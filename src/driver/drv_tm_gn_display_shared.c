@@ -250,9 +250,6 @@ static void TM_GN_WriteCommand(softI2C_t *i2c, byte command, const byte *data, i
 	}
 	TM_GN_Stop(i2c);
 }
-static void TM_GN_WriteCommangSingle(softI2C_t *i2c, byte command, byte val) {
-	TM_GN_WriteCommand(i2c, command, &val, 1);
-}
 static void TM1637_SendSegments(const byte *segments, byte length, byte pos) {
 	// set COM1 (no data, just command)
 	TM_GN_WriteCommand(&g_i2c, TM1637_I2C_COM1, 0, 0);
@@ -597,28 +594,12 @@ void TM_GN_Display_SharedInit() {
 				g_remap[i] = i;
 			}
 		}
-		g_i2c.pin_clk = 11; // A11
-		g_i2c.pin_data = 24; // B8
-		g_i2c.pin_stb = 19; // B3
-
-
 		HAL_PIN_Setup_Output(g_i2c.pin_clk);
 		HAL_PIN_Setup_Output(g_i2c.pin_stb);
 		HAL_PIN_Setup_Output(g_i2c.pin_data);
 		HAL_PIN_SetOutputValue(g_i2c.pin_clk, true);
 		HAL_PIN_SetOutputValue(g_i2c.pin_stb, true);
 		HAL_PIN_SetOutputValue(g_i2c.pin_data, true);
-
-		g_i2c.pin_stb = -1; // B3
-		usleep(100);
-
-		TM_GN_WriteCommangSingle(&g_i2c, 0x24, 0x71);
-		usleep(100);
-		TM_GN_WriteCommangSingle(&g_i2c, 0x34, 0x06);
-		usleep(100);
-		TM_GN_WriteCommangSingle(&g_i2c, 0x35, 0x5B);
-		usleep(100);
-		return;
 
 		g_totalDigits = 16;
 	}
@@ -682,5 +663,4 @@ void TM_GN_Display_SharedInit() {
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TMGN_SetupButtons", CMD_TMGN_SetupButtons, NULL);
-
 }
