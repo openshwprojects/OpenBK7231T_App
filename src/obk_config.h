@@ -127,6 +127,7 @@
 #define ENABLE_DRIVER_WEMO		1
 #define ENABLE_DRIVER_HUE		1
 #define ENABLE_DRIVER_DHT		1
+#define	ENABLE_DRIVER_TMGN		1
 
 #else
 
