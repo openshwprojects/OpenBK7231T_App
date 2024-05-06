@@ -195,9 +195,8 @@ void TMGN_ReadButtons() {
 	int i;
 
 	if (g_displayType == TMGN_HD2015) {
-		tmp = 0;	
 		Soft_I2C_Start(&g_i2c, 0x4F);
-		Soft_I2C_ReadByte(&g_i2c, &tmp);
+		tmp = Soft_I2C_ReadByte(&g_i2c, 0);
 		Soft_I2C_Stop(&g_i2c);
 	}
 	else {
