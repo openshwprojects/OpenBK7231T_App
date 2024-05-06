@@ -643,42 +643,6 @@ commandResult_t CMD_FindPattern(const void *context, const char *cmd, const char
 
 int g_pwmFrequency = PWM_FREQUENCY_DEFAULT;
 
-
-#include "../driver/drv_local.h"
-
-static softI2C_t g_softI2C;
-
-commandResult_t CMD_Test1(const void* context, const char* cmd, const char* args, int cmdFlags) {
-
-	g_softI2C.pin_clk = 11; // A11
-	g_softI2C.pin_data = 24; // B8
-	g_softI2C.pin_stb = 19; // B3
-
-	Soft_I2C_PreInit(&g_softI2C);
-
-
-	Soft_I2C_Start(&g_softI2C, 0x48);
-	Soft_I2C_WriteByte(&g_softI2C, 0x11);
-	Soft_I2C_Stop(&g_softI2C);
-
-	usleep(100);
-
-	Soft_I2C_Start(&g_softI2C, 0x68);
-	Soft_I2C_WriteByte(&g_softI2C, 0x06);
-	Soft_I2C_Stop(&g_softI2C);
-
-	usleep(100);
-	Soft_I2C_Start(&g_softI2C, 0x6A);
-	Soft_I2C_WriteByte(&g_softI2C, 0xE6);
-	Soft_I2C_Stop(&g_softI2C);
-
-	usleep(100);
-	Soft_I2C_Start(&g_softI2C, 0x6C);
-	Soft_I2C_WriteByte(&g_softI2C, 0x5B);
-	Soft_I2C_Stop(&g_softI2C);
-
-	return CMD_RES_OK;
-}
 commandResult_t CMD_PWMFrequency(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
 	// following check must be done after 'Tokenizer_TokenizeString',
@@ -851,7 +815,6 @@ void CMD_Init_Early() {
 	CMD_RegisterCommand("TimeSize", CMD_TimeSize, NULL);
 
 	CMD_RegisterCommand("PWMFrequency", CMD_PWMFrequency, NULL);
-	CMD_RegisterCommand("Test1", CMD_Test1, NULL);
 	
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602)
 	CMD_InitScripting();

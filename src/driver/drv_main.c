@@ -335,6 +335,9 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK/STB interface. TM1638 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20553628#20553628) for details.",
 	//drvdetail:"requires":""}
 	{ "TM1638",	TM1638_Init,		NULL,		NULL, TMGN_RunQuickTick,NULL,  NULL, false },
+
+	{ "HD2015",	HD2015_Init,		NULL,		NULL, TMGN_RunQuickTick,NULL,  NULL, false },
+
 #endif
 #if ENABLE_DRIVER_BATTERY
 	//drvdetail:{"name":"Battery",

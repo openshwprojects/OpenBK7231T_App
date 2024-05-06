@@ -67,6 +67,8 @@ void TM1638_Init();
 
 void HT16K33_Init();
 
+void HD2015_Init();
+
 void DRV_ADCSmoother_Init();
 void DRV_ADCSmoother_RunFrame();
 

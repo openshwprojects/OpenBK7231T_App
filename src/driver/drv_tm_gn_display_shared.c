@@ -11,11 +11,13 @@
 #include "drv_uart.h"
 #include "../httpserver/new_http.h"
 #include "../hal/hal_pins.h"
-
+#include "drv_tm_gn_display_shared.h"
 #include "drv_tm1637.h"
 
 #define GN6932_DELAY usleep(1);
 
+
+static byte g_displayType;
 static softI2C_t g_i2c;
 static byte g_brightness;
 static int g_buttonReadIntervalMS;
@@ -250,19 +252,21 @@ static void TM_GN_WriteCommand(softI2C_t *i2c, byte command, const byte *data, i
 	}
 	TM_GN_Stop(i2c);
 }
-static void TM_GN_WriteCommandSingle(softI2C_t *i2c, byte command, byte data) {
-	TM_GN_WriteCommand(i2c, command, &data, 1);
+static void HD2015_WriteCommandSingle(softI2C_t *i2c, byte command, byte data) {
+	Soft_I2C_Start(i2c, command);
+	Soft_I2C_WriteByte(i2c, data);
+	Soft_I2C_Stop(i2c);
 }
 static void TM1637_SendSegments(const byte *segments, byte length, byte pos) {
-	if (1) {
+	if (g_displayType == TMGN_HD2015) {
 		int i;
-		g_i2c.pin_stb = -1;
-		TM_GN_WriteCommandSingle(&g_i2c, 0x48, 0x11);
+		HD2015_WriteCommandSingle(&g_i2c, 0x48, 0x11);
 
 		usleep(100);
 
 		for (i = 0; i < length; i++) {
-			TM_GN_WriteCommandSingle(&g_i2c, 0x68 + (i+pos) * 2, g_digits[segments[i]]);
+			HD2015_WriteCommandSingle(&g_i2c, 0x68 + (i+pos) * 2, g_digits[segments[i]]);
+			usleep(100);
 		}
 		return;
 	}
@@ -570,7 +574,7 @@ void TMGN_RunQuickTick() {
 		}
 	}
 }
-void TM_GN_Display_SharedInit() {
+void TM_GN_Display_SharedInit(tmGnType_t type) {
 	int i;
 
 	g_doTM1638RowsToColumnsSwap = 0;
