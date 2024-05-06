@@ -650,9 +650,8 @@ static softI2C_t g_softI2C;
 
 commandResult_t CMD_Test1(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
-	g_softI2C.pin_clk = 11;
-	g_softI2C.pin_data = 24;
-
+	g_softI2C.pin_clk = 11; // A11
+	g_softI2C.pin_data = 24; // B8
 	g_softI2C.pin_stb = 19; // B3
 
 	Soft_I2C_PreInit(&g_softI2C);
@@ -662,15 +661,18 @@ commandResult_t CMD_Test1(const void* context, const char* cmd, const char* args
 	Soft_I2C_WriteByte(&g_softI2C, 0x11);
 	Soft_I2C_Stop(&g_softI2C);
 
+	usleep(100);
 
 	Soft_I2C_Start(&g_softI2C, 0x68);
 	Soft_I2C_WriteByte(&g_softI2C, 0x06);
 	Soft_I2C_Stop(&g_softI2C);
 
+	usleep(100);
 	Soft_I2C_Start(&g_softI2C, 0x6A);
 	Soft_I2C_WriteByte(&g_softI2C, 0xE6);
 	Soft_I2C_Stop(&g_softI2C);
 
+	usleep(100);
 	Soft_I2C_Start(&g_softI2C, 0x6C);
 	Soft_I2C_WriteByte(&g_softI2C, 0x5B);
 	Soft_I2C_Stop(&g_softI2C);

@@ -250,7 +250,22 @@ static void TM_GN_WriteCommand(softI2C_t *i2c, byte command, const byte *data, i
 	}
 	TM_GN_Stop(i2c);
 }
+static void TM_GN_WriteCommandSingle(softI2C_t *i2c, byte command, byte data) {
+	TM_GN_WriteCommand(i2c, command, &data, 1);
+}
 static void TM1637_SendSegments(const byte *segments, byte length, byte pos) {
+	if (1) {
+		int i;
+		g_i2c.pin_stb = -1;
+		TM_GN_WriteCommandSingle(&g_i2c, 0x48, 0x11);
+
+		usleep(100);
+
+		for (i = 0; i < length; i++) {
+			TM_GN_WriteCommandSingle(&g_i2c, 0x68 + (i+pos) * 2, g_digits[segments[i]]);
+		}
+		return;
+	}
 	// set COM1 (no data, just command)
 	TM_GN_WriteCommand(&g_i2c, TM1637_I2C_COM1, 0, 0);
 
@@ -260,6 +275,7 @@ static void TM1637_SendSegments(const byte *segments, byte length, byte pos) {
 	// set COM3 + brightness (no data, just command)
 	TM_GN_WriteCommand(&g_i2c, TM1637_I2C_COM3 + (g_brightness & 0x0f), 0, 0);
 }
+
 static int TM1637_MapCharacter(int ch) {
 	int ret;
 	if (ch >= '0' && ch <= '9') {
@@ -596,7 +612,7 @@ void TM_GN_Display_SharedInit() {
 		}
 		g_i2c.pin_clk = 11; // A11
 		g_i2c.pin_data = 24; // B8
-		g_i2c.pin_stb = 19; // B3
+		g_i2c.pin_stb = -1; // B3
 
 
 		HAL_PIN_Setup_Output(g_i2c.pin_clk);
@@ -608,11 +624,8 @@ void TM_GN_Display_SharedInit() {
 
 		usleep(100);
 
-		TM_GN_WriteCommand(&g_i2c, 0x24, 0, 0);
-		usleep(100);
-		return;
-
 		g_totalDigits = 16;
+		g_totalDigits = 4;
 	}
 	
 	usleep(100);
