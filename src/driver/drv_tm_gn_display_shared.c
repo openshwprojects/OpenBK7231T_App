@@ -581,16 +581,22 @@ void TM_GN_Display_SharedInit(tmGnType_t type) {
 	g_displayType = type;
 	g_doTM1638RowsToColumnsSwap = 0;
 
-	if (PIN_FindPinIndexForRole(IOR_TM1637_CLK, -1) != -1) {
+	if (type == TMGN_HD2015) {
+		// startDriver HD2015 [CLK] [DAT]
+		// startDriver HD2015 11 24
+		g_i2c.pin_clk = Tokenizer_GetArgIntegerDefault(1, 11); // A11
+		g_i2c.pin_data = Tokenizer_GetArgIntegerDefault(2, 24); // B8
+		g_i2c.pin_stb = -1; // B3
+		g_totalDigits = 4;
+		// HD2015 has no remap
+		for (i = 0; i < sizeof(g_remap); i++) {
+			g_remap[i] = i;
+		}
+	} else if (PIN_FindPinIndexForRole(IOR_TM1637_CLK, -1) != -1) {
 		g_i2c.pin_clk = PIN_FindPinIndexForRole(IOR_TM1637_CLK, 16);
 		g_i2c.pin_data = PIN_FindPinIndexForRole(IOR_TM1637_DIO, 14);
 		g_i2c.pin_stb = -1;
 		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using I2C mode (TM1637)");
-
-		HAL_PIN_Setup_Output(g_i2c.pin_clk);
-		HAL_PIN_Setup_Output(g_i2c.pin_data);
-		HAL_PIN_SetOutputValue(g_i2c.pin_clk, true);
-		HAL_PIN_SetOutputValue(g_i2c.pin_data, true);
 
 		g_totalDigits = 6;
 	}
@@ -616,24 +622,20 @@ void TM_GN_Display_SharedInit(tmGnType_t type) {
 				g_remap[i] = i;
 			}
 		}
-		g_i2c.pin_clk = 11; // A11
-		g_i2c.pin_data = 24; // B8
-		g_i2c.pin_stb = -1; // B3
-
-
-		HAL_PIN_Setup_Output(g_i2c.pin_clk);
-		HAL_PIN_Setup_Output(g_i2c.pin_stb);
-		HAL_PIN_Setup_Output(g_i2c.pin_data);
-		HAL_PIN_SetOutputValue(g_i2c.pin_clk, true);
-		HAL_PIN_SetOutputValue(g_i2c.pin_stb, true);
-		HAL_PIN_SetOutputValue(g_i2c.pin_data, true);
-
-		usleep(100);
 
 		g_totalDigits = 16;
-		g_totalDigits = 4;
 	}
-	
+
+	HAL_PIN_Setup_Output(g_i2c.pin_clk);
+	HAL_PIN_Setup_Output(g_i2c.pin_data);
+	HAL_PIN_SetOutputValue(g_i2c.pin_clk, true);
+	HAL_PIN_SetOutputValue(g_i2c.pin_data, true);
+
+	if (g_i2c.pin_stb != -1) {
+		HAL_PIN_Setup_Output(g_i2c.pin_stb);
+		HAL_PIN_SetOutputValue(g_i2c.pin_stb, true);
+	}
+
 	usleep(100);
 
 	if (tmgn_buffer == 0) {
