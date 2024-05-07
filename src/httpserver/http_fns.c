@@ -1713,29 +1713,6 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		}
 	}
 #endif
-	//if (relayCount > 0) {
-		for (i = 0; i < CHANNEL_MAX; i++) {
-			// if already included by light, skip
-			if (BIT_CHECK(flagsChannelPublished, i)) {
-				continue;
-			}
-			bool bToggleInv = g_cfg.pins.channelTypes[i] == ChType_Toggle_Inv;
-			if (h_isChannelRelay(i) || g_cfg.pins.channelTypes[i] == ChType_Toggle || bToggleInv) {
-				// TODO: flags are 32 bit and there are 64 max channels
-				BIT_SET(flagsChannelPublished, i);
-				if (CFG_HasFlag(OBK_FLAG_MQTT_HASS_ADD_RELAYS_AS_LIGHTS)) {
-					dev_info = hass_init_relay_device_info(i, LIGHT_ON_OFF, bToggleInv);
-				}
-				else {
-					dev_info = hass_init_relay_device_info(i, RELAY, bToggleInv);
-				}
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-				dev_info = NULL;
-				discoveryQueued = true;
-			}
-		}
-	//}
 
 
 	if (pwmCount == 5 || ledDriverChipRunning || (pwmCount == 4 && CFG_HasFlag(OBK_FLAG_LED_EMULATE_COOL_WITH_RGB))) {
@@ -1991,6 +1968,30 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		}
 	}
 #endif
+
+	//if (relayCount > 0) {
+	for (i = 0; i < CHANNEL_MAX; i++) {
+		// if already included by light, skip
+		if (BIT_CHECK(flagsChannelPublished, i)) {
+			continue;
+		}
+		bool bToggleInv = g_cfg.pins.channelTypes[i] == ChType_Toggle_Inv;
+		if (h_isChannelRelay(i) || g_cfg.pins.channelTypes[i] == ChType_Toggle || bToggleInv) {
+			// TODO: flags are 32 bit and there are 64 max channels
+			BIT_SET(flagsChannelPublished, i);
+			if (CFG_HasFlag(OBK_FLAG_MQTT_HASS_ADD_RELAYS_AS_LIGHTS)) {
+				dev_info = hass_init_relay_device_info(i, LIGHT_ON_OFF, bToggleInv);
+			}
+			else {
+				dev_info = hass_init_relay_device_info(i, RELAY, bToggleInv);
+			}
+			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+			hass_free_device_info(dev_info);
+			dev_info = NULL;
+			discoveryQueued = true;
+		}
+	}
+	//}
 	if (dInputCount > 0) {
 		for (i = 0; i < CHANNEL_MAX; i++) {
 			if (h_isChannelDigitalInput(i)) {

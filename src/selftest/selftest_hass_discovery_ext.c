@@ -346,6 +346,9 @@ void Test_HassDiscovery_Channel_Motion_With_dInput() {
 	PIN_SetPinRoleForPinIndex(10, IOR_DigitalInput);
 	PIN_SetPinChannelForPinIndex(10, 4);
 
+	PIN_SetPinRoleForPinIndex(11, IOR_LED_n);
+	PIN_SetPinChannelForPinIndex(11, 4);
+
 	SIM_ClearMQTTHistory();
 	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
 	Sim_RunSeconds(5, false);
