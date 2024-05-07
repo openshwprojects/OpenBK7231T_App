@@ -16,7 +16,7 @@
 
 #include <stdint.h>
 
-#define BMP280_CHIP_ID        0x77
+#define BMP280_CHIP_ID        0x56
 #define BME280_CHIP_ID        0x60
 
 #define BMP280_REG_DIG_T1     0x88
