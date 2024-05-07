@@ -187,23 +187,27 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code)) {
 //        ef_get_env_blob((const char *)WIFI_AP_PSM_INFO_CHANNEL, val_buf, val_len, NULL);
 //        ef_get_env_blob((const char *)WIFI_AP_PSM_INFO_BSSID, val_buf, val_len, NULL);
 //
-void HAL_GetWiFiSSID(char* ssid){
+char* HAL_GetWiFiSSID(char* ssid){
 	wifi_mgmr_sta_connect_ind_stat_info_t info;
 	memset(&info, 0, sizeof(info));
 	wifi_mgmr_sta_connect_ind_stat_get(&info);
 	memcpy(ssid, info.ssid, sizeof(ssid));
+	return ssid;
 };
-void HAL_GetWiFiBSSID(char* bssid){
+char* HAL_GetWiFiBSSID(char* bssid){
 	wifi_mgmr_sta_connect_ind_stat_info_t info;
 	memset(&info, 0, sizeof(info));
 	wifi_mgmr_sta_connect_ind_stat_get(&info);
-	memcpy(bssid, info.bssid, sizeof(bssid));
+//	memcpy(bssid, info.bssid, sizeof(bssid));
+	sprintf(bssid, MACSTR, MAC2STR(info.bssid));
+	return bssid;
 };
-int HAL_GetWiFiChannel(uint8_t *chan){
+uint8_t HAL_GetWiFiChannel(uint8_t *chan){
 	wifi_mgmr_sta_connect_ind_stat_info_t info;
 	memset(&info, 0, sizeof(info));
 	wifi_mgmr_sta_connect_ind_stat_get(&info);
 	*chan = info.chan_band;
+	return *chan;
 };
 
 void HAL_PrintNetworkInfo() {

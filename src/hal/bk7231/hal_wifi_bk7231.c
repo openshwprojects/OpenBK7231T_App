@@ -172,26 +172,34 @@ int HAL_GetWifiStrength()
 	return linkStatus.wifi_strength;
 }
 // Get WiFi Information (SSID / BSSID) - e.g. to display on status page 
-void HAL_GetWiFiSSID(char* ssid){
+char* HAL_GetWiFiSSID(char* ssid){
 	if (sta_ip_is_start()){
 		LinkStatusTypeDef linkStatus;
 		bk_wlan_get_link_status(&linkStatus);
 		memcpy(ssid, linkStatus.ssid, sizeof(ssid)-1);
+		return ssid;	
 	}
+	ssid[0]="\0";
+	return ssid; 
 };
-void HAL_GetWiFiBSSID(char* bssid){
+char* HAL_GetWiFiBSSID(char* bssid){
 	if (sta_ip_is_start()){
 		LinkStatusTypeDef linkStatus;
 		bk_wlan_get_link_status(&linkStatus);
-		memcpy(bssid, MAC2STR(linkStatus.bssid), sizeof(bssid)-1);
+		sprintf(bssid, MACSTR, MAC2STR(linkStatus.bssid));
+		return bssid;
 	}
+	bssid[0]="\0";
+	return bssid; 
 };
-void HAL_GetWiFiChannel(uint8_t *chan){
+uint8_t HAL_GetWiFiChannel(uint8_t *chan){
 	if (sta_ip_is_start()){
 		LinkStatusTypeDef linkStatus;
 		bk_wlan_get_link_status(&linkStatus);
 		*chan = linkStatus.channel ;
+		return *chan;
 	}
+	return 0;
 };
 
 // receives status change notifications about wireless - could be useful

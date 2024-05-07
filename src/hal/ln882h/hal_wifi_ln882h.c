@@ -144,22 +144,25 @@ if (wifi_get_sta_conn_info(&ssid, &bssid) == 0){
 +		}
 
 */
-void HAL_GetWiFiSSID(char* ssid){
+char* HAL_GetWiFiSSID(char* ssid){
 	const uint8_t * bssid = NULL;
 	const char * tempssid = NULL;
 	wifi_get_sta_conn_info(&tempssid, &bssid);
 	strcpy(ssid,tempssid);
+	return ssid;
 };
-void HAL_GetWiFiBSSID(char* bssid){
+char* HAL_GetWiFiBSSID(char* bssid){
 	const uint8_t * tempbssid = NULL;
 	const char * ssid = NULL;
 //	if (wifi_get_sta_conn_info(&ssid, &tempbssid) == 0) sprintf(bssid,"%02X:%02X:%02X:%02X:%02X:%02X", tempbssid[0], tempbssid[1], tempbssid[2], tempbssid[3], tempbssid[4], tempbssid[5]);
 	if (wifi_get_sta_conn_info(&ssid, &tempbssid) == 0) sprintf(bssid, MACSTR, MAC2STR(tempbssid));
+	return bssid;
 };
-void HAL_GetWiFiChannel(uint8_t *chan){
+uint8_t HAL_GetWiFiChannel(uint8_t *chan){
 	wifi_scan_cfg_t   scan_cfg   = {0,};
 	wifi_get_sta_scan_cfg(&scan_cfg);
 	*chan = scan_cfg.channel;
+	return *chan;
 };
 
 

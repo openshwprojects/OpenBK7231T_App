@@ -34,10 +34,10 @@ const char* HAL_GetMyMaskString();
 const char* HAL_GetMACStr(char* macstr);
 
 // Get WiFi Information (SSID / BSSID) - e.g. to display on status page 
-void HAL_GetWiFiSSID(char* ssid);
-void HAL_GetWiFiBSSID(char* bssid);
+char* HAL_GetWiFiSSID(char* ssid);
+char* HAL_GetWiFiBSSID(char* bssid);
 typedef unsigned char uint8_t ;
-void HAL_GetWiFiChannel(uint8_t *chan);
+uint8_t HAL_GetWiFiChannel(uint8_t *chan);
 
 void WiFI_GetMacAddress(char* mac);
 int WiFI_SetMacAddress(char* mac);
