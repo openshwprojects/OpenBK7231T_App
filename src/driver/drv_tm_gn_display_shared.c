@@ -3,7 +3,7 @@
 // - TM1637
 // - TM1638
 // - GN6932
-// - HD2015/TM1650
+// - HD2015/TM1650 - https://www.elektroda.com/rtvforum/find.php?q=HD2015
 
 #include "../new_common.h"
 #include "../new_pins.h"
