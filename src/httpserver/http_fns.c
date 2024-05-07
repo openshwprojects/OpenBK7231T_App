@@ -505,6 +505,18 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "Channel %s = %i", CHANNEL_GetLabel(i), iValue);
 			poststr(request, "</td></tr>");
 		}
+		else if (channelType == ChType_Motion) {
+			iValue = CHANNEL_Get(i);
+
+			poststr(request, "<tr><td>");
+			if (iValue) {
+				hprintf255(request, "No motion (ch %i)", i);
+			}
+			else {
+				hprintf255(request, "Motion! (ch %i)", i);
+			}
+			poststr(request, "</td></tr>");
+		}
 		else if (channelType == ChType_OpenClosed) {
 			iValue = CHANNEL_Get(i);
 
@@ -1725,19 +1737,6 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		}
 	//}
 
-	if (dInputCount > 0) {
-		for (i = 0; i < CHANNEL_MAX; i++) {
-			if (h_isChannelDigitalInput(i)) {
-				// TODO: flags are 32 bit and there are 64 max channels
-				BIT_SET(flagsChannelPublished, i);
-				dev_info = hass_init_binary_sensor_device_info(i, false);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-				dev_info = NULL;
-				discoveryQueued = true;
-			}
-		}
-	}
 
 	if (pwmCount == 5 || ledDriverChipRunning || (pwmCount == 4 && CFG_HasFlag(OBK_FLAG_LED_EMULATE_COOL_WITH_RGB))) {
 		if (dev_info == NULL) {
@@ -1842,246 +1841,172 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		if (BIT_CHECK(flagsChannelPublished, i)) {
 			continue;
 		}
+		dev_info = 0;
 		switch (type)
 		{
+			case ChType_Motion:
+			{
+				dev_info = hass_init_binary_sensor_device_info(i, false);
+				cJSON_AddStringToObject(dev_info->root, "dev_cla", "motion");
+			}
+			break;
 			case ChType_OpenClosed:
 			{
 				dev_info = hass_init_binary_sensor_device_info(i, false);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_OpenClosed_Inv:
 			{
 				dev_info = hass_init_binary_sensor_device_info(i, true);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Voltage_div10:
 			{
 				dev_info = hass_init_sensor_device_info(VOLTAGE_SENSOR, i, 2, 1, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Voltage_div100:
 			{
 				dev_info = hass_init_sensor_device_info(VOLTAGE_SENSOR, i, 2, 2, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_ReadOnlyLowMidHigh:
 			{
 				dev_info = hass_init_sensor_device_info(READONLYLOWMIDHIGH_SENSOR, i, -1, -1, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_SmokePercent:
 			{
 				dev_info = hass_init_sensor_device_info(SMOKE_SENSOR, i, -1, -1, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Illuminance:
 			{
 				dev_info = hass_init_sensor_device_info(ILLUMINANCE_SENSOR, i, -1, -1, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_ReadOnly:
 			{
 				dev_info = hass_init_sensor_device_info(CUSTOM_SENSOR, i, -1, -1, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Temperature:
 			{
 				dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, i, -1, -1, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Temperature_div2:
 			{
 				dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, i, 2, 1, 5);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Temperature_div10:
 			{
 				dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, i, 2, 1, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Temperature_div100:
 			{
 				dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, i, 2, 2, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Humidity:
 			{
 				dev_info = hass_init_sensor_device_info(HUMIDITY_SENSOR, i, -1, -1, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Humidity_div10:
 			{
 				dev_info = hass_init_sensor_device_info(HUMIDITY_SENSOR, i, 2, 1, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Current_div100:
 			{
 				dev_info = hass_init_sensor_device_info(CURRENT_SENSOR, i, 3, 2, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_LeakageCurrent_div1000:
 			case ChType_Current_div1000:
 			{
 				dev_info = hass_init_sensor_device_info(CURRENT_SENSOR, i, 3, 3, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Power:
 			{
 				dev_info = hass_init_sensor_device_info(POWER_SENSOR, i, -1, -1, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Power_div10:
 			{
 				dev_info = hass_init_sensor_device_info(POWER_SENSOR, i, 2, 1, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Power_div100:
 			{
 				dev_info = hass_init_sensor_device_info(POWER_SENSOR, i, 3, 2, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_PowerFactor_div100:
 			{
 				dev_info = hass_init_sensor_device_info(POWERFACTOR_SENSOR, i, 3, 2, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Pressure_div100:
 			{
 				dev_info = hass_init_sensor_device_info(PRESSURE_SENSOR, i, 3, 2, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_PowerFactor_div1000:
 			{
 				dev_info = hass_init_sensor_device_info(POWERFACTOR_SENSOR, i, 4, 3, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Frequency_div100:
 			{
 				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, i, 3, 2, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Frequency_div10:
 			{
 				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, i, 3, 1, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_EnergyTotal_kWh_div100:
 			{
 				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 2, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_EnergyTotal_kWh_div1000:
 			{
 				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 3, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 		}
+		if (dev_info) {
+			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+			hass_free_device_info(dev_info);
+
+			BIT_SET(flagsChannelPublished, i);
+			discoveryQueued = true;
+		}
 	}
 #endif
+	if (dInputCount > 0) {
+		for (i = 0; i < CHANNEL_MAX; i++) {
+			if (h_isChannelDigitalInput(i)) {
+				if (BIT_CHECK(flagsChannelPublished, i)) {
+					continue;
+				}
+				// TODO: flags are 32 bit and there are 64 max channels
+				BIT_SET(flagsChannelPublished, i);
+				dev_info = hass_init_binary_sensor_device_info(i, false);
+				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+				hass_free_device_info(dev_info);
+				dev_info = NULL;
+				discoveryQueued = true;
+			}
+		}
+	}
 	if (1) {
 		//use -1 for channel as these don't correspond to channels
 		dev_info = hass_init_sensor_device_info(HASS_RSSI, -1, -1, -1, 1);

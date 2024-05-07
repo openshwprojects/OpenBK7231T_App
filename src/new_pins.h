@@ -915,6 +915,13 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Power_div100,
+	//chandetail:{"name":"Motion",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Motion",
+	//chandetail:"enum":"Motion",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Motion,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",

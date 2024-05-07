@@ -2010,6 +2010,9 @@ const char* g_channelTypeNames[] = {
 	"Temperature_div100",
 	"LeakageCurrent_div1000",
 	"Power_div100",
+	"Motion",
+	"error",
+	"error",
 	"error",
 	"error",
 };
