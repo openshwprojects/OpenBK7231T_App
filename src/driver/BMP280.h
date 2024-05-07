@@ -165,6 +165,7 @@ void BMP280_Configure(BMP280_mode mode, BMP280_sampling T_sampling,
 }
 
 // initializes the BMP280 sensor, returns 1 if OK and 0 if error
+// initializes the BMP280 sensor, returns 1 if OK and 0 if error
 uint8_t BMP280_begin(BMP280_mode mode,
                   BMP280_sampling T_sampling,
                   BMP280_sampling P_sampling,
@@ -172,12 +173,13 @@ uint8_t BMP280_begin(BMP280_mode mode,
                   standby_time  standby)
 {
 	int id = BMP280_Read8(BMP280_REG_CHIPID);
+	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "Read chip ID: %02X", id); // Add this line to output the read chip ID
+
 	if (id == BMP280_CHIP_ID) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BMP280 detected!");
 	} else if (id == BME280_CHIP_ID) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BME280 detected!");
-	}
-	else {
+	} else {
 		addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BMx280 wrong ID!");
 		return 0;
 	}
