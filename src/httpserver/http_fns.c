@@ -1846,7 +1846,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		{
 			case ChType_Motion:
 			{
-				dev_info = hass_init_binary_sensor_device_info(i, false);
+				dev_info = hass_init_binary_sensor_device_info(i, true);
 				cJSON_AddStringToObject(dev_info->root, "dev_cla", "motion");
 			}
 			break;
