@@ -1,4 +1,10 @@
-// NOTE: qqq
+// NOTE: This is my shared driver for 7-segment display drivers.
+// Currently supported:
+// - TM1637
+// - TM1638
+// - GN6932
+// - HD2015/TM1650
+
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
