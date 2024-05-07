@@ -331,6 +331,7 @@
     <ClCompile Include="src\driver\drv_sm16703P.c" />
     <ClCompile Include="src\selftest\selftest_ws2812b.c" />
     <ClCompile Include="src\sim\Controller_WS2812.cpp" />
+    <ClCompile Include="src\driver\drv_pixelAnim.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\base64\base64.h" />
