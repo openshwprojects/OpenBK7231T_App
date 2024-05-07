@@ -1,4 +1,13 @@
-// NOTE: qqq
+// NOTE: This is my shared driver for 7-segment display drivers.
+// Currently supported:
+// - TM1637
+// - TM1638
+// - GN6932
+// - HD2015/TM1650 - https://www.elektroda.com/rtvforum/find.php?q=HD2015
+// This shared driver exposes OBK commands API so you can create custom
+// OBK scripts to manipulate your display, show values, show temperature,
+// time, etc.... no hardcoding needed
+
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
