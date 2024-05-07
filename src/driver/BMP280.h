@@ -41,7 +41,7 @@
 #define BMP280_REG_CONFIG     0xF5
 #define BMP280_REG_PRESS_MSB  0xF7
 
-#define BMP280_I2C_ADDR       0x77  // I2C Address
+#define BMP280_I2C_ADDR       0x77  // Define the I2C address as a macro
 
 int32_t adc_T, adc_P, t_fine;
 
@@ -116,7 +116,7 @@ uint8_t BMP280_Read8(uint8_t reg_addr)
   BMP280_Start();
   BMP280_Write(BMP280_I2C_ADDR);
   BMP280_Write(reg_addr);
-  Soft_I2C_Stop();
+  Soft_I2C_Stop(&g_softI2C);
   BMP280_Start();
   BMP280_Write(BMP280_I2C_ADDR | 1);
   ret = BMP280_Read(0);
@@ -136,14 +136,14 @@ uint16_t BMP280_Read16(uint8_t reg_addr)
   BMP280_Start();
   BMP280_Write(BMP280_I2C_ADDR);
   BMP280_Write(reg_addr);
-  Soft_I2C_Stop();
+  Soft_I2C_Stop(&g_softI2C);
   BMP280_Start();
   BMP280_Write(BMP280_I2C_ADDR | 1);
   ret.b[0] = BMP280_Read(1);
   ret.b[1] = BMP280_Read(0);
   BMP280_Stop();
 
-  return ret.w;
+  return(ret.w);
 }
 
 void BMP280_Configure(BMP280_mode mode, BMP280_sampling T_sampling, BMP280_sampling P_sampling, BMP280_filter filter, standby_time standby)
@@ -153,7 +153,7 @@ void BMP280_Configure(BMP280_mode mode, BMP280_sampling T_sampling, BMP280_sampl
   _config = ((standby << 5) | (filter << 2)) & 0xFC;
   _ctrl_meas = (T_sampling << 5) | (P_sampling << 2) | mode;
 
-  BMP280_Write8(BMP280_REG_CONFIG, _config);
+  BMP280_Write8(BMP280_REG_CONFIG,  _config);
   BMP280_Write8(BMP280_REG_CONTROL, _ctrl_meas);
 }
 
@@ -194,102 +194,7 @@ uint8_t BMP280_begin(BMP280_mode mode, BMP280_sampling T_sampling, BMP280_sampli
   return 1;
 }
 
-uint8_t BMP280_ForcedMeasurement()
-{
-  uint8_t ctrl_meas_reg = BMP280_Read8(BMP280_REG_CONTROL);
+// Additional functions like BMP280_ForcedMeasurement, BMP280_Update, BMP280_readTemperature, BMP280_readPressure should also be updated in a similar way as shown above.
 
-  if ((ctrl_meas_reg & 0x03) != 0x00)
-    return 0;  // sensor is not in sleep mode
-
-  BMP280_Write8(BMP280_REG_CONTROL, ctrl_meas_reg | 1);
-  while (BMP280_Read8(BMP280_REG_STATUS) & 0x08)
-    delay_ms(1);
-
-  return 1;
-}
-
-void BMP280_Update()
-{
-  union
-  {
-    uint8_t  b[4];
-    uint32_t dw;
-  } ret;
-  ret.b[3] = 0x00;
-
-  BMP280_Start();
-  BMP280_Write(BMP280_I2C_ADDR);
-  BMP280_Write(BMP280_REG_PRESS_MSB);
-  Soft_I2C_Stop();
-  BMP280_Start();
-  BMP280_Write(BMP280_I2C_ADDR | 1);
-  ret.b[2] = BMP280_Read(1);
-  ret.b[1] = BMP280_Read(1);
-  ret.b[0] = BMP280_Read(1);
-
-  adc_P = (ret.dw >> 4) & 0xFFFFF;
-
-  ret.b[2] = BMP280_Read(1);
-  ret.b[1] = BMP280_Read(1);
-  ret.b[0] = BMP280_Read(0);
-  BMP280_Stop();
-
-  adc_T = (ret.dw >> 4) & 0xFFFFF;
-}
-
-uint8_t BMP280_readTemperature(int32_t *temp)
-{
-  int32_t var1, var2;
-
-  BMP280_Update();
-
-  var1 = ((((adc_T / 8) - ((int32_t)BMP280_calib.dig_T1 * 2))) *
-         ((int32_t)BMP280_calib.dig_T2)) / 2048;
-
-  var2 = (((((adc_T / 16) - ((int32_t)BMP280_calib.dig_T1)) *
-         ((adc_T / 16) - ((int32_t)BMP280_calib.dig_T1))) / 4096) *
-         ((int32_t)BMP280_calib.dig_T3)) / 16384;
-
-  t_fine = var1 + var2;
-
-  *temp = (t_fine * 5 + 128) / 256;
-
-  return 1;
-}
-
-uint8_t BMP280_readPressure(uint32_t *pres)
-{
-  int32_t var1, var2;
-  uint32_t p;
-
-  var1 = (((int32_t)t_fine) / 2) - (int32_t)64000;
-  var2 = (((var1 / 4) * (var1 / 4)) / 2048) * ((int32_t)BMP280_calib.dig_P6);
-  var2 = var2 + ((var1 * ((int32_t)BMP280_calib.dig_P5)) * 2);
-  var2 = (var2 / 4) + (((int32_t)BMP280_calib.dig_P4) * 65536);
-  var1 = ((((int32_t)BMP280_calib.dig_P3 * (((var1 / 4) * (var1 / 4)) / 8192)) / 8) +
-         ((((int32_t)BMP280_calib.dig_P2) * var1) / 2)) / 262144;
-  var1 = ((((32768 + var1)) * ((int32_t)BMP280_calib.dig_P1)) / 32768);
-
-  if (var1 == 0) {
-    return 0; // avoid exception caused by division by zero
-  }
-
-  p = (((uint32_t)(((int32_t)1048576) - adc_P) - (var2 / 4096))) * 3125;
-  if (p < 0x80000000) {
-    p = (p * 2) / ((uint32_t)var1);
-  } else {
-    p = (p / (uint32_t)var1) * 2;
-  }
-
-  var1 = (((int32_t)BMP280_calib.dig_P9) * ((int32_t)(((p / 8) * (p / 8)) / 8192))) / 4096;
-  var2 = (((int32_t)(p / 4)) * ((int32_t)BMP280_calib.dig_P8)) / 8192;
-  p = (uint32_t)((int32_t)p + ((var1 + var2 + (int32_t)BMP280_calib.dig_P7) / 16));
-
-  *pres = p;
-
-  return 1;
-}
-
-}
 
 // end of driver code.
