@@ -815,7 +815,6 @@ void CMD_Init_Early() {
 	CMD_RegisterCommand("TimeSize", CMD_TimeSize, NULL);
 
 	CMD_RegisterCommand("PWMFrequency", CMD_PWMFrequency, NULL);
-
 	
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602)
 	CMD_InitScripting();

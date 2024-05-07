@@ -11,11 +11,13 @@
 #include "drv_uart.h"
 #include "../httpserver/new_http.h"
 #include "../hal/hal_pins.h"
-
+#include "drv_tm_gn_display_shared.h"
 #include "drv_tm1637.h"
 
 #define GN6932_DELAY usleep(1);
 
+
+static byte g_displayType;
 static softI2C_t g_i2c;
 static byte g_brightness;
 static int g_buttonReadIntervalMS;
@@ -191,7 +193,15 @@ int g_previousButtons = 0;
 void TMGN_ReadButtons() {
 	int tmp;
 	int i;
-	TM_GN_ReadCommand(&g_i2c, TM1638_I2C_COM1_READ, (byte*)&tmp, 4);
+
+	if (g_displayType == TMGN_HD2015) {
+		Soft_I2C_Start(&g_i2c, 0x4F);
+		tmp = Soft_I2C_ReadByte(&g_i2c, 1);
+		Soft_I2C_Stop(&g_i2c);
+	}
+	else {
+		TM_GN_ReadCommand(&g_i2c, TM1638_I2C_COM1_READ, (byte*)&tmp, 4);
+	}
 	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_MAIN, "CMD_TMGN_Read: %i", tmp);
 	for (i = 0; i < 32; i++) {
 		if (!BIT_CHECK(g_previousButtons, i) && BIT_CHECK(tmp, i)) {
@@ -250,7 +260,24 @@ static void TM_GN_WriteCommand(softI2C_t *i2c, byte command, const byte *data, i
 	}
 	TM_GN_Stop(i2c);
 }
+static void HD2015_WriteCommandSingle(softI2C_t *i2c, byte command, byte data) {
+	Soft_I2C_Start(i2c, command);
+	Soft_I2C_WriteByte(i2c, data);
+	Soft_I2C_Stop(i2c);
+}
 static void TM1637_SendSegments(const byte *segments, byte length, byte pos) {
+	if (g_displayType == TMGN_HD2015) {
+		int i;
+		HD2015_WriteCommandSingle(&g_i2c, 0x48, 0x11);
+
+		usleep(100);
+
+		for (i = 0; i < length; i++) {
+			HD2015_WriteCommandSingle(&g_i2c, 0x68 + (i+pos) * 2, segments[i]);
+			usleep(100);
+		}
+		return;
+	}
 	// set COM1 (no data, just command)
 	TM_GN_WriteCommand(&g_i2c, TM1637_I2C_COM1, 0, 0);
 
@@ -260,6 +287,7 @@ static void TM1637_SendSegments(const byte *segments, byte length, byte pos) {
 	// set COM3 + brightness (no data, just command)
 	TM_GN_WriteCommand(&g_i2c, TM1637_I2C_COM3 + (g_brightness & 0x0f), 0, 0);
 }
+
 static int TM1637_MapCharacter(int ch) {
 	int ret;
 	if (ch >= '0' && ch <= '9') {
@@ -450,6 +478,7 @@ static commandResult_t CMD_TM1637_Brightness(const void *context, const char *cm
 // NOTE: TMGN_Brightness [Brightness0to8] [bOn]
 // The bOn is optional, default is 1
 
+// backlog startDriver HD2015; TMGN_Print 0 0 123456
 // backlog startDriver TM1637; TMGN_Test
 // backlog startDriver TM1637; TMGN_Print 0 0 123456
 // backlog TMGN_Brightness 5; TMGN_Test
@@ -554,21 +583,28 @@ void TMGN_RunQuickTick() {
 		}
 	}
 }
-void TM_GN_Display_SharedInit() {
+void TM_GN_Display_SharedInit(tmGnType_t type) {
 	int i;
-
+	
+	g_displayType = type;
 	g_doTM1638RowsToColumnsSwap = 0;
 
-	if (PIN_FindPinIndexForRole(IOR_TM1637_CLK, -1) != -1) {
+	if (type == TMGN_HD2015) {
+		// startDriver HD2015 [CLK] [DAT]
+		// startDriver HD2015 11 24
+		g_i2c.pin_clk = Tokenizer_GetArgIntegerDefault(1, 11); // A11
+		g_i2c.pin_data = Tokenizer_GetArgIntegerDefault(2, 24); // B8
+		g_i2c.pin_stb = -1; // B3
+		g_totalDigits = 4;
+		// HD2015 has no remap
+		for (i = 0; i < sizeof(g_remap); i++) {
+			g_remap[i] = i;
+		}
+	} else if (PIN_FindPinIndexForRole(IOR_TM1637_CLK, -1) != -1) {
 		g_i2c.pin_clk = PIN_FindPinIndexForRole(IOR_TM1637_CLK, 16);
 		g_i2c.pin_data = PIN_FindPinIndexForRole(IOR_TM1637_DIO, 14);
 		g_i2c.pin_stb = -1;
 		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using I2C mode (TM1637)");
-
-		HAL_PIN_Setup_Output(g_i2c.pin_clk);
-		HAL_PIN_Setup_Output(g_i2c.pin_data);
-		HAL_PIN_SetOutputValue(g_i2c.pin_clk, true);
-		HAL_PIN_SetOutputValue(g_i2c.pin_data, true);
 
 		g_totalDigits = 6;
 	}
@@ -594,16 +630,20 @@ void TM_GN_Display_SharedInit() {
 				g_remap[i] = i;
 			}
 		}
-		HAL_PIN_Setup_Output(g_i2c.pin_clk);
-		HAL_PIN_Setup_Output(g_i2c.pin_stb);
-		HAL_PIN_Setup_Output(g_i2c.pin_data);
-		HAL_PIN_SetOutputValue(g_i2c.pin_clk, true);
-		HAL_PIN_SetOutputValue(g_i2c.pin_stb, true);
-		HAL_PIN_SetOutputValue(g_i2c.pin_data, true);
 
 		g_totalDigits = 16;
 	}
-	
+
+	HAL_PIN_Setup_Output(g_i2c.pin_clk);
+	HAL_PIN_Setup_Output(g_i2c.pin_data);
+	HAL_PIN_SetOutputValue(g_i2c.pin_clk, true);
+	HAL_PIN_SetOutputValue(g_i2c.pin_data, true);
+
+	if (g_i2c.pin_stb != -1) {
+		HAL_PIN_Setup_Output(g_i2c.pin_stb);
+		HAL_PIN_SetOutputValue(g_i2c.pin_stb, true);
+	}
+
 	usleep(100);
 
 	if (tmgn_buffer == 0) {
@@ -663,4 +703,5 @@ void TM_GN_Display_SharedInit() {
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TMGN_SetupButtons", CMD_TMGN_SetupButtons, NULL);
+
 }
