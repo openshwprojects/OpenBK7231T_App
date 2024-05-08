@@ -191,7 +191,8 @@ char* HAL_GetWiFiSSID(char* ssid){
 	wifi_mgmr_sta_connect_ind_stat_info_t info;
 	memset(&info, 0, sizeof(info));
 	wifi_mgmr_sta_connect_ind_stat_get(&info);
-	memcpy(ssid, info.ssid, sizeof(ssid));
+//	memcpy(ssid, info.ssid, sizeof(ssid));
+	strcpy(ssid, info.ssid);
 	return ssid;
 };
 char* HAL_GetWiFiBSSID(char* bssid){

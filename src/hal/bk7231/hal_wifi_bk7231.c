@@ -176,7 +176,8 @@ char* HAL_GetWiFiSSID(char* ssid){
 	if (sta_ip_is_start()){
 		LinkStatusTypeDef linkStatus;
 		bk_wlan_get_link_status(&linkStatus);
-		memcpy(ssid, linkStatus.ssid, sizeof(ssid)-1);
+//		memcpy(ssid, linkStatus.ssid, sizeof(ssid)-1);
+		strcpy(ssid,linkStatus.ssid);
 		return ssid;	
 	}
 	ssid[0]="\0";

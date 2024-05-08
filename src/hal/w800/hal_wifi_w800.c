@@ -122,6 +122,7 @@ char* HAL_GetWiFiSSID(char* ssid){
 	struct tls_curr_bss_t bss;
 	tls_wifi_get_current_bss(&bss);
 	strcpy(ssid,bss.ssid);
+	ssid[bss.ssid_len]='\0';
 	return ssid;
 };
 char* HAL_GetWiFiBSSID(char* bssid){
