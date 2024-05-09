@@ -34,7 +34,7 @@ void BMP280_Stop(void) {		//manufacturer ID
 
 #include "BMP280.h"
 
-// startDriver BMP280 8 14 1 2 236
+// startDriver BMP280 8 14 1 2 238
 // startDriver BMP280 [CLK] [DATA] [ChannelForTemp] [ChannelForPressure] [Adr8bit]
 void BMP280_Init() {
 
@@ -48,9 +48,9 @@ void BMP280_Init() {
 
 	usleep(100);
 	if (BMP280_begin(MODE_NORMAL, SAMPLING_X1, SAMPLING_X1, FILTER_OFF, STANDBY_0_5) == 0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BMP280 failed!");
+		addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BMxx80 driver failed to start!");
 	} else {
-		addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BMP280 ready!");
+		addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BMxx80 driver started!");
 	}
 }
 
