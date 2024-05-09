@@ -76,7 +76,7 @@ typedef struct obk_mqtt_request_tag {
 } obk_mqtt_request_t;
 
 #define MQTT_PUBLISH_ITEM_TOPIC_LENGTH    64
-#define MQTT_PUBLISH_ITEM_CHANNEL_LENGTH  64
+#define MQTT_PUBLISH_ITEM_CHANNEL_LENGTH  128
 #define MQTT_PUBLISH_ITEM_VALUE_LENGTH    1023
 
 typedef enum PostPublishCommands_e {
