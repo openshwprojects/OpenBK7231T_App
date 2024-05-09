@@ -16,8 +16,9 @@
 
 #include <stdint.h>
 
-#define BMP280_CHIP_ID        0xFF
-#define BME280_CHIP_ID        0x61 // trying 61 for BME680
+#define BMP280_CHIP_ID        0x58
+#define BME280_CHIP_ID        0x60
+#define BME680_CHIP_ID        0x61
 
 #define BMP280_REG_DIG_T1     0x88
 #define BMP280_REG_DIG_T2     0x8A
@@ -176,13 +177,15 @@ uint8_t BMP280_begin(BMP280_mode mode,
 	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "Read chip ID: %02X", id); // Add this line to output the read chip ID
 
 	if (id == BMP280_CHIP_ID) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BMP280 detected!");
-	} else if (id == BME280_CHIP_ID) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BME280 detected!");
-	} else {
-		addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BMx280 wrong ID!");
-		return 0;
-	}
+    addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BMP280 detected!");
+  } else if (id == BME280_CHIP_ID) {
+    addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BME280 detected!");
+  } else if (id == BME680_CHIP_ID) {
+    addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BME680 detected!");
+  } else {
+    addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BMxx80 wrong ID!");
+    return 0;
+  }
 
   // reset the BMP280 with soft reset
   BMP280_Write8(BMP280_REG_SOFTRESET, 0xB6);
