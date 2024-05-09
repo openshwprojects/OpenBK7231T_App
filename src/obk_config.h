@@ -29,7 +29,11 @@
 
 #elif PLATFORM_W800
 
-#define OBK_DISABLE_ALL_DRIVERS 1
+#define ENABLE_DRIVER_LED       1
+#define ENABLE_I2C       1
+#define ENABLE_CHT8305       1
+
+//#define OBK_DISABLE_ALL_DRIVERS 1
 
 #elif WINDOWS
 
