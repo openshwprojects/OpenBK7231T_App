@@ -1338,6 +1338,40 @@ commandResult_t MQTT_PublishCommand(const void* context, const char* cmd, const 
 
 	return CMD_RES_OK;
 }
+/*
+1. Create LittleFS file with any string
+2. Use command: PublishFile [TopicName] [FileName] [bOptionalForRemoveGet]
+	Like: PublishFile myTopic myFile.txt 1
+
+*/
+#if ENABLE_LITTLEFS
+commandResult_t MQTT_PublishFile(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	const char* topic, *fname;
+	OBK_Publish_Result ret;
+	int flags = 0;
+	byte*data;
+
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS);
+
+	if (Tokenizer_GetArgsCount() < 2) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish command requires two arguments (topic and value)");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	topic = Tokenizer_GetArg(0);
+	fname = Tokenizer_GetArg(1);
+	// optional third argument to remove get, etc
+	if (Tokenizer_GetArgIntegerDefault(2, 0) != 0) {
+		flags = OBK_PUBLISH_FLAG_RAW_TOPIC_NAME;
+	}
+	data = LFS_ReadFile(fname);
+	if (data) {
+		ret = MQTT_PublishMain_StringString(topic, (const char*)data, flags);
+		free(data);
+	}
+
+	return CMD_RES_OK;
+}
+#endif
 // we have a separate command for integer because it can support math expressions
 // (so it handled like $CH10*10, etc)
 commandResult_t MQTT_PublishCommandInteger(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -1729,6 +1763,10 @@ void MQTT_init()
 	//cmddetail:"fn":"MQTT_SetTasTeleIntervals","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TasTeleInterval", MQTT_SetTasTeleIntervals, NULL);
+
+#if ENABLE_LITTLEFS
+	CMD_RegisterCommand("publishFile", MQTT_PublishFile, NULL);
+#endif
 }
 
 OBK_Publish_Result MQTT_DoItemPublishString(const char* sChannel, const char* valueStr)
