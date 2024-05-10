@@ -18,6 +18,12 @@
     "requires": ""
   },
   {
+    "name": "PixelAnim",
+    "title": "TODO",
+    "descr": "PixelAnim provides a simple set of WS2812B animations",
+    "requires": ""
+  },
+  {
     "name": "NTP",
     "title": "TODO",
     "descr": "NTP driver is required to get current time and date from web. Without it, there is no correct datetime. Put 'startDriver NTP' in short startup line or autoexec.bat to run it on start.",
@@ -228,6 +234,42 @@
     "requires": ""
   },
   {
+    "name": "ADCSmoother",
+    "title": "TODO",
+    "descr": "qq",
+    "requires": ""
+  },
+  {
+    "name": "SHT3X",
+    "title": "TODO",
+    "descr": "Humidity/temperature sensor. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html)",
+    "requires": ""
+  },
+  {
+    "name": "SGP",
+    "title": "TODO",
+    "descr": "SGP Air Quality sensor with I2C interface. See [this DIY sensor](https://www.elektroda.com/rtvforum/topic3967174.html) for setup information.",
+    "requires": ""
+  },
+  {
+    "name": "AHT2X",
+    "title": "TODO",
+    "descr": "AHT Humidity/temperature sensor. Supported sensors are: AHT10, AHT2X, AHT30.",
+    "requires": ""
+  },
+  {
+    "name": "ShiftRegister",
+    "title": "TODO",
+    "descr": "Simple Shift Register driver that allows you to map channels to shift register output. See [related topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20533505#20533505)",
+    "requires": ""
+  },
+  {
+    "name": "HT16K33",
+    "title": "TODO",
+    "descr": "Driver for 16-segment LED display with I2C. See [protocol explanation](https://www.elektroda.pl/rtvforum/topic3984616.html)",
+    "requires": ""
+  },
+  {
     "name": "TM1637",
     "title": "TODO",
     "descr": "Driver for 7-segment LED display with DIO/CLK interface.",
@@ -246,33 +288,9 @@
     "requires": ""
   },
   {
-    "name": "ADCSmoother",
-    "title": "TODO",
-    "descr": "qq",
-    "requires": ""
-  },
-  {
-    "name": "HT16K33",
-    "title": "TODO",
-    "descr": "Driver for 16-segment LED display with I2C. See [protocol explanation](https://www.elektroda.pl/rtvforum/topic3984616.html)",
-    "requires": ""
-  },
-  {
-    "name": "SHT3X",
-    "title": "TODO",
-    "descr": "Humidity/temperature sensor. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html)",
-    "requires": ""
-  },
-  {
-    "name": "SGP",
-    "title": "TODO",
-    "descr": "SGP Air Quality sensor with I2C interface. See [this DIY sensor](https://www.elektroda.com/rtvforum/topic3967174.html) for setup information.",
-    "requires": ""
-  },
-  {
-    "name": "ShiftRegister",
-    "title": "TODO",
-    "descr": "Simple Shift Register driver that allows you to map channels to shift register output. See [related topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20533505#20533505)",
+    "name": "HD2015",
+    "title": "HD2015",
+    "descr": "TODO",
     "requires": ""
   },
   {

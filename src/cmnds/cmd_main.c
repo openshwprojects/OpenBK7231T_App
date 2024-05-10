@@ -812,8 +812,16 @@ void CMD_Init_Early() {
 	CMD_RegisterCommand("Choice", CMD_Choice, NULL);
 	//CMD_RegisterCommand("FindPattern", CMD_FindPattern, NULL);
 
+	//cmddetail:{"name":"TimeSize","args":"CMD_TimeSize",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TimeSize", CMD_TimeSize, NULL);
 
+	//cmddetail:{"name":"PWMFrequency","args":"CMD_PWMFrequency",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PWMFrequency", CMD_PWMFrequency, NULL);
 	
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602)

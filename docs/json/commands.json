@@ -126,6 +126,42 @@
     "examples": ""
   },
   {
+    "name": "AHT2X_Calibrate",
+    "args": "[DeltaTemp][DeltaHumidity]",
+    "descr": "Calibrate the AHT2X Sensor as Tolerance is +/-2 degrees C.",
+    "fn": "AHT2X_Calibrate",
+    "file": "driver/drv_aht2x.c",
+    "requires": "",
+    "examples": "AHT2X_Calibrate -4 10 <br /> meaning -4 on current temp reading and +10 on current humidity reading"
+  },
+  {
+    "name": "AHT2X_Cycle",
+    "args": "[IntervalSeconds]",
+    "descr": "This is the interval between measurements in seconds, by default 1. Max is 255.",
+    "fn": "AHT2X_cycle",
+    "file": "drv/drv_aht2X.c",
+    "requires": "",
+    "examples": "AHT2X_Cycle 60 <br /> measurement is taken every 60 seconds"
+  },
+  {
+    "name": "AHT2X_Measure",
+    "args": "",
+    "descr": "Retrieve OneShot measurement.",
+    "fn": "AHT2X_Measure",
+    "file": "drv/drv_aht2X.c",
+    "requires": "",
+    "examples": "AHT2X_Measure"
+  },
+  {
+    "name": "AHT2X_Reinit",
+    "args": "",
+    "descr": "Reinitialize sensor.",
+    "fn": "AHT2X_Reinit",
+    "file": "drv/drv_aht2X.c",
+    "requires": "",
+    "examples": "AHT2X_Reinit"
+  },
+  {
     "name": "alias",
     "args": "[Alias][Command with spaces]",
     "descr": "add an aliased command, so a command with spaces can be called with a short, nospaced alias",
@@ -140,6 +176,24 @@
     "descr": "Internal usage only. See docs for 'alias' command.",
     "fn": "runcmd",
     "file": "cmnds/cmd_test.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Anim",
+    "args": "PA_Cmd_Anim",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_pixelAnim.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "AnimSpeed",
+    "args": "PA_Cmd_AnimSpeed",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_pixelAnim.c",
     "requires": "",
     "examples": ""
   },
@@ -1450,7 +1504,7 @@
   },
   {
     "name": "publish",
-    "args": "[Topic][Value]",
+    "args": "[Topic][Value][bOptionalSkipPrefixAndSuffix]",
     "descr": "Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'. You can use argument expansion here, so $CH11 will change to value of the channel 11",
     "fn": "MQTT_PublishCommand",
     "file": "mqtt/new_mqtt.c",
@@ -1494,8 +1548,17 @@
     "examples": ""
   },
   {
+    "name": "publishFile",
+    "args": "[Topic][Value][bOptionalSkipPrefixAndSuffix]",
+    "descr": "Publishes data read from LFS file by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.",
+    "fn": "MQTT_PublishFile",
+    "file": "mqtt/new_mqtt.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "publishFloat",
-    "args": "[Topic][Value]",
+    "args": "[Topic][Value][bOptionalSkipPrefixAndSuffix]",
     "descr": "Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an float, so you can also use math expressions like $CH10*0.0, etc.",
     "fn": "MQTT_PublishCommand",
     "file": "mqtt/new_mqtt.c",
@@ -1504,10 +1567,19 @@
   },
   {
     "name": "publishInt",
-    "args": "[Topic][Value]",
+    "args": "[Topic][Value][bOptionalSkipPrefixAndSuffix]",
     "descr": "Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an integer, so you can also use math expressions like $CH10*10, etc.",
     "fn": "MQTT_PublishCommand",
     "file": "mqtt/new_mqtt.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "PWMFrequency",
+    "args": "CMD_PWMFrequency",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_main.c",
     "requires": "",
     "examples": ""
   },
@@ -2332,7 +2404,7 @@
   },
   {
     "name": "TMGN_Test",
-    "args": "CMD_TM1637_Test",
+    "args": "CMD_TMGN_Test",
     "descr": "",
     "fn": "NULL);",
     "file": "driver/drv_tm_gn_display_shared.c",

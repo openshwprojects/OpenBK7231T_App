@@ -400,6 +400,14 @@
     "driver": ""
   },
   {
+    "name": "Motion",
+    "title": "TODO",
+    "descr": "Motion",
+    "enum": "Motion",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
     "name": "Max",
     "title": "TODO",
     "descr": "This is the current total number of available channel types.",
