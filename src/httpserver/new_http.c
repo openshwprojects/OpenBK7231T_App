@@ -604,6 +604,7 @@ int HTTP_ProcessPacket(http_request_t* request) {
 		ADDLOGF_ERROR("You gave request with NULL input");
 		return 0;
 	}
+	request->method = -1;
 	recvbuf = request->received;
 	for (i = 0; i < sizeof(methodNames) / sizeof(*methodNames); i++) {
 		if (http_startsWith(recvbuf, methodNames[i])) {
