@@ -2477,9 +2477,10 @@ int http_fn_cfg_pins(http_request_t* request) {
 	}
 	poststr(request, "];");
 
-	poststr(request, "function f(n, c) {"
+	poststr(request, "function f(n, c, b) {"
 		"let d = document.getElementById(n);"
 		"	for (var i = 0; i < r.length; i++) {"
+		"	if(b && r[i].startsWith(\"PWM\")) continue; "
 		"var o = document.createElement(\"option\");"
 		"	o.text = r[i];"
 		"	o.value = i;"
@@ -2498,7 +2499,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 
 		bCanThisPINbePWM = HAL_PIN_CanThisPinBePWM(i);
 		si = PIN_GetPinRoleForPinIndex(i);
-		hprintf255(request, "f(\"s%i\",%i);", i, si);
+		hprintf255(request, "f(\"s%i\",%i, %i);", i, si, !bCanThisPINbePWM);
 	}
 	poststr(request, " </script>");
 	poststr(request, "<input type=\"submit\" value=\"Save\"/></form>");
