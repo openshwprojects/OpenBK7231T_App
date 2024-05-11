@@ -289,8 +289,8 @@
   },
   {
     "name": "HD2015",
-    "title": "HD2015",
-    "descr": "TODO",
+    "title": "TODO",
+    "descr": "Driver for 7-segment LED display with I2C-like interface. Seems to be compatible with TM1650. HD2015 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/topic4052946.html) for details.",
     "requires": ""
   },
   {
