@@ -682,7 +682,7 @@ void TM_GN_Display_SharedInit(tmGnType_t type) {
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm_gn_display_shared.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TMGN_Print", CMD_TMGN_Print, NULL);
-	//cmddetail:{"name":"TMGN_Test","args":"CMD_TMGN_Test",
+	//cmddetail:{"name":"TMGN_Test","args":"",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm_gn_display_shared.c","requires":"",
 	//cmddetail:"examples":""}
@@ -702,13 +702,13 @@ void TM_GN_Display_SharedInit(tmGnType_t type) {
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TM1650_Test", CMD_TM1650_Test, NULL);
-	//cmddetail:{"name":"TMGN_Read","args":"CMD_TMGN_Read",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"TMGN_Read","args":"",
+	//cmddetail:"descr":"Executes a single buttons read on TM/GN LED driver",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TMGN_Read", CMD_TMGN_Read, NULL);
-	//cmddetail:{"name":"TMGN_SetupButtons","args":"CMD_TMGN_SetupButtons",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"TMGN_SetupButtons","args":"[Interval]",
+	//cmddetail:"descr":"Setups periodic buttons read on TM/GN LED driver",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TMGN_SetupButtons", CMD_TMGN_SetupButtons, NULL);

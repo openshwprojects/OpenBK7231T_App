@@ -2314,8 +2314,8 @@
   },
   {
     "name": "TimeSize",
-    "args": "CMD_TimeSize",
-    "descr": "",
+    "args": "",
+    "descr": "Prints the size of time_t on current platform - sizeof(time_t), only for testing purposes.",
     "fn": "NULL);",
     "file": "cmnds/cmd_main.c",
     "requires": "",
@@ -2377,8 +2377,8 @@
   },
   {
     "name": "TMGN_Read",
-    "args": "CMD_TMGN_Read",
-    "descr": "",
+    "args": "",
+    "descr": "Executes a single buttons read on TM/GN LED driver",
     "fn": "NULL);",
     "file": "driver/drv_tm1637.c",
     "requires": "",
@@ -2395,8 +2395,8 @@
   },
   {
     "name": "TMGN_SetupButtons",
-    "args": "CMD_TMGN_SetupButtons",
-    "descr": "",
+    "args": "[Interval]",
+    "descr": "Setups periodic buttons read on TM/GN LED driver",
     "fn": "NULL);",
     "file": "driver/drv_tm1637.c",
     "requires": "",
@@ -2404,7 +2404,7 @@
   },
   {
     "name": "TMGN_Test",
-    "args": "CMD_TMGN_Test",
+    "args": "",
     "descr": "",
     "fn": "NULL);",
     "file": "driver/drv_tm_gn_display_shared.c",
