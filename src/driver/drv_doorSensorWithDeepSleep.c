@@ -25,7 +25,9 @@ static int g_emergencyTimeWithNoConnection = 0;
 
 #define EMERGENCY_TIME_TO_SLEEP_WITHOUT_MQTT 60 * 5
 
-
+int Simulator_GetNoChangeTimePassed() {
+	return g_noChangeTimePassed;
+}
 // addEventHandler OnClick 8 DSTime +100
 commandResult_t DoorDeepSleep_SetTime(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	const char *a;
@@ -39,7 +41,9 @@ commandResult_t DoorDeepSleep_SetTime(const void* context, const char* cmd, cons
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	a = Tokenizer_GetArg(0);
-	if (a[0] == '+') {
+	if (a[0] == 'c') {
+		g_noChangeTimePassed = 0;
+	} else if (a[0] == '+') {
 		g_noChangeTimePassed -= atoi(a + 1);;
 	}
 	else {
@@ -54,7 +58,7 @@ void DoorDeepSleep_Init() {
 	g_noChangeTimePassed = 0;
 
 	//cmddetail:{"name":"DSTime","args":"[timeSeconds]",
-	//cmddetail:"descr":"DoorSensor driver configuration command. Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival",
+	//cmddetail:"descr":"DoorSensor driver configuration command. Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival. You can also use this to extend current awake time (at runtime) with syntax: 'DSTime +10', this will make device stay awake 10 seconds longer. You can also restart current value of awake counter by 'DSTime clear', this will make counter go from 0 again.",
 	//cmddetail:"fn":"DoorDeepSleep_SetTime","file":"drv/drv_doorSensorWithDeepSleep.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DSTime", DoorDeepSleep_SetTime, NULL);
