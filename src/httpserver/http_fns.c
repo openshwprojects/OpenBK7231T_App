@@ -2420,28 +2420,77 @@ int http_fn_cfg_pins(http_request_t* request) {
 		if (!bSafeMode && CFG_HasFlag(OBK_FLAG_AUTOMAIC_HASS_DISCOVERY)) {
 			Main_ScheduleHomeAssistantDiscovery(1);
 		}
-
 		hprintf255(request, "Pins update - %i reqs, %i changed!<br><br>", iChangedRequested, iChanged);
 	}
 	//	strcat(outbuf,"<button type=\"button\">Click Me!</button>");
-	poststr(request, "<form action=\"cfg_pins\">");
+	poststr(request, "<form action=\"cfg_pins\" id=\"x\">");
+
+
+	poststr(request, "<script> var r = [");
+	for (i = 0; i < IOR_Total_Options; i++) {
+		if (i) {
+			poststr(request, ",");
+		}
+		hprintf255(request, "\"%s\"", htmlPinRoleNames[i]);
+	}
+	poststr(request, "];");
+
+	poststr(request, "function f(alias, id, c, b, ch1, ch2) {"
+		"let f = document.getElementById(\"x\");"
+		"let d = document.createElement(\"div\");"
+		"d.className = \"hdiv\";"
+		"d.innerText = alias;"
+		"f.appendChild(d);"
+		"let s = document.createElement(\"select\");"
+		"s.className = \"hele\";"
+		"s.name = id;"
+		"d.appendChild(s);"
+		"	for (var i = 0; i < r.length; i++) {"
+		"	if(b && r[i].startsWith(\"PWM\")) continue; "
+		"var o = document.createElement(\"option\");"
+		"	o.text = r[i];"
+		"	o.value = i;"
+		"	if (i == c) {"
+		"		o.selected = true;"
+		"	}"
+		"s.add(o);"
+		"}"
+		"if(ch1!= null) {"
+			"let y = document.createElement(\"input\");"
+			"y.className = \"hele\";"
+			"y.type = \"text\";"
+			"y.name = \"r\"+id;"
+			"y.value = ch1;"
+			"d.appendChild(y);"
+		"}"
+		"if(ch2!= null) {"
+			"let y = document.createElement(\"input\");"
+			"y.className = \"hele\";"
+			"y.type = \"text\";"
+			"y.name = \"e\"+id;"
+			"y.value = ch2;"
+			"d.appendChild(y);"
+		"}"
+		" }");
+
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
-		int si, ch, ch2;
-		int j;
-		const char* alias;
 		// On BL602, any GPIO can be mapped to one of 5 PWM channels
 		// But on Beken chips, only certain pins can be PWM
 		int bCanThisPINbePWM;
+		int si, ch, ch2;
+		int j;
+		const char* alias;
 
 		si = PIN_GetPinRoleForPinIndex(i);
 		ch = PIN_GetPinChannelForPinIndex(i);
 		ch2 = PIN_GetPinChannel2ForPinIndex(i);
 
-		bCanThisPINbePWM = HAL_PIN_CanThisPinBePWM(i);
-
 		// if available..
 		alias = HAL_PIN_GetPinNameAlias(i);
-		poststr(request, "<div class=\"hdiv\">");
+
+		bCanThisPINbePWM = HAL_PIN_CanThisPinBePWM(i);
+		si = PIN_GetPinRoleForPinIndex(i);
+		hprintf255(request, "f(\"");
 		if (alias) {
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 			hprintf255(request, "P%i (%s) ", i, alias);
@@ -2453,25 +2502,9 @@ int http_fn_cfg_pins(http_request_t* request) {
 		else {
 			hprintf255(request, "P%i ", i);
 		}
-		hprintf255(request, "<select class=\"hele\" name=\"%i\">", i);
-		for (j = 0; j < IOR_Total_Options; j++) {
-			// do not show hardware PWM on non-PWM pin
-			if (j == IOR_PWM || j == IOR_PWM_n) {
-				if (bCanThisPINbePWM == 0) {
-					continue;
-				}
-			}
-
-			if (j == si) {
-				hprintf255(request, "<option value=\"%i\" selected>%s</option>", j, htmlPinRoleNames[j]);
-			}
-			else {
-				hprintf255(request, "<option value=\"%i\">%s</option>", j, htmlPinRoleNames[j]);
-			}
-		}
-		poststr(request, "</select>");
+		hprintf255(request, "\",%i,%i, %i,", i, si, !bCanThisPINbePWM);
 		// Primary linked channel
-		// Some roles do not need any channels
+// Some roles do not need any channels
 		if ((si != IOR_SGP_CLK && si != IOR_SHT3X_CLK && si != IOR_CHT8305_CLK && si != IOR_Button_ToggleAll && si != IOR_Button_ToggleAll_n
 			&& si != IOR_BL0937_CF && si != IOR_BL0937_CF1 && si != IOR_BL0937_SEL
 			&& si != IOR_LED_WIFI && si != IOR_LED_WIFI_n && si != IOR_LED_WIFI_n
@@ -2479,16 +2512,26 @@ int http_fn_cfg_pins(http_request_t* request) {
 			&& !(si >= IOR_SM2135_DAT && si <= IOR_BP1658CJ_CLK))
 			|| IS_PIN_DHT_ROLE(si))
 		{
-			hprintf255(request, "<input class=\"hele\" name=\"r%i\" type=\"text\" value=\"%i\"/>", i, ch);
+			hprintf255(request, "%i,", ch);
+			//hprintf255(request, "<input class=\"hele\" name=\"r%i\" type=\"text\" value=\"%i\"/>", i, ch);
+		}
+		else {
+			hprintf255(request, "null,", ch);
 		}
 		// Secondary linked channel
 		// For button, is relay index to toggle on double click
 		if (si == IOR_Button || si == IOR_Button_n || IS_PIN_DHT_ROLE(si) || IS_PIN_TEMP_HUM_SENSOR_ROLE(si) || IS_PIN_AIR_SENSOR_ROLE(si))
 		{
-			hprintf255(request, "<input class=\"hele\" name=\"e%i\" type=\"text\" value=\"%i\"/>", i, ch2);
+			hprintf255(request, "%i,", ch2);
+			//hprintf255(request, "<input class=\"hele\" name=\"e%i\" type=\"text\" value=\"%i\"/>", i, ch2);
 		}
-		poststr(request, "</div>");
+		else {
+			hprintf255(request, "null,", ch);
+		}
+		hprintf255(request, ");");
+
 	}
+	poststr(request, " </script>");
 	poststr(request, "<input type=\"submit\" value=\"Save\"/></form>");
 
 	poststr(request, htmlFooterReturnToCfgOrMainPage);

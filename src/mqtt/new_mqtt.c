@@ -1713,17 +1713,17 @@ void MQTT_init()
 
 	mqtt_initialised = 1;
 
-	//cmddetail:{"name":"publish","args":"[Topic][Value]",
+	//cmddetail:{"name":"publish","args":"[Topic][Value][bOptionalSkipPrefixAndSuffix]",
 	//cmddetail:"descr":"Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'. You can use argument expansion here, so $CH11 will change to value of the channel 11",
 	//cmddetail:"fn":"MQTT_PublishCommand","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("publish", MQTT_PublishCommand, NULL);
-	//cmddetail:{"name":"publishInt","args":"[Topic][Value]",
+	//cmddetail:{"name":"publishInt","args":"[Topic][Value][bOptionalSkipPrefixAndSuffix]",
 	//cmddetail:"descr":"Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an integer, so you can also use math expressions like $CH10*10, etc.",
 	//cmddetail:"fn":"MQTT_PublishCommand","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("publishInt", MQTT_PublishCommandInteger, NULL);
-	//cmddetail:{"name":"publishFloat","args":"[Topic][Value]",
+	//cmddetail:{"name":"publishFloat","args":"[Topic][Value][bOptionalSkipPrefixAndSuffix]",
 	//cmddetail:"descr":"Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an float, so you can also use math expressions like $CH10*0.0, etc.",
 	//cmddetail:"fn":"MQTT_PublishCommand","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
@@ -1765,6 +1765,10 @@ void MQTT_init()
 	CMD_RegisterCommand("TasTeleInterval", MQTT_SetTasTeleIntervals, NULL);
 
 #if ENABLE_LITTLEFS
+	//cmddetail:{"name":"publishFile","args":"[Topic][Value][bOptionalSkipPrefixAndSuffix]",
+	//cmddetail:"descr":"Publishes data read from LFS file by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.",
+	//cmddetail:"fn":"MQTT_PublishFile","file":"mqtt/new_mqtt.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("publishFile", MQTT_PublishFile, NULL);
 #endif
 }

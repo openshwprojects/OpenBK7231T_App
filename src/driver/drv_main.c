@@ -16,12 +16,12 @@
 
 typedef struct driver_s {
 	const char* name;
-	void (*initFunc)();
-	void (*onEverySecond)();
-	void (*appendInformationToHTTPIndexPage)(http_request_t* request);
-	void (*runQuickTick)();
-	void (*stopFunc)();
-	void (*onChannelChanged)(int ch, int val);
+	void(*initFunc)();
+	void(*onEverySecond)();
+	void(*appendInformationToHTTPIndexPage)(http_request_t* request);
+	void(*runQuickTick)();
+	void(*stopFunc)();
+	void(*onChannelChanged)(int ch, int val);
 	bool bLoaded;
 } driver_t;
 
@@ -56,7 +56,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "PixelAnim",		PixelAnim_Init,			NULL,			NULL, PixelAnim_SetAnimQuickTick, NULL, NULL, false },
 #endif
-	
+
 #if ENABLE_NTP
 	//drvdetail:{"name":"NTP",
 	//drvdetail:"title":"TODO",
@@ -335,9 +335,11 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK/STB interface. TM1638 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20553628#20553628) for details.",
 	//drvdetail:"requires":""}
 	{ "TM1638",	TM1638_Init,		NULL,		NULL, TMGN_RunQuickTick,NULL,  NULL, false },
-
+	//drvdetail:{"name":"HD2015",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Driver for 7-segment LED display with I2C-like interface. Seems to be compatible with TM1650. HD2015 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/topic4052946.html) for details.",
+	//drvdetail:"requires":""}
 	{ "HD2015",	HD2015_Init,		NULL,		NULL, TMGN_RunQuickTick,NULL,  NULL, false },
-
 #endif
 #if ENABLE_DRIVER_BATTERY
 	//drvdetail:{"name":"Battery",
@@ -587,7 +589,7 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t* request) {
 
 bool DRV_IsMeasuringPower() {
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	return DRV_IsRunning("BL0937") || DRV_IsRunning("BL0942") 
+	return DRV_IsRunning("BL0937") || DRV_IsRunning("BL0942")
 		|| DRV_IsRunning("CSE7766") || DRV_IsRunning("TESTPOWER")
 		|| DRV_IsRunning("BL0942SPI") || DRV_IsRunning("RN8209");
 #else
