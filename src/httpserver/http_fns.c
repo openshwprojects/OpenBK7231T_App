@@ -2420,7 +2420,6 @@ int http_fn_cfg_pins(http_request_t* request) {
 		if (!bSafeMode && CFG_HasFlag(OBK_FLAG_AUTOMAIC_HASS_DISCOVERY)) {
 			Main_ScheduleHomeAssistantDiscovery(1);
 		}
-
 		hprintf255(request, "Pins update - %i reqs, %i changed!<br><br>", iChangedRequested, iChanged);
 	}
 	//	strcat(outbuf,"<button type=\"button\">Click Me!</button>");
@@ -2429,15 +2428,10 @@ int http_fn_cfg_pins(http_request_t* request) {
 		int si, ch, ch2;
 		int j;
 		const char* alias;
-		// On BL602, any GPIO can be mapped to one of 5 PWM channels
-		// But on Beken chips, only certain pins can be PWM
-		int bCanThisPINbePWM;
 
 		si = PIN_GetPinRoleForPinIndex(i);
 		ch = PIN_GetPinChannelForPinIndex(i);
 		ch2 = PIN_GetPinChannel2ForPinIndex(i);
-
-		bCanThisPINbePWM = HAL_PIN_CanThisPinBePWM(i);
 
 		// if available..
 		alias = HAL_PIN_GetPinNameAlias(i);
@@ -2453,22 +2447,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 		else {
 			hprintf255(request, "P%i ", i);
 		}
-		hprintf255(request, "<select class=\"hele\" name=\"%i\">", i);
-		for (j = 0; j < IOR_Total_Options; j++) {
-			// do not show hardware PWM on non-PWM pin
-			if (j == IOR_PWM || j == IOR_PWM_n) {
-				if (bCanThisPINbePWM == 0) {
-					continue;
-				}
-			}
-
-			if (j == si) {
-				hprintf255(request, "<option value=\"%i\" selected>%s</option>", j, htmlPinRoleNames[j]);
-			}
-			else {
-				hprintf255(request, "<option value=\"%i\">%s</option>", j, htmlPinRoleNames[j]);
-			}
-		}
+		hprintf255(request, "<select class=\"hele\" name=\"%i\" id=\"s%i\">", i, i);
 		poststr(request, "</select>");
 		// Primary linked channel
 		// Some roles do not need any channels
@@ -2489,6 +2468,39 @@ int http_fn_cfg_pins(http_request_t* request) {
 		}
 		poststr(request, "</div>");
 	}
+	poststr(request, "<script> var r = [");
+	for (i = 0; i < IOR_Total_Options; i++) {
+		if (i) {
+			poststr(request, ",");
+		}
+		hprintf255(request, "\"%s\"", htmlPinRoleNames[i]);
+	}
+	poststr(request, "];");
+
+	poststr(request, "function f(n, c) {"
+		"let d = document.getElementById(n);"
+		"	for (var i = 0; i < r.length; i++) {"
+		"var o = document.createElement(\"option\");"
+		"	o.text = r[i];"
+		"	o.value = i;"
+		"	if (i == c) {"
+		"		o.selected = true;"
+		"	}"
+		"d.add(o);"
+		"}"
+		" }");
+
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		int si;
+		// On BL602, any GPIO can be mapped to one of 5 PWM channels
+		// But on Beken chips, only certain pins can be PWM
+		int bCanThisPINbePWM;
+
+		bCanThisPINbePWM = HAL_PIN_CanThisPinBePWM(i);
+		si = PIN_GetPinRoleForPinIndex(i);
+		hprintf255(request, "f(\"s%i\",%i);", i, si);
+	}
+	poststr(request, " </script>");
 	poststr(request, "<input type=\"submit\" value=\"Save\"/></form>");
 
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
