@@ -696,7 +696,7 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("restart", CMD_Restart, NULL);
 	//cmddetail:{"name":"reboot","args":"",
-	//cmddetail:"descr":"Same as restart. Needed for bkWriter 1.60 which sends 'reboot' cmd before trying to get bus",
+	//cmddetail:"descr":"Same as restart. Needed for bkWriter 1.60 which sends 'reboot' cmd before trying to get bus via UART. Thanks to this, if you enable command line on UART1, you don't need to manually reboot while flashing via UART.",
 	//cmddetail:"fn":"CMD_Restart","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("reboot", CMD_Restart, NULL);
@@ -818,8 +818,8 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TimeSize", CMD_TimeSize, NULL);
 
-	//cmddetail:{"name":"PWMFrequency","args":"CMD_PWMFrequency",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"PWMFrequency","args":"[FrequencyInHz]",
+	//cmddetail:"descr":"Sets the global PWM frequency.",
 	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PWMFrequency", CMD_PWMFrequency, NULL);

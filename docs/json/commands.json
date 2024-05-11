@@ -330,7 +330,7 @@
     "fn": "CHT_Calibrate",
     "file": "driver/drv_cht8305.c",
     "requires": "",
-    "examples": "SHT_Calibrate -4 10 <br /> meaning -4 on current temp reading and +10 on current humidity reading"
+    "examples": "CHT_Calibrate -4 10 <br /> meaning -4 on current temp reading and +10 on current humidity reading"
   },
   {
     "name": "CHT_Cycle",
@@ -560,7 +560,7 @@
   {
     "name": "DSTime",
     "args": "[timeSeconds]",
-    "descr": "DoorSensor driver configuration command. Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival",
+    "descr": "DoorSensor driver configuration command. Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival. You can also use this to extend current awake time (at runtime) with syntax: 'DSTime +10', this will make device stay awake 10 seconds longer. You can also restart current value of awake counter by 'DSTime clear', this will make counter go from 0 again.",
     "fn": "DoorDeepSleep_SetTime",
     "file": "drv/drv_doorSensorWithDeepSleep.c",
     "requires": "",
@@ -1576,8 +1576,8 @@
   },
   {
     "name": "PWMFrequency",
-    "args": "CMD_PWMFrequency",
-    "descr": "",
+    "args": "[FrequencyInHz]",
+    "descr": "Sets the global PWM frequency.",
     "fn": "NULL);",
     "file": "cmnds/cmd_main.c",
     "requires": "",
@@ -1585,8 +1585,8 @@
   },
   {
     "name": "PWMG_Raw",
-    "args": "CMD_PWMG_Raw",
-    "descr": "",
+    "args": "",
+    "descr": "PWM grouping (synchronous PWM)",
     "fn": "NULL);",
     "file": "driver/drv_pwm_groups.c",
     "requires": "",
@@ -1594,8 +1594,8 @@
   },
   {
     "name": "PWMG_Set",
-    "args": "CMD_PWMG_Set",
-    "descr": "",
+    "args": "Duty1Percent Duty2Percent DeadTimePercent Frequency PinA PinB",
+    "descr": "PWM grouping (synchronous PWM)",
     "fn": "NULL);",
     "file": "driver/drv_pwm_groups.c",
     "requires": "",
@@ -1604,7 +1604,7 @@
   {
     "name": "reboot",
     "args": "",
-    "descr": "Same as restart. Needed for bkWriter 1.60 which sends 'reboot' cmd before trying to get bus",
+    "descr": "Same as restart. Needed for bkWriter 1.60 which sends 'reboot' cmd before trying to get bus via UART. Thanks to this, if you enable command line on UART1, you don't need to manually reboot while flashing via UART.",
     "fn": "CMD_Restart",
     "file": "cmnds/cmd_main.c",
     "requires": "",
@@ -1918,7 +1918,7 @@
   },
   {
     "name": "SHT_Calibrate",
-    "args": "",
+    "args": "[DeltaTemp][DeltaHumidity]",
     "descr": "Calibrate the SHT Sensor as Tolerance is +/-2 degrees C.",
     "fn": "SHT3X_Calibrate",
     "file": "driver/drv_sht3x.c",
@@ -1954,7 +1954,7 @@
   },
   {
     "name": "SHT_Heater",
-    "args": "",
+    "args": "[1or0]",
     "descr": "Activate or Deactivate Heater (0 / 1)",
     "fn": "SHT3X_Heater",
     "file": "driver/drv_sht3x.c",
