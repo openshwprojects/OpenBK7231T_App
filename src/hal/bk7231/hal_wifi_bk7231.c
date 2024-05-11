@@ -172,6 +172,8 @@ int HAL_GetWifiStrength()
 	return linkStatus.wifi_strength;
 }
 // Get WiFi Information (SSID / BSSID) - e.g. to display on status page 
+/*
+// ATM there is only one SSID, so need for this code
 char* HAL_GetWiFiSSID(char* ssid){
 	if (sta_ip_is_start()){
 		LinkStatusTypeDef linkStatus;
@@ -180,9 +182,10 @@ char* HAL_GetWiFiSSID(char* ssid){
 		strcpy(ssid,linkStatus.ssid);
 		return ssid;	
 	}
-	ssid[0]="\0";
+	ssid[0]='\0';
 	return ssid; 
 };
+*/
 char* HAL_GetWiFiBSSID(char* bssid){
 	if (sta_ip_is_start()){
 		LinkStatusTypeDef linkStatus;
@@ -190,7 +193,7 @@ char* HAL_GetWiFiBSSID(char* bssid){
 		sprintf(bssid, MACSTR, MAC2STR(linkStatus.bssid));
 		return bssid;
 	}
-	bssid[0]="\0";
+	bssid[0]='\0';
 	return bssid; 
 };
 uint8_t HAL_GetWiFiChannel(uint8_t *chan){

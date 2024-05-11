@@ -187,6 +187,8 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code)) {
 //        ef_get_env_blob((const char *)WIFI_AP_PSM_INFO_CHANNEL, val_buf, val_len, NULL);
 //        ef_get_env_blob((const char *)WIFI_AP_PSM_INFO_BSSID, val_buf, val_len, NULL);
 //
+/*
+// ATM there is only one SSID, so need for this code
 char* HAL_GetWiFiSSID(char* ssid){
 	wifi_mgmr_sta_connect_ind_stat_info_t info;
 	memset(&info, 0, sizeof(info));
@@ -195,6 +197,7 @@ char* HAL_GetWiFiSSID(char* ssid){
 	strcpy(ssid, info.ssid);
 	return ssid;
 };
+*/
 char* HAL_GetWiFiBSSID(char* bssid){
 	wifi_mgmr_sta_connect_ind_stat_info_t info;
 	memset(&info, 0, sizeof(info));

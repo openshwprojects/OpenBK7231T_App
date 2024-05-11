@@ -157,6 +157,26 @@ from LN882H
     }
 
 
+*/
+	if (g_wlan_netif != NULL){
+//		unsigned char mac[32];
+//		WiFI_GetMacAddress((char *)mac);
+		uint8_t * mac = g_wlan_netif->hwaddr;
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "+--------------- net device info ------------+\r\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", wlan_if_get_mode(g_wlan_netif) == WLAN_MODE_STA ? "STA" : "AP");
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "|netif hostname: %-16s            |\r\n", g_wlan_netif->hostname);
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |\r\n", inet_ntoa(g_wlan_netif->ip_addr));
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |\r\n", inet_ntoa(g_wlan_netif->netmask));
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "|netif gateway = %-16s            |\r\n", inet_ntoa(g_wlan_netif->gw));
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "|netif mac     : [%02X:%02X:%02X:%02X:%02X:%02X] %-7s |\r\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], "");
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "+--------------------------------------------+\r\n");
+
+	}	
+
+}
+
+
+/*
 from cmd_wlan of xr809.c
 
 static __inline void cmd_wlan_sta_print_ap(wlan_sta_ap_t *ap)
@@ -182,55 +202,45 @@ static __inline void cmd_wlan_sta_print_ap(wlan_sta_ap_t *ap)
 }addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, 
 
 */
-	if (g_wlan_netif != NULL){
-//		unsigned char mac[32];
-//		WiFI_GetMacAddress((char *)mac);
-		uint8_t * mac = g_wlan_netif->hwaddr;
-		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "+--------------- net device info ------------+\r\n");
-		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", wlan_if_get_mode(g_wlan_netif) == WLAN_MODE_STA ? "STA" : "AP");
-		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "|netif hostname: %-16s            |\r\n", g_wlan_netif->hostname);
-		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |\r\n", inet_ntoa(g_wlan_netif->ip_addr));
-		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |\r\n", inet_ntoa(g_wlan_netif->netmask));
-		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "|netif gateway = %-16s            |\r\n", inet_ntoa(g_wlan_netif->gw));
-		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "|netif mac     : [%02X:%02X:%02X:%02X:%02X:%02X] %-7s |\r\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], "");
-		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "+--------------------------------------------+\r\n");
-
-	}	
-
-}
-
-
-
 int HAL_GetWifiStrength() {
 	wlan_sta_ap_t *ap = malloc(sizeof(wlan_sta_ap_t));	// to hold information of connected AP	
 	if (wlan_sta_ap_info(ap)){
 		uint8_t rssi=ap->rssi;
+		free(ap);
 		return rssi;	
 	}
 	return; 
 }
 
 // Get WiFi Information (SSID / BSSID) - e.g. to display on status page 
+/*
+// ATM there is only one SSID, so need for this code
 char* HAL_GetWiFiSSID(char* ssid){
+	ssid[0]='\0';
 	wlan_sta_ap_t *ap = malloc(sizeof(wlan_sta_ap_t));	// to hold information of connected AP	
 	if (wlan_sta_ap_info(ap)){
 		memcpy(ssid, ap->ssid.ssid, ap->ssid.ssid_len);
+		ssid[ap->ssid.ssid_len]='\0';
+		free(ap);
 	}
-	ssid[0]="\0";
 	return ssid; 
 };
+
+*/
 char* HAL_GetWiFiBSSID(char* bssid){
+	bssid[0]='\0';
 	wlan_sta_ap_t *ap = malloc(sizeof(wlan_sta_ap_t));	// to hold information of connected AP	
 	if (wlan_sta_ap_info(ap)){
 		sprintf(bssid, MACSTR, MAC2STR(ap->bssid));
+		free(ap);
 	}
-	bssid[0]="\0";
 	return bssid;
 };
 uint8_t HAL_GetWiFiChannel(uint8_t *chan){
 	wlan_sta_ap_t *ap = malloc(sizeof(wlan_sta_ap_t));	// to hold information of connected AP	
 	if (wlan_sta_ap_info(ap)){
 		*chan = ap->channel ;
+		free(ap);
 		return *chan;
 	}
 	return 0; 
