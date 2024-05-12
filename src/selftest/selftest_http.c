@@ -107,6 +107,10 @@ void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data) {
 	sprintf(buffer, http_post_template1, tg, dataLen, data);
 	Test_FakeHTTPClientPacket_Generic();
 }
+void Test_FakeHTTPClientPacket_POST_withJSONReply(const char *tg, const char *data) {
+	Test_FakeHTTPClientPacket_POST(tg, data);
+	Test_GetJSONValue_Setup(replyAt);
+}
 void Test_GetJSONValue_Setup(const char *text) {
 	if (g_json) {
 		cJSON_Delete(g_json);
@@ -833,12 +837,26 @@ void Test_Http_Commands() {
 	// test backlog with space at the end... "backlog setChannel 1 345; "
 	Test_FakeHTTPClientPacket_GET("cm?cmnd=backlog%20setChannel%201%20345;%20");
 	SELFTEST_ASSERT_CHANNEL(1, 345);
-	// test backlog with more spaces... "backlog setChannel 1 345 ; "
+	// test backlog with more spaces... "backlog setChannel 1 567 ; "
 	Test_FakeHTTPClientPacket_GET("cm?cmnd=backlog%20setChannel%201%20567%20;%20");
 	SELFTEST_ASSERT_CHANNEL(1, 567);
 	// test backlog with more spaces...  etc... "backlog setChannel 1 345 ; setChannel 1 111"
 	Test_FakeHTTPClientPacket_GET("cm?cmnd=backlog%20setChannel%201%20567%20;%20setChannel%201%20111");
 	SELFTEST_ASSERT_CHANNEL(1, 111);
+
+	// old endpoint introduced by btsimonh
+	Test_FakeHTTPClientPacket_POST_withJSONReply("api/cmnd",
+		"setChannel 1 123");
+	SELFTEST_ASSERT_CHANNEL(1, 123);
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0,"success", 200);
+	Test_FakeHTTPClientPacket_POST_withJSONReply("api/cmnd",
+		"backlog setChannel 1 345; ");
+	SELFTEST_ASSERT_CHANNEL(1, 345);
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0, "success", 200);
+	Test_FakeHTTPClientPacket_POST_withJSONReply("api/cmnd",
+		"backlog setChannel 1 567 ; ");
+	SELFTEST_ASSERT_CHANNEL(1, 567);
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0, "success", 200);
 }
 void Test_Http() {
 	Test_Http_SingleRelayOnChannel1();

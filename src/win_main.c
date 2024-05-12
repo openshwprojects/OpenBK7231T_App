@@ -130,6 +130,7 @@ void SIM_ClearOBK(const char *flashPath) {
 	Main_Init();
 }
 void Win_DoUnitTests() {
+	Test_Backlog();
 	Test_DoorSensor();
 	Test_WS2812B();
 	Test_Command_If_Else();
