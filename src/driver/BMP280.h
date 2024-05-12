@@ -179,7 +179,7 @@ uint8_t BMP280_begin(BMP280_mode mode,
 		addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BMP280 detected!");
 	} else if (id == BME280_CHIP_ID) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BME280 detected!");
-	} else if (id == BME280_CHIP_ID) {
+	} else if (id == BME680_CHIP_ID) {
     addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BME680 detected!");
 	} else {
 		addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BMx280 wrong ID!");
