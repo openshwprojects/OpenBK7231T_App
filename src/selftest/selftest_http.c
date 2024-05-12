@@ -824,12 +824,28 @@ void Test_Http_WiFi() {
 	//Test_FakeHTTPClientPacket_GET("/cfg_wifi_set?ssid=WiFi+with+space&pass=123&ssid2=&pass2=&web_admin_password=");
 
 }
-
+void Test_Http_Commands() {
+	Test_FakeHTTPClientPacket_GET("cm?cmnd=setChannel%201%20123");
+	SELFTEST_ASSERT_CHANNEL(1, 123);
+	// same as above but 234 and space at the end
+	Test_FakeHTTPClientPacket_GET("cm?cmnd=setChannel%201%20234%20");
+	SELFTEST_ASSERT_CHANNEL(1, 234);
+	// test backlog with space at the end... "backlog setChannel 1 345; "
+	Test_FakeHTTPClientPacket_GET("cm?cmnd=backlog%20setChannel%201%20345;%20");
+	SELFTEST_ASSERT_CHANNEL(1, 345);
+	// test backlog with more spaces... "backlog setChannel 1 345 ; "
+	Test_FakeHTTPClientPacket_GET("cm?cmnd=backlog%20setChannel%201%20567%20;%20");
+	SELFTEST_ASSERT_CHANNEL(1, 567);
+	// test backlog with more spaces...  etc... "backlog setChannel 1 345 ; setChannel 1 111"
+	Test_FakeHTTPClientPacket_GET("cm?cmnd=backlog%20setChannel%201%20567%20;%20setChannel%201%20111");
+	SELFTEST_ASSERT_CHANNEL(1, 111);
+}
 void Test_Http() {
 	Test_Http_SingleRelayOnChannel1();
 	Test_Http_TwoRelays();
 	Test_Http_FourRelays();
 	Test_Http_WiFi();
+	Test_Http_Commands();
 }
 
 
