@@ -1333,6 +1333,9 @@ int ChannelType_GetDecimalPlaces(int type);
 
 int PIN_ParsePinRoleName(const char* name);
 const char* PIN_RoleToString(int role);
+// return number of channels used for a role
+// taken from code in http_fnc.c
+int PIN_IOR_NofChan(int test);
 
 extern const char* g_channelTypeNames[];
 
