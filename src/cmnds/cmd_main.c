@@ -507,17 +507,6 @@ static commandResult_t CMD_CreateAliasForCommand(const void* context, const char
 
 	return CMD_CreateAliasHelper(alias, ocmd);
 }
-static commandResult_t CMD_SimonTest(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SimonTest: ir test routine");
-
-#ifdef PLATFORM_BK7231T
-	//stackCrash(0);
-	//CrashMalloc();
-	// anything
-#endif
-
-	return CMD_RES_OK;
-}
 /*
 int Flash_FindPattern(byte *data, int dataSize, int startOfs, int endOfs) {
 	int i;

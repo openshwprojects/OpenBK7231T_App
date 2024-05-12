@@ -337,6 +337,17 @@ static commandResult_t CMD_CrashNull(const void* context, const char* cmd, const
 
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_SimonTest(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SimonTest: ir test routine");
+
+#ifdef PLATFORM_BK7231T
+	//stackCrash(0);
+	//CrashMalloc();
+	// anything
+#endif
+
+	return CMD_RES_OK;
+}
 
 int CMD_InitTestCommands(){
 	//cmddetail:{"name":"testMallocFree","args":"",
