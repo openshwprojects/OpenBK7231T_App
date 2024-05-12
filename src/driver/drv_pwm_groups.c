@@ -95,13 +95,13 @@ static commandResult_t CMD_PWMG_Raw(const void* context, const char* cmd, const 
 // backlog startDriver PWMG; PWMG_Set 10 10 10 1000
 void PWMG_Init() {
 
-	//cmddetail:{"name":"PWMG_Raw","args":"CMD_PWMG_Raw",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"PWMG_Raw","args":"",
+	//cmddetail:"descr":"PWM grouping (synchronous PWM)",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_pwm_groups.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PWMG_Raw", CMD_PWMG_Raw, NULL);
-	//cmddetail:{"name":"PWMG_Set","args":"CMD_PWMG_Set",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"PWMG_Set","args":"Duty1Percent Duty2Percent DeadTimePercent Frequency PinA PinB",
+	//cmddetail:"descr":"PWM grouping (synchronous PWM)",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_pwm_groups.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PWMG_Set", CMD_PWMG_Set, NULL);

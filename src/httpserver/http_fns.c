@@ -171,7 +171,7 @@ int http_fn_index(http_request_t* request) {
 	bForceShowRGB = CFG_HasFlag(OBK_FLAG_LED_FORCE_MODE_RGB);
 
 	// user override is always stronger, so if no override set
-	if (bForceShowRGB == false && bForceShowRGB == false) {
+	if (bForceShowRGB == false && bForceShowRGBCW == false) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 		if (DRV_IsRunning("SM16703P")) {
 			bForceShowRGB = true;
@@ -503,6 +503,18 @@ int http_fn_index(http_request_t* request) {
 
 			poststr(request, "<tr><td>");
 			hprintf255(request, "Channel %s = %i", CHANNEL_GetLabel(i), iValue);
+			poststr(request, "</td></tr>");
+		}
+		else if (channelType == ChType_Motion) {
+			iValue = CHANNEL_Get(i);
+
+			poststr(request, "<tr><td>");
+			if (iValue) {
+				hprintf255(request, "No motion (ch %i)", i);
+			}
+			else {
+				hprintf255(request, "Motion! (ch %i)", i);
+			}
 			poststr(request, "</td></tr>");
 		}
 		else if (channelType == ChType_OpenClosed) {
@@ -1701,43 +1713,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		}
 	}
 #endif
-	//if (relayCount > 0) {
-		for (i = 0; i < CHANNEL_MAX; i++) {
-			// if already included by light, skip
-			if (BIT_CHECK(flagsChannelPublished, i)) {
-				continue;
-			}
-			bool bToggleInv = g_cfg.pins.channelTypes[i] == ChType_Toggle_Inv;
-			if (h_isChannelRelay(i) || g_cfg.pins.channelTypes[i] == ChType_Toggle || bToggleInv) {
-				// TODO: flags are 32 bit and there are 64 max channels
-				BIT_SET(flagsChannelPublished, i);
-				if (CFG_HasFlag(OBK_FLAG_MQTT_HASS_ADD_RELAYS_AS_LIGHTS)) {
-					dev_info = hass_init_relay_device_info(i, LIGHT_ON_OFF, bToggleInv);
-				}
-				else {
-					dev_info = hass_init_relay_device_info(i, RELAY, bToggleInv);
-				}
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-				dev_info = NULL;
-				discoveryQueued = true;
-			}
-		}
-	//}
 
-	if (dInputCount > 0) {
-		for (i = 0; i < CHANNEL_MAX; i++) {
-			if (h_isChannelDigitalInput(i)) {
-				// TODO: flags are 32 bit and there are 64 max channels
-				BIT_SET(flagsChannelPublished, i);
-				dev_info = hass_init_binary_sensor_device_info(i, false);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-				dev_info = NULL;
-				discoveryQueued = true;
-			}
-		}
-	}
 
 	if (pwmCount == 5 || ledDriverChipRunning || (pwmCount == 4 && CFG_HasFlag(OBK_FLAG_LED_EMULATE_COOL_WITH_RGB))) {
 		if (dev_info == NULL) {
@@ -1842,246 +1818,196 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		if (BIT_CHECK(flagsChannelPublished, i)) {
 			continue;
 		}
+		dev_info = 0;
 		switch (type)
 		{
+			case ChType_Motion:
+			{
+				dev_info = hass_init_binary_sensor_device_info(i, true);
+				cJSON_AddStringToObject(dev_info->root, "dev_cla", "motion");
+			}
+			break;
 			case ChType_OpenClosed:
 			{
 				dev_info = hass_init_binary_sensor_device_info(i, false);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_OpenClosed_Inv:
 			{
 				dev_info = hass_init_binary_sensor_device_info(i, true);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Voltage_div10:
 			{
 				dev_info = hass_init_sensor_device_info(VOLTAGE_SENSOR, i, 2, 1, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Voltage_div100:
 			{
 				dev_info = hass_init_sensor_device_info(VOLTAGE_SENSOR, i, 2, 2, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_ReadOnlyLowMidHigh:
 			{
 				dev_info = hass_init_sensor_device_info(READONLYLOWMIDHIGH_SENSOR, i, -1, -1, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_SmokePercent:
 			{
 				dev_info = hass_init_sensor_device_info(SMOKE_SENSOR, i, -1, -1, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Illuminance:
 			{
 				dev_info = hass_init_sensor_device_info(ILLUMINANCE_SENSOR, i, -1, -1, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_ReadOnly:
 			{
 				dev_info = hass_init_sensor_device_info(CUSTOM_SENSOR, i, -1, -1, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Temperature:
 			{
 				dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, i, -1, -1, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Temperature_div2:
 			{
 				dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, i, 2, 1, 5);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Temperature_div10:
 			{
 				dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, i, 2, 1, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Temperature_div100:
 			{
 				dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, i, 2, 2, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Humidity:
 			{
 				dev_info = hass_init_sensor_device_info(HUMIDITY_SENSOR, i, -1, -1, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Humidity_div10:
 			{
 				dev_info = hass_init_sensor_device_info(HUMIDITY_SENSOR, i, 2, 1, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Current_div100:
 			{
 				dev_info = hass_init_sensor_device_info(CURRENT_SENSOR, i, 3, 2, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_LeakageCurrent_div1000:
 			case ChType_Current_div1000:
 			{
 				dev_info = hass_init_sensor_device_info(CURRENT_SENSOR, i, 3, 3, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Power:
 			{
 				dev_info = hass_init_sensor_device_info(POWER_SENSOR, i, -1, -1, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Power_div10:
 			{
 				dev_info = hass_init_sensor_device_info(POWER_SENSOR, i, 2, 1, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Power_div100:
 			{
 				dev_info = hass_init_sensor_device_info(POWER_SENSOR, i, 3, 2, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_PowerFactor_div100:
 			{
 				dev_info = hass_init_sensor_device_info(POWERFACTOR_SENSOR, i, 3, 2, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Pressure_div100:
 			{
 				dev_info = hass_init_sensor_device_info(PRESSURE_SENSOR, i, 3, 2, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_PowerFactor_div1000:
 			{
 				dev_info = hass_init_sensor_device_info(POWERFACTOR_SENSOR, i, 4, 3, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Frequency_div100:
 			{
 				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, i, 3, 2, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_Frequency_div10:
 			{
 				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, i, 3, 1, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_EnergyTotal_kWh_div100:
 			{
 				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 2, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 			case ChType_EnergyTotal_kWh_div1000:
 			{
 				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 3, 1);
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-
-				discoveryQueued = true;
 			}
 			break;
 		}
+		if (dev_info) {
+			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+			hass_free_device_info(dev_info);
+
+			BIT_SET(flagsChannelPublished, i);
+			discoveryQueued = true;
+		}
 	}
 #endif
+
+	//if (relayCount > 0) {
+	for (i = 0; i < CHANNEL_MAX; i++) {
+		// if already included by light, skip
+		if (BIT_CHECK(flagsChannelPublished, i)) {
+			continue;
+		}
+		bool bToggleInv = g_cfg.pins.channelTypes[i] == ChType_Toggle_Inv;
+		if (h_isChannelRelay(i) || g_cfg.pins.channelTypes[i] == ChType_Toggle || bToggleInv) {
+			// TODO: flags are 32 bit and there are 64 max channels
+			BIT_SET(flagsChannelPublished, i);
+			if (CFG_HasFlag(OBK_FLAG_MQTT_HASS_ADD_RELAYS_AS_LIGHTS)) {
+				dev_info = hass_init_relay_device_info(i, LIGHT_ON_OFF, bToggleInv);
+			}
+			else {
+				dev_info = hass_init_relay_device_info(i, RELAY, bToggleInv);
+			}
+			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+			hass_free_device_info(dev_info);
+			dev_info = NULL;
+			discoveryQueued = true;
+		}
+	}
+	//}
+	if (dInputCount > 0) {
+		for (i = 0; i < CHANNEL_MAX; i++) {
+			if (h_isChannelDigitalInput(i)) {
+				if (BIT_CHECK(flagsChannelPublished, i)) {
+					continue;
+				}
+				// TODO: flags are 32 bit and there are 64 max channels
+				BIT_SET(flagsChannelPublished, i);
+				dev_info = hass_init_binary_sensor_device_info(i, false);
+				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+				hass_free_device_info(dev_info);
+				dev_info = NULL;
+				discoveryQueued = true;
+			}
+		}
+	}
 	if (1) {
 		//use -1 for channel as these don't correspond to channels
 		dev_info = hass_init_sensor_device_info(HASS_RSSI, -1, -1, -1, 1);
@@ -2494,28 +2420,77 @@ int http_fn_cfg_pins(http_request_t* request) {
 		if (!bSafeMode && CFG_HasFlag(OBK_FLAG_AUTOMAIC_HASS_DISCOVERY)) {
 			Main_ScheduleHomeAssistantDiscovery(1);
 		}
-
 		hprintf255(request, "Pins update - %i reqs, %i changed!<br><br>", iChangedRequested, iChanged);
 	}
 	//	strcat(outbuf,"<button type=\"button\">Click Me!</button>");
-	poststr(request, "<form action=\"cfg_pins\">");
+	poststr(request, "<form action=\"cfg_pins\" id=\"x\">");
+
+
+	poststr(request, "<script> var r = [");
+	for (i = 0; i < IOR_Total_Options; i++) {
+		if (i) {
+			poststr(request, ",");
+		}
+		hprintf255(request, "\"%s\"", htmlPinRoleNames[i]);
+	}
+	poststr(request, "];");
+
+	poststr(request, "function f(alias, id, c, b, ch1, ch2) {"
+		"let f = document.getElementById(\"x\");"
+		"let d = document.createElement(\"div\");"
+		"d.className = \"hdiv\";"
+		"d.innerText = alias;"
+		"f.appendChild(d);"
+		"let s = document.createElement(\"select\");"
+		"s.className = \"hele\";"
+		"s.name = id;"
+		"d.appendChild(s);"
+		"	for (var i = 0; i < r.length; i++) {"
+		"	if(b && r[i].startsWith(\"PWM\")) continue; "
+		"var o = document.createElement(\"option\");"
+		"	o.text = r[i];"
+		"	o.value = i;"
+		"	if (i == c) {"
+		"		o.selected = true;"
+		"	}"
+		"s.add(o);"
+		"}"
+		"if(ch1!= null) {"
+			"let y = document.createElement(\"input\");"
+			"y.className = \"hele\";"
+			"y.type = \"text\";"
+			"y.name = \"r\"+id;"
+			"y.value = ch1;"
+			"d.appendChild(y);"
+		"}"
+		"if(ch2!= null) {"
+			"let y = document.createElement(\"input\");"
+			"y.className = \"hele\";"
+			"y.type = \"text\";"
+			"y.name = \"e\"+id;"
+			"y.value = ch2;"
+			"d.appendChild(y);"
+		"}"
+		" }");
+
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
-		int si, ch, ch2;
-		int j;
-		const char* alias;
 		// On BL602, any GPIO can be mapped to one of 5 PWM channels
 		// But on Beken chips, only certain pins can be PWM
 		int bCanThisPINbePWM;
+		int si, ch, ch2;
+		int j;
+		const char* alias;
 
 		si = PIN_GetPinRoleForPinIndex(i);
 		ch = PIN_GetPinChannelForPinIndex(i);
 		ch2 = PIN_GetPinChannel2ForPinIndex(i);
 
-		bCanThisPINbePWM = HAL_PIN_CanThisPinBePWM(i);
-
 		// if available..
 		alias = HAL_PIN_GetPinNameAlias(i);
-		poststr(request, "<div class=\"hdiv\">");
+
+		bCanThisPINbePWM = HAL_PIN_CanThisPinBePWM(i);
+		si = PIN_GetPinRoleForPinIndex(i);
+		hprintf255(request, "f(\"");
 		if (alias) {
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 			hprintf255(request, "P%i (%s) ", i, alias);
@@ -2527,25 +2502,9 @@ int http_fn_cfg_pins(http_request_t* request) {
 		else {
 			hprintf255(request, "P%i ", i);
 		}
-		hprintf255(request, "<select class=\"hele\" name=\"%i\">", i);
-		for (j = 0; j < IOR_Total_Options; j++) {
-			// do not show hardware PWM on non-PWM pin
-			if (j == IOR_PWM || j == IOR_PWM_n) {
-				if (bCanThisPINbePWM == 0) {
-					continue;
-				}
-			}
-
-			if (j == si) {
-				hprintf255(request, "<option value=\"%i\" selected>%s</option>", j, htmlPinRoleNames[j]);
-			}
-			else {
-				hprintf255(request, "<option value=\"%i\">%s</option>", j, htmlPinRoleNames[j]);
-			}
-		}
-		poststr(request, "</select>");
+		hprintf255(request, "\",%i,%i, %i,", i, si, !bCanThisPINbePWM);
 		// Primary linked channel
-		// Some roles do not need any channels
+// Some roles do not need any channels
 		if ((si != IOR_SGP_CLK && si != IOR_SHT3X_CLK && si != IOR_CHT8305_CLK && si != IOR_Button_ToggleAll && si != IOR_Button_ToggleAll_n
 			&& si != IOR_BL0937_CF && si != IOR_BL0937_CF1 && si != IOR_BL0937_SEL
 			&& si != IOR_LED_WIFI && si != IOR_LED_WIFI_n && si != IOR_LED_WIFI_n
@@ -2553,16 +2512,26 @@ int http_fn_cfg_pins(http_request_t* request) {
 			&& !(si >= IOR_SM2135_DAT && si <= IOR_BP1658CJ_CLK))
 			|| IS_PIN_DHT_ROLE(si))
 		{
-			hprintf255(request, "<input class=\"hele\" name=\"r%i\" type=\"text\" value=\"%i\"/>", i, ch);
+			hprintf255(request, "%i,", ch);
+			//hprintf255(request, "<input class=\"hele\" name=\"r%i\" type=\"text\" value=\"%i\"/>", i, ch);
+		}
+		else {
+			hprintf255(request, "null,", ch);
 		}
 		// Secondary linked channel
 		// For button, is relay index to toggle on double click
 		if (si == IOR_Button || si == IOR_Button_n || IS_PIN_DHT_ROLE(si) || IS_PIN_TEMP_HUM_SENSOR_ROLE(si) || IS_PIN_AIR_SENSOR_ROLE(si))
 		{
-			hprintf255(request, "<input class=\"hele\" name=\"e%i\" type=\"text\" value=\"%i\"/>", i, ch2);
+			hprintf255(request, "%i,", ch2);
+			//hprintf255(request, "<input class=\"hele\" name=\"e%i\" type=\"text\" value=\"%i\"/>", i, ch2);
 		}
-		poststr(request, "</div>");
+		else {
+			hprintf255(request, "null,", ch);
+		}
+		hprintf255(request, ");");
+
 	}
+	poststr(request, " </script>");
 	poststr(request, "<input type=\"submit\" value=\"Save\"/></form>");
 
 	poststr(request, htmlFooterReturnToCfgOrMainPage);

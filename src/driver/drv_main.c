@@ -16,12 +16,12 @@
 
 typedef struct driver_s {
 	const char* name;
-	void (*initFunc)();
-	void (*onEverySecond)();
-	void (*appendInformationToHTTPIndexPage)(http_request_t* request);
-	void (*runQuickTick)();
-	void (*stopFunc)();
-	void (*onChannelChanged)(int ch, int val);
+	void(*initFunc)();
+	void(*onEverySecond)();
+	void(*appendInformationToHTTPIndexPage)(http_request_t* request);
+	void(*runQuickTick)();
+	void(*stopFunc)();
+	void(*onChannelChanged)(int ch, int val);
 	bool bLoaded;
 } driver_t;
 
@@ -56,7 +56,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "PixelAnim",		PixelAnim_Init,			NULL,			NULL, PixelAnim_SetAnimQuickTick, NULL, NULL, false },
 #endif
-	
+
 #if ENABLE_NTP
 	//drvdetail:{"name":"NTP",
 	//drvdetail:"title":"TODO",
@@ -283,36 +283,11 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, NULL, NULL, false },
 #endif
-// Shared driver for TM1637, GN6932, TM1638 - TM_GN_Display_SharedInit
-#if ENABLE_DRIVER_TMGN
-	//drvdetail:{"name":"TM1637",
-	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK interface.",
-	//drvdetail:"requires":""}
-	{ "TM1637",	TM1637_Init,		NULL,		NULL,  TMGN_RunQuickTick,NULL, NULL, false },
-	//drvdetail:{"name":"GN6932",
-	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK/STB interface. See [this topic](https://www.elektroda.com/rtvforum/topic3971252.html) for details.",
-	//drvdetail:"requires":""}
-	{ "GN6932",	GN6932_Init,		NULL,		NULL, TMGN_RunQuickTick, NULL, NULL, false },
-	//drvdetail:{"name":"TM1638",
-	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK/STB interface. TM1638 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20553628#20553628) for details.",
-	//drvdetail:"requires":""}
-	{ "TM1638",	TM1638_Init,		NULL,		NULL, TMGN_RunQuickTick,NULL,  NULL, false },
-#endif
 	//drvdetail:{"name":"ADCSmoother",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"qq",
 	//drvdetail:"requires":""}
 	{ "ADCSmoother", DRV_ADCSmoother_Init, NULL, NULL, DRV_ADCSmoother_RunFrame, NULL, NULL, false },
-#if ENABLE_DRIVER_HT16K33
-	//drvdetail:{"name":"HT16K33",
-	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"Driver for 16-segment LED display with I2C. See [protocol explanation](https://www.elektroda.pl/rtvforum/topic3984616.html)",
-	//drvdetail:"requires":""}
-	{ "HT16K33",	HT16K33_Init,		NULL,		NULL, NULL,NULL,  NULL, false },
-#endif
 	//drvdetail:{"name":"SHT3X",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Humidity/temperature sensor. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html)",
@@ -335,6 +310,36 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"Simple Shift Register driver that allows you to map channels to shift register output. See [related topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20533505#20533505)",
 	//drvdetail:"requires":""}
 	{ "ShiftRegister",	    Shift_Init,		Shift_OnEverySecond,		NULL, NULL, NULL, Shift_OnChannelChanged, false },
+#endif
+#if ENABLE_DRIVER_HT16K33
+	//drvdetail:{"name":"HT16K33",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Driver for 16-segment LED display with I2C. See [protocol explanation](https://www.elektroda.pl/rtvforum/topic3984616.html)",
+	//drvdetail:"requires":""}
+	{ "HT16K33",	HT16K33_Init,		NULL,		NULL, NULL,NULL,  NULL, false },
+#endif
+	// Shared driver for TM1637, GN6932, TM1638 - TM_GN_Display_SharedInit
+#if ENABLE_DRIVER_TMGN
+	//drvdetail:{"name":"TM1637",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK interface.",
+	//drvdetail:"requires":""}
+	{ "TM1637",	TM1637_Init,		NULL,		NULL,  TMGN_RunQuickTick,NULL, NULL, false },
+	//drvdetail:{"name":"GN6932",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK/STB interface. See [this topic](https://www.elektroda.com/rtvforum/topic3971252.html) for details.",
+	//drvdetail:"requires":""}
+	{ "GN6932",	GN6932_Init,		NULL,		NULL, TMGN_RunQuickTick, NULL, NULL, false },
+	//drvdetail:{"name":"TM1638",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK/STB interface. TM1638 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20553628#20553628) for details.",
+	//drvdetail:"requires":""}
+	{ "TM1638",	TM1638_Init,		NULL,		NULL, TMGN_RunQuickTick,NULL,  NULL, false },
+	//drvdetail:{"name":"HD2015",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Driver for 7-segment LED display with I2C-like interface. Seems to be compatible with TM1650. HD2015 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/topic4052946.html) for details.",
+	//drvdetail:"requires":""}
+	{ "HD2015",	HD2015_Init,		NULL,		NULL, TMGN_RunQuickTick,NULL,  NULL, false },
 #endif
 #if ENABLE_DRIVER_BATTERY
 	//drvdetail:{"name":"Battery",
@@ -584,7 +589,7 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t* request) {
 
 bool DRV_IsMeasuringPower() {
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	return DRV_IsRunning("BL0937") || DRV_IsRunning("BL0942") 
+	return DRV_IsRunning("BL0937") || DRV_IsRunning("BL0942")
 		|| DRV_IsRunning("CSE7766") || DRV_IsRunning("TESTPOWER")
 		|| DRV_IsRunning("BL0942SPI") || DRV_IsRunning("RN8209");
 #else
