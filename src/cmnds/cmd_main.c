@@ -269,7 +269,7 @@ static commandResult_t CMD_ClearAll(const void* context, const char* cmd, const 
 	CHANNEL_ClearAllChannels();
 	CMD_ClearAllHandlers(0, 0, 0, 0);
 	RepeatingEvents_Cmd_ClearRepeatingEvents(0, 0, 0, 0);
-#if defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_BEKEN)
+#if defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_BEKEN) || defined(PLATFORM_LN882H)
 	CMD_resetSVM(0, 0, 0, 0);
 #endif
 
@@ -824,7 +824,7 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PWMFrequency", CMD_PWMFrequency, NULL);
 	
-#if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602)
+#if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602) || (defined PLATFORM_LN882H)
 	CMD_InitScripting();
 #endif
 	if (!bSafeMode) {
