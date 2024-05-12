@@ -5,6 +5,13 @@
 
 int Simulator_GetNoChangeTimePassed();
 
+
+const char *demo_noSleeper =
+"again:\n"
+"delay_s 0.25\n"
+"if $CH1==1 then DSTime clear\n"
+"goto again\n";
+
 void Test_DoorSensor() {
 	// reset whole device
 	SIM_ClearOBK(0);
@@ -53,6 +60,28 @@ void Test_DoorSensor() {
 	CMD_ExecuteCommand("DSTime clear", 0);
 	SELFTEST_ASSERT(Simulator_GetNoChangeTimePassed() == 0);
 
+	CMD_ExecuteCommand("lfs_format", 0);
+
+	// put file in LittleFS
+	Test_FakeHTTPClientPacket_POST("api/lfs/demo_noSleeper.txt", demo_noSleeper);
+	// get this file 
+	Test_FakeHTTPClientPacket_GET("api/lfs/demo_noSleeper.txt");
+	SELFTEST_ASSERT_HTML_REPLY(demo_noSleeper);
+
+	CMD_ExecuteCommand("startScript demo_noSleeper.txt", 0);
+	SELFTEST_ASSERT(Simulator_GetNoChangeTimePassed() == 0);
+	for (int i = 0; i < 16; i++) {
+		SELFTEST_ASSERT_INTEGER(CMD_GetCountActiveScriptThreads(), 1);
+		SELFTEST_ASSERT(Simulator_GetNoChangeTimePassed() <= 1);
+		Sim_RunSeconds(1.0f,0);
+		SELFTEST_ASSERT(Simulator_GetNoChangeTimePassed() <= 1);
+	}
+	// so script wont clear
+	CHANNEL_Set(1, 0, 0);
+	for (int i = 0; i < 16; i++) {
+		Sim_RunSeconds(1.0f, 0);
+	}
+	SELFTEST_ASSERT(Simulator_GetNoChangeTimePassed() > 10);
 }
 
 #endif
