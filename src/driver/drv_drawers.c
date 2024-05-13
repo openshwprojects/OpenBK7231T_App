@@ -81,8 +81,8 @@ void Drawers_Init() {
 /*
 // Usage:
 startDriver SM16703P
-SM16703P_Init 16
-startDriver Drawers
+SM16703P_Init 60
+startDriver Drawers 60
 
 */
 
