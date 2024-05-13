@@ -625,6 +625,15 @@ void Test_Backlog() {
 	SELFTEST_ASSERT_CHANNEL(1, 4);
 	SELFTEST_ASSERT(CMD_ExecuteCommand("backlog    setChannel 1     5 ;;;", 0) == CMD_RES_OK);
 	SELFTEST_ASSERT_CHANNEL(1, 5);
+	SELFTEST_ASSERT(CMD_ExecuteCommand("backlog    thiisCooommandNotExists 1     5 ;;;", 0)
+		== CMD_RES_UNKNOWN_COMMAND);
+	SELFTEST_ASSERT_CHANNEL(1, 5);
+	SELFTEST_ASSERT(CMD_ExecuteCommand("backlog    setChannel 1;;;", 0) == CMD_RES_NOT_ENOUGH_ARGUMENTS);
+	SELFTEST_ASSERT_CHANNEL(1, 5);
+	SELFTEST_ASSERT(CMD_ExecuteCommand("backlog    setChannel ;;;", 0) == CMD_RES_NOT_ENOUGH_ARGUMENTS);
+	SELFTEST_ASSERT_CHANNEL(1, 5);
+	SELFTEST_ASSERT(CMD_ExecuteCommand("backlog setChannel 1 22; setChannel 1 33", 0) == CMD_RES_OK);
+	SELFTEST_ASSERT_CHANNEL(1, 33);
 }
 void Test_Tasmota() {
 	Test_Tasmota_MQTT_Switch();
