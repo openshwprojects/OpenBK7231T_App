@@ -17,8 +17,10 @@ static int *g_timeOuts = 0;
 static int g_numLEDs = 0;
 static int g_on_color = 8900331;
 static int g_off_color = 0;
-static int g_on_timeout_ms = 1000;
+static int g_on_timeout_ms;
 static int g_changes = 0;
+static bool g_bEnableAmbient = 0;
+static int g_ambient_color = 0xFF0000;
 
 // http://127.0.0.1/led_index?params=5
 static int DR_LedIndex(http_request_t* request) {
@@ -31,6 +33,21 @@ static int DR_LedIndex(http_request_t* request) {
 	g_timeOuts[index] = g_on_timeout_ms;
 	SM16703P_setPixel(index, SPLIT_COLOR(g_on_color));
 	g_changes++;
+	return 0;
+}
+static int DR_LedEnableAmbient(http_request_t* request) {
+	char tmp[16];
+	if (!http_getArg(request->url, "params", tmp, sizeof(tmp))) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "DR_LedEnableAmbient: missing params\n");
+		return 0;
+	}
+	g_bEnableAmbient = atoi(tmp);
+	if (g_bEnableAmbient) {
+		g_changes++;
+		for (int i = 0; i < g_numLEDs; i++) {
+			SM16703P_setPixel(i, SPLIT_COLOR(g_ambient_color));
+		}
+	}
 	return 0;
 }
 static int DR_LedOnColor(http_request_t* request) {
@@ -62,7 +79,19 @@ static int DR_LedOnTimeout(http_request_t* request) {
 }
 void Drawers_Init() {
 
+	/*
+	// Usage:
+	startDriver SM16703P
+	SM16703P_Init 60
+	// startDriver Drawers [NumLEDs] [TimeoutMS] [OnColor] [OffColor]
+	startDriver Drawers 60 2000 0x00FF00
+
+	*/
 	g_numLEDs = Tokenizer_GetArgIntegerDefault(1, 128);
+	g_on_timeout_ms = Tokenizer_GetArgIntegerDefault(2, 1000);
+	g_on_color = Tokenizer_GetArgIntegerDefault(3, 8900331);
+	g_off_color = Tokenizer_GetArgIntegerDefault(4, 0);
+	
 	if (g_timeOuts) {
 		free(g_timeOuts);
 	}
@@ -80,16 +109,11 @@ void Drawers_Init() {
 	// sets the LED on timeout for all LEDs
 	HTTP_RegisterCallback("/led_on_timeout", HTTP_GET, DR_LedOnTimeout, 1);
 	HTTP_RegisterCallback("/led_on_timeout", HTTP_POST, DR_LedOnTimeout, 1);
+	// 
+	HTTP_RegisterCallback("/enable_ambient", HTTP_GET, DR_LedEnableAmbient, 1);
+	HTTP_RegisterCallback("/enable_ambient", HTTP_POST, DR_LedEnableAmbient, 1);
 	
 }
-/*
-// Usage:
-startDriver SM16703P
-SM16703P_Init 60
-startDriver Drawers 60
-
-*/
-
 
 void Drawers_QuickTick() {
 	//SM16703P_setAllPixels(SPLIT_COLOR(g_on_color));
