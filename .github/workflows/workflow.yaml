@@ -88,7 +88,7 @@ jobs:
       - name: Run make
         run: make APP_VERSION=${{ needs.refs.outputs.version }} APP_NAME=${{ matrix.platform }} ${{ matrix.platform }}
       - name: Save build assets
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
           path: |
@@ -123,7 +123,7 @@ jobs:
           path: output/${{ needs.refs.outputs.version }}
       - name: Run Semantic Release
         id: semantic
-        uses: cycjimmy/semantic-release-action@v4
+        uses: cycjimmy/semantic-release-action@v3
         with:
           dry_run: false
           semantic_version: 21
