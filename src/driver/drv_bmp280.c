@@ -34,7 +34,7 @@ void BMP280_Stop(void) {		//manufacturer ID
 
 #include "BMP280.h"
 
-// startDriver BMP280 8 14 1 2 236
+// startDriver BMP280 8 14 1 2 238
 // startDriver BMP280 [CLK] [DATA] [ChannelForTemp] [ChannelForPressure] [Adr8bit]
 void BMP280_Init() {
 
