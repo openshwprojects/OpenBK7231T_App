@@ -70,12 +70,16 @@ void Drawers_Init() {
 
 	// turns on the LED
 	HTTP_RegisterCallback("/led_index", HTTP_GET, DR_LedIndex, 1);
+	HTTP_RegisterCallback("/led_index", HTTP_POST, DR_LedIndex, 1);
 	// sets the LED on color for all LEDs
 	HTTP_RegisterCallback("/led_on_color", HTTP_GET, DR_LedOnColor, 1);
+	HTTP_RegisterCallback("/led_on_color", HTTP_POST, DR_LedOnColor, 1);
 	// sets the LED off color for all LEDs
 	HTTP_RegisterCallback("/led_off_color", HTTP_GET, DR_LedOffColor, 1);
+	HTTP_RegisterCallback("/led_off_color", HTTP_POST, DR_LedOffColor, 1);
 	// sets the LED on timeout for all LEDs
 	HTTP_RegisterCallback("/led_on_timeout", HTTP_GET, DR_LedOnTimeout, 1);
+	HTTP_RegisterCallback("/led_on_timeout", HTTP_POST, DR_LedOnTimeout, 1);
 	
 }
 /*
