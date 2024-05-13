@@ -35,14 +35,8 @@ static int DR_LedIndex(http_request_t* request) {
 	g_changes++;
 	return 0;
 }
-static int DR_LedEnableAmbient(http_request_t* request) {
-	char tmp[16];
+static void applyAmbient() {
 	int c = 0;
-	if (!http_getArg(request->url, "params", tmp, sizeof(tmp))) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "DR_LedEnableAmbient: missing params\n");
-		return 0;
-	}
-	g_bEnableAmbient = atoi(tmp);
 	if (g_bEnableAmbient) {
 		c = g_ambient_color;
 	}
@@ -50,6 +44,25 @@ static int DR_LedEnableAmbient(http_request_t* request) {
 	for (int i = 0; i < g_numLEDs; i++) {
 		SM16703P_setPixel(i, SPLIT_COLOR(c));
 	}
+}
+static int DR_LedEnableAmbient(http_request_t* request) {
+	char tmp[16];
+	if (!http_getArg(request->url, "params", tmp, sizeof(tmp))) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "DR_LedEnableAmbient: missing params\n");
+		return 0;
+	}
+	g_bEnableAmbient = atoi(tmp);
+	applyAmbient();
+	return 0;
+}
+static int DR_LedAmbientColor(http_request_t* request) {
+	char tmp[16];
+	if (!http_getArg(request->url, "params", tmp, sizeof(tmp))) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "DR_LedAmbientColor: missing params\n");
+		return 0;
+	}
+	g_ambient_color = atoi(tmp);
+	applyAmbient();
 	return 0;
 }
 static int DR_LedOnColor(http_request_t* request) {
@@ -116,6 +129,9 @@ void Drawers_Init() {
 	// 
 	HTTP_RegisterCallback("/enable_ambient", HTTP_GET, DR_LedEnableAmbient, 1);
 	HTTP_RegisterCallback("/enable_ambient", HTTP_POST, DR_LedEnableAmbient, 1);
+	// sets the LED on color for all LEDs
+	HTTP_RegisterCallback("/led_ambient", HTTP_GET, DR_LedAmbientColor, 1);
+	HTTP_RegisterCallback("/led_ambient", HTTP_POST, DR_LedAmbientColor, 1);
 	
 }
 
