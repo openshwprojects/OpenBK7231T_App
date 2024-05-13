@@ -37,16 +37,18 @@ static int DR_LedIndex(http_request_t* request) {
 }
 static int DR_LedEnableAmbient(http_request_t* request) {
 	char tmp[16];
+	int c = 0;
 	if (!http_getArg(request->url, "params", tmp, sizeof(tmp))) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "DR_LedEnableAmbient: missing params\n");
 		return 0;
 	}
 	g_bEnableAmbient = atoi(tmp);
 	if (g_bEnableAmbient) {
-		g_changes++;
-		for (int i = 0; i < g_numLEDs; i++) {
-			SM16703P_setPixel(i, SPLIT_COLOR(g_ambient_color));
-		}
+		c = g_ambient_color;
+	}
+	g_changes++;
+	for (int i = 0; i < g_numLEDs; i++) {
+		SM16703P_setPixel(i, SPLIT_COLOR(c));
 	}
 	return 0;
 }
@@ -83,7 +85,8 @@ void Drawers_Init() {
 	// Usage:
 	startDriver SM16703P
 	SM16703P_Init 60
-	// startDriver Drawers [NumLEDs] [TimeoutMS] [OnColor] [OffColor]
+	// All arguments are optional
+	// startDriver Drawers [NumLEDs] [TimeoutMS] [OnColor] [OffColor] [AmbientColor]
 	startDriver Drawers 60 2000 0x00FF00
 
 	*/
@@ -91,6 +94,7 @@ void Drawers_Init() {
 	g_on_timeout_ms = Tokenizer_GetArgIntegerDefault(2, 1000);
 	g_on_color = Tokenizer_GetArgIntegerDefault(3, 8900331);
 	g_off_color = Tokenizer_GetArgIntegerDefault(4, 0);
+	g_ambient_color = Tokenizer_GetArgIntegerDefault(5, 0);
 	
 	if (g_timeOuts) {
 		free(g_timeOuts);
