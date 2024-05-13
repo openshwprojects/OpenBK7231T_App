@@ -326,6 +326,25 @@ int PIN_GetPinChannel2ForPinIndex(int index) {
 	}
 	return g_cfg.pins.channels2[index];
 }
+// return number of channels used for a role
+// taken from code in http_fnc.c
+int PIN_IOR_NofChan(int test){
+	// For button, is relay index to toggle on double click
+	if (test == IOR_Button || test == IOR_Button_n || IS_PIN_DHT_ROLE(test) || IS_PIN_TEMP_HUM_SENSOR_ROLE(test) || IS_PIN_AIR_SENSOR_ROLE(test)){
+			return 2;
+	}
+	// Some roles don't need any channels
+	if (test == IOR_SGP_CLK || test == IOR_SHT3X_CLK || test == IOR_CHT8305_CLK || test == IOR_Button_ToggleAll || test == IOR_Button_ToggleAll_n
+			|| test == IOR_BL0937_CF || test == IOR_BL0937_CF1 || test == IOR_BL0937_SEL
+			|| test == IOR_LED_WIFI || test == IOR_LED_WIFI_n || test == IOR_LED_WIFI_n
+			|| (test >= IOR_IRRecv && test <= IOR_DHT11)
+			|| (test >= IOR_SM2135_DAT && test <= IOR_BP1658CJ_CLK)) {
+			return 0;
+	}
+	// all others have 1 channel
+	return 1;
+}
+
 void RAW_SetPinValue(int index, int iVal) {
 	if (index < 0 || index >= PLATFORM_GPIO_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "RAW_SetPinValue: Pin index %i out of range <0,%i).", index, PLATFORM_GPIO_MAX);

@@ -2431,9 +2431,27 @@ int http_fn_cfg_pins(http_request_t* request) {
 		if (i) {
 			poststr(request, ",");
 		}
-		hprintf255(request, "\"%s\"", htmlPinRoleNames[i]);
+		// print array with ["name_of_role",<Number of channnels for this role>]
+		hprintf255(request, "[\"%s\",%i]", htmlPinRoleNames[i],PIN_IOR_NofChan(i));
 	}
 	poststr(request, "];");
+
+	poststr(request, "function hide_show() {"
+		"switch (r[this.selectedIndex][1]){"
+		"case 0:"
+		"	e=getElement('r'+this.name); e.disabled=true;e.style.display='none';"
+		"	e=getElement('e'+this.name); e.disabled=true;e.style.display='none';"
+		"	break;"
+		"case 1:"
+		"	e=getElement('r'+this.name); e.disabled=false;e.style.display='inline';"
+		"	e=getElement('e'+this.name); e.disabled=true;e.style.display='none';"
+		"	break;"
+		"case 2:"
+		"	e=getElement('r'+this.name); e.disabled=false;e.style.display='inline';"
+		"	e=getElement('e'+this.name); e.disabled=false;e.style.display='inline';"
+		"	break;"
+		"};"
+		"}");
 
 	poststr(request, "function f(alias, id, c, b, ch1, ch2) {"
 		"let f = document.getElementById(\"x\");"
@@ -2446,31 +2464,33 @@ int http_fn_cfg_pins(http_request_t* request) {
 		"s.name = id;"
 		"d.appendChild(s);"
 		"	for (var i = 0; i < r.length; i++) {"
-		"	if(b && r[i].startsWith(\"PWM\")) continue; "
+		"	if(b && r[i][0].startsWith(\"PWM\")) continue; "
 		"var o = document.createElement(\"option\");"
-		"	o.text = r[i];"
+		"	o.text = r[i][0];"
 		"	o.value = i;"
 		"	if (i == c) {"
 		"		o.selected = true;"
 		"	}"
-		"s.add(o);"
+		"s.add(o);s.onchange = hide_show;"
 		"}"
-		"if(ch1!= null) {"
-			"let y = document.createElement(\"input\");"
-			"y.className = \"hele\";"
-			"y.type = \"text\";"
-			"y.name = \"r\"+id;"
-			"y.value = ch1;"
-			"d.appendChild(y);"
-		"}"
-		"if(ch2!= null) {"
-			"let y = document.createElement(\"input\");"
-			"y.className = \"hele\";"
-			"y.type = \"text\";"
-			"y.name = \"e\"+id;"
-			"y.value = ch2;"
-			"d.appendChild(y);"
-		"}"
+		"var y = document.createElement(\"input\");"
+		"y.className = \"hele\";"
+		"y.type = \"text\";"
+		"y.name = \"r\"+id;"
+		"y.id = \"r\"+id;"
+		"y.disabled = ch1==null;"
+		"y.style.display = ch1==null ? 'none' :'inline' ;"
+		"y.value = ch1==null ? 0 : ch1;"
+		"d.appendChild(y);"
+		"y = document.createElement(\"input\");"
+		"y.className = \"hele\";"
+		"y.type = \"text\";"
+		"y.name = \"e\"+id;"
+		"y.id = \"e\"+id;"
+		"y.disabled = ch2==null ;"
+		"y.style.display = ch2==null ? 'none' :'inline' ;"
+		"y.value = ch2==null ? 0 : ch2;"
+		"d.appendChild(y);"
 		" }");
 
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
@@ -2504,26 +2524,19 @@ int http_fn_cfg_pins(http_request_t* request) {
 		}
 		hprintf255(request, "\",%i,%i, %i,", i, si, !bCanThisPINbePWM);
 		// Primary linked channel
-// Some roles do not need any channels
-		if ((si != IOR_SGP_CLK && si != IOR_SHT3X_CLK && si != IOR_CHT8305_CLK && si != IOR_Button_ToggleAll && si != IOR_Button_ToggleAll_n
-			&& si != IOR_BL0937_CF && si != IOR_BL0937_CF1 && si != IOR_BL0937_SEL
-			&& si != IOR_LED_WIFI && si != IOR_LED_WIFI_n && si != IOR_LED_WIFI_n
-			&& !(si >= IOR_IRRecv && si <= IOR_DHT11)
-			&& !(si >= IOR_SM2135_DAT && si <= IOR_BP1658CJ_CLK))
-			|| IS_PIN_DHT_ROLE(si))
+		int NofC = PIN_IOR_NofChan(si);
+		if (NofC >= 1)
 		{
 			hprintf255(request, "%i,", ch);
-			//hprintf255(request, "<input class=\"hele\" name=\"r%i\" type=\"text\" value=\"%i\"/>", i, ch);
 		}
+		// Some roles do not need any channels
 		else {
 			hprintf255(request, "null,", ch);
 		}
 		// Secondary linked channel
-		// For button, is relay index to toggle on double click
-		if (si == IOR_Button || si == IOR_Button_n || IS_PIN_DHT_ROLE(si) || IS_PIN_TEMP_HUM_SENSOR_ROLE(si) || IS_PIN_AIR_SENSOR_ROLE(si))
+		if (NofC > 1)
 		{
 			hprintf255(request, "%i,", ch2);
-			//hprintf255(request, "<input class=\"hele\" name=\"e%i\" type=\"text\" value=\"%i\"/>", i, ch2);
 		}
 		else {
 			hprintf255(request, "null,", ch);
