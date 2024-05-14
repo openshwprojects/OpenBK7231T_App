@@ -29,6 +29,7 @@ configMemory.bin
 /lastHTTPPacket.txt
 /lastMQTTPublishSentByOBK.txt
 *.sln
+/pushupfromopenw800.ps1
 
 # MacOS ignores
 .DS_Store
