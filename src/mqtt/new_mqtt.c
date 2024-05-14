@@ -708,6 +708,7 @@ int mqtt_printf255(obk_mqtt_publishReplyPrinter_t* request, const char* fmt, ...
 	request->curLen += myLen;
 	return 0;
 }
+#if ENABLE_TASMOTA_JSON
 void MQTT_ProcessCommandReplyJSON(const char *cmd, const char *args, int flags) {
 	obk_mqtt_publishReplyPrinter_t replyBuilder;
 	memset(&replyBuilder, 0, sizeof(obk_mqtt_publishReplyPrinter_t));
@@ -716,6 +717,7 @@ void MQTT_ProcessCommandReplyJSON(const char *cmd, const char *args, int flags) 
 		free(replyBuilder.allocated);
 	}
 }
+#endif
 int tasCmnd(obk_mqtt_request_t* request) {
 	const char *p, *args;
     //const char *p2;
@@ -739,7 +741,9 @@ int tasCmnd(obk_mqtt_request_t* request) {
 	// there is a NULL terminating character after payload of MQTT
 	// So we can feed it directly as command
 	CMD_ExecuteCommandArgs(p, args, COMMAND_FLAG_SOURCE_MQTT);
+#if ENABLE_TASMOTA_JSON
 	MQTT_ProcessCommandReplyJSON(p, args, COMMAND_FLAG_SOURCE_MQTT);
+#endif
 #else
 	int len = request->receivedLen;
 	char copy[64];
@@ -1894,6 +1898,7 @@ int MQTT_RunQuickTick(){
 
 int g_wantTasmotaTeleSend = 0;
 void MQTT_BroadcastTasmotaTeleSENSOR() {
+#if ENABLE_TASMOTA_JSON
 	if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES) == false) {
 		return;
 	}
@@ -1906,12 +1911,15 @@ void MQTT_BroadcastTasmotaTeleSENSOR() {
 	if (bHasAnySensor) {
 		MQTT_ProcessCommandReplyJSON("SENSOR", "", COMMAND_FLAG_SOURCE_TELESENDER);
 	}
+#endif
 }
 void MQTT_BroadcastTasmotaTeleSTATE() {
+#if ENABLE_TASMOTA_JSON
 	if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES) == false) {
 		return;
 	}
 	MQTT_ProcessCommandReplyJSON("STATE", "", COMMAND_FLAG_SOURCE_TELESENDER);
+#endif
 }
 // called from user timer.
 int MQTT_RunEverySecondUpdate()

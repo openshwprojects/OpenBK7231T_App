@@ -21,6 +21,8 @@
 #include "../driver/drv_local.h"
 #include "../driver/drv_bl_shared.h"
 
+#if ENABLE_TASMOTA_JSON
+
 void JSON_PrintKeyValue_String(void* request, jsonCb_t printer, const char* key, const char* value, bool bComma) {
 	printer(request, "\"%s\":\"%s\"", key, value);
 	if (bComma) {
@@ -1049,6 +1051,8 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 
 	return 0;
 }
+// close for ENABLE_TASMOTA_JSON
+#endif
 
 
 
