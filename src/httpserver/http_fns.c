@@ -2441,20 +2441,12 @@ int http_fn_cfg_pins(http_request_t* request) {
 	poststr(request, "];");
 
 	poststr(request, "function hide_show() {"
-		"switch (r[this.selectedIndex][1]){"
-		"case 0:"
-		"	e=getElement('r'+this.name); e.disabled=true;e.style.display='none';"
-		"	e=getElement('e'+this.name); e.disabled=true;e.style.display='none';"
-		"	break;"
-		"case 1:"
-		"	e=getElement('r'+this.name); e.disabled=false;e.style.display='inline';"
-		"	e=getElement('e'+this.name); e.disabled=true;e.style.display='none';"
-		"	break;"
-		"case 2:"
-		"	e=getElement('r'+this.name); e.disabled=false;e.style.display='inline';"
-		"	e=getElement('e'+this.name); e.disabled=false;e.style.display='inline';"
-		"	break;"
-		"};"
+		"n=this.name;"
+		"er=getElement('r'+n);"
+		"ee=getElement('e'+n);"
+		"ch=r[this.value][1];"		// since we might have skiped PWM entries in options list, don't use "selectedIndex" but "value" (it's even shorter ;-)
+		"er.disabled = (ch<1); er.style.display= ch<1 ? 'none' : 'inline';"
+		"ee.disabled = (ch<2); ee.style.display= ch<2 ? 'none' : 'inline';"
 		"}");
 
 	poststr(request, "function f(alias, id, c, b, ch1, ch2) {"
@@ -2479,7 +2471,6 @@ int http_fn_cfg_pins(http_request_t* request) {
 		"}"
 		"var y = document.createElement(\"input\");"
 		"y.className = \"hele\";"
-		"y.type = \"text\";"
 		"y.name = \"r\"+id;"
 		"y.id = \"r\"+id;"
 		"y.disabled = ch1==null;"
@@ -2488,7 +2479,6 @@ int http_fn_cfg_pins(http_request_t* request) {
 		"d.appendChild(y);"
 		"y = document.createElement(\"input\");"
 		"y.className = \"hele\";"
-		"y.type = \"text\";"
 		"y.name = \"e\"+id;"
 		"y.id = \"e\"+id;"
 		"y.disabled = ch2==null ;"
