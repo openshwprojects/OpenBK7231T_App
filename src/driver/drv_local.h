@@ -154,6 +154,10 @@ void PixelAnim_Init();
 void PixelAnim_SetAnimQuickTick();
 void PixelAnim_SetAnim(int j);
 
+void Drawers_Init();
+void Drawers_QuickTick();
+
+
 #define SM2135_DELAY         4
 
 // Software I2C 

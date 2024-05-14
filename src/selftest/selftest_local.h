@@ -102,6 +102,7 @@ void Test_NTP();
 void Test_NTP_SunsetSunrise();
 void Test_MQTT();
 void Test_Tasmota();
+void Test_Backlog();
 void Test_EnergyMeter();
 void Test_DHT();
 void Test_Flags();
@@ -135,6 +136,7 @@ void Test_DoorSensor();
 void Test_GetJSONValue_Setup(const char *text);
 void Test_FakeHTTPClientPacket_GET(const char *tg);
 void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data);
+void Test_FakeHTTPClientPacket_POST_withJSONReply(const char *tg, const char *data);
 void Test_FakeHTTPClientPacket_JSON(const char *tg);
 const char *Test_GetLastHTMLReply();
 

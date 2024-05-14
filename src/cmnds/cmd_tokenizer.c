@@ -262,12 +262,12 @@ int Tokenizer_GetArgInteger(int i) {
 	return atoi(s);
 }
 float Tokenizer_GetArgFloat(int i) {
-#if !PLATFORM_BEKEN
+#if !PLATFORM_BEKEN && !WINDOWS && !PLATFORM_BL602
 	int channelIndex;
 #endif
 	const char *s;
 	s = g_args[i];
-#if (!PLATFORM_BEKEN && !WINDOWS)
+#if (!PLATFORM_BEKEN && !WINDOWS && !PLATFORM_BL602)
 	if(g_bAllowExpand && s[0] == '$') {
 		// constant
 		if(s[1] == 'C' && s[2] == 'H') {

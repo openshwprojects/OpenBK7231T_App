@@ -70,18 +70,25 @@ void Test_DoorSensor() {
 
 	CMD_ExecuteCommand("startScript demo_noSleeper.txt", 0);
 	SELFTEST_ASSERT(Simulator_GetNoChangeTimePassed() == 0);
-	for (int i = 0; i < 16; i++) {
-		SELFTEST_ASSERT_INTEGER(CMD_GetCountActiveScriptThreads(), 1);
-		SELFTEST_ASSERT(Simulator_GetNoChangeTimePassed() <= 1);
-		Sim_RunSeconds(1.0f,0);
-		SELFTEST_ASSERT(Simulator_GetNoChangeTimePassed() <= 1);
-	}
-	// so script wont clear
-	CHANNEL_Set(1, 0, 0);
-	for (int i = 0; i < 16; i++) {
+	for (int tr = 0; tr < 3; tr++) {
+		for (int i = 0; i < 16; i++) {
+			SELFTEST_ASSERT_INTEGER(CMD_GetCountActiveScriptThreads(), 1);
+			SELFTEST_ASSERT(Simulator_GetNoChangeTimePassed() <= 1);
+			Sim_RunSeconds(1.0f, 0);
+			SELFTEST_ASSERT(Simulator_GetNoChangeTimePassed() <= 1);
+		}
+		// so script won't clear
+		CHANNEL_Set(1, 0, 0);
+		for (int i = 0; i < 16; i++) {
+			Sim_RunSeconds(1.0f, 0);
+		}
+		SELFTEST_ASSERT(Simulator_GetNoChangeTimePassed() > 10);
+		// so script will clear
+		CHANNEL_Set(1, 1, 0);
 		Sim_RunSeconds(1.0f, 0);
+		Sim_RunSeconds(1.0f, 0);
+		SELFTEST_ASSERT(Simulator_GetNoChangeTimePassed() <= 1);
 	}
-	SELFTEST_ASSERT(Simulator_GetNoChangeTimePassed() > 10);
 }
 
 #endif

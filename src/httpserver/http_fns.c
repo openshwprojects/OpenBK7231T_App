@@ -2291,13 +2291,17 @@ int http_fn_cm(http_request_t* request) {
 					http_getRawArg(request->bodystart, "cmnd", long_str_alloced, commandLen);
 				}
 				CMD_ExecuteCommand(long_str_alloced, COMMAND_FLAG_SOURCE_HTTP);
+#if ENABLE_TASMOTA_JSON
 				JSON_ProcessCommandReply(long_str_alloced, skipToNextWord(long_str_alloced), request, (jsonCb_t)hprintf255, COMMAND_FLAG_SOURCE_HTTP);
+#endif
 				free(long_str_alloced);
 			}
 		}
 		else {
 			CMD_ExecuteCommand(tmpA, COMMAND_FLAG_SOURCE_HTTP);
+#if ENABLE_TASMOTA_JSON
 			JSON_ProcessCommandReply(tmpA, skipToNextWord(tmpA), request, (jsonCb_t)hprintf255, COMMAND_FLAG_SOURCE_HTTP);
+#endif
 		}
 	}
 
@@ -2467,8 +2471,6 @@ int http_fn_cfg_pins(http_request_t* request) {
 		"}"
 		"var y = document.createElement(\"input\");"
 		"y.className = \"hele\";"
-// text is default
-//		"y.type = \"text\";"
 		"y.name = \"r\"+id;"
 		"y.id = \"r\"+id;"
 		"y.disabled = ch1==null;"
@@ -2477,8 +2479,6 @@ int http_fn_cfg_pins(http_request_t* request) {
 		"d.appendChild(y);"
 		"y = document.createElement(\"input\");"
 		"y.className = \"hele\";"
-// text is default
-//		"y.type = \"text\";"
 		"y.name = \"e\"+id;"
 		"y.id = \"e\"+id;"
 		"y.disabled = ch2==null ;"
