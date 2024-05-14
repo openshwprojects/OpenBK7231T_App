@@ -1,3 +1,5 @@
+// for full presentation, see related topic:
+// https://www.elektroda.com/rtvforum/topic4054134.html
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
@@ -119,21 +121,27 @@ void Drawers_Init() {
 	g_timeOuts = (int*)malloc(sizeof(int)*g_numLEDs);
 
 	// turns on the LED
+	// http://192.168.0.123/led_index?params=4
 	HTTP_RegisterCallback("/led_index", HTTP_GET, DR_LedIndex, 1);
 	HTTP_RegisterCallback("/led_index", HTTP_POST, DR_LedIndex, 1);
 	// sets the LED on color for all LEDs
+	// http://192.168.0.123/led_on_color?params=0xFF00FF
 	HTTP_RegisterCallback("/led_on_color", HTTP_GET, DR_LedOnColor, 1);
 	HTTP_RegisterCallback("/led_on_color", HTTP_POST, DR_LedOnColor, 1);
 	// sets the LED off color for all LEDs
+	// http://192.168.0.123/led_off_color?params=0x00FF00
 	HTTP_RegisterCallback("/led_off_color", HTTP_GET, DR_LedOffColor, 1);
 	HTTP_RegisterCallback("/led_off_color", HTTP_POST, DR_LedOffColor, 1);
 	// sets the LED on timeout for all LEDs
+	// http://192.168.0.123/led_on_timeout?params=5000
 	HTTP_RegisterCallback("/led_on_timeout", HTTP_GET, DR_LedOnTimeout, 1);
 	HTTP_RegisterCallback("/led_on_timeout", HTTP_POST, DR_LedOnTimeout, 1);
 	// 
+	// http://192.168.0.123/enable_ambient?params=1
 	HTTP_RegisterCallback("/enable_ambient", HTTP_GET, DR_LedEnableAmbient, 1);
 	HTTP_RegisterCallback("/enable_ambient", HTTP_POST, DR_LedEnableAmbient, 1);
-	// sets the LED on color for all LEDs
+	// sets the LED ambient color for all LEDs
+	// http://192.168.0.123/led_ambient?params=0xFFFFFF
 	HTTP_RegisterCallback("/led_ambient", HTTP_GET, DR_LedAmbientColor, 1);
 	HTTP_RegisterCallback("/led_ambient", HTTP_POST, DR_LedAmbientColor, 1);
 	
