@@ -56,6 +56,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "PixelAnim",		PixelAnim_Init,			NULL,			NULL, PixelAnim_SetAnimQuickTick, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_DRAWERS
+	//drvdetail:{"name":"Drawers",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Drawers",
+	//drvdetail:"requires":""}
+	{ "Drawers",		Drawers_Init,			NULL,			NULL, Drawers_QuickTick, NULL, NULL, false },
+#endif
 
 #if ENABLE_NTP
 	//drvdetail:{"name":"NTP",
