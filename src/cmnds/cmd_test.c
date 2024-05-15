@@ -405,8 +405,8 @@ int CMD_InitTestCommands(){
 	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("json_test", cmnd_json_test, NULL);
-	//cmddetail:{"name":"TimeSize","args":"CMD_TimeSize",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"TimeSize","args":"",
+	//cmddetail:"descr":"Prints the size of time_t on current platform - sizeof(time_t), only for testing purposes",
 	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TimeSize", CMD_TimeSize, NULL);

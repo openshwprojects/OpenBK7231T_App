@@ -59,7 +59,7 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_DRAWERS
 	//drvdetail:{"name":"Drawers",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"Drawers",
+	//drvdetail:"descr":"WS2812B driver wrapper with REST API for [smart drawers project](https://www.elektroda.com/rtvforum/topic4054134.html)",
 	//drvdetail:"requires":""}
 	{ "Drawers",		Drawers_Init,			NULL,			NULL, Drawers_QuickTick, NULL, NULL, false },
 #endif
@@ -224,18 +224,18 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "DoorSensor",		DoorDeepSleep_Init,		DoorDeepSleep_OnEverySecond,	DoorDeepSleep_AppendInformationToHTTPIndexPage, NULL, NULL, DoorDeepSleep_OnChannelChanged, false },
 
+	//drvdetail:{"name":"ADCButton",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"This allows you to connect multiple buttons on single ADC pin. Each button must have a different resistor value, this works by probing the voltage on ADC from a resistor divider. You need to select AB_Map first. See forum post for [details](https://www.elektroda.com/rtvforum/viewtopic.php?p=20541973#20541973).",
+	//drvdetail:"requires":""}
+	{ "ADCButton",		DRV_ADCButton_Init,		NULL,	NULL, DRV_ADCButton_RunFrame, NULL, NULL, false },
+#endif
 #if ENABLE_DRIVER_MAX72XX
 	//drvdetail:{"name":"MAX72XX_Clock",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Simple hardcoded driver for MAX72XX clock. Requires manual start of MAX72XX driver with MAX72XX setup and NTP start.",
 	//drvdetail:"requires":""}
 	{ "MAX72XX_Clock",		DRV_MAX72XX_Clock_Init,		DRV_MAX72XX_Clock_OnEverySecond,	NULL, DRV_MAX72XX_Clock_RunFrame, NULL, NULL, false },
-#endif
-	//drvdetail:{"name":"ADCButton",
-	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"This allows you to connect multiple buttons on single ADC pin. Each button must have a different resistor value, this works by probing the voltage on ADC from a resistor divider. You need to select AB_Map first. See forum post for [details](https://www.elektroda.com/rtvforum/viewtopic.php?p=20541973#20541973).",
-	//drvdetail:"requires":""}
-	{ "ADCButton",		DRV_ADCButton_Init,		NULL,	NULL, DRV_ADCButton_RunFrame, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_LED
 	//drvdetail:{"name":"SM2135",
@@ -267,6 +267,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "BMP280", BMP280_Init, BMP280_OnEverySecond, BMP280_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_MAX72XX
+		//drvdetail:{"name":"MAX72XX",
+		//drvdetail:"title":"TODO",
+		//drvdetail:"descr":"MAX72XX LED matrix display driver with font and simple script interface. See [protocol explanation](https://www.elektroda.pl/rtvforum/viewtopic.php?p=18040628#18040628)",
+		//drvdetail:"requires":""}
+	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, NULL, NULL, false },
+#endif
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	//drvdetail:{"name":"CHT8305",
 	//drvdetail:"title":"TODO",
@@ -283,13 +290,6 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"KP18058 I2C LED driver. Supports also KP18068. Working, see reverse-engineering [topic](https://www.elektroda.pl/rtvforum/topic3991620.html)",
 	//drvdetail:"requires":""}
 	{ "KP18058",		KP18058_Init,		NULL,			NULL, NULL, NULL, NULL, false },
-#if ENABLE_DRIVER_MAX72XX
-	//drvdetail:{"name":"MAX72XX",
-	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"MAX72XX LED matrix display driver with font and simple script interface. See [protocol explanation](https://www.elektroda.pl/rtvforum/viewtopic.php?p=18040628#18040628)",
-	//drvdetail:"requires":""}
-	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, NULL, NULL, false },
-#endif
 	//drvdetail:{"name":"ADCSmoother",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"qq",
@@ -305,18 +305,18 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"SGP Air Quality sensor with I2C interface. See [this DIY sensor](https://www.elektroda.com/rtvforum/topic3967174.html) for setup information.",
 	//drvdetail:"requires":""}
 	{ "SGP",	    SGP_Init,		SGP_OnEverySecond,		SGP_AppendInformationToHTTPIndexPage, NULL, SGP_StopDriver, NULL, false },
-#if ENABLE_DRIVER_AHT2X
-	//drvdetail:{"name":"AHT2X",
-	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"AHT Humidity/temperature sensor. Supported sensors are: AHT10, AHT2X, AHT30.",
-	//drvdetail:"requires":""}
-	{ "AHT2X",	AHT2X_Init,	AHT2X_OnEverySecond,	AHT2X_AppendInformationToHTTPIndexPage,	NULL,	AHT2X_StopDriver,	NULL,	false },
-#endif
 	//drvdetail:{"name":"ShiftRegister",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Simple Shift Register driver that allows you to map channels to shift register output. See [related topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20533505#20533505)",
 	//drvdetail:"requires":""}
 	{ "ShiftRegister",	    Shift_Init,		Shift_OnEverySecond,		NULL, NULL, NULL, Shift_OnChannelChanged, false },
+#endif
+#if ENABLE_DRIVER_AHT2X
+	//drvdetail:{"name":"AHT2X",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"AHT Humidity/temperature sensor. Supported sensors are: AHT10, AHT2X, AHT30. See [presentation guide](https://www.elektroda.com/rtvforum/topic4052685.html)",
+	//drvdetail:"requires":""}
+	{ "AHT2X",	AHT2X_Init,	AHT2X_OnEverySecond,	AHT2X_AppendInformationToHTTPIndexPage,	NULL,	AHT2X_StopDriver,	NULL,	false },
 #endif
 #if ENABLE_DRIVER_HT16K33
 	//drvdetail:{"name":"HT16K33",
@@ -329,7 +329,7 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_TMGN
 	//drvdetail:{"name":"TM1637",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK interface.",
+	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK interface. See [TM1637 information](https://www.elektroda.com/rtvforum/viewtopic.php?p=20468593#20468593)",
 	//drvdetail:"requires":""}
 	{ "TM1637",	TM1637_Init,		NULL,		NULL,  TMGN_RunQuickTick,NULL, NULL, false },
 	//drvdetail:{"name":"GN6932",
