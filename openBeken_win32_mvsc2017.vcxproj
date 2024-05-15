@@ -351,8 +351,10 @@
     <ClCompile Include="src\driver\drv_dht.c" />
     <ClCompile Include="src\driver\drv_dht_internal.c" />
     <ClCompile Include="src\driver\drv_doorSensorWithDeepSleep.c" />
+    <ClCompile Include="src\driver\drv_drawers.c" />
     <ClCompile Include="src\driver\drv_freeze.c" />
     <ClCompile Include="src\driver\drv_gn6932.c" />
+    <ClCompile Include="src\driver\drv_hd2015.c" />
     <ClCompile Include="src\driver\drv_ht16k33.c" />
     <ClCompile Include="src\driver\drv_httpButtons.c" />
     <ClCompile Include="src\driver\drv_hue.c" />
@@ -373,6 +375,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\driver\drv_ntp_events.c" />
+    <ClCompile Include="src\driver\drv_pixelAnim.c" />
     <ClCompile Include="src\driver\drv_pt6523.c" />
     <ClCompile Include="src\driver\drv_pwmToggler.c" />
     <ClCompile Include="src\driver\drv_pwrCal.c" />
@@ -968,6 +971,7 @@
     <ClCompile Include="src\selftest\selftest_chargingDriver.c" />
     <ClCompile Include="src\selftest\selftest_clockEvents.c" />
     <ClCompile Include="src\selftest\selftest_cmd_startup.c" />
+    <ClCompile Include="src\selftest\selftest_doorSensor.c" />
     <ClCompile Include="src\selftest\selftest_flashSearch.c" />
     <ClCompile Include="src\selftest\selftest_hass_discovery_base.c" />
     <ClCompile Include="src\selftest\selftest_hass_discovery_ext.c" />

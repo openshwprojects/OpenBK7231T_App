@@ -67,6 +67,8 @@ void TM1638_Init();
 
 void HT16K33_Init();
 
+void HD2015_Init();
+
 void DRV_ADCSmoother_Init();
 void DRV_ADCSmoother_RunFrame();
 
@@ -151,6 +153,10 @@ void Freeze_RunFrame();
 void PixelAnim_Init();
 void PixelAnim_SetAnimQuickTick();
 void PixelAnim_SetAnim(int j);
+
+void Drawers_Init();
+void Drawers_QuickTick();
+
 
 #define SM2135_DELAY         4
 

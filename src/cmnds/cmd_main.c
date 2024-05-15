@@ -214,37 +214,6 @@ static commandResult_t CMD_HTTPOTA(const void* context, const char* cmd, const c
 
 	return CMD_RES_OK;
 }
-static void stackOverflow(int a) {
-	char lala[64];
-	int i;
-
-	for (i = 0; i < sizeof(lala); i++) {
-		lala[i] = a;
-	}
-	stackOverflow(a + 1);
-}
-static commandResult_t CMD_StackOverflow(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StackOverflow: Will overflow soon");
-
-	stackOverflow(0);
-
-	return CMD_RES_OK;
-}
-static commandResult_t CMD_CrashNull(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	int *p = (int*)0;
-
-	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_CrashNull: Will crash soon");
-
-	while (1) {
-		*p = 0;
-		p++;
-	}
-
-	
-
-	return CMD_RES_OK;
-}
-
 static commandResult_t CMD_Restart(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int delaySeconds;
 
@@ -269,7 +238,7 @@ static commandResult_t CMD_ClearAll(const void* context, const char* cmd, const 
 	CHANNEL_ClearAllChannels();
 	CMD_ClearAllHandlers(0, 0, 0, 0);
 	RepeatingEvents_Cmd_ClearRepeatingEvents(0, 0, 0, 0);
-#if defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_BEKEN)
+#if defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_BEKEN) || defined(PLATFORM_LN882H)
 	CMD_resetSVM(0, 0, 0, 0);
 #endif
 
@@ -330,12 +299,6 @@ static commandResult_t CMD_StartupCommand(const void* context, const char* cmd, 
 	else {
 		CFG_SetShortStartupCommand(cmdToSet);
 	}
-
-
-	return CMD_RES_OK;
-}
-static commandResult_t CMD_TimeSize(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	ADDLOG_INFO(LOG_FEATURE_CMD, "sizeof(time_t) = %i, sizeof(int) = %i",sizeof(time_t), sizeof(int));
 
 
 	return CMD_RES_OK;
@@ -544,17 +507,6 @@ static commandResult_t CMD_CreateAliasForCommand(const void* context, const char
 
 	return CMD_CreateAliasHelper(alias, ocmd);
 }
-static commandResult_t CMD_SimonTest(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SimonTest: ir test routine");
-
-#ifdef PLATFORM_BK7231T
-	//stackCrash(0);
-	//CrashMalloc();
-	// anything
-#endif
-
-	return CMD_RES_OK;
-}
 /*
 int Flash_FindPattern(byte *data, int dataSize, int startOfs, int endOfs) {
 	int i;
@@ -696,7 +648,7 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("restart", CMD_Restart, NULL);
 	//cmddetail:{"name":"reboot","args":"",
-	//cmddetail:"descr":"Same as restart. Needed for bkWriter 1.60 which sends 'reboot' cmd before trying to get bus",
+	//cmddetail:"descr":"Same as restart. Needed for bkWriter 1.60 which sends 'reboot' cmd before trying to get bus via UART. Thanks to this, if you enable command line on UART1, you don't need to manually reboot while flashing via UART.",
 	//cmddetail:"fn":"CMD_Restart","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("reboot", CMD_Restart, NULL);
@@ -725,21 +677,6 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_PowerSave","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PowerSave", CMD_PowerSave, NULL);
-	//cmddetail:{"name":"stackOverflow","args":"",
-	//cmddetail:"descr":"Causes a stack overflow",
-	//cmddetail:"fn":"CMD_StackOverflow","file":"cmnds/cmd_main.c","requires":"",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("stackOverflow", CMD_StackOverflow, NULL);
-	//cmddetail:{"name":"crashNull","args":"",
-	//cmddetail:"descr":"Causes a crash",
-	//cmddetail:"fn":"CMD_CrashNull","file":"cmnds/cmd_main.c","requires":"",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("crashNull", CMD_CrashNull, NULL);
-	//cmddetail:{"name":"simonirtest","args":"",
-	//cmddetail:"descr":"Simons Special Test",
-	//cmddetail:"fn":"CMD_SimonTest","file":"cmnds/cmd_main.c","requires":"",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("simonirtest", CMD_SimonTest, NULL);
 	//cmddetail:{"name":"if","args":"[Condition]['then'][CommandA]['else'][CommandB]",
 	//cmddetail:"descr":"Executed a conditional. Condition should be single line. You must always use 'then' after condition. 'else' is optional. Use aliases or quotes for commands with spaces",
 	//cmddetail:"fn":"CMD_If","file":"cmnds/cmd_main.c","requires":"",
@@ -810,14 +747,13 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Choice", CMD_Choice, NULL);
-	//CMD_RegisterCommand("FindPattern", CMD_FindPattern, NULL);
-
-	CMD_RegisterCommand("TimeSize", CMD_TimeSize, NULL);
-
+	//cmddetail:{"name":"PWMFrequency","args":"[FrequencyInHz]",
+	//cmddetail:"descr":"Sets the global PWM frequency.",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PWMFrequency", CMD_PWMFrequency, NULL);
-
 	
-#if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602)
+#if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602) || (defined PLATFORM_LN882H)
 	CMD_InitScripting();
 #endif
 	if (!bSafeMode) {

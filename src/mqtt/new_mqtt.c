@@ -708,6 +708,7 @@ int mqtt_printf255(obk_mqtt_publishReplyPrinter_t* request, const char* fmt, ...
 	request->curLen += myLen;
 	return 0;
 }
+#if ENABLE_TASMOTA_JSON
 void MQTT_ProcessCommandReplyJSON(const char *cmd, const char *args, int flags) {
 	obk_mqtt_publishReplyPrinter_t replyBuilder;
 	memset(&replyBuilder, 0, sizeof(obk_mqtt_publishReplyPrinter_t));
@@ -716,6 +717,7 @@ void MQTT_ProcessCommandReplyJSON(const char *cmd, const char *args, int flags) 
 		free(replyBuilder.allocated);
 	}
 }
+#endif
 int tasCmnd(obk_mqtt_request_t* request) {
 	const char *p, *args;
     //const char *p2;
@@ -739,7 +741,9 @@ int tasCmnd(obk_mqtt_request_t* request) {
 	// there is a NULL terminating character after payload of MQTT
 	// So we can feed it directly as command
 	CMD_ExecuteCommandArgs(p, args, COMMAND_FLAG_SOURCE_MQTT);
+#if ENABLE_TASMOTA_JSON
 	MQTT_ProcessCommandReplyJSON(p, args, COMMAND_FLAG_SOURCE_MQTT);
+#endif
 #else
 	int len = request->receivedLen;
 	char copy[64];
@@ -1338,6 +1342,40 @@ commandResult_t MQTT_PublishCommand(const void* context, const char* cmd, const 
 
 	return CMD_RES_OK;
 }
+/*
+1. Create LittleFS file with any string
+2. Use command: PublishFile [TopicName] [FileName] [bOptionalForRemoveGet]
+	Like: PublishFile myTopic myFile.txt 1
+
+*/
+#if ENABLE_LITTLEFS
+commandResult_t MQTT_PublishFile(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	const char* topic, *fname;
+	OBK_Publish_Result ret;
+	int flags = 0;
+	byte*data;
+
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS);
+
+	if (Tokenizer_GetArgsCount() < 2) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish command requires two arguments (topic and value)");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	topic = Tokenizer_GetArg(0);
+	fname = Tokenizer_GetArg(1);
+	// optional third argument to remove get, etc
+	if (Tokenizer_GetArgIntegerDefault(2, 0) != 0) {
+		flags = OBK_PUBLISH_FLAG_RAW_TOPIC_NAME;
+	}
+	data = LFS_ReadFile(fname);
+	if (data) {
+		ret = MQTT_PublishMain_StringString(topic, (const char*)data, flags);
+		free(data);
+	}
+
+	return CMD_RES_OK;
+}
+#endif
 // we have a separate command for integer because it can support math expressions
 // (so it handled like $CH10*10, etc)
 commandResult_t MQTT_PublishCommandInteger(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -1679,17 +1717,17 @@ void MQTT_init()
 
 	mqtt_initialised = 1;
 
-	//cmddetail:{"name":"publish","args":"[Topic][Value]",
+	//cmddetail:{"name":"publish","args":"[Topic][Value][bOptionalSkipPrefixAndSuffix]",
 	//cmddetail:"descr":"Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'. You can use argument expansion here, so $CH11 will change to value of the channel 11",
 	//cmddetail:"fn":"MQTT_PublishCommand","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("publish", MQTT_PublishCommand, NULL);
-	//cmddetail:{"name":"publishInt","args":"[Topic][Value]",
+	//cmddetail:{"name":"publishInt","args":"[Topic][Value][bOptionalSkipPrefixAndSuffix]",
 	//cmddetail:"descr":"Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an integer, so you can also use math expressions like $CH10*10, etc.",
 	//cmddetail:"fn":"MQTT_PublishCommand","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("publishInt", MQTT_PublishCommandInteger, NULL);
-	//cmddetail:{"name":"publishFloat","args":"[Topic][Value]",
+	//cmddetail:{"name":"publishFloat","args":"[Topic][Value][bOptionalSkipPrefixAndSuffix]",
 	//cmddetail:"descr":"Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an float, so you can also use math expressions like $CH10*0.0, etc.",
 	//cmddetail:"fn":"MQTT_PublishCommand","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
@@ -1729,6 +1767,14 @@ void MQTT_init()
 	//cmddetail:"fn":"MQTT_SetTasTeleIntervals","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TasTeleInterval", MQTT_SetTasTeleIntervals, NULL);
+
+#if ENABLE_LITTLEFS
+	//cmddetail:{"name":"publishFile","args":"[Topic][Value][bOptionalSkipPrefixAndSuffix]",
+	//cmddetail:"descr":"Publishes data read from LFS file by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.",
+	//cmddetail:"fn":"MQTT_PublishFile","file":"mqtt/new_mqtt.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("publishFile", MQTT_PublishFile, NULL);
+#endif
 }
 
 OBK_Publish_Result MQTT_DoItemPublishString(const char* sChannel, const char* valueStr)
@@ -1852,6 +1898,7 @@ int MQTT_RunQuickTick(){
 
 int g_wantTasmotaTeleSend = 0;
 void MQTT_BroadcastTasmotaTeleSENSOR() {
+#if ENABLE_TASMOTA_JSON
 	if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES) == false) {
 		return;
 	}
@@ -1864,12 +1911,15 @@ void MQTT_BroadcastTasmotaTeleSENSOR() {
 	if (bHasAnySensor) {
 		MQTT_ProcessCommandReplyJSON("SENSOR", "", COMMAND_FLAG_SOURCE_TELESENDER);
 	}
+#endif
 }
 void MQTT_BroadcastTasmotaTeleSTATE() {
+#if ENABLE_TASMOTA_JSON
 	if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES) == false) {
 		return;
 	}
 	MQTT_ProcessCommandReplyJSON("STATE", "", COMMAND_FLAG_SOURCE_TELESENDER);
+#endif
 }
 // called from user timer.
 int MQTT_RunEverySecondUpdate()

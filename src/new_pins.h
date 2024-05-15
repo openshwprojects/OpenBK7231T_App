@@ -915,6 +915,13 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Power_div100,
+	//chandetail:{"name":"Motion",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Motion",
+	//chandetail:"enum":"Motion",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Motion,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
@@ -1326,6 +1333,9 @@ int ChannelType_GetDecimalPlaces(int type);
 
 int PIN_ParsePinRoleName(const char* name);
 const char* PIN_RoleToString(int role);
+// return number of channels used for a role
+// taken from code in http_fnc.c
+int PIN_IOR_NofChan(int test);
 
 extern const char* g_channelTypeNames[];
 

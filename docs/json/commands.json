@@ -126,6 +126,42 @@
     "examples": ""
   },
   {
+    "name": "AHT2X_Calibrate",
+    "args": "[DeltaTemp][DeltaHumidity]",
+    "descr": "Calibrate the AHT2X Sensor as Tolerance is +/-2 degrees C.",
+    "fn": "AHT2X_Calibrate",
+    "file": "driver/drv_aht2x.c",
+    "requires": "",
+    "examples": "AHT2X_Calibrate -4 10 <br /> meaning -4 on current temp reading and +10 on current humidity reading"
+  },
+  {
+    "name": "AHT2X_Cycle",
+    "args": "[IntervalSeconds]",
+    "descr": "This is the interval between measurements in seconds, by default 1. Max is 255.",
+    "fn": "AHT2X_cycle",
+    "file": "drv/drv_aht2X.c",
+    "requires": "",
+    "examples": "AHT2X_Cycle 60 <br /> measurement is taken every 60 seconds"
+  },
+  {
+    "name": "AHT2X_Measure",
+    "args": "",
+    "descr": "Retrieve OneShot measurement.",
+    "fn": "AHT2X_Measure",
+    "file": "drv/drv_aht2X.c",
+    "requires": "",
+    "examples": "AHT2X_Measure"
+  },
+  {
+    "name": "AHT2X_Reinit",
+    "args": "",
+    "descr": "Reinitialize sensor.",
+    "fn": "AHT2X_Reinit",
+    "file": "drv/drv_aht2X.c",
+    "requires": "",
+    "examples": "AHT2X_Reinit"
+  },
+  {
     "name": "alias",
     "args": "[Alias][Command with spaces]",
     "descr": "add an aliased command, so a command with spaces can be called with a short, nospaced alias",
@@ -140,6 +176,24 @@
     "descr": "Internal usage only. See docs for 'alias' command.",
     "fn": "runcmd",
     "file": "cmnds/cmd_test.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Anim",
+    "args": "PA_Cmd_Anim",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_pixelAnim.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "AnimSpeed",
+    "args": "PA_Cmd_AnimSpeed",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_pixelAnim.c",
     "requires": "",
     "examples": ""
   },
@@ -276,7 +330,7 @@
     "fn": "CHT_Calibrate",
     "file": "driver/drv_cht8305.c",
     "requires": "",
-    "examples": "SHT_Calibrate -4 10 <br /> meaning -4 on current temp reading and +10 on current humidity reading"
+    "examples": "CHT_Calibrate -4 10 <br /> meaning -4 on current temp reading and +10 on current humidity reading"
   },
   {
     "name": "CHT_Cycle",
@@ -506,7 +560,7 @@
   {
     "name": "DSTime",
     "args": "[timeSeconds]",
-    "descr": "DoorSensor driver configuration command. Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival",
+    "descr": "DoorSensor driver configuration command. Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival. You can also use this to extend current awake time (at runtime) with syntax: 'DSTime +10', this will make device stay awake 10 seconds longer. You can also restart current value of awake counter by 'DSTime clear', this will make counter go from 0 again.",
     "fn": "DoorDeepSleep_SetTime",
     "file": "drv/drv_doorSensorWithDeepSleep.c",
     "requires": "",
@@ -1450,7 +1504,7 @@
   },
   {
     "name": "publish",
-    "args": "[Topic][Value]",
+    "args": "[Topic][Value][bOptionalSkipPrefixAndSuffix]",
     "descr": "Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'. You can use argument expansion here, so $CH11 will change to value of the channel 11",
     "fn": "MQTT_PublishCommand",
     "file": "mqtt/new_mqtt.c",
@@ -1494,8 +1548,17 @@
     "examples": ""
   },
   {
+    "name": "publishFile",
+    "args": "[Topic][Value][bOptionalSkipPrefixAndSuffix]",
+    "descr": "Publishes data read from LFS file by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.",
+    "fn": "MQTT_PublishFile",
+    "file": "mqtt/new_mqtt.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "publishFloat",
-    "args": "[Topic][Value]",
+    "args": "[Topic][Value][bOptionalSkipPrefixAndSuffix]",
     "descr": "Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an float, so you can also use math expressions like $CH10*0.0, etc.",
     "fn": "MQTT_PublishCommand",
     "file": "mqtt/new_mqtt.c",
@@ -1504,7 +1567,7 @@
   },
   {
     "name": "publishInt",
-    "args": "[Topic][Value]",
+    "args": "[Topic][Value][bOptionalSkipPrefixAndSuffix]",
     "descr": "Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an integer, so you can also use math expressions like $CH10*10, etc.",
     "fn": "MQTT_PublishCommand",
     "file": "mqtt/new_mqtt.c",
@@ -1512,9 +1575,18 @@
     "examples": ""
   },
   {
+    "name": "PWMFrequency",
+    "args": "[FrequencyInHz]",
+    "descr": "Sets the global PWM frequency.",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "PWMG_Raw",
-    "args": "CMD_PWMG_Raw",
-    "descr": "",
+    "args": "",
+    "descr": "PWM grouping (synchronous PWM)",
     "fn": "NULL);",
     "file": "driver/drv_pwm_groups.c",
     "requires": "",
@@ -1522,8 +1594,8 @@
   },
   {
     "name": "PWMG_Set",
-    "args": "CMD_PWMG_Set",
-    "descr": "",
+    "args": "Duty1Percent Duty2Percent DeadTimePercent Frequency PinA PinB",
+    "descr": "PWM grouping (synchronous PWM)",
     "fn": "NULL);",
     "file": "driver/drv_pwm_groups.c",
     "requires": "",
@@ -1532,7 +1604,7 @@
   {
     "name": "reboot",
     "args": "",
-    "descr": "Same as restart. Needed for bkWriter 1.60 which sends 'reboot' cmd before trying to get bus",
+    "descr": "Same as restart. Needed for bkWriter 1.60 which sends 'reboot' cmd before trying to get bus via UART. Thanks to this, if you enable command line on UART1, you don't need to manually reboot while flashing via UART.",
     "fn": "CMD_Restart",
     "file": "cmnds/cmd_main.c",
     "requires": "",
@@ -1846,7 +1918,7 @@
   },
   {
     "name": "SHT_Calibrate",
-    "args": "",
+    "args": "[DeltaTemp][DeltaHumidity]",
     "descr": "Calibrate the SHT Sensor as Tolerance is +/-2 degrees C.",
     "fn": "SHT3X_Calibrate",
     "file": "driver/drv_sht3x.c",
@@ -1882,7 +1954,7 @@
   },
   {
     "name": "SHT_Heater",
-    "args": "",
+    "args": "[1or0]",
     "descr": "Activate or Deactivate Heater (0 / 1)",
     "fn": "SHT3X_Heater",
     "file": "driver/drv_sht3x.c",
@@ -2242,8 +2314,8 @@
   },
   {
     "name": "TimeSize",
-    "args": "CMD_TimeSize",
-    "descr": "",
+    "args": "",
+    "descr": "Prints the size of time_t on current platform - sizeof(time_t), only for testing purposes.",
     "fn": "NULL);",
     "file": "cmnds/cmd_main.c",
     "requires": "",
@@ -2305,8 +2377,8 @@
   },
   {
     "name": "TMGN_Read",
-    "args": "CMD_TMGN_Read",
-    "descr": "",
+    "args": "",
+    "descr": "Executes a single buttons read on TM/GN LED driver",
     "fn": "NULL);",
     "file": "driver/drv_tm1637.c",
     "requires": "",
@@ -2323,8 +2395,8 @@
   },
   {
     "name": "TMGN_SetupButtons",
-    "args": "CMD_TMGN_SetupButtons",
-    "descr": "",
+    "args": "[Interval]",
+    "descr": "Setups periodic buttons read on TM/GN LED driver",
     "fn": "NULL);",
     "file": "driver/drv_tm1637.c",
     "requires": "",
@@ -2332,7 +2404,7 @@
   },
   {
     "name": "TMGN_Test",
-    "args": "CMD_TM1637_Test",
+    "args": "",
     "descr": "",
     "fn": "NULL);",
     "file": "driver/drv_tm_gn_display_shared.c",

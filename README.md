@@ -20,6 +20,7 @@ See our guides in Russian: [BK7231N/T34](https://www.v-elite.ru/t34), and [BL602
 
 If you want to get some generic information about BK7231 modules, available datasheets, pinout, peripherals, [consult our docs topic](https://www.elektroda.com/rtvforum/topic3951016.html).
 
+
 # [Supported Devices/Templates List](https://openbekeniot.github.io/webapp/devicesList.html) Now with 500+ entries! (Get 🏆[free SD Card](https://www.elektroda.com/rtvforum/topic3950844.html)🏆 for submitting new one!)
 We have our own interactive devices database that is maintained by users.
 The database is also accessible from inside our firmware (but requires internet connection to fetch).
@@ -62,6 +63,7 @@ OpenBeken features:
 - Advanced and custom drivers like [synchronized PWM groups with configurable dead time](https://www.elektroda.com/rtvforum/topic4025665.html)
 - WS2812B support, see [scripting tutorial](https://www.elektroda.com/rtvforum/topic4036716.html)
 - LFS and REST API allows you to create and host a custom HTML+CSS+JS page on device with a custom GUI/display of channels/TuyaMCU dpIDs, see [tutorial](https://www.elektroda.com/rtvforum/topic3971355.html) and see [sample page](https://www.elektroda.com/rtvforum/viewtopic.php?p=20932186#20932186)
+- can control 'smart lab organiser drawers' with a custom Drawers driver, see [full presentation](https://www.elektroda.com/rtvforum/topic4054134.html)
 - Can run on Windows with device simulator/schematic drawer, see [tutorial](https://www.elektroda.com/rtvforum/topic4046056.html)
 - and much more
 
