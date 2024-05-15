@@ -420,6 +420,34 @@ void Test_TuyaMCU_Basic() {
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 	SIM_ClearMQTTHistory();
 
+
+
+	// check tuyamcu inversion
+
+	CMD_ExecuteCommand("setChannel 15 0", 0);
+	// This will map TuyaMCU fnID 2 of type Value to channel 15 with inverse
+	// [dpId][varType][channelID][bDPCache-Optional][mult-optional][bInverse]
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 2 val 15 0 1 1", 0);
+	SELFTEST_ASSERT_CHANNEL(15, 0);
+	// This packet sets fnID 2 of type Value to 100
+	CMD_ExecuteCommand("uartFakeHex 55AA0307000802020004000000647D", 0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(1000, false);
+	// Now, channel 15 should be set to negated 100. so 0
+	SELFTEST_ASSERT_CHANNEL(15, 0);
+	// and disable mult
+	CMD_ExecuteCommand("setChannel 15 0", 0);
+	// This will map TuyaMCU fnID 2 of type Value to channel 15 with no inverse
+	// [dpId][varType][channelID][bDPCache-Optional][mult-optional][bInverse]
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 2 val 15 0 1 0", 0);
+	SELFTEST_ASSERT_CHANNEL(15, 0);
+	// This packet sets fnID 2 of type Value to 100
+	CMD_ExecuteCommand("uartFakeHex 55AA0307000802020004000000647D", 0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(1000, false);
+	// Now, channel 15 should be set to  100
+	SELFTEST_ASSERT_CHANNEL(15, 100);
+
 	SIM_ClearUART();
 
 
