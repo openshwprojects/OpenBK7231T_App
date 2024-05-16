@@ -6,7 +6,7 @@ all:
 	cd $(PWD)/../../platforms/$(TARGET_PLATFORM)/toolchain/$(TUYA_APPS_BUILD_PATH) && sh $(TUYA_APPS_BUILD_CMD) $(APP_NAME) $(APP_VERSION) $(TARGET_PLATFORM) $(USER_CMD)
 else
 
-######## Continue with custom simplified Makefile ########
+######## Continue with custom simplied Makefile ########
 
 # Use current folder name as app name
 APP_NAME ?= $(shell basename $(CURDIR))
@@ -42,23 +42,38 @@ ifdef GITHUB_ACTIONS
 endif
 	git commit -m "feat: update SDKs" && git push || echo "No changes to commit"
 
-# Consolidated symlink creation
-define create_symlink
+# Create symlink for App into SDK folder structure
+sdk/OpenBK7231T/apps/$(APP_NAME):
 	@echo Create symlink for $(APP_NAME) into sdk folder
-	ln -s "$(shell pwd)/" "$1"
-endef
+	ln -s "$(shell pwd)/" "sdk/OpenBK7231T/apps/$(APP_NAME)"
 
-sdk/OpenBK7231T/apps/$(APP_NAME): ; $(call create_symlink, sdk/OpenBK7231T/apps/$(APP_NAME))
-sdk/OpenBK7231N/apps/$(APP_NAME): ; $(call create_symlink, sdk/OpenBK7231N/apps/$(APP_NAME))
-sdk/OpenXR809/project/oxr_sharedApp/shared: ; $(call create_symlink, sdk/OpenXR809/project/oxr_sharedApp/shared)
-sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared: ; $(call create_symlink, sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared)
-sdk/OpenW800/sharedAppContainer/sharedApp: ; $(call create_symlink, sdk/OpenW800/sharedAppContainer/sharedApp)
-sdk/OpenW600/sharedAppContainer/sharedApp: ; $(call create_symlink, sdk/OpenW600/sharedAppContainer/sharedApp)
-sdk/OpenLN882H/project/OpenBeken/app: ; $(call create_symlink, sdk/OpenLN882H/project/OpenBeken/app)
+sdk/OpenBK7231N/apps/$(APP_NAME):
+	@echo Create symlink for $(APP_NAME) into sdk folder
+	ln -s "$(shell pwd)/" "sdk/OpenBK7231N/apps/$(APP_NAME)"
 
-# Compiler and linker flags for optimization
-CFLAGS += -Os -flto -s
-LDFLAGS += -flto --gc-sections
+sdk/OpenXR809/project/oxr_sharedApp/shared:
+	@echo Create symlink for $(APP_NAME) into sdk folder
+	ln -s "$(shell pwd)/" "sdk/OpenXR809/project/oxr_sharedApp/shared"
+
+sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared:
+	@echo Create symlink for $(APP_NAME) into sdk folder
+	ln -s "$(shell pwd)/" "sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared"
+
+sdk/OpenW800/sharedAppContainer/sharedApp:
+	@echo Create symlink for $(APP_NAME) into sdk folder
+	@mkdir "sdk/OpenW800/sharedAppContainer"
+	ln -s "$(shell pwd)/" "sdk/OpenW800/sharedAppContainer/sharedApp"
+
+sdk/OpenW600/sharedAppContainer/sharedApp:
+	@echo Create symlink for $(APP_NAME) into sdk folder
+	@mkdir -p "sdk/OpenW600/sharedAppContainer"
+	ln -s "$(shell pwd)/" "sdk/OpenW600/sharedAppContainer/sharedApp"
+
+sdk/OpenLN882H/project/OpenBeken/app:
+	@echo Create symlink for $(APP_NAME) into sdk folder
+	@mkdir -p "sdk/OpenLN882H/project/OpenBeken"
+	ln -s "$(shell pwd)/" "sdk/OpenLN882H/project/OpenBeken/app"
+
 
 # Build main binaries
 OpenBK7231T:
@@ -70,6 +85,7 @@ OpenBK7231N:
 sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q2:
 	cd sdk/OpenXR809/tools && wget -q "https://launchpad.net/gcc-arm-embedded/4.9/4.9-2015-q2-update/+download/gcc-arm-none-eabi-4_9-2015q2-20150609-linux.tar.bz2" && tar -xf *.tar.bz2 && rm -f *.tar.bz2
 
+	
 .PHONY: OpenXR809 build-XR809
 # Retry OpenXR809 a few times to account for calibration file issues
 RETRY = 3
@@ -133,7 +149,7 @@ OpenLN882H: submodules sdk/OpenLN882H/project/OpenBeken/app
 
 # clean .o files and output directory
 .PHONY: clean
-clean:
+clean: 
 	$(MAKE) -C sdk/OpenBK7231T/platforms/bk7231t/bk7231t_os APP_BIN_NAME=$(APP_NAME) USER_SW_VER=$(APP_VERSION) clean
 	$(MAKE) -C sdk/OpenBK7231N/platforms/bk7231n/bk7231n_os APP_BIN_NAME=$(APP_NAME) USER_SW_VER=$(APP_VERSION) clean
 	$(MAKE) -C sdk/OpenXR809/src clean
@@ -141,8 +157,6 @@ clean:
 	$(MAKE) -C sdk/OpenW800 clean
 	$(MAKE) -C sdk/OpenW600 clean
 	test -d ./sdk/OpenLN882H/build && cmake --build ./sdk/OpenLN882H/build --target clean
-	find . -name '*.o' -delete
-	find . -name '*.a' -delete
 
 # Add custom Makefile if required
 -include custom.mk
