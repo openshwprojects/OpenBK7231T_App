@@ -67,6 +67,7 @@ int http_fn_empty_url(http_request_t* request) {
 	return 0;
 }
 
+
 void postFormAction(http_request_t* request, char* action, char* value) {
 	//"<form action=\"cfg_pins\"><input type=\"submit\" value=\"Configure Module\"/></form>"
 	hprintf255(request, "<form action=\"%s\"><input type=\"submit\" value=\"%s\"/></form>", action, value);
@@ -150,6 +151,26 @@ int http_fn_testmsg(http_request_t* request) {
 	return 0;
 
 }
+
+int http_fn_reset_cfg(http_request_t* request) {
+	if (g_secondsElapsed > TIME_TO_RESET_CFG_AFTER_STARTUP) return 0;		// just to be safe
+	http_setup(request, httpMimeTypeHTML);
+	http_html_start(request, "Restore factory defaults");
+	poststr_h2(request, "Do you want to reset your device to factory defaults?");
+	hprintf255(request,"<h5>Since you inserted a wrong password more than %i times, you maybe want to reset your device to factory defaults?</h5>",FAILED_AUTH_ATTEMPTS);
+	extern int g_auth_fail; // defined in http_basic_auth
+	g_auth_fail=-1*(rand() % 10000 + 100 );		// we want a negative number from -10000 to -100 as a simple security measure
+	hprintf255(request, "<form action=\"\"  onsubmit=\"return prompt('Do you really want to reset config and restart your device? Enter YES','no')=='YES';\">");
+	hprintf255(request, "<input type=\"hidden\" name=\"resetmagic\" value=\"%i\"/>", g_auth_fail);
+	hprintf255(request, "<input type=\"submit\" value=\"Reset module settings to defaults\"/></form>");
+	hprintf255(request, "<form action=\"\">");
+	hprintf255(request, "<input type=\"hidden\" name=\"authfailcont\" value=\"%i\"/>", g_auth_fail);
+	hprintf255(request, "<input type=\"submit\" value=\"Just retry - I know the password\"/></form>");
+	poststr(request, htmlBodyEnd);		// don't use html_end, this will reload page after some seconds making this page at least hard to use ...
+	poststr(request, NULL);
+	return 0;
+}
+
 
 // bit mask telling which channels are hidden from HTTP
 // If given bit is set, then given channel is hidden

@@ -16,6 +16,7 @@ extern const char htmlHeadMeta[];
 extern const char htmlFooterReturnToMainPage[];
 extern const char htmlFooterRefreshLink[];
 extern const char htmlFooterReturnToCfgOrMainPage[];
+extern const char htmlBodyEnd[];
 
 extern const char* htmlPinRoleNames[];
 

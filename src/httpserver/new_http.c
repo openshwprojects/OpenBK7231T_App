@@ -12,7 +12,6 @@
 #include "../base64/base64.h"
 #include "http_basic_auth.h"
 
-
 // define the feature ADDLOGF_XXX will use
 #define LOG_FEATURE LOG_FEATURE_HTTP
 
@@ -737,7 +736,18 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	}
 
 	if (http_basic_auth_run(request) == HTTP_BASIC_AUTH_FAIL) {
-		return 0;
+		if (g_auth_fail>-99 || g_secondsElapsed > TIME_TO_RESET_CFG_AFTER_STARTUP) return 0; //-99 is our "magic" to allow reset
+		if (http_getArgInteger(request->url, "resetmagic") == g_auth_fail){
+			CFG_SetDefaultConfig();
+			CFG_Save_IfThereArePendingChanges();
+			addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "Going to call HAL_RebootModule\r\n");
+			HAL_RebootModule();
+		}
+		if (http_getArgInteger(request->url, "authfailcont") == g_auth_fail) {
+			g_auth_fail=0;
+			return http_basic_auth_unauth(request); 
+		}
+		return http_fn_reset_cfg(request);
 	}
 
 	if (http_checkUrlBase(urlStr, "")) return http_fn_empty_url(request);
