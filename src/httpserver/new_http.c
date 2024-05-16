@@ -9,6 +9,7 @@
 #include "../new_cfg.h"
 #include "../ota/ota.h"
 #include "../hal/hal_wifi.h"
+#include "../hal/hal_generic.h"		// for HAL_RebootModule();
 #include "../base64/base64.h"
 #include "http_basic_auth.h"
 
