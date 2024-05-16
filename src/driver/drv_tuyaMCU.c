@@ -1075,25 +1075,25 @@ void TuyaMCU_ForcePublishChannelValues() {
 // same as above but merged
 // backlog ntp_timeZoneOfs 2; addRepeatingEvent 10 -1 uartSendHex 55AA0008000007; setChannelType 1 temperature_div10; setChannelType 2 humidity; linkTuyaMCUOutputToChannel 1 1; linkTuyaMCUOutputToChannel 2 2; addRepeatingEvent 10 -1 tuyaMcu_sendCurTime
 //
-void TuyaMCU_ApplyMapping(tuyaMCUMapping_t* mapping, int fnID, int value) {
+void TuyaMCU_ApplyMapping(tuyaMCUMapping_t* mapping, int dpID, int value) {
 	int mappedValue = value;
 
 	// hardcoded values
-	if (fnID == g_tuyaMCUled_id_power) {
+	if (dpID == g_tuyaMCUled_id_power) {
 		LED_SetEnableAll(value);
 	}
-	if (fnID == g_tuyaMCUled_id_cw_temperature) {
+	if (dpID == g_tuyaMCUled_id_cw_temperature) {
 		float temperatureRange01 = 1.0f - ((value - 10) / 980.0f);
 		LED_SetTemperature0to1Range(temperatureRange01);
 	}
-	if (fnID == g_tuyaMCUled_id_cw_brightness) {
+	if (dpID == g_tuyaMCUled_id_cw_brightness) {
 		// TuyaMCU sends in 0-1000 range, we need 0-100
 		LED_SetDimmerForDisplayOnly(value*0.1f);
 	}
 
 
 	if (mapping == 0) {
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "ApplyMapping: id %i (val %i) not mapped\n", fnID, value);
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "ApplyMapping: id %i (val %i) not mapped\n", dpID, value);
 		return;
 	}
 	if (mapping->channel == -1) {
@@ -1123,7 +1123,7 @@ void TuyaMCU_ApplyMapping(tuyaMCUMapping_t* mapping, int fnID, int value) {
 	}
 
 	if (value != mappedValue) {
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "ApplyMapping: mapped dp %i value %d to %d\n", fnID, value, mappedValue);
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "ApplyMapping: mapped dp %i value %d to %d\n", dpID, value, mappedValue);
 	}
 
 	mapping->prevValue = mappedValue;

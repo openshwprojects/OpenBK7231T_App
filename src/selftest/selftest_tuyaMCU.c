@@ -14,10 +14,10 @@ void Test_TuyaMCU_RawAccess() {
 
 	CFG_SetFlag(OBK_FLAG_TUYAMCU_STORE_RAW_DATA, 1);
 
-	// This will map TuyaMCU fnID 2 of type Value to channel 15
+	// This will map TuyaMCU dpID 2 of type Value to channel 15
 	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 2 val 15", 0);
 	SELFTEST_ASSERT_CHANNEL(15, 0);
-	// This packet sets fnID 2 of type Value to 100
+	// This packet sets dpID 2 of type Value to 100
 	CMD_ExecuteCommand("uartFakeHex 55AA0307000802020004000000647D", 0);
 
 
@@ -29,7 +29,7 @@ void Test_TuyaMCU_RawAccess() {
 
 	SIM_ClearMQTTHistory();
 
-	// This packet sets fnID 2 of type Value to 90
+	// This packet sets dpID 2 of type Value to 90
 	CMD_ExecuteCommand("uartFakeHex 55AA03070008020200040000005A73", 0);
 	// above command will just put into buffer - need at least a frame to parse it
 	Sim_RunFrames(1000, false);
@@ -93,11 +93,11 @@ void Test_TuyaMCU_Mult_Internal(float mul) {
 	CFG_SetFlag(OBK_FLAG_TUYAMCU_STORE_RAW_DATA, 1);
 
 	char cmd[256];
-	// This will map TuyaMCU fnID 2 of type Value to channel 15 and mult %f
+	// This will map TuyaMCU dpID 2 of type Value to channel 15 and mult %f
 	sprintf(cmd,"linkTuyaMCUOutputToChannel 2 val 15 0 %f",mul);
 	CMD_ExecuteCommand(cmd, 0);
 	SELFTEST_ASSERT_CHANNEL(15, 0);
-	// This packet sets fnID 2 of type Value to 100
+	// This packet sets dpID 2 of type Value to 100
 	CMD_ExecuteCommand("uartFakeHex 55AA0307000802020004000000647D", 0);
 
 
@@ -109,7 +109,7 @@ void Test_TuyaMCU_Mult_Internal(float mul) {
 
 	SIM_ClearMQTTHistory();
 
-	// This packet sets fnID 2 of type Value to 90
+	// This packet sets dpID 2 of type Value to 90
 	CMD_ExecuteCommand("uartFakeHex 55AA03070008020200040000005A73", 0);
 	// above command will just put into buffer - need at least a frame to parse it
 	Sim_RunFrames(1000, false);
@@ -176,31 +176,31 @@ void Test_TuyaMCU_Basic() {
 
 	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
 
-	// This will map TuyaMCU fnID 2 of type Value to channel 15
+	// This will map TuyaMCU dpID 2 of type Value to channel 15
 	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 2 val 15", 0);
 	SELFTEST_ASSERT_CHANNEL(15, 0);
-	// This packet sets fnID 2 of type Value to 100
+	// This packet sets dpID 2 of type Value to 100
 	CMD_ExecuteCommand("uartFakeHex 55AA0307000802020004000000647D", 0);
 	// above command will just put into buffer - need at least a frame to parse it
 	Sim_RunFrames(1000, false);
 	// Now, channel 15 should be set to 100...
 	SELFTEST_ASSERT_CHANNEL(15, 100);
 
-	// This packet sets fnID 2 of type Value to 90
+	// This packet sets dpID 2 of type Value to 90
 	CMD_ExecuteCommand("uartFakeHex 55AA03070008020200040000005A73", 0);
 	// above command will just put into buffer - need at least a frame to parse it
 	Sim_RunFrames(1000, false);
 	// Now, channel 15 should be set to 90...
 	SELFTEST_ASSERT_CHANNEL(15, 90);
 
-	// This packet sets fnID 2 of type Value to 110
+	// This packet sets dpID 2 of type Value to 110
 	CMD_ExecuteCommand("uartFakeHex 55AA03070008020200040000006E87", 0);
 	// above command will just put into buffer - need at least a frame to parse it
 	Sim_RunFrames(1000, false);
 	// Now, channel 15 should be set to 110...
 	SELFTEST_ASSERT_CHANNEL(15, 110);
 
-	// This packet sets fnID 2 of type Value to 120
+	// This packet sets dpID 2 of type Value to 120
 	CMD_ExecuteCommand("uartFakeHex 55AA03070008020200040000007891", 0);
 	// above command will just put into buffer - need at least a frame to parse it
 	Sim_RunFrames(1000, false);
@@ -425,11 +425,11 @@ void Test_TuyaMCU_Basic() {
 	// check tuyamcu inversion
 
 	CMD_ExecuteCommand("setChannel 15 0", 0);
-	// This will map TuyaMCU fnID 2 of type Value to channel 15 with inverse
+	// This will map TuyaMCU dpID 2 of type Value to channel 15 with inverse
 	// [dpId][varType][channelID][bDPCache-Optional][mult-optional][bInverse]
 	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 2 val 15 0 1 1", 0);
 	SELFTEST_ASSERT_CHANNEL(15, 0);
-	// This packet sets fnID 2 of type Value to 100
+	// This packet sets dpID 2 of type Value to 100
 	CMD_ExecuteCommand("uartFakeHex 55AA0307000802020004000000647D", 0);
 	// above command will just put into buffer - need at least a frame to parse it
 	Sim_RunFrames(1000, false);
@@ -437,11 +437,11 @@ void Test_TuyaMCU_Basic() {
 	SELFTEST_ASSERT_CHANNEL(15, 0);
 	// and disable inversion
 	CMD_ExecuteCommand("setChannel 15 0", 0);
-	// This will map TuyaMCU fnID 2 of type Value to channel 15 with no inverse
+	// This will map TuyaMCU dpID 2 of type Value to channel 15 with no inverse
 	// [dpId][varType][channelID][bDPCache-Optional][mult-optional][bInverse]
 	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 2 val 15 0 1 0", 0);
 	SELFTEST_ASSERT_CHANNEL(15, 0);
-	// This packet sets fnID 2 of type Value to 100
+	// This packet sets dpID 2 of type Value to 100
 	CMD_ExecuteCommand("uartFakeHex 55AA0307000802020004000000647D", 0);
 	// above command will just put into buffer - need at least a frame to parse it
 	Sim_RunFrames(1000, false);
@@ -451,12 +451,12 @@ void Test_TuyaMCU_Basic() {
 	// now try multiplier
 
 	CMD_ExecuteCommand("setChannel 15 0", 0);
-	// This will map TuyaMCU fnID 2 of type Value to channel 15 with no inverse
+	// This will map TuyaMCU dpID 2 of type Value to channel 15 with no inverse
 	// 10 is multiplier
 	// [dpId][varType][channelID][bDPCache-Optional][mult-optional][bInverse]
 	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 2 val 15 0 10 0", 0);
 	SELFTEST_ASSERT_CHANNEL(15, 0);
-	// This packet sets fnID 2 of type Value to 100
+	// This packet sets dpID 2 of type Value to 100
 	CMD_ExecuteCommand("uartFakeHex 55AA0307000802020004000000647D", 0);
 	// above command will just put into buffer - need at least a frame to parse it
 	Sim_RunFrames(1000, false);
