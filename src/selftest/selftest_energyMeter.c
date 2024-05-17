@@ -14,8 +14,14 @@ void Test_EnergyMeter_Basic() {
 	CMD_ExecuteCommand("SetupTestPower 0 0 0 0", 0);
 
 	Sim_RunSeconds(10, false);
+	SELFTEST_ASSERT_EXPRESSION("$voltage", 0);
+	SELFTEST_ASSERT_EXPRESSION("$current", 0);
+	SELFTEST_ASSERT_EXPRESSION("$power", 0);
 	CMD_ExecuteCommand("SetupTestPower 230 0.26 60 0", 0);
 	Sim_RunSeconds(10, false);
+	SELFTEST_ASSERT_EXPRESSION("$voltage", 230);
+	SELFTEST_ASSERT_EXPRESSION("$current", 0.26f);
+	SELFTEST_ASSERT_EXPRESSION("$power", 60);
 
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/voltage/get", 230.0f, false);
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/current/get", 0.26f, false);
@@ -25,6 +31,9 @@ void Test_EnergyMeter_Basic() {
 
 	CMD_ExecuteCommand("SetupTestPower 241 0.36 80 0", 0);
 	Sim_RunSeconds(10, false);
+	SELFTEST_ASSERT_EXPRESSION("$voltage", 241);
+	SELFTEST_ASSERT_EXPRESSION("$current", 0.36f);
+	SELFTEST_ASSERT_EXPRESSION("$power", 80);
 
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/voltage/get", 241.0f, false);
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/current/get", 0.36f, false);
@@ -34,6 +43,10 @@ void Test_EnergyMeter_Basic() {
 
 	CMD_ExecuteCommand("SetupTestPower 221 0.46 70 0", 0);
 	Sim_RunSeconds(10, false);
+	SELFTEST_ASSERT_EXPRESSION("$voltage", 221);
+	SELFTEST_ASSERT_EXPRESSION("$current", 0.46f);
+	SELFTEST_ASSERT_EXPRESSION("$power", 70);
+
 
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/voltage/get", 221.0f, false);
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/current/get", 0.46f, false);

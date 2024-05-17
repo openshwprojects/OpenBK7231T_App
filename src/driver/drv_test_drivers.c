@@ -24,7 +24,7 @@ commandResult_t TestPower_Setup(const void* context, const char* cmd, const char
 	base_c = Tokenizer_GetArgFloat(1);
 	base_p = Tokenizer_GetArgFloat(2);
 	bAllowRandom = Tokenizer_GetArgInteger(3);
-
+	// SetupTestPower 230 0.23 60 
 
 	return CMD_RES_OK;
 }
@@ -32,8 +32,8 @@ commandResult_t TestPower_Setup(const void* context, const char* cmd, const char
 void Test_Power_Init(void) {
     BL_Shared_Init();
 
-	//cmddetail:{"name":"SetupTestPower","args":"",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:{"name":"SetupTestPower","args":"[fakeVoltage] [FakeCurrent] [FakePower] [bAllowRandom]",
+	//cmddetail:"descr":"Starts the fake power metering driver",
 	//cmddetail:"fn":"TestPower_Setup","file":"driver/drv_test_drivers.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetupTestPower", TestPower_Setup, NULL);
