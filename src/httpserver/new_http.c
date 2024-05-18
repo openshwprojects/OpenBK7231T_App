@@ -9,9 +9,12 @@
 #include "../new_cfg.h"
 #include "../ota/ota.h"
 #include "../hal/hal_wifi.h"
+#if ENABLE_OBK_AUTHFAIL_CONFIGRESET
 #include "../hal/hal_generic.h"		// for HAL_RebootModule();
+#endif
 #include "../base64/base64.h"
 #include "http_basic_auth.h"
+
 
 // define the feature ADDLOGF_XXX will use
 #define LOG_FEATURE LOG_FEATURE_HTTP
@@ -737,7 +740,12 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	}
 
 	if (http_basic_auth_run(request) == HTTP_BASIC_AUTH_FAIL) {
-		if (g_auth_fail>-99 || g_secondsElapsed > TIME_TO_RESET_CFG_AFTER_STARTUP) return 0; //-99 is our "magic" to allow reset
+#if ENABLE_OBK_AUTHFAIL_CONFIGRESET
+		if (g_auth_fail>-99 || g_secondsElapsed > TIME_TO_RESET_CFG_AFTER_STARTUP){  //-99 is our "magic" to allow reset
+#endif
+			return 0;
+#if ENABLE_OBK_AUTHFAIL_CONFIGRESET
+		}
 		if (http_getArgInteger(request->url, "resetmagic") == g_auth_fail){
 			CFG_SetDefaultConfig();
 			CFG_Save_IfThereArePendingChanges();
@@ -749,6 +757,7 @@ int HTTP_ProcessPacket(http_request_t* request) {
 			return http_basic_auth_unauth(request); 
 		}
 		return http_fn_reset_cfg(request);
+#endif
 	}
 
 	if (http_checkUrlBase(urlStr, "")) return http_fn_empty_url(request);

@@ -15,11 +15,18 @@
 //ENABLE_DRIVER_TUYAMCU - Enable support for TuyaMCU and tmSensor
 
 
-// default time to reset SFG to defaults after startup
+// settings for possible reset device to defaults after unsuccessful auth retries
+// will only work for small time window after a (re)start of a device (configured below)
+// enable (or disable) the feature
+#define ENABLE_OBK_AUTHFAIL_CONFIGRESET	1 
+
+// default time to reset CFG to defaults after startup
 // 180 seconds = 3 minutes should be enough
 #define TIME_TO_RESET_CFG_AFTER_STARTUP	180
 // after this amount of failed auths, display page to reset config (during first TIME_TO_RESET_CFG_AFTER_STARTUP seconds)
 #define FAILED_AUTH_ATTEMPTS		5
+
+
 
 #if PLATFORM_XR809
 

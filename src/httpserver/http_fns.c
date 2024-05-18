@@ -67,7 +67,6 @@ int http_fn_empty_url(http_request_t* request) {
 	return 0;
 }
 
-
 void postFormAction(http_request_t* request, char* action, char* value) {
 	//"<form action=\"cfg_pins\"><input type=\"submit\" value=\"Configure Module\"/></form>"
 	hprintf255(request, "<form action=\"%s\"><input type=\"submit\" value=\"%s\"/></form>", action, value);
@@ -152,15 +151,16 @@ int http_fn_testmsg(http_request_t* request) {
 
 }
 
+#if ENABLE_OBK_AUTHFAIL_CONFIGRESET
 int http_fn_reset_cfg(http_request_t* request) {
 	if (g_secondsElapsed > TIME_TO_RESET_CFG_AFTER_STARTUP) return 0;		// just to be safe
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Restore factory defaults");
 	poststr_h2(request, "Do you want to reset your device to factory defaults?");
-	hprintf255(request,"<h5>Since you inserted a wrong password more than %i times, you maybe want to reset your device to factory defaults?</h5>",FAILED_AUTH_ATTEMPTS);
+	hprintf255(request,"<h5>If you lost your password, you can reset your device to factory defaults</h5>");
 	extern int g_auth_fail; // defined in http_basic_auth
-	g_auth_fail=-1*(rand() % 10000 + 100 );		// we want a negative number from -10000 to -100 as a simple security measure
-	hprintf255(request, "<form action=\"\"  onsubmit=\"return prompt('Do you really want to reset config and restart your device? Enter YES','no')=='YES';\">");
+	g_auth_fail=-1*(rand() % 10000 + 100 );		// we want a negative number from -10000 to -100 (as a simple security measure)
+	hprintf255(request, "<form action=\"\"  onsubmit=\"return prompt('To erase the configuration and restart your enter YES','no')=='YES';\">");
 	hprintf255(request, "<input type=\"hidden\" name=\"resetmagic\" value=\"%i\"/>", g_auth_fail);
 	hprintf255(request, "<input type=\"submit\" value=\"Reset module settings to defaults\"/></form>");
 	hprintf255(request, "<form action=\"\">");
@@ -170,7 +170,7 @@ int http_fn_reset_cfg(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
-
+#endif
 
 // bit mask telling which channels are hidden from HTTP
 // If given bit is set, then given channel is hidden
@@ -1268,7 +1268,18 @@ int http_fn_cfg_wifi(http_request_t* request) {
 	poststr_h2(request, "Web Authentication");
 	poststr(request, "<p>Enabling web authentication will protect this web interface and API using basic HTTP authentication. Username is always <b>admin</b>.</p>");
 	hprintf255(request, "<div><input type=\"checkbox\" name=\"web_admin_password_enabled\" id=\"web_admin_password_enabled\" value=\"1\"%s>", (web_password_enabled > 0 ? " checked" : ""));
-	poststr(request, "<label for=\"web_admin_password_enabled\">Enable web authentication</label></div>");
+	poststr(request, "<label for=\"web_admin_password_enabled\">Enable web authentication</label>");
+#if ENABLE_OBK_AUTHFAIL_CONFIGRESET
+	poststr(request, "<span style=\"float:right;\">");
+	poststr(request, "<input type=\"checkbox\" name=\"resetDis\" id=\"resetDis\" ");
+	// this checkbos is probaly hard to understand, so I added some explanation
+	// but this will take some valuable bytes of size, so it might be deleted ...
+	poststr(request, "title='If you lost web password, configuration can be reset to factory defaults during the first minutes after startup. ");
+	poststr(request, "If you have security concerns, this can be disabled here. But be sure, not to lose your password!' ");
+	hprintf255(request, "value=\"1\"%s>", (CFG_HasFlag(OBK_FLAG_RESETCFG_DISABLED) > 0 ? " checked" : ""));	
+	poststr(request, "<label for=\"resetDis\">Disable possible reset of configuration</label>");
+#endif
+	poststr(request, "</div>");
 	add_label_password_field(request, "Admin Password", "web_admin_password", CFG_GetWebPassword(), "");
 #endif
 	poststr(request, "<br><br>\
@@ -1352,15 +1363,26 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 		if (web_password_enabled > 0 && http_getArg(request->url, "web_admin_password", tmpA, sizeof(tmpA))) {
 			if (strlen(tmpA) < 5) {
 				poststr_h4(request, "Web password needs to be at least 5 characters long!");
-			} else {
+			} else if (strcmp(CFG_GetWebPassword(),tmpA) != 0){
 				poststr(request, "<p>Web password has been changed.</p>");
 				CFG_SetWebPassword(tmpA);
 			}
 		}
 	} else {
-		CFG_SetWebPassword("");
+		if (strcmp(CFG_GetWebPassword(),"") != 0){
+			CFG_SetWebPassword("");
+			poststr(request, "<p>Web password has been disabled.</p>");
+		 }
 	}
-#endif
+#if ENABLE_OBK_AUTHFAIL_CONFIGRESET
+	int dis_resetcfg = (http_getArg(request->url, "resetDis", tmpA, sizeof(tmpA))) ? 1 : 0;
+	if (dis_resetcfg != CFG_HasFlag(OBK_FLAG_RESETCFG_DISABLED)){
+		CFG_SetFlag(OBK_FLAG_RESETCFG_DISABLED, dis_resetcfg);
+		CFG_Save_IfThereArePendingChanges();
+		hprintf255(request, "<p>%sabled possible reset of configuration.</p>",dis_resetcfg==1 ? "Dis" : "En");
+	}
+#endif  // ENABLE_OBK_AUTHFAIL_CONFIGRESET
+#endif  // ALLOW_WEB_PASSWORD
 	CFG_Save_SetupTimer();
 	if (bChanged == 0) {
 		poststr(request, "<p>WiFi: No changes detected.</p>");
@@ -2621,7 +2643,7 @@ const char* g_obk_flagNames[] = {
 	"[TuyaMCU] Store raw data",
 	"[TuyaMCU] Store ALL data",
 	"[PWR] Invert AC dir",
-	"error",
+	"[HTTP] Disable password recovery (= clear configuration) directly after startup (please see documentation)",
 	"error",
 	"error",
 }; 

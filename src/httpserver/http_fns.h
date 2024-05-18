@@ -33,4 +33,6 @@ int http_fn_startup_command(http_request_t* request);
 int http_fn_cfg_generic(http_request_t* request);
 int http_fn_cfg_startup(http_request_t* request);
 int http_fn_cfg_dgr(http_request_t* request);
+#if ENABLE_OBK_AUTHFAIL_CONFIGRESET
 int http_fn_reset_cfg(http_request_t* request);
+#endif
