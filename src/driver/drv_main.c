@@ -274,6 +274,13 @@ static driver_t g_drivers[] = {
 		//drvdetail:"requires":""}
 	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_BMPI2C
+		//drvdetail:{"name":"BMPI2C",
+		//drvdetail:"title":"TODO",
+		//drvdetail:"descr":"Driver for BMP085, BMP180, BMP280, BME280, BME68X sensors with I2C interface.",
+		//drvdetail:"requires":""}
+	{ "BMPI2C", BMPI2C_Init, BMPI2C_OnEverySecond, BMPI2C_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+#endif
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	//drvdetail:{"name":"CHT8305",
 	//drvdetail:"title":"TODO",
