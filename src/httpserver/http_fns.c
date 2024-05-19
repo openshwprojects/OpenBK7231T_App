@@ -2010,6 +2010,8 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	}
 	if (1) {
 		//use -1 for channel as these don't correspond to channels
+		dev_info = hass_init_sensor_device_info(HASS_TEMP, -1, -1, -1, 1);
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		dev_info = hass_init_sensor_device_info(HASS_RSSI, -1, -1, -1, 1);
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
