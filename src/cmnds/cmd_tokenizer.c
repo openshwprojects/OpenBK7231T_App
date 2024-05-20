@@ -239,7 +239,7 @@ int Tokenizer_GetArgInteger(int i) {
 		sscanf(s, "%x", &ret);
 		return ret;
 	}
-#if (!PLATFORM_BEKEN && !WINDOWS)
+#if !ENABLE_EXPAND_CONSTANT
 	if(g_bAllowExpand && s[0] == '$') {
 		// constant
 		int channelIndex;
@@ -262,12 +262,12 @@ int Tokenizer_GetArgInteger(int i) {
 	return atoi(s);
 }
 float Tokenizer_GetArgFloat(int i) {
-#if !PLATFORM_BEKEN && !WINDOWS && !PLATFORM_BL602
+#if !ENABLE_EXPAND_CONSTANT
 	int channelIndex;
 #endif
 	const char *s;
 	s = g_args[i];
-#if (!PLATFORM_BEKEN && !WINDOWS && !PLATFORM_BL602)
+#if !ENABLE_EXPAND_CONSTANT
 	if(g_bAllowExpand && s[0] == '$') {
 		// constant
 		if(s[1] == 'C' && s[2] == 'H') {
