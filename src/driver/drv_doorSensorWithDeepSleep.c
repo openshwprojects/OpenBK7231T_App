@@ -22,11 +22,15 @@ static int setting_timeRequiredUntilDeepSleep = 60;
 static int g_noChangeTimePassed = 0;
 static int g_initialStateSent = 0;
 static int g_emergencyTimeWithNoConnection = 0;
+static int setting_automaticWakeUpAfterSleepTime = 0;
 
 #define EMERGENCY_TIME_TO_SLEEP_WITHOUT_MQTT 60 * 5
 
 int Simulator_GetNoChangeTimePassed() {
 	return g_noChangeTimePassed;
+}
+int Simulator_GetDoorSennsorAutomaticWakeUpAfterSleepTime() {
+	return setting_automaticWakeUpAfterSleepTime;
 }
 // addEventHandler OnClick 8 DSTime +100
 commandResult_t DoorDeepSleep_SetTime(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -49,6 +53,9 @@ commandResult_t DoorDeepSleep_SetTime(const void* context, const char* cmd, cons
 	else {
 		setting_timeRequiredUntilDeepSleep = Tokenizer_GetArgInteger(0);
 	}
+	if (Tokenizer_GetArgsCount() > 1) {
+		setting_automaticWakeUpAfterSleepTime = Tokenizer_GetArgInteger(1);
+	}
 
 
 	return CMD_RES_OK;
@@ -57,7 +64,7 @@ void DoorDeepSleep_Init() {
 	// 0 seconds since last change
 	g_noChangeTimePassed = 0;
 
-	//cmddetail:{"name":"DSTime","args":"[timeSeconds]",
+	//cmddetail:{"name":"DSTime","args":"[timeSeconds][optionalAutoWakeUpTimeSeconds]",
 	//cmddetail:"descr":"DoorSensor driver configuration command. Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival. You can also use this to extend current awake time (at runtime) with syntax: 'DSTime +10', this will make device stay awake 10 seconds longer. You can also restart current value of awake counter by 'DSTime clear', this will make counter go from 0 again.",
 	//cmddetail:"fn":"DoorDeepSleep_SetTime","file":"drv/drv_doorSensorWithDeepSleep.c","requires":"",
 	//cmddetail:"examples":""}
@@ -105,12 +112,14 @@ void DoorDeepSleep_OnEverySecond() {
 			// (so if door sensor is low, it will wake up on rising edge,
 			// if door sensor is high, it will wake up on falling)
 			g_bWantPinDeepSleep = true;
+			g_pinDeepSleepWakeUp = setting_automaticWakeUpAfterSleepTime;
 		}
 	}
 	else {
 		g_emergencyTimeWithNoConnection++;
 		if (g_emergencyTimeWithNoConnection >= EMERGENCY_TIME_TO_SLEEP_WITHOUT_MQTT) {
 			g_bWantPinDeepSleep = true;
+			g_pinDeepSleepWakeUp = setting_automaticWakeUpAfterSleepTime;
 		}
 	}
 }

@@ -4,7 +4,7 @@
 #include "../driver/drv_ntp.h"
 
 int Simulator_GetNoChangeTimePassed();
-
+int Simulator_GetDoorSennsorAutomaticWakeUpAfterSleepTime();
 
 const char *demo_noSleeper =
 "again:\n"
@@ -21,6 +21,18 @@ void Test_DoorSensor() {
 
 	CMD_ExecuteCommand("startDriver DoorSensor", 0);
 	CMD_ExecuteCommand("DSTime 100", 0);
+	SELFTEST_ASSERT(Simulator_GetDoorSennsorAutomaticWakeUpAfterSleepTime() == 0);
+	CMD_ExecuteCommand("DSTime 100 1234", 0);
+	SELFTEST_ASSERT(Simulator_GetDoorSennsorAutomaticWakeUpAfterSleepTime() == 1234);
+	// no argument will not overwrite it
+	CMD_ExecuteCommand("DSTime 200", 0);
+	SELFTEST_ASSERT(Simulator_GetDoorSennsorAutomaticWakeUpAfterSleepTime() == 1234);
+	CMD_ExecuteCommand("DSTime 100 345", 0);
+	SELFTEST_ASSERT(Simulator_GetDoorSennsorAutomaticWakeUpAfterSleepTime() == 345);
+	CMD_ExecuteCommand("DSTime 200 0", 0);
+	SELFTEST_ASSERT(Simulator_GetDoorSennsorAutomaticWakeUpAfterSleepTime() == 0);
+
+
 	// start state
 	CHANNEL_Set(1, 0, 0);
 
