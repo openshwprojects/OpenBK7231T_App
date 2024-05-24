@@ -18,11 +18,11 @@
 #include "../hal/hal_adc.h"
 #include "../ota/ota.h"
 
-static int setting_timeRequiredUntilDeepSleep = 60;
-static int g_noChangeTimePassed = 0;
-static int g_emergencyTimeWithNoConnection = 0;
-static int g_lastEventState = -1;
+static int g_noChangeTimePassed = 0; // time without change. Every event in any of the doorsensor channels resets it.
+static int g_emergencyTimeWithNoConnection = 0; // time without connection to MQTT. Extends the interval till Deep Sleep until connection is established or EMERGENCY_TIME_TO_SLEEP_WITHOUT_MQTT
+static int g_lastEventState = -1; // last state of doorsensor channel
 static int setting_automaticWakeUpAfterSleepTime = 0;
+static int setting_timeRequiredUntilDeepSleep = 60;
 
 #define EMERGENCY_TIME_TO_SLEEP_WITHOUT_MQTT 60 * 5
 
@@ -85,7 +85,7 @@ void DoorDeepSleep_QueueNewEvents() {
 			int channel = g_cfg.pins.channels[i];
 			sprintf(sChannel, "%i/get", channel); // manually adding the suffix "/get" to the topic
 			// Explanation: I manually add "/get" suffix to the sChannel, because for some reason, 
-			// when queued messages are published through PuublishQueuedItems(), the  
+			// when queued messages are published through PublishQueuedItems(), the  
 			// functionality of appendding /get is disabled (in MQTT_PublishTopicToClient()), 
 			// and there is no flag to enforce it. 
 			// There is only a flag (OBK_PUBLISH_FLAG_FORCE_REMOVE_GET) to remove 
