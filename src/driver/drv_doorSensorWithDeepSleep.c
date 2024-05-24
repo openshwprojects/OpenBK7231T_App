@@ -85,7 +85,7 @@ void DoorDeepSleep_QueueNewEvents() {
 			int channel = g_cfg.pins.channels[i];
 			sprintf(sChannel, "%i/get", channel); // manually adding the suffix "/get" to the topic
 			// Explanation: I manually add "/get" suffix to the sChannel, because for some reason, 
-			// when queued messages are published through PublishQueuedItems(), the  
+			// when queued messages are published through PuublishQueuedItems(), the  
 			// functionality of appendding /get is disabled (in MQTT_PublishTopicToClient()), 
 			// and there is no flag to enforce it. 
 			// There is only a flag (OBK_PUBLISH_FLAG_FORCE_REMOVE_GET) to remove 
