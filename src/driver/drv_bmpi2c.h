@@ -13,6 +13,8 @@
 #define I2C_ALT_ADDR            0x76 << 1
 
 #define BMP180_CHIP_ID          0x55
+#define BMP280_CHIP_ID_S1       0x56
+#define BMP280_CHIP_ID_S2       0x57
 #define BMP280_CHIP_ID          0x58
 #define BME280_CHIP_ID          0x60
 #define BME68X_CHIP_ID          0x61
@@ -479,6 +481,9 @@ bool BMP_BasicInit()
 		ADDLOG_INFO(LOG_FEATURE_SENSOR, "Sensor version: %#02x", ver);
 		ReadCalibData_BMP180();
 		return true;
+	// 0x56 and 0x57 are samples, 0x58 are mass production
+	case BMP280_CHIP_ID_S1:
+	case BMP280_CHIP_ID_S2:
 	case BMP280_CHIP_ID:
 		ADDLOG_INFO(LOG_FEATURE_SENSOR, "BMP280 detected!");
 		g_chipName = "BMP280";
