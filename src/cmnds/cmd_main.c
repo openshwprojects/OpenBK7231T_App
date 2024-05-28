@@ -276,7 +276,7 @@ static commandResult_t CMD_Echo(const void* context, const char* cmd, const char
 #else
 	// we want $CH40 etc expanded
 	Tokenizer_TokenizeString(args, TOKENIZER_ALTERNATE_EXPAND_AT_START | TOKENIZER_FORCE_SINGLE_ARGUMENT_MODE);
-	ADDLOG_INFO(LOG_FEATURE_CMD, Tokenizer_GetArgFrom(0));
+	ADDLOG_INFO(LOG_FEATURE_CMD, Tokenizer_GetArg(0));
 #endif
 
 	return CMD_RES_OK;
