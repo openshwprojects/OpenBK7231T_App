@@ -181,17 +181,21 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "IR",			DRV_IR_Init,		 NULL,						NULL, DRV_IR_RunFrame, NULL, NULL, false },
 #endif
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)	|| defined(PLATFORM_BL602)|| defined(PLATFORM_LN882H)
+#if ENABLE_DRIVER_DDP
 	//drvdetail:{"name":"DDP",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"DDP is a LED control protocol that is using UDP. You can use xLights or any other app to control OBK LEDs that way.",
 	//drvdetail:"requires":""}
 	{ "DDP",		DRV_DDP_Init,		NULL,						DRV_DDP_AppendInformationToHTTPIndexPage, DRV_DDP_RunFrame, DRV_DDP_Shutdown, NULL, false },
+#endif
+#if ENABLE_DRIVER_SSDP
 	//drvdetail:{"name":"SSDP",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"SSDP is a discovery protocol, so BK devices can show up in, for example, Windows network section",
 	//drvdetail:"requires":""}
 	{ "SSDP",		DRV_SSDP_Init,		DRV_SSDP_RunEverySecond,	NULL, DRV_SSDP_RunQuickTick, DRV_SSDP_Shutdown, NULL, false },
+#endif
+#if ENABLE_TASMOTADEVICEGROUPS
 	//drvdetail:{"name":"DGR",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Tasmota Device groups driver. See [forum example](https://www.elektroda.com/rtvforum/topic3925472.html) and [video tutorial](https://www.youtube.com/watch?v=e1xcq3OUR5M&ab_channel=Elektrodacom)",
@@ -268,10 +272,10 @@ static driver_t g_drivers[] = {
 	{ "BMP280", BMP280_Init, BMP280_OnEverySecond, BMP280_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_MAX72XX
-		//drvdetail:{"name":"MAX72XX",
-		//drvdetail:"title":"TODO",
-		//drvdetail:"descr":"MAX72XX LED matrix display driver with font and simple script interface. See [protocol explanation](https://www.elektroda.pl/rtvforum/viewtopic.php?p=18040628#18040628)",
-		//drvdetail:"requires":""}
+	//drvdetail:{"name":"MAX72XX",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"MAX72XX LED matrix display driver with font and simple script interface. See [protocol explanation](https://www.elektroda.pl/rtvforum/viewtopic.php?p=18040628#18040628)",
+	//drvdetail:"requires":""}
 	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, NULL, NULL, false },
 #endif
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
