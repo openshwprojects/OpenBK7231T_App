@@ -96,6 +96,9 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 	case PRESSURE_SENSOR:
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "pressure", index);
 		break;
+	case HASS_TEMP:
+		sprintf(uniq_id, "%s_temp", longDeviceName);
+		break;
 	case HASS_RSSI:
 		sprintf(uniq_id, "%s_rssi", longDeviceName);
 		break;
@@ -280,6 +283,9 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 			break;
 		case ILLUMINANCE_SENSOR:
 			sprintf(g_hassBuffer, "Illuminance");
+			break;
+		case HASS_TEMP:
+			sprintf(g_hassBuffer, "Temperature");
 			break;
 		case HASS_RSSI:
 			sprintf(g_hassBuffer, "RSSI");
@@ -649,6 +655,13 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		cJSON_AddStringToObject(info->root, "val_tpl", g_template_lowMidHigh);
 
+		break;
+	case HASS_TEMP:
+		cJSON_AddStringToObject(info->root, "dev_cla", "temperature");
+		cJSON_AddStringToObject(info->root, "stat_t", "~/temp");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "°C");
+		cJSON_AddStringToObject(info->root, "entity_category", "diagnostic");
+		//cJSON_AddStringToObject(info->root, "icon_template", "mdi:access-point");
 		break;
 	case HASS_RSSI:
 		cJSON_AddStringToObject(info->root, "dev_cla", "signal_strength");

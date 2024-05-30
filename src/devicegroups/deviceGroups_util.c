@@ -1,8 +1,8 @@
 #include "deviceGroups_local.h"
 
-u32 DGR_GetMaskForItem(byte item)
+unsigned int DGR_GetMaskForItem(byte item)
 {
-	u32 mask = 0;
+	unsigned int mask = 0;
 	if (item == DGR_ITEM_LIGHT_BRI || item == DGR_ITEM_BRI_POWER_ON)
 		mask = DGR_SHARE_LIGHT_BRI;
 	else if (item == DGR_ITEM_POWER)
@@ -19,8 +19,8 @@ u32 DGR_GetMaskForItem(byte item)
 		mask = DGR_SHARE_EVENT;
 	return mask;
 }
-int DGR_IsItemInMask(byte item, u32 mask) {
-	u32 itemMask;
+int DGR_IsItemInMask(byte item, unsigned int mask) {
+	unsigned int itemMask;
 
 	itemMask = DGR_GetMaskForItem(item);
 
