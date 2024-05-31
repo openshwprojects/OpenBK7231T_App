@@ -419,6 +419,14 @@ void Test_TuyaMCU_Basic() {
 	// nothing is sent by OBK at that point
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 	SIM_ClearMQTTHistory();
+	// This command will calculate checksum as well - 0x3
+	// This will send wifi state 0x04
+	CMD_ExecuteCommand("tuyaMcu_sendCmd 0x03 04", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA 00 03 00 01 04 07");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	SIM_ClearMQTTHistory();
+
 
 
 
@@ -462,6 +470,8 @@ void Test_TuyaMCU_Basic() {
 	Sim_RunFrames(1000, false);
 	// Now, channel 15 should be set to  100*10
 	SELFTEST_ASSERT_CHANNEL(15, 100 * 10);
+
+
 
 
 	SIM_ClearUART();

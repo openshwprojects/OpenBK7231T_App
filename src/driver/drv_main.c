@@ -181,17 +181,21 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "IR",			DRV_IR_Init,		 NULL,						NULL, DRV_IR_RunFrame, NULL, NULL, false },
 #endif
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)	|| defined(PLATFORM_BL602)
+#if ENABLE_DRIVER_DDP
 	//drvdetail:{"name":"DDP",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"DDP is a LED control protocol that is using UDP. You can use xLights or any other app to control OBK LEDs that way.",
 	//drvdetail:"requires":""}
 	{ "DDP",		DRV_DDP_Init,		NULL,						DRV_DDP_AppendInformationToHTTPIndexPage, DRV_DDP_RunFrame, DRV_DDP_Shutdown, NULL, false },
+#endif
+#if ENABLE_DRIVER_SSDP
 	//drvdetail:{"name":"SSDP",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"SSDP is a discovery protocol, so BK devices can show up in, for example, Windows network section",
 	//drvdetail:"requires":""}
 	{ "SSDP",		DRV_SSDP_Init,		DRV_SSDP_RunEverySecond,	NULL, DRV_SSDP_RunQuickTick, DRV_SSDP_Shutdown, NULL, false },
+#endif
+#if ENABLE_TASMOTADEVICEGROUPS
 	//drvdetail:{"name":"DGR",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Tasmota Device groups driver. See [forum example](https://www.elektroda.com/rtvforum/topic3925472.html) and [video tutorial](https://www.youtube.com/watch?v=e1xcq3OUR5M&ab_channel=Elektrodacom)",
@@ -223,7 +227,8 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"DoorSensor is using deep sleep to preserve battery. This is used for devices without TuyaMCU, where BK deep sleep and wakeup on GPIO is used. This drives requires you to set a DoorSensor pin. Change on door sensor pin wakes up the device. If there are no changes for some time, device goes to sleep. See example [here](https://www.elektroda.com/rtvforum/topic3960149.html). If your door sensor does not wake up in certain pos, please use DSEdge command (try all 3 options, default is 2). ",
 	//drvdetail:"requires":""}
 	{ "DoorSensor",		DoorDeepSleep_Init,		DoorDeepSleep_OnEverySecond,	DoorDeepSleep_AppendInformationToHTTPIndexPage, NULL, NULL, DoorDeepSleep_OnChannelChanged, false },
-
+#endif
+#if ENABLE_DRIVER_ADCBUTTON
 	//drvdetail:{"name":"ADCButton",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This allows you to connect multiple buttons on single ADC pin. Each button must have a different resistor value, this works by probing the voltage on ADC from a resistor divider. You need to select AB_Map first. See forum post for [details](https://www.elektroda.com/rtvforum/viewtopic.php?p=20541973#20541973).",
@@ -268,10 +273,10 @@ static driver_t g_drivers[] = {
 	{ "BMP280", BMP280_Init, BMP280_OnEverySecond, BMP280_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_MAX72XX
-		//drvdetail:{"name":"MAX72XX",
-		//drvdetail:"title":"TODO",
-		//drvdetail:"descr":"MAX72XX LED matrix display driver with font and simple script interface. See [protocol explanation](https://www.elektroda.pl/rtvforum/viewtopic.php?p=18040628#18040628)",
-		//drvdetail:"requires":""}
+	//drvdetail:{"name":"MAX72XX",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"MAX72XX LED matrix display driver with font and simple script interface. See [protocol explanation](https://www.elektroda.pl/rtvforum/viewtopic.php?p=18040628#18040628)",
+	//drvdetail:"requires":""}
 	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_BMPI2C
