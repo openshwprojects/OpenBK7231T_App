@@ -619,6 +619,7 @@ int http_fn_index(http_request_t* request) {
 	if (bRawPWMs == 0 || bForceShowRGBCW || bForceShowRGB) {
 		int c_pwms;
 		int lm;
+		int c_realPwms = 0;
 
 		lm = LED_GetMode();
 
@@ -627,6 +628,7 @@ int http_fn_index(http_request_t* request) {
 		// Thanks to this users can turn for example RGB LED controller
 		// into high power 3-outputs single colors LED controller
 		PIN_get_Relay_PWM_Count(0, &c_pwms, 0);
+		c_realPwms = c_pwms;
 		if (bForceShowRGBCW) {
 			c_pwms = 5;
 		}
@@ -683,12 +685,15 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "<input  type=\"submit\" class='disp-none' value=\"Toggle Light\"/></form>");
 			poststr(request, "</td></tr>");
 		}
+		bool bShowCWForPixelAnim = false;
 #if ENABLE_DRIVER_PIXELANIM
 		if (DRV_IsRunning("PixelAnim")) {
+			if (c_realPwms == 2)
+				bShowCWForPixelAnim = true;
 			PixelAnim_CreatePanel(request);
 		}
 #endif
-		if (c_pwms == 2 || c_pwms >= 4) {
+		if (c_pwms == 2 || c_pwms >= 4 || bShowCWForPixelAnim) {
 			// TODO: temperature slider
 			int pwmValue;
 			const char* activeStr = "";
@@ -2268,6 +2273,19 @@ int http_fn_ha_cfg(http_request_t* request) {
 	return 0;
 }
 
+void runHTTPCommandInternal(http_request_t* request, const char *cmd) {
+	bool bEchoHack = strncmp(cmd, "echo", 4) == 0;
+	CMD_ExecuteCommand(cmd, COMMAND_FLAG_SOURCE_HTTP);
+#if ENABLE_TASMOTA_JSON
+	if (!bEchoHack) {
+		JSON_ProcessCommandReply(cmd, skipToNextWord(cmd), request, (jsonCb_t)hprintf255, COMMAND_FLAG_SOURCE_HTTP);
+	}
+	else {
+		const char *s = Tokenizer_GetArg(0);
+		poststr(request, s);
+	}
+#endif
+}
 int http_fn_cm(http_request_t* request) {
 	char tmpA[128];
 	char* long_str_alloced = 0;
@@ -2278,10 +2296,10 @@ int http_fn_cm(http_request_t* request) {
 	if (request->method == HTTP_GET) {
 		commandLen = http_getArg(request->url, "cmnd", tmpA, sizeof(tmpA));
 		//ADDLOG_INFO(LOG_FEATURE_HTTP, "Got here (GET) %s;%s;%d\n", request->url, tmpA, commandLen);
-        } else if (request->method == HTTP_POST || request->method == HTTP_PUT) {
+    } else if (request->method == HTTP_POST || request->method == HTTP_PUT) {
 		commandLen = http_getRawArg(request->bodystart, "cmnd", tmpA, sizeof(tmpA));
 		//ADDLOG_INFO(LOG_FEATURE_HTTP, "Got here (POST) %s;%s;%d\n", request->bodystart, tmpA, commandLen);
-        }
+    }
 	if (commandLen) {
 		if (commandLen > (sizeof(tmpA) - 5)) {
 			commandLen += 8;
@@ -2293,17 +2311,14 @@ int http_fn_cm(http_request_t* request) {
 					http_getRawArg(request->bodystart, "cmnd", long_str_alloced, commandLen);
 				}
 				CMD_ExecuteCommand(long_str_alloced, COMMAND_FLAG_SOURCE_HTTP);
-#if ENABLE_TASMOTA_JSON
-				JSON_ProcessCommandReply(long_str_alloced, skipToNextWord(long_str_alloced), request, (jsonCb_t)hprintf255, COMMAND_FLAG_SOURCE_HTTP);
-#endif
+
+				runHTTPCommandInternal(request, long_str_alloced);
+
 				free(long_str_alloced);
 			}
 		}
 		else {
-			CMD_ExecuteCommand(tmpA, COMMAND_FLAG_SOURCE_HTTP);
-#if ENABLE_TASMOTA_JSON
-			JSON_ProcessCommandReply(tmpA, skipToNextWord(tmpA), request, (jsonCb_t)hprintf255, COMMAND_FLAG_SOURCE_HTTP);
-#endif
+			runHTTPCommandInternal(request, tmpA);
 		}
 	}
 
