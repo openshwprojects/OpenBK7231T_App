@@ -273,7 +273,8 @@ void HAL_DisconnectFromWifi()
     bk_wlan_stop(STATION);
 }
 
-int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
+// setup openAP with key=NULL, WPA2 AP with key !="" 
+int HAL_SetupWiFiAP(const char* ssid, const char* key)
 {
 #define APP_DRONE_DEF_NET_IP        "192.168.4.1"
 #define APP_DRONE_DEF_NET_MASK      "255.255.255.0"
@@ -297,18 +298,18 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	os_strcpy((char*)wNetConfig.net_mask, APP_DRONE_DEF_NET_MASK);
 	os_strcpy((char*)wNetConfig.dns_server_ip_addr, APP_DRONE_DEF_NET_GW);
 
-
 	ADDLOGF_INFO("no flash configuration, use default\r\n");
 	mac = (unsigned char*)&ap_info.bssid.array;
 	// this is MAC for Access Point, it's different than Client one
 	// see wifi_get_mac_address source
 	wifi_get_mac_address((char*)mac, CONFIG_ROLE_AP);
 	ap_info.chann = APP_DRONE_DEF_CHANNEL;
-	ap_info.cipher_suite = 0;
+	
+	ap_info.cipher_suite = (! key || key[0] == 0) ? 0 : SECURITY_TYPE_WPA2_AES;
 	//memcpy(ap_info.ssid.array, APP_DRONE_DEF_SSID, os_strlen(APP_DRONE_DEF_SSID));
 	memcpy(ap_info.ssid.array, ssid, os_strlen(ssid));
 
-	ap_info.key_len = 0;
+	ap_info.key_len = (! key || key[0] == 0) ? 0 : os_strlen(key);
 	os_memset(&ap_info.key, 0, 65);
 
 
@@ -351,11 +352,34 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 
 	//}
 	bk_wlan_start(&wNetConfig);
-	g_bOpenAccessPointMode = 1;
+	g_bOpenAccessPointMode = (! key || key[0] == 0) ? 1 : 0;
 
 	//dhcp_server_start(0);
 	//dhcp_server_stop(void);
 
 	return 0;
+}
+int HAL_SetupWiFiOpenAccessPoint(const char* ssid){
+	g_bOpenAccessPointMode = 1;
+	return HAL_SetupWiFiAP(ssid, NULL);
+}
+
+int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
+{
+	if ( ssid[0] == 0 ){
+		ADDLOGF_INFO("ERROR: empty SSID!!\r\n");
+		if (g_wifiStatusCallback != 0) {
+			g_wifiStatusCallback(WIFI_AP_FAILED);
+		}
+		return -1;
+	} 
+	if ( key && os_strlen(key) < 8){
+		ADDLOGF_INFO("ERROR! key(%s) needs to be at least 8 characters!\r\n",key);
+		if (g_wifiStatusCallback != 0) {
+			g_wifiStatusCallback(WIFI_AP_FAILED);
+		}
+		return -1;
+	} 
+	return HAL_SetupWiFiAP(ssid,key);
 }
 

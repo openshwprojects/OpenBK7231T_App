@@ -348,5 +348,24 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 
 	return 0;
 }
+int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
+{
+
+	if ( key && strlen(key) < 8){
+		printf("ERROR! key(%s) needs to be at least 8 characters!\r\n", key);
+		if (g_wifiStatusCallback != 0) {
+			g_wifiStatusCallback(WIFI_AP_FAILED);
+		}
+		return -1;
+	}
+
+
+	demo_create_softap(ssid, key, 1, IEEE80211_ENCRYT_AUTO_WPA2, 1);
+
+	// dhcp_server_start(0);
+	// dhcp_server_stop(void);
+
+	return 0;
+}
 
 #endif

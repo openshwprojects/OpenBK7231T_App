@@ -1241,6 +1241,15 @@ int http_fn_cfg_wifi(http_request_t* request) {
 <input type=\"hidden\" id=\"open\" name=\"open\" value=\"1\">\
 <input type=\"submit\" value=\"Convert to open access wifi\" onclick=\"return confirm('Are you sure to convert module to open access wifi?')\">\
 </form>");
+
+	poststr_h2(request, "Open a (WPA2 based) WiFi Accesspoint");
+	poststr(request, "<form action=\"/cfg_wifi_set\"  onsubmit=\"txt='';ts=this.SSIDAP.value;tp=this.PWAP.value;(ts.length<1)&&(txt='SSID is empty!');(tp.length<8)&&(txt+=' Password is less than 8 chars!'); if (txt != ''){alert(txt); return false}  else   return confirm('Are you sure to convert module to access point with \\nSSID='+ts+' \\nPW='+tp+' \\n?')\" >\
+<input type=\"hidden\" name=\"WPA-AP\" value=\"1\">\
+<input type=\"submit\" value=\"Convert to access point with the following data\" onclick=\"if (thisreturn confirm('Are you sure to convert module to access point?')\">\
+<label>APs SSID:<br><input name=\"SSIDAP\"><label>\
+<label>APs passphrase:<br><input name=\"PWAP\"><label>\
+</form>");
+	
 	poststr_h2(request, "Use this to connect to your WiFi");
 	add_label_text_field(request, "SSID", "ssid", CFG_GetWiFiSSID(), "<form action=\"/cfg_wifi_set\">");
 	add_label_password_field(request, "Password", "pass", CFG_GetWiFiPass(), "<br>");
@@ -1304,6 +1313,7 @@ int http_fn_cfg_name(http_request_t* request) {
 int http_fn_cfg_wifi_set(http_request_t* request) {
 	char tmpA[128];
 	int bChanged;
+	char ssid[32],pw[32];
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HTTP_ProcessPacket: generating cfg_wifi_set \r\n");
 	bChanged = 0;
@@ -1314,6 +1324,18 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 		bChanged |= CFG_SetWiFiSSID("");
 		bChanged |= CFG_SetWiFiPass("");
 		poststr(request, "WiFi mode set: open access point.");
+	}
+	else if (http_getArg(request->url, "WPA-AP", tmpA, sizeof(tmpA))) {
+		if (http_getArg(request->url, "SSIDAP", tmpA, sizeof(tmpA))) {
+			strcpy(ssid,tmpA);
+	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "APA-AP: ssid=%s \r\n",ssid);
+		}
+		if (http_getArg(request->url, "PWAP", tmpA, sizeof(tmpA))) {
+			strcpy(pw,tmpA);
+	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "APA-AP: PW=%s \r\n",pw);
+		}
+		poststr(request, "WiFi mode set to access point.");
+		if (ssid[0] !=0 && pw[0] != 0 && strlen(pw) >7 ) HAL_SetupWiFiAccessPoint(ssid, pw);
 	}
 	else {
 		if (http_getArg(request->url, "ssid", tmpA, sizeof(tmpA))) {

@@ -273,7 +273,7 @@ static void ap_startup_cb(void * arg)
     }
 }
 
-void wifi_init_ap(const char* ssid)
+void wifi_init_ap(const char* ssid, const char* key)
 {
     tcpip_ip_info_t  ip_info;
     server_config_t  server_config;
@@ -311,11 +311,11 @@ void wifi_init_ap(const char* ssid)
 
     wifi_softap_cfg_t ap_cfg = {
 		.ssid            = ssid,
-		.pwd             = "",
+		.pwd             = (! key || key[0] == 0) ? "" : key,
 		.bssid           = mac_addr,
 		.ext_cfg = {
 			.channel         = 6,
-			.authmode        = WIFI_AUTH_OPEN,
+			.authmode        = (! key || key[0] == 0) ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA2_PSK,
 			.ssid_hidden     = 0,
 			.beacon_interval = 100,
 			.psk_value = NULL,
@@ -329,6 +329,14 @@ void wifi_init_ap(const char* ssid)
     wifi_manager_reg_event_callback(WIFI_MGR_EVENT_SOFTAP_STARTUP, &ap_startup_cb);
 
     ap_cfg.ext_cfg.psk_value = NULL;
+    if (ap_cfg.ext_cfg.authmode == WIFI_AUTH_WPA2_PSK){
+	// generate PSK from SSID and password
+	    static uint8_t psk_value[40]      = {0x0};
+	    if (0 == ln_psk_calc(ap_cfg.ssid, ap_cfg.pwd, psk_value, sizeof (psk_value))) {
+		    ap_cfg.ext_cfg.psk_value = psk_value;
+		    hexdump(LOG_LVL_INFO, "psk value ", psk_value, sizeof(psk_value));
+		}
+    }
 
     //3. wifi
     if(WIFI_ERR_NONE !=  wifi_softap_start(&ap_cfg)){
@@ -341,8 +349,8 @@ void wifi_init_ap(const char* ssid)
 
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
-	alert_log("Starting AP: %s", ssid);
-	wifi_init_ap(ssid);
+	alert_log("Starting open AP: %s", ssid);
+	wifi_init_ap(ssid,NULL);
 
 	alert_log("AP started, waiting for: netdev_got_ip()");
     while (!netdev_got_ip()) {
@@ -351,6 +359,37 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 
 	alert_log("AP started OK!");
 	g_bOpenAccessPointMode = 1;
+
+	return 0;
+}
+
+int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
+{
+	alert_log("Starting WPA2 AP: ssid=%s - PW=%s", ssid,key);
+	if (ssid[0] == 0) {
+		alert_log("Error: empty SSID!!\r\n");
+	        if (g_wifiStatusCallback != NULL) {
+		    g_wifiStatusCallback(WIFI_AP_FAILED);
+		}
+		return WIFI_ERR_INVALID_PARAM;
+	}
+	if (key[0] == 0 || strlen(key) < 8) {
+		alert_log("Error: Password minimum is 8 characters!!\r\n");
+	        if (g_wifiStatusCallback != NULL) {
+		    g_wifiStatusCallback(WIFI_AP_FAILED);
+		}
+		return WIFI_ERR_INVALID_PARAM;
+	}
+	 
+	wifi_init_ap(ssid,key);
+
+	alert_log("AP started, waiting for: netdev_got_ip()");
+    while (!netdev_got_ip()) {
+        OS_MsDelay(1000);
+    }
+
+	alert_log("AP started OK!");
+	g_bOpenAccessPointMode = 0;
 
 	return 0;
 }
