@@ -71,12 +71,13 @@ There is also a bit more outdated [WIKI](https://github.com/openshwprojects/Open
 
 # Building
 
-OpenBeken supports online builds for all platforms (BK7231T, BK7231N, XR809, BL602, W800), but if you want to compile it yourself, see  [BUILDING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md)
+OpenBeken supports [online builds](https://www.elektroda.com/rtvforum/viewtopic.php?p=20946719#20946719) for all platforms (BK7231T, BK7231N, XR809, BL602, W800), but if you want to compile it yourself, see  [BUILDING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md)
 
 # Developer guides
 - online builds system [guide](https://www.elektroda.com/rtvforum/viewtopic.php?p=20946719#20946719)
 - how to [create custom obk driver](https://www.elektroda.com/rtvforum/topic4056286.html)
 - how to [analyze unknown protocol with Salae logic analyzer](https://www.elektroda.com/rtvforum/topic4035491.html)
+- obk [simulator short presentation](https://www.elektroda.com/rtvforum/topic4046056.html)
 
 # Flashing
 
