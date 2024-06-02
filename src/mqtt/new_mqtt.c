@@ -1776,6 +1776,9 @@ void MQTT_init()
 	CMD_RegisterCommand("publishFile", MQTT_PublishFile, NULL);
 #endif
 }
+static float getInternalTemperature() {
+	return g_wifi_temperature;
+}
 
 OBK_Publish_Result MQTT_DoItemPublishString(const char* sChannel, const char* valueStr)
 {
@@ -1850,6 +1853,11 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 		sprintf(dataStr, "%d", LWIP_GetActiveSockets());
 		return MQTT_DoItemPublishString("sockets", dataStr);
 
+
+	case PUBLISHITEM_SELF_TEMP:
+		sprintf(dataStr, "%.2f", getInternalTemperature());
+		return MQTT_DoItemPublishString("temp", dataStr);
+		
 	case PUBLISHITEM_SELF_RSSI:
 		sprintf(dataStr, "%d", HAL_GetWifiStrength());
 		return MQTT_DoItemPublishString("rssi", dataStr);

@@ -14,8 +14,14 @@ void Test_EnergyMeter_Basic() {
 	CMD_ExecuteCommand("SetupTestPower 0 0 0 0", 0);
 
 	Sim_RunSeconds(10, false);
+	SELFTEST_ASSERT_EXPRESSION("$voltage", 0);
+	SELFTEST_ASSERT_EXPRESSION("$current", 0);
+	SELFTEST_ASSERT_EXPRESSION("$power", 0);
 	CMD_ExecuteCommand("SetupTestPower 230 0.26 60 0", 0);
 	Sim_RunSeconds(10, false);
+	SELFTEST_ASSERT_EXPRESSION("$voltage", 230);
+	SELFTEST_ASSERT_EXPRESSION("$current", 0.26f);
+	SELFTEST_ASSERT_EXPRESSION("$power", 60);
 
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/voltage/get", 230.0f, false);
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/current/get", 0.26f, false);
@@ -25,6 +31,9 @@ void Test_EnergyMeter_Basic() {
 
 	CMD_ExecuteCommand("SetupTestPower 241 0.36 80 0", 0);
 	Sim_RunSeconds(10, false);
+	SELFTEST_ASSERT_EXPRESSION("$voltage", 241);
+	SELFTEST_ASSERT_EXPRESSION("$current", 0.36f);
+	SELFTEST_ASSERT_EXPRESSION("$power", 80);
 
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/voltage/get", 241.0f, false);
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/current/get", 0.36f, false);
@@ -34,6 +43,10 @@ void Test_EnergyMeter_Basic() {
 
 	CMD_ExecuteCommand("SetupTestPower 221 0.46 70 0", 0);
 	Sim_RunSeconds(10, false);
+	SELFTEST_ASSERT_EXPRESSION("$voltage", 221);
+	SELFTEST_ASSERT_EXPRESSION("$current", 0.46f);
+	SELFTEST_ASSERT_EXPRESSION("$power", 70);
+
 
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/voltage/get", 221.0f, false);
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/current/get", 0.46f, false);
@@ -165,10 +178,102 @@ void Test_EnergyMeter_Tasmota() {
 
 	SIM_ClearMQTTHistory();
 }
+
+const char *test_turnOffIfNoPower =
+"setChannel 10 0\r\n"
+"again:\r\n"
+"    delay_s 1\r\n"
+"    if $power>1 then backlog setChannel 10 0; goto again\r\n"
+"    addChannel 10 1\r\n"
+"    if $CH10==20 then setChannel 1 2015\r\n"
+"    goto again\r\n";
+
+void Test_EnergyMeter_TurnOffScript() {
+	SIM_ClearOBK(0);
+	SIM_ClearAndPrepareForMQTTTesting("miscDevice", "bekens");
+
+	// put file in LittleFS
+	Test_FakeHTTPClientPacket_POST("api/lfs/myTurnOff.txt", test_turnOffIfNoPower);
+	// get this file 
+	Test_FakeHTTPClientPacket_GET("api/lfs/myTurnOff.txt");
+	SELFTEST_ASSERT_HTML_REPLY(test_turnOffIfNoPower);
+
+	CMD_ExecuteCommand("setChannel 1 1", 0);
+	CMD_ExecuteCommand("startScript myTurnOff.txt", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+
+	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(9, 1);
+
+	CMD_ExecuteCommand("startDriver TESTPOWER", 0);
+	CMD_ExecuteCommand("SetupTestPower 0 0 0 0", 0);
+
+	CMD_ExecuteCommand("SetupTestPower 230 0.01 0.5 0", 0);
+	int prevChannel10 = CHANNEL_Get(10);
+	for (int i = 0; i < 10; i++) {
+		Sim_RunSeconds(1.5f, false);
+		int now10 = CHANNEL_Get(10);
+		SELFTEST_ASSERT(now10 > prevChannel10);
+		prevChannel10 = now10;
+		SELFTEST_ASSERT_CHANNEL(1, 1);
+	}
+	// now reset will kick in
+	CMD_ExecuteCommand("SetupTestPower 230 0.01 1.5 0", 0);
+	for (int i = 0; i < 10; i++) {
+		Sim_RunSeconds(1.5f, false);
+		int now10 = CHANNEL_Get(10);
+		SELFTEST_ASSERT(now10 == 0);
+		prevChannel10 = now10;
+		SELFTEST_ASSERT_CHANNEL(1, 1);
+	}
+	// again counting
+	CMD_ExecuteCommand("SetupTestPower 230 0.01 0.5 0", 0);
+	Sim_RunSeconds(1.5f, false);
+	prevChannel10 = CHANNEL_Get(10);
+	for (int i = 0; i < 10; i++) {
+		Sim_RunSeconds(1.5f, false);
+		int now10 = CHANNEL_Get(10);
+		SELFTEST_ASSERT(now10 > prevChannel10);
+		prevChannel10 = now10;
+		SELFTEST_ASSERT_CHANNEL(1, 1);
+	}
+	// now reset will kick in
+	CMD_ExecuteCommand("SetupTestPower 230 0.01 1.5 0", 0);
+	for (int i = 0; i < 10; i++) {
+		Sim_RunSeconds(1.5f, false);
+		int now10 = CHANNEL_Get(10);
+		SELFTEST_ASSERT(now10 == 0);
+		prevChannel10 = now10;
+		SELFTEST_ASSERT_CHANNEL(1, 1);
+	}
+	CMD_ExecuteCommand("SetupTestPower 230 0.01 0.5 0", 0);
+	prevChannel10 = CHANNEL_Get(10);
+	for (int i = 0; i < 12; i++) {
+		Sim_RunSeconds(1.5f, false);
+		int now10 = CHANNEL_Get(10);
+		SELFTEST_ASSERT(now10 > prevChannel10);
+		prevChannel10 = now10;
+		SELFTEST_ASSERT_CHANNEL(1, 1);
+	}
+	// this loop should trigger turn off
+	prevChannel10 = CHANNEL_Get(10);
+	for (int i = 0; i < 3; i++) {
+		Sim_RunSeconds(1.5f, false);
+		int now10 = CHANNEL_Get(10);
+		SELFTEST_ASSERT(now10 > prevChannel10);
+		prevChannel10 = now10;
+	}
+	// turn off should have been triggered
+	SELFTEST_ASSERT_CHANNEL(1, 2015);
+
+
+	SIM_ClearMQTTHistory();
+}
 void Test_EnergyMeter() {
 	Test_EnergyMeter_Basic();
 	Test_EnergyMeter_Tasmota();
 	Test_EnergyMeter_Events();
+	Test_EnergyMeter_TurnOffScript();
 }
 
 #endif

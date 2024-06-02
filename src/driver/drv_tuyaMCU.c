@@ -160,6 +160,8 @@ typedef struct tuyaMCUMapping_s {
 	byte dpType;
 	// true if it's supposed to be sent in dp cache
 	byte bDPCache;
+	// could be renamed to flags later?
+	byte inv;
 	// store last channel value to avoid sending it again
 	int prevValue;
 	// allow storing raw data for later usage
@@ -323,25 +325,25 @@ tuyaMCUMapping_t* TuyaMCU_FindDefForChannel(int channel) {
 	return 0;
 }
 
-tuyaMCUMapping_t* TuyaMCU_MapIDToChannel(int dpId, int dpType, int channel, int bDPCache, float mul) {
+tuyaMCUMapping_t* TuyaMCU_MapIDToChannel(int dpId, int dpType, int channel, int bDPCache, float mul, int inv) {
 	tuyaMCUMapping_t* cur;
 
 	cur = TuyaMCU_FindDefForID(dpId);
 
 	if (cur == 0) {
 		cur = (tuyaMCUMapping_t*)malloc(sizeof(tuyaMCUMapping_t));
-		cur->dpId = dpId;
-		cur->dpType = dpType;
-		cur->bDPCache = bDPCache;
-		cur->mult = mul;
-		cur->prevValue = 0;
 		cur->next = g_tuyaMappings;
 		cur->rawData = 0;
 		cur->rawDataLen = 0;
 		cur->rawBufferSize = 0;
 		g_tuyaMappings = cur;
 	}
-
+	cur->dpId = dpId;
+	cur->dpType = dpType;
+	cur->bDPCache = bDPCache;
+	cur->mult = mul;
+	cur->inv = inv;
+	cur->prevValue = 0;
 	cur->channel = channel;
 	return cur;
 }
@@ -847,6 +849,7 @@ commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void* context, const ch
 	byte argsCount;
 	byte bDPCache;
 	float mult;
+	byte inv;
 
 	// linkTuyaMCUOutputToChannel dpId varType channelID
 	// linkTuyaMCUOutputToChannel 1 val 1
@@ -870,8 +873,9 @@ commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void* context, const ch
 	}
 	bDPCache = Tokenizer_GetArgInteger(3);
 	mult = Tokenizer_GetArgFloatDefault(4, 1.0f);
+	inv = Tokenizer_GetArgInteger(5);
 
-	TuyaMCU_MapIDToChannel(dpId, dpType, channelID, bDPCache, mult);
+	TuyaMCU_MapIDToChannel(dpId, dpType, channelID, bDPCache, mult, inv);
 
 	return CMD_RES_OK;
 }
@@ -1071,25 +1075,25 @@ void TuyaMCU_ForcePublishChannelValues() {
 // same as above but merged
 // backlog ntp_timeZoneOfs 2; addRepeatingEvent 10 -1 uartSendHex 55AA0008000007; setChannelType 1 temperature_div10; setChannelType 2 humidity; linkTuyaMCUOutputToChannel 1 1; linkTuyaMCUOutputToChannel 2 2; addRepeatingEvent 10 -1 tuyaMcu_sendCurTime
 //
-void TuyaMCU_ApplyMapping(tuyaMCUMapping_t* mapping, int fnID, int value) {
+void TuyaMCU_ApplyMapping(tuyaMCUMapping_t* mapping, int dpID, int value) {
 	int mappedValue = value;
 
 	// hardcoded values
-	if (fnID == g_tuyaMCUled_id_power) {
+	if (dpID == g_tuyaMCUled_id_power) {
 		LED_SetEnableAll(value);
 	}
-	if (fnID == g_tuyaMCUled_id_cw_temperature) {
+	if (dpID == g_tuyaMCUled_id_cw_temperature) {
 		float temperatureRange01 = 1.0f - ((value - 10) / 980.0f);
 		LED_SetTemperature0to1Range(temperatureRange01);
 	}
-	if (fnID == g_tuyaMCUled_id_cw_brightness) {
+	if (dpID == g_tuyaMCUled_id_cw_brightness) {
 		// TuyaMCU sends in 0-1000 range, we need 0-100
 		LED_SetDimmerForDisplayOnly(value*0.1f);
 	}
 
 
 	if (mapping == 0) {
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "ApplyMapping: id %i (val %i) not mapped\n", fnID, value);
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "ApplyMapping: id %i (val %i) not mapped\n", dpID, value);
 		return;
 	}
 	if (mapping->channel == -1) {
@@ -1114,9 +1118,12 @@ void TuyaMCU_ApplyMapping(tuyaMCUMapping_t* mapping, int fnID, int value) {
 	default:
 		break;
 	}
+	if (mapping->inv) {
+		mappedValue = !mappedValue;
+	}
 
 	if (value != mappedValue) {
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "ApplyMapping: mapped value %d (TuyaMCU range) to %d (OpenBK7321T_App range)\n", value, mappedValue);
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "ApplyMapping: mapped dp %i value %d to %d\n", dpID, value, mappedValue);
 	}
 
 	mapping->prevValue = mappedValue;
@@ -1144,6 +1151,10 @@ void TuyaMCU_OnChannelChanged(int channel, int iVal) {
 
 	if (mapping == 0) {
 		return;
+	}
+
+	if (mapping->inv) {
+		iVal = !iVal;
 	}
 
 	// this might be a callback from CHANNEL_Set in TuyaMCU_ApplyMapping. If we should set exactly the
@@ -1511,7 +1522,7 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 		if (CFG_HasFlag(OBK_FLAG_TUYAMCU_STORE_RAW_DATA)) {
 			if (CFG_HasFlag(OBK_FLAG_TUYAMCU_STORE_ALL_DATA)) {
 				if (mapping == 0) {
-					mapping = TuyaMCU_MapIDToChannel(dpId, dataType, -1, 0, 1.0f);
+					mapping = TuyaMCU_MapIDToChannel(dpId, dataType, -1, 0, 1.0f, 0);
 				}
 			}
 			if (mapping) {
@@ -1799,7 +1810,12 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 			wifi_state_valid = true;
 		}
 		break;
-
+	case TUYA_CMD_WIFI_RESET:
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: 0x04 replying");
+		// added for https://www.elektroda.com/rtvforum/viewtopic.php?p=21095905#21095905
+		TuyaMCU_SendCommandWithData(0x04, 0, 0);
+		break;
+		
 	case TUYA_CMD_STATE:
 		TuyaMCU_ParseStateMessage(data + 6, len - 6);
 		state_updated = true;
@@ -2294,7 +2310,7 @@ void TuyaMCU_Init()
 	//cmddetail:"fn":"TuyaMCU_Send_SetTime_Current","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_sendCurTime", TuyaMCU_Send_SetTime_Current, NULL);
-	//cmddetail:{"name":"linkTuyaMCUOutputToChannel","args":"[dpId][varType][channelID][bDPCache-Optional][mult-optional]",
+	//cmddetail:{"name":"linkTuyaMCUOutputToChannel","args":"[dpId][varType][channelID][bDPCache-Optional][mult-optional][bInverse]",
 	//cmddetail:"descr":"Used to map between TuyaMCU dpIDs and our internal channels. Last argument is optional and 0 by default. You can set it to 1 for battery powered devices, so a variable is set with DPCache, for example a sampling interval for humidity/temperature sensor. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap. Please see [Tuya Docs](https://developer.tuya.com/en/docs/iot/tuya-cloud-universal-serial-port-access-protocol?id=K9hhi0xxtn9cb) for info about TuyaMCU. You can also see our [TuyaMCU Analyzer Tool](https://www.elektroda.com/rtvforum/viewtopic.php?p=20528459#20528459)",
 	//cmddetail:"fn":"TuyaMCU_LinkTuyaMCUOutputToChannel","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}

@@ -65,6 +65,8 @@ typedef enum {
 	READONLYLOWMIDHIGH_SENSOR,
 	// lx unit
 	ILLUMINANCE_SENSOR,
+	/// @brief °C unit
+	HASS_TEMP,
 	/// @brief dBm unit
 	HASS_RSSI,
 	/// @brief Time firmware is alive in secs
