@@ -106,6 +106,10 @@ void AHT2X_AppendInformationToHTTPIndexPage(http_request_t* request);
 void AHT2X_OnEverySecond();
 void AHT2X_StopDriver();
 
+void BMPI2C_Init();
+void BMPI2C_AppendInformationToHTTPIndexPage(http_request_t* request);
+void BMPI2C_OnEverySecond();
+
 void SGP_Init();
 void SGP_AppendInformationToHTTPIndexPage(http_request_t* request);
 void SGP_OnEverySecond();
