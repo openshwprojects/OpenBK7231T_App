@@ -281,14 +281,21 @@ int HAL_SetupWiFiAP(const char* ssid, const char* key)
 #define APP_DRONE_DEF_NET_GW        "192.168.4.1"
 #define APP_DRONE_DEF_CHANNEL       1
 
+
+	if (sta_ip_is_start()) HAL_DisconnectFromWifi();
 	general_param_t general;
-	ap_param_t ap_info;
+	
+// couldn't figure out, why ap_info is used
+// every data assigned to "ap_info" is only used, to copy its content to "wNetConfig" later
+// so my approach is to configure "wNetConfig" directly, without "ap_info"
+// to make sure what I did, I only commented it out 
+//	ap_param_t ap_info;
 	network_InitTypeDef_st wNetConfig;
-	int len;
+//	int len;							// never used (assigned later, but not used)
 	unsigned char* mac;
 
 	os_memset(&general, 0, sizeof(general_param_t));
-	os_memset(&ap_info, 0, sizeof(ap_param_t));
+//	os_memset(&ap_info, 0, sizeof(ap_param_t));
 	os_memset(&wNetConfig, 0x0, sizeof(network_InitTypeDef_st));
 
 	general.role = 1,
@@ -299,10 +306,14 @@ int HAL_SetupWiFiAP(const char* ssid, const char* key)
 	os_strcpy((char*)wNetConfig.dns_server_ip_addr, APP_DRONE_DEF_NET_GW);
 
 	ADDLOGF_INFO("no flash configuration, use default\r\n");
-	mac = (unsigned char*)&ap_info.bssid.array;
+//	mac = (unsigned char*)&ap_info.bssid.array;			// why? it's 0 anyway from "os_memset(&ap_info, 0, sizeof(ap_param_t));"
 	// this is MAC for Access Point, it's different than Client one
 	// see wifi_get_mac_address source
 	wifi_get_mac_address((char*)mac, CONFIG_ROLE_AP);
+
+// as described above: don't use ap_info but set wNetConfig directly later
+
+/*
 	ap_info.chann = APP_DRONE_DEF_CHANNEL;
 	
 	ap_info.cipher_suite = (! key || key[0] == 0) ? 0 : SECURITY_TYPE_WPA2_AES;
@@ -310,15 +321,18 @@ int HAL_SetupWiFiAP(const char* ssid, const char* key)
 	memcpy(ap_info.ssid.array, ssid, os_strlen(ssid));
 
 	ap_info.key_len = (! key || key[0] == 0) ? 0 : os_strlen(key);
-	os_memset(&ap_info.key, 0, 65);
-
+	os_memset(&ap_info.key, 0, 65);		// to be sure it's 0 terminated, even 
+	if ( key && key[0] != 0) memcpy(ap_info.key, key, os_strlen(key));
 
 	bk_wlan_ap_set_default_channel(ap_info.chann);
-
-	len = os_strlen((char*)ap_info.ssid.array);
+//	len = os_strlen((char*)ap_info.ssid.array);			// len is never used
 
 	os_strncpy((char*)wNetConfig.wifi_ssid, (char*)ap_info.ssid.array, sizeof(wNetConfig.wifi_ssid));
 	os_strncpy((char*)wNetConfig.wifi_key, (char*)ap_info.key, sizeof(wNetConfig.wifi_key));
+*/
+	bk_wlan_ap_set_default_channel(APP_DRONE_DEF_CHANNEL);
+	os_strncpy((char*)wNetConfig.wifi_ssid, ssid, sizeof(wNetConfig.wifi_ssid));
+	os_strncpy((char*)wNetConfig.wifi_key, key, sizeof(wNetConfig.wifi_key));
 
 	wNetConfig.wifi_mode = SOFT_AP;
 	wNetConfig.dhcp_mode = DHCP_SERVER;
