@@ -451,7 +451,7 @@ static commandResult_t SM16703P_StartTX(const void *context, const char *cmd, co
 	SM16703P_Show();
 	return CMD_RES_OK;
 }
-static commandResult_t SM16703P_SendBytes(const void *context, const char *cmd, const char *args, int flags) {
+static commandResult_t SM16703P_CMD_sendBytes(const void *context, const char *cmd, const char *args, int flags) {
 	if (!initialized)
 		return CMD_RES_ERROR;
 	const char *s = args;
