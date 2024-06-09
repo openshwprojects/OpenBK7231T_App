@@ -619,6 +619,7 @@ int http_fn_index(http_request_t* request) {
 	if (bRawPWMs == 0 || bForceShowRGBCW || bForceShowRGB) {
 		int c_pwms;
 		int lm;
+		int c_realPwms = 0;
 
 		lm = LED_GetMode();
 
@@ -627,6 +628,7 @@ int http_fn_index(http_request_t* request) {
 		// Thanks to this users can turn for example RGB LED controller
 		// into high power 3-outputs single colors LED controller
 		PIN_get_Relay_PWM_Count(0, &c_pwms, 0);
+		c_realPwms = c_pwms;
 		if (bForceShowRGBCW) {
 			c_pwms = 5;
 		}
@@ -683,12 +685,15 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "<input  type=\"submit\" class='disp-none' value=\"Toggle Light\"/></form>");
 			poststr(request, "</td></tr>");
 		}
+		bool bShowCWForPixelAnim = false;
 #if ENABLE_DRIVER_PIXELANIM
 		if (DRV_IsRunning("PixelAnim")) {
+			if (c_realPwms == 2)
+				bShowCWForPixelAnim = true;
 			PixelAnim_CreatePanel(request);
 		}
 #endif
-		if (c_pwms == 2 || c_pwms >= 4) {
+		if (c_pwms == 2 || c_pwms >= 4 || bShowCWForPixelAnim) {
 			// TODO: temperature slider
 			int pwmValue;
 			const char* activeStr = "";
@@ -2010,6 +2015,8 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	}
 	if (1) {
 		//use -1 for channel as these don't correspond to channels
+		dev_info = hass_init_sensor_device_info(HASS_TEMP, -1, -1, -1, 1);
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		dev_info = hass_init_sensor_device_info(HASS_RSSI, -1, -1, -1, 1);
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
@@ -2266,6 +2273,19 @@ int http_fn_ha_cfg(http_request_t* request) {
 	return 0;
 }
 
+void runHTTPCommandInternal(http_request_t* request, const char *cmd) {
+	bool bEchoHack = strncmp(cmd, "echo", 4) == 0;
+	CMD_ExecuteCommand(cmd, COMMAND_FLAG_SOURCE_HTTP);
+#if ENABLE_TASMOTA_JSON
+	if (!bEchoHack) {
+		JSON_ProcessCommandReply(cmd, skipToNextWord(cmd), request, (jsonCb_t)hprintf255, COMMAND_FLAG_SOURCE_HTTP);
+	}
+	else {
+		const char *s = Tokenizer_GetArg(0);
+		poststr(request, s);
+	}
+#endif
+}
 int http_fn_cm(http_request_t* request) {
 	char tmpA[128];
 	char* long_str_alloced = 0;
@@ -2276,10 +2296,10 @@ int http_fn_cm(http_request_t* request) {
 	if (request->method == HTTP_GET) {
 		commandLen = http_getArg(request->url, "cmnd", tmpA, sizeof(tmpA));
 		//ADDLOG_INFO(LOG_FEATURE_HTTP, "Got here (GET) %s;%s;%d\n", request->url, tmpA, commandLen);
-        } else if (request->method == HTTP_POST || request->method == HTTP_PUT) {
+    } else if (request->method == HTTP_POST || request->method == HTTP_PUT) {
 		commandLen = http_getRawArg(request->bodystart, "cmnd", tmpA, sizeof(tmpA));
 		//ADDLOG_INFO(LOG_FEATURE_HTTP, "Got here (POST) %s;%s;%d\n", request->bodystart, tmpA, commandLen);
-        }
+    }
 	if (commandLen) {
 		if (commandLen > (sizeof(tmpA) - 5)) {
 			commandLen += 8;
@@ -2291,13 +2311,14 @@ int http_fn_cm(http_request_t* request) {
 					http_getRawArg(request->bodystart, "cmnd", long_str_alloced, commandLen);
 				}
 				CMD_ExecuteCommand(long_str_alloced, COMMAND_FLAG_SOURCE_HTTP);
-				JSON_ProcessCommandReply(long_str_alloced, skipToNextWord(long_str_alloced), request, (jsonCb_t)hprintf255, COMMAND_FLAG_SOURCE_HTTP);
+
+				runHTTPCommandInternal(request, long_str_alloced);
+
 				free(long_str_alloced);
 			}
 		}
 		else {
-			CMD_ExecuteCommand(tmpA, COMMAND_FLAG_SOURCE_HTTP);
-			JSON_ProcessCommandReply(tmpA, skipToNextWord(tmpA), request, (jsonCb_t)hprintf255, COMMAND_FLAG_SOURCE_HTTP);
+			runHTTPCommandInternal(request, tmpA);
 		}
 	}
 
@@ -2431,9 +2452,19 @@ int http_fn_cfg_pins(http_request_t* request) {
 		if (i) {
 			poststr(request, ",");
 		}
-		hprintf255(request, "\"%s\"", htmlPinRoleNames[i]);
+		// print array with ["name_of_role",<Number of channnels for this role>]
+		hprintf255(request, "[\"%s\",%i]", htmlPinRoleNames[i],PIN_IOR_NofChan(i));
 	}
 	poststr(request, "];");
+
+	poststr(request, "function hide_show() {"
+		"n=this.name;"
+		"er=getElement('r'+n);"
+		"ee=getElement('e'+n);"
+		"ch=r[this.value][1];"		// since we might have skiped PWM entries in options list, don't use "selectedIndex" but "value" (it's even shorter ;-)
+		"er.disabled = (ch<1); er.style.display= ch<1 ? 'none' : 'inline';"
+		"ee.disabled = (ch<2); ee.style.display= ch<2 ? 'none' : 'inline';"
+		"}");
 
 	poststr(request, "function f(alias, id, c, b, ch1, ch2) {"
 		"let f = document.getElementById(\"x\");"
@@ -2446,31 +2477,31 @@ int http_fn_cfg_pins(http_request_t* request) {
 		"s.name = id;"
 		"d.appendChild(s);"
 		"	for (var i = 0; i < r.length; i++) {"
-		"	if(b && r[i].startsWith(\"PWM\")) continue; "
+		"	if(b && r[i][0].startsWith(\"PWM\")) continue; "
 		"var o = document.createElement(\"option\");"
-		"	o.text = r[i];"
+		"	o.text = r[i][0];"
 		"	o.value = i;"
 		"	if (i == c) {"
 		"		o.selected = true;"
 		"	}"
-		"s.add(o);"
+		"s.add(o);s.onchange = hide_show;"
 		"}"
-		"if(ch1!= null) {"
-			"let y = document.createElement(\"input\");"
-			"y.className = \"hele\";"
-			"y.type = \"text\";"
-			"y.name = \"r\"+id;"
-			"y.value = ch1;"
-			"d.appendChild(y);"
-		"}"
-		"if(ch2!= null) {"
-			"let y = document.createElement(\"input\");"
-			"y.className = \"hele\";"
-			"y.type = \"text\";"
-			"y.name = \"e\"+id;"
-			"y.value = ch2;"
-			"d.appendChild(y);"
-		"}"
+		"var y = document.createElement(\"input\");"
+		"y.className = \"hele\";"
+		"y.name = \"r\"+id;"
+		"y.id = \"r\"+id;"
+		"y.disabled = ch1==null;"
+		"y.style.display = ch1==null ? 'none' :'inline' ;"
+		"y.value = ch1==null ? 0 : ch1;"
+		"d.appendChild(y);"
+		"y = document.createElement(\"input\");"
+		"y.className = \"hele\";"
+		"y.name = \"e\"+id;"
+		"y.id = \"e\"+id;"
+		"y.disabled = ch2==null ;"
+		"y.style.display = ch2==null ? 'none' :'inline' ;"
+		"y.value = ch2==null ? 0 : ch2;"
+		"d.appendChild(y);"
 		" }");
 
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
@@ -2504,26 +2535,19 @@ int http_fn_cfg_pins(http_request_t* request) {
 		}
 		hprintf255(request, "\",%i,%i, %i,", i, si, !bCanThisPINbePWM);
 		// Primary linked channel
-// Some roles do not need any channels
-		if ((si != IOR_SGP_CLK && si != IOR_SHT3X_CLK && si != IOR_CHT8305_CLK && si != IOR_Button_ToggleAll && si != IOR_Button_ToggleAll_n
-			&& si != IOR_BL0937_CF && si != IOR_BL0937_CF1 && si != IOR_BL0937_SEL
-			&& si != IOR_LED_WIFI && si != IOR_LED_WIFI_n && si != IOR_LED_WIFI_n
-			&& !(si >= IOR_IRRecv && si <= IOR_DHT11)
-			&& !(si >= IOR_SM2135_DAT && si <= IOR_BP1658CJ_CLK))
-			|| IS_PIN_DHT_ROLE(si))
+		int NofC = PIN_IOR_NofChan(si);
+		if (NofC >= 1)
 		{
 			hprintf255(request, "%i,", ch);
-			//hprintf255(request, "<input class=\"hele\" name=\"r%i\" type=\"text\" value=\"%i\"/>", i, ch);
 		}
+		// Some roles do not need any channels
 		else {
 			hprintf255(request, "null,", ch);
 		}
 		// Secondary linked channel
-		// For button, is relay index to toggle on double click
-		if (si == IOR_Button || si == IOR_Button_n || IS_PIN_DHT_ROLE(si) || IS_PIN_TEMP_HUM_SENSOR_ROLE(si) || IS_PIN_AIR_SENSOR_ROLE(si))
+		if (NofC > 1)
 		{
 			hprintf255(request, "%i,", ch2);
-			//hprintf255(request, "<input class=\"hele\" name=\"e%i\" type=\"text\" value=\"%i\"/>", i, ch2);
 		}
 		else {
 			hprintf255(request, "null,", ch);

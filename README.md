@@ -4,6 +4,7 @@ OpenBK7231T/OpenBeken is a Tasmota/Esphome replacement for new Tuya modules feat
 This repository is named "OpenBK7231T_App", but now it's a multiplatform app, supporting build for multiple separate chips:
 - [BK7231T](https://www.elektroda.com/rtvforum/topic3951016.html) ([WB3S](https://developer.tuya.com/en/docs/iot/wb3s-module-datasheet?id=K9dx20n6hz5n4), [WB2S](https://developer.tuya.com/en/docs/iot/wb2s-module-datasheet?id=K9ghecl7kc479), WB2L, etc)
 - [BK7231N](https://www.elektroda.com/rtvforum/topic3951016.html) ([CB2S](https://developer.tuya.com/en/docs/iot/cb2s-module-datasheet?id=Kafgfsa2aaypq), [CB2L](https://developer.tuya.com/en/docs/iot/cb2l-module-datasheet?id=Kai2eku1m3pyl), [WB2L_M1](https://www.elektroda.com/rtvforum/topic3903356.html), etc)
+- [BK7231M](https://www.elektroda.com/rtvforum/topic4058227.html), this is a non-Tuya version of BK7231N with 00000000 keys, also sometimes in BL2028 flavour
 - T34 ([T34 is based on BK7231N](https://developer.tuya.com/en/docs/iot/t34-module-datasheet?id=Ka0l4h5zvg6j8)), see [flashing trick](https://www.elektroda.com/rtvforum/topic4036975.html)
 - BL2028N ([BL2028N is a Belon version of BK7231N](https://www.elektroda.com/rtvforum/viewtopic.php?p=20262533#20262533))
 - [XR809](https://www.elektroda.com/rtvforum/topic3806769.html) ([XR3](https://developer.tuya.com/en/docs/iot/xr3-datasheet?id=K98s9168qi49g), etc)
@@ -62,7 +63,8 @@ OpenBeken features:
 - Supports automatic GPIO setup with [Tuya GPIO extraction](https://www.youtube.com/watch?v=WunlqIMAdgw), [cloudcutter templates](https://www.elektroda.com/rtvforum/topic3973669.html), can also import/export [OpenBeken templates](https://openbekeniot.github.io/webapp/devicesList.html), you can also use [GPIODoctor to find out quickly GPIO roles](https://www.elektroda.com/rtvforum/topic3976371.html)
 - Advanced and custom drivers like [synchronized PWM groups with configurable dead time](https://www.elektroda.com/rtvforum/topic4025665.html)
 - WS2812B support, see [scripting tutorial](https://www.elektroda.com/rtvforum/topic4036716.html)
-- LFS and REST API allows you to create and host a custom HTML+CSS+JS page on device with a custom GUI/display of channels/TuyaMCU dpIDs, see [tutorial](https://www.elektroda.com/rtvforum/topic3971355.html) and see [sample page](https://www.elektroda.com/rtvforum/viewtopic.php?p=20932186#20932186)
+- LFS and REST API allows you to create and host a custom HTML+CSS+JS page on device with a custom GUI/display of channels/TuyaMCU dpIDs, see [tutorial](https://www.elektroda.com/rtvforum/topic3971355.html) and see [sample page](https://www.elektroda.com/rtvforum/viewtopic.php?p=20932186#20932186) , and see [final version of custom TOMPD-63-WIFI page](https://www.elektroda.com/rtvforum/topic4040354.html)
+- can control 'smart lab organiser drawers' with a custom Drawers driver, see [full presentation](https://www.elektroda.com/rtvforum/topic4054134.html)
 - Can run on Windows with device simulator/schematic drawer, see [tutorial](https://www.elektroda.com/rtvforum/topic4046056.html)
 - and much more
 
@@ -70,7 +72,13 @@ There is also a bit more outdated [WIKI](https://github.com/openshwprojects/Open
 
 # Building
 
-OpenBeken supports online builds for all platforms (BK7231T, BK7231N, XR809, BL602, W800), but if you want to compile it yourself, see  [BUILDING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md)
+OpenBeken supports [online builds](https://www.elektroda.com/rtvforum/viewtopic.php?p=20946719#20946719) for all platforms (BK7231T, BK7231N, XR809, BL602, W800), but if you want to compile it yourself, see  [BUILDING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md)
+
+# Developer guides
+- online builds system [guide](https://www.elektroda.com/rtvforum/viewtopic.php?p=20946719#20946719)
+- how to [create custom obk driver](https://www.elektroda.com/rtvforum/topic4056286.html)
+- how to [analyze unknown protocol with Salae logic analyzer](https://www.elektroda.com/rtvforum/topic4035491.html)
+- obk [simulator short presentation](https://www.elektroda.com/rtvforum/topic4046056.html)
 
 # Flashing
 

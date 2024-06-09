@@ -255,7 +255,7 @@ void PixelAnim_CreatePanel(http_request_t *request) {
 
 	for (i = 0; i < g_numAnims; i++) {
 		const char* c;
-		if (i == activeAnim) {
+		if (i == activeAnim && g_lightMode == Light_Anim) {
 			c = "bgrn";
 		}
 		else {

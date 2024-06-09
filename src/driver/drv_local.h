@@ -106,6 +106,10 @@ void AHT2X_AppendInformationToHTTPIndexPage(http_request_t* request);
 void AHT2X_OnEverySecond();
 void AHT2X_StopDriver();
 
+void BMPI2C_Init();
+void BMPI2C_AppendInformationToHTTPIndexPage(http_request_t* request);
+void BMPI2C_OnEverySecond();
+
 void SGP_Init();
 void SGP_AppendInformationToHTTPIndexPage(http_request_t* request);
 void SGP_OnEverySecond();
@@ -153,6 +157,10 @@ void Freeze_RunFrame();
 void PixelAnim_Init();
 void PixelAnim_SetAnimQuickTick();
 void PixelAnim_SetAnim(int j);
+
+void Drawers_Init();
+void Drawers_QuickTick();
+
 
 #define SM2135_DELAY         4
 

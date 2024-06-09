@@ -2315,7 +2315,7 @@
   {
     "name": "TimeSize",
     "args": "",
-    "descr": "Prints the size of time_t on current platform - sizeof(time_t), only for testing purposes.",
+    "descr": "Prints the size of time_t on current platform - sizeof(time_t), only for testing purposes",
     "fn": "NULL);",
     "file": "cmnds/cmd_main.c",
     "requires": "",

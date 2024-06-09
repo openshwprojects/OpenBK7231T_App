@@ -334,6 +334,7 @@
     <ClCompile Include="src\driver\drv_pixelAnim.c" />
     <ClCompile Include="src\driver\drv_hd2015.c" />
     <ClCompile Include="src\selftest\selftest_doorSensor.c" />
+    <ClCompile Include="src\driver\drv_drawers.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\base64\base64.h" />

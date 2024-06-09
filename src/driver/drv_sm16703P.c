@@ -451,6 +451,19 @@ static commandResult_t SM16703P_StartTX(const void *context, const char *cmd, co
 	SM16703P_Show();
 	return CMD_RES_OK;
 }
+static commandResult_t SM16703P_CMD_sendBytes(const void *context, const char *cmd, const char *args, int flags) {
+	if (!initialized)
+		return CMD_RES_ERROR;
+	const char *s = args;
+	int i = 0;
+	while (*s && s[1]) {
+		*(spi_msg->send_buf + (pixel_offset + i)) = hexbyte(s);
+		s += 2;
+		i++;
+	}
+	SPIDMA_StartTX(spi_msg);
+	return CMD_RES_OK;
+}
 
 // startDriver SM16703P
 // backlog startDriver SM16703P; SM16703P_Test
@@ -497,5 +510,6 @@ void SM16703P_Init() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SM16703P_SetRaw", SM16703P_CMD_setRaw, NULL);
 
+	CMD_RegisterCommand("SM16703P_SendBytes", SM16703P_CMD_sendBytes, NULL);
 }
 #endif
