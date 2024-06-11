@@ -68,7 +68,7 @@ jobs:
         platform: [OpenBK7231T, OpenBK7231N, OpenXR809, OpenBL602, OpenW800, OpenW600, OpenLN882H]
     steps:
       - name: Source checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive        
       - uses: actions/setup-python@v2
@@ -116,7 +116,7 @@ jobs:
     if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
     steps:
       - name: Source checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Fetch build assets
         uses: actions/download-artifact@v3
         with:
