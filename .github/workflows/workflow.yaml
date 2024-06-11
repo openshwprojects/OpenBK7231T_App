@@ -22,7 +22,7 @@ jobs:
       new_release: ${{ steps.refs.outputs.new_release }}
     steps:
       - name: Source checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive        
       - name: Update SDKs if required
