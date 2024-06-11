@@ -2062,7 +2062,9 @@ static int http_rest_post_cmd(http_request_t* request) {
 	request->responseCode = code;
 	http_setup(request, httpMimeTypeJson);
 	hprintf255(request, "{\"%s\":%d, \"msg\":\"%s\", \"res\":", type, code, reply);
+#if ENABLE_TASMOTA_JSON
 	JSON_ProcessCommandReply(cmd, skipToNextWord(cmd), request, (jsonCb_t)hprintf255, COMMAND_FLAG_SOURCE_HTTP);
+#endif
 	hprintf255(request, "}", code, reply);
 	poststr(request, NULL);
 	return 0;
