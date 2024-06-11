@@ -47,7 +47,7 @@ jobs:
           export BRANCHTRANSLATED=$(echo ${BRANCH} | tr '/' '_')
           echo "short_ref: ${BRANCHTRANSLATED}"
           export VERSION=""
-          if ${{ steps.semantic.outputs.new_release_published == 'true' }}; then
+          if [ "${{ steps.semantic.outputs.new_release_published }}" == "true" ]; then
             export VERSION=${{ steps.semantic.outputs.new_release_version }}
           else
             export VERSION=${BRANCHTRANSLATED}_$(git rev-parse --short=12 HEAD)
