@@ -82,7 +82,7 @@ static void translate_byte(uint8_t input, uint8_t *dst) {
 	}
 #endif
 }
-bool SM16703P_GetPixel(uint32_t pixel, byte *dst) {
+void SM16703P_GetPixel(uint32_t pixel, byte *dst) {
 	int i;
 	uint8_t *input;
 
