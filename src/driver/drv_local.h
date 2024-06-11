@@ -50,6 +50,7 @@ void BP1658CJ_Init();
 
 void KP18058_Init();
 
+void SM15155E_Init();
 
 void SM16703P_Init();
 void SM16703P_setPixel(int pixel, int r, int g, int b);

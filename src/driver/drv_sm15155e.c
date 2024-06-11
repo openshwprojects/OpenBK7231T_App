@@ -19,11 +19,11 @@
 
 void SM15155E_Write(float *rgbcw) {
 	byte packet[16];
+	int i;
 	unsigned short *cur_col_16 = (unsigned short)&packet[0];
 
 	for (i = 0; i < 5; i++) {
 		// convert 0-255 to 0-1023
-		//cur_col_10[i] = rgbcw[g_cfg.ledRemap.ar[i]] * 4;
 		cur_col_16[i] = MAP(rgbcw[g_cfg.ledRemap.ar[i]], 0, 255.0f, 0, 65535.0f);
 
 	}
@@ -32,6 +32,8 @@ void SM15155E_Write(float *rgbcw) {
 	packet[12] = 0xE7;
 	packet[13] = 0x1F;
 	packet[14] = 0x00;
+
+	SPILED_SetRawBytes(0, packet, 15, 1);
 }
 
 
@@ -39,7 +41,7 @@ void SM15155E_Write(float *rgbcw) {
 void SM15155E_Init() {
 	SPILED_Init();
 
-	// FF00 0000 0000 0000 0000 739CE71F00
+	// FF00 0000 0000 0000 0000 73 9C E7 1F 00
 	SPILED_InitDMA(15);
 }
 

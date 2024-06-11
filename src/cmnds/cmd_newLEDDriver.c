@@ -289,6 +289,11 @@ void LED_I2CDriver_WriteRGBCW(float* finalRGBCW) {
 	if (DRV_IsRunning("KP18058")) {
 		KP18058_Write(finalRGBCW);
 	}
+#ifdef ENABLE_DRIVER_SM15155E
+	if (DRV_IsRunning("SM15155E")) {
+		SM15155E_Write(finalRGBCW);
+	}
+#endif
 #endif
 }
 void LED_RunOnEverySecond() {

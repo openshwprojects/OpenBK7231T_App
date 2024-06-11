@@ -174,6 +174,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "SM16703P",	SM16703P_Init,		NULL,						NULL, NULL, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_SM15155E
+	//drvdetail:{"name":"SM15155E",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"SM15155E .",
+	//drvdetail:"requires":""}
+	{ "SM15155E",	SM15155E_Init,		NULL,						NULL, NULL, NULL, NULL, false },
+#endif
 #if PLATFORM_BEKEN
 	//drvdetail:{"name":"IR",
 	//drvdetail:"title":"TODO",
