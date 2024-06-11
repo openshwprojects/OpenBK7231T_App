@@ -103,7 +103,7 @@ bool SM16703P_GetPixel(uint32_t pixel, byte *dst) {
 		*dst++ = reverse_translate_byte(input + i * 4);
 	}
 }
-void SM16703P_setRaw(int start_offset, const char *s, int push) {
+void SPILED_SetRawHexString(int start_offset, const char *s, int push) {
 	// start offset is in bytes, and we do 2 bits per dst byte, so *4
 	uint8_t *dst = spi_msg->send_buf + pixel_offset + start_offset*4;
 
@@ -116,6 +116,22 @@ void SM16703P_setRaw(int start_offset, const char *s, int push) {
 		*dst++ = translate_2bit((b >> 2));
 		*dst++ = translate_2bit(b);
 		s += 2;
+	}
+	if (push) {
+		SPIDMA_StartTX(spi_msg);
+	}
+}
+void SPILED_SetRawBytes(int start_offset, byte *bytes, int numBytes, int push) {
+	// start offset is in bytes, and we do 2 bits per dst byte, so *4
+	uint8_t *dst = spi_msg->send_buf + pixel_offset + start_offset * 4;
+
+	// parse hex string like FFAABB0011 byte by byte
+	for(int i = 0; i < numBytes; i++) {
+		byte b = bytes[i];
+		*dst++ = translate_2bit((b >> 6));
+		*dst++ = translate_2bit((b >> 4));
+		*dst++ = translate_2bit((b >> 2));
+		*dst++ = translate_2bit(b);
 	}
 	if (push) {
 		SPIDMA_StartTX(spi_msg);
@@ -311,7 +327,7 @@ commandResult_t SM16703P_CMD_setRaw(const void *context, const char *cmd, const 
 	Tokenizer_TokenizeString(args, 0);
 	bPush = Tokenizer_GetArgInteger(0);
 	ofs = Tokenizer_GetArgInteger(1);
-	SM16703P_setRaw(ofs, Tokenizer_GetArg(2), bPush);
+	SPILED_SetRawHexString(ofs, Tokenizer_GetArg(2), bPush);
 	return CMD_RES_OK;
 }
 commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, const char *args, int flags) {
@@ -451,26 +467,24 @@ static commandResult_t SM16703P_StartTX(const void *context, const char *cmd, co
 	SM16703P_Show();
 	return CMD_RES_OK;
 }
-static commandResult_t SM16703P_CMD_sendBytes(const void *context, const char *cmd, const char *args, int flags) {
-	if (!initialized)
-		return CMD_RES_ERROR;
-	const char *s = args;
-	int i = 0;
-	while (*s && s[1]) {
-		*(spi_msg->send_buf + (pixel_offset + i)) = hexbyte(s);
-		s += 2;
-		i++;
-	}
-	SPIDMA_StartTX(spi_msg);
-	return CMD_RES_OK;
-}
+//static commandResult_t SM16703P_CMD_sendBytes(const void *context, const char *cmd, const char *args, int flags) {
+//	if (!initialized)
+//		return CMD_RES_ERROR;
+//	const char *s = args;
+//	int i = pixel_offset;
+//	while (*s && s[1]) {
+//		*(spi_msg->send_buf + (i)) = hexbyte(s);
+//		s += 2;
+//		i++;
+//	}
+//	while (i < spi_msg->send_len) {
+//		*(spi_msg->send_buf + (i)) = 0;
+//	}
+//	SPIDMA_StartTX(spi_msg);
+//	return CMD_RES_OK;
+//}
 
-// startDriver SM16703P
-// backlog startDriver SM16703P; SM16703P_Test
-void SM16703P_Init() {
-
-	initialized = false;
-
+void SPILED_Init() {
 	uint32_t val;
 #if PLATFORM_BK7231N
 	val = GFUNC_MODE_SPI_USE_GPIO_14;
@@ -489,6 +503,15 @@ void SM16703P_Init() {
 
 
 #endif
+}
+// startDriver SM16703P
+// backlog startDriver SM16703P; SM16703P_Test
+void SM16703P_Init() {
+
+	initialized = false;
+
+	SPILED_Init();
+
 	//cmddetail:{"name":"SM16703P_Init","args":"[NumberOfLEDs][ColorOrder]",
 	//cmddetail:"descr":"This will setup LED driver for a strip with given number of LEDs. Please note that it also works for WS2812B and similiar LEDs. You can optionally set the color order with either RGB, RBG, BRG, BGB, GRB or GBR (default RGB). See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_sm16703P.c","requires":"",
@@ -510,6 +533,6 @@ void SM16703P_Init() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SM16703P_SetRaw", SM16703P_CMD_setRaw, NULL);
 
-	CMD_RegisterCommand("SM16703P_SendBytes", SM16703P_CMD_sendBytes, NULL);
+	//CMD_RegisterCommand("SM16703P_SendBytes", SM16703P_CMD_sendBytes, NULL);
 }
 #endif
