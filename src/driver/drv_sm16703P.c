@@ -31,7 +31,7 @@ static uint8_t data_translate[4] = {0b10001000, 0b10001110, 0b11101000, 0b111011
 
 UINT8 *send_buf;
 struct spi_message *spi_msg;
-BOOLEAN initialized = false;
+BOOLEAN spiled_ready = false;
 // Number of pixels that can be addressed
 uint32_t pixel_count = 0;
 // Number of empty bytes to send before pixel data on each frame
@@ -40,14 +40,6 @@ uint32_t pixel_offset = 0;
 // Number of empty bytes to send after pixel data on each frame
 // Workaround to stuff the SPI buffer with empty bytes after a transmission (s.a. #1055)
 uint32_t pixel_padding = 64;
-
-#define SM16703P_COLOR_ORDER_RGB         0x00
-#define SM16703P_COLOR_ORDER_RBG         0x01
-#define SM16703P_COLOR_ORDER_BRG         0x02
-#define SM16703P_COLOR_ORDER_BGR         0x03
-#define SM16703P_COLOR_ORDER_GRB         0x04
-#define SM16703P_COLOR_ORDER_GBR         0x05
-int color_order = SM16703P_COLOR_ORDER_RGB; // default to RGB
 
 static uint8_t translate_2bit(uint8_t input) {
 	//ADDLOG_INFO(LOG_FEATURE_CMD, "Translate 0x%02x to 0x%02x", (input & 0b00000011), data_translate[(input & 0b00000011)]);
@@ -138,6 +130,36 @@ void SPILED_SetRawBytes(int start_offset, byte *bytes, int numBytes, int push) {
 	}
 }
 
+void SPILED_Init() {
+	uint32_t val;
+#if PLATFORM_BK7231N
+	val = GFUNC_MODE_SPI_USE_GPIO_14;
+	sddev_control(GPIO_DEV_NAME, CMD_GPIO_ENABLE_SECOND, &val);
+
+	val = GFUNC_MODE_SPI_USE_GPIO_16_17;
+	sddev_control(GPIO_DEV_NAME, CMD_GPIO_ENABLE_SECOND, &val);
+
+	UINT32 param;
+	param = PCLK_POSI_SPI;
+	sddev_control(ICU_DEV_NAME, CMD_CONF_PCLK_26M, &param);
+
+	param = PWD_SPI_CLK_BIT;
+	sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_UP, &param);
+#else
+
+
+#endif
+}
+
+#define SM16703P_COLOR_ORDER_RGB         0x00
+#define SM16703P_COLOR_ORDER_RBG         0x01
+#define SM16703P_COLOR_ORDER_BRG         0x02
+#define SM16703P_COLOR_ORDER_BGR         0x03
+#define SM16703P_COLOR_ORDER_GRB         0x04
+#define SM16703P_COLOR_ORDER_GBR         0x05
+int color_order = SM16703P_COLOR_ORDER_RGB; // default to RGB
+
+
 bool SM16703P_VerifyPixel(uint32_t pixel, byte r, byte g, byte b) {
 	byte real[3];
 	SM16703P_GetPixel(pixel, real);
@@ -154,7 +176,7 @@ bool SM16703P_VerifyPixel(uint32_t pixel, byte r, byte g, byte b) {
 void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 
 	// Return if driver is not loaded
-	if (!initialized)
+	if (!spiled_ready)
 		return;
 
 	// Check max pixel
@@ -214,7 +236,7 @@ void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 	}
 }
 void SM16703P_setPixel(int pixel, int r, int g, int b) {
-	if (!initialized)
+	if (!spiled_ready)
 		return;
 	// Load data in correct format
 	int b0, b1, b2;
@@ -278,7 +300,7 @@ void SM16703P_scaleAllPixels(int scale) {
 }
 void SM16703P_setAllPixels(int r, int g, int b) {
 	int pixel;
-	if (!initialized)
+	if (!spiled_ready)
 		return;
 	// Load data in correct format
 	int b0, b1, b2;
@@ -382,6 +404,34 @@ commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, cons
 	return CMD_RES_OK;
 }
 
+void SPILED_InitDMA(int numBytes) {
+	// Prepare buffer
+	uint32_t buffer_size = pixel_offset + (numBytes * 4) + pixel_padding; //Add `pixel_offset` bytes for "Reset"
+
+	send_buf = (UINT8 *)os_malloc(sizeof(UINT8) * (buffer_size)); //18LEDs x RGB x 4Bytes
+	int i;
+
+	// Fill `pixel_offset` slice of the buffer with zero
+	for (i = 0; i < pixel_offset; i++) {
+		send_buf[i] = 0;
+	}
+	// Fill data slice of the buffer with data bits that decode to black color
+	for (i = pixel_offset; i < buffer_size - pixel_padding; i++) {
+		send_buf[i] = 0b10001000;
+	}
+	// Fill `pixel_padding` slice of the buffer with zero
+	for (i = buffer_size - pixel_padding; i < buffer_size; i++) {
+		send_buf[i] = 0;
+	}
+
+	spi_msg = os_malloc(sizeof(struct spi_message));
+	spi_msg->send_buf = send_buf;
+	spi_msg->send_len = buffer_size;
+
+	SPIDMA_Init(spi_msg);
+
+	spiled_ready = true;
+}
 commandResult_t SM16703P_InitForLEDCount(const void *context, const char *cmd, const char *args, int flags) {
 
 	Tokenizer_TokenizeString(args, 0);
@@ -413,7 +463,8 @@ commandResult_t SM16703P_InitForLEDCount(const void *context, const char *cmd, c
 		}
 		else if (!stricmp(format, "GBR")) {
 			color_order = SM16703P_COLOR_ORDER_GBR;
-		} else {
+		}
+		else {
 			ADDLOG_INFO(LOG_FEATURE_CMD, "Invalid color format, should be combination of R,G,B", format);
 			return CMD_RES_ERROR;
 		}
@@ -428,32 +479,9 @@ commandResult_t SM16703P_InitForLEDCount(const void *context, const char *cmd, c
 	}
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Register driver with %i LEDs", pixel_count);
-
-	// Prepare buffer
-	uint32_t buffer_size = pixel_offset + (pixel_count * 3 * 4) + pixel_padding; //Add `pixel_offset` bytes for "Reset"
-	send_buf = (UINT8 *)os_malloc(sizeof(UINT8) * (buffer_size)); //18LEDs x RGB x 4Bytes
-	int i;
-
-	// Fill `pixel_offset` slice of the buffer with zero
-	for (i = 0; i < pixel_offset; i++) {
-		send_buf[i] = 0;
-	}
-	// Fill data slice of the buffer with data bits that decode to black color
-	for (i = pixel_offset; i < buffer_size - pixel_padding; i++) {
-		send_buf[i] = 0b10001000;
-	}
-	// Fill `pixel_padding` slice of the buffer with zero
-	for (i = buffer_size - pixel_padding; i < buffer_size; i++) {
-		send_buf[i] = 0;
-	}
-
-	spi_msg = os_malloc(sizeof(struct spi_message));
-	spi_msg->send_buf = send_buf;
-	spi_msg->send_len = buffer_size;
-
-	SPIDMA_Init(spi_msg);
-
-	initialized = true;
+	
+	// each pixel is RGB, so 3 bytes per pixel
+	SPILED_InitDMA(pixel_count * 3);
 
 	return CMD_RES_OK;
 }
@@ -462,13 +490,13 @@ void SM16703P_Show() {
 	SPIDMA_StartTX(spi_msg);
 }
 static commandResult_t SM16703P_StartTX(const void *context, const char *cmd, const char *args, int flags) {
-	if (!initialized)
+	if (!spiled_ready)
 		return CMD_RES_ERROR;
 	SM16703P_Show();
 	return CMD_RES_OK;
 }
 //static commandResult_t SM16703P_CMD_sendBytes(const void *context, const char *cmd, const char *args, int flags) {
-//	if (!initialized)
+//	if (!spiled_ready)
 //		return CMD_RES_ERROR;
 //	const char *s = args;
 //	int i = pixel_offset;
@@ -484,31 +512,11 @@ static commandResult_t SM16703P_StartTX(const void *context, const char *cmd, co
 //	return CMD_RES_OK;
 //}
 
-void SPILED_Init() {
-	uint32_t val;
-#if PLATFORM_BK7231N
-	val = GFUNC_MODE_SPI_USE_GPIO_14;
-	sddev_control(GPIO_DEV_NAME, CMD_GPIO_ENABLE_SECOND, &val);
-
-	val = GFUNC_MODE_SPI_USE_GPIO_16_17;
-	sddev_control(GPIO_DEV_NAME, CMD_GPIO_ENABLE_SECOND, &val);
-
-	UINT32 param;
-	param = PCLK_POSI_SPI;
-	sddev_control(ICU_DEV_NAME, CMD_CONF_PCLK_26M, &param);
-
-	param = PWD_SPI_CLK_BIT;
-	sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_UP, &param);
-#else
-
-
-#endif
-}
 // startDriver SM16703P
 // backlog startDriver SM16703P; SM16703P_Test
 void SM16703P_Init() {
 
-	initialized = false;
+	spiled_ready = false;
 
 	SPILED_Init();
 
