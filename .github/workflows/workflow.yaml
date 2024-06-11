@@ -108,6 +108,7 @@ jobs:
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin.xz            
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin.xz.ota
           if-no-files-found: warn
+          overwrite: true
 
   release:
     name: Semantic Release Images and Artifacts
