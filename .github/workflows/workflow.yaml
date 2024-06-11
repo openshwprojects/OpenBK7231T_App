@@ -77,8 +77,6 @@ jobs:
           architecture: 'x64'
       - name: Install dependencies
         run: |
-          sudo npm fund
-          sudo npm audit fix
           sudo dpkg --add-architecture i386
           sudo apt-get update
           sudo apt-get -y install libc6-i386 make cmake gcc-arm-none-eabi
@@ -89,6 +87,10 @@ jobs:
       - run: ls -la
       - name: Run make
         run: make APP_VERSION=${{ needs.refs.outputs.version }} APP_NAME=${{ matrix.platform }} ${{ matrix.platform }}
+      - name: Debug build output
+        run: |
+          echo "VERSION=${{ needs.refs.outputs.version }}"
+          ls -la output/${{ needs.refs.outputs.version }}
       - name: Save build assets
         uses: actions/upload-artifact@v4
         with:
