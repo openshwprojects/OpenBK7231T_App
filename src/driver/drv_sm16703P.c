@@ -15,10 +15,10 @@
 
 #if WINDOWS
 
-void SPIDMA_Init(struct spi_message *spi_msg) {
+void SPIDMA_Init(struct spi_message *msg) {
 
 }
-void SPIDMA_StartTX(struct spi_message *spi_msg) {
+void SPIDMA_StartTX(struct spi_message *msg) {
 
 }
 void SPIDMA_StopTX(void) {
@@ -29,17 +29,21 @@ void SPIDMA_StopTX(void) {
 
 static uint8_t data_translate[4] = {0b10001000, 0b10001110, 0b11101000, 0b11101110};
 
-UINT8 *send_buf;
-struct spi_message *spi_msg;
-BOOLEAN spiled_ready = false;
+typedef struct spiLED_s {
+	UINT8 *buf;
+	struct spi_message *msg;
+	BOOLEAN ready;
+	// Number of empty bytes to send before pixel data on each frame
+	// Likely not needed as the data line should be LOW (reset) between frames anyway
+	uint32_t ofs;
+	// Number of empty bytes to send after pixel data on each frame
+	// Workaround to stuff the SPI buffer with empty bytes after a transmission (s.a. #1055)
+	uint32_t padding;
+} spiLED_t;
+
+spiLED_t spiLED;
 // Number of pixels that can be addressed
-uint32_t pixel_count = 0;
-// Number of empty bytes to send before pixel data on each frame
-// Likely not needed as the data line should be LOW (reset) between frames anyway
-uint32_t pixel_offset = 0;
-// Number of empty bytes to send after pixel data on each frame
-// Workaround to stuff the SPI buffer with empty bytes after a transmission (s.a. #1055)
-uint32_t pixel_padding = 64;
+uint32_t pixel_count;
 
 static uint8_t translate_2bit(uint8_t input) {
 	//ADDLOG_INFO(LOG_FEATURE_CMD, "Translate 0x%02x to 0x%02x", (input & 0b00000011), data_translate[(input & 0b00000011)]);
@@ -86,10 +90,10 @@ void SM16703P_GetPixel(uint32_t pixel, byte *dst) {
 	int i;
 	uint8_t *input;
 
-	if (spi_msg == 0)
+	if (spiLED.msg == 0)
 		return;
 	
-	input = spi_msg->send_buf + pixel_offset + (pixel * 3 * 4);
+	input = spiLED.msg->send_buf + spiLED.ofs + (pixel * 3 * 4);
 
 	for (i = 0; i < 3; i++) {
 		*dst++ = reverse_translate_byte(input + i * 4);
@@ -97,7 +101,7 @@ void SM16703P_GetPixel(uint32_t pixel, byte *dst) {
 }
 void SPILED_SetRawHexString(int start_offset, const char *s, int push) {
 	// start offset is in bytes, and we do 2 bits per dst byte, so *4
-	uint8_t *dst = spi_msg->send_buf + pixel_offset + start_offset*4;
+	uint8_t *dst = spiLED.msg->send_buf + spiLED.ofs + start_offset*4;
 
 	// parse hex string like FFAABB0011 byte by byte
 	while (s[0] && s[1]) {
@@ -110,12 +114,12 @@ void SPILED_SetRawHexString(int start_offset, const char *s, int push) {
 		s += 2;
 	}
 	if (push) {
-		SPIDMA_StartTX(spi_msg);
+		SPIDMA_StartTX(spiLED.msg);
 	}
 }
 void SPILED_SetRawBytes(int start_offset, byte *bytes, int numBytes, int push) {
 	// start offset is in bytes, and we do 2 bits per dst byte, so *4
-	uint8_t *dst = spi_msg->send_buf + pixel_offset + start_offset * 4;
+	uint8_t *dst = spiLED.msg->send_buf + spiLED.ofs + start_offset * 4;
 
 	// parse hex string like FFAABB0011 byte by byte
 	for(int i = 0; i < numBytes; i++) {
@@ -126,7 +130,7 @@ void SPILED_SetRawBytes(int start_offset, byte *bytes, int numBytes, int push) {
 		*dst++ = translate_2bit(b);
 	}
 	if (push) {
-		SPIDMA_StartTX(spi_msg);
+		SPIDMA_StartTX(spiLED.msg);
 	}
 }
 
@@ -176,7 +180,7 @@ bool SM16703P_VerifyPixel(uint32_t pixel, byte r, byte g, byte b) {
 void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 
 	// Return if driver is not loaded
-	if (!spiled_ready)
+	if (!spiLED.ready)
 		return;
 
 	// Check max pixel
@@ -184,7 +188,7 @@ void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 		pixel = pixel_count;
 
 	// Iterate over pixel
-	uint8_t *dst = spi_msg->send_buf + pixel_offset;
+	uint8_t *dst = spiLED.msg->send_buf + spiLED.ofs;
 	for (uint32_t i = 0; i < pixel; i++) {
 		uint8_t r, g, b;
 		if (color_order == SM16703P_COLOR_ORDER_RGB) {
@@ -232,11 +236,11 @@ void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 		*dst++ = translate_2bit(b);
 	}
 	if (push) {
-		SPIDMA_StartTX(spi_msg);
+		SPIDMA_StartTX(spiLED.msg);
 	}
 }
 void SM16703P_setPixel(int pixel, int r, int g, int b) {
-	if (!spiled_ready)
+	if (!spiLED.ready)
 		return;
 	// Load data in correct format
 	int b0, b1, b2;
@@ -270,9 +274,9 @@ void SM16703P_setPixel(int pixel, int r, int g, int b) {
 		b1 = b;
 		b2 = r;
 	}
-	translate_byte(b0, spi_msg->send_buf + (pixel_offset + 0 + (pixel * 3 * 4)));
-	translate_byte(b1, spi_msg->send_buf + (pixel_offset + 4 + (pixel * 3 * 4)));
-	translate_byte(b2, spi_msg->send_buf + (pixel_offset + 8 + (pixel * 3 * 4)));
+	translate_byte(b0, spiLED.msg->send_buf + (spiLED.ofs + 0 + (pixel * 3 * 4)));
+	translate_byte(b1, spiLED.msg->send_buf + (spiLED.ofs + 4 + (pixel * 3 * 4)));
+	translate_byte(b2, spiLED.msg->send_buf + (spiLED.ofs + 8 + (pixel * 3 * 4)));
 }
 extern float g_brightness0to100;//TODO
 void SM16703P_setPixelWithBrig(int pixel, int r, int g, int b) {
@@ -291,7 +295,7 @@ void SM16703P_scaleAllPixels(int scale) {
 
 	for (pixel = 0; pixel < pixel_count; pixel++) {
 		for (ofs = 0; ofs < 3; ofs++) {
-			data = spi_msg->send_buf + (pixel_offset + ofs * 4 + (pixel * 3 * 4));
+			data = spiLED.msg->send_buf + (spiLED.ofs + ofs * 4 + (pixel * 3 * 4));
 			b = reverse_translate_byte(data);
 			b = SCALE8_PIXEL(b, scale);
 			translate_byte(b, data);
@@ -300,7 +304,7 @@ void SM16703P_scaleAllPixels(int scale) {
 }
 void SM16703P_setAllPixels(int r, int g, int b) {
 	int pixel;
-	if (!spiled_ready)
+	if (!spiLED.ready)
 		return;
 	// Load data in correct format
 	int b0, b1, b2;
@@ -335,9 +339,9 @@ void SM16703P_setAllPixels(int r, int g, int b) {
 		b2 = r;
 	}
 	for (pixel = 0; pixel < pixel_count; pixel++) {
-		translate_byte(b0, spi_msg->send_buf + (pixel_offset + 0 + (pixel * 3 * 4)));
-		translate_byte(b1, spi_msg->send_buf + (pixel_offset + 4 + (pixel * 3 * 4)));
-		translate_byte(b2, spi_msg->send_buf + (pixel_offset + 8 + (pixel * 3 * 4)));
+		translate_byte(b0, spiLED.msg->send_buf + (spiLED.ofs + 0 + (pixel * 3 * 4)));
+		translate_byte(b1, spiLED.msg->send_buf + (spiLED.ofs + 4 + (pixel * 3 * 4)));
+		translate_byte(b2, spiLED.msg->send_buf + (spiLED.ofs + 8 + (pixel * 3 * 4)));
 	}
 }
 
@@ -386,18 +390,18 @@ commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, cons
 		SM16703P_setPixel(pixel, r, g, b);
 
 		ADDLOG_INFO(LOG_FEATURE_CMD, "Raw Data 0x%02x 0x%02x 0x%02x 0x%02x - 0x%02x 0x%02x 0x%02x 0x%02x - 0x%02x 0x%02x 0x%02x 0x%02x",
-			spi_msg->send_buf[pixel_offset + 0 + (pixel * 3 * 4)],
-			spi_msg->send_buf[pixel_offset + 1 + (pixel * 3 * 4)],
-			spi_msg->send_buf[pixel_offset + 2 + (pixel * 3 * 4)],
-			spi_msg->send_buf[pixel_offset + 3 + (pixel * 3 * 4)],
-			spi_msg->send_buf[pixel_offset + 4 + (pixel * 3 * 4)],
-			spi_msg->send_buf[pixel_offset + 5 + (pixel * 3 * 4)],
-			spi_msg->send_buf[pixel_offset + 6 + (pixel * 3 * 4)],
-			spi_msg->send_buf[pixel_offset + 7 + (pixel * 3 * 4)],
-			spi_msg->send_buf[pixel_offset + 8 + (pixel * 3 * 4)],
-			spi_msg->send_buf[pixel_offset + 9 + (pixel * 3 * 4)],
-			spi_msg->send_buf[pixel_offset + 10 + (pixel * 3 * 4)],
-			spi_msg->send_buf[pixel_offset + 11 + (pixel * 3 * 4)]);
+			spiLED.msg->send_buf[spiLED.ofs + 0 + (pixel * 3 * 4)],
+			spiLED.msg->send_buf[spiLED.ofs + 1 + (pixel * 3 * 4)],
+			spiLED.msg->send_buf[spiLED.ofs + 2 + (pixel * 3 * 4)],
+			spiLED.msg->send_buf[spiLED.ofs + 3 + (pixel * 3 * 4)],
+			spiLED.msg->send_buf[spiLED.ofs + 4 + (pixel * 3 * 4)],
+			spiLED.msg->send_buf[spiLED.ofs + 5 + (pixel * 3 * 4)],
+			spiLED.msg->send_buf[spiLED.ofs + 6 + (pixel * 3 * 4)],
+			spiLED.msg->send_buf[spiLED.ofs + 7 + (pixel * 3 * 4)],
+			spiLED.msg->send_buf[spiLED.ofs + 8 + (pixel * 3 * 4)],
+			spiLED.msg->send_buf[spiLED.ofs + 9 + (pixel * 3 * 4)],
+			spiLED.msg->send_buf[spiLED.ofs + 10 + (pixel * 3 * 4)],
+			spiLED.msg->send_buf[spiLED.ofs + 11 + (pixel * 3 * 4)]);
 	}
 
 
@@ -406,31 +410,31 @@ commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, cons
 
 void SPILED_InitDMA(int numBytes) {
 	// Prepare buffer
-	uint32_t buffer_size = pixel_offset + (numBytes * 4) + pixel_padding; //Add `pixel_offset` bytes for "Reset"
+	uint32_t buffer_size = spiLED.ofs + (numBytes * 4) + spiLED.padding; //Add `spiLED.ofs` bytes for "Reset"
 
-	send_buf = (UINT8 *)os_malloc(sizeof(UINT8) * (buffer_size)); //18LEDs x RGB x 4Bytes
+	spiLED.buf = (UINT8 *)os_malloc(sizeof(UINT8) * (buffer_size)); //18LEDs x RGB x 4Bytes
 	int i;
 
-	// Fill `pixel_offset` slice of the buffer with zero
-	for (i = 0; i < pixel_offset; i++) {
-		send_buf[i] = 0;
+	// Fill `spiLED.ofs` slice of the buffer with zero
+	for (i = 0; i < spiLED.ofs; i++) {
+		spiLED.buf[i] = 0;
 	}
 	// Fill data slice of the buffer with data bits that decode to black color
-	for (i = pixel_offset; i < buffer_size - pixel_padding; i++) {
-		send_buf[i] = 0b10001000;
+	for (i = spiLED.ofs; i < buffer_size - spiLED.padding; i++) {
+		spiLED.buf[i] = 0b10001000;
 	}
-	// Fill `pixel_padding` slice of the buffer with zero
-	for (i = buffer_size - pixel_padding; i < buffer_size; i++) {
-		send_buf[i] = 0;
+	// Fill `spiLED.padding` slice of the buffer with zero
+	for (i = buffer_size - spiLED.padding; i < buffer_size; i++) {
+		spiLED.buf[i] = 0;
 	}
 
-	spi_msg = os_malloc(sizeof(struct spi_message));
-	spi_msg->send_buf = send_buf;
-	spi_msg->send_len = buffer_size;
+	spiLED.msg = os_malloc(sizeof(struct spi_message));
+	spiLED.msg->send_buf = spiLED.buf;
+	spiLED.msg->send_len = buffer_size;
 
-	SPIDMA_Init(spi_msg);
+	SPIDMA_Init(spiLED.msg);
 
-	spiled_ready = true;
+	spiLED.ready = true;
 }
 commandResult_t SM16703P_InitForLEDCount(const void *context, const char *cmd, const char *args, int flags) {
 
@@ -469,13 +473,13 @@ commandResult_t SM16703P_InitForLEDCount(const void *context, const char *cmd, c
 			return CMD_RES_ERROR;
 		}
 	}
-	// Third arg (optional, default "0"): pixel_offset to prepend to each transmission
+	// Third arg (optional, default "0"): spiLED.ofs to prepend to each transmission
 	if (Tokenizer_GetArgsCount() > 2) {
-		pixel_offset = Tokenizer_GetArgIntegerRange(2, 0, 255);
+		spiLED.ofs = Tokenizer_GetArgIntegerRange(2, 0, 255);
 	}
-	// Fourth arg (optional, default "64"): pixel_padding to append to each transmission
+	// Fourth arg (optional, default "64"): spiLED.padding to append to each transmission
 	if (Tokenizer_GetArgsCount() > 3) {
-		pixel_padding = Tokenizer_GetArgIntegerRange(3, 0, 255);
+		spiLED.padding = Tokenizer_GetArgIntegerRange(3, 0, 255);
 	}
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Register driver with %i LEDs", pixel_count);
@@ -487,28 +491,28 @@ commandResult_t SM16703P_InitForLEDCount(const void *context, const char *cmd, c
 }
 
 void SM16703P_Show() {
-	SPIDMA_StartTX(spi_msg);
+	SPIDMA_StartTX(spiLED.msg);
 }
 static commandResult_t SM16703P_StartTX(const void *context, const char *cmd, const char *args, int flags) {
-	if (!spiled_ready)
+	if (!spiLED.ready)
 		return CMD_RES_ERROR;
 	SM16703P_Show();
 	return CMD_RES_OK;
 }
 //static commandResult_t SM16703P_CMD_sendBytes(const void *context, const char *cmd, const char *args, int flags) {
-//	if (!spiled_ready)
+//	if (!spiLED.ready)
 //		return CMD_RES_ERROR;
 //	const char *s = args;
-//	int i = pixel_offset;
+//	int i = spiLED.ofs;
 //	while (*s && s[1]) {
-//		*(spi_msg->send_buf + (i)) = hexbyte(s);
+//		*(spiLED.msg->send_buf + (i)) = hexbyte(s);
 //		s += 2;
 //		i++;
 //	}
-//	while (i < spi_msg->send_len) {
-//		*(spi_msg->send_buf + (i)) = 0;
+//	while (i < spiLED.msg->send_len) {
+//		*(spiLED.msg->send_buf + (i)) = 0;
 //	}
-//	SPIDMA_StartTX(spi_msg);
+//	SPIDMA_StartTX(spiLED.msg);
 //	return CMD_RES_OK;
 //}
 
@@ -516,7 +520,7 @@ static commandResult_t SM16703P_StartTX(const void *context, const char *cmd, co
 // backlog startDriver SM16703P; SM16703P_Test
 void SM16703P_Init() {
 
-	spiled_ready = false;
+	spiLED.ready = false;
 
 	SPILED_Init();
 
