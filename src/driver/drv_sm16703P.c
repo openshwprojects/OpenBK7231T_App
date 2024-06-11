@@ -409,11 +409,12 @@ commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, cons
 }
 
 void SPILED_InitDMA(int numBytes) {
+	int i;
+
 	// Prepare buffer
 	uint32_t buffer_size = spiLED.ofs + (numBytes * 4) + spiLED.padding; //Add `spiLED.ofs` bytes for "Reset"
 
 	spiLED.buf = (UINT8 *)os_malloc(sizeof(UINT8) * (buffer_size)); //18LEDs x RGB x 4Bytes
-	int i;
 
 	// Fill `spiLED.ofs` slice of the buffer with zero
 	for (i = 0; i < spiLED.ofs; i++) {
@@ -478,6 +479,7 @@ commandResult_t SM16703P_InitForLEDCount(const void *context, const char *cmd, c
 		spiLED.ofs = Tokenizer_GetArgIntegerRange(2, 0, 255);
 	}
 	// Fourth arg (optional, default "64"): spiLED.padding to append to each transmission
+	spiLED.padding = 64;
 	if (Tokenizer_GetArgsCount() > 3) {
 		spiLED.padding = Tokenizer_GetArgIntegerRange(3, 0, 255);
 	}
@@ -519,9 +521,6 @@ static commandResult_t SM16703P_StartTX(const void *context, const char *cmd, co
 // startDriver SM16703P
 // backlog startDriver SM16703P; SM16703P_Test
 void SM16703P_Init() {
-
-	spiLED.ready = false;
-
 	SPILED_Init();
 
 	//cmddetail:{"name":"SM16703P_Init","args":"[NumberOfLEDs][ColorOrder]",
