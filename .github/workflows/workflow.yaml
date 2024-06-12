@@ -88,11 +88,15 @@ jobs:
       - name: Run make
         run: make APP_VERSION=${{ needs.refs.outputs.version }} APP_NAME=${{ matrix.platform }} ${{ matrix.platform }}
       - name: Archive build assets
-      - name: Archive build assets
         run: |
           zip -r ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}-ubuntu-20.04_${{ matrix.platform }}.zip \
           output/${{ needs.refs.outputs.version }}/*  # Archive all files within the output directory
         if: success()  # Only archive if the build step succeeds
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}-ubuntu-20.04_${{ matrix.platform }}.zip
+          path: output/${{ needs.refs.outputs.version }}/*.zip  # Upload only the zip file
 
   release:
     name: Semantic Release Images and Artifacts
