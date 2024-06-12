@@ -42,22 +42,22 @@ jobs:
       - name: Set outputs
         id: refs
         run: |
-          export BRANCH=${GITHUB_REF#refs/heads/}
+          export BRANCH=${GITHUB_REF#refs/*/}
           echo "branch: ${BRANCH}"
           export BRANCHTRANSLATED=$(echo ${BRANCH} | tr '/' '_')
           echo "short_ref: ${BRANCHTRANSLATED}"
           export VERSION=""
-          if [ "${{ steps.semantic.outputs.new_release_published }}" = "true" ]; then
+          if ${{ steps.semantic.outputs.new_release_published == 'true' }}; then
             export VERSION=${{ steps.semantic.outputs.new_release_version }}
           else
             export VERSION=${BRANCHTRANSLATED}_$(git rev-parse --short=12 HEAD)
           fi
           echo "new_release: ${{ steps.semantic.outputs.new_release_published }}"
           echo "version: ${VERSION}"
-          echo "name=new_release::${{ steps.semantic.outputs.new_release_published }}" >> $GITHUB_ENV
-          echo "name=short_ref::${BRANCHTRANSLATED}" >> $GITHUB_ENV
-          echo "name=sha_short::SHA-$(git rev-parse --short=12 HEAD)" >> $GITHUB_ENV
-          echo "name=version::${VERSION}" >> $GITHUB_ENV
+          echo "::set-output name=new_release::${{ steps.semantic.outputs.new_release_published }}"
+          echo "::set-output name=short_ref::${BRANCHTRANSLATED}"
+          echo "::set-output name=sha_short::SHA-$(git rev-parse --short=12 HEAD)"
+          echo "::set-output name=version::${VERSION}"
   build:
     name: Build
     needs: refs
@@ -71,7 +71,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive        
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v2
         with:
           python-version: '3.8'
           architecture: 'x64'
@@ -87,15 +87,10 @@ jobs:
       - run: ls -la
       - name: Run make
         run: make APP_VERSION=${{ needs.refs.outputs.version }} APP_NAME=${{ matrix.platform }} ${{ matrix.platform }}
-      - name: Debug build output
-        run: |
-          echo "VERSION=${{ needs.refs.outputs.version }}"
-          ls -la output
-          ls -la output/${{ needs.refs.outputs.version }}
       - name: Save build assets
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
-          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}-ubuntu-20.04
+          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
           path: |
             output/${{ needs.refs.outputs.version }}/OpenBK7231T_UA_${{ needs.refs.outputs.version }}.bin
             output/${{ needs.refs.outputs.version }}/OpenBK7231T_UG_${{ needs.refs.outputs.version }}.bin
@@ -112,10 +107,7 @@ jobs:
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin      
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin.xz            
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin.xz.ota
-          compression-level: 6
-          merge-multiple: true
           if-no-files-found: warn
-          overwrite: true
 
   release:
     name: Semantic Release Images and Artifacts
@@ -126,13 +118,13 @@ jobs:
       - name: Source checkout
         uses: actions/checkout@v4
       - name: Fetch build assets
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
           path: output/${{ needs.refs.outputs.version }}
       - name: Run Semantic Release
         id: semantic
-        uses: cycjimmy/semantic-release-action@v3
+        uses: cycjimmy/semantic-release-action@v4
         with:
           dry_run: false
           semantic_version: 21
