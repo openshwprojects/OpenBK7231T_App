@@ -109,6 +109,12 @@ jobs:
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin.xz.ota
           overwrite: true
           if-no-files-found: warn
+  merge:
+      runs-on: ubuntu-latest
+      needs: build 
+      steps:
+          - name: Merge Artifacts
+            uses: actions/upload-artifact/merge@v4
 
   release:
     name: Semantic Release Images and Artifacts
