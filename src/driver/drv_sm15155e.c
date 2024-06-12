@@ -12,6 +12,7 @@
 #include "../mqtt/new_mqtt.h"
 
 #include "drv_spiLED.h"
+#include "drv_local.h"
 
 
 
@@ -39,6 +40,8 @@ void SM15155E_Write(float *rgbcw) {
 
 // startDriver SM15155E
 void SM15155E_Init() {
+	CMD_RegisterCommand("LED_Map", CMD_LEDDriver_Map, NULL);
+
 	SPILED_Init();
 
 	// FF00 0000 0000 0000 0000 73 9C E7 1F 00
