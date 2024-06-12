@@ -54,10 +54,10 @@ jobs:
           fi
           echo "new_release: ${{ steps.semantic.outputs.new_release_published }}"
           echo "version: ${VERSION}"
-          echo "name=new_release::${{ steps.semantic.outputs.new_release_published }}" >> $GITHUB_OUTPUT
-          echo "name=short_ref::${BRANCHTRANSLATED}" >> $GITHUB_OUTPUT
-          echo "name=sha_short::SHA-$(git rev-parse --short=12 HEAD)" >> $GITHUB_OUTPUT
-          echo "name=version::${VERSION}" >> $GITHUB_OUTPUT
+          echo "name=new_release::${{ steps.semantic.outputs.new_release_published }}" >> $GITHUB_ENV
+          echo "name=short_ref::${BRANCHTRANSLATED}" >> $GITHUB_ENV
+          echo "name=sha_short::SHA-$(git rev-parse --short=12 HEAD)" >> $GITHUB_ENV
+          echo "name=version::${VERSION}" >> $GITHUB_ENV
   build:
     name: Build
     needs: refs
@@ -90,6 +90,7 @@ jobs:
       - name: Debug build output
         run: |
           echo "VERSION=${{ needs.refs.outputs.version }}"
+          ls -la output
           ls -la output/${{ needs.refs.outputs.version }}
       - name: Save build assets
         uses: actions/upload-artifact@v4
@@ -111,6 +112,7 @@ jobs:
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin      
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin.xz            
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin.xz.ota
+          compression-level: 6
           if-no-files-found: warn
           overwrite: true
 
