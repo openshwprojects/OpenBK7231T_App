@@ -335,6 +335,8 @@
     <ClCompile Include="src\driver\drv_hd2015.c" />
     <ClCompile Include="src\selftest\selftest_doorSensor.c" />
     <ClCompile Include="src\driver\drv_drawers.c" />
+    <ClCompile Include="src\driver\drv_spiLED.c" />
+    <ClCompile Include="src\driver\drv_sm15155e.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\base64\base64.h" />
@@ -487,6 +489,7 @@
     <ClInclude Include="src\ntp_time.h" />
     <ClInclude Include="src\obk_config.h" />
     <ClInclude Include="src\sim\Controller_WS2812.h" />
+    <ClInclude Include="src\driver\drv_spiLED.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\include\net_param_pub.h" />
