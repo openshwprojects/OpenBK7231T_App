@@ -115,8 +115,9 @@ jobs:
       steps:
           - name: Merge Artifacts
             uses: actions/upload-artifact/merge@v4
-           # with:
-            #  delete-merged: true
+            with:
+              name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
+              delete-merged: true
 
   release:
     name: Semantic Release Images and Artifacts
