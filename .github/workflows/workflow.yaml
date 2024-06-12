@@ -61,7 +61,7 @@ jobs:
   build:
     name: Build
     needs: refs
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-20.04 # working OS
     strategy:
       fail-fast: false
       matrix:
@@ -70,7 +70,7 @@ jobs:
       - name: Source checkout
         uses: actions/checkout@v4
         with:
-          submodules: recursive        
+          submodules: recursive
       - uses: actions/setup-python@v5
         with:
           python-version: '3.8'
@@ -88,9 +88,9 @@ jobs:
       - name: Run make
         run: make APP_VERSION=${{ needs.refs.outputs.version }} APP_NAME=${{ matrix.platform }} ${{ matrix.platform }}
       - name: Save build assets
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4  # Update action version
         with:
-          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
+          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}-ubuntu-20.04  # Keep the existing OS name
           path: |
             output/${{ needs.refs.outputs.version }}/OpenBK7231T_UA_${{ needs.refs.outputs.version }}.bin
             output/${{ needs.refs.outputs.version }}/OpenBK7231T_UG_${{ needs.refs.outputs.version }}.bin
