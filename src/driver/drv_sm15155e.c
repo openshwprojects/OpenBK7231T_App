@@ -1,3 +1,16 @@
+/*
+
+Related topic: https://www.elektroda.com/rtvforum/viewtopic.php?p=21111677#21111677
+
+
+Usage:
+
+startDriver SM15155E
+LED_Map 0 1 3 2 4
+
+
+*/
+
 #if PLATFORM_BK7231N || WINDOWS
 
 
