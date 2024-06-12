@@ -20,13 +20,17 @@
 
 void SM15155E_Write(float *rgbcw) {
 	byte packet[16];
+
 	int i;
 	unsigned short *cur_col_16 = (unsigned short)&packet[0];
 
+	memset(packet, 0, sizeof(packet));
+
 	for (i = 0; i < 5; i++) {
 		// convert 0-255 to 0-1023
-		cur_col_16[i] = MAP(rgbcw[g_cfg.ledRemap.ar[i]], 0, 255.0f, 0, 65535.0f);
+		//cur_col_16[i] = MAP(rgbcw[g_cfg.ledRemap.ar[i]], 0, 255.0f, 0, 65535.0f);
 
+		packet[i * 2] = rgbcw[g_cfg.ledRemap.ar[i]];
 	}
 	packet[10] = 0x73;
 	packet[11] = 0x9C;
