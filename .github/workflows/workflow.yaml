@@ -42,12 +42,12 @@ jobs:
       - name: Set outputs
         id: refs
         run: |
-          export BRANCH=${GITHUB_REF#refs/*/}
+          export BRANCH=${GITHUB_REF#refs/heads/}
           echo "branch: ${BRANCH}"
           export BRANCHTRANSLATED=$(echo ${BRANCH} | tr '/' '_')
           echo "short_ref: ${BRANCHTRANSLATED}"
           export VERSION=""
-          if [ "${{ steps.semantic.outputs.new_release_published }}" == "true" ]; then
+          if [ "${{ steps.semantic.outputs.new_release_published }}" = "true" ]; then
             export VERSION=${{ steps.semantic.outputs.new_release_version }}
           else
             export VERSION=${BRANCHTRANSLATED}_$(git rev-parse --short=12 HEAD)
@@ -112,7 +112,7 @@ jobs:
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin.xz            
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin.xz.ota
           if-no-files-found: warn
-          overwrite: false
+          overwrite: true
 
   release:
     name: Semantic Release Images and Artifacts
