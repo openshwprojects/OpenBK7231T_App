@@ -28,6 +28,7 @@ static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"
 #include <bl_adc.h>     //  For BL602 ADC HAL
 #include <bl602_adc.h>  //  For BL602 ADC Standard Driver
 #include <bl602_glb.h>  //  For BL602 Global Register Standard Driver
+#include <wifi_mgmr_ext.h> //For BL602 WiFi AP Scan
 #elif PLATFORM_W600 || PLATFORM_W800
 
 #elif PLATFORM_XR809
@@ -1197,7 +1198,17 @@ int http_fn_cfg_wifi(http_request_t* request) {
 #elif PLATFORM_W600 || PLATFORM_W800
 		poststr(request, "TODO W800<br>");
 #elif PLATFORM_BL602
-		poststr(request, "TODO BL602<br>");
+               wifi_mgmr_ap_item_t *ap_info;
+               uint32_t i, ap_num;
+
+               bk_printf("Scan begin...\r\n");
+               wifi_mgmr_all_ap_scan(&ap_info, &ap_num);
+               bk_printf("Scan returned %li networks\r\n", ap_num);
+
+               for (i = 0; i < ap_num; i++) {
+                       hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", (i+1), (int)ap_num, ap_info[i].ssid, ap_info[i].channel, ap_info[i].rssi);
+               }
+               vPortFree(ap_info);
 #elif PLATFORM_BK7231T
 		int i;
 
