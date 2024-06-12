@@ -325,10 +325,10 @@ commandResult_t SM16703P_InitForLEDCount(const void *context, const char *cmd, c
 		spiLED.ofs = Tokenizer_GetArgIntegerRange(2, 0, 255);
 	}
 	// Fourth arg (optional, default "64"): spiLED.padding to append to each transmission
-	spiLED.padding = 64;
-	if (Tokenizer_GetArgsCount() > 3) {
-		spiLED.padding = Tokenizer_GetArgIntegerRange(3, 0, 255);
-	}
+	//spiLED.padding = 64;
+	//if (Tokenizer_GetArgsCount() > 3) {
+	//	spiLED.padding = Tokenizer_GetArgIntegerRange(3, 0, 255);
+	//}
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Register driver with %i LEDs", pixel_count);
 	
