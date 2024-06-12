@@ -54,10 +54,10 @@ jobs:
           fi
           echo "new_release: ${{ steps.semantic.outputs.new_release_published }}"
           echo "version: ${VERSION}"
-          echo "::set-output name=new_release::${{ steps.semantic.outputs.new_release_published }}"
-          echo "::set-output name=short_ref::${BRANCHTRANSLATED}"
-          echo "::set-output name=sha_short::SHA-$(git rev-parse --short=12 HEAD)"
-          echo "::set-output name=version::${VERSION}"
+          echo "new_release=${{ steps.semantic.outputs.new_release_published }}" >> $GITHUB_STATE
+          echo "short_ref=${BRANCHTRANSLATED}" >> $GITHUB_STATE
+          echo "sha_short=SHA-$(git rev-parse --short=12 HEAD)" >> $GITHUB_STATE
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
   build:
     name: Build
     needs: refs
