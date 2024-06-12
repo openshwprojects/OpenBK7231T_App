@@ -95,8 +95,9 @@ jobs:
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}-ubuntu-20.04_${{ matrix.platform }}.zip
-          path: output/${{ needs.refs.outputs.version }}/*.zip  # Upload only the zip file
+          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}-ubuntu-20.04_${{ matrix.platform }}  # Append platform name for uniqueness and OS name
+          path: output/${{ needs.refs.outputs.version }}/*  # Upload all files within the directory using wildcard
+          if-no-files-found: warn
 
   release:
     name: Semantic Release Images and Artifacts
