@@ -110,11 +110,13 @@ jobs:
           overwrite: true
           if-no-files-found: warn
   merge:
-      runs-on: ubuntu-latest
+      runs-on: ubuntu-20.04
       needs: build 
       steps:
           - name: Merge Artifacts
             uses: actions/upload-artifact/merge@v4
+           # with:
+            #  delete-merged: true
 
   release:
     name: Semantic Release Images and Artifacts
