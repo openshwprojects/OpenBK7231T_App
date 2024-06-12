@@ -93,9 +93,9 @@ jobs:
           ls -la output
           ls -la output/${{ needs.refs.outputs.version }}
       - name: Save build assets
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
+          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}-ubuntu-20.04
           path: |
             output/${{ needs.refs.outputs.version }}/OpenBK7231T_UA_${{ needs.refs.outputs.version }}.bin
             output/${{ needs.refs.outputs.version }}/OpenBK7231T_UG_${{ needs.refs.outputs.version }}.bin
@@ -113,6 +113,7 @@ jobs:
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin.xz            
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin.xz.ota
           compression-level: 6
+          merge-multiple: true
           if-no-files-found: warn
           overwrite: true
 
