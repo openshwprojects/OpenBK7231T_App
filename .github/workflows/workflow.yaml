@@ -88,10 +88,10 @@ jobs:
       - name: Run make
         run: make APP_VERSION=${{ needs.refs.outputs.version }} APP_NAME=${{ matrix.platform }} ${{ matrix.platform }}
       - name: Archive build assets
+      - name: Archive build assets
         run: |
-          tar -cf ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}-ubuntu-20.04_${{ matrix.platform }}.tar \
-          output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_*
-          rm -rf output/${{ needs.refs.outputs.version }}  # Optional: Remove individual files after archiving (clean up)
+          zip -r ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}-ubuntu-20.04_${{ matrix.platform }}.zip \
+          output/${{ needs.refs.outputs.version }}/*  # Archive all files within the output directory
         if: success()  # Only archive if the build step succeeds
 
   release:
