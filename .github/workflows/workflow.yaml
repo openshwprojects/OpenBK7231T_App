@@ -125,7 +125,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: '*_${{ needs.refs.outputs.version }}-ubuntu-20.04_*'
+          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}-ubuntu-20.04_Open*
           path: artifacts
       - name: Create zip file
         run: |
