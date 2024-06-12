@@ -80,10 +80,11 @@ spiLED_t spiLED;
 void SPILED_InitDMA(int numBytes) {
 	int i;
 
+	spiLED.padding = 64;
+
 	// Prepare buffer
 	uint32_t buffer_size = spiLED.ofs + (numBytes * 4) + spiLED.padding; //Add `spiLED.ofs` bytes for "Reset"
 
-	spiLED.padding = 64;
 	spiLED.buf = (UINT8 *)os_malloc(sizeof(UINT8) * (buffer_size)); //18LEDs x RGB x 4Bytes
 
 	// Fill `spiLED.ofs` slice of the buffer with zero
