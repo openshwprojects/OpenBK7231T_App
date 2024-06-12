@@ -50,8 +50,15 @@ void BP1658CJ_Init();
 
 void KP18058_Init();
 
+void SM15155E_Init();
 
 void SM16703P_Init();
+void SM16703P_setPixel(int pixel, int r, int g, int b);
+void SM16703P_setPixelWithBrig(int pixel, int r, int g, int b);
+void SM16703P_setAllPixels(int r, int g, int b);
+void SM16703P_scaleAllPixels(int scale);
+void SM16703P_Show();
+extern uint32_t pixel_count;
 
 void TM1637_Init();
 
@@ -60,6 +67,8 @@ void GN6932_Init();
 void TM1638_Init();
 
 void HT16K33_Init();
+
+void HD2015_Init();
 
 void DRV_ADCSmoother_Init();
 void DRV_ADCSmoother_RunFrame();
@@ -92,6 +101,15 @@ void SHT3X_Init();
 void SHT3X_AppendInformationToHTTPIndexPage(http_request_t* request);
 void SHT3X_OnEverySecond();
 void SHT3X_StopDriver();
+
+void AHT2X_Init();
+void AHT2X_AppendInformationToHTTPIndexPage(http_request_t* request);
+void AHT2X_OnEverySecond();
+void AHT2X_StopDriver();
+
+void BMPI2C_Init();
+void BMPI2C_AppendInformationToHTTPIndexPage(http_request_t* request);
+void BMPI2C_OnEverySecond();
 
 void SGP_Init();
 void SGP_AppendInformationToHTTPIndexPage(http_request_t* request);
@@ -128,7 +146,22 @@ void ChargingLimit_AppendInformationToHTTPIndexPage(http_request_t *request);
 void RN8209_Init(void);
 void RN8029_RunEverySecond(void);
 
+void MAX6675_Init(void);
+void MAX6675_RunEverySecond(void);
+
 void PWMG_Init();
+
+void Freeze_Init();
+void Freeze_OnEverySecond();
+void Freeze_RunFrame();
+
+void PixelAnim_Init();
+void PixelAnim_SetAnimQuickTick();
+void PixelAnim_SetAnim(int j);
+
+void Drawers_Init();
+void Drawers_QuickTick();
+
 
 #define SM2135_DELAY         4
 

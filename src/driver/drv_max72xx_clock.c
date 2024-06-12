@@ -70,7 +70,7 @@ void Clock_Send(int type) {
 	char *p;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime((time_t*)&g_ntpTime);
+	ltm = gmtime(&g_ntpTime);
 
 	if (ltm == 0) {
 		return;
@@ -143,7 +143,7 @@ void Run_Animated() {
 	char *p;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime((time_t*)&g_ntpTime);
+	ltm = gmtime(&g_ntpTime);
 
 	if (ltm == 0) {
 		return;

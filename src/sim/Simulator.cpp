@@ -57,7 +57,7 @@ void CSimulator::drawWindow() {
 	const char *projectPathDisp = projectPath.c_str();
 	if (*projectPathDisp == 0)
 		projectPathDisp = "none";
-	sprintf(buffer, "OpenBeken Simulator - %s", projectPathDisp);
+	sprintf(buffer, "OpenBeken Simulator " __DATE__  " - %s", projectPathDisp);
 	if (SIM_IsFlashModified()) {
 		strcat(buffer, " (FLASH MODIFIED)");
 	}
@@ -269,6 +269,7 @@ bool CSimulator::loadSimulation(const char *s) {
 		fixed.append(".obkproj");
 		s = fixed.c_str();
 		if (FS_Exists(s) == false) {
+			printf("CSimulator::loadSimulation: cannot open %s\n", s);
 			return true;
 		}
 	}
@@ -279,9 +280,30 @@ bool CSimulator::loadSimulation(const char *s) {
 	printf("CSimulator::loadSimulation: simPath %s\n", simPath.c_str());
 	printf("CSimulator::loadSimulation: memPath %s\n", memPath.c_str());
 
+	if (FS_Exists(simPath.c_str()) == false) {
+		printf("CSimulator::loadSimulation: there is no %s\n", simPath.c_str());
+		return true;
+	}
+	if (FS_Exists(memPath.c_str()) == false) {
+		printf("CSimulator::loadSimulation: there is no %s\n", memPath.c_str());
+		return true;
+	}
+	printf("CSimulator::loadSimulation: going to load %s\n", s);
+	CProject *newProject = saveLoad->loadProjectFile(s);
+	if (newProject == 0) {
+		printf("CSimulator::loadSimulation: failed reading %s\n", s);
+		return true;
+	}
+	printf("CSimulator::loadSimulation: loaded %s\n", s);
+	CSimulation *newSim = saveLoad->loadSimulationFromFile(simPath.c_str());
+	if (newSim == 0) {
+		printf("CSimulator::loadSimulation: failed reading %s\n", simPath.c_str());
+		return true;
+	}
+	printf("CSimulator::loadSimulation: loaded %s\n", simPath.c_str());
 	projectPath = s;
-	project = saveLoad->loadProjectFile(s);
-	sim = saveLoad->loadSimulationFromFile(simPath.c_str());
+	project = newProject;
+	sim = newSim;
 	recents->registerAndSave(projectPath.c_str());
 	SIM_ClearOBK(memPath.c_str());
 	sim->recalcBounds();

@@ -198,10 +198,8 @@ typedef int (*beken_thread_function_t)(void *p);
 #include <task.h>
 #include <portable.h>
 #include <semphr.h>
-
-typedef int bool;
-#define true 1
-#define false 0
+#include <stdbool.h>
+#include <stdint.h>
 
 #define ASSERT
 #define os_strcpy strcpy
@@ -212,6 +210,7 @@ typedef int bool;
 #define bk_printf printf
 
 #define rtos_delay_milliseconds vTaskDelay
+#define delay_ms vTaskDelay
 
 #define kNoErr                      0       //! No error occurred.
 typedef void *beken_thread_arg_t;
@@ -323,9 +322,7 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 #elif PLATFORM_LN882H
 
 // TODO:LN882H Platform setup here.
-typedef int bool;
-#define true 1
-#define false 0
+#include <stdbool.h>
 
 #define ASSERT
 #define os_strcpy strcpy
@@ -477,14 +474,19 @@ WIFI_RSSI_LEVEL wifi_rssi_scale(int8_t rssi_value);
 extern const char *str_rssi[];
 extern int bSafeMode;
 extern int g_bWantPinDeepSleep;
+extern int g_pinDeepSleepWakeUp;
 extern int g_timeSinceLastPingReply;
 extern int g_startPingWatchDogAfter;
 extern int g_openAP;
 extern int g_bootFailures;
 extern int g_secondsElapsed;
+extern int g_rebootReason;
+extern float g_wifi_temperature;
 
 typedef int(*jsonCb_t)(void *userData, const char *fmt, ...);
+#if ENABLE_TASMOTA_JSON
 int JSON_ProcessCommandReply(const char *cmd, const char *args, void *request, jsonCb_t printer, int flags);
+#endif
 void ScheduleDriverStart(const char *name, int delay);
 bool isWhiteSpace(char ch);
 void convert_IP_to_string(char *o, unsigned char *ip);

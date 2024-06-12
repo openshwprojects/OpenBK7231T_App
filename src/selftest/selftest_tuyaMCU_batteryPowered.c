@@ -230,7 +230,7 @@ void Test_TuyaMCU_BatteryPowered_DPcacheFeature() {
 		HEADER	VER=00	ObtainDPcache		LEN		CHK
 		Sent by WiFi module:
 		55 AA	00	10		00 12	010211020004000000011202000400000001	55
-		HEADER	VER=00	ObtainDPcache		LEN	fnId=17 Val V=1,fnId=18 Val V=1	CHK
+		HEADER	VER=00	ObtainDPcache		LEN	dpId=17 Val V=1,dpId=18 Val V=1	CHK
 	*/
 	// reset whole device
 	SIM_ClearOBK(0);
@@ -243,9 +243,9 @@ void Test_TuyaMCU_BatteryPowered_DPcacheFeature() {
 	// 01 02 
 	// result 1 (OK), numVars 2
 	// 11 02 0004 00000001  		
-	// fnId = 17 Len = 0004 Val V = 1
+	// dpId = 17 Len = 0004 Val V = 1
 	// 12 02 0004 00000001
-	// fnId = 18 Len = 0004 Val V = 1	
+	// dpId = 18 Len = 0004 Val V = 1	
 	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 18 val 2 1", 0);
 	CMD_ExecuteCommand("setChannel 2 1", 0);
 	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 17 val 1 1", 0);
@@ -260,7 +260,7 @@ void Test_TuyaMCU_BatteryPowered_DPcacheFeature() {
 void Test_TuyaMCU_BatteryPowered_DPcacheFeature3() {
 	/*
 	55 AA	00	10		00 07	01010904000101	27
-	HEADER	VER=00	ObtainDPcache		LEN	fnId=9 Enum V=1	CHK
+	HEADER	VER=00	ObtainDPcache		LEN	dpId=9 Enum V=1	CHK
 	*/
 	// reset whole device
 	SIM_ClearOBK(0);
@@ -283,7 +283,7 @@ void Test_TuyaMCU_BatteryPowered_DPcacheFeature3() {
 void Test_TuyaMCU_BatteryPowered_DPcacheFeature4() {
 	/*
 	55 AA	00	10		00 07	01010904000100	26
-	HEADER	VER=00	ObtainDPcache		LEN	fnId=9 Enum V=0	CHK
+	HEADER	VER=00	ObtainDPcache		LEN	dpId=9 Enum V=0	CHK
 	*/
 	// reset whole device
 	SIM_ClearOBK(0);

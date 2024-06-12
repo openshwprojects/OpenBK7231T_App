@@ -41,9 +41,11 @@ const char htmlBodyStart2[] =
 "</a></h1>";
 const char htmlBodyEnd[] = "</div></body></html>";
 
-const char htmlFooterReturnToMenu[] = "<a href=\"index\">Return to menu</a>";
+const char htmlFooterReturnToMainPage[] = "<a href=\"index\">MAIN page</a>";
 const char htmlFooterRefreshLink[] = "<a href=\"index\">Refresh</a>";
-const char htmlFooterReturnToCfgLink[] = "<a href=\"cfg\">Return to cfg</a>";
+const char htmlFooterReturnToCfgOrMainPage[] =
+"<a href=\"cfg\">Return to cfg</a> | "
+"<a href=\"index\">MAIN page</a>";
 
 const char htmlFooterInfo[] =
 "<a target=\"_blank\" "
@@ -602,6 +604,7 @@ int HTTP_ProcessPacket(http_request_t* request) {
 		ADDLOGF_ERROR("You gave request with NULL input");
 		return 0;
 	}
+	request->method = -1;
 	recvbuf = request->received;
 	for (i = 0; i < sizeof(methodNames) / sizeof(*methodNames); i++) {
 		if (http_startsWith(recvbuf, methodNames[i])) {

@@ -45,6 +45,7 @@ commandResult_t CMD_ExecuteCommandArgs(const char* cmd, const char* args, int cm
 char* CMD_ExpandingStrdup(const char* in);
 commandResult_t CMD_CreateAliasHelper(const char *alias, const char *ocmd);
 const char *CMD_ExpandConstant(const char *s, const char *stop, float *out);
+byte CMD_ParseOrExpandHexByte(const char **p);
 
 enum EventCode {
 	CMD_EVENT_NONE,
@@ -149,6 +150,7 @@ enum LightMode {
 	Light_Temperature,
 	Light_RGB,
 	Light_All,
+	Light_Anim,
 };
 
 #define TOKENIZER_ALLOW_QUOTES					1
@@ -166,6 +168,7 @@ const char* Tokenizer_GetArg(int i);
 const char* Tokenizer_GetArgFrom(int i);
 int Tokenizer_GetArgInteger(int i);
 int Tokenizer_GetArgIntegerDefault(int i, int def);
+float Tokenizer_GetArgFloatDefault(int i, float def);
 bool Tokenizer_IsArgInteger(int i);
 float Tokenizer_GetArgFloat(int i);
 int Tokenizer_GetArgIntegerRange(int i, int rangeMax, int rangeMin);
@@ -230,6 +233,9 @@ float LED_GetSaturation();
 float LED_GetGreen255();
 float LED_GetRed255();
 float LED_GetBlue255();
+extern float led_baseColors[5];
+extern byte g_lightEnableAll;
+extern byte g_lightMode;
 void LED_RunQuickColorLerp(int deltaMS);
 void LED_RunOnEverySecond();
 OBK_Publish_Result sendFinalColor();

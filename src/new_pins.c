@@ -142,7 +142,7 @@ void setGPIActive(int index, int active, int falling) {
 			g_gpio_edge_map[0] &= ~(1 << index);
 	}
 }
-void PINS_BeginDeepSleepWithPinWakeUp() {
+void PINS_BeginDeepSleepWithPinWakeUp(unsigned int wakeUpTime) {
 	int i;
 	int value;
 	int falling;
@@ -189,7 +189,17 @@ void PINS_BeginDeepSleepWithPinWakeUp() {
 	extern void deep_sleep_wakeup_with_gpio(UINT32 gpio_index_map, UINT32 gpio_edge_map);
 	deep_sleep_wakeup_with_gpio(g_gpio_index_map[0], g_gpio_edge_map[0]);
 #else
-	bk_enter_deep_sleep(g_gpio_index_map[0], g_gpio_edge_map[0]);
+	extern void bk_enter_deep_sleep(UINT32 g_gpio_index_map, UINT32 g_gpio_edge_map);
+	extern void deep_sleep_wakeup(const UINT32* g_gpio_index_map,
+		const UINT32* g_gpio_edge_map, const UINT32* sleep_time);
+	if (wakeUpTime) {
+		deep_sleep_wakeup(&g_gpio_index_map[0],
+			&g_gpio_edge_map[0],
+			&wakeUpTime);
+	}
+	else {
+		bk_enter_deep_sleep(g_gpio_index_map[0], g_gpio_edge_map[0]);
+	}
 #endif
 #else
 
@@ -316,6 +326,25 @@ int PIN_GetPinChannel2ForPinIndex(int index) {
 	}
 	return g_cfg.pins.channels2[index];
 }
+// return number of channels used for a role
+// taken from code in http_fnc.c
+int PIN_IOR_NofChan(int test){
+	// For button, is relay index to toggle on double click
+	if (test == IOR_Button || test == IOR_Button_n || IS_PIN_DHT_ROLE(test) || IS_PIN_TEMP_HUM_SENSOR_ROLE(test) || IS_PIN_AIR_SENSOR_ROLE(test)){
+			return 2;
+	}
+	// Some roles don't need any channels
+	if (test == IOR_SGP_CLK || test == IOR_SHT3X_CLK || test == IOR_CHT8305_CLK || test == IOR_Button_ToggleAll || test == IOR_Button_ToggleAll_n
+			|| test == IOR_BL0937_CF || test == IOR_BL0937_CF1 || test == IOR_BL0937_SEL
+			|| test == IOR_LED_WIFI || test == IOR_LED_WIFI_n || test == IOR_LED_WIFI_n
+			|| (test >= IOR_IRRecv && test <= IOR_DHT11)
+			|| (test >= IOR_SM2135_DAT && test <= IOR_BP1658CJ_CLK)) {
+			return 0;
+	}
+	// all others have 1 channel
+	return 1;
+}
+
 void RAW_SetPinValue(int index, int iVal) {
 	if (index < 0 || index >= PLATFORM_GPIO_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "RAW_SetPinValue: Pin index %i out of range <0,%i).", index, PLATFORM_GPIO_MAX);
@@ -793,14 +822,6 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 
 			// digital input
 			HAL_PIN_Setup_Input_Pullup(index);
-#ifdef PLATFORM_BEKEN
-			//20231217 XJIKKA
-			//On the BK7231N Mini WiFi Smart Switch, the correct state of the ADC input pin
-			//can be readed 1000us after the pin is initialized. Maybe there is a capacitor?
-			//Without delay, g_lastValidState is after restart set to 0, so the light will toggle, if the switch on input pin is on (1).
-			//To be sure, we will wait for 2000us.
-			usleep(2000);
-#endif
 
 			// init button after initializing pin role
 			NEW_button_init(bt, button_generic_get_gpio_value, 0);
@@ -823,7 +844,15 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 
 			// digital input
 			HAL_PIN_Setup_Input_Pullup(index);
-			// otherwise we get a toggle on start
+			// otherwise we get a toggle on start			
+#ifdef PLATFORM_BEKEN
+			//20231217 XJIKKA
+			//On the BK7231N Mini WiFi Smart Switch, the correct state of the ADC input pin
+			//can be readed 1000us after the pin is initialized. Maybe there is a capacitor?
+			//Without delay, g_lastValidState is after restart set to 0, so the light will toggle, if the switch on input pin is on (1).
+			//To be sure, we will wait for 2000us.
+			usleep(2000);
+#endif
 			g_lastValidState[index] = PIN_ReadDigitalInputValue_WithInversionIncluded(index);
 			// this is input - sample initial state down below
 			bSampleInitialState = true;
@@ -1499,7 +1528,7 @@ bool CHANNEL_ShouldBePublished(int ch) {
 		if (g_cfg.pins.channels[i] == ch) {
 			if (role == IOR_Relay || role == IOR_Relay_n
 				|| role == IOR_LED || role == IOR_LED_n
-				|| role == IOR_ADC || role == IOR_BAT_ADC 
+				|| role == IOR_ADC || role == IOR_BAT_ADC
 				|| role == IOR_CHT8305_DAT || role == IOR_SHT3X_DAT || role == IOR_SGP_DAT
 				|| role == IOR_DigitalInput || role == IOR_DigitalInput_n
 				|| role == IOR_DoorSensorWithDeepSleep || role == IOR_DoorSensorWithDeepSleep_NoPup
@@ -2000,6 +2029,9 @@ const char* g_channelTypeNames[] = {
 	"Temperature_div100",
 	"LeakageCurrent_div1000",
 	"Power_div100",
+	"Motion",
+	"error",
+	"error",
 	"error",
 	"error",
 };

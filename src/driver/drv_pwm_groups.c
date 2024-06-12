@@ -32,6 +32,7 @@ static commandResult_t CMD_PWMG_Set(const void* context, const char* cmd, const 
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
+#if PLATFORM_BK7231N
 	int err;
 	// OSStatus bk_pwm_group_initialize(bk_pwm_t pwm1,  bk_pwm_t pwm2, 
 	// uint32_t frequency, uint32_t duty_cycle1, uint32_t duty_cycle2, uint32_t dead_band);
@@ -48,7 +49,6 @@ static commandResult_t CMD_PWMG_Set(const void* context, const char* cmd, const 
 	uint32_t duty1_s = (duty1 / 100.0 * period); //No need to use upscaled variable
 	uint32_t duty2_s = (duty2 / 100.0 * period); //No need to use upscaled variable
 	uint32_t dead_s = (dead / 100.0 * period); //No need to use upscaled variable
-#if PLATFORM_BK7231N
 	err = bk_pwm_group_mode_disable(pwm1);
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "bk_pwm_group_mode_disable %i", err);
 	err = bk_pwm_group_initialize(pwm1, pwm2, period, duty1_s, duty2_s, dead_s);
@@ -68,6 +68,7 @@ static commandResult_t CMD_PWMG_Raw(const void* context, const char* cmd, const 
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
+#if PLATFORM_BK7231N
 	int err;
 	// OSStatus bk_pwm_group_initialize(bk_pwm_t pwm1,  bk_pwm_t pwm2, 
 	// uint32_t frequency, uint32_t duty_cycle1, uint32_t duty_cycle2, uint32_t dead_band);
@@ -80,7 +81,6 @@ static commandResult_t CMD_PWMG_Raw(const void* context, const char* cmd, const 
 	int pwm1 = PIN_GetPWMIndexForPinIndex(p1);
 	int pwm2 = PIN_GetPWMIndexForPinIndex(p2);
 
-#if PLATFORM_BK7231N
 	err = bk_pwm_group_mode_disable(pwm1);
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "bk_pwm_group_mode_disable %i", err);
 	err = bk_pwm_group_initialize(pwm1, pwm2, freq, duty1, duty2, dead);
@@ -95,7 +95,15 @@ static commandResult_t CMD_PWMG_Raw(const void* context, const char* cmd, const 
 // backlog startDriver PWMG; PWMG_Set 10 10 10 1000
 void PWMG_Init() {
 
+	//cmddetail:{"name":"PWMG_Raw","args":"",
+	//cmddetail:"descr":"PWM grouping (synchronous PWM)",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_pwm_groups.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PWMG_Raw", CMD_PWMG_Raw, NULL);
+	//cmddetail:{"name":"PWMG_Set","args":"Duty1Percent Duty2Percent DeadTimePercent Frequency PinA PinB",
+	//cmddetail:"descr":"PWM grouping (synchronous PWM)",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_pwm_groups.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PWMG_Set", CMD_PWMG_Set, NULL);
 }
 

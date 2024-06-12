@@ -426,6 +426,10 @@ static int getData(char* buff, int buffsize, int* tail) {
 	if (!initialised)
 		return 0;
 	taken = xSemaphoreTake(logMemory.mutex, 100);
+	if (taken == 0)
+	{
+		return 0;
+	}
 
 	count = 0;
 	p = buff;
@@ -724,7 +728,7 @@ static int http_getlog(http_request_t* request) {
 	char* post = "</pre>";
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Log");
-	poststr(request, htmlFooterReturnToMenu);
+	poststr(request, htmlFooterReturnToMainPage);
 
 	poststr(request, "<pre>");
 

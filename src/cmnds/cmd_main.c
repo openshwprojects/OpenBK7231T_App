@@ -18,6 +18,9 @@ int cmd_uartInitIndex = 0;
 #endif
 #ifdef PLATFORM_BL602
 #include <wifi_mgmr_ext.h>
+#elif PLATFORM_LN882H
+#include <wifi.h>
+#include <power_mgmt/ln_pm.h>
 #endif
 
 #define HASH_SIZE 128
@@ -43,6 +46,29 @@ static int generateHashValue(const char* fname) {
 command_t* g_commands[HASH_SIZE] = { NULL };
 bool g_powersave;
 
+#if defined(PLATFORM_LN882H)
+// this will be applied after WiFi connect
+int g_ln882h_pendingPowerSaveCommand = -1;
+
+void LN882H_ApplyPowerSave(int bOn) {
+	if (bOn) {
+		sysparam_sta_powersave_update(WIFI_MAX_POWERSAVE);
+		wifi_sta_set_powersave(WIFI_MAX_POWERSAVE);
+		if (bOn > 1) {
+			ln_pm_sleep_mode_set(LIGHT_SLEEP);
+		}
+		else {	// to be able to switch from PowerSave from > 1 to 1 (without sleep) 
+			ln_pm_sleep_mode_set(ACTIVE);
+		}
+	}
+	else {
+		sysparam_sta_powersave_update(WIFI_NO_POWERSAVE);
+		wifi_sta_set_powersave(WIFI_NO_POWERSAVE);
+		ln_pm_sleep_mode_set(ACTIVE);
+	}
+}
+#endif
+
 static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int bOn = 1;
 	Tokenizer_TokenizeString(args, 0);
@@ -50,7 +76,12 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	if (Tokenizer_GetArgsCount() > 0) {
 		bOn = Tokenizer_GetArgInteger(0);
 	}
+#if (PLATFORM_LN882H)	
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_PowerSave: will set to %i%s", bOn, Main_IsConnectedToWiFi() == 0 ? " after WiFi is connected" : "");
+#else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_PowerSave: will set to %i", bOn);
+#endif
+	
 
 #ifdef PLATFORM_BEKEN
 	extern int bk_wlan_power_save_set_level(BK_PS_LEVEL level);
@@ -74,10 +105,16 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	else {
 		wifi_mgmr_sta_powersaving(0);
 	}
+#elif defined(PLATFORM_LN882H)
+	// this will be applied after WiFi connect
+	if (Main_IsConnectedToWiFi() == 0){
+		g_ln882h_pendingPowerSaveCommand = bOn;
+	}
+	else LN882H_ApplyPowerSave(bOn);
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave is not implemented on this platform");
 #endif    
-	g_powersave = bOn;
+	g_powersave = (bOn);
 	return CMD_RES_OK;
 }
 static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -177,37 +214,6 @@ static commandResult_t CMD_HTTPOTA(const void* context, const char* cmd, const c
 
 	return CMD_RES_OK;
 }
-static void stackOverflow(int a) {
-	char lala[64];
-	int i;
-
-	for (i = 0; i < sizeof(lala); i++) {
-		lala[i] = a;
-	}
-	stackOverflow(a + 1);
-}
-static commandResult_t CMD_StackOverflow(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StackOverflow: Will overflow soon");
-
-	stackOverflow(0);
-
-	return CMD_RES_OK;
-}
-static commandResult_t CMD_CrashNull(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	int *p = (int*)0;
-
-	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_CrashNull: Will crash soon");
-
-	while (1) {
-		*p = 0;
-		p++;
-	}
-
-	
-
-	return CMD_RES_OK;
-}
-
 static commandResult_t CMD_Restart(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int delaySeconds;
 
@@ -232,7 +238,7 @@ static commandResult_t CMD_ClearAll(const void* context, const char* cmd, const 
 	CHANNEL_ClearAllChannels();
 	CMD_ClearAllHandlers(0, 0, 0, 0);
 	RepeatingEvents_Cmd_ClearRepeatingEvents(0, 0, 0, 0);
-#if defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_BEKEN)
+#if defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_BEKEN) || defined(PLATFORM_LN882H)
 	CMD_resetSVM(0, 0, 0, 0);
 #endif
 
@@ -270,7 +276,7 @@ static commandResult_t CMD_Echo(const void* context, const char* cmd, const char
 #else
 	// we want $CH40 etc expanded
 	Tokenizer_TokenizeString(args, TOKENIZER_ALTERNATE_EXPAND_AT_START | TOKENIZER_FORCE_SINGLE_ARGUMENT_MODE);
-	ADDLOG_INFO(LOG_FEATURE_CMD, Tokenizer_GetArgFrom(0));
+	ADDLOG_INFO(LOG_FEATURE_CMD, Tokenizer_GetArg(0));
 #endif
 
 	return CMD_RES_OK;
@@ -501,17 +507,6 @@ static commandResult_t CMD_CreateAliasForCommand(const void* context, const char
 
 	return CMD_CreateAliasHelper(alias, ocmd);
 }
-static commandResult_t CMD_SimonTest(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SimonTest: ir test routine");
-
-#ifdef PLATFORM_BK7231T
-	//stackCrash(0);
-	//CrashMalloc();
-	// anything
-#endif
-
-	return CMD_RES_OK;
-}
 /*
 int Flash_FindPattern(byte *data, int dataSize, int startOfs, int endOfs) {
 	int i;
@@ -596,6 +591,23 @@ commandResult_t CMD_FindPattern(const void *context, const char *cmd, const char
 	return CMD_RES_OK;
 }*/
 
+#define PWM_FREQUENCY_DEFAULT 1000 //Default Frequency
+
+int g_pwmFrequency = PWM_FREQUENCY_DEFAULT;
+
+commandResult_t CMD_PWMFrequency(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1))
+	{
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	
+	g_pwmFrequency = Tokenizer_GetArgInteger(0);
+	return CMD_RES_OK;
+}
 commandResult_t CMD_DeepSleep_SetEdge(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
@@ -636,7 +648,7 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("restart", CMD_Restart, NULL);
 	//cmddetail:{"name":"reboot","args":"",
-	//cmddetail:"descr":"Same as restart. Needed for bkWriter 1.60 which sends 'reboot' cmd before trying to get bus",
+	//cmddetail:"descr":"Same as restart. Needed for bkWriter 1.60 which sends 'reboot' cmd before trying to get bus via UART. Thanks to this, if you enable command line on UART1, you don't need to manually reboot while flashing via UART.",
 	//cmddetail:"fn":"CMD_Restart","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("reboot", CMD_Restart, NULL);
@@ -665,21 +677,6 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_PowerSave","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PowerSave", CMD_PowerSave, NULL);
-	//cmddetail:{"name":"stackOverflow","args":"",
-	//cmddetail:"descr":"Causes a stack overflow",
-	//cmddetail:"fn":"CMD_StackOverflow","file":"cmnds/cmd_main.c","requires":"",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("stackOverflow", CMD_StackOverflow, NULL);
-	//cmddetail:{"name":"crashNull","args":"",
-	//cmddetail:"descr":"Causes a crash",
-	//cmddetail:"fn":"CMD_CrashNull","file":"cmnds/cmd_main.c","requires":"",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("crashNull", CMD_CrashNull, NULL);
-	//cmddetail:{"name":"simonirtest","args":"",
-	//cmddetail:"descr":"Simons Special Test",
-	//cmddetail:"fn":"CMD_SimonTest","file":"cmnds/cmd_main.c","requires":"",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("simonirtest", CMD_SimonTest, NULL);
 	//cmddetail:{"name":"if","args":"[Condition]['then'][CommandA]['else'][CommandB]",
 	//cmddetail:"descr":"Executed a conditional. Condition should be single line. You must always use 'then' after condition. 'else' is optional. Use aliases or quotes for commands with spaces",
 	//cmddetail:"fn":"CMD_If","file":"cmnds/cmd_main.c","requires":"",
@@ -750,9 +747,13 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Choice", CMD_Choice, NULL);
-	//CMD_RegisterCommand("FindPattern", CMD_FindPattern, NULL);
+	//cmddetail:{"name":"PWMFrequency","args":"[FrequencyInHz]",
+	//cmddetail:"descr":"Sets the global PWM frequency.",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("PWMFrequency", CMD_PWMFrequency, NULL);
 	
-#if (defined WINDOWS) || (defined PLATFORM_BEKEN)
+#if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602) || (defined PLATFORM_LN882H)
 	CMD_InitScripting();
 #endif
 	if (!bSafeMode) {

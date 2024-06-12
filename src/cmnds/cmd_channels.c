@@ -46,10 +46,16 @@ bool CHANNEL_HasNeverPublishFlag(int ch) {
 	return false;
 }
 
-const char *CHANNEL_GetLabel(int ch) {
+bool CHANNEL_HasLabel(int ch) {
 	if (ch >= 0 && ch < CHANNEL_MAX) {
-		if (g_channelLabels[ch])
-			return g_channelLabels[ch];
+		return g_channelLabels[ch];
+	}
+	return false;
+}
+
+const char *CHANNEL_GetLabel(int ch) {
+	if (CHANNEL_HasLabel(ch)) {
+		return g_channelLabels[ch];
 	}
 	static char tmp[8];
 	sprintf(tmp, "%i", ch);
@@ -246,7 +252,7 @@ static commandResult_t CMD_SetPinRole(const void *context, const char *cmd, cons
 	return CMD_RES_OK;
 }
 static commandResult_t CMD_SetPinChannel(const void *context, const char *cmd, const char *args, int cmdFlags){
-	int pin, ch;
+	int pin, ch, ch2;
 
 	Tokenizer_TokenizeString(args,0);
 	// following check must be done after 'Tokenizer_TokenizeString',
@@ -258,6 +264,10 @@ static commandResult_t CMD_SetPinChannel(const void *context, const char *cmd, c
 
 	pin = Tokenizer_GetArgInteger(0);
 	ch = Tokenizer_GetArgInteger(1);
+	if (Tokenizer_GetArgsCount() > 2) {
+		ch2 = Tokenizer_GetArgInteger(2);
+		PIN_SetPinChannel2ForPinIndex(pin, ch2);
+	}
 
 	PIN_SetPinChannelForPinIndex(pin,ch);
 
@@ -470,6 +480,10 @@ static commandResult_t CMD_FullBootTime(const void *context, const char *cmd, co
 	return CMD_RES_OK;
 }
 static commandResult_t CMD_PinDeepSleep(const void *context, const char *cmd, const char *args, int cmdFlags){
+
+	Tokenizer_TokenizeString(args, 0); 
+	
+	g_pinDeepSleepWakeUp = Tokenizer_GetArgIntegerDefault(0, 0);
 	g_bWantPinDeepSleep = 1;
 	return CMD_RES_OK;
 }
@@ -504,7 +518,7 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_SetPinRole","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SetPinRole", CMD_SetPinRole, NULL);
-	//cmddetail:{"name":"SetPinChannel","args":"[PinIndex][ChannelIndex]",
+	//cmddetail:{"name":"SetPinChannel","args":"[PinIndex][ChannelIndex][optionalChannel2Index]",
 	//cmddetail:"descr":"This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command.",
 	//cmddetail:"fn":"CMD_SetPinChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
@@ -529,8 +543,8 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_FriendlyName","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("FriendlyName", CMD_FriendlyName, NULL);
-	//cmddetail:{"name":"PinDeepSleep","args":"",
-	//cmddetail:"descr":"Starts a pin deep sleep (deep sleep that can be interrupted by external IO events like a button press)",
+	//cmddetail:{"name":"PinDeepSleep","args":"[OptionalTimerForWakeup]",
+	//cmddetail:"descr":"Starts a pin deep sleep (deep sleep that can be interrupted by external IO events like a button press). The argument is an optional extra time to wake up also by timer. See [tutorial](https://www.elektroda.com/rtvforum/topic4041971.html)",
 	//cmddetail:"fn":"CMD_PinDeepSleep","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PinDeepSleep", CMD_PinDeepSleep, NULL);
@@ -540,7 +554,7 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("FullBootTime", CMD_FullBootTime, NULL);
 	//cmddetail:{"name":"SetChannelLabel","args":"[ChannelIndex][Str][bHideTogglePrefix]",
-	//cmddetail:"descr":"Sets a channel label for UI. If you use 1 for bHideTogglePrefix, then the 'Toggle ' prefix from button will be omitted",
+	//cmddetail:"descr":"Sets a channel label for UI and default entity name for Home Assistant discovery. If you use 1 for bHideTogglePrefix, then the 'Toggle ' prefix from UI button will be omitted",
 	//cmddetail:"fn":"CMD_SetChannelLabel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetChannelLabel", CMD_SetChannelLabel, NULL);
@@ -560,7 +574,7 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetChannelVisible", CMD_SetChannelVisible, NULL);
 	//cmddetail:{"name":"SetChannelPrivate","args":"[ChannelIndex][bPrivate]",
-	//cmddetail:"descr":"Channels marked as private are NEVER published via MQTT.",
+	//cmddetail:"descr":"Channels marked as private are NEVER published via MQTT and excluded from Home Assistant discovery",
 	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetChannelPrivate", CMD_SetChannelPrivate, NULL);

@@ -21,7 +21,19 @@ static int tok_flags = 0;
 #define g_bAllowExpand (!(tok_flags&TOKENIZER_DONT_EXPAND))
 
 int str_to_ip(const char *s, byte *ip) {
+#if PLATFORM_W600
+	//seems like sscanf in W600 does not support %hhu and uses it as %u, thus overwriting more memory, use temp array for it
+	int tmp_ip[4];
+	int res; 
+	res = sscanf(s, IP_STRING_FORMAT, &tmp_ip[0], &tmp_ip[1], &tmp_ip[2], &tmp_ip[3]);
+	ip[0]=tmp_ip[0];
+	ip[1]=tmp_ip[1];
+	ip[2]=tmp_ip[2];
+	ip[3]=tmp_ip[3];
+	return res;
+#else
 	return sscanf(s, IP_STRING_FORMAT, &ip[0], &ip[1], &ip[2], &ip[3]);
+#endif
 }
 void convert_IP_to_string(char *o, unsigned char *ip) {
 	sprintf(o, IP_STRING_FORMAT, ip[0], ip[1], ip[2], ip[3]);
@@ -206,6 +218,16 @@ int Tokenizer_GetArgIntegerDefault(int i, int def) {
 
 	return r;
 }
+float Tokenizer_GetArgFloatDefault(int i, float def) {
+	float r;
+
+	if (g_numArgs <= i) {
+		return def;
+	}
+	r = Tokenizer_GetArgFloat(i);
+
+	return r;
+}
 int Tokenizer_GetArgInteger(int i) {
 	const char *s;
 	int ret;
@@ -217,7 +239,7 @@ int Tokenizer_GetArgInteger(int i) {
 		sscanf(s, "%x", &ret);
 		return ret;
 	}
-#if (!PLATFORM_BEKEN && !WINDOWS)
+#if !ENABLE_EXPAND_CONSTANT
 	if(g_bAllowExpand && s[0] == '$') {
 		// constant
 		int channelIndex;
@@ -240,12 +262,12 @@ int Tokenizer_GetArgInteger(int i) {
 	return atoi(s);
 }
 float Tokenizer_GetArgFloat(int i) {
-#if !PLATFORM_BEKEN
+#if !ENABLE_EXPAND_CONSTANT
 	int channelIndex;
 #endif
 	const char *s;
 	s = g_args[i];
-#if (!PLATFORM_BEKEN && !WINDOWS)
+#if !ENABLE_EXPAND_CONSTANT
 	if(g_bAllowExpand && s[0] == '$') {
 		// constant
 		if(s[1] == 'C' && s[2] == 'H') {
@@ -313,6 +335,9 @@ void Tokenizer_TokenizeString(const char *s, int flags) {
 	if (flags & TOKENIZER_FORCE_SINGLE_ARGUMENT_MODE) {
 		g_args[g_numArgs] = g_buffer;
 		g_argsFrom[g_numArgs] = g_buffer;
+		// some hack, but we fored to have only have one arg, so we can extend the string over array bondaries.
+		// probably better: introducing an union containing g_argsExpanded[][] and one sole string in the same memory area ...
+		CMD_ExpandConstantsWithinString(g_buffer,g_argsExpanded,sizeof(g_argsExpanded)-1);
 		g_numArgs = 1;
 		return;
 	}

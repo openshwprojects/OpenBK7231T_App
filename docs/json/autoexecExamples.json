@@ -112,6 +112,10 @@
 "file": "autoexecs/deep_sleep_temp_sensor_http.bat"
 },
 {
+"title": "[Deep sleep usage for water sensor with PWM buzzer](https://www.elektroda.com/rtvforum/viewtopic.php?p=21096228#21096228)",
+"file": "autoexecs/deep_sleep_water_sensor_withBuzzer.bat"
+},
+{
 "title": "Manual flash save example for TuyaMCU - using special Channels 200, 201, etc",
 "file": "autoexecs/manual_tuyamcu_flash_save.bat"
 },
@@ -130,5 +134,9 @@
 {
 "title": "[Setup for PJ-MGW1103 T-Clamp TuyaMCU with a device state request demonstation](https://www.elektroda.com/rtvforum/viewtopic.php?p=20882983#20882983)",
 "file": "autoexecs/PJ-MGW1103_CT-Clamp_tuyaMCU_with_request.bat"
+},
+{
+"title": "[TOMPD-63-WIFI TuyaMCU power meter config with alternate HTML panel hosted in LittleFS](https://www.elektroda.com/rtvforum/topic4040354.html)",
+"file": "autoexecs/TOMPD-63-WIFI.bat"
 }
 ]

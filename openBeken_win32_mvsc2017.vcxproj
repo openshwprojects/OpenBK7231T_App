@@ -351,7 +351,10 @@
     <ClCompile Include="src\driver\drv_dht.c" />
     <ClCompile Include="src\driver\drv_dht_internal.c" />
     <ClCompile Include="src\driver\drv_doorSensorWithDeepSleep.c" />
+    <ClCompile Include="src\driver\drv_drawers.c" />
+    <ClCompile Include="src\driver\drv_freeze.c" />
     <ClCompile Include="src\driver\drv_gn6932.c" />
+    <ClCompile Include="src\driver\drv_hd2015.c" />
     <ClCompile Include="src\driver\drv_ht16k33.c" />
     <ClCompile Include="src\driver\drv_httpButtons.c" />
     <ClCompile Include="src\driver\drv_hue.c" />
@@ -363,6 +366,7 @@
     <ClCompile Include="src\driver\drv_main.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_max6675.c" />
     <ClCompile Include="src\driver\drv_max72xx_clock.c" />
     <ClCompile Include="src\driver\drv_max72xx_internal.c" />
     <ClCompile Include="src\driver\drv_max72xx_single.c" />
@@ -371,6 +375,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\driver\drv_ntp_events.c" />
+    <ClCompile Include="src\driver\drv_pixelAnim.c" />
     <ClCompile Include="src\driver\drv_pt6523.c" />
     <ClCompile Include="src\driver\drv_pwmToggler.c" />
     <ClCompile Include="src\driver\drv_pwrCal.c" />
@@ -378,12 +383,15 @@
     <ClCompile Include="src\driver\drv_sgp.c" />
     <ClCompile Include="src\driver\drv_shiftRegister.c" />
     <ClCompile Include="src\driver\drv_sht3x.c" />
+    <ClCompile Include="src\driver\drv_sm15155e.c" />
+    <ClCompile Include="src\driver\drv_sm16703P.c" />
     <ClCompile Include="src\driver\drv_sm2135.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\driver\drv_sm2235.c" />
     <ClCompile Include="src\driver\drv_soft_i2c.c" />
     <ClCompile Include="src\driver\drv_spi.c" />
+    <ClCompile Include="src\driver\drv_spiLED.c" />
     <ClCompile Include="src\driver\drv_ssdp.c" />
     <ClCompile Include="src\driver\drv_tasmotaDeviceGroups.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
@@ -965,9 +973,11 @@
     <ClCompile Include="src\selftest\selftest_chargingDriver.c" />
     <ClCompile Include="src\selftest\selftest_clockEvents.c" />
     <ClCompile Include="src\selftest\selftest_cmd_startup.c" />
+    <ClCompile Include="src\selftest\selftest_doorSensor.c" />
     <ClCompile Include="src\selftest\selftest_flashSearch.c" />
     <ClCompile Include="src\selftest\selftest_hass_discovery_base.c" />
     <ClCompile Include="src\selftest\selftest_hass_discovery_ext.c" />
+    <ClCompile Include="src\selftest\selftest_http_led.c" />
     <ClCompile Include="src\selftest\selftest_if_inside_backlog.c" />
     <ClCompile Include="src\selftest\selftest_json_lib.c" />
     <ClCompile Include="src\selftest\selftest_mqtt_get.c" />
@@ -1014,12 +1024,14 @@
     <ClCompile Include="src\selftest\selftest_util_mqtt.c" />
     <ClCompile Include="src\selftest\selftest_util_mqtt_json.c" />
     <ClCompile Include="src\selftest\selftest_waitFor.c" />
+    <ClCompile Include="src\selftest\selftest_ws2812b.c" />
     <ClCompile Include="src\sim\Circle.cpp" />
     <ClCompile Include="src\sim\Controller_BL0942.cpp" />
     <ClCompile Include="src\sim\Controller_Bulb.cpp" />
     <ClCompile Include="src\sim\Controller_Button.cpp" />
     <ClCompile Include="src\sim\Controller_Pot.cpp" />
     <ClCompile Include="src\sim\Controller_SimulatorLink.cpp" />
+    <ClCompile Include="src\sim\Controller_WS2812.cpp" />
     <ClCompile Include="src\sim\CursorManager.cpp" />
     <ClCompile Include="src\sim\Junction.cpp" />
     <ClCompile Include="src\sim\Line.cpp" />
@@ -1081,6 +1093,7 @@
     <ClInclude Include="src\driver\drv_sgp.h" />
     <ClInclude Include="src\driver\drv_sht3x.h" />
     <ClInclude Include="src\driver\drv_sm2235.h" />
+    <ClInclude Include="src\driver\drv_spiLED.h" />
     <ClInclude Include="src\driver\drv_test_drivers.h" />
     <ClInclude Include="src\driver\drv_tm1637.h" />
     <ClInclude Include="src\driver\drv_tm_gn_display_shared.h" />
@@ -1343,6 +1356,7 @@
     <ClInclude Include="src\sim\Controller_Button.h" />
     <ClInclude Include="src\sim\Controller_Pot.h" />
     <ClInclude Include="src\sim\Controller_SimulatorLink.h" />
+    <ClInclude Include="src\sim\Controller_WS2812.h" />
     <ClInclude Include="src\sim\CursorManager.h" />
     <ClInclude Include="src\sim\Junction.h" />
     <ClInclude Include="src\sim\Line.h" />

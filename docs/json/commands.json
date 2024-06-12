@@ -37,8 +37,8 @@
   },
   {
     "name": "addClockEvent",
-    "args": "[Time or sunrise or sunset] [WeekDayFlags] [UniqueIDForRemoval][Command]",
-    "descr": "Schedule command to run on given time in given day of week. NTP must be running. Time is a time like HH:mm or HH:mm:ss, WeekDayFlag is a bitflag on which day to run, 0xff mean all days, 0x01 means sunday, 0x02 monday, 0x03 sunday and monday, etc, id is an unique id so event can be removed later. (NOTE: Use of sunrise/sunset requires compiling with ENABLE_NTP_SUNRISE_SUNSET set which adds about 11k of code",
+    "args": "[TimerSeconds or Time or sunrise or sunset] [WeekDayFlags] [UniqueIDForRemoval][Command]",
+    "descr": "Schedule command to run on given time in given day of week. NTP must be running. TimerSeconds is seconds from midnight, Time is a time like HH:mm or HH:mm:ss, WeekDayFlag is a bitflag on which day to run, 0xff mean all days, 0x01 means sunday, 0x02 monday, 0x03 sunday and monday, etc, id is an unique id so event can be removed later. (NOTE: Use of sunrise/sunset requires compiling with ENABLE_NTP_SUNRISE_SUNSET set which adds about 11k of code)",
     "fn": "CMD_NTP_AddClockEvent",
     "file": "driver/drv_ntp_events.c",
     "requires": "",
@@ -126,6 +126,42 @@
     "examples": ""
   },
   {
+    "name": "AHT2X_Calibrate",
+    "args": "[DeltaTemp][DeltaHumidity]",
+    "descr": "Calibrate the AHT2X Sensor as Tolerance is +/-2 degrees C.",
+    "fn": "AHT2X_Calibrate",
+    "file": "driver/drv_aht2x.c",
+    "requires": "",
+    "examples": "AHT2X_Calibrate -4 10 <br /> meaning -4 on current temp reading and +10 on current humidity reading"
+  },
+  {
+    "name": "AHT2X_Cycle",
+    "args": "[IntervalSeconds]",
+    "descr": "This is the interval between measurements in seconds, by default 1. Max is 255.",
+    "fn": "AHT2X_cycle",
+    "file": "drv/drv_aht2X.c",
+    "requires": "",
+    "examples": "AHT2X_Cycle 60 <br /> measurement is taken every 60 seconds"
+  },
+  {
+    "name": "AHT2X_Measure",
+    "args": "",
+    "descr": "Retrieve OneShot measurement.",
+    "fn": "AHT2X_Measure",
+    "file": "drv/drv_aht2X.c",
+    "requires": "",
+    "examples": "AHT2X_Measure"
+  },
+  {
+    "name": "AHT2X_Reinit",
+    "args": "",
+    "descr": "Reinitialize sensor.",
+    "fn": "AHT2X_Reinit",
+    "file": "drv/drv_aht2X.c",
+    "requires": "",
+    "examples": "AHT2X_Reinit"
+  },
+  {
     "name": "alias",
     "args": "[Alias][Command with spaces]",
     "descr": "add an aliased command, so a command with spaces can be called with a short, nospaced alias",
@@ -140,6 +176,24 @@
     "descr": "Internal usage only. See docs for 'alias' command.",
     "fn": "runcmd",
     "file": "cmnds/cmd_test.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Anim",
+    "args": "PA_Cmd_Anim",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_pixelAnim.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "AnimSpeed",
+    "args": "PA_Cmd_AnimSpeed",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_pixelAnim.c",
     "requires": "",
     "examples": ""
   },
@@ -276,7 +330,7 @@
     "fn": "CHT_Calibrate",
     "file": "driver/drv_cht8305.c",
     "requires": "",
-    "examples": "SHT_Calibrate -4 10 <br /> meaning -4 on current temp reading and +10 on current humidity reading"
+    "examples": "CHT_Calibrate -4 10 <br /> meaning -4 on current temp reading and +10 on current humidity reading"
   },
   {
     "name": "CHT_Cycle",
@@ -506,7 +560,7 @@
   {
     "name": "DSTime",
     "args": "[timeSeconds]",
-    "descr": "DoorSensor driver configuration command. Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival",
+    "descr": "DoorSensor driver configuration command. Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival. You can also use this to extend current awake time (at runtime) with syntax: 'DSTime +10', this will make device stay awake 10 seconds longer. You can also restart current value of awake counter by 'DSTime clear', this will make counter go from 0 again.",
     "fn": "DoorDeepSleep_SetTime",
     "file": "drv/drv_doorSensorWithDeepSleep.c",
     "requires": "",
@@ -523,8 +577,8 @@
   },
   {
     "name": "EnergyCntReset",
-    "args": "",
-    "descr": "Resets the total Energy Counter, the one that is usually kept after device reboots. After this commands, the counter will start again from 0.",
+    "args": "[OptionalNewValue]",
+    "descr": "Resets the total Energy Counter, the one that is usually kept after device reboots. After this commands, the counter will start again from 0 (or from the value you specified).",
     "fn": "BL09XX_ResetEnergyCounter",
     "file": "driver/drv_bl_shared.c",
     "requires": "",
@@ -721,8 +775,8 @@
   },
   {
     "name": "IRSend",
-    "args": "[PROT-ADDR-CMD-REP]",
-    "descr": "Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0",
+    "args": "[PROT-ADDR-CMD-REP-BITS]",
+    "descr": "Sends IR commands in the form PROT-ADDR-CMD-REP-BITS, e.g. NEC-1-1A-0-0, note that -BITS is optional, it can be 0 for default one, so you can just do NEC-1-1A-0",
     "fn": "IR_Send_Cmd",
     "file": "driver/drv_ir.cpp",
     "requires": "",
@@ -1063,7 +1117,7 @@
   },
   {
     "name": "linkTuyaMCUOutputToChannel",
-    "args": "[dpId][varType][channelID][bDPCache-Optional]",
+    "args": "[dpId][varType][channelID][bDPCache-Optional][mult-optional]",
     "descr": "Used to map between TuyaMCU dpIDs and our internal channels. Last argument is optional and 0 by default. You can set it to 1 for battery powered devices, so a variable is set with DPCache, for example a sampling interval for humidity/temperature sensor. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap. Please see [Tuya Docs](https://developer.tuya.com/en/docs/iot/tuya-cloud-universal-serial-port-access-protocol?id=K9hhi0xxtn9cb) for info about TuyaMCU. You can also see our [TuyaMCU Analyzer Tool](https://www.elektroda.com/rtvforum/viewtopic.php?p=20528459#20528459)",
     "fn": "TuyaMCU_LinkTuyaMCUOutputToChannel",
     "file": "driver/drv_tuyaMCU.c",
@@ -1378,8 +1432,8 @@
   },
   {
     "name": "PinDeepSleep",
-    "args": "",
-    "descr": "Starts a pin deep sleep (deep sleep that can be interrupted by external IO events like a button press)",
+    "args": "[OptionalTimerForWakeup]",
+    "descr": "Starts a pin deep sleep (deep sleep that can be interrupted by external IO events like a button press). The argument is an optional extra time to wake up also by timer. See [tutorial](https://www.elektroda.com/rtvforum/topic4041971.html)",
     "fn": "CMD_PinDeepSleep",
     "file": "cmnds/cmd_channels.c",
     "requires": "",
@@ -1450,7 +1504,7 @@
   },
   {
     "name": "publish",
-    "args": "[Topic][Value]",
+    "args": "[Topic][Value][bOptionalSkipPrefixAndSuffix]",
     "descr": "Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'. You can use argument expansion here, so $CH11 will change to value of the channel 11",
     "fn": "MQTT_PublishCommand",
     "file": "mqtt/new_mqtt.c",
@@ -1494,8 +1548,17 @@
     "examples": ""
   },
   {
+    "name": "publishFile",
+    "args": "[Topic][Value][bOptionalSkipPrefixAndSuffix]",
+    "descr": "Publishes data read from LFS file by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.",
+    "fn": "MQTT_PublishFile",
+    "file": "mqtt/new_mqtt.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "publishFloat",
-    "args": "[Topic][Value]",
+    "args": "[Topic][Value][bOptionalSkipPrefixAndSuffix]",
     "descr": "Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an float, so you can also use math expressions like $CH10*0.0, etc.",
     "fn": "MQTT_PublishCommand",
     "file": "mqtt/new_mqtt.c",
@@ -1504,7 +1567,7 @@
   },
   {
     "name": "publishInt",
-    "args": "[Topic][Value]",
+    "args": "[Topic][Value][bOptionalSkipPrefixAndSuffix]",
     "descr": "Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an integer, so you can also use math expressions like $CH10*10, etc.",
     "fn": "MQTT_PublishCommand",
     "file": "mqtt/new_mqtt.c",
@@ -1512,9 +1575,27 @@
     "examples": ""
   },
   {
-    "name": "PWMG_Setup",
-    "args": "CMD_PWMG_Setup",
-    "descr": "",
+    "name": "PWMFrequency",
+    "args": "[FrequencyInHz]",
+    "descr": "Sets the global PWM frequency.",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "PWMG_Raw",
+    "args": "",
+    "descr": "PWM grouping (synchronous PWM)",
+    "fn": "NULL);",
+    "file": "driver/drv_pwm_groups.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "PWMG_Set",
+    "args": "Duty1Percent Duty2Percent DeadTimePercent Frequency PinA PinB",
+    "descr": "PWM grouping (synchronous PWM)",
     "fn": "NULL);",
     "file": "driver/drv_pwm_groups.c",
     "requires": "",
@@ -1523,7 +1604,7 @@
   {
     "name": "reboot",
     "args": "",
-    "descr": "Same as restart. Needed for bkWriter 1.60 which sends 'reboot' cmd before trying to get bus",
+    "descr": "Same as restart. Needed for bkWriter 1.60 which sends 'reboot' cmd before trying to get bus via UART. Thanks to this, if you enable command line on UART1, you don't need to manually reboot while flashing via UART.",
     "fn": "CMD_Restart",
     "file": "cmnds/cmd_main.c",
     "requires": "",
@@ -1685,7 +1766,7 @@
   {
     "name": "SetChannelLabel",
     "args": "[ChannelIndex][Str][bHideTogglePrefix]",
-    "descr": "Sets a channel label for UI. If you use 1 for bHideTogglePrefix, then the 'Toggle ' prefix from button will be omitted",
+    "descr": "Sets a channel label for UI and default entity name for Home Assistant discovery. If you use 1 for bHideTogglePrefix, then the 'Toggle ' prefix from UI button will be omitted",
     "fn": "CMD_SetChannelLabel",
     "file": "cmnds/cmd_channels.c",
     "requires": "",
@@ -1694,7 +1775,7 @@
   {
     "name": "SetChannelPrivate",
     "args": "[ChannelIndex][bPrivate]",
-    "descr": "Channels marked as private are NEVER published via MQTT.",
+    "descr": "Channels marked as private are NEVER published via MQTT and excluded from Home Assistant discovery",
     "fn": "NULL);",
     "file": "cmnds/cmd_channels.c",
     "requires": "",
@@ -1729,7 +1810,7 @@
   },
   {
     "name": "SetPinChannel",
-    "args": "[PinIndex][ChannelIndex]",
+    "args": "[PinIndex][ChannelIndex][optionalChannel2Index]",
     "descr": "This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command.",
     "fn": "CMD_SetPinChannel",
     "file": "cmnds/cmd_channels.c",
@@ -1837,7 +1918,7 @@
   },
   {
     "name": "SHT_Calibrate",
-    "args": "",
+    "args": "[DeltaTemp][DeltaHumidity]",
     "descr": "Calibrate the SHT Sensor as Tolerance is +/-2 degrees C.",
     "fn": "SHT3X_Calibrate",
     "file": "driver/drv_sht3x.c",
@@ -1873,7 +1954,7 @@
   },
   {
     "name": "SHT_Heater",
-    "args": "",
+    "args": "[1or0]",
     "descr": "Activate or Deactivate Heater (0 / 1)",
     "fn": "SHT3X_Heater",
     "file": "driver/drv_sht3x.c",
@@ -1945,8 +2026,8 @@
   },
   {
     "name": "SM16703P_Init",
-    "args": "SM16703P_Start",
-    "descr": "",
+    "args": "[NumberOfLEDs][ColorOrder]",
+    "descr": "This will setup LED driver for a strip with given number of LEDs. Please note that it also works for WS2812B and similiar LEDs. You can optionally set the color order with either RGB, RBG, BRG, BGB, GRB or GBR (default RGB). See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
     "fn": "NULL);",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
@@ -1954,8 +2035,17 @@
   },
   {
     "name": "SM16703P_SetPixel",
-    "args": "SM16703P_CMD_setPixel",
-    "descr": "",
+    "args": "[index/all] [R] [G] [B]",
+    "descr": "Sets a pixel for LED strip. Index can be a number or 'all' keyword to set all. Then, 3 integer values for R, G and B. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
+    "fn": "NULL);",
+    "file": "driver/drv_sm16703P.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "SM16703P_SetRaw",
+    "args": "[bUpdate] [byteOfs] [HexData]",
+    "descr": "Sets the raw data bytes for SPI DMA LED driver at the given offset. Hex data should be as a hex string, for example, FF00AA, etc. The bUpdate, if set to 1, will run SM16703P_Start automatically after setting data. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
     "fn": "NULL);",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
@@ -1963,8 +2053,8 @@
   },
   {
     "name": "SM16703P_Start",
-    "args": "SM16703P_StartTX",
-    "descr": "",
+    "args": "",
+    "descr": "This will send the currently set data to the strip. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
     "fn": "NULL);",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
@@ -2223,6 +2313,15 @@
     "examples": ""
   },
   {
+    "name": "TimeSize",
+    "args": "",
+    "descr": "Prints the size of time_t on current platform - sizeof(time_t), only for testing purposes",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "TM1650_Test",
     "args": "CMD_TM1650_Test",
     "descr": "",
@@ -2278,8 +2377,8 @@
   },
   {
     "name": "TMGN_Read",
-    "args": "CMD_TMGN_Read",
-    "descr": "",
+    "args": "",
+    "descr": "Executes a single buttons read on TM/GN LED driver",
     "fn": "NULL);",
     "file": "driver/drv_tm1637.c",
     "requires": "",
@@ -2296,8 +2395,8 @@
   },
   {
     "name": "TMGN_SetupButtons",
-    "args": "CMD_TMGN_SetupButtons",
-    "descr": "",
+    "args": "[Interval]",
+    "descr": "Setups periodic buttons read on TM/GN LED driver",
     "fn": "NULL);",
     "file": "driver/drv_tm1637.c",
     "requires": "",
@@ -2305,7 +2404,7 @@
   },
   {
     "name": "TMGN_Test",
-    "args": "CMD_TM1637_Test",
+    "args": "",
     "descr": "",
     "fn": "NULL);",
     "file": "driver/drv_tm_gn_display_shared.c",
@@ -2380,6 +2479,15 @@
     "args": "",
     "descr": "Command sets the default WiFi state for TuyaMCU when device is not online. It may be required for some devices to work, because Tuya designs them to ignore touch buttons or beep when not paired. Please see [values table and description here](https://www.elektroda.com/rtvforum/viewtopic.php?p=20483899#20483899).",
     "fn": "Cmd_TuyaMCU_Send_RSSI",
+    "file": "driver/drv_tuyaMCU.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "tuyaMcu_sendCmd",
+    "args": "TuyaMCU_SendUserCmd",
+    "descr": "",
+    "fn": "NULL);",
     "file": "driver/drv_tuyaMCU.c",
     "requires": "",
     "examples": ""

@@ -22,6 +22,7 @@ class PrefabManager {
 	class CShape *generateGND();
 	class CShape *generateVDD();
 	class CShape *generatePot();
+	class CShape *generateWS2812B();
 public:
 	PrefabManager(CSimulator *ps) {
 		sim = ps;

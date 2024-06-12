@@ -324,7 +324,7 @@ static int http_rest_app(http_request_t* request) {
 	}
 	else {
 		http_html_start(request, "Not available");
-		poststr(request, htmlFooterReturnToMenu);
+		poststr(request, htmlFooterReturnToMainPage);
 		poststr(request, "no APP available<br/>");
 		http_html_end(request);
 	}
@@ -534,6 +534,14 @@ static int http_rest_post_lfs_file(http_request_t* request) {
 	// create if it does not exist
 	init_lfs(1);
 
+	if (!lfs_present()) {
+		request->responseCode = 400;
+		http_setup(request, httpMimeTypeText);
+		poststr(request, "LittleFS is not abailable");
+		poststr(request, NULL);
+		return 0;
+	}
+
 	fpath = os_malloc(strlen(request->url) - strlen("api/lfs/") + 1);
 	file = os_malloc(sizeof(lfs_file_t));
 	memset(file, 0, sizeof(lfs_file_t));
@@ -658,6 +666,7 @@ static int http_rest_get_seriallog(http_request_t* request) {
 
 static int http_rest_get_pins(http_request_t* request) {
 	int i;
+	int maxNonZero;
 	http_setup(request, httpMimeTypeJson);
 	poststr(request, "{\"rolenames\":[");
 	for (i = 0; i < IOR_Total_Options; i++) {
@@ -676,12 +685,37 @@ static int http_rest_get_pins(http_request_t* request) {
 	}
 	// TODO: maybe we should cull futher channels that are not used?
 	// I support many channels because I plan to use 16x relays module with I2C MCP23017 driver
+
+	// find max non-zero ch
+	//maxNonZero = -1;
+	//for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+	//	if (g_cfg.pins.channels[i] != 0) {
+	//		maxNonZero = i;
+	//	}
+	//}
+
 	poststr(request, "],\"channels\":[");
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if (i) {
 			hprintf255(request, ",");
 		}
 		hprintf255(request, "%d", g_cfg.pins.channels[i]);
+	}
+	// find max non-zero ch2
+	maxNonZero = -1;	
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (g_cfg.pins.channels2[i] != 0) {
+			maxNonZero = i;
+		}
+	}
+	if (maxNonZero != -1) {
+		poststr(request, "],\"channels2\":[");
+		for (i = 0; i <= maxNonZero; i++) {
+			if (i) {
+				hprintf255(request, ",");
+			}
+			hprintf255(request, "%d", g_cfg.pins.channels2[i]);
+		}
 	}
 	poststr(request, "],\"states\":[");
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
@@ -836,19 +870,23 @@ static int http_rest_post_logconfig(http_request_t* request) {
 
 static int http_rest_get_info(http_request_t* request) {
 	char macstr[3 * 6 + 1];
+	long int* pAllGenericFlags = (long int*)&g_cfg.genericFlags;
+
 	http_setup(request, httpMimeTypeJson);
 	hprintf255(request, "{\"uptime_s\":%d,", g_secondsElapsed);
 	hprintf255(request, "\"build\":\"%s\",", g_build_str);
 	hprintf255(request, "\"ip\":\"%s\",", HAL_GetMyIPString());
 	hprintf255(request, "\"mac\":\"%s\",", HAL_GetMACStr(macstr));
-	hprintf255(request, "\"flags\":\"%ld\",", *((long int*)&g_cfg.genericFlags));
+	hprintf255(request, "\"flags\":\"%ld\",", *pAllGenericFlags);
 	hprintf255(request, "\"mqtthost\":\"%s:%d\",", CFG_GetMQTTHost(), CFG_GetMQTTPort());
 	hprintf255(request, "\"mqtttopic\":\"%s\",", CFG_GetMQTTClientId());
 	hprintf255(request, "\"chipset\":\"%s\",", PLATFORM_MCU_NAME);
 	hprintf255(request, "\"webapp\":\"%s\",", CFG_GetWebappRoot());
 	hprintf255(request, "\"shortName\":\"%s\",", CFG_GetShortDeviceName());
-	
-	hprintf255(request, "\"startcmd\":\"%s\",", CFG_GetShortStartupCommand());
+	poststr(request, "\"startcmd\":\"");
+	// This can be longer than 255
+	poststr(request, CFG_GetShortStartupCommand());
+	poststr(request, "\",");
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	hprintf255(request, "\"supportsSSDP\":%d,", DRV_IsRunning("SSDP") ? 1 : 0);
 #else
@@ -1540,8 +1578,23 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 
 	printf("[OTA] [TEST] Erase flash with size %lu...", bin_size);
 	hal_update_mfg_ptable();
-	bl_mtd_erase_all(handle);
-	printf("Done\r\n");
+
+	//Erase in chunks, because erasing everything at once is slow and causes issues with http connection
+	uint32_t erase_offset = 0;
+	uint32_t erase_len = 0;
+	while (erase_offset < bin_size)
+	{
+		erase_len = bin_size - erase_offset;
+		if (erase_len > 0x10000)
+		{
+			erase_len = 0x10000; //Erase in 64kb chunks
+		}
+		bl_mtd_erase(handle, erase_offset, erase_len);
+		printf("[OTA] Erased:  %lu / %lu \r\n", erase_offset, erase_len);
+		erase_offset += erase_len;
+		rtos_delay_milliseconds(100);
+	}
+	printf("[OTA] Done\r\n");
 
 	if (request->contentLength >= 0) {
 		towrite = request->contentLength;
@@ -2009,7 +2062,9 @@ static int http_rest_post_cmd(http_request_t* request) {
 	request->responseCode = code;
 	http_setup(request, httpMimeTypeJson);
 	hprintf255(request, "{\"%s\":%d, \"msg\":\"%s\", \"res\":", type, code, reply);
+#if ENABLE_TASMOTA_JSON
 	JSON_ProcessCommandReply(cmd, skipToNextWord(cmd), request, (jsonCb_t)hprintf255, COMMAND_FLAG_SOURCE_HTTP);
+#endif
 	hprintf255(request, "}", code, reply);
 	poststr(request, NULL);
 	return 0;

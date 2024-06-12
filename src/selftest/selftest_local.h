@@ -31,6 +31,12 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 #define SELFTEST_ASSERT_JSON_VALUE_STRING_NESTED2(par1, par2, varName, res) SELFTEST_ASSERT((!strcmp(Test_GetJSONValue_String_Nested2(par1, par2,varName),res)));
 #define SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_INT(index, key, valInt) SELFTEST_ASSERT((Test_GetJSONValue_IntFromArray(index,key)==valInt));
 #define SELFTEST_ASSERT_HAS_MQTT_ARRAY_ITEM_STR(index, key, valInt) SELFTEST_ASSERT((!strcmp(Test_GetJSONValue_StrFromArray(index,key),valInt)));
+#define SELFTEST_ASSERT_HTTP_HAS_LED_DIMMER(bHas) SELFTEST_ASSERT((bHas) == SIM_HasHTTPDimmer());
+#define SELFTEST_ASSERT_HTTP_HAS_LED_TEMPERATURE(bHas) SELFTEST_ASSERT((bHas) == SIM_HasHTTPTemperature());
+#define SELFTEST_ASSERT_HTTP_HAS_LED_RGB(bHas) SELFTEST_ASSERT((bHas) == SIM_HasHTTPRGB());
+#define SELFTEST_ASSERT_HTTP_HAS_BUTTON_LEDS_ON(bHas) SELFTEST_ASSERT((bHas) == SIM_HasHTTP_LED_Toggler(true));
+#define SELFTEST_ASSERT_HTTP_HAS_BUTTON_LEDS_OFF(bHas) SELFTEST_ASSERT((bHas) == SIM_HasHTTP_LED_Toggler(false));
+
 
 #define SELFTEST_ASSERT_STRING(current,expected) SELFTEST_ASSERT((strcmp(expected,current) == 0));
 #define SELFTEST_ASSERT_INTEGER(current,expected) SELFTEST_ASSERT((expected==current));
@@ -80,6 +86,7 @@ void Test_ClockEvents();
 void Test_Commands_Channels();
 void Test_LEDDriver();
 void Test_TuyaMCU_Basic();
+void Test_TuyaMCU_Mult();
 void Test_TuyaMCU_RawAccess();
 void Test_Command_If();
 void Test_Command_If_Else();
@@ -95,6 +102,7 @@ void Test_NTP();
 void Test_NTP_SunsetSunrise();
 void Test_MQTT();
 void Test_Tasmota();
+void Test_Backlog();
 void Test_EnergyMeter();
 void Test_DHT();
 void Test_Flags();
@@ -122,10 +130,13 @@ void Test_IF_Inside_Backlog();
 void Test_MQTT_Get_LED_EnableAll();
 void Test_TuyaMCU_BatteryPowered();
 void Test_ChargeLimitDriver();
+void Test_WS2812B();
+void Test_DoorSensor();
 
 void Test_GetJSONValue_Setup(const char *text);
 void Test_FakeHTTPClientPacket_GET(const char *tg);
 void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data);
+void Test_FakeHTTPClientPacket_POST_withJSONReply(const char *tg, const char *data);
 void Test_FakeHTTPClientPacket_JSON(const char *tg);
 const char *Test_GetLastHTMLReply();
 

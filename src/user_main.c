@@ -39,12 +39,25 @@
 #include "driver/drv_ssdp.h"
 #include "driver/drv_uart.h"
 
-#ifdef PLATFORM_BEKEN
+#if PLATFORM_BEKEN
 #include <mcu_ps.h>
 #include <fake_clock_pub.h>
 #include <BkDriverWdg.h>
+#include "temp_detect_pub.h"
 void bg_register_irda_check_func(FUNCPTR func);
+#elif PLATFORM_BL602
+#include <bl_sys.h>
+#include <bl_adc.h>     //  For BL602 ADC HAL
+#include <bl602_adc.h>  //  For BL602 ADC Standard Driver
+#include <bl602_glb.h>  //  For BL602 Global Register Standard Driver
+#include <bl_wdt.h>
+#elif PLATFORM_W600 || PLATFORM_W800
+#include "wm_watchdog.h"
+#elif PLATFORM_LN882H
+#include "hal/hal_wdt.h"
+#include "hal/hal_gpio.h"
 #endif
+
 
 int g_secondsElapsed = 0;
 // open access point after this number of seconds
@@ -89,6 +102,70 @@ void Main_ForceUnsafeInit();
 
 #if PLATFORM_XR809
 size_t xPortGetFreeHeapSize() {
+	return 0;
+}
+#endif
+
+#if PLATFORM_BL602
+/// Read the Internal Temperature Sensor as Float. Returns 0 if successful.
+/// Based on bl_tsen_adc_get in https://github.com/lupyuen/bl_iot_sdk/blob/master/components/hal_drv/bl602_hal/bl_adc.c#L224-L282
+static int get_tsen_adc(
+	float *temp,      //  Pointer to float to store the temperature
+	uint8_t log_flag  //  0 to disable logging, 1 to enable logging
+) {
+	static uint16_t tsen_offset = 0xFFFF;
+	float val = 0.0;
+
+	//  If the offset has not been fetched...
+	if (0xFFFF == tsen_offset) {
+		//  Define the ADC configuration
+		tsen_offset = 0;
+		ADC_CFG_Type adcCfg = {
+		  .v18Sel = ADC_V18_SEL_1P82V,                /*!< ADC 1.8V select */
+		  .v11Sel = ADC_V11_SEL_1P1V,                 /*!< ADC 1.1V select */
+		  .clkDiv = ADC_CLK_DIV_32,                   /*!< Clock divider */
+		  .gain1 = ADC_PGA_GAIN_1,                    /*!< PGA gain 1 */
+		  .gain2 = ADC_PGA_GAIN_1,                    /*!< PGA gain 2 */
+		  .chopMode = ADC_CHOP_MOD_AZ_PGA_ON,         /*!< ADC chop mode select */
+		  .biasSel = ADC_BIAS_SEL_MAIN_BANDGAP,       /*!< ADC current form main bandgap or aon bandgap */
+		  .vcm = ADC_PGA_VCM_1V,                      /*!< ADC VCM value */
+		  .vref = ADC_VREF_2V,                        /*!< ADC voltage reference */
+		  .inputMode = ADC_INPUT_SINGLE_END,          /*!< ADC input signal type */
+		  .resWidth = ADC_DATA_WIDTH_16_WITH_256_AVERAGE,  /*!< ADC resolution and oversample rate */
+		  .offsetCalibEn = 0,                         /*!< Offset calibration enable */
+		  .offsetCalibVal = 0,                        /*!< Offset calibration value */
+		};
+		ADC_FIFO_Cfg_Type adcFifoCfg = {
+		  .fifoThreshold = ADC_FIFO_THRESHOLD_1,
+		  .dmaEn = DISABLE,
+		};
+
+		//  Enable and reset the ADC
+		GLB_Set_ADC_CLK(ENABLE, GLB_ADC_CLK_96M, 7);
+		ADC_Disable();
+		ADC_Enable();
+		ADC_Reset();
+
+		//  Configure the ADC and Internal Temperature Sensor
+		ADC_Init(&adcCfg);
+		ADC_Channel_Config(ADC_CHAN_TSEN_P, ADC_CHAN_GND, 0);
+		ADC_Tsen_Init(ADC_TSEN_MOD_INTERNAL_DIODE);
+		ADC_FIFO_Cfg(&adcFifoCfg);
+
+		//  Fetch the offset
+		BL_Err_Type rc = ADC_Trim_TSEN(&tsen_offset);
+
+		//  Must wait 100 milliseconds or returned temperature will be negative
+		rtos_delay_milliseconds(100);
+	}
+	//  Read the temperature based on the offset
+	val = TSEN_Get_Temp(tsen_offset);
+	if (log_flag) {
+		printf("offset = %d\r\n", tsen_offset);
+		printf("temperature = %f Celsius\r\n", val);
+	}
+	//  Return the temperature
+	*temp = val;
 	return 0;
 }
 #endif
@@ -204,6 +281,13 @@ void ScheduleDriverStart(const char* name, int delay) {
 	}
 }
 
+#if defined(PLATFORM_LN882H)
+// LN882H hack, maybe place somewhere else?
+// this will be applied after WiFi connect
+extern int g_ln882h_pendingPowerSaveCommand;
+void LN882H_ApplyPowerSave(int bOn);
+#endif
+
 void Main_OnWiFiStatusChange(int code)
 {
 	// careful what you do in here.
@@ -247,7 +331,15 @@ void Main_OnWiFiStatusChange(int code)
 				//DRV_SSDP_Restart(); // this kills things
 			}
 		}
-
+#if defined(PLATFORM_LN882H)
+		// LN882H hack, maybe place somewhere else?
+		// this will be applied only if WiFi is connected
+		if (g_ln882h_pendingPowerSaveCommand != -1) {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_PowerSave: applying delayed setting. PowerSave will set to %i", g_ln882h_pendingPowerSaveCommand);
+			LN882H_ApplyPowerSave(g_ln882h_pendingPowerSaveCommand);
+			g_ln882h_pendingPowerSaveCommand = -1;
+		}
+#endif
 		break;
 		/* for softap mode */
 	case WIFI_AP_CONNECTED:
@@ -277,6 +369,7 @@ void Main_OnPingCheckerReply(int ms)
 
 int g_doHomeAssistantDiscoveryIn = 0;
 int g_bBootMarkedOK = 0;
+int g_rebootReason = 0;
 static int bMQTTconnected = 0;
 
 int Main_HasMQTTConnected()
@@ -369,6 +462,14 @@ bool Main_HasFastConnect() {
 	}
 	return false;
 }
+#if PLATFORM_LN882H
+// Quick hack to display LN-only temperature,
+// we may improve it in the future
+extern float g_wifi_temperature;
+#else
+float g_wifi_temperature = 0;
+#endif
+
 static byte g_secondsSpentInLowMemoryWarning = 0;
 void Main_OnEverySecond()
 {
@@ -380,6 +481,24 @@ void Main_OnEverySecond()
 	g_bHasWiFiConnected = 1;
 #endif
 
+	// display temperature - thanks to giedriuslt
+// only in Normal mode, and if boot is not failing
+	if (!bSafeMode && g_bootFailures <= 1)
+	{
+#if PLATFORM_BEKEN
+		UINT32 temperature;
+		temp_single_get_current_temperature(&temperature);
+#if PLATFORM_BK7231T
+		g_wifi_temperature = temperature / 25.0f;
+#else
+		g_wifi_temperature = temperature * 0.128f;
+#endif
+#elif PLATFORM_BL602
+		get_tsen_adc(&g_wifi_temperature, 0);
+#elif PLATFORM_LN882H
+		// this is set externally, I am just leaving comment here
+#endif
+	}
 	// run_adc_test();
 	newMQTTState = MQTT_RunEverySecondUpdate();
 	if (newMQTTState != bMQTTconnected) {
@@ -620,6 +739,7 @@ void Main_OnEverySecond()
 				}
 			}
 		}
+
 	}
 	if (g_connectToWiFi)
 	{
@@ -664,7 +784,7 @@ void Main_OnEverySecond()
 		}
 	}
 
-#if defined(PLATFORM_BEKEN) || defined(PLATFORM_BL602) || defined(PLATFORM_W600) || defined(WINDOWS)
+#if ENABLE_DRIVER_DHT
 	if (g_dhtsCount > 0) {
 		if (bSafeMode == 0) {
 			DHT_OnEverySecond();
@@ -673,6 +793,12 @@ void Main_OnEverySecond()
 #endif
 #ifdef PLATFORM_BEKEN
 	bk_wdg_reload();
+#elif PLATFORM_BL602
+	bl_wdt_feed();
+#elif PLATFORM_W600 || PLATFORM_W800
+	tls_watchdog_clr();
+#elif PLATFORM_LN882H
+	hal_wdt_cnt_restart(WDT_BASE);
 #endif
 	// force it to sleep...  we MUST have some idle task processing
 	// else task memory doesn't get freed
@@ -694,6 +820,7 @@ static int g_wifi_ledState = 0;
 static uint32_t g_time = 0;
 static uint32_t g_last_time = 0;
 int g_bWantPinDeepSleep;
+int g_pinDeepSleepWakeUp = 0;
 unsigned int g_deltaTimeMS;
 
 /////////////////////////////////////////////////////
@@ -702,7 +829,7 @@ void QuickTick(void* param)
 {
 	if (g_bWantPinDeepSleep) {
 		g_bWantPinDeepSleep = 0;
-		PINS_BeginDeepSleepWithPinWakeUp();
+		PINS_BeginDeepSleepWithPinWakeUp(g_pinDeepSleepWakeUp);
 		return;
 	}
 
@@ -725,7 +852,7 @@ void QuickTick(void* param)
 	g_last_time = g_time;
 
 
-#if (defined WINDOWS) || (defined PLATFORM_BEKEN)
+#if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602) || (defined PLATFORM_LN882H)
 	SVM_RunThreads(g_deltaTimeMS);
 #endif
 	RepeatingEvents_RunUpdate(g_deltaTimeMS * 0.001f);
@@ -886,6 +1013,27 @@ void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
 	}
 #ifdef PLATFORM_BEKEN
 	bk_wdg_initialize(10000);
+#elif PLATFORM_BL602
+	// max is 4 seconds or so...
+	// #define MAX_MS_WDT (65535/16)
+	bl_wdt_init(3000);
+#elif PLATFORM_W600 || PLATFORM_W800
+	tls_watchdog_init(5*1000*1000);
+#elif PLATFORM_LN882H
+	/* Watchdog initialization */
+	wdt_init_t_def wdt_init;
+	memset(&wdt_init,0,sizeof(wdt_init));
+	wdt_init.wdt_rmod = WDT_RMOD_1;         // When equal to 0, the counter is reset directly when it overflows; when equal to 1, an interrupt is generated first when the counter overflows, and if it overflows again, it resets.
+	wdt_init.wdt_rpl = WDT_RPL_32_PCLK;     // Set the reset delay time
+	wdt_init.top = WDT_TOP_VALUE_9;         //wdt cnt value = 0x1FFFF   Time = 4.095 s
+	hal_wdt_init(WDT_BASE, &wdt_init);
+    
+	/* Configure watchdog interrupt */
+	NVIC_SetPriority(WDT_IRQn,     4);
+	NVIC_EnableIRQ(WDT_IRQn);
+    
+	/* Enable watchdog */
+	hal_wdt_en(WDT_BASE,HAL_ENABLE);
 #endif
 }
 void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
@@ -893,6 +1041,11 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_Generic_Init();
 #endif
+#ifdef PLATFORM_BEKEN
+	int bk_misc_get_start_type();
+	g_rebootReason = bk_misc_get_start_type();
+#endif
+
 	RepeatingEvents_Init();
 
 	// set initial values for channels.

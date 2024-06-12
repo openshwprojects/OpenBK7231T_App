@@ -130,12 +130,15 @@ void SIM_ClearOBK(const char *flashPath) {
 	Main_Init();
 }
 void Win_DoUnitTests() {
-
+	Test_Backlog();
+	Test_DoorSensor();
+	Test_WS2812B();
 	Test_Command_If_Else();
 	Test_MQTT();
 	Test_ChargeLimitDriver();
 	// this is slowest
 	Test_TuyaMCU_Basic();
+	Test_TuyaMCU_Mult();
 	Test_TuyaMCU_RawAccess();
 	Test_Battery();
 	Test_TuyaMCU_BatteryPowered();
@@ -184,6 +187,7 @@ void Win_DoUnitTests() {
 	Test_Command_If();
 	Test_Tokenizer();
 	Test_Http();
+	Test_Http_LED();
 	Test_DeviceGroups();
 
 
@@ -218,7 +222,7 @@ int g_bDoingUnitTestsNow = 0;
 #include "sim/sim_public.h"
 int __cdecl main(int argc, char **argv)
 {
-	bool bWantsUnitTests = 1;
+	bool bWantsUnitTests = 0;
 
 	// clear debug data
 	if (1) {

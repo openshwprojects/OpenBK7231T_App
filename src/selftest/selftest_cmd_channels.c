@@ -229,6 +229,14 @@ void Test_Commands_Channels() {
 	SELFTEST_ASSERT_CHANNEL(2, 202);
 	SELFTEST_ASSERT_CHANNEL(3, 303);
 
+	for (int i = 0; i < 5; i++) {
+		CMD_ExecuteCommand("setChannel 1 $rand01*5", 0);
+		printf("Rand01 times 5 - channel 1 is %i\n", CHANNEL_Get(1));
+	}
+	for (int i = 0; i < 5; i++) {
+		CMD_ExecuteCommand("setChannel 1 $rand", 0);
+		printf("Rand - channel 1 is %i\n", CHANNEL_Get(1));
+	}
 }
 
 

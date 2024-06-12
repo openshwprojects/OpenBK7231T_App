@@ -1,0 +1,8 @@
+#define AHT2X_CMD_INI	0xBE
+#define AHT2X_DAT_INI1	0x08
+#define AHT2X_DAT_INI2	0x00
+#define AHT2X_CMD_TMS	0xAC
+#define AHT2X_DAT_TMS1	0x33
+#define AHT2X_DAT_TMS2	0x00
+#define AHT2X_CMD_RST	0xBA
+#define AHT2X_DAT_BUSY	0x80

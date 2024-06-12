@@ -41,7 +41,7 @@ bool Soft_I2C_WriteByte(softI2C_t *i2c, uint8_t value) {
 	uint8_t curr;
 	uint8_t ack;
 
-	for (curr = 0X80; curr != 0; curr >>= 1) {
+	for (curr = 0x80; curr != 0; curr >>= 1) {
 		if (curr & value) {
 			Soft_I2C_SetHigh(i2c->pin_data);
 		}

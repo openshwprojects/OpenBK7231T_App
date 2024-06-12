@@ -21,6 +21,8 @@
 #include "../driver/drv_local.h"
 #include "../driver/drv_bl_shared.h"
 
+#if ENABLE_TASMOTA_JSON
+
 void JSON_PrintKeyValue_String(void* request, jsonCb_t printer, const char* key, const char* value, bool bComma) {
 	printer(request, "\"%s\":\"%s\"", key, value);
 	if (bComma) {
@@ -193,16 +195,14 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 {"StatusSNS":{"Time":"2022-07-30T10:11:26","ENERGY":{"TotalStartTime":"2022-05-12T10:56:31","Total":0.003,"Yesterday":0.003,"Today":0.000,"Power": 0,"ApparentPower": 0,"ReactivePower": 0,"Factor":0.00,"Voltage":236,"Current":0.000}}}
 */
 
+// returns NaN values as 0
+static float _getReading_NanToZero(energySensor_t type) {
+	float retval = DRV_GetReading(type);
+	return OBK_IS_NAN(retval) ? 0 : retval;
+}
 
 static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
-	float power, voltage, current, batterypercentage = 0;
-	float energy, energy_hour;
-
-	voltage = DRV_GetReading(OBK_VOLTAGE);
-	current = DRV_GetReading(OBK_CURRENT);
-	power = DRV_GetReading(OBK_POWER);
-	energy = DRV_GetReading(OBK_CONSUMPTION_TOTAL);
-	energy_hour = DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR);
+	float voltage, batterypercentage = 0;
 
 	if (DRV_IsMeasuringBattery()) {
 #ifdef ENABLE_DRIVER_BATTERY
@@ -210,29 +210,22 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 		batterypercentage = Battery_lastreading(OBK_BATT_LEVEL);
 #endif
 		printer(request, "{");
-		printer(request, "\"Voltage\":%.4f,", voltage);
+		printer(request, "\"Voltage\":%.4f,", _getReading_NanToZero(OBK_VOLTAGE));
 		printer(request, "\"Batterypercentage\":%.0f", batterypercentage);
 		// close ENERGY block
 		printer(request, "}");
 	}
 	else {
-		// following check will clear NaN values
-		if (OBK_IS_NAN(energy)) {
-			energy = 0;
-		}
-		if (OBK_IS_NAN(energy_hour)) {
-			energy_hour = 0;
-		}
-
-		printer(request, "{");
-		printer(request, "\"Power\": %f,", power);
-		printer(request, "\"ApparentPower\": %f,", g_apparentPower);
-		printer(request, "\"ReactivePower\": %f,", g_reactivePower);
-		printer(request, "\"Factor\":%f,", g_powerFactor);
-		printer(request, "\"Voltage\":%f,", voltage);
-		printer(request, "\"Current\":%f,", current);
-		printer(request, "\"ConsumptionTotal\":%f,", energy);
-		printer(request, "\"ConsumptionLastHour\":%f", energy_hour);
+		printer(request, "{"); 
+		printer(request, "\"Power\": %f,", _getReading_NanToZero(OBK_POWER));
+		printer(request, "\"ApparentPower\": %f,", _getReading_NanToZero(OBK_POWER_APPARENT));
+		printer(request, "\"ReactivePower\": %f,", _getReading_NanToZero(OBK_POWER_REACTIVE));
+		printer(request, "\"Factor\":%f,", _getReading_NanToZero(OBK_POWER_FACTOR));
+		printer(request, "\"Voltage\":%f,", _getReading_NanToZero(OBK_VOLTAGE));
+		printer(request, "\"Current\":%f,", _getReading_NanToZero(OBK_CURRENT));
+		printer(request, "\"ConsumptionTotal\":%f,", _getReading_NanToZero(OBK_CONSUMPTION_TOTAL));
+		printer(request, "\"Yesterday\": %f,", _getReading_NanToZero(OBK_CONSUMPTION_YESTERDAY));
+		printer(request, "\"ConsumptionLastHour\":%f", _getReading_NanToZero(OBK_CONSUMPTION_LAST_HOUR));
 		// close ENERGY block
 		printer(request, "}");
 	}
@@ -297,6 +290,26 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 		// close ENERGY block
 		printer(request, "},");
 	}
+	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		int role = PIN_GetPinRoleForPinIndex(i);
+		if (role != IOR_DHT11 && role != IOR_DHT12 && role != IOR_DHT21 && role != IOR_DHT22)
+			continue;
+		channel_1 = g_cfg.pins.channels[i];
+		channel_2 = g_cfg.pins.channels2[i];
+
+		chan_val1 = CHANNEL_GetFloat(channel_1) / 10.0f;
+		chan_val2 = CHANNEL_GetFloat(channel_2);
+
+		// writer header
+		// TODO - index?
+		printer(request, "\"DHT\":");
+		// following check will clear NaN values
+		printer(request, "{");
+		printer(request, "\"Temperature\": %.1f,", chan_val1);
+		printer(request, "\"Humidity\": %.0f", chan_val2);
+		// close ENERGY block
+		printer(request, "},");
+	}
 	if (DRV_IsRunning("SGP")) {
 		g_pin_1 = PIN_FindPinIndexForRole(IOR_SGP_DAT, g_pin_1);
 		channel_1 = g_cfg.pins.channels[g_pin_1];
@@ -321,6 +334,11 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 /*
 {"StatusSNS":{"Time":"2023-04-10T10:19:55"}}
 */
+static void format_date(char *buffer, int buflength, struct tm *ltm)
+{
+	snprintf(buffer, buflength, "%04d-%02d-%02dT%02d:%02d:%02d",ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+}
+
 static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bAppendHeader) {
 	char buff[20];
 
@@ -330,7 +348,7 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 	printer(request, "{");
 
 	time_t localTime = (time_t)NTP_GetCurrentTime();
-	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", gmtime(&localTime));
+	format_date(buff, sizeof(buff), gmtime(&localTime));
 	JSON_PrintKeyValue_String(request, printer, "Time", buff, false);
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
@@ -342,7 +360,15 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 		printer(request, "\"ENERGY\":");
 		http_tasmota_json_ENERGY(request, printer);
 	}
-	if (DRV_IsSensor()) {
+	bool bHasAnyDHT = false;
+	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		int role = PIN_GetPinRoleForPinIndex(i);
+		if (role != IOR_DHT11 && role != IOR_DHT12 && role != IOR_DHT21 && role != IOR_DHT22)
+			continue;
+		bHasAnyDHT = true;
+		break;
+	}
+	if (DRV_IsSensor() || bHasAnyDHT) {
 		http_tasmota_json_SENSOR(request, printer);
 		JSON_PrintKeyValue_String(request, printer, "TempUnit", "C", false);
 	}
@@ -411,7 +437,7 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 		printer(request, "\"StatusSTS\":");
 	}
 	printer(request, "{");
-	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", gmtime(&localTime));
+	format_date(buff, sizeof(buff), gmtime(&localTime));
 	JSON_PrintKeyValue_String(request, printer, "Time", buff, true);
 	format_time(g_secondsElapsed, buff, sizeof(buff));
 	JSON_PrintKeyValue_String(request, printer, "Uptime", buff, true);
@@ -449,9 +475,9 @@ static int http_tasmota_json_status_TIM(void* request, jsonCb_t printer) {
 	time_t localTime = (time_t)NTP_GetCurrentTime();
 	time_t localUTC = (time_t)NTP_GetCurrentTimeWithoutOffset();
 	printer(request, "\"StatusTIM\":{");
-	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", gmtime(&localUTC));
+	format_date(buff, sizeof(buff), gmtime(&localUTC));
 	JSON_PrintKeyValue_String(request, printer, "UTC", buff, true);
-	strftime(buff, sizeof(buff), "%Y-%m-%dT%H:%M:%S", gmtime(&localTime));
+	format_date(buff, sizeof(buff), gmtime(&localTime));
 	JSON_PrintKeyValue_String(request, printer, "Local", buff, true);
 	JSON_PrintKeyValue_String(request, printer, "StartDST", "2022-03-27T02:00:00", true);
 	JSON_PrintKeyValue_String(request, printer, "EndDST", "2022-10-30T03:00:00", true);
@@ -662,14 +688,15 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	JSON_PrintKeyValue_String(request, printer, "RestartReason", "HardwareWatchdog", true);
 	JSON_PrintKeyValue_Int(request, printer, "Uptime", g_secondsElapsed, true);
 	struct tm* ltm;
-	int ntpTime = NTP_GetCurrentTime() - g_secondsElapsed;
-	ltm = gmtime((time_t*)&ntpTime);
-
+	time_t ntpTime = 0; // if no NTP_time set, we will not change this value, but just stick to 0 and hence "fake" start of epoch 1970-01-01T00:00:00
+	if (NTP_GetCurrentTimeWithoutOffset() > g_secondsElapsed) {	// would be negative else, leading to unwanted results when converted to (unsigned) time_t 
+		ntpTime = (time_t)NTP_GetCurrentTimeWithoutOffset() - (time_t)g_secondsElapsed;
+	}
+	ltm = gmtime(&ntpTime);
 	if (ltm != 0) {
 		printer(request, "\"StartupUTC\":\"%04d-%02d-%02dT%02d:%02d:%02d\",", ltm->tm_year + 1900, ltm->tm_mon + 1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
 	}
 	else {
-
 	}
 	JSON_PrintKeyValue_Int(request, printer, "Sleep", 50, true);
 	JSON_PrintKeyValue_Int(request, printer, "CfgHolder", 4617, true);
@@ -749,6 +776,7 @@ int http_obk_json_dps(int id, void* request, jsonCb_t printer);
 
 int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, jsonCb_t printer, int flags) {
 	int i;
+	long int* pAllGenericFlags = (long int*)&g_cfg.genericFlags;
 
 	if (!wal_strnicmp(cmd, "POWER", 5)) {
 
@@ -1024,7 +1052,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 	}
 	else if (!wal_strnicmp(cmd, "Flags", 5)) {
 		printer(request, "{");
-		printer(request, "\"Flags\":\"%ld\"", *((long int*)&g_cfg.genericFlags));
+		printer(request, "\"Flags\":\"%ld\"", *pAllGenericFlags);
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "Ch", 2)) {
@@ -1034,7 +1062,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 #if ENABLE_DRIVER_TUYAMCU
 	else if (!wal_strnicmp(cmd, "Dp", 2)) {
 		int id = -1;
-		if (isdigit(cmd[2])) {
+		if (isdigit((int)cmd[2])) {
 			sscanf(cmd + 2, "%i", &id);
 		}
 		http_obk_json_dps(id,request, printer);
@@ -1051,6 +1079,8 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 
 	return 0;
 }
+// close for ENABLE_TASMOTA_JSON
+#endif
 
 
 

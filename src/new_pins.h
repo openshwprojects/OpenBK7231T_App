@@ -915,6 +915,13 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Power_div100,
+	//chandetail:{"name":"Motion",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Motion",
+	//chandetail:"enum":"Motion",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Motion,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
@@ -1046,8 +1053,10 @@ typedef struct pinsState_s {
 #define OBK_FLAG_HTTP_DISABLE_AUTH_IN_SAFE_MODE		44
 #define OBK_FLAG_DISCOVERY_DONT_MERGE_LIGHTS		45
 #define OBK_FLAG_TUYAMCU_STORE_RAW_DATA				46
+#define OBK_FLAG_TUYAMCU_STORE_ALL_DATA				47
+#define OBK_FLAG_POWER_INVERT_AC					48
 
-#define OBK_TOTAL_FLAGS 47
+#define OBK_TOTAL_FLAGS 49
 
 #define LOGGER_FLAG_MQTT_DEDUPER					1
 #define LOGGER_FLAG_POWER_SAVE						2
@@ -1261,7 +1270,7 @@ void PIN_DeepSleep_SetAllWakeUpEdges(byte edgeCode);
 
 void PIN_set_wifi_led(int value);
 void PIN_AddCommands(void);
-void PINS_BeginDeepSleepWithPinWakeUp();
+void PINS_BeginDeepSleepWithPinWakeUp(unsigned int wakeUpTime);
 void PIN_SetupPins();
 void PIN_OnReboot();
 void CFG_ClearPins();
@@ -1304,6 +1313,7 @@ bool CHANNEL_IsInUse(int ch);
 void Channel_SaveInFlashIfNeeded(int ch);
 int CHANNEL_FindMaxValueForChannel(int ch);
 // cmd_channels.c
+bool CHANNEL_HasLabel(int ch);
 const char* CHANNEL_GetLabel(int ch);
 bool CHANNEL_ShouldAddTogglePrefixToUI(int ch);
 bool CHANNEL_HasNeverPublishFlag(int ch);
@@ -1323,6 +1333,9 @@ int ChannelType_GetDecimalPlaces(int type);
 
 int PIN_ParsePinRoleName(const char* name);
 const char* PIN_RoleToString(int role);
+// return number of channels used for a role
+// taken from code in http_fnc.c
+int PIN_IOR_NofChan(int test);
 
 extern const char* g_channelTypeNames[];
 
