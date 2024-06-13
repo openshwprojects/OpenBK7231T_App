@@ -22,7 +22,7 @@ jobs:
       new_release: ${{ steps.refs.outputs.new_release }}
     steps:
       - name: Source checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive        
       - name: Update SDKs if required
@@ -54,10 +54,10 @@ jobs:
           fi
           echo "new_release: ${{ steps.semantic.outputs.new_release_published }}"
           echo "version: ${VERSION}"
-          echo "::set-output name=new_release::${{ steps.semantic.outputs.new_release_published }}"
-          echo "::set-output name=short_ref::${BRANCHTRANSLATED}"
-          echo "::set-output name=sha_short::SHA-$(git rev-parse --short=12 HEAD)"
-          echo "::set-output name=version::${VERSION}"
+          echo "new_release=${{ steps.semantic.outputs.new_release_published }}" >> $GITHUB_STATE
+          echo "short_ref=${BRANCHTRANSLATED}" >> $GITHUB_STATE
+          echo "sha_short=SHA-$(git rev-parse --short=12 HEAD)" >> $GITHUB_STATE
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
   build:
     name: Build
     needs: refs
@@ -68,10 +68,10 @@ jobs:
         platform: [OpenBK7231T, OpenBK7231N, OpenXR809, OpenBL602, OpenW800, OpenW600, OpenLN882H]
     steps:
       - name: Source checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive        
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.8'
           architecture: 'x64'
@@ -88,9 +88,9 @@ jobs:
       - name: Run make
         run: make APP_VERSION=${{ needs.refs.outputs.version }} APP_NAME=${{ matrix.platform }} ${{ matrix.platform }}
       - name: Save build assets
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
+          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}-ubuntu-20.04_${{ matrix.platform }}
           path: |
             output/${{ needs.refs.outputs.version }}/OpenBK7231T_UA_${{ needs.refs.outputs.version }}.bin
             output/${{ needs.refs.outputs.version }}/OpenBK7231T_UG_${{ needs.refs.outputs.version }}.bin
@@ -108,17 +108,27 @@ jobs:
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin.xz            
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin.xz.ota
           if-no-files-found: warn
-
+          
+  merge:
+      runs-on: ubuntu-20.04
+      needs: build 
+      steps:
+          - name: Merge Artifacts
+            uses: actions/upload-artifact/merge@v4
+            with:
+              name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
+              delete-merged: true
+              
   release:
     name: Semantic Release Images and Artifacts
     runs-on: ubuntu-20.04
-    needs: [ refs, build ]
+    needs: [ refs, build, merge ]
     if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
     steps:
       - name: Source checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Fetch build assets
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
           path: output/${{ needs.refs.outputs.version }}
