@@ -111,7 +111,7 @@ jobs:
           
   merge:
       runs-on: ubuntu-20.04
-      needs: build 
+      needs: [ build, refs ]
       steps:
           - name: Merge Artifacts
             uses: actions/upload-artifact/merge@v4
