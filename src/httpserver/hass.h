@@ -73,6 +73,10 @@ typedef enum {
 	HASS_UPTIME,
 	/// @brief Firmware build info
 	HASS_BUILD,
+	/// @brief 
+	HASS_SSID,
+	/// @brief 
+	HASS_IP,
 	/// @brief Wh, kWh
 	ENERGY_SENSOR,
 	// hPa
