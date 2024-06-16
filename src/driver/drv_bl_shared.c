@@ -37,21 +37,21 @@ struct {
 	double lastSentValue; // what are the last values we sent over the MQTT?
 	int noChangeFrame; // how much update frames has passed without sending MQTT update of read values?
 } sensors[OBK__NUM_SENSORS] = { 
-	//.hass_dev_class, 	.units,		.name_friendly,			.name_mqtt,		 .hass_uniq_id_suffix, .rounding_decimals, .changeSendThreshold		
-	{{"voltage",		"V",		"Voltage",				"voltage",					"0",		},  1,			0.25,		},	// OBK_VOLTAGE
-	{{"current",		"A",		"Current",				"current",					"1",		},	3,			0.002,		},	// OBK_CURRENT
-	{{"power",			"W",		"Power",				"power",					"2",		},	2,			0.25,		},	// OBK_POWER
-	{{"apparent_power",	"VA",		"Apparent Power",		"power_apparent",			"9",		},	2,			0.25,		},	// OBK_POWER_APPARENT
-	{{"reactive_power",	"var",		"Reactive Power",		"power_reactive",			"10",		},	2,			0.25,		},	// OBK_POWER_REACTIVE
-	{{"power_factor",	"",			"Power Factor",			"power_factor",				"11",		},	2,			0.05,		},	// OBK_POWER_FACTOR
-	{{"energy",			UNIT_WH,	"Energy Total",			"energycounter",			"3",		},	3,			0.1,		},	// OBK_CONSUMPTION_TOTAL
-	{{"energy",			UNIT_WH,	"Energy Last Hour",		"energycounter_last_hour",	"4",		},	3,			0.1,		},	// OBK_CONSUMPTION_LAST_HOUR
-	//{{"",				"",			"Consumption Stats",	"consumption_stats",		"5",		},	0,			0,			},	// OBK_CONSUMPTION_STATS
-	{{"energy",			UNIT_WH,	"Energy Today",			"energycounter_today",		"7",		},	3,			0.1,		},	// OBK_CONSUMPTION_TODAY
-	{{"energy",			UNIT_WH,	"Energy Yesterday",		"energycounter_yesterday",	"6",		},	3,			0.1,		},	// OBK_CONSUMPTION_YESTERDAY
-	{{"energy",			UNIT_WH,	"Energy 2 Days Ago",	"energycounter_2_days_ago",	"12",		},	3,			0.1,		},	// OBK_CONSUMPTION_2_DAYS_AGO
-	{{"energy",			UNIT_WH,	"Energy 3 Days Ago",	"energycounter_3_days_ago",	"13",		},	3,			0.1,		},	// OBK_CONSUMPTION_3_DAYS_AGO
-	{{"timestamp",		"",			"Energy Clear Date",	"energycounter_clear_date",	"8",		},	0,			86400,		},	// OBK_CONSUMPTION_CLEAR_DATE	
+	//.hass_dev_class, 	.units,		.name_friendly,			.name_mqtt,		 .hass_uniq_index, .rounding_decimals, .changeSendThreshold
+	{{"voltage",		"V",		"Voltage",				"voltage",					0,		},  1,			0.25,		},	// OBK_VOLTAGE
+	{{"current",		"A",		"Current",				"current",					1,		},	3,			0.002,		},	// OBK_CURRENT
+	{{"power",			"W",		"Power",				"power",					2,		},	2,			0.25,		},	// OBK_POWER
+	{{"apparent_power",	"VA",		"Apparent Power",		"power_apparent",			9,		},	2,			0.25,		},	// OBK_POWER_APPARENT
+	{{"reactive_power",	"var",		"Reactive Power",		"power_reactive",			10,		},	2,			0.25,		},	// OBK_POWER_REACTIVE
+	{{"power_factor",	"",			"Power Factor",			"power_factor",				11,		},	2,			0.05,		},	// OBK_POWER_FACTOR
+	{{"energy",			UNIT_WH,	"Energy Total",			"energycounter",			3,		},	3,			0.1,		},	// OBK_CONSUMPTION_TOTAL
+	{{"energy",			UNIT_WH,	"Energy Last Hour",		"energycounter_last_hour",	4,		},	3,			0.1,		},	// OBK_CONSUMPTION_LAST_HOUR
+	//{{"",				"",			"Consumption Stats",	"consumption_stats",		5,		},	0,			0,			},	// OBK_CONSUMPTION_STATS
+	{{"energy",			UNIT_WH,	"Energy Today",			"energycounter_today",		7,		},	3,			0.1,		},	// OBK_CONSUMPTION_TODAY
+	{{"energy",			UNIT_WH,	"Energy Yesterday",		"energycounter_yesterday",	6,		},	3,			0.1,		},	// OBK_CONSUMPTION_YESTERDAY
+	{{"energy",			UNIT_WH,	"Energy 2 Days Ago",	"energycounter_2_days_ago",	12,		},	3,			0.1,		},	// OBK_CONSUMPTION_2_DAYS_AGO
+	{{"energy",			UNIT_WH,	"Energy 3 Days Ago",	"energycounter_3_days_ago",	13,		},	3,			0.1,		},	// OBK_CONSUMPTION_3_DAYS_AGO
+	{{"timestamp",		"",			"Energy Clear Date",	"energycounter_clear_date",	8,		},	0,			86400,		},	// OBK_CONSUMPTION_CLEAR_DATE
 }; 
 
 float lastReadingFrequency = NAN;
@@ -182,7 +182,9 @@ bool BL09XX_PublishHASSDevices(const char* topic) {
 
 	for (i = OBK__FIRST; i <= OBK__LAST; i++)
 	{
-		dev_info = hass_init_energy_sensor_device_info(i);
+		if (index >= OBK_CONSUMPTION__DAILY_FIRST && !DRV_IsRunning("NTP"))
+			continue; //include daily stats only when time is valid
+		dev_info = hass_init_energy_sensor_device_info(&sensors[i].names);
 		if (dev_info) {
 			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 			hass_free_device_info(dev_info);
@@ -839,9 +841,4 @@ void BL_Shared_Init(void)
 float DRV_GetReading(energySensor_t type) 
 {
 	return sensors[type].lastReading;
-}
-
-energySensorNames_t* DRV_GetEnergySensorNames(energySensor_t type)
-{
-	return &sensors[type].names;
 }

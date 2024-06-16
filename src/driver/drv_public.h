@@ -3,6 +3,7 @@
 
 #include "../httpserver/new_http.h"
 #include "../new_common.h"
+#include <stdint.h>
 
 typedef enum energySensor_e {
 	OBK__FIRST = 0,
@@ -33,12 +34,13 @@ typedef enum energySensor_e {
 	OBK__NUM_SENSORS,
 } energySensor_t;
 
-typedef struct energySensorNames_s {	
+//Used in hass_init_energy_sensor_device_info() so declared as public type.
+typedef struct energySensorNames_s {
 	const char* const hass_dev_class;
 	const char* const units;
 	const char* const name_friendly;
 	const char* const name_mqtt;
-	const char* const hass_uniq_id_suffix; //keep identifiers persistent in case OBK_ENERG_SENSOR changes
+	const uint32_t hass_uniq_index; //keep identifiers persistent in case OBK_ENERG_SENSOR changes
 } energySensorNames_t;
 
 extern int g_dhtsCount;
@@ -71,7 +73,6 @@ void DRV_DGR_OnLedFinalColorsChange(byte rgbcw[5]);
 
 // OBK_POWER etc
 float DRV_GetReading(energySensor_t type);
-energySensorNames_t* DRV_GetEnergySensorNames(energySensor_t type);
 bool DRV_IsMeasuringPower();
 bool DRV_IsMeasuringBattery();
 bool DRV_IsSensor();
