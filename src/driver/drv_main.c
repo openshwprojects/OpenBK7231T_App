@@ -13,7 +13,6 @@
 #include "drv_tuyaMCU.h"
 #include "drv_uart.h"
 
-
 typedef struct driver_s {
 	const char* name;
 	void(*initFunc)();
@@ -27,6 +26,9 @@ typedef struct driver_s {
 	bool bLoaded;
 } driver_t;
 
+//Values accessible via DRV_GetReading()
+//Drivers should store values by pointer to element of this array.
+double readings[OBK__NUM_READINGS] = {0};
 
 void TuyaMCU_RunEverySecond();
 
@@ -1201,4 +1203,9 @@ bool DRV_IsSensor() {
 #else
 	return false;
 #endif
+}
+
+float DRV_GetReading(reading_t type)
+{
+	return readings[type];
 }

@@ -5,7 +5,8 @@
 #include "../new_common.h"
 #include <stdint.h>
 
-typedef enum energySensor_e {
+//These are indexes, acceptable by DRV_GetReading() call
+typedef enum reading_e {
 	OBK__FIRST = 0,
 	OBK_VOLTAGE = OBK__FIRST, // must match order in cmd_public.h
 	OBK_CURRENT,
@@ -14,25 +15,24 @@ typedef enum energySensor_e {
 	OBK_POWER_REACTIVE,
 	OBK_POWER_FACTOR,
 	OBK_CONSUMPTION_TOTAL,
-	OBK__NUM_MEASUREMENTS = OBK_CONSUMPTION_TOTAL,
-
-	// TODO OBK_CONSUMPTION_LAST_HOUR is actally "sum of consumption stats recording period"
-	// and won't correspond to 'last hour' unless cmd SetupEnergyStats is enabled and configured to record one hour
-	// e.g. 'SetupEnergyStats 1 60 60 0': 60 sec intervals, 60 samples
-	OBK_CONSUMPTION_LAST_HOUR,	
-	//OBK_CONSUMPTION_STATS, // represents a variable size array of energy samples, not a sensor
-	// below here are sensors that are assumed to require NTP driver
+	OBK_CONSUMPTION_LAST_HOUR,
 	OBK_CONSUMPTION__DAILY_FIRST, //daily consumptions are assumed to be in chronological order
-	OBK_CONSUMPTION_TODAY = OBK_CONSUMPTION__DAILY_FIRST, 
+	OBK_CONSUMPTION_TODAY = OBK_CONSUMPTION__DAILY_FIRST,
 	OBK_CONSUMPTION_YESTERDAY,
 	OBK_CONSUMPTION_2_DAYS_AGO,
 	OBK_CONSUMPTION_3_DAYS_AGO,
 	OBK_CONSUMPTION__DAILY_LAST = OBK_CONSUMPTION_3_DAYS_AGO,
-
 	OBK_CONSUMPTION_CLEAR_DATE,
-	OBK__LAST = OBK_CONSUMPTION_CLEAR_DATE,
-	OBK__NUM_SENSORS,
-} energySensor_t;
+	OBK_POWER_L1,
+	OBK_POWER_L2,
+	OBK_POWER_L3,
+	OBK_CONSUMPTION_L1,
+	OBK_CONSUMPTION_L2,
+	OBK_CONSUMPTION_L3,
+	OBK__NUM_READINGS, //must be the last one
+} reading_t;
+
+extern double readings[OBK__NUM_READINGS];
 
 //Used in hass_init_energy_sensor_device_info() so declared as public type.
 typedef struct energySensorNames_s {
@@ -72,7 +72,7 @@ void DRV_DGR_OnLedEnableAllChange(int iVal);
 void DRV_DGR_OnLedFinalColorsChange(byte rgbcw[5]);
 
 // OBK_POWER etc
-float DRV_GetReading(energySensor_t type);
+float DRV_GetReading(reading_t type);
 bool DRV_IsMeasuringPower();
 bool DRV_IsMeasuringBattery();
 bool DRV_IsSensor();

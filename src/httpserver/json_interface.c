@@ -19,7 +19,6 @@
 #include <time.h>
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_local.h"
-#include "../driver/drv_bl_shared.h"
 
 #if ENABLE_TASMOTA_JSON
 
@@ -196,7 +195,7 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 */
 
 // returns NaN values as 0
-static float _getReading_NanToZero(energySensor_t type) {
+static float _getReading_NanToZero(reading_t type) {
 	float retval = DRV_GetReading(type);
 	return OBK_IS_NAN(retval) ? 0 : retval;
 }
