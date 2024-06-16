@@ -1636,7 +1636,6 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	int excludedCount = 0;
 	bool ledDriverChipRunning;
 	HassDeviceInfo* dev_info = NULL;
-	bool measuringPower = false;
 	bool measuringBattery = false;
 	struct cJSON_Hooks hooks;
 	bool discoveryQueued = false;
@@ -1661,7 +1660,6 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	}
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	measuringPower = DRV_IsMeasuringPower();
 	measuringBattery = DRV_IsMeasuringBattery();
 #endif
 
@@ -1766,17 +1764,9 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	}
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	if (measuringPower == true) {
-		for (i = OBK__FIRST; i <= OBK__LAST; i++)
-		{
-			dev_info = hass_init_energy_sensor_device_info(i);
-			if (dev_info) {
-				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-				hass_free_device_info(dev_info);
-				discoveryQueued = true;
-			}
-		}
-	}
+	if (DRV_PublishHASSDevices(topic)) {
+		discoveryQueued = true;
+	};
 #endif
 
 	if (measuringBattery == true) {
@@ -2526,7 +2516,6 @@ int http_fn_cfg_pins(http_request_t* request) {
 		// But on Beken chips, only certain pins can be PWM
 		int bCanThisPINbePWM;
 		int si, ch, ch2;
-		int j;
 		const char* alias;
 
 		si = PIN_GetPinRoleForPinIndex(i);

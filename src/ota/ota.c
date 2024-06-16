@@ -148,10 +148,9 @@ int myhttpclientcallback(httprequest_t* request){
       CFG_IncrementOTACount();
       // make sure it's saved before reboot
 	  CFG_Save_IfThereArePendingChanges();
-      if (DRV_IsMeasuringPower())
-      {
-        BL09XX_SaveEmeteringStatistics();
-      }
+
+      DRV_SaveState();
+
       rtos_delay_milliseconds(1000);
       bk_reboot();
       break;

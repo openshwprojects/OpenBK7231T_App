@@ -14,6 +14,7 @@
 #include "../cmnds/cmd_public.h" //for enum EventCode
 #include <math.h>
 #include <time.h>
+#include "../httpserver/hass.h"
 
 
 int stat_updatesSkipped = 0;
@@ -172,6 +173,24 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
         hprintf255(request,"<h5>Periodic Statistics disabled. Use startup command SetupEnergyStats to enable function.</h5>");
     }
     /********************************************************************************************************************/
+}
+
+bool BL09XX_PublishHASSDevices(const char* topic) {
+	HassDeviceInfo* dev_info;
+	bool discoveryQueued = false;
+	int i;
+
+	for (i = OBK__FIRST; i <= OBK__LAST; i++)
+	{
+		dev_info = hass_init_energy_sensor_device_info(i);
+		if (dev_info) {
+			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+			hass_free_device_info(dev_info);
+			discoveryQueued = true;
+		}
+	}
+
+	return discoveryQueued;
 }
 
 void BL09XX_SaveEmeteringStatistics()

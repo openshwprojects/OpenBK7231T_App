@@ -2,6 +2,7 @@
 #define __DRV_PUBLIC_H__
 
 #include "../httpserver/new_http.h"
+#include "../new_common.h"
 
 typedef enum energySensor_e {
 	OBK__FIRST = 0,
@@ -47,11 +48,13 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t* request);
 void DRV_OnEverySecond();
 void DHT_OnEverySecond();
 void DHT_OnPinsConfigChanged();
+bool DRV_PublishHASSDevices(const char* topic);
 void DRV_RunQuickTick();
 void DRV_StartDriver(const char* name);
 void DRV_StopDriver(const char* name);
 // right now only used by simulator
 void DRV_ShutdownAllDrivers();
+void DRV_SaveState();
 bool DRV_IsRunning(const char* name);
 void DRV_OnChannelChanged(int channel, int iVal);
 #if PLATFORM_BK7231N
@@ -72,7 +75,6 @@ energySensorNames_t* DRV_GetEnergySensorNames(energySensor_t type);
 bool DRV_IsMeasuringPower();
 bool DRV_IsMeasuringBattery();
 bool DRV_IsSensor();
-void BL09XX_SaveEmeteringStatistics();
 
 // TuyaMCU exports for LED
 void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMode, float brightnessRange01, float temperatureRange01);
