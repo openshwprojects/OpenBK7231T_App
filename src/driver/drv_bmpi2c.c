@@ -1,3 +1,4 @@
+//  Driver for BMP085, 180, 280, and BME280, 680, 688.
 #include "../new_pins.h"
 #include "../logging/logging.h"
 #include "drv_local.h"
