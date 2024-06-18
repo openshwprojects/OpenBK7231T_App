@@ -142,7 +142,7 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_CSE7766
 	//drvdetail:{"name":"CSE7766",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK",
+	//drvdetail:"descr":"CSE7766 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK",
 	//drvdetail:"requires":""}
 	{ "CSE7766",	CSE7766_Init,		CSE7766_RunEverySecond,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
