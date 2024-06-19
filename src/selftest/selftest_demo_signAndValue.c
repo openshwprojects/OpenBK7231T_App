@@ -23,6 +23,12 @@ void Test_Demo_SignAndValue() {
 	SELFTEST_ASSERT(*op == '-');
 	op = CMD_FindOperator("-1/-1", 0, &dummy);
 	SELFTEST_ASSERT(*op == '/');
+	op = CMD_FindOperator("-1/-12345", 0, &dummy);
+	SELFTEST_ASSERT(*op == '/');
+	op = CMD_FindOperator("-1*-12345", 0, &dummy);
+	SELFTEST_ASSERT(*op == '*');
+	op = CMD_FindOperator("-1==-12345", 0, &dummy);
+	SELFTEST_ASSERT(*op == '=');
 
 
 	Sim_RunMiliseconds(500, false);
@@ -34,12 +40,12 @@ void Test_Demo_SignAndValue() {
 	SELFTEST_ASSERT_EXPRESSION("$CH3*-1", -14);
 
 	// change to OnClick if you want?
-	CMD_ExecuteCommand("alias positive setChannel 19 $CH3", 0);
-	CMD_ExecuteCommand("alias negative setChannel 19 $CH3*-1", 0);
-	CMD_ExecuteCommand("alias myset if $CH4==0 then positive else negative", 0);
+	CMD_ExecuteCommand("alias qpositive setChannel 19 $CH3", 0);
+	CMD_ExecuteCommand("alias qnegative setChannel 19 $CH3*-1", 0);
+	CMD_ExecuteCommand("alias mysetcomb if $CH4==0 then qpositive else qnegative", 0);
 
-	CMD_ExecuteCommand("addEventHandler OnChannelChange 3 myset", 0);
-	CMD_ExecuteCommand("addEventHandler OnChannelChange 4 myset ", 0);
+	CMD_ExecuteCommand("addEventHandler OnChannelChange 3 mysetcomb", 0);
+	CMD_ExecuteCommand("addEventHandler OnChannelChange 4 mysetcomb ", 0);
 
 	CMD_ExecuteCommand("setChannel 3 10", 0);
 	SELFTEST_ASSERT_CHANNEL(3, 10);
@@ -74,6 +80,13 @@ void Test_Demo_SignAndValue() {
 	SELFTEST_ASSERT_CHANNEL(3, 1234);
 	SELFTEST_ASSERT_CHANNEL(19, -1234);
 
+	CMD_ExecuteCommand("setChannel 4 0", 0);
+	CMD_ExecuteCommand("setChannel 3 0", 0);
+	CMD_ExecuteCommand("setChannel 19 0", 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(19, 0);
+	CMD_ExecuteCommand("clearAllHandlers", 0);
 }
 
 
