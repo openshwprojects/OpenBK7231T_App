@@ -407,6 +407,18 @@ int http_fn_index(http_request_t* request) {
 			poststr(request, "</td></tr>");
 
 		}
+		else if (channelType == ChType_ReadOnlyLowMidHigh) {
+			const char* types[] = { "Low","Mid","High" };
+			iValue = CHANNEL_Get(i);
+			poststr(request, "<tr><td>");
+			if (iValue >= 0 && iValue <= 2) {
+				hprintf255(request, "Channel %s = %s", CHANNEL_GetLabel(i), types[iValue]);
+			}
+			else {
+				hprintf255(request, "Channel %s = %i", CHANNEL_GetLabel(i), iValue);
+			}
+			poststr(request, "</td></tr>");
+		}
 		else if (channelType == ChType_LowMidHigh) {
 			const char* types[] = { "Low","Mid","High" };
 			iValue = CHANNEL_Get(i);
