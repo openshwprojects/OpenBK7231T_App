@@ -337,6 +337,7 @@
     <ClCompile Include="src\driver\drv_drawers.c" />
     <ClCompile Include="src\driver\drv_spiLED.c" />
     <ClCompile Include="src\driver\drv_sm15155e.c" />
+    <ClCompile Include="src\selftest\selftest_demo_signAndValue.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\base64\base64.h" />

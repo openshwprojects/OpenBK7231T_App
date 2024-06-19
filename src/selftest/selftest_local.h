@@ -115,6 +115,7 @@ void Test_MapRanges();
 void Test_Demo_MapFanSpeedToRelays();
 void Test_Demo_FanCyclingRelays();
 void Test_Role_ToggleAll();
+void Test_Demo_SignAndValue();
 void Test_Demo_SimpleShuttersScript();
 void Test_Commands_Generic();
 void Test_ChangeHandlers_MQTT();
