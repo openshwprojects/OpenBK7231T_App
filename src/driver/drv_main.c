@@ -149,14 +149,14 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_MAX6675
 	//drvdetail:{"name":"MAX6675",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"BQQQK",
+	//drvdetail:"descr":"Thermocouple driver for measuring high temperatures, see [presentation](https://www.elektroda.com/rtvforum/topic4055231.html)",
 	//drvdetail:"requires":""}
 	{ "MAX6675",	MAX6675_Init,		MAX6675_RunEverySecond,			NULL, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_PT6523
 	//drvdetail:{"name":"PT6523",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"BQQQK",
+	//drvdetail:"descr":"Car radio LCD driver, see [teardown and presentation](https://www.elektroda.com/rtvforum/topic3983111.html)",
 	//drvdetail:"requires":""}
 	{ "PT6523",	PT6523_Init,		PT6523_RunFrame,			NULL, NULL, NULL, NULL, false },
 #endif
@@ -177,7 +177,7 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_SM15155E
 	//drvdetail:{"name":"SM15155E",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"SM15155E .",
+	//drvdetail:"descr":"SM15155E is a WS2812B-like single wire LED controller. It's also always using P16 (SPI out) on Beken. See [reverse-engineering topic](https://www.elektroda.com/rtvforum/topic4060227.html)",
 	//drvdetail:"requires":""}
 	{ "SM15155E",	SM15155E_Init,		NULL,						NULL, NULL, NULL, NULL, false },
 #endif
@@ -191,7 +191,7 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_DDP
 	//drvdetail:{"name":"DDP",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"DDP is a LED control protocol that is using UDP. You can use xLights or any other app to control OBK LEDs that way.",
+	//drvdetail:"descr":"DDP is a LED control protocol that is using UDP. You can use xLights or any other app to control OBK LEDs that way. See [DDP topic](https://www.elektroda.com/rtvforum/topic4040325.html)",
 	//drvdetail:"requires":""}
 	{ "DDP",		DRV_DDP_Init,		NULL,						DRV_DDP_AppendInformationToHTTPIndexPage, DRV_DDP_RunFrame, DRV_DDP_Shutdown, NULL, false },
 #endif
