@@ -345,6 +345,7 @@ void Main_OnWiFiStatusChange(int code)
 	case WIFI_AP_CONNECTED:
 		g_bHasWiFiConnected = 1;
 		ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_AP_CONNECTED - %i\r\n", code);
+		g_connectToWiFi = 0;	// to be sure: we don't want STA to reconnect
 		break;
 	case WIFI_AP_FAILED:
 		g_bHasWiFiConnected = 0;
@@ -644,9 +645,10 @@ void Main_OnEverySecond()
 		//int mqtt_max, mqtt_cur, mqtt_mem;
 		//MQTT_GetStats(&mqtt_cur, &mqtt_max, &mqtt_mem);
 		//ADDLOGF_INFO("mqtt req %i/%i, free mem %i\n", mqtt_cur,mqtt_max,mqtt_mem);
-		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i %s\n",
+		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i, g_openAP %i, g_connectToWiFi %i, g_bHasWiFiConnected %i, %s\n",
 			safe, g_secondsElapsed, idleCount, xPortGetFreeHeapSize(), bMQTTconnected, MQTT_GetConnectEvents(),
 			g_bHasWiFiConnected, g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets(),
+			g_openAP, g_connectToWiFi, g_bHasWiFiConnected,
 			g_powersave ? "POWERSAVE" : "");
 		// reset so it's a per-second counter.
 		idleCount = 0;

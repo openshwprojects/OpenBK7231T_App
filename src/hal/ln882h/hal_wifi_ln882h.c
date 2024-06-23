@@ -382,8 +382,10 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 	}
 	 
 	wifi_init_ap(ssid,key);
+	int tmp;
+	wifi_softap_get_max_supp_sta_num(&tmp);
 
-	alert_log("AP started, waiting for: netdev_got_ip()");
+	alert_log("AP started for %i clients, waiting for: netdev_got_ip()",tmp);
     while (!netdev_got_ip()) {
         OS_MsDelay(1000);
     }

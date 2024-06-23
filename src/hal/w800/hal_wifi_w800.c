@@ -81,18 +81,12 @@ void print_security_type(int type)
 
 void HAL_PrintNetworkInfo()
 {
-	char macstr[3 * 6 + 1];
 	struct tls_curr_bss_t bss;
-	unsigned char mac[6] = { 0, 1, 2, 3, 4, 5 };
-
-	struct netif* netif = tls_get_netif();
-	MEMCPY(mac, &netif->hwaddr[0], ETH_ALEN);
-	snprintf(macstr, sizeof(macstr), MACSTR, MAC2STR(mac));
 
 	tls_wifi_get_current_bss(&bss);
-
-	wm_printf("sta:rssi=%d,ssid=%s,bssid=" MACSTR ",channel=%d,cipher_type:",
-		bss.rssi, bss.ssid, macstr, bss.channel);
+	//wm_printf won't accept "%.*s" to specify length of SSID - without this, SSID is often followed by garbage
+	printf("sta:rssi=%d,ssid=%.*s,bssid=" MACSTR ",channel=%d,cipher_type:",
+		bss.rssi, (int)bss.ssid_len, bss.ssid, bss.bssid[0], bss.bssid[1], bss.bssid[2], bss.bssid[3], bss.bssid[4], bss.bssid[5], bss.channel);
 	print_security_type(bss.encryptype);
 
 	struct tls_ethif* tmpethif = tls_netif_get_ethif();
@@ -155,6 +149,10 @@ static void apsta_net_status(u8 status)
 		break;
 	case NETIF_IP_NET2_UP:
 		// wm_printf("\napsta_net_status: softap ip: %v\n", netif->next->ip_addr.addr);
+		if (g_wifiStatusCallback != 0)
+		{
+			g_wifiStatusCallback(WIFI_AP_CONNECTED);
+		}
 		break;
 	default:
 		break;
@@ -222,7 +220,7 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 
 void HAL_DisconnectFromWifi()
 {
-
+	tls_wifi_disconnect();
 }
 
 
