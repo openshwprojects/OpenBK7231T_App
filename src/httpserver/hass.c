@@ -49,12 +49,7 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 	case RELAY:
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "relay", index);
 		break;
-
 	case ENERGY_METER_SENSOR:
-#ifndef OBK_DISABLE_ALL_DRIVERS
-		sprintf(uniq_id, "%s_sensor_%s", longDeviceName, DRV_GetEnergySensorNames(index)->hass_uniq_id_suffix);
-#endif
-		break;
 	case POWER_SENSOR:
 	case ENERGY_SENSOR:
 	case TIMESTAMP_SENSOR:
@@ -243,12 +238,6 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 			break;
 		case ENERGY_METER_SENSOR:
 			isSensor = true;
-	#ifndef OBK_DISABLE_ALL_DRIVERS
-			if (index <= OBK__LAST)
-				sprintf(g_hassBuffer, "%s", DRV_GetEnergySensorNames(index)->name_friendly);
-			else
-				sprintf(g_hassBuffer, "Unknown Energy Meter Sensor");
-	#endif
 			break;
 		case POWER_SENSOR:
 			isSensor = true;
@@ -320,7 +309,11 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 			break;
 		}
 	}
-	cJSON_AddStringToObject(info->root, "name", g_hassBuffer);
+
+	//For ENERGY_METER_SENSOR name should be set in hass_init_energy_sensor_device_info()
+	if (type != ENERGY_METER_SENSOR)
+		cJSON_AddStringToObject(info->root, "name", g_hassBuffer);
+
 	cJSON_AddStringToObject(info->root, "~", CFG_GetMQTTClientId());      //base topic
 	// remove availability information for sensor to keep last value visible on Home Assistant
 	bool flagavty = false;
@@ -458,34 +451,32 @@ HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 
 /// @brief Initializes HomeAssistant power sensor device discovery storage.
-/// @param index Index corresponding to energySensor_t.
+/// @param sensor Sensor definition, energySensorNames_t type.
 /// @return 
-HassDeviceInfo* hass_init_energy_sensor_device_info(int index) {
+HassDeviceInfo* hass_init_energy_sensor_device_info(energySensorNames_t *sensor) {
 	HassDeviceInfo* info = 0;
 
 	//https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes
 	//device_class automatically assigns unit,icon
-	if (index > OBK__LAST) return info;
-	if (index >= OBK_CONSUMPTION__DAILY_FIRST && !DRV_IsRunning("NTP")) return info; //include daily stats only when time is valid
 
-	info = hass_init_device_info(ENERGY_METER_SENSOR, index, NULL, NULL);
+	info = hass_init_device_info(ENERGY_METER_SENSOR, sensor->hass_uniq_index, NULL, NULL);
 
-	cJSON_AddStringToObject(info->root, "dev_cla", DRV_GetEnergySensorNames(index)->hass_dev_class);   //device_class=voltage,current,power, energy, timestamp
-	cJSON_AddStringToObject(info->root, "unit_of_meas", DRV_GetEnergySensorNames(index)->units);   //unit_of_measurement. Sets as empty string if not present. HA doesn't seem to mind
+	cJSON_AddStringToObject(info->root, "name", sensor->name_friendly);
+	cJSON_AddStringToObject(info->root, "dev_cla", sensor->hass_dev_class);   //device_class=voltage,current,power, energy, timestamp
 
-	sprintf(g_hassBuffer, "~/%s/get", DRV_GetEnergySensorNames(index)->name_mqtt);
+	sprintf(g_hassBuffer, "~/%s/get", sensor->name_mqtt);
 	cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 
-	if (!strcmp(DRV_GetEnergySensorNames(index)->hass_dev_class, "energy")) {
+	if (!strcmp(sensor->hass_dev_class, "energy")) {
 		//state_class can be measurement, total or total_increasing. Energy values should be total_increasing.
 		cJSON_AddStringToObject(info->root, "stat_cla", "total_increasing");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH) ? "kWh" : "Wh");
 	} else {
 		cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
-		cJSON_AddStringToObject(info->root, "unit_of_meas", DRV_GetEnergySensorNames(index)->units);
+		cJSON_AddStringToObject(info->root, "unit_of_meas", sensor->units);   //unit_of_measurement. Sets as empty string if not present. HA doesn't seem to mind
 	}
 	// if (index == OBK_CONSUMPTION_STATS) { //hide this as its not working anyway at present
-	// 	cJSON_AddStringToObject(info->root, "enabled_by_default ", "false");
+	// 	cJSON_AddStringToObject(info->root, "enabled_by_default", "false");
 	// }
 	return info;
 }
