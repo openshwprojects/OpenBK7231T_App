@@ -64,14 +64,13 @@ const char* g_typesLowestLowMidHighHighest[] = { "Lowest", "Low", "Mid", "High",
 
 #define ADD_OPTION(t,a) if(type == t) { *numTypes = sizeof(a)/sizeof(a[0]); return a; }
 
-const char *Channel_GetOptionsForChannelType(int type, int *numTypes) {
+const char **Channel_GetOptionsForChannelType(int type, int *numTypes) {
 	ADD_OPTION(ChType_OffLowMidHigh, g_typesOffLowMidHigh);
 	ADD_OPTION(ChType_OffLowestLowMidHighHighest, g_typesOffLowMidHigh);
 	ADD_OPTION(ChType_LowestLowMidHighHighest, g_typesLowestLowMidHighHighest);
 	ADD_OPTION(ChType_OffLowestLowMidHighHighest, g_typesOffLowestLowMidHighHighest);
 	ADD_OPTION(ChType_LowMidHighHighest, g_typesLowMidHighHighest);
 	ADD_OPTION(ChType_OffOnRemember, g_typesOffOnRemember);
-	ADD_OPTION(ChType_LowMidHigh, g_typeLowMidHigh);
 	ADD_OPTION(ChType_LowMidHigh, g_typeLowMidHigh);
 	
 	*numTypes = 0;
@@ -401,7 +400,7 @@ int http_fn_index(http_request_t* request) {
 		}
 	}
 	for (i = 0; i < CHANNEL_MAX; i++) {
-		const char *types;
+		const char **types;
 		int numTypes;
 
 		// check ability to hide given channel from gui
