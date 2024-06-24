@@ -53,6 +53,31 @@ int tuya_os_adapt_wifi_all_ap_scan(AP_IF_S** ap_ary, unsigned int* num);
 int tuya_os_adapt_wifi_release_ap(AP_IF_S* ap);
 #endif
 
+
+const char* g_typesOffLowMidHigh[] = { "Off","Low","Mid","High" };
+const char* g_typesOffLowMidHighHighest[] = { "Off", "Low","Mid","High","Highest" };
+const char* g_typesOffLowestLowMidHighHighest[] = { "Off", "Lowest", "Low", "Mid", "High", "Highest" };
+const char* g_typesLowMidHighHighest[] = { "Low","Mid","High","Highest" };
+const char* g_typesOffOnRemember[] = { "Off", "On", "Remember" };
+const char* g_typeLowMidHigh[] = { "Low","Mid","High" };
+const char* g_typesLowestLowMidHighHighest[] = { "Lowest", "Low", "Mid", "High", "Highest" };;
+
+#define ADD_OPTION(t,a) if(type == t) { *numTypes = sizeof(a)/sizeof(a[0]); return a; }
+
+const char *Channel_GetOptionsForChannelType(int type, int *numTypes) {
+	ADD_OPTION(ChType_OffLowMidHigh, g_typesOffLowMidHigh);
+	ADD_OPTION(ChType_OffLowestLowMidHighHighest, g_typesOffLowMidHigh);
+	ADD_OPTION(ChType_LowestLowMidHighHighest, g_typesLowestLowMidHighHighest);
+	ADD_OPTION(ChType_OffLowestLowMidHighHighest, g_typesOffLowestLowMidHighHighest);
+	ADD_OPTION(ChType_LowMidHighHighest, g_typesLowMidHighHighest);
+	ADD_OPTION(ChType_OffOnRemember, g_typesOffOnRemember);
+	ADD_OPTION(ChType_LowMidHigh, g_typeLowMidHigh);
+	ADD_OPTION(ChType_LowMidHigh, g_typeLowMidHigh);
+	
+	*numTypes = 0;
+	return 0;
+}
+
 unsigned char hexdigit(char hex) {
 	return (hex <= '9') ? hex - '0' :
 		toupper((unsigned char)hex) - 'A' + 10;
@@ -376,7 +401,8 @@ int http_fn_index(http_request_t* request) {
 		}
 	}
 	for (i = 0; i < CHANNEL_MAX; i++) {
-
+		const char *types;
+		int numTypes;
 
 		// check ability to hide given channel from gui
 		if (BIT_CHECK(g_hiddenChannels, i)) {
@@ -406,8 +432,7 @@ int http_fn_index(http_request_t* request) {
 			}
 			poststr(request, "</td></tr>");
 
-		}
-		else if (channelType == ChType_ReadOnlyLowMidHigh) {
+		} else if (channelType == ChType_ReadOnlyLowMidHigh) {
 			const char* types[] = { "Low","Mid","High" };
 			iValue = CHANNEL_Get(i);
 			poststr(request, "<tr><td>");
@@ -419,53 +444,13 @@ int http_fn_index(http_request_t* request) {
 			}
 			poststr(request, "</td></tr>");
 		}
-		else if (channelType == ChType_OffLowMidHigh || channelType == ChType_OffLowestLowMidHighHighest
-			|| channelType == ChType_LowestLowMidHighHighest || channelType == ChType_LowMidHighHighest
-			|| channelType == ChType_OffLowMidHighHighest || channelType == ChType_OffOnRemember
-			|| channelType == ChType_LowMidHigh) {
-			const char** types;
-			const char* typesLowMidHigh[] = { "Low","Mid","High" };
-			const char* types4[] = { "Off","Low","Mid","High" };
-			const char* typesLowMidHighHighest[] = { "Low","Mid","High","Highest" };
-			const char* typesOffLowMidHighHighest[] = { "Off", "Low","Mid","High","Highest" };
-			const char* types6[] = { "Off", "Lowest", "Low", "Mid", "High", "Highest" };
-			const char* types5NoOff[] = { "Lowest", "Low", "Mid", "High", "Highest" };
-			const char* typesOffOnRemember[] = { "Off", "On", "Remember" };
-			int numTypes;
+		else if ((types = Channel_GetOptionsForChannelType(channelType, &numTypes)) != 0) {
 			const char *what;
-
 			if (channelType == ChType_OffOnRemember) {
 				what = "memory";
 			}
 			else {
 				what = "speed";
-			}
-			if (channelType == ChType_LowMidHigh) {
-				types = typesLowMidHigh;
-				numTypes = 3;
-			} else if (channelType == ChType_OffLowMidHigh) {
-				types = types4;
-				numTypes = 4;
-			}
-			else if (channelType == ChType_LowMidHighHighest) {
-				types = typesLowMidHighHighest;
-				numTypes = 4;
-			}
-			else if (channelType == ChType_OffLowMidHighHighest) {
-				types = typesOffLowMidHighHighest;
-				numTypes = 5;
-			}
-			else if (channelType == ChType_LowestLowMidHighHighest) {
-				types = types5NoOff;
-				numTypes = 5;
-			}
-			else if (channelType == ChType_OffOnRemember) {
-				types = typesOffOnRemember;
-				numTypes = 3;
-			}
-			else {
-				types = types6;
-				numTypes = 6;
 			}
 			
 			iValue = CHANNEL_Get(i);
