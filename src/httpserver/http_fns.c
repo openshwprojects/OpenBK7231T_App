@@ -419,29 +419,12 @@ int http_fn_index(http_request_t* request) {
 			}
 			poststr(request, "</td></tr>");
 		}
-		else if (channelType == ChType_LowMidHigh) {
-			const char* types[] = { "Low","Mid","High" };
-			iValue = CHANNEL_Get(i);
-
-			poststr(request, "<tr><td>");
-			hprintf255(request, "<p>Select speed:</p><form action=\"index\">");
-			hprintf255(request, "<input type=\"hidden\" name=\"setIndex\" value=\"%i\">", i);
-			for (j = 0; j < 3; j++) {
-				const char* check;
-				if (j == iValue)
-					check = "checked";
-				else
-					check = "";
-				hprintf255(request, "<input type=\"radio\" name=\"set\" value=\"%i\" onchange=\"this.form.submit()\" %s>%s", j, check, types[j]);
-			}
-			hprintf255(request, "</form>");
-			poststr(request, "</td></tr>");
-
-		}
 		else if (channelType == ChType_OffLowMidHigh || channelType == ChType_OffLowestLowMidHighHighest
 			|| channelType == ChType_LowestLowMidHighHighest || channelType == ChType_LowMidHighHighest
-			|| channelType == ChType_OffLowMidHighHighest || channelType == ChType_OffOnRemember) {
+			|| channelType == ChType_OffLowMidHighHighest || channelType == ChType_OffOnRemember
+			|| channelType == ChType_LowMidHigh) {
 			const char** types;
+			const char* typesLowMidHigh[] = { "Low","Mid","High" };
 			const char* types4[] = { "Off","Low","Mid","High" };
 			const char* typesLowMidHighHighest[] = { "Low","Mid","High","Highest" };
 			const char* typesOffLowMidHighHighest[] = { "Off", "Low","Mid","High","Highest" };
@@ -457,7 +440,10 @@ int http_fn_index(http_request_t* request) {
 			else {
 				what = "speed";
 			}
-			if (channelType == ChType_OffLowMidHigh) {
+			if (channelType == ChType_LowMidHigh) {
+				types = typesLowMidHigh;
+				numTypes = 3;
+			} else if (channelType == ChType_OffLowMidHigh) {
 				types = types4;
 				numTypes = 4;
 			}
