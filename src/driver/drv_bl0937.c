@@ -293,7 +293,6 @@ void BL0937_RunEverySecond(void) {
 		bNeedRestart = true;
 	}
 
-	ticksElapsed = (xTaskGetTickCount() - pulseStamp);
 
 #if PLATFORM_BEKEN
 	GLOBAL_INT_DECLARATION();
@@ -346,19 +345,20 @@ void BL0937_RunEverySecond(void) {
 
 #endif
 
+	ticksElapsed = (xTaskGetTickCount() - pulseStamp);
 	pulseStamp = xTaskGetTickCount();
 	//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
 
     PwrCal_Scale(res_v, res_c, res_p, &final_v, &final_c, &final_p);
 
-	final_v *= (float)ticksElapsed;
-	final_v /= (1000.0f / (float)portTICK_PERIOD_MS);
+	final_v *= (1000.0f / (float)portTICK_PERIOD_MS);
+	final_v /= (float)ticksElapsed;
 
-	final_c *= (float)ticksElapsed;
-	final_c /= (1000.0f / (float)portTICK_PERIOD_MS);
+	final_c *= (1000.0f / (float)portTICK_PERIOD_MS);
+	final_c /= (float)ticksElapsed;
 
-	final_p *= (float)ticksElapsed;
-	final_p /= (1000.0f / (float)portTICK_PERIOD_MS);
+	final_p *= (1000.0f / (float)portTICK_PERIOD_MS);
+	final_p /= (float)ticksElapsed;
 
     /* patch to limit max power reading, filter random reading errors */
     if (final_p > BL0937_PMAX)
