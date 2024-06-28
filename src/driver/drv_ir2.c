@@ -220,6 +220,7 @@ static commandResult_t CMD_IR2_TestDuty(const void* context, const char* cmd, co
 #if 0
 	REG_WRITE(REG_APB_BK_PWMn_DC_ADDR(pwmIndex), duty_cycle);
 #else
+#define REG_APB_BK_PWMn_CNT_ADDR(n)         (PWM_BASE + 0x08 + 2 * 0x04 * (n))
 	UINT32 value;
 	value = (((UINT32)duty_cycle & 0x0000FFFF) << 16)
 		+ ((UINT32)period & 0x0000FFFF);
