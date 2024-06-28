@@ -100,7 +100,7 @@ static commandResult_t CMD_IR2_Test2(const void* context, const char* cmd, const
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
 	return CMD_RES_OK;
 }
-void IR2_Init() {
+void DRV_IR2_Init() {
 	CMD_RegisterCommand("Test1", CMD_IR2_Test1, NULL);
 	CMD_RegisterCommand("Test2", CMD_IR2_Test2, NULL);
 

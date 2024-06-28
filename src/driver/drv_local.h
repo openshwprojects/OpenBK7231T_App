@@ -70,7 +70,7 @@ void HT16K33_Init();
 
 void HD2015_Init();
 
-void IR2_Init();
+void DRV_IR2_Init();
 
 void DRV_ADCSmoother_Init();
 void DRV_ADCSmoother_RunFrame();
