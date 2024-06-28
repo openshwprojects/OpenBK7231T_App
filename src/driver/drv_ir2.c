@@ -217,14 +217,14 @@ static commandResult_t CMD_IR2_TestDuty(const void* context, const char* cmd, co
 
 	uint32 duty_cycle = period * fduty;
 
+#if 0
 	REG_WRITE(REG_APB_BK_PWMn_DC_ADDR(pwmIndex), duty_cycle);
-
-	//int end_value = 100;
-	//UINT32 value;
-	//value = (((UINT32)duty_cycle & 0x0000FFFF) << 16)
-	//	+ ((UINT32)pwm_param->end_value & 0x0000FFFF);
-	//REG_WRITE(REG_APB_BK_PWMn_CNT_ADDR(pwmIndex), value);
-
+#else
+	UINT32 value;
+	value = (((UINT32)duty_cycle & 0x0000FFFF) << 16)
+		+ ((UINT32)period & 0x0000FFFF);
+	REG_WRITE(REG_APB_BK_PWMn_CNT_ADDR(pwmIndex), value);
+#endif
 	return CMD_RES_OK;
 }
 
