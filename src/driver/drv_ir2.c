@@ -210,6 +210,14 @@ static commandResult_t CMD_IR2_Test3(const void* context, const char* cmd, const
 	return CMD_RES_OK;
 }
 
+#define REG_PWM_BASE_ADDR                   	(0x00802B00UL)
+#define REG_PWM_GROUP_ADDR(x)               	(REG_PWM_BASE_ADDR + (0x40 * x))
+
+#define REG_GROUP_PWM0_T1_ADDR(x)           (REG_PWM_GROUP_ADDR(x) + 0x01 * 4)
+#define REG_GROUP_PWM0_T1(x)                (*((volatile unsigned long *) REG_GROUP_PWM0_T1_ADDR(x) ))
+
+#define REG_GROUP_PWM1_T1_ADDR(x)           (REG_PWM_GROUP_ADDR(x) + 0x05 * 4)
+#define REG_GROUP_PWM1_T1(x)                (*((volatile unsigned long *) REG_GROUP_PWM1_T1_ADDR(x) ))
 
 UINT8 init_pwm_param(pwm_param_t *pwm_param, UINT8 enable);
 static commandResult_t CMD_IR2_TestDuty(const void* context, const char* cmd, const char* args, int cmdFlags) {
