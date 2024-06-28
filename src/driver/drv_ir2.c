@@ -33,20 +33,29 @@ static UINT32 ir_div = 1;
 static UINT32 ir_periodus = 50;
 int txpin = 26;
 
-int *times;
-int maxTimes;
+int times[512];
+int maxTimes = 512;
 int *cur;
 int *stop;
 int myPeriodUs;
 
-
 void Send_Init() {
 
+	float frequency = 38000;
+	float duty_cycle = 0.330000f;
 	cur = times;
 	stop = times;
-	while (1) {
-		*stop = atoi("xx");
-		stop++;
+	// parse string like 10,12,432,432,432,432,432
+	char *token = strtok(input, ",");
+	while (token) {
+		if (stop - times < maxTimes) {
+			*stop = atoi(token);
+			stop++;
+		}
+		else {
+			break;
+		}
+		token = strtok(NULL, ",");
 	}
 }
 void Send_Tick() {
