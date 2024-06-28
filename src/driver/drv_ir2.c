@@ -61,7 +61,7 @@ static commandResult_t CMD_IR2_Test2(const void* context, const char* cmd, const
 
 	Tokenizer_TokenizeString(args, 0);
 
-	myPeriodUs = Tokenizer_GetArgIntegerDefault(0, 50);
+	int myPeriodUs = Tokenizer_GetArgIntegerDefault(0, 50);
 
 	timer_param_t params = {
 	 (unsigned char)ir_chan,
