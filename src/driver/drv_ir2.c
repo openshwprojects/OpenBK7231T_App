@@ -39,12 +39,14 @@ int *cur;
 int *stop;
 int myPeriodUs;
 int curTime = 0;
+int state = 0;
 
 void Send_Init() {
 
 	float frequency = 38000;
 	float duty_cycle = 0.330000f;
 	stop = times;
+	const char *input = "x";
 	// parse string like 10,12,432,432,432,432,432
 	char *token = strtok(input, ",");
 	while (token) {
@@ -102,7 +104,6 @@ static commandResult_t CMD_IR2_Test1(const void* context, const char* cmd, const
 
 	return CMD_RES_OK;
 }
-int state = 0;
 void Test2_ISR(UINT8 t) {
 	state = !state;
 	bk_gpio_output(txpin, state);
