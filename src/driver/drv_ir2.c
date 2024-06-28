@@ -38,12 +38,12 @@ int maxTimes = 512;
 int *cur;
 int *stop;
 int myPeriodUs;
+int curTime = 0;
 
 void Send_Init() {
 
 	float frequency = 38000;
 	float duty_cycle = 0.330000f;
-	cur = times;
 	stop = times;
 	// parse string like 10,12,432,432,432,432,432
 	char *token = strtok(input, ",");
@@ -57,24 +57,39 @@ void Send_Init() {
 		}
 		token = strtok(NULL, ",");
 	}
+	cur = times;
 }
+
 void Send_Tick() {
-	*cur -= myPeriodUs;
-	if (*cur <= 0) {
+	if (cur == 0)
+		return;
+	curTime += myPeriodUs;
+	int tg = *cur;
+	if (tg <= curTime) {
+		curTime -= tg;
+		state = !state;
+#if PLATFORM_BK7231N
+		//bk_pwm_update_param((bk_pwm_t)pwmIndex, pwmperiod, duty, 0, 0);
+#else
+		//bk_pwm_update_param((bk_pwm_t)pwmIndex, pwmperiod, duty);
+#endif
+
 		cur++;
 		if (cur == stop) {
 			// done
+			cur = 0;
 		}
 	}
 }
 
-
+int pwmIndex = -1;
+uint32 period;
 static commandResult_t CMD_IR2_Test1(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	int pwmIndex = PIN_GetPWMIndexForPinIndex(txpin);
+	pwmIndex = PIN_GetPWMIndexForPinIndex(txpin);
 	// is this pin capable of PWM?
 	if (pwmIndex != -1) {
 		uint32_t pwmfrequency = 38000;
-		uint32_t period = (26000000 / pwmfrequency);
+		period = (26000000 / pwmfrequency);
 		uint32_t duty = period / 2;
 #if PLATFORM_BK7231N
 		// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
@@ -192,14 +207,32 @@ static commandResult_t CMD_IR2_Test3(const void* context, const char* cmd, const
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
 	return CMD_RES_OK;
 }
+
+static commandResult_t CMD_IR2_TestDuty(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	Tokenizer_TokenizeString(args, 0);
+
+	float fduty = Tokenizer_GetArgFloatDefault(0, 0.5f);
+
+	uint32 duty_cycle = period * fduty;
+
+	REG_WRITE(REG_APB_BK_PWMn_DC_ADDR(pwmIndex), duty_cycle);
+
+	//int end_value = 100;
+	//UINT32 value;
+	//value = (((UINT32)duty_cycle & 0x0000FFFF) << 16)
+	//	+ ((UINT32)pwm_param->end_value & 0x0000FFFF);
+	//REG_WRITE(REG_APB_BK_PWMn_CNT_ADDR(pwmIndex), value);
+
+	return CMD_RES_OK;
+}
+
 void DRV_IR2_Init() {
 	CMD_RegisterCommand("Test1", CMD_IR2_Test1, NULL);
 	CMD_RegisterCommand("Test2", CMD_IR2_Test2, NULL);
 	CMD_RegisterCommand("Test3", CMD_IR2_Test3, NULL);
+	CMD_RegisterCommand("TestDuty", CMD_IR2_TestDuty, NULL);
 
 
 
 }
-
-
-
