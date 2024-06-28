@@ -209,6 +209,51 @@ static commandResult_t CMD_IR2_Test3(const void* context, const char* cmd, const
 	return CMD_RES_OK;
 }
 
+UINT8 current_channel;
+UINT8 current_group;
+static void pwm_set_duty_cycle(UINT8 ucChannel, UINT32 u32DutyCycle)
+{
+	UINT32 value;
+
+	if (ucChannel < 2)
+	{
+		current_group = 0;
+		current_channel = ucChannel;
+	}
+	else  if (ucChannel < 4)
+	{
+		current_group = 1;
+		current_channel = ucChannel - 2;
+	}
+	else
+	{
+		current_group = 2;
+		current_channel = ucChannel - 4;
+	}
+
+	//check last opreation work
+	value = REG_READ(REG_PWM_GROUP_CTRL_ADDR(current_group));
+	if (value & (PWM_GROUP_PWM_CFG_UPDATA_MASK(current_channel)))
+	{
+
+	}
+
+	if (current_channel == 0)
+	{
+		REG_WRITE(REG_GROUP_PWM0_T1_ADDR(current_group), u32DutyCycle);
+	}
+	else
+	{
+		REG_WRITE(REG_GROUP_PWM1_T1_ADDR(current_group), u32DutyCycle);
+	}
+
+	// bit 7/15 :cfg_updata enable
+	value = REG_READ(REG_PWM_GROUP_CTRL_ADDR(current_group));
+	value |= PWM_GROUP_PWM_CFG_UPDATA_MASK(current_channel);
+	REG_WRITE(REG_PWM_GROUP_CTRL_ADDR(current_group), value);
+
+}
+
 static commandResult_t CMD_IR2_TestDuty(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, 0);
@@ -217,8 +262,9 @@ static commandResult_t CMD_IR2_TestDuty(const void* context, const char* cmd, co
 
 	uint32 duty_cycle = period * fduty;
 
-#if 0
-	REG_WRITE(REG_APB_BK_PWMn_DC_ADDR(pwmIndex), duty_cycle);
+#if 1
+	pwm_set_duty_cycle(pwmIndex, duty_cycle);
+	///REG_WRITE(REG_APB_BK_PWMn_DC_ADDR(pwmIndex), duty_cycle);
 #else
 #define REG_APB_BK_PWMn_CNT_ADDR(n)         (PWM_BASE + 0x08 + 2 * 0x04 * (n))
 	UINT32 value;
