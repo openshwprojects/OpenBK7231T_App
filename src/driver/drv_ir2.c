@@ -33,6 +33,33 @@ static UINT32 ir_div = 1;
 static UINT32 ir_periodus = 50;
 int txpin = 26;
 
+int *times;
+int maxTimes;
+int *cur;
+int *stop;
+int myPeriodUs;
+
+
+void Send_Init() {
+
+	cur = times;
+	stop = times;
+	while (1) {
+		*stop = atoi("xx");
+		stop++;
+	}
+}
+void Send_Tick() {
+	*cur -= myPeriodUs;
+	if (*cur <= 0) {
+		cur++;
+		if (cur == stop) {
+			// done
+		}
+	}
+}
+
+
 static commandResult_t CMD_IR2_Test1(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int pwmIndex = PIN_GetPWMIndexForPinIndex(txpin);
 	// is this pin capable of PWM?
@@ -61,7 +88,7 @@ static commandResult_t CMD_IR2_Test2(const void* context, const char* cmd, const
 
 	Tokenizer_TokenizeString(args, 0);
 
-	int myPeriodUs = Tokenizer_GetArgIntegerDefault(0, 50);
+	myPeriodUs = Tokenizer_GetArgIntegerDefault(0, 50);
 
 	timer_param_t params = {
 	 (unsigned char)ir_chan,
