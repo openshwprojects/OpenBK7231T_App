@@ -247,11 +247,35 @@ static commandResult_t CMD_IR2_TestDuty(const void* context, const char* cmd, co
 	return CMD_RES_OK;
 }
 
+
+static commandResult_t CMD_IR2_TestSet(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	Tokenizer_TokenizeString(args, 0);
+
+	int on = Tokenizer_GetArgIntegerDefault(0, 1);
+
+	pwm_single_update_param_enable(pwmIndex, on);
+
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_IR2_TestDuty2(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	Tokenizer_TokenizeString(args, 0);
+
+	float fduty = Tokenizer_GetArgFloatDefault(0, 0.5f);
+
+	uint32 duty_cycle = period * fduty;
+	bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_cycle, 0, 0);
+
+	return CMD_RES_OK;
+}
 void DRV_IR2_Init() {
 	CMD_RegisterCommand("Test1", CMD_IR2_Test1, NULL);
 	CMD_RegisterCommand("Test2", CMD_IR2_Test2, NULL);
 	CMD_RegisterCommand("Test3", CMD_IR2_Test3, NULL);
 	CMD_RegisterCommand("TestDuty", CMD_IR2_TestDuty, NULL);
+	CMD_RegisterCommand("TestDuty2", CMD_IR2_TestDuty2, NULL);
+	CMD_RegisterCommand("TestSet", CMD_IR2_TestSet, NULL);
 
 
 
