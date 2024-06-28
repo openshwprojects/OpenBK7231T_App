@@ -25,6 +25,7 @@
 #include "../../beken378/driver/i2c/i2c1.h"
 #include "../../beken378/driver/gpio/gpio.h"
 #include "../../beken378/driver/pwm/pwm.h"
+#define CFG_SOC_NAME SOC_BK7231N
 #include "../../beken378/driver/pwm/pwm_new.h"
 
 #endif
