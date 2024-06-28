@@ -222,20 +222,34 @@ static commandResult_t CMD_IR2_TestDuty(const void* context, const char* cmd, co
 
 #if 1
 
-	pwm_param_t param;
+	UINT8 group, channel;
 
-	/*init pwm*/
-	param.channel = (uint8_t)pwmIndex;
-	param.cfg.bits.en = PWM_INT_EN;
-	param.cfg.bits.int_en = PWM_INT_DIS;//PWM_INT_EN;
-	param.cfg.bits.mode = PWM_PWM_MODE;
-	param.cfg.bits.clk = PWM_CLK_26M;
-	param.p_Int_Handler = 0;
-	param.duty_cycle1 = duty_cycle;
-	param.duty_cycle2 = 0;
-	param.duty_cycle3 = 0;
-	param.end_value = period;  // ?????
-	pwm_single_update_param(&param);
+	group = get_set_group(pwmIndex);
+	channel = get_set_channel(pwmIndex);
+	if (channel == 0)
+	{
+		REG_WRITE(REG_GROUP_PWM0_T1_ADDR(group), duty_cycle);
+	}
+	else
+	{
+		REG_WRITE(REG_GROUP_PWM1_T1_ADDR(group), duty_cycle);
+	}
+	pwm_single_update_param_enable(pwmIndex, 1);
+
+	//pwm_param_t param;
+
+	///*init pwm*/
+	//param.channel = (uint8_t)pwmIndex;
+	//param.cfg.bits.en = PWM_INT_EN;
+	//param.cfg.bits.int_en = PWM_INT_DIS;//PWM_INT_EN;
+	//param.cfg.bits.mode = PWM_PWM_MODE;
+	//param.cfg.bits.clk = PWM_CLK_26M;
+	//param.p_Int_Handler = 0;
+	//param.duty_cycle1 = duty_cycle;
+	//param.duty_cycle2 = 0;
+	//param.duty_cycle3 = 0;
+	//param.end_value = period;  // ?????
+	//pwm_single_update_param(&param);
 	///REG_WRITE(REG_APB_BK_PWMn_DC_ADDR(pwmIndex), duty_cycle);
 #else
 #define REG_APB_BK_PWMn_CNT_ADDR(n)         (PWM_BASE + 0x08 + 2 * 0x04 * (n))
