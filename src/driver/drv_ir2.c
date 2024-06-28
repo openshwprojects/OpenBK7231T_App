@@ -232,8 +232,10 @@ static commandResult_t CMD_IR2_TestDuty(const void* context, const char* cmd, co
 	param.cfg.bits.clk = PWM_CLK_26M;
 	param.p_Int_Handler = 0;
 	param.duty_cycle1 = duty_cycle;
+	param.duty_cycle2 = 0;
+	param.duty_cycle3 = 0;
 	param.end_value = period;  // ?????
-	init_pwm_param(&param, 1);
+	pwm_single_update_param(&param);
 	///REG_WRITE(REG_APB_BK_PWMn_DC_ADDR(pwmIndex), duty_cycle);
 #else
 #define REG_APB_BK_PWMn_CNT_ADDR(n)         (PWM_BASE + 0x08 + 2 * 0x04 * (n))
