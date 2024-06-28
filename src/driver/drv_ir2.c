@@ -127,9 +127,66 @@ static commandResult_t CMD_IR2_Test2(const void* context, const char* cmd, const
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
 	return CMD_RES_OK;
 }
+volatile UINT32 *gpio_cfg_addr;
+void Test3_ISR(UINT8 t) {
+	UINT32 reg_val = REG_READ(gpio_cfg_addr);
+	reg_val ^= GCFG_OUTPUT_BIT;
+	REG_WRITE(gpio_cfg_addr, reg_val);
+}
+static commandResult_t CMD_IR2_Test3(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	bk_gpio_config_output(txpin);
+
+	int id = txpin;
+
+	if (id >= GPIO32)
+		id += 16;
+	gpio_cfg_addr = (volatile UINT32 *)(REG_GPIO_CFG_BASE_ADDR + id * 4);
+
+	Tokenizer_TokenizeString(args, 0);
+
+	myPeriodUs = Tokenizer_GetArgIntegerDefault(0, 50);
+
+	timer_param_t params = {
+	 (unsigned char)ir_chan,
+	 (unsigned char)ir_div, // div
+	 myPeriodUs, // us
+	 Test3_ISR
+	};
+	//GLOBAL_INT_DECLARATION();
+
+
+	UINT32 res;
+	// test what error we get with an invalid command
+	res = sddev_control((char *)TIMER_DEV_NAME, -1, 0);
+
+	if (res == 1) {
+		ADDLOG_INFO(LOG_FEATURE_IR, (char *)"bk_timer already initialised");
+	}
+	else {
+		ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"bk_timer driver not initialised?");
+		if ((int)res == -5) {
+			ADDLOG_INFO(LOG_FEATURE_IR, (char *)"bk_timer sddev not found - not initialised?");
+			return;
+		}
+		return;
+	}
+
+
+	//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer init");
+	// do not need to do this
+	//bk_timer_init();
+	//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer init done");
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"will ir timer setup %u", res);
+	res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_INIT_PARAM_US, &params);
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer setup %u", res);
+	res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_ENABLE, &ir_chan);
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
+	return CMD_RES_OK;
+}
 void DRV_IR2_Init() {
 	CMD_RegisterCommand("Test1", CMD_IR2_Test1, NULL);
 	CMD_RegisterCommand("Test2", CMD_IR2_Test2, NULL);
+	CMD_RegisterCommand("Test3", CMD_IR2_Test3, NULL);
 
 
 
