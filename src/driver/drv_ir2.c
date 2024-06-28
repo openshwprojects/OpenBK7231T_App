@@ -59,10 +59,14 @@ void Test2_ISR(UINT8 t) {
 static commandResult_t CMD_IR2_Test2(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	bk_gpio_config_output(txpin);
 
+	Tokenizer_TokenizeString(args, 0);
+
+	myPeriodUs = Tokenizer_GetArgIntegerDefault(0, 50);
+
 	timer_param_t params = {
 	 (unsigned char)ir_chan,
 	 (unsigned char)ir_div, // div
-	 ir_periodus, // us
+	 myPeriodUs, // us
 	 Test2_ISR
 	};
 	//GLOBAL_INT_DECLARATION();
@@ -70,7 +74,7 @@ static commandResult_t CMD_IR2_Test2(const void* context, const char* cmd, const
 
 	UINT32 res;
 	// test what error we get with an invalid command
-	res = sddev_control((char *)TIMER_DEV_NAME, -1, nullptr);
+	res = sddev_control((char *)TIMER_DEV_NAME, -1, 0);
 
 	if (res == 1) {
 		ADDLOG_INFO(LOG_FEATURE_IR, (char *)"bk_timer already initialised");
