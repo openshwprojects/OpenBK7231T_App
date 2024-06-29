@@ -129,6 +129,7 @@ static UINT32 ir_chan
 static UINT32 ir_div = 1;
 static UINT32 ir_periodus = 50;
 static UINT32 duty_on, duty_off;
+static UINT32 reg_duty;
 
 /*
 			bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off, 0, 0);
@@ -136,11 +137,7 @@ static UINT32 duty_on, duty_off;
 			bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off);
 */
 #define MY_SET_DUTY(duty)	\
-	if (channel == 0) {		\
-		REG_WRITE(REG_GROUP_PWM0_T1_ADDR(group), duty);	\
-	} else {	\
-		REG_WRITE(REG_GROUP_PWM1_T1_ADDR(group), duty);	\
-	}	\
+	REG_WRITE(reg_duty, duty);	\
 	UINT32 level;	\
 	if (duty == 0)	\
 		level = 0;	\
@@ -244,6 +241,11 @@ static commandResult_t CMD_IR2_Test1(const void* context, const char* cmd, const
 	if (pwmIndex != -1) {
 		group = get_set_group(pwmIndex);
 		channel = get_set_channel(pwmIndex);
+		if (channel == 0) {
+			reg_duty = REG_GROUP_PWM0_T1_ADDR(group);
+		} else {
+			reg_duty = REG_GROUP_PWM1_T1_ADDR(group);
+		}
 		uint32_t pwmfrequency = 38000;
 		period = (26000000 / pwmfrequency);
 		uint32_t duty = period / 2;
