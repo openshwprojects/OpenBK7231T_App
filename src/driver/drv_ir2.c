@@ -162,21 +162,12 @@ void Send_ISR(UINT8 t) {
 		else {
 			duty_cycle = duty_on;
 		}
-		if (channel == 0)
-		{
-			REG_WRITE(REG_GROUP_PWM0_T1_ADDR(group), duty_cycle);
-		}
-		else
-		{
-			REG_WRITE(REG_GROUP_PWM1_T1_ADDR(group), duty_cycle);
-		}
-		UINT32 level = 1;
-		// cfg_updata and initial level update enable
-		UINT32  value = REG_READ(REG_PWM_GROUP_CTRL_ADDR(group));
-		value &= ~(PWM_GROUP_PWM_INT_LEVL_MASK(channel));
-		value |= PWM_GROUP_PWM_CFG_UPDATA_MASK(channel)
-			| (level << PWM_GROUP_PWM_INT_LEVL_BIT(channel));
-		REG_WRITE(REG_PWM_GROUP_CTRL_ADDR(group), value);
+
+#if PLATFORM_BK7231N
+		bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_cycle, 0, 0);
+#else
+		bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_cycle);
+#endif
 #endif
 		cur++;
 		if (cur == stop) {
@@ -184,21 +175,11 @@ void Send_ISR(UINT8 t) {
 			cur = 0; 
 
 
-			if (channel == 0)
-			{
-				REG_WRITE(REG_GROUP_PWM0_T1_ADDR(group), duty_off);
-			}
-			else
-			{
-				REG_WRITE(REG_GROUP_PWM1_T1_ADDR(group), duty_off);
-			}
-			UINT32 level = 1;
-			// cfg_updata and initial level update enable
-			UINT32  value = REG_READ(REG_PWM_GROUP_CTRL_ADDR(group));
-			value &= ~(PWM_GROUP_PWM_INT_LEVL_MASK(channel));
-			value |= PWM_GROUP_PWM_CFG_UPDATA_MASK(channel)
-				| (level << PWM_GROUP_PWM_INT_LEVL_BIT(channel));
-			REG_WRITE(REG_PWM_GROUP_CTRL_ADDR(group), value);
+#if PLATFORM_BK7231N
+			bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off, 0, 0);
+#else
+			bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off);
+#endif
 		}
 	}
 }
@@ -304,22 +285,11 @@ static commandResult_t CMD_IR2_StartTimer(const void* context, const char* cmd, 
 #endif
 		bk_pwm_start((bk_pwm_t)pwmIndex);
 
-
-		if (channel == 0)
-		{
-			REG_WRITE(REG_GROUP_PWM0_T1_ADDR(group), duty_off);
-		}
-		else
-		{
-			REG_WRITE(REG_GROUP_PWM1_T1_ADDR(group), duty_off);
-		}
-		UINT32 level = 1;
-		// cfg_updata and initial level update enable
-		UINT32  value = REG_READ(REG_PWM_GROUP_CTRL_ADDR(group));
-		value &= ~(PWM_GROUP_PWM_INT_LEVL_MASK(channel));
-		value |= PWM_GROUP_PWM_CFG_UPDATA_MASK(channel)
-			| (level << PWM_GROUP_PWM_INT_LEVL_BIT(channel));
-		REG_WRITE(REG_PWM_GROUP_CTRL_ADDR(group), value);
+#if PLATFORM_BK7231N
+		bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off, 0, 0);
+#else
+		bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off);
+#endif
 #endif
 	}
 #endif
