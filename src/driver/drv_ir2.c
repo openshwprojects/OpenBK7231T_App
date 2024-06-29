@@ -368,7 +368,7 @@ static commandResult_t CMD_IR2_TestDuty2(const void* context, const char* cmd, c
 
 	Tokenizer_TokenizeString(args, 0);
 
-	float fduty = Tokenizer_GetArgFloatDefault(0, 0.5f)
+	float fduty = Tokenizer_GetArgFloatDefault(0, 0.5f);
 	uint32 duty_cycle = period * fduty;
 
 #if PLATFORM_BK7231N
