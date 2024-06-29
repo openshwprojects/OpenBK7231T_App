@@ -155,10 +155,10 @@ void Send_ISR(UINT8 t) {
 #else
 		unsigned int duty_cycle;
 		if (state == 0) {
-			duty_cycle = duty_on;
+			duty_cycle = duty_off;
 		}
 		else {
-			duty_cycle = duty_off;
+			duty_cycle = duty_on;
 		}
 		if (channel == 0)
 		{
