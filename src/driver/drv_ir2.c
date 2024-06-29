@@ -271,6 +271,8 @@ static commandResult_t CMD_IR2_StartTimer(const void* context, const char* cmd, 
 	pwmIndex = PIN_GetPWMIndexForPinIndex(txpin);
 	// is this pin capable of PWM?
 	if (pwmIndex != -1) {
+		group = get_set_group(pwmIndex);
+		channel = get_set_channel(pwmIndex);
 		uint32_t pwmfrequency = 38000;
 		period = (26000000 / pwmfrequency);
 		duty_on = period * duty_on_frac;
