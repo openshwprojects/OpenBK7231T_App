@@ -242,7 +242,17 @@ static commandResult_t CMD_IR2_TestDuty(const void* context, const char* cmd, co
 	{
 		REG_WRITE(REG_GROUP_PWM1_T1_ADDR(group), duty_cycle);
 	}
-	pwm_single_update_param_enable(pwmIndex, 1);
+	///pwm_single_update_param_enable(pwmIndex, 1);
+
+
+	UINT32 level = 1;
+	// cfg_updata and initial level update enable
+	UINT32  value = REG_READ(REG_PWM_GROUP_CTRL_ADDR(group));
+	value &= ~(PWM_GROUP_PWM_INT_LEVL_MASK(channel));
+	value |= PWM_GROUP_PWM_CFG_UPDATA_MASK(channel)
+		| (level << PWM_GROUP_PWM_INT_LEVL_BIT(channel));
+	REG_WRITE(REG_PWM_GROUP_CTRL_ADDR(group), value);
+
 
 	//pwm_param_t param;
 
