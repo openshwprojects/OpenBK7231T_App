@@ -189,8 +189,8 @@ void Send_ISR(UINT8 t) {
 // start the driver
 startDriver IR2
 // start timer 50us
-// arguments: duty_on_fraction, duty_off_fraction
-StartTimer 50 0.5 0
+// arguments: duty_on_fraction, duty_off_fraction, pin for sending
+StartTimer 50 0.5 0 7
 // send data
 Send 1000,5000,1000,5000,1000
 // 1000 duty_on, 5000 duty_off, 1000 duty_on, 5000 duty_off, 1000 duty_on
@@ -264,6 +264,7 @@ static commandResult_t CMD_IR2_StartTimer(const void* context, const char* cmd, 
 	float duty_on_frac = Tokenizer_GetArgFloatDefault(1, 0.5f);
 	float duty_off_frac = Tokenizer_GetArgFloatDefault(2, 0.0f);
 
+	txpin = Tokenizer_GetArgIntegerDefault(3, 26);
 
 #if DEBUG_WAVE_WITH_GPIO
 	bk_gpio_config_output(txpin);
@@ -272,7 +273,7 @@ static commandResult_t CMD_IR2_StartTimer(const void* context, const char* cmd, 
 	// is this pin capable of PWM?
 	if (pwmIndex != -1) {
 		group = get_set_group(pwmIndex);
-		channel = get_set_channel(pwmIndex);
+		channel = get_set_channel(pwmIndex);10
 		uint32_t pwmfrequency = 38000;
 		period = (26000000 / pwmfrequency);
 		duty_on = period * duty_on_frac;
