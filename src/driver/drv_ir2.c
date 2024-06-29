@@ -364,7 +364,21 @@ static commandResult_t CMD_IR2_StartTimer(const void* context, const char* cmd, 
 	return CMD_RES_OK;
 }
 
+static commandResult_t CMD_IR2_TestDuty2(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
+	Tokenizer_TokenizeString(args, 0);
+
+	float fduty = Tokenizer_GetArgFloatDefault(0, 0.5f)
+	uint32 duty_cycle = period * fduty;
+
+#if PLATFORM_BK7231N
+	// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
+	bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty_cycle, 0, 0);
+#else
+	bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty_cycle);
+#endif
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_IR2_TestDuty(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, 0);
@@ -441,6 +455,7 @@ void DRV_IR2_Init() {
 	CMD_RegisterCommand("Test1", CMD_IR2_Test1, NULL);
 	CMD_RegisterCommand("StartTimer", CMD_IR2_StartTimer, NULL);
 	CMD_RegisterCommand("TestDuty", CMD_IR2_TestDuty, NULL);
+	CMD_RegisterCommand("TestDuty2", CMD_IR2_TestDuty2, NULL);
 	CMD_RegisterCommand("TestSet", CMD_IR2_TestSet, NULL);
 	CMD_RegisterCommand("Send", CMD_IR2_Send, NULL);
 
