@@ -241,11 +241,6 @@ static commandResult_t CMD_IR2_Test1(const void* context, const char* cmd, const
 	if (pwmIndex != -1) {
 		group = get_set_group(pwmIndex);
 		channel = get_set_channel(pwmIndex);
-		if (channel == 0) {
-			reg_duty = REG_GROUP_PWM0_T1_ADDR(group);
-		} else {
-			reg_duty = REG_GROUP_PWM1_T1_ADDR(group);
-		}
 		uint32_t pwmfrequency = 38000;
 		period = (26000000 / pwmfrequency);
 		uint32_t duty = period / 2;
@@ -285,6 +280,12 @@ static commandResult_t CMD_IR2_StartTimer(const void* context, const char* cmd, 
 		period = (26000000 / pwmfrequency);
 		duty_on = period * duty_on_frac;
 		duty_off = period * duty_off_frac;
+		if (channel == 0) {
+			reg_duty = REG_GROUP_PWM0_T1_ADDR(group);
+		}
+		else {
+			reg_duty = REG_GROUP_PWM1_T1_ADDR(group);
+		}
 #ifndef WINDOWS
 #if PLATFORM_BK7231N
 		// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
