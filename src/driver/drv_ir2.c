@@ -44,6 +44,8 @@ static UINT32 ir_chan
 
 static UINT32 ir_div = 1;
 static UINT32 ir_periodus = 50;
+static UINT32 duty_on, duty_off;
+
 int txpin = 26;
 
 int times[512];
@@ -54,6 +56,8 @@ int myPeriodUs = 50;
 int curTime = 0;
 int state = 0;
 
+UINT8 group, channel;
+
 void Send_ISR(UINT8 t) {
 	if (cur == 0)
 		return;
@@ -61,8 +65,33 @@ void Send_ISR(UINT8 t) {
 	int tg = *cur;
 	if (tg <= curTime) {
 		curTime -= tg;
-		state = !state;
+		state = !state; 
+#if DEBUG_WAVE_WITH_GPIO
 		bk_gpio_output(txpin, state);
+#else
+		unsigned int duty_cycle;
+		if (state == 0) {
+			duty_cycle = duty_on;
+		}
+		else {
+			duty_cycle = duty_off;
+		}
+		if (channel == 0)
+		{
+			REG_WRITE(REG_GROUP_PWM0_T1_ADDR(group), duty_cycle);
+		}
+		else
+		{
+			REG_WRITE(REG_GROUP_PWM1_T1_ADDR(group), duty_cycle);
+		}
+		UINT32 level = 1;
+		// cfg_updata and initial level update enable
+		UINT32  value = REG_READ(REG_PWM_GROUP_CTRL_ADDR(group));
+		value &= ~(PWM_GROUP_PWM_INT_LEVL_MASK(channel));
+		value |= PWM_GROUP_PWM_CFG_UPDATA_MASK(channel)
+			| (level << PWM_GROUP_PWM_INT_LEVL_BIT(channel));
+		REG_WRITE(REG_PWM_GROUP_CTRL_ADDR(group), value);
+#endif
 		cur++;
 		if (cur == stop) {
 			// done
@@ -74,9 +103,10 @@ void Send_ISR(UINT8 t) {
 // start the driver
 startDriver IR2
 // start timer 50us
-StartTimer 50
+// arguments: duty_on_fraction, duty_off_ fraction
+StartTimer 50 0.5 0
 // send data
-Send 100,500,100,500,100
+Send 1000,5000,1000,5000,1000
 // 100 hi, 500 low, 100 hi, 500 low, 100 hi
 */
 static commandResult_t CMD_IR2_Send(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -101,7 +131,13 @@ static commandResult_t CMD_IR2_Send(const void* context, const char* cmd, const 
 	}
 	state = 0;
 	ADDLOG_INFO(LOG_FEATURE_IR, "Queue size:",(stop - times));
-	bk_gpio_output(txpin, state);
+
+#if PLATFORM_BK7231N
+	// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
+	bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty_off, 0, 0);
+#else
+	bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty_off);
+#endif
 
 	cur = times;
 #if WINDOWS
@@ -117,6 +153,8 @@ static commandResult_t CMD_IR2_Test1(const void* context, const char* cmd, const
 	pwmIndex = PIN_GetPWMIndexForPinIndex(txpin);
 	// is this pin capable of PWM?
 	if (pwmIndex != -1) {
+		group = get_set_group(pwmIndex);
+		channel = get_set_channel(pwmIndex);
 		uint32_t pwmfrequency = 38000;
 		period = (26000000 / pwmfrequency);
 		uint32_t duty = period / 2;
@@ -135,11 +173,35 @@ static commandResult_t CMD_IR2_Test1(const void* context, const char* cmd, const
 }
 
 static commandResult_t CMD_IR2_StartTimer(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	bk_gpio_config_output(txpin);
 
 	Tokenizer_TokenizeString(args, 0);
 
 	myPeriodUs = Tokenizer_GetArgIntegerDefault(0, 50);
+	float duty_on_frac = Tokenizer_GetArgFloatDefault(1, 0.5f);
+	float duty_off_frac = Tokenizer_GetArgFloatDefault(2, 0.0f);
+
+
+#if DEBUG_WAVE_WITH_GPIO
+	bk_gpio_config_output(txpin);
+#else
+	pwmIndex = PIN_GetPWMIndexForPinIndex(txpin);
+	// is this pin capable of PWM?
+	if (pwmIndex != -1) {
+		uint32_t pwmfrequency = 38000;
+		period = (26000000 / pwmfrequency);
+		duty_on = period * duty_on_frac;
+		duty_off = period * duty_off_frac;
+#ifndef WINDOWS
+#if PLATFORM_BK7231N
+		// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
+		bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty, 0, 0);
+#else
+		bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty);
+#endif
+		bk_pwm_start((bk_pwm_t)pwmIndex);
+#endif
+	}
+#endif
 
 #ifndef WINDOWS
 	timer_param_t params = {
