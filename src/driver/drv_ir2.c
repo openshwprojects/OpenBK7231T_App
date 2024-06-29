@@ -130,6 +130,29 @@ static UINT32 ir_div = 1;
 static UINT32 ir_periodus = 50;
 static UINT32 duty_on, duty_off;
 
+/*
+			bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off, 0, 0);
+#else
+			bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off);
+*/
+#define MY_SET_DUTY(duty)	\
+	if (channel == 0) {		\
+		REG_WRITE(REG_GROUP_PWM0_T1_ADDR(group), duty);	\
+	} else {	\
+		REG_WRITE(REG_GROUP_PWM1_T1_ADDR(group), duty);	\
+	}	\
+	UINT32 level;	\
+	if (duty == 0)	\
+		level = 0;	\
+	else	\
+		level = 1;	\
+	UINT32 value = REG_READ(REG_PWM_GROUP_CTRL_ADDR(group));	\
+	value &= ~(PWM_GROUP_PWM_INT_LEVL_MASK(channel));	\
+	value |= PWM_GROUP_PWM_CFG_UPDATA_MASK(channel)	\
+	| (level << PWM_GROUP_PWM_INT_LEVL_BIT(channel));	\
+	REG_WRITE(REG_PWM_GROUP_CTRL_ADDR(group), value);	\
+
+
 int txpin = 26;
 
 int times[512];
@@ -152,34 +175,18 @@ void Send_ISR(UINT8 t) {
 	if (tg <= curTime) {
 		curTime -= tg;
 		state = !state; 
-#if DEBUG_WAVE_WITH_GPIO
-		bk_gpio_output(txpin, state);
-#else
-		unsigned int duty_cycle;
 		if (state == 0) {
-			duty_cycle = duty_off;
+			MY_SET_DUTY(duty_off);
 		}
 		else {
-			duty_cycle = duty_on;
+			MY_SET_DUTY(duty_on);
 		}
-
-#if PLATFORM_BK7231N
-		bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_cycle, 0, 0);
-#else
-		bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_cycle);
-#endif
-#endif
 		cur++;
 		if (cur == stop) {
 			// done
 			cur = 0; 
 
-
-#if PLATFORM_BK7231N
-			bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off, 0, 0);
-#else
-			bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off);
-#endif
+			MY_SET_DUTY(duty_on);
 		}
 	}
 }
@@ -188,7 +195,7 @@ void Send_ISR(UINT8 t) {
 startDriver IR2
 // start timer 50us
 // arguments: duty_on_fraction, duty_off_fraction, pin for sending (optional)
-StartTimer 50 0.5 0
+StartTimer 50 0.5 0 8
 // send data
 Send 3200,1300,950,500,900,1300,900,550,900,650,900
 // 
@@ -285,11 +292,7 @@ static commandResult_t CMD_IR2_StartTimer(const void* context, const char* cmd, 
 #endif
 		bk_pwm_start((bk_pwm_t)pwmIndex);
 
-#if PLATFORM_BK7231N
-		bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off, 0, 0);
-#else
-		bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off);
-#endif
+		MY_SET_DUTY(duty_off);
 #endif
 	}
 #endif
