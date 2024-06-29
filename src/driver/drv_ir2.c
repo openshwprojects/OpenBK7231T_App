@@ -50,7 +50,7 @@ int times[512];
 int maxTimes = 512;
 int *cur;
 int *stop;
-int myPeriodUs;
+int myPeriodUs = 50;
 int curTime = 0;
 int state = 0;
 
@@ -89,7 +89,9 @@ static commandResult_t CMD_IR2_Send(const void* context, const char* cmd, const 
 	stop++;
 	while (token) {
 		if (stop - times < maxTimes) {
-			*stop = atoi(token);
+			int x = atoi(token);
+			*stop = x;
+			ADDLOG_INFO(LOG_FEATURE_IR, "Value: %i",x);
 			stop++;
 		}
 		else {
@@ -98,6 +100,7 @@ static commandResult_t CMD_IR2_Send(const void* context, const char* cmd, const 
 		token = strtok(NULL, ",");
 	}
 	state = 0;
+	ADDLOG_INFO(LOG_FEATURE_IR, "Queue size:",(stop - times));
 	bk_gpio_output(txpin, state);
 
 	cur = times;
@@ -106,6 +109,7 @@ static commandResult_t CMD_IR2_Send(const void* context, const char* cmd, const 
 		Send_ISR(0);
 	}
 #endif
+	return CMD_RES_OK;
 }
 int pwmIndex = -1;
 unsigned int period;
