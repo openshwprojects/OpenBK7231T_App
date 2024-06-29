@@ -70,9 +70,15 @@ void Send_ISR(UINT8 t) {
 		}
 	}
 }
-// startDriver IR2
-// Send 100,500,100,500,100
+/*
+// start the driver
+startDriver IR2
+// start timer 50us
+StartTimer 50
+// send data
+Send 100,500,100,500,100
 // 100 hi, 500 low, 100 hi, 500 low, 100 hi
+*/
 static commandResult_t CMD_IR2_Send(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	float frequency = 38000;
 	float duty_cycle = 0.330000f;
@@ -91,10 +97,10 @@ static commandResult_t CMD_IR2_Send(const void* context, const char* cmd, const 
 		}
 		token = strtok(NULL, ",");
 	}
-	cur = times;
 	state = 0;
 	bk_gpio_output(txpin, state);
 
+	cur = times;
 #if WINDOWS
 	while (cur) {
 		Send_ISR(0);
