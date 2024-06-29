@@ -139,6 +139,8 @@ int *stop;
 int myPeriodUs = 50;
 int curTime = 0;
 int state = 0;
+int pwmIndex = -1;
+unsigned int period;
 
 UINT8 group, channel;
 
@@ -231,8 +233,6 @@ static commandResult_t CMD_IR2_Send(const void* context, const char* cmd, const 
 #endif
 	return CMD_RES_OK;
 }
-int pwmIndex = -1;
-unsigned int period;
 static commandResult_t CMD_IR2_Test1(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	pwmIndex = PIN_GetPWMIndexForPinIndex(txpin);
 	// is this pin capable of PWM?
@@ -399,23 +399,11 @@ static commandResult_t CMD_IR2_TestSet(const void* context, const char* cmd, con
 
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_IR2_TestDuty2(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
-	Tokenizer_TokenizeString(args, 0);
-
-	float fduty = Tokenizer_GetArgFloatDefault(0, 0.5f);
-#ifndef WINDOWS
-	uint32 duty_cycle = period * fduty;
-	bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_cycle, 0, 0);
-#endif
-
-	return CMD_RES_OK;
-}
 void DRV_IR2_Init() {
 	CMD_RegisterCommand("Test1", CMD_IR2_Test1, NULL);
 	CMD_RegisterCommand("StartTimer", CMD_IR2_StartTimer, NULL);
 	CMD_RegisterCommand("TestDuty", CMD_IR2_TestDuty, NULL);
-	CMD_RegisterCommand("TestDuty2", CMD_IR2_TestDuty2, NULL);
 	CMD_RegisterCommand("TestSet", CMD_IR2_TestSet, NULL);
 	CMD_RegisterCommand("Send", CMD_IR2_Send, NULL);
 
