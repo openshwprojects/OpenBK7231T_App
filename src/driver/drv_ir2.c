@@ -189,11 +189,11 @@ void Send_ISR(UINT8 t) {
 // start the driver
 startDriver IR2
 // start timer 50us
-// arguments: duty_on_fraction, duty_off_ fraction
+// arguments: duty_on_fraction, duty_off_fraction
 StartTimer 50 0.5 0
 // send data
 Send 1000,5000,1000,5000,1000
-// 100 hi, 500 low, 100 hi, 500 low, 100 hi
+// 1000 duty_on, 5000 duty_off, 1000 duty_on, 5000 duty_off, 1000 duty_on
 */
 static commandResult_t CMD_IR2_Send(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	float frequency = 38000;
@@ -218,11 +218,11 @@ static commandResult_t CMD_IR2_Send(const void* context, const char* cmd, const 
 	state = 0;
 	ADDLOG_INFO(LOG_FEATURE_IR, "Queue size:",(stop - times));
 
+
 #if PLATFORM_BK7231N
-	// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
-	bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty_off, 0, 0);
+	bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off, 0, 0);
 #else
-	bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty_off);
+	bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off);
 #endif
 
 	cur = times;
@@ -278,11 +278,17 @@ static commandResult_t CMD_IR2_StartTimer(const void* context, const char* cmd, 
 #ifndef WINDOWS
 #if PLATFORM_BK7231N
 		// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
-		bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty_off, 0, 0);
+		bk_pwm_initialize((bk_pwm_t)pwmIndex, period, period/2, 0, 0);
 #else
-		bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty_off);
+		bk_pwm_initialize((bk_pwm_t)pwmIndex, period, period / 2);
 #endif
 		bk_pwm_start((bk_pwm_t)pwmIndex);
+
+#if PLATFORM_BK7231N
+		bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off, 0, 0);
+#else
+		bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off);
+#endif
 #endif
 	}
 #endif
