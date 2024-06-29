@@ -181,7 +181,24 @@ void Send_ISR(UINT8 t) {
 		cur++;
 		if (cur == stop) {
 			// done
-			cur = 0;
+			cur = 0; 
+
+
+			if (channel == 0)
+			{
+				REG_WRITE(REG_GROUP_PWM0_T1_ADDR(group), duty_off);
+			}
+			else
+			{
+				REG_WRITE(REG_GROUP_PWM1_T1_ADDR(group), duty_off);
+			}
+			UINT32 level = 1;
+			// cfg_updata and initial level update enable
+			UINT32  value = REG_READ(REG_PWM_GROUP_CTRL_ADDR(group));
+			value &= ~(PWM_GROUP_PWM_INT_LEVL_MASK(channel));
+			value |= PWM_GROUP_PWM_CFG_UPDATA_MASK(channel)
+				| (level << PWM_GROUP_PWM_INT_LEVL_BIT(channel));
+			REG_WRITE(REG_PWM_GROUP_CTRL_ADDR(group), value);
 		}
 	}
 }
@@ -189,11 +206,11 @@ void Send_ISR(UINT8 t) {
 // start the driver
 startDriver IR2
 // start timer 50us
-// arguments: duty_on_fraction, duty_off_fraction, pin for sending
-StartTimer 50 0.5 0 7
+// arguments: duty_on_fraction, duty_off_fraction, pin for sending (optional)
+StartTimer 50 0.5 0
 // send data
-Send 1000,5000,1000,5000,1000
-// 1000 duty_on, 5000 duty_off, 1000 duty_on, 5000 duty_off, 1000 duty_on
+Send 3200,1300,950,500,900,1300,900,550,900,650,900
+// 
 */
 static commandResult_t CMD_IR2_Send(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	float frequency = 38000;
@@ -287,11 +304,22 @@ static commandResult_t CMD_IR2_StartTimer(const void* context, const char* cmd, 
 #endif
 		bk_pwm_start((bk_pwm_t)pwmIndex);
 
-#if PLATFORM_BK7231N
-		bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off, 0, 0);
-#else
-		bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off);
-#endif
+
+		if (channel == 0)
+		{
+			REG_WRITE(REG_GROUP_PWM0_T1_ADDR(group), duty_off);
+		}
+		else
+		{
+			REG_WRITE(REG_GROUP_PWM1_T1_ADDR(group), duty_off);
+		}
+		UINT32 level = 1;
+		// cfg_updata and initial level update enable
+		UINT32  value = REG_READ(REG_PWM_GROUP_CTRL_ADDR(group));
+		value &= ~(PWM_GROUP_PWM_INT_LEVL_MASK(channel));
+		value |= PWM_GROUP_PWM_CFG_UPDATA_MASK(channel)
+			| (level << PWM_GROUP_PWM_INT_LEVL_BIT(channel));
+		REG_WRITE(REG_PWM_GROUP_CTRL_ADDR(group), value);
 #endif
 	}
 #endif
