@@ -194,9 +194,9 @@ static commandResult_t CMD_IR2_StartTimer(const void* context, const char* cmd, 
 #ifndef WINDOWS
 #if PLATFORM_BK7231N
 		// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
-		bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty, 0, 0);
+		bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty_off, 0, 0);
 #else
-		bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty);
+		bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty_off);
 #endif
 		bk_pwm_start((bk_pwm_t)pwmIndex);
 #endif
