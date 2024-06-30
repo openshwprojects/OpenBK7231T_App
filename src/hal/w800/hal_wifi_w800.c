@@ -116,6 +116,31 @@ int HAL_GetWifiStrength()
 	return (signed char)(0x100-bss.rssi); //this is adjusted according to example
 }
 
+// Get WiFi Information (SSID / BSSID) - e.g. to display on status page 
+/*
+// ATM there is only one SSID, so need for this code
+
+char* HAL_GetWiFiSSID(char* ssid){
+	struct tls_curr_bss_t bss;
+	tls_wifi_get_current_bss(&bss);
+	strcpy(ssid,bss.ssid);
+	ssid[bss.ssid_len]='\0';
+	return ssid;
+};
+*/
+char* HAL_GetWiFiBSSID(char* bssid){
+	struct tls_curr_bss_t bss;
+	tls_wifi_get_current_bss(&bss);
+	sprintf(bssid, MACSTR, MAC2STR(bss.bssid));
+	return bssid;
+};
+uint8_t HAL_GetWiFiChannel(uint8_t *chan){
+	struct tls_curr_bss_t bss;
+	tls_wifi_get_current_bss(&bss);
+	*chan = bss.channel;
+	return *chan;
+};
+
 static void apsta_net_status(u8 status)
 {
 	switch (status)
