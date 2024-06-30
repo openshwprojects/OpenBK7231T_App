@@ -183,7 +183,7 @@ void Send_ISR(UINT8 t) {
 			// done
 			cur = 0; 
 
-			MY_SET_DUTY(duty_on);
+			MY_SET_DUTY(duty_off);
 		}
 	}
 }
