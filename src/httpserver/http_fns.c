@@ -1880,9 +1880,19 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, i, 2, 1, 1);
 			}
 			break;
+			case ChType_ReadOnly_div10:
+			{
+				dev_info = hass_init_sensor_device_info(CUSTOM_SENSOR, i, 2, 1, 1);
+			}
+			break;
 			case ChType_Temperature_div100:
 			{
 				dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, i, 2, 2, 1);
+			}
+			break;
+			case ChType_ReadOnly_div100:
+			{
+				dev_info = hass_init_sensor_device_info(CUSTOM_SENSOR, i, 2, 2, 1);
 			}
 			break;
 			case ChType_Humidity:
@@ -1898,6 +1908,11 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			case ChType_Current_div100:
 			{
 				dev_info = hass_init_sensor_device_info(CURRENT_SENSOR, i, 3, 2, 1);
+			}
+			break;
+			case ChType_ReadOnly_div1000:
+			{
+				dev_info = hass_init_sensor_device_info(CUSTOM_SENSOR, i, 3, 3, 1);
 			}
 			break;
 			case ChType_LeakageCurrent_div1000:
