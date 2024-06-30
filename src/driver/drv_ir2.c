@@ -201,6 +201,9 @@ static commandResult_t CMD_IR2_Send(const void* context, const char* cmd, const 
 	float frequency = 38000;
 	float duty_cycle = 0.330000f;
 	stop = times;
+
+	ADDLOG_INFO(LOG_FEATURE_IR, "Send args len: %i", strlen(args));
+
 	// parse string like 10,12,432,432,432,432,432
 	char *token = strtok(args, ",");
 	*stop = 500; // prepend 500us zero
