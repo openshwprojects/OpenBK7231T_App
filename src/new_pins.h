@@ -953,10 +953,10 @@ typedef enum channelType_e {
 	//chandetail:{"name":"Ph",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"Ph Water Quality",
-	//chandetail:"enum":"ChType_ph",
+	//chandetail:"enum":"ChType_Ph",
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
-	ChType_ph,
+	ChType_Ph,
 } channelType_t;
 
 
