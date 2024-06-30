@@ -142,7 +142,8 @@ bool LED_IsLedDriverChipRunning()
 		|| DRV_IsRunning("TESTLED") || DRV_IsRunning("SM2235") || DRV_IsRunning("BP1658CJ")
 		|| DRV_IsRunning("KP18058")
 		|| DRV_IsRunning("SM16703P")
-		;
+		|| DRV_IsRunning("SM15155E")
+		; 
 #else
 	return false;
 #endif
@@ -288,6 +289,11 @@ void LED_I2CDriver_WriteRGBCW(float* finalRGBCW) {
 	}
 	if (DRV_IsRunning("KP18058")) {
 		KP18058_Write(finalRGBCW);
+	}
+#endif
+#ifdef ENABLE_DRIVER_SM15155E
+	if (DRV_IsRunning("SM15155E")) {
+		SM15155E_Write(finalRGBCW);
 	}
 #endif
 }

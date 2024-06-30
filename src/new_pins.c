@@ -1096,6 +1096,7 @@ int ChannelType_GetDivider(int type) {
 	case ChType_Voltage_div10:
 	case ChType_Power_div10:
 	case ChType_Frequency_div10:
+	case ChType_ReadOnly_div10:
 		return 10;
 	case ChType_Frequency_div100:
 	case ChType_Current_div100:
@@ -1105,6 +1106,7 @@ int ChannelType_GetDivider(int type) {
 	case ChType_Pressure_div100:
 	case ChType_Temperature_div100:
 	case ChType_Power_div100:
+	case ChType_ReadOnly_div100:
 		return 100;
 	case ChType_PowerFactor_div1000:
 	case ChType_EnergyTotal_kWh_div1000:
@@ -1112,6 +1114,7 @@ int ChannelType_GetDivider(int type) {
 	case ChType_EnergyToday_kWh_div1000:
 	case ChType_Current_div1000:
 	case ChType_LeakageCurrent_div1000:
+	case ChType_ReadOnly_div1000:
 		return 1000;
 	case ChType_Temperature_div2:
 		return 2;
@@ -1205,6 +1208,11 @@ const char *ChannelType_GetTitle(int type) {
 		return "ReactivePower";
 	case ChType_Illuminance:
 		return "Illuminance";
+	case ChType_ReadOnly:
+	case ChType_ReadOnly_div10:
+	case ChType_ReadOnly_div100:
+	case ChType_ReadOnly_div1000:
+		return "ReadOnly:";
 	}
 	return "";
 }
@@ -2030,7 +2038,9 @@ const char* g_channelTypeNames[] = {
 	"LeakageCurrent_div1000",
 	"Power_div100",
 	"Motion",
-	"error",
+	"ReadOnly_div10",
+	"ReadOnly_div100",
+	"ReadOnly_div1000",
 	"error",
 	"error",
 	"error",

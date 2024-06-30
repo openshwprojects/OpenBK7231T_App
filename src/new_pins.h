@@ -922,6 +922,27 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Motion,
+	//chandetail:{"name":"ReadOnly_div10",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"This channel is read only.",
+	//chandetail:"enum":"ChType_ReadOnly_div10",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_ReadOnly_div10,
+	//chandetail:{"name":"ReadOnly_div100",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"This channel is read only.",
+	//chandetail:"enum":"ChType_ReadOnly_div100",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_ReadOnly_div100,
+	//chandetail:{"name":"ReadOnly_div1000",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"This channel is read only.",
+	//chandetail:"enum":"ChType_ReadOnly_div1000",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_ReadOnly_div1000,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",

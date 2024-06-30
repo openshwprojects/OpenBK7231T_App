@@ -28,6 +28,7 @@ static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"
 #include <bl_adc.h>     //  For BL602 ADC HAL
 #include <bl602_adc.h>  //  For BL602 ADC Standard Driver
 #include <bl602_glb.h>  //  For BL602 Global Register Standard Driver
+#include <wifi_mgmr_ext.h> //For BL602 WiFi AP Scan
 #elif PLATFORM_W600 || PLATFORM_W800
 
 #elif PLATFORM_XR809
@@ -51,6 +52,30 @@ static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"
 int tuya_os_adapt_wifi_all_ap_scan(AP_IF_S** ap_ary, unsigned int* num);
 int tuya_os_adapt_wifi_release_ap(AP_IF_S* ap);
 #endif
+
+
+const char* g_typesOffLowMidHigh[] = { "Off","Low","Mid","High" };
+const char* g_typesOffLowMidHighHighest[] = { "Off", "Low","Mid","High","Highest" };
+const char* g_typesOffLowestLowMidHighHighest[] = { "Off", "Lowest", "Low", "Mid", "High", "Highest" };
+const char* g_typesLowMidHighHighest[] = { "Low","Mid","High","Highest" };
+const char* g_typesOffOnRemember[] = { "Off", "On", "Remember" };
+const char* g_typeLowMidHigh[] = { "Low","Mid","High" };
+const char* g_typesLowestLowMidHighHighest[] = { "Lowest", "Low", "Mid", "High", "Highest" };;
+
+#define ADD_OPTION(t,a) if(type == t) { *numTypes = sizeof(a)/sizeof(a[0]); return a; }
+
+const char **Channel_GetOptionsForChannelType(int type, int *numTypes) {
+	ADD_OPTION(ChType_OffLowMidHigh, g_typesOffLowMidHigh);
+	ADD_OPTION(ChType_OffLowestLowMidHighHighest, g_typesOffLowestLowMidHighHighest);
+	ADD_OPTION(ChType_LowestLowMidHighHighest, g_typesLowestLowMidHighHighest);
+	ADD_OPTION(ChType_OffLowMidHighHighest, g_typesOffLowMidHighHighest);
+	ADD_OPTION(ChType_LowMidHighHighest, g_typesLowMidHighHighest);
+	ADD_OPTION(ChType_OffOnRemember, g_typesOffOnRemember);
+	ADD_OPTION(ChType_LowMidHigh, g_typeLowMidHigh);
+	
+	*numTypes = 0;
+	return 0;
+}
 
 unsigned char hexdigit(char hex) {
 	return (hex <= '9') ? hex - '0' :
@@ -375,7 +400,8 @@ int http_fn_index(http_request_t* request) {
 		}
 	}
 	for (i = 0; i < CHANNEL_MAX; i++) {
-
+		const char **types;
+		int numTypes;
 
 		// check ability to hide given channel from gui
 		if (BIT_CHECK(g_hiddenChannels, i)) {
@@ -405,68 +431,25 @@ int http_fn_index(http_request_t* request) {
 			}
 			poststr(request, "</td></tr>");
 
-		}
-		else if (channelType == ChType_LowMidHigh) {
+		} else if (channelType == ChType_ReadOnlyLowMidHigh) {
 			const char* types[] = { "Low","Mid","High" };
 			iValue = CHANNEL_Get(i);
-
 			poststr(request, "<tr><td>");
-			hprintf255(request, "<p>Select speed:</p><form action=\"index\">");
-			hprintf255(request, "<input type=\"hidden\" name=\"setIndex\" value=\"%i\">", i);
-			for (j = 0; j < 3; j++) {
-				const char* check;
-				if (j == iValue)
-					check = "checked";
-				else
-					check = "";
-				hprintf255(request, "<input type=\"radio\" name=\"set\" value=\"%i\" onchange=\"this.form.submit()\" %s>%s", j, check, types[j]);
+			if (iValue >= 0 && iValue <= 2) {
+				hprintf255(request, "Channel %s = %s", CHANNEL_GetLabel(i), types[iValue]);
 			}
-			hprintf255(request, "</form>");
+			else {
+				hprintf255(request, "Channel %s = %i", CHANNEL_GetLabel(i), iValue);
+			}
 			poststr(request, "</td></tr>");
-
 		}
-		else if (channelType == ChType_OffLowMidHigh || channelType == ChType_OffLowestLowMidHighHighest
-			|| channelType == ChType_LowestLowMidHighHighest || channelType == ChType_LowMidHighHighest
-			|| channelType == ChType_OffLowMidHighHighest || channelType == ChType_OffOnRemember) {
-			const char** types;
-			const char* types4[] = { "Off","Low","Mid","High" };
-			const char* typesLowMidHighHighest[] = { "Low","Mid","High","Highest" };
-			const char* typesOffLowMidHighHighest[] = { "Off", "Low","Mid","High","Highest" };
-			const char* types6[] = { "Off", "Lowest", "Low", "Mid", "High", "Highest" };
-			const char* types5NoOff[] = { "Lowest", "Low", "Mid", "High", "Highest" };
-			const char* typesOffOnRemember[] = { "Off", "On", "Remember" };
-			int numTypes;
+		else if ((types = Channel_GetOptionsForChannelType(channelType, &numTypes)) != 0) {
 			const char *what;
-
 			if (channelType == ChType_OffOnRemember) {
 				what = "memory";
 			}
 			else {
 				what = "speed";
-			}
-			if (channelType == ChType_OffLowMidHigh) {
-				types = types4;
-				numTypes = 4;
-			}
-			else if (channelType == ChType_LowMidHighHighest) {
-				types = typesLowMidHighHighest;
-				numTypes = 4;
-			}
-			else if (channelType == ChType_OffLowMidHighHighest) {
-				types = typesOffLowMidHighHighest;
-				numTypes = 5;
-			}
-			else if (channelType == ChType_LowestLowMidHighHighest) {
-				types = types5NoOff;
-				numTypes = 5;
-			}
-			else if (channelType == ChType_OffOnRemember) {
-				types = typesOffOnRemember;
-				numTypes = 3;
-			}
-			else {
-				types = types6;
-				numTypes = 6;
 			}
 			
 			iValue = CHANNEL_Get(i);
@@ -1197,7 +1180,17 @@ int http_fn_cfg_wifi(http_request_t* request) {
 #elif PLATFORM_W600 || PLATFORM_W800
 		poststr(request, "TODO W800<br>");
 #elif PLATFORM_BL602
-		poststr(request, "TODO BL602<br>");
+               wifi_mgmr_ap_item_t *ap_info;
+               uint32_t i, ap_num;
+
+               bk_printf("Scan begin...\r\n");
+               wifi_mgmr_all_ap_scan(&ap_info, &ap_num);
+               bk_printf("Scan returned %li networks\r\n", ap_num);
+
+               for (i = 0; i < ap_num; i++) {
+                       hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", (i+1), (int)ap_num, ap_info[i].ssid, ap_info[i].channel, ap_info[i].rssi);
+               }
+               vPortFree(ap_info);
 #elif PLATFORM_BK7231T
 		int i;
 
@@ -1243,10 +1236,10 @@ int http_fn_cfg_wifi(http_request_t* request) {
 </form>");
 	poststr_h2(request, "Use this to connect to your WiFi");
 	add_label_text_field(request, "SSID", "ssid", CFG_GetWiFiSSID(), "<form action=\"/cfg_wifi_set\">");
-	add_label_password_field(request, "Password", "pass", CFG_GetWiFiPass(), "<br>");
+	add_label_password_field(request, "", "pass", CFG_GetWiFiPass(), "<br>Password <span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears password)</span>");
 	poststr_h2(request, "Alternate WiFi (used when first one is not responding)");
 	add_label_text_field(request, "SSID2", "ssid2", CFG_GetWiFiSSID2(), "");
-	add_label_password_field(request, "Password2", "pass2", CFG_GetWiFiPass2(), "<br>");
+	add_label_password_field(request, "", "pass2", CFG_GetWiFiPass2(), "<br>Password2 <span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass2');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears password)</span>");
 #if ALLOW_WEB_PASSWORD
 	int web_password_enabled = strcmp(CFG_GetWebPassword(), "") == 0 ? 0 : 1;
 	poststr_h2(request, "Web Authentication");
@@ -1887,9 +1880,19 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, i, 2, 1, 1);
 			}
 			break;
+			case ChType_ReadOnly_div10:
+			{
+				dev_info = hass_init_sensor_device_info(CUSTOM_SENSOR, i, 2, 1, 1);
+			}
+			break;
 			case ChType_Temperature_div100:
 			{
 				dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, i, 2, 2, 1);
+			}
+			break;
+			case ChType_ReadOnly_div100:
+			{
+				dev_info = hass_init_sensor_device_info(CUSTOM_SENSOR, i, 2, 2, 1);
 			}
 			break;
 			case ChType_Humidity:
@@ -1905,6 +1908,11 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			case ChType_Current_div100:
 			{
 				dev_info = hass_init_sensor_device_info(CURRENT_SENSOR, i, 3, 2, 1);
+			}
+			break;
+			case ChType_ReadOnly_div1000:
+			{
+				dev_info = hass_init_sensor_device_info(CUSTOM_SENSOR, i, 3, 3, 1);
 			}
 			break;
 			case ChType_LeakageCurrent_div1000:
@@ -2024,6 +2032,12 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
 		dev_info = hass_init_sensor_device_info(HASS_BUILD, -1, -1, -1, 1);
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		dev_info = hass_init_sensor_device_info(HASS_SSID, -1, -1, -1, 1);
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		dev_info = hass_init_sensor_device_info(HASS_IP, -1, -1, -1, 1);
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
 		discoveryQueued = true;

@@ -267,7 +267,17 @@ void Test_Http_SingleRelayOnChannel1() {
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=POWER");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "OFF");
 
+	// echo to get value
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=echo%20$CH1");
+	SELFTEST_ASSERT_STRING(replyAt, "0");
+
 	CMD_ExecuteCommand("setChannel 1 1",0);
+	// echo to get value
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=echo%20$CH1");
+	SELFTEST_ASSERT_STRING(replyAt, "1");
+
+	
+
 	// The empty power packet should not affect relay
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=POWER");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "ON");
@@ -831,15 +841,28 @@ void Test_Http_WiFi() {
 void Test_Http_Commands() {
 	Test_FakeHTTPClientPacket_GET("cm?cmnd=setChannel%201%20123");
 	SELFTEST_ASSERT_CHANNEL(1, 123);
+	// echo to get value
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=echo%20$CH1");
+	SELFTEST_ASSERT_STRING(replyAt, "123");
+
 	// same as above but 234 and space at the end
 	Test_FakeHTTPClientPacket_GET("cm?cmnd=setChannel%201%20234%20");
 	SELFTEST_ASSERT_CHANNEL(1, 234);
+	// echo to get value
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=echo%20$CH1");
+	SELFTEST_ASSERT_STRING(replyAt, "234");
 	// test backlog with space at the end... "backlog setChannel 1 345; "
 	Test_FakeHTTPClientPacket_GET("cm?cmnd=backlog%20setChannel%201%20345;%20");
 	SELFTEST_ASSERT_CHANNEL(1, 345);
+	// echo to get value
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=echo%20$CH1");
+	SELFTEST_ASSERT_STRING(replyAt, "345");
 	// test backlog with more spaces... "backlog setChannel 1 567 ; "
 	Test_FakeHTTPClientPacket_GET("cm?cmnd=backlog%20setChannel%201%20567%20;%20");
 	SELFTEST_ASSERT_CHANNEL(1, 567);
+	// echo to get value
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=echo%20$CH1");
+	SELFTEST_ASSERT_STRING(replyAt, "567");
 	// test backlog with more spaces...  etc... "backlog setChannel 1 345 ; setChannel 1 111"
 	Test_FakeHTTPClientPacket_GET("cm?cmnd=backlog%20setChannel%201%20567%20;%20setChannel%201%20111");
 	SELFTEST_ASSERT_CHANNEL(1, 111);
@@ -849,6 +872,9 @@ void Test_Http_Commands() {
 		"setChannel 1 123");
 	SELFTEST_ASSERT_CHANNEL(1, 123);
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0,"success", 200);
+	// echo to get value
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=echo%20$CH1");
+	SELFTEST_ASSERT_STRING(replyAt, "123");
 	Test_FakeHTTPClientPacket_POST_withJSONReply("api/cmnd",
 		"backlog setChannel 1 345; ");
 	SELFTEST_ASSERT_CHANNEL(1, 345);

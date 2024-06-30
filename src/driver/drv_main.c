@@ -98,7 +98,7 @@ static driver_t g_drivers[] = {
 	{ "I2C",		DRV_I2C_Init,		DRV_I2C_EverySecond,		NULL, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_BL0942
-	//drvdetail:{"name":"qq",
+	//drvdetail:{"name":"RN8209",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Bqqqqqqqqqq ",
 	//drvdetail:"requires":""}
@@ -121,7 +121,7 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_BL0942SPI
 	//drvdetail:{"name":"BL0942SPI",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"BL0942 is a power-metering chip which uses SPI protocol for communication. It's usually connected to SPI1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [PZIOT-E01 teardown example](https://www.elektroda.com/rtvforum/topic3945667.html). ",
+	//drvdetail:"descr":"BL0942 driver version for SPI protocol. It's usually connected to SPI1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [PZIOT-E01 teardown example](https://www.elektroda.com/rtvforum/topic3945667.html). ",
 	//drvdetail:"requires":""}
 	{ "BL0942SPI",	BL0942_SPI_Init,	BL0942_SPI_RunEverySecond,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
@@ -142,21 +142,21 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_CSE7766
 	//drvdetail:{"name":"CSE7766",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK",
+	//drvdetail:"descr":"CSE7766 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK",
 	//drvdetail:"requires":""}
 	{ "CSE7766",	CSE7766_Init,		CSE7766_RunEverySecond,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_MAX6675
 	//drvdetail:{"name":"MAX6675",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"BQQQK",
+	//drvdetail:"descr":"Thermocouple driver for measuring high temperatures, see [presentation](https://www.elektroda.com/rtvforum/topic4055231.html)",
 	//drvdetail:"requires":""}
 	{ "MAX6675",	MAX6675_Init,		MAX6675_RunEverySecond,			NULL, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_PT6523
 	//drvdetail:{"name":"PT6523",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"BQQQK",
+	//drvdetail:"descr":"Car radio LCD driver, see [teardown and presentation](https://www.elektroda.com/rtvforum/topic3983111.html)",
 	//drvdetail:"requires":""}
 	{ "PT6523",	PT6523_Init,		PT6523_RunFrame,			NULL, NULL, NULL, NULL, false },
 #endif
@@ -174,6 +174,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "SM16703P",	SM16703P_Init,		NULL,						NULL, NULL, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_SM15155E
+	//drvdetail:{"name":"SM15155E",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"SM15155E is a WS2812B-like single wire LED controller. It's also always using P16 (SPI out) on Beken. See [reverse-engineering topic](https://www.elektroda.com/rtvforum/topic4060227.html)",
+	//drvdetail:"requires":""}
+	{ "SM15155E",	SM15155E_Init,		NULL,						NULL, NULL, NULL, NULL, false },
+#endif
 #if PLATFORM_BEKEN
 	//drvdetail:{"name":"IR",
 	//drvdetail:"title":"TODO",
@@ -184,7 +191,7 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_DDP
 	//drvdetail:{"name":"DDP",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"DDP is a LED control protocol that is using UDP. You can use xLights or any other app to control OBK LEDs that way.",
+	//drvdetail:"descr":"DDP is a LED control protocol that is using UDP. You can use xLights or any other app to control OBK LEDs that way. See [DDP topic](https://www.elektroda.com/rtvforum/topic4040325.html)",
 	//drvdetail:"requires":""}
 	{ "DDP",		DRV_DDP_Init,		NULL,						DRV_DDP_AppendInformationToHTTPIndexPage, DRV_DDP_RunFrame, DRV_DDP_Shutdown, NULL, false },
 #endif
