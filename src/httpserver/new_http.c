@@ -9,6 +9,9 @@
 #include "../new_cfg.h"
 #include "../ota/ota.h"
 #include "../hal/hal_wifi.h"
+#if ENABLE_OBK_AUTHFAIL_CONFIGRESET
+#include "../hal/hal_generic.h"		// for HAL_RebootModule();
+#endif
 #include "../base64/base64.h"
 #include "http_basic_auth.h"
 
@@ -737,7 +740,24 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	}
 
 	if (http_basic_auth_run(request) == HTTP_BASIC_AUTH_FAIL) {
-		return 0;
+#if ENABLE_OBK_AUTHFAIL_CONFIGRESET
+		if (g_auth_fail>-99 || g_secondsElapsed > TIME_TO_RESET_CFG_AFTER_STARTUP){  //-99 is our "magic" to allow reset
+#endif
+			return 0;
+#if ENABLE_OBK_AUTHFAIL_CONFIGRESET
+		}
+		if (http_getArgInteger(request->url, "resetmagic") == g_auth_fail){
+			CFG_SetDefaultConfig();
+			CFG_Save_IfThereArePendingChanges();
+			addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "Going to call HAL_RebootModule\r\n");
+			HAL_RebootModule();
+		}
+		if (http_getArgInteger(request->url, "authfailcont") == g_auth_fail) {
+			g_auth_fail=0;
+			return http_basic_auth_unauth(request); 
+		}
+		return http_fn_reset_cfg(request);
+#endif
 	}
 
 	if (http_checkUrlBase(urlStr, "")) return http_fn_empty_url(request);

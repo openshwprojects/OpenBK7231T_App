@@ -6,6 +6,20 @@
 #include "../new_cfg.h"
 
 #define LOG_FEATURE LOG_FEATURE_HTTP
+#if ENABLE_OBK_AUTHFAIL_CONFIGRESET
+int g_auth_fail = 0;
+#endif
+
+int http_basic_auth_unauth(http_request_t* request) {
+	poststr(request, "HTTP/1.1 401 Unauthorized\r\n");
+	poststr(request, "Connection: close");
+	poststr(request, "\r\n");
+	poststr(request, "WWW-Authenticate: Basic realm=\"OpenBeken HTTP Server\"");
+	poststr(request, "\r\n");
+	poststr(request, "\r\n");
+	poststr(request, NULL);
+	return 0;
+}
 
 int http_basic_auth_eval(http_request_t *request) {
 #if ALLOW_WEB_PASSWORD
@@ -40,17 +54,19 @@ int http_basic_auth_eval(http_request_t *request) {
 	return HTTP_BASIC_AUTH_OK;
 #endif
 }
-
 int http_basic_auth_run(http_request_t *request) {
     int result = http_basic_auth_eval(request);
     if (result == HTTP_BASIC_AUTH_FAIL) {
-		poststr(request, "HTTP/1.1 401 Unauthorized\r\n");
-        poststr(request, "Connection: close");
-        poststr(request, "\r\n");
-        poststr(request, "WWW-Authenticate: Basic realm=\"OpenBeken HTTP Server\"");
-        poststr(request, "\r\n");
-        poststr(request, "\r\n");
-		poststr(request, NULL);
+#if ENABLE_OBK_AUTHFAIL_CONFIGRESET
+	if (CFG_HasFlag(OBK_FLAG_RESETCFG_DISABLED)!=1){
+		if (g_auth_fail > -99) g_auth_fail++;	// just in case there are further attemps after enabling reset, don't overwrite "magic"
+		if (g_auth_fail > FAILED_AUTH_ATTEMPTS && g_secondsElapsed < TIME_TO_RESET_CFG_AFTER_STARTUP){
+			g_auth_fail=-99;	// "magic" to allow cfg reset
+			return result;
+		}
+	}
+#endif 
+	http_basic_auth_unauth(request);
     }
     return result;
 }

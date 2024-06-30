@@ -16,6 +16,9 @@ extern const char htmlHeadMeta[];
 extern const char htmlFooterReturnToMainPage[];
 extern const char htmlFooterRefreshLink[];
 extern const char htmlFooterReturnToCfgOrMainPage[];
+#if ENABLE_OBK_AUTHFAIL_CONFIGRESET
+extern const char htmlBodyEnd[];
+#endif
 
 extern const char* htmlPinRoleNames[];
 
