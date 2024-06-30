@@ -1,4 +1,6 @@
-// freeze
+
+#ifndef PLATFORM_BL602
+
 #include "drv_local.h"
 #include "../new_common.h"
 
@@ -328,3 +330,5 @@ void DRV_IR2_Init() {
 	CMD_RegisterCommand("SendIR2", CMD_IR2_SendIR2, NULL);
 
 }
+
+#endif
