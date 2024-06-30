@@ -25,17 +25,9 @@
 #include "../../beken378/driver/i2c/i2c1.h"
 #include "../../beken378/driver/gpio/gpio.h"
 #include "../../beken378/driver/pwm/pwm.h"
+#if PLATFORM_BK7231N
 #include "../../beken378/driver/pwm/pwm_new.h"
 
-
-#elif WINDOWS
-void bk_gpio_output(int x, int y) {
-
-}
-void bk_gpio_config_output(int x) {
-
-}
-#endif
 
 
 #define REG_PWM_BASE_ADDR                   	(0x00802B00UL)
@@ -118,6 +110,33 @@ void bk_gpio_config_output(int x) {
 #define REG_GROUP_PWM1_RD_DATA_ADDR(x)      (REG_PWM_GROUP_ADDR(x) + 0x0b * 4)
 #define REG_GROUP_PWM1_RD_DATA_(x)          (*((volatile unsigned long *) REG_GROUP_PWM1_RD_DATA_ADDR(x) ))
 
+#define MY_SET_DUTY(duty)	\
+	REG_WRITE(reg_duty, duty);	\
+	UINT32 level;	\
+	if (duty == 0)	\
+		level = 0;	\
+	else	\
+		level = 1;	\
+	UINT32 value = REG_READ(REG_PWM_GROUP_CTRL_ADDR(group));	\
+	value &= ~(PWM_GROUP_PWM_INT_LEVL_MASK(channel));	\
+	value |= PWM_GROUP_PWM_CFG_UPDATA_MASK(channel)	\
+	| (level << PWM_GROUP_PWM_INT_LEVL_BIT(channel));	\
+	REG_WRITE(REG_PWM_GROUP_CTRL_ADDR(group), value);	\
+
+#else
+
+#define MY_SET_DUTY(duty)	bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty);
+
+#endif
+
+#elif WINDOWS
+void bk_gpio_output(int x, int y) {
+
+}
+void bk_gpio_config_output(int x) {
+
+}
+#endif
 
 
 static UINT32 ir_chan
@@ -131,23 +150,6 @@ static UINT32 ir_periodus = 50;
 static UINT32 duty_on, duty_off;
 static UINT32 reg_duty;
 
-/*
-			bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off, 0, 0);
-#else
-			bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off);
-*/
-#define MY_SET_DUTY(duty)	\
-	REG_WRITE(reg_duty, duty);	\
-	UINT32 level;	\
-	if (duty == 0)	\
-		level = 0;	\
-	else	\
-		level = 1;	\
-	UINT32 value = REG_READ(REG_PWM_GROUP_CTRL_ADDR(group));	\
-	value &= ~(PWM_GROUP_PWM_INT_LEVL_MASK(channel));	\
-	value |= PWM_GROUP_PWM_CFG_UPDATA_MASK(channel)	\
-	| (level << PWM_GROUP_PWM_INT_LEVL_BIT(channel));	\
-	REG_WRITE(REG_PWM_GROUP_CTRL_ADDR(group), value);	\
 
 
 int txpin = 26;
@@ -164,7 +166,7 @@ unsigned int period;
 
 UINT8 group, channel;
 
-void Send_ISR(UINT8 t) {
+void SendIR2_ISR(UINT8 t) {
 	if (cur == 0)
 		return;
 	curTime += myPeriodUs;
@@ -192,17 +194,17 @@ void Send_ISR(UINT8 t) {
 startDriver IR2
 // start timer 50us
 // arguments: duty_on_fraction, duty_off_fraction, pin for sending (optional)
-StartTimer 50 0.5 0 8
+SetupIR2 50 0.5 0 8
 // send data
-Send 3200,1300,950,500,900,1300,900,550,900,650,900
+SendIR2 3200,1300,950,500,900,1300,900,550,900,650,900
 // 
 */
-static commandResult_t CMD_IR2_Send(const void* context, const char* cmd, const char* args, int cmdFlags) {
+static commandResult_t CMD_IR2_SendIR2(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	float frequency = 38000;
 	float duty_cycle = 0.330000f;
 	stop = times;
 
-	ADDLOG_INFO(LOG_FEATURE_IR, "Send args len: %i", strlen(args));
+	ADDLOG_INFO(LOG_FEATURE_IR, "SendIR2 args len: %i", strlen(args));
 
 	// parse string like 10,12,432,432,432,432,432
 	char *token = strtok(args, ",");
@@ -233,35 +235,12 @@ static commandResult_t CMD_IR2_Send(const void* context, const char* cmd, const 
 	cur = times;
 #if WINDOWS
 	while (cur) {
-		Send_ISR(0);
+		SendIR2_ISR(0);
 	}
 #endif
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_IR2_Test1(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	pwmIndex = PIN_GetPWMIndexForPinIndex(txpin);
-	// is this pin capable of PWM?
-	if (pwmIndex != -1) {
-		group = get_set_group(pwmIndex);
-		channel = get_set_channel(pwmIndex);
-		uint32_t pwmfrequency = 38000;
-		period = (26000000 / pwmfrequency);
-		uint32_t duty = period / 2;
-#ifndef WINDOWS
-#if PLATFORM_BK7231N
-		// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
-		bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty, 0, 0);
-#else
-		bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty);
-#endif
-		bk_pwm_start((bk_pwm_t)pwmIndex);
-#endif
-	}
-
-	return CMD_RES_OK;
-}
-
-static commandResult_t CMD_IR2_StartTimer(const void* context, const char* cmd, const char* args, int cmdFlags) {
+static commandResult_t CMD_IR2_SetupIR2(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, 0);
 
@@ -308,7 +287,7 @@ static commandResult_t CMD_IR2_StartTimer(const void* context, const char* cmd, 
 	 (unsigned char)ir_chan,
 	 (unsigned char)ir_div, // div
 	 myPeriodUs, // us
-	 Send_ISR
+	 SendIR2_ISR
 	};
 	//GLOBAL_INT_DECLARATION();
 
@@ -343,101 +322,9 @@ static commandResult_t CMD_IR2_StartTimer(const void* context, const char* cmd, 
 	return CMD_RES_OK;
 }
 
-static commandResult_t CMD_IR2_TestDuty2(const void* context, const char* cmd, const char* args, int cmdFlags) {
-
-	Tokenizer_TokenizeString(args, 0);
-
-	float fduty = Tokenizer_GetArgFloatDefault(0, 0.5f);
-	uint32 duty_cycle = period * fduty;
-
-#if PLATFORM_BK7231N
-	// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
-	bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty_cycle, 0, 0);
-#else
-	bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty_cycle);
-#endif
-	return CMD_RES_OK;
-}
-static commandResult_t CMD_IR2_TestDuty(const void* context, const char* cmd, const char* args, int cmdFlags) {
-
-	Tokenizer_TokenizeString(args, 0);
-
-	float fduty = Tokenizer_GetArgFloatDefault(0, 0.5f);
-#ifndef WINDOWS
-	uint32 duty_cycle = period * fduty;
-
-#if 1
-
-	UINT8 group, channel;
-
-	group = get_set_group(pwmIndex);
-	channel = get_set_channel(pwmIndex);
-	if (channel == 0)
-	{
-		REG_WRITE(REG_GROUP_PWM0_T1_ADDR(group), duty_cycle);
-	}
-	else
-	{
-		REG_WRITE(REG_GROUP_PWM1_T1_ADDR(group), duty_cycle);
-	}
-	///pwm_single_update_param_enable(pwmIndex, 1);
-
-
-	UINT32 level = 1;
-	// cfg_updata and initial level update enable
-	UINT32  value = REG_READ(REG_PWM_GROUP_CTRL_ADDR(group));
-	value &= ~(PWM_GROUP_PWM_INT_LEVL_MASK(channel));
-	value |= PWM_GROUP_PWM_CFG_UPDATA_MASK(channel)
-		| (level << PWM_GROUP_PWM_INT_LEVL_BIT(channel));
-	REG_WRITE(REG_PWM_GROUP_CTRL_ADDR(group), value);
-
-
-	//pwm_param_t param;
-
-	///*init pwm*/
-	//param.channel = (uint8_t)pwmIndex;
-	//param.cfg.bits.en = PWM_INT_EN;
-	//param.cfg.bits.int_en = PWM_INT_DIS;//PWM_INT_EN;
-	//param.cfg.bits.mode = PWM_PWM_MODE;
-	//param.cfg.bits.clk = PWM_CLK_26M;
-	//param.p_Int_Handler = 0;
-	//param.duty_cycle1 = duty_cycle;
-	//param.duty_cycle2 = 0;
-	//param.duty_cycle3 = 0;
-	//param.end_value = period;  // ?????
-	//pwm_single_update_param(&param);
-	///REG_WRITE(REG_APB_BK_PWMn_DC_ADDR(pwmIndex), duty_cycle);
-#else
-#define REG_APB_BK_PWMn_CNT_ADDR(n)         (PWM_BASE + 0x08 + 2 * 0x04 * (n))
-	UINT32 value;
-	value = (((UINT32)duty_cycle & 0x0000FFFF) << 16)
-		+ ((UINT32)period & 0x0000FFFF);
-	REG_WRITE(REG_APB_BK_PWMn_CNT_ADDR(pwmIndex), value);
-#endif
-#endif
-	return CMD_RES_OK;
-}
-
-
-static commandResult_t CMD_IR2_TestSet(const void* context, const char* cmd, const char* args, int cmdFlags) {
-
-	Tokenizer_TokenizeString(args, 0);
-
-	int on = Tokenizer_GetArgIntegerDefault(0, 1);
-
-	//pwm_single_update_param_enable(pwmIndex, on);
-
-	return CMD_RES_OK;
-}
 
 void DRV_IR2_Init() {
-	CMD_RegisterCommand("Test1", CMD_IR2_Test1, NULL);
-	CMD_RegisterCommand("StartTimer", CMD_IR2_StartTimer, NULL);
-	CMD_RegisterCommand("TestDuty", CMD_IR2_TestDuty, NULL);
-	CMD_RegisterCommand("TestDuty2", CMD_IR2_TestDuty2, NULL);
-	CMD_RegisterCommand("TestSet", CMD_IR2_TestSet, NULL);
-	CMD_RegisterCommand("Send", CMD_IR2_Send, NULL);
-
-	
+	CMD_RegisterCommand("SetupIR2", CMD_IR2_SetupIR2, NULL);
+	CMD_RegisterCommand("SendIR2", CMD_IR2_SendIR2, NULL);
 
 }
