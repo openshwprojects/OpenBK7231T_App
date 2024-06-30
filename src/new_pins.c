@@ -1161,6 +1161,8 @@ const char *ChannelType_GetUnit(int type) {
 		return "vAr";
 	case ChType_Illuminance:
 		return "Lux";
+	case ChType_Ph:
+		return "Ph";
 	}
 	return "";
 }
@@ -1208,6 +1210,8 @@ const char *ChannelType_GetTitle(int type) {
 		return "ReactivePower";
 	case ChType_Illuminance:
 		return "Illuminance";
+	case ChType_Ph:
+		return "Ph Water Quality";
 	case ChType_ReadOnly:
 	case ChType_ReadOnly_div10:
 	case ChType_ReadOnly_div100:
