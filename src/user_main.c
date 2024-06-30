@@ -288,6 +288,53 @@ extern int g_ln882h_pendingPowerSaveCommand;
 void LN882H_ApplyPowerSave(int bOn);
 #endif
 
+// SSID switcher by xjikka 20240525
+#if ALLOW_SSID2
+static int g_SSIDactual = 0;        // 0=SSID1 1=SSID2
+static int g_SSIDSwitchAfterTry = 3;// switch to opposite SSID after
+static int g_SSIDSwitchCnt = 0;     // switch counter
+#endif
+
+void CheckForSSID12_Switch() {
+#if ALLOW_SSID2
+	// nothing to do if SSID2 is unset 
+	if (CFG_GetWiFiSSID2()[0] == 0) return;
+	if (g_SSIDSwitchCnt++ < g_SSIDSwitchAfterTry) {
+		ADDLOGF_INFO("WiFi SSID: waiting for SSID switch %d/%d (using SSID%d)\r\n", g_SSIDSwitchCnt, g_SSIDSwitchAfterTry, g_SSIDactual+1);
+		return;
+	}
+	g_SSIDSwitchCnt = 0;
+	g_SSIDactual ^= 1;	// toggle SSID 
+	ADDLOGF_INFO("WiFi SSID: switching to SSID%i\r\n", g_SSIDactual + 1);
+#endif
+}
+
+const char* CFG_GetWiFiSSIDX() {
+#if ALLOW_SSID2
+	if (g_SSIDactual) {
+		return CFG_GetWiFiSSID2();
+	}
+	else {
+		return CFG_GetWiFiSSID();
+	}
+#else
+	return CFG_GetWiFiSSID();
+#endif
+}
+
+const char* CFG_GetWiFiPassX() {
+#if ALLOW_SSID2
+	if (g_SSIDactual) {
+		return CFG_GetWiFiPass2();
+	}
+	else {
+		return CFG_GetWiFiPass();
+	}
+#else
+	return CFG_GetWiFiPass();
+#endif
+}
+
 void Main_OnWiFiStatusChange(int code)
 {
 	// careful what you do in here.
@@ -318,6 +365,9 @@ void Main_OnWiFiStatusChange(int code)
 		break;
 	case WIFI_STA_CONNECTED:
 		g_bHasWiFiConnected = 1;
+#if ALLOW_SSID2
+		g_SSIDSwitchCnt = 0;
+#endif
 		ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTED - %i\r\n", code);
 
 		if (bSafeMode == 0) {
@@ -441,13 +491,19 @@ void Main_ConnectToWiFiNow() {
 	const char* wifi_ssid, * wifi_pass;
 
 	g_bOpenAccessPointMode = 0;
-	wifi_ssid = CFG_GetWiFiSSID();
-	wifi_pass = CFG_GetWiFiPass();
-	HAL_ConnectToWiFi(wifi_ssid, wifi_pass,&g_cfg.staticIP);
-	// register function to get callbacks about wifi changes.
+	CheckForSSID12_Switch();
+	wifi_ssid = CFG_GetWiFiSSIDX();
+	wifi_pass = CFG_GetWiFiPassX();
+	// register function to get callbacks about wifi changes .. 
+	// ... but do it, before calling HAL_ConnectToWiFi(), 
+	// otherwise callbacks are not possible (e.g. WIFI_STA_CONNECTING can never be called )!!
 	HAL_WiFi_SetupStatusCallback(Main_OnWiFiStatusChange);
-	ADDLOGF_DEBUG("Registered for wifi changes\r\n");
-	g_connectToWiFi = 0;
+	ADDLOGF_INFO("Registered for wifi changes\r\n");
+	ADDLOGF_INFO("Connecting to SSID [%s]\r\n", wifi_ssid);
+	HAL_ConnectToWiFi(wifi_ssid, wifi_pass, &g_cfg.staticIP);
+	// don't set g_connectToWiFi = 0; here!
+	// this would overwrite any changes, e.g. from Main_OnWiFiStatusChange !
+	// so don't do this here, but e.g. set in Main_OnWiFiStatusChange if connected!!!
 }
 bool Main_HasFastConnect() {
 	if (g_bootFailures > 2)
