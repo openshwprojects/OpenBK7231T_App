@@ -950,6 +950,13 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Max,
+	//chandetail:{"name":"Ph",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Ph Water Quality",
+	//chandetail:"enum":"ChType_Ph",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Ph,
 } channelType_t;
 
 

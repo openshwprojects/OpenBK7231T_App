@@ -83,6 +83,8 @@ typedef enum {
 	PRESSURE_SENSOR,
 	/// @Brief Timestamp Sensor
 	TIMESTAMP_SENSOR,
+	// Ph
+	WATER_QUALITY_PH,
 
 } ENTITY_TYPE;
 
