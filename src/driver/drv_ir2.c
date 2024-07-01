@@ -258,6 +258,7 @@ static commandResult_t CMD_IR2_SetupIR2(const void* context, const char* cmd, co
 	pwmIndex = PIN_GetPWMIndexForPinIndex(txpin);
 	// is this pin capable of PWM?
 	if (pwmIndex != -1) {
+#if PLATFORM_BK7231N
 		group = get_set_group(pwmIndex);
 		channel = get_set_channel(pwmIndex);
 		uint32_t pwmfrequency = 38000;
@@ -270,6 +271,7 @@ static commandResult_t CMD_IR2_SetupIR2(const void* context, const char* cmd, co
 		else {
 			reg_duty = REG_GROUP_PWM1_T1_ADDR(group);
 		}
+#endif
 #ifndef WINDOWS
 #if PLATFORM_BK7231N
 		// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
