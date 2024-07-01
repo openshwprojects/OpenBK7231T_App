@@ -188,6 +188,10 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "IR",			DRV_IR_Init,		 NULL,						NULL, DRV_IR_RunFrame, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_IR2
+	{ "IR2",			DRV_IR2_Init,		 NULL,						NULL, NULL, NULL, NULL, false },
+#endif
+		
 #if ENABLE_DRIVER_DDP
 	//drvdetail:{"name":"DDP",
 	//drvdetail:"title":"TODO",

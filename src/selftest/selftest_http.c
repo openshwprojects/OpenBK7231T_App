@@ -56,8 +56,8 @@ const char *Helper_GetPastHTTPHeader(const char *s) {
 	return 0;
 }
 
-static char outbuf[8192];
-static char buffer[8192];
+static char outbuf[65536];
+static char buffer[65536];
 static const char *replyAt;
 //static jsmntok_t tokens[256]; /* We expect no more than qq JSON tokens */
 
@@ -118,6 +118,20 @@ void Test_GetJSONValue_Setup(const char *text) {
 	printf("Received JSON: %s\n", text);
 	g_json = cJSON_Parse(text);
 	g_sec_power = cJSON_GetObjectItemCaseSensitive(g_json, "POWER");
+}
+void Test_FakeHTTPClientPacket_JSON_VA(const char *tg, ...) {
+	char bufferTemp[32768];
+	va_list argList;
+
+	va_start(argList, tg);
+	vsnprintf(bufferTemp, sizeof(bufferTemp), tg, argList);
+	va_end(argList);
+	int r;
+	Test_FakeHTTPClientPacket_GET(bufferTemp);
+
+	//jsmn_init(&parser);
+	//r = jsmn_parse(&parser, replyAt, strlen(replyAt), tokens, 256);
+	Test_GetJSONValue_Setup(replyAt);
 }
 void Test_FakeHTTPClientPacket_JSON(const char *tg) {
 	/*char bufferTemp[8192];

@@ -1548,6 +1548,7 @@ int http_fn_cmd_tool(http_request_t* request) {
 	poststr(request, "Remember that some commands are added after a restart when a driver is activated... <br>");
 
 	commandLen = http_getArg(request->url, "cmd", tmpA, sizeof(tmpA));
+	addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "http_fn_cmd_tool: len %i",commandLen);
 	if (commandLen) {
 		poststr(request, "<br>");
 		// all log printfs made by command will be sent also to request

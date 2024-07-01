@@ -245,8 +245,7 @@ typedef struct scriptInstance_s {
 	struct scriptInstance_s *next;
 } scriptInstance_t;
 
-#define MAX_SCRIPT_LINE 512
-
+int g_scrBufferSize = 0;
 char *g_scrBuffer = 0;
 int svm_deltaMS;
 scriptFile_t *g_scriptFiles = 0;
@@ -399,8 +398,12 @@ void SVM_RunThread(scriptInstance_t *t) {
 
 			// skip empty lines and skip labels
 			if(len > 0 && start[len-1] != ':') {
-				if(len >= MAX_SCRIPT_LINE) {
-					len = MAX_SCRIPT_LINE-1;
+				if(len >= g_scrBufferSize) {
+					g_scrBufferSize = len + 256;
+					g_scrBuffer = (char*)realloc(g_scrBuffer, g_scrBufferSize+1);
+				}
+				if (g_scrBuffer == NULL) {
+					return;
 				}
 				memcpy(g_scrBuffer,start,len);
 				g_scrBuffer[len] = 0;
@@ -426,7 +429,8 @@ void SVM_RunThreads(int deltaMS) {
 	svm_deltaMS = deltaMS;
 
 	if(g_scrBuffer == 0) {
-		g_scrBuffer = malloc(MAX_SCRIPT_LINE);
+		g_scrBufferSize = 256;
+		g_scrBuffer = malloc(g_scrBufferSize + 1);
 	}
 
 	g_activeThread = g_scriptThreads;
