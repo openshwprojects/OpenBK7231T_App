@@ -591,7 +591,7 @@ void apply_smart_light() {
 	TuyaMCU_OnRGBCWChange(finalColors, g_lightEnableAll, g_lightMode, g_brightness0to100*0.01f, LED_GetTemperature0to1Range());
 #endif
 #if	ENABLE_DRIVER_SM16703P
-	if (pixel_count > 0 && g_lightMode != Light_Anim) {
+	if (pixel_count > 0 && (g_lightMode != Light_Anim || g_lightEnableAll == 0)) {
 		SM16703P_setAllPixels(finalColors[0], finalColors[1], finalColors[2]);
 		SM16703P_Show();
 	}
