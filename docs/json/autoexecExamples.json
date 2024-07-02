@@ -138,5 +138,9 @@
 {
 "title": "[TOMPD-63-WIFI TuyaMCU power meter config with alternate HTML panel hosted in LittleFS](https://www.elektroda.com/rtvforum/topic4040354.html)",
 "file": "autoexecs/TOMPD-63-WIFI.bat"
+},
+{
+"title": "[PJ-MGW1103 CT-Clamp Energy Meter sample for combining two dpIDs (sign and value) into one channel](https://www.elektroda.com/rtvforum/viewtopic.php?p=21125206#21125206)",
+"file": "autoexecs/combine_sign_and_value.bat"
 }
 ]
