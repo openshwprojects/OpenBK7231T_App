@@ -129,6 +129,8 @@ void TMGN_RunQuickTick();
 
 void DRV_MAX72XX_Init();
 
+void apply_smart_light();
+
 void WEMO_Init();
 void WEMO_AppendInformationToHTTPIndexPage(http_request_t* request);
 
