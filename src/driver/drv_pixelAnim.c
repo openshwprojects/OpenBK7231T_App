@@ -184,6 +184,7 @@ int g_speed = 0;
 void PixelAnim_SetAnim(int j) {
 	activeAnim = j;
 	g_lightMode = Light_Anim;
+	apply_smart_light();
 }
 commandResult_t PA_Cmd_Anim(const void *context, const char *cmd, const char *args, int flags) {
 
