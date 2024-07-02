@@ -408,6 +408,30 @@
     "driver": ""
   },
   {
+    "name": "ReadOnly_div10",
+    "title": "TODO",
+    "descr": "This channel is read only.",
+    "enum": "ChType_ReadOnly_div10",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "ReadOnly_div100",
+    "title": "TODO",
+    "descr": "This channel is read only.",
+    "enum": "ChType_ReadOnly_div100",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "ReadOnly_div1000",
+    "title": "TODO",
+    "descr": "This channel is read only.",
+    "enum": "ChType_ReadOnly_div1000",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
     "name": "Max",
     "title": "TODO",
     "descr": "This is the current total number of available channel types.",
