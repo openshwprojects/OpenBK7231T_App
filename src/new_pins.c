@@ -1107,6 +1107,7 @@ int ChannelType_GetDivider(int type) {
 	case ChType_Temperature_div100:
 	case ChType_Power_div100:
 	case ChType_ReadOnly_div100:
+	case ChType_Ph:
 		return 100;
 	case ChType_PowerFactor_div1000:
 	case ChType_EnergyTotal_kWh_div1000:
