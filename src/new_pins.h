@@ -950,6 +950,13 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Ph,
+	//chandetail:{"name":"Orp",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Orp Water Quality",
+	//chandetail:"enum":"ChType_Orp",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Orp,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",

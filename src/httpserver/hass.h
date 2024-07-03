@@ -85,6 +85,8 @@ typedef enum {
 	TIMESTAMP_SENSOR,
 	// Ph
 	WATER_QUALITY_PH,
+	// ORP
+	WATER_QUALITY_ORP,
 
 } ENTITY_TYPE;
 

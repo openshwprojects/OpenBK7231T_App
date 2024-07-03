@@ -1164,6 +1164,8 @@ const char *ChannelType_GetUnit(int type) {
 		return "Lux";
 	case ChType_Ph:
 		return "Ph";
+	case ChType_Orp:
+		return "mV";
 	}
 	return "";
 }
@@ -2047,6 +2049,7 @@ const char* g_channelTypeNames[] = {
 	"ReadOnly_div100",
 	"ReadOnly_div1000",
 	"Ph",
+	"Orp",
 	"error",
 	"error",
 };
