@@ -1166,6 +1166,8 @@ const char *ChannelType_GetUnit(int type) {
 		return "Ph";
 	case ChType_Orp:
 		return "mV";
+	case ChType_Tds:
+		return "ppm";
 	}
 	return "";
 }
@@ -1217,6 +1219,8 @@ const char *ChannelType_GetTitle(int type) {
 		return "Ph Water Quality";
 	case ChType_Orp:
 		return "Orp Water Quality";
+	case ChType_Tds:
+		return "TDS Water Quality";
 	case ChType_ReadOnly:
 	case ChType_ReadOnly_div10:
 	case ChType_ReadOnly_div100:

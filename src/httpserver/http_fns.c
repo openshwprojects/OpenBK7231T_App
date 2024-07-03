@@ -1981,6 +1981,11 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				dev_info = hass_init_sensor_device_info(WATER_QUALITY_ORP, i, -1, 2, 1);
 			}
 			break;
+			case ChType_Tds:
+			{
+				dev_info = hass_init_sensor_device_info(WATER_QUALITY_TDS, i, -1, 2, 1);
+			}
+			break;
 		}
 		if (dev_info) {
 			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
