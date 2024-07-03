@@ -2056,6 +2056,7 @@ const char* g_channelTypeNames[] = {
 	"ReadOnly_div1000",
 	"Ph",
 	"Orp",
+	"Tds",
 	"error",
 	"error",
 };
