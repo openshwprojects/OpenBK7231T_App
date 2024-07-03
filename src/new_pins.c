@@ -1215,6 +1215,8 @@ const char *ChannelType_GetTitle(int type) {
 		return "Illuminance";
 	case ChType_Ph:
 		return "Ph Water Quality";
+	case ChType_Orp:
+		return "Orp Water Quality";
 	case ChType_ReadOnly:
 	case ChType_ReadOnly_div10:
 	case ChType_ReadOnly_div100:
