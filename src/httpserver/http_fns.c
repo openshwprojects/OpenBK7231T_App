@@ -1973,7 +1973,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			break;
 			case ChType_Ph:
 			{
-				dev_info = hass_init_sensor_device_info(WATER_QUALITY_PH, i, 3, 2, 1);
+				dev_info = hass_init_sensor_device_info(WATER_QUALITY_PH, i, 2, 2, 1);
 			}
 			break;
 		}
