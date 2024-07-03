@@ -957,7 +957,7 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Orp,
-	//chandetail:{"name":"TDS",
+	//chandetail:{"name":"Tds",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"TDS Water Quality",
 	//chandetail:"enum":"ChType_Tds",
