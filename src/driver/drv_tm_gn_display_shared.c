@@ -623,7 +623,7 @@ void TM_GN_Display_SharedInit(tmGnType_t type) {
 			g_i2c.pin_data = PIN_FindPinIndexForRole(IOR_TM1638_DAT, 15);
 			g_i2c.pin_stb = PIN_FindPinIndexForRole(IOR_TM1638_STB, 28);
 			addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using SPI mode (TM1638)");
-			g_doTM1638RowsToColumnsSwap = 1;
+			g_doTM1638RowsToColumnsSwap = Tokenizer_GetArgIntegerDefault(1,1);
 			
 			for (i = 0; i < 8; i++) {
 				g_remap[i] = 7-i;
