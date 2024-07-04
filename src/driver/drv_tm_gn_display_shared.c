@@ -435,8 +435,12 @@ static commandResult_t CMD_TMGN_Print(const void *context, const char *cmd, cons
 	if (maxLen <= 0) {
 		maxLen = 999;
 	}
-	if (Tokenizer_GetArgInteger(3)) {
+	int clampMode = Tokenizer_GetArgInteger(3);
+	if (clampMode) {
 		sLen = strlen(s);
+		if (strchr(s, '.')) {
+			sLen--;
+		}
 		if (sLen < maxLen) {
 			iPadZeroes = maxLen - sLen;
 			TM1637_PrintStringAt("00000", ofs, iPadZeroes);
