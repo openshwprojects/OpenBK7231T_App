@@ -96,15 +96,24 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 	case PRESSURE_SENSOR:
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "pressure", index);
 		break;
+	case HASS_TEMP:
+		sprintf(uniq_id, "%s_temp", longDeviceName);
+		break;
 	case HASS_RSSI:
 		sprintf(uniq_id, "%s_rssi", longDeviceName);
 		break;
 	case HASS_UPTIME:
 		sprintf(uniq_id, "%s_uptime", longDeviceName);
-		break;	
+		break;
 	case HASS_BUILD:
 		sprintf(uniq_id, "%s_build", longDeviceName);
-		break;		
+		break;
+	case HASS_SSID:
+		sprintf(uniq_id, "%s_ssid", longDeviceName);
+		break;
+	case HASS_IP:
+		sprintf(uniq_id, "%s_ip", longDeviceName);
+		break;
 	default:
 		// TODO: USE type here as well?
 		// If type is not set, and we use "sensor" naming, we can easily make collision
@@ -281,6 +290,9 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 		case ILLUMINANCE_SENSOR:
 			sprintf(g_hassBuffer, "Illuminance");
 			break;
+		case HASS_TEMP:
+			sprintf(g_hassBuffer, "Temperature");
+			break;
 		case HASS_RSSI:
 			sprintf(g_hassBuffer, "RSSI");
 			break;
@@ -289,7 +301,13 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 			break;
 		case HASS_BUILD:
 			sprintf(g_hassBuffer, "Build");
-			break;		
+			break;
+		case HASS_SSID:
+			sprintf(g_hassBuffer, "SSID");
+			break;
+		case HASS_IP:
+			sprintf(g_hassBuffer, "IP");
+			break;
 		case ENERGY_SENSOR:
 			isSensor = true;
 			sprintf(g_hassBuffer, "Energy");
@@ -648,14 +666,34 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 		sprintf(g_hassBuffer, "~/%d/get", channel);
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		cJSON_AddStringToObject(info->root, "val_tpl", g_template_lowMidHigh);
-
+		break;
+	case WATER_QUALITY_PH:
+		cJSON_AddStringToObject(info->root, "dev_cla", "ph");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "Ph");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case WATER_QUALITY_ORP:
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "mV");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case WATER_QUALITY_TDS:
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "ppm");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case HASS_TEMP:
+		cJSON_AddStringToObject(info->root, "dev_cla", "temperature");
+		cJSON_AddStringToObject(info->root, "stat_t", "~/temp");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "°C");
+		cJSON_AddStringToObject(info->root, "entity_category", "diagnostic");
 		break;
 	case HASS_RSSI:
 		cJSON_AddStringToObject(info->root, "dev_cla", "signal_strength");
 		cJSON_AddStringToObject(info->root, "stat_t", "~/rssi");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "dBm");
 		cJSON_AddStringToObject(info->root, "entity_category", "diagnostic");
-		//cJSON_AddStringToObject(info->root, "icon_template", "mdi:access-point");
 		break;
 	case HASS_UPTIME:
 		cJSON_AddStringToObject(info->root, "dev_cla", "duration");
@@ -667,14 +705,24 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 	case HASS_BUILD:
 		cJSON_AddStringToObject(info->root, "stat_t", "~/build");
 		cJSON_AddStringToObject(info->root, "entity_category", "diagnostic");
-		break;	
+		break;
+	case HASS_SSID:
+		cJSON_AddStringToObject(info->root, "stat_t", "~/ssid");
+		cJSON_AddStringToObject(info->root, "entity_category", "diagnostic");
+		cJSON_AddStringToObject(info->root, "icon", "mdi:access-point-network");
+		break;
+	case HASS_IP:
+		cJSON_AddStringToObject(info->root, "stat_t", "~/ip");
+		cJSON_AddStringToObject(info->root, "entity_category", "diagnostic");
+		cJSON_AddStringToObject(info->root, "icon", "mdi:ip-network");
+		break;
 	default:
 		sprintf(g_hassBuffer, "~/%d/get", channel);
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		return NULL;
 	}
 
-	if (type != READONLYLOWMIDHIGH_SENSOR && type != HASS_BUILD && !cJSON_HasObjectItem(info->root, "stat_cla")) {
+	if (type != READONLYLOWMIDHIGH_SENSOR && type != HASS_BUILD && type != HASS_SSID && type != HASS_IP && !cJSON_HasObjectItem(info->root, "stat_cla")) {
 		cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
 	}
 

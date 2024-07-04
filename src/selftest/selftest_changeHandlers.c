@@ -158,6 +158,22 @@ void Test_ChangeHandlers_EnsureThatChannelVariableIsExpandedAtHandlerRunTime() {
 	SELFTEST_ASSERT_CHANNEL(14, (2 * (2 + 2)) + 3 * 123);
 	SELFTEST_ASSERT_CHANNEL(15, 123);
 
+	CMD_ExecuteCommand("setChannel 20 999", 0);
+	CMD_ExecuteCommand("addChangeHandler Channel20 == 0 setChannel 21 1", 0);
+	CMD_ExecuteCommand("addChangeHandler Channel20 != 0 setChannel 21 0", 0);
+	CMD_ExecuteCommand("setChannel 20 0", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 0);
+	SELFTEST_ASSERT_CHANNEL(21, 1);
+	CMD_ExecuteCommand("setChannel 20 1", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 1);
+	SELFTEST_ASSERT_CHANNEL(21, 0);
+	CMD_ExecuteCommand("setChannel 20 0", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 0);
+	SELFTEST_ASSERT_CHANNEL(21, 1)
+		CMD_ExecuteCommand("setChannel 20 1", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 1);
+	SELFTEST_ASSERT_CHANNEL(21, 0);
+
 	SIM_ClearMQTTHistory();
 
 }

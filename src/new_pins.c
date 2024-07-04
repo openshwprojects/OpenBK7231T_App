@@ -326,6 +326,25 @@ int PIN_GetPinChannel2ForPinIndex(int index) {
 	}
 	return g_cfg.pins.channels2[index];
 }
+// return number of channels used for a role
+// taken from code in http_fnc.c
+int PIN_IOR_NofChan(int test){
+	// For button, is relay index to toggle on double click
+	if (test == IOR_Button || test == IOR_Button_n || IS_PIN_DHT_ROLE(test) || IS_PIN_TEMP_HUM_SENSOR_ROLE(test) || IS_PIN_AIR_SENSOR_ROLE(test)){
+			return 2;
+	}
+	// Some roles don't need any channels
+	if (test == IOR_SGP_CLK || test == IOR_SHT3X_CLK || test == IOR_CHT8305_CLK || test == IOR_Button_ToggleAll || test == IOR_Button_ToggleAll_n
+			|| test == IOR_BL0937_CF || test == IOR_BL0937_CF1 || test == IOR_BL0937_SEL
+			|| test == IOR_LED_WIFI || test == IOR_LED_WIFI_n || test == IOR_LED_WIFI_n
+			|| (test >= IOR_IRRecv && test <= IOR_DHT11)
+			|| (test >= IOR_SM2135_DAT && test <= IOR_BP1658CJ_CLK)) {
+			return 0;
+	}
+	// all others have 1 channel
+	return 1;
+}
+
 void RAW_SetPinValue(int index, int iVal) {
 	if (index < 0 || index >= PLATFORM_GPIO_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "RAW_SetPinValue: Pin index %i out of range <0,%i).", index, PLATFORM_GPIO_MAX);
@@ -1077,6 +1096,7 @@ int ChannelType_GetDivider(int type) {
 	case ChType_Voltage_div10:
 	case ChType_Power_div10:
 	case ChType_Frequency_div10:
+	case ChType_ReadOnly_div10:
 		return 10;
 	case ChType_Frequency_div100:
 	case ChType_Current_div100:
@@ -1086,6 +1106,8 @@ int ChannelType_GetDivider(int type) {
 	case ChType_Pressure_div100:
 	case ChType_Temperature_div100:
 	case ChType_Power_div100:
+	case ChType_ReadOnly_div100:
+	case ChType_Ph:
 		return 100;
 	case ChType_PowerFactor_div1000:
 	case ChType_EnergyTotal_kWh_div1000:
@@ -1093,6 +1115,7 @@ int ChannelType_GetDivider(int type) {
 	case ChType_EnergyToday_kWh_div1000:
 	case ChType_Current_div1000:
 	case ChType_LeakageCurrent_div1000:
+	case ChType_ReadOnly_div1000:
 		return 1000;
 	case ChType_Temperature_div2:
 		return 2;
@@ -1139,6 +1162,12 @@ const char *ChannelType_GetUnit(int type) {
 		return "vAr";
 	case ChType_Illuminance:
 		return "Lux";
+	case ChType_Ph:
+		return "Ph";
+	case ChType_Orp:
+		return "mV";
+	case ChType_Tds:
+		return "ppm";
 	}
 	return "";
 }
@@ -1186,6 +1215,17 @@ const char *ChannelType_GetTitle(int type) {
 		return "ReactivePower";
 	case ChType_Illuminance:
 		return "Illuminance";
+	case ChType_Ph:
+		return "Ph Water Quality";
+	case ChType_Orp:
+		return "Orp Water Quality";
+	case ChType_Tds:
+		return "TDS Water Quality";
+	case ChType_ReadOnly:
+	case ChType_ReadOnly_div10:
+	case ChType_ReadOnly_div100:
+	case ChType_ReadOnly_div1000:
+		return "ReadOnly:";
 	}
 	return "";
 }
@@ -2011,8 +2051,12 @@ const char* g_channelTypeNames[] = {
 	"LeakageCurrent_div1000",
 	"Power_div100",
 	"Motion",
-	"error",
-	"error",
+	"ReadOnly_div10",
+	"ReadOnly_div100",
+	"ReadOnly_div1000",
+	"Ph",
+	"Orp",
+	"Tds",
 	"error",
 	"error",
 };

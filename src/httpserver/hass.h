@@ -65,18 +65,30 @@ typedef enum {
 	READONLYLOWMIDHIGH_SENSOR,
 	// lx unit
 	ILLUMINANCE_SENSOR,
+	/// @brief °C unit
+	HASS_TEMP,
 	/// @brief dBm unit
 	HASS_RSSI,
 	/// @brief Time firmware is alive in secs
 	HASS_UPTIME,
 	/// @brief Firmware build info
 	HASS_BUILD,
+	/// @brief 
+	HASS_SSID,
+	/// @brief 
+	HASS_IP,
 	/// @brief Wh, kWh
 	ENERGY_SENSOR,
 	// hPa
 	PRESSURE_SENSOR,
 	/// @Brief Timestamp Sensor
 	TIMESTAMP_SENSOR,
+	// Ph
+	WATER_QUALITY_PH,
+	// ORP
+	WATER_QUALITY_ORP,
+	// TDS
+	WATER_QUALITY_TDS,
 
 } ENTITY_TYPE;
 

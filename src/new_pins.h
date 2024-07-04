@@ -922,6 +922,48 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Motion,
+	//chandetail:{"name":"ReadOnly_div10",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"This channel is read only.",
+	//chandetail:"enum":"ChType_ReadOnly_div10",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_ReadOnly_div10,
+	//chandetail:{"name":"ReadOnly_div100",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"This channel is read only.",
+	//chandetail:"enum":"ChType_ReadOnly_div100",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_ReadOnly_div100,
+	//chandetail:{"name":"ReadOnly_div1000",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"This channel is read only.",
+	//chandetail:"enum":"ChType_ReadOnly_div1000",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_ReadOnly_div1000,
+	//chandetail:{"name":"Ph",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Ph Water Quality",
+	//chandetail:"enum":"ChType_Ph",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Ph,
+	//chandetail:{"name":"Orp",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Orp Water Quality",
+	//chandetail:"enum":"ChType_Orp",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Orp,
+	//chandetail:{"name":"Tds",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TDS Water Quality",
+	//chandetail:"enum":"ChType_Tds",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Tds,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
@@ -1333,6 +1375,9 @@ int ChannelType_GetDecimalPlaces(int type);
 
 int PIN_ParsePinRoleName(const char* name);
 const char* PIN_RoleToString(int role);
+// return number of channels used for a role
+// taken from code in http_fnc.c
+int PIN_IOR_NofChan(int test);
 
 extern const char* g_channelTypeNames[];
 

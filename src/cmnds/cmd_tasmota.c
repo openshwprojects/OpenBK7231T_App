@@ -126,7 +126,7 @@ static commandResult_t cmnd_backlog(const void * context, const char *cmd, const
 		*c = 0;
 		count++;
 		localRes = CMD_ExecuteCommand(copy, cmdFlags);
-		if (localRes != CMD_RES_OK) {
+		if (localRes != CMD_RES_OK && localRes != CMD_RES_EMPTY_STRING) {
 			res = localRes;
 		}
 		subcmd = p;

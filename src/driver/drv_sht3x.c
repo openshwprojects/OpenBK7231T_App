@@ -447,7 +447,7 @@ void SHT3X_Init() {
 	//cmddetail:"fn":"SHT_cycle","file":"drv/drv_sht3x.c","requires":"",
 	//cmddetail:"examples":"SHT_Cycle 60"}
 	CMD_RegisterCommand("SHT_cycle", SHT_cycle, NULL);
-	//cmddetail:{"name":"SHT_Calibrate","args":"",
+	//cmddetail:{"name":"SHT_Calibrate","args":"[DeltaTemp][DeltaHumidity]",
 	//cmddetail:"descr":"Calibrate the SHT Sensor as Tolerance is +/-2 degrees C.",
 	//cmddetail:"fn":"SHT3X_Calibrate","file":"driver/drv_sht3x.c","requires":"",
 	//cmddetail:"examples":"SHT_Calibrate -4 10"}
@@ -472,7 +472,7 @@ void SHT3X_Init() {
 	//cmddetail:"fn":"SHT3X_Measure","file":"driver/drv_sht3x.c","requires":"",
 	//cmddetail:"examples":"SHT_Measure"}
 	CMD_RegisterCommand("SHT_Measure", SHT3X_Measure, NULL);
-	//cmddetail:{"name":"SHT_Heater","args":"",
+	//cmddetail:{"name":"SHT_Heater","args":"[1or0]",
 	//cmddetail:"descr":"Activate or Deactivate Heater (0 / 1)",
 	//cmddetail:"fn":"SHT3X_Heater","file":"driver/drv_sht3x.c","requires":"",
 	//cmddetail:"examples":"SHT_Heater 1"}

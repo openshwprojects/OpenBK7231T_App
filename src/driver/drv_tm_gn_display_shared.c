@@ -343,7 +343,7 @@ static void TM1637_PrintStringAt(const char *str, int pos, int maxLen) {
 	}
 }
 
-static commandResult_t CMD_TM1637_Clear(const void *context, const char *cmd, const char *args, int flags) {
+static commandResult_t CMD_TMGN_Clear(const void *context, const char *cmd, const char *args, int flags) {
 	memset(tmgn_buffer, 0x00, g_totalDigits);
 
 	TM1637_SendSegments(tmgn_buffer, g_totalDigits, 0);
@@ -361,7 +361,7 @@ static commandResult_t CMD_TM1650_Test(const void *context, const char *cmd, con
 
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_TM1637_Test(const void *context, const char *cmd, const char *args, int flags) {
+static commandResult_t CMD_TMGN_Test(const void *context, const char *cmd, const char *args, int flags) {
 	byte segments[8];
 	int i;
 	for (i = 0; i < 8; i++) {
@@ -376,7 +376,7 @@ static commandResult_t CMD_TM1637_Test(const void *context, const char *cmd, con
 // TMGN_SetBit [DigitIndex] [BitIndex] [1or0]
 // TMGN_SetBit 1 0 0
 // TMGN_SetBit 1 0 1
-static commandResult_t CMD_TM1637_SetBit(const void *context, const char *cmd, const char *args, int flags) {
+static commandResult_t CMD_TMGN_SetBit(const void *context, const char *cmd, const char *args, int flags) {
 	int digitIndex;
 	int bitIndex;
 	int newValue;
@@ -396,7 +396,7 @@ static commandResult_t CMD_TM1637_SetBit(const void *context, const char *cmd, c
 
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_TM1637_Char(const void *context, const char *cmd, const char *args, int flags) {
+static commandResult_t CMD_TMGN_Char(const void *context, const char *cmd, const char *args, int flags) {
 	int index;
 	int code;
 
@@ -414,7 +414,7 @@ static commandResult_t CMD_TM1637_Char(const void *context, const char *cmd, con
 	return CMD_RES_OK;
 }
 // [StartOfs] [MaxLenOr0] [StringText] [optionalBClampWithZeroesForClock]
-static commandResult_t CMD_TM1637_Print(const void *context, const char *cmd, const char *args, int flags) {
+static commandResult_t CMD_TMGN_Print(const void *context, const char *cmd, const char *args, int flags) {
 	int ofs;
 	int maxLen;
 	const char *s;
@@ -449,7 +449,7 @@ static commandResult_t CMD_TM1637_Print(const void *context, const char *cmd, co
 
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_TM1637_Map(const void *context, const char *cmd, const char *args, int flags) {
+static commandResult_t CMD_TMGN_Map(const void *context, const char *cmd, const char *args, int flags) {
 	int i;
 
 	Tokenizer_TokenizeString(args, 0);
@@ -460,7 +460,7 @@ static commandResult_t CMD_TM1637_Map(const void *context, const char *cmd, cons
 
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_TM1637_Brightness(const void *context, const char *cmd, const char *args, int flags) {
+static commandResult_t CMD_TMGN_Brightness(const void *context, const char *cmd, const char *args, int flags) {
 	int br;
 	int bOn = 1;
 
@@ -666,49 +666,49 @@ void TM_GN_Display_SharedInit(tmGnType_t type) {
 	//cmddetail:"descr":"Set given bit of given digit to 1 or 0.",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("TMGN_SetBit", CMD_TM1637_SetBit, NULL);
+	CMD_RegisterCommand("TMGN_SetBit", CMD_TMGN_SetBit, NULL);
 	//cmddetail:{"name":"TMGN_Clear","args":"",
 	//cmddetail:"descr":"This clears the TM1637/GN932/etc display",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm_gn_display_shared.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("TMGN_Clear", CMD_TM1637_Clear, NULL);
+	CMD_RegisterCommand("TMGN_Clear", CMD_TMGN_Clear, NULL);
 	//cmddetail:{"name":"TMGN_Char","args":"[CharIndex] [CharCode]",
 	//cmddetail:"descr":"This allows you to set binary code for given char, valid chars range is 0 to 15, because this is 7-seg display",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("TMGN_Char", CMD_TM1637_Char, NULL);
+	CMD_RegisterCommand("TMGN_Char", CMD_TMGN_Char, NULL);
 	//cmddetail:{"name":"TMGN_Print","args":"[StartOfs] [MaxLenOr0] [StringText] [optionalBClampWithZeroesForClock]",
 	//cmddetail:"descr":"This allows you to print string on TM1637/GN932/etc display, it supports variables expansion",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm_gn_display_shared.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("TMGN_Print", CMD_TM1637_Print, NULL);
-	//cmddetail:{"name":"TMGN_Test","args":"CMD_TM1637_Test",
+	CMD_RegisterCommand("TMGN_Print", CMD_TMGN_Print, NULL);
+	//cmddetail:{"name":"TMGN_Test","args":"",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm_gn_display_shared.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("TMGN_Test", CMD_TM1637_Test, NULL);
+	CMD_RegisterCommand("TMGN_Test", CMD_TMGN_Test, NULL);
 	//cmddetail:{"name":"TMGN_Brightness","args":"[Brigthness0to7][bOn]",
 	//cmddetail:"descr":"This allows you to change brightness and state of  TM1637/GN932/etc display",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm_gn_display_shared.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("TMGN_Brightness", CMD_TM1637_Brightness, NULL);
+	CMD_RegisterCommand("TMGN_Brightness", CMD_TMGN_Brightness, NULL);
 	//cmddetail:{"name":"TMGN_Map","args":"[Map0][Map1, etc]",
 	//cmddetail:"descr":"This allows you to remap characters order for TM1637/GN932/etc. My TM1637 module from Aliexpress has a strange characters order.",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm_gn_display_shared.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("TMGN_Map", CMD_TM1637_Map, NULL);
+	CMD_RegisterCommand("TMGN_Map", CMD_TMGN_Map, NULL);
 	//cmddetail:{"name":"TM1650_Test","args":"CMD_TM1650_Test",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TM1650_Test", CMD_TM1650_Test, NULL);
-	//cmddetail:{"name":"TMGN_Read","args":"CMD_TMGN_Read",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"TMGN_Read","args":"",
+	//cmddetail:"descr":"Executes a single buttons read on TM/GN LED driver",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TMGN_Read", CMD_TMGN_Read, NULL);
-	//cmddetail:{"name":"TMGN_SetupButtons","args":"CMD_TMGN_SetupButtons",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"TMGN_SetupButtons","args":"[Interval]",
+	//cmddetail:"descr":"Setups periodic buttons read on TM/GN LED driver",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TMGN_SetupButtons", CMD_TMGN_SetupButtons, NULL);

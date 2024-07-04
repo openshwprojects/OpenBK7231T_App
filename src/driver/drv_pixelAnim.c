@@ -184,6 +184,7 @@ int g_speed = 0;
 void PixelAnim_SetAnim(int j) {
 	activeAnim = j;
 	g_lightMode = Light_Anim;
+	apply_smart_light();
 }
 commandResult_t PA_Cmd_Anim(const void *context, const char *cmd, const char *args, int flags) {
 
@@ -211,7 +212,15 @@ commandResult_t PA_Cmd_AnimSpeed(const void *context, const char *cmd, const cha
 }
 void PixelAnim_Init() {
 
+	//cmddetail:{"name":"Anim","args":"PA_Cmd_Anim",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_pixelAnim.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Anim", PA_Cmd_Anim, NULL);
+	//cmddetail:{"name":"AnimSpeed","args":"PA_Cmd_AnimSpeed",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_pixelAnim.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("AnimSpeed", PA_Cmd_AnimSpeed, NULL);
 }
 
@@ -247,7 +256,7 @@ void PixelAnim_CreatePanel(http_request_t *request) {
 
 	for (i = 0; i < g_numAnims; i++) {
 		const char* c;
-		if (i == activeAnim) {
+		if (i == activeAnim && g_lightMode == Light_Anim) {
 			c = "bgrn";
 		}
 		else {
