@@ -209,12 +209,14 @@ static commandResult_t CMD_IR2_SendIR2(const void* context, const char* cmd, con
 	ADDLOG_INFO(LOG_FEATURE_IR, "SendIR2 args len: %i", strlen(args));
 
 	// parse string like 10 12 432 432 432 432 432
-	char *token = strtok(args, " ");
 	*stop = 500; // prepend 500us zero
 	stop++;
-	while (token) {
+	while (*args) {
+		while (*args && isWhiteSpace(*args)) {
+			args++;
+		}
 		if (stop - times < maxTimes) {
-			int x = atoi(token);
+			int x = atoi(args);
 			*stop = x;
 			ADDLOG_INFO(LOG_FEATURE_IR, "Value: %i",x);
 			stop++;
@@ -222,7 +224,9 @@ static commandResult_t CMD_IR2_SendIR2(const void* context, const char* cmd, con
 		else {
 			break;
 		}
-		token = strtok(NULL, " ");
+		while (*args && !isWhiteSpace(*args)) {
+			args++;
+		}
 	}
 	state = 0;
 	ADDLOG_INFO(LOG_FEATURE_IR, "Queue size %i",(stop - times));
