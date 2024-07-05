@@ -1408,6 +1408,7 @@ commandResult_t MQTT_PublishCommandFloat(const void* context, const char* cmd, c
 	float value;
 	OBK_Publish_Result ret;
 	int flags = 0;
+	int decimalPlaces;
 
 	Tokenizer_TokenizeString(args, 0);
 
@@ -1422,7 +1423,9 @@ commandResult_t MQTT_PublishCommandFloat(const void* context, const char* cmd, c
 	if (Tokenizer_GetArgIntegerDefault(2, 0) != 0) {
 		flags = OBK_PUBLISH_FLAG_RAW_TOPIC_NAME;
 	}
-	ret = MQTT_PublishMain_StringFloat(topic, value, -1, flags);
+	// optional fourth argument to set rounding
+	decimalPlaces = Tokenizer_GetArgIntegerDefault(3, -1);
+	ret = MQTT_PublishMain_StringFloat(topic, value, decimalPlaces, flags);
 
 	return CMD_RES_OK;
 }
