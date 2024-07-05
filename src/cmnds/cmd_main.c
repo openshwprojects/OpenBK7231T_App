@@ -506,13 +506,13 @@ static commandResult_t CMD_CreateAliasForCommand(const void* context, const char
 #if 0
 	ocmd = Tokenizer_GetArgFrom(1);
 #else
-	while (*args && iswspace(*args)) {
+	while (*args && isWhiteSpace(*args)) {
 		args++;
 	}
-	while (*args && !iswspace(*args)) {
+	while (*args && !isWhiteSpace(*args)) {
 		args++;
 	}
-	while (*args && iswspace(*args)) {
+	while (*args && isWhiteSpace(*args)) {
 		args++;
 	}
 	ocmd = args;
