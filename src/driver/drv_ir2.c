@@ -225,7 +225,7 @@ static commandResult_t CMD_IR2_SendIR2(const void* context, const char* cmd, con
 		token = strtok(NULL, " ");
 	}
 	state = 0;
-	ADDLOG_INFO(LOG_FEATURE_IR, "Queue size:",(stop - times));
+	ADDLOG_INFO(LOG_FEATURE_IR, "Queue size %i",(stop - times));
 
 
 #if PLATFORM_BK7231N
