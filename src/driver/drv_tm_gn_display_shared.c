@@ -320,10 +320,12 @@ static void TM1637_PrintStringAt(const char *str, int pos, int maxLen) {
 	int i, len, idx;
 	int tgIndex;
 	len = strlen(str);
-	if (len > maxLen)
-		len = maxLen;
+	int stopIndex = pos + maxLen;
 	tgIndex = pos;
 	for (i = 0; i < len; i++) {
+		if (tgIndex >= stopIndex) {
+			break;
+		}
 		if (tgIndex >= g_totalDigits)
 			break;
 		if (str[i] == '.') {
