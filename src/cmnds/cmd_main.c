@@ -503,7 +503,20 @@ static commandResult_t CMD_CreateAliasForCommand(const void* context, const char
 	}
 
 	alias = Tokenizer_GetArg(0);
+#if 0
 	ocmd = Tokenizer_GetArgFrom(1);
+#else
+	while (*args && iswspace(*args)) {
+		args++;
+	}
+	while (*args && !iswspace(*args)) {
+		args++;
+	}
+	while (*args && iswspace(*args)) {
+		args++;
+	}
+	ocmd = args;
+#endif
 
 	return CMD_CreateAliasHelper(alias, ocmd);
 }
