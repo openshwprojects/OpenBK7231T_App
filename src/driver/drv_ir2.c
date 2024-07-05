@@ -6,7 +6,6 @@
 
 #if PLATFORM_BEKEN
 
-
 #include "include.h"
 #include "arm_arch.h"
 #include "../new_pins.h"
@@ -198,7 +197,7 @@ startDriver IR2
 // arguments: duty_on_fraction, duty_off_fraction, pin for sending (optional)
 SetupIR2 50 0.5 0 8
 // send data
-SendIR2 3200,1300,950,500,900,1300,900,550,900,650,900
+SendIR2 3200 1300 950 500 900 1300 900 550 900 650 900
 // 
 */
 static commandResult_t CMD_IR2_SendIR2(const void* context, const char* cmd, const char* args, int cmdFlags) {
