@@ -320,10 +320,12 @@ static void TM1637_PrintStringAt(const char *str, int pos, int maxLen) {
 	int i, len, idx;
 	int tgIndex;
 	len = strlen(str);
-	if (len > maxLen)
-		len = maxLen;
+	int stopIndex = pos + maxLen;
 	tgIndex = pos;
 	for (i = 0; i < len; i++) {
+		if (tgIndex >= stopIndex) {
+			break;
+		}
 		if (tgIndex >= g_totalDigits)
 			break;
 		if (str[i] == '.') {
@@ -435,8 +437,12 @@ static commandResult_t CMD_TMGN_Print(const void *context, const char *cmd, cons
 	if (maxLen <= 0) {
 		maxLen = 999;
 	}
-	if (Tokenizer_GetArgInteger(3)) {
+	int clampMode = Tokenizer_GetArgInteger(3);
+	if (clampMode) {
 		sLen = strlen(s);
+		if (strchr(s, '.')) {
+			sLen--;
+		}
 		if (sLen < maxLen) {
 			iPadZeroes = maxLen - sLen;
 			TM1637_PrintStringAt("00000", ofs, iPadZeroes);
@@ -623,7 +629,7 @@ void TM_GN_Display_SharedInit(tmGnType_t type) {
 			g_i2c.pin_data = PIN_FindPinIndexForRole(IOR_TM1638_DAT, 15);
 			g_i2c.pin_stb = PIN_FindPinIndexForRole(IOR_TM1638_STB, 28);
 			addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using SPI mode (TM1638)");
-			g_doTM1638RowsToColumnsSwap = 1;
+			g_doTM1638RowsToColumnsSwap = Tokenizer_GetArgIntegerDefault(1,1);
 			
 			for (i = 0; i < 8; i++) {
 				g_remap[i] = 7-i;
