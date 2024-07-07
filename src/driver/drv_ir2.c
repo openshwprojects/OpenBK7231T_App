@@ -167,7 +167,38 @@ unsigned int period;
 
 UINT8 group, channel;
 
+// test receive
+int curTime;
+int curState = -1;
+int pin_recv;
+#define MAX_SAMPLES 512
+int times[MAX_SAMPLES];
+int cur_recv = 0;
+
 void SendIR2_ISR(UINT8 t) {
+	{
+		int ns = bk_gpio_input(pin_recv);
+		if (curState != ns) {
+			times[cur_recv] = curTime;
+			if (cur_recv + 1 < MAX_SAMPLES) {
+				cur_recv++;
+			}
+			curTime = 0;
+		}
+		else {
+			curTime++;
+			if (curTime > (100000 / 50)) {
+				if (cur_recv) {
+					ADDLOG_INFO(LOG_FEATURE_IR, "Recv: %i", cur_recv);
+					for (int i = 0; i < cur_recv; i++) {
+						ADDLOG_INFO(LOG_FEATURE_IR, "%i", times[i]*50);
+					}
+					cur_recv = 0;
+				}
+				curTime = 0;
+			}
+		}
+	}
 	if (cur == 0)
 		return;
 	curTime += myPeriodUs;
@@ -254,6 +285,9 @@ static commandResult_t CMD_IR2_SetupIR2(const void* context, const char* cmd, co
 	float duty_off_frac = Tokenizer_GetArgFloatDefault(2, 0.0f);
 
 	txpin = Tokenizer_GetArgIntegerDefault(3, 26);
+	pin_recv = Tokenizer_GetArgIntegerDefault(4, 9);
+
+	bk_gpio_config_input_pup((GPIO_INDEX)pin_recv);
 
 #if DEBUG_WAVE_WITH_GPIO
 	bk_gpio_config_output(txpin);
