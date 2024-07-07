@@ -1530,7 +1530,7 @@ ISR () // for functions definitions which are called by separate (board specific
 #if 1
 	volatile UINT32 *gpio_cfg_addr;
 	gpio_cfg_addr = (volatile UINT32 *)(REG_GPIO_CFG_BASE_ADDR + irparams.IRReceivePin * 4);
-    uint_fast8_t tIRInputLevel = REG_READ(gpio_cfg_addr);
+    uint_fast8_t tIRInputLevel = REG_READ(gpio_cfg_addr) & GCFG_INPUT_BIT;
 #else
 	uint_fast8_t tIRInputLevel = (uint_fast8_t)digitalReadFast(irparams.IRReceivePin);
 #endif
