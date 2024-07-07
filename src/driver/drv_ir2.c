@@ -179,6 +179,7 @@ void SendIR2_ISR(UINT8 t) {
 	{
 		int ns = bk_gpio_input(pin_recv);
 		if (curState != ns) {
+			curState = ns;
 			times[cur_recv] = curTime;
 			if (cur_recv + 1 < MAX_SAMPLES) {
 				cur_recv++;
@@ -225,8 +226,8 @@ void SendIR2_ISR(UINT8 t) {
 // start the driver
 startDriver IR2
 // start timer 50us
-// arguments: duty_on_fraction, duty_off_fraction, pin for sending (optional)
-SetupIR2 50 0.5 0 8
+// arguments: duty_on_fraction, duty_off_fraction, pin for sending (optional), pin for receive
+SetupIR2 50 0.5 0 8 9
 // send data
 SendIR2 3200 1300 950 500 900 1300 900 550 900 650 900
 // 
