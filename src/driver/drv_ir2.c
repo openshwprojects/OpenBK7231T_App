@@ -179,22 +179,22 @@ void SendIR2_ISR(UINT8 t) {
 	{
 		int ns = bk_gpio_input(pin_recv);
 		if (curState != ns) {
-			curState = ns;
-			times[cur_recv] = curTime;
+			curState = ns; // save new state
+			times[cur_recv] = curTime; // save total time (cycles, one is 50us)
 			if (cur_recv + 1 < MAX_SAMPLES) {
-				cur_recv++;
+				cur_recv++; // do not collect too much
 			}
-			curTime = 0;
+			curTime = 1; // count from 1
 		}
 		else {
-			curTime++;
+			curTime++; // increase time and check if there is no change for longer
 			if (curTime > (100000 / 50) || cur_recv > (MAX_SAMPLES-2)) {
 				if (cur_recv) {
 					ADDLOG_INFO(LOG_FEATURE_IR, "Recv: %i", cur_recv);
 					for (int i = 0; i < cur_recv; i++) {
 						ADDLOG_INFO(LOG_FEATURE_IR, "%i", times[i]*50);
 					}
-					cur_recv = 0;
+					cur_recv = 0; // clear all samples
 				}
 				curTime = 0;
 			}
@@ -227,7 +227,7 @@ void SendIR2_ISR(UINT8 t) {
 startDriver IR2
 // start timer 50us
 // arguments: duty_on_fraction, duty_off_fraction, pin for sending (optional), pin for receive
-SetupIR2 50 0.5 0 8 9
+SetupIR2 50 0.5 0 7 24
 // send data
 SendIR2 3200 1300 950 500 900 1300 900 550 900 650 900
 // 
