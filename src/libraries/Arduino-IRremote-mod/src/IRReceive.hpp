@@ -1614,15 +1614,15 @@ ISR () // for functions definitions which are called by separate (board specific
         }
     }
 
-#if !defined(NO_LED_FEEDBACK_CODE)
-    if (FeedbackLEDControl.LedFeedbackEnabled == LED_FEEDBACK_ENABLED_FOR_RECEIVE) {
-        setFeedbackLED(tIRInputLevel == INPUT_MARK);
-    }
-#endif
-
-#ifdef _IR_MEASURE_TIMING
-    digitalWriteFast(_IR_TIMING_TEST_PIN, LOW); // 2 clock cycles
-#endif
+//#if !defined(NO_LED_FEEDBACK_CODE)
+//    if (FeedbackLEDControl.LedFeedbackEnabled == LED_FEEDBACK_ENABLED_FOR_RECEIVE) {
+//        setFeedbackLED(tIRInputLevel == INPUT_MARK);
+//    }
+//#endif
+//
+//#ifdef _IR_MEASURE_TIMING
+//    digitalWriteFast(_IR_TIMING_TEST_PIN, LOW); // 2 clock cycles
+//#endif
 }
 
 /**********************************************************************************************************************
