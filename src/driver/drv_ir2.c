@@ -187,7 +187,7 @@ void SendIR2_ISR(UINT8 t) {
 		}
 		else {
 			curTime++;
-			if (curTime > (100000 / 50)) {
+			if (curTime > (100000 / 50) || cur_recv > (MAX_SAMPLES-2)) {
 				if (cur_recv) {
 					ADDLOG_INFO(LOG_FEATURE_IR, "Recv: %i", cur_recv);
 					for (int i = 0; i < cur_recv; i++) {
