@@ -192,7 +192,8 @@ void SendIR2_ISR(UINT8 t) {
 			if (rec_time > (100000 / 50) || cur_recv > (MAX_SAMPLES-2)) {
 				if (cur_recv) {
 					ADDLOG_INFO(LOG_FEATURE_IR, "Recv: %i", cur_recv);
-					for (int i = 0; i < cur_recv; i++) {
+					// skip first entry, it's always random, depending
+					for (int i = 1; i < cur_recv; i++) {
 						ADDLOG_INFO(LOG_FEATURE_IR, "%i", times[i]* myPeriodUs);
 					}
 					cur_recv = 0; // clear all samples
