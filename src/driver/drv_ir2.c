@@ -175,9 +175,10 @@ int pin_recv;
 int times[MAX_SAMPLES];
 int cur_recv = 0;
 
+volatile UINT32 *gpio_cfg_addr;
 void SendIR2_ISR(UINT8 t) {
 	{
-		int ns = bk_gpio_input(pin_recv);
+		int ns = REG_READ(gpio_cfg_addr) & GCFG_INPUT_BIT;
 		if (curState != ns) {
 			curState = ns; // save new state
 			times[cur_recv] = curTime; // save total time (cycles, one is 50us)
@@ -289,6 +290,8 @@ static commandResult_t CMD_IR2_SetupIR2(const void* context, const char* cmd, co
 	pin_recv = Tokenizer_GetArgIntegerDefault(4, 9);
 
 	bk_gpio_config_input_pup((GPIO_INDEX)pin_recv);
+
+	gpio_cfg_addr = (volatile UINT32 *)(REG_GPIO_CFG_BASE_ADDR + pin_recv * 4);
 
 #if DEBUG_WAVE_WITH_GPIO
 	bk_gpio_config_output(txpin);
