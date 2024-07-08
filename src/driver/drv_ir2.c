@@ -155,7 +155,6 @@ static UINT32 reg_duty;
 
 int txpin = 26;
 
-int times[512];
 int maxTimes = 512;
 int *cur;
 int *stop;
