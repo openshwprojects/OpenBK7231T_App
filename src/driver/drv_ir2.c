@@ -174,7 +174,7 @@ int pin_recv;
 #define MAX_SAMPLES 512
 volatile int times[MAX_SAMPLES];
 volatile int cur_recv = 0;
-
+#define UARTCALL   __attribute__((section("uartcall")))
 volatile UINT32 *gpio_cfg_addr;
 void SendIR2_ISR(UINT8 t) {
 	{
@@ -193,7 +193,7 @@ void SendIR2_ISR(UINT8 t) {
 				if (cur_recv) {
 					ADDLOG_INFO(LOG_FEATURE_IR, "Recv: %i", cur_recv);
 					for (int i = 0; i < cur_recv; i++) {
-						ADDLOG_INFO(LOG_FEATURE_IR, "%i", times[i]*50);
+						ADDLOG_INFO(LOG_FEATURE_IR, "%i", times[i]* myPeriodUs);
 					}
 					cur_recv = 0; // clear all samples
 				}
