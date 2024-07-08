@@ -170,10 +170,11 @@ UINT8 group, channel;
 // test receive
 int curTime;
 int curState = -1;
+volatile int rec_time;
 int pin_recv;
 #define MAX_SAMPLES 512
-int times[MAX_SAMPLES];
-int cur_recv = 0;
+volatile int times[MAX_SAMPLES];
+volatile int cur_recv = 0;
 
 volatile UINT32 *gpio_cfg_addr;
 void SendIR2_ISR(UINT8 t) {
@@ -181,15 +182,15 @@ void SendIR2_ISR(UINT8 t) {
 		int ns = REG_READ(gpio_cfg_addr) & GCFG_INPUT_BIT;
 		if (curState != ns) {
 			curState = ns; // save new state
-			times[cur_recv] = curTime; // save total time (cycles, one is 50us)
+			times[cur_recv] = rec_time; // save total time (cycles, one is 50us)
 			if (cur_recv + 1 < MAX_SAMPLES) {
 				cur_recv++; // do not collect too much
 			}
-			curTime = 1; // count from 1
+			rec_time = 1; // count from 1
 		}
 		else {
-			curTime++; // increase time and check if there is no change for longer
-			if (curTime > (100000 / 50) || cur_recv > (MAX_SAMPLES-2)) {
+			rec_time++; // increase time and check if there is no change for longer
+			if (rec_time > (100000 / 50) || cur_recv > (MAX_SAMPLES-2)) {
 				if (cur_recv) {
 					ADDLOG_INFO(LOG_FEATURE_IR, "Recv: %i", cur_recv);
 					for (int i = 0; i < cur_recv; i++) {
@@ -197,7 +198,7 @@ void SendIR2_ISR(UINT8 t) {
 					}
 					cur_recv = 0; // clear all samples
 				}
-				curTime = 0;
+				rec_time = 0;
 			}
 		}
 	}
