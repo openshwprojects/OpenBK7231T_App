@@ -943,6 +943,27 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_ReadOnly_div1000,
+	//chandetail:{"name":"Ph",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Ph Water Quality",
+	//chandetail:"enum":"ChType_Ph",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Ph,
+	//chandetail:{"name":"Orp",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Orp Water Quality",
+	//chandetail:"enum":"ChType_Orp",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Orp,
+	//chandetail:{"name":"Tds",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TDS Water Quality",
+	//chandetail:"enum":"ChType_Tds",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Tds,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",

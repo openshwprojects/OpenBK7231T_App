@@ -1791,6 +1791,15 @@
     "examples": ""
   },
   {
+    "name": "SetChannelEnum",
+    "args": "[ChannelIndex][Value,Title][Value,Title]",
+    "descr": "Creates a custom channel enumeration.",
+    "fn": "SetChannelEnum",
+    "file": "cmnds/cmd_channels.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "SetChannelFloat",
     "args": "[ChannelIndex][ChannelValue]",
     "descr": "Sets a raw channel to given float value. Currently only used for LED PWM channels.",
