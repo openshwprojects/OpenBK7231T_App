@@ -1548,6 +1548,7 @@ int http_fn_cmd_tool(http_request_t* request) {
 	poststr(request, "Remember that some commands are added after a restart when a driver is activated... <br>");
 
 	commandLen = http_getArg(request->url, "cmd", tmpA, sizeof(tmpA));
+	addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "http_fn_cmd_tool: len %i",commandLen);
 	if (commandLen) {
 		poststr(request, "<br>");
 		// all log printfs made by command will be sent also to request
@@ -1969,6 +1970,21 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			case ChType_EnergyTotal_kWh_div1000:
 			{
 				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 3, 1);
+			}
+			break;
+			case ChType_Ph:
+			{
+				dev_info = hass_init_sensor_device_info(WATER_QUALITY_PH, i, 2, 2, 1);
+			}
+			break;
+			case ChType_Orp:
+			{
+				dev_info = hass_init_sensor_device_info(WATER_QUALITY_ORP, i, -1, 2, 1);
+			}
+			break;
+			case ChType_Tds:
+			{
+				dev_info = hass_init_sensor_device_info(WATER_QUALITY_TDS, i, -1, 2, 1);
 			}
 			break;
 		}

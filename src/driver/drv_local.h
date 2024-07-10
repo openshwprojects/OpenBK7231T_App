@@ -70,6 +70,8 @@ void HT16K33_Init();
 
 void HD2015_Init();
 
+void DRV_IR2_Init();
+
 void DRV_ADCSmoother_Init();
 void DRV_ADCSmoother_RunFrame();
 
@@ -128,6 +130,8 @@ void Shift_OnChannelChanged(int ch, int value);
 void TMGN_RunQuickTick();
 
 void DRV_MAX72XX_Init();
+
+void apply_smart_light();
 
 void WEMO_Init();
 void WEMO_AppendInformationToHTTPIndexPage(http_request_t* request);
