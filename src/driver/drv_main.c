@@ -12,6 +12,8 @@
 #include "drv_test_drivers.h"
 #include "drv_tuyaMCU.h"
 #include "drv_uart.h"
+#include "drv_ds18x20.h"
+
 
 
 typedef struct driver_s {
@@ -63,7 +65,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "Drawers",		Drawers_Init,			NULL,			NULL, Drawers_QuickTick, NULL, NULL, false },
 #endif
-
+#if ENABLE_DRIVER_DS18X20
+//drvdetail:{"name":"DS18x20",
+//drvdetail:"title":"DS18x20 Temperature Sensor Driver",
+//drvdetail:"descr":"Driver for DS18x20 temperature sensors using the OneWire protocol.",
+//drvdetail:"requires":""}
+{ "DS18x20", DS18x20_InitDriver, DS18x20_OnEverySecondHook, DS18x20_AppendInformationToHTTPIndexPageHook, NULL, DS18x20_ShutdownDriver, NULL, false },
+#endif
 #if ENABLE_NTP
 	//drvdetail:{"name":"NTP",
 	//drvdetail:"title":"TODO",
