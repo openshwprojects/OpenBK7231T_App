@@ -8,7 +8,7 @@
 #include "drv_local.h"
 #include "drv_uart.h"
 #include "../httpserver/new_http.h"
-#include "../hal/hal_pins.h"
+#include "../hal/hal_pins.h"  // Include hal_pins.h
 
 #include "../libraries/OneWire/OneWire.h"
 #include "../libraries/DallasTemperature/DallasTemperature.h"
@@ -32,6 +32,7 @@ commandResult_t DS18x20_Calibrate(const void* context, const char* cmd, const ch
 }
 
 void DS18x20_Init(int pin) {
+    hal_set_pin_mode(pin, GPIO_MODE_INPUT_OUTPUT);  // Set pin mode using hal_pins.h
     oneWire.begin(pin);
     channel_temp = g_cfg.pins.channels[pin];
     sensors.setOneWire(&oneWire);
