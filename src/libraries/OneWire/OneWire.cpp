@@ -1,7 +1,23 @@
 #include "OneWire.h"
-#include "hal_pins.h"  // Include your HAL header
+#include "../hal/hal_pins.h"
+
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <unistd.h>
+#endif
+
+// Implement delayMicroseconds function
+void delayMicroseconds(unsigned int us) {
+#ifdef _WIN32
+    Sleep(us / 1000);  // Sleep function for Windows
+#else
+    usleep(us);  // usleep function for Unix-like systems
+#endif
+}
 
 OneWire::OneWire(uint8_t pin) {
+    this->pin = pin;
     hal_set_pin_mode(pin, GPIO_MODE_INPUT);
     hal_write_pin(pin, LOW);
     reset_search();
