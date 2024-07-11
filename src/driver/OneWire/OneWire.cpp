@@ -18,17 +18,17 @@ void delayMicroseconds(unsigned int us) {
 
 OneWire::OneWire(uint8_t pin) {
     this->pin = pin;
-    hal_set_pin_mode(pin, GPIO_MODE_INPUT);
-    hal_write_pin(pin, LOW);
+    HAL_PIN_Setup_Input(pin);
+    HAL_PIN_SetOutputValue(pin, 0);
     reset_search();
 }
 
 uint8_t OneWire::reset(void) {
-    hal_write_pin(pin, LOW);
+    HAL_PIN_SetOutputValue(pin, 0);
     delayMicroseconds(480);
-    hal_set_pin_mode(pin, INPUT);
+    HAL_PIN_Setup_Input(pin);
     delayMicroseconds(70);
-    uint8_t presence = hal_read_pin(pin);
+    uint8_t presence = HAL_PIN_ReadDigitalInput(pin);
     delayMicroseconds(410);
     return presence;
 }
@@ -36,31 +36,31 @@ uint8_t OneWire::reset(void) {
 void OneWire::write(uint8_t v, uint8_t power) {
     for (uint8_t bitMask = 0x01; bitMask; bitMask <<= 1) {
         if (v & bitMask) {
-            hal_write_pin(pin, LOW);
+            HAL_PIN_SetOutputValue(pin, 0);
             delayMicroseconds(10);
-            hal_write_pin(pin, HIGH);
+            HAL_PIN_SetOutputValue(pin, 1);
             delayMicroseconds(55);
         } else {
-            hal_write_pin(pin, LOW);
+            HAL_PIN_SetOutputValue(pin, 0);
             delayMicroseconds(65);
-            hal_write_pin(pin, HIGH);
+            HAL_PIN_SetOutputValue(pin, 1);
             delayMicroseconds(5);
         }
     }
     if (power) {
-        hal_set_pin_mode(pin, GPIO_MODE_OUTPUT);
-        hal_write_pin(pin, HIGH);
+        HAL_PIN_Setup_Output(pin);
+        HAL_PIN_SetOutputValue(pin, 1);
     }
 }
 
 uint8_t OneWire::read(void) {
     uint8_t result = 0;
     for (uint8_t bitMask = 0x01; bitMask; bitMask <<= 1) {
-        hal_write_pin(pin, LOW);
+        HAL_PIN_SetOutputValue(pin, 0);
         delayMicroseconds(3);
-        hal_set_pin_mode(pin, INPUT);
+        HAL_PIN_Setup_Input(pin);
         delayMicroseconds(10);
-        if (hal_read_pin(pin)) {
+        if (HAL_PIN_ReadDigitalInput(pin)) {
             result |= bitMask;
         }
         delayMicroseconds(53);
@@ -80,7 +80,7 @@ void OneWire::skip(void) {
 }
 
 void OneWire::depower(void) {
-    hal_set_pin_mode(pin, GPIO_MODE_INPUT);
+    HAL_PIN_Setup_Input(pin);
 }
 
 void OneWire::reset_search(void) {
