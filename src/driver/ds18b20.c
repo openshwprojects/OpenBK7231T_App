@@ -96,7 +96,7 @@ unsigned char ds18b20_read(void) {
 	usleep(6);
 	HAL_PIN_Setup_Input(DS_GPIO);
 	usleep(9);
-	value = gpio_get_level(DS_GPIO);
+	value = HAL_PIN_ReadDigitalInput(DS_GPIO);
 	usleep(55);
 	interrupts();
 	return (value);
@@ -133,7 +133,7 @@ unsigned char ds18b20_reset(void) {
 	HAL_PIN_SetOutputValue(DS_GPIO, 1);
 	HAL_PIN_Setup_Input(DS_GPIO);
 	usleep(70);
-	presence = (gpio_get_level(DS_GPIO) == 0);
+	presence = (HAL_PIN_ReadDigitalInput(DS_GPIO) == 0);
 	usleep(410);
 	interrupts();
 	return presence;
@@ -326,7 +326,7 @@ float ds18b20_get_temp(void) {
 
 void ds18b20_init(int GPIO) {
 	DS_GPIO = GPIO;
-	gpio_pad_select_gpio(DS_GPIO);
+	//gpio_pad_select_gpio(DS_GPIO);
 	init = 1;
 }
 
