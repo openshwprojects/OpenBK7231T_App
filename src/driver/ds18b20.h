@@ -16,8 +16,8 @@
 #ifndef DS18B20_H_  
 #define DS18B20_H_
 
-#define noInterrupts() portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;taskENTER_CRITICAL(&mux)
-#define interrupts() taskEXIT_CRITICAL(&mux)
+#define noInterrupts() 
+#define interrupts() 
 
 #define DEVICE_DISCONNECTED_C -127
 #define DEVICE_DISCONNECTED_F -196.6

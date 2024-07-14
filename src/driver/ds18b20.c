@@ -70,19 +70,19 @@ void ds18b20_write(char bit) {
 	if (bit & 1) {
 		HAL_PIN_Setup_Output(DS_GPIO);
 		noInterrupts();
-		HAL_PIN_Setup_Output(DS_GPIO, 0);
-		ets_delay_us(6);
+		HAL_PIN_SetOutputValue(DS_GPIO, 0);
+		usleep(6);
 		HAL_PIN_Setup_Input(DS_GPIO);	// release bus
-		ets_delay_us(64);
+		usleep(64);
 		interrupts();
 	}
 	else {
 		HAL_PIN_Setup_Output(DS_GPIO);
 		noInterrupts();
-		HAL_PIN_Setup_Output(DS_GPIO, 0);
-		ets_delay_us(60);
+		HAL_PIN_SetOutputValue(DS_GPIO, 0);
+		usleep(60);
 		HAL_PIN_Setup_Input(DS_GPIO);	// release bus
-		ets_delay_us(10);
+		usleep(10);
 		interrupts();
 	}
 }
@@ -92,12 +92,12 @@ unsigned char ds18b20_read(void) {
 	unsigned char value = 0;
 	HAL_PIN_Setup_Output(DS_GPIO);
 	noInterrupts();
-	HAL_PIN_Setup_Output(DS_GPIO, 0);
-	ets_delay_us(6);
+	HAL_PIN_SetOutputValue(DS_GPIO, 0);
+	usleep(6);
 	HAL_PIN_Setup_Input(DS_GPIO);
-	ets_delay_us(9);
-	value = HAL_PIN_ReadDigitalInput(DS_GPIO);
-	ets_delay_us(55);
+	usleep(9);
+	value = gpio_get_level(DS_GPIO);
+	usleep(55);
 	interrupts();
 	return (value);
 }
@@ -110,7 +110,7 @@ void ds18b20_write_byte(char data) {
 		x &= 0x01;
 		ds18b20_write(x);
 	}
-	ets_delay_us(100);
+	usleep(100);
 }
 // Reads one byte from bus
 unsigned char ds18b20_read_byte(void) {
@@ -119,7 +119,7 @@ unsigned char ds18b20_read_byte(void) {
 	for (i = 0; i < 8; i++)
 	{
 		if (ds18b20_read()) data |= 0x01 << i;
-		ets_delay_us(15);
+		usleep(15);
 	}
 	return(data);
 }
@@ -128,13 +128,13 @@ unsigned char ds18b20_reset(void) {
 	unsigned char presence;
 	HAL_PIN_Setup_Output(DS_GPIO);
 	noInterrupts();
-	HAL_PIN_Setup_Output(DS_GPIO, 0);
-	ets_delay_us(480);
-	HAL_PIN_Setup_Output(DS_GPIO, 1);
+	HAL_PIN_SetOutputValue(DS_GPIO, 0);
+	usleep(480);
+	HAL_PIN_SetOutputValue(DS_GPIO, 1);
 	HAL_PIN_Setup_Input(DS_GPIO);
-	ets_delay_us(70);
-	presence = (HAL_PIN_ReadDigitalInput(DS_GPIO) == 0);
-	ets_delay_us(410);
+	usleep(70);
+	presence = (gpio_get_level(DS_GPIO) == 0);
+	usleep(410);
 	interrupts();
 	return presence;
 }
@@ -219,8 +219,8 @@ void ds18b20_requestTemperatures() {
 	ds18b20_reset();
 	ds18b20_write_byte(SKIPROM);
 	ds18b20_write_byte(GETTEMP);
-	unsigned long start = esp_timer_get_time() / 1000ULL;
-	while (!isConversionComplete() && ((esp_timer_get_time() / 1000ULL) - start < millisToWaitForConversion())) vPortYield();
+	//unsigned long start = esp_timer_get_time() / 1000ULL;
+	//while (!isConversionComplete() && ((esp_timer_get_time() / 1000ULL) - start < millisToWaitForConversion())) vPortYield();
 }
 
 bool isConversionComplete() {
