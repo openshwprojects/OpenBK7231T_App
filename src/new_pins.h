@@ -551,6 +551,13 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_KP18058_DAT,
+	//iodetail:{"name":"DS1820",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"vers simple OneWire Temp sensor DS1820",
+	//iodetail:"enum":"DS1820_IO",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_DS1820_IO,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",

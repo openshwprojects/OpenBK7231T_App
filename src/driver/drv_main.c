@@ -12,6 +12,7 @@
 #include "drv_test_drivers.h"
 #include "drv_tuyaMCU.h"
 #include "drv_uart.h"
+#include "drv_ds1820_simple.h"
 
 
 typedef struct driver_s {
@@ -340,6 +341,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"AHT Humidity/temperature sensor. Supported sensors are: AHT10, AHT2X, AHT30. See [presentation guide](https://www.elektroda.com/rtvforum/topic4052685.html)",
 	//drvdetail:"requires":""}
 	{ "AHT2X",	AHT2X_Init,	AHT2X_OnEverySecond,	AHT2X_AppendInformationToHTTPIndexPage,	NULL,	AHT2X_StopDriver,	NULL,	false },
+#endif
+#if ENABLE_DRIVER_DS1820
+	//drvdetail:{"name":"DS1820",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Very simple driver for oneWire temperature sensor DS1820.",
+	//drvdetail:"requires":""}
+	{ "DS1820",     DS1820_driver_Init, DS1820_OnEverySecond,                       DS1820_AppendInformationToHTTPIndexPage, NULL, NULL, NULL,  false }
 #endif
 #if ENABLE_DRIVER_HT16K33
 	//drvdetail:{"name":"HT16K33",

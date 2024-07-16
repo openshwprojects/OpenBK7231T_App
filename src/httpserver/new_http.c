@@ -473,7 +473,7 @@ const char* htmlPinRoleNames[] = {
 	"BAT_Relay_n",
 	"KP18058_CLK",
 	"KP18058_DAT",
-	"error",
+	"DS1820_IO",
 	"error",
 	"error",
 	"error",
