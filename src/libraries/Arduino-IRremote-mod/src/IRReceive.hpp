@@ -1487,6 +1487,9 @@ const char* getProtocolString(decode_type_t aProtocol) {
 }
 #endif
 
+
+#include "../../beken378/driver/gpio/gpio.h"
+
 /**********************************************************************************************************************
  * Interrupt Service Routine - Called every 50 us
  *
@@ -1524,7 +1527,13 @@ ISR () // for functions definitions which are called by separate (board specific
 #if defined(__AVR__)
     uint8_t tIRInputLevel = *irparams.IRReceivePinPortInputRegister & irparams.IRReceivePinMask;
 #else
-    uint_fast8_t tIRInputLevel = (uint_fast8_t) digitalReadFast(irparams.IRReceivePin);
+#if 1
+	volatile UINT32 *gpio_cfg_addr;
+	gpio_cfg_addr = (volatile UINT32 *)(REG_GPIO_CFG_BASE_ADDR + irparams.IRReceivePin * 4);
+    uint_fast8_t tIRInputLevel = REG_READ(gpio_cfg_addr) & GCFG_INPUT_BIT;
+#else
+	uint_fast8_t tIRInputLevel = (uint_fast8_t)digitalReadFast(irparams.IRReceivePin);
+#endif
 #endif
 
     /*
@@ -1605,15 +1614,15 @@ ISR () // for functions definitions which are called by separate (board specific
         }
     }
 
-#if !defined(NO_LED_FEEDBACK_CODE)
-    if (FeedbackLEDControl.LedFeedbackEnabled == LED_FEEDBACK_ENABLED_FOR_RECEIVE) {
-        setFeedbackLED(tIRInputLevel == INPUT_MARK);
-    }
-#endif
-
-#ifdef _IR_MEASURE_TIMING
-    digitalWriteFast(_IR_TIMING_TEST_PIN, LOW); // 2 clock cycles
-#endif
+//#if !defined(NO_LED_FEEDBACK_CODE)
+//    if (FeedbackLEDControl.LedFeedbackEnabled == LED_FEEDBACK_ENABLED_FOR_RECEIVE) {
+//        setFeedbackLED(tIRInputLevel == INPUT_MARK);
+//    }
+//#endif
+//
+//#ifdef _IR_MEASURE_TIMING
+//    digitalWriteFast(_IR_TIMING_TEST_PIN, LOW); // 2 clock cycles
+//#endif
 }
 
 /**********************************************************************************************************************

@@ -97,10 +97,6 @@ void digitalToggleFast(unsigned char P) {
     bk_gpio_output((GPIO_INDEX)P, !bk_gpio_input((GPIO_INDEX)P));
 }
 
-unsigned char digitalReadFast(unsigned char P) { 
-	return bk_gpio_input((GPIO_INDEX)P);
-}
-
 void digitalWriteFast(unsigned char P, unsigned char V) {
     //RAW_SetPinValue(P, V);
     //HAL_PIN_SetOutputValue(index, iVal);

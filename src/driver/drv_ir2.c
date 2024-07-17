@@ -155,7 +155,6 @@ static UINT32 reg_duty;
 
 int txpin = 26;
 
-int times[512];
 int maxTimes = 512;
 int *cur;
 int *stop;
@@ -167,7 +166,42 @@ unsigned int period;
 
 UINT8 group, channel;
 
+// test receive
+int curTime;
+int curState = -1;
+volatile int rec_time;
+int pin_recv;
+#define MAX_SAMPLES 512
+volatile int times[MAX_SAMPLES];
+volatile int cur_recv = 0;
+#define UARTCALL   __attribute__((section("uartcall")))
+volatile UINT32 *gpio_cfg_addr;
 void SendIR2_ISR(UINT8 t) {
+	{
+		int ns = REG_READ(gpio_cfg_addr) & GCFG_INPUT_BIT;
+		if (curState != ns) {
+			curState = ns; // save new state
+			times[cur_recv] = rec_time; // save total time (cycles, one is 50us)
+			if (cur_recv + 1 < MAX_SAMPLES) {
+				cur_recv++; // do not collect too much
+			}
+			rec_time = 1; // count from 1
+		}
+		else {
+			rec_time++; // increase time and check if there is no change for longer
+			if (rec_time > (100000 / 50) || cur_recv > (MAX_SAMPLES-2)) {
+				if (cur_recv) {
+					ADDLOG_INFO(LOG_FEATURE_IR, "Recv: %i", cur_recv);
+					// skip first entry, it's always random, depending
+					for (int i = 1; i < cur_recv; i++) {
+						ADDLOG_INFO(LOG_FEATURE_IR, "%i", times[i]* myPeriodUs);
+					}
+					cur_recv = 0; // clear all samples
+				}
+				rec_time = 0;
+			}
+		}
+	}
 	if (cur == 0)
 		return;
 	curTime += myPeriodUs;
@@ -194,8 +228,8 @@ void SendIR2_ISR(UINT8 t) {
 // start the driver
 startDriver IR2
 // start timer 50us
-// arguments: duty_on_fraction, duty_off_fraction, pin for sending (optional)
-SetupIR2 50 0.5 0 8
+// arguments: duty_on_fraction, duty_off_fraction, pin for sending (optional), pin for receive
+SetupIR2 50 0.5 0 7 24
 // send data
 SendIR2 3200 1300 950 500 900 1300 900 550 900 650 900
 // 
@@ -254,6 +288,11 @@ static commandResult_t CMD_IR2_SetupIR2(const void* context, const char* cmd, co
 	float duty_off_frac = Tokenizer_GetArgFloatDefault(2, 0.0f);
 
 	txpin = Tokenizer_GetArgIntegerDefault(3, 26);
+	pin_recv = Tokenizer_GetArgIntegerDefault(4, 9);
+
+	bk_gpio_config_input_pup((GPIO_INDEX)pin_recv);
+
+	gpio_cfg_addr = (volatile UINT32 *)(REG_GPIO_CFG_BASE_ADDR + pin_recv * 4);
 
 #if DEBUG_WAVE_WITH_GPIO
 	bk_gpio_config_output(txpin);
