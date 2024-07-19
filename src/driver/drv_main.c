@@ -4,6 +4,7 @@
 #include "drv_bl0942.h"
 #include "drv_bl_shared.h"
 #include "drv_cse7766.h"
+#include "drv_cse7759B.h"
 #include "drv_ir.h"
 #include "drv_local.h"
 #include "drv_ntp.h"
@@ -146,6 +147,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"CSE7766 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK",
 	//drvdetail:"requires":""}
 	{ "CSE7766",	CSE7766_Init,		CSE7766_RunEverySecond,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_CSE7759B
+	//drvdetail:{"name":"CSE7759B",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"CSE7759B is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK",
+	//drvdetail:"requires":""}
+	{ "CSE7759B",	CSE7759B_Init,		CSE7759B_RunEverySecond,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_MAX6675
 	//drvdetail:{"name":"MAX6675",
@@ -628,7 +636,7 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t* request) {
 bool DRV_IsMeasuringPower() {
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	return DRV_IsRunning("BL0937") || DRV_IsRunning("BL0942")
-		|| DRV_IsRunning("CSE7766") || DRV_IsRunning("TESTPOWER")
+		|| DRV_IsRunning("CSE7766") || DRV_IsRunning("CSE7759B") || DRV_IsRunning("TESTPOWER")
 		|| DRV_IsRunning("BL0942SPI") || DRV_IsRunning("RN8209");
 #else
 	return false;
