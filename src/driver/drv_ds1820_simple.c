@@ -70,7 +70,6 @@ void usleepds(int r) //delay function do 10*r nops, because rtos_delay_milliseco
 		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
 		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
 		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	// 5
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
 	}
 #elif PLATFORM_LN882H
 	for (volatile int i = 0; i < r; i++) {
@@ -361,7 +360,7 @@ void DS1820_OnEverySecond() {
 			Tc = (6 * Val) + Val / 4 ;
 			t = negative ? -1 : 1 * Tc ;
 			dsread=0;
-			addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "DS1820 - Pin=%i temp=%s%i.%i \r\n",Pin, negative ? "-" : "+", (int)Tc/100 , (int)Tc%100);
+			addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "DS1820 - Pin=%i temp=%s%i.%02i \r\n",Pin, negative ? "-" : "+", (int)Tc/100 , (int)Tc%100);
 			addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "DS1820 - High=%i Low=%i Val=%i Tc=%i \r\n",High, Low, Val,Tc);
 		}
 		else if (g_secondsElapsed % 5 == 0) {	// every 5 seconds
