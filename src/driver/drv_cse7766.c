@@ -34,7 +34,7 @@ int CSE7766_TryToGetNextCSE7766Packet() {
     // skip garbage data (should not happen)
 	while(cs > 0) {
         //a = UART_GetByte(1);
-        if(UART_GetByte(0) != 0x55 || UART_GetByte(1) != 0x5A) {
+        if(UART_GetByte(0) != 0x55 || UART_GetByte(1) != 0x5B) {
 			UART_ConsumeBytes(1);
 			c_garbage_consumed++;
 			cs--;
@@ -49,7 +49,7 @@ int CSE7766_TryToGetNextCSE7766Packet() {
 		return 0;
 	}
     //a = UART_GetByte(1);
-    if(UART_GetByte(0) != 0x55 || UART_GetByte(1) != 0x5A) {
+    if(UART_GetByte(0) != 0x55 || UART_GetByte(1) != 0x5B) {
 		return 0;
 	}
 	checksum = 0;
