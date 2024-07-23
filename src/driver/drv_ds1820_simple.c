@@ -5,7 +5,8 @@ static int Pin;
 static int t=-127;
 static int errcount=0;
 static int lastconv;		// secondsElapsed on last successfull reading
-
+static uint16_t BKfact = 17;	// introduce a variable for BEKEN factor 
+static uint8_t testfact=0;
 
 // usleep adopted from DHT driver
 
@@ -66,7 +67,7 @@ void usleepds(int r) //delay function do 10*r nops, because rtos_delay_milliseco
 		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
 	}
 #elif PLATFORM_BEKEN
-	usleep((17*r)/10);		// "1" is to fast and "2" to slow, 1.7 seems better than 1.5 (only from observing readings, no scope involved)
+	usleep((BKfact*r)/10);		// "1" is to fast and "2" to slow, 1.7 seems better than 1.5 (only from observing readings, no scope involved)
 #elif PLATFORM_LN882H
 	usleep(5*r);			// "5" seems o.k
 #else
@@ -294,7 +295,16 @@ int DS1820_getTemp() {
 }
 
 
-void DS1820_driver_Init(){};
+void DS1820_driver_Init(){
+#if PLATFORM_BEKEN
+	BKfact = Tokenizer_GetArgIntegerDefault(1, 17);
+	if (BKfact = 9999) 	// "magic" 9999 to initiate a test (increase factor every 2 minutes)
+	{
+		BKfact=10;
+		testfact=1;
+	}
+#endif
+};
 
 
 void DS1820_AppendInformationToHTTPIndexPage(http_request_t *request)
@@ -333,7 +343,11 @@ void DS1820_OnEverySecond() {
 			if (crc != scratchpad[8])
 			{
 				errcount++;
-				addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "DS1820 - Read CRC=%x != calculated:%x (errcount=%i)\r\n",scratchpad[8],crc,errcount);
+				addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "DS1820 - Read CRC=%x != calculated:%x (errcount=%i)",scratchpad[8],crc,errcount);
+				#if PLATFORM_BEKEN
+					addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, " --- BKfact is %i",BKfact);
+				#endif
+				addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "\r\n");
 				addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "DS1820 - Scratchpad Data Read: %x %x %x %x %x %x %x %x %x \r\n",scratchpad[0],scratchpad[1],scratchpad[2],scratchpad[3],scratchpad[4],scratchpad[5],scratchpad[6],scratchpad[7],scratchpad[8]);
 				
 				if (errcount > 5) dsread=0;	// retry afer 5 failures		
@@ -360,12 +374,21 @@ void DS1820_OnEverySecond() {
 				dsread=0;
 				lastconv=g_secondsElapsed;
 				addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "DS1820 - Pin=%i temp=%s%i.%02i \r\n",Pin, negative ? "-" : "+", (int)Tc/100 , (int)Tc%100);
-				addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "DS1820 - High=%i Low=%i Val=%i Tc=%i  -- Read CRC=%x - calculated:%x \r\n",High, Low, Val,Tc,scratchpad[8],crc);
+				addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "DS1820 - High=%i Low=%i Val=%i Tc=%i  -- Read CRC=%x - calculated:%x ",High, Low, Val,Tc,scratchpad[8],crc);
+				#if PLATFORM_BEKEN
+					addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, " --- BKfact is %i",BKfact);
+				#endif
+				addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "\r\n");
 			}
 		}
 		else if (g_secondsElapsed % 5 == 0) {	// every 5 seconds
-				// ask for "conversion" 
-
+#if PLATFORM_BEKEN
+			// increase BEKEN factor if testing is requested
+			if ((testfact == 1) && (BKfact <= 1000) (g_secondsElapsed % 120 == 0)) {	// increase factor by 2 until its 1000 every 2 minutes seconds
+				BKfact+=2;
+			}
+#endif
+			// ask for "conversion" 
 			if (OWReset(Pin) == 0){
 				addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "DS1820 - Pin=%i  -- Reset failed",Pin);
 
