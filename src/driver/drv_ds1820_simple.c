@@ -298,7 +298,7 @@ int DS1820_getTemp() {
 void DS1820_driver_Init(){
 #if PLATFORM_BEKEN
 	BKfact = Tokenizer_GetArgIntegerDefault(1, 17);
-	if (BKfact = 9999) 	// "magic" 9999 to initiate a test (increase factor every 2 minutes)
+	if (BKfact == 9999) 	// "magic" 9999 to initiate a test (increase factor every 2 minutes)
 	{
 		BKfact=10;
 		testfact=1;
@@ -384,7 +384,7 @@ void DS1820_OnEverySecond() {
 		else if (g_secondsElapsed % 5 == 0) {	// every 5 seconds
 #if PLATFORM_BEKEN
 			// increase BEKEN factor if testing is requested
-			if ((testfact == 1) && (BKfact <= 1000) (g_secondsElapsed % 120 == 0)) {	// increase factor by 2 until its 1000 every 2 minutes seconds
+			if ((testfact == 1) && (BKfact <= 1000) && (g_secondsElapsed % 120 == 0)) {	// increase factor by 2 until its 1000 every 2 minutes seconds
 				BKfact+=2;
 			}
 #endif
