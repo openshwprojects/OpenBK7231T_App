@@ -4,6 +4,10 @@
 #include "../../new_cfg.h"
 #include "../../new_pins.h"
 
+#include "../../logging/logging.h"
+
+#define LOG_FEATURE LOG_FEATURE_MAIN
+
 
 #include <stdio.h>
 #include <string.h>
@@ -135,11 +139,114 @@ void WiFI_GetMacAddress(char *mac) {
 }
 
 void HAL_PrintNetworkInfo() {
+/*
+from LN882H
+
+    struct netif *nif = get_connected_nif();
+    if (nif != NULL) {
+        netif_idx_t active = netdev_get_active();
+        uint8_t * mac = nif->hwaddr;
+        LOG(LOG_LVL_INFO, "+--------------- net device info ------------+\r\n");
+        LOG(LOG_LVL_INFO, "|netif type    : %-16s            |\r\n", active == NETIF_IDX_STA ? "STA" : "AP");
+        LOG(LOG_LVL_INFO, "|netif hostname: %-16s            |\r\n", nif->hostname);
+        LOG(LOG_LVL_INFO, "|netif ip      = %-16s            |\r\n", ip4addr_ntoa(&nif->ip_addr));
+        LOG(LOG_LVL_INFO, "|netif mask    = %-16s            |\r\n", ip4addr_ntoa(&nif->netmask));
+        LOG(LOG_LVL_INFO, "|netif gateway = %-16s            |\r\n", ip4addr_ntoa(&nif->gw));
+        LOG(LOG_LVL_INFO, "|netif mac     : [%02X:%02X:%02X:%02X:%02X:%02X] %-7s |\r\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], "");
+        LOG(LOG_LVL_INFO, "+--------------------------------------------+\r\n");
+    }
+
+
+*/
+	if (g_wlan_netif != NULL){
+//		unsigned char mac[32];
+//		WiFI_GetMacAddress((char *)mac);
+		uint8_t * mac = g_wlan_netif->hwaddr;
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "+--------------- net device info ------------+\r\n");
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", wlan_if_get_mode(g_wlan_netif) == WLAN_MODE_STA ? "STA" : "AP");
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "|netif hostname: %-16s            |\r\n", g_wlan_netif->hostname);
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |\r\n", inet_ntoa(g_wlan_netif->ip_addr));
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |\r\n", inet_ntoa(g_wlan_netif->netmask));
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "|netif gateway = %-16s            |\r\n", inet_ntoa(g_wlan_netif->gw));
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "|netif mac     : [%02X:%02X:%02X:%02X:%02X:%02X] %-7s |\r\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], "");
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "+--------------------------------------------+\r\n");
+
+	}	
 
 }
+
+
+/*
+from cmd_wlan of xr809.c
+
+static __inline void cmd_wlan_sta_print_ap(wlan_sta_ap_t *ap)
+{
+	CMD_LOG(1, "%02x:%02x:%02x:%02x:%02x:%02x  ssid=%-32.32s  "
+		"beacon_int=%d  freq=%d  channel=%u  rssi=%d  level=%d  "
+		"flags=%#010x  wpa_key_mgmt=%#010x  wpa_cipher=%#010x  "
+		"wpa2_key_mgmt=%#010x  wpa2_cipher=%#010x\n",
+		ap->bssid[0], ap->bssid[1],
+		ap->bssid[2], ap->bssid[3],
+		ap->bssid[4], ap->bssid[5],
+		ap->ssid.ssid,
+		ap->beacon_int,
+		ap->freq,
+		ap->channel,
+		ap->rssi,
+		ap->level,
+		ap->wpa_flags,
+		ap->wpa_key_mgmt,
+		ap->wpa_cipher,
+		ap->wpa2_key_mgmt,
+		ap->wpa2_cipher);
+}addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, 
+
+*/
 int HAL_GetWifiStrength() {
-    return -1;
+	wlan_sta_ap_t *ap = malloc(sizeof(wlan_sta_ap_t));	// to hold information of connected AP	
+	if (wlan_sta_ap_info(ap)){
+		uint8_t rssi=ap->rssi;
+		free(ap);
+		return rssi;	
+	}
+	return; 
 }
+
+// Get WiFi Information (SSID / BSSID) - e.g. to display on status page 
+/*
+// ATM there is only one SSID, so need for this code
+char* HAL_GetWiFiSSID(char* ssid){
+	ssid[0]='\0';
+	wlan_sta_ap_t *ap = malloc(sizeof(wlan_sta_ap_t));	// to hold information of connected AP	
+	if (wlan_sta_ap_info(ap)){
+		memcpy(ssid, ap->ssid.ssid, ap->ssid.ssid_len);
+		ssid[ap->ssid.ssid_len]='\0';
+		free(ap);
+	}
+	return ssid; 
+};
+
+*/
+char* HAL_GetWiFiBSSID(char* bssid){
+	bssid[0]='\0';
+	wlan_sta_ap_t *ap = malloc(sizeof(wlan_sta_ap_t));	// to hold information of connected AP	
+	if (wlan_sta_ap_info(ap)){
+		sprintf(bssid, MACSTR, MAC2STR(ap->bssid));
+		free(ap);
+	}
+	return bssid;
+};
+uint8_t HAL_GetWiFiChannel(uint8_t *chan){
+	wlan_sta_ap_t *ap = malloc(sizeof(wlan_sta_ap_t));	// to hold information of connected AP	
+	if (wlan_sta_ap_info(ap)){
+		*chan = ap->channel ;
+		free(ap);
+		return *chan;
+	}
+	return 0; 
+};
+
+
 
 const char *HAL_GetMyIPString() {
 	strcpy(g_ipStr,inet_ntoa(g_wlan_netif->ip_addr));

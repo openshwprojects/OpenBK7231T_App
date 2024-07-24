@@ -770,7 +770,16 @@ int http_fn_index(http_request_t* request) {
 
   // display temperature - thanks to giedriuslt
   // only in Normal mode, and if boot is not failing
-	hprintf255(request, "<h5>Internal temperature: %.1f°C</h5>", g_wifi_temperature);
+	extern bool g_powersave;
+  	if (g_powersave){
+  		int ps=1;
+#if PLATFORM_LN882H
+#include <power_mgmt/ln_pm.h>
+		if (ln_pm_sleep_mode_get() != ACTIVE ) ps = 2;
+#endif  		
+  		sprintf(tmpA," - Powersave %d",ps);
+	}
+	hprintf255(request, "<h5>Internal temperature: %.1f°C%s</h5>", g_wifi_temperature, g_powersave ? tmpA : "");
 
 	inputName = CFG_GetPingHost();
 	if (inputName && *inputName && CFG_GetPingDisconnectedSecondsToRestart()) {
