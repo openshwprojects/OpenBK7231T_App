@@ -11,6 +11,7 @@
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_tuyaMCU.h"
 #include "../ota/ota.h"
+#include <lwip/dns.h>
 
 #define BUILD_AND_VERSION_FOR_MQTT "Open" PLATFORM_MCU_NAME " " USER_SW_VER " " __DATE__ " " __TIME__ 
 
@@ -1127,6 +1128,26 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 	}
 }
 
+static ip_addr_t mqtt_ip_resolved;
+static volatile bool dns_in_progress;
+static volatile bool dns_resolved;
+void dnsFound(const char *name, ip_addr_t *ipaddr, void *arg) 
+{       
+
+	if (NULL != ipaddr)
+	{
+		memcpy(&mqtt_ip_resolved, ipaddr, sizeof(mqtt_ip_resolved));
+		dns_resolved = true;
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host %s resolution SUCCESS\r\n", name);
+	}
+	else
+	{
+		dns_resolved = false;
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host %s resolution FAILED\r\n", name);
+	}
+	dns_in_progress = false;
+}
+
 static int MQTT_do_connect(mqtt_client_t* client)
 {
 	const char* mqtt_userName, * mqtt_host, * mqtt_pass, * mqtt_clientID;
@@ -1174,25 +1195,39 @@ static int MQTT_do_connect(mqtt_client_t* client)
 	sprintf(will_topic, "%s/connected", mqtt_clientID);
 	mqtt_client_info.will_topic = will_topic;
 	mqtt_client_info.will_msg = "offline";
-	mqtt_client_info.will_retain = true,
-		mqtt_client_info.will_qos = 2,
+	mqtt_client_info.will_retain = true;
+	mqtt_client_info.will_qos = 2;
 
-		hostEntry = gethostbyname(mqtt_host);
-	if (NULL != hostEntry)
+	//hostEntry = gethostbyname(mqtt_host);
+	if (!dns_in_progress && !dns_resolved)
 	{
-		if (hostEntry->h_addr_list && hostEntry->h_addr_list[0]) {
-			int len = hostEntry->h_length;
-			if (len > 4) {
-				addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host resolves to addr len > 4\r\n");
-				len = 4;
-			}
-			memcpy(&mqtt_ip, hostEntry->h_addr_list[0], len);
+	#ifdef PLATFORM_XR809
+		res = dns_gethostbyname(mqtt_host, &mqtt_ip_resolved, dnsFound, NULL);
+	#else
+	    res = dns_gethostbyname_addrtype(mqtt_host, &mqtt_ip_resolved, dnsFound, NULL, LWIP_DNS_ADDRTYPE_IPV4);
+	#endif
+		if (ERR_OK == res)
+		{
+			dns_in_progress = false;
+			dns_resolved = true;
 		}
-		else {
-			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host resolves no addresses?\r\n");
-			snprintf(mqtt_status_message, sizeof(mqtt_status_message), "mqtt_host resolves no addresses?");
-			return 0;
+		else if (ERR_INPROGRESS == res)
+		{
+			dns_in_progress = true;
+			dns_resolved = false;
 		}
+		else
+		{
+			dns_in_progress = false;
+			dns_resolved = false;
+		}
+	}
+
+	if (!dns_in_progress && dns_resolved)
+	{
+		dns_resolved = false;
+		memcpy(&mqtt_ip, &mqtt_ip_resolved, sizeof(mqtt_ip_resolved));
+
 
 		// host name/ip
 		//ipaddr_aton(mqtt_host,&mqtt_ip);
@@ -1224,8 +1259,18 @@ static int MQTT_do_connect(mqtt_client_t* client)
 		return res;
 	}
 	else {
-		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host %s not found by gethostbyname\r\n", mqtt_host);
-		snprintf(mqtt_status_message, sizeof(mqtt_status_message), "mqtt_host %s not found by gethostbyname", mqtt_host);
+		if (dns_in_progress)
+		{
+			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host %s is being resolved by gethostbyname\r\n", mqtt_host);
+		}
+		else
+		{
+			if (!dns_resolved)
+			{
+				addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host %s not found by gethostbyname\r\n", mqtt_host);
+				snprintf(mqtt_status_message, sizeof(mqtt_status_message), "mqtt_host %s not found by gethostbyname", mqtt_host);
+			}
+		}
 	}
 	return 0;
 }
