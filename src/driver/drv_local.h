@@ -95,9 +95,9 @@ void DRV_HTTPButtons_ProcessChanges(http_request_t* request);
 void DRV_HTTPButtons_AddToHtmlPage(http_request_t* request);
 void DRV_InitHTTPButtons();
 
-void CHT8305_Init();
-void CHT8305_OnEverySecond();
-void CHT8305_AppendInformationToHTTPIndexPage(http_request_t* request);
+void CHT83XX_Init();
+void CHT83XX_OnEverySecond();
+void CHT83XX_AppendInformationToHTTPIndexPage(http_request_t* request);
 
 void SHT3X_Init();
 void SHT3X_AppendInformationToHTTPIndexPage(http_request_t* request);

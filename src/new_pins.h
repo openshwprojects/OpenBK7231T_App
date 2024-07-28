@@ -327,20 +327,20 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_DHT22,
-	//iodetail:{"name":"CHT8305_DAT",
+	//iodetail:{"name":"CHT83XX_DAT",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"DAT pin of CHT8305. Setting this pin role and saving will reveal two fields next to it. Set first field to 1 and second to 2. Those are related channel numbers to store temperature and humidity.",
-	//iodetail:"enum":"IOR_CHT8305_DAT",
+	//iodetail:"descr":"DAT pin of CHT83XX. Setting this pin role and saving will reveal two fields next to it. Set first field to 1 and second to 2. Those are related channel numbers to store temperature and humidity.",
+	//iodetail:"enum":"IOR_CHT83XX_DAT",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
-	IOR_CHT8305_DAT,
-	//iodetail:{"name":"CHT8305_CLK",
+	IOR_CHT83XX_DAT,
+	//iodetail:{"name":"CHT83XX_CLK",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"CLK pin of CHT8305 sensor",
-	//iodetail:"enum":"IOR_CHT8305_CLK",
+	//iodetail:"descr":"CLK pin of CHT83XX sensor",
+	//iodetail:"enum":"IOR_CHT83XX_CLK",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
-	IOR_CHT8305_CLK,
+	IOR_CHT83XX_CLK,
 	//iodetail:{"name":"SHT3X_DAT",
 	//iodetail:"title":"TODO",	
 	//iodetail:"descr":"Humidity/temperature sensor DATA pin. Driver will autostart if both required pins are set. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html)",
@@ -568,7 +568,7 @@ typedef enum ioRole_e {
 } ioRole_t;
 
 #define IS_PIN_DHT_ROLE(role) (((role)>=IOR_DHT11) && ((role)<=IOR_DHT22))
-#define IS_PIN_TEMP_HUM_SENSOR_ROLE(role) (((role)==IOR_SHT3X_DAT) || ((role)==IOR_CHT8305_DAT))
+#define IS_PIN_TEMP_HUM_SENSOR_ROLE(role) (((role)==IOR_SHT3X_DAT) || ((role)==IOR_CHT83XX_DAT))
 #define IS_PIN_AIR_SENSOR_ROLE(role) (((role)==IOR_SGP_DAT))
 
 typedef enum channelType_e {
