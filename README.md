@@ -65,6 +65,7 @@ OpenBeken features:
 - WS2812B support, see [scripting tutorial](https://www.elektroda.com/rtvforum/topic4036716.html)
 - LFS and REST API allows you to create and host a custom HTML+CSS+JS page on device with a custom GUI/display of channels/TuyaMCU dpIDs, see [tutorial](https://www.elektroda.com/rtvforum/topic3971355.html) and see [sample page](https://www.elektroda.com/rtvforum/viewtopic.php?p=20932186#20932186) , and see [final version of custom TOMPD-63-WIFI page](https://www.elektroda.com/rtvforum/topic4040354.html)
 - can control 'smart lab organiser drawers' with a custom Drawers driver, see [full presentation](https://www.elektroda.com/rtvforum/topic4054134.html)
+- DHT11 (and family) sensors support, BMP280 support, initial DS18B20 support
 - Can run on Windows with device simulator/schematic drawer, see [tutorial](https://www.elektroda.com/rtvforum/topic4046056.html)
 - and much more
 
