@@ -1238,6 +1238,9 @@ int http_fn_cfg_wifi(http_request_t* request) {
 	add_label_text_field(request, "SSID", "ssid", CFG_GetWiFiSSID(), "<form action=\"/cfg_wifi_set\">");
 	add_label_password_field(request, "", "pass", CFG_GetWiFiPass(), "<br>Password <span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears password)</span>");
 	poststr_h2(request, "Alternate WiFi (used when first one is not responding)");
+#ifndef PLATFORM_BEKEN
+	poststr_h2(request, "SSID2 only on Beken Platform (BK7231T,BK7231N)");
+#endif
 	add_label_text_field(request, "SSID2", "ssid2", CFG_GetWiFiSSID2(), "");
 	add_label_password_field(request, "", "pass2", CFG_GetWiFiPass2(), "<br>Password2 <span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass2');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears password)</span>");
 #if ALLOW_WEB_PASSWORD
