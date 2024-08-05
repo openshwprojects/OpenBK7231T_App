@@ -686,7 +686,7 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DeepSleep", CMD_DeepSleep, NULL);
 	//cmddetail:{"name":"PowerSave","args":"[Optional 1 or 0, by default 1 is assumed]",
-	//cmddetail:"descr":"Enables dynamic power saving mode on BK and W600. You can also disable power saving with PowerSave 0.",
+	//cmddetail:"descr":"Enables dynamic power saving mode on Beken N/T, BL602, W600 and LN882H. In the case of LN882H PowerSave will not work as a startup command so use in autoexec. On LN882H PowerSave >1 (eg PowerSave 2) should be used if BL0937 metering is present. You can also disable power saving with PowerSave 0.",
 	//cmddetail:"fn":"CMD_PowerSave","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PowerSave", CMD_PowerSave, NULL);
