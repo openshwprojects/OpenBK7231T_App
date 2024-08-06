@@ -1129,7 +1129,7 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 }
 
 static ip_addr_t mqtt_ip_resolved;
-static volatile bool dns_in_progress;
+static volatile int dns_in_progress_time;
 static volatile bool dns_resolved;
 void dnsFound(const char *name, ip_addr_t *ipaddr, void *arg) 
 {       
@@ -1145,7 +1145,7 @@ void dnsFound(const char *name, ip_addr_t *ipaddr, void *arg)
 		dns_resolved = false;
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host %s resolution FAILED\r\n", name);
 	}
-	dns_in_progress = false;
+	dns_in_progress_time = 0;
 }
 
 static int MQTT_do_connect(mqtt_client_t* client)
@@ -1199,7 +1199,7 @@ static int MQTT_do_connect(mqtt_client_t* client)
 	mqtt_client_info.will_qos = 2;
 
 	//hostEntry = gethostbyname(mqtt_host);
-	if (!dns_in_progress && !dns_resolved)
+	if (dns_in_progress_time <= 0 && !dns_resolved)
 	{
 	#ifdef PLATFORM_XR809
 		res = dns_gethostbyname(mqtt_host, &mqtt_ip_resolved, dnsFound, NULL);
@@ -1208,22 +1208,22 @@ static int MQTT_do_connect(mqtt_client_t* client)
 	#endif
 		if (ERR_OK == res)
 		{
-			dns_in_progress = false;
+			dns_in_progress_time = 0;
 			dns_resolved = true;
 		}
 		else if (ERR_INPROGRESS == res)
 		{
-			dns_in_progress = true;
+			dns_in_progress_time = 10;
 			dns_resolved = false;
 		}
 		else
 		{
-			dns_in_progress = false;
+			dns_in_progress_time = 0;
 			dns_resolved = false;
 		}
 	}
 
-	if (!dns_in_progress && dns_resolved)
+	if (dns_in_progress_time <= 0 && dns_resolved)
 	{
 		dns_resolved = false;
 		memcpy(&mqtt_ip, &mqtt_ip_resolved, sizeof(mqtt_ip_resolved));
@@ -1259,9 +1259,10 @@ static int MQTT_do_connect(mqtt_client_t* client)
 		return res;
 	}
 	else {
-		if (dns_in_progress)
+		if (dns_in_progress_time > 0)
 		{
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host %s is being resolved by gethostbyname\r\n", mqtt_host);
+			dns_in_progress_time--;
 		}
 		else
 		{
