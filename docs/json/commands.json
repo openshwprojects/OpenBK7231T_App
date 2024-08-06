@@ -369,6 +369,15 @@
     "examples": "CHT_Cycle 60 <br /> measurement is taken every 60 seconds"
   },
   {
+    "name": "CHT_Alert",
+    "args": "[TempDiff][Freq][FQ]",
+    "descr": "Enable alert pin. TempDif (temperature difference in .1°C increments) = set detected difference in temperature required for device to wake. Freq (time per measurement in s) = 1, 5, 10, 60, 120. FQ (fault queue number) = 1, 2, 4, 6",
+    "fn": "CHT_Alert",
+    "file": "drv/drv_cht8305.c",
+    "requires": "",
+    "examples": "CHT_Alert 0.5 5 2 <br /> alert pin will trigger when temperature deviates by more than 0.5°C. Sensor measures every 5s with fault queue number 2."
+  },
+  {
     "name": "ClampChannel",
     "args": "[ChannelIndex][Min][Max]",
     "descr": "Clamps given channel value to a range.",
