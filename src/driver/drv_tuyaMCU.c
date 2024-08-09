@@ -2032,8 +2032,13 @@ void TuyaMCU_RunReceive() {
 		}
 	}
 }
+int prev_heart = -1;
 void TuyaMCU_RunStateMachine_V3() {
 
+	if(heartbeat_valid != prev_heart) {
+                MQTT_PublishMain_StringInt("hb", heartbeat_valid, 0);
+		prev_heart = heartbeat_valid;
+	}
 	//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"UART ring buffer state: %i %i\n",g_recvBufIn,g_recvBufOut);
 
 	// extraDebug log level
