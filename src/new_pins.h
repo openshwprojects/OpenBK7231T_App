@@ -1297,7 +1297,15 @@ typedef struct mainConfig_s {
 	// offset 0x00000CA5 (3237 decimal)
 	char unused[347];
 #endif
-} mainConfig_t; 
+} mainConfig_t;
+
+typedef struct
+{
+	char psk[65];
+	char bssid[6];
+	int channel;
+	uint8_t security;
+} widataadv_t;
 
 // one sector is 4096 so it we still have some expand possibility
 #define MAGIC_CONFIG_SIZE_V3		2016
