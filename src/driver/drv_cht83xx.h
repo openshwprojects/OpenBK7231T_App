@@ -1,5 +1,21 @@
+#include <math.h>
 #define CHT83XX_I2C_ADDR (0x40 << 1)
 #define IS_CHT831X (sensor_id == 0x8215 || sensor_id == 0x8315)
+
+#define CHT831X_REG_TEMP 0x00
+#define CHT831X_REG_HUM 0x01
+#define CHT831X_REG_STATUS 0x02
+#define CHT831X_REG_CFG 0x03
+#define CHT831X_REG_C_RATE 0x04
+#define CHT831X_REG_TEMP_HL 0x05
+#define CHT831X_REG_TEMP_LL 0x06
+#define CHT831X_REG_HUM_HL 0x07
+#define CHT831X_REG_HUM_LL 0x08
+#define CHT831X_REG_ONESHOT 0x0F
+#define CHT831X_REG_SWRST 0xFC
+#define CHT831X_REG_ID 0xFE
+
+static softI2C_t g_softI2C;
 
 // sensor internal measurement frequency
 typedef enum
@@ -38,3 +54,12 @@ typedef enum
 	FQ_4 = 0b10,
 	FQ_6 = 0b11,
 } CHT_alert_fq;
+
+void WriteReg(uint8_t reg, int16_t data)
+{
+	Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR);
+	Soft_I2C_WriteByte(&g_softI2C, reg);
+	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)((data & 0xFF00) >> 8));
+	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(data & 0x00FF));
+	Soft_I2C_Stop(&g_softI2C);
+}
