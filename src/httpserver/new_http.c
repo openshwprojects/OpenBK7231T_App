@@ -59,7 +59,7 @@ const char htmlFooterInfo[] =
 "<a target=\"_blank\" "
 "href=\"https://paypal.me/openshwprojects\">Support project</a><br>";
 
-const char* g_build_str = "Build on " __DATE__ " " __TIME__ " version " USER_SW_VER; // Show GIT version at Build line;
+const char* g_build_str = "Built on " __DATE__ " " __TIME__ " version " USER_SW_VER; // Show GIT version at Build line;
 
 const char httpCorsHeaders[] = "Access-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept";           // TEXT MIME type
 
@@ -441,8 +441,8 @@ const char* htmlPinRoleNames[] = {
 	"DHT12",
 	"DHT21",
 	"DHT22",
-	"CHT8305_SDA",
-	"CHT8305_SCK",
+	"CHT83XX_SDA",
+	"CHT83XX_SCK",
 	"SHT3X_SDA",
 	"SHT3X_SCK",
 	"SoftSDA",
