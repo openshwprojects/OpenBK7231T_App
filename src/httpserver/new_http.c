@@ -474,7 +474,7 @@ const char* htmlPinRoleNames[] = {
 	"KP18058_CLK",
 	"KP18058_DAT",
 	"DS1820_IO",
-	"error",
+	"DS1820_DEB_Rx_PULSE",
 	"error",
 	"error",
 };

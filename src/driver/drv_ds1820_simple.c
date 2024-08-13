@@ -1,11 +1,11 @@
 #include "drv_ds1820_simple.h"
+#include <task.h>
 
 static uint8_t   dsread=0;
-static int Pin;
+static int Pin, debPin;
 static int t=-127;
 static int errcount=0;
 static int lastconv;		// secondsElapsed on last successfull reading
-static uint16_t BKfact = 17;	// introduce a variable for BEKEN factor 
 static uint8_t testfact=0;
 
 // usleep adopted from DHT driver
@@ -67,7 +67,17 @@ void usleepds(int r) //delay function do 10*r nops, because rtos_delay_milliseco
 		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
 	}
 #elif PLATFORM_BEKEN
-	usleep((BKfact*r)/10);		// "1" is to fast and "2" to slow, 1.7 seems better than 1.5 (only from observing readings, no scope involved)
+	int newr=r/(g_powersave+1);		// devide by 2 if powerSave set to 1
+	for (volatile int i = 0; i < newr; i++) {
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	// 5
+	}
+
+
+
 #elif PLATFORM_LN882H
 	usleep(5*r);			// "5" seems o.k
 #else
@@ -78,6 +88,62 @@ void usleepds(int r) //delay function do 10*r nops, because rtos_delay_milliseco
 	}
 #endif
 }
+
+
+
+
+void usleepshort(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
+{
+#
+#if PLATFORM_BEKEN
+	int newr=r/(3*g_powersave+1);		// devide by 4 if powerSave set to 1
+	for (volatile int i = 0; i < newr; i++) {
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+//		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop");
+	}
+
+#else
+	usleepds(r);
+#endif
+}
+void usleepmed(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
+{
+#
+#if PLATFORM_BEKEN
+	int newr= 10 * r / (10 + 5 * g_powersave) ;		// devide by 1.5 powerSave set to 1
+	for (volatile int i = 0; i < newr; i++) {
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	// 5
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+	}
+
+#else
+	usleepds(r);
+#endif
+}
+void usleeplong(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
+{
+#
+#if PLATFORM_BEKEN
+	int newr= 10 * r / (10 + 5 * g_powersave) ;		// devide by 1.5 powerSave set to 1
+	for (volatile int i = 0; i < newr; i++) {
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+//		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	// 5
+		__asm__("nop\nnop\nnop\nnop\nnop");	// 5
+	}
+
+#else
+	usleepds(r);
+#endif
+}
+
 
 
 /*
@@ -115,16 +181,23 @@ J 		Standard 	410
 int OWReset(int Pin)
 {
         int result;
+// better don't use critical section since we will wait for more ~ 1ms here
+//taskENTER_CRITICAL();
 
-        usleepds(OWtimeG);
+//        usleepds(OWtimeG);	it's 0 anyway
         HAL_PIN_Setup_Output(Pin);
         HAL_PIN_SetOutputValue(Pin,0); // Drives DQ low
-        usleepds(OWtimeH);
+//        usleepds(OWtimeH);
+        usleeplong(OWtimeH);
         HAL_PIN_SetOutputValue(Pin,1); // Releases the bus
-        usleepds(OWtimeI);
+//        usleepds(OWtimeI);
+        usleepmed(OWtimeI);
         HAL_PIN_Setup_Input(Pin);
         result = HAL_PIN_ReadDigitalInput(Pin) ^ 0x01; // Sample for presence pulse from slave
-        usleepds(OWtimeJ); // Complete the reset sequence recovery
+//        usleepds(OWtimeJ); // Complete the reset sequence recovery
+        usleeplong(OWtimeJ); // Complete the reset sequence recovery
+//taskEXIT_CRITICAL();
+
         return result; // Return sample presence pulse result
 }
 
@@ -133,24 +206,30 @@ int OWReset(int Pin)
 //
 void OWWriteBit(int Pin, int bit)
 {
-        if (bit)
+taskENTER_CRITICAL();
+         if (bit)
         {
                 // Write '1' bit
                 HAL_PIN_Setup_Output(Pin);
                 HAL_PIN_SetOutputValue(Pin,0); // Drives DQ low
-                usleepds(OWtimeA);
+//                usleepds(OWtimeA);
+                usleepshort(OWtimeA);
                 HAL_PIN_SetOutputValue(Pin,1); // Releases the bus
-                usleepds(OWtimeB); // Complete the time slot and 10us recovery
+//                usleepds(OWtimeB); // Complete the time slot and 10us recovery
+                usleepmed(OWtimeB); // Complete the time slot and 10us recovery
         }
         else
         {
                 // Write '0' bit
                 HAL_PIN_Setup_Output(Pin);
                 HAL_PIN_SetOutputValue(Pin,0); // Drives DQ low
-                usleepds(OWtimeC);
+//                usleepds(OWtimeC);
+                usleepmed(OWtimeC);
                 HAL_PIN_SetOutputValue(Pin,1); // Releases the bus
-                usleepds(OWtimeD);
+//                usleepds(OWtimeD);
+                usleepshort(OWtimeD);
         }
+ taskEXIT_CRITICAL();
 }
 
 //-----------------------------------------------------------------------------
@@ -159,18 +238,46 @@ void OWWriteBit(int Pin, int bit)
 int OWReadBit(int Pin)
 {
         int result;
-
+taskENTER_CRITICAL();
         HAL_PIN_Setup_Output(Pin);
         HAL_PIN_SetOutputValue(Pin,0); // Drives DQ low
-        usleepds(OWtimeA);
+//        usleepds(OWtimeA);	// 6us 
+        usleepshort(OWtimeA);	// 6us 
         HAL_PIN_SetOutputValue(Pin,1); // Releases the bus
-        usleepds(OWtimeE);
+//        usleepds(OWtimeE);	// 9us
+        usleepshort(OWtimeE);	// 9us
         HAL_PIN_Setup_Input(Pin);
 //        result = HAL_PIN_ReadDigitalInput(Pin) ^ 0x01; // Sample for presence pulse from slave
         result = HAL_PIN_ReadDigitalInput(Pin); // Sample for presence pulse from slave
+taskEXIT_CRITICAL();	// hope for the best for the following timer and keep CRITICAL as short as possible
+//        usleepds(OWtimeF); // Complete the time slot and 10us recovery
+        usleepmed(OWtimeF); // Complete the time slot and 10us recovery
+        return result;
+}
+
+int OWReadBitDEBUG(int Pin)
+{
+        int result;
+        HAL_PIN_Setup_Output(Pin);
+taskENTER_CRITICAL();
+        HAL_PIN_SetOutputValue(Pin,0); // Drives DQ low
+        usleepshort(OWtimeA);
+        HAL_PIN_SetOutputValue(Pin,1); // Releases the bus
+        usleepmed(OWtimeE);
+
+        HAL_PIN_Setup_Input(Pin);
+        result = HAL_PIN_ReadDigitalInput(Pin); // Sample for presence pulse from slave
+
+        // we are in DEBUG read, so we can be sure, debPin is defined and set to Output an level "1". 
+        // We can just set the value "0" here to signal time of reading on OW line
+        HAL_PIN_SetOutputValue(debPin,0);
+	HAL_PIN_SetOutputValue(debPin,1);
+
+taskEXIT_CRITICAL();	// hope for the best for the following timer and keep CRITICAL as short as possible
         usleepds(OWtimeF); // Complete the time slot and 10us recovery
         return result;
 }
+
 
 //-----------------------------------------------------------------------------
 // Poll if DS1820 temperature conversion is complete
@@ -222,6 +329,25 @@ int OWReadByte(int Pin)
         return result;
 }
 
+
+//-----------------------------------------------------------------------------
+// Read 1-Wire data byte and return it
+//
+int OWReadByteDEBUG(int Pin)
+{
+        int loop, result=0;
+
+        for (loop = 0; loop < 8; loop++)
+        {
+                // shift the result to get it ready for the next bit
+                result >>= 1;
+
+                // if result is one, then set MS bit
+                if (OWReadBitDEBUG(Pin))
+                        result |= 0x80;
+        }
+        return result;
+}
 //-----------------------------------------------------------------------------
 // Write a 1-Wire data byte and return the sampled result.
 //
@@ -296,14 +422,6 @@ int DS1820_getTemp() {
 
 
 void DS1820_driver_Init(){
-#if PLATFORM_BEKEN
-	BKfact = Tokenizer_GetArgIntegerDefault(1, 17);
-	if (BKfact == 9999) 	// "magic" 9999 to initiate a test (increase factor every 2 minutes)
-	{
-		BKfact=10;
-		testfact=1;
-	}
-#endif
 };
 
 
@@ -320,6 +438,17 @@ void DS1820_OnEverySecond() {
 	// for now just find the pin used
 	//
 	Pin=PIN_FindPinIndexForRole(IOR_DS1820_IO, 99);
+	
+	// DEBUG timing - will set this pin to low while taking sample of devices response
+	// search for defined pin and if it is defined, set to high output
+	debPin=PIN_FindPinIndexForRole(IOR_DS1820_DEB_Rx_PULSE, 99);
+        if (debPin != 99) {
+        	HAL_PIN_Setup_Output(debPin);
+        	HAL_PIN_SetOutputValue(debPin,1);
+        }
+
+	
+	
 	uint8_t scratchpad[9], crc;
 	if (Pin != 99) {	// only if pin is set
 		// request temp if conversion was requested two seconds after request
@@ -334,20 +463,27 @@ void DS1820_OnEverySecond() {
 			OWWriteByte(Pin,0xCC);
 			OWWriteByte(Pin,0xBE);
 
-			for (int i = 0; i < 9; i++)
-			  {
-			    scratchpad[i] = OWReadByte(Pin);//read Scratchpad Memory of DS
-			  }
+
+// to test for debug only once before reading, just define a second "read" function if we shall use it
+
+			if (debPin == 99) {	// not defined, use normal reading
+				for (int i = 0; i < 9; i++)
+				  {
+				    scratchpad[i] = OWReadByte(Pin);//read Scratchpad Memory of DS
+				  }
+			}
+			else {	// debPin !=99 , so it's defined an we use the "debugging" read function
+				for (int i = 0; i < 9; i++)
+				  {
+				    scratchpad[i] = OWReadByteDEBUG(Pin);//read Scratchpad Memory of DS
+				  }			
+			}
 //			crc= OWcrc(scratchpad, 8);
 			crc= Crc8CQuick(scratchpad, 8);
 			if (crc != scratchpad[8])
 			{
 				errcount++;
-				addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "DS1820 - Read CRC=%x != calculated:%x (errcount=%i)",scratchpad[8],crc,errcount);
-				#if PLATFORM_BEKEN
-					addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, " --- BKfact is %i",BKfact);
-				#endif
-				addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "\r\n");
+				addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "DS1820 - Read CRC=%x != calculated:%x (errcount=%i)\r\n",scratchpad[8],crc,errcount);
 				addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "DS1820 - Scratchpad Data Read: %x %x %x %x %x %x %x %x %x \r\n",scratchpad[0],scratchpad[1],scratchpad[2],scratchpad[3],scratchpad[4],scratchpad[5],scratchpad[6],scratchpad[7],scratchpad[8]);
 				
 				if (errcount > 5) dsread=0;	// retry afer 5 failures		
@@ -374,20 +510,11 @@ void DS1820_OnEverySecond() {
 				dsread=0;
 				lastconv=g_secondsElapsed;
 				addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "DS1820 - Pin=%i temp=%s%i.%02i \r\n",Pin, negative ? "-" : "+", (int)Tc/100 , (int)Tc%100);
-				addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "DS1820 - High=%i Low=%i Val=%i Tc=%i  -- Read CRC=%x - calculated:%x ",High, Low, Val,Tc,scratchpad[8],crc);
-				#if PLATFORM_BEKEN
-					addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, " --- BKfact is %i",BKfact);
-				#endif
+				addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "DS1820 - High=%i Low=%i Val=%i Tc=%i  -- Read CRC=%x - calculated:%x \r\n",High, Low, Val,Tc,scratchpad[8],crc);
 				addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "\r\n");
 			}
 		}
 		else if (g_secondsElapsed % 5 == 0) {	// every 5 seconds
-#if PLATFORM_BEKEN
-			// increase BEKEN factor if testing is requested
-			if ((testfact == 1) && (BKfact <= 1000) && (g_secondsElapsed % 120 == 0)) {	// increase factor by 2 until its 1000 every 2 minutes seconds
-				BKfact+=2;
-			}
-#endif
 			// ask for "conversion" 
 			if (OWReset(Pin) == 0){
 				addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "DS1820 - Pin=%i  -- Reset failed",Pin);
