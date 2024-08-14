@@ -32,16 +32,16 @@ lnPinMapping_t g_pins[] = {
 	{ "A14", GPIOA_BASE, GPIO_PIN_14 },
 	{ "A15", GPIOA_BASE, GPIO_PIN_15 },
 	// port B
-	{ "B0", GPIOB_BASE, GPIO_PIN_0 },
-	{ "B1", GPIOB_BASE, GPIO_PIN_1 },
-	{ "B2", GPIOB_BASE, GPIO_PIN_2 },
-	{ "B3", GPIOB_BASE, GPIO_PIN_3 },
-	{ "B4", GPIOB_BASE, GPIO_PIN_4 },
-	{ "B5", GPIOB_BASE, GPIO_PIN_5 },
-	{ "B6", GPIOB_BASE, GPIO_PIN_6 },
-	{ "B7", GPIOB_BASE, GPIO_PIN_7 },
-	{ "B8", GPIOB_BASE, GPIO_PIN_8 },
-	{ "B9", GPIOB_BASE, GPIO_PIN_9 },
+	{ "B0", GPIOB_BASE, GPIO_PIN_0 }, // 16
+	{ "B1", GPIOB_BASE, GPIO_PIN_1 }, // 17
+	{ "B2", GPIOB_BASE, GPIO_PIN_2 }, // 18
+	{ "B3", GPIOB_BASE, GPIO_PIN_3 }, // 19
+	{ "B4", GPIOB_BASE, GPIO_PIN_4 }, // 20
+	{ "B5", GPIOB_BASE, GPIO_PIN_5 }, // 21
+	{ "B6", GPIOB_BASE, GPIO_PIN_6 }, // 22
+	{ "B7", GPIOB_BASE, GPIO_PIN_7 }, // 23
+	{ "B8", GPIOB_BASE, GPIO_PIN_8 }, // 24
+	{ "B9", GPIOB_BASE, GPIO_PIN_9 }, // 25
 	// ETC TODO
 };
 static int g_numPins = sizeof(g_pins) / sizeof(g_pins[0]);

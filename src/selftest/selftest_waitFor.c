@@ -379,6 +379,53 @@ void Test_WaitFor_OperatorNotEqual() {
 	SELFTEST_ASSERT_CHANNEL(1, 123);
 	SELFTEST_ASSERT_CHANNEL(2, 234);
 }
+void Test_WaitFor_ChannelValue() {
+
+	int i;
+	char buffer[64];
+
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	// send file content as POST to REST interface
+	Test_FakeHTTPClientPacket_POST("api/lfs/testScript.txt",
+		"setChannel 1 50\n"
+		"setChannel 2 75\n"
+		"waitFor Channel5 55\n"
+		"setChannel 1 123\n"
+		"setChannel 2 234\n");
+
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	CMD_ExecuteCommand("setChannel 2 0", 0);
+
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+
+	CMD_ExecuteCommand("startScript testScript.txt", 0);
+
+	for (i = 0; i < 10; i++) {
+		SVM_RunThreads(5);
+	}
+	SELFTEST_ASSERT_CHANNEL(1, 50);
+	SELFTEST_ASSERT_CHANNEL(2, 75);
+
+	for (int ii = 0; ii < 10; ii++) {
+		CMD_ExecuteCommand("setChannel 5 45", 0);
+
+		for (i = 0; i < 10; i++) {
+			SVM_RunThreads(5);
+		}
+		SELFTEST_ASSERT_CHANNEL(1, 50);
+		SELFTEST_ASSERT_CHANNEL(2, 75);
+	}
+	// now it becomes 55 and condition is met
+	CMD_ExecuteCommand("setChannel 5 55", 0);
+	for (i = 0; i < 10; i++) {
+		SVM_RunThreads(5);
+	}
+	SELFTEST_ASSERT_CHANNEL(1, 123);
+	SELFTEST_ASSERT_CHANNEL(2, 234);
+}
 void Test_WaitFor() {
 	Test_WaitFor_MQTTState();
 	Test_WaitFor_NoPingTime();
@@ -388,6 +435,7 @@ void Test_WaitFor() {
 	Test_WaitFor_OperatorLess();
 	Test_WaitFor_OperatorLess2();
 	Test_WaitFor_OperatorNotEqual();
+	Test_WaitFor_ChannelValue();
 }
 
 #endif

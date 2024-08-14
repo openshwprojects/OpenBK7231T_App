@@ -55,4 +55,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | Temperature_div100 |  Just like humidity_div100, but for temperature. |
 | LeakageCurrent_div1000 |  . |
 | Power_div100 |  Just like power, but with one decimal place (but stored as integer, for TuyaMCU support) |
+| Motion |  Motion |
+| ReadOnly_div10 |  This channel is read only. |
+| ReadOnly_div100 |  This channel is read only. |
+| ReadOnly_div1000 |  This channel is read only. |
 | Max |  This is the current total number of available channel types. |

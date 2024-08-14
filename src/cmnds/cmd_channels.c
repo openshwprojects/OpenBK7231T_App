@@ -479,6 +479,11 @@ static commandResult_t CMD_FullBootTime(const void *context, const char *cmd, co
 
 	return CMD_RES_OK;
 }
+
+// cmd_enums.c
+commandResult_t CMD_SetChannelEnum(const void *context, const char *cmd,
+	const char *args, int cmdFlags);
+
 static commandResult_t CMD_PinDeepSleep(const void *context, const char *cmd, const char *args, int cmdFlags){
 
 	Tokenizer_TokenizeString(args, 0); 
@@ -553,6 +558,13 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_FullBootTime","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("FullBootTime", CMD_FullBootTime, NULL);
+	//cmddetail:{"name":"SetChannelEnum","args":"[ChannelIndex][Value,Title][Value,Title]",
+	//cmddetail:"descr":"Creates a custom channel enumeration.",
+	//cmddetail:"fn":"SetChannelEnum","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+#if WINDOWS
+	CMD_RegisterCommand("SetChannelEnum", CMD_SetChannelEnum, NULL);
+#endif
 	//cmddetail:{"name":"SetChannelLabel","args":"[ChannelIndex][Str][bHideTogglePrefix]",
 	//cmddetail:"descr":"Sets a channel label for UI and default entity name for Home Assistant discovery. If you use 1 for bHideTogglePrefix, then the 'Toggle ' prefix from UI button will be omitted",
 	//cmddetail:"fn":"CMD_SetChannelLabel","file":"cmnds/cmd_channels.c","requires":"",

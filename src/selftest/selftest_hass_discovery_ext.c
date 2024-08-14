@@ -275,9 +275,88 @@ void Test_HassDiscovery_Channel_Toggle() {
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "pl_on", "1");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "pl_off", "0");
 }
+void Test_HassDiscovery_Channel_Illuminance() {
+	const char *shortName = "WinIlluminanceTest";
+	const char *fullName = "Windows Fake Illuminance";
+	const char *mqttName = "testIlluminance";
+	SIM_ClearOBK(shortName);
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
+
+	CFG_SetShortDeviceName(shortName);
+	CFG_SetDeviceName(fullName);
+
+	CHANNEL_SetType(4, ChType_Illuminance);
+
+	SIM_ClearMQTTHistory();
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(5, false);
+
+	// OBK device should publish JSON on MQTT topic "homeassistant"
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "name", shortName);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "sw", USER_SW_VER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mf", MANUFACTURER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mdl", PLATFORM_MCU_NAME);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "~", mqttName);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "dev_cla", "illuminance");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "unit_of_meas", "lx");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "stat_t", "~/4/get");
+}
 void Test_HassDiscovery_Channel_Motion() {
 	const char *shortName = "WinMotionTest";
 	const char *fullName = "Windows Fake Motion";
+	const char *mqttName = "testMotion";
+	SIM_ClearOBK(shortName);
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
+
+	CFG_SetShortDeviceName(shortName);
+	CFG_SetDeviceName(fullName);
+
+	CHANNEL_SetType(4, ChType_Motion);
+
+	SIM_ClearMQTTHistory();
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(5, false);
+
+	// OBK device should publish JSON on MQTT topic "homeassistant"
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "name", shortName);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "sw", USER_SW_VER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mf", MANUFACTURER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mdl", PLATFORM_MCU_NAME);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "~", mqttName);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "dev_cla", "motion");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "stat_t", "~/4/get");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "pl_on", "1");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "pl_off", "0");
+}
+void Test_HassDiscovery_Channel_LowMidHigh() {
+	const char *shortName = "WinReadOnlyLowMidHighTest";
+	const char *fullName = "Windows Fake ReadOnlyLowMidHigh";
+	const char *mqttName = "testReadOnlyLowMidHigh";
+	SIM_ClearOBK(shortName);
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
+
+	CFG_SetShortDeviceName(shortName);
+	CFG_SetDeviceName(fullName);
+
+	CHANNEL_SetType(4, ChType_ReadOnlyLowMidHigh);
+
+	SIM_ClearMQTTHistory();
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(5, false);
+
+	// OBK device should publish JSON on MQTT topic "homeassistant"
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "name", shortName);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "sw", USER_SW_VER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mf", MANUFACTURER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mdl", PLATFORM_MCU_NAME);
+
+}
+void Test_HassDiscovery_Channel_Motion_longName() {
+	const char *shortName = "multifunction_PIR_obkE1552B06";
+	const char *fullName = "multifunction_PIR_OpenBK7231N_E1552B06";
 	const char *mqttName = "testMotion";
 	SIM_ClearOBK(shortName);
 	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
@@ -318,6 +397,9 @@ void Test_HassDiscovery_Channel_Motion_With_dInput() {
 	// dInput should not SHADOW the channel type
 	PIN_SetPinRoleForPinIndex(10, IOR_DigitalInput);
 	PIN_SetPinChannelForPinIndex(10, 4);
+
+	PIN_SetPinRoleForPinIndex(11, IOR_LED_n);
+	PIN_SetPinChannelForPinIndex(11, 4);
 
 	SIM_ClearMQTTHistory();
 	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
@@ -477,6 +559,9 @@ void Test_HassDiscovery_Ext() {
 	Test_HassDiscovery_Channel_DimmerLightDetection_Dual();
 	Test_HassDiscovery_Channel_Motion();
 	Test_HassDiscovery_Channel_Motion_With_dInput();
+	Test_HassDiscovery_Channel_Motion_longName();
+	Test_HassDiscovery_Channel_Illuminance();
+	Test_HassDiscovery_Channel_LowMidHigh();
 
 
 }

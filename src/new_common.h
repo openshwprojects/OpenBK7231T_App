@@ -322,9 +322,7 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 #elif PLATFORM_LN882H
 
 // TODO:LN882H Platform setup here.
-typedef int bool;
-#define true 1
-#define false 0
+#include <stdbool.h>
 
 #define ASSERT
 #define os_strcpy strcpy
@@ -486,7 +484,9 @@ extern int g_rebootReason;
 extern float g_wifi_temperature;
 
 typedef int(*jsonCb_t)(void *userData, const char *fmt, ...);
+#if ENABLE_TASMOTA_JSON
 int JSON_ProcessCommandReply(const char *cmd, const char *args, void *request, jsonCb_t printer, int flags);
+#endif
 void ScheduleDriverStart(const char *name, int delay);
 bool isWhiteSpace(char ch);
 void convert_IP_to_string(char *o, unsigned char *ip);

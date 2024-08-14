@@ -142,7 +142,8 @@ bool LED_IsLedDriverChipRunning()
 		|| DRV_IsRunning("TESTLED") || DRV_IsRunning("SM2235") || DRV_IsRunning("BP1658CJ")
 		|| DRV_IsRunning("KP18058")
 		|| DRV_IsRunning("SM16703P")
-		;
+		|| DRV_IsRunning("SM15155E")
+		; 
 #else
 	return false;
 #endif
@@ -288,6 +289,11 @@ void LED_I2CDriver_WriteRGBCW(float* finalRGBCW) {
 	}
 	if (DRV_IsRunning("KP18058")) {
 		KP18058_Write(finalRGBCW);
+	}
+#endif
+#ifdef ENABLE_DRIVER_SM15155E
+	if (DRV_IsRunning("SM15155E")) {
+		SM15155E_Write(finalRGBCW);
 	}
 #endif
 }
@@ -510,13 +516,18 @@ void apply_smart_light() {
 					baseRGBCW[i] = 0;
 					final = 0;
 				}
-			} else if(g_lightMode == Light_RGB) {
+			}
+			else if (g_lightMode == Light_RGB) {
 				// skip channels 3, 4
-				if(i >= 3)
+				if (i >= 3)
 				{
 					baseRGBCW[i] = 0;
 					final = 0;
 				}
+			} else if(g_lightMode == Light_Anim) {
+				// skip all?
+				baseRGBCW[i] = 0;
+				final = 0;
 			} else {
 
 			}
@@ -580,7 +591,7 @@ void apply_smart_light() {
 	TuyaMCU_OnRGBCWChange(finalColors, g_lightEnableAll, g_lightMode, g_brightness0to100*0.01f, LED_GetTemperature0to1Range());
 #endif
 #if	ENABLE_DRIVER_SM16703P
-	if (pixel_count > 0) {
+	if (pixel_count > 0 && (g_lightMode != Light_Anim || g_lightEnableAll == 0)) {
 		SM16703P_setAllPixels(finalColors[0], finalColors[1], finalColors[2]);
 		SM16703P_Show();
 	}

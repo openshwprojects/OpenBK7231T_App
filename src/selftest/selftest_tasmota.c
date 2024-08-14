@@ -615,6 +615,26 @@ void Test_Tasmota_MQTT_RGBCW() {
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "ON");
 	SIM_ClearMQTTHistory();
 }
+void Test_Backlog() {
+
+	SELFTEST_ASSERT(CMD_ExecuteCommand("backlog setChannel 1 2; ", 0) == CMD_RES_OK);
+	SELFTEST_ASSERT_CHANNEL(1, 2);
+	SELFTEST_ASSERT(CMD_ExecuteCommand("backlog setChannel 1 3", 0) == CMD_RES_OK);
+	SELFTEST_ASSERT_CHANNEL(1, 3);
+	SELFTEST_ASSERT(CMD_ExecuteCommand("backlog    setChannel 1     4", 0) == CMD_RES_OK);
+	SELFTEST_ASSERT_CHANNEL(1, 4);
+	SELFTEST_ASSERT(CMD_ExecuteCommand("backlog    setChannel 1     5 ;;;", 0) == CMD_RES_OK);
+	SELFTEST_ASSERT_CHANNEL(1, 5);
+	SELFTEST_ASSERT(CMD_ExecuteCommand("backlog    thiisCooommandNotExists 1     5 ;;;", 0)
+		== CMD_RES_UNKNOWN_COMMAND);
+	SELFTEST_ASSERT_CHANNEL(1, 5);
+	SELFTEST_ASSERT(CMD_ExecuteCommand("backlog    setChannel 1;;;", 0) == CMD_RES_NOT_ENOUGH_ARGUMENTS);
+	SELFTEST_ASSERT_CHANNEL(1, 5);
+	SELFTEST_ASSERT(CMD_ExecuteCommand("backlog    setChannel ;;;", 0) == CMD_RES_NOT_ENOUGH_ARGUMENTS);
+	SELFTEST_ASSERT_CHANNEL(1, 5);
+	SELFTEST_ASSERT(CMD_ExecuteCommand("backlog setChannel 1 22; setChannel 1 33", 0) == CMD_RES_OK);
+	SELFTEST_ASSERT_CHANNEL(1, 33);
+}
 void Test_Tasmota() {
 	Test_Tasmota_MQTT_Switch();
 	Test_Tasmota_MQTT_Switch_Double();

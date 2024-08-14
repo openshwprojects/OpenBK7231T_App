@@ -11,6 +11,7 @@
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_tuyaMCU.h"
 #include "../ota/ota.h"
+#include <lwip/dns.h>
 
 #define BUILD_AND_VERSION_FOR_MQTT "Open" PLATFORM_MCU_NAME " " USER_SW_VER " " __DATE__ " " __TIME__ 
 
@@ -708,6 +709,7 @@ int mqtt_printf255(obk_mqtt_publishReplyPrinter_t* request, const char* fmt, ...
 	request->curLen += myLen;
 	return 0;
 }
+#if ENABLE_TASMOTA_JSON
 void MQTT_ProcessCommandReplyJSON(const char *cmd, const char *args, int flags) {
 	obk_mqtt_publishReplyPrinter_t replyBuilder;
 	memset(&replyBuilder, 0, sizeof(obk_mqtt_publishReplyPrinter_t));
@@ -716,6 +718,7 @@ void MQTT_ProcessCommandReplyJSON(const char *cmd, const char *args, int flags) 
 		free(replyBuilder.allocated);
 	}
 }
+#endif
 int tasCmnd(obk_mqtt_request_t* request) {
 	const char *p, *args;
     //const char *p2;
@@ -739,7 +742,9 @@ int tasCmnd(obk_mqtt_request_t* request) {
 	// there is a NULL terminating character after payload of MQTT
 	// So we can feed it directly as command
 	CMD_ExecuteCommandArgs(p, args, COMMAND_FLAG_SOURCE_MQTT);
+#if ENABLE_TASMOTA_JSON
 	MQTT_ProcessCommandReplyJSON(p, args, COMMAND_FLAG_SOURCE_MQTT);
+#endif
 #else
 	int len = request->receivedLen;
 	char copy[64];
@@ -1123,6 +1128,26 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 	}
 }
 
+static ip_addr_t mqtt_ip_resolved;
+static volatile int dns_in_progress_time;
+static volatile bool dns_resolved;
+void dnsFound(const char *name, ip_addr_t *ipaddr, void *arg) 
+{       
+
+	if (NULL != ipaddr)
+	{
+		memcpy(&mqtt_ip_resolved, ipaddr, sizeof(mqtt_ip_resolved));
+		dns_resolved = true;
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host %s resolution SUCCESS\r\n", name);
+	}
+	else
+	{
+		dns_resolved = false;
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host %s resolution FAILED\r\n", name);
+	}
+	dns_in_progress_time = 0;
+}
+
 static int MQTT_do_connect(mqtt_client_t* client)
 {
 	const char* mqtt_userName, * mqtt_host, * mqtt_pass, * mqtt_clientID;
@@ -1170,25 +1195,39 @@ static int MQTT_do_connect(mqtt_client_t* client)
 	sprintf(will_topic, "%s/connected", mqtt_clientID);
 	mqtt_client_info.will_topic = will_topic;
 	mqtt_client_info.will_msg = "offline";
-	mqtt_client_info.will_retain = true,
-		mqtt_client_info.will_qos = 2,
+	mqtt_client_info.will_retain = true;
+	mqtt_client_info.will_qos = 2;
 
-		hostEntry = gethostbyname(mqtt_host);
-	if (NULL != hostEntry)
+	//hostEntry = gethostbyname(mqtt_host);
+	if (dns_in_progress_time <= 0 && !dns_resolved)
 	{
-		if (hostEntry->h_addr_list && hostEntry->h_addr_list[0]) {
-			int len = hostEntry->h_length;
-			if (len > 4) {
-				addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host resolves to addr len > 4\r\n");
-				len = 4;
-			}
-			memcpy(&mqtt_ip, hostEntry->h_addr_list[0], len);
+	#ifdef PLATFORM_XR809
+		res = dns_gethostbyname(mqtt_host, &mqtt_ip_resolved, dnsFound, NULL);
+	#else
+	    res = dns_gethostbyname_addrtype(mqtt_host, &mqtt_ip_resolved, dnsFound, NULL, LWIP_DNS_ADDRTYPE_IPV4);
+	#endif
+		if (ERR_OK == res)
+		{
+			dns_in_progress_time = 0;
+			dns_resolved = true;
 		}
-		else {
-			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host resolves no addresses?\r\n");
-			snprintf(mqtt_status_message, sizeof(mqtt_status_message), "mqtt_host resolves no addresses?");
-			return 0;
+		else if (ERR_INPROGRESS == res)
+		{
+			dns_in_progress_time = 10;
+			dns_resolved = false;
 		}
+		else
+		{
+			dns_in_progress_time = 0;
+			dns_resolved = false;
+		}
+	}
+
+	if (dns_in_progress_time <= 0 && dns_resolved)
+	{
+		dns_resolved = false;
+		memcpy(&mqtt_ip, &mqtt_ip_resolved, sizeof(mqtt_ip_resolved));
+
 
 		// host name/ip
 		//ipaddr_aton(mqtt_host,&mqtt_ip);
@@ -1220,8 +1259,19 @@ static int MQTT_do_connect(mqtt_client_t* client)
 		return res;
 	}
 	else {
-		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host %s not found by gethostbyname\r\n", mqtt_host);
-		snprintf(mqtt_status_message, sizeof(mqtt_status_message), "mqtt_host %s not found by gethostbyname", mqtt_host);
+		if (dns_in_progress_time > 0)
+		{
+			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host %s is being resolved by gethostbyname\r\n", mqtt_host);
+			dns_in_progress_time--;
+		}
+		else
+		{
+			if (!dns_resolved)
+			{
+				addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host %s not found by gethostbyname\r\n", mqtt_host);
+				snprintf(mqtt_status_message, sizeof(mqtt_status_message), "mqtt_host %s not found by gethostbyname", mqtt_host);
+			}
+		}
 	}
 	return 0;
 }
@@ -1338,6 +1388,40 @@ commandResult_t MQTT_PublishCommand(const void* context, const char* cmd, const 
 
 	return CMD_RES_OK;
 }
+/*
+1. Create LittleFS file with any string
+2. Use command: PublishFile [TopicName] [FileName] [bOptionalForRemoveGet]
+	Like: PublishFile myTopic myFile.txt 1
+
+*/
+#if ENABLE_LITTLEFS
+commandResult_t MQTT_PublishFile(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	const char* topic, *fname;
+	OBK_Publish_Result ret;
+	int flags = 0;
+	byte*data;
+
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS);
+
+	if (Tokenizer_GetArgsCount() < 2) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish command requires two arguments (topic and value)");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	topic = Tokenizer_GetArg(0);
+	fname = Tokenizer_GetArg(1);
+	// optional third argument to remove get, etc
+	if (Tokenizer_GetArgIntegerDefault(2, 0) != 0) {
+		flags = OBK_PUBLISH_FLAG_RAW_TOPIC_NAME;
+	}
+	data = LFS_ReadFile(fname);
+	if (data) {
+		ret = MQTT_PublishMain_StringString(topic, (const char*)data, flags);
+		free(data);
+	}
+
+	return CMD_RES_OK;
+}
+#endif
 // we have a separate command for integer because it can support math expressions
 // (so it handled like $CH10*10, etc)
 commandResult_t MQTT_PublishCommandInteger(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -1370,6 +1454,7 @@ commandResult_t MQTT_PublishCommandFloat(const void* context, const char* cmd, c
 	float value;
 	OBK_Publish_Result ret;
 	int flags = 0;
+	int decimalPlaces;
 
 	Tokenizer_TokenizeString(args, 0);
 
@@ -1384,7 +1469,9 @@ commandResult_t MQTT_PublishCommandFloat(const void* context, const char* cmd, c
 	if (Tokenizer_GetArgIntegerDefault(2, 0) != 0) {
 		flags = OBK_PUBLISH_FLAG_RAW_TOPIC_NAME;
 	}
-	ret = MQTT_PublishMain_StringFloat(topic, value, -1, flags);
+	// optional fourth argument to set rounding
+	decimalPlaces = Tokenizer_GetArgIntegerDefault(3, -1);
+	ret = MQTT_PublishMain_StringFloat(topic, value, decimalPlaces, flags);
 
 	return CMD_RES_OK;
 }
@@ -1679,17 +1766,17 @@ void MQTT_init()
 
 	mqtt_initialised = 1;
 
-	//cmddetail:{"name":"publish","args":"[Topic][Value]",
+	//cmddetail:{"name":"publish","args":"[Topic][Value][bOptionalSkipPrefixAndSuffix]",
 	//cmddetail:"descr":"Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'. You can use argument expansion here, so $CH11 will change to value of the channel 11",
 	//cmddetail:"fn":"MQTT_PublishCommand","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("publish", MQTT_PublishCommand, NULL);
-	//cmddetail:{"name":"publishInt","args":"[Topic][Value]",
+	//cmddetail:{"name":"publishInt","args":"[Topic][Value][bOptionalSkipPrefixAndSuffix]",
 	//cmddetail:"descr":"Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an integer, so you can also use math expressions like $CH10*10, etc.",
 	//cmddetail:"fn":"MQTT_PublishCommand","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("publishInt", MQTT_PublishCommandInteger, NULL);
-	//cmddetail:{"name":"publishFloat","args":"[Topic][Value]",
+	//cmddetail:{"name":"publishFloat","args":"[Topic][Value][bOptionalSkipPrefixAndSuffix]",
 	//cmddetail:"descr":"Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an float, so you can also use math expressions like $CH10*0.0, etc.",
 	//cmddetail:"fn":"MQTT_PublishCommand","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
@@ -1729,6 +1816,17 @@ void MQTT_init()
 	//cmddetail:"fn":"MQTT_SetTasTeleIntervals","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TasTeleInterval", MQTT_SetTasTeleIntervals, NULL);
+
+#if ENABLE_LITTLEFS
+	//cmddetail:{"name":"publishFile","args":"[Topic][Value][bOptionalSkipPrefixAndSuffix]",
+	//cmddetail:"descr":"Publishes data read from LFS file by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.",
+	//cmddetail:"fn":"MQTT_PublishFile","file":"mqtt/new_mqtt.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("publishFile", MQTT_PublishFile, NULL);
+#endif
+}
+static float getInternalTemperature() {
+	return g_wifi_temperature;
 }
 
 OBK_Publish_Result MQTT_DoItemPublishString(const char* sChannel, const char* valueStr)
@@ -1804,6 +1902,11 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 		sprintf(dataStr, "%d", LWIP_GetActiveSockets());
 		return MQTT_DoItemPublishString("sockets", dataStr);
 
+
+	case PUBLISHITEM_SELF_TEMP:
+		sprintf(dataStr, "%.2f", getInternalTemperature());
+		return MQTT_DoItemPublishString("temp", dataStr);
+		
 	case PUBLISHITEM_SELF_RSSI:
 		sprintf(dataStr, "%d", HAL_GetWifiStrength());
 		return MQTT_DoItemPublishString("rssi", dataStr);
@@ -1852,6 +1955,7 @@ int MQTT_RunQuickTick(){
 
 int g_wantTasmotaTeleSend = 0;
 void MQTT_BroadcastTasmotaTeleSENSOR() {
+#if ENABLE_TASMOTA_JSON
 	if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES) == false) {
 		return;
 	}
@@ -1864,12 +1968,15 @@ void MQTT_BroadcastTasmotaTeleSENSOR() {
 	if (bHasAnySensor) {
 		MQTT_ProcessCommandReplyJSON("SENSOR", "", COMMAND_FLAG_SOURCE_TELESENDER);
 	}
+#endif
 }
 void MQTT_BroadcastTasmotaTeleSTATE() {
+#if ENABLE_TASMOTA_JSON
 	if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES) == false) {
 		return;
 	}
 	MQTT_ProcessCommandReplyJSON("STATE", "", COMMAND_FLAG_SOURCE_TELESENDER);
+#endif
 }
 // called from user timer.
 int MQTT_RunEverySecondUpdate()

@@ -21,6 +21,8 @@
 #include "../driver/drv_local.h"
 #include "../driver/drv_bl_shared.h"
 
+#if ENABLE_TASMOTA_JSON
+
 void JSON_PrintKeyValue_String(void* request, jsonCb_t printer, const char* key, const char* value, bool bComma) {
 	printer(request, "\"%s\":\"%s\"", key, value);
 	if (bComma) {
@@ -271,8 +273,8 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 		// close ENERGY block
 		printer(request, "},");
 	}
-	if (DRV_IsRunning("CHT8305")) {
-		g_pin_1 = PIN_FindPinIndexForRole(IOR_CHT8305_DAT, g_pin_1);
+	if (DRV_IsRunning("CHT83XX")) {
+		g_pin_1 = PIN_FindPinIndexForRole(IOR_CHT83XX_DAT, g_pin_1);
 		channel_1 = g_cfg.pins.channels[g_pin_1];
 		channel_2 = g_cfg.pins.channels2[g_pin_1];
 
@@ -280,7 +282,27 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 		chan_val2 = CHANNEL_GetFloat(channel_2);
 
 		// writer header
-		printer(request, "\"CHT8305\":");
+		printer(request, "\"CHT83XX\":");
+		// following check will clear NaN values
+		printer(request, "{");
+		printer(request, "\"Temperature\": %.1f,", chan_val1);
+		printer(request, "\"Humidity\": %.0f", chan_val2);
+		// close ENERGY block
+		printer(request, "},");
+	}
+	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		int role = PIN_GetPinRoleForPinIndex(i);
+		if (role != IOR_DHT11 && role != IOR_DHT12 && role != IOR_DHT21 && role != IOR_DHT22)
+			continue;
+		channel_1 = g_cfg.pins.channels[i];
+		channel_2 = g_cfg.pins.channels2[i];
+
+		chan_val1 = CHANNEL_GetFloat(channel_1) / 10.0f;
+		chan_val2 = CHANNEL_GetFloat(channel_2);
+
+		// writer header
+		// TODO - index?
+		printer(request, "\"DHT\":");
 		// following check will clear NaN values
 		printer(request, "{");
 		printer(request, "\"Temperature\": %.1f,", chan_val1);
@@ -338,7 +360,15 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 		printer(request, "\"ENERGY\":");
 		http_tasmota_json_ENERGY(request, printer);
 	}
-	if (DRV_IsSensor()) {
+	bool bHasAnyDHT = false;
+	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		int role = PIN_GetPinRoleForPinIndex(i);
+		if (role != IOR_DHT11 && role != IOR_DHT12 && role != IOR_DHT21 && role != IOR_DHT22)
+			continue;
+		bHasAnyDHT = true;
+		break;
+	}
+	if (DRV_IsSensor() || bHasAnyDHT) {
 		http_tasmota_json_SENSOR(request, printer);
 		JSON_PrintKeyValue_String(request, printer, "TempUnit", "C", false);
 	}
@@ -1061,6 +1091,8 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 
 	return 0;
 }
+// close for ENABLE_TASMOTA_JSON
+#endif
 
 
 

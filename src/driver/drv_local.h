@@ -50,6 +50,7 @@ void BP1658CJ_Init();
 
 void KP18058_Init();
 
+void SM15155E_Init();
 
 void SM16703P_Init();
 void SM16703P_setPixel(int pixel, int r, int g, int b);
@@ -66,6 +67,10 @@ void GN6932_Init();
 void TM1638_Init();
 
 void HT16K33_Init();
+
+void HD2015_Init();
+
+void DRV_IR2_Init();
 
 void DRV_ADCSmoother_Init();
 void DRV_ADCSmoother_RunFrame();
@@ -90,9 +95,9 @@ void DRV_HTTPButtons_ProcessChanges(http_request_t* request);
 void DRV_HTTPButtons_AddToHtmlPage(http_request_t* request);
 void DRV_InitHTTPButtons();
 
-void CHT8305_Init();
-void CHT8305_OnEverySecond();
-void CHT8305_AppendInformationToHTTPIndexPage(http_request_t* request);
+void CHT83XX_Init();
+void CHT83XX_OnEverySecond();
+void CHT83XX_AppendInformationToHTTPIndexPage(http_request_t* request);
 
 void SHT3X_Init();
 void SHT3X_AppendInformationToHTTPIndexPage(http_request_t* request);
@@ -103,6 +108,10 @@ void AHT2X_Init();
 void AHT2X_AppendInformationToHTTPIndexPage(http_request_t* request);
 void AHT2X_OnEverySecond();
 void AHT2X_StopDriver();
+
+void BMPI2C_Init();
+void BMPI2C_AppendInformationToHTTPIndexPage(http_request_t* request);
+void BMPI2C_OnEverySecond();
 
 void SGP_Init();
 void SGP_AppendInformationToHTTPIndexPage(http_request_t* request);
@@ -121,6 +130,8 @@ void Shift_OnChannelChanged(int ch, int value);
 void TMGN_RunQuickTick();
 
 void DRV_MAX72XX_Init();
+
+void apply_smart_light();
 
 void WEMO_Init();
 void WEMO_AppendInformationToHTTPIndexPage(http_request_t* request);
@@ -151,6 +162,10 @@ void Freeze_RunFrame();
 void PixelAnim_Init();
 void PixelAnim_SetAnimQuickTick();
 void PixelAnim_SetAnim(int j);
+
+void Drawers_Init();
+void Drawers_QuickTick();
+
 
 #define SM2135_DELAY         4
 

@@ -13,6 +13,6 @@
 #include "drv_tm_gn_display_shared.h"
 
 void GN6932_Init() {
-	TM_GN_Display_SharedInit();
+	TM_GN_Display_SharedInit(TMGN_AUTO);
 }
 
