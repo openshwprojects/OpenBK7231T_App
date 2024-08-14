@@ -312,8 +312,8 @@ void Main_OnWiFiStatusChange(int code)
 		break;
 	case WIFI_STA_AUTH_FAILED:
 		// try to connect again in few seconds
-		// for me first auth will often fail, so retry more aggressive during startup
-		// the maximum of 6 tries during first 30 seconds should be accepttable
+		// for me first auth will often fail, so retry more aggressively during startup
+		// the maximum of 6 tries during first 30 seconds should be acceptable
 		if (g_secondsElapsed < 30) {
 			g_connectToWiFi = 5;
 		}
