@@ -552,7 +552,7 @@ static int http_tasmota_json_status_MEM(void* request, jsonCb_t printer) {
 }
 // Test command: http://192.168.0.159/cm?cmnd=STATUS%205
 static int http_tasmota_json_status_NET(void* request, jsonCb_t printer) {
-	char tmpStr[16];
+	char tmpStr[19];	// will be used for MAC string 6*3 chars (18 would be o.k, since last hex has no ":" ...)
 	HAL_GetMACStr(tmpStr);
 
 	printer(request, "\"StatusNET\":{");
