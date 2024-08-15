@@ -145,52 +145,52 @@ commandResult_t CHT83XX_Alert(const void* context, const char* cmd, const char* 
 	int tfq = Tokenizer_GetArgInteger(2);
 	CHT_alert_freq freq;
 	CHT_alert_fq fq;
-	switch(tfreq)
-	{
-	case 120:
+	if (tfreq == 120) {
 		freq = FREQ_120S;
 		tfreq = 120;
-		break;
-	case 60 ... 119:
+	}
+	else if (tfreq >= 60 && tfreq <= 119) {
 		freq = FREQ_60S;
 		tfreq = 60;
-		break;
-	case 10 ... 59:
+	}
+	else if (tfreq >= 10 && tfreq <= 59) {
 		freq = FREQ_10S;
 		tfreq = 10;
-		break;
-	case 5 ... 9:
+	}
+	else if (tfreq >= 5 && tfreq <= 9) {
 		freq = FREQ_5S;
 		tfreq = 5;
-		break;
-	default:
-		ADDLOG_WARN(LOG_FEATURE_CMD, "CHT83XX_Alert: Wrong freq");
-	case 1 ... 4:
+	}
+	else if (tfreq >= 1 && tfreq <= 4) {
 		freq = FREQ_1S;
 		tfreq = 1;
-		break;
 	}
-	switch(tfq)
-	{
-	case 6:
+	else {
+		ADDLOG_WARN(LOG_FEATURE_CMD, "CHT83XX_Alert: Wrong freq");
+	}
+
+	if (tfq == 6) {
 		fq = FQ_6;
 		tfq = 6;
-		break;
-	case 4 ... 5:
+	}
+	else if (tfq >= 4 && tfq <= 5) {
 		fq = FQ_4;
 		tfq = 4;
-		break;
-	case 2 ... 3:
+	}
+	else if (tfq >= 2 && tfq <= 3) {
 		fq = FQ_2;
 		tfq = 2;
-		break;
-	default:
-		ADDLOG_WARN(LOG_FEATURE_CMD, "CHT83XX_Alert: Wrong fq");
-	case 1:
+	}
+	else if (tfq == 1) {
 		fq = FQ_1;
 		tfq = 1;
-		break;
 	}
+	else {
+		ADDLOG_WARN(LOG_FEATURE_CMD, "CHT83XX_Alert: Wrong fq");
+		fq = FQ_1;  // Assuming that the default case falls through to the case 1
+		tfq = 1;
+	}
+
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "freq:%i,fq:%i", tfreq, tfq);
 	CHT831X_ConfigureAlert(diff, freq, fq);
 
