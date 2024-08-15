@@ -167,6 +167,8 @@ commandResult_t CHT83XX_Alert(const void* context, const char* cmd, const char* 
 	}
 	else {
 		ADDLOG_WARN(LOG_FEATURE_CMD, "CHT83XX_Alert: Wrong freq");
+		freq = FREQ_1S;
+		tfreq = 1;
 	}
 
 	if (tfq == 6) {
@@ -187,7 +189,7 @@ commandResult_t CHT83XX_Alert(const void* context, const char* cmd, const char* 
 	}
 	else {
 		ADDLOG_WARN(LOG_FEATURE_CMD, "CHT83XX_Alert: Wrong fq");
-		fq = FQ_1;  // Assuming that the default case falls through to the case 1
+		fq = FQ_1; 
 		tfq = 1;
 	}
 
