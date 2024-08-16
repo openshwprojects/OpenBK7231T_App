@@ -166,6 +166,8 @@ void PixelAnim_SetAnim(int j);
 void Drawers_Init();
 void Drawers_QuickTick();
 
+void HGS02_Init(void);
+void HGS02_RunEverySecond(void);
 
 #define SM2135_DELAY         4
 

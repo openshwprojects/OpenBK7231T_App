@@ -64,7 +64,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "Drawers",		Drawers_Init,			NULL,			NULL, Drawers_QuickTick, NULL, NULL, false },
 #endif
-
+#if ENABLE_DRIVER_HGS02
+	//drvdetail:{"name":"HGS02",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"[HGS02](https://www.elektroda.com/rtvforum/viewtopic.php?p=21177061#21177061)",
+	//drvdetail:"requires":""}
+	{ "HGS02",		HGS02_Init,			HGS02_RunEverySecond,			NULL, NULL, NULL, NULL, false },
+#endif
 #if ENABLE_NTP
 	//drvdetail:{"name":"NTP",
 	//drvdetail:"title":"TODO",
