@@ -2616,7 +2616,7 @@ const char* g_obk_flagNames[] = {
 	"[LED] Automatically enable Light when changing brightness, color or temperature on WWW panel",
 	"[LED] Smooth transitions for LED (EXPERIMENTAL)",
 	"[MQTT] Always publish channels used by TuyaMCU",
-	"[LED] Force RGB mode (3 PWMs for LEDs) and ignore futher PWMs if they are set",
+	"[LED] Force RGB mode (3 PWMs for LEDs) and ignore further PWMs if they are set",
 	"[MQTT] Retain power channels (Relay channels, etc)",
 	"[IR] Do MQTT publish (Tasmota JSON format) for incoming IR data",
 	"[LED] Automatically enable Light on any change of brightness, color or temperature",
