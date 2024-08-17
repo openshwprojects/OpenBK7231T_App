@@ -1,4 +1,5 @@
 #include "drv_ds1820_simple.h"
+#include <task.h>
 
 static uint8_t   dsread=0;
 static int Pin;
@@ -79,6 +80,63 @@ void usleepds(int r) //delay function do 10*r nops, because rtos_delay_milliseco
 }
 
 
+// add some "special timing" for Beken - works w/o and with powerSave 1 for me
+
+void usleepshort(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
+{
+#
+#if PLATFORM_BEKEN
+	int newr=r/(3*g_powersave+1);		// devide by 4 if powerSave set to 1
+	for (volatile int i = 0; i < newr; i++) {
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+//		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop");
+	}
+
+#else
+	usleepds(r);
+#endif
+}
+void usleepmed(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
+{
+#
+#if PLATFORM_BEKEN
+	int newr= 10 * r / (10 + 5 * g_powersave) ;		// devide by 1.5 powerSave set to 1
+	for (volatile int i = 0; i < newr; i++) {
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	// 5
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+	}
+
+#else
+	usleepds(r);
+#endif
+}
+void usleeplong(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
+{
+#
+#if PLATFORM_BEKEN
+	int newr= 10 * r / (10 + 5 * g_powersave) ;		// devide by 1.5 powerSave set to 1
+	for (volatile int i = 0; i < newr; i++) {
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+//		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	// 5
+		__asm__("nop\nnop\nnop\nnop\nnop");	// 5
+	}
+
+#else
+	usleepds(r);
+#endif
+}
+
+
+
+
 /*
 
 timing numbers and general code idea from
@@ -115,15 +173,15 @@ int OWReset(int Pin)
 {
         int result;
 
-        usleepds(OWtimeG);
+//        usleep(OWtimeG);
         HAL_PIN_Setup_Output(Pin);
         HAL_PIN_SetOutputValue(Pin,0); // Drives DQ low
-        usleepds(OWtimeH);
+        usleeplong(OWtimeH);
         HAL_PIN_SetOutputValue(Pin,1); // Releases the bus
-        usleepds(OWtimeI);
+        usleepmed(OWtimeI);
         HAL_PIN_Setup_Input(Pin);
         result = HAL_PIN_ReadDigitalInput(Pin) ^ 0x01; // Sample for presence pulse from slave
-        usleepds(OWtimeJ); // Complete the reset sequence recovery
+        usleeplong(OWtimeJ); // Complete the reset sequence recovery
         return result; // Return sample presence pulse result
 }
 
@@ -136,19 +194,23 @@ void OWWriteBit(int Pin, int bit)
         {
                 // Write '1' bit
                 HAL_PIN_Setup_Output(Pin);
+                taskENTER_CRITICAL();
                 HAL_PIN_SetOutputValue(Pin,0); // Drives DQ low
-                usleepds(OWtimeA);
+                usleepshort(OWtimeA);
                 HAL_PIN_SetOutputValue(Pin,1); // Releases the bus
-                usleepds(OWtimeB); // Complete the time slot and 10us recovery
+                taskEXIT_CRITICAL();	// hope for the best for the following timer and keep CRITICAL as short as possible
+                usleepmed(OWtimeB); // Complete the time slot and 10us recovery
         }
         else
         {
                 // Write '0' bit
                 HAL_PIN_Setup_Output(Pin);
+                taskENTER_CRITICAL();
                 HAL_PIN_SetOutputValue(Pin,0); // Drives DQ low
-                usleepds(OWtimeC);
+                usleepmed(OWtimeC);
                 HAL_PIN_SetOutputValue(Pin,1); // Releases the bus
-                usleepds(OWtimeD);
+                taskEXIT_CRITICAL();	// hope for the best for the following timer and keep CRITICAL as short as possible
+                usleepshort(OWtimeD);
         }
 }
 
@@ -159,15 +221,16 @@ int OWReadBit(int Pin)
 {
         int result;
 
+	taskENTER_CRITICAL();
         HAL_PIN_Setup_Output(Pin);
         HAL_PIN_SetOutputValue(Pin,0); // Drives DQ low
-        usleepds(OWtimeA);
+        usleepshort(OWtimeA);
         HAL_PIN_SetOutputValue(Pin,1); // Releases the bus
-        usleepds(OWtimeE);
+        usleepshort(OWtimeE);
         HAL_PIN_Setup_Input(Pin);
-//        result = HAL_PIN_ReadDigitalInput(Pin) ^ 0x01; // Sample for presence pulse from slave
         result = HAL_PIN_ReadDigitalInput(Pin); // Sample for presence pulse from slave
-        usleepds(OWtimeF); // Complete the time slot and 10us recovery
+        taskEXIT_CRITICAL();	// hope for the best for the following timer and keep CRITICAL as short as possible
+        usleepmed(OWtimeF); // Complete the time slot and 10us recovery
         return result;
 }
 
@@ -363,7 +426,7 @@ void DS1820_OnEverySecond() {
 				addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "DS1820 - High=%i Low=%i Val=%i Tc=%i  -- Read CRC=%x - calculated:%x \r\n",High, Low, Val,Tc,scratchpad[8],crc);
 			}
 		}
-		else if (g_secondsElapsed % 5 == 0) {	// every 5 seconds
+		else if (g_secondsElapsed % 15 == 0) {	// every 15 seconds
 				// ask for "conversion" 
 
 			if (OWReset(Pin) == 0){
