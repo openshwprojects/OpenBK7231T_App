@@ -41,11 +41,11 @@ const char htmlBodyStart2[] =
 "</a></h1>";
 const char htmlBodyEnd[] = "</div></body></html>";
 
-const char htmlFooterReturnToMainPage[] = "<a href=\"index\">MAIN page</a>";
+const char htmlFooterReturnToMainPage[] = "<a href=\"index\">Home</a>";
 const char htmlFooterRefreshLink[] = "<a href=\"index\">Refresh</a>";
 const char htmlFooterReturnToCfgOrMainPage[] =
-"<a href=\"cfg\">Return to cfg</a> | "
-"<a href=\"index\">MAIN page</a>";
+"<a href=\"cfg\">Return to Config</a> | "
+"<a href=\"index\">Home</a>";
 
 const char htmlFooterInfo[] =
 "<a target=\"_blank\" "
