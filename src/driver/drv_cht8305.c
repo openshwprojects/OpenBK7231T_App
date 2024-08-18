@@ -14,7 +14,6 @@
 static byte g_cht_secondsUntilNextMeasurement = 1, g_cht_secondsBetweenMeasurements = 1;
 static byte channel_temp = 0, channel_humid = 0;
 static float g_temp = 0.0, g_humid = 0.0;
-static softI2C_t g_softI2C;
 static float g_calTemp = 0, g_calHum = 0;
 static uint16_t sensor_id = 0;
 static char* g_cht_sensor = "CHT8305";
@@ -27,14 +26,14 @@ static void CHT83XX_ReadEnv(float* temp, float* hum)
 	{
 		//Oneshot measurement
 		Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR);
-		Soft_I2C_WriteByte(&g_softI2C, 0x0F);
+		Soft_I2C_WriteByte(&g_softI2C, CHT831X_REG_ONESHOT);
 		Soft_I2C_WriteByte(&g_softI2C, 0x00);
 		Soft_I2C_WriteByte(&g_softI2C, 0x00);
 		Soft_I2C_Stop(&g_softI2C);
 	}
 
 	Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR);
-	Soft_I2C_WriteByte(&g_softI2C, 0x00);
+	Soft_I2C_WriteByte(&g_softI2C, CHT831X_REG_TEMP);
 	Soft_I2C_Stop(&g_softI2C);
 
 	rtos_delay_milliseconds(20);	//give the sensor time to do the conversion
@@ -47,7 +46,7 @@ static void CHT83XX_ReadEnv(float* temp, float* hum)
 	if(IS_CHT831X)
 	{
 		Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR);
-		Soft_I2C_WriteByte(&g_softI2C, 0x01);
+		Soft_I2C_WriteByte(&g_softI2C, CHT831X_REG_HUM);
 		Soft_I2C_Stop(&g_softI2C);
 
 		Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR | 1);
@@ -64,32 +63,42 @@ static void CHT83XX_ReadEnv(float* temp, float* hum)
 	(*hum) = ((buff[2] << 8 | buff[3]) * 100.0 / 65535.0) + g_calHum;
 }
 
-void CHT831X_ConfigureAlert(float temp_diff, CHT_alert_freq freq, CHT_alert_fq fq)
+void CHT831X_ConfigureAlert(float temp_diff, float hum_diff, CHT_alert_freq freq, CHT_alert_fq fq)
 {
-	int16_t hight = (int)((g_temp - g_calTemp + temp_diff) / 0.03125) << 3;
-	int16_t lowt = (int)((g_temp - g_calTemp - temp_diff) / 0.03125) << 3;
+	uint8_t mode = SRC_TEMP_AND_HUM;
+	if(temp_diff > 0.05) mode ^= 0b10;
+	if(hum_diff > 0.1) mode ^= 0b01;
+	// technically we can support this mode
+	if(mode == SRC_TEMP_AND_HUM)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "CHT_Alert: wrong mode, too low TempDiff && HumDiff");
+		return;
+	}
+	if(mode != SRC_HUM_ONLY)
+	{
+		int16_t hight = (int)((g_temp - g_calTemp + temp_diff) / 0.03125) << 3;
+		int16_t lowt = (int)((g_temp - g_calTemp - temp_diff) / 0.03125) << 3;
+		WriteReg(CHT831X_REG_TEMP_HL, hight);
+		WriteReg(CHT831X_REG_TEMP_LL, lowt);
+	}
+	if(mode != SRC_TEMP_ONLY)
+	{
+		int16_t humh = (int)round((g_humid - g_calHum + hum_diff) * 327.67);
+		int16_t huml = (int)round((g_humid - g_calHum - hum_diff) * 327.67);
 
-	Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR);
-	Soft_I2C_WriteByte(&g_softI2C, 0x05);
-	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)((hight & 0xFF00) >> 8));
-	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(hight & 0x00FF));
-	Soft_I2C_Stop(&g_softI2C);
+		WriteReg(CHT831X_REG_HUM_HL, humh);
+		WriteReg(CHT831X_REG_HUM_LL, huml);
+	}
 
+	uint8_t conf = 0x80 | (POL_AL << 5) | (mode << 3) | (fq << 1) | 1;
 	Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR);
-	Soft_I2C_WriteByte(&g_softI2C, 0x06);
-	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)((lowt & 0xFF00) >> 8));
-	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(lowt & 0x00FF));
-	Soft_I2C_Stop(&g_softI2C);
-
-	uint8_t conf = 0x80 | (POL_AL << 5) | (SRC_TEMP_ONLY << 3) | (fq << 1) | 1;
-	Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR);
-	Soft_I2C_WriteByte(&g_softI2C, 0x03);
+	Soft_I2C_WriteByte(&g_softI2C, CHT831X_REG_CFG);
 	Soft_I2C_WriteByte(&g_softI2C, 0x08);
 	Soft_I2C_WriteByte(&g_softI2C, conf);
 	Soft_I2C_Stop(&g_softI2C);
 
 	Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR);
-	Soft_I2C_WriteByte(&g_softI2C, 0x04);
+	Soft_I2C_WriteByte(&g_softI2C, CHT831X_REG_C_RATE);
 	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)freq);
 	Soft_I2C_Stop(&g_softI2C);
 }
@@ -140,61 +149,52 @@ commandResult_t CHT83XX_Alert(const void* context, const char* cmd, const char* 
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "ALERT is not supported on CHT8305");
 		return CMD_RES_ERROR;
 	}
-	float diff = Tokenizer_GetArgFloat(0);
-	int tfreq = Tokenizer_GetArgInteger(1);
-	int tfq = Tokenizer_GetArgInteger(2);
+	float difft = Tokenizer_GetArgFloat(0);
+	float diffh = Tokenizer_GetArgFloat(1);
+	int tfreq = Tokenizer_GetArgInteger(2);
+	int tfq = Tokenizer_GetArgInteger(3);
 	CHT_alert_freq freq;
 	CHT_alert_fq fq;
-	if (tfreq == 120) {
+	switch(tfreq)
+	{
+	case 120:
 		freq = FREQ_120S;
-		tfreq = 120;
-	}
-	else if (tfreq >= 60 && tfreq <= 119) {
+		break;
+	case 60:
 		freq = FREQ_60S;
-		tfreq = 60;
-	}
-	else if (tfreq >= 10 && tfreq <= 59) {
+		break;
+	case 10:
 		freq = FREQ_10S;
-		tfreq = 10;
-	}
-	else if (tfreq >= 5 && tfreq <= 9) {
+		break;
+	case 5:
 		freq = FREQ_5S;
-		tfreq = 5;
-	}
-	else if (tfreq >= 1 && tfreq <= 4) {
+		break;
+	default:
+		ADDLOG_WARN(LOG_FEATURE_CMD, "CHT83XX_Alert: Wrong freq, using def (1s)");
+	case 1:
 		freq = FREQ_1S;
-		tfreq = 1;
-	}
-	else {
-		ADDLOG_WARN(LOG_FEATURE_CMD, "CHT83XX_Alert: Wrong freq");
-		freq = FREQ_1S;
-		tfreq = 1;
+		break;
 	}
 
-	if (tfq == 6) {
+	switch(tfq)
+	{
+	case 6:
 		fq = FQ_6;
-		tfq = 6;
-	}
-	else if (tfq >= 4 && tfq <= 5) {
+		break;
+	case 4:
 		fq = FQ_4;
-		tfq = 4;
-	}
-	else if (tfq >= 2 && tfq <= 3) {
+		break;
+	case 2:
 		fq = FQ_2;
-		tfq = 2;
-	}
-	else if (tfq == 1) {
+		break;
+	default:
+		ADDLOG_WARN(LOG_FEATURE_CMD, "CHT83XX_Alert: Wrong fault queue, using def (1)");
+	case 1:
 		fq = FQ_1;
-		tfq = 1;
-	}
-	else {
-		ADDLOG_WARN(LOG_FEATURE_CMD, "CHT83XX_Alert: Wrong fq");
-		fq = FQ_1; 
-		tfq = 1;
+		break;
 	}
 
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "freq:%i,fq:%i", tfreq, tfq);
-	CHT831X_ConfigureAlert(diff, freq, fq);
+	CHT831X_ConfigureAlert(difft, diffh, freq, fq);
 
 	return CMD_RES_OK;
 }
@@ -212,7 +212,7 @@ void CHT83XX_Init()
 	Soft_I2C_PreInit(&g_softI2C);
 
 	Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR);
-	Soft_I2C_WriteByte(&g_softI2C, 0xfe); //manufacturer ID 2 bytes
+	Soft_I2C_WriteByte(&g_softI2C, CHT831X_REG_ID); //manufacturer ID 2 bytes
 	Soft_I2C_Stop(&g_softI2C);
 
 	Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR | 1);
@@ -221,7 +221,7 @@ void CHT83XX_Init()
 
 	//Read Sensor version separately on the last 2 bytes of the buffer
 	Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR);
-	Soft_I2C_WriteByte(&g_softI2C, 0xff);
+	Soft_I2C_WriteByte(&g_softI2C, CHT831X_REG_ID + 1);
 	Soft_I2C_Stop(&g_softI2C);
 
 	Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR | 1);
@@ -235,10 +235,22 @@ void CHT83XX_Init()
 
 	if(IS_CHT831X)
 	{
+		Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR);
+		Soft_I2C_WriteByte(&g_softI2C, CHT831X_REG_STATUS);
+		Soft_I2C_Stop(&g_softI2C);
+
+		Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR | 1);
+		uint8_t status = Soft_I2C_ReadByte(&g_softI2C, 1);
+		Soft_I2C_Stop(&g_softI2C);
+		if(status != 0)
+		{
+			ADDLOG_INFO(LOG_FEATURE_SENSOR, "CHT83XX wake: th:%i,tl:%i,hh:%i,hl:%i", (status & (1 << 6)) > 0,
+				(status & (1 << 5)) > 0, (status & (1 << 4)) > 0, (status & (1 << 3)) > 0);
+		}
 		//it should be 8310 id is 0x8215, we enable low power mode, so only 50nA are drawn from sensor,
 		//but need to write something to one shot register to trigger new measurement
 		Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR);
-		Soft_I2C_WriteByte(&g_softI2C, 0x03);	//config register
+		Soft_I2C_WriteByte(&g_softI2C, CHT831X_REG_CFG);	//config register
 		Soft_I2C_WriteByte(&g_softI2C, 0x48);	//enable shutdown default is 0x08
 		//setting bit 6 enables low power mode,
 		//to get new measurement need to write to one shot register
@@ -269,10 +281,10 @@ void CHT83XX_Init()
 	//cmddetail:"fn":"CHT_cycle","file":"drv/drv_cht8305.c","requires":"",
 	//cmddetail:"examples":"CHT_Cycle 60 <br /> measurement is taken every 60 seconds"}
 	CMD_RegisterCommand("CHT_Cycle", CHT83XX_Cycle, NULL);
-	//cmddetail:{"name":"CHT_Alert","args":"[temp_diff][freq][fq]",
-	//cmddetail:"descr":"Enable alert pin. freq (time per measurement, in s) = 1, 5, 10, 60, 120, fq (fault queue number) = 1, 2, 4, 6",
+	//cmddetail:{"name":"CHT_Alert","args":"[TempDiff][HumDiff][Freq][FQ]",
+	//cmddetail:"descr":"Enable alert pin. TempDif (temperature difference is any float higher than 0.05°C) = set detected difference in temperature required for device to wake. HumDiff (humidity difference is any float higher than 0.1%). Freq (time per measurement in s) = 1, 5, 10, 60, 120 (default if wrong = 1). FQ (fault queue number) = 1, 2, 4, 6 (default if wrong = 1)",
 	//cmddetail:"fn":"CHT_Alert","file":"drv/drv_cht8305.c","requires":"",
-	//cmddetail:"examples":"CHT_Alert 0.5 5 2<br /> will trigger alert pin, when temperature deviates for more than 0.5C, sensor measure every 5s with 2 fault queue number"}
+	//cmddetail:"examples":"CHT_Alert 0.5 0 5 2 <br /> alert pin will trigger when temperature deviates by more than 0.5°C. Humidity will be ignored. Sensor measures every 5s with fault queue number 2."}
 	CMD_RegisterCommand("CHT_Alert", CHT83XX_Alert, NULL);
 }
 
