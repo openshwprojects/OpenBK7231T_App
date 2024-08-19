@@ -1101,12 +1101,12 @@ int http_fn_cfg_ping(http_request_t* request) {
 	http_html_start(request, "Set Watchdog");
 	bChanged = 0;
 	poststr(request, "<h3>Ping watchdog (backup reconnect mechanism)</h3>");
-	poststr(request, "<p> By default, all OpenBeken devices automatically tries to reconnect to WiFi when a connection is lost.");
+	poststr(request, "<p> By default, all OpenBeken devices automatically try to reconnect to WiFi when a connection is lost.");
 	poststr(request, " I have tested the reconnect mechanism many times by restarting my router and it always worked reliably.");
-	poststr(request, " However, according to some reports, there are still some edge cases when a device fails to reconnect to WIFi.");
+	poststr(request, " However, according to some reports, there are still some edge cases where a device fails to reconnect to WiFi.");
 	poststr(request, " This is why <b>this mechanism</b> has been added.</p>");
-	poststr(request, "<p>This mechanism keeps pinging certain host and reconnects to WiFi if it doesn't respond at all for a certain amount of seconds.</p>");
-	poststr(request, "<p>USAGE: For a host, choose the main address of your router and make sure it responds to a pings. Interval is 1 second or so, timeout can be set by user, to eg. 60 sec</p>");
+	poststr(request, "<p>This mechanism continuously pings a specified host and reconnects to WiFi if it doesn't respond for the specified number of seconds.</p>");
+	poststr(request, "<p>USAGE: For the host, choose the main address of your router and ensure it responds to pings. The interval is around 1 second, and the timeout can be set by the user, for example, to 60 seconds.</p>");
 	if (http_getArg(request->url, "host", tmpA, sizeof(tmpA))) {
 		CFG_SetPingHost(tmpA);
 		poststr_h4(request, "New ping host set!");
@@ -1232,7 +1232,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 	poststr_h4(request, "Use this to disconnect from your WiFi");
 	poststr(request, "<form action=\"/cfg_wifi_set\">\
 <input type=\"hidden\" id=\"open\" name=\"open\" value=\"1\">\
-<input type=\"submit\" value=\"Convert to open access wifi\" onclick=\"return confirm('Are you sure to convert module to open access wifi?')\">\
+<input type=\"submit\" value=\"Convert to open access wifi\" onclick=\"return confirm('Are you sure to convert module to open access WiFi?')\">\
 </form>");
 	poststr_h2(request, "Use this to connect to your WiFi");
 	add_label_text_field(request, "SSID", "ssid", CFG_GetWiFiSSID(), "<form action=\"/cfg_wifi_set\">");
@@ -1544,8 +1544,8 @@ int http_fn_cmd_tool(http_request_t* request) {
 	http_html_start(request, "Command tool");
 	poststr_h4(request, "Command Tool");
 	poststr(request, "This is a basic command line. <br>");
-	poststr(request, "Please consider using 'Web Application' console with more options and real time log view. <br>");
-	poststr(request, "Remember that some commands are added after a restart when a driver is activated... <br>");
+	poststr(request, "Please consider using the 'Web Application' console for more options and real-time log viewing. <br>");
+	poststr(request, "Remember that some commands are added after a restart when a driver is activated. <br>");
 
 	commandLen = http_getArg(request->url, "cmd", tmpA, sizeof(tmpA));
 	addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "http_fn_cmd_tool: len %i",commandLen);
@@ -1588,7 +1588,7 @@ int http_fn_startup_command(http_request_t* request) {
 	http_html_start(request, "Set startup command");
 	poststr_h4(request, "Set/Change/Clear startup command line");
 	poststr(request, "<p>Startup command is a shorter, smaller alternative to LittleFS autoexec.bat. "
-		"The startup commands are ran at device startup. "
+		"The startup commands are run at device startup. "
 		"You can use them to init peripherals and drivers, like BL0942 energy sensor. "
 		"Use backlog cmd1; cmd2; cmd3; etc to enter multiple commands</p>");
 
@@ -2710,7 +2710,7 @@ int http_fn_cfg_generic(http_request_t* request) {
 	poststr(request, "<input type=\"hidden\" id=\"setFlags\" name=\"setFlags\" value=\"1\">");
 	poststr(request, SUBMIT_AND_END_FORM);
 
-	add_label_numeric_field(request, "Uptime seconds required to mark boot as ok", "boot_ok_delay",
+	add_label_numeric_field(request, "Uptime seconds required to mark boot as OK", "boot_ok_delay",
 		CFG_GetBootOkSeconds(), "<form action=\"/cfg_generic\">");
 	poststr(request, "<br><input type=\"submit\" value=\"Save\"/></form>");
 
@@ -2728,7 +2728,7 @@ int http_fn_cfg_startup(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Config startup");
 	poststr_h4(request, "Here you can set pin start values");
-	poststr(request, "<ul><li>For relays, simply use 1 or 0</li>");
+	poststr(request, "<ul><li>For relays, use 1 or 0</li>");
 	poststr(request, "<li>To 'remember last power state', use -1 as a special value</li>");
 	poststr(request, "<li>For dimmers, range is 0 to 100</li>");
 	poststr(request, "<li>For custom values, you can set any numeric value</li>");
@@ -2910,7 +2910,7 @@ int http_fn_ota_exec(http_request_t* request) {
 int http_fn_ota(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "OTA system");
-	poststr(request, "<p>Simple OTA system (you should rather use the OTA from App panel where you can drag and drop file easily without setting up server). Use RBL file for OTA. In the OTA below, you should paste link to RBL file (you need HTTP server).</p>");
+	poststr(request, "<p>For a more user-friendly experience, it is recommended to use the OTA option in the Web Application, where you can easily drag and drop files without needing to set up a server. On Beken platforms, the .rbl file is used for OTA updates. In the OTA section below, paste the link to the .rbl file (an HTTP server is required).</p>");
 	add_label_text_field(request, "URL for new bin file", "host", "", "<form action=\"/ota_exec\">");
 	poststr(request, "<br>\
 <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure?')\">\
