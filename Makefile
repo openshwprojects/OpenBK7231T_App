@@ -119,7 +119,8 @@ OpenBL602: submodules sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp
 	
 sdk/OpenW800/tools/w800/csky/bin: submodules
 	mkdir -p sdk/OpenW800/tools/w800/csky
-	cd sdk/OpenW800/tools/w800/csky && wget -q "https://occ-oss-prod.oss-cn-hangzhou.aliyuncs.com/resource/1356021/1619529111421/csky-elfabiv2-tools-x86_64-minilibc-20210423.tar.gz" && tar -xf *.tar.gz && rm -f *.tar.gz
+	# cd sdk/OpenW800/tools/w800/csky && wget -q "https://occ-oss-prod.oss-cn-hangzhou.aliyuncs.com/resource/1356021/1619529111421/csky-elfabiv2-tools-x86_64-minilibc-20210423.tar.gz" && tar -xf *.tar.gz && rm -f *.tar.gz
+	if [ ! -e sdk/OpenW800/tools/w800/csky/got_csky-elfabiv2-tools-x86_64-minilibc-20210423 ]; then cd sdk/OpenW800/tools/w800/csky && wget -q "https://occ-oss-prod.oss-cn-hangzhou.aliyuncs.com/resource/1356021/1619529111421/csky-elfabiv2-tools-x86_64-minilibc-20210423.tar.gz" && tar -xf *.tar.gz && rm -f *.tar.gz && touch got_csky-elfabiv2-tools-x86_64-minilibc-20210423 ; fi
 
 sdk/OpenW600/tools/gcc-arm-none-eabi-4_9-2014q4/bin: submodules
 	mkdir -p sdk/OpenW600/tools
