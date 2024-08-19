@@ -41,11 +41,11 @@ const char htmlBodyStart2[] =
 "</a></h1>";
 const char htmlBodyEnd[] = "</div></body></html>";
 
-const char htmlFooterReturnToMainPage[] = "<a href=\"index\">MAIN page</a>";
+const char htmlFooterReturnToMainPage[] = "<a href=\"index\">Home</a>";
 const char htmlFooterRefreshLink[] = "<a href=\"index\">Refresh</a>";
 const char htmlFooterReturnToCfgOrMainPage[] =
-"<a href=\"cfg\">Return to cfg</a> | "
-"<a href=\"index\">MAIN page</a>";
+"<a href=\"cfg\">Return to Config</a> | "
+"<a href=\"index\">Home</a>";
 
 const char htmlFooterInfo[] =
 "<a target=\"_blank\" "
@@ -57,7 +57,7 @@ const char htmlFooterInfo[] =
 "<a target=\"_blank\" "
 "href=\"https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/README.md\">Docs</a> | "
 "<a target=\"_blank\" "
-"href=\"https://paypal.me/openshwprojects\">Support project</a><br>";
+"href=\"https://paypal.me/openshwprojects\">Support Project</a><br>";
 
 const char* g_build_str = "Built on " __DATE__ " " __TIME__ " version " USER_SW_VER; // Show GIT version at Build line;
 
