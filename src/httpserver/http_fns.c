@@ -2370,13 +2370,13 @@ int http_fn_cfg(http_request_t* request) {
 	postFormAction(request, "cfg_mqtt", "Configure MQTT");
 	postFormAction(request, "cfg_name", "Configure Names");
 	postFormAction(request, "cfg_mac", "Change MAC");
-	postFormAction(request, "cfg_ping", "Ping Watchdog (Network lost restarter)");
+	postFormAction(request, "cfg_ping", "Ping Watchdog (Auto-Reboot on Network Loss)");
 	postFormAction(request, "cfg_webapp", "Configure Webapp");
 	postFormAction(request, "ha_cfg", "Home Assistant Configuration");
-	postFormAction(request, "ota", "OTA (update software by WiFi)");
-	postFormAction(request, "cmd_tool", "Execute custom command");
+	postFormAction(request, "ota", "OTA (Update Firmware via WiFi)");
+	postFormAction(request, "cmd_tool", "Run Custom Command");
 	//postFormAction(request, "flash_read_tool", "Flash Read Tool");
-	postFormAction(request, "startup_command", "Change startup command text");
+	postFormAction(request, "startup_command", "Edit Startup Commands");
 
 #if 0
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
