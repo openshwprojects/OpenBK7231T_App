@@ -2373,7 +2373,7 @@ int http_fn_cfg(http_request_t* request) {
 	postFormAction(request, "cfg_ping", "Ping Watchdog");
 	postFormAction(request, "cfg_webapp", "Configure WebApp");
 	postFormAction(request, "ha_cfg", "Home Assistant Configuration");
-	postFormAction(request, "ota", "Firmware Upgrade (OTA)");
+	postFormAction(request, "ota", "Firmware Update (OTA)");
 	postFormAction(request, "cmd_tool", "Command Line (CLI)");
 	//postFormAction(request, "flash_read_tool", "Flash Read Tool");
 	postFormAction(request, "startup_command", "Startup Commands");
