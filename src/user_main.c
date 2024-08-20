@@ -502,7 +502,8 @@ void Main_OnEverySecond()
 		g_wifi_temperature = temperature * 0.128f;
 #endif
 #elif PLATFORM_BL602
-		get_tsen_adc(&g_wifi_temperature, 0);
+		//do not read temp, sometimes it's to slow and causes reboot
+		//get_tsen_adc(&g_wifi_temperature, 0);
 #elif PLATFORM_LN882H
 		// this is set externally, I am just leaving comment here
 #endif
