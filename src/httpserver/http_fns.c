@@ -1169,7 +1169,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 	if(bChanged) {
 		poststr(request,"<h4> Device will reconnect after restarting</h4>");
 	}*/
-	poststr(request, "<h2> Check networks reachable by module</h2> This will lag few seconds.<br>");
+	poststr(request, "<h2> Scan Available Networks</h2> This may take a few seconds.<br>");
 	if (http_getArg(request->url, "scan", tmpA, sizeof(tmpA))) {
 #ifdef WINDOWS
 
@@ -1227,29 +1227,29 @@ int http_fn_cfg_wifi(http_request_t* request) {
 	}
 	poststr(request, "<form action=\"/cfg_wifi\">\
 <input type=\"hidden\" id=\"scan\" name=\"scan\" value=\"1\">\
-<input type=\"submit\" value=\"Scan local networks!\">\
+<input type=\"submit\" value=\"Scan\">\
 </form>");
-	poststr_h4(request, "Use this to disconnect from your WiFi");
+	poststr_h4(request, "Disconnect from WiFi");
 	poststr(request, "<form action=\"/cfg_wifi_set\">\
 <input type=\"hidden\" id=\"open\" name=\"open\" value=\"1\">\
-<input type=\"submit\" value=\"Convert to open access wifi\" onclick=\"return confirm('Are you sure to convert module to open access WiFi?')\">\
+<input type=\"submit\" value=\"Convert to Open Access WiFi\" onclick=\"return confirm('Are you sure you want to convert to Open Access WiFi?')\">\
 </form>");
-	poststr_h2(request, "Use this to connect to your WiFi");
+	poststr_h2(request, "Connect to WiFi");
 	add_label_text_field(request, "SSID", "ssid", CFG_GetWiFiSSID(), "<form action=\"/cfg_wifi_set\">");
-	add_label_password_field(request, "", "pass", CFG_GetWiFiPass(), "<br>Password <span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears password)</span>");
-	poststr_h2(request, "Alternate WiFi (used when first one is not responding)");
+	add_label_password_field(request, "", "pass", CFG_GetWiFiPass(), "<br>Password <span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > Show Password (Clears current input)</span>");
+	poststr_h2(request, "Backup WiFi (Feature Not Yet Implemented)");
 	add_label_text_field(request, "SSID2", "ssid2", CFG_GetWiFiSSID2(), "");
-	add_label_password_field(request, "", "pass2", CFG_GetWiFiPass2(), "<br>Password2 <span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass2');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears password)</span>");
+	add_label_password_field(request, "", "pass2", CFG_GetWiFiPass2(), "<br>Password2 <span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass2');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > Show Password (Clears current input)</span>");
 #if ALLOW_WEB_PASSWORD
 	int web_password_enabled = strcmp(CFG_GetWebPassword(), "") == 0 ? 0 : 1;
 	poststr_h2(request, "Web Authentication");
-	poststr(request, "<p>Enabling web authentication will protect this web interface and API using basic HTTP authentication. Username is always <b>admin</b>.</p>");
+	poststr(request, "<p>Enabling web authentication secures this interface and API with basic HTTP authentication. The username is always <b>admin</b>.</p>");
 	hprintf255(request, "<div><input type=\"checkbox\" name=\"web_admin_password_enabled\" id=\"web_admin_password_enabled\" value=\"1\"%s>", (web_password_enabled > 0 ? " checked" : ""));
 	poststr(request, "<label for=\"web_admin_password_enabled\">Enable web authentication</label></div>");
 	add_label_password_field(request, "Admin Password", "web_admin_password", CFG_GetWebPassword(), "");
 #endif
 	poststr(request, "<br><br>\
-<input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check SSID and pass twice?')\">\
+<input type=\"submit\" value=\"Save & Apply\" onclick=\"return confirm('Are you sure? Please double-check SSID and password.')\">\
 </form>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
