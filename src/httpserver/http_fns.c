@@ -2362,10 +2362,10 @@ int http_fn_cfg(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Config");
 	postFormAction(request, "cfg_pins", "Configure Module");
-	postFormAction(request, "cfg_generic", "Configure General/Flags");
+	postFormAction(request, "cfg_generic", "General Settings");
 	postFormAction(request, "cfg_startup", "Configure Startup");
 	postFormAction(request, "cfg_dgr", "Configure Device Groups");
-	postFormAction(request, "cfg_wifi", "Configure WiFi &amp; Web");
+	postFormAction(request, "cfg_wifi", "WiFi &amp; Web Settings");
 	postFormAction(request, "cfg_ip", "Configure IP");
 	postFormAction(request, "cfg_mqtt", "Configure MQTT");
 	postFormAction(request, "cfg_name", "Configure Names");
@@ -2373,7 +2373,7 @@ int http_fn_cfg(http_request_t* request) {
 	postFormAction(request, "cfg_ping", "Ping Watchdog");
 	postFormAction(request, "cfg_webapp", "Configure WebApp");
 	postFormAction(request, "ha_cfg", "Home Assistant Configuration");
-	postFormAction(request, "ota", "Firmware Update (OTA)");
+	postFormAction(request, "ota", "OTA Firmware Update");
 	postFormAction(request, "cmd_tool", "Command Line (CLI)");
 	//postFormAction(request, "flash_read_tool", "Flash Read Tool");
 	postFormAction(request, "startup_command", "Startup Commands");
