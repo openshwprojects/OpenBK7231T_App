@@ -313,31 +313,33 @@ int http_fn_index(http_request_t* request) {
 		poststr(request, "<div id=\"state\">"); // replaceable content follows
 	}
 
-	poststr(request, "<table>");	//Table default to 100% width in stylesheet
-	for (i = 0; i < CHANNEL_MAX; i++) {
+	if (!CFG_HasFlag(OBK_FLAG_HTTP_NO_ONOFF_WORDS)){
+		poststr(request, "<table>");	//Table default to 100% width in stylesheet
+		for (i = 0; i < CHANNEL_MAX; i++) {
 
-		channelType = CHANNEL_GetType(i);
-		// check ability to hide given channel from gui
-		if (BIT_CHECK(g_hiddenChannels, i)) {
-			continue; // hidden
+			channelType = CHANNEL_GetType(i);
+			// check ability to hide given channel from gui
+			if (BIT_CHECK(g_hiddenChannels, i)) {
+				continue; // hidden
+			}
+			bool bToggleInv = channelType == ChType_Toggle_Inv;
+			if (h_isChannelRelay(i) || channelType == ChType_Toggle) {
+				if (i <= 1) {
+					hprintf255(request, "<tr>");
+				}
+				if (CHANNEL_Check(i) != bToggleInv) {
+					poststr(request, "<td class='on'>ON</td>");
+				}
+				else {
+					poststr(request, "<td class='off'>OFF</td>");
+				}
+				if (i == CHANNEL_MAX - 1) {
+					poststr(request, "</tr>");
+				}
+			}
 		}
-		bool bToggleInv = channelType == ChType_Toggle_Inv;
-		if (h_isChannelRelay(i) || channelType == ChType_Toggle) {
-			if (i <= 1) {
-				hprintf255(request, "<tr>");
-			}
-			if (CHANNEL_Check(i) != bToggleInv) {
-				poststr(request, "<td class='on'>ON</td>");
-			}
-			else {
-				poststr(request, "<td class='off'>OFF</td>");
-			}
-			if (i == CHANNEL_MAX - 1) {
-				poststr(request, "</tr>");
-			}
-		}
+		poststr(request, "</table>");
 	}
-	poststr(request, "</table>");
 	poststr(request, "<table>");	//Table default to 100% width in stylesheet
 	for (i = 0; i < CHANNEL_MAX; i++) {
 
@@ -2647,6 +2649,7 @@ const char* g_obk_flagNames[] = {
 	"[TuyaMCU] Store raw data",
 	"[TuyaMCU] Store ALL data",
 	"[PWR] Invert AC dir",
+	"[HTTP] Hide ON/OFF for relays (only red/green buttons)",
 	"error",
 	"error",
 	"error",
