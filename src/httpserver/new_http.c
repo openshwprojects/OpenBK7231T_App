@@ -47,7 +47,7 @@ const char htmlFooterReturnToCfgOrMainPage[] =
 "<a href=\"cfg\">Return to cfg</a> | "
 "<a href=\"index\">MAIN page</a>";
 
-const char htmlFooterInfo[] =
+/*const char htmlFooterInfo[] =
 "<a target=\"_blank\" "
 "href=\"https://www.elektroda.com/rtvforum/forum390.html\">Forum</a> | "
 "<a target=\"_blank\" "
@@ -57,9 +57,9 @@ const char htmlFooterInfo[] =
 "<a target=\"_blank\" "
 "href=\"https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/README.md\">Docs</a> | "
 "<a target=\"_blank\" "
-"href=\"https://paypal.me/openshwprojects\">Support project</a><br>";
+"href=\"https://paypal.me/openshwprojects\">Support project</a><br>";*/
 
-const char* g_build_str = "Build on " __DATE__ " " __TIME__ " version " USER_SW_VER; // Show GIT version at Build line;
+//const char* g_build_str = "Build on " __DATE__ " " __TIME__ " version " USER_SW_VER; // Show GIT version at Build line;
 
 const char httpCorsHeaders[] = "Access-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept";           // TEXT MIME type
 
@@ -248,7 +248,7 @@ void http_setup(http_request_t* request, const char* type) {
 void http_html_start(http_request_t* request, const char* pagename) {
 	poststr(request, htmlDoctype);
 	poststr(request, "<head><title>");
-	poststr(request, CFG_GetDeviceName());
+	//poststr(request, CFG_GetDeviceName());
 	if (pagename) {
 		hprintf255(request, " - %s", pagename);
 	}
@@ -269,16 +269,16 @@ void http_html_end(http_request_t* request) {
 	poststr(request, " | ");
 	poststr(request, htmlFooterInfo);
 	poststr(request, "<br>");
-	poststr(request, g_build_str);
+	//poststr(request, g_build_str);
 
 	hprintf255(request, "<br>Online for&nbsp;<span id=\"onlineFor\" data-initial=\"%i\">-</span>", g_secondsElapsed);
 
-	WiFI_GetMacAddress((char*)mac);
+	//WiFI_GetMacAddress((char*)mac);
 
-	snprintf(upTimeStr, sizeof(upTimeStr), "<br>Device MAC: %02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+	snprintf(upTimeStr, sizeof(upTimeStr), "<br>");
 	poststr(request, upTimeStr);
-	snprintf(upTimeStr, sizeof(upTimeStr), "<br>Short name: %s, Chipset %s", CFG_GetShortDeviceName(), PLATFORM_MCU_NAME);
-	poststr(request, upTimeStr);
+	//snprintf(upTimeStr, sizeof(upTimeStr), "<br>Short name: %s, Chipset %s", CFG_GetShortDeviceName(), PLATFORM_MCU_NAME);
+	//poststr(request, upTimeStr);
 
 	poststr(request, htmlBodyEnd);
 	poststr(request, pageScript);
