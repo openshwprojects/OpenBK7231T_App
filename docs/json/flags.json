@@ -341,5 +341,12 @@
     "title": "todo",
     "file": "new_pins.h",
     "descr": "[PWR] Invert AC dir"
+  },
+  {
+    "index": "49",
+    "enum": "OBK_FLAG_HTTP_NO_ONOFF_WORDS",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[HTTP] Hide ON/OFF for relays (only red/green buttons)"
   }
 ]
