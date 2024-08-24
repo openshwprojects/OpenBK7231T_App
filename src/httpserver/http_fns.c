@@ -490,11 +490,11 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "Channel %s = %i", CHANNEL_GetLabel(i), iValue);
 			poststr(request, "</td></tr>");
 		}
-		else if (channelType == ChType_Motion) {
+		else if (channelType == ChType_Motion || channelType == ChType_Motion_n) {
 			iValue = CHANNEL_Get(i);
 
 			poststr(request, "<tr><td>");
-			if (iValue) {
+			if (iValue == (channelType == ChType_Motion)) {
 				hprintf255(request, "No motion (ch %i)", i);
 			}
 			else {
@@ -1825,6 +1825,12 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			case ChType_Motion:
 			{
 				dev_info = hass_init_binary_sensor_device_info(i, true);
+				cJSON_AddStringToObject(dev_info->root, "dev_cla", "motion");
+			}
+			break;
+			case ChType_Motion_n:
+			{
+				dev_info = hass_init_binary_sensor_device_info(i, false);
 				cJSON_AddStringToObject(dev_info->root, "dev_cla", "motion");
 			}
 			break;

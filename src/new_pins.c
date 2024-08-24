@@ -2057,6 +2057,7 @@ const char* g_channelTypeNames[] = {
 	"Ph",
 	"Orp",
 	"Tds",
+	"Motion_n",
 	"error",
 	"error",
 };
