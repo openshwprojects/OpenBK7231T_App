@@ -11,7 +11,9 @@
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_tuyaMCU.h"
 #include "../ota/ota.h"
+#ifndef WINDOWS
 #include <lwip/dns.h>
+#endif
 
 #define BUILD_AND_VERSION_FOR_MQTT "Open" PLATFORM_MCU_NAME " " USER_SW_VER " " __DATE__ " " __TIME__ 
 
@@ -1198,14 +1200,32 @@ static int MQTT_do_connect(mqtt_client_t* client)
 	mqtt_client_info.will_retain = true;
 	mqtt_client_info.will_qos = 2;
 
-	//hostEntry = gethostbyname(mqtt_host);
+#ifdef WINDOWS
+	hostEntry = gethostbyname(mqtt_host);
+	// host name/ip
+	if (NULL != hostEntry)
+	{
+		if (hostEntry->h_addr_list && hostEntry->h_addr_list[0]) {
+			int len = hostEntry->h_length;
+			if (len > 4) {
+				addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host resolves to addr len > 4\r\n");
+				len = 4;
+			}
+			memcpy(&mqtt_ip, hostEntry->h_addr_list[0], len);
+		}
+		else {
+			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host resolves no addresses?\r\n");
+			snprintf(mqtt_status_message, sizeof(mqtt_status_message), "mqtt_host resolves no addresses?");
+			return 0;
+		}
+#else
 	if (dns_in_progress_time <= 0 && !dns_resolved)
 	{
-	#ifdef PLATFORM_XR809
+#ifdef PLATFORM_XR809
 		res = dns_gethostbyname(mqtt_host, &mqtt_ip_resolved, dnsFound, NULL);
-	#else
+#else
 	    res = dns_gethostbyname_addrtype(mqtt_host, &mqtt_ip_resolved, dnsFound, NULL, LWIP_DNS_ADDRTYPE_IPV4);
-	#endif
+#endif
 		if (ERR_OK == res)
 		{
 			dns_in_progress_time = 0;
@@ -1228,9 +1248,7 @@ static int MQTT_do_connect(mqtt_client_t* client)
 		dns_resolved = false;
 		memcpy(&mqtt_ip, &mqtt_ip_resolved, sizeof(mqtt_ip_resolved));
 
-
-		// host name/ip
-		//ipaddr_aton(mqtt_host,&mqtt_ip);
+#endif
 
 		/* Initiate client and connect to server, if this fails immediately an error code is returned
 		  otherwise mqtt_connection_cb will be called with connection result after attempting
