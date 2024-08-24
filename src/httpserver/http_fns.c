@@ -494,7 +494,7 @@ int http_fn_index(http_request_t* request) {
 			iValue = CHANNEL_Get(i);
 
 			poststr(request, "<tr><td>");
-			if (iValue == (channelType == ChType_Motion)) {
+			if (iValue == (channelType != ChType_Motion)) {
 				hprintf255(request, "No motion (ch %i)", i);
 			}
 			else {
