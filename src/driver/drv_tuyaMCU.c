@@ -1052,6 +1052,10 @@ void TuyaMCU_SendNetworkStatus()
 	else if (Main_HasWiFiConnected() != 0) {
 		state = Main_HasMQTTConnected() != 0 ? TUYA_NETWORK_STATUS_CONNECTED_TO_CLOUD : TUYA_NETWORK_STATUS_CONNECTED_TO_ROUTER;
 	}
+	// allow override
+	if (state < g_defaultTuyaMCUWiFiState) {
+		state = g_defaultTuyaMCUWiFiState;
+	}
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "SendNetworkStatus: sending status 0x%X to MCU \n", state);
 	TuyaMCU_SendCommandWithData(0x2B, &state, 1);
 }
