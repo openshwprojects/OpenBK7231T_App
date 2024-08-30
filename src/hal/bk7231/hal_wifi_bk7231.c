@@ -171,6 +171,40 @@ int HAL_GetWifiStrength()
 	bk_wlan_get_link_status(&linkStatus);
 	return linkStatus.wifi_strength;
 }
+// Get WiFi Information (SSID / BSSID) - e.g. to display on status page 
+/*
+// ATM there is only one SSID, so need for this code
+char* HAL_GetWiFiSSID(char* ssid){
+	if (sta_ip_is_start()){
+		LinkStatusTypeDef linkStatus;
+		bk_wlan_get_link_status(&linkStatus);
+//		memcpy(ssid, linkStatus.ssid, sizeof(ssid)-1);
+		strcpy(ssid,linkStatus.ssid);
+		return ssid;	
+	}
+	ssid[0]='\0';
+	return ssid; 
+};
+*/
+char* HAL_GetWiFiBSSID(char* bssid){
+	if (sta_ip_is_start()){
+		LinkStatusTypeDef linkStatus;
+		bk_wlan_get_link_status(&linkStatus);
+		sprintf(bssid, MACSTR, MAC2STR(linkStatus.bssid));
+		return bssid;
+	}
+	bssid[0]='\0';
+	return bssid; 
+};
+uint8_t HAL_GetWiFiChannel(uint8_t *chan){
+	if (sta_ip_is_start()){
+		LinkStatusTypeDef linkStatus;
+		bk_wlan_get_link_status(&linkStatus);
+		*chan = linkStatus.channel ;
+		return *chan;
+	}
+	return 0;
+};
 
 // receives status change notifications about wireless - could be useful
 // ctxt is pointer to a rw_evt_type

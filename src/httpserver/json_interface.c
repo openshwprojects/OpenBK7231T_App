@@ -458,8 +458,20 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 	printer(request, "\"Wifi\":{"); // open WiFi
 	JSON_PrintKeyValue_Int(request, printer, "AP", 1, true);
 	JSON_PrintKeyValue_String(request, printer, "SSId", CFG_GetWiFiSSID(), true);
+// note:
+// no feedback about XR809 yet - hope it works out as expected
+#if PLATFORM_LN882H || PLATFORM_XR809 || PLATFORM_BEKEN || PLATFORM_BL602 || PLATFORM_W800 || PLATFORM_W600
+	char bssid[33]={0};
+	uint8_t channel=0;
+	HAL_GetWiFiBSSID(bssid);
+	HAL_GetWiFiChannel(&channel);
+	// note: 
+	JSON_PrintKeyValue_String(request, printer, "BSSId", bssid, true);
+	JSON_PrintKeyValue_Int(request, printer, "Channel", channel, true);
+#else
 	JSON_PrintKeyValue_String(request, printer, "BSSId", "30:B5:C2:5D:70:72", true);
 	JSON_PrintKeyValue_Int(request, printer, "Channel", 11, true);
+#endif	
 	JSON_PrintKeyValue_String(request, printer, "Mode", "11n", true);
 	JSON_PrintKeyValue_Int(request, printer, "RSSI", (HAL_GetWifiStrength() + 100) * 2, true);
 	JSON_PrintKeyValue_Int(request, printer, "Signal", HAL_GetWifiStrength(), true);

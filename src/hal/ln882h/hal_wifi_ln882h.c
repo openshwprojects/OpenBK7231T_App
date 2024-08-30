@@ -134,6 +134,41 @@ int HAL_GetWifiStrength()
     wifi_sta_get_rssi(&val);
     return val;
 }
+// Get WiFi Information (SSID / BSSID) - e.g. to display on status page 
+/*
+const uint8_t * bssid;
+const char ssid[33]={0};
+
+if (wifi_get_sta_conn_info(&ssid, &bssid) == 0){
++			hprintf255(request, " --- Wifi SSID/BSSI: %s / [%02X:%02X:%02X:%02X:%02X:%02X] ", ssid, bssid[0], bssid[1], bssid[2], bssid[3], bssid[4], bssid[5]);
++		}
+
+*/
+/*
+// ATM there is only one SSID, so need for this code
+
+char* HAL_GetWiFiSSID(char* ssid){
+	const uint8_t * bssid = NULL;
+	const char * tempssid = NULL;
+	wifi_get_sta_conn_info(&tempssid, &bssid);
+	strcpy(ssid,tempssid);
+	return ssid;
+};
+*/
+char* HAL_GetWiFiBSSID(char* bssid){
+	const uint8_t * tempbssid = NULL;
+	const char * ssid = NULL;
+	if (wifi_get_sta_conn_info(&ssid, &tempbssid) == 0) sprintf(bssid, MACSTR, MAC2STR(tempbssid));
+	return bssid;
+};
+uint8_t HAL_GetWiFiChannel(uint8_t *chan){
+	wifi_scan_cfg_t   scan_cfg   = {0,};
+	wifi_get_sta_scan_cfg(&scan_cfg);
+	*chan = scan_cfg.channel;
+	return *chan;
+};
+
+
 
 void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 {
@@ -194,7 +229,7 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
 		.bssid   = NULL,
 		.psk_value = NULL,
 	};
-	
+//	wifi_manager_set_ap_list_sort_rule(1);
 	wifi_scan_cfg_t scan_cfg = {
         .channel   = 0,
         .scan_type = WIFI_SCAN_TYPE_ACTIVE,
