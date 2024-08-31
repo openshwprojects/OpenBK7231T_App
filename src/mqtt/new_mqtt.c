@@ -1197,8 +1197,8 @@ static int MQTT_do_connect(mqtt_client_t* client)
 	sprintf(will_topic, "%s/connected", mqtt_clientID);
 	mqtt_client_info.will_topic = will_topic;
 	mqtt_client_info.will_msg = "offline";
-	mqtt_client_info.will_retain = true,
-		mqtt_client_info.will_qos = 1,
+	mqtt_client_info.will_retain = true;
+	mqtt_client_info.will_qos = 1;
 
 #ifdef WINDOWS
 	hostEntry = gethostbyname(mqtt_host);
