@@ -73,6 +73,7 @@ const char *CMD_FindOperator(const char *s, const char *stop, byte *oCode) {
 	byte bestPriority;
 	const char *retVal;
 	int o = 0;
+	const char *signSkip = 0;
 
 	if (*s == 0)
 		return 0;
@@ -87,14 +88,22 @@ const char *CMD_FindOperator(const char *s, const char *stop, byte *oCode) {
 	bestPriority = 0;
 
 	while (s[0] && s[1] && (s < stop || stop == 0)) {
-		for (o = 0; o < g_numOperators; o++) {
-			if (!strncmp(s, g_operators[o].txt, g_operators[o].len)) {
-				if (g_operators[o].prio >= bestPriority) {
-					bestPriority = g_operators[o].prio;
-					retVal = s;
-					*oCode = o;
+		if (s != signSkip) {
+			for (o = 0; o < g_numOperators; o++) {
+				if (!strncmp(s, g_operators[o].txt, g_operators[o].len)) {
+					if (g_operators[o].prio >= bestPriority) {
+						bestPriority = g_operators[o].prio;
+						retVal = s;
+						*oCode = o;
+						signSkip = s + g_operators[o].len;
+						if (*signSkip != '-') {
+							signSkip = 0;
+						}
+					}
 				}
 			}
+		} else {
+			signSkip = 0;
 		}
 		s++;
 	}

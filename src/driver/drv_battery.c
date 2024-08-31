@@ -12,7 +12,8 @@
 #include "../hal/hal_adc.h"
 #include "drv_battery.h"
 
-static int g_pin_adc = 0, channel_adc = 0, channel_rel = 0, g_pin_rel = 0, g_battcycle = 1, g_battcycleref = 10;
+static int g_pin_adc = 0, channel_adc = 0, g_pin_rel = 0, g_battcycle = 1, g_battcycleref = 10;
+//static int channel_rel = 0;
 static float g_battvoltage = 0.0, g_battlevel = 0.0;
 static int g_lastbattvoltage = 0, g_lastbattlevel = 0;
 static float g_vref = 2400, g_vdivider = 2.29, g_maxbatt = 3000, g_minbatt = 2000, g_adcbits = 4096;
@@ -20,6 +21,7 @@ static float g_vref = 2400, g_vdivider = 2.29, g_maxbatt = 3000, g_minbatt = 200
 static void Batt_Measure() {
 	//this command has only been tested on CBU
 	float batt_ref, batt_res, vref;
+	int writeVal = 1;
 	ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : Measure Battery volt en perc");
 	g_pin_adc = PIN_FindPinIndexForRole(IOR_BAT_ADC, g_pin_adc);
 	if (PIN_FindPinIndexForRole(IOR_BAT_Relay, -1) == -1 && PIN_FindPinIndexForRole(IOR_BAT_Relay_n, -1) == -1) {
@@ -30,8 +32,11 @@ static void Batt_Measure() {
 		g_pin_rel = PIN_FindPinIndexForRole(IOR_BAT_Relay, -1);
 		if (g_pin_rel == -1) {
 			g_pin_rel = PIN_FindPinIndexForRole(IOR_BAT_Relay_n, -1);
+			writeVal = 0;
 		}
-		channel_rel = g_cfg.pins.channels[g_pin_rel];
+		//if(g_pin_rel>0) {
+		//channel_rel = g_cfg.pins.channels[g_pin_rel];
+		//}
 	}
 	HAL_ADC_Init(g_pin_adc);
 	g_battlevel = HAL_ADC_Read(g_pin_adc);
@@ -39,13 +44,19 @@ static void Batt_Measure() {
 		ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : ADC Value low device not on battery");
 	}
 	if (g_vdivider > 1) {
-		CHANNEL_Set(channel_rel, 1, 0);
+		//CHANNEL_Set(channel_rel, 1, 0);
+		if (g_pin_rel > 0) {
+			HAL_PIN_SetOutputValue(g_pin_rel, writeVal);
+		}
 		rtos_delay_milliseconds(10);
 	}
 	g_battvoltage = HAL_ADC_Read(g_pin_adc);
 	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY : ADC binary Measurement : %f and channel %i", g_battvoltage, channel_adc);
 	if (g_vdivider > 1) {
-		CHANNEL_Set(channel_rel, 0, 0);
+		if (g_pin_rel > 0) {
+			HAL_PIN_SetOutputValue(g_pin_rel, !writeVal);
+		}
+		//CHANNEL_Set(channel_rel, 0, 0);
 	}
 	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY : Calculation with param : %f %f %f", g_vref, g_adcbits, g_vdivider);
 	// batt_value = batt_value / vref / 12bits value should be 10 un doc ... but on CBU is 12 ....

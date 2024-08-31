@@ -115,6 +115,7 @@ void Test_MapRanges();
 void Test_Demo_MapFanSpeedToRelays();
 void Test_Demo_FanCyclingRelays();
 void Test_Role_ToggleAll();
+void Test_Demo_SignAndValue();
 void Test_Demo_SimpleShuttersScript();
 void Test_Commands_Generic();
 void Test_ChangeHandlers_MQTT();
@@ -132,12 +133,13 @@ void Test_TuyaMCU_BatteryPowered();
 void Test_ChargeLimitDriver();
 void Test_WS2812B();
 void Test_DoorSensor();
+void Test_Enums();
 
 void Test_GetJSONValue_Setup(const char *text);
 void Test_FakeHTTPClientPacket_GET(const char *tg);
 void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data);
 void Test_FakeHTTPClientPacket_POST_withJSONReply(const char *tg, const char *data);
-void Test_FakeHTTPClientPacket_JSON(const char *tg);
+void Test_FakeHTTPClientPacket_JSON(const char *tg, ...);
 const char *Test_GetLastHTMLReply();
 
 // TODO: move elsewhere?

@@ -273,8 +273,8 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 		// close ENERGY block
 		printer(request, "},");
 	}
-	if (DRV_IsRunning("CHT8305")) {
-		g_pin_1 = PIN_FindPinIndexForRole(IOR_CHT8305_DAT, g_pin_1);
+	if (DRV_IsRunning("CHT83XX")) {
+		g_pin_1 = PIN_FindPinIndexForRole(IOR_CHT83XX_DAT, g_pin_1);
 		channel_1 = g_cfg.pins.channels[g_pin_1];
 		channel_2 = g_cfg.pins.channels2[g_pin_1];
 
@@ -282,7 +282,7 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 		chan_val2 = CHANNEL_GetFloat(channel_2);
 
 		// writer header
-		printer(request, "\"CHT8305\":");
+		printer(request, "\"CHT83XX\":");
 		// following check will clear NaN values
 		printer(request, "{");
 		printer(request, "\"Temperature\": %.1f,", chan_val1);
@@ -552,7 +552,7 @@ static int http_tasmota_json_status_MEM(void* request, jsonCb_t printer) {
 }
 // Test command: http://192.168.0.159/cm?cmnd=STATUS%205
 static int http_tasmota_json_status_NET(void* request, jsonCb_t printer) {
-	char tmpStr[16];
+	char tmpStr[19];	// will be used for MAC string 6*3 chars (18 would be o.k, since last hex has no ":" ...)
 	HAL_GetMACStr(tmpStr);
 
 	printer(request, "\"StatusNET\":{");

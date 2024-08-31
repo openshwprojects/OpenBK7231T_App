@@ -80,7 +80,7 @@ static void ScaleAndUpdate(bl0942_data_t *data) {
     BL_ProcessUpdate(voltage, current, power, frequency, energyWh);
 }
 
-static int UART_TryToGetNextPacket(void) {
+static int BL0942_UART_TryToGetNextPacket(void) {
 	int cs;
 	int i;
 	int c_garbage_consumed = 0;
@@ -208,7 +208,7 @@ static int SPI_WriteReg(uint8_t reg, uint32_t val) {
     return -1;
 }
 
-static void Init(void) {
+static void BL0942_Init(void) {
     PrevCfCnt = CF_CNT_INVALID;
 
     BL_Shared_Init();
@@ -220,7 +220,7 @@ static void Init(void) {
 // THIS IS called by 'startDriver BL0942' command
 // You can set alternate baud with 'startDriver BL0942 9600' syntax
 void BL0942_UART_Init(void) {
-	Init();
+	BL0942_Init();
 
 	bl0942_baudRate = Tokenizer_GetArgIntegerDefault(1, 4800);
 
@@ -233,7 +233,7 @@ void BL0942_UART_Init(void) {
 }
 
 void BL0942_UART_RunEverySecond(void) {
-    UART_TryToGetNextPacket();
+    BL0942_UART_TryToGetNextPacket();
 
     UART_InitUART(bl0942_baudRate, 0);
 
@@ -242,7 +242,7 @@ void BL0942_UART_RunEverySecond(void) {
 }
 
 void BL0942_SPI_Init(void) {
-	Init();
+	BL0942_Init();
 
 	SPI_DriverInit();
 	spi_config_t cfg;

@@ -225,6 +225,33 @@
     "examples": "Battery_Setup 1500 3000 2 2400 4096"
   },
   {
+    "name": "BMPI2C_Calibrate",
+    "args": "[DeltaTemp][DeltaPressure][DeltaHumidity]",
+    "descr": "Calibrate the BMPI2C Sensor.",
+    "fn": "BMPI2C_Calibrate",
+    "file": "driver/drv_bmpi2c.c",
+    "requires": "",
+    "examples": "BMPI2C_Calibrate -4 0 10 <br /> meaning -4 on current temp reading, 0 on current pressure reading and +10 on current humidity reading"
+  },
+  {
+    "name": "BMPI2C_Configure",
+    "args": "BMPI2C_Configure",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_bmpi2c.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "BMPI2C_Cycle",
+    "args": "[IntervalSeconds]",
+    "descr": "This is the interval between measurements in seconds, by default 1. Max is 255.",
+    "fn": "BMPI2C_cycle",
+    "file": "drv/drv_bmpi2c.c",
+    "requires": "",
+    "examples": "BMPI2C_Cycle 60 <br /> measurement is taken every 60 seconds"
+  },
+  {
     "name": "BP1658CJ_Current",
     "args": "[MaxCurrentRGB][MaxCurrentCW]",
     "descr": "Sets the maximum current limit for BP1658CJ driver.",
@@ -559,7 +586,7 @@
   },
   {
     "name": "DSTime",
-    "args": "[timeSeconds]",
+    "args": "[timeSeconds][optionalAutoWakeUpTimeSeconds]",
     "descr": "DoorSensor driver configuration command. Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival. You can also use this to extend current awake time (at runtime) with syntax: 'DSTime +10', this will make device stay awake 10 seconds longer. You can also restart current value of awake counter by 'DSTime clear', this will make counter go from 0 again.",
     "fn": "DoorDeepSleep_SetTime",
     "file": "drv/drv_doorSensorWithDeepSleep.c",
@@ -954,6 +981,15 @@
     "examples": ""
   },
   {
+    "name": "LED_Map",
+    "args": "CMD_LEDDriver_Map",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_sm15155e.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "led_nextColor",
     "args": "",
     "descr": "Sets the next color from predefined colours list. Our list is the same as in Tasmota.",
@@ -1117,7 +1153,7 @@
   },
   {
     "name": "linkTuyaMCUOutputToChannel",
-    "args": "[dpId][varType][channelID][bDPCache-Optional][mult-optional]",
+    "args": "[dpId][varType][channelID][bDPCache-Optional][mult-optional][bInverse]",
     "descr": "Used to map between TuyaMCU dpIDs and our internal channels. Last argument is optional and 0 by default. You can set it to 1 for battery powered devices, so a variable is set with DPCache, for example a sampling interval for humidity/temperature sensor. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap. Please see [Tuya Docs](https://developer.tuya.com/en/docs/iot/tuya-cloud-universal-serial-port-access-protocol?id=K9hhi0xxtn9cb) for info about TuyaMCU. You can also see our [TuyaMCU Analyzer Tool](https://www.elektroda.com/rtvforum/viewtopic.php?p=20528459#20528459)",
     "fn": "TuyaMCU_LinkTuyaMCUOutputToChannel",
     "file": "driver/drv_tuyaMCU.c",
@@ -1755,6 +1791,15 @@
     "examples": ""
   },
   {
+    "name": "SetChannelEnum",
+    "args": "[ChannelIndex][Value,Title][Value,Title]",
+    "descr": "Creates a custom channel enumeration.",
+    "fn": "SetChannelEnum",
+    "file": "cmnds/cmd_channels.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "SetChannelFloat",
     "args": "[ChannelIndex][ChannelValue]",
     "descr": "Sets a raw channel to given float value. Currently only used for LED PWM channels.",
@@ -1846,8 +1891,8 @@
   },
   {
     "name": "SetupTestPower",
-    "args": "",
-    "descr": "NULL",
+    "args": "[fakeVoltage] [FakeCurrent] [FakePower] [bAllowRandom]",
+    "descr": "Starts the fake power metering driver",
     "fn": "TestPower_Setup",
     "file": "driver/drv_test_drivers.c",
     "requires": "",

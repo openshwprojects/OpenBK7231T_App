@@ -330,6 +330,58 @@ void Test_HassDiscovery_Channel_Motion() {
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "pl_on", "1");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "pl_off", "0");
 }
+void Test_HassDiscovery_Channel_Motion_inv() {
+	const char *shortName = "WinMotionTest";
+	const char *fullName = "Windows Fake Motion";
+	const char *mqttName = "testMotion";
+	SIM_ClearOBK(shortName);
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
+
+	CFG_SetShortDeviceName(shortName);
+	CFG_SetDeviceName(fullName);
+
+	CHANNEL_SetType(4, ChType_Motion_n);
+
+	SIM_ClearMQTTHistory();
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(5, false);
+
+	// OBK device should publish JSON on MQTT topic "homeassistant"
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "name", shortName);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "sw", USER_SW_VER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mf", MANUFACTURER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mdl", PLATFORM_MCU_NAME);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "~", mqttName);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "dev_cla", "motion");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "stat_t", "~/4/get");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "pl_on", "0"); // inv so swapped
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "pl_off", "1"); // inv so swapped
+}
+void Test_HassDiscovery_Channel_LowMidHigh() {
+	const char *shortName = "WinReadOnlyLowMidHighTest";
+	const char *fullName = "Windows Fake ReadOnlyLowMidHigh";
+	const char *mqttName = "testReadOnlyLowMidHigh";
+	SIM_ClearOBK(shortName);
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
+
+	CFG_SetShortDeviceName(shortName);
+	CFG_SetDeviceName(fullName);
+
+	CHANNEL_SetType(4, ChType_ReadOnlyLowMidHigh);
+
+	SIM_ClearMQTTHistory();
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(5, false);
+
+	// OBK device should publish JSON on MQTT topic "homeassistant"
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "name", shortName);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "sw", USER_SW_VER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mf", MANUFACTURER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mdl", PLATFORM_MCU_NAME);
+
+}
 void Test_HassDiscovery_Channel_Motion_longName() {
 	const char *shortName = "multifunction_PIR_obkE1552B06";
 	const char *fullName = "multifunction_PIR_OpenBK7231N_E1552B06";
@@ -536,7 +588,9 @@ void Test_HassDiscovery_Ext() {
 	Test_HassDiscovery_Channel_Motion();
 	Test_HassDiscovery_Channel_Motion_With_dInput();
 	Test_HassDiscovery_Channel_Motion_longName();
+	Test_HassDiscovery_Channel_Motion_inv();
 	Test_HassDiscovery_Channel_Illuminance();
+	Test_HassDiscovery_Channel_LowMidHigh();
 
 
 }

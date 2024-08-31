@@ -327,20 +327,20 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_DHT22,
-	//iodetail:{"name":"CHT8305_DAT",
+	//iodetail:{"name":"CHT83XX_DAT",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"DAT pin of CHT8305. Setting this pin role and saving will reveal two fields next to it. Set first field to 1 and second to 2. Those are related channel numbers to store temperature and humidity.",
-	//iodetail:"enum":"IOR_CHT8305_DAT",
+	//iodetail:"descr":"DAT pin of CHT83XX. Setting this pin role and saving will reveal two fields next to it. Set first field to 1 and second to 2. Those are related channel numbers to store temperature and humidity.",
+	//iodetail:"enum":"IOR_CHT83XX_DAT",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
-	IOR_CHT8305_DAT,
-	//iodetail:{"name":"CHT8305_CLK",
+	IOR_CHT83XX_DAT,
+	//iodetail:{"name":"CHT83XX_CLK",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"CLK pin of CHT8305 sensor",
-	//iodetail:"enum":"IOR_CHT8305_CLK",
+	//iodetail:"descr":"CLK pin of CHT83XX sensor",
+	//iodetail:"enum":"IOR_CHT83XX_CLK",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
-	IOR_CHT8305_CLK,
+	IOR_CHT83XX_CLK,
 	//iodetail:{"name":"SHT3X_DAT",
 	//iodetail:"title":"TODO",	
 	//iodetail:"descr":"Humidity/temperature sensor DATA pin. Driver will autostart if both required pins are set. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html)",
@@ -551,6 +551,13 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_KP18058_DAT,
+	//iodetail:{"name":"DS1820",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"vers simple OneWire Temp sensor DS1820",
+	//iodetail:"enum":"DS1820_IO",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_DS1820_IO,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
@@ -561,7 +568,7 @@ typedef enum ioRole_e {
 } ioRole_t;
 
 #define IS_PIN_DHT_ROLE(role) (((role)>=IOR_DHT11) && ((role)<=IOR_DHT22))
-#define IS_PIN_TEMP_HUM_SENSOR_ROLE(role) (((role)==IOR_SHT3X_DAT) || ((role)==IOR_CHT8305_DAT))
+#define IS_PIN_TEMP_HUM_SENSOR_ROLE(role) (((role)==IOR_SHT3X_DAT) || ((role)==IOR_CHT83XX_DAT))
 #define IS_PIN_AIR_SENSOR_ROLE(role) (((role)==IOR_SGP_DAT))
 
 typedef enum channelType_e {
@@ -922,6 +929,55 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Motion,
+	//chandetail:{"name":"ReadOnly_div10",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"This channel is read only.",
+	//chandetail:"enum":"ChType_ReadOnly_div10",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_ReadOnly_div10,
+	//chandetail:{"name":"ReadOnly_div100",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"This channel is read only.",
+	//chandetail:"enum":"ChType_ReadOnly_div100",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_ReadOnly_div100,
+	//chandetail:{"name":"ReadOnly_div1000",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"This channel is read only.",
+	//chandetail:"enum":"ChType_ReadOnly_div1000",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_ReadOnly_div1000,
+	//chandetail:{"name":"Ph",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Ph Water Quality",
+	//chandetail:"enum":"ChType_Ph",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Ph,
+	//chandetail:{"name":"Orp",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Orp Water Quality",
+	//chandetail:"enum":"ChType_Orp",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Orp,
+	//chandetail:{"name":"Tds",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"TDS Water Quality",
+	//chandetail:"enum":"ChType_Tds",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Tds,
+	//chandetail:{"name":"Motion_n",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"Motion_n",
+	//chandetail:"enum":"Motion_n",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Motion_n,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
@@ -1055,8 +1111,9 @@ typedef struct pinsState_s {
 #define OBK_FLAG_TUYAMCU_STORE_RAW_DATA				46
 #define OBK_FLAG_TUYAMCU_STORE_ALL_DATA				47
 #define OBK_FLAG_POWER_INVERT_AC					48
+#define OBK_FLAG_HTTP_NO_ONOFF_WORDS				49
 
-#define OBK_TOTAL_FLAGS 49
+#define OBK_TOTAL_FLAGS 50
 
 #define LOGGER_FLAG_MQTT_DEDUPER					1
 #define LOGGER_FLAG_POWER_SAVE						2

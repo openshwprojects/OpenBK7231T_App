@@ -334,7 +334,7 @@ int PIN_IOR_NofChan(int test){
 			return 2;
 	}
 	// Some roles don't need any channels
-	if (test == IOR_SGP_CLK || test == IOR_SHT3X_CLK || test == IOR_CHT8305_CLK || test == IOR_Button_ToggleAll || test == IOR_Button_ToggleAll_n
+	if (test == IOR_SGP_CLK || test == IOR_SHT3X_CLK || test == IOR_CHT83XX_CLK || test == IOR_Button_ToggleAll || test == IOR_Button_ToggleAll_n
 			|| test == IOR_BL0937_CF || test == IOR_BL0937_CF1 || test == IOR_BL0937_SEL
 			|| test == IOR_LED_WIFI || test == IOR_LED_WIFI_n || test == IOR_LED_WIFI_n
 			|| (test >= IOR_IRRecv && test <= IOR_DHT11)
@@ -1096,6 +1096,7 @@ int ChannelType_GetDivider(int type) {
 	case ChType_Voltage_div10:
 	case ChType_Power_div10:
 	case ChType_Frequency_div10:
+	case ChType_ReadOnly_div10:
 		return 10;
 	case ChType_Frequency_div100:
 	case ChType_Current_div100:
@@ -1105,6 +1106,8 @@ int ChannelType_GetDivider(int type) {
 	case ChType_Pressure_div100:
 	case ChType_Temperature_div100:
 	case ChType_Power_div100:
+	case ChType_ReadOnly_div100:
+	case ChType_Ph:
 		return 100;
 	case ChType_PowerFactor_div1000:
 	case ChType_EnergyTotal_kWh_div1000:
@@ -1112,6 +1115,7 @@ int ChannelType_GetDivider(int type) {
 	case ChType_EnergyToday_kWh_div1000:
 	case ChType_Current_div1000:
 	case ChType_LeakageCurrent_div1000:
+	case ChType_ReadOnly_div1000:
 		return 1000;
 	case ChType_Temperature_div2:
 		return 2;
@@ -1158,6 +1162,12 @@ const char *ChannelType_GetUnit(int type) {
 		return "vAr";
 	case ChType_Illuminance:
 		return "Lux";
+	case ChType_Ph:
+		return "Ph";
+	case ChType_Orp:
+		return "mV";
+	case ChType_Tds:
+		return "ppm";
 	}
 	return "";
 }
@@ -1205,6 +1215,17 @@ const char *ChannelType_GetTitle(int type) {
 		return "ReactivePower";
 	case ChType_Illuminance:
 		return "Illuminance";
+	case ChType_Ph:
+		return "Ph Water Quality";
+	case ChType_Orp:
+		return "Orp Water Quality";
+	case ChType_Tds:
+		return "TDS Water Quality";
+	case ChType_ReadOnly:
+	case ChType_ReadOnly_div10:
+	case ChType_ReadOnly_div100:
+	case ChType_ReadOnly_div1000:
+		return "ReadOnly:";
 	}
 	return "";
 }
@@ -1529,7 +1550,7 @@ bool CHANNEL_ShouldBePublished(int ch) {
 			if (role == IOR_Relay || role == IOR_Relay_n
 				|| role == IOR_LED || role == IOR_LED_n
 				|| role == IOR_ADC || role == IOR_BAT_ADC
-				|| role == IOR_CHT8305_DAT || role == IOR_SHT3X_DAT || role == IOR_SGP_DAT
+				|| role == IOR_CHT83XX_DAT || role == IOR_SHT3X_DAT || role == IOR_SGP_DAT
 				|| role == IOR_DigitalInput || role == IOR_DigitalInput_n
 				|| role == IOR_DoorSensorWithDeepSleep || role == IOR_DoorSensorWithDeepSleep_NoPup
 				|| role == IOR_DoorSensorWithDeepSleep_pd
@@ -1543,7 +1564,7 @@ bool CHANNEL_ShouldBePublished(int ch) {
 				return true;
 			}
 			// SGP, CHT8305 and SHT3X uses secondary channel for humidity
-			if (role == IOR_CHT8305_DAT || role == IOR_SHT3X_DAT || role == IOR_SGP_DAT) {
+			if (role == IOR_CHT83XX_DAT || role == IOR_SHT3X_DAT || role == IOR_SGP_DAT) {
 				return true;
 			}
 		}
@@ -2030,8 +2051,13 @@ const char* g_channelTypeNames[] = {
 	"LeakageCurrent_div1000",
 	"Power_div100",
 	"Motion",
-	"error",
-	"error",
+	"ReadOnly_div10",
+	"ReadOnly_div100",
+	"ReadOnly_div1000",
+	"Ph",
+	"Orp",
+	"Tds",
+	"Motion_n",
 	"error",
 	"error",
 };
