@@ -1359,7 +1359,7 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 		}
 	}
 
-	return MQTT_PublishMain(mqtt_client, channelNameStr, valueStr, flags, true);
+	return MQTT_PublishMain(mqtt_client, CHANNEL_PublishLabel(channel) ? CHANNEL_GetLabel(channel) : channelNameStr, valueStr, flags, true);
 }
 // This console command will trigger a publish of all used variables (channels and extra stuff)
 commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char* args, int cmdFlags) {

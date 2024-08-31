@@ -14,6 +14,8 @@ static char *g_channelLabels[CHANNEL_MAX] = { 0 };
 static int g_bHideTogglePrefix = 0;
 // same, for hiding from MQTT
 int g_doNotPublishChannels = 0;
+// same, for using channel label in MQTT
+static int g_PublishChannelLabel = 0;
 
 void CHANNEL_SetLabel(int ch, const char *s, int bHideTogglePrefix) {
 	if (ch < 0)
@@ -23,6 +25,32 @@ void CHANNEL_SetLabel(int ch, const char *s, int bHideTogglePrefix) {
 	if (g_channelLabels[ch])
 		free(g_channelLabels[ch]);
 	g_channelLabels[ch] = strdup(s);
+
+	// if using label for MQTT, take care of "valid" topics (since label will be used as topic):
+	//
+	// https://cedalo.com/blog/mqtt-topics-and-mqtt-wildcards-explained/#MQTT_Topic_Allowed_Characters:
+	//
+	// As mentioned earlier, MQTT topics use UTF-8 characters and are considered valid if they contain at least one UTF-8 character.
+	// Almost any character or symbol on your keyboard would be MQTT topic-allowed characters, including blank spaces. 
+	//
+	// That said, please avoid using blank spaces because this will cause chaos!
+	//
+	// However, there are a few characters that you must avoid as they are reserved for other purposes, such as:
+	//    ‘+’ and ‘#’ – represent MQTT wildcards
+	//    ‘$’ – is a reserved character to be used at the start of the topic and it can only be defined by the broker.
+	//
+	// ... and surely we should never use '/' in a topic ! 
+	
+	// if any of these characters is present, we will replace it with an underscore for now
+
+	if (CHANNEL_PublishLabel(ch)){
+		char *p = g_channelLabels[ch];
+		for (int i=0; i<strlen(g_channelLabels[ch]); i++) { 
+			if ( *p == ' ' || *p=='+' || *p=='#' || *p=='$' || *p == '/') *p='_';
+			p++; 
+			}
+	}
+
 	if (ch >= 0 && ch <= 32) {
 		BIT_SET_TO(g_bHideTogglePrefix, ch, bHideTogglePrefix);
 	}
@@ -42,6 +70,16 @@ bool CHANNEL_HasNeverPublishFlag(int ch) {
 	if (ch >= 32)
 		return false;
 	if (BIT_CHECK(g_doNotPublishChannels, ch))
+		return true;
+	return false;
+}
+
+bool CHANNEL_PublishLabel(int ch) {
+	if (ch < 0)
+		return false;
+	if (ch >= 32)
+		return false;
+	if (BIT_CHECK(g_PublishChannelLabel, ch))
 		return true;
 	return false;
 }
@@ -80,9 +118,19 @@ static commandResult_t CMD_SetChannelLabel(const void *context, const char *cmd,
 	if (Tokenizer_GetArgsCount() > 2) {
 		bHideTogglePrefix = Tokenizer_GetArgInteger(2);
 	}
+	// 0/1 : add label as usual			0 don't hide toggle prefix	1 hide prefix
+	// 2/3 : add label AND use label for MQTT 	2 don't hide toggle prefix	3 hide prefix
 
-	CHANNEL_SetLabel(ch, s, bHideTogglePrefix);
+	// if argument "bHideTogglePrefix" > 1, we want to use the label in MQTT
+	// to deal with special chars or whitespaces in this case, we need to set this before calling CHANNEL_SetLabel!!
+	BIT_SET_TO(g_PublishChannelLabel, ch, (bHideTogglePrefix > 1));
 
+
+
+	// for bHideTogglePrefix we use %2 to deal with possible values > 1 
+	CHANNEL_SetLabel(ch, s, bHideTogglePrefix%2);
+	
+	
 	return CMD_RES_OK;
 }
 static commandResult_t CMD_Ch(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -566,7 +614,7 @@ void CMD_InitChannelCommands(){
 	CMD_RegisterCommand("SetChannelEnum", CMD_SetChannelEnum, NULL);
 #endif
 	//cmddetail:{"name":"SetChannelLabel","args":"[ChannelIndex][Str][bHideTogglePrefix]",
-	//cmddetail:"descr":"Sets a channel label for UI and default entity name for Home Assistant discovery. If you use 1 for bHideTogglePrefix, then the 'Toggle ' prefix from UI button will be omitted",
+	//cmddetail:"descr":"Sets a channel label for UI and default entity name for Home Assistant discovery. If you use 1 for bHideTogglePrefix, then the 'Toggle ' prefix from UI button will be omitted. Testing: you may use 2 or 3 to use the label in MQTT, too. 2 will leave 'Toggle' prefix (like '0') and 3 will ommit prefix (like '1').",
 	//cmddetail:"fn":"CMD_SetChannelLabel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetChannelLabel", CMD_SetChannelLabel, NULL);

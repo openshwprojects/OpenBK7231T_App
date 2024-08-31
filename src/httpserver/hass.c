@@ -449,7 +449,11 @@ HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse) {
 	}
 	HassDeviceInfo* info = hass_init_device_info(BINARY_SENSOR, index, payload_on, payload_off);
 
-	sprintf(g_hassBuffer, "~/%i/get", index);
+	if (CHANNEL_PublishLabel(index)){
+		sprintf(g_hassBuffer, "~/%s/get", CHANNEL_GetLabel(index));
+	} else {
+		sprintf(g_hassBuffer, "~/%i/get", index);
+	}
 	cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);   //state_topic
 
 	return info;
