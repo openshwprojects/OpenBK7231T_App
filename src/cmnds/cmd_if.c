@@ -238,6 +238,13 @@ float getPower(const char *s) {
 float getEnergy(const char *s) {
 	return DRV_GetReading(OBK_CONSUMPTION_TOTAL);
 }
+float getYesterday(const char *s) {
+	return DRV_GetReading(OBK_CONSUMPTION_YESTERDAY);
+}
+float getToday(const char *s) {
+	return DRV_GetReading(OBK_CONSUMPTION_TODAY);
+}
+
 
 
 float getNTPOn(const char *s) {
@@ -440,6 +447,16 @@ const constant_t g_constants[] = {
 	////cnstdetail:"descr":"Current Year from NTP",
 	////cnstdetail:"requires":""}
 	{ "$year", &getYear },
+	////cnstdetail:{"name":"$yesterday",
+	////cnstdetail:"title":"$yesterday",
+	////cnstdetail:"descr":"",
+	////cnstdetail:"requires":""}
+	{ "$yesterday", &getYesterday },
+	////cnstdetail:{"name":"$today",
+	////cnstdetail:"title":"$today",
+	////cnstdetail:"descr":"",
+	////cnstdetail:"requires":""}
+	{ "$today", &getToday },
 #if ENABLE_NTP_SUNRISE_SUNSET
 	////cnstdetail:{"name":"$sunrise",
 	////cnstdetail:"title":"$sunrise",
