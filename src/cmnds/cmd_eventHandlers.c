@@ -208,6 +208,9 @@ int EVENT_ParseEventName(const char *s) {
 		return CMD_EVENT_CUSTOM_DOWN;
 	if (!stricmp(s, "OnCustomUP"))
 		return CMD_EVENT_CUSTOM_UP;
+	if (isdigit(*s)) {
+		return atoi(s);
+	}
 	return CMD_EVENT_NONE;
 }
 static bool EVENT_EvaluateCondition(int code, int argument, int next) {
