@@ -263,7 +263,7 @@ static struct mqtt_connect_client_info_t mqtt_client_info =
   100,  /* keep alive */
   NULL, /* will_topic */
   NULL, /* will_msg */
-  0,    /* will_qos */
+  1,    /* will_qos */
   0     /* will_retain */
 #if LWIP_ALTCP && LWIP_ALTCP_TLS
   , NULL
@@ -809,7 +809,7 @@ static void mqtt_pub_request_cb(void* arg, err_t result)
 static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const char* sTopic, const char* sChannel, const char* sVal, int flags, bool appendGet)
 {
 	err_t err;
-	u8_t qos = 2; /* 0 1 or 2, see MQTT specification */
+	u8_t qos = 1; /* 0 1 or 2, see MQTT specification */
 	u8_t retain = 0; /* No don't retain such crappy payload... */
 	size_t sVal_len;
 	char* pub_topic;
@@ -1198,7 +1198,7 @@ static int MQTT_do_connect(mqtt_client_t* client)
 	mqtt_client_info.will_topic = will_topic;
 	mqtt_client_info.will_msg = "offline";
 	mqtt_client_info.will_retain = true;
-	mqtt_client_info.will_qos = 2;
+	mqtt_client_info.will_qos = 1;
 
 #ifdef WINDOWS
 	hostEntry = gethostbyname(mqtt_host);
@@ -1520,7 +1520,7 @@ void MQTT_Test_Tick(void* param)
 	BENCHMARK_TEST_INFO* info = (BENCHMARK_TEST_INFO*)param;
 	int block = 1;
 	err_t err;
-	int qos = 2;
+	int qos = 1;
 	int retain = 0;
 
 	if (info != NULL)
