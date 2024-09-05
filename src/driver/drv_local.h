@@ -84,6 +84,7 @@ void DGR_SpoofNextDGRPacketSource(const char* ipStrs);
 void TuyaMCU_Sensor_RunEverySecond();
 void TuyaMCU_Sensor_Init();
 
+void DRV_Test_Charts_AddToHtmlPage(http_request_t *request);
 
 void DRV_Toggler_ProcessChanges(http_request_t* request);
 void DRV_Toggler_AddToHtmlPage(http_request_t* request);

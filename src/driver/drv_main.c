@@ -71,6 +71,14 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "HGS02",		HGS02_Init,			HGS02_RunEverySecond,			NULL, NULL, NULL, NULL, false },
 #endif
+
+#if WINDOWS
+	//drvdetail:{"name":"TestCharts",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":".",
+	//drvdetail:"requires":""}
+	{ "TestCharts",		NULL,			NULL,			DRV_Test_Charts_AddToHtmlPage, NULL, NULL, NULL, false },
+#endif
 #if ENABLE_NTP
 	//drvdetail:{"name":"NTP",
 	//drvdetail:"title":"TODO",
@@ -532,7 +540,9 @@ void DRV_StartDriver(const char* name) {
 
 			}
 			else {
-				g_drivers[i].initFunc();
+				if (g_drivers[i].initFunc) {
+					g_drivers[i].initFunc();
+				}
 				g_drivers[i].bLoaded = true;
 				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Started %s.\n", name);
 				bStarted = 1;
