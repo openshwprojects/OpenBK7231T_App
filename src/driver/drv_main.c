@@ -79,6 +79,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "TestCharts",		NULL,			NULL,			DRV_Test_Charts_AddToHtmlPage, NULL, NULL, NULL, false },
 #endif
+#if WINDOWS
+	//drvdetail:{"name":"Charts",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":".",
+	//drvdetail:"requires":""}
+	{ "Charts",		DRV_Charts_Init,			NULL,			DRV_Charts_AddToHtmlPage, NULL, NULL, NULL, false },
+#endif
 #if ENABLE_NTP
 	//drvdetail:{"name":"NTP",
 	//drvdetail:"title":"TODO",

@@ -86,6 +86,9 @@ void TuyaMCU_Sensor_Init();
 
 void DRV_Test_Charts_AddToHtmlPage(http_request_t *request);
 
+void DRV_Charts_AddToHtmlPage(http_request_t *request);
+void DRV_Charts_Init();
+
 void DRV_Toggler_ProcessChanges(http_request_t* request);
 void DRV_Toggler_AddToHtmlPage(http_request_t* request);
 void DRV_Toggler_AppendInformationToHTTPIndexPage(http_request_t* request);

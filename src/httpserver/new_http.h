@@ -54,6 +54,9 @@ typedef struct http_request_tag {
 	int replylen;
 	int replymaxlen;
 	int fd;
+
+	// user variables used to build JSON data
+	int userCounter;
 } http_request_t;
 
 
