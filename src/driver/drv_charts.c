@@ -130,7 +130,7 @@ void Series_Display(http_request_t *request, series_t *s) {
 	poststr(request, "    data: {");
 	poststr(request, "        labels: labels,");  // Use the pre-formatted labels
 	poststr(request, "        datasets: [{");
-	poststr(request, "            label: 'Temperature',");
+	hprintf255(request, "            label: '%s',",s->title);
 	poststr(request, "            data: [");
 	request->userCounter = 0;
 	Series_Iterate(s, Series_DisplayData, request);
@@ -158,7 +158,7 @@ void Series_Display(http_request_t *request, series_t *s) {
 // startDriver Charts
 void DRV_Charts_AddToHtmlPage(http_request_t *request) {
 
-	series_t *s = Series_Create("Test", 16);
+	series_t *s = Series_Create("Testperature", 16);
 	Series_AddSample(s, 1725606094, 30);
 	Series_AddSample(s, 1725616094, 34);
 	Series_AddSample(s, 1725626094, 38);
