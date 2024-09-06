@@ -58,6 +58,7 @@ void DRV_Test_Charts_AddToHtmlPage(http_request_t *request) {
 	}
 	poststr(request, "],");
 	poststr(request, "                borderColor: 'rgba(75, 192, 192, 1)',");
+	poststr(request, "                yAxisID: 'y-temp',"); // Assign to temperature Y-axis
 	poststr(request, "                fill: false");
 	poststr(request, "            },");
 	poststr(request, "            {");
@@ -71,17 +72,34 @@ void DRV_Test_Charts_AddToHtmlPage(http_request_t *request) {
 		}
 	}
 	poststr(request, "],");
-	poststr(request, "            borderColor: 'rgba(232, 122, 432, 1)',");
-	poststr(request, "            fill: false");
-	poststr(request, "        }]");
+	poststr(request, "                borderColor: 'rgba(232, 122, 432, 1)',");
+	poststr(request, "                yAxisID: 'y-hum',"); // Assign to humidity Y-axis
+	poststr(request, "                fill: false");
+	poststr(request, "            }]");
 	poststr(request, "    },");
 	poststr(request, "    options: {");
 	poststr(request, "        scales: {");
 	poststr(request, "            x: {");
-	poststr(request, "                type: 'category',"); 
+	poststr(request, "                type: 'category'");
 	poststr(request, "            },");
-	poststr(request, "            y: {");
-	poststr(request, "                beginAtZero: false");
+	poststr(request, "            'y-temp': {"); // Define temperature Y-axis
+	poststr(request, "                type: 'linear',");
+	poststr(request, "                position: 'left',");
+	poststr(request, "                title: {");
+	poststr(request, "                    display: true,");
+	poststr(request, "                    text: 'Temperature (°C)'");
+	poststr(request, "                }");
+	poststr(request, "            },");
+	poststr(request, "            'y-hum': {"); // Define humidity Y-axis
+	poststr(request, "                type: 'linear',");
+	poststr(request, "                position: 'right',");
+	poststr(request, "                title: {");
+	poststr(request, "                    display: true,");
+	poststr(request, "                    text: 'Humidity (%)'");
+	poststr(request, "                },");
+	poststr(request, "                grid: {");
+	poststr(request, "                    drawOnChartArea: false"); // Avoid grid lines overlapping
+	poststr(request, "                }");
 	poststr(request, "            }");
 	poststr(request, "        }");
 	poststr(request, "    }");
@@ -89,7 +107,5 @@ void DRV_Test_Charts_AddToHtmlPage(http_request_t *request) {
 	poststr(request, "}");
 	poststr(request, "</script>");
 	poststr(request, "<style onload='cha();'></style>");
-
 }
-
 
