@@ -498,7 +498,7 @@ void Main_OnEverySecond()
 #if PLATFORM_BK7231T
 		g_wifi_temperature = temperature / 25.0f;
 #else
-		g_wifi_temperature = temperature;// * 0.128f;
+		g_wifi_temperature = (-0.457f * temperature) + 188.474f;
 #endif
 #elif PLATFORM_BL602
 		get_tsen_adc(&g_wifi_temperature, 0);
