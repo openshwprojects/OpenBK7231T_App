@@ -221,7 +221,28 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
     //2. net device(lwip)
     netdev_set_mac_addr(NETIF_IDX_STA, mac_addr);
     sysparam_sta_hostname_update(CFG_GetDeviceName());
+    // static ip address
+       if (ip->localIPAddr[0] != 0){
+            tcpip_ip_info_t  ip_info;
+            convert_IP_to_string(g_IP, ip->localIPAddr);
+            LOG(LOG_LVL_INFO, "INSIDE wifi_init_sta, ip->localIPAddr[0] != 0 - setting static IP (%s)",g_IP);
+            ip_info.ip.addr      = ipaddr_addr((const char *)g_IP);
+            convert_IP_to_string(g_IP, ip->netMask);
+            ip_info.netmask.addr = ipaddr_addr((const char *)g_IP);
+            convert_IP_to_string(g_IP, ip->gatewayIPAddr);
+            ip_info.gw.addr      = ipaddr_addr((const char *)g_IP);
+//            convert_IP_to_string(g_IP, ip->dnsServerIpAddr);
+//            ip_info.dns.addr      = ipaddr_addr((const char *)g_IP);
+// ToDo: set DNS server
+
+            netdev_set_ip_info(NETIF_IDX_STA, &ip_info);
+       } else  LOG(LOG_LVL_INFO, "INSIDE wifi_init_sta, no static IP - use DHCP (ip->localIPAddr[0] == 0)");
+
+
+
+
     netdev_set_active(NETIF_IDX_STA);
+
 
     //3. wifi start
     wifi_manager_reg_event_callback(WIFI_MGR_EVENT_STA_SCAN_COMPLETE, &wifi_scan_complete_cb);

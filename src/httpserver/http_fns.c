@@ -987,18 +987,22 @@ int http_fn_cfg_ip(http_request_t* request) {
 
 	if (http_getArg(request->url, "IP", tmp, sizeof(tmp))) {
 		str_to_ip(tmp, g_cfg.staticIP.localIPAddr);
+//hprintf255(request, "<br>IP=%s (%02x %02x %02x %02x)<br>",tmp,g_cfg.staticIP.localIPAddr[0],g_cfg.staticIP.localIPAddr[1],g_cfg.staticIP.localIPAddr[2],g_cfg.staticIP.localIPAddr[3]);
 		g_changes++;
 	}
 	if (http_getArg(request->url, "mask", tmp, sizeof(tmp))) {
 		str_to_ip(tmp, g_cfg.staticIP.netMask);
+//hprintf255(request, "<br>Mask=%s (%02x %02x %02x %02x)<br>",tmp, g_cfg.staticIP.netMask[0], g_cfg.staticIP.netMask[1], g_cfg.staticIP.netMask[2], g_cfg.staticIP.netMask[3]);
 		g_changes++;
 	}
 	if (http_getArg(request->url, "dns", tmp, sizeof(tmp))) {
 		str_to_ip(tmp, g_cfg.staticIP.dnsServerIpAddr);
+//hprintf255(request, "<br>DNS=%s (%02x %02x %02x %02x)<br>",tmp, g_cfg.staticIP.dnsServerIpAddr[0], g_cfg.staticIP.dnsServerIpAddr[1], g_cfg.staticIP.dnsServerIpAddr[2], g_cfg.staticIP.dnsServerIpAddr[3]);
 		g_changes++;
 	}
 	if (http_getArg(request->url, "gate", tmp, sizeof(tmp))) {
 		str_to_ip(tmp, g_cfg.staticIP.gatewayIPAddr);
+//hprintf255(request, "<br>GW=%s (%02x %02x %02x %02x)<br>",tmp, g_cfg.staticIP.gatewayIPAddr[0], g_cfg.staticIP.gatewayIPAddr[1], g_cfg.staticIP.gatewayIPAddr[2], g_cfg.staticIP.gatewayIPAddr[3]);
 		g_changes++;
 	}
 	if (g_changes) {
