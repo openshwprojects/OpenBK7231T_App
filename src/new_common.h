@@ -468,8 +468,11 @@ typedef enum
     EXCELLENT,
 } WIFI_RSSI_LEVEL;
 
+#if PLATFORM_LN882H
+#define IP_STRING_FORMAT	"%u.%u.%u.%u"
+#else
 #define IP_STRING_FORMAT	"%hhu.%hhu.%hhu.%hhu"
-
+#endif
 WIFI_RSSI_LEVEL wifi_rssi_scale(int8_t rssi_value);
 extern const char *str_rssi[];
 extern int bSafeMode;
