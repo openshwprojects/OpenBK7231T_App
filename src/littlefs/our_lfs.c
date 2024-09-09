@@ -30,6 +30,10 @@
 #include "hal/hal_flash.h"
 #include "flash_partition_table.h"
 
+#elif PLATFORM_ESPIDF
+
+#include "esp_partition.h"
+esp_partition_t* esplfs = NULL;
 
 #endif
 
@@ -609,6 +613,62 @@ static int lfs_erase(const struct lfs_config *c, lfs_block_t block){
     unsigned int startAddr = LFS_Start;
     startAddr += block*LFS_BLOCK_SIZE;
     hal_flash_erase(startAddr, LFS_BLOCK_SIZE);		// it's a void function for LN882H, so no return value
+    return res;
+}
+
+#elif PLATFORM_ESPIDF
+
+bool esp_lfs_find()
+{
+    if(esplfs == NULL)
+    {
+        esplfs = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_LITTLEFS, NULL);
+        if(esplfs != NULL)
+        {
+            ADDLOG_INFO(LOG_FEATURE_LFS, "Partition %s found, size: %i", esplfs->label, LFS_Size);
+        }
+    }
+    return false;
+}
+
+static int lfs_read(const struct lfs_config* c, lfs_block_t block,
+    lfs_off_t off, void* buffer, lfs_size_t size)
+{
+    esp_lfs_find();
+    int res = LFS_ERR_OK;
+    unsigned int startAddr = block * LFS_BLOCK_SIZE;
+    startAddr += off;
+    res = esp_partition_read(esplfs, startAddr, (uint8_t*)buffer, size);
+    return res;
+}
+
+// Program a region in a block. The block must have previously
+// been erased. Negative error codes are propogated to the user.
+// May return LFS_ERR_CORRUPT if the block should be considered bad.
+static int lfs_write(const struct lfs_config* c, lfs_block_t block,
+    lfs_off_t off, const void* buffer, lfs_size_t size)
+{
+    esp_lfs_find();
+    int res = LFS_ERR_OK;
+
+    unsigned int startAddr = block * LFS_BLOCK_SIZE;
+    startAddr += off;
+
+    res = esp_partition_write(esplfs, startAddr, (uint8_t*)buffer, size);
+
+    return res;
+}
+
+// Erase a block. A block must be erased before being programmed.
+// The state of an erased block is undefined. Negative error codes
+// are propogated to the user.
+// May return LFS_ERR_CORRUPT if the block should be considered bad.
+static int lfs_erase(const struct lfs_config* c, lfs_block_t block)
+{
+    esp_lfs_find();
+    int res = LFS_ERR_OK;
+    unsigned int startAddr = block * LFS_BLOCK_SIZE;
+    res = esp_partition_erase_range(esplfs, startAddr, LFS_BLOCK_SIZE);
     return res;
 }
 

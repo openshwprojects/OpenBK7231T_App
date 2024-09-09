@@ -39,7 +39,8 @@ static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"
 #include "BkDriverFlash.h"
 #include "temp_detect_pub.h"
 #elif defined(PLATFORM_LN882H)
-
+#elif defined(PLATFORM_ESPIDF)
+#include "esp_wifi.h"
 #else
 // REALLY? A typo in Tuya SDK? Storge?
 // tuya-iotos-embeded-sdk-wifi-ble-bk7231t/platforms/bk7231t/tuya_os_adapter/include/driver/tuya_hal_storge.h
@@ -1222,6 +1223,20 @@ int http_fn_cfg_wifi(http_request_t* request) {
 #elif PLATFORM_LN882H
 // TODO:LN882H action
         poststr(request, "TODO LN882H<br>");
+#elif PLATFORM_ESPIDF
+		// doesn't work in ap mode, only sta/apsta
+		uint16_t ap_count = 0, number = 30;
+		wifi_ap_record_t ap_info[number];
+		memset(ap_info, 0, sizeof(ap_info));
+		bk_printf("Scan begin...\r\n");
+		esp_wifi_scan_start(NULL, true);
+		esp_wifi_scan_get_ap_num(&ap_count);
+		bk_printf("Scan returned %i networks, max allowed: %i\r\n", ap_count, number);
+		esp_wifi_scan_get_ap_records(&number, ap_info);
+		for(int i = 0; i < number; i++)
+		{
+			hprintf255(request, "[%i/%u] SSID: %s, Channel: %i, Signal %i<br>", i + 1, number, ap_info[i].ssid, ap_info[i].primary, ap_info[i].rssi);
+		}
 #else
 #error "Unknown platform"
 		poststr(request, "Unknown platform<br>");
@@ -2890,7 +2905,7 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 
 #elif PLATFORM_LN882H
 
-
+#elif PLATFORM_ESPIDF
 #elif PLATFORM_W600 || PLATFORM_W800
 	t_http_fwup(s);
 #elif PLATFORM_XR809

@@ -32,7 +32,6 @@
 extern void MQTT_TriggerRead();
 #endif
 
-
 // these won't exist except on Beken?
 #ifndef LOCK_TCPIP_CORE
 #define LOCK_TCPIP_CORE()
@@ -1630,19 +1629,11 @@ static BENCHMARK_TEST_INFO* info = NULL;
 
 #if WINDOWS
 
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF
 static void mqtt_timer_thread(void* param)
 {
 	while (1)
 	{
-		vTaskDelay(MQTT_TMR_DURATION);
-		MQTT_Test_Tick(param);
-	}
-}
-#elif PLATFORM_W600 || PLATFORM_W800
-static void mqtt_timer_thread(void* param)
-{
-	while (1) {
 		vTaskDelay(MQTT_TMR_DURATION);
 		MQTT_Test_Tick(param);
 	}
@@ -1678,9 +1669,7 @@ commandResult_t MQTT_StartMQTTTestThread(const void* context, const char* cmd, c
 
 #if WINDOWS
 
-#elif PLATFORM_BL602
-	xTaskCreate(mqtt_timer_thread, "mqtt", 1024, (void*)info, 15, NULL);
-#elif PLATFORM_W600 || PLATFORM_W800
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF
 	xTaskCreate(mqtt_timer_thread, "mqtt", 1024, (void*)info, 15, NULL);
 #elif PLATFORM_XR809 || PLATFORM_LN882H
 	OS_TimerSetInvalid(&timer);

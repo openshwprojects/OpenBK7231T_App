@@ -48,6 +48,8 @@ uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
 
 #elif PLATFORM_LN882H
 
+#elif PLATFORM_ESPIDF
+
 #else
 
 extern UINT32 flash_read(char* user_buf, UINT32 count, UINT32 address);
@@ -1402,7 +1404,7 @@ static int ota_verify_download(void)
 
 static int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr) {
 
-#if PLATFORM_XR809 || PLATFORM_W800
+#if PLATFORM_XR809 || PLATFORM_W800 || PLATFORM_ESPIDF
 	return 0;	//Operation not supported yet
 #endif
 
@@ -1764,6 +1766,8 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Precheck bad\r\n");
 	}
 
+
+#elif PLATFORM_ESPIDF
 #else
 
 	init_ota(startaddr);
@@ -1858,7 +1862,7 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 		res = bl_flash_read(startaddr, (uint8_t *)buffer, readlen);
 #elif PLATFORM_W600 || PLATFORM_W800
 		res = 0;
-#elif PLATFORM_LN882H
+#elif PLATFORM_LN882H || PLATFORM_ESPIDF
 // TODO:LN882H flash read?
         res = 0;
 #else

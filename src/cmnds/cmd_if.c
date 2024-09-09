@@ -670,7 +670,7 @@ const char *CMD_ExpandConstantString(const char *s, const char *stop, char *out,
 
 const char *CMD_ExpandConstantToString(const char *constant, char *out, char *stop) {
 	int outLen;
-	float value;
+	float value = 0;
 	int valueInt;
 	const char *after;
 	float delta;

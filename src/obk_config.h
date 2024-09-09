@@ -165,6 +165,15 @@
 #define ENABLE_TASMOTA_JSON		1
 #define ENABLE_DRIVER_DS1820		1
 
+#elif PLATFORM_ESPIDF
+
+#define ENABLE_I2C 1
+#define ENABLE_NTP 1
+#define ENABLE_DRIVER_LED 1
+#define ENABLE_DRIVER_TUYAMCU 1
+#define ENABLE_LITTLEFS 1
+#define ENABLE_DRIVER_BMPI2C 1
+
 #else
 
 #error "Platform not defined"

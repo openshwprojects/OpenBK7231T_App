@@ -21,6 +21,9 @@ int cmd_uartInitIndex = 0;
 #elif PLATFORM_LN882H
 #include <wifi.h>
 #include <power_mgmt/ln_pm.h>
+#elif PLATFORM_ESPIDF
+#include "esp_wifi.h"
+#include "esp_pm.h"
 #endif
 
 #define HASH_SIZE 128
@@ -111,6 +114,33 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 		g_ln882h_pendingPowerSaveCommand = bOn;
 	}
 	else LN882H_ApplyPowerSave(bOn);
+#elif defined(PLATFORM_ESPIDF)
+	if(Tokenizer_GetArgsCount() > 2)
+	{
+		int minfreq = Tokenizer_GetArgInteger(1);
+		int maxfreq = Tokenizer_GetArgInteger(2);
+		esp_pm_config_t pm_config = {
+				.max_freq_mhz = maxfreq,
+				.min_freq_mhz = minfreq,
+		};
+		esp_pm_configure(&pm_config);
+		ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave freq scaling, min: %iMhz, max: %iMhz", minfreq, maxfreq);
+	}
+	else if(bOn >= 2)
+	{
+		ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave max_modem");
+		esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
+	}
+	else if(bOn == 1)
+	{
+		ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave min_modem");
+		esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
+	}
+	else
+	{
+		ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave disabled");
+		esp_wifi_set_ps(WIFI_PS_NONE);
+	}
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave is not implemented on this platform");
 #endif    
@@ -767,6 +797,7 @@ void CMD_Init_Early() {
 	CMD_RegisterCommand("PWMFrequency", CMD_PWMFrequency, NULL);
 	
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602) || (defined PLATFORM_LN882H)
+	|| (defined PLATFORM_ESPIDF)
 	CMD_InitScripting();
 #endif
 	if (!bSafeMode) {
