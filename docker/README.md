@@ -3,7 +3,7 @@
 This docker will build all or some of the platforms that OpenBeken supports. To use, first build the docker image:
 
 ```sh
-docker build -t openbk_build --build-arg USERNAME=$USER .
+docker build -t openbk_build --build-arg UID=$UID --build-arg USERNAME=$USER .
 ```
 
 Note that the current user name is passed through to the docker image build. This is to preserve local file permissions when OpenBeken is built.
