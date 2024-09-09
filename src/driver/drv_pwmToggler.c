@@ -11,6 +11,7 @@
 #include "drv_uart.h"
 #include "../httpserver/new_http.h"
 #include "../quicktick.h"
+#include <math.h>
 
 /*
 PWM toggler provides you an abstraction layer over PWM channels 
@@ -67,13 +68,17 @@ toggler_enable0 1
 
 Test code for smooth transitions:
 
+// NOTE: Enable "show raw pwm controllers" in flags
 startDriver PWMToggler
 
-toggler_channel0 4 20
-toggler_name0 Laser
 
-toggler_channel1 5 20
-toggler_name1 Motor
+// assumes we have PWM on channel 1
+toggler_channel0 1 20
+toggler_name0 First
+
+// assumes we have PWM on channel 2
+toggler_channel1 2 20
+toggler_name1 Second
 
 
 
