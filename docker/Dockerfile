@@ -3,6 +3,9 @@ FROM --platform=linux/amd64 ubuntu:20.04
 ARG DEBIAN_FRONTEND=noninteractive
 ARG USERNAME=devuser
 ARG UID=1000
+ARG TZ="Etc/UTC"
+
+RUN echo "$TZ" > /etc/timezone
 
 RUN dpkg --add-architecture i386 \
  && apt-get update \
