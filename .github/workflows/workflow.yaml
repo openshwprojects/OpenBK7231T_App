@@ -58,6 +58,7 @@ jobs:
           echo "::set-output name=short_ref::${BRANCHTRANSLATED}"
           echo "::set-output name=sha_short::SHA-$(git rev-parse --short=12 HEAD)"
           echo "::set-output name=version::${VERSION}"
+
   build:
     name: Build
     needs: refs
@@ -109,10 +110,52 @@ jobs:
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin.xz.ota
           if-no-files-found: warn
 
+  build_idf:
+    name: Build IDF
+    needs: refs
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [OpenESP32, OpenESP32C3, OpenESP32C2, OpenESP32C6, OpenESP32S3, OpenESP32S2]
+    steps:
+      - name: Source checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive        
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+          architecture: 'x64'
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install make cmake python3-venv coreutils
+          pip3 install pycryptodomex
+          pip3 install configobj
+          pip3 install toml
+          pip3 install fdt
+      - name: Run make
+        run: |
+          cd sdk/esp-idf
+          ./install.sh > /dev/null
+          . ./export.sh
+          . ./add_path.sh
+          cd ../..
+          make APP_VERSION=${{ needs.refs.outputs.version }} APP_NAME=${{ matrix.platform }} ${{ matrix.platform }}
+      - name: Save build assets
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
+          path: |
+            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.bin
+            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.factory.bin
+          if-no-files-found: warn
+
   release:
     name: Semantic Release Images and Artifacts
     runs-on: ubuntu-20.04
-    needs: [ refs, build ]
+    needs: [ refs, build, build_idf ]
     if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
     steps:
       - name: Source checkout

@@ -35,7 +35,7 @@ else
 endif
 
 update-submodules: submodules
-	git add sdk/OpenBK7231T sdk/OpenBK7231N sdk/OpenXR809 sdk/OpenBL602 sdk/OpenW800 sdk/OpenW600 sdk/OpenLN882H
+	git add sdk/OpenBK7231T sdk/OpenBK7231N sdk/OpenXR809 sdk/OpenBL602 sdk/OpenW800 sdk/OpenW600 sdk/OpenLN882H sdk/esp-idf
 ifdef GITHUB_ACTIONS
 	git config user.name github-actions
 	git config user.email github-actions@github.com
@@ -162,7 +162,7 @@ ESP-IDF-C3:
 	IDF_TARGET="esp32c3" USER_SW_VER=$(APP_VERSION) cmake idf -B idf/build-c3 
 	IDF_TARGET="esp32c3" USER_SW_VER=$(APP_VERSION) cmake --build ./idf/build-c3 -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
-	esptool.py -c esp32c3 merge_bin -o output/$(APP_VERSION)/OpenESP32C3_$(APP_VERSION).factory.bin --flash_mode dio --flash_size 2MB 0x1000 ./idf/build-c3/bootloader/bootloader.bin 0x8000 ./idf/build-c3/partition_table/partition-table.bin 0x10000 ./idf/build-c3/OpenBeken.bin
+	esptool.py -c esp32c3 merge_bin -o output/$(APP_VERSION)/OpenESP32C3_$(APP_VERSION).factory.bin --flash_mode dio --flash_size 2MB 0x0 ./idf/build-c3/bootloader/bootloader.bin 0x8000 ./idf/build-c3/partition_table/partition-table.bin 0x10000 ./idf/build-c3/OpenBeken.bin
 	cp ./idf/build-c3/OpenBeken.bin output/$(APP_VERSION)/OpenESP32C3_$(APP_VERSION).bin
 
 .PHONY: ESP-IDF-C2
