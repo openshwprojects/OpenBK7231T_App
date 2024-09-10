@@ -56,6 +56,8 @@ void bg_register_irda_check_func(FUNCPTR func);
 #elif PLATFORM_LN882H
 #include "hal/hal_wdt.h"
 #include "hal/hal_gpio.h"
+#elif PLATFORM_ESPIDF
+#include "hal/wdt_hal.h"
 #endif
 
 
@@ -537,7 +539,7 @@ void Main_OnEverySecond()
 	LED_RunOnEverySecond();
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602)
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF)
 	UART_RunEverySecond();
 #endif
 #endif
@@ -806,6 +808,11 @@ void Main_OnEverySecond()
 	tls_watchdog_clr();
 #elif PLATFORM_LN882H
 	hal_wdt_cnt_restart(WDT_BASE);
+#elif PLATFORM_ESPIDF
+	wdt_hal_context_t rtc_wdt_ctx = RWDT_HAL_CONTEXT_DEFAULT();
+	wdt_hal_write_protect_disable(&rtc_wdt_ctx);
+	wdt_hal_feed(&rtc_wdt_ctx);
+	wdt_hal_write_protect_enable(&rtc_wdt_ctx);
 #endif
 	// force it to sleep...  we MUST have some idle task processing
 	// else task memory doesn't get freed

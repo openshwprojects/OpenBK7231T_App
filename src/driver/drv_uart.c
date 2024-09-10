@@ -89,6 +89,11 @@ int g_chosenUART = BK_UART_1;
 //int g_fd;
 uint8_t g_id = 1;
 int fd_console = -1;
+#elif PLATFORM_ESPIDF
+#include "driver/uart.h"
+uart_port_t uartnum = UART_NUM_0;
+static QueueHandle_t uart_queue;
+TaskHandle_t uartHandle = NULL;
 #else
 #endif
 
@@ -184,6 +189,41 @@ static void console_cb_read(int fd, void *param)
 }
 #endif
 
+#ifdef PLATFORM_ESPIDF
+
+static void uart_event_task(void* pvParameters)
+{
+    uart_event_t event;
+    size_t buffered_size;
+    uint8_t* dtmp = (uint8_t*)malloc(1024);
+    while(true)
+    {
+        if(xQueueReceive(uart_queue, (void*)&event, (TickType_t)portMAX_DELAY))
+        {
+            bzero(dtmp, 1024);
+            switch(event.type)
+            {
+            case UART_DATA:
+                uart_read_bytes(uartnum, dtmp, event.size, portMAX_DELAY);
+                for(int i = 0; i < event.size; i++)
+                {
+                    UART_AppendByteToReceiveRingBuffer(dtmp[i]);
+                }
+                break;
+            case UART_BUFFER_FULL:
+            case UART_FIFO_OVF:
+                uart_flush_input(uartnum);
+                xQueueReset(uart_queue);
+                break;
+            default:
+                break;
+            }
+        }
+    }
+}
+
+#endif
+
 void UART_SendByte(byte b) {
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
     // BK_UART_1 is defined to 0
@@ -199,6 +239,8 @@ void UART_SendByte(byte b) {
 #elif PLATFORM_BL602
     aos_write(fd_console, &b, 1);
 	//bl_uart_data_send(g_id, b);
+#elif PLATFORM_ESPIDF
+    uart_write_bytes(uartnum, &b, 1);
 #endif
 }
 commandResult_t CMD_UART_Send_Hex(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -327,6 +369,37 @@ int UART_InitUART(int baud, int parity) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "failed CLI with event Driven\r\n");
         }
     }
+#elif PLATFORM_ESPIDF
+    if(uartHandle != NULL)
+    {
+        vTaskDelete(uartHandle);
+        uartHandle = NULL;
+    }
+    if(CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART))
+    {
+        uartnum = UART_NUM_1;
+    }
+    else
+    {
+        uartnum = UART_NUM_0;
+    }
+    if(uart_is_driver_installed(uartnum))
+    {
+        uart_driver_delete(uartnum);
+    }
+    uart_config_t uart_config =
+    {
+        .baud_rate = baud,
+        .data_bits = UART_DATA_8_BITS,
+        .parity = parity > 0 ? parity + 1 : parity,
+        .stop_bits = UART_STOP_BITS_1,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+        .source_clk = UART_SCLK_DEFAULT,
+    };
+    uart_driver_install(uartnum, 2048, 2048, 20, &uart_queue, 0);
+    uart_param_config(uartnum, &uart_config);
+    uart_set_pin(uartnum, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+    xTaskCreate(uart_event_task, "uart_event_task", 3072, NULL, 12, NULL);
 #endif
     return g_uart_init_counter;
 }

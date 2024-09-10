@@ -153,7 +153,7 @@ OpenESP32:
 	IDF_TARGET="esp32" USER_SW_VER=$(APP_VERSION) cmake idf -B idf/build-32 
 	IDF_TARGET="esp32" USER_SW_VER=$(APP_VERSION) cmake --build ./idf/build-32 -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
-	esptool.py -c esp32 merge_bin -o output/$(APP_VERSION)/OpenESP32_$(APP_VERSION).factory.bin --flash_mode dio --flash_size 2MB 0x1000 ./idf/build-32/bootloader/bootloader.bin 0x8000 ./idf/build-32/partition_table/partition-table.bin 0x10000 ./idf/build-32/OpenBeken.bin
+	esptool.py -c esp32 merge_bin -o output/$(APP_VERSION)/OpenESP32_$(APP_VERSION).factory.bin --flash_mode dio --flash_size 4MB 0x1000 ./idf/build-32/bootloader/bootloader.bin 0x8000 ./idf/build-32/partition_table/partition-table.bin 0x10000 ./idf/build-32/OpenBeken.bin
 	cp ./idf/build-32/OpenBeken.bin output/$(APP_VERSION)/OpenESP32_$(APP_VERSION).img
 
 .PHONY: OpenESP32C3
