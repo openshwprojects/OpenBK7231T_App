@@ -24,6 +24,8 @@ int cmd_uartInitIndex = 0;
 #elif PLATFORM_ESPIDF
 #include "esp_wifi.h"
 #include "esp_pm.h"
+#include "esp_sleep.h"
+#include "driver/rtc_io.h"
 #endif
 
 #define HASH_SIZE 128
@@ -169,7 +171,12 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 	bk_wlan_ps_wakeup_with_timer(timeMS);
 	return CMD_RES_OK;
 #elif defined(PLATFORM_W600)
-
+#elif defined(PLATFORM_ESPIDF)
+	esp_sleep_enable_timer_wakeup(timeMS * 1000000);
+#if CONFIG_IDF_TARGET_ESP32
+	rtc_gpio_isolate(GPIO_NUM_12);
+#endif
+	esp_deep_sleep_start();
 #endif
 
 	return CMD_RES_OK;

@@ -1043,7 +1043,7 @@ typedef enum channelType_e {
 #define SPECIAL_CHANNEL_FLASHVARS_LAST	264
 
 
-#if PLATFORM_W800
+#if PLATFORM_W800 || PLATFORM_ESPIDF
 
 typedef struct pinsState_s {
 	// All above values are indexed by physical pin index
@@ -1282,7 +1282,7 @@ typedef struct mainConfig_s {
 	// offset 0x000004BC
 	unsigned long LFS_Size; // szie of LFS volume.  it's aligned against the end of OTA
 	int loggerFlags;
-#if PLATFORM_W800
+#if PLATFORM_W800 || PLATFORM_ESPIDF
 	byte unusedSectorAB[51];
 #else    
 	byte unusedSectorAB[99];
