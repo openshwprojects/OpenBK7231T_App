@@ -45,7 +45,7 @@ typedef struct chart_s {
 	axis_t *axes;
 } chart_t;
 
-
+chart_t *g_chart = 0;
 
 void Chart_Free(chart_t *s) {
 	if (!s) {
@@ -244,8 +244,7 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 	poststr(request, "<style onload='cha();'></style>");
 
 }
-// startDriver Charts
-void DRV_Charts_AddToHtmlPage(http_request_t *request) {
+void DRV_Charts_AddToHtmlPage_Test(http_request_t *request) {
 
 	// chart_create [NumSamples] [NumVariables] [NumAxes]
 	// chart_create 16 3 2
@@ -292,10 +291,98 @@ void DRV_Charts_AddToHtmlPage(http_request_t *request) {
 	Chart_Display(request, s);
 	Chart_Free(s);
 }
+// startDriver Charts
+void DRV_Charts_AddToHtmlPage(http_request_t *request) {
+	if (1) {
+		DRV_Charts_AddToHtmlPage_Test(request);
+		return;
+	}
+}
 
+static commandResult_t CMD_Chart_Create(const void *context, const char *cmd, const char *args, int flags) {
+	Tokenizer_TokenizeString(args,0);
+
+	if(Tokenizer_GetArgsCount()<=1) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	int numSamples = Tokenizer_GetArgInteger(0);
+	int numVars = Tokenizer_GetArgInteger(1);
+	int numAxes = Tokenizer_GetArgInteger(2);
+
+	Chart_Free(g_chart);
+	g_chart = Chart_Create(numSamples, numVars, numAxes);
+
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_Chart_SetVar(const void *context, const char *cmd, const char *args, int flags) {
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() <= 1) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	int varIndex = Tokenizer_GetArgInteger(0);
+	const char *displayName = Tokenizer_GetArg(1);
+	const char *axis = Tokenizer_GetArg(2);
+
+	Chart_SetVar(g_chart, varIndex, displayName, axis);
+
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_Chart_SetAxis(const void *context, const char *cmd, const char *args, int flags) {
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() <= 1) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	int axisIndex = Tokenizer_GetArgInteger(0);
+	const char *name = Tokenizer_GetArg(1);
+	int cflags = Tokenizer_GetArgInteger(2);
+	const char *label = Tokenizer_GetArg(3);
+
+	Chart_SetAxis(g_chart, axisIndex, name, cflags, label);
+
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_Chart_AddNow(const void *context, const char *cmd, const char *args, int flags) {
+	Tokenizer_TokenizeString(args, 0);
+
+	int cnt = Tokenizer_GetArgsCount();
+	if (cnt < 1) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	for (int i = 0; i < cnt; i++) {
+		float f = Tokenizer_GetArgFloat(i);
+		Chart_SetSample(g_chart, i, f);
+	}
+	Chart_AddTime(g_chart, NTP_GetCurrentTime());
+
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_Chart_Add(const void *context, const char *cmd, const char *args, int flags) {
+	Tokenizer_TokenizeString(args, 0);
+
+	int cnt = Tokenizer_GetArgsCount();
+	if (cnt < 2) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	int time = Tokenizer_GetArgInteger(0);
+	for (int i = 1; i < cnt; i++) {
+		float f = Tokenizer_GetArgFloat(i-1);
+		Chart_SetSample(g_chart, i - 1, f);
+	}
+	Chart_AddTime(g_chart, time);
+
+	return CMD_RES_OK;
+}
 
 void DRV_Charts_Init() {
 
 
+
+	CMD_RegisterCommand("chart_setAxis", CMD_Chart_SetAxis, NULL);
+	CMD_RegisterCommand("chart_setVar", CMD_Chart_SetVar, NULL);
+	CMD_RegisterCommand("chart_create", CMD_Chart_Create, NULL);
+	CMD_RegisterCommand("chart_addNow", CMD_Chart_AddNow, NULL);
+	CMD_RegisterCommand("chart_add", CMD_Chart_Add, NULL);
 }
 
