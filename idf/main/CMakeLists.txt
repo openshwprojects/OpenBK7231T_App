@@ -1,4 +1,3 @@
-
 set(PROJ_ALL_SRC
     ../../src/base64/base64.c
     ../../src/bitmessage/bitmessage_read.c
@@ -127,4 +126,4 @@ set(PROJ_ALL_SRC
     app.c
 )
 idf_component_register(SRCS ${PROJ_ALL_SRC} 
-			PRIV_REQUIRES mqtt lwip esp_wifi nvs_flash esp_driver_tsens esp_driver_gpio esp_pm esp_partition app_update)
+			PRIV_REQUIRES mqtt lwip esp_wifi nvs_flash esp_driver_tsens esp_driver_gpio esp_pm esp_partition app_update esp_adc)

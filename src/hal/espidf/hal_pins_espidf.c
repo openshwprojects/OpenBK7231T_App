@@ -5,12 +5,7 @@
 #include "../../new_cfg.h"
 #include "../../new_pins.h"
 #include "driver/gpio.h"
-
-typedef struct espPinMapping_s
-{
-	const char* name;
-	gpio_num_t pin;
-} espPinMapping_t;
+#include "hal_generic_espidf.h"
 
 #ifdef CONFIG_IDF_TARGET_ESP32C3
 
@@ -250,7 +245,7 @@ espPinMapping_t g_pins[] = { };
 
 #endif
 
-static int g_numPins = sizeof(g_pins) / sizeof(g_pins[0]);
+int g_numPins = sizeof(g_pins) / sizeof(g_pins[0]);
 
 int PIN_GetPWMIndexForPinIndex(int pin)
 {
