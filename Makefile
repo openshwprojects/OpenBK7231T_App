@@ -154,7 +154,7 @@ OpenESP32:
 	IDF_TARGET="esp32" USER_SW_VER=$(APP_VERSION) cmake --build ./idf/build-32 -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
 	esptool.py -c esp32 merge_bin -o output/$(APP_VERSION)/OpenESP32_$(APP_VERSION).factory.bin --flash_mode dio --flash_size 2MB 0x1000 ./idf/build-32/bootloader/bootloader.bin 0x8000 ./idf/build-32/partition_table/partition-table.bin 0x10000 ./idf/build-32/OpenBeken.bin
-	cp ./idf/build-32/OpenBeken.bin output/$(APP_VERSION)/OpenESP32_$(APP_VERSION).bin
+	cp ./idf/build-32/OpenBeken.bin output/$(APP_VERSION)/OpenESP32_$(APP_VERSION).img
 
 .PHONY: OpenESP32C3
 OpenESP32C3: 
@@ -163,7 +163,7 @@ OpenESP32C3:
 	IDF_TARGET="esp32c3" USER_SW_VER=$(APP_VERSION) cmake --build ./idf/build-c3 -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
 	esptool.py -c esp32c3 merge_bin -o output/$(APP_VERSION)/OpenESP32C3_$(APP_VERSION).factory.bin --flash_mode dio --flash_size 2MB 0x0 ./idf/build-c3/bootloader/bootloader.bin 0x8000 ./idf/build-c3/partition_table/partition-table.bin 0x10000 ./idf/build-c3/OpenBeken.bin
-	cp ./idf/build-c3/OpenBeken.bin output/$(APP_VERSION)/OpenESP32C3_$(APP_VERSION).bin
+	cp ./idf/build-c3/OpenBeken.bin output/$(APP_VERSION)/OpenESP32C3_$(APP_VERSION).img
 
 .PHONY: OpenESP32C2
 OpenESP32C2: 
@@ -172,7 +172,7 @@ OpenESP32C2:
 	IDF_TARGET="esp32c2" USER_SW_VER=$(APP_VERSION) cmake --build ./idf/build-c2 -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
 	esptool.py -c esp32c2 merge_bin -o output/$(APP_VERSION)/OpenESP32C2_$(APP_VERSION).factory.bin --flash_mode dio --flash_size 2MB 0x0 ./idf/build-c2/bootloader/bootloader.bin 0x8000 ./idf/build-c2/partition_table/partition-table.bin 0x10000 ./idf/build-c2/OpenBeken.bin
-	cp ./idf/build-c2/OpenBeken.bin output/$(APP_VERSION)/OpenESP32C2_$(APP_VERSION).bin
+	cp ./idf/build-c2/OpenBeken.bin output/$(APP_VERSION)/OpenESP32C2_$(APP_VERSION).img
 
 .PHONY: OpenESP32C6
 OpenESP32C6: 
@@ -181,7 +181,7 @@ OpenESP32C6:
 	IDF_TARGET="esp32c6" USER_SW_VER=$(APP_VERSION) cmake --build ./idf/build-c6 -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
 	esptool.py -c esp32c6 merge_bin -o output/$(APP_VERSION)/OpenESP32C6_$(APP_VERSION).factory.bin --flash_mode dio --flash_size 4MB 0x0 ./idf/build-c6/bootloader/bootloader.bin 0x8000 ./idf/build-c6/partition_table/partition-table.bin 0x10000 ./idf/build-c6/OpenBeken.bin
-	cp ./idf/build-c6/OpenBeken.bin output/$(APP_VERSION)/OpenESP32C6_$(APP_VERSION).bin
+	cp ./idf/build-c6/OpenBeken.bin output/$(APP_VERSION)/OpenESP32C6_$(APP_VERSION).img
 
 .PHONY: OpenESP32S2
 OpenESP32S2: 
@@ -190,7 +190,7 @@ OpenESP32S2:
 	IDF_TARGET="esp32s2" USER_SW_VER=$(APP_VERSION) cmake --build ./idf/build-s2 -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
 	esptool.py -c esp32s2 merge_bin -o output/$(APP_VERSION)/OpenESP32S2_$(APP_VERSION).factory.bin --flash_mode dio --flash_size 4MB 0x1000 ./idf/build-s2/bootloader/bootloader.bin 0x8000 ./idf/build-s2/partition_table/partition-table.bin 0x10000 ./idf/build-s2/OpenBeken.bin
-	cp ./idf/build-s2/OpenBeken.bin output/$(APP_VERSION)/OpenESP32S2_$(APP_VERSION).bin
+	cp ./idf/build-s2/OpenBeken.bin output/$(APP_VERSION)/OpenESP32S2_$(APP_VERSION).img
 
 .PHONY: OpenESP32S3
 OpenESP32S3: 
@@ -199,7 +199,7 @@ OpenESP32S3:
 	IDF_TARGET="esp32s3" USER_SW_VER=$(APP_VERSION) cmake --build ./idf/build-s3 -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
 	esptool.py -c esp32s3 merge_bin -o output/$(APP_VERSION)/OpenESP32S3_$(APP_VERSION).factory.bin --flash_mode dio --flash_size 4MB 0x0 ./idf/build-s3/bootloader/bootloader.bin 0x8000 ./idf/build-s3/partition_table/partition-table.bin 0x10000 ./idf/build-s3/OpenBeken.bin
-	cp ./idf/build-s3/OpenBeken.bin output/$(APP_VERSION)/OpenESP32S3_$(APP_VERSION).bin
+	cp ./idf/build-s3/OpenBeken.bin output/$(APP_VERSION)/OpenESP32S3_$(APP_VERSION).img
 
 # clean .o files and output directory
 .PHONY: clean

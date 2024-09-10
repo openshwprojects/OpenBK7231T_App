@@ -848,6 +848,8 @@ void QuickTick(void* param)
 
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	g_time = rtos_get_time();
+#elif defined (PLATFORM_ESPIDF)
+	g_time = esp_timer_get_time() / 1000;
 #else
 	g_time += QUICK_TMR_DURATION;
 #endif
@@ -915,6 +917,15 @@ void quick_timer_thread(void* param)
 {
 	while (1) {
 		vTaskDelay(QUICK_TMR_DURATION);
+		QuickTick(0);
+	}
+}
+#elif PLATFORM_ESPIDF
+void quick_timer_thread(void* param)
+{
+	while(1)
+	{
+		vTaskDelay(QUICK_TMR_DURATION / portTICK_RATE_MS);
 		QuickTick(0);
 	}
 }

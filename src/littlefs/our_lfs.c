@@ -622,7 +622,7 @@ bool esp_lfs_find()
 {
     if(esplfs == NULL)
     {
-        esplfs = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_LITTLEFS, NULL);
+        esplfs = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_SPIFFS, NULL);
         if(esplfs != NULL)
         {
             ADDLOG_INFO(LOG_FEATURE_LFS, "Partition %s found, size: %i", esplfs->label, LFS_Size);

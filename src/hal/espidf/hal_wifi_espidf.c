@@ -168,7 +168,7 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 
 void HAL_DisconnectFromWifi()
 {
-	esp_err_t esp_wifi_disconnect(void);
+	esp_wifi_disconnect();
 	if(g_wifiStatusCallback != NULL)
 	{
 		g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
