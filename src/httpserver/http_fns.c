@@ -41,6 +41,7 @@ static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"
 #elif defined(PLATFORM_LN882H)
 #elif defined(PLATFORM_ESPIDF)
 #include "esp_wifi.h"
+#include "esp_system.h"
 #else
 // REALLY? A typo in Tuya SDK? Storge?
 // tuya-iotos-embeded-sdk-wifi-ble-bk7231t/platforms/bk7231t/tuya_os_adapter/include/driver/tuya_hal_storge.h
@@ -842,6 +843,25 @@ typedef enum {
 			s = "Wdt";
 		hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", g_rebootReason, s);
 	}
+#elif PLATFORM_ESPIDF
+	esp_reset_reason_t reason = esp_reset_reason();
+	const char* s = "Unknown";
+	switch(reason)
+	{
+	case ESP_RST_POWERON:    s = "ESP_RST_POWERON"; break;
+	case ESP_RST_SW:         s = "ESP_RST_SW"; break;
+	case ESP_RST_PANIC:      s = "ESP_RST_PANIC"; break;
+	case ESP_RST_INT_WDT:    s = "ESP_RST_INT_WDT"; break;
+	case ESP_RST_TASK_WDT:   s = "ESP_RST_TASK_WDT"; break;
+	case ESP_RST_WDT:        s = "ESP_RST_WDT"; break;
+	case ESP_RST_DEEPSLEEP:  s = "ESP_RST_DEEPSLEEP"; break;
+	case ESP_RST_BROWNOUT:   s = "ESP_RST_BROWNOUT"; break;
+	case ESP_RST_USB:        s = "ESP_RST_USB"; break;
+	case ESP_RST_PWR_GLITCH: s = "ESP_RST_PWR_GLITCH"; break;
+	case ESP_RST_CPU_LOCKUP: s = "ESP_RST_CPU_LOCKUP"; break;
+	default: break;
+	}
+	hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", reason, s);
 #endif
 	if (CFG_GetMQTTHost()[0] == 0) {
 		hprintf255(request, "<h5>MQTT State: not configured<br>");
