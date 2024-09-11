@@ -140,6 +140,22 @@ goto again
 
 
 */
+/*
+// Sample 7
+// Just like previous sample, but uses repeating event instead of loop
+startDriver charts
+startDriver NTP
+waitFor NTPState 1
+chart_create 16 1 1
+chart_setVar 0 "Temperature" "axtemp"
+chart_setAxis 0 "axtemp" 0 "Temperature (C)"
+
+// every 10 seconds, -1 means infinite repeats
+addRepeatingEvent 10 -1 chart_addNow $CH1*0.1
+
+
+
+*/
 #define AX_RIGHT 1
 typedef struct var_s {
 	char *title;
