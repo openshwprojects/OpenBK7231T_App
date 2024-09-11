@@ -156,6 +156,27 @@ addRepeatingEvent 10 -1 chart_addNow $CH1*0.1
 
 
 */
+/*
+// Sample 8
+// Random numbers
+startDriver charts
+startDriver NTP
+//waitFor NTPState 1
+chart_create 16 1 1
+chart_setVar 0 "Number" "ax"
+chart_setAxis 0 "ax" 0 "Number"
+
+
+again:
+setChannel 5 $rand
+clampChannel 5 0 10 1
+chart_addNow $CH5
+delay_s 1
+goto again
+
+
+
+*/
 #define AX_RIGHT 1
 typedef struct var_s {
 	char *title;
