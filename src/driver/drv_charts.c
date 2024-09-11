@@ -160,6 +160,9 @@ addRepeatingEvent 10 -1 chart_addNow $CH1*0.1
 /*
 // Sample 8
 // Random numbers
+
+IndexRefreshInterval 100000
+
 startDriver charts
 startDriver NTP
 //waitFor NTPState 1
@@ -208,15 +211,31 @@ void Chart_Free(chart_t *s) {
 	if (!s) {
 		return; 
 	}
-	for (int i = 0; i < s->numVars; i++) {
-		if (s->vars[i].title) {
-			free(s->vars[i].title);
+	if (s->axes) {
+		for (int i = 0; i < s->numAxes; i++) {
+			if (s->axes[i].label) {
+				free(s->axes[i].label);
+			}
+			if (s->axes[i].name) {
+				free(s->axes[i].name);
+			}
 		}
-		if (s->vars[i].samples) {
-			free(s->vars[i].samples);
-		}
+		free(s->axes);
 	}
-	free(s->times);
+	if (s->vars) {
+		for (int i = 0; i < s->numVars; i++) {
+			if (s->vars[i].title) {
+				free(s->vars[i].title);
+			}
+			if (s->vars[i].samples) {
+				free(s->vars[i].samples);
+			}
+		}
+		free(s->vars);
+	}
+	if (s->times) {
+		free(s->times);
+	}
 	free(s);
 }
 chart_t *Chart_Create(int maxSamples, int numVars, int numAxes) {
@@ -231,17 +250,22 @@ chart_t *Chart_Create(int maxSamples, int numVars, int numAxes) {
 	}
 	s->axes = (axis_t *)malloc(sizeof(axis_t) * numAxes);
 	if (!s->axes) {
+		free(s->vars);
 		free(s);
 		return NULL;
 	}
 	s->times = (time_t *)malloc(sizeof(time_t) * maxSamples);
 	if (!s->times) {
+		free(s->axes);
 		free(s->vars);
 		free(s);
 		return NULL; 
 	}
 	for (int i = 0; i < numVars; i++) {
 		s->vars[i].samples = (float*)malloc(sizeof(float) * maxSamples);
+		if (s->vars[i].samples == 0) {
+			// TODO
+		}
 	}
 	s->numAxes = numAxes;
 	s->numVars = numVars;
