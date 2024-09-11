@@ -9,6 +9,87 @@
 #include "../httpserver/new_http.h"
 
 /*
+// Sample 1
+// single variable chart
+startDriver charts
+// chart with max 16 samples, 1 variable and single axis
+chart_create 16 1 1
+// set the temperature variable with axis
+chart_setVar 0 "Temperature" "axtemp"
+// setup axis
+// axis_index, name, flags, label
+chart_setAxis 0 "axtemp" 0 "Temperature (C)"
+chart_add 1725606094 20
+chart_add 1725616094 22
+chart_add 1725626094 26
+chart_add 1725636094 30
+chart_add 1725646094 28
+chart_add 1725656094 27
+
+// Sample 2
+// Three temperature variables chart
+startDriver charts
+// chart with max 16 samples, 3 variables and single axis
+chart_create 16 3 1
+// set variables along with their axis
+chart_setVar 0 "Kitchen" "axtemp"
+chart_setVar 1 "Outside" "axtemp"
+chart_setVar 2 "Bedroom" "axtemp"
+// setup axis
+// axis_index, name, flags, label
+chart_setAxis 0 "axtemp" 0 "Temperature (C)"
+chart_add 1725606094 20 15 22
+chart_add 1725616094 22 16 23
+chart_add 1725626094 26 17 24
+chart_add 1725636094 30 14 25
+chart_add 1725646094 28 13 22
+chart_add 1725656094 27 15 21
+
+// Sample 3
+// Two temperatures and one humidity with separate Temperature/Humidity axes
+
+startDriver charts
+// chart with max 16 samples, 3 variables and two separate vertical axes
+chart_create 16 3 2
+// set variables along with their axes
+chart_setVar 0 "Room T" "axtemp"
+chart_setVar 1 "Outside T" "axtemp"
+chart_setVar 2 "Humidity" "axhum"
+// setup axes
+// axis_index, name, flags, label
+chart_setAxis 0 "axtemp" 0 "Temperature (C)"
+// flags 1 means this axis is on the right
+chart_setAxis 1 "axhum" 1 "Humidity (%)"
+chart_add 1725606094 20 15 89
+chart_add 1725616094 22 16 88
+chart_add 1725626094 26 17 91
+chart_add 1725636094 30 14 92
+chart_add 1725646094 28 13 92
+chart_add 1725656094 27 15 91
+
+
+// Sample 4
+// Battery voltage + pressure
+startDriver charts
+// chart with max 16 samples, 2 variables and single axis
+chart_create 16 2 1
+// set variables along with their axis
+chart_setVar 0 "Battery Voltage" "axvolt"
+chart_setVar 1 "Pressure" "axpress"
+// setup axis
+// axis_index, name, flags, label
+chart_setAxis 0 "axvolt" 0 "Battery Voltage (V)"
+chart_setAxis 1 "axpress" 1 "Pressure (hPa)"
+chart_add 1725606094 3.8 1013
+chart_add 1725616094 3.7 1011
+chart_add 1725626094 3.7 1012
+chart_add 1725636094 3.6 1015
+chart_add 1725646094 3.5 1013
+chart_add 1725656094 3.4 1014
+
+
+*/
+/*
 startDriver Charts
 
 createSeries 0 Temperature
@@ -293,14 +374,17 @@ void DRV_Charts_AddToHtmlPage_Test(http_request_t *request) {
 }
 // startDriver Charts
 void DRV_Charts_AddToHtmlPage(http_request_t *request) {
-	if (1) {
+	if (0) {
 		DRV_Charts_AddToHtmlPage_Test(request);
 		return;
+	}
+	if (g_chart) {
+		Chart_Display(request, g_chart);
 	}
 }
 
 static commandResult_t CMD_Chart_Create(const void *context, const char *cmd, const char *args, int flags) {
-	Tokenizer_TokenizeString(args,0);
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 
 	if(Tokenizer_GetArgsCount()<=1) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
@@ -315,7 +399,7 @@ static commandResult_t CMD_Chart_Create(const void *context, const char *cmd, co
 	return CMD_RES_OK;
 }
 static commandResult_t CMD_Chart_SetVar(const void *context, const char *cmd, const char *args, int flags) {
-	Tokenizer_TokenizeString(args, 0);
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 
 	if (Tokenizer_GetArgsCount() <= 1) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
@@ -329,7 +413,7 @@ static commandResult_t CMD_Chart_SetVar(const void *context, const char *cmd, co
 	return CMD_RES_OK;
 }
 static commandResult_t CMD_Chart_SetAxis(const void *context, const char *cmd, const char *args, int flags) {
-	Tokenizer_TokenizeString(args, 0);
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 
 	if (Tokenizer_GetArgsCount() <= 1) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
@@ -344,7 +428,7 @@ static commandResult_t CMD_Chart_SetAxis(const void *context, const char *cmd, c
 	return CMD_RES_OK;
 }
 static commandResult_t CMD_Chart_AddNow(const void *context, const char *cmd, const char *args, int flags) {
-	Tokenizer_TokenizeString(args, 0);
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 
 	int cnt = Tokenizer_GetArgsCount();
 	if (cnt < 1) {
@@ -367,7 +451,7 @@ static commandResult_t CMD_Chart_Add(const void *context, const char *cmd, const
 	}
 	int time = Tokenizer_GetArgInteger(0);
 	for (int i = 1; i < cnt; i++) {
-		float f = Tokenizer_GetArgFloat(i-1);
+		float f = Tokenizer_GetArgFloat(i);
 		Chart_SetSample(g_chart, i - 1, f);
 	}
 	Chart_AddTime(g_chart, time);
