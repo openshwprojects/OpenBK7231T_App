@@ -19,6 +19,8 @@ chart_setVar 0 "Temperature" "axtemp"
 // setup axis
 // axis_index, name, flags, label
 chart_setAxis 0 "axtemp" 0 "Temperature (C)"
+// for demonstration purposes, add some data at fixed times
+// First argument is NTP time value
 chart_add 1725606094 20
 chart_add 1725616094 22
 chart_add 1725626094 26
@@ -38,6 +40,8 @@ chart_setVar 2 "Bedroom" "axtemp"
 // setup axis
 // axis_index, name, flags, label
 chart_setAxis 0 "axtemp" 0 "Temperature (C)"
+// for demonstration purposes, add some data at fixed times
+// First argument is NTP time value
 chart_add 1725606094 20 15 22
 chart_add 1725616094 22 16 23
 chart_add 1725626094 26 17 24
@@ -60,6 +64,8 @@ chart_setVar 2 "Humidity" "axhum"
 chart_setAxis 0 "axtemp" 0 "Temperature (C)"
 // flags 1 means this axis is on the right
 chart_setAxis 1 "axhum" 1 "Humidity (%)"
+// for demonstration purposes, add some data at fixed times
+// First argument is NTP time value
 chart_add 1725606094 20 15 89
 chart_add 1725616094 22 16 88
 chart_add 1725626094 26 17 91
@@ -80,6 +86,8 @@ chart_setVar 1 "Pressure" "axpress"
 // axis_index, name, flags, label
 chart_setAxis 0 "axvolt" 0 "Battery Voltage (V)"
 chart_setAxis 1 "axpress" 1 "Pressure (hPa)"
+// for demonstration purposes, add some data at fixed times
+// First argument is NTP time value
 chart_add 1725606094 3.8 1013
 chart_add 1725616094 3.7 1011
 chart_add 1725626094 3.7 1012
@@ -100,6 +108,8 @@ chart_setVar 2 "Power" "axpower"
 chart_setAxis 0 "axvolt" 0 "Voltage (V)"
 chart_setAxis 1 "axcurr" 1 "Current (A)"
 chart_setAxis 2 "axpower" 2 "Power (W)"
+// for demonstration purposes, add some data at fixed times
+// First argument is NTP time value
 chart_add 1725606094 12 0.5 6
 chart_add 1725616094 11.8 0.52 6.14
 chart_add 1725626094 11.5 0.54 6.21
@@ -109,13 +119,22 @@ chart_add 1725656094 10.9 0.58 6.32
 
 */
 /*
-startDriver Charts
+// Sample 6
+// This demonstrated how to save channel values to charts.
+// No more fixed debug data!
+startDriver charts
+startDriver NTP
+waitFor NTPState 1
+chart_create 16 1 1
+chart_setVar 0 "Temperature" "axtemp"
+chart_setAxis 0 "axtemp" 0 "Temperature (C)"
 
-createSeries 0 Temperature
-
+// in a loop
 again:
-// assumes that $CH1 is temperature_div10
-addSample 0 $CH1*0.1
+// This assumes that $CH1 is temperature_div10
+// chart_addNow will take time from the NTP driver
+chart_addNow $CH1*0.1
+// every 10 seconds
 delay_s 10
 goto again
 
