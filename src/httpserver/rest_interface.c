@@ -1428,6 +1428,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	int towrite = request->bodylen;
 	char* writebuf = request->bodystart;
 	int writelen = request->bodylen;
+	int fsize = 0;
 
 	ADDLOG_DEBUG(LOG_FEATURE_OTA, "OTA post len %d", request->contentLength);
 
@@ -1830,7 +1831,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	update_partition = esp_ota_get_next_update_partition(NULL);
 	if(request->contentLength >= 0)
 	{
-		towrite = request->contentLength;
+		fsize = towrite = request->contentLength;
 	}
 
 	esp_wifi_set_ps(WIFI_PS_NONE);
@@ -1876,7 +1877,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 			return -1;
 		}
 
-		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Written image length %d", writelen, total);
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "OTA in progress: %.1f%%", (100 - ((float)towrite / fsize) * 100));
 		total += writelen;
 		startaddr += writelen;
 		towrite -= writelen;
@@ -1892,7 +1893,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 		}
 	} while((towrite > 0) && (writelen >= 0));
 
-	ADDLOG_INFO(LOG_FEATURE_OTA, "Total Write binary data length: %d", total);
+	ADDLOG_INFO(LOG_FEATURE_OTA, "OTA in progress: 100%%, total Write binary data length: %d", total);
 
 	err = esp_ota_end(update_handle);
 	if(err != ESP_OK)

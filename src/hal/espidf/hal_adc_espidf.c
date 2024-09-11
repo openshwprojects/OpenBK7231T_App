@@ -1,4 +1,4 @@
-#if PLATFORM_ESPIDF
+#ifdef PLATFORM_ESPIDF
 
 #include "../hal_adc.h"
 #include "../../logging/logging.h"

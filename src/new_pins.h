@@ -1004,13 +1004,13 @@ typedef enum channelType_e {
 #elif CONFIG_IDF_TARGET_ESP32C2
 #define PLATFORM_GPIO_MAX 21
 #elif CONFIG_IDF_TARGET_ESP32S2
-#define PLATFORM_GPIO_MAX 43
+#define PLATFORM_GPIO_MAX 47
 #elif CONFIG_IDF_TARGET_ESP32S3
-#define PLATFORM_GPIO_MAX 45
+#define PLATFORM_GPIO_MAX 49
 #elif CONFIG_IDF_TARGET_ESP32C6
 #define PLATFORM_GPIO_MAX 31
 #elif CONFIG_IDF_TARGET_ESP32
-#define PLATFORM_GPIO_MAX 39
+#define PLATFORM_GPIO_MAX 40
 #else
 #define PLATFORM_GPIO_MAX 0
 #endif
@@ -1048,12 +1048,12 @@ typedef enum channelType_e {
 typedef struct pinsState_s {
 	// All above values are indexed by physical pin index
 	// (so we assume we have maximum of 32 pins)
-	byte roles[48];
-	byte channels[48];
+	byte roles[49];
+	byte channels[49];
 	// extra channels array - this is needed for
 	// buttons, so button can toggle one relay on single click
 	// and other relay on double click
-	byte channels2[48];
+	byte channels2[49];
 	// This single field above, is indexed by CHANNEL INDEX
 	// (not by pin index)
 	byte channelTypes[CHANNEL_MAX];
@@ -1283,7 +1283,7 @@ typedef struct mainConfig_s {
 	unsigned long LFS_Size; // szie of LFS volume.  it's aligned against the end of OTA
 	int loggerFlags;
 #if PLATFORM_W800 || PLATFORM_ESPIDF
-	byte unusedSectorAB[51];
+	byte unusedSectorAB[47];
 #else    
 	byte unusedSectorAB[99];
 #endif    

@@ -126,4 +126,4 @@ set(PROJ_ALL_SRC
     app.c
 )
 idf_component_register(SRCS ${PROJ_ALL_SRC} 
-			PRIV_REQUIRES mqtt lwip esp_wifi nvs_flash esp_driver_tsens esp_driver_gpio esp_pm esp_partition app_update esp_adc esp_driver_uart)
+			PRIV_REQUIRES mqtt lwip esp_wifi nvs_flash esp_driver_tsens esp_driver_gpio esp_pm esp_partition app_update esp_adc esp_driver_uart esp_driver_ledc)

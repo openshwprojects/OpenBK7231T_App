@@ -5,7 +5,10 @@
 #include "../../new_cfg.h"
 #include "../../new_pins.h"
 #include "driver/gpio.h"
+#include "driver/ledc.h"
 #include "hal_generic_espidf.h"
+
+#define LEDC_MAX_CH 6
 
 #ifdef CONFIG_IDF_TARGET_ESP32C3
 
@@ -122,6 +125,10 @@ espPinMapping_t g_pins[] = {
 	{ "IO19", GPIO_NUM_19 },
 	{ "IO20", GPIO_NUM_20 },
 	{ "IO21", GPIO_NUM_21 },
+	{ "NC", GPIO_NUM_NC },
+	{ "NC", GPIO_NUM_NC },
+	{ "NC", GPIO_NUM_NC },
+	{ "NC", GPIO_NUM_NC },
 	{ "IO26", GPIO_NUM_26 },
 	{ "IO27", GPIO_NUM_27 },
 	{ "IO28", GPIO_NUM_28 },
@@ -170,6 +177,10 @@ espPinMapping_t g_pins[] = {
 	{ "IO19", GPIO_NUM_19 },
 	{ "IO20", GPIO_NUM_20 },
 	{ "IO21", GPIO_NUM_21 },
+	{ "NC", GPIO_NUM_NC },
+	{ "NC", GPIO_NUM_NC },
+	{ "NC", GPIO_NUM_NC },
+	{ "NC", GPIO_NUM_NC },
 	{ "IO26", GPIO_NUM_26 },
 	{ "IO27", GPIO_NUM_27 },
 	{ "IO28", GPIO_NUM_28 },
@@ -222,6 +233,7 @@ espPinMapping_t g_pins[] = {
 	{ "IO21", GPIO_NUM_21 },
 	{ "IO22", GPIO_NUM_22 },
 	{ "IO23", GPIO_NUM_23 },
+	{ "NC", GPIO_NUM_NC },
 	{ "IO25", GPIO_NUM_25 },
 	{ "IO26", GPIO_NUM_26 },
 	{ "IO27", GPIO_NUM_27 },
@@ -247,6 +259,59 @@ espPinMapping_t g_pins[] = { };
 
 int g_numPins = sizeof(g_pins) / sizeof(g_pins[0]);
 
+static ledc_channel_config_t ledc_channel[LEDC_MAX_CH];
+static bool g_ledc_init = false;
+
+void InitLEDC()
+{
+	if(!g_ledc_init)
+	{
+		ledc_timer_config_t ledc_timer = {
+			.duty_resolution = LEDC_TIMER_13_BIT,
+			.freq_hz = 1000,
+			.speed_mode = LEDC_LOW_SPEED_MODE,
+			.timer_num = LEDC_TIMER_0,
+			.clk_cfg = LEDC_AUTO_CLK,
+		};
+		ledc_timer_config(&ledc_timer);
+		for(int i = 0; i < LEDC_MAX_CH; i++)
+		{
+			ledc_channel[i].channel = i;
+			ledc_channel[i].duty = 0;
+			ledc_channel[i].gpio_num = GPIO_NUM_NC;
+			ledc_channel[i].speed_mode = LEDC_LOW_SPEED_MODE;
+			ledc_channel[i].hpoint = 0;
+			ledc_channel[i].timer_sel = LEDC_TIMER_0;
+			ledc_channel[i].intr_type = LEDC_INTR_DISABLE;
+		}
+		g_ledc_init = true;
+	}
+}
+
+int GetAvailableLedcChannel()
+{
+	for(int i = 0; i < LEDC_MAX_CH; i++)
+	{
+		if(ledc_channel[i].gpio_num == GPIO_NUM_NC)
+		{
+			return ledc_channel[i].channel;
+		}
+	}
+	return -1;
+}
+
+int GetLedcChannelForPin(gpio_num_t pin)
+{
+	for(int i = 0; i < LEDC_MAX_CH; i++)
+	{
+		if(ledc_channel[i].gpio_num == pin)
+		{
+			return ledc_channel[i].channel;
+		}
+	}
+	return -1;
+}
+
 int PIN_GetPWMIndexForPinIndex(int pin)
 {
 	return -1;
@@ -261,7 +326,11 @@ const char* HAL_PIN_GetPinNameAlias(int index)
 
 int HAL_PIN_CanThisPinBePWM(int index)
 {
-	return 0;
+	if(index >= g_numPins)
+		return 0;
+	espPinMapping_t* pin = g_pins + index;
+	if(pin->pin != GPIO_NUM_NC) return 1;
+	else return 0;
 }
 
 void HAL_PIN_SetOutputValue(int index, int iVal)
@@ -279,7 +348,6 @@ int HAL_PIN_ReadDigitalInput(int index)
 	espPinMapping_t* pin = g_pins + index;
 	return gpio_get_level(pin->pin);
 }
-
 
 void HAL_PIN_Setup_Input_Pullup(int index)
 {
@@ -317,17 +385,48 @@ void HAL_PIN_Setup_Output(int index)
 
 void HAL_PIN_PWM_Stop(int index)
 {
-
+	if(index >= g_numPins)
+		return;
+	espPinMapping_t* pin = g_pins + index;
+	int ch = GetLedcChannelForPin(pin->pin);
+	if(ch >= 0)
+	{
+		ledc_stop(LEDC_LOW_SPEED_MODE, ch, 0);
+		gpio_reset_pin(pin->pin);
+		ledc_channel[ch].gpio_num = GPIO_NUM_NC;
+	}
 }
 
 void HAL_PIN_PWM_Start(int index)
 {
-
+	InitLEDC();
+	if(index >= g_numPins)
+		return;
+	espPinMapping_t* pin = g_pins + index;
+	int freecha = GetAvailableLedcChannel();
+	if(freecha >= 0)
+	{
+		ledc_channel[freecha].gpio_num = pin->pin;
+		ledc_channel_config(&ledc_channel[freecha]);
+		ADDLOG_INFO(LOG_FEATURE_PINS, "init ledc ch %i pin %i\n", freecha, pin->pin);
+	}
+	else
+	{
+		ADDLOG_ERROR(LOG_FEATURE_PINS, "PWM_Start: no free ledc channels for pin %i", pin->pin);
+	}
 }
 
 void HAL_PIN_PWM_Update(int index, float value)
 {
-
+	if(index >= g_numPins)
+		return;
+	espPinMapping_t* pin = g_pins + index;
+	int ch = GetLedcChannelForPin(pin->pin);
+	if(ch >= 0)
+	{
+		ledc_set_duty(LEDC_LOW_SPEED_MODE, ch, value * 80.92);
+		ledc_update_duty(LEDC_LOW_SPEED_MODE, ch);
+	}
 }
 
 unsigned int HAL_GetGPIOPin(int index)

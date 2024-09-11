@@ -91,6 +91,17 @@ uint8_t g_id = 1;
 int fd_console = -1;
 #elif PLATFORM_ESPIDF
 #include "driver/uart.h"
+#include "driver/gpio.h"
+#ifdef CONFIG_IDF_TARGET_ESP32C6
+#define RX1_PIN GPIO_NUM_7
+#define TX1_PIN GPIO_NUM_5
+#elif CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C2
+#define RX1_PIN GPIO_NUM_6
+#define TX1_PIN GPIO_NUM_7
+#else
+#define RX1_PIN UART_PIN_NO_CHANGE
+#define TX1_PIN UART_PIN_NO_CHANGE
+#endif
 uart_port_t uartnum = UART_NUM_0;
 static QueueHandle_t uart_queue;
 TaskHandle_t uartHandle = NULL;
@@ -398,7 +409,14 @@ int UART_InitUART(int baud, int parity) {
     };
     uart_driver_install(uartnum, 2048, 2048, 20, &uart_queue, 0);
     uart_param_config(uartnum, &uart_config);
-    uart_set_pin(uartnum, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+    if(uartnum == UART_NUM_0)
+    {
+        uart_set_pin(uartnum, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+    }
+    else
+    {
+        uart_set_pin(uartnum, TX1_PIN, RX1_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+    }
     xTaskCreate(uart_event_task, "uart_event_task", 3072, NULL, 12, NULL);
 #endif
     return g_uart_init_counter;
