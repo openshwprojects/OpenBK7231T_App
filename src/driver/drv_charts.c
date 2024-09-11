@@ -71,8 +71,8 @@ chart_add 1725656094 27 15 91
 // Sample 4
 // Battery voltage + pressure
 startDriver charts
-// chart with max 16 samples, 2 variables and single axis
-chart_create 16 2 1
+// chart with max 16 samples, 2 variables and 2 axes
+chart_create 16 2 2
 // set variables along with their axis
 chart_setVar 0 "Battery Voltage" "axvolt"
 chart_setVar 1 "Pressure" "axpress"
@@ -87,6 +87,25 @@ chart_add 1725636094 3.6 1015
 chart_add 1725646094 3.5 1013
 chart_add 1725656094 3.4 1014
 
+// Sample 5 - try 3 axes
+startDriver charts
+// chart with max 16 samples, 3 variables and 3 separate vertical axes
+chart_create 16 3 3
+// set variables along with their axes
+chart_setVar 0 "Voltage" "axvolt"
+chart_setVar 1 "Current" "axcurr"
+chart_setVar 2 "Power" "axpower"
+// setup axes
+// axis_index, name, flags, label
+chart_setAxis 0 "axvolt" 0 "Voltage (V)"
+chart_setAxis 1 "axcurr" 1 "Current (A)"
+chart_setAxis 2 "axpower" 2 "Power (W)"
+chart_add 1725606094 12 0.5 6
+chart_add 1725616094 11.8 0.52 6.14
+chart_add 1725626094 11.5 0.54 6.21
+chart_add 1725636094 11.3 0.55 6.22
+chart_add 1725646094 11.1 0.56 6.22
+chart_add 1725656094 10.9 0.58 6.32
 
 */
 /*
