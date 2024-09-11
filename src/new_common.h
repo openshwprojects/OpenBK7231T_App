@@ -375,6 +375,7 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 #include <stdbool.h>
 #include <arch/sys_arch.h>
 #include "esp_timer.h"
+#include "esp_log.h"
 #include "esp_idf_version.h"
 
 #define ASSERT
@@ -383,7 +384,9 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 #define os_free free
 #define os_memset memset
 
-#define bk_printf printf
+//#define bk_printf printf
+
+#define bk_printf(...) ESP_LOGI("OpenBeken", __VA_ARGS__);
 
 #define kNoErr                      0       //! No error occurred.
 #define rtos_delay_milliseconds sys_delay_ms
