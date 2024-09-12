@@ -33,6 +33,7 @@
 #define OBK_DISABLE_ALL_DRIVERS 1
 #define ENABLE_TASMOTA_JSON		1
 #define ENABLE_DRIVER_DS1820		1
+#define SAVETEMPS			1
 
 
 #elif WINDOWS
@@ -148,6 +149,7 @@
 #define ENABLE_DRIVER_IR2		0
 #define ENABLE_DRIVER_DS1820		1
 #define ENABLE_DRIVER_CHT83XX 1
+#define SAVETEMPS			1
 
 #elif PLATFORM_LN882H
 
@@ -166,6 +168,7 @@
 #define ENABLE_TASMOTA_JSON		1
 #define ENABLE_DRIVER_DS1820		1
 #define SAVETEMPS			1
+
 #else
 
 #error "Platform not defined"
