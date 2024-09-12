@@ -79,7 +79,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "TestCharts",		NULL,			NULL,			DRV_Test_Charts_AddToHtmlPage, NULL, NULL, NULL, false },
 #endif
-#if WINDOWS
+#if ENABLE_DRIVER_CHARTS
 	//drvdetail:{"name":"Charts",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":".",
