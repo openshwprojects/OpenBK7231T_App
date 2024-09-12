@@ -22,6 +22,7 @@ set(PROJ_ALL_SRC
     ../../src/devicegroups/deviceGroups_write.c
     ../../src/driver/drv_adcButton.c
     ../../src/driver/drv_adcSmoother.c
+    ../../src/driver/drv_aht2x.c
     ../../src/driver/drv_battery.c
     ../../src/driver/drv_bl_shared.c
     ../../src/driver/drv_bl0937.c
