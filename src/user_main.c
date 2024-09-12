@@ -938,9 +938,11 @@ void QuickTick_StartThread(void)
 {
 #if WINDOWS
 
-#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800
 
 	xTaskCreate(quick_timer_thread, "quick", 1024, NULL, 15, NULL);
+#elif PLATFORM_ESPIDF
+	xTaskCreate(quick_timer_thread, "quick", 2048, NULL, 15, NULL);
 #elif PLATFORM_XR809 || PLATFORM_LN882H
 
 	OS_TimerSetInvalid(&g_quick_timer);

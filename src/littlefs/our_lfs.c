@@ -625,8 +625,13 @@ bool esp_lfs_find()
         esplfs = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_SPIFFS, NULL);
         if(esplfs != NULL)
         {
-            ADDLOG_INFO(LOG_FEATURE_LFS, "Partition %s found, size: %i", esplfs->label, LFS_Size);
+            ADDLOG_INFO(LOG_FEATURE_LFS, "Partition %s found, size: %i", esplfs->label, esplfs->size);
+            return true;
         }
+    }
+    else
+    {
+        return true;
     }
     return false;
 }
@@ -634,12 +639,15 @@ bool esp_lfs_find()
 static int lfs_read(const struct lfs_config* c, lfs_block_t block,
     lfs_off_t off, void* buffer, lfs_size_t size)
 {
-    esp_lfs_find();
-    int res = LFS_ERR_OK;
-    unsigned int startAddr = block * LFS_BLOCK_SIZE;
-    startAddr += off;
-    res = esp_partition_read(esplfs, startAddr, (uint8_t*)buffer, size);
-    return res;
+    if(esp_lfs_find())
+    {
+        int res = LFS_ERR_OK;
+        unsigned int startAddr = block * LFS_BLOCK_SIZE;
+        startAddr += off;
+        res = esp_partition_read(esplfs, startAddr, (uint8_t*)buffer, size);
+        return res;
+    }
+    return LFS_ERR_IO;
 }
 
 // Program a region in a block. The block must have previously
@@ -648,15 +656,18 @@ static int lfs_read(const struct lfs_config* c, lfs_block_t block,
 static int lfs_write(const struct lfs_config* c, lfs_block_t block,
     lfs_off_t off, const void* buffer, lfs_size_t size)
 {
-    esp_lfs_find();
-    int res = LFS_ERR_OK;
+    if(esp_lfs_find())
+    {
+        int res = LFS_ERR_OK;
 
-    unsigned int startAddr = block * LFS_BLOCK_SIZE;
-    startAddr += off;
+        unsigned int startAddr = block * LFS_BLOCK_SIZE;
+        startAddr += off;
 
-    res = esp_partition_write(esplfs, startAddr, (uint8_t*)buffer, size);
+        res = esp_partition_write(esplfs, startAddr, (uint8_t*)buffer, size);
 
-    return res;
+        return res;
+    }
+    return LFS_ERR_IO;
 }
 
 // Erase a block. A block must be erased before being programmed.
@@ -665,11 +676,14 @@ static int lfs_write(const struct lfs_config* c, lfs_block_t block,
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int lfs_erase(const struct lfs_config* c, lfs_block_t block)
 {
-    esp_lfs_find();
-    int res = LFS_ERR_OK;
-    unsigned int startAddr = block * LFS_BLOCK_SIZE;
-    res = esp_partition_erase_range(esplfs, startAddr, LFS_BLOCK_SIZE);
-    return res;
+    if(esp_lfs_find())
+    {
+        int res = LFS_ERR_OK;
+        unsigned int startAddr = block * LFS_BLOCK_SIZE;
+        res = esp_partition_erase_range(esplfs, startAddr, LFS_BLOCK_SIZE);
+        return res;
+    }
+    return LFS_ERR_IO;
 }
 
 
