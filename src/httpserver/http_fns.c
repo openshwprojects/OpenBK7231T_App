@@ -912,9 +912,38 @@ typedef enum {
 		hprintf255(request, "Pins, relays, etc are disabled.</h5>");
 
 	}
+
+#if SAVETEMPS
+extern uint8_t g_temperatures[100];
+uint8_t gettempnext();
+bool did_temp_rb_overflow();
+
+
+hprintf255(request, "\n<input type='hidden' id='graphdata' value='");
+if (did_temp_rb_overflow()) { 
+	int c=gettempnext();
+	for (int i=0; i<99;i++) {
+		hprintf255(request, "%.2f,",(float)g_temperatures[c++]/2-15.5);
+		c = c%100;
+	}
+	hprintf255(request, "%.2f",(float)g_temperatures[c]/2-15.5);
+}
+else {
+	for (int i=0; i<gettempnext()-2;i++) {
+		hprintf255(request, "%.2f,",(float)g_temperatures[i]/2-15.5);
+	}
+	hprintf255(request, "%.2f",(float)g_temperatures[gettempnext()-1]/2-15.5);
+}
+hprintf255(request, "'>\n<p>Scale graph <input type='range' min='0.5' max='3' step='0.1' value='.8' onchange='scalegraph(document.getElementById(\"mygraph\"),this.value)'>");
+#endif
+
 	// for normal page loads, show the rest of the HTML
 	if (!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
 		poststr(request, "</div>"); // end div#state
+#if SAVETEMPS
+hprintf255(request, "<p><svg xmlns='http://www.w3.org/2000/svg' id='mygraph' width='1000' heigth='500' viewBox='-75 -75 1100 650' style='background: white'></svg>");
+hprintf255(request, "<script>function updategraph(){draw(document.getElementById(\"mygraph\"),document.getElementById(\"graphdata\").value.split(/\s*,\s*/).map(i => !isNaN(parseInt(i)) ? parseInt(i) : i))};scalegraph(document.getElementById(\"mygraph\"),0.8);</script>");
+#endif
 
 		// Shared UI elements 
 		poststr(request, "<form action=\"cfg\"><input type=\"submit\" value=\"Config\"/></form>");
@@ -2369,7 +2398,15 @@ int http_fn_cm(http_request_t* request) {
 
 	return 0;
 }
+#if SAVETEMPS
+int http_fn_jsgraph(http_request_t* request) {
 
+	char js[]="const gw=1e3,gh=500,labelmargin=50;function scalegraph(t,e){t.setAttribute(\"width\",gw*e),t.setAttribute(\"heigth\",gh*e)}function mydate(t){return new Date(t).toLocaleString().replace(\",\",\"&#13;\")}function draw(t,d){maxval=5*(1+~~(Math.max(...d)/5)),now=(new Date).getTime(),displaydate=now-d.length*dsteps,circ=\"\",axes=\"\",line=\"<path d='\";for(var e=0;e<d.length;e++)x=gw/d.length*e,y=gh-gh/maxval*d[e],circ+=\"<circle cx='\"+x+\"' cy='\"+y+\"' r='5' fill='#5cceee'><title> \"+d[e].toFixed(2)+\"°C &#13; \"+mydate(displaydate)+\"</title></circle>\",line+=e>0?\" L \":\"M \",line+=x+\" \"+y,e%~~(d.length/5)==0&&(axes+=\"<text  y='525' x='\"+(x-50)+\"'>\"+mydate(displaydate).replace(/\\&#13.*/,\"\")+\"<tspan></text>\",axes+=\"<text  y='550' x='\"+(x-50)+\"'>\"+mydate(displaydate).replace(/.*\\&#13; /,\"\")+\"<tspan></text>\"),displaydate+=dsteps;for(line+=\"' fill='transparent' stroke='black'></path>\",axes+=\" <line x1='0' x2='0' y1='0' y2='500'  stroke='black'></line><text font-size='30px' y='-25' x='-25'>°C</text>  \",axes+=\"  <line x1='0' x2='1000' y1='500' y2='500'  stroke='black'></line> \",e=0;e<5;e++)axes+=\"<text  x='-50' y='\"+e*gh/5+\"'>\"+(maxval-e*maxval/5)+\"</text>\";t.innerHTML=circ+line+axes}dsteps=5e3;";
+	poststr(request, js);
+	poststr(request, NULL);
+	return 0;
+}
+#endif
 int http_fn_cfg(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Config");

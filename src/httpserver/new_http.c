@@ -258,6 +258,11 @@ void http_html_start(http_request_t* request, const char* pagename) {
 	poststr(request, htmlShortcutIcon);
 	poststr(request, htmlHeadMeta);
 	poststr(request, htmlHeadStyle);
+#if SAVETEMPS
+//	poststr(request, "<script  src='/graph.js' type='text/javascript'></script>");
+	char js[]="<script>const gw=1e3,gh=500,labelmargin=50;function scalegraph(t,e){t.setAttribute(\"width\",gw*e),t.setAttribute(\"heigth\",gh*e)}function mydate(t){return new Date(t).toLocaleString().replace(\",\",\"&#13;\")}function draw(t,d){maxval=5*(1+~~(Math.max(...d)/5)),now=(new Date).getTime(),displaydate=now-d.length*dsteps,circ=\"\",axes=\"\",line=\"<path d='\";for(var e=0;e<d.length;e++)x=gw/d.length*e,y=gh-gh/maxval*d[e],circ+=\"<circle cx='\"+x+\"' cy='\"+y+\"' r='5' fill='#5cceee'><title> \"+d[e].toFixed(2)+\"°C &#13; \"+mydate(displaydate)+\"</title></circle>\",line+=e>0?\" L \":\"M \",line+=x+\" \"+y,e%~~(d.length/5)==0&&(axes+=\"<text  y='525' x='\"+(x-50)+\"'>\"+mydate(displaydate).replace(/\\&#13.*/,\"\")+\"<tspan></text>\",axes+=\"<text  y='550' x='\"+(x-50)+\"'>\"+mydate(displaydate).replace(/.*\\&#13; /,\"\")+\"<tspan></text>\"),displaydate+=dsteps;for(line+=\"' fill='transparent' stroke='black'></path>\",axes+=\" <line x1='0' x2='0' y1='0' y2='500'  stroke='black'></line><text font-size='30px' y='-25' x='-25'>°C</text>  \",axes+=\"  <line x1='0' x2='1000' y1='500' y2='500'  stroke='black'></line> \",e=0;e<5;e++)axes+=\"<text  x='-50' y='\"+e*gh/5+\"'>\"+(maxval-e*maxval/5)+\"</text>\";t.innerHTML=circ+line+axes}dsteps=5e3;</script>";
+	poststr(request, js);
+#endif
 	poststr(request, "</head>");
 	poststr(request, htmlBodyStart);
 	poststr(request, CFG_GetDeviceName());
@@ -266,7 +271,11 @@ void http_html_start(http_request_t* request, const char* pagename) {
 
 
 const char pageScriptPart1[] = "<script type='text/javascript'>var firstTime,lastTime,onlineFor,req=null,onlineForEl=null,getElement=e=>document.getElementById(e);function showState(){clearTimeout(firstTime),clearTimeout(lastTime),null!=req&&req.abort(),(req=new XMLHttpRequest).onreadystatechange=()=>{var e;4==req.readyState&&\"OK\"==req.statusText&&((\"INPUT\"!=document.activeElement.tagName||\"number\"!=document.activeElement.type&&\"color\"!=document.activeElement.type)&&(e=getElement(\"state\"))&&(e.innerHTML=req.responseText),clearTimeout(firstTime),clearTimeout(lastTime),lastTime=setTimeout(showState,";
-const char pageScriptPart2[] = "))},req.open(\"GET\",\"index?state=1\",!0),req.send(),firstTime=setTimeout(showState,";
+const char pageScriptPart2[] = "))},req.open(\"GET\",\"index?state=1\",!0),req.send(),"
+#if SAVETEMPS
+"updategraph(),"
+#endif
+"firstTime=setTimeout(showState,";
 const char pageScriptPart3[] = ")}function fmtUpTime(e){var t,n,o=Math.floor(e/86400);return e%=86400,t=Math.floor(e/3600),e%=3600,n=Math.floor(e/60),e=e%60,0<o?o+` days, ${t} hours, ${n} minutes and ${e} seconds`:0<t?t+` hours, ${n} minutes and ${e} seconds`:0<n?n+` minutes and ${e} seconds`:`just ${e} seconds`}function updateOnlineFor(){onlineForEl.textContent=fmtUpTime(++onlineFor)}function onLoad(){(onlineForEl=getElement(\"onlineFor\"))&&(onlineFor=parseInt(onlineForEl.dataset.initial,10))&&setInterval(updateOnlineFor,1e3),showState()}function submitTemperature(e){var t=getElement(\"form132\");getElement(\"kelvin132\").value=Math.round(1e6/parseInt(e.value)),t.submit()}window.addEventListener(\"load\",onLoad),history.pushState(null,\"\",window.location.pathname.slice(1)),setTimeout(()=>{var e=getElement(\"changed\");e&&(e.innerHTML=\"\")},5e3);</script>";
 
 
@@ -790,7 +799,9 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	if (http_checkUrlBase(urlStr, "ota")) return http_fn_ota(request);
 	if (http_checkUrlBase(urlStr, "ota_exec")) return http_fn_ota_exec(request);
 	if (http_checkUrlBase(urlStr, "cm")) return http_fn_cm(request);
-
+#if SAVETEMPS
+	if (http_checkUrlBase(urlStr, "graph.js")) return http_fn_jsgraph(request);
+#endif
 	return http_fn_other(request);
 }
 

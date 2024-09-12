@@ -165,7 +165,7 @@
 //#define	ENABLE_DRIVER_TMGN		1
 #define ENABLE_TASMOTA_JSON		1
 #define ENABLE_DRIVER_DS1820		1
-
+#define SAVETEMPS			1
 #else
 
 #error "Platform not defined"
