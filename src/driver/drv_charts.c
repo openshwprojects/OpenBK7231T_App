@@ -8,7 +8,6 @@
 #include "../hal/hal_pins.h"
 #include "../httpserver/new_http.h"
 #include "drv_ntp.h"
-
 /*
 // Sample 1
 // single variable chart
@@ -159,6 +158,30 @@ addRepeatingEvent 10 -1 chart_addNow $CH1*0.1
 */
 /*
 // Sample 8
+// DHT11 setup
+IndexRefreshInterval 100000
+startDriver charts
+startDriver NTP
+waitFor NTPState 1
+chart_create 48 2 2
+// set variables along with their axes
+chart_setVar 0 "Temperature" "axtemp"
+chart_setVar 1 "Humidity" "axhum"
+// setup axes
+// axis_index, name, flags, label
+chart_setAxis 0 "axtemp" 0 "Temperature (C)"
+// flags 1 means this axis is on the right
+chart_setAxis 1 "axhum" 1 "Humidity (%)"
+
+// every 60 seconds, -1 means infinite repeats
+// assumes that $CH1 is temperature div10 and $CH2 is humidity
+addRepeatingEvent 60 -1 chart_addNow $CH1*0.1 $CH2
+
+
+
+*/
+/*
+// Sample 9
 // Random numbers
 
 IndexRefreshInterval 100000
@@ -172,8 +195,7 @@ chart_setAxis 0 "ax" 0 "Number"
 
 
 again:
-setChannel 5 $rand
-clampChannel 5 0 10 1
+setChannel 5 $rand*0.001
 chart_addNow $CH5
 delay_s 1
 goto again
@@ -275,13 +297,17 @@ chart_t *Chart_Create(int maxSamples, int numVars, int numAxes) {
 	return s;
 }
 void Chart_SetAxis(chart_t *s, int idx, const char *name, int flags, const char *label) {
-
+	if (!s) {
+		return;
+	}
 	s->axes[idx].name = strdup(name);
 	s->axes[idx].label = strdup(label);
 	s->axes[idx].flags = flags;
 }
 void Chart_SetVar(chart_t *s, int idx, const char *title, const char *axis) {
-
+	if (!s) {
+		return;
+	}
 	s->vars[idx].title = strdup(title);
 	s->vars[idx].axis = strdup(axis);
 }
