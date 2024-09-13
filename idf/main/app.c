@@ -32,6 +32,7 @@ void app_main(void)
 {
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
     esp_netif_init();
+    esp_event_loop_create_default();
 #ifndef CONFIG_IDF_TARGET_ESP32
     temperature_sensor_config_t temp_sensor_config = TEMPERATURE_SENSOR_CONFIG_DEFAULT(20, 50);
     temperature_sensor_install(&temp_sensor_config, &temp_handle);

@@ -117,10 +117,25 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	}
 	else LN882H_ApplyPowerSave(bOn);
 #elif defined(PLATFORM_ESPIDF)
-	if(Tokenizer_GetArgsCount() > 2)
+	if(Tokenizer_GetArgsCount() > 1)
 	{
-		int minfreq = Tokenizer_GetArgInteger(1);
-		int maxfreq = Tokenizer_GetArgInteger(2);
+		int tx = Tokenizer_GetArgInteger(1);
+		int8_t maxtx = 0;
+		esp_wifi_get_max_tx_power(&maxtx);
+		if(tx > maxtx / 4)
+		{
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "TX power maximum is: %ddBm, entered: %idBm", maxtx / 4, tx);
+		}
+		else
+		{
+			esp_wifi_set_max_tx_power(tx * 4);
+			ADDLOG_INFO(LOG_FEATURE_CMD, "Setting TX power to: %idBm", tx);
+		}
+	}
+	if(Tokenizer_GetArgsCount() > 3)
+	{
+		int minfreq = Tokenizer_GetArgInteger(2);
+		int maxfreq = Tokenizer_GetArgInteger(3);
 		esp_pm_config_t pm_config = {
 				.max_freq_mhz = maxfreq,
 				.min_freq_mhz = minfreq,

@@ -20,6 +20,8 @@
 static void (*g_wifiStatusCallback)(int code);
 static int g_bOpenAccessPointMode = 0;
 static esp_netif_ip_info_t g_ip_info;
+static esp_netif_t* sta_netif = NULL;
+static esp_netif_t* ap_netif = NULL;
 static char g_ip[16];
 static char g_gw[16];
 static char g_ms[16];
@@ -57,7 +59,7 @@ int WiFI_SetMacAddress(char* mac)
 
 void WiFI_GetMacAddress(char* mac)
 {
-	esp_read_mac((unsigned char*) mac, ESP_MAC_BASE);
+	esp_read_mac((unsigned char*)mac, ESP_MAC_BASE);
 }
 
 const char* HAL_GetMACStr(char* macstr)
@@ -93,10 +95,10 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 	g_wifiStatusCallback = cb;
 }
 
-static void event_handler(void* arg, esp_event_base_t event_base,
+void event_handler(void* arg, esp_event_base_t event_base,
 	int32_t event_id, void* event_data)
 {
-	if(event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START)
+	if(event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START && !g_bOpenAccessPointMode)
 	{
 		if(g_wifiStatusCallback != NULL)
 		{
@@ -122,85 +124,95 @@ static void event_handler(void* arg, esp_event_base_t event_base,
 			g_wifiStatusCallback(WIFI_STA_CONNECTED);
 		}
 	}
+	else if(event_base == WIFI_EVENT && event_id == WIFI_EVENT_AP_STACONNECTED)
+	{
+		if(g_wifiStatusCallback != NULL)
+		{
+			g_wifiStatusCallback(WIFI_AP_CONNECTED);
+		}
+	}
 }
 
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
 {
-	//esp_netif_init();
-	esp_event_loop_create_default();
-	esp_netif_t* sta_netif = esp_netif_create_default_wifi_sta();
-	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-	esp_wifi_init(&cfg);
-
-	esp_event_handler_instance_t instance_any_id;
-	esp_event_handler_instance_t instance_got_ip;
-	ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
-		ESP_EVENT_ANY_ID,
-		&event_handler,
-		NULL,
-		&instance_any_id));
-	ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT,
-		IP_EVENT_STA_GOT_IP,
-		&event_handler,
-		NULL,
-		&instance_got_ip));
-
-	wifi_config_t wifi_config = 
+	if(sta_netif == NULL)
 	{
-		.sta = 
+		sta_netif = esp_netif_create_default_wifi_sta();
+		wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+		esp_wifi_init(&cfg);
+
+		esp_event_handler_instance_t instance_any_id, instance_got_ip;
+
+		esp_event_handler_instance_register(WIFI_EVENT,
+			ESP_EVENT_ANY_ID,
+			&event_handler,
+			NULL,
+			&instance_any_id);
+		esp_event_handler_instance_register(IP_EVENT,
+			IP_EVENT_STA_GOT_IP,
+			&event_handler,
+			NULL,
+			&instance_got_ip);
+
+		wifi_config_t wifi_config =
 		{
-			.threshold.authmode = WIFI_AUTH_WPA2_PSK,
-		},
-	};
-	strncpy((char*)wifi_config.sta.ssid, (char*)oob_ssid, 32);
-	strncpy((char*)wifi_config.sta.password, (char*)connect_key, 64);
-	esp_netif_set_hostname(sta_netif, CFG_GetDeviceName());
+			.sta =
+			{
+				.threshold.authmode = WIFI_AUTH_WPA2_PSK,
+			},
+		};
+		strncpy((char*)wifi_config.sta.ssid, (char*)oob_ssid, 32);
+		strncpy((char*)wifi_config.sta.password, (char*)connect_key, 64);
+		esp_netif_set_hostname(sta_netif, CFG_GetDeviceName());
 
-	esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
-	esp_wifi_set_mode(WIFI_MODE_STA);
-	
-	esp_wifi_start();
+		esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
+		esp_wifi_set_mode(WIFI_MODE_STA);
 
-#ifdef CONFIG_IDF_TARGET_ESP32C3
-	esp_wifi_set_max_tx_power(13 * 4);
-#endif
+		esp_wifi_start();
+	}
+	else
+	{
+		esp_wifi_connect();
+	}
 }
 
 void HAL_DisconnectFromWifi()
 {
 	esp_wifi_disconnect();
-	if(g_wifiStatusCallback != NULL)
-	{
-		g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
-	}
 }
 
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
 	g_bOpenAccessPointMode = 1;
-	//esp_netif_init();
-	esp_event_loop_create_default();
-	esp_netif_t* ap_netif = esp_netif_create_default_wifi_ap();
+	ap_netif = esp_netif_create_default_wifi_ap();
 	esp_netif_create_default_wifi_sta();
 	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
 	esp_wifi_init(&cfg);
 
-	wifi_config_t wifi_ap_config = 
+	esp_event_handler_instance_t instance_any_id;
+
+	esp_event_handler_instance_register(WIFI_EVENT,
+		ESP_EVENT_ANY_ID,
+		&event_handler,
+		NULL,
+		&instance_any_id);
+
+	wifi_config_t wifi_ap_config =
 	{
-		.ap = 
+		.ap =
 		{
 			.ssid_len = strlen(ssid),
 			.channel = 1,
 			.max_connection = 1,
 			.authmode = WIFI_AUTH_OPEN,
-			.pmf_cfg = 
+			.pmf_cfg =
 			{
 				.required = false,
 			},
 		},
 	};
 
-	wifi_config_t wifi_sta_config = 
+	wifi_config_t wifi_sta_config =
 	{
 		.sta = { },
 	};
@@ -210,15 +222,12 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	esp_wifi_set_config(WIFI_IF_AP, &wifi_ap_config);
 	esp_wifi_set_config(WIFI_IF_STA, &wifi_sta_config);
 	esp_wifi_set_mode(WIFI_MODE_APSTA);
+	esp_wifi_set_max_tx_power(10 * 4);
 	esp_wifi_start();
 
-	esp_netif_set_default_netif(ap_netif);
+	//esp_netif_set_default_netif(ap_netif);
 
 	esp_netif_get_ip_info(ap_netif, &g_ip_info);
-	if(g_wifiStatusCallback != NULL)
-	{
-		g_wifiStatusCallback(WIFI_AP_CONNECTED);
-	}
 
 	return 1;
 }

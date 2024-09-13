@@ -49,7 +49,7 @@
 
 #define LFS_BLOCKS_START 0x0
 #define LFS_BLOCKS_START_MIN 0x0
-#define LFS_BLOCKS_END 0x100000
+#define LFS_BLOCKS_END 0x50000
 
 #else
 // TODO

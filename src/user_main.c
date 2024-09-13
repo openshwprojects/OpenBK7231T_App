@@ -56,6 +56,8 @@ void bg_register_irda_check_func(FUNCPTR func);
 #elif PLATFORM_LN882H
 #include "hal/hal_wdt.h"
 #include "hal/hal_gpio.h"
+#elif PLATFORM_ESPIDF
+#include "esp_timer.h"
 #endif
 
 
@@ -209,6 +211,7 @@ int LWIP_GetMaxSockets() {
 int LWIP_GetActiveSockets() {
 	return 0;
 }
+
 #endif
 
 #if defined(PLATFORM_BL602) || defined(PLATFORM_W800) || defined(PLATFORM_W600)|| defined(PLATFORM_LN882H) || defined(PLATFORM_ESPIDF)
@@ -450,9 +453,9 @@ void Main_ConnectToWiFiNow() {
 	g_bOpenAccessPointMode = 0;
 	wifi_ssid = CFG_GetWiFiSSID();
 	wifi_pass = CFG_GetWiFiPass();
-	HAL_ConnectToWiFi(wifi_ssid, wifi_pass,&g_cfg.staticIP);
 	// register function to get callbacks about wifi changes.
 	HAL_WiFi_SetupStatusCallback(Main_OnWiFiStatusChange);
+	HAL_ConnectToWiFi(wifi_ssid, wifi_pass,&g_cfg.staticIP);
 	ADDLOGF_DEBUG("Registered for wifi changes\r\n");
 	g_connectToWiFi = 0;
 }
@@ -912,7 +915,7 @@ void QuickTick(void* param)
 // this is the bit which runs the quick tick timer
 #if WINDOWS
 
-#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800
 void quick_timer_thread(void* param)
 {
 	while (1) {
@@ -921,14 +924,7 @@ void quick_timer_thread(void* param)
 	}
 }
 #elif PLATFORM_ESPIDF
-void quick_timer_thread(void* param)
-{
-	while(1)
-	{
-		vTaskDelay(QUICK_TMR_DURATION / portTICK_RATE_MS);
-		QuickTick(0);
-	}
-}
+esp_timer_handle_t g_quick_timer;
 #elif PLATFORM_XR809 || PLATFORM_LN882H
 OS_Timer_t g_quick_timer;
 #else
@@ -942,7 +938,14 @@ void QuickTick_StartThread(void)
 
 	xTaskCreate(quick_timer_thread, "quick", 1024, NULL, 15, NULL);
 #elif PLATFORM_ESPIDF
-	xTaskCreate(quick_timer_thread, "quick", 2048, NULL, 15, NULL);
+	const esp_timer_create_args_t g_quick_timer_args =
+	{
+			.callback = &QuickTick,
+			.name = "quick"
+	};
+
+	esp_timer_create(&g_quick_timer_args, &g_quick_timer);
+	esp_timer_start_periodic(g_quick_timer, QUICK_TMR_DURATION);
 #elif PLATFORM_XR809 || PLATFORM_LN882H
 
 	OS_TimerSetInvalid(&g_quick_timer);
