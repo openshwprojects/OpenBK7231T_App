@@ -8,7 +8,6 @@
 #include "../hal/hal_pins.h"
 #include "../httpserver/new_http.h"
 #include "drv_ntp.h"
-
 /*
 // Sample 1
 // single variable chart
@@ -159,6 +158,30 @@ addRepeatingEvent 10 -1 chart_addNow $CH1*0.1
 */
 /*
 // Sample 8
+// DHT11 setup
+IndexRefreshInterval 100000
+startDriver charts
+startDriver NTP
+waitFor NTPState 1
+chart_create 48 2 2
+// set variables along with their axes
+chart_setVar 0 "Temperature" "axtemp"
+chart_setVar 1 "Humidity" "axhum"
+// setup axes
+// axis_index, name, flags, label
+chart_setAxis 0 "axtemp" 0 "Temperature (C)"
+// flags 1 means this axis is on the right
+chart_setAxis 1 "axhum" 1 "Humidity (%)"
+
+// every 60 seconds, -1 means infinite repeats
+// assumes that $CH1 is temperature div10 and $CH2 is humidity
+addRepeatingEvent 60 -1 chart_addNow $CH1*0.1 $CH2
+
+
+
+*/
+/*
+// Sample 9
 // Random numbers
 
 IndexRefreshInterval 100000
@@ -172,8 +195,7 @@ chart_setAxis 0 "ax" 0 "Number"
 
 
 again:
-setChannel 5 $rand
-clampChannel 5 0 10 1
+setChannel 5 $rand*0.001
 chart_addNow $CH5
 delay_s 1
 goto again
@@ -207,7 +229,8 @@ typedef struct chart_s {
 
 chart_t *g_chart = 0;
 
-void Chart_Free(chart_t *s) {
+void Chart_Free(chart_t **ptr) {
+	chart_t *s = *ptr;
 	if (!s) {
 		return; 
 	}
@@ -237,6 +260,7 @@ void Chart_Free(chart_t *s) {
 		free(s->times);
 	}
 	free(s);
+	*ptr = 0;
 }
 chart_t *Chart_Create(int maxSamples, int numVars, int numAxes) {
 	chart_t *s = (chart_t *)malloc(sizeof(chart_t));
@@ -248,12 +272,14 @@ chart_t *Chart_Create(int maxSamples, int numVars, int numAxes) {
 		free(s);
 		return NULL; 
 	}
+	memset(s->vars, 0, sizeof(var_t) * numVars);
 	s->axes = (axis_t *)malloc(sizeof(axis_t) * numAxes);
 	if (!s->axes) {
 		free(s->vars);
 		free(s);
 		return NULL;
 	}
+	memset(s->axes, 0, sizeof(axis_t) * numAxes);
 	s->times = (time_t *)malloc(sizeof(time_t) * maxSamples);
 	if (!s->times) {
 		free(s->axes);
@@ -261,10 +287,15 @@ chart_t *Chart_Create(int maxSamples, int numVars, int numAxes) {
 		free(s);
 		return NULL; 
 	}
+	memset(s->times, 0, sizeof(time_t) * maxSamples);
+
 	for (int i = 0; i < numVars; i++) {
 		s->vars[i].samples = (float*)malloc(sizeof(float) * maxSamples);
 		if (s->vars[i].samples == 0) {
 			// TODO
+		}
+		else {
+			memset(s->vars[i].samples, 0, sizeof(float) * maxSamples);
 		}
 	}
 	s->numAxes = numAxes;
@@ -275,13 +306,17 @@ chart_t *Chart_Create(int maxSamples, int numVars, int numAxes) {
 	return s;
 }
 void Chart_SetAxis(chart_t *s, int idx, const char *name, int flags, const char *label) {
-
+	if (!s) {
+		return;
+	}
 	s->axes[idx].name = strdup(name);
 	s->axes[idx].label = strdup(label);
 	s->axes[idx].flags = flags;
 }
 void Chart_SetVar(chart_t *s, int idx, const char *title, const char *axis) {
-
+	if (!s) {
+		return;
+	}
 	s->vars[idx].title = strdup(title);
 	s->vars[idx].axis = strdup(axis);
 }
@@ -470,7 +505,7 @@ void DRV_Charts_AddToHtmlPage_Test(http_request_t *request) {
 	Chart_SetSample(s, 2, 91);
 	Chart_AddTime(s, 1725656094);
 	Chart_Display(request, s);
-	Chart_Free(s);
+	Chart_Free(&s);
 }
 // startDriver Charts
 void DRV_Charts_AddToHtmlPage(http_request_t *request) {
@@ -493,7 +528,7 @@ static commandResult_t CMD_Chart_Create(const void *context, const char *cmd, co
 	int numVars = Tokenizer_GetArgInteger(1);
 	int numAxes = Tokenizer_GetArgInteger(2);
 
-	Chart_Free(g_chart);
+	Chart_Free(&g_chart);
 	g_chart = Chart_Create(numSamples, numVars, numAxes);
 
 	return CMD_RES_OK;
