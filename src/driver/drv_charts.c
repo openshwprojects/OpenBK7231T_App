@@ -262,40 +262,41 @@ void Chart_Free(chart_t **ptr) {
 	free(s);
 	*ptr = 0;
 }
+byte *ZeroMalloc(unsigned int size) {
+	byte *r = (byte*)malloc(size);
+	if (r == 0)
+		return 0;
+	memset(r, 0, size);
+	return r;
+}
 chart_t *Chart_Create(int maxSamples, int numVars, int numAxes) {
-	chart_t *s = (chart_t *)malloc(sizeof(chart_t));
+	chart_t *s = (chart_t *)ZeroMalloc(sizeof(chart_t));
 	if (!s) {
 		return NULL;
 	}
-	s->vars = (var_t *)malloc(sizeof(var_t) * numVars);
+	s->vars = (var_t *)ZeroMalloc(sizeof(var_t) * numVars);
 	if (!s->vars) {
 		free(s);
 		return NULL; 
 	}
-	memset(s->vars, 0, sizeof(var_t) * numVars);
-	s->axes = (axis_t *)malloc(sizeof(axis_t) * numAxes);
+	s->axes = (axis_t *)ZeroMalloc(sizeof(axis_t) * numAxes);
 	if (!s->axes) {
 		free(s->vars);
 		free(s);
 		return NULL;
 	}
-	memset(s->axes, 0, sizeof(axis_t) * numAxes);
-	s->times = (time_t *)malloc(sizeof(time_t) * maxSamples);
+	s->times = (time_t *)ZeroMalloc(sizeof(time_t) * maxSamples);
 	if (!s->times) {
 		free(s->axes);
 		free(s->vars);
 		free(s);
 		return NULL; 
 	}
-	memset(s->times, 0, sizeof(time_t) * maxSamples);
 
 	for (int i = 0; i < numVars; i++) {
-		s->vars[i].samples = (float*)malloc(sizeof(float) * maxSamples);
+		s->vars[i].samples = (float*)ZeroMalloc(sizeof(float) * maxSamples);
 		if (s->vars[i].samples == 0) {
 			// TODO
-		}
-		else {
-			memset(s->vars[i].samples, 0, sizeof(float) * maxSamples);
 		}
 	}
 	s->numAxes = numAxes;
