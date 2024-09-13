@@ -296,7 +296,14 @@ chart_t *Chart_Create(int maxSamples, int numVars, int numAxes) {
 	for (int i = 0; i < numVars; i++) {
 		s->vars[i].samples = (float*)ZeroMalloc(sizeof(float) * maxSamples);
 		if (s->vars[i].samples == 0) {
-			// TODO
+			for (int j = 0; j < i; j++) {
+				free(s->vars[j].samples);
+			}
+			free(s->times);
+			free(s->axes);
+			free(s->vars);
+			free(s);
+			return NULL;
 		}
 	}
 	s->numAxes = numAxes;
