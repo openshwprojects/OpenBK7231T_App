@@ -945,7 +945,7 @@ void QuickTick_StartThread(void)
 	};
 
 	esp_timer_create(&g_quick_timer_args, &g_quick_timer);
-	esp_timer_start_periodic(g_quick_timer, QUICK_TMR_DURATION);
+	esp_timer_start_periodic(g_quick_timer, (QUICK_TMR_DURATION / portTICK_RATE_MS) * 1000);
 #elif PLATFORM_XR809 || PLATFORM_LN882H
 
 	OS_TimerSetInvalid(&g_quick_timer);
