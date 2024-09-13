@@ -387,6 +387,23 @@ void Chart_DisplayData(float *val, time_t *time, void *userData) {
 void Chart_Display(http_request_t *request, chart_t *s) {
 	char buffer[64];
 
+	if (s == 0) {
+		poststr(request, "<h4>Chart is NULL</h4>");
+		return;
+	}
+	for (int i = 0; i < s->numAxes; i++) {
+		if (s->axes[i].label == 0) {
+			poststr(request, "<h4>No axes set</h4>");
+			return;
+		}
+	}
+	for (int i = 0; i < s->numVars; i++) {
+		if (s->vars[i].title == 0) {
+			poststr(request, "<h4>No vars set</h4>");
+			return;
+		}
+	}
+
 	poststr(request, "<canvas id=\"myChart\" width=\"400\" height=\"200\"></canvas>");
 	poststr(request, "<script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>");
 
