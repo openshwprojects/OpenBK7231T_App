@@ -229,7 +229,8 @@ typedef struct chart_s {
 
 chart_t *g_chart = 0;
 
-void Chart_Free(chart_t *s) {
+void Chart_Free(chart_t **ptr) {
+	chart_t *s = *ptr;
 	if (!s) {
 		return; 
 	}
@@ -259,6 +260,7 @@ void Chart_Free(chart_t *s) {
 		free(s->times);
 	}
 	free(s);
+	*ptr = 0;
 }
 chart_t *Chart_Create(int maxSamples, int numVars, int numAxes) {
 	chart_t *s = (chart_t *)malloc(sizeof(chart_t));
@@ -270,12 +272,14 @@ chart_t *Chart_Create(int maxSamples, int numVars, int numAxes) {
 		free(s);
 		return NULL; 
 	}
+	memset(s->vars, 0, sizeof(var_t) * numVars);
 	s->axes = (axis_t *)malloc(sizeof(axis_t) * numAxes);
 	if (!s->axes) {
 		free(s->vars);
 		free(s);
 		return NULL;
 	}
+	memset(s->axes, 0, sizeof(axis_t) * numAxes);
 	s->times = (time_t *)malloc(sizeof(time_t) * maxSamples);
 	if (!s->times) {
 		free(s->axes);
@@ -283,10 +287,15 @@ chart_t *Chart_Create(int maxSamples, int numVars, int numAxes) {
 		free(s);
 		return NULL; 
 	}
+	memset(s->times, 0, sizeof(time_t) * maxSamples);
+
 	for (int i = 0; i < numVars; i++) {
 		s->vars[i].samples = (float*)malloc(sizeof(float) * maxSamples);
 		if (s->vars[i].samples == 0) {
 			// TODO
+		}
+		else {
+			memset(s->vars[i].samples, 0, sizeof(float) * maxSamples);
 		}
 	}
 	s->numAxes = numAxes;
@@ -496,7 +505,7 @@ void DRV_Charts_AddToHtmlPage_Test(http_request_t *request) {
 	Chart_SetSample(s, 2, 91);
 	Chart_AddTime(s, 1725656094);
 	Chart_Display(request, s);
-	Chart_Free(s);
+	Chart_Free(&s);
 }
 // startDriver Charts
 void DRV_Charts_AddToHtmlPage(http_request_t *request) {
@@ -519,7 +528,7 @@ static commandResult_t CMD_Chart_Create(const void *context, const char *cmd, co
 	int numVars = Tokenizer_GetArgInteger(1);
 	int numAxes = Tokenizer_GetArgInteger(2);
 
-	Chart_Free(g_chart);
+	Chart_Free(&g_chart);
 	g_chart = Chart_Create(numSamples, numVars, numAxes);
 
 	return CMD_RES_OK;
