@@ -333,6 +333,51 @@
     "examples": ""
   },
   {
+    "name": "chart_add",
+    "args": "",
+    "descr": "See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "fn": "NULL);",
+    "file": "driver/drv_charts.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "chart_addNow",
+    "args": "",
+    "descr": "See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "fn": "NULL);",
+    "file": "driver/drv_charts.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "chart_create",
+    "args": "",
+    "descr": "See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "fn": "NULL);",
+    "file": "driver/drv_charts.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "chart_setAxis",
+    "args": "",
+    "descr": "See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "fn": "NULL);",
+    "file": "driver/drv_charts.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "chart_setVar",
+    "args": "",
+    "descr": " See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "fn": "NULL);",
+    "file": "driver/drv_charts.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "Choice",
     "args": "[IndexToExecute][Option0][Option1][Option2][OptionN][etc]",
     "descr": "This will choose a given argument by index and execute it as a command. Index to execute can be a variable like $CH1.",
@@ -349,6 +394,15 @@
     "file": "driver/drv_chargingLimit.c",
     "requires": "",
     "examples": ""
+  },
+  {
+    "name": "CHT_Alert",
+    "args": "[TempDiff][HumDiff][Freq][FQ]",
+    "descr": "Enable alert pin. TempDif (temperature difference is any float higher than 0.05�C) = set detected difference in temperature required for device to wake. HumDiff (humidity difference is any float higher than 0.1%). Freq (time per measurement in s) = 1, 5, 10, 60, 120 (default if wrong = 1). FQ (fault queue number) = 1, 2, 4, 6 (default if wrong = 1)",
+    "fn": "CHT_Alert",
+    "file": "drv/drv_cht8305.c",
+    "requires": "",
+    "examples": "CHT_Alert 0.5 0 5 2 <br /> alert pin will trigger when temperature deviates by more than 0.5�C. Humidity will be ignored. Sensor measures every 5s with fault queue number 2."
   },
   {
     "name": "CHT_Calibrate",
@@ -787,6 +841,15 @@
     "args": "[Condition]['then'][CommandA]['else'][CommandB]",
     "descr": "Executed a conditional. Condition should be single line. You must always use 'then' after condition. 'else' is optional. Use aliases or quotes for commands with spaces",
     "fn": "CMD_If",
+    "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "IndexRefreshInterval",
+    "args": "CMD_IndexRefreshInterval",
+    "descr": "",
+    "fn": "NULL);",
     "file": "cmnds/cmd_main.c",
     "requires": "",
     "examples": ""
@@ -1523,7 +1586,7 @@
   {
     "name": "PowerSave",
     "args": "[Optional 1 or 0, by default 1 is assumed]",
-    "descr": "Enables dynamic power saving mode on BK and W600. You can also disable power saving with PowerSave 0.",
+    "descr": "Enables dynamic power saving mode on Beken N/T, BL602, W600, W800 and LN882H. In the case of LN882H PowerSave will not work as a startup command, so use in autoexec. On LN882H PowerSave 1 = light sleep and Powersave >1 (eg PowerSave 2) = deeper sleep. On LN882H PowerSave 1 should be used if BL0937 metering is present. On all supported platforms PowerSave 0 can be used to disable power saving.",
     "fn": "CMD_PowerSave",
     "file": "cmnds/cmd_main.c",
     "requires": "",
@@ -1719,6 +1782,15 @@
     "examples": ""
   },
   {
+    "name": "SendIR2",
+    "args": "CMD_IR2_SendIR2",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_ir2.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "sendPOST",
     "args": "[TargetURL] [HTTP Port] [Content Type] [Post Content]",
     "descr": "Sends a HTTP POST request to target URL. Arguments can contain variable expansion.",
@@ -1886,6 +1958,15 @@
     "descr": "Setup Energy Statistic Parameters: [enable 0 or 1] [sample_time[10..90]] [sample_count[10..180]] [JsonEnable 0 or 1]. JSONEnable is optional.",
     "fn": "BL09XX_SetupEnergyStatistic",
     "file": "driver/drv_bl_shared.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "SetupIR2",
+    "args": "CMD_IR2_SetupIR2",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_ir2.c",
     "requires": "",
     "examples": ""
   },
@@ -2066,6 +2147,15 @@
     "descr": "Simons Special Test",
     "fn": "CMD_SimonTest",
     "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "SimSaveArgs",
+    "args": "CMD_SelfTest_SaveArgs",
+    "descr": "",
+    "fn": "0);",
+    "file": "selftest/selftest_cfg_via_http.c",
     "requires": "",
     "examples": ""
   },

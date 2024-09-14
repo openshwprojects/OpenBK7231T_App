@@ -100,6 +100,10 @@ void Test_CFG_Via_HTTP() {
 	// causes assert
 	//SELFTEST_ASSERT_JSON_VALUE_STRING(0, "SSID1", "newAcName");
 
+	//cmddetail:{"name":"SimSaveArgs","args":"CMD_SelfTest_SaveArgs",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"0);","file":"selftest/selftest_cfg_via_http.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SimSaveArgs", CMD_SelfTest_SaveArgs, 0);
 
 

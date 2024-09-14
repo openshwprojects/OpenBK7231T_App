@@ -33,6 +33,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | $mday |  TODO |
 | $month |  TODO |
 | $year |  TODO |
+| $yesterday |  TODO |
+| $today |  TODO |
 | $sunrise |  TODO |
 | $sunset |  TODO |
 | $NTPOn |  Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0. |

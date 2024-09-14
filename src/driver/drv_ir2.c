@@ -331,7 +331,15 @@ static commandResult_t CMD_IR2_SetupIR2(const void* context, const char* cmd, co
 
 
 void DRV_IR2_Init() {
+	//cmddetail:{"name":"SetupIR2","args":"CMD_IR2_SetupIR2",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_ir2.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetupIR2", CMD_IR2_SetupIR2, NULL);
+	//cmddetail:{"name":"SendIR2","args":"CMD_IR2_SendIR2",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_ir2.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SendIR2", CMD_IR2_SendIR2, NULL);
 
 }

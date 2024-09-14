@@ -82,7 +82,7 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_CHARTS
 	//drvdetail:{"name":"Charts",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":".",
+	//drvdetail:"descr":"Charts driver allows you to create a customizable chart directly on your device. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
 	//drvdetail:"requires":""}
 	{ "Charts",		DRV_Charts_Init,			NULL,			DRV_Charts_AddToHtmlPage, NULL, NULL, NULL, false },
 #endif

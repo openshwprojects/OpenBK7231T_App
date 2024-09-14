@@ -368,18 +368,18 @@
     "driver": ""
   },
   {
-    "name": "CHT8305_DAT",
+    "name": "CHT83XX_DAT",
     "title": "TODO",
-    "descr": "DAT pin of CHT8305. Setting this pin role and saving will reveal two fields next to it. Set first field to 1 and second to 2. Those are related channel numbers to store temperature and humidity.",
-    "enum": "IOR_CHT8305_DAT",
+    "descr": "DAT pin of CHT83XX. Setting this pin role and saving will reveal two fields next to it. Set first field to 1 and second to 2. Those are related channel numbers to store temperature and humidity.",
+    "enum": "IOR_CHT83XX_DAT",
     "file": "new_pins.h",
     "driver": ""
   },
   {
-    "name": "CHT8305_CLK",
+    "name": "CHT83XX_CLK",
     "title": "TODO",
-    "descr": "CLK pin of CHT8305 sensor",
-    "enum": "IOR_CHT8305_CLK",
+    "descr": "CLK pin of CHT83XX sensor",
+    "enum": "IOR_CHT83XX_CLK",
     "file": "new_pins.h",
     "driver": ""
   },
@@ -620,6 +620,14 @@
     "title": "TODO",
     "descr": "QQQ",
     "enum": "KP18058_DAT",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "DS1820",
+    "title": "TODO",
+    "descr": "vers simple OneWire Temp sensor DS1820",
+    "enum": "DS1820_IO",
     "file": "new_pins.h",
     "driver": ""
   },
