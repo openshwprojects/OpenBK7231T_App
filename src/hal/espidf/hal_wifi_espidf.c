@@ -74,13 +74,13 @@ void HAL_PrintNetworkInfo()
 {
 	uint8_t mac[6];
 	esp_read_mac(mac, ESP_MAC_BASE);
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------- net device info ------------+\r\n");
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_bOpenAccessPointMode == 0 ? "STA" : "AP");
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |\r\n", HAL_GetMyIPString());
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |\r\n", HAL_GetMyMaskString());
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif gateway = %-16s            |\r\n", HAL_GetMyGatewayString());
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mac     : [%02X:%02X:%02X:%02X:%02X:%02X] %-7s |\r\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], "");
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------------------------------------+\r\n");
+	bk_printf("+--------------- net device info ------------+\r\n");
+	bk_printf("|netif type    : %-16s            |\r\n", g_bOpenAccessPointMode == 0 ? "STA" : "AP");
+	bk_printf("|netif ip      = %-16s            |\r\n", HAL_GetMyIPString());
+	bk_printf("|netif mask    = %-16s            |\r\n", HAL_GetMyMaskString());
+	bk_printf("|netif gateway = %-16s            |\r\n", HAL_GetMyGatewayString());
+	bk_printf("|netif mac     : [%02X:%02X:%02X:%02X:%02X:%02X] %-7s |\r\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], "");
+	bk_printf("+--------------------------------------------+\r\n");
 }
 
 int HAL_GetWifiStrength()
@@ -109,11 +109,11 @@ void event_handler(void* arg, esp_event_base_t event_base,
 	}
 	else if(event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED)
 	{
+		esp_wifi_restore();
 		if(g_wifiStatusCallback != NULL)
 		{
 			g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
 		}
-		esp_wifi_restore();
 		ADDLOG_INFO(LOG_FEATURE_MAIN, "WiFi Disconnected");
 	}
 	else if(event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP)
@@ -157,10 +157,10 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 
 		wifi_config_t wifi_config;
 		esp_wifi_get_config(WIFI_IF_STA, &wifi_config);
-		if(strlen(&wifi_config.sta.ssid) == 0 || strlen(&wifi_config.sta.password) == 0)
+		if(strcmp((char*)wifi_config.sta.ssid, oob_ssid) != 0 || strcmp((char*)wifi_config.sta.password, connect_key) != 0)
 		{
-			esp_wifi_restore();
-			esp_wifi_get_config(WIFI_IF_STA, &wifi_config);
+			ADDLOG_ERROR(LOG_FEATURE_MAIN, "WiFi saved ssid/pass != current, resetting");
+			memset(&wifi_config.sta, 0, sizeof(wifi_sta_config_t));
 			wifi_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
 			strncpy((char*)wifi_config.sta.ssid, (char*)oob_ssid, 32);
 			strncpy((char*)wifi_config.sta.password, (char*)connect_key, 64);
