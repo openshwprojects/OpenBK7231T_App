@@ -476,15 +476,7 @@ commandResult_t CMD_UART_Init(const void *context, const char *cmd, const char *
 
     baud = Tokenizer_GetArgInteger(0);
 
-#ifdef PLATFORM_ESPIDF
-
-    UART_InitReceiveRingBuffer(4096);
-
-#else
-
     UART_InitReceiveRingBuffer(512);
-
-#endif
 
     UART_InitUART(baud, 0);
     g_uart_manualInitCounter = g_uart_init_counter;

@@ -113,6 +113,7 @@ void event_handler(void* arg, esp_event_base_t event_base,
 		{
 			g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
 		}
+		esp_wifi_restore();
 		ADDLOG_INFO(LOG_FEATURE_MAIN, "WiFi Disconnected");
 	}
 	else if(event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP)
@@ -154,15 +155,17 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 			NULL,
 			&instance_got_ip);
 
-		wifi_config_t wifi_config =
+		wifi_config_t wifi_config;
+		esp_wifi_get_config(WIFI_IF_STA, &wifi_config);
+		if(strlen(&wifi_config.sta.ssid) == 0 || strlen(&wifi_config.sta.password) == 0)
 		{
-			.sta =
-			{
-				.threshold.authmode = WIFI_AUTH_WPA2_PSK,
-			},
-		};
-		strncpy((char*)wifi_config.sta.ssid, (char*)oob_ssid, 32);
-		strncpy((char*)wifi_config.sta.password, (char*)connect_key, 64);
+			esp_wifi_restore();
+			esp_wifi_get_config(WIFI_IF_STA, &wifi_config);
+			wifi_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
+			strncpy((char*)wifi_config.sta.ssid, (char*)oob_ssid, 32);
+			strncpy((char*)wifi_config.sta.password, (char*)connect_key, 64);
+		}
+
 		esp_netif_set_hostname(sta_netif, CFG_GetDeviceName());
 
 		esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
@@ -187,6 +190,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	ap_netif = esp_netif_create_default_wifi_ap();
 	esp_netif_create_default_wifi_sta();
 	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+	cfg.nvs_enable = false;
 	esp_wifi_init(&cfg);
 
 	esp_event_handler_instance_t instance_any_id;
