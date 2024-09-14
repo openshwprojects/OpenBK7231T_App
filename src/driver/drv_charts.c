@@ -262,40 +262,48 @@ void Chart_Free(chart_t **ptr) {
 	free(s);
 	*ptr = 0;
 }
+byte *ZeroMalloc(unsigned int size) {
+	byte *r = (byte*)malloc(size);
+	if (r == 0)
+		return 0;
+	memset(r, 0, size);
+	return r;
+}
 chart_t *Chart_Create(int maxSamples, int numVars, int numAxes) {
-	chart_t *s = (chart_t *)malloc(sizeof(chart_t));
+	chart_t *s = (chart_t *)ZeroMalloc(sizeof(chart_t));
 	if (!s) {
 		return NULL;
 	}
-	s->vars = (var_t *)malloc(sizeof(var_t) * numVars);
+	s->vars = (var_t *)ZeroMalloc(sizeof(var_t) * numVars);
 	if (!s->vars) {
 		free(s);
 		return NULL; 
 	}
-	memset(s->vars, 0, sizeof(var_t) * numVars);
-	s->axes = (axis_t *)malloc(sizeof(axis_t) * numAxes);
+	s->axes = (axis_t *)ZeroMalloc(sizeof(axis_t) * numAxes);
 	if (!s->axes) {
 		free(s->vars);
 		free(s);
 		return NULL;
 	}
-	memset(s->axes, 0, sizeof(axis_t) * numAxes);
-	s->times = (time_t *)malloc(sizeof(time_t) * maxSamples);
+	s->times = (time_t *)ZeroMalloc(sizeof(time_t) * maxSamples);
 	if (!s->times) {
 		free(s->axes);
 		free(s->vars);
 		free(s);
 		return NULL; 
 	}
-	memset(s->times, 0, sizeof(time_t) * maxSamples);
 
 	for (int i = 0; i < numVars; i++) {
-		s->vars[i].samples = (float*)malloc(sizeof(float) * maxSamples);
+		s->vars[i].samples = (float*)ZeroMalloc(sizeof(float) * maxSamples);
 		if (s->vars[i].samples == 0) {
-			// TODO
-		}
-		else {
-			memset(s->vars[i].samples, 0, sizeof(float) * maxSamples);
+			for (int j = 0; j < i; j++) {
+				free(s->vars[j].samples);
+			}
+			free(s->times);
+			free(s->axes);
+			free(s->vars);
+			free(s);
+			return NULL;
 		}
 	}
 	s->numAxes = numAxes;
@@ -378,6 +386,23 @@ void Chart_DisplayData(float *val, time_t *time, void *userData) {
 }
 void Chart_Display(http_request_t *request, chart_t *s) {
 	char buffer[64];
+
+	if (s == 0) {
+		poststr(request, "<h4>Chart is NULL</h4>");
+		return;
+	}
+	for (int i = 0; i < s->numAxes; i++) {
+		if (s->axes[i].label == 0) {
+			poststr(request, "<h4>No axes set</h4>");
+			return;
+		}
+	}
+	for (int i = 0; i < s->numVars; i++) {
+		if (s->vars[i].title == 0) {
+			poststr(request, "<h4>No vars set</h4>");
+			return;
+		}
+	}
 
 	poststr(request, "<canvas id=\"myChart\" width=\"400\" height=\"200\"></canvas>");
 	poststr(request, "<script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>");
@@ -598,10 +623,30 @@ void DRV_Charts_Init() {
 
 
 
+	//cmddetail:{"name":"chart_setAxis","args":"",
+	//cmddetail:"descr":"See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_charts.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("chart_setAxis", CMD_Chart_SetAxis, NULL);
+	//cmddetail:{"name":"chart_setVar","args":"",
+	//cmddetail:"descr":" See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_charts.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("chart_setVar", CMD_Chart_SetVar, NULL);
+	//cmddetail:{"name":"chart_create","args":"",
+	//cmddetail:"descr":"See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_charts.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("chart_create", CMD_Chart_Create, NULL);
+	//cmddetail:{"name":"chart_addNow","args":"",
+	//cmddetail:"descr":"See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_charts.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("chart_addNow", CMD_Chart_AddNow, NULL);
+	//cmddetail:{"name":"chart_add","args":"",
+	//cmddetail:"descr":"See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_charts.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("chart_add", CMD_Chart_Add, NULL);
 }
 
