@@ -109,7 +109,6 @@ void event_handler(void* arg, esp_event_base_t event_base,
 	}
 	else if(event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED)
 	{
-		esp_wifi_restore();
 		if(g_wifiStatusCallback != NULL)
 		{
 			g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
@@ -136,12 +135,15 @@ void event_handler(void* arg, esp_event_base_t event_base,
 
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
 {
-	if(sta_netif == NULL)
+	if(sta_netif != NULL)
 	{
-		sta_netif = esp_netif_create_default_wifi_sta();
-		wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-		esp_wifi_init(&cfg);
-
+		esp_wifi_stop();
+		esp_netif_destroy(sta_netif);
+		esp_wifi_deinit();
+		delay_ms(10);
+	}
+	else
+	{
 		esp_event_handler_instance_t instance_any_id, instance_got_ip;
 
 		esp_event_handler_instance_register(WIFI_EVENT,
@@ -154,29 +156,29 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 			&event_handler,
 			NULL,
 			&instance_got_ip);
-
-		wifi_config_t wifi_config;
-		esp_wifi_get_config(WIFI_IF_STA, &wifi_config);
-		if(strcmp((char*)wifi_config.sta.ssid, oob_ssid) != 0 || strcmp((char*)wifi_config.sta.password, connect_key) != 0)
-		{
-			ADDLOG_ERROR(LOG_FEATURE_MAIN, "WiFi saved ssid/pass != current, resetting");
-			memset(&wifi_config.sta, 0, sizeof(wifi_sta_config_t));
-			wifi_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
-			strncpy((char*)wifi_config.sta.ssid, (char*)oob_ssid, 32);
-			strncpy((char*)wifi_config.sta.password, (char*)connect_key, 64);
-		}
-
-		esp_netif_set_hostname(sta_netif, CFG_GetDeviceName());
-
-		esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
-		esp_wifi_set_mode(WIFI_MODE_STA);
-
-		esp_wifi_start();
 	}
-	else
+
+	sta_netif = esp_netif_create_default_wifi_sta();
+	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+	esp_wifi_init(&cfg);
+
+	wifi_config_t wifi_config;
+	esp_wifi_get_config(WIFI_IF_STA, &wifi_config);
+	if(strcmp((char*)wifi_config.sta.ssid, oob_ssid) != 0 || strcmp((char*)wifi_config.sta.password, connect_key) != 0)
 	{
-		esp_wifi_connect();
+		ADDLOG_ERROR(LOG_FEATURE_MAIN, "WiFi saved ssid/pass != current, resetting");
+		memset(&wifi_config.sta, 0, sizeof(wifi_sta_config_t));
+		wifi_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
+		strncpy((char*)wifi_config.sta.ssid, (char*)oob_ssid, 32);
+		strncpy((char*)wifi_config.sta.password, (char*)connect_key, 64);
 	}
+
+	esp_netif_set_hostname(sta_netif, CFG_GetDeviceName());
+
+	esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
+	esp_wifi_set_mode(WIFI_MODE_STA);
+
+	esp_wifi_start();
 }
 
 void HAL_DisconnectFromWifi()

@@ -312,8 +312,16 @@ int GetLedcChannelForPin(gpio_num_t pin)
 	return -1;
 }
 
-int PIN_GetPWMIndexForPinIndex(int pin)
+int PIN_GetPWMIndexForPinIndex(int index)
 {
+	if(index >= g_numPins)
+		return -1;
+	espPinMapping_t* pin = g_pins + index;
+	int ch = GetLedcChannelForPin(pin->pin);
+	if(ch >= 0)
+	{
+		return ch;
+	}
 	return -1;
 }
 
@@ -373,6 +381,7 @@ void HAL_PIN_Setup_Input(int index)
 		return;
 	espPinMapping_t* pin = g_pins + index;
 	gpio_set_direction(pin->pin, GPIO_MODE_INPUT);
+	gpio_set_pull_mode(pin->pin, GPIO_FLOATING);
 }
 
 void HAL_PIN_Setup_Output(int index)
@@ -381,6 +390,7 @@ void HAL_PIN_Setup_Output(int index)
 		return;
 	espPinMapping_t* pin = g_pins + index;
 	gpio_set_direction(pin->pin, GPIO_MODE_OUTPUT);
+	gpio_set_pull_mode(pin->pin, GPIO_FLOATING);
 }
 
 void HAL_PIN_PWM_Stop(int index)
@@ -399,9 +409,9 @@ void HAL_PIN_PWM_Stop(int index)
 
 void HAL_PIN_PWM_Start(int index)
 {
-	InitLEDC();
 	if(index >= g_numPins)
 		return;
+	InitLEDC();
 	espPinMapping_t* pin = g_pins + index;
 	int freecha = GetAvailableLedcChannel();
 	if(freecha >= 0)
@@ -424,8 +434,21 @@ void HAL_PIN_PWM_Update(int index, float value)
 	int ch = GetLedcChannelForPin(pin->pin);
 	if(ch >= 0)
 	{
-		ledc_set_duty(LEDC_LOW_SPEED_MODE, ch, value * 80.92);
-		ledc_update_duty(LEDC_LOW_SPEED_MODE, ch);
+		uint32_t curduty = ledc_get_duty(LEDC_LOW_SPEED_MODE, ch);
+		uint32_t propduty = value * 81.92;
+		if(propduty != curduty)
+		{
+			ledc_set_duty(LEDC_LOW_SPEED_MODE, ch, value * 81.92);
+			ledc_update_duty(LEDC_LOW_SPEED_MODE, ch);
+			if(value == 100.0f)
+			{
+				ledc_stop(LEDC_LOW_SPEED_MODE, ch, 1);
+			}
+			else if(value <= 0.01f)
+			{
+				ledc_stop(LEDC_LOW_SPEED_MODE, ch, 0);
+			}
+		}
 	}
 }
 
