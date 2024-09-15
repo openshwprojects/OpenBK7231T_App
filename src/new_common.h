@@ -32,6 +32,13 @@ extern unsigned char hexbyte(const char* hex);
 
 void OTA_RequestDownloadFromHTTP(const char *s);
 
+#if SAVETEMPS
+// how many enties in buffer?
+#define SAVEMAX 500
+// save every X seconds
+#define SAVETEMPRATE 30
+#endif
+
 #if WINDOWS
 #define DEVICENAME_PREFIX_FULL "WinTest"
 #define DEVICENAME_PREFIX_SHORT "WT"

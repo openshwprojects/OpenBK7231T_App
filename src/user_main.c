@@ -97,18 +97,25 @@ uint32_t idleCount = 0;
 int DRV_SSDP_Active = 0;
 
 #if SAVETEMPS
-uint8_t g_temperatures[100]={255};
-static uint8_t next=0;
+// how many enties in buffer?
+// #define SAVEMAX 500
+// save every X seconds
+// #define SAVETEMPRATE 30
+//
+// definitions in new_common.h
+
+uint8_t g_temperatures[SAVEMAX]={255};
+static int next=0;
 bool temp_rb_overflow=0;
 uint8_t savetemperature(uint8_t t){
 	g_temperatures[next++] = t;
-	if (next >99) { 
+	if (next > SAVEMAX-1) { 
 		temp_rb_overflow=1; 
 		next = 0;
 	}
 	return next;
 }
-uint8_t gettempnext(){
+int gettempnext(){
 	return next;
 }
 bool did_temp_rb_overflow(){
@@ -665,6 +672,7 @@ float round_to_5(float t) {
 	return (float)temp/2;
 }
 
+//if (!(g_secondsElapsed % SAVETEMPRATE)) {
 if (!(g_secondsElapsed % 5)) {
 	ADDLOGF_INFO("[saveTepm] g_wifi_temperature=%.2f  -- rouded: %.2f -- saving as %i\n", g_wifi_temperature,round_to_5(g_wifi_temperature),(uint8_t)(2*round_to_5(g_wifi_temperature)+31));
 	savetemperature((uint8_t)(2*round_to_5(g_wifi_temperature)+31));
