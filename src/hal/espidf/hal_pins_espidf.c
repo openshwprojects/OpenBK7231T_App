@@ -266,12 +266,13 @@ void InitLEDC()
 {
 	if(!g_ledc_init)
 	{
-		ledc_timer_config_t ledc_timer = {
+		ledc_timer_config_t ledc_timer =
+		{
 			.duty_resolution = LEDC_TIMER_13_BIT,
-			.freq_hz = 1000,
+			.freq_hz = 9765,
 			.speed_mode = LEDC_LOW_SPEED_MODE,
 			.timer_num = LEDC_TIMER_0,
-			.clk_cfg = LEDC_AUTO_CLK,
+			.clk_cfg = SOC_MOD_CLK_RC_FAST,
 		};
 		ledc_timer_config(&ledc_timer);
 		for(int i = 0; i < LEDC_MAX_CH; i++)
@@ -390,7 +391,8 @@ void HAL_PIN_Setup_Output(int index)
 		return;
 	espPinMapping_t* pin = g_pins + index;
 	gpio_set_direction(pin->pin, GPIO_MODE_OUTPUT);
-	gpio_set_pull_mode(pin->pin, GPIO_FLOATING);
+	gpio_set_pull_mode(pin->pin, GPIO_PULLUP_ONLY);
+	gpio_set_level(pin->pin, 0);
 }
 
 void HAL_PIN_PWM_Stop(int index)
@@ -435,10 +437,10 @@ void HAL_PIN_PWM_Update(int index, float value)
 	if(ch >= 0)
 	{
 		uint32_t curduty = ledc_get_duty(LEDC_LOW_SPEED_MODE, ch);
-		uint32_t propduty = value * 81.92;
+		uint32_t propduty = value * 81.91;
 		if(propduty != curduty)
 		{
-			ledc_set_duty(LEDC_LOW_SPEED_MODE, ch, value * 81.92);
+			ledc_set_duty(LEDC_LOW_SPEED_MODE, ch, value * 81.91);
 			ledc_update_duty(LEDC_LOW_SPEED_MODE, ch);
 			if(value == 100.0f)
 			{
