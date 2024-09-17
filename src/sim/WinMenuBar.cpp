@@ -45,6 +45,8 @@ enum {
 	ID_CREATE_FIRST,
 	ID_CREATE_LAST = ID_CREATE_FIRST + 100,
 	ID_OPTIONS,
+	ID_LITTLEFS_FORMAT,
+	ID_LITTLEFS_SETAUTOEXEC,
 	ID_ABOUT,
 };
 void CWinMenuBar::createWindowsMenu(HWND windowRef) {
@@ -52,12 +54,14 @@ void CWinMenuBar::createWindowsMenu(HWND windowRef) {
 	hMenuBar = CreateMenu();
 	hFile = CreateMenu();
 	hEdit = CreateMenu();
+	hLittleFS = CreateMenu();
 	hHelp = CreateMenu();
 	HMENU hRecent = CreateMenu();
 	HMENU hCreate = CreateMenu();
 
 	AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hFile, "File");
 	AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hEdit, "Edit");
+	AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hLittleFS, "LittleFS");
 	AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hHelp, "Help");
 
 	AppendMenu(hFile, MF_STRING, ID_NEW, "New (empty)");
@@ -88,7 +92,11 @@ void CWinMenuBar::createWindowsMenu(HWND windowRef) {
 		AppendMenu(hCreate, MF_STRING, ID_CREATE_FIRST + i, tmp.c_str());
 	}
 
-	AppendMenu(hHelp, MF_STRING, ID_ABOUT, "About");
+	AppendMenu(hFile, MF_STRING, ID_NEW, "New (empty)");
+
+	AppendMenu(hLittleFS, MF_STRING, ID_LITTLEFS_SETAUTOEXEC, "Set autoexec.bat");
+	AppendMenu(hLittleFS, MF_STRING, ID_LITTLEFS_FORMAT, "Format FileSystem");
+
 
 	SetMenu(windowRef, hMenuBar);
 
@@ -146,6 +154,18 @@ void CWinMenuBar::processEvent(const SDL_Event &Event) {
 				if (result == NFD_OKAY) {
 					sim->loadSimulation(outPath);
 				}
+			}
+			else if (id == ID_LITTLEFS_SETAUTOEXEC)
+			{
+				result = NFD_OpenDialog("bat", NULL, &outPath);
+				if (result == NFD_OKAY) {
+					sim->setAutoexecBat(outPath);
+				}
+			}
+			else if (id == ID_ABOUT)
+			{
+				MessageBoxA(NULL, "OpenBeken simulator - try and test OBK on Windows. Pair your Windows machine with Home Assistant via MQTT!",
+					"About OBK Simulator", 0);
 			}
 			else if (id == ID_SAVEAS)
 			{

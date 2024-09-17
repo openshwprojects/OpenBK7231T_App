@@ -11,6 +11,7 @@ class CWinMenuBar {
 	HMENU hFile;
 	HMENU hEdit;
 	HMENU hHelp;
+	HMENU hLittleFS;
 	TArray<CString> recents;
 	TArray<CString> prefabNames;
 

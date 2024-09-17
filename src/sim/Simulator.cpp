@@ -23,6 +23,13 @@
 #include "RecentList.h"
 
 
+// not the best solution... but I need LFS access
+extern "C" {
+	void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data);
+}
+
+
+
 CSimulator::CSimulator() {
 	currentlyEditingText = 0;
 	memset(bMouseButtonStates, 0, sizeof(bMouseButtonStates));
@@ -260,6 +267,23 @@ bool CSimulator::beginAddingPrefab(const char *s) {
 	}
 	newShape->setPosition(80, 80);
 	sim->addObject(newShape);
+	return false;
+}
+void CSimulator::formatLFS() {
+	CMD_ExecuteCommand("lfs_format", 0);
+}
+bool CSimulator::setAutoexecBat(const char *s) {
+	if (FS_Exists(s) == false) {
+		printf("CSimulator::setAutoexecBat: %s does not exist\n", s);
+		return true;
+	}
+	char *data = FS_ReadTextFile(s);
+	if (data == 0) {
+		printf("CSimulator::setAutoexecBat: cannot open %s\n", s);
+		return true;
+	}
+	Test_FakeHTTPClientPacket_POST("api/lfs/autoexec.bat", data);
+	free(data);
 	return false;
 }
 bool CSimulator::loadSimulation(const char *s) {
