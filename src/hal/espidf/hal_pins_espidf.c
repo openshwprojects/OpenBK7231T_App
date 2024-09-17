@@ -269,7 +269,7 @@ void InitLEDC()
 		ledc_timer_config_t ledc_timer =
 		{
 			.duty_resolution = LEDC_TIMER_13_BIT,
-			.freq_hz = 9765,
+			.freq_hz = 1000,
 			.speed_mode = LEDC_LOW_SPEED_MODE,
 			.timer_num = LEDC_TIMER_0,
 			.clk_cfg = SOC_MOD_CLK_RC_FAST,
