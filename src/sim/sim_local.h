@@ -28,6 +28,7 @@ typedef uint32_t u32;
 enum {
 	EVE_NONE,
 	EVE_LMB_HOLD,
+	EVE_LMB_DOWN,
 };
 
 #define WINDOWS_MOUSE_MENUBAR_OFFSET 20

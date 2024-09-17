@@ -9,6 +9,15 @@ void Tool_Use::onMouseDown(const Coord &pos, int button) {
 	currentTarget = sim->getShapeUnderCursor();
 	prevPos = GetMousePos();
 
+	if (currentTarget != 0) {
+		Coord curPos = GetMousePos();
+		Coord delta = curPos - prevPos;
+		prevPos = curPos;
+		CControllerBase *cntrl = currentTarget->getController();
+		if (cntrl != 0) {
+			cntrl->sendEvent(EVE_LMB_DOWN, delta);
+		}
+	}
 }
 void Tool_Use::onMouseUp(const Coord &pos, int button) {
 	currentTarget = 0;

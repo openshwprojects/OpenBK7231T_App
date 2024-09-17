@@ -115,12 +115,16 @@ public:
 			return true;
 		return false;
 	}
-	Coord moveTowards(const Coord &tg, float dt) {
+	Coord moveTowards(const Coord &tg, float dt) const {
 		Coord dir = tg - *this;
 		float len = dir.normalize();
 		if (len < dt)
 			return tg;
 		return *this + dir * dt;
+	}
+	float moveMeTowards(const Coord &tg, float dt) {
+		*this = moveTowards(tg, dt);
+		return this->dist(tg);
 	}
 	float normalize() {
 		float l = len();
