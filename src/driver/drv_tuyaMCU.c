@@ -1821,7 +1821,7 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		break;
 	case 0x22:
 		{
-			byte data23[1] = 1;
+			byte data23[1] = { 1 };
 			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: 0x22 replying");
 			// For example, the module returns 55 aa 00 23 00 01 01 24
 			TuyaMCU_SendCommandWithData(0x23, data23, 1);
