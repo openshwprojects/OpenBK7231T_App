@@ -60,6 +60,22 @@ void CSimulator::setTool(Tool_Base *tb) {
 }
 Coord camera(0, 0);
 float zoomFactor = 1.0f;
+
+Coord GetMousePosWorld() {
+	Coord r;
+	int mx, my;
+	//SDL_GetGlobalMouseState(&mx, &my);
+	SDL_GetMouseState(&mx, &my);
+	// No longer needed after resize event was introduced
+	// BUGFIX FOR MENUBAR OFFSET
+	//my += WINDOWS_MOUSE_MENUBAR_OFFSET;
+	r.set(mx, my);
+	float ndcX = (r.getX() / WinWidth);
+	float ndcY = (r.getY() / WinHeight);
+	r.setX(camera.getX() + (ndcX * WinWidth / (zoomFactor)));
+	r.setY(camera.getY() + (ndcY * WinHeight / (zoomFactor)));
+	return r;
+}
 void CSimulator::drawWindow() {
 	char buffer[256];
 	const char *projectPathDisp = projectPath.c_str();
@@ -102,7 +118,7 @@ void CSimulator::drawWindow() {
 		{
 			//int x = Event.button.x;
 			//int y = Event.button.y;
-			Coord mouse = GetMousePos();
+			Coord mouse = GetMousePosWorld();
 			int which = Event.button.button;
 			if (activeTool) {
 				activeTool->onMouseDown(mouse, which);
@@ -113,7 +129,7 @@ void CSimulator::drawWindow() {
 		{
 			//int x = Event.button.x;
 			//int y = Event.button.y;
-			Coord mouse = GetMousePos();
+			Coord mouse = GetMousePosWorld();
 			int which = Event.button.button;
 			if (activeTool) {
 				activeTool->onMouseUp(mouse, which);
@@ -138,7 +154,7 @@ void CSimulator::drawWindow() {
 		}
 		else if (Event.type == SDL_MOUSEWHEEL)
 		{
-			Coord mouse = GetMousePos();
+			Coord mouse = GetMousePosWorld();
 
 			Coord worldBeforeZoom = camera + (mouse / zoomFactor);
 
@@ -280,7 +296,7 @@ void CSimulator::destroyObject(CShape *s) {
 	sim->destroyObject(s);
 }
 class CShape *CSimulator::getShapeUnderCursor(bool bIncludeDeepText) {
-	Coord p = GetMousePos();
+	Coord p = GetMousePosWorld();
 	return sim->findShapeByBoundsPoint(p,bIncludeDeepText);
 }
 bool CSimulator::createSimulation(bool bDemo) {

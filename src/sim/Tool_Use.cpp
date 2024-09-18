@@ -7,10 +7,10 @@
 
 void Tool_Use::onMouseDown(const Coord &pos, int button) {
 	currentTarget = sim->getShapeUnderCursor();
-	prevPos = GetMousePos();
+	prevPos = GetMousePosWorld();
 
 	if (currentTarget != 0) {
-		Coord curPos = GetMousePos();
+		Coord curPos = GetMousePosWorld();
 		Coord delta = curPos - prevPos;
 		prevPos = curPos;
 		CControllerBase *cntrl = currentTarget->getController();
@@ -41,7 +41,7 @@ void Tool_Use::drawTool() {
 		}
 	}
 	if (currentTarget != 0) {
-		Coord curPos = GetMousePos();
+		Coord curPos = GetMousePosWorld();
 		Coord delta = curPos - prevPos;
 		prevPos = curPos;
 		CControllerBase *cntrl = currentTarget->getController();

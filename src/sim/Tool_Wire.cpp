@@ -21,7 +21,7 @@ void Tool_Wire::onMouseDown(const Coord &pos, int button) {
 		bSideness = !bSideness;
 	}
 	if (button == SDL_BUTTON_LEFT) {
-		Coord curPos = roundToGrid(GetMousePos());
+		Coord curPos = roundToGrid(GetMousePosWorld());
 		if (bActive) {
 #if 1				
 			sim->markAsModified();
@@ -62,7 +62,7 @@ void Tool_Wire::onMouseDown(const Coord &pos, int button) {
 void Tool_Wire::drawTool() {
 	Coord m;
 	sim->getCursorMgr()->setCursor(SDL_SYSTEM_CURSOR_CROSSHAIR);
-	m = roundToGrid(GetMousePos());
+	m = roundToGrid(GetMousePosWorld());
 	if (bActive) {
 		if (0) {
 			glBegin(GL_LINES);
