@@ -58,8 +58,7 @@ void CSimulator::setTool(Tool_Base *tb) {
 	activeTool->setSimulator(this);
 	activeTool->onBegin();
 }
-float cameraX = 0.0f;
-float cameraY = 0.0f;
+Coord camera(0, 0);
 float zoomFactor = 1.0f;
 void CSimulator::drawWindow() {
 	char buffer[256];
@@ -91,10 +90,10 @@ void CSimulator::drawWindow() {
 			}
 			else {
 				switch (Event.key.keysym.sym) {
-				case SDLK_LEFT: cameraX -= 10.0f; break;
-				case SDLK_RIGHT: cameraX += 10.0f; break;
-				case SDLK_UP: cameraY -= 10.0f; break;
-				case SDLK_DOWN: cameraY += 10.0f; break;
+				case SDLK_LEFT: camera.addX(-10.0f); break;
+				case SDLK_RIGHT: camera.addX(10.0f); break;
+				case SDLK_UP: camera.addY(10.0f); break;
+				case SDLK_DOWN: camera.addY(-10.0f); break;
 				}
 				onKeyDown(Event.key.keysym.sym);
 			}
@@ -141,8 +140,7 @@ void CSimulator::drawWindow() {
 		{
 			Coord mouse = GetMousePos();
 
-			float worldXBeforeZoom = cameraX + (mouse.getX() / zoomFactor);
-			float worldYBeforeZoom = cameraY + (mouse.getY() / zoomFactor);
+			Coord worldBeforeZoom = camera + (mouse / zoomFactor);
 
 			if (Event.wheel.y > 0) {
 				zoomFactor *= 1.1f; 
@@ -151,11 +149,9 @@ void CSimulator::drawWindow() {
 				zoomFactor /= 1.1f;
 			}
 
-			float worldXAfterZoom = cameraX + (mouse.getX() / zoomFactor);
-			float worldYAfterZoom = cameraY + (mouse.getY() / zoomFactor);
+			Coord worldAfterZoom = camera + (mouse / zoomFactor);
 
-			cameraX += (worldXBeforeZoom - worldXAfterZoom);
-			cameraY += (worldYBeforeZoom - worldYAfterZoom);
+			camera += (worldBeforeZoom - worldAfterZoom);
 		}
 		else if (Event.type == SDL_QUIT)
 		{
@@ -204,18 +200,28 @@ void CSimulator::drawWindow() {
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(cameraX, cameraX + WinWidth / zoomFactor, cameraY + WinHeight / zoomFactor, cameraY, 0.0f, 1.0f);
+	glOrtho(camera.getX(), camera.getX() + WinWidth / zoomFactor,
+		camera.getY() + WinHeight / zoomFactor, camera.getY(), 0.0f, 1.0f);
 
 	glColor3f(0.7f, 0.7f, 0.7f);
 	glLineWidth(0.25f);
 	glBegin(GL_LINES);
-	for (int i = 0; i < WinWidth; i += gridSize) {
-		glVertex2f(i, 0);
-		glVertex2f(i, WinHeight);
+	float minX = camera.getX();
+	float maxX = camera.getX() + WinWidth / zoomFactor;
+	float minY = camera.getY();
+	float maxY = camera.getY() + WinHeight / zoomFactor;
+
+	float startX = minX - fmod(minX, gridSize);
+	float startY = minY - fmod(minY, gridSize);
+
+	for (float x = startX; x <= maxX; x += gridSize) {
+		glVertex2f(x, minY);
+		glVertex2f(x, maxY);
 	}
-	for (int i = 0; i < WinHeight; i += gridSize) {
-		glVertex2f(0, i);
-		glVertex2f(WinWidth, i);
+
+	for (float y = startY; y <= maxY; y += gridSize) {
+		glVertex2f(minX, y);
+		glVertex2f(maxX, y);
 	}
 	glEnd();
 	glColor3f(1, 1, 0);

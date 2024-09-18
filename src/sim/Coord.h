@@ -67,6 +67,9 @@ public:
 	Coord operator*(float f) const {
 		return Coord(this->x * f, this->y * f);
 	}
+	Coord operator/(float f) const {
+		return Coord(this->x / f, this->y / f);
+	}
 	friend Coord operator*(float f, const Coord &o)  {
 		return Coord(o.x * f, o.y * f);
 	}
