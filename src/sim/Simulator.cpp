@@ -58,7 +58,9 @@ void CSimulator::setTool(Tool_Base *tb) {
 	activeTool->setSimulator(this);
 	activeTool->onBegin();
 }
-
+float cameraX = 0.0f;
+float cameraY = 0.0f;
+float zoomFactor = 1.0f;
 void CSimulator::drawWindow() {
 	char buffer[256];
 	const char *projectPathDisp = projectPath.c_str();
@@ -88,6 +90,12 @@ void CSimulator::drawWindow() {
 				}
 			}
 			else {
+				switch (Event.key.keysym.sym) {
+				case SDLK_LEFT: cameraX -= 10.0f; break;
+				case SDLK_RIGHT: cameraX += 10.0f; break;
+				case SDLK_UP: cameraY -= 10.0f; break;
+				case SDLK_DOWN: cameraY += 10.0f; break;
+				}
 				onKeyDown(Event.key.keysym.sym);
 			}
 		}
@@ -129,6 +137,26 @@ void CSimulator::drawWindow() {
 				}
 			}
 		}
+		else if (Event.type == SDL_MOUSEWHEEL)
+		{
+			Coord mouse = GetMousePos();
+
+			float worldXBeforeZoom = cameraX + (mouse.getX() / zoomFactor);
+			float worldYBeforeZoom = cameraY + (mouse.getY() / zoomFactor);
+
+			if (Event.wheel.y > 0) {
+				zoomFactor *= 1.1f; 
+			}
+			else if (Event.wheel.y < 0) {
+				zoomFactor /= 1.1f;
+			}
+
+			float worldXAfterZoom = cameraX + (mouse.getX() / zoomFactor);
+			float worldYAfterZoom = cameraY + (mouse.getY() / zoomFactor);
+
+			cameraX += (worldXBeforeZoom - worldXAfterZoom);
+			cameraY += (worldYBeforeZoom - worldYAfterZoom);
+		}
 		else if (Event.type == SDL_QUIT)
 		{
 			Running = 0;
@@ -156,7 +184,8 @@ void CSimulator::drawWindow() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0.0f, WinWidth, WinHeight, 0.0f, 0.0f, 1.0f);
+	glOrtho(0, WinWidth,  WinHeight, 0, 0.0f, 1.0f);
+
 
 	int h = 40;
 	h = drawText(NULL, 10, h, "OpenBeken Simulator");
@@ -172,6 +201,10 @@ void CSimulator::drawWindow() {
 	}
 	glColor3f(1.0f, 0.0f, 0.0f);
 	drawText(&g_style_text_red, 260, 40, "WARNING: The following sketch may not be a correct circuit schematic. Connections in this simulator are simplified.");
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(cameraX, cameraX + WinWidth / zoomFactor, cameraY + WinHeight / zoomFactor, cameraY, 0.0f, 1.0f);
 
 	glColor3f(0.7f, 0.7f, 0.7f);
 	glLineWidth(0.25f);
