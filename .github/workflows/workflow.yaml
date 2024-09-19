@@ -70,7 +70,10 @@ jobs:
       run: |
         choco install visualstudio2017buildtools --version=15.9.35
         choco install visualstudio2017-workload-vctools
-        
+    - name: Add MSBuild to PATH
+      run: |
+       echo "##vso[task.setvariable variable=PATH]$PATH;C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
+   
     - name: Build project
       run: msbuild openBeken_win32_mvsc2017.vcxproj /p:Configuration=Release /t:Build        
   build:
