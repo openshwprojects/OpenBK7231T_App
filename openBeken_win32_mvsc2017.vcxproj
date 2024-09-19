@@ -29,7 +29,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EE06C1F3-28B1-4580-A0FA-9F7422C7E456}</ProjectGuid>
     <RootNamespace>myHTTP2022</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'" Label="Configuration">
@@ -342,6 +342,7 @@
     </ClCompile>
     <ClCompile Include="src\driver\drv_bridge_driver.c" />
     <ClCompile Include="src\driver\drv_chargingLimit.c" />
+    <ClCompile Include="src\driver\drv_charts.c" />
     <ClCompile Include="src\driver\drv_cht8305.c" />
     <ClCompile Include="src\driver\drv_cse7766.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
@@ -396,6 +397,7 @@
     <ClCompile Include="src\driver\drv_tasmotaDeviceGroups.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\driver\drv_test_charts.c" />
     <ClCompile Include="src\driver\drv_test_drivers.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32 ScriptOnly|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -1032,6 +1034,7 @@
     <ClCompile Include="src\sim\Controller_Button.cpp" />
     <ClCompile Include="src\sim\Controller_Pot.cpp" />
     <ClCompile Include="src\sim\Controller_SimulatorLink.cpp" />
+    <ClCompile Include="src\sim\Controller_Switch.cpp" />
     <ClCompile Include="src\sim\Controller_WS2812.cpp" />
     <ClCompile Include="src\sim\CursorManager.cpp" />
     <ClCompile Include="src\sim\Junction.cpp" />
@@ -1357,6 +1360,7 @@
     <ClInclude Include="src\sim\Controller_Button.h" />
     <ClInclude Include="src\sim\Controller_Pot.h" />
     <ClInclude Include="src\sim\Controller_SimulatorLink.h" />
+    <ClInclude Include="src\sim\Controller_Switch.h" />
     <ClInclude Include="src\sim\Controller_WS2812.h" />
     <ClInclude Include="src\sim\CursorManager.h" />
     <ClInclude Include="src\sim\Junction.h" />
