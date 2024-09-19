@@ -80,7 +80,7 @@ jobs:
     - name: Save build assets
       uses: actions/upload-artifact@v3
       with:
-        name: openBeken_win32.zip
+        name: obkSimulator_win32_${{ needs.refs.outputs.version }}
         path: |
           ./Release/openBeken_win32.exe
           ./SDL2.dll
