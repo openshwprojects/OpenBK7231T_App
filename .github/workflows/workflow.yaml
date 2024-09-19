@@ -80,11 +80,11 @@ jobs:
     - name: Save build assets
       uses: actions/upload-artifact@v3
       with:
-        name: openBeken_win32.exe
+        name: openBeken_win32.zip
         path: |
           ./Release/openBeken_win32.exe
           ./SDL2.dll
-          ./Release/openBeken_win32.exe
+          ./ILUT.dll
   build:
     name: Build
     needs: refs
