@@ -58,6 +58,18 @@ jobs:
           echo "::set-output name=short_ref::${BRANCHTRANSLATED}"
           echo "::set-output name=sha_short::SHA-$(git rev-parse --short=12 HEAD)"
           echo "::set-output name=version::${VERSION}"
+  build2:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Build project
+      run: msbuild openBeken_win32_mvsc2017.vcxproj /p:Configuration=Release /p:PlatformToolset=v143      
   build:
     name: Build
     needs: refs
