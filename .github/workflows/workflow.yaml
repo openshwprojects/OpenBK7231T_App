@@ -83,7 +83,7 @@ jobs:
         name: openBeken_win32.exe
         path: |
           ./Release/openBeken_win32.exe
-          ./Release/openBeken_win32.exe
+          ./SDL2.dll
           ./Release/openBeken_win32.exe
   build:
     name: Build
