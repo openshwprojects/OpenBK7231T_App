@@ -9,10 +9,6 @@
       <Configuration>Release Win322</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EE06C1F3-28B1-4580-A0FA-9F7422C7E456}</ProjectGuid>
@@ -30,12 +26,6 @@
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v141</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -45,17 +35,9 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release Win322|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>15.0.28307.799</_ProjectFileVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
-    <IntDir>$(Configuration)\</IntDir>
-    <TargetName>openBeken_win32</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
@@ -67,23 +49,6 @@
     <IntDir>$(Configuration)\</IntDir>
     <TargetName>openBeken_win32</TargetName>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <ClCompile>
-      <Optimization>MaxSpeed</Optimization>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-    </ClCompile>
-    <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <OptimizeReferences>true</OptimizeReferences>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <TargetMachine>MachineX86</TargetMachine>
-    </Link>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -122,17 +87,14 @@
     <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\driver\common\dd.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Win322|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\key\multi_button.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Win322|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\lwip_intf\lwip-2.0.2\port\ethernetif.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Win322|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\lwip_intf\lwip-2.0.2\src\api\sockets.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
@@ -141,7 +103,6 @@
     <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\lwip_intf\lwip-2.0.2\src\apps\mqtt\mqtt.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Win322|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\lwip_intf\lwip-2.0.2\src\core\tcp.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
@@ -150,7 +111,6 @@
     <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\net_param_intf\net_param.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Win322|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\main.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
@@ -361,21 +321,15 @@
     <ClCompile Include="src\httpclient\utils_timer.c" />
     <ClCompile Include="src\httpserver\hass.c" />
     <ClCompile Include="src\httpserver\http_basic_auth.c" />
-    <ClCompile Include="src\httpserver\http_fns.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="src\httpserver\http_fns.c" />
     <ClCompile Include="src\httpserver\http_tcp_server.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Win322|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\httpserver\http_tcp_server_nonblocking.c" />
     <ClCompile Include="src\httpserver\json_interface.c" />
-    <ClCompile Include="src\httpserver\new_http.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="src\httpserver\rest_interface.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="src\httpserver\new_http.c" />
+    <ClCompile Include="src\httpserver\rest_interface.c" />
     <ClCompile Include="src\i2c\drv_i2c_lcd_pcf8574t.c" />
     <ClCompile Include="src\i2c\drv_i2c_main.c" />
     <ClCompile Include="src\i2c\drv_i2c_mcp23017.c" />
@@ -729,9 +683,7 @@
     <ClCompile Include="src\littlefs\lfs_util.c" />
     <ClCompile Include="src\littlefs\our_lfs.c" />
     <ClCompile Include="src\logging\logging.c" />
-    <ClCompile Include="src\mqtt\new_mqtt.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="src\mqtt\new_mqtt.c" />
     <ClCompile Include="src\mqtt\new_mqtt_deduper.c" />
     <ClCompile Include="src\new_cfg.c" />
     <ClCompile Include="src\new_common.c" />
@@ -743,7 +695,6 @@
     <ClCompile Include="src\ota\ota.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Win322|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\rgb2hsv.c" />
     <ClCompile Include="src\selftest\selftest_batteryDriver.c" />
@@ -838,9 +789,7 @@
     <ClCompile Include="src\sim\WinMenuBar.cpp" />
     <ClCompile Include="src\sim\Wire.cpp" />
     <ClCompile Include="src\tiny_crc8.c" />
-    <ClCompile Include="src\user_main.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="src\user_main.c" />
     <ClCompile Include="src\win32\stubs\lwip\win_mqtt_stub.c" />
     <ClCompile Include="src\win32\stubs\win_rtos_stub.c" />
     <ClCompile Include="src\win32\stubs\win_flash_stub.c" />
@@ -1154,21 +1103,16 @@
     <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\include\net_param_pub.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Win322|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </CustomBuild>
     <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\key\multi_button.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Win322|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </CustomBuild>
     <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\lwip_intf\lwip-2.0.2\src\include\lwip\apps\mqtt.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Win322|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </CustomBuild>
-    <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\user_driver\BkDriverI2c.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </CustomBuild>
+    <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\user_driver\BkDriverI2c.h" />
     <CustomBuild Include="src\bitmessage\bitmessage_public.h" />
     <CustomBuild Include="src\cJSON\cJSON.h" />
     <CustomBuild Include="src\cmnds\cmd_local.h" />
@@ -1195,17 +1139,12 @@
     <CustomBuild Include="src\httpclient\utils_net.h" />
     <CustomBuild Include="src\httpclient\utils_timer.h" />
     <CustomBuild Include="src\httpserver\hass.h" />
-    <CustomBuild Include="src\httpserver\http_fns.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </CustomBuild>
+    <CustomBuild Include="src\httpserver\http_fns.h" />
     <ClInclude Include="src\httpserver\http_tcp_server.h" />
-    <CustomBuild Include="src\httpserver\new_http.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </CustomBuild>
+    <CustomBuild Include="src\httpserver\new_http.h" />
     <CustomBuild Include="src\i2c\drv_i2c_local.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Win32|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Win322|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </CustomBuild>
     <CustomBuild Include="src\i2c\drv_i2c_mcp23017.h" />
     <CustomBuild Include="src\i2c\drv_i2c_public.h" />
