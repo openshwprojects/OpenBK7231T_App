@@ -59,6 +59,7 @@ jobs:
           echo "::set-output name=sha_short::SHA-$(git rev-parse --short=12 HEAD)"
           echo "::set-output name=version::${VERSION}"
   build2:
+    name: Build Simulator
     runs-on: windows-latest
 
     steps:
@@ -67,6 +68,13 @@ jobs:
 
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v1.0.2
+
+
+  - name: Checkout simulator repository
+    run: |
+      git clone https://github.com/openshwprojects/obkSimulator
+      mkdir -p ./libs_for_simulator
+      cp -r ./obkSimulator/simulator/libs_for_simulator/* ./libs_for_simulator
 
     - name: Build project
       run: msbuild openBeken_win32_mvsc2017.vcxproj /p:Configuration=Release /p:PlatformToolset=v143      
