@@ -87,17 +87,7 @@ jobs:
       - run: ls -la
       - name: Run make
         run: make APP_VERSION=${{ needs.refs.outputs.version }} APP_NAME=${{ matrix.platform }} ${{ matrix.platform }}
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1.0.2
-
-      - name: Set up Visual Studio
-        uses: actions/setup-dotnet@v2
-        with:
-          dotnet-version: '5.x'
-
-      - name: Build project
-        run: msbuild openBeken_win32_mvsc2017.vcxproj /p:Configuration=Release /t:Build      
-       - name: Save build assets
+      - name: Save build assets
         uses: actions/upload-artifact@v3
         with:
           name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
