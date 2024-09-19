@@ -66,14 +66,11 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v1.0.2
-
-    - name: Set up Visual Studio
-      uses: actions/setup-dotnet@v2
-      with:
-        dotnet-version: '5.x'
-
+    - name: Install Visual Studio 2017 Build Tools
+      run: |
+        choco install visualstudio2017buildtools --version=15.9.35
+        choco install visualstudio2017-workload-vctools --version=15.9.35
+        
     - name: Build project
       run: msbuild openBeken_win32_mvsc2017.vcxproj /p:Configuration=Release /t:Build        
   build:
