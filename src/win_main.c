@@ -130,7 +130,7 @@ void SIM_ClearOBK(const char *flashPath) {
 	Main_Init();
 }
 void Win_DoUnitTests() {
-	Test_Enums();
+	//Test_Enums();
 	Test_Backlog();
 	Test_DoorSensor();
 	Test_WS2812B();

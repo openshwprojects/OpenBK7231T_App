@@ -3,6 +3,8 @@
 #include "new_common.h"
 #include "hal/hal_wifi.h"
 
+#define test12321321  321321321
+
 typedef enum ioRole_e {
 	//iodetail:{"name":"None",
 	//iodetail:"title":"TODO",
