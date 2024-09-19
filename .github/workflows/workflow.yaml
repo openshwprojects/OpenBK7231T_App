@@ -83,11 +83,11 @@ jobs:
         name: obkSimulator_win32_${{ needs.refs.outputs.version }}
         path: |
           ./Release/openBeken_win32.exe
-          ./SDL2.dll
-          ./DevIL.dll
-          ./freeglut.dll
-          ./ILUT.dll
-          ./ILU.dll
+          ./obkSimulator/simulator/SDL2.dll
+          ./obkSimulator/simulator/DevIL.dll
+          ./obkSimulator/simulator/freeglut.dll
+          ./obkSimulator/simulator/ILUT.dll
+          ./obkSimulator/simulator/ILU.dll
   build:
     name: Build
     needs: refs
