@@ -70,8 +70,8 @@ jobs:
       uses: microsoft/setup-msbuild@v1.0.2
 
 
-  - name: Checkout simulator repository
-    run: |
+    - name: Checkout simulator repository
+      run: |
       git clone https://github.com/openshwprojects/obkSimulator
       mkdir -p ./libs_for_simulator
       cp -r ./obkSimulator/simulator/libs_for_simulator/* ./libs_for_simulator
