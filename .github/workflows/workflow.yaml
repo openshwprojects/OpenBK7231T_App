@@ -60,6 +60,7 @@ jobs:
           echo "::set-output name=version::${VERSION}"
   build2:
     name: Build Simulator
+    needs: refs
     runs-on: windows-latest
 
     steps:
