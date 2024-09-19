@@ -77,7 +77,6 @@ jobs:
 
     - name: Build project
       run: msbuild openBeken_win32_mvsc2017.vcxproj /p:Configuration=Release /p:PlatformToolset=v143  
-	  
 
   build:
     name: Build
