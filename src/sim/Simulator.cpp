@@ -70,10 +70,7 @@ Coord GetMousePosWorld() {
 	// BUGFIX FOR MENUBAR OFFSET
 	//my += WINDOWS_MOUSE_MENUBAR_OFFSET;
 	r.set(mx, my);
-	float ndcX = (r.getX() / WinWidth);
-	float ndcY = (r.getY() / WinHeight);
-	r.setX(camera.getX() + (ndcX * WinWidth / (zoomFactor)));
-	r.setY(camera.getY() + (ndcY * WinHeight / (zoomFactor)));
+	r = camera + r / zoomFactor;
 	return r;
 }
 void CSimulator::drawWindow() {
