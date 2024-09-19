@@ -69,6 +69,7 @@ jobs:
     - name: Install Visual Studio 2017 Build Tools
       run: |
         choco install visualstudio2017buildtools --version=15.9.35
+        choco install visualstudio2017-workload-vctools
         
     - name: Build project
       run: msbuild openBeken_win32_mvsc2017.vcxproj /p:Configuration=Release /t:Build        
