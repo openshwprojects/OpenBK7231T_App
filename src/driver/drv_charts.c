@@ -371,7 +371,7 @@ void Chart_DisplayLabel(float *val, time_t *time, void *userData) {
 		poststr(request, ",");
 	}
 	request->userCounter++;
-	snprintf(buffer, sizeof(buffer), "new Date(%ld * 1000).toLocaleTimeString()", (long)(*time));
+	snprintf(buffer, sizeof(buffer), "%ld", (long)(*time));					// don't transmit too much data, use only the timestamps here and handle conversion later  ....
 	poststr(request, buffer);
 }
 void Chart_DisplayData(float *val, time_t *time, void *userData) {
@@ -407,6 +407,24 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 	poststr(request, "<canvas id=\"myChart\" width=\"400\" height=\"200\"></canvas>");
 	poststr(request, "<script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>");
 
+	poststr(request, "<input type='hidden' id='labels' value='");
+	request->userCounter = 0;
+	Chart_Iterate(s, 0, Chart_DisplayLabel, request);
+	poststr(request, "'>");
+
+	for (int i = 0; i < s->numVars; i++) {
+		hprintf255(request, "<input type='hidden' id='data%i' value='",i);
+		request->userCounter = 0;
+		Chart_Iterate(s, i,  Chart_DisplayData, request);
+		poststr(request, "'>");
+	}
+
+
+
+
+
+
+
 	poststr(request, "<script>");
 	poststr(request, "function cha() {");
 	poststr(request, "console.log('Initializing chart');");
@@ -415,15 +433,18 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 	poststr(request, "}");
 	poststr(request, "var ctx = document.getElementById('myChart').getContext('2d');");
 
+/*
 	poststr(request, "var labels = [");
 	request->userCounter = 0;
 	Chart_Iterate(s, 0, Chart_DisplayLabel, request);
 	poststr(request, "];");
-
+*/
+	poststr(request, "var labels=document.getElementById('labels').value.split(/\s*,\s*/).map(Number);");
+	
 	poststr(request, "window.myChartInstance = new Chart(ctx, {");
 	poststr(request, "    type: 'line',");
 	poststr(request, "    data: {");
-	poststr(request, "        labels: labels,");  
+	poststr(request, "        labels: labels.map((x)=>new Date(x * 1000).toLocaleTimeString()),");  	// we transmitted only timestamps, let Javascript do the work to convert them ;-)
 	poststr(request, "        datasets: [");
 	for (int i = 0; i < s->numVars; i++) {
 		if (i) {
@@ -431,10 +452,14 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 		}
 		poststr(request, "{");
 		hprintf255(request, "            label: '%s',", s->vars[i].title);
+/*
 		poststr(request, "            data: [");
 		request->userCounter = 0;
 		Chart_Iterate(s, i,  Chart_DisplayData, request);
 		poststr(request, "],");
+*/
+
+		hprintf255(request, "            data: document.getElementById('data%i').value.split(/\s*,\s*/).map(Number),",i);
 		if (i == 2) {
 			poststr(request, "                borderColor: 'rgba(155, 33, 55, 1)',");
 		}
@@ -451,6 +476,7 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 	poststr(request, "]");
 	poststr(request, "    },");
 	poststr(request, "    options: {");
+	poststr(request, "        animation: false,");		// for me it's annoying, if on every refresh the graph is "animated"
 	poststr(request, "        scales: {");
 	poststr(request, "            x: {");
 	poststr(request, "                type: 'category',");  
