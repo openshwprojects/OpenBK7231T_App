@@ -81,9 +81,8 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: openBeken_win32.exe
-        path: |
-		  ./Release/openBeken_win32.exe
-		  ./SDL2.dll
+        path: ./Release/openBeken_win32.exe
+
   build:
     name: Build
     needs: refs
