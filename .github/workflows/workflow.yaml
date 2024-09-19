@@ -84,7 +84,10 @@ jobs:
         path: |
           ./Release/openBeken_win32.exe
           ./SDL2.dll
+          ./DevIL.dll
+          ./freeglut.dll
           ./ILUT.dll
+          ./ILU.dll
   build:
     name: Build
     needs: refs
