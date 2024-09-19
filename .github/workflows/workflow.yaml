@@ -78,11 +78,6 @@ jobs:
     - name: Build project
       run: msbuild openBeken_win32_mvsc2017.vcxproj /p:Configuration=Release /p:PlatformToolset=v143  
 	  
-    - name: Save build assets
-       uses: actions/upload-artifact@v3
-       with:
-         name: openBeken_win32.exe
-         path: ./Release/openBeken_win32.exe
 
   build:
     name: Build
