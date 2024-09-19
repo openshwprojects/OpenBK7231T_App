@@ -91,6 +91,9 @@ jobs:
       with:
         name: obkSimulator_win32_${{ needs.refs.outputs.version }}
         path: obkSimulator_win32_${{ needs.refs.outputs.version }}.zip
+    - name: Copy build assets
+      run: |
+        cp obkSimulator_win32_${{ needs.refs.outputs.version }}.zip output/${{ needs.refs.outputs.version }}/obkSimulator_${{ needs.refs.outputs.version }}.zip
   build:
     name: Build
     needs: refs
