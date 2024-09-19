@@ -76,7 +76,13 @@ jobs:
         cp -r ./obkSimulator/simulator/libs_for_simulator/* ./libs_for_simulator
 
     - name: Build project
-      run: msbuild openBeken_win32_mvsc2017.vcxproj /p:Configuration=Release /p:PlatformToolset=v143      
+      run: msbuild openBeken_win32_mvsc2017.vcxproj /p:Configuration=Release /p:PlatformToolset=v143   
+	  
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: openBeken-win32-exe
+        path: ./Release/openBeken_win32.exe
   build:
     name: Build
     needs: refs
