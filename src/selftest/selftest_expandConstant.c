@@ -115,7 +115,6 @@ void Test_ExpandConstant() {
 	free(ptr);
 	//system("pause");
 
-
 	CFG_SetFlag(OBK_FLAG_HTTP_PINMONITOR, 0);
 	ptr = CMD_ExpandingStrdup("$FLAG13");
 	SELFTEST_ASSERT_STRING(ptr, "0");
