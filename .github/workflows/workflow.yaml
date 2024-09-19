@@ -81,8 +81,10 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: openBeken_win32.exe
-        path: ./Release/openBeken_win32.exe
-
+        path: |
+          ./Release/openBeken_win32.exe
+          ./Release/openBeken_win32.exe
+          ./Release/openBeken_win32.exe
   build:
     name: Build
     needs: refs
