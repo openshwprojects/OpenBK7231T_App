@@ -34,9 +34,9 @@ void app_main(void)
     esp_netif_init();
     esp_event_loop_create_default();
 #ifndef CONFIG_IDF_TARGET_ESP32
-    temperature_sensor_config_t temp_sensor_config = TEMPERATURE_SENSOR_CONFIG_DEFAULT(20, 50);
+    temperature_sensor_config_t temp_sensor_config = TEMPERATURE_SENSOR_CONFIG_DEFAULT(-30, 80);
     temperature_sensor_install(&temp_sensor_config, &temp_handle);
-    xTaskCreate(temp_func, "IntTemp", 384, NULL, tskIDLE_PRIORITY, NULL);
+    xTaskCreate(temp_func, "IntTemp", 512, NULL, tskIDLE_PRIORITY, NULL);
 #endif
 
     Main_Init();
