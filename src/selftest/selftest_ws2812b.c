@@ -96,6 +96,14 @@ void Test_WS2812B() {
 	for (int i = 0; i < 6; i++) {
 		SELFTEST_ASSERT_PIXEL(i, 0, 0, 0);
 	}
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+	for (int i = 0; i < 6; i++) {
+		SELFTEST_ASSERT_PIXEL(i, 255, 255, 0);
+	}
+	CMD_ExecuteCommand("led_basecolor_rgb FF00FF", 0);
+	for (int i = 0; i < 6; i++) {
+		SELFTEST_ASSERT_PIXEL(i, 255, 0, 255);
+	}
 }
 
 
