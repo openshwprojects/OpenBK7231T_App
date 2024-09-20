@@ -17,6 +17,7 @@ class PrefabManager {
 	class CShape *generateBulb();
 	class CShape *generateWB3S();
 	class CShape *generateButton();
+	class CShape *generateSwitch();
 	class CShape *generateTest();
 	class CShape *generateBL0942();
 	class CShape *generateGND();

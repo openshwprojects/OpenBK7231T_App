@@ -563,7 +563,7 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"SetChannelEnum","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 #if WINDOWS
-	CMD_RegisterCommand("SetChannelEnum", CMD_SetChannelEnum, NULL);
+	///CMD_RegisterCommand("SetChannelEnum", CMD_SetChannelEnum, NULL);
 #endif
 	//cmddetail:{"name":"SetChannelLabel","args":"[ChannelIndex][Str][bHideTogglePrefix]",
 	//cmddetail:"descr":"Sets a channel label for UI and default entity name for Home Assistant discovery. If you use 1 for bHideTogglePrefix, then the 'Toggle ' prefix from UI button will be omitted",

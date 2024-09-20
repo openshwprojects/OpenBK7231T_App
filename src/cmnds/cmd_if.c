@@ -618,8 +618,14 @@ const char *CMD_ExpandConstantString(const char *s, const char *stop, char *out,
 	ret = strCompareBound(s, "$autoexec.bat", stop, false);
 	if (ret) {
 		byte* data = LFS_ReadFile("autoexec.bat");
-		if (data == 0)
+		if (data == 0) {
+#if 1
+			strcpy_safe(out, "No autoexec.bat for this sample", outLen);
+			return ret;
+#else
 			return false;
+#endif
+		}
 		strcpy_safe(out, (char*)data, outLen);
 		free(data);
 		return ret;

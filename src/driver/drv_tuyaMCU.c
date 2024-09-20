@@ -1819,6 +1819,15 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		// added for https://www.elektroda.com/rtvforum/viewtopic.php?p=21095905#21095905
 		TuyaMCU_SendCommandWithData(0x04, 0, 0);
 		break;
+	case 0x22:
+		{
+			byte data23[1] = { 1 };
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: 0x22 replying");
+			// For example, the module returns 55 aa 00 23 00 01 01 24
+			TuyaMCU_SendCommandWithData(0x23, data23, 1);
+		}
+		break;
+
 		
 	case TUYA_CMD_STATE:
 		TuyaMCU_ParseStateMessage(data + 6, len - 6);
