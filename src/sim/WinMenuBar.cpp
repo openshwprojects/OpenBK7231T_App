@@ -33,6 +33,55 @@ char *strncat(char *s1, const char *s2, size_t n)
 
 #endif
 
+
+#include <vector>
+#include <string>
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <dirent.h>
+#include <cstring>
+#endif
+
+bool has_extension(const std::string& filename, const std::string& ext) {
+	size_t pos = filename.rfind('.');
+	return (pos != std::string::npos && filename.substr(pos) == ext);
+}
+
+std::vector<std::string> list_files_with_extension(const std::string& path, const std::string& ext) {
+	std::vector<std::string> file_list;
+
+#ifdef _WIN32
+	WIN32_FIND_DATA find_file_data;
+	HANDLE hFind = FindFirstFile((path + "\\*").c_str(), &find_file_data);
+	if (hFind == INVALID_HANDLE_VALUE) return file_list;
+
+	do {
+		const std::string file_name = find_file_data.cFileName;
+		if (!(find_file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && has_extension(file_name, ext)) {
+			file_list.push_back(file_name);
+		}
+	} while (FindNextFile(hFind, &find_file_data) != 0);
+
+	FindClose(hFind);
+#else
+	DIR *dir = opendir(path.c_str());
+	if (!dir) return file_list;
+
+	struct dirent *entry;
+	while ((entry = readdir(dir)) != NULL) {
+		std::string file_name = entry->d_name;
+		if (entry->d_type != DT_DIR && has_extension(file_name, ext)) {
+			file_list.push_back(file_name);
+		}
+	}
+	closedir(dir);
+#endif
+
+	return file_list;
+}
+
 CWinMenuBar::CWinMenuBar() {
 
 
@@ -46,6 +95,9 @@ enum {
 	ID_EXIT,
 	ID_OPEN_RECENT_FIRST,
 	ID_OPEN_RECENT_LAST = ID_OPEN_RECENT_FIRST + 100,
+	ID_OPEN_SAMPLE_FIRST,
+	ID_OPEN_SAMPLE_LAST = ID_OPEN_SAMPLE_FIRST + 100,
+	ID_OPEN_SAMPLES_NONE,
 	ID_CREATE_FIRST,
 	ID_CREATE_LAST = ID_CREATE_FIRST + 100,
 	ID_OPTIONS,
@@ -63,6 +115,7 @@ void CWinMenuBar::createWindowsMenu(HWND windowRef) {
 	hHelp = CreateMenu();
 	HMENU hRecent = CreateMenu();
 	HMENU hCreate = CreateMenu();
+	HMENU hSample = CreateMenu();
 
 	AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hFile, "File");
 	AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hEdit, "Edit");
@@ -84,6 +137,18 @@ void CWinMenuBar::createWindowsMenu(HWND windowRef) {
 		tmp.append(entr);
 		AppendMenu(hRecent, MF_STRING, ID_OPEN_RECENT_FIRST + i, tmp.c_str());
 	}
+	AppendMenu(hFile, MF_POPUP, (UINT_PTR)hSample, "Open sample");
+	samples = list_files_with_extension("examples/", ".obkproj");
+	for (int i = 0; i < samples.size(); i++) {
+		const char *entr = samples[i].c_str();
+		recents.push_back(entr);
+		CString tmp = "Open ";
+		tmp.append(entr);
+		AppendMenu(hSample, MF_STRING, ID_OPEN_SAMPLE_FIRST + i, tmp.c_str());
+	}
+	if (samples.size() == 0) {
+		AppendMenu(hSample, MF_STRING, ID_OPEN_SAMPLES_NONE, "No samples found");
+	}
 	AppendMenu(hFile, MF_STRING, ID_EXIT, "Exit");
 	prefabNames.clear();
 	AppendMenu(hEdit, MF_STRING, ID_OPTIONS, "Options");
@@ -97,9 +162,8 @@ void CWinMenuBar::createWindowsMenu(HWND windowRef) {
 		AppendMenu(hCreate, MF_STRING, ID_CREATE_FIRST + i, tmp.c_str());
 	}
 
-	AppendMenu(hFile, MF_STRING, ID_NEW, "New (empty)");
 
-	AppendMenu(hLittleFS, MF_STRING, ID_LITTLEFS_SETAUTOEXEC, "Set autoexec.bat");
+	AppendMenu(hLittleFS, MF_STRING, ID_LITTLEFS_SETAUTOEXEC, "Upload autoexec.bat...");
 	AppendMenu(hLittleFS, MF_STRING, ID_LITTLEFS_FORMAT, "Format FileSystem");
 
 	AppendMenu(hHelp, MF_STRING, ID_HELP_ABOUT, "About (open link)");
@@ -191,6 +255,14 @@ void CWinMenuBar::processEvent(const SDL_Event &Event) {
 				int recentID = id - ID_OPEN_RECENT_FIRST;
 				const char *recentStr = recents[recentID].c_str();
 				sim->loadSimulation(recentStr);
+			}
+			else if (id >= ID_OPEN_SAMPLE_FIRST && id <= ID_OPEN_SAMPLE_LAST)
+			{
+				int sampleID = id - ID_OPEN_SAMPLE_FIRST;
+				const char *sampleStr = samples[sampleID].c_str();
+				std::string full = "examples/";
+				full.append(sampleStr);
+				sim->loadSimulation(full.c_str());
 			}
 			else if (id >= ID_CREATE_FIRST && id <= ID_CREATE_LAST)
 			{
