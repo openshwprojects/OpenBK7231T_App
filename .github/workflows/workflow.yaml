@@ -86,6 +86,11 @@ jobs:
         cp ./run_*.bat flat/
         mkdir -p flat/examples
         cp -r ./obkSimulator/examples/* flat/examples/
+    - name: Run unit tests
+      run: |
+        ./flat/openBeken_win32.exe -runUnitTests 1
+      continue-on-error: true
+      id: run_tests
     - name: Compress build assets
       run: |
         Compress-Archive -Path flat/* -DestinationPath obkSimulator_win32_${{ needs.refs.outputs.version }}.zip
