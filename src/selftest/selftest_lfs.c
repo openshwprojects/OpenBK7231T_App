@@ -130,6 +130,16 @@ void Test_LFS() {
 	CMD_ExecuteCommand("lfs_appendInt numbers.txt 15+16", 0);
 	Test_FakeHTTPClientPacket_GET("api/lfs/numbers.txt");
 	SELFTEST_ASSERT_HTML_REPLY("value is 2023, and 31");
+
+	CMD_ExecuteCommand("lfs_format", 0);
+	Test_FakeHTTPClientPacket_GET("api/lfs/numbers.txt");
+	SELFTEST_ASSERT_HTML_REPLY("{\"fname\":\"numbers.txt\",\"error\":-2}");
+	CMD_ExecuteCommand("lfs_remove numbers.txt", 0);
+	CMD_ExecuteCommand("lfs_remove numbers.txt", 0);
+	CMD_ExecuteCommand("lfs_remove numbers.txt", 0);
+	CMD_ExecuteCommand("lfs_appendInt numbers.txt 100+23", 0);
+	Test_FakeHTTPClientPacket_GET("api/lfs/numbers.txt");
+	SELFTEST_ASSERT_HTML_REPLY("123");
 }
 
 #endif
