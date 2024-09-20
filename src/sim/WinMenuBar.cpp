@@ -7,6 +7,10 @@
 #include "PrefabManager.h"
 #include <nfd.h>
 
+// removeme
+#include <Windows.h>
+#include <shellapi.h>
+
 #if DEBUG
 #pragma comment (lib, "nfd_d.lib")
 #else
@@ -47,6 +51,7 @@ enum {
 	ID_OPTIONS,
 	ID_LITTLEFS_FORMAT,
 	ID_LITTLEFS_SETAUTOEXEC,
+	ID_HELP_ABOUT,
 	ID_ABOUT,
 };
 void CWinMenuBar::createWindowsMenu(HWND windowRef) {
@@ -63,7 +68,7 @@ void CWinMenuBar::createWindowsMenu(HWND windowRef) {
 	AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hEdit, "Edit");
 	AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hLittleFS, "LittleFS");
 	AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hHelp, "Help");
-
+	
 	AppendMenu(hFile, MF_STRING, ID_NEW, "New (empty)");
 	AppendMenu(hFile, MF_STRING, ID_NEW_DEMO, "New (built-in demo)");
 	AppendMenu(hFile, MF_STRING, ID_LOAD, "Load...");
@@ -97,6 +102,7 @@ void CWinMenuBar::createWindowsMenu(HWND windowRef) {
 	AppendMenu(hLittleFS, MF_STRING, ID_LITTLEFS_SETAUTOEXEC, "Set autoexec.bat");
 	AppendMenu(hLittleFS, MF_STRING, ID_LITTLEFS_FORMAT, "Format FileSystem");
 
+	AppendMenu(hHelp, MF_STRING, ID_HELP_ABOUT, "About (open link)");
 
 	SetMenu(windowRef, hMenuBar);
 
@@ -154,6 +160,11 @@ void CWinMenuBar::processEvent(const SDL_Event &Event) {
 				if (result == NFD_OKAY) {
 					sim->loadSimulation(outPath);
 				}
+			}
+			else if (id == ID_HELP_ABOUT)
+			{
+				ShellExecute(0, 0, "https://www.elektroda.com/rtvforum/topic4046056.html",
+					0, 0, SW_SHOW);
 			}
 			else if (id == ID_LITTLEFS_SETAUTOEXEC)
 			{
