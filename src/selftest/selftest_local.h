@@ -1,3 +1,6 @@
+#ifndef __SELFTEST_LOCAL_H__
+#define __SELFTEST_LOCAL_H__
+
 #ifdef WINDOWS
 
 #include "../new_common.h"
@@ -181,4 +184,6 @@ bool SIM_UART_ExpectAndConsumeHByte(byte b);
 bool SIM_UART_ExpectAndConsumeHexStr(const char *hexString);
 void SIM_ClearUART();
 
+
 #endif
+#endif // __SELFTEST_LOCAL_H__

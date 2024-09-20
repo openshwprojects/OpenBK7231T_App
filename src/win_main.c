@@ -222,9 +222,12 @@ int rtos_get_time() {
 int g_bDoingUnitTestsNow = 0;
 
 #include "sim/sim_public.h"
+
+int SelfTest_GetNumErrors();
+extern int g_selfTestsMode;
+
 int __cdecl main(int argc, char **argv)
 {
-	bool bWantsUnitTests = 0;
 
 	// clear debug data
 	if (1) {
@@ -263,7 +266,8 @@ int __cdecl main(int argc, char **argv)
 					i++;
 
 					if (i < argc && sscanf(argv[i], "%d", &value) == 1) {
-						bWantsUnitTests = value != 0;
+						// 0 = don't run, 1 = run with system pause, 2 - run without system pause
+						g_selfTestsMode = value;
 					}
 				}
 			}
@@ -401,7 +405,7 @@ int __cdecl main(int argc, char **argv)
 	// Test expansion
 	//CMD_UART_Send_Hex(0,0,"FFAA$CH1$BB",0);
 
-	if (bWantsUnitTests) {
+	if (g_selfTestsMode) {
 		g_bDoingUnitTestsNow = 1;
 		SIM_ClearOBK(0);
 		// let things warm up a little
@@ -410,6 +414,9 @@ int __cdecl main(int argc, char **argv)
 		Win_DoUnitTests();
 		Sim_RunFrames(50, false);
 		g_bDoingUnitTestsNow = 0;
+		if (g_selfTestsMode > 1) {
+			return SelfTest_GetNumErrors();
+		}
 	}
 
 
