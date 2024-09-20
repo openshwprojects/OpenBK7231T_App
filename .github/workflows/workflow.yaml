@@ -85,7 +85,7 @@ jobs:
         cp ./obkSimulator/simulator/*.dll flat/
         cp ./run_*.bat flat/
         mkdir -p flat/examples
-        cp ./obkSimulator/examples/* flat/examples/
+        cp -r ./obkSimulator/examples/* flat/examples/
     - name: Compress build assets
       run: |
         Compress-Archive -Path flat/* -DestinationPath obkSimulator_win32_${{ needs.refs.outputs.version }}.zip
