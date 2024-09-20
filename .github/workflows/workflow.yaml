@@ -83,6 +83,7 @@ jobs:
         mkdir -p flat
         cp ./Release/openBeken_win32.exe flat/
         cp ./obkSimulator/simulator/*.dll flat/
+        cp ./run_*.bat flat/
         mkdir -p flat/examples
         cp ./obkSimulator/examples/* flat/examples/
     - name: Compress build assets
