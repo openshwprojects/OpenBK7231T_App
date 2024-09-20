@@ -91,6 +91,12 @@ jobs:
         ./flat/openBeken_win32.exe -runUnitTests 2
       continue-on-error: true
       id: run_tests
+    - name: Check test results
+      run: |
+        if [ ${{ steps.run_tests.outcome == 'failure' }} ]; then
+          echo "Failed ${{ steps.run_tests.exit_code }} of tests"
+          exit 1
+        fi
     - name: Compress build assets
       run: |
         Compress-Archive -Path flat/* -DestinationPath obkSimulator_win32_${{ needs.refs.outputs.version }}.zip
