@@ -93,7 +93,7 @@ jobs:
     - name: Upload build assets
       uses: actions/upload-artifact@v3
       with:
-        name: output/${{ needs.refs.outputs.version }}/obkSimulator_${{ needs.refs.outputs.version }}
+        name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
         path: output/${{ needs.refs.outputs.version }}/obkSimulator_${{ needs.refs.outputs.version }}.zip
   build:
     name: Build
