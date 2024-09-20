@@ -239,7 +239,7 @@ void Test_Commands_Channels() {
 	}
 
 	// cause error
-	SELFTEST_ASSERT_CHANNEL(3, 666);
+	//SELFTEST_ASSERT_CHANNEL(3, 666);
 }
 
 
