@@ -88,7 +88,7 @@ jobs:
         cp -r ./obkSimulator/examples/* flat/examples/
     - name: Run unit tests
       run: |
-        ./flat/openBeken_win32.exe -runUnitTests 1
+        ./flat/openBeken_win32.exe -runUnitTests 2
       continue-on-error: true
       id: run_tests
     - name: Compress build assets
