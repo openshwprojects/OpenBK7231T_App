@@ -90,7 +90,7 @@ jobs:
       run: |
         mkdir -Force output/${{ needs.refs.outputs.version }}
         cp obkSimulator_win32_${{ needs.refs.outputs.version }}.zip output/${{ needs.refs.outputs.version }}/obkSimulator_${{ needs.refs.outputs.version }}.zip
-	- name: Upload build assets
+    - name: Upload build assets
       uses: actions/upload-artifact@v3
       with:
         name: output/${{ needs.refs.outputs.version }}/obkSimulator_${{ needs.refs.outputs.version }}
