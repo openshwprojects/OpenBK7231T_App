@@ -15,6 +15,20 @@ int compareRoleNames(const void* a, const void* b) {
 }
 
 void sortPinRoleNames() {
+    qsort(htmlPinRoleNames, IOR_Total_Options, sizeof(const char*), compareRoleNames);
+}
+
+#include <stdlib.h> // Include for qsort
+
+// Sorting functions for pin role names
+int compareRoleNames(const void* a, const void* b) {
+    const char* roleA = *(const char**)a;
+    const char* roleB = *(const char**)b;
+    return strcmp(roleA, roleB);
+}
+
+void sortPinRoleNames() {
+    qsort(htmlPinRoleNames, IOR_Total_Options, sizeof(const char*), compareRoleNames);
 }
 #include "../cmnds/cmd_public.h"
 #include "../driver/drv_tuyaMCU.h"
