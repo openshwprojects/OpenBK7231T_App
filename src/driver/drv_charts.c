@@ -624,27 +624,27 @@ void DRV_Charts_Init() {
 
 
 	//cmddetail:{"name":"chart_setAxis","args":"",
-	//cmddetail:"descr":"See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+	//cmddetail:"descr":"Sets up an axis with a name, flags, and label. Currently flags can be 0 (left axis) or 1 (right axis). See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_charts.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("chart_setAxis", CMD_Chart_SetAxis, NULL);
 	//cmddetail:{"name":"chart_setVar","args":"",
-	//cmddetail:"descr":" See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+	//cmddetail:"descr":"Associates a variable with a specific axis. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_charts.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("chart_setVar", CMD_Chart_SetVar, NULL);
 	//cmddetail:{"name":"chart_create","args":"",
-	//cmddetail:"descr":"See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+	//cmddetail:"descr":"Creates a chart with a specified number of samples, variables, and axes. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_charts.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("chart_create", CMD_Chart_Create, NULL);
 	//cmddetail:{"name":"chart_addNow","args":"",
-	//cmddetail:"descr":"See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+	//cmddetail:"descr":"Adds data to the chart using the current NTP time. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_charts.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("chart_addNow", CMD_Chart_AddNow, NULL);
 	//cmddetail:{"name":"chart_add","args":"",
-	//cmddetail:"descr":"See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+	//cmddetail:"descr":"Adds data to the chart with specified variables at a specific NTP time. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_charts.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("chart_add", CMD_Chart_Add, NULL);
