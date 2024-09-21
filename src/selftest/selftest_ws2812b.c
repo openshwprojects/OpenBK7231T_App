@@ -104,6 +104,10 @@ void Test_WS2812B() {
 	for (int i = 0; i < 6; i++) {
 		SELFTEST_ASSERT_PIXEL(i, 255, 0, 255);
 	}
+	CMD_ExecuteCommand("led_dimmer 50", 0);
+	for (int i = 0; i < 6; i++) {
+		SELFTEST_ASSERT_PIXEL(i, 55, 0, 55);
+	}
 }
 
 
