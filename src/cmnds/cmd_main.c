@@ -26,6 +26,9 @@ int cmd_uartInitIndex = 0;
 #include "esp_pm.h"
 #include "esp_sleep.h"
 #include "driver/rtc_io.h"
+#include "driver/gpio.h"
+#include "driver/ledc.h"
+#include "esp_check.h"
 #endif
 
 #define HASH_SIZE 128
@@ -671,6 +674,20 @@ commandResult_t CMD_PWMFrequency(const void* context, const char* cmd, const cha
 	}
 	
 	g_pwmFrequency = Tokenizer_GetArgInteger(0);
+
+#ifdef PLATFORM_ESPIDF
+	esp_err_t err = ledc_set_freq(LEDC_LOW_SPEED_MODE, LEDC_TIMER_0, (uint32_t)g_pwmFrequency);
+	if(err == ESP_ERR_INVALID_ARG)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "ledc_set_freq: invalid arg");
+		return CMD_RES_BAD_ARGUMENT;
+	}
+	else if(err == ESP_FAIL)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "ledc_set_freq: Can not find a proper pre-divider number base on the given frequency and the current duty_resolution");
+		return CMD_RES_ERROR;
+	}
+#endif
 	return CMD_RES_OK;
 }
 commandResult_t CMD_IndexRefreshInterval(const void* context, const char* cmd, const char* args, int cmdFlags) {

@@ -13,6 +13,12 @@ float g_wifi_temperature = 0;
 
 #include "driver/temperature_sensor.h"
 
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+#define TEMP_STACK_SIZE 1024
+#else
+#define TEMP_STACK_SIZE 384
+#endif
+
 temperature_sensor_handle_t temp_handle = NULL;
 
 void temp_func(void* pvParameters)
@@ -36,7 +42,7 @@ void app_main(void)
 #ifndef CONFIG_IDF_TARGET_ESP32
     temperature_sensor_config_t temp_sensor_config = TEMPERATURE_SENSOR_CONFIG_DEFAULT(-10, 80);
     temperature_sensor_install(&temp_sensor_config, &temp_handle);
-    xTaskCreate(temp_func, "IntTemp", 512, NULL, tskIDLE_PRIORITY, NULL);
+    xTaskCreate(temp_func, "IntTemp", TEMP_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL);
 #endif
 
     Main_Init();
