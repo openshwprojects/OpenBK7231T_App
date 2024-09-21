@@ -103,24 +103,47 @@ int DRV_SSDP_Active = 0;
 // #define SAVETEMPRATE 30
 //
 // definitions in new_common.h
+#include "ringbuff32.h"
 
-uint8_t g_temperatures[SAVEMAX]={255};
-static int next=0;
-bool temp_rb_overflow=0;
+RB32_t* g_temperature_rb=NULL;	// will be initialized in Main_after_Delay ... 
 uint8_t savetemperature(uint8_t t){
-	g_temperatures[next++] = t;
-	if (next > SAVEMAX-1) { 
-		temp_rb_overflow=1; 
-		next = 0;
-	}
-	return next;
+	RB_saveVal(g_temperature_rb, t);
 }
-int gettempnext(){
-	return next;
+
+
+// some helper functions 
+
+// round a float to next 0.5 value:
+//  5.24 -->  5.0
+//  5.25 -->  5.5
+//  5.76 -->  6.0
+// same for negative values
+// -5.24 --> -5.0
+// -5.26 --> -5.5
+// -5.76 --> -6.0
+float round_to_5(float t) {
+	int temp = t < 0 ? 2*t -0.5 : 2*t + 0.5;
+	return (float)temp/2;
 }
-bool did_temp_rb_overflow(){
-	return temp_rb_overflow;
-};
+
+
+// store Temperature values (floats) between -15.0° and +110°
+// in 0.5 steps as (uint8_t) integers
+// no check if temp is below lowest value yet
+// but this is prepared:
+// -15° ist stored as 1
+// so value 0 shuld be "below scale"
+// same for max value of 110° (stored at 251):
+// we can use 255 as "above scale"
+uint8_t floatTemp2int(float val){
+	return (uint8_t)(2*round_to_5(val)+31);
+}
+
+// reverse: return float from our temperature representation
+float intTemp2float(uint8_t val){
+	return (float)val/2-15.5;
+}
+
 #endif
 
 #define LOG_FEATURE LOG_FEATURE_MAIN
@@ -667,15 +690,12 @@ void Main_OnEverySecond()
 	}
 
 #if SAVETEMPS
-float round_to_5(float t) {
-	int temp = t < 0 ? 2*t -0.5 : 2*t + 0.5;
-	return (float)temp/2;
-}
+
 
 //if (!(g_secondsElapsed % SAVETEMPRATE)) {
 if (!(g_secondsElapsed % 5)) {
 	ADDLOGF_INFO("[saveTepm] g_wifi_temperature=%.2f  -- rouded: %.2f -- saving as %i\n", g_wifi_temperature,round_to_5(g_wifi_temperature),(uint8_t)(2*round_to_5(g_wifi_temperature)+31));
-	savetemperature((uint8_t)(2*round_to_5(g_wifi_temperature)+31));
+	savetemperature(floatTemp2int(g_wifi_temperature));
 }
 #endif
 
@@ -1379,7 +1399,9 @@ void Main_Init_After_Delay()
 
 		Main_Init_AfterDelay_Unsafe(true);
 	}
-
+#if SAVETEMPS
+	g_temperature_rb = RBinit(SAVEMAX); 
+#endif
 	ADDLOGF_INFO("Main_Init_After_Delay done");
 }
 

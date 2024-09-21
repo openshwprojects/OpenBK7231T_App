@@ -54,6 +54,21 @@ int tuya_os_adapt_wifi_release_ap(AP_IF_S* ap);
 #endif
 
 
+#if SAVETEMPS
+#include "../ringbuff32.h"
+
+extern float intTemp2float(uint8_t val);	// in user_main.c
+extern RB32_t* g_temperature_rb;
+
+// callback function to "print" content to http request ...
+void RB_CB_DataAsFloatTemp(RBTYPE val, void *buff, char *concatstr) {
+	http_request_t *request = (http_request_t *)buff;
+	hprintf255(request,"%.2f%s", intTemp2float(val),concatstr);
+}
+
+
+#endif
+
 const char* g_typesOffLowMidHigh[] = { "Off","Low","Mid","High" };
 const char* g_typesOffLowMidHighHighest[] = { "Off", "Low","Mid","High","Highest" };
 const char* g_typesOffLowestLowMidHighHighest[] = { "Off", "Lowest", "Low", "Mid", "High", "Highest" };
@@ -914,26 +929,14 @@ typedef enum {
 	}
 
 #if SAVETEMPS
-extern uint8_t g_temperatures[SAVEMAX];
-int gettempnext();
-bool did_temp_rb_overflow();
 
+extern RB32_t* g_temperature_rb;
+const char delim[]=",";
 
 hprintf255(request, "\n<input type='hidden' id='graphdata' value='");
-if (did_temp_rb_overflow()) { 
-	int c=gettempnext();
-	for (int i=0; i<SAVEMAX-1;i++) {
-		hprintf255(request, "%.2f,",(float)g_temperatures[c++]/2-15.5);
-		c = c%SAVEMAX;
-	}
-	hprintf255(request, "%.2f",(float)g_temperatures[c]/2-15.5);
-}
-else {
-	for (int i=0; i<gettempnext()-2;i++) {
-		hprintf255(request, "%.2f,",(float)g_temperatures[i]/2-15.5);
-	}
-	hprintf255(request, "%.2f",(float)g_temperatures[gettempnext()-1]/2-15.5);
-}
+
+iterateRBtoBuff(g_temperature_rb, RB_CB_DataAsFloatTemp, request,",\0");
+
 hprintf255(request, "'>\n<p>Scale graph <input type='range' min='0.5' max='3' step='0.1' value='.8' onchange='scalegraph(this.value)'>");
 #endif
 
@@ -941,8 +944,8 @@ hprintf255(request, "'>\n<p>Scale graph <input type='range' min='0.5' max='3' st
 	if (!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
 		poststr(request, "</div>"); // end div#state
 #if SAVETEMPS
-hprintf255(request, "<p><svg xmlns='http://www.w3.org/2000/svg' id='mygraph' width='1000' heigth='500' viewBox='-75 -75 1100 650' style='background: white'></svg>");
-hprintf255(request, "<script>function updategraph(){draw(document.getElementById(\"mygraph\"),document.getElementById(\"graphdata\").value.split(/\s*,\s*/).map(i => !isNaN(parseInt(i)) ? parseInt(i) : i))};scalegraph(0.8);</script>");
+hprintf255(request, "<p><svg xmlns='http://www.w3.org/2000/svg' id='mygraph' width='800' heigth='400' viewBox='-75 -75 1100 650' style='background: white'></svg>");
+hprintf255(request, "<script>function updategraph(){draw(document.getElementById(\"mygraph\"),document.getElementById(\"graphdata\").value.split(/\s*,\s*/).map(Number))};;</script>");
 #endif
 
 		// Shared UI elements 
