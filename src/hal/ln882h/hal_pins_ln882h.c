@@ -131,27 +131,18 @@ uint32_t get_adv_timer_base(uint8_t ch)
 {
 	switch(ch)
 	{
-	case 0:
-	case 1: return ADV_TIMER_0_BASE;
-	case 2:
-	case 3: return ADV_TIMER_1_BASE;
-	case 4:
-	case 5: return ADV_TIMER_2_BASE;
-	case 6:
-	case 7: return ADV_TIMER_3_BASE;
-	case 8:
-	case 9: return ADV_TIMER_4_BASE;
-	case 10:
-	case 11: return ADV_TIMER_5_BASE;
+	case 0: return ADV_TIMER_0_BASE;
+	case 1: return ADV_TIMER_1_BASE;
+	case 2: return ADV_TIMER_2_BASE;
+	case 3: return ADV_TIMER_3_BASE;
+	case 4: return ADV_TIMER_4_BASE;
+	case 5: return ADV_TIMER_5_BASE;
 	}
 }
 
-void pwm_init(uint32_t freq, float duty, uint8_t pwm_channel_num, uint32_t gpio_reg_base, gpio_pin_t gpio_pin)
+void pwm_init(uint32_t freq, uint8_t pwm_channel_num, uint32_t gpio_reg_base, gpio_pin_t gpio_pin)
 {
 	uint32_t reg_base = get_adv_timer_base(pwm_channel_num);
-
-	hal_gpio_pin_afio_select(gpio_reg_base, gpio_pin, (afio_function_t)(ADV_TIMER_PWM0 + pwm_channel_num));
-	hal_gpio_pin_afio_en(gpio_reg_base, gpio_pin, HAL_ENABLE);
 
 	adv_tim_init_t_def adv_tim_init;
 	memset(&adv_tim_init, 0, sizeof(adv_tim_init));
@@ -167,42 +158,38 @@ void pwm_init(uint32_t freq, float duty, uint8_t pwm_channel_num, uint32_t gpio_
 		adv_tim_init.adv_tim_load_value = 1000000 / freq - 2;
 	}
 
-	if((pwm_channel_num & 0x01) == 0)
-		adv_tim_init.adv_tim_cmp_a_value = (adv_tim_init.adv_tim_load_value + 2) * duty / 100.0f;
-	else
-		adv_tim_init.adv_tim_cmp_b_value = (adv_tim_init.adv_tim_load_value + 2) * duty / 100.0f;
-
+	adv_tim_init.adv_tim_cmp_a_value = 0;
 	adv_tim_init.adv_tim_dead_gap_value = 0;
 	adv_tim_init.adv_tim_dead_en = ADV_TIMER_DEAD_DIS;
 	adv_tim_init.adv_tim_cnt_mode = ADV_TIMER_CNT_MODE_INC;
 	adv_tim_init.adv_tim_cha_inv_en = ADV_TIMER_CHA_INV_EN;
-	adv_tim_init.adv_tim_chb_inv_en = ADV_TIMER_CHB_INV_EN;
 
 	hal_adv_tim_init(reg_base, &adv_tim_init);
+
+	hal_gpio_pin_afio_select(gpio_reg_base, gpio_pin, (afio_function_t)(ADV_TIMER_PWM0 + pwm_channel_num * 2));
+	hal_gpio_pin_afio_en(gpio_reg_base, gpio_pin, HAL_ENABLE);
+
 }
 
 void pwm_start(uint8_t pwm_channel_num)
 {
 	uint32_t reg_base = get_adv_timer_base(pwm_channel_num);
-	if((pwm_channel_num & 0x01) == 0)
-		hal_adv_tim_a_en(reg_base, HAL_ENABLE);
-	else
-		hal_adv_tim_b_en(reg_base, HAL_ENABLE);
+	hal_adv_tim_a_en(reg_base, HAL_ENABLE);
 }
 
 void pwm_set_duty(float duty, uint8_t pwm_channel_num)
 {
 	uint32_t reg_base = get_adv_timer_base(pwm_channel_num);
-	if((pwm_channel_num & 0x01) == 0)
-		hal_adv_tim_set_comp_a(reg_base, (hal_adv_tim_get_load_value(reg_base) + 2) * duty / 100.0f);
-	else
-		hal_adv_tim_set_comp_b(reg_base, (hal_adv_tim_get_load_value(reg_base) + 2) * duty / 100.0f);
+	hal_adv_tim_set_comp_a(reg_base, (hal_adv_tim_get_load_value(reg_base) + 2) * duty / 100.0f);
 }
 
 void HAL_PIN_PWM_Stop(int index) {
 	if(index >= g_numPins)
 		return;
 	lnPinMapping_t* pin = g_pins + index;
+	if(pin->pwm_cha < 0) return;
+	uint32_t reg_base = get_adv_timer_base(pin->pwm_cha);
+	hal_adv_tim_a_en(reg_base, HAL_DISABLE);
 	hal_gpio_pin_afio_en(pin->base, pin->pin, HAL_DISABLE);
 	g_active_pwm &= ~(1 << pin->pwm_cha);
 	uint8_t chan = pin->pwm_cha;
@@ -215,12 +202,12 @@ void HAL_PIN_PWM_Start(int index)
 	if(index >= g_numPins)
 		return;
 	uint8_t freecha;
-	for(freecha = 0; freecha < 11; freecha++) if((g_active_pwm >> freecha & 1) == 0) break;
+	for(freecha = 0; freecha < 5; freecha++) if((g_active_pwm >> freecha & 1) == 0) break;
 	lnPinMapping_t* pin = g_pins + index;
 	g_active_pwm |= 1 << freecha;
 	pin->pwm_cha = freecha;
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "PWM_Start: ch_pwm: %u", freecha);
-	pwm_init(10000, 0, freecha, pin->base, pin->pin);
+	pwm_init(10000, freecha, pin->base, pin->pin);
 	pwm_start(freecha);
 }
 

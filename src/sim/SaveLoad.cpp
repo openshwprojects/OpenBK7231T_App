@@ -37,6 +37,7 @@ class CProject *CSaveLoad::loadProjectFile(const char *fname) {
 			printf("Warning: missing 'lastModified' node in %s\n", fname);
 		}
 	}
+	free(jsonData);
 	return p;
 }
 void CSaveLoad::saveProjectToFile(class CProject *projToSave, const char *fname) {
@@ -104,6 +105,7 @@ class CSimulation *CSaveLoad::loadSimulationFromFile(const char *fname) {
 	}
 	s->matchAllJunctions();
 	s->recalcBounds();
+	free(jsonData);
 	return s;
 }
 void CSaveLoad::saveSimulationToFile(class CSimulation *simToSave, const char *fname) {

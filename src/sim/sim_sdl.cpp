@@ -88,18 +88,6 @@ Coord roundToGrid(Coord c) {
 	return Coord(roundToGrid(c.getX()), roundToGrid(c.getY()));
 }
 
-Coord GetMousePos() {
-	Coord r;
-	int mx, my;
-	//SDL_GetGlobalMouseState(&mx, &my);
-	SDL_GetMouseState(&mx, &my);
-	// No longer needed after resize event was introduced
-	// BUGFIX FOR MENUBAR OFFSET
-	//my += WINDOWS_MOUSE_MENUBAR_OFFSET;
-	r.set(mx, my);
-	return r;
-}
-
 
 
 float CEdge::drawInformation2D(float x, float h) {

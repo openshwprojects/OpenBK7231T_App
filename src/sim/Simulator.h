@@ -58,6 +58,10 @@ public:
 	bool saveSimulation();
 	void saveOrShowSaveAsDialogIfNeeded();
 
+	// LFS
+	bool setAutoexecBat(const char *s);
+	void formatLFS();
+
 	void markAsModified() {
 		bSchematicModified = true;
 	}

@@ -19,7 +19,7 @@ void Tool_Info::drawTool() {
 	else {
 		sim->getCursorMgr()->setCursor(SDL_SYSTEM_CURSOR_ARROW);
 	}
-	Coord pos = GetMousePos();
+	Coord pos = GetMousePosWorld();
 	int h = pos.getY();
 	if (currentTarget) {
 		h = currentTarget->drawInformation2D(pos.getX(), h);

@@ -28,6 +28,7 @@ typedef uint32_t u32;
 enum {
 	EVE_NONE,
 	EVE_LMB_HOLD,
+	EVE_LMB_DOWN,
 };
 
 #define WINDOWS_MOUSE_MENUBAR_OFFSET 20
@@ -35,7 +36,7 @@ enum {
 int drawText(class CStyle *style, int x, int y, const char* fmt, ...);
 #include "Coord.h"
 Coord roundToGrid(Coord c);
-Coord GetMousePos();
+Coord GetMousePosWorld();
 void FS_CreateDirectoriesForPath(const char *file_path);
 char *FS_ReadTextFile(const char *fname);
 bool FS_WriteTextFile(const char *data, const char *fname);

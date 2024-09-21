@@ -4,6 +4,7 @@
 #include "Wire.h"
 #include "Text.h"
 #include "Controller_Button.h"
+#include "Controller_Switch.h"
 #include "Controller_Bulb.h"
 #include "Controller_SimulatorLink.h"
 #include "Controller_BL0942.h"
@@ -51,6 +52,25 @@ class CShape *PrefabManager::generateButton() {
 #endif
 	mover->setName("button_mover");
 	CControllerButton *btn = new CControllerButton(a, b);
+	btn->setMover(mover);
+	o->setController(btn);
+	o->translateEachChild(0, 10);
+	return o;
+}
+class CShape *PrefabManager::generateSwitch() {
+	CShape *o = new CShape();
+	o->setName("Switch");
+	CJunction *a = o->addJunction(-40, -10, "pad_a");
+	CJunction *b = o->addJunction(40, -10, "pad_b");
+	a->setName("pad_a");
+	b->setName("pad_b");
+	o->addLine(40, -10, 20, -10);
+	o->addLine(-40, -10, -20, -10);
+
+	CShape *mover = o->addLine(20, -10, -20, 10);
+
+	mover->setName("switch_mover");
+	CControllerSwitch *btn = new CControllerSwitch(a, b);
 	btn->setMover(mover);
 	o->setController(btn);
 	o->translateEachChild(0, 10);
@@ -483,6 +503,7 @@ void PrefabManager::createDefaultPrefabs() {
 	addPrefab(generateBulb());
 	addPrefab(generateWB3S());
 	addPrefab(generateButton());
+	addPrefab(generateSwitch());
 	addPrefab(generateTest());
 	addPrefab(generateGND());
 	addPrefab(generateVDD());
