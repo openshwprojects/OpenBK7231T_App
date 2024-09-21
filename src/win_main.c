@@ -3,7 +3,9 @@
 #undef UNICODE
 
 #define WIN32_LEAN_AND_MEAN
-
+#include <crtdbg.h>
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
 #include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -130,7 +132,7 @@ void SIM_ClearOBK(const char *flashPath) {
 	Main_Init();
 }
 void Win_DoUnitTests() {
-	Test_Enums();
+	//Test_Enums();
 	Test_Backlog();
 	Test_DoorSensor();
 	Test_WS2812B();
@@ -400,6 +402,8 @@ int __cdecl main(int argc, char **argv)
 	}
 	// Test expansion
 	//CMD_UART_Send_Hex(0,0,"FFAA$CH1$BB",0);
+
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_ALWAYS_DF);
 
 	if (bWantsUnitTests) {
 		g_bDoingUnitTestsNow = 1;

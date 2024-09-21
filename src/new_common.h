@@ -8,6 +8,12 @@
 #include <time.h>
 #include <stdarg.h>
 
+#if WINDOWS
+#include <crtdbg.h>
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#endif
+
 #include "obk_config.h"
 
 typedef int OBK_Publish_Result;
