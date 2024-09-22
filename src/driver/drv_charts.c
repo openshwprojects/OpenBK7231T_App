@@ -501,9 +501,16 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 		}
 	}
 
+/*
+	// on every "state" request, JS code will be loaded and canvas is redrawn
+	// this leads to a flickering graph
+	// so put this right below the "state" div
+	// with a "#ifdef 
+	// drawback : We need to take care, if driver is loaded and canvas will be displayed only on a reload of the page
+	// or we might try and hide/unhide it ...
 	poststr(request, "<canvas id=\"myChart\" width=\"400\" height=\"200\"></canvas>");
 	poststr(request, "<script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>");
-
+*/
 	poststr(request, "<input type='hidden' id='labels' value='");
 	request->userCounter = 0;
 //	Chart_Iterate(s, 0, Chart_DisplayLabel, request);
@@ -531,7 +538,9 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 	poststr(request, "if (window.myChartInstance) {");
 	poststr(request, "    window.myChartInstance.destroy();");
 	poststr(request, "}");
-	poststr(request, "var ctx = document.getElementById('myChart').getContext('2d');");
+	poststr(request, "var ctx = document.getElementById('myChart');");
+	poststr(request, "if (ctx.style.display=='none') ctx.style.display='block';");
+	poststr(request, "ctx =ctx.getContext('2d');");
 
 /*
 	poststr(request, "var labels = [");
