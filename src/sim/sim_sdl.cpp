@@ -172,16 +172,16 @@ bool FS_WriteTextFile(const char *data, const char *fname) {
 	fclose(f);
 	return false;
 }
-CSimulator *sim;
+CSimulator *g_sim;
 extern "C" int SIM_CreateWindow(int argc, char **argv)
 {
 	glutInit(&argc, argv);
-	sim = new CSimulator();
-	sim->createWindow();
-	sim->loadRecentProject();
+	g_sim = new CSimulator();
+	g_sim->createWindow();
+	g_sim->loadRecentProject();
 	return 0;
 }
 extern "C" void SIM_RunWindow() {
-	sim->drawWindow();
+	g_sim->drawWindow();
 }
 #endif

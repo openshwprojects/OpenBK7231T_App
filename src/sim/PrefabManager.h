@@ -24,6 +24,7 @@ class PrefabManager {
 	class CShape *generateVDD();
 	class CShape *generatePot();
 	class CShape *generateWS2812B();
+	class CShape *generateDHT11();
 public:
 	PrefabManager(CSimulator *ps) {
 		sim = ps;

@@ -45,6 +45,7 @@ bool FS_Exists(const char *fname);
 extern int WinWidth;
 extern int WinHeight;
 extern int gridSize;
+extern class CSimulator *g_sim;
 
 extern "C" {
 	void CMD_ExpandConstantsWithinString(const char *in, char *out, int outLen);

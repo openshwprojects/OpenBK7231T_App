@@ -21,6 +21,16 @@ class CSimulation {
 	void registerJunctions(class CShape *s);
 	class CShape *findDeepText_r(const class Coord &p, class CShape *cur);
 public:
+	template <typename T>
+	T *findFirstControllerOfType() {
+		for (int i = 0; i < objects.size(); i++) {
+			CControllerBase *c = objects[i]->getController();
+			T *r = dynamic_cast<T*>(c);
+			if (r)
+				return r;
+		}
+		return 0;
+	}
 	void setSimulator(class CSimulator *ssim) {
 		this->sim = ssim;
 	}
