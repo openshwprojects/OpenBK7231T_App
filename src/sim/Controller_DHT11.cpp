@@ -1,8 +1,11 @@
 #ifdef WINDOWS
 #include "Simulator.h"
 #include "Simulation.h"
+#include "Junction.h"
+#include "Solver.h"
 #include "sim_local.h"
 #include "Controller_DHT11.h"
+#include "Controller_SimulatorLink.h"
 #include "Shape.h"
 #include "Junction.h"
 #include "Text.h"
@@ -17,12 +20,21 @@ extern "C" bool SIM_ReadDHT11(int pin, byte *data) {
 	data[1] = 0;
 	if (s == 0)
 		return true;
-	CControllerDHT11 *dht = s->findFirstControllerOfType<CControllerDHT11>();
-	if (dht == 0)
-		return true;
-	data[2] = dht->getTemperature();
-	data[0] = dht->getHumidity();
-
+	TArray<CControllerDHT11 *> dhts = s->findControllersOfType<CControllerDHT11>();
+	for (int d = 0; d < dhts.size(); d++) {
+		CControllerDHT11 *dht = dhts[d];
+		CControllerSimulatorLink *wifi = s->findFirstControllerOfType<CControllerSimulatorLink>();
+		if (wifi == 0)
+			return true;
+		CJunction *p = wifi->findJunctionByGPIOIndex(pin);
+		if (p == 0)
+			return true;
+		data[2] = dht->getTemperature();
+		data[0] = dht->getHumidity();
+		if (g_sim->getSolver()->hasPath(dht->getDataPin(), p)) {
+			return true;
+		}
+	}
 	return true;
 }
 

@@ -31,6 +31,18 @@ public:
 		}
 		return 0;
 	}
+	template <typename T>
+	TArray<T*> findControllersOfType() {
+		TArray<T*> ret;
+		for (int i = 0; i < objects.size(); i++) {
+			CControllerBase *c = objects[i]->getController();
+			T *r = dynamic_cast<T*>(c);
+			if (r) {
+				ret.push_back(r);
+			}
+		}
+		return ret;
+	}
 	void setSimulator(class CSimulator *ssim) {
 		this->sim = ssim;
 	}

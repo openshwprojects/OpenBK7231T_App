@@ -36,6 +36,9 @@ public:
 	float getHumidity() const {
 		return realHumidity;
 	}
+	class CJunction *getDataPin() {
+		return dat;
+	}
 };
 
 #endif // __CONTROLLER_DHT11_H__

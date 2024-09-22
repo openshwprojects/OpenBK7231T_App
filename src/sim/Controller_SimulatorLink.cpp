@@ -8,6 +8,13 @@
 CControllerSimulatorLink::CControllerSimulatorLink() {
 
 }
+CJunction *CControllerSimulatorLink::findJunctionByGPIOIndex(int idx) {
+	for (int i = 0; i < related.size(); i++) {
+		if (related[i]->getGPIO() == idx)
+			return related[i];
+	}
+	return 0;
+}
 class CControllerBase *CControllerSimulatorLink::cloneController(class CShape *origOwner, class CShape *newOwner) {
 	CControllerSimulatorLink *r = new CControllerSimulatorLink();
 	for (int i = 0; i < related.size(); i++) {

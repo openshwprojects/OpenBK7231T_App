@@ -26,6 +26,36 @@ void CSolver::solveVoltages() {
 		}
 	}
 }
+bool CSolver::hasPath(class CJunction *a, class CJunction *b) {
+	TArray<CJunction*> toVisit;
+	TArray<CJunction*> checked;
+	toVisit.push_back(a);
+	while (toVisit.size()) {
+		CJunction *j = toVisit.pop();
+		checked.push_back(j);
+		for (int i = 0; i < j->getEdgesCount(); i++) {
+			CJunction *other = j->getEdge(i)->getOther(j);
+			if (other == 0)
+				continue;
+			if (checked.contains(other))
+				continue;
+			if (other == b)
+				return true;
+			toVisit.push_back(other);
+		}
+		for (int i = 0; i < j->getLinksCount(); i++) {
+			CJunction *other = j->getLink(i);
+			if (other == 0)
+				continue;
+			if (checked.contains(other))
+				continue;
+			if (other == b)
+				return true;
+			toVisit.push_back(other);
+		}
+	}
+	return false;
+}
 // Idea: count steps to VDD/GND and use it to support multiple objects on line?
 void CSolver::floodJunctions(CJunction *ju, float voltage, float duty, int depth) {
 	if (ju == 0)
