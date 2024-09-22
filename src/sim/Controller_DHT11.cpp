@@ -11,13 +11,15 @@
 #include "Text.h"
 
 extern "C" bool SIM_ReadDHT11(int pin, byte *data) {
-	CSimulation *s = g_sim->getSim();
 	data[0] = data[1] = data[2] = data[3] = data[4] = 0;
 	// temp 19
 	data[2] = 19;
 	// humidity 67
 	data[0] = 67;
 	data[1] = 0;
+	if (g_sim == 0)
+		return true;
+	CSimulation *s = g_sim->getSim();
 	if (s == 0)
 		return true;
 	TArray<CControllerDHT11 *> dhts = s->findControllersOfType<CControllerDHT11>();
