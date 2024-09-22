@@ -820,7 +820,7 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 			return 0;
 		}
 	}
-	if (*s == '(' && stop[-1] == ')' && CMD_FindMatchingBrace(s) == (stop-1)) {
+	while (*s == '(' && stop[-1] == ')' && CMD_FindMatchingBrace(s) == (stop-1)) {
 		s++;
 		stop--;
 	}
