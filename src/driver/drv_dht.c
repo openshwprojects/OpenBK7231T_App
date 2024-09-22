@@ -101,8 +101,8 @@ void DHT_OnEverySecond() {
 				if (g_dhts[i]->_lastresult != 0) {
 					// don't want to loose accuracy, so multiply by 10
 					// We have a channel types to handle that
-					CHANNEL_Set(g_cfg.pins.channels[i], (int)(temp * 10), 0);
-					CHANNEL_Set(g_cfg.pins.channels2[i], (int)(humid), 0);
+					CHANNEL_Set(g_cfg.pins.channels[i], (int)(temp * 10), CHANNEL_SET_FLAG_SILENT);
+					CHANNEL_Set(g_cfg.pins.channels2[i], (int)(humid), CHANNEL_SET_FLAG_SILENT);
 				}
 			}
 		}
