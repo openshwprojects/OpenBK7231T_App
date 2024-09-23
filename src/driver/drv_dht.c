@@ -10,25 +10,9 @@
 #include "drv_local.h"
 #include "drv_dht_internal.h"
 
-// test device
-static dht_t *test = 0;
 // per-pin devices
 static dht_t **g_dhts = 0;
 
-// simplest demo
-void DHT_DoMyDHTTest() {
-	if (test == 0) {
-		test = DHT_Create(24, DHT11);
-	}
-	if (test) {
-		float temp, humid;
-
-		humid = DHT_readHumidity(test, false);
-		temp = DHT_readTemperature(test, false, false);
-
-		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "DHT says %f %f", humid, temp);
-	}
-}
 int translateDHTType(int role) {
 	if (role == IOR_DHT11)
 		return DHT11;
