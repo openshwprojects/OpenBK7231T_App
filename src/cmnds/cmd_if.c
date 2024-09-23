@@ -86,13 +86,19 @@ const char *CMD_FindOperator(const char *s, const char *stop, byte *oCode) {
 
 	retVal = 0;
 	bestPriority = 0;
-
+	int level = 0;
 	while (s[0] && s[1] && (s < stop || stop == 0)) {
-		if (s != signSkip) {
+		if (*s == '(') {
+			level++;
+		} else if (*s == ')') {
+			level--;
+		} else if (s != signSkip) {
 			for (o = 0; o < g_numOperators; o++) {
 				if (!strncmp(s, g_operators[o].txt, g_operators[o].len)) {
-					if (g_operators[o].prio >= bestPriority) {
-						bestPriority = g_operators[o].prio;
+					int prio = g_operators[o].prio;
+					prio -= level * 1000;
+					if (prio >= bestPriority) {
+						bestPriority = prio;
 						retVal = s;
 						*oCode = o;
 						signSkip = s + g_operators[o].len;
@@ -675,35 +681,35 @@ const char *CMD_ExpandConstantString(const char *s, const char *stop, char *out,
 #endif
 
 const char *CMD_ExpandConstantToString(const char *constant, char *out, char *stop) {
-	int outLen;
-	float value;
-	int valueInt;
-	const char *after;
-	float delta;
+int outLen;
+float value;
+int valueInt;
+const char *after;
+float delta;
 
-	outLen = (stop - out) - 1;
+outLen = (stop - out) - 1;
 
-	after = CMD_ExpandConstant(constant, 0, &value);
+after = CMD_ExpandConstant(constant, 0, &value);
 #if WINDOWS
-	if (after == 0) {
-		after = CMD_ExpandConstantString(constant, 0, out, outLen);
-		return after;
-	}
-#endif
-	if (after == 0)
-		return 0;
-
-	valueInt = (int)value;
-	delta = valueInt - value;
-	if (delta < 0)
-		delta = -delta;
-	if (delta < 0.001f) {
-		snprintf(out, outLen, "%i", valueInt);
-	}
-	else {
-		snprintf(out, outLen, "%f", value);
-	}
+if (after == 0) {
+	after = CMD_ExpandConstantString(constant, 0, out, outLen);
 	return after;
+}
+#endif
+if (after == 0)
+return 0;
+
+valueInt = (int)value;
+delta = valueInt - value;
+if (delta < 0)
+	delta = -delta;
+if (delta < 0.001f) {
+	snprintf(out, outLen, "%i", valueInt);
+}
+else {
+	snprintf(out, outLen, "%f", value);
+}
+return after;
 }
 void CMD_ExpandConstantsWithinString(const char *in, char *out, int outLen) {
 	char *outStop;
@@ -771,6 +777,24 @@ char *CMD_ExpandingStrdup(const char *in) {
 	CMD_ExpandConstantsWithinString(in, ret, realLen);
 	return ret;
 }
+const char *CMD_FindMatchingBrace(const char *s) {
+	if (*s != '(')
+		return s;
+	int level = 1;
+	s++;
+	while (*s) {
+		if (*s == '(')
+			level++;
+		else if (*s == ')') {
+			level--;
+			if (level == 0)
+				return s;
+		}
+		s++;
+	}
+	return s;
+
+}
 float CMD_EvaluateExpression(const char *s, const char *stop) {
 	byte opCode;
 	const char *op;
@@ -789,11 +813,16 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 	while (stop > s && isspace(((int)stop[-1]))) {
 		stop--;
 	}
+	// cull whitespaces at the start
 	while (isspace(((int)*s))) {
 		s++;
 		if (s >= stop) {
 			return 0;
 		}
+	}
+	while (*s == '(' && stop[-1] == ')' && CMD_FindMatchingBrace(s) == (stop-1)) {
+		s++;
+		stop--;
 	}
 	if (g_expDebugBuffer == 0) {
 		g_expDebugBuffer = malloc(EXPRESSION_DEBUG_BUFFER_SIZE);
@@ -804,7 +833,6 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 		g_expDebugBuffer[idx] = 0;
 		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: will run '%s'", g_expDebugBuffer);
 	}
-
 	op = CMD_FindOperator(s, stop, &opCode);
 	if (op) {
 		const char *p2;

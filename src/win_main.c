@@ -132,6 +132,10 @@ void SIM_ClearOBK(const char *flashPath) {
 	Main_Init();
 }
 void Win_DoUnitTests() {
+
+
+	Test_Expressions_RunTests_Braces();
+	Test_Expressions_RunTests_Basic();
 	//Test_Enums();
 	Test_Backlog();
 	Test_DoorSensor();
@@ -183,7 +187,6 @@ void Win_DoUnitTests() {
 	Test_ButtonEvents();
 	Test_Commands_Alias();
 	Test_Demo_SignAndValue();
-	Test_Expressions_RunTests_Basic();
 	Test_LEDDriver();
 	Test_LFS();
 	Test_Scripting();

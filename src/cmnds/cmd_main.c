@@ -844,7 +844,10 @@ void CMD_RegisterCommand(const char* name, commandHandler_t handler, void* conte
 	// check
 	newCmd = CMD_Find(name);
 	if (newCmd != 0) {
-		ADDLOG_ERROR(LOG_FEATURE_CMD, "command with name %s already exists!", name);
+		// it happens very often in Simulator due to the lack of the ability to remove commands
+		if (newCmd->handler != handler) {
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "command with name %s already exists!", name);
+		}
 		return;
 	}
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "Adding command %s", name);

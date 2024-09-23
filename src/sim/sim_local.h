@@ -45,6 +45,7 @@ bool FS_Exists(const char *fname);
 extern int WinWidth;
 extern int WinHeight;
 extern int gridSize;
+extern class CSimulator *g_sim;
 
 extern "C" {
 	void CMD_ExpandConstantsWithinString(const char *in, char *out, int outLen);
@@ -56,6 +57,14 @@ extern "C" {
 template <typename T>
 class TArray : public std::vector<T> {
 public:
+	T pop() {
+		if (!this->empty()) {
+			T lastElement = this->back();
+			this->pop_back();
+			return lastElement;
+		}
+		return 0;
+	}
 	void remove(T o) {
 		this->erase(std::remove(this->begin(), this->end(), o), this->end());
 	}

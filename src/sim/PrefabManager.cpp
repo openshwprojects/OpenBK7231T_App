@@ -10,6 +10,7 @@
 #include "Controller_BL0942.h"
 #include "Controller_Pot.h"
 #include "Controller_WS2812.h"
+#include "Controller_DHT11.h"
 #include "Junction.h"
 
 class CShape *PrefabManager::generateVDD() {
@@ -114,6 +115,37 @@ class CShape *PrefabManager::generateBL0942() {
 	gnd->setName("GND");
 	gnd->addText(-5, -5, "GND");
 	CControllerBL0942 *cntr = new CControllerBL0942(rx, tx, tx_voltage, tx_current, tx_power, tx_freq);
+	o->setController(cntr);
+	return o;
+}
+class CShape *PrefabManager::generateDHT11() {
+
+	CShape *o = new CShape();
+	o->setName("DHT11");
+	int w = 40;
+	int h = 40;
+	o->addText(-w - 5, -h - 5, "DHT11");
+	o->addText(-w + 5, -h + 15, "T:");
+	o->addText(-w + 5, -h + 35, "H:");
+	CText *tx_temperatura = o->addText(-w + 25, -h + 15, "19.9C", true, false)->asText();
+	tx_temperatura->setName("tex_temperature");
+	CText *tx_humidity = o->addText(-w + 25, -h + 35, "85%", true, false)->asText();
+	tx_humidity->setName("text_humidity");
+	o->addRect(-w, -h, w * 2, 80);
+	CJunction *dat = o->addJunction(w + 20, 0, "DAT");
+	o->addLine(w + 20, 0, w, 0);
+	dat->setName("DAT");
+	dat->addText(-5, -5, "DAT");
+
+	CJunction *vdd = o->addJunction(w + 20, 20, "VDD");
+	o->addLine(w + 20, 20, w, 20);
+	vdd->setName("VDD");
+	vdd->addText(-5, -5, "VDD");
+	CJunction *gnd = o->addJunction(w + 20, -20, "GND");
+	o->addLine(w + 20, -20, w, -20);
+	gnd->setName("GND");
+	gnd->addText(-5, -5, "GND");
+	CControllerDHT11 *cntr = new CControllerDHT11(dat, tx_temperatura, tx_humidity);
 	o->setController(cntr);
 	return o;
 }
@@ -510,6 +542,7 @@ void PrefabManager::createDefaultPrefabs() {
 	addPrefab(generateBL0942());
 	addPrefab(generatePot());
 	addPrefab(generateWS2812B());
+	addPrefab(generateDHT11());
 }
 
 

@@ -138,6 +138,8 @@ void Test_ChargeLimitDriver();
 void Test_WS2812B();
 void Test_DoorSensor();
 void Test_Enums();
+void Test_Expressions_RunTests_Basic();
+void Test_Expressions_RunTests_Braces();
 
 void Test_GetJSONValue_Setup(const char *text);
 void Test_FakeHTTPClientPacket_GET(const char *tg);

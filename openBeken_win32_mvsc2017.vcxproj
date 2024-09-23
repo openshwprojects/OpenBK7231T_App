@@ -759,6 +759,7 @@
     <ClCompile Include="src\sim\Controller_BL0942.cpp" />
     <ClCompile Include="src\sim\Controller_Bulb.cpp" />
     <ClCompile Include="src\sim\Controller_Button.cpp" />
+    <ClCompile Include="src\sim\Controller_DHT11.cpp" />
     <ClCompile Include="src\sim\Controller_Pot.cpp" />
     <ClCompile Include="src\sim\Controller_SimulatorLink.cpp" />
     <ClCompile Include="src\sim\Controller_Switch.cpp" />
@@ -1074,6 +1075,7 @@
     <ClInclude Include="src\sim\Controller_BL0942.h" />
     <ClInclude Include="src\sim\Controller_Bulb.h" />
     <ClInclude Include="src\sim\Controller_Button.h" />
+    <ClInclude Include="src\sim\Controller_DHT11.h" />
     <ClInclude Include="src\sim\Controller_Pot.h" />
     <ClInclude Include="src\sim\Controller_SimulatorLink.h" />
     <ClInclude Include="src\sim\Controller_Switch.h" />
