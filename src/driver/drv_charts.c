@@ -371,7 +371,7 @@ void Chart_DisplayLabel(float *val, time_t *time, void *userData) {
 		poststr(request, ",");
 	}
 	request->userCounter++;
-	snprintf(buffer, sizeof(buffer), "new Date(%ld * 1000).toLocaleTimeString()", (long)(*time));
+	snprintf(buffer, sizeof(buffer), "%ld", (long)(*time));					// don't transmit too much data, use only the timestamps here and handle conversion later  ....
 	poststr(request, buffer);
 }
 void Chart_DisplayData(float *val, time_t *time, void *userData) {
@@ -404,26 +404,48 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 		}
 	}
 
-	poststr(request, "<canvas id=\"myChart\" width=\"400\" height=\"200\"></canvas>");
+/*
+	// on every "state" request, JS code will be loaded and canvas is redrawn
+	// this leads to a flickering graph
+	// so put this right below the "state" div
+	// with a "#ifdef 
+	// drawback : We need to take care, if driver is loaded and canvas will be displayed only on a reload of the page
+	// or we might try and hide/unhide it ...
+	poststr(request, "<canvas id=\"obkChart\" width=\"400\" height=\"200\"></canvas>");
 	poststr(request, "<script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>");
-
+*/
+	poststr(request, "<input type='hidden' id='chartlabels' value='");
+	request->userCounter = 0;
+	Chart_Iterate(s, 0, Chart_DisplayLabel, request);
+	poststr(request, "'>");
+	for (int i = 0; i < s->numVars; i++) {
+		hprintf255(request, "<input type='hidden' id='chartdata%i' value='",i);
+		request->userCounter = 0;
+		Chart_Iterate(s, i,  Chart_DisplayData, request);
+		poststr(request, "'>");
+	}
 	poststr(request, "<script>");
 	poststr(request, "function cha() {");
 	poststr(request, "console.log('Initializing chart');");
-	poststr(request, "if (window.myChartInstance) {");
-	poststr(request, "    window.myChartInstance.destroy();");
+	poststr(request, "if (window.obkChartInstance) {");
+	poststr(request, "    window.obkChartInstance.destroy();");
 	poststr(request, "}");
-	poststr(request, "var ctx = document.getElementById('myChart').getContext('2d');");
+	poststr(request, "var ctx = document.getElementById('obkChart');");
+	poststr(request, "if (ctx.style.display=='none') ctx.style.display='block';");
+	poststr(request, "ctx =ctx.getContext('2d');");
 
+/*
 	poststr(request, "var labels = [");
 	request->userCounter = 0;
 	Chart_Iterate(s, 0, Chart_DisplayLabel, request);
 	poststr(request, "];");
-
-	poststr(request, "window.myChartInstance = new Chart(ctx, {");
+*/
+	poststr(request, "var labels=document.getElementById('chartlabels').value.split(/\s*,\s*/).map(Number);");
+	
+	poststr(request, "window.obkChartInstance = new Chart(ctx, {");
 	poststr(request, "    type: 'line',");
 	poststr(request, "    data: {");
-	poststr(request, "        labels: labels,");  
+	poststr(request, "        labels: labels.map((x)=>new Date(x * 1000).toLocaleTimeString()),");  	// we transmitted only timestamps, let Javascript do the work to convert them ;-)
 	poststr(request, "        datasets: [");
 	for (int i = 0; i < s->numVars; i++) {
 		if (i) {
@@ -431,10 +453,14 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 		}
 		poststr(request, "{");
 		hprintf255(request, "            label: '%s',", s->vars[i].title);
+/*
 		poststr(request, "            data: [");
 		request->userCounter = 0;
 		Chart_Iterate(s, i,  Chart_DisplayData, request);
 		poststr(request, "],");
+*/
+
+		hprintf255(request, "            data: document.getElementById('chartdata%i').value.split(/\s*,\s*/).map(Number),",i);
 		if (i == 2) {
 			poststr(request, "                borderColor: 'rgba(155, 33, 55, 1)',");
 		}
@@ -451,6 +477,7 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 	poststr(request, "]");
 	poststr(request, "    },");
 	poststr(request, "    options: {");
+	poststr(request, "        animation: false,");		// for me it's annoying, if on every refresh the graph is "animated"
 	poststr(request, "        scales: {");
 	poststr(request, "            x: {");
 	poststr(request, "                type: 'category',");  
