@@ -9,6 +9,7 @@
 #include "Shape.h"
 #include "Junction.h"
 #include "Text.h"
+#include "../cJSON/cJSON.h"
 
 extern "C" bool SIM_ReadDHT11(int pin, byte *data) {
 	data[0] = data[1] = data[2] = data[3] = data[4] = 0;
@@ -39,7 +40,21 @@ extern "C" bool SIM_ReadDHT11(int pin, byte *data) {
 	}
 	return true;
 }
+void CControllerDHT11::saveTo(struct cJSON *j_obj) {
+	cJSON_AddStringToObject(j_obj, "temperature", this->txt_temperature->getText());
+	cJSON_AddStringToObject(j_obj, "humidity", this->txt_humidity->getText());
 
+}
+void CControllerDHT11::loadFrom(struct cJSON *j_obj) {
+	cJSON *temp = cJSON_GetObjectItemCaseSensitive(j_obj, "temperature");
+	if (temp) {
+		this->txt_temperature->setText(temp->valuestring);
+	}
+	cJSON *hum = cJSON_GetObjectItemCaseSensitive(j_obj, "humidity");
+	if (hum) {
+		this->txt_humidity->setText(hum->valuestring);
+	}
+}
 void CControllerDHT11::onDrawn() {
 	if (txt_temperature->isBeingEdited() == false) {
 		realTemperature = txt_temperature->getFloat();

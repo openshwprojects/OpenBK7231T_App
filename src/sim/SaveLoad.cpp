@@ -7,6 +7,7 @@
 #include "Simulation.h"
 #include "PrefabManager.h"
 #include "Text.h"
+#include "Controller_Base.h"
 #include "../cJSON/cJSON.h"
 
 class CProject *CSaveLoad::loadProjectFile(const char *fname) {
@@ -93,6 +94,10 @@ class CSimulation *CSaveLoad::loadSimulationFromFile(const char *fname) {
 			if (jText != 0 && as_text != 0) {
 				as_text->setText(jText->valuestring);
 			}
+			class CControllerBase *cb = o->getController();
+			if (cb) {
+				cb->loadFrom(jObject);
+			}
 		}
 	}
 	cJSON_ArrayForEach(jWire, n_jWires)
@@ -129,6 +134,10 @@ void CSaveLoad::saveSimulationToFile(class CSimulation *simToSave, const char *f
 		cJSON_AddNumberToObject(j_obj, "y", pos.getY());
 		if (as_text) {
 			cJSON_AddStringToObject(j_obj, "text", as_text->getText());
+		}
+		class CControllerBase *cb = obj->getController();
+		if (cb) {
+			cb->saveTo(j_obj);
 		}
 	}
 	cJSON *main_wires = cJSON_AddObjectToObject(main_sim, "wires");

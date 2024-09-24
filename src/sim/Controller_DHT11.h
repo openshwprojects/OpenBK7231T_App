@@ -30,6 +30,9 @@ public:
 	virtual void onDrawn();
 	virtual class CControllerBase *cloneController(class CShape *origOwner, class CShape *newOwner);
 
+	virtual void saveTo(struct cJSON *j_obj);
+	virtual void loadFrom(struct cJSON *j_obj);
+
 	float getTemperature() const {
 		return realTemperature;
 	}
