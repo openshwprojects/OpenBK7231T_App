@@ -164,7 +164,8 @@ class CShape *PrefabManager::generateWB3S() {
 	o->setName("WB3S");
 	CControllerSimulatorLink *link = new CControllerSimulatorLink();
 	o->setController(link);
-	o->addText(-40, -25, "WB3S");
+	o->addText(-40, -45, "WB3S");
+	o->addText(-40, -25, "$simPowerState");
 	o->addRect(-50, -20, 100, 180);
 	struct PinDef_s {
 		const char *name;
