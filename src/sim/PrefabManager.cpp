@@ -178,17 +178,17 @@ class CShape *PrefabManager::generateWB3S() {
 		{ "RXD2", 1 },
 		{ "TXD2", 0 },
 		{ "PWM1", 7 },
-		{ "GND", -1 }
+		{ "GND", GPIO_GND }
 	};
 	PinDef_s wb3sPinsLeft[] = {
-		{ "CEN", -1 },
+		{ "CEN", GPIO_CEN },
 		{ "ADC3", 23 },
-		{ "EN", -1 },
+		{ "EN", GPIO_EN },
 		{ "P14", 14 },
 		{ "PWM5", 26 },
 		{ "PWM4", 24 },
 		{ "PWM0", 6 },
-		{ "VCC", -1 }
+		{ "VCC", GPIO_VDD }
 	};
 	for (int i = 0; i < 8; i++) {
 		int y = i * 20;

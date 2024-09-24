@@ -2,7 +2,6 @@
 #define __PREFABMANAGER_H__
 
 #include "sim_local.h"
-#include "PrefabManager.h"
 
 class PrefabManager {
 	class CSimulator *sim;

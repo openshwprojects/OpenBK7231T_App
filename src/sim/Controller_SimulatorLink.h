@@ -12,7 +12,8 @@ public:
 	void addRelatedJunction(CJunction *p) {
 		related.push_back(p);
 	}
-	virtual void onDrawn(); 
+	virtual void onDrawn();
+	virtual void onPostSolveVoltages();
 	class CControllerBase *cloneController(class CShape *origOwner, class CShape *newOwner);
 
 	CJunction *findJunctionByGPIOIndex(int idx);

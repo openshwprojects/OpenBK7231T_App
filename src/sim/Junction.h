@@ -94,6 +94,13 @@ public:
 	int getVisitCount() const {
 		return visitCount;
 	}
+	bool hasVoltage(float f) const {
+		if (visitCount <= 0)
+			return false;
+		if (fabs(f - this->voltage) < 0.1f)
+			return true;
+		return false;
+	}
 	float drawInformation2D(float x, float h);
 	virtual const char *getClassName() const {
 		return "CJunction";

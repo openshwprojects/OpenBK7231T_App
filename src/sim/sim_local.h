@@ -185,5 +185,13 @@ extern CStyle g_style_wires;
 extern CStyle g_style_text;
 extern CStyle g_style_text_red;
 
+enum SpecialGPIO {
+	GPIO_INVALID = -1,
+	GPIO_VDD = -2,
+	GPIO_GND = -3,
+	GPIO_EN = -4,
+	GPIO_CEN = -5
+};
+
 #endif
 #endif

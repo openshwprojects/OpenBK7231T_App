@@ -22,6 +22,16 @@ class CControllerBase *CControllerSimulatorLink::cloneController(class CShape *o
 	}
 	return r;
 }
+void CControllerSimulatorLink::onPostSolveVoltages() {
+	CJunction *vdd = findJunctionByGPIOIndex(GPIO_VDD);
+	CJunction *gnd = findJunctionByGPIOIndex(GPIO_GND);
+	if (vdd->hasVoltage(3.3f) && gnd->hasVoltage(0.0f)) {
+		//printf("Powered\n");
+	}
+	else {
+		//printf("Not powered\n");
+	}
+}
 void CControllerSimulatorLink::onDrawn() {
 	for (int i = 0; i < related.size(); i++) {
 		CJunction *ju = related[i];

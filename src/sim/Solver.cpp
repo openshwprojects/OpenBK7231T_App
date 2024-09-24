@@ -25,6 +25,13 @@ void CSolver::solveVoltages() {
 			floodJunctions(ju, ju->getVoltage(), ju->getDuty());
 		}
 	}
+	for (int i = 0; i < sim->getObjectsCount(); i++) {
+		CShape *s = sim->getObject(i);
+		CControllerBase *cb = s->getController();
+		if (cb) {
+			cb->onPostSolveVoltages();
+		}
+	}
 }
 bool CSolver::hasPath(class CJunction *a, class CJunction *b) {
 	TArray<CJunction*> toVisit;

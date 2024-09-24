@@ -15,6 +15,8 @@ public:
 	// save and load
 	virtual void saveTo(struct cJSON *j_obj) { }
 	virtual void loadFrom(struct cJSON *j_obj) { }
+	// simulation
+	virtual void onPostSolveVoltages() { }
 
 
 };
