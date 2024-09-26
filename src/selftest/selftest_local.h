@@ -54,12 +54,17 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 #define SELFTEST_ASSERT_HAS_UART_EMPTY() SELFTEST_ASSERT(SIM_UART_GetDataSize()==0);
 
 //#define FLOAT_EQUALS (a,b) (fabs(a-b)<0.001f)
+inline float myFabs(float f) {
+	if (f < 0)
+		return -f;
+	return f;
+}
 inline bool Float_Equals(float a, float b) {
-	float res = fabs(a - b);
+	float res = myFabs(a - b);
 	return res < 0.001f;
 }
 inline bool Float_EqualsEpsilon(float a, float b, float epsilon) {
-	float res = fabs(a - b);
+	float res = myFabs(a - b);
 	return res < epsilon;
 }
 
@@ -140,6 +145,8 @@ void Test_DoorSensor();
 void Test_Enums();
 void Test_Expressions_RunTests_Basic();
 void Test_Expressions_RunTests_Braces();
+void Test_ButtonEvents();
+void Test_Http();
 
 void Test_GetJSONValue_Setup(const char *text);
 void Test_FakeHTTPClientPacket_GET(const char *tg);

@@ -368,8 +368,6 @@ mqtt_init_requests(struct mqtt_request_t *r_objs, size_t r_objs_len)
 /** Connect to server */
 err_t mqtt_client_connect(mqtt_client_t *client, const ip_addr_t *ip_addr, u16_t port, mqtt_connection_cb_t cb, void *arg,
                    const struct mqtt_connect_client_info_t *client_info) {
-
-	err_t err;
 	size_t len;
 	u16_t client_id_length;
 	/* Length is the sum of 2+"MQTT", protocol level, flags and keep alive */

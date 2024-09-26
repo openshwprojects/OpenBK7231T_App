@@ -17,6 +17,7 @@
 #include "cmnds\cmd_public.h"
 #include "httpserver\new_http.h"
 #include "hal\hal_flashVars.h"
+#include "selftest\selftest_local.h"
 #include "new_pins.h"
 #include <timeapi.h>
 
@@ -39,14 +40,6 @@ void strcat_safe_test(){
 	char tmpA[16];
 	char tmpB[16];
 	char buff[128];
-	char timeStrA[128];
-	char timeStrB[128];
-	char timeStrC[128];
-	char timeStrD[128];
-	char timeStrE[128];
-	char timeStrF[128];
-	char timeStrG[128];
-	char timeStrH[128];
 	int res0, res1, res2, res3, res4, res5;
 	tmpA[0] = 0;
 	res0 = strcat_safe(tmpA,"Test1",sizeof(tmpA));
@@ -93,7 +86,7 @@ void Sim_RunMiliseconds(int ms, bool bApplyRealtimeWait) {
 	}
 }
 void Sim_RunSeconds(float f, bool bApplyRealtimeWait) {
-	int ms = f * 1000;
+	int ms = (int)(f * 1000);
 	Sim_RunMiliseconds(ms, bApplyRealtimeWait);
 }
 void Sim_RunFrames(int n, bool bApplyRealtimeWait) {

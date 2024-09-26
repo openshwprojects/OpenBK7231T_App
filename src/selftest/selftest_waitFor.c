@@ -382,7 +382,6 @@ void Test_WaitFor_OperatorNotEqual() {
 void Test_WaitFor_ChannelValue() {
 
 	int i;
-	char buffer[64];
 
 	// reset whole device
 	SIM_ClearOBK(0);

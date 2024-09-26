@@ -126,7 +126,6 @@ void Test_FakeHTTPClientPacket_JSON_VA(const char *tg, ...) {
 	va_start(argList, tg);
 	vsnprintf(bufferTemp, sizeof(bufferTemp), tg, argList);
 	va_end(argList);
-	int r;
 	Test_FakeHTTPClientPacket_GET(bufferTemp);
 
 	//jsmn_init(&parser);
@@ -141,7 +140,6 @@ void Test_FakeHTTPClientPacket_JSON(const char *tg) {
 	vsnprintf(bufferTemp, sizeof(bufferTemp), tg, argList);
 	va_end(argList);
 */
-	int r;
 	Test_FakeHTTPClientPacket_GET(tg);
 
 	//jsmn_init(&parser);
