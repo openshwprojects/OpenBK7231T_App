@@ -2499,6 +2499,8 @@ int http_fn_cfg_pins(http_request_t* request) {
 	}
 	poststr(request, "];");
 
+	poststr(request, "var  sr = r.map((e,i)=>{return e[0]+'#'+i}).sort(Intl.Collator().compare).map(e=>e.split('#'));");
+	
 	poststr(request, "function hide_show() {"
 		"n=this.name;"
 		"er=getElement('r'+n);"
@@ -2518,14 +2520,12 @@ int http_fn_cfg_pins(http_request_t* request) {
 		"s.className = \"hele\";"
 		"s.name = id;"
 		"d.appendChild(s);"
-		"	for (var i = 0; i < r.length; i++) {"
-		"	if(b && r[i][0].startsWith(\"PWM\")) continue; "
+		"	for (var i = 0; i < sr.length; i++) {"
+		"	if(b && sr[i][0].startsWith(\"PWM\")) continue; "
 		"var o = document.createElement(\"option\");"
-		"	o.text = r[i][0];"
-		"	o.value = i;"
-		"	if (i == c) {"
-		"		o.selected = true;"
-		"	}"
+		"	o.text = sr[i][0];"
+		"	o.value = sr[i][1];"
+		"	o.selected = (sr[i][1] == c);"
 		"s.add(o);s.onchange = hide_show;"
 		"}"
 		"var y = document.createElement(\"input\");"
