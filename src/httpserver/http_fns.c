@@ -2514,7 +2514,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 		"let f = document.getElementById(\"x\");"
 		"let d = document.createElement(\"div\");"
 		"d.className = \"hdiv\";"
-		"d.innerText = alias;"
+		"d.innerHTML = \"<span class='disp-inline' style='min-width: 15ch'>\"+alias+\"</span>\";"
 		"f.appendChild(d);"
 		"let s = document.createElement(\"select\");"
 		"s.className = \"hele\";"
