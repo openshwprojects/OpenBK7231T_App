@@ -17,7 +17,16 @@
 
 #if PLATFORM_XR809
 
-#define OBK_DISABLE_ALL_DRIVERS       1
+#define OBK_DISABLE_ALL_DRIVERS		1
+// Even with OBK_DISABLE_ALL_DRIVERS defined
+// allow to start a driver and display on HTML Page:
+// enables:
+//		DRV_OnEverySecond(); and DRV_Generic_Init(); in usr_main.c
+// 		DRV_AppendInformationToHTTPIndexPage(request); in http_fns.c
+// used for charts driver
+#define OBK_ALLOW_DRIVERS_START		1
+#define ENABLE_DRIVER_CHARTS		1
+
 
 #elif PLATFORM_W600
 
@@ -27,13 +36,21 @@
 #define ENABLE_DRIVER_BL0937    1
 #define ENABLE_DRIVER_DHT		1
 #define ENABLE_TASMOTA_JSON		1
+#define ENABLE_DRIVER_CHARTS		1
 
 #elif PLATFORM_W800
 
-#define OBK_DISABLE_ALL_DRIVERS 1
+#define OBK_DISABLE_ALL_DRIVERS		1
+// Even with OBK_DISABLE_ALL_DRIVERS defined
+// allow to start a driver and display on HTML Page:
+// enables:
+//		DRV_OnEverySecond(); and DRV_Generic_Init(); in usr_main.c
+// 		DRV_AppendInformationToHTTPIndexPage(request); in http_fns.c
+// used for DS1820 and charts driver
+#define OBK_ALLOW_DRIVERS_START		1
 #define ENABLE_TASMOTA_JSON		1
 #define ENABLE_DRIVER_DS1820		1
-#define ENABLE_DRIVER_CHARTS	1
+#define ENABLE_DRIVER_CHARTS		1
 
 
 #elif WINDOWS
@@ -76,7 +93,7 @@
 #define ENABLE_DRIVER_ADCBUTTON	1
 #define ENABLE_DRIVER_SM15155E	1
 #define ENABLE_DRIVER_IR2		0
-#define ENABLE_DRIVER_CHARTS	1
+#define ENABLE_DRIVER_CHARTS		1
 
 #elif PLATFORM_BL602
 
@@ -99,6 +116,7 @@
 #define ENABLE_DRIVER_SSDP		1
 #define ENABLE_DRIVER_CHT83XX 1
 #define ENABLE_DRIVER_DS1820		1
+#define ENABLE_DRIVER_CHARTS		1
 
 #elif PLATFORM_BEKEN
 
@@ -149,7 +167,7 @@
 #define ENABLE_DRIVER_IR2		0
 #define ENABLE_DRIVER_DS1820		1
 #define ENABLE_DRIVER_CHT83XX 1
-#define ENABLE_DRIVER_CHARTS	1
+#define ENABLE_DRIVER_CHARTS		1
 
 #elif PLATFORM_LN882H
 
@@ -167,7 +185,7 @@
 //#define	ENABLE_DRIVER_TMGN		1
 #define ENABLE_TASMOTA_JSON		1
 #define ENABLE_DRIVER_DS1820		1
-#define ENABLE_DRIVER_CHARTS	1
+#define ENABLE_DRIVER_CHARTS		1
 
 #else
 

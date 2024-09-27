@@ -535,7 +535,7 @@ void Main_OnEverySecond()
 
 	MQTT_Dedup_Tick();
 	LED_RunOnEverySecond();
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#if ! OBK_DISABLE_ALL_DRIVERS || OBK_ALLOW_DRIVERS_START
 	DRV_OnEverySecond();
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602)
 	UART_RunEverySecond();
@@ -1045,7 +1045,7 @@ void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
 }
 void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	g_unsafeInitDone = true;
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#if ! OBK_DISABLE_ALL_DRIVERS || OBK_ALLOW_DRIVERS_START
 	DRV_Generic_Init();
 #endif
 #ifdef PLATFORM_BEKEN

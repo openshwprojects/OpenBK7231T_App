@@ -720,7 +720,7 @@ int http_fn_index(http_request_t* request) {
 #endif
 
 	poststr(request, "</table>");
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#if ! OBK_DISABLE_ALL_DRIVERS || OBK_ALLOW_DRIVERS_START
 	DRV_AppendInformationToHTTPIndexPage(request);
 #endif
 
