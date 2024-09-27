@@ -48,7 +48,9 @@ bool CHANNEL_HasNeverPublishFlag(int ch) {
 
 bool CHANNEL_HasLabel(int ch) {
 	if (ch >= 0 && ch < CHANNEL_MAX) {
-		return g_channelLabels[ch];
+		if (g_channelLabels[ch])
+			return true;
+		return false;
 	}
 	return false;
 }

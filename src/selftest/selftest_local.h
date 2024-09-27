@@ -17,9 +17,11 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 	SelfTest_Failed(__FILE__, __FUNCTION__, __LINE__, #expr)
 
 #define SELFTEST_ASSERT_FLOATCOMPARE(exp, res) SELFTEST_ASSERT(Float_Equals(exp, res));
+#define SELFTEST_ASSERT_INTCOMPARE(exp, res) SELFTEST_ASSERT((exp==res));
 #define SELFTEST_ASSERT_FLOATCOMPAREEPSILON(exp, res, eps) SELFTEST_ASSERT(Float_EqualsEpsilon(exp, res, eps));
 #define SELFTEST_ASSERT_EXPRESSION(exp, res) SELFTEST_ASSERT(Float_Equals(CMD_EvaluateExpression(exp,0), res));
-#define SELFTEST_ASSERT_CHANNEL(channelIndex, res) SELFTEST_ASSERT(Float_Equals(CHANNEL_Get(channelIndex), res));
+// currently, channels are integers
+#define SELFTEST_ASSERT_CHANNEL(channelIndex, res) SELFTEST_ASSERT(CHANNEL_Get(channelIndex) == res);
 #define SELFTEST_ASSERT_CHANNELEPSILON(channelIndex, res, marg) SELFTEST_ASSERT(Float_EqualsEpsilon(CHANNEL_Get(channelIndex), res, marg));
 #define SELFTEST_ASSERT_CHANNELTYPE(channelIndex, res) SELFTEST_ASSERT(CHANNEL_GetType(channelIndex)==res);
 #define SELFTEST_ASSERT_PIN_BOOLEAN(pinIndex, res) SELFTEST_ASSERT((SIM_GetSimulatedPinValue(pinIndex)== res));
@@ -154,6 +156,12 @@ void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data);
 void Test_FakeHTTPClientPacket_POST_withJSONReply(const char *tg, const char *data);
 void Test_FakeHTTPClientPacket_JSON(const char *tg, ...);
 const char *Test_GetLastHTMLReply();
+
+bool SIM_HasHTTPTemperature();
+bool SIM_HasHTTPRGB();
+bool SIM_HasHTTP_LED_Toggler(bool bIsNowOn);
+bool SIM_HasHTTP_Active_RGB();
+bool SIM_HasHTTPDimmer();
 
 // TODO: move elsewhere?
 void Sim_RunMiliseconds(int ms, bool bApplyRealtimeWait);

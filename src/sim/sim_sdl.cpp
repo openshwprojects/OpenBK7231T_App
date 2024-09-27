@@ -41,12 +41,12 @@ extern "C" {
 		WinHeight = val;
 	}
 }
-int drawTextInternal(float x, float y, const char *buffer) {
+float drawTextInternal(float x, float y, const char *buffer) {
 	glRasterPos2f(x, y);
 	const char *p = buffer;
 	while (*p) {
 		if (*p == '\n') {
-			y += 15;
+			y += 15.0f;
 			glRasterPos2f(x, y);
 		}
 		else {
@@ -54,11 +54,11 @@ int drawTextInternal(float x, float y, const char *buffer) {
 		}
 		p++;
 	}
-	y += 15;
+	y += 15.0f;
 	return y;
 }
 
-int drawText(class CStyle *style, int x, int y, const char* fmt, ...) {
+float drawText(class CStyle *style, float x, float y, const char* fmt, ...) {
 	va_list argList;
 	char buffer2[4096];
 	char buffer[4096];

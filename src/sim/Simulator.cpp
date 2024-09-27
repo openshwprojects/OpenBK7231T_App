@@ -196,7 +196,7 @@ void CSimulator::drawWindow() {
 	glOrtho(0, WinWidth,  WinHeight, 0, 0.0f, 1.0f);
 
 
-	int h = 40;
+	float h = 40.0f;
 	h = drawText(NULL, 10, h, "OpenBeken Simulator");
 	if (sim != 0) {
 		h = sim->drawTextStats(h);

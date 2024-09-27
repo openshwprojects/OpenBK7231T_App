@@ -21,7 +21,7 @@ void Tool_Text::onMouseUp(const Coord &pos, int button) {
 }
 void Tool_Text::onEnd() {
 }
-int Tool_Text::drawTextStats(int h) {
+float Tool_Text::drawTextStats(float h) {
 	return h;
 }
 void Tool_Text::onMouseDown(const Coord &pos, int button) {

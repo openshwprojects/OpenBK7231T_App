@@ -81,7 +81,7 @@ public:
 	void matchJunction(class CJunction *j);
 	void matchJunction(class CWire *w);
 	void matchJunctionsOf_r(class CShape *s);
-	int drawTextStats(int h);
+	float drawTextStats(float h);
 };
 
 #endif

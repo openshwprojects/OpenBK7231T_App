@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include "obk_config.h"
 #include "new_common.h"
+#include "quicktick.h"
 #include "driver\drv_public.h"
 #include "cmnds\cmd_public.h"
 #include "httpserver\new_http.h"

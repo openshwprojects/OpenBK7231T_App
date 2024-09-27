@@ -88,7 +88,6 @@ void HTTPServer_RunQuickTick() {
     int recvbuflen = DEFAULT_BUFLEN;
     SOCKET ClientSocket = INVALID_SOCKET;
 	int len, iSendResult;
-	int argp;
 
 	// Accept a client socket
 	ClientSocket = accept(ListenSocket, NULL, NULL);

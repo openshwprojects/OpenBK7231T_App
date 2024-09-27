@@ -40,7 +40,7 @@ public:
 	CJunction() {
 		depth = 0;
 	}
-	CJunction(int _x, int _y, const char *s, int gpio = -1) {
+	CJunction(float _x, float _y, const char *s, int gpio = -1) {
 		this->setPosition(_x, _y);
 		this->name = s;
 		this->gpioIndex = gpio;

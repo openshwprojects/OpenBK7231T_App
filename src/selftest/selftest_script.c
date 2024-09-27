@@ -85,8 +85,6 @@ void Test_Scripting_Loop2() {
 	//system("pause");
 }
 void Test_Scripting_Loop3() {
-	char buffer[64];
-
 	// reset whole device
 	SIM_ClearOBK(0);
 	CMD_ExecuteCommand("lfs_format", 0);

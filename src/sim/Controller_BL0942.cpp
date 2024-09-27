@@ -35,9 +35,9 @@ void CControllerBL0942::onDrawn() {
 	data[0] = 0x55;
 	byte checksum = BL0942_READ_COMMAND;
 
-	int bl_current = BL0942_IREF * realCurrent;
-	int bl_power = BL0942_PREF * realPower;
-	int bl_voltage = BL0942_UREF * realVoltage;
+	int bl_current = (int)(BL0942_IREF * realCurrent);
+	int bl_power = (int)(BL0942_PREF * realPower);
+	int bl_voltage = (int)(BL0942_UREF * realVoltage);
 
 	data[1] = (byte)(bl_current);
 	data[2] = (byte)(bl_current >> 8);

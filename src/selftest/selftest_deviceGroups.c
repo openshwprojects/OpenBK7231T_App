@@ -153,7 +153,7 @@ void Test_DeviceGroups_RGB() {
 
 	SIM_SendFakeDGRBrightnessPacketToSelf_Next(testName, 127);
 
-	printf("R %i G % B %\n", CHANNEL_Get(1), CHANNEL_Get(2), CHANNEL_Get(3));
+	printf("R %i G %i B %i\n", CHANNEL_Get(1), CHANNEL_Get(2), CHANNEL_Get(3));
 
 	SELFTEST_ASSERT_CHANNEL(1, 20);
 	SELFTEST_ASSERT_CHANNEL(2, 0);
@@ -161,7 +161,7 @@ void Test_DeviceGroups_RGB() {
 
 	SIM_SendFakeDGRBrightnessPacketToSelf_Next(testName, 255);
 
-	printf("R %i G % B %\n", CHANNEL_Get(1), CHANNEL_Get(2), CHANNEL_Get(3));
+	printf("R %i G %i B %i\n", CHANNEL_Get(1), CHANNEL_Get(2), CHANNEL_Get(3));
 
 	SELFTEST_ASSERT_CHANNEL(1, 100);
 	SELFTEST_ASSERT_CHANNEL(2, 0);

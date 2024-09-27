@@ -81,13 +81,13 @@ class CShape *PrefabManager::generateBL0942() {
 
 	CShape *o = new CShape();
 	o->setName("BL0942");
-	int w = 40;
-	int h = 40;
-	o->addText(-w-5, -h-5, "BL0942");
-	o->addText(-w + 5, -h + 15, "U:");
-	o->addText(-w + 5, -h + 35, "I:");
-	o->addText(-w + 5, -h + 55, "P:");
-	o->addText(-w + 5, -h + 75, "F:");
+	float w = 40.0f;
+	float h = 40.0f;
+	o->addText(-w - 5.0f, -h - 5.0f, "BL0942");
+	o->addText(-w + 5.0f, -h + 15.0f, "U:");
+	o->addText(-w + 5.0f, -h + 35.0f, "I:");
+	o->addText(-w + 5.0f, -h + 55.0f, "P:");
+	o->addText(-w + 5.0f, -h + 75.0f, "F:");
 	CText *tx_voltage = o->addText(-w + 25, -h + 15, "230V", true, false)->asText();
 	tx_voltage->setName("text_voltage");
 	CText *tx_current = o->addText(-w + 25, -h + 35, "0.24A", true, false)->asText();
@@ -215,13 +215,13 @@ class CShape *PrefabManager::generateLED_CW() {
 	CShape *filler = o->addCircle(0, 0, bulb_radius);
 	CShape *body = o->addCircle(0, 0, bulb_radius);
 	filler->setFill(true);
-	CJunction *gnd = o->addJunction(-bulb_radius, 0);
+	CJunction *gnd = o->addJunction(-bulb_radius, 0.0f);
 	gnd->setName("GND");
 	gnd->addText(-5, -5, "");
-	CJunction *cool = o->addJunction(bulb_radius, 20);
+	CJunction *cool = o->addJunction(bulb_radius, 20.0f);
 	cool->setName("C");
 	cool->addText(-5, -5, "C");
-	CJunction *warm = o->addJunction(bulb_radius, -20);
+	CJunction *warm = o->addJunction(bulb_radius, -20.0f);
 	warm->setName("W");
 	warm->addText(-5, -5, "W");
 
@@ -373,7 +373,7 @@ class CShape *PrefabManager::generatePot() {
 	CShape *handle = o->addRect(-10, -60, 20, 40);
 	handle->setName("pot_handle_mover");
 	int leds = 8;
-	int ofs = 10;
+	float ofs = 10.0f;
 	float start = ofs - w;
 	float len = 2 * w - ofs * 2;
 	float ledlen = len / (leds + 1);
@@ -407,7 +407,7 @@ class CShape *PrefabManager::generateStrip_RGBCW() {
 	int w = 200;
 	o->addRect(-w, -20, w * 2, 40);
 	int leds = 8;
-	int ofs = 10;
+	float ofs = 10.0f;
 	float start = ofs - w;
 	float len = 2 * w - ofs * 2;
 	float ledlen = len / (leds + 1);

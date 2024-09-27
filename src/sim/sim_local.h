@@ -33,7 +33,7 @@ enum {
 
 #define WINDOWS_MOUSE_MENUBAR_OFFSET 20
 
-int drawText(class CStyle *style, int x, int y, const char* fmt, ...);
+float drawText(class CStyle *style, float x, float y, const char* fmt, ...);
 #include "Coord.h"
 Coord roundToGrid(Coord c);
 Coord GetMousePosWorld();

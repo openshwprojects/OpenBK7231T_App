@@ -32,8 +32,8 @@ extern "C" bool SIM_ReadDHT11(int pin, byte *data) {
 		CJunction *p = wifi->findJunctionByGPIOIndex(pin);
 		if (p == 0)
 			return true;
-		data[2] = dht->getTemperature();
-		data[0] = dht->getHumidity();
+		data[2] = (byte)dht->getTemperature();
+		data[0] = (byte)dht->getHumidity();
 		if (g_sim->getSolver()->hasPath(dht->getDataPin(), p)) {
 			return true;
 		}

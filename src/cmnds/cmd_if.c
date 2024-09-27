@@ -541,7 +541,7 @@ const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 	int i;
 	var = g_constants;
 	for (i = 0; i < g_totalConstants; i++, var++) {
-		bool bAllowWildCard = strstr(var->constantName, "*");
+		bool bAllowWildCard = strstr(var->constantName, "*") != 0;
 		const char *ret = strCompareBound(s, var->constantName, stop, bAllowWildCard);
 		if (ret) {
 			*out = var->getValue(s);

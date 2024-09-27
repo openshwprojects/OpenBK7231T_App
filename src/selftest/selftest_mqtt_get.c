@@ -4,7 +4,6 @@
 #include "../hal/hal_wifi.h"
 
 void Test_MQTT_Get_LED_EnableAll() {
-	char buffer[512], buffer2[512];
 	SIM_ClearOBK(0);
 	SIM_ClearAndPrepareForMQTTTesting("myTestDevice", "bekens");
 

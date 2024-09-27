@@ -4,7 +4,6 @@
 
 void Test_WaitFor_MQTTState() {
 	int i;
-	char buffer[64];
 
 	// reset whole device
 	SIM_ClearOBK(0);
@@ -43,7 +42,6 @@ void Test_WaitFor_MQTTState() {
 
 void Test_WaitFor_NoPingTime() {
 	int i;
-	char buffer[64];
 
 	// reset whole device
 	SIM_ClearOBK(0);
@@ -95,7 +93,6 @@ void Test_WaitFor_NoPingTime() {
 }
 void Test_WaitFor_NoPingTime2() {
 	int i;
-	char buffer[64];
 
 	// reset whole device
 	SIM_ClearOBK(0);
@@ -147,7 +144,6 @@ void Test_WaitFor_NoPingTime2() {
 void Test_WaitFor_OperatorMore() {
 
 	int i;
-	char buffer[64];
 
 	// reset whole device
 	SIM_ClearOBK(0);
@@ -194,7 +190,6 @@ void Test_WaitFor_OperatorMore() {
 void Test_WaitFor_OperatorMore2() {
 
 	int i;
-	char buffer[64];
 
 	// reset whole device
 	SIM_ClearOBK(0);
@@ -241,7 +236,6 @@ void Test_WaitFor_OperatorMore2() {
 void Test_WaitFor_OperatorLess() {
 
 	int i;
-	char buffer[64];
 
 	// reset whole device
 	SIM_ClearOBK(0);
@@ -288,7 +282,6 @@ void Test_WaitFor_OperatorLess() {
 void Test_WaitFor_OperatorLess2() {
 
 	int i;
-	char buffer[64];
 
 	// reset whole device
 	SIM_ClearOBK(0);
@@ -335,7 +328,6 @@ void Test_WaitFor_OperatorLess2() {
 void Test_WaitFor_OperatorNotEqual() {
 
 	int i;
-	char buffer[64];
 
 	// reset whole device
 	SIM_ClearOBK(0);

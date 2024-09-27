@@ -2,6 +2,9 @@
 
 #include "selftest_local.h"
 
+
+const char *CMD_FindOperator(const char *s, const char *stop, byte *oCode);
+
 void Test_Demo_SignAndValue() {
 	// reset whole device
 	SIM_ClearOBK(0);
