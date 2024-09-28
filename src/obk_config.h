@@ -27,18 +27,12 @@
 #define ENABLE_DRIVER_BL0937    1
 #define ENABLE_DRIVER_DHT		1
 #define ENABLE_TASMOTA_JSON		1
-// allow usage as an WPA2 AP ans define number of clients to connect
-#define ENABLE_WPA_AP			1
-#define WPA_AP_STA_CLIENTS		3
 
 #elif PLATFORM_W800
 
 #define OBK_DISABLE_ALL_DRIVERS 1
 #define ENABLE_TASMOTA_JSON		1
 #define ENABLE_DRIVER_DS1820		1
-// allow usage as an WPA2 AP ans define number of clients to connect
-#define ENABLE_WPA_AP			1
-#define WPA_AP_STA_CLIENTS		3
 
 
 #elif WINDOWS
@@ -104,9 +98,6 @@
 #define ENABLE_DRIVER_SSDP		1
 #define ENABLE_DRIVER_CHT83XX 1
 #define ENABLE_DRIVER_DS1820		1
-// allow usage as an WPA2 AP ans define number of clients to connect
-#define ENABLE_WPA_AP			1
-#define WPA_AP_STA_CLIENTS		3
 
 #elif PLATFORM_BEKEN
 
@@ -157,9 +148,6 @@
 #define ENABLE_DRIVER_IR2		0
 #define ENABLE_DRIVER_DS1820		1
 #define ENABLE_DRIVER_CHT83XX 1
-// allow usage as an WPA2 AP ans define number of clients to connect
-#define ENABLE_WPA_AP			1
-#define WPA_AP_STA_CLIENTS		3
 
 #elif PLATFORM_LN882H
 
@@ -177,9 +165,6 @@
 //#define	ENABLE_DRIVER_TMGN		1
 #define ENABLE_TASMOTA_JSON		1
 #define ENABLE_DRIVER_DS1820		1
-// allow usage as an WPA2 AP ans define number of clients to connect
-#define ENABLE_WPA_AP			1
-#define WPA_AP_STA_CLIENTS		3
 
 #else
 
