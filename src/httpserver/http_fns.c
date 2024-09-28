@@ -896,6 +896,22 @@ typedef enum {
 		hprintf255(request, "</h5>");
 	}
 
+#if ENABLE_DRIVER_CHARTS		
+/*	// moved from drv_charts.c:
+	// on every "state" request, JS code will be loaded and canvas is redrawn
+	// this leads to a flickering graph
+	// so put this right below the "state" div
+	// with a "#ifdef 
+	// drawback : We need to take care, if driver is loaded and canvas will be displayed only on a reload of the page
+	// or we might try and hide/unhide it ...
+*/
+	// since we can't simply stop showing the graph in updated status, we need to "hide" it if driver was stopped
+	if (! DRV_IsRunning("Charts")) {
+		poststr(request, "<style onload=\"document.getElementById('myChart').style.display='none'\"></style>");		
+	};
+
+#endif
+
 #if WINDOWS
 #elif PLATFORM_BL602
 #elif PLATFORM_W600 || PLATFORM_W800
@@ -915,6 +931,22 @@ typedef enum {
 	// for normal page loads, show the rest of the HTML
 	if (!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
 		poststr(request, "</div>"); // end div#state
+#if ENABLE_DRIVER_CHARTS		
+/*	// moved from drv_charts.c:
+	// on every "state" request, JS code will be loaded and canvas is redrawn
+	// this leads to a flickering graph
+	// so put this right below the "state" div
+	// with a "#ifdef 
+	// drawback : We need to take care, if driver is loaded and canvas will be displayed only on a reload of the page
+	// or we might try and hide/unhide it ...
+*/
+//	if (DRV_IsRunning("Charts")) {
+		poststr(request, "<canvas style='display: none' id=\"myChart\" width=\"400\" height=\"200\"></canvas>");
+		poststr(request, "<script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>");
+//	};
+
+#endif
+
 
 		// Shared UI elements 
 		poststr(request, "<form action=\"cfg\"><input type=\"submit\" value=\"Config\"/></form>");

@@ -8,6 +8,10 @@
 #include "../hal/hal_pins.h"
 #include "../httpserver/new_http.h"
 #include "drv_ntp.h"
+
+#include "../ringbuff32.h"		// try to us "external" ring buffer
+
+
 /*
 // Sample 1
 // single variable chart
@@ -207,7 +211,8 @@ goto again
 typedef struct var_s {
 	char *title;
 	char *axis;
-	float *samples;
+//	float *samples;
+	RB32_t *samplesRB;
 } var_t;
 
 typedef struct axis_s {
@@ -217,10 +222,11 @@ typedef struct axis_s {
 } axis_t;
 
 typedef struct chart_s {
-	int maxSamples;
-	int nextSample;
-	int lastSample;
-	time_t *times;
+//	int maxSamples;
+//	int nextSample;
+//	int lastSample;
+//	time_t *times;
+	RB32_t *timesRB;
 	int numVars;
 	var_t *vars;
 	int numAxes;
@@ -228,7 +234,7 @@ typedef struct chart_s {
 } chart_t;
 
 chart_t *g_chart = 0;
-
+/*
 void Chart_Free(chart_t **ptr) {
 	chart_t *s = *ptr;
 	if (!s) {
@@ -262,6 +268,41 @@ void Chart_Free(chart_t **ptr) {
 	free(s);
 	*ptr = 0;
 }
+*/
+void Chart_Free(chart_t **ptr) {
+	chart_t *s = *ptr;
+	if (!s) {
+		return; 
+	}
+	if (s->axes) {
+		for (int i = 0; i < s->numAxes; i++) {
+			if (s->axes[i].label) {
+				free(s->axes[i].label);
+			}
+			if (s->axes[i].name) {
+				free(s->axes[i].name);
+			}
+		}
+		free(s->axes);
+	}
+	if (s->vars) {
+		for (int i = 0; i < s->numVars; i++) {
+			if (s->vars[i].title) {
+				free(s->vars[i].title);
+			}
+			if (s->vars[i].samplesRB) {
+				RBfree(s->vars[i].samplesRB);
+			}
+		}
+		free(s->vars);
+	}
+	if (s->timesRB) {
+		free(s->timesRB);
+	}
+	free(s);
+	*ptr = 0;
+}
+
 byte *ZeroMalloc(unsigned int size) {
 	byte *r = (byte*)malloc(size);
 	if (r == 0)
@@ -285,6 +326,7 @@ chart_t *Chart_Create(int maxSamples, int numVars, int numAxes) {
 		free(s);
 		return NULL;
 	}
+/*
 	s->times = (time_t *)ZeroMalloc(sizeof(time_t) * maxSamples);
 	if (!s->times) {
 		free(s->axes);
@@ -306,11 +348,35 @@ chart_t *Chart_Create(int maxSamples, int numVars, int numAxes) {
 			return NULL;
 		}
 	}
+*/
+	s->timesRB = RBinit(maxSamples);
+	if (!s->timesRB) {
+		free(s->axes);
+		free(s->vars);
+		free(s);
+		return NULL; 
+	}
+	for (int i = 0; i < numVars; i++) {
+		s->vars[i].samplesRB =  RBinit(maxSamples);
+		if (s->vars[i].samplesRB == 0) {
+			for (int j = 0; j < i; j++) {
+				RBfree(s->vars[j].samplesRB);
+			}
+			RBfree(s->timesRB);
+			free(s->axes);
+			free(s->vars);
+			free(s);
+			return NULL;
+		}
+	}
+
 	s->numAxes = numAxes;
 	s->numVars = numVars;
+/*
 	s->maxSamples = maxSamples;
 	s->nextSample = 0;
 	s->lastSample = 0; 
+*/
 	return s;
 }
 void Chart_SetAxis(chart_t *s, int idx, const char *name, int flags, const char *label) {
@@ -328,6 +394,7 @@ void Chart_SetVar(chart_t *s, int idx, const char *title, const char *axis) {
 	s->vars[idx].title = strdup(title);
 	s->vars[idx].axis = strdup(axis);
 }
+/*
 void Chart_SetSample(chart_t *s, int idx, float value) {
 	if (!s) {
 		return;
@@ -344,6 +411,22 @@ void Chart_AddTime(chart_t *s, time_t time) {
 		s->lastSample = (s->lastSample + 1) % s->maxSamples;
 	}
 }
+*/
+void Chart_SetSample(chart_t *s, int idx, float value) {
+	if (!s) {
+		return;
+	}
+	RB_saveVal(s->vars[idx].samplesRB, (int)(value*100));
+}
+
+void Chart_AddTime(chart_t *s, time_t time) {
+	if (!s) {
+		return;
+	}
+	RB_saveVal(s->timesRB, (RBTYPE)time);
+}
+
+/*
 void Chart_Iterate(chart_t *s, int index, void (*callback)(float *val, time_t *time, void *userData), void *userData) {
 	if (!s) {
 		return;
@@ -364,6 +447,8 @@ void Chart_Iterate(chart_t *s, int index, void (*callback)(float *val, time_t *t
 		}
 	}
 }
+
+
 void Chart_DisplayLabel(float *val, time_t *time, void *userData) {
 	char buffer[64];
 	http_request_t *request = (http_request_t *)userData;
@@ -371,7 +456,7 @@ void Chart_DisplayLabel(float *val, time_t *time, void *userData) {
 		poststr(request, ",");
 	}
 	request->userCounter++;
-	snprintf(buffer, sizeof(buffer), "new Date(%ld * 1000).toLocaleTimeString()", (long)(*time));
+	snprintf(buffer, sizeof(buffer), "%ld", (long)(*time));					// don't transmit too much data, use only the timestamps here and handle conversion later  ....
 	poststr(request, buffer);
 }
 void Chart_DisplayData(float *val, time_t *time, void *userData) {
@@ -384,6 +469,18 @@ void Chart_DisplayData(float *val, time_t *time, void *userData) {
 	snprintf(buffer, sizeof(buffer), "%.2f", *val);
 	poststr(request, buffer);
 }
+*/
+// callback function to "print" content to http request ...
+void RB_CB_Integer(RBTYPE val, void *buff, char *concatstr) {
+	http_request_t *request = (http_request_t *)buff;
+	hprintf255(request,"%li%s", val, concatstr);
+}
+void RB_CB_IntegerAsFloat(RBTYPE val, void *buff, char *concatstr) {
+	http_request_t *request = (http_request_t *)buff;
+	hprintf255(request,"%.2f%s", (float)val/100, concatstr);
+}
+
+
 void Chart_Display(http_request_t *request, chart_t *s) {
 	char buffer[64];
 
@@ -404,8 +501,36 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 		}
 	}
 
+/*
+	// on every "state" request, JS code will be loaded and canvas is redrawn
+	// this leads to a flickering graph
+	// so put this right below the "state" div
+	// with a "#ifdef 
+	// drawback : We need to take care, if driver is loaded and canvas will be displayed only on a reload of the page
+	// or we might try and hide/unhide it ...
 	poststr(request, "<canvas id=\"myChart\" width=\"400\" height=\"200\"></canvas>");
 	poststr(request, "<script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>");
+*/
+	poststr(request, "<input type='hidden' id='labels' value='");
+	request->userCounter = 0;
+//	Chart_Iterate(s, 0, Chart_DisplayLabel, request);
+	iterateRBtoBuff(s->timesRB, RB_CB_Integer, request,",\0");
+
+	poststr(request, "'>");
+
+	for (int i = 0; i < s->numVars; i++) {
+		hprintf255(request, "<input type='hidden' id='data%i' value='",i);
+		request->userCounter = 0;
+//		Chart_Iterate(s, i,  Chart_DisplayData, request);
+		iterateRBtoBuff(s->vars[i].samplesRB, RB_CB_IntegerAsFloat, request,",\0");
+		poststr(request, "'>");
+	}
+
+
+
+
+
+
 
 	poststr(request, "<script>");
 	poststr(request, "function cha() {");
@@ -413,17 +538,22 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 	poststr(request, "if (window.myChartInstance) {");
 	poststr(request, "    window.myChartInstance.destroy();");
 	poststr(request, "}");
-	poststr(request, "var ctx = document.getElementById('myChart').getContext('2d');");
+	poststr(request, "var ctx = document.getElementById('myChart');");
+	poststr(request, "if (ctx.style.display=='none') ctx.style.display='block';");
+	poststr(request, "ctx =ctx.getContext('2d');");
 
+/*
 	poststr(request, "var labels = [");
 	request->userCounter = 0;
 	Chart_Iterate(s, 0, Chart_DisplayLabel, request);
 	poststr(request, "];");
-
+*/
+	poststr(request, "var labels=document.getElementById('labels').value.split(/\s*,\s*/).map(Number);");
+	
 	poststr(request, "window.myChartInstance = new Chart(ctx, {");
 	poststr(request, "    type: 'line',");
 	poststr(request, "    data: {");
-	poststr(request, "        labels: labels,");  
+	poststr(request, "        labels: labels.map((x)=>new Date(x * 1000).toLocaleTimeString()),");  	// we transmitted only timestamps, let Javascript do the work to convert them ;-)
 	poststr(request, "        datasets: [");
 	for (int i = 0; i < s->numVars; i++) {
 		if (i) {
@@ -431,10 +561,14 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 		}
 		poststr(request, "{");
 		hprintf255(request, "            label: '%s',", s->vars[i].title);
+/*
 		poststr(request, "            data: [");
 		request->userCounter = 0;
 		Chart_Iterate(s, i,  Chart_DisplayData, request);
 		poststr(request, "],");
+*/
+
+		hprintf255(request, "            data: document.getElementById('data%i').value.split(/\s*,\s*/).map(Number),",i);
 		if (i == 2) {
 			poststr(request, "                borderColor: 'rgba(155, 33, 55, 1)',");
 		}
@@ -451,6 +585,7 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 	poststr(request, "]");
 	poststr(request, "    },");
 	poststr(request, "    options: {");
+	poststr(request, "        animation: false,");		// for me it's annoying, if on every refresh the graph is "animated"
 	poststr(request, "        scales: {");
 	poststr(request, "            x: {");
 	poststr(request, "                type: 'category',");  
