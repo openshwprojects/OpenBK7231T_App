@@ -15,7 +15,7 @@ void Tool_Move::onMouseUp(const Coord &pos, int button) {
 void Tool_Move::onEnd() {
 	sim->getCursorMgr()->setCursor(SDL_SYSTEM_CURSOR_ARROW);
 }
-int Tool_Move::drawTextStats(int h) {
+float Tool_Move::drawTextStats(float h) {
 	if (currentTarget) {
 		if (bMovingButtonHeld) {
 			h = drawText(NULL, 20, h, "Moving %s", currentTarget->getClassName());

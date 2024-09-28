@@ -585,7 +585,7 @@ int channelGet(obk_mqtt_request_t* request) {
 	// atoi won't parse any non-decimal chars, so it should skip over the rest of the topic.
 	channel = atoi(p);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelGet channel %i", channel);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelGet channel %i", channel);
 
 	// if channel out of range, stop here.
 	if ((channel < 0) || (channel > 32)) {

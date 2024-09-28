@@ -47,6 +47,9 @@ public:
 	class CursorManager*getCursorMgr() {
 		return cur;
 	}
+	class CSolver *getSolver() {
+		return solver;
+	}
 	class CShape *allocByClassName(const char *className);
 	bool isMouseButtonHold(int idx) const {
 		return bMouseButtonStates[idx];

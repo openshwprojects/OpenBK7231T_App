@@ -16,7 +16,8 @@ class CControllerSwitch : public CControllerBase {
 	bool bVisualPressed;
 public:
 	CControllerSwitch() {
-
+		bPressed = false;
+		bVisualPressed = false;
 	}
 	CControllerSwitch(class CJunction *_a, class CJunction *_b);
 	void setMover(CShape *p) {

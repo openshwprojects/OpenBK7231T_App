@@ -8,6 +8,12 @@
 #include <time.h>
 #include <stdarg.h>
 
+#if WINDOWS
+#include <crtdbg.h>
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#endif
+
 #include "obk_config.h"
 
 typedef int OBK_Publish_Result;
@@ -159,6 +165,8 @@ typedef unsigned short u16_t;
 #define		LWIP_UNUSED_ARG(x)
 #define 	LWIP_CONST_CAST(target_type, val)   ((target_type)(val))
 
+void doNothing();
+
 #define 	GLOBAL_INT_DECLARATION		doNothing
 #define 	GLOBAL_INT_DISABLE			doNothing
 #define 	GLOBAL_INT_RESTORE			doNothing
@@ -183,6 +191,9 @@ typedef int SemaphoreHandle_t;
 #define pdTRUE 1
 #define pdFALSE 0
 typedef int OSStatus;
+
+int rtos_delay_milliseconds(int sec);
+int delay_ms(int sec);
 
 enum {
 	kNoErr = 0,
@@ -406,11 +417,11 @@ typedef unsigned char byte;
 
 int wal_stricmp(const char *a, const char *b) ;
 #define stricmp wal_stricmp
+char *strdup(const char *s);
 
 #endif
 
 const char* skipToNextWord(const char* p);
-char *strdup(const char *s);
 void stripDecimalPlaces(char *p, int maxDecimalPlaces);
 int wal_stricmp(const char *a, const char *b);
 int wal_strnicmp(const char *a, const char *b, int count);

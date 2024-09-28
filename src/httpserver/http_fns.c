@@ -2583,7 +2583,6 @@ int http_fn_cfg_pins(http_request_t* request) {
 		// But on Beken chips, only certain pins can be PWM
 		int bCanThisPINbePWM;
 		int si, ch, ch2;
-		int j;
 		const char* alias;
 
 		si = PIN_GetPinRoleForPinIndex(i);

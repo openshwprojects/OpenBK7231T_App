@@ -237,6 +237,9 @@ void Test_Commands_Channels() {
 		CMD_ExecuteCommand("setChannel 1 $rand", 0);
 		printf("Rand - channel 1 is %i\n", CHANNEL_Get(1));
 	}
+
+	// cause error
+	//SELFTEST_ASSERT_CHANNEL(3, 666);
 }
 
 
