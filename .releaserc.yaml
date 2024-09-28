@@ -108,7 +108,7 @@ generateNotes:
         | BK7231T  | SPI Flash | [OpenBK7231T_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231T_QIO_{{version}}.bin) |
         | BK7231N  | OTA Update | [OpenBK7231N_{{version}}.rbl]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231N_{{version}}.rbl)         |
         | BK7231N  | CCtr Flash | [OpenBK7231N_UG_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231N_UG_{{version}}.bin)   |
-        | BK7231N  | UART Flash | [OpenBK7231N_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231N_QIO_{{version}}.bin) |
+        | BK7231N  | UART Flash | [OpenBK7231N_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231N_QIO_{{version}}.bin) |   
         | XR809    |            | [OpenXR809_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenXR809_{{version}}.img)             |
         | BL602    | UART Flash | [OpenBL602_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBL602_{{version}}.bin)             |
         | BL602    | OTA Web App | [OpenBL602_{{version}}_OTA.bin.xz.ota]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBL602_{{version}}_OTA.bin.xz.ota)             |
@@ -117,10 +117,14 @@ generateNotes:
         | W600     | OTA Update | [OpenW600_{{version}}_gz.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenW600_{{version}}_gz.img)         |
         | W600     | UART Flash | [OpenW600_{{version}}.fls]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenW600_{{version}}.fls)               |
         | LN882H   | OTA Update | [OpenLN882H_{{version}}_OTA.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenLN882H_{{version}}_OTA.bin)   |
-        | LN882H   | UART Flash | [OpenLN882H_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenLN882H_{{version}}.bin)           |
+        | LN882H   | UART Flash | [OpenLN882H_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenLN882H_{{version}}.bin)           |        
+        | BK7231M  | UART Flash | [OpenBK7231M_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231M_QIO_{{version}}.bin) |
+        | Win32  | - | [obkSimulator_{{version}}.zip]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/obkSimulator_{{version}}.zip) |
 
         CCtr Flash = Tuya cloud Cutter flash
         SPI Flash can be flashed through SPI, even if you broke BK bootloader
+        BK7231M is basically a BK7231N but with 000000 encryption keys. BK7231EasyGUIFlasher will show the encryption keys and warn you if you are trying to flash BK7231N with 000000 keys.
+        BK7231M binary will work also for some BL2808Ns, they are also often just a BK7231N with 000000 etc keys.
 
         Flashing instructions are available on the project's [README.md]({{host}}/{{owner}}/{{repository}}#readme)
     preset: conventionalcommits
@@ -174,6 +178,7 @@ publish:
       - path: "output/**/OpenW600*"
       - path: "output/**/OpenW800*"
       - path: "output/**/OpenLN882H*"
+      - path: "output/**/obkSimulator*"
 
 success:
   - "@semantic-release/github"

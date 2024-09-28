@@ -56,8 +56,8 @@ const char *Helper_GetPastHTTPHeader(const char *s) {
 	return 0;
 }
 
-static char outbuf[8192];
-static char buffer[8192];
+static char outbuf[65536];
+static char buffer[65536];
 static const char *replyAt;
 //static jsmntok_t tokens[256]; /* We expect no more than qq JSON tokens */
 
@@ -119,6 +119,19 @@ void Test_GetJSONValue_Setup(const char *text) {
 	g_json = cJSON_Parse(text);
 	g_sec_power = cJSON_GetObjectItemCaseSensitive(g_json, "POWER");
 }
+void Test_FakeHTTPClientPacket_JSON_VA(const char *tg, ...) {
+	char bufferTemp[32768];
+	va_list argList;
+
+	va_start(argList, tg);
+	vsnprintf(bufferTemp, sizeof(bufferTemp), tg, argList);
+	va_end(argList);
+	Test_FakeHTTPClientPacket_GET(bufferTemp);
+
+	//jsmn_init(&parser);
+	//r = jsmn_parse(&parser, replyAt, strlen(replyAt), tokens, 256);
+	Test_GetJSONValue_Setup(replyAt);
+}
 void Test_FakeHTTPClientPacket_JSON(const char *tg) {
 	/*char bufferTemp[8192];
 	va_list argList;
@@ -127,7 +140,6 @@ void Test_FakeHTTPClientPacket_JSON(const char *tg) {
 	vsnprintf(bufferTemp, sizeof(bufferTemp), tg, argList);
 	va_end(argList);
 */
-	int r;
 	Test_FakeHTTPClientPacket_GET(tg);
 
 	//jsmn_init(&parser);
@@ -267,7 +279,17 @@ void Test_Http_SingleRelayOnChannel1() {
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=POWER");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "OFF");
 
+	// echo to get value
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=echo%20$CH1");
+	SELFTEST_ASSERT_STRING(replyAt, "0");
+
 	CMD_ExecuteCommand("setChannel 1 1",0);
+	// echo to get value
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=echo%20$CH1");
+	SELFTEST_ASSERT_STRING(replyAt, "1");
+
+	
+
 	// The empty power packet should not affect relay
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=POWER");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "ON");
@@ -831,15 +853,28 @@ void Test_Http_WiFi() {
 void Test_Http_Commands() {
 	Test_FakeHTTPClientPacket_GET("cm?cmnd=setChannel%201%20123");
 	SELFTEST_ASSERT_CHANNEL(1, 123);
+	// echo to get value
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=echo%20$CH1");
+	SELFTEST_ASSERT_STRING(replyAt, "123");
+
 	// same as above but 234 and space at the end
 	Test_FakeHTTPClientPacket_GET("cm?cmnd=setChannel%201%20234%20");
 	SELFTEST_ASSERT_CHANNEL(1, 234);
+	// echo to get value
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=echo%20$CH1");
+	SELFTEST_ASSERT_STRING(replyAt, "234");
 	// test backlog with space at the end... "backlog setChannel 1 345; "
 	Test_FakeHTTPClientPacket_GET("cm?cmnd=backlog%20setChannel%201%20345;%20");
 	SELFTEST_ASSERT_CHANNEL(1, 345);
+	// echo to get value
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=echo%20$CH1");
+	SELFTEST_ASSERT_STRING(replyAt, "345");
 	// test backlog with more spaces... "backlog setChannel 1 567 ; "
 	Test_FakeHTTPClientPacket_GET("cm?cmnd=backlog%20setChannel%201%20567%20;%20");
 	SELFTEST_ASSERT_CHANNEL(1, 567);
+	// echo to get value
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=echo%20$CH1");
+	SELFTEST_ASSERT_STRING(replyAt, "567");
 	// test backlog with more spaces...  etc... "backlog setChannel 1 345 ; setChannel 1 111"
 	Test_FakeHTTPClientPacket_GET("cm?cmnd=backlog%20setChannel%201%20567%20;%20setChannel%201%20111");
 	SELFTEST_ASSERT_CHANNEL(1, 111);
@@ -849,6 +884,9 @@ void Test_Http_Commands() {
 		"setChannel 1 123");
 	SELFTEST_ASSERT_CHANNEL(1, 123);
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0,"success", 200);
+	// echo to get value
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=echo%20$CH1");
+	SELFTEST_ASSERT_STRING(replyAt, "123");
 	Test_FakeHTTPClientPacket_POST_withJSONReply("api/cmnd",
 		"backlog setChannel 1 345; ");
 	SELFTEST_ASSERT_CHANNEL(1, 345);

@@ -225,6 +225,33 @@
     "examples": "Battery_Setup 1500 3000 2 2400 4096"
   },
   {
+    "name": "BMPI2C_Calibrate",
+    "args": "[DeltaTemp][DeltaPressure][DeltaHumidity]",
+    "descr": "Calibrate the BMPI2C Sensor.",
+    "fn": "BMPI2C_Calibrate",
+    "file": "driver/drv_bmpi2c.c",
+    "requires": "",
+    "examples": "BMPI2C_Calibrate -4 0 10 <br /> meaning -4 on current temp reading, 0 on current pressure reading and +10 on current humidity reading"
+  },
+  {
+    "name": "BMPI2C_Configure",
+    "args": "BMPI2C_Configure",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_bmpi2c.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "BMPI2C_Cycle",
+    "args": "[IntervalSeconds]",
+    "descr": "This is the interval between measurements in seconds, by default 1. Max is 255.",
+    "fn": "BMPI2C_cycle",
+    "file": "drv/drv_bmpi2c.c",
+    "requires": "",
+    "examples": "BMPI2C_Cycle 60 <br /> measurement is taken every 60 seconds"
+  },
+  {
     "name": "BP1658CJ_Current",
     "args": "[MaxCurrentRGB][MaxCurrentCW]",
     "descr": "Sets the maximum current limit for BP1658CJ driver.",
@@ -306,6 +333,51 @@
     "examples": ""
   },
   {
+    "name": "chart_add",
+    "args": "",
+    "descr": "See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "fn": "NULL);",
+    "file": "driver/drv_charts.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "chart_addNow",
+    "args": "",
+    "descr": "See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "fn": "NULL);",
+    "file": "driver/drv_charts.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "chart_create",
+    "args": "",
+    "descr": "See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "fn": "NULL);",
+    "file": "driver/drv_charts.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "chart_setAxis",
+    "args": "",
+    "descr": "See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "fn": "NULL);",
+    "file": "driver/drv_charts.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "chart_setVar",
+    "args": "",
+    "descr": " See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "fn": "NULL);",
+    "file": "driver/drv_charts.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "Choice",
     "args": "[IndexToExecute][Option0][Option1][Option2][OptionN][etc]",
     "descr": "This will choose a given argument by index and execute it as a command. Index to execute can be a variable like $CH1.",
@@ -322,6 +394,15 @@
     "file": "driver/drv_chargingLimit.c",
     "requires": "",
     "examples": ""
+  },
+  {
+    "name": "CHT_Alert",
+    "args": "[TempDiff][HumDiff][Freq][FQ]",
+    "descr": "Enable alert pin. TempDif (temperature difference is any float higher than 0.05�C) = set detected difference in temperature required for device to wake. HumDiff (humidity difference is any float higher than 0.1%). Freq (time per measurement in s) = 1, 5, 10, 60, 120 (default if wrong = 1). FQ (fault queue number) = 1, 2, 4, 6 (default if wrong = 1)",
+    "fn": "CHT_Alert",
+    "file": "drv/drv_cht8305.c",
+    "requires": "",
+    "examples": "CHT_Alert 0.5 0 5 2 <br /> alert pin will trigger when temperature deviates by more than 0.5�C. Humidity will be ignored. Sensor measures every 5s with fault queue number 2."
   },
   {
     "name": "CHT_Calibrate",
@@ -559,7 +640,7 @@
   },
   {
     "name": "DSTime",
-    "args": "[timeSeconds]",
+    "args": "[timeSeconds][optionalAutoWakeUpTimeSeconds]",
     "descr": "DoorSensor driver configuration command. Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival. You can also use this to extend current awake time (at runtime) with syntax: 'DSTime +10', this will make device stay awake 10 seconds longer. You can also restart current value of awake counter by 'DSTime clear', this will make counter go from 0 again.",
     "fn": "DoorDeepSleep_SetTime",
     "file": "drv/drv_doorSensorWithDeepSleep.c",
@@ -765,6 +846,15 @@
     "examples": ""
   },
   {
+    "name": "IndexRefreshInterval",
+    "args": "CMD_IndexRefreshInterval",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "IREnable",
     "args": "[Str][1or0]",
     "descr": "Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol",
@@ -954,6 +1044,15 @@
     "examples": ""
   },
   {
+    "name": "LED_Map",
+    "args": "CMD_LEDDriver_Map",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_sm15155e.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "led_nextColor",
     "args": "",
     "descr": "Sets the next color from predefined colours list. Our list is the same as in Tasmota.",
@@ -1117,7 +1216,7 @@
   },
   {
     "name": "linkTuyaMCUOutputToChannel",
-    "args": "[dpId][varType][channelID][bDPCache-Optional][mult-optional]",
+    "args": "[dpId][varType][channelID][bDPCache-Optional][mult-optional][bInverse]",
     "descr": "Used to map between TuyaMCU dpIDs and our internal channels. Last argument is optional and 0 by default. You can set it to 1 for battery powered devices, so a variable is set with DPCache, for example a sampling interval for humidity/temperature sensor. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap. Please see [Tuya Docs](https://developer.tuya.com/en/docs/iot/tuya-cloud-universal-serial-port-access-protocol?id=K9hhi0xxtn9cb) for info about TuyaMCU. You can also see our [TuyaMCU Analyzer Tool](https://www.elektroda.com/rtvforum/viewtopic.php?p=20528459#20528459)",
     "fn": "TuyaMCU_LinkTuyaMCUOutputToChannel",
     "file": "driver/drv_tuyaMCU.c",
@@ -1487,7 +1586,7 @@
   {
     "name": "PowerSave",
     "args": "[Optional 1 or 0, by default 1 is assumed]",
-    "descr": "Enables dynamic power saving mode on BK and W600. You can also disable power saving with PowerSave 0.",
+    "descr": "Enables dynamic power saving mode on Beken N/T, BL602, W600, W800 and LN882H. In the case of LN882H PowerSave will not work as a startup command, so use in autoexec. On LN882H PowerSave 1 = light sleep and Powersave >1 (eg PowerSave 2) = deeper sleep. On LN882H PowerSave 1 should be used if BL0937 metering is present. On all supported platforms PowerSave 0 can be used to disable power saving.",
     "fn": "CMD_PowerSave",
     "file": "cmnds/cmd_main.c",
     "requires": "",
@@ -1683,6 +1782,15 @@
     "examples": ""
   },
   {
+    "name": "SendIR2",
+    "args": "CMD_IR2_SendIR2",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_ir2.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "sendPOST",
     "args": "[TargetURL] [HTTP Port] [Content Type] [Post Content]",
     "descr": "Sends a HTTP POST request to target URL. Arguments can contain variable expansion.",
@@ -1750,6 +1858,15 @@
     "args": "[ChannelIndex][ChannelValue]",
     "descr": "Sets a raw channel to given value. Relay channels are using 1 and 0 values. PWM channels are within [0,100] range. Do not use this for LED control, because there is a better and more advanced LED driver with dimming and configuration memory (remembers setting after on/off), LED driver commands has 'led_' prefix.",
     "fn": "CMD_SetChannel",
+    "file": "cmnds/cmd_channels.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "SetChannelEnum",
+    "args": "[ChannelIndex][Value,Title][Value,Title]",
+    "descr": "Creates a custom channel enumeration.",
+    "fn": "SetChannelEnum",
     "file": "cmnds/cmd_channels.c",
     "requires": "",
     "examples": ""
@@ -1845,9 +1962,18 @@
     "examples": ""
   },
   {
+    "name": "SetupIR2",
+    "args": "CMD_IR2_SetupIR2",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_ir2.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "SetupTestPower",
-    "args": "",
-    "descr": "NULL",
+    "args": "[fakeVoltage] [FakeCurrent] [FakePower] [bAllowRandom]",
+    "descr": "Starts the fake power metering driver",
     "fn": "TestPower_Setup",
     "file": "driver/drv_test_drivers.c",
     "requires": "",
@@ -2021,6 +2147,15 @@
     "descr": "Simons Special Test",
     "fn": "CMD_SimonTest",
     "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "SimSaveArgs",
+    "args": "CMD_SelfTest_SaveArgs",
+    "descr": "",
+    "fn": "0);",
+    "file": "selftest/selftest_cfg_via_http.c",
     "requires": "",
     "examples": ""
   },

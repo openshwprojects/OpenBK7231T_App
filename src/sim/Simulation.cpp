@@ -27,7 +27,7 @@ void CSimulation::removeJunctions(class CShape *s) {
 void CSimulation::removeJunction(class CJunction *ju) {
 	junctions.remove(ju);
 }
-int CSimulation::drawTextStats(int h) {
+float CSimulation::drawTextStats(float h) {
 	h = drawText(NULL, 10, h, "Objects %i, wires %i", objects.size(), wires.size());
 	return h;
 }

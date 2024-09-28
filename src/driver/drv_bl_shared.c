@@ -132,7 +132,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 	hprintf255(request, "<br>");
 	if(DRV_IsRunning("NTP")==false) {
-		hprintf255(request,"NTP driver is not started, daily energy stats disbled.");
+		hprintf255(request,"NTP driver is not started, daily energy stats disabled.");
 	} else if (!NTP_IsTimeSynced()) {
 		hprintf255(request,"Daily energy stats awaiting NTP driver to sync real time...");
 	}

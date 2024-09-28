@@ -91,8 +91,31 @@ static void tcp_client_thread(beken_thread_arg_t arg)
 	request.received = buf;
 	request.receivedLenmax = INCOMING_BUFFER_SIZE - 2;
 	request.responseCode = HTTP_RESPONSE_OK;
+#if PLATFORM_BL602
 	request.receivedLen = recv(fd, request.received, request.receivedLenmax, 0);
 	request.received[request.receivedLen] = 0;
+#else
+	request.receivedLen = 0;
+	while (1) {
+		int remaining = request.receivedLenmax - request.receivedLen;
+		int received = recv(fd, request.received + request.receivedLen, remaining, 0);
+		if (received <= 0) {
+			break;
+		}
+		request.receivedLen += received;
+		if (received < remaining) {
+			break;
+		}
+		// grow by 1024
+		request.receivedLenmax += 1024;
+		request.received = (char*)realloc(request.received, request.receivedLenmax+2);
+		if (request.received == NULL) {
+			// no memory
+			return;
+		}
+	}
+	request.received[request.receivedLen] = 0;
+#endif
 
 	request.reply = reply;
 	request.replylen = 0;

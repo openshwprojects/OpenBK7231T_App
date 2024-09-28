@@ -47,6 +47,9 @@ public:
 	class CursorManager*getCursorMgr() {
 		return cur;
 	}
+	class CSolver *getSolver() {
+		return solver;
+	}
 	class CShape *allocByClassName(const char *className);
 	bool isMouseButtonHold(int idx) const {
 		return bMouseButtonStates[idx];
@@ -57,6 +60,10 @@ public:
 	bool saveSimulationAs(const char *s);
 	bool saveSimulation();
 	void saveOrShowSaveAsDialogIfNeeded();
+
+	// LFS
+	bool setAutoexecBat(const char *s);
+	void formatLFS();
 
 	void markAsModified() {
 		bSchematicModified = true;

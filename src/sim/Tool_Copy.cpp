@@ -37,7 +37,7 @@ void Tool_Copy::onMouseDown(const Coord &pos, int button) {
 }
 void Tool_Copy::drawTool() {
 	sim->getCursorMgr()->setCursor(SDL_SYSTEM_CURSOR_ARROW);
-	Coord nowMousePos = GetMousePos();
+	Coord nowMousePos = GetMousePosWorld();
 	Coord delta = nowMousePos - prevMousePos;
 	if (copyingObject) {
 		copyingObject->translate(delta);

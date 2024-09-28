@@ -93,7 +93,7 @@ void SIM_SetVoltageOnADCPin(int index, float v) {
 		v = 0;
 	float f = v / 3.3f;
 	int iVal = f * 1024;
-	SIM_SetIntegerValueADCPin(index, v);
+	SIM_SetIntegerValueADCPin(index, iVal);
 }
 int SIM_GetPWMValue(int index) {
 	return g_simulatedPWMs[index];

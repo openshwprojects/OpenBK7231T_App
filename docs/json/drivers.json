@@ -30,6 +30,24 @@
     "requires": ""
   },
   {
+    "name": "HGS02",
+    "title": "TODO",
+    "descr": "[HGS02](https://www.elektroda.com/rtvforum/viewtopic.php?p=21177061#21177061)",
+    "requires": ""
+  },
+  {
+    "name": "TestCharts",
+    "title": "TODO",
+    "descr": ".",
+    "requires": ""
+  },
+  {
+    "name": "Charts",
+    "title": "TODO",
+    "descr": "Charts driver allows you to create a customizable chart directly on your device. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "requires": ""
+  },
+  {
     "name": "NTP",
     "title": "TODO",
     "descr": "NTP driver is required to get current time and date from web. Without it, there is no correct datetime. Put 'startDriver NTP' in short startup line or autoexec.bat to run it on start.",
@@ -60,7 +78,7 @@
     "requires": ""
   },
   {
-    "name": "qq",
+    "name": "RN8209",
     "title": "TODO",
     "descr": "Bqqqqqqqqqq ",
     "requires": ""
@@ -80,7 +98,7 @@
   {
     "name": "BL0942SPI",
     "title": "TODO",
-    "descr": "BL0942 is a power-metering chip which uses SPI protocol for communication. It's usually connected to SPI1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [PZIOT-E01 teardown example](https://www.elektroda.com/rtvforum/topic3945667.html). ",
+    "descr": "BL0942 driver version for SPI protocol. It's usually connected to SPI1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [PZIOT-E01 teardown example](https://www.elektroda.com/rtvforum/topic3945667.html). ",
     "requires": ""
   },
   {
@@ -98,19 +116,19 @@
   {
     "name": "CSE7766",
     "title": "TODO",
-    "descr": "BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK",
+    "descr": "CSE7766 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK",
     "requires": ""
   },
   {
     "name": "MAX6675",
     "title": "TODO",
-    "descr": "BQQQK",
+    "descr": "Thermocouple driver for measuring high temperatures, see [presentation](https://www.elektroda.com/rtvforum/topic4055231.html)",
     "requires": ""
   },
   {
     "name": "PT6523",
     "title": "TODO",
-    "descr": "BQQQK",
+    "descr": "Car radio LCD driver, see [teardown and presentation](https://www.elektroda.com/rtvforum/topic3983111.html)",
     "requires": ""
   },
   {
@@ -126,15 +144,27 @@
     "requires": ""
   },
   {
+    "name": "SM15155E",
+    "title": "TODO",
+    "descr": "SM15155E is a WS2812B-like single wire LED controller. It's also always using P16 (SPI out) on Beken. See [reverse-engineering topic](https://www.elektroda.com/rtvforum/topic4060227.html)",
+    "requires": ""
+  },
+  {
     "name": "IR",
     "title": "TODO",
     "descr": "IRLibrary wrapper, so you can receive remote signals and send them. See [forum discussion here](https://www.elektroda.com/rtvforum/topic3920360.html), also see [LED strip and IR YT video](https://www.youtube.com/watch?v=KU0tDwtjfjw)",
     "requires": ""
   },
   {
+    "name": "IR2",
+    "title": "IR2",
+    "descr": "TODO",
+    "requires": ""
+  },
+  {
     "name": "DDP",
     "title": "TODO",
-    "descr": "DDP is a LED control protocol that is using UDP. You can use xLights or any other app to control OBK LEDs that way.",
+    "descr": "DDP is a LED control protocol that is using UDP. You can use xLights or any other app to control OBK LEDs that way. See [DDP topic](https://www.elektroda.com/rtvforum/topic4040325.html)",
     "requires": ""
   },
   {
@@ -222,9 +252,15 @@
     "requires": ""
   },
   {
-    "name": "CHT8305",
+    "name": "BMPI2C",
     "title": "TODO",
-    "descr": "CHT8305 is a Temperature and Humidity sensor with I2C interface.",
+    "descr": "Driver for BMP085, BMP180, BMP280, BME280, BME68X sensors with I2C interface.",
+    "requires": ""
+  },
+  {
+    "name": "CHT83XX",
+    "title": "TODO",
+    "descr": "CHT8305, CHT8310 and CHT8315 are a Temperature and Humidity sensors with I2C interface.",
     "requires": ""
   },
   {
@@ -267,6 +303,12 @@
     "name": "AHT2X",
     "title": "TODO",
     "descr": "AHT Humidity/temperature sensor. Supported sensors are: AHT10, AHT2X, AHT30. See [presentation guide](https://www.elektroda.com/rtvforum/topic4052685.html)",
+    "requires": ""
+  },
+  {
+    "name": "DS1820",
+    "title": "TODO",
+    "descr": "Very simple driver for oneWire temperature sensor DS1820.",
     "requires": ""
   },
   {

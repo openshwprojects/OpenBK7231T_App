@@ -36,6 +36,9 @@ public:
 		realVoltage = 220.0f;
 		realFreq = 60.0f;
 	}
+	virtual void saveTo(struct cJSON *j_obj);
+	virtual void loadFrom(struct cJSON *j_obj);
+
 	virtual void onDrawn();
 	virtual class CControllerBase *cloneController(class CShape *origOwner, class CShape *newOwner);
 };

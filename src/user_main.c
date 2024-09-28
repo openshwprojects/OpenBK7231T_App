@@ -312,7 +312,14 @@ void Main_OnWiFiStatusChange(int code)
 		break;
 	case WIFI_STA_AUTH_FAILED:
 		// try to connect again in few seconds
-		g_connectToWiFi = 60;
+		// for me first auth will often fail, so retry more aggressively during startup
+		// the maximum of 6 tries during first 30 seconds should be acceptable
+		if (g_secondsElapsed < 30) {
+			g_connectToWiFi = 5;
+		}
+		else {
+			g_connectToWiFi = 60;
+		}
 		g_bHasWiFiConnected = 0;
 		ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_AUTH_FAILED - %i\r\n", code);
 		break;
@@ -490,9 +497,9 @@ void Main_OnEverySecond()
 		UINT32 temperature;
 		temp_single_get_current_temperature(&temperature);
 #if PLATFORM_BK7231T
-		g_wifi_temperature = temperature / 25.0f;
+		g_wifi_temperature = 2.21f * (temperature / 25.0f) - 65.91f;
 #else
-		g_wifi_temperature = temperature * 0.128f;
+		g_wifi_temperature = (-0.457f * temperature) + 188.474f;
 #endif
 #elif PLATFORM_BL602
 		get_tsen_adc(&g_wifi_temperature, 0);
@@ -1147,9 +1154,9 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 				DRV_StartDriver("DoorSensor");
 #endif
 			}
-			if (PIN_FindPinIndexForRole(IOR_CHT8305_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_CHT8305_DAT, -1) != -1) {
+			if (PIN_FindPinIndexForRole(IOR_CHT83XX_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_CHT83XX_DAT, -1) != -1) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
-				DRV_StartDriver("CHT8305");
+				DRV_StartDriver("CHT83XX");
 #endif
 			}
 			if (PIN_FindPinIndexForRole(IOR_SHT3X_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SHT3X_DAT, -1) != -1) {
@@ -1180,14 +1187,14 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 				DRV_StartDriver("GN6932");
 #endif
 			}
-			if ((PIN_FindPinIndexForRole(IOR_TM1638_CLK, -1) != -1) &&
-				(PIN_FindPinIndexForRole(IOR_TM1638_DAT, -1) != -1) &&
-				(PIN_FindPinIndexForRole(IOR_TM1638_STB, -1) != -1))
-			{
-#ifndef OBK_DISABLE_ALL_DRIVERS
-				DRV_StartDriver("TM1638");
-#endif
-			}
+//			if ((PIN_FindPinIndexForRole(IOR_TM1638_CLK, -1) != -1) &&
+//				(PIN_FindPinIndexForRole(IOR_TM1638_DAT, -1) != -1) &&
+//				(PIN_FindPinIndexForRole(IOR_TM1638_STB, -1) != -1))
+//			{
+//#ifndef OBK_DISABLE_ALL_DRIVERS
+//				DRV_StartDriver("TM1638");
+//#endif
+//			}
 		}
 	}
 

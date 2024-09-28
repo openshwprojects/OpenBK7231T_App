@@ -1052,6 +1052,10 @@ void TuyaMCU_SendNetworkStatus()
 	else if (Main_HasWiFiConnected() != 0) {
 		state = Main_HasMQTTConnected() != 0 ? TUYA_NETWORK_STATUS_CONNECTED_TO_CLOUD : TUYA_NETWORK_STATUS_CONNECTED_TO_ROUTER;
 	}
+	// allow override
+	if (state < g_defaultTuyaMCUWiFiState) {
+		state = g_defaultTuyaMCUWiFiState;
+	}
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "SendNetworkStatus: sending status 0x%X to MCU \n", state);
 	TuyaMCU_SendCommandWithData(0x2B, &state, 1);
 }
@@ -1815,6 +1819,15 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		// added for https://www.elektroda.com/rtvforum/viewtopic.php?p=21095905#21095905
 		TuyaMCU_SendCommandWithData(0x04, 0, 0);
 		break;
+	case 0x22:
+		{
+			byte data23[1] = { 1 };
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: 0x22 replying");
+			// For example, the module returns 55 aa 00 23 00 01 01 24
+			TuyaMCU_SendCommandWithData(0x23, data23, 1);
+		}
+		break;
+
 		
 	case TUYA_CMD_STATE:
 		TuyaMCU_ParseStateMessage(data + 6, len - 6);
