@@ -81,13 +81,16 @@ void print_security_type(int type)
 
 void HAL_PrintNetworkInfo()
 {
+	char macstr[3 * 6 + 1];
 	struct tls_curr_bss_t bss;
+	unsigned char mac[6] = { 0, 1, 2, 3, 4, 5 };
+
+	struct netif* netif = tls_get_netif();
+	MEMCPY(mac, &netif->hwaddr, ETH_ALEN);
+	snprintf(macstr, sizeof(macstr), MACSTR, MAC2STR(mac));
 
 	tls_wifi_get_current_bss(&bss);
-	//wm_printf won't accept "%.*s" to specify length of SSID - without this, SSID is often followed by garbage
-	printf("sta:rssi=%d,ssid=%.*s,bssid=" MACSTR ",channel=%d,cipher_type:",
-		bss.rssi, (int)bss.ssid_len, bss.ssid, bss.bssid[0], bss.bssid[1], bss.bssid[2], bss.bssid[3], bss.bssid[4], bss.bssid[5], bss.channel);
-	print_security_type(bss.encryptype);
+	bss.ssid[bss.ssid_len]=0;
 
 	struct tls_ethif* tmpethif = tls_netif_get_ethif();
 	char buffer[256];
@@ -99,8 +102,16 @@ void HAL_PrintNetworkInfo()
 	strcpy(netmask, inet_ntoa(tmpethif->netmask));
 	char dns[16] = {0};
 	strcpy(dns, inet_ntoa(tmpethif->dns1));
-	snprintf(buffer, 256, "ip=%s,gate=%s,mask=%s,dns=%s\r\n", ip, gw, netmask, dns);
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, buffer);
+	snprintf(buffer, 256, 	"Network info:\r\n"
+				"\tsta:rssi=%d, SSID=%s, BSSID=" MACSTR ", channel=%d, encr=%s\r\n"
+				"\tIP=%s, GW=%s, MASK=%s, MAC=%s, DNS=%s\r\n",
+				bss.rssi, bss.ssid, MAC2STR(bss.bssid), bss.channel, 
+				( bss.encryptype >=  IEEE80211_ENCRYT_NONE && bss.encryptype <= IEEE80211_ENCRYT_AUTO_WPA2) ? security_names[bss.encryptype] : "-",
+				 ip, gw, netmask, macstr, dns );
+	bk_printf(buffer);
+	// do we need this in web Log?
+	// disable for now
+//	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, buffer);
 }
 
 int HAL_GetWifiStrength()
@@ -346,6 +357,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 
 	return 0;
 }
+
 int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 {
 
