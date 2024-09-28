@@ -13,17 +13,11 @@
 //ENABLE_DRIVER_BL0942 - Enable support for BL0942
 //ENABLE_DRIVER_CSE7766 - Enable support for CSE7766
 //ENABLE_DRIVER_TUYAMCU - Enable support for TuyaMCU and tmSensor
-//ENABLE_WPA_AP		- Enable use as WPA2 protected AP 
-//	WPA_AP_STA_CLIENTS	# of clients allowed - default: 3
+
 
 #if PLATFORM_XR809
 
 #define OBK_DISABLE_ALL_DRIVERS       1
-// allow usage as an WPA2 AP ans define number of clients to connect
-#define ENABLE_WPA_AP			1
-#define WPA_AP_STA_CLIENTS		3
-
-
 
 #elif PLATFORM_W600
 
@@ -33,6 +27,9 @@
 #define ENABLE_DRIVER_BL0937    1
 #define ENABLE_DRIVER_DHT		1
 #define ENABLE_TASMOTA_JSON		1
+// allow usage as an WPA2 AP ans define number of clients to connect
+#define ENABLE_WPA_AP			1
+#define WPA_AP_STA_CLIENTS		3
 
 #elif PLATFORM_W800
 
@@ -42,6 +39,7 @@
 // allow usage as an WPA2 AP ans define number of clients to connect
 #define ENABLE_WPA_AP			1
 #define WPA_AP_STA_CLIENTS		3
+
 
 #elif WINDOWS
 
@@ -81,6 +79,9 @@
 #define ENABLE_DRIVER_DDP		1
 #define ENABLE_DRIVER_SSDP		1
 #define ENABLE_DRIVER_ADCBUTTON	1
+#define ENABLE_DRIVER_SM15155E	1
+#define ENABLE_DRIVER_IR2		0
+#define ENABLE_DRIVER_CHARTS	1
 
 #elif PLATFORM_BL602
 
@@ -101,6 +102,8 @@
 #define ENABLE_TASMOTA_JSON		1
 #define ENABLE_DRIVER_DDP		1
 #define ENABLE_DRIVER_SSDP		1
+#define ENABLE_DRIVER_CHT83XX 1
+#define ENABLE_DRIVER_DS1820		1
 // allow usage as an WPA2 AP ans define number of clients to connect
 #define ENABLE_WPA_AP			1
 #define WPA_AP_STA_CLIENTS		3
@@ -117,7 +120,7 @@
 #define ENABLE_DRIVER_BL0942    1
 #define ENABLE_DRIVER_BL0942SPI 1
 #define ENABLE_DRIVER_CSE7766   1
-//#define ENABLE_DRIVER_BMP280 1
+#define ENABLE_DRIVER_BMP280 1
 //#define ENABLE_DRIVER_PT6523	1
 //#define ENABLE_DRIVER_MAX6675	1
 //#define ENABLE_DRIVER_TEXTSCROLLER	1
@@ -139,16 +142,21 @@
 //#define ENABLE_DRIVER_PWM_GROUP 1
 #define ENABLE_DRIVER_SM16703P 1
 #define ENABLE_DRIVER_PIXELANIM	1
+#define ENABLE_DRIVER_SM15155E 1
 #endif
 // parse things like $CH1 or $hour etc
 #define ENABLE_EXPAND_CONSTANT	1
 #define ENABLE_DRIVER_DHT		1
 //#define ENABLE_DRIVER_AHT2X 1
-//#define ENABLE_DRIVER_DRAWERS	1
+#define	ENABLE_DRIVER_TMGN		0
+#define ENABLE_DRIVER_DRAWERS	0
 #define ENABLE_TASMOTA_JSON		1
 //#define ENABLE_DRIVER_BMPI2C 1
 #define ENABLE_DRIVER_DDP		1
 #define ENABLE_DRIVER_SSDP		1
+#define ENABLE_DRIVER_IR2		0
+#define ENABLE_DRIVER_DS1820		1
+#define ENABLE_DRIVER_CHT83XX 1
 // allow usage as an WPA2 AP ans define number of clients to connect
 #define ENABLE_WPA_AP			1
 #define WPA_AP_STA_CLIENTS		3
@@ -168,6 +176,7 @@
 #define ENABLE_EXPAND_CONSTANT		1
 //#define	ENABLE_DRIVER_TMGN		1
 #define ENABLE_TASMOTA_JSON		1
+#define ENABLE_DRIVER_DS1820		1
 // allow usage as an WPA2 AP ans define number of clients to connect
 #define ENABLE_WPA_AP			1
 #define WPA_AP_STA_CLIENTS		3
