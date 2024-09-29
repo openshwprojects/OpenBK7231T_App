@@ -220,7 +220,7 @@ float getActiveRepeatingEvents(const char *s) {
 	return RepeatingEvents_GetActiveCount();
 }
 
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#ifdef ENABLE_DRIVER_BL0937
 
 float getVoltage(const char *s) {
 	return DRV_GetReading(OBK_VOLTAGE);
