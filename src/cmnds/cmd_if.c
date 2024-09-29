@@ -397,7 +397,7 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current number of active repeating events",
 	//cnstdetail:"requires":""}
 	{"$activeRepeatingEvents", &getActiveRepeatingEvents},
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#ifdef ENABLE_DRIVER_BL0937
 	//cnstdetail:{"name":"$voltage",
 	//cnstdetail:"title":"$voltage",
 	//cnstdetail:"descr":"Current value of voltage from energy metering chip. You can use those variables to make, for example, a change handler that fires when voltage is above 245, etc.",
@@ -422,6 +422,8 @@ const constant_t g_constants[] = {
 	//cnstdetail:"title":"$day",
 	//cnstdetail:"descr":"Current weekday from NTP",
 	//cnstdetail:"requires":""}
+#endif	//ENABLE_DRIVER_BL0937
+#ifdef ENABLE_NTP
 	{"$day", &getWeekDay},
 	//cnstdetail:{"name":"$hour",
 	//cnstdetail:"title":"$hour",
@@ -480,6 +482,7 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",
 	//cnstdetail:"requires":""}
 	{ "$NTPOn", &getNTPOn },
+#endif	//ENABLE_NTP
 #ifdef ENABLE_DRIVER_BATTERY
 	//cnstdetail:{"name":"$batteryVoltage",
 	//cnstdetail:"title":"$batteryVoltage",
@@ -491,8 +494,7 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Battery driver level",
 	//cnstdetail:"requires":""}
 	{ "$batteryLevel", &getBatteryLevel },
-#endif
-#endif
+#endif	// ENABLE_DRIVER_BATTERY
 	//cnstdetail:{"name":"$uptime",
 	//cnstdetail:"title":"$uptime",
 	//cnstdetail:"descr":"Time since reboot in seconds",
