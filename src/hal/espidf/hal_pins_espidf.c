@@ -358,13 +358,23 @@ int HAL_PIN_ReadDigitalInput(int index)
 	return gpio_get_level(pin->pin);
 }
 
+void ESP_ConfigurePin(gpio_num_t pin, gpio_mode_t mode, bool pup, bool pdown)
+{
+	gpio_config_t conf = {};
+	conf.pin_bit_mask = 1ULL << (uint32_t)pin;
+	conf.mode = mode;
+	conf.pull_up_en = pup ? GPIO_PULLUP_ENABLE : GPIO_PULLUP_DISABLE;
+	conf.pull_down_en = pdown ? GPIO_PULLDOWN_ENABLE : GPIO_PULLDOWN_DISABLE;
+	conf.intr_type = GPIO_INTR_DISABLE;
+	gpio_config(&conf);
+}
+
 void HAL_PIN_Setup_Input_Pullup(int index)
 {
 	if(index >= g_numPins)
 		return;
 	espPinMapping_t* pin = g_pins + index;
-	gpio_set_direction(pin->pin, GPIO_MODE_INPUT);
-	gpio_set_pull_mode(pin->pin, GPIO_PULLUP_ONLY);
+	ESP_ConfigurePin(pin->pin, GPIO_MODE_INPUT, true, false);
 }
 
 void HAL_PIN_Setup_Input_Pulldown(int index)
@@ -372,8 +382,7 @@ void HAL_PIN_Setup_Input_Pulldown(int index)
 	if(index >= g_numPins)
 		return;
 	espPinMapping_t* pin = g_pins + index;
-	gpio_set_direction(pin->pin, GPIO_MODE_INPUT);
-	gpio_set_pull_mode(pin->pin, GPIO_PULLDOWN_ONLY);
+	ESP_ConfigurePin(pin->pin, GPIO_MODE_INPUT, false, true);
 }
 
 void HAL_PIN_Setup_Input(int index)
@@ -381,8 +390,7 @@ void HAL_PIN_Setup_Input(int index)
 	if(index >= g_numPins)
 		return;
 	espPinMapping_t* pin = g_pins + index;
-	gpio_set_direction(pin->pin, GPIO_MODE_INPUT);
-	gpio_set_pull_mode(pin->pin, GPIO_FLOATING);
+	ESP_ConfigurePin(pin->pin, GPIO_MODE_INPUT, false, false);
 }
 
 void HAL_PIN_Setup_Output(int index)
@@ -390,8 +398,7 @@ void HAL_PIN_Setup_Output(int index)
 	if(index >= g_numPins)
 		return;
 	espPinMapping_t* pin = g_pins + index;
-	gpio_set_direction(pin->pin, GPIO_MODE_OUTPUT);
-	gpio_set_pull_mode(pin->pin, GPIO_PULLUP_ONLY);
+	ESP_ConfigurePin(pin->pin, GPIO_MODE_OUTPUT, true, false);
 	gpio_set_level(pin->pin, 0);
 }
 

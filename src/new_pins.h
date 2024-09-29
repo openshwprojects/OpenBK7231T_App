@@ -1045,9 +1045,26 @@ typedef enum channelType_e {
 #define SPECIAL_CHANNEL_FLASHVARS_LAST	264
 
 
-#if PLATFORM_W800 || PLATFORM_ESPIDF
+#if PLATFORM_W800
 
 typedef struct pinsState_s {
+	// All above values are indexed by physical pin index
+	// (so we assume we have maximum of 32 pins)
+	byte roles[48];
+	byte channels[48];
+	// extra channels array - this is needed for
+	// buttons, so button can toggle one relay on single click
+	// and other relay on double click
+	byte channels2[48];
+	// This single field above, is indexed by CHANNEL INDEX
+	// (not by pin index)
+	byte channelTypes[CHANNEL_MAX];
+} pinsState_t;
+
+#elif PLATFORM_ESPIDF
+
+typedef struct pinsState_s
+{
 	// All above values are indexed by physical pin index
 	// (so we assume we have maximum of 32 pins)
 	byte roles[50];
@@ -1285,7 +1302,9 @@ typedef struct mainConfig_s {
 	// offset 0x000004BC
 	unsigned long LFS_Size; // szie of LFS volume.  it's aligned against the end of OTA
 	int loggerFlags;
-#if PLATFORM_W800 || PLATFORM_ESPIDF
+#if PLATFORM_W800
+	byte unusedSectorAB[51];
+#elif PLATFORM_ESPIDF
 	byte unusedSectorAB[43];
 #else    
 	byte unusedSectorAB[99];
