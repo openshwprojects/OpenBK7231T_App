@@ -776,7 +776,7 @@ void Main_OnEverySecond()
 		if (!g_reset) {
 			// ensure any config changes are saved before reboot.
 			CFG_Save_IfThereArePendingChanges();
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#ifdef ENABLE_DRIVER_BL0937
 			if (DRV_IsMeasuringPower())
 			{
 				BL09XX_SaveEmeteringStatistics();
