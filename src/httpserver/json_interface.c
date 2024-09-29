@@ -194,7 +194,7 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 /*
 {"StatusSNS":{"Time":"2022-07-30T10:11:26","ENERGY":{"TotalStartTime":"2022-05-12T10:56:31","Total":0.003,"Yesterday":0.003,"Today":0.000,"Power": 0,"ApparentPower": 0,"ReactivePower": 0,"Factor":0.00,"Voltage":236,"Current":0.000}}}
 */
-
+#ifdef ENABLE_DRIVER_BL0937
 // returns NaN values as 0
 static float _getReading_NanToZero(energySensor_t type) {
 	float retval = DRV_GetReading(type);
@@ -231,7 +231,7 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 	}
 	return 0;
 }
-
+#endif	// ENABLE_DRIVER_BL0937
 // Topic: tele/tasmota_48E7F3/SENSOR at 3:06 AM:
 // Sample:
 /*
@@ -352,7 +352,7 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 	JSON_PrintKeyValue_String(request, printer, "Time", buff, false);
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
-
+#ifdef ENABLE_DRIVER_BL0937
 	if (DRV_IsMeasuringPower() || DRV_IsMeasuringBattery()) {
 
 		// begin ENERGY block
@@ -360,6 +360,7 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 		printer(request, "\"ENERGY\":");
 		http_tasmota_json_ENERGY(request, printer);
 	}
+#endif	// ENABLE_DRIVER_BL0937
 	bool bHasAnyDHT = false;
 	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		int role = PIN_GetPinRoleForPinIndex(i);
