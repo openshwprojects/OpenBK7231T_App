@@ -69,14 +69,14 @@ void Test_LEDDriver_CW() {
 
 	for (i = 0; i <= 100; i++) {
 		char buffer[64];
-		sprintf(buffer, "Dimmer %i", i);
+		snprintf(buffer, sizeof(buffer), "Dimmer %i", i);
 		CMD_ExecuteCommand(buffer, 0);
 		//printf("Dimmer loop test: %i\n",i);
 		SELFTEST_ASSERT_EXPRESSION("$led_dimmer", i);
 	}
 	for (i = 154; i <= 500; i++) {
 		char buffer[64];
-		sprintf(buffer, "CT %i", i);
+		snprintf(buffer, sizeof(buffer), "CT %i", i);
 		CMD_ExecuteCommand(buffer, 0);
 		//printf("Dimmer loop test: %i\n",i);
 		SELFTEST_ASSERT_EXPRESSION("$led_temperature", i);
@@ -156,14 +156,14 @@ void Test_LEDDriver_CW_OtherChannels() {
 
 	for (i = 0; i <= 100; i++) {
 		char buffer[64];
-		sprintf(buffer, "Dimmer %i", i);
+		snprintf(buffer, sizeof(buffer), "Dimmer %i", i);
 		CMD_ExecuteCommand(buffer, 0);
 		//printf("Dimmer loop test: %i\n",i);
 		SELFTEST_ASSERT_EXPRESSION("$led_dimmer", i);
 	}
 	for (i = 154; i <= 500; i++) {
 		char buffer[64];
-		sprintf(buffer, "CT %i", i);
+		snprintf(buffer, sizeof(buffer), "CT %i", i);
 		CMD_ExecuteCommand(buffer, 0);
 		//printf("Dimmer loop test: %i\n",i);
 		SELFTEST_ASSERT_EXPRESSION("$led_temperature", i);
@@ -245,7 +245,7 @@ void Test_LEDDriver_CW_Alternate() {
 
 	for (i = 0; i <= 100; i++) {
 		char buffer[64];
-		sprintf(buffer, "Dimmer %i", i);
+		snprintf(buffer, sizeof(buffer), "Dimmer %i", i);
 		CMD_ExecuteCommand(buffer, 0);
 		//printf("Dimmer loop test: %i\n",i);
 		SELFTEST_ASSERT_EXPRESSION("$led_dimmer", i);
@@ -257,7 +257,7 @@ void Test_LEDDriver_CW_Alternate() {
 	CMD_ExecuteCommand("led_temperature 500", 0);
 	for (i = 0; i <= 100; i++) {
 		char buffer[64];
-		sprintf(buffer, "Dimmer %i", i);
+		snprintf(buffer,sizeof(buffer), "Dimmer %i", i);
 		CMD_ExecuteCommand(buffer, 0);
 		//printf("Dimmer loop test: %i\n",i);
 		SELFTEST_ASSERT_EXPRESSION("$led_dimmer", i);
@@ -268,7 +268,7 @@ void Test_LEDDriver_CW_Alternate() {
 
 	for (i = 154; i <= 500; i++) {
 		char buffer[64];
-		sprintf(buffer, "CT %i", i);
+		snprintf(buffer, sizeof(buffer), "CT %i", i);
 		CMD_ExecuteCommand(buffer, 0);
 		//printf("Dimmer loop test: %i\n",i);
 		SELFTEST_ASSERT_EXPRESSION("$led_temperature", i);

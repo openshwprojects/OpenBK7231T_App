@@ -78,6 +78,8 @@ int HTTPServer_Start() {
     }
 }
 #define DEFAULT_BUFLEN 10000
+int g_prevHTTPResult;
+
 void HTTPServer_RunQuickTick() {
 	int iResult;
 	int err;
@@ -86,14 +88,16 @@ void HTTPServer_RunQuickTick() {
     int recvbuflen = DEFAULT_BUFLEN;
     SOCKET ClientSocket = INVALID_SOCKET;
 	int len, iSendResult;
-	int argp;
 
 	// Accept a client socket
 	ClientSocket = accept(ListenSocket, NULL, NULL);
 	if (ClientSocket == INVALID_SOCKET) {
 		iResult = WSAGetLastError();
 		if(iResult != WSAEWOULDBLOCK) {
-			printf("accept failed with error: %d\n", iResult);
+			if (iResult != g_prevHTTPResult) {
+				printf("accept failed with error: %d\n", iResult);
+				g_prevHTTPResult = iResult;
+			}
 		}
 		return;
 	}

@@ -8,12 +8,29 @@
 CControllerSimulatorLink::CControllerSimulatorLink() {
 
 }
+CJunction *CControllerSimulatorLink::findJunctionByGPIOIndex(int idx) {
+	for (int i = 0; i < related.size(); i++) {
+		if (related[i]->getGPIO() == idx)
+			return related[i];
+	}
+	return 0;
+}
 class CControllerBase *CControllerSimulatorLink::cloneController(class CShape *origOwner, class CShape *newOwner) {
 	CControllerSimulatorLink *r = new CControllerSimulatorLink();
 	for (int i = 0; i < related.size(); i++) {
 		r->addRelatedJunction(newOwner->findShapeByName_r(related[i]->getName())->asJunction());
 	}
 	return r;
+}
+void CControllerSimulatorLink::onPostSolveVoltages() {
+	CJunction *vdd = findJunctionByGPIOIndex(GPIO_VDD);
+	CJunction *gnd = findJunctionByGPIOIndex(GPIO_GND);
+	if (vdd->hasVoltage(3.3f) && gnd->hasVoltage(0.0f)) {
+		//printf("Powered\n");
+	}
+	else {
+		//printf("Not powered\n");
+	}
 }
 void CControllerSimulatorLink::onDrawn() {
 	for (int i = 0; i < related.size(); i++) {

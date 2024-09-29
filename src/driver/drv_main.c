@@ -75,7 +75,7 @@ static driver_t g_drivers[] = {
 #if WINDOWS
 	//drvdetail:{"name":"TestCharts",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":".",
+	//drvdetail:"descr":"Development only driver - a sample of chart generation with chart.js.",
 	//drvdetail:"requires":""}
 	{ "TestCharts",		NULL,			NULL,			DRV_Test_Charts_AddToHtmlPage, NULL, NULL, NULL, false },
 #endif

@@ -53,7 +53,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.\libs_for_simulator\SDL2-2.24.2\include;.\src\win32\stubs\;.\libs_for_simulator\DevIL-Windows-SDK-1.8.0\include;.\libs_for_simulator\freeglut-MSVC-3.0.0-2.mp\include;.\libs_for_simulator\nativefiledialog\src\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WINDOWS;%(PreprocessorDefinitions);_USE_32BIT_TIME_T;DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WINDOWS;_CRT_NONSTDC_NO_WARNINGS;WINSOCK_DEPRECATED_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions);_USE_32BIT_TIME_T;DEBUG</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -70,7 +70,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.\libs_for_simulator\SDL2-2.24.2\include;.\src\win32\stubs\;.\libs_for_simulator\DevIL-Windows-SDK-1.8.0\include;.\libs_for_simulator\freeglut-MSVC-3.0.0-2.mp\include;.\libs_for_simulator\nativefiledialog\src\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WINDOWS;%(PreprocessorDefinitions);_USE_32BIT_TIME_T;WIN32_LEAN_AND_MEAN;WIN32;_CRT_NON_CONFORMING_SWPRINTFS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CONSOLE</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WINDOWS;_CRT_NONSTDC_NO_WARNINGS;WINSOCK_DEPRECATED_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions);_USE_32BIT_TIME_T;WIN32_LEAN_AND_MEAN;WIN32;_CRT_NON_CONFORMING_SWPRINTFS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CONSOLE</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -759,6 +759,7 @@
     <ClCompile Include="src\sim\Controller_BL0942.cpp" />
     <ClCompile Include="src\sim\Controller_Bulb.cpp" />
     <ClCompile Include="src\sim\Controller_Button.cpp" />
+    <ClCompile Include="src\sim\Controller_DHT11.cpp" />
     <ClCompile Include="src\sim\Controller_Pot.cpp" />
     <ClCompile Include="src\sim\Controller_SimulatorLink.cpp" />
     <ClCompile Include="src\sim\Controller_Switch.cpp" />
@@ -1074,6 +1075,7 @@
     <ClInclude Include="src\sim\Controller_BL0942.h" />
     <ClInclude Include="src\sim\Controller_Bulb.h" />
     <ClInclude Include="src\sim\Controller_Button.h" />
+    <ClInclude Include="src\sim\Controller_DHT11.h" />
     <ClInclude Include="src\sim\Controller_Pot.h" />
     <ClInclude Include="src\sim\Controller_SimulatorLink.h" />
     <ClInclude Include="src\sim\Controller_Switch.h" />

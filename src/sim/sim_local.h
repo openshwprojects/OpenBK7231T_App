@@ -33,7 +33,7 @@ enum {
 
 #define WINDOWS_MOUSE_MENUBAR_OFFSET 20
 
-int drawText(class CStyle *style, int x, int y, const char* fmt, ...);
+float drawText(class CStyle *style, float x, float y, const char* fmt, ...);
 #include "Coord.h"
 Coord roundToGrid(Coord c);
 Coord GetMousePosWorld();
@@ -45,6 +45,7 @@ bool FS_Exists(const char *fname);
 extern int WinWidth;
 extern int WinHeight;
 extern int gridSize;
+extern class CSimulator *g_sim;
 
 extern "C" {
 	void CMD_ExpandConstantsWithinString(const char *in, char *out, int outLen);
@@ -56,6 +57,14 @@ extern "C" {
 template <typename T>
 class TArray : public std::vector<T> {
 public:
+	T pop() {
+		if (!this->empty()) {
+			T lastElement = this->back();
+			this->pop_back();
+			return lastElement;
+		}
+		return 0;
+	}
 	void remove(T o) {
 		this->erase(std::remove(this->begin(), this->end(), o), this->end());
 	}
@@ -175,6 +184,14 @@ extern CStyle g_style_shapes;
 extern CStyle g_style_wires;
 extern CStyle g_style_text;
 extern CStyle g_style_text_red;
+
+enum SpecialGPIO {
+	GPIO_INVALID = -1,
+	GPIO_VDD = -2,
+	GPIO_GND = -3,
+	GPIO_EN = -4,
+	GPIO_CEN = -5
+};
 
 #endif
 #endif

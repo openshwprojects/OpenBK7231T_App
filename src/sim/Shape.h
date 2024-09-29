@@ -147,11 +147,11 @@ public:
 
 	void rotateDegreesAround(float f, const Coord &p);
 	void rotateDegreesAroundSelf(float f);
-	class CShape* addLine(int x, int y, int x2, int y2);
-	class CShape* addRect(int x, int y, int w, int h);
+	class CShape* addLine(float x, float y, float x2, float y2);
+	class CShape* addRect(float x, float y, float w, float h);
 	class CShape* addCircle(float x, float y, float r);
-	class CShape* addText(int x, int y, const char *s, bool bDeepText = false, bool bAllowNewLine = true);
-	class CJunction* addJunction(int x, int y, const char *name = "", int gpio = -1);
+	class CShape* addText(float x, float y, const char *s, bool bDeepText = false, bool bAllowNewLine = true);
+	class CJunction* addJunction(float x, float y, const char *name = "", int gpio = -1);
 	class CShape* addShape(CShape *p);
 	void recalcBoundsAll();
 	bool hasWorldPointInside(const Coord &p)const;

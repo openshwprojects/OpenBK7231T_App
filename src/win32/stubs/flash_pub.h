@@ -66,5 +66,9 @@ extern void flash_init(void);
 extern void flash_exit(void);
 extern UINT8 flash_get_line_mode(void);
 extern void flash_set_line_mode(UINT8 );
+UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address);
+int bekken_hal_flash_read(const uint32_t addr, uint8_t *dst, const uint32_t size);
+UINT32 flash_write(char *user_buf, UINT32 count, UINT32 address);
+UINT32 flash_ctrl(UINT32 cmd, void *parm);
 
 #endif //_FLASH_PUB_H

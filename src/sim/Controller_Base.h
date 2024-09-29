@@ -12,6 +12,13 @@ public:
 	// for buttons
 	virtual class CJunction *findOtherJunctionIfPassable(class CJunction *ju) { return 0; }
 	virtual class CControllerBase *cloneController(class CShape *origOwner, class CShape *newOwner) { return 0; }
+	// save and load
+	virtual void saveTo(struct cJSON *j_obj) { }
+	virtual void loadFrom(struct cJSON *j_obj) { }
+	// simulation
+	virtual void onPostSolveVoltages() { }
+
+
 };
 
 

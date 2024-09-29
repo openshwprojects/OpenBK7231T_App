@@ -81,6 +81,33 @@ void Test_WS2812B() {
 	SELFTEST_ASSERT_PIXEL(4, 0, 255, 0);
 	SELFTEST_ASSERT_PIXEL(5, 0, 0, 255);
 
+	CMD_ExecuteCommand("startDriver PixelAnim", 0);
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+	CMD_ExecuteCommand("led_dimmer 100", 0);
+	CMD_ExecuteCommand("led_basecolor_rgb FF0000", 0);
+	for (int i = 0; i < 6; i++) {
+		SELFTEST_ASSERT_PIXEL(i, 255, 0, 0);
+	}
+	CMD_ExecuteCommand("led_basecolor_rgb FFFF00", 0);
+	for (int i = 0; i < 6; i++) {
+		SELFTEST_ASSERT_PIXEL(i, 255, 255, 0);
+	}
+	CMD_ExecuteCommand("led_enableAll 0", 0);
+	for (int i = 0; i < 6; i++) {
+		SELFTEST_ASSERT_PIXEL(i, 0, 0, 0);
+	}
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+	for (int i = 0; i < 6; i++) {
+		SELFTEST_ASSERT_PIXEL(i, 255, 255, 0);
+	}
+	CMD_ExecuteCommand("led_basecolor_rgb FF00FF", 0);
+	for (int i = 0; i < 6; i++) {
+		SELFTEST_ASSERT_PIXEL(i, 255, 0, 255);
+	}
+	CMD_ExecuteCommand("led_dimmer 50", 0);
+	for (int i = 0; i < 6; i++) {
+		SELFTEST_ASSERT_PIXEL(i, 55, 0, 55);
+	}
 }
 
 

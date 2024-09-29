@@ -13,6 +13,7 @@ CControllerSwitch::CControllerSwitch(class CJunction *_a, class CJunction *_b) {
 	b = _b;
 	remDist = 0;
 	bPressed = false;
+	bVisualPressed = false;
 }
 class CControllerBase *CControllerSwitch::cloneController(class CShape *origOwner, class CShape *newOwner) {
 	CControllerSwitch *r = new CControllerSwitch();
@@ -49,9 +50,9 @@ void CControllerSwitch::onDrawn() {
 	CLine *l = dynamic_cast<CLine*>(mover);
 	float tgPos;
 	if (bPressed)
-		tgPos = 20;
-	else
 		tgPos = 0;
+	else
+		tgPos = 20;
 	remDist = l->getPos2().moveMeTowards(Coord(l->getPos2().getX(), tgPos),speed);
 	timeAfterMouseHold += dt;
 	bVisualPressed = false;
