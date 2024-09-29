@@ -1293,7 +1293,7 @@ typedef struct mainConfig_s {
 	//char initCommandLine[512];
 #if PLATFORM_W600 || PLATFORM_W800
 #define ALLOW_SSID2 0
-#define ALLOW_WEB_PASSWORD 0
+#define ALLOW_WEB_PASSWORD 1
 	char initCommandLine[512];
 #else
 #define ALLOW_SSID2 1
