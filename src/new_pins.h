@@ -1295,6 +1295,8 @@ typedef struct mainConfig_s {
 #define ALLOW_SSID2 0
 #define ALLOW_WEB_PASSWORD 1
 	char initCommandLine[512];
+	// ofs 0x000007E0 (dec 2016)
+	char webPassword[30];
 #else
 #define ALLOW_SSID2 1
 #define ALLOW_WEB_PASSWORD 1
