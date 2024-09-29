@@ -145,6 +145,7 @@ void Win_DoUnitTests() {
 	Test_TuyaMCU_BatteryPowered();
 	Test_JSON_Lib();
 	Test_MQTT_Get_LED_EnableAll();
+	Test_MQTT_Get_Relay();
 	Test_Commands_Startup();
 	Test_IF_Inside_Backlog();
 	Test_WaitFor();

@@ -2691,6 +2691,7 @@ const char* g_obk_flagNames[] = {
 	"[TuyaMCU] Store ALL data",
 	"[PWR] Invert AC dir",
 	"[HTTP] Hide ON/OFF for relays (only red/green buttons)",
+	"[MQTT] Never add get sufix",
 	"error",
 	"error",
 	"error",

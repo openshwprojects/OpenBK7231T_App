@@ -140,6 +140,7 @@ void Test_Role_ToggleAll_2();
 void Test_WaitFor();
 void Test_IF_Inside_Backlog();
 void Test_MQTT_Get_LED_EnableAll();
+void Test_MQTT_Get_Relay();
 void Test_TuyaMCU_BatteryPowered();
 void Test_ChargeLimitDriver();
 void Test_WS2812B();

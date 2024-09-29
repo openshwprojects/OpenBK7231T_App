@@ -844,6 +844,10 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 	{
 		appendGet = false;
 	}
+	if (CFG_HasFlag(OBK_FLAG_MQTT_NEVERAPPENDGET))
+	{
+		appendGet = false;
+	}
 
 
 	LOCK_TCPIP_CORE();
