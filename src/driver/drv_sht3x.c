@@ -524,3 +524,23 @@ void SHT3X_AppendInformationToHTTPIndexPage(http_request_t* request)
 		hprintf255(request, "WARNING: You don't have configured target channels for temp and humid results, set the first and second channel index in Pins!");
 	}
 }
+
+bool SHT_ProbeSensor() {
+    uint8_t response[3];
+    
+    // Probe with SHT3x-specific command
+    I2C_Write(SHT3X_I2C_ADDR, SHT3X_MEASURE_CMD);
+    if (I2C_Read(SHT3X_I2C_ADDR, NULL, response, sizeof(response))) {
+        // SHT3x successfully probed
+        return SHT3X_SENSOR;
+    }
+
+    // If SHT3x probing fails, try SHT4x-specific command
+    I2C_Write(SHT4X_I2C_ADDR, SHT4X_MEASURE_CMD);
+    if (I2C_Read(SHT4X_I2C_ADDR, NULL, response, sizeof(response))) {
+        // SHT4x successfully probed
+        return SHT4X_SENSOR;
+    }
+
+    return false;  // No sensor detected
+}
