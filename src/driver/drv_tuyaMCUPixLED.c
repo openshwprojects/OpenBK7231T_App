@@ -15,10 +15,14 @@ int g_numLEDs = 0;
 byte *g_ledStates;
 int g_id_states = 104;
 
+void TuyaMCU_SendString(uint8_t id, char data[]);
+
 // startDriver tmPixLED
 void TuyaMCU_PixelLED_Init() {
 	g_numLEDs = Tokenizer_GetArgIntegerDefault(1, 12);
-	g_ledStates = (byte*)malloc(g_numLEDs);
+	g_id_states = Tokenizer_GetArgIntegerDefault(2, 104);
+	g_ledStates = (byte*)malloc(g_numLEDs); 
+	memset(g_ledStates, 0, g_numLEDs);
 }
 void TuyaMCU_PixelLED_SetOnOff() {
 	char tmp[32];
