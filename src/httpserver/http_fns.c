@@ -1721,7 +1721,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		topic = "homeassistant";
 	}
 
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#ifdef ENABLE_DRIVER_BL0937
 	measuringPower = DRV_IsMeasuringPower();
 	measuringBattery = DRV_IsMeasuringBattery();
 #endif
@@ -1826,7 +1826,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		}
 	}
 
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#ifdef ENABLE_DRIVER_BL0937
 	if (measuringPower == true) {
 		for (i = OBK__FIRST; i <= OBK__LAST; i++)
 		{
