@@ -13,7 +13,7 @@ float g_wifi_temperature = 0;
 
 #include "driver/temperature_sensor.h"
 
-#ifdef CONFIG_IDF_TARGET_ESP32S3
+#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32S2)
 #define TEMP_STACK_SIZE 1024
 #else
 #define TEMP_STACK_SIZE 384
