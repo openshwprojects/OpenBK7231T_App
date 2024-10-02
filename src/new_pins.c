@@ -280,7 +280,7 @@ void PIN_SetupPins() {
 	}
 #endif
 #endif
-#if defined(PLATFORM_BEKEN) || defined(PLATFORM_BL602) || defined(PLATFORM_W600) || defined(WINDOWS)
+#ifdef ENABLE_DRIVER_DHT
 	// TODO: better place to call?
 	DHT_OnPinsConfigChanged();
 #endif
@@ -1002,7 +1002,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 	}
 
 	if (bDHTChange) {
-#if defined(PLATFORM_BEKEN) || defined(PLATFORM_BL602) || defined(PLATFORM_W600) || defined(WINDOWS)
+#ifdef ENABLE_DRIVER_DHT
 		// TODO: better place to call?
 		DHT_OnPinsConfigChanged();
 #endif
