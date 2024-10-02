@@ -13,242 +13,242 @@
 #ifdef CONFIG_IDF_TARGET_ESP32C3
 
 espPinMapping_t g_pins[] = {
-	{ "IO0", GPIO_NUM_0 },
-	{ "IO1", GPIO_NUM_1 },
-	{ "IO2", GPIO_NUM_2 },
-	{ "IO3", GPIO_NUM_3 },
-	{ "IO4", GPIO_NUM_4 },
-	{ "IO5", GPIO_NUM_5 },
-	{ "IO6", GPIO_NUM_6 },
-	{ "IO7", GPIO_NUM_7 },
-	{ "IO8", GPIO_NUM_8 },
-	{ "IO9", GPIO_NUM_9 },
-	{ "IO10", GPIO_NUM_10 },
+	{ "IO0", GPIO_NUM_0, false },
+	{ "IO1", GPIO_NUM_1, false },
+	{ "IO2", GPIO_NUM_2, false },
+	{ "IO3", GPIO_NUM_3, false },
+	{ "IO4", GPIO_NUM_4, false },
+	{ "IO5", GPIO_NUM_5, false },
+	{ "IO6", GPIO_NUM_6, false },
+	{ "IO7", GPIO_NUM_7, false },
+	{ "IO8", GPIO_NUM_8, false },
+	{ "IO9", GPIO_NUM_9, false },
+	{ "IO10", GPIO_NUM_10, false },
 	// SPI flash 11-17
-	{ "IO11", GPIO_NUM_11 },
-	{ "IO12", GPIO_NUM_12 },
-	{ "IO13", GPIO_NUM_13 },
-	{ "IO14", GPIO_NUM_14 },
-	{ "IO15", GPIO_NUM_15 },
-	{ "IO16", GPIO_NUM_16 },
-	{ "IO17", GPIO_NUM_17 },
-	{ "IO18", GPIO_NUM_18 },
-	{ "IO19", GPIO_NUM_19 },
-	{ "IO20 (RX)", GPIO_NUM_20 },
-	{ "IO21 (TX)", GPIO_NUM_21 },
+	{ "IO11", GPIO_NUM_11, false },
+	{ "IO12", GPIO_NUM_12, false },
+	{ "IO13", GPIO_NUM_13, false },
+	{ "IO14", GPIO_NUM_14, false },
+	{ "IO15", GPIO_NUM_15, false },
+	{ "IO16", GPIO_NUM_16, false },
+	{ "IO17", GPIO_NUM_17, false },
+	{ "IO18", GPIO_NUM_18, false },
+	{ "IO19", GPIO_NUM_19, false },
+	{ "IO20 (RX)", GPIO_NUM_20, false },
+	{ "IO21 (TX)", GPIO_NUM_21, false },
 };
 
 #elif CONFIG_IDF_TARGET_ESP32C2
 
 espPinMapping_t g_pins[] = {
-	{ "IO0", GPIO_NUM_0 },
-	{ "IO1", GPIO_NUM_1 },
-	{ "IO2", GPIO_NUM_2 },
-	{ "IO3", GPIO_NUM_3 },
-	{ "IO4", GPIO_NUM_4 },
-	{ "IO5", GPIO_NUM_5 },
-	{ "IO6", GPIO_NUM_6 },
-	{ "IO7", GPIO_NUM_7 },
-	{ "IO8", GPIO_NUM_8 },
-	{ "IO9", GPIO_NUM_9 },
-	{ "IO10", GPIO_NUM_10 },
-	{ "IO11", GPIO_NUM_11 },
-	{ "IO12", GPIO_NUM_12 },
-	{ "IO13", GPIO_NUM_13 },
-	{ "IO14", GPIO_NUM_14 },
-	{ "IO15", GPIO_NUM_15 },
-	{ "IO16", GPIO_NUM_16 },
-	{ "IO17", GPIO_NUM_17 },
-	{ "IO18", GPIO_NUM_18 },
-	{ "IO19", GPIO_NUM_19 },
-	{ "IO20", GPIO_NUM_20 },
+	{ "IO0", GPIO_NUM_0, false },
+	{ "IO1", GPIO_NUM_1, false },
+	{ "IO2", GPIO_NUM_2, false },
+	{ "IO3", GPIO_NUM_3, false },
+	{ "IO4", GPIO_NUM_4, false },
+	{ "IO5", GPIO_NUM_5, false },
+	{ "IO6", GPIO_NUM_6, false },
+	{ "IO7", GPIO_NUM_7, false },
+	{ "IO8", GPIO_NUM_8, false },
+	{ "IO9", GPIO_NUM_9, false },
+	{ "IO10", GPIO_NUM_10, false },
+	{ "IO11", GPIO_NUM_11, false },
+	{ "IO12", GPIO_NUM_12, false },
+	{ "IO13", GPIO_NUM_13, false },
+	{ "IO14", GPIO_NUM_14, false },
+	{ "IO15", GPIO_NUM_15, false },
+	{ "IO16", GPIO_NUM_16, false },
+	{ "IO17", GPIO_NUM_17, false },
+	{ "IO18", GPIO_NUM_18, false },
+	{ "IO19", GPIO_NUM_19, false },
+	{ "IO20", GPIO_NUM_20, false },
 };
 
 #elif CONFIG_IDF_TARGET_ESP32C6
 
 espPinMapping_t g_pins[] = {
-	{ "IO0", GPIO_NUM_0 },
-	{ "IO1", GPIO_NUM_1 },
-	{ "IO2", GPIO_NUM_2 },
-	{ "IO3", GPIO_NUM_3 },
-	{ "IO4", GPIO_NUM_4 },
-	{ "IO5", GPIO_NUM_5 },
-	{ "IO6", GPIO_NUM_6 },
-	{ "IO7", GPIO_NUM_7 },
-	{ "IO8", GPIO_NUM_8 },
-	{ "IO9", GPIO_NUM_9 },
-	{ "IO10", GPIO_NUM_10 },
-	{ "IO11", GPIO_NUM_11 },
-	{ "IO12", GPIO_NUM_12 },
-	{ "IO13", GPIO_NUM_13 },
-	{ "IO14", GPIO_NUM_14 },
-	{ "IO15", GPIO_NUM_15 },
-	{ "IO16", GPIO_NUM_16 },
-	{ "IO17", GPIO_NUM_17 },
-	{ "IO18", GPIO_NUM_18 },
-	{ "IO19", GPIO_NUM_19 },
-	{ "IO20", GPIO_NUM_20 },
-	{ "IO21", GPIO_NUM_21 },
-	{ "IO22", GPIO_NUM_22 },
-	{ "IO23", GPIO_NUM_23 },
-	{ "IO24", GPIO_NUM_24 },
-	{ "IO25", GPIO_NUM_25 },
-	{ "IO26", GPIO_NUM_26 },
-	{ "IO27", GPIO_NUM_27 },
-	{ "IO28", GPIO_NUM_28 },
-	{ "IO29", GPIO_NUM_29 },
-	{ "IO30", GPIO_NUM_30 },
+	{ "IO0", GPIO_NUM_0, false },
+	{ "IO1", GPIO_NUM_1, false },
+	{ "IO2", GPIO_NUM_2, false },
+	{ "IO3", GPIO_NUM_3, false },
+	{ "IO4", GPIO_NUM_4, false },
+	{ "IO5", GPIO_NUM_5, false },
+	{ "IO6", GPIO_NUM_6, false },
+	{ "IO7", GPIO_NUM_7, false },
+	{ "IO8", GPIO_NUM_8, false },
+	{ "IO9", GPIO_NUM_9, false },
+	{ "IO10", GPIO_NUM_10, false },
+	{ "IO11", GPIO_NUM_11, false },
+	{ "IO12", GPIO_NUM_12, false },
+	{ "IO13", GPIO_NUM_13, false },
+	{ "IO14", GPIO_NUM_14, false },
+	{ "IO15", GPIO_NUM_15, false },
+	{ "IO16", GPIO_NUM_16, false },
+	{ "IO17", GPIO_NUM_17, false },
+	{ "IO18", GPIO_NUM_18, false },
+	{ "IO19", GPIO_NUM_19, false },
+	{ "IO20", GPIO_NUM_20, false },
+	{ "IO21", GPIO_NUM_21, false },
+	{ "IO22", GPIO_NUM_22, false },
+	{ "IO23", GPIO_NUM_23, false },
+	{ "IO24", GPIO_NUM_24, false },
+	{ "IO25", GPIO_NUM_25, false },
+	{ "IO26", GPIO_NUM_26, false },
+	{ "IO27", GPIO_NUM_27, false },
+	{ "IO28", GPIO_NUM_28, false },
+	{ "IO29", GPIO_NUM_29, false },
+	{ "IO30", GPIO_NUM_30, false },
 };
 
 #elif CONFIG_IDF_TARGET_ESP32S2
 
 espPinMapping_t g_pins[] = {
-	{ "IO0", GPIO_NUM_0 },
-	{ "IO1", GPIO_NUM_1 },
-	{ "IO2", GPIO_NUM_2 },
-	{ "IO3", GPIO_NUM_3 },
-	{ "IO4", GPIO_NUM_4 },
-	{ "IO5", GPIO_NUM_5 },
-	{ "IO6", GPIO_NUM_6 },
-	{ "IO7", GPIO_NUM_7 },
-	{ "IO8", GPIO_NUM_8 },
-	{ "IO9", GPIO_NUM_9 },
-	{ "IO10", GPIO_NUM_10 },
-	{ "IO11", GPIO_NUM_11 },
-	{ "IO12", GPIO_NUM_12 },
-	{ "IO13", GPIO_NUM_13 },
-	{ "IO14", GPIO_NUM_14 },
-	{ "IO15", GPIO_NUM_15 },
-	{ "IO16", GPIO_NUM_16 },
-	{ "IO17", GPIO_NUM_17 },
-	{ "IO18", GPIO_NUM_18 },
-	{ "IO19", GPIO_NUM_19 },
-	{ "IO20", GPIO_NUM_20 },
-	{ "IO21", GPIO_NUM_21 },
-	{ "NC", GPIO_NUM_NC },
-	{ "NC", GPIO_NUM_NC },
-	{ "NC", GPIO_NUM_NC },
-	{ "NC", GPIO_NUM_NC },
-	{ "IO26", GPIO_NUM_26 },
-	{ "IO27", GPIO_NUM_27 },
-	{ "IO28", GPIO_NUM_28 },
-	{ "IO29", GPIO_NUM_29 },
-	{ "IO30", GPIO_NUM_30 },
-	{ "IO31", GPIO_NUM_31 },
-	{ "IO32", GPIO_NUM_32 },
-	{ "IO33", GPIO_NUM_33 },
-	{ "IO34", GPIO_NUM_34 },
-	{ "IO35", GPIO_NUM_35 },
-	{ "IO36", GPIO_NUM_36 },
-	{ "IO37", GPIO_NUM_37 },
-	{ "IO38", GPIO_NUM_38 },
-	{ "IO39", GPIO_NUM_39 },
-	{ "IO40", GPIO_NUM_40 },
-	{ "IO41", GPIO_NUM_41 },
-	{ "IO42", GPIO_NUM_42 },
-	{ "IO43", GPIO_NUM_43 },
-	{ "IO44", GPIO_NUM_44 },
-	{ "IO45", GPIO_NUM_45 },
-	{ "IO46", GPIO_NUM_46 },
+	{ "IO0", GPIO_NUM_0, false },
+	{ "IO1", GPIO_NUM_1, false },
+	{ "IO2", GPIO_NUM_2, false },
+	{ "IO3", GPIO_NUM_3, false },
+	{ "IO4", GPIO_NUM_4, false },
+	{ "IO5", GPIO_NUM_5, false },
+	{ "IO6", GPIO_NUM_6, false },
+	{ "IO7", GPIO_NUM_7, false },
+	{ "IO8", GPIO_NUM_8, false },
+	{ "IO9", GPIO_NUM_9, false },
+	{ "IO10", GPIO_NUM_10, false },
+	{ "IO11", GPIO_NUM_11, false },
+	{ "IO12", GPIO_NUM_12, false },
+	{ "IO13", GPIO_NUM_13, false },
+	{ "IO14", GPIO_NUM_14, false },
+	{ "IO15", GPIO_NUM_15, false },
+	{ "IO16", GPIO_NUM_16, false },
+	{ "IO17", GPIO_NUM_17, false },
+	{ "IO18", GPIO_NUM_18, false },
+	{ "IO19", GPIO_NUM_19, false },
+	{ "IO20", GPIO_NUM_20, false },
+	{ "IO21", GPIO_NUM_21, false },
+	{ "NC", GPIO_NUM_NC, true },
+	{ "NC", GPIO_NUM_NC, true },
+	{ "NC", GPIO_NUM_NC, true },
+	{ "NC", GPIO_NUM_NC, true },
+	{ "IO26", GPIO_NUM_26, false },
+	{ "IO27", GPIO_NUM_27, false },
+	{ "IO28", GPIO_NUM_28, false },
+	{ "IO29", GPIO_NUM_29, false },
+	{ "IO30", GPIO_NUM_30, false },
+	{ "IO31", GPIO_NUM_31, false },
+	{ "IO32", GPIO_NUM_32, false },
+	{ "IO33", GPIO_NUM_33, false },
+	{ "IO34", GPIO_NUM_34, false },
+	{ "IO35", GPIO_NUM_35, false },
+	{ "IO36", GPIO_NUM_36, false },
+	{ "IO37", GPIO_NUM_37, false },
+	{ "IO38", GPIO_NUM_38, false },
+	{ "IO39", GPIO_NUM_39, false },
+	{ "IO40", GPIO_NUM_40, false },
+	{ "IO41", GPIO_NUM_41, false },
+	{ "IO42", GPIO_NUM_42, false },
+	{ "IO43", GPIO_NUM_43, false },
+	{ "IO44", GPIO_NUM_44, false },
+	{ "IO45", GPIO_NUM_45, false },
+	{ "IO46", GPIO_NUM_46, false },
 };
 
 #elif CONFIG_IDF_TARGET_ESP32S3
 
 espPinMapping_t g_pins[] = {
-	{ "IO0", GPIO_NUM_0 },
-	{ "IO1", GPIO_NUM_1 },
-	{ "IO2", GPIO_NUM_2 },
-	{ "IO3", GPIO_NUM_3 },
-	{ "IO4", GPIO_NUM_4 },
-	{ "IO5", GPIO_NUM_5 },
-	{ "IO6", GPIO_NUM_6 },
-	{ "IO7", GPIO_NUM_7 },
-	{ "IO8", GPIO_NUM_8 },
-	{ "IO9", GPIO_NUM_9 },
-	{ "IO10", GPIO_NUM_10 },
-	{ "IO11", GPIO_NUM_11 },
-	{ "IO12", GPIO_NUM_12 },
-	{ "IO13", GPIO_NUM_13 },
-	{ "IO14", GPIO_NUM_14 },
-	{ "IO15", GPIO_NUM_15 },
-	{ "IO16", GPIO_NUM_16 },
-	{ "IO17", GPIO_NUM_17 },
-	{ "IO18", GPIO_NUM_18 },
-	{ "IO19", GPIO_NUM_19 },
-	{ "IO20", GPIO_NUM_20 },
-	{ "IO21", GPIO_NUM_21 },
-	{ "NC", GPIO_NUM_NC },
-	{ "NC", GPIO_NUM_NC },
-	{ "NC", GPIO_NUM_NC },
-	{ "NC", GPIO_NUM_NC },
-	{ "IO26", GPIO_NUM_26 },
-	{ "IO27", GPIO_NUM_27 },
-	{ "IO28", GPIO_NUM_28 },
-	{ "IO29", GPIO_NUM_29 },
-	{ "IO30", GPIO_NUM_30 },
-	{ "IO31", GPIO_NUM_31 },
-	{ "IO32", GPIO_NUM_32 },
-	{ "IO33", GPIO_NUM_33 },
-	{ "IO34", GPIO_NUM_34 },
-	{ "IO35", GPIO_NUM_35 },
-	{ "IO36", GPIO_NUM_36 },
-	{ "IO37", GPIO_NUM_37 },
-	{ "IO38", GPIO_NUM_38 },
-	{ "IO39", GPIO_NUM_39 },
-	{ "IO40", GPIO_NUM_40 },
-	{ "IO41", GPIO_NUM_41 },
-	{ "IO42", GPIO_NUM_42 },
-	{ "IO43", GPIO_NUM_43 },
-	{ "IO44", GPIO_NUM_44 },
-	{ "IO45", GPIO_NUM_45 },
-	{ "IO46", GPIO_NUM_46 },
-	{ "IO47", GPIO_NUM_47 },
-	{ "IO48", GPIO_NUM_48 },
+	{ "IO0", GPIO_NUM_0, false },
+	{ "IO1", GPIO_NUM_1, false },
+	{ "IO2", GPIO_NUM_2, false },
+	{ "IO3", GPIO_NUM_3, false },
+	{ "IO4", GPIO_NUM_4, false },
+	{ "IO5", GPIO_NUM_5, false },
+	{ "IO6", GPIO_NUM_6, false },
+	{ "IO7", GPIO_NUM_7, false },
+	{ "IO8", GPIO_NUM_8, false },
+	{ "IO9", GPIO_NUM_9, false },
+	{ "IO10", GPIO_NUM_10, false },
+	{ "IO11", GPIO_NUM_11, false },
+	{ "IO12", GPIO_NUM_12, false },
+	{ "IO13", GPIO_NUM_13, false },
+	{ "IO14", GPIO_NUM_14, false },
+	{ "IO15", GPIO_NUM_15, false },
+	{ "IO16", GPIO_NUM_16, false },
+	{ "IO17", GPIO_NUM_17, false },
+	{ "IO18", GPIO_NUM_18, false },
+	{ "IO19", GPIO_NUM_19, false },
+	{ "IO20", GPIO_NUM_20, false },
+	{ "IO21", GPIO_NUM_21, false },
+	{ "NC", GPIO_NUM_NC, true },
+	{ "NC", GPIO_NUM_NC, true },
+	{ "NC", GPIO_NUM_NC, true },
+	{ "NC", GPIO_NUM_NC, true },
+	{ "IO26", GPIO_NUM_26, false },
+	{ "IO27", GPIO_NUM_27, false },
+	{ "IO28", GPIO_NUM_28, false },
+	{ "IO29", GPIO_NUM_29, false },
+	{ "IO30", GPIO_NUM_30, false },
+	{ "IO31", GPIO_NUM_31, false },
+	{ "IO32", GPIO_NUM_32, false },
+	{ "IO33", GPIO_NUM_33, false },
+	{ "IO34", GPIO_NUM_34, false },
+	{ "IO35", GPIO_NUM_35, false },
+	{ "IO36", GPIO_NUM_36, false },
+	{ "IO37", GPIO_NUM_37, false },
+	{ "IO38", GPIO_NUM_38, false },
+	{ "IO39", GPIO_NUM_39, false },
+	{ "IO40", GPIO_NUM_40, false },
+	{ "IO41", GPIO_NUM_41, false },
+	{ "IO42", GPIO_NUM_42, false },
+	{ "IO43", GPIO_NUM_43, false },
+	{ "IO44", GPIO_NUM_44, false },
+	{ "IO45", GPIO_NUM_45, false },
+	{ "IO46", GPIO_NUM_46, false },
+	{ "IO47", GPIO_NUM_47, false },
+	{ "IO48", GPIO_NUM_48, false },
 };
 
 #elif CONFIG_IDF_TARGET_ESP32
 
 espPinMapping_t g_pins[] = {
-	{ "IO0", GPIO_NUM_0 },
-	{ "IO1", GPIO_NUM_1 },
-	{ "IO2", GPIO_NUM_2 },
-	{ "IO3", GPIO_NUM_3 },
-	{ "IO4", GPIO_NUM_4 },
-	{ "IO5", GPIO_NUM_5 },
-	{ "IO6", GPIO_NUM_6 },
-	{ "IO7", GPIO_NUM_7 },
-	{ "IO8", GPIO_NUM_8 },
-	{ "IO9", GPIO_NUM_9 },
-	{ "IO10", GPIO_NUM_10 },
-	{ "IO11", GPIO_NUM_11 },
-	{ "IO12", GPIO_NUM_12 },
-	{ "IO13", GPIO_NUM_13 },
-	{ "IO14", GPIO_NUM_14 },
-	{ "IO15", GPIO_NUM_15 },
-	{ "IO16", GPIO_NUM_16 },
-	{ "IO17", GPIO_NUM_17 },
-	{ "IO18", GPIO_NUM_18 },
-	{ "IO19", GPIO_NUM_19 },
-	{ "IO20", GPIO_NUM_20 },
-	{ "IO21", GPIO_NUM_21 },
-	{ "IO22", GPIO_NUM_22 },
-	{ "IO23", GPIO_NUM_23 },
-	{ "NC", GPIO_NUM_NC },
-	{ "IO25", GPIO_NUM_25 },
-	{ "IO26", GPIO_NUM_26 },
-	{ "IO27", GPIO_NUM_27 },
-	{ "IO28", GPIO_NUM_28 },
-	{ "IO29", GPIO_NUM_29 },
-	{ "IO30", GPIO_NUM_30 },
-	{ "IO31", GPIO_NUM_31 },
-	{ "IO32", GPIO_NUM_32 },
-	{ "IO33", GPIO_NUM_33 },
-	{ "IO34", GPIO_NUM_34 },
-	{ "IO35", GPIO_NUM_35 },
-	{ "IO36", GPIO_NUM_36 },
-	{ "IO37", GPIO_NUM_37 },
-	{ "IO38", GPIO_NUM_38 },
-	{ "IO39", GPIO_NUM_39 },
+	{ "IO0", GPIO_NUM_0, false },
+	{ "IO1", GPIO_NUM_1, false },
+	{ "IO2", GPIO_NUM_2, false },
+	{ "IO3", GPIO_NUM_3, false },
+	{ "IO4", GPIO_NUM_4, false },
+	{ "IO5", GPIO_NUM_5, false },
+	{ "IO6", GPIO_NUM_6, false },
+	{ "IO7", GPIO_NUM_7, false },
+	{ "IO8", GPIO_NUM_8, false },
+	{ "IO9", GPIO_NUM_9, false },
+	{ "IO10", GPIO_NUM_10, false },
+	{ "IO11", GPIO_NUM_11, false },
+	{ "IO12", GPIO_NUM_12, false },
+	{ "IO13", GPIO_NUM_13, false },
+	{ "IO14", GPIO_NUM_14, false },
+	{ "IO15", GPIO_NUM_15, false },
+	{ "IO16", GPIO_NUM_16, false },
+	{ "IO17", GPIO_NUM_17, false },
+	{ "IO18", GPIO_NUM_18, false },
+	{ "IO19", GPIO_NUM_19, false },
+	{ "IO20", GPIO_NUM_20, false },
+	{ "IO21", GPIO_NUM_21, false },
+	{ "IO22", GPIO_NUM_22, false },
+	{ "IO23", GPIO_NUM_23, false },
+	{ "NC", GPIO_NUM_NC, true },
+	{ "IO25", GPIO_NUM_25, false },
+	{ "IO26", GPIO_NUM_26, false },
+	{ "IO27", GPIO_NUM_27, false },
+	{ "IO28", GPIO_NUM_28, false },
+	{ "IO29", GPIO_NUM_29, false },
+	{ "IO30", GPIO_NUM_30, false },
+	{ "IO31", GPIO_NUM_31, false },
+	{ "IO32", GPIO_NUM_32, false },
+	{ "IO33", GPIO_NUM_33, false },
+	{ "IO34", GPIO_NUM_34, false },
+	{ "IO35", GPIO_NUM_35, false },
+	{ "IO36", GPIO_NUM_36, false },
+	{ "IO37", GPIO_NUM_37, false },
+	{ "IO38", GPIO_NUM_38, false },
+	{ "IO39", GPIO_NUM_39, false },
 };
 
 #else
@@ -347,6 +347,7 @@ void HAL_PIN_SetOutputValue(int index, int iVal)
 	if(index >= g_numPins)
 		return;
 	espPinMapping_t* pin = g_pins + index;
+	if(pin->pin == GPIO_NUM_NC) return;
 	gpio_set_level(pin->pin, iVal ? 1 : 0);
 }
 
@@ -355,6 +356,7 @@ int HAL_PIN_ReadDigitalInput(int index)
 	if(index >= g_numPins)
 		return 0;
 	espPinMapping_t* pin = g_pins + index;
+	if(pin->pin == GPIO_NUM_NC) return 0;
 	return gpio_get_level(pin->pin);
 }
 
@@ -374,7 +376,15 @@ void HAL_PIN_Setup_Input_Pullup(int index)
 	if(index >= g_numPins)
 		return;
 	espPinMapping_t* pin = g_pins + index;
-	ESP_ConfigurePin(pin->pin, GPIO_MODE_INPUT, true, false);
+	if(pin->pin == GPIO_NUM_NC) return;
+	if(!pin->isConfigured)
+	{
+		pin->isConfigured = true;
+		ESP_ConfigurePin(pin->pin, GPIO_MODE_INPUT, true, false);
+		return;
+	}
+	gpio_set_direction(pin->pin, GPIO_MODE_INPUT);
+	gpio_set_pull_mode(pin->pin, GPIO_PULLUP_ONLY);
 }
 
 void HAL_PIN_Setup_Input_Pulldown(int index)
@@ -382,7 +392,15 @@ void HAL_PIN_Setup_Input_Pulldown(int index)
 	if(index >= g_numPins)
 		return;
 	espPinMapping_t* pin = g_pins + index;
-	ESP_ConfigurePin(pin->pin, GPIO_MODE_INPUT, false, true);
+	if(pin->pin == GPIO_NUM_NC) return;
+	if(!pin->isConfigured)
+	{
+		pin->isConfigured = true;
+		ESP_ConfigurePin(pin->pin, GPIO_MODE_INPUT, false, true);
+		return;
+	}
+	gpio_set_direction(pin->pin, GPIO_MODE_INPUT);
+	gpio_set_pull_mode(pin->pin, GPIO_PULLDOWN_ONLY);
 }
 
 void HAL_PIN_Setup_Input(int index)
@@ -390,7 +408,15 @@ void HAL_PIN_Setup_Input(int index)
 	if(index >= g_numPins)
 		return;
 	espPinMapping_t* pin = g_pins + index;
-	ESP_ConfigurePin(pin->pin, GPIO_MODE_INPUT, false, false);
+	if(pin->pin == GPIO_NUM_NC) return;
+	if(!pin->isConfigured)
+	{
+		pin->isConfigured = true;
+		ESP_ConfigurePin(pin->pin, GPIO_MODE_INPUT, false, false);
+		return;
+	}
+	gpio_set_direction(pin->pin, GPIO_MODE_INPUT);
+	gpio_set_pull_mode(pin->pin, GPIO_FLOATING);
 }
 
 void HAL_PIN_Setup_Output(int index)
@@ -398,7 +424,15 @@ void HAL_PIN_Setup_Output(int index)
 	if(index >= g_numPins)
 		return;
 	espPinMapping_t* pin = g_pins + index;
-	ESP_ConfigurePin(pin->pin, GPIO_MODE_OUTPUT, true, false);
+	if(pin->pin == GPIO_NUM_NC) return;
+	if(!pin->isConfigured)
+	{
+		pin->isConfigured = true;
+		ESP_ConfigurePin(pin->pin, GPIO_MODE_OUTPUT, true, false);
+		return;
+	}
+	gpio_set_direction(pin->pin, GPIO_MODE_OUTPUT);
+	gpio_set_pull_mode(pin->pin, GPIO_PULLUP_ONLY);
 	gpio_set_level(pin->pin, 0);
 }
 
@@ -412,6 +446,7 @@ void HAL_PIN_PWM_Stop(int index)
 	{
 		ledc_stop(LEDC_LOW_SPEED_MODE, ch, 0);
 		gpio_reset_pin(pin->pin);
+		pin->isConfigured = false;
 		ledc_channel[ch].gpio_num = GPIO_NUM_NC;
 	}
 }

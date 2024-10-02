@@ -22,57 +22,22 @@ void usleep(int r) //delay function do 10*r nops, because rtos_delay_millisecond
 }
 #endif
 
-#ifdef PLATFORM_ESPIDF
-#include "driver/gpio.h"
-
-void Soft_I2C_SetLow(uint8_t pin)
-{
-	gpio_set_direction(pin, GPIO_MODE_OUTPUT);
-	gpio_set_pull_mode(pin, GPIO_FLOATING);
-	HAL_PIN_SetOutputValue(pin, 0);
-}
-
-void Soft_I2C_SetHigh(uint8_t pin)
-{
-	HAL_PIN_SetOutputValue(pin, 1);
-	gpio_set_direction(pin, GPIO_MODE_INPUT);
-	gpio_set_pull_mode(pin, GPIO_PULLUP_ONLY);
-}
-
-bool Soft_I2C_PreInit(softI2C_t* i2c)
-{
-	HAL_PIN_Setup_Output(i2c->pin_data);
-	HAL_PIN_Setup_Output(i2c->pin_clk);
-	gpio_set_pull_mode(i2c->pin_data, GPIO_FLOATING);
-	gpio_set_pull_mode(i2c->pin_clk, GPIO_FLOATING);
-	Soft_I2C_SetHigh(i2c->pin_data);
-	Soft_I2C_SetHigh(i2c->pin_clk);
-	return (!((HAL_PIN_ReadDigitalInput(i2c->pin_data) == 0 || HAL_PIN_ReadDigitalInput(i2c->pin_clk) == 0)));
-}
-
-#else
-
-void Soft_I2C_SetLow(uint8_t pin)
-{
+void Soft_I2C_SetLow(uint8_t pin) {
 	HAL_PIN_Setup_Output(pin);
 	HAL_PIN_SetOutputValue(pin, 0);
 }
 
-void Soft_I2C_SetHigh(uint8_t pin)
-{
+void Soft_I2C_SetHigh(uint8_t pin) {
 	HAL_PIN_Setup_Input_Pullup(pin);
 }
 
-bool Soft_I2C_PreInit(softI2C_t* i2c)
-{
+bool Soft_I2C_PreInit(softI2C_t *i2c) {
 	HAL_PIN_SetOutputValue(i2c->pin_data, 0);
 	HAL_PIN_SetOutputValue(i2c->pin_clk, 0);
 	Soft_I2C_SetHigh(i2c->pin_data);
 	Soft_I2C_SetHigh(i2c->pin_clk);
 	return (!((HAL_PIN_ReadDigitalInput(i2c->pin_data) == 0 || HAL_PIN_ReadDigitalInput(i2c->pin_clk) == 0)));
 }
-
-#endif
 
 bool Soft_I2C_WriteByte(softI2C_t *i2c, uint8_t value) {
 	uint8_t curr;

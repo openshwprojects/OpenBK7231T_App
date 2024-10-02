@@ -53,7 +53,7 @@ void app_main(void)
         wdt_hal_write_protect_disable(&rtc_wdt_ctx);
         wdt_hal_feed(&rtc_wdt_ctx);
         wdt_hal_write_protect_enable(&rtc_wdt_ctx);
-        sys_delay_ms(999);
         Main_OnEverySecond();
+        sys_delay_ms(1000);
     }
 }
