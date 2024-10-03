@@ -5,6 +5,9 @@
 
 #define test12321321  321321321
 
+//
+//   #################  moved to pins_and_roles.h !!!  ################# 
+/*
 typedef enum ioRole_e {
 	//iodetail:{"name":"None",
 	//iodetail:"title":"TODO",
@@ -568,10 +571,57 @@ typedef enum ioRole_e {
 	//iodetail:"driver":""}
 	IOR_Total_Options,
 } ioRole_t;
+*/
 
+typedef enum ioRole_e {
+	// generated "enum" of the IORoles
+	// include generated array of struct IORoles (including HTTP-Name, # of Channels and function of the role)  
+	#define  AS_ENUM 1
+	#include "pins_and_roles.h"
+	#undef AS_ENUM 
+} ioRole_t;
+
+
+typedef enum  {
+	ROLE_DHT=1,
+	ROLE_TEMP=2,
+	ROLE_HUM=4,
+	ROLE_AIR=8
+} ROLE_functions;
+
+// since we "defined" the function of a role in "pins_and_roles.h"
+// we no longer need to do some "calculations on their enum-value" here ... 
+/*
 #define IS_PIN_DHT_ROLE(role) (((role)>=IOR_DHT11) && ((role)<=IOR_DHT22))
 #define IS_PIN_TEMP_HUM_SENSOR_ROLE(role) (((role)==IOR_SHT3X_DAT) || ((role)==IOR_CHT83XX_DAT))
 #define IS_PIN_AIR_SENSOR_ROLE(role) (((role)==IOR_SGP_DAT))
+*/
+// ... but can simply test the given value for the function
+
+typedef struct {
+	char* HTTP_name;
+	int NumberOfChannels;
+	int function;
+} IOroles;
+
+extern IOroles  IORoles[];
+
+// #defines to test for role functions
+// get function value for a role given as "enum"
+#define f(p)	IORoles[p].function
+/*
+#define IS_PIN_DHT_ROLE(r)  ((f(r) & ROLE_DHT)  !=0)
+#define IS_PIN_TEMP_SENSOR_ROLE(r) ((f(r) & ROLE_TEMP) !=0)
+#define IS_PIN_HUM_SENSOR_ROLE(r) ((f(r) & ROLE_HUM)  !=0)
+#define IS_PIN_TEMP_HUM_SENSOR_ROLE(r) ((f(r) & ROLE_TEMP & ROLE_HUM)  !=0)
+#define IS_PIN_AIR_SENSOR_ROLE(r) ((f(r) & ROLE_AIR)  !=0)
+*/
+#define IS_PIN_DHT_ROLE(r)  		(f(r) & ROLE_DHT)
+#define IS_PIN_TEMP_HUM_SENSOR_ROLE(r) 	(f(r) & ROLE_TEMP & ROLE_HUM)
+#define IS_PIN_AIR_SENSOR_ROLE(r) 	(f(r) & ROLE_AIR)
+// and some new defines for "only" temp or hum
+#define IS_PIN_TEMP_SENSOR_ROLE(r) 	(f(r) & ROLE_TEMP)
+#define IS_PIN_HUM_SENSOR_ROLE(r) 	(f(r) & ROLE_HUM)
 
 typedef enum channelType_e {
 	//chandetail:{"name":"Default",

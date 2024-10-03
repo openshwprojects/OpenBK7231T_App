@@ -2527,7 +2527,8 @@ int http_fn_cfg_pins(http_request_t* request) {
 			poststr(request, ",");
 		}
 		// print array with ["name_of_role",<Number of channnels for this role>]
-		hprintf255(request, "[\"%s\",%i]", htmlPinRoleNames[i],PIN_IOR_NofChan(i));
+//		hprintf255(request, "[\"%s\",%i]", htmlPinRoleNames[i],PIN_IOR_NofChan(i));
+		hprintf255(request, "[\"%s\",%i]", IORoles[i].HTTP_name,IORoles[i].NumberOfChannels);
 	}
 	poststr(request, "];");
 
@@ -2608,7 +2609,8 @@ int http_fn_cfg_pins(http_request_t* request) {
 		}
 		hprintf255(request, "\",%i,%i, %i,", i, si, !bCanThisPINbePWM);
 		// Primary linked channel
-		int NofC = PIN_IOR_NofChan(si);
+//		int NofC = PIN_IOR_NofChan(si);
+		int NofC = IORoles[si].NumberOfChannels;
 		if (NofC >= 1)
 		{
 			hprintf255(request, "%i,", ch);

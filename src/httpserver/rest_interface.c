@@ -673,7 +673,8 @@ static int http_rest_get_pins(http_request_t* request) {
 		if (i) {
 			hprintf255(request, ",");
 		}
-		hprintf255(request, "\"%s\"", htmlPinRoleNames[i]);
+//		hprintf255(request, "\"%s\"", htmlPinRoleNames[i]);
+		hprintf255(request, "\"%s\"", IORoles[i].HTTP_name);
 	}
 	poststr(request, "],\"roles\":[");
 
