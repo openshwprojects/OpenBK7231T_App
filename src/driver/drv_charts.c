@@ -507,6 +507,7 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 	poststr(request, "        }");
 	poststr(request, "    }");
 	poststr(request, "});");
+	poststr(request, "Chart.defaults.color = '#099'; ");  // Issue #1375, add a default color to improve readability (applies to: dataset names, axis ticks, color for axes title, (use color: '#099')
 	poststr(request, "}");
 	poststr(request, "</script>");
 	poststr(request, "<style onload='cha();'></style>");
@@ -625,7 +626,7 @@ static commandResult_t CMD_Chart_AddNow(const void *context, const char *cmd, co
 		float f = Tokenizer_GetArgFloat(i);
 		Chart_SetSample(g_chart, i, f);
 	}
-	Chart_AddTime(g_chart, NTP_GetCurrentTime());
+	Chart_AddTime(g_chart, NTP_GetCurrentTimeWithoutOffset());  // Fix issue #1376 .....was NTP_GetCurrentTime() ... now "WithoutOffset" since NTP drivers timestamp are already offsetted
 
 	return CMD_RES_OK;
 }
