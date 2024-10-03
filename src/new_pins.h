@@ -617,7 +617,7 @@ extern IOroles  IORoles[];
 #define IS_PIN_AIR_SENSOR_ROLE(r) ((f(r) & ROLE_AIR)  !=0)
 */
 #define IS_PIN_DHT_ROLE(r)  		(f(r) & ROLE_DHT)
-#define IS_PIN_TEMP_HUM_SENSOR_ROLE(r) 	(f(r) & ROLE_TEMP) && (f(r) & ROLE_HUM)
+#define IS_PIN_TEMP_HUM_SENSOR_ROLE(r) 	((f(r) & ROLE_TEMP) && (f(r) & ROLE_HUM))
 #define IS_PIN_AIR_SENSOR_ROLE(r) 	(f(r) & ROLE_AIR)
 // and some new defines for "only" temp or hum
 #define IS_PIN_TEMP_SENSOR_ROLE(r) 	(f(r) & ROLE_TEMP)
