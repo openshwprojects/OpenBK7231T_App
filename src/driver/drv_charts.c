@@ -507,6 +507,7 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 	poststr(request, "        }");
 	poststr(request, "    }");
 	poststr(request, "});");
+	poststr(request, "Chart.defaults.color = '#099'; ");  // Issue #1375, add a default color to improve readability (applies to: dataset names, axis ticks, color for axes title, (use color: '#099')
 	poststr(request, "}");
 	poststr(request, "</script>");
 	poststr(request, "<style onload='cha();'></style>");
