@@ -1,5 +1,6 @@
 let fs = require('fs');
 
+
 let commands = [];
 let cmdindex = {};
 let channels = [];
