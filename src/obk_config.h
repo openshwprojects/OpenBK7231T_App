@@ -103,6 +103,7 @@
 #elif PLATFORM_BEKEN
 
 // set to 0 to disable
+#define ENABLE_DRIVER_CHARTS 1
 #define ENABLE_TASMOTADEVICEGROUPS 1
 #define ENABLE_LITTLEFS			1
 #define ENABLE_NTP    1
