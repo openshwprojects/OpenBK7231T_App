@@ -126,6 +126,8 @@ void SIM_ClearOBK(const char *flashPath) {
 	Main_Init();
 }
 void Win_DoUnitTests() {
+	Test_TuyaMCU_Boolean();
+	Test_TuyaMCU_DP22();
 
 
 	Test_Expressions_RunTests_Braces();
