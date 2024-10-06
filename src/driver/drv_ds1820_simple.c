@@ -6,7 +6,8 @@ static int Pin;
 static int t=-127;
 static int errcount=0;
 static int lastconv;		// secondsElapsed on last successfull reading
-
+static uint8_t ds18_family = 0;
+static int ds18_conversionPeriod = 0;
 
 // usleep adopted from DHT driver
 
@@ -356,8 +357,11 @@ int DS1820_getTemp() {
 	return t;
 }
 
-
-void DS1820_driver_Init(){};
+// startDriver DS1820 [conversionPeriod (seconds) - default 15]
+void DS1820_driver_Init(){
+	ds18_conversionPeriod = Tokenizer_GetArgIntegerDefault(1, 15);
+	lastconv=0;
+};
 
 
 void DS1820_AppendInformationToHTTPIndexPage(http_request_t *request)
@@ -366,7 +370,38 @@ void DS1820_AppendInformationToHTTPIndexPage(http_request_t *request)
         hprintf255(request, "<h5>DS1820 Temperature: %.2f C (read %i secs ago)</h5>",(float)t/100, g_secondsElapsed-lastconv);
 }
 
+int DS1820_DiscoverFamily() {
+	if (!OWReset(Pin)) {
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_CFG, "DS1820 - Pin=%i - Discover Reset failed",Pin);
+		return 0;
+	}
 
+	// Read ROM
+	uint8_t ROM[8];
+	OWWriteByte(Pin, 0x33);
+	for (int i = 0; i < 8; i++) {
+		ROM[i] = OWReadByte(Pin);
+	}
+
+	// Check CRC
+	uint8_t crc = Crc8CQuick(ROM, 7);
+	if (crc != ROM[7]) {
+		// This might mean bad signal integrity or multiple 1-wire devices on the bus
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_CFG, "DS1820 - Pin=%i - Discover CRC=%x != calculated:%x",Pin, ROM[7], crc);
+		return 0;
+	}
+
+	// Check family
+	uint8_t family = ROM[0];
+	if (family == 0x10 || family == 0x28) {
+		ds18_family = family;
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_CFG, "DS1820 - Pin=%i - Family %x",Pin, ds18_family);
+		return 1;
+	} else {
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_CFG, "DS1820 - Pin=%i - Family %x not supported",Pin, family);
+		return 0;
+	}
+}
 
 void DS1820_OnEverySecond() {
 
@@ -379,10 +414,6 @@ void DS1820_OnEverySecond() {
 		// if (dsread == 1 && g_secondsElapsed % 5 == 2) {
 		// better if we don't use parasitic power, we can check if conversion is ready		
 		if (dsread == 1 && DS1820TConversionDone(Pin) == 1) {
-		
-			uint8_t Low=0,High=0,negative=0;
-			int Val,Tc;
-
 			if (OWReset(Pin) == 0) addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "DS1820 - Pin=%i  -- Reset failed",Pin); 
 			OWWriteByte(Pin,0xCC);
 			OWWriteByte(Pin,0xBE);
@@ -403,33 +434,36 @@ void DS1820_OnEverySecond() {
 			}	
 			else
 			{		
-				Low = scratchpad[0];
-				High = scratchpad[1];
-			
+				int16_t raw = (scratchpad[1] << 8) | scratchpad[0];
 
-				Val = (High << 8) + Low; // combine bytes to integer
-				negative = (High >= 8); // negative temperature
-				if (negative)
-				{
-				  Val = (Val ^ 0xffff) + 1;
+				if (ds18_family == 0x10) { // DS18S20 or old DS1820
+					int16_t dT = 128 * (scratchpad[7] - scratchpad[6]);
+					dT /= scratchpad[7];
+					raw = 64 * (raw & 0xFFFE) - 32 + dT;
+					addLogAdv(LOG_DEBUG, LOG_FEATURE_CFG, "DS1820 - Pin=%i  -- Family %x, raw %i, count_remain %i, count_per_c %i, dT %i",Pin, ds18_family, raw, scratchpad[6], scratchpad[7], dT);
+				} else { // DS18B20
+					uint8_t cfg = scratchpad[4] & 0x60;
+					if (cfg == 0x00) raw = raw & ~7;  // 9 bit resolution, 93.75 ms
+					else if (cfg == 0x20) raw = raw & ~3; // 10 bit res, 187.5 ms
+					else if (cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
+					raw = raw << 3; // multiply by 8
+					addLogAdv(LOG_DEBUG, LOG_FEATURE_CFG, "DS1820 - Pin=%i  -- Family %x, cfg %x, raw %i",Pin, ds18_family, cfg, raw);
 				}
-				// Temperature is returned in multiples of 1/16 °C
-				//  we want a simple way to display e.g. xx.yy °C, so just multiply with 100 and we get xxyy 
-				//  --> the last two digits will be the fractional part  (Val%100)
-				// -->  the whole part of temperature is (int)Val/100
-				// so we want 100/16 = 6.25 times the value (the sign to be able to show negative temperatures is in "factor") 
-				Tc = (6 * Val) + Val / 4 ;
-				t = negative ? -1 : 1 * Tc ;
+			
+				// Raw is t * 128
+				t = (raw / 128) * 100; // Whole degrees
+				int frac = (raw % 128) * 100 / 128; // Fractional degrees
+				t += t > 0 ? frac : -frac;
+
 				dsread=0;
 				lastconv=g_secondsElapsed;
-				addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "DS1820 - Pin=%i temp=%s%i.%02i \r\n",Pin, negative ? "-" : "+", (int)Tc/100 , (int)Tc%100);
-				addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "DS1820 - High=%i Low=%i Val=%i Tc=%i  -- Read CRC=%x - calculated:%x \r\n",High, Low, Val,Tc,scratchpad[8],crc);
+				CHANNEL_Set(g_cfg.pins.channels[Pin], t, CHANNEL_SET_FLAG_SILENT);
+				addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "DS1820 - Pin=%i temp=%i.%02i \r\n", Pin, (int)t/100 , (int)t%100);
 			}
 		}
-		else if (g_secondsElapsed % 15 == 0) {	// every 15 seconds
-				// ask for "conversion" 
-
-			if (OWReset(Pin) == 0){
+		else if (dsread == 0 && (g_secondsElapsed % ds18_conversionPeriod == 0 || lastconv == 0)) {	
+			if (OWReset(Pin) == 0) {
+				lastconv=-1;	// reset lastconv to avoid immediate retry
 				addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "DS1820 - Pin=%i  -- Reset failed",Pin);
 
 				// if device is not found, maybe "usleep" is not working as expected
@@ -459,6 +493,16 @@ void DS1820_OnEverySecond() {
 				
 			} 
 			else {
+				if (ds18_family == 0) {
+					int discovered = DS1820_DiscoverFamily();
+					if (!discovered) {
+						lastconv=-1;	// reset lastconv to avoid immediate retry
+						addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "DS1820 - Pin=%i  -- Family not discovered",Pin);
+						return;
+					}
+					addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "DS1820 - Pin=%i  -- Family discovered %x",Pin, ds18_family);
+				}
+
 				OWWriteByte(Pin,0xCC);
 				OWWriteByte(Pin,0x44);
 				addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "DS1820 - asked for conversion - Pin %i",Pin);
