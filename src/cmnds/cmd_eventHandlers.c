@@ -208,7 +208,7 @@ int EVENT_ParseEventName(const char *s) {
 		return CMD_EVENT_CUSTOM_DOWN;
 	if (!stricmp(s, "OnCustomUP"))
 		return CMD_EVENT_CUSTOM_UP;
-	if (isdigit(*s)) {
+	if (isdigit((unsigned char)*s)) {
 		return atoi(s);
 	}
 	return CMD_EVENT_NONE;

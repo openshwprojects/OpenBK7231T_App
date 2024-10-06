@@ -66,6 +66,8 @@ void usleep2(int r) //delay function do 10*r nops, because rtos_delay_millisecon
 		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
 		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
 	}
+#elif PLATFORM_ESPIDF
+	usleep(r);
 #else
 	for (volatile int i = 0; i < r; i++) {
 		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
