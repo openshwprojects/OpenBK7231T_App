@@ -9,6 +9,8 @@ static int lastconv;		// secondsElapsed on last successfull reading
 static uint8_t ds18_family = 0;
 static int ds18_conversionPeriod = 0;
 
+#define DS1820_LOG(x, fmt, ...) addLogAdv(LOG_##x, LOG_FEATURE_SENSOR, "DS1820[%i] - " fmt, Pin, ##__VA_ARGS__)
+
 // usleep adopted from DHT driver
 
 void usleepds(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
@@ -372,7 +374,7 @@ void DS1820_AppendInformationToHTTPIndexPage(http_request_t *request)
 
 int DS1820_DiscoverFamily() {
 	if (!OWReset(Pin)) {
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_CFG, "DS1820 - Pin=%i - Discover Reset failed",Pin);
+		DS1820_LOG(DEBUG, "Discover Reset failed");
 		return 0;
 	}
 
@@ -387,7 +389,7 @@ int DS1820_DiscoverFamily() {
 	uint8_t crc = Crc8CQuick(ROM, 7);
 	if (crc != ROM[7]) {
 		// This might mean bad signal integrity or multiple 1-wire devices on the bus
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_CFG, "DS1820 - Pin=%i - Discover CRC=%x != calculated:%x",Pin, ROM[7], crc);
+		DS1820_LOG(DEBUG, "Discover CRC failed (CRC=%x != calculated:%x)", ROM[7], crc);
 		return 0;
 	}
 
@@ -395,10 +397,10 @@ int DS1820_DiscoverFamily() {
 	uint8_t family = ROM[0];
 	if (family == 0x10 || family == 0x28) {
 		ds18_family = family;
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_CFG, "DS1820 - Pin=%i - Family %x",Pin, ds18_family);
+		DS1820_LOG(INFO, "Discover Family %x", family);
 		return 1;
 	} else {
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_CFG, "DS1820 - Pin=%i - Family %x not supported",Pin, family);
+		DS1820_LOG(DEBUG, "Discover Family %x not supported", family);
 		return 0;
 	}
 }
@@ -414,22 +416,27 @@ void DS1820_OnEverySecond() {
 		// if (dsread == 1 && g_secondsElapsed % 5 == 2) {
 		// better if we don't use parasitic power, we can check if conversion is ready		
 		if (dsread == 1 && DS1820TConversionDone(Pin) == 1) {
-			if (OWReset(Pin) == 0) addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "DS1820 - Pin=%i  -- Reset failed",Pin); 
+			if (OWReset(Pin) == 0) {
+				DS1820_LOG(ERROR, "Read Reset failed");
+				return;
+			}
 			OWWriteByte(Pin,0xCC);
 			OWWriteByte(Pin,0xBE);
 
 			for (int i = 0; i < 9; i++)
-			  {
-			    scratchpad[i] = OWReadByte(Pin);//read Scratchpad Memory of DS
-			  }
+			{
+				scratchpad[i] = OWReadByte(Pin);//read Scratchpad Memory of DS
+			}
 //			crc= OWcrc(scratchpad, 8);
 			crc= Crc8CQuick(scratchpad, 8);
 			if (crc != scratchpad[8])
 			{
 				errcount++;
-				addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "DS1820 - Read CRC=%x != calculated:%x (errcount=%i)\r\n",scratchpad[8],crc,errcount);
-				addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "DS1820 - Scratchpad Data Read: %x %x %x %x %x %x %x %x %x \r\n",scratchpad[0],scratchpad[1],scratchpad[2],scratchpad[3],scratchpad[4],scratchpad[5],scratchpad[6],scratchpad[7],scratchpad[8]);
-				
+				DS1820_LOG(ERROR, "Read CRC=%x != calculated:%x (errcount=%i)", scratchpad[8], crc, errcount);
+				DS1820_LOG(ERROR, "Scratchpad Data Read: %x %x %x %x %x %x %x %x %x",
+					scratchpad[0], scratchpad[1], scratchpad[2], scratchpad[3], scratchpad[4],
+					scratchpad[5], scratchpad[6], scratchpad[7], scratchpad[8]);
+
 				if (errcount > 5) dsread=0;	// retry afer 5 failures		
 			}	
 			else
@@ -440,14 +447,14 @@ void DS1820_OnEverySecond() {
 					int16_t dT = 128 * (scratchpad[7] - scratchpad[6]);
 					dT /= scratchpad[7];
 					raw = 64 * (raw & 0xFFFE) - 32 + dT;
-					addLogAdv(LOG_DEBUG, LOG_FEATURE_CFG, "DS1820 - Pin=%i  -- Family %x, raw %i, count_remain %i, count_per_c %i, dT %i",Pin, ds18_family, raw, scratchpad[6], scratchpad[7], dT);
+					DS1820_LOG(DEBUG, "family=%x, raw=%i, count_remain=%i, count_per_c=%i, dT=%i", ds18_family, raw, scratchpad[6], scratchpad[7], dT);
 				} else { // DS18B20
 					uint8_t cfg = scratchpad[4] & 0x60;
 					if (cfg == 0x00) raw = raw & ~7;  // 9 bit resolution, 93.75 ms
 					else if (cfg == 0x20) raw = raw & ~3; // 10 bit res, 187.5 ms
 					else if (cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
 					raw = raw << 3; // multiply by 8
-					addLogAdv(LOG_DEBUG, LOG_FEATURE_CFG, "DS1820 - Pin=%i  -- Family %x, cfg %x, raw %i",Pin, ds18_family, cfg, raw);
+					DS1820_LOG(DEBUG, "family=%x, raw=%i, cfg=%x", ds18_family, raw, cfg);
 				}
 			
 				// Raw is t * 128
@@ -458,13 +465,13 @@ void DS1820_OnEverySecond() {
 				dsread=0;
 				lastconv=g_secondsElapsed;
 				CHANNEL_Set(g_cfg.pins.channels[Pin], t, CHANNEL_SET_FLAG_SILENT);
-				addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "DS1820 - Pin=%i temp=%i.%02i \r\n", Pin, (int)t/100 , (int)t%100);
+				DS1820_LOG(INFO, "Temp=%i.%02i", (int)t/100 , (int)t%100);
 			}
 		}
 		else if (dsread == 0 && (g_secondsElapsed % ds18_conversionPeriod == 0 || lastconv == 0)) {	
 			if (OWReset(Pin) == 0) {
 				lastconv=-1;	// reset lastconv to avoid immediate retry
-				addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "DS1820 - Pin=%i  -- Reset failed",Pin);
+				DS1820_LOG(ERROR, "Reset failed");
 
 				// if device is not found, maybe "usleep" is not working as expected
 				// lets do usleepds() with numbers 50.000 and 100.00
@@ -475,20 +482,18 @@ void DS1820_OnEverySecond() {
 				usleepds(tempsleep);
 				int duration = (int)(portTICK_RATE_MS*xTaskGetTickCount()-actTick);
 
-				addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "DS1820 - usleepds(%i) took %i ms ",tempsleep,duration);
-
-
+				DS1820_LOG(DEBUG, "usleepds(%i) took %i ms ", tempsleep, duration);
 
 				tempsleep=100000;
 				actTick=portTICK_RATE_MS*xTaskGetTickCount();
 				usleepds(tempsleep);
 				duration = (int)(portTICK_RATE_MS*xTaskGetTickCount()-actTick);
 
-				addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "DS1820 - usleepds(%i) took %i ms ",tempsleep,duration);
+				DS1820_LOG(DEBUG, "usleepds(%i) took %i ms ", tempsleep, duration);
 	
 				if (duration < 95 || duration > 105){
 					// calc a new factor for usleepds
-					addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "usleepds duration divergates - proposed factor to adjust usleepds %f ",(float)100/duration);
+					DS1820_LOG(ERROR, "usleepds duration divergates - proposed factor to adjust usleepds %f ",(float)100/duration);
 				}
 				
 			} 
@@ -497,15 +502,15 @@ void DS1820_OnEverySecond() {
 					int discovered = DS1820_DiscoverFamily();
 					if (!discovered) {
 						lastconv=-1;	// reset lastconv to avoid immediate retry
-						addLogAdv(LOG_ERROR, LOG_FEATURE_CFG, "DS1820 - Pin=%i  -- Family not discovered",Pin);
+						DS1820_LOG(ERROR, "Family not discovered");
 						return;
 					}
-					addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "DS1820 - Pin=%i  -- Family discovered %x",Pin, ds18_family);
+					DS1820_LOG(INFO, "Family discovered %x", ds18_family);
 				}
 
 				OWWriteByte(Pin,0xCC);
 				OWWriteByte(Pin,0x44);
-				addLogAdv(LOG_INFO, LOG_FEATURE_CFG, "DS1820 - asked for conversion - Pin %i",Pin);
+				DS1820_LOG(INFO, "Starting conversion");
 				dsread=1;
 				errcount=0;
 			}
