@@ -314,25 +314,6 @@ int OWTouchByte(int Pin, int data)
         return result;
 }
 
-
-
-
-uint8_t OWcrc( uint8_t *data, uint8_t len)
-{
-	uint8_t crc = 0;
-	
-	while (len--) {
-		uint8_t inb = *data++;
-		for (uint8_t i = 8; i; i--) {
-			uint8_t mix = (crc ^ inb) & 0x01;
-			crc >>= 1;
-			if (mix) crc ^= 0x8C;
-			inb >>= 1;
-		}
-	}
-	return crc;
-}
-
 // quicker CRC with lookup table
 // based on code found here: https://community.st.com/t5/stm32-mcus-security/use-stm32-crc-to-compare-ds18b20-crc/m-p/333749/highlight/true#M4690
 // Dallas 1-Wire CRC Test App -
@@ -397,7 +378,7 @@ int DS1820_DiscoverFamily() {
 	uint8_t family = ROM[0];
 	if (family == 0x10 || family == 0x28) {
 		ds18_family = family;
-		DS1820_LOG(INFO, "Discover Family %x", family);
+		DS1820_LOG(INFO, "Discover Family - discovered %x", family);
 		return 1;
 	} else {
 		DS1820_LOG(DEBUG, "Discover Family %x not supported", family);
@@ -427,7 +408,6 @@ void DS1820_OnEverySecond() {
 			{
 				scratchpad[i] = OWReadByte(Pin);//read Scratchpad Memory of DS
 			}
-//			crc= OWcrc(scratchpad, 8);
 			crc= Crc8CQuick(scratchpad, 8);
 			if (crc != scratchpad[8])
 			{
@@ -454,7 +434,7 @@ void DS1820_OnEverySecond() {
 					else if (cfg == 0x20) raw = raw & ~3; // 10 bit res, 187.5 ms
 					else if (cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
 					raw = raw << 3; // multiply by 8
-					DS1820_LOG(DEBUG, "family=%x, raw=%i, cfg=%x", ds18_family, raw, cfg);
+					DS1820_LOG(DEBUG, "family=%x, raw=%i, cfg=%x (%i bit resolution)", ds18_family, raw, cfg, 9+(cfg)/32) ;
 				}
 			
 				// Raw is t * 128
@@ -505,7 +485,6 @@ void DS1820_OnEverySecond() {
 						DS1820_LOG(ERROR, "Family not discovered");
 						return;
 					}
-					DS1820_LOG(INFO, "Family discovered %x", ds18_family);
 				}
 
 				OWWriteByte(Pin,0xCC);
