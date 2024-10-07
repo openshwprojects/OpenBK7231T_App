@@ -201,6 +201,7 @@
     <ClCompile Include="src\driver\drv_tm1638.c" />
     <ClCompile Include="src\driver\drv_tm_gn_display_shared.c" />
     <ClCompile Include="src\driver\drv_tuyaMCU.c" />
+    <ClCompile Include="src\driver\drv_tuyaMCUPixLED.c" />
     <ClCompile Include="src\driver\drv_tuyaMCUSensor.c" />
     <ClCompile Include="src\driver\drv_wemo.c" />
     <ClCompile Include="src\driver\drv_uart.c" />
