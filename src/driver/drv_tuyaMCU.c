@@ -1194,7 +1194,6 @@ void TuyaMCU_OnChannelChanged(int channel, int iVal) {
 	if (iVal != mappediVal) {
 		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "OnChannelChanged: mapped value %d (OpenBK7321T_App range) to %d (TuyaMCU range)\n", iVal, mappediVal);
 	}
-
 	// send value to TuyaMCU
 	switch (mapping->dpType)
 	{
@@ -1214,6 +1213,7 @@ void TuyaMCU_OnChannelChanged(int channel, int iVal) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "OnChannelChanged: channel %d: unsupported data point type %d-%s\n", channel, mapping->dpType, TuyaMCU_GetDataTypeString(mapping->dpType));
 		break;
 	}
+	//mapping->prevValue = iVal;
 }
 
 void TuyaMCU_ParseQueryProductInformation(const byte* data, int len) {
@@ -1821,6 +1821,8 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		break;
 	case 0x22:
 		{
+			TuyaMCU_ParseStateMessage(data + 6, len - 6);
+
 			byte data23[1] = { 1 };
 			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: 0x22 replying");
 			// For example, the module returns 55 aa 00 23 00 01 01 24
@@ -2358,9 +2360,8 @@ void TuyaMCU_Init()
 	//cmddetail:"fn":"TuyaMCU_SendMCUConf","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_sendMCUConf", TuyaMCU_SendMCUConf, NULL);
-
-	//cmddetail:{"name":"tuyaMcu_sendCmd","args":"TuyaMCU_SendUserCmd",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"tuyaMcu_sendCmd","args":"[CommandIndex] [HexPayloadNBytes]",
+	//cmddetail:"descr":"This will automatically calculate TuyaMCU checksum and length for given command ID and payload, then it will send a command. It's better to use it than uartSendHex",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_sendCmd", TuyaMCU_SendUserCmd, NULL);
