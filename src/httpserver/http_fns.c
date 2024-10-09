@@ -17,6 +17,7 @@
 #include "../cJSON/cJSON.h"
 #include <time.h>
 #include "../driver/drv_ntp.h"
+#include "../driver/drv_deviceclock.h"		// to set clock via Javascript in pmntp
 #include "../driver/drv_local.h"
 
 static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"></form>";
@@ -175,6 +176,39 @@ int http_fn_testmsg(http_request_t* request) {
 	return 0;
 
 }
+
+// poor mans NTP
+#if ENABLE_LOCAL_CLOCK
+int http_fn_pmntp(http_request_t* request) {
+	char tmpA[128];
+	uint32_t actepoch=0;
+	// javascripts "getTime()" should return time since 01.01.1970 (UTC)
+	// we want local time, so we need to add the UTC offset (if there is one)
+	if (http_getArg(request->url, "EPOCH", tmpA, sizeof(tmpA))) {
+		// atoi will only work on signed integers, we might get a higher value after 2038 , so use strtoul here
+		actepoch = (uint32_t)strtoul(tmpA,0,10);
+//		g_epochOnStartup = actepoch - g_secondsElapsed ;
+		CLOCK_setDeviceTime(actepoch);
+//addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"PoormMansNTP - set g_epochOnStartup to %u -- got actepoch=%u secondsElapsed=%u!! \n",g_epochOnStartup,actepoch, g_secondsElapsed);	
+	}
+	if (http_getArg(request->url, "OFFSET", tmpA, sizeof(tmpA)) && actepoch != 0 ) {
+#if ENABLE_LOCAL_CLOCK_ADVANCED
+	// if actual time is during DST period, javascript will return 
+	// an offset including the one additional hour of DST  
+	// if this is the case, set g_DSToffset (in testNsetDST) and reduce the 
+	// offset to the offset from timesone (subtract offset seconds)
+		g_UTCoffset = testNsetDST(actepoch)==1 ? atoi(tmpA)-g_DSToffset : atoi(tmpA);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"PoormMansNTP - set g_UTCoffset to %u -- got offset=%i -- next switch at %u!! \n",g_UTCoffset,atoi(tmpA),g_next_dst_change);	
+#else
+	// don't care about daylight saving time
+		g_UTCoffset = atoi(tmpA);	
+#endif
+	}
+	poststr(request, "HTTP/1.1 302 OK\nLocation: /index\nConnection: close\n\n");
+	poststr(request, NULL);
+	return 0;
+}
+#endif // to #if ENABLE_LOCAL_CLOCK
 
 // bit mask telling which channels are hidden from HTTP
 // If given bit is set, then given channel is hidden
@@ -2421,6 +2455,11 @@ int http_fn_cfg(http_request_t* request) {
 	postFormAction(request, "cmd_tool", "Execute custom command");
 	//postFormAction(request, "flash_read_tool", "Flash Read Tool");
 	postFormAction(request, "startup_command", "Change startup command text");
+#if ENABLE_LOCAL_CLOCK
+	poststr(request, "<form action=\"javascript:location.href=PoorMansNTP() \">\
+			<input type=\"submit\" value=\"Set device clock to browser time\">\
+			</form>");
+#endif
 
 #if 0
 #if PLATFORM_BK7231T | PLATFORM_BK7231N

@@ -172,7 +172,7 @@ void Win_DoUnitTests() {
 	Test_EnergyMeter();
 	Test_Tasmota();
 	Test_NTP();
-	Test_NTP_SunsetSunrise();
+	Test_CLOCK_SunsetSunrise();
 	Test_HTTP_Client();
 	Test_ExpandConstant();
 	Test_ChangeHandlers_MQTT();

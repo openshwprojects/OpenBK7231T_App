@@ -1,6 +1,13 @@
 #include "new_common.h"
+#if ENABLE_LOCAL_CLOCK_ADVANCED
+#include "new_cfg.h" // for CFG_SetCLOCK_SETTINGS() - used in CMD_CLOCK_SetConfig()
+#include <time.h>
+// Commands register, execution API and cmd tokenizer
+#include "cmnds/cmd_public.h"
+#endif
 #include <stdio.h>
 #include <stdlib.h>
+#include "logging/logging.h"
 
 const char *str_rssi[] = { "N/A", "Weak", "Fair", "Good", "Excellent" };
 
@@ -62,7 +69,7 @@ int vsprintf3(char *buffer, const char *fmt, va_list val) {
 
 #endif
 
-#if WINDOWS
+#if WINDOWS || PLATFORM_W800
 const char* strcasestr(const char* str1, const char* str2)
 {
 	const char* p1 = str1;
@@ -344,4 +351,51 @@ WIFI_RSSI_LEVEL wifi_rssi_scale(int8_t rssi_value)
         retVal = EXCELLENT;
     return retVal;
 }
+
+
+// functions for adjusting "g_secondsElapsed" to rtos tics
+
+// g_secondsElapsed is drifting of after some time (for me it was ~ 1 to 2 minutes (!) a day)
+// when using rtos ticks, it was reduced to 1 to 2 seconds(!) a day
+// if we want to use this for emulating an RTC, we should get the time as good as possible 
+ 
+TickType_t lastTick=0;
+// it's a pitty we cant use rtos' "xNumOfOverflows" here, but its not accessable, so we need to take care of owerflows here
+// a 32 bit TickType_t counter of ms will rollover after (4294836225÷1000÷3600÷24=49,7088) ~ 49,7 days we should expect uptimes 
+// bigger than this value!
+//
+// I don't expect uptime > 35 years, so uint8_t could be sufficient if TickType_t is 32 bit ( 255×4294967295 ms = 1,09521666×10¹² ms = 1095216660 s ~ 12676 days ~ 34,7 years)
+// but just to be sure use uint16_t (65535 x 4294967295 ms = 2,814706817×10¹⁴ ms = 281470681677,825 s ~ 3257762 days ~ 8919 years)
+// if TickType_t is also uint16_t it will last for approx 50 days, while uint8_t will rollover after 4,65 hours !! 
+uint16_t timer_rollovers=0; 
+
+
+uint32_t getSecondsElapsed(){
+
+	// xTicks are not bound to be in ms, 
+	// but for all plattforms xTicks can be converted to MS with "portTICK_RATE_MS"
+
+ 	TickType_t actTick=portTICK_RATE_MS*xTaskGetTickCount();
+
+	 // to make this work, getSecondsElapsed() must be called once before rollover, which is 
+	 // no problem for the usual choice of TickType_t = uint32_t:
+	 // 	rollover will take place after 4294967295 ms (almost 50 days)
+	 // but it might be a more of challenge for uint16_t its with only 65535 ms (one Minute and 5 seconds)!! 
+	 if (actTick < lastTick ){
+		timer_rollovers++;
+		ADDLOG_INFO(LOG_FEATURE_RAW, "\r\n\r\nCLOCK: Rollover of tick counter! Actual value of timer_rollovers=%u \r\n\r\n",timer_rollovers);
+
+	 }
+	 lastTick = actTick;
+	 // 
+	 // version 1 :
+	 // use the time also to adjust g_secondsElapsed 
+	 g_secondsElapsed = (uint32_t)(((uint64_t) timer_rollovers << (sizeof(TickType_t)*8) | actTick) / 1000 );
+	 return  g_secondsElapsed;
+	 // 
+	 // possible version 2 :
+	 // without adjusting g_secondsElapsed :
+	// return (uint32_t)(((uint64_t) timer_rollovers << 32 | actTick) / 1000 );
+}
+
 

@@ -36,6 +36,7 @@
 
 
 #include "driver/drv_ntp.h"
+#include "driver/drv_deviceclock.h"
 #include "driver/drv_ssdp.h"
 #include "driver/drv_uart.h"
 
@@ -60,6 +61,7 @@ void bg_register_irda_check_func(FUNCPTR func);
 
 
 int g_secondsElapsed = 0;
+extern int g_DSToffset;
 // open access point after this number of seconds
 int g_openAP = 0;
 // connect to wifi after this number of seconds
@@ -651,8 +653,18 @@ void Main_OnEverySecond()
 		//int mqtt_max, mqtt_cur, mqtt_mem;
 		//MQTT_GetStats(&mqtt_cur, &mqtt_max, &mqtt_mem);
 		//ADDLOGF_INFO("mqtt req %i/%i, free mem %i\n", mqtt_cur,mqtt_max,mqtt_mem);
-		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i %s\n",
-			safe, g_secondsElapsed, idleCount, xPortGetFreeHeapSize(), bMQTTconnected, MQTT_GetConnectEvents(),
+		char timestring[50];
+		if (Clock_IsTimeSynced() == true) {
+			CLOCK_OnEverySecond();
+			time_t localTime = (time_t)Clock_GetCurrentTime();
+			strftime(timestring, sizeof(timestring), "Date: %Y-%m-%dT%H:%M:%S", gmtime(&localTime));
+		}
+		else {
+			sprintf(timestring, "Time %i", g_secondsElapsed);
+		}
+		
+		ADDLOGF_INFO("%s %s, idle %i/s, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i %s\n",
+			safe, timestring, idleCount, xPortGetFreeHeapSize(), bMQTTconnected, MQTT_GetConnectEvents(),
 			g_bHasWiFiConnected, g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets(),
 			g_powersave ? "POWERSAVE" : "");
 		// reset so it's a per-second counter.
@@ -666,12 +678,26 @@ void Main_OnEverySecond()
 #endif
 
 
-	// print network info
+	// every 10 seconds ...
 	if (!(g_secondsElapsed % 10))
 	{
+		// ... print network info ...
 		HAL_PrintNetworkInfo();
-
+		// adjust g_secondsElapsed to rtos ticks to be more reliable
+		getSecondsElapsed(); // getSecondsElapsed() will set g_secondsElapsed to a tick based counter
 	}
+#if ENABLE_LOCAL_CLOCK_ADVANCED
+		// handle dayligth saving time 
+
+		// since Clock_GetCurrentTimeWithoutOffset() is 0 if time is not set, we don't need to test for "Clock_IsTimeSynced()" in advance 
+		// (0 will never be > g_next_dst_change, even if g_next_dst_change was never set and hence is also 0		
+		//ADDLOGF_INFO("DST: Next DST switch at epoch %u -- g_DSToffset is %i ! \n",g_next_dst_change, g_DSToffset);				
+		if  ( Clock_GetCurrentTimeWithoutOffset() > g_next_dst_change ){ // since Clock_GetCurrentTimeWithoutOffset() is 0 if time is not set, we don't need to test if time is set before
+			if (testNsetDST(Clock_GetCurrentTimeWithoutOffset())) ADDLOGF_INFO("DST switch from normal time to DST at epoch %u -- next switch at %u!! \n", Clock_GetCurrentTimeWithoutOffset(), g_next_dst_change);
+			else  ADDLOGF_INFO("DST switch back from DST at epoch %u -- next switch at %u!! \n", Clock_GetCurrentTimeWithoutOffset(),g_next_dst_change);
+		}
+#endif
+
 	// IR TESTING ONLY!!!!
 #ifdef PLATFORM_BK7231T
 	//DRV_IR_Print();
@@ -1084,6 +1110,11 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	CMD_InitSendCommands();
 #endif
+#if ENABLE_HTTP_HEADER_TIME
+	extern int CMD_InitGetHeaderTime();
+	CMD_InitGetHeaderTime();
+#endif
+
 	CMD_InitChannelCommands();
 	EventHandlers_Init();
 
@@ -1236,6 +1267,11 @@ void Main_Init_Before_Delay()
 		ADDLOGF_INFO("###### safe mode activated - boot failures %d", g_bootFailures);
 	}
 	CFG_InitAndLoad();
+#if ENABLE_LOCAL_CLOCK_ADVANCED
+	// set clocksettings to stored values
+	g_clocksettings.value=CFG_GetCLOCK_SETTINGS();
+	set_UTCoffset_from_Config();
+#endif
 
 #if ENABLE_LITTLEFS
 	LFSAddCmds();
@@ -1340,6 +1376,12 @@ void Main_Init_After_Delay()
 		Main_Init_AfterDelay_Unsafe(true);
 	}
 
+#if ENABLE_LOCAL_CLOCK
+	extern commandResult_t CMD_CLOCK_SetConfig(); 	// defined in new_common.c
+	CMD_RegisterCommand("clock_setConfig",CMD_CLOCK_SetConfig, NULL);
+	extern commandResult_t CMD_CLOCK_GetConfig(); 	// defined in new_common.c
+	CMD_RegisterCommand("clock_getConfig",CMD_CLOCK_GetConfig, NULL);
+#endif
 	ADDLOGF_INFO("Main_Init_After_Delay done");
 }
 

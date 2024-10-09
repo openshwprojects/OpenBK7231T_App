@@ -318,7 +318,9 @@ typedef void *beken_thread_arg_t;
 typedef void *beken_thread_t;
 typedef void (*beken_thread_function_t)( beken_thread_arg_t arg );
 typedef int OSStatus;
-
+#ifdef PLATFORM_W600
+	typedef portTickType TickType_t;		// W600/W800: xTaskGetTickCount() is of type "portTickType", all others "TickType_t" , W600 has no definition for TickType_t
+#endif
 #define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
 #define BEKEN_APPLICATION_PRIORITY         (7)
 
@@ -334,6 +336,8 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 
 // TODO:LN882H Platform setup here.
 #include <stdbool.h>
+#include <FreeRTOS.h>
+#include <task.h>
 
 #define ASSERT
 #define os_strcpy strcpy
@@ -456,9 +460,14 @@ int PingWatchDog_GetTotalReceived();
 int LWIP_GetMaxSockets();
 int LWIP_GetActiveSockets();
 
+// for Beken, you will get "conflicting types" else:
+///OpenBK7231T_App/sdk/OpenBK7231N/platforms/bk7231n/toolchain/gcc-arm-none-eabi-4_9-2015q1/arm-none-eabi/include/sys/unistd.h:198:6: note: previous declaration of 'usleep' was here
+// int  _EXFUN(usleep, (useconds_t __useconds));
+//
+#if ! ( PLATFORM_BEKEN && ENABLE_HTTP_HEADER_TIME) 
 //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 void usleep(int r);
-
+#endif
 #define RESTARTS_REQUIRED_FOR_SAFE_MODE 4
 
 // linear mapping function --> https://www.arduino.cc/reference/en/language/functions/math/map/
@@ -496,6 +505,18 @@ extern int g_bootFailures;
 extern int g_secondsElapsed;
 extern int g_rebootReason;
 extern float g_wifi_temperature;
+uint32_t getSecondsElapsed();
+
+#if ENABLE_LOCAL_CLOCK
+// some variables and functions for handling device time even without NTP driver present
+// vars will be initialised in new_common.c 
+// "eoch" on startup of device; If we add g_secondsElapsed we get the actual time  
+extern uint32_t g_epochOnStartup ;
+// UTC offset
+extern int g_UTCoffset;
+extern int g_DSToffset;
+extern uint32_t g_next_dst_change;
+#endif
 
 typedef int(*jsonCb_t)(void *userData, const char *fmt, ...);
 #if ENABLE_TASMOTA_JSON

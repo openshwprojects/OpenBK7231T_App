@@ -19,6 +19,11 @@
 
 #define OBK_DISABLE_ALL_DRIVERS       1
 
+// test for local clock
+#define ENABLE_LOCAL_CLOCK_ADVANCED	0
+#define ENABLE_LOCAL_CLOCK		0
+
+
 #elif PLATFORM_W600
 
 // Some limited drivers are supported on W600, OBK_DISABLE_ALL_DRIVERS is not defined
@@ -27,6 +32,9 @@
 #define ENABLE_DRIVER_BL0937    1
 #define ENABLE_DRIVER_DHT		1
 #define ENABLE_TASMOTA_JSON		1
+// test for local clock
+#define ENABLE_LOCAL_CLOCK_ADVANCED	0
+#define ENABLE_LOCAL_CLOCK		0
 
 #elif PLATFORM_W800
 
@@ -34,7 +42,14 @@
 //#define OBK_DISABLE_ALL_DRIVERS 1
 #define ENABLE_TASMOTA_JSON		1
 #define ENABLE_DRIVER_DS1820		1
-
+// test for local clock
+#define ENABLE_LOCAL_CLOCK_ADVANCED	1
+#define ENABLE_LOCAL_CLOCK		1
+#define  ENABLE_HTTP_HEADER_TIME	1
+#define ENABLE_CLOCK_SUNRISE_SUNSET	1
+#define ENABLE_CALENDAR_EVENTS	1
+// parse things like $CH1 or $hour etc
+#define ENABLE_EXPAND_CONSTANT		1
 
 #elif WINDOWS
 
@@ -62,7 +77,7 @@
 #define ENABLE_DRIVER_PT6523	1
 #define ENABLE_DRIVER_MAX6675	1
 #define ENABLE_DRIVER_TEXTSCROLLER	1
-#define ENABLE_NTP_SUNRISE_SUNSET	1
+#define ENABLE_CLOCK_SUNRISE_SUNSET	1
 // parse things like $CH1 or $hour etc
 #define ENABLE_EXPAND_CONSTANT		1
 #define ENABLE_DRIVER_DHT		1
@@ -77,6 +92,10 @@
 #define ENABLE_DRIVER_SM15155E	1
 #define ENABLE_DRIVER_IR2		0
 #define ENABLE_DRIVER_CHARTS	1
+
+// test for local clock
+#define ENABLE_LOCAL_CLOCK_ADVANCED	0
+#define ENABLE_LOCAL_CLOCK		0
 
 #elif PLATFORM_BL602
 
@@ -100,13 +119,18 @@
 #define ENABLE_DRIVER_CHT83XX 1
 #define ENABLE_DRIVER_DS1820		1
 
+// test for local clock
+#define ENABLE_LOCAL_CLOCK_ADVANCED	0
+#define ENABLE_LOCAL_CLOCK		0
+
+
 #elif PLATFORM_BEKEN
 
 // set to 0 to disable
 #define ENABLE_TASMOTADEVICEGROUPS 1
 #define ENABLE_LITTLEFS			1
-#define ENABLE_NTP    1
-#define ENABLE_NTP_SUNRISE_SUNSET	1
+//#define ENABLE_NTP    1
+#define ENABLE_CLOCK_SUNRISE_SUNSET	1
 #define ENABLE_DRIVER_LED       1
 #define ENABLE_DRIVER_BL0937    1
 #define ENABLE_DRIVER_BL0942    1
@@ -150,11 +174,16 @@
 #define ENABLE_DRIVER_DS1820		1
 #define ENABLE_DRIVER_CHT83XX 1
 
+// test for local clock
+#define ENABLE_LOCAL_CLOCK_ADVANCED	1
+#define ENABLE_LOCAL_CLOCK		1
+#define  ENABLE_HTTP_HEADER_TIME	1
+
 #elif PLATFORM_LN882H
 
 //#define OBK_DISABLE_ALL_DRIVERS       1
 #define ENABLE_TASMOTADEVICEGROUPS 1
-#define ENABLE_NTP			1
+//#define ENABLE_NTP			1
 #define ENABLE_DRIVER_BL0937    	1
 #define ENABLE_DRIVER_LED 		1
 #define ENABLE_DRIVER_WEMO		1
@@ -166,6 +195,15 @@
 //#define	ENABLE_DRIVER_TMGN		1
 #define ENABLE_TASMOTA_JSON		1
 #define ENABLE_DRIVER_DS1820		1
+// test for local clock
+#define ENABLE_LOCAL_CLOCK_ADVANCED	1
+#define ENABLE_LOCAL_CLOCK		1
+
+#define  ENABLE_HTTP_HEADER_TIME	1
+#define ENABLE_CLOCK_SUNRISE_SUNSET	1
+#define ENABLE_CALENDAR_EVENTS	1
+// parse things like $CH1 or $hour etc
+#define ENABLE_EXPAND_CONSTANT		1
 
 #else
 

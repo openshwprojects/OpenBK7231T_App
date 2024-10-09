@@ -64,7 +64,14 @@ function fmtUpTime(totalSeconds) {
 
 function updateOnlineFor() {
 	onlineForEl.textContent = fmtUpTime(++onlineFor);
+	getElement("DT").innerHTML = utc > 10 ? new Date((utc+onlineFor)*1e3) : 'unset <a href="javascript:window.location = PoorMansNTP() ;">set to browser time</a>';
 }
+
+function PoorMansNTP() {
+	var d=new Date(); 
+	d.getTime(); 
+	return '/pmntp?EPOCH=' + parseInt(d/1000) + '&OFFSET=' + d.getTimezoneOffset()* - 60;
+};
 
 function onLoad() {
 	onlineForEl = getElement("onlineFor");
@@ -74,7 +81,6 @@ function onLoad() {
 			setInterval(updateOnlineFor, 1000);
 		}
 	}
-
 	showState();
 }
 

@@ -267,7 +267,11 @@ void http_html_start(http_request_t* request, const char* pagename) {
 
 const char pageScriptPart1[] = "<script type='text/javascript'>var firstTime,lastTime,onlineFor,req=null,onlineForEl=null,getElement=e=>document.getElementById(e);function showState(){clearTimeout(firstTime),clearTimeout(lastTime),null!=req&&req.abort(),(req=new XMLHttpRequest).onreadystatechange=()=>{var e;4==req.readyState&&\"OK\"==req.statusText&&((\"INPUT\"!=document.activeElement.tagName||\"number\"!=document.activeElement.type&&\"color\"!=document.activeElement.type)&&(e=getElement(\"state\"))&&(e.innerHTML=req.responseText),clearTimeout(firstTime),clearTimeout(lastTime),lastTime=setTimeout(showState,";
 const char pageScriptPart2[] = "))},req.open(\"GET\",\"index?state=1\",!0),req.send(),firstTime=setTimeout(showState,";
-const char pageScriptPart3[] = ")}function fmtUpTime(e){var t,n,o=Math.floor(e/86400);return e%=86400,t=Math.floor(e/3600),e%=3600,n=Math.floor(e/60),e=e%60,0<o?o+` days, ${t} hours, ${n} minutes and ${e} seconds`:0<t?t+` hours, ${n} minutes and ${e} seconds`:0<n?n+` minutes and ${e} seconds`:`just ${e} seconds`}function updateOnlineFor(){onlineForEl.textContent=fmtUpTime(++onlineFor)}function onLoad(){(onlineForEl=getElement(\"onlineFor\"))&&(onlineFor=parseInt(onlineForEl.dataset.initial,10))&&setInterval(updateOnlineFor,1e3),showState()}function submitTemperature(e){var t=getElement(\"form132\");getElement(\"kelvin132\").value=Math.round(1e6/parseInt(e.value)),t.submit()}window.addEventListener(\"load\",onLoad),history.pushState(null,\"\",window.location.pathname.slice(1)),setTimeout(()=>{var e=getElement(\"changed\");e&&(e.innerHTML=\"\")},5e3);</script>";
+const char pageScriptPart3[] = ")}function fmtUpTime(e){var t,n,o=Math.floor(e/86400);return e%=86400,t=Math.floor(e/3600),e%=3600,n=Math.floor(e/60),e=e%60,0<o?o+` days, ${t} hours, ${n} minutes and ${e} seconds`:0<t?t+` hours, ${n} minutes and ${e} seconds`:0<n?n+` minutes and ${e} seconds`:`just ${e} seconds`}function updateOnlineFor(){onlineForEl.textContent=fmtUpTime(++onlineFor)"
+#if ENABLE_LOCAL_CLOCK
+",getElement(\"DT\").innerHTML=10<utc?new Date(1e3*(utc+onlineFor)):'unset <a href=\"javascript:window.location = PoorMansNTP() ;\">set to browser time</a>'}function PoorMansNTP(){var e=new Date;return e.getTime(),\"/pmntp?EPOCH=\"+parseInt(e/1e3)+\"&OFFSET=\"+-60*e.getTimezoneOffset()"
+#endif
+"}function onLoad(){(onlineForEl=getElement(\"onlineFor\"))&&(onlineFor=parseInt(onlineForEl.dataset.initial,10))&&setInterval(updateOnlineFor,1e3),showState()}function submitTemperature(e){var t=getElement(\"form132\");getElement(\"kelvin132\").value=Math.round(1e6/parseInt(e.value)),t.submit()}window.addEventListener(\"load\",onLoad),history.pushState(null,\"\",window.location.pathname.slice(1)),setTimeout(()=>{var e=getElement(\"changed\");e&&(e.innerHTML=\"\")},5e3);</script>";
 
 
 void http_html_end(http_request_t* request) {
@@ -280,7 +284,9 @@ void http_html_end(http_request_t* request) {
 	poststr(request, g_build_str);
 
 	hprintf255(request, "<br>Online for&nbsp;<span id=\"onlineFor\" data-initial=\"%i\">-</span>", g_secondsElapsed);
-
+#if ENABLE_LOCAL_CLOCK
+	hprintf255(request, "<br>Device time:&nbsp;<span id=\"DT\">-</span><script>utc=%u</script>",Clock_IsTimeSynced()? Clock_GetCurrentTimeWithoutOffset()-g_secondsElapsed : 1);
+#endif
 	WiFI_GetMacAddress((char*)mac);
 
 	snprintf(upTimeStr, sizeof(upTimeStr), "<br>Device MAC: %02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
@@ -790,7 +796,9 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	if (http_checkUrlBase(urlStr, "ota")) return http_fn_ota(request);
 	if (http_checkUrlBase(urlStr, "ota_exec")) return http_fn_ota_exec(request);
 	if (http_checkUrlBase(urlStr, "cm")) return http_fn_cm(request);
-
+#if ENABLE_LOCAL_CLOCK
+	if (http_checkUrlBase(urlStr, "pmntp")) return http_fn_pmntp(request); // poor mans NTP
+#endif	
 	return http_fn_other(request);
 }
 

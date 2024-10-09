@@ -3,7 +3,7 @@
 #include "selftest_local.h"
 #include "../driver/drv_ntp.h"
 
-void Test_NTP_SunsetSunrise() {
+void Test_CLOCK_SunsetSunrise() {
 	byte hour, minute;
 	int sunrise, sunset;
 
@@ -18,15 +18,15 @@ void Test_NTP_SunsetSunrise() {
 	// set Tue, 19 Dec 2023 20:14:52
 	NTP_SetSimulatedTime(1703016892);
 
-	sunrise = NTP_GetSunrise();
-	NTP_CalculateSunrise(&hour, &minute);
+	sunrise = CLOCK_GetSunrise();
+	CLOCK_CalculateSunrise(&hour, &minute);
 	// Expect sunrise at 7:11
 	SELFTEST_ASSERT(hour == 7);
 	SELFTEST_ASSERT(minute == 11);
 	SELFTEST_ASSERT(sunrise == 25860);
 
-	sunset = NTP_GetSunset();
-	NTP_CalculateSunset(&hour, &minute);
+	sunset = CLOCK_GetSunset();
+	CLOCK_CalculateSunset(&hour, &minute);
 	// Expect sunset at 16:02
 	SELFTEST_ASSERT(hour == 16);
 	SELFTEST_ASSERT(minute == 2);
@@ -39,15 +39,15 @@ void Test_NTP_SunsetSunrise() {
 	// set Tue, 19 Dec 2023 20:14:52
 	NTP_SetSimulatedTime(1703016892);
 	
-	sunrise = NTP_GetSunrise();
-	NTP_CalculateSunrise(&hour, &minute);
+	sunrise = CLOCK_GetSunrise();
+	CLOCK_CalculateSunrise(&hour, &minute);
 	// Expect sunrise at 6:52
 	SELFTEST_ASSERT(hour == 6);
 	SELFTEST_ASSERT(minute == 52);
 	SELFTEST_ASSERT(sunrise == 24720);
 	
-	sunset = NTP_GetSunset();
-	NTP_CalculateSunset(&hour, &minute);
+	sunset = CLOCK_GetSunset();
+	CLOCK_CalculateSunset(&hour, &minute);
 	// Expect sunset at 16:45
 	SELFTEST_ASSERT(hour == 16);
 	SELFTEST_ASSERT(minute == 45);
@@ -60,15 +60,15 @@ void Test_NTP_SunsetSunrise() {
 	// set Wed Jul 12 2023 13:47:13 GMT+0000
 	NTP_SetSimulatedTime(1689169633);
 
-	sunrise = NTP_GetSunrise();
-	NTP_CalculateSunrise(&hour, &minute);
+	sunrise = CLOCK_GetSunrise();
+	CLOCK_CalculateSunrise(&hour, &minute);
 	// Expect sunrise at 6:37
 	SELFTEST_ASSERT(hour == 6);
 	SELFTEST_ASSERT(minute == 37);
 	SELFTEST_ASSERT(sunrise == 23820);
 
-	sunset = NTP_GetSunset();
-	NTP_CalculateSunset(&hour, &minute);
+	sunset = CLOCK_GetSunset();
+	CLOCK_CalculateSunset(&hour, &minute);
 	// Expect sunset at 20:34
 	SELFTEST_ASSERT(hour == 20);
 	SELFTEST_ASSERT(minute == 34);
@@ -86,13 +86,13 @@ void Test_NTP_SunsetSunrise() {
 	SELFTEST_ASSERT_CHANNEL(15,123);
 
 	// expect set at 15:23
-	NTP_CalculateSunset(&hour, &minute);
+	CLOCK_CalculateSunset(&hour, &minute);
 	SELFTEST_ASSERT(hour == 15);
 	SELFTEST_ASSERT(minute == 23);
 	SELFTEST_ASSERT_EXPRESSION("$sunset", 55380);
 	
 	// expect rise at 7:41
-	NTP_CalculateSunrise(&hour, &minute);
+	CLOCK_CalculateSunrise(&hour, &minute);
 	SELFTEST_ASSERT(hour == 7);
 	SELFTEST_ASSERT(minute == 41);
 	SELFTEST_ASSERT_EXPRESSION("$sunrise", 27660);

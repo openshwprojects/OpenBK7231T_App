@@ -1267,12 +1267,16 @@ typedef struct mainConfig_s {
 	byte unused_fill1;
 
 	// offset 0x000004BC
-	unsigned long LFS_Size; // szie of LFS volume.  it's aligned against the end of OTA
+	unsigned long LFS_Size; // size of LFS volume.  it's aligned against the end of OTA
 	int loggerFlags;
+	// offset 0x000004C4
+	int unused_fill2;
+	// offset 0x000004C8 - needed for 8 byte boundary
+	uint64_t CLOCK_SETTINGS; // 64 bits/8 bytes: Clock settings like timezone and DST - using "value" of union ST for setting all parameters at once
 #if PLATFORM_W800
-	byte unusedSectorAB[51];
+	byte unusedSectorAB[39];	// was 51 before adding CLOCK_SETTINGS - added 12 bytes
 #else    
-	byte unusedSectorAB[99];
+	byte unusedSectorAB[87];	// was 99 before adding CLOCK_SETTINGS - added 12 bytes
 #endif    
 	obkStaticIP_t staticIP;
 	ledRemap_t ledRemap;
