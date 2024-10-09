@@ -9,6 +9,7 @@
 #include "../hal/hal_wifi.h"
 #include "../driver/drv_public.h"
 #include "../driver/drv_ntp.h"
+#include "../driver/drv_deviceclock.h"
 #include "../driver/drv_tuyaMCU.h"
 #include "../ota/ota.h"
 #ifndef WINDOWS

@@ -9,6 +9,7 @@
 #include "../ota/ota.h"
 #include "drv_local.h"
 #include "drv_ntp.h"
+#include "../driver/drv_deviceclock.h"
 #include "drv_public.h"
 #include "drv_uart.h"
 #include "../cmnds/cmd_public.h" //for enum EventCode

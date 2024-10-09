@@ -10,6 +10,24 @@
 #include "../ota/ota.h"
 
 #include "drv_deviceclock.h"
+// functions for handling device time even without NTP driver present
+// using "g_epochOnStartup" and "g_UTCoffset" if NTP not present (or not synced)
+
+#include "drv_ntp.h"
+
+// "eoch" on startup of device; If we add g_secondsElapsed we get the actual time  
+#if ENABLE_LOCAL_CLOCK
+uint32_t g_epochOnStartup = 0;
+// UTC offset
+int g_UTCoffset = 0;
+#endif
+
+#if ENABLE_LOCAL_CLOCK_ADVANCED
+// daylight saving time offset
+int g_DSToffset = 0;
+// epoch of next change in dst
+uint32_t g_next_dst_change=0;
+#endif
 
 extern void CLOCK_Init_Events(void);
 extern void CLOCK_RunEvents(unsigned int newTime, bool bTimeValid);
@@ -170,7 +188,7 @@ int CLOCK_GetYear() {
 }
 
 
-
+#if ENABLE_LOCAL_CLOCK
 void CLOCK_setDeviceTime(uint32_t time)
 {
 	if (g_epochOnStartup < 10) CLOCK_Init();
@@ -181,7 +199,7 @@ void CLOCK_setDeviceTimeOffset(int offs)
 {
 	g_UTCoffset = offs;
 }
-
+#endif
 
 
 void CLOCK_Init() {
@@ -210,25 +228,6 @@ void CLOCK_OnEverySecond()
 }
 
 
-// functions for handling device time even without NTP driver present
-// using "g_epochOnStartup" and "g_UTCoffset" if NTP not present (or not synced)
-
-#include "drv_ntp.h"
-
-// "eoch" on startup of device; If we add g_secondsElapsed we get the actual time  
-#if ENABLE_LOCAL_CLOCK
-uint32_t g_epochOnStartup = 0;
-
-
-#endif
-// UTC offset
-int g_UTCoffset = 0;
-#if ENABLE_LOCAL_CLOCK_ADVANCED
-// daylight saving time offset
-int g_DSToffset = 0;
-// epoch of next change in dst
-uint32_t g_next_dst_change=0;
-#endif
 
 
 
