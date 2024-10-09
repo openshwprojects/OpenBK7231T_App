@@ -184,6 +184,9 @@ int g_speed = 0;
 void PixelAnim_SetAnim(int j) {
 	activeAnim = j;
 	g_lightMode = Light_Anim;
+	if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_ANY_ACTION)) {
+		LED_SetEnableAll(true);
+	}
 	apply_smart_light();
 }
 commandResult_t PA_Cmd_Anim(const void *context, const char *cmd, const char *args, int flags) {
