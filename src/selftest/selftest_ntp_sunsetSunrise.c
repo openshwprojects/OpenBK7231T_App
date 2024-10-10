@@ -103,6 +103,11 @@ void Test_CLOCK_SunsetSunrise() {
 	// during next 10 minutes, the rise should occur
 	int runSeconds = 10 * 60;
 	for (int i = 0; i < runSeconds; i++) {
+	// we moved clock functionality away from NTP source
+	// so "tewak" the clock by adding a second
+		g_secondsElapsed++;
+		// we might have an action pending for this time, so call CLOCK_OnEverySecond();
+		CLOCK_OnEverySecond();
 		NTP_OnEverySecond();
 	}
 	SELFTEST_ASSERT_CHANNEL(15, 2020);
@@ -126,6 +131,11 @@ void Test_CLOCK_SunsetSunrise() {
 	// during next 10 minutes, the rise should occur
 	runSeconds = 10 * 60;
 	for (int i = 0; i < runSeconds; i++) {
+	// we moved clock functionality away from NTP source
+	// so "tewak" the clock by adding a second
+		g_secondsElapsed++;
+		// we might have an action pending for this time, so call CLOCK_OnEverySecond();
+		CLOCK_OnEverySecond();
 		NTP_OnEverySecond();
 	}
 	// channel value should change

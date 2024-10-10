@@ -94,8 +94,9 @@
 #define ENABLE_DRIVER_CHARTS	1
 
 // test for local clock
-#define ENABLE_LOCAL_CLOCK_ADVANCED	0
-#define ENABLE_LOCAL_CLOCK		0
+#define ENABLE_LOCAL_CLOCK_ADVANCED	1
+#define ENABLE_LOCAL_CLOCK		1
+
 
 #elif PLATFORM_BL602
 

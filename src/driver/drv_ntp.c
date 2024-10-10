@@ -130,6 +130,11 @@ void NTP_SetSimulatedTime(unsigned int timeNow) {
 	g_ntpTime += g_timeOffsetSeconds;
 	g_synced = true;
 	b_ntp_simulatedTime = true;
+#if ENABLE_LOCAL_CLOCK
+	CLOCK_setDeviceTime(timeNow);
+	// we might have an action pending for this time, so call CLOCK_OnEverySecond();
+	CLOCK_OnEverySecond();
+#endif
 }
 #endif
 void NTP_Init() {
