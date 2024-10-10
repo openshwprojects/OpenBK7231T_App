@@ -10,8 +10,8 @@
 
 typedef struct {
 	bool bEnabled;
-	char label[32];
-	char command[128];
+	char *label;
+	char *command;
 	char color[16];
 } httpButton_t;
 
@@ -56,14 +56,18 @@ void setLabel(int idx, const char *lab) {
 	bt = getOrAlloc(idx);
 	if (bt == 0)
 		return;
-	strcpy_safe(bt->label, lab, sizeof(bt->label));
+	if (bt->label)
+		free(bt->label);
+	bt->label = strdup(lab);
 }
 void setCommand(int idx, const char *cmd) {
 	httpButton_t *bt;
 	bt = getOrAlloc(idx);
 	if (bt == 0)
 		return;
-	strcpy_safe(bt->command, cmd, sizeof(bt->command));
+	if (bt->command)
+		free(bt->command);
+	bt->command = strdup(cmd);
 }
 void setColor(int idx, const char *cs) {
 	httpButton_t *bt;
