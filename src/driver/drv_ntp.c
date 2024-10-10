@@ -128,12 +128,6 @@ bool b_ntp_simulatedTime = false;
 void NTP_SetSimulatedTime(unsigned int timeNow) {
 	g_ntpTime = timeNow;
 	g_ntpTime += g_timeOffsetSeconds;
-// would be called in NTP_CheckForReceive() in real device 
-	if (g_synced == false) {
-		EventHandlers_FireEvent(CMD_EVENT_NTP_STATE, 1);
-		// so now clock is synced. If it wasn't set before, start "CLOCK_Init()" for timed events
-		if (! Clock_IsTimeSynced() ) CLOCK_Init();
-	}
 	g_synced = true;
 	b_ntp_simulatedTime = true;
 }
@@ -297,7 +291,8 @@ void NTP_CheckForReceive() {
 	if (g_synced == false) {
 		EventHandlers_FireEvent(CMD_EVENT_NTP_STATE, 1);
 		// so now clock is synced. If it wasn't set before, start "CLOCK_Init()" for timed events
-		if (! Clock_IsTimeSynced() ) CLOCK_Init();
+		// done in CMD_Init_Delayed()  in cmd_main.c
+//		if (! Clock_IsTimeSynced() ) CLOCK_Init();
 	}
     g_synced = true;
 #if 0

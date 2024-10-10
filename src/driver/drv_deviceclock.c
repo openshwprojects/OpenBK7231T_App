@@ -191,7 +191,8 @@ int CLOCK_GetYear() {
 #if ENABLE_LOCAL_CLOCK
 void CLOCK_setDeviceTime(uint32_t time)
 {
-	if (g_epochOnStartup < 10) CLOCK_Init();
+// done in CMD_Init_Delayed()  in cmd_main.c
+//	if (g_epochOnStartup < 10) CLOCK_Init();
 	g_epochOnStartup = time - g_secondsElapsed;
 }
 
