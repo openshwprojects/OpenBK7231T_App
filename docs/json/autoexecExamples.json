@@ -142,5 +142,9 @@
 {
 "title": "[PJ-MGW1103 CT-Clamp Energy Meter sample for combining two dpIDs (sign and value) into one channel](https://www.elektroda.com/rtvforum/viewtopic.php?p=21125206#21125206)",
 "file": "autoexecs/combine_sign_and_value.bat"
+},
+{
+"title": "[Scripting custom light animation/styles for TuyaMCU](https://www.elektroda.com/rtvforum/topic4014389.html)",
+"file": "autoexecs/tuyamcu_light_styles.bat"
 }
 ]
