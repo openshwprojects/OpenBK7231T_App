@@ -125,6 +125,7 @@ void DRV_HTTPButtons_AddToHtmlPage(http_request_t *request) {
 	int i;
 	const char *c;
 	const char *action;
+	const char *label;
 
 	for (i = 0; i < g_buttonCount; i++) {
 		httpButton_t *bt = g_buttons[i];
@@ -143,6 +144,11 @@ void DRV_HTTPButtons_AddToHtmlPage(http_request_t *request) {
 		}
 
 		action = bt->command;
+		if (action == 0)
+			action = "";
+		label = bt->label;
+		if (label == 0)
+			label = "";
 		poststr(request, "<td><form action=\"");
 		if (action[0] == '*') {
 			poststr(request, action+1);
@@ -157,7 +163,7 @@ void DRV_HTTPButtons_AddToHtmlPage(http_request_t *request) {
 		if (bt->color[0]) {
 			hprintf255(request, "style = \"background-color:%s;\" ",bt->color);
 		}
-		hprintf255(request, "type = \"submit\" value=\"%s\"/></form></td>",  bt->label);
+		hprintf255(request, "type = \"submit\" value=\"%s\"/></form></td>",  label);
 		poststr(request, "</tr>");
 
 
