@@ -447,7 +447,7 @@ int CLOCK_Print_EventList() {
 	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Total %i events", t);
 	return t;
 }
-commandResult_t CMD_CLOCK_List_Events(const void* context, const char* cmd, const char* args, int cmdFlags) {
+commandResult_t CMD_CLOCK_ListEvents(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	CLOCK_Print_EventList();
 	return CMD_RES_OK;
@@ -493,9 +493,9 @@ void CLOCK_Init_Events() {
 	CMD_RegisterCommand("removeClockEvent", CMD_CLOCK_RemoveEvent, NULL);
 	//cmddetail:{"name":"listClockEvents","args":"",
 	//cmddetail:"descr":"Print the complete set clock events list",
-	//cmddetail:"fn":"CMD_CLOCK_List_Events","file":"driver/drv_timed_events.c","requires":"",
+	//cmddetail:"fn":"CMD_CLOCK_ListEvents","file":"driver/drv_timed_events.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("listClockEvents", CMD_CLOCK_List_Events, NULL);
+	CMD_RegisterCommand("listClockEvents", CMD_CLOCK_ListEvents, NULL);
 	//cmddetail:{"name":"clearClockEvents","args":"",
 	//cmddetail:"descr":"Removes all set clock events",
 	//cmddetail:"fn":"CMD_CLOCK_ClearEvents","file":"driver/drv_timed_events.c","requires":"",
