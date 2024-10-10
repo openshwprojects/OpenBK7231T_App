@@ -38,7 +38,7 @@
   {
     "name": "TestCharts",
     "title": "TODO",
-    "descr": ".",
+    "descr": "Development only driver - a sample of chart generation with chart.js.",
     "requires": ""
   },
   {

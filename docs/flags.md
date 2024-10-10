@@ -55,3 +55,4 @@ Do not add anything here, as it will overwritten with next rebuild.
 | 47 | [TuyaMCU] Store ALL data |
 | 48 | [PWR] Invert AC dir |
 | 49 | [HTTP] Hide ON/OFF for relays (only red/green buttons) |
+| 50 | [MQTT] Never add get sufix |

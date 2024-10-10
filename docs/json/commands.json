@@ -335,7 +335,7 @@
   {
     "name": "chart_add",
     "args": "",
-    "descr": "See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "descr": "Adds data to the chart with specified variables at a specific NTP time. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
     "fn": "NULL);",
     "file": "driver/drv_charts.c",
     "requires": "",
@@ -344,7 +344,7 @@
   {
     "name": "chart_addNow",
     "args": "",
-    "descr": "See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "descr": "Adds data to the chart using the current NTP time. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
     "fn": "NULL);",
     "file": "driver/drv_charts.c",
     "requires": "",
@@ -353,7 +353,7 @@
   {
     "name": "chart_create",
     "args": "",
-    "descr": "See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "descr": "Creates a chart with a specified number of samples, variables, and axes. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
     "fn": "NULL);",
     "file": "driver/drv_charts.c",
     "requires": "",
@@ -362,7 +362,7 @@
   {
     "name": "chart_setAxis",
     "args": "",
-    "descr": "See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "descr": "Sets up an axis with a name, flags, and label. Currently flags can be 0 (left axis) or 1 (right axis). See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
     "fn": "NULL);",
     "file": "driver/drv_charts.c",
     "requires": "",
@@ -371,7 +371,7 @@
   {
     "name": "chart_setVar",
     "args": "",
-    "descr": " See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "descr": "Associates a variable with a specific axis. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
     "fn": "NULL);",
     "file": "driver/drv_charts.c",
     "requires": "",
@@ -2620,8 +2620,8 @@
   },
   {
     "name": "tuyaMcu_sendCmd",
-    "args": "TuyaMCU_SendUserCmd",
-    "descr": "",
+    "args": "[CommandIndex] [HexPayloadNBytes]",
+    "descr": "This will automatically calculate TuyaMCU checksum and length for given command ID and payload, then it will send a command. It's better to use it than uartSendHex",
     "fn": "NULL);",
     "file": "driver/drv_tuyaMCU.c",
     "requires": "",

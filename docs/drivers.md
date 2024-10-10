@@ -13,7 +13,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | PixelAnim |  PixelAnim provides a simple set of WS2812B animations.<br/>See also [PixelAnim on forum](https://www.elektroda.com/rtvforum/find.php?q=PixelAnim). |
 | Drawers |  WS2812B driver wrapper with REST API for [smart drawers project](https://www.elektroda.com/rtvforum/topic4054134.html).<br/>See also [Drawers on forum](https://www.elektroda.com/rtvforum/find.php?q=Drawers). |
 | HGS02 |  [HGS02](https://www.elektroda.com/rtvforum/viewtopic.php?p=21177061#21177061).<br/>See also [HGS02 on forum](https://www.elektroda.com/rtvforum/find.php?q=HGS02). |
-| TestCharts |  .<br/>See also [TestCharts on forum](https://www.elektroda.com/rtvforum/find.php?q=TestCharts). |
+| TestCharts |  Development only driver - a sample of chart generation with chart.js.<br/>See also [TestCharts on forum](https://www.elektroda.com/rtvforum/find.php?q=TestCharts). |
 | Charts |  Charts driver allows you to create a customizable chart directly on your device. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).<br/>See also [Charts on forum](https://www.elektroda.com/rtvforum/find.php?q=Charts). |
 | NTP |  NTP driver is required to get current time and date from web. Without it, there is no correct datetime. Put 'startDriver NTP' in short startup line or autoexec.bat to run it on start.<br/>See also [NTP on forum](https://www.elektroda.com/rtvforum/find.php?q=NTP). |
 | HTTPButtons |  This driver allows you to create custom, scriptable buttons on main WWW page. You can create those buttons in autoexec.bat and assign commands to them.<br/>See also [HTTPButtons on forum](https://www.elektroda.com/rtvforum/find.php?q=HTTPButtons). |
