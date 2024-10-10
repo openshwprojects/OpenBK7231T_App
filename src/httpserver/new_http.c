@@ -262,6 +262,11 @@ void http_html_start(http_request_t* request, const char* pagename) {
 	poststr(request, htmlBodyStart);
 	poststr(request, CFG_GetDeviceName());
 	poststr(request, htmlBodyStart2);
+#if ENABLE_LOCAL_CLOCK
+	// print HTML element holding time if its not the "state" page, which will contain the data to be refreshed on every request 
+	if(pagename) hprintf255(request, "<p hidden id='utc' data-utc='%u'></p>",Clock_IsTimeSynced()? Clock_GetCurrentTimeWithoutOffset()-g_secondsElapsed : 1);
+//	if(pagename) hprintf255(request, "<p hidden id='utc1' data-utc='%u'></p>",Clock_IsTimeSynced()? Clock_GetDeviceTimeWithoutOffset()-g_secondsElapsed : 1);
+#endif
 }
 
 
@@ -269,7 +274,9 @@ const char pageScriptPart1[] = "<script type='text/javascript'>var firstTime,las
 const char pageScriptPart2[] = "))},req.open(\"GET\",\"index?state=1\",!0),req.send(),firstTime=setTimeout(showState,";
 const char pageScriptPart3[] = ")}function fmtUpTime(e){var t,n,o=Math.floor(e/86400);return e%=86400,t=Math.floor(e/3600),e%=3600,n=Math.floor(e/60),e=e%60,0<o?o+` days, ${t} hours, ${n} minutes and ${e} seconds`:0<t?t+` hours, ${n} minutes and ${e} seconds`:0<n?n+` minutes and ${e} seconds`:`just ${e} seconds`}function updateOnlineFor(){onlineForEl.textContent=fmtUpTime(++onlineFor)"
 #if ENABLE_LOCAL_CLOCK
-",getElement(\"DT\").innerHTML=10<utc?new Date(1e3*(utc+onlineFor)):'unset <a href=\"javascript:window.location = PoorMansNTP() ;\">set to browser time</a>'}function PoorMansNTP(){var e=new Date;return e.getTime(),\"/pmntp?EPOCH=\"+parseInt(e/1e3)+\"&OFFSET=\"+-60*e.getTimezoneOffset()"
+",u=Number(getElement(\"utc\").dataset.utc),getElement(\"DT\").innerHTML=10<u?new Date(1e3*(u+onlineFor)):'unset <a href=\"javascript:window.location = PoorMansNTP() ;\">set to browser time</a>'"
+//",u=Number(getElement(\"utc1\").dataset.utc),getElement(\"DT1\").innerHTML=10<u?new Date(1e3*(u+onlineFor)):unset"
+"}function PoorMansNTP(){var e=new Date;return e.getTime(),\"/pmntp?EPOCH=\"+parseInt(e/1e3)+\"&OFFSET=\"+-60*e.getTimezoneOffset()"
 #endif
 "}function onLoad(){(onlineForEl=getElement(\"onlineFor\"))&&(onlineFor=parseInt(onlineForEl.dataset.initial,10))&&setInterval(updateOnlineFor,1e3),showState()}function submitTemperature(e){var t=getElement(\"form132\");getElement(\"kelvin132\").value=Math.round(1e6/parseInt(e.value)),t.submit()}window.addEventListener(\"load\",onLoad),history.pushState(null,\"\",window.location.pathname.slice(1)),setTimeout(()=>{var e=getElement(\"changed\");e&&(e.innerHTML=\"\")},5e3);</script>";
 
@@ -285,7 +292,9 @@ void http_html_end(http_request_t* request) {
 
 	hprintf255(request, "<br>Online for&nbsp;<span id=\"onlineFor\" data-initial=\"%i\">-</span>", g_secondsElapsed);
 #if ENABLE_LOCAL_CLOCK
-	hprintf255(request, "<br>Device time:&nbsp;<span id=\"DT\">-</span><script>utc=%u</script>",Clock_IsTimeSynced()? Clock_GetCurrentTimeWithoutOffset()-g_secondsElapsed : 1);
+	poststr(request, "<br>Device time:&nbsp;<span id=\"DT\">-</span>");
+//	t=Clock_IsTimeSynced()? Clock_GetDeviceTime() : 0;
+//	hprintf255(request, "<br>Local Device time:&nbsp;<span id=\"DT1\">%s</span>",(t != 0) ? ctime(&t) : "-");
 #endif
 	WiFI_GetMacAddress((char*)mac);
 

@@ -945,6 +945,10 @@ typedef enum {
 	};
 
 #endif
+#if ENABLE_LOCAL_CLOCK
+	hprintf255(request, "<p hidden id='utc' data-utc='%u'></p>",Clock_IsTimeSynced()? Clock_GetCurrentTimeWithoutOffset()-g_secondsElapsed : 1);
+//	hprintf255(request, "<p hidden id='utc1' data-utc='%u'></p>",Clock_IsTimeSynced()? Clock_GetDeviceTimeWithoutOffset()-g_secondsElapsed : 1);
+#endif
 
 #if WINDOWS
 #elif PLATFORM_BL602

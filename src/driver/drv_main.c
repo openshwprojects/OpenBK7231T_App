@@ -91,7 +91,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"NTP driver is required to get current time and date from web. Without it, there is no correct datetime. Put 'startDriver NTP' in short startup line or autoexec.bat to run it on start.",
 	//drvdetail:"requires":""}
-	{ "NTP",		NTP_Init,			NTP_OnEverySecond,			NTP_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	{ "NTP",		NTP_Init,			NTP_OnEverySecond,			NTP_AppendInformationToHTTPIndexPage, NULL, NTP_Stop , NULL, false },
 #endif
 #if ENABLE_HTTPBUTTONS
 	//drvdetail:{"name":"HTTPButtons",

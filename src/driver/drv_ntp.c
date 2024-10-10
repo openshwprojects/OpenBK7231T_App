@@ -163,6 +163,12 @@ void NTP_Init() {
     g_synced = false;
 }
 
+// if driver is stopped, we need to make sure, we don't keep NTP in state "synched"
+void NTP_Stop() {
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP driver stopped");
+    g_synced = false;
+}
+
 unsigned int NTP_GetCurrentTime() {
     return g_ntpTime;
 }
@@ -287,6 +293,9 @@ void NTP_CheckForReceive() {
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Seconds since Jan 1 1900 = %u",secsSince1900);
 
     g_ntpTime = secsSince1900 - NTP_OFFSET;
+#if ENABLE_LOCAL_CLOCK
+	CLOCK_setDeviceTime(g_ntpTime);
+#endif
     g_ntpTime += g_timeOffsetSeconds;
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u",(unsigned int)g_ntpTime);
     ltm = gmtime(&g_ntpTime);

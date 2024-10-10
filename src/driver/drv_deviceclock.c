@@ -273,6 +273,37 @@ uint32_t Clock_GetCurrentTimeWithoutOffset(){ 	// ... same forNTP_GetCurrentTime
 };
 
 
+//
+// ###################################################################  START  ########################################################################
+// ##################################################### temp. function to get local time, ############################################################
+// ##################################################### even if NTP is running and synced ############################################################ 
+//
+uint32_t Clock_GetDeviceTime(){ 			// might replace for NTP_GetCurrentTime() to return time regardless of NTP present/running
+#if ENABLE_LOCAL_CLOCK_ADVANCED
+	return g_epochOnStartup > 10 ? g_epochOnStartup + g_secondsElapsed + g_UTCoffset + g_DSToffset : 0;
+#elif ENABLE_LOCAL_CLOCK
+	return g_epochOnStartup > 10 ? g_epochOnStartup + g_secondsElapsed + g_UTCoffset : 0;
+#else
+	return  0;
+#endif
+};
+
+uint32_t Clock_GetDeviceTimeWithoutOffset(){ 	// ... same forNTP_GetCurrentTimeWithoutOffset()...
+#if ENABLE_LOCAL_CLOCK
+	// if g_epochOnStartup is set, return time - we migth (mis-)use a very small value as status,
+	// so check for > 10. A hack, but as we will not go back in time ... 
+	return g_epochOnStartup > 10 ? g_epochOnStartup  + g_secondsElapsed  : 0;
+#else
+	return  0;
+#endif
+};
+
+//
+// ###################################################################   END   ########################################################################
+// ##################################################### temp. function to get local time, ############################################################
+// ##################################################### even if NTP is running and synced ############################################################ 
+//
+
 
 bool Clock_IsTimeSynced(){ 				// ... and for NTP_IsTimeSynced()
 #if ENABLE_NTP
