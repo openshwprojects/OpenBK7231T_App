@@ -318,7 +318,7 @@ static int http_rest_app(http_request_t* request) {
 
 		poststr(request, htmlShortcutIcon);
 		poststr(request, htmlHeadMeta);
-		hprintf255(request, "<script>var root='%s',device='http://%s';</script>", webhost, ourip);
+		hprintf255(request, "<script>var root='%s',device='http://'+location.hostname;</script>", webhost);
 		hprintf255(request, "<script src='%s/startup.js'></script>", webhost);
 		poststr(request, "</head><body></body></html>");
 	}

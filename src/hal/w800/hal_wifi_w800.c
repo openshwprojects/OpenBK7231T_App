@@ -160,6 +160,10 @@ static void apsta_net_status(u8 status)
 		break;
 	case NETIF_IP_NET2_UP:
 		// wm_printf("\napsta_net_status: softap ip: %v\n", netif->next->ip_addr.addr);
+		if (g_wifiStatusCallback != 0)
+		{
+			g_wifiStatusCallback(WIFI_AP_CONNECTED);
+		}
 		break;
 	default:
 		break;
@@ -227,7 +231,7 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 
 void HAL_DisconnectFromWifi()
 {
-
+	tls_wifi_disconnect();
 }
 
 
@@ -347,6 +351,26 @@ int demo_create_softap(u8* ssid, u8* key, int chan, int encrypt, int format)
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
 	demo_create_softap(ssid, "", 15, 0, 1);
+
+	// dhcp_server_start(0);
+	// dhcp_server_stop(void);
+
+	return 0;
+}
+
+int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
+{
+
+	if ( key && strlen(key) < 8){
+		printf("ERROR! key(%s) needs to be at least 8 characters!\r\n", key);
+		if (g_wifiStatusCallback != 0) {
+			g_wifiStatusCallback(WIFI_AP_FAILED);
+		}
+		return -1;
+	}
+
+
+	demo_create_softap(ssid, key, 1, IEEE80211_ENCRYT_CCMP_WPA2, 1);	// tls_softap_info_t has no "AUTO", only tls_ibss_info_t ...
 
 	// dhcp_server_start(0);
 	// dhcp_server_stop(void);

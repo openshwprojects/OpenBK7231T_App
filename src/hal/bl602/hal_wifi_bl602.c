@@ -73,6 +73,26 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
 
 	return 0;
 }
+int HAL_SetupWiFiAccessPoint(const char *ssid, const char *key) {
+
+	uint8_t hidden_ssid = 0;
+	//int channel;
+
+	if ( key && strlen(key) < 8){
+		printf("ERROR! key(%s) needs to be at least 8 characters!\r\n", key);
+		if (g_wifiStatusCallback != 0) {
+			g_wifiStatusCallback(WIFI_AP_FAILED);
+		}
+		return -1;
+	}
+	wifi_interface_t wifi_interface;
+	//struct netif *net;
+	wifi_interface = wifi_mgmr_ap_enable();
+	wifi_mgmr_ap_start(wifi_interface, ssid, hidden_ssid, key, 1);
+	g_bAccessPointMode = 0;
+
+	return 0;
+}
 static void event_cb_wifi_event(input_event_t *event, void *private_data)
 {
 
