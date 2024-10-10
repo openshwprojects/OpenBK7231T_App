@@ -206,11 +206,17 @@ void CLOCK_setDeviceTimeOffset(int offs)
 void CLOCK_Init() {
 
 #if ENABLE_CLOCK_SUNRISE_SUNSET
-	//cmddetail:{"name":"ntp_setLatLong","args":"[Latlong]",
-	//cmddetail:"descr":"Sets the NTP latitude and longitude",
+	//cmddetail:{"name":"clock_setLatLong","args":"[Latlong]",
+	//cmddetail:"descr":"Sets the devices latitude and longitude",
 	//cmddetail:"fn":"CLOCK_SetLatlong","file":"driver/drv_ntp.c","requires":"",
 	//cmddetail:"examples":"CLOCK_SetLatlong -34.911498 138.809488"}
     CMD_RegisterCommand("clock_setLatLong", CLOCK_SetLatlong, NULL);    
+// and register an alias for backward compatibility
+	//cmddetail:{"name":"ntp_setLatLong","args":"[Latlong]",
+	//cmddetail:"descr":"obsolete! only for backward compatibility - please use 'clock_setLatLong' in the future",
+	//cmddetail:"fn":"CLOCK_SetLatlong","file":"driver/drv_ntp.c","requires":"",
+	//cmddetail:"examples":"ntp_SetLatlong -34.911498 138.809488"}
+    CMD_RegisterCommand("ntp_setLatLong", CLOCK_SetLatlong, NULL);    
 #endif
 #if ENABLE_CALENDAR_EVENTS
 	CLOCK_Init_Events();
