@@ -684,7 +684,9 @@ void Main_OnEverySecond()
 		// ... print network info ...
 		HAL_PrintNetworkInfo();
 		// adjust g_secondsElapsed to rtos ticks to be more reliable
+#ifndef WINDOWS
 		getSecondsElapsed(); // getSecondsElapsed() will set g_secondsElapsed to a tick based counter
+#endif
 	}
 #if ENABLE_LOCAL_CLOCK_ADVANCED
 		// handle dayligth saving time 

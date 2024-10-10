@@ -1,29 +1,17 @@
 #define _XOPEN_SOURCE 700
-#if PLATFORM_W800
-// wil get strange error else:
-/*
-./include/net/wm_sockets2.0.3.h:480:70: error: expected declaration specifiers or '...' before numeric constant
- #define write(s,dataptr,len)                      send(s,dataptr,len,0)
-                                                                      ^
-../include/net/wm_sockets2.0.3.h:478:66: error: expected declaration specifiers or '...' before numeric constant
- #define read(s,mem,len)                           recv(s,mem,len,0)
 
-*/
-#define GET_HEADER_BUILD
-#endif
 #include "lwip/inet.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "lwip/sockets.h"
 #include "lwip/tcp.h"
-#include <unistd.h>
 #include <time.h>
 #include "../cmnds/cmd_local.h"
 #include "../logging/logging.h"
 #include "../new_common.h"
 
-#undef GET_HEADER_BUILD
+
 
 #define MAX_REQUEST_LEN 64	// 64 chars for the request line should be enough
 #define TCP_PROTO 6

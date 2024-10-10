@@ -358,7 +358,8 @@ WIFI_RSSI_LEVEL wifi_rssi_scale(int8_t rssi_value)
 // g_secondsElapsed is drifting of after some time (for me it was ~ 1 to 2 minutes (!) a day)
 // when using rtos ticks, it was reduced to 1 to 2 seconds(!) a day
 // if we want to use this for emulating an RTC, we should get the time as good as possible 
- 
+
+#ifndef WINDOWS 
 TickType_t lastTick=0;
 // it's a pitty we cant use rtos' "xNumOfOverflows" here, but its not accessable, so we need to take care of owerflows here
 // a 32 bit TickType_t counter of ms will rollover after (4294836225÷1000÷3600÷24=49,7088) ~ 49,7 days we should expect uptimes 
@@ -397,5 +398,5 @@ uint32_t getSecondsElapsed(){
 	 // without adjusting g_secondsElapsed :
 	// return (uint32_t)(((uint64_t) timer_rollovers << 32 | actTick) / 1000 );
 }
-
+#endif
 
