@@ -139,7 +139,7 @@
 // parse things like $CH1 or $hour etc
 #define ENABLE_EXPAND_CONSTANT	1
 #define ENABLE_DRIVER_DHT		1
-//#define ENABLE_DRIVER_AHT2X 1
+#define ENABLE_DRIVER_AHT2X 1
 #define	ENABLE_DRIVER_TMGN		0
 #define ENABLE_DRIVER_DRAWERS	0
 #define ENABLE_TASMOTA_JSON		1
