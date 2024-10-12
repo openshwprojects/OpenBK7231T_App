@@ -25,6 +25,8 @@ int cmd_uartInitIndex = 0;
 
 #define HASH_SIZE 128
 
+#define CMD_BUFFER_SIZE 512
+
 static int generateHashValue(const char* fname) {
 	int		i;
 	int		hash;
@@ -410,7 +412,7 @@ void CMD_UARTConsole_Run() {
 	char a;
 	int i;
 	int totalSize;
-	char tmp[128];
+	char tmp[CMD_BUFFER_SIZE];
 
 	totalSize = UART_GetDataSize();
 	while (totalSize) {
@@ -937,7 +939,7 @@ commandResult_t CMD_ExecuteCommand(const char* s, int cmdFlags) {
 	const char* p;
 	const char* args;
 
-	char copy[128];
+	char copy[CMD_BUFFER_SIZE];
 	int len;
 	//const char *org;
 
