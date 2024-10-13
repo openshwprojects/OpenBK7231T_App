@@ -426,26 +426,19 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 	}
 	poststr(request, "<script>");
 	poststr(request, "function cha() {");
+	poststr(request, "var labels =document.getElementById('chartlabels').value.split(/\s*,\s*/).map(Number).map((x)=>new Date(x * 1000).toLocaleTimeString());"); // we transmitted only timestamps, let Javascript do the work to convert them ;-)
+	for (int i = 0; i < s->numVars; i++) {
+		hprintf255(request, "var data%i = document.getElementById('chartdata%i').value.split(/\s*,\s*/).map(Number);",i,i);	
+	}
+	poststr(request, "if (! window.obkChartInstance) {");
 	poststr(request, "console.log('Initializing chart');");
-	poststr(request, "if (window.obkChartInstance) {");
-	poststr(request, "    window.obkChartInstance.destroy();");
-	poststr(request, "}");
 	poststr(request, "var ctx = document.getElementById('obkChart');");
 	poststr(request, "if (ctx.style.display=='none') ctx.style.display='block';");
 	poststr(request, "ctx =ctx.getContext('2d');");
-
-/*
-	poststr(request, "var labels = [");
-	request->userCounter = 0;
-	Chart_Iterate(s, 0, Chart_DisplayLabel, request);
-	poststr(request, "];");
-*/
-	poststr(request, "var labels=document.getElementById('chartlabels').value.split(/\s*,\s*/).map(Number);");
-	
 	poststr(request, "window.obkChartInstance = new Chart(ctx, {");
 	poststr(request, "    type: 'line',");
 	poststr(request, "    data: {");
-	poststr(request, "        labels: labels.map((x)=>new Date(x * 1000).toLocaleTimeString()),");  	// we transmitted only timestamps, let Javascript do the work to convert them ;-)
+	poststr(request, "        labels: labels,");
 	poststr(request, "        datasets: [");
 	for (int i = 0; i < s->numVars; i++) {
 		if (i) {
@@ -453,14 +446,7 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 		}
 		poststr(request, "{");
 		hprintf255(request, "            label: '%s',", s->vars[i].title);
-/*
-		poststr(request, "            data: [");
-		request->userCounter = 0;
-		Chart_Iterate(s, i,  Chart_DisplayData, request);
-		poststr(request, "],");
-*/
-
-		hprintf255(request, "            data: document.getElementById('chartdata%i').value.split(/\s*,\s*/).map(Number),",i);
+		hprintf255(request, "            data: data%i,",i);
 		if (i == 2) {
 			poststr(request, "                borderColor: 'rgba(155, 33, 55, 1)',");
 		}
@@ -506,9 +492,17 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 	}
 	poststr(request, "        }");
 	poststr(request, "    }");
-	poststr(request, "});");
+	poststr(request, "});\n");
 	poststr(request, "Chart.defaults.color = '#099'; ");  // Issue #1375, add a default color to improve readability (applies to: dataset names, axis ticks, color for axes title, (use color: '#099')
-	poststr(request, "}");
+	poststr(request, "}\n");
+	poststr(request, "else {\n");
+	poststr(request, "console.log('Updating chart');\n");
+	poststr(request, "	window.obkChartInstance.data.labels=labels;\n");
+	for (int i = 0; i < s->numVars; i++) {
+		hprintf255(request, "	window.obkChartInstance.data.datasets[%i].data=data%i;\n",i,i);	
+	}
+	poststr(request, "	window.obkChartInstance.update();\n");
+	poststr(request, "}\n}");
 	poststr(request, "</script>");
 	poststr(request, "<style onload='cha();'></style>");
 
