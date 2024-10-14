@@ -330,9 +330,10 @@ void Chart_SetVar(chart_t *s, int idx, const char *title, const char *axis) {
 }
 void Chart_SetSample(chart_t *s, int idx, float value) {
 	if (!s || idx >= s->numVars) {
-	bk_printf("DEBUG CHARTS: Chart_SetSample ixd=%i /  s->numVars=%i",idx, s->numVars); 
+	bk_printf("DEBUG CHARTS: ERROR - Chart_SetSample ixd=%i /  s->numVars=%i / value=%f",idx, s->numVars,value); 
 		return;
 	}
+	bk_printf("DEBUG CHARTS: Chart_SetSample ixd=%i /  s->numVars=%i  / value=%f",idx, s->numVars,value); 
 	s->vars[idx].samples[s->nextSample] = value;
 }
 void Chart_AddTime(chart_t *s, time_t time) {
