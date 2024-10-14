@@ -314,7 +314,7 @@ chart_t *Chart_Create(int maxSamples, int numVars, int numAxes) {
 	return s;
 }
 void Chart_SetAxis(chart_t *s, int idx, const char *name, int flags, const char *label) {
-	if (!s) {
+	if (!s || idx >= s->numAxes) {
 		return;
 	}
 	s->axes[idx].name = strdup(name);
@@ -322,14 +322,14 @@ void Chart_SetAxis(chart_t *s, int idx, const char *name, int flags, const char 
 	s->axes[idx].flags = flags;
 }
 void Chart_SetVar(chart_t *s, int idx, const char *title, const char *axis) {
-	if (!s) {
+	if (!s || idx >= s->numVars) {
 		return;
 	}
 	s->vars[idx].title = strdup(title);
 	s->vars[idx].axis = strdup(axis);
 }
 void Chart_SetSample(chart_t *s, int idx, float value) {
-	if (!s) {
+	if (!s || idx >= s->numVars) {
 		return;
 	}
 	s->vars[idx].samples[s->nextSample] = value;
@@ -587,6 +587,10 @@ static commandResult_t CMD_Chart_SetVar(const void *context, const char *cmd, co
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	int varIndex = Tokenizer_GetArgInteger(0);
+	if (varIndex >= g_chart->numVars){
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set var %i, only %i var defined (starting with 0)!", varIndex, g_chart->numVars);
+		return CMD_RES_ERROR;
+	}
 	const char *displayName = Tokenizer_GetArg(1);
 	const char *axis = Tokenizer_GetArg(2);
 
@@ -601,6 +605,10 @@ static commandResult_t CMD_Chart_SetAxis(const void *context, const char *cmd, c
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	int axisIndex = Tokenizer_GetArgInteger(0);
+	if (axisIndex >= g_chart->numAxes){
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set axis %i, only %i axes defined (starting with 0)!", axisIndex, g_chart->numAxes);
+		return CMD_RES_ERROR;
+	}
 	const char *name = Tokenizer_GetArg(1);
 	int cflags = Tokenizer_GetArgInteger(2);
 	const char *label = Tokenizer_GetArg(3);
@@ -617,6 +625,11 @@ static commandResult_t CMD_Chart_AddNow(const void *context, const char *cmd, co
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	for (int i = 0; i < cnt; i++) {
+		if (i >= g_chart->numVars){
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set value for var %i, only %i vars defined (starting with 0)!", i, g_chart->numVars);
+		return CMD_RES_ERROR;
+		}
+
 		float f = Tokenizer_GetArgFloat(i);
 		Chart_SetSample(g_chart, i, f);
 	}
@@ -633,6 +646,10 @@ static commandResult_t CMD_Chart_Add(const void *context, const char *cmd, const
 	}
 	int time = Tokenizer_GetArgInteger(0);
 	for (int i = 1; i < cnt; i++) {
+		if (i >= g_chart->numVars){
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set value for var %i, only %i vars defined (starting with 0)!", i, g_chart->numVars);
+		return CMD_RES_ERROR;
+		}
 		float f = Tokenizer_GetArgFloat(i);
 		Chart_SetSample(g_chart, i - 1, f);
 	}
