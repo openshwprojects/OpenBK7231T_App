@@ -650,7 +650,7 @@ static commandResult_t CMD_Chart_Add(const void *context, const char *cmd, const
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	int time = Tokenizer_GetArgInteger(0);
-	for (int i = 1; i < cnt-1; i++) {
+	for (int i = 1; i < cnt; i++) {
 		float f = Tokenizer_GetArgFloat(i);
 		if (i > g_chart->numVars){
 //			ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set value %f for var %i, only %i vars defined (starting with 0)!",f, i-1, g_chart->numVars);
