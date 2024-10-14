@@ -25,6 +25,10 @@ void DoorDeepSleep_StopDriver();
 void DoorDeepSleep_AppendInformationToHTTPIndexPage(http_request_t* request);
 void DoorDeepSleep_OnChannelChanged(int ch, int value);
 
+void TuyaMCU_PixelLED_Init();
+void TuyaMCU_PixelLED_RunEverySecond();
+void TuyaMCU_PixelLED_AppendInformationToHTTPIndexPage(http_request_t* request);
+
 void DRV_MAX72XX_Clock_OnEverySecond();
 void DRV_MAX72XX_Clock_RunFrame();
 void DRV_MAX72XX_Clock_Init();
