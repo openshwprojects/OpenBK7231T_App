@@ -330,10 +330,10 @@ void Chart_SetVar(chart_t *s, int idx, const char *title, const char *axis) {
 }
 void Chart_SetSample(chart_t *s, int idx, float value) {
 	if (!s || idx >= s->numVars) {
-	bk_printf("DEBUG CHARTS: ERROR - Chart_SetSample ixd=%i /  s->numVars=%i / value=%f",idx, s->numVars,value); 
+	bk_printf("DEBUG CHARTS: ERROR - Chart_SetSample ixd=%i /  s->numVars=%i / value=%f\n",idx, s->numVars,value); 
 		return;
 	}
-	bk_printf("DEBUG CHARTS: Chart_SetSample ixd=%i /  s->numVars=%i  / value=%f",idx, s->numVars,value); 
+	bk_printf("DEBUG CHARTS: OK - Chart_SetSample ixd=%i /  s->numVars=%i  / value=%f\n",idx, s->numVars,value); 
 	s->vars[idx].samples[s->nextSample] = value;
 }
 void Chart_AddTime(chart_t *s, time_t time) {
@@ -590,8 +590,9 @@ static commandResult_t CMD_Chart_SetVar(const void *context, const char *cmd, co
 	}
 	int varIndex = Tokenizer_GetArgInteger(0);
 	if (varIndex >= g_chart->numVars){
-		ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set var %i, only %i var defined (starting with 0)!", varIndex, g_chart->numVars);
-		return CMD_RES_ERROR;
+//		ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set var %i, only %i vars defined (starting with 0)!", varIndex, g_chart->numVars);
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set var %i, only var %s%i defined!", varIndex, g_chart->numVars>1? "0-":"",g_chart->numVars);
+		return CMD_RES_BAD_ARGUMENT;
 	}
 	const char *displayName = Tokenizer_GetArg(1);
 	const char *axis = Tokenizer_GetArg(2);
@@ -608,8 +609,9 @@ static commandResult_t CMD_Chart_SetAxis(const void *context, const char *cmd, c
 	}
 	int axisIndex = Tokenizer_GetArgInteger(0);
 	if (axisIndex >= g_chart->numAxes){
-		ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set axis %i, only %i axes defined (starting with 0)!", axisIndex, g_chart->numAxes);
-		return CMD_RES_ERROR;
+//		ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set axis %i, only %i axes defined (starting with 0)!", axisIndex, g_chart->numAxes);
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set axis %i, only axis %s%i defined!", axisIndex, g_chart->numAxes>1? "0-":"", g_chart->numAxes);
+		return CMD_RES_BAD_ARGUMENT;
 	}
 	const char *name = Tokenizer_GetArg(1);
 	int cflags = Tokenizer_GetArgInteger(2);
@@ -628,8 +630,9 @@ static commandResult_t CMD_Chart_AddNow(const void *context, const char *cmd, co
 	}
 	for (int i = 0; i < cnt; i++) {
 		if (i >= g_chart->numVars){
-			ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set value for var %i, only %i vars defined (starting with 0)!", i, g_chart->numVars);
-		return CMD_RES_ERROR;
+//			ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set value for var %i, only %i vars defined (starting with 0)!", i, g_chart->numVars);
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set sample value for var %i, only var %s%i defined!", i, g_chart->numVars>1? "0-":"",g_chart->numVars);
+		return CMD_RES_BAD_ARGUMENT;
 		}
 
 		float f = Tokenizer_GetArgFloat(i);
@@ -650,9 +653,10 @@ static commandResult_t CMD_Chart_Add(const void *context, const char *cmd, const
 	for (int i = 1; i < cnt-1; i++) {
 		float f = Tokenizer_GetArgFloat(i);
 		if (i > g_chart->numVars){
-			ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set value %f for var %i, only %i vars defined (starting with 0)!",f, i-1, g_chart->numVars);
-			bk_printf("CHARTS: Can't set value %f for var %i, only %i vars defined (starting with 0)!", f,i-1, g_chart->numVars);
-		return CMD_RES_ERROR;
+//			ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set value %f for var %i, only %i vars defined (starting with 0)!",f, i-1, g_chart->numVars);
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set value %f for var %i, only var %s%i defined!",f, i-1,  g_chart->numVars>1? "0-":"",g_chart->numVars);
+			bk_printf("CHARTS: Can't set value %f for var %i, only var %s%i defined!",f, i-1,  g_chart->numVars>1? "0-":"",g_chart->numVars);
+		return CMD_RES_BAD_ARGUMENT;
 		}
 		Chart_SetSample(g_chart, i - 1, f);
 	}
