@@ -648,11 +648,12 @@ static commandResult_t CMD_Chart_Add(const void *context, const char *cmd, const
 	}
 	int time = Tokenizer_GetArgInteger(0);
 	for (int i = 1; i < cnt-1; i++) {
+		float f = Tokenizer_GetArgFloat(i);
 		if (i > g_chart->numVars){
-			ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set value for var %i, only %i vars defined (starting with 0)!", i-1, g_chart->numVars);
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set value %f for var %i, only %i vars defined (starting with 0)!",f, i-1, g_chart->numVars);
+			bk_printf("CHARTS: Can't set value %f for var %i, only %i vars defined (starting with 0)!", f,i-1, g_chart->numVars);
 		return CMD_RES_ERROR;
 		}
-		float f = Tokenizer_GetArgFloat(i);
 		Chart_SetSample(g_chart, i - 1, f);
 	}
 	Chart_AddTime(g_chart, time);
