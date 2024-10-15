@@ -9,7 +9,7 @@
 
 #if PLATFORM_BEKEN
 #include "mem_pub.h"
-#elif PLATFORM_BL602 || PLATFORM_LN882H
+#elif PLATFORM_BL602 || PLATFORM_LN882H || PLATFORM_ESPIDF
 #define os_free free
 #define os_malloc malloc
 #endif
