@@ -74,12 +74,73 @@ sdk/OpenLN882H/project/OpenBeken/app:
 	@mkdir -p "sdk/OpenLN882H/project/OpenBeken"
 	ln -s "$(shell pwd)/" "sdk/OpenLN882H/project/OpenBeken/app"
 
+.PHONY: prebuild_OpenBK7231N prebuild_OpenBK7231T prebuild_OpenBL602 prebuild_OpenLN882H prebuild_OpenW600 prebuild_OpenW800 prebuild_OpenXR809
+
+prebuild_OpenBK7231N:
+	@if [ -e platforms/BK7231N/pre_build.sh ]; then \
+		echo "prebuild found for OpenBK7231N"; \
+		sh platforms/BK7231N/pre_build.sh; \
+	else echo "prebuild for OpenBK7231N not found ... "; \
+	fi
+
+
+prebuild_OpenBK7231T:
+	@if [ -e platforms/BK7231T/pre_build.sh ]; then \
+		echo "prebuild found for OpenBK7231T"; \
+		sh platforms/BK7231T/pre_build.sh; \
+	else echo "prebuild for OpenBK7231T not found ... "; \
+	fi
+
+
+prebuild_OpenBL602:
+	@if [ -e platforms/BL602/pre_build.sh ]; then \
+		echo "prebuild found for OpenBL602"; \
+		sh platforms/BL602/pre_build.sh; \
+	else echo "prebuild for OpenBL602 not found ... "; \
+	fi
+
+
+prebuild_OpenLN882H:
+	@if [ -e platforms/LN882H/pre_build.sh ]; then \
+		echo "prebuild found for OpenLN882H"; \
+		sh platforms/LN882H/pre_build.sh; \
+	else echo "prebuild for OpenLN882H not found ... "; \
+	fi
+
+
+prebuild_OpenW600:
+	@if [ -e platforms/W600/pre_build.sh ]; then \
+		echo "prebuild found for OpenW600"; \
+		sh platforms/W600/pre_build.sh; \
+	else echo "prebuild for OpenW600 not found ... "; \
+	fi
+
+
+prebuild_OpenW800:
+	@if [ -e platforms/W800/pre_build.sh ]; then \
+		echo "prebuild found for OpenW800"; \
+		sh platforms/W800/pre_build.sh; \
+	else echo "prebuild for OpenW800 not found ... "; \
+	fi
+
+
+prebuild_OpenXR809:
+	@if [ -e platforms/XR809/pre_build.sh ]; then \
+		echo "prebuild found for OpenXR809"; \
+		sh platforms/XR809/pre_build.sh; \
+	else echo "prebuild for OpenXR809 not found ... "; \
+	fi
+
+
+
+
+
 
 # Build main binaries
-OpenBK7231T:
+OpenBK7231T: prebuild_OpenBK7231T
 	$(MAKE) APP_NAME=OpenBK7231T TARGET_PLATFORM=bk7231t SDK_PATH=sdk/OpenBK7231T APPS_BUILD_PATH=../bk7231t_os build-BK7231
 
-OpenBK7231N:
+OpenBK7231N: prebuild_OpenBK7231N
 	$(MAKE) APP_NAME=OpenBK7231N TARGET_PLATFORM=bk7231n SDK_PATH=sdk/OpenBK7231N APPS_BUILD_PATH=../bk7231n_os build-BK7231
 
 sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q2:
@@ -89,7 +150,7 @@ sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q2:
 .PHONY: OpenXR809 build-XR809
 # Retry OpenXR809 a few times to account for calibration file issues
 RETRY = 3
-OpenXR809:
+OpenXR809: prebuild_OpenXR809
 	@for i in `seq 1 ${RETRY}`; do ($(MAKE) -k build-XR809; echo Prebuild attempt $$i/${RETRY}); done
 	@echo Running build final time to check output
 	$(MAKE) build-XR809;
@@ -108,7 +169,7 @@ build-BK7231: submodules $(SDK_PATH)/apps/$(APP_NAME)
 	rm $(SDK_PATH)/platforms/$(TARGET_PLATFORM)/toolchain/$(APPS_BUILD_PATH)/tools/generate/$(APP_NAME)_*.rbl || /bin/true
 	rm $(SDK_PATH)/platforms/$(TARGET_PLATFORM)/toolchain/$(APPS_BUILD_PATH)/tools/generate/$(APP_NAME)_*.bin || /bin/true
 
-OpenBL602: submodules sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared
+OpenBL602: submodules sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared prebuild_OpenBL602
 	$(MAKE) -C sdk/OpenBL602/customer_app/bl602_sharedApp USER_SW_VER=$(APP_VERSION) CONFIG_CHIP_NAME=BL602 CONFIG_LINK_ROM=1 -j
 	$(MAKE) -C sdk/OpenBL602/customer_app/bl602_sharedApp USER_SW_VER=$(APP_VERSION) CONFIG_CHIP_NAME=BL602 bins
 	mkdir -p output/$(APP_VERSION)
@@ -127,21 +188,21 @@ sdk/OpenW600/tools/gcc-arm-none-eabi-4_9-2014q4/bin: submodules
 	cd sdk/OpenW600/tools && tar -xf ../support/*.tar.bz2
 
 .PHONY: OpenW800
-OpenW800: sdk/OpenW800/tools/w800/csky/bin sdk/OpenW800/sharedAppContainer/sharedApp
+OpenW800: sdk/OpenW800/tools/w800/csky/bin sdk/OpenW800/sharedAppContainer/sharedApp prebuild_OpenW800
 	$(MAKE) -C sdk/OpenW800 EXTRA_CCFLAGS=-DPLATFORM_W800 CONFIG_W800_USE_LIB=n CONFIG_W800_TOOLCHAIN_PATH="$(shell realpath sdk/OpenW800/tools/w800/csky/bin)/"
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenW800/bin/w800/w800.fls output/$(APP_VERSION)/OpenW800_$(APP_VERSION).fls
 	cp sdk/OpenW800/bin/w800/w800_ota.img output/$(APP_VERSION)/OpenW800_$(APP_VERSION)_ota.img
 
 .PHONY: OpenW600
-OpenW600: sdk/OpenW600/tools/gcc-arm-none-eabi-4_9-2014q4/bin sdk/OpenW600/sharedAppContainer/sharedApp
+OpenW600: sdk/OpenW600/tools/gcc-arm-none-eabi-4_9-2014q4/bin sdk/OpenW600/sharedAppContainer/sharedApp prebuild_OpenW600
 	$(MAKE) -C sdk/OpenW600 TOOL_CHAIN_PATH="$(shell realpath sdk/OpenW600/tools/gcc-arm-none-eabi-4_9-2014q4/bin)/" APP_VERSION=$(APP_VERSION)
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenW600/bin/w600/w600.fls output/$(APP_VERSION)/OpenW600_$(APP_VERSION).fls
 	cp sdk/OpenW600/bin/w600/w600_gz.img output/$(APP_VERSION)/OpenW600_$(APP_VERSION)_gz.img
 
 .PHONY: OpenLN882H
-OpenLN882H: submodules sdk/OpenLN882H/project/OpenBeken/app
+OpenLN882H: submodules sdk/OpenLN882H/project/OpenBeken/app prebuild_OpenLN882H
 	CROSS_TOOLCHAIN_ROOT="/usr/" cmake sdk/OpenLN882H -B sdk/OpenLN882H/build
 	CROSS_TOOLCHAIN_ROOT="/usr/" cmake --build ./sdk/OpenLN882H/build
 	mkdir -p output/$(APP_VERSION)
