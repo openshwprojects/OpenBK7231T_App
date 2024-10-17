@@ -82,6 +82,7 @@ OpenBeken supports [online builds](https://www.elektroda.com/rtvforum/viewtopic.
 - how to [create custom obk driver](https://www.elektroda.com/rtvforum/topic4056286.html)
 - how to [analyze unknown protocol with Salae logic analyzer](https://www.elektroda.com/rtvforum/topic4035491.html)
 - obk [simulator short presentation](https://www.elektroda.com/rtvforum/topic4046056.html)
+- how to [make changes to SDK during (automated) build process](https://www.elektroda.com/rtvforum/topic4081556.html)
 
 # Flashing
 
