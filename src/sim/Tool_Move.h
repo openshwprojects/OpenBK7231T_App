@@ -14,7 +14,7 @@ public:
 	virtual const char *getName() const {
 		return "Move";
 	}
-	virtual int drawTextStats(int h);
+	virtual float drawTextStats(float h);
 	virtual void onEnd();
 	virtual void drawTool();
 	virtual void onMouseDown(const Coord &pos, int button);

@@ -21,6 +21,28 @@ class CSimulation {
 	void registerJunctions(class CShape *s);
 	class CShape *findDeepText_r(const class Coord &p, class CShape *cur);
 public:
+	template <typename T>
+	T *findFirstControllerOfType() {
+		for (int i = 0; i < objects.size(); i++) {
+			CControllerBase *c = objects[i]->getController();
+			T *r = dynamic_cast<T*>(c);
+			if (r)
+				return r;
+		}
+		return 0;
+	}
+	template <typename T>
+	TArray<T*> findControllersOfType() {
+		TArray<T*> ret;
+		for (int i = 0; i < objects.size(); i++) {
+			CControllerBase *c = objects[i]->getController();
+			T *r = dynamic_cast<T*>(c);
+			if (r) {
+				ret.push_back(r);
+			}
+		}
+		return ret;
+	}
 	void setSimulator(class CSimulator *ssim) {
 		this->sim = ssim;
 	}
@@ -59,7 +81,7 @@ public:
 	void matchJunction(class CJunction *j);
 	void matchJunction(class CWire *w);
 	void matchJunctionsOf_r(class CShape *s);
-	int drawTextStats(int h);
+	float drawTextStats(float h);
 };
 
 #endif

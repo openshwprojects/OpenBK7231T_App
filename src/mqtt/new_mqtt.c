@@ -11,6 +11,9 @@
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_tuyaMCU.h"
 #include "../ota/ota.h"
+#ifndef WINDOWS
+#include <lwip/dns.h>
+#endif
 
 #define BUILD_AND_VERSION_FOR_MQTT "Open" PLATFORM_MCU_NAME " " USER_SW_VER " " __DATE__ " " __TIME__ 
 
@@ -260,7 +263,7 @@ static struct mqtt_connect_client_info_t mqtt_client_info =
   100,  /* keep alive */
   NULL, /* will_topic */
   NULL, /* will_msg */
-  0,    /* will_qos */
+  1,    /* will_qos */
   0     /* will_retain */
 #if LWIP_ALTCP && LWIP_ALTCP_TLS
   , NULL
@@ -582,7 +585,7 @@ int channelGet(obk_mqtt_request_t* request) {
 	// atoi won't parse any non-decimal chars, so it should skip over the rest of the topic.
 	channel = atoi(p);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelGet channel %i", channel);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelGet channel %i", channel);
 
 	// if channel out of range, stop here.
 	if ((channel < 0) || (channel > 32)) {
@@ -806,7 +809,7 @@ static void mqtt_pub_request_cb(void* arg, err_t result)
 static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const char* sTopic, const char* sChannel, const char* sVal, int flags, bool appendGet)
 {
 	err_t err;
-	u8_t qos = 2; /* 0 1 or 2, see MQTT specification */
+	u8_t qos = 1; /* 0 1 or 2, see MQTT specification */
 	u8_t retain = 0; /* No don't retain such crappy payload... */
 	size_t sVal_len;
 	char* pub_topic;
@@ -838,6 +841,10 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 		retain = 1;
 	}
 	if (flags & OBK_PUBLISH_FLAG_FORCE_REMOVE_GET)
+	{
+		appendGet = false;
+	}
+	if (CFG_HasFlag(OBK_FLAG_MQTT_NEVERAPPENDGET))
 	{
 		appendGet = false;
 	}
@@ -1127,6 +1134,26 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 	}
 }
 
+static ip_addr_t mqtt_ip_resolved;
+static volatile int dns_in_progress_time;
+static volatile bool dns_resolved;
+void dnsFound(const char *name, ip_addr_t *ipaddr, void *arg) 
+{       
+
+	if (NULL != ipaddr)
+	{
+		memcpy(&mqtt_ip_resolved, ipaddr, sizeof(mqtt_ip_resolved));
+		dns_resolved = true;
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host %s resolution SUCCESS\r\n", name);
+	}
+	else
+	{
+		dns_resolved = false;
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host %s resolution FAILED\r\n", name);
+	}
+	dns_in_progress_time = 0;
+}
+
 static int MQTT_do_connect(mqtt_client_t* client)
 {
 	const char* mqtt_userName, * mqtt_host, * mqtt_pass, * mqtt_clientID;
@@ -1174,10 +1201,12 @@ static int MQTT_do_connect(mqtt_client_t* client)
 	sprintf(will_topic, "%s/connected", mqtt_clientID);
 	mqtt_client_info.will_topic = will_topic;
 	mqtt_client_info.will_msg = "offline";
-	mqtt_client_info.will_retain = true,
-		mqtt_client_info.will_qos = 2,
+	mqtt_client_info.will_retain = true;
+	mqtt_client_info.will_qos = 1;
 
-		hostEntry = gethostbyname(mqtt_host);
+#ifdef WINDOWS
+	hostEntry = gethostbyname(mqtt_host);
+	// host name/ip
 	if (NULL != hostEntry)
 	{
 		if (hostEntry->h_addr_list && hostEntry->h_addr_list[0]) {
@@ -1193,9 +1222,37 @@ static int MQTT_do_connect(mqtt_client_t* client)
 			snprintf(mqtt_status_message, sizeof(mqtt_status_message), "mqtt_host resolves no addresses?");
 			return 0;
 		}
+#else
+	if (dns_in_progress_time <= 0 && !dns_resolved)
+	{
+#ifdef PLATFORM_XR809
+		res = dns_gethostbyname(mqtt_host, &mqtt_ip_resolved, dnsFound, NULL);
+#else
+	    res = dns_gethostbyname_addrtype(mqtt_host, &mqtt_ip_resolved, dnsFound, NULL, LWIP_DNS_ADDRTYPE_IPV4);
+#endif
+		if (ERR_OK == res)
+		{
+			dns_in_progress_time = 0;
+			dns_resolved = true;
+		}
+		else if (ERR_INPROGRESS == res)
+		{
+			dns_in_progress_time = 10;
+			dns_resolved = false;
+		}
+		else
+		{
+			dns_in_progress_time = 0;
+			dns_resolved = false;
+		}
+	}
 
-		// host name/ip
-		//ipaddr_aton(mqtt_host,&mqtt_ip);
+	if (dns_in_progress_time <= 0 && dns_resolved)
+	{
+		dns_resolved = false;
+		memcpy(&mqtt_ip, &mqtt_ip_resolved, sizeof(mqtt_ip_resolved));
+
+#endif
 
 		/* Initiate client and connect to server, if this fails immediately an error code is returned
 		  otherwise mqtt_connection_cb will be called with connection result after attempting
@@ -1224,8 +1281,19 @@ static int MQTT_do_connect(mqtt_client_t* client)
 		return res;
 	}
 	else {
-		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host %s not found by gethostbyname\r\n", mqtt_host);
-		snprintf(mqtt_status_message, sizeof(mqtt_status_message), "mqtt_host %s not found by gethostbyname", mqtt_host);
+		if (dns_in_progress_time > 0)
+		{
+			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host %s is being resolved by gethostbyname\r\n", mqtt_host);
+			dns_in_progress_time--;
+		}
+		else
+		{
+			if (!dns_resolved)
+			{
+				addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host %s not found by gethostbyname\r\n", mqtt_host);
+				snprintf(mqtt_status_message, sizeof(mqtt_status_message), "mqtt_host %s not found by gethostbyname", mqtt_host);
+			}
+		}
 	}
 	return 0;
 }
@@ -1326,7 +1394,7 @@ commandResult_t MQTT_PublishCommand(const void* context, const char* cmd, const 
 	OBK_Publish_Result ret;
 	int flags = 0;
 
-	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS);
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS | TOKENIZER_EXPAND_EARLY);
 
 	if (Tokenizer_GetArgsCount() < 2) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish command requires two arguments (topic and value)");
@@ -1408,6 +1476,7 @@ commandResult_t MQTT_PublishCommandFloat(const void* context, const char* cmd, c
 	float value;
 	OBK_Publish_Result ret;
 	int flags = 0;
+	int decimalPlaces;
 
 	Tokenizer_TokenizeString(args, 0);
 
@@ -1422,7 +1491,9 @@ commandResult_t MQTT_PublishCommandFloat(const void* context, const char* cmd, c
 	if (Tokenizer_GetArgIntegerDefault(2, 0) != 0) {
 		flags = OBK_PUBLISH_FLAG_RAW_TOPIC_NAME;
 	}
-	ret = MQTT_PublishMain_StringFloat(topic, value, -1, flags);
+	// optional fourth argument to set rounding
+	decimalPlaces = Tokenizer_GetArgIntegerDefault(3, -1);
+	ret = MQTT_PublishMain_StringFloat(topic, value, decimalPlaces, flags);
 
 	return CMD_RES_OK;
 }
@@ -1453,7 +1524,7 @@ void MQTT_Test_Tick(void* param)
 	BENCHMARK_TEST_INFO* info = (BENCHMARK_TEST_INFO*)param;
 	int block = 1;
 	err_t err;
-	int qos = 2;
+	int qos = 1;
 	int retain = 0;
 
 	if (info != NULL)

@@ -1,7 +1,7 @@
 #ifndef _NEW_HTTP_H
 #define _NEW_HTTP_H
 
-
+extern int g_indexAutoRefreshInterval;
 extern const char httpHeader[];  // HTTP header
 extern const char httpMimeTypeHTML[];              // HTML MIME type
 extern const char httpMimeTypeText[];           // TEXT MIME type
@@ -54,6 +54,9 @@ typedef struct http_request_tag {
 	int replylen;
 	int replymaxlen;
 	int fd;
+
+	// user variables used to build JSON data
+	int userCounter;
 } http_request_t;
 
 

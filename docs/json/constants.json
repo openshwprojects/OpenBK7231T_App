@@ -162,6 +162,18 @@
     "requires": ""
   },
   {
+    "name": "$yesterday",
+    "title": "$yesterday",
+    "descr": "TODO",
+    "requires": ""
+  },
+  {
+    "name": "$today",
+    "title": "$today",
+    "descr": "TODO",
+    "requires": ""
+  },
+  {
     "name": "$sunrise",
     "title": "$sunrise",
     "descr": "TODO",

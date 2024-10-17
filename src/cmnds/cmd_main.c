@@ -503,7 +503,20 @@ static commandResult_t CMD_CreateAliasForCommand(const void* context, const char
 	}
 
 	alias = Tokenizer_GetArg(0);
+#if 0
 	ocmd = Tokenizer_GetArgFrom(1);
+#else
+	while (*args && isWhiteSpace(*args)) {
+		args++;
+	}
+	while (*args && !isWhiteSpace(*args)) {
+		args++;
+	}
+	while (*args && isWhiteSpace(*args)) {
+		args++;
+	}
+	ocmd = args;
+#endif
 
 	return CMD_CreateAliasHelper(alias, ocmd);
 }
@@ -608,6 +621,19 @@ commandResult_t CMD_PWMFrequency(const void* context, const char* cmd, const cha
 	g_pwmFrequency = Tokenizer_GetArgInteger(0);
 	return CMD_RES_OK;
 }
+commandResult_t CMD_IndexRefreshInterval(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1))
+	{
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	g_indexAutoRefreshInterval = Tokenizer_GetArgInteger(0);
+	return CMD_RES_OK;
+}
 commandResult_t CMD_DeepSleep_SetEdge(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
@@ -673,7 +699,7 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DeepSleep", CMD_DeepSleep, NULL);
 	//cmddetail:{"name":"PowerSave","args":"[Optional 1 or 0, by default 1 is assumed]",
-	//cmddetail:"descr":"Enables dynamic power saving mode on BK and W600. You can also disable power saving with PowerSave 0.",
+	//cmddetail:"descr":"Enables dynamic power saving mode on Beken N/T, BL602, W600, W800 and LN882H. In the case of LN882H PowerSave will not work as a startup command, so use in autoexec. On LN882H PowerSave 1 = light sleep and Powersave >1 (eg PowerSave 2) = deeper sleep. On LN882H PowerSave 1 should be used if BL0937 metering is present. On all supported platforms PowerSave 0 can be used to disable power saving.",
 	//cmddetail:"fn":"CMD_PowerSave","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PowerSave", CMD_PowerSave, NULL);
@@ -752,6 +778,13 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PWMFrequency", CMD_PWMFrequency, NULL);
+
+	//cmddetail:{"name":"IndexRefreshInterval","args":"CMD_IndexRefreshInterval",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("IndexRefreshInterval", CMD_IndexRefreshInterval, NULL);
+	
 	
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602) || (defined PLATFORM_LN882H)
 	CMD_InitScripting();
@@ -811,7 +844,10 @@ void CMD_RegisterCommand(const char* name, commandHandler_t handler, void* conte
 	// check
 	newCmd = CMD_Find(name);
 	if (newCmd != 0) {
-		ADDLOG_ERROR(LOG_FEATURE_CMD, "command with name %s already exists!", name);
+		// it happens very often in Simulator due to the lack of the ability to remove commands
+		if (newCmd->handler != handler) {
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "command with name %s already exists!", name);
+		}
 		return;
 	}
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "Adding command %s", name);

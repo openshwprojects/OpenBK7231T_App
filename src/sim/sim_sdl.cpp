@@ -41,12 +41,12 @@ extern "C" {
 		WinHeight = val;
 	}
 }
-int drawTextInternal(float x, float y, const char *buffer) {
+float drawTextInternal(float x, float y, const char *buffer) {
 	glRasterPos2f(x, y);
 	const char *p = buffer;
 	while (*p) {
 		if (*p == '\n') {
-			y += 15;
+			y += 15.0f;
 			glRasterPos2f(x, y);
 		}
 		else {
@@ -54,11 +54,11 @@ int drawTextInternal(float x, float y, const char *buffer) {
 		}
 		p++;
 	}
-	y += 15;
+	y += 15.0f;
 	return y;
 }
 
-int drawText(class CStyle *style, int x, int y, const char* fmt, ...) {
+float drawText(class CStyle *style, float x, float y, const char* fmt, ...) {
 	va_list argList;
 	char buffer2[4096];
 	char buffer[4096];
@@ -86,18 +86,6 @@ float roundToGrid(float f) {
 }
 Coord roundToGrid(Coord c) {
 	return Coord(roundToGrid(c.getX()), roundToGrid(c.getY()));
-}
-
-Coord GetMousePos() {
-	Coord r;
-	int mx, my;
-	//SDL_GetGlobalMouseState(&mx, &my);
-	SDL_GetMouseState(&mx, &my);
-	// No longer needed after resize event was introduced
-	// BUGFIX FOR MENUBAR OFFSET
-	//my += WINDOWS_MOUSE_MENUBAR_OFFSET;
-	r.set(mx, my);
-	return r;
 }
 
 
@@ -184,16 +172,16 @@ bool FS_WriteTextFile(const char *data, const char *fname) {
 	fclose(f);
 	return false;
 }
-CSimulator *sim;
+CSimulator *g_sim;
 extern "C" int SIM_CreateWindow(int argc, char **argv)
 {
 	glutInit(&argc, argv);
-	sim = new CSimulator();
-	sim->createWindow();
-	sim->loadRecentProject();
+	g_sim = new CSimulator();
+	g_sim->createWindow();
+	g_sim->loadRecentProject();
 	return 0;
 }
 extern "C" void SIM_RunWindow() {
-	sim->drawWindow();
+	g_sim->drawWindow();
 }
 #endif

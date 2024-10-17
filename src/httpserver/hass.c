@@ -51,7 +51,7 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 		break;
 
 	case ENERGY_METER_SENSOR:
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#ifdef ENABLE_DRIVER_BL0937
 		sprintf(uniq_id, "%s_sensor_%s", longDeviceName, DRV_GetEnergySensorNames(index)->hass_uniq_id_suffix);
 #endif
 		break;
@@ -243,7 +243,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 			break;
 		case ENERGY_METER_SENSOR:
 			isSensor = true;
-	#ifndef OBK_DISABLE_ALL_DRIVERS
+	#ifdef ENABLE_DRIVER_BL0937
 			if (index <= OBK__LAST)
 				sprintf(g_hassBuffer, "%s", DRV_GetEnergySensorNames(index)->name_friendly);
 			else
@@ -324,13 +324,13 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 	cJSON_AddStringToObject(info->root, "~", CFG_GetMQTTClientId());      //base topic
 	// remove availability information for sensor to keep last value visible on Home Assistant
 	bool flagavty = false;
-	flagavty = CFG_HasFlag(OBK_FLAG_NOT_PUBLISH_AVAILABILITY_SENSOR);
+	flagavty = CFG_HasFlag(OBK_FLAG_NOT_PUBLISH_AVAILABILITY);
 	// if door sensor is running, then deep sleep will be invoked mostly, then we dont want availability
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	if (DRV_IsRunning("DoorSensor") == false && DRV_IsRunning("tmSensor") == false)
 #endif
 	{
-		if (!isSensor || !flagavty) {
+		if (!isSensor && !flagavty) {
 			cJSON_AddStringToObject(info->root, "avty_t", "~/connected");   //availability_topic, `online` value is broadcasted
 		}
 	}
@@ -455,7 +455,7 @@ HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse) {
 	return info;
 }
 
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#ifdef ENABLE_DRIVER_BL0937
 
 /// @brief Initializes HomeAssistant power sensor device discovery storage.
 /// @param index Index corresponding to energySensor_t.
@@ -666,7 +666,22 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 		sprintf(g_hassBuffer, "~/%d/get", channel);
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		cJSON_AddStringToObject(info->root, "val_tpl", g_template_lowMidHigh);
-
+		break;
+	case WATER_QUALITY_PH:
+		cJSON_AddStringToObject(info->root, "dev_cla", "ph");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "Ph");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case WATER_QUALITY_ORP:
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "mV");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case WATER_QUALITY_TDS:
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "ppm");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		break;
 	case HASS_TEMP:
 		cJSON_AddStringToObject(info->root, "dev_cla", "temperature");

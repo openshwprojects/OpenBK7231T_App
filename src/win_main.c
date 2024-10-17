@@ -3,7 +3,9 @@
 #undef UNICODE
 
 #define WIN32_LEAN_AND_MEAN
-
+#include <crtdbg.h>
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
 #include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -11,10 +13,12 @@
 #include <stdio.h>
 #include "obk_config.h"
 #include "new_common.h"
+#include "quicktick.h"
 #include "driver\drv_public.h"
 #include "cmnds\cmd_public.h"
 #include "httpserver\new_http.h"
 #include "hal\hal_flashVars.h"
+#include "selftest\selftest_local.h"
 #include "new_pins.h"
 #include <timeapi.h>
 
@@ -37,14 +41,6 @@ void strcat_safe_test(){
 	char tmpA[16];
 	char tmpB[16];
 	char buff[128];
-	char timeStrA[128];
-	char timeStrB[128];
-	char timeStrC[128];
-	char timeStrD[128];
-	char timeStrE[128];
-	char timeStrF[128];
-	char timeStrG[128];
-	char timeStrH[128];
 	int res0, res1, res2, res3, res4, res5;
 	tmpA[0] = 0;
 	res0 = strcat_safe(tmpA,"Test1",sizeof(tmpA));
@@ -91,7 +87,7 @@ void Sim_RunMiliseconds(int ms, bool bApplyRealtimeWait) {
 	}
 }
 void Sim_RunSeconds(float f, bool bApplyRealtimeWait) {
-	int ms = f * 1000;
+	int ms = (int)(f * 1000);
 	Sim_RunMiliseconds(ms, bApplyRealtimeWait);
 }
 void Sim_RunFrames(int n, bool bApplyRealtimeWait) {
@@ -130,6 +126,13 @@ void SIM_ClearOBK(const char *flashPath) {
 	Main_Init();
 }
 void Win_DoUnitTests() {
+	Test_TuyaMCU_Boolean();
+	Test_TuyaMCU_DP22();
+
+
+	Test_Expressions_RunTests_Braces();
+	Test_Expressions_RunTests_Basic();
+	//Test_Enums();
 	Test_Backlog();
 	Test_DoorSensor();
 	Test_WS2812B();
@@ -144,6 +147,7 @@ void Win_DoUnitTests() {
 	Test_TuyaMCU_BatteryPowered();
 	Test_JSON_Lib();
 	Test_MQTT_Get_LED_EnableAll();
+	Test_MQTT_Get_Relay();
 	Test_Commands_Startup();
 	Test_IF_Inside_Backlog();
 	Test_WaitFor();
@@ -179,7 +183,7 @@ void Win_DoUnitTests() {
 	Test_RepeatingEvents();
 	Test_ButtonEvents();
 	Test_Commands_Alias();
-	Test_Expressions_RunTests_Basic();
+	Test_Demo_SignAndValue();
 	Test_LEDDriver();
 	Test_LFS();
 	Test_Scripting();
@@ -220,9 +224,12 @@ int rtos_get_time() {
 int g_bDoingUnitTestsNow = 0;
 
 #include "sim/sim_public.h"
+
+int SelfTest_GetNumErrors();
+extern int g_selfTestsMode;
+
 int __cdecl main(int argc, char **argv)
 {
-	bool bWantsUnitTests = 0;
 
 	// clear debug data
 	if (1) {
@@ -261,7 +268,8 @@ int __cdecl main(int argc, char **argv)
 					i++;
 
 					if (i < argc && sscanf(argv[i], "%d", &value) == 1) {
-						bWantsUnitTests = value != 0;
+						// 0 = don't run, 1 = run with system pause, 2 - run without system pause
+						g_selfTestsMode = value;
 					}
 				}
 			}
@@ -399,7 +407,9 @@ int __cdecl main(int argc, char **argv)
 	// Test expansion
 	//CMD_UART_Send_Hex(0,0,"FFAA$CH1$BB",0);
 
-	if (bWantsUnitTests) {
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_ALWAYS_DF);
+
+	if (g_selfTestsMode) {
 		g_bDoingUnitTestsNow = 1;
 		SIM_ClearOBK(0);
 		// let things warm up a little
@@ -408,6 +418,9 @@ int __cdecl main(int argc, char **argv)
 		Win_DoUnitTests();
 		Sim_RunFrames(50, false);
 		g_bDoingUnitTestsNow = 0;
+		if (g_selfTestsMode > 1) {
+			return SelfTest_GetNumErrors();
+		}
 	}
 
 

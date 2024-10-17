@@ -27,7 +27,7 @@ public:
 		bDeepText = false;
 		bAllowNewLine = true;
 	}
-	CText(int _x, int _y, const char *s) {
+	CText(float _x, float _y, const char *s) {
 		this->setPosition(_x, _y);
 		this->txt = s;
 		cursorPos = strlen(s);

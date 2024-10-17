@@ -814,6 +814,77 @@ DeepSleep 120
 ```
 
 
+[Deep sleep usage for water sensor with PWM buzzer](https://www.elektroda.com/rtvforum/viewtopic.php?p=21096228#21096228)
+<br>
+```
+
+// Water Sensor with deep sleep and buzzer (PWM)
+// See related topic: https://www.elektroda.com/rtvforum/viewtopic.php?p=21096228#21096228
+
+
+Battery_Setup 2000 3000 2 2400 4096
+//measure batt every 2s
+Battery_cycle 2
+//mqtt_broadcastInterval 1
+//mqtt_broadcastItemsPerSec 5
+addEventHandler OnHold 10 SafeMode 5
+
+setChannelLabel 1 Water
+
+// now wait for MQTT
+waitFor MQTTState 1
+// extra delay, to be sure
+delay_s 1
+// publish water state at least once after boot
+publish 1 $CH1
+
+// if water detected, keep cycling (drains battery)
+// also useful for configuring the device or doing OTA
+mainLoop:
+delay_s 1
+if $CH1!=1 then "goto sirenOn" else "goto sleep"
+
+
+// turn on the siren and goes into siren loop
+sirenOn:
+setChannel 6 10
+
+// siren loop repeats while water is detected
+sirenLoop:
+backlog PWMfrequency 460;delay_ms 50
+backlog PWMfrequency 491;delay_ms 50
+backlog PWMfrequency 521;delay_ms 50
+backlog PWMfrequency 550;delay_ms 50
+backlog PWMfrequency 577;delay_ms 50
+backlog PWMfrequency 601;delay_ms 50
+backlog PWMfrequency 621;delay_ms 50
+backlog PWMfrequency 638;delay_ms 50
+backlog PWMfrequency 650;delay_ms 50
+backlog PWMfrequency 657;delay_ms 50
+backlog PWMfrequency 660;delay_ms 50
+backlog PWMfrequency 657;delay_ms 50
+backlog PWMfrequency 650;delay_ms 50
+backlog PWMfrequency 638;delay_ms 50
+backlog PWMfrequency 621;delay_ms 50
+backlog PWMfrequency 601;delay_ms 50
+backlog PWMfrequency 577;delay_ms 50
+backlog PWMfrequency 550;delay_ms 50
+backlog PWMfrequency 521;delay_ms 50
+backlog PWMfrequency 491;delay_ms 50
+if $CH1!=1 then "goto sirenLoop" else "goto sirenOff"
+
+// turn off the siren and go into main loop
+sirenOff:
+setChannel 6 0
+goto mainLoop
+
+sleep:
+delay_s 5
+// All good, sleep for 1 day or next water event
+PinDeepSleep 86400
+```
+
+
 Manual flash save example for TuyaMCU - using special Channels 200, 201, etc
 <br>
 ```
@@ -1154,6 +1225,133 @@ setChannelLabel 15 "Protection Recovery Time [s]"
 // we need it just first time to obtain initial status. Some dpIDs not reported without asking
 tuyaMcu_sendQueryState
 
+```
+
+
+[PJ-MGW1103 CT-Clamp Energy Meter sample for combining two dpIDs (sign and value) into one channel](https://www.elektroda.com/rtvforum/viewtopic.php?p=21125206#21125206)
+<br>
+```
+// For TuyaMCU
+// One dpID is sign, second is value
+// Taken from: https://www.elektroda.com/rtvforum/viewtopic.php?p=21125206#21125206
+
+//power A
+setChannelType 3 Power_div10
+SetChannelLabel 3 "Power(A)"
+linkTuyaMCUOutputToChannel  101 1 3
+
+//Direction A
+setChannelType 4 ReadOnly
+SetChannelLabel 4 "Direction(A)"
+linkTuyaMCUOutputToChannel  102 1 4
+
+//Corrected Power
+setChannelType 19 ReadOnly
+SetChannelLabel 19 "Corrected Power(A)"
+
+// channel 4 is sign
+// channel 3 is unsigned val
+alias positive setChannel 19 $CH3
+alias negative setChannel 19 $CH3*-1
+alias myset if $CH4==0 then positive else negative
+// now trigger it on every change
+addEventHandler OnChannelChange 3 myset 
+addEventHandler OnChannelChange 4 myset 
+
+```
+
+
+[Scripting custom light animation/styles for TuyaMCU](https://www.elektroda.com/rtvforum/topic4014389.html)
+<br>
+```
+// See: https://www.elektroda.com/rtvforum/topic4014389.html
+
+startDriver httpButtons
+setButtonEnabled 0 1
+setButtonLabel 0 "Music mode"
+setButtonCommand 0 "tuyaMcu_sendState 21 4 3"
+
+setButtonEnabled 1 1
+setButtonLabel 1 "Light mode"
+setButtonCommand 1 "tuyaMcu_sendState 21 4 1" 
+ 
+setButtonEnabled 2 1
+setButtonLabel 2 "Curtain"
+setButtonCommand 2 "startScript autoexec.bat do_cur"
+ 
+setButtonEnabled 3 1
+setButtonLabel 3 "Collision"
+setButtonCommand 3 "startScript autoexec.bat do_col"
+ 
+setButtonEnabled 4 1
+setButtonLabel 4 "Rainbow"
+setButtonCommand 4 "startScript autoexec.bat do_rai"
+ 
+setButtonEnabled 5 1
+setButtonLabel 5 "Pile"
+setButtonCommand 5 "startScript autoexec.bat do_pil"
+ 
+setButtonEnabled 6 1
+setButtonLabel 6 "Firework"
+setButtonCommand 6 "startScript autoexec.bat do_fir"
+ 
+setButtonEnabled 7 1
+setButtonLabel 7 "Chase"
+setButtonCommand 7 "startScript autoexec.bat do_chase"
+ 
+// startDriver MCP9808 [ClkPin] [DatPin] [OptionalTargetChannel]
+startDriver MCP9808 7 8  1
+MCP9808_Adr 0x30
+MCP9808_Cycle 1
+
+
+// use choice to choose effect by index stored in $CH10
+alias do_chosen_effect Choice $CH10 cmd_cur cmd_col cmd_rai cmd_pil cmd_fir cmd_chase
+// when click on Btn_ScriptOnly on P24 happens, add 1 to $CH10 (wrap to 0-5) and do effect
+addEventHandler OnClick 24 backlog addChannel 10 1 0 4 1; do_chosen_effect
+ 
+// stop execution
+return
+ 
+ 
+
+
+do_chase:
+tuyaMcu_sendState 21 4 2
+delay_s 0.1
+tuyaMcu_sendState 25 3 020e0d00001403e803e800000000
+return
+ 
+ 
+do_cur:
+tuyaMcu_sendState 21 4 2
+delay_s 0.1
+tuyaMcu_sendState 25 3 000e0d00002e03e802cc00000000
+return
+ 
+do_col:
+tuyaMcu_sendState 21 4 2
+delay_s 0.1
+tuyaMcu_sendState 25 3 07464602000003e803e800000000464602007803e803e80000000046460200f003e803e800000000464602003d03e803e80000000046460200ae03e803e800000000464602011303e803e800000000
+return
+ 
+do_rai:
+tuyaMcu_sendState 21 4 2
+delay_s 0.1
+tuyaMcu_sendState 25 3 06464601000003e803e800000000464601007803e803e80000000046460100f003e803e800000000
+return
+ 
+do_pil:
+tuyaMcu_sendState 21 4 2
+delay_s 0.1
+tuyaMcu_sendState 25 3 010e0d000084000003e800000000
+return
+ 
+do_fir:
+tuyaMcu_sendState 21 4 2
+delay_s 0.1
+tuyaMcu_sendState 25 3 05464601000003e803e800000000464601007803e803e80000000046460100f003e803e800000000464601003d03e803e80000000046460100ae03e803e800000000464601011303e803e800000000
+return
 ```
 
 

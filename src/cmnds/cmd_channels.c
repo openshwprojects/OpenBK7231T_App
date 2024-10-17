@@ -48,7 +48,9 @@ bool CHANNEL_HasNeverPublishFlag(int ch) {
 
 bool CHANNEL_HasLabel(int ch) {
 	if (ch >= 0 && ch < CHANNEL_MAX) {
-		return g_channelLabels[ch];
+		if (g_channelLabels[ch])
+			return true;
+		return false;
 	}
 	return false;
 }
@@ -219,7 +221,7 @@ static commandResult_t CMD_ClampChannel(const void *context, const char *cmd, co
 	ch = Tokenizer_GetArgInteger(0);
 	min = Tokenizer_GetArgInteger(1);
 	max = Tokenizer_GetArgInteger(2);
-	bWrapInsteadOfClamp = 0;
+	bWrapInsteadOfClamp = Tokenizer_GetArgInteger(3);
 
 	CHANNEL_AddClamped(ch,0, min, max, bWrapInsteadOfClamp);
 
@@ -405,7 +407,7 @@ static commandResult_t CMD_SetChannelPrivate(const void *context, const char *cm
 	return CMD_RES_OK;
 }
 static commandResult_t CMD_GetReadings(const void *context, const char *cmd, const char *args, int cmdFlags){
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#ifdef ENABLE_DRIVER_BL0937
 	char tmp[96];
 	float v, c, p;
     float e, elh;
@@ -479,6 +481,11 @@ static commandResult_t CMD_FullBootTime(const void *context, const char *cmd, co
 
 	return CMD_RES_OK;
 }
+
+// cmd_enums.c
+commandResult_t CMD_SetChannelEnum(const void *context, const char *cmd,
+	const char *args, int cmdFlags);
+
 static commandResult_t CMD_PinDeepSleep(const void *context, const char *cmd, const char *args, int cmdFlags){
 
 	Tokenizer_TokenizeString(args, 0); 
@@ -553,6 +560,13 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_FullBootTime","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("FullBootTime", CMD_FullBootTime, NULL);
+	//cmddetail:{"name":"SetChannelEnum","args":"[ChannelIndex][Value,Title][Value,Title]",
+	//cmddetail:"descr":"Creates a custom channel enumeration.",
+	//cmddetail:"fn":"SetChannelEnum","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+#if WINDOWS
+	//CMD_RegisterCommand("SetChannelEnum", CMD_SetChannelEnum, NULL);
+#endif
 	//cmddetail:{"name":"SetChannelLabel","args":"[ChannelIndex][Str][bHideTogglePrefix]",
 	//cmddetail:"descr":"Sets a channel label for UI and default entity name for Home Assistant discovery. If you use 1 for bHideTogglePrefix, then the 'Toggle ' prefix from UI button will be omitted",
 	//cmddetail:"fn":"CMD_SetChannelLabel","file":"cmnds/cmd_channels.c","requires":"",

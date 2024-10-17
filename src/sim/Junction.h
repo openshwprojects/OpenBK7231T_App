@@ -40,7 +40,7 @@ public:
 	CJunction() {
 		depth = 0;
 	}
-	CJunction(int _x, int _y, const char *s, int gpio = -1) {
+	CJunction(float _x, float _y, const char *s, int gpio = -1) {
 		this->setPosition(_x, _y);
 		this->name = s;
 		this->gpioIndex = gpio;
@@ -93,6 +93,13 @@ public:
 	}
 	int getVisitCount() const {
 		return visitCount;
+	}
+	bool hasVoltage(float f) const {
+		if (visitCount <= 0)
+			return false;
+		if (fabs(f - this->voltage) < 0.1f)
+			return true;
+		return false;
 	}
 	float drawInformation2D(float x, float h);
 	virtual const char *getClassName() const {

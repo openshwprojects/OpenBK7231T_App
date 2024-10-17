@@ -51,8 +51,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | DHT12 | DHT12 data line. You can have multiple DHT sensors on your device. Related driver is automatically started. Results are saved in related channels to pin with that role (when editing pins, you get two textboxes to set channel indexes) |
 | DHT21 | DHT21 data line. You can have multiple DHT sensors on your device. Related driver is automatically started. Results are saved in related channels to pin with that role (when editing pins, you get two textboxes to set channel indexes) |
 | DHT22 | DHT22 data line. You can have multiple DHT sensors on your device. Related driver is automatically started. Results are saved in related channels to pin with that role (when editing pins, you get two textboxes to set channel indexes) |
-| CHT8305_DAT | DAT pin of CHT8305. Setting this pin role and saving will reveal two fields next to it. Set first field to 1 and second to 2. Those are related channel numbers to store temperature and humidity. |
-| CHT8305_CLK | CLK pin of CHT8305 sensor |
+| CHT83XX_DAT | DAT pin of CHT83XX. Setting this pin role and saving will reveal two fields next to it. Set first field to 1 and second to 2. Those are related channel numbers to store temperature and humidity. |
+| CHT83XX_CLK | CLK pin of CHT83XX sensor |
 | SHT3X_DAT | Humidity/temperature sensor DATA pin. Driver will autostart if both required pins are set. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html) |
 | SHT3X_CLK | Humidity/temperature sensor CLOCK pin. Driver will autostart if both required pins are set. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html) |
 | SOFT_SDA | Generic software SDA pin for our more advanced, scriptable I2C driver. This allows you to even connect a I2C display to OBK. |
@@ -83,4 +83,5 @@ Do not add anything here, as it will overwritten with next rebuild.
 | BAT_Relay_n | Like BAT_Relay, but inversed. See [battery driver topic here](https://www.elektroda.com/rtvforum/topic3959103.html) |
 | KP18058_CLK | QQQ |
 | KP18058_DAT | QQQ |
+| DS1820 | vers simple OneWire Temp sensor DS1820 |
 | Total_Options | Current total number of available IOR roles |

@@ -53,6 +53,30 @@ int tuya_os_adapt_wifi_all_ap_scan(AP_IF_S** ap_ary, unsigned int* num);
 int tuya_os_adapt_wifi_release_ap(AP_IF_S* ap);
 #endif
 
+
+const char* g_typesOffLowMidHigh[] = { "Off","Low","Mid","High" };
+const char* g_typesOffLowMidHighHighest[] = { "Off", "Low","Mid","High","Highest" };
+const char* g_typesOffLowestLowMidHighHighest[] = { "Off", "Lowest", "Low", "Mid", "High", "Highest" };
+const char* g_typesLowMidHighHighest[] = { "Low","Mid","High","Highest" };
+const char* g_typesOffOnRemember[] = { "Off", "On", "Remember" };
+const char* g_typeLowMidHigh[] = { "Low","Mid","High" };
+const char* g_typesLowestLowMidHighHighest[] = { "Lowest", "Low", "Mid", "High", "Highest" };;
+
+#define ADD_OPTION(t,a) if(type == t) { *numTypes = sizeof(a)/sizeof(a[0]); return a; }
+
+const char **Channel_GetOptionsForChannelType(int type, int *numTypes) {
+	ADD_OPTION(ChType_OffLowMidHigh, g_typesOffLowMidHigh);
+	ADD_OPTION(ChType_OffLowestLowMidHighHighest, g_typesOffLowestLowMidHighHighest);
+	ADD_OPTION(ChType_LowestLowMidHighHighest, g_typesLowestLowMidHighHighest);
+	ADD_OPTION(ChType_OffLowMidHighHighest, g_typesOffLowMidHighHighest);
+	ADD_OPTION(ChType_LowMidHighHighest, g_typesLowMidHighHighest);
+	ADD_OPTION(ChType_OffOnRemember, g_typesOffOnRemember);
+	ADD_OPTION(ChType_LowMidHigh, g_typeLowMidHigh);
+	
+	*numTypes = 0;
+	return 0;
+}
+
 unsigned char hexdigit(char hex) {
 	return (hex <= '9') ? hex - '0' :
 		toupper((unsigned char)hex) - 'A' + 10;
@@ -289,31 +313,33 @@ int http_fn_index(http_request_t* request) {
 		poststr(request, "<div id=\"state\">"); // replaceable content follows
 	}
 
-	poststr(request, "<table>");	//Table default to 100% width in stylesheet
-	for (i = 0; i < CHANNEL_MAX; i++) {
+	if (!CFG_HasFlag(OBK_FLAG_HTTP_NO_ONOFF_WORDS)){
+		poststr(request, "<table>");	//Table default to 100% width in stylesheet
+		for (i = 0; i < CHANNEL_MAX; i++) {
 
-		channelType = CHANNEL_GetType(i);
-		// check ability to hide given channel from gui
-		if (BIT_CHECK(g_hiddenChannels, i)) {
-			continue; // hidden
+			channelType = CHANNEL_GetType(i);
+			// check ability to hide given channel from gui
+			if (BIT_CHECK(g_hiddenChannels, i)) {
+				continue; // hidden
+			}
+			bool bToggleInv = channelType == ChType_Toggle_Inv;
+			if (h_isChannelRelay(i) || channelType == ChType_Toggle) {
+				if (i <= 1) {
+					hprintf255(request, "<tr>");
+				}
+				if (CHANNEL_Check(i) != bToggleInv) {
+					poststr(request, "<td class='on'>ON</td>");
+				}
+				else {
+					poststr(request, "<td class='off'>OFF</td>");
+				}
+				if (i == CHANNEL_MAX - 1) {
+					poststr(request, "</tr>");
+				}
+			}
 		}
-		bool bToggleInv = channelType == ChType_Toggle_Inv;
-		if (h_isChannelRelay(i) || channelType == ChType_Toggle) {
-			if (i <= 1) {
-				hprintf255(request, "<tr>");
-			}
-			if (CHANNEL_Check(i) != bToggleInv) {
-				poststr(request, "<td class='on'>ON</td>");
-			}
-			else {
-				poststr(request, "<td class='off'>OFF</td>");
-			}
-			if (i == CHANNEL_MAX - 1) {
-				poststr(request, "</tr>");
-			}
-		}
+		poststr(request, "</table>");
 	}
-	poststr(request, "</table>");
 	poststr(request, "<table>");	//Table default to 100% width in stylesheet
 	for (i = 0; i < CHANNEL_MAX; i++) {
 
@@ -376,7 +402,8 @@ int http_fn_index(http_request_t* request) {
 		}
 	}
 	for (i = 0; i < CHANNEL_MAX; i++) {
-
+		const char **types;
+		int numTypes;
 
 		// check ability to hide given channel from gui
 		if (BIT_CHECK(g_hiddenChannels, i)) {
@@ -406,68 +433,25 @@ int http_fn_index(http_request_t* request) {
 			}
 			poststr(request, "</td></tr>");
 
-		}
-		else if (channelType == ChType_LowMidHigh) {
+		} else if (channelType == ChType_ReadOnlyLowMidHigh) {
 			const char* types[] = { "Low","Mid","High" };
 			iValue = CHANNEL_Get(i);
-
 			poststr(request, "<tr><td>");
-			hprintf255(request, "<p>Select speed:</p><form action=\"index\">");
-			hprintf255(request, "<input type=\"hidden\" name=\"setIndex\" value=\"%i\">", i);
-			for (j = 0; j < 3; j++) {
-				const char* check;
-				if (j == iValue)
-					check = "checked";
-				else
-					check = "";
-				hprintf255(request, "<input type=\"radio\" name=\"set\" value=\"%i\" onchange=\"this.form.submit()\" %s>%s", j, check, types[j]);
+			if (iValue >= 0 && iValue <= 2) {
+				hprintf255(request, "Channel %s = %s", CHANNEL_GetLabel(i), types[iValue]);
 			}
-			hprintf255(request, "</form>");
+			else {
+				hprintf255(request, "Channel %s = %i", CHANNEL_GetLabel(i), iValue);
+			}
 			poststr(request, "</td></tr>");
-
 		}
-		else if (channelType == ChType_OffLowMidHigh || channelType == ChType_OffLowestLowMidHighHighest
-			|| channelType == ChType_LowestLowMidHighHighest || channelType == ChType_LowMidHighHighest
-			|| channelType == ChType_OffLowMidHighHighest || channelType == ChType_OffOnRemember) {
-			const char** types;
-			const char* types4[] = { "Off","Low","Mid","High" };
-			const char* typesLowMidHighHighest[] = { "Low","Mid","High","Highest" };
-			const char* typesOffLowMidHighHighest[] = { "Off", "Low","Mid","High","Highest" };
-			const char* types6[] = { "Off", "Lowest", "Low", "Mid", "High", "Highest" };
-			const char* types5NoOff[] = { "Lowest", "Low", "Mid", "High", "Highest" };
-			const char* typesOffOnRemember[] = { "Off", "On", "Remember" };
-			int numTypes;
+		else if ((types = Channel_GetOptionsForChannelType(channelType, &numTypes)) != 0) {
 			const char *what;
-
 			if (channelType == ChType_OffOnRemember) {
 				what = "memory";
 			}
 			else {
 				what = "speed";
-			}
-			if (channelType == ChType_OffLowMidHigh) {
-				types = types4;
-				numTypes = 4;
-			}
-			else if (channelType == ChType_LowMidHighHighest) {
-				types = typesLowMidHighHighest;
-				numTypes = 4;
-			}
-			else if (channelType == ChType_OffLowMidHighHighest) {
-				types = typesOffLowMidHighHighest;
-				numTypes = 5;
-			}
-			else if (channelType == ChType_LowestLowMidHighHighest) {
-				types = types5NoOff;
-				numTypes = 5;
-			}
-			else if (channelType == ChType_OffOnRemember) {
-				types = typesOffOnRemember;
-				numTypes = 3;
-			}
-			else {
-				types = types6;
-				numTypes = 6;
 			}
 			
 			iValue = CHANNEL_Get(i);
@@ -506,11 +490,11 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "Channel %s = %i", CHANNEL_GetLabel(i), iValue);
 			poststr(request, "</td></tr>");
 		}
-		else if (channelType == ChType_Motion) {
+		else if (channelType == ChType_Motion || channelType == ChType_Motion_n) {
 			iValue = CHANNEL_Get(i);
 
 			poststr(request, "<tr><td>");
-			if (iValue) {
+			if (iValue == (channelType != ChType_Motion)) {
 				hprintf255(request, "No motion (ch %i)", i);
 			}
 			else {
@@ -562,7 +546,7 @@ int http_fn_index(http_request_t* request) {
 			}
 			pwmValue = CHANNEL_Get(i);
 			poststr(request, "<tr><td>");
-			hprintf255(request, "<form action=\"index\" id=\"form%i\">", i);
+			hprintf255(request, "Channel %s:<br><form action=\"index\" id=\"form%i\">", CHANNEL_GetLabel(i), i);
 			hprintf255(request, "<input type=\"range\" min=\"0\" max=\"%i\" name=\"%s\" id=\"slider%i\" value=\"%i\" onchange=\"this.form.submit()\">", maxValue, inputName, i, pwmValue);
 			hprintf255(request, "<input type=\"hidden\" name=\"%sIndex\" value=\"%i\">", inputName, i);
 			hprintf255(request, "<input type=\"submit\" class='disp-none' value=\"Toggle %s\"/></form>", CHANNEL_GetLabel(i));
@@ -783,7 +767,7 @@ int http_fn_index(http_request_t* request) {
 		}
 		hprintf255(request, "</h5>");
 	}
-	hprintf255(request, "<h5>Cfg size: %i, change counter: %i, ota counter: %i, boot incompletes %i (might change to 0 if you wait to 30 sec)!</h5>",
+	hprintf255(request, "<h5>Cfg size: %i, change counter: %i, ota counter: %i, incomplete boots: %i (might change to 0 if you wait to 30 sec)!</h5>",
 		sizeof(g_cfg), g_cfg.changeCounter, g_cfg.otaCounter, g_bootFailures);
 
   // display temperature - thanks to giedriuslt
@@ -912,6 +896,22 @@ typedef enum {
 		hprintf255(request, "</h5>");
 	}
 
+#if ENABLE_DRIVER_CHARTS		
+/*	// moved from drv_charts.c:
+	// on every "state" request, JS code will be loaded and canvas is redrawn
+	// this leads to a flickering graph
+	// so put this right below the "state" div
+	// with a "#ifdef 
+	// drawback : We need to take care, if driver is loaded and canvas will be displayed only on a reload of the page
+	// or we might try and hide/unhide it ...
+*/
+	// since we can't simply stop showing the graph in updated status, we need to "hide" it if driver was stopped
+	if (! DRV_IsRunning("Charts")) {
+		poststr(request, "<style onload=\"document.getElementById('obkChart').style.display='none'\"></style>");		
+	};
+
+#endif
+
 #if WINDOWS
 #elif PLATFORM_BL602
 #elif PLATFORM_W600 || PLATFORM_W800
@@ -931,6 +931,22 @@ typedef enum {
 	// for normal page loads, show the rest of the HTML
 	if (!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
 		poststr(request, "</div>"); // end div#state
+#if ENABLE_DRIVER_CHARTS		
+/*	// moved from drv_charts.c:
+	// on every "state" request, JS code will be loaded and canvas is redrawn
+	// this leads to a flickering graph
+	// so put this right below the "state" div
+	// with a "#ifdef 
+	// drawback : We need to take care, if driver is loaded and canvas will be displayed only on a reload of the page
+	// or we might try and hide/unhide it ...
+*/
+//	if (DRV_IsRunning("Charts")) {
+		poststr(request, "<canvas style='display: none' id=\"obkChart\" width=\"400\" height=\"200\"></canvas>");
+		poststr(request, "<script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>");
+//	};
+
+#endif
+
 
 		// Shared UI elements 
 		poststr(request, "<form action=\"cfg\"><input type=\"submit\" value=\"Config\"/></form>");
@@ -1003,18 +1019,22 @@ int http_fn_cfg_ip(http_request_t* request) {
 
 	if (http_getArg(request->url, "IP", tmp, sizeof(tmp))) {
 		str_to_ip(tmp, g_cfg.staticIP.localIPAddr);
+//hprintf255(request, "<br>IP=%s (%02x %02x %02x %02x)<br>",tmp,g_cfg.staticIP.localIPAddr[0],g_cfg.staticIP.localIPAddr[1],g_cfg.staticIP.localIPAddr[2],g_cfg.staticIP.localIPAddr[3]);
 		g_changes++;
 	}
 	if (http_getArg(request->url, "mask", tmp, sizeof(tmp))) {
 		str_to_ip(tmp, g_cfg.staticIP.netMask);
+//hprintf255(request, "<br>Mask=%s (%02x %02x %02x %02x)<br>",tmp, g_cfg.staticIP.netMask[0], g_cfg.staticIP.netMask[1], g_cfg.staticIP.netMask[2], g_cfg.staticIP.netMask[3]);
 		g_changes++;
 	}
 	if (http_getArg(request->url, "dns", tmp, sizeof(tmp))) {
 		str_to_ip(tmp, g_cfg.staticIP.dnsServerIpAddr);
+//hprintf255(request, "<br>DNS=%s (%02x %02x %02x %02x)<br>",tmp, g_cfg.staticIP.dnsServerIpAddr[0], g_cfg.staticIP.dnsServerIpAddr[1], g_cfg.staticIP.dnsServerIpAddr[2], g_cfg.staticIP.dnsServerIpAddr[3]);
 		g_changes++;
 	}
 	if (http_getArg(request->url, "gate", tmp, sizeof(tmp))) {
 		str_to_ip(tmp, g_cfg.staticIP.gatewayIPAddr);
+//hprintf255(request, "<br>GW=%s (%02x %02x %02x %02x)<br>",tmp, g_cfg.staticIP.gatewayIPAddr[0], g_cfg.staticIP.gatewayIPAddr[1], g_cfg.staticIP.gatewayIPAddr[2], g_cfg.staticIP.gatewayIPAddr[3]);
 		g_changes++;
 	}
 	if (g_changes) {
@@ -1119,12 +1139,12 @@ int http_fn_cfg_ping(http_request_t* request) {
 	http_html_start(request, "Set Watchdog");
 	bChanged = 0;
 	poststr(request, "<h3>Ping watchdog (backup reconnect mechanism)</h3>");
-	poststr(request, "<p> By default, all OpenBeken devices automatically tries to reconnect to WiFi when a connection is lost.");
+	poststr(request, "<p> By default, all OpenBeken devices automatically try to reconnect to WiFi when a connection is lost.");
 	poststr(request, " I have tested the reconnect mechanism many times by restarting my router and it always worked reliably.");
-	poststr(request, " However, according to some reports, there are still some edge cases when a device fails to reconnect to WIFi.");
+	poststr(request, " However, according to some reports, there are still some edge cases where a device fails to reconnect to WiFi.");
 	poststr(request, " This is why <b>this mechanism</b> has been added.</p>");
-	poststr(request, "<p>This mechanism keeps pinging certain host and reconnects to WiFi if it doesn't respond at all for a certain amount of seconds.</p>");
-	poststr(request, "<p>USAGE: For a host, choose the main address of your router and make sure it responds to a pings. Interval is 1 second or so, timeout can be set by user, to eg. 60 sec</p>");
+	poststr(request, "<p>This mechanism continuously pings a specified host and reconnects to WiFi if it doesn't respond for the specified number of seconds.</p>");
+	poststr(request, "<p>USAGE: For the host, choose the main address of your router and ensure it responds to pings. The interval is around 1 second, and the timeout can be set by the user, for example, to 60 seconds.</p>");
 	if (http_getArg(request->url, "host", tmpA, sizeof(tmpA))) {
 		CFG_SetPingHost(tmpA);
 		poststr_h4(request, "New ping host set!");
@@ -1250,7 +1270,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 	poststr_h4(request, "Use this to disconnect from your WiFi");
 	poststr(request, "<form action=\"/cfg_wifi_set\">\
 <input type=\"hidden\" id=\"open\" name=\"open\" value=\"1\">\
-<input type=\"submit\" value=\"Convert to open access wifi\" onclick=\"return confirm('Are you sure to convert module to open access wifi?')\">\
+<input type=\"submit\" value=\"Convert to open access wifi\" onclick=\"return confirm('Are you sure to convert module to open access WiFi?')\">\
 </form>");
 	poststr_h2(request, "Use this to connect to your WiFi");
 	add_label_text_field(request, "SSID", "ssid", CFG_GetWiFiSSID(), "<form action=\"/cfg_wifi_set\">");
@@ -1565,10 +1585,11 @@ int http_fn_cmd_tool(http_request_t* request) {
 	http_html_start(request, "Command tool");
 	poststr_h4(request, "Command Tool");
 	poststr(request, "This is a basic command line. <br>");
-	poststr(request, "Please consider using 'Web Application' console with more options and real time log view. <br>");
-	poststr(request, "Remember that some commands are added after a restart when a driver is activated... <br>");
+	poststr(request, "Please consider using the 'Web Application' console for more options and real-time log viewing. <br>");
+	poststr(request, "Remember that some commands are added after a restart when a driver is activated. <br>");
 
 	commandLen = http_getArg(request->url, "cmd", tmpA, sizeof(tmpA));
+	addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "http_fn_cmd_tool: len %i",commandLen);
 	if (commandLen) {
 		poststr(request, "<br>");
 		// all log printfs made by command will be sent also to request
@@ -1608,7 +1629,7 @@ int http_fn_startup_command(http_request_t* request) {
 	http_html_start(request, "Set startup command");
 	poststr_h4(request, "Set/Change/Clear startup command line");
 	poststr(request, "<p>Startup command is a shorter, smaller alternative to LittleFS autoexec.bat. "
-		"The startup commands are ran at device startup. "
+		"The startup commands are run at device startup. "
 		"You can use them to init peripherals and drivers, like BL0942 energy sensor. "
 		"Use backlog cmd1; cmd2; cmd3; etc to enter multiple commands</p>");
 
@@ -1663,7 +1684,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		topic = "homeassistant";
 	}
 
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#ifdef ENABLE_DRIVER_BL0937
 	measuringPower = DRV_IsMeasuringPower();
 	measuringBattery = DRV_IsMeasuringBattery();
 #endif
@@ -1768,7 +1789,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		}
 	}
 
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#ifdef ENABLE_DRIVER_BL0937
 	if (measuringPower == true) {
 		for (i = OBK__FIRST; i <= OBK__LAST; i++)
 		{
@@ -1846,6 +1867,12 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				cJSON_AddStringToObject(dev_info->root, "dev_cla", "motion");
 			}
 			break;
+			case ChType_Motion_n:
+			{
+				dev_info = hass_init_binary_sensor_device_info(i, false);
+				cJSON_AddStringToObject(dev_info->root, "dev_cla", "motion");
+			}
+			break;
 			case ChType_OpenClosed:
 			{
 				dev_info = hass_init_binary_sensor_device_info(i, false);
@@ -1901,9 +1928,19 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, i, 2, 1, 1);
 			}
 			break;
+			case ChType_ReadOnly_div10:
+			{
+				dev_info = hass_init_sensor_device_info(CUSTOM_SENSOR, i, 2, 1, 1);
+			}
+			break;
 			case ChType_Temperature_div100:
 			{
 				dev_info = hass_init_sensor_device_info(TEMPERATURE_SENSOR, i, 2, 2, 1);
+			}
+			break;
+			case ChType_ReadOnly_div100:
+			{
+				dev_info = hass_init_sensor_device_info(CUSTOM_SENSOR, i, 2, 2, 1);
 			}
 			break;
 			case ChType_Humidity:
@@ -1919,6 +1956,11 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			case ChType_Current_div100:
 			{
 				dev_info = hass_init_sensor_device_info(CURRENT_SENSOR, i, 3, 2, 1);
+			}
+			break;
+			case ChType_ReadOnly_div1000:
+			{
+				dev_info = hass_init_sensor_device_info(CUSTOM_SENSOR, i, 3, 3, 1);
 			}
 			break;
 			case ChType_LeakageCurrent_div1000:
@@ -1975,6 +2017,21 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			case ChType_EnergyTotal_kWh_div1000:
 			{
 				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 3, 1);
+			}
+			break;
+			case ChType_Ph:
+			{
+				dev_info = hass_init_sensor_device_info(WATER_QUALITY_PH, i, 2, 2, 1);
+			}
+			break;
+			case ChType_Orp:
+			{
+				dev_info = hass_init_sensor_device_info(WATER_QUALITY_ORP, i, -1, 2, 1);
+			}
+			break;
+			case ChType_Tds:
+			{
+				dev_info = hass_init_sensor_device_info(WATER_QUALITY_TDS, i, -1, 2, 1);
 			}
 			break;
 		}
@@ -2477,6 +2534,8 @@ int http_fn_cfg_pins(http_request_t* request) {
 	}
 	poststr(request, "];");
 
+	poststr(request, "var  sr = r.map((e,i)=>{return e[0]+'#'+i}).sort(Intl.Collator().compare).map(e=>e.split('#'));");
+	
 	poststr(request, "function hide_show() {"
 		"n=this.name;"
 		"er=getElement('r'+n);"
@@ -2490,20 +2549,18 @@ int http_fn_cfg_pins(http_request_t* request) {
 		"let f = document.getElementById(\"x\");"
 		"let d = document.createElement(\"div\");"
 		"d.className = \"hdiv\";"
-		"d.innerText = alias;"
+		"d.innerHTML = \"<span class='disp-inline' style='min-width: 15ch'>\"+alias+\"</span>\";"
 		"f.appendChild(d);"
 		"let s = document.createElement(\"select\");"
 		"s.className = \"hele\";"
 		"s.name = id;"
 		"d.appendChild(s);"
-		"	for (var i = 0; i < r.length; i++) {"
-		"	if(b && r[i][0].startsWith(\"PWM\")) continue; "
+		"	for (var i = 0; i < sr.length; i++) {"
+		"	if(b && sr[i][0].startsWith(\"PWM\")) continue; "
 		"var o = document.createElement(\"option\");"
-		"	o.text = r[i][0];"
-		"	o.value = i;"
-		"	if (i == c) {"
-		"		o.selected = true;"
-		"	}"
+		"	o.text = sr[i][0];"
+		"	o.value = sr[i][1];"
+		"	o.selected = (sr[i][1] == c);"
 		"s.add(o);s.onchange = hide_show;"
 		"}"
 		"var y = document.createElement(\"input\");"
@@ -2529,7 +2586,6 @@ int http_fn_cfg_pins(http_request_t* request) {
 		// But on Beken chips, only certain pins can be PWM
 		int bCanThisPINbePWM;
 		int si, ch, ch2;
-		int j;
 		const char* alias;
 
 		si = PIN_GetPinRoleForPinIndex(i);
@@ -2606,7 +2662,7 @@ const char* g_obk_flagNames[] = {
 	"[LED] Automatically enable Light when changing brightness, color or temperature on WWW panel",
 	"[LED] Smooth transitions for LED (EXPERIMENTAL)",
 	"[MQTT] Always publish channels used by TuyaMCU",
-	"[LED] Force RGB mode (3 PWMs for LEDs) and ignore futher PWMs if they are set",
+	"[LED] Force RGB mode (3 PWMs for LEDs) and ignore further PWMs if they are set",
 	"[MQTT] Retain power channels (Relay channels, etc)",
 	"[IR] Do MQTT publish (Tasmota JSON format) for incoming IR data",
 	"[LED] Automatically enable Light on any change of brightness, color or temperature",
@@ -2623,7 +2679,7 @@ const char* g_obk_flagNames[] = {
 	"[LED] Use old linear brightness mode, ignore gamma ramp",
 	"[MQTT] Apply channel type multiplier on (if any) on channel value before publishing it",
 	"[MQTT] In HA discovery, add relays as lights",
-	"[HASS] Deactivate avty_t flag for sensor when publishing to HASS (permit to keep value). You must restart HASS discovery for change to take effect.",
+	"[HASS] Deactivate avty_t flag when publishing to HASS (permit to keep value). You must restart HASS discovery for change to take effect.",
 	"[DRV] Deactivate Autostart of all drivers",
 	"[WiFi] Quick connect to WiFi on reboot (TODO: check if it works for you and report on github)",
 	"[Power] Set power and current to zero if all relays are open",
@@ -2637,6 +2693,8 @@ const char* g_obk_flagNames[] = {
 	"[TuyaMCU] Store raw data",
 	"[TuyaMCU] Store ALL data",
 	"[PWR] Invert AC dir",
+	"[HTTP] Hide ON/OFF for relays (only red/green buttons)",
+	"[MQTT] Never add get sufix",
 	"error",
 	"error",
 	"error",
@@ -2700,7 +2758,7 @@ int http_fn_cfg_generic(http_request_t* request) {
 	poststr(request, "<input type=\"hidden\" id=\"setFlags\" name=\"setFlags\" value=\"1\">");
 	poststr(request, SUBMIT_AND_END_FORM);
 
-	add_label_numeric_field(request, "Uptime seconds required to mark boot as ok", "boot_ok_delay",
+	add_label_numeric_field(request, "Uptime seconds required to mark boot as OK", "boot_ok_delay",
 		CFG_GetBootOkSeconds(), "<form action=\"/cfg_generic\">");
 	poststr(request, "<br><input type=\"submit\" value=\"Save\"/></form>");
 
@@ -2718,7 +2776,7 @@ int http_fn_cfg_startup(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Config startup");
 	poststr_h4(request, "Here you can set pin start values");
-	poststr(request, "<ul><li>For relays, simply use 1 or 0</li>");
+	poststr(request, "<ul><li>For relays, use 1 or 0</li>");
 	poststr(request, "<li>To 'remember last power state', use -1 as a special value</li>");
 	poststr(request, "<li>For dimmers, range is 0 to 100</li>");
 	poststr(request, "<li>For custom values, you can set any numeric value</li>");
@@ -2900,7 +2958,7 @@ int http_fn_ota_exec(http_request_t* request) {
 int http_fn_ota(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "OTA system");
-	poststr(request, "<p>Simple OTA system (you should rather use the OTA from App panel where you can drag and drop file easily without setting up server). Use RBL file for OTA. In the OTA below, you should paste link to RBL file (you need HTTP server).</p>");
+	poststr(request, "<p>For a more user-friendly experience, it is recommended to use the OTA option in the Web Application, where you can easily drag and drop files without needing to set up a server. On Beken platforms, the .rbl file is used for OTA updates. In the OTA section below, paste the link to the .rbl file (an HTTP server is required).</p>");
 	add_label_text_field(request, "URL for new bin file", "host", "", "<form action=\"/ota_exec\">");
 	poststr(request, "<br>\
 <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure?')\">\

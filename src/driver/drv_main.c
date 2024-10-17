@@ -12,6 +12,7 @@
 #include "drv_test_drivers.h"
 #include "drv_tuyaMCU.h"
 #include "drv_uart.h"
+#include "drv_ds1820_simple.h"
 
 
 typedef struct driver_s {
@@ -63,7 +64,28 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "Drawers",		Drawers_Init,			NULL,			NULL, Drawers_QuickTick, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_HGS02
+	//drvdetail:{"name":"HGS02",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"[HGS02](https://www.elektroda.com/rtvforum/viewtopic.php?p=21177061#21177061)",
+	//drvdetail:"requires":""}
+	{ "HGS02",		HGS02_Init,			HGS02_RunEverySecond,			NULL, NULL, NULL, NULL, false },
+#endif
 
+#if WINDOWS
+	//drvdetail:{"name":"TestCharts",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Development only driver - a sample of chart generation with chart.js.",
+	//drvdetail:"requires":""}
+	{ "TestCharts",		NULL,			NULL,			DRV_Test_Charts_AddToHtmlPage, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_CHARTS
+	//drvdetail:{"name":"Charts",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Charts driver allows you to create a customizable chart directly on your device. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+	//drvdetail:"requires":""}
+	{ "Charts",		DRV_Charts_Init,			NULL,			DRV_Charts_AddToHtmlPage, NULL, NULL, NULL, false },
+#endif
 #if ENABLE_NTP
 	//drvdetail:{"name":"NTP",
 	//drvdetail:"title":"TODO",
@@ -98,7 +120,7 @@ static driver_t g_drivers[] = {
 	{ "I2C",		DRV_I2C_Init,		DRV_I2C_EverySecond,		NULL, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_BL0942
-	//drvdetail:{"name":"qq",
+	//drvdetail:{"name":"RN8209",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Bqqqqqqqqqq ",
 	//drvdetail:"requires":""}
@@ -121,7 +143,7 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_BL0942SPI
 	//drvdetail:{"name":"BL0942SPI",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"BL0942 is a power-metering chip which uses SPI protocol for communication. It's usually connected to SPI1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [PZIOT-E01 teardown example](https://www.elektroda.com/rtvforum/topic3945667.html). ",
+	//drvdetail:"descr":"BL0942 driver version for SPI protocol. It's usually connected to SPI1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [PZIOT-E01 teardown example](https://www.elektroda.com/rtvforum/topic3945667.html). ",
 	//drvdetail:"requires":""}
 	{ "BL0942SPI",	BL0942_SPI_Init,	BL0942_SPI_RunEverySecond,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
@@ -142,21 +164,21 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_CSE7766
 	//drvdetail:{"name":"CSE7766",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK",
+	//drvdetail:"descr":"CSE7766 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK",
 	//drvdetail:"requires":""}
 	{ "CSE7766",	CSE7766_Init,		CSE7766_RunEverySecond,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_MAX6675
 	//drvdetail:{"name":"MAX6675",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"BQQQK",
+	//drvdetail:"descr":"Thermocouple driver for measuring high temperatures, see [presentation](https://www.elektroda.com/rtvforum/topic4055231.html)",
 	//drvdetail:"requires":""}
 	{ "MAX6675",	MAX6675_Init,		MAX6675_RunEverySecond,			NULL, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_PT6523
 	//drvdetail:{"name":"PT6523",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"BQQQK",
+	//drvdetail:"descr":"Car radio LCD driver, see [teardown and presentation](https://www.elektroda.com/rtvforum/topic3983111.html)",
 	//drvdetail:"requires":""}
 	{ "PT6523",	PT6523_Init,		PT6523_RunFrame,			NULL, NULL, NULL, NULL, false },
 #endif
@@ -177,7 +199,7 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_SM15155E
 	//drvdetail:{"name":"SM15155E",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"SM15155E .",
+	//drvdetail:"descr":"SM15155E is a WS2812B-like single wire LED controller. It's also always using P16 (SPI out) on Beken. See [reverse-engineering topic](https://www.elektroda.com/rtvforum/topic4060227.html)",
 	//drvdetail:"requires":""}
 	{ "SM15155E",	SM15155E_Init,		NULL,						NULL, NULL, NULL, NULL, false },
 #endif
@@ -188,10 +210,14 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "IR",			DRV_IR_Init,		 NULL,						NULL, DRV_IR_RunFrame, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_IR2
+	{ "IR2",			DRV_IR2_Init,		 NULL,						NULL, NULL, NULL, NULL, false },
+#endif
+		
 #if ENABLE_DRIVER_DDP
 	//drvdetail:{"name":"DDP",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"DDP is a LED control protocol that is using UDP. You can use xLights or any other app to control OBK LEDs that way.",
+	//drvdetail:"descr":"DDP is a LED control protocol that is using UDP. You can use xLights or any other app to control OBK LEDs that way. See [DDP topic](https://www.elektroda.com/rtvforum/topic4040325.html)",
 	//drvdetail:"requires":""}
 	{ "DDP",		DRV_DDP_Init,		NULL,						DRV_DDP_AppendInformationToHTTPIndexPage, DRV_DDP_RunFrame, DRV_DDP_Shutdown, NULL, false },
 #endif
@@ -228,7 +254,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"PWMToggler is a custom abstraction layer that can run on top of raw PWM channels. It provides ability to turn off/on the PWM while keeping it's value, which is not possible by direct channel operations. It can be used for some custom devices with extra lights/lasers. See example [here](https://www.elektroda.com/rtvforum/topic3939064.html).",
 	//drvdetail:"requires":""}
-	{ "PWMToggler",	DRV_InitPWMToggler, NULL, DRV_Toggler_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	{ "PWMToggler",	DRV_InitPWMToggler, NULL, DRV_Toggler_AppendInformationToHTTPIndexPage, DRV_Toggler_QuickTick, NULL, NULL, false },
 	//drvdetail:{"name":"DoorSensor",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"DoorSensor is using deep sleep to preserve battery. This is used for devices without TuyaMCU, where BK deep sleep and wakeup on GPIO is used. This drives requires you to set a DoorSensor pin. Change on door sensor pin wakes up the device. If there are no changes for some time, device goes to sleep. See example [here](https://www.elektroda.com/rtvforum/topic3960149.html). If your door sensor does not wake up in certain pos, please use DSEdge command (try all 3 options, default is 2). ",
@@ -293,12 +319,14 @@ static driver_t g_drivers[] = {
 		//drvdetail:"requires":""}
 	{ "BMPI2C", BMPI2C_Init, BMPI2C_OnEverySecond, BMPI2C_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
-	//drvdetail:{"name":"CHT8305",
+#if ENABLE_DRIVER_CHT83XX
+	//drvdetail:{"name":"CHT83XX",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"CHT8305 is a Temperature and Humidity sensor with I2C interface.",
+	//drvdetail:"descr":"CHT8305, CHT8310 and CHT8315 are a Temperature and Humidity sensors with I2C interface.",
 	//drvdetail:"requires":""}
-	{ "CHT8305",	CHT8305_Init,		CHT8305_OnEverySecond,		CHT8305_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	{ "CHT83XX",	CHT83XX_Init,		CHT83XX_OnEverySecond,		CHT83XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+#endif
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	//drvdetail:{"name":"MCP9808",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"MCP9808 is a Temperature sensor with I2C interface and an external wakeup pin, see [docs](https://www.elektroda.pl/rtvforum/topic3988466.html).",
@@ -336,6 +364,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"AHT Humidity/temperature sensor. Supported sensors are: AHT10, AHT2X, AHT30. See [presentation guide](https://www.elektroda.com/rtvforum/topic4052685.html)",
 	//drvdetail:"requires":""}
 	{ "AHT2X",	AHT2X_Init,	AHT2X_OnEverySecond,	AHT2X_AppendInformationToHTTPIndexPage,	NULL,	AHT2X_StopDriver,	NULL,	false },
+#endif
+#if ENABLE_DRIVER_DS1820
+	//drvdetail:{"name":"DS1820",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Very simple driver for oneWire temperature sensor DS1820.",
+	//drvdetail:"requires":""}
+	{ "DS1820",     DS1820_driver_Init, DS1820_OnEverySecond,                       DS1820_AppendInformationToHTTPIndexPage, NULL, NULL, NULL,  false },
 #endif
 #if ENABLE_DRIVER_HT16K33
 	//drvdetail:{"name":"HT16K33",
@@ -512,7 +547,9 @@ void DRV_StartDriver(const char* name) {
 
 			}
 			else {
-				g_drivers[i].initFunc();
+				if (g_drivers[i].initFunc) {
+					g_drivers[i].initFunc();
+				}
 				g_drivers[i].bLoaded = true;
 				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Started %s.\n", name);
 				bStarted = 1;
@@ -632,7 +669,7 @@ bool DRV_IsMeasuringBattery() {
 
 bool DRV_IsSensor() {
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	return DRV_IsRunning("SHT3X") || DRV_IsRunning("CHT8305") || DRV_IsRunning("SGP") || DRV_IsRunning("AHT2X");
+	return DRV_IsRunning("SHT3X") || DRV_IsRunning("CHT83XX") || DRV_IsRunning("SGP") || DRV_IsRunning("AHT2X");
 #else
 	return false;
 #endif

@@ -160,6 +160,7 @@ enum LightMode {
 // force single argument mode
 #define TOKENIZER_FORCE_SINGLE_ARGUMENT_MODE	8
 #define TOKENIZER_ALLOW_ESCAPING_QUOTATIONS		16
+#define TOKENIZER_EXPAND_EARLY					32
 
 // cmd_tokenizer.c
 int Tokenizer_GetArgsCount();

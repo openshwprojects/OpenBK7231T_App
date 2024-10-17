@@ -194,7 +194,7 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 /*
 {"StatusSNS":{"Time":"2022-07-30T10:11:26","ENERGY":{"TotalStartTime":"2022-05-12T10:56:31","Total":0.003,"Yesterday":0.003,"Today":0.000,"Power": 0,"ApparentPower": 0,"ReactivePower": 0,"Factor":0.00,"Voltage":236,"Current":0.000}}}
 */
-
+#ifdef ENABLE_DRIVER_BL0937
 // returns NaN values as 0
 static float _getReading_NanToZero(energySensor_t type) {
 	float retval = DRV_GetReading(type);
@@ -231,7 +231,7 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 	}
 	return 0;
 }
-
+#endif	// ENABLE_DRIVER_BL0937
 // Topic: tele/tasmota_48E7F3/SENSOR at 3:06 AM:
 // Sample:
 /*
@@ -273,8 +273,8 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 		// close ENERGY block
 		printer(request, "},");
 	}
-	if (DRV_IsRunning("CHT8305")) {
-		g_pin_1 = PIN_FindPinIndexForRole(IOR_CHT8305_DAT, g_pin_1);
+	if (DRV_IsRunning("CHT83XX")) {
+		g_pin_1 = PIN_FindPinIndexForRole(IOR_CHT83XX_DAT, g_pin_1);
 		channel_1 = g_cfg.pins.channels[g_pin_1];
 		channel_2 = g_cfg.pins.channels2[g_pin_1];
 
@@ -282,7 +282,7 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 		chan_val2 = CHANNEL_GetFloat(channel_2);
 
 		// writer header
-		printer(request, "\"CHT8305\":");
+		printer(request, "\"CHT83XX\":");
 		// following check will clear NaN values
 		printer(request, "{");
 		printer(request, "\"Temperature\": %.1f,", chan_val1);
@@ -352,7 +352,7 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 	JSON_PrintKeyValue_String(request, printer, "Time", buff, false);
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
-
+#ifdef ENABLE_DRIVER_BL0937
 	if (DRV_IsMeasuringPower() || DRV_IsMeasuringBattery()) {
 
 		// begin ENERGY block
@@ -360,6 +360,7 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 		printer(request, "\"ENERGY\":");
 		http_tasmota_json_ENERGY(request, printer);
 	}
+#endif	// ENABLE_DRIVER_BL0937
 	bool bHasAnyDHT = false;
 	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		int role = PIN_GetPinRoleForPinIndex(i);
@@ -552,7 +553,7 @@ static int http_tasmota_json_status_MEM(void* request, jsonCb_t printer) {
 }
 // Test command: http://192.168.0.159/cm?cmnd=STATUS%205
 static int http_tasmota_json_status_NET(void* request, jsonCb_t printer) {
-	char tmpStr[16];
+	char tmpStr[19];	// will be used for MAC string 6*3 chars (18 would be o.k, since last hex has no ":" ...)
 	HAL_GetMACStr(tmpStr);
 
 	printer(request, "\"StatusNET\":{");

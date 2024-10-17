@@ -35,6 +35,7 @@ void BMP280_Stop(void) {		//manufacturer ID
 	Soft_I2C_Stop(&g_softI2C);
 }
 
+// NOTE: code in this header will set isHumidityAvail
 #include "BMP280.h"
 
 // startDriver BMP280 8 14 1 2 3 236
@@ -65,6 +66,7 @@ void BMP280_OnEverySecond() {
 	BMP280_readTemperature(&g_temperature);  // read temperature
 	BMP280_readPressure(&g_pressure);        // read pressure
 
+	// check variable set in BMP280.h so we know if there is humiditygit
 	if(isHumidityAvail)
 	{
 		BME280_readHumidity(&g_humidity);

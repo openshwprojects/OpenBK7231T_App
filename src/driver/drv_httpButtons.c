@@ -10,8 +10,8 @@
 
 typedef struct {
 	bool bEnabled;
-	char label[32];
-	char command[128];
+	char *label;
+	char *command;
 	char color[16];
 } httpButton_t;
 
@@ -56,14 +56,18 @@ void setLabel(int idx, const char *lab) {
 	bt = getOrAlloc(idx);
 	if (bt == 0)
 		return;
-	strcpy_safe(bt->label, lab, sizeof(bt->label));
+	if (bt->label)
+		free(bt->label);
+	bt->label = strdup(lab);
 }
 void setCommand(int idx, const char *cmd) {
 	httpButton_t *bt;
 	bt = getOrAlloc(idx);
 	if (bt == 0)
 		return;
-	strcpy_safe(bt->command, cmd, sizeof(bt->command));
+	if (bt->command)
+		free(bt->command);
+	bt->command = strdup(cmd);
 }
 void setColor(int idx, const char *cs) {
 	httpButton_t *bt;
@@ -121,6 +125,7 @@ void DRV_HTTPButtons_AddToHtmlPage(http_request_t *request) {
 	int i;
 	const char *c;
 	const char *action;
+	const char *label;
 
 	for (i = 0; i < g_buttonCount; i++) {
 		httpButton_t *bt = g_buttons[i];
@@ -139,6 +144,11 @@ void DRV_HTTPButtons_AddToHtmlPage(http_request_t *request) {
 		}
 
 		action = bt->command;
+		if (action == 0)
+			action = "";
+		label = bt->label;
+		if (label == 0)
+			label = "";
 		poststr(request, "<td><form action=\"");
 		if (action[0] == '*') {
 			poststr(request, action+1);
@@ -153,7 +163,7 @@ void DRV_HTTPButtons_AddToHtmlPage(http_request_t *request) {
 		if (bt->color[0]) {
 			hprintf255(request, "style = \"background-color:%s;\" ",bt->color);
 		}
-		hprintf255(request, "type = \"submit\" value=\"%s\"/></form></td>",  bt->label);
+		hprintf255(request, "type = \"submit\" value=\"%s\"/></form></td>",  label);
 		poststr(request, "</tr>");
 
 

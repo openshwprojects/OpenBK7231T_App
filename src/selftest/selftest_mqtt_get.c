@@ -3,8 +3,18 @@
 #include "selftest_local.h"
 #include "../hal/hal_wifi.h"
 
+void Test_MQTT_Get_Relay() {
+	SIM_ClearOBK(0);
+	SIM_ClearAndPrepareForMQTTTesting("myTestDevice", "bekens");
+
+	PIN_SetPinRoleForPinIndex(24, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(24, 1);
+
+	SIM_ClearMQTTHistory();
+
+
+}
 void Test_MQTT_Get_LED_EnableAll() {
-	char buffer[512], buffer2[512];
 	SIM_ClearOBK(0);
 	SIM_ClearAndPrepareForMQTTTesting("myTestDevice", "bekens");
 
@@ -112,6 +122,34 @@ void Test_MQTT_Get_LED_EnableAll() {
 		SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/led_temperature/get", tgState, false);
 		SIM_ClearMQTTHistory();
 
+	}
+
+	CFG_SetFlag(OBK_FLAG_MQTT_NEVERAPPENDGET, true);
+	for (int i = 0; i < 15; i++) {
+		char tgState[32];
+		int randVal = abs(rand() % 300) + 160;
+		sprintf(tgState, "%i", randVal);
+
+#if 1
+		// send set
+		SIM_SendFakeMQTT("cmnd/myTestDevice/led_temperature", tgState);
+#else
+		// cause an error
+		SIM_SendFakeMQTT("cmnd/myTestDevice/led_temperature", "0");
+#endif
+		// expect get reply - led_dimmer will publish its value on change - NO GET SUFIX AS DISABLED IN FLAGS
+		SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/led_temperature", tgState, false);
+		SIM_ClearMQTTHistory();
+
+		// wait a bit
+		Sim_RunFrames(20, false);
+		// sending empty get should give us a state dump
+		SIM_ClearMQTTHistory();
+		SIM_SendFakeMQTT("myTestDevice/led_temperature/get", "");
+		Sim_RunFrames(4, false);
+		// expect get reply - led_dimmer will publish value because we have requested it - NO GET SUFIX AS DISABLED IN FLAGS
+		SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/led_temperature", tgState, false);
+		SIM_ClearMQTTHistory();
 	}
 }
 

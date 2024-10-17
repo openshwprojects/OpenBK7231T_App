@@ -42,8 +42,6 @@ const char *demo_nested_loop =
 "setChannel 32 100\r\n";
 
 void Test_Scripting_Loop1() {
-	char buffer[64];
-
 	// reset whole device
 	SIM_ClearOBK(0);
 	CMD_ExecuteCommand("lfs_format", 0);
@@ -65,8 +63,6 @@ void Test_Scripting_Loop1() {
 	//system("pause");
 }
 void Test_Scripting_Loop2() {
-	char buffer[64];
-
 	// reset whole device
 	SIM_ClearOBK(0);
 	CMD_ExecuteCommand("lfs_format", 0);
@@ -89,8 +85,6 @@ void Test_Scripting_Loop2() {
 	//system("pause");
 }
 void Test_Scripting_Loop3() {
-	char buffer[64];
-
 	// reset whole device
 	SIM_ClearOBK(0);
 	CMD_ExecuteCommand("lfs_format", 0);

@@ -73,6 +73,7 @@ const char *CMD_FindOperator(const char *s, const char *stop, byte *oCode) {
 	byte bestPriority;
 	const char *retVal;
 	int o = 0;
+	const char *signSkip = 0;
 
 	if (*s == 0)
 		return 0;
@@ -85,16 +86,30 @@ const char *CMD_FindOperator(const char *s, const char *stop, byte *oCode) {
 
 	retVal = 0;
 	bestPriority = 0;
-
+	int level = 0;
 	while (s[0] && s[1] && (s < stop || stop == 0)) {
-		for (o = 0; o < g_numOperators; o++) {
-			if (!strncmp(s, g_operators[o].txt, g_operators[o].len)) {
-				if (g_operators[o].prio >= bestPriority) {
-					bestPriority = g_operators[o].prio;
-					retVal = s;
-					*oCode = o;
+		if (*s == '(') {
+			level++;
+		} else if (*s == ')') {
+			level--;
+		} else if (s != signSkip) {
+			for (o = 0; o < g_numOperators; o++) {
+				if (!strncmp(s, g_operators[o].txt, g_operators[o].len)) {
+					int prio = g_operators[o].prio;
+					prio -= level * 1000;
+					if (prio >= bestPriority) {
+						bestPriority = prio;
+						retVal = s;
+						*oCode = o;
+						signSkip = s + g_operators[o].len;
+						if (*signSkip != '-') {
+							signSkip = 0;
+						}
+					}
 				}
 			}
+		} else {
+			signSkip = 0;
 		}
 		s++;
 	}
@@ -205,7 +220,7 @@ float getActiveRepeatingEvents(const char *s) {
 	return RepeatingEvents_GetActiveCount();
 }
 
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#ifdef ENABLE_DRIVER_BL0937
 
 float getVoltage(const char *s) {
 	return DRV_GetReading(OBK_VOLTAGE);
@@ -229,6 +244,13 @@ float getPower(const char *s) {
 float getEnergy(const char *s) {
 	return DRV_GetReading(OBK_CONSUMPTION_TOTAL);
 }
+float getYesterday(const char *s) {
+	return DRV_GetReading(OBK_CONSUMPTION_YESTERDAY);
+}
+float getToday(const char *s) {
+	return DRV_GetReading(OBK_CONSUMPTION_TODAY);
+}
+
 
 
 float getNTPOn(const char *s) {
@@ -375,7 +397,7 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current number of active repeating events",
 	//cnstdetail:"requires":""}
 	{"$activeRepeatingEvents", &getActiveRepeatingEvents},
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#ifdef ENABLE_DRIVER_BL0937
 	//cnstdetail:{"name":"$voltage",
 	//cnstdetail:"title":"$voltage",
 	//cnstdetail:"descr":"Current value of voltage from energy metering chip. You can use those variables to make, for example, a change handler that fires when voltage is above 245, etc.",
@@ -400,6 +422,8 @@ const constant_t g_constants[] = {
 	//cnstdetail:"title":"$day",
 	//cnstdetail:"descr":"Current weekday from NTP",
 	//cnstdetail:"requires":""}
+#endif	//ENABLE_DRIVER_BL0937
+#ifdef ENABLE_NTP
 	{"$day", &getWeekDay},
 	//cnstdetail:{"name":"$hour",
 	//cnstdetail:"title":"$hour",
@@ -431,6 +455,16 @@ const constant_t g_constants[] = {
 	////cnstdetail:"descr":"Current Year from NTP",
 	////cnstdetail:"requires":""}
 	{ "$year", &getYear },
+	////cnstdetail:{"name":"$yesterday",
+	////cnstdetail:"title":"$yesterday",
+	////cnstdetail:"descr":"",
+	////cnstdetail:"requires":""}
+	{ "$yesterday", &getYesterday },
+	////cnstdetail:{"name":"$today",
+	////cnstdetail:"title":"$today",
+	////cnstdetail:"descr":"",
+	////cnstdetail:"requires":""}
+	{ "$today", &getToday },
 #if ENABLE_NTP_SUNRISE_SUNSET
 	////cnstdetail:{"name":"$sunrise",
 	////cnstdetail:"title":"$sunrise",
@@ -448,6 +482,7 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",
 	//cnstdetail:"requires":""}
 	{ "$NTPOn", &getNTPOn },
+#endif	//ENABLE_NTP
 #ifdef ENABLE_DRIVER_BATTERY
 	//cnstdetail:{"name":"$batteryVoltage",
 	//cnstdetail:"title":"$batteryVoltage",
@@ -459,8 +494,7 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Battery driver level",
 	//cnstdetail:"requires":""}
 	{ "$batteryLevel", &getBatteryLevel },
-#endif
-#endif
+#endif	// ENABLE_DRIVER_BATTERY
 	//cnstdetail:{"name":"$uptime",
 	//cnstdetail:"title":"$uptime",
 	//cnstdetail:"descr":"Time since reboot in seconds",
@@ -509,7 +543,7 @@ const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 	int i;
 	var = g_constants;
 	for (i = 0; i < g_totalConstants; i++, var++) {
-		bool bAllowWildCard = strstr(var->constantName, "*");
+		bool bAllowWildCard = strstr(var->constantName, "*") != 0;
 		const char *ret = strCompareBound(s, var->constantName, stop, bAllowWildCard);
 		if (ret) {
 			*out = var->getValue(s);
@@ -592,8 +626,14 @@ const char *CMD_ExpandConstantString(const char *s, const char *stop, char *out,
 	ret = strCompareBound(s, "$autoexec.bat", stop, false);
 	if (ret) {
 		byte* data = LFS_ReadFile("autoexec.bat");
-		if (data == 0)
+		if (data == 0) {
+#if 1
+			strcpy_safe(out, "No autoexec.bat for this sample", outLen);
+			return ret;
+#else
 			return false;
+#endif
+		}
 		strcpy_safe(out, (char*)data, outLen);
 		free(data);
 		return ret;
@@ -643,35 +683,35 @@ const char *CMD_ExpandConstantString(const char *s, const char *stop, char *out,
 #endif
 
 const char *CMD_ExpandConstantToString(const char *constant, char *out, char *stop) {
-	int outLen;
-	float value;
-	int valueInt;
-	const char *after;
-	float delta;
+int outLen;
+float value;
+int valueInt;
+const char *after;
+float delta;
 
-	outLen = (stop - out) - 1;
+outLen = (stop - out) - 1;
 
-	after = CMD_ExpandConstant(constant, 0, &value);
+after = CMD_ExpandConstant(constant, 0, &value);
 #if WINDOWS
-	if (after == 0) {
-		after = CMD_ExpandConstantString(constant, 0, out, outLen);
-		return after;
-	}
-#endif
-	if (after == 0)
-		return 0;
-
-	valueInt = (int)value;
-	delta = valueInt - value;
-	if (delta < 0)
-		delta = -delta;
-	if (delta < 0.001f) {
-		snprintf(out, outLen, "%i", valueInt);
-	}
-	else {
-		snprintf(out, outLen, "%f", value);
-	}
+if (after == 0) {
+	after = CMD_ExpandConstantString(constant, 0, out, outLen);
 	return after;
+}
+#endif
+if (after == 0)
+return 0;
+
+valueInt = (int)value;
+delta = valueInt - value;
+if (delta < 0)
+	delta = -delta;
+if (delta < 0.001f) {
+	snprintf(out, outLen, "%i", valueInt);
+}
+else {
+	snprintf(out, outLen, "%f", value);
+}
+return after;
 }
 void CMD_ExpandConstantsWithinString(const char *in, char *out, int outLen) {
 	char *outStop;
@@ -739,6 +779,24 @@ char *CMD_ExpandingStrdup(const char *in) {
 	CMD_ExpandConstantsWithinString(in, ret, realLen);
 	return ret;
 }
+const char *CMD_FindMatchingBrace(const char *s) {
+	if (*s != '(')
+		return s;
+	int level = 1;
+	s++;
+	while (*s) {
+		if (*s == '(')
+			level++;
+		else if (*s == ')') {
+			level--;
+			if (level == 0)
+				return s;
+		}
+		s++;
+	}
+	return s;
+
+}
 float CMD_EvaluateExpression(const char *s, const char *stop) {
 	byte opCode;
 	const char *op;
@@ -757,11 +815,16 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 	while (stop > s && isspace(((int)stop[-1]))) {
 		stop--;
 	}
+	// cull whitespaces at the start
 	while (isspace(((int)*s))) {
 		s++;
 		if (s >= stop) {
 			return 0;
 		}
+	}
+	while (*s == '(' && stop[-1] == ')' && CMD_FindMatchingBrace(s) == (stop-1)) {
+		s++;
+		stop--;
 	}
 	if (g_expDebugBuffer == 0) {
 		g_expDebugBuffer = malloc(EXPRESSION_DEBUG_BUFFER_SIZE);
@@ -772,7 +835,6 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 		g_expDebugBuffer[idx] = 0;
 		ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_EvaluateExpression: will run '%s'", g_expDebugBuffer);
 	}
-
 	op = CMD_FindOperator(s, stop, &opCode);
 	if (op) {
 		const char *p2;

@@ -10,6 +10,8 @@
 #include "drv_local.h"
 #include "drv_uart.h"
 #include "../httpserver/new_http.h"
+#include "../quicktick.h"
+#include <math.h>
 
 /*
 PWM toggler provides you an abstraction layer over PWM channels 
@@ -63,14 +65,33 @@ To set startup value, use:
 toggler_set0 50
 toggler_enable0 1
 
+
+Test code for smooth transitions:
+
+// NOTE: Enable "show raw pwm controllers" in flags
+startDriver PWMToggler
+
+
+// assumes we have PWM on channel 1
+toggler_channel0 1 20
+toggler_name0 First
+
+// assumes we have PWM on channel 2
+toggler_channel1 2 20
+toggler_name1 Second
+
+
+
 */
 
 #define MAX_ONOFF_SLOTS 6
 
 static char *g_names[MAX_ONOFF_SLOTS] = { 0 };
 static int g_channels[MAX_ONOFF_SLOTS];
-static int g_values[MAX_ONOFF_SLOTS];
+static float g_values[MAX_ONOFF_SLOTS];
 static bool g_enabled[MAX_ONOFF_SLOTS];
+static float g_speeds[MAX_ONOFF_SLOTS];
+static float g_current[MAX_ONOFF_SLOTS];
 
 int parsePowerArgument(const char *s);
 
@@ -86,16 +107,22 @@ void publish_value(int index) {
 
 	MQTT_PublishMain_StringInt(topic, g_values[index], 0);
 }
+void setTargetChannel(int index) {
+
+}
 void apply(int index) {
 	if (index < 0)
 		return;
 	if (index >= MAX_ONOFF_SLOTS)
 		return;
-	if (g_enabled[index]) {
-		CHANNEL_Set(g_channels[index], g_values[index], 0);
-	}
-	else {
-		CHANNEL_Set(g_channels[index], 0, 0);
+	if (g_speeds[index] == 0) {
+		g_current[index] = g_values[index];
+		if (g_enabled[index]) {
+			CHANNEL_Set(g_channels[index], g_values[index], 0);
+		}
+		else {
+			CHANNEL_Set(g_channels[index], 0, 0);
+		}
 	}
 	publish_enableState(index);
 	publish_value(index);
@@ -206,10 +233,6 @@ commandResult_t Toggler_ChannelX(const void *context, const char *cmd, const cha
 	const char *indexStr;
 	int index;
 
-	if (args == 0 || *args == 0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "This command needs one argument");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
 
 	indexStr = cmd + strlen("toggler_channel");
 	index = atoi(indexStr);
@@ -218,7 +241,16 @@ commandResult_t Toggler_ChannelX(const void *context, const char *cmd, const cha
 		return CMD_RES_BAD_ARGUMENT;
 	}
 
-	g_channels[index] = atoi(args);
+	Tokenizer_TokenizeString(args, 0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1))
+	{
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	g_channels[index] = Tokenizer_GetArgInteger(0);
+	g_speeds[index] = Tokenizer_GetArgFloat(1);
 
 	return CMD_RES_OK;
 }
@@ -279,11 +311,44 @@ void DRV_Toggler_AddToHtmlPage(http_request_t *request) {
 		poststr(request, "<tr><td>");
 		hprintf255(request, "<form action=\"index\" id=\"form%i\">", i);
 		hprintf255(request, "<input type=\"range\" min=\"0\" max=\"%i\" name=\"togglerValue\" id=\"togglerValue\" value=\"%i\" onchange=\"this.form.submit()\">", 
-			maxValue, g_values[i]);
+			maxValue, (int)g_values[i]);
 		hprintf255(request, "<input type=\"hidden\" name=\"togglerValueID\" value=\"%i\">", i);
 		hprintf255(request, "<input type=\"submit\" class='disp-none' value=\"Set %s\"/></form>", name);
 		poststr(request, "</td></tr>");
+	}
+}
+void DRV_Toggler_QuickTick() {
+	int i;
 
+	for (i = 0; i < MAX_ONOFF_SLOTS; i++) {
+		if (g_channels[i] == -1)
+			continue;
+		if (g_speeds[i] == 0)
+			continue;
+		float tgVal;
+		if (g_enabled[i] == 0)
+			tgVal = 0;
+		else
+			tgVal = g_values[i];
+		// move g_current[i] towards g_values[i] but do not overshoot
+		float delta = tgVal - g_current[i];
+		float canMove = g_speeds[i] * g_deltaTimeMS * 0.001f;
+		float prev = g_current[i];
+		if (fabs(delta) <= canMove) {
+			g_current[i] = tgVal;
+		}
+		else {
+			g_current[i] += (delta > 0 ? canMove : -canMove);
+		}
+		if (prev != g_current[i]) {
+			//printf("Lerping %i, cur %f, tg %f\n", i, g_current[i], tgVal);
+			if (g_current[i]) {
+				CHANNEL_Set(g_channels[i], g_current[i], 0);
+			}
+			else {
+				CHANNEL_Set(g_channels[i], 0, 0);
+			}
+		}
 	}
 }
 void DRV_Toggler_AppendInformationToHTTPIndexPage(http_request_t* request) {
@@ -302,7 +367,7 @@ void DRV_Toggler_AppendInformationToHTTPIndexPage(http_request_t* request) {
 			st = "ON";
 		else
 			st = "OFF";
-		hprintf255(request, "slot %i-%s (target %i) has value %i, state %s", 
+		hprintf255(request, "slot %i-%s (target %i) has value %f, state %s", 
 			i, name, g_channels[i], g_values[i],st);
 		cnt++;
 	}

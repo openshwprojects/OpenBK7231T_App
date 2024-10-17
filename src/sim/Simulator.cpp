@@ -23,6 +23,13 @@
 #include "RecentList.h"
 
 
+// not the best solution... but I need LFS access
+extern "C" {
+	void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data);
+}
+
+
+
 CSimulator::CSimulator() {
 	currentlyEditingText = 0;
 	memset(bMouseButtonStates, 0, sizeof(bMouseButtonStates));
@@ -51,7 +58,21 @@ void CSimulator::setTool(Tool_Base *tb) {
 	activeTool->setSimulator(this);
 	activeTool->onBegin();
 }
+Coord camera(0, 0);
+float zoomFactor = 1.0f;
 
+Coord GetMousePosWorld() {
+	Coord r;
+	int mx, my;
+	//SDL_GetGlobalMouseState(&mx, &my);
+	SDL_GetMouseState(&mx, &my);
+	// No longer needed after resize event was introduced
+	// BUGFIX FOR MENUBAR OFFSET
+	//my += WINDOWS_MOUSE_MENUBAR_OFFSET;
+	r.set(mx, my);
+	r = camera + r / zoomFactor;
+	return r;
+}
 void CSimulator::drawWindow() {
 	char buffer[256];
 	const char *projectPathDisp = projectPath.c_str();
@@ -81,6 +102,12 @@ void CSimulator::drawWindow() {
 				}
 			}
 			else {
+				switch (Event.key.keysym.sym) {
+				case SDLK_LEFT: camera.addX(-10.0f); break;
+				case SDLK_RIGHT: camera.addX(10.0f); break;
+				case SDLK_UP: camera.addY(10.0f); break;
+				case SDLK_DOWN: camera.addY(-10.0f); break;
+				}
 				onKeyDown(Event.key.keysym.sym);
 			}
 		}
@@ -88,7 +115,7 @@ void CSimulator::drawWindow() {
 		{
 			//int x = Event.button.x;
 			//int y = Event.button.y;
-			Coord mouse = GetMousePos();
+			Coord mouse = GetMousePosWorld();
 			int which = Event.button.button;
 			if (activeTool) {
 				activeTool->onMouseDown(mouse, which);
@@ -99,7 +126,7 @@ void CSimulator::drawWindow() {
 		{
 			//int x = Event.button.x;
 			//int y = Event.button.y;
-			Coord mouse = GetMousePos();
+			Coord mouse = GetMousePosWorld();
 			int which = Event.button.button;
 			if (activeTool) {
 				activeTool->onMouseUp(mouse, which);
@@ -121,6 +148,23 @@ void CSimulator::drawWindow() {
 					activeTool->onTextInput(Event.text.text);
 				}
 			}
+		}
+		else if (Event.type == SDL_MOUSEWHEEL)
+		{
+			Coord mouse = GetMousePosWorld();
+
+			Coord worldBeforeZoom = camera + (mouse / zoomFactor);
+
+			if (Event.wheel.y > 0) {
+				zoomFactor *= 1.1f; 
+			}
+			else if (Event.wheel.y < 0) {
+				zoomFactor /= 1.1f;
+			}
+
+			Coord worldAfterZoom = camera + (mouse / zoomFactor);
+
+			camera += (worldBeforeZoom - worldAfterZoom);
 		}
 		else if (Event.type == SDL_QUIT)
 		{
@@ -149,9 +193,10 @@ void CSimulator::drawWindow() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0.0f, WinWidth, WinHeight, 0.0f, 0.0f, 1.0f);
+	glOrtho(0, WinWidth,  WinHeight, 0, 0.0f, 1.0f);
 
-	int h = 40;
+
+	float h = 40.0f;
 	h = drawText(NULL, 10, h, "OpenBeken Simulator");
 	if (sim != 0) {
 		h = sim->drawTextStats(h);
@@ -166,16 +211,30 @@ void CSimulator::drawWindow() {
 	glColor3f(1.0f, 0.0f, 0.0f);
 	drawText(&g_style_text_red, 260, 40, "WARNING: The following sketch may not be a correct circuit schematic. Connections in this simulator are simplified.");
 
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(camera.getX(), camera.getX() + WinWidth / zoomFactor,
+		camera.getY() + WinHeight / zoomFactor, camera.getY(), 0.0f, 1.0f);
+
 	glColor3f(0.7f, 0.7f, 0.7f);
 	glLineWidth(0.25f);
 	glBegin(GL_LINES);
-	for (int i = 0; i < WinWidth; i += gridSize) {
-		glVertex2f(i, 0);
-		glVertex2f(i, WinHeight);
+	float minX = camera.getX();
+	float maxX = camera.getX() + WinWidth / zoomFactor;
+	float minY = camera.getY();
+	float maxY = camera.getY() + WinHeight / zoomFactor;
+
+	float startX = minX - fmod(minX, gridSize);
+	float startY = minY - fmod(minY, gridSize);
+
+	for (float x = startX; x <= maxX; x += gridSize) {
+		glVertex2f(x, minY);
+		glVertex2f(x, maxY);
 	}
-	for (int i = 0; i < WinHeight; i += gridSize) {
-		glVertex2f(0, i);
-		glVertex2f(WinWidth, i);
+
+	for (float y = startY; y <= maxY; y += gridSize) {
+		glVertex2f(minX, y);
+		glVertex2f(maxX, y);
 	}
 	glEnd();
 	glColor3f(1, 1, 0);
@@ -234,7 +293,7 @@ void CSimulator::destroyObject(CShape *s) {
 	sim->destroyObject(s);
 }
 class CShape *CSimulator::getShapeUnderCursor(bool bIncludeDeepText) {
-	Coord p = GetMousePos();
+	Coord p = GetMousePosWorld();
 	return sim->findShapeByBoundsPoint(p,bIncludeDeepText);
 }
 bool CSimulator::createSimulation(bool bDemo) {
@@ -260,6 +319,23 @@ bool CSimulator::beginAddingPrefab(const char *s) {
 	}
 	newShape->setPosition(80, 80);
 	sim->addObject(newShape);
+	return false;
+}
+void CSimulator::formatLFS() {
+	CMD_ExecuteCommand("lfs_format", 0);
+}
+bool CSimulator::setAutoexecBat(const char *s) {
+	if (FS_Exists(s) == false) {
+		printf("CSimulator::setAutoexecBat: %s does not exist\n", s);
+		return true;
+	}
+	char *data = FS_ReadTextFile(s);
+	if (data == 0) {
+		printf("CSimulator::setAutoexecBat: cannot open %s\n", s);
+		return true;
+	}
+	Test_FakeHTTPClientPacket_POST("api/lfs/autoexec.bat", data);
+	free(data);
 	return false;
 }
 bool CSimulator::loadSimulation(const char *s) {

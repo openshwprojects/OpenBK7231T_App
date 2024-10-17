@@ -1,3 +1,6 @@
+#ifndef __SELFTEST_LOCAL_H__
+#define __SELFTEST_LOCAL_H__
+
 #ifdef WINDOWS
 
 #include "../new_common.h"
@@ -14,9 +17,11 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 	SelfTest_Failed(__FILE__, __FUNCTION__, __LINE__, #expr)
 
 #define SELFTEST_ASSERT_FLOATCOMPARE(exp, res) SELFTEST_ASSERT(Float_Equals(exp, res));
+#define SELFTEST_ASSERT_INTCOMPARE(exp, res) SELFTEST_ASSERT((exp==res));
 #define SELFTEST_ASSERT_FLOATCOMPAREEPSILON(exp, res, eps) SELFTEST_ASSERT(Float_EqualsEpsilon(exp, res, eps));
 #define SELFTEST_ASSERT_EXPRESSION(exp, res) SELFTEST_ASSERT(Float_Equals(CMD_EvaluateExpression(exp,0), res));
-#define SELFTEST_ASSERT_CHANNEL(channelIndex, res) SELFTEST_ASSERT(Float_Equals(CHANNEL_Get(channelIndex), res));
+// currently, channels are integers
+#define SELFTEST_ASSERT_CHANNEL(channelIndex, res) SELFTEST_ASSERT(CHANNEL_Get(channelIndex) == res);
 #define SELFTEST_ASSERT_CHANNELEPSILON(channelIndex, res, marg) SELFTEST_ASSERT(Float_EqualsEpsilon(CHANNEL_Get(channelIndex), res, marg));
 #define SELFTEST_ASSERT_CHANNELTYPE(channelIndex, res) SELFTEST_ASSERT(CHANNEL_GetType(channelIndex)==res);
 #define SELFTEST_ASSERT_PIN_BOOLEAN(pinIndex, res) SELFTEST_ASSERT((SIM_GetSimulatedPinValue(pinIndex)== res));
@@ -24,6 +29,7 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 #define SELFTEST_ASSERT_ARGUMENT_INTEGER(argumentIndex, res) SELFTEST_ASSERT((Tokenizer_GetArgInteger(argumentIndex)== res));
 #define SELFTEST_ASSERT_ARGUMENTS_COUNT(wantedCount) SELFTEST_ASSERT((Tokenizer_GetArgsCount()==wantedCount));
 #define SELFTEST_ASSERT_JSON_VALUE_STRING(obj, varName, res) SELFTEST_ASSERT(!strcmp(Test_GetJSONValue_String(varName,obj), res));
+#define SELFTEST_ASSERT_JSON_VALUE_STRING_NOT_PRESENT(obj, varName) SELFTEST_ASSERT((*Test_GetJSONValue_String(varName,obj))==0);
 #define SELFTEST_ASSERT_JSON_VALUE_EXISTS(obj, varName) SELFTEST_ASSERT(Test_GetJSONValue_Generic(varName,obj));
 #define SELFTEST_ASSERT_JSON_VALUE_INTEGER(obj, varName, res) SELFTEST_ASSERT((Test_GetJSONValue_Integer(varName,obj) == res));
 #define SELFTEST_ASSERT_JSON_VALUE_INTEGER_NESTED2(par1, par2, varName, res) SELFTEST_ASSERT((Test_GetJSONValue_Integer_Nested2(par1, par2,varName) == res));
@@ -50,12 +56,17 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 #define SELFTEST_ASSERT_HAS_UART_EMPTY() SELFTEST_ASSERT(SIM_UART_GetDataSize()==0);
 
 //#define FLOAT_EQUALS (a,b) (fabs(a-b)<0.001f)
+inline float myFabs(float f) {
+	if (f < 0)
+		return -f;
+	return f;
+}
 inline bool Float_Equals(float a, float b) {
-	float res = fabs(a - b);
+	float res = myFabs(a - b);
 	return res < 0.001f;
 }
 inline bool Float_EqualsEpsilon(float a, float b, float epsilon) {
-	float res = fabs(a - b);
+	float res = myFabs(a - b);
 	return res < epsilon;
 }
 
@@ -86,6 +97,8 @@ void Test_ClockEvents();
 void Test_Commands_Channels();
 void Test_LEDDriver();
 void Test_TuyaMCU_Basic();
+void Test_TuyaMCU_Boolean();
+void Test_TuyaMCU_DP22();
 void Test_TuyaMCU_Mult();
 void Test_TuyaMCU_RawAccess();
 void Test_Command_If();
@@ -115,6 +128,7 @@ void Test_MapRanges();
 void Test_Demo_MapFanSpeedToRelays();
 void Test_Demo_FanCyclingRelays();
 void Test_Role_ToggleAll();
+void Test_Demo_SignAndValue();
 void Test_Demo_SimpleShuttersScript();
 void Test_Commands_Generic();
 void Test_ChangeHandlers_MQTT();
@@ -128,17 +142,29 @@ void Test_Role_ToggleAll_2();
 void Test_WaitFor();
 void Test_IF_Inside_Backlog();
 void Test_MQTT_Get_LED_EnableAll();
+void Test_MQTT_Get_Relay();
 void Test_TuyaMCU_BatteryPowered();
 void Test_ChargeLimitDriver();
 void Test_WS2812B();
 void Test_DoorSensor();
+void Test_Enums();
+void Test_Expressions_RunTests_Basic();
+void Test_Expressions_RunTests_Braces();
+void Test_ButtonEvents();
+void Test_Http();
 
 void Test_GetJSONValue_Setup(const char *text);
 void Test_FakeHTTPClientPacket_GET(const char *tg);
 void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data);
 void Test_FakeHTTPClientPacket_POST_withJSONReply(const char *tg, const char *data);
-void Test_FakeHTTPClientPacket_JSON(const char *tg);
+void Test_FakeHTTPClientPacket_JSON(const char *tg, ...);
 const char *Test_GetLastHTMLReply();
+
+bool SIM_HasHTTPTemperature();
+bool SIM_HasHTTPRGB();
+bool SIM_HasHTTP_LED_Toggler(bool bIsNowOn);
+bool SIM_HasHTTP_Active_RGB();
+bool SIM_HasHTTPDimmer();
 
 // TODO: move elsewhere?
 void Sim_RunMiliseconds(int ms, bool bApplyRealtimeWait);
@@ -178,4 +204,6 @@ bool SIM_UART_ExpectAndConsumeHByte(byte b);
 bool SIM_UART_ExpectAndConsumeHexStr(const char *hexString);
 void SIM_ClearUART();
 
+
 #endif
+#endif // __SELFTEST_LOCAL_H__
