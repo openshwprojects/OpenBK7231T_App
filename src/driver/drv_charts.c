@@ -314,7 +314,7 @@ chart_t *Chart_Create(int maxSamples, int numVars, int numAxes) {
 	return s;
 }
 void Chart_SetAxis(chart_t *s, int idx, const char *name, int flags, const char *label) {
-	if (!s) {
+	if (!s || idx >= s->numAxes) {
 		return;
 	}
 	s->axes[idx].name = strdup(name);
@@ -322,16 +322,18 @@ void Chart_SetAxis(chart_t *s, int idx, const char *name, int flags, const char 
 	s->axes[idx].flags = flags;
 }
 void Chart_SetVar(chart_t *s, int idx, const char *title, const char *axis) {
-	if (!s) {
+	if (!s || idx >= s->numVars) {
 		return;
 	}
 	s->vars[idx].title = strdup(title);
 	s->vars[idx].axis = strdup(axis);
 }
 void Chart_SetSample(chart_t *s, int idx, float value) {
-	if (!s) {
+	if (!s || idx >= s->numVars) {
+	bk_printf("DEBUG CHARTS: ERROR - Chart_SetSample ixd=%i /  s->numVars=%i / value=%f\n",idx, s->numVars,value); 
 		return;
 	}
+	bk_printf("DEBUG CHARTS: OK - Chart_SetSample ixd=%i /  s->numVars=%i  / value=%f\n",idx, s->numVars,value); 
 	s->vars[idx].samples[s->nextSample] = value;
 }
 void Chart_AddTime(chart_t *s, time_t time) {
@@ -426,26 +428,19 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 	}
 	poststr(request, "<script>");
 	poststr(request, "function cha() {");
+	poststr(request, "var labels =document.getElementById('chartlabels').value.split(/\s*,\s*/).map(Number).map((x)=>new Date(x * 1000).toLocaleTimeString());"); // we transmitted only timestamps, let Javascript do the work to convert them ;-)
+	for (int i = 0; i < s->numVars; i++) {
+		hprintf255(request, "var data%i = document.getElementById('chartdata%i').value.split(/\s*,\s*/).map(Number);",i,i);	
+	}
+	poststr(request, "if (! window.obkChartInstance) {");
 	poststr(request, "console.log('Initializing chart');");
-	poststr(request, "if (window.obkChartInstance) {");
-	poststr(request, "    window.obkChartInstance.destroy();");
-	poststr(request, "}");
 	poststr(request, "var ctx = document.getElementById('obkChart');");
 	poststr(request, "if (ctx.style.display=='none') ctx.style.display='block';");
 	poststr(request, "ctx =ctx.getContext('2d');");
-
-/*
-	poststr(request, "var labels = [");
-	request->userCounter = 0;
-	Chart_Iterate(s, 0, Chart_DisplayLabel, request);
-	poststr(request, "];");
-*/
-	poststr(request, "var labels=document.getElementById('chartlabels').value.split(/\s*,\s*/).map(Number);");
-	
 	poststr(request, "window.obkChartInstance = new Chart(ctx, {");
 	poststr(request, "    type: 'line',");
 	poststr(request, "    data: {");
-	poststr(request, "        labels: labels.map((x)=>new Date(x * 1000).toLocaleTimeString()),");  	// we transmitted only timestamps, let Javascript do the work to convert them ;-)
+	poststr(request, "        labels: labels,");
 	poststr(request, "        datasets: [");
 	for (int i = 0; i < s->numVars; i++) {
 		if (i) {
@@ -453,14 +448,7 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 		}
 		poststr(request, "{");
 		hprintf255(request, "            label: '%s',", s->vars[i].title);
-/*
-		poststr(request, "            data: [");
-		request->userCounter = 0;
-		Chart_Iterate(s, i,  Chart_DisplayData, request);
-		poststr(request, "],");
-*/
-
-		hprintf255(request, "            data: document.getElementById('chartdata%i').value.split(/\s*,\s*/).map(Number),",i);
+		hprintf255(request, "            data: data%i,",i);
 		if (i == 2) {
 			poststr(request, "                borderColor: 'rgba(155, 33, 55, 1)',");
 		}
@@ -506,9 +494,17 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 	}
 	poststr(request, "        }");
 	poststr(request, "    }");
-	poststr(request, "});");
+	poststr(request, "});\n");
 	poststr(request, "Chart.defaults.color = '#099'; ");  // Issue #1375, add a default color to improve readability (applies to: dataset names, axis ticks, color for axes title, (use color: '#099')
-	poststr(request, "}");
+	poststr(request, "}\n");
+	poststr(request, "else {\n");
+	poststr(request, "console.log('Updating chart');\n");
+	poststr(request, "	window.obkChartInstance.data.labels=labels;\n");
+	for (int i = 0; i < s->numVars; i++) {
+		hprintf255(request, "	window.obkChartInstance.data.datasets[%i].data=data%i;\n",i,i);	
+	}
+	poststr(request, "	window.obkChartInstance.update();\n");
+	poststr(request, "}\n}");
 	poststr(request, "</script>");
 	poststr(request, "<style onload='cha();'></style>");
 
@@ -593,6 +589,11 @@ static commandResult_t CMD_Chart_SetVar(const void *context, const char *cmd, co
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	int varIndex = Tokenizer_GetArgInteger(0);
+	if (varIndex >= g_chart->numVars){
+//		ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set var %i, only %i vars defined (starting with 0)!", varIndex, g_chart->numVars);
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set var %i, only var %s%i defined!", varIndex, g_chart->numVars>1? "0-":"",g_chart->numVars-1);
+		return CMD_RES_BAD_ARGUMENT;
+	}
 	const char *displayName = Tokenizer_GetArg(1);
 	const char *axis = Tokenizer_GetArg(2);
 
@@ -607,6 +608,11 @@ static commandResult_t CMD_Chart_SetAxis(const void *context, const char *cmd, c
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	int axisIndex = Tokenizer_GetArgInteger(0);
+	if (axisIndex >= g_chart->numAxes){
+//		ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set axis %i, only %i axes defined (starting with 0)!", axisIndex, g_chart->numAxes);
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set axis %i, only axis %s%i defined!", axisIndex, g_chart->numAxes>1? "0-":"", g_chart->numAxes-1);
+		return CMD_RES_BAD_ARGUMENT;
+	}
 	const char *name = Tokenizer_GetArg(1);
 	int cflags = Tokenizer_GetArgInteger(2);
 	const char *label = Tokenizer_GetArg(3);
@@ -623,6 +629,12 @@ static commandResult_t CMD_Chart_AddNow(const void *context, const char *cmd, co
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	for (int i = 0; i < cnt; i++) {
+		if (i >= g_chart->numVars){
+//			ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set value for var %i, only %i vars defined (starting with 0)!", i, g_chart->numVars);
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set sample value for var %i, only var %s%i defined!", i, g_chart->numVars>1? "0-":"",g_chart->numVars-1);
+		return CMD_RES_BAD_ARGUMENT;
+		}
+
 		float f = Tokenizer_GetArgFloat(i);
 		Chart_SetSample(g_chart, i, f);
 	}
@@ -640,6 +652,12 @@ static commandResult_t CMD_Chart_Add(const void *context, const char *cmd, const
 	int time = Tokenizer_GetArgInteger(0);
 	for (int i = 1; i < cnt; i++) {
 		float f = Tokenizer_GetArgFloat(i);
+		if (i > g_chart->numVars){
+//			ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set value %f for var %i, only %i vars defined (starting with 0)!",f, i-1, g_chart->numVars);
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set value %f for var %i, only var %s%i defined!",f, i-1,  g_chart->numVars>1? "0-":"",g_chart->numVars-1);
+			bk_printf("CHARTS: Can't set value %f for var %i, only var %s%i defined!\n",f, i-1,  g_chart->numVars>1? "0-":"",g_chart->numVars-1);
+		return CMD_RES_BAD_ARGUMENT;
+		}
 		Chart_SetSample(g_chart, i - 1, f);
 	}
 	Chart_AddTime(g_chart, time);
