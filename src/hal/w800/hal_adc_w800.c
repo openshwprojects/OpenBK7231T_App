@@ -42,7 +42,7 @@ int HAL_ADC_Read(int pinNumber)
 {
 	return adc_get_inputVolt(gpioToAdc(pinNumber));
 }
-
+// cpu internal temperature
 float HAL_ADC_Temp(void)
 {
 	wm_adc_config(0);
