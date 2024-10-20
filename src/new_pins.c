@@ -20,6 +20,8 @@
 #ifdef PLATFORM_BEKEN
 #include <gpio_pub.h>
 #include "driver/drv_ir.h"
+#elif PLATFORM_ESPIDF
+#include "esp_sleep.h"
 #endif
 
 
@@ -201,8 +203,19 @@ void PINS_BeginDeepSleepWithPinWakeUp(unsigned int wakeUpTime) {
 		bk_enter_deep_sleep(g_gpio_index_map[0], g_gpio_edge_map[0]);
 	}
 #endif
-#else
-
+#elif PLATFORM_ESPIDF
+//	if(wakeUpTime)
+//	{
+//		esp_sleep_enable_timer_wakeup(timeMS * 1000000);
+//	}
+//#if SOC_GPIO_SUPPORT_DEEPSLEEP_WAKEUP
+//	esp_deep_sleep_start();
+//#else
+//	addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "%s, doesn't support gpio deep sleep, entering light sleep.", PLATFORM_MCU_NAME);
+//	delay_ms(10);
+//	esp_sleep_enable_gpio_wakeup();
+//	esp_light_sleep_start();
+//#endif
 #endif
 }
 
@@ -267,7 +280,7 @@ void PIN_SetupPins() {
 	}
 #endif
 #endif
-#if defined(PLATFORM_BEKEN) || defined(PLATFORM_BL602) || defined(PLATFORM_W600) || defined(WINDOWS)
+#ifdef ENABLE_DRIVER_DHT
 	// TODO: better place to call?
 	DHT_OnPinsConfigChanged();
 #endif
@@ -989,7 +1002,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 	}
 
 	if (bDHTChange) {
-#if defined(PLATFORM_BEKEN) || defined(PLATFORM_BL602) || defined(PLATFORM_W600) || defined(WINDOWS)
+#ifdef ENABLE_DRIVER_DHT
 		// TODO: better place to call?
 		DHT_OnPinsConfigChanged();
 #endif

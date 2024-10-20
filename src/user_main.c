@@ -56,8 +56,9 @@ void bg_register_irda_check_func(FUNCPTR func);
 #elif PLATFORM_LN882H
 #include "hal/hal_wdt.h"
 #include "hal/hal_gpio.h"
+#elif PLATFORM_ESPIDF
+#include "esp_timer.h"
 #endif
-
 
 int g_secondsElapsed = 0;
 // open access point after this number of seconds
@@ -201,7 +202,7 @@ void extended_app_waiting_for_launch2(void) {
 #endif
 
 
-#if defined(PLATFORM_LN882H)
+#if defined(PLATFORM_LN882H) || defined(PLATFORM_ESPIDF)
 
 int LWIP_GetMaxSockets() {
 	return 0;
@@ -211,9 +212,7 @@ int LWIP_GetActiveSockets() {
 }
 #endif
 
-#if defined(PLATFORM_BL602) || defined(PLATFORM_W800) || defined(PLATFORM_W600)|| defined(PLATFORM_LN882H)
-
-
+#if defined(PLATFORM_BL602) || defined(PLATFORM_W800) || defined(PLATFORM_W600)|| defined(PLATFORM_LN882H) || defined(PLATFORM_ESPIDF)
 
 OSStatus rtos_create_thread(beken_thread_t* thread,
 	uint8_t priority, const char* name,
@@ -525,7 +524,7 @@ bool Main_HasFastConnect() {
 	}
 	return false;
 }
-#if PLATFORM_LN882H
+#if PLATFORM_LN882H || PLATFORM_ESPIDF
 // Quick hack to display LN-only temperature,
 // we may improve it in the future
 extern float g_wifi_temperature;
@@ -593,7 +592,7 @@ void Main_OnEverySecond()
 	LED_RunOnEverySecond();
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602)
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF)
 	UART_RunEverySecond();
 #endif
 #endif
@@ -904,6 +903,8 @@ void QuickTick(void* param)
 
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	g_time = rtos_get_time();
+#elif defined (PLATFORM_ESPIDF)
+	g_time = esp_timer_get_time() / 1000;
 #else
 	g_time += QUICK_TMR_DURATION;
 #endif
@@ -915,7 +916,7 @@ void QuickTick(void* param)
 	g_last_time = g_time;
 
 
-#if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602) || (defined PLATFORM_LN882H)
+#if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602) || (defined PLATFORM_LN882H) || (defined PLATFORM_ESPIDF)
 	SVM_RunThreads(g_deltaTimeMS);
 #endif
 	RepeatingEvents_RunUpdate(g_deltaTimeMS * 0.001f);
@@ -966,7 +967,7 @@ void QuickTick(void* param)
 // this is the bit which runs the quick tick timer
 #if WINDOWS
 
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800
 void quick_timer_thread(void* param)
 {
 	while (1) {
@@ -974,14 +975,8 @@ void quick_timer_thread(void* param)
 		QuickTick(0);
 	}
 }
-#elif PLATFORM_W600 || PLATFORM_W800
-void quick_timer_thread(void* param)
-{
-	while (1) {
-		vTaskDelay(QUICK_TMR_DURATION);
-		QuickTick(0);
-	}
-}
+#elif PLATFORM_ESPIDF
+esp_timer_handle_t g_quick_timer;
 #elif PLATFORM_XR809 || PLATFORM_LN882H
 OS_Timer_t g_quick_timer;
 #else
@@ -991,12 +986,18 @@ void QuickTick_StartThread(void)
 {
 #if WINDOWS
 
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800
 
 	xTaskCreate(quick_timer_thread, "quick", 1024, NULL, 15, NULL);
-#elif PLATFORM_W600 || PLATFORM_W800
+#elif PLATFORM_ESPIDF
+	const esp_timer_create_args_t g_quick_timer_args =
+	{
+			.callback = &QuickTick,
+			.name = "quick"
+	};
 
-	xTaskCreate(quick_timer_thread, "quick", 1024, NULL, 15, NULL);
+	esp_timer_create(&g_quick_timer_args, &g_quick_timer);
+	esp_timer_start_periodic(g_quick_timer, QUICK_TMR_DURATION * 1000);
 #elif PLATFORM_XR809 || PLATFORM_LN882H
 
 	OS_TimerSetInvalid(&g_quick_timer);

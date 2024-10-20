@@ -89,6 +89,22 @@ int g_chosenUART = BK_UART_1;
 //int g_fd;
 uint8_t g_id = 1;
 int fd_console = -1;
+#elif PLATFORM_ESPIDF
+#include "driver/uart.h"
+#include "driver/gpio.h"
+#ifdef CONFIG_IDF_TARGET_ESP32C6
+#define RX1_PIN GPIO_NUM_7
+#define TX1_PIN GPIO_NUM_5
+#elif CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C2
+#define RX1_PIN GPIO_NUM_6
+#define TX1_PIN GPIO_NUM_7
+#else
+#define RX1_PIN UART_PIN_NO_CHANGE
+#define TX1_PIN UART_PIN_NO_CHANGE
+#endif
+uart_port_t uartnum = UART_NUM_0;
+static QueueHandle_t uart_queue;
+uint8_t* data = NULL;
 #else
 #endif
 
@@ -184,6 +200,44 @@ static void console_cb_read(int fd, void *param)
 }
 #endif
 
+#ifdef PLATFORM_ESPIDF
+
+static void uart_event_task(void* pvParameters)
+{
+    uart_event_t event;
+    for(;;)
+    {
+        if(xQueueReceive(uart_queue, (void*)&event, (TickType_t)portMAX_DELAY))
+        {
+            bzero(data, 256);
+            switch(event.type)
+            {
+            case UART_DATA:
+                uart_read_bytes(uartnum, data, event.size, portMAX_DELAY);
+                for(int i = 0; i < event.size; i++)
+                {
+                    UART_AppendByteToReceiveRingBuffer(data[i]);
+                    vTaskDelay(3);
+                }
+                break;
+            case UART_BUFFER_FULL:
+            case UART_FIFO_OVF:
+                addLogAdv(LOG_WARN, LOG_FEATURE_CMD, "%s", event.type == UART_BUFFER_FULL ? "UART_BUFFER_FULL" : "UART_FIFO_OVF");
+                uart_flush_input(uartnum);
+                xQueueReset(uart_queue);
+                break;
+            default:
+                break;
+            }
+        }
+    }
+    free(data);
+    data = NULL;
+    vTaskDelete(NULL);
+}
+
+#endif
+
 void UART_SendByte(byte b) {
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
     // BK_UART_1 is defined to 0
@@ -199,6 +253,8 @@ void UART_SendByte(byte b) {
 #elif PLATFORM_BL602
     aos_write(fd_console, &b, 1);
 	//bl_uart_data_send(g_id, b);
+#elif PLATFORM_ESPIDF
+    uart_write_bytes(uartnum, &b, 1);
 #endif
 }
 commandResult_t CMD_UART_Send_Hex(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -278,54 +334,101 @@ void UART_ResetForSimulator() {
 	g_uart_init_counter = 0;
 }
 
-int UART_InitUART(int baud, int parity) {
+int UART_InitUART(int baud, int parity)
+{
     g_uart_init_counter++;
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
     bk_uart_config_t config;
 
     config.baud_rate = baud;
     config.data_width = 0x03;
-	config.parity = parity;    //0:no parity,1:odd,2:even
-	config.stop_bits = 0;   //0:1bit,1:2bit
-	config.flow_control = 0;   //FLOW_CTRL_DISABLED
+    config.parity = parity;    //0:no parity,1:odd,2:even
+    config.stop_bits = 0;   //0:1bit,1:2bit
+    config.flow_control = 0;   //FLOW_CTRL_DISABLED
     config.flags = 0;
 
 
     // BK_UART_1 is defined to 0
-    if (CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART)) {
+    if(CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART))
+    {
         g_chosenUART = BK_UART_2;
-	}
-	else {
+    }
+    else
+    {
         g_chosenUART = BK_UART_1;
     }
     bk_uart_initialize(g_chosenUART, &config, NULL);
-	bk_uart_set_rx_callback(g_chosenUART, test_ty_read_uart_data_to_buffer, NULL);
+    bk_uart_set_rx_callback(g_chosenUART, test_ty_read_uart_data_to_buffer, NULL);
 #elif PLATFORM_BL602
-    if (fd_console < 0) {
-		//uint8_t tx_pin = 16;
-		//uint8_t rx_pin = 7;
-		//bl_uart_init(g_id, tx_pin, rx_pin, 0, 0, baud);
-		//g_fd = aos_open(name, 0);
-		//bl_uart_int_rx_enable(1);
-		//bl_irq_register(UART1_IRQn, MY_UART1_IRQHandler);
-		//bl_irq_enable(UART1_IRQn);
-		//vfs_uart_init_simple_mode(0, 7, 16, baud, "/dev/ttyS0");
+    if(fd_console < 0)
+    {
+        //uint8_t tx_pin = 16;
+        //uint8_t rx_pin = 7;
+        //bl_uart_init(g_id, tx_pin, rx_pin, 0, 0, baud);
+        //g_fd = aos_open(name, 0);
+        //bl_uart_int_rx_enable(1);
+        //bl_irq_register(UART1_IRQn, MY_UART1_IRQHandler);
+        //bl_irq_enable(UART1_IRQn);
+        //vfs_uart_init_simple_mode(0, 7, 16, baud, "/dev/ttyS0");
 
-        if (CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART)) {
+        if(CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART))
+        {
             fd_console = aos_open("/dev/ttyS1", 0);
-		}
-		else {
+        }
+        else
+        {
             fd_console = aos_open("/dev/ttyS0", 0);
         }
-        if (fd_console >= 0) {
+        if(fd_console >= 0)
+        {
             aos_ioctl(fd_console, IOCTL_UART_IOC_BAUD_MODE, baud);
-			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Init CLI with event Driven\r\n");
+            addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Init CLI with event Driven\r\n");
             aos_cli_init(0);
-			aos_poll_read_fd(fd_console, console_cb_read, (void*)0x12345678);
-		}
-		else {
-			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "failed CLI with event Driven\r\n");
+            aos_poll_read_fd(fd_console, console_cb_read, (void*)0x12345678);
         }
+        else
+        {
+            addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "failed CLI with event Driven\r\n");
+        }
+    }
+#elif PLATFORM_ESPIDF
+    if(CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART))
+    {
+        uartnum = UART_NUM_1;
+        esp_log_level_set("*", ESP_LOG_INFO);
+    }
+    else
+    {
+        uartnum = UART_NUM_0;
+        esp_log_level_set("*", ESP_LOG_NONE);
+    }
+    if(uart_is_driver_installed(uartnum))
+    {
+        uart_driver_delete(uartnum);
+    }
+    uart_config_t uart_config =
+    {
+        .baud_rate = baud,
+        .data_bits = UART_DATA_8_BITS,
+        .parity = parity > 0 ? parity + 1 : parity,
+        .stop_bits = UART_STOP_BITS_1,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+        .source_clk = UART_SCLK_DEFAULT,
+    };
+    uart_driver_install(uartnum, 256, 0, 20, &uart_queue, 0);
+    uart_param_config(uartnum, &uart_config);
+    if(uartnum == UART_NUM_0)
+    {
+        uart_set_pin(uartnum, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+    }
+    else
+    {
+        uart_set_pin(uartnum, TX1_PIN, RX1_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+    }
+    if(data == NULL)
+    {
+        data = (uint8_t*)malloc(256);
+        xTaskCreate(uart_event_task, "uart_event_task", 1024, NULL, 16, NULL);
     }
 #endif
     return g_uart_init_counter;
@@ -373,9 +476,10 @@ commandResult_t CMD_UART_Init(const void *context, const char *cmd, const char *
 
     baud = Tokenizer_GetArgInteger(0);
 
+    UART_InitReceiveRingBuffer(512);
+
     UART_InitUART(baud, 0);
     g_uart_manualInitCounter = g_uart_init_counter;
-    UART_InitReceiveRingBuffer(512);
 
     return CMD_RES_OK;
 }
