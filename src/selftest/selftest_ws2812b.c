@@ -108,6 +108,15 @@ void Test_WS2812B() {
 	for (int i = 0; i < 6; i++) {
 		SELFTEST_ASSERT_PIXEL(i, 55, 0, 55);
 	}
+	CMD_ExecuteCommand("led_dimmer 100", 0);
+	Sim_RunFrames(5, false);
+	CMD_ExecuteCommand("Anim 1", 0);
+	Sim_RunFrames(5, false);
+	CMD_ExecuteCommand("led_enableAll 0", 0);
+	Sim_RunFrames(5, false);
+	for (int i = 0; i < 6; i++) {
+		SELFTEST_ASSERT_PIXEL(i, 0, 0, 0);
+	}
 }
 
 

@@ -428,7 +428,7 @@ int UART_InitUART(int baud, int parity)
     if(data == NULL)
     {
         data = (uint8_t*)malloc(256);
-        xTaskCreate(uart_event_task, "uart_event_task", 1024, NULL, tskIDLE_PRIORITY, NULL);
+        xTaskCreate(uart_event_task, "uart_event_task", 1024, NULL, 16, NULL);
     }
 #endif
     return g_uart_init_counter;

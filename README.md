@@ -8,7 +8,7 @@ This repository is named "OpenBK7231T_App", but now it's a multiplatform app, su
 - T34 ([T34 is based on BK7231N](https://developer.tuya.com/en/docs/iot/t34-module-datasheet?id=Ka0l4h5zvg6j8)), see [flashing trick](https://www.elektroda.com/rtvforum/topic4036975.html)
 - BL2028N ([BL2028N is a Belon version of BK7231N](https://www.elektroda.com/rtvforum/viewtopic.php?p=20262533#20262533))
 - [XR809](https://www.elektroda.com/rtvforum/topic3806769.html) ([XR3](https://developer.tuya.com/en/docs/iot/xr3-datasheet?id=K98s9168qi49g), etc)
-- [BL602](https://www.elektroda.com/rtvforum/topic3889041.html) ([SM-028_V1.3 etc](https://www.elektroda.com/rtvforum/topic3945435.html)), see also [BL602 flash OBK via OTA tutorial](https://www.elektroda.com/rtvforum/topic4050297.html)
+- [BL602](https://www.elektroda.com/rtvforum/topic3889041.html) ([SM-028_V1.3 etc](https://www.elektroda.com/rtvforum/topic3945435.html)), see also [BL602 flash OBK via OTA tutorial](https://www.elektroda.com/rtvforum/topic4050297.html) (Magic Home devices only)
 - [LF686](https://www.leapfive.com/wp-content/uploads/2020/09/LF686-Datasheet.pdf) (flash it [as BL602](https://www.elektroda.com/rtvforum/topic4024917.html))
 - W800 (W800-C400, WinnerMicro WiFi & Bluetooth), W801
 - [W600](https://www.elektroda.com/rtvforum/viewtopic.php?p=20252619#20252619) (WinnerMicro chip), W601 ([WIS600, ESP-01W](https://www.elektroda.com/rtvforum/topic3950611.html), [TW-02](https://www.elektroda.com/rtvforum/viewtopic.php?p=20239610#20239610), [TW-03](https://www.elektroda.com/rtvforum/topic3929601.html), etc)
@@ -82,6 +82,7 @@ OpenBeken supports [online builds](https://www.elektroda.com/rtvforum/viewtopic.
 - how to [create custom obk driver](https://www.elektroda.com/rtvforum/topic4056286.html)
 - how to [analyze unknown protocol with Salae logic analyzer](https://www.elektroda.com/rtvforum/topic4035491.html)
 - obk [simulator short presentation](https://www.elektroda.com/rtvforum/topic4046056.html)
+- how to [make changes to SDK during (automated) build process](https://www.elektroda.com/rtvforum/topic4081556.html)
 
 # Flashing
 
