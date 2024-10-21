@@ -381,8 +381,8 @@ int DS1820_DiscoverFamily() {
 		DS1820_LOG(INFO, "Discover Family - discovered %x", family);
 		return 1;
 	} else {
-		DS1820_LOG(DEBUG, "Discover Family %x not supported", family);
-		return 0;
+		DS1820_LOG(DEBUG, "Discover Family %x not supported (read ROM: %x %x %x %x %x %x %x %x)", family,ROM[0], ROM[1], ROM[2], ROM[3], ROM[4], ROM[5], ROM[6], ROM[7]);
+		return 0; 
 	}
 }
 
@@ -481,9 +481,10 @@ void DS1820_OnEverySecond() {
 				if (ds18_family == 0) {
 					int discovered = DS1820_DiscoverFamily();
 					if (!discovered) {
-						lastconv=-1;	// reset lastconv to avoid immediate retry
-						DS1820_LOG(ERROR, "Family not discovered");
-						return;
+						// for debugging allow all "families", only report a warning
+						// lastconv=-1;	// reset lastconv to avoid immediate retry
+						DS1820_LOG(ERROR, "WARNING: Family not discovered (reported family %x)", ds18_family);
+						// return;
 					}
 				}
 
