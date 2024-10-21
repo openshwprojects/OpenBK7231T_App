@@ -560,6 +560,8 @@ void Main_OnEverySecond()
 		get_tsen_adc(&g_wifi_temperature, 0);
 #elif PLATFORM_LN882H
 		// this is set externally, I am just leaving comment here
+#elif PLATFORM_W800 || PLATFORM_W600
+		g_wifi_temperature = HAL_ADC_Temp();
 #endif
 	}
 	// run_adc_test();
