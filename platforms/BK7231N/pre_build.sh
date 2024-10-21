@@ -8,25 +8,25 @@
 # As an example you will find a script below which will copy all content of the "override"
 # directory to the corresponding location in the SDK
 #
-#DIRNAME=$(dirname $0);
-#echo "PREBUILD script! Executed from $DIRNAME!"
+DIRNAME=$(dirname $0);
+echo "PREBUILD script! Executed from $DIRNAME!"
 # allow whitspace in file or path, so take only newline as seperator
-#OFS=$IFS
-#IFS='
-#'
-#for X in $(find platforms/BK7231N/override/ -type f);do
+OFS=$IFS
+IFS='
+'
+for X in $(find platforms/BK7231N/override/ -type f);do
 #	# script is executed from main app directory, so take found file and path as source
-#	S=${X};
+S=${X};
 #	# destination is path stripped from path to override
 #	# so inside "override" we have the full path to the file
 #	# starting with "sdk/OpenBK7231N/..."
-#	D=${X#platforms/BK7231N/override/};
+D=${X#platforms/BK7231N/override/};
 #	# if file is present, we replace it, otherwise file is added ...
-#	[ -e $D ] && echo "PREBUILD: replacing file\n\t$D\n\twith file\n\t$S" || echo "PREBUILD: adding file\n\t$S\n\tas\n\t$D"
-#	cp $S $D;
-#done
+[ -e $D ] && echo "PREBUILD: replacing file\n\t$D\n\twith file\n\t$S" || echo "PREBUILD: adding file\n\t$S\n\tas\n\t$D"
+cp $S $D;
+done
 ## restore IFS to whatever it was before ...
-#IFS=$OFS
+IFS=$OFS
 
 # you can also use all other commands to change files, like
 # sed -i "s/#define FOO bar/#define FOO baz/" sdk/OpenBK7231N/platforms/bk7231n/bk7231n_os/beken378/file_to_change.c
