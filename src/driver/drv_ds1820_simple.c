@@ -381,8 +381,8 @@ int DS1820_DiscoverFamily() {
 		DS1820_LOG(INFO, "Discover Family - discovered %x", family);
 		return 1;
 	} else {
-		DS1820_LOG(DEBUG, "Discover Family %x not supported", family);
-		return 0;
+		DS1820_LOG(DEBUG, "Discover Family %x not supported (read ROM: %x %x %x %x %x %x %x %x)", family,ROM[0], ROM[1], ROM[2], ROM[3], ROM[4], ROM[5], ROM[6], ROM[7]);
+		return 0; 
 	}
 }
 
