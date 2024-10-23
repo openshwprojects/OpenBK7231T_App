@@ -46,3 +46,4 @@ sed -i "/\[BK_PARTITION_RF_FIRMWARE\]/,+4 s/0x1D0000,/0x1E3000,/" $FILE
 # check
 echo "just changed $FILE!"
 grep -A 6 BK_PARTITION_RF_FIRMWARE $FILE
+
