@@ -39,3 +39,10 @@
 #
 # patch -p 1 -d sdk/OpenBK7231N < platforms/BK7231N/my_change.diff
 
+
+# we change 0x1D0000 to 0x1E3000 directly in the file
+FILE="sdk/OpenBK7231N/platforms/bk7231n/bk7231n_os/beken378/func/user_driver/BkDriverFlash.c"
+sed -i "/\[BK_PARTITION_RF_FIRMWARE\]/,+4 s/0x1D0000,/0x1E3000,/" $FILE
+# check
+echo "just changed $FILE!"
+grep -A 6 BK_PARTITION_RF_FIRMWARE $FILE
