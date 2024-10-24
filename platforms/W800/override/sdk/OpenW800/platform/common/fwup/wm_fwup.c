@@ -29,6 +29,7 @@
 #include "wm_wl_task.h"
 #include "wm_params.h"
 #include "wm_param.h"
+#include "wm_ram_config.h"
 
 #define FWUP_MSG_QUEUE_SIZE      (4)
 
@@ -39,7 +40,7 @@
 static struct tls_fwup *fwup = NULL;
 static tls_os_queue_t *fwup_msg_queue = NULL;
 
-static u32 fwup_task_stk[FWUP_TASK_STK_SIZE];
+static u32 *fwup_task_stk = NULL;
 static u8 oneshotback = 0;
 
 extern int tls_fls_fast_write_init(void);
@@ -66,11 +67,31 @@ int tls_fwup_img_header_check(IMAGE_HEADER_PARAM_ST *img_param)
 	unsigned int crcvalue = 0;
 	unsigned int crccallen = 0;
 	int i = 0;
+	IMAGE_HEADER_PARAM_ST run_param;
 
 	if (img_param->magic_no != SIGNATURE_WORD)
 	{
 		return FALSE;	
 	}
+	/*temperary forbid to update secboot*/
+	if (img_param->img_attr.b.img_type != IMG_TYPE_FLASHBIN0)
+	{
+		return FALSE;
+	}
+
+	/*check run image and upgrade image have the same image info*/
+	tls_fls_read(img_param->img_header_addr, (u8 *)&run_param, sizeof(run_param));
+	if ((run_param.img_attr.b.signature && (img_param->img_attr.b.signature == 0))
+		|| ((run_param.img_attr.b.signature == 0) && img_param->img_attr.b.signature))
+	{
+		return FALSE;
+	}
+
+	if ((run_param.img_attr.b.code_encrypt && (img_param->img_attr.b.code_encrypt == 0))
+		|| ((run_param.img_attr.b.code_encrypt == 0) && img_param->img_attr.b.code_encrypt))
+	{
+		return FALSE;
+	}	
 
     if (img_param->img_addr % IMAGE_START_ADDR_MSK) //vbr register must be 1024 align.
     {
@@ -198,6 +219,7 @@ static void fwup_scheduler(void *data)
 								fwup->program_base = booter.upgrade_img_addr | FLASH_BASE_ADDR;
 								fwup->program_offset = 0;
 								fwup->total_len = booter.img_len + sizeof(IMAGE_HEADER_PARAM_ST);
+
 								if (booter.img_attr.b.signature)
 								{
 									fwup->total_len += 128;
@@ -284,7 +306,7 @@ static void fwup_scheduler(void *data)
 
 							if (booter.org_checksum != image_checksum)			
 							{
-                                TLS_DBGPRT_ERR("varify incorrect[0x%02x, but 0x%02x]\n", booter.org_checksum, image_checksum);
+                                TLS_DBGPRT_ERR("verify incorrect[0x%02x, but 0x%02x]\n", booter.org_checksum, image_checksum);
 								request->status = TLS_FWUP_REQ_STATUS_FCRC;
 								fwup->current_state |= TLS_FWUP_STATE_ERROR_CRC;
 								goto request_finish;
@@ -313,14 +335,19 @@ request_finish:
 					{
 						fwup->current_state &= ~TLS_FWUP_STATE_BUSY;
 					}
+
+					/*when all data has received  or error happened, reset system*/
+					if(((fwup->updated_len >= sizeof(IMAGE_HEADER_PARAM_ST)) && (fwup->updated_len >= (fwup->total_len)))
+						|| (request->status != TLS_FWUP_REQ_STATUS_SUCCESS))
+					{
+					    fwup_update_autoflag();
+						tls_sys_set_reboot_reason(REBOOT_REASON_ACTIVE);
+					    tls_sys_reset();
+					}
+					
 					if(request->complete) 
 					{
 						request->complete(request, request->arg);
-					}
-					if(fwup->updated_len >= (fwup->total_len))
-					{
-					    fwup_update_autoflag();
-					    tls_sys_reset();
 					}
 				}
 				break;
@@ -675,20 +702,37 @@ int tls_fwup_init(void)
 		tls_mem_free(fwup);
 		return TLS_FWUP_STATUS_EMEM;
 	}
-
-	err = tls_os_task_create(NULL, "fwup",
-						fwup_scheduler,
-						(void *)fwup,
-						(void *)&fwup_task_stk[0],
-						FWUP_TASK_STK_SIZE * sizeof(u32),
-						TLS_FWUP_TASK_PRIO,
-						0);
-	if (err != TLS_OS_SUCCESS)
+	fwup_task_stk = (u32 *)tls_mem_alloc(FWUP_TASK_STK_SIZE * sizeof(u32));
+	if (fwup_task_stk)
 	{
-		TLS_DBGPRT_ERR("create firmware update process task fail!\n");
+		err = tls_os_task_create(NULL, "fwup",
+							fwup_scheduler,
+							(void *)fwup,
+							(void *)fwup_task_stk,
+							FWUP_TASK_STK_SIZE * sizeof(u32),
+							TLS_FWUP_TASK_PRIO,
+							0);
+		if (err != TLS_OS_SUCCESS)
+		{
+			TLS_DBGPRT_ERR("create firmware update process task fail!\n");
 
+			tls_os_queue_delete(fwup_msg_queue);
+			fwup_msg_queue = NULL;
+			tls_os_sem_delete(fwup->list_lock);
+			fwup->list_lock = NULL;
+			tls_mem_free(fwup);
+			fwup = NULL;
+			tls_mem_free(fwup_task_stk);
+			fwup_task_stk = NULL;
+			return TLS_FWUP_STATUS_EMEM;
+		}
+	}
+	else
+	{
 		tls_os_queue_delete(fwup_msg_queue);
+		fwup_msg_queue = NULL;
 		tls_os_sem_delete(fwup->list_lock);
+		fwup->list_lock = NULL;
 		tls_mem_free(fwup);
 		return TLS_FWUP_STATUS_EMEM;
 	}
