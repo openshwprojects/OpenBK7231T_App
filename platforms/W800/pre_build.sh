@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 # This script will be called just before starting build process for W800
 # It allows you to make changes to the SDK, for example..
 # For example, you can use changed files in the SDK for the automated build during the checks for a PR without changing the SDK itself:
@@ -38,4 +39,17 @@
 # and then in pre_build.sh you apply this patch with:
 #
 # patch -p 1 -d sdk/OpenW800 < platforms/W800/my_change.diff
+=======
+DIRNAME=$(dirname $0);
+OFS=$IFS
+IFS='
+
+for X in $(find platforms/W800/override/ -type f);do
+S=${X};
+D=${X#platforms/W800/override/};
+[ -e $D ] && echo "PREBUILD: replacing file\n\t$D\n\twith file\n\t$S" || echo "PREBUILD: adding file\n\t$S\n\tas\n\t$D"
+cp $S $D;
+done
+IFS=$OFS
+>>>>>>> Stashed changes
 
