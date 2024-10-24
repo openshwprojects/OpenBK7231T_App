@@ -491,7 +491,7 @@ HassDeviceInfo* hass_init_energy_sensor_device_info(int index) {
 		//HASS:	sensor...power_factor is using native unit of measurement '' which is not a valid unit 
 		//		for the device class ('power_factor') it is using; expected one of ['no unit of measurement', '%']; 
 		//solution is to skip empty 
-		if (!strcmp(DRV_GetEnergySensorNames(index)->units,"")) {
+		if (strlen(DRV_GetEnergySensorNames(index)->units)>0) {
 			cJSON_AddStringToObject(info->root, "unit_of_meas", DRV_GetEnergySensorNames(index)->units);
 		}
 	}
