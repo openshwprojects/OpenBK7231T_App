@@ -471,8 +471,8 @@ HassDeviceInfo* hass_init_energy_sensor_device_info(int index) {
 	info = hass_init_device_info(ENERGY_METER_SENSOR, index, NULL, NULL);
 
 	cJSON_AddStringToObject(info->root, "dev_cla", DRV_GetEnergySensorNames(index)->hass_dev_class);   //device_class=voltage,current,power, energy, timestamp
-	//20241024 XJIKKA unit_of_meas is set bellow {was set twice)
-	cJSON_AddStringToObject(info->root, "unit_of_meas", DRV_GetEnergySensorNames(index)->units);   //unit_of_measurement. Sets as empty string if not present. HA doesn't seem to mind
+	//20241024 XJIKKA unit_of_meas is set bellow (was set twice)
+	//cJSON_AddStringToObject(info->root, "unit_of_meas", DRV_GetEnergySensorNames(index)->units);   //unit_of_measurement. Sets as empty string if not present. HA doesn't seem to mind
 	sprintf(g_hassBuffer, "~/%s/get", DRV_GetEnergySensorNames(index)->name_mqtt);
 	cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 
