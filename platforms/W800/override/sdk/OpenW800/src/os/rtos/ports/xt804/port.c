@@ -260,6 +260,11 @@ void cpu_intrpt_restore( void )
 
 /*-----------------------------------------------------------*/
 
+void vApplicationStackOverflowHook( xTaskHandle *pxTask, signed char *pcTaskName, signed char prio )
+{
+	printf("\ntask[%s] priority[%d] stack over flow\n",pcTaskName, prio);
+    for(;;);
+}
 
 /* configUSE_STATIC_ALLOCATION is set to 1, so the application must provide an
 implementation of vApplicationGetIdleTaskMemory() to provide the memory that is

@@ -347,7 +347,7 @@ int tls_cmd_scan( enum tls_cmd_mode mode)
     return CMD_ERR_OK;
 }
 
-int tls_cmd_scan_by_param( enum tls_cmd_mode mode, u16 channellist, u32 times, u16 switchinterval, u16 scantype)
+int tls_cmd_scan_by_param( enum tls_cmd_mode mode, u16 channellist, u32 times, u16 switchinterval)
 {
 
     int ret=0;
@@ -365,7 +365,6 @@ int tls_cmd_scan_by_param( enum tls_cmd_mode mode, u16 channellist, u32 times, u
     tls_wifi_scan_result_cb_register(hostif_wscan_cmplt);
     
     /* trigger the scan */
-	scan_param.scan_type = scantype;
     scan_param.scan_chanlist = channellist;
     scan_param.scan_chinterval = switchinterval;
     scan_param.scan_times = times;

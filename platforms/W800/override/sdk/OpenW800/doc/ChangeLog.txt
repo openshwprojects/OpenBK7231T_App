@@ -1,0 +1,339 @@
+ ==========================================================
+|	CHANGELOG: WinnerMicro Software Development Kit	   |
+ ==========================================================
+W800 SDK v1.00.08 | 2022/07/26
+========================== 
+*********
+SDK功能（因v1.00.06版本问题解决，升级版本号到V1.00.08)
+********* 
+1.修复BLE mesh问题
+2.解决softap模式下，SSID隐藏与否条件没有立即生效的问题
+3.wm_tool工具修改：
+  修改wm_tool生成，使用zlib-1.2.11的压缩库，解决某些文件的压缩包生成失败问题
+4.解决添加校准参数后导致的频偏补偿值不对，导致频率补偿错误，引起扫描网络和联网失败的问题
+5.清理编译告警
+6.解决ADC工作时导致某些IO下拉中断产生的问题
+7.更改任务删除时的内存释放处理
+
+W800 SDK v1.00.06 | 2022/05/12
+========================== 
+*********
+SDK功能
+********* 
+1.蓝牙：
+  1）支持mesh功能
+  2）增加BR_EDR的链接脚本，当使用BT工程时，使用gcc_csky_bt.ld链接脚本
+
+2.RTOS版本：升级到V10.4.1
+  关于回退OS版本的操作：要回退FreeRTOS V7.0.2版本，需把OS文件夹更换为之前版本的OS；具体做法：
+     0）删除当前OS的文件夹，把旧版SDK里的OS文件夹拷贝过来
+     1）针对CDK工程，需要把CDK工程中OS相关代码更新为旧的OS代码（具体表现为删除工程里的文件夹，重新添加OS）；
+     2）命令行编译，需要命令行下重新make lib生成libos.a
+
+3.Wi-Fi联网功能
+  *解决连接某些Wi-Fi6路由器后无法获取IP地址的问题
+  *优化反复连接某些网络失败概率高的问题
+
+4.驱动相关
+  *产线校准ADC功能后的校准参数使用修改
+  *解决UART DMA发送函数里DMA接口使用问题
+  *同型号Flash不同容量因状态寄存器的差异导致启动失败的问题
+  *touch和TRNG使用相同时钟，时钟配置改为默认打开
+  *修改一组PSRAM的IO复用功能问题
+  *新增touch功能配置接口
+
+5.支持C++的构造函数的初始化
+
+6.demo
+  *增加LCD的demo
+  *修改touch的demo
+  *修改socket client demo使用select防止网络异常造成的阻塞
+
+7.wm_tool工具修改：
+  1）修改wm_tool生成压缩文件的压缩等级为缺省等级
+  2）修复使用BEST_COMPRESS时部分压缩文件生成不完整问题
+
+8.升级：
+  *fwup升级增加image_type检测，只支持IMG_TYPE_FLASHBIN0类型的升级
+  *修复通过http方式升级进度条打印不完整的问题
+
+9.清理无效的DSP头文件
+
+W800 SDK v1.00.04 | 2021/10/30
+==========================
+*********
+SDK功能
+********* 
+1.驱动相关
+  *低速SPI做主时，默认IO复用为PB2,PB3,PB4,PB5（与DEMO保持一致）
+  *增加UART5功能
+  *修复使用40M分频时32K不校准导致不准的问题，RTC使用40M分频时精度基本没有问题
+  *修复LCD功能不工作的问题
+  *增加ADC获取供电电压的功能
+  *增加Flash的OTP操作，增加读取Unique ID的操作
+  *增加touch功能
+  *修改Flash驱动部分读取操作未加保护问题
+  *修复去使能某个IO中断使能位时将整个IO中断也关闭的问题
+  
+2.DEMO相关
+  *增加获取供电电压DEMO
+  *增加PMU demo选择时钟使用
+
+3.调试相关
+  *增加打印口可设置为UART0/UART1的可配操作（默认使用UART0）
+
+4.配网相关 
+  *优改联盛德一键配网的内存使用
+  *增加TLS_CONFIG_BLE_WIFI_ONESHOT宏定义
+
+5.编译打包相关：
+  *清理部分无效代码
+  *修复PPP_SUPPORT宏定义打开，编译报错的问题
+  *修复TLS_CONFIG_HOSTIF宏关闭，RMMS编译报错的问题
+  *wm_tool.c打包工具更新，解决当升级文件小于1024Byte时打包出的文件无法升级成功的问题
+  *增加CKLINK调试下载使用的flash驱动(tools/w800/utilities/W800_Flash_Tool.elf)
+
+6.蓝牙相关
+  *修复蓝牙wm_ble_client_demo_on_mtu设置MTU时不设限的问题
+
+7.Wi-Fi相关
+  *修复ssid为空时，tls_sys.c文件里自动联网依然触发问题
+  *修复apssid为空时，依然可以创建热点成功的问题
+  *优化Wi-Fi联网
+  *优化联网低功耗
+  *修复热点模式Beacon帧发送问题
+
+8.AT相关
+  *UART作为AT指令传输通道时，可指定为除UART0外的任意一个UART。
+  *修复STA模式固定IP时，AT指令第二次加网，无法查询网络状态的问题
+  
+9.增加单独支持生产测试的AT指令(src/app/factorycmd目录下）
+  *支持发送测试
+  *支持接收测试
+  *支持频偏补偿(AT+FREQ）
+  *支持是否校准查询(AT+&CALFIN)
+
+W800 SDK v1.00.02 | 2021/5/13
+==========================
+*********
+SDK功能
+*********
+1. 简化RAM分配调整，详见wm_ram_config.h（除了HSPI和WiFi必须使用静态内存外）。
+
+2. 代码空间调整说明：
+   1）调整ld文件里的I-SRAM的LENGTH值，如果LENGTH值加ORIGIN值已越界FLASH容量，则调整ORIGIN的初始值
+   2） 依据是CDK编译工程，还是直接make来选择调整
+      （1） CDK工程里，要调整代码空间大小，除了步骤1）之外，要调整tools\w800\uitilities\aft_build_project.sh文件里的
+	  run_img_header和run_img_pos，run_img_pos要和ORIGIN的值一致；run_img_header为ORIGIN值减0x400
+      （2） 命令行方式编译，除了步骤1）之外，要调整CONFIG_W800_IMAGE_HEADER和CONFIG_W800_RUN_ADDRESS的值，方法同（1）
+   3） 由于代码空间变大，用户空间会变小，那么需要注意用户空间的位置，作为使用时局限。
+
+3. 蓝牙：
+  1）ble host切换为nimble，默认使用的蓝牙协议栈
+  2）增加了ble多连接示例
+  3）蓝牙控制器代码优化
+  4）标准蓝牙部分：提供了br_edr lib文件：libbtcontroller_br_edr.a和libbthost_br_edr.a
+       如果需要使用标准蓝牙，需要操作：
+       （1） 把wm_config.h里的宏TLS_CONFIG_BR_EDR设置为CFG_ON
+       （2）编译时：
+           如果使用命令行编译，需要make menuconfig，在编译选项菜单里，去使能nimble的选项，或者修改.config文件，把NIMBLE_FTR去掉
+           如果使用CDK编译，需要把DNIMBLE_FTR设置为0，在CDK的编译设置项里
+       （3）相应的需要把libbtcontroller_br_edr.a和libbthost_br_edr.a改为libbtcontroller.a和libbthost.a
+       （4）还需要单独编译一下src/app目录（命令行编译）
+       （5） 因蓝牙增加了Code Size，需扩大gcc.ld文件里I-SRAM的空间
+
+   5）蓝牙任务删除统一修改为通过句柄方式删除
+   6）蓝牙host的代码统一开源，位置位于目录:src\bt
+
+4. Wi-Fi优化：
+   1） STA节能处理优化
+   2） 软ap功能暂不支持wmm功能
+
+5. 驱动问题处理：
+   DMA：    修复DMA是用loop方式时，循环地址处理不正确导致的中断不产生的问题
+   ADC：    DMA方式回调接口统一，DMA时使用内存为动态申请内存；ADC的回调函数统一处理
+   GPIO：   修复GPIOB的中断关闭操作时，没有正确操作的问题
+   FLASH：  修复Flash加锁操作的操作数异常
+   PMU：    删除PMU中断处理里的重复的csi_kernel_intrpt_exit调用触发调度的操作
+   7816：   增加7816接口demo
+   SPI：    低速主SPI，当使用DMA方式传输时，所用内存为动态分配内存
+   IO复用： 增加了W801的IO复用功能设置接口
+   uart：   为了适配某些平台，增加的单个字符即回调的接口。
+
+6. OS：
+   1） 增加通过任务句柄删除任务的操作(wm_osal_rtos.c, tasks.c)
+   2） 完善通过优先级删除任务的操作(wm_osal_rtos.c, tasks.c)
+   3） 部分os的适配接口，增加了中断里的使用保护(wm_osal_rtos.c)
+
+7. 网络部分修改：
+    1）网络主机名改为：WinnerMicro_+mac地址末2字段的格式。(ethernetif.c)
+	2）修复sys_arch.c里的queue delete函数，不再使用开关中断保护
+
+8. wm_main.c里的主任务增加可删除操作，可通过打开宏开关，使得wm_main里的任务使用完毕后删除
+
+9. 内存分配（wm_mem.c）的封装函数改为仅用信号量来管理
+
+10. 应用修复：
+   1）FATFS文件系统增加可重入保护处理，针对SDIO HOST部分对接的写SD卡时的非4字节对齐做了处理。
+   2）SSL不再使用之前的版本，改为使用mbed TLS 2.7.10
+   3）修复oneshot宏关闭，链接失败的问题
+
+11. 清理部分编译告警
+
+
+W800 SDK v1.00.01 | 2020/12/29
+==========================
+*********
+SDK功能
+*********
+*ld调整：
+     因增加BT功能，代码空间超过1MB，当前设定为1MB+64KB，相应的用户区要减少64KB
+     用户区宏调整（wm_flash_map.h）：#define USER_ADDR_START    (0x81E0000UL)
+     当前升级区针对超过1MB的情况，只能选择使用压缩的ota固件
+
+*二级BOOT更新：
+    1）发布SDK里添加secboot.bin文件生成img的操作，以免客户调整运行区起始地址时，因为secboot的头信息与其不匹配导致升级fls启动不了	 
+
+*蓝牙：
+     1）提供三种蓝牙的库，bt和ble都有的lib，单独标准bt的lib，单独ble的lib
+        用户可根据实际需要配合wm_config.h里的TLS_CONFIG_BR_EDR和TLS_CONFIG_BLE的设置，把相关的lib更名为libbt.a。
+     2）发布时默认使用ble都有的lib
+	 3）优化蓝牙参数
+	 4）增加蓝牙demo
+
+*Wi-Fi：
+    1）优化低功耗功能
+	2）优化异常恢复处理
+
+*系统参数及驱动：
+    1）增加关键参数区写保护操作
+	2）优化参数区使用内存，改为只使用一块静态内存
+    3）解决SDIO多block写操作失败问题
+	4）Master SPI使用的任务栈改为使用申请创建任务，不再使用静态内存
+
+*芯片的sleep和standby功能修改：
+    1）sleep和standby的进入条件修改
+    2）at指令里的AT+ENTS需要的芯片Sleep和standby功能函数从wifi lib移至wm_cmdp.c
+
+	
+W800 SDK v1.00.00 | 2020/08/04
+==========================
+*********
+SDK功能
+*********
+*ld调整：
+     因增加BT功能，代码空间超过1MB，当前设定为1MB+64KB，相应的用户区要减少64KB
+     用户区宏调整（wm_flash_map.h）：#define USER_ADDR_START    (0x81E0000UL)
+     当前升级区针对超过1MB的情况，只能选择使用压缩的ota固件
+*蓝牙：
+     1）支持BT功能，提供Audio sink和免提电话相关的API
+     2）提供三种蓝牙的库，bt和ble都有的lib，单独标准bt的lib，单独ble的lib
+        用户可根据实际需要配合wm_config.h里的TLS_CONFIG_BR_EDR和TLS_CONFIG_BLE的设置，把相关的lib更名为libbt.a。
+     3）发布时默认使用bt和ble都有的lib
+*Wi-Fi：
+    1）解决设定参数扫描，时间过长扫描个数反而少的问题
+*增加DSP功能（以lib和demo方式提供）
+*提供dsp功能的相关demo，详见DEMO_DSP宏包含的相关代码
+*增加IO下拉功能配置
+*修改GPIO demo，增加下拉功能，GPIO的输出高或低的测试
+*修改ADC功能，提供芯片温度和外部输入电压的测试，不支持芯片电源电压的检测功能。
+*修改PWM demo，支持PWM两组复用的测试demo
+*SDK提供CDK编译工程（编译限制路径长度80字符以内）
+*CDK（CSKY Development Kit）的版本：>V2.2.2，获取路径：https://occ.t-head.cn/community/download?id=575997419775328256
+*增加BLE数据通信的demo
+
+W800 SDK v0.00.06 | 2020/07/07
+==========================
+*********
+SDK功能
+*********
+*低功耗：
+    1）只有Wi-Fi的时候，断网也进入节能
+    2）部分外设的时钟改为只在使用时打开（LSPI）
+*蓝牙：开放蓝牙应用代码，路径:src/app/btapp
+*Wi-Fi：
+    1）增加可配扫描参数的扫描API接口：tls_wifi_scan_by_param
+    2）内部增益优化
+    3）Wi-FI的调试LOG默认关闭
+    4）更新Wi-Fi默认增益参数
+    5）处理SSID长度为0时也触发联网的问题
+	6）默认wifi工作使用温补（wm_main.c里设置）
+*与PWM相关的IO复用配置的API命名更改为0,1,2,3,4编号，即函数:wm_pwmX_config（X=0,1,2,3,4）
+*更改部分DEMO的IO使用（GPIO，PWM，LSPI，I2S）
+*解决LSD ONESHOT可能使用空SSID联网的问题
+*处理IPERF SERVER测试后，无法启动Client测试的问题
+*更改内部温度检测函数的结果计算(不再计算平均值）
+*解决RMMS反复创建存在的内存不释放问题
+*调整ping的任务栈大小
+*解决某些路由DHCP拿不到IP的问题
+
+W800 SDK v0.00.05 | 2020/06/12
+==========================
+*********
+SDK功能
+*********
+*修改CPU默认时钟为80M
+*默认打开Wi-Fi的节能功能（Wi-Fi和蓝牙共存时，Wi-Fi不节能）
+*优化蓝牙配网兼容性
+*修改部分任务栈使用动态申请内存，不再使用静态数组
+*打开并生效Wi-Fi的本振和相位补偿功能
+*修复GPIO的数据定义边界问题
+*删除link文件，当前默认make使用的是use lib
+*修复命令行编译结果不变的问题：因elf文件未移动导致的
+
+W800 SDK v0.00.04 | 2020/06/04
+==========================
+*********
+SDK功能
+*********
+*优化蓝牙配网兼容性
+*增加CK-LINK复用打开关闭的宏开关:WM_SWD_ENABLE，默认打开
+*代码清理
+*sdk打包里添加编译的固件（bin目录）
+*修改Standby和Sleep功耗问题
+*修改ADC采集内部温度功能（采集电压功能还不支持）
+
+W800 SDK v0.00.03 | 2020/06/01
+==========================
+*********
+SDK功能
+*********
+*优化蓝牙配网兼容性
+*优化Wi-Fi的基带参数，解决最大输入电平问题
+*增加mbedtls及demo
+*默认JTAG复用功能打开
+
+W800 SDK v0.00.02 | 2020/05/19
+==========================
+*********
+SDK功能
+*********
+*更新优化后的Wi-Fi相关参数
+*更新Flash工作模式及工作频率(80MHz)
+*更新SDIO HOST和I2S驱动
+*更新AT+ENTS的Sleep和Standby功能，更新文档
+*更新AT+HTTPC的返回值说明，更新文档
+*更新secboot版本
+*默认打开IPERF功能
+
+W800 SDK v0.00.01 | 2020/04/30
+==========================
+*********
+SDK功能
+*********
+*Wi-Fi基本功能：STA，AP，APSTA
+*Wi-Fi配网功能：oneshot，蓝牙，ap，web
+*基本驱动功能（除adc，sdio host，i2s外）
+*Flash的布局及参数区
+*升级功能：串口升级，OTA（http服务器升级）
+*加密功能
+*基础的demo
+
+
+
+
+
+
+
+
+

@@ -5517,11 +5517,3 @@ static void prvAddCurrentTaskToDelayedList( TickType_t xTicksToWait,
     #endif
 
 #endif /* if ( configINCLUDE_FREERTOS_TASK_C_ADDITIONS_H == 1 ) */
-
-#if ( configCHECK_FOR_STACK_OVERFLOW == 1 )
-void vApplicationStackOverflowHook( TaskHandle_t xTask,  char * pcTaskName )
-{
-	printf("\ntask[%s] priority[%d] stack over flow\n",pcTaskName, configMAX_PRIORITIES - (int)(xTask->uxPriority));
-    for(;;);
-}
-#endif /* if ( configCHECK_FOR_STACK_OVERFLOW == 1 )*/

@@ -24,7 +24,7 @@
 //#define WM_MEM_DEBUG 1
 #if WM_MEM_DEBUG
 
-#include "../list.h"
+#include "list.h"
 
 #define  MEM_HEADER_PATTERN          0x76028412
 #define  MEM_TAILER_PATTERN          0x83395627

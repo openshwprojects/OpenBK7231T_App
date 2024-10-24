@@ -47,7 +47,7 @@
 #include "wm_watchdog.h"
 #include "wm_wifi.h"
 #if TLS_CONFIG_ONLY_FACTORY_ATCMD
-#include "../../src/app/factorycmd/factory_atcmd.h"
+#include "factory_atcmd.h"
 #endif
 
 /* c librayr mutex */
@@ -97,7 +97,7 @@ tls_os_task_t tststarthdl = NULL;
 
 #define FW_MAJOR_VER           0x1
 #define FW_MINOR_VER           0x0
-#define FW_PATCH_VER           0x10
+#define FW_PATCH_VER           0x8
 
 const char FirmWareVer[4] =
 {

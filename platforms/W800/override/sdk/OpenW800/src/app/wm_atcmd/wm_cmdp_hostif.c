@@ -2433,7 +2433,7 @@ int wscan_proc(u8 set_opt, u8 update_flash, union HOSTIF_CMD_PARAMS_UNION *cmd, 
     struct tls_hostif *hif = tls_get_hostif();
 
 	hif->uart_atcmd_bits &= ~(1 << UART_ATCMD_BIT_WSCAN);
-    ret = tls_cmd_scan_by_param(cmd->scanparam.mode, cmd->scanparam.chlist, cmd->scanparam.scantimes, cmd->scanparam.switchinterval, cmd->scanparam.scantype);
+    ret = tls_cmd_scan_by_param(cmd->scanparam.mode, cmd->scanparam.chlist, cmd->scanparam.scantimes, cmd->scanparam.switchinterval);
     if(ret){
         return -ret;
     }
@@ -3800,7 +3800,7 @@ int txg_proc(u8 set_opt, u8 update_flash, union HOSTIF_CMD_PARAMS_UNION *cmd, un
     if(set_opt){
          memcpy(tx_gain, cmd->txg.tx_gain, TX_GAIN_LEN);
 		TLS_DBGPRT_INFO("save tx gain!\r\n");
-		return tls_set_tx_gain(tx_gain);
+		tls_set_tx_gain(tx_gain);
     }else{
 		MEMCPY(cmdrsp->txg.tx_gain, tx_gain, TX_GAIN_LEN);
     }
@@ -3867,7 +3867,7 @@ int txg_rate_set_proc(u8 set_opt, u8 update_flash, union HOSTIF_CMD_PARAMS_UNION
          tx_gain[cmd->txgr.tx_rate] = cmd->txgr.txr_gain[0];
          tx_gain[cmd->txgr.tx_rate+TX_GAIN_LEN/3] = cmd->txgr.txr_gain[1];		 
          tx_gain[cmd->txgr.tx_rate+TX_GAIN_LEN*2/3] = cmd->txgr.txr_gain[2];			 
-         return tls_set_tx_gain(tx_gain);
+	tls_set_tx_gain(tx_gain);
     }
     return 0;
 }
@@ -3890,7 +3890,7 @@ int mac_proc(u8 set_opt, u8 update_flash, union HOSTIF_CMD_PARAMS_UNION *cmd, un
    		    return -CMD_ERR_INV_PARAMS;
         }
 		wpa_supplicant_set_mac(cmd->mac.macaddr);
-		return tls_set_mac_addr(cmd->mac.macaddr);
+		tls_set_mac_addr(cmd->mac.macaddr);
     }else{
         u8 *mac = NULL;
         mac = wpa_supplicant_get_mac();
@@ -7889,16 +7889,9 @@ int at_parse_func(char *at_name, struct tls_atcmd_token_t *tok, union HOSTIF_CMD
 		cmd->scanparam.switchinterval = 0;
 		cmd->scanparam.scantimes = 0;
 		cmd->scanparam.chlist = 0;
-		cmd->scanparam.scantype = 0;
 
 		switch(tok->arg_found)
 		{
-			case 4:
-				ret = string_to_uint(tok->arg[3], &value);
-		        if(ret)
-		            return -CMD_ERR_INV_PARAMS;
-				cmd->scanparam.scantype = value;
-
 			case 3:
 				ret = string_to_uint(tok->arg[2], &value);
 		        if(ret)
@@ -7919,7 +7912,6 @@ int at_parse_func(char *at_name, struct tls_atcmd_token_t *tok, union HOSTIF_CMD
 				cmd->scanparam.switchinterval = 0;
 				cmd->scanparam.scantimes = 0;
 				cmd->scanparam.chlist = 0;
-				cmd->scanparam.scantype = 0;
 				break;
 		}		
     }

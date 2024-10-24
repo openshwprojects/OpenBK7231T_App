@@ -168,7 +168,7 @@ static int bt_aes_decrypt(uint8_t *key, uint8_t *src_ptr, int length, uint8_t *d
     psCipherContext_t ctx;
     uint8_t *buf = NULL;
     TLS_DBGPRT_INFO("original data:");
-    TLS_DBGPRT_DUMP((char *)src_ptr, length);
+    TLS_DBGPRT_DUMP(src_ptr, length);
 
     if(key == NULL || src_ptr == NULL || length % 16 != 0) {
         goto out;
@@ -182,7 +182,7 @@ static int bt_aes_decrypt(uint8_t *key, uint8_t *src_ptr, int length, uint8_t *d
 
     MEMCPY(buf, src_ptr, length);
     TLS_DBGPRT_INFO("aes key:");
-    TLS_DBGPRT_DUMP((char *)key, 16);
+    TLS_DBGPRT_DUMP(key, 16);
 
     if(tls_crypto_aes_init(&ctx, key, key, 16, CRYPTO_MODE_ECB) != 0) {
         goto out;
@@ -194,7 +194,7 @@ static int bt_aes_decrypt(uint8_t *key, uint8_t *src_ptr, int length, uint8_t *d
 
     MEMCPY(dest_ptr, buf, length);
     TLS_DBGPRT_INFO("decrypt data:");
-    TLS_DBGPRT_DUMP((char *)dest_ptr, length);
+    TLS_DBGPRT_DUMP(dest_ptr, length);
     ret = DePKCS7Padding(dest_ptr, length);
 out:
 
@@ -244,7 +244,7 @@ static int bt_aes_encrypt(uint8_t *key, uint8_t *src_ptr, int length, uint8_t *d
     psCipherContext_t ctx;
     unsigned char *aes_encode_temp = NULL;
     TLS_DBGPRT_INFO("original data:");
-    TLS_DBGPRT_DUMP((char *)src_ptr, length);
+    TLS_DBGPRT_DUMP(src_ptr, length);
     aes_encode_temp = tls_mem_alloc(length + 16);
 
     if(aes_encode_temp == NULL) {
@@ -264,7 +264,7 @@ static int bt_aes_encrypt(uint8_t *key, uint8_t *src_ptr, int length, uint8_t *d
     }
 
     //TLS_DBGPRT_INFO("encrypt data:");
-    TLS_DBGPRT_DUMP((char *)dest_ptr, len);
+    TLS_DBGPRT_DUMP(dest_ptr, len);
     ret = len;
 out:
 

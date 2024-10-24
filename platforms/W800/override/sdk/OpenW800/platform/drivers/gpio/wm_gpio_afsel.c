@@ -206,7 +206,7 @@ void wm_psram_config(uint8_t numsel)
 {
 	switch(numsel)
 	{
-		case 0://W800 or w801
+		case 0:
 			tls_io_cfg_set(WM_IO_PB_00, WM_IO_OPTION4);/*CK*/
 			tls_io_cfg_set(WM_IO_PB_01, WM_IO_OPTION4);/*CS*/
 			tls_io_cfg_set(WM_IO_PB_02, WM_IO_OPTION4);/*D0*/
@@ -217,16 +217,6 @@ void wm_psram_config(uint8_t numsel)
 			break;
 			
 		case 1://w801
-			tls_io_cfg_set(WM_IO_PA_15, WM_IO_OPTION1);/*CK*/
-			tls_io_cfg_set(WM_IO_PB_27, WM_IO_OPTION1);/*CS*/
-			tls_io_cfg_set(WM_IO_PB_02, WM_IO_OPTION4);/*D0*/
-			tls_io_cfg_set(WM_IO_PB_03, WM_IO_OPTION4);/*D1*/
-			tls_io_cfg_set(WM_IO_PB_04, WM_IO_OPTION4);/*D2*/
-			tls_io_cfg_set(WM_IO_PB_05, WM_IO_OPTION4);/*D3*/
-			tls_open_peripheral_clock(TLS_PERIPHERAL_TYPE_PSRAM);			
-			break;
-
-		case 2://w861
 			tls_io_cfg_set(WM_IO_PA_15, WM_IO_OPTION1);/*CK*/
 			tls_io_cfg_set(WM_IO_PB_27, WM_IO_OPTION1);/*CS*/
 			tls_io_cfg_set(WM_IO_PB_28, WM_IO_OPTION1);/*D0*/
@@ -1099,7 +1089,7 @@ void wm_gpio_af_disable(void)
 #endif
     tls_reg_write32(HR_GPIOB_AFSEL, 0x0);
 
-    tls_reg_write32(HR_GPIOA_DATA_PULLEN, 0x0);
-    tls_reg_write32(HR_GPIOB_DATA_PULLEN, 0x0);
+    tls_reg_write32(HR_GPIOA_DATA_PULLEN, 0xffff);
+    tls_reg_write32(HR_GPIOB_DATA_PULLEN, 0xffffffff);
 }
 

@@ -31,14 +31,10 @@ typedef struct
 	double a[3];
 }ST_ADC_POLYFIT_PARAM;
 
-/*f(x) = kx + b*/
-//#define ADC_CAL_K_POS   (6)
-//#define ADC_CAL_B_POS   (7)
-
-
 ST_ADC_POLYFIT_PARAM _polyfit_param = {0};
 extern void polyfit(int n,double x[],double y[],int poly_n,double a[]);
-
+//TODO
+#define HR_SD_ADC_CONFIG_REG 0
 static int adc_offset = 0;
 static int *adc_dma_buffer = NULL;
 volatile ST_ADC gst_adc;
@@ -83,45 +79,28 @@ static void adc_dma_isr_callbk(void)
 }
 int adc_polyfit_init(ST_ADC_POLYFIT_PARAM *polyfit_param)
 {
-	FT_ADC_CAL_ST adc_cal;
-	/*function f(x) = ax + b*/
-	float a = 0.0;
-	float b = 0.0;
+	FT_ADC_CAL_ST adc_st;
+	double x[16] = {0};
+	double y[16] = {0};
+	int n = 4, poly_n = 1; // or = 2
+
 	int i;
-	double x[8] = {0.0};
-	double y[8] = {0.0};
+
 
 	polyfit_param->poly_n = 0;
-	memset(&adc_cal, 0, sizeof(adc_cal));
-	tls_get_adc_cal_param(&adc_cal);
-	if ((adc_cal.valid_cnt == 4)
-		||(adc_cal.valid_cnt == 2) 
-		|| (adc_cal.valid_cnt == 3))
+	memset(&adc_st, 0, sizeof(adc_st));
+	tls_get_adc_cal_param(&adc_st);
+	//dumpBuffer("adc_st",(char *)&adc_st, sizeof(adc_st));
+	n = adc_st.valid_cnt;
+	if(n >= 4 && n <= 8)
 	{
-		//memcpy((char *)&a, (char *)&adc_cal.units[ADC_CAL_K_POS], 4);
-		//memcpy((char *)&b, (char *)&adc_cal.units[ADC_CAL_B_POS], 4);	
-		a = adc_cal.a;
-		b = adc_cal.b;
-		if ((a > 1.0) && (a < 1.3) && (b < -1000.0)) /*new calibration*/
+		for(i = 0; i < n; i++)
 		{
-			polyfit_param->poly_n = 1;
-			polyfit_param->a[1] = a;
-			polyfit_param->a[0] = b;
+			x[i] = (double)adc_st.units[i].real_val;
+			y[i] = (double)adc_st.units[i].ref_val;
 		}
-		else /*old calibration*/
-		{
-			for(i = 0; i < adc_cal.valid_cnt; i++)
-			{
-				x[i] = (double)adc_cal.units[i].real_val;
-				y[i] = (double)adc_cal.units[i].ref_val;
-			}
-			polyfit_param->poly_n = 1;
-			polyfit(adc_cal.valid_cnt,x,y,1, polyfit_param->a);
-			if (b < -1000.0)
-			{
-				polyfit_param->a[0] = b;
-			}
-		}
+		polyfit_param->poly_n = poly_n;
+		polyfit(n,x,y,poly_n,polyfit_param->a);
 	}
 
 	return 0;
@@ -493,11 +472,26 @@ static void waitForAdcDone(void)
 int cal_voltage(double vol)
 {
 	double y1, voltage;
+
+	double vol_30mV;
 	int average = ((int)vol >> 2) & 0xFFFF;
 
-	if(_polyfit_param.poly_n == 1)
+	if(_polyfit_param.poly_n == 2)
+	{
+		y1 = _polyfit_param.a[2]*average*average + _polyfit_param.a[1]*average + _polyfit_param.a[0];
+	}
+	else if(_polyfit_param.poly_n == 1)
 	{
 		y1 = _polyfit_param.a[1]*average + _polyfit_param.a[0];
+		vol_30mV = ((double)300.0L - _polyfit_param.a[0]) / _polyfit_param.a[1];
+		if(average + 170 < vol_30mV)
+		{
+			return 0;
+		}
+		else if(average < vol_30mV)
+		{
+			y1 = 300.0L - 200.0L*(vol_30mV - average) / 170.0L;
+		}
 	}
 	else
 	{
@@ -647,5 +641,4 @@ int adc_temp(void)
 
 	return temperature;
 }
-
 

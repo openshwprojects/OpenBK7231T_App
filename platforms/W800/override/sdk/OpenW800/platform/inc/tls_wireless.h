@@ -419,7 +419,6 @@ int tls_wl_if_sta_add(struct tls_wif *wif,
 int tls_wl_if_sta_remove(struct tls_wif *wif, u8 *addr);
 int tls_wl_if_get_inact_sec(struct tls_wif *wif, const u8 *addr);
 int tls_wl_if_get_scan_res(struct tls_wif *wif, u8 *buf, u32 buf_size);
-int tls_wl_if_get_scan_res_format2(struct tls_wif *wif, u8 *buf, u32 buf_size);
 int tls_wl_if_disconnect(struct tls_wif *wif);
 int tls_wl_if_tx(struct tls_wif *wif,
         u8 *buf, u32 buflen, bool last_packet, bool is_apsta, bool not_delay);

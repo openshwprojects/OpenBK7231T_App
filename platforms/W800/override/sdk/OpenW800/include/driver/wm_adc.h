@@ -295,41 +295,6 @@ u32 adc_get_interVolt(void);
 int adc_temp(void);
 
 /**
- * @brief          This function is used to calibrate adc single-end voltage. offset after FT or multipoint calibration.
- *
- * @param[in]      chan: adc calibration channel to be used, ADC channel 0,1,2,3
- * @param[in]      refvoltage: calibration reference voltage to be used, unit:mV
- *                             input range[100,2300)mV, suggest reference voltage[500,2000]mV
- *
- * @return         0: success, < 0: failure
- *
- * @note           After FT calibration or mulitpoint calibration, adc curve is y=ax+b,
- *                 y is real voltage(unit:mV), x is adc sample data
- *                 a and b is the coefficient. This fuction only used to revise b value.
- */ 
-int adc_offset_calibration(int chan, int refvoltage);
-
-/**
- * @brief          This function can used to calibrate adc coefficient if not calibrated,
- *                 or adc offset after FT or multipoint calibration.
- *
- * @param[in]      chanused: bitmap, specified calibration channel,only bit0-3 can be used
- * @param[in]      refvoltage[]: array, calibration reference voltage to be used, unit:mV
- *                               refvoltage keep the same position with chan bitmap
- *                               input range[100,2300)mV, suggest reference voltage[500,2000]mV
- *
- * @return         0: success, < 0: failure
- *
- * @note           1)Adc curve is y=ax+b,y is real voltage(unit:mV), x is adc sample data.
- *                 After calibration, we can get a and b, or only update b.
- *                 2) Only used single-end adc
- *                 3) For example, use chan 0,1,3, and refvoltage 500,1000,2000, 
- * 		             then chanused is 0xB, refvoltage[] value is  {500,1000,0, 2000};
- */
-int adc_multipoint_calibration(int chanused, int refvoltage[]);
-
-
-/**
  * @}
  */
 
@@ -346,9 +311,6 @@ void signedToUnsignedData(int *adcValue);
 void tls_adc_buffer_bypass_set(u8 isset);
 void tls_adc_cmp_start(int Channel, int cmp_data, int cmp_pol);
 u32  adc_get_offset(void);
-void tls_adc_set_pga(int gain1, int gain2);
-int  cal_voltage(double vol);
-
 
 #endif
 

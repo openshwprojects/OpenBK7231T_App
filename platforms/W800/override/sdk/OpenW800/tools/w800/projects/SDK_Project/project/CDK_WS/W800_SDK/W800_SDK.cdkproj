@@ -1,0 +1,3393 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project Name="W800_SDK" Version="1" Language="C">
+  <Description/>
+  <Dependencies Name="Debug"/>
+  <VirtualDirectory Name="src">
+    <VirtualDirectory Name="os">
+      <VirtualDirectory Name="rtos">
+        <VirtualDirectory Name="include">
+          <File Name="../../../../../../../src/os/rtos/include/atomic.h"/>
+          <File Name="../../../../../../../src/os/rtos/include/croutine.h"/>
+          <File Name="../../../../../../../src/os/rtos/include/deprecated_definitions.h"/>
+          <File Name="../../../../../../../src/os/rtos/include/event_groups.h"/>
+          <File Name="../../../../../../../src/os/rtos/include/FreeRTOS.h"/>
+          <File Name="../../../../../../../src/os/rtos/include/FreeRTOSConfig.h"/>
+          <File Name="../../../../../../../src/os/rtos/include/message_buffer.h"/>
+          <File Name="../../../../../../../src/os/rtos/include/mpu_prototypes.h"/>
+          <File Name="../../../../../../../src/os/rtos/include/mpu_wrappers.h"/>
+          <File Name="../../../../../../../src/os/rtos/include/portable.h"/>
+          <File Name="../../../../../../../src/os/rtos/include/portmacro.h"/>
+          <File Name="../../../../../../../src/os/rtos/include/projdefs.h"/>
+          <File Name="../../../../../../../src/os/rtos/include/rtoslist.h"/>
+          <File Name="../../../../../../../src/os/rtos/include/rtosqueue.h"/>
+          <File Name="../../../../../../../src/os/rtos/include/rtostimers.h"/>
+          <File Name="../../../../../../../src/os/rtos/include/semphr.h"/>
+          <File Name="../../../../../../../src/os/rtos/include/StackMacros.h"/>
+          <File Name="../../../../../../../src/os/rtos/include/stack_macros.h"/>
+          <File Name="../../../../../../../src/os/rtos/include/stream_buffer.h"/>
+          <File Name="../../../../../../../src/os/rtos/include/task.h"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="ports">
+          <VirtualDirectory Name="xt804">
+            <File Name="../../../../../../../src/os/rtos/ports/xt804/cpu_task_sw.S"/>
+            <File Name="../../../../../../../src/os/rtos/ports/xt804/port.c"/>
+          </VirtualDirectory>
+        </VirtualDirectory>
+        <VirtualDirectory Name="source">
+          <File Name="../../../../../../../src/os/rtos/source/croutine.c"/>
+          <File Name="../../../../../../../src/os/rtos/source/event_groups.c"/>
+          <File Name="../../../../../../../src/os/rtos/source/heap_2.c"/>
+          <File Name="../../../../../../../src/os/rtos/source/heap_3.c"/>
+          <File Name="../../../../../../../src/os/rtos/source/list.c"/>
+          <File Name="../../../../../../../src/os/rtos/source/queue.c"/>
+          <File Name="../../../../../../../src/os/rtos/source/stream_buffer.c"/>
+          <File Name="../../../../../../../src/os/rtos/source/tasks.c"/>
+          <File Name="../../../../../../../src/os/rtos/source/timers.c"/>
+        </VirtualDirectory>
+        <File Name="../../../../../../../src/os/rtos/wm_osal_rtos.c"/>
+      </VirtualDirectory>
+    </VirtualDirectory>
+    <VirtualDirectory Name="app">
+      <VirtualDirectory Name="cJSON">
+        <File Name="../../../../../../../src/app/cJSON/cJSON.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/cJSON/cJSON.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="dhcpserver">
+        <File Name="../../../../../../../src/app/dhcpserver/dhcp_server.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/dhcpserver/dhcp_server.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="dnsserver">
+        <File Name="../../../../../../../src/app/dnsserver/dns_server.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/dnsserver/dns_server.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="httpclient">
+        <File Name="../../../../../../../src/app/httpclient/HTTPClient.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/httpclient/HTTPClient.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/httpclient/HTTPClientAuth.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/httpclient/HTTPClientAuth.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/httpclient/HTTPClientCommon.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/httpclient/HTTPClientString.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/httpclient/HTTPClientString.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/httpclient/HTTPClientWrapper.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/httpclient/HTTPClientWrapper.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/httpclient/wm_httpclient_if.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/httpclient/wm_httpclient_task.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="iperf">
+        <File Name="../../../../../../../src/app/iperf/config.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_api.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_api.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_client_api.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_client_api.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_error.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_error.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_locale.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_locale.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_main.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_net.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_net.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_queue.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_server_api.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_server_api.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_tcp.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_tcp.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_timer.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_timer.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_udp.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_udp.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_units.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_units.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_util.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_util.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/tcp_info.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/tcp_window_size.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/tcp_window_size.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/version.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/wm_perf.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="libwebsockets-2">
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/alloc.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/base64-decode.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/client-handshake.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/client-parser.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/client.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/context.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/daemonize.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/extension-permessage-deflate.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/extension-permessage-deflate.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/extension.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/getifaddrs.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/getifaddrs.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/handshake.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/header.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/hpack.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/http2.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/huftable.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lejp-conf.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lejp.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lejp.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lextable-strings.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lextable.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/libev.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/libuv.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/libwebsockets.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/libwebsockets.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lws-plat-esp8266.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lws-plat-mbed3.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lws-plat-mbed3.cpp" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lws-plat-unix.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lws-plat-win.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lws-plat-wm.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lws_config.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lws_config_private.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/minihuf.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/minilex.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/output.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/parsers.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/pollfd.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/private-libwebsockets.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/rewrite.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/server-handshake.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/server.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/service.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/sha-1.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/smtp.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/ssl-client.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/ssl-http2.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/ssl-server.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/ssl.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="mbedtls">
+        <VirtualDirectory Name="include">
+          <VirtualDirectory Name="mbedtls">
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/aes.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/aesni.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/arc4.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/asn1.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/asn1write.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/base64.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/bignum.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/blowfish.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/bn_mul.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/camellia.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ccm.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/certs.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/check_config.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/cipher.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/cipher_internal.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/cmac.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/compat-1.3.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/config.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ctr_drbg.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/debug.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/des.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/dhm.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ecdh.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ecdsa.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ecjpake.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ecp.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ecp_internal.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/entropy.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/entropy_poll.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/error.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/gcm.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/havege.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/hmac_drbg.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/md.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/md2.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/md4.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/md5.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/md_internal.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/memory_buffer_alloc.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/net.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/net_sockets.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/oid.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/padlock.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/pem.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/pk.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/pkcs11.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/pkcs12.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/pkcs5.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/pk_internal.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/platform.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/platform_time.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ripemd160.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/rsa.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/rsa_internal.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/sha1.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/sha256.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/sha512.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ssl.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ssl_cache.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ssl_ciphersuites.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ssl_cookie.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ssl_internal.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ssl_ticket.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/threading.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/timing.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/version.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/x509.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/x509_crl.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/x509_crt.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/x509_csr.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/xtea.h">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+        </VirtualDirectory>
+        <VirtualDirectory Name="library">
+          <File Name="../../../../../../../src/app/mbedtls/library/aes.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/aesni.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/arc4.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/asn1parse.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/asn1write.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/base64.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/bignum.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/blowfish.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/camellia.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ccm.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/certs.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/cipher.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/cipher_wrap.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/cmac.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ctr_drbg.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/debug.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/des.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/dhm.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ecdh.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ecdsa.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ecjpake.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ecp.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ecp_curves.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/entropy.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/entropy_poll.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/error.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/gcm.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/havege.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/hmac_drbg.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/md.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/md2.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/md4.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/md5.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/md_wrap.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/memory_buffer_alloc.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/net_sockets.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/oid.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/padlock.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/pem.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/pk.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/pkcs11.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/pkcs12.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/pkcs5.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/pkparse.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/pkwrite.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/pk_wrap.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/platform.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ripemd160.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/rsa.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/rsa_internal.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/sha1.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/sha256.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/sha512.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ssl_cache.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ssl_ciphersuites.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ssl_cli.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ssl_cookie.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ssl_srv.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ssl_ticket.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ssl_tls.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/threading.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/timing.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/version.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/version_features.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/x509.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/x509write_crt.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/x509write_csr.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/x509_create.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/x509_crl.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/x509_crt.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/x509_csr.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/xtea.c">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+        <VirtualDirectory Name="ports">
+          <File Name="../../../../../../../src/app/mbedtls/ports/aes_alt.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/aes_alt.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/arc4_alt.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/arc4_alt.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/des_alt.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/des_alt.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/hardware_alt.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/md5_alt.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/md5_alt.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/net_alt.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/net_alt.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/sha1_alt.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/sha1_alt.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/timing_alt.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/timing_alt.h">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+      </VirtualDirectory>
+      <VirtualDirectory Name="mDNS">
+        <VirtualDirectory Name="mDNSCore">
+          <File Name="../../../../../../../src/app/mDNS/mDNSCore/APSCommonServices.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mDNS/mDNSCore/mDNS.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mDNS/mDNSCore/mDNS.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mDNS/mDNSCore/mDNSClientAPI.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mDNS/mDNSCore/mDNSDebug.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mDNS/mDNSCore/mDNSEmbeddedAPI.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mDNS/mDNSCore/mDNSPlatformFunctions.h">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+        <VirtualDirectory Name="mDNSPosix">
+          <File Name="../../../../../../../src/app/mDNS/mDNSPosix/mDNSPosix.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mDNS/mDNSPosix/mDNSPosix.h">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+      </VirtualDirectory>
+      <VirtualDirectory Name="mqtt">
+        <File Name="../../../../../../../src/app/mqtt/libemqtt.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/mqtt/libemqtt.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="ntp">
+        <File Name="../../../../../../../src/app/ntp/ntp_client.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="oneshotconfig">
+        <File Name="../../../../../../../src/app/oneshotconfig/airkiss.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/oneshotconfig/wm_oneshot_airkiss.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/oneshotconfig/wm_oneshot_hailin.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/oneshotconfig/wm_oneshot_hailin.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/oneshotconfig/wm_oneshot_lsd.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/oneshotconfig/wm_oneshot_lsd.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/oneshotconfig/wm_wifi_oneshot.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="ota">
+        <File Name="../../../../../../../src/app/ota/wm_http_fwup.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/ota/wm_http_fwup.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/ota/wm_socket_fwup.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/ota/wm_socket_fwup.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="ping">
+        <File Name="../../../../../../../src/app/ping/ping.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/ping/ping.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="sslserver">
+        <File Name="../../../../../../../src/app/sslserver/wm_ssl_server.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="web">
+        <File Name="../../../../../../../src/app/web/fs.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/web/fs.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/web/httpd.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/web/httpd.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/web/web.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="wm_atcmd">
+        <File Name="../../../../../../../src/app/wm_atcmd/wm_cmdp.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/wm_atcmd/wm_cmdp.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/wm_atcmd/wm_cmdp_hostif.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/wm_atcmd/wm_cmdp_hostif.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/wm_atcmd/wm_cmdp_hostif_gcc.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/wm_atcmd/wm_cmdp_ri.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/wm_atcmd/wm_cmdp_ri.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/wm_atcmd/wm_rmms.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/wm_atcmd/wm_rmms.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/wm_atcmd/wm_uart_task.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/wm_atcmd/wm_uart_task.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/wm_atcmd/wm_hspi_task.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="fatfs">
+        <File Name="../../../../../../../src/app/fatfs/diskio.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/fatfs/diskio.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/fatfs/ff.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/fatfs/ff.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/fatfs/ffconf.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/fatfs/ffsystem.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/fatfs/ffunicode.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="bleapp">
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_client_api_demo.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_client_api_demo.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_client_api_multi_conn_demo.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_client_api_multi_conn_demo.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_client_peer_manager.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_client_util.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_client_util.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_gap.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_gap.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_server_api_demo.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_server_api_demo.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_server_wifi_app.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_server_wifi_app.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_server_wifi_prof.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_server_wifi_prof.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_uart_if.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_uart_if.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_bt_app.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_bt_app.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_bt_util.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_bt_util.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_mesh.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_mesh_gen_level_server.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_mesh_gen_onoff_client.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_mesh_gen_onoff_server.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_mesh_health_server.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_mesh_light_model.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_mesh_node_demo.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/bleapp/wm_ble_mesh_vnd_model.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="factorycmd">
+        <File Name="../../../../../../../src/app/factorycmd/factory_atcmd.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/factorycmd/factory_atcmd.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+    </VirtualDirectory>
+    <VirtualDirectory Name="network">
+      <VirtualDirectory Name="api2.0">
+        <File Name="../../../../../../../src/network/api2.0.3/tls_netconn.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/network/api2.0.3/tls_netconn.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/network/api2.0.3/tls_sockets.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="lwip2.0">
+        <VirtualDirectory Name="api">
+          <File Name="../../../../../../../src/network/lwip2.0.3/api/api_lib.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/api/api_msg.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/api/err.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/api/netbuf.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/api/netdb.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/api/netifapi.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/api/pppapi.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/api/sockets.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/api/tcpip.c">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+        <VirtualDirectory Name="core">
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/alg.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/def.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/dns.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/inet_chksum.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/init.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/ip.c">
+            <FileOption/>
+          </File>
+          <VirtualDirectory Name="ipv4">
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv4/autoip.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv4/dhcp.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv4/etharp.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv4/icmp.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv4/igmp.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv4/ip4.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv4/ip4_addr.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv4/ip4_frag.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv4/ip_frag.c" ExcludeProjConfig="BuildSet">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="ipv6">
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv6/dhcp6.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv6/ethip6.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv6/icmp6.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv6/inet6.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv6/ip6.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv6/ip6_addr.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv6/ip6_frag.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv6/mld6.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv6/nd6.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/mem.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/memp.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/netif.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/pbuf.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/raw.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/stats.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/sys.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/tcp.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/tcp_in.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/tcp_out.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/timeouts.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/timers.c" ExcludeProjConfig="BuildSet">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/udp.c">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+        <VirtualDirectory Name="include">
+          <VirtualDirectory Name="arch">
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/arch/cc.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/arch/perf.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/arch/sys_arch.h">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="lwip">
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/alg.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/api.h">
+              <FileOption/>
+            </File>
+            <VirtualDirectory Name="apps">
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/fs.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/httpd.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/httpd_opts.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/lwiperf.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/mdns.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/mdns_opts.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/mdns_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/mqtt.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/mqtt_opts.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/netbiosns.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/netbiosns_opts.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/snmp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/snmpv3.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/snmp_core.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/snmp_mib2.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/snmp_opts.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/snmp_scalar.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/snmp_table.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/snmp_threadsync.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/sntp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/sntp_opts.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/tftp_opts.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/tftp_server.h">
+                <FileOption/>
+              </File>
+            </VirtualDirectory>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/arch.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/autoip.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/debug.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/def.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/dhcp.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/dhcp6.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/dns.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/err.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/errno.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/etharp.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/ethip6.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/icmp.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/icmp6.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/igmp.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/inet.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/inet_chksum.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/init.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/ip.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/ip4.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/ip4_addr.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/ip4_frag.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/ip6.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/ip6_addr.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/ip6_frag.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/ip_addr.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/ip_frag.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/lwipopts.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/mem.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/memp.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/mld6.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/nd6.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/netbuf.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/netdb.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/netif.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/netifapi.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/opt.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/pbuf.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/pppapi.h">
+              <FileOption/>
+            </File>
+            <VirtualDirectory Name="priv">
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/priv/api_msg.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/priv/memp_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/priv/memp_std.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/priv/nd6_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/priv/tcpip_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/priv/tcp_priv.h">
+                <FileOption/>
+              </File>
+            </VirtualDirectory>
+            <VirtualDirectory Name="prot">
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/autoip.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/dhcp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/dns.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/etharp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/ethernet.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/icmp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/icmp6.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/igmp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/ip.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/ip4.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/ip6.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/mld6.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/nd6.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/tcp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/udp.h">
+                <FileOption/>
+              </File>
+            </VirtualDirectory>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/raw.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/sio.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/snmp.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/sockets.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/stats.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/sys.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/tcp.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/tcpip.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/timeouts.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/timers.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/udp.h">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="netif">
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/etharp.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ethernet.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ethernetif.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/lowpan6.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/lowpan6_opts.h">
+              <FileOption/>
+            </File>
+            <VirtualDirectory Name="ppp">
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/ccp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/chap-md5.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/chap-new.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/chap_ms.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/eap.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/ecp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/eui64.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/fsm.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/ipcp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/ipv6cp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/lcp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/magic.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/mppe.h">
+                <FileOption/>
+              </File>
+              <VirtualDirectory Name="polarssl">
+                <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/polarssl/arc4.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/polarssl/des.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/polarssl/md4.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/polarssl/md5.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/polarssl/sha1.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/ppp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/pppapi.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/pppcrypt.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/pppdebug.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/pppoe.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/pppol2tp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/pppos.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/ppp_impl.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/ppp_opts.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/upap.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/vj.h">
+                <FileOption/>
+              </File>
+            </VirtualDirectory>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/slipif.h">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="posix">
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/posix/errno.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/posix/netdb.h">
+              <FileOption/>
+            </File>
+            <VirtualDirectory Name="sys">
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/posix/sys/socket.h">
+                <FileOption/>
+              </File>
+            </VirtualDirectory>
+          </VirtualDirectory>
+        </VirtualDirectory>
+        <VirtualDirectory Name="netif">
+          <File Name="../../../../../../../src/network/lwip2.0.3/netif/ethernet.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/netif/ethernetif.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/netif/lowpan6.c" ExcludeProjConfig="BuildSet">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/netif/slipif.c" ExcludeProjConfig="BuildSet">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/netif/wm_ethernet.c">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+        <File Name="../../../../../../../src/network/lwip2.0.3/sys_arch.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+    </VirtualDirectory>
+    <File Name="../../../../../../../app/main.c">
+      <FileOption/>
+    </File>
+    <VirtualDirectory Name="bt">
+      <VirtualDirectory Name="blehost">
+        <VirtualDirectory Name="docs">
+          <VirtualDirectory Name="ble_hs"/>
+          <VirtualDirectory Name="ble_setup"/>
+          <VirtualDirectory Name="btshell"/>
+          <VirtualDirectory Name="mesh"/>
+        </VirtualDirectory>
+        <VirtualDirectory Name="ext">
+          <VirtualDirectory Name="tinycrypt">
+            <VirtualDirectory Name="include">
+              <VirtualDirectory Name="tinycrypt">
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/aes.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/cbc_mode.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/ccm_mode.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/cmac_mode.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/constants.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/ctr_mode.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/ctr_prng.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/ecc.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/ecc_dh.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/ecc_dsa.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/ecc_platform_specific.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/hmac.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/hmac_prng.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/sha256.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt/utils.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+            </VirtualDirectory>
+            <VirtualDirectory Name="src">
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/aes_decrypt.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/aes_encrypt.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/bleutils.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/cbc_mode.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/ccm_mode.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/cmac_mode.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/ctr_mode.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/ctr_prng.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/ecc.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/ecc_dh.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/ecc_dsa.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/ecc_platform_specific.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/hmac.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/hmac_prng.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/ext/tinycrypt/src/sha256.c">
+                <FileOption/>
+              </File>
+            </VirtualDirectory>
+          </VirtualDirectory>
+        </VirtualDirectory>
+        <VirtualDirectory Name="nimble">
+          <VirtualDirectory Name="host">
+            <VirtualDirectory Name="include">
+              <VirtualDirectory Name="host">
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_att.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_eddystone.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_gap.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_gatt.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_hs.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_hs_adv.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_hs_hci.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_hs_id.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_hs_log.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_hs_mbuf.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_hs_stop.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_ibeacon.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_l2cap.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_monitor.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_sm.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_store.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/include/host/ble_uuid.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+            </VirtualDirectory>
+            <VirtualDirectory Name="mesh">
+              <VirtualDirectory Name="include">
+                <VirtualDirectory Name="mesh">
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/access.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/cfg_cli.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/cfg_srv.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/glue.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/health_cli.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/health_srv.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/main.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/mesh.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/model_cli.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/model_srv.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/porting.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/proxy.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/slist.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh/testing.h">
+                    <FileOption/>
+                  </File>
+                </VirtualDirectory>
+              </VirtualDirectory>
+              <VirtualDirectory Name="src">
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/access.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/access.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/adv.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/adv.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/atomic.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/beacon.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/beacon.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/cfg_cli.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/cfg_srv.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/crypto.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/crypto.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/foundation.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/friend.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/friend.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/glue.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/health_cli.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/health_srv.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/light_model.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/light_model.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/lpn.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/lpn.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/mesh.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/mesh_priv.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/model_cli.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/model_srv.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/net.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/net.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/nodes.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/nodes.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/prov.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/prov.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/proxy.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/proxy.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/settings.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/settings.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/shell.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/shell.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/testing.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/testing.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/transport.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/transport.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/mesh/src/wm_ble_mesh_store.c">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+            </VirtualDirectory>
+            <VirtualDirectory Name="services">
+              <VirtualDirectory Name="gap">
+                <VirtualDirectory Name="include">
+                  <VirtualDirectory Name="services">
+                    <VirtualDirectory Name="gap">
+                      <File Name="../../../../../../../src/bt/blehost/nimble/host/services/gap/include/services/gap/ble_svc_gap.h">
+                        <FileOption/>
+                      </File>
+                    </VirtualDirectory>
+                  </VirtualDirectory>
+                </VirtualDirectory>
+                <VirtualDirectory Name="src">
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/services/gap/src/ble_svc_gap.c">
+                    <FileOption/>
+                  </File>
+                </VirtualDirectory>
+              </VirtualDirectory>
+              <VirtualDirectory Name="gatt">
+                <VirtualDirectory Name="include">
+                  <VirtualDirectory Name="services">
+                    <VirtualDirectory Name="gatt">
+                      <File Name="../../../../../../../src/bt/blehost/nimble/host/services/gatt/include/services/gatt/ble_svc_gatt.h">
+                        <FileOption/>
+                      </File>
+                    </VirtualDirectory>
+                  </VirtualDirectory>
+                </VirtualDirectory>
+                <VirtualDirectory Name="src">
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/services/gatt/src/ble_svc_gatt.c">
+                    <FileOption/>
+                  </File>
+                </VirtualDirectory>
+              </VirtualDirectory>
+            </VirtualDirectory>
+            <VirtualDirectory Name="src">
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_att.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_att_clt.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_att_cmd.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_att_cmd_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_att_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_att_svr.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_eddystone.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_gap.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_gap_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_gattc.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_gatts.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_gatts_lcl.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_gatt_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_adv.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_adv_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_atomic.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_atomic_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_cfg.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_conn.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_conn_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_flow.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_flow_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_hci.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_hci_cmd.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_hci_evt.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_hci_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_hci_util.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_id.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_id_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_log.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_mbuf.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_mbuf_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_misc.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_mqueue.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_periodic_sync.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_periodic_sync_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_pvcy.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_pvcy_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_shutdown.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_startup.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_startup_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_hs_stop.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_ibeacon.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_l2cap.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_l2cap_coc.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_l2cap_coc_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_l2cap_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_l2cap_sig.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_l2cap_sig_cmd.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_l2cap_sig_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_monitor.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_monitor_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_sm.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_sm_alg.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_sm_cmd.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_sm_lgcy.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_sm_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_sm_sc.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_store.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_store_util.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_uuid.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/host/src/ble_uuid_priv.h">
+                <FileOption/>
+              </File>
+            </VirtualDirectory>
+            <VirtualDirectory Name="store">
+              <VirtualDirectory Name="config">
+                <VirtualDirectory Name="include">
+                  <VirtualDirectory Name="store">
+                    <VirtualDirectory Name="config">
+                      <File Name="../../../../../../../src/bt/blehost/nimble/host/store/config/include/store/config/ble_store_config.h">
+                        <FileOption/>
+                      </File>
+                    </VirtualDirectory>
+                  </VirtualDirectory>
+                </VirtualDirectory>
+                <VirtualDirectory Name="src">
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/store/config/src/ble_store_config.c">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/store/config/src/ble_store_config_priv.h">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/store/config/src/ble_store_nvram.c">
+                    <FileOption/>
+                  </File>
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/store/config/src/wm_bt_storage.c">
+                    <FileOption/>
+                  </File>
+                </VirtualDirectory>
+              </VirtualDirectory>
+              <VirtualDirectory Name="ram">
+                <VirtualDirectory Name="include">
+                  <VirtualDirectory Name="store">
+                    <VirtualDirectory Name="ram">
+                      <File Name="../../../../../../../src/bt/blehost/nimble/host/store/ram/include/store/ram/ble_store_ram.h">
+                        <FileOption/>
+                      </File>
+                    </VirtualDirectory>
+                  </VirtualDirectory>
+                </VirtualDirectory>
+                <VirtualDirectory Name="src">
+                  <File Name="../../../../../../../src/bt/blehost/nimble/host/store/ram/src/ble_store_ram.c">
+                    <FileOption/>
+                  </File>
+                </VirtualDirectory>
+              </VirtualDirectory>
+            </VirtualDirectory>
+            <VirtualDirectory Name="util">
+              <VirtualDirectory Name="include">
+                <VirtualDirectory Name="host">
+                  <VirtualDirectory Name="util">
+                    <File Name="../../../../../../../src/bt/blehost/nimble/host/util/include/host/util/util.h">
+                      <FileOption/>
+                    </File>
+                  </VirtualDirectory>
+                </VirtualDirectory>
+              </VirtualDirectory>
+              <VirtualDirectory Name="src">
+                <File Name="../../../../../../../src/bt/blehost/nimble/host/util/src/addr.c">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+            </VirtualDirectory>
+          </VirtualDirectory>
+          <VirtualDirectory Name="include">
+            <VirtualDirectory Name="nimble">
+              <File Name="../../../../../../../src/bt/blehost/nimble/include/nimble/ble.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/include/nimble/ble_hci_trans.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/include/nimble/hci_common.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/include/nimble/nimble_npl.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/include/nimble/nimble_opt.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/nimble/include/nimble/nimble_opt_auto.h">
+                <FileOption/>
+              </File>
+            </VirtualDirectory>
+          </VirtualDirectory>
+          <VirtualDirectory Name="transport">
+            <VirtualDirectory Name="uart">
+              <VirtualDirectory Name="include">
+                <VirtualDirectory Name="transport">
+                  <VirtualDirectory Name="uart">
+                    <File Name="../../../../../../../src/bt/blehost/nimble/transport/uart/include/transport/uart/ble_hci_uart.h">
+                      <FileOption/>
+                    </File>
+                  </VirtualDirectory>
+                </VirtualDirectory>
+              </VirtualDirectory>
+              <VirtualDirectory Name="src">
+                <File Name="../../../../../../../src/bt/blehost/nimble/transport/uart/src/ble_hci_uart.c">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+            </VirtualDirectory>
+          </VirtualDirectory>
+        </VirtualDirectory>
+        <VirtualDirectory Name="porting">
+          <VirtualDirectory Name="w800">
+            <VirtualDirectory Name="include">
+              <VirtualDirectory Name="hal">
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/hal/hal_timer.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/hal/hal_uart.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <VirtualDirectory Name="log">
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/log/log.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <VirtualDirectory Name="logcfg">
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/logcfg/logcfg.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <VirtualDirectory Name="log_common">
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/log_common/ignore.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/log_common/log_common.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <VirtualDirectory Name="mem">
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/mem/mem.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <VirtualDirectory Name="modlog">
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/modlog/modlog.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <VirtualDirectory Name="nimble">
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/nimble/nimble_npl_os.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/nimble/nimble_port.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/nimble/nimble_port_freertos.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/nimble/tls_nimble.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <VirtualDirectory Name="os">
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/os/endian.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/os/npl_freertos.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/os/os.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/os/os_cputime.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/os/os_error.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/os/os_mbuf.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/os/os_mempool.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/os/os_trace_api.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/os/queue.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/os/util.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <VirtualDirectory Name="stats">
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/stats/stats.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <VirtualDirectory Name="syscfg">
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/syscfg/syscfg.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <VirtualDirectory Name="sysflash">
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/sysflash/sysflash.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <VirtualDirectory Name="sysinit">
+                <File Name="../../../../../../../src/bt/blehost/porting/w800/include/sysinit/sysinit.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+            </VirtualDirectory>
+            <VirtualDirectory Name="src">
+              <File Name="../../../../../../../src/bt/blehost/porting/w800/src/endian.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/porting/w800/src/mem.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/porting/w800/src/nimble_port.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/porting/w800/src/npl_os_freertos.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/porting/w800/src/os_mbuf.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/porting/w800/src/os_mempool.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/porting/w800/src/os_msys_init.c">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/blehost/porting/w800/src/tls_nimble.c">
+                <FileOption/>
+              </File>
+            </VirtualDirectory>
+          </VirtualDirectory>
+        </VirtualDirectory>
+      </VirtualDirectory>
+    </VirtualDirectory>
+  </VirtualDirectory>
+  <VirtualDirectory Name="platform">
+    <VirtualDirectory Name="arch">
+      <VirtualDirectory Name="xt804">
+        <VirtualDirectory Name="bsp">
+          <File Name="../../../../../../../platform/arch/xt804/bsp/board_init.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../platform/arch/xt804/bsp/isr.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../platform/arch/xt804/bsp/startup.S">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../platform/arch/xt804/bsp/system.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../platform/arch/xt804/bsp/trap_c.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../platform/arch/xt804/bsp/vectors.S">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+        <VirtualDirectory Name="libc">
+          <File Name="../../../../../../../platform/arch/xt804/libc/libc_port.c">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+      </VirtualDirectory>
+    </VirtualDirectory>
+    <VirtualDirectory Name="common">
+      <VirtualDirectory Name="fwup">
+        <File Name="../../../../../../../platform/common/fwup/wm_fwup.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="mem">
+        <File Name="../../../../../../../platform/common/mem/wm_mem.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="params">
+        <File Name="../../../../../../../platform/common/params/wm_param.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../platform/common/params/wm_param.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="task">
+        <File Name="../../../../../../../platform/common/task/wm_wl_mbox.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../platform/common/task/wm_wl_task.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../platform/common/task/wm_wl_timers.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="utils">
+        <File Name="../../../../../../../platform/common/utils/utils.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="crypto">
+        <File Name="../../../../../../../platform/common/crypto/wm_crypto_hard.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../platform/common/crypto/wm_crypto_hard_mbed.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+    </VirtualDirectory>
+    <VirtualDirectory Name="inc">
+      <File Name="../../../../../../../platform/inc/bitops.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../platform/inc/tls_common.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../platform/inc/tls_ieee80211.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../platform/inc/tls_wireless.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../platform/inc/utils.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../platform/inc/wm_dbg.h">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+    <VirtualDirectory Name="drivers">
+      <VirtualDirectory Name="7816">
+        <File Name="../../../../../../../platform/drivers/7816/wm_7816.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="adc">
+        <File Name="../../../../../../../platform/drivers/adc/wm_adc.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../platform/drivers/adc/wm_polyfit.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="cpu">
+        <File Name="../../../../../../../platform/drivers/cpu/wm_cpu.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="dma">
+        <File Name="../../../../../../../platform/drivers/dma/wm_dma.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="efuse">
+        <File Name="../../../../../../../platform/drivers/efuse/wm_efuse.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="flash">
+        <File Name="../../../../../../../platform/drivers/flash/wm_fls.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../platform/drivers/flash/wm_fls_gd25qxx.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="gpio">
+        <File Name="../../../../../../../platform/drivers/gpio/wm_gpio.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../platform/drivers/gpio/wm_gpio_afsel.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="i2c">
+        <File Name="../../../../../../../platform/drivers/i2c/wm_i2c.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="i2s">
+        <File Name="../../../../../../../platform/drivers/i2s/wm_i2s.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="internalflash">
+        <File Name="../../../../../../../platform/drivers/internalflash/wm_internal_fls.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="io">
+        <File Name="../../../../../../../platform/drivers/io/wm_io.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="irq">
+        <File Name="../../../../../../../platform/drivers/irq/wm_irq.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="pmu">
+        <File Name="../../../../../../../platform/drivers/pmu/wm_pmu.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="pwm">
+        <File Name="../../../../../../../platform/drivers/pwm/wm_pwm.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="rtc">
+        <File Name="../../../../../../../platform/drivers/rtc/wm_rtc.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="sasc">
+        <File Name="../../../../../../../platform/drivers/sasc/wm_sasc.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="spi">
+        <File Name="../../../../../../../platform/drivers/spi/wm_hostspi.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../platform/drivers/spi/wm_spi_hal.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="timer">
+        <File Name="../../../../../../../platform/drivers/timer/wm_timer.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="uart">
+        <File Name="../../../../../../../platform/drivers/uart/wm_uart.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="watchdog">
+        <File Name="../../../../../../../platform/drivers/watchdog/wm_watchdog.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="hspi">
+        <File Name="../../../../../../../platform/drivers/hspi/wm_hspi.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="sdio_host">
+        <File Name="../../../../../../../platform/drivers/sdio_host/wm_sdio_host.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="psram">
+        <File Name="../../../../../../../platform/drivers/psram/wm_psram.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="touchsensor">
+        <File Name="../../../../../../../platform/drivers/touchsensor/wm_touchsensor.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="lcd">
+        <File Name="../../../../../../../platform/drivers/lcd/wm_lcd.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+    </VirtualDirectory>
+    <VirtualDirectory Name="sys">
+      <File Name="../../../../../../../platform/sys/tls_sys.c">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../platform/sys/tls_sys.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../platform/sys/wm_main.c">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+  </VirtualDirectory>
+  <VirtualDirectory Name="ld">
+    <VirtualDirectory Name="w800">
+      <File Name="../../../../../../../ld/w800/gcc_csky.ld">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+  </VirtualDirectory>
+  <VirtualDirectory Name="include">
+    <VirtualDirectory Name="arch">
+      <VirtualDirectory Name="xt804">
+        <File Name="../../../../../../../include/arch/xt804/csi_config.h">
+          <FileOption/>
+        </File>
+        <VirtualDirectory Name="csi_core">
+          <File Name="../../../../../../../include/arch/xt804/csi_core/core_804.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../include/arch/xt804/csi_core/csi_core.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../include/arch/xt804/csi_core/csi_gcc.h">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+        <VirtualDirectory Name="csi_dsp">
+          <File Name="../../../../../../../include/arch/xt804/csi_dsp/csky_common_tables.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../include/arch/xt804/csi_dsp/csky_const_structs.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../include/arch/xt804/csi_dsp/csky_math.h">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+      </VirtualDirectory>
+    </VirtualDirectory>
+    <File Name="../../../../../../../include/wm_config.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../include/wm_debug.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../include/wm_include.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../include/wm_ram_config.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../include/wm_regs.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../include/wm_type_def.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../include/wm_wifi_config.h">
+      <FileOption/>
+    </File>
+    <VirtualDirectory Name="driver">
+      <File Name="../../../../../../../include/driver/wm_7816.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_adc.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_cpu.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_dma.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_efuse.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_flash.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_flash_map.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_fls_gd25qxx.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_gpio.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_gpio_afsel.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_hostspi.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_hspi.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_i2c.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_i2s.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_internal_flash.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_io.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_irq.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_lcd.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_pmu.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_psram.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_pwm.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_rtc.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_sasc.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_sdio_host.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_timer.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_tipc.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_uart.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_watchdog.h">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+    <VirtualDirectory Name="os">
+      <File Name="../../../../../../../include/os/wm_osal.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/os/wm_os_config.h">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+    <VirtualDirectory Name="platform">
+      <File Name="../../../../../../../include/platform/aes.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/platform/wm_crypto_hard.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/platform/wm_fwup.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/platform/wm_mem.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/platform/wm_params.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/platform/wm_wl_mbox.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/platform/wm_wl_task.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/platform/wm_wl_timers.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/platform/wm_crypto_hard_mbed.h">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+    <VirtualDirectory Name="wifi">
+      <File Name="../../../../../../../include/wifi/litepoint.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/wifi/wm_ieee80211.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/wifi/wm_ieee80211_gcc.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/wifi/wm_wifi.h">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+    <VirtualDirectory Name="net">
+      <File Name="../../../../../../../include/net/wm_socket.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/net/wm_socket2.0.3.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/net/wm_sockets.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/net/wm_sockets2.0.3.h">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+    <VirtualDirectory Name="app">
+      <File Name="../../../../../../../include/app/wm_at_ri_init.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/app/wm_crypto.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/app/wm_dhcp_server.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/app/wm_dns_server.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/app/wm_http_client.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/app/wm_netif.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/app/wm_netif2.0.3.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/app/wm_ntp.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/app/wm_ssl_server.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/app/wm_webserver.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/app/wm_wifi_oneshot.h">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+    <VirtualDirectory Name="bt">
+      <File Name="../../../../../../../include/bt/wm_ble.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/bt/wm_ble_gatt.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/bt/wm_bt.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/bt/wm_bt_def.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/bt/wm_bt_av.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/bt/wm_bt_hf_client.h">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+  </VirtualDirectory>
+  <VirtualDirectory Name="demo">
+    <VirtualDirectory Name="console">
+      <File Name="../../../../../../../demo/console/wm_demo_console.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../demo/console/wm_demo_console_task.c">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+    <File Name="../../../../../../../demo/wm_7816_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_adc_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_apsta_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_connect_net_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_crypt_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_crypt_hard_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_demo.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_flash_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_gpio_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_http_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_https_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_i2c_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_i2s_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_iperf_auto_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_master_spi_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_mbedtls_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_mcast_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_mqtt_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_ntp_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_pmu_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_pwm_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_rsa_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_rtc_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_scan_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_sck_client_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_sck_server_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_socket_client_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_socket_server_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_softap_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_ssl_server_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_ssl_server_demo.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_timer_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_uart_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_udp_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_websockets_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_wps_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_dsp_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_fatfs_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_sdio_host_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_slave_spi_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_touchsensor_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_avoid_copy_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_lcd_demo.c">
+      <FileOption/>
+    </File>
+  </VirtualDirectory>
+  <DebugSessions>
+    <watchExpressions/>
+    <memoryExpressions/>
+    <statistics/>
+    <peripheralTabs/>
+    <WatchDisplayFormat/>
+    <LocalDisplayFormat/>
+    <debugLayout/>
+    <memoryTabColSizeExpressions/>
+  </DebugSessions>
+  <Dependencies Name="BuildSet"/>
+  <VendorInfo>
+    <VendorName>NULL</VendorName>
+  </VendorInfo>
+  <BuildConfigs>
+    <BuildConfig Name="BuildSet">
+      <Target>
+        <ROMBank Selected="1">
+          <ROM1>
+            <InUse>yes</InUse>
+            <Start>0x0</Start>
+            <Size>0x5000</Size>
+          </ROM1>
+          <ROM2>
+            <InUse>no</InUse>
+            <Start/>
+            <Size/>
+          </ROM2>
+          <ROM3>
+            <InUse>no</InUse>
+            <Start/>
+            <Size/>
+          </ROM3>
+          <ROM4>
+            <InUse>no</InUse>
+            <Start/>
+            <Size/>
+          </ROM4>
+          <ROM5>
+            <InUse>no</InUse>
+            <Start/>
+            <Size/>
+          </ROM5>
+        </ROMBank>
+        <RAMBank>
+          <RAM1>
+            <InUse>yes</InUse>
+            <Start>0x20000000</Start>
+            <Size>0x48000</Size>
+            <Init>yes</Init>
+          </RAM1>
+          <RAM2>
+            <InUse>no</InUse>
+            <Start/>
+            <Size/>
+            <Init>yes</Init>
+          </RAM2>
+          <RAM3>
+            <InUse>no</InUse>
+            <Start/>
+            <Size/>
+            <Init>yes</Init>
+          </RAM3>
+          <RAM4>
+            <InUse>no</InUse>
+            <Start/>
+            <Size/>
+            <Init>yes</Init>
+          </RAM4>
+          <RAM5>
+            <InUse>no</InUse>
+            <Start/>
+            <Size/>
+            <Init>yes</Init>
+          </RAM5>
+        </RAMBank>
+        <CPU>ck804ef</CPU>
+        <UseMiniLib>yes</UseMiniLib>
+        <Endian>little</Endian>
+        <UseHardFloat>yes</UseHardFloat>
+        <UseEnhancedLRW>no</UseEnhancedLRW>
+        <UseContinueBuild>no</UseContinueBuild>
+        <UseSemiHost>no</UseSemiHost>
+      </Target>
+      <Output>
+        <OutputName>w800</OutputName>
+        <Type>Executable</Type>
+        <CreateHexFile>no</CreateHexFile>
+        <CreateBinFile>yes</CreateBinFile>
+        <Preprocessor>no</Preprocessor>
+        <Disassmeble>yes</Disassmeble>
+        <CallGraph>no</CallGraph>
+        <Map>yes</Map>
+      </Output>
+      <User>
+        <BeforeCompile>
+          <RunUserProg>no</RunUserProg>
+          <UserProgName/>
+        </BeforeCompile>
+        <BeforeMake>
+          <RunUserProg>no</RunUserProg>
+          <UserProgName/>
+        </BeforeMake>
+        <AfterMake>
+          <RunUserProg>yes</RunUserProg>
+          <UserProgName>../../../../../../../tools/w800/utilities/cdk_aft_build.sh;../../../../../../../tools/w800/utilities/aft_build_project.sh</UserProgName>
+        </AfterMake>
+      </User>
+      <Compiler>
+        <Define>GCC_COMPILE=1;TLS_CONFIG_CPU_XT804=1;NIMBLE_FTR=1</Define>
+        <Undefine/>
+        <Optim>Optimize more (-O2)</Optim>
+        <DebugLevel>Maximum (-g3)</DebugLevel>
+        <IncludePath>$(CDKPath)/CSKY/MinGW/csky-abiv2-elf-toolchain/csky-elfabiv2/include;$(ProjectPath);$(ProjectPath)/../../../../../../../demo;$(ProjectPath)/../../../../../../../include;$(ProjectPath)/../../../../../../../include/app;$(ProjectPath)/../../../../../../../include/arch/xt804;$(ProjectPath)/../../../../../../../include/arch/xt804/csi_core;$(ProjectPath)/../../../../../../../include/arch/xt804/csi_dsp;$(ProjectPath)/../../../../../../../include/bt;$(ProjectPath)/../../../../../../../include/driver;$(ProjectPath)/../../../../../../../include/net;$(ProjectPath)/../../../../../../../include/os;$(ProjectPath)/../../../../../../../include/platform;$(ProjectPath)/../../../../../../../include/wifi;$(ProjectPath)/../../../../../../../platform/common/params;$(ProjectPath)/../../../../../../../platform/drivers/spi;$(ProjectPath)/../../../../../../../platform/inc;$(ProjectPath)/../../../../../../../platform/sys;$(ProjectPath)/../../../../../../../src/app;$(ProjectPath)/../../../../../../../src/app/bleapp;$(ProjectPath)/../../../../../../../src/app/btapp;$(ProjectPath)/../../../../../../../src/app/cJSON;$(ProjectPath)/../../../../../../../src/app/dhcpserver;$(ProjectPath)/../../../../../../../src/app/dnsserver;$(ProjectPath)/../../../../../../../src/app/fatfs;$(ProjectPath)/../../../../../../../src/app/httpclient;$(ProjectPath)/../../../../../../../src/app/iperf;$(ProjectPath)/../../../../../../../src/app/libcoap/include;$(ProjectPath)/../../../../../../../src/app/libwebsockets-2.1-stable;$(ProjectPath)/../../../../../../../src/app/mDNS/mDNSCore;$(ProjectPath)/../../../../../../../src/app/mDNS/mDNSPosix;$(ProjectPath)/../../../../../../../src/app/mbedtls/include;$(ProjectPath)/../../../../../../../src/app/mbedtls/include/mbedtls;$(ProjectPath)/../../../../../../../src/app/mbedtls/ports;$(ProjectPath)/../../../../../../../src/app/mqtt;$(ProjectPath)/../../../../../../../src/app/oneshotconfig;$(ProjectPath)/../../../../../../../src/app/ota;$(ProjectPath)/../../../../../../../src/app/ping;$(ProjectPath)/../../../../../../../src/app/polarssl/include;$(ProjectPath)/../../../../../../../src/app/web;$(ProjectPath)/../../../../../../../src/app/wm_atcmd;$(ProjectPath)/../../../../../../../src/bt/blehost/ext/tinycrypt/include;$(ProjectPath)/../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/include;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/include/host;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/mesh/include;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/mesh/src;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/porting/w800/include;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/services/gap/include;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/services/gap/include/services/gap;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/services/gatt/include;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/services/gatt/include/services/gatt;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/src;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/store/config/include;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/store/config/include/store/config;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/store/config/src;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/store/ram/include;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/store/ram/include/store/ram;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/util/include;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/util/include/host/util;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/include;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/include/nimble;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/transport/uart/include;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/transport/uart/include/transport/uart;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/hal;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/log;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/log_common;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/logcfg;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/mem;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/modlog;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/nimble;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/os;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/stats;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/syscfg;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/sysflash;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/sysinit;$(ProjectPath)/../../../../../../../src/network/api2.0.3;$(ProjectPath)/../../../../../../../src/network/lwip2.0.3/apps/httpd;$(ProjectPath)/../../../../../../../src/network/lwip2.0.3/apps/snmp;$(ProjectPath)/../../../../../../../src/network/lwip2.0.3/include;$(ProjectPath)/../../../../../../../src/network/lwip2.0.3/include/arch;$(ProjectPath)/../../../../../../../src/network/lwip2.0.3/include/lwip;$(ProjectPath)/../../../../../../../src/os/rtos/include</IncludePath>
+        <OtherFlags>-fdata-sections -c</OtherFlags>
+        <Verbose>no</Verbose>
+        <Ansi>no</Ansi>
+        <Syntax>no</Syntax>
+        <Pedantic>no</Pedantic>
+        <PedanticErr>no</PedanticErr>
+        <InhibitWarn>no</InhibitWarn>
+        <AllWarn>yes</AllWarn>
+        <WarnErr>no</WarnErr>
+        <OneElfS>yes</OneElfS>
+        <OneElfSPerData>no</OneElfSPerData>
+        <Fstrict>no</Fstrict>
+      </Compiler>
+      <Asm>
+        <Define/>
+        <Undefine/>
+        <IncludePath>$(CDKPath)/CSKY/csi/csi_core/csi_cdk/;$(CDKPath)/CSKY/csi/csi_core/include/;$(CDKPath)/CSKY/csi/csi_driver/include/;$(ProjectPath);$(ProjectPath)/../../../../../../../include;$(ProjectPath)/../../../../../../../include/arch/xt804;$(ProjectPath)/../../../../../../../include/arch/xt804/csi_core;$(ProjectPath)/../../../../../../../include/arch/xt804/csi_dsp;$(ProjectPath)/../../../../../../../include/os;$(ProjectPath)/../../../../../../../include/platform;$(ProjectPath)/../../../../../../../src/app/bleapp;$(ProjectPath)/../../../../../../../src/app/btapp;$(ProjectPath)/../../../../../../../src/app/fatfs;$(ProjectPath)/../../../../../../../src/bt/blehost/ext/tinycrypt/include/tinycrypt;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/include/host;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/mesh/include/mesh;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/mesh/src;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/services/gap/include/services/gap;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/services/gatt/include/services/gatt;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/src;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/store/config/include/store/config;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/store/config/src;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/store/ram/include/store/ram;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/host/util/include/host/util;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/include/nimble;$(ProjectPath)/../../../../../../../src/bt/blehost/nimble/transport/uart/include/transport/uart;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/hal;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/log;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/log_common;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/logcfg;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/mem;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/modlog;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/nimble;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/os;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/stats;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/syscfg;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/sysflash;$(ProjectPath)/../../../../../../../src/bt/blehost/porting/w800/include/sysinit;$(ProjectPath)/../../../../../../../src/os/rtos/include</IncludePath>
+        <OtherFlags/>
+        <DebugLevel>gdwarf2</DebugLevel>
+      </Asm>
+      <Linker>
+        <Garbage>yes</Garbage>
+        <Garbage2>yes</Garbage2>
+        <LDFile>$(ProjectPath)..\..\..\..\..\..\..\ld\w800\gcc_csky.ld</LDFile>
+        <LibName>btcontroller;wlan;dsp</LibName>
+        <LibPath>..\..\..\..\..\..\..\lib\w800</LibPath>
+        <OtherFlags>-Wl,-zmax-page-size=1024 -mhard-float</OtherFlags>
+        <AutoLDFile>no</AutoLDFile>
+        <LinkType/>
+      </Linker>
+      <Debug>
+        <LoadApplicationAtStartup>yes</LoadApplicationAtStartup>
+        <Connector>ICE</Connector>
+        <StopAt>yes</StopAt>
+        <StopAtText>main</StopAtText>
+        <InitFile>$(ProjectPath)..\..\..\..\..\..\..\tools\w800\utilities\gdb.init</InitFile>
+        <AfterLoadFile/>
+        <AutoRun>yes</AutoRun>
+        <ResetType>Hard Reset</ResetType>
+        <SoftResetVal>0</SoftResetVal>
+        <ResetAfterLoad>no</ResetAfterLoad>
+        <AfterResetFile/>
+        <Dumpcore>no</Dumpcore>
+        <DumpcoreText>$(ProjectPath)/$(ProjectName).cdkcore</DumpcoreText>
+        <ConfigICE>
+          <IP>localhost</IP>
+          <PORT>1025</PORT>
+          <CPUNumber>0</CPUNumber>
+          <Clock>12000</Clock>
+          <Delay>10</Delay>
+          <WaitReset>50</WaitReset>
+          <DDC>yes</DDC>
+          <TRST>no</TRST>
+          <DebugPrint>no</DebugPrint>
+          <Connect>Normal</Connect>
+          <ResetType>soft</ResetType>
+          <SoftResetVal>0</SoftResetVal>
+          <RTOSType>None</RTOSType>
+          <DownloadToFlash>no</DownloadToFlash>
+          <ResetAfterConnect>yes</ResetAfterConnect>
+          <GDBName/>
+          <GDBServerType>Local</GDBServerType>
+          <OtherFlags/>
+        </ConfigICE>
+        <ConfigSIM>
+          <SIMTarget/>
+          <OtherFlags/>
+          <NoGraphic>yes</NoGraphic>
+          <Log>no</Log>
+          <SimTrace>no</SimTrace>
+        </ConfigSIM>
+        <ConfigOpenOCD>
+          <OpenOCDExecutablePath/>
+          <OpenOCDTelnetPortEnable>no</OpenOCDTelnetPortEnable>
+          <OpenOCDTelnetPort>4444</OpenOCDTelnetPort>
+          <OpenOCDTclPortEnable>no</OpenOCDTclPortEnable>
+          <OpenOCDTclPort>6666</OpenOCDTclPort>
+          <OpenOCDConfigOptions/>
+          <OpenOCDTimeout>5000</OpenOCDTimeout>
+        </ConfigOpenOCD>
+      </Debug>
+      <Flash>
+        <InitFile>$(ProjectPath)..\..\..\..\..\..\..\tools\w800\utilities\flashinit</InitFile>
+        <Erase>Erase Sectors</Erase>
+        <Algorithms Path=""/>
+        <Program>no</Program>
+        <Verify>no</Verify>
+        <ResetAndRun>no</ResetAndRun>
+        <ResetType>Soft Reset</ResetType>
+        <SoftResetVal/>
+        <External>no</External>
+        <Command/>
+        <Arguments/>
+      </Flash>
+    </BuildConfig>
+  </BuildConfigs>
+</Project>

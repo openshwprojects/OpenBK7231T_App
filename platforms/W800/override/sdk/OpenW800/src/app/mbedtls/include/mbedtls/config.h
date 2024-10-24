@@ -2733,17 +2733,12 @@
 
 /* Platform options */
 //#define MBEDTLS_PLATFORM_STD_MEM_HDR   <stdlib.h> /**< Header to include if MBEDTLS_PLATFORM_NO_STD_FUNCTIONS is defined. Don't define if no header is needed. */
-#if WM_MEM_DEBUG
-#define MBEDTLS_PLATFORM_STD_CALLOC        calloc /**< Default allocator to use, can be undefined */
-#define MBEDTLS_PLATFORM_STD_FREE            free /**< Default free to use, can be undefined */
-#else
 #ifdef tls_mem_calloc
 #define MBEDTLS_PLATFORM_STD_CALLOC        tls_mem_calloc /**< Default allocator to use, can be undefined */
 #define MBEDTLS_PLATFORM_STD_FREE          tls_mem_free /**< Default free to use, can be undefined */
 #else
 #define MBEDTLS_PLATFORM_STD_CALLOC        calloc /**< Default allocator to use, can be undefined */
 #define MBEDTLS_PLATFORM_STD_FREE            free /**< Default free to use, can be undefined */
-#endif
 #endif
 //#define MBEDTLS_PLATFORM_STD_EXIT            exit /**< Default exit to use, can be undefined */
 //#define MBEDTLS_PLATFORM_STD_TIME            tls_os_get_time /**< Default time to use, can be undefined. MBEDTLS_HAVE_TIME must be enabled */

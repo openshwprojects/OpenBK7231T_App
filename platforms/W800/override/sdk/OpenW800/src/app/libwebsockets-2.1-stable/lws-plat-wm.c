@@ -4,7 +4,7 @@
 #include <wm_sockets.h>
 #include "random.h"
 
-static int _poll ( struct lws_pollfd * fds, unsigned int nfds, int timeout)
+static int poll ( struct lws_pollfd * fds, unsigned int nfds, int timeout)
 {
 	int ret, i, max_fd=0;
 	fd_set readset, writeset;
@@ -70,7 +70,7 @@ LWS_VISIBLE int lws_send_pipe_choked(struct lws *wsi)
 	fds.events = POLLOUT;
 	fds.revents = 0;
 
-	if (_poll(&fds, 1, 0) != 1)
+	if (poll(&fds, 1, 0) != 1)
 		return 1;
 
 	if ((fds.revents & POLLOUT) == 0)
@@ -84,7 +84,7 @@ LWS_VISIBLE int lws_send_pipe_choked(struct lws *wsi)
 LWS_VISIBLE int
 lws_poll_listen_fd(struct lws_pollfd *fd)
 {
-	return _poll(fd, 1, 0);
+	return poll(fd, 1, 0);
 }
 
 int
@@ -129,7 +129,7 @@ lws_plat_service_tsi(struct lws_context *context, int timeout_ms, int tsi)
 			timeout_ms = 0;
 	}
 
-	n = _poll(pt->fds, pt->fds_count, timeout_ms);
+	n = poll(pt->fds, pt->fds_count, timeout_ms);
 
 #if 0//def LWS_OPENSSL_SUPPORT
 	if (!pt->rx_draining_ext_list &&

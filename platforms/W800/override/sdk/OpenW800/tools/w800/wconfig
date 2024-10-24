@@ -1,0 +1,110 @@
+mainmenu "WinnerMicro W800 Configuration"
+
+menu "Firmware Configuration"
+
+    config W800_TARGET_NAME
+        string "target name"
+        default w800
+        help
+            w800 firmware name.
+
+    config W800_IMAGE_TYPE
+        int "image type"
+        default 1
+        help
+            w800 image type.
+
+    config W800_IMAGE_HEADER
+        hex "image header address"
+        default 80D0000
+        help
+            w800 image header address.
+
+    config W800_RUN_ADDRESS
+        hex "image run address"
+        default 80D0400
+        help
+            w800 image run address.
+
+    config W800_UPDATE_ADDRESS
+        hex "image update address"
+        default 8010000
+        help
+            w800 image update address.
+
+    config W800_PRIKEY_SEL
+        int "image key select"
+        default 0
+        help
+            w800 image key select.
+
+    config W800_IMAGE_SIGNATURE
+        int "image signature"
+        default 0
+        help
+            w800 image signature.
+
+    config W800_CODE_ENCRYPT
+        int "image encrypt"
+        default 0
+        help
+            w800 image encrypt.
+
+    config W800_SECBOOT_IMAGE_TYPE
+	int "boot image type"
+        default 0
+        help
+            w800 secboot image type.
+endmenu
+
+menu "Download Configuration"
+
+    config W800_DOWNLOAD_PORT
+        string "download port"
+        default COM3
+        help
+            w800 download port.
+
+    config W800_DOWNLOAD_RATE
+        int "download rate"
+        default 2000000
+        help
+            w800 download rate.
+endmenu
+
+menu "Compile Configuration"
+
+    config W800_USE_LIB
+        bool "enable use lib"
+        default y
+        help
+            w800 sdk use lib.
+			
+    config W800_USE_NIMBLE
+        bool "enable use nimble"
+        default y
+        help
+            w800 sdk use nimble.			
+
+    config W800_FIRMWARE_DEBUG
+        bool "enable JTAG debug"
+        default y
+        help
+            w800 enable JTAG debug.
+endmenu
+
+menu "Toolchain Configuration"
+
+    config W800_TOOLCHAIN_PREFIX
+        string "toolchain prefix"
+        default "csky-abiv2-elf"
+        help
+            w800 toolchain prefix, the common name is csky-abiv2-elf, 
+            you can also use csky-elfabiv2 for minilibc, and csky-elf-noneabiv2 for newlib.
+
+    config W800_TOOLCHAIN_PATH
+        string "toolchain path"
+        default ""
+        help
+            w800 toolchain path, please add / at the end of the path.
+endmenu

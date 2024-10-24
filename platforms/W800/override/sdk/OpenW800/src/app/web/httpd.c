@@ -84,7 +84,6 @@
 #include "lwip/tcp.h"
 #include "lwip/memp.h"
 #include "httpd.h"
-#include "wm_wifi.h"
 #include "wm_fwup.h"
 #include "wm_watchdog.h"
 #include "wm_params.h"

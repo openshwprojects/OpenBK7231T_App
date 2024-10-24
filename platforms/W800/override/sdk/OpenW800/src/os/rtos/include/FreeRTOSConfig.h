@@ -112,9 +112,6 @@ to exclude the API function. */
 #define configUSE_STATS_FORMATTING_FUNCTIONS  (1)
 #define INCLUDE_xTaskGetCurrentTaskHandle  (1)
 
-#define configUSE_APPLICATION_TASK_TAG 1
-#define INCLUDE_xQueueGetMutexHolder   1
-
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION  0
 
 #define configUSE_RECURSIVE_MUTEXES    1

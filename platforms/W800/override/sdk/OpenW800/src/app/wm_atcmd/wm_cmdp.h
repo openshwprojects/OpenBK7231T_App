@@ -188,7 +188,7 @@ int tls_cmd_pmtf(void);
 void tls_cmd_reset_sys(void);
 int tls_cmd_get_ver( struct tls_cmd_ver_t *ver);
 int tls_cmd_scan( enum tls_cmd_mode mode);
-int tls_cmd_scan_by_param( enum tls_cmd_mode mode, u16 channellist, u32 times, u16 switchinterval, u16 scantype);
+int tls_cmd_scan_by_param( enum tls_cmd_mode mode, u16 channellist, u32 times, u16 switchinterval);
 int tls_cmd_join( enum tls_cmd_mode mode,struct tls_cmd_connect_t *conn);
 int tls_cmd_disconnect_network(u8 mode);
 int tls_cmd_get_link_status(struct tls_cmd_link_status_t *lks);

@@ -3,7 +3,6 @@
 #define HTTP_CLIENT_WRAPPER
 
 #include "wm_config.h"
-#include "lwip/opt.h"
 #include "lwip/arch.h"
 
 #if TLS_CONFIG_HTTP_CLIENT_SECURE

@@ -88,11 +88,10 @@ int wm_sdh_config(void)
 
 	tls_sys_clk_get(&sysclk);
 	SDIO_HOST->MMC_CARDSEL = 0xC0 | (sysclk.cpuclk / 2 - 1);//0xd3; //enable module, enable mmcclk
-	SDIO_HOST->MMC_CTL = 0x13;//0xC3; //4bits, low speed, 1/4 divider, auto transfer, mmc mode.
+	SDIO_HOST->MMC_CTL = 0xD3;//0xC3; //4bits, low speed, 1/4 divider, auto transfer, mmc mode.
 	SDIO_HOST->MMC_INT_MASK = 0x100; //unmask sdio data interrupt.
 	SDIO_HOST->MMC_CRCCTL = 0xC0; //
 	SDIO_HOST->MMC_TIMEOUTCNT = 0xff;
-	SDIO_HOST->MMC_IO_MBCTL |= 0xf0;
 	return 0;
 }
 
@@ -114,14 +113,10 @@ int wm_sd_card_initialize(uint32_t *rca)
 	// CMD 3  Get RCA.
 	//======================================================
 begin:
-	//Send CMD0 + 8 null clock to reset and stablize
-	for (int i = 0; i < 7 - recnt; i++)
-	{
-		wm_sdh_send_cmd(0, 0, 0x84);
-		sm_sdh_wait_interrupt(0, -1);
-	}
+	wm_sdh_send_cmd(0, 0, 0x04); //Send CMD0
+	sm_sdh_wait_interrupt(0, -1);
 	delay_cnt(1000);
-	wm_sdh_send_cmd(8, 0x1AA, 0xC4); //Send CMD8
+	wm_sdh_send_cmd(8, 0x1AA, 0x44); //Send CMD8
 	sm_sdh_wait_interrupt(0, -1);
 	wm_sdh_get_response(respCmd, 2);
 	sh_dumpBuffer("CMD8 respCmd", (char *)respCmd, 5);
@@ -134,14 +129,14 @@ begin:
 	}
 	while(1)
 	{
-		wm_sdh_send_cmd(55, 0, 0xC4); //Send CMD55
+		wm_sdh_send_cmd(55, 0, 0x44); //Send CMD55
 		sm_sdh_wait_interrupt(0, -1);
 		wm_sdh_get_response(respCmd, 2);
 		sh_dumpBuffer("CMD55 respCmd", (char *)respCmd, 5);
 		if((respCmd[1] & 0xFF) != 55)
 			goto end;
 
-		wm_sdh_send_cmd(41, 0xC0100000, 0xC4); //Send ACMD41
+		wm_sdh_send_cmd(41, 0xC0100000, 0x44); //Send ACMD41
 		sm_sdh_wait_interrupt(0, -1);
 		sm_sdh_wait_interrupt(3, 1000); //由于sd规范中，Acmd41返回的crc永远是11111，也就是应该忽略crc;这里的crc错误应该忽略。
 		wm_sdh_get_response(respCmd, 2);
@@ -155,14 +150,14 @@ begin:
 		}
 	}
 
-	wm_sdh_send_cmd(2, 0, 0xD4); //Send CMD2
+	wm_sdh_send_cmd(2, 0, 0x54); //Send CMD2
 	sm_sdh_wait_interrupt(0, -1);
 	sm_sdh_wait_interrupt(3, 1000);
 	wm_sdh_get_response(respCmd, 4);
 	sh_dumpBuffer("CMD2 respCmd", (char *)respCmd, 16);
 	if((respCmd[3] >> 24 & 0xFF) != 0x3F) //sd规范定义固定为0x3F,所以导致crc错误
 		goto end;
-	wm_sdh_send_cmd(3, 0, 0xC4); //Send CMD3
+	wm_sdh_send_cmd(3, 0, 0x44); //Send CMD3
 	sm_sdh_wait_interrupt(0, -1);
 	wm_sdh_get_response(respCmd, 2);
 	sh_dumpBuffer("CMD3 respCmd", (char *)respCmd, 5);
@@ -184,7 +179,6 @@ static uint32_t SD_GetCapacity(uint8_t *csd, SD_CardInfo_t *SDCardInfo)
 
   if((csd[0]&0xC0)==0x40)//判断bit126是否为1
   { 
-	SDCardInfo->CSDVer = 2;
     csize = csd[9] + ((uint32_t)csd[8] << 8) + ((uint32_t)(csd[7] & 63) << 16) + 1;
     Capacity = csize << 9;
 	SDCardInfo->CardCapacity = (long long)Capacity*1024;
@@ -192,7 +186,6 @@ static uint32_t SD_GetCapacity(uint8_t *csd, SD_CardInfo_t *SDCardInfo)
   }
   else
   { 
-	SDCardInfo->CSDVer = 1;
     n = (csd[5] & 0x0F) + ((csd[10] & 0x80) >> 7) + ((csd[9] & 0x03) << 1) + 2;
     csize = (csd[8] >> 6) + ((uint16_t)csd[7] << 2) + ((uint16_t)(csd[6] & 0x03) << 10) + 1;
     Capacity = (uint32_t)csize << (n - 10);
@@ -226,7 +219,7 @@ int wm_sd_card_set_blocklen(uint32_t blocklen)
 {
 	int ret = -1;
 	uint32_t respCmd[2];
-	wm_sdh_send_cmd(16, blocklen, 0xC4); //Send CMD16
+	wm_sdh_send_cmd(16, blocklen, 0x44); //Send CMD16
 	sm_sdh_wait_interrupt(0, -1);
 	wm_sdh_get_response(respCmd, 2);
 	sh_dumpBuffer("CMD16 respCmd", (char *)respCmd, 5);
@@ -241,7 +234,7 @@ int wm_sd_card_select(uint32_t rca)
 {
 	int ret = -1;
 	uint32_t respCmd[2];
-	wm_sdh_send_cmd(7, rca<<16, 0xC4); //Send CMD7
+	wm_sdh_send_cmd(7, rca<<16, 0x44); //Send CMD7
 	sm_sdh_wait_interrupt(0, -1);
 	wm_sdh_get_response(respCmd, 2);
 	sh_dumpBuffer("CMD7 respCmd", (char *)respCmd, 5);
@@ -254,7 +247,7 @@ end:
 
 void wm_sd_card_deselect()
 {
-	wm_sdh_send_cmd(7, 0, 0x84); //Send CMD7
+	wm_sdh_send_cmd(7, 0, 0x04); //Send CMD7
 	sm_sdh_wait_interrupt(0, -1);
 }
 
@@ -266,7 +259,7 @@ int wm_sd_card_query_status(uint32_t rca, uint32_t *respCmd0)
 	uint8_t error_state = 0;
 #endif	
 	uint32_t respCmd[2];
-	wm_sdh_send_cmd(13, rca<<16, 0xC4); //Send CMD13
+	wm_sdh_send_cmd(13, rca<<16, 0x44); //Send CMD13
 	sm_sdh_wait_interrupt(0, -1);
 	wm_sdh_get_response(respCmd, 2);
 	sh_dumpBuffer("CMD13 respCmd", (char *)respCmd, 5);
@@ -295,7 +288,7 @@ int wm_sd_card_switch_func(uint8_t speed_mode)
 	int i;
 	uint32_t respCmd[2];
 
-	wm_sdh_send_cmd(6, 0x00fffff1, 0xC4); //Send CMD6
+	wm_sdh_send_cmd(6, 0x00fffff1, 0x44); //Send CMD6
 	sm_sdh_wait_interrupt(0, -1);
 	wm_sdh_get_response(respCmd, 2);
 	sh_dumpBuffer("CMD6 respCmd", (char *)respCmd, 5);
@@ -303,7 +296,7 @@ int wm_sd_card_switch_func(uint8_t speed_mode)
 		goto end;
 	SDIO_HOST->BUF_CTL = 0x4020; //disable dma, read sd card
 	SDIO_HOST->MMC_INT_SRC |= 0x7ff; // clear all firstly
-	SDIO_HOST->MMC_IO  = 0x83;   //!!!read data, auto transfer
+	SDIO_HOST->MMC_IO  = 0x3;   //!!!read data, auto transfer
 	sm_sdh_wait_interrupt(1, -1);
 	TEST_DEBUG("read complete\n");
 	for(i = 0; i < 128; i++)
@@ -322,7 +315,7 @@ int wm_sd_card_switch_func(uint8_t speed_mode)
 	TEST_DEBUG("the value of byte 17~20 is 0x%x\n", respCmd[1]);
 	if(respCmd[1] & 0xF) //support high speed
 	{
-		wm_sdh_send_cmd(6, 0x80fffff0 | speed_mode, 0xC4); //Send CMD6
+		wm_sdh_send_cmd(6, 0x80fffff0 | speed_mode, 0x44); //Send CMD6
 		sm_sdh_wait_interrupt(0, -1);
 		wm_sdh_get_response(respCmd, 2);
 		sh_dumpBuffer("CMD6 respCmd", (char *)respCmd, 5);
@@ -330,7 +323,7 @@ int wm_sd_card_switch_func(uint8_t speed_mode)
 			goto end;
 		SDIO_HOST->BUF_CTL = 0x4020; //disable dma, read sd card
 		SDIO_HOST->MMC_INT_SRC |= 0x7ff; // clear all firstly
-		SDIO_HOST->MMC_IO  = 0x83;   //!!!read data, auto transfer
+		SDIO_HOST->MMC_IO  = 0x3;   //!!!read data, auto transfer
 		sm_sdh_wait_interrupt(1, -1);
 		TEST_DEBUG("read complete\n");
 		for(i = 0; i < 128; i++)
@@ -385,13 +378,13 @@ int wm_sd_card_set_bus_width(uint32_t rca, uint8_t bus_width)
 	{
 		SDIO_HOST->MMC_CTL &= ~(1 << 7);
 	}
-	wm_sdh_send_cmd(55, rca<<16, 0xC4); //Send CMD55
+	wm_sdh_send_cmd(55, rca<<16, 0x44); //Send CMD55
 	sm_sdh_wait_interrupt(0, -1);
 	wm_sdh_get_response(respCmd, 2);
 	sh_dumpBuffer("CMD55 respCmd", (char *)respCmd, 5);
 	if((respCmd[1] & 0xFF) != 55)
 		goto end;
-	wm_sdh_send_cmd(6, bus_width, 0xC4); //Send ACMD6
+	wm_sdh_send_cmd(6, bus_width, 0x44); //Send ACMD6
 	sm_sdh_wait_interrupt(0, -1);
 	wm_sdh_get_response(respCmd, 2);
 	sh_dumpBuffer("ACMD6 respCmd", (char *)respCmd, 5);
@@ -406,7 +399,7 @@ int wm_sd_card_stop_trans(void)
 {
 	int ret = -1;
 	uint32_t respCmd[2];
-	wm_sdh_send_cmd(12, 0, 0xC4); //Send CMD12
+	wm_sdh_send_cmd(12, 0, 0x44); //Send CMD12
 	ret = sm_sdh_wait_interrupt(0, -1);
 	if(ret)
 		goto end;
@@ -422,7 +415,7 @@ end:
 static void sdio_host_reset(void)
 {
 	tls_bitband_write(HR_CLK_RST_CTL, 27, 0);
-	delay_cnt(1000);
+
 	tls_bitband_write(HR_CLK_RST_CTL, 27, 1);
 	while(tls_bitband_read(HR_CLK_RST_CTL, 27) == 0);
 }
@@ -438,7 +431,6 @@ int sdh_card_init(uint32_t *rca_ref)
 	ret = wm_sd_card_initialize(&rca);
 	if(ret)
 		goto end;
-	SDCardInfo.RCA = (u16)(rca & 0xFFFF);
 	ret = wm_sd_card_query_csd(rca);
 	if(ret)
 		goto end;
@@ -452,8 +444,6 @@ int sdh_card_init(uint32_t *rca_ref)
 	if(ret)
 		goto end;
 	*rca_ref = rca;
-
-	SDIO_HOST->MMC_CTL = 0xD3;
 	ret = 0;
 end:
 	TEST_DEBUG("ret %d\n", ret);

@@ -542,7 +542,7 @@ int ping_test_sync(struct ping_param *para)
     if (ret > 0)
     {
         //memset(icmppacket, 0, PACKET_SIZE);
-        ret = recvfrom(socketid, icmppacket, PACKET_SIZE, 0, NULL, NULL);
+        ret = recvfrom(socketid, icmppacket, sizeof(icmppacket), 0, NULL, NULL);
         if (ret > 0)
         {
             ret = ping_test_unpack(icmppacket, ret, tls_os_get_time(), NULL);

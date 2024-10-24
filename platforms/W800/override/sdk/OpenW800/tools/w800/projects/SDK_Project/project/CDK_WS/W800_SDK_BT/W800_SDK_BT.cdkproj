@@ -1,0 +1,4373 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project Name="W800_SDK_BT" Version="1" Language="C">
+  <Description/>
+  <Dependencies Name="Debug"/>
+  <VirtualDirectory Name="src">
+    <VirtualDirectory Name="os">
+      <VirtualDirectory Name="rtos">
+        <VirtualDirectory Name="include">
+          <File Name="../../../../../../../src/os/rtos/include/atomic.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/include/croutine.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/include/deprecated_definitions.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/include/event_groups.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/include/FreeRTOS.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/include/FreeRTOSConfig.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/include/message_buffer.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/include/mpu_prototypes.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/include/mpu_wrappers.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/include/portable.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/include/portmacro.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/include/projdefs.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/include/rtoslist.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/include/rtosqueue.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/include/rtostimers.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/include/semphr.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/include/StackMacros.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/include/stack_macros.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/include/stream_buffer.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/include/task.h">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+        <VirtualDirectory Name="ports">
+          <VirtualDirectory Name="xt804">
+            <File Name="../../../../../../../src/os/rtos/ports/xt804/cpu_task_sw.S">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/os/rtos/ports/xt804/port.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+        </VirtualDirectory>
+        <VirtualDirectory Name="source">
+          <File Name="../../../../../../../src/os/rtos/source/croutine.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/source/event_groups.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/source/heap_2.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/source/heap_3.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/source/list.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/source/queue.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/source/stream_buffer.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/source/tasks.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/os/rtos/source/timers.c">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+        <File Name="../../../../../../../src/os/rtos/wm_osal_rtos.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+    </VirtualDirectory>
+    <VirtualDirectory Name="app">
+      <VirtualDirectory Name="cJSON">
+        <File Name="../../../../../../../src/app/cJSON/cJSON.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/cJSON/cJSON.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="dhcpserver">
+        <File Name="../../../../../../../src/app/dhcpserver/dhcp_server.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/dhcpserver/dhcp_server.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="dnsserver">
+        <File Name="../../../../../../../src/app/dnsserver/dns_server.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/dnsserver/dns_server.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="httpclient">
+        <File Name="../../../../../../../src/app/httpclient/HTTPClient.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/httpclient/HTTPClient.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/httpclient/HTTPClientAuth.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/httpclient/HTTPClientAuth.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/httpclient/HTTPClientCommon.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/httpclient/HTTPClientString.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/httpclient/HTTPClientString.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/httpclient/HTTPClientWrapper.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/httpclient/HTTPClientWrapper.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/httpclient/wm_httpclient_if.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/httpclient/wm_httpclient_task.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="iperf">
+        <File Name="../../../../../../../src/app/iperf/config.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_api.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_api.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_client_api.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_client_api.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_error.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_error.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_locale.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_locale.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_main.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_net.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_net.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_queue.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_server_api.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_server_api.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_tcp.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_tcp.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_timer.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_timer.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_udp.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_udp.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_units.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_units.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_util.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/iperf_util.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/tcp_info.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/tcp_window_size.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/tcp_window_size.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/version.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/iperf/wm_perf.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="libwebsockets-2">
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/alloc.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/base64-decode.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/client-handshake.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/client-parser.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/client.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/context.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/daemonize.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/extension-permessage-deflate.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/extension-permessage-deflate.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/extension.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/getifaddrs.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/getifaddrs.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/handshake.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/header.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/hpack.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/http2.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/huftable.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lejp-conf.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lejp.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lejp.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lextable-strings.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lextable.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/libev.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/libuv.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/libwebsockets.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/libwebsockets.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lws-plat-esp8266.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lws-plat-mbed3.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lws-plat-mbed3.cpp" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lws-plat-unix.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lws-plat-win.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lws-plat-wm.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lws_config.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/lws_config_private.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/minihuf.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/minilex.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/output.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/parsers.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/pollfd.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/private-libwebsockets.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/rewrite.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/server-handshake.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/server.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/service.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/sha-1.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/smtp.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/ssl-client.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/ssl-http2.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/ssl-server.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/libwebsockets-2.1-stable/ssl.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="mbedtls">
+        <VirtualDirectory Name="include">
+          <VirtualDirectory Name="mbedtls">
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/aes.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/aesni.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/arc4.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/asn1.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/asn1write.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/base64.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/bignum.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/blowfish.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/bn_mul.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/camellia.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ccm.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/certs.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/check_config.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/cipher.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/cipher_internal.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/cmac.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/compat-1.3.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/config.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ctr_drbg.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/debug.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/des.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/dhm.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ecdh.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ecdsa.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ecjpake.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ecp.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ecp_internal.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/entropy.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/entropy_poll.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/error.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/gcm.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/havege.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/hmac_drbg.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/md.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/md2.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/md4.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/md5.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/md_internal.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/memory_buffer_alloc.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/net.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/net_sockets.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/oid.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/padlock.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/pem.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/pk.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/pkcs11.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/pkcs12.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/pkcs5.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/pk_internal.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/platform.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/platform_time.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ripemd160.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/rsa.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/rsa_internal.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/sha1.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/sha256.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/sha512.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ssl.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ssl_cache.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ssl_ciphersuites.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ssl_cookie.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ssl_internal.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/ssl_ticket.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/threading.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/timing.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/version.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/x509.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/x509_crl.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/x509_crt.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/x509_csr.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/app/mbedtls/include/mbedtls/xtea.h">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+        </VirtualDirectory>
+        <VirtualDirectory Name="library">
+          <File Name="../../../../../../../src/app/mbedtls/library/aes.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/aesni.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/arc4.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/asn1parse.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/asn1write.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/base64.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/bignum.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/blowfish.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/camellia.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ccm.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/certs.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/cipher.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/cipher_wrap.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/cmac.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ctr_drbg.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/debug.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/des.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/dhm.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ecdh.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ecdsa.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ecjpake.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ecp.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ecp_curves.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/entropy.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/entropy_poll.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/error.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/gcm.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/havege.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/hmac_drbg.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/md.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/md2.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/md4.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/md5.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/md_wrap.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/memory_buffer_alloc.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/net_sockets.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/oid.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/padlock.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/pem.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/pk.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/pkcs11.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/pkcs12.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/pkcs5.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/pkparse.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/pkwrite.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/pk_wrap.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/platform.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ripemd160.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/rsa.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/rsa_internal.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/sha1.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/sha256.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/sha512.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ssl_cache.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ssl_ciphersuites.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ssl_cli.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ssl_cookie.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ssl_srv.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ssl_ticket.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/ssl_tls.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/threading.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/timing.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/version.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/version_features.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/x509.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/x509write_crt.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/x509write_csr.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/x509_create.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/x509_crl.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/x509_crt.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/x509_csr.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/library/xtea.c">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+        <VirtualDirectory Name="ports">
+          <File Name="../../../../../../../src/app/mbedtls/ports/aes_alt.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/aes_alt.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/arc4_alt.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/arc4_alt.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/des_alt.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/des_alt.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/hardware_alt.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/md5_alt.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/md5_alt.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/net_alt.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/net_alt.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/sha1_alt.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/sha1_alt.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/timing_alt.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mbedtls/ports/timing_alt.h">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+      </VirtualDirectory>
+      <VirtualDirectory Name="mDNS">
+        <VirtualDirectory Name="mDNSCore">
+          <File Name="../../../../../../../src/app/mDNS/mDNSCore/APSCommonServices.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mDNS/mDNSCore/mDNS.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mDNS/mDNSCore/mDNS.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mDNS/mDNSCore/mDNSClientAPI.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mDNS/mDNSCore/mDNSDebug.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mDNS/mDNSCore/mDNSEmbeddedAPI.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mDNS/mDNSCore/mDNSPlatformFunctions.h">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+        <VirtualDirectory Name="mDNSPosix">
+          <File Name="../../../../../../../src/app/mDNS/mDNSPosix/mDNSPosix.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/app/mDNS/mDNSPosix/mDNSPosix.h">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+      </VirtualDirectory>
+      <VirtualDirectory Name="mqtt">
+        <File Name="../../../../../../../src/app/mqtt/libemqtt.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/mqtt/libemqtt.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="ntp">
+        <File Name="../../../../../../../src/app/ntp/ntp_client.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="oneshotconfig">
+        <File Name="../../../../../../../src/app/oneshotconfig/airkiss.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/oneshotconfig/wm_oneshot_airkiss.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/oneshotconfig/wm_oneshot_hailin.c" ExcludeProjConfig="BuildSet">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/oneshotconfig/wm_oneshot_hailin.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/oneshotconfig/wm_oneshot_lsd.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/oneshotconfig/wm_oneshot_lsd.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/oneshotconfig/wm_wifi_oneshot.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="ota">
+        <File Name="../../../../../../../src/app/ota/wm_http_fwup.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/ota/wm_http_fwup.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/ota/wm_socket_fwup.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/ota/wm_socket_fwup.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="ping">
+        <File Name="../../../../../../../src/app/ping/ping.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/ping/ping.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="sslserver">
+        <File Name="../../../../../../../src/app/sslserver/wm_ssl_server.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="web">
+        <File Name="../../../../../../../src/app/web/fs.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/web/fs.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/web/httpd.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/web/httpd.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/web/web.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="wm_atcmd">
+        <File Name="../../../../../../../src/app/wm_atcmd/wm_cmdp.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/wm_atcmd/wm_cmdp.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/wm_atcmd/wm_cmdp_hostif.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/wm_atcmd/wm_cmdp_hostif.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/wm_atcmd/wm_cmdp_hostif_gcc.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/wm_atcmd/wm_cmdp_ri.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/wm_atcmd/wm_cmdp_ri.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/wm_atcmd/wm_rmms.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/wm_atcmd/wm_rmms.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/wm_atcmd/wm_uart_task.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/wm_atcmd/wm_uart_task.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/wm_atcmd/wm_hspi_task.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="fatfs">
+        <File Name="../../../../../../../src/app/fatfs/diskio.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/fatfs/diskio.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/fatfs/ff.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/fatfs/ff.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/fatfs/ffconf.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/fatfs/ffsystem.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/fatfs/ffunicode.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="btapp">
+        <File Name="../../../../../../../src/app/btapp/wm_audio_sink.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_audio_sink.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_ble_client.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_ble_client.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_ble_client_api_demo.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_ble_client_api_demo.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_ble_client_api_multi_conn_demo.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_ble_client_api_multi_conn_demo.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_ble_client_demo.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_ble_client_demo.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_ble_dm_api.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_ble_gap.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_ble_gap.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_ble_server.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_ble_server.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_ble_server_api_demo.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_ble_server_api_demo.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_ble_server_demo_prof.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_ble_server_demo_prof.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_ble_server_wifi_app.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_ble_server_wifi_app.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_ble_server_wifi_prof.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_ble_server_wifi_prof.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_ble_uart_if.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_ble_uart_if.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_bt_app.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_bt_app.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_bt_spp_client.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_bt_spp_client.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_bt_spp_server.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_bt_spp_server.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_bt_util.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_bt_util.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_hfp_hsp_client.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/app/btapp/wm_hfp_hsp_client.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+    </VirtualDirectory>
+    <VirtualDirectory Name="network">
+      <VirtualDirectory Name="api2.0">
+        <File Name="../../../../../../../src/network/api2.0.3/tls_netconn.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/network/api2.0.3/tls_netconn.h">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../src/network/api2.0.3/tls_sockets.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="lwip2.0">
+        <VirtualDirectory Name="api">
+          <File Name="../../../../../../../src/network/lwip2.0.3/api/api_lib.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/api/api_msg.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/api/err.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/api/netbuf.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/api/netdb.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/api/netifapi.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/api/pppapi.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/api/sockets.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/api/tcpip.c">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+        <VirtualDirectory Name="core">
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/alg.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/def.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/dns.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/inet_chksum.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/init.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/ip.c">
+            <FileOption/>
+          </File>
+          <VirtualDirectory Name="ipv4">
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv4/autoip.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv4/dhcp.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv4/etharp.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv4/icmp.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv4/igmp.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv4/ip4.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv4/ip4_addr.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv4/ip4_frag.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv4/ip_frag.c" ExcludeProjConfig="BuildSet">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="ipv6">
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv6/dhcp6.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv6/ethip6.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv6/icmp6.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv6/inet6.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv6/ip6.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv6/ip6_addr.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv6/ip6_frag.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv6/mld6.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/core/ipv6/nd6.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/mem.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/memp.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/netif.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/pbuf.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/raw.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/stats.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/sys.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/tcp.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/tcp_in.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/tcp_out.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/timeouts.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/timers.c" ExcludeProjConfig="BuildSet">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/core/udp.c">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+        <VirtualDirectory Name="include">
+          <VirtualDirectory Name="arch">
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/arch/cc.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/arch/perf.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/arch/sys_arch.h">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="lwip">
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/alg.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/api.h">
+              <FileOption/>
+            </File>
+            <VirtualDirectory Name="apps">
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/fs.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/httpd.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/httpd_opts.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/lwiperf.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/mdns.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/mdns_opts.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/mdns_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/mqtt.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/mqtt_opts.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/netbiosns.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/netbiosns_opts.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/snmp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/snmpv3.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/snmp_core.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/snmp_mib2.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/snmp_opts.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/snmp_scalar.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/snmp_table.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/snmp_threadsync.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/sntp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/sntp_opts.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/tftp_opts.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/apps/tftp_server.h">
+                <FileOption/>
+              </File>
+            </VirtualDirectory>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/arch.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/autoip.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/debug.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/def.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/dhcp.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/dhcp6.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/dns.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/err.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/errno.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/etharp.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/ethip6.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/icmp.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/icmp6.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/igmp.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/inet.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/inet_chksum.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/init.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/ip.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/ip4.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/ip4_addr.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/ip4_frag.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/ip6.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/ip6_addr.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/ip6_frag.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/ip_addr.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/ip_frag.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/lwipopts.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/mem.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/memp.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/mld6.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/nd6.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/netbuf.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/netdb.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/netif.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/netifapi.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/opt.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/pbuf.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/pppapi.h">
+              <FileOption/>
+            </File>
+            <VirtualDirectory Name="priv">
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/priv/api_msg.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/priv/memp_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/priv/memp_std.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/priv/nd6_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/priv/tcpip_priv.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/priv/tcp_priv.h">
+                <FileOption/>
+              </File>
+            </VirtualDirectory>
+            <VirtualDirectory Name="prot">
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/autoip.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/dhcp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/dns.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/etharp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/ethernet.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/icmp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/icmp6.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/igmp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/ip.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/ip4.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/ip6.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/mld6.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/nd6.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/tcp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/prot/udp.h">
+                <FileOption/>
+              </File>
+            </VirtualDirectory>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/raw.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/sio.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/snmp.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/sockets.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/stats.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/sys.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/tcp.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/tcpip.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/timeouts.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/timers.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/lwip/udp.h">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="netif">
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/etharp.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ethernet.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ethernetif.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/lowpan6.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/lowpan6_opts.h">
+              <FileOption/>
+            </File>
+            <VirtualDirectory Name="ppp">
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/ccp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/chap-md5.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/chap-new.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/chap_ms.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/eap.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/ecp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/eui64.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/fsm.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/ipcp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/ipv6cp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/lcp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/magic.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/mppe.h">
+                <FileOption/>
+              </File>
+              <VirtualDirectory Name="polarssl">
+                <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/polarssl/arc4.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/polarssl/des.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/polarssl/md4.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/polarssl/md5.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/polarssl/sha1.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/ppp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/pppapi.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/pppcrypt.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/pppdebug.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/pppoe.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/pppol2tp.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/pppos.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/ppp_impl.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/ppp_opts.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/upap.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/ppp/vj.h">
+                <FileOption/>
+              </File>
+            </VirtualDirectory>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/netif/slipif.h">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="posix">
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/posix/errno.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/network/lwip2.0.3/include/posix/netdb.h">
+              <FileOption/>
+            </File>
+            <VirtualDirectory Name="sys">
+              <File Name="../../../../../../../src/network/lwip2.0.3/include/posix/sys/socket.h">
+                <FileOption/>
+              </File>
+            </VirtualDirectory>
+          </VirtualDirectory>
+        </VirtualDirectory>
+        <VirtualDirectory Name="netif">
+          <File Name="../../../../../../../src/network/lwip2.0.3/netif/ethernet.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/netif/ethernetif.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/netif/lowpan6.c" ExcludeProjConfig="BuildSet">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/netif/slipif.c" ExcludeProjConfig="BuildSet">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/network/lwip2.0.3/netif/wm_ethernet.c">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+        <File Name="../../../../../../../src/network/lwip2.0.3/sys_arch.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+    </VirtualDirectory>
+    <File Name="../../../../../../../app/main.c">
+      <FileOption/>
+    </File>
+    <VirtualDirectory Name="bt">
+      <VirtualDirectory Name="host">
+        <VirtualDirectory Name="bta">
+          <VirtualDirectory Name="ag">
+            <File Name="../../../../../../../src/bt/host/bta/ag/bta_ag_act.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/ag/bta_ag_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/ag/bta_ag_at.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/ag/bta_ag_cfg.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/ag/bta_ag_ci.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/ag/bta_ag_cmd.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/ag/bta_ag_main.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/ag/bta_ag_rfc.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/ag/bta_ag_sco.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/ag/bta_ag_sdp.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="ar">
+            <File Name="../../../../../../../src/bt/host/bta/ar/bta_ar.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="av">
+            <File Name="../../../../../../../src/bt/host/bta/av/bta_av_aact.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/av/bta_av_act.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/av/bta_av_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/av/bta_av_cfg.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/av/bta_av_ci.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/av/bta_av_main.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/av/bta_av_sbc.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/av/bta_av_ssm.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="dm">
+            <File Name="../../../../../../../src/bt/host/bta/dm/bta_dm_act.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/dm/bta_dm_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/dm/bta_dm_cfg.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/dm/bta_dm_ci.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/dm/bta_dm_main.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/dm/bta_dm_pm.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/dm/bta_dm_sco.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="gatt">
+            <File Name="../../../../../../../src/bt/host/bta/gatt/bta_gattc_act.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/gatt/bta_gattc_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/gatt/bta_gattc_cache.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/gatt/bta_gattc_main.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/gatt/bta_gattc_utils.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/gatt/bta_gatts_act.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/gatt/bta_gatts_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/gatt/bta_gatts_main.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/gatt/bta_gatts_utils.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="hf_client">
+            <File Name="../../../../../../../src/bt/host/bta/hf_client/bta_hf_client_act.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/hf_client/bta_hf_client_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/hf_client/bta_hf_client_at.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/hf_client/bta_hf_client_cmd.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/hf_client/bta_hf_client_co.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/hf_client/bta_hf_client_main.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/hf_client/bta_hf_client_rfc.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/hf_client/bta_hf_client_sco.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/hf_client/bta_hf_client_sdp.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="hh">
+            <File Name="../../../../../../../src/bt/host/bta/hh/bta_hh_act.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/hh/bta_hh_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/hh/bta_hh_cfg.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/hh/bta_hh_le.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/hh/bta_hh_main.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/hh/bta_hh_utils.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="hl">
+            <File Name="../../../../../../../src/bt/host/bta/hl/bta_hl_act.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/hl/bta_hl_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/hl/bta_hl_ci.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/hl/bta_hl_main.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/hl/bta_hl_sdp.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/hl/bta_hl_utils.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="include">
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_ag_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_ag_at.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_ag_ci.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_ag_co.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_ag_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_ar_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_ar_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_av_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_av_ci.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_av_co.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_av_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_av_sbc.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_dm_ci.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_dm_co.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_dm_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_gattc_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_gatts_co.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_gatts_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_gatt_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_hf_client_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_hf_client_at.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_hf_client_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_hh_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_hh_co.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_hh_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_hl_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_hl_ci.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_hl_co.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_hl_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_jv_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_jv_co.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_jv_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_mce_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_mce_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_op_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_pan_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_pan_ci.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_pan_co.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_pan_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_pbs_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_sdp_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_sdp_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_sys.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/bta_sys_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/ptim.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/include/utl.h">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="jv">
+            <File Name="../../../../../../../src/bt/host/bta/jv/bta_jv_act.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/jv/bta_jv_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/jv/bta_jv_cfg.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/jv/bta_jv_main.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="mce">
+            <File Name="../../../../../../../src/bt/host/bta/mce/bta_mce_act.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/mce/bta_mce_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/mce/bta_mce_cfg.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/mce/bta_mce_main.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="pan">
+            <File Name="../../../../../../../src/bt/host/bta/pan/bta_pan_act.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/pan/bta_pan_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/pan/bta_pan_ci.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/pan/bta_pan_main.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="sdp">
+            <File Name="../../../../../../../src/bt/host/bta/sdp/bta_sdp.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/sdp/bta_sdp_act.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/sdp/bta_sdp_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/sdp/bta_sdp_cfg.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="sys">
+            <File Name="../../../../../../../src/bt/host/bta/sys/bta_sys_cfg.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/sys/bta_sys_conn.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/sys/bta_sys_main.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/sys/ptim.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/bta/sys/utl.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+        </VirtualDirectory>
+        <VirtualDirectory Name="btcore">
+          <VirtualDirectory Name="include">
+            <File Name="../../../../../../../src/bt/host/btcore/include/bdaddr.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btcore/include/device_class.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btcore/include/device_features.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btcore/include/event_mask.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btcore/include/hal_util.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btcore/include/iac.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btcore/include/module.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btcore/include/osi_module.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btcore/include/property.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btcore/include/uuid.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btcore/include/version.h">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="src">
+            <File Name="../../../../../../../src/bt/host/btcore/src/bdaddr.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btcore/src/device_class.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btcore/src/property.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btcore/src/uuid.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+        </VirtualDirectory>
+        <VirtualDirectory Name="btif">
+          <VirtualDirectory Name="co">
+            <File Name="../../../../../../../src/bt/host/btif/co/bta_ag_co.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/co/bta_av_co.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/co/bta_dm_co.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/co/bta_gatts_co.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/co/bta_hh_co.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/co/bta_hl_co.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/co/bta_pan_co.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="include">
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_av.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_avrcp_audio_track.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_av_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_av_co.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_common.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_config.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_config_transcode.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_debug.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_debug_btsnoop.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_debug_conn.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_dm.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_gatt.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_gatt_multi_adv_util.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_gatt_util.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_hh.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_hl.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_mce.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_media.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_pan.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_pan_internal.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_profile_queue.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_sdp.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_sm.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_sock.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_sock_l2cap.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_sock_rfc.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_sock_sco.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_sock_sdp.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_sock_thread.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_sock_util.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_storage.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_uid.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/btif_util.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/stack_manager.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/include/uinput.h">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="src">
+            <File Name="../../../../../../../src/bt/host/btif/src/bluetooth.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/src/btif_av.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/src/btif_core.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/src/btif_dm.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/src/btif_gatt.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/src/btif_gatt_client.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/src/btif_gatt_dm.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/src/btif_gatt_multi_adv_util.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/src/btif_gatt_server.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/src/btif_gatt_util.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/src/btif_hf.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/src/btif_hf_client.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/src/btif_hh.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/src/btif_hl.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/src/btif_mce.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/src/btif_media_task.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/src/btif_pan.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/src/btif_profile_queue.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/src/btif_rc.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/src/btif_sdp.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/src/btif_sdp_server.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/src/btif_sm.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/src/btif_spp.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/src/btif_storage.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/btif/src/btif_util.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+        </VirtualDirectory>
+        <VirtualDirectory Name="conf"/>
+        <VirtualDirectory Name="embdrv">
+          <VirtualDirectory Name="sbc">
+            <VirtualDirectory Name="decoder">
+              <VirtualDirectory Name="include">
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/include/oi_assert.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/include/oi_bitstream.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/include/oi_bt_spec.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/include/oi_codec_sbc.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/include/oi_codec_sbc_private.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/include/oi_common.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/include/oi_cpu_dep.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/include/oi_modules.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/include/oi_osinterface.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/include/oi_status.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/include/oi_stddefs.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/include/oi_string.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/include/oi_time.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/include/oi_utils.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <VirtualDirectory Name="srce">
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/srce/alloc.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/srce/bitalloc-sbc.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/srce/bitalloc.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/srce/bitstream-decode.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/srce/decoder-oina.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/srce/decoder-private.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/srce/decoder-sbc.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/srce/dequant.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/srce/framing-sbc.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/srce/framing.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/srce/oi_codec_version.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/srce/synthesis-8-generated.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/srce/synthesis-dct8.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/decoder/srce/synthesis-sbc.c">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+            </VirtualDirectory>
+            <VirtualDirectory Name="encoder">
+              <VirtualDirectory Name="include">
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/encoder/include/sbc_dct.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/encoder/include/sbc_encoder.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/encoder/include/sbc_enc_func_declare.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/encoder/include/sbc_if.h">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/encoder/include/sbc_types.h">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+              <VirtualDirectory Name="srce">
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/encoder/srce/sbc_analysis.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/encoder/srce/sbc_dct.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/encoder/srce/sbc_dct_coeffs.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/encoder/srce/sbc_encoder.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/encoder/srce/sbc_enc_bit_alloc_mono.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/encoder/srce/sbc_enc_bit_alloc_ste.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/encoder/srce/sbc_enc_coeffs.c">
+                  <FileOption/>
+                </File>
+                <File Name="../../../../../../../src/bt/host/embdrv/sbc/encoder/srce/sbc_packing.c">
+                  <FileOption/>
+                </File>
+              </VirtualDirectory>
+            </VirtualDirectory>
+          </VirtualDirectory>
+        </VirtualDirectory>
+        <VirtualDirectory Name="gki">
+          <VirtualDirectory Name="common">
+            <File Name="../../../../../../../src/bt/host/gki/common/gki.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/gki/common/gki_buffer.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/gki/common/gki_common.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/gki/common/gki_debug.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/gki/common/gki_time.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="wm">
+            <File Name="../../../../../../../src/bt/host/gki/wm/data_types.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/gki/wm/gki_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/gki/wm/gki_wm.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+        </VirtualDirectory>
+        <VirtualDirectory Name="hci">
+          <VirtualDirectory Name="include">
+            <File Name="../../../../../../../src/bt/host/hci/include/btsnoop.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/hci/include/btsnoop_mem.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/hci/include/bt_hci_bdroid.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/hci/include/bt_hci_lib.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/hci/include/bt_vendor_lib.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/hci/include/buffer_allocator.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/hci/include/hcih.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/hci/include/hci_audio.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/hci/include/hci_hal.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/hci/include/hci_inject.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/hci/include/hci_internals.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/hci/include/hci_layer.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/hci/include/hci_packet_factory.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/hci/include/hci_packet_parser.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/hci/include/low_power_manager.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/hci/include/packet_fragmenter.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/hci/include/userial.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/hci/include/vendor.h">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="src">
+            <File Name="../../../../../../../src/bt/host/hci/src/bt_hci_bdroid.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/hci/src/hci_h4.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/hci/src/utils.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+        </VirtualDirectory>
+        <VirtualDirectory Name="include">
+          <File Name="../../../../../../../src/bt/host/include/audio_a2dp_hw.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/bdroid_buildcfg.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/bluetooth.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/bte.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/bte_appl.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/bt_av.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/bt_common.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/bt_common_types.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/bt_gatt.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/bt_gatt_client.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/bt_gatt_dm.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/bt_gatt_server.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/bt_gatt_types.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/bt_hf.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/bt_hf_client.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/bt_hh.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/bt_hl.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/bt_mce.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/bt_pan.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/bt_rc.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/bt_sdp.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/bt_sock.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/bt_target.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/bt_trace.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/bt_utils.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/generic.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/gki_target.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/gki_target_ble.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/include/stack_config.h">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+        <VirtualDirectory Name="main">
+          <File Name="../../../../../../../src/bt/host/main/bte_init.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/main/bte_logmsg.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/main/bte_main.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/main/wm_bt_storage.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../src/bt/host/main/wm_bt_storage.h">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+        <VirtualDirectory Name="osi">
+          <VirtualDirectory Name="include">
+            <File Name="../../../../../../../src/bt/host/osi/include/alarm.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/include/allocation_tracker.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/include/allocator.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/include/array.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/include/buffer.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/include/compat.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/include/config.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/include/data_dispatcher.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/include/eager_reader.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/include/fixed_queue.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/include/future.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/include/hash_functions.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/include/hash_map.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/include/hash_map_utils.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/include/list.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/include/log.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/include/metrics.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/include/mutex.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/include/osi.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/include/properties.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/include/reactor.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/include/ringbuffer.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/include/semaphore.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/include/socket.h">
+              <FileOption/>
+            </File>
+            <VirtualDirectory Name="socket_utils">
+              <File Name="../../../../../../../src/bt/host/osi/include/socket_utils/sockets.h">
+                <FileOption/>
+              </File>
+              <File Name="../../../../../../../src/bt/host/osi/include/socket_utils/socket_local.h">
+                <FileOption/>
+              </File>
+            </VirtualDirectory>
+            <File Name="../../../../../../../src/bt/host/osi/include/thread.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/include/wakelock.h">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="src">
+            <File Name="../../../../../../../src/bt/host/osi/src/buffer.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/src/compat.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/src/fixed_queue.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/src/hash_map.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/src/list.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/src/mutex.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/osi/src/ringbuffer.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+        </VirtualDirectory>
+        <VirtualDirectory Name="stack">
+          <VirtualDirectory Name="a2dp">
+            <File Name="../../../../../../../src/bt/host/stack/a2dp/a2d_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/a2dp/a2d_sbc.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="avct">
+            <File Name="../../../../../../../src/bt/host/stack/avct/avct_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/avct/avct_ccb.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/avct/avct_l2c.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/avct/avct_lcb.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/avct/avct_lcb_act.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="avdt">
+            <File Name="../../../../../../../src/bt/host/stack/avdt/avdt_ad.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/avdt/avdt_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/avdt/avdt_ccb.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/avdt/avdt_ccb_act.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/avdt/avdt_l2c.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/avdt/avdt_msg.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/avdt/avdt_scb.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/avdt/avdt_scb_act.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="avrc">
+            <File Name="../../../../../../../src/bt/host/stack/avrc/avrc_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/avrc/avrc_bld_ct.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/avrc/avrc_bld_tg.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/avrc/avrc_opt.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/avrc/avrc_pars_ct.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/avrc/avrc_pars_tg.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/avrc/avrc_sdp.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/avrc/avrc_utils.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="bnep">
+            <File Name="../../../../../../../src/bt/host/stack/bnep/bnep_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/bnep/bnep_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/bnep/bnep_main.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/bnep/bnep_utils.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="btm">
+            <File Name="../../../../../../../src/bt/host/stack/btm/btm_acl.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/btm/btm_ble.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/btm/btm_ble_addr.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/btm/btm_ble_adv_filter.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/btm/btm_ble_batchscan.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/btm/btm_ble_bgconn.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/btm/btm_ble_cont_energy.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/btm/btm_ble_gap.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/btm/btm_ble_multi_adv.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/btm/btm_ble_privacy.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/btm/btm_dev.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/btm/btm_devctl.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/btm/btm_inq.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/btm/btm_main.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/btm/btm_pm.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/btm/btm_sco.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/btm/btm_sec.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="btu">
+            <File Name="../../../../../../../src/bt/host/stack/btu/btu_hcif.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/btu/btu_init.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/btu/btu_task.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="gap">
+            <File Name="../../../../../../../src/bt/host/stack/gap/gap_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/gap/gap_ble.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/gap/gap_conn.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/gap/gap_utils.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="gatt">
+            <File Name="../../../../../../../src/bt/host/stack/gatt/att_protocol.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/gatt/gatt_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/gatt/gatt_attr.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/gatt/gatt_auth.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/gatt/gatt_cl.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/gatt/gatt_db.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/gatt/gatt_main.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/gatt/gatt_sr.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/gatt/gatt_utils.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="hcic">
+            <File Name="../../../../../../../src/bt/host/stack/hcic/hciblecmds.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/hcic/hcicmds.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="hid">
+            <File Name="../../../../../../../src/bt/host/stack/hid/hidh_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/hid/hidh_conn.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="include">
+            <File Name="../../../../../../../src/bt/host/stack/include/a2d_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/a2d_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/a2d_sbc.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/avct_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/avct_defs.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/avct_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/avdtc_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/avdt_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/avdt_defs.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/avdt_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/avrc_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/avrc_defs.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/avrc_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/bnep_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/btm_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/btm_ble_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/btm_ble_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/btm_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/btu.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/bt_buffer_q.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/bt_types.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/dyn_mem.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/gap_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/gap_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/gattdefs.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/gatt_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/gatt_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/hcidefs.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/hcimsgs.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/hiddefs.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/hidh_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/hidh_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/hid_conn.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/l2cap_client.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/l2cdefs.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/l2c_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/l2c_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/mca_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/mca_defs.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/mca_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/pan_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/pan_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/port_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/port_ext.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/port_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/profiles_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/p_256_ecc_pp.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/p_256_multprecision.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/rfcdefs.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/rfc_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/sdpdefs.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/sdpint.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/sdp_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/smp_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/smp_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/srvc_api.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/srvc_battery_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/srvc_dis_int.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/include/srvc_eng_int.h">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="l2cap">
+            <File Name="../../../../../../../src/bt/host/stack/l2cap/l2cap_client.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/l2cap/l2c_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/l2cap/l2c_ble.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/l2cap/l2c_csm.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/l2cap/l2c_fcr.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/l2cap/l2c_link.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/l2cap/l2c_main.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/l2cap/l2c_ucd.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/l2cap/l2c_utils.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="mcap">
+            <File Name="../../../../../../../src/bt/host/stack/mcap/mca_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/mcap/mca_cact.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/mcap/mca_csm.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/mcap/mca_dact.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/mcap/mca_dsm.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/mcap/mca_l2c.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/mcap/mca_main.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="pan">
+            <File Name="../../../../../../../src/bt/host/stack/pan/pan_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/pan/pan_main.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/pan/pan_utils.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="rfcomm">
+            <File Name="../../../../../../../src/bt/host/stack/rfcomm/port_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/rfcomm/port_rfc.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/rfcomm/port_utils.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/rfcomm/rfc_l2cap_if.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/rfcomm/rfc_mx_fsm.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/rfcomm/rfc_port_fsm.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/rfcomm/rfc_port_if.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/rfcomm/rfc_ts_frames.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/rfcomm/rfc_utils.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="sdp">
+            <File Name="../../../../../../../src/bt/host/stack/sdp/sdp_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/sdp/sdp_db.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/sdp/sdp_discovery.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/sdp/sdp_main.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/sdp/sdp_server.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/sdp/sdp_utils.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="smp">
+            <File Name="../../../../../../../src/bt/host/stack/smp/aes.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/smp/aes.h">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/smp/p_256_curvepara.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/smp/p_256_ecc_pp.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/smp/p_256_multprecision.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/smp/smp_act.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/smp/smp_api.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/smp/smp_br_main.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/smp/smp_cmac.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/smp/smp_keys.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/smp/smp_l2c.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/smp/smp_main.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/smp/smp_utils.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="srvc">
+            <File Name="../../../../../../../src/bt/host/stack/srvc/srvc_battery.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/srvc/srvc_dis.c">
+              <FileOption/>
+            </File>
+            <File Name="../../../../../../../src/bt/host/stack/srvc/srvc_eng.c">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+        </VirtualDirectory>
+        <VirtualDirectory Name="udrv">
+          <VirtualDirectory Name="include">
+            <File Name="../../../../../../../src/bt/host/udrv/include/uipc.h">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="ulinux">
+            <File Name="../../../../../../../src/bt/host/udrv/ulinux/uipc_linux.h">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+        </VirtualDirectory>
+        <VirtualDirectory Name="vnd">
+          <VirtualDirectory Name="ble">
+            <File Name="../../../../../../../src/bt/host/vnd/ble/vendor_hcidefs.h">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+          <VirtualDirectory Name="include">
+            <File Name="../../../../../../../src/bt/host/vnd/include/vendor_api.h">
+              <FileOption/>
+            </File>
+          </VirtualDirectory>
+        </VirtualDirectory>
+      </VirtualDirectory>
+    </VirtualDirectory>
+  </VirtualDirectory>
+  <VirtualDirectory Name="platform">
+    <VirtualDirectory Name="arch">
+      <VirtualDirectory Name="xt804">
+        <VirtualDirectory Name="bsp">
+          <File Name="../../../../../../../platform/arch/xt804/bsp/board_init.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../platform/arch/xt804/bsp/isr.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../platform/arch/xt804/bsp/startup.S">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../platform/arch/xt804/bsp/system.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../platform/arch/xt804/bsp/trap_c.c">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../platform/arch/xt804/bsp/vectors.S">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+        <VirtualDirectory Name="libc">
+          <File Name="../../../../../../../platform/arch/xt804/libc/libc_port.c">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+      </VirtualDirectory>
+    </VirtualDirectory>
+    <VirtualDirectory Name="common">
+      <VirtualDirectory Name="fwup">
+        <File Name="../../../../../../../platform/common/fwup/wm_fwup.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="mem">
+        <File Name="../../../../../../../platform/common/mem/wm_mem.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="params">
+        <File Name="../../../../../../../platform/common/params/wm_param.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../platform/common/params/wm_param.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="task">
+        <File Name="../../../../../../../platform/common/task/wm_wl_mbox.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../platform/common/task/wm_wl_task.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../platform/common/task/wm_wl_timers.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="utils">
+        <File Name="../../../../../../../platform/common/utils/utils.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="crypto">
+        <File Name="../../../../../../../platform/common/crypto/wm_crypto_hard.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../platform/common/crypto/wm_crypto_hard_mbed.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+    </VirtualDirectory>
+    <VirtualDirectory Name="inc">
+      <File Name="../../../../../../../platform/inc/bitops.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../platform/inc/tls_common.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../platform/inc/tls_ieee80211.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../platform/inc/tls_wireless.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../platform/inc/utils.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../platform/inc/wm_dbg.h">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+    <VirtualDirectory Name="drivers">
+      <VirtualDirectory Name="7816">
+        <File Name="../../../../../../../platform/drivers/7816/wm_7816.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="adc">
+        <File Name="../../../../../../../platform/drivers/adc/wm_adc.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../platform/drivers/adc/wm_polyfit.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="cpu">
+        <File Name="../../../../../../../platform/drivers/cpu/wm_cpu.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="dma">
+        <File Name="../../../../../../../platform/drivers/dma/wm_dma.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="efuse">
+        <File Name="../../../../../../../platform/drivers/efuse/wm_efuse.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="flash">
+        <File Name="../../../../../../../platform/drivers/flash/wm_fls.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../platform/drivers/flash/wm_fls_gd25qxx.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="gpio">
+        <File Name="../../../../../../../platform/drivers/gpio/wm_gpio.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../platform/drivers/gpio/wm_gpio_afsel.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="i2c">
+        <File Name="../../../../../../../platform/drivers/i2c/wm_i2c.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="i2s">
+        <File Name="../../../../../../../platform/drivers/i2s/wm_i2s.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="internalflash">
+        <File Name="../../../../../../../platform/drivers/internalflash/wm_internal_fls.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="io">
+        <File Name="../../../../../../../platform/drivers/io/wm_io.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="irq">
+        <File Name="../../../../../../../platform/drivers/irq/wm_irq.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="pmu">
+        <File Name="../../../../../../../platform/drivers/pmu/wm_pmu.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="pwm">
+        <File Name="../../../../../../../platform/drivers/pwm/wm_pwm.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="rtc">
+        <File Name="../../../../../../../platform/drivers/rtc/wm_rtc.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="sasc">
+        <File Name="../../../../../../../platform/drivers/sasc/wm_sasc.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="spi">
+        <File Name="../../../../../../../platform/drivers/spi/wm_hostspi.c">
+          <FileOption/>
+        </File>
+        <File Name="../../../../../../../platform/drivers/spi/wm_spi_hal.h">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="timer">
+        <File Name="../../../../../../../platform/drivers/timer/wm_timer.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="uart">
+        <File Name="../../../../../../../platform/drivers/uart/wm_uart.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="watchdog">
+        <File Name="../../../../../../../platform/drivers/watchdog/wm_watchdog.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="hspi">
+        <File Name="../../../../../../../platform/drivers/hspi/wm_hspi.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="sdio_host">
+        <File Name="../../../../../../../platform/drivers/sdio_host/wm_sdio_host.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="psram">
+        <File Name="../../../../../../../platform/drivers/psram/wm_psram.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="touchsensor">
+        <File Name="../../../../../../../platform/drivers/touchsensor/wm_touchsensor.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+      <VirtualDirectory Name="lcd">
+        <File Name="../../../../../../../platform/drivers/lcd/wm_lcd.c">
+          <FileOption/>
+        </File>
+      </VirtualDirectory>
+    </VirtualDirectory>
+    <VirtualDirectory Name="sys">
+      <File Name="../../../../../../../platform/sys/tls_sys.c">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../platform/sys/tls_sys.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../platform/sys/wm_main.c">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+  </VirtualDirectory>
+  <VirtualDirectory Name="ld">
+    <VirtualDirectory Name="w800">
+      <File Name="../../../../../../../ld/w800/gcc_csky_bt.ld">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+  </VirtualDirectory>
+  <VirtualDirectory Name="include">
+    <VirtualDirectory Name="arch">
+      <VirtualDirectory Name="xt804">
+        <File Name="../../../../../../../include/arch/xt804/csi_config.h">
+          <FileOption/>
+        </File>
+        <VirtualDirectory Name="csi_core">
+          <File Name="../../../../../../../include/arch/xt804/csi_core/core_804.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../include/arch/xt804/csi_core/csi_core.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../include/arch/xt804/csi_core/csi_gcc.h">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+        <VirtualDirectory Name="csi_dsp">
+          <File Name="../../../../../../../include/arch/xt804/csi_dsp/csky_common_tables.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../include/arch/xt804/csi_dsp/csky_const_structs.h">
+            <FileOption/>
+          </File>
+          <File Name="../../../../../../../include/arch/xt804/csi_dsp/csky_math.h">
+            <FileOption/>
+          </File>
+        </VirtualDirectory>
+      </VirtualDirectory>
+    </VirtualDirectory>
+    <File Name="../../../../../../../include/wm_config.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../include/wm_debug.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../include/wm_include.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../include/wm_ram_config.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../include/wm_regs.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../include/wm_type_def.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../include/wm_wifi_config.h">
+      <FileOption/>
+    </File>
+    <VirtualDirectory Name="driver">
+      <File Name="../../../../../../../include/driver/wm_7816.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_adc.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_cpu.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_dma.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_efuse.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_flash.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_flash_map.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_fls_gd25qxx.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_gpio.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_gpio_afsel.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_hostspi.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_hspi.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_i2c.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_i2s.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_internal_flash.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_io.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_irq.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_lcd.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_pmu.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_psram.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_pwm.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_rtc.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_sasc.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_sdio_host.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_timer.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_tipc.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_uart.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/driver/wm_watchdog.h">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+    <VirtualDirectory Name="os">
+      <File Name="../../../../../../../include/os/wm_osal.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/os/wm_os_config.h">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+    <VirtualDirectory Name="platform">
+      <File Name="../../../../../../../include/platform/aes.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/platform/wm_crypto_hard.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/platform/wm_fwup.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/platform/wm_mem.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/platform/wm_params.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/platform/wm_wl_mbox.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/platform/wm_wl_task.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/platform/wm_wl_timers.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/platform/wm_crypto_hard_mbed.h">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+    <VirtualDirectory Name="wifi">
+      <File Name="../../../../../../../include/wifi/litepoint.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/wifi/wm_ieee80211.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/wifi/wm_ieee80211_gcc.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/wifi/wm_wifi.h">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+    <VirtualDirectory Name="net">
+      <File Name="../../../../../../../include/net/wm_socket.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/net/wm_socket2.0.3.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/net/wm_sockets.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/net/wm_sockets2.0.3.h">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+    <VirtualDirectory Name="app">
+      <File Name="../../../../../../../include/app/wm_at_ri_init.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/app/wm_crypto.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/app/wm_dhcp_server.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/app/wm_dns_server.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/app/wm_http_client.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/app/wm_netif.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/app/wm_netif2.0.3.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/app/wm_ntp.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/app/wm_ssl_server.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/app/wm_webserver.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/app/wm_wifi_oneshot.h">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+    <VirtualDirectory Name="bt">
+      <File Name="../../../../../../../include/bt/wm_ble.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/bt/wm_ble_gatt.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/bt/wm_bt.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/bt/wm_bt_def.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/bt/wm_bt_av.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../include/bt/wm_bt_hf_client.h">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+    <File Name="../../../../../../../include/wm_bt_config.h">
+      <FileOption/>
+    </File>
+  </VirtualDirectory>
+  <VirtualDirectory Name="demo">
+    <VirtualDirectory Name="console">
+      <File Name="../../../../../../../demo/console/wm_demo_console.h">
+        <FileOption/>
+      </File>
+      <File Name="../../../../../../../demo/console/wm_demo_console_task.c">
+        <FileOption/>
+      </File>
+    </VirtualDirectory>
+    <File Name="../../../../../../../demo/wm_7816_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_adc_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_apsta_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_connect_net_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_crypt_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_crypt_hard_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_demo.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_flash_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_gpio_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_http_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_https_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_i2c_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_i2s_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_iperf_auto_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_master_spi_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_mbedtls_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_mcast_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_mqtt_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_ntp_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_pmu_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_pwm_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_rsa_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_rtc_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_scan_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_sck_client_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_sck_server_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_socket_client_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_socket_server_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_softap_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_ssl_server_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_ssl_server_demo.h">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_timer_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_uart_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_udp_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_websockets_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_wps_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_dsp_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_fatfs_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_sdio_host_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_slave_spi_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_avoid_copy_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_lcd_demo.c">
+      <FileOption/>
+    </File>
+    <File Name="../../../../../../../demo/wm_touchsensor_demo.c">
+      <FileOption/>
+    </File>
+  </VirtualDirectory>
+  <DebugSessions>
+    <watchExpressions/>
+    <memoryExpressions/>
+    <statistics/>
+    <peripheralTabs/>
+    <WatchDisplayFormat/>
+    <LocalDisplayFormat/>
+    <debugLayout/>
+    <memoryTabColSizeExpressions/>
+  </DebugSessions>
+  <VendorInfo>
+    <VendorName>NULL</VendorName>
+  </VendorInfo>
+  <BuildConfigs>
+    <BuildConfig Name="BuildSet">
+      <Target>
+        <ROMBank Selected="1">
+          <ROM1>
+            <InUse>yes</InUse>
+            <Start>0x0</Start>
+            <Size>0x5000</Size>
+          </ROM1>
+          <ROM2>
+            <InUse>no</InUse>
+            <Start/>
+            <Size/>
+          </ROM2>
+          <ROM3>
+            <InUse>no</InUse>
+            <Start/>
+            <Size/>
+          </ROM3>
+          <ROM4>
+            <InUse>no</InUse>
+            <Start/>
+            <Size/>
+          </ROM4>
+          <ROM5>
+            <InUse>no</InUse>
+            <Start/>
+            <Size/>
+          </ROM5>
+        </ROMBank>
+        <RAMBank>
+          <RAM1>
+            <InUse>yes</InUse>
+            <Start>0x20000000</Start>
+            <Size>0x48000</Size>
+            <Init>yes</Init>
+          </RAM1>
+          <RAM2>
+            <InUse>no</InUse>
+            <Start/>
+            <Size/>
+            <Init>yes</Init>
+          </RAM2>
+          <RAM3>
+            <InUse>no</InUse>
+            <Start/>
+            <Size/>
+            <Init>yes</Init>
+          </RAM3>
+          <RAM4>
+            <InUse>no</InUse>
+            <Start/>
+            <Size/>
+            <Init>yes</Init>
+          </RAM4>
+          <RAM5>
+            <InUse>no</InUse>
+            <Start/>
+            <Size/>
+            <Init>yes</Init>
+          </RAM5>
+        </RAMBank>
+        <CPU>ck804ef</CPU>
+        <UseMiniLib>yes</UseMiniLib>
+        <Endian>little</Endian>
+        <UseHardFloat>yes</UseHardFloat>
+        <UseEnhancedLRW>no</UseEnhancedLRW>
+        <UseContinueBuild>no</UseContinueBuild>
+        <UseSemiHost>no</UseSemiHost>
+      </Target>
+      <Output>
+        <OutputName>w800</OutputName>
+        <Type>Executable</Type>
+        <CreateHexFile>no</CreateHexFile>
+        <CreateBinFile>yes</CreateBinFile>
+        <Preprocessor>no</Preprocessor>
+        <Disassmeble>yes</Disassmeble>
+        <CallGraph>no</CallGraph>
+        <Map>yes</Map>
+      </Output>
+      <User>
+        <BeforeCompile>
+          <RunUserProg>no</RunUserProg>
+          <UserProgName/>
+        </BeforeCompile>
+        <BeforeMake>
+          <RunUserProg>no</RunUserProg>
+          <UserProgName/>
+        </BeforeMake>
+        <AfterMake>
+          <RunUserProg>yes</RunUserProg>
+          <UserProgName>../../../../../../../tools/w800/utilities/cdk_aft_build.sh;../../../../../../../tools/w800/utilities/aft_build_project.sh</UserProgName>
+        </AfterMake>
+      </User>
+      <Compiler>
+        <Define>GCC_COMPILE=1;TLS_CONFIG_CPU_XT804=1</Define>
+        <Undefine/>
+        <Optim>Optimize more (-O2)</Optim>
+        <DebugLevel>Maximum (-g3)</DebugLevel>
+        <IncludePath>$(CDKPath)/CSKY/MinGW/csky-abiv2-elf-toolchain/csky-elfabiv2/include;$(ProjectPath);$(ProjectPath)/../../../../../../../demo;$(ProjectPath)/../../../../../../../include;$(ProjectPath)/../../../../../../../include/app;$(ProjectPath)/../../../../../../../include/arch/xt804;$(ProjectPath)/../../../../../../../include/arch/xt804/csi_core;$(ProjectPath)/../../../../../../../include/arch/xt804/csi_dsp;$(ProjectPath)/../../../../../../../include/bt;$(ProjectPath)/../../../../../../../include/driver;$(ProjectPath)/../../../../../../../include/net;$(ProjectPath)/../../../../../../../include/os;$(ProjectPath)/../../../../../../../include/platform;$(ProjectPath)/../../../../../../../include/wifi;$(ProjectPath)/../../../../../../../platform/common/params;$(ProjectPath)/../../../../../../../platform/drivers/spi;$(ProjectPath)/../../../../../../../platform/inc;$(ProjectPath)/../../../../../../../platform/sys;$(ProjectPath)/../../../../../../../src/app;$(ProjectPath)/../../../../../../../src/app/btapp;$(ProjectPath)/../../../../../../../src/app/cJSON;$(ProjectPath)/../../../../../../../src/app/dhcpserver;$(ProjectPath)/../../../../../../../src/app/dnsserver;$(ProjectPath)/../../../../../../../src/app/fatfs;$(ProjectPath)/../../../../../../../src/app/httpclient;$(ProjectPath)/../../../../../../../src/app/iperf;$(ProjectPath)/../../../../../../../src/app/libcoap/include;$(ProjectPath)/../../../../../../../src/app/libwebsockets-2.1-stable;$(ProjectPath)/../../../../../../../src/app/mDNS/mDNSCore;$(ProjectPath)/../../../../../../../src/app/mDNS/mDNSPosix;$(ProjectPath)/../../../../../../../src/app/mbedtls/include;$(ProjectPath)/../../../../../../../src/app/mbedtls/include/mbedtls;$(ProjectPath)/../../../../../../../src/app/mbedtls/ports;$(ProjectPath)/../../../../../../../src/app/mqtt;$(ProjectPath)/../../../../../../../src/app/oneshotconfig;$(ProjectPath)/../../../../../../../src/app/ota;$(ProjectPath)/../../../../../../../src/app/ping;$(ProjectPath)/../../../../../../../src/app/polarssl/include;$(ProjectPath)/../../../../../../../src/app/web;$(ProjectPath)/../../../../../../../src/app/wm_atcmd;$(ProjectPath)/../../../../../../../src/bt/host/;$(ProjectPath)/../../../../../../../src/bt/host/bta/include;$(ProjectPath)/../../../../../../../src/bt/host/btcore/include;$(ProjectPath)/../../../../../../../src/bt/host/btif/include;$(ProjectPath)/../../../../../../../src/bt/host/embdrv/sbc/decoder/include;$(ProjectPath)/../../../../../../../src/bt/host/embdrv/sbc/encoder/include;$(ProjectPath)/../../../../../../../src/bt/host/gki/common;$(ProjectPath)/../../../../../../../src/bt/host/gki/wm;$(ProjectPath)/../../../../../../../src/bt/host/hci/include;$(ProjectPath)/../../../../../../../src/bt/host/include;$(ProjectPath)/../../../../../../../src/bt/host/main;$(ProjectPath)/../../../../../../../src/bt/host/osi/include;$(ProjectPath)/../../../../../../../src/bt/host/osi/include/socket_utils;$(ProjectPath)/../../../../../../../src/bt/host/stack/;$(ProjectPath)/../../../../../../../src/bt/host/stack/bnep;$(ProjectPath)/../../../../../../../src/bt/host/stack/include;$(ProjectPath)/../../../../../../../src/bt/host/stack/smp;$(ProjectPath)/../../../../../../../src/bt/host/udrv/include;$(ProjectPath)/../../../../../../../src/bt/host/udrv/ulinux;$(ProjectPath)/../../../../../../../src/bt/host/vnd/ble;$(ProjectPath)/../../../../../../../src/bt/host/vnd/include;$(ProjectPath)/../../../../../../../src/network/api2.0.3;$(ProjectPath)/../../../../../../../src/network/lwip2.0.3/apps/httpd;$(ProjectPath)/../../../../../../../src/network/lwip2.0.3/apps/snmp;$(ProjectPath)/../../../../../../../src/network/lwip2.0.3/include;$(ProjectPath)/../../../../../../../src/network/lwip2.0.3/include/arch;$(ProjectPath)/../../../../../../../src/network/lwip2.0.3/include/lwip;$(ProjectPath)/../../../../../../../src/os/rtos/include</IncludePath>
+        <OtherFlags>-fdata-sections -c</OtherFlags>
+        <Verbose>no</Verbose>
+        <Ansi>no</Ansi>
+        <Syntax>no</Syntax>
+        <Pedantic>no</Pedantic>
+        <PedanticErr>no</PedanticErr>
+        <InhibitWarn>no</InhibitWarn>
+        <AllWarn>yes</AllWarn>
+        <WarnErr>no</WarnErr>
+        <OneElfS>yes</OneElfS>
+        <OneElfSPerData>no</OneElfSPerData>
+        <Fstrict>no</Fstrict>
+      </Compiler>
+      <Asm>
+        <Define/>
+        <Undefine/>
+        <IncludePath>$(CDKPath)/CSKY/csi/csi_core/csi_cdk/;$(CDKPath)/CSKY/csi/csi_core/include/;$(CDKPath)/CSKY/csi/csi_driver/include/;$(ProjectPath);$(ProjectPath)/../../../../../../../include;$(ProjectPath)/../../../../../../../include/arch/xt804;$(ProjectPath)/../../../../../../../include/arch/xt804/csi_core;$(ProjectPath)/../../../../../../../include/arch/xt804/csi_dsp;$(ProjectPath)/../../../../../../../include/os;$(ProjectPath)/../../../../../../../include/platform;$(ProjectPath)/../../../../../../../src/app/bleapp;$(ProjectPath)/../../../../../../../src/app/btapp;$(ProjectPath)/../../../../../../../src/app/fatfs;$(ProjectPath)/../../../../../../../src/bt/host/bta/include;$(ProjectPath)/../../../../../../../src/bt/host/btcore/include;$(ProjectPath)/../../../../../../../src/bt/host/btif/include;$(ProjectPath)/../../../../../../../src/bt/host/embdrv/sbc/decoder/include;$(ProjectPath)/../../../../../../../src/bt/host/embdrv/sbc/encoder/include;$(ProjectPath)/../../../../../../../src/bt/host/gki/common;$(ProjectPath)/../../../../../../../src/bt/host/gki/wm;$(ProjectPath)/../../../../../../../src/bt/host/hci/include;$(ProjectPath)/../../../../../../../src/bt/host/include;$(ProjectPath)/../../../../../../../src/bt/host/main;$(ProjectPath)/../../../../../../../src/bt/host/osi/include;$(ProjectPath)/../../../../../../../src/bt/host/osi/include/socket_utils;$(ProjectPath)/../../../../../../../src/bt/host/stack/bnep;$(ProjectPath)/../../../../../../../src/bt/host/stack/include;$(ProjectPath)/../../../../../../../src/bt/host/stack/smp;$(ProjectPath)/../../../../../../../src/bt/host/udrv/include;$(ProjectPath)/../../../../../../../src/bt/host/udrv/ulinux;$(ProjectPath)/../../../../../../../src/bt/host/vnd/ble;$(ProjectPath)/../../../../../../../src/bt/host/vnd/include;$(ProjectPath)/../../../../../../../src/os/rtos/include</IncludePath>
+        <OtherFlags/>
+        <DebugLevel>gdwarf2</DebugLevel>
+      </Asm>
+      <Linker>
+        <Garbage>yes</Garbage>
+        <Garbage2>yes</Garbage2>
+        <LDFile>$(ProjectPath)..\..\..\..\..\..\..\ld\w800\gcc_csky_bt.ld</LDFile>
+        <LibName>libbtcontroller_br_edr;wlan;dsp</LibName>
+        <LibPath>..\..\..\..\..\..\..\lib\w800</LibPath>
+        <OtherFlags>-Wl,-zmax-page-size=1024 -mhard-float</OtherFlags>
+        <AutoLDFile>no</AutoLDFile>
+        <LinkType/>
+      </Linker>
+      <Debug>
+        <LoadApplicationAtStartup>yes</LoadApplicationAtStartup>
+        <Connector>ICE</Connector>
+        <StopAt>yes</StopAt>
+        <StopAtText>main</StopAtText>
+        <InitFile>$(ProjectPath)..\..\..\..\..\..\..\tools\w800\utilities\gdb.init</InitFile>
+        <AfterLoadFile/>
+        <AutoRun>yes</AutoRun>
+        <ResetType>Hard Reset</ResetType>
+        <SoftResetVal>0</SoftResetVal>
+        <ResetAfterLoad>no</ResetAfterLoad>
+        <AfterResetFile/>
+        <Dumpcore>no</Dumpcore>
+        <DumpcoreText>$(ProjectPath)/$(ProjectName).cdkcore</DumpcoreText>
+        <ConfigICE>
+          <IP>localhost</IP>
+          <PORT>1025</PORT>
+          <CPUNumber>0</CPUNumber>
+          <Clock>12000</Clock>
+          <Delay>10</Delay>
+          <WaitReset>50</WaitReset>
+          <DDC>yes</DDC>
+          <TRST>no</TRST>
+          <DebugPrint>no</DebugPrint>
+          <Connect>Normal</Connect>
+          <ResetType>soft</ResetType>
+          <SoftResetVal>0</SoftResetVal>
+          <RTOSType>None</RTOSType>
+          <DownloadToFlash>no</DownloadToFlash>
+          <ResetAfterConnect>yes</ResetAfterConnect>
+          <GDBName/>
+          <GDBServerType>Local</GDBServerType>
+          <OtherFlags/>
+        </ConfigICE>
+        <ConfigSIM>
+          <SIMTarget/>
+          <OtherFlags/>
+          <NoGraphic>yes</NoGraphic>
+          <Log>no</Log>
+          <SimTrace>no</SimTrace>
+        </ConfigSIM>
+        <ConfigOpenOCD>
+          <OpenOCDExecutablePath/>
+          <OpenOCDTelnetPortEnable>no</OpenOCDTelnetPortEnable>
+          <OpenOCDTelnetPort>4444</OpenOCDTelnetPort>
+          <OpenOCDTclPortEnable>no</OpenOCDTclPortEnable>
+          <OpenOCDTclPort>6666</OpenOCDTclPort>
+          <OpenOCDConfigOptions/>
+          <OpenOCDTimeout>5000</OpenOCDTimeout>
+        </ConfigOpenOCD>
+      </Debug>
+      <Flash>
+        <InitFile>$(ProjectPath)..\..\..\..\..\..\..\tools\w800\utilities\flashinit</InitFile>
+        <Erase>Erase Sectors</Erase>
+        <Algorithms Path=""/>
+        <Program>no</Program>
+        <Verify>no</Verify>
+        <ResetAndRun>no</ResetAndRun>
+        <ResetType>Soft Reset</ResetType>
+        <SoftResetVal/>
+        <External>no</External>
+        <Command/>
+        <Arguments/>
+      </Flash>
+    </BuildConfig>
+  </BuildConfigs>
+</Project>

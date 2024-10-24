@@ -59,18 +59,17 @@ static void writeBpBit_for_1wreg(char cmp, char bp4, char bp3, char bp2, char bp
     M32(HR_FLASH_CMD_ADDR) = 0x0C035;
     M32(HR_FLASH_CMD_START) = CMD_START_Msk;
     status  |=  (read_first_value() & 0xFF) << 8;
-    bpstatus  = (bp4 << 6) | (bp3 << 5) | (bp2 << 4) | (bp1 << 3) | (bp0 << 2);
-	if ((status & 0x407C) != (bpstatus|(cmp<<14)))
-	{
-	    status      = (status & 0xBF83) | bpstatus | (cmp << 14);
-	    /*Write Enable*/
-	    M32(HR_FLASH_CMD_ADDR) = 0x6;
-	    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
 
-	    M32(RSA_BASE_ADDRESS)  = status;
-	    M32(HR_FLASH_CMD_ADDR) = 0x1A001;
-	    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
-	}
+    /*Write Enable*/
+    M32(HR_FLASH_CMD_ADDR) = 0x6;
+    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
+
+    bpstatus  = (bp4 << 6) | (bp3 << 5) | (bp2 << 4) | (bp1 << 3) | (bp0 << 2);
+    status      = (status & 0xBF83) | bpstatus | (cmp << 14);
+
+    M32(RSA_BASE_ADDRESS)  = status;
+    M32(HR_FLASH_CMD_ADDR) = 0x1A001;
+    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
 }
 
 static void writeBpBit_for_2wreg(char cmp, char bp4, char bp3, char bp2, char bp1, char bp0)
@@ -87,29 +86,24 @@ static void writeBpBit_for_2wreg(char cmp, char bp4, char bp3, char bp2, char bp
     status  |=  (read_first_value() & 0xFF) << 8;
 
     /*Write Enable*/
+    M32(HR_FLASH_CMD_ADDR) = 0x6;
+    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
+
     bpstatus  = (bp4 << 6) | (bp3 << 5) | (bp2 << 4) | (bp1 << 3) | (bp0 << 2);
-	if ((bpstatus != (status & 0x7C)))
-	{
-	    bpstatus      = (status & 0x83) | bpstatus;
+    bpstatus      = (status & 0x83) | bpstatus;
 
-	    M32(HR_FLASH_CMD_ADDR) = 0x6;
-	    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
+    M32(RSA_BASE_ADDRESS)  = bpstatus;
+    M32(HR_FLASH_CMD_ADDR) = 0xA001;
+    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
 
-	    M32(RSA_BASE_ADDRESS)  = bpstatus;
-	    M32(HR_FLASH_CMD_ADDR) = 0xA001;
-	    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
-	}
 
-	if (((status & 0x4000)>>8) != (cmp << 6))
-	{
-	    M32(HR_FLASH_CMD_ADDR) = 0x6;
-	    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
+    M32(HR_FLASH_CMD_ADDR) = 0x6;
+    M32(HR_FLASH_CMD_START) = CMD_START_Msk;
 
-	    status      = ((status>>8) & 0xBF) | (cmp << 6);
-	    M32(RSA_BASE_ADDRESS)   = status;
-	    M32(HR_FLASH_CMD_ADDR)  = 0xA031;
-	    M32(HR_FLASH_CMD_START) = CMD_START_Msk;	
-	}
+    status      = ((status>>8) & 0xBF) | (cmp << 6);
+    M32(RSA_BASE_ADDRESS)   = status;
+    M32(HR_FLASH_CMD_ADDR)  = 0xA031;
+    M32(HR_FLASH_CMD_START) = CMD_START_Msk;	
 }
 
 
@@ -156,10 +150,10 @@ static int flashunlock(void)
     {
     case SPIFLASH_MID_GD:
 	case SPIFLASH_MID_TSINGTENG:
+	case SPIFLASH_MID_TSINGTENG_1MB:
         writeBpBit_for_1wreg(0, 0, 0, 0, 0, 0);
         break;
     case SPIFLASH_MID_PUYA:
-	case SPIFLASH_MID_TSINGTENG_1MB_4MB:
 		if (inside_fls->density == 0x100000)/*PUYA 1M Flash use 1 register to set lock/unlock*/
 		{
 			writeBpBit_for_1wreg(0, 0, 0, 0, 0, 0);
@@ -190,10 +184,10 @@ static int flashlock(void)
     {
     case SPIFLASH_MID_GD:
 	case SPIFLASH_MID_TSINGTENG:	
+	case SPIFLASH_MID_TSINGTENG_1MB:	
         writeBpBit_for_1wreg(0, 1, 1, 0, 1, 0);
 		break;
     case SPIFLASH_MID_PUYA:
-	case SPIFLASH_MID_TSINGTENG_1MB_4MB:
 		if (inside_fls->density == 0x100000) /*PUYA 1M Flash use 1 register to set lock/unlock*/
 		{
 			writeBpBit_for_1wreg(0, 1, 1, 0, 1, 0);
@@ -661,7 +655,7 @@ int tls_fls_read_unique_id(unsigned  char *uuid)
 		case SPIFLASH_MID_GD:
 		case SPIFLASH_MID_PUYA:
 		case SPIFLASH_MID_TSINGTENG:
-		case SPIFLASH_MID_TSINGTENG_1MB_4MB:
+		case SPIFLASH_MID_TSINGTENG_1MB:
 			dumy_bytes = 4;
 			uni_bytes = 16;
 			break;
@@ -876,7 +870,7 @@ int tls_fls_otp_lock(void)
 	case SPIFLASH_MID_TSINGTENG:
 		writeLbBit_for_1wreg((1<<10));
 		break;
-	case SPIFLASH_MID_TSINGTENG_1MB_4MB:
+	case SPIFLASH_MID_TSINGTENG_1MB:
 		writeLbBit_for_1wreg((7<<11));
 		break;
 	case SPIFLASH_MID_FUDANMICRO:
@@ -1466,21 +1460,8 @@ int tls_fls_init(void)
 	fls->OTPWRParam.pageSize = 256;
 	switch(fls->flashid)
 	{
-	case SPIFLASH_MID_TSINGTENG_1MB_4MB:
-		if (fls->density == 0x100000)
-		{
-			fls->OTPWRParam.eraseSize = 1024;
-		}
-		else if (fls->density == 0x400000)
-		{
-			fls->OTPWRParam.eraseSize = 2048;
-		}
-		else
-		{
-			fls->OTPWRParam.eraseSize = 256;
-		}
-		break;	
 	case SPIFLASH_MID_GD:
+	case SPIFLASH_MID_TSINGTENG_1MB:
 		fls->OTPWRParam.eraseSize = 1024;
 		break;
 	case SPIFLASH_MID_FUDANMICRO:

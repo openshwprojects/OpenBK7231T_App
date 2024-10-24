@@ -606,7 +606,7 @@ ATTRIBUTE_ISR void UART0_IRQHandler(void)
                 port->rx_callback(1, port->priv_data);
             }
         }
-        if (rxlen && port->rx_callback != NULL && !rx_byte_cb_flag)
+        if (port->rx_callback != NULL && !rx_byte_cb_flag)
         {
             port->rx_callback(rxlen, port->priv_data);
         }
@@ -693,10 +693,6 @@ ATTRIBUTE_ISR void UART1_IRQHandler(void)
 	            ch = (u8) port->regs->UR_RXW;
 	            recv->buf[recv->head] = ch;
 	            recv->head = (recv->head + 1) & (TLS_UART_RX_BUF_SIZE - 1);
-				if(port->rx_callback != NULL && rx_byte_cb_flag)
-				{
-					port->rx_callback(1, port->priv_data);
-				}
 	        }
 		}
 
@@ -716,6 +712,10 @@ ATTRIBUTE_ISR void UART1_IRQHandler(void)
                     if(recv->buf[recv->head-2]=='+' && recv->buf[recv->head-3]=='+')
                         port->plus_char_cnt = 3;
                     break;
+            }
+            if(rxlen && port->rx_callback != NULL && rx_byte_cb_flag)
+            {
+                port->rx_callback(1, port->priv_data);
             }
         }
         if (rxlen && port->rx_callback!=NULL && !rx_byte_cb_flag)
@@ -798,10 +798,6 @@ ATTRIBUTE_ISR void UART2_4_IRQHandler(void)
             }
             recv->buf[recv->head] = ch;
             recv->head = (recv->head + 1) & (TLS_UART_RX_BUF_SIZE - 1);
-            if(port->rx_callback != NULL && rx_byte_cb_flag)
-            {
-                port->rx_callback(1, port->priv_data);
-            }
         }
 
         if( escapefifocnt==3 && ch=='+')
@@ -821,8 +817,12 @@ ATTRIBUTE_ISR void UART2_4_IRQHandler(void)
                         port->plus_char_cnt = 3;
                     break;
             }
+            if(port->rx_callback != NULL && rx_byte_cb_flag)
+            {
+                port->rx_callback(1, port->priv_data);
+            }
         }
-        if (rxlen && port->rx_callback!=NULL && !rx_byte_cb_flag)
+        if (port->rx_callback!=NULL && !rx_byte_cb_flag)
         {
             port->rx_callback(rxlen, port->priv_data);
         }

@@ -3,8 +3,8 @@ sinclude $(TOP_DIR)/tools/w800/conf.mk
 
 ifndef PDIR
 GEN_LIBS = libnetwork$(LIB_EXT)
-COMPONENTS_libnetwork = api_wm/liblwipapi$(LIB_EXT) 	\
-						lwip2.1.3/liblwip$(LIB_EXT)
+COMPONENTS_libnetwork = api2.0.3/liblwipapi$(LIB_EXT) 	\
+						lwip2.0.3/liblwip$(LIB_EXT)
 endif
 
 #DEFINES +=

@@ -8,7 +8,7 @@
 
 void polyfit_verify(double x, double* a)
 {
-	double y1 = a[1]*x + a[0];
+	double y1 = a[2]*x*x + a[1]*x + a[0];
 	printf("x=%d, y1=%d\n", (int)x, (int)(y1+0.5));
 }
 
@@ -95,9 +95,9 @@ x[i]-=A[i*n+j]*x[j];
 
 void polyfit_test(void)
 {
-	int i,n=2,poly_n=1;
-	double x[2]={15174, 19196},y[2]={5000, 9986};
-	double a[2];
+	int i,n=4,poly_n=2;
+	double x[4]={4823, 9816, 14851, 19837},y[4]={5000, 9986, 15001, 19959};
+	double a[3];
 	void polyfit(int n,double *x,double *y,int poly_n,double a[]);
 
 

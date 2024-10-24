@@ -25,8 +25,6 @@ enum {
 	CMD_RX_IQ_PHASE,
 	CMD_TX_GAIN,
 	CMD_TX_ADC_CAL,
-	CMD_FREQ_ERR,
-	CMD_RF_CAL_FLAG,
 	CMD_ALL,
 };
 
@@ -47,9 +45,7 @@ typedef struct FT_ADC_CAL_UNIT
 typedef struct FT_ADC_CAL
 {
 	unsigned int       valid_cnt;
-	FT_ADC_CAL_UINT_ST units[6];
-	float              a;
-	float              b;
+	FT_ADC_CAL_UINT_ST units[8];
 }FT_ADC_CAL_ST;
 
 typedef struct FT_TEMP_CAL
@@ -306,18 +302,6 @@ int tls_rf_cal_finish_op(u8 *calflag, u8 flag);
 * @retval		TLS_EFUSE_STATUS_EIO		get failed
 */
 int tls_get_adc_cal_param(FT_ADC_CAL_ST *adc_cal);
-
-
-/**
-* @brief 	This function is used to set adc cal param
-*
-* @param[out]	adc_cal		adc cal param
-*
-* @retval	 	TLS_EFUSE_STATUS_OK			get success
-* @retval		TLS_EFUSE_STATUS_EIO		get failed
-*/
-int tls_set_adc_cal_param(FT_ADC_CAL_ST *adc_cal);
-
 
 /**
  * @}

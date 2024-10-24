@@ -20,6 +20,6 @@ void UserMain(void)
 #if DEMO_CONSOLE
 	CreateDemoTask();
 #endif
-//鐢ㄦ埛鑷繁鐨則ask
+//用户自己的task
 }
 

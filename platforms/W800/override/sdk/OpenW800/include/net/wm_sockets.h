@@ -10,6 +10,6 @@
 #ifndef WM_SOCKET_API_H
 #define WM_SOCKET_API_H
 #include "wm_config.h"
-#include "wm_sockets2.1.3.h"
+#include "wm_sockets2.0.3.h"
 #endif
 

@@ -149,7 +149,6 @@
 #include "APSCommonServices.h"
 #include "lwip/sockets.h"
 #include "wm_sockets.h"
-#include "wm_netif.h"
 #include "lwip/inet.h"
 #include "lwip/igmp.h"
 #include <time.h>                   // platform support for UTC time

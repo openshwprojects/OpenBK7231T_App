@@ -10,6 +10,6 @@
 #ifndef WM_NETIF_H
 #define WM_NETIF_H
 #include "wm_config.h"
-#include "wm_netif2.1.3.h"
+#include "wm_netif2.0.3.h"
 #endif /* WM_NETIF_H */
 

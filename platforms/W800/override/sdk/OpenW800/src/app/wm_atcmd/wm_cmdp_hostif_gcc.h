@@ -856,10 +856,9 @@ typedef struct HOSTIF_CMD_PARAMS_TXGR{
 
  typedef  struct _HOSTIF_CMD_PARAMS_SCANPARAM{
     enum tls_cmd_mode mode;
-	u16 scantimes; 
+	u32 scantimes;
 	u16 chlist;
 	u16 switchinterval;
-	u16 scantype;	
  }__attribute__((packed))HOSTIF_CMD_PARAMS_SCANPARAM;
 
 

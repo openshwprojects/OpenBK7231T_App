@@ -1859,10 +1859,7 @@ static UINT32 HTTPIntrnConnectionOpen (P_HTTP_SESSION pHTTPSession)
                 (HTTP_SOCKADDR*)&ServerAddress,			                // Server address    
                 sizeof(HTTP_SOCKADDR));		                    // Length of server address structure
 	        // The socket was set to be asyn so we should check the error being returned from connect()
-	        if(nRetCode)
-	        {
-	        	nRetCode = SocketGetErr(pHTTPSession->HttpConnection.HttpSocket);
-	        }
+	        nRetCode = SocketGetErr(pHTTPSession->HttpConnection.HttpSocket);
         }
         
         if(nRetCode == 0 || nRetCode == HTTP_EWOULDBLOCK || nRetCode == HTTP_EINPROGRESS)
@@ -1879,7 +1876,6 @@ static UINT32 HTTPIntrnConnectionOpen (P_HTTP_SESSION pHTTPSession)
         }
         else
         {
-        	//printf("%s: nRetCode %d\n", __func__, nRetCode);
             // Socket connection problem
             nRetCode = HTTP_CLIENT_ERROR_SOCKET_CONNECT;
             break;

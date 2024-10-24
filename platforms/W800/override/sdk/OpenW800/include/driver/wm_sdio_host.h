@@ -34,7 +34,7 @@ typedef struct
   long long CardCapacity;
   u32 CardBlockSize;
   u16 RCA;
-  u8 CSDVer;
+  u8 CardType;
 } SD_CardInfo_t;
 extern SD_CardInfo_t SDCardInfo;
 /**

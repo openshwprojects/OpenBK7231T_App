@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CDK_Workspace Name="CDK_WS" Database="">
+  <Project Name="W800_SDK" Path="W800_SDK/W800_SDK.cdkproj" Active="Yes"/>
+  <Project Name="W800_SDK_BT" Path="W800_SDK_BT/W800_SDK_BT.cdkproj" Active="No"/>
+  <BuildMatrix>
+    <WorkspaceConfiguration Name="Debug" Selected="yes">
+      <Environment/>
+      <Project Name="W800_SDK" ConfigName="BuildSet"/>
+      <Project Name="W800_SDK_BT" ConfigName="BuildSet"/>
+    </WorkspaceConfiguration>
+  </BuildMatrix>
+</CDK_Workspace>

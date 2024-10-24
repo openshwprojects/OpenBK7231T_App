@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "tls_common.h"
 #include "wm_mem.h"
 #include "wm_debug.h"
 #include "lwip/stats.h"
@@ -24,8 +25,6 @@
 #include "lwip/prot/dhcp.h"
 #include "netif/ethernetif.h"
 #include "dhcp_server.h"
-#include "tls_common.h"
-#include "wm_wifi.h"
 
 #if TLS_CONFIG_AP
 
@@ -37,7 +36,7 @@
 extern u8 *wpa_supplicant_get_mac(void);
 
 
-/* 鏄惁鏍规嵁瀹㈡埛绔痙hcp鎶ユ枃涓殑broadcast鏍囧織鏉ュ洖搴旓紝涓嶄娇鐢ㄥ垯缁熶竴浣跨敤骞挎挱鍥炲 */
+/* 是否根据客户端dhcp报文中的broadcast标志来回应，不使用则统一使用广播回复 */
 #define DHCPS_CHECK_BROADCAST_FLAG
 #ifdef DHCPS_CHECK_BROADCAST_FLAG
 #define IS_BROADCAST_SEND(x)    (((x) >> 15) == 1 ? TRUE : FALSE)
@@ -159,7 +158,7 @@ static bool _CheckMacIsValid(u8 *mac)
 
     sta_buf = tls_mem_alloc(STA_MAC_BUF_LEN);
     if (!sta_buf)
-        return FALSE;/* 绯荤粺璧勬簮涓嶈冻锛屾棤闇�鍐嶈client鎺ュ叆 */
+        return FALSE;/* 系统资源不足，无需再让client接入 */
 
     memset(sta_buf, 0, STA_MAC_BUF_LEN);
     tls_wifi_get_authed_sta_info(&sta_num, sta_buf, STA_MAC_BUF_LEN);
@@ -168,7 +167,7 @@ static bool _CheckMacIsValid(u8 *mac)
     {
         if (!compare_ether_addr(mac, sta->mac_addr))
         {
-            ret = TRUE;/* 鏈琒OFTAP涓嬬殑client鎵嶄簣浠ュ垎閰岻P */
+            ret = TRUE;/* 本SOFTAP下的client才予以分配IP */
             break;
         }
         sta++;
@@ -1135,8 +1134,7 @@ INT8S DHCPS_Start(struct netif *Netif)
 	udp_bind(DhcpServer->Socket, IP_ADDR_ANY, DHCP_SERVER_UDP_PORT);
 
 	/* bind multicast&broadcast netif */
-	//udp_bind_multicast_netif(DhcpServer->Socket, &Netif->ip_addr);
-	udp_set_multicast_netif_addr(DhcpServer->Socket, &Netif->ip_addr);
+	udp_bind_multicast_netif(DhcpServer->Socket, &Netif->ip_addr);
 
 	/* Set up the recv callback and argument. */
 	udp_recv(DhcpServer->Socket, (udp_recv_fn)DHCPS_RecvCb, Netif);

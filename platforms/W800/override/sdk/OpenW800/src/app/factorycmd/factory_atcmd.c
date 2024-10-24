@@ -11,8 +11,6 @@
 #include "wm_internal_flash.h"
 #include "litepoint.h"
 #include "wm_ram_config.h"
-#include "wm_adc.h"
-#include "wm_gpio_afsel.h"
 
 #define FACTORY_ATCMD_MAX_ARG      10
 #define FACTORY_ATCMD_NAME_MAX_LEN 10
@@ -525,7 +523,7 @@ static int factory_atcmd_txgi_proc( struct factory_atcmd_token_t *tok, char *res
 	    }
     }
 	else{
-		/*濡傚疄鍙嶆槧flash鍙傛暟鍖虹殑瀹為檯瀛樺偍鎯呭喌*/
+		/*如实反映flash参数区的实际存储情况*/
 		ret = tls_get_tx_gain(tx_gain);
 		if (ret == 0)
 		{
@@ -844,102 +842,6 @@ static int factory_atcmd_qver_proc( struct factory_atcmd_token_t *tok, char *res
                 __DATE__, __TIME__);
 	return 0;
 }
-static int factory_atcmd_test_mode_proc( struct factory_atcmd_token_t *tok, char *res_resp, u32 *res_len)
-{
-	wm_adc_config(0);
-	wm_adc_config(1);
-	wm_adc_config(2);
-	wm_adc_config(3);
-	*res_len = factory_atcmd_ok_resp(res_resp);
-	return 0;
-}
-static int factory_atcmd_adc_cal_proc( struct factory_atcmd_token_t *tok, char *res_resp, u32 *res_len)
-{
-	int ret = 0;
-	int val = 0;
-	int i = 0; 
-	int refvoltage[4] = {0};
-	FT_ADC_CAL_ST adc_cal;
-
-	if (tok->arg_found)
-	{
-		if (tok->arg_found < 5)
-		{
-			*res_len = factory_atcmd_err_resp(res_resp, FACTORY_ATCMD_ERR_INV_PARAMS);
-			return 0;
-		}
-		ret = strtodec(&val, tok->arg[0]);
-		if (ret < 0 || val > 15 || val < 1)
-		{
-			*res_len = factory_atcmd_err_resp(res_resp, FACTORY_ATCMD_ERR_INV_PARAMS);
-			return 0;
-		}
-		for(i = 0; i < 4; i++)
-		{
-			ret = strtodec(&refvoltage[i], tok->arg[i + 1]);
-			if (ret < 0 )
-			{
-				*res_len = factory_atcmd_err_resp(res_resp, FACTORY_ATCMD_ERR_INV_PARAMS);
-				return 0;
-			}
-		}
-		
-		ret = adc_multipoint_calibration(val, refvoltage);
-		if (ret == 0)
-		{
-			*res_len = factory_atcmd_ok_resp(res_resp);
-		}
-		else
-		{
-			*res_len = factory_atcmd_err_resp(res_resp, FACTORY_ATCMD_ERR_FLASH);
-		}		
-		return 0;
-	}
-	else
-	{
-		ret = tls_get_adc_cal_param(&adc_cal);
-		//dumpBuffer("&adc_cal", &adc_cal, sizeof(adc_cal));
-		if (ret == 0)
-		{
-			*res_len = sprintf(res_resp, "+OK=%lf,%lf\r\n", adc_cal.a, adc_cal.b);
-		}
-		else
-		{
-			*res_len = factory_atcmd_err_resp(res_resp,FACTORY_ATCMD_ERR_FLASH);
-		}		
-
-		return 0;
-	}
-}
-
-static int factory_atcmd_adc_vol_proc( struct factory_atcmd_token_t *tok, char *res_resp, u32 *res_len)
-{
-	int ret = 0;
-	int val = 0xF;
-	int i = 0; 
-	int voltage[4] = {0};
-
-	if (tok->arg_found)
-	{
-		ret = strtodec(&val, tok->arg[0]);
-		if (ret < 0 || val > 15 || val < 1)
-		{
-			*res_len = factory_atcmd_err_resp(res_resp, FACTORY_ATCMD_ERR_INV_PARAMS);
-			return 0;
-		}
-	}
-	
-	for(i = 0; i < 4; i++)
-	{
-		if (val & (1 << i))
-		{
-			wm_adc_config(i);
-			voltage[i] = adc_get_inputVolt(i);
-		}
-	}
-	*res_len = sprintf(res_resp, "+OK=%d,%d,%d,%d\r\n", voltage[0], voltage[1], voltage[2], voltage[3]);
-	return 0;
-}
 
 
 static struct factory_atcmd_t  factory_atcmd_tbl[] =
@@ -967,9 +869,6 @@ static struct factory_atcmd_t  factory_atcmd_tbl[] =
 	{ "&LPRSTT", factory_atcmd_lprstt_proc},
     { "&CALFIN", factory_atcmd_calfinish_proc},
     { "FREQ",    factory_atcmd_freq_err_proc},
-    { "&TESTM",  factory_atcmd_test_mode_proc},
-    { "&ADCCAL", factory_atcmd_adc_cal_proc},
-    { "&ADCVOL", factory_atcmd_adc_vol_proc},
     { NULL,      NULL },
 };
 

@@ -327,7 +327,7 @@ static int ble_uart_init(int8_t uart_idx, int bandrate, int parity, int stopbits
                            wm_uart_task,
                            (void *) wm_uart,
                            (void *) wm_uart_task_stk, /** 任务栈的起始地址 */
-                           WM_UART_TAST_STK_SIZE*4,                         /** 任务栈的大小     */
+                           WM_UART_TAST_STK_SIZE,                         /** 任务栈的大小     */
                            WM_UART_TASK_PRIO, 0);
         assert(status == 0);
         status = tls_os_queue_create(&(wm_uart->wm_queue_msg_available), 6);
@@ -336,7 +336,7 @@ static int ble_uart_init(int8_t uart_idx, int bandrate, int parity, int stopbits
                    wm_dispatch_task,
                    (void *) wm_uart,
                    (void *) wm_disp_task_stk, /** 任务栈的起始地址 */
-                   WM_DISP_TAST_STK_SIZE*4,                         /** 任务栈的大小     */
+                   WM_DISP_TAST_STK_SIZE,                         /** 任务栈的大小     */
                    WM_UART_TASK_PRIO+1, 0);
         assert(status == 0);
     }

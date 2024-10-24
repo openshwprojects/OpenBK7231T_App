@@ -33,8 +33,6 @@ static void io_cfg_option1(enum tls_io_name name)
     tls_reg_write32(HR_GPIO_AF_SEL + offset, tls_reg_read32(HR_GPIO_AF_SEL + offset) | BIT(pin));  /* gpio function */
     tls_reg_write32(HR_GPIO_AF_S1  + offset, tls_reg_read32(HR_GPIO_AF_S1  + offset) & (~BIT(pin)));
     tls_reg_write32(HR_GPIO_AF_S0  + offset, tls_reg_read32(HR_GPIO_AF_S0  + offset) & (~BIT(pin)));
-	tls_reg_write32(HR_GPIO_PULLUP_EN + offset, tls_reg_read32(HR_GPIO_PULLUP_EN + offset) | (BIT(pin))); /*disable pullup*/
-	tls_reg_write32(HR_GPIO_PULLDOWN_EN + offset, tls_reg_read32(HR_GPIO_PULLDOWN_EN + offset) & (~BIT(pin)));	/*disable pulldown*/
 }
 
 static void io_cfg_option2(enum tls_io_name name)
@@ -56,8 +54,6 @@ static void io_cfg_option2(enum tls_io_name name)
     tls_reg_write32(HR_GPIO_AF_SEL + offset, tls_reg_read32(HR_GPIO_AF_SEL + offset) | BIT(pin));  /* gpio function */
     tls_reg_write32(HR_GPIO_AF_S1  + offset, tls_reg_read32(HR_GPIO_AF_S1  + offset) & (~BIT(pin)));
     tls_reg_write32(HR_GPIO_AF_S0  + offset, tls_reg_read32(HR_GPIO_AF_S0  + offset) | BIT(pin));
-	tls_reg_write32(HR_GPIO_PULLUP_EN + offset, tls_reg_read32(HR_GPIO_PULLUP_EN + offset) | (BIT(pin))); /*disable pullup*/
-	tls_reg_write32(HR_GPIO_PULLDOWN_EN + offset, tls_reg_read32(HR_GPIO_PULLDOWN_EN + offset) & (~BIT(pin)));	/*disable pulldown*/
 }
 
 static void io_cfg_option3(enum tls_io_name name)
@@ -79,8 +75,6 @@ static void io_cfg_option3(enum tls_io_name name)
     tls_reg_write32(HR_GPIO_AF_SEL + offset, tls_reg_read32(HR_GPIO_AF_SEL + offset) | BIT(pin));  /* gpio function */
     tls_reg_write32(HR_GPIO_AF_S1  + offset, tls_reg_read32(HR_GPIO_AF_S1  + offset) | BIT(pin));
     tls_reg_write32(HR_GPIO_AF_S0  + offset, tls_reg_read32(HR_GPIO_AF_S0  + offset) & (~BIT(pin)));
-	tls_reg_write32(HR_GPIO_PULLUP_EN + offset, tls_reg_read32(HR_GPIO_PULLUP_EN + offset) | (BIT(pin))); /*disable pullup*/
-	tls_reg_write32(HR_GPIO_PULLDOWN_EN + offset, tls_reg_read32(HR_GPIO_PULLDOWN_EN + offset) & (~BIT(pin)));	/*disable pulldown*/
 }
 
 static void io_cfg_option4(enum tls_io_name name)
@@ -102,8 +96,6 @@ static void io_cfg_option4(enum tls_io_name name)
     tls_reg_write32(HR_GPIO_AF_SEL + offset, tls_reg_read32(HR_GPIO_AF_SEL + offset) | BIT(pin));  /* gpio function */
     tls_reg_write32(HR_GPIO_AF_S1  + offset, tls_reg_read32(HR_GPIO_AF_S1  + offset) | BIT(pin));
     tls_reg_write32(HR_GPIO_AF_S0  + offset, tls_reg_read32(HR_GPIO_AF_S0  + offset) | BIT(pin));
-	tls_reg_write32(HR_GPIO_PULLUP_EN + offset, tls_reg_read32(HR_GPIO_PULLUP_EN + offset) | (BIT(pin))); /*disable pullup*/
-	tls_reg_write32(HR_GPIO_PULLDOWN_EN + offset, tls_reg_read32(HR_GPIO_PULLDOWN_EN + offset) & (~BIT(pin)));	/*disable pulldown*/
 }
 
 static void io_cfg_option5(enum tls_io_name name)
@@ -123,8 +115,6 @@ static void io_cfg_option5(enum tls_io_name name)
     }
 
     tls_reg_write32(HR_GPIO_AF_SEL + offset, tls_reg_read32(HR_GPIO_AF_SEL + offset) & (~BIT(pin)));  /* disable gpio function */
-	tls_reg_write32(HR_GPIO_PULLUP_EN + offset, tls_reg_read32(HR_GPIO_PULLUP_EN + offset) | (BIT(pin))); /*disable pullup*/
-	tls_reg_write32(HR_GPIO_PULLDOWN_EN + offset, tls_reg_read32(HR_GPIO_PULLDOWN_EN + offset) & (~BIT(pin)));	/*disable pulldown*/
 }
 
 static u32 io_pa_option67 = 0;
@@ -149,8 +139,8 @@ static void io_cfg_option6(enum tls_io_name name)
 
     tls_reg_write32(HR_GPIO_AF_SEL  + offset, tls_reg_read32(HR_GPIO_AF_SEL  + offset) & (~BIT(pin)));  /* disable gpio function */
     tls_reg_write32(HR_GPIO_DIR     + offset, tls_reg_read32(HR_GPIO_DIR     + offset) & (~BIT(pin)));
-	tls_reg_write32(HR_GPIO_PULLUP_EN + offset, tls_reg_read32(HR_GPIO_PULLUP_EN + offset) | (BIT(pin))); /*disable pullup*/
-	tls_reg_write32(HR_GPIO_PULLDOWN_EN + offset, tls_reg_read32(HR_GPIO_PULLDOWN_EN + offset) & (~BIT(pin)));	/*disable pulldown*/
+	tls_reg_write32(HR_GPIO_PULLUP_EN + offset, tls_reg_read32(HR_GPIO_PULLUP_EN + offset) | (BIT(pin)));
+	tls_reg_write32(HR_GPIO_PULLDOWN_EN + offset, tls_reg_read32(HR_GPIO_PULLDOWN_EN + offset) & (~BIT(pin)));	
 }
 
 static void io_cfg_option7(enum tls_io_name name)
