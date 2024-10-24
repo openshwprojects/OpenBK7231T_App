@@ -1,0 +1,11 @@
+/***********************************************/
+/* HTML tag styles                             */
+/***********************************************/
+body{
+	font-family: Arial,sans-serif;
+	color: #333333;
+	line-height: 1.166;
+	background: #cccccc;
+	position:relative
+}
+/********************* end **********************/

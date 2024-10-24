@@ -1,0 +1,115 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!-- DW6 -->
+<head>
+<!-- Copyright 2005 Macromedia, Inc. All rights reserved. -->
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>System&nbsp;</title>
+<link rel="stylesheet" href="style.css" type="text/css" />
+<script type="text/JavaScript">
+function Restart()
+{        
+	if(confirm('Are you sure to restart system?')){
+	   document.systeminfo.submit();
+	} 	
+}
+function UpGrade()
+{        
+	if (document.FirmWareUpgrade.file.value == "")
+	{
+		alert("Please select file first");
+		return ;
+	}
+	if(confirm('Are you sure to update firmware?')){
+	   document.FirmWareUpgrade.submit() ;
+	} 	
+}
+</script>
+</head>
+<body>
+<div id="pagecell1" style="width:800;height=800" align="center">
+  <!--pagecell1-->
+  <div style="background-color:#CCCCCC">&nbsp;</div>
+  <div id="pageName">
+    <h2>System </h2>
+  </div>
+  <div id="pageNav">
+    <div id="sectionLinks"> <a href="basic.html">Basic </a> <a href="advance.html">Advanced </a> <a href="firmware.html">System </a></div>
+    <p></p>
+	<div id="advert">
+	<p align="left">·System Information: Mac address,hardware version,firmware version </p>
+	<p align="left">·Firmware Upgrade: Select the firmware file and click the“upgrade” button, then you can upgrade your firmware </p>
+	</div>
+  </div>
+  <div id="content">
+  <form id="systeminfo" name="systeminfo" method="get" action="">
+    <div class="story">
+      <h3 style="background-color:#666666">System Information</h3>
+      <table width="400" border="0" cellpadding="0" cellspacing="5">
+        <tr>
+          <td height="10"></td>
+        </tr>
+		<tr>
+          <td align="right">Mac Address ：</td>
+          <td align="left"><label>
+            <input name="MAC Address" type="text" id="MacAdr" value="0" disabled="disabled"/></label>
+          </td>
+		</tr>
+		<tr>
+          <td width="120" align="right">Hardware Version：</td>
+          <td align="left"><label>
+            <input name="Hardware Version" type="text" id="HardVer" value="0" disabled="disabled"/>
+          </label></td>
+    </tr>
+		<tr>
+          <td width="120" align="right">Firmware Version：</td>
+          <td align="left"><label>
+            <input name="Firmware Version" type="text" id="FirmVer" value="0" disabled="disabled"/>
+          </label></td>
+    </tr>
+		<tr>
+          <td width="120" align="right">Release Time：</td>
+          <td align="left"><label>
+            <input name="Release Time" type="text" id="RelTime" value="0" disabled="disabled"/>
+          </label></td>
+    </tr>
+		  <tr><td height="10" colspan="2"></td></tr>
+		<tr>
+          <td height="20" colspan="4" align="center" valign="top">
+		  <label>
+		  	        <input name="restart" type="hidden" value="1" />
+                <input type="button" id="restart" onClick="Restart()" value="Restart System" />
+              </label>&nbsp;&nbsp;
+          </td>
+          </tr>
+        </table>
+    </div>
+	</form>	
+	  <form action="" method="post" enctype="multipart/form-data" name="FirmWareUpgrade" id="form1">
+    <div class="story"> 
+      <h3 style="background-color:#666666">Firmware Upgrade</h3>
+      <table width="400" border="0" cellpadding="0" cellspacing="5">
+          <tr><td height="10" colspan="2"></td></tr>
+		  <tr>
+            <td width="120" align="right">Firmware File：</td>
+            <td align="left"><input type="file" name="file" /></td>
+          </tr>
+		  <tr><td height="10" colspan="2"></td></tr>
+		  <tr>
+            <td height="20" colspan="3" align="center" valign="top">
+              <label>
+                <input name="Save" type="button" id="Save" onClick="UpGrade()" value="Upgrade" />	  
+              </label>&nbsp;&nbsp;</td>
+		  </tr>
+		  <tr><td height="10" colspan="2"></td></tr>
+        </table>
+    </div>
+	</form>
+  </div>
+  <div id="siteInfo">Copyright 2010-2013 </div>
+</div>
+<!--end pagecell1-->
+<br />
+</body>
+</html>
+

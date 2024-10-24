@@ -1,0 +1,202 @@
+/***********************************************/
+/* HTML tag styles                             */
+/***********************************************/
+body{
+	font-family: Arial,sans-serif;
+	color: #333333;
+	line-height: 1.166;	
+	margin: 0px;
+	padding: 0px;
+	background: #cccccc;
+	position:relative
+}
+
+/******* hyperlink and anchor tag styles *******/
+
+a:link, a:visited{
+	color: #005FA9;
+	text-decoration: none;
+}
+
+a:hover{
+	text-decoration: underline;
+}
+
+/************** header tag styles **************/
+h2{
+ font: bold 114% Arial,sans-serif;
+ color: #006699;
+ margin: 0px;
+ padding: 0px;
+}
+
+h3{
+ font: bold 100% Arial,sans-serif;
+ color: #334d55;
+ margin: 0px;
+ padding: 0px;
+ align:left
+}
+/*************** list tag styles ***************/
+
+ul{
+ list-style-type: square;
+}
+
+ul ul{
+ list-style-type: disc;
+}
+
+ul ul ul{
+ list-style-type: none;
+}
+
+/********* form and related tag styles *********/
+
+form {
+	margin: 0;
+	padding: 0;
+}
+
+label{
+ font: bold 1em Arial,sans-serif;
+ color: #334d55;
+}
+				
+input{
+font-family: Arial,sans-serif;
+}
+
+/***********************************************/
+/* Layout Divs                                 */
+/***********************************************/
+#pagecell1{
+	width:800px;
+	margin:0 auto;
+	background-color: #ffffff;
+}
+
+#tl {
+	position:absolute;
+	top: -1px;
+	left: -1px;
+	margin: 0px;
+	padding: 0px;
+	z-index: 100;
+}
+#pageNav{
+	float: left;
+	width:178px;
+	padding: 0px;
+	background-color: #F5f7f7;
+	border-right: 1px solid #cccccc;
+	border-bottom: 1px solid #cccccc;
+	font: small Verdana,sans-serif;
+}
+
+#content{
+	padding: 0px 10px 0px 0px;
+	margin:0px 0px 0px 178px;
+	border-left: 1px solid #ccd2d2;
+}
+
+/************** pageName styles ****************/
+
+#pageName{
+	padding: 0px 0px 14px 10px;
+	margin: 0px;
+	border-bottom:1px solid #ccd2d2;
+}
+
+/*************** story styles ******************/
+
+.story {
+	padding: 10px 0px 0px 10px;
+	font-size: 80%;
+}
+
+.story h3{
+	font: bold 125% Arial,sans-serif;
+	color: #000000;
+}
+
+.story p {
+	padding: 0px 0px 10px 0px;
+}
+
+.story a.capsule{
+	font: bold 1em Arial,sans-serif;
+	color: #005FA9;
+	display:block;
+	padding-bottom: 5px;
+}
+
+.story a.capsule:hover{
+	text-decoration: underline;
+}
+
+td.storyLeft{
+	padding-right: 12px;
+}
+
+
+/************** siteInfo styles ****************/
+
+#siteInfo{
+	clear: both;
+	border-top: 1px solid #cccccc;
+	font-size: small;
+	color: #cccccc;
+	padding: 10px 10px 10px 10px;
+	margin-top: 0px;
+}
+
+#siteInfo img{
+	padding: 4px 4px 4px 0px;
+	vertical-align: middle;
+}
+
+
+/************ sectionLinks styles **************/
+
+#sectionLinks{
+	margin: 0px;
+	padding: 0px;
+
+}
+
+#sectionLinks h3{
+	padding: 10px 0px 2px 10px;
+	border-bottom: 1px solid #cccccc;
+}
+
+#sectionLinks a:link, #sectionLinks a:visited {
+	display: block;
+	border-top: 1px solid #ffffff;
+	border-bottom: 1px solid #cccccc;
+	font-weight: bold;
+	padding: 3px 0px 3px 10px;
+	color: #21536A;
+}
+
+#sectionLinks a:hover{
+	border-top: 1px solid #cccccc;
+	background-color: #DDEEFF;
+	background-image: none;
+	font-weight: bold;
+	text-decoration: none;
+}
+
+
+
+/**************** advert styles *****************/
+
+#advert{
+	padding: 10px;
+}
+
+#advert img{
+	display: block;
+}
+
+/********************* end **********************/

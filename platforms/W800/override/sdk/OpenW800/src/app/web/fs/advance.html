@@ -1,0 +1,423 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!-- DW6 -->
+<head>
+<!-- Copyright 2005 Macromedia, Inc. All rights reserved. -->
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>Advanced Configuration&nbsp;</title>
+<link rel="stylesheet" href="style.css" type="text/css" />
+<script type="text/JavaScript">
+<!--
+function strlen(str) {
+	var len = 0;
+	for (var i = 0; i < str.length; i++)
+	{
+		if (str.charCodeAt(i) > 255) len += 2; else len ++;
+    }
+	return len;
+}
+
+function saveconfig(){
+	if(confirm('Are you sure to save?\n')){
+		return true;	  
+	}	  
+	else
+	{
+		return false;
+	}	
+}
+
+function Wireless_popupMsg() { //v1.0
+      var Bssid_var=document.getElementById("Bssid").value;
+	  var BssidEable_obj=document.getElementById("BssidEable").value; 
+      var Try_times_var=document.getElementById("Try_times").value;	  	   
+      var BssidLen=strlen(Bssid_var);
+	  if(BssidEable_obj==1)
+	  {
+      if(BssidLen!=12)
+	   {
+              alert('Bssid Length must be 12 characters!');
+                 return false;
+       }
+	   }
+	   if(parseInt(Try_times_var)>255)
+	   {
+              alert('Try times Error!');
+                 return false;	   
+	   }		   
+     return saveconfig();
+}
+
+function MM_popupMsg() { //v1.0
+      var Password_var=document.getElementById("PassWord").value;
+   
+      var PasswordLen=strlen(Password_var);
+	  
+        if(PasswordLen!=6){
+              alert('Password must be 6 characters!');
+                 return false;
+       }
+     return saveconfig();
+}
+function BssidEable1()
+{
+	var obj=document.form4.BssidEable.value;
+	if(obj==0)
+	{
+		document.form4.Bssid.disabled=true;
+	}
+	else
+	{
+		document.form4.Bssid.disabled=false;
+	}
+}
+function SelectBg()
+{
+	var obj=document.all.Bg.value;
+	var RateSelect=document.getElementById("Rate");
+	var bm=new Array();
+	RateSelect.options.length = 0;
+
+    bm[0]="0"; 
+    bm[1]="1M"; 
+    bm[2]="1"; 
+    bm[3]="2M"; 
+    bm[4]="2"; 
+    bm[5]="5.5M"; 
+    bm[6]="3"; 
+    bm[7]="11M"; 
+    bm[8]="4"; 
+    bm[9]="6M"; 
+    bm[10]="5"; 
+    bm[11]="9M"; 
+    bm[12]="6"; 
+    bm[13]="12M"; 
+    bm[14]="7"; 
+    bm[15]="18M"; 
+    bm[16]="8"; 
+    bm[17]="24M"; 
+    bm[18]="9"; 
+    bm[19]="36M"; 
+    bm[20]="10"; 
+    bm[21]="48M"; 
+    bm[22]="11"; 
+    bm[23]="54M"; 
+    bm[24]="12"; 
+    bm[25]="MCS0"; 
+    bm[26]="13"; 
+    bm[27]="MCS1"; 
+    bm[28]="14"; 
+    bm[29]="MCS2"; 
+    bm[30]="15"; 
+    bm[31]="MCS3"; 
+    bm[32]="16"; 
+    bm[33]="MCS4"; 
+    bm[34]="17"; 
+    bm[35]="MCS5"; 
+    bm[36]="18"; 
+    bm[37]="MCS6"; 
+    bm[38]="19"; 
+    bm[39]="MCS7"; 
+    bm[40]="20"; 
+    bm[41]="MCS8"; 
+    bm[42]="21"; 
+    bm[43]="MCS9"; 
+    bm[44]="22"; 
+    bm[45]="MCS10"; 
+    bm[46]="23"; 
+    bm[47]="MCS11"; 
+    bm[48]="24"; 
+    bm[49]="MCS12"; 
+    bm[50]="25"; 
+    bm[51]="MCS13"; 
+    bm[52]="26"; 
+    bm[53]="MCS14"; 
+    bm[54]="27"; 
+    bm[55]="MCS15"; 
+    bm[56]="28"; 
+    bm[57]="MCS32"; 
+	if(obj==0)
+	{	
+  		for(x=0;x<24;x=x+2)
+		{
+   			 var option = new Option(bm[x+1],bm[x]); 
+ 		     RateSelect.options.add(option);
+   		}		
+	}
+	else if(obj==2)
+	{	
+  		for(x=0;x<bm.length;x=x+2)
+		{
+   			 var option = new Option(bm[x+1],bm[x]); 
+ 		     RateSelect.options.add(option);
+   		}		
+	}
+	else
+	{
+  		for(x=0;x<8;x=x+2)
+		{
+   			 var option = new Option(bm[x+1],bm[x]); 
+ 		     RateSelect.options.add(option);
+   		}	
+	}
+}
+function EsckeyHandle()
+{
+  if	(
+(event.keyCode>=48 && event.keyCode<=57) || 
+(event.keyCode>=65 && event.keyCode<=70) ||
+(event.keyCode>=97 && event.keyCode<=102) 
+	)
+{   
+	event.returnValue = true;
+}
+else 
+{
+ alert("Must input HEX characters!");	 
+ event.returnValue = false;
+}
+}
+//-->
+</script>
+<style type="text/css">
+<!--
+.STYLE1 {color: #333333}
+-->
+</style>
+
+</head>
+<body>
+<div id="pagecell1" style="width:800;height=800" align="center">
+  <!--pagecell1-->
+  <div style="background-color:#CCCCCC">&nbsp;</div>
+  <div id="pageName">
+    <h2>Advanced</h2>
+  </div>
+  <div id="pageNav">
+    <div id="sectionLinks"> <a href="basic.html">Basic </a> <a href="advance.html">Advanced </a> <a href="firmware.html">System </a></div>
+	<p></p>
+	<div id="advert">
+	<p align="left">·Advanced Wireless Settings: You can configure the following wireless parameters: network mode、wireless standard、AP BSSID etc.</p>
+	<p align="left">·Channel List Settings: Proper channel list Settings can speed the wireless network connection.</p>
+	<p align="left">·Serial Port Settings: Proper serial port settings is necessary for you to use the wifi module.</p>
+	</div>
+  </div>
+  <div id="content">
+  <form id="form4" name="form4" method="get" action="">
+    <div class="story"> 
+      <h3 style="background-color:#666666">Advance Wireless  Settings</h3>
+      <table width="550" border="0" cellpadding="0" cellspacing="5">
+        <tr>
+          <td height="10" colspan="4"></td>
+		  </tr>
+        <tr valign="middle">
+          <td align="right">Wireless Standard：</td>
+          <td align="left"><label>
+            <select name="Bg" size="1" onchange="SelectBg()" id="Bg" > <option value="0" selected="selected">b/g</option> <option value="1">b</option>
+            </select>
+          </label></td>
+          <td width="104" align="left">Data Rate：</td>
+          <td width="194" align="left"><label>
+            <select name="Rate" size="1" id="Rate" > <option value="11" selected="selected">1M</option> <option value="10">2M</option> <option value="9">5.5M</option> <option value="8">6M</option> <option value="7">9M</option> <option value="6">11M</option> <option value="5">12M</option> <option value="4">18M</option> <option value="3">24M</option> <option value="2">36M</option> <option value="1">48M</option> <option value="0">54M</option>
+            </select>
+          </label></td>
+        </tr>
+        <tr valign="middle">
+          <td align="right">Channel Number：</td>
+          <td colspan="3" align="left"><label>
+            <select name="Channel" size="1" id="Channel" > <option value="0" selected="selected">Auto</option> <option value="1">1</option> <option value="2">2</option> <option value="3">3</option> <option value="4">4</option> <option value="5">5</option> <option value="6">6</option> <option value="7">7</option> <option value="8">8</option> <option value="9">9</option> <option value="10">10</option> <option value="11">11</option> <option value="12">12</option> <option value="13">13</option> <option value="14">14</option>
+            </select>
+          </label></td>
+        </tr>	
+        <tr valign="middle">
+          <td align="right">Roam(Sta)：</td>
+          <td colspan="3" align="left"><label>
+            <select name="roam" size="1" id="roam" > <option value="0" selected="selected">disable</option> <option value="1">enable</option> 
+			  </select>
+          </label></td>
+        </tr>		
+        <tr valign="middle">
+          <td align="right">Power Save(Sta)：</td>
+          <td colspan="3" align="left"><label>
+            <select name="powersave" size="1" id="powersave" > <option value="0" selected="selected">disable</option> <option value="1">enable</option> 
+			  </select>
+          </label></td>
+        </tr>		
+          <tr valign="middle">
+          <td align="right">Bssid Bind(Sta)：</td>
+          <td width="77" align="left"><label>
+          <select name="BssidEable" size="1" id="BssidEable" onchange="BssidEable1()" > <option value="0">disable</option> <option value="1">enable</option>
+            </select>
+          </label></td>
+ 			<td colspan="2" align="left">
+            <input name="Bssid" type="text" onkeypress="EsckeyHandle()" id="Bssid" value="000000000000" size="12" maxlength="12" />
+            (e.g. 001122334455) </td>
+          </tr>
+	     <tr valign="middle">
+          <td align="right">Auto Create(Adhoc)：</td>
+          <td colspan="3" align="left"><label>
+            <select name="autocreateadhoc" size="1" id="autocreateadhoc" > <option value="0" selected="selected">disable</option> <option value="1">enable</option> 
+			</select>
+          </label></td>
+        </tr>	  	
+	     <tr valign="middle">
+          <td align="right">Ssid Broadcast(AP)：</td>
+          <td colspan="3" align="left"><label>
+            <select name="SsidBenable" size="1" id="SsidBenable" > <option value="0" selected="selected">disable</option> <option value="1">enable</option> 
+			</select>
+          </label></td>
+        </tr>	  	
+        <tr>
+          <td height="10" colspan="4"></td>
+      </tr>
+        <tr>
+          <td height="20" colspan="4" align="center" valign="middle"><label>
+            <input name="Save2" type="submit" id="Save2" onClick="return Wireless_popupMsg()" value="Save" />
+            </label>
+            &nbsp;&nbsp;
+            </td>
+        </tr>
+      </table>
+    </div>
+  </form>
+	<form id="form3" name="form3" method="get" action="">
+	<div class="story"> 
+      <h3 style="background-color:#666666">Channel List Settings </h3>
+      <table width="550" border="0" cellpadding="0" cellspacing="5">
+        <tr>
+          <td height="10" colspan="7"></td>
+        </tr>
+        <tr align="left">
+          <td ><label>
+            <input name="Ch1" type="checkbox" id="Ch1" value="1" checked="checked" />
+            </label>Ch 1</td>
+          <td ><label>
+            <input name="Ch2" type="checkbox" id="Ch2" value="1" checked="checked" />
+            </label>Ch 2</td>
+          <td><label>
+            <input name="Ch3" type="checkbox" id="Ch3" value="1" checked="checked" />
+            </label>Ch 3</td>
+          <td ><label>
+            <input name="Ch4" type="checkbox"id="Ch4" value="1" checked="checked" />
+            </label>Ch 4</td>
+          <td ><label>
+            <input name="Ch5" type="checkbox" id="Ch5" value="1" checked="checked" />
+            </label>Ch 5</td>
+          <td ><label>
+            <input name="Ch6" type="checkbox" id="Ch6" value="1" checked="checked" />
+            </label>Ch 6</td>
+          <td ><label>
+            <input name="Ch7" type="checkbox" id="Ch7" value="1" checked="checked" />
+            </label>Ch 7</td>
+        </tr>
+        <tr align="left">
+          <td><label>
+            <input name="Ch8" type="checkbox"id="Ch8" value="1" checked="checked" />
+           </label> Ch 8</td>
+          <td><label>
+            <input name="Ch9" type="checkbox" id="Ch9" value="1" checked="checked" />
+            </label>Ch 9</td>
+          <td><label>
+            <input name="Ch10" type="checkbox" id="Ch10" value="1" checked="checked" />
+            </label>Ch 10</td>
+          <td><label>
+            <input name="Ch11" type="checkbox" id="Ch11" value="1" checked="checked" />
+            </label>Ch 11</td>
+          <td><label>
+            <input name="Ch12" type="checkbox" id="Ch12" value="1" checked="checked" />
+            </label>Ch 12</td>
+          <td><label>
+            <input name="Ch13" type="checkbox" id="Ch13" value="1" checked="checked" />
+            </label>Ch 13</td>
+          <td><label>
+            <input name="Ch14" type="checkbox" id="Ch14" value="1" checked="checked" />
+            </label>Ch 14</td>
+        </tr>
+        <tr>
+          <td height="10" colspan="7"></td>
+        </tr>
+        <tr>
+          <td height="20" colspan="7" align="center" valign="middle"><label>
+            <input name="Save3" type="submit" id="Save3" onclick="return MM_popupMsg()" value="Save" />
+            </label>
+            &nbsp;&nbsp;
+          </td>
+        </tr>
+      </table>
+	</div>
+	</form>
+	<form id="form1" name="form1" method="get" action="">
+    <div class="story">
+      <h3 style="background-color:#666666">Serial Port Settings</h3>
+      <table width="550" border="0" cellpadding="0" cellspacing="5">
+        <tr>
+          <td height="10" colspan="4"></td>
+        </tr>
+		<tr valign="middle">
+          <td width="100" align="right">Baud rate ：</td>
+          <td width="120" align="left"><label>
+            <select name="Baud" size="1" id="Baud" > <option value="0" selected="selected" >115200</option> <option value="1">57600</option>  <option value="2">38400</option> <option value="3">19200</option> <option value="4">9600</option> <option value="5">4800</option> <option value="6">2400</option> <option value="7">1200</option>
+            </select>
+          </label>bps</td>
+          <td width="100" align="right">Parity：</td>
+          <td align="left"><label>
+            <select name="Check" size="1" id="Check" > <option value="0">None</option> <option value="1">Odd</option> <option value="2">Even</option>
+            </select>
+          </label></td>
+        </tr>
+        <tr valign="middle">
+          <td align="right">Data bits：</td>
+          <td align="left"><label>
+            <select name="DataSize" size="1" id="DataSize" > <option value="0" selected="selected">8</option>
+            </select>
+          </label></td>
+          <td align="right">Stop bits ：</td>
+          <td align="left"><label>
+            <select name="StopSize" size="1" id="StopSize" > <option value="0" selected="selected">1</option> <option value="1">2</option>
+          </select>
+          </label></td>
+        </tr>
+		<tr><td height="10" colspan="4"></td></tr>
+		<tr>
+          <td height="20" colspan="4" align="center" valign="middle">
+		  <label>
+                <input name="Save" type="submit" id="Save" onClick="return MM_popupMsg()" value="Save" />
+              </label>&nbsp;&nbsp;
+		  </td>
+          </tr>
+      </table>
+    </div>
+	</form>
+<form id="form6" name="form6" method="get" action="">
+    <div class="story">
+      <h3 style="background-color:#666666">Others</h3>
+      <table width="550" border="0" cellpadding="0" cellspacing="5">
+        <tr>
+          <td height="10"></td>
+        </tr>
+		<tr>
+          <td width="138" align="right">Login Password ：</td>
+          <td width="297" align="left"><label>
+            <input name="PassWord" type="text" id="PassWord" value="000000" size="6" maxlength="6" />
+           </label> Password  must be 6 characters </td>
+		</tr>
+		<tr><td height="10" colspan="2"></td></tr>
+		<tr>
+          <td height="20" colspan="4" align="center" valign="top">
+		  <label>
+                <input name="Save" type="submit" id="Save" onClick="return MM_popupMsg()" value="Save" />
+              </label>&nbsp;&nbsp;
+          </td>
+          </tr>
+		  <tr><td height="10" colspan="2"></td></tr>
+      </table>
+    </div>
+	</form>	
+  </div>
+  <div id="siteInfo">Copyright 2010-2013 </div>
+</div>
+<!--end pagecell1-->
+<br />
+</body>
+</html>
+

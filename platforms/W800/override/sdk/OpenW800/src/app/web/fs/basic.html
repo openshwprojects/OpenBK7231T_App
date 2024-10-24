@@ -1,0 +1,538 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!-- DW6 -->
+<head>
+<!-- Copyright 2005 Macromedia, Inc. All rights reserved. -->
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>Basic Configuration&nbsp;</title>
+<link rel="stylesheet" href="style.css" type="text/css" />
+<script type="text/JavaScript">
+<!--
+function strlen(str) 
+{
+	var len = 0;
+	for (var i = 0; i < str.length; i++)
+	{
+		if (str.charCodeAt(i) > 255) len += 2; else len ++;
+    }
+	return len;
+}
+function saveconfig()
+{
+	if(confirm('Are you sure to save?\n'))
+	{
+		return true;	  
+	}	  
+	else
+	{
+		return false;
+	}	
+}
+function isIp(str)
+{ 
+	var sa=str.split(".");
+	if(sa.length!=4) return false;
+	for(var i=0;i<sa.length;i++)
+	{ 
+		if(!(/^(\d)+$/g).test(sa[i]) || (sa[i]<0) || (sa[i]>255)) return false; 
+	}
+	return true;
+} 
+
+function Form1_MM_popupMsg()
+{
+	  var Encry_var = document.getElementById("Encry").value;
+	  var Key_var = document.getElementById("Key").value;
+	  var KeyType_var = document.getElementById("KeyType").value;
+	  var Mode_var = document.getElementById("Mode").value;	  
+	  if(Mode_var != 0)
+	  {
+		  if(Encry_var == 1)
+		  {
+				if(KeyType_var == 0)
+			  {
+					if(strlen(Key_var) != 10)
+					{
+						alert('In WEP64 Mode Key(HEX) Length should be  10 characters!');
+						return false;	
+					}	  
+			  }
+			  else if(KeyType_var == 1)
+			  {
+						if(strlen(Key_var) != 5)
+						{
+							alert('In WEP64 Mode Key(ASCII) Length should be  5 characters!');
+							return false;	
+						}	  
+				}
+			}
+		  else if(Encry_var == 2)
+		  {
+				if(KeyType_var == 0)
+			  {
+					if(strlen(Key_var) != 26)
+					{
+						alert('In WEP128 Mode Key(HEX) Length should be  26 characters!');
+						return false;
+					}		  
+			  }
+			  else if(KeyType_var == 1)
+			  {
+			  	if(strlen(Key_var) != 13)
+					{
+						alert('In WEP128 Mode Key(ASCII) Length should be  13 characters!');
+						return false;		 
+					} 
+			  }	  	
+		  }
+	  }
+    return saveconfig();
+}
+
+function Form3MM_popupMsg(){
+	  var Port_var=document.getElementById("Port").value;
+	  var Auto_obj=document.all.Auto.checked;
+	  if(Auto_obj==1)
+	  {
+	  if(parseInt(Port_var)>65536||parseInt(Port_var)<1)
+	  {
+              alert('Port Number Error!');
+                 return false;	   
+	  }	   
+	  }
+     return saveconfig();
+}
+
+function MM_popupMsg() { //v1.0
+      var IP_var=document.getElementById("Ip").value;
+      var Sub_var=document.getElementById("Sub").value;
+      var Gate_var=document.getElementById("Gate").value;
+      var Dns_var=document.getElementById("Dns").value;
+	  if(!isIp(IP_var))
+	  {
+              alert('Fixed IP Address Error!');
+                 return false;
+	  }
+	  if(!isIp(Sub_var))
+	  {
+              alert('Subnet mask Address Error!');
+                 return false;
+	  }	  if(!isIp(Gate_var))
+
+	  {
+              alert('Gateway Address Error!');
+                 return false;
+	  }	  if(!isIp(Dns_var))
+
+	  {
+              alert('DNS Address Error!');
+                 return false;
+	  }	   
+     return saveconfig();
+}
+
+//-->
+
+function dhcp1()
+{
+	var obj=document.all.Dhcp.checked;
+	if(obj)
+	{
+		document.all.Ip.disabled=true;
+		document.all.Sub.disabled=true;
+		document.all.Gate.disabled=true;
+		document.all.Dns.disabled=true;
+	}
+	else
+	{
+		document.all.Ip.disabled=false;
+		document.all.Sub.disabled=false;
+		document.all.Gate.disabled=false;
+		document.all.Dns.disabled=false;
+	}
+}
+function key()
+{
+	var objEncry = document.getElementById("Encry").value;	
+  if(objEncry == 0)	//open
+	{
+		document.all.KeyType.disabled=true;
+		document.all.KeyIndex1.disabled=true;
+		document.all.KeyIndex2.disabled=true;
+		document.all.KeyIndex3.disabled=true;
+		document.all.KeyIndex4.disabled=true;
+		document.all.Key.disabled=true;
+	}
+	else if(objEncry == 1 || objEncry == 2)	//web64 web128
+	{
+		document.all.KeyType.disabled = false;
+		document.all.KeyIndex1.disabled=false;
+		document.all.KeyIndex2.disabled=false;
+		document.all.KeyIndex3.disabled=false;
+		document.all.KeyIndex4.disabled=false;
+		document.all.Key.disabled = false;
+	}
+	else	//other
+	{
+		document.all.KeyType.disabled=false;
+		document.all.KeyIndex1.disabled=true;
+		document.all.KeyIndex2.disabled=true;
+		document.all.KeyIndex3.disabled=true;
+		document.all.KeyIndex4.disabled=true;
+		document.all.Key.disabled=false;
+	}
+}
+function reEncryOptions()
+{
+	var obj=document.all.Mode.value;
+	var EncrySelect=document.getElementById("Encry");
+	var bm=new Array();
+	var len = 2;
+	EncrySelect.options.length = 0;
+
+    bm[0]="0"; 
+    bm[1]="Disable"; 
+    bm[2]="1"; 
+    bm[3]="WEP64"; 
+    bm[4]="2"; 
+    bm[5]="WEP128"; 
+    bm[6]="3"; 
+    bm[7]="WPA-PSK(TKIP)"; 
+    bm[8]="4"; 
+    bm[9]="WPA-PSK(CCMP)"; 
+    bm[10]="5"; 
+    bm[11]="WPA2-PSK(TKIP)"; 
+    bm[12]="6"; 
+    bm[13]="WPA2_PSK(CCMP)"; 
+	if(obj==0)
+	{	
+		len = 2;
+	}
+	else if(obj == 1)
+	{
+		len = 6;
+	}
+	else
+	{
+		len = 14;
+	}
+	for(x=0;x<len;x=x+2)
+  {
+		 var option = new Option(bm[x+1],bm[x]); 
+     EncrySelect.options.add(option);
+	}	
+}
+function mode()
+{
+	var obj=document.all.Mode.value;
+	reEncryOptions();
+	if(obj==0)	// sta
+	{
+		document.all.Encry.disabled=true;
+		document.all.KeyType.disabled=true;
+		document.all.KeyIndex1.disabled=true;
+		document.all.KeyIndex2.disabled=true;
+		document.all.KeyIndex3.disabled=true;
+		document.all.KeyIndex4.disabled=true;
+		document.all.Key.disabled=false;
+	}
+	else	// ap adhoc
+	{
+		document.all.Encry.disabled=false;
+		key();
+	}
+	if(obj==2)
+	{
+		document.all.Dhcp.checked=true;
+		document.all.Dhcp.disabled=true;
+		document.all.Gate.disabled=true;
+		document.all.Dns.disabled=true;
+		document.all.Ip.disabled=false;
+		document.all.Sub.disabled=false;
+		document.all.DnsName.disabled=false;
+	}
+	else
+	{
+		document.all.DnsName.disabled=true;
+		document.all.Dhcp.disabled=false;
+		document.all.Gate.disabled=false;
+		document.all.Dns.disabled=false;
+		dhcp1();
+	}	
+}
+function auto()
+{
+	var obj=document.all.Auto.checked;
+	var CsSelect=document.getElementById("Cs");
+	var ProtocolSelect=document.getElementById("Protocol");	
+	var bm=new Array();
+	var bm2=new Array();
+	CsSelect.options.length = 0;
+	ProtocolSelect.options.length = 0;
+    bm[0]="0"; 
+    bm[1]="CLIENT"; 
+    bm[2]="1"; 
+    bm[3]="SERVER"; 
+    bm2[0]="0"; 
+    bm2[1]="TCP"; 
+    bm2[2]="1"; 
+    bm2[3]="UDP"; 		
+	
+	if(obj)
+	{
+		document.all.Protocol.disabled=false;
+		document.all.Cs.disabled=false;
+		document.all.Port.disabled=false;
+		document.all.Domain.disabled=true;
+		document.all.TCP_TimeOut.disabled=true;	
+		if(CsSelect.value==0)
+			document.all.Domain.disabled=false;
+		if(CsSelect.value==1)
+			document.all.TCP_TimeOut.disabled=false;		
+		
+		document.all.Domain.value="0.0.0.0";
+		document.all.Port.value="0";
+		document.all.AutoHiden.value="1";
+   		for(x=0;x<bm.length;x=x+2)
+		{
+   			 var option = new Option(bm[x+1],bm[x]); 
+ 		     CsSelect.options.add(option);
+   		}		
+   		for(x=0;x<bm.length;x=x+2)
+		{
+   			 var option1 = new Option(bm2[x+1],bm2[x]);   
+ 		     ProtocolSelect.options.add(option1);
+   		}			
+	}
+	else
+	{
+		document.all.Protocol.disabled=true;
+		document.all.Cs.disabled=true;
+		document.all.Domain.disabled=true;
+		document.all.Port.disabled=true;
+		document.all.TCP_TimeOut.disabled=true;		
+		document.all.Domain.value="0.0.0.0";
+		document.all.Port.value="0";
+		document.all.AutoHiden.value="0";		
+	}
+}
+
+function protocol_select()
+{
+	var obj=document.getElementById("Cs").value;	
+	var objProtocol=document.getElementById("Protocol").value;
+	if(obj==1 && objProtocol==0)//TCP Server
+	{
+		document.all.TCP_TimeOut.disabled=false;	
+		document.all.Domain.disabled=true;	
+	}
+	else
+	{
+		document.all.TCP_TimeOut.disabled=true;
+		document.all.Domain.disabled=false;	
+	}		
+}
+</script>
+</head>
+<body>
+<div id="pagecell1" style="width:800;height=800" align="center">
+  <!--pagecell1-->
+  <div style="background-color:#CCCCCC">&nbsp;</div>
+  <div id="pageName">
+    <h2>Basic </h2>
+  </div>
+  <div id="pageNav">
+    <div id="sectionLinks"> <a href="basic.html">Basic </a> <a href="advance.html">Advanced </a> <a href="firmware.html">System </a></div>
+	<p></p>
+	<div id="advert">
+	<p align="left">·Wireless Settings: Wireless settings is the basic step for you to use the wifi module. The encryption can guarantee the security of your data.</p>
+	<p align="left">·Network Settings: Proper Network Settings can ensure that your network is properly connected</p>
+	<p align="left">·Auto Mode Settings: If the auto mode is enabled, your wifi module will transmit the data transparently.</p>
+	</div>
+  </div>
+  <div id="content">
+  <form id="form1" name="form1" method="get" action="">
+    <div class="story"> 
+      <h3 style="background-color:#666666">Wireless Settings</h3>
+      <table width="500" border="0" cellpadding="0" cellspacing="5">
+          <tr><td height="10" colspan="2"></td></tr>
+        <tr valign="middle">
+          <td width="150" align="right">Work Type：</td>
+          <td width="77" align="left"><label>
+            <select name="Mode" size="1" id="Mode" onChange="mode()" > <option value="0" selected="selected">Sta</option>  <option value="1">Adhoc</option> <option value="2">AP</option>
+            </select>
+          </label></td>
+        </tr>
+		  <tr>
+            <td align="right" valign="middle">SSID：</td>
+            <td width="295" align="left" valign="middle"><label>
+              <input name="Ssid" type="text"  id="Ssid" value="noos" size="30" maxlength="32" />
+            </label>
+			<label><input name="ApEnable" type="hidden"  id="ApEnable" value="0"/></label>
+			</td>
+          </tr>
+          <tr>
+            <td align="right" valign="middle">Encryption：</td>
+            <td align="left" valign="middle"><label>
+              <select name="Encry" size="1" id="Encry" onchange="key()"  > <option value="0" >Disable</option> <option value="1" selected="selected">WEP64</option> <option value="2" >WEP128</option> <option value="3">WPA-PSK(TKIP)</option> <option value="4">WPA-PSK(CCMP)</option> <option value="5">WPA2-PSK(TKIP)</option> <option value="6">WPA2_PSK(CCMP)</option>
+			  </select>
+            </label></td>
+          </tr>
+          <tr>
+            <td align="right" valign="middle">Key Format：</td>
+            <td align="left" valign="middle"><label>
+              <select name="KeyType" size="1" id="KeyType" > <option value="0" selected="selected">HEX</option> <option value="1">ASCII</option>
+              </select>
+            </label></td>
+          </tr>
+					<tr>
+            <td align="right" valign="middle">Key Index：</td>
+            <td align="left" valign="middle">
+	            <label><input name="KeyIndex" type="radio" value="1" id="KeyIndex1" >
+	            </input>1</label>
+							<label><input name="KeyIndex" type="radio" value="2" id="KeyIndex2" >
+	            </input>2</label>
+							<label><input name="KeyIndex" type="radio" value="3" id="KeyIndex3" >
+	            </input>3</label>
+							<label><input name="KeyIndex" type="radio" value="4" id="KeyIndex4" >
+	            </input>4</label>
+            </td>
+          </tr>
+          <tr>
+            <td align="right" valign="middle">Encryption Key：</td>
+            <td align="left" valign="middle"><label>
+              <input name="Key" type="text" id="Key" value="" size="30" maxlength="63"  />
+            </label></td>
+          </tr>
+		  <tr><td height="10" colspan="2"></td></tr>
+		  <tr>
+            <td height="20" colspan="2" align="center" valign="top">
+              <label>
+                <input name="Save" type="submit" id="Save" onclick="return Form1_MM_popupMsg()" value="Save" />
+              </label>&nbsp;&nbsp;
+          </td>
+          </tr>
+        </table>	
+    </div>
+	</form>
+	<form id="form1" name="form1" method="get" action="">
+	<div class="story"> 
+      <h3 style="background-color:#666666">Network Settings </h3>
+      <table width="500" border="0" cellpadding="0" cellspacing="5">
+                <tr>
+                  <td height="10" colspan="2"></td>
+                </tr>
+				<tr>
+                  <td  align="right" valign="middle"></td>
+                  <td width="301" align="left" valign="middle"><label>
+                    <input name="Dhcp" type="checkbox" id="Dhcp" onclick="dhcp1()" value="0"  /> DHCP Enable</label></td>
+                </tr>
+                <tr>
+                  <td align="right" valign="middle">Fixed IP Address：</td>
+                  <td width="301" align="left" valign="middle"><label>
+                    <input name="Ip" type="text"  id="Ip" value="10.3.3.173" size="15" maxlength="15" />
+                  </label></td>
+                </tr>
+                <tr>
+                  <td align="right" valign="middle">Subnet Mask：</td>
+                  <td align="left" valign="middle"><label>
+                    <input name="Sub" type="text"  id="Sub" value="255.255.255.0" size="15" maxlength="15" />
+                  </label></td>
+                </tr>
+                <tr valign="middle">
+                 <td align="right">Gateway Address：</td>
+                  <td align="left"><label>
+                    <input name="Gate" type="text"  id="Gate" value="10.3.3.1" size="15" maxlength="15" />
+                  </label></td>
+                </tr>
+                <tr valign="middle">
+                  <td align="right">DNS Address：</td>
+                  <td align="left"><label>
+                    <input name="Dns" type="text"  id="Dns" value="10.2.4.51" size="15" maxlength="15" />
+                  </label></td>
+                </tr>
+            <tr valign="middle">
+          <td align="right">DNS Name(AP)：</td>
+          <td align="left"><label>
+            <input name="DnsName" type="text" id="DnsName" value="1" size="32" maxlength="32"  />
+          </label></td>
+              </tr>				
+				<tr><td height="10" colspan="2"></td></tr>
+		  <tr>
+            <td height="20" colspan="2" align="center" valign="top">
+              <label>
+                <input name="Save" type="submit" id="Save" onclick="return MM_popupMsg()" value="Save" />
+              </label>&nbsp;&nbsp;
+         </td>
+          </tr>
+        </table>
+    </div>
+	</form>
+	<form id="form1" name="form1" method="get" action="">
+    <div class="story">
+      <h3 style="background-color:#666666">Auto Mode Settings</h3>
+      <table width="500" border="0" cellpadding="0" cellspacing="5">
+        <tr>
+          <td height="10" colspan="4"></td>
+        </tr>
+		<tr valign="middle">
+          <td width="183" align="right">&nbsp;</td>
+          <td colspan="3" align="left"><label>
+            <input name="Auto" type="checkbox"  id="Auto" onclick="auto()" value="1" checked="checked" /> Auto Mode Enable </label>
+			<label><input name="AutoHiden" type="hidden"  id="AutoHiden" value="0"/></label></td>
+          </tr>
+        <tr valign="middle">
+          <td align="right">Protocol：</td>
+          <td width="302" align="left"><label>
+            <select name="Protocol" size="1" onchange="protocol_select()" id="Protocol" > <option value="0" selected="selected">TCP</option> <option value="1">UDP</option>
+            </select>
+          </label></td>
+        </tr>
+       <tr valign="middle">
+          <td align="right">C/S Mode：</td>
+          <td width="302" align="left"><label>
+            <select name="Cs" size="1" onchange="protocol_select()" id="Cs"  > <option value="0">CLIENT</option> <option value="1" selected="selected">SERVER</option>
+            </select>
+          </label></td>
+        </tr>
+        <tr valign="middle">
+          <td align="right">Server Address：</td>
+          <td align="left"><label>
+            <input name="Domain" type="text" id="Domain" value="192.168.1.1" size="15" maxlength="15"  />
+          </label></td>
+        </tr>
+	<tr valign="middle">
+          <td align="right" valign="top">Tcp Link TimeOut：</td>
+          <td align="left" valign="top"><label>
+            <input name="TCP_TimeOut" type="text"  id="TCP_TimeOut" value="10000" size="5" maxlength="8" />
+          </label>s      (range <0 , 10000000>)</td>
+        </tr>
+<tr valign="middle">
+          <td align="right" valign="top">Port Number：</td>
+          <td align="left" valign="top"><label>
+            <input name="Port" type="text"  id="Port" value="10000" size="5" maxlength="5" />
+          </label></td>
+        </tr>		
+		<tr>
+          <td height="10" colspan="4"></td>
+        </tr>
+		<tr valign="middle">
+          <td height="20" colspan="4" align="center">
+		  <label>
+                <input name="Save" type="submit" id="Save" onclick="return Form3MM_popupMsg()" value="Save" />
+              </label>&nbsp;&nbsp;
+         </td>
+          </tr>
+		  <tr>
+          <td height="20" colspan="4"></td>
+        </tr>
+      </table>
+    </div>
+	</form>
+  </div>
+  <div id="siteInfo">Copyright 2010-2013 </div>
+</div>
+<!--end pagecell1-->
+<br />
+</body>
+</html>
