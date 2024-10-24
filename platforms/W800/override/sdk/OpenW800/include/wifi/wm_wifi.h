@@ -113,6 +113,28 @@ enum tls_wifi_auth_mode {
     WM_WIFI_AUTH_MODE_UNKNOWN           = 128
 };
 
+/** Wi-Fi encryption enum */
+enum tls_wifi_encrypt_mode {
+    WM_WIFI_ECN_MODE_OPEN          = 0, /**< encrypt mode : open */
+    WM_WIFI_ECN_MODE_WEP           = 1, /**< encrypt mode : wep*/
+    WM_WIFI_ECN_MODE_WPA_PSK       = 2, /**< encrypt mode : wpa psk*/
+    WM_WIFI_ECN_MODE_WPA2_PSK      = 3, /**< encrypt mode : wpa2 psk*/
+    WM_WIFI_ECN_MODE_WPA_WPA2_PSK  = 4, /**< encrypt mode : wpa and wpa2 psk*/
+    WM_WIFI_ECN_MODE_UNKNOWN        = 5, /**< encrypt mode : unknown*/
+};
+
+/** Wi-Fi group/pairwise cipher enumu*/
+enum tls_wifi_cipher_mode{
+	WM_WIFI_CIPHER_NONE = 0,
+	WM_WIFI_CIPHER_WEP40 = 1,
+	WM_WIFI_CIPHER_WEP104 = 2,
+	WM_WIFI_CIPHER_TKIP = 3,
+	WM_WIFI_CIPHER_CCMP = 4,
+	WM_WIFI_CIPHER_TKIP_AND_CCMP = 5,
+	WM_WIFI_CIPHER_AES_CMAC_128 = 6,
+};
+
+
 /** Wi-Fi states */
 enum tls_wifi_states {
 	WM_WIFI_DISCONNECTED,      /**< Disconnected state */
@@ -270,6 +292,29 @@ struct tls_scan_bss_t {
     struct tls_bss_info_t bss[1];    /**< list of bss found*/
 };
 
+/** format2 bss information */
+struct tls_bss_info_format2_t {
+    u8 ecn;            /**< encryption type, @ref enum tls_wifi_encrypt_mode */
+    u8 rssi;               /**< signal strength of AP, real rssi = (signed char)rssi */
+    u8 ssid[32];           /**< SSID of AP */
+    u8 ssid_len;           /**< SSID length */
+    u8 bssid[ETH_ALEN];    /**< MAC address of AP */
+	u8 channel;            /**< channel of AP */
+    s16 freq_offset;	   /**< reserved do not support*/
+    s16 freqcal_val;       /**< reserved do not support*/
+    s8 pairwise_cipher;    /**< pairwise cipher. @ref enum tls_wifi_cipher_mode */
+    s8 group_cipher;       /**< group cipher. @ref enum tls_wifi_cipher_mode */
+    u8 bgn;                /**< bgnmode, bit0:b mode, bit1:g mode, bit2:n mode */
+    bool wps_support;      /**< is support WPS function */
+};
+
+/** format2 scan result */
+struct tls_scan_bss_format2_t {
+    u32     count;                   /**< total count */
+    u32     length;                  /**< bss info total length */
+    struct tls_bss_info_format2_t bss[1];    /**< list of bss found*/
+};
+
 /** station information */
 struct tls_sta_info_t {
     u8  mac_addr[ETH_ALEN];    /**< MAC address of station */
@@ -299,7 +344,8 @@ struct tls_wifi_tx_rate_t {
 
 /** scan param */
 struct tls_wifi_scan_param_t{
-    u32 scan_times;        /**< Scan times, >=0, if zero, only 1 times */
+    u16 scan_type;
+    u16 scan_times;        /**< Scan times, >=0, if zero, only 1 times */
     u16 scan_chanlist;     /**< Scan channel list ,[0,3FFF],per bit is one channel,if zero or above 0x3FFF, scan all channel*/
     u16 scan_chinterval;   /**< Scan channel switch time,>=0, if zero, use default value, unit:ms */
 };
@@ -630,6 +676,24 @@ void tls_wifi_scan_result_cb_register(void (*callback)(void));
  *                 and the meaning of the privacy field was extended.
  */
 int tls_wifi_get_scan_rslt(u8* buf, u32 buffer_size);
+
+
+/*************************************************************************** 
+* Function: 	 tls_wifi_get_scan_rslt_format2 
+*
+* Description:   get result of last scan for format2 result
+* 
+* Input: 	  buffer: address to store returned BSS info
+* 			  buffer_size: the length of the buffer
+* Output: 	  BSS info got by last scan
+* 
+* Return: 	 WM_SUCCESS: return ok;
+*			 WM_FAILED: failed to get result;
+* Note:		 user need to memalloc a buffer in advance. size for one item of scan result is @ref struct tls_bss_info_format2_t
+*			 the buffer size depends how many items user wants.
+* Date : 		 2022-6-07 
+****************************************************************************/ 
+int tls_wifi_get_scan_rslt_format2(u8* buf, u32 buffer_size);
 
 
 /**
@@ -1014,20 +1078,6 @@ int tls_wifi_send_mgmt(enum tls_wifi_mgmt_type type, struct tls_wifi_hdr_mac_t *
  */
 int tls_wifi_send_data(struct tls_wifi_hdr_mac_t *mac, u8 *data, u16 data_len, struct tls_wifi_tx_rate_t *tx);
 
-#if TLS_CONFIG_AP
-/**
- * @brief          This function is used to get authed sta list
- *
- * @param[out]     *sta_num    authed's station number
- * @param[out]     *buf        address to store returned station list info, tls_sta_info_t
- * @param[in]      buf_size    buffer size
- *
- * @return         None
- *
- * @note           None
- */
-void tls_wifi_get_authed_sta_info(u32 *sta_num, u8 *buf, u32 buf_size);
-#endif
 /**
  * @brief          This function is used to get current Wi-Fi State
  *
@@ -1115,6 +1165,43 @@ int tls_wifi_softap_set_sta_num(unsigned char ap_sta_num);
 int tls_wifi_softap_del_station(unsigned char* hwaddr);
 
 /**
+ * @brief	   This function used to add sta to black list for softap
+ *
+ * @param[out]	   hwaddr: sta's mac address to forbid
+ *
+ * @return		   None
+ *
+ * @note		   None
+ */
+int tls_wifi_softap_add_blacksta(unsigned char *hwaddr);
+
+
+/**
+ * @brief	   This function used to accept sta joining softap that sta in balck list
+ *
+ * @param[out]	   hwaddr: mac address to delete from black list
+ *
+ * @return		   None
+ *
+ * @note		   None
+ */
+int tls_wifi_softap_del_blacksta(unsigned char *hwaddr);
+
+/**
+ * @brief	   This function used to get stations from blacklist
+ *
+ * @param[out]	   sta_num: station's number in blacklist
+ * @param[out]	   buf: store stations to get from blacklist
+ * @param[in]  	   buf_size: memory size to store stations in blacklist
+ *
+ * @return		   None
+ *
+ * @note		   None
+ */
+int tls_wifi_softap_get_blackinfo(u32 *sta_num, u8 *buf, u32 buf_size);
+
+
+/**
  * @brief          This function is used to set some information display in the process of wifi networking
  *
  * @param[in]      enable     true: enable  false: disable
@@ -1146,6 +1233,109 @@ void tls_wifi_set_tempcomp_flag(int flag);
  * @note           None
  */
 u8 tls_wifi_get_tempcomp_flag(void);
+
+/**
+ * @brief          This function is used to get temperature compensation flag
+ *
+ * @param[in]      fixrateindex: 11b:0-3, 11g:4-11, 11n-ht20:12-19, 11n-ht40:20-27
+ * @param[in]	      retrycnt: retry count, range[1,15]
+ *
+ * @return         None
+ *
+ * @note           When use this function, data to be transfered will use fix rate.
+ */
+void tls_wifi_set_fixed_rate(u32 fixrateindex, u32 retrycnt);
+
+
+/**
+ * @brief          This function is used to set listen_interval (dummy interface)
+ *
+ * @param[in]      listen_interval: >=1
+ *
+ * @return         None
+ *
+ * @note           this is dummy interface. this value can used only in sta mode.
+ */
+int tls_wifi_cfg_listen_interval(u16 listen_interval);
+
+/**
+ * @brief          This function is used to set connect timeout
+ *
+ * @param[in]      timeout: to connect ap's time, >=5s
+ *
+ * @return         None
+ *
+ * @note           valid only when scan AP failed.
+ */
+int tls_wifi_cfg_connect_timeout(u16 timeout);
+
+/**
+ * @brief          This function is used to configure scan mode
+ *
+ * @param[in]      mode:0-find max RSSI AP, 1-find AP and immediately stop scan to start join
+ *
+ * @return         None
+ *
+ * @note           only used in STA mode.
+ */
+int tls_wifi_cfg_connect_scan_mode(u32 mode);
+
+/**
+ * @brief          This function is used to set pci flag
+ *
+ * @param[in]      pci flag:0-can join any supported AP(open,wep,wpa,wpa2)
+ *                          1-only join AP(WPA/WPA2 that supported)
+ *
+ * @return         None
+ *
+ * @note           none.
+ */
+int tls_wifi_cfg_connect_pci(u32 pci_en);
+
+/**
+ * @brief          This function is used to set 11b's digital gain
+ *
+ * @param[in]      value:gain value, <0x40
+ *
+ * @return         0:if value is valid,-1:if value is invalid
+ *
+ * @note           none.
+ */
+int tls_wifi_set_11b_digital_gain(u8 value);
+
+/**
+ * @brief          This function is used to get 11b's gain value
+ *
+ * @param[in]      None
+ *
+ * @return         gain value
+ *
+ * @note           none.
+ */
+u8 tls_wifi_get_11b_digital_gain(void);
+
+/**
+ * @brief          This function is used to set 11n's digital gain
+ *
+ * @param[in]      value:gain value, <0x40
+ *
+ * @return         0:if value is valid,-1:if value is invalid
+ *
+ * @note           none.
+ */
+int tls_wifi_set_11n_digital_gain(u8 value);
+
+/**
+ * @brief          This function is used to get 11n's gain value
+ *
+ * @param[in]      None
+ *
+ * @return         gain value
+ *
+ * @note           none.
+ */
+u8 tls_wifi_get_11n_digital_gain(void);
+
 
 
 /**
