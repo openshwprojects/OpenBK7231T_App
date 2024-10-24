@@ -1,7 +1,7 @@
 DIRNAME=$(dirname $0);
 OFS=$IFS
 IFS='
-
+'
 for X in $(find platforms/W800/override/ -type f);do
 S=${X};
 D=${X#platforms/W800/override/};
