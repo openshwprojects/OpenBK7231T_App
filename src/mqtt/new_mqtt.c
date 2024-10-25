@@ -223,7 +223,7 @@ int mqtt_reconnect = 0;
 // set for the device to broadcast self state on start
 int g_bPublishAllStatesNow = 0;
 int g_publishItemIndex = PUBLISHITEM_ALL_INDEX_FIRST;
-static bool g_firstFullBroadcast = true;  //Flag indicating that we need to do a full broadcast
+//static bool g_firstFullBroadcast = true;  //Flag indicating that we need to do a full broadcast
 
 int g_memoryErrorsThisSession = 0;
 int g_mqtt_bBaseTopicDirty = 0;
@@ -242,7 +242,8 @@ void MQTT_PublishWholeDeviceState_Internal(bool bAll)
 void MQTT_PublishWholeDeviceState()
 {
 	//Publish all status items once. Publish only dynamic items after that.
-	MQTT_PublishWholeDeviceState_Internal(g_firstFullBroadcast);
+	//MQTT_PublishWholeDeviceState_Internal(g_firstFullBroadcast);
+	MQTT_PublishWholeDeviceState_Internal(1);
 }
 
 void MQTT_PublishOnlyDeviceChannelsIfPossible()
@@ -1942,7 +1943,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 		return MQTT_DoItemPublishString("freeheap", dataStr);
 
 	case PUBLISHITEM_SELF_IP:
-		g_firstFullBroadcast = false; //We published the last status item, disable full broadcast
+		//g_firstFullBroadcast = false; //We published the last status item, disable full broadcast
 		return MQTT_DoItemPublishString("ip", HAL_GetMyIPString());
 
 	default:
