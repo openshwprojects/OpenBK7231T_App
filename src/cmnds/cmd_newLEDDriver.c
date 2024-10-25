@@ -595,6 +595,11 @@ void apply_smart_light() {
 		SM16703P_setAllPixels(finalColors[0], finalColors[1], finalColors[2]);
 		SM16703P_Show();
 	}
+#elif ENABLE_DRIVER_WS2811
+	if (pixel_count > 0 && (g_lightMode != Light_Anim || g_lightEnableAll == 0)) {
+		WS2811_setAllPixels(finalColors[0], finalColors[1], finalColors[2]);
+		WS2811_Show();
+	}
 #endif
 	
 	// I am not sure if it's the best place to do it

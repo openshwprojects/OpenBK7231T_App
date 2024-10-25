@@ -14,6 +14,8 @@
 
 #if ENABLE_DRIVER_SM16703P
 #include "drv_spiLED.h"
+#elif ENABLE_DRIVER_WS2811
+#include "drv_ws2811.h"
 #endif
 
 static const char* group = "239.255.250.250";
@@ -135,6 +137,12 @@ void DDP_Parse(byte *data, int len) {
 		} else {
 			LED_SetFinalRGB(r,g,b);
 		}
+#elif ENABLE_DRIVER_WS2811
+	if (ws2811Data.ready) {
+		// Note that this is limited by DDP msgbuf size
+		uint32_t pixel = (len - 10) / 3;
+		WS2811_setMultiplePixel(pixel, &data[10], true);
+	}
 #else
 		LED_SetFinalRGB(r,g,b);
 #endif
