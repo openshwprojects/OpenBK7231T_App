@@ -9,10 +9,10 @@
 #include "drv_local.h"
 #include "../hal/hal_pins.h"
 
-int port_cs = 24;
-int sclk = 26;
-int miso = 6;
-int targetChannel = -1;
+static int port_cs = 24;
+static int sclk = 26;
+static int miso = 6;
+static int targetChannel = -1;
 
 #define MAX31855_THERMOCOUPLE_RESOLUTION    0.25   //in °C per dac step
 #define MAX31855_COLD_JUNCTION_RESOLUTION   0.0625 //in °C per dac step
