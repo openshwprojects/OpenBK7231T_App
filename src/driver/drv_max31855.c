@@ -48,20 +48,20 @@ void MAX31855_ReadTemperature() {
 
 	if (raw == 0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "MAX31855 read fail");
-		return 0;
+		return;
 	}
 
-	if (bitRead(rawValue, 17) == 0 && bitRead(rawValue, 3) == 0) {
+	if (bitRead(raw, 17) == 0 && bitRead(raw, 3) == 0) {
 
 	}
 	else {
 		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "MAX31855 bad ID");
-		return 0;
+		return;
 	}
 
 	// clear D17..D0 bits
-	float temp = (float)(rawValue >> 18) * MAX31855_THERMOCOUPLE_RESOLUTION;
-	float cjTemp = (float)((rawValue & 0x0000FFFF) >> 4) * MAX31855_COLD_JUNCTION_RESOLUTION;
+	float temp = (float)(raw >> 18) * MAX31855_THERMOCOUPLE_RESOLUTION;
+	float cjTemp = (float)((raw & 0x0000FFFF) >> 4) * MAX31855_COLD_JUNCTION_RESOLUTION;
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "T %f, cjT %f", temp, cjTemp);
 }
