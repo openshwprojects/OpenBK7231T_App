@@ -17,10 +17,19 @@ static int targetChannel = -1;
 #define MAX31855_THERMOCOUPLE_RESOLUTION    0.25   //in °C per dac step
 #define MAX31855_COLD_JUNCTION_RESOLUTION   0.0625 //in °C per dac step
 
+static int stage = 0;
 int MAX31855_ReadRaw(void) {
 	int i;
 	byte d = 0;
+	
+	stage = !stage;
 
+	if (stage) {
+		HAL_PIN_SetOutputValue(port_cs, 0);
+		delay_ms(10);
+		HAL_PIN_SetOutputValue(port_cs, 1);
+		return;
+	}
 	HAL_PIN_SetOutputValue(port_cs, 0);
 	delay_ms(10);
 
