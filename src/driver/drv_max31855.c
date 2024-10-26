@@ -21,15 +21,7 @@ static int stage = 0;
 int MAX31855_ReadRaw(void) {
 	int i;
 	int d = 0;
-	
-	stage = !stage;
 
-	if (stage) {
-		HAL_PIN_SetOutputValue(port_cs, 0);
-		usleep(10);
-		HAL_PIN_SetOutputValue(port_cs, 1);
-		return;
-	}
 	//	delay_ms(100);
 	HAL_PIN_SetOutputValue(port_cs, 0);
 	usleep(10);
@@ -52,9 +44,20 @@ int MAX31855_ReadRaw(void) {
 void MAX31855_ReadTemperature() {
 	int raw;
 
+	stage = !stage;
+
+	// request data
+	if (stage) {
+		HAL_PIN_SetOutputValue(port_cs, 0);
+		usleep(10);
+		HAL_PIN_SetOutputValue(port_cs, 1);
+		return;
+	}
+	// read data
 	raw = MAX31855_ReadRaw();
+
 	// print it like 0xFFAABBCC
-	addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "0x%08X", raw);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "0x%08X", raw);
 
 	if (raw == 0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "MAX31855 read fail");
