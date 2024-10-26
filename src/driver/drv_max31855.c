@@ -53,6 +53,8 @@ void MAX31855_ReadTemperature() {
 	int raw;
 
 	raw = MAX31855_ReadRaw();
+	// print it like 0xFFAABBCC
+	addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "0x%08X", raw);
 
 	if (raw == 0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "MAX31855 read fail");
