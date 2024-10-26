@@ -32,15 +32,15 @@ int MAX31855_ReadRaw(void) {
 	////}
 	//	delay_ms(100);
 	HAL_PIN_SetOutputValue(port_cs, 0);
-	delay_us(10);
+	usleep(10);
 	for (i = 31; i >= 0; i--) {
 		HAL_PIN_SetOutputValue(sclk, 1);
-		delay_us(10);
+		usleep(10);
 		if (HAL_PIN_ReadDigitalInput(miso)) {
 			d |= (1 << i);
 		}
 		HAL_PIN_SetOutputValue(sclk, 0);
-		delay_us(10);
+		usleep(10);
 	}
 	HAL_PIN_SetOutputValue(port_cs, 1);
 
