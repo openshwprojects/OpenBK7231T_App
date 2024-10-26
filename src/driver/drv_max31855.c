@@ -20,7 +20,7 @@ static int targetChannel = -1;
 static int stage = 0;
 int MAX31855_ReadRaw(void) {
 	int i;
-	byte d = 0;
+	int d = 0;
 	
 	stage = !stage;
 
