@@ -24,12 +24,12 @@ int MAX31855_ReadRaw(void) {
 	
 	stage = !stage;
 
-	////if (stage) {
-	//	HAL_PIN_SetOutputValue(port_cs, 0);
-	//	delay_ms(10);
-	//	HAL_PIN_SetOutputValue(port_cs, 1);
-	////	return;
-	////}
+	if (stage) {
+		HAL_PIN_SetOutputValue(port_cs, 0);
+		usleep(10);
+		HAL_PIN_SetOutputValue(port_cs, 1);
+		return;
+	}
 	//	delay_ms(100);
 	HAL_PIN_SetOutputValue(port_cs, 0);
 	usleep(10);
