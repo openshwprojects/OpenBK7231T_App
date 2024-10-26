@@ -24,24 +24,23 @@ int MAX31855_ReadRaw(void) {
 	
 	stage = !stage;
 
-	if (stage) {
-		HAL_PIN_SetOutputValue(port_cs, 0);
-		delay_ms(10);
-		HAL_PIN_SetOutputValue(port_cs, 1);
-		return;
-	}
+	////if (stage) {
+	//	HAL_PIN_SetOutputValue(port_cs, 0);
+	//	delay_ms(10);
+	//	HAL_PIN_SetOutputValue(port_cs, 1);
+	////	return;
+	////}
+	//	delay_ms(100);
 	HAL_PIN_SetOutputValue(port_cs, 0);
-	delay_ms(10);
-
+	delay_us(10);
 	for (i = 31; i >= 0; i--) {
 		HAL_PIN_SetOutputValue(sclk, 1);
-		delay_ms(10);
+		delay_us(10);
 		if (HAL_PIN_ReadDigitalInput(miso)) {
 			d |= (1 << i);
 		}
-
 		HAL_PIN_SetOutputValue(sclk, 0);
-		delay_ms(10);
+		delay_us(10);
 	}
 	HAL_PIN_SetOutputValue(port_cs, 1);
 
