@@ -471,8 +471,8 @@ HassDeviceInfo* hass_init_energy_sensor_device_info(int index) {
 	info = hass_init_device_info(ENERGY_METER_SENSOR, index, NULL, NULL);
 
 	cJSON_AddStringToObject(info->root, "dev_cla", DRV_GetEnergySensorNames(index)->hass_dev_class);   //device_class=voltage,current,power, energy, timestamp
-	cJSON_AddStringToObject(info->root, "unit_of_meas", DRV_GetEnergySensorNames(index)->units);   //unit_of_measurement. Sets as empty string if not present. HA doesn't seem to mind
-
+	//20241024 XJIKKA unit_of_meas is set bellow (was set twice)
+	//cJSON_AddStringToObject(info->root, "unit_of_meas", DRV_GetEnergySensorNames(index)->units);   //unit_of_measurement. Sets as empty string if not present. HA doesn't seem to mind
 	sprintf(g_hassBuffer, "~/%s/get", DRV_GetEnergySensorNames(index)->name_mqtt);
 	cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 
@@ -481,8 +481,19 @@ HassDeviceInfo* hass_init_energy_sensor_device_info(int index) {
 		cJSON_AddStringToObject(info->root, "stat_cla", "total_increasing");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH) ? "kWh" : "Wh");
 	} else {
-		cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
-		cJSON_AddStringToObject(info->root, "unit_of_meas", DRV_GetEnergySensorNames(index)->units);
+		//20241024 XJIKKA skip measurement for timestamp - HASS log:
+		//HASS:	energy_clear_date (<class 'homeassistant.components.mqtt.sensor.MqttSensor'>) is using state class 'measurement' 
+		//		which is impossible considering device class ('timestamp') it is using; expected None; 
+		if (!strcmp(DRV_GetEnergySensorNames(index)->hass_dev_class,"timestamp")) {
+			cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
+		}
+		//20241024 XJIKKA if unit is not set (drv_bl_shared.c @ "power_factor"), mqtt value unit_of_meas was empty - HASS log:
+		//HASS:	sensor...power_factor is using native unit of measurement '' which is not a valid unit 
+		//		for the device class ('power_factor') it is using; expected one of ['no unit of measurement', '%']; 
+		//solution is to skip empty 
+		if (strlen(DRV_GetEnergySensorNames(index)->units)>0) {
+			cJSON_AddStringToObject(info->root, "unit_of_meas", DRV_GetEnergySensorNames(index)->units);
+		}
 	}
 	// if (index == OBK_CONSUMPTION_STATS) { //hide this as its not working anyway at present
 	// 	cJSON_AddStringToObject(info->root, "enabled_by_default ", "false");
