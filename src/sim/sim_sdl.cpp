@@ -19,6 +19,7 @@
 #include "Tool_Delete.h"
 #include "CursorManager.h"
 #include "Controller_Button.h"
+#include "Controller_SimulatorLink.h"
 
 #pragma comment (lib, "SDL2.lib")
 #pragma comment (lib, "Opengl32.lib")
@@ -180,9 +181,14 @@ extern "C" void SIM_GeneratePowerStateDesc(char *o, int outLen) {
 		strcpy(o, "No simulation");
 		return;
 	}
-	//sim->findFirstControllerOfType<Simulatio
+	CControllerSimulatorLink *w = sim->findFirstControllerOfType<CControllerSimulatorLink>();
 	// TODO
-	strcpy(o, "WiFi module power on");
+	if (w->isPowered()) {
+		strcpy(o, "WiFi module power on");
+	}
+	else {
+		strcpy(o, "WiFi module power off");
+	}
 }
 
 extern "C" int SIM_CreateWindow(int argc, char **argv)
