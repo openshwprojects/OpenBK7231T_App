@@ -184,10 +184,10 @@ extern "C" void SIM_GeneratePowerStateDesc(char *o, int outLen) {
 	CControllerSimulatorLink *w = sim->findFirstControllerOfType<CControllerSimulatorLink>();
 	// TODO
 	if (w->isPowered()) {
-		strcpy(o, "WiFi module power on");
+		strcpy(o, "Power on");
 	}
 	else {
-		strcpy(o, "WiFi module power off");
+		strcpy(o, "Power off");
 	}
 }
 
