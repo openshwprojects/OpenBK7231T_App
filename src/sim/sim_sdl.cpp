@@ -173,6 +173,18 @@ bool FS_WriteTextFile(const char *data, const char *fname) {
 	return false;
 }
 CSimulator *g_sim;
+
+extern "C" void SIM_GeneratePowerStateDesc(char *o, int outLen) {
+	class CSimulation *sim = g_sim->getSim();
+	if (sim == 0) {
+		strcpy(o, "No simulation");
+		return;
+	}
+	//sim->findFirstControllerOfType<Simulatio
+	// TODO
+	strcpy(o, "WiFi module power on");
+}
+
 extern "C" int SIM_CreateWindow(int argc, char **argv)
 {
 	glutInit(&argc, argv);

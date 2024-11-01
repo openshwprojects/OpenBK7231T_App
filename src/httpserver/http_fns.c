@@ -1908,6 +1908,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				dev_info = hass_init_sensor_device_info(ILLUMINANCE_SENSOR, i, -1, -1, 1);
 			}
 			break;
+			case ChType_Custom:
 			case ChType_ReadOnly:
 			{
 				dev_info = hass_init_sensor_device_info(CUSTOM_SENSOR, i, -1, -1, 1);
