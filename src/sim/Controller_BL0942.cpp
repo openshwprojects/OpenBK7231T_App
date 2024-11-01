@@ -83,8 +83,9 @@ void CControllerBL0942::saveTo(struct cJSON *j_obj) {
 	cJSON_AddStringToObject(j_obj, "voltage", this->txt_voltage->getText());
 	cJSON_AddStringToObject(j_obj, "current", this->txt_current->getText());
 	cJSON_AddStringToObject(j_obj, "power", this->txt_power->getText());
-	cJSON_AddStringToObject(j_obj, "frequency", this->txt_freq->getText());
-
+	if (this->txt_freq) {
+		cJSON_AddStringToObject(j_obj, "frequency", this->txt_freq->getText());
+	}
 }
 void CControllerBL0942::loadFrom(struct cJSON *j_obj) {
 	cJSON *v = cJSON_GetObjectItemCaseSensitive(j_obj, "voltage");

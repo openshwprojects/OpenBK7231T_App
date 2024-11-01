@@ -18,7 +18,7 @@ class CControllerBL0942 : public CControllerBase {
 public:
 	CControllerBL0942() {
 		rx = tx = 0;
-		txt_voltage = txt_current = txt_power = 0;
+		txt_voltage = txt_current = txt_power = txt_freq = 0;
 		realCurrent = 0.25f;
 		realPower = 60.0f;
 		realVoltage = 220.0f;
