@@ -2419,7 +2419,7 @@ int http_fn_cfg(http_request_t* request) {
 	postFormAction(request, "cfg_name", "Configure Names");
 	postFormAction(request, "cfg_mac", "Change MAC");
 	postFormAction(request, "cfg_ping", "Ping Watchdog (network lost restarter)");
-	postFormAction(request, "cfg_webapp", "Configure Webapp");
+	postFormAction(request, "cfg_webapp", "Configure WebApp");
 	postFormAction(request, "ha_cfg", "Home Assistant Configuration");
 	postFormAction(request, "ota", "OTA (update software by WiFi)");
 	postFormAction(request, "cmd_tool", "Execute Custom Command");
