@@ -1,0 +1,127 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: siprintf</title>
+
+<meta name="description" content="The Red Hat newlib C Library: siprintf">
+<meta name="keywords" content="The Red Hat newlib C Library: siprintf">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="siscanf.html#siscanf" rel="next" title="siscanf">
+<link href="setvbuf.html#setvbuf" rel="prev" title="setvbuf">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="siprintf"></a>
+<div class="header">
+<p>
+Next: <a href="siscanf.html#siscanf" accesskey="n" rel="next">siscanf</a>, Previous: <a href="setvbuf.html#setvbuf" accesskey="p" rel="prev">setvbuf</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="siprintf_002c-fiprintf_002c-iprintf_002c-sniprintf_002c-asiprintf_002c-asniprintf_002d_002d_002dformat-output-_0028integer-only_0029"></a>
+<h3 class="section">4.59 <code>siprintf</code>, <code>fiprintf</code>, <code>iprintf</code>, <code>sniprintf</code>, <code>asiprintf</code>, <code>asniprintf</code>&mdash;format output (integer only)</h3>
+<a name="index-fiprintf"></a>
+<a name="index-_005ffiprintf_005fr"></a>
+<a name="index-iprintf"></a>
+<a name="index-_005fiprintf_005fr"></a>
+<a name="index-siprintf"></a>
+<a name="index-_005fsiprintf_005fr"></a>
+<a name="index-sniprintf"></a>
+<a name="index-_005fsniprintf_005fr"></a>
+<a name="index-asiprintf"></a>
+<a name="index-_005fasiprintf_005fr"></a>
+<a name="index-asniprintf"></a>
+<a name="index-_005fasniprintf_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+
+int iprintf(const char *<var>format</var>, ...);
+int fiprintf(FILE *<var>fd</var>, const char *<var>format</var> , ...);
+int siprintf(char *<var>str</var>, const char *<var>format</var>, ...);
+int sniprintf(char *<var>str</var>, size_t <var>size</var>, const char *<var>format</var>, 
+    ...);
+int asiprintf(char **<var>strp</var>, const char *<var>format</var>, ...);
+char *asniprintf(char *<var>str</var>, size_t *<var>size</var>, 
+    const char *<var>format</var>, ...);
+
+int _iprintf_r(struct _reent *<var>ptr</var>, const char *<var>format</var>, ...);
+int _fiprintf_r(struct _reent *<var>ptr</var>, FILE *<var>fd</var>,
+    const char *<var>format</var>, ...);
+int _siprintf_r(struct _reent *<var>ptr</var>, char *<var>str</var>,
+    const char *<var>format</var>, ...);
+int _sniprintf_r(struct _reent *<var>ptr</var>, char *<var>str</var>, size_t <var>size</var>,
+    const char *<var>format</var>, ...);
+int _asiprintf_r(struct _reent *<var>ptr</var>, char **<var>strp</var>,
+    const char *<var>format</var>, ...);
+char *_asniprintf_r(struct _reent *<var>ptr</var>, char *<var>str</var>,
+    size_t *<var>size</var>, const char *<var>format</var>, ...);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>iprintf</code>, <code>fiprintf</code>, <code>siprintf</code>, <code>sniprintf</code>,
+<code>asiprintf</code>, and <code>asniprintf</code> are the same as <code>printf</code>,
+<code>fprintf</code>, <code>sprintf</code>, <code>snprintf</code>, <code>asprintf</code>, and
+<code>asnprintf</code>, respectively, except that they restrict usage
+to non-floating-point format specifiers.
+</p>
+<p><code>_iprintf_r</code>, <code>_fiprintf_r</code>, <code>_asiprintf_r</code>,
+<code>_siprintf_r</code>, <code>_sniprintf_r</code>, <code>_asniprintf_r</code> are
+simply reentrant versions of the functions above.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+Similar to <code>printf</code>, <code>fprintf</code>, <code>sprintf</code>, <code>snprintf</code>, <code>asprintf</code>,
+and <code>asnprintf</code>.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>iprintf</code>, <code>fiprintf</code>, <code>siprintf</code>, <code>sniprintf</code>, <code>asiprintf</code>,
+and <code>asniprintf</code> are newlib extensions.
+</p>
+<p>Supporting OS subroutines required: <code>close</code>, <code>fstat</code>, <code>isatty</code>,
+<code>lseek</code>, <code>read</code>, <code>sbrk</code>, <code>write</code>.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Embed with GNU: GCC</title>
+
+<meta name="description" content="Embed with GNU: GCC">
+<meta name="keywords" content="Embed with GNU: GCC">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="leds_002ec.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="index.html#Top" rel="up" title="Top">
+<link href="Overview.html#Overview" rel="next" title="Overview">
+<link href="Board-support.html#Board-support" rel="prev" title="Board support">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="GCC"></a>
+<div class="header">
+<p>
+Next: <a href="Libraries.html#Libraries" accesskey="n" rel="next">Libraries</a>, Previous: <a href="Libgloss.html#Libgloss" accesskey="p" rel="prev">Libgloss</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<a name="Porting-GCC"></a>
+<h2 class="chapter">2 Porting GCC</h2>
+
+<p>Porting GCC requires two things, neither of which has anything to do
+with GCC. If GCC already supports a processor type, then all the work in
+porting GCC is really a linker issue. All GCC has to do is produce
+assembler output in the proper syntax. Most of the work is done by the
+linker, which is described elsewhere.
+</p>
+<p>Mostly all GCC does is format the command line for the linker pass. The
+command line for GCC is set in the various config subdirectories of gcc.
+The options of interest to us are <code>CPP_SPEC</code> and
+<code>STARTFILE_SPEC</code>. CPP_SPEC sets the builtin defines for your
+environment. If you support multiple environments with the same
+processor, then OS specific defines will need to be elsewhere. 
+</p>
+<p><code>STARTFILE_SPEC</code>
+</p>
+<p>Once you have linker support, GCC will be able to produce a fully linked
+executable image. The only <em>part</em> of GCC that the linker wants is a
+crt0.o, and a memory map. If you plan on running any programs that do
+I/O of any kind, you&rsquo;ll need to write support for the C library, which
+is described elsewhere. 
+</p>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="Overview.html#Overview" accesskey="1">Overview</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">An overview as to the compilation passes.
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Options.html#Options" accesskey="2">Options</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Useful GCC options for embedded systems.
+</td></tr>
+</table>
+
+
+
+
+</body>
+</html>

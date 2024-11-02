@@ -1,0 +1,87 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: strlen</title>
+
+<meta name="description" content="The Red Hat newlib C Library: strlen">
+<meta name="keywords" content="The Red Hat newlib C Library: strlen">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Strings.html#Strings" rel="up" title="Strings">
+<link href="strlwr.html#strlwr" rel="next" title="strlwr">
+<link href="strerror_005fr.html#strerror_005fr" rel="prev" title="strerror_r">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="strlen"></a>
+<div class="header">
+<p>
+Next: <a href="strlwr.html#strlwr" accesskey="n" rel="next">strlwr</a>, Previous: <a href="strerror_005fr.html#strerror_005fr" accesskey="p" rel="prev">strerror_r</a>, Up: <a href="Strings.html#Strings" accesskey="u" rel="up">Strings</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="strlen_002d_002d_002dcharacter-string-length"></a>
+<h3 class="section">5.29 <code>strlen</code>&mdash;character string length</h3>
+<a name="index-strlen"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;string.h&gt;
+size_t strlen(const char *<var>str</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+The <code>strlen</code> function works out the length of the string
+starting at <code>*<var>str</var></code> by counting chararacters until it
+reaches a <code>NULL</code> character.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>strlen</code> returns the character count.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>strlen</code> is ANSI C.
+</p>
+<p><code>strlen</code> requires no supporting OS subroutines.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

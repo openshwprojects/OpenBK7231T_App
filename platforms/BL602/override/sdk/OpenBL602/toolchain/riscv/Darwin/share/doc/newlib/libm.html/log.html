@@ -1,0 +1,78 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>log (LIBM)</title>
+
+<meta name="description" content="log (LIBM)">
+<meta name="keywords" content="log (LIBM)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="Document-Index.html" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Math.html" rel="up" title="Math">
+<link href="log10.html" rel="next" title="log10">
+<link href="ldexp.html" rel="prev" title="ldexp">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="log"></span><div class="header">
+<p>
+Next: <a href="log10.html" accesskey="n" rel="next">log10</a>, Previous: <a href="ldexp.html" accesskey="p" rel="prev">ldexp</a>, Up: <a href="Math.html" accesskey="u" rel="up">Math</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="log_002c-logf_002d_002d_002dnatural-logarithms"></span><h3 class="section">1.34 <code>log</code>, <code>logf</code>&mdash;natural logarithms</h3>
+<span id="index-log"></span>
+<span id="index-logf"></span>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;math.h&gt;
+double log(double <var>x</var>);
+float logf(float <var>x</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+Return the natural logarithm of <var>x</var>, that is, its logarithm base e
+(where e is the base of the natural system of logarithms, 2.71828&hellip;).
+<code>log</code> and <code>logf</code> are identical save for the return and argument types.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+Normally, returns the calculated value.  When <var>x</var> is zero, the
+returned value is <code>-HUGE_VAL</code> and <code>errno</code> is set to <code>ERANGE</code>.
+When <var>x</var> is negative, the returned value is NaN (not a number) and
+<code>errno</code> is set to <code>EDOM</code>.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>log</code> is ANSI. <code>logf</code> is an extension.
+</p>
+<br>
+
+
+
+</body>
+</html>

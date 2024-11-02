@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual documents how to install and use the Multiple Precision
+Floating-Point Reliable Library, version 3.1.4.
+
+Copyright 1991, 1993-2016 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with no Front-Cover Texts, and with no Back-Cover Texts.  A copy of the
+license is included in GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MPFR 3.1.4: Type and Macro Changes</title>
+
+<meta name="description" content="How to install and use GNU MPFR, a library for reliable multiple precision
+floating-point arithmetic, version 3.1.4.">
+<meta name="keywords" content="GNU MPFR 3.1.4: Type and Macro Changes">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="API-Compatibility.html#API-Compatibility" rel="up" title="API Compatibility">
+<link href="Added-Functions.html#Added-Functions" rel="next" title="Added Functions">
+<link href="API-Compatibility.html#API-Compatibility" rel="prev" title="API Compatibility">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Type-and-Macro-Changes"></a>
+<div class="header">
+<p>
+Next: <a href="Added-Functions.html#Added-Functions" accesskey="n" rel="next">Added Functions</a>, Previous: <a href="API-Compatibility.html#API-Compatibility" accesskey="p" rel="prev">API Compatibility</a>, Up: <a href="API-Compatibility.html#API-Compatibility" accesskey="u" rel="up">API Compatibility</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Type-and-Macro-Changes-1"></a>
+<h3 class="section">6.1 Type and Macro Changes</h3>
+
+<p>The official type for exponent values changed from <code>mp_exp_t</code> to
+<code>mpfr_exp_t</code> in MPFR 3.0.  The type <code>mp_exp_t</code> will remain
+available as it comes from GMP (with a different meaning).  These types
+are currently the same (<code>mpfr_exp_t</code> is defined as <code>mp_exp_t</code>
+with <code>typedef</code>), so that programs can still use <code>mp_exp_t</code>;
+but this may change in the future.
+Alternatively, using the following code after including <samp>mpfr.h</samp>
+will work with official MPFR versions, as <code>mpfr_exp_t</code> was never
+defined in MPFR 2.x:
+</p><div class="example">
+<pre class="example">#if MPFR_VERSION_MAJOR &lt; 3
+typedef mp_exp_t mpfr_exp_t;
+#endif
+</pre></div>
+
+<p>The official types for precision values and for rounding modes
+respectively changed from <code>mp_prec_t</code> and <code>mp_rnd_t</code>
+to <code>mpfr_prec_t</code> and <code>mpfr_rnd_t</code> in MPFR 3.0.  This
+change was actually done a long time ago in MPFR, at least since
+MPFR 2.2.0, with the following code in <samp>mpfr.h</samp>:
+</p><div class="example">
+<pre class="example">#ifndef mp_rnd_t
+# define mp_rnd_t  mpfr_rnd_t
+#endif
+#ifndef mp_prec_t
+# define mp_prec_t mpfr_prec_t
+#endif
+</pre></div>
+<p>This means that it is safe to use the new official types
+<code>mpfr_prec_t</code> and <code>mpfr_rnd_t</code> in your programs.
+The types <code>mp_prec_t</code> and <code>mp_rnd_t</code> (defined
+in MPFR only) may be removed in the future, as the prefix
+<code>mp_</code> is reserved by GMP.
+</p>
+<p>The precision type <code>mpfr_prec_t</code> (<code>mp_prec_t</code>) was unsigned
+before MPFR 3.0; it is now signed.  <code>MPFR_PREC_MAX</code> has not changed,
+though.  Indeed the MPFR code requires that <code>MPFR_PREC_MAX</code> be
+representable in the exponent type, which may have the same size as
+<code>mpfr_prec_t</code> but has always been signed.
+The consequence is that valid code that does not assume anything about
+the signedness of <code>mpfr_prec_t</code> should work with past and new MPFR
+versions.
+This change was useful as the use of unsigned types tends to convert
+signed values to unsigned ones in expressions due to the usual arithmetic
+conversions, which can yield incorrect results if a negative value is
+converted in such a way.
+Warning!  A program assuming (intentionally or not) that
+<code>mpfr_prec_t</code> is signed may be affected by this problem when
+it is built and run against MPFR 2.x.
+</p>
+<p>The rounding modes <code>GMP_RNDx</code> were renamed to <code>MPFR_RNDx</code>
+in MPFR 3.0. However the old names <code>GMP_RNDx</code> have been kept for
+compatibility (this might change in future versions), using:
+</p><div class="example">
+<pre class="example">#define GMP_RNDN MPFR_RNDN
+#define GMP_RNDZ MPFR_RNDZ
+#define GMP_RNDU MPFR_RNDU
+#define GMP_RNDD MPFR_RNDD
+</pre></div>
+<p>The rounding mode &ldquo;round away from zero&rdquo; (<code>MPFR_RNDA</code>) was added in
+MPFR 3.0 (however no rounding mode <code>GMP_RNDA</code> exists).
+</p>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Added-Functions.html#Added-Functions" accesskey="n" rel="next">Added Functions</a>, Previous: <a href="API-Compatibility.html#API-Compatibility" accesskey="p" rel="prev">API Compatibility</a>, Up: <a href="API-Compatibility.html#API-Compatibility" accesskey="u" rel="up">API Compatibility</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

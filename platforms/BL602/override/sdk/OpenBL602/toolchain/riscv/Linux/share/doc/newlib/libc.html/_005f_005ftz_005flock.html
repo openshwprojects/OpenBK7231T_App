@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: __tz_lock</title>
+
+<meta name="description" content="The Red Hat newlib C Library: __tz_lock">
+<meta name="keywords" content="The Red Hat newlib C Library: __tz_lock">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Timefns.html#Timefns" rel="up" title="Timefns">
+<link href="tzset.html#tzset" rel="next" title="tzset">
+<link href="time.html#time" rel="prev" title="time">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="g_t_005f_005ftz_005flock"></a>
+<div class="header">
+<p>
+Next: <a href="tzset.html#tzset" accesskey="n" rel="next">tzset</a>, Previous: <a href="time.html#time" accesskey="p" rel="prev">time</a>, Up: <a href="Timefns.html#Timefns" accesskey="u" rel="up">Timefns</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="g_t_005f_005ftz_005flock_002c-_005f_005ftz_005funlock_002d_002d_002dlock-time-zone-global-variables"></a>
+<h3 class="section">8.10 <code>__tz_lock</code>, <code>__tz_unlock</code>&mdash;lock time zone global variables</h3>
+<a name="index-_005f_005ftz_005flock"></a>
+<a name="index-_005f_005ftz_005funlock"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &quot;local.h&quot;
+void __tz_lock (void);
+void __tz_unlock (void);
+
+</pre></div>
+<p><strong>Description</strong><br>
+The <code>tzset</code> facility functions call these functions when they need to
+ensure the values of global variables.  The version of these routines
+supplied in the library use the lock API defined in sys/lock.h.  If multiple
+threads of execution can call the time functions and give up scheduling in
+the middle, then you you need to define your own versions of these functions
+in order to safely lock the time zone variables during a call.  If you do
+not, the results of <code>localtime</code>, <code>mktime</code>, <code>ctime</code>, and <code>strftime</code>
+are undefined.
+</p>
+<p>The lock <code>__tz_lock</code> may not be called recursively; that is,
+a call <code>__tz_lock</code> will always lock all subsequent <code>__tz_lock</code> calls
+until the corresponding <code>__tz_unlock</code> call on the same thread is made.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

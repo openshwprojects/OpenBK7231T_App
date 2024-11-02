@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Exact Remainder</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Exact Remainder">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Division-Algorithms.html#Division-Algorithms" rel="up" title="Division Algorithms">
+<link href="Small-Quotient-Division.html#Small-Quotient-Division" rel="next" title="Small Quotient Division">
+<link href="Exact-Division.html#Exact-Division" rel="prev" title="Exact Division">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Exact-Remainder"></a>
+<div class="header">
+<p>
+Next: <a href="Small-Quotient-Division.html#Small-Quotient-Division" accesskey="n" rel="next">Small Quotient Division</a>, Previous: <a href="Exact-Division.html#Exact-Division" accesskey="p" rel="prev">Exact Division</a>, Up: <a href="Division-Algorithms.html#Division-Algorithms" accesskey="u" rel="up">Division Algorithms</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Exact-Remainder-1"></a>
+<h4 class="subsection">15.2.6 Exact Remainder</h4>
+<a name="index-Exact-remainder"></a>
+
+<p>If the exact division algorithm is done with a full subtraction at each stage
+and the dividend isn&rsquo;t a multiple of the divisor, then low zero limbs are
+produced but with a remainder in the high limbs.  For dividend <em>a</em>,
+divisor <em>d</em>, quotient <em>q</em>, and <em>b = 2^mp_bits_per_limb</em>, this remainder
+<em>r</em> is of the form
+</p>
+<div class="example">
+<pre class="example">a = q*d + r*b^n
+</pre></div>
+
+<p><em>n</em> represents the number of zero limbs produced by the subtractions,
+that being the number of limbs produced for <em>q</em>.  <em>r</em> will be in the
+range <em>0&lt;=r&lt;d</em> and can be viewed as a remainder, but one shifted up by
+a factor of <em>b^n</em>.
+</p>
+<p>Carrying out full subtractions at each stage means the same number of cross
+products must be done as a normal division, but there&rsquo;s still some single limb
+divisions saved.  When <em>d</em> is a single limb some simplifications arise,
+providing good speedups on a number of processors.
+</p>
+<p>The functions <code>mpn_divexact_by3</code>, <code>mpn_modexact_1_odd</code> and the
+internal <code>mpn_redc_X</code> functions differ subtly in how they return <em>r</em>,
+leading to some negations in the above formula, but all are essentially the
+same.
+</p>
+<a name="index-Divisibility-algorithm"></a>
+<a name="index-Congruence-algorithm"></a>
+<p>Clearly <em>r</em> is zero when <em>a</em> is a multiple of <em>d</em>, and this
+leads to divisibility or congruence tests which are potentially more efficient
+than a normal division.
+</p>
+<p>The factor of <em>b^n</em> on <em>r</em> can be ignored in a GCD when <em>d</em> is
+odd, hence the use of <code>mpn_modexact_1_odd</code> by <code>mpn_gcd_1</code> and
+<code>mpz_kronecker_ui</code> etc (see <a href="Greatest-Common-Divisor-Algorithms.html#Greatest-Common-Divisor-Algorithms">Greatest Common Divisor Algorithms</a>).
+</p>
+<p>Montgomery&rsquo;s REDC method for modular multiplications uses operands of the form
+of <em>x*b^-n</em> and <em>y*b^-n</em> and on calculating <em>(x*b^-n)*(y*b^-n)</em> uses the factor of <em>b^n</em> in the exact
+remainder to reach a product in the same form <em>(x*y)*b^-n</em>
+(see <a href="Modular-Powering-Algorithm.html#Modular-Powering-Algorithm">Modular Powering Algorithm</a>).
+</p>
+<p>Notice that <em>r</em> generally gives no useful information about the ordinary
+remainder <em>a mod d</em> since <em>b^n mod d</em> could be anything.  If
+however <em>b^n &equiv; 1 mod d</em>, then <em>r</em> is the negative of the
+ordinary remainder.  This occurs whenever <em>d</em> is a factor of
+<em>b^n-1</em>, as for example with 3 in <code>mpn_divexact_by3</code>.  For a 32 or
+64 bit limb other such factors include 5, 17 and 257, but no particular use
+has been found for this.
+</p>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Small-Quotient-Division.html#Small-Quotient-Division" accesskey="n" rel="next">Small Quotient Division</a>, Previous: <a href="Exact-Division.html#Exact-Division" accesskey="p" rel="prev">Exact Division</a>, Up: <a href="Division-Algorithms.html#Division-Algorithms" accesskey="u" rel="up">Division Algorithms</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

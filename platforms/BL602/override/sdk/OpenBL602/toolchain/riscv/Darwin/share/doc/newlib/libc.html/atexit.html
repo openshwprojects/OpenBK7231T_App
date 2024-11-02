@@ -1,0 +1,91 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>atexit (The Red Hat newlib C Library)</title>
+
+<meta name="description" content="atexit (The Red Hat newlib C Library)">
+<meta name="keywords" content="atexit (The Red Hat newlib C Library)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdlib.html" rel="up" title="Stdlib">
+<link href="atof.html" rel="next" title="atof">
+<link href="assert.html" rel="prev" title="assert">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="atexit"></span><div class="header">
+<p>
+Next: <a href="atof.html" accesskey="n" rel="next">atof</a>, Previous: <a href="assert.html" accesskey="p" rel="prev">assert</a>, Up: <a href="Stdlib.html" accesskey="u" rel="up">Stdlib</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="atexit_002d_002d_002drequest-execution-of-functions-at-program-exit"></span><h3 class="section">2.6 <code>atexit</code>&mdash;request execution of functions at program exit</h3>
+<span id="index-atexit"></span>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdlib.h&gt;
+int atexit (void (*<var>function</var>)(void));
+
+</pre></div>
+<p><strong>Description</strong><br>
+You can use <code>atexit</code> to enroll functions in a list of functions that
+will be called when your program terminates normally.  The argument is
+a pointer to a user-defined function (which must not require arguments and
+must not return a result).
+</p>
+<p>The functions are kept in a LIFO stack; that is, the last function
+enrolled by <code>atexit</code> will be the first to execute when your program
+exits.
+</p>
+<p>There is no built-in limit to the number of functions you can enroll
+in this list; however, after every group of 32 functions is enrolled,
+<code>atexit</code> will call <code>malloc</code> to get space for the next part of the
+list.   The initial list of 32 functions is statically allocated, so
+you can always count on at least that many slots available.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>atexit</code> returns <code>0</code> if it succeeds in enrolling your function,
+<code>-1</code> if it fails (possible only if no space was available for
+<code>malloc</code> to extend the list of functions).
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>atexit</code> is required by the ANSI standard, which also specifies that
+implementations must support enrolling at least 32 functions.
+</p>
+<p>Supporting OS subroutines required: <code>close</code>, <code>fstat</code>, <code>isatty</code>,
+<code>lseek</code>, <code>read</code>, <code>sbrk</code>, <code>write</code>.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

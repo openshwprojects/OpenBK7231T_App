@@ -1,0 +1,143 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: Ctype</title>
+
+<meta name="description" content="The Red Hat newlib C Library: Ctype">
+<meta name="keywords" content="The Red Hat newlib C Library: Ctype">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="index.html#Top" rel="up" title="Top">
+<link href="isalnum.html#isalnum" rel="next" title="isalnum">
+<link href="wctomb.html#wctomb" rel="prev" title="wctomb">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Ctype"></a>
+<div class="header">
+<p>
+Next: <a href="Stdio.html#Stdio" accesskey="n" rel="next">Stdio</a>, Previous: <a href="Stdlib.html#Stdlib" accesskey="p" rel="prev">Stdlib</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Character-Type-Macros-and-Functions-_0028ctype_002eh_0029"></a>
+<h2 class="chapter">3 Character Type Macros and Functions (<samp>ctype.h</samp>)</h2>
+<p>This chapter groups macros (which are also available as subroutines)
+to classify characters into several categories (alphabetic,
+numeric, control characters, whitespace, and so on), or to perform
+simple character mappings.
+</p>
+<p>The header file <samp>ctype.h</samp> defines the macros.
+</p><table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="isalnum.html#isalnum" accesskey="1">isalnum</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Alphanumeric character predicate (isalnum, isalnum_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="isalpha.html#isalpha" accesskey="2">isalpha</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Alphabetic character predicate (isalpha, isalpha_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="isascii.html#isascii" accesskey="3">isascii</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">ASCII character predicate (isascii, isascii_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="isblank.html#isblank" accesskey="4">isblank</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Blank character predicate (isblank, isblank_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="iscntrl.html#iscntrl" accesskey="5">iscntrl</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Control character predicate (iscntrl, iscntrl_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="isdigit.html#isdigit" accesskey="6">isdigit</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Decimal digit predicate (isdigit, isdigit_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="islower.html#islower" accesskey="7">islower</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Lowercase character predicate (islower, islower_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="isprint.html#isprint" accesskey="8">isprint</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Printable character predicates (isprint, isprint_l. isgraph, isgraph_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="ispunct.html#ispunct" accesskey="9">ispunct</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Punctuation character predicate (ispunct, ispunct_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="isspace.html#isspace">isspace</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Whitespace character predicate (isspace, isspace_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="isupper.html#isupper">isupper</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Uppercase character predicate (isupper, isupper_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="isxdigit.html#isxdigit">isxdigit</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Hexadecimal digit predicate (isxdigit, isxdigit_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="toascii.html#toascii">toascii</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Force integers to ASCII range (toascii, toascii_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="tolower.html#tolower">tolower</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Translate characters to lowercase (tolower, tolower_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="toupper.html#toupper">toupper</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Translate characters to uppercase (toupper, toupper_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="iswalnum.html#iswalnum">iswalnum</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Alphanumeric wide character predicate (iswalnum, iswalnum_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="iswalpha.html#iswalpha">iswalpha</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Alphabetic wide character predicate (iswalpha, iswalpha_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="iswblank.html#iswblank">iswblank</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Blank wide character predicate (iswblank, iswblank_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="iswcntrl.html#iswcntrl">iswcntrl</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Control wide character predicate (iswcntrl, iswcntrl_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="iswdigit.html#iswdigit">iswdigit</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Decimal digit wide character predicate (iswdigit, iswdigit_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="iswgraph.html#iswgraph">iswgraph</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Graphic wide character predicate (iswgraph, iswgraph_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="iswlower.html#iswlower">iswlower</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Lowercase wide character predicate (iswlower, iswlower_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="iswprint.html#iswprint">iswprint</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Printable wide character predicate (iswprint, iswprint_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="iswpunct.html#iswpunct">iswpunct</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Punctuation wide character predicate (iswpunct, iswpunct_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="iswspace.html#iswspace">iswspace</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Whitespace wide character predicate (iswspace, iswspace_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="iswupper.html#iswupper">iswupper</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Uppercase wide character predicate (iswupper, iswupper_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="iswxdigit.html#iswxdigit">iswxdigit</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Hexadecimal digit wide character predicate (iswxdigit, iswxdigit_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="iswctype.html#iswctype">iswctype</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Extensible wide-character test (iswctype, iswctype_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="wctype.html#wctype">wctype</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Compute wide-character test type (wctype, wctype_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="towlower.html#towlower">towlower</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Translate wide characters to lowercase (towlower, towlower_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="towupper.html#towupper">towupper</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Translate wide characters to uppercase (towupper, towupper_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="towctrans.html#towctrans">towctrans</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Extensible wide-character translation (towctrans, towctrans_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="wctrans.html#wctrans">wctrans</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Compute wide-character translation type (wctrans, wctrans_l)
+</td></tr>
+</table>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Stdio.html#Stdio" accesskey="n" rel="next">Stdio</a>, Previous: <a href="Stdlib.html#Stdlib" accesskey="p" rel="prev">Stdlib</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

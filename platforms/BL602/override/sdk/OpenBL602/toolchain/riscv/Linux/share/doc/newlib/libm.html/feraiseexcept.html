@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>LIBM: feraiseexcept</title>
+
+<meta name="description" content="LIBM: feraiseexcept">
+<meta name="keywords" content="LIBM: feraiseexcept">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Fenv.html#Fenv" rel="up" title="Fenv">
+<link href="fesetenv.html#fesetenv" rel="next" title="fesetenv">
+<link href="feholdexcept.html#feholdexcept" rel="prev" title="feholdexcept">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="feraiseexcept"></a>
+<div class="header">
+<p>
+Next: <a href="fesetenv.html#fesetenv" accesskey="n" rel="next">fesetenv</a>, Previous: <a href="feholdexcept.html#feholdexcept" accesskey="p" rel="prev">feholdexcept</a>, Up: <a href="Fenv.html#Fenv" accesskey="u" rel="up">Fenv</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="feraiseexcept_002d_002d_002draise-floating_002dpoint-exception"></a>
+<h3 class="section">3.6 <code>feraiseexcept</code>&mdash;raise floating-point exception</h3>
+<a name="index-feraiseexcept"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;fenv.h&gt;
+int feraiseexcept(int <var>excepts</var>);
+
+Link with -lm.
+
+</pre></div>
+<p><strong>Description</strong><br>
+This method attempts to raise the floating-point exceptions specified
+in <var>excepts</var>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+If the <var>excepts</var> argument is zero or all requested exceptions were
+successfully raised, this method returns zero. Otherwise, a non-zero
+value is returned.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+ANSI C requires <code>feraiseexcept</code>.
+</p>
+<p>Not all Newlib targets have a working implementation.  Refer to
+the file <code>sys/fenv.h</code> to see the status for your target.
+</p>
+<br>
+
+
+
+</body>
+</html>

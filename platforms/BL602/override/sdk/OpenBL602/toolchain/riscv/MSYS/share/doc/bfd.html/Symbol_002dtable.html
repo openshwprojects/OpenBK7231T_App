@@ -1,0 +1,188 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This file documents the BFD library.
+
+Copyright (C) 1991-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "GNU General Public License" and "Funding
+Free Software", the Front-Cover texts being (a) (see below), and with
+the Back-Cover Texts being (b) (see below).  A copy of the license is
+included in the section entitled "GNU Free Documentation License".
+
+(a) The FSF's Front-Cover Text is:
+
+A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Untitled Document: Symbol-table</title>
+
+<meta name="description" content="Untitled Document: Symbol-table">
+<meta name="keywords" content="Untitled Document: Symbol-table">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="BFD-Index.html#BFD-Index" rel="index" title="BFD Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="mmo.html#mmo" rel="up" title="mmo">
+<link href="mmo-section-mapping.html#mmo-section-mapping" rel="next" title="mmo section mapping">
+<link href="File-layout.html#File-layout" rel="prev" title="File layout">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Symbol_002dtable"></a>
+<div class="header">
+<p>
+Next: <a href="mmo-section-mapping.html#mmo-section-mapping" accesskey="n" rel="next">mmo section mapping</a>, Previous: <a href="File-layout.html#File-layout" accesskey="p" rel="prev">File layout</a>, Up: <a href="mmo.html#mmo" accesskey="u" rel="up">mmo</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="BFD-Index.html#BFD-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Symbol-table-format"></a>
+<h4 class="subsection">3.5.2 Symbol table format</h4>
+<p>From mmixal.w (or really, the generated mmixal.tex) in the
+MMIXware package which also contains the <code>mmix</code> simulator:
+&ldquo;Symbols are stored and retrieved by means of a &lsquo;<samp>ternary
+search trie</samp>&rsquo;, following ideas of Bentley and Sedgewick. (See
+ACM&ndash;SIAM Symp. on Discrete Algorithms &lsquo;<samp>8</samp>&rsquo; (1997), 360&ndash;369;
+R.Sedgewick, &lsquo;<samp>Algorithms in C</samp>&rsquo; (Reading, Mass.
+Addison&ndash;Wesley, 1998), &lsquo;<samp>15.4</samp>&rsquo;.)  Each trie node stores a
+character, and there are branches to subtries for the cases where
+a given character is less than, equal to, or greater than the
+character in the trie.  There also is a pointer to a symbol table
+entry if a symbol ends at the current node.&rdquo;
+</p>
+<p>So it&rsquo;s a tree encoded as a stream of bytes.  The stream of bytes
+acts on a single virtual global symbol, adding and removing
+characters and signalling complete symbol points.  Here, we read
+the stream and create symbols at the completion points.
+</p>
+<p>First, there&rsquo;s a control byte <code>m</code>.  If any of the listed bits
+in <code>m</code> is nonzero, we execute what stands at the right, in
+the listed order:
+</p>
+<div class="example">
+<pre class="example"> (MMO3_LEFT)
+ 0x40 - Traverse left trie.
+        (Read a new command byte and recurse.)
+
+ (MMO3_SYMBITS)
+ 0x2f - Read the next byte as a character and store it in the
+        current character position; increment character position.
+        Test the bits of <code>m</code>:
+
+        (MMO3_WCHAR)
+        0x80 - The character is 16-bit (so read another byte,
+               merge into current character.
+
+        (MMO3_TYPEBITS)
+        0xf  - We have a complete symbol; parse the type, value
+               and serial number and do what should be done
+               with a symbol.  The type and length information
+               is in j = (m &amp; 0xf).
+
+               (MMO3_REGQUAL_BITS)
+               j == 0xf: A register variable.  The following
+                         byte tells which register.
+               j &lt;= 8:   An absolute symbol.  Read j bytes as the
+                         big-endian number the symbol equals.
+                         A j = 2 with two zero bytes denotes an
+                         unknown symbol.
+               j &gt; 8:    As with j &lt;= 8, but add (0x20 &lt;&lt; 56)
+                         to the value in the following j - 8
+                         bytes.
+
+               Then comes the serial number, as a variant of
+               uleb128, but better named ubeb128:
+               Read bytes and shift the previous value left 7
+               (multiply by 128).  Add in the new byte, repeat
+               until a byte has bit 7 set.  The serial number
+               is the computed value minus 128.
+
+        (MMO3_MIDDLE)
+        0x20 - Traverse middle trie.  (Read a new command byte
+               and recurse.)  Decrement character position.
+
+ (MMO3_RIGHT)
+ 0x10 - Traverse right trie.  (Read a new command byte and
+        recurse.)
+</pre></div>
+
+<p>Let&rsquo;s look again at the <code>lop_stab</code> for the trivial file
+(see <a href="File-layout.html#File-layout">File layout</a>).
+</p>
+<div class="example">
+<pre class="example"> 0x980b0000 - lop_stab for &quot;:Main&quot; = 0, serial 1.
+ 0x203a4040
+ 0x10404020
+ 0x4d206120
+ 0x69016e00
+ 0x81000000
+</pre></div>
+
+<p>This forms the trivial trie (note that the path between &ldquo;:&rdquo; and
+&ldquo;M&rdquo; is redundant):
+</p>
+<div class="example">
+<pre class="example"> 203a     &quot;:&quot;
+ 40       /
+ 40      /
+ 10      \
+ 40      /
+ 40     /
+ 204d  &quot;M&quot;
+ 2061  &quot;a&quot;
+ 2069  &quot;i&quot;
+ 016e  &quot;n&quot; is the last character in a full symbol, and
+       with a value represented in one byte.
+ 00    The value is 0.
+ 81    The serial number is 1.
+</pre></div>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="mmo-section-mapping.html#mmo-section-mapping" accesskey="n" rel="next">mmo section mapping</a>, Previous: <a href="File-layout.html#File-layout" accesskey="p" rel="prev">File layout</a>, Up: <a href="mmo.html#mmo" accesskey="u" rel="up">mmo</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="BFD-Index.html#BFD-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

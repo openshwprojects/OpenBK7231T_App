@@ -1,0 +1,301 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Notes for Particular Systems</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Notes for Particular Systems">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Installing-GMP.html#Installing-GMP" rel="up" title="Installing GMP">
+<link href="Known-Build-Problems.html#Known-Build-Problems" rel="next" title="Known Build Problems">
+<link href="Notes-for-Package-Builds.html#Notes-for-Package-Builds" rel="prev" title="Notes for Package Builds">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Notes-for-Particular-Systems"></a>
+<div class="header">
+<p>
+Next: <a href="Known-Build-Problems.html#Known-Build-Problems" accesskey="n" rel="next">Known Build Problems</a>, Previous: <a href="Notes-for-Package-Builds.html#Notes-for-Package-Builds" accesskey="p" rel="prev">Notes for Package Builds</a>, Up: <a href="Installing-GMP.html#Installing-GMP" accesskey="u" rel="up">Installing GMP</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Notes-for-Particular-Systems-1"></a>
+<h3 class="section">2.4 Notes for Particular Systems</h3>
+<a name="index-Build-notes-for-particular-systems"></a>
+<a name="index-Particular-systems"></a>
+<a name="index-Systems"></a>
+<dl compact="compact">
+<dt>AIX 3 and 4</dt>
+<dd><a name="index-AIX-1"></a>
+<p>On systems &lsquo;<samp>*-*-aix[34]*</samp>&rsquo; shared libraries are disabled by default, since
+some versions of the native <code>ar</code> fail on the convenience libraries
+used.  A shared build can be attempted with
+</p>
+<div class="example">
+<pre class="example">./configure --enable-shared --disable-static
+</pre></div>
+
+<p>Note that the &lsquo;<samp>--disable-static</samp>&rsquo; is necessary because in a shared build
+libtool makes <samp>libgmp.a</samp> a symlink to <samp>libgmp.so</samp>, apparently for
+the benefit of old versions of <code>ld</code> which only recognise <samp>.a</samp>,
+but unfortunately this is done even if a fully functional <code>ld</code> is
+available.
+</p>
+</dd>
+<dt>ARM</dt>
+<dd><a name="index-ARM"></a>
+<p>On systems &lsquo;<samp>arm*-*-*</samp>&rsquo;, versions of GCC up to and including 2.95.3 have a
+bug in unsigned division, giving wrong results for some operands.  GMP
+&lsquo;<samp>./configure</samp>&rsquo; will demand GCC 2.95.4 or later.
+</p>
+</dd>
+<dt>Compaq C++</dt>
+<dd><a name="index-Compaq-C_002b_002b"></a>
+<p>Compaq C++ on OSF 5.1 has two flavours of <code>iostream</code>, a standard one and
+an old pre-standard one (see &lsquo;<samp>man iostream_intro</samp>&rsquo;).  GMP can only use the
+standard one, which unfortunately is not the default but must be selected by
+defining <code>__USE_STD_IOSTREAM</code>.  Configure with for instance
+</p>
+<div class="example">
+<pre class="example">./configure --enable-cxx CPPFLAGS=-D__USE_STD_IOSTREAM
+</pre></div>
+
+</dd>
+<dt>Floating Point Mode</dt>
+<dd><a name="index-Floating-point-mode"></a>
+<a name="index-Hardware-floating-point-mode"></a>
+<a name="index-Precision-of-hardware-floating-point"></a>
+<a name="index-x87"></a>
+<p>On some systems, the hardware floating point has a control mode which can set
+all operations to be done in a particular precision, for instance single,
+double or extended on x86 systems (x87 floating point).  The GMP functions
+involving a <code>double</code> cannot be expected to operate to their full
+precision when the hardware is in single precision mode.  Of course this
+affects all code, including application code, not just GMP.
+</p>
+</dd>
+<dt>FreeBSD 7.x, 8.x, 9.0, 9.1, 9.2</dt>
+<dd><a name="index-FreeBSD"></a>
+<p><code>m4</code> in these releases of FreeBSD has an eval function which ignores
+its 2nd and 3rd arguments, which makes it unsuitable for <samp>.asm</samp> file
+processing.  &lsquo;<samp>./configure</samp>&rsquo; will detect the problem and either abort or
+choose another m4 in the <code>PATH</code>.  The bug is fixed in FreeBSD 9.3 and 10.0,
+so either upgrade or use GNU m4.  Note that the FreeBSD package system installs
+GNU m4 under the name &lsquo;<samp>gm4</samp>&rsquo;, which GMP cannot guess.
+</p>
+</dd>
+<dt>FreeBSD 7.x, 8.x, 9.x</dt>
+<dd><a name="index-FreeBSD-1"></a>
+<p>GMP releases starting with 6.0 do not support &lsquo;<samp>ABI=32</samp>&rsquo; on FreeBSD/amd64
+prior to release 10.0 of the system.  The cause is a broken <code>limits.h</code>,
+which GMP no longer works around.
+</p>
+</dd>
+<dt>MS-DOS and MS Windows</dt>
+<dd><a name="index-MS_002dDOS"></a>
+<a name="index-MS-Windows"></a>
+<a name="index-Windows"></a>
+<a name="index-Cygwin"></a>
+<a name="index-DJGPP"></a>
+<a name="index-MINGW"></a>
+<p>On an MS-DOS system DJGPP can be used to build GMP, and on an MS Windows
+system Cygwin, DJGPP and MINGW can be used.  All three are excellent ports of
+GCC and the various GNU tools.
+</p>
+<div class="display">
+<pre class="display"><a href="http://www.cygwin.com/">http://www.cygwin.com/</a>
+<a href="http://www.delorie.com/djgpp/">http://www.delorie.com/djgpp/</a>
+<a href="http://www.mingw.org/">http://www.mingw.org/</a>
+</pre></div>
+
+<a name="index-Interix"></a>
+<a name="index-Services-for-Unix"></a>
+<p>Microsoft also publishes an Interix &ldquo;Services for Unix&rdquo; which can be used to
+build GMP on Windows (with a normal &lsquo;<samp>./configure</samp>&rsquo;), but it&rsquo;s not free
+software.
+</p>
+</dd>
+<dt>MS Windows DLLs</dt>
+<dd><a name="index-DLLs"></a>
+<a name="index-MS-Windows-1"></a>
+<a name="index-Windows-1"></a>
+<p>On systems &lsquo;<samp>*-*-cygwin*</samp>&rsquo;, &lsquo;<samp>*-*-mingw*</samp>&rsquo; and &lsquo;<samp>*-*-pw32*</samp>&rsquo; by
+default GMP builds only a static library, but a DLL can be built instead using
+</p>
+<div class="example">
+<pre class="example">./configure --disable-static --enable-shared
+</pre></div>
+
+<p>Static and DLL libraries can&rsquo;t both be built, since certain export directives
+in <samp>gmp.h</samp> must be different.
+</p>
+<p>A MINGW DLL build of GMP can be used with Microsoft C.  Libtool doesn&rsquo;t
+install a <samp>.lib</samp> format import library, but it can be created with MS
+<code>lib</code> as follows, and copied to the install directory.  Similarly for
+<samp>libmp</samp> and <samp>libgmpxx</samp>.
+</p>
+<div class="example">
+<pre class="example">cd .libs
+lib /def:libgmp-3.dll.def /out:libgmp-3.lib
+</pre></div>
+
+<p>MINGW uses the C runtime library &lsquo;<samp>msvcrt.dll</samp>&rsquo; for I/O, so applications
+wanting to use the GMP I/O routines must be compiled with &lsquo;<samp>cl /MD</samp>&rsquo; to do
+the same.  If one of the other C runtime library choices provided by MS C is
+desired then the suggestion is to use the GMP string functions and confine I/O
+to the application.
+</p>
+</dd>
+<dt>Motorola 68k CPU Types</dt>
+<dd><a name="index-68000"></a>
+<p>&lsquo;<samp>m68k</samp>&rsquo; is taken to mean 68000.  &lsquo;<samp>m68020</samp>&rsquo; or higher will give a
+performance boost on applicable CPUs.  &lsquo;<samp>m68360</samp>&rsquo; can be used for CPU32
+series chips.  &lsquo;<samp>m68302</samp>&rsquo; can be used for &ldquo;Dragonball&rdquo; series chips,
+though this is merely a synonym for &lsquo;<samp>m68000</samp>&rsquo;.
+</p>
+</dd>
+<dt>NetBSD 5.x</dt>
+<dd><a name="index-NetBSD"></a>
+<p><code>m4</code> in these releases of NetBSD has an eval function which ignores its
+2nd and 3rd arguments, which makes it unsuitable for <samp>.asm</samp> file
+processing.  &lsquo;<samp>./configure</samp>&rsquo; will detect the problem and either abort or
+choose another m4 in the <code>PATH</code>.  The bug is fixed in NetBSD 6, so either
+upgrade or use GNU m4.  Note that the NetBSD package system installs GNU m4
+under the name &lsquo;<samp>gm4</samp>&rsquo;, which GMP cannot guess.
+</p>
+</dd>
+<dt>OpenBSD 2.6</dt>
+<dd><a name="index-OpenBSD"></a>
+<p><code>m4</code> in this release of OpenBSD has a bug in <code>eval</code> that makes it
+unsuitable for <samp>.asm</samp> file processing.  &lsquo;<samp>./configure</samp>&rsquo; will detect
+the problem and either abort or choose another m4 in the <code>PATH</code>.  The bug
+is fixed in OpenBSD 2.7, so either upgrade or use GNU m4.
+</p>
+</dd>
+<dt>Power CPU Types</dt>
+<dd><a name="index-Power_002fPowerPC"></a>
+<p>In GMP, CPU types &lsquo;<samp>power*</samp>&rsquo; and &lsquo;<samp>powerpc*</samp>&rsquo; will each use instructions
+not available on the other, so it&rsquo;s important to choose the right one for the
+CPU that will be used.  Currently GMP has no assembly code support for using
+just the common instruction subset.  To get executables that run on both, the
+current suggestion is to use the generic C code (<samp>--disable-assembly</samp>),
+possibly with appropriate compiler options (like &lsquo;<samp>-mcpu=common</samp>&rsquo; for
+<code>gcc</code>).  CPU &lsquo;<samp>rs6000</samp>&rsquo; (which is not a CPU but a family of
+workstations) is accepted by <samp>config.sub</samp>, but is currently equivalent to
+<samp>--disable-assembly</samp>.
+</p>
+</dd>
+<dt>Sparc CPU Types</dt>
+<dd><a name="index-Sparc"></a>
+<p>&lsquo;<samp>sparcv8</samp>&rsquo; or &lsquo;<samp>supersparc</samp>&rsquo; on relevant systems will give a
+significant performance increase over the V7 code selected by plain
+&lsquo;<samp>sparc</samp>&rsquo;.
+</p>
+</dd>
+<dt>Sparc App Regs</dt>
+<dd><a name="index-Sparc-1"></a>
+<p>The GMP assembly code for both 32-bit and 64-bit Sparc clobbers the
+&ldquo;application registers&rdquo; <code>g2</code>, <code>g3</code> and <code>g4</code>, the same way
+that the GCC default &lsquo;<samp>-mapp-regs</samp>&rsquo; does (see <a href="http://gcc.gnu.org/onlinedocs/gcc/SPARC-Options.html#SPARC-Options">SPARC
+Options</a> in <cite>Using the GNU Compiler Collection (GCC)</cite>).
+</p>
+<p>This makes that code unsuitable for use with the special V9
+&lsquo;<samp>-mcmodel=embmedany</samp>&rsquo; (which uses <code>g4</code> as a data segment pointer), and
+for applications wanting to use those registers for special purposes.  In these
+cases the only suggestion currently is to build GMP with
+<samp>--disable-assembly</samp> to avoid the assembly code.
+</p>
+</dd>
+<dt>SunOS 4</dt>
+<dd><a name="index-SunOS"></a>
+<p><code>/usr/bin/m4</code> lacks various features needed to process <samp>.asm</samp>
+files, and instead &lsquo;<samp>./configure</samp>&rsquo; will automatically use
+<code>/usr/5bin/m4</code>, which we believe is always available (if not then use
+GNU m4).
+</p>
+</dd>
+<dt>x86 CPU Types</dt>
+<dd><a name="index-x86"></a>
+<a name="index-80x86"></a>
+<a name="index-i386"></a>
+<p>&lsquo;<samp>i586</samp>&rsquo;, &lsquo;<samp>pentium</samp>&rsquo; or &lsquo;<samp>pentiummmx</samp>&rsquo; code is good for its intended
+P5 Pentium chips, but quite slow when run on Intel P6 class chips (PPro, P-II,
+P-III).  &lsquo;<samp>i386</samp>&rsquo; is a better choice when making binaries that must run on
+both.
+</p>
+</dd>
+<dt>x86 MMX and SSE2 Code</dt>
+<dd><a name="index-MMX"></a>
+<a name="index-SSE2"></a>
+<p>If the CPU selected has MMX code but the assembler doesn&rsquo;t support it, a
+warning is given and non-MMX code is used instead.  This will be an inferior
+build, since the MMX code that&rsquo;s present is there because it&rsquo;s faster than the
+corresponding plain integer code.  The same applies to SSE2.
+</p>
+<p>Old versions of &lsquo;<samp>gas</samp>&rsquo; don&rsquo;t support MMX instructions, in particular
+version 1.92.3 that comes with FreeBSD 2.2.8 or the more recent OpenBSD 3.1
+doesn&rsquo;t.
+</p>
+<p>Solaris 2.6 and 2.7 <code>as</code> generate incorrect object code for register
+to register <code>movq</code> instructions, and so can&rsquo;t be used for MMX code.
+Install a recent <code>gas</code> if MMX code is wanted on these systems.
+</p></dd>
+</dl>
+
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Known-Build-Problems.html#Known-Build-Problems" accesskey="n" rel="next">Known Build Problems</a>, Previous: <a href="Notes-for-Package-Builds.html#Notes-for-Package-Builds" accesskey="p" rel="prev">Notes for Package Builds</a>, Up: <a href="Installing-GMP.html#Installing-GMP" accesskey="u" rel="up">Installing GMP</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

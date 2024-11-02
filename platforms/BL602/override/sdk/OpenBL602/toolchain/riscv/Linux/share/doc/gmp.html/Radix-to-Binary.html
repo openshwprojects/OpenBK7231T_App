@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Radix to Binary</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Radix to Binary">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Radix-Conversion-Algorithms.html#Radix-Conversion-Algorithms" rel="up" title="Radix Conversion Algorithms">
+<link href="Other-Algorithms.html#Other-Algorithms" rel="next" title="Other Algorithms">
+<link href="Binary-to-Radix.html#Binary-to-Radix" rel="prev" title="Binary to Radix">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Radix-to-Binary"></a>
+<div class="header">
+<p>
+Previous: <a href="Binary-to-Radix.html#Binary-to-Radix" accesskey="p" rel="prev">Binary to Radix</a>, Up: <a href="Radix-Conversion-Algorithms.html#Radix-Conversion-Algorithms" accesskey="u" rel="up">Radix Conversion Algorithms</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Radix-to-Binary-1"></a>
+<h4 class="subsection">15.6.2 Radix to Binary</h4>
+
+<p><strong>This section needs to be rewritten, it currently describes the
+algorithms used before GMP 4.3.</strong>
+</p>
+<p>Conversions from a power-of-2 radix into binary use a simple and fast
+<em>O(N)</em> bitwise concatenation algorithm.
+</p>
+<p>Conversions from other radices use one of two algorithms.  Sizes below
+<code>SET_STR_PRECOMPUTE_THRESHOLD</code> use a basic <em>O(N^2)</em> method.  Groups
+of <em>n</em> digits are converted to limbs, where <em>n</em> is the biggest
+power of the base <em>b</em> which will fit in a limb, then those groups are
+accumulated into the result by multiplying by <em>b^n</em> and adding.  This
+saves multi-precision operations, as per Knuth section 4.4 part E
+(see <a href="References.html#References">References</a>).  Some special case code is provided for decimal, giving
+the compiler a chance to optimize multiplications by 10.
+</p>
+<p>Above <code>SET_STR_PRECOMPUTE_THRESHOLD</code> a sub-quadratic algorithm is used.
+First groups of <em>n</em> digits are converted into limbs.  Then adjacent
+limbs are combined into limb pairs with <em>x*b^n+y</em>, where <em>x</em>
+and <em>y</em> are the limbs.  Adjacent limb pairs are combined into quads
+similarly with <em>x*b^(2n)+y</em>.  This continues until a single block
+remains, that being the result.
+</p>
+<p>The advantage of this method is that the multiplications for each <em>x</em> are
+big blocks, allowing Karatsuba and higher algorithms to be used.  But the cost
+of calculating the powers <em>b^(n*2^i)</em> must be overcome.
+<code>SET_STR_PRECOMPUTE_THRESHOLD</code> usually ends up quite big, around 5000 digits, and on
+some processors much bigger still.
+</p>
+<p><code>SET_STR_PRECOMPUTE_THRESHOLD</code> is based on the input digits (and tuned
+for decimal), though it might be better based on a limb count, so as to be
+independent of the base.  But that sort of count isn&rsquo;t used by the base case
+and so would need some sort of initial calculation or estimate.
+</p>
+<p>The main reason <code>SET_STR_PRECOMPUTE_THRESHOLD</code> is so much bigger than the
+corresponding <code>GET_STR_PRECOMPUTE_THRESHOLD</code> is that <code>mpn_mul_1</code> is
+much faster than <code>mpn_divrem_1</code> (often by a factor of 5, or more).
+</p>
+
+<hr>
+<div class="header">
+<p>
+Previous: <a href="Binary-to-Radix.html#Binary-to-Radix" accesskey="p" rel="prev">Binary to Radix</a>, Up: <a href="Radix-Conversion-Algorithms.html#Radix-Conversion-Algorithms" accesskey="u" rel="up">Radix Conversion Algorithms</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

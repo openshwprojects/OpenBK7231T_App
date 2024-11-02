@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Embed with GNU: PA-RISC</title>
+
+<meta name="description" content="Embed with GNU: PA-RISC">
+<meta name="keywords" content="Embed with GNU: PA-RISC">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="leds_002ec.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Supported-targets.html#Supported-targets" rel="up" title="Supported targets">
+<link href="Building-libgloss.html#Building-libgloss" rel="next" title="Building libgloss">
+<link href="Mips.html#Mips" rel="prev" title="Mips">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="PA_002dRISC"></a>
+<div class="header">
+<p>
+Previous: <a href="Mips.html#Mips" accesskey="p" rel="prev">Mips</a>, Up: <a href="Supported-targets.html#Supported-targets" accesskey="u" rel="up">Supported targets</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<a name="PA_002dRISC-Targets-Supported"></a>
+<h4 class="subsection">1.1.4 PA-RISC Targets Supported</h4>
+<p>This supports the various boards manufactured by the HP-PRO consortium.
+This is a group of companies all making variations on the PA-RISC
+processor. Currently supported are ports to the WinBond &lsquo;<samp>Cougar</samp>&rsquo;
+board based around their w89k version of the PA. Also supported is the
+Oki op50n processor.
+</p>
+<p>There is also included, but never built an unfinished port to the HP 743
+board. This board is the main CPU board for the HP700 line of industrial
+computers. This target isn&rsquo;t exactly an embedded system, in fact it&rsquo;s
+really only designed to load and run HP-UX. Still, the crt0.S and I/O
+code are fully working. It is included mostly because their is a barely
+functioning exception handler GDB debug stub, and I hope somebody could
+use it. The other PRO targets all use GDB&rsquo;s ability to talk to ROM
+monitors directly, so it doesn&rsquo;t need a debug stub. There is also a
+utility that will produce a bootable file by HP&rsquo;s ROM monitor. This is
+all included in the hopes somebody else will finish it. :-)
+</p>
+<p>Both the WinBond board and the Oki board download srecords. The WinBond
+board also has support for loading the SOM files as produced by the
+native compiler on HP-UX. WinBond supplies a set of DOS programs that
+will allow the loading of files via a bidirectional parallel port. This
+has never been tested with the output of GNU SOM, as this manual is
+mostly for Unix based systems. 
+</p>
+
+
+
+</body>
+</html>

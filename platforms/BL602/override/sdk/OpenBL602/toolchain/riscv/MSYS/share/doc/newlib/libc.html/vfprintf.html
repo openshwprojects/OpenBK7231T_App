@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: vfprintf</title>
+
+<meta name="description" content="The Red Hat newlib C Library: vfprintf">
+<meta name="keywords" content="The Red Hat newlib C Library: vfprintf">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="vfscanf.html#vfscanf" rel="next" title="vfscanf">
+<link href="ungetwc.html#ungetwc" rel="prev" title="ungetwc">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="vfprintf"></a>
+<div class="header">
+<p>
+Next: <a href="vfscanf.html#vfscanf" accesskey="n" rel="next">vfscanf</a>, Previous: <a href="ungetwc.html#ungetwc" accesskey="p" rel="prev">ungetwc</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="vfprintf_002c-vprintf_002c-vsprintf_002c-vsnprintf_002c-vasprintf_002c-vasnprintf_002d_002d_002dformat-argument-list"></a>
+<h3 class="section">4.70 <code>vfprintf</code>, <code>vprintf</code>, <code>vsprintf</code>, <code>vsnprintf</code>, <code>vasprintf</code>, <code>vasnprintf</code>&mdash;format argument list</h3>
+<a name="index-vfprintf"></a>
+<a name="index-_005fvfprintf_005fr"></a>
+<a name="index-vprintf"></a>
+<a name="index-_005fvprintf_005fr"></a>
+<a name="index-vsprintf"></a>
+<a name="index-_005fvsprintf_005fr"></a>
+<a name="index-vsnprintf"></a>
+<a name="index-_005fvsnprintf_005fr"></a>
+<a name="index-vasprintf"></a>
+<a name="index-_005fvasprintf_005fr"></a>
+<a name="index-vasnprintf"></a>
+<a name="index-_005fvasnprintf_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+#include &lt;stdarg.h&gt;
+int vprintf(const char *<var>fmt</var>, va_list <var>list</var>);
+int vfprintf(FILE *<var>fp</var>, const char *<var>fmt</var>, va_list <var>list</var>);
+int vsprintf(char *<var>str</var>, const char *<var>fmt</var>, va_list <var>list</var>);
+int vsnprintf(char *<var>str</var>, size_t <var>size</var>, const char *<var>fmt</var>,
+    va_list <var>list</var>);
+int vasprintf(char **<var>strp</var>, const char *<var>fmt</var>, va_list <var>list</var>);
+char *vasnprintf(char *<var>str</var>, size_t *<var>size</var>, const char *<var>fmt</var>,
+    va_list <var>list</var>);
+
+int _vprintf_r(struct _reent *<var>reent</var>, const char *<var>fmt</var>,
+    va_list <var>list</var>);
+int _vfprintf_r(struct _reent *<var>reent</var>, FILE *<var>fp</var>,
+    const char *<var>fmt</var>, va_list <var>list</var>);
+int _vsprintf_r(struct _reent *<var>reent</var>, char *<var>str</var>,
+    const char *<var>fmt</var>, va_list <var>list</var>);
+int _vasprintf_r(struct _reent *<var>reent</var>, char **<var>str</var>,
+    const char *<var>fmt</var>, va_list <var>list</var>);
+int _vsnprintf_r(struct _reent *<var>reent</var>, char *<var>str</var>,
+    size_t <var>size</var>, const char *<var>fmt</var>, va_list <var>list</var>);
+char *_vasnprintf_r(struct _reent *<var>reent</var>, char *<var>str</var>,
+    size_t *<var>size</var>, const char *<var>fmt</var>, va_list <var>list</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>vprintf</code>, <code>vfprintf</code>, <code>vasprintf</code>, <code>vsprintf</code>, <code>vsnprintf</code>,
+and <code>vasnprintf</code> are (respectively) variants of <code>printf</code>,
+<code>fprintf</code>, <code>asprintf</code>, <code>sprintf</code>, <code>snprintf</code>, and
+<code>asnprintf</code>.  They differ only in allowing their caller to pass the
+variable argument list as a <code>va_list</code> object (initialized by
+<code>va_start</code>) rather than directly accepting a variable number of
+arguments.  The caller is responsible for calling <code>va_end</code>.
+</p>
+<p><code>_vprintf_r</code>, <code>_vfprintf_r</code>, <code>_vasprintf_r</code>, <code>_vsprintf_r</code>,
+<code>_vsnprintf_r</code>, and <code>_vasnprintf_r</code> are reentrant versions of the
+above.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+The return values are consistent with the corresponding functions.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+ANSI C requires <code>vprintf</code>, <code>vfprintf</code>, <code>vsprintf</code>, and
+<code>vsnprintf</code>.  The remaining functions are newlib extensions.
+</p>
+<p>Supporting OS subroutines required: <code>close</code>, <code>fstat</code>, <code>isatty</code>,
+<code>lseek</code>, <code>read</code>, <code>sbrk</code>, <code>write</code>.
+</p>
+<br>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="vfscanf.html#vfscanf" accesskey="n" rel="next">vfscanf</a>, Previous: <a href="ungetwc.html#ungetwc" accesskey="p" rel="prev">ungetwc</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

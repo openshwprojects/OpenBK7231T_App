@@ -1,0 +1,126 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: fgets</title>
+
+<meta name="description" content="The Red Hat newlib C Library: fgets">
+<meta name="keywords" content="The Red Hat newlib C Library: fgets">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="fgetwc.html#fgetwc" rel="next" title="fgetwc">
+<link href="fgetpos.html#fgetpos" rel="prev" title="fgetpos">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="fgets"></a>
+<div class="header">
+<p>
+Next: <a href="fgetwc.html#fgetwc" accesskey="n" rel="next">fgetwc</a>, Previous: <a href="fgetpos.html#fgetpos" accesskey="p" rel="prev">fgetpos</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="fgets_002c-fgets_005funlocked_002d_002d_002dget-character-string-from-a-file-or-stream"></a>
+<h3 class="section">4.12 <code>fgets</code>, <code>fgets_unlocked</code>&mdash;get character string from a file or stream</h3>
+<a name="index-fgets"></a>
+<a name="index-fgets_005funlocked"></a>
+<a name="index-_005ffgets_005fr"></a>
+<a name="index-_005ffgets_005funlocked_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+char *fgets(char *restrict <var>buf</var>, int <var>n</var>, FILE *restrict <var>fp</var>);
+
+#define _GNU_SOURCE
+#include &lt;stdio.h&gt;
+char *fgets_unlocked(char *restrict <var>buf</var>, int <var>n</var>, FILE *restrict <var>fp</var>);
+
+#include &lt;stdio.h&gt;
+char *_fgets_r(struct _reent *<var>ptr</var>, char *restrict <var>buf</var>, int <var>n</var>, FILE *restrict <var>fp</var>);
+
+#include &lt;stdio.h&gt;
+char *_fgets_unlocked_r(struct _reent *<var>ptr</var>, char *restrict <var>buf</var>, int <var>n</var>, FILE *restrict <var>fp</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+Reads at most <var>n-1</var> characters from <var>fp</var> until a newline
+is found. The characters including to the newline are stored
+in <var>buf</var>. The buffer is terminated with a 0.
+</p>
+<p><code>fgets_unlocked</code> is a non-thread-safe version of <code>fgets</code>.
+<code>fgets_unlocked</code> may only safely be used within a scope
+protected by flockfile() (or ftrylockfile()) and funlockfile().  This
+function may safely be used in a multi-threaded program if and only
+if they are called while the invoking thread owns the (FILE *)
+object, as is the case after a successful call to the flockfile() or
+ftrylockfile() functions.  If threads are disabled, then
+<code>fgets_unlocked</code> is equivalent to <code>fgets</code>.
+</p>
+<p>The functions <code>_fgets_r</code> and <code>_fgets_unlocked_r</code> are simply
+reentrant versions that are passed the additional reentrant structure
+pointer argument: <var>ptr</var>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>fgets</code> returns the buffer passed to it, with the data
+filled in. If end of file occurs with some data already
+accumulated, the data is returned with no other indication. If
+no data are read, NULL is returned instead.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>fgets</code> should replace all uses of <code>gets</code>. Note however
+that <code>fgets</code> returns all of the data, while <code>gets</code> removes
+the trailing newline (with no indication that it has done so.)
+</p>
+<p><code>fgets_unlocked</code> is a GNU extension.
+</p>
+<p>Supporting OS subroutines required: <code>close</code>, <code>fstat</code>, <code>isatty</code>,
+<code>lseek</code>, <code>read</code>, <code>sbrk</code>, <code>write</code>.
+</p>
+<br>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="fgetwc.html#fgetwc" accesskey="n" rel="next">fgetwc</a>, Previous: <a href="fgetpos.html#fgetpos" accesskey="p" rel="prev">fgetpos</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

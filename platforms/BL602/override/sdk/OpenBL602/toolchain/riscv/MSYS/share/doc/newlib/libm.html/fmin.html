@@ -1,0 +1,87 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>LIBM: fmin</title>
+
+<meta name="description" content="LIBM: fmin">
+<meta name="keywords" content="LIBM: fmin">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Math.html#Math" rel="up" title="Math">
+<link href="fmod.html#fmod" rel="next" title="fmod">
+<link href="fmax.html#fmax" rel="prev" title="fmax">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="fmin"></a>
+<div class="header">
+<p>
+Next: <a href="fmod.html#fmod" accesskey="n" rel="next">fmod</a>, Previous: <a href="fmax.html#fmax" accesskey="p" rel="prev">fmax</a>, Up: <a href="Math.html#Math" accesskey="u" rel="up">Math</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="fmin_002c-fminf_002d_002d_002dminimum"></a>
+<h3 class="section">1.24 <code>fmin</code>, <code>fminf</code>&mdash;minimum</h3>
+<a name="index-fmin"></a>
+<a name="index-fminf"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;math.h&gt;
+double fmin(double <var>x</var>, double <var>y</var>);
+float fminf(float <var>x</var>, float <var>y</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+The <code>fmin</code> functions determine the minimum numeric value of their arguments.
+NaN arguments are treated as missing data:  if one argument is a NaN and the
+other numeric, then the <code>fmin</code> functions choose the numeric value.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+The <code>fmin</code> functions return the minimum numeric value of their arguments.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+ANSI C, POSIX.
+</p>
+
+<br>
+
+
+
+</body>
+</html>

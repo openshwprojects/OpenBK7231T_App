@@ -1,0 +1,111 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Toom 4-Way Multiplication</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Toom 4-Way Multiplication">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Multiplication-Algorithms.html#Multiplication-Algorithms" rel="up" title="Multiplication Algorithms">
+<link href="Higher-degree-Toom_0027n_0027half.html#Higher-degree-Toom_0027n_0027half" rel="next" title="Higher degree Toom'n'half">
+<link href="Toom-3_002dWay-Multiplication.html#Toom-3_002dWay-Multiplication" rel="prev" title="Toom 3-Way Multiplication">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Toom-4_002dWay-Multiplication"></a>
+<div class="header">
+<p>
+Next: <a href="Higher-degree-Toom_0027n_0027half.html#Higher-degree-Toom_0027n_0027half" accesskey="n" rel="next">Higher degree Toom'n'half</a>, Previous: <a href="Toom-3_002dWay-Multiplication.html#Toom-3_002dWay-Multiplication" accesskey="p" rel="prev">Toom 3-Way Multiplication</a>, Up: <a href="Multiplication-Algorithms.html#Multiplication-Algorithms" accesskey="u" rel="up">Multiplication Algorithms</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Toom-4_002dWay-Multiplication-1"></a>
+<h4 class="subsection">15.1.4 Toom 4-Way Multiplication</h4>
+<a name="index-Toom-multiplication-1"></a>
+
+<p>Karatsuba and Toom-3 split the operands into 2 and 3 coefficients,
+respectively.  Toom-4 analogously splits the operands into 4 coefficients.
+Using the notation from the section on Toom-3 multiplication, we form two
+polynomials:
+</p>
+<div class="display">
+<pre class="display"><em>X(t) = x3*t^3 + x2*t^2 + x1*t + x0</em>
+<em>Y(t) = y3*t^3 + y2*t^2 + y1*t + y0</em>
+</pre></div>
+
+<p><em>X(t)</em> and <em>Y(t)</em> are evaluated and multiplied at 7 points, giving
+values of <em>W(t)</em> at those points.  In GMP the following points are used,
+</p>
+<blockquote>
+<table>
+<tr><td>Point</td><td>Value</td></tr>
+<tr><td><em>t=0</em></td><td><em>x0 * y0</em>, which gives w0 immediately</td></tr>
+<tr><td><em>t=1/2</em></td><td><em>(x3+2*x2+4*x1+8*x0) * (y3+2*y2+4*y1+8*y0)</em></td></tr>
+<tr><td><em>t=-1/2</em></td><td><em>(-x3+2*x2-4*x1+8*x0) * (-y3+2*y2-4*y1+8*y0)</em></td></tr>
+<tr><td><em>t=1</em></td><td><em>(x3+x2+x1+x0) * (y3+y2+y1+y0)</em></td></tr>
+<tr><td><em>t=-1</em></td><td><em>(-x3+x2-x1+x0) * (-y3+y2-y1+y0)</em></td></tr>
+<tr><td><em>t=2</em></td><td><em>(8*x3+4*x2+2*x1+x0) * (8*y3+4*y2+2*y1+y0)</em></td></tr>
+<tr><td><em>t=inf</em></td><td><em>x3 * y3</em>, which gives w6 immediately</td></tr>
+</table>
+</blockquote>
+
+<p>The number of additions and subtractions for Toom-4 is much larger than for Toom-3.
+But several subexpressions occur multiple times, for example <em>x2+x0</em>, occurs
+for both <em>t=1</em> and <em>t=-1</em>.
+</p>
+<p>Toom-4 is asymptotically <em>O(N^1.404<!-- /@w -->)</em>, the exponent being
+<em>log(7)/log(4)</em>, representing 7 recursive multiplies of 1/4 the
+original size each.
+</p>
+
+
+
+
+</body>
+</html>

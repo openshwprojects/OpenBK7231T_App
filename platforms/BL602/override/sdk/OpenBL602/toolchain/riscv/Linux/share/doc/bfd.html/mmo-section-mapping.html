@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This file documents the BFD library.
+
+Copyright (C) 1991-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "GNU General Public License" and "Funding
+Free Software", the Front-Cover texts being (a) (see below), and with
+the Back-Cover Texts being (b) (see below).  A copy of the license is
+included in the section entitled "GNU Free Documentation License".
+
+(a) The FSF's Front-Cover Text is:
+
+A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Untitled Document: mmo section mapping</title>
+
+<meta name="description" content="Untitled Document: mmo section mapping">
+<meta name="keywords" content="Untitled Document: mmo section mapping">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="BFD-Index.html#BFD-Index" rel="index" title="BFD Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="mmo.html#mmo" rel="up" title="mmo">
+<link href="GNU-Free-Documentation-License.html#GNU-Free-Documentation-License" rel="next" title="GNU Free Documentation License">
+<link href="Symbol_002dtable.html#Symbol_002dtable" rel="prev" title="Symbol-table">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="mmo-section-mapping"></a>
+<div class="header">
+<p>
+Previous: <a href="Symbol_002dtable.html#Symbol_002dtable" accesskey="p" rel="prev">Symbol-table</a>, Up: <a href="mmo.html#mmo" accesskey="u" rel="up">mmo</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="BFD-Index.html#BFD-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="mmo-section-mapping-1"></a>
+<h4 class="subsection">3.5.3 mmo section mapping</h4>
+<p>The implementation in BFD uses special data type 80 (decimal) to
+encapsulate and describe named sections, containing e.g. debug
+information.  If needed, any datum in the encapsulation will be
+quoted using lop_quote.  First comes a 32-bit word holding the
+number of 32-bit words containing the zero-terminated zero-padded
+segment name.  After the name there&rsquo;s a 32-bit word holding flags
+describing the section type.  Then comes a 64-bit big-endian word
+with the section length (in bytes), then another with the section
+start address.  Depending on the type of section, the contents
+might follow, zero-padded to 32-bit boundary.  For a loadable
+section (such as data or code), the contents might follow at some
+later point, not necessarily immediately, as a lop_loc with the
+same start address as in the section description, followed by the
+contents.  This in effect forms a descriptor that must be emitted
+before the actual contents.  Sections described this way must not
+overlap.
+</p>
+<p>For areas that don&rsquo;t have such descriptors, synthetic sections are
+formed by BFD.  Consecutive contents in the two memory areas
+&lsquo;<samp>0x0000&hellip;00</samp>&rsquo; to &lsquo;<samp>0x01ff&hellip;ff</samp>&rsquo; and
+&lsquo;<samp>0x2000&hellip;00</samp>&rsquo; to &lsquo;<samp>0x20ff&hellip;ff</samp>&rsquo; are entered in
+sections named <code>.text</code> and <code>.data</code> respectively.  If an area
+is not otherwise described, but would together with a neighboring
+lower area be less than &lsquo;<samp>0x40000000</samp>&rsquo; bytes long, it is joined
+with the lower area and the gap is zero-filled.  For other cases,
+a new section is formed, named <code>.MMIX.sec.<var>n</var></code>.  Here,
+<var>n</var> is a number, a running count through the mmo file,
+starting at 0.
+</p>
+<p>A loadable section specified as:
+</p>
+<div class="example">
+<pre class="example"> .section secname,&quot;ax&quot;
+ TETRA 1,2,3,4,-1,-2009
+ BYTE 80
+</pre></div>
+
+<p>and linked to address &lsquo;<samp>0x4</samp>&rsquo;, is represented by the sequence:
+</p>
+<div class="example">
+<pre class="example"> 0x98080050 - lop_spec 80
+ 0x00000002 - two 32-bit words for the section name
+ 0x7365636e - &quot;secn&quot;
+ 0x616d6500 - &quot;ame\0&quot;
+ 0x00000033 - flags CODE, READONLY, LOAD, ALLOC
+ 0x00000000 - high 32 bits of section length
+ 0x0000001c - section length is 28 bytes; 6 * 4 + 1 + alignment to 32 bits
+ 0x00000000 - high 32 bits of section address
+ 0x00000004 - section address is 4
+ 0x98010002 - 64 bits with address of following data
+ 0x00000000 - high 32 bits of address
+ 0x00000004 - low 32 bits: data starts at address 4
+ 0x00000001 - 1
+ 0x00000002 - 2
+ 0x00000003 - 3
+ 0x00000004 - 4
+ 0xffffffff - -1
+ 0xfffff827 - -2009
+ 0x50000000 - 80 as a byte, padded with zeros.
+</pre></div>
+
+<p>Note that the lop_spec wrapping does not include the section
+contents.  Compare this to a non-loaded section specified as:
+</p>
+<div class="example">
+<pre class="example"> .section thirdsec
+ TETRA 200001,100002
+ BYTE 38,40
+</pre></div>
+
+<p>This, when linked to address &lsquo;<samp>0x200000000000001c</samp>&rsquo;, is
+represented by:
+</p>
+<div class="example">
+<pre class="example"> 0x98080050 - lop_spec 80
+ 0x00000002 - two 32-bit words for the section name
+ 0x7365636e - &quot;thir&quot;
+ 0x616d6500 - &quot;dsec&quot;
+ 0x00000010 - flag READONLY
+ 0x00000000 - high 32 bits of section length
+ 0x0000000c - section length is 12 bytes; 2 * 4 + 2 + alignment to 32 bits
+ 0x20000000 - high 32 bits of address
+ 0x0000001c - low 32 bits of address 0x200000000000001c
+ 0x00030d41 - 200001
+ 0x000186a2 - 100002
+ 0x26280000 - 38, 40 as bytes, padded with zeros
+</pre></div>
+
+<p>For the latter example, the section contents must not be
+loaded in memory, and is therefore specified as part of the
+special data.  The address is usually unimportant but might
+provide information for e.g. the DWARF 2 debugging format.
+</p>
+<hr>
+<div class="header">
+<p>
+Previous: <a href="Symbol_002dtable.html#Symbol_002dtable" accesskey="p" rel="prev">Symbol-table</a>, Up: <a href="mmo.html#mmo" accesskey="u" rel="up">mmo</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="BFD-Index.html#BFD-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

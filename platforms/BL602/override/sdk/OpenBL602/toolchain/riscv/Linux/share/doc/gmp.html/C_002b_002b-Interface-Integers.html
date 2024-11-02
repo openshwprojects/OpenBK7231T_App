@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: C++ Interface Integers</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: C++ Interface Integers">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="C_002b_002b-Class-Interface.html#C_002b_002b-Class-Interface" rel="up" title="C++ Class Interface">
+<link href="C_002b_002b-Interface-Rationals.html#C_002b_002b-Interface-Rationals" rel="next" title="C++ Interface Rationals">
+<link href="C_002b_002b-Interface-General.html#C_002b_002b-Interface-General" rel="prev" title="C++ Interface General">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="C_002b_002b-Interface-Integers"></a>
+<div class="header">
+<p>
+Next: <a href="C_002b_002b-Interface-Rationals.html#C_002b_002b-Interface-Rationals" accesskey="n" rel="next">C++ Interface Rationals</a>, Previous: <a href="C_002b_002b-Interface-General.html#C_002b_002b-Interface-General" accesskey="p" rel="prev">C++ Interface General</a>, Up: <a href="C_002b_002b-Class-Interface.html#C_002b_002b-Class-Interface" accesskey="u" rel="up">C++ Class Interface</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="C_002b_002b-Interface-Integers-1"></a>
+<h3 class="section">12.2 C++ Interface Integers</h3>
+
+<dl>
+<dt><a name="index-mpz_005fclass_003a_003ampz_005fclass"></a>Function: <em></em> <strong>mpz_class::mpz_class</strong> <em>(type <var>n</var>)</em></dt>
+<dd><p>Construct an <code>mpz_class</code>.  All the standard C++ types may be used, except
+<code>long long</code> and <code>long double</code>, and all the GMP C++ classes can be
+used, although conversions from <code>mpq_class</code> and <code>mpf_class</code> are
+<code>explicit</code>.  Any necessary conversion follows the corresponding C
+function, for example <code>double</code> follows <code>mpz_set_d</code>
+(see <a href="Assigning-Integers.html#Assigning-Integers">Assigning Integers</a>).
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpz_005fclass_003a_003ampz_005fclass-1"></a>Function: <em>explicit</em> <strong>mpz_class::mpz_class</strong> <em>(const mpz_t <var>z</var>)</em></dt>
+<dd><p>Construct an <code>mpz_class</code> from an <code>mpz_t</code>.  The value in <var>z</var> is
+copied into the new <code>mpz_class</code>, there won&rsquo;t be any permanent association
+between it and <var>z</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpz_005fclass_003a_003ampz_005fclass-2"></a>Function: <em>explicit</em> <strong>mpz_class::mpz_class</strong> <em>(const char *<var>s</var>, int <var>base</var> = 0)</em></dt>
+<dt><a name="index-mpz_005fclass_003a_003ampz_005fclass-3"></a>Function: <em>explicit</em> <strong>mpz_class::mpz_class</strong> <em>(const string&amp; <var>s</var>, int <var>base</var> = 0)</em></dt>
+<dd><p>Construct an <code>mpz_class</code> converted from a string using <code>mpz_set_str</code>
+(see <a href="Assigning-Integers.html#Assigning-Integers">Assigning Integers</a>).
+</p>
+<p>If the string is not a valid integer, an <code>std::invalid_argument</code>
+exception is thrown.  The same applies to <code>operator=</code>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-operator_0022_0022"></a>Function: <em>mpz_class</em> <strong>operator&quot;&quot;</strong> <em>_mpz (const char *<var>str</var>)</em></dt>
+<dd><p>With C++11 compilers, integers can be constructed with the syntax
+<code>123_mpz</code> which is equivalent to <code>mpz_class(&quot;123&quot;)</code>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-operator_002f"></a>Function: <em>mpz_class</em> <strong>operator/</strong> <em>(mpz_class <var>a</var>, mpz_class <var>d</var>)</em></dt>
+<dt><a name="index-operator_0025"></a>Function: <em>mpz_class</em> <strong>operator%</strong> <em>(mpz_class <var>a</var>, mpz_class <var>d</var>)</em></dt>
+<dd><p>Divisions involving <code>mpz_class</code> round towards zero, as per the
+<code>mpz_tdiv_q</code> and <code>mpz_tdiv_r</code> functions (see <a href="Integer-Division.html#Integer-Division">Integer Division</a>).
+This is the same as the C99 <code>/</code> and <code>%</code> operators.
+</p>
+<p>The <code>mpz_fdiv&hellip;</code> or <code>mpz_cdiv&hellip;</code> functions can always be called
+directly if desired.  For example,
+</p>
+<div class="example">
+<pre class="example">mpz_class q, a, d;
+...
+mpz_fdiv_q (q.get_mpz_t(), a.get_mpz_t(), d.get_mpz_t());
+</pre></div>
+</dd></dl>
+
+<dl>
+<dt><a name="index-abs"></a>Function: <em>mpz_class</em> <strong>abs</strong> <em>(mpz_class <var>op</var>)</em></dt>
+<dt><a name="index-cmp"></a>Function: <em>int</em> <strong>cmp</strong> <em>(mpz_class <var>op1</var>, type <var>op2</var>)</em></dt>
+<dt><a name="index-cmp-1"></a>Function: <em>int</em> <strong>cmp</strong> <em>(type <var>op1</var>, mpz_class <var>op2</var>)</em></dt>
+<dt><a name="index-mpz_005fclass_003a_003afits_005fsint_005fp"></a>Function: <em>bool</em> <strong>mpz_class::fits_sint_p</strong> <em>(void)</em></dt>
+<dt><a name="index-mpz_005fclass_003a_003afits_005fslong_005fp"></a>Function: <em>bool</em> <strong>mpz_class::fits_slong_p</strong> <em>(void)</em></dt>
+<dt><a name="index-mpz_005fclass_003a_003afits_005fsshort_005fp"></a>Function: <em>bool</em> <strong>mpz_class::fits_sshort_p</strong> <em>(void)</em></dt>
+<dt><a name="index-mpz_005fclass_003a_003afits_005fuint_005fp"></a>Function: <em>bool</em> <strong>mpz_class::fits_uint_p</strong> <em>(void)</em></dt>
+<dt><a name="index-mpz_005fclass_003a_003afits_005fulong_005fp"></a>Function: <em>bool</em> <strong>mpz_class::fits_ulong_p</strong> <em>(void)</em></dt>
+<dt><a name="index-mpz_005fclass_003a_003afits_005fushort_005fp"></a>Function: <em>bool</em> <strong>mpz_class::fits_ushort_p</strong> <em>(void)</em></dt>
+<dt><a name="index-mpz_005fclass_003a_003aget_005fd"></a>Function: <em>double</em> <strong>mpz_class::get_d</strong> <em>(void)</em></dt>
+<dt><a name="index-mpz_005fclass_003a_003aget_005fsi"></a>Function: <em>long</em> <strong>mpz_class::get_si</strong> <em>(void)</em></dt>
+<dt><a name="index-mpz_005fclass_003a_003aget_005fstr"></a>Function: <em>string</em> <strong>mpz_class::get_str</strong> <em>(int <var>base</var> = 10)</em></dt>
+<dt><a name="index-mpz_005fclass_003a_003aget_005fui"></a>Function: <em>unsigned long</em> <strong>mpz_class::get_ui</strong> <em>(void)</em></dt>
+<dt><a name="index-mpz_005fclass_003a_003aset_005fstr"></a>Function: <em>int</em> <strong>mpz_class::set_str</strong> <em>(const char *<var>str</var>, int <var>base</var>)</em></dt>
+<dt><a name="index-mpz_005fclass_003a_003aset_005fstr-1"></a>Function: <em>int</em> <strong>mpz_class::set_str</strong> <em>(const string&amp; <var>str</var>, int <var>base</var>)</em></dt>
+<dt><a name="index-sgn"></a>Function: <em>int</em> <strong>sgn</strong> <em>(mpz_class <var>op</var>)</em></dt>
+<dt><a name="index-sqrt"></a>Function: <em>mpz_class</em> <strong>sqrt</strong> <em>(mpz_class <var>op</var>)</em></dt>
+<dt><a name="index-gcd"></a>Function: <em>mpz_class</em> <strong>gcd</strong> <em>(mpz_class <var>op1</var>, mpz_class <var>op2</var>)</em></dt>
+<dt><a name="index-lcm"></a>Function: <em>mpz_class</em> <strong>lcm</strong> <em>(mpz_class <var>op1</var>, mpz_class <var>op2</var>)</em></dt>
+<dt><a name="index-mpz_005fclass_003a_003aswap"></a>Function: <em>void</em> <strong>mpz_class::swap</strong> <em>(mpz_class&amp; <var>op</var>)</em></dt>
+<dt><a name="index-swap"></a>Function: <em>void</em> <strong>swap</strong> <em>(mpz_class&amp; <var>op1</var>, mpz_class&amp; <var>op2</var>)</em></dt>
+<dd><p>These functions provide a C++ class interface to the corresponding GMP C
+routines.
+</p>
+<p><code>cmp</code> can be used with any of the classes or the standard C++ types,
+except <code>long long</code> and <code>long double</code>.
+</p></dd></dl>
+
+<br>
+<p>Overloaded operators for combinations of <code>mpz_class</code> and <code>double</code>
+are provided for completeness, but it should be noted that if the given
+<code>double</code> is not an integer then the way any rounding is done is currently
+unspecified.  The rounding might take place at the start, in the middle, or at
+the end of the operation, and it might change in the future.
+</p>
+<p>Conversions between <code>mpz_class</code> and <code>double</code>, however, are defined
+to follow the corresponding C functions <code>mpz_get_d</code> and <code>mpz_set_d</code>.
+And comparisons are always made exactly, as per <code>mpz_cmp_d</code>.
+</p>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="C_002b_002b-Interface-Rationals.html#C_002b_002b-Interface-Rationals" accesskey="n" rel="next">C++ Interface Rationals</a>, Previous: <a href="C_002b_002b-Interface-General.html#C_002b_002b-Interface-General" accesskey="p" rel="prev">C++ Interface General</a>, Up: <a href="C_002b_002b-Class-Interface.html#C_002b_002b-Class-Interface" accesskey="u" rel="up">C++ Class Interface</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

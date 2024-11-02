@@ -1,0 +1,104 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: ungetc</title>
+
+<meta name="description" content="The Red Hat newlib C Library: ungetc">
+<meta name="keywords" content="The Red Hat newlib C Library: ungetc">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="ungetwc.html#ungetwc" rel="next" title="ungetwc">
+<link href="tmpnam.html#tmpnam" rel="prev" title="tmpnam">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="ungetc"></a>
+<div class="header">
+<p>
+Next: <a href="ungetwc.html#ungetwc" accesskey="n" rel="next">ungetwc</a>, Previous: <a href="tmpnam.html#tmpnam" accesskey="p" rel="prev">tmpnam</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="ungetc_002d_002d_002dpush-data-back-into-a-stream"></a>
+<h3 class="section">4.68 <code>ungetc</code>&mdash;push data back into a stream</h3>
+<a name="index-ungetc"></a>
+<a name="index-_005fungetc_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+int ungetc(int <var>c</var>, FILE *<var>stream</var>);
+
+int _ungetc_r(struct _reent *<var>reent</var>, int <var>c</var>, FILE *<var>stream</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>ungetc</code> is used to return bytes back to <var>stream</var> to be read again.
+If <var>c</var> is EOF, the stream is unchanged.  Otherwise, the unsigned
+char <var>c</var> is put back on the stream, and subsequent reads will see
+the bytes pushed back in reverse order.  Pushed byes are lost if the
+stream is repositioned, such as by <code>fseek</code>, <code>fsetpos</code>, or
+<code>rewind</code>.
+</p>
+<p>The underlying file is not changed, but it is possible to push back
+something different than what was originally read.  Ungetting a
+character will clear the end-of-stream marker, and decrement the file
+position indicator.  Pushing back beyond the beginning of a file gives
+unspecified behavior.
+</p>
+<p>The alternate function <code>_ungetc_r</code> is a reentrant version.  The
+extra argument <var>reent</var> is a pointer to a reentrancy structure.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+The character pushed back, or <code>EOF</code> on error.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+ANSI C requires <code>ungetc</code>, but only requires a pushback buffer of one
+byte; although this implementation can handle multiple bytes, not all
+can.  Pushing back a signed char is a common application bug.
+</p>
+<p>Supporting OS subroutines required: <code>sbrk</code>.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: fputc</title>
+
+<meta name="description" content="The Red Hat newlib C Library: fputc">
+<meta name="keywords" content="The Red Hat newlib C Library: fputc">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="fputs.html#fputs" rel="next" title="fputs">
+<link href="fpurge.html#fpurge" rel="prev" title="fpurge">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="fputc"></a>
+<div class="header">
+<p>
+Next: <a href="fputs.html#fputs" accesskey="n" rel="next">fputs</a>, Previous: <a href="fpurge.html#fpurge" accesskey="p" rel="prev">fpurge</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="fputc_002c-fputc_005funlocked_002d_002d_002dwrite-a-character-on-a-stream-or-file"></a>
+<h3 class="section">4.20 <code>fputc</code>, <code>fputc_unlocked</code>&mdash;write a character on a stream or file</h3>
+<a name="index-fputc"></a>
+<a name="index-fputc_005funlocked"></a>
+<a name="index-_005ffputc_005fr"></a>
+<a name="index-_005ffputc_005funlocked_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+int fputc(int <var>ch</var>, FILE *<var>fp</var>);
+
+#define _BSD_SOURCE
+#include &lt;stdio.h&gt;
+int fputc_unlocked(int <var>ch</var>, FILE *<var>fp</var>);
+
+#include &lt;stdio.h&gt;
+int _fputc_r(struct _rent *<var>ptr</var>, int <var>ch</var>, FILE *<var>fp</var>);
+
+#include &lt;stdio.h&gt;
+int _fputc_unlocked_r(struct _rent *<var>ptr</var>, int <var>ch</var>, FILE *<var>fp</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>fputc</code> converts the argument <var>ch</var> from an <code>int</code> to an
+<code>unsigned char</code>, then writes it to the file or stream identified by
+<var>fp</var>.
+</p>
+<p>If the file was opened with append mode (or if the stream cannot
+support positioning), then the new character goes at the end of the
+file or stream.  Otherwise, the new character is written at the
+current value of the position indicator, and the position indicator
+oadvances by one.
+</p>
+<p>For a macro version of this function, see <code>putc</code>.
+</p>
+<p><code>fputc_unlocked</code> is a non-thread-safe version of <code>fputc</code>.
+<code>fputc_unlocked</code> may only safely be used within a scope
+protected by flockfile() (or ftrylockfile()) and funlockfile().  This
+function may safely be used in a multi-threaded program if and only
+if they are called while the invoking thread owns the (FILE *)
+object, as is the case after a successful call to the flockfile() or
+ftrylockfile() functions.  If threads are disabled, then
+<code>fputc_unlocked</code> is equivalent to <code>fputc</code>.
+</p>
+<p>The <code>_fputc_r</code> and <code>_fputc_unlocked_r</code> functions are simply reentrant
+versions of the above that take an additional reentrant structure
+argument: <var>ptr</var>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+If successful, <code>fputc</code> returns its argument <var>ch</var>.  If an error
+intervenes, the result is <code>EOF</code>.  You can use &lsquo;<code>ferror(<var>fp</var>)</code>&rsquo; to
+query for errors.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>fputc</code> is required by ANSI C.
+</p>
+<p><code>fputc_unlocked</code> is a BSD extension also provided by GNU libc.
+</p>
+<p>Supporting OS subroutines required: <code>close</code>, <code>fstat</code>, <code>isatty</code>,
+<code>lseek</code>, <code>read</code>, <code>sbrk</code>, <code>write</code>.
+</p>
+<br>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="fputs.html#fputs" accesskey="n" rel="next">fputs</a>, Previous: <a href="fpurge.html#fpurge" accesskey="p" rel="prev">fpurge</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

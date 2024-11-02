@@ -1,0 +1,131 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Demonstration Programs</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Demonstration Programs">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="GMP-Basics.html#GMP-Basics" rel="up" title="GMP Basics">
+<link href="Efficiency.html#Efficiency" rel="next" title="Efficiency">
+<link href="Compatibility-with-older-versions.html#Compatibility-with-older-versions" rel="prev" title="Compatibility with older versions">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Demonstration-Programs"></a>
+<div class="header">
+<p>
+Next: <a href="Efficiency.html#Efficiency" accesskey="n" rel="next">Efficiency</a>, Previous: <a href="Compatibility-with-older-versions.html#Compatibility-with-older-versions" accesskey="p" rel="prev">Compatibility with older versions</a>, Up: <a href="GMP-Basics.html#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Demonstration-programs"></a>
+<h3 class="section">3.10 Demonstration programs</h3>
+<a name="index-Demonstration-programs"></a>
+<a name="index-Example-programs"></a>
+<a name="index-Sample-programs"></a>
+<p>The <samp>demos</samp> subdirectory has some sample programs using GMP.  These
+aren&rsquo;t built or installed, but there&rsquo;s a <samp>Makefile</samp> with rules for them.
+For instance,
+</p>
+<div class="example">
+<pre class="example">make pexpr
+./pexpr 68^975+10
+</pre></div>
+
+<p>The following programs are provided
+</p>
+<ul>
+<li> <a name="index-Expression-parsing-demo"></a>
+<a name="index-Parsing-expressions-demo"></a>
+&lsquo;<samp>pexpr</samp>&rsquo; is an expression evaluator, the program used on the GMP web page.
+</li><li> <a name="index-Expression-parsing-demo-1"></a>
+<a name="index-Parsing-expressions-demo-1"></a>
+The &lsquo;<samp>calc</samp>&rsquo; subdirectory has a similar but simpler evaluator using
+<code>lex</code> and <code>yacc</code>.
+</li><li> <a name="index-Expression-parsing-demo-2"></a>
+<a name="index-Parsing-expressions-demo-2"></a>
+The &lsquo;<samp>expr</samp>&rsquo; subdirectory is yet another expression evaluator, a library
+designed for ease of use within a C program.  See <samp>demos/expr/README</samp> for
+more information.
+</li><li> <a name="index-Factorization-demo"></a>
+&lsquo;<samp>factorize</samp>&rsquo; is a Pollard-Rho factorization program.
+</li><li> &lsquo;<samp>isprime</samp>&rsquo; is a command-line interface to the <code>mpz_probab_prime_p</code>
+function.
+</li><li> &lsquo;<samp>primes</samp>&rsquo; counts or lists primes in an interval, using a sieve.
+</li><li> &lsquo;<samp>qcn</samp>&rsquo; is an example use of <code>mpz_kronecker_ui</code> to estimate quadratic
+class numbers.
+</li><li> <a name="index-perl"></a>
+<a name="index-GMP-Perl-module"></a>
+<a name="index-Perl-module"></a>
+The &lsquo;<samp>perl</samp>&rsquo; subdirectory is a comprehensive perl interface to GMP.  See
+<samp>demos/perl/INSTALL</samp> for more information.  Documentation is in POD
+format in <samp>demos/perl/GMP.pm</samp>.
+</li></ul>
+
+<p>As an aside, consideration has been given at various times to some sort of
+expression evaluation within the main GMP library.  Going beyond something
+minimal quickly leads to matters like user-defined functions, looping, fixnums
+for control variables, etc, which are considered outside the scope of GMP
+(much closer to language interpreters or compilers, See <a href="Language-Bindings.html#Language-Bindings">Language Bindings</a>.)
+Something simple for program input convenience may yet be a possibility, a
+combination of the <samp>expr</samp> demo and the <samp>pexpr</samp> tree back-end
+perhaps.  But for now the above evaluators are offered as illustrations.
+</p>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Efficiency.html#Efficiency" accesskey="n" rel="next">Efficiency</a>, Previous: <a href="Compatibility-with-older-versions.html#Compatibility-with-older-versions" accesskey="p" rel="prev">Compatibility with older versions</a>, Up: <a href="GMP-Basics.html#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

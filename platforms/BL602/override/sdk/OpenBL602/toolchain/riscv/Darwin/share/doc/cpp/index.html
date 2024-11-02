@@ -1,0 +1,382 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 1987-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation.  A copy of
+the license is included in the
+section entitled "GNU Free Documentation License".
+
+This manual contains no Invariant Sections.  The Front-Cover Texts are
+(a) (see below), and the Back-Cover Texts are (b) (see below).
+
+(a) The FSF's Front-Cover Text is:
+
+A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development. -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Top (The C Preprocessor)</title>
+
+<meta name="description" content="Top (The C Preprocessor)">
+<meta name="keywords" content="Top (The C Preprocessor)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="#Top" rel="start" title="Top">
+<link href="Index-of-Directives.html" rel="index" title="Index of Directives">
+<link href="#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Overview.html" rel="next" title="Overview">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<h1 class="settitle" align="center">The C Preprocessor</h1>
+
+
+
+
+
+
+
+
+
+
+
+
+<span id="SEC_Contents"></span>
+<h2 class="contents-heading">Table of Contents</h2>
+
+<div class="contents">
+
+<ul class="no-bullet">
+  <li><a id="toc-Overview-1" href="Overview.html#Overview">1 Overview</a>
+  <ul class="no-bullet">
+    <li><a id="toc-Character-sets-1" href="Character-sets.html#Character-sets">1.1 Character sets</a></li>
+    <li><a id="toc-Initial-processing-1" href="Initial-processing.html#Initial-processing">1.2 Initial processing</a></li>
+    <li><a id="toc-Tokenization-1" href="Tokenization.html#Tokenization">1.3 Tokenization</a></li>
+    <li><a id="toc-The-preprocessing-language-1" href="The-preprocessing-language.html#The-preprocessing-language">1.4 The preprocessing language</a></li>
+  </ul></li>
+  <li><a id="toc-Header-Files-1" href="Header-Files.html#Header-Files">2 Header Files</a>
+  <ul class="no-bullet">
+    <li><a id="toc-Include-Syntax-1" href="Include-Syntax.html#Include-Syntax">2.1 Include Syntax</a></li>
+    <li><a id="toc-Include-Operation-1" href="Include-Operation.html#Include-Operation">2.2 Include Operation</a></li>
+    <li><a id="toc-Search-Path-1" href="Search-Path.html#Search-Path">2.3 Search Path</a></li>
+    <li><a id="toc-Once_002dOnly-Headers-1" href="Once_002dOnly-Headers.html#Once_002dOnly-Headers">2.4 Once-Only Headers</a></li>
+    <li><a id="toc-Alternatives-to-Wrapper-_0023ifndef-1" href="Alternatives-to-Wrapper-_0023ifndef.html#Alternatives-to-Wrapper-_0023ifndef">2.5 Alternatives to Wrapper #ifndef</a></li>
+    <li><a id="toc-Computed-Includes-1" href="Computed-Includes.html#Computed-Includes">2.6 Computed Includes</a></li>
+    <li><a id="toc-Wrapper-Headers-1" href="Wrapper-Headers.html#Wrapper-Headers">2.7 Wrapper Headers</a></li>
+    <li><a id="toc-System-Headers-1" href="System-Headers.html#System-Headers">2.8 System Headers</a></li>
+  </ul></li>
+  <li><a id="toc-Macros-1" href="Macros.html#Macros">3 Macros</a>
+  <ul class="no-bullet">
+    <li><a id="toc-Object_002dlike-Macros-1" href="Object_002dlike-Macros.html#Object_002dlike-Macros">3.1 Object-like Macros</a></li>
+    <li><a id="toc-Function_002dlike-Macros-1" href="Function_002dlike-Macros.html#Function_002dlike-Macros">3.2 Function-like Macros</a></li>
+    <li><a id="toc-Macro-Arguments-1" href="Macro-Arguments.html#Macro-Arguments">3.3 Macro Arguments</a></li>
+    <li><a id="toc-Stringizing-1" href="Stringizing.html#Stringizing">3.4 Stringizing</a></li>
+    <li><a id="toc-Concatenation-1" href="Concatenation.html#Concatenation">3.5 Concatenation</a></li>
+    <li><a id="toc-Variadic-Macros-1" href="Variadic-Macros.html#Variadic-Macros">3.6 Variadic Macros</a></li>
+    <li><a id="toc-Predefined-Macros-1" href="Predefined-Macros.html#Predefined-Macros">3.7 Predefined Macros</a>
+    <ul class="no-bullet">
+      <li><a id="toc-Standard-Predefined-Macros-1" href="Standard-Predefined-Macros.html#Standard-Predefined-Macros">3.7.1 Standard Predefined Macros</a></li>
+      <li><a id="toc-Common-Predefined-Macros-1" href="Common-Predefined-Macros.html#Common-Predefined-Macros">3.7.2 Common Predefined Macros</a></li>
+      <li><a id="toc-System_002dspecific-Predefined-Macros-1" href="System_002dspecific-Predefined-Macros.html#System_002dspecific-Predefined-Macros">3.7.3 System-specific Predefined Macros</a></li>
+      <li><a id="toc-C_002b_002b-Named-Operators-1" href="C_002b_002b-Named-Operators.html#C_002b_002b-Named-Operators">3.7.4 C++ Named Operators</a></li>
+    </ul></li>
+    <li><a id="toc-Undefining-and-Redefining-Macros-1" href="Undefining-and-Redefining-Macros.html#Undefining-and-Redefining-Macros">3.8 Undefining and Redefining Macros</a></li>
+    <li><a id="toc-Directives-Within-Macro-Arguments-1" href="Directives-Within-Macro-Arguments.html#Directives-Within-Macro-Arguments">3.9 Directives Within Macro Arguments</a></li>
+    <li><a id="toc-Macro-Pitfalls-1" href="Macro-Pitfalls.html#Macro-Pitfalls">3.10 Macro Pitfalls</a>
+    <ul class="no-bullet">
+      <li><a id="toc-Misnesting-1" href="Misnesting.html#Misnesting">3.10.1 Misnesting</a></li>
+      <li><a id="toc-Operator-Precedence-Problems-1" href="Operator-Precedence-Problems.html#Operator-Precedence-Problems">3.10.2 Operator Precedence Problems</a></li>
+      <li><a id="toc-Swallowing-the-Semicolon-1" href="Swallowing-the-Semicolon.html#Swallowing-the-Semicolon">3.10.3 Swallowing the Semicolon</a></li>
+      <li><a id="toc-Duplication-of-Side-Effects-1" href="Duplication-of-Side-Effects.html#Duplication-of-Side-Effects">3.10.4 Duplication of Side Effects</a></li>
+      <li><a id="toc-Self_002dReferential-Macros-1" href="Self_002dReferential-Macros.html#Self_002dReferential-Macros">3.10.5 Self-Referential Macros</a></li>
+      <li><a id="toc-Argument-Prescan-1" href="Argument-Prescan.html#Argument-Prescan">3.10.6 Argument Prescan</a></li>
+      <li><a id="toc-Newlines-in-Arguments-1" href="Newlines-in-Arguments.html#Newlines-in-Arguments">3.10.7 Newlines in Arguments</a></li>
+    </ul></li>
+  </ul></li>
+  <li><a id="toc-Conditionals-1" href="Conditionals.html#Conditionals">4 Conditionals</a>
+  <ul class="no-bullet">
+    <li><a id="toc-Conditional-Uses-1" href="Conditional-Uses.html#Conditional-Uses">4.1 Conditional Uses</a></li>
+    <li><a id="toc-Conditional-Syntax-1" href="Conditional-Syntax.html#Conditional-Syntax">4.2 Conditional Syntax</a>
+    <ul class="no-bullet">
+      <li><a id="toc-Ifdef-1" href="Ifdef.html#Ifdef">4.2.1 Ifdef</a></li>
+      <li><a id="toc-If-1" href="If.html#If">4.2.2 If</a></li>
+      <li><a id="toc-Defined-1" href="Defined.html#Defined">4.2.3 Defined</a></li>
+      <li><a id="toc-Else-1" href="Else.html#Else">4.2.4 Else</a></li>
+      <li><a id="toc-Elif-1" href="Elif.html#Elif">4.2.5 Elif</a></li>
+      <li><a id="toc-_005f_005fhas_005fattribute-1" href="_005f_005fhas_005fattribute.html#g_t_005f_005fhas_005fattribute">4.2.6 <code>__has_attribute</code></a></li>
+      <li><a id="toc-_005f_005fhas_005fcpp_005fattribute-1" href="_005f_005fhas_005fcpp_005fattribute.html#g_t_005f_005fhas_005fcpp_005fattribute">4.2.7 <code>__has_cpp_attribute</code></a></li>
+      <li><a id="toc-_005f_005fhas_005fbuiltin-1" href="_005f_005fhas_005fbuiltin.html#g_t_005f_005fhas_005fbuiltin">4.2.8 <code>__has_builtin</code></a></li>
+      <li><a id="toc-_005f_005fhas_005finclude-1" href="_005f_005fhas_005finclude.html#g_t_005f_005fhas_005finclude">4.2.9 <code>__has_include</code></a></li>
+    </ul></li>
+    <li><a id="toc-Deleted-Code-1" href="Deleted-Code.html#Deleted-Code">4.3 Deleted Code</a></li>
+  </ul></li>
+  <li><a id="toc-Diagnostics-1" href="Diagnostics.html#Diagnostics">5 Diagnostics</a></li>
+  <li><a id="toc-Line-Control-1" href="Line-Control.html#Line-Control">6 Line Control</a></li>
+  <li><a id="toc-Pragmas-1" href="Pragmas.html#Pragmas">7 Pragmas</a></li>
+  <li><a id="toc-Other-Directives-1" href="Other-Directives.html#Other-Directives">8 Other Directives</a></li>
+  <li><a id="toc-Preprocessor-Output-1" href="Preprocessor-Output.html#Preprocessor-Output">9 Preprocessor Output</a></li>
+  <li><a id="toc-Traditional-Mode-1" href="Traditional-Mode.html#Traditional-Mode">10 Traditional Mode</a>
+  <ul class="no-bullet">
+    <li><a id="toc-Traditional-lexical-analysis-1" href="Traditional-lexical-analysis.html#Traditional-lexical-analysis">10.1 Traditional lexical analysis</a></li>
+    <li><a id="toc-Traditional-macros-1" href="Traditional-macros.html#Traditional-macros">10.2 Traditional macros</a></li>
+    <li><a id="toc-Traditional-miscellany-1" href="Traditional-miscellany.html#Traditional-miscellany">10.3 Traditional miscellany</a></li>
+    <li><a id="toc-Traditional-warnings-1" href="Traditional-warnings.html#Traditional-warnings">10.4 Traditional warnings</a></li>
+  </ul></li>
+  <li><a id="toc-Implementation-Details-1" href="Implementation-Details.html#Implementation-Details">11 Implementation Details</a>
+  <ul class="no-bullet">
+    <li><a id="toc-Implementation_002ddefined-behavior-1" href="Implementation_002ddefined-behavior.html#Implementation_002ddefined-behavior">11.1 Implementation-defined behavior</a></li>
+    <li><a id="toc-Implementation-limits-1" href="Implementation-limits.html#Implementation-limits">11.2 Implementation limits</a></li>
+    <li><a id="toc-Obsolete-Features-1" href="Obsolete-Features.html#Obsolete-Features">11.3 Obsolete Features</a>
+    <ul class="no-bullet">
+      <li><a id="toc-Assertions" href="Obsolete-Features.html#Assertions">11.3.1 Assertions</a></li>
+    </ul></li>
+  </ul></li>
+  <li><a id="toc-Invocation-1" href="Invocation.html#Invocation">12 Invocation</a></li>
+  <li><a id="toc-Environment-Variables-1" href="Environment-Variables.html#Environment-Variables">13 Environment Variables</a></li>
+  <li><a id="toc-GNU-Free-Documentation-License-1" href="GNU-Free-Documentation-License.html#GNU-Free-Documentation-License">GNU Free Documentation License</a>
+  <ul class="no-bullet">
+    <li><a id="toc-ADDENDUM_003a-How-to-use-this-License-for-your-documents" href="GNU-Free-Documentation-License.html#ADDENDUM_003a-How-to-use-this-License-for-your-documents">ADDENDUM: How to use this License for your documents</a></li>
+  </ul></li>
+  <li><a id="toc-Index-of-Directives-1" href="Index-of-Directives.html#Index-of-Directives" rel="index">Index of Directives</a></li>
+  <li><a id="toc-Option-Index-1" href="Option-Index.html#Option-Index" rel="index">Option Index</a></li>
+  <li><a id="toc-Concept-Index-1" href="Concept-Index.html#Concept-Index" rel="index">Concept Index</a></li>
+</ul>
+</div>
+
+
+<span id="Top"></span><div class="header">
+<p>
+Next: <a href="Overview.html" accesskey="n" rel="next">Overview</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index-of-Directives.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="SEC_Top"></span><p>The C preprocessor implements the macro language used to transform C,
+C++, and Objective-C programs before they are compiled.  It can also be
+useful on its own.
+</p>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="Overview.html" accesskey="1">Overview</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Header-Files.html" accesskey="2">Header Files</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Macros.html" accesskey="3">Macros</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Conditionals.html" accesskey="4">Conditionals</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Diagnostics.html" accesskey="5">Diagnostics</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Line-Control.html" accesskey="6">Line Control</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Pragmas.html" accesskey="7">Pragmas</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Other-Directives.html" accesskey="8">Other Directives</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Preprocessor-Output.html" accesskey="9">Preprocessor Output</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Traditional-Mode.html">Traditional Mode</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Implementation-Details.html">Implementation Details</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Invocation.html">Invocation</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Environment-Variables.html">Environment Variables</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GNU-Free-Documentation-License.html">GNU Free Documentation License</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Index-of-Directives.html" rel="index">Index of Directives</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Option-Index.html" rel="index">Option Index</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Concept-Index.html" rel="index">Concept Index</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><th colspan="3" align="left" valign="top"><pre class="menu-comment">
+
+</pre></th></tr><tr><th colspan="3" align="left" valign="top"><pre class="menu-comment"> &mdash; The Detailed Node Listing &mdash;
+
+Overview
+
+</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="Character-sets.html">Character sets</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Initial-processing.html">Initial processing</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Tokenization.html">Tokenization</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="The-preprocessing-language.html">The preprocessing language</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><th colspan="3" align="left" valign="top"><pre class="menu-comment">
+
+Header Files
+
+</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="Include-Syntax.html">Include Syntax</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Include-Operation.html">Include Operation</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Search-Path.html">Search Path</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Once_002dOnly-Headers.html">Once-Only Headers</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Alternatives-to-Wrapper-_0023ifndef.html">Alternatives to Wrapper #ifndef</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Computed-Includes.html">Computed Includes</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Wrapper-Headers.html">Wrapper Headers</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="System-Headers.html">System Headers</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><th colspan="3" align="left" valign="top"><pre class="menu-comment">
+
+Macros
+
+</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="Object_002dlike-Macros.html">Object-like Macros</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Function_002dlike-Macros.html">Function-like Macros</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Macro-Arguments.html">Macro Arguments</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Stringizing.html">Stringizing</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Concatenation.html">Concatenation</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Variadic-Macros.html">Variadic Macros</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Predefined-Macros.html">Predefined Macros</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Undefining-and-Redefining-Macros.html">Undefining and Redefining Macros</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Directives-Within-Macro-Arguments.html">Directives Within Macro Arguments</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Macro-Pitfalls.html">Macro Pitfalls</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><th colspan="3" align="left" valign="top"><pre class="menu-comment">
+
+Predefined Macros
+
+</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="Standard-Predefined-Macros.html">Standard Predefined Macros</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Common-Predefined-Macros.html">Common Predefined Macros</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="System_002dspecific-Predefined-Macros.html">System-specific Predefined Macros</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="C_002b_002b-Named-Operators.html">C++ Named Operators</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><th colspan="3" align="left" valign="top"><pre class="menu-comment">
+
+Macro Pitfalls
+
+</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="Misnesting.html">Misnesting</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Operator-Precedence-Problems.html">Operator Precedence Problems</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Swallowing-the-Semicolon.html">Swallowing the Semicolon</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Duplication-of-Side-Effects.html">Duplication of Side Effects</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Self_002dReferential-Macros.html">Self-Referential Macros</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Argument-Prescan.html">Argument Prescan</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Newlines-in-Arguments.html">Newlines in Arguments</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><th colspan="3" align="left" valign="top"><pre class="menu-comment">
+
+Conditionals
+
+</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="Conditional-Uses.html">Conditional Uses</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Conditional-Syntax.html">Conditional Syntax</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Deleted-Code.html">Deleted Code</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><th colspan="3" align="left" valign="top"><pre class="menu-comment">
+
+Conditional Syntax
+
+</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="Ifdef.html">Ifdef</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="If.html">If</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Defined.html">Defined</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Else.html">Else</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Elif.html">Elif</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><th colspan="3" align="left" valign="top"><pre class="menu-comment">
+
+Implementation Details
+
+</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="Implementation_002ddefined-behavior.html">Implementation-defined behavior</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Implementation-limits.html">Implementation limits</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Obsolete-Features.html">Obsolete Features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><th colspan="3" align="left" valign="top"><pre class="menu-comment">
+
+Obsolete Features
+
+</pre></th></tr><tr><td align="left" valign="top">&bull; <a href="Obsolete-Features.html">Obsolete Features</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><th colspan="3" align="left" valign="top"><pre class="menu-comment">
+
+</pre></th></tr></table>
+
+<p>Copyright &copy; 1987-2020 Free Software Foundation, Inc.
+</p>
+<p>Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation.  A copy of
+the license is included in the
+section entitled &ldquo;GNU Free Documentation License&rdquo;.
+</p>
+<p>This manual contains no Invariant Sections.  The Front-Cover Texts are
+(a) (see below), and the Back-Cover Texts are (b) (see below).
+</p>
+<p>(a) The FSF&rsquo;s Front-Cover Text is:
+</p>
+<p>A GNU Manual
+</p>
+<p>(b) The FSF&rsquo;s Back-Cover Text is:
+</p>
+<p>You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development.
+</p>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Overview.html" accesskey="n" rel="next">Overview</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index-of-Directives.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

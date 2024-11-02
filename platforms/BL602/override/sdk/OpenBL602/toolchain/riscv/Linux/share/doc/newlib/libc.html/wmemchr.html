@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: wmemchr</title>
+
+<meta name="description" content="The Red Hat newlib C Library: wmemchr">
+<meta name="keywords" content="The Red Hat newlib C Library: wmemchr">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Wchar-strings.html#Wchar-strings" rel="up" title="Wchar strings">
+<link href="wmemcmp.html#wmemcmp" rel="next" title="wmemcmp">
+<link href="Wchar-strings.html#Wchar-strings" rel="prev" title="Wchar strings">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="wmemchr"></a>
+<div class="header">
+<p>
+Next: <a href="wmemcmp.html#wmemcmp" accesskey="n" rel="next">wmemcmp</a>, Up: <a href="Wchar-strings.html#Wchar-strings" accesskey="u" rel="up">Wchar strings</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="wmemchr_002d_002d_002dfind-a-wide-character-in-memory"></a>
+<h3 class="section">6.1 <code>wmemchr</code>&mdash;find a wide character in memory</h3>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;wchar.h&gt;
+wchar_t	*wmemchr(const wchar_t *<var>s</var>, wchar_t <var>c</var>, size_t <var>n</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+The <code>wmemchr</code> function locates the first occurrence of <var>c</var> in the
+initial <var>n</var> wide characters of the object pointed to be <var>s</var>. This
+function is not affected by locale and all wchar_t values are treated
+identically.  The null wide character and wchar_t values not
+corresponding to valid characters are not treated specially.
+</p>
+<p>If <var>n</var> is zero, <var>s</var> must be a valid pointer and the function
+behaves as if no valid occurrence of <var>c</var> is found. 
+</p>
+<br>
+<p><strong>Returns</strong><br>
+The <code>wmemchr</code> function returns a pointer to the located
+wide character, or a null pointer if the wide character does not occur
+in the object. 
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>wmemchr</code> is ISO/IEC 9899/AMD1:1995 (ISO C).
+</p>
+<p>No supporting OS subroutines are required.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

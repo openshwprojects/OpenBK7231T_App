@@ -1,0 +1,177 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Assembly Floating Point</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Assembly Floating Point">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Assembly-Coding.html#Assembly-Coding" rel="up" title="Assembly Coding">
+<link href="Assembly-SIMD-Instructions.html#Assembly-SIMD-Instructions" rel="next" title="Assembly SIMD Instructions">
+<link href="Assembly-Functional-Units.html#Assembly-Functional-Units" rel="prev" title="Assembly Functional Units">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Assembly-Floating-Point"></a>
+<div class="header">
+<p>
+Next: <a href="Assembly-SIMD-Instructions.html#Assembly-SIMD-Instructions" accesskey="n" rel="next">Assembly SIMD Instructions</a>, Previous: <a href="Assembly-Functional-Units.html#Assembly-Functional-Units" accesskey="p" rel="prev">Assembly Functional Units</a>, Up: <a href="Assembly-Coding.html#Assembly-Coding" accesskey="u" rel="up">Assembly Coding</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Floating-Point"></a>
+<h4 class="subsection">15.8.6 Floating Point</h4>
+<a name="index-Assembly-floating-Point"></a>
+
+<p>Floating point arithmetic is used in GMP for multiplications on CPUs with poor
+integer multipliers.  It&rsquo;s mostly useful for <code>mpn_mul_1</code>,
+<code>mpn_addmul_1</code> and <code>mpn_submul_1</code> on 64-bit machines, and
+<code>mpn_mul_basecase</code> on both 32-bit and 64-bit machines.
+</p>
+<p>With IEEE 53-bit double precision floats, integer multiplications producing up
+to 53 bits will give exact results.  Breaking a 64x64 multiplication
+into eight 16x<em>32-&gt;48</em> bit pieces is convenient.  With
+some care though six 21x<em>32-&gt;53</em> bit products can be
+used, if one of the lower two 21-bit pieces also uses the sign bit.
+</p>
+<p>For the <code>mpn_mul_1</code> family of functions on a 64-bit machine, the
+invariant single limb is split at the start, into 3 or 4 pieces.  Inside the
+loop, the bignum operand is split into 32-bit pieces.  Fast conversion of
+these unsigned 32-bit pieces to floating point is highly machine-dependent.
+In some cases, reading the data into the integer unit, zero-extending to
+64-bits, then transferring to the floating point unit back via memory is the
+only option.
+</p>
+<p>Converting partial products back to 64-bit limbs is usually best done as a
+signed conversion.  Since all values are smaller than <em>2^53</em>, signed
+and unsigned are the same, but most processors lack unsigned conversions.
+</p>
+<br>
+<br>
+
+<p>Here is a diagram showing 16x32 bit products for an <code>mpn_mul_1</code> or
+<code>mpn_addmul_1</code> with a 64-bit limb.  The single limb operand V is split
+into four 16-bit parts.  The multi-limb operand U is split in the loop into
+two 32-bit parts.
+</p>
+<div class="example">
+<pre class="example">                +---+---+---+---+
+                |v48|v32|v16|v00|    V operand
+                +---+---+---+---+
+
+                +-------+---+---+
+            x   |  u32  |  u00  |    U operand (one limb)
+                +---------------+
+
+---------------------------------
+
+                    +-----------+
+                    | u00 x v00 |    p00    48-bit products
+                    +-----------+
+                +-----------+
+                | u00 x v16 |        p16
+                +-----------+
+            +-----------+
+            | u00 x v32 |            p32
+            +-----------+
+        +-----------+
+        | u00 x v48 |                p48
+        +-----------+
+            +-----------+
+            | u32 x v00 |            r32
+            +-----------+
+        +-----------+
+        | u32 x v16 |                r48
+        +-----------+
+    +-----------+
+    | u32 x v32 |                    r64
+    +-----------+
++-----------+
+| u32 x v48 |                        r80
++-----------+
+</pre></div>
+
+<p><em>p32</em> and <em>r32</em> can be summed using floating-point addition, and
+likewise <em>p48</em> and <em>r48</em>.  <em>p00</em> and <em>p16</em> can be summed
+with <em>r64</em> and <em>r80</em> from the previous iteration.
+</p>
+<p>For each loop then, four 49-bit quantities are transferred to the integer unit,
+aligned as follows,
+</p>
+<div class="example">
+<pre class="example">|-----64bits----|-----64bits----|
+                   +------------+
+                   | p00 + r64' |    i00
+                   +------------+
+               +------------+
+               | p16 + r80' |        i16
+               +------------+
+           +------------+
+           | p32 + r32  |            i32
+           +------------+
+       +------------+
+       | p48 + r48  |                i48
+       +------------+
+</pre></div>
+
+<p>The challenge then is to sum these efficiently and add in a carry limb,
+generating a low 64-bit result limb and a high 33-bit carry limb (<em>i48</em>
+extends 33 bits into the high half).
+</p>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Assembly-SIMD-Instructions.html#Assembly-SIMD-Instructions" accesskey="n" rel="next">Assembly SIMD Instructions</a>, Previous: <a href="Assembly-Functional-Units.html#Assembly-Functional-Units" accesskey="p" rel="prev">Assembly Functional Units</a>, Up: <a href="Assembly-Coding.html#Assembly-Coding" accesskey="u" rel="up">Assembly Coding</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

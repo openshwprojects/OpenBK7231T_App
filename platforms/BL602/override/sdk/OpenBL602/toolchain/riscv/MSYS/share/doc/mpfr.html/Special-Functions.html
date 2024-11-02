@@ -1,0 +1,430 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual documents how to install and use the Multiple Precision
+Floating-Point Reliable Library, version 3.1.4.
+
+Copyright 1991, 1993-2016 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with no Front-Cover Texts, and with no Back-Cover Texts.  A copy of the
+license is included in GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MPFR 3.1.4: Special Functions</title>
+
+<meta name="description" content="How to install and use GNU MPFR, a library for reliable multiple precision
+floating-point arithmetic, version 3.1.4.">
+<meta name="keywords" content="GNU MPFR 3.1.4: Special Functions">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="MPFR-Interface.html#MPFR-Interface" rel="up" title="MPFR Interface">
+<link href="Input-and-Output-Functions.html#Input-and-Output-Functions" rel="next" title="Input and Output Functions">
+<link href="Comparison-Functions.html#Comparison-Functions" rel="prev" title="Comparison Functions">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Special-Functions"></a>
+<div class="header">
+<p>
+Next: <a href="Input-and-Output-Functions.html#Input-and-Output-Functions" accesskey="n" rel="next">Input and Output Functions</a>, Previous: <a href="Comparison-Functions.html#Comparison-Functions" accesskey="p" rel="prev">Comparison Functions</a>, Up: <a href="MPFR-Interface.html#MPFR-Interface" accesskey="u" rel="up">MPFR Interface</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="index-Special-functions"></a>
+<a name="Special-Functions-1"></a>
+<h3 class="section">5.7 Special Functions</h3>
+
+<p>All those functions, except explicitly stated (for example
+<code>mpfr_sin_cos</code>), return a <a href="Rounding-Modes.html#ternary-value">ternary value</a>, i.e., zero for an
+exact return value, a positive value for a return value larger than the
+exact result, and a negative value otherwise.
+</p>
+<p>Important note: in some domains, computing special functions (either with
+correct or incorrect rounding) is expensive, even for small precision,
+for example the trigonometric and Bessel functions for large argument.
+</p>
+<dl>
+<dt><a name="index-mpfr_005flog"></a>Function: <em>int</em> <strong>mpfr_log</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005flog2"></a>Function: <em>int</em> <strong>mpfr_log2</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005flog10"></a>Function: <em>int</em> <strong>mpfr_log10</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the natural logarithm of <var>op</var>,
+<em>log2(<var>op</var>)</em> or
+<em>log10(<var>op</var>)</em>, respectively,
+rounded in the direction <var>rnd</var>.
+Set <var>rop</var> to +0 if <var>op</var> is 1 (in all rounding modes),
+for consistency with the ISO C99 and IEEE 754-2008 standards.
+Set <var>rop</var> to −Inf if <var>op</var> is ±0
+(i.e., the sign of the zero has no influence on the result).
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fexp"></a>Function: <em>int</em> <strong>mpfr_exp</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fexp2"></a>Function: <em>int</em> <strong>mpfr_exp2</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fexp10"></a>Function: <em>int</em> <strong>mpfr_exp10</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the exponential of <var>op</var>,
+ to <em>2 power of <var>op</var></em>
+or to <em>10 power of <var>op</var></em>, respectively,
+rounded in the direction <var>rnd</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fcos"></a>Function: <em>int</em> <strong>mpfr_cos</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fsin"></a>Function: <em>int</em> <strong>mpfr_sin</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005ftan"></a>Function: <em>int</em> <strong>mpfr_tan</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the cosine of <var>op</var>, sine of <var>op</var>,
+tangent of <var>op</var>, rounded in the direction <var>rnd</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fsin_005fcos"></a>Function: <em>int</em> <strong>mpfr_sin_cos</strong> <em>(mpfr_t <var>sop</var>, mpfr_t <var>cop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set simultaneously <var>sop</var> to the sine of <var>op</var> and <var>cop</var> to the
+cosine of <var>op</var>, rounded in the direction <var>rnd</var> with the corresponding
+precisions of <var>sop</var> and <var>cop</var>, which must be different variables.
+Return 0 iff both results are exact, more precisely it returns <em>s+4c</em>
+where <em>s=0</em> if <var>sop</var> is exact, <em>s=1</em> if <var>sop</var> is larger
+than the sine of <var>op</var>, <em>s=2</em> if <var>sop</var> is smaller than the sine
+of <var>op</var>, and similarly for <em>c</em> and the cosine of <var>op</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fsec"></a>Function: <em>int</em> <strong>mpfr_sec</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fcsc"></a>Function: <em>int</em> <strong>mpfr_csc</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fcot"></a>Function: <em>int</em> <strong>mpfr_cot</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the secant of <var>op</var>, cosecant of <var>op</var>,
+cotangent of <var>op</var>, rounded in the direction <var>rnd</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005facos"></a>Function: <em>int</em> <strong>mpfr_acos</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fasin"></a>Function: <em>int</em> <strong>mpfr_asin</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fatan"></a>Function: <em>int</em> <strong>mpfr_atan</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the arc-cosine, arc-sine or arc-tangent of <var>op</var>,
+rounded in the direction <var>rnd</var>.
+Note that since <code>acos(-1)</code> returns the floating-point number closest to
+<em>Pi</em> according to the given rounding mode, this number might not be
+in the output range <em>0 &lt;= <var>rop</var> &lt; \pi</em>
+of the arc-cosine function;
+still, the result lies in the image of the output range
+by the rounding function.
+The same holds for <code>asin(-1)</code>, <code>asin(1)</code>, <code>atan(-Inf)</code>,
+<code>atan(+Inf)</code> or for <code>atan(op)</code> with large <var>op</var> and
+small precision of <var>rop</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fatan2"></a>Function: <em>int</em> <strong>mpfr_atan2</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>y</var>, mpfr_t <var>x</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the arc-tangent2 of <var>y</var> and <var>x</var>,
+rounded in the direction <var>rnd</var>:
+if <code>x &gt; 0</code>, <code>atan2(y, x) = atan (y/x)</code>;
+if <code>x &lt; 0</code>, <code>atan2(y, x) = sign(y)*(Pi - atan (abs(y/x)))</code>,
+thus a number from <em>-Pi</em> to <em>Pi</em>.
+As for <code>atan</code>, in case the exact mathematical result is <em>+Pi</em> or
+<em>-Pi</em>,
+its rounded result might be outside the function output range.
+</p>
+<p><code>atan2(y, 0)</code> does not raise any floating-point exception.
+Special values are handled as described in the ISO C99 and IEEE 754-2008
+standards for the <code>atan2</code> function:
+</p><ul>
+<li> <code>atan2(+0, -0)</code> returns <em>+Pi</em>.
+</li><li> <code>atan2(-0, -0)</code> returns <em>-Pi</em>.
+</li><li> <code>atan2(+0, +0)</code> returns +0.
+</li><li> <code>atan2(-0, +0)</code> returns −0.
+</li><li> <code>atan2(+0, x)</code> returns <em>+Pi</em> for <em>x &lt; 0</em>.
+</li><li> <code>atan2(-0, x)</code> returns <em>-Pi</em> for <em>x &lt; 0</em>.
+</li><li> <code>atan2(+0, x)</code> returns +0 for <em>x &gt; 0</em>.
+</li><li> <code>atan2(-0, x)</code> returns −0 for <em>x &gt; 0</em>.
+</li><li> <code>atan2(y, 0)</code> returns <em>-Pi/2</em> for <em>y &lt; 0</em>.
+</li><li> <code>atan2(y, 0)</code> returns <em>+Pi/2</em> for <em>y &gt; 0</em>.
+</li><li> <code>atan2(+Inf, -Inf)</code> returns <em>+3*Pi/4</em>.
+</li><li> <code>atan2(-Inf, -Inf)</code> returns <em>-3*Pi/4</em>.
+</li><li> <code>atan2(+Inf, +Inf)</code> returns <em>+Pi/4</em>.
+</li><li> <code>atan2(-Inf, +Inf)</code> returns <em>-Pi/4</em>.
+</li><li> <code>atan2(+Inf, x)</code> returns <em>+Pi/2</em> for finite <em>x</em>.
+</li><li> <code>atan2(-Inf, x)</code> returns <em>-Pi/2</em> for finite <em>x</em>.
+</li><li> <code>atan2(y, -Inf)</code> returns <em>+Pi</em> for finite <em>y &gt; 0</em>.
+</li><li> <code>atan2(y, -Inf)</code> returns <em>-Pi</em> for finite <em>y &lt; 0</em>.
+</li><li> <code>atan2(y, +Inf)</code> returns +0 for finite <em>y &gt; 0</em>.
+</li><li> <code>atan2(y, +Inf)</code> returns −0 for finite <em>y &lt; 0</em>.
+</li></ul>
+</dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fcosh"></a>Function: <em>int</em> <strong>mpfr_cosh</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fsinh"></a>Function: <em>int</em> <strong>mpfr_sinh</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005ftanh"></a>Function: <em>int</em> <strong>mpfr_tanh</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the hyperbolic cosine, sine or tangent of <var>op</var>,
+rounded in the direction <var>rnd</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fsinh_005fcosh"></a>Function: <em>int</em> <strong>mpfr_sinh_cosh</strong> <em>(mpfr_t <var>sop</var>, mpfr_t <var>cop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set simultaneously <var>sop</var> to the hyperbolic sine of <var>op</var> and
+<var>cop</var> to the hyperbolic cosine of <var>op</var>,
+rounded in the direction <var>rnd</var> with the corresponding precision of
+<var>sop</var> and <var>cop</var>, which must be different variables.
+Return 0 iff both results are exact (see <code>mpfr_sin_cos</code> for a more
+detailed description of the return value).
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fsech"></a>Function: <em>int</em> <strong>mpfr_sech</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fcsch"></a>Function: <em>int</em> <strong>mpfr_csch</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fcoth"></a>Function: <em>int</em> <strong>mpfr_coth</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the hyperbolic secant of <var>op</var>, cosecant of <var>op</var>,
+cotangent of <var>op</var>, rounded in the direction <var>rnd</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005facosh"></a>Function: <em>int</em> <strong>mpfr_acosh</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fasinh"></a>Function: <em>int</em> <strong>mpfr_asinh</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fatanh"></a>Function: <em>int</em> <strong>mpfr_atanh</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the inverse hyperbolic cosine, sine or tangent of <var>op</var>,
+rounded in the direction <var>rnd</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005ffac_005fui"></a>Function: <em>int</em> <strong>mpfr_fac_ui</strong> <em>(mpfr_t <var>rop</var>, unsigned long int  <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the factorial of <var>op</var>, rounded in the direction <var>rnd</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005flog1p"></a>Function: <em>int</em> <strong>mpfr_log1p</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the logarithm of one plus <var>op</var>,
+rounded in the direction <var>rnd</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fexpm1"></a>Function: <em>int</em> <strong>mpfr_expm1</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em>the exponential of <var>op</var> followed by a
+subtraction by one</em>, rounded in the direction <var>rnd</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005feint"></a>Function: <em>int</em> <strong>mpfr_eint</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the exponential integral of <var>op</var>,
+rounded in the direction <var>rnd</var>.
+For positive <var>op</var>,
+the exponential integral is the sum of Euler&rsquo;s constant, of the logarithm
+of <var>op</var>, and of the sum for k from 1 to infinity of
+<var>op</var> to the power k, divided by k and factorial(k).
+For negative <var>op</var>, <var>rop</var> is set to NaN
+(this definition for negative argument follows formula 5.1.2 from the
+Handbook of Mathematical Functions from Abramowitz and Stegun, a future
+version might use another definition).
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fli2"></a>Function: <em>int</em> <strong>mpfr_li2</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to real part of the dilogarithm of <var>op</var>, rounded in the
+direction <var>rnd</var>. MPFR defines the dilogarithm function as
+<em>the integral of -log(1-t)/t from 0
+to <var>op</var></em>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fgamma"></a>Function: <em>int</em> <strong>mpfr_gamma</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the value of the Gamma function on <var>op</var>, rounded in the
+direction <var>rnd</var>. When <var>op</var> is a negative integer, <var>rop</var> is set
+to NaN.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005flngamma"></a>Function: <em>int</em> <strong>mpfr_lngamma</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the value of the logarithm of the Gamma function on <var>op</var>,
+rounded in the direction <var>rnd</var>.
+When <var>op</var> is 1 or 2, set <var>rop</var> to +0 (in all rounding modes).
+When <var>op</var> is an infinity or a nonpositive integer, set <var>rop</var> to +Inf,
+following the general rules on special values.
+When <em>−2<var>k</var>−1 &lt; <var>op</var> &lt; −2<var>k</var></em>,
+<var>k</var> being a nonnegative integer, set <var>rop</var> to NaN.
+See also <code>mpfr_lgamma</code>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005flgamma"></a>Function: <em>int</em> <strong>mpfr_lgamma</strong> <em>(mpfr_t <var>rop</var>, int *<var>signp</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the value of the logarithm of the absolute value of the
+Gamma function on <var>op</var>, rounded in the direction <var>rnd</var>. The sign
+(1 or −1) of Gamma(<var>op</var>) is returned in the object pointed to
+by <var>signp</var>.
+When <var>op</var> is 1 or 2, set <var>rop</var> to +0 (in all rounding modes).
+When <var>op</var> is an infinity or a nonpositive integer, set <var>rop</var> to +Inf.
+When <var>op</var> is NaN, −Inf or a negative integer, *<var>signp</var> is
+undefined, and when <var>op</var> is ±0, *<var>signp</var> is the sign of the zero.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fdigamma"></a>Function: <em>int</em> <strong>mpfr_digamma</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the value of the Digamma (sometimes also called Psi)
+function on <var>op</var>, rounded in the direction <var>rnd</var>.
+When <var>op</var> is a negative integer, set <var>rop</var> to NaN.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fzeta"></a>Function: <em>int</em> <strong>mpfr_zeta</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fzeta_005fui"></a>Function: <em>int</em> <strong>mpfr_zeta_ui</strong> <em>(mpfr_t <var>rop</var>, unsigned long <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the value of the Riemann Zeta function on <var>op</var>,
+rounded in the direction <var>rnd</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005ferf"></a>Function: <em>int</em> <strong>mpfr_erf</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005ferfc"></a>Function: <em>int</em> <strong>mpfr_erfc</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the value of the error function on <var>op</var>
+(resp. the complementary error function on <var>op</var>)
+rounded in the direction <var>rnd</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fj0"></a>Function: <em>int</em> <strong>mpfr_j0</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fj1"></a>Function: <em>int</em> <strong>mpfr_j1</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fjn"></a>Function: <em>int</em> <strong>mpfr_jn</strong> <em>(mpfr_t <var>rop</var>, long <var>n</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the value of the first kind Bessel function of order 0,
+(resp. 1 and <var>n</var>)
+on <var>op</var>, rounded in the direction <var>rnd</var>. When <var>op</var> is
+NaN, <var>rop</var> is always set to NaN. When <var>op</var> is plus or minus Infinity,
+<var>rop</var> is set to +0. When <var>op</var> is zero, and <var>n</var> is not zero,
+<var>rop</var> is set to +0 or −0 depending on the parity and sign of <var>n</var>,
+and the sign of <var>op</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fy0"></a>Function: <em>int</em> <strong>mpfr_y0</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fy1"></a>Function: <em>int</em> <strong>mpfr_y1</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fyn"></a>Function: <em>int</em> <strong>mpfr_yn</strong> <em>(mpfr_t <var>rop</var>, long <var>n</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the value of the second kind Bessel function of order 0
+(resp. 1 and <var>n</var>)
+on <var>op</var>, rounded in the direction <var>rnd</var>. When <var>op</var> is
+NaN or negative, <var>rop</var> is always set to NaN. When <var>op</var> is +Inf,
+<var>rop</var> is set to +0. When <var>op</var> is zero, <var>rop</var> is set to +Inf
+or −Inf depending on the parity and sign of <var>n</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005ffma"></a>Function: <em>int</em> <strong>mpfr_fma</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, mpfr_t <var>op2</var>, mpfr_t <var>op3</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005ffms"></a>Function: <em>int</em> <strong>mpfr_fms</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, mpfr_t <var>op2</var>, mpfr_t <var>op3</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em>(<var>op1</var> times <var>op2</var>) + <var>op3</var></em>
+(resp. <em>(<var>op1</var> times <var>op2</var>) - <var>op3</var></em>)
+rounded in the direction <var>rnd</var>.  Concerning special values (signed zeros,
+infinities, NaN), these functions behave like a multiplication followed by a
+separate addition or subtraction.  That is, the fused operation matters only
+for rounding.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fagm"></a>Function: <em>int</em> <strong>mpfr_agm</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, mpfr_t <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the arithmetic-geometric mean of <var>op1</var> and <var>op2</var>,
+rounded in the direction <var>rnd</var>.
+The arithmetic-geometric mean is the common limit of the sequences
+<em><var>u</var>_<var>n</var></em> and <em><var>v</var>_<var>n</var></em>,
+where <em><var>u</var>_<var>0</var></em>=<var>op1</var>, <em><var>v</var>_<var>0</var></em>=<var>op2</var>,
+<em><var>u</var>_(<var>n</var>+1)</em> is the
+arithmetic mean of <em><var>u</var>_<var>n</var></em> and <em><var>v</var>_<var>n</var></em>,
+and <em><var>v</var>_(<var>n</var>+1)</em> is the geometric mean of
+<em><var>u</var>_<var>n</var></em> and <em><var>v</var>_<var>n</var></em>.
+If any operand is negative, set <var>rop</var> to NaN.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fhypot"></a>Function: <em>int</em> <strong>mpfr_hypot</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>x</var>, mpfr_t <var>y</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the Euclidean norm of <var>x</var> and <var>y</var>,
+i.e., the square root of the sum of the squares of <var>x</var> and <var>y</var>,
+rounded in the direction <var>rnd</var>.
+Special values are handled as described in the ISO C99 (Section F.9.4.3)
+and IEEE 754-2008 (Section 9.2.1) standards:
+If <var>x</var> or <var>y</var> is an infinity, then +Inf is returned in <var>rop</var>,
+even if the other number is NaN.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fai"></a>Function: <em>int</em> <strong>mpfr_ai</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>x</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the value of the Airy function Ai
+ on <var>x</var>, rounded in the direction <var>rnd</var>.
+When <var>x</var> is
+NaN,
+<var>rop</var> is always set to NaN. When <var>x</var> is +Inf or −Inf,
+<var>rop</var> is +0.
+The current implementation is not intended to be used with large arguments.
+It works with abs(<var>x</var>) typically smaller than 500. For larger arguments,
+other methods should be used and will be implemented in a future version.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fconst_005flog2"></a>Function: <em>int</em> <strong>mpfr_const_log2</strong> <em>(mpfr_t <var>rop</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fconst_005fpi"></a>Function: <em>int</em> <strong>mpfr_const_pi</strong> <em>(mpfr_t <var>rop</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fconst_005feuler"></a>Function: <em>int</em> <strong>mpfr_const_euler</strong> <em>(mpfr_t <var>rop</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fconst_005fcatalan"></a>Function: <em>int</em> <strong>mpfr_const_catalan</strong> <em>(mpfr_t <var>rop</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the logarithm of 2, the value of <em>Pi</em>,
+of Euler&rsquo;s constant 0.577&hellip;, of Catalan&rsquo;s constant 0.915&hellip;,
+respectively, rounded in the direction
+<var>rnd</var>. These functions cache the computed values to avoid other
+calculations if a lower or equal precision is requested. To free these caches,
+use <code>mpfr_free_cache</code>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005ffree_005fcache"></a>Function: <em>void</em> <strong>mpfr_free_cache</strong> <em>(void)</em></dt>
+<dd><p>Free various caches used by MPFR internally, in particular the
+caches used by the functions computing constants (<code>mpfr_const_log2</code>,
+<code>mpfr_const_pi</code>,
+<code>mpfr_const_euler</code> and <code>mpfr_const_catalan</code>).
+You should call this function before terminating a thread, even if you did
+not call these functions directly (they could have been called internally).
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fsum"></a>Function: <em>int</em> <strong>mpfr_sum</strong> <em>(mpfr_t <var>rop</var>, mpfr_ptr const <var>tab</var>[], unsigned long int <var>n</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the sum of all elements of <var>tab</var>, whose size is <var>n</var>,
+rounded in the direction <var>rnd</var>. Warning: for efficiency reasons,
+<var>tab</var> is an array of pointers
+to <code>mpfr_t</code>, not an array of <code>mpfr_t</code>.
+If the returned <code>int</code> value is zero, <var>rop</var> is guaranteed to be the
+exact sum; otherwise <var>rop</var> might be smaller than, equal to, or larger than
+the exact sum (in accordance to the rounding mode).
+However, <code>mpfr_sum</code> does guarantee the result is correctly rounded.
+</p></dd></dl>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Input-and-Output-Functions.html#Input-and-Output-Functions" accesskey="n" rel="next">Input and Output Functions</a>, Previous: <a href="Comparison-Functions.html#Comparison-Functions" accesskey="p" rel="prev">Comparison Functions</a>, Up: <a href="MPFR-Interface.html#MPFR-Interface" accesskey="u" rel="up">MPFR Interface</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

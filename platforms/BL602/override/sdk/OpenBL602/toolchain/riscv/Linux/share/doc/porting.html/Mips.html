@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Embed with GNU: Mips</title>
+
+<meta name="description" content="Embed with GNU: Mips">
+<meta name="keywords" content="Embed with GNU: Mips">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="leds_002ec.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Supported-targets.html#Supported-targets" rel="up" title="Supported targets">
+<link href="PA_002dRISC.html#PA_002dRISC" rel="next" title="PA-RISC">
+<link href="CPU32.html#CPU32" rel="prev" title="CPU32">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Mips"></a>
+<div class="header">
+<p>
+Next: <a href="PA_002dRISC.html#PA_002dRISC" accesskey="n" rel="next">PA-RISC</a>, Previous: <a href="CPU32.html#CPU32" accesskey="p" rel="prev">CPU32</a>, Up: <a href="Supported-targets.html#Supported-targets" accesskey="u" rel="up">Supported targets</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<a name="Mips-core-Targets-Supported"></a>
+<h4 class="subsection">1.1.3 Mips core Targets Supported</h4>
+<p>The Crt0 startup file should run on any mips target that doesn&rsquo;t require
+additional hardware initialization. The I/O code so far only supports a
+custom LSI33k based RAID disk controller board. It should easy to
+change to support the IDT line of eval boards. Currently the two
+debugging protocols supported by GDB for mips targets is IDT&rsquo;s mips
+debug protocol, and a customized hybrid of the standard GDB remote
+protocol and GDB&rsquo;s standard ROM monitor support. Included here is the
+debug stub for the hybrid monitor. This supports the LSI33k processor,
+and only has support for the GDB protocol commands <code>g</code>, <code>G</code>,
+<code>m</code>, <code>M</code>, which basically only supports the register and
+memory reading and writing commands. This is part of libgloss and is
+called lsi33k-stub.c.
+</p>
+<p>The crt0.S should also work on the IDT line of eval boards, but has only
+been run on the LSI33k for now. There is no I/O support for the IDT eval
+board at this time. The current I/O code is for a customized version of
+LSI&rsquo;s <code>pmon</code> ROM monitor. This uses entry points into the monitor,
+and should easily port to other versions of the pmon monitor. Pmon is
+distributed in source by LSI.
+</p>
+
+
+
+</body>
+</html>

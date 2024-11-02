@@ -1,0 +1,193 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: malloc</title>
+
+<meta name="description" content="The Red Hat newlib C Library: malloc">
+<meta name="keywords" content="The Red Hat newlib C Library: malloc">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdlib.html#Stdlib" rel="up" title="Stdlib">
+<link href="mallinfo.html#mallinfo" rel="next" title="mallinfo">
+<link href="lldiv.html#lldiv" rel="prev" title="lldiv">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="malloc"></a>
+<div class="header">
+<p>
+Next: <a href="mallinfo.html#mallinfo" accesskey="n" rel="next">mallinfo</a>, Previous: <a href="lldiv.html#lldiv" accesskey="p" rel="prev">lldiv</a>, Up: <a href="Stdlib.html#Stdlib" accesskey="u" rel="up">Stdlib</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="malloc_002c-realloc_002c-free_002d_002d_002dmanage-memory"></a>
+<h3 class="section">2.24 <code>malloc</code>, <code>realloc</code>, <code>free</code>&mdash;manage memory</h3>
+<a name="index-malloc"></a>
+<a name="index-realloc"></a>
+<a name="index-reallocf"></a>
+<a name="index-free"></a>
+<a name="index-memalign"></a>
+<a name="index-malloc_005fusable_005fsize"></a>
+<a name="index-_005fmalloc_005fr"></a>
+<a name="index-_005frealloc_005fr"></a>
+<a name="index-_005freallocf_005fr"></a>
+<a name="index-_005ffree_005fr"></a>
+<a name="index-_005fmemalign_005fr"></a>
+<a name="index-_005fmalloc_005fusable_005fsize_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdlib.h&gt;
+void *malloc(size_t <var>nbytes</var>);
+void *realloc(void *<var>aptr</var>, size_t <var>nbytes</var>);
+void *reallocf(void *<var>aptr</var>, size_t <var>nbytes</var>);
+void free(void *<var>aptr</var>);
+
+void *memalign(size_t <var>align</var>, size_t <var>nbytes</var>);
+
+size_t malloc_usable_size(void *<var>aptr</var>);
+
+void *_malloc_r(void *<var>reent</var>, size_t <var>nbytes</var>);
+void *_realloc_r(void *<var>reent</var>, 
+    void *<var>aptr</var>, size_t <var>nbytes</var>);
+void *_reallocf_r(void *<var>reent</var>, 
+    void *<var>aptr</var>, size_t <var>nbytes</var>);
+void _free_r(void *<var>reent</var>, void *<var>aptr</var>);
+
+void *_memalign_r(void *<var>reent</var>,
+    size_t <var>align</var>, size_t <var>nbytes</var>);
+
+size_t _malloc_usable_size_r(void *<var>reent</var>, void *<var>aptr</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+These functions manage a pool of system memory.
+</p>
+<p>Use <code>malloc</code> to request allocation of an object with at least
+<var>nbytes</var> bytes of storage available.  If the space is available,
+<code>malloc</code> returns a pointer to a newly allocated block as its result.
+</p>
+<p>If you already have a block of storage allocated by <code>malloc</code>, but
+you no longer need all the space allocated to it, you can make it
+smaller by calling <code>realloc</code> with both the object pointer and the
+new desired size as arguments.  <code>realloc</code> guarantees that the
+contents of the smaller object match the beginning of the original object.
+</p>
+<p>Similarly, if you need more space for an object, use <code>realloc</code> to
+request the larger size; again, <code>realloc</code> guarantees that the
+beginning of the new, larger object matches the contents of the
+original object.
+</p>
+<p>When you no longer need an object originally allocated by <code>malloc</code>
+or <code>realloc</code> (or the related function <code>calloc</code>), return it to the
+memory storage pool by calling <code>free</code> with the address of the object
+as the argument.  You can also use <code>realloc</code> for this purpose by
+calling it with <code>0</code> as the <var>nbytes</var> argument.
+</p>
+<p>The <code>reallocf</code> function behaves just like <code>realloc</code> except if the
+function is required to allocate new storage and this fails.  In this
+case <code>reallocf</code> will free the original object passed in whereas
+<code>realloc</code> will not.
+</p>
+<p>The <code>memalign</code> function returns a block of size <var>nbytes</var> aligned
+to a <var>align</var> boundary.  The <var>align</var> argument must be a power of
+two.
+</p>
+<p>The <code>malloc_usable_size</code> function takes a pointer to a block
+allocated by <code>malloc</code>.  It returns the amount of space that is
+available in the block.  This may or may not be more than the size
+requested from <code>malloc</code>, due to alignment or minimum size
+constraints.
+</p>
+<p>The alternate functions <code>_malloc_r</code>, <code>_realloc_r</code>, <code>_reallocf_r</code>, 
+<code>_free_r</code>, <code>_memalign_r</code>, and <code>_malloc_usable_size_r</code> are reentrant
+versions.  The extra argument <var>reent</var> is a pointer to a reentrancy structure.
+</p>
+<p>If you have multiple threads of execution which may call any of these
+routines, or if any of these routines may be called reentrantly, then
+you must provide implementations of the <code>__malloc_lock</code> and
+<code>__malloc_unlock</code> functions for your system.  See the documentation
+for those functions.
+</p>
+<p>These functions operate by calling the function <code>_sbrk_r</code> or
+<code>sbrk</code>, which allocates space.  You may need to provide one of these
+functions for your system.  <code>_sbrk_r</code> is called with a positive
+value to allocate more space, and with a negative value to release
+previously allocated space if it is no longer required.
+See <a href="Stubs.html#Stubs">Stubs</a>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>malloc</code> returns a pointer to the newly allocated space, if
+successful; otherwise it returns <code>NULL</code>.  If your application needs
+to generate empty objects, you may use <code>malloc(0)</code> for this purpose.
+</p>
+<p><code>realloc</code> returns a pointer to the new block of memory, or <code>NULL</code>
+if a new block could not be allocated.  <code>NULL</code> is also the result
+when you use &lsquo;<code>realloc(<var>aptr</var>,0)</code>&rsquo; (which has the same effect as
+&lsquo;<code>free(<var>aptr</var>)</code>&rsquo;).  You should always check the result of
+<code>realloc</code>; successful reallocation is not guaranteed even when
+you request a smaller object.
+</p>
+<p><code>free</code> does not return a result.
+</p>
+<p><code>memalign</code> returns a pointer to the newly allocated space.
+</p>
+<p><code>malloc_usable_size</code> returns the usable size.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>malloc</code>, <code>realloc</code>, and <code>free</code> are specified by the ANSI C
+standard, but other conforming implementations of <code>malloc</code> may
+behave differently when <var>nbytes</var> is zero.
+</p>
+<p><code>memalign</code> is part of SVR4.
+</p>
+<p><code>malloc_usable_size</code> is not portable.
+</p>
+<p>Supporting OS subroutines required: <code>sbrk</code>.  
+</p><br>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="mallinfo.html#mallinfo" accesskey="n" rel="next">mallinfo</a>, Previous: <a href="lldiv.html#lldiv" accesskey="p" rel="prev">lldiv</a>, Up: <a href="Stdlib.html#Stdlib" accesskey="u" rel="up">Stdlib</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

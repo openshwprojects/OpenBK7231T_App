@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: strtok</title>
+
+<meta name="description" content="The Red Hat newlib C Library: strtok">
+<meta name="keywords" content="The Red Hat newlib C Library: strtok">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Strings.html#Strings" rel="up" title="Strings">
+<link href="strupr.html#strupr" rel="next" title="strupr">
+<link href="strstr.html#strstr" rel="prev" title="strstr">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="strtok"></a>
+<div class="header">
+<p>
+Next: <a href="strupr.html#strupr" accesskey="n" rel="next">strupr</a>, Previous: <a href="strstr.html#strstr" accesskey="p" rel="prev">strstr</a>, Up: <a href="Strings.html#Strings" accesskey="u" rel="up">Strings</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="strtok_002c-strtok_005fr_002c-strsep_002d_002d_002dget-next-token-from-a-string"></a>
+<h3 class="section">5.42 <code>strtok</code>, <code>strtok_r</code>, <code>strsep</code>&mdash;get next token from a string</h3>
+<a name="index-strtok"></a>
+<a name="index-strtok_005fr"></a>
+<a name="index-strsep"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;string.h&gt;
+char *strtok(char *restrict <var>source</var>,
+    const char *restrict <var>delimiters</var>);
+char *strtok_r(char *restrict <var>source</var>,
+    const char *restrict <var>delimiters</var>,
+    char **<var>lasts</var>);
+char *strsep(char **<var>source_ptr</var>, const char *<var>delimiters</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+The <code>strtok</code> function is used to isolate sequential tokens in a 
+null-terminated string, <code>*<var>source</var></code>. These tokens are delimited 
+in the string by at least one of the characters in <code>*<var>delimiters</var></code>.
+The first time that <code>strtok</code> is called, <code>*<var>source</var></code> should be
+specified; subsequent calls, wishing to obtain further tokens from
+the same string, should pass a null pointer instead.  The separator
+string, <code>*<var>delimiters</var></code>, must be supplied each time and may 
+change between calls.
+</p>
+<p>The <code>strtok</code> function returns a pointer to the beginning of each 
+subsequent token in the string, after replacing the separator 
+character itself with a null character.  When no more tokens remain, 
+a null pointer is returned.
+</p>
+<p>The <code>strtok_r</code> function has the same behavior as <code>strtok</code>, except
+a pointer to placeholder <code>*<var>lasts</var></code> must be supplied by the caller.
+</p>
+<p>The <code>strsep</code> function is similar in behavior to <code>strtok</code>, except
+a pointer to the string pointer must be supplied <code><var>source_ptr</var></code> and
+the function does not skip leading delimiters.  When the string starts
+with a delimiter, the delimiter is changed to the null character and
+the empty string is returned.  Like <code>strtok_r</code> and <code>strtok</code>, the
+<code>*<var>source_ptr</var></code> is updated to the next character following the
+last delimiter found or NULL if the end of string is reached with
+no more delimiters.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>strtok</code>, <code>strtok_r</code>, and <code>strsep</code> all return a pointer to the 
+next token, or <code>NULL</code> if no more tokens can be found.  For
+<code>strsep</code>, a token may be the empty string.
+</p>
+<br>
+<p><strong>Notes</strong><br>
+<code>strtok</code> is unsafe for multi-threaded applications.  <code>strtok_r</code>
+and <code>strsep</code> are thread-safe and should be used instead.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>strtok</code> is ANSI C.
+<code>strtok_r</code> is POSIX.
+<code>strsep</code> is a BSD extension.
+</p>
+<p><code>strtok</code>, <code>strtok_r</code>, and <code>strsep</code> require no supporting OS subroutines.
+</p>
+<br>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="strupr.html#strupr" accesskey="n" rel="next">strupr</a>, Previous: <a href="strstr.html#strstr" accesskey="p" rel="prev">strstr</a>, Up: <a href="Strings.html#Strings" accesskey="u" rel="up">Strings</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

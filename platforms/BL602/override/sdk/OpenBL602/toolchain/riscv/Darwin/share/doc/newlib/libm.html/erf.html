@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>erf (LIBM)</title>
+
+<meta name="description" content="erf (LIBM)">
+<meta name="keywords" content="erf (LIBM)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="Document-Index.html" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Math.html" rel="up" title="Math">
+<link href="exp.html" rel="next" title="exp">
+<link href="cosh.html" rel="prev" title="cosh">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="erf"></span><div class="header">
+<p>
+Next: <a href="exp.html" accesskey="n" rel="next">exp</a>, Previous: <a href="cosh.html" accesskey="p" rel="prev">cosh</a>, Up: <a href="Math.html" accesskey="u" rel="up">Math</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="erf_002c-erff_002c-erfc_002c-erfcf_002d_002d_002derror-function"></span><h3 class="section">1.14 <code>erf</code>, <code>erff</code>, <code>erfc</code>, <code>erfcf</code>&mdash;error function</h3>
+<span id="index-erf"></span>
+<span id="index-erff"></span>
+<span id="index-erfc"></span>
+<span id="index-erfcf"></span>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;math.h&gt;
+double erf(double <var>x</var>);
+float erff(float <var>x</var>);
+double erfc(double <var>x</var>);
+float erfcf(float <var>x</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>erf</code> calculates an approximation to the &ldquo;error function&rdquo;,
+which estimates the probability that an observation will fall within
+<var>x</var> standard deviations of the mean (assuming a normal
+distribution).
+</p>
+<p><code>erfc</code> calculates the complementary probability; that is,
+<code>erfc(<var>x</var>)</code> is <code>1 - erf(<var>x</var>)</code>.  <code>erfc</code> is computed directly,
+so that you can use it to avoid the loss of precision that would
+result from subtracting large probabilities (on large <var>x</var>) from 1.
+</p>
+<p><code>erff</code> and <code>erfcf</code> differ from <code>erf</code> and <code>erfc</code> only in the
+argument and result types.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+For positive arguments, <code>erf</code> and all its variants return a
+probability&mdash;a number between 0 and 1.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+None of the variants of <code>erf</code> are ANSI C.
+</p>
+<br>
+
+
+
+</body>
+</html>

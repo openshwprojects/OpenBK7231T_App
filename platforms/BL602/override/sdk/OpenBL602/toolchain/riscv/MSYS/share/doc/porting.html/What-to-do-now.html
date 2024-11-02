@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Embed with GNU: What to do now</title>
+
+<meta name="description" content="Embed with GNU: What to do now">
+<meta name="keywords" content="Embed with GNU: What to do now">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="leds_002ec.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Libraries.html#Libraries" rel="up" title="Libraries">
+<link href="Libc.html#Libc" rel="next" title="Libc">
+<link href="Linker-Scripts.html#Linker-Scripts" rel="prev" title="Linker Scripts">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="What-to-do-now"></a>
+<div class="header">
+<p>
+Next: <a href="Libc.html#Libc" accesskey="n" rel="next">Libc</a>, Previous: <a href="Linker-Scripts.html#Linker-Scripts" accesskey="p" rel="prev">Linker Scripts</a>, Up: <a href="Libraries.html#Libraries" accesskey="u" rel="up">Libraries</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<a name="What-to-do-when-you-have-a-binary-image"></a>
+<h3 class="section">3.3 What to do when you have a binary image</h3>
+
+<p>A few ROM monitors load binary images, typically <code>a.out</code>, but most all
+will load an <code>srecord</code>. An srecord is an ASCII representation of a binary 
+image. At it&rsquo;s simplest, an srecord is an address, followed by a byte
+count, followed by the bytes, and a 2&rsquo;s compliment checksum. A whole
+srecord file has an optional <em>start</em> record, and a required <em>end</em> 
+record. To make an srecord from a binary image, the GNU <code>objcopy</code> program
+is used. This will read the image and make an srecord from it. To do
+this, invoke objcopy like this: <code>objcopy -O srec infile outfile</code>. Most
+PROM burners also read srecords or a similar format. Use <code>objdump -i</code> to
+get a list of support object files types for your architecture. 
+</p>
+
+
+
+</body>
+</html>

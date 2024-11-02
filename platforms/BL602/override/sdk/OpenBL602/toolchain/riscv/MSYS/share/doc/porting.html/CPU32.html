@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Embed with GNU: CPU32</title>
+
+<meta name="description" content="Embed with GNU: CPU32">
+<meta name="keywords" content="Embed with GNU: CPU32">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="leds_002ec.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Supported-targets.html#Supported-targets" rel="up" title="Supported targets">
+<link href="Mips.html#Mips" rel="next" title="Mips">
+<link href="Sparclite.html#Sparclite" rel="prev" title="Sparclite">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="CPU32"></a>
+<div class="header">
+<p>
+Next: <a href="Mips.html#Mips" accesskey="n" rel="next">Mips</a>, Previous: <a href="Sparclite.html#Sparclite" accesskey="p" rel="prev">Sparclite</a>, Up: <a href="Supported-targets.html#Supported-targets" accesskey="u" rel="up">Supported targets</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<a name="Motorola-CPU32-Targets-supported"></a>
+<h4 class="subsection">1.1.2 Motorola CPU32 Targets supported</h4>
+<p>This refers to Motorola&rsquo;s m68k based CPU32 processor family. The crt0.S
+startup file should be usable with any target environment, and it&rsquo;s
+mostly just the I/O code and linker scripts that vary. Currently there
+is support for the Motorola MVME line of 6U VME boards and IDP
+line of eval boards. All of the
+Motorola VME boards run <code>Bug</code>, a ROM based debug monitor.
+This monitor has the feature of using user level traps to do I/O, so
+this code should be portable to other MVME boards with little if any
+change. The startup file also can remain unchanged. About the only thing
+that varies is the address for where the text section begins. This can
+be accomplished either in the linker script, or on the command line
+using the &lsquo;<samp>-Ttext [address]</samp>&rsquo;.
+</p>
+<p>There is also support for the <code>rom68k</code> monitor as shipped on
+Motorola&rsquo;s IDP eval board line. This code should be portable across the
+range of CPU&rsquo;s the board supports. There is also GDB support for this
+target environment in the GDB source tree. The relevant files are
+gdb/monitor.c, monitor.h, and rom58k-rom.c. The usage of these files is
+discussed in the GDB section.
+</p>
+
+
+
+</body>
+</html>

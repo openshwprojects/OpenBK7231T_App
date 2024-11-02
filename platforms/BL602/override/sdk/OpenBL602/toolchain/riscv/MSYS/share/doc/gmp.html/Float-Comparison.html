@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Float Comparison</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Float Comparison">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Floating_002dpoint-Functions.html#Floating_002dpoint-Functions" rel="up" title="Floating-point Functions">
+<link href="I_002fO-of-Floats.html#I_002fO-of-Floats" rel="next" title="I/O of Floats">
+<link href="Float-Arithmetic.html#Float-Arithmetic" rel="prev" title="Float Arithmetic">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Float-Comparison"></a>
+<div class="header">
+<p>
+Next: <a href="I_002fO-of-Floats.html#I_002fO-of-Floats" accesskey="n" rel="next">I/O of Floats</a>, Previous: <a href="Float-Arithmetic.html#Float-Arithmetic" accesskey="p" rel="prev">Float Arithmetic</a>, Up: <a href="Floating_002dpoint-Functions.html#Floating_002dpoint-Functions" accesskey="u" rel="up">Floating-point Functions</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Comparison-Functions-2"></a>
+<h3 class="section">7.6 Comparison Functions</h3>
+<a name="index-Float-comparison-functions"></a>
+<a name="index-Comparison-functions-2"></a>
+
+<dl>
+<dt><a name="index-mpf_005fcmp"></a>Function: <em>int</em> <strong>mpf_cmp</strong> <em>(const mpf_t <var>op1</var>, const mpf_t <var>op2</var>)</em></dt>
+<dt><a name="index-mpf_005fcmp_005fz"></a>Function: <em>int</em> <strong>mpf_cmp_z</strong> <em>(const mpf_t <var>op1</var>, const mpz_t <var>op2</var>)</em></dt>
+<dt><a name="index-mpf_005fcmp_005fd"></a>Function: <em>int</em> <strong>mpf_cmp_d</strong> <em>(const mpf_t <var>op1</var>, double <var>op2</var>)</em></dt>
+<dt><a name="index-mpf_005fcmp_005fui"></a>Function: <em>int</em> <strong>mpf_cmp_ui</strong> <em>(const mpf_t <var>op1</var>, unsigned long int <var>op2</var>)</em></dt>
+<dt><a name="index-mpf_005fcmp_005fsi"></a>Function: <em>int</em> <strong>mpf_cmp_si</strong> <em>(const mpf_t <var>op1</var>, signed long int <var>op2</var>)</em></dt>
+<dd><p>Compare <var>op1</var> and <var>op2</var>.  Return a positive value if <em><var>op1</var> &gt;
+<var>op2</var></em>, zero if <em><var>op1</var> = <var>op2</var></em>, and a negative value if
+<em><var>op1</var> &lt; <var>op2</var></em>.
+</p>
+<p><code>mpf_cmp_d</code> can be called with an infinity, but results are undefined for
+a NaN.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpf_005feq"></a>Function: <em>int</em> <strong>mpf_eq</strong> <em>(const mpf_t <var>op1</var>, const mpf_t <var>op2</var>, mp_bitcnt_t op3)</em></dt>
+<dd><p><strong>This function is mathematically ill-defined and should not be used.</strong>
+</p>
+<p>Return non-zero if the first <var>op3</var> bits of <var>op1</var> and <var>op2</var> are
+equal, zero otherwise.  Note that numbers like e.g., 256 (binary 100000000) and
+255 (binary 11111111) will never be equal by this function&rsquo;s measure, and
+furthermore that 0 will only be equal to itself.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpf_005freldiff"></a>Function: <em>void</em> <strong>mpf_reldiff</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op1</var>, const mpf_t <var>op2</var>)</em></dt>
+<dd><p>Compute the relative difference between <var>op1</var> and <var>op2</var> and store the
+result in <var>rop</var>.  This is <em>abs(<var>op1</var>-<var>op2</var>)/<var>op1</var></em>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpf_005fsgn"></a>Macro: <em>int</em> <strong>mpf_sgn</strong> <em>(const mpf_t <var>op</var>)</em></dt>
+<dd><a name="index-Sign-tests-2"></a>
+<a name="index-Float-sign-tests"></a>
+<p>Return <em>+1</em> if <em><var>op</var> &gt; 0</em>, 0 if <em><var>op</var> = 0</em>, and
+<em>-1</em> if <em><var>op</var> &lt; 0</em>.
+</p>
+<p>This function is actually implemented as a macro.  It evaluates its argument
+multiple times.
+</p></dd></dl>
+
+
+
+
+</body>
+</html>

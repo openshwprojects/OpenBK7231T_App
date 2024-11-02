@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: strerror_r</title>
+
+<meta name="description" content="The Red Hat newlib C Library: strerror_r">
+<meta name="keywords" content="The Red Hat newlib C Library: strerror_r">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Strings.html#Strings" rel="up" title="Strings">
+<link href="strlen.html#strlen" rel="next" title="strlen">
+<link href="strerror.html#strerror" rel="prev" title="strerror">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="strerror_005fr"></a>
+<div class="header">
+<p>
+Next: <a href="strlen.html#strlen" accesskey="n" rel="next">strlen</a>, Previous: <a href="strerror.html#strerror" accesskey="p" rel="prev">strerror</a>, Up: <a href="Strings.html#Strings" accesskey="u" rel="up">Strings</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="strerror_005fr_002d_002d_002dconvert-error-number-to-string-and-copy-to-buffer"></a>
+<h3 class="section">5.28 <code>strerror_r</code>&mdash;convert error number to string and copy to buffer</h3>
+<a name="index-strerror_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;string.h&gt;
+#ifdef _GNU_SOURCE
+char *strerror_r(int <var>errnum</var>, char *<var>buffer</var>, size_t <var>n</var>);
+#else
+int strerror_r(int <var>errnum</var>, char *<var>buffer</var>, size_t <var>n</var>);
+#endif
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>strerror_r</code> converts the error number <var>errnum</var> into a
+string and copies the result into the supplied <var>buffer</var> for
+a length up to <var>n</var>, including the NUL terminator. The value of
+<var>errnum</var> is usually a copy of <code>errno</code>.  If <code>errnum</code> is not a known
+error number, the result is the empty string.
+</p>
+<p>See <code>strerror</code> for how strings are mapped to <code>errnum</code>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+There are two variants: the GNU version always returns a NUL-terminated
+string, which is <var>buffer</var> if all went well, but which is another
+pointer if <var>n</var> was too small (leaving <var>buffer</var> untouched).  If the
+return is not <var>buffer</var>, your application must not modify that string.
+The POSIX version returns 0 on success, <var>EINVAL</var> if <code>errnum</code> was not
+recognized, and <var>ERANGE</var> if <var>n</var> was too small.  The variant chosen
+depends on macros that you define before inclusion of <code>string.h</code>.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>strerror_r</code> with a <var>char *</var> result is a GNU extension.
+<code>strerror_r</code> with an <var>int</var> result is required by POSIX 2001.
+This function is compliant only if <code>_user_strerror</code> is not provided,
+or if it is thread-safe and uses separate storage according to whether
+the second argument of that function is non-zero.  For more details
+on <code>_user_strerror</code>, see the <code>strerror</code> documentation.
+</p>
+<p>POSIX states that the contents of <var>buf</var> are unspecified on error,
+although this implementation guarantees a NUL-terminated string for
+all except <var>n</var> of 0.
+</p>
+<p>POSIX recommends that unknown <var>errnum</var> result in a message including
+that value, however it is not a requirement and this implementation
+provides only an empty string (unless you provide <code>_user_strerror</code>).
+POSIX also recommends that unknown <var>errnum</var> fail with EINVAL even
+when providing such a message, however it is not a requirement and
+this implementation will return success if <code>_user_strerror</code> provided
+a non-empty alternate string without assigning into its third argument.
+</p>
+<p><code>strerror_r</code> requires no supporting OS subroutines.
+</p>
+
+<br>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="strlen.html#strlen" accesskey="n" rel="next">strlen</a>, Previous: <a href="strerror.html#strerror" accesskey="p" rel="prev">strerror</a>, Up: <a href="Strings.html#Strings" accesskey="u" rel="up">Strings</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

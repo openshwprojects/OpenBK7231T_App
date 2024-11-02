@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This file documents the GNU Assembler "as".
+
+Copyright (C) 1991-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3
+or any later version published by the Free Software Foundation;
+with no Invariant Sections, with no Front-Cover Texts, and with no
+Back-Cover Texts.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+ -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>a (Using as)</title>
+
+<meta name="description" content="a (Using as)">
+<meta name="keywords" content="a (Using as)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="AS-Index.html" rel="index" title="AS Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Invoking.html" rel="up" title="Invoking">
+<link href="alternate.html" rel="next" title="alternate">
+<link href="Invoking.html" rel="prev" title="Invoking">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="a"></span><div class="header">
+<p>
+Next: <a href="alternate.html" accesskey="n" rel="next">alternate</a>, Up: <a href="Invoking.html" accesskey="u" rel="up">Invoking</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="AS-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Enable-Listings_003a-_002da_005bcdghlns_005d"></span><h3 class="section">2.1 Enable Listings: <samp>-a[cdghlns]</samp></h3>
+
+<span id="index-_002da"></span>
+<span id="index-_002dac"></span>
+<span id="index-_002dad"></span>
+<span id="index-_002dag"></span>
+<span id="index-_002dah"></span>
+<span id="index-_002dal"></span>
+<span id="index-_002dan"></span>
+<span id="index-_002das"></span>
+<span id="index-listings_002c-enabling"></span>
+<span id="index-assembly-listings_002c-enabling"></span>
+
+<p>These options enable listing output from the assembler.  By itself,
+&lsquo;<samp>-a</samp>&rsquo; requests high-level, assembly, and symbols listing.
+You can use other letters to select specific options for the list:
+&lsquo;<samp>-ah</samp>&rsquo; requests a high-level language listing,
+&lsquo;<samp>-al</samp>&rsquo; requests an output-program assembly listing, and
+&lsquo;<samp>-as</samp>&rsquo; requests a symbol table listing.
+High-level listings require that a compiler debugging option like
+&lsquo;<samp>-g</samp>&rsquo; be used, and that assembly listings (&lsquo;<samp>-al</samp>&rsquo;) be requested
+also.
+</p>
+<p>Use the &lsquo;<samp>-ag</samp>&rsquo; option to print a first section with general assembly
+information, like as version, switches passed, or time stamp.
+</p>
+<p>Use the &lsquo;<samp>-ac</samp>&rsquo; option to omit false conditionals from a listing.  Any lines
+which are not assembled because of a false <code>.if</code> (or <code>.ifdef</code>, or any
+other conditional), or a true <code>.if</code> followed by an <code>.else</code>, will be
+omitted from the listing.
+</p>
+<p>Use the &lsquo;<samp>-ad</samp>&rsquo; option to omit debugging directives from the
+listing.
+</p>
+<p>Once you have specified one of these options, you can further control
+listing output and its appearance using the directives <code>.list</code>,
+<code>.nolist</code>, <code>.psize</code>, <code>.eject</code>, <code>.title</code>, and
+<code>.sbttl</code>.
+The &lsquo;<samp>-an</samp>&rsquo; option turns off all forms processing.
+If you do not request listing output with one of the &lsquo;<samp>-a</samp>&rsquo; options, the
+listing-control directives have no effect.
+</p>
+<p>The letters after &lsquo;<samp>-a</samp>&rsquo; may be combined into one option,
+<em>e.g.</em>, &lsquo;<samp>-aln</samp>&rsquo;.
+</p>
+<p>Note if the assembler source is coming from the standard input (e.g.,
+because it
+is being created by <code>gcc</code> and the &lsquo;<samp>-pipe</samp>&rsquo; command-line switch
+is being used) then the listing will not contain any comments or preprocessor
+directives.  This is because the listing code buffers input source lines from
+stdin only after they have been preprocessed by the assembler.  This reduces
+memory usage and makes the code more efficient.
+</p>
+<hr>
+<div class="header">
+<p>
+Next: <a href="alternate.html" accesskey="n" rel="next">alternate</a>, Up: <a href="Invoking.html" accesskey="u" rel="up">Invoking</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="AS-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 1988-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "Free Software" and "Free Software Needs
+Free Documentation", with the Front-Cover Texts being "A GNU Manual,"
+and with the Back-Cover Texts as in (a) below.
+
+(a) The FSF's Back-Cover Text is: "You are free to copy and modify
+this GNU Manual.  Buying copies from GNU Press supports the FSF in
+developing GNU and promoting software freedom." -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Lazy Strings In Python (Debugging with GDB)</title>
+
+<meta name="description" content="Lazy Strings In Python (Debugging with GDB)">
+<meta name="keywords" content="Lazy Strings In Python (Debugging with GDB)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="Concept-Index.html" rel="index" title="Concept Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Python-API.html" rel="up" title="Python API">
+<link href="Architectures-In-Python.html" rel="next" title="Architectures In Python">
+<link href="Finish-Breakpoints-in-Python.html" rel="prev" title="Finish Breakpoints in Python">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="Lazy-Strings-In-Python"></span><div class="header">
+<p>
+Next: <a href="Architectures-In-Python.html" accesskey="n" rel="next">Architectures In Python</a>, Previous: <a href="Finish-Breakpoints-in-Python.html" accesskey="p" rel="prev">Finish Breakpoints in Python</a>, Up: <a href="Python-API.html" accesskey="u" rel="up">Python API</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Python-representation-of-lazy-strings"></span><h4 class="subsubsection">23.2.2.32 Python representation of lazy strings</h4>
+
+<span id="index-lazy-strings-in-python"></span>
+<span id="index-gdb_002eLazyString"></span>
+
+<p>A <em>lazy string</em> is a string whose contents is not retrieved or
+encoded until it is needed.
+</p>
+<p>A <code>gdb.LazyString</code> is represented in <small>GDB</small> as an
+<code>address</code> that points to a region of memory, an <code>encoding</code>
+that will be used to encode that region of memory, and a <code>length</code>
+to delimit the region of memory that represents the string.  The
+difference between a <code>gdb.LazyString</code> and a string wrapped within
+a <code>gdb.Value</code> is that a <code>gdb.LazyString</code> will be treated
+differently by <small>GDB</small> when printing.  A <code>gdb.LazyString</code> is
+retrieved and encoded during printing, while a <code>gdb.Value</code>
+wrapping a string is immediately retrieved and encoded on creation.
+</p>
+<p>A <code>gdb.LazyString</code> object has the following functions:
+</p>
+<dl>
+<dt id="index-LazyString_002evalue">Function: <strong>LazyString.value</strong> <em>()</em></dt>
+<dd><p>Convert the <code>gdb.LazyString</code> to a <code>gdb.Value</code>.  This value
+will point to the string in memory, but will lose all the delayed
+retrieval, encoding and handling that <small>GDB</small> applies to a
+<code>gdb.LazyString</code>.
+</p></dd></dl>
+
+<dl>
+<dt id="index-LazyString_002eaddress">Variable: <strong>LazyString.address</strong></dt>
+<dd><p>This attribute holds the address of the string.  This attribute is not
+writable.
+</p></dd></dl>
+
+<dl>
+<dt id="index-LazyString_002elength">Variable: <strong>LazyString.length</strong></dt>
+<dd><p>This attribute holds the length of the string in characters.  If the
+length is -1, then the string will be fetched and encoded up to the
+first null of appropriate width.  This attribute is not writable.
+</p></dd></dl>
+
+<dl>
+<dt id="index-LazyString_002eencoding">Variable: <strong>LazyString.encoding</strong></dt>
+<dd><p>This attribute holds the encoding that will be applied to the string
+when the string is printed by <small>GDB</small>.  If the encoding is not
+set, or contains an empty string,  then <small>GDB</small> will select the
+most appropriate encoding when the string is printed.  This attribute
+is not writable.
+</p></dd></dl>
+
+<dl>
+<dt id="index-LazyString_002etype">Variable: <strong>LazyString.type</strong></dt>
+<dd><p>This attribute holds the type that is represented by the lazy string&rsquo;s
+type.  For a lazy string this is a pointer or array type.  To
+resolve this to the lazy string&rsquo;s character type, use the type&rsquo;s
+<code>target</code> method.  See <a href="Types-In-Python.html">Types In Python</a>.  This attribute is not
+writable.
+</p></dd></dl>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Architectures-In-Python.html" accesskey="n" rel="next">Architectures In Python</a>, Previous: <a href="Finish-Breakpoints-in-Python.html" accesskey="p" rel="prev">Finish Breakpoints in Python</a>, Up: <a href="Python-API.html" accesskey="u" rel="up">Python API</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

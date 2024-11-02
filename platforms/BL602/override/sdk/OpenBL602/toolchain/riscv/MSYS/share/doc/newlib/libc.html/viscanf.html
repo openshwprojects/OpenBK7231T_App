@@ -1,0 +1,115 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: viscanf</title>
+
+<meta name="description" content="The Red Hat newlib C Library: viscanf">
+<meta name="keywords" content="The Red Hat newlib C Library: viscanf">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="Strings.html#Strings" rel="next" title="Strings">
+<link href="viprintf.html#viprintf" rel="prev" title="viprintf">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="viscanf"></a>
+<div class="header">
+<p>
+Previous: <a href="viprintf.html#viprintf" accesskey="p" rel="prev">viprintf</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="viscanf_002c-vfiscanf_002c-vsiscanf_002d_002d_002dformat-argument-list"></a>
+<h3 class="section">4.75 <code>viscanf</code>, <code>vfiscanf</code>, <code>vsiscanf</code>&mdash;format argument list</h3>
+<a name="index-viscanf"></a>
+<a name="index-_005fviscanf_005fr"></a>
+<a name="index-vfiscanf"></a>
+<a name="index-_005fvfiscanf_005fr"></a>
+<a name="index-vsiscanf"></a>
+<a name="index-_005fvsiscanf_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+#include &lt;stdarg.h&gt;
+int viscanf(const char *<var>fmt</var>, va_list <var>list</var>);
+int vfiscanf(FILE *<var>fp</var>, const char *<var>fmt</var>, va_list <var>list</var>);
+int vsiscanf(const char *<var>str</var>, const char *<var>fmt</var>, va_list <var>list</var>);
+
+int _viscanf_r(struct _reent *<var>reent</var>, const char *<var>fmt</var>, 
+    va_list <var>list</var>);
+int _vfiscanf_r(struct _reent *<var>reent</var>, FILE *<var>fp</var>, const char *<var>fmt</var>, 
+    va_list <var>list</var>);
+int _vsiscanf_r(struct _reent *<var>reent</var>, const char *<var>str</var>,
+    const char *<var>fmt</var>, va_list <var>list</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>viscanf</code>, <code>vfiscanf</code>, and <code>vsiscanf</code> are (respectively) variants
+of <code>iscanf</code>, <code>fiscanf</code>, and <code>siscanf</code>.  They differ only in 
+allowing their caller to pass the variable argument list as a 
+<code>va_list</code> object (initialized by <code>va_start</code>) rather than 
+directly accepting a variable number of arguments.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+The return values are consistent with the corresponding functions:
+<code>viscanf</code> returns the number of input fields successfully scanned,
+converted, and stored; the return value does not include scanned
+fields which were not stored.  
+</p>
+<p>If <code>viscanf</code> attempts to read at end-of-file, the return value 
+is <code>EOF</code>.
+</p>
+<p>If no fields were stored, the return value is <code>0</code>.
+</p>
+<p>The routines <code>_viscanf_r</code>, <code>_vfiscanf_f</code>, and <code>_vsiscanf_r</code> are
+reentrant versions which take an additional first parameter which points to the
+reentrancy structure.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+These are newlib extensions.
+</p>
+<p>Supporting OS subroutines required:
+</p>
+<br>
+
+
+
+</body>
+</html>

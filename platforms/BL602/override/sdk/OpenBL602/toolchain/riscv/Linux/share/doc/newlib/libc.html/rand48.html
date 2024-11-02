@@ -1,0 +1,173 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: rand48</title>
+
+<meta name="description" content="The Red Hat newlib C Library: rand48">
+<meta name="keywords" content="The Red Hat newlib C Library: rand48">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdlib.html#Stdlib" rel="up" title="Stdlib">
+<link href="rpmatch.html#rpmatch" rel="next" title="rpmatch">
+<link href="random.html#random" rel="prev" title="random">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="rand48"></a>
+<div class="header">
+<p>
+Next: <a href="rpmatch.html#rpmatch" accesskey="n" rel="next">rpmatch</a>, Previous: <a href="random.html#random" accesskey="p" rel="prev">random</a>, Up: <a href="Stdlib.html#Stdlib" accesskey="u" rel="up">Stdlib</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="rand48_002c-drand48_002c-erand48_002c-lrand48_002c-nrand48_002c-mrand48_002c-jrand48_002c-srand48_002c-seed48_002c-lcong48_002d_002d_002dpseudo_002drandom-number-generators-and-initialization-routines"></a>
+<h3 class="section">2.35 <code>rand48</code>, <code>drand48</code>, <code>erand48</code>, <code>lrand48</code>, <code>nrand48</code>, <code>mrand48</code>, <code>jrand48</code>, <code>srand48</code>, <code>seed48</code>, <code>lcong48</code>&mdash;pseudo-random number generators and initialization routines</h3>
+<a name="index-rand48"></a>
+<a name="index-drand48"></a>
+<a name="index-erand48"></a>
+<a name="index-lrand48"></a>
+<a name="index-nrand48"></a>
+<a name="index-mrand48"></a>
+<a name="index-jrand48"></a>
+<a name="index-srand48"></a>
+<a name="index-seed48"></a>
+<a name="index-lcong48"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdlib.h&gt;
+double drand48(void);
+double erand48(unsigned short <var>xseed</var>[3]);
+long lrand48(void);
+long nrand48(unsigned short <var>xseed</var>[3]);
+long mrand48(void);
+long jrand48(unsigned short <var>xseed</var>[3]);
+void srand48(long <var>seed</var>);
+unsigned short *seed48(unsigned short <var>xseed</var>[3]);
+void lcong48(unsigned short <var>p</var>[7]);
+
+</pre></div>
+<p><strong>Description</strong><br>
+The <code>rand48</code> family of functions generates pseudo-random numbers
+using a linear congruential algorithm working on integers 48 bits in size.
+The particular formula employed is
+r(n+1) = (a * r(n) + c) mod m
+where the default values are
+for the multiplicand a = 0xfdeece66d = 25214903917 and
+the addend c = 0xb = 11. The modulo is always fixed at m = 2 ** 48.
+r(n) is called the seed of the random number generator.
+</p>
+<p>For all the six generator routines described next, the first
+computational step is to perform a single iteration of the algorithm.
+</p>
+<p><code>drand48</code> and <code>erand48</code>
+return values of type double. The full 48 bits of r(n+1) are
+loaded into the mantissa of the returned value, with the exponent set
+such that the values produced lie in the interval [0.0, 1.0].
+</p>
+<p><code>lrand48</code> and <code>nrand48</code>
+return values of type long in the range
+[0, 2**31-1]. The high-order (31) bits of
+r(n+1) are loaded into the lower bits of the returned value, with
+the topmost (sign) bit set to zero.
+</p>
+<p><code>mrand48</code> and <code>jrand48</code>
+return values of type long in the range
+[-2**31, 2**31-1]. The high-order (32) bits of
+r(n+1) are loaded into the returned value.
+</p>
+<p><code>drand48</code>, <code>lrand48</code>, and <code>mrand48</code>
+use an internal buffer to store r(n). For these functions
+the initial value of r(0) = 0x1234abcd330e = 20017429951246.
+</p>
+<p>On the other hand, <code>erand48</code>, <code>nrand48</code>, and <code>jrand48</code>
+use a user-supplied buffer to store the seed r(n),
+which consists of an array of 3 shorts, where the zeroth member
+holds the least significant bits.
+</p>
+<p>All functions share the same multiplicand and addend.
+</p>
+<p><code>srand48</code> is used to initialize the internal buffer r(n) of
+<code>drand48</code>, <code>lrand48</code>, and <code>mrand48</code>
+such that the 32 bits of the seed value are copied into the upper 32 bits
+of r(n), with the lower 16 bits of r(n) arbitrarily being set to 0x330e.
+Additionally, the constant multiplicand and addend of the algorithm are
+reset to the default values given above.
+</p>
+<p><code>seed48</code> also initializes the internal buffer r(n) of
+<code>drand48</code>, <code>lrand48</code>, and <code>mrand48</code>,
+but here all 48 bits of the seed can be specified in an array of 3 shorts,
+where the zeroth member specifies the lowest bits. Again,
+the constant multiplicand and addend of the algorithm are
+reset to the default values given above.
+<code>seed48</code> returns a pointer to an array of 3 shorts which contains
+the old seed.
+This array is statically allocated, thus its contents are lost after
+each new call to <code>seed48</code>.
+</p>
+<p>Finally, <code>lcong48</code> allows full control over the multiplicand and
+addend used in <code>drand48</code>, <code>erand48</code>, <code>lrand48</code>, <code>nrand48</code>,
+<code>mrand48</code>, and <code>jrand48</code>,
+and the seed used in <code>drand48</code>, <code>lrand48</code>, and <code>mrand48</code>.
+An array of 7 shorts is passed as parameter; the first three shorts are
+used to initialize the seed; the second three are used to initialize the
+multiplicand; and the last short is used to initialize the addend.
+It is thus not possible to use values greater than 0xffff as the addend.
+</p>
+<p>Note that all three methods of seeding the random number generator
+always also set the multiplicand and addend for any of the six
+generator calls.
+</p>
+<p>For a more powerful random number generator, see <code>random</code>.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+SUS requires these functions.
+</p>
+<p>No supporting OS subroutines are required.
+</p>
+<br>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="rpmatch.html#rpmatch" accesskey="n" rel="next">rpmatch</a>, Previous: <a href="random.html#random" accesskey="p" rel="prev">random</a>, Up: <a href="Stdlib.html#Stdlib" accesskey="u" rel="up">Stdlib</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

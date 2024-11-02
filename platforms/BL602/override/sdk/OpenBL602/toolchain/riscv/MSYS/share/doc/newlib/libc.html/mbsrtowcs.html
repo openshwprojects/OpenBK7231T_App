@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: mbsrtowcs</title>
+
+<meta name="description" content="The Red Hat newlib C Library: mbsrtowcs">
+<meta name="keywords" content="The Red Hat newlib C Library: mbsrtowcs">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdlib.html#Stdlib" rel="up" title="Stdlib">
+<link href="mbstowcs.html#mbstowcs" rel="next" title="mbstowcs">
+<link href="mblen.html#mblen" rel="prev" title="mblen">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="mbsrtowcs"></a>
+<div class="header">
+<p>
+Next: <a href="mbstowcs.html#mbstowcs" accesskey="n" rel="next">mbstowcs</a>, Previous: <a href="mblen.html#mblen" accesskey="p" rel="prev">mblen</a>, Up: <a href="Stdlib.html#Stdlib" accesskey="u" rel="up">Stdlib</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="mbsrtowcs_002c-mbsnrtowcs_002d_002d_002dconvert-a-character-string-to-a-wide_002dcharacter-string"></a>
+<h3 class="section">2.28 <code>mbsrtowcs</code>, <code>mbsnrtowcs</code>&mdash;convert a character string to a wide-character string</h3>
+<a name="index-mbsrtowcs"></a>
+<a name="index-_005fmbsrtowcs_005fr"></a>
+<a name="index-mbsnrtowcs"></a>
+<a name="index-_005fmbsnrtowcs_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;wchar.h&gt;
+size_t mbsrtowcs(wchar_t *__restrict <var>dst</var>,
+    const char **__restrict <var>src</var>,
+    size_t <var>len</var>,
+    mbstate_t *__restrict <var>ps</var>);
+
+#include &lt;wchar.h&gt;
+size_t _mbsrtowcs_r(struct _reent *<var>ptr</var>, wchar_t *<var>dst</var>,
+    const char **<var>src</var>, size_t <var>len</var>,
+    mbstate_t *<var>ps</var>);
+
+#include &lt;wchar.h&gt;
+size_t mbsnrtowcs(wchar_t *__ restrict <var>dst</var>, 
+    const char **__restrict <var>src</var>, size_t <var>nms</var>,
+    size_t <var>len</var>, mbstate_t *__restrict <var>ps</var>);
+
+#include &lt;wchar.h&gt;
+size_t _mbsnrtowcs_r(struct _reent *<var>ptr</var>, wchar_t *<var>dst</var>,
+    const char **<var>src</var>, size_t <var>nms</var>,
+    size_t <var>len</var>, mbstate_t *<var>ps</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+The <code>mbsrtowcs</code> function converts a sequence of multibyte characters
+pointed to indirectly by <var>src</var> into a sequence of corresponding wide
+characters and stores at most <var>len</var> of them in the wchar_t array pointed
+to by <var>dst</var>, until it encounters a terminating null character (&rsquo;\0&rsquo;).
+</p>
+<p>If <var>dst</var> is NULL, no characters are stored.
+</p>
+<p>If <var>dst</var> is not NULL, the pointer pointed to by <var>src</var> is updated to point
+to the character after the one that conversion stopped at.  If conversion
+stops because a null character is encountered, *<var>src</var> is set to NULL.
+</p>
+<p>The mbstate_t argument, <var>ps</var>, is used to keep track of the shift state.  If
+it is NULL, <code>mbsrtowcs</code> uses an internal, static mbstate_t object, which
+is initialized to the initial conversion state at program startup.
+</p>
+<p>The <code>mbsnrtowcs</code> function behaves identically to <code>mbsrtowcs</code>, except that
+conversion stops after reading at most <var>nms</var> bytes from the buffer pointed
+to by <var>src</var>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+The <code>mbsrtowcs</code> and <code>mbsnrtowcs</code> functions return the number of wide
+characters stored in the array pointed to by <var>dst</var> if successful, otherwise
+it returns (size_t)-1.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>mbsrtowcs</code> is defined by the C99 standard.
+<code>mbsnrtowcs</code> is defined by the POSIX.1-2008 standard.
+</p>
+<br>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="mbstowcs.html#mbstowcs" accesskey="n" rel="next">mbstowcs</a>, Previous: <a href="mblen.html#mblen" accesskey="p" rel="prev">mblen</a>, Up: <a href="Stdlib.html#Stdlib" accesskey="u" rel="up">Stdlib</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

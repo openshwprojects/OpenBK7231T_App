@@ -1,0 +1,266 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Embed with GNU: Crt0</title>
+
+<meta name="description" content="Embed with GNU: Crt0">
+<meta name="keywords" content="Embed with GNU: Crt0">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="leds_002ec.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Libraries.html#Libraries" rel="up" title="Libraries">
+<link href="Linker-Scripts.html#Linker-Scripts" rel="next" title="Linker Scripts">
+<link href="Libraries.html#Libraries" rel="prev" title="Libraries">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Crt0"></a>
+<div class="header">
+<p>
+Next: <a href="Linker-Scripts.html#Linker-Scripts" accesskey="n" rel="next">Linker Scripts</a>, Up: <a href="Libraries.html#Libraries" accesskey="u" rel="up">Libraries</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<a name="Crt0_002c-the-main-startup-file"></a>
+<h3 class="section">3.1 Crt0, the main startup file</h3>
+       
+<p>To make a program that has been compiled with GCC to run, you
+need to write some startup code. The initial piece of startup code is
+called a crt0. (C RunTime 0) This is usually written in assembler, and
+it&rsquo;s object gets linked in first, and bootstraps the rest of the
+application when executed. This file needs to do the following things.
+</p>
+<ol>
+<li> Initialize anything that needs it. This init section varies. If you are
+developing an application that gets download to a ROM monitor, then
+there is usually no need for any special initialization. The ROM monitor
+handles it for you.
+
+<p>If you plan to burn your code in a ROM, then the crt0 typically has to
+do all the hardware initialization that is required to run an
+application. This can include things like initializing serial ports or
+run a memory check. It all depends on the hardware. 
+</p>    
+</li><li> Zero the BSS section. This is for uninitialized data. All the addresses in
+this section need to be initialized to zero so that programs that forget
+to check new variables default value will get unpredictable results.
+
+</li><li> Call main()
+This is what basically starts things running. If your ROM monitor
+supports it, then first setup argc and argv for command line arguments
+and an environment pointer. Then branch to main(). For G++ the the main
+routine gets a branch to __main inserted by the code generator at the
+very top.  __main() is used by G++ to initialize it&rsquo;s internal tables.
+__main() then returns back to your original main() and your code gets
+executed.
+
+</li><li> Call exit()
+After main() has returned, you need to cleanup things and return control
+of the hardware from the application. On some hardware, there is nothing
+to return to, especially if your program is in ROM.  Sometimes the best
+thing to do in this case is do a hardware reset, or branch back to the
+start address all over again.
+
+<p>When there is a ROM monitor present, usually a user trap can be called
+and then the ROM takes over. Pick a safe vector with no side
+effects. Some ROMs have a builtin trap handler just for this case.
+</p></li></ol>
+<p>portable between all the m68k based boards we have here.
+<a href="crt0_002eS.html#crt0_002eS">Example Crt0.S</a>. 
+</p>
+
+<div class="smallexample">
+<pre class="smallexample">/* ANSI concatenation macros.  */
+
+#define CONCAT1(a, b) CONCAT2(a, b)
+#define CONCAT2(a, b) a ## b
+</pre></div>
+<p>These we&rsquo;ll use later.
+</p>
+<div class="smallexample">
+<pre class="smallexample">/* These are predefined by new versions of GNU cpp.  */
+
+#ifndef __USER_LABEL_PREFIX__
+#define __USER_LABEL_PREFIX__ _
+#endif
+
+/* Use the right prefix for global labels.  */
+#define SYM(x) CONCAT1 (__USER_LABEL_PREFIX__, x)
+
+</pre></div>
+
+<p>These macros are to make this code portable between both <em>COFF</em> and
+<em>a.out</em>. <em>COFF</em> always has an <var>_ (underline)</var> prepended on
+the front of all global symbol names. <em>a.out</em> has none.
+</p>
+<div class="smallexample">
+<pre class="smallexample">#ifndef __REGISTER_PREFIX__
+#define __REGISTER_PREFIX__
+#endif
+
+/* Use the right prefix for registers.  */
+#define REG(x) CONCAT1 (__REGISTER_PREFIX__, x)
+
+#define d0 REG (d0)
+#define d1 REG (d1)
+#define d2 REG (d2)
+#define d3 REG (d3)
+#define d4 REG (d4)
+#define d5 REG (d5)
+#define d6 REG (d6)
+#define d7 REG (d7)
+#define a0 REG (a0)
+#define a1 REG (a1)
+#define a2 REG (a2)
+#define a3 REG (a3)
+#define a4 REG (a4)
+#define a5 REG (a5)
+#define a6 REG (a6)
+#define fp REG (fp)
+#define sp REG (sp)
+</pre></div>
+
+<p>This is for portability between assemblers. Some register names have a
+<var>%</var> or <var>$</var> prepended to the register name.
+</p>
+<div class="smallexample">
+<pre class="smallexample">/*
+ * Set up some room for a stack. We just grab a chunk of memory.
+ */
+	.set	stack_size, 0x2000
+	.comm	SYM (stack), stack_size
+</pre></div>
+
+<p>Set up space for the stack. This can also be done in the linker script,
+but it typically gets done here.
+</p>
+<div class="smallexample">
+<pre class="smallexample">/*
+ * Define an empty environment.
+ */
+        .data
+        .align 2
+SYM (environ):
+        .long 0
+</pre></div>
+
+<p>Set up an empty space for the environment. This is bogus on any most ROM 
+monitor, but we setup a valid address for it, and pass it to main. At
+least that way if an application checks for it, it won&rsquo;t crash.
+</p>
+<div class="smallexample">
+<pre class="smallexample"> 	.align	2
+	.text
+	.global SYM (stack)
+
+	.global SYM (main)
+	.global SYM (exit)
+/* 
+ * This really should be __bss_start, not SYM (__bss_start).
+ */
+	.global __bss_start
+</pre></div>
+
+<p>Setup a few global symbols that get used elsewhere. <var>__bss_start</var>
+needs to be unchanged, as it&rsquo;s setup by the linker script.
+</p>
+<div class="smallexample">
+<pre class="smallexample">/*
+ * start -- set things up so the application will run.
+ */
+SYM (start):
+	link	a6, #-8
+	moveal	#SYM (stack) + stack_size, sp
+
+/*
+ * zerobss -- zero out the bss section
+ */
+	moveal	#__bss_start, a0
+	moveal	#SYM (end), a1
+1:
+	movel	#0, (a0)
+	leal	4(a0), a0
+	cmpal	a0, a1
+	bne	1b
+</pre></div>
+
+<p>The global symbol <code>start</code> is used by the linker as the default
+address to use for the <code>.text</code> section. then it zeros the
+<code>.bss</code> section so the uninitialized data will all be cleared. Some
+programs have wild side effects from having the .bss section let
+uncleared. Particularly it causes problems with some implementations of
+<code>malloc</code>. 
+</p>
+<div class="smallexample">
+<pre class="smallexample">/*
+ * Call the main routine from the application to get it going.
+ * main (argc, argv, environ)
+ * We pass argv as a pointer to NULL.
+ */
+        pea     0
+        pea     SYM (environ)
+        pea     sp@(4)
+        pea     0
+	jsr	SYM (main)
+	movel	d0, sp@-
+</pre></div>
+
+<p>Setup the environment pointer and jump to <code>main()</code>. When
+<code>main()</code> returns, it drops down to the <code>exit</code> routine below.
+</p>
+<div class="smallexample">
+<pre class="smallexample">/*
+ * _exit -- Exit from the application. Normally we cause a user trap
+ *          to return to the ROM monitor for another run.
+ */
+SYM (exit):
+	trap	#0
+</pre></div>
+
+<p>Implementing <code>exit</code> here is easy. Both the <code>rom68k</code> and <code>bug</code>
+can handle a user caused exception of <code>zero</code> with no side effects.
+Although the <code>bug</code> monitor has a user caused trap that will return
+control to the ROM monitor, this solution has been more portable.
+</p>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Linker-Scripts.html#Linker-Scripts" accesskey="n" rel="next">Linker Scripts</a>, Up: <a href="Libraries.html#Libraries" accesskey="u" rel="up">Libraries</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+
+
+
+</body>
+</html>

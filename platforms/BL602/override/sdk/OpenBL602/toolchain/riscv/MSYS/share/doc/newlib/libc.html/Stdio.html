@@ -1,0 +1,243 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: Stdio</title>
+
+<meta name="description" content="The Red Hat newlib C Library: Stdio">
+<meta name="keywords" content="The Red Hat newlib C Library: Stdio">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="index.html#Top" rel="up" title="Top">
+<link href="clearerr.html#clearerr" rel="next" title="clearerr">
+<link href="wctrans.html#wctrans" rel="prev" title="wctrans">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Stdio"></a>
+<div class="header">
+<p>
+Next: <a href="Strings.html#Strings" accesskey="n" rel="next">Strings</a>, Previous: <a href="Ctype.html#Ctype" accesskey="p" rel="prev">Ctype</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Input-and-Output-_0028stdio_002eh_0029"></a>
+<h2 class="chapter">4 Input and Output (<samp>stdio.h</samp>)</h2>
+
+<p>This chapter comprises functions to manage files
+or other input/output streams. Among these functions are subroutines
+to generate or scan strings according to specifications from a format string.
+</p>
+<p>The underlying facilities for input and output depend on the host
+system, but these functions provide a uniform interface.
+</p>
+<p>The corresponding declarations are in <samp>stdio.h</samp>.
+</p>
+<p>The reentrant versions of these functions use macros
+</p>
+<div class="example">
+<pre class="example">_stdin_r(<var>reent</var>)
+_stdout_r(<var>reent</var>)
+_stderr_r(<var>reent</var>)
+</pre></div>
+
+<p>instead of the globals <code>stdin</code>, <code>stdout</code>, and
+<code>stderr</code>.  The argument <var>reent</var> is a pointer to a reentrancy
+structure.
+</p>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="clearerr.html#clearerr" accesskey="1">clearerr</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Clear file or stream error indicator
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="diprintf.html#diprintf" accesskey="2">diprintf</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Print to a file descriptor (integer only)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="dprintf.html#dprintf" accesskey="3">dprintf</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Print to a file descriptor
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fclose.html#fclose" accesskey="4">fclose</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Close a file
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fcloseall.html#fcloseall" accesskey="5">fcloseall</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Close all files
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fdopen.html#fdopen" accesskey="6">fdopen</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Turn an open file into a stream
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="feof.html#feof" accesskey="7">feof</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Test for end of file
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="ferror.html#ferror" accesskey="8">ferror</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Test whether read/write error has occurred
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fflush.html#fflush" accesskey="9">fflush</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Flush buffered file output
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fgetc.html#fgetc">fgetc</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Get a character from a file or stream
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fgetpos.html#fgetpos">fgetpos</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Record position in a stream or file
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fgets.html#fgets">fgets</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Get character string from a file or stream
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fgetwc.html#fgetwc">fgetwc</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Get a wide character from a file or stream
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fgetws.html#fgetws">fgetws</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Get a wide character string from a file or stream
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fileno.html#fileno">fileno</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Get file descriptor associated with stream
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fmemopen.html#fmemopen">fmemopen</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Open a stream around a fixed-length buffer
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fopen.html#fopen">fopen</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Open a file
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fopencookie.html#fopencookie">fopencookie</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Open a stream with custom callbacks
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fpurge.html#fpurge">fpurge</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Discard all pending I/O on a stream
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fputc.html#fputc">fputc</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Write a character on a stream or file
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fputs.html#fputs">fputs</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Write a character string in a file or stream
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fputwc.html#fputwc">fputwc</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Write a wide character to a file or stream
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fputws.html#fputws">fputws</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Write a wide character string to a file or stream
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fread.html#fread">fread</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Read array elements from a file
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="freopen.html#freopen">freopen</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Open a file using an existing file descriptor
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fseek.html#fseek">fseek</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Set file position
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="_005f_005ffsetlocking.html#g_t_005f_005ffsetlocking">__fsetlocking</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Set or query locking mode on FILE stream
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fsetpos.html#fsetpos">fsetpos</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Restore position of a stream or file
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="ftell.html#ftell">ftell</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Return position in a stream or file
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="funopen.html#funopen">funopen</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Open a stream with custom callbacks
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fwide.html#fwide">fwide</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Set and determine the orientation of a FILE stream
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fwrite.html#fwrite">fwrite</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Write array elements from memory to a file or stream
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="getc.html#getc">getc</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Get a character from a file or stream (macro)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="getc_005funlocked.html#getc_005funlocked">getc_unlocked</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Get a character from a file or stream (macro)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="getchar.html#getchar">getchar</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Get a character from standard input (macro)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="getchar_005funlocked.html#getchar_005funlocked">getchar_unlocked</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Get a character from standard input (macro)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="getdelim.html#getdelim">getdelim</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Get character string from a file or stream
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="getline.html#getline">getline</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Get character string from a file or stream
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="gets.html#gets">gets</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Get character string from standard input (obsolete)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="getw.html#getw">getw</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Get a word (int) from a file or stream
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="getwchar.html#getwchar">getwchar</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Get a wide character from standard input
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="mktemp.html#mktemp">mktemp</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Generate unused file name
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="open_005fmemstream.html#open_005fmemstream">open_memstream</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Open a write stream around an arbitrary-length buffer
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="perror.html#perror">perror</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Print an error message on standard error
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="putc.html#putc">putc</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Write a character on a stream or file (macro)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="putc_005funlocked.html#putc_005funlocked">putc_unlocked</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Write a character on a stream or file (macro)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="putchar.html#putchar">putchar</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Write a character on standard output (macro)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="putchar_005funlocked.html#putchar_005funlocked">putchar_unlocked</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Write a character on standard output (macro)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="puts.html#puts">puts</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Write a character string on standard output
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="putw.html#putw">putw</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Write a word (int) to a file or stream
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="putwchar.html#putwchar">putwchar</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Write a wide character to standard output
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="remove.html#remove">remove</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Delete a file&rsquo;s name
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="rename.html#rename">rename</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Rename a file
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="rewind.html#rewind">rewind</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Reinitialize a file or stream
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="setbuf.html#setbuf">setbuf</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Specify full buffering for a file or stream
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="setbuffer.html#setbuffer">setbuffer</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Specify full buffering for a file or stream with size
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="setlinebuf.html#setlinebuf">setlinebuf</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Specify line buffering for a file or stream
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="setvbuf.html#setvbuf">setvbuf</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Specify buffering for a file or stream
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="siprintf.html#siprintf">siprintf</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Write formatted output (integer only)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="siscanf.html#siscanf">siscanf</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Scan and format input (integer only)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="sprintf.html#sprintf">sprintf</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Write formatted output
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="sscanf.html#sscanf">sscanf</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Scan and format input
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="stdio_005fext.html#stdio_005fext">stdio_ext</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Access internals of FILE structure
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="swprintf.html#swprintf">swprintf</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Write formatted wide character output
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="swscanf.html#swscanf">swscanf</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Scan and format wide character input
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="tmpfile.html#tmpfile">tmpfile</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Create a temporary file
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="tmpnam.html#tmpnam">tmpnam</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Generate name for a temporary file
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="ungetc.html#ungetc">ungetc</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Push data back into a stream
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="ungetwc.html#ungetwc">ungetwc</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Push wide character data back into a stream
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="vfprintf.html#vfprintf">vfprintf</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Format variable argument list
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="vfscanf.html#vfscanf">vfscanf</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Scan variable argument list
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="vfwprintf.html#vfwprintf">vfwprintf</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Format variable wide character argument list
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="vfwscanf.html#vfwscanf">vfwscanf</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Scan and format argument list from wide character input
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="viprintf.html#viprintf">viprintf</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Format variable argument list (integer only)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="viscanf.html#viscanf">viscanf</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Scan variable format list (integer only)
+</td></tr>
+</table>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Strings.html#Strings" accesskey="n" rel="next">Strings</a>, Previous: <a href="Ctype.html#Ctype" accesskey="p" rel="prev">Ctype</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

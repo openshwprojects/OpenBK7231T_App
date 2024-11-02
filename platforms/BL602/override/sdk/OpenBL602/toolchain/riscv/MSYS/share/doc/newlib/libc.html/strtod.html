@@ -1,0 +1,156 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: strtod</title>
+
+<meta name="description" content="The Red Hat newlib C Library: strtod">
+<meta name="keywords" content="The Red Hat newlib C Library: strtod">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdlib.html#Stdlib" rel="up" title="Stdlib">
+<link href="strtol.html#strtol" rel="next" title="strtol">
+<link href="rpmatch.html#rpmatch" rel="prev" title="rpmatch">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="strtod"></a>
+<div class="header">
+<p>
+Next: <a href="strtol.html#strtol" accesskey="n" rel="next">strtol</a>, Previous: <a href="rpmatch.html#rpmatch" accesskey="p" rel="prev">rpmatch</a>, Up: <a href="Stdlib.html#Stdlib" accesskey="u" rel="up">Stdlib</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="strtod_002c-strtof_002c-strtold_002c-strtod_005fl_002c-strtof_005fl_002c-strtold_005fl_002d_002d_002dstring-to-double-or-float"></a>
+<h3 class="section">2.37 <code>strtod</code>, <code>strtof</code>, <code>strtold</code>, <code>strtod_l</code>, <code>strtof_l</code>, <code>strtold_l</code>&mdash;string to double or float</h3>
+<a name="index-strtod"></a>
+<a name="index-strtof"></a>
+<a name="index-strtold"></a>
+<a name="index-strtod_005fl"></a>
+<a name="index-strtof_005fl"></a>
+<a name="index-strtold_005fl"></a>
+<a name="index-_005fstrtod_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdlib.h&gt;
+double strtod(const char *restrict <var>str</var>, char **restrict <var>tail</var>);
+float strtof(const char *restrict <var>str</var>, char **restrict <var>tail</var>);
+long double strtold(const char *restrict <var>str</var>,
+    char **restrict <var>tail</var>);
+
+#include &lt;stdlib.h&gt;
+double strtod_l(const char *restrict <var>str</var>, char **restrict <var>tail</var>,
+    locale_t <var>locale</var>);
+float strtof_l(const char *restrict <var>str</var>, char **restrict <var>tail</var>,
+    locale_t <var>locale</var>);
+long double strtold_l(const char *restrict <var>str</var>,
+    char **restrict <var>tail</var>,
+    locale_t <var>locale</var>);
+
+double _strtod_r(void *<var>reent</var>,
+    const char *restrict <var>str</var>, char **restrict <var>tail</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>strtod</code>, <code>strtof</code>, <code>strtold</code> parse the character string
+<var>str</var>, producing a substring which can be converted to a double,
+float, or long double value, respectively.  The substring converted
+is the longest initial subsequence of <var>str</var>, beginning with the
+first non-whitespace character, that has one of these formats:
+</p><div class="smallexample">
+<pre class="smallexample">[+|-]<var>digits</var>[.[<var>digits</var>]][(e|E)[+|-]<var>digits</var>]
+[+|-].<var>digits</var>[(e|E)[+|-]<var>digits</var>]
+[+|-](i|I)(n|N)(f|F)[(i|I)(n|N)(i|I)(t|T)(y|Y)]
+[+|-](n|N)(a|A)(n|N)[&lt;(&gt;[<var>hexdigits</var>]&lt;)&gt;]
+[+|-]0(x|X)<var>hexdigits</var>[.[<var>hexdigits</var>]][(p|P)[+|-]<var>digits</var>]
+[+|-]0(x|X).<var>hexdigits</var>[(p|P)[+|-]<var>digits</var>]
+</pre></div>
+<p>The substring contains no characters if <var>str</var> is empty, consists
+entirely of whitespace, or if the first non-whitespace
+character is something other than <code>+</code>, <code>-</code>, <code>.</code>, or a
+digit, and cannot be parsed as infinity or NaN. If the platform
+does not support NaN, then NaN is treated as an empty substring.
+If the substring is empty, no conversion is done, and
+the value of <var>str</var> is stored in <code>*<var>tail</var></code>.  Otherwise,
+the substring is converted, and a pointer to the final string
+(which will contain at least the terminating null character of
+<var>str</var>) is stored in <code>*<var>tail</var></code>.  If you want no
+assignment to <code>*<var>tail</var></code>, pass a null pointer as <var>tail</var>.
+</p>
+<p>This implementation returns the nearest machine number to the
+input decimal string.  Ties are broken by using the IEEE
+round-even rule.  However, <code>strtof</code> is currently subject to
+double rounding errors.
+</p>
+<p><code>strtod_l</code>, <code>strtof_l</code>, <code>strtold_l</code> are like <code>strtod</code>,
+<code>strtof</code>, <code>strtold</code> but perform the conversion based on the
+locale specified by the locale object locale.  If <var>locale</var> is
+LC_GLOBAL_LOCALE or not a valid locale object, the behaviour is
+undefined.
+</p>
+<p>The alternate function <code>_strtod_r</code> is a reentrant version.
+The extra argument <var>reent</var> is a pointer to a reentrancy structure.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+These functions return the converted substring value, if any.  If
+no conversion could be performed, 0 is returned.  If the correct
+value is out of the range of representable values, plus or minus
+<code>HUGE_VAL</code> (<code>HUGE_VALF</code>, <code>HUGE_VALL</code>) is returned, and
+<code>ERANGE</code> is stored in errno. If the correct value would cause
+underflow, 0 is returned and <code>ERANGE</code> is stored in errno.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>strtod</code> is ANSI.
+<code>strtof</code>, <code>strtold</code> are C99.
+<code>strtod_l</code>, <code>strtof_l</code>, <code>strtold_l</code> are GNU extensions.
+</p>
+<p>Supporting OS subroutines required: <code>close</code>, <code>fstat</code>, <code>isatty</code>,
+<code>lseek</code>, <code>read</code>, <code>sbrk</code>, <code>write</code>.
+</p>
+<br>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="strtol.html#strtol" accesskey="n" rel="next">strtol</a>, Previous: <a href="rpmatch.html#rpmatch" accesskey="p" rel="prev">rpmatch</a>, Up: <a href="Stdlib.html#Stdlib" accesskey="u" rel="up">Stdlib</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

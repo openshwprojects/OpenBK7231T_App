@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual documents how to install and use the Multiple Precision
+Floating-Point Reliable Library, version 3.1.4.
+
+Copyright 1991, 1993-2016 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with no Front-Cover Texts, and with no Back-Cover Texts.  A copy of the
+license is included in GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MPFR 3.1.4: Reporting Bugs</title>
+
+<meta name="description" content="How to install and use GNU MPFR, a library for reliable multiple precision
+floating-point arithmetic, version 3.1.4.">
+<meta name="keywords" content="GNU MPFR 3.1.4: Reporting Bugs">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="index.html#Top" rel="up" title="Top">
+<link href="MPFR-Basics.html#MPFR-Basics" rel="next" title="MPFR Basics">
+<link href="Installing-MPFR.html#Installing-MPFR" rel="prev" title="Installing MPFR">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Reporting-Bugs"></a>
+<div class="header">
+<p>
+Next: <a href="MPFR-Basics.html#MPFR-Basics" accesskey="n" rel="next">MPFR Basics</a>, Previous: <a href="Installing-MPFR.html#Installing-MPFR" accesskey="p" rel="prev">Installing MPFR</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Reporting-Bugs-1"></a>
+<h2 class="chapter">3 Reporting Bugs</h2>
+<a name="index-Reporting-bugs"></a>
+
+<p>If you think you have found a bug in the MPFR library, first have a look
+on the MPFR 3.1.4 web page <a href="http://www.mpfr.org/mpfr-3.1.4/">http://www.mpfr.org/mpfr-3.1.4/</a> and the
+FAQ <a href="http://www.mpfr.org/faq.html">http://www.mpfr.org/faq.html</a>:
+perhaps this bug is already known, in which case you may find there
+a workaround for it.
+You might also look in the archives of the MPFR mailing-list:
+<a href="https://sympa.inria.fr/sympa/arc/mpfr">https://sympa.inria.fr/sympa/arc/mpfr</a>.
+Otherwise, please investigate and report it.
+We have made this library available to you, and it is not to ask too
+much from you, to ask you to report the bugs that you find.
+</p>
+<p>There are a few things you should think about when you put your bug report
+together.
+</p>
+<p>You have to send us a test case that makes it possible for us to reproduce the
+bug, i.e., a small self-content program, using no other library than MPFR.
+Include instructions on how to run the test case.
+</p>
+<p>You also have to explain what is wrong; if you get a crash, or if the results
+you get are incorrect and in that case, in what way.
+</p>
+<p>Please include compiler version information in your bug report. This can
+be extracted using &lsquo;<samp>cc -V</samp>&rsquo; on some machines, or, if you&rsquo;re using GCC,
+&lsquo;<samp>gcc -v</samp>&rsquo;. Also, include the output from &lsquo;<samp>uname -a</samp>&rsquo; and the MPFR
+version (the GMP version may be useful too).
+If you get a failure while running &lsquo;<samp>make</samp>&rsquo; or &lsquo;<samp>make check</samp>&rsquo;, please
+include the <samp>config.log</samp> file in your bug report, and in case of test
+failure, the <samp>tests/test-suite.log</samp> file too.
+</p>
+<p>If your bug report is good, we will do our best to help you to get a corrected
+version of the library; if the bug report is poor, we will not do anything
+about it (aside of chiding you to send better bug reports).
+</p>
+<p>Send your bug report to the MPFR mailing-list &lsquo;<samp>mpfr@inria.fr</samp>&rsquo;.
+</p>
+<p>If you think something in this manual is unclear, or downright incorrect, or if
+the language needs to be improved, please send a note to the same address.
+</p>
+<hr>
+<div class="header">
+<p>
+Next: <a href="MPFR-Basics.html#MPFR-Basics" accesskey="n" rel="next">MPFR Basics</a>, Previous: <a href="Installing-MPFR.html#Installing-MPFR" accesskey="p" rel="prev">Installing MPFR</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

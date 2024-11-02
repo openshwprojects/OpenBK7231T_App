@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Embed with GNU: Libgloss</title>
+
+<meta name="description" content="Embed with GNU: Libgloss">
+<meta name="keywords" content="Embed with GNU: Libgloss">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="leds_002ec.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="index.html#Top" rel="up" title="Top">
+<link href="Supported-targets.html#Supported-targets" rel="next" title="Supported targets">
+<link href="index.html#Top" rel="prev" title="Top">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Libgloss"></a>
+<div class="header">
+<p>
+Next: <a href="GCC.html#GCC" accesskey="n" rel="next">GCC</a>, Previous: <a href="index.html#Top" accesskey="p" rel="prev">Top</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<a name="Libgloss-1"></a>
+<h2 class="chapter">1 Libgloss</h2>
+<p>Libgloss is a library for all the details that usually get glossed over.
+This library refers to things like startup code, and usually I/O support
+for <code>gcc</code> and <code>C library</code>. The C library used through out
+this manual is <code>newlib</code>. Newlib is a ANSI conforming C library
+developed by Cygnus Support. Libgloss could easily be made to
+support other C libraries, and it can be used standalone as well. The
+standalone configuration is typically used when bringing up new
+hardware, or on small systems. 
+</p>
+<p>For a long time, these details were part of newlib. This approach worked
+well when a complete tool chain only had to support one system. A tool
+chain refers to the series of compiler passes required to produce a
+binary file that will run on an embedded system. For C, the passes are
+cpp, gcc, gas, ld. Cpp is the preprocessor, which process all the header
+files and macros. Gcc is the compiler, which produces assembler from the
+processed C files. Gas assembles the code into object files, and then ld
+combines the object files and binds the code to addresses and produces
+the final executable image. 
+</p>
+<p>Most of the time a tool chain does only have to support one target
+execution environment. An example of this would be a tool chain for the
+AMD 29k processor family. All of the execution environments for this
+processor have the same interface, the same memory map, and the same
+I/O code. In this case all of the support code is under newlib/libc/sys.
+Libgloss&rsquo;s creation was forced initially because of the <code>cpu32</code>
+processor family. There are many different execution environments for
+this line, and they vary wildly. newlib itself has only a few
+dependencies that it needs for each target. These are explained later in
+this doc. The hardware dependent part of newlib was reorganized into a
+separate directory structure within newlib called the stub dirs. It was
+initially called this because most of the routines newlib needs for a
+target were simple stubs that do nothing, but return a value to the
+application. They only exist so the linker can produce a final
+executable image. This work was done during the early part of 1993.
+</p>
+<p>After a while it became apparent that this approach of isolating the
+hardware and systems files together made sense. Around this same time
+the stub dirs were made to run standalone, mostly so it could also be
+used to support GDB&rsquo;s remote debugging needs. At this time it was
+decided to move the stub dirs out of newlib and into it&rsquo;s own separate
+library so it could be used standalone, and be included in various other
+GNU tools without having to bring in all of newlib, which is large. The
+new library is called Libgloss, for Gnu Low-level OS support. 
+</p>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="Supported-targets.html#Supported-targets" accesskey="1">Supported targets</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">What targets libgloss currently
+                                supports.
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Building-libgloss.html#Building-libgloss" accesskey="2">Building libgloss</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">How to configure and built libgloss
+                                for a target.
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Board-support.html#Board-support" accesskey="3">Board support</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">How to add support for a new board.
+</td></tr>
+</table>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="GCC.html#GCC" accesskey="n" rel="next">GCC</a>, Previous: <a href="index.html#Top" accesskey="p" rel="prev">Top</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+
+
+
+</body>
+</html>

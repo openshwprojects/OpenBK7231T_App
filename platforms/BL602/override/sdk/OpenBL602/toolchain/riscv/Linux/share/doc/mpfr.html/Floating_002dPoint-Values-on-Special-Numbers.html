@@ -1,0 +1,136 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual documents how to install and use the Multiple Precision
+Floating-Point Reliable Library, version 3.1.4.
+
+Copyright 1991, 1993-2016 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with no Front-Cover Texts, and with no Back-Cover Texts.  A copy of the
+license is included in GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MPFR 3.1.4: Floating-Point Values on Special Numbers</title>
+
+<meta name="description" content="How to install and use GNU MPFR, a library for reliable multiple precision
+floating-point arithmetic, version 3.1.4.">
+<meta name="keywords" content="GNU MPFR 3.1.4: Floating-Point Values on Special Numbers">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="MPFR-Basics.html#MPFR-Basics" rel="up" title="MPFR Basics">
+<link href="Exceptions.html#Exceptions" rel="next" title="Exceptions">
+<link href="Rounding-Modes.html#Rounding-Modes" rel="prev" title="Rounding Modes">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Floating_002dPoint-Values-on-Special-Numbers"></a>
+<div class="header">
+<p>
+Next: <a href="Exceptions.html#Exceptions" accesskey="n" rel="next">Exceptions</a>, Previous: <a href="Rounding-Modes.html#Rounding-Modes" accesskey="p" rel="prev">Rounding Modes</a>, Up: <a href="MPFR-Basics.html#MPFR-Basics" accesskey="u" rel="up">MPFR Basics</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Floating_002dPoint-Values-on-Special-Numbers-1"></a>
+<h3 class="section">4.5 Floating-Point Values on Special Numbers</h3>
+
+<p>This section specifies the floating-point values (of type <code>mpfr_t</code>)
+returned by MPFR functions (where by &ldquo;returned&rdquo; we mean here the modified
+value of the destination object, which should not be mixed with the ternary
+return value of type <code>int</code> of those functions).
+For functions returning several values (like
+<code>mpfr_sin_cos</code>), the rules apply to each result separately.
+</p>
+<p>Functions can have one or several input arguments. An input point is
+a mapping from these input arguments to the set of the MPFR numbers.
+When none of its components are NaN, an input point can also be seen
+as a tuple in the extended real numbers (the set of the real numbers
+with both infinities).
+</p>
+<p>When the input point is in the domain of the mathematical function, the
+result is rounded as described in Section &ldquo;Rounding Modes&rdquo; (but see
+below for the specification of the sign of an exact zero). Otherwise
+the general rules from this section apply unless stated otherwise in
+the description of the MPFR function (<a href="MPFR-Interface.html#MPFR-Interface">MPFR Interface</a>).
+</p>
+<p>When the input point is not in the domain of the mathematical function
+but is in its closure in the extended real numbers and the function can
+be extended by continuity, the result is the obtained limit.
+Examples: <code>mpfr_hypot</code> on (+Inf,0) gives +Inf. But <code>mpfr_pow</code>
+cannot be defined on (1,+Inf) using this rule, as one can find
+sequences (<em><var>x</var>_<var>n</var></em>,<em><var>y</var>_<var>n</var></em>) such that
+<em><var>x</var>_<var>n</var></em> goes to 1, <em><var>y</var>_<var>n</var></em> goes to +Inf
+and <em><var>x</var>_<var>n</var> to the <var>y</var>_<var>n</var></em> goes to any
+positive value when <var>n</var> goes to the infinity.
+</p>
+<p>When the input point is in the closure of the domain of the mathematical
+function and an input argument is +0 (resp. −0), one considers
+the limit when the corresponding argument approaches 0 from above
+(resp. below), if possible. If the limit is not defined (e.g.,
+<code>mpfr_sqrt</code> and <code>mpfr_log</code> on −0), the behavior is
+specified in the description of the MPFR function, but must be consistent
+with the rule from the above paragraph (e.g., <code>mpfr_log</code> on ±0
+gives −Inf).
+</p>
+<p>When the result is equal to 0, its sign is determined by considering the
+limit as if the input point were not in the domain: If one approaches 0
+from above (resp. below), the result is +0 (resp. −0);
+for example, <code>mpfr_sin</code> on −0 gives −0 and
+<code>mpfr_acos</code> on 1 gives +0 (in all rounding modes).
+In the other cases, the sign is specified in the description of the MPFR
+function; for example <code>mpfr_max</code> on −0 and +0 gives +0.
+</p>
+<p>When the input point is not in the closure of the domain of the function,
+the result is NaN. Example: <code>mpfr_sqrt</code> on −17 gives NaN.
+</p>
+<p>When an input argument is NaN, the result is NaN, possibly except when
+a partial function is constant on the finite floating-point numbers;
+such a case is always explicitly specified in <a href="MPFR-Interface.html#MPFR-Interface">MPFR Interface</a>.
+Example: <code>mpfr_hypot</code> on (NaN,0) gives NaN, but <code>mpfr_hypot</code>
+on (NaN,+Inf) gives +Inf (as specified in <a href="Special-Functions.html#Special-Functions">Special Functions</a>),
+since for any finite or infinite input <var>x</var>, <code>mpfr_hypot</code> on
+(<var>x</var>,+Inf) gives +Inf.
+</p>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Exceptions.html#Exceptions" accesskey="n" rel="next">Exceptions</a>, Previous: <a href="Rounding-Modes.html#Rounding-Modes" accesskey="p" rel="prev">Rounding Modes</a>, Up: <a href="MPFR-Basics.html#MPFR-Basics" accesskey="u" rel="up">MPFR Basics</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

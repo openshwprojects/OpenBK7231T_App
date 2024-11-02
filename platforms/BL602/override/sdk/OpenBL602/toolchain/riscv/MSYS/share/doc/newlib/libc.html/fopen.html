@@ -1,0 +1,153 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: fopen</title>
+
+<meta name="description" content="The Red Hat newlib C Library: fopen">
+<meta name="keywords" content="The Red Hat newlib C Library: fopen">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="fopencookie.html#fopencookie" rel="next" title="fopencookie">
+<link href="fmemopen.html#fmemopen" rel="prev" title="fmemopen">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="fopen"></a>
+<div class="header">
+<p>
+Next: <a href="fopencookie.html#fopencookie" accesskey="n" rel="next">fopencookie</a>, Previous: <a href="fmemopen.html#fmemopen" accesskey="p" rel="prev">fmemopen</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="fopen_002d_002d_002dopen-a-file"></a>
+<h3 class="section">4.17 <code>fopen</code>&mdash;open a file</h3>
+<a name="index-fopen"></a>
+<a name="index-_005ffopen_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+FILE *fopen(const char *<var>file</var>, const char *<var>mode</var>);
+
+FILE *_fopen_r(struct _reent *<var>reent</var>, 
+    const char *<var>file</var>, const char *<var>mode</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>fopen</code> initializes the data structures needed to read or write a
+file.  Specify the file&rsquo;s name as the string at <var>file</var>, and the kind
+of access you need to the file with the string at <var>mode</var>.
+</p>
+<p>The alternate function <code>_fopen_r</code> is a reentrant version.
+The extra argument <var>reent</var> is a pointer to a reentrancy structure.
+</p>
+<p>Three fundamental kinds of access are available: read, write, and append.
+<code>*<var>mode</var></code> must begin with one of the three characters &lsquo;<code>r</code>&rsquo;,
+&lsquo;<code>w</code>&rsquo;, or &lsquo;<code>a</code>&rsquo;, to select one of these:
+</p>
+<dl compact="compact">
+<dt><code>r</code></dt>
+<dd><p>Open the file for reading; the operation will fail if the file does
+not exist, or if the host system does not permit you to read it.
+</p>
+</dd>
+<dt><code>w</code></dt>
+<dd><p>Open the file for writing <em>from the beginning</em> of the file:
+effectively, this always creates a new file.  If the file whose name you
+specified already existed, its old contents are discarded.
+</p>
+</dd>
+<dt><code>a</code></dt>
+<dd><p>Open the file for appending data, that is writing from the end of
+file.  When you open a file this way, all data always goes to the
+current end of file; you cannot change this using <code>fseek</code>.
+</p></dd>
+</dl>
+
+
+<p>Some host systems distinguish between &ldquo;binary&rdquo; and &ldquo;text&rdquo; files.
+Such systems may perform data transformations on data written to, or
+read from, files opened as &ldquo;text&rdquo;.
+If your system is one of these, then you can append a &lsquo;<code>b</code>&rsquo; to any
+of the three modes above, to specify that you are opening the file as
+a binary file (the default is to open the file as a text file).
+</p>
+<p>&lsquo;<code>rb</code>&rsquo;, then, means &ldquo;read binary&rdquo;; &lsquo;<code>wb</code>&rsquo;, &ldquo;write binary&rdquo;; and
+&lsquo;<code>ab</code>&rsquo;, &ldquo;append binary&rdquo;.
+</p>
+<p>To make C programs more portable, the &lsquo;<code>b</code>&rsquo; is accepted on all
+systems, whether or not it makes a difference.
+</p>
+<p>Finally, you might need to both read and write from the same file.
+You can also append a &lsquo;<code>+</code>&rsquo; to any of the three modes, to permit
+this.  (If you want to append both &lsquo;<code>b</code>&rsquo; and &lsquo;<code>+</code>&rsquo;, you can do it
+in either order: for example, <code>&quot;rb+&quot;</code> means the same thing as
+<code>&quot;r+b&quot;</code> when used as a mode string.)
+</p>
+<p>Use <code>&quot;r+&quot;</code> (or <code>&quot;rb+&quot;</code>) to permit reading and writing anywhere in
+an existing file, without discarding any data; <code>&quot;w+&quot;</code> (or <code>&quot;wb+&quot;</code>)
+to create a new file (or begin by discarding all data from an old one)
+that permits reading and writing anywhere in it; and <code>&quot;a+&quot;</code> (or
+<code>&quot;ab+&quot;</code>) to permit reading anywhere in an existing file, but writing
+only at the end.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>fopen</code> returns a file pointer which you can use for other file
+operations, unless the file you requested could not be opened; in that
+situation, the result is <code>NULL</code>.  If the reason for failure was an
+invalid string at <var>mode</var>, <code>errno</code> is set to <code>EINVAL</code>.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>fopen</code> is required by ANSI C.
+</p>
+<p>Supporting OS subroutines required: <code>close</code>, <code>fstat</code>, <code>isatty</code>,
+<code>lseek</code>, <code>open</code>, <code>read</code>, <code>sbrk</code>, <code>write</code>.
+</p>
+<br>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="fopencookie.html#fopencookie" accesskey="n" rel="next">fopencookie</a>, Previous: <a href="fmemopen.html#fmemopen" accesskey="p" rel="prev">fmemopen</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

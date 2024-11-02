@@ -1,0 +1,101 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: gets</title>
+
+<meta name="description" content="The Red Hat newlib C Library: gets">
+<meta name="keywords" content="The Red Hat newlib C Library: gets">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="getw.html#getw" rel="next" title="getw">
+<link href="getline.html#getline" rel="prev" title="getline">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="gets"></a>
+<div class="header">
+<p>
+Next: <a href="getw.html#getw" accesskey="n" rel="next">getw</a>, Previous: <a href="getline.html#getline" accesskey="p" rel="prev">getline</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="gets_002d_002d_002dget-character-string-_0028obsolete_002c-use-fgets-instead_0029"></a>
+<h3 class="section">4.39 <code>gets</code>&mdash;get character string (obsolete, use <code>fgets</code> instead)</h3>
+<a name="index-gets"></a>
+<a name="index-_005fgets_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+
+char *gets(char *<var>buf</var>);
+
+char *_gets_r(struct _reent *<var>reent</var>, char *<var>buf</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+Reads characters from standard input until a newline is found.
+The characters up to the newline are stored in <var>buf</var>. The
+newline is discarded, and the buffer is terminated with a 0.
+</p>
+<p>This is a <em>dangerous</em> function, as it has no way of checking
+the amount of space available in <var>buf</var>. One of the attacks
+used by the Internet Worm of 1988 used this to overrun a
+buffer allocated on the stack of the finger daemon and
+overwrite the return address, causing the daemon to execute
+code downloaded into it over the connection.
+</p>
+<p>The alternate function <code>_gets_r</code> is a reentrant version.  The extra
+argument <var>reent</var> is a pointer to a reentrancy structure.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>gets</code> returns the buffer passed to it, with the data filled
+in. If end of file occurs with some data already accumulated,
+the data is returned with no other indication. If end of file
+occurs with no data in the buffer, NULL is returned.
+</p>
+<p>Supporting OS subroutines required: <code>close</code>, <code>fstat</code>, <code>isatty</code>,
+<code>lseek</code>, <code>read</code>, <code>sbrk</code>, <code>write</code>.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

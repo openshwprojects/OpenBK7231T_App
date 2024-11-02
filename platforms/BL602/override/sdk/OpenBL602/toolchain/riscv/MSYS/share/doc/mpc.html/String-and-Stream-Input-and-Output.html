@@ -1,0 +1,205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual is for GNU MPC, a library for multiple precision complex arithmetic,
+version 1.0.3 of February 2015.
+
+Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 INRIA
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections. A copy of the license is included in the section
+entitled "GNU Free Documentation License." -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MPC 1.0.3: String and Stream Input and Output</title>
+
+<meta name="description" content="GNU MPC 1.0.3: String and Stream Input and Output">
+<meta name="keywords" content="GNU MPC 1.0.3: String and Stream Input and Output">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Complex-Functions.html#Complex-Functions" rel="up" title="Complex Functions">
+<link href="Complex-Comparison.html#Complex-Comparison" rel="next" title="Complex Comparison">
+<link href="Converting-Complex-Numbers.html#Converting-Complex-Numbers" rel="prev" title="Converting Complex Numbers">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="String-and-Stream-Input-and-Output"></a>
+<div class="header">
+<p>
+Next: <a href="Complex-Comparison.html#Complex-Comparison" accesskey="n" rel="next">Complex Comparison</a>, Previous: <a href="Converting-Complex-Numbers.html#Converting-Complex-Numbers" accesskey="p" rel="prev">Converting Complex Numbers</a>, Up: <a href="Complex-Functions.html#Complex-Functions" accesskey="u" rel="up">Complex Functions</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="String-and-Stream-Input-and-Output-1"></a>
+<h3 class="section">5.4 String and Stream Input and Output</h3>
+<a name="index-String-and-stream-input-and-output"></a>
+
+<dl>
+<dt><a name="index-mpc_005fstrtoc"></a>Function: <em>int</em> <strong>mpc_strtoc</strong> <em>(mpc_t <var>rop</var>, const char *<var>nptr</var>, char **<var>endptr</var>, int <var>base</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Read a complex number from a string <var>nptr</var> in base <var>base</var>, rounded to
+the precision of <var>rop</var> with the given rounding mode <var>rnd</var>.
+The <var>base</var> must be either 0 or a number from 2 to 36 (otherwise the
+behaviour is undefined).
+If <var>nptr</var> starts with valid data, the result is stored in <var>rop</var>,
+the usual inexact value is returned (see <a href="GNU-MPC-Basics.html#return_002dvalue">Return
+Value</a>) and, if <var>endptr</var> is not the null pointer,
+<var>*endptr</var> points to the character just after the valid data.
+Otherwise, <var>rop</var> is set to <code>NaN + i * NaN</code>, -1 is returned and,
+if <var>endptr</var> is not the null pointer,
+the value of <var>nptr</var> is stored in the location referenced by
+<var>endptr</var>.
+</p>
+<p>The expected form of a complex number string is either a real number (an
+optional leading whitespace, an optional sign followed by a floating-point
+number), or a pair of real numbers in parentheses separated by whitespace. If
+a real number is read, the missing imaginary part is set to +0.
+The form of a floating-point number depends on the base and is described
+in the documentation of <code>mpfr_strtofr</code>
+in the GNU MPFR manual.
+For instance, <code>&quot;3.1415926&quot;</code>, <code>&quot;(1.25e+7 +.17)&quot;</code>, <code>&quot;(@nan@
+2)&quot;</code> and <code>&quot;(-0 -7)&quot;</code> are valid strings for <var>base</var> = 10.
+If <var>base</var> = 0, then a prefix may be used to indicate the base in which the
+floating-point number is written. Use prefix &rsquo;0b&rsquo; for binary numbers, prefix
+&rsquo;0x&rsquo; for hexadecimal numbers, and no prefix for decimal numbers.
+The real and imaginary part may then be written in different bases.
+For instance, <code>&quot;(1.024e+3 +2.05e+3)&quot;</code> and <code>&quot;(0b1p+10 +0x802)&quot;</code> are
+valid strings for <code>base</code>=0 and represent the same value.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpc_005fset_005fstr"></a>Function: <em>int</em> <strong>mpc_set_str</strong> <em>(mpc_t <var>rop</var>, const char *<var>s</var>, int <var>base</var>, mpc_rnd_t rnd)</em></dt>
+<dd><p>Set <var>rop</var> to the value of the string <var>s</var> in base <var>base</var>, rounded
+to the precision of <var>rop</var> with the given rounding mode <var>rnd</var>.
+See the documentation of <code>mpc_strtoc</code> for a detailed description of the
+valid string formats.
+Contrarily to <code>mpc_strtoc</code>, <code>mpc_set_str</code> requires the <em>whole</em>
+string to represent a valid complex number (potentially followed by
+additional white space).
+This function returns the usual inexact value (see <a href="GNU-MPC-Basics.html#return_002dvalue">Return
+Value</a>) if the entire string up to the final null character is a valid number
+in base <var>base</var>; otherwise it returns -1, and <var>rop</var> is set to
+NaN+i*NaN.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpc_005fget_005fstr"></a>Function: <em>char *</em> <strong>mpc_get_str</strong> <em>(int <var>b</var>, size_t <var>n</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Convert <var>op</var> to a string containing its real and imaginary parts,
+separated by a space and enclosed in a pair of parentheses.
+The numbers are written in base <var>b</var> (which may vary from 2 to 36) and
+rounded according to <var>rnd</var>. The number of significant digits, at least 2,
+is given by <var>n</var>. It is also possible to let
+<var>n</var> be zero, in which case the number of digits is chosen large
+enough so that re-reading the printed value with the same precision, assuming
+both output and input use rounding to nearest, will recover the original value
+of <var>op</var>.
+Note that <code>mpc_get_str</code> uses the decimal point of the current locale
+if available, and &lsquo;<samp>.</samp>&rsquo; otherwise.
+</p>
+<p>The string is generated using the current memory allocation function
+(<code>malloc</code> by default, unless it has been modified using the custom
+memory allocation interface of <code>gmp</code>); once it is not needed any more,
+it should be freed by calling <code>mpc_free_str</code>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpc_005ffree_005fstr"></a>Function: <em>void</em> <strong>mpc_free_str</strong> <em>(char *<var>str</var>)</em></dt>
+<dd><p>Free the string <var>str</var>, which needs to have been allocated by
+a call to <code>mpc_get_str</code>.
+</p></dd></dl>
+
+<p>The following two functions read numbers from input streams and write
+them to output streams.
+When using any of these functions, you need to include <samp>stdio.h</samp>
+<em>before</em> <samp>mpc.h</samp>.
+</p>
+<dl>
+<dt><a name="index-mpc_005finp_005fstr"></a>Function: <em>int</em> <strong>mpc_inp_str</strong> <em>(mpc_t <var>rop</var>, FILE *<var>stream</var>, size_t *<var>read</var>, int <var>base</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Input a string in base <var>base</var> in the same format as for <code>mpc_strtoc</code>
+from stdio stream <var>stream</var>, rounded according to <var>rnd</var>, and put the
+read complex number into <var>rop</var>.
+If <var>stream</var> is the null pointer, <var>rop</var> is read from <code>stdin</code>.
+Return the usual inexact value; if an error occurs, set <var>rop</var> to <code>NaN
++ i * NaN</code> and return -1.
+If <var>read</var> is not the null pointer, it is set to the number of read
+characters.
+</p>
+<p>Unlike <code>mpc_strtoc</code>, the function <code>mpc_inp_str</code> does not possess
+perfect knowledge of the string to transform and has to read it
+character by character, so it behaves slightly differently: It tries
+to read a string describing a complex number and processes this string
+through a call to <code>mpc_set_str</code>. Precisely, after skipping optional
+whitespace, a minimal string is read according to the regular expression
+<code>mpfr | '(' \s* mpfr \s+ mpfr \s* ')'</code>, where <code>\s</code> denotes a whitespace,
+and <code>mpfr</code> is either a string containing neither whitespaces nor
+parentheses, or <code>nan(n-char-sequence)</code> or <code>@nan@(n-char-sequence)</code>
+(regardless of capitalisation) with <code>n-char-sequence</code> a string
+of ascii letters, digits or <code>'_'</code>.
+</p>
+<p>For instance, upon input of <code>&quot;nan(13 1)&quot;</code>, the function
+<code>mpc_inp_str</code> starts to recognise a value of NaN followed by an
+n-char-sequence indicated by the opening parenthesis; as soon as the
+space is reached, it becocmes clear that the expression in parentheses
+is not an n-char-sequence, and the error flag -1 is returned after 6
+characters have been consumed from the stream (the whitespace itself
+remaining in the stream).
+The function <code>mpc_strtoc</code>, on the other hand, may track back
+when reaching the whitespace; it treats the string as the two successive
+complex numbers <code>NaN + i * 0</code> and <code>13 + i</code>.
+It is thus recommended to have a whitespace follow each floating point number
+to avoid this problem.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpc_005fout_005fstr"></a>Function: <em>size_t</em> <strong>mpc_out_str</strong> <em>(FILE *<var>stream</var>, int <var>base</var>, size_t <var>n_digits</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Output <var>op</var> on stdio stream <var>stream</var> in
+base <var>base</var>, rounded according to <var>rnd</var>, in the same format
+as for <code>mpc_strtoc</code>
+If <var>stream</var> is the null pointer, <var>rop</var> is written to <code>stdout</code>.
+</p>
+<p>Return the number of characters written.
+</p></dd></dl>
+
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Complex-Comparison.html#Complex-Comparison" accesskey="n" rel="next">Complex Comparison</a>, Previous: <a href="Converting-Complex-Numbers.html#Converting-Complex-Numbers" accesskey="p" rel="prev">Converting Complex Numbers</a>, Up: <a href="Complex-Functions.html#Complex-Functions" accesskey="u" rel="up">Complex Functions</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

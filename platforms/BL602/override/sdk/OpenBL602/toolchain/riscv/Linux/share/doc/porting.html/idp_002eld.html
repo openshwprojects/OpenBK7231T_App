@@ -1,0 +1,135 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Embed with GNU: idp.ld</title>
+
+<meta name="description" content="Embed with GNU: idp.ld">
+<meta name="keywords" content="Embed with GNU: idp.ld">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="leds_002ec.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Code-Listings.html#Code-Listings" rel="up" title="Code Listings">
+<link href="crt0_002eS.html#crt0_002eS" rel="next" title="crt0.S">
+<link href="Code-Listings.html#Code-Listings" rel="prev" title="Code Listings">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="idp_002eld"></a>
+<div class="header">
+<p>
+Next: <a href="crt0_002eS.html#crt0_002eS" accesskey="n" rel="next">crt0.S</a>, Previous: <a href="Code-Listings.html#Code-Listings" accesskey="p" rel="prev">Code Listings</a>, Up: <a href="Code-Listings.html#Code-Listings" accesskey="u" rel="up">Code Listings</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<a name="Linker-script-for-the-IDP-board"></a>
+<h3 class="section">A.1 Linker script for the IDP board</h3>
+
+<p>This is the linker script script that is used on the Motorola IDP board.
+</p>
+<div class="example">
+<pre class="example">STARTUP(crt0.o)
+OUTPUT_ARCH(m68k)
+INPUT(idp.o)
+SEARCH_DIR(.)
+__DYNAMIC  =  0;
+/*
+ * Setup the memory map of the MC68ec0x0 Board (IDP)
+ * stack grows up towards high memory. This works for
+ * both the rom68k and the mon68k monitors.
+ */
+MEMORY
+{
+  ram     : ORIGIN = 0x10000, LENGTH = 2M
+}
+/*
+ * stick everything in ram (of course)
+ */
+SECTIONS
+{
+  .text :
+  {
+    CREATE_OBJECT_SYMBOLS
+    *(.text)
+     etext  =  .;
+     __CTOR_LIST__ = .;
+     LONG((__CTOR_END__ - __CTOR_LIST__) / 4 - 2)
+    *(.ctors)
+     LONG(0)
+     __CTOR_END__ = .;
+     __DTOR_LIST__ = .;
+     LONG((__DTOR_END__ - __DTOR_LIST__) / 4 - 2)
+    *(.dtors)
+     LONG(0)
+     __DTOR_END__ = .;
+    *(.lit)
+    *(.shdata)
+  }  &gt; ram
+  .shbss SIZEOF(.text) + ADDR(.text) :	{
+    *(.shbss)
+  } 
+  .talias :	 { }  &gt; ram
+  .data  : {
+    *(.data)
+    CONSTRUCTORS
+    _edata  =  .;
+  } &gt; ram
+
+  .bss SIZEOF(.data) + ADDR(.data) :
+  {
+   __bss_start = ALIGN(0x8);
+   *(.bss)
+   *(COMMON)
+      end = ALIGN(0x8);
+      _end = ALIGN(0x8);
+      __end = ALIGN(0x8);
+  }
+  .mstack  : { }  &gt; ram
+  .rstack  : { }  &gt; ram
+  .stab  . (NOLOAD) : 
+  {
+    [ .stab ]
+  }
+  .stabstr  . (NOLOAD) :
+  {
+    [ .stabstr ]
+  }
+}
+</pre></div>
+
+
+
+
+</body>
+</html>

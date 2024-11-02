@@ -1,0 +1,123 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 1994-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+Texts.  A copy of the license is included in the section entitled "GNU
+Free Documentation License". -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Prompting (GDB&rsquo;s Obsolete Annotations)</title>
+
+<meta name="description" content="Prompting (GDB&rsquo;s Obsolete Annotations)">
+<meta name="keywords" content="Prompting (GDB&rsquo;s Obsolete Annotations)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="index.html" rel="up" title="Top">
+<link href="Errors.html" rel="next" title="Errors">
+<link href="Displays.html" rel="prev" title="Displays">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="Prompting"></span><div class="header">
+<p>
+Next: <a href="Errors.html" accesskey="n" rel="next">Errors</a>, Previous: <a href="Displays.html" accesskey="p" rel="prev">Displays</a>, Up: <a href="index.html" accesskey="u" rel="up">Top</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<span id="Annotation-for-GDB-Input"></span><h2 class="chapter">8 Annotation for <small>GDB</small> Input</h2>
+
+<span id="index-annotations-for-prompts"></span>
+<p>When <small>GDB</small> prompts for input, it annotates this fact so it is possible
+to know when to send output, when the output from a given command is
+over, etc.
+</p>
+<p>Different kinds of input each have a different <em>input type</em>.  Each
+input type has three annotations: a <code>pre-</code> annotation, which
+denotes the beginning of any prompt which is being output, a plain
+annotation, which denotes the end of the prompt, and then a <code>post-</code>
+annotation which denotes the end of any echo which may (or may not) be
+associated with the input.  For example, the <code>prompt</code> input type
+features the following annotations:
+</p>
+<div class="example">
+<pre class="example">^Z^Zpre-prompt
+^Z^Zprompt
+^Z^Zpost-prompt
+</pre></div>
+
+<p>The input types are
+</p>
+<dl compact="compact">
+<dd><span id="index-pre_002dprompt"></span>
+<span id="index-prompt"></span>
+<span id="index-post_002dprompt"></span>
+</dd>
+<dt><code>prompt</code></dt>
+<dd><p>When <small>GDB</small> is prompting for a command (the main <small>GDB</small> prompt).
+</p>
+<span id="index-pre_002dcommands"></span>
+<span id="index-commands"></span>
+<span id="index-post_002dcommands"></span>
+</dd>
+<dt><code>commands</code></dt>
+<dd><p>When <small>GDB</small> prompts for a set of commands, like in the <code>commands</code>
+command.  The annotations are repeated for each command which is input.
+</p>
+<span id="index-pre_002doverload_002dchoice"></span>
+<span id="index-overload_002dchoice"></span>
+<span id="index-post_002doverload_002dchoice"></span>
+</dd>
+<dt><code>overload-choice</code></dt>
+<dd><p>When <small>GDB</small> wants the user to select between various overloaded functions.
+</p>
+<span id="index-pre_002dquery"></span>
+<span id="index-query"></span>
+<span id="index-post_002dquery"></span>
+</dd>
+<dt><code>query</code></dt>
+<dd><p>When <small>GDB</small> wants the user to confirm a potentially dangerous operation.
+</p>
+<span id="index-pre_002dprompt_002dfor_002dcontinue"></span>
+<span id="index-prompt_002dfor_002dcontinue"></span>
+<span id="index-post_002dprompt_002dfor_002dcontinue"></span>
+</dd>
+<dt><code>prompt-for-continue</code></dt>
+<dd><p>When <small>GDB</small> is asking the user to press return to continue.  Note: Don&rsquo;t
+expect this to work well; instead use <code>set height 0</code> to disable
+prompting.  This is because the counting of lines is buggy in the
+presence of annotations.
+</p></dd>
+</dl>
+
+
+
+
+</body>
+</html>

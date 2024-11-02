@@ -1,0 +1,85 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 1988-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "Free Software" and "Free Software Needs
+Free Documentation", with the Front-Cover Texts being "A GNU Manual,"
+and with the Back-Cover Texts as in (a) below.
+
+(a) The FSF's Back-Cover Text is: "You are free to copy and modify
+this GNU Manual.  Buying copies from GNU Press supports the FSF in
+developing GNU and promoting software freedom." -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Source Annotations (Debugging with GDB)</title>
+
+<meta name="description" content="Source Annotations (Debugging with GDB)">
+<meta name="keywords" content="Source Annotations (Debugging with GDB)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="Concept-Index.html" rel="index" title="Concept Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Annotations.html" rel="up" title="Annotations">
+<link href="JIT-Interface.html" rel="next" title="JIT Interface">
+<link href="Annotations-for-Running.html" rel="prev" title="Annotations for Running">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="Source-Annotations"></span><div class="header">
+<p>
+Previous: <a href="Annotations-for-Running.html" accesskey="p" rel="prev">Annotations for Running</a>, Up: <a href="Annotations.html" accesskey="u" rel="up">Annotations</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Displaying-Source"></span><h3 class="section">28.7 Displaying Source</h3>
+<span id="index-annotations-for-source-display"></span>
+
+<span id="index-source-annotation"></span>
+<p>The following annotation is used instead of displaying source code:
+</p>
+<div class="example">
+<pre class="example">^Z^Zsource <var>filename</var>:<var>line</var>:<var>character</var>:<var>middle</var>:<var>addr</var>
+</pre></div>
+
+<p>where <var>filename</var> is an absolute file name indicating which source
+file, <var>line</var> is the line number within that file (where 1 is the
+first line in the file), <var>character</var> is the character position
+within the file (where 0 is the first character in the file) (for most
+debug formats this will necessarily point to the beginning of a line),
+<var>middle</var> is &lsquo;<samp>middle</samp>&rsquo; if <var>addr</var> is in the middle of the
+line, or &lsquo;<samp>beg</samp>&rsquo; if <var>addr</var> is at the beginning of the line, and
+<var>addr</var> is the address in the target program associated with the
+source which is being displayed.  The <var>addr</var> is in the form &lsquo;<samp>0x</samp>&rsquo;
+followed by one or more lowercase hex digits (note that this does not
+depend on the language).
+</p>
+
+
+
+</body>
+</html>

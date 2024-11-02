@@ -1,0 +1,104 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Embed with GNU: Overview</title>
+
+<meta name="description" content="Embed with GNU: Overview">
+<meta name="keywords" content="Embed with GNU: Overview">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="leds_002ec.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="GCC.html#GCC" rel="up" title="GCC">
+<link href="Options.html#Options" rel="next" title="Options">
+<link href="GCC.html#GCC" rel="prev" title="GCC">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Overview"></a>
+<div class="header">
+<p>
+Next: <a href="Options.html#Options" accesskey="n" rel="next">Options</a>, Up: <a href="GCC.html#GCC" accesskey="u" rel="up">GCC</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<a name="Compilation-passes"></a>
+<h3 class="section">2.1 Compilation passes</h3>
+
+<p>GCC by itself only compiles the C or C++ code into assembler. Typically
+GCC invokes all the passes required for you. These passes are cpp, cc1,
+gas, ld. <code>cpp</code> is the C preprocessor. This will merge in the
+include files, expand all macros definitions, and process all the
+<code>#ifdef</code> sections. To see the output of ccp, invoke gcc with the
+<code>-E</code> option, and the preprocessed file will be printed on the
+stdout. cc1 is the actual compiler pass that produces the assembler for
+the processed file. GCC is actually only a driver program for all the
+compiler passes. It will format command line options for the other passes.
+The usual command line GCC uses for the final link phase will have LD
+link in the startup code and additional libraries by default.
+</p>
+<p>GNU AS started it&rsquo;s life to only function as a compiler pass, but
+these days it can also be used as a source level assembler. When used as
+a source level assembler, it has a companion assembler preprocessor
+called <code>gasp</code>. This has a syntax similar to most other assembler
+macros packages. GAS emits a relocatable object file from the assembler
+source. The object file contains the executable part of the application,
+and debug symbols.
+</p>
+<p>LD is responsible for resolving the addresses and symbols to something
+that will be fully self-contained. Some RTOS&rsquo;s use relocatable object
+file formats like <code>a.out</code>, but more commonly the final image will
+only use absolute addresses for symbols. This enables code to be burned
+into PROMS as well. Although LD can produce an executable image, there
+is usually a hidden object file called <code>crt0.o</code> that is required as
+startup code.  With this startup code and a memory map, the executable
+image will actually run on the target environment. <a href="Crt0.html#Crt0">Startup
+Files</a>.
+</p>
+<p>The startup code usually defines a special symbol like <code>_start</code>
+that is the default base address for the application, and the first
+symbol in the executable image. If you plan to use any routines from the
+standard C library, you&rsquo;ll also need to implement the functions that
+this library is dependent on. <a href="Libraries.html#Libraries">Porting Newlib</a>.
+</p>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Options.html#Options" accesskey="n" rel="next">Options</a>, Up: <a href="GCC.html#GCC" accesskey="u" rel="up">GCC</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+
+
+
+</body>
+</html>

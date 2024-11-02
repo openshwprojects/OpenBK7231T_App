@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Random State Initialization</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Random State Initialization">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Random-Number-Functions.html#Random-Number-Functions" rel="up" title="Random Number Functions">
+<link href="Random-State-Seeding.html#Random-State-Seeding" rel="next" title="Random State Seeding">
+<link href="Random-Number-Functions.html#Random-Number-Functions" rel="prev" title="Random Number Functions">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Random-State-Initialization"></a>
+<div class="header">
+<p>
+Next: <a href="Random-State-Seeding.html#Random-State-Seeding" accesskey="n" rel="next">Random State Seeding</a>, Previous: <a href="Random-Number-Functions.html#Random-Number-Functions" accesskey="p" rel="prev">Random Number Functions</a>, Up: <a href="Random-Number-Functions.html#Random-Number-Functions" accesskey="u" rel="up">Random Number Functions</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Random-State-Initialization-1"></a>
+<h3 class="section">9.1 Random State Initialization</h3>
+<a name="index-Random-number-state"></a>
+<a name="index-Initialization-functions-5"></a>
+
+<dl>
+<dt><a name="index-gmp_005frandinit_005fdefault"></a>Function: <em>void</em> <strong>gmp_randinit_default</strong> <em>(gmp_randstate_t <var>state</var>)</em></dt>
+<dd><p>Initialize <var>state</var> with a default algorithm.  This will be a compromise
+between speed and randomness, and is recommended for applications with no
+special requirements.  Currently this is <code>gmp_randinit_mt</code>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-gmp_005frandinit_005fmt"></a>Function: <em>void</em> <strong>gmp_randinit_mt</strong> <em>(gmp_randstate_t <var>state</var>)</em></dt>
+<dd><a name="index-Mersenne-twister-random-numbers"></a>
+<p>Initialize <var>state</var> for a Mersenne Twister algorithm.  This algorithm is
+fast and has good randomness properties.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-gmp_005frandinit_005flc_005f2exp"></a>Function: <em>void</em> <strong>gmp_randinit_lc_2exp</strong> <em>(gmp_randstate_t <var>state</var>, const mpz_t <var>a</var>, unsigned&nbsp;long&nbsp;<var>c</var><!-- /@w -->, <span class="nolinebreak">mp_bitcnt_t</span>&nbsp;<var>m2exp</var><!-- /@w -->)</em></dt>
+<dd><a name="index-Linear-congruential-random-numbers"></a>
+<p>Initialize <var>state</var> with a linear congruential algorithm <em>X = (<var>a</var>*X + <var>c</var>) mod 2^<var>m2exp</var></em>.
+</p>
+<p>The low bits of <em>X</em> in this algorithm are not very random.  The least
+significant bit will have a period no more than 2, and the second bit no more
+than 4, etc.  For this reason only the high half of each <em>X</em> is actually
+used.
+</p>
+<p>When a random number of more than <em><var>m2exp</var>/2</em> bits is to be
+generated, multiple iterations of the recurrence are used and the results
+concatenated.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-gmp_005frandinit_005flc_005f2exp_005fsize"></a>Function: <em>int</em> <strong>gmp_randinit_lc_2exp_size</strong> <em>(gmp_randstate_t <var>state</var>, mp_bitcnt_t <var>size</var>)</em></dt>
+<dd><a name="index-Linear-congruential-random-numbers-1"></a>
+<p>Initialize <var>state</var> for a linear congruential algorithm as per
+<code>gmp_randinit_lc_2exp</code>.  <var>a</var>, <var>c</var> and <var>m2exp</var> are selected
+from a table, chosen so that <var>size</var> bits (or more) of each <em>X</em> will
+be used, i.e. <em><var>m2exp</var>/2 &gt;= <var>size</var></em>.
+</p>
+<p>If successful the return value is non-zero.  If <var>size</var> is bigger than the
+table data provides then the return value is zero.  The maximum <var>size</var>
+currently supported is 128.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-gmp_005frandinit_005fset"></a>Function: <em>void</em> <strong>gmp_randinit_set</strong> <em>(gmp_randstate_t <var>rop</var>, gmp_randstate_t <var>op</var>)</em></dt>
+<dd><p>Initialize <var>rop</var> with a copy of the algorithm and state from <var>op</var>.
+</p></dd></dl>
+
+
+<dl>
+<dt><a name="index-gmp_005frandinit"></a>Function: <em>void</em> <strong>gmp_randinit</strong> <em>(gmp_randstate_t <var>state</var>, <span class="nolinebreak">gmp_randalg_t</span>&nbsp;<var>alg</var><!-- /@w -->, &hellip;)</em></dt>
+<dd><p><strong>This function is obsolete.</strong>
+</p>
+<a name="index-GMP_005fRAND_005fALG_005fLC"></a>
+<a name="index-GMP_005fRAND_005fALG_005fDEFAULT"></a>
+<p>Initialize <var>state</var> with an algorithm selected by <var>alg</var>.  The only
+choice is <code>GMP_RAND_ALG_LC</code>, which is <code>gmp_randinit_lc_2exp_size</code>
+described above.  A third parameter of type <code>unsigned long</code> is required,
+this is the <var>size</var> for that function.  <code>GMP_RAND_ALG_DEFAULT</code> or 0
+are the same as <code>GMP_RAND_ALG_LC</code>.
+</p>
+<a name="index-gmp_005ferrno"></a>
+<a name="index-GMP_005fERROR_005fUNSUPPORTED_005fARGUMENT"></a>
+<a name="index-GMP_005fERROR_005fINVALID_005fARGUMENT"></a>
+<p><code>gmp_randinit</code> sets bits in the global variable <code>gmp_errno</code> to
+indicate an error.  <code>GMP_ERROR_UNSUPPORTED_ARGUMENT</code> if <var>alg</var> is
+unsupported, or <code>GMP_ERROR_INVALID_ARGUMENT</code> if the <var>size</var> parameter
+is too big.  It may be noted this error reporting is not thread safe (a good
+reason to use <code>gmp_randinit_lc_2exp_size</code> instead).
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-gmp_005frandclear"></a>Function: <em>void</em> <strong>gmp_randclear</strong> <em>(gmp_randstate_t <var>state</var>)</em></dt>
+<dd><p>Free all memory occupied by <var>state</var>.
+</p></dd></dl>
+
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Random-State-Seeding.html#Random-State-Seeding" accesskey="n" rel="next">Random State Seeding</a>, Previous: <a href="Random-Number-Functions.html#Random-Number-Functions" accesskey="p" rel="prev">Random Number Functions</a>, Up: <a href="Random-Number-Functions.html#Random-Number-Functions" accesskey="u" rel="up">Random Number Functions</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

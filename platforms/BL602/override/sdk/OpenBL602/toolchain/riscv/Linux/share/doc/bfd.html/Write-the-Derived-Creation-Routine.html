@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This file documents the BFD library.
+
+Copyright (C) 1991-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "GNU General Public License" and "Funding
+Free Software", the Front-Cover texts being (a) (see below), and with
+the Back-Cover Texts being (b) (see below).  A copy of the license is
+included in the section entitled "GNU Free Documentation License".
+
+(a) The FSF's Front-Cover Text is:
+
+A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Untitled Document: Write the Derived Creation Routine</title>
+
+<meta name="description" content="Untitled Document: Write the Derived Creation Routine">
+<meta name="keywords" content="Untitled Document: Write the Derived Creation Routine">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="BFD-Index.html#BFD-Index" rel="index" title="BFD Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Deriving-a-New-Hash-Table-Type.html#Deriving-a-New-Hash-Table-Type" rel="up" title="Deriving a New Hash Table Type">
+<link href="Write-Other-Derived-Routines.html#Write-Other-Derived-Routines" rel="next" title="Write Other Derived Routines">
+<link href="Define-the-Derived-Structures.html#Define-the-Derived-Structures" rel="prev" title="Define the Derived Structures">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Write-the-Derived-Creation-Routine"></a>
+<div class="header">
+<p>
+Next: <a href="Write-Other-Derived-Routines.html#Write-Other-Derived-Routines" accesskey="n" rel="next">Write Other Derived Routines</a>, Previous: <a href="Define-the-Derived-Structures.html#Define-the-Derived-Structures" accesskey="p" rel="prev">Define the Derived Structures</a>, Up: <a href="Deriving-a-New-Hash-Table-Type.html#Deriving-a-New-Hash-Table-Type" accesskey="u" rel="up">Deriving a New Hash Table Type</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="BFD-Index.html#BFD-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Write-the-derived-creation-routine"></a>
+<h4 class="subsubsection">2.18.4.2 Write the derived creation routine</h4>
+<p>You must write a routine which will create and initialize an
+entry in the hash table.  This routine is passed as the
+function argument to <code>bfd_hash_table_init</code>.
+</p>
+<p>In order to permit other hash tables to be derived from the
+hash table you are creating, this routine must be written in a
+standard way.
+</p>
+<p>The first argument to the creation routine is a pointer to a
+hash table entry.  This may be <code>NULL</code>, in which case the
+routine should allocate the right amount of space.  Otherwise
+the space has already been allocated by a hash table type
+derived from this one.
+</p>
+<p>After allocating space, the creation routine must call the
+creation routine of the hash table type it is derived from,
+passing in a pointer to the space it just allocated.  This
+will initialize any fields used by the base hash table.
+</p>
+<p>Finally the creation routine must initialize any local fields
+for the new hash table type.
+</p>
+<p>Here is a boilerplate example of a creation routine.
+<var>function_name</var> is the name of the routine.
+<var>entry_type</var> is the type of an entry in the hash table you
+are creating.  <var>base_newfunc</var> is the name of the creation
+routine of the hash table type your hash table is derived
+from.
+</p>
+
+<div class="example">
+<pre class="example">struct bfd_hash_entry *
+<var>function_name</var> (struct bfd_hash_entry *entry,
+                     struct bfd_hash_table *table,
+                     const char *string)
+{
+  struct <var>entry_type</var> *ret = (<var>entry_type</var> *) entry;
+
+ /* Allocate the structure if it has not already been allocated by a
+    derived class.  */
+  if (ret == NULL)
+    {
+      ret = bfd_hash_allocate (table, sizeof (* ret));
+      if (ret == NULL)
+        return NULL;
+    }
+
+ /* Call the allocation method of the base class.  */
+  ret = ((<var>entry_type</var> *)
+         <var>base_newfunc</var> ((struct bfd_hash_entry *) ret, table, string));
+
+ /* Initialize the local fields here.  */
+
+  return (struct bfd_hash_entry *) ret;
+}
+</pre></div>
+<p><strong>Description</strong><br>
+The creation routine for the linker hash table, which is in
+<code>linker.c</code>, looks just like this example.
+<var>function_name</var> is <code>_bfd_link_hash_newfunc</code>.
+<var>entry_type</var> is <code>struct bfd_link_hash_entry</code>.
+<var>base_newfunc</var> is <code>bfd_hash_newfunc</code>, the creation
+routine for a basic hash table.
+</p>
+<p><code>_bfd_link_hash_newfunc</code> also initializes the local fields
+in a linker hash table entry: <code>type</code>, <code>written</code> and
+<code>next</code>.
+</p>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Write-Other-Derived-Routines.html#Write-Other-Derived-Routines" accesskey="n" rel="next">Write Other Derived Routines</a>, Previous: <a href="Define-the-Derived-Structures.html#Define-the-Derived-Structures" accesskey="p" rel="prev">Define the Derived Structures</a>, Up: <a href="Deriving-a-New-Hash-Table-Type.html#Deriving-a-New-Hash-Table-Type" accesskey="u" rel="up">Deriving a New Hash Table Type</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="BFD-Index.html#BFD-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

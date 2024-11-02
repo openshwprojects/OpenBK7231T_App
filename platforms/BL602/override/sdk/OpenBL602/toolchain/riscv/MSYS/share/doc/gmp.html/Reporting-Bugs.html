@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Reporting Bugs</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Reporting Bugs">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="index.html#Top" rel="up" title="Top">
+<link href="Integer-Functions.html#Integer-Functions" rel="next" title="Integer Functions">
+<link href="Emacs.html#Emacs" rel="prev" title="Emacs">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Reporting-Bugs"></a>
+<div class="header">
+<p>
+Next: <a href="Integer-Functions.html#Integer-Functions" accesskey="n" rel="next">Integer Functions</a>, Previous: <a href="GMP-Basics.html#GMP-Basics" accesskey="p" rel="prev">GMP Basics</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Reporting-Bugs-1"></a>
+<h2 class="chapter">4 Reporting Bugs</h2>
+<a name="index-Reporting-bugs"></a>
+<a name="index-Bug-reporting"></a>
+
+<p>If you think you have found a bug in the GMP library, please investigate it
+and report it.  We have made this library available to you, and it is not too
+much to ask you to report the bugs you find.
+</p>
+<p>Before you report a bug, check it&rsquo;s not already addressed in <a href="Known-Build-Problems.html#Known-Build-Problems">Known Build Problems</a>, or perhaps <a href="Notes-for-Particular-Systems.html#Notes-for-Particular-Systems">Notes for Particular Systems</a>.  You may also want
+to check <a href="https://gmplib.org/">https://gmplib.org/</a> for patches for this release.
+</p>
+<p>Please include the following in any report,
+</p>
+<ul>
+<li> The GMP version number, and if pre-packaged or patched then say so.
+
+</li><li> A test program that makes it possible for us to reproduce the bug.  Include
+instructions on how to run the program.
+
+</li><li> A description of what is wrong.  If the results are incorrect, in what way.
+If you get a crash, say so.
+
+</li><li> If you get a crash, include a stack backtrace from the debugger if it&rsquo;s
+informative (&lsquo;<samp>where</samp>&rsquo; in <code>gdb</code>, or &lsquo;<samp>$C</samp>&rsquo; in <code>adb</code>).
+
+</li><li> Please do not send core dumps, executables or <code>strace</code>s.
+
+</li><li> The &lsquo;<samp>configure</samp>&rsquo; options you used when building GMP, if any.
+
+</li><li> The output from &lsquo;<samp>configure</samp>&rsquo;, as printed to stdout, with any options used.
+
+</li><li> The name of the compiler and its version.  For <code>gcc</code>, get the version
+with &lsquo;<samp>gcc -v</samp>&rsquo;, otherwise perhaps &lsquo;<samp>what `which cc`</samp>&rsquo;, or similar.
+
+</li><li> The output from running &lsquo;<samp>uname -a</samp>&rsquo;.
+
+</li><li> The output from running &lsquo;<samp>./config.guess</samp>&rsquo;, and from running
+&lsquo;<samp>./configfsf.guess</samp>&rsquo; (might be the same).
+
+</li><li> If the bug is related to &lsquo;<samp>configure</samp>&rsquo;, then the compressed contents of
+<samp>config.log</samp>.
+
+</li><li> If the bug is related to an <samp>asm</samp> file not assembling, then the contents
+of <samp>config.m4</samp> and the offending line or lines from the temporary
+<samp>mpn/tmp-&lt;file&gt;.s</samp>.
+</li></ul>
+
+<p>Please make an effort to produce a self-contained report, with something
+definite that can be tested or debugged.  Vague queries or piecemeal messages
+are difficult to act on and don&rsquo;t help the development effort.
+</p>
+<p>It is not uncommon that an observed problem is actually due to a bug in the
+compiler; the GMP code tends to explore interesting corners in compilers.
+</p>
+<p>If your bug report is good, we will do our best to help you get a corrected
+version of the library; if the bug report is poor, we won&rsquo;t do anything about
+it (except maybe ask you to send a better report).
+</p>
+<p>Send your report to: <a href="mailto:gmp-bugs@gmplib.org">gmp-bugs@gmplib.org</a>.
+</p>
+<p>If you think something in this manual is unclear, or downright incorrect, or if
+the language needs to be improved, please send a note to the same address.
+</p>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Integer-Functions.html#Integer-Functions" accesskey="n" rel="next">Integer Functions</a>, Previous: <a href="GMP-Basics.html#GMP-Basics" accesskey="p" rel="prev">GMP Basics</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

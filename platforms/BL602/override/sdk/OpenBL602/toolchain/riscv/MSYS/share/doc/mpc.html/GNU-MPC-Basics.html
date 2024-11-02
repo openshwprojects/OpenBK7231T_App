@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual is for GNU MPC, a library for multiple precision complex arithmetic,
+version 1.0.3 of February 2015.
+
+Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 INRIA
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections. A copy of the license is included in the section
+entitled "GNU Free Documentation License." -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MPC 1.0.3: GNU MPC Basics</title>
+
+<meta name="description" content="GNU MPC 1.0.3: GNU MPC Basics">
+<meta name="keywords" content="GNU MPC 1.0.3: GNU MPC Basics">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="index.html#Top" rel="up" title="Top">
+<link href="Complex-Functions.html#Complex-Functions" rel="next" title="Complex Functions">
+<link href="Reporting-Bugs.html#Reporting-Bugs" rel="prev" title="Reporting Bugs">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="GNU-MPC-Basics"></a>
+<div class="header">
+<p>
+Next: <a href="Complex-Functions.html#Complex-Functions" accesskey="n" rel="next">Complex Functions</a>, Previous: <a href="Reporting-Bugs.html#Reporting-Bugs" accesskey="p" rel="prev">Reporting Bugs</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="GNU-MPC-Basics-1"></a>
+<h2 class="chapter">4 GNU MPC Basics</h2>
+
+
+<a name="index-mpc_002eh"></a>
+<p>All declarations needed to use GNU MPC are collected in the include file
+<samp>mpc.h</samp>.  It is designed to work with both C and C++ compilers.
+You should include that file in any program using the GNU MPC library
+by adding the line
+</p><div class="example">
+<pre class="example">   #include &quot;mpc.h&quot;
+</pre></div>
+
+<a name="Nomenclature-and-Types"></a>
+<h3 class="section">4.1 Nomenclature and Types</h3>
+
+<a name="index-Complex-number"></a>
+<a name="index-mpc_005ft"></a>
+<p><em>Complex number</em> or <em>Complex</em> for short, is a pair of two
+arbitrary precision floating-point numbers (for the real and imaginary parts).
+The C data type for such objects is <code>mpc_t</code>.
+</p>
+<a name="index-Precision"></a>
+<a name="index-mpfr_005fprec_005ft"></a>
+<p>The <em>Precision</em> is the number of bits used to represent the mantissa
+of the real and imaginary parts;
+the corresponding C data type is <code>mpfr_prec_t</code>.
+For more details on the allowed precision range,
+see Section &ldquo;Nomenclature and Types&rdquo; in <cite>GNU MPFR</cite>.
+</p>
+<a name="index-Rounding-Mode"></a>
+<a name="index-mpc_005frnd_005ft"></a>
+<p>The <em>rounding mode</em> specifies the way to round the result of a
+complex operation, in case the exact result can not be represented
+exactly in the destination mantissa;
+the corresponding C data type is <code>mpc_rnd_t</code>.
+A complex rounding mode is a pair of two rounding modes: one for the real
+part, one for the imaginary part.
+</p>
+<a name="Function-Classes"></a>
+<h3 class="section">4.2 Function Classes</h3>
+
+<p>There is only one class of functions in the GNU MPC library, namely functions for
+complex arithmetic. The function names begin with <code>mpc_</code>. The
+associated type is <code>mpc_t</code>.
+</p>
+
+<a name="GNU-MPC-Variable-Conventions"></a>
+<h3 class="section">4.3 GNU MPC Variable Conventions</h3>
+
+<p>As a general rule, all GNU MPC functions expect output arguments before input
+arguments.  This notation is based on an analogy with the assignment operator.
+</p>
+<p>GNU MPC allows you to use the same variable for both input and output in the same
+expression.  For example, the main function for floating-point multiplication,
+<code>mpc_mul</code>, can be used like this: <code>mpc_mul (x, x, x, rnd_mode)</code>.
+This
+computes the square of <var>x</var> with rounding mode <code>rnd_mode</code>
+and puts the result back in <var>x</var>.
+</p>
+<p>Before you can assign to an GNU MPC variable, you need to initialize it by calling
+one of the special initialization functions.  When you are done with a
+variable, you need to clear it out, using one of the functions for that
+purpose.
+</p>
+<p>A variable should only be initialized once, or at least cleared out between
+each initialization.  After a variable has been initialized, it may be
+assigned to any number of times.
+</p>
+<p>For efficiency reasons, avoid to initialize and clear out a variable in loops.
+Instead, initialize it before entering the loop, and clear it out after the
+loop has exited.
+</p>
+<p>You do not need to be concerned about allocating additional space for GNU MPC
+variables, since each of its real and imaginary part
+has a mantissa of fixed size.
+Hence unless you change its precision, or clear and reinitialize it,
+a complex variable will have the same allocated space during all its
+life.
+</p>
+
+<a name="Rounding-Modes"></a>
+<h3 class="section">4.4 Rounding Modes</h3>
+
+<p>A complex rounding mode is of the form <code>MPC_RNDxy</code> where
+<code>x</code> and <code>y</code> are one of <code>N</code> (to nearest), <code>Z</code> (towards
+zero), <code>U</code> (towards plus infinity), <code>D</code> (towards minus infinity).
+The first letter refers to the rounding mode for the real part,
+and the second one for the imaginary part.
+For example <code>MPC_RNDZU</code> indicates to round the real part towards zero,
+and the imaginary part towards plus infinity.
+</p>
+<p>The &lsquo;<samp>round to nearest</samp>&rsquo; mode works as in the IEEE P754 standard: in case
+the number to be rounded lies exactly in the middle of two representable
+numbers, it is rounded to the one with the least significant bit set to zero.
+For example, the number 5, which is represented by (101) in binary, is rounded
+to (100)=4 with a precision of two bits, and not to (110)=6.
+</p>
+
+<a name="return_002dvalue"></a><a name="Return-Value"></a>
+<h3 class="section">4.5 Return Value</h3>
+
+<p>Most GNU MPC functions have a return value of type <code>int</code>, which is used
+to indicate the position of the rounded real and imaginary parts with respect
+to the exact (infinite precision) values.
+If this integer is <code>i</code>, the macros <code>MPC_INEX_RE(i)</code> and
+<code>MPC_INEX_IM(i)</code> give 0 if the corresponding rounded value is exact,
+a negative value if the rounded value is less than the exact one,
+and a positive value if it is greater than the exact one.
+Similarly, functions computing a result of type <code>mpfr_t</code>
+return an integer that is 0, positive or negative depending on
+whether the rounded value is the same, larger or smaller then
+the exact result.
+</p>
+<p>Some functions, such as <code>mpc_sin_cos</code>, compute two complex results;
+the macros <code>MPC_INEX1(i)</code> and <code>MPC_INEX2(i)</code>, applied to
+the return value <code>i</code> of such a function, yield the exactness value
+corresponding to the first or the second computed value, respectively.
+</p>
+
+<a name="Branch-Cuts-And-Special-Values"></a>
+<h3 class="section">4.6 Branch Cuts And Special Values</h3>
+
+<p>Some complex functions have branch cuts, across which the function is
+discontinous. In GNU MPC, the branch cuts chosen are the same as those
+specified for the corresponding functions in the ISO C99 standard.
+</p>
+<p>Likewise, when evaluated at a point whose real or imaginary part is
+either infinite or a NaN or a signed zero, a function returns the same
+value as those specified for the corresponding function in the ISO C99
+standard.
+</p>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Complex-Functions.html#Complex-Functions" accesskey="n" rel="next">Complex Functions</a>, Previous: <a href="Reporting-Bugs.html#Reporting-Bugs" accesskey="p" rel="prev">Reporting Bugs</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

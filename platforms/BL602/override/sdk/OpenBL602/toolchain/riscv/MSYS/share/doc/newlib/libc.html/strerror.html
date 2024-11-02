@@ -1,0 +1,534 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: strerror</title>
+
+<meta name="description" content="The Red Hat newlib C Library: strerror">
+<meta name="keywords" content="The Red Hat newlib C Library: strerror">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Strings.html#Strings" rel="up" title="Strings">
+<link href="strerror_005fr.html#strerror_005fr" rel="next" title="strerror_r">
+<link href="strcspn.html#strcspn" rel="prev" title="strcspn">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="strerror"></a>
+<div class="header">
+<p>
+Next: <a href="strerror_005fr.html#strerror_005fr" accesskey="n" rel="next">strerror_r</a>, Previous: <a href="strcspn.html#strcspn" accesskey="p" rel="prev">strcspn</a>, Up: <a href="Strings.html#Strings" accesskey="u" rel="up">Strings</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="strerror_002c-strerror_005fl_002d_002d_002dconvert-error-number-to-string"></a>
+<h3 class="section">5.27 <code>strerror</code>, <code>strerror_l</code>&mdash;convert error number to string</h3>
+<a name="index-strerror"></a>
+<a name="index-strerror_005fl"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;string.h&gt;
+char *strerror(int <var>errnum</var>);
+char *strerror_l(int <var>errnum</var>, locale_t <var>locale</var>);
+char *_strerror_r(struct _reent <var>ptr</var>, int <var>errnum</var>,
+    int <var>internal</var>, int *<var>error</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>strerror</code> converts the error number <var>errnum</var> into a
+string.  The value of <var>errnum</var> is usually a copy of <code>errno</code>.
+If <code>errnum</code> is not a known error number, the result points to an
+empty string.
+</p>
+<p><code>strerror_l</code> is like <code>strerror</code> but creates a string in a format
+as expected in locale <var>locale</var>.  If <var>locale</var> is LC_GLOBAL_LOCALE or
+not a valid locale object, the behaviour is undefined.
+</p>
+<p>This implementation of <code>strerror</code> prints out the following strings
+for each of the values defined in &lsquo;<code>errno.h</code>&rsquo;:
+</p>
+<dl compact="compact">
+<dt><code>0</code></dt>
+<dd><p>Success
+</p>
+</dd>
+<dt><code>E2BIG</code></dt>
+<dd><p>Arg list too long
+</p>
+</dd>
+<dt><code>EACCES</code></dt>
+<dd><p>Permission denied
+</p>
+</dd>
+<dt><code>EADDRINUSE</code></dt>
+<dd><p>Address already in use
+</p>
+</dd>
+<dt><code>EADDRNOTAVAIL</code></dt>
+<dd><p>Address not available
+</p>
+</dd>
+<dt><code>EADV</code></dt>
+<dd><p>Advertise error
+</p>
+</dd>
+<dt><code>EAFNOSUPPORT</code></dt>
+<dd><p>Address family not supported by protocol family
+</p>
+</dd>
+<dt><code>EAGAIN</code></dt>
+<dd><p>No more processes
+</p>
+</dd>
+<dt><code>EALREADY</code></dt>
+<dd><p>Socket already connected
+</p>
+</dd>
+<dt><code>EBADF</code></dt>
+<dd><p>Bad file number
+</p>
+</dd>
+<dt><code>EBADMSG</code></dt>
+<dd><p>Bad message
+</p>
+</dd>
+<dt><code>EBUSY</code></dt>
+<dd><p>Device or resource busy
+</p>
+</dd>
+<dt><code>ECANCELED</code></dt>
+<dd><p>Operation canceled
+</p>
+</dd>
+<dt><code>ECHILD</code></dt>
+<dd><p>No children
+</p>
+</dd>
+<dt><code>ECOMM</code></dt>
+<dd><p>Communication error
+</p>
+</dd>
+<dt><code>ECONNABORTED</code></dt>
+<dd><p>Software caused connection abort
+</p>
+</dd>
+<dt><code>ECONNREFUSED</code></dt>
+<dd><p>Connection refused
+</p>
+</dd>
+<dt><code>ECONNRESET</code></dt>
+<dd><p>Connection reset by peer
+</p>
+</dd>
+<dt><code>EDEADLK</code></dt>
+<dd><p>Deadlock
+</p>
+</dd>
+<dt><code>EDESTADDRREQ</code></dt>
+<dd><p>Destination address required
+</p>
+</dd>
+<dt><code>EEXIST</code></dt>
+<dd><p>File exists
+</p>
+</dd>
+<dt><code>EDOM</code></dt>
+<dd><p>Mathematics argument out of domain of function
+</p>
+</dd>
+<dt><code>EFAULT</code></dt>
+<dd><p>Bad address
+</p>
+</dd>
+<dt><code>EFBIG</code></dt>
+<dd><p>File too large
+</p>
+</dd>
+<dt><code>EHOSTDOWN</code></dt>
+<dd><p>Host is down
+</p>
+</dd>
+<dt><code>EHOSTUNREACH</code></dt>
+<dd><p>Host is unreachable
+</p>
+</dd>
+<dt><code>EIDRM</code></dt>
+<dd><p>Identifier removed
+</p>
+</dd>
+<dt><code>EILSEQ</code></dt>
+<dd><p>Illegal byte sequence
+</p>
+</dd>
+<dt><code>EINPROGRESS</code></dt>
+<dd><p>Connection already in progress
+</p>
+</dd>
+<dt><code>EINTR</code></dt>
+<dd><p>Interrupted system call
+</p>
+</dd>
+<dt><code>EINVAL</code></dt>
+<dd><p>Invalid argument
+</p>
+</dd>
+<dt><code>EIO</code></dt>
+<dd><p>I/O error
+</p>
+</dd>
+<dt><code>EISCONN</code></dt>
+<dd><p>Socket is already connected
+</p>
+</dd>
+<dt><code>EISDIR</code></dt>
+<dd><p>Is a directory
+</p>
+</dd>
+<dt><code>ELIBACC</code></dt>
+<dd><p>Cannot access a needed shared library
+</p>
+</dd>
+<dt><code>ELIBBAD</code></dt>
+<dd><p>Accessing a corrupted shared library
+</p>
+</dd>
+<dt><code>ELIBEXEC</code></dt>
+<dd><p>Cannot exec a shared library directly
+</p>
+</dd>
+<dt><code>ELIBMAX</code></dt>
+<dd><p>Attempting to link in more shared libraries than system limit
+</p>
+</dd>
+<dt><code>ELIBSCN</code></dt>
+<dd><p><code>.lib</code> section in a.out corrupted
+</p>
+</dd>
+<dt><code>EMFILE</code></dt>
+<dd><p>File descriptor value too large
+</p>
+</dd>
+<dt><code>EMLINK</code></dt>
+<dd><p>Too many links
+</p>
+</dd>
+<dt><code>EMSGSIZE</code></dt>
+<dd><p>Message too long
+</p>
+</dd>
+<dt><code>EMULTIHOP</code></dt>
+<dd><p>Multihop attempted
+</p>
+</dd>
+<dt><code>ENAMETOOLONG</code></dt>
+<dd><p>File or path name too long
+</p>
+</dd>
+<dt><code>ENETDOWN</code></dt>
+<dd><p>Network interface is not configured
+</p>
+</dd>
+<dt><code>ENETRESET</code></dt>
+<dd><p>Connection aborted by network
+</p>
+</dd>
+<dt><code>ENETUNREACH</code></dt>
+<dd><p>Network is unreachable
+</p>
+</dd>
+<dt><code>ENFILE</code></dt>
+<dd><p>Too many open files in system
+</p>
+</dd>
+<dt><code>ENOBUFS</code></dt>
+<dd><p>No buffer space available
+</p>
+</dd>
+<dt><code>ENODATA</code></dt>
+<dd><p>No data
+</p>
+</dd>
+<dt><code>ENODEV</code></dt>
+<dd><p>No such device
+</p>
+</dd>
+<dt><code>ENOENT</code></dt>
+<dd><p>No such file or directory
+</p>
+</dd>
+<dt><code>ENOEXEC</code></dt>
+<dd><p>Exec format error
+</p>
+</dd>
+<dt><code>ENOLCK</code></dt>
+<dd><p>No lock
+</p>
+</dd>
+<dt><code>ENOLINK</code></dt>
+<dd><p>Virtual circuit is gone
+</p>
+</dd>
+<dt><code>ENOMEM</code></dt>
+<dd><p>Not enough space
+</p>
+</dd>
+<dt><code>ENOMSG</code></dt>
+<dd><p>No message of desired type
+</p>
+</dd>
+<dt><code>ENONET</code></dt>
+<dd><p>Machine is not on the network
+</p>
+</dd>
+<dt><code>ENOPKG</code></dt>
+<dd><p>No package
+</p>
+</dd>
+<dt><code>ENOPROTOOPT</code></dt>
+<dd><p>Protocol not available
+</p>
+</dd>
+<dt><code>ENOSPC</code></dt>
+<dd><p>No space left on device
+</p>
+</dd>
+<dt><code>ENOSR</code></dt>
+<dd><p>No stream resources
+</p>
+</dd>
+<dt><code>ENOSTR</code></dt>
+<dd><p>Not a stream
+</p>
+</dd>
+<dt><code>ENOSYS</code></dt>
+<dd><p>Function not implemented
+</p>
+</dd>
+<dt><code>ENOTBLK</code></dt>
+<dd><p>Block device required
+</p>
+</dd>
+<dt><code>ENOTCONN</code></dt>
+<dd><p>Socket is not connected
+</p>
+</dd>
+<dt><code>ENOTDIR</code></dt>
+<dd><p>Not a directory
+</p>
+</dd>
+<dt><code>ENOTEMPTY</code></dt>
+<dd><p>Directory not empty
+</p>
+</dd>
+<dt><code>ENOTRECOVERABLE</code></dt>
+<dd><p>State not recoverable
+</p>
+</dd>
+<dt><code>ENOTSOCK</code></dt>
+<dd><p>Socket operation on non-socket
+</p>
+</dd>
+<dt><code>ENOTSUP</code></dt>
+<dd><p>Not supported
+</p>
+</dd>
+<dt><code>ENOTTY</code></dt>
+<dd><p>Not a character device
+</p>
+</dd>
+<dt><code>ENXIO</code></dt>
+<dd><p>No such device or address
+</p>
+</dd>
+<dt><code>EOPNOTSUPP</code></dt>
+<dd><p>Operation not supported on socket
+</p>
+</dd>
+<dt><code>EOVERFLOW</code></dt>
+<dd><p>Value too large for defined data type
+</p>
+</dd>
+<dt><code>EOWNERDEAD</code></dt>
+<dd><p>Previous owner died
+</p>
+</dd>
+<dt><code>EPERM</code></dt>
+<dd><p>Not owner
+</p>
+</dd>
+<dt><code>EPIPE</code></dt>
+<dd><p>Broken pipe
+</p>
+</dd>
+<dt><code>EPROTO</code></dt>
+<dd><p>Protocol error
+</p>
+</dd>
+<dt><code>EPROTOTYPE</code></dt>
+<dd><p>Protocol wrong type for socket
+</p>
+</dd>
+<dt><code>EPROTONOSUPPORT</code></dt>
+<dd><p>Unknown protocol
+</p>
+</dd>
+<dt><code>ERANGE</code></dt>
+<dd><p>Result too large
+</p>
+</dd>
+<dt><code>EREMOTE</code></dt>
+<dd><p>Resource is remote
+</p>
+</dd>
+<dt><code>EROFS</code></dt>
+<dd><p>Read-only file system
+</p>
+</dd>
+<dt><code>ESHUTDOWN</code></dt>
+<dd><p>Can&rsquo;t send after socket shutdown
+</p>
+</dd>
+<dt><code>ESOCKTNOSUPPORT</code></dt>
+<dd><p>Socket type not supported
+</p>
+</dd>
+<dt><code>ESPIPE</code></dt>
+<dd><p>Illegal seek
+</p>
+</dd>
+<dt><code>ESRCH</code></dt>
+<dd><p>No such process
+</p>
+</dd>
+<dt><code>ESRMNT</code></dt>
+<dd><p>Srmount error
+</p>
+</dd>
+<dt><code>ESTRPIPE</code></dt>
+<dd><p>Strings pipe error
+</p>
+</dd>
+<dt><code>ETIME</code></dt>
+<dd><p>Stream ioctl timeout
+</p>
+</dd>
+<dt><code>ETIMEDOUT</code></dt>
+<dd><p>Connection timed out
+</p>
+</dd>
+<dt><code>ETXTBSY</code></dt>
+<dd><p>Text file busy
+</p>
+</dd>
+<dt><code>EWOULDBLOCK</code></dt>
+<dd><p>Operation would block (usually same as EAGAIN)
+</p>
+</dd>
+<dt><code>EXDEV</code></dt>
+<dd><p>Cross-device link
+</p>
+</dd>
+</dl>
+
+
+<p><code>_strerror_r</code> is a reentrant version of the above.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+This function returns a pointer to a string.  Your application must
+not modify that string.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+ANSI C requires <code>strerror</code>, but does not specify the strings used
+for each error number.
+</p>
+<p><code>strerror_l</code> is POSIX-1.2008.
+</p>
+<p>Although this implementation of <code>strerror</code> is reentrant (depending
+on <code>_user_strerror</code>), ANSI C declares that subsequent calls to
+<code>strerror</code> may overwrite the result string; therefore portable
+code cannot depend on the reentrancy of this subroutine.
+</p>
+<p>Although this implementation of <code>strerror</code> guarantees a non-null
+result with a NUL-terminator, some implementations return <code>NULL</code>
+on failure.  Although POSIX allows <code>strerror</code> to set <code>errno</code>
+to EINVAL on failure, this implementation does not do so (unless
+you provide <code>_user_strerror</code>).
+</p>
+<p>POSIX recommends that unknown <var>errnum</var> result in a message
+including that value, however it is not a requirement and this
+implementation does not provide that information (unless you
+provide <code>_user_strerror</code>).
+</p>
+<p>This implementation of <code>strerror</code> provides for user-defined
+extensibility.  <code>errno.h</code> defines <var>__ELASTERROR</var>, which can be
+used as a base for user-defined error values.  If the user supplies a
+routine named <code>_user_strerror</code>, and <var>errnum</var> passed to
+<code>strerror</code> does not match any of the supported values,
+<code>_user_strerror</code> is called with three arguments.  The first is of
+type <var>int</var>, and is the <var>errnum</var> value unknown to <code>strerror</code>.
+The second is of type <var>int</var>, and matches the <var>internal</var> argument
+of <code>_strerror_r</code>; this should be zero if called from <code>strerror</code>
+and non-zero if called from any other function; <code>_user_strerror</code> can
+use this information to satisfy the POSIX rule that no other
+standardized function can overwrite a static buffer reused by
+<code>strerror</code>.  The third is of type <var>int *</var>, and matches the
+<var>error</var> argument of <code>_strerror_r</code>; if a non-zero value is stored
+into that location (usually <var>EINVAL</var>), then <code>strerror</code> will set
+<code>errno</code> to that value, and the XPG variant of <code>strerror_r</code> will
+return that value instead of zero or <var>ERANGE</var>.  <code>_user_strerror</code>
+returns a <var>char *</var> value; returning <var>NULL</var> implies that the user
+function did not choose to handle <var>errnum</var>.  The default
+<code>_user_strerror</code> returns <var>NULL</var> for all input values.  Note that
+<code>_user_sterror</code> must be thread-safe, and only denote errors via the
+third argument rather than modifying <code>errno</code>, if <code>strerror</code> and
+<code>strerror_r</code> are are to comply with POSIX.
+</p>
+<p><code>strerror</code> requires no supporting OS subroutines.
+</p>
+<br>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="strerror_005fr.html#strerror_005fr" accesskey="n" rel="next">strerror_r</a>, Previous: <a href="strcspn.html#strcspn" accesskey="p" rel="prev">strcspn</a>, Up: <a href="Strings.html#Strings" accesskey="u" rel="up">Strings</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

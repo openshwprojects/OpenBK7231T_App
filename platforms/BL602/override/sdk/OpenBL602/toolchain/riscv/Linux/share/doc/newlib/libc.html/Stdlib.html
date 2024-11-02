@@ -1,0 +1,177 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: Stdlib</title>
+
+<meta name="description" content="The Red Hat newlib C Library: Stdlib">
+<meta name="keywords" content="The Red Hat newlib C Library: Stdlib">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="index.html#Top" rel="up" title="Top">
+<link href="_005fExit.html#g_t_005fExit" rel="next" title="_Exit">
+<link href="Introduction.html#Introduction" rel="prev" title="Introduction">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Stdlib"></a>
+<div class="header">
+<p>
+Next: <a href="Ctype.html#Ctype" accesskey="n" rel="next">Ctype</a>, Previous: <a href="Introduction.html#Introduction" accesskey="p" rel="prev">Introduction</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Standard-Utility-Functions-_0028stdlib_002eh_0029"></a>
+<h2 class="chapter">2 Standard Utility Functions (<samp>stdlib.h</samp>)</h2>
+
+<p>This chapter groups utility functions useful in a variety of programs.
+The corresponding declarations are in the header file <samp>stdlib.h</samp>.
+</p>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="_005fExit.html#g_t_005fExit" accesskey="1">_Exit</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">End program execution without cleaning up
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="a64l.html#a64l" accesskey="2">a64l</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">String to long long
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="abort.html#abort" accesskey="3">abort</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Abnormal termination of a program
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="abs.html#abs" accesskey="4">abs</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Integer absolute value (magnitude)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="assert.html#assert" accesskey="5">assert</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Macro for Debugging Diagnostics
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="atexit.html#atexit" accesskey="6">atexit</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Request execution of functions at program exit
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="atof.html#atof" accesskey="7">atof</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">String to double or float
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="atoi.html#atoi" accesskey="8">atoi</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">String to integer
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="atoll.html#atoll" accesskey="9">atoll</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">String to long long
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="bsearch.html#bsearch">bsearch</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Binary search
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="calloc.html#calloc">calloc</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Allocate space for arrays
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="div.html#div">div</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Divide two integers
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="ecvtbuf.html#ecvtbuf">ecvtbuf</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Double or float to string of digits
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="ecvt.html#ecvt">ecvt</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Double or float to string of digits (malloc result)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="_005f_005fenv_005flock.html#g_t_005f_005fenv_005flock">__env_lock</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Lock environment list for getenv and setenv
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="gcvt.html#gcvt">gcvt</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Format double or float as string
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="exit.html#exit">exit</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">End program execution
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="getenv.html#getenv">getenv</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Look up environment variable
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="itoa.html#itoa">itoa</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Integer to string
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="labs.html#labs">labs</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Long integer absolute value (magnitude)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="ldiv.html#ldiv">ldiv</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Divide two long integers
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="llabs.html#llabs">llabs</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Long long integer absolute value (magnitude)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="lldiv.html#lldiv">lldiv</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Divide two long long integers
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="malloc.html#malloc">malloc</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Allocate and manage memory (malloc, realloc, free)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="mallinfo.html#mallinfo">mallinfo</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Get information about allocated memory
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="_005f_005fmalloc_005flock.html#g_t_005f_005fmalloc_005flock">__malloc_lock</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Lock memory pool for malloc and free
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="mbsrtowcs.html#mbsrtowcs">mbsrtowcs</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Convert a character string to a wide-character string
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="mbstowcs.html#mbstowcs">mbstowcs</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Minimal multibyte string to wide string converter
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="mblen.html#mblen">mblen</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Minimal multibyte length
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="mbtowc.html#mbtowc">mbtowc</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Minimal multibyte to wide character converter
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="on_005fexit.html#on_005fexit">on_exit</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Request execution of functions at program exit
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="qsort.html#qsort">qsort</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Array sort
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="rand.html#rand">rand</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Pseudo-random numbers
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="random.html#random">random</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Pseudo-random numbers
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="rand48.html#rand48">rand48</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Uniformly distributed pseudo-random numbers
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="rpmatch.html#rpmatch">rpmatch</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Determine whether response is affirmative or negative
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strtod.html#strtod">strtod</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">String to double or float
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strtol.html#strtol">strtol</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">String to long
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strtoll.html#strtoll">strtoll</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">String to long long
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strtoul.html#strtoul">strtoul</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">String to unsigned long
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strtoull.html#strtoull">strtoull</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">String to unsigned long long
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="wcsrtombs.html#wcsrtombs">wcsrtombs</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Convert a wide-character string to a character string
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="wcstod.html#wcstod">wcstod</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Wide string to double or float
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="wcstol.html#wcstol">wcstol</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Wide string to long
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="wcstoll.html#wcstoll">wcstoll</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Wide string to long long
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="wcstoul.html#wcstoul">wcstoul</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Wide string to unsigned long
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="wcstoull.html#wcstoull">wcstoull</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Wide string to unsigned long long
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="system.html#system">system</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Execute command string
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="utoa.html#utoa">utoa</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Unsigned integer to string
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="wcstombs.html#wcstombs">wcstombs</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Minimal wide string to multibyte string converter
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="wctomb.html#wctomb">wctomb</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Minimal wide character to multibyte converter
+</td></tr>
+</table>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Ctype.html#Ctype" accesskey="n" rel="next">Ctype</a>, Previous: <a href="Introduction.html#Introduction" accesskey="p" rel="prev">Introduction</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

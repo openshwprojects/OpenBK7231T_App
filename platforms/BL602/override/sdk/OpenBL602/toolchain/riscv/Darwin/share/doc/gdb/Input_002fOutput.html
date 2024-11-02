@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 1988-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "Free Software" and "Free Software Needs
+Free Documentation", with the Front-Cover Texts being "A GNU Manual,"
+and with the Back-Cover Texts as in (a) below.
+
+(a) The FSF's Back-Cover Text is: "You are free to copy and modify
+this GNU Manual.  Buying copies from GNU Press supports the FSF in
+developing GNU and promoting software freedom." -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Input/Output (Debugging with GDB)</title>
+
+<meta name="description" content="Input/Output (Debugging with GDB)">
+<meta name="keywords" content="Input/Output (Debugging with GDB)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="Concept-Index.html" rel="index" title="Concept Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Running.html" rel="up" title="Running">
+<link href="Attach.html" rel="next" title="Attach">
+<link href="Working-Directory.html" rel="prev" title="Working Directory">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="Input_002fOutput"></span><div class="header">
+<p>
+Next: <a href="Attach.html" accesskey="n" rel="next">Attach</a>, Previous: <a href="Working-Directory.html" accesskey="p" rel="prev">Working Directory</a>, Up: <a href="Running.html" accesskey="u" rel="up">Running</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Your-Program_0027s-Input-and-Output"></span><h3 class="section">4.6 Your Program&rsquo;s Input and Output</h3>
+
+<span id="index-redirection"></span>
+<span id="index-i_002fo"></span>
+<span id="index-terminal"></span>
+<p>By default, the program you run under <small>GDB</small> does input and output to
+the same terminal that <small>GDB</small> uses.  <small>GDB</small> switches the terminal
+to its own terminal modes to interact with you, but it records the terminal
+modes your program was using and switches back to them when you continue
+running your program.
+</p>
+<dl compact="compact">
+<dd><span id="index-info-terminal"></span>
+</dd>
+<dt><code>info terminal</code></dt>
+<dd><p>Displays information recorded by <small>GDB</small> about the terminal modes your
+program is using.
+</p></dd>
+</dl>
+
+<p>You can redirect your program&rsquo;s input and/or output using shell
+redirection with the <code>run</code> command.  For example,
+</p>
+<div class="example">
+<pre class="example">run &gt; outfile
+</pre></div>
+
+<p>starts your program, diverting its output to the file <samp>outfile</samp>.
+</p>
+<span id="index-tty"></span>
+<span id="index-controlling-terminal"></span>
+<p>Another way to specify where your program should do input and output is
+with the <code>tty</code> command.  This command accepts a file name as
+argument, and causes this file to be the default for future <code>run</code>
+commands.  It also resets the controlling terminal for the child
+process, for future <code>run</code> commands.  For example,
+</p>
+<div class="example">
+<pre class="example">tty /dev/ttyb
+</pre></div>
+
+<p>directs that processes started with subsequent <code>run</code> commands
+default to do input and output on the terminal <samp>/dev/ttyb</samp> and have
+that as their controlling terminal.
+</p>
+<p>An explicit redirection in <code>run</code> overrides the <code>tty</code> command&rsquo;s
+effect on the input/output device, but not its effect on the controlling
+terminal.
+</p>
+<p>When you use the <code>tty</code> command or redirect input in the <code>run</code>
+command, only the input <em>for your program</em> is affected.  The input
+for <small>GDB</small> still comes from your terminal.  <code>tty</code> is an alias
+for <code>set inferior-tty</code>.
+</p>
+<span id="index-inferior-tty"></span>
+<span id="index-set-inferior-controlling-terminal"></span>
+<p>You can use the <code>show inferior-tty</code> command to tell <small>GDB</small> to
+display the name of the terminal that will be used for future runs of your
+program.
+</p>
+<dl compact="compact">
+<dt><code>set inferior-tty [ <var>tty</var> ]</code></dt>
+<dd><span id="index-set-inferior_002dtty"></span>
+<p>Set the tty for the program being debugged to <var>tty</var>.  Omitting <var>tty</var>
+restores the default behavior, which is to use the same terminal as
+<small>GDB</small>.
+</p>
+</dd>
+<dt><code>show inferior-tty</code></dt>
+<dd><span id="index-show-inferior_002dtty"></span>
+<p>Show the current tty for the program being debugged.
+</p></dd>
+</dl>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Attach.html" accesskey="n" rel="next">Attach</a>, Previous: <a href="Working-Directory.html" accesskey="p" rel="prev">Working Directory</a>, Up: <a href="Running.html" accesskey="u" rel="up">Running</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

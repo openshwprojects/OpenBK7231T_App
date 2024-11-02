@@ -1,0 +1,186 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Known Build Problems</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Known Build Problems">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Installing-GMP.html#Installing-GMP" rel="up" title="Installing GMP">
+<link href="Performance-optimization.html#Performance-optimization" rel="next" title="Performance optimization">
+<link href="Notes-for-Particular-Systems.html#Notes-for-Particular-Systems" rel="prev" title="Notes for Particular Systems">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Known-Build-Problems"></a>
+<div class="header">
+<p>
+Next: <a href="Performance-optimization.html#Performance-optimization" accesskey="n" rel="next">Performance optimization</a>, Previous: <a href="Notes-for-Particular-Systems.html#Notes-for-Particular-Systems" accesskey="p" rel="prev">Notes for Particular Systems</a>, Up: <a href="Installing-GMP.html#Installing-GMP" accesskey="u" rel="up">Installing GMP</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Known-Build-Problems-1"></a>
+<h3 class="section">2.5 Known Build Problems</h3>
+<a name="index-Build-problems-known"></a>
+
+
+<p>You might find more up-to-date information at <a href="https://gmplib.org/">https://gmplib.org/</a>.
+</p>
+<dl compact="compact">
+<dt>Compiler link options</dt>
+<dd><p>The version of libtool currently in use rather aggressively strips compiler
+options when linking a shared library.  This will hopefully be relaxed in the
+future, but for now if this is a problem the suggestion is to create a little
+script to hide them, and for instance configure with
+</p>
+<div class="example">
+<pre class="example">./configure CC=gcc-with-my-options
+</pre></div>
+
+</dd>
+<dt>DJGPP (&lsquo;<samp>*-*-msdosdjgpp*</samp>&rsquo;)</dt>
+<dd><a name="index-DJGPP-1"></a>
+<p>The DJGPP port of <code>bash</code> 2.03 is unable to run the &lsquo;<samp>configure</samp>&rsquo;
+script, it exits silently, having died writing a preamble to
+<samp>config.log</samp>.  Use <code>bash</code> 2.04 or higher.
+</p>
+<p>&lsquo;<samp>make all</samp>&rsquo; was found to run out of memory during the final
+<samp>libgmp.la</samp> link on one system tested, despite having 64Mb available.
+Running &lsquo;<samp>make libgmp.la</samp>&rsquo; directly helped, perhaps recursing into the
+various subdirectories uses up memory.
+</p>
+</dd>
+<dt>GNU binutils <code>strip</code> prior to 2.12</dt>
+<dd><a name="index-Stripped-libraries"></a>
+<a name="index-Binutils-strip"></a>
+<a name="index-GNU-strip"></a>
+<p><code>strip</code> from GNU binutils 2.11 and earlier should not be used on the
+static libraries <samp>libgmp.a</samp> and <samp>libmp.a</samp> since it will discard all
+but the last of multiple archive members with the same name, like the three
+versions of <samp>init.o</samp> in <samp>libgmp.a</samp>.  Binutils 2.12 or higher can be
+used successfully.
+</p>
+<p>The shared libraries <samp>libgmp.so</samp> and <samp>libmp.so</samp> are not affected by
+this and any version of <code>strip</code> can be used on them.
+</p>
+</dd>
+<dt><code>make</code> syntax error</dt>
+<dd><a name="index-SCO"></a>
+<a name="index-IRIX-1"></a>
+<p>On certain versions of SCO OpenServer 5 and IRIX 6.5 the native <code>make</code>
+is unable to handle the long dependencies list for <samp>libgmp.la</samp>.  The
+symptom is a &ldquo;syntax error&rdquo; on the following line of the top-level
+<samp>Makefile</samp>.
+</p>
+<div class="example">
+<pre class="example">libgmp.la: $(libgmp_la_OBJECTS) $(libgmp_la_DEPENDENCIES)
+</pre></div>
+
+<p>Either use GNU Make, or as a workaround remove
+<code>$(libgmp_la_DEPENDENCIES)</code> from that line (which will make the initial
+build work, but if any recompiling is done <samp>libgmp.la</samp> might not be
+rebuilt).
+</p>
+</dd>
+<dt>MacOS X (&lsquo;<samp>*-*-darwin*</samp>&rsquo;)</dt>
+<dd><a name="index-MacOS-X"></a>
+<a name="index-Darwin"></a>
+<p>Libtool currently only knows how to create shared libraries on MacOS X using
+the native <code>cc</code> (which is a modified GCC), not a plain GCC.  A
+static-only build should work though (&lsquo;<samp>--disable-shared</samp>&rsquo;).
+</p>
+</dd>
+<dt>NeXT prior to 3.3</dt>
+<dd><a name="index-NeXT"></a>
+<p>The system compiler on old versions of NeXT was a massacred and old GCC, even
+if it called itself <samp>cc</samp>.  This compiler cannot be used to build GMP, you
+need to get a real GCC, and install that.  (NeXT may have fixed this in
+release 3.3 of their system.)
+</p>
+</dd>
+<dt>POWER and PowerPC</dt>
+<dd><a name="index-Power_002fPowerPC-1"></a>
+<p>Bugs in GCC 2.7.2 (and 2.6.3) mean it can&rsquo;t be used to compile GMP on POWER or
+PowerPC.  If you want to use GCC for these machines, get GCC 2.7.2.1 (or
+later).
+</p>
+</dd>
+<dt>Sequent Symmetry</dt>
+<dd><a name="index-Sequent-Symmetry"></a>
+<p>Use the GNU assembler instead of the system assembler, since the latter has
+serious bugs.
+</p>
+</dd>
+<dt>Solaris 2.6</dt>
+<dd><a name="index-Solaris-1"></a>
+<p>The system <code>sed</code> prints an error &ldquo;Output line too long&rdquo; when libtool
+builds <samp>libgmp.la</samp>.  This doesn&rsquo;t seem to cause any obvious ill effects,
+but GNU <code>sed</code> is recommended, to avoid any doubt.
+</p>
+</dd>
+<dt>Sparc Solaris 2.7 with gcc 2.95.2 in &lsquo;<samp>ABI=32</samp>&rsquo;</dt>
+<dd><a name="index-Solaris-2"></a>
+<p>A shared library build of GMP seems to fail in this combination, it builds but
+then fails the tests, apparently due to some incorrect data relocations within
+<code>gmp_randinit_lc_2exp_size</code>.  The exact cause is unknown,
+&lsquo;<samp>--disable-shared</samp>&rsquo; is recommended.
+</p></dd>
+</dl>
+
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Performance-optimization.html#Performance-optimization" accesskey="n" rel="next">Performance optimization</a>, Previous: <a href="Notes-for-Particular-Systems.html#Notes-for-Particular-Systems" accesskey="p" rel="prev">Notes for Particular Systems</a>, Up: <a href="Installing-GMP.html#Installing-GMP" accesskey="u" rel="up">Installing GMP</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

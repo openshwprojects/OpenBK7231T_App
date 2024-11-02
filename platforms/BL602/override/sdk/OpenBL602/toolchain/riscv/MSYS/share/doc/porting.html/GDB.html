@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Embed with GNU: GDB</title>
+
+<meta name="description" content="Embed with GNU: GDB">
+<meta name="keywords" content="Embed with GNU: GDB">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="leds_002ec.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="index.html#Top" rel="up" title="Top">
+<link href="GNU-remote-protocol.html#GNU-remote-protocol" rel="next" title="GNU remote protocol">
+<link href="Debugging.html#Debugging" rel="prev" title="Debugging">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="GDB"></a>
+<div class="header">
+<p>
+Next: <a href="Binutils.html#Binutils" accesskey="n" rel="next">Binutils</a>, Previous: <a href="Libraries.html#Libraries" accesskey="p" rel="prev">Libraries</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<a name="Writing-a-new-GDB-backend"></a>
+<h2 class="chapter">4 Writing a new GDB backend</h2>
+
+<p>Typically, either the low-level I/O routines are used for debugging, or
+LEDs, if present. It is much easier to use GDb for debugging an
+application. There are several different techniques used to have GDB work
+remotely. Commonly more than one kind of GDB interface is used to cober
+a wide variety of development needs.
+</p>
+<p>The most common style of GDB backend is an exception handler for
+breakpoints. This is also called a <em>gdb stub</em>, and is requires the
+two additional lines of init code in your <code>main()</code> routine. The GDB
+stubs all use the GDB <em>remote protocol</em>. When the application gets a
+breakpoint exception, it communicates to GDB on the host.
+</p>
+<p>Another common style of interfacing GDB to a target is by using an
+existing ROM monitor. These break down into two main kinds, a similar
+protocol to the GDB remote protocol, and an interface that uses the ROM
+monitor directly. This kind has GDB simulating a human operator, and all
+GDB does is work as a command formatter and parser. 
+</p>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="GNU-remote-protocol.html#GNU-remote-protocol" accesskey="1">GNU remote protocol</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">The standard remote protocol.
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Exception-handler.html#Exception-handler" accesskey="2">Exception handler</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">A linked in exception handler.
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="ROM-monitors.html#ROM-monitors" accesskey="3">ROM monitors</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Using a ROM monitor as a backend.
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Other-remote-protocols.html#Other-remote-protocols" accesskey="4">Other remote protocols</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Adding support for new protocols.
+</td></tr>
+</table>
+
+
+
+
+</body>
+</html>

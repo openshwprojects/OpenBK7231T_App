@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 1988-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "Free Software" and "Free Software Needs
+Free Documentation", with the Front-Cover Texts being "A GNU Manual,"
+and with the Back-Cover Texts as in (a) below.
+
+(a) The FSF's Back-Cover Text is: "You are free to copy and modify
+this GNU Manual.  Buying copies from GNU Press supports the FSF in
+developing GNU and promoting software freedom." -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Debugging with GDB: Command Settings</title>
+
+<meta name="description" content="Debugging with GDB: Command Settings">
+<meta name="keywords" content="Debugging with GDB: Command Settings">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Commands.html#Commands" rel="up" title="Commands">
+<link href="Completion.html#Completion" rel="next" title="Completion">
+<link href="Command-Syntax.html#Command-Syntax" rel="prev" title="Command Syntax">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Command-Settings"></a>
+<div class="header">
+<p>
+Next: <a href="Completion.html#Completion" accesskey="n" rel="next">Completion</a>, Previous: <a href="Command-Syntax.html#Command-Syntax" accesskey="p" rel="prev">Command Syntax</a>, Up: <a href="Commands.html#Commands" accesskey="u" rel="up">Commands</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Command-Settings-1"></a>
+<h3 class="section">3.2 Command Settings</h3>
+<a name="index-default-behavior-of-commands_002c-changing"></a>
+<a name="index-default-settings_002c-changing"></a>
+
+<p>Many commands change their behavior according to command-specific
+variables or settings.  These settings can be changed with the
+<code>set</code> subcommands.  For example, the <code>print</code> command
+(see <a href="Data.html#Data">Examining Data</a>) prints arrays differently depending on
+settings changeable with the commands <code>set print elements
+NUMBER-OF-ELEMENTS</code> and <code>set print array-indexes</code>, among others.
+</p>
+<p>You can change these settings to your preference in the gdbinit files
+loaded at <small>GDB</small> startup.  See <a href="Startup.html#Startup">Startup</a>.
+</p>
+<p>The settings can also be changed interactively during the debugging
+session.  For example, to change the limit of array elements to print,
+you can do the following:
+</p><div class="smallexample">
+<pre class="smallexample">(GDB) set print elements 10
+(GDB) print some_array
+$1 = {0, 10, 20, 30, 40, 50, 60, 70, 80, 90...}
+</pre></div>
+
+<p>The above <code>set print elements 10</code> command changes the number of
+elements to print from the default of 200 to 10.  If you only intend
+this limit of 10 to be used for printing <code>some_array</code>, then you
+must restore the limit back to 200, with <code>set print elements
+200</code>.
+</p>
+<p>Some commands allow overriding settings with command options.  For
+example, the <code>print</code> command supports a number of options that
+allow overriding relevant global print settings as set by <code>set
+print</code> subcommands.  See <a href="Data.html#print-options">print options</a>.  The example above could be
+rewritten as:
+</p><div class="smallexample">
+<pre class="smallexample">(GDB) print -elements 10 -- some_array
+$1 = {0, 10, 20, 30, 40, 50, 60, 70, 80, 90...}
+</pre></div>
+
+<p>Alternatively, you can use the <code>with</code> command to change a setting
+temporarily, for the duration of a command invocation.
+</p>
+<dl compact="compact">
+<dd><a name="index-with-command"></a>
+<a name="index-w-_0028with_0029"></a>
+<a name="index-settings"></a>
+<a name="index-temporarily-change-settings"></a>
+</dd>
+<dt><code>with <var>setting</var> [<var>value</var>] [-- <var>command</var>]</code></dt>
+<dt><code>w <var>setting</var> [<var>value</var>] [-- <var>command</var>]</code></dt>
+<dd><p>Temporarily set <var>setting</var> to <var>value</var> for the duration of
+<var>command</var>.
+</p>
+<p><var>setting</var> is any setting you can change with the <code>set</code>
+subcommands.  <var>value</var> is the value to assign to <code>setting</code>
+while running <code>command</code>.
+</p>
+<p>If no <var>command</var> is provided, the last command executed is
+repeated.
+</p>
+<p>If a <var>command</var> is provided, it must be preceded by a double dash
+(<code>--</code>) separator.  This is required because some settings accept
+free-form arguments, such as expressions or filenames.
+</p>
+<p>For example, the command
+</p><div class="smallexample">
+<pre class="smallexample">(GDB) with print array on -- print some_array
+</pre></div>
+<p>is equivalent to the following 3 commands:
+</p><div class="smallexample">
+<pre class="smallexample">(GDB) set print array on
+(GDB) print some_array
+(GDB) set print array off
+</pre></div>
+
+<p>The <code>with</code> command is particularly useful when you want to
+override a setting while running user-defined commands, or commands
+defined in Python or Guile.  See <a href="Extending-GDB.html#Extending-GDB">Extending GDB</a>.
+</p>
+<div class="smallexample">
+<pre class="smallexample">(GDB) with print pretty on -- my_complex_command
+</pre></div>
+
+<p>To change several settings for the same command, you can nest
+<code>with</code> commands.  For example, <code>with language ada -- with
+print elements 10</code> temporarily changes the language to Ada and sets a
+limit of 10 elements to print for arrays and strings.
+</p>
+</dd>
+</dl>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Completion.html#Completion" accesskey="n" rel="next">Completion</a>, Previous: <a href="Command-Syntax.html#Command-Syntax" accesskey="p" rel="prev">Command Syntax</a>, Up: <a href="Commands.html#Commands" accesskey="u" rel="up">Commands</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This file documents the GNU Assembler "as".
+
+Copyright (C) 1991-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3
+or any later version published by the Free Software Foundation;
+with no Invariant Sections, with no Front-Cover Texts, and with no
+Back-Cover Texts.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+ -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>RISC-V-Modifiers (Using as)</title>
+
+<meta name="description" content="RISC-V-Modifiers (Using as)">
+<meta name="keywords" content="RISC-V-Modifiers (Using as)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="AS-Index.html" rel="index" title="AS Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="RISC_002dV_002dDependent.html" rel="up" title="RISC-V-Dependent">
+<link href="RISC_002dV_002dFormats.html" rel="next" title="RISC-V-Formats">
+<link href="RISC_002dV_002dDirectives.html" rel="prev" title="RISC-V-Directives">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="RISC_002dV_002dModifiers"></span><div class="header">
+<p>
+Next: <a href="RISC_002dV_002dFormats.html" accesskey="n" rel="next">RISC-V-Formats</a>, Previous: <a href="RISC_002dV_002dDirectives.html" accesskey="p" rel="prev">RISC-V-Directives</a>, Up: <a href="RISC_002dV_002dDependent.html" accesskey="u" rel="up">RISC-V-Dependent</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="AS-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="RISC_002dV-Assembler-Modifiers"></span><h4 class="subsection">9.38.3 RISC-V Assembler Modifiers</h4>
+
+<p>The RISC-V assembler supports following modifiers for relocatable addresses
+used in RISC-V instruction operands.  However, we also support some pseudo
+instructions that are easier to use than these modifiers.
+</p>
+<dl compact="compact">
+<dt><code>%lo(<var>symbol</var>)</code></dt>
+<dd><p>The low 12 bits of absolute address for <var>symbol</var>.
+</p>
+</dd>
+<dt><code>%hi(<var>symbol</var>)</code></dt>
+<dd><p>The high 20 bits of absolute address for <var>symbol</var>.  This is usually
+used with the %lo modifier to represent a 32-bit absolute address.
+</p>
+<div class="example">
+<pre class="example">	lui        a0, %hi(<var>symbol</var>)     // R_RISCV_HI20
+	addi       a0, a0, %lo(<var>symbol</var>) // R_RISCV_LO12_I
+
+	lui        a0, %hi(<var>symbol</var>)     // R_RISCV_HI20
+	load/store a0, %lo(<var>symbol</var>)(a0) // R_RISCV_LO12_I/S
+</pre></div>
+
+</dd>
+<dt><code>%pcrel_lo(<var>label</var>)</code></dt>
+<dd><p>The low 12 bits of relative address between pc and <var>symbol</var>.
+The <var>symbol</var> is related to the high part instruction which is marked
+by <var>label</var>.
+</p>
+</dd>
+<dt><code>%pcrel_hi(<var>symbol</var>)</code></dt>
+<dd><p>The high 20 bits of relative address between pc and <var>symbol</var>.
+This is usually used with the %pcrel_lo modifier to represent a +/-2GB
+pc-relative range.
+</p>
+<div class="example">
+<pre class="example"><var>label</var>:
+	auipc      a0, %pcrel_hi(<var>symbol</var>)    // R_RISCV_PCREL_HI20
+	addi       a0, a0, %pcrel_lo(<var>label</var>) // R_RISCV_PCREL_LO12_I
+
+<var>label</var>:
+	auipc      a0, %pcrel_hi(<var>symbol</var>)    // R_RISCV_PCREL_HI20
+	load/store a0, %pcrel_lo(<var>label</var>)(a0) // R_RISCV_PCREL_LO12_I/S
+</pre></div>
+
+<p>Or you can use the pseudo lla/lw/sw/... instruction to do this.
+</p>
+<div class="example">
+<pre class="example">	lla  a0, <var>symbol</var>
+</pre></div>
+
+</dd>
+<dt><code>%got_pcrel_hi(<var>symbol</var>)</code></dt>
+<dd><p>The high 20 bits of relative address between pc and the GOT entry of
+<var>symbol</var>.  This is usually used with the %pcrel_lo modifier to access
+the GOT entry.
+</p>
+<div class="example">
+<pre class="example"><var>label</var>:
+	auipc      a0, %got_pcrel_hi(<var>symbol</var>) // R_RISCV_GOT_HI20
+	addi       a0, a0, %pcrel_lo(<var>label</var>)  // R_RISCV_PCREL_LO12_I
+
+<var>label</var>:
+	auipc      a0, %got_pcrel_hi(<var>symbol</var>) // R_RISCV_GOT_HI20
+	load/store a0, %pcrel_lo(<var>label</var>)(a0)  // R_RISCV_PCREL_LO12_I/S
+</pre></div>
+
+<p>Also, the pseudo la instruction with PIC has similar behavior.
+</p>
+</dd>
+<dt><code>%tprel_add(<var>symbol</var>)</code></dt>
+<dd><p>This is used purely to associate the R_RISCV_TPREL_ADD relocation for
+TLS relaxation.  This one is only valid as the fourth operand to the normally
+3 operand add instruction.
+</p>
+</dd>
+<dt><code>%tprel_lo(<var>symbol</var>)</code></dt>
+<dd><p>The low 12 bits of relative address between tp and <var>symbol</var>.
+</p>
+</dd>
+<dt><code>%tprel_hi(<var>symbol</var>)</code></dt>
+<dd><p>The high 20 bits of relative address between tp and <var>symbol</var>.  This is
+usually used with the %tprel_lo and %tprel_add modifiers to access the thread
+local variable <var>symbol</var> in TLS Local Exec.
+</p>
+<div class="example">
+<pre class="example">	lui        a5, %tprel_hi(<var>symbol</var>)          // R_RISCV_TPREL_HI20
+	add        a5, a5, tp, %tprel_add(<var>symbol</var>) // R_RISCV_TPREL_ADD
+	load/store t0, %tprel_lo(<var>symbol</var>)(a5)      // R_RISCV_TPREL_LO12_I/S
+</pre></div>
+
+</dd>
+<dt><code>%tls_ie_pcrel_hi(<var>symbol</var>)</code></dt>
+<dd><p>The high 20 bits of relative address between pc and GOT entry.  It is
+usually used with the %pcrel_lo modifier to access the thread local
+variable <var>symbol</var> in TLS Initial Exec.
+</p>
+<div class="example">
+<pre class="example">	la.tls.ie  a5, <var>symbol</var>
+	add        a5, a5, tp
+	load/store t0, 0(a5)
+</pre></div>
+
+<p>The pseudo la.tls.ie instruction can be expended to
+</p>
+<div class="example">
+<pre class="example"><var>label</var>:
+	auipc a5, %tls_ie_pcrel_hi(<var>symbol</var>) // R_RISCV_TLS_GOT_HI20
+	load  a5, %pcrel_lo(<var>label</var>)(a5)     // R_RISCV_PCREL_LO12_I
+</pre></div>
+
+</dd>
+<dt><code>%tls_gd_pcrel_hi(<var>symbol</var>)</code></dt>
+<dd><p>The high 20 bits of relative address between pc and GOT entry.  It is
+usually used with the %pcrel_lo modifier to access the thread local variable
+<var>symbol</var> in TLS Global Dynamic.
+</p>
+<div class="example">
+<pre class="example">	la.tls.gd  a0, <var>symbol</var>
+	call       __tls_get_addr@plt
+	mv         a5, a0
+	load/store t0, 0(a5)
+</pre></div>
+
+<p>The pseudo la.tls.gd instruction can be expended to
+</p>
+<div class="example">
+<pre class="example"><var>label</var>:
+	auipc a0, %tls_gd_pcrel_hi(<var>symbol</var>) // R_RISCV_TLS_GD_HI20
+	addi  a0, a0, %pcrel_lo(<var>label</var>)     // R_RISCV_PCREL_LO12_I
+</pre></div>
+
+</dd>
+</dl>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="RISC_002dV_002dFormats.html" accesskey="n" rel="next">RISC-V-Formats</a>, Previous: <a href="RISC_002dV_002dDirectives.html" accesskey="p" rel="prev">RISC-V-Directives</a>, Up: <a href="RISC_002dV_002dDependent.html" accesskey="u" rel="up">RISC-V-Dependent</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="AS-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

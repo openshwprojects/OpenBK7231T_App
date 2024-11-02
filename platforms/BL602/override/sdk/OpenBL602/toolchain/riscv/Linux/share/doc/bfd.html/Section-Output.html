@@ -1,0 +1,145 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This file documents the BFD library.
+
+Copyright (C) 1991-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "GNU General Public License" and "Funding
+Free Software", the Front-Cover texts being (a) (see below), and with
+the Back-Cover Texts being (b) (see below).  A copy of the license is
+included in the section entitled "GNU Free Documentation License".
+
+(a) The FSF's Front-Cover Text is:
+
+A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Untitled Document: Section Output</title>
+
+<meta name="description" content="Untitled Document: Section Output">
+<meta name="keywords" content="Untitled Document: Section Output">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="BFD-Index.html#BFD-Index" rel="index" title="BFD Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Sections.html#Sections" rel="up" title="Sections">
+<link href="typedef-asection.html#typedef-asection" rel="next" title="typedef asection">
+<link href="Section-Input.html#Section-Input" rel="prev" title="Section Input">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Section-Output"></a>
+<div class="header">
+<p>
+Next: <a href="typedef-asection.html#typedef-asection" accesskey="n" rel="next">typedef asection</a>, Previous: <a href="Section-Input.html#Section-Input" accesskey="p" rel="prev">Section Input</a>, Up: <a href="Sections.html#Sections" accesskey="u" rel="up">Sections</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="BFD-Index.html#BFD-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Section-output"></a>
+<h4 class="subsection">2.6.2 Section output</h4>
+<p>To write a new object style BFD, the various sections to be
+written have to be created. They are attached to the BFD in
+the same way as input sections; data is written to the
+sections using <code>bfd_set_section_contents</code>.
+</p>
+<p>Any program that creates or combines sections (e.g., the assembler
+and linker) must use the <code>asection</code> fields <code>output_section</code> and
+<code>output_offset</code> to indicate the file sections to which each
+section must be written.  (If the section is being created from
+scratch, <code>output_section</code> should probably point to the section
+itself and <code>output_offset</code> should probably be zero.)
+</p>
+<p>The data to be written comes from input sections attached
+(via <code>output_section</code> pointers) to
+the output sections.  The output section structure can be
+considered a filter for the input section: the output section
+determines the vma of the output data and the name, but the
+input section determines the offset into the output section of
+the data to be written.
+</p>
+<p>E.g., to create a section &quot;O&quot;, starting at 0x100, 0x123 long,
+containing two subsections, &quot;A&quot; at offset 0x0 (i.e., at vma
+0x100) and &quot;B&quot; at offset 0x20 (i.e., at vma 0x120) the <code>asection</code>
+structures would look like:
+</p>
+<div class="example">
+<pre class="example">   section name          &quot;A&quot;
+     output_offset   0x00
+     size            0x20
+     output_section -----------&gt;  section name    &quot;O&quot;
+                             |    vma             0x100
+   section name          &quot;B&quot; |    size            0x123
+     output_offset   0x20    |
+     size            0x103   |
+     output_section  --------|
+</pre></div>
+
+<a name="Link-orders"></a>
+<h4 class="subsection">2.6.3 Link orders</h4>
+<p>The data within a section is stored in a <em>link_order</em>.
+These are much like the fixups in <code>gas</code>.  The link_order
+abstraction allows a section to grow and shrink within itself.
+</p>
+<p>A link_order knows how big it is, and which is the next
+link_order and where the raw data for it is; it also points to
+a list of relocations which apply to it.
+</p>
+<p>The link_order is used by the linker to perform relaxing on
+final code.  The compiler creates code which is as big as
+necessary to make it work without relaxing, and the user can
+select whether to relax.  Sometimes relaxing takes a lot of
+time.  The linker runs around the relocations to see if any
+are attached to data which can be shrunk, if so it does it on
+a link_order by link_order basis.
+</p>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="typedef-asection.html#typedef-asection" accesskey="n" rel="next">typedef asection</a>, Previous: <a href="Section-Input.html#Section-Input" accesskey="p" rel="prev">Section Input</a>, Up: <a href="Sections.html#Sections" accesskey="u" rel="up">Sections</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="BFD-Index.html#BFD-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

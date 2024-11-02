@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Profiling</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Profiling">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="GMP-Basics.html#GMP-Basics" rel="up" title="GMP Basics">
+<link href="Autoconf.html#Autoconf" rel="next" title="Autoconf">
+<link href="Debugging.html#Debugging" rel="prev" title="Debugging">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Profiling"></a>
+<div class="header">
+<p>
+Next: <a href="Autoconf.html#Autoconf" accesskey="n" rel="next">Autoconf</a>, Previous: <a href="Debugging.html#Debugging" accesskey="p" rel="prev">Debugging</a>, Up: <a href="GMP-Basics.html#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Profiling-1"></a>
+<h3 class="section">3.13 Profiling</h3>
+<a name="index-Profiling"></a>
+<a name="index-Execution-profiling-1"></a>
+<a name="index-_002d_002denable_002dprofiling-1"></a>
+
+<p>Running a program under a profiler is a good way to find where it&rsquo;s spending
+most time and where improvements can be best sought.  The profiling choices
+for a GMP build are as follows.
+</p>
+<dl compact="compact">
+<dt>&lsquo;<samp>--disable-profiling</samp>&rsquo;</dt>
+<dd><p>The default is to add nothing special for profiling.
+</p>
+<p>It should be possible to just compile the mainline of a program with <code>-p</code>
+and use <code>prof</code> to get a profile consisting of timer-based sampling of
+the program counter.  Most of the GMP assembly code has the necessary symbol
+information.
+</p>
+<p>This approach has the advantage of minimizing interference with normal program
+operation, but on most systems the resolution of the sampling is quite low (10
+milliseconds for instance), requiring long runs to get accurate information.
+</p>
+</dd>
+<dt>&lsquo;<samp>--enable-profiling=prof</samp>&rsquo;</dt>
+<dd><a name="index-prof"></a>
+<p>Build with support for the system <code>prof</code>, which means &lsquo;<samp>-p</samp>&rsquo; added
+to the &lsquo;<samp>CFLAGS</samp>&rsquo;.
+</p>
+<p>This provides call counting in addition to program counter sampling, which
+allows the most frequently called routines to be identified, and an average
+time spent in each routine to be determined.
+</p>
+<p>The x86 assembly code has support for this option, but on other processors
+the assembly routines will be as if compiled without &lsquo;<samp>-p</samp>&rsquo; and therefore
+won&rsquo;t appear in the call counts.
+</p>
+<p>On some systems, such as GNU/Linux, &lsquo;<samp>-p</samp>&rsquo; in fact means &lsquo;<samp>-pg</samp>&rsquo; and in
+this case &lsquo;<samp>--enable-profiling=gprof</samp>&rsquo; described below should be used
+instead.
+</p>
+</dd>
+<dt>&lsquo;<samp>--enable-profiling=gprof</samp>&rsquo;</dt>
+<dd><a name="index-gprof"></a>
+<p>Build with support for <code>gprof</code>, which means &lsquo;<samp>-pg</samp>&rsquo; added to the
+&lsquo;<samp>CFLAGS</samp>&rsquo;.
+</p>
+<p>This provides call graph construction in addition to call counting and program
+counter sampling, which makes it possible to count calls coming from different
+locations.  For example the number of calls to <code>mpn_mul</code> from
+<code>mpz_mul</code> versus the number from <code>mpf_mul</code>.  The program counter
+sampling is still flat though, so only a total time in <code>mpn_mul</code> would be
+accumulated, not a separate amount for each call site.
+</p>
+<p>The x86 assembly code has support for this option, but on other processors
+the assembly routines will be as if compiled without &lsquo;<samp>-pg</samp>&rsquo; and therefore
+not be included in the call counts.
+</p>
+<p>On x86 and m68k systems &lsquo;<samp>-pg</samp>&rsquo; and &lsquo;<samp>-fomit-frame-pointer</samp>&rsquo; are
+incompatible, so the latter is omitted from the default flags in that case,
+which might result in poorer code generation.
+</p>
+<p>Incidentally, it should be possible to use the <code>gprof</code> program with a
+plain &lsquo;<samp>--enable-profiling=prof</samp>&rsquo; build.  But in that case only the
+&lsquo;<samp>gprof -p</samp>&rsquo; flat profile and call counts can be expected to be valid, not
+the &lsquo;<samp>gprof -q</samp>&rsquo; call graph.
+</p>
+</dd>
+<dt>&lsquo;<samp>--enable-profiling=instrument</samp>&rsquo;</dt>
+<dd><a name="index-_002dfinstrument_002dfunctions"></a>
+<a name="index-instrument_002dfunctions"></a>
+<p>Build with the GCC option &lsquo;<samp>-finstrument-functions</samp>&rsquo; added to the
+&lsquo;<samp>CFLAGS</samp>&rsquo; (see <a href="http://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code-Gen-Options">Options for Code Generation</a> in <cite>Using the GNU Compiler Collection (GCC)</cite>).
+</p>
+<p>This inserts special instrumenting calls at the start and end of each
+function, allowing exact timing and full call graph construction.
+</p>
+<p>This instrumenting is not normally a standard system feature and will require
+support from an external library, such as
+</p>
+<a name="index-FunctionCheck"></a>
+<a name="index-fnccheck"></a>
+<div class="display">
+<pre class="display"><a href="http://sourceforge.net/projects/fnccheck/">http://sourceforge.net/projects/fnccheck/</a>
+</pre></div>
+
+<p>This should be included in &lsquo;<samp>LIBS</samp>&rsquo; during the GMP configure so that test
+programs will link.  For example,
+</p>
+<div class="example">
+<pre class="example">./configure --enable-profiling=instrument LIBS=-lfc
+</pre></div>
+
+<p>On a GNU system the C library provides dummy instrumenting functions, so
+programs compiled with this option will link.  In this case it&rsquo;s only
+necessary to ensure the correct library is added when linking an application.
+</p>
+<p>The x86 assembly code supports this option, but on other processors the
+assembly routines will be as if compiled without
+&lsquo;<samp>-finstrument-functions</samp>&rsquo; meaning time spent in them will effectively be
+attributed to their caller.
+</p></dd>
+</dl>
+
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Autoconf.html#Autoconf" accesskey="n" rel="next">Autoconf</a>, Previous: <a href="Debugging.html#Debugging" accesskey="p" rel="prev">Debugging</a>, Up: <a href="GMP-Basics.html#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

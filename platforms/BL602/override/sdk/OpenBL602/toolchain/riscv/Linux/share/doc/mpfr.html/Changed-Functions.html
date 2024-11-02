@@ -1,0 +1,168 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual documents how to install and use the Multiple Precision
+Floating-Point Reliable Library, version 3.1.4.
+
+Copyright 1991, 1993-2016 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with no Front-Cover Texts, and with no Back-Cover Texts.  A copy of the
+license is included in GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MPFR 3.1.4: Changed Functions</title>
+
+<meta name="description" content="How to install and use GNU MPFR, a library for reliable multiple precision
+floating-point arithmetic, version 3.1.4.">
+<meta name="keywords" content="GNU MPFR 3.1.4: Changed Functions">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="API-Compatibility.html#API-Compatibility" rel="up" title="API Compatibility">
+<link href="Removed-Functions.html#Removed-Functions" rel="next" title="Removed Functions">
+<link href="Added-Functions.html#Added-Functions" rel="prev" title="Added Functions">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Changed-Functions"></a>
+<div class="header">
+<p>
+Next: <a href="Removed-Functions.html#Removed-Functions" accesskey="n" rel="next">Removed Functions</a>, Previous: <a href="Added-Functions.html#Added-Functions" accesskey="p" rel="prev">Added Functions</a>, Up: <a href="API-Compatibility.html#API-Compatibility" accesskey="u" rel="up">API Compatibility</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Changed-Functions-1"></a>
+<h3 class="section">6.3 Changed Functions</h3>
+
+<p>The following functions have changed after MPFR 2.2. Changes can affect
+the behavior of code written for some MPFR version when built and run
+against another MPFR version (older or newer), as described below.
+</p>
+<ul>
+<li> <code>mpfr_check_range</code> changed in MPFR 2.3.2 and MPFR 2.4.
+If the value is an inexact infinity, the overflow flag is now set
+(in case it was lost), while it was previously left unchanged.
+This is really what is expected in practice (and what the MPFR code
+was expecting), so that the previous behavior was regarded as a bug.
+Hence the change in MPFR 2.3.2.
+
+</li><li> <code>mpfr_get_f</code> changed in MPFR 3.0.
+This function was returning zero, except for NaN and Inf, which do not
+exist in MPF. The <em>erange</em> flag is now set in these cases,
+and <code>mpfr_get_f</code> now returns the usual ternary value.
+
+</li><li> <code>mpfr_get_si</code>, <code>mpfr_get_sj</code>, <code>mpfr_get_ui</code>
+and <code>mpfr_get_uj</code> changed in MPFR 3.0.
+In previous MPFR versions, the cases where the <em>erange</em> flag
+is set were unspecified.
+
+</li><li> <code>mpfr_get_z</code> changed in MPFR 3.0.
+The return type was <code>void</code>; it is now <code>int</code>, and the usual
+ternary value is returned.  Thus programs that need to work with both
+MPFR 2.x and 3.x must not use the return value.  Even in this case,
+C code using <code>mpfr_get_z</code> as the second or third term of
+a conditional operator may also be affected. For instance, the
+following is correct with MPFR 3.0, but not with MPFR 2.x:
+<div class="example">
+<pre class="example">  bool ? mpfr_get_z(...) : mpfr_add(...);
+</pre></div>
+<p>On the other hand, the following is correct with MPFR 2.x, but not
+with MPFR 3.0:
+</p><div class="example">
+<pre class="example">  bool ? mpfr_get_z(...) : (void) mpfr_add(...);
+</pre></div>
+<p>Portable code should cast <code>mpfr_get_z(...)</code> to <code>void</code> to
+use the type <code>void</code> for both terms of the conditional operator,
+as in:
+</p><div class="example">
+<pre class="example">  bool ? (void) mpfr_get_z(...) : (void) mpfr_add(...);
+</pre></div>
+<p>Alternatively, <code>if ... else</code> can be used instead of the
+conditional operator.
+</p>
+<p>Moreover the cases where the <em>erange</em> flag is set were unspecified
+in MPFR 2.x.
+</p>
+</li><li> <code>mpfr_get_z_exp</code> changed in MPFR 3.0.
+In previous MPFR versions, the cases where the <em>erange</em> flag
+is set were unspecified.
+Note: this function has been renamed to <code>mpfr_get_z_2exp</code>
+in MPFR 3.0, but <code>mpfr_get_z_exp</code> is still available for
+compatibility reasons.
+
+</li><li> <code>mpfr_strtofr</code> changed in MPFR 2.3.1 and MPFR 2.4.
+This was actually a bug fix since the code and the documentation did
+not match.  But both were changed in order to have a more consistent
+and useful behavior.  The main changes in the code are as follows.
+The binary exponent is now accepted even without the <code>0b</code> or
+<code>0x</code> prefix.  Data corresponding to NaN can now have an optional
+sign (such data were previously invalid).
+
+</li><li> <code>mpfr_strtofr</code> changed in MPFR 3.0.
+This function now accepts bases from 37 to 62 (no changes for the other
+bases).  Note: if an unsupported base is provided to this function,
+the behavior is undefined; more precisely, in MPFR 2.3.1 and later,
+providing an unsupported base yields an assertion failure (this
+behavior may change in the future).
+
+</li><li> <code>mpfr_subnormalize</code> changed in MPFR 3.1.
+This was actually regarded as a bug fix. The <code>mpfr_subnormalize</code>
+implementation up to MPFR 3.0.0 did not change the flags. In particular,
+it did not follow the generic rule concerning the inexact flag (and no
+special behavior was specified). The case of the underflow flag was more
+a lack of specification.
+
+</li><li> <code>mpfr_urandom</code> and <code>mpfr_urandomb</code> changed in MPFR 3.1.
+Their behavior no longer depends on the platform (assuming this is also true
+for GMP&rsquo;s random generator, which is not the case between GMP 4.1 and 4.2 if
+<code>gmp_randinit_default</code> is used).  As a consequence, the returned values
+can be different between MPFR 3.1 and previous MPFR versions.
+Note: as the reproducibility of these functions was not specified
+before MPFR 3.1, the MPFR 3.1 behavior is <em>not</em> regarded as
+backward incompatible with previous versions.
+
+</li></ul>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Removed-Functions.html#Removed-Functions" accesskey="n" rel="next">Removed Functions</a>, Previous: <a href="Added-Functions.html#Added-Functions" accesskey="p" rel="prev">Added Functions</a>, Up: <a href="API-Compatibility.html#API-Compatibility" accesskey="u" rel="up">API Compatibility</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

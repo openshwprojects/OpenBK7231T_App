@@ -1,0 +1,91 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>LIBM: catan</title>
+
+<meta name="description" content="LIBM: catan">
+<meta name="keywords" content="LIBM: catan">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Complex.html#Complex" rel="up" title="Complex">
+<link href="catanh.html#catanh" rel="next" title="catanh">
+<link href="casinh.html#casinh" rel="prev" title="casinh">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="catan"></a>
+<div class="header">
+<p>
+Next: <a href="catanh.html#catanh" accesskey="n" rel="next">catanh</a>, Previous: <a href="casinh.html#casinh" accesskey="p" rel="prev">casinh</a>, Up: <a href="Complex.html#Complex" accesskey="u" rel="up">Complex</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="catan_002c-catanf_002d_002d_002dcomplex-arc-tangent"></a>
+<h3 class="section">2.7 <code>catan</code>, <code>catanf</code>&mdash;complex arc tangent</h3>
+<a name="index-catan"></a>
+<a name="index-catanf"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;complex.h&gt;
+double complex catan(double complex <var>z</var>);
+float complex catanf(float complex <var>z</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+These functions compute the complex arc tangent of <var>z</var>,
+with branch cuts outside the interval [-i, +i] along the 
+imaginary axis.
+</p>
+<p><code>catanf</code> is identical to <code>catan</code>, except that it performs
+its calculations on <code>floats complex</code>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+These functions return the complex arc tangent value, in the range
+of a strip mathematically  unbounded  along the imaginary axis
+and in the interval [-pi/2, +pi/2] along the real axis.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>catan</code> and <code>catanf</code> are ISO C99
+</p>
+<br>
+
+
+
+</body>
+</html>

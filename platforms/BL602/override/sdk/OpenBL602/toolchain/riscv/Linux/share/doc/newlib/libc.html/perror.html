@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: perror</title>
+
+<meta name="description" content="The Red Hat newlib C Library: perror">
+<meta name="keywords" content="The Red Hat newlib C Library: perror">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="putc.html#putc" rel="next" title="putc">
+<link href="open_005fmemstream.html#open_005fmemstream" rel="prev" title="open_memstream">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="perror"></a>
+<div class="header">
+<p>
+Next: <a href="putc.html#putc" accesskey="n" rel="next">putc</a>, Previous: <a href="open_005fmemstream.html#open_005fmemstream" accesskey="p" rel="prev">open_memstream</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="perror_002d_002d_002dprint-an-error-message-on-standard-error"></a>
+<h3 class="section">4.44 <code>perror</code>&mdash;print an error message on standard error</h3>
+<a name="index-perror"></a>
+<a name="index-_005fperror_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+void perror(char *<var>prefix</var>);
+
+void _perror_r(struct _reent *<var>reent</var>, char *<var>prefix</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+Use <code>perror</code> to print (on standard error) an error message
+corresponding to the current value of the global variable <code>errno</code>.
+Unless you use <code>NULL</code> as the value of the argument <var>prefix</var>, the
+error message will begin with the string at <var>prefix</var>, followed by a
+colon and a space (<code>: </code>). The remainder of the error message is one
+of the strings described for <code>strerror</code>.
+</p>
+<p>The alternate function <code>_perror_r</code> is a reentrant version.  The
+extra argument <var>reent</var> is a pointer to a reentrancy structure.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>perror</code> returns no result.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+ANSI C requires <code>perror</code>, but the strings issued vary from one
+implementation to another.
+</p>
+<p>Supporting OS subroutines required: <code>close</code>, <code>fstat</code>, <code>isatty</code>,
+<code>lseek</code>, <code>read</code>, <code>sbrk</code>, <code>write</code>.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

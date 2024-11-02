@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: wcstok</title>
+
+<meta name="description" content="The Red Hat newlib C Library: wcstok">
+<meta name="keywords" content="The Red Hat newlib C Library: wcstok">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Wchar-strings.html#Wchar-strings" rel="up" title="Wchar strings">
+<link href="wcswidth.html#wcswidth" rel="next" title="wcswidth">
+<link href="wcsstr.html#wcsstr" rel="prev" title="wcsstr">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="wcstok"></a>
+<div class="header">
+<p>
+Next: <a href="wcswidth.html#wcswidth" accesskey="n" rel="next">wcswidth</a>, Previous: <a href="wcsstr.html#wcsstr" accesskey="p" rel="prev">wcsstr</a>, Up: <a href="Wchar-strings.html#Wchar-strings" accesskey="u" rel="up">Wchar strings</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="wcstok_002d_002d_002dget-next-token-from-a-string"></a>
+<h3 class="section">6.27 <code>wcstok</code>&mdash;get next token from a string</h3>
+<a name="index-wcstok"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;wchar.h&gt;
+wchar_t *wcstok(wchar_t *__restrict <var>source</var>,
+    const wchar_t *__restrict <var>delimiters</var>,
+    wchar_t **__restrict <var>lasts</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+The <code>wcstok</code> function is the wide-character equivalent of the
+<code>strtok_r</code> function (which in turn is the same as the <code>strtok</code>
+function with an added argument to make it thread-safe).
+</p>
+<p>The <code>wcstok</code> function is used to isolate (one at a time)
+sequential tokens in a null-terminated wide-character string,
+<code>*<var>source</var></code>.  A token is defined as a substring not containing
+any wide-characters from <code>*<var>delimiters</var></code>.
+</p>
+<p>The first time that <code>wcstok</code> is called, <code>*<var>source</var></code> should
+be specified with the wide-character string to be searched, and
+<code>*<var>lasts</var></code>&ndash;but not <code>lasts</code>, which must be non-NULL&ndash;may be
+random; subsequent calls, wishing to obtain further tokens from
+the same string, should pass a null pointer for <code>*<var>source</var></code>
+instead but must supply <code>*<var>lasts</var></code> unchanged from the last
+call.  The separator wide-character string, <code>*<var>delimiters</var></code>,
+must be supplied each time and may change between calls.
+A pointer to placeholder <code>*<var>lasts</var></code> must be supplied by
+the caller, and is set each time as needed to save the state
+by <code>wcstok</code>.	Every call to <code>wcstok</code> with <code>*<var>source</var></code>
+== <code>NULL</code> must pass the value of <code>*<var>lasts</var></code> as last set
+by <code>wcstok</code>.
+</p>
+<p>The <code>wcstok</code> function returns a pointer to the beginning of each 
+subsequent token in the string, after replacing the separator 
+wide-character itself with a null wide-character.  When no more tokens
+remain, a null pointer is returned.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>wcstok</code> returns a pointer to the first wide character of a token, or
+<code>NULL</code> if there is no token.
+</p>
+<br>
+<p><strong>Notes</strong><br>
+<code>wcstok</code> is thread-safe (unlike <code>strtok</code>, but like <code>strtok_r</code>).
+<code>wcstok</code> writes into the string being searched.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>wcstok</code> is C99 and POSIX.1-2001.
+</p>
+<p><code>wcstok</code> requires no supporting OS subroutines.
+</p>
+<br>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="wcswidth.html#wcswidth" accesskey="n" rel="next">wcswidth</a>, Previous: <a href="wcsstr.html#wcsstr" accesskey="p" rel="prev">wcsstr</a>, Up: <a href="Wchar-strings.html#Wchar-strings" accesskey="u" rel="up">Wchar strings</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,313 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual documents how to install and use the Multiple Precision
+Floating-Point Reliable Library, version 3.1.4.
+
+Copyright 1991, 1993-2016 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with no Front-Cover Texts, and with no Back-Cover Texts.  A copy of the
+license is included in GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MPFR 3.1.4: Formatted Output Functions</title>
+
+<meta name="description" content="How to install and use GNU MPFR, a library for reliable multiple precision
+floating-point arithmetic, version 3.1.4.">
+<meta name="keywords" content="GNU MPFR 3.1.4: Formatted Output Functions">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="MPFR-Interface.html#MPFR-Interface" rel="up" title="MPFR Interface">
+<link href="Integer-Related-Functions.html#Integer-Related-Functions" rel="next" title="Integer Related Functions">
+<link href="Input-and-Output-Functions.html#Input-and-Output-Functions" rel="prev" title="Input and Output Functions">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Formatted-Output-Functions"></a>
+<div class="header">
+<p>
+Next: <a href="Integer-Related-Functions.html#Integer-Related-Functions" accesskey="n" rel="next">Integer Related Functions</a>, Previous: <a href="Input-and-Output-Functions.html#Input-and-Output-Functions" accesskey="p" rel="prev">Input and Output Functions</a>, Up: <a href="MPFR-Interface.html#MPFR-Interface" accesskey="u" rel="up">MPFR Interface</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="index-Float-output-functions"></a>
+<a name="index-Output-functions-1"></a>
+<a name="index-I_002fO-functions-1"></a>
+<a name="Formatted-Output-Functions-1"></a>
+<h3 class="section">5.9 Formatted Output Functions</h3>
+
+<a name="Requirements"></a>
+<h4 class="subsection">5.9.1 Requirements</h4>
+<p>The class of <code>mpfr_printf</code> functions provides formatted output in a
+similar manner as the standard C <code>printf</code>. These functions are defined
+only if your system supports ISO C variadic functions and the corresponding
+argument access macros.
+</p>
+<p>When using any of these functions, you must include the <code>&lt;stdio.h&gt;</code>
+standard header before <samp>mpfr.h</samp>, to allow <samp>mpfr.h</samp> to define
+prototypes for these functions.
+</p>
+<a name="Format-String"></a>
+<h4 class="subsection">5.9.2 Format String</h4>
+<p>The format specification accepted by <code>mpfr_printf</code> is an extension of the
+<code>printf</code> one. The conversion specification is of the form:
+</p><div class="example">
+<pre class="example">% [flags] [width] [.[precision]] [type] [rounding] conv
+</pre></div>
+<p>&lsquo;<samp>flags</samp>&rsquo;, &lsquo;<samp>width</samp>&rsquo;, and &lsquo;<samp>precision</samp>&rsquo; have the same meaning as for
+the standard <code>printf</code> (in particular, notice that the &lsquo;<samp>precision</samp>&rsquo; is
+related to the number of digits displayed in the base chosen by &lsquo;<samp>conv</samp>&rsquo;
+and not related to the internal precision of the <code>mpfr_t</code> variable).
+<code>mpfr_printf</code> accepts the same &lsquo;<samp>type</samp>&rsquo; specifiers as GMP (except the
+non-standard and deprecated &lsquo;<samp>q</samp>&rsquo;, use &lsquo;<samp>ll</samp>&rsquo; instead), namely the
+length modifiers defined in the C standard:
+</p>
+<blockquote>
+<table>
+<tr><td>&lsquo;<samp>h</samp>&rsquo;</td><td><code>short</code></td></tr>
+<tr><td>&lsquo;<samp>hh</samp>&rsquo;</td><td><code>char</code></td></tr>
+<tr><td>&lsquo;<samp>j</samp>&rsquo;</td><td><code>intmax_t</code> or <code>uintmax_t</code></td></tr>
+<tr><td>&lsquo;<samp>l</samp>&rsquo;</td><td><code>long</code> or <code>wchar_t</code></td></tr>
+<tr><td>&lsquo;<samp>ll</samp>&rsquo;</td><td><code>long long</code></td></tr>
+<tr><td>&lsquo;<samp>L</samp>&rsquo;</td><td><code>long double</code></td></tr>
+<tr><td>&lsquo;<samp>t</samp>&rsquo;</td><td><code>ptrdiff_t</code></td></tr>
+<tr><td>&lsquo;<samp>z</samp>&rsquo;</td><td><code>size_t</code></td></tr>
+</table>
+</blockquote>
+
+<p>and the &lsquo;<samp>type</samp>&rsquo; specifiers defined in GMP plus &lsquo;<samp>R</samp>&rsquo; and &lsquo;<samp>P</samp>&rsquo;
+specific to MPFR (the second column in the table below shows the type of the
+argument read in the argument list and the kind of &lsquo;<samp>conv</samp>&rsquo; specifier to
+use after the &lsquo;<samp>type</samp>&rsquo; specifier):
+</p>
+<blockquote>
+<table>
+<tr><td>&lsquo;<samp>F</samp>&rsquo;</td><td><code>mpf_t</code>, float conversions</td></tr>
+<tr><td>&lsquo;<samp>Q</samp>&rsquo;</td><td><code>mpq_t</code>, integer conversions</td></tr>
+<tr><td>&lsquo;<samp>M</samp>&rsquo;</td><td><code>mp_limb_t</code>, integer conversions</td></tr>
+<tr><td>&lsquo;<samp>N</samp>&rsquo;</td><td><code>mp_limb_t</code> array, integer conversions</td></tr>
+<tr><td>&lsquo;<samp>Z</samp>&rsquo;</td><td><code>mpz_t</code>, integer conversions</td></tr>
+<tr><td>&lsquo;<samp>P</samp>&rsquo;</td><td><code>mpfr_prec_t</code>, integer conversions</td></tr>
+<tr><td>&lsquo;<samp>R</samp>&rsquo;</td><td><code>mpfr_t</code>, float conversions</td></tr>
+</table>
+</blockquote>
+
+<p>The &lsquo;<samp>type</samp>&rsquo; specifiers have the same restrictions as those
+mentioned in the GMP documentation:
+see Section &ldquo;Formatted Output Strings&rdquo; in <cite>GNU MP</cite>.
+In particular, the &lsquo;<samp>type</samp>&rsquo; specifiers (except &lsquo;<samp>R</samp>&rsquo; and &lsquo;<samp>P</samp>&rsquo;) are
+supported only if they are supported by <code>gmp_printf</code> in your GMP build;
+this implies that the standard specifiers, such as &lsquo;<samp>t</samp>&rsquo;, must <em>also</em>
+be supported by your C library if you want to use them.
+</p>
+<p>The &lsquo;<samp>rounding</samp>&rsquo; field is specific to <code>mpfr_t</code> arguments and should
+not be used with other types.
+</p>
+<p>With conversion specification not involving &lsquo;<samp>P</samp>&rsquo; and &lsquo;<samp>R</samp>&rsquo; types,
+<code>mpfr_printf</code> behaves exactly as <code>gmp_printf</code>.
+</p>
+<p>The &lsquo;<samp>P</samp>&rsquo; type specifies that a following &lsquo;<samp>d</samp>&rsquo;, &lsquo;<samp>i</samp>&rsquo;,
+&lsquo;<samp>o</samp>&rsquo;, &lsquo;<samp>u</samp>&rsquo;, &lsquo;<samp>x</samp>&rsquo;, or &lsquo;<samp>X</samp>&rsquo; conversion specifier applies
+to a <code>mpfr_prec_t</code> argument.
+It is needed because the <code>mpfr_prec_t</code> type does not necessarily
+correspond to an <code>int</code> or any fixed standard type.
+The &lsquo;<samp>precision</samp>&rsquo; field specifies the minimum number of digits to
+appear. The default &lsquo;<samp>precision</samp>&rsquo; is 1.
+For example:
+</p><div class="example">
+<pre class="example">mpfr_t x;
+mpfr_prec_t p;
+mpfr_init (x);
+&hellip;
+p = mpfr_get_prec (x);
+mpfr_printf (&quot;variable x with %Pu bits&quot;, p);
+</pre></div>
+
+<p>The &lsquo;<samp>R</samp>&rsquo; type specifies that a following &lsquo;<samp>a</samp>&rsquo;, &lsquo;<samp>A</samp>&rsquo;, &lsquo;<samp>b</samp>&rsquo;,
+&lsquo;<samp>e</samp>&rsquo;, &lsquo;<samp>E</samp>&rsquo;, &lsquo;<samp>f</samp>&rsquo;, &lsquo;<samp>F</samp>&rsquo;, &lsquo;<samp>g</samp>&rsquo;, &lsquo;<samp>G</samp>&rsquo;, or &lsquo;<samp>n</samp>&rsquo;
+conversion specifier applies to a <code>mpfr_t</code> argument.
+The &lsquo;<samp>R</samp>&rsquo; type can be followed by a &lsquo;<samp>rounding</samp>&rsquo; specifier denoted by
+one of the following characters:
+</p>
+<blockquote>
+<table>
+<tr><td>&lsquo;<samp>U</samp>&rsquo;</td><td>round toward plus infinity</td></tr>
+<tr><td>&lsquo;<samp>D</samp>&rsquo;</td><td>round toward minus infinity</td></tr>
+<tr><td>&lsquo;<samp>Y</samp>&rsquo;</td><td>round away from zero</td></tr>
+<tr><td>&lsquo;<samp>Z</samp>&rsquo;</td><td>round toward zero</td></tr>
+<tr><td>&lsquo;<samp>N</samp>&rsquo;</td><td>round to nearest (with ties to even)</td></tr>
+<tr><td>&lsquo;<samp>*</samp>&rsquo;</td><td>rounding mode indicated by the <code>mpfr_rnd_t</code> argument
+just before the corresponding <code>mpfr_t</code> variable.</td></tr>
+</table>
+</blockquote>
+
+<p>The default rounding mode is rounding to nearest.
+The following three examples are equivalent:
+</p><div class="example">
+<pre class="example">mpfr_t x;
+mpfr_init (x);
+&hellip;
+mpfr_printf (&quot;%.128Rf&quot;, x);
+mpfr_printf (&quot;%.128RNf&quot;, x);
+mpfr_printf (&quot;%.128R*f&quot;, MPFR_RNDN, x);
+</pre></div>
+
+<p>Note that the rounding away from zero mode is specified with &lsquo;<samp>Y</samp>&rsquo;
+because ISO C reserves the &lsquo;<samp>A</samp>&rsquo; specifier for hexadecimal output (see
+below).
+</p>
+<p>The output &lsquo;<samp>conv</samp>&rsquo; specifiers allowed with <code>mpfr_t</code> parameter are:
+</p>
+<blockquote>
+<table>
+<tr><td>&lsquo;<samp>a</samp>&rsquo; &lsquo;<samp>A</samp>&rsquo;</td><td>hex float, C99 style</td></tr>
+<tr><td>&lsquo;<samp>b</samp>&rsquo;</td><td>binary output</td></tr>
+<tr><td>&lsquo;<samp>e</samp>&rsquo; &lsquo;<samp>E</samp>&rsquo;</td><td>scientific format float</td></tr>
+<tr><td>&lsquo;<samp>f</samp>&rsquo; &lsquo;<samp>F</samp>&rsquo;</td><td>fixed point float</td></tr>
+<tr><td>&lsquo;<samp>g</samp>&rsquo; &lsquo;<samp>G</samp>&rsquo;</td><td>fixed or scientific float</td></tr>
+</table>
+</blockquote>
+
+<p>The conversion specifier &lsquo;<samp>b</samp>&rsquo; which displays the argument in binary is
+specific to <code>mpfr_t</code> arguments and should not be used with other types.
+Other conversion specifiers have the same meaning as for a <code>double</code>
+argument.
+</p>
+<p>In case of non-decimal output, only the significand is written in the
+specified base, the exponent is always displayed in decimal.
+Special values are always displayed as <code>nan</code>, <code>-inf</code>, and <code>inf</code>
+for &lsquo;<samp>a</samp>&rsquo;, &lsquo;<samp>b</samp>&rsquo;, &lsquo;<samp>e</samp>&rsquo;, &lsquo;<samp>f</samp>&rsquo;, and &lsquo;<samp>g</samp>&rsquo; specifiers and
+<code>NAN</code>, <code>-INF</code>, and <code>INF</code> for &lsquo;<samp>A</samp>&rsquo;, &lsquo;<samp>E</samp>&rsquo;, &lsquo;<samp>F</samp>&rsquo;, and
+&lsquo;<samp>G</samp>&rsquo; specifiers.
+</p>
+<p>If the &lsquo;<samp>precision</samp>&rsquo; field is not empty, the <code>mpfr_t</code> number is
+rounded to the given precision in the direction specified by the rounding
+mode.
+If the precision is zero with rounding to nearest mode and one of the
+following &lsquo;<samp>conv</samp>&rsquo; specifiers: &lsquo;<samp>a</samp>&rsquo;, &lsquo;<samp>A</samp>&rsquo;, &lsquo;<samp>b</samp>&rsquo;, &lsquo;<samp>e</samp>&rsquo;,
+&lsquo;<samp>E</samp>&rsquo;, tie case is rounded to even when it lies between two consecutive
+values at the
+wanted precision which have the same exponent, otherwise, it is rounded away
+from zero.
+For instance, 85 is displayed as &quot;8e+1&quot; and 95 is displayed as &quot;1e+2&quot; with the
+format specification <code>&quot;%.0RNe&quot;</code>.
+This also applies when the &lsquo;<samp>g</samp>&rsquo; (resp. &lsquo;<samp>G</samp>&rsquo;) conversion specifier uses
+the &lsquo;<samp>e</samp>&rsquo; (resp. &lsquo;<samp>E</samp>&rsquo;) style.
+If the precision is set to a value greater than the maximum value for an
+<code>int</code>, it will be silently reduced down to <code>INT_MAX</code>.
+</p>
+<p>If the &lsquo;<samp>precision</samp>&rsquo; field is empty (as in <code>%Re</code> or <code>%.RE</code>) with
+&lsquo;<samp>conv</samp>&rsquo; specifier &lsquo;<samp>e</samp>&rsquo; and &lsquo;<samp>E</samp>&rsquo;, the number is displayed with
+enough digits so that it can be read back exactly, assuming that the input and
+output variables have the same precision and that the input and output
+rounding modes are both rounding to nearest (as for <code>mpfr_get_str</code>).
+The default precision for an empty &lsquo;<samp>precision</samp>&rsquo; field with &lsquo;<samp>conv</samp>&rsquo;
+specifiers &lsquo;<samp>f</samp>&rsquo;, &lsquo;<samp>F</samp>&rsquo;, &lsquo;<samp>g</samp>&rsquo;, and &lsquo;<samp>G</samp>&rsquo; is 6.
+</p>
+
+<a name="Functions"></a>
+<h4 class="subsection">5.9.3 Functions</h4>
+
+<p>For all the following functions, if the number of characters which ought to be
+written appears to exceed the maximum limit for an <code>int</code>, nothing is
+written in the stream (resp. to <code>stdout</code>, to <var>buf</var>, to <var>str</var>),
+the function returns −1, sets the <em>erange</em> flag, and (in
+POSIX system only) <code>errno</code> is set to <code>EOVERFLOW</code>.
+</p>
+<dl>
+<dt><a name="index-mpfr_005ffprintf"></a>Function: <em>int</em> <strong>mpfr_fprintf</strong> <em>(FILE *<var>stream</var>, const char *<var>template</var>, &hellip;)</em></dt>
+<dt><a name="index-mpfr_005fvfprintf"></a>Function: <em>int</em> <strong>mpfr_vfprintf</strong> <em>(FILE *<var>stream</var>, const char *<var>template</var>, va_list <var>ap</var>)</em></dt>
+<dd><p>Print to the stream <var>stream</var> the optional arguments under the control of
+the template string <var>template</var>.
+Return the number of characters written or a negative value if an error
+occurred.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fprintf"></a>Function: <em>int</em> <strong>mpfr_printf</strong> <em>(const char *<var>template</var>, &hellip;)</em></dt>
+<dt><a name="index-mpfr_005fvprintf"></a>Function: <em>int</em> <strong>mpfr_vprintf</strong> <em>(const char *<var>template</var>, va_list <var>ap</var>)</em></dt>
+<dd><p>Print to <code>stdout</code> the optional arguments under the control of the
+template string <var>template</var>.
+Return the number of characters written or a negative value if an error
+occurred.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fsprintf"></a>Function: <em>int</em> <strong>mpfr_sprintf</strong> <em>(char *<var>buf</var>, const char *<var>template</var>, &hellip;)</em></dt>
+<dt><a name="index-mpfr_005fvsprintf"></a>Function: <em>int</em> <strong>mpfr_vsprintf</strong> <em>(char *<var>buf</var>, const char *<var>template</var>, va_list <var>ap</var>)</em></dt>
+<dd><p>Form a null-terminated string corresponding to the optional arguments under
+the control of the template string <var>template</var>, and print it in
+<var>buf</var>. No overlap is permitted between
+<var>buf</var> and the other arguments.
+Return the number of characters written in the array <var>buf</var>
+<em>not counting</em>
+the terminating null character or a negative value if an error occurred.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fsnprintf"></a>Function: <em>int</em> <strong>mpfr_snprintf</strong> <em>(char *<var>buf</var>, size_t <var>n</var>, const char *<var>template</var>, &hellip;)</em></dt>
+<dt><a name="index-mpfr_005fvsnprintf"></a>Function: <em>int</em> <strong>mpfr_vsnprintf</strong> <em>(char *<var>buf</var>, size_t <var>n</var>, const char *<var>template</var>, va_list <var>ap</var>)</em></dt>
+<dd><p>Form a null-terminated string corresponding to the optional arguments under
+the control of the template string <var>template</var>, and print it in
+<var>buf</var>. If <var>n</var> is zero, nothing is
+written and <var>buf</var> may be a null pointer, otherwise, the <var>n</var>−1
+first characters are written in <var>buf</var> and the <var>n</var>-th is a null character.
+Return the number of characters that would have been written had <var>n</var> be
+sufficiently large, <em>not counting</em>
+the terminating null character, or a negative value if an error occurred.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fasprintf"></a>Function: <em>int</em> <strong>mpfr_asprintf</strong> <em>(char **<var>str</var>, const char *<var>template</var>, &hellip;)</em></dt>
+<dt><a name="index-mpfr_005fvasprintf"></a>Function: <em>int</em> <strong>mpfr_vasprintf</strong> <em>(char **<var>str</var>, const char *<var>template</var>, va_list <var>ap</var>)</em></dt>
+<dd><p>Write their output as a null terminated string in a block of memory allocated
+using the current allocation function. A pointer to the block is stored in
+<var>str</var>. The block of memory must be freed using <code>mpfr_free_str</code>.
+The return value is the number of characters written in the string, excluding
+the null-terminator, or a negative value if an error occurred.
+</p></dd></dl>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Integer-Related-Functions.html#Integer-Related-Functions" accesskey="n" rel="next">Integer Related Functions</a>, Previous: <a href="Input-and-Output-Functions.html#Input-and-Output-Functions" accesskey="p" rel="prev">Input and Output Functions</a>, Up: <a href="MPFR-Interface.html#MPFR-Interface" accesskey="u" rel="up">MPFR Interface</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

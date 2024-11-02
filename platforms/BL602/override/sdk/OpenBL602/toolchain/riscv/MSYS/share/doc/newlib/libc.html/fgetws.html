@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: fgetws</title>
+
+<meta name="description" content="The Red Hat newlib C Library: fgetws">
+<meta name="keywords" content="The Red Hat newlib C Library: fgetws">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="fileno.html#fileno" rel="next" title="fileno">
+<link href="fgetwc.html#fgetwc" rel="prev" title="fgetwc">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="fgetws"></a>
+<div class="header">
+<p>
+Next: <a href="fileno.html#fileno" accesskey="n" rel="next">fileno</a>, Previous: <a href="fgetwc.html#fgetwc" accesskey="p" rel="prev">fgetwc</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="fgetws_002c-fgetws_005funlocked_002d_002d_002dget-wide-character-string-from-a-file-or-stream"></a>
+<h3 class="section">4.14 <code>fgetws</code>, <code>fgetws_unlocked</code>&mdash;get wide character string from a file or stream</h3>
+<a name="index-fgetws"></a>
+<a name="index-fgetws_005funlocked"></a>
+<a name="index-_005ffgetws_005fr"></a>
+<a name="index-_005ffgetws_005funlocked_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;wchar.h&gt;
+wchar_t *fgetws(wchar_t *__restrict <var>ws</var>, int <var>n</var>,
+    FILE *__restrict <var>fp</var>);
+
+#define _GNU_SOURCE
+#include &lt;wchar.h&gt;
+wchar_t *fgetws_unlocked(wchar_t *__restrict <var>ws</var>, int <var>n</var>,
+    FILE *__restrict <var>fp</var>);
+
+#include &lt;wchar.h&gt;
+wchar_t *_fgetws_r(struct _reent *<var>ptr</var>, wchar_t *<var>ws</var>,
+    int <var>n</var>, FILE *<var>fp</var>);
+
+#include &lt;wchar.h&gt;
+wchar_t *_fgetws_unlocked_r(struct _reent *<var>ptr</var>, wchar_t *<var>ws</var>,
+    int <var>n</var>, FILE *<var>fp</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+Reads at most <var>n-1</var> wide characters from <var>fp</var> until a newline
+is found. The wide characters including to the newline are stored
+in <var>ws</var>. The buffer is terminated with a 0.
+</p>
+<p><code>fgetws_unlocked</code> is a non-thread-safe version of <code>fgetws</code>.
+<code>fgetws_unlocked</code> may only safely be used within a scope
+protected by flockfile() (or ftrylockfile()) and funlockfile().  This
+function may safely be used in a multi-threaded program if and only
+if they are called while the invoking thread owns the (FILE *)
+object, as is the case after a successful call to the flockfile() or
+ftrylockfile() functions.  If threads are disabled, then
+<code>fgetws_unlocked</code> is equivalent to <code>fgetws</code>.
+</p>
+<p>The <code>_fgetws_r</code> and <code>_fgetws_unlocked_r</code> functions are simply reentrant
+version of the above and are passed an additional reentrancy structure
+pointer: <var>ptr</var>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>fgetws</code> returns the buffer passed to it, with the data
+filled in. If end of file occurs with some data already
+accumulated, the data is returned with no other indication. If
+no data are read, NULL is returned instead.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>fgetws</code> is required by C99 and POSIX.1-2001.
+</p>
+<p><code>fgetws_unlocked</code> is a GNU extension.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

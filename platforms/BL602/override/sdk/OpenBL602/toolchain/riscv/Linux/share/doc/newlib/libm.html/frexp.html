@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>LIBM: frexp</title>
+
+<meta name="description" content="LIBM: frexp">
+<meta name="keywords" content="LIBM: frexp">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Math.html#Math" rel="up" title="Math">
+<link href="gamma.html#gamma" rel="next" title="gamma">
+<link href="fmod.html#fmod" rel="prev" title="fmod">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="frexp"></a>
+<div class="header">
+<p>
+Next: <a href="gamma.html#gamma" accesskey="n" rel="next">gamma</a>, Previous: <a href="fmod.html#fmod" accesskey="p" rel="prev">fmod</a>, Up: <a href="Math.html#Math" accesskey="u" rel="up">Math</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="frexp_002c-frexpf_002d_002d_002dsplit-floating_002dpoint-number"></a>
+<h3 class="section">1.26 <code>frexp</code>, <code>frexpf</code>&mdash;split floating-point number</h3>
+<a name="index-frexp"></a>
+<a name="index-frexpf"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;math.h&gt;
+double frexp(double <var>val</var>, int *<var>exp</var>);
+float frexpf(float <var>val</var>, int *<var>exp</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+All nonzero, normal numbers can be described as <var>m</var> * 2**<var>p</var>.
+<code>frexp</code> represents the double <var>val</var> as a mantissa <var>m</var>
+and a power of two <var>p</var>. The resulting mantissa will always
+be greater than or equal to <code>0.5</code>, and less than <code>1.0</code> (as
+long as <var>val</var> is nonzero). The power of two will be stored
+in <code>*</code><var>exp</var>. 
+</p>
+<p><var>m</var> and <var>p</var> are calculated so that
+<var>val</var> is <var>m</var> times <code>2</code> to the power <var>p</var>.
+</p>
+<p><code>frexpf</code> is identical, other than taking and returning
+floats rather than doubles.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>frexp</code> returns the mantissa <var>m</var>. If <var>val</var> is <code>0</code>, infinity,
+or Nan, <code>frexp</code> will set <code>*</code><var>exp</var> to <code>0</code> and return <var>val</var>.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>frexp</code> is ANSI.
+<code>frexpf</code> is an extension.
+</p>
+
+<br>
+
+
+
+</body>
+</html>

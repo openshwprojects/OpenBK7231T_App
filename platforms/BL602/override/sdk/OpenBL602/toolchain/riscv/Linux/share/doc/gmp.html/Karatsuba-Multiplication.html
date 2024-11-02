@@ -1,0 +1,169 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Karatsuba Multiplication</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Karatsuba Multiplication">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Multiplication-Algorithms.html#Multiplication-Algorithms" rel="up" title="Multiplication Algorithms">
+<link href="Toom-3_002dWay-Multiplication.html#Toom-3_002dWay-Multiplication" rel="next" title="Toom 3-Way Multiplication">
+<link href="Basecase-Multiplication.html#Basecase-Multiplication" rel="prev" title="Basecase Multiplication">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Karatsuba-Multiplication"></a>
+<div class="header">
+<p>
+Next: <a href="Toom-3_002dWay-Multiplication.html#Toom-3_002dWay-Multiplication" accesskey="n" rel="next">Toom 3-Way Multiplication</a>, Previous: <a href="Basecase-Multiplication.html#Basecase-Multiplication" accesskey="p" rel="prev">Basecase Multiplication</a>, Up: <a href="Multiplication-Algorithms.html#Multiplication-Algorithms" accesskey="u" rel="up">Multiplication Algorithms</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Karatsuba-Multiplication-1"></a>
+<h4 class="subsection">15.1.2 Karatsuba Multiplication</h4>
+<a name="index-Karatsuba-multiplication"></a>
+
+<p>The Karatsuba multiplication algorithm is described in Knuth section 4.3.3
+part A, and various other textbooks.  A brief description is given here.
+</p>
+<p>The inputs <em>x</em> and <em>y</em> are treated as each split into two parts of
+equal length (or the most significant part one limb shorter if N is odd).
+</p>
+<div class="example">
+<pre class="example"> high              low
++----------+----------+
+|    x1    |    x0    |
++----------+----------+
+
++----------+----------+
+|    y1    |    y0    |
++----------+----------+
+</pre></div>
+
+<p>Let <em>b</em> be the power of 2 where the split occurs, i.e. if x0 is
+<em>k</em> limbs (y0 the same) then
+<em>b=2^(k*mp_bits_per_limb)</em>.
+With that <em>x=x1*b+x0</em> and <em>y=y1*b+y0</em>, and the
+following holds,
+</p>
+<div class="display">
+<pre class="display"><em>x*y = (b^2+b)*x1*y1 - b*(x1-x0)*(y1-y0) + (b+1)*x0*y0</em>
+</pre></div>
+
+<p>This formula means doing only three multiplies of (N/2)x(N/2) limbs,
+whereas a basecase multiply of NxN limbs is equivalent to four
+multiplies of (N/2)x(N/2).  The factors <em>(b^2+b)</em> etc represent
+the positions where the three products must be added.
+</p>
+<div class="example">
+<pre class="example"> high                              low
++--------+--------+ +--------+--------+
+|      x1*y1      | |      x0*y0      |
++--------+--------+ +--------+--------+
+          +--------+--------+
+      add |      x1*y1      |
+          +--------+--------+
+          +--------+--------+
+      add |      x0*y0      |
+          +--------+--------+
+          +--------+--------+
+      sub | (x1-x0)*(y1-y0) |
+          +--------+--------+
+</pre></div>
+
+<p>The term <em>(x1-x0)*(y1-y0)</em> is best calculated as an
+absolute value, and the sign used to choose to add or subtract.  Notice the
+sum <em>high(x0*y0)+low(x1*y1)</em> occurs twice, so it&rsquo;s possible to do <em>5*k</em> limb
+additions, rather than <em>6*k</em>, but in GMP extra function call overheads
+outweigh the saving.
+</p>
+<p>Squaring is similar to multiplying, but with <em>x=y</em> the formula reduces to
+an equivalent with three squares,
+</p>
+<div class="display">
+<pre class="display"><em>x^2 = (b^2+b)*x1^2 - b*(x1-x0)^2 + (b+1)*x0^2</em>
+</pre></div>
+
+<p>The final result is accumulated from those three squares the same way as for
+the three multiplies above.  The middle term <em>(x1-x0)^2</em> is now
+always positive.
+</p>
+<p>A similar formula for both multiplying and squaring can be constructed with a
+middle term <em>(x1+x0)*(y1+y0)</em>.  But those sums can exceed
+<em>k</em> limbs, leading to more carry handling and additions than the form
+above.
+</p>
+<p>Karatsuba multiplication is asymptotically an <em>O(N^1.585<!-- /@w -->)</em> algorithm,
+the exponent being <em>log(3)/log(2)</em>, representing 3 multiplies
+each <em>1/2</em> the size of the inputs.  This is a big improvement over the
+basecase multiply at <em>O(N^2)</em> and the advantage soon overcomes the extra
+additions Karatsuba performs.  <code>MUL_TOOM22_THRESHOLD</code> can be as little
+as 10 limbs.  The <code>SQR</code> threshold is usually about twice the <code>MUL</code>.
+</p>
+<p>The basecase algorithm will take a time of the form <em>M(N) = a*N^2 + b*N + c</em> and the Karatsuba algorithm <em>K(N) = 3*M(N/2) + d*N + e</em>, which expands to <em>K(N) = 3/4*a*N^2 + 3/2*b*N + 3*c + d*N + e</em>.  The
+factor <em>3/4</em> for <em>a</em> means per-crossproduct speedups in the
+basecase code will increase the threshold since they benefit <em>M(N)</em> more
+than <em>K(N)</em>.  And conversely the <em>3/2</em> for <em>b</em> means
+linear style speedups of <em>b</em> will increase the threshold since they
+benefit <em>K(N)</em> more than <em>M(N)</em>.  The latter can be seen for
+instance when adding an optimized <code>mpn_sqr_diagonal</code> to
+<code>mpn_sqr_basecase</code>.  Of course all speedups reduce total time, and in
+that sense the algorithm thresholds are merely of academic interest.
+</p>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Toom-3_002dWay-Multiplication.html#Toom-3_002dWay-Multiplication" accesskey="n" rel="next">Toom 3-Way Multiplication</a>, Previous: <a href="Basecase-Multiplication.html#Basecase-Multiplication" accesskey="p" rel="prev">Basecase Multiplication</a>, Up: <a href="Multiplication-Algorithms.html#Multiplication-Algorithms" accesskey="u" rel="up">Multiplication Algorithms</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

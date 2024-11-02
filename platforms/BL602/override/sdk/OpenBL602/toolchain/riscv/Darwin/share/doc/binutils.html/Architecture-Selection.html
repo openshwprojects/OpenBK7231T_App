@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 1991-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3
+or any later version published by the Free Software Foundation;
+with no Invariant Sections, with no Front-Cover Texts, and with no
+Back-Cover Texts.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+ -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Architecture Selection (GNU Binary Utilities)</title>
+
+<meta name="description" content="Architecture Selection (GNU Binary Utilities)">
+<meta name="keywords" content="Architecture Selection (GNU Binary Utilities)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="Binutils-Index.html" rel="index" title="Binutils Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Selecting-the-Target-System.html" rel="up" title="Selecting the Target System">
+<link href="debuginfod.html" rel="next" title="debuginfod">
+<link href="Target-Selection.html" rel="prev" title="Target Selection">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="Architecture-Selection"></span><div class="header">
+<p>
+Previous: <a href="Target-Selection.html" accesskey="p" rel="prev">Target Selection</a>, Up: <a href="Selecting-the-Target-System.html" accesskey="u" rel="up">Selecting the Target System</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Binutils-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Architecture-Selection-1"></span><h3 class="section">17.2 Architecture Selection</h3>
+
+<p>An <em>architecture</em> is a type of <small>CPU</small> on which an object file is
+to run.  Its name may contain a colon, separating the name of the
+processor family from the name of the particular <small>CPU</small>.
+</p>
+<p>The command to list valid architecture values is &lsquo;<samp>objdump -i</samp>&rsquo; (the
+second column contains the relevant information).
+</p>
+<p>Sample values: &lsquo;<samp>m68k:68020</samp>&rsquo;, &lsquo;<samp>mips:3000</samp>&rsquo;, &lsquo;<samp>sparc</samp>&rsquo;.
+</p>
+<span id="objdump-Architecture"></span><h4 class="subheading"><code>objdump</code> Architecture</h4>
+
+<p>Ways to specify:
+</p>
+<ol>
+<li> command-line option: <samp>-m</samp> or <samp>--architecture</samp>
+
+</li><li> deduced from the input file
+</li></ol>
+
+<span id="objcopy_002c-nm_002c-size_002c-strings-Architecture"></span><h4 class="subheading"><code>objcopy</code>, <code>nm</code>, <code>size</code>, <code>strings</code> Architecture</h4>
+
+<p>Ways to specify:
+</p>
+<ol>
+<li> deduced from the input file
+</li></ol>
+
+
+
+
+</body>
+</html>

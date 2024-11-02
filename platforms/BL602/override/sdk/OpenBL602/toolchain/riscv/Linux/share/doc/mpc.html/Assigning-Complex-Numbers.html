@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual is for GNU MPC, a library for multiple precision complex arithmetic,
+version 1.0.3 of February 2015.
+
+Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 INRIA
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections. A copy of the license is included in the section
+entitled "GNU Free Documentation License." -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MPC 1.0.3: Assigning Complex Numbers</title>
+
+<meta name="description" content="GNU MPC 1.0.3: Assigning Complex Numbers">
+<meta name="keywords" content="GNU MPC 1.0.3: Assigning Complex Numbers">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Complex-Functions.html#Complex-Functions" rel="up" title="Complex Functions">
+<link href="Converting-Complex-Numbers.html#Converting-Complex-Numbers" rel="next" title="Converting Complex Numbers">
+<link href="Initializing-Complex-Numbers.html#Initializing-Complex-Numbers" rel="prev" title="Initializing Complex Numbers">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Assigning-Complex-Numbers"></a>
+<div class="header">
+<p>
+Next: <a href="Converting-Complex-Numbers.html#Converting-Complex-Numbers" accesskey="n" rel="next">Converting Complex Numbers</a>, Previous: <a href="Initializing-Complex-Numbers.html#Initializing-Complex-Numbers" accesskey="p" rel="prev">Initializing Complex Numbers</a>, Up: <a href="Complex-Functions.html#Complex-Functions" accesskey="u" rel="up">Complex Functions</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Assignment-Functions"></a>
+<h3 class="section">5.2 Assignment Functions</h3>
+<a name="index-Complex-assignment-functions"></a>
+
+<p>These functions assign new values to already initialized complex numbers
+(see <a href="Initializing-Complex-Numbers.html#Initializing-Complex-Numbers">Initializing Complex Numbers</a>).
+When using any functions with <code>intmax_t</code> or <code>uintmax_t</code>
+parameters, you must include
+<code>&lt;stdint.h&gt;</code> or <code>&lt;inttypes.h&gt;</code> <em>before</em> <samp>mpc.h</samp>, to allow
+<samp>mpc.h</samp> to define prototypes for these functions.
+Similarly, functions with parameters of type <code>complex</code> or
+<code>long complex</code> are defined only if <code>&lt;complex.h&gt;</code> is included
+<em>before</em> <samp>mpc.h</samp>.
+If you need assignment functions that are not in the current API, you can
+define them using the <code>MPC_SET_X_Y</code> macro (see <a href="Advanced-Functions.html#Advanced-Functions">Advanced Functions</a>).
+</p>
+<dl>
+<dt><a name="index-mpc_005fset"></a>Function: <em>int</em> <strong>mpc_set</strong> <em>(mpc_t <var>rop</var>, mpc_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set the value of <var>rop</var> from <var>op</var>, rounded to the precision of <var>rop</var>
+with the given rounding mode <var>rnd</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpc_005fset_005fui"></a>Function: <em>int</em> <strong>mpc_set_ui</strong> <em>(mpc_t <var>rop</var>, unsigned long int <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpc_005fset_005fsi"></a>Function: <em>int</em> <strong>mpc_set_si</strong> <em>(mpc_t <var>rop</var>, long int <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpc_005fset_005fuj"></a>Function: <em>int</em> <strong>mpc_set_uj</strong> <em>(mpc_t <var>rop</var>, uintmax_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpc_005fset_005fsj"></a>Function: <em>int</em> <strong>mpc_set_sj</strong> <em>(mpc_t <var>rop</var>, intmax_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpc_005fset_005fd"></a>Function: <em>int</em> <strong>mpc_set_d</strong> <em>(mpc_t <var>rop</var>, double <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpc_005fset_005fld"></a>Function: <em>int</em> <strong>mpc_set_ld</strong> <em>(mpc_t <var>rop</var>, long double <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpc_005fset_005fdc"></a>Function: <em>int</em> <strong>mpc_set_dc</strong> <em>(mpc_t <var>rop</var>, double _Complex <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpc_005fset_005fldc"></a>Function: <em>int</em> <strong>mpc_set_ldc</strong> <em>(mpc_t <var>rop</var>, long double _Complex <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpc_005fset_005fz"></a>Function: <em>int</em> <strong>mpc_set_z</strong> <em>(mpc_t <var>rop</var>, mpz_t <var>op</var> mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpc_005fset_005fq"></a>Function: <em>int</em> <strong>mpc_set_q</strong> <em>(mpc_t <var>rop</var>, mpq_t <var>op</var> mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpc_005fset_005ff"></a>Function: <em>int</em> <strong>mpc_set_f</strong> <em>(mpc_t <var>rop</var>, mpf_t <var>op</var> mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpc_005fset_005ffr"></a>Function: <em>int</em> <strong>mpc_set_fr</strong> <em>(mpc_t <var>rop</var>, mpfr_t <var>op</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set the value of <var>rop</var> from <var>op</var>, rounded to the precision of
+<var>rop</var> with the given rounding mode <var>rnd</var>.
+The argument <var>op</var> is interpreted as real, so the imaginary part of
+<var>rop</var> is set to zero with a positive sign.
+Please note that even a <code>long int</code> may have to be rounded, if the
+destination precision is less than the machine word width.
+For <code>mpc_set_d</code>, be careful that the input number <var>op</var> may not be
+exactly representable as a double-precision number (this happens for 0.1 for
+instance), in which case it is first rounded by the C compiler to a
+double-precision number, and then only to a complex number.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpc_005fset_005fui_005fui"></a>Function: <em>int</em> <strong>mpc_set_ui_ui</strong> <em>(mpc_t <var>rop</var>, unsigned long int <var>op1</var>, unsigned long int <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpc_005fset_005fsi_005fsi"></a>Function: <em>int</em> <strong>mpc_set_si_si</strong> <em>(mpc_t <var>rop</var>, long int <var>op1</var>, long int <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpc_005fset_005fuj_005fuj"></a>Function: <em>int</em> <strong>mpc_set_uj_uj</strong> <em>(mpc_t <var>rop</var>, uintmax_t <var>op1</var>, uintmax_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpc_005fset_005fsj_005fsj"></a>Function: <em>int</em> <strong>mpc_set_sj_sj</strong> <em>(mpc_t <var>rop</var>, intmax_t <var>op1</var>, intmax_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpc_005fset_005fd_005fd"></a>Function: <em>int</em> <strong>mpc_set_d_d</strong> <em>(mpc_t <var>rop</var>, double <var>op1</var>, double <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpc_005fset_005fld_005fld"></a>Function: <em>int</em> <strong>mpc_set_ld_ld</strong> <em>(mpc_t <var>rop</var>, long double <var>op1</var>, long double <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpc_005fset_005fz_005fz"></a>Function: <em>int</em> <strong>mpc_set_z_z</strong> <em>(mpc_t <var>rop</var>, mpz_t <var>op1</var>, mpz_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpc_005fset_005fq_005fq"></a>Function: <em>int</em> <strong>mpc_set_q_q</strong> <em>(mpc_t <var>rop</var>, mpq_t <var>op1</var>, mpq_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpc_005fset_005ff_005ff"></a>Function: <em>int</em> <strong>mpc_set_f_f</strong> <em>(mpc_t <var>rop</var>, mpf_t <var>op1</var>, mpf_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpc_005fset_005ffr_005ffr"></a>Function: <em>int</em> <strong>mpc_set_fr_fr</strong> <em>(mpc_t <var>rop</var>, mpfr_t <var>op1</var>, mpfr_t <var>op2</var>, mpc_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set the real part of <var>rop</var> from <var>op1</var>, and its imaginary part from
+<var>op2</var>, according to the rounding mode <var>rnd</var>.
+</p>
+<p>Beware that the behaviour of <code>mpc_set_fr_fr</code> is undefined if <var>op1</var>
+or <var>op2</var> is a pointer to the real or imaginary part of <var>rop</var>.
+To exchange the real and the imaginary part of a complex number, either use
+<code>mpfr_swap (mpc_realref (rop), mpc_imagref (rop))</code>, which also exchanges
+the precisions of the two parts; or use a temporary variable.
+</p></dd></dl>
+
+<p>For functions assigning complex variables from strings or input streams,
+see <a href="String-and-Stream-Input-and-Output.html#String-and-Stream-Input-and-Output">String and Stream Input and Output</a>.
+</p>
+<dl>
+<dt><a name="index-mpc_005fset_005fnan"></a>Function: <em>void</em> <strong>mpc_set_nan</strong> <em>(mpc_t <var>rop</var>)</em></dt>
+<dd><p>Set <var>rop</var> to Nan+i*NaN.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpc_005fswap"></a>Function: <em>void</em> <strong>mpc_swap</strong> <em>(mpc_t <var>op1</var>, mpc_t <var>op2</var>)</em></dt>
+<dd><p>Swap the values of <var>op1</var> and <var>op2</var> efficiently. Warning: The
+precisions are exchanged, too; in case these are different,
+<code>mpc_swap</code> is thus not equivalent to three <code>mpc_set</code> calls using a
+third auxiliary variable.
+</p></dd></dl>
+
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Converting-Complex-Numbers.html#Converting-Complex-Numbers" accesskey="n" rel="next">Converting Complex Numbers</a>, Previous: <a href="Initializing-Complex-Numbers.html#Initializing-Complex-Numbers" accesskey="p" rel="prev">Initializing Complex Numbers</a>, Up: <a href="Complex-Functions.html#Complex-Functions" accesskey="u" rel="up">Complex Functions</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

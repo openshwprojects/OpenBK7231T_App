@@ -1,0 +1,108 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: setbuf</title>
+
+<meta name="description" content="The Red Hat newlib C Library: setbuf">
+<meta name="keywords" content="The Red Hat newlib C Library: setbuf">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="setbuffer.html#setbuffer" rel="next" title="setbuffer">
+<link href="rewind.html#rewind" rel="prev" title="rewind">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="setbuf"></a>
+<div class="header">
+<p>
+Next: <a href="setbuffer.html#setbuffer" accesskey="n" rel="next">setbuffer</a>, Previous: <a href="rewind.html#rewind" accesskey="p" rel="prev">rewind</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="setbuf_002d_002d_002dspecify-full-buffering-for-a-file-or-stream"></a>
+<h3 class="section">4.55 <code>setbuf</code>&mdash;specify full buffering for a file or stream</h3>
+<a name="index-setbuf"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+void setbuf(FILE *<var>fp</var>, char *<var>buf</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>setbuf</code> specifies that output to the file or stream identified by <var>fp</var>
+should be fully buffered.  All output for this file will go to a
+buffer (of size <code>BUFSIZ</code>, specified in &lsquo;<code>stdio.h</code>&rsquo;).  Output will
+be passed on to the host system only when the buffer is full, or when
+an input operation intervenes.
+</p>
+<p>You may, if you wish, supply your own buffer by passing a pointer to
+it as the argument <var>buf</var>.  It must have size <code>BUFSIZ</code>.  You can
+also use <code>NULL</code> as the value of <var>buf</var>, to signal that the
+<code>setbuf</code> function is to allocate the buffer.
+</p>
+<br>
+<p><strong>Warnings</strong><br>
+You may only use <code>setbuf</code> before performing any file operation other
+than opening the file.
+</p>
+<p>If you supply a non-null <var>buf</var>, you must ensure that the associated
+storage continues to be available until you close the stream
+identified by <var>fp</var>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>setbuf</code> does not return a result.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+Both ANSI C and the System V Interface Definition (Issue 2) require
+<code>setbuf</code>.  However, they differ on the meaning of a <code>NULL</code> buffer
+pointer: the SVID issue 2 specification says that a <code>NULL</code> buffer
+pointer requests unbuffered output.  For maximum portability, avoid
+<code>NULL</code> buffer pointers.
+</p>
+<p>Supporting OS subroutines required: <code>close</code>, <code>fstat</code>, <code>isatty</code>,
+<code>lseek</code>, <code>read</code>, <code>sbrk</code>, <code>write</code>.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

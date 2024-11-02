@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: Object Size Checking</title>
+
+<meta name="description" content="The Red Hat newlib C Library: Object Size Checking">
+<meta name="keywords" content="The Red Hat newlib C Library: Object Size Checking">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Overflow-Protection.html#Overflow-Protection" rel="up" title="Overflow Protection">
+<link href="Syscalls.html#Syscalls" rel="next" title="Syscalls">
+<link href="Stack-Smashing-Protection.html#Stack-Smashing-Protection" rel="prev" title="Stack Smashing Protection">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Object-Size-Checking"></a>
+<div class="header">
+<p>
+Previous: <a href="Stack-Smashing-Protection.html#Stack-Smashing-Protection" accesskey="p" rel="prev">Stack Smashing Protection</a>, Up: <a href="Overflow-Protection.html#Overflow-Protection" accesskey="u" rel="up">Overflow Protection</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Object-Size-Checking-1"></a>
+<h3 class="section">12.2 Object Size Checking</h3>
+<p>Object Size Checking is a feature which wraps certain functions with checks
+to prevent buffer overflows.  These are enabled when compiling with
+optimization (<code>-O1</code> and higher) and <code>_FORTIFY_SOURCE</code> defined
+to 1, or for stricter checks, to 2.
+</p>
+<a name="index-list-of-overflow-protected-functions"></a>
+<p>The following functions use object size checking to detect buffer overflows
+when enabled:
+</p>
+<div class="example">
+<pre class="example"><em>String functions:</em>
+</pre><pre class="example">bcopy           memmove         strcpy
+bzero           mempcpy         strcat
+explicit_bzero  memset          strncat
+memcpy          stpcpy          strncpy
+
+</pre><pre class="example"><em>Wide Character String functions:</em>
+</pre><pre class="example">fgetws          wcrtomb         wcsrtombs
+fgetws_unlocked wcscat          wmemcpy
+mbsnrtowcs      wcscpy          wmemmove
+mbsrtowcs       wcsncat         wmempcpy
+wcpcpy          wcsncpy         wmemset
+wcpncpy         wcsnrtombs
+
+</pre><pre class="example"><em>Stdio functions:</em>
+</pre><pre class="example">fgets           fread_unlocked  sprintf
+fgets_unlocked  gets            vsnprintf
+fread           snprintf        vsprintf
+
+</pre><pre class="example"><em>Stdlib functions:</em>
+</pre><pre class="example">mbstowcs        wcstombs        wctomb
+
+</pre><pre class="example"><em>System functions:</em>
+</pre><pre class="example">getcwd          read            ttyname_r
+pread           readlink
+
+</pre></div>
+
+
+
+</body>
+</html>

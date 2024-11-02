@@ -1,0 +1,112 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: stdio_ext</title>
+
+<meta name="description" content="The Red Hat newlib C Library: stdio_ext">
+<meta name="keywords" content="The Red Hat newlib C Library: stdio_ext">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="swprintf.html#swprintf" rel="next" title="swprintf">
+<link href="sscanf.html#sscanf" rel="prev" title="sscanf">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="stdio_005fext"></a>
+<div class="header">
+<p>
+Next: <a href="swprintf.html#swprintf" accesskey="n" rel="next">swprintf</a>, Previous: <a href="sscanf.html#sscanf" accesskey="p" rel="prev">sscanf</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="stdio_005fext_002c_005f_005ffbufsize_002c_005f_005ffpending_002c_005f_005fflbf_002c_005f_005ffreadable_002c_005f_005ffwritable_002c_005f_005ffreading_002c_005f_005ffwriting_002d_002d_002daccess-internals-of-FILE-structure"></a>
+<h3 class="section">4.63 <code>stdio_ext</code>,<code>__fbufsize</code>,<code>__fpending</code>,<code>__flbf</code>,<code>__freadable</code>,<code>__fwritable</code>,<code>__freading</code>,<code>__fwriting</code>&mdash;access internals of FILE structure</h3>
+<a name="index-_005f_005ffbufsize"></a>
+<a name="index-_005f_005ffpending"></a>
+<a name="index-_005f_005fflbf"></a>
+<a name="index-_005f_005ffreadable"></a>
+<a name="index-_005f_005ffwritable"></a>
+<a name="index-_005f_005ffreading"></a>
+<a name="index-_005f_005ffwriting"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+#include &lt;stdio_ext.h&gt;
+size_t __fbufsize(FILE *<var>fp</var>);
+size_t __fpending(FILE *<var>fp</var>);
+int __flbf(FILE *<var>fp</var>);
+int __freadable(FILE *<var>fp</var>);
+int __fwritable(FILE *<var>fp</var>);
+int __freading(FILE *<var>fp</var>);
+int __fwriting(FILE *<var>fp</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+These functions provides access to the internals of the FILE structure <var>fp</var>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>__fbufsize</code> returns the number of bytes in the buffer of stream <var>fp</var>.
+</p>
+<p><code>__fpending</code> returns the number of bytes in the output buffer of stream <var>fp</var>.
+</p>
+<p><code>__flbf</code> returns nonzero if stream <var>fp</var> is line-buffered, and <code>0</code> if not.
+</p>
+<p><code>__freadable</code> returns nonzero if stream <var>fp</var> may be read, and <code>0</code> if not.
+</p>
+<p><code>__fwritable</code> returns nonzero if stream <var>fp</var> may be written, and <code>0</code> if not.
+</p>
+<p><code>__freading</code> returns nonzero if stream <var>fp</var> if the last operation on
+it was a read, or if it read-only, and <code>0</code> if not.
+</p>
+<p><code>__fwriting</code> returns nonzero if stream <var>fp</var> if the last operation on
+it was a write, or if it write-only, and <code>0</code> if not.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+These functions originate from Solaris and are also provided by GNU libc.
+</p>
+<p>No supporting OS subroutines are required.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

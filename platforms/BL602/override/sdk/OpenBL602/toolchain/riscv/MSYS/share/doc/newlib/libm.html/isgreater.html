@@ -1,0 +1,138 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>LIBM: isgreater</title>
+
+<meta name="description" content="LIBM: isgreater">
+<meta name="keywords" content="LIBM: isgreater">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Math.html#Math" rel="up" title="Math">
+<link href="fpclassify.html#fpclassify" rel="next" title="fpclassify">
+<link href="infinity.html#infinity" rel="prev" title="infinity">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="isgreater"></a>
+<div class="header">
+<p>
+Next: <a href="fpclassify.html#fpclassify" accesskey="n" rel="next">fpclassify</a>, Previous: <a href="infinity.html#infinity" accesskey="p" rel="prev">infinity</a>, Up: <a href="Math.html#Math" accesskey="u" rel="up">Math</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="isgreater_002c-isgreaterequal_002c-isless_002c-islessequal_002c-islessgreater_002c-and-isunordered_002d_002d_002dcomparison-macros"></a>
+<h3 class="section">1.31 <code>isgreater</code>, <code>isgreaterequal</code>, <code>isless</code>, <code>islessequal</code>, <code>islessgreater</code>, and <code>isunordered</code>&mdash;comparison macros</h3>
+<a name="index-isgreater"></a>
+<a name="index-isgreaterequal"></a>
+<a name="index-isless"></a>
+<a name="index-islessequal"></a>
+<a name="index-islessgreater"></a>
+<a name="index-isunordered"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;math.h&gt;
+int isgreater(real-floating <var>x</var>, real-floating <var>y</var>);
+int isgreaterequal(real-floating <var>x</var>, real-floating <var>y</var>);
+int isless(real-floating <var>x</var>, real-floating <var>y</var>);
+int islessequal(real-floating <var>x</var>, real-floating <var>y</var>);
+int islessgreater(real-floating <var>x</var>, real-floating <var>y</var>);
+int isunordered(real-floating <var>x</var>, real-floating <var>y</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>isgreater</code>, <code>isgreaterequal</code>, <code>isless</code>, <code>islessequal</code>,
+<code>islessgreater</code>, and <code>isunordered</code> are macros defined for use in
+comparing floating-point numbers without raising any floating-point
+exceptions.
+</p>
+<p>The relational operators (i.e. &lt;, &gt;, &lt;=, and &gt;=) support the usual mathematical
+relationships between numeric values.  For any ordered pair of numeric
+values exactly one of the relationships&ndash;less, greater, and equal&ndash;is
+true.  Relational operators may raise the &quot;invalid&quot; floating-point
+exception when argument values are NaNs.  For a NaN and a numeric value, or
+for two NaNs, just the unordered relationship is true (i.e., if one or both
+of the arguments a NaN, the relationship is called unordered).  The specified
+macros are quiet (non floating-point exception raising) versions of the
+relational operators, and other comparison macros that facilitate writing
+efficient code that accounts for NaNs without suffering the &quot;invalid&quot;
+floating-point exception.  In the synopses shown, &quot;real-floating&quot; indicates
+that the argument is an expression of real floating type.
+</p>
+<p>Please note that saying that the macros do not raise floating-point
+exceptions, it is referring to the function that they are performing.  It
+is certainly possible to give them an expression which causes an exception.
+For example:
+</p><dl compact="compact">
+<dt><code>NaN &lt; 1.0</code></dt>
+<dd><p>causes an &quot;invalid&quot; exception,
+</p></dd>
+<dt><code>isless(NaN, 1.0)</code></dt>
+<dd><p>does not, and
+</p></dd>
+<dt><code>isless(NaN*0., 1.0)</code></dt>
+<dd><p>causes an exception due to the &quot;NaN*0.&quot;, but not from the
+resultant reduced comparison of isless(NaN, 1.0).
+</p></dd>
+</dl>
+
+
+<br>
+<p><strong>Returns</strong><br>
+No floating-point exceptions are raised for any of the macros.<br>
+The <code>isgreater</code> macro returns the value of (x) &gt; (y).<br>
+The <code>isgreaterequal</code> macro returns the value of (x) &gt;= (y).<br>
+The <code>isless</code> macro returns the value of (x) &lt; (y).<br>
+The <code>islessequal</code> macro returns the value of (x) &lt;= (y).<br>
+The <code>islessgreater</code> macro returns the value of (x) &lt; (y) || (x) &gt; (y).<br>
+The <code>isunordered</code> macro returns 1 if either of its arguments is NaN and 0 otherwise.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+C99, POSIX.
+</p>
+
+<br>
+<hr>
+<div class="header">
+<p>
+Next: <a href="fpclassify.html#fpclassify" accesskey="n" rel="next">fpclassify</a>, Previous: <a href="infinity.html#infinity" accesskey="p" rel="prev">infinity</a>, Up: <a href="Math.html#Math" accesskey="u" rel="up">Math</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

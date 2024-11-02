@@ -1,0 +1,394 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: Stubs</title>
+
+<meta name="description" content="The Red Hat newlib C Library: Stubs">
+<meta name="keywords" content="The Red Hat newlib C Library: Stubs">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Syscalls.html#Syscalls" rel="up" title="Syscalls">
+<link href="Reentrant-Syscalls.html#Reentrant-Syscalls" rel="next" title="Reentrant Syscalls">
+<link href="Syscalls.html#Syscalls" rel="prev" title="Syscalls">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Stubs"></a>
+<div class="header">
+<p>
+Next: <a href="Reentrant-Syscalls.html#Reentrant-Syscalls" accesskey="n" rel="next">Reentrant Syscalls</a>, Up: <a href="Syscalls.html#Syscalls" accesskey="u" rel="up">Syscalls</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Definitions-for-OS-interface"></a>
+<h3 class="section">13.1 Definitions for OS interface</h3>
+<a name="index-stubs"></a>
+
+<a name="index-subroutines-for-OS-interface"></a>
+<a name="index-OS-interface-subroutines"></a>
+<p>This is the complete set of system definitions (primarily subroutines)
+required; the examples shown implement the minimal functionality
+required to allow <code>libc</code> to link, and fail gracefully where OS
+services are not available.  
+</p>
+<p>Graceful failure is permitted by returning an error code.  A minor
+complication arises here: the C library must be compatible with
+development environments that supply fully functional versions of these
+subroutines.  Such environments usually return error codes in a global
+<code>errno</code>.  However, the Red Hat newlib C library provides a <em>macro</em>
+definition for <code>errno</code> in the header file <samp>errno.h</samp>, as part
+of its support for reentrant routines (see <a href="Reentrancy.html#Reentrancy">Reentrancy</a>).
+</p>
+<a name="index-errno-global-vs-macro"></a>
+<p>The bridge between these two interpretations of <code>errno</code> is
+straightforward: the C library routines with OS interface calls
+capture the <code>errno</code> values returned globally, and record them in
+the appropriate field of the reentrancy structure (so that you can query
+them using the <code>errno</code> macro from <samp>errno.h</samp>).
+</p>
+<p>This mechanism becomes visible when you write stub routines for OS
+interfaces.   You must include <samp>errno.h</samp>, then disable the macro,
+like this:
+</p>
+<div class="example">
+<pre class="example">#include &lt;errno.h&gt;
+#undef errno
+extern int errno;
+</pre></div>
+
+<p>The examples in this chapter include this treatment of <code>errno</code>.
+</p>
+<dl compact="compact">
+<dt><code>_exit</code>
+<a name="index-_005fexit"></a>
+</dt>
+<dd><p>Exit a program without cleaning up files.  If your system doesn&rsquo;t
+provide this, it is best to avoid linking with subroutines that require
+it (<code>exit</code>, <code>system</code>).
+</p>
+</dd>
+<dt><code>close</code>
+<a name="index-close"></a>
+</dt>
+<dd><p>Close a file.  Minimal implementation:
+</p>
+<div class="example">
+<pre class="example">int close(int file) {
+  return -1;
+}
+</pre></div>
+
+</dd>
+<dt><code>environ</code>
+<a name="index-environ-1"></a>
+</dt>
+<dd><p>A pointer to a list of environment variables and their values.  For a
+minimal environment, this empty list is adequate:
+</p>
+<div class="example">
+<pre class="example">char *__env[1] = { 0 };
+char **environ = __env;
+</pre></div>
+
+</dd>
+<dt><code>execve</code>
+<a name="index-execve"></a>
+</dt>
+<dd><p>Transfer control to a new process.  Minimal implementation (for a system
+without processes):
+</p>
+<div class="example">
+<pre class="example">#include &lt;errno.h&gt;
+#undef errno
+extern int errno;
+int execve(char *name, char **argv, char **env) {
+  errno = ENOMEM;
+  return -1;
+}
+</pre></div>
+
+</dd>
+<dt><code>fork</code>
+<a name="index-fork"></a>
+</dt>
+<dd><p>Create a new process.  Minimal implementation (for a system without processes):
+</p>
+<div class="example">
+<pre class="example">#include &lt;errno.h&gt;
+#undef errno
+extern int errno;
+int fork(void) {
+  errno = EAGAIN;
+  return -1;
+}
+</pre></div>
+
+</dd>
+<dt><code>fstat</code>
+<a name="index-fstat"></a>
+</dt>
+<dd><p>Status of an open file.  For consistency with other minimal
+implementations in these examples, all files are regarded as character
+special devices.  The <samp>sys/stat.h</samp> header file required is
+distributed in the <samp>include</samp> subdirectory for this C library.
+</p>
+<div class="example">
+<pre class="example">#include &lt;sys/stat.h&gt;
+int fstat(int file, struct stat *st) {
+  st-&gt;st_mode = S_IFCHR;
+  return 0;
+}
+</pre></div>
+
+</dd>
+<dt><code>getpid</code>
+<a name="index-getpid"></a>
+</dt>
+<dd><p>Process-ID; this is sometimes used to generate strings unlikely to
+conflict with other processes.  Minimal implementation, for a system
+without processes:
+</p>
+<div class="example">
+<pre class="example">int getpid(void) {
+  return 1;
+}
+</pre></div>
+
+</dd>
+<dt><code>isatty</code>
+<a name="index-isatty"></a>
+</dt>
+<dd><p>Query whether output stream is a terminal.   For consistency with the
+other minimal implementations, which only support output to
+<code>stdout</code>, this minimal implementation is suggested:
+</p>
+<div class="example">
+<pre class="example">int isatty(int file) {
+  return 1;
+}
+</pre></div>
+
+</dd>
+<dt><code>kill</code>
+<a name="index-kill"></a>
+</dt>
+<dd><p>Send a signal.  Minimal implementation:
+</p>
+<div class="example">
+<pre class="example">#include &lt;errno.h&gt;
+#undef errno
+extern int errno;
+int kill(int pid, int sig) {
+  errno = EINVAL;
+  return -1;
+}
+</pre></div>
+
+</dd>
+<dt><code>link</code>
+<a name="index-link"></a>
+</dt>
+<dd><p>Establish a new name for an existing file.  Minimal implementation:
+</p>
+<div class="example">
+<pre class="example">#include &lt;errno.h&gt;
+#undef errno
+extern int errno;
+int link(char *old, char *new) {
+  errno = EMLINK;
+  return -1;
+}
+</pre></div>
+
+</dd>
+<dt><code>lseek</code>
+<a name="index-lseek"></a>
+</dt>
+<dd><p>Set position in a file.  Minimal implementation:
+</p>
+<div class="example">
+<pre class="example">int lseek(int file, int ptr, int dir) {
+  return 0;
+}
+</pre></div>
+
+</dd>
+<dt><code>open</code>
+<a name="index-open"></a>
+</dt>
+<dd><p>Open a file.  Minimal implementation:
+</p>
+<div class="example">
+<pre class="example">int open(const char *name, int flags, int mode) {
+  return -1;
+}
+</pre></div>
+
+</dd>
+<dt><code>read</code>
+<a name="index-read"></a>
+</dt>
+<dd><p>Read from a file.  Minimal implementation:
+</p>
+<div class="example">
+<pre class="example">int read(int file, char *ptr, int len) {
+  return 0;
+}
+</pre></div>
+
+</dd>
+<dt><code>sbrk</code>
+<a name="index-sbrk"></a>
+</dt>
+<dd><p>Increase program data space.  As <code>malloc</code> and related functions
+depend on this, it is useful to have a working implementation.  The
+following suffices for a standalone system; it exploits the symbol
+<code>_end</code> automatically defined by the GNU linker.
+</p>
+<div class="example">
+<pre class="example">caddr_t sbrk(int incr) {
+  extern char _end;		/* <span class="roman">Defined by the linker</span> */
+  static char *heap_end;
+  char *prev_heap_end;
+ 
+  if (heap_end == 0) {
+    heap_end = &amp;_end;
+  }
+  prev_heap_end = heap_end;
+  if (heap_end + incr &gt; stack_ptr) {
+    write (1, &quot;Heap and stack collision\n&quot;, 25);
+    abort ();
+  }
+
+  heap_end += incr;
+  return (caddr_t) prev_heap_end;
+}
+</pre></div>
+
+</dd>
+<dt><code>stat</code>
+<a name="index-stat"></a>
+</dt>
+<dd><p>Status of a file (by name).  Minimal implementation:
+</p>
+<div class="example">
+<pre class="example">int stat(char *file, struct stat *st) {
+  st-&gt;st_mode = S_IFCHR;
+  return 0;
+}
+</pre></div>
+
+</dd>
+<dt><code>times</code>
+<a name="index-times"></a>
+</dt>
+<dd><p>Timing information for current process.  Minimal implementation:
+</p>
+<div class="example">
+<pre class="example">int times(struct tms *buf) {
+  return -1;
+}
+</pre></div>
+
+</dd>
+<dt><code>unlink</code>
+<a name="index-unlink"></a>
+</dt>
+<dd><p>Remove a file&rsquo;s directory entry.  Minimal implementation:
+</p>
+<div class="example">
+<pre class="example">#include &lt;errno.h&gt;
+#undef errno
+extern int errno;
+int unlink(char *name) {
+  errno = ENOENT;
+  return -1; 
+}
+</pre></div>
+
+</dd>
+<dt><code>wait</code>
+<a name="index-wait"></a>
+</dt>
+<dd><p>Wait for a child process.  Minimal implementation:
+</p><div class="example">
+<pre class="example">#include &lt;errno.h&gt;
+#undef errno
+extern int errno;
+int wait(int *status) {
+  errno = ECHILD;
+  return -1;
+}
+</pre></div>
+
+</dd>
+<dt><code>write</code>
+<a name="index-write"></a>
+</dt>
+<dd><p>Write to a file.  <samp>libc</samp> subroutines will use this
+system routine for output to all files, <em>including</em>
+<code>stdout</code>&mdash;so if you need to generate any output, for example to a
+serial port for debugging, you should make your minimal <code>write</code>
+capable of doing this.  The following minimal implementation is an
+incomplete example; it relies on a <code>outbyte</code> subroutine (not
+shown; typically, you must write this in assembler from examples
+provided by your hardware manufacturer) to actually perform the output.
+</p>
+<div class="example">
+<pre class="example">int write(int file, char *ptr, int len) {
+  int todo;
+
+  for (todo = 0; todo &lt; len; todo++) {
+    outbyte (*ptr++);
+  }
+  return len;
+}
+</pre></div>
+
+</dd>
+</dl>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Reentrant-Syscalls.html#Reentrant-Syscalls" accesskey="n" rel="next">Reentrant Syscalls</a>, Up: <a href="Syscalls.html#Syscalls" accesskey="u" rel="up">Syscalls</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

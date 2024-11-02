@@ -1,0 +1,135 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Fibonacci Numbers Algorithm</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Fibonacci Numbers Algorithm">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Other-Algorithms.html#Other-Algorithms" rel="up" title="Other Algorithms">
+<link href="Lucas-Numbers-Algorithm.html#Lucas-Numbers-Algorithm" rel="next" title="Lucas Numbers Algorithm">
+<link href="Binomial-Coefficients-Algorithm.html#Binomial-Coefficients-Algorithm" rel="prev" title="Binomial Coefficients Algorithm">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Fibonacci-Numbers-Algorithm"></a>
+<div class="header">
+<p>
+Next: <a href="Lucas-Numbers-Algorithm.html#Lucas-Numbers-Algorithm" accesskey="n" rel="next">Lucas Numbers Algorithm</a>, Previous: <a href="Binomial-Coefficients-Algorithm.html#Binomial-Coefficients-Algorithm" accesskey="p" rel="prev">Binomial Coefficients Algorithm</a>, Up: <a href="Other-Algorithms.html#Other-Algorithms" accesskey="u" rel="up">Other Algorithms</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Fibonacci-Numbers"></a>
+<h4 class="subsection">15.7.4 Fibonacci Numbers</h4>
+<a name="index-Fibonacci-number-algorithm"></a>
+
+<p>The Fibonacci functions <code>mpz_fib_ui</code> and <code>mpz_fib2_ui</code> are designed
+for calculating isolated <em>F[n]</em> or <em>F[n]</em>,<em>F[n-1]</em>
+values efficiently.
+</p>
+<p>For small <em>n</em>, a table of single limb values in <code>__gmp_fib_table</code> is
+used.  On a 32-bit limb this goes up to <em>F[47]</em>, or on a 64-bit limb
+up to <em>F[93]</em>.  For convenience the table starts at <em>F[-1]</em>.
+</p>
+<p>Beyond the table, values are generated with a binary powering algorithm,
+calculating a pair <em>F[n]</em> and <em>F[n-1]</em> working from high to
+low across the bits of <em>n</em>.  The formulas used are
+</p>
+<div class="example">
+<pre class="example">F[2k+1] = 4*F[k]^2 - F[k-1]^2 + 2*(-1)^k
+F[2k-1] =   F[k]^2 + F[k-1]^2
+
+F[2k] = F[2k+1] - F[2k-1]
+</pre></div>
+
+<p>At each step, <em>k</em> is the high <em>b</em> bits of <em>n</em>.  If the next bit
+of <em>n</em> is 0 then <em>F[2k]</em>,<em>F[2k-1]</em> is used, or if
+it&rsquo;s a 1 then <em>F[2k+1]</em>,<em>F[2k]</em> is used, and the process
+repeated until all bits of <em>n</em> are incorporated.  Notice these formulas
+require just two squares per bit of <em>n</em>.
+</p>
+<p>It&rsquo;d be possible to handle the first few <em>n</em> above the single limb table
+with simple additions, using the defining Fibonacci recurrence <em>F[k+1]=F[k]+F[k-1]</em>, but this is not done since it usually
+turns out to be faster for only about 10 or 20 values of <em>n</em>, and
+including a block of code for just those doesn&rsquo;t seem worthwhile.  If they
+really mattered it&rsquo;d be better to extend the data table.
+</p>
+<p>Using a table avoids lots of calculations on small numbers, and makes small
+<em>n</em> go fast.  A bigger table would make more small <em>n</em> go fast, it&rsquo;s
+just a question of balancing size against desired speed.  For GMP the code is
+kept compact, with the emphasis primarily on a good powering algorithm.
+</p>
+<p><code>mpz_fib2_ui</code> returns both <em>F[n]</em> and <em>F[n-1]</em>, but
+<code>mpz_fib_ui</code> is only interested in <em>F[n]</em>.  In this case the last
+step of the algorithm can become one multiply instead of two squares.  One of
+the following two formulas is used, according as <em>n</em> is odd or even.
+</p>
+<div class="example">
+<pre class="example">F[2k]   = F[k]*(F[k]+2F[k-1])
+
+F[2k+1] = (2F[k]+F[k-1])*(2F[k]-F[k-1]) + 2*(-1)^k
+</pre></div>
+
+<p><em>F[2k+1]</em> here is the same as above, just rearranged to be a
+multiply.  For interest, the <em>2*(-1)^k</em> term both here and above
+can be applied just to the low limb of the calculation, without a carry or
+borrow into further limbs, which saves some code size.  See comments with
+<code>mpz_fib_ui</code> and the internal <code>mpn_fib2_ui</code> for how this is done.
+</p>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Lucas-Numbers-Algorithm.html#Lucas-Numbers-Algorithm" accesskey="n" rel="next">Lucas Numbers Algorithm</a>, Previous: <a href="Binomial-Coefficients-Algorithm.html#Binomial-Coefficients-Algorithm" accesskey="p" rel="prev">Binomial Coefficients Algorithm</a>, Up: <a href="Other-Algorithms.html#Other-Algorithms" accesskey="u" rel="up">Other Algorithms</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

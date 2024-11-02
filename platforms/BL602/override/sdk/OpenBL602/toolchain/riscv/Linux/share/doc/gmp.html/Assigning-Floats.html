@@ -1,0 +1,135 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Assigning Floats</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Assigning Floats">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Floating_002dpoint-Functions.html#Floating_002dpoint-Functions" rel="up" title="Floating-point Functions">
+<link href="Simultaneous-Float-Init-_0026-Assign.html#Simultaneous-Float-Init-_0026-Assign" rel="next" title="Simultaneous Float Init &amp; Assign">
+<link href="Initializing-Floats.html#Initializing-Floats" rel="prev" title="Initializing Floats">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Assigning-Floats"></a>
+<div class="header">
+<p>
+Next: <a href="Simultaneous-Float-Init-_0026-Assign.html#Simultaneous-Float-Init-_0026-Assign" accesskey="n" rel="next">Simultaneous Float Init &amp; Assign</a>, Previous: <a href="Initializing-Floats.html#Initializing-Floats" accesskey="p" rel="prev">Initializing Floats</a>, Up: <a href="Floating_002dpoint-Functions.html#Floating_002dpoint-Functions" accesskey="u" rel="up">Floating-point Functions</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Assignment-Functions-1"></a>
+<h3 class="section">7.2 Assignment Functions</h3>
+<a name="index-Float-assignment-functions"></a>
+<a name="index-Assignment-functions-3"></a>
+
+<p>These functions assign new values to already initialized floats
+(see <a href="Initializing-Floats.html#Initializing-Floats">Initializing Floats</a>).
+</p>
+<dl>
+<dt><a name="index-mpf_005fset"></a>Function: <em>void</em> <strong>mpf_set</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op</var>)</em></dt>
+<dt><a name="index-mpf_005fset_005fui"></a>Function: <em>void</em> <strong>mpf_set_ui</strong> <em>(mpf_t <var>rop</var>, unsigned long int <var>op</var>)</em></dt>
+<dt><a name="index-mpf_005fset_005fsi"></a>Function: <em>void</em> <strong>mpf_set_si</strong> <em>(mpf_t <var>rop</var>, signed long int <var>op</var>)</em></dt>
+<dt><a name="index-mpf_005fset_005fd"></a>Function: <em>void</em> <strong>mpf_set_d</strong> <em>(mpf_t <var>rop</var>, double <var>op</var>)</em></dt>
+<dt><a name="index-mpf_005fset_005fz"></a>Function: <em>void</em> <strong>mpf_set_z</strong> <em>(mpf_t <var>rop</var>, const mpz_t <var>op</var>)</em></dt>
+<dt><a name="index-mpf_005fset_005fq"></a>Function: <em>void</em> <strong>mpf_set_q</strong> <em>(mpf_t <var>rop</var>, const mpq_t <var>op</var>)</em></dt>
+<dd><p>Set the value of <var>rop</var> from <var>op</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpf_005fset_005fstr"></a>Function: <em>int</em> <strong>mpf_set_str</strong> <em>(mpf_t <var>rop</var>, const char *<var>str</var>, int <var>base</var>)</em></dt>
+<dd><p>Set the value of <var>rop</var> from the string in <var>str</var>.  The string is of the
+form &lsquo;<samp>M@N</samp>&rsquo; or, if the base is 10 or less, alternatively &lsquo;<samp>MeN</samp>&rsquo;.
+&lsquo;<samp>M</samp>&rsquo; is the mantissa and &lsquo;<samp>N</samp>&rsquo; is the exponent.  The mantissa is always
+in the specified base.  The exponent is either in the specified base or, if
+<var>base</var> is negative, in decimal.  The decimal point expected is taken from
+the current locale, on systems providing <code>localeconv</code>.
+</p>
+<p>The argument <var>base</var> may be in the ranges 2 to 62, or -62 to
+-2.  Negative values are used to specify that the exponent is in
+decimal.
+</p>
+<p>For bases up to 36, case is ignored; upper-case and lower-case letters have
+the same value; for bases 37 to 62, upper-case letter represent the usual
+10..35 while lower-case letter represent 36..61.
+</p>
+<p>Unlike the corresponding <code>mpz</code> function, the base will not be determined
+from the leading characters of the string if <var>base</var> is 0.  This is so that
+numbers like &lsquo;<samp>0.23</samp>&rsquo; are not interpreted as octal.
+</p>
+<p>White space is allowed in the string, and is simply ignored.  [This is not
+really true; white-space is ignored in the beginning of the string and within
+the mantissa, but not in other places, such as after a minus sign or in the
+exponent.  We are considering changing the definition of this function, making
+it fail when there is any white-space in the input, since that makes a lot of
+sense.  Please tell us your opinion about this change.  Do you really want it
+to accept <code>&quot;3 14&quot;</code> as meaning 314 as it does now?]
+</p>
+<p>This function returns 0 if the entire string is a valid number in base
+<var>base</var>.  Otherwise it returns -1.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpf_005fswap"></a>Function: <em>void</em> <strong>mpf_swap</strong> <em>(mpf_t <var>rop1</var>, mpf_t <var>rop2</var>)</em></dt>
+<dd><p>Swap <var>rop1</var> and <var>rop2</var> efficiently.  Both the values and the
+precisions of the two variables are swapped.
+</p></dd></dl>
+
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Simultaneous-Float-Init-_0026-Assign.html#Simultaneous-Float-Init-_0026-Assign" accesskey="n" rel="next">Simultaneous Float Init &amp; Assign</a>, Previous: <a href="Initializing-Floats.html#Initializing-Floats" accesskey="p" rel="prev">Initializing Floats</a>, Up: <a href="Floating_002dpoint-Functions.html#Floating_002dpoint-Functions" accesskey="u" rel="up">Floating-point Functions</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

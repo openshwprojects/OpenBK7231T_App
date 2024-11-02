@@ -1,0 +1,250 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Float Internals</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Float Internals">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Internals.html#Internals" rel="up" title="Internals">
+<link href="Raw-Output-Internals.html#Raw-Output-Internals" rel="next" title="Raw Output Internals">
+<link href="Rational-Internals.html#Rational-Internals" rel="prev" title="Rational Internals">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Float-Internals"></a>
+<div class="header">
+<p>
+Next: <a href="Raw-Output-Internals.html#Raw-Output-Internals" accesskey="n" rel="next">Raw Output Internals</a>, Previous: <a href="Rational-Internals.html#Rational-Internals" accesskey="p" rel="prev">Rational Internals</a>, Up: <a href="Internals.html#Internals" accesskey="u" rel="up">Internals</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Float-Internals-1"></a>
+<h3 class="section">16.3 Float Internals</h3>
+<a name="index-Float-internals"></a>
+
+<p>Efficient calculation is the primary aim of GMP floats and the use of whole
+limbs and simple rounding facilitates this.
+</p>
+<p><code>mpf_t</code> floats have a variable precision mantissa and a single machine
+word signed exponent.  The mantissa is represented using sign and magnitude.
+</p>
+<div class="example">
+<pre class="example">   most                   least
+significant            significant
+   limb                   limb
+
+                            _mp_d
+ |---- _mp_exp ---&gt;           |
+  _____ _____ _____ _____ _____
+ |_____|_____|_____|_____|_____|
+                   . &lt;------------ radix point
+
+  &lt;-------- _mp_size ---------&gt;
+
+</pre></div>
+
+<p>The fields are as follows.
+</p>
+<dl compact="compact">
+<dt><code>_mp_size</code></dt>
+<dd><p>The number of limbs currently in use, or the negative of that when
+representing a negative value.  Zero is represented by <code>_mp_size</code> and
+<code>_mp_exp</code> both set to zero, and in that case the <code>_mp_d</code> data is
+unused.  (In the future <code>_mp_exp</code> might be undefined when representing
+zero.)
+</p>
+</dd>
+<dt><code>_mp_prec</code></dt>
+<dd><p>The precision of the mantissa, in limbs.  In any calculation the aim is to
+produce <code>_mp_prec</code> limbs of result (the most significant being non-zero).
+</p>
+</dd>
+<dt><code>_mp_d</code></dt>
+<dd><p>A pointer to the array of limbs which is the absolute value of the mantissa.
+These are stored &ldquo;little endian&rdquo; as per the <code>mpn</code> functions, so
+<code>_mp_d[0]</code> is the least significant limb and
+<code>_mp_d[ABS(_mp_size)-1]</code> the most significant.
+</p>
+<p>The most significant limb is always non-zero, but there are no other
+restrictions on its value, in particular the highest 1 bit can be anywhere
+within the limb.
+</p>
+<p><code>_mp_prec+1</code> limbs are allocated to <code>_mp_d</code>, the extra limb being
+for convenience (see below).  There are no reallocations during a calculation,
+only in a change of precision with <code>mpf_set_prec</code>.
+</p>
+</dd>
+<dt><code>_mp_exp</code></dt>
+<dd><p>The exponent, in limbs, determining the location of the implied radix point.
+Zero means the radix point is just above the most significant limb.  Positive
+values mean a radix point offset towards the lower limbs and hence a value
+<em>&gt;= 1</em>, as for example in the diagram above.  Negative exponents mean
+a radix point further above the highest limb.
+</p>
+<p>Naturally the exponent can be any value, it doesn&rsquo;t have to fall within the
+limbs as the diagram shows, it can be a long way above or a long way below.
+Limbs other than those included in the <code>{_mp_d,_mp_size}</code> data
+are treated as zero.
+</p></dd>
+</dl>
+
+<p>The <code>_mp_size</code> and <code>_mp_prec</code> fields are <code>int</code>, although the
+<code>mp_size_t</code> type is usually a <code>long</code>.  The <code>_mp_exp</code> field is
+usually <code>long</code>.  This is done to make some fields just 32 bits on some 64
+bits systems, thereby saving a few bytes of data space but still providing
+plenty of precision and a very large range.
+</p>
+
+<br>
+<p>The following various points should be noted.
+</p>
+<dl compact="compact">
+<dt>Low Zeros</dt>
+<dd><p>The least significant limbs <code>_mp_d[0]</code> etc can be zero, though such low
+zeros can always be ignored.  Routines likely to produce low zeros check and
+avoid them to save time in subsequent calculations, but for most routines
+they&rsquo;re quite unlikely and aren&rsquo;t checked.
+</p>
+</dd>
+<dt>Mantissa Size Range</dt>
+<dd><p>The <code>_mp_size</code> count of limbs in use can be less than <code>_mp_prec</code> if
+the value can be represented in less.  This means low precision values or
+small integers stored in a high precision <code>mpf_t</code> can still be operated
+on efficiently.
+</p>
+<p><code>_mp_size</code> can also be greater than <code>_mp_prec</code>.  Firstly a value is
+allowed to use all of the <code>_mp_prec+1</code> limbs available at <code>_mp_d</code>,
+and secondly when <code>mpf_set_prec_raw</code> lowers <code>_mp_prec</code> it leaves
+<code>_mp_size</code> unchanged and so the size can be arbitrarily bigger than
+<code>_mp_prec</code>.
+</p>
+</dd>
+<dt>Rounding</dt>
+<dd><p>All rounding is done on limb boundaries.  Calculating <code>_mp_prec</code> limbs
+with the high non-zero will ensure the application requested minimum precision
+is obtained.
+</p>
+<p>The use of simple &ldquo;trunc&rdquo; rounding towards zero is efficient, since there&rsquo;s
+no need to examine extra limbs and increment or decrement.
+</p>
+</dd>
+<dt>Bit Shifts</dt>
+<dd><p>Since the exponent is in limbs, there are no bit shifts in basic operations
+like <code>mpf_add</code> and <code>mpf_mul</code>.  When differing exponents are
+encountered all that&rsquo;s needed is to adjust pointers to line up the relevant
+limbs.
+</p>
+<p>Of course <code>mpf_mul_2exp</code> and <code>mpf_div_2exp</code> will require bit shifts,
+but the choice is between an exponent in limbs which requires shifts there, or
+one in bits which requires them almost everywhere else.
+</p>
+</dd>
+<dt>Use of <code>_mp_prec+1</code> Limbs</dt>
+<dd><p>The extra limb on <code>_mp_d</code> (<code>_mp_prec+1</code> rather than just
+<code>_mp_prec</code>) helps when an <code>mpf</code> routine might get a carry from its
+operation.  <code>mpf_add</code> for instance will do an <code>mpn_add</code> of
+<code>_mp_prec</code> limbs.  If there&rsquo;s no carry then that&rsquo;s the result, but if
+there is a carry then it&rsquo;s stored in the extra limb of space and
+<code>_mp_size</code> becomes <code>_mp_prec+1</code>.
+</p>
+<p>Whenever <code>_mp_prec+1</code> limbs are held in a variable, the low limb is not
+needed for the intended precision, only the <code>_mp_prec</code> high limbs.  But
+zeroing it out or moving the rest down is unnecessary.  Subsequent routines
+reading the value will simply take the high limbs they need, and this will be
+<code>_mp_prec</code> if their target has that same precision.  This is no more than
+a pointer adjustment, and must be checked anyway since the destination
+precision can be different from the sources.
+</p>
+<p>Copy functions like <code>mpf_set</code> will retain a full <code>_mp_prec+1</code> limbs
+if available.  This ensures that a variable which has <code>_mp_size</code> equal to
+<code>_mp_prec+1</code> will get its full exact value copied.  Strictly speaking
+this is unnecessary since only <code>_mp_prec</code> limbs are needed for the
+application&rsquo;s requested precision, but it&rsquo;s considered that an <code>mpf_set</code>
+from one variable into another of the same precision ought to produce an exact
+copy.
+</p>
+</dd>
+<dt>Application Precisions</dt>
+<dd><p><code>__GMPF_BITS_TO_PREC</code> converts an application requested precision to an
+<code>_mp_prec</code>.  The value in bits is rounded up to a whole limb then an
+extra limb is added since the most significant limb of <code>_mp_d</code> is only
+non-zero and therefore might contain only one bit.
+</p>
+<p><code>__GMPF_PREC_TO_BITS</code> does the reverse conversion, and removes the extra
+limb from <code>_mp_prec</code> before converting to bits.  The net effect of
+reading back with <code>mpf_get_prec</code> is simply the precision rounded up to a
+multiple of <code>mp_bits_per_limb</code>.
+</p>
+<p>Note that the extra limb added here for the high only being non-zero is in
+addition to the extra limb allocated to <code>_mp_d</code>.  For example with a
+32-bit limb, an application request for 250 bits will be rounded up to 8
+limbs, then an extra added for the high being only non-zero, giving an
+<code>_mp_prec</code> of 9.  <code>_mp_d</code> then gets 10 limbs allocated.  Reading
+back with <code>mpf_get_prec</code> will take <code>_mp_prec</code> subtract 1 limb and
+multiply by 32, giving 256 bits.
+</p>
+<p>Strictly speaking, the fact the high limb has at least one bit means that a
+float with, say, 3 limbs of 32-bits each will be holding at least 65 bits, but
+for the purposes of <code>mpf_t</code> it&rsquo;s considered simply to be 64 bits, a nice
+multiple of the limb size.
+</p></dd>
+</dl>
+
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Raw-Output-Internals.html#Raw-Output-Internals" accesskey="n" rel="next">Raw Output Internals</a>, Previous: <a href="Rational-Internals.html#Rational-Internals" accesskey="p" rel="prev">Rational Internals</a>, Up: <a href="Internals.html#Internals" accesskey="u" rel="up">Internals</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

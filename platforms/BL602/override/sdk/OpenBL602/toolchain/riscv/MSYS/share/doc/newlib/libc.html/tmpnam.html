@@ -1,0 +1,136 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: tmpnam</title>
+
+<meta name="description" content="The Red Hat newlib C Library: tmpnam">
+<meta name="keywords" content="The Red Hat newlib C Library: tmpnam">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="ungetc.html#ungetc" rel="next" title="ungetc">
+<link href="tmpfile.html#tmpfile" rel="prev" title="tmpfile">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="tmpnam"></a>
+<div class="header">
+<p>
+Next: <a href="ungetc.html#ungetc" accesskey="n" rel="next">ungetc</a>, Previous: <a href="tmpfile.html#tmpfile" accesskey="p" rel="prev">tmpfile</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="tmpnam_002c-tempnam_002d_002d_002dname-for-a-temporary-file"></a>
+<h3 class="section">4.67 <code>tmpnam</code>, <code>tempnam</code>&mdash;name for a temporary file</h3>
+<a name="index-tmpnam"></a>
+<a name="index-tempnam"></a>
+<a name="index-_005ftmpnam_005fr"></a>
+<a name="index-_005ftempnam_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+char *tmpnam(char *<var>s</var>);
+char *tempnam(char *<var>dir</var>, char *<var>pfx</var>);
+char *_tmpnam_r(struct _reent *<var>reent</var>, char *<var>s</var>);
+char *_tempnam_r(struct _reent *<var>reent</var>, char *<var>dir</var>, char *<var>pfx</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+Use either of these functions to generate a name for a temporary file.
+The generated name is guaranteed to avoid collision with other files
+(for up to <code>TMP_MAX</code> calls of either function).
+</p>
+<p><code>tmpnam</code> generates file names with the value of <code>P_tmpdir</code>
+(defined in &lsquo;<code>stdio.h</code>&rsquo;) as the leading directory component of the path.
+</p>
+<p>You can use the <code>tmpnam</code> argument <var>s</var> to specify a suitable area
+of memory for the generated filename; otherwise, you can call
+<code>tmpnam(NULL)</code> to use an internal static buffer.
+</p>
+<p><code>tempnam</code> allows you more control over the generated filename: you
+can use the argument <var>dir</var> to specify the path to a directory for
+temporary files, and you can use the argument <var>pfx</var> to specify a
+prefix for the base filename.
+</p>
+<p>If <var>dir</var> is <code>NULL</code>, <code>tempnam</code> will attempt to use the value of
+environment variable <code>TMPDIR</code> instead; if there is no such value,
+<code>tempnam</code> uses the value of <code>P_tmpdir</code> (defined in &lsquo;<code>stdio.h</code>&rsquo;).
+</p>
+<p>If you don&rsquo;t need any particular prefix to the basename of temporary
+files, you can pass <code>NULL</code> as the <var>pfx</var> argument to <code>tempnam</code>.
+</p>
+<p><code>_tmpnam_r</code> and <code>_tempnam_r</code> are reentrant versions of <code>tmpnam</code>
+and <code>tempnam</code> respectively.  The extra argument <var>reent</var> is a
+pointer to a reentrancy structure.
+</p>
+<br>
+<p><strong>Warnings</strong><br>
+The generated filenames are suitable for temporary files, but do not
+in themselves make files temporary.  Files with these names must still
+be explicitly removed when you no longer want them.
+</p>
+<p>If you supply your own data area <var>s</var> for <code>tmpnam</code>, you must ensure
+that it has room for at least <code>L_tmpnam</code> elements of type <code>char</code>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+Both <code>tmpnam</code> and <code>tempnam</code> return a pointer to the newly
+generated filename.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+ANSI C requires <code>tmpnam</code>, but does not specify the use of
+<code>P_tmpdir</code>.  The System V Interface Definition (Issue 2) requires
+both <code>tmpnam</code> and <code>tempnam</code>.
+</p>
+<p>Supporting OS subroutines required: <code>close</code>,  <code>fstat</code>, <code>getpid</code>,
+<code>isatty</code>, <code>lseek</code>, <code>open</code>, <code>read</code>, <code>sbrk</code>, <code>write</code>.
+</p>
+<p>The global pointer <code>environ</code> is also required.
+</p>
+<br>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="ungetc.html#ungetc" accesskey="n" rel="next">ungetc</a>, Previous: <a href="tmpfile.html#tmpfile" accesskey="p" rel="prev">tmpfile</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Strings (The Red Hat newlib C Library)</title>
+
+<meta name="description" content="Strings (The Red Hat newlib C Library)">
+<meta name="keywords" content="Strings (The Red Hat newlib C Library)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="index.html#Top" rel="up" title="Top">
+<link href="bcmp.html" rel="next" title="bcmp">
+<link href="viscanf.html" rel="prev" title="viscanf">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="Strings"></span><div class="header">
+<p>
+Next: <a href="Wchar-strings.html" accesskey="n" rel="next">Wchar strings</a>, Previous: <a href="Stdio.html" accesskey="p" rel="prev">Stdio</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Strings-and-Memory-_0028string_002eh_0029"></span><h2 class="chapter">5 Strings and Memory (<samp>string.h</samp>)</h2>
+
+<p>This chapter describes string-handling functions and functions for
+managing areas of memory.  The corresponding declarations are in
+<samp>string.h</samp>.
+</p>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="bcmp.html" accesskey="1">bcmp</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Compare two memory areas
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="bcopy.html" accesskey="2">bcopy</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Copy memory regions
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="bzero.html" accesskey="3">bzero</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Initialize memory to zero
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="index.html#index" accesskey="4">index</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Search for character in string
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="memccpy.html" accesskey="5">memccpy</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Copy memory regions up to end-token
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="memchr.html" accesskey="6">memchr</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Find character in memory
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="memcmp.html" accesskey="7">memcmp</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Compare two memory areas
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="memcpy.html" accesskey="8">memcpy</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Copy memory regions
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="memmem.html" accesskey="9">memmem</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Find memory segment
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="memmove.html">memmove</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Move possibly overlapping memory
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="mempcpy.html">mempcpy</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Copy memory regions and locate end
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="memrchr.html">memrchr</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Reverse search for character in memory
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="memset.html">memset</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Set an area of memory
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="rawmemchr.html">rawmemchr</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Find character in memory
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="rindex.html">rindex</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Reverse search for character in string
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="stpcpy.html">stpcpy</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Copy string returning a pointer to its end
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="stpncpy.html">stpncpy</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Counted copy string returning a pointer to its end
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strcasecmp.html">strcasecmp</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Compare strings ignoring case
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strcasestr.html">strcasestr</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Find string segment ignoring case
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strcat.html">strcat</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Concatenate strings
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strchr.html">strchr</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Search for character in string
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strchrnul.html">strchrnul</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Search for character in string
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strcmp.html">strcmp</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Character string compare
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strcoll.html">strcoll</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Locale-specific character string compare
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strcpy.html">strcpy</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Copy string
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strcspn.html">strcspn</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Count chars not in string
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strerror.html">strerror</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Convert error number to string (strerror, strerror_l)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strerror_005fr.html">strerror_r</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Convert error number to string
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strlen.html">strlen</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Character string length
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strlwr.html">strlwr</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Convert string to lowercase
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strncasecmp.html">strncasecmp</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Compare strings ignoring case
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strncat.html">strncat</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Concatenate strings
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strncmp.html">strncmp</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Character string compare
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strncpy.html">strncpy</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Counted copy string
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strnstr.html">strnstr</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Find string segment
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strnlen.html">strnlen</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Character string length
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strpbrk.html">strpbrk</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Find chars in string
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strrchr.html">strrchr</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Reverse search for character in string
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strsignal.html">strsignal</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Return signal message string
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strspn.html">strspn</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Find initial match
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strstr.html">strstr</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Find string segment
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strtok.html">strtok</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Get next token from a string
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strupr.html">strupr</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Convert string to upper case
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strverscmp.html">strverscmp</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Compare version strings
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="strxfrm.html">strxfrm</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Transform string
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="swab.html">swab</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Swap adjacent bytes
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="wcscasecmp.html">wcscasecmp</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Compare wide character strings ignoring case
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="wcsdup.html">wcsdup</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Wide character string duplicate
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="wcsncasecmp.html">wcsncasecmp</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Compare wide character strings ignoring case
+</td></tr>
+</table>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Wchar-strings.html" accesskey="n" rel="next">Wchar strings</a>, Previous: <a href="Stdio.html" accesskey="p" rel="prev">Stdio</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

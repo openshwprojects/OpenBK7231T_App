@@ -1,0 +1,213 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Contributors</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Contributors">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="index.html#Top" rel="up" title="Top">
+<link href="References.html#References" rel="next" title="References">
+<link href="C_002b_002b-Interface-Internals.html#C_002b_002b-Interface-Internals" rel="prev" title="C++ Interface Internals">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Contributors"></a>
+<div class="header">
+<p>
+Next: <a href="References.html#References" accesskey="n" rel="next">References</a>, Previous: <a href="Internals.html#Internals" accesskey="p" rel="prev">Internals</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Contributors-1"></a>
+<h2 class="appendix">Appendix A Contributors</h2>
+<a name="index-Contributors"></a>
+
+<p>Torbj&ouml;rn Granlund wrote the original GMP library and is still the main
+developer.  Code not explicitly attributed to others, was contributed by
+Torbj&ouml;rn.  Several other individuals and organizations have contributed
+GMP.  Here is a list in chronological order on first contribution:
+</p>
+<p>Gunnar Sj&ouml;din and Hans Riesel helped with mathematical problems in early
+versions of the library.
+</p>
+<p>Richard Stallman helped with the interface design and revised the first
+version of this manual.
+</p>
+<p>Brian Beuning and Doug Lea helped with testing of early versions of the
+library and made creative suggestions.
+</p>
+<p>John Amanatides of York University in Canada contributed the function
+<code>mpz_probab_prime_p</code>.
+</p>
+<p>Paul Zimmermann wrote the REDC-based mpz_powm code, the Sch&ouml;nhage-Strassen
+FFT multiply code, and the Karatsuba square root code.  He also improved the
+Toom3 code for GMP 4.2.  Paul sparked the development of GMP 2, with his
+comparisons between bignum packages.  The ECMNET project Paul is organizing
+was a driving force behind many of the optimizations in GMP 3.  Paul also
+wrote the new GMP 4.3 nth root code (with Torbj&ouml;rn).
+</p>
+<p>Ken Weber (Kent State University, Universidade Federal do Rio Grande do Sul)
+contributed now defunct versions of <code>mpz_gcd</code>, <code>mpz_divexact</code>,
+<code>mpn_gcd</code>, and <code>mpn_bdivmod</code>, partially supported by CNPq (Brazil)
+grant 301314194-2.
+</p>
+<p>Per Bothner of Cygnus Support helped to set up GMP to use Cygnus&rsquo; configure.
+He has also made valuable suggestions and tested numerous intermediary
+releases.
+</p>
+<p>Joachim Hollman was involved in the design of the <code>mpf</code> interface, and in
+the <code>mpz</code> design revisions for version 2.
+</p>
+<p>Bennet Yee contributed the initial versions of <code>mpz_jacobi</code> and
+<code>mpz_legendre</code>.
+</p>
+<p>Andreas Schwab contributed the files <samp>mpn/m68k/lshift.S</samp> and
+<samp>mpn/m68k/rshift.S</samp> (now in <samp>.asm</samp> form).
+</p>
+<p>Robert Harley of Inria, France and David Seal of ARM, England, suggested clever
+improvements for population count.  Robert also wrote highly optimized
+Karatsuba and 3-way Toom multiplication functions for GMP 3, and contributed
+the ARM assembly code.
+</p>
+<p>Torsten Ekedahl of the Mathematical department of Stockholm University provided
+significant inspiration during several phases of the GMP development.  His
+mathematical expertise helped improve several algorithms.
+</p>
+<p>Linus Nordberg wrote the new configure system based on autoconf and
+implemented the new random functions.
+</p>
+<p>Kevin Ryde worked on a large number of things: optimized x86 code, m4 asm
+macros, parameter tuning, speed measuring, the configure system, function
+inlining, divisibility tests, bit scanning, Jacobi symbols, Fibonacci and Lucas
+number functions, printf and scanf functions, perl interface, demo expression
+parser, the algorithms chapter in the manual, <samp>gmpasm-mode.el</samp>, and
+various miscellaneous improvements elsewhere.
+</p>
+<p>Kent Boortz made the Mac OS 9 port.
+</p>
+<p>Steve Root helped write the optimized alpha 21264 assembly code.
+</p>
+<p>Gerardo Ballabio wrote the <samp>gmpxx.h</samp> C++ class interface and the C++
+<code>istream</code> input routines.
+</p>
+<p>Jason Moxham rewrote <code>mpz_fac_ui</code>.
+</p>
+<p>Pedro Gimeno implemented the Mersenne Twister and made other random number
+improvements.
+</p>
+<p>Niels M&ouml;ller wrote the sub-quadratic GCD, extended GCD and jacobi code, the
+quadratic Hensel division code, and (with Torbj&ouml;rn) the new divide and
+conquer division code for GMP 4.3.  Niels also helped implement the new Toom
+multiply code for GMP 4.3 and implemented helper functions to simplify Toom
+evaluations for GMP 5.0.  He wrote the original version of mpn_mulmod_bnm1, and
+he is the main author of the mini-gmp package used for gmp bootstrapping.
+</p>
+<p>Alberto Zanoni and Marco Bodrato suggested the unbalanced multiply strategy,
+and found the optimal strategies for evaluation and interpolation in Toom
+multiplication.
+</p>
+<p>Marco Bodrato helped implement the new Toom multiply code for GMP 4.3 and
+implemented most of the new Toom multiply and squaring code for 5.0.
+He is the main author of the current mpn_mulmod_bnm1, mpn_mullo_n, and
+mpn_sqrlo.  Marco also wrote the functions mpn_invert and mpn_invertappr,
+and improved the speed of integer root extraction.  He is the author of
+the current combinatorial functions: binomial, factorial, multifactorial,
+primorial.
+</p>
+<p>David Harvey suggested the internal function <code>mpn_bdiv_dbm1</code>, implementing
+division relevant to Toom multiplication.  He also worked on fast assembly
+sequences, in particular on a fast AMD64 <code>mpn_mul_basecase</code>. He wrote
+the internal middle product functions <code>mpn_mulmid_basecase</code>,
+<code>mpn_toom42_mulmid</code>, <code>mpn_mulmid_n</code> and related helper routines.
+</p>
+<p>Martin Boij wrote <code>mpn_perfect_power_p</code>.
+</p>
+<p>Marc Glisse improved <samp>gmpxx.h</samp>: use fewer temporaries (faster),
+specializations of <code>numeric_limits</code> and <code>common_type</code>, C++11
+features (move constructors, explicit bool conversion, UDL), make the
+conversion from <code>mpq_class</code> to <code>mpz_class</code> explicit, optimize
+operations where one argument is a small compile-time constant, replace
+some heap allocations by stack allocations.  He also fixed the eofbit
+handling of C++ streams, and removed one division from <samp>mpq/aors.c</samp>.
+</p>
+<p>David S Miller wrote assembly code for SPARC T3 and T4.
+</p>
+<p>Mark Sofroniou cleaned up the types of mul_fft.c, letting it work for huge
+operands.
+</p>
+<p>Ulrich Weigand ported GMP to the powerpc64le ABI.
+</p>
+<p>(This list is chronological, not ordered after significance.  If you have
+contributed to GMP but are not listed above, please tell
+<a href="mailto:gmp-devel@gmplib.org">gmp-devel@gmplib.org</a> about the omission!)
+</p>
+<p>The development of floating point functions of GNU MP 2, were supported in part
+by the ESPRIT-BRA (Basic Research Activities) 6846 project POSSO (POlynomial
+System SOlving).
+</p>
+<p>The development of GMP 2, 3, and 4.0 was supported in part by the IDA Center
+for Computing Sciences.
+</p>
+<p>The development of GMP 4.3, 5.0, and 5.1 was supported in part by the Swedish
+Foundation for Strategic Research.
+</p>
+<p>Thanks go to Hans Thorsen for donating an SGI system for the GMP test system
+environment.
+</p>
+<hr>
+<div class="header">
+<p>
+Next: <a href="References.html#References" accesskey="n" rel="next">References</a>, Previous: <a href="Internals.html#Internals" accesskey="p" rel="prev">Internals</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

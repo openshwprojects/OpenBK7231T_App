@@ -1,0 +1,248 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual documents how to install and use the Multiple Precision
+Floating-Point Reliable Library, version 3.1.4.
+
+Copyright 1991, 1993-2016 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with no Front-Cover Texts, and with no Back-Cover Texts.  A copy of the
+license is included in GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MPFR 3.1.4: Assignment Functions</title>
+
+<meta name="description" content="How to install and use GNU MPFR, a library for reliable multiple precision
+floating-point arithmetic, version 3.1.4.">
+<meta name="keywords" content="GNU MPFR 3.1.4: Assignment Functions">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="MPFR-Interface.html#MPFR-Interface" rel="up" title="MPFR Interface">
+<link href="Combined-Initialization-and-Assignment-Functions.html#Combined-Initialization-and-Assignment-Functions" rel="next" title="Combined Initialization and Assignment Functions">
+<link href="Initialization-Functions.html#Initialization-Functions" rel="prev" title="Initialization Functions">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Assignment-Functions"></a>
+<div class="header">
+<p>
+Next: <a href="Combined-Initialization-and-Assignment-Functions.html#Combined-Initialization-and-Assignment-Functions" accesskey="n" rel="next">Combined Initialization and Assignment Functions</a>, Previous: <a href="Initialization-Functions.html#Initialization-Functions" accesskey="p" rel="prev">Initialization Functions</a>, Up: <a href="MPFR-Interface.html#MPFR-Interface" accesskey="u" rel="up">MPFR Interface</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="index-Assignment-functions"></a>
+<a name="Assignment-Functions-1"></a>
+<h3 class="section">5.2 Assignment Functions</h3>
+
+<p>These functions assign new values to already initialized floats
+(see <a href="Initialization-Functions.html#Initialization-Functions">Initialization Functions</a>).
+</p>
+<dl>
+<dt><a name="index-mpfr_005fset"></a>Function: <em>int</em> <strong>mpfr_set</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fset_005fui"></a>Function: <em>int</em> <strong>mpfr_set_ui</strong> <em>(mpfr_t <var>rop</var>, unsigned long int <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fset_005fsi"></a>Function: <em>int</em> <strong>mpfr_set_si</strong> <em>(mpfr_t <var>rop</var>, long int <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fset_005fuj"></a>Function: <em>int</em> <strong>mpfr_set_uj</strong> <em>(mpfr_t <var>rop</var>, uintmax_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fset_005fsj"></a>Function: <em>int</em> <strong>mpfr_set_sj</strong> <em>(mpfr_t <var>rop</var>, intmax_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fset_005fflt"></a>Function: <em>int</em> <strong>mpfr_set_flt</strong> <em>(mpfr_t <var>rop</var>, float <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fset_005fd"></a>Function: <em>int</em> <strong>mpfr_set_d</strong> <em>(mpfr_t <var>rop</var>, double <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fset_005fld"></a>Function: <em>int</em> <strong>mpfr_set_ld</strong> <em>(mpfr_t <var>rop</var>, long double <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fset_005fdecimal64"></a>Function: <em>int</em> <strong>mpfr_set_decimal64</strong> <em>(mpfr_t <var>rop</var>, _Decimal64 <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fset_005fz"></a>Function: <em>int</em> <strong>mpfr_set_z</strong> <em>(mpfr_t <var>rop</var>, mpz_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fset_005fq"></a>Function: <em>int</em> <strong>mpfr_set_q</strong> <em>(mpfr_t <var>rop</var>, mpq_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fset_005ff"></a>Function: <em>int</em> <strong>mpfr_set_f</strong> <em>(mpfr_t <var>rop</var>, mpf_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set the value of <var>rop</var> from <var>op</var>, rounded
+toward the given direction <var>rnd</var>.
+Note that the input 0 is converted to +0 by <code>mpfr_set_ui</code>,
+<code>mpfr_set_si</code>, <code>mpfr_set_uj</code>, <code>mpfr_set_sj</code>,
+<code>mpfr_set_z</code>, <code>mpfr_set_q</code> and
+<code>mpfr_set_f</code>, regardless of the rounding mode.
+If the system does not support the IEEE 754 standard,
+<code>mpfr_set_flt</code>, <code>mpfr_set_d</code>, <code>mpfr_set_ld</code> and
+<code>mpfr_set_decimal64</code> might not preserve the signed zeros.
+The <code>mpfr_set_decimal64</code> function is built only with the configure
+option &lsquo;<samp>--enable-decimal-float</samp>&rsquo;, which also requires
+&lsquo;<samp>--with-gmp-build</samp>&rsquo;, and when the compiler or
+system provides the &lsquo;<samp>_Decimal64</samp>&rsquo; data type
+(recent versions of GCC support this data type);
+to use <code>mpfr_set_decimal64</code>, one should define the macro
+<code>MPFR_WANT_DECIMAL_FLOATS</code> before including <samp>mpfr.h</samp>.
+<code>mpfr_set_q</code> might fail if the numerator (or the
+denominator) can not be represented as a <code>mpfr_t</code>.
+</p>
+<p>Note: If you want to store a floating-point constant to a <code>mpfr_t</code>,
+you should use <code>mpfr_set_str</code> (or one of the MPFR constant functions,
+such as <code>mpfr_const_pi</code> for <em>Pi</em>) instead of
+<code>mpfr_set_flt</code>, <code>mpfr_set_d</code>,
+<code>mpfr_set_ld</code> or <code>mpfr_set_decimal64</code>.
+Otherwise the floating-point constant will be first
+converted into a reduced-precision (e.g., 53-bit) binary
+(or decimal, for <code>mpfr_set_decimal64</code>) number before
+MPFR can work with it.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fset_005fui_005f2exp"></a>Function: <em>int</em> <strong>mpfr_set_ui_2exp</strong> <em>(mpfr_t <var>rop</var>, unsigned long int <var>op</var>, mpfr_exp_t <var>e</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fset_005fsi_005f2exp"></a>Function: <em>int</em> <strong>mpfr_set_si_2exp</strong> <em>(mpfr_t <var>rop</var>, long int <var>op</var>, mpfr_exp_t <var>e</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fset_005fuj_005f2exp"></a>Function: <em>int</em> <strong>mpfr_set_uj_2exp</strong> <em>(mpfr_t <var>rop</var>, uintmax_t <var>op</var>, intmax_t <var>e</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fset_005fsj_005f2exp"></a>Function: <em>int</em> <strong>mpfr_set_sj_2exp</strong> <em>(mpfr_t <var>rop</var>, intmax_t <var>op</var>, intmax_t <var>e</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fset_005fz_005f2exp"></a>Function: <em>int</em> <strong>mpfr_set_z_2exp</strong> <em>(mpfr_t <var>rop</var>, mpz_t <var>op</var>, mpfr_exp_t <var>e</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set the value of <var>rop</var> from <em><var>op</var> multiplied by
+two to the power <var>e</var></em>, rounded toward the given direction <var>rnd</var>.
+Note that the input 0 is converted to +0.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fset_005fstr"></a>Function: <em>int</em> <strong>mpfr_set_str</strong> <em>(mpfr_t <var>rop</var>, const char *<var>s</var>, int <var>base</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the value of the string <var>s</var> in base <var>base</var>,
+rounded in the direction <var>rnd</var>.
+See the documentation of <code>mpfr_strtofr</code> for a detailed description
+of the valid string formats.
+Contrary to <code>mpfr_strtofr</code>, <code>mpfr_set_str</code> requires the
+<em>whole</em> string to represent a valid floating-point number.
+</p>
+<p>The meaning of the return value differs from other MPFR functions:
+it is 0 if the entire string up to the final null character
+is a valid number in base <var>base</var>; otherwise it is −1, and
+<var>rop</var> may have changed (users interested in the <a href="Rounding-Modes.html#ternary-value">ternary value</a>
+should use <code>mpfr_strtofr</code> instead).
+</p>
+<p>Note: it is preferable to use <code>mpfr_strtofr</code> if one wants to distinguish
+between an infinite <var>rop</var> value coming from an infinite <var>s</var> or from
+an overflow.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fstrtofr"></a>Function: <em>int</em> <strong>mpfr_strtofr</strong> <em>(mpfr_t <var>rop</var>, const char *<var>nptr</var>, char **<var>endptr</var>, int <var>base</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Read a floating-point number from a string <var>nptr</var> in base <var>base</var>,
+rounded in the direction <var>rnd</var>; <var>base</var> must be either 0 (to
+detect the base, as described below) or a number from 2 to 62 (otherwise
+the behavior is undefined). If <var>nptr</var> starts with valid data, the
+result is stored in <var>rop</var> and <code>*<var>endptr</var></code> points to the
+character just after the valid data (if <var>endptr</var> is not a null pointer);
+otherwise <var>rop</var> is set to zero (for consistency with <code>strtod</code>)
+and the value of <var>nptr</var> is stored
+in the location referenced by <var>endptr</var> (if <var>endptr</var> is not a null
+pointer). The usual ternary value is returned.
+</p>
+<p>Parsing follows the standard C <code>strtod</code> function with some extensions.
+After optional leading whitespace, one has a subject sequence consisting of an
+optional sign (<code>+</code> or <code>-</code>), and either numeric data or special
+data. The subject sequence is defined as the longest initial subsequence of
+the input string, starting with the first non-whitespace character, that is of
+the expected form.
+</p>
+<p>The form of numeric data is a non-empty sequence of significand digits with an
+optional decimal point, and an optional exponent consisting of an exponent
+prefix followed by an optional sign and a non-empty sequence of decimal
+digits. A significand digit is either a decimal digit or a Latin letter (62
+possible characters), with <code>A</code> = 10, <code>B</code> = 11, &hellip;, <code>Z</code> =
+35; case is ignored in bases less or equal to 36, in bases larger than 36,
+<code>a</code> = 36, <code>b</code> = 37, &hellip;, <code>z</code> = 61.
+The value of a
+significand digit must be strictly less than the base.  The decimal point can
+be either the one defined by the current locale or the period (the first one
+is accepted for consistency with the C standard and the practice, the second
+one is accepted to allow the programmer to provide MPFR numbers from strings
+in a way that does not depend on the current locale).
+The exponent prefix can be <code>e</code> or <code>E</code> for bases up to 10, or
+<code>@</code> in any base; it indicates a multiplication by a power of the
+base. In bases 2 and 16, the exponent prefix can also be <code>p</code> or <code>P</code>,
+in which case the exponent, called <em>binary exponent</em>, indicates a
+multiplication by a power of 2 instead of the base (there is a difference
+only for base 16); in base 16 for example <code>1p2</code> represents 4 whereas
+<code>1@2</code> represents 256. The value of an exponent is always written in
+base 10.
+</p>
+<p>If the argument <var>base</var> is 0, then the base is automatically detected
+as follows. If the significand starts with <code>0b</code> or <code>0B</code>, base 2
+is assumed. If the significand starts with <code>0x</code> or <code>0X</code>, base 16
+is assumed. Otherwise base 10 is assumed.
+</p>
+<p>Note: The exponent (if present)
+must contain at least a digit. Otherwise the possible
+exponent prefix and sign are not part of the number (which ends with the
+significand). Similarly, if <code>0b</code>, <code>0B</code>, <code>0x</code> or <code>0X</code>
+is not followed by a binary/hexadecimal digit, then the subject sequence
+stops at the character <code>0</code>, thus 0 is read.
+</p>
+<p>Special data (for infinities and NaN) can be <code>@inf@</code> or
+<code>@nan@(n-char-sequence-opt)</code>, and if <em><var>base</var> &lt;= 16</em>,
+it can also be <code>infinity</code>, <code>inf</code>, <code>nan</code> or
+<code>nan(n-char-sequence-opt)</code>, all case insensitive.
+A <code>n-char-sequence-opt</code> is a possibly empty string containing only digits,
+Latin letters and the underscore (0, 1, 2, &hellip;, 9, a, b, &hellip;, z,
+A, B, &hellip;, Z, _). Note: one has an optional sign for all data, even
+NaN.
+For example, <code>-@nAn@(This_Is_Not_17)</code> is a valid representation for NaN
+in base 17.
+</p>
+</dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fset_005fnan"></a>Function: <em>void</em> <strong>mpfr_set_nan</strong> <em>(mpfr_t <var>x</var>)</em></dt>
+<dt><a name="index-mpfr_005fset_005finf"></a>Function: <em>void</em> <strong>mpfr_set_inf</strong> <em>(mpfr_t <var>x</var>, int <var>sign</var>)</em></dt>
+<dt><a name="index-mpfr_005fset_005fzero"></a>Function: <em>void</em> <strong>mpfr_set_zero</strong> <em>(mpfr_t <var>x</var>, int <var>sign</var>)</em></dt>
+<dd><p>Set the variable <var>x</var> to NaN (Not-a-Number), infinity or zero respectively.
+In <code>mpfr_set_inf</code> or <code>mpfr_set_zero</code>, <var>x</var> is set to plus
+infinity or plus zero iff <var>sign</var> is nonnegative;
+in <code>mpfr_set_nan</code>, the sign bit of the result is unspecified.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fswap"></a>Function: <em>void</em> <strong>mpfr_swap</strong> <em>(mpfr_t <var>x</var>, mpfr_t <var>y</var>)</em></dt>
+<dd><p>Swap the structures pointed to by <var>x</var> and <var>y</var>. In particular,
+the values are exchanged without rounding (this may be different from
+three <code>mpfr_set</code> calls using a third auxiliary variable).
+</p>
+<p>Warning! Since the precisions are exchanged, this will affect future
+assignments. Moreover, since the significand pointers are also exchanged,
+you must not use this function if the allocation method used for <var>x</var>
+and/or <var>y</var> does not permit it. This is the case when <var>x</var> and/or
+<var>y</var> were declared and initialized with <code>MPFR_DECL_INIT</code>, and
+possibly with <code>mpfr_custom_init_set</code> (see <a href="Custom-Interface.html#Custom-Interface">Custom Interface</a>).
+</p></dd></dl>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Combined-Initialization-and-Assignment-Functions.html#Combined-Initialization-and-Assignment-Functions" accesskey="n" rel="next">Combined Initialization and Assignment Functions</a>, Previous: <a href="Initialization-Functions.html#Initialization-Functions" accesskey="p" rel="prev">Initialization Functions</a>, Up: <a href="MPFR-Interface.html#MPFR-Interface" accesskey="u" rel="up">MPFR Interface</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

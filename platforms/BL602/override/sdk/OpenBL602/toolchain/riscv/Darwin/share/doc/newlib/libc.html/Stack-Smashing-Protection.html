@@ -1,0 +1,60 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Stack Smashing Protection (The Red Hat newlib C Library)</title>
+
+<meta name="description" content="Stack Smashing Protection (The Red Hat newlib C Library)">
+<meta name="keywords" content="Stack Smashing Protection (The Red Hat newlib C Library)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Overflow-Protection.html" rel="up" title="Overflow Protection">
+<link href="Object-Size-Checking.html" rel="next" title="Object Size Checking">
+<link href="Overflow-Protection.html" rel="prev" title="Overflow Protection">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="Stack-Smashing-Protection"></span><div class="header">
+<p>
+Next: <a href="Object-Size-Checking.html" accesskey="n" rel="next">Object Size Checking</a>, Up: <a href="Overflow-Protection.html" accesskey="u" rel="up">Overflow Protection</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Stack-Smashing-Protection-1"></span><h3 class="section">12.1 Stack Smashing Protection</h3>
+<p>Stack Smashing Protection is a compiler feature which emits extra code
+to check for stack smashing attacks.  It depends on a canary, which is
+initialized with the process, and functions for process termination when
+an overflow is detected.  These are private entry points intended solely
+for use by the compiler, and are used when any of the <code>-fstack-protector</code>,
+<code>-fstack-protector-all</code>, <code>-fstack-protector-explicit</code>, or
+<code>-fstack-protector-strong</code> compiler flags are enabled.
+</p>
+
+
+
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This file documents the BFD library.
+
+Copyright (C) 1991-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "GNU General Public License" and "Funding
+Free Software", the Front-Cover texts being (a) (see below), and with
+the Back-Cover Texts being (b) (see below).  A copy of the license is
+included in the section entitled "GNU Free Documentation License".
+
+(a) The FSF's Front-Cover Text is:
+
+A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Untitled Document: File Caching</title>
+
+<meta name="description" content="Untitled Document: File Caching">
+<meta name="keywords" content="Untitled Document: File Caching">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="BFD-Index.html#BFD-Index" rel="index" title="BFD Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="BFD-front-end.html#BFD-front-end" rel="up" title="BFD front end">
+<link href="Linker-Functions.html#Linker-Functions" rel="next" title="Linker Functions">
+<link href="Internal.html#Internal" rel="prev" title="Internal">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="File-Caching"></a>
+<div class="header">
+<p>
+Next: <a href="Linker-Functions.html#Linker-Functions" accesskey="n" rel="next">Linker Functions</a>, Previous: <a href="Internal.html#Internal" accesskey="p" rel="prev">Internal</a>, Up: <a href="BFD-front-end.html#BFD-front-end" accesskey="u" rel="up">BFD front end</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="BFD-Index.html#BFD-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="File-caching"></a>
+<h3 class="section">2.16 File caching</h3>
+<p>The file caching mechanism is embedded within BFD and allows
+the application to open as many BFDs as it wants without
+regard to the underlying operating system&rsquo;s file descriptor
+limit (often as low as 20 open files).  The module in
+<code>cache.c</code> maintains a least recently used list of
+<code>bfd_cache_max_open</code> files, and exports the name
+<code>bfd_cache_lookup</code>, which runs around and makes sure that
+the required BFD is open. If not, then it chooses a file to
+close, closes it and opens the one wanted, returning its file
+handle.
+</p>
+<a name="Caching-functions"></a>
+<h4 class="subsection">2.16.1 Caching functions</h4>
+
+
+<a name="index-bfd_005fcache_005finit"></a>
+<a name="bfd_005fcache_005finit"></a>
+<h4 class="subsubsection">2.16.1.1 <code>bfd_cache_init</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd_boolean bfd_cache_init (bfd *abfd);
+</pre></div>
+<p><strong>Description</strong><br>
+Add a newly opened BFD to the cache.
+</p>
+<a name="index-bfd_005fcache_005fclose"></a>
+<a name="bfd_005fcache_005fclose"></a>
+<h4 class="subsubsection">2.16.1.2 <code>bfd_cache_close</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd_boolean bfd_cache_close (bfd *abfd);
+</pre></div>
+<p><strong>Description</strong><br>
+Remove the BFD <var>abfd</var> from the cache. If the attached file is open,
+then close it too.
+</p>
+<p><strong>Returns</strong><br>
+<code>FALSE</code> is returned if closing the file fails, <code>TRUE</code> is
+returned if all is well.
+</p>
+<a name="index-bfd_005fcache_005fclose_005fall"></a>
+<a name="bfd_005fcache_005fclose_005fall"></a>
+<h4 class="subsubsection">2.16.1.3 <code>bfd_cache_close_all</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd_boolean bfd_cache_close_all (void);
+</pre></div>
+<p><strong>Description</strong><br>
+Remove all BFDs from the cache. If the attached file is open,
+then close it too.
+</p>
+<p><strong>Returns</strong><br>
+<code>FALSE</code> is returned if closing one of the file fails, <code>TRUE</code> is
+returned if all is well.
+</p>
+<a name="index-bfd_005fopen_005ffile"></a>
+<a name="bfd_005fopen_005ffile"></a>
+<h4 class="subsubsection">2.16.1.4 <code>bfd_open_file</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">FILE* bfd_open_file (bfd *abfd);
+</pre></div>
+<p><strong>Description</strong><br>
+Call the OS to open a file for <var>abfd</var>.  Return the <code>FILE *</code>
+(possibly <code>NULL</code>) that results from this operation.  Set up the
+BFD so that future accesses know the file is open. If the <code>FILE *</code>
+returned is <code>NULL</code>, then it won&rsquo;t have been put in the
+cache, so it won&rsquo;t have to be removed from it.
+</p>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Linker-Functions.html#Linker-Functions" accesskey="n" rel="next">Linker Functions</a>, Previous: <a href="Internal.html#Internal" accesskey="p" rel="prev">Internal</a>, Up: <a href="BFD-front-end.html#BFD-front-end" accesskey="u" rel="up">BFD front end</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="BFD-Index.html#BFD-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

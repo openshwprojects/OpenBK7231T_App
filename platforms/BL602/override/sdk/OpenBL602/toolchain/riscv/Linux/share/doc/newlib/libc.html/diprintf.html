@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: diprintf</title>
+
+<meta name="description" content="The Red Hat newlib C Library: diprintf">
+<meta name="keywords" content="The Red Hat newlib C Library: diprintf">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="dprintf.html#dprintf" rel="next" title="dprintf">
+<link href="clearerr.html#clearerr" rel="prev" title="clearerr">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="diprintf"></a>
+<div class="header">
+<p>
+Next: <a href="dprintf.html#dprintf" accesskey="n" rel="next">dprintf</a>, Previous: <a href="clearerr.html#clearerr" accesskey="p" rel="prev">clearerr</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="diprintf_002c-vdiprintf_002d_002d_002dprint-to-a-file-descriptor-_0028integer-only_0029"></a>
+<h3 class="section">4.2 <code>diprintf</code>, <code>vdiprintf</code>&mdash;print to a file descriptor (integer only)</h3>
+<a name="index-diprintf"></a>
+<a name="index-_005fdiprintf_005fr"></a>
+<a name="index-vdiprintf"></a>
+<a name="index-_005fvdiprintf_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+#include &lt;stdarg.h&gt;
+int diprintf(int <var>fd</var>, const char *<var>format</var>, ...);
+int vdiprintf(int <var>fd</var>, const char *<var>format</var>, va_list <var>ap</var>);
+int _diprintf_r(struct _reent *<var>ptr</var>, int <var>fd</var>,
+    const char *<var>format</var>, ...);
+int _vdiprintf_r(struct _reent *<var>ptr</var>, int <var>fd</var>,
+    const char *<var>format</var>, va_list <var>ap</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>diprintf</code> and <code>vdiprintf</code> are similar to <code>dprintf</code> and <code>vdprintf</code>,
+except that only integer format specifiers are processed.
+</p>
+<p>The functions <code>_diprintf_r</code> and <code>_vdiprintf_r</code> are simply
+reentrant versions of the functions above.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+Similar to <code>dprintf</code> and <code>vdprintf</code>.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+This set of functions is an integer-only extension, and is not portable.
+</p>
+<p>Supporting OS subroutines required: <code>sbrk</code>, <code>write</code>.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

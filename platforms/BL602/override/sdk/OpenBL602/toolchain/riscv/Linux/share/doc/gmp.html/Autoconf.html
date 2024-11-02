@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Autoconf</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Autoconf">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="GMP-Basics.html#GMP-Basics" rel="up" title="GMP Basics">
+<link href="Emacs.html#Emacs" rel="next" title="Emacs">
+<link href="Profiling.html#Profiling" rel="prev" title="Profiling">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Autoconf"></a>
+<div class="header">
+<p>
+Next: <a href="Emacs.html#Emacs" accesskey="n" rel="next">Emacs</a>, Previous: <a href="Profiling.html#Profiling" accesskey="p" rel="prev">Profiling</a>, Up: <a href="GMP-Basics.html#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Autoconf-1"></a>
+<h3 class="section">3.14 Autoconf</h3>
+<a name="index-Autoconf"></a>
+
+<p>Autoconf based applications can easily check whether GMP is installed.  The
+only thing to be noted is that GMP library symbols from version 3 onwards have
+prefixes like <code>__gmpz</code>.  The following therefore would be a simple test,
+</p>
+<a name="index-AC_005fCHECK_005fLIB"></a>
+<div class="example">
+<pre class="example">AC_CHECK_LIB(gmp, __gmpz_init)
+</pre></div>
+
+<p>This just uses the default <code>AC_CHECK_LIB</code> actions for found or not found,
+but an application that must have GMP would want to generate an error if not
+found.  For example,
+</p>
+<div class="example">
+<pre class="example">AC_CHECK_LIB(gmp, __gmpz_init, ,
+  [AC_MSG_ERROR([GNU MP not found, see https://gmplib.org/])])
+</pre></div>
+
+<p>If functions added in some particular version of GMP are required, then one of
+those can be used when checking.  For example <code>mpz_mul_si</code> was added in
+GMP 3.1,
+</p>
+<div class="example">
+<pre class="example">AC_CHECK_LIB(gmp, __gmpz_mul_si, ,
+  [AC_MSG_ERROR(
+  [GNU MP not found, or not 3.1 or up, see https://gmplib.org/])])
+</pre></div>
+
+<p>An alternative would be to test the version number in <samp>gmp.h</samp> using say
+<code>AC_EGREP_CPP</code>.  That would make it possible to test the exact version,
+if some particular sub-minor release is known to be necessary.
+</p>
+<p>In general it&rsquo;s recommended that applications should simply demand a new
+enough GMP rather than trying to provide supplements for features not
+available in past versions.
+</p>
+<p>Occasionally an application will need or want to know the size of a type at
+configuration or preprocessing time, not just with <code>sizeof</code> in the code.
+This can be done in the normal way with <code>mp_limb_t</code> etc, but GMP 4.0 or
+up is best for this, since prior versions needed certain &lsquo;<samp>-D</samp>&rsquo; defines on
+systems using a <code>long long</code> limb.  The following would suit Autoconf 2.50
+or up,
+</p>
+<div class="example">
+<pre class="example">AC_CHECK_SIZEOF(mp_limb_t, , [#include &lt;gmp.h&gt;])
+</pre></div>
+
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Emacs.html#Emacs" accesskey="n" rel="next">Emacs</a>, Previous: <a href="Profiling.html#Profiling" accesskey="p" rel="prev">Profiling</a>, Up: <a href="GMP-Basics.html#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

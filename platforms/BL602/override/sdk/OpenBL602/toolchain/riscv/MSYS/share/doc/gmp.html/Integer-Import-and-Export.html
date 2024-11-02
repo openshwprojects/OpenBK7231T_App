@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Integer Import and Export</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Integer Import and Export">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Integer-Functions.html#Integer-Functions" rel="up" title="Integer Functions">
+<link href="Miscellaneous-Integer-Functions.html#Miscellaneous-Integer-Functions" rel="next" title="Miscellaneous Integer Functions">
+<link href="Integer-Random-Numbers.html#Integer-Random-Numbers" rel="prev" title="Integer Random Numbers">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Integer-Import-and-Export"></a>
+<div class="header">
+<p>
+Next: <a href="Miscellaneous-Integer-Functions.html#Miscellaneous-Integer-Functions" accesskey="n" rel="next">Miscellaneous Integer Functions</a>, Previous: <a href="Integer-Random-Numbers.html#Integer-Random-Numbers" accesskey="p" rel="prev">Integer Random Numbers</a>, Up: <a href="Integer-Functions.html#Integer-Functions" accesskey="u" rel="up">Integer Functions</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Integer-Import-and-Export-1"></a>
+<h3 class="section">5.14 Integer Import and Export</h3>
+
+<p><code>mpz_t</code> variables can be converted to and from arbitrary words of binary
+data with the following functions.
+</p>
+<dl>
+<dt><a name="index-mpz_005fimport"></a>Function: <em>void</em> <strong>mpz_import</strong> <em>(mpz_t <var>rop</var>, size_t <var>count</var>, int <var>order</var>, size_t <var>size</var>, int <var>endian</var>, size_t <var>nails</var>, const void *<var>op</var>)</em></dt>
+<dd><a name="index-Integer-import"></a>
+<a name="index-Import"></a>
+<p>Set <var>rop</var> from an array of word data at <var>op</var>.
+</p>
+<p>The parameters specify the format of the data.  <var>count</var> many words are
+read, each <var>size</var> bytes.  <var>order</var> can be 1 for most significant word
+first or -1 for least significant first.  Within each word <var>endian</var> can be
+1 for most significant byte first, -1 for least significant first, or 0 for
+the native endianness of the host CPU.  The most significant <var>nails</var> bits
+of each word are skipped, this can be 0 to use the full words.
+</p>
+<p>There is no sign taken from the data, <var>rop</var> will simply be a positive
+integer.  An application can handle any sign itself, and apply it for instance
+with <code>mpz_neg</code>.
+</p>
+<p>There are no data alignment restrictions on <var>op</var>, any address is allowed.
+</p>
+<p>Here&rsquo;s an example converting an array of <code>unsigned long</code> data, most
+significant element first, and host byte order within each value.
+</p>
+<div class="example">
+<pre class="example">unsigned long  a[20];
+/* Initialize <var>z</var> and <var>a</var> */
+mpz_import (z, 20, 1, sizeof(a[0]), 0, 0, a);
+</pre></div>
+
+<p>This example assumes the full <code>sizeof</code> bytes are used for data in the
+given type, which is usually true, and certainly true for <code>unsigned long</code>
+everywhere we know of.  However on Cray vector systems it may be noted that
+<code>short</code> and <code>int</code> are always stored in 8 bytes (and with
+<code>sizeof</code> indicating that) but use only 32 or 46 bits.  The <var>nails</var>
+feature can account for this, by passing for instance
+<code>8*sizeof(int)-INT_BIT</code>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpz_005fexport"></a>Function: <em>void *</em> <strong>mpz_export</strong> <em>(void *<var>rop</var>, size_t *<var>countp</var>, int <var>order</var>, size_t <var>size</var>, int <var>endian</var>, size_t <var>nails</var>, const mpz_t <var>op</var>)</em></dt>
+<dd><a name="index-Integer-export"></a>
+<a name="index-Export"></a>
+<p>Fill <var>rop</var> with word data from <var>op</var>.
+</p>
+<p>The parameters specify the format of the data produced.  Each word will be
+<var>size</var> bytes and <var>order</var> can be 1 for most significant word first or
+-1 for least significant first.  Within each word <var>endian</var> can be 1 for
+most significant byte first, -1 for least significant first, or 0 for the
+native endianness of the host CPU.  The most significant <var>nails</var> bits of
+each word are unused and set to zero, this can be 0 to produce full words.
+</p>
+<p>The number of words produced is written to <code>*<var>countp</var></code>, or
+<var>countp</var> can be <code>NULL</code> to discard the count.  <var>rop</var> must have
+enough space for the data, or if <var>rop</var> is <code>NULL</code> then a result array
+of the necessary size is allocated using the current GMP allocation function
+(see <a href="Custom-Allocation.html#Custom-Allocation">Custom Allocation</a>).  In either case the return value is the
+destination used, either <var>rop</var> or the allocated block.
+</p>
+<p>If <var>op</var> is non-zero then the most significant word produced will be
+non-zero.  If <var>op</var> is zero then the count returned will be zero and
+nothing written to <var>rop</var>.  If <var>rop</var> is <code>NULL</code> in this case, no
+block is allocated, just <code>NULL</code> is returned.
+</p>
+<p>The sign of <var>op</var> is ignored, just the absolute value is exported.  An
+application can use <code>mpz_sgn</code> to get the sign and handle it as desired.
+(see <a href="Integer-Comparisons.html#Integer-Comparisons">Integer Comparisons</a>)
+</p>
+<p>There are no data alignment restrictions on <var>rop</var>, any address is allowed.
+</p>
+<p>When an application is allocating space itself the required size can be
+determined with a calculation like the following.  Since <code>mpz_sizeinbase</code>
+always returns at least 1, <code>count</code> here will be at least one, which
+avoids any portability problems with <code>malloc(0)</code>, though if <code>z</code> is
+zero no space at all is actually needed (or written).
+</p>
+<div class="example">
+<pre class="example">numb = 8*size - nail;
+count = (mpz_sizeinbase (z, 2) + numb-1) / numb;
+p = malloc (count * size);
+</pre></div>
+</dd></dl>
+
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Miscellaneous-Integer-Functions.html#Miscellaneous-Integer-Functions" accesskey="n" rel="next">Miscellaneous Integer Functions</a>, Previous: <a href="Integer-Random-Numbers.html#Integer-Random-Numbers" accesskey="p" rel="prev">Integer Random Numbers</a>, Up: <a href="Integer-Functions.html#Integer-Functions" accesskey="u" rel="up">Integer Functions</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

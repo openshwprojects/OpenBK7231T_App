@@ -1,0 +1,249 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This file documents the BFD library.
+
+Copyright (C) 1991-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "GNU General Public License" and "Funding
+Free Software", the Front-Cover texts being (a) (see below), and with
+the Back-Cover Texts being (b) (see below).  A copy of the license is
+included in the section entitled "GNU Free Documentation License".
+
+(a) The FSF's Front-Cover Text is:
+
+A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Untitled Document: File layout</title>
+
+<meta name="description" content="Untitled Document: File layout">
+<meta name="keywords" content="Untitled Document: File layout">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="BFD-Index.html#BFD-Index" rel="index" title="BFD Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="mmo.html#mmo" rel="up" title="mmo">
+<link href="Symbol_002dtable.html#Symbol_002dtable" rel="next" title="Symbol-table">
+<link href="mmo.html#mmo" rel="prev" title="mmo">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="File-layout"></a>
+<div class="header">
+<p>
+Next: <a href="Symbol_002dtable.html#Symbol_002dtable" accesskey="n" rel="next">Symbol-table</a>, Previous: <a href="mmo.html#mmo" accesskey="p" rel="prev">mmo</a>, Up: <a href="mmo.html#mmo" accesskey="u" rel="up">mmo</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="BFD-Index.html#BFD-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="File-layout-2"></a>
+<h4 class="subsection">3.5.1 File layout</h4>
+<p>The mmo file contents is not partitioned into named sections as
+with e.g. ELF.  Memory areas is formed by specifying the
+location of the data that follows.  Only the memory area
+&lsquo;<samp>0x0000&hellip;00</samp>&rsquo; to &lsquo;<samp>0x01ff&hellip;ff</samp>&rsquo; is executable, so
+it is used for code (and constants) and the area
+&lsquo;<samp>0x2000&hellip;00</samp>&rsquo; to &lsquo;<samp>0x20ff&hellip;ff</samp>&rsquo; is used for
+writable data.  See <a href="mmo-section-mapping.html#mmo-section-mapping">mmo section mapping</a>.
+</p>
+<p>There is provision for specifying &ldquo;special data&rdquo; of 65536
+different types.  We use type 80 (decimal), arbitrarily chosen the
+same as the ELF <code>e_machine</code> number for MMIX, filling it with
+section information normally found in ELF objects. See <a href="mmo-section-mapping.html#mmo-section-mapping">mmo section mapping</a>.
+</p>
+<p>Contents is entered as 32-bit words, xor:ed over previous
+contents, always zero-initialized.  A word that starts with the
+byte &lsquo;<samp>0x98</samp>&rsquo; forms a command called a &lsquo;<samp>lopcode</samp>&rsquo;, where
+the next byte distinguished between the thirteen lopcodes.  The
+two remaining bytes, called the &lsquo;<samp>Y</samp>&rsquo; and &lsquo;<samp>Z</samp>&rsquo; fields, or
+the &lsquo;<samp>YZ</samp>&rsquo; field (a 16-bit big-endian number), are used for
+various purposes different for each lopcode.  As documented in
+<a href="http://mmix.cs.hm.edu/doc/mmixal.pdf">http://mmix.cs.hm.edu/doc/mmixal.pdf</a>,
+the lopcodes are:
+</p>
+<dl compact="compact">
+<dt><code>lop_quote</code></dt>
+<dd><p>0x98000001.  The next word is contents, regardless of whether it
+starts with 0x98 or not.
+</p>
+</dd>
+<dt><code>lop_loc</code></dt>
+<dd><p>0x9801YYZZ, where &lsquo;<samp>Z</samp>&rsquo; is 1 or 2.  This is a location
+directive, setting the location for the next data to the next
+32-bit word (for <em>Z = 1</em>) or 64-bit word (for <em>Z = 2</em>),
+plus <em>Y * 2^56</em>.  Normally &lsquo;<samp>Y</samp>&rsquo; is 0 for the text segment
+and 2 for the data segment.  Beware that the low bits of non-
+tetrabyte-aligned values are silently discarded when being
+automatically incremented and when storing contents (in contrast
+to e.g. its use as current location when followed by lop_fixo
+et al before the next possibly-quoted tetrabyte contents).
+</p>
+</dd>
+<dt><code>lop_skip</code></dt>
+<dd><p>0x9802YYZZ.  Increase the current location by &lsquo;<samp>YZ</samp>&rsquo; bytes.
+</p>
+</dd>
+<dt><code>lop_fixo</code></dt>
+<dd><p>0x9803YYZZ, where &lsquo;<samp>Z</samp>&rsquo; is 1 or 2.  Store the current location
+as 64 bits into the location pointed to by the next 32-bit
+(<em>Z = 1</em>) or 64-bit (<em>Z = 2</em>) word, plus <em>Y *
+2^56</em>.
+</p>
+</dd>
+<dt><code>lop_fixr</code></dt>
+<dd><p>0x9804YYZZ.  &lsquo;<samp>YZ</samp>&rsquo; is stored into the current location plus
+<em>2 - 4 * YZ</em>.
+</p>
+</dd>
+<dt><code>lop_fixrx</code></dt>
+<dd><p>0x980500ZZ.  &lsquo;<samp>Z</samp>&rsquo; is 16 or 24.  A value &lsquo;<samp>L</samp>&rsquo; derived from
+the following 32-bit word are used in a manner similar to
+&lsquo;<samp>YZ</samp>&rsquo; in lop_fixr: it is xor:ed into the current location
+minus <em>4 * L</em>.  The first byte of the word is 0 or 1.  If it
+is 1, then <em>L = (<var>lowest 24 bits of word</var>) - 2^Z</em>, if 0,
+then <em>L = (<var>lowest 24 bits of word</var>)</em>.
+</p>
+</dd>
+<dt><code>lop_file</code></dt>
+<dd><p>0x9806YYZZ.  &lsquo;<samp>Y</samp>&rsquo; is the file number, &lsquo;<samp>Z</samp>&rsquo; is count of
+32-bit words.  Set the file number to &lsquo;<samp>Y</samp>&rsquo; and the line
+counter to 0.  The next <em>Z * 4</em> bytes contain the file name,
+padded with zeros if the count is not a multiple of four.  The
+same &lsquo;<samp>Y</samp>&rsquo; may occur multiple times, but &lsquo;<samp>Z</samp>&rsquo; must be 0 for
+all but the first occurrence.
+</p>
+</dd>
+<dt><code>lop_line</code></dt>
+<dd><p>0x9807YYZZ.  &lsquo;<samp>YZ</samp>&rsquo; is the line number.  Together with
+lop_file, it forms the source location for the next 32-bit word.
+Note that for each non-lopcode 32-bit word, line numbers are
+assumed incremented by one.
+</p>
+</dd>
+<dt><code>lop_spec</code></dt>
+<dd><p>0x9808YYZZ.  &lsquo;<samp>YZ</samp>&rsquo; is the type number.  Data until the next
+lopcode other than lop_quote forms special data of type &lsquo;<samp>YZ</samp>&rsquo;.
+See <a href="mmo-section-mapping.html#mmo-section-mapping">mmo section mapping</a>.
+</p>
+<p>Other types than 80, (or type 80 with a content that does not
+parse) is stored in sections named <code>.MMIX.spec_data.<var>n</var></code>
+where <var>n</var> is the &lsquo;<samp>YZ</samp>&rsquo;-type.  The flags for such a
+sections say not to allocate or load the data.  The vma is 0.
+Contents of multiple occurrences of special data <var>n</var> is
+concatenated to the data of the previous lop_spec <var>n</var>s.  The
+location in data or code at which the lop_spec occurred is lost.
+</p>
+</dd>
+<dt><code>lop_pre</code></dt>
+<dd><p>0x980901ZZ.  The first lopcode in a file.  The &lsquo;<samp>Z</samp>&rsquo; field forms the
+length of header information in 32-bit words, where the first word
+tells the time in seconds since &lsquo;<samp>00:00:00 GMT Jan 1 1970</samp>&rsquo;.
+</p>
+</dd>
+<dt><code>lop_post</code></dt>
+<dd><p>0x980a00ZZ.  <em>Z &gt; 32</em>.  This lopcode follows after all
+content-generating lopcodes in a program.  The &lsquo;<samp>Z</samp>&rsquo; field
+denotes the value of &lsquo;<samp>rG</samp>&rsquo; at the beginning of the program.
+The following <em>256 - Z</em> big-endian 64-bit words are loaded
+into global registers &lsquo;<samp>$G</samp>&rsquo; &hellip; &lsquo;<samp>$255</samp>&rsquo;.
+</p>
+</dd>
+<dt><code>lop_stab</code></dt>
+<dd><p>0x980b0000.  The next-to-last lopcode in a program.  Must follow
+immediately after the lop_post lopcode and its data.  After this
+lopcode follows all symbols in a compressed format
+(see <a href="Symbol_002dtable.html#Symbol_002dtable">Symbol-table</a>).
+</p>
+</dd>
+<dt><code>lop_end</code></dt>
+<dd><p>0x980cYYZZ.  The last lopcode in a program.  It must follow the
+lop_stab lopcode and its data.  The &lsquo;<samp>YZ</samp>&rsquo; field contains the
+number of 32-bit words of symbol table information after the
+preceding lop_stab lopcode.
+</p></dd>
+</dl>
+
+<p>Note that the lopcode &quot;fixups&quot;; <code>lop_fixr</code>, <code>lop_fixrx</code> and
+<code>lop_fixo</code> are not generated by BFD, but are handled.  They are
+generated by <code>mmixal</code>.
+</p>
+<p>This trivial one-label, one-instruction file:
+</p>
+<div class="example">
+<pre class="example"> :Main TRAP 1,2,3
+</pre></div>
+
+<p>can be represented this way in mmo:
+</p>
+<div class="example">
+<pre class="example"> 0x98090101 - lop_pre, one 32-bit word with timestamp.
+ &lt;timestamp&gt;
+ 0x98010002 - lop_loc, text segment, using a 64-bit address.
+              Note that mmixal does not emit this for the file above.
+ 0x00000000 - Address, high 32 bits.
+ 0x00000000 - Address, low 32 bits.
+ 0x98060002 - lop_file, 2 32-bit words for file-name.
+ 0x74657374 - &quot;test&quot;
+ 0x2e730000 - &quot;.s\0\0&quot;
+ 0x98070001 - lop_line, line 1.
+ 0x00010203 - TRAP 1,2,3
+ 0x980a00ff - lop_post, setting $255 to 0.
+ 0x00000000
+ 0x00000000
+ 0x980b0000 - lop_stab for &quot;:Main&quot; = 0, serial 1.
+ 0x203a4040   See <a href="Symbol_002dtable.html#Symbol_002dtable">Symbol-table</a>.
+ 0x10404020
+ 0x4d206120
+ 0x69016e00
+ 0x81000000
+ 0x980c0005 - lop_end; symbol table contained five 32-bit words.
+</pre></div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Symbol_002dtable.html#Symbol_002dtable" accesskey="n" rel="next">Symbol-table</a>, Previous: <a href="mmo.html#mmo" accesskey="p" rel="prev">mmo</a>, Up: <a href="mmo.html#mmo" accesskey="u" rel="up">mmo</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="BFD-Index.html#BFD-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

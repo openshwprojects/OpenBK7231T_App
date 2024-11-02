@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Embed with GNU: Building libgloss</title>
+
+<meta name="description" content="Embed with GNU: Building libgloss">
+<meta name="keywords" content="Embed with GNU: Building libgloss">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="leds_002ec.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Libgloss.html#Libgloss" rel="up" title="Libgloss">
+<link href="Board-support.html#Board-support" rel="next" title="Board support">
+<link href="PA_002dRISC.html#PA_002dRISC" rel="prev" title="PA-RISC">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Building-libgloss"></a>
+<div class="header">
+<p>
+Next: <a href="Board-support.html#Board-support" accesskey="n" rel="next">Board support</a>, Previous: <a href="Supported-targets.html#Supported-targets" accesskey="p" rel="prev">Supported targets</a>, Up: <a href="Libgloss.html#Libgloss" accesskey="u" rel="up">Libgloss</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<a name="Configuring-and-building-libgloss_002e"></a>
+<h3 class="section">1.2 Configuring and building libgloss.</h3>
+
+<p>Libgloss uses an autoconf based script to configure. Autoconf scripts
+are portable shell scripts that are generated from a configure.in file.
+Configure input scripts are based themselves on m4. Most configure
+scripts run a series of tests to determine features the various
+supported features of the target. For features that can&rsquo;t be determined
+by a feature test, a makefile fragment is merged in. The configure
+process leaves creates a Makefile in the build directory. For libgloss,
+there are only a few configure options of importance. These are &ndash;target
+and &ndash;srcdir. 
+</p>
+<p>Typically libgloss is built in a separate tree just for objects. In this
+manner, it&rsquo;s possible to have a single source tree, and multiple object
+trees. If you only need to configure for a single target environment,
+then you can configure in the source tree. The argument for &ndash;target is
+a config string. It&rsquo;s usually safest to use the full canonical opposed
+to the target alias. So, to configure for a CPU32 (m68k) with a separate
+source tree, use:
+</p>
+<div class="smallexample">
+<pre class="smallexample">../src/libgloss/configure --verbose --target m68k-coff
+</pre></div>
+
+<p>The configure script is in the source tree. When configure is invoked
+it will determine it&rsquo;s own source tree, so the &ndash;srcdir is would be
+redundant here.
+</p>
+<p>Once libgloss is configured, <code>make</code> is sufficient to build it. The
+default values for <code>Makefiles</code> are typically correct for all
+supported systems. The test cases in the testsuite will also built
+automatically as opposed to a <code>make check</code>, where test binaries
+aren&rsquo;t built till test time. This is mostly cause the libgloss
+testsuites are the last thing built when building the entire GNU source
+tree, so it&rsquo;s a good test of all the other compilation passes.
+</p>
+<p>The default values for the Makefiles are set in the Makefile fragment
+merged in during configuration. This fragment typically has rules like
+</p>
+<div class="smallexample">
+<pre class="smallexample">CC_FOR_TARGET = `if [ -f $${OBJROOT}/gcc/xgcc ] ; \
+	then echo ${OBJROOT}/gcc/xgcc -B${OBJROOT}/gcc/ ; \
+	else t='${program_transform_name}'; echo gcc | sed -e '' $$t ; fi`
+</pre></div>
+
+<p>Basically this is a runtime test to determine whether there are freshly
+built executables for the other main passes of the GNU tools. If there
+isn&rsquo;t an executable built in the same object tree, then
+<em>transformed</em>the generic tool name (like gcc) is transformed to the
+name typically used in GNU cross compilers. The  names are
+typically based on the target&rsquo;s canonical name, so if you&rsquo;ve configured
+for <code>m68k-coff</code> the transformed name is <code>m68k-coff-gcc</code> in
+this case. If you install with aliases or rename the tools, this won&rsquo;t
+work, and it will always look for tools in the path. You can force the a
+different name to work by reconfiguring with the
+<code>--program-transform-name</code> option to configure. This option takes a
+sed script like this <code>-e s,^,m68k-coff-,</code> which produces tools
+using the standard names (at least here at Cygnus). 
+</p>
+<p>The search for the other GNU development tools is exactly the same idea. 
+This technique gets messier when build options like <code>-msoft-float</code>
+support are used. The Makefile fragments set the <code>MUTILIB</code>
+variable, and if it is set, the search path is modified. If the linking
+is done with an installed cross compiler, then none of this needs to be
+used. This is done so libgloss will build automatically with a fresh,
+and uninstalled object tree. It also makes it easier to debug the other
+tools using libgloss&rsquo;s test suites.
+</p>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Board-support.html#Board-support" accesskey="n" rel="next">Board support</a>, Previous: <a href="Supported-targets.html#Supported-targets" accesskey="p" rel="prev">Supported targets</a>, Up: <a href="Libgloss.html#Libgloss" accesskey="u" rel="up">Libgloss</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: fileno</title>
+
+<meta name="description" content="The Red Hat newlib C Library: fileno">
+<meta name="keywords" content="The Red Hat newlib C Library: fileno">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="fmemopen.html#fmemopen" rel="next" title="fmemopen">
+<link href="fgetws.html#fgetws" rel="prev" title="fgetws">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="fileno"></a>
+<div class="header">
+<p>
+Next: <a href="fmemopen.html#fmemopen" accesskey="n" rel="next">fmemopen</a>, Previous: <a href="fgetws.html#fgetws" accesskey="p" rel="prev">fgetws</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="fileno_002c-fileno_005funlocked_002d_002d_002dreturn-file-descriptor-associated-with-stream"></a>
+<h3 class="section">4.15 <code>fileno</code>, <code>fileno_unlocked</code>&mdash;return file descriptor associated with stream</h3>
+<a name="index-fileno"></a>
+<a name="index-fileno_005funlocked"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+int fileno(FILE *<var>fp</var>);
+
+#define _BSD_SOURCE
+#include &lt;stdio.h&gt;
+int fileno_unlocked(FILE *<var>fp</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+You can use <code>fileno</code> to return the file descriptor identified by <var>fp</var>.
+</p>
+<p><code>fileno_unlocked</code> is a non-thread-safe version of <code>fileno</code>.
+<code>fileno_unlocked</code> may only safely be used within a scope
+protected by flockfile() (or ftrylockfile()) and funlockfile().  This
+function may safely be used in a multi-threaded program if and only
+if they are called while the invoking thread owns the (FILE *)
+object, as is the case after a successful call to the flockfile() or
+ftrylockfile() functions.  If threads are disabled, then
+<code>fileno_unlocked</code> is equivalent to <code>fileno</code>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>fileno</code> returns a non-negative integer when successful.
+If <var>fp</var> is not an open stream, <code>fileno</code> returns -1.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>fileno</code> is not part of ANSI C.
+POSIX requires <code>fileno</code>.
+</p>
+<p><code>fileno_unlocked</code> is a BSD extension also provided by GNU libc.
+</p>
+<p>Supporting OS subroutines required: none.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

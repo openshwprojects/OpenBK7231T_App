@@ -1,0 +1,156 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: wcstoull</title>
+
+<meta name="description" content="The Red Hat newlib C Library: wcstoull">
+<meta name="keywords" content="The Red Hat newlib C Library: wcstoull">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdlib.html#Stdlib" rel="up" title="Stdlib">
+<link href="system.html#system" rel="next" title="system">
+<link href="wcstoul.html#wcstoul" rel="prev" title="wcstoul">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="wcstoull"></a>
+<div class="header">
+<p>
+Next: <a href="system.html#system" accesskey="n" rel="next">system</a>, Previous: <a href="wcstoul.html#wcstoul" accesskey="p" rel="prev">wcstoul</a>, Up: <a href="Stdlib.html#Stdlib" accesskey="u" rel="up">Stdlib</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="wcstoull_002c-wcstoull_005fl_002d_002d_002dwide-string-to-unsigned-long-long"></a>
+<h3 class="section">2.47 <code>wcstoull</code>, <code>wcstoull_l</code>&mdash;wide string to unsigned long long</h3>
+<a name="index-wcstoull"></a>
+<a name="index-wcstoull_005fl"></a>
+<a name="index-_005fwcstoull_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;wchar.h&gt;
+unsigned long long wcstoull(const wchar_t *__restrict <var>s</var>,
+    wchar_t **__restrict <var>ptr</var>,
+    int <var>base</var>);
+
+#include &lt;wchar.h&gt;
+unsigned long long wcstoull_l(const wchar_t *__restrict <var>s</var>,
+    wchar_t **__restrict <var>ptr</var>,
+    int <var>base</var>,
+    locale_t <var>locale</var>);
+
+unsigned long long _wcstoull_r(void *<var>reent</var>, const wchar_t *<var>s</var>,
+    wchar_t **<var>ptr</var>, int <var>base</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+The function <code>wcstoull</code> converts the wide string <code>*<var>s</var></code> to
+an <code>unsigned long long</code>. First, it breaks down the string into three parts:
+leading whitespace, which is ignored; a subject string consisting
+of the digits meaningful in the radix specified by <var>base</var>
+(for example, <code>0</code> through <code>7</code> if the value of <var>base</var> is 8);
+and a trailing portion consisting of one or more unparseable characters,
+which always includes the terminating null character. Then, it attempts
+to convert the subject string into an unsigned long long integer, and returns the
+result.
+</p>
+<p>If the value of <var>base</var> is zero, the subject string is expected to look
+like a normal C integer constant:  an optional sign (<code>+</code> or <code>-</code>),
+a possible <code>0x</code> indicating hexadecimal radix or a possible &lt;0&gt; indicating
+octal radix, and a number.
+If <var>base</var> is between 2 and 36, the expected form of the subject is a
+sequence of digits (which may include letters, depending on the
+base) representing an integer in the radix specified by <var>base</var>.
+The letters <code>a</code>&ndash;<code>z</code> (or <code>A</code>&ndash;<code>Z</code>) are used as digits valued from
+10 to 35. If <var>base</var> is 16, a leading <code>0x</code> is permitted.
+</p>
+<p>The subject sequence is the longest initial sequence of the input
+string that has the expected form, starting with the first
+non-whitespace character.  If the string is empty or consists entirely
+of whitespace, or if the first non-whitespace character is not a
+permissible digit, the subject string is empty.
+</p>
+<p>If the subject string is acceptable, and the value of <var>base</var> is zero,
+<code>wcstoull</code> attempts to determine the radix from the input string. A
+string with a leading <code>0x</code> is treated as a hexadecimal value; a string with
+a leading <code>0</code> and no <code>x</code> is treated as octal; all other strings are
+treated as decimal. If <var>base</var> is between 2 and 36, it is used as the
+conversion radix, as described above. Finally, a pointer to the first
+character past the converted subject string is stored in <var>ptr</var>, if
+<var>ptr</var> is not <code>NULL</code>.
+</p>
+<p>If the subject string is empty (that is, if <code>*</code><var>s</var> does not start
+with a substring in acceptable form), no conversion
+is performed and the value of <var>s</var> is stored in <var>ptr</var> (if <var>ptr</var> is
+not <code>NULL</code>).
+</p>
+<p>The alternate function <code>_wcstoull_r</code> is a reentrant version.  The
+extra argument <var>reent</var> is a pointer to a reentrancy structure.
+</p>
+<p><code>wcstoull_l</code> is like <code>wcstoull</code> but performs the conversion based on the
+locale specified by the locale object locale.  If <var>locale</var> is
+LC_GLOBAL_LOCALE or not a valid locale object, the behaviour is undefined.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>wcstoull</code>, <code>wcstoull_l</code> return <code>0</code> and sets <code>errno</code> to <code>EINVAL</code>
+if the value of <var>base</var> is not supported.
+</p>
+<p><code>wcstoull</code>, <code>wcstoull_l</code> return the converted value, if any. If no
+conversion was made, <code>0</code> is returned.
+</p>
+<p><code>wcstoull</code>, <code>wcstoull_l</code> return <code>ULLONG_MAX</code> if the magnitude of
+the converted value is too large, and sets <code>errno</code> to <code>ERANGE</code>.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>wcstoull</code> is ANSI.
+<code>wcstoull_l</code> is a GNU extension.
+</p>
+<p><code>wcstoull</code> requires no supporting OS subroutines.
+</p>
+<br>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="system.html#system" accesskey="n" rel="next">system</a>, Previous: <a href="wcstoul.html#wcstoul" accesskey="p" rel="prev">wcstoul</a>, Up: <a href="Stdlib.html#Stdlib" accesskey="u" rel="up">Stdlib</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

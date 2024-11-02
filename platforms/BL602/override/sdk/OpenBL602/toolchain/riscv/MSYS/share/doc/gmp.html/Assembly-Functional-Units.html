@@ -1,0 +1,103 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Assembly Functional Units</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Assembly Functional Units">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Assembly-Coding.html#Assembly-Coding" rel="up" title="Assembly Coding">
+<link href="Assembly-Floating-Point.html#Assembly-Floating-Point" rel="next" title="Assembly Floating Point">
+<link href="Assembly-Cache-Handling.html#Assembly-Cache-Handling" rel="prev" title="Assembly Cache Handling">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Assembly-Functional-Units"></a>
+<div class="header">
+<p>
+Next: <a href="Assembly-Floating-Point.html#Assembly-Floating-Point" accesskey="n" rel="next">Assembly Floating Point</a>, Previous: <a href="Assembly-Cache-Handling.html#Assembly-Cache-Handling" accesskey="p" rel="prev">Assembly Cache Handling</a>, Up: <a href="Assembly-Coding.html#Assembly-Coding" accesskey="u" rel="up">Assembly Coding</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Functional-Units"></a>
+<h4 class="subsection">15.8.5 Functional Units</h4>
+
+<p>When choosing an approach for an assembly loop, consideration is given to
+what operations can execute simultaneously and what throughput can thereby be
+achieved.  In some cases an algorithm can be tweaked to accommodate available
+resources.
+</p>
+<p>Loop control will generally require a counter and pointer updates, costing as
+much as 5 instructions, plus any delays a branch introduces.  CPU addressing
+modes might reduce pointer updates, perhaps by allowing just one updating
+pointer and others expressed as offsets from it, or on CISC chips with all
+addressing done with the loop counter as a scaled index.
+</p>
+<p>The final loop control cost can be amortised by processing several limbs in
+each iteration (see <a href="Assembly-Loop-Unrolling.html#Assembly-Loop-Unrolling">Assembly Loop Unrolling</a>).  This at least ensures loop
+control isn&rsquo;t a big fraction the work done.
+</p>
+<p>Memory throughput is always a limit.  If perhaps only one load or one store
+can be done per cycle then 3 cycles/limb will the top speed for &ldquo;binary&rdquo;
+operations like <code>mpn_add_n</code>, and any code achieving that is optimal.
+</p>
+<p>Integer resources can be freed up by having the loop counter in a float
+register, or by pressing the float units into use for some multiplying,
+perhaps doing every second limb on the float side (see <a href="Assembly-Floating-Point.html#Assembly-Floating-Point">Assembly Floating Point</a>).
+</p>
+<p>Float resources can be freed up by doing carry propagation on the integer
+side, or even by doing integer to float conversions in integers using bit
+twiddling.
+</p>
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Embed with GNU: Memory Support</title>
+
+<meta name="description" content="Embed with GNU: Memory Support">
+<meta name="keywords" content="Embed with GNU: Memory Support">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="leds_002ec.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Libc.html#Libc" rel="up" title="Libc">
+<link href="Misc-Support.html#Misc-Support" rel="next" title="Misc Support">
+<link href="I_002fO-Support.html#I_002fO-Support" rel="prev" title="I/O Support">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Memory-Support"></a>
+<div class="header">
+<p>
+Next: <a href="Misc-Support.html#Misc-Support" accesskey="n" rel="next">Misc Support</a>, Previous: <a href="I_002fO-Support.html#I_002fO-Support" accesskey="p" rel="prev">I/O Support</a>, Up: <a href="Libc.html#Libc" accesskey="u" rel="up">Libc</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<a name="Routines-for-dynamic-memory-allocation"></a>
+<h4 class="subsection">3.4.2 Routines for dynamic memory allocation</h4>
+<p>To support using any of the memory functions, you need to implement
+sbrk(). <code>malloc()</code>, <code>calloc()</code>, and <code>realloc()</code> all call
+<code>sbrk()</code> at there lowest level. <code>caddr_t</code> is defined elsewhere
+as <code>char *</code>. <code>RAMSIZE</code> is presently a compile time option. All
+this does is move a pointer to heap memory and check for the upper
+limit. <a href="glue_002ec.html#glue_002ec">Example libc support code</a>. <code>sbrk()</code> returns a
+pointer to the previous value before more memory was allocated.
+</p>
+<div class="smallexample">
+<pre class="smallexample">/* _end is set in the linker command file *
+extern caddr_t _end;/
+
+/* just in case, most boards have at least some memory */
+#ifndef RAMSIZE
+#  define RAMSIZE             (caddr_t)0x100000
+#endif
+
+/*
+ * sbrk -- changes heap size size. Get nbytes more
+ *         RAM. We just increment a pointer in what's
+ *         left of memory on the board.
+ */
+caddr_t
+sbrk(nbytes)
+     int nbytes;
+{
+  static caddr_t heap_ptr = NULL;
+  caddr_t        base;
+
+  if (heap_ptr == NULL) {
+    heap_ptr = (caddr_t)&amp;_end;
+  }
+
+  if ((RAMSIZE - heap_ptr) &gt;= 0) {
+    base = heap_ptr;
+    heap_ptr += nbytes;
+    return (base);
+  } else {
+    errno = ENOMEM;
+    return ((caddr_t)-1);
+  }
+}
+</pre></div>
+
+
+
+
+</body>
+</html>

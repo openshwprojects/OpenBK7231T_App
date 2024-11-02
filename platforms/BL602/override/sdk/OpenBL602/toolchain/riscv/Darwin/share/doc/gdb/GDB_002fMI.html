@@ -1,0 +1,209 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 1988-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "Free Software" and "Free Software Needs
+Free Documentation", with the Front-Cover Texts being "A GNU Manual,"
+and with the Back-Cover Texts as in (a) below.
+
+(a) The FSF's Back-Cover Text is: "You are free to copy and modify
+this GNU Manual.  Buying copies from GNU Press supports the FSF in
+developing GNU and promoting software freedom." -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>GDB/MI (Debugging with GDB)</title>
+
+<meta name="description" content="GDB/MI (Debugging with GDB)">
+<meta name="keywords" content="GDB/MI (Debugging with GDB)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="Concept-Index.html" rel="index" title="Concept Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="index.html" rel="up" title="Top">
+<link href="GDB_002fMI-General-Design.html" rel="next" title="GDB/MI General Design">
+<link href="Emacs.html" rel="prev" title="Emacs">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="GDB_002fMI"></span><div class="header">
+<p>
+Next: <a href="Annotations.html" accesskey="n" rel="next">Annotations</a>, Previous: <a href="Emacs.html" accesskey="p" rel="prev">Emacs</a>, Up: <a href="index.html" accesskey="u" rel="up">Top</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="The-GDB_002fMI-Interface"></span><h2 class="chapter">27 The <small>GDB/MI</small> Interface</h2>
+
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-General-Design.html" accesskey="1"><small>GDB/MI</small> General Design</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Command-Syntax.html" accesskey="2"><small>GDB/MI</small> Command Syntax</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Compatibility-with-CLI.html" accesskey="3"><small>GDB/MI</small> Compatibility with CLI</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Development-and-Front-Ends.html" accesskey="4"><small>GDB/MI</small> Development and Front Ends</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Output-Records.html" accesskey="5"><small>GDB/MI</small> Output Records</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Simple-Examples.html" accesskey="6">Simple Examples of <small>GDB/MI</small> Interaction</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Command-Description-Format.html" accesskey="7"><small>GDB/MI</small> Command Description Format</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Breakpoint-Commands.html" accesskey="8"><small>GDB/MI</small> Breakpoint Commands</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Catchpoint-Commands.html" accesskey="9"><small>GDB/MI</small> Catchpoint Commands</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Program-Context.html"><small>GDB/MI</small>  Program Context</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Thread-Commands.html"><small>GDB/MI</small> Thread Commands</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Ada-Tasking-Commands.html"><small>GDB/MI</small> Ada Tasking Commands</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Program-Execution.html"><small>GDB/MI</small> Program Execution</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Stack-Manipulation.html"><small>GDB/MI</small> Stack Manipulation Commands</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Variable-Objects.html"><small>GDB/MI</small> Variable Objects</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Data-Manipulation.html"><small>GDB/MI</small> Data Manipulation</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Tracepoint-Commands.html"><small>GDB/MI</small> Tracepoint Commands</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Symbol-Query.html"><small>GDB/MI</small> Symbol Query Commands</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-File-Commands.html"><small>GDB/MI</small> File Commands</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Target-Manipulation.html"><small>GDB/MI</small> Target Manipulation Commands</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-File-Transfer-Commands.html"><small>GDB/MI</small> File Transfer Commands</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Ada-Exceptions-Commands.html">Ada Exceptions <small>GDB/MI</small> Commands</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Support-Commands.html"><small>GDB/MI</small> Support Commands</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Miscellaneous-Commands.html">Miscellaneous <small>GDB/MI</small> Commands</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+</table>
+
+<span id="Function-and-Purpose"></span><h3 class="unnumberedsec">Function and Purpose</h3>
+
+<span id="index-GDB_002fMI_002c-its-purpose"></span>
+<p><small>GDB/MI</small> is a line based machine oriented text interface to
+<small>GDB</small> and is activated by specifying using the
+<samp>--interpreter</samp> command line option (see <a href="Mode-Options.html">Mode Options</a>).  It
+is specifically intended to support the development of systems which
+use the debugger as just one small component of a larger system.
+</p>
+<p>This chapter is a specification of the <small>GDB/MI</small> interface.  It is written
+in the form of a reference manual.
+</p>
+<p>Note that <small>GDB/MI</small> is still under construction, so some of the
+features described below are incomplete and subject to change
+(see <a href="GDB_002fMI-Development-and-Front-Ends.html"><small>GDB/MI</small> Development and Front Ends</a>).  
+</p>
+<span id="Notation-and-Terminology"></span><h3 class="unnumberedsec">Notation and Terminology</h3>
+
+<span id="index-notational-conventions_002c-for-GDB_002fMI"></span>
+<p>This chapter uses the following notation:
+</p>
+<ul>
+<li> <code>|</code> separates two alternatives.
+
+</li><li> <code>[ <var>something</var> ]</code> indicates that <var>something</var> is optional:
+it may or may not be given.
+
+</li><li> <code>( <var>group</var> )*</code> means that <var>group</var> inside the parentheses
+may repeat zero or more times.
+
+</li><li> <code>( <var>group</var> )+</code> means that <var>group</var> inside the parentheses
+may repeat one or more times.
+
+</li><li> <code>&quot;<var>string</var>&quot;</code> means a literal <var>string</var>.
+</li></ul>
+
+
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-General-Design.html" accesskey="1">GDB/MI General Design</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Command-Syntax.html" accesskey="2">GDB/MI Command Syntax</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Compatibility-with-CLI.html" accesskey="3">GDB/MI Compatibility with CLI</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Development-and-Front-Ends.html" accesskey="4">GDB/MI Development and Front Ends</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Output-Records.html" accesskey="5">GDB/MI Output Records</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Simple-Examples.html" accesskey="6">GDB/MI Simple Examples</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Command-Description-Format.html" accesskey="7">GDB/MI Command Description Format</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Breakpoint-Commands.html" accesskey="8">GDB/MI Breakpoint Commands</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Catchpoint-Commands.html" accesskey="9">GDB/MI Catchpoint Commands</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Program-Context.html">GDB/MI Program Context</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Thread-Commands.html">GDB/MI Thread Commands</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Ada-Tasking-Commands.html">GDB/MI Ada Tasking Commands</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Program-Execution.html">GDB/MI Program Execution</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Stack-Manipulation.html">GDB/MI Stack Manipulation</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Variable-Objects.html">GDB/MI Variable Objects</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Data-Manipulation.html">GDB/MI Data Manipulation</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Tracepoint-Commands.html">GDB/MI Tracepoint Commands</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Symbol-Query.html">GDB/MI Symbol Query</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-File-Commands.html">GDB/MI File Commands</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Target-Manipulation.html">GDB/MI Target Manipulation</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-File-Transfer-Commands.html">GDB/MI File Transfer Commands</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Ada-Exceptions-Commands.html">GDB/MI Ada Exceptions Commands</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Support-Commands.html">GDB/MI Support Commands</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GDB_002fMI-Miscellaneous-Commands.html">GDB/MI Miscellaneous Commands</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+</table>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Annotations.html" accesskey="n" rel="next">Annotations</a>, Previous: <a href="Emacs.html" accesskey="p" rel="prev">Emacs</a>, Up: <a href="index.html" accesskey="u" rel="up">Top</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

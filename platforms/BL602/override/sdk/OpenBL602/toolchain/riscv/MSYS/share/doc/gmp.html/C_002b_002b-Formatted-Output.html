@@ -1,0 +1,145 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: C++ Formatted Output</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: C++ Formatted Output">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Formatted-Output.html#Formatted-Output" rel="up" title="Formatted Output">
+<link href="Formatted-Input.html#Formatted-Input" rel="next" title="Formatted Input">
+<link href="Formatted-Output-Functions.html#Formatted-Output-Functions" rel="prev" title="Formatted Output Functions">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="C_002b_002b-Formatted-Output"></a>
+<div class="header">
+<p>
+Previous: <a href="Formatted-Output-Functions.html#Formatted-Output-Functions" accesskey="p" rel="prev">Formatted Output Functions</a>, Up: <a href="Formatted-Output.html#Formatted-Output" accesskey="u" rel="up">Formatted Output</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="C_002b_002b-Formatted-Output-1"></a>
+<h3 class="section">10.3 C++ Formatted Output</h3>
+<a name="index-C_002b_002b-ostream-output"></a>
+<a name="index-ostream-output"></a>
+
+<p>The following functions are provided in <samp>libgmpxx</samp> (see <a href="Headers-and-Libraries.html#Headers-and-Libraries">Headers and Libraries</a>), which is built if C++ support is enabled (see <a href="Build-Options.html#Build-Options">Build Options</a>).
+Prototypes are available from <code>&lt;gmp.h&gt;</code>.
+</p>
+<dl>
+<dt><a name="index-operator_003c_003c"></a>Function: <em>ostream&amp;</em> <strong>operator&lt;&lt;</strong> <em>(ostream&amp; <var>stream</var>, const mpz_t <var>op</var>)</em></dt>
+<dd><p>Print <var>op</var> to <var>stream</var>, using its <code>ios</code> formatting settings.
+<code>ios::width</code> is reset to 0 after output, the same as the standard
+<code>ostream operator&lt;&lt;</code> routines do.
+</p>
+<p>In hex or octal, <var>op</var> is printed as a signed number, the same as for
+decimal.  This is unlike the standard <code>operator&lt;&lt;</code> routines on <code>int</code>
+etc, which instead give twos complement.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-operator_003c_003c-1"></a>Function: <em>ostream&amp;</em> <strong>operator&lt;&lt;</strong> <em>(ostream&amp; <var>stream</var>, const mpq_t <var>op</var>)</em></dt>
+<dd><p>Print <var>op</var> to <var>stream</var>, using its <code>ios</code> formatting settings.
+<code>ios::width</code> is reset to 0 after output, the same as the standard
+<code>ostream operator&lt;&lt;</code> routines do.
+</p>
+<p>Output will be a fraction like &lsquo;<samp>5/9</samp>&rsquo;, or if the denominator is 1 then
+just a plain integer like &lsquo;<samp>123</samp>&rsquo;.
+</p>
+<p>In hex or octal, <var>op</var> is printed as a signed value, the same as for
+decimal.  If <code>ios::showbase</code> is set then a base indicator is shown on
+both the numerator and denominator (if the denominator is required).
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-operator_003c_003c-2"></a>Function: <em>ostream&amp;</em> <strong>operator&lt;&lt;</strong> <em>(ostream&amp; <var>stream</var>, const mpf_t <var>op</var>)</em></dt>
+<dd><p>Print <var>op</var> to <var>stream</var>, using its <code>ios</code> formatting settings.
+<code>ios::width</code> is reset to 0 after output, the same as the standard
+<code>ostream operator&lt;&lt;</code> routines do.
+</p>
+<p>The decimal point follows the standard library float <code>operator&lt;&lt;</code>, which
+on recent systems means the <code>std::locale</code> imbued on <var>stream</var>.
+</p>
+<p>Hex and octal are supported, unlike the standard <code>operator&lt;&lt;</code> on
+<code>double</code>.  The mantissa will be in hex or octal, the exponent will be in
+decimal.  For hex the exponent delimiter is an &lsquo;<samp>@</samp>&rsquo;.  This is as per
+<code>mpf_out_str</code>.
+</p>
+<p><code>ios::showbase</code> is supported, and will put a base on the mantissa, for
+example hex &lsquo;<samp>0x1.8</samp>&rsquo; or &lsquo;<samp>0x0.8</samp>&rsquo;, or octal &lsquo;<samp>01.4</samp>&rsquo; or &lsquo;<samp>00.4</samp>&rsquo;.
+This last form is slightly strange, but at least differentiates itself from
+decimal.
+</p></dd></dl>
+
+<p>These operators mean that GMP types can be printed in the usual C++ way, for
+example,
+</p>
+<div class="example">
+<pre class="example">mpz_t  z;
+int    n;
+...
+cout &lt;&lt; &quot;iteration &quot; &lt;&lt; n &lt;&lt; &quot; value &quot; &lt;&lt; z &lt;&lt; &quot;\n&quot;;
+</pre></div>
+
+<p>But note that <code>ostream</code> output (and <code>istream</code> input, see <a href="C_002b_002b-Formatted-Input.html#C_002b_002b-Formatted-Input">C++ Formatted Input</a>) is the only overloading available for the GMP types and that
+for instance using <code>+</code> with an <code>mpz_t</code> will have unpredictable
+results.  For classes with overloading, see <a href="C_002b_002b-Class-Interface.html#C_002b_002b-Class-Interface">C++ Class Interface</a>.
+</p>
+
+<hr>
+<div class="header">
+<p>
+Previous: <a href="Formatted-Output-Functions.html#Formatted-Output-Functions" accesskey="p" rel="prev">Formatted Output Functions</a>, Up: <a href="Formatted-Output.html#Formatted-Output" accesskey="u" rel="up">Formatted Output</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

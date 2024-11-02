@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: bzero</title>
+
+<meta name="description" content="The Red Hat newlib C Library: bzero">
+<meta name="keywords" content="The Red Hat newlib C Library: bzero">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Strings.html#Strings" rel="up" title="Strings">
+<link href="index.html#index" rel="next" title="index">
+<link href="bcopy.html#bcopy" rel="prev" title="bcopy">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="bzero"></a>
+<div class="header">
+<p>
+Next: <a href="index.html#index" accesskey="n" rel="next">index</a>, Previous: <a href="bcopy.html#bcopy" accesskey="p" rel="prev">bcopy</a>, Up: <a href="Strings.html#Strings" accesskey="u" rel="up">Strings</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="bzero_002d_002d_002dinitialize-memory-to-zero"></a>
+<h3 class="section">5.3 <code>bzero</code>&mdash;initialize memory to zero</h3>
+<a name="index-bzero"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;strings.h&gt;
+void bzero(void *<var>b</var>, size_t <var>length</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>bzero</code> initializes <var>length</var> bytes of memory, starting at address
+<var>b</var>, to zero.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>bzero</code> does not return a result.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>bzero</code> is in the Berkeley Software Distribution.
+Neither ANSI C nor the System V Interface Definition (Issue 2) require
+<code>bzero</code>.
+</p>
+<p><code>bzero</code> requires no supporting OS subroutines.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

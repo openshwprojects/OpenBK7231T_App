@@ -1,0 +1,403 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: ABI and ISA</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: ABI and ISA">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Installing-GMP.html#Installing-GMP" rel="up" title="Installing GMP">
+<link href="Notes-for-Package-Builds.html#Notes-for-Package-Builds" rel="next" title="Notes for Package Builds">
+<link href="Build-Options.html#Build-Options" rel="prev" title="Build Options">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="ABI-and-ISA"></a>
+<div class="header">
+<p>
+Next: <a href="Notes-for-Package-Builds.html#Notes-for-Package-Builds" accesskey="n" rel="next">Notes for Package Builds</a>, Previous: <a href="Build-Options.html#Build-Options" accesskey="p" rel="prev">Build Options</a>, Up: <a href="Installing-GMP.html#Installing-GMP" accesskey="u" rel="up">Installing GMP</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="ABI-and-ISA-1"></a>
+<h3 class="section">2.2 ABI and ISA</h3>
+<a name="index-ABI-1"></a>
+<a name="index-Application-Binary-Interface"></a>
+<a name="index-ISA"></a>
+<a name="index-Instruction-Set-Architecture"></a>
+
+<p>ABI (Application Binary Interface) refers to the calling conventions between
+functions, meaning what registers are used and what sizes the various C data
+types are.  ISA (Instruction Set Architecture) refers to the instructions and
+registers a CPU has available.
+</p>
+<p>Some 64-bit ISA CPUs have both a 64-bit ABI and a 32-bit ABI defined, the
+latter for compatibility with older CPUs in the family.  GMP supports some
+CPUs like this in both ABIs.  In fact within GMP &lsquo;<samp>ABI</samp>&rsquo; means a
+combination of chip ABI, plus how GMP chooses to use it.  For example in some
+32-bit ABIs, GMP may support a limb as either a 32-bit <code>long</code> or a 64-bit
+<code>long long</code>.
+</p>
+<p>By default GMP chooses the best ABI available for a given system, and this
+generally gives significantly greater speed.  But an ABI can be chosen
+explicitly to make GMP compatible with other libraries, or particular
+application requirements.  For example,
+</p>
+<div class="example">
+<pre class="example">./configure ABI=32
+</pre></div>
+
+<p>In all cases it&rsquo;s vital that all object code used in a given program is
+compiled for the same ABI.
+</p>
+<p>Usually a limb is implemented as a <code>long</code>.  When a <code>long long</code> limb
+is used this is encoded in the generated <samp>gmp.h</samp>.  This is convenient for
+applications, but it does mean that <samp>gmp.h</samp> will vary, and can&rsquo;t be just
+copied around.  <samp>gmp.h</samp> remains compiler independent though, since all
+compilers for a particular ABI will be expected to use the same limb type.
+</p>
+<p>Currently no attempt is made to follow whatever conventions a system has for
+installing library or header files built for a particular ABI.  This will
+probably only matter when installing multiple builds of GMP, and it might be
+as simple as configuring with a special &lsquo;<samp>libdir</samp>&rsquo;, or it might require
+more than that.  Note that builds for different ABIs need to done separately,
+with a fresh <code>./configure</code> and <code>make</code> each.
+</p>
+<br>
+<dl compact="compact">
+<dt>AMD64 (&lsquo;<samp>x86_64</samp>&rsquo;)</dt>
+<dd><a name="index-AMD64"></a>
+<p>On AMD64 systems supporting both 32-bit and 64-bit modes for applications, the
+following ABI choices are available.
+</p>
+<dl compact="compact">
+<dt>&lsquo;<samp>ABI=64</samp>&rsquo;</dt>
+<dd><p>The 64-bit ABI uses 64-bit limbs and pointers and makes full use of the chip
+architecture.  This is the default.  Applications will usually not need
+special compiler flags, but for reference the option is
+</p>
+<div class="example">
+<pre class="example">gcc  -m64
+</pre></div>
+
+</dd>
+<dt>&lsquo;<samp>ABI=32</samp>&rsquo;</dt>
+<dd><p>The 32-bit ABI is the usual i386 conventions.  This will be slower, and is not
+recommended except for inter-operating with other code not yet 64-bit capable.
+Applications must be compiled with
+</p>
+<div class="example">
+<pre class="example">gcc  -m32
+</pre></div>
+
+<p>(In GCC 2.95 and earlier there&rsquo;s no &lsquo;<samp>-m32</samp>&rsquo; option, it&rsquo;s the only mode.)
+</p>
+</dd>
+<dt>&lsquo;<samp>ABI=x32</samp>&rsquo;</dt>
+<dd><p>The x32 ABI uses 64-bit limbs but 32-bit pointers.  Like the 64-bit ABI, it
+makes full use of the chip&rsquo;s arithmetic capabilities.  This ABI is not
+supported by all operating systems.
+</p>
+<div class="example">
+<pre class="example">gcc  -mx32
+</pre></div>
+
+</dd>
+</dl>
+
+<br>
+</dd>
+<dt>HPPA 2.0 (&lsquo;<samp>hppa2.0*</samp>&rsquo;, &lsquo;<samp>hppa64</samp>&rsquo;)</dt>
+<dd><a name="index-HPPA"></a>
+<a name="index-HP_002dUX"></a>
+<dl compact="compact">
+<dt>&lsquo;<samp>ABI=2.0w</samp>&rsquo;</dt>
+<dd><p>The 2.0w ABI uses 64-bit limbs and pointers and is available on HP-UX 11 or
+up.  Applications must be compiled with
+</p>
+<div class="example">
+<pre class="example">gcc [built for 2.0w]
+cc  +DD64
+</pre></div>
+
+</dd>
+<dt>&lsquo;<samp>ABI=2.0n</samp>&rsquo;</dt>
+<dd><p>The 2.0n ABI means the 32-bit HPPA 1.0 ABI and all its normal calling
+conventions, but with 64-bit instructions permitted within functions.  GMP
+uses a 64-bit <code>long long</code> for a limb.  This ABI is available on hppa64
+GNU/Linux and on HP-UX 10 or higher.  Applications must be compiled with
+</p>
+<div class="example">
+<pre class="example">gcc [built for 2.0n]
+cc  +DA2.0 +e
+</pre></div>
+
+<p>Note that current versions of GCC (eg. 3.2) don&rsquo;t generate 64-bit
+instructions for <code>long long</code> operations and so may be slower than for
+2.0w.  (The GMP assembly code is the same though.)
+</p>
+</dd>
+<dt>&lsquo;<samp>ABI=1.0</samp>&rsquo;</dt>
+<dd><p>HPPA 2.0 CPUs can run all HPPA 1.0 and 1.1 code in the 32-bit HPPA 1.0 ABI.
+No special compiler options are needed for applications.
+</p></dd>
+</dl>
+
+<p>All three ABIs are available for CPU types &lsquo;<samp>hppa2.0w</samp>&rsquo;, &lsquo;<samp>hppa2.0</samp>&rsquo; and
+&lsquo;<samp>hppa64</samp>&rsquo;, but for CPU type &lsquo;<samp>hppa2.0n</samp>&rsquo; only 2.0n or 1.0 are
+considered.
+</p>
+<p>Note that GCC on HP-UX has no options to choose between 2.0n and 2.0w modes,
+unlike HP <code>cc</code>.  Instead it must be built for one or the other ABI.
+GMP will detect how it was built, and skip to the corresponding &lsquo;<samp>ABI</samp>&rsquo;.
+</p>
+<br>
+</dd>
+<dt>IA-64 under HP-UX (&lsquo;<samp>ia64*-*-hpux*</samp>&rsquo;, &lsquo;<samp>itanium*-*-hpux*</samp>&rsquo;)</dt>
+<dd><a name="index-IA_002d64"></a>
+<a name="index-HP_002dUX-1"></a>
+<p>HP-UX supports two ABIs for IA-64.  GMP performance is the same in both.
+</p>
+<dl compact="compact">
+<dt>&lsquo;<samp>ABI=32</samp>&rsquo;</dt>
+<dd><p>In the 32-bit ABI, pointers, <code>int</code>s and <code>long</code>s are 32 bits and GMP
+uses a 64 bit <code>long long</code> for a limb.  Applications can be compiled
+without any special flags since this ABI is the default in both HP C and GCC,
+but for reference the flags are
+</p>
+<div class="example">
+<pre class="example">gcc  -milp32
+cc   +DD32
+</pre></div>
+
+</dd>
+<dt>&lsquo;<samp>ABI=64</samp>&rsquo;</dt>
+<dd><p>In the 64-bit ABI, <code>long</code>s and pointers are 64 bits and GMP uses a
+<code>long</code> for a limb.  Applications must be compiled with
+</p>
+<div class="example">
+<pre class="example">gcc  -mlp64
+cc   +DD64
+</pre></div>
+</dd>
+</dl>
+
+<p>On other IA-64 systems, GNU/Linux for instance, &lsquo;<samp>ABI=64</samp>&rsquo; is the only
+choice.
+</p>
+<br>
+</dd>
+<dt>MIPS under IRIX 6 (&lsquo;<samp>mips*-*-irix[6789]</samp>&rsquo;)</dt>
+<dd><a name="index-MIPS"></a>
+<a name="index-IRIX"></a>
+<p>IRIX 6 always has a 64-bit MIPS 3 or better CPU, and supports ABIs o32, n32,
+and 64.  n32 or 64 are recommended, and GMP performance will be the same in
+each.  The default is n32.
+</p>
+<dl compact="compact">
+<dt>&lsquo;<samp>ABI=o32</samp>&rsquo;</dt>
+<dd><p>The o32 ABI is 32-bit pointers and integers, and no 64-bit operations.  GMP
+will be slower than in n32 or 64, this option only exists to support old
+compilers, eg. GCC 2.7.2.  Applications can be compiled with no special
+flags on an old compiler, or on a newer compiler with
+</p>
+<div class="example">
+<pre class="example">gcc  -mabi=32
+cc   -32
+</pre></div>
+
+</dd>
+<dt>&lsquo;<samp>ABI=n32</samp>&rsquo;</dt>
+<dd><p>The n32 ABI is 32-bit pointers and integers, but with a 64-bit limb using a
+<code>long long</code>.  Applications must be compiled with
+</p>
+<div class="example">
+<pre class="example">gcc  -mabi=n32
+cc   -n32
+</pre></div>
+
+</dd>
+<dt>&lsquo;<samp>ABI=64</samp>&rsquo;</dt>
+<dd><p>The 64-bit ABI is 64-bit pointers and integers.  Applications must be compiled
+with
+</p>
+<div class="example">
+<pre class="example">gcc  -mabi=64
+cc   -64
+</pre></div>
+</dd>
+</dl>
+
+<p>Note that MIPS GNU/Linux, as of kernel version 2.2, doesn&rsquo;t have the necessary
+support for n32 or 64 and so only gets a 32-bit limb and the MIPS 2 code.
+</p>
+<br>
+</dd>
+<dt>PowerPC 64 (&lsquo;<samp>powerpc64</samp>&rsquo;, &lsquo;<samp>powerpc620</samp>&rsquo;, &lsquo;<samp>powerpc630</samp>&rsquo;, &lsquo;<samp>powerpc970</samp>&rsquo;, &lsquo;<samp>power4</samp>&rsquo;, &lsquo;<samp>power5</samp>&rsquo;)</dt>
+<dd><a name="index-PowerPC"></a>
+<dl compact="compact">
+<dt>&lsquo;<samp>ABI=mode64</samp>&rsquo;</dt>
+<dd><a name="index-AIX"></a>
+<p>The AIX 64 ABI uses 64-bit limbs and pointers and is the default on PowerPC 64
+&lsquo;<samp>*-*-aix*</samp>&rsquo; systems.  Applications must be compiled with
+</p>
+<div class="example">
+<pre class="example">gcc  -maix64
+xlc  -q64
+</pre></div>
+
+<p>On 64-bit GNU/Linux, BSD, and Mac OS X/Darwin systems, the applications must
+be compiled with
+</p>
+<div class="example">
+<pre class="example">gcc  -m64
+</pre></div>
+
+</dd>
+<dt>&lsquo;<samp>ABI=mode32</samp>&rsquo;</dt>
+<dd><p>The &lsquo;<samp>mode32</samp>&rsquo; ABI uses a 64-bit <code>long long</code> limb but with the chip
+still in 32-bit mode and using 32-bit calling conventions.  This is the default
+for systems where the true 64-bit ABI is unavailable.  No special compiler
+options are typically needed for applications.  This ABI is not available under
+AIX.
+</p>
+</dd>
+<dt>&lsquo;<samp>ABI=32</samp>&rsquo;</dt>
+<dd><p>This is the basic 32-bit PowerPC ABI, with a 32-bit limb.  No special compiler
+options are needed for applications.
+</p></dd>
+</dl>
+
+<p>GMP&rsquo;s speed is greatest for the &lsquo;<samp>mode64</samp>&rsquo; ABI, the &lsquo;<samp>mode32</samp>&rsquo; ABI is 2nd
+best.  In &lsquo;<samp>ABI=32</samp>&rsquo; only the 32-bit ISA is used and this doesn&rsquo;t make full
+use of a 64-bit chip.
+</p>
+<br>
+</dd>
+<dt>Sparc V9 (&lsquo;<samp>sparc64</samp>&rsquo;, &lsquo;<samp>sparcv9</samp>&rsquo;, &lsquo;<samp>ultrasparc*</samp>&rsquo;)</dt>
+<dd><a name="index-Sparc-V9"></a>
+<a name="index-Solaris"></a>
+<a name="index-Sun"></a>
+<dl compact="compact">
+<dt>&lsquo;<samp>ABI=64</samp>&rsquo;</dt>
+<dd><p>The 64-bit V9 ABI is available on the various BSD sparc64 ports, recent
+versions of Sparc64 GNU/Linux, and Solaris 2.7 and up (when the kernel is in
+64-bit mode).  GCC 3.2 or higher, or Sun <code>cc</code> is required.  On
+GNU/Linux, depending on the default <code>gcc</code> mode, applications must be
+compiled with
+</p>
+<div class="example">
+<pre class="example">gcc  -m64
+</pre></div>
+
+<p>On Solaris applications must be compiled with
+</p>
+<div class="example">
+<pre class="example">gcc  -m64 -mptr64 -Wa,-xarch=v9 -mcpu=v9
+cc   -xarch=v9
+</pre></div>
+
+<p>On the BSD sparc64 systems no special options are required, since 64-bits is
+the only ABI available.
+</p>
+</dd>
+<dt>&lsquo;<samp>ABI=32</samp>&rsquo;</dt>
+<dd><p>For the basic 32-bit ABI, GMP still uses as much of the V9 ISA as it can.  In
+the Sun documentation this combination is known as &ldquo;v8plus&rdquo;.  On GNU/Linux,
+depending on the default <code>gcc</code> mode, applications may need to be
+compiled with
+</p>
+<div class="example">
+<pre class="example">gcc  -m32
+</pre></div>
+
+<p>On Solaris, no special compiler options are required for applications, though
+using something like the following is recommended.  (<code>gcc</code> 2.8 and
+earlier only support &lsquo;<samp>-mv8</samp>&rsquo; though.)
+</p>
+<div class="example">
+<pre class="example">gcc  -mv8plus
+cc   -xarch=v8plus
+</pre></div>
+</dd>
+</dl>
+
+<p>GMP speed is greatest in &lsquo;<samp>ABI=64</samp>&rsquo;, so it&rsquo;s the default where available.
+The speed is partly because there are extra registers available and partly
+because 64-bits is considered the more important case and has therefore had
+better code written for it.
+</p>
+<p>Don&rsquo;t be confused by the names of the &lsquo;<samp>-m</samp>&rsquo; and &lsquo;<samp>-x</samp>&rsquo; compiler
+options, they&rsquo;re called &lsquo;<samp>arch</samp>&rsquo; but effectively control both ABI and ISA.
+</p>
+<p>On Solaris 2.6 and earlier, only &lsquo;<samp>ABI=32</samp>&rsquo; is available since the kernel
+doesn&rsquo;t save all registers.
+</p>
+<p>On Solaris 2.7 with the kernel in 32-bit mode, a normal native build will
+reject &lsquo;<samp>ABI=64</samp>&rsquo; because the resulting executables won&rsquo;t run.
+&lsquo;<samp>ABI=64</samp>&rsquo; can still be built if desired by making it look like a
+cross-compile, for example
+</p>
+<div class="example">
+<pre class="example">./configure --build=none --host=sparcv9-sun-solaris2.7 ABI=64
+</pre></div>
+</dd>
+</dl>
+
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Notes-for-Package-Builds.html#Notes-for-Package-Builds" accesskey="n" rel="next">Notes for Package Builds</a>, Previous: <a href="Build-Options.html#Build-Options" accesskey="p" rel="prev">Build Options</a>, Up: <a href="Installing-GMP.html#Installing-GMP" accesskey="u" rel="up">Installing GMP</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

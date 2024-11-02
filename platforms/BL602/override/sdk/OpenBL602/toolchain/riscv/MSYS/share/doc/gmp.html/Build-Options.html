@@ -1,0 +1,568 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Build Options</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Build Options">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Installing-GMP.html#Installing-GMP" rel="up" title="Installing GMP">
+<link href="ABI-and-ISA.html#ABI-and-ISA" rel="next" title="ABI and ISA">
+<link href="Installing-GMP.html#Installing-GMP" rel="prev" title="Installing GMP">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Build-Options"></a>
+<div class="header">
+<p>
+Next: <a href="ABI-and-ISA.html#ABI-and-ISA" accesskey="n" rel="next">ABI and ISA</a>, Previous: <a href="Installing-GMP.html#Installing-GMP" accesskey="p" rel="prev">Installing GMP</a>, Up: <a href="Installing-GMP.html#Installing-GMP" accesskey="u" rel="up">Installing GMP</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Build-Options-1"></a>
+<h3 class="section">2.1 Build Options</h3>
+<a name="index-Build-options"></a>
+
+<p>All the usual autoconf configure options are available, run &lsquo;<samp>./configure
+--help</samp>&rsquo; for a summary.  The file <samp>INSTALL.autoconf</samp> has some generic
+installation information too.
+</p>
+<dl compact="compact">
+<dt>Tools</dt>
+<dd><a name="index-Non_002dUnix-systems"></a>
+<p>&lsquo;<samp>configure</samp>&rsquo; requires various Unix-like tools.  See <a href="Notes-for-Particular-Systems.html#Notes-for-Particular-Systems">Notes for Particular Systems</a>, for some options on non-Unix systems.
+</p>
+<p>It might be possible to build without the help of &lsquo;<samp>configure</samp>&rsquo;, certainly
+all the code is there, but unfortunately you&rsquo;ll be on your own.
+</p>
+</dd>
+<dt>Build Directory</dt>
+<dd><a name="index-Build-directory"></a>
+<p>To compile in a separate build directory, <code>cd</code> to that directory, and
+prefix the configure command with the path to the GMP source directory.  For
+example
+</p>
+<div class="example">
+<pre class="example">cd /my/build/dir
+/my/sources/gmp-6.1.0/configure
+</pre></div>
+
+<p>Not all &lsquo;<samp>make</samp>&rsquo; programs have the necessary features (<code>VPATH</code>) to
+support this.  In particular, SunOS and Slowaris <code>make</code> have bugs that
+make them unable to build in a separate directory.  Use GNU <code>make</code>
+instead.
+</p>
+</dd>
+<dt><samp>--prefix</samp> and <samp>--exec-prefix</samp></dt>
+<dd><a name="index-Prefix"></a>
+<a name="index-Exec-prefix"></a>
+<a name="index-Install-prefix"></a>
+<a name="index-_002d_002dprefix"></a>
+<a name="index-_002d_002dexec_002dprefix"></a>
+<p>The <samp>--prefix</samp> option can be used in the normal way to direct GMP to
+install under a particular tree.  The default is &lsquo;<samp>/usr/local</samp>&rsquo;.
+</p>
+<p><samp>--exec-prefix</samp> can be used to direct architecture-dependent files like
+<samp>libgmp.a</samp> to a different location.  This can be used to share
+architecture-independent parts like the documentation, but separate the
+dependent parts.  Note however that <samp>gmp.h</samp> and <samp>mp.h</samp> are
+architecture-dependent since they encode certain aspects of <samp>libgmp</samp>, so
+it will be necessary to ensure both <samp>$prefix/include</samp> and
+<samp>$exec_prefix/include</samp> are available to the compiler.
+</p>
+</dd>
+<dt><samp>--disable-shared</samp>, <samp>--disable-static</samp></dt>
+<dd><a name="index-_002d_002ddisable_002dshared"></a>
+<a name="index-_002d_002ddisable_002dstatic"></a>
+<p>By default both shared and static libraries are built (where possible), but
+one or other can be disabled.  Shared libraries result in smaller executables
+and permit code sharing between separate running processes, but on some CPUs
+are slightly slower, having a small cost on each function call.
+</p>
+</dd>
+<dt>Native Compilation, <samp>--build=CPU-VENDOR-OS</samp></dt>
+<dd><a name="index-Native-compilation"></a>
+<a name="index-Build-system"></a>
+<a name="index-_002d_002dbuild"></a>
+<p>For normal native compilation, the system can be specified with
+&lsquo;<samp>--build</samp>&rsquo;.  By default &lsquo;<samp>./configure</samp>&rsquo; uses the output from running
+&lsquo;<samp>./config.guess</samp>&rsquo;.  On some systems &lsquo;<samp>./config.guess</samp>&rsquo; can determine
+the exact CPU type, on others it will be necessary to give it explicitly.  For
+example,
+</p>
+<div class="example">
+<pre class="example">./configure --build=ultrasparc-sun-solaris2.7
+</pre></div>
+
+<p>In all cases the &lsquo;<samp>OS</samp>&rsquo; part is important, since it controls how libtool
+generates shared libraries.  Running &lsquo;<samp>./config.guess</samp>&rsquo; is the simplest way
+to see what it should be, if you don&rsquo;t know already.
+</p>
+</dd>
+<dt>Cross Compilation, <samp>--host=CPU-VENDOR-OS</samp></dt>
+<dd><a name="index-Cross-compiling"></a>
+<a name="index-Host-system"></a>
+<a name="index-_002d_002dhost"></a>
+<p>When cross-compiling, the system used for compiling is given by &lsquo;<samp>--build</samp>&rsquo;
+and the system where the library will run is given by &lsquo;<samp>--host</samp>&rsquo;.  For
+example when using a FreeBSD Athlon system to build GNU/Linux m68k binaries,
+</p>
+<div class="example">
+<pre class="example">./configure --build=athlon-pc-freebsd3.5 --host=m68k-mac-linux-gnu
+</pre></div>
+
+<p>Compiler tools are sought first with the host system type as a prefix.  For
+example <code>m68k-mac-linux-gnu-ranlib</code> is tried, then plain
+<code>ranlib</code>.  This makes it possible for a set of cross-compiling tools
+to co-exist with native tools.  The prefix is the argument to &lsquo;<samp>--host</samp>&rsquo;,
+and this can be an alias, such as &lsquo;<samp>m68k-linux</samp>&rsquo;.  But note that tools
+don&rsquo;t have to be setup this way, it&rsquo;s enough to just have a <code>PATH</code> with a
+suitable cross-compiling <code>cc</code> etc.
+</p>
+<p>Compiling for a different CPU in the same family as the build system is a form
+of cross-compilation, though very possibly this would merely be special
+options on a native compiler.  In any case &lsquo;<samp>./configure</samp>&rsquo; avoids depending
+on being able to run code on the build system, which is important when
+creating binaries for a newer CPU since they very possibly won&rsquo;t run on the
+build system.
+</p>
+<p>In all cases the compiler must be able to produce an executable (of whatever
+format) from a standard C <code>main</code>.  Although only object files will go to
+make up <samp>libgmp</samp>, &lsquo;<samp>./configure</samp>&rsquo; uses linking tests for various
+purposes, such as determining what functions are available on the host system.
+</p>
+<p>Currently a warning is given unless an explicit &lsquo;<samp>--build</samp>&rsquo; is used when
+cross-compiling, because it may not be possible to correctly guess the build
+system type if the <code>PATH</code> has only a cross-compiling <code>cc</code>.
+</p>
+<p>Note that the &lsquo;<samp>--target</samp>&rsquo; option is not appropriate for GMP.  It&rsquo;s for use
+when building compiler tools, with &lsquo;<samp>--host</samp>&rsquo; being where they will run,
+and &lsquo;<samp>--target</samp>&rsquo; what they&rsquo;ll produce code for.  Ordinary programs or
+libraries like GMP are only interested in the &lsquo;<samp>--host</samp>&rsquo; part, being where
+they&rsquo;ll run.  (Some past versions of GMP used &lsquo;<samp>--target</samp>&rsquo; incorrectly.)
+</p>
+</dd>
+<dt>CPU types</dt>
+<dd><a name="index-CPU-types-1"></a>
+<p>In general, if you want a library that runs as fast as possible, you should
+configure GMP for the exact CPU type your system uses.  However, this may mean
+the binaries won&rsquo;t run on older members of the family, and might run slower on
+other members, older or newer.  The best idea is always to build GMP for the
+exact machine type you intend to run it on.
+</p>
+<p>The following CPUs have specific support.  See <samp>configure.ac</samp> for details
+of what code and compiler options they select.
+</p>
+<ul>
+<li> Alpha:
+&lsquo;<samp>alpha</samp>&rsquo;,
+&lsquo;<samp>alphaev5</samp>&rsquo;,
+&lsquo;<samp>alphaev56</samp>&rsquo;,
+&lsquo;<samp>alphapca56</samp>&rsquo;,
+&lsquo;<samp>alphapca57</samp>&rsquo;,
+&lsquo;<samp>alphaev6</samp>&rsquo;,
+&lsquo;<samp>alphaev67</samp>&rsquo;,
+&lsquo;<samp>alphaev68</samp>&rsquo;
+&lsquo;<samp>alphaev7</samp>&rsquo;
+
+</li><li> Cray:
+&lsquo;<samp>c90</samp>&rsquo;,
+&lsquo;<samp>j90</samp>&rsquo;,
+&lsquo;<samp>t90</samp>&rsquo;,
+&lsquo;<samp>sv1</samp>&rsquo;
+
+</li><li> HPPA:
+&lsquo;<samp>hppa1.0</samp>&rsquo;,
+&lsquo;<samp>hppa1.1</samp>&rsquo;,
+&lsquo;<samp>hppa2.0</samp>&rsquo;,
+&lsquo;<samp>hppa2.0n</samp>&rsquo;,
+&lsquo;<samp>hppa2.0w</samp>&rsquo;,
+&lsquo;<samp>hppa64</samp>&rsquo;
+
+</li><li> IA-64:
+&lsquo;<samp>ia64</samp>&rsquo;,
+&lsquo;<samp>itanium</samp>&rsquo;,
+&lsquo;<samp>itanium2</samp>&rsquo;
+
+</li><li> MIPS:
+&lsquo;<samp>mips</samp>&rsquo;,
+&lsquo;<samp>mips3</samp>&rsquo;,
+&lsquo;<samp>mips64</samp>&rsquo;
+
+</li><li> Motorola:
+&lsquo;<samp>m68k</samp>&rsquo;,
+&lsquo;<samp>m68000</samp>&rsquo;,
+&lsquo;<samp>m68010</samp>&rsquo;,
+&lsquo;<samp>m68020</samp>&rsquo;,
+&lsquo;<samp>m68030</samp>&rsquo;,
+&lsquo;<samp>m68040</samp>&rsquo;,
+&lsquo;<samp>m68060</samp>&rsquo;,
+&lsquo;<samp>m68302</samp>&rsquo;,
+&lsquo;<samp>m68360</samp>&rsquo;,
+&lsquo;<samp>m88k</samp>&rsquo;,
+&lsquo;<samp>m88110</samp>&rsquo;
+
+</li><li> POWER:
+&lsquo;<samp>power</samp>&rsquo;,
+&lsquo;<samp>power1</samp>&rsquo;,
+&lsquo;<samp>power2</samp>&rsquo;,
+&lsquo;<samp>power2sc</samp>&rsquo;
+
+</li><li> PowerPC:
+&lsquo;<samp>powerpc</samp>&rsquo;,
+&lsquo;<samp>powerpc64</samp>&rsquo;,
+&lsquo;<samp>powerpc401</samp>&rsquo;,
+&lsquo;<samp>powerpc403</samp>&rsquo;,
+&lsquo;<samp>powerpc405</samp>&rsquo;,
+&lsquo;<samp>powerpc505</samp>&rsquo;,
+&lsquo;<samp>powerpc601</samp>&rsquo;,
+&lsquo;<samp>powerpc602</samp>&rsquo;,
+&lsquo;<samp>powerpc603</samp>&rsquo;,
+&lsquo;<samp>powerpc603e</samp>&rsquo;,
+&lsquo;<samp>powerpc604</samp>&rsquo;,
+&lsquo;<samp>powerpc604e</samp>&rsquo;,
+&lsquo;<samp>powerpc620</samp>&rsquo;,
+&lsquo;<samp>powerpc630</samp>&rsquo;,
+&lsquo;<samp>powerpc740</samp>&rsquo;,
+&lsquo;<samp>powerpc7400</samp>&rsquo;,
+&lsquo;<samp>powerpc7450</samp>&rsquo;,
+&lsquo;<samp>powerpc750</samp>&rsquo;,
+&lsquo;<samp>powerpc801</samp>&rsquo;,
+&lsquo;<samp>powerpc821</samp>&rsquo;,
+&lsquo;<samp>powerpc823</samp>&rsquo;,
+&lsquo;<samp>powerpc860</samp>&rsquo;,
+&lsquo;<samp>powerpc970</samp>&rsquo;
+
+</li><li> SPARC:
+&lsquo;<samp>sparc</samp>&rsquo;,
+&lsquo;<samp>sparcv8</samp>&rsquo;,
+&lsquo;<samp>microsparc</samp>&rsquo;,
+&lsquo;<samp>supersparc</samp>&rsquo;,
+&lsquo;<samp>sparcv9</samp>&rsquo;,
+&lsquo;<samp>ultrasparc</samp>&rsquo;,
+&lsquo;<samp>ultrasparc2</samp>&rsquo;,
+&lsquo;<samp>ultrasparc2i</samp>&rsquo;,
+&lsquo;<samp>ultrasparc3</samp>&rsquo;,
+&lsquo;<samp>sparc64</samp>&rsquo;
+
+</li><li> x86 family:
+&lsquo;<samp>i386</samp>&rsquo;,
+&lsquo;<samp>i486</samp>&rsquo;,
+&lsquo;<samp>i586</samp>&rsquo;,
+&lsquo;<samp>pentium</samp>&rsquo;,
+&lsquo;<samp>pentiummmx</samp>&rsquo;,
+&lsquo;<samp>pentiumpro</samp>&rsquo;,
+&lsquo;<samp>pentium2</samp>&rsquo;,
+&lsquo;<samp>pentium3</samp>&rsquo;,
+&lsquo;<samp>pentium4</samp>&rsquo;,
+&lsquo;<samp>k6</samp>&rsquo;,
+&lsquo;<samp>k62</samp>&rsquo;,
+&lsquo;<samp>k63</samp>&rsquo;,
+&lsquo;<samp>athlon</samp>&rsquo;,
+&lsquo;<samp>amd64</samp>&rsquo;,
+&lsquo;<samp>viac3</samp>&rsquo;,
+&lsquo;<samp>viac32</samp>&rsquo;
+
+</li><li> Other:
+&lsquo;<samp>arm</samp>&rsquo;,
+&lsquo;<samp>sh</samp>&rsquo;,
+&lsquo;<samp>sh2</samp>&rsquo;,
+&lsquo;<samp>vax</samp>&rsquo;,
+</li></ul>
+
+<p>CPUs not listed will use generic C code.
+</p>
+</dd>
+<dt>Generic C Build</dt>
+<dd><a name="index-Generic-C"></a>
+<p>If some of the assembly code causes problems, or if otherwise desired, the
+generic C code can be selected with the configure <samp>--disable-assembly</samp>.
+</p>
+<p>Note that this will run quite slowly, but it should be portable and should at
+least make it possible to get something running if all else fails.
+</p>
+</dd>
+<dt>Fat binary, <samp>--enable-fat</samp></dt>
+<dd><a name="index-Fat-binary"></a>
+<a name="index-_002d_002denable_002dfat"></a>
+<p>Using <samp>--enable-fat</samp> selects a &ldquo;fat binary&rdquo; build on x86, where
+optimized low level subroutines are chosen at runtime according to the CPU
+detected.  This means more code, but gives good performance on all x86 chips.
+(This option might become available for more architectures in the future.)
+</p>
+</dd>
+<dt><samp>ABI</samp></dt>
+<dd><a name="index-ABI"></a>
+<p>On some systems GMP supports multiple ABIs (application binary interfaces),
+meaning data type sizes and calling conventions.  By default GMP chooses the
+best ABI available, but a particular ABI can be selected.  For example
+</p>
+<div class="example">
+<pre class="example">./configure --host=mips64-sgi-irix6 ABI=n32
+</pre></div>
+
+<p>See <a href="ABI-and-ISA.html#ABI-and-ISA">ABI and ISA</a>, for the available choices on relevant CPUs, and what
+applications need to do.
+</p>
+</dd>
+<dt><samp>CC</samp>, <samp>CFLAGS</samp></dt>
+<dd><a name="index-C-compiler"></a>
+<a name="index-CC"></a>
+<a name="index-CFLAGS"></a>
+<p>By default the C compiler used is chosen from among some likely candidates,
+with <code>gcc</code> normally preferred if it&rsquo;s present.  The usual
+&lsquo;<samp>CC=whatever</samp>&rsquo; can be passed to &lsquo;<samp>./configure</samp>&rsquo; to choose something
+different.
+</p>
+<p>For various systems, default compiler flags are set based on the CPU and
+compiler.  The usual &lsquo;<samp>CFLAGS=&quot;-whatever&quot;</samp>&rsquo; can be passed to
+&lsquo;<samp>./configure</samp>&rsquo; to use something different or to set good flags for systems
+GMP doesn&rsquo;t otherwise know.
+</p>
+<p>The &lsquo;<samp>CC</samp>&rsquo; and &lsquo;<samp>CFLAGS</samp>&rsquo; used are printed during &lsquo;<samp>./configure</samp>&rsquo;,
+and can be found in each generated <samp>Makefile</samp>.  This is the easiest way
+to check the defaults when considering changing or adding something.
+</p>
+<p>Note that when &lsquo;<samp>CC</samp>&rsquo; and &lsquo;<samp>CFLAGS</samp>&rsquo; are specified on a system
+supporting multiple ABIs it&rsquo;s important to give an explicit
+&lsquo;<samp>ABI=whatever</samp>&rsquo;, since GMP can&rsquo;t determine the ABI just from the flags and
+won&rsquo;t be able to select the correct assembly code.
+</p>
+<p>If just &lsquo;<samp>CC</samp>&rsquo; is selected then normal default &lsquo;<samp>CFLAGS</samp>&rsquo; for that
+compiler will be used (if GMP recognises it).  For example &lsquo;<samp>CC=gcc</samp>&rsquo; can
+be used to force the use of GCC, with default flags (and default ABI).
+</p>
+</dd>
+<dt><samp>CPPFLAGS</samp></dt>
+<dd><a name="index-CPPFLAGS"></a>
+<p>Any flags like &lsquo;<samp>-D</samp>&rsquo; defines or &lsquo;<samp>-I</samp>&rsquo; includes required by the
+preprocessor should be set in &lsquo;<samp>CPPFLAGS</samp>&rsquo; rather than &lsquo;<samp>CFLAGS</samp>&rsquo;.
+Compiling is done with both &lsquo;<samp>CPPFLAGS</samp>&rsquo; and &lsquo;<samp>CFLAGS</samp>&rsquo;, but
+preprocessing uses just &lsquo;<samp>CPPFLAGS</samp>&rsquo;.  This distinction is because most
+preprocessors won&rsquo;t accept all the flags the compiler does.  Preprocessing is
+done separately in some configure tests.
+</p>
+</dd>
+<dt><samp>CC_FOR_BUILD</samp></dt>
+<dd><a name="index-CC_005fFOR_005fBUILD"></a>
+<p>Some build-time programs are compiled and run to generate host-specific data
+tables.  &lsquo;<samp>CC_FOR_BUILD</samp>&rsquo; is the compiler used for this.  It doesn&rsquo;t need
+to be in any particular ABI or mode, it merely needs to generate executables
+that can run.  The default is to try the selected &lsquo;<samp>CC</samp>&rsquo; and some likely
+candidates such as &lsquo;<samp>cc</samp>&rsquo; and &lsquo;<samp>gcc</samp>&rsquo;, looking for something that works.
+</p>
+<p>No flags are used with &lsquo;<samp>CC_FOR_BUILD</samp>&rsquo; because a simple invocation like
+&lsquo;<samp>cc foo.c</samp>&rsquo; should be enough.  If some particular options are required
+they can be included as for instance &lsquo;<samp>CC_FOR_BUILD=&quot;cc -whatever&quot;</samp>&rsquo;.
+</p>
+</dd>
+<dt>C++ Support, <samp>--enable-cxx</samp></dt>
+<dd><a name="index-C_002b_002b-support"></a>
+<a name="index-_002d_002denable_002dcxx"></a>
+<p>C++ support in GMP can be enabled with &lsquo;<samp>--enable-cxx</samp>&rsquo;, in which case a
+C++ compiler will be required.  As a convenience &lsquo;<samp>--enable-cxx=detect</samp>&rsquo;
+can be used to enable C++ support only if a compiler can be found.  The C++
+support consists of a library <samp>libgmpxx.la</samp> and header file
+<samp>gmpxx.h</samp> (see <a href="Headers-and-Libraries.html#Headers-and-Libraries">Headers and Libraries</a>).
+</p>
+<p>A separate <samp>libgmpxx.la</samp> has been adopted rather than having C++ objects
+within <samp>libgmp.la</samp> in order to ensure dynamic linked C programs aren&rsquo;t
+bloated by a dependency on the C++ standard library, and to avoid any chance
+that the C++ compiler could be required when linking plain C programs.
+</p>
+<p><samp>libgmpxx.la</samp> will use certain internals from <samp>libgmp.la</samp> and can
+only be expected to work with <samp>libgmp.la</samp> from the same GMP version.
+Future changes to the relevant internals will be accompanied by renaming, so a
+mismatch will cause unresolved symbols rather than perhaps mysterious
+misbehaviour.
+</p>
+<p>In general <samp>libgmpxx.la</samp> will be usable only with the C++ compiler that
+built it, since name mangling and runtime support are usually incompatible
+between different compilers.
+</p>
+</dd>
+<dt><samp>CXX</samp>, <samp>CXXFLAGS</samp></dt>
+<dd><a name="index-C_002b_002b-compiler"></a>
+<a name="index-CXX"></a>
+<a name="index-CXXFLAGS"></a>
+<p>When C++ support is enabled, the C++ compiler and its flags can be set with
+variables &lsquo;<samp>CXX</samp>&rsquo; and &lsquo;<samp>CXXFLAGS</samp>&rsquo; in the usual way.  The default for
+&lsquo;<samp>CXX</samp>&rsquo; is the first compiler that works from a list of likely candidates,
+with <code>g++</code> normally preferred when available.  The default for
+&lsquo;<samp>CXXFLAGS</samp>&rsquo; is to try &lsquo;<samp>CFLAGS</samp>&rsquo;, &lsquo;<samp>CFLAGS</samp>&rsquo; without &lsquo;<samp>-g</samp>&rsquo;, then
+for <code>g++</code> either &lsquo;<samp>-g -O2</samp>&rsquo; or &lsquo;<samp>-O2</samp>&rsquo;, or for other compilers
+&lsquo;<samp>-g</samp>&rsquo; or nothing.  Trying &lsquo;<samp>CFLAGS</samp>&rsquo; this way is convenient when using
+&lsquo;<samp>gcc</samp>&rsquo; and &lsquo;<samp>g++</samp>&rsquo; together, since the flags for &lsquo;<samp>gcc</samp>&rsquo; will
+usually suit &lsquo;<samp>g++</samp>&rsquo;.
+</p>
+<p>It&rsquo;s important that the C and C++ compilers match, meaning their startup and
+runtime support routines are compatible and that they generate code in the
+same ABI (if there&rsquo;s a choice of ABIs on the system).  &lsquo;<samp>./configure</samp>&rsquo;
+isn&rsquo;t currently able to check these things very well itself, so for that
+reason &lsquo;<samp>--disable-cxx</samp>&rsquo; is the default, to avoid a build failure due to a
+compiler mismatch.  Perhaps this will change in the future.
+</p>
+<p>Incidentally, it&rsquo;s normally not good enough to set &lsquo;<samp>CXX</samp>&rsquo; to the same as
+&lsquo;<samp>CC</samp>&rsquo;.  Although <code>gcc</code> for instance recognises <samp>foo.cc</samp> as
+C++ code, only <code>g++</code> will invoke the linker the right way when
+building an executable or shared library from C++ object files.
+</p>
+</dd>
+<dt>Temporary Memory, <samp>--enable-alloca=&lt;choice&gt;</samp></dt>
+<dd><a name="index-Temporary-memory"></a>
+<a name="index-Stack-overflow"></a>
+<a name="index-alloca"></a>
+<a name="index-_002d_002denable_002dalloca"></a>
+<p>GMP allocates temporary workspace using one of the following three methods,
+which can be selected with for instance
+&lsquo;<samp>--enable-alloca=malloc-reentrant</samp>&rsquo;.
+</p>
+<ul>
+<li> &lsquo;<samp>alloca</samp>&rsquo; - C library or compiler builtin.
+</li><li> &lsquo;<samp>malloc-reentrant</samp>&rsquo; - the heap, in a re-entrant fashion.
+</li><li> &lsquo;<samp>malloc-notreentrant</samp>&rsquo; - the heap, with global variables.
+</li></ul>
+
+<p>For convenience, the following choices are also available.
+&lsquo;<samp>--disable-alloca</samp>&rsquo; is the same as &lsquo;<samp>no</samp>&rsquo;.
+</p>
+<ul>
+<li> &lsquo;<samp>yes</samp>&rsquo; - a synonym for &lsquo;<samp>alloca</samp>&rsquo;.
+</li><li> &lsquo;<samp>no</samp>&rsquo; - a synonym for &lsquo;<samp>malloc-reentrant</samp>&rsquo;.
+</li><li> &lsquo;<samp>reentrant</samp>&rsquo; - <code>alloca</code> if available, otherwise
+&lsquo;<samp>malloc-reentrant</samp>&rsquo;.  This is the default.
+</li><li> &lsquo;<samp>notreentrant</samp>&rsquo; - <code>alloca</code> if available, otherwise
+&lsquo;<samp>malloc-notreentrant</samp>&rsquo;.
+</li></ul>
+
+<p><code>alloca</code> is reentrant and fast, and is recommended.  It actually allocates
+just small blocks on the stack; larger ones use malloc-reentrant.
+</p>
+<p>&lsquo;<samp>malloc-reentrant</samp>&rsquo; is, as the name suggests, reentrant and thread safe,
+but &lsquo;<samp>malloc-notreentrant</samp>&rsquo; is faster and should be used if reentrancy is
+not required.
+</p>
+<p>The two malloc methods in fact use the memory allocation functions selected by
+<code>mp_set_memory_functions</code>, these being <code>malloc</code> and friends by
+default.  See <a href="Custom-Allocation.html#Custom-Allocation">Custom Allocation</a>.
+</p>
+<p>An additional choice &lsquo;<samp>--enable-alloca=debug</samp>&rsquo; is available, to help when
+debugging memory related problems (see <a href="Debugging.html#Debugging">Debugging</a>).
+</p>
+</dd>
+<dt>FFT Multiplication, <samp>--disable-fft</samp></dt>
+<dd><a name="index-FFT-multiplication"></a>
+<a name="index-_002d_002ddisable_002dfft"></a>
+<p>By default multiplications are done using Karatsuba, 3-way Toom, higher degree
+Toom, and Fermat FFT.  The FFT is only used on large to very large operands
+and can be disabled to save code size if desired.
+</p>
+</dd>
+<dt>Assertion Checking, <samp>--enable-assert</samp></dt>
+<dd><a name="index-Assertion-checking"></a>
+<a name="index-_002d_002denable_002dassert"></a>
+<p>This option enables some consistency checking within the library.  This can be
+of use while debugging, see <a href="Debugging.html#Debugging">Debugging</a>.
+</p>
+</dd>
+<dt>Execution Profiling, <samp>--enable-profiling=prof/gprof/instrument</samp></dt>
+<dd><a name="index-Execution-profiling"></a>
+<a name="index-_002d_002denable_002dprofiling"></a>
+<p>Enable profiling support, in one of various styles, see <a href="Profiling.html#Profiling">Profiling</a>.
+</p>
+</dd>
+<dt><samp>MPN_PATH</samp></dt>
+<dd><a name="index-MPN_005fPATH"></a>
+<p>Various assembly versions of each mpn subroutines are provided.  For a given
+CPU, a search is made though a path to choose a version of each.  For example
+&lsquo;<samp>sparcv8</samp>&rsquo; has
+</p>
+<div class="example">
+<pre class="example">MPN_PATH=&quot;sparc32/v8 sparc32 generic&quot;
+</pre></div>
+
+<p>which means look first for v8 code, then plain sparc32 (which is v7), and
+finally fall back on generic C.  Knowledgeable users with special requirements
+can specify a different path.  Normally this is completely unnecessary.
+</p>
+</dd>
+<dt>Documentation</dt>
+<dd><a name="index-Documentation-formats"></a>
+<a name="index-Texinfo"></a>
+<p>The source for the document you&rsquo;re now reading is <samp>doc/gmp.texi</samp>, in
+Texinfo format, see <a href="http://www.gnu.org/software/texinfo/manual/texinfo/html_node/index.html#Top">Texinfo</a> in <cite>Texinfo</cite>.
+</p>
+<a name="index-Postscript"></a>
+<a name="index-DVI"></a>
+<a name="index-PDF"></a>
+<p>Info format &lsquo;<samp>doc/gmp.info</samp>&rsquo; is included in the distribution.  The usual
+automake targets are available to make PostScript, DVI, PDF and HTML (these
+will require various TeX and Texinfo tools).
+</p>
+<a name="index-DocBook"></a>
+<a name="index-XML"></a>
+<p>DocBook and XML can be generated by the Texinfo <code>makeinfo</code> program
+too, see <a href="http://www.gnu.org/software/texinfo/manual/texinfo/html_node/makeinfo-options.html#makeinfo-options">Options for <code>makeinfo</code></a> in <cite>Texinfo</cite>.
+</p>
+<p>Some supplementary notes can also be found in the <samp>doc</samp> subdirectory.
+</p>
+</dd>
+</dl>
+
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="ABI-and-ISA.html#ABI-and-ISA" accesskey="n" rel="next">ABI and ISA</a>, Previous: <a href="Installing-GMP.html#Installing-GMP" accesskey="p" rel="prev">Installing GMP</a>, Up: <a href="Installing-GMP.html#Installing-GMP" accesskey="u" rel="up">Installing GMP</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

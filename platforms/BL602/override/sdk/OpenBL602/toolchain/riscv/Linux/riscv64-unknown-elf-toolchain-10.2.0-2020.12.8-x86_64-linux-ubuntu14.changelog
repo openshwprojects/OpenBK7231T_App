@@ -1,0 +1,31 @@
+[Wed Jan 27 12:54:53 2021 +0800] Bump version
+[Tue Jan 19 12:40:04 2021 -0800] Bumping package version number
+[Tue Jan 19 12:38:28 2021 -0800] Fixing copy paste error that made ubuntu and win builds clash
+[Sun Jan 17 18:22:44 2021 -0800] Merge branch '2020.12-release' of git@github.com:sifive/freedom-toolchain-metal.git into 2020.12-release
+[Sun Jan 17 18:18:00 2021 -0800] Fixing that src tarballs of submodules are removed
+[Sat Jan 16 17:37:51 2021 -0800] Adding a statement for debug status
+[Sat Jan 16 17:27:15 2021 -0800] Bumping version and adding src merging
+[Thu Jan 14 00:28:51 2021 +0800] Bump version
+[Mon Jan 11 13:11:11 2021 +0800] Bump version
+[Fri Jan 8 20:39:03 2021 +0800] Bump version to 2020.12.3 for RVB 0.93
+[Wed Jan 6 16:58:13 2021 +0800] Bump version
+[Mon Jan 4 15:07:11 2021 +0800] Bump version to 2020.12.1
+[Mon Jan 4 14:34:50 2021 +0800] Bump version to 2020.12.1-rc1
+[Wed Dec 23 06:38:15 2020 -0800] Bump version
+[Sun Jan 17 18:18:00 2021 -0800] Fixing that src tarballs of submodules are removed
+[Sat Jan 16 17:37:51 2021 -0800] Adding a statement for debug status
+[Sat Jan 16 17:27:15 2021 -0800] Bumping version and adding src merging
+[Fri Jan 15 14:41:50 2021 -0800] Adding src from subcomponents to toolchain src tarball
+[Thu Jan 14 00:28:51 2021 +0800] Bump version
+[Mon Jan 11 13:11:11 2021 +0800] Bump version
+[Fri Jan 8 20:39:03 2021 +0800] Bump version to 2020.12.3 for RVB 0.93
+[Wed Jan 6 16:58:13 2021 +0800] Bump version
+[Mon Jan 4 15:07:11 2021 +0800] Bump version to 2020.12.1
+[Mon Jan 4 14:34:50 2021 +0800] Bump version to 2020.12.1-rc1
+[Wed Dec 23 06:38:15 2020 -0800] Bump version
+[Fri Dec 18 18:31:23 2020 -0800] Also remember to remove zip archives
+[Fri Dec 18 11:40:46 2020 -0800] Removing component packages after use
+[Fri Dec 18 09:23:32 2020 -0800] Adding win64 targets
+[Thu Dec 17 14:53:26 2020 -0800] Adding more checks and bundle generation
+[Wed Dec 16 13:28:31 2020 -0800] Cleaning up
+[Wed Sep 23 14:55:37 2020 -0700] Initial commit

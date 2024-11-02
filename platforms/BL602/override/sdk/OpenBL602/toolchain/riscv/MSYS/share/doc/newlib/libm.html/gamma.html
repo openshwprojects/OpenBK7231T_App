@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>LIBM: gamma</title>
+
+<meta name="description" content="LIBM: gamma">
+<meta name="keywords" content="LIBM: gamma">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Math.html#Math" rel="up" title="Math">
+<link href="hypot.html#hypot" rel="next" title="hypot">
+<link href="frexp.html#frexp" rel="prev" title="frexp">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="gamma"></a>
+<div class="header">
+<p>
+Next: <a href="hypot.html#hypot" accesskey="n" rel="next">hypot</a>, Previous: <a href="frexp.html#frexp" accesskey="p" rel="prev">frexp</a>, Up: <a href="Math.html#Math" accesskey="u" rel="up">Math</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="gamma_002c-gammaf_002c-lgamma_002c-lgammaf_002c-gamma_005fr_002c-gammaf_005fr_002c-lgamma_005fr_002c-lgammaf_005fr_002c-tgamma_002c-and-tgammaf_002d_002d_002dlogarithmic-and-plain-gamma-functions"></a>
+<h3 class="section">1.27 <code>gamma</code>, <code>gammaf</code>, <code>lgamma</code>, <code>lgammaf</code>, <code>gamma_r</code>, <code>gammaf_r</code>, <code>lgamma_r</code>, <code>lgammaf_r</code>, <code>tgamma</code>, and <code>tgammaf</code>&mdash;logarithmic and plain gamma functions</h3>
+<a name="index-gamma"></a>
+<a name="index-gammaf"></a>
+<a name="index-lgamma"></a>
+<a name="index-lgammaf"></a>
+<a name="index-gamma_005fr"></a>
+<a name="index-gammaf_005fr"></a>
+<a name="index-lgamma_005fr"></a>
+<a name="index-lgammaf_005fr"></a>
+<a name="index-tgamma"></a>
+<a name="index-tgammaf"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;math.h&gt;
+double gamma(double <var>x</var>);
+float gammaf(float <var>x</var>);
+double lgamma(double <var>x</var>);
+float lgammaf(float <var>x</var>);
+double gamma_r(double <var>x</var>, int *<var>signgamp</var>);
+float gammaf_r(float <var>x</var>, int *<var>signgamp</var>);
+double lgamma_r(double <var>x</var>, int *<var>signgamp</var>);
+float lgammaf_r(float <var>x</var>, int *<var>signgamp</var>);
+double tgamma(double <var>x</var>);
+float tgammaf(float <var>x</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>gamma</code> calculates
+the natural logarithm of the gamma function of <var>x</var>.  The gamma function
+(<code>exp(gamma(<var>x</var>))</code>) is a generalization of factorial, and retains
+the property that
+<code>exp(gamma(N))</code> is equivalent to <code>N*exp(gamma(N-1))</code>.
+Accordingly, the results of the gamma function itself grow very
+quickly.  <code>gamma</code> is defined as
+the natural log of the gamma function, rather than the gamma function
+itself,
+to extend the useful range of results representable.
+</p>
+<p>The sign of the result is returned in the global variable <code>signgam</code>,
+which is declared in math.h.
+</p>
+<p><code>gammaf</code> performs the same calculation as <code>gamma</code>, but uses and
+returns <code>float</code> values.
+</p>
+<p><code>lgamma</code> and <code>lgammaf</code> are alternate names for <code>gamma</code> and
+<code>gammaf</code>.  The use of <code>lgamma</code> instead of <code>gamma</code> is a reminder
+that these functions compute the log of the gamma function, rather
+than the gamma function itself.
+</p>
+<p>The functions <code>gamma_r</code>, <code>gammaf_r</code>, <code>lgamma_r</code>, and
+<code>lgammaf_r</code> are just like <code>gamma</code>, <code>gammaf</code>, <code>lgamma</code>, and
+<code>lgammaf</code>, respectively, but take an additional argument.  This
+additional argument is a pointer to an integer.  This additional
+argument is used to return the sign of the result, and the global
+variable <code>signgam</code> is not used.  These functions may be used for
+reentrant calls (but they will still set the global variable <code>errno</code>
+if an error occurs).
+</p>
+<p><code>tgamma</code> and <code>tgammaf</code> are the &quot;true gamma&quot; functions, returning
+the gamma function of <var>x</var>&ndash;without a logarithm.
+(They are apparently so named because of the prior existence of the old,
+poorly-named <code>gamma</code> functions which returned the log of gamma up
+through BSD 4.2.)
+</p>
+<br>
+<p><strong>Returns</strong><br>
+Normally, the computed result is returned.
+</p>
+<p>When <var>x</var> is a nonpositive integer, <code>gamma</code> returns <code>HUGE_VAL</code>
+and <code>errno</code> is set to <code>EDOM</code>.  If the result overflows, <code>gamma</code>
+returns <code>HUGE_VAL</code> and <code>errno</code> is set to <code>ERANGE</code>.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+Neither <code>gamma</code> nor <code>gammaf</code> is ANSI C.  It is better not to use either
+of these; use <code>lgamma</code> or <code>tgamma</code> instead.<br>
+<code>lgamma</code>, <code>lgammaf</code>, <code>tgamma</code>, and <code>tgammaf</code> are nominally C standard
+in terms of the base return values, although the <var>signgam</var> global for
+<code>lgamma</code> is not standard.
+</p>
+<br>
+<hr>
+<div class="header">
+<p>
+Next: <a href="hypot.html#hypot" accesskey="n" rel="next">hypot</a>, Previous: <a href="frexp.html#frexp" accesskey="p" rel="prev">frexp</a>, Up: <a href="Math.html#Math" accesskey="u" rel="up">Math</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

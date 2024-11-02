@@ -1,0 +1,202 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>LIBM: Math</title>
+
+<meta name="description" content="LIBM: Math">
+<meta name="keywords" content="LIBM: Math">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="index.html#Top" rel="up" title="Top">
+<link href="version.html#version" rel="next" title="version">
+<link href="index.html#Top" rel="prev" title="Top">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Math"></a>
+<div class="header">
+<p>
+Next: <a href="Complex.html#Complex" accesskey="n" rel="next">Complex</a>, Previous: <a href="index.html#Top" accesskey="p" rel="prev">Top</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Mathematical-Functions-_0028math_002eh_0029"></a>
+<h2 class="chapter">1 Mathematical Functions (<samp>math.h</samp>)</h2>
+
+<p>This chapter groups a wide variety of mathematical functions.  The
+corresponding definitions and declarations are in <samp>math.h</samp>.  
+The definition of HUGE_VAL from <samp>math.h</samp> is of particular interest.
+</p>
+<ol>
+<li> The representation of infinity as a <code>double</code> is defined as
+<code>HUGE_VAL</code>; this number is returned on overflow by many functions.
+The macro <code>HUGE_VALF</code> is a corresponding value for <code>float</code>.
+</li></ol>
+
+<p>Alternative declarations of the mathematical functions, which exploit
+specific machine capabilities to operate faster&mdash;but generally have
+less error checking and may reflect additional limitations on some
+machines&mdash;are available when you include <samp>fastmath.h</samp> instead of
+<samp>math.h</samp>.
+</p>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="version.html#version" accesskey="1">version</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Version of library
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="acos.html#acos" accesskey="2">acos</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Arccosine
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="acosh.html#acosh" accesskey="3">acosh</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Inverse hyperbolic cosine
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="asin.html#asin" accesskey="4">asin</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Arcsine
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="asinh.html#asinh" accesskey="5">asinh</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Inverse hyperbolic sine
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="atan.html#atan" accesskey="6">atan</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Arctangent
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="atan2.html#atan2" accesskey="7">atan2</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Arctangent of y/x
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="atanh.html#atanh" accesskey="8">atanh</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Inverse hyperbolic tangent
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="jN.html#jN" accesskey="9">jN</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Bessel functions (jN, yN)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="cbrt.html#cbrt">cbrt</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Cube root
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="copysign.html#copysign">copysign</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Sign of Y, magnitude of X
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="cosh.html#cosh">cosh</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Hyperbolic cosine
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="erf.html#erf">erf</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Error function (erf, erfc)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="exp.html#exp">exp</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Exponential, base e
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="exp10.html#exp10">exp10</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Exponential, base 10
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="exp2.html#exp2">exp2</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Exponential, base 2
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="expm1.html#expm1">expm1</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Exponential, base e, of x - 1
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fabs.html#fabs">fabs</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Absolute value (magnitude)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fdim.html#fdim">fdim</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Positive difference
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="floor.html#floor">floor</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Floor and ceiling (floor, ceil)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fma.html#fma">fma</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Floating multiply add
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fmax.html#fmax">fmax</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Maximum
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fmin.html#fmin">fmin</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Minimum
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fmod.html#fmod">fmod</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Floating-point remainder (modulo)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="fpclassify.html#fpclassify">fpclassify</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Floating-point classification macro
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="frexp.html#frexp">frexp</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Split floating-point number
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="gamma.html#gamma">gamma</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Logarithmic gamma function
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="hypot.html#hypot">hypot</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Distance from origin
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="ilogb.html#ilogb">ilogb</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Get exponent
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="infinity.html#infinity">infinity</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Floating infinity
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="isgreater.html#isgreater">isgreater</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Comparison macros
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="ldexp.html#ldexp">ldexp</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Scale by a power of 2
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="log.html#log">log</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Natural logarithms
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="log10.html#log10">log10</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Base 10 logarithms
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="log1p.html#log1p">log1p</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Log of 1 + X
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="log2.html#log2">log2</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Base 2 logarithms
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="logb.html#logb">logb</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Get exponent
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="lrint.html#lrint">lrint</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Round to integer
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="lround.html#lround">lround</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Round to integer, away from zero (lround, llround)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="modf.html#modf">modf</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Split fractional and integer parts
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="nan.html#nan">nan</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Floating Not a Number
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="nearbyint.html#nearbyint">nearbyint</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Round to integer
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="nextafter.html#nextafter">nextafter</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Get next representable number
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="pow.html#pow">pow</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">X to the power Y
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="pow10.html#pow10">pow10</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">10 to the power X
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="remainder.html#remainder">remainder</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">remainder of X divided by Y 
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="remquo.html#remquo">remquo</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Remainder and part of quotient
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="rint.html#rint">rint</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Round to integer
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="round.html#round">round</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Round to integer, away from zero
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="scalbn.html#scalbn">scalbn</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Scale by a power of FLT_RADIX (2)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="signbit.html#signbit">signbit</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Does floating-point number have negative sign?
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="sin.html#sin">sin</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Sine or cosine (sin, cos)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="sinh.html#sinh">sinh</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Hyperbolic sine
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="sqrt.html#sqrt">sqrt</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Positive square root
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="tan.html#tan">tan</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Tangent
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="tanh.html#tanh">tanh</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Hyperbolic tangent
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="trunc.html#trunc">trunc</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Round to integer, towards zero
+</td></tr>
+</table>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Complex.html#Complex" accesskey="n" rel="next">Complex</a>, Previous: <a href="index.html#Top" accesskey="p" rel="prev">Top</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

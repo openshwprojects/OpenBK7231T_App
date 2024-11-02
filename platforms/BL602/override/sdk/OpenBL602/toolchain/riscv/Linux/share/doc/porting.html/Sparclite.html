@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Embed with GNU: Sparclite</title>
+
+<meta name="description" content="Embed with GNU: Sparclite">
+<meta name="keywords" content="Embed with GNU: Sparclite">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="leds_002ec.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Supported-targets.html#Supported-targets" rel="up" title="Supported targets">
+<link href="CPU32.html#CPU32" rel="next" title="CPU32">
+<link href="Supported-targets.html#Supported-targets" rel="prev" title="Supported targets">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Sparclite"></a>
+<div class="header">
+<p>
+Next: <a href="CPU32.html#CPU32" accesskey="n" rel="next">CPU32</a>, Up: <a href="Supported-targets.html#Supported-targets" accesskey="u" rel="up">Supported targets</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<a name="Sparclite-Targets-Supported"></a>
+<h4 class="subsection">1.1.1 Sparclite Targets Supported</h4>
+<p>This is for the Fujitsu Sparclite family of processors. Currently this 
+covers the ex930, ex931, ex932, ex933, and the ex934. In addition to the
+I/O code a startup file, this has a GDB debug-stub that gets linked into
+your application. This is an exception handler style debug stub. For
+more info, see the section on Porting GDB. <a href="GDB.html#GDB">Porting GDB</a>.
+</p>
+<p>The Fujitsu eval boards use a host based terminal program to load and
+execute programs on the target. This program, <code>pciuh</code> is relatively
+new (in 1994) and it replaced the previous ROM monitor which had the
+shell in the ROM. GDB uses the the GDB remote protocol, the relevant
+source files from the gdb sources are remote-sparcl.c. The debug stub is
+part of libgloss and is called sparcl-stub.c.
+</p>
+
+
+
+</body>
+</html>

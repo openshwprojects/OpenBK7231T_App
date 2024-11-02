@@ -1,0 +1,299 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Embed with GNU: glue.c</title>
+
+<meta name="description" content="Embed with GNU: glue.c">
+<meta name="keywords" content="Embed with GNU: glue.c">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="leds_002ec.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Code-Listings.html#Code-Listings" rel="up" title="Code Listings">
+<link href="mvme_002eS.html#mvme_002eS" rel="next" title="mvme.S">
+<link href="crt0_002eS.html#crt0_002eS" rel="prev" title="crt0.S">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="glue_002ec"></a>
+<div class="header">
+<p>
+Next: <a href="mvme_002eS.html#mvme_002eS" accesskey="n" rel="next">mvme.S</a>, Previous: <a href="crt0_002eS.html#crt0_002eS" accesskey="p" rel="prev">crt0.S</a>, Up: <a href="Code-Listings.html#Code-Listings" accesskey="u" rel="up">Code Listings</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<a name="C-based-_0022glue_0022-code_002e"></a>
+<h3 class="section">A.3 C based &quot;glue&quot; code.</h3>
+
+<div class="example">
+<pre class="example">
+
+/*
+ * glue.c -- all the code to make GCC and the libraries run on
+ *           a bare target board. These should work with any
+ *           target if inbyte() and outbyte() exist.
+ */
+
+#include &lt;sys/types.h&gt;
+#include &lt;sys/stat.h&gt;
+#include &lt;errno.h&gt;
+#ifndef NULL
+#define NULL 0
+#endif
+
+/* FIXME: this is a hack till libc builds */
+__main()
+{
+  return;
+}
+
+#undef errno
+int errno;
+
+extern caddr_t _end;                /* _end is set in the linker command file */
+extern int outbyte();
+extern unsigned char inbyte();
+extern int havebyte();
+
+/* just in case, most boards have at least some memory */
+#ifndef RAMSIZE
+#  define RAMSIZE             (caddr_t)0x100000
+#endif
+
+/*
+ * read  -- read bytes from the serial port. Ignore fd, since
+ *          we only have stdin.
+ */
+int
+read(fd, buf, nbytes)
+     int fd;
+     char *buf;
+     int nbytes;
+{
+  int i = 0;
+
+  for (i = 0; i &lt; nbytes; i++) {
+    *(buf + i) = inbyte();
+    if ((*(buf + i) == '\n') || (*(buf + i) == '\r')) {
+      (*(buf + i)) = 0;
+      break;
+    }
+  }
+  return (i);
+}
+
+/*
+ * write -- write bytes to the serial port. Ignore fd, since
+ *          stdout and stderr are the same. Since we have no filesystem,
+ *          open will only return an error.
+ */
+int
+write(fd, buf, nbytes)
+     int fd;
+     char *buf;
+     int nbytes;
+{
+  int i;
+
+  for (i = 0; i &lt; nbytes; i++) {
+    if (*(buf + i) == '\n') {
+      outbyte ('\r');
+    }
+    outbyte (*(buf + i));
+  }
+  return (nbytes);
+}
+
+/*
+ * open -- open a file descriptor. We don't have a filesystem, so
+ *         we return an error.
+ */
+int
+open(buf, flags, mode)
+     char *buf;
+     int flags;
+     int mode;
+{
+  errno = EIO;
+  return (-1);
+}
+
+/*
+ * close -- close a file descriptor. We don't need
+ *          to do anything, but pretend we did.
+ */
+int
+close(fd)
+     int fd;
+{
+  return (0);
+}
+
+/*
+ * sbrk -- changes heap size size. Get nbytes more
+ *         RAM. We just increment a pointer in what's
+ *         left of memory on the board.
+ */
+caddr_t
+sbrk(nbytes)
+     int nbytes;
+{
+  static caddr_t heap_ptr = NULL;
+  caddr_t        base;
+
+  if (heap_ptr == NULL) {
+    heap_ptr = (caddr_t)&amp;_end;
+  }
+
+  if ((RAMSIZE - heap_ptr) &gt;= 0) {
+    base = heap_ptr;
+    heap_ptr += nbytes;
+    return (base);
+  } else {
+    errno = ENOMEM;
+    return ((caddr_t)-1);
+  }
+}
+
+/*
+ * isatty -- returns 1 if connected to a terminal device,
+ *           returns 0 if not. Since we're hooked up to a
+ *           serial port, we'll say yes and return a 1.
+ */
+int
+isatty(fd)
+     int fd;
+{
+  return (1);
+}
+
+/*
+ * lseek -- move read/write pointer. Since a serial port
+ *          is non-seekable, we return an error.
+ */
+off_t
+lseek(fd,  offset, whence)
+     int fd;
+     off_t offset;
+     int whence;
+{
+  errno = ESPIPE;
+  return ((off_t)-1);
+}
+
+/*
+ * fstat -- get status of a file. Since we have no file
+ *          system, we just return an error.
+ */
+int
+fstat(fd, buf)
+     int fd;
+     struct stat *buf;
+{
+  errno = EIO;
+  return (-1);
+}
+
+/*
+ * getpid -- only one process, so just return 1.
+ */
+#define __MYPID 1
+int
+getpid()
+{
+  return __MYPID;
+}
+
+/*
+ * kill -- go out via exit...
+ */
+int
+kill(pid, sig)
+     int pid;
+     int sig;
+{
+  if(pid == __MYPID)
+    _exit(sig);
+  return 0;
+}
+
+/*
+ * print -- do a raw print of a string
+ */ 
+int
+print(ptr)
+char *ptr;
+{
+  while (*ptr) {
+    outbyte (*ptr++);
+  }
+}
+
+/*
+ * putnum -- print a 32 bit number in hex
+ */
+int
+putnum (num)
+unsigned int num;
+{
+  char  buffer[9];
+  int   count;
+  char  *bufptr = buffer;
+  int   digit;
+  
+  for (count = 7 ; count &gt;= 0 ; count--) {
+    digit = (num &gt;&gt; (count * 4)) &amp; 0xf;
+    
+    if (digit &lt;= 9)
+      *bufptr++ = (char) ('0' + digit);
+    else
+      *bufptr++ = (char) ('a' - 10 + digit);
+  }
+
+  *bufptr = (char) 0;
+  print (buffer);
+  return;
+}
+</pre></div>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="mvme_002eS.html#mvme_002eS" accesskey="n" rel="next">mvme.S</a>, Previous: <a href="crt0_002eS.html#crt0_002eS" accesskey="p" rel="prev">crt0.S</a>, Up: <a href="Code-Listings.html#Code-Listings" accesskey="u" rel="up">Code Listings</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+
+
+
+</body>
+</html>

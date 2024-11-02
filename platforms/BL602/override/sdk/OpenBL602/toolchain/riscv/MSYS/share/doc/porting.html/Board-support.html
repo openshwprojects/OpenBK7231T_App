@@ -1,0 +1,111 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Embed with GNU: Board support</title>
+
+<meta name="description" content="Embed with GNU: Board support">
+<meta name="keywords" content="Embed with GNU: Board support">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="leds_002ec.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Libgloss.html#Libgloss" rel="up" title="Libgloss">
+<link href="GCC.html#GCC" rel="next" title="GCC">
+<link href="Building-libgloss.html#Building-libgloss" rel="prev" title="Building libgloss">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Board-support"></a>
+<div class="header">
+<p>
+Previous: <a href="Building-libgloss.html#Building-libgloss" accesskey="p" rel="prev">Building libgloss</a>, Up: <a href="Libgloss.html#Libgloss" accesskey="u" rel="up">Libgloss</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<a name="Adding-Support-for-a-New-Board"></a>
+<h3 class="section">1.3 Adding Support for a New Board</h3>
+
+<p>This section explains how to add support for a new board to libgloss.
+In order to add support for a board, you must already have developed a
+toolchain for the target architecture.
+</p>
+<p>All of the changes you will make will be in the subdirectory named
+after the architecture used by your board.  For example, if you are
+developing support for a new ColdFire board, you will modify files in
+the <samp>m68k</samp> subdirectory, as that subdirectory contains support
+for all 68K devices, including architecture variants like ColdFire.
+</p>
+<p>In general, you will be adding three components: a <samp>crt0.S</samp> file
+(see <a href="Crt0.html#Crt0">Crt0</a>), a linker script (see <a href="Linker-Scripts.html#Linker-Scripts">Linker Scripts</a>), and a
+hardware support library.  Each should be prefixed with the name of
+your board.  For example, if you ard adding support for a new Surf
+board, then you will be adding the assembly <samp>surf-crt0.S</samp> (which
+will be assembled into <samp>surf-crt0.o</samp>), the linker script
+<samp>surf.ld</samp>, and other C and assembly files which will be combined
+into the hardware support library <samp>libsurf.a</samp>.
+</p>
+<p>You should modify <samp>Makefile.in</samp> to define new variables
+corresponding to your board.  Although there is some variation between
+architectures, the general convention is to use the following format:
+</p>
+<div class="example">
+<pre class="example"># The name of the crt0.o file.
+SURF_CRT0    = surf-crt0.o
+# The name of the linker script.
+SURF_SCRIPTS = surf.ld
+# The name of the hardware support library.
+SURF_BSP     = libsurf.a
+# The object files that make up the hardware support library.
+SURF_OBJS    = surf-file1.o surf-file2.o 
+# The name of the Makefile target to use for installation.
+SURF_INSTALL = install-surf
+</pre></div>
+
+<p>Then, you should create the <code>${SURF_BSP}</code> and
+<code>${SURF_INSTALL}</code> make targets.  Add <code>${SURF_CRT0}</code> to
+the dependencies for the <code>all</code> target and add
+<code>${SURF_INSTALL}</code> to the dependencies for the <code>install</code>
+target.  Now, when libgloss is built and installed, support for your
+BSP will be installed as well.
+</p>
+<hr>
+<div class="header">
+<p>
+Previous: <a href="Building-libgloss.html#Building-libgloss" accesskey="p" rel="prev">Building libgloss</a>, Up: <a href="Libgloss.html#Libgloss" accesskey="u" rel="up">Libgloss</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+
+
+
+</body>
+</html>

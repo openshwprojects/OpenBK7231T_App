@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Embed with GNU: crt0.S</title>
+
+<meta name="description" content="Embed with GNU: crt0.S">
+<meta name="keywords" content="Embed with GNU: crt0.S">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="leds_002ec.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Code-Listings.html#Code-Listings" rel="up" title="Code Listings">
+<link href="glue_002ec.html#glue_002ec" rel="next" title="glue.c">
+<link href="idp_002eld.html#idp_002eld" rel="prev" title="idp.ld">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="crt0_002eS"></a>
+<div class="header">
+<p>
+Next: <a href="glue_002ec.html#glue_002ec" accesskey="n" rel="next">glue.c</a>, Previous: <a href="idp_002eld.html#idp_002eld" accesskey="p" rel="prev">idp.ld</a>, Up: <a href="Code-Listings.html#Code-Listings" accesskey="u" rel="up">Code Listings</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<a name="crt0_002eS-_002d-The-startup-file"></a>
+<h3 class="section">A.2 crt0.S - The startup file</h3>
+
+<div class="example">
+<pre class="example">/*
+ * crt0.S -- startup file for m68k-coff
+ * 
+ */
+
+	.title &quot;crt0.S for m68k-coff&quot;
+
+/* These are predefined by new versions of GNU cpp.  */
+
+#ifndef __USER_LABEL_PREFIX__
+#define __USER_LABEL_PREFIX__ _
+#endif
+
+#ifndef __REGISTER_PREFIX__
+#define __REGISTER_PREFIX__
+#endif
+
+/* ANSI concatenation macros.  */
+
+#define CONCAT1(a, b) CONCAT2(a, b)
+#define CONCAT2(a, b) a ## b
+
+/* Use the right prefix for global labels.  */
+
+#define SYM(x) CONCAT1 (__USER_LABEL_PREFIX__, x)
+
+/* Use the right prefix for registers.  */
+
+#define REG(x) CONCAT1 (__REGISTER_PREFIX__, x)
+
+#define d0 REG (d0)
+#define d1 REG (d1)
+#define d2 REG (d2)
+#define d3 REG (d3)
+#define d4 REG (d4)
+#define d5 REG (d5)
+#define d6 REG (d6)
+#define d7 REG (d7)
+#define a0 REG (a0)
+#define a1 REG (a1)
+#define a2 REG (a2)
+#define a3 REG (a3)
+#define a4 REG (a4)
+#define a5 REG (a5)
+#define a6 REG (a6)
+#define fp REG (fp)
+#define sp REG (sp)
+
+/*
+ * Set up some room for a stack. We just grab a chunk of memory.
+ */
+	.set	stack_size, 0x2000
+	.comm	SYM (stack), stack_size
+
+/*
+ * Define an empty environment.
+ */
+        .data
+        .align 2
+SYM (environ):
+        .long 0
+
+ 	.align	2
+	.text
+	.global SYM (stack)
+
+	.global SYM (main)
+	.global SYM (exit)
+/* 
+ * This really should be __bss_start, not SYM (__bss_start).
+ */
+	.global __bss_start
+
+/*
+ * start -- set things up so the application will run.
+ */
+SYM (start):
+	link	a6, #-8
+	moveal	#SYM (stack) + stack_size, sp
+
+/*
+ * zerobss -- zero out the bss section
+ */
+	moveal	#__bss_start, a0
+	moveal	#SYM (end), a1
+1:
+	movel	#0, (a0)
+	leal	4(a0), a0
+	cmpal	a0, a1
+	bne	1b
+
+/*
+ * Call the main routine from the application to get it going.
+ * main (argc, argv, environ)
+ * We pass argv as a pointer to NULL.
+ */
+        pea     0
+        pea     SYM (environ)
+        pea     sp@(4)
+        pea     0
+	jsr	SYM (main)
+	movel	d0, sp@-
+
+/*
+ * _exit -- Exit from the application. Normally we cause a user trap
+ *          to return to the ROM monitor for another run.
+ */
+SYM (exit):
+	trap	#0
+</pre></div>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="glue_002ec.html#glue_002ec" accesskey="n" rel="next">glue.c</a>, Previous: <a href="idp_002eld.html#idp_002eld" accesskey="p" rel="prev">idp.ld</a>, Up: <a href="Code-Listings.html#Code-Listings" accesskey="u" rel="up">Code Listings</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+
+
+
+</body>
+</html>

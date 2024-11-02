@@ -1,0 +1,265 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 1988-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "Free Software" and "Free Software Needs
+Free Documentation", with the Front-Cover Texts being "A GNU Manual,"
+and with the Back-Cover Texts as in (a) below.
+
+(a) The FSF's Back-Cover Text is: "You are free to copy and modify
+this GNU Manual.  Buying copies from GNU Press supports the FSF in
+developing GNU and promoting software freedom." -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Target Commands (Debugging with GDB)</title>
+
+<meta name="description" content="Target Commands (Debugging with GDB)">
+<meta name="keywords" content="Target Commands (Debugging with GDB)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="Concept-Index.html" rel="index" title="Concept Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Targets.html" rel="up" title="Targets">
+<link href="Byte-Order.html" rel="next" title="Byte Order">
+<link href="Active-Targets.html" rel="prev" title="Active Targets">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="Target-Commands"></span><div class="header">
+<p>
+Next: <a href="Byte-Order.html" accesskey="n" rel="next">Byte Order</a>, Previous: <a href="Active-Targets.html" accesskey="p" rel="prev">Active Targets</a>, Up: <a href="Targets.html" accesskey="u" rel="up">Targets</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Commands-for-Managing-Targets"></span><h3 class="section">19.2 Commands for Managing Targets</h3>
+
+<dl compact="compact">
+<dt><code>target <var>type</var> <var>parameters</var></code></dt>
+<dd><p>Connects the <small>GDB</small> host environment to a target machine or
+process.  A target is typically a protocol for talking to debugging
+facilities.  You use the argument <var>type</var> to specify the type or
+protocol of the target machine.
+</p>
+<p>Further <var>parameters</var> are interpreted by the target protocol, but
+typically include things like device names or host names to connect
+with, process numbers, and baud rates.
+</p>
+<p>The <code>target</code> command does not repeat if you press <tt class="key">RET</tt> again
+after executing the command.
+</p>
+<span id="index-help-target"></span>
+</dd>
+<dt><code>help target</code></dt>
+<dd><p>Displays the names of all targets available.  To display targets
+currently selected, use either <code>info target</code> or <code>info files</code>
+(see <a href="Files.html">Commands to Specify Files</a>).
+</p>
+</dd>
+<dt><code>help target <var>name</var></code></dt>
+<dd><p>Describe a particular target, including any parameters necessary to
+select it.
+</p>
+<span id="index-set-gnutarget"></span>
+</dd>
+<dt><code>set gnutarget <var>args</var></code></dt>
+<dd><p><small>GDB</small> uses its own library BFD to read your files.  <small>GDB</small>
+knows whether it is reading an <em>executable</em>,
+a <em>core</em>, or a <em>.o</em> file; however, you can specify the file format
+with the <code>set gnutarget</code> command.  Unlike most <code>target</code> commands,
+with <code>gnutarget</code> the <code>target</code> refers to a program, not a machine.
+</p>
+<blockquote>
+<p><em>Warning:</em> To specify a file format with <code>set gnutarget</code>,
+you must know the actual BFD name.
+</p></blockquote>
+
+<p>See <a href="Files.html">Commands to Specify Files</a>.
+</p>
+<span id="index-show-gnutarget"></span>
+</dd>
+<dt><code>show gnutarget</code></dt>
+<dd><p>Use the <code>show gnutarget</code> command to display what file format
+<code>gnutarget</code> is set to read.  If you have not set <code>gnutarget</code>,
+<small>GDB</small> will determine the file format for each file automatically,
+and <code>show gnutarget</code> displays &lsquo;<samp>The current BFD target is &quot;auto&quot;</samp>&rsquo;.
+</p></dd>
+</dl>
+
+<span id="index-common-targets"></span>
+<p>Here are some common targets (available, or not, depending on the GDB
+configuration):
+</p>
+<dl compact="compact">
+<dd><span id="index-target"></span>
+</dd>
+<dt><code>target exec <var>program</var></code></dt>
+<dd><span id="index-executable-file-target"></span>
+<p>An executable file.  &lsquo;<samp>target exec <var>program</var></samp>&rsquo; is the same as
+&lsquo;<samp>exec-file <var>program</var></samp>&rsquo;.
+</p>
+</dd>
+<dt><code>target core <var>filename</var></code></dt>
+<dd><span id="index-core-dump-file-target"></span>
+<p>A core dump file.  &lsquo;<samp>target core <var>filename</var></samp>&rsquo; is the same as
+&lsquo;<samp>core-file <var>filename</var></samp>&rsquo;.
+</p>
+</dd>
+<dt><code>target remote <var>medium</var></code></dt>
+<dd><span id="index-remote-target"></span>
+<p>A remote system connected to <small>GDB</small> via a serial line or network
+connection.  This command tells <small>GDB</small> to use its own remote
+protocol over <var>medium</var> for debugging.  See <a href="Remote-Debugging.html">Remote Debugging</a>.
+</p>
+<p>For example, if you have a board connected to <samp>/dev/ttya</samp> on the
+machine running <small>GDB</small>, you could say:
+</p>
+<div class="example">
+<pre class="example">target remote /dev/ttya
+</pre></div>
+
+<p><code>target remote</code> supports the <code>load</code> command.  This is only
+useful if you have some other way of getting the stub to the target
+system, and you can put it somewhere in memory where it won&rsquo;t get
+clobbered by the download.
+</p>
+</dd>
+<dt><code>target sim <span class="roman">[</span><var>simargs</var><span class="roman">]</span> &hellip;</code></dt>
+<dd><span id="index-built_002din-simulator-target"></span>
+<p>Builtin CPU simulator.  <small>GDB</small> includes simulators for most architectures.
+In general,
+</p><div class="example">
+<pre class="example">        target sim
+        load
+        run
+</pre></div>
+<p>works; however, you cannot assume that a specific memory map, device
+drivers, or even basic I/O is available, although some simulators do
+provide these.  For info about any processor-specific simulator details,
+see the appropriate section in <a href="Embedded-Processors.html">Embedded
+Processors</a>.
+</p>
+</dd>
+<dt><code>target native</code></dt>
+<dd><span id="index-native-target"></span>
+<p>Setup for local/native process debugging.  Useful to make the
+<code>run</code> command spawn native processes (likewise <code>attach</code>,
+etc.) even when <code>set auto-connect-native-target</code> is <code>off</code>
+(see <a href="Starting.html#set-auto_002dconnect_002dnative_002dtarget">set auto-connect-native-target</a>).
+</p>
+</dd>
+</dl>
+
+<p>Different targets are available on different configurations of <small>GDB</small>;
+your configuration may have more or fewer targets.
+</p>
+<p>Many remote targets require you to download the executable&rsquo;s code once
+you&rsquo;ve successfully established a connection.  You may wish to control
+various aspects of this process.
+</p>
+<dl compact="compact">
+<dt><code>set hash</code></dt>
+<dd><span id="index-set-hash_002c-for-remote-monitors"></span>
+<span id="index-hash-mark-while-downloading"></span>
+<p>This command controls whether a hash mark &lsquo;<samp>#</samp>&rsquo; is displayed while
+downloading a file to the remote monitor.  If on, a hash mark is
+displayed after each S-record is successfully downloaded to the
+monitor.
+</p>
+</dd>
+<dt><code>show hash</code></dt>
+<dd><span id="index-show-hash_002c-for-remote-monitors"></span>
+<p>Show the current status of displaying the hash mark.
+</p>
+</dd>
+<dt><code>set debug monitor</code></dt>
+<dd><span id="index-set-debug-monitor"></span>
+<span id="index-display-remote-monitor-communications"></span>
+<p>Enable or disable display of communications messages between
+<small>GDB</small> and the remote monitor.
+</p>
+</dd>
+<dt><code>show debug monitor</code></dt>
+<dd><span id="index-show-debug-monitor"></span>
+<p>Show the current status of displaying communications between
+<small>GDB</small> and the remote monitor.
+</p></dd>
+</dl>
+
+<dl compact="compact">
+<dd>
+<span id="index-load-filename-offset"></span>
+</dd>
+<dt><code>load <var>filename</var> <var>offset</var></code></dt>
+<dd><span id="load"></span><p>Depending on what remote debugging facilities are configured into
+<small>GDB</small>, the <code>load</code> command may be available.  Where it exists, it
+is meant to make <var>filename</var> (an executable) available for debugging
+on the remote system&mdash;by downloading, or dynamic linking, for example.
+<code>load</code> also records the <var>filename</var> symbol table in <small>GDB</small>, like
+the <code>add-symbol-file</code> command.
+</p>
+<p>If your <small>GDB</small> does not have a <code>load</code> command, attempting to
+execute it gets the error message &ldquo;<code>You can't do that when your
+target is &hellip;</code>&rdquo;
+</p>
+<p>The file is loaded at whatever address is specified in the executable.
+For some object file formats, you can specify the load address when you
+link the program; for other formats, like a.out, the object file format
+specifies a fixed address.
+</p>
+<p>It is also possible to tell <small>GDB</small> to load the executable file at a
+specific offset described by the optional argument <var>offset</var>.  When
+<var>offset</var> is provided, <var>filename</var> must also be provided.
+</p>
+<p>Depending on the remote side capabilities, <small>GDB</small> may be able to
+load programs into flash memory.
+</p>
+<p><code>load</code> does not repeat if you press <tt class="key">RET</tt> again after using it.
+</p></dd>
+</dl>
+
+<dl compact="compact">
+<dd>
+<span id="index-flash_002derase"></span>
+</dd>
+<dt><code>flash-erase</code></dt>
+<dd><span id="flash_002derase"></span>
+<p>Erases all known flash memory regions on the target.
+</p>
+</dd>
+</dl>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Byte-Order.html" accesskey="n" rel="next">Byte Order</a>, Previous: <a href="Active-Targets.html" accesskey="p" rel="prev">Active Targets</a>, Up: <a href="Targets.html" accesskey="u" rel="up">Targets</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

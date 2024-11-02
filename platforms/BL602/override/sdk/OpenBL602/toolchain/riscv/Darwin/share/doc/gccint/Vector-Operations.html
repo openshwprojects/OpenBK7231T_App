@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 1988-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "Funding Free Software", the Front-Cover
+Texts being (a) (see below), and with the Back-Cover Texts being (b)
+(see below).  A copy of the license is included in the section entitled
+"GNU Free Documentation License".
+
+(a) The FSF's Front-Cover Text is:
+
+A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development. -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Vector Operations (GNU Compiler Collection (GCC) Internals)</title>
+
+<meta name="description" content="Vector Operations (GNU Compiler Collection (GCC) Internals)">
+<meta name="keywords" content="Vector Operations (GNU Compiler Collection (GCC) Internals)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="Option-Index.html" rel="index" title="Option Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="RTL.html" rel="up" title="RTL">
+<link href="Conversions.html" rel="next" title="Conversions">
+<link href="Bit_002dFields.html" rel="prev" title="Bit-Fields">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="Vector-Operations"></span><div class="header">
+<p>
+Next: <a href="Conversions.html" accesskey="n" rel="next">Conversions</a>, Previous: <a href="Bit_002dFields.html" accesskey="p" rel="prev">Bit-Fields</a>, Up: <a href="RTL.html" accesskey="u" rel="up">RTL</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Option-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Vector-Operations-1"></span><h3 class="section">14.12 Vector Operations</h3>
+<span id="index-vector-operations"></span>
+
+<p>All normal RTL expressions can be used with vector modes; they are
+interpreted as operating on each part of the vector independently.
+Additionally, there are a few new expressions to describe specific vector
+operations.
+</p>
+<dl compact="compact">
+<dd><span id="index-vec_005fmerge"></span>
+</dd>
+<dt><code>(vec_merge:<var>m</var> <var>vec1</var> <var>vec2</var> <var>items</var>)</code></dt>
+<dd><p>This describes a merge operation between two vectors.  The result is a vector
+of mode <var>m</var>; its elements are selected from either <var>vec1</var> or
+<var>vec2</var>.  Which elements are selected is described by <var>items</var>, which
+is a bit mask represented by a <code>const_int</code>; a zero bit indicates the
+corresponding element in the result vector is taken from <var>vec2</var> while
+a set bit indicates it is taken from <var>vec1</var>.
+</p>
+<span id="index-vec_005fselect"></span>
+</dd>
+<dt><code>(vec_select:<var>m</var> <var>vec1</var> <var>selection</var>)</code></dt>
+<dd><p>This describes an operation that selects parts of a vector.  <var>vec1</var> is
+the source vector, and <var>selection</var> is a <code>parallel</code> that contains a
+<code>const_int</code> (or another expression, if the selection can be made at
+runtime) for each of the subparts of the result vector, giving the number of
+the source subpart that should be stored into it.  The result mode <var>m</var> is
+either the submode for a single element of <var>vec1</var> (if only one subpart is
+selected), or another vector mode with that element submode (if multiple
+subparts are selected).
+</p>
+<span id="index-vec_005fconcat"></span>
+</dd>
+<dt><code>(vec_concat:<var>m</var> <var>x1</var> <var>x2</var>)</code></dt>
+<dd><p>Describes a vector concat operation.  The result is a concatenation of the
+vectors or scalars <var>x1</var> and <var>x2</var>; its length is the sum of the
+lengths of the two inputs.
+</p>
+<span id="index-vec_005fduplicate"></span>
+</dd>
+<dt><code>(vec_duplicate:<var>m</var> <var>x</var>)</code></dt>
+<dd><p>This operation converts a scalar into a vector or a small vector into a
+larger one by duplicating the input values.  The output vector mode must have
+the same submodes as the input vector mode or the scalar modes, and the
+number of output parts must be an integer multiple of the number of input
+parts.
+</p>
+<span id="index-vec_005fseries"></span>
+</dd>
+<dt><code>(vec_series:<var>m</var> <var>base</var> <var>step</var>)</code></dt>
+<dd><p>This operation creates a vector in which element <var>i</var> is equal to
+&lsquo;<samp><var>base</var> + <var>i</var>*<var>step</var></samp>&rsquo;.  <var>m</var> must be a vector integer mode.
+</p></dd>
+</dl>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Conversions.html" accesskey="n" rel="next">Conversions</a>, Previous: <a href="Bit_002dFields.html" accesskey="p" rel="prev">Bit-Fields</a>, Up: <a href="RTL.html" accesskey="u" rel="up">RTL</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Option-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

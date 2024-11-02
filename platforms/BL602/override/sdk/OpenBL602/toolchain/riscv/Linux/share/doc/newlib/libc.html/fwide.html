@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: fwide</title>
+
+<meta name="description" content="The Red Hat newlib C Library: fwide">
+<meta name="keywords" content="The Red Hat newlib C Library: fwide">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="fwrite.html#fwrite" rel="next" title="fwrite">
+<link href="funopen.html#funopen" rel="prev" title="funopen">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="fwide"></a>
+<div class="header">
+<p>
+Next: <a href="fwrite.html#fwrite" accesskey="n" rel="next">fwrite</a>, Previous: <a href="funopen.html#funopen" accesskey="p" rel="prev">funopen</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="fwide_002d_002d_002dset-and-determine-the-orientation-of-a-FILE-stream"></a>
+<h3 class="section">4.31 <code>fwide</code>&mdash;set and determine the orientation of a FILE stream</h3>
+<a name="index-fwide"></a>
+<a name="index-_005ffwide_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;wchar.h&gt;
+int fwide(FILE *<var>fp</var>, int <var>mode</var>);
+
+int _fwide_r(struct _reent *<var>ptr</var>, FILE *<var>fp</var>, int <var>mode</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+When <var>mode</var> is zero, the <code>fwide</code> function determines the current
+orientation of <var>fp</var>. It returns a value &gt; 0 if <var>fp</var> is
+wide-character oriented, i.e. if wide character I/O is permitted but
+char I/O is disallowed. It returns a value &lt; 0 if <var>fp</var> is byte
+oriented, i.e. if char I/O is permitted but wide character I/O is
+disallowed. It returns zero if <var>fp</var> has no orientation yet; in
+this case the next I/O operation might change the orientation (to byte
+oriented if it is a char I/O operation, or to wide-character oriented
+if it is a wide character I/O operation).
+</p>
+<p>Once a stream has an orientation, it cannot be changed and persists
+until the stream is closed, unless the stream is re-opened with freopen,
+which removes the orientation of the stream.
+</p>
+<p>When <var>mode</var> is non-zero, the <code>fwide</code> function first attempts to set
+<var>fp</var>&rsquo;s orientation (to wide-character oriented if <var>mode</var> &gt; 0, or to
+byte oriented if <var>mode</var> &lt; 0). It then returns a value denoting the
+current orientation, as above.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+The <code>fwide</code> function returns <var>fp</var>&rsquo;s orientation, after possibly
+changing it. A return value &gt; 0 means wide-character oriented. A return
+value &lt; 0 means byte oriented. A return value of zero means undecided.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+C99, POSIX.1-2001.
+</p>
+
+<br>
+
+
+
+
+</body>
+</html>

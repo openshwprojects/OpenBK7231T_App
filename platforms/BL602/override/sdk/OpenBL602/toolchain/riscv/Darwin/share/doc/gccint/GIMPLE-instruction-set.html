@@ -1,0 +1,108 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 1988-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "Funding Free Software", the Front-Cover
+Texts being (a) (see below), and with the Back-Cover Texts being (b)
+(see below).  A copy of the license is included in the section entitled
+"GNU Free Documentation License".
+
+(a) The FSF's Front-Cover Text is:
+
+A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development. -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>GIMPLE instruction set (GNU Compiler Collection (GCC) Internals)</title>
+
+<meta name="description" content="GIMPLE instruction set (GNU Compiler Collection (GCC) Internals)">
+<meta name="keywords" content="GIMPLE instruction set (GNU Compiler Collection (GCC) Internals)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="Option-Index.html" rel="index" title="Option Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="GIMPLE.html" rel="up" title="GIMPLE">
+<link href="GIMPLE-Exception-Handling.html" rel="next" title="GIMPLE Exception Handling">
+<link href="Class-hierarchy-of-GIMPLE-statements.html" rel="prev" title="Class hierarchy of GIMPLE statements">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="GIMPLE-instruction-set"></span><div class="header">
+<p>
+Next: <a href="GIMPLE-Exception-Handling.html" accesskey="n" rel="next">GIMPLE Exception Handling</a>, Previous: <a href="Class-hierarchy-of-GIMPLE-statements.html" accesskey="p" rel="prev">Class hierarchy of GIMPLE statements</a>, Up: <a href="GIMPLE.html" accesskey="u" rel="up">GIMPLE</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Option-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="GIMPLE-instruction-set-1"></span><h3 class="section">12.3 GIMPLE instruction set</h3>
+<span id="index-GIMPLE-instruction-set"></span>
+
+<p>The following table briefly describes the GIMPLE instruction set.
+</p>
+<table>
+<tr><td>Instruction</td><td>High GIMPLE</td><td>Low GIMPLE</td></tr>
+<tr><td><code>GIMPLE_ASM</code></td><td>x</td><td>x</td></tr>
+<tr><td><code>GIMPLE_ASSIGN</code></td><td>x</td><td>x</td></tr>
+<tr><td><code>GIMPLE_BIND</code></td><td>x</td><td></td></tr>
+<tr><td><code>GIMPLE_CALL</code></td><td>x</td><td>x</td></tr>
+<tr><td><code>GIMPLE_CATCH</code></td><td>x</td><td></td></tr>
+<tr><td><code>GIMPLE_COND</code></td><td>x</td><td>x</td></tr>
+<tr><td><code>GIMPLE_DEBUG</code></td><td>x</td><td>x</td></tr>
+<tr><td><code>GIMPLE_EH_FILTER</code></td><td>x</td><td></td></tr>
+<tr><td><code>GIMPLE_GOTO</code></td><td>x</td><td>x</td></tr>
+<tr><td><code>GIMPLE_LABEL</code></td><td>x</td><td>x</td></tr>
+<tr><td><code>GIMPLE_NOP</code></td><td>x</td><td>x</td></tr>
+<tr><td><code>GIMPLE_OMP_ATOMIC_LOAD</code></td><td>x</td><td>x</td></tr>
+<tr><td><code>GIMPLE_OMP_ATOMIC_STORE</code></td><td>x</td><td>x</td></tr>
+<tr><td><code>GIMPLE_OMP_CONTINUE</code></td><td>x</td><td>x</td></tr>
+<tr><td><code>GIMPLE_OMP_CRITICAL</code></td><td>x</td><td>x</td></tr>
+<tr><td><code>GIMPLE_OMP_FOR</code></td><td>x</td><td>x</td></tr>
+<tr><td><code>GIMPLE_OMP_MASTER</code></td><td>x</td><td>x</td></tr>
+<tr><td><code>GIMPLE_OMP_ORDERED</code></td><td>x</td><td>x</td></tr>
+<tr><td><code>GIMPLE_OMP_PARALLEL</code></td><td>x</td><td>x</td></tr>
+<tr><td><code>GIMPLE_OMP_RETURN</code></td><td>x</td><td>x</td></tr>
+<tr><td><code>GIMPLE_OMP_SECTION</code></td><td>x</td><td>x</td></tr>
+<tr><td><code>GIMPLE_OMP_SECTIONS</code></td><td>x</td><td>x</td></tr>
+<tr><td><code>GIMPLE_OMP_SECTIONS_SWITCH</code></td><td>x</td><td>x</td></tr>
+<tr><td><code>GIMPLE_OMP_SINGLE</code></td><td>x</td><td>x</td></tr>
+<tr><td><code>GIMPLE_PHI</code></td><td></td><td>x</td></tr>
+<tr><td><code>GIMPLE_RESX</code></td><td></td><td>x</td></tr>
+<tr><td><code>GIMPLE_RETURN</code></td><td>x</td><td>x</td></tr>
+<tr><td><code>GIMPLE_SWITCH</code></td><td>x</td><td>x</td></tr>
+<tr><td><code>GIMPLE_TRY</code></td><td>x</td><td></td></tr>
+</table>
+
+
+
+
+</body>
+</html>

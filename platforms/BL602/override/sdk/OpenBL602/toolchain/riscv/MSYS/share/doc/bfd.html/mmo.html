@@ -1,0 +1,107 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This file documents the BFD library.
+
+Copyright (C) 1991-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "GNU General Public License" and "Funding
+Free Software", the Front-Cover texts being (a) (see below), and with
+the Back-Cover Texts being (b) (see below).  A copy of the license is
+included in the section entitled "GNU Free Documentation License".
+
+(a) The FSF's Front-Cover Text is:
+
+A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Untitled Document: mmo</title>
+
+<meta name="description" content="Untitled Document: mmo">
+<meta name="keywords" content="Untitled Document: mmo">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="BFD-Index.html#BFD-Index" rel="index" title="BFD Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="BFD-back-ends.html#BFD-back-ends" rel="up" title="BFD back ends">
+<link href="File-layout.html#File-layout" rel="next" title="File layout">
+<link href="elf.html#elf" rel="prev" title="elf">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="mmo"></a>
+<div class="header">
+<p>
+Previous: <a href="elf.html#elf" accesskey="p" rel="prev">elf</a>, Up: <a href="BFD-back-ends.html#BFD-back-ends" accesskey="u" rel="up">BFD back ends</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="BFD-Index.html#BFD-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="mmo-backend"></a>
+<h3 class="section">3.5 mmo backend</h3>
+<p>The mmo object format is used exclusively together with Professor
+Donald E. Knuth&rsquo;s educational 64-bit processor MMIX.  The simulator
+<code>mmix</code> which is available at
+<a href="http://mmix.cs.hm.edu/src/index.html">http://mmix.cs.hm.edu/src/index.html</a>
+understands this format.  That package also includes a combined
+assembler and linker called <code>mmixal</code>.  The mmo format has
+no advantages feature-wise compared to e.g. ELF.  It is a simple
+non-relocatable object format with no support for archives or
+debugging information, except for symbol value information and
+line numbers (which is not yet implemented in BFD).  See
+<a href="http://mmix.cs.hm.edu/">http://mmix.cs.hm.edu/</a> for more
+information about MMIX.  The ELF format is used for intermediate
+object files in the BFD implementation.
+</p>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="File-layout.html#File-layout" accesskey="1">File layout</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Symbol_002dtable.html#Symbol_002dtable" accesskey="2">Symbol-table</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="mmo-section-mapping.html#mmo-section-mapping" accesskey="3">mmo section mapping</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+</table>
+
+
+
+
+</body>
+</html>

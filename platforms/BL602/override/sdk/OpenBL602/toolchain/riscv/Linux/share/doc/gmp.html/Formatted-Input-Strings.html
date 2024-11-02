@@ -1,0 +1,218 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Formatted Input Strings</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Formatted Input Strings">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Formatted-Input.html#Formatted-Input" rel="up" title="Formatted Input">
+<link href="Formatted-Input-Functions.html#Formatted-Input-Functions" rel="next" title="Formatted Input Functions">
+<link href="Formatted-Input.html#Formatted-Input" rel="prev" title="Formatted Input">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Formatted-Input-Strings"></a>
+<div class="header">
+<p>
+Next: <a href="Formatted-Input-Functions.html#Formatted-Input-Functions" accesskey="n" rel="next">Formatted Input Functions</a>, Previous: <a href="Formatted-Input.html#Formatted-Input" accesskey="p" rel="prev">Formatted Input</a>, Up: <a href="Formatted-Input.html#Formatted-Input" accesskey="u" rel="up">Formatted Input</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Formatted-Input-Strings-1"></a>
+<h3 class="section">11.1 Formatted Input Strings</h3>
+
+<p><code>gmp_scanf</code> and friends accept format strings similar to the standard C
+<code>scanf</code> (see <a href="http://www.gnu.org/software/libc/manual/html_node/Formatted-Input.html#Formatted-Input">Formatted Input</a> in <cite>The GNU C
+Library Reference Manual</cite>).  A format specification is of the form
+</p>
+<div class="example">
+<pre class="example">% [flags] [width] [type] conv
+</pre></div>
+
+<p>GMP adds types &lsquo;<samp>Z</samp>&rsquo;, &lsquo;<samp>Q</samp>&rsquo; and &lsquo;<samp>F</samp>&rsquo; for <code>mpz_t</code>, <code>mpq_t</code>
+and <code>mpf_t</code> respectively.  &lsquo;<samp>Z</samp>&rsquo; and &lsquo;<samp>Q</samp>&rsquo; behave like integers.
+&lsquo;<samp>Q</samp>&rsquo; will read a &lsquo;<samp>/</samp>&rsquo; and a denominator, if present.  &lsquo;<samp>F</samp>&rsquo; behaves
+like a float.
+</p>
+<p>GMP variables don&rsquo;t require an <code>&amp;</code> when passed to <code>gmp_scanf</code>, since
+they&rsquo;re already &ldquo;call-by-reference&rdquo;.  For example,
+</p>
+<div class="example">
+<pre class="example">/* to read say &quot;a(5) = 1234&quot; */
+int   n;
+mpz_t z;
+gmp_scanf (&quot;a(%d) = %Zd\n&quot;, &amp;n, z);
+
+mpq_t q1, q2;
+gmp_sscanf (&quot;0377 + 0x10/0x11&quot;, &quot;%Qi + %Qi&quot;, q1, q2);
+
+/* to read say &quot;topleft (1.55,-2.66)&quot; */
+mpf_t x, y;
+char  buf[32];
+gmp_scanf (&quot;%31s (%Ff,%Ff)&quot;, buf, x, y);
+</pre></div>
+
+<p>All the standard C <code>scanf</code> types behave the same as in the C library
+<code>scanf</code>, and can be freely intermixed with the GMP extensions.  In the
+current implementation the standard parts of the format string are simply
+handed to <code>scanf</code> and only the GMP extensions handled directly.
+</p>
+<p>The flags accepted are as follows.  &lsquo;<samp>a</samp>&rsquo; and &lsquo;<samp>'</samp>&rsquo; will depend on
+support from the C library, and &lsquo;<samp>'</samp>&rsquo; cannot be used with GMP types.
+</p>
+<blockquote>
+<table>
+<tr><td><code>*</code></td><td>read but don&rsquo;t store</td></tr>
+<tr><td><code>a</code></td><td>allocate a buffer (string conversions)</td></tr>
+<tr><td><code>'</code></td><td>grouped digits, GLIBC style (not GMP types)</td></tr>
+</table>
+</blockquote>
+
+<p>The standard types accepted are as follows.  &lsquo;<samp>h</samp>&rsquo; and &lsquo;<samp>l</samp>&rsquo; are
+portable, the rest will depend on the compiler (or include files) for the type
+and the C library for the input.
+</p>
+<blockquote>
+<table>
+<tr><td><code>h</code></td><td><code>short</code></td></tr>
+<tr><td><code>hh</code></td><td><code>char</code></td></tr>
+<tr><td><code>j</code></td><td><code>intmax_t</code> or <code>uintmax_t</code></td></tr>
+<tr><td><code>l</code></td><td><code>long int</code>, <code>double</code> or <code>wchar_t</code></td></tr>
+<tr><td><code>ll</code></td><td><code>long long</code></td></tr>
+<tr><td><code>L</code></td><td><code>long double</code></td></tr>
+<tr><td><code>q</code></td><td><code>quad_t</code> or <code>u_quad_t</code></td></tr>
+<tr><td><code>t</code></td><td><code>ptrdiff_t</code></td></tr>
+<tr><td><code>z</code></td><td><code>size_t</code></td></tr>
+</table>
+</blockquote>
+
+<p>The GMP types are
+</p>
+<blockquote>
+<table>
+<tr><td><code>F</code></td><td><code>mpf_t</code>, float conversions</td></tr>
+<tr><td><code>Q</code></td><td><code>mpq_t</code>, integer conversions</td></tr>
+<tr><td><code>Z</code></td><td><code>mpz_t</code>, integer conversions</td></tr>
+</table>
+</blockquote>
+
+<p>The conversions accepted are as follows.  &lsquo;<samp>p</samp>&rsquo; and &lsquo;<samp>[</samp>&rsquo; will depend on
+support from the C library, the rest are standard.
+</p>
+<blockquote>
+<table>
+<tr><td><code>c</code></td><td>character or characters</td></tr>
+<tr><td><code>d</code></td><td>decimal integer</td></tr>
+<tr><td><code>e</code> <code>E</code> <code>f</code> <code>g</code> <code>G</code></td><td>float</td></tr>
+<tr><td><code>i</code></td><td>integer with base indicator</td></tr>
+<tr><td><code>n</code></td><td>characters read so far</td></tr>
+<tr><td><code>o</code></td><td>octal integer</td></tr>
+<tr><td><code>p</code></td><td>pointer</td></tr>
+<tr><td><code>s</code></td><td>string of non-whitespace characters</td></tr>
+<tr><td><code>u</code></td><td>decimal integer</td></tr>
+<tr><td><code>x</code> <code>X</code></td><td>hex integer</td></tr>
+<tr><td><code>[</code></td><td>string of characters in a set</td></tr>
+</table>
+</blockquote>
+
+<p>&lsquo;<samp>e</samp>&rsquo;, &lsquo;<samp>E</samp>&rsquo;, &lsquo;<samp>f</samp>&rsquo;, &lsquo;<samp>g</samp>&rsquo; and &lsquo;<samp>G</samp>&rsquo; are identical, they all
+read either fixed point or scientific format, and either upper or lower case
+&lsquo;<samp>e</samp>&rsquo; for the exponent in scientific format.
+</p>
+<p>C99 style hex float format (<code>printf %a</code>, see <a href="Formatted-Output-Strings.html#Formatted-Output-Strings">Formatted Output Strings</a>) is always accepted for <code>mpf_t</code>, but for the standard float
+types it will depend on the C library.
+</p>
+<p>&lsquo;<samp>x</samp>&rsquo; and &lsquo;<samp>X</samp>&rsquo; are identical, both accept both upper and lower case
+hexadecimal.
+</p>
+<p>&lsquo;<samp>o</samp>&rsquo;, &lsquo;<samp>u</samp>&rsquo;, &lsquo;<samp>x</samp>&rsquo; and &lsquo;<samp>X</samp>&rsquo; all read positive or negative
+values.  For the standard C types these are described as &ldquo;unsigned&rdquo;
+conversions, but that merely affects certain overflow handling, negatives are
+still allowed (per <code>strtoul</code>, see <a href="http://www.gnu.org/software/libc/manual/html_node/Parsing-of-Integers.html#Parsing-of-Integers">Parsing of
+Integers</a> in <cite>The GNU C Library Reference Manual</cite>).  For GMP types there are
+no overflows, so &lsquo;<samp>d</samp>&rsquo; and &lsquo;<samp>u</samp>&rsquo; are identical.
+</p>
+<p>&lsquo;<samp>Q</samp>&rsquo; type reads the numerator and (optional) denominator as given.  If the
+value might not be in canonical form then <code>mpq_canonicalize</code> must be
+called before using it in any calculations (see <a href="Rational-Number-Functions.html#Rational-Number-Functions">Rational Number Functions</a>).
+</p>
+<p>&lsquo;<samp>Qi</samp>&rsquo; will read a base specification separately for the numerator and
+denominator.  For example &lsquo;<samp>0x10/11</samp>&rsquo; would be 16/11, whereas
+&lsquo;<samp>0x10/0x11</samp>&rsquo; would be 16/17.
+</p>
+<p>&lsquo;<samp>n</samp>&rsquo; can be used with any of the types above, even the GMP types.
+&lsquo;<samp>*</samp>&rsquo; to suppress assignment is allowed, though in that case it would do
+nothing at all.
+</p>
+<p>Other conversions or types that might be accepted by the C library
+<code>scanf</code> cannot be used through <code>gmp_scanf</code>.
+</p>
+<p>Whitespace is read and discarded before a field, except for &lsquo;<samp>c</samp>&rsquo; and
+&lsquo;<samp>[</samp>&rsquo; conversions.
+</p>
+<p>For float conversions, the decimal point character (or string) expected is
+taken from the current locale settings on systems which provide
+<code>localeconv</code> (see <a href="http://www.gnu.org/software/libc/manual/html_node/Locales.html#Locales">Locales and Internationalization</a> in <cite>The GNU C Library Reference Manual</cite>).  The C library will normally do the same
+for standard float input.
+</p>
+<p>The format string is only interpreted as plain <code>char</code>s, multibyte
+characters are not recognised.  Perhaps this will change in the future.
+</p>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Formatted-Input-Functions.html#Formatted-Input-Functions" accesskey="n" rel="next">Formatted Input Functions</a>, Previous: <a href="Formatted-Input.html#Formatted-Input" accesskey="p" rel="prev">Formatted Input</a>, Up: <a href="Formatted-Input.html#Formatted-Input" accesskey="u" rel="up">Formatted Input</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

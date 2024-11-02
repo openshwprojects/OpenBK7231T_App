@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: C++ Formatted Input</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: C++ Formatted Input">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Formatted-Input.html#Formatted-Input" rel="up" title="Formatted Input">
+<link href="C_002b_002b-Class-Interface.html#C_002b_002b-Class-Interface" rel="next" title="C++ Class Interface">
+<link href="Formatted-Input-Functions.html#Formatted-Input-Functions" rel="prev" title="Formatted Input Functions">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="C_002b_002b-Formatted-Input"></a>
+<div class="header">
+<p>
+Previous: <a href="Formatted-Input-Functions.html#Formatted-Input-Functions" accesskey="p" rel="prev">Formatted Input Functions</a>, Up: <a href="Formatted-Input.html#Formatted-Input" accesskey="u" rel="up">Formatted Input</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="C_002b_002b-Formatted-Input-1"></a>
+<h3 class="section">11.3 C++ Formatted Input</h3>
+<a name="index-C_002b_002b-istream-input"></a>
+<a name="index-istream-input"></a>
+
+<p>The following functions are provided in <samp>libgmpxx</samp> (see <a href="Headers-and-Libraries.html#Headers-and-Libraries">Headers and Libraries</a>), which is built only if C++ support is enabled (see <a href="Build-Options.html#Build-Options">Build Options</a>).  Prototypes are available from <code>&lt;gmp.h&gt;</code>.
+</p>
+<dl>
+<dt><a name="index-operator_003e_003e"></a>Function: <em>istream&amp;</em> <strong>operator&gt;&gt;</strong> <em>(istream&amp; <var>stream</var>, mpz_t <var>rop</var>)</em></dt>
+<dd><p>Read <var>rop</var> from <var>stream</var>, using its <code>ios</code> formatting settings.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-operator_003e_003e-1"></a>Function: <em>istream&amp;</em> <strong>operator&gt;&gt;</strong> <em>(istream&amp; <var>stream</var>, mpq_t <var>rop</var>)</em></dt>
+<dd><p>An integer like &lsquo;<samp>123</samp>&rsquo; will be read, or a fraction like &lsquo;<samp>5/9</samp>&rsquo;.  No
+whitespace is allowed around the &lsquo;<samp>/</samp>&rsquo;.  If the fraction is not in
+canonical form then <code>mpq_canonicalize</code> must be called (see <a href="Rational-Number-Functions.html#Rational-Number-Functions">Rational Number Functions</a>) before operating on it.
+</p>
+<p>As per integer input, an &lsquo;<samp>0</samp>&rsquo; or &lsquo;<samp>0x</samp>&rsquo; base indicator is read when
+none of <code>ios::dec</code>, <code>ios::oct</code> or <code>ios::hex</code> are set.  This is
+done separately for numerator and denominator, so that for instance
+&lsquo;<samp>0x10/11</samp>&rsquo; is <em>16/11</em> and &lsquo;<samp>0x10/0x11</samp>&rsquo; is <em>16/17</em>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-operator_003e_003e-2"></a>Function: <em>istream&amp;</em> <strong>operator&gt;&gt;</strong> <em>(istream&amp; <var>stream</var>, mpf_t <var>rop</var>)</em></dt>
+<dd><p>Read <var>rop</var> from <var>stream</var>, using its <code>ios</code> formatting settings.
+</p>
+<p>Hex or octal floats are not supported, but might be in the future, or perhaps
+it&rsquo;s best to accept only what the standard float <code>operator&gt;&gt;</code> does.
+</p></dd></dl>
+
+<p>Note that digit grouping specified by the <code>istream</code> locale is currently
+not accepted.  Perhaps this will change in the future.
+</p>
+<br>
+<p>These operators mean that GMP types can be read in the usual C++ way, for
+example,
+</p>
+<div class="example">
+<pre class="example">mpz_t  z;
+...
+cin &gt;&gt; z;
+</pre></div>
+
+<p>But note that <code>istream</code> input (and <code>ostream</code> output, see <a href="C_002b_002b-Formatted-Output.html#C_002b_002b-Formatted-Output">C++ Formatted Output</a>) is the only overloading available for the GMP types and
+that for instance using <code>+</code> with an <code>mpz_t</code> will have unpredictable
+results.  For classes with overloading, see <a href="C_002b_002b-Class-Interface.html#C_002b_002b-Class-Interface">C++ Class Interface</a>.
+</p>
+
+
+<hr>
+<div class="header">
+<p>
+Previous: <a href="Formatted-Input-Functions.html#Formatted-Input-Functions" accesskey="p" rel="prev">Formatted Input Functions</a>, Up: <a href="Formatted-Input.html#Formatted-Input" accesskey="u" rel="up">Formatted Input</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

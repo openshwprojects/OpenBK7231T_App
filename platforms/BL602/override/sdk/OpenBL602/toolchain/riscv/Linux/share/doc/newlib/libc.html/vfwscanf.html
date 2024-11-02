@@ -1,0 +1,116 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: vfwscanf</title>
+
+<meta name="description" content="The Red Hat newlib C Library: vfwscanf">
+<meta name="keywords" content="The Red Hat newlib C Library: vfwscanf">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="viprintf.html#viprintf" rel="next" title="viprintf">
+<link href="vfwprintf.html#vfwprintf" rel="prev" title="vfwprintf">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="vfwscanf"></a>
+<div class="header">
+<p>
+Next: <a href="viprintf.html#viprintf" accesskey="n" rel="next">viprintf</a>, Previous: <a href="vfwprintf.html#vfwprintf" accesskey="p" rel="prev">vfwprintf</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="vfwscanf_002c-vwscanf_002c-vswscanf_002d_002d_002dscan-and-format-argument-list-from-wide-character-input"></a>
+<h3 class="section">4.73 <code>vfwscanf</code>, <code>vwscanf</code>, <code>vswscanf</code>&mdash;scan and format argument list from wide character input</h3>
+<a name="index-vfwscanf"></a>
+<a name="index-_005fvfwscanf"></a>
+<a name="index-vwscanf"></a>
+<a name="index-_005fvwscanf"></a>
+<a name="index-vswscanf"></a>
+<a name="index-_005fvswscanf"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+#include &lt;stdarg.h&gt;
+int vwscanf(const wchar_t *__restrict <var>fmt</var>, va_list <var>list</var>);
+int vfwscanf(FILE *__restrict <var>fp</var>,
+    const wchar_t *__restrict <var>fmt</var>, va_list <var>list</var>);
+int vswscanf(const wchar_t *__restrict <var>str</var>,
+    const wchar_t *__restrict <var>fmt</var>, va_list <var>list</var>);
+
+int _vwscanf(struct _reent *<var>reent</var>, const wchar_t *<var>fmt</var>,
+    va_list <var>list</var>);
+int _vfwscanf(struct _reent *<var>reent</var>, FILE *<var>fp</var>,
+    const wchar_t *<var>fmt</var>, va_list <var>list</var>);
+int _vswscanf(struct _reent *<var>reent</var>, const wchar_t *<var>str</var>,
+    const wchar_t *<var>fmt</var>, va_list <var>list</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>vwscanf</code>, <code>vfwscanf</code>, and <code>vswscanf</code> are (respectively) variants
+of <code>wscanf</code>, <code>fwscanf</code>, and <code>swscanf</code>.  They differ only in
+allowing their caller to pass the variable argument list as a
+<code>va_list</code> object (initialized by <code>va_start</code>) rather than
+directly accepting a variable number of arguments.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+The return values are consistent with the corresponding functions:
+<code>vwscanf</code> returns the number of input fields successfully scanned,
+converted, and stored; the return value does not include scanned
+fields which were not stored.
+</p>
+<p>If <code>vwscanf</code> attempts to read at end-of-file, the return value
+is <code>EOF</code>.
+</p>
+<p>If no fields were stored, the return value is <code>0</code>.
+</p>
+<p>The routines <code>_vwscanf</code>, <code>_vfwscanf</code>, and <code>_vswscanf</code> are
+reentrant versions which take an additional first parameter which points
+to the reentrancy structure.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+C99, POSIX-1.2008
+</p>
+<br>
+
+
+
+
+</body>
+</html>

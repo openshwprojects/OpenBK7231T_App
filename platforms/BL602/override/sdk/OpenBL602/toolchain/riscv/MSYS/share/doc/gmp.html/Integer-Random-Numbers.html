@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Integer Random Numbers</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Integer Random Numbers">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Integer-Functions.html#Integer-Functions" rel="up" title="Integer Functions">
+<link href="Integer-Import-and-Export.html#Integer-Import-and-Export" rel="next" title="Integer Import and Export">
+<link href="I_002fO-of-Integers.html#I_002fO-of-Integers" rel="prev" title="I/O of Integers">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Integer-Random-Numbers"></a>
+<div class="header">
+<p>
+Next: <a href="Integer-Import-and-Export.html#Integer-Import-and-Export" accesskey="n" rel="next">Integer Import and Export</a>, Previous: <a href="I_002fO-of-Integers.html#I_002fO-of-Integers" accesskey="p" rel="prev">I/O of Integers</a>, Up: <a href="Integer-Functions.html#Integer-Functions" accesskey="u" rel="up">Integer Functions</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Random-Number-Functions-1"></a>
+<h3 class="section">5.13 Random Number Functions</h3>
+<a name="index-Integer-random-number-functions"></a>
+<a name="index-Random-number-functions"></a>
+
+<p>The random number functions of GMP come in two groups; older function
+that rely on a global state, and newer functions that accept a state
+parameter that is read and modified.  Please see the <a href="Random-Number-Functions.html#Random-Number-Functions">Random Number Functions</a> for more information on how to use and not to use random
+number functions.
+</p>
+<dl>
+<dt><a name="index-mpz_005furandomb"></a>Function: <em>void</em> <strong>mpz_urandomb</strong> <em>(mpz_t <var>rop</var>, gmp_randstate_t <var>state</var>, mp_bitcnt_t <var>n</var>)</em></dt>
+<dd><p>Generate a uniformly distributed random integer in the range 0 to <em>2^<var>n</var>-1</em>, inclusive.
+</p>
+<p>The variable <var>state</var> must be initialized by calling one of the
+<code>gmp_randinit</code> functions (<a href="Random-State-Initialization.html#Random-State-Initialization">Random State Initialization</a>) before
+invoking this function.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpz_005furandomm"></a>Function: <em>void</em> <strong>mpz_urandomm</strong> <em>(mpz_t <var>rop</var>, gmp_randstate_t <var>state</var>, const mpz_t <var>n</var>)</em></dt>
+<dd><p>Generate a uniform random integer in the range 0 to <em><var>n</var>-1</em>,
+inclusive.
+</p>
+<p>The variable <var>state</var> must be initialized by calling one of the
+<code>gmp_randinit</code> functions (<a href="Random-State-Initialization.html#Random-State-Initialization">Random State Initialization</a>)
+before invoking this function.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpz_005frrandomb"></a>Function: <em>void</em> <strong>mpz_rrandomb</strong> <em>(mpz_t <var>rop</var>, gmp_randstate_t <var>state</var>, mp_bitcnt_t <var>n</var>)</em></dt>
+<dd><p>Generate a random integer with long strings of zeros and ones in the
+binary representation.  Useful for testing functions and algorithms,
+since this kind of random numbers have proven to be more likely to
+trigger corner-case bugs.  The random number will be in the range
+0 to <em>2^<var>n</var>-1</em>, inclusive.
+</p>
+<p>The variable <var>state</var> must be initialized by calling one of the
+<code>gmp_randinit</code> functions (<a href="Random-State-Initialization.html#Random-State-Initialization">Random State Initialization</a>)
+before invoking this function.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpz_005frandom"></a>Function: <em>void</em> <strong>mpz_random</strong> <em>(mpz_t <var>rop</var>, mp_size_t <var>max_size</var>)</em></dt>
+<dd><p>Generate a random integer of at most <var>max_size</var> limbs.  The generated
+random number doesn&rsquo;t satisfy any particular requirements of randomness.
+Negative random numbers are generated when <var>max_size</var> is negative.
+</p>
+<p>This function is obsolete.  Use <code>mpz_urandomb</code> or
+<code>mpz_urandomm</code> instead.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpz_005frandom2"></a>Function: <em>void</em> <strong>mpz_random2</strong> <em>(mpz_t <var>rop</var>, mp_size_t <var>max_size</var>)</em></dt>
+<dd><p>Generate a random integer of at most <var>max_size</var> limbs, with long strings
+of zeros and ones in the binary representation.  Useful for testing functions
+and algorithms, since this kind of random numbers have proven to be more
+likely to trigger corner-case bugs.  Negative random numbers are generated
+when <var>max_size</var> is negative.
+</p>
+<p>This function is obsolete.  Use <code>mpz_rrandomb</code> instead.
+</p></dd></dl>
+
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Integer-Import-and-Export.html#Integer-Import-and-Export" accesskey="n" rel="next">Integer Import and Export</a>, Previous: <a href="I_002fO-of-Integers.html#I_002fO-of-Integers" accesskey="p" rel="prev">I/O of Integers</a>, Up: <a href="Integer-Functions.html#Integer-Functions" accesskey="u" rel="up">Integer Functions</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

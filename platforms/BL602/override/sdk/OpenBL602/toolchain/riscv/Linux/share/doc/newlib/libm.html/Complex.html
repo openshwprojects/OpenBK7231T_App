@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>LIBM: Complex</title>
+
+<meta name="description" content="LIBM: Complex">
+<meta name="keywords" content="LIBM: Complex">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="index.html#Top" rel="up" title="Top">
+<link href="cabs.html#cabs" rel="next" title="cabs">
+<link href="trunc.html#trunc" rel="prev" title="trunc">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Complex"></a>
+<div class="header">
+<p>
+Next: <a href="Fenv.html#Fenv" accesskey="n" rel="next">Fenv</a>, Previous: <a href="Math.html#Math" accesskey="p" rel="prev">Math</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Mathematical-Complex-Functions-_0028complex_002eh_0029"></a>
+<h2 class="chapter">2 Mathematical Complex Functions (<samp>complex.h</samp>)</h2>
+
+<p>This chapter groups the complex mathematical functions.  The
+corresponding definitions and declarations are in <samp>complex.h</samp>.  
+Functions and documentations are taken from NetBSD.
+</p>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="cabs.html#cabs" accesskey="1">cabs</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Complex absolute value
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="cacos.html#cacos" accesskey="2">cacos</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Complex arc cosine
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="cacosh.html#cacosh" accesskey="3">cacosh</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Complex arc hyperbolic cosine
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="carg.html#carg" accesskey="4">carg</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Argument (also called phase angle)
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="casin.html#casin" accesskey="5">casin</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Complex arc sine
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="casinh.html#casinh" accesskey="6">casinh</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Complex arc hyperbolic sine
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="catan.html#catan" accesskey="7">catan</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Complex arc tangent
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="catanh.html#catanh" accesskey="8">catanh</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Complex arc hyperbolic tangent
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="ccos.html#ccos" accesskey="9">ccos</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Complex cosine
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="ccosh.html#ccosh">ccosh</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Complex hyperbolic cosine
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="cexp.html#cexp">cexp</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Complex exponent
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="cimag.html#cimag">cimag</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Imaginary part
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="clog.html#clog">clog</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Complex natural (base e) logarithm
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="clog10.html#clog10">clog10</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Complex base 10 logarithm
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="conj.html#conj">conj</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Complex conjugate
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="cpow.html#cpow">cpow</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Complex power function
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="cproj.html#cproj">cproj</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Compute a projection on the Riemann sphere
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="creal.html#creal">creal</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Real part
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="csin.html#csin">csin</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Complex sine
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="csinh.html#csinh">csinh</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Complex hyperbolic sine
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="csqrt.html#csqrt">csqrt</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Complex square root
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="ctan.html#ctan">ctan</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Complex tangent
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="ctanh.html#ctanh">ctanh</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Complex hyperbolic tangent
+</td></tr>
+</table>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Fenv.html#Fenv" accesskey="n" rel="next">Fenv</a>, Previous: <a href="Math.html#Math" accesskey="p" rel="prev">Math</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

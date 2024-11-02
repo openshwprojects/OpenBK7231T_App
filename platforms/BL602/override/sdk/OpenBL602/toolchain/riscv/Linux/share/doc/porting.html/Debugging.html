@@ -1,0 +1,198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Embed with GNU: Debugging</title>
+
+<meta name="description" content="Embed with GNU: Debugging">
+<meta name="keywords" content="Embed with GNU: Debugging">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="leds_002ec.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Libc.html#Libc" rel="up" title="Libc">
+<link href="GDB.html#GDB" rel="next" title="GDB">
+<link href="Misc-Support.html#Misc-Support" rel="prev" title="Misc Support">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Debugging"></a>
+<div class="header">
+<p>
+Previous: <a href="Misc-Support.html#Misc-Support" accesskey="p" rel="prev">Misc Support</a>, Up: <a href="Libc.html#Libc" accesskey="u" rel="up">Libc</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<a name="Useful-debugging-functions"></a>
+<h4 class="subsection">3.4.4 Useful debugging functions</h4>
+
+<p>There are always a few useful functions for debugging your project in
+progress. I typically implement a simple <code>print()</code> routine that
+runs standalone in liblgoss, with no <code>newlib</code> support. The I/O
+function <code>outbyte()</code> can also be used for low level debugging. Many
+times print will work when there are problems that cause <code>printf()</code> to
+cause an exception. <code>putnum()</code> is just to print out values in hex
+so they are easier to read.
+</p>
+<div class="smallexample">
+<pre class="smallexample">/*
+ * print -- do a raw print of a string
+ */ 
+int
+print(ptr)
+char *ptr;
+{
+  while (*ptr) {
+    outbyte (*ptr++);
+  }
+}
+
+/*
+ * putnum -- print a 32 bit number in hex
+ */
+int
+putnum (num)
+unsigned int num;
+{
+  char  buffer[9];
+  int   count;
+  char  *bufptr = buffer;
+  int   digit;
+  
+  for (count = 7 ; count &gt;= 0 ; count--) {
+    digit = (num &gt;&gt; (count * 4)) &amp; 0xf;
+    
+    if (digit &lt;= 9)
+      *bufptr++ = (char) ('0' + digit);
+    else
+      *bufptr++ = (char) ('a' - 10 + digit);
+  }
+
+  *bufptr = (char) 0;
+  print (buffer);
+  return;
+}
+</pre></div>
+
+<p>If there are LEDs on the board, they can also be put to use for
+debugging when the serial I/O code is being written. I usually implement
+a <code>zylons()</code> function, which strobes the LEDS (if there is more
+than one) in sequence, creating a rotating effect. This is convenient
+between I/O to see if the target is still alive. Another useful LED
+function is <code>led_putnum()</code>, which takes a digit and displays it as
+a bit pattern or number. These usually have to be written in assembler
+for each target board. Here are a number of C based routines that may be
+useful.
+</p>
+<p><code>led_putnum()</code> puts a number on a single digit segmented
+LED display. This LED is set by setting a bit mask to an address, where
+1 turns the segment off, and 0 turns it on. There is also a little
+decimal point on the LED display, so it gets the leftmost bit. The other
+bits specify the segment location. The bits look like:
+</p>
+<div class="smallexample">
+<pre class="smallexample">        [d.p | g | f | e | d | c | b | a ] is the byte.
+</pre></div>
+
+<p>The locations are set up as:
+</p>
+<div class="smallexample">
+<pre class="smallexample">             a
+           -----
+        f |     | b
+          |  g  |
+           -----
+          |     |
+        e |     | c
+           -----
+             d
+</pre></div>
+
+<p>This takes a number that&rsquo;s already been converted to a string, and
+prints it. 
+</p>
+<div class="smallexample">
+<pre class="smallexample">#define LED_ADDR	0xd00003
+
+void
+led_putnum ( num )
+char num;
+{
+    static unsigned char *leds = (unsigned char *)LED_ADDR;
+    static unsigned char num_bits [18] = {
+      0xff,						/* clear all */
+      0xc0, 0xf9, 0xa4, 0xb0, 0x99, 0x92, 0x82, 0xf8, 0x80, 0x98, /* numbers 0-9 */
+      0x98, 0x20, 0x3, 0x27, 0x21, 0x4, 0xe 		/* letters a-f */
+    };
+
+    if (num &gt;= '0' &amp;&amp; num &lt;= '9')
+      num = (num - '0') + 1;
+
+    if (num &gt;= 'a' &amp;&amp; num &lt;= 'f')
+      num = (num - 'a') + 12;
+
+    if (num == ' ')
+      num = 0;
+
+    *leds = num_bits[num];
+}
+
+/*
+ * zylons -- draw a rotating pattern. NOTE: this function never returns.
+ */
+void
+zylons()
+{
+  unsigned char *leds 	= (unsigned char *)LED_ADDR;
+  unsigned char curled = 0xfe;
+
+  while (1)
+    {
+      *leds = curled;
+      curled = (curled &gt;&gt; 1) | (curled &lt;&lt; 7);
+      delay ( 200 );
+    }
+}
+</pre></div>
+
+
+<hr>
+<div class="header">
+<p>
+Previous: <a href="Misc-Support.html#Misc-Support" accesskey="p" rel="prev">Misc Support</a>, Up: <a href="Libc.html#Libc" accesskey="u" rel="up">Libc</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+
+
+
+</body>
+</html>

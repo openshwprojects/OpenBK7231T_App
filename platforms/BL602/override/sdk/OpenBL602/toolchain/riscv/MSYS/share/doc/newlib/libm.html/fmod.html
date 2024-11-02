@@ -1,0 +1,91 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>LIBM: fmod</title>
+
+<meta name="description" content="LIBM: fmod">
+<meta name="keywords" content="LIBM: fmod">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Math.html#Math" rel="up" title="Math">
+<link href="frexp.html#frexp" rel="next" title="frexp">
+<link href="fmin.html#fmin" rel="prev" title="fmin">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="fmod"></a>
+<div class="header">
+<p>
+Next: <a href="frexp.html#frexp" accesskey="n" rel="next">frexp</a>, Previous: <a href="fmin.html#fmin" accesskey="p" rel="prev">fmin</a>, Up: <a href="Math.html#Math" accesskey="u" rel="up">Math</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="fmod_002c-fmodf_002d_002d_002dfloating_002dpoint-remainder-_0028modulo_0029"></a>
+<h3 class="section">1.25 <code>fmod</code>, <code>fmodf</code>&mdash;floating-point remainder (modulo)</h3>
+<a name="index-fmod"></a>
+<a name="index-fmodf"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;math.h&gt;
+double fmod(double <var>x</var>, double <var>y</var>);
+float fmodf(float <var>x</var>, float <var>y</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+The <code>fmod</code> and <code>fmodf</code> functions compute the floating-point
+remainder of <var>x</var>/<var>y</var> (<var>x</var> modulo <var>y</var>).
+</p>
+<br>
+<p><strong>Returns</strong><br>
+The <code>fmod</code> function returns the value 
+<var>x</var>-<var>i</var>*<var>y</var>, 
+for the largest integer <var>i</var> such that, if <var>y</var> is nonzero, the
+result has the same sign as <var>x</var> and magnitude less than the
+magnitude of <var>y</var>. 
+</p>
+<p><code>fmod(<var>x</var>,0)</code> returns NaN, and sets <code>errno</code> to <code>EDOM</code>.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>fmod</code> is ANSI C. <code>fmodf</code> is an extension.
+</p>
+<br>
+
+
+
+</body>
+</html>

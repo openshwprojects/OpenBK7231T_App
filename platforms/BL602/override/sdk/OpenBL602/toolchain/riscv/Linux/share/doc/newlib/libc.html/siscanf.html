@@ -1,0 +1,114 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: siscanf</title>
+
+<meta name="description" content="The Red Hat newlib C Library: siscanf">
+<meta name="keywords" content="The Red Hat newlib C Library: siscanf">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="sprintf.html#sprintf" rel="next" title="sprintf">
+<link href="siprintf.html#siprintf" rel="prev" title="siprintf">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="siscanf"></a>
+<div class="header">
+<p>
+Next: <a href="sprintf.html#sprintf" accesskey="n" rel="next">sprintf</a>, Previous: <a href="siprintf.html#siprintf" accesskey="p" rel="prev">siprintf</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="siscanf_002c-fiscanf_002c-iscanf_002d_002d_002dscan-and-format-non_002dfloating-input"></a>
+<h3 class="section">4.60 <code>siscanf</code>, <code>fiscanf</code>, <code>iscanf</code>&mdash;scan and format non-floating input</h3>
+<a name="index-iscanf"></a>
+<a name="index-_005fiscanf_005fr"></a>
+<a name="index-fiscanf"></a>
+<a name="index-_005ffiscanf_005fr"></a>
+<a name="index-siscanf"></a>
+<a name="index-_005fsiscanf_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+
+int iscanf(const char *<var>format</var>, ...);
+int fiscanf(FILE *<var>fd</var>, const char *<var>format</var>, ...);
+int siscanf(const char *<var>str</var>, const char *<var>format</var>, ...);
+
+int _iscanf_r(struct _reent *<var>ptr</var>, const char *<var>format</var>, ...);
+int _fiscanf_r(struct _reent *<var>ptr</var>, FILE *<var>fd</var>, 
+    const char *<var>format</var>, ...);
+int _siscanf_r(struct _reent *<var>ptr</var>, const char *<var>str</var>,
+    const char *<var>format</var>, ...);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>iscanf</code>, <code>fiscanf</code>, and <code>siscanf</code> are the same as
+<code>scanf</code>, <code>fscanf</code>, and <code>sscanf</code> respectively, only that
+they restrict the available formats to non-floating-point
+format specifiers.
+</p>
+<p>The routines <code>_iscanf_r</code>, <code>_fiscanf_r</code>, and <code>_siscanf_r</code> are reentrant
+versions of <code>iscanf</code>, <code>fiscanf</code>, and <code>siscanf</code> that take an additional
+first argument pointing to a reentrancy structure.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>iscanf</code> returns the number of input fields successfully
+scanned, converted and stored; the return value does
+not include scanned fields which were not stored.
+</p>
+<p>If <code>iscanf</code> attempts to read at end-of-file, the return
+value is <code>EOF</code>.
+</p>
+<p>If no fields were stored, the return value is <code>0</code>.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>iscanf</code>, <code>fiscanf</code>, and <code>siscanf</code> are newlib extensions.
+</p>
+<p>Supporting OS subroutines required: <code>close</code>, <code>fstat</code>, <code>isatty</code>,
+<code>lseek</code>, <code>read</code>, <code>sbrk</code>, <code>write</code>.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

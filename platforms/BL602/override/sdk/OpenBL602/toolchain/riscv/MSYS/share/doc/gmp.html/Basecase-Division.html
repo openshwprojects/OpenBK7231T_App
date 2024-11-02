@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Basecase Division</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Basecase Division">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Division-Algorithms.html#Division-Algorithms" rel="up" title="Division Algorithms">
+<link href="Divide-and-Conquer-Division.html#Divide-and-Conquer-Division" rel="next" title="Divide and Conquer Division">
+<link href="Single-Limb-Division.html#Single-Limb-Division" rel="prev" title="Single Limb Division">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Basecase-Division"></a>
+<div class="header">
+<p>
+Next: <a href="Divide-and-Conquer-Division.html#Divide-and-Conquer-Division" accesskey="n" rel="next">Divide and Conquer Division</a>, Previous: <a href="Single-Limb-Division.html#Single-Limb-Division" accesskey="p" rel="prev">Single Limb Division</a>, Up: <a href="Division-Algorithms.html#Division-Algorithms" accesskey="u" rel="up">Division Algorithms</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Basecase-Division-1"></a>
+<h4 class="subsection">15.2.2 Basecase Division</h4>
+
+<p>Basecase NxM division is like long division done by hand, but in base
+<em>2^mp_bits_per_limb</em>.  See Knuth
+section 4.3.1 algorithm D, and <samp>mpn/generic/sb_divrem_mn.c</samp>.
+</p>
+<p>Briefly stated, while the dividend remains larger than the divisor, a high
+quotient limb is formed and the Nx1 product <em>q*d</em> subtracted at
+the top end of the dividend.  With a normalized divisor (most significant bit
+set), each quotient limb can be formed with a 2x1 division and a
+1x1 multiplication plus some subtractions.  The 2x1 division is
+by the high limb of the divisor and is done either with a hardware divide or a
+multiply by inverse (the same as in <a href="Single-Limb-Division.html#Single-Limb-Division">Single Limb Division</a>) whichever is
+faster.  Such a quotient is sometimes one too big, requiring an addback of the
+divisor, but that happens rarely.
+</p>
+<p>With Q=N-M being the number of quotient limbs, this is an
+<em>O(Q*M)</em> algorithm and will run at a speed similar to a basecase
+QxM multiplication, differing in fact only in the extra multiply and
+divide for each of the Q quotient limbs.
+</p>
+
+
+
+
+</body>
+</html>

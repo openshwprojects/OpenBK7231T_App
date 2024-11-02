@@ -1,0 +1,263 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual documents how to install and use the Multiple Precision
+Floating-Point Reliable Library, version 3.1.4.
+
+Copyright 1991, 1993-2016 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with no Front-Cover Texts, and with no Back-Cover Texts.  A copy of the
+license is included in GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MPFR 3.1.4: Initialization Functions</title>
+
+<meta name="description" content="How to install and use GNU MPFR, a library for reliable multiple precision
+floating-point arithmetic, version 3.1.4.">
+<meta name="keywords" content="GNU MPFR 3.1.4: Initialization Functions">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="MPFR-Interface.html#MPFR-Interface" rel="up" title="MPFR Interface">
+<link href="Assignment-Functions.html#Assignment-Functions" rel="next" title="Assignment Functions">
+<link href="MPFR-Interface.html#MPFR-Interface" rel="prev" title="MPFR Interface">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Initialization-Functions"></a>
+<div class="header">
+<p>
+Next: <a href="Assignment-Functions.html#Assignment-Functions" accesskey="n" rel="next">Assignment Functions</a>, Previous: <a href="MPFR-Interface.html#MPFR-Interface" accesskey="p" rel="prev">MPFR Interface</a>, Up: <a href="MPFR-Interface.html#MPFR-Interface" accesskey="u" rel="up">MPFR Interface</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="index-Initialization-functions"></a>
+<a name="Initialization-Functions-1"></a>
+<h3 class="section">5.1 Initialization Functions</h3>
+
+<p>An <code>mpfr_t</code> object must be initialized before storing the first value in
+it.  The functions <code>mpfr_init</code> and <code>mpfr_init2</code> are used for that
+purpose.
+</p>
+<dl>
+<dt><a name="index-mpfr_005finit2"></a>Function: <em>void</em> <strong>mpfr_init2</strong> <em>(mpfr_t <var>x</var>, mpfr_prec_t <var>prec</var>)</em></dt>
+<dd><p>Initialize <var>x</var>, set its precision to be <strong>exactly</strong>
+<var>prec</var> bits and its value to NaN. (Warning: the corresponding
+MPF function initializes to zero instead.)
+</p>
+<p>Normally, a variable should be initialized once only or at
+least be cleared, using <code>mpfr_clear</code>, between initializations.
+To change the precision of a variable which has already been initialized,
+use <code>mpfr_set_prec</code>.
+The precision <var>prec</var> must be an integer between <code>MPFR_PREC_MIN</code> and
+<code>MPFR_PREC_MAX</code> (otherwise the behavior is undefined).
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005finits2"></a>Function: <em>void</em> <strong>mpfr_inits2</strong> <em>(mpfr_prec_t <var>prec</var>, mpfr_t <var>x</var>, ...)</em></dt>
+<dd><p>Initialize all the <code>mpfr_t</code> variables of the given variable
+argument <code>va_list</code>, set their precision to be <strong>exactly</strong>
+<var>prec</var> bits and their value to NaN.
+See <code>mpfr_init2</code> for more details.
+The <code>va_list</code> is assumed to be composed only of type <code>mpfr_t</code>
+(or equivalently <code>mpfr_ptr</code>).
+It begins from <var>x</var>, and ends when it encounters a null pointer (whose
+type must also be <code>mpfr_ptr</code>).
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fclear"></a>Function: <em>void</em> <strong>mpfr_clear</strong> <em>(mpfr_t <var>x</var>)</em></dt>
+<dd><p>Free the space occupied by the significand of
+<var>x</var>.  Make sure to call this function for all
+<code>mpfr_t</code> variables when you are done with them.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fclears"></a>Function: <em>void</em> <strong>mpfr_clears</strong> <em>(mpfr_t <var>x</var>, ...)</em></dt>
+<dd><p>Free the space occupied by all the <code>mpfr_t</code> variables of the given
+<code>va_list</code>. See <code>mpfr_clear</code> for more details.
+The <code>va_list</code> is assumed to be composed only of type <code>mpfr_t</code>
+(or equivalently <code>mpfr_ptr</code>).
+It begins from <var>x</var>, and ends when it encounters a null pointer (whose
+type must also be <code>mpfr_ptr</code>).
+</p></dd></dl>
+
+<p>Here is an example of how to use multiple initialization functions
+(since <code>NULL</code> is not necessarily defined in this context, we use
+<code>(mpfr_ptr) 0</code> instead, but <code>(mpfr_ptr) NULL</code> is also correct).
+</p>
+<div class="example">
+<pre class="example">{
+  mpfr_t x, y, z, t;
+  mpfr_inits2 (256, x, y, z, t, (mpfr_ptr) 0);
+  &hellip;
+  mpfr_clears (x, y, z, t, (mpfr_ptr) 0);
+}
+</pre></div>
+
+<dl>
+<dt><a name="index-mpfr_005finit"></a>Function: <em>void</em> <strong>mpfr_init</strong> <em>(mpfr_t <var>x</var>)</em></dt>
+<dd><p>Initialize <var>x</var>, set its precision to the default precision,
+and set its value to NaN.
+The default precision can be changed by a call to <code>mpfr_set_default_prec</code>.
+</p>
+<p>Warning! In a given program, some other libraries might change the default
+precision and not restore it. Thus it is safer to use <code>mpfr_init2</code>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005finits"></a>Function: <em>void</em> <strong>mpfr_inits</strong> <em>(mpfr_t <var>x</var>, ...)</em></dt>
+<dd><p>Initialize all the <code>mpfr_t</code> variables of the given <code>va_list</code>,
+set their precision to the default precision and their value to NaN.
+See <code>mpfr_init</code> for more details.
+The <code>va_list</code> is assumed to be composed only of type <code>mpfr_t</code>
+(or equivalently <code>mpfr_ptr</code>).
+It begins from <var>x</var>, and ends when it encounters a null pointer (whose
+type must also be <code>mpfr_ptr</code>).
+</p>
+<p>Warning! In a given program, some other libraries might change the default
+precision and not restore it. Thus it is safer to use <code>mpfr_inits2</code>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-MPFR_005fDECL_005fINIT"></a>Macro: <strong>MPFR_DECL_INIT</strong> <em>(<var>name</var>, <var>prec</var>)</em></dt>
+<dd><p>This macro declares <var>name</var> as an automatic variable of type <code>mpfr_t</code>,
+initializes it and sets its precision to be <strong>exactly</strong> <var>prec</var> bits
+and its value to NaN. <var>name</var> must be a valid identifier.
+You must use this macro in the declaration section.
+This macro is much faster than using <code>mpfr_init2</code> but has some
+drawbacks:
+</p>
+<ul>
+<li> You <strong>must not</strong> call <code>mpfr_clear</code> with variables
+created with this macro (the storage is allocated at the point of declaration
+and deallocated when the brace-level is exited).
+
+</li><li> You <strong>cannot</strong> change their precision.
+
+</li><li> You <strong>should not</strong> create variables with huge precision with this
+macro.
+
+</li><li> Your compiler must support &lsquo;<samp>Non-Constant Initializers</samp>&rsquo; (standard
+in C++ and ISO C99) and &lsquo;<samp>Token Pasting</samp>&rsquo;
+(standard in ISO C89). If <var>prec</var> is not a constant expression, your
+compiler must support &lsquo;<samp>variable-length automatic arrays</samp>&rsquo; (standard
+in ISO C99). GCC 2.95.3 and above supports all these features.
+If you compile your program with GCC in C89 mode and with &lsquo;<samp>-pedantic</samp>&rsquo;,
+you may want to define the <code>MPFR_USE_EXTENSION</code> macro to avoid warnings
+due to the <code>MPFR_DECL_INIT</code> implementation.
+
+</li></ul>
+</dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fset_005fdefault_005fprec"></a>Function: <em>void</em> <strong>mpfr_set_default_prec</strong> <em>(mpfr_prec_t <var>prec</var>)</em></dt>
+<dd><p>Set the default precision to be <strong>exactly</strong> <var>prec</var> bits, where
+<var>prec</var> can be any integer between <code>MPFR_PREC_MIN</code> and
+<code>MPFR_PREC_MAX</code>.
+The
+precision of a variable means the number of bits used to store its significand.
+All
+subsequent calls to <code>mpfr_init</code> or <code>mpfr_inits</code>
+will use this precision, but previously
+initialized variables are unaffected.
+The default precision is set to 53 bits initially.
+</p>
+<p>Note: when MPFR is built with the <code>--enable-thread-safe</code> configure option,
+the default precision is local to each thread. See <a href="Memory-Handling.html#Memory-Handling">Memory Handling</a>, for
+more information.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fget_005fdefault_005fprec"></a>Function: <em>mpfr_prec_t</em> <strong>mpfr_get_default_prec</strong> <em>(void)</em></dt>
+<dd><p>Return the current default MPFR precision in bits.
+See the documentation of <code>mpfr_set_default_prec</code>.
+</p></dd></dl>
+
+<p>Here is an example on how to initialize floating-point variables:
+</p>
+<div class="example">
+<pre class="example">{
+  mpfr_t x, y;
+  mpfr_init (x);                /* use default precision */
+  mpfr_init2 (y, 256);          /* precision <em>exactly</em> 256 bits */
+  &hellip;
+  /* When the program is about to exit, do ... */
+  mpfr_clear (x);
+  mpfr_clear (y);
+  mpfr_free_cache ();           /* free the cache for constants like pi */
+}
+</pre></div>
+
+<p>The following functions are useful for changing the precision during a
+calculation.  A typical use would be for adjusting the precision gradually in
+iterative algorithms like Newton-Raphson, making the computation precision
+closely match the actual accurate part of the numbers.
+</p>
+<dl>
+<dt><a name="index-mpfr_005fset_005fprec"></a>Function: <em>void</em> <strong>mpfr_set_prec</strong> <em>(mpfr_t <var>x</var>, mpfr_prec_t <var>prec</var>)</em></dt>
+<dd><p>Reset the precision of <var>x</var> to be <strong>exactly</strong> <var>prec</var> bits,
+and set its value to NaN.
+The previous value stored in <var>x</var> is lost. It is equivalent to
+a call to <code>mpfr_clear(x)</code> followed by a call to
+<code>mpfr_init2(x, prec)</code>, but more efficient as no allocation is done in
+case the current allocated space for the significand of <var>x</var> is enough.
+The precision <var>prec</var> can be any integer between <code>MPFR_PREC_MIN</code> and
+<code>MPFR_PREC_MAX</code>.
+In case you want to keep the previous value stored in <var>x</var>,
+use <code>mpfr_prec_round</code> instead.
+</p>
+<p>Warning! You must not use this function if <var>x</var> was initialized
+with <code>MPFR_DECL_INIT</code> or with <code>mpfr_custom_init_set</code>
+(see <a href="Custom-Interface.html#Custom-Interface">Custom Interface</a>).
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fget_005fprec"></a>Function: <em>mpfr_prec_t</em> <strong>mpfr_get_prec</strong> <em>(mpfr_t <var>x</var>)</em></dt>
+<dd><p>Return the precision of <var>x</var>, i.e., the
+number of bits used to store its significand.
+</p></dd></dl>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Assignment-Functions.html#Assignment-Functions" accesskey="n" rel="next">Assignment Functions</a>, Previous: <a href="MPFR-Interface.html#MPFR-Interface" accesskey="p" rel="prev">MPFR Interface</a>, Up: <a href="MPFR-Interface.html#MPFR-Interface" accesskey="u" rel="up">MPFR Interface</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: Syscalls</title>
+
+<meta name="description" content="The Red Hat newlib C Library: Syscalls">
+<meta name="keywords" content="The Red Hat newlib C Library: Syscalls">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="index.html#Top" rel="up" title="Top">
+<link href="Stubs.html#Stubs" rel="next" title="Stubs">
+<link href="Object-Size-Checking.html#Object-Size-Checking" rel="prev" title="Object Size Checking">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Syscalls"></a>
+<div class="header">
+<p>
+Next: <a href="Arglists.html#Arglists" accesskey="n" rel="next">Arglists</a>, Previous: <a href="Overflow-Protection.html#Overflow-Protection" accesskey="p" rel="prev">Overflow Protection</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="System-Calls"></a>
+<h2 class="chapter">13 System Calls</h2>
+
+<a name="index-linking-the-C-library"></a>
+<p>The C subroutine library depends on a handful of subroutine calls for
+operating system services.  If you use the C library on a system that
+complies with the POSIX.1 standard (also known as IEEE 1003.1), most of
+these subroutines are supplied with your operating system.
+</p>
+<p>If some of these subroutines are not provided with your system&mdash;in
+the extreme case, if you are developing software for a &ldquo;bare board&rdquo;
+system, without an OS&mdash;you will at least need to provide do-nothing
+stubs (or subroutines with minimal functionality) to allow your
+programs to link with the subroutines in <code>libc.a</code>.
+</p>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="Stubs.html#Stubs" accesskey="1">Stubs</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Definitions for OS interface
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Reentrant-Syscalls.html#Reentrant-Syscalls" accesskey="2">Reentrant Syscalls</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Reentrant covers for OS subroutines
+</td></tr>
+</table>
+
+
+
+
+</body>
+</html>

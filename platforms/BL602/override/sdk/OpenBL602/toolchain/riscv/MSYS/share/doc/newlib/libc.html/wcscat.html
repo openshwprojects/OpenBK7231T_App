@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: wcscat</title>
+
+<meta name="description" content="The Red Hat newlib C Library: wcscat">
+<meta name="keywords" content="The Red Hat newlib C Library: wcscat">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Wchar-strings.html#Wchar-strings" rel="up" title="Wchar strings">
+<link href="wcschr.html#wcschr" rel="next" title="wcschr">
+<link href="wmemset.html#wmemset" rel="prev" title="wmemset">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="wcscat"></a>
+<div class="header">
+<p>
+Next: <a href="wcschr.html#wcschr" accesskey="n" rel="next">wcschr</a>, Previous: <a href="wmemset.html#wmemset" accesskey="p" rel="prev">wmemset</a>, Up: <a href="Wchar-strings.html#Wchar-strings" accesskey="u" rel="up">Wchar strings</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="wcscat_002d_002d_002dconcatenate-two-wide_002dcharacter-strings"></a>
+<h3 class="section">6.7 <code>wcscat</code>&mdash;concatenate two wide-character strings</h3>
+<a name="index-wcscat"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;wchar.h&gt;
+wchar_t *wcscat(wchar_t *__restrict <var>s1</var>,
+    const wchar_t *__restrict <var>s2</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+The <code>wcscat</code> function appends a copy of the wide-character string
+pointed to by <var>s2</var> (including the terminating null wide-character
+code) to the end of the wide-character string pointed to by <var>s1</var>.
+The initial wide-character code of <var>s2</var> overwrites the null
+wide-character code at the end of <var>s1</var>. If copying takes place between
+objects that overlap, the behaviour is undefined. 
+</p>
+<br>
+<p><strong>Returns</strong><br>
+The <code>wcscat</code> function returns <var>s1</var>;
+no return value is reserved to indicate an error. 
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>wcscat</code> is ISO/IEC 9899/AMD1:1995 (ISO C).
+</p>
+<p>No supporting OS subroutines are required.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: memcpy</title>
+
+<meta name="description" content="The Red Hat newlib C Library: memcpy">
+<meta name="keywords" content="The Red Hat newlib C Library: memcpy">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Strings.html#Strings" rel="up" title="Strings">
+<link href="memmem.html#memmem" rel="next" title="memmem">
+<link href="memcmp.html#memcmp" rel="prev" title="memcmp">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="memcpy"></a>
+<div class="header">
+<p>
+Next: <a href="memmem.html#memmem" accesskey="n" rel="next">memmem</a>, Previous: <a href="memcmp.html#memcmp" accesskey="p" rel="prev">memcmp</a>, Up: <a href="Strings.html#Strings" accesskey="u" rel="up">Strings</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="memcpy_002d_002d_002dcopy-memory-regions"></a>
+<h3 class="section">5.8 <code>memcpy</code>&mdash;copy memory regions</h3>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;string.h&gt;
+void* memcpy(void *restrict <var>out</var>, const void *restrict <var>in</var>,
+    size_t <var>n</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+This function copies <var>n</var> bytes from the memory region
+pointed to by <var>in</var> to the memory region pointed to by
+<var>out</var>.
+</p>
+<p>If the regions overlap, the behavior is undefined.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>memcpy</code> returns a pointer to the first byte of the <var>out</var>
+region.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>memcpy</code> is ANSI C.
+</p>
+<p><code>memcpy</code> requires no supporting OS subroutines.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

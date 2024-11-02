@@ -1,0 +1,107 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: system</title>
+
+<meta name="description" content="The Red Hat newlib C Library: system">
+<meta name="keywords" content="The Red Hat newlib C Library: system">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdlib.html#Stdlib" rel="up" title="Stdlib">
+<link href="utoa.html#utoa" rel="next" title="utoa">
+<link href="wcstoull.html#wcstoull" rel="prev" title="wcstoull">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="system"></a>
+<div class="header">
+<p>
+Next: <a href="utoa.html#utoa" accesskey="n" rel="next">utoa</a>, Previous: <a href="wcstoull.html#wcstoull" accesskey="p" rel="prev">wcstoull</a>, Up: <a href="Stdlib.html#Stdlib" accesskey="u" rel="up">Stdlib</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="system_002d_002d_002dexecute-command-string"></a>
+<h3 class="section">2.48 <code>system</code>&mdash;execute command string</h3>
+<a name="index-system"></a>
+<a name="index-_005fsystem_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdlib.h&gt;
+int system(char *<var>s</var>);
+
+int _system_r(void *<var>reent</var>, char *<var>s</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+</p>
+<p>Use <code>system</code> to pass a command string <code>*<var>s</var></code> to <code>/bin/sh</code> on
+your system, and wait for it to finish executing.
+</p>
+<p>Use &ldquo;<code>system(NULL)</code>&rdquo; to test whether your system has <code>/bin/sh</code>
+available.
+</p>
+<p>The alternate function <code>_system_r</code> is a reentrant version.  The
+extra argument <var>reent</var> is a pointer to a reentrancy structure.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>system(NULL)</code> returns a non-zero value if <code>/bin/sh</code> is available, and
+<code>0</code> if it is not.
+</p>
+<p>With a command argument, the result of <code>system</code> is the exit status
+returned by <code>/bin/sh</code>.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+ANSI C requires <code>system</code>, but leaves the nature and effects of a
+command processor undefined.  ANSI C does, however, specify that
+<code>system(NULL)</code> return zero or nonzero to report on the existence of
+a command processor.
+</p>
+<p>POSIX.2 requires <code>system</code>, and requires that it invoke a <code>sh</code>.
+Where <code>sh</code> is found is left unspecified.
+</p>
+<p>Supporting OS subroutines required: <code>_exit</code>, <code>_execve</code>, <code>_fork_r</code>,
+<code>_wait_r</code>.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

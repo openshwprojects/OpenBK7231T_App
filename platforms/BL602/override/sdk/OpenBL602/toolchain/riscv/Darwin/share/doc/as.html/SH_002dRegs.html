@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This file documents the GNU Assembler "as".
+
+Copyright (C) 1991-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3
+or any later version published by the Free Software Foundation;
+with no Invariant Sections, with no Front-Cover Texts, and with no
+Back-Cover Texts.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+ -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>SH-Regs (Using as)</title>
+
+<meta name="description" content="SH-Regs (Using as)">
+<meta name="keywords" content="SH-Regs (Using as)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="AS-Index.html" rel="index" title="AS Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="SH-Syntax.html" rel="up" title="SH Syntax">
+<link href="SH_002dAddressing.html" rel="next" title="SH-Addressing">
+<link href="SH_002dChars.html" rel="prev" title="SH-Chars">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="SH_002dRegs"></span><div class="header">
+<p>
+Next: <a href="SH_002dAddressing.html" accesskey="n" rel="next">SH-Addressing</a>, Previous: <a href="SH_002dChars.html" accesskey="p" rel="prev">SH-Chars</a>, Up: <a href="SH-Syntax.html" accesskey="u" rel="up">SH Syntax</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="AS-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Register-Names-15"></span><h4 class="subsubsection">9.43.2.2 Register Names</h4>
+
+<span id="index-SH-registers"></span>
+<span id="index-registers_002c-SH"></span>
+<p>You can use the predefined symbols &lsquo;<samp>r0</samp>&rsquo;, &lsquo;<samp>r1</samp>&rsquo;, &lsquo;<samp>r2</samp>&rsquo;,
+&lsquo;<samp>r3</samp>&rsquo;, &lsquo;<samp>r4</samp>&rsquo;, &lsquo;<samp>r5</samp>&rsquo;, &lsquo;<samp>r6</samp>&rsquo;, &lsquo;<samp>r7</samp>&rsquo;, &lsquo;<samp>r8</samp>&rsquo;,
+&lsquo;<samp>r9</samp>&rsquo;, &lsquo;<samp>r10</samp>&rsquo;, &lsquo;<samp>r11</samp>&rsquo;, &lsquo;<samp>r12</samp>&rsquo;, &lsquo;<samp>r13</samp>&rsquo;, &lsquo;<samp>r14</samp>&rsquo;,
+and &lsquo;<samp>r15</samp>&rsquo; to refer to the SH registers.
+</p>
+<p>The SH also has these control registers:
+</p>
+<dl compact="compact">
+<dt><code>pr</code></dt>
+<dd><p>procedure register (holds return address)
+</p>
+</dd>
+<dt><code>pc</code></dt>
+<dd><p>program counter
+</p>
+</dd>
+<dt><code>mach</code></dt>
+<dt><code>macl</code></dt>
+<dd><p>high and low multiply accumulator registers
+</p>
+</dd>
+<dt><code>sr</code></dt>
+<dd><p>status register
+</p>
+</dd>
+<dt><code>gbr</code></dt>
+<dd><p>global base register
+</p>
+</dd>
+<dt><code>vbr</code></dt>
+<dd><p>vector base register (for interrupt vectors)
+</p></dd>
+</dl>
+
+
+
+
+</body>
+</html>

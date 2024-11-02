@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: wcscasecmp</title>
+
+<meta name="description" content="The Red Hat newlib C Library: wcscasecmp">
+<meta name="keywords" content="The Red Hat newlib C Library: wcscasecmp">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Strings.html#Strings" rel="up" title="Strings">
+<link href="wcsdup.html#wcsdup" rel="next" title="wcsdup">
+<link href="swab.html#swab" rel="prev" title="swab">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="wcscasecmp"></a>
+<div class="header">
+<p>
+Next: <a href="wcsdup.html#wcsdup" accesskey="n" rel="next">wcsdup</a>, Previous: <a href="swab.html#swab" accesskey="p" rel="prev">swab</a>, Up: <a href="Strings.html#Strings" accesskey="u" rel="up">Strings</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="wcscasecmp_002d_002d_002dcase_002dinsensitive-wide-character-string-compare"></a>
+<h3 class="section">5.47 <code>wcscasecmp</code>&mdash;case-insensitive wide character string compare</h3>
+<a name="index-wcscasecmp"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;wchar.h&gt;
+int wcscasecmp(const wchar_t *<var>a</var>, const wchar_t *<var>b</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>wcscasecmp</code> compares the wide character string at <var>a</var> to
+the wide character string at <var>b</var> in a case-insensitive manner.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+</p>
+<p>If <code>*<var>a</var></code> sorts lexicographically after <code>*<var>b</var></code> (after
+both are converted to uppercase), <code>wcscasecmp</code> returns a
+number greater than zero.  If the two strings match,
+<code>wcscasecmp</code> returns zero.  If <code>*<var>a</var></code> sorts
+lexicographically before <code>*<var>b</var></code>, <code>wcscasecmp</code> returns a
+number less than zero.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+POSIX-1.2008
+</p>
+<p><code>wcscasecmp</code> requires no supporting OS subroutines. It uses
+tolower() from elsewhere in this library.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

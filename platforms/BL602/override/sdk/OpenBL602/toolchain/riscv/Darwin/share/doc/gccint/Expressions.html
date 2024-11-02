@@ -1,0 +1,311 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 1988-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "Funding Free Software", the Front-Cover
+Texts being (a) (see below), and with the Back-Cover Texts being (b)
+(see below).  A copy of the license is included in the section entitled
+"GNU Free Documentation License".
+
+(a) The FSF's Front-Cover Text is:
+
+A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development. -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Expressions (GNU Compiler Collection (GCC) Internals)</title>
+
+<meta name="description" content="Expressions (GNU Compiler Collection (GCC) Internals)">
+<meta name="keywords" content="Expressions (GNU Compiler Collection (GCC) Internals)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="Option-Index.html" rel="index" title="Option Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Insn-Attributes.html" rel="up" title="Insn Attributes">
+<link href="Tagging-Insns.html" rel="next" title="Tagging Insns">
+<link href="Defining-Attributes.html" rel="prev" title="Defining Attributes">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="Expressions"></span><div class="header">
+<p>
+Next: <a href="Tagging-Insns.html" accesskey="n" rel="next">Tagging Insns</a>, Previous: <a href="Defining-Attributes.html" accesskey="p" rel="prev">Defining Attributes</a>, Up: <a href="Insn-Attributes.html" accesskey="u" rel="up">Insn Attributes</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Option-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Attribute-Expressions"></span><h4 class="subsection">17.19.2 Attribute Expressions</h4>
+<span id="index-attribute-expressions"></span>
+
+<p>RTL expressions used to define attributes use the codes described above
+plus a few specific to attribute definitions, to be discussed below.
+Attribute value expressions must have one of the following forms:
+</p>
+<dl compact="compact">
+<dd><span id="index-const_005fint-and-attributes"></span>
+</dd>
+<dt><code>(const_int <var>i</var>)</code></dt>
+<dd><p>The integer <var>i</var> specifies the value of a numeric attribute.  <var>i</var>
+must be non-negative.
+</p>
+<p>The value of a numeric attribute can be specified either with a
+<code>const_int</code>, or as an integer represented as a string in
+<code>const_string</code>, <code>eq_attr</code> (see below), <code>attr</code>,
+<code>symbol_ref</code>, simple arithmetic expressions, and <code>set_attr</code>
+overrides on specific instructions (see <a href="Tagging-Insns.html">Tagging Insns</a>).
+</p>
+<span id="index-const_005fstring-and-attributes"></span>
+</dd>
+<dt><code>(const_string <var>value</var>)</code></dt>
+<dd><p>The string <var>value</var> specifies a constant attribute value.
+If <var>value</var> is specified as &lsquo;<samp>&quot;*&quot;</samp>&rsquo;, it means that the default value of
+the attribute is to be used for the insn containing this expression.
+&lsquo;<samp>&quot;*&quot;</samp>&rsquo; obviously cannot be used in the <var>default</var> expression
+of a <code>define_attr</code>.
+</p>
+<p>If the attribute whose value is being specified is numeric, <var>value</var>
+must be a string containing a non-negative integer (normally
+<code>const_int</code> would be used in this case).  Otherwise, it must
+contain one of the valid values for the attribute.
+</p>
+<span id="index-if_005fthen_005felse-and-attributes"></span>
+</dd>
+<dt><code>(if_then_else <var>test</var> <var>true-value</var> <var>false-value</var>)</code></dt>
+<dd><p><var>test</var> specifies an attribute test, whose format is defined below.
+The value of this expression is <var>true-value</var> if <var>test</var> is true,
+otherwise it is <var>false-value</var>.
+</p>
+<span id="index-cond-and-attributes"></span>
+</dd>
+<dt><code>(cond [<var>test1</var> <var>value1</var> &hellip;] <var>default</var>)</code></dt>
+<dd><p>The first operand of this expression is a vector containing an even
+number of expressions and consisting of pairs of <var>test</var> and <var>value</var>
+expressions.  The value of the <code>cond</code> expression is that of the
+<var>value</var> corresponding to the first true <var>test</var> expression.  If
+none of the <var>test</var> expressions are true, the value of the <code>cond</code>
+expression is that of the <var>default</var> expression.
+</p></dd>
+</dl>
+
+<p><var>test</var> expressions can have one of the following forms:
+</p>
+<dl compact="compact">
+<dd><span id="index-const_005fint-and-attribute-tests"></span>
+</dd>
+<dt><code>(const_int <var>i</var>)</code></dt>
+<dd><p>This test is true if <var>i</var> is nonzero and false otherwise.
+</p>
+<span id="index-not-and-attributes"></span>
+<span id="index-ior-and-attributes"></span>
+<span id="index-and-and-attributes"></span>
+</dd>
+<dt><code>(not <var>test</var>)</code></dt>
+<dt><code>(ior <var>test1</var> <var>test2</var>)</code></dt>
+<dt><code>(and <var>test1</var> <var>test2</var>)</code></dt>
+<dd><p>These tests are true if the indicated logical function is true.
+</p>
+<span id="index-match_005foperand-and-attributes"></span>
+</dd>
+<dt><code>(match_operand:<var>m</var> <var>n</var> <var>pred</var> <var>constraints</var>)</code></dt>
+<dd><p>This test is true if operand <var>n</var> of the insn whose attribute value
+is being determined has mode <var>m</var> (this part of the test is ignored
+if <var>m</var> is <code>VOIDmode</code>) and the function specified by the string
+<var>pred</var> returns a nonzero value when passed operand <var>n</var> and mode
+<var>m</var> (this part of the test is ignored if <var>pred</var> is the null
+string).
+</p>
+<p>The <var>constraints</var> operand is ignored and should be the null string.
+</p>
+<span id="index-match_005ftest-and-attributes"></span>
+</dd>
+<dt><code>(match_test <var>c-expr</var>)</code></dt>
+<dd><p>The test is true if C expression <var>c-expr</var> is true.  In non-constant
+attributes, <var>c-expr</var> has access to the following variables:
+</p>
+<dl compact="compact">
+<dt><var>insn</var></dt>
+<dd><p>The rtl instruction under test.
+</p></dd>
+<dt><var>which_alternative</var></dt>
+<dd><p>The <code>define_insn</code> alternative that <var>insn</var> matches.
+See <a href="Output-Statement.html">Output Statement</a>.
+</p></dd>
+<dt><var>operands</var></dt>
+<dd><p>An array of <var>insn</var>&rsquo;s rtl operands.
+</p></dd>
+</dl>
+
+<p><var>c-expr</var> behaves like the condition in a C <code>if</code> statement,
+so there is no need to explicitly convert the expression into a boolean
+0 or 1 value.  For example, the following two tests are equivalent:
+</p>
+<div class="example">
+<pre class="example">(match_test &quot;x &amp; 2&quot;)
+(match_test &quot;(x &amp; 2) != 0&quot;)
+</pre></div>
+
+<span id="index-le-and-attributes"></span>
+<span id="index-leu-and-attributes"></span>
+<span id="index-lt-and-attributes"></span>
+<span id="index-gt-and-attributes"></span>
+<span id="index-gtu-and-attributes"></span>
+<span id="index-ge-and-attributes"></span>
+<span id="index-geu-and-attributes"></span>
+<span id="index-ne-and-attributes"></span>
+<span id="index-eq-and-attributes"></span>
+<span id="index-plus-and-attributes"></span>
+<span id="index-minus-and-attributes"></span>
+<span id="index-mult-and-attributes"></span>
+<span id="index-div-and-attributes"></span>
+<span id="index-mod-and-attributes"></span>
+<span id="index-abs-and-attributes"></span>
+<span id="index-neg-and-attributes"></span>
+<span id="index-ashift-and-attributes"></span>
+<span id="index-lshiftrt-and-attributes"></span>
+<span id="index-ashiftrt-and-attributes"></span>
+</dd>
+<dt><code>(le <var>arith1</var> <var>arith2</var>)</code></dt>
+<dt><code>(leu <var>arith1</var> <var>arith2</var>)</code></dt>
+<dt><code>(lt <var>arith1</var> <var>arith2</var>)</code></dt>
+<dt><code>(ltu <var>arith1</var> <var>arith2</var>)</code></dt>
+<dt><code>(gt <var>arith1</var> <var>arith2</var>)</code></dt>
+<dt><code>(gtu <var>arith1</var> <var>arith2</var>)</code></dt>
+<dt><code>(ge <var>arith1</var> <var>arith2</var>)</code></dt>
+<dt><code>(geu <var>arith1</var> <var>arith2</var>)</code></dt>
+<dt><code>(ne <var>arith1</var> <var>arith2</var>)</code></dt>
+<dt><code>(eq <var>arith1</var> <var>arith2</var>)</code></dt>
+<dd><p>These tests are true if the indicated comparison of the two arithmetic
+expressions is true.  Arithmetic expressions are formed with
+<code>plus</code>, <code>minus</code>, <code>mult</code>, <code>div</code>, <code>mod</code>,
+<code>abs</code>, <code>neg</code>, <code>and</code>, <code>ior</code>, <code>xor</code>, <code>not</code>,
+<code>ashift</code>, <code>lshiftrt</code>, and <code>ashiftrt</code> expressions.
+</p>
+<span id="index-get_005fattr"></span>
+<p><code>const_int</code> and <code>symbol_ref</code> are always valid terms (see <a href="Insn-Lengths.html">Insn Lengths</a>,for additional forms).  <code>symbol_ref</code> is a string
+denoting a C expression that yields an <code>int</code> when evaluated by the
+&lsquo;<samp>get_attr_&hellip;</samp>&rsquo; routine.  It should normally be a global
+variable.
+</p>
+<span id="index-eq_005fattr"></span>
+</dd>
+<dt><code>(eq_attr <var>name</var> <var>value</var>)</code></dt>
+<dd><p><var>name</var> is a string specifying the name of an attribute.
+</p>
+<p><var>value</var> is a string that is either a valid value for attribute
+<var>name</var>, a comma-separated list of values, or &lsquo;<samp>!</samp>&rsquo; followed by a
+value or list.  If <var>value</var> does not begin with a &lsquo;<samp>!</samp>&rsquo;, this
+test is true if the value of the <var>name</var> attribute of the current
+insn is in the list specified by <var>value</var>.  If <var>value</var> begins
+with a &lsquo;<samp>!</samp>&rsquo;, this test is true if the attribute&rsquo;s value is
+<em>not</em> in the specified list.
+</p>
+<p>For example,
+</p>
+<div class="example">
+<pre class="example">(eq_attr &quot;type&quot; &quot;load,store&quot;)
+</pre></div>
+
+<p>is equivalent to
+</p>
+<div class="example">
+<pre class="example">(ior (eq_attr &quot;type&quot; &quot;load&quot;) (eq_attr &quot;type&quot; &quot;store&quot;))
+</pre></div>
+
+<p>If <var>name</var> specifies an attribute of &lsquo;<samp>alternative</samp>&rsquo;, it refers to the
+value of the compiler variable <code>which_alternative</code>
+(see <a href="Output-Statement.html">Output Statement</a>) and the values must be small integers.  For
+example,
+</p>
+<div class="example">
+<pre class="example">(eq_attr &quot;alternative&quot; &quot;2,3&quot;)
+</pre></div>
+
+<p>is equivalent to
+</p>
+<div class="example">
+<pre class="example">(ior (eq (symbol_ref &quot;which_alternative&quot;) (const_int 2))
+     (eq (symbol_ref &quot;which_alternative&quot;) (const_int 3)))
+</pre></div>
+
+<p>Note that, for most attributes, an <code>eq_attr</code> test is simplified in cases
+where the value of the attribute being tested is known for all insns matching
+a particular pattern.  This is by far the most common case.
+</p>
+<span id="index-attr_005fflag"></span>
+</dd>
+<dt><code>(attr_flag <var>name</var>)</code></dt>
+<dd><p>The value of an <code>attr_flag</code> expression is true if the flag
+specified by <var>name</var> is true for the <code>insn</code> currently being
+scheduled.
+</p>
+<p><var>name</var> is a string specifying one of a fixed set of flags to test.
+Test the flags <code>forward</code> and <code>backward</code> to determine the
+direction of a conditional branch.
+</p>
+<p>This example describes a conditional branch delay slot which
+can be nullified for forward branches that are taken (annul-true) or
+for backward branches which are not taken (annul-false).
+</p>
+<div class="example">
+<pre class="example">(define_delay (eq_attr &quot;type&quot; &quot;cbranch&quot;)
+  [(eq_attr &quot;in_branch_delay&quot; &quot;true&quot;)
+   (and (eq_attr &quot;in_branch_delay&quot; &quot;true&quot;)
+        (attr_flag &quot;forward&quot;))
+   (and (eq_attr &quot;in_branch_delay&quot; &quot;true&quot;)
+        (attr_flag &quot;backward&quot;))])
+</pre></div>
+
+<p>The <code>forward</code> and <code>backward</code> flags are false if the current
+<code>insn</code> being scheduled is not a conditional branch.
+</p>
+<p><code>attr_flag</code> is only used during delay slot scheduling and has no
+meaning to other passes of the compiler.
+</p>
+<span id="index-attr"></span>
+</dd>
+<dt><code>(attr <var>name</var>)</code></dt>
+<dd><p>The value of another attribute is returned.  This is most useful
+for numeric attributes, as <code>eq_attr</code> and <code>attr_flag</code>
+produce more efficient code for non-numeric attributes.
+</p></dd>
+</dl>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Tagging-Insns.html" accesskey="n" rel="next">Tagging Insns</a>, Previous: <a href="Defining-Attributes.html" accesskey="p" rel="prev">Defining Attributes</a>, Up: <a href="Insn-Attributes.html" accesskey="u" rel="up">Insn Attributes</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Option-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

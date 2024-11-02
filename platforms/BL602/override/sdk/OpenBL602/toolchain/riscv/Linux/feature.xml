@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+    id="riscv64-unknown-elf-toolchain_2020.12.8"
+    label="Freedom Tools 2020.12.8 Bare Metal Toolchain 10.2.0 for x86_64-linux-ubuntu14"
+    version="10.2.0"
+    provider-name="SiFive">
+
+  <description>
+    Freedom Tools 2020.12.8 Bare Metal Toolchain 10.2.0 for x86_64-linux-ubuntu14
+  </description>
+
+  <copyright>
+    Copyright (c) 2015-2020, SiFive Inc.
+  </copyright>
+
+  <license>
+    Eclipse Public License v1.0
+  </license>
+
+</feature>

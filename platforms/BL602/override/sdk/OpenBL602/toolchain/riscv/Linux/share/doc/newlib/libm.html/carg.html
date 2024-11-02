@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>LIBM: carg</title>
+
+<meta name="description" content="LIBM: carg">
+<meta name="keywords" content="LIBM: carg">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Complex.html#Complex" rel="up" title="Complex">
+<link href="casin.html#casin" rel="next" title="casin">
+<link href="cacosh.html#cacosh" rel="prev" title="cacosh">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="carg"></a>
+<div class="header">
+<p>
+Next: <a href="casin.html#casin" accesskey="n" rel="next">casin</a>, Previous: <a href="cacosh.html#cacosh" accesskey="p" rel="prev">cacosh</a>, Up: <a href="Complex.html#Complex" accesskey="u" rel="up">Complex</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="carg_002c-cargf_002d_002d_002dargument-_0028phase-angle_0029"></a>
+<h3 class="section">2.4 <code>carg</code>, <code>cargf</code>&mdash;argument (phase angle)</h3>
+<a name="index-carg"></a>
+<a name="index-cargf"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;complex.h&gt;
+double carg(double complex <var>z</var>);
+float cargf(float complex <var>z</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+These functions compute the argument (also called phase angle) 
+of <var>z</var>, with a branch cut along the negative real axis.
+</p>
+<p><code>cargf</code> is identical to <code>carg</code>, except that it performs
+its calculations on <code>floats complex</code>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+The carg functions return the value of the argument in the 
+interval [-pi, +pi]
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>carg</code> and <code>cargf</code> are ISO C99
+</p>
+<br>
+
+
+
+</body>
+</html>

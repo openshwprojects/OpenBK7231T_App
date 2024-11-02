@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: remove</title>
+
+<meta name="description" content="The Red Hat newlib C Library: remove">
+<meta name="keywords" content="The Red Hat newlib C Library: remove">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="rename.html#rename" rel="next" title="rename">
+<link href="putwchar.html#putwchar" rel="prev" title="putwchar">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="remove"></a>
+<div class="header">
+<p>
+Next: <a href="rename.html#rename" accesskey="n" rel="next">rename</a>, Previous: <a href="putwchar.html#putwchar" accesskey="p" rel="prev">putwchar</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="remove_002d_002d_002ddelete-a-file_0027s-name"></a>
+<h3 class="section">4.52 <code>remove</code>&mdash;delete a file&rsquo;s name</h3>
+<a name="index-remove"></a>
+<a name="index-_005fremove_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+int remove(char *<var>filename</var>);
+
+int _remove_r(struct _reent *<var>reent</var>, char *<var>filename</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+Use <code>remove</code> to dissolve the association between a particular
+filename (the string at <var>filename</var>) and the file it represents.
+After calling <code>remove</code> with a particular filename, you will no
+longer be able to open the file by that name.
+</p>
+<p>In this implementation, you may use <code>remove</code> on an open file without
+error; existing file descriptors for the file will continue to access
+the file&rsquo;s data until the program using them closes the file.
+</p>
+<p>The alternate function <code>_remove_r</code> is a reentrant version.  The
+extra argument <var>reent</var> is a pointer to a reentrancy structure.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>remove</code> returns <code>0</code> if it succeeds, <code>-1</code> if it fails.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+ANSI C requires <code>remove</code>, but only specifies that the result on
+failure be nonzero.  The behavior of <code>remove</code> when you call it on an
+open file may vary among implementations.
+</p>
+<p>Supporting OS subroutine required: <code>unlink</code>.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

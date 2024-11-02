@@ -1,0 +1,101 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>LIBM: atanh</title>
+
+<meta name="description" content="LIBM: atanh">
+<meta name="keywords" content="LIBM: atanh">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Math.html#Math" rel="up" title="Math">
+<link href="jN.html#jN" rel="next" title="jN">
+<link href="atan2.html#atan2" rel="prev" title="atan2">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="atanh"></a>
+<div class="header">
+<p>
+Next: <a href="jN.html#jN" accesskey="n" rel="next">jN</a>, Previous: <a href="atan2.html#atan2" accesskey="p" rel="prev">atan2</a>, Up: <a href="Math.html#Math" accesskey="u" rel="up">Math</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="atanh_002c-atanhf_002d_002d_002dinverse-hyperbolic-tangent"></a>
+<h3 class="section">1.9 <code>atanh</code>, <code>atanhf</code>&mdash;inverse hyperbolic tangent</h3>
+<a name="index-atanh"></a>
+<a name="index-atanhf"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;math.h&gt;
+double atanh(double <var>x</var>);
+float atanhf(float <var>x</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>atanh</code> calculates the inverse hyperbolic tangent of <var>x</var>.
+</p>
+<p><code>atanhf</code> is identical, other than taking and returning
+<code>float</code> values.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>atanh</code> and <code>atanhf</code> return the calculated value.
+</p>
+<p>If 
+</p><div class="smallexample">
+<pre class="smallexample"><var>x</var>|
+</pre></div>
+<p>is greater than 1, the global <code>errno</code> is set to <code>EDOM</code> and
+the result is a NaN.  A <code>DOMAIN error</code> is reported.
+</p>
+<p>If 
+</p><div class="smallexample">
+<pre class="smallexample"><var>x</var>|
+</pre></div>
+<p>is 1, the global <code>errno</code> is set to <code>EDOM</code>; and the result is 
+infinity with the same sign as <code>x</code>.  A <code>SING error</code> is reported.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+Neither <code>atanh</code> nor <code>atanhf</code> are ANSI C.
+</p>
+<br>
+
+
+
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Custom Allocation</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Custom Allocation">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="index.html#Top" rel="up" title="Top">
+<link href="Language-Bindings.html#Language-Bindings" rel="next" title="Language Bindings">
+<link href="C_002b_002b-Interface-Limitations.html#C_002b_002b-Interface-Limitations" rel="prev" title="C++ Interface Limitations">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Custom-Allocation"></a>
+<div class="header">
+<p>
+Next: <a href="Language-Bindings.html#Language-Bindings" accesskey="n" rel="next">Language Bindings</a>, Previous: <a href="C_002b_002b-Class-Interface.html#C_002b_002b-Class-Interface" accesskey="p" rel="prev">C++ Class Interface</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Custom-Allocation-1"></a>
+<h2 class="chapter">13 Custom Allocation</h2>
+<a name="index-Custom-allocation"></a>
+<a name="index-Memory-allocation"></a>
+<a name="index-Allocation-of-memory"></a>
+
+<p>By default GMP uses <code>malloc</code>, <code>realloc</code> and <code>free</code> for memory
+allocation, and if they fail GMP prints a message to the standard error output
+and terminates the program.
+</p>
+<p>Alternate functions can be specified, to allocate memory in a different way or
+to have a different error action on running out of memory.
+</p>
+<dl>
+<dt><a name="index-mp_005fset_005fmemory_005ffunctions"></a>Function: <em>void</em> <strong>mp_set_memory_functions</strong> <em>(<br> void *(*<var>alloc_func_ptr</var>) (size_t), <br> void *(*<var>realloc_func_ptr</var>) (void *, size_t, size_t), <br> void (*<var>free_func_ptr</var>) (void *, size_t))</em></dt>
+<dd><p>Replace the current allocation functions from the arguments.  If an argument
+is <code>NULL</code>, the corresponding default function is used.
+</p>
+<p>These functions will be used for all memory allocation done by GMP, apart from
+temporary space from <code>alloca</code> if that function is available and GMP is
+configured to use it (see <a href="Build-Options.html#Build-Options">Build Options</a>).
+</p>
+<p><strong>Be sure to call <code>mp_set_memory_functions</code> only when there are no
+active GMP objects allocated using the previous memory functions!  Usually
+that means calling it before any other GMP function.</strong>
+</p></dd></dl>
+
+<p>The functions supplied should fit the following declarations:
+</p>
+<dl>
+<dt><a name="index-allocate_005ffunction"></a>Function: <em>void *</em> <strong>allocate_function</strong> <em>(size_t <var>alloc_size</var>)</em></dt>
+<dd><p>Return a pointer to newly allocated space with at least <var>alloc_size</var>
+bytes.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-reallocate_005ffunction"></a>Function: <em>void *</em> <strong>reallocate_function</strong> <em>(void *<var>ptr</var>, size_t <var>old_size</var>, size_t <var>new_size</var>)</em></dt>
+<dd><p>Resize a previously allocated block <var>ptr</var> of <var>old_size</var> bytes to be
+<var>new_size</var> bytes.
+</p>
+<p>The block may be moved if necessary or if desired, and in that case the
+smaller of <var>old_size</var> and <var>new_size</var> bytes must be copied to the new
+location.  The return value is a pointer to the resized block, that being the
+new location if moved or just <var>ptr</var> if not.
+</p>
+<p><var>ptr</var> is never <code>NULL</code>, it&rsquo;s always a previously allocated block.
+<var>new_size</var> may be bigger or smaller than <var>old_size</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-free_005ffunction"></a>Function: <em>void</em> <strong>free_function</strong> <em>(void *<var>ptr</var>, size_t <var>size</var>)</em></dt>
+<dd><p>De-allocate the space pointed to by <var>ptr</var>.
+</p>
+<p><var>ptr</var> is never <code>NULL</code>, it&rsquo;s always a previously allocated block of
+<var>size</var> bytes.
+</p></dd></dl>
+
+<p>A <em>byte</em> here means the unit used by the <code>sizeof</code> operator.
+</p>
+<p>The <var>reallocate_function</var> parameter <var>old_size</var> and the
+<var>free_function</var> parameter <var>size</var> are passed for convenience, but of
+course they can be ignored if not needed by an implementation.  The default
+functions using <code>malloc</code> and friends for instance don&rsquo;t use them.
+</p>
+<p>No error return is allowed from any of these functions, if they return then
+they must have performed the specified operation.  In particular note that
+<var>allocate_function</var> or <var>reallocate_function</var> mustn&rsquo;t return
+<code>NULL</code>.
+</p>
+<p>Getting a different fatal error action is a good use for custom allocation
+functions, for example giving a graphical dialog rather than the default print
+to <code>stderr</code>.  How much is possible when genuinely out of memory is
+another question though.
+</p>
+<p>There&rsquo;s currently no defined way for the allocation functions to recover from
+an error such as out of memory, they must terminate program execution.  A
+<code>longjmp</code> or throwing a C++ exception will have undefined results.  This
+may change in the future.
+</p>
+<p>GMP may use allocated blocks to hold pointers to other allocated blocks.  This
+will limit the assumptions a conservative garbage collection scheme can make.
+</p>
+<p>Since the default GMP allocation uses <code>malloc</code> and friends, those
+functions will be linked in even if the first thing a program does is an
+<code>mp_set_memory_functions</code>.  It&rsquo;s necessary to change the GMP sources if
+this is a problem.
+</p>
+<br>
+<dl>
+<dt><a name="index-mp_005fget_005fmemory_005ffunctions"></a>Function: <em>void</em> <strong>mp_get_memory_functions</strong> <em>(<br> void *(**<var>alloc_func_ptr</var>) (size_t), <br> void *(**<var>realloc_func_ptr</var>) (void *, size_t, size_t), <br> void (**<var>free_func_ptr</var>) (void *, size_t))</em></dt>
+<dd><p>Get the current allocation functions, storing function pointers to the
+locations given by the arguments.  If an argument is <code>NULL</code>, that
+function pointer is not stored.
+</p>
+<p>For example, to get just the current free function,
+</p>
+<div class="example">
+<pre class="example">void (*freefunc) (void *, size_t);
+
+mp_get_memory_functions (NULL, NULL, &amp;freefunc);
+</pre></div>
+</dd></dl>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Language-Bindings.html#Language-Bindings" accesskey="n" rel="next">Language Bindings</a>, Previous: <a href="C_002b_002b-Class-Interface.html#C_002b_002b-Class-Interface" accesskey="p" rel="prev">C++ Class Interface</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

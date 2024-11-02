@@ -1,0 +1,512 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 1988-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "Funding Free Software", the Front-Cover
+Texts being (a) (see below), and with the Back-Cover Texts being (b)
+(see below).  A copy of the license is included in the section entitled
+"GNU Free Documentation License".
+
+(a) The FSF's Front-Cover Text is:
+
+A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Using the GNU Compiler Collection (GCC): Static Analyzer Options</title>
+
+<meta name="description" content="Using the GNU Compiler Collection (GCC): Static Analyzer Options">
+<meta name="keywords" content="Using the GNU Compiler Collection (GCC): Static Analyzer Options">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Option-Index.html#Option-Index" rel="index" title="Option Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Invoking-GCC.html#Invoking-GCC" rel="up" title="Invoking GCC">
+<link href="Debugging-Options.html#Debugging-Options" rel="next" title="Debugging Options">
+<link href="Warning-Options.html#Warning-Options" rel="prev" title="Warning Options">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Static-Analyzer-Options"></a>
+<div class="header">
+<p>
+Next: <a href="Debugging-Options.html#Debugging-Options" accesskey="n" rel="next">Debugging Options</a>, Previous: <a href="Warning-Options.html#Warning-Options" accesskey="p" rel="prev">Warning Options</a>, Up: <a href="Invoking-GCC.html#Invoking-GCC" accesskey="u" rel="up">Invoking GCC</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Option-Index.html#Option-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Options-That-Control-Static-Analysis"></a>
+<h3 class="section">3.9 Options That Control Static Analysis</h3>
+
+<dl compact="compact">
+<dt><code>-fanalyzer</code></dt>
+<dd><a name="index-analyzer"></a>
+<a name="index-fanalyzer"></a>
+<a name="index-fno_002danalyzer"></a>
+<p>This option enables an static analysis of program flow which looks
+for &ldquo;interesting&rdquo; interprocedural paths through the
+code, and issues warnings for problems found on them.
+</p>
+<p>This analysis is much more expensive than other GCC warnings.
+</p>
+<p>Enabling this option effectively enables the following warnings:
+</p>
+<div class="smallexample">
+<pre class="smallexample">
+
+-Wanalyzer-double-fclose 
+-Wanalyzer-double-free 
+-Wanalyzer-exposure-through-output-file 
+-Wanalyzer-file-leak 
+-Wanalyzer-free-of-non-heap 
+-Wanalyzer-malloc-leak 
+-Wanalyzer-possible-null-argument 
+-Wanalyzer-possible-null-dereference 
+-Wanalyzer-null-argument 
+-Wanalyzer-null-dereference 
+-Wanalyzer-stale-setjmp-buffer 
+-Wanalyzer-tainted-array-index 
+-Wanalyzer-unsafe-call-within-signal-handler 
+-Wanalyzer-use-after-free 
+-Wanalyzer-use-of-pointer-in-stale-stack-frame 
+
+</pre></div>
+
+<p>This option is only available if GCC was configured with analyzer
+support enabled.
+</p>
+</dd>
+<dt><code>-Wanalyzer-too-complex</code></dt>
+<dd><a name="index-Wanalyzer_002dtoo_002dcomplex"></a>
+<a name="index-Wno_002danalyzer_002dtoo_002dcomplex"></a>
+<p>If <samp>-fanalyzer</samp> is enabled, the analyzer uses various heuristics
+to attempt to explore the control flow and data flow in the program,
+but these can be defeated by sufficiently complicated code.
+</p>
+<p>By default, the analysis silently stops if the code is too
+complicated for the analyzer to fully explore and it reaches an internal
+limit.  The <samp>-Wanalyzer-too-complex</samp> option warns if this occurs.
+</p>
+</dd>
+<dt><code>-Wno-analyzer-double-fclose</code></dt>
+<dd><a name="index-Wanalyzer_002ddouble_002dfclose"></a>
+<a name="index-Wno_002danalyzer_002ddouble_002dfclose"></a>
+<p>This warning requires <samp>-fanalyzer</samp>, which enables it; use
+<samp>-Wno-analyzer-double-fclose</samp> to disable it.
+</p>
+<p>This diagnostic warns for paths through the code in which a <code>FILE *</code>
+can have <code>fclose</code> called on it more than once.
+</p>
+</dd>
+<dt><code>-Wno-analyzer-double-free</code></dt>
+<dd><a name="index-Wanalyzer_002ddouble_002dfree"></a>
+<a name="index-Wno_002danalyzer_002ddouble_002dfree"></a>
+<p>This warning requires <samp>-fanalyzer</samp>, which enables it; use
+<samp>-Wno-analyzer-double-free</samp> to disable it.
+</p>
+<p>This diagnostic warns for paths through the code in which a pointer
+can have <code>free</code> called on it more than once.
+</p>
+</dd>
+<dt><code>-Wno-analyzer-exposure-through-output-file</code></dt>
+<dd><a name="index-Wanalyzer_002dexposure_002dthrough_002doutput_002dfile"></a>
+<a name="index-Wno_002danalyzer_002dexposure_002dthrough_002doutput_002dfile"></a>
+<p>This warning requires <samp>-fanalyzer</samp>, which enables it; use
+<samp>-Wno-analyzer-exposure-through-output-file</samp>
+to disable it.
+</p>
+<p>This diagnostic warns for paths through the code in which a
+security-sensitive value is written to an output file
+(such as writing a password to a log file).
+</p>
+</dd>
+<dt><code>-Wno-analyzer-file-leak</code></dt>
+<dd><a name="index-Wanalyzer_002dfile_002dleak"></a>
+<a name="index-Wno_002danalyzer_002dfile_002dleak"></a>
+<p>This warning requires <samp>-fanalyzer</samp>, which enables it; use
+<samp>-Wno-analyzer-file-leak</samp>
+to disable it.
+</p>
+<p>This diagnostic warns for paths through the code in which a
+<code>&lt;stdio.h&gt;</code> <code>FILE *</code> stream object is leaked.
+</p>
+</dd>
+<dt><code>-Wno-analyzer-free-of-non-heap</code></dt>
+<dd><a name="index-Wanalyzer_002dfree_002dof_002dnon_002dheap"></a>
+<a name="index-Wno_002danalyzer_002dfree_002dof_002dnon_002dheap"></a>
+<p>This warning requires <samp>-fanalyzer</samp>, which enables it; use
+<samp>-Wno-analyzer-free-of-non-heap</samp>
+to disable it.
+</p>
+<p>This diagnostic warns for paths through the code in which <code>free</code>
+is called on a non-heap pointer (e.g. an on-stack buffer, or a global).
+</p>
+</dd>
+<dt><code>-Wno-analyzer-malloc-leak</code></dt>
+<dd><a name="index-Wanalyzer_002dmalloc_002dleak"></a>
+<a name="index-Wno_002danalyzer_002dmalloc_002dleak"></a>
+<p>This warning requires <samp>-fanalyzer</samp>, which enables it; use
+<samp>-Wno-analyzer-malloc-leak</samp>
+to disable it.
+</p>
+<p>This diagnostic warns for paths through the code in which a
+pointer allocated via <code>malloc</code> is leaked.
+</p>
+</dd>
+<dt><code>-Wno-analyzer-possible-null-argument</code></dt>
+<dd><a name="index-Wanalyzer_002dpossible_002dnull_002dargument"></a>
+<a name="index-Wno_002danalyzer_002dpossible_002dnull_002dargument"></a>
+<p>This warning requires <samp>-fanalyzer</samp>, which enables it; use
+<samp>-Wno-analyzer-possible-null-argument</samp> to disable it.
+</p>
+<p>This diagnostic warns for paths through the code in which a
+possibly-NULL value is passed to a function argument marked
+with <code>__attribute__((nonnull))</code> as requiring a non-NULL
+value.
+</p>
+</dd>
+<dt><code>-Wno-analyzer-possible-null-dereference</code></dt>
+<dd><a name="index-Wanalyzer_002dpossible_002dnull_002ddereference"></a>
+<a name="index-Wno_002danalyzer_002dpossible_002dnull_002ddereference"></a>
+<p>This warning requires <samp>-fanalyzer</samp>, which enables it; use
+<samp>-Wno-analyzer-possible-null-dereference</samp> to disable it.
+</p>
+<p>This diagnostic warns for paths through the code in which a
+possibly-NULL value is dereferenced.
+</p>
+</dd>
+<dt><code>-Wno-analyzer-null-argument</code></dt>
+<dd><a name="index-Wanalyzer_002dnull_002dargument"></a>
+<a name="index-Wno_002danalyzer_002dnull_002dargument"></a>
+<p>This warning requires <samp>-fanalyzer</samp>, which enables it; use
+<samp>-Wno-analyzer-null-argument</samp> to disable it.
+</p>
+<p>This diagnostic warns for paths through the code in which a
+value known to be NULL is passed to a function argument marked
+with <code>__attribute__((nonnull))</code> as requiring a non-NULL
+value.
+</p>
+</dd>
+<dt><code>-Wno-analyzer-null-dereference</code></dt>
+<dd><a name="index-Wanalyzer_002dnull_002ddereference"></a>
+<a name="index-Wno_002danalyzer_002dnull_002ddereference"></a>
+<p>This warning requires <samp>-fanalyzer</samp>, which enables it; use
+<samp>-Wno-analyzer-null-dereference</samp> to disable it.
+</p>
+<p>This diagnostic warns for paths through the code in which a
+value known to be NULL is dereferenced.
+</p>
+</dd>
+<dt><code>-Wno-analyzer-stale-setjmp-buffer</code></dt>
+<dd><a name="index-Wanalyzer_002dstale_002dsetjmp_002dbuffer"></a>
+<a name="index-Wno_002danalyzer_002dstale_002dsetjmp_002dbuffer"></a>
+<p>This warning requires <samp>-fanalyzer</samp>, which enables it; use
+<samp>-Wno-analyzer-stale-setjmp-buffer</samp> to disable it.
+</p>
+<p>This diagnostic warns for paths through the code in which
+<code>longjmp</code> is called to rewind to a <code>jmp_buf</code> relating
+to a <code>setjmp</code> call in a function that has returned.
+</p>
+<p>When <code>setjmp</code> is called on a <code>jmp_buf</code> to record a rewind
+location, it records the stack frame.  The stack frame becomes invalid
+when the function containing the <code>setjmp</code> call returns.  Attempting
+to rewind to it via <code>longjmp</code> would reference a stack frame that
+no longer exists, and likely lead to a crash (or worse).
+</p>
+</dd>
+<dt><code>-Wno-analyzer-tainted-array-index</code></dt>
+<dd><a name="index-Wanalyzer_002dtainted_002darray_002dindex"></a>
+<a name="index-Wno_002danalyzer_002dtainted_002darray_002dindex"></a>
+<p>This warning requires both <samp>-fanalyzer</samp> and
+<samp>-fanalyzer-checker=taint</samp> to enable it;
+use <samp>-Wno-analyzer-tainted-array-index</samp> to disable it.
+</p>
+<p>This diagnostic warns for paths through the code in which a value
+that could be under an attacker&rsquo;s control is used as the index
+of an array access without being sanitized.
+</p>
+</dd>
+<dt><code>-Wno-analyzer-unsafe-call-within-signal-handler</code></dt>
+<dd><a name="index-Wanalyzer_002dunsafe_002dcall_002dwithin_002dsignal_002dhandler"></a>
+<a name="index-Wno_002danalyzer_002dunsafe_002dcall_002dwithin_002dsignal_002dhandler"></a>
+<p>This warning requires <samp>-fanalyzer</samp>, which enables it; use
+<samp>-Wno-analyzer-unsafe-call-within-signal-handler</samp> to disable it.
+</p>
+<p>This diagnostic warns for paths through the code in which a
+function known to be async-signal-unsafe (such as <code>fprintf</code>) is
+called from a signal handler.
+</p>
+</dd>
+<dt><code>-Wno-analyzer-use-after-free</code></dt>
+<dd><a name="index-Wanalyzer_002duse_002dafter_002dfree"></a>
+<a name="index-Wno_002danalyzer_002duse_002dafter_002dfree"></a>
+<p>This warning requires <samp>-fanalyzer</samp>, which enables it; use
+<samp>-Wno-analyzer-use-after-free</samp> to disable it.
+</p>
+<p>This diagnostic warns for paths through the code in which a
+pointer is used after <code>free</code> is called on it.
+</p>
+</dd>
+<dt><code>-Wno-analyzer-use-of-pointer-in-stale-stack-frame</code></dt>
+<dd><a name="index-Wanalyzer_002duse_002dof_002dpointer_002din_002dstale_002dstack_002dframe"></a>
+<a name="index-Wno_002danalyzer_002duse_002dof_002dpointer_002din_002dstale_002dstack_002dframe"></a>
+<p>This warning requires <samp>-fanalyzer</samp>, which enables it; use
+<samp>-Wno-analyzer-use-of-pointer-in-stale-stack-frame</samp>
+to disable it.
+</p>
+<p>This diagnostic warns for paths through the code in which a pointer
+is dereferenced that points to a variable in a stale stack frame.
+</p>
+</dd>
+</dl>
+
+<p>Pertinent parameters for controlling the exploration are:
+<samp>--param analyzer-bb-explosion-factor=<var>value</var></samp>,
+<samp>--param analyzer-max-enodes-per-program-point=<var>value</var></samp>,
+<samp>--param analyzer-max-recursion-depth=<var>value</var></samp>, and
+<samp>--param analyzer-min-snodes-for-call-summary=<var>value</var></samp>.
+</p>
+<p>The following options control the analyzer.
+</p>
+<dl compact="compact">
+<dt><code>-fanalyzer-call-summaries</code></dt>
+<dd><a name="index-fanalyzer_002dcall_002dsummaries"></a>
+<a name="index-fno_002danalyzer_002dcall_002dsummaries"></a>
+<p>Simplify interprocedural analysis by computing the effect of certain calls,
+rather than exploring all paths through the function from callsite to each
+possible return.
+</p>
+<p>If enabled, call summaries are only used for functions with more than one
+call site, and that are sufficiently complicated (as per
+<samp>--param analyzer-min-snodes-for-call-summary=<var>value</var></samp>).
+</p>
+</dd>
+<dt><code>-fanalyzer-checker=<var>name</var></code></dt>
+<dd><a name="index-fanalyzer_002dchecker"></a>
+<p>Restrict the analyzer to run just the named checker, and enable it.
+</p>
+<p>Some checkers are disabled by default (even with <samp>-fanalyzer</samp>),
+such as the <code>taint</code> checker that implements
+<samp>-Wanalyzer-tainted-array-index</samp>, and this option is required
+to enable them.
+</p>
+</dd>
+<dt><code>-fanalyzer-fine-grained</code></dt>
+<dd><a name="index-fanalyzer_002dfine_002dgrained"></a>
+<a name="index-fno_002danalyzer_002dfine_002dgrained"></a>
+<p>This option is intended for analyzer developers.
+</p>
+<p>Internally the analyzer builds an &ldquo;exploded graph&rdquo; that combines
+control flow graphs with data flow information.
+</p>
+<p>By default, an edge in this graph can contain the effects of a run
+of multiple statements within a basic block.  With
+<samp>-fanalyzer-fine-grained</samp>, each statement gets its own edge.
+</p>
+</dd>
+<dt><code>-fanalyzer-show-duplicate-count</code></dt>
+<dd><a name="index-fanalyzer_002dshow_002dduplicate_002dcount"></a>
+<a name="index-fno_002danalyzer_002dshow_002dduplicate_002dcount"></a>
+<p>This option is intended for analyzer developers: if multiple diagnostics
+have been detected as being duplicates of each other, it emits a note when
+reporting the best diagnostic, giving the number of additional diagnostics
+that were suppressed by the deduplication logic.
+</p>
+</dd>
+<dt><code>-fno-analyzer-state-merge</code></dt>
+<dd><a name="index-fanalyzer_002dstate_002dmerge"></a>
+<a name="index-fno_002danalyzer_002dstate_002dmerge"></a>
+<p>This option is intended for analyzer developers.
+</p>
+<p>By default the analyzer attempts to simplify analysis by merging
+sufficiently similar states at each program point as it builds its
+&ldquo;exploded graph&rdquo;.  With <samp>-fno-analyzer-state-merge</samp> this
+merging can be suppressed, for debugging state-handling issues.
+</p>
+</dd>
+<dt><code>-fno-analyzer-state-purge</code></dt>
+<dd><a name="index-fanalyzer_002dstate_002dpurge"></a>
+<a name="index-fno_002danalyzer_002dstate_002dpurge"></a>
+<p>This option is intended for analyzer developers.
+</p>
+<p>By default the analyzer attempts to simplify analysis by purging
+aspects of state at a program point that appear to no longer be relevant
+e.g. the values of locals that aren&rsquo;t accessed later in the function
+and which aren&rsquo;t relevant to leak analysis.
+</p>
+<p>With <samp>-fno-analyzer-state-purge</samp> this purging of state can
+be suppressed, for debugging state-handling issues.
+</p>
+</dd>
+<dt><code>-fanalyzer-transitivity</code></dt>
+<dd><a name="index-fanalyzer_002dtransitivity"></a>
+<a name="index-fno_002danalyzer_002dtransitivity"></a>
+<p>This option enables transitivity of constraints within the analyzer.
+</p>
+</dd>
+<dt><code>-fanalyzer-verbose-edges</code></dt>
+<dd><p>This option is intended for analyzer developers.  It enables more
+verbose, lower-level detail in the descriptions of control flow
+within diagnostic paths.
+</p>
+</dd>
+<dt><code>-fanalyzer-verbose-state-changes</code></dt>
+<dd><p>This option is intended for analyzer developers.  It enables more
+verbose, lower-level detail in the descriptions of events relating
+to state machines within diagnostic paths.
+</p>
+</dd>
+<dt><code>-fanalyzer-verbosity=<var>level</var></code></dt>
+<dd><p>This option controls the complexity of the control flow paths that are
+emitted for analyzer diagnostics.
+</p>
+<p>The <var>level</var> can be one of:
+</p>
+<dl compact="compact">
+<dt>&lsquo;<samp>0</samp>&rsquo;</dt>
+<dd><p>At this level, interprocedural call and return events are displayed,
+along with the most pertinent state-change events relating to
+a diagnostic.  For example, for a double-<code>free</code> diagnostic,
+both calls to <code>free</code> will be shown.
+</p>
+</dd>
+<dt>&lsquo;<samp>1</samp>&rsquo;</dt>
+<dd><p>As per the previous level, but also show events for the entry
+to each function.
+</p>
+</dd>
+<dt>&lsquo;<samp>2</samp>&rsquo;</dt>
+<dd><p>As per the previous level, but also show events relating to
+control flow that are significant to triggering the issue
+(e.g. &ldquo;true path taken&rdquo; at a conditional).
+</p>
+<p>This level is the default.
+</p>
+</dd>
+<dt>&lsquo;<samp>3</samp>&rsquo;</dt>
+<dd><p>As per the previous level, but show all control flow events, not
+just significant ones.
+</p>
+</dd>
+<dt>&lsquo;<samp>4</samp>&rsquo;</dt>
+<dd><p>This level is intended for analyzer developers; it adds various
+other events intended for debugging the analyzer.
+</p>
+</dd>
+</dl>
+
+</dd>
+<dt><code>-fdump-analyzer</code></dt>
+<dd><a name="index-fdump_002danalyzer"></a>
+<p>Dump internal details about what the analyzer is doing to
+<samp><var>file</var>.analyzer.txt</samp>.
+This option is overridden by <samp>-fdump-analyzer-stderr</samp>.
+</p>
+</dd>
+<dt><code>-fdump-analyzer-stderr</code></dt>
+<dd><a name="index-fdump_002danalyzer_002dstderr"></a>
+<p>Dump internal details about what the analyzer is doing to stderr.
+This option overrides <samp>-fdump-analyzer</samp>.
+</p>
+</dd>
+<dt><code>-fdump-analyzer-callgraph</code></dt>
+<dd><a name="index-fdump_002danalyzer_002dcallgraph"></a>
+<p>Dump a representation of the call graph suitable for viewing with
+GraphViz to <samp><var>file</var>.callgraph.dot</samp>.
+</p>
+</dd>
+<dt><code>-fdump-analyzer-exploded-graph</code></dt>
+<dd><a name="index-fdump_002danalyzer_002dexploded_002dgraph"></a>
+<p>Dump a representation of the &ldquo;exploded graph&rdquo; suitable for viewing with
+GraphViz to <samp><var>file</var>.eg.dot</samp>.
+Nodes are color-coded based on state-machine states to emphasize
+state changes.
+</p>
+</dd>
+<dt><code>-fdump-analyzer-exploded-nodes</code></dt>
+<dd><a name="index-dump_002danalyzer_002dexploded_002dnodes"></a>
+<p>Emit diagnostics showing where nodes in the &ldquo;exploded graph&rdquo; are
+in relation to the program source.
+</p>
+</dd>
+<dt><code>-fdump-analyzer-exploded-nodes-2</code></dt>
+<dd><a name="index-dump_002danalyzer_002dexploded_002dnodes_002d2"></a>
+<p>Dump a textual representation of the &ldquo;exploded graph&rdquo; to
+<samp><var>file</var>.eg.txt</samp>.
+</p>
+</dd>
+<dt><code>-fdump-analyzer-exploded-nodes-3</code></dt>
+<dd><a name="index-dump_002danalyzer_002dexploded_002dnodes_002d3"></a>
+<p>Dump a textual representation of the &ldquo;exploded graph&rdquo; to
+one dump file per node, to <samp><var>file</var>.eg-<var>id</var>.txt</samp>.
+This is typically a large number of dump files.
+</p>
+</dd>
+<dt><code>-fdump-analyzer-state-purge</code></dt>
+<dd><a name="index-fdump_002danalyzer_002dstate_002dpurge"></a>
+<p>As per <samp>-fdump-analyzer-supergraph</samp>, dump a representation of the
+&ldquo;supergraph&rdquo; suitable for viewing with GraphViz, but annotate the
+graph with information on what state will be purged at each node.
+The graph is written to <samp><var>file</var>.state-purge.dot</samp>.
+</p>
+</dd>
+<dt><code>-fdump-analyzer-supergraph</code></dt>
+<dd><a name="index-fdump_002danalyzer_002dsupergraph"></a>
+<p>Dump representations of the &ldquo;supergraph&rdquo; suitable for viewing with
+GraphViz to <samp><var>file</var>.supergraph.dot</samp> and to
+<samp><var>file</var>.supergraph-eg.dot</samp>.  These show all of the
+control flow graphs in the program, with interprocedural edges for
+calls and returns.  The second dump contains annotations showing nodes
+in the &ldquo;exploded graph&rdquo; and diagnostics associated with them.
+</p>
+</dd>
+</dl>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Debugging-Options.html#Debugging-Options" accesskey="n" rel="next">Debugging Options</a>, Previous: <a href="Warning-Options.html#Warning-Options" accesskey="p" rel="prev">Warning Options</a>, Up: <a href="Invoking-GCC.html#Invoking-GCC" accesskey="u" rel="up">Invoking GCC</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Option-Index.html#Option-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

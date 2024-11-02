@@ -1,0 +1,253 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Efficiency</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Efficiency">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="GMP-Basics.html#GMP-Basics" rel="up" title="GMP Basics">
+<link href="Debugging.html#Debugging" rel="next" title="Debugging">
+<link href="Demonstration-Programs.html#Demonstration-Programs" rel="prev" title="Demonstration Programs">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Efficiency"></a>
+<div class="header">
+<p>
+Next: <a href="Debugging.html#Debugging" accesskey="n" rel="next">Debugging</a>, Previous: <a href="Demonstration-Programs.html#Demonstration-Programs" accesskey="p" rel="prev">Demonstration Programs</a>, Up: <a href="GMP-Basics.html#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Efficiency-1"></a>
+<h3 class="section">3.11 Efficiency</h3>
+<a name="index-Efficiency"></a>
+
+<dl compact="compact">
+<dt>Small Operands</dt>
+<dd><a name="index-Small-operands"></a>
+<p>On small operands, the time for function call overheads and memory allocation
+can be significant in comparison to actual calculation.  This is unavoidable
+in a general purpose variable precision library, although GMP attempts to be
+as efficient as it can on both large and small operands.
+</p>
+</dd>
+<dt>Static Linking</dt>
+<dd><a name="index-Static-linking"></a>
+<p>On some CPUs, in particular the x86s, the static <samp>libgmp.a</samp> should be
+used for maximum speed, since the PIC code in the shared <samp>libgmp.so</samp> will
+have a small overhead on each function call and global data address.  For many
+programs this will be insignificant, but for long calculations there&rsquo;s a gain
+to be had.
+</p>
+</dd>
+<dt>Initializing and Clearing</dt>
+<dd><a name="index-Initializing-and-clearing"></a>
+<p>Avoid excessive initializing and clearing of variables, since this can be
+quite time consuming, especially in comparison to otherwise fast operations
+like addition.
+</p>
+<p>A language interpreter might want to keep a free list or stack of
+initialized variables ready for use.  It should be possible to integrate
+something like that with a garbage collector too.
+</p>
+</dd>
+<dt>Reallocations</dt>
+<dd><a name="index-Reallocations"></a>
+<p>An <code>mpz_t</code> or <code>mpq_t</code> variable used to hold successively increasing
+values will have its memory repeatedly <code>realloc</code>ed, which could be quite
+slow or could fragment memory, depending on the C library.  If an application
+can estimate the final size then <code>mpz_init2</code> or <code>mpz_realloc2</code> can
+be called to allocate the necessary space from the beginning
+(see <a href="Initializing-Integers.html#Initializing-Integers">Initializing Integers</a>).
+</p>
+<p>It doesn&rsquo;t matter if a size set with <code>mpz_init2</code> or <code>mpz_realloc2</code>
+is too small, since all functions will do a further reallocation if necessary.
+Badly overestimating memory required will waste space though.
+</p>
+</dd>
+<dt><code>2exp</code> Functions</dt>
+<dd><a name="index-2exp-functions"></a>
+<p>It&rsquo;s up to an application to call functions like <code>mpz_mul_2exp</code> when
+appropriate.  General purpose functions like <code>mpz_mul</code> make no attempt to
+identify powers of two or other special forms, because such inputs will
+usually be very rare and testing every time would be wasteful.
+</p>
+</dd>
+<dt><code>ui</code> and <code>si</code> Functions</dt>
+<dd><a name="index-ui-and-si-functions"></a>
+<p>The <code>ui</code> functions and the small number of <code>si</code> functions exist for
+convenience and should be used where applicable.  But if for example an
+<code>mpz_t</code> contains a value that fits in an <code>unsigned long</code> there&rsquo;s no
+need extract it and call a <code>ui</code> function, just use the regular <code>mpz</code>
+function.
+</p>
+</dd>
+<dt>In-Place Operations</dt>
+<dd><a name="index-In_002dplace-operations"></a>
+<p><code>mpz_abs</code>, <code>mpq_abs</code>, <code>mpf_abs</code>, <code>mpz_neg</code>, <code>mpq_neg</code>
+and <code>mpf_neg</code> are fast when used for in-place operations like
+<code>mpz_abs(x,x)</code>, since in the current implementation only a single field
+of <code>x</code> needs changing.  On suitable compilers (GCC for instance) this is
+inlined too.
+</p>
+<p><code>mpz_add_ui</code>, <code>mpz_sub_ui</code>, <code>mpf_add_ui</code> and <code>mpf_sub_ui</code>
+benefit from an in-place operation like <code>mpz_add_ui(x,x,y)</code>, since
+usually only one or two limbs of <code>x</code> will need to be changed.  The same
+applies to the full precision <code>mpz_add</code> etc if <code>y</code> is small.  If
+<code>y</code> is big then cache locality may be helped, but that&rsquo;s all.
+</p>
+<p><code>mpz_mul</code> is currently the opposite, a separate destination is slightly
+better.  A call like <code>mpz_mul(x,x,y)</code> will, unless <code>y</code> is only one
+limb, make a temporary copy of <code>x</code> before forming the result.  Normally
+that copying will only be a tiny fraction of the time for the multiply, so
+this is not a particularly important consideration.
+</p>
+<p><code>mpz_set</code>, <code>mpq_set</code>, <code>mpq_set_num</code>, <code>mpf_set</code>, etc, make
+no attempt to recognise a copy of something to itself, so a call like
+<code>mpz_set(x,x)</code> will be wasteful.  Naturally that would never be written
+deliberately, but if it might arise from two pointers to the same object then
+a test to avoid it might be desirable.
+</p>
+<div class="example">
+<pre class="example">if (x != y)
+  mpz_set (x, y);
+</pre></div>
+
+<p>Note that it&rsquo;s never worth introducing extra <code>mpz_set</code> calls just to get
+in-place operations.  If a result should go to a particular variable then just
+direct it there and let GMP take care of data movement.
+</p>
+</dd>
+<dt>Divisibility Testing (Small Integers)</dt>
+<dd><a name="index-Divisibility-testing"></a>
+<p><code>mpz_divisible_ui_p</code> and <code>mpz_congruent_ui_p</code> are the best functions
+for testing whether an <code>mpz_t</code> is divisible by an individual small
+integer.  They use an algorithm which is faster than <code>mpz_tdiv_ui</code>, but
+which gives no useful information about the actual remainder, only whether
+it&rsquo;s zero (or a particular value).
+</p>
+<p>However when testing divisibility by several small integers, it&rsquo;s best to take
+a remainder modulo their product, to save multi-precision operations.  For
+instance to test whether a number is divisible by any of 23, 29 or 31 take a
+remainder modulo <em>23*29*31 = 20677</em> and then test that.
+</p>
+<p>The division functions like <code>mpz_tdiv_q_ui</code> which give a quotient as well
+as a remainder are generally a little slower than the remainder-only functions
+like <code>mpz_tdiv_ui</code>.  If the quotient is only rarely wanted then it&rsquo;s
+probably best to just take a remainder and then go back and calculate the
+quotient if and when it&rsquo;s wanted (<code>mpz_divexact_ui</code> can be used if the
+remainder is zero).
+</p>
+</dd>
+<dt>Rational Arithmetic</dt>
+<dd><a name="index-Rational-arithmetic"></a>
+<p>The <code>mpq</code> functions operate on <code>mpq_t</code> values with no common factors
+in the numerator and denominator.  Common factors are checked-for and cast out
+as necessary.  In general, cancelling factors every time is the best approach
+since it minimizes the sizes for subsequent operations.
+</p>
+<p>However, applications that know something about the factorization of the
+values they&rsquo;re working with might be able to avoid some of the GCDs used for
+canonicalization, or swap them for divisions.  For example when multiplying by
+a prime it&rsquo;s enough to check for factors of it in the denominator instead of
+doing a full GCD.  Or when forming a big product it might be known that very
+little cancellation will be possible, and so canonicalization can be left to
+the end.
+</p>
+<p>The <code>mpq_numref</code> and <code>mpq_denref</code> macros give access to the
+numerator and denominator to do things outside the scope of the supplied
+<code>mpq</code> functions.  See <a href="Applying-Integer-Functions.html#Applying-Integer-Functions">Applying Integer Functions</a>.
+</p>
+<p>The canonical form for rationals allows mixed-type <code>mpq_t</code> and integer
+additions or subtractions to be done directly with multiples of the
+denominator.  This will be somewhat faster than <code>mpq_add</code>.  For example,
+</p>
+<div class="example">
+<pre class="example">/* mpq increment */
+mpz_add (mpq_numref(q), mpq_numref(q), mpq_denref(q));
+
+/* mpq += unsigned long */
+mpz_addmul_ui (mpq_numref(q), mpq_denref(q), 123UL);
+
+/* mpq -= mpz */
+mpz_submul (mpq_numref(q), mpq_denref(q), z);
+</pre></div>
+
+</dd>
+<dt>Number Sequences</dt>
+<dd><a name="index-Number-sequences"></a>
+<p>Functions like <code>mpz_fac_ui</code>, <code>mpz_fib_ui</code> and <code>mpz_bin_uiui</code>
+are designed for calculating isolated values.  If a range of values is wanted
+it&rsquo;s probably best to call to get a starting point and iterate from there.
+</p>
+</dd>
+<dt>Text Input/Output</dt>
+<dd><a name="index-Text-input_002foutput"></a>
+<p>Hexadecimal or octal are suggested for input or output in text form.
+Power-of-2 bases like these can be converted much more efficiently than other
+bases, like decimal.  For big numbers there&rsquo;s usually nothing of particular
+interest to be seen in the digits, so the base doesn&rsquo;t matter much.
+</p>
+<p>Maybe we can hope octal will one day become the normal base for everyday use,
+as proposed by King Charles XII of Sweden and later reformers.
+</p></dd>
+</dl>
+
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Debugging.html#Debugging" accesskey="n" rel="next">Debugging</a>, Previous: <a href="Demonstration-Programs.html#Demonstration-Programs" accesskey="p" rel="prev">Demonstration Programs</a>, Up: <a href="GMP-Basics.html#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 1988-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "Free Software" and "Free Software Needs
+Free Documentation", with the Front-Cover Texts being "A GNU Manual,"
+and with the Back-Cover Texts as in (a) below.
+
+(a) The FSF's Back-Cover Text is: "You are free to copy and modify
+this GNU Manual.  Buying copies from GNU Press supports the FSF in
+developing GNU and promoting software freedom." -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Screen Size (Debugging with GDB)</title>
+
+<meta name="description" content="Screen Size (Debugging with GDB)">
+<meta name="keywords" content="Screen Size (Debugging with GDB)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="Concept-Index.html" rel="index" title="Concept Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Controlling-GDB.html" rel="up" title="Controlling GDB">
+<link href="Output-Styling.html" rel="next" title="Output Styling">
+<link href="Command-History.html" rel="prev" title="Command History">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="Screen-Size"></span><div class="header">
+<p>
+Next: <a href="Output-Styling.html" accesskey="n" rel="next">Output Styling</a>, Previous: <a href="Command-History.html" accesskey="p" rel="prev">Command History</a>, Up: <a href="Controlling-GDB.html" accesskey="u" rel="up">Controlling GDB</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Screen-Size-1"></span><h3 class="section">22.4 Screen Size</h3>
+<span id="index-size-of-screen"></span>
+<span id="index-screen-size"></span>
+<span id="index-pagination"></span>
+<span id="index-page-size"></span>
+<span id="index-pauses-in-output"></span>
+
+<p>Certain commands to <small>GDB</small> may produce large amounts of
+information output to the screen.  To help you read all of it,
+<small>GDB</small> pauses and asks you for input at the end of each page of
+output.  Type <tt class="key">RET</tt> when you want to see one more page of output,
+<kbd>q</kbd> to discard the remaining output, or <kbd>c</kbd> to continue
+without paging for the rest of the current command.  Also, the screen
+width setting determines when to wrap lines of output.  Depending on
+what is being printed, <small>GDB</small> tries to break the line at a
+readable place, rather than simply letting it overflow onto the
+following line.
+</p>
+<p>Normally <small>GDB</small> knows the size of the screen from the terminal
+driver software.  For example, on Unix <small>GDB</small> uses the termcap data base
+together with the value of the <code>TERM</code> environment variable and the
+<code>stty rows</code> and <code>stty cols</code> settings.  If this is not correct,
+you can override it with the <code>set height</code> and <code>set
+width</code> commands:
+</p>
+<dl compact="compact">
+<dd><span id="index-set-height"></span>
+<span id="index-set-width"></span>
+<span id="index-show-width"></span>
+<span id="index-show-height"></span>
+</dd>
+<dt><code>set height <var>lpp</var></code></dt>
+<dt><code>set height unlimited</code></dt>
+<dt><code>show height</code></dt>
+<dt><code>set width <var>cpl</var></code></dt>
+<dt><code>set width unlimited</code></dt>
+<dt><code>show width</code></dt>
+<dd><p>These <code>set</code> commands specify a screen height of <var>lpp</var> lines and
+a screen width of <var>cpl</var> characters.  The associated <code>show</code>
+commands display the current settings.
+</p>
+<p>If you specify a height of either <code>unlimited</code> or zero lines,
+<small>GDB</small> does not pause during output no matter how long the
+output is.  This is useful if output is to a file or to an editor
+buffer.
+</p>
+<p>Likewise, you can specify &lsquo;<samp>set width unlimited</samp>&rsquo; or &lsquo;<samp>set
+width 0</samp>&rsquo; to prevent <small>GDB</small> from wrapping its output.
+</p>
+</dd>
+<dt><code>set pagination on</code></dt>
+<dt><code>set pagination off</code></dt>
+<dd><span id="index-set-pagination"></span>
+<p>Turn the output pagination on or off; the default is on.  Turning
+pagination off is the alternative to <code>set height unlimited</code>.  Note that
+running <small>GDB</small> with the <samp>--batch</samp> option (see <a href="Mode-Options.html">-batch</a>) also automatically disables pagination.
+</p>
+</dd>
+<dt><code>show pagination</code></dt>
+<dd><span id="index-show-pagination"></span>
+<p>Show the current pagination mode.
+</p></dd>
+</dl>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Output-Styling.html" accesskey="n" rel="next">Output Styling</a>, Previous: <a href="Command-History.html" accesskey="p" rel="prev">Command History</a>, Up: <a href="Controlling-GDB.html" accesskey="u" rel="up">Controlling GDB</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: wctomb</title>
+
+<meta name="description" content="The Red Hat newlib C Library: wctomb">
+<meta name="keywords" content="The Red Hat newlib C Library: wctomb">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdlib.html#Stdlib" rel="up" title="Stdlib">
+<link href="Ctype.html#Ctype" rel="next" title="Ctype">
+<link href="wcstombs.html#wcstombs" rel="prev" title="wcstombs">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="wctomb"></a>
+<div class="header">
+<p>
+Previous: <a href="wcstombs.html#wcstombs" accesskey="p" rel="prev">wcstombs</a>, Up: <a href="Stdlib.html#Stdlib" accesskey="u" rel="up">Stdlib</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="wctomb_002d_002d_002dminimal-wide-char-to-multibyte-converter"></a>
+<h3 class="section">2.51 <code>wctomb</code>&mdash;minimal wide char to multibyte converter</h3>
+<a name="index-wctomb"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdlib.h&gt;
+int wctomb(char *<var>s</var>, wchar_t <var>wchar</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+When _MB_CAPABLE is not defined, this is a minimal ANSI-conforming 
+implementation of <code>wctomb</code>.  The
+only &ldquo;wide characters&rdquo; recognized are single bytes,
+and they are &ldquo;converted&rdquo; to themselves.  
+</p>
+<p>When _MB_CAPABLE is defined, this routine calls <code>_wctomb_r</code> to perform
+the conversion, passing a state variable to allow state dependent
+decoding.  The result is based on the locale setting which may
+be restricted to a defined set of locales.
+</p>
+<p>Each call to <code>wctomb</code> modifies <code>*<var>s</var></code> unless <var>s</var> is a null
+pointer or _MB_CAPABLE is defined and <var>wchar</var> is invalid.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+This implementation of <code>wctomb</code> returns <code>0</code> if
+<var>s</var> is <code>NULL</code>; it returns <code>-1</code> if _MB_CAPABLE is enabled
+and the wchar is not a valid multi-byte character, it returns <code>1</code>
+if _MB_CAPABLE is not defined or the wchar is in reality a single
+byte character, otherwise it returns the number of bytes in the
+multi-byte character.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>wctomb</code> is required in the ANSI C standard.  However, the precise
+effects vary with the locale.
+</p>
+<p><code>wctomb</code> requires no supporting OS subroutines.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

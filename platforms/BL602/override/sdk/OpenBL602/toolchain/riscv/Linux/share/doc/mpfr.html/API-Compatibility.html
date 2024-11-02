@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual documents how to install and use the Multiple Precision
+Floating-Point Reliable Library, version 3.1.4.
+
+Copyright 1991, 1993-2016 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with no Front-Cover Texts, and with no Back-Cover Texts.  A copy of the
+license is included in GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MPFR 3.1.4: API Compatibility</title>
+
+<meta name="description" content="How to install and use GNU MPFR, a library for reliable multiple precision
+floating-point arithmetic, version 3.1.4.">
+<meta name="keywords" content="GNU MPFR 3.1.4: API Compatibility">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="index.html#Top" rel="up" title="Top">
+<link href="Type-and-Macro-Changes.html#Type-and-Macro-Changes" rel="next" title="Type and Macro Changes">
+<link href="Internals.html#Internals" rel="prev" title="Internals">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="API-Compatibility"></a>
+<div class="header">
+<p>
+Next: <a href="Contributors.html#Contributors" accesskey="n" rel="next">Contributors</a>, Previous: <a href="MPFR-Interface.html#MPFR-Interface" accesskey="p" rel="prev">MPFR Interface</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="API-Compatibility-1"></a>
+<h2 class="chapter">6 API Compatibility</h2>
+
+<p>The goal of this section is to describe some API changes that occurred
+from one version of MPFR to another, and how to write code that can be compiled
+and run with older MPFR versions.  The minimum MPFR version that is
+considered here is 2.2.0 (released on 20 September 2005).
+</p>
+<p>API changes can only occur between major or minor versions.  Thus the
+patchlevel (the third number in the MPFR version) will be ignored in
+the following.  If a program does not use MPFR internals, changes in
+the behavior between two versions differing only by the patchlevel
+should only result from what was regarded as a bug or unspecified behavior.
+</p>
+<p>As a general rule, a program written for some MPFR version should work
+with later versions, possibly except at a new major version, where
+some features (described as obsolete for some time) can be removed.
+In such a case, a failure should occur during compilation or linking.
+If a result becomes incorrect because of such a change, please look
+at the various changes below (they are minimal, and most software
+should be unaffected), at the FAQ and at the MPFR web page for your
+version (a bug could have been introduced and be already fixed);
+and if the problem is not mentioned, please send us a bug report
+(see <a href="Reporting-Bugs.html#Reporting-Bugs">Reporting Bugs</a>).
+</p>
+<p>However, a program written for the current MPFR version (as documented
+by this manual) may not necessarily work with previous versions of
+MPFR.  This section should help developers to write portable code.
+</p>
+<p>Note: Information given here may be incomplete.  API changes are
+also described in the NEWS file (for each version, instead of being
+classified like here), together with other changes.
+</p>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="Type-and-Macro-Changes.html#Type-and-Macro-Changes" accesskey="1">Type and Macro Changes</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Added-Functions.html#Added-Functions" accesskey="2">Added Functions</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Changed-Functions.html#Changed-Functions" accesskey="3">Changed Functions</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Removed-Functions.html#Removed-Functions" accesskey="4">Removed Functions</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Other-Changes.html#Other-Changes" accesskey="5">Other Changes</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+</table>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Contributors.html#Contributors" accesskey="n" rel="next">Contributors</a>, Previous: <a href="MPFR-Interface.html#MPFR-Interface" accesskey="p" rel="prev">MPFR Interface</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

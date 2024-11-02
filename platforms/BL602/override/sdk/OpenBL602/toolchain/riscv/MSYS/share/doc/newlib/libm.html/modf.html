@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>LIBM: modf</title>
+
+<meta name="description" content="LIBM: modf">
+<meta name="keywords" content="LIBM: modf">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Math.html#Math" rel="up" title="Math">
+<link href="nan.html#nan" rel="next" title="nan">
+<link href="lround.html#lround" rel="prev" title="lround">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="modf"></a>
+<div class="header">
+<p>
+Next: <a href="nan.html#nan" accesskey="n" rel="next">nan</a>, Previous: <a href="lround.html#lround" accesskey="p" rel="prev">lround</a>, Up: <a href="Math.html#Math" accesskey="u" rel="up">Math</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="modf_002c-modff_002d_002d_002dsplit-fractional-and-integer-parts"></a>
+<h3 class="section">1.41 <code>modf</code>, <code>modff</code>&mdash;split fractional and integer parts</h3>
+<a name="index-modf"></a>
+<a name="index-modff"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;math.h&gt;
+double modf(double <var>val</var>, double *<var>ipart</var>);
+float modff(float <var>val</var>, float *<var>ipart</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>modf</code> splits the double <var>val</var> apart into an integer part
+and a fractional part, returning the fractional part and
+storing the integer part in <code>*<var>ipart</var></code>.  No rounding
+whatsoever is done; the sum of the integer and fractional
+parts is guaranteed to be exactly  equal to <var>val</var>.   That
+is, if <var>realpart</var> = modf(<var>val</var>, &amp;<var>intpart</var>); then
+&lsquo;<code><var>realpart</var>+<var>intpart</var></code>&rsquo; is the same as <var>val</var>.
+<code>modff</code> is identical, save that it takes and returns
+<code>float</code> rather than <code>double</code> values. 
+</p>
+<br>
+<p><strong>Returns</strong><br>
+The fractional part is returned.  Each result has the same
+sign as the supplied argument <var>val</var>.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>modf</code> is ANSI C. <code>modff</code> is an extension.
+</p>
+<br>
+
+
+
+</body>
+</html>

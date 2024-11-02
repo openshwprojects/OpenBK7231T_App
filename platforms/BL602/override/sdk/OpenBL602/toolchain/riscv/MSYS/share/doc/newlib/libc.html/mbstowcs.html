@@ -1,0 +1,104 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: mbstowcs</title>
+
+<meta name="description" content="The Red Hat newlib C Library: mbstowcs">
+<meta name="keywords" content="The Red Hat newlib C Library: mbstowcs">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdlib.html#Stdlib" rel="up" title="Stdlib">
+<link href="mbtowc.html#mbtowc" rel="next" title="mbtowc">
+<link href="mbsrtowcs.html#mbsrtowcs" rel="prev" title="mbsrtowcs">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="mbstowcs"></a>
+<div class="header">
+<p>
+Next: <a href="mbtowc.html#mbtowc" accesskey="n" rel="next">mbtowc</a>, Previous: <a href="mbsrtowcs.html#mbsrtowcs" accesskey="p" rel="prev">mbsrtowcs</a>, Up: <a href="Stdlib.html#Stdlib" accesskey="u" rel="up">Stdlib</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="mbstowcs_002d_002d_002dminimal-multibyte-string-to-wide-char-converter"></a>
+<h3 class="section">2.29 <code>mbstowcs</code>&mdash;minimal multibyte string to wide char converter</h3>
+<a name="index-mbstowcs"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdlib.h&gt;
+int mbstowcs(wchar_t *restrict <var>pwc</var>, const char *restrict <var>s</var>, size_t <var>n</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+When _MB_CAPABLE is not defined, this is a minimal ANSI-conforming 
+implementation of <code>mbstowcs</code>.  In this case, the
+only &ldquo;multi-byte character sequences&rdquo; recognized are single bytes,
+and they are &ldquo;converted&rdquo; to wide-char versions simply by byte
+extension.
+</p>
+<p>When _MB_CAPABLE is defined, this routine calls <code>_mbstowcs_r</code> to perform
+the conversion, passing a state variable to allow state dependent
+decoding.  The result is based on the locale setting which may
+be restricted to a defined set of locales.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+This implementation of <code>mbstowcs</code> returns <code>0</code> if
+<var>s</var> is <code>NULL</code> or is the empty string; 
+it returns <code>-1</code> if _MB_CAPABLE and one of the
+multi-byte characters is invalid or incomplete;
+otherwise it returns the minimum of: <code>n</code> or the
+number of multi-byte characters in <code>s</code> plus 1 (to
+compensate for the nul character).
+If the return value is -1, the state of the <code>pwc</code> string is
+indeterminate.  If the input has a length of 0, the output
+string will be modified to contain a wchar_t nul terminator.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>mbstowcs</code> is required in the ANSI C standard.  However, the precise
+effects vary with the locale.
+</p>
+<p><code>mbstowcs</code> requires no supporting OS subroutines.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

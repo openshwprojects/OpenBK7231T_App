@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: wcswidth</title>
+
+<meta name="description" content="The Red Hat newlib C Library: wcswidth">
+<meta name="keywords" content="The Red Hat newlib C Library: wcswidth">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Wchar-strings.html#Wchar-strings" rel="up" title="Wchar strings">
+<link href="wcsxfrm.html#wcsxfrm" rel="next" title="wcsxfrm">
+<link href="wcstok.html#wcstok" rel="prev" title="wcstok">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="wcswidth"></a>
+<div class="header">
+<p>
+Next: <a href="wcsxfrm.html#wcsxfrm" accesskey="n" rel="next">wcsxfrm</a>, Previous: <a href="wcstok.html#wcstok" accesskey="p" rel="prev">wcstok</a>, Up: <a href="Wchar-strings.html#Wchar-strings" accesskey="u" rel="up">Wchar strings</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="wcswidth_002d_002d_002dnumber-of-column-positions-of-a-wide_002dcharacter-string"></a>
+<h3 class="section">6.28 <code>wcswidth</code>&mdash;number of column positions of a wide-character string</h3>
+<a name="index-wcswidth"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;wchar.h&gt;
+int wcswidth(const wchar_t *<var>pwcs</var>, size_t <var>n</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+The <code>wcswidth</code> function shall determine the number of column
+positions required for <var>n</var> wide-character codes (or fewer than <var>n</var>
+wide-character codes if a null wide-character code is encountered
+before <var>n</var> wide-character codes are exhausted) in the string pointed
+to by <var>pwcs</var>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+The <code>wcswidth</code> function either shall return 0 (if <var>pwcs</var> points to a
+null wide-character code), or return the number of column positions
+to be occupied by the wide-character string pointed to by <var>pwcs</var>, or
+return -1 (if any of the first <var>n</var> wide-character codes in the
+wide-character string pointed to by <var>pwcs</var> is not a printable
+wide-character code).
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>wcswidth</code> has been introduced in the Single UNIX Specification Volume 2.
+<code>wcswidth</code> has been marked as an extension in the Single UNIX Specification Volume 3.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

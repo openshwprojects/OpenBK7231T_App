@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Embed with GNU: Libc</title>
+
+<meta name="description" content="Embed with GNU: Libc">
+<meta name="keywords" content="Embed with GNU: Libc">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="leds_002ec.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Libraries.html#Libraries" rel="up" title="Libraries">
+<link href="I_002fO-Support.html#I_002fO-Support" rel="next" title="I/O Support">
+<link href="What-to-do-now.html#What-to-do-now" rel="prev" title="What to do now">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Libc"></a>
+<div class="header">
+<p>
+Previous: <a href="What-to-do-now.html#What-to-do-now" accesskey="p" rel="prev">What to do now</a>, Up: <a href="Libraries.html#Libraries" accesskey="u" rel="up">Libraries</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<a name="Libraries-1"></a>
+<h3 class="section">3.4 Libraries</h3>
+
+<p>This describes <code>newlib</code>, a freely available libc replacement. Most
+applications use calls in the standard C library. When initially linking
+in libc.a, several I/O functions are undefined. If you don&rsquo;t plan on
+doing any I/O, then you&rsquo;re OK, otherwise they need to be created. These
+routines are read, write, open, close. sbrk, and kill. Open &amp; close
+don&rsquo;t need to be fully supported unless you have a filesystems, so
+typically they are stubbed out. Kill is also a stub, since you can&rsquo;t do
+process control on an embedded system. 
+</p>
+<p>Sbrk() is only needed by applications that do dynamic memory
+allocation. It&rsquo;s uses the symbol <code>_end</code> that is setup in the linker
+script. It also requires a compile time option to set the upper size
+limit on the heap space. This leaves us with read and write, which are
+required for serial I/O. Usually these two routines are written in C,
+and call a lower level function for the actual I/O operation. These two
+lowest level I/O primitives are inbyte() and outbyte(), and are also
+used by GDB back ends if you&rsquo;ve written an exception handler. Some
+systems also implement a havebyte() for input as well. 
+</p>
+<p>Other commonly included functions are routines for manipulating
+LED&rsquo;s on the target (if they exist) or low level debug help. Typically a
+putnum() for printing words and bytes as a hex number is helpful, as
+well as a low-level print() to output simple strings. 
+</p>
+<p>As libg++ uses the I/O routines in libc.a, if read and write work,
+then libg++ will also work with no additional changes. 
+</p>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="I_002fO-Support.html#I_002fO-Support" accesskey="1">I/O Support</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Functions that make serial I/O work.
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Memory-Support.html#Memory-Support" accesskey="2">Memory Support</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Memory support.
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Misc-Support.html#Misc-Support" accesskey="3">Misc Support</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Other needed functions.
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Debugging.html#Debugging" accesskey="4">Debugging</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Useful Debugging Functions
+</td></tr>
+</table>
+
+<hr>
+<div class="header">
+<p>
+Previous: <a href="What-to-do-now.html#What-to-do-now" accesskey="p" rel="prev">What to do now</a>, Up: <a href="Libraries.html#Libraries" accesskey="u" rel="up">Libraries</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+
+
+
+</body>
+</html>

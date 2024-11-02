@@ -1,0 +1,113 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: random</title>
+
+<meta name="description" content="The Red Hat newlib C Library: random">
+<meta name="keywords" content="The Red Hat newlib C Library: random">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdlib.html#Stdlib" rel="up" title="Stdlib">
+<link href="rand48.html#rand48" rel="next" title="rand48">
+<link href="rand.html#rand" rel="prev" title="rand">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="random"></a>
+<div class="header">
+<p>
+Next: <a href="rand48.html#rand48" accesskey="n" rel="next">rand48</a>, Previous: <a href="rand.html#rand" accesskey="p" rel="prev">rand</a>, Up: <a href="Stdlib.html#Stdlib" accesskey="u" rel="up">Stdlib</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="random_002c-srandom_002d_002d_002dpseudo_002drandom-numbers"></a>
+<h3 class="section">2.34 <code>random</code>, <code>srandom</code>&mdash;pseudo-random numbers</h3>
+<a name="index-random"></a>
+<a name="index-srandom"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#define _XOPEN_SOURCE 500
+#include &lt;stdlib.h&gt;
+long int random(void);
+void srandom(unsigned int <var>seed</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>random</code> returns a different integer each time it is called; each
+integer is chosen by an algorithm designed to be unpredictable, so
+that you can use <code>random</code> when you require a random number.
+The algorithm depends on a static variable called the &ldquo;random seed&rdquo;;
+starting with a given value of the random seed always produces the
+same sequence of numbers in successive calls to <code>random</code>.
+</p>
+<p>You can set the random seed using <code>srandom</code>; it does nothing beyond
+storing its argument in the static variable used by <code>rand</code>.  You can
+exploit this to make the pseudo-random sequence less predictable, if
+you wish, by using some other unpredictable value (often the least
+significant parts of a time-varying value) as the random seed before
+beginning a sequence of calls to <code>rand</code>; or, if you wish to ensure
+(for example, while debugging) that successive runs of your program
+use the same &ldquo;random&rdquo; numbers, you can use <code>srandom</code> to set the same
+random seed at the outset.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>random</code> returns the next pseudo-random integer in sequence; it is a
+number between <code>0</code> and <code>RAND_MAX</code> (inclusive).
+</p>
+<p><code>srandom</code> does not return a result.
+</p>
+<br>
+<p><strong>Notes</strong><br>
+<code>random</code> and <code>srandom</code> are unsafe for multi-threaded applications.
+</p>
+<p>_XOPEN_SOURCE may be any value &gt;= 500.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>random</code> is required by XSI. This implementation uses the same
+algorithm as <code>rand</code>.
+</p>
+<p><code>random</code> requires no supporting OS subroutines.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

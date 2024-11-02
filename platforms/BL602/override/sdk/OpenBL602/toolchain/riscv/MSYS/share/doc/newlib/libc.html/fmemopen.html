@@ -1,0 +1,126 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: fmemopen</title>
+
+<meta name="description" content="The Red Hat newlib C Library: fmemopen">
+<meta name="keywords" content="The Red Hat newlib C Library: fmemopen">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="fopen.html#fopen" rel="next" title="fopen">
+<link href="fileno.html#fileno" rel="prev" title="fileno">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="fmemopen"></a>
+<div class="header">
+<p>
+Next: <a href="fopen.html#fopen" accesskey="n" rel="next">fopen</a>, Previous: <a href="fileno.html#fileno" accesskey="p" rel="prev">fileno</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="fmemopen_002d_002d_002dopen-a-stream-around-a-fixed_002dlength-string"></a>
+<h3 class="section">4.16 <code>fmemopen</code>&mdash;open a stream around a fixed-length string</h3>
+<a name="index-fmemopen"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+FILE *fmemopen(void *restrict <var>buf</var>, size_t <var>size</var>,
+    const char *restrict <var>mode</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>fmemopen</code> creates a seekable <code>FILE</code> stream that wraps a
+fixed-length buffer of <var>size</var> bytes starting at <var>buf</var>.  The stream
+is opened with <var>mode</var> treated as in <code>fopen</code>, where append mode
+starts writing at the first NUL byte.  If <var>buf</var> is NULL, then
+<var>size</var> bytes are automatically provided as if by <code>malloc</code>, with
+the initial size of 0, and <var>mode</var> must contain <code>+</code> so that data
+can be read after it is written.
+</p>
+<p>The stream maintains a current position, which moves according to
+bytes read or written, and which can be one past the end of the array.
+The stream also maintains a current file size, which is never greater
+than <var>size</var>.  If <var>mode</var> starts with <code>r</code>, the position starts at
+<code>0</code>, and file size starts at <var>size</var> if <var>buf</var> was provided.  If
+<var>mode</var> starts with <code>w</code>, the position and file size start at <code>0</code>,
+and if <var>buf</var> was provided, the first byte is set to NUL.  If
+<var>mode</var> starts with <code>a</code>, the position and file size start at the
+location of the first NUL byte, or else <var>size</var> if <var>buf</var> was
+provided.
+</p>
+<p>When reading, NUL bytes have no significance, and reads cannot exceed
+the current file size.  When writing, the file size can increase up to
+<var>size</var> as needed, and NUL bytes may be embedded in the stream (see
+<code>open_memstream</code> for an alternative that automatically enlarges the
+buffer).  When the stream is flushed or closed after a write that
+changed the file size, a NUL byte is written at the current position
+if there is still room; if the stream is not also open for reading, a
+NUL byte is additionally written at the last byte of <var>buf</var> when the
+stream has exceeded <var>size</var>, so that a write-only <var>buf</var> is always
+NUL-terminated when the stream is flushed or closed (and the initial
+<var>size</var> should take this into account).  It is not possible to seek
+outside the bounds of <var>size</var>.  A NUL byte written during a flush is
+restored to its previous value when seeking elsewhere in the string.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+The return value is an open FILE pointer on success.  On error,
+<code>NULL</code> is returned, and <code>errno</code> will be set to EINVAL if <var>size</var>
+is zero or <var>mode</var> is invalid, ENOMEM if <var>buf</var> was NULL and memory
+could not be allocated, or EMFILE if too many streams are already
+open.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+This function is being added to POSIX 200x, but is not in POSIX 2001.
+</p>
+<p>Supporting OS subroutines required: <code>sbrk</code>.
+</p>
+<br>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="fopen.html#fopen" accesskey="n" rel="next">fopen</a>, Previous: <a href="fileno.html#fileno" accesskey="p" rel="prev">fileno</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

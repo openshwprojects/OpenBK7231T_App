@@ -1,0 +1,112 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>LIBM: remquo</title>
+
+<meta name="description" content="LIBM: remquo">
+<meta name="keywords" content="LIBM: remquo">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Math.html#Math" rel="up" title="Math">
+<link href="rint.html#rint" rel="next" title="rint">
+<link href="remainder.html#remainder" rel="prev" title="remainder">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="remquo"></a>
+<div class="header">
+<p>
+Next: <a href="rint.html#rint" accesskey="n" rel="next">rint</a>, Previous: <a href="remainder.html#remainder" accesskey="p" rel="prev">remainder</a>, Up: <a href="Math.html#Math" accesskey="u" rel="up">Math</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="remquo_002c-remquof_002d_002d_002dremainder-and-part-of-quotient"></a>
+<h3 class="section">1.48 <code>remquo</code>, <code>remquof</code>&mdash;remainder and part of quotient</h3>
+<a name="index-remquo"></a>
+<a name="index-remquof"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;math.h&gt;
+double remquo(double <var>x</var>, double <var>y</var>, int *<var>quo</var>);
+float remquof(float <var>x</var>, float <var>y</var>, int *<var>quo</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+The <code>remquo</code> functions compute the same remainder as the <code>remainder</code>
+functions; this value is in the range -<var>y</var>/2 ... +<var>y</var>/2.  In the object
+pointed to by <code>quo</code> they store a value whose sign is the sign of <code>x</code>/<code>y</code>
+and whose magnitude is congruent modulo 2**n to the magnitude of the integral
+quotient of <code>x</code>/<code>y</code>.  (That is, <code>quo</code> is given the n lsbs of the
+quotient, not counting the sign.)  This implementation uses n=31 if int is 32
+bits or more, otherwise, n is 1 less than the width of int.
+</p>
+<p>For example:
+</p><div class="smallexample">
+<pre class="smallexample">	remquo(-29.0, 3.0, &amp;<var>quo</var>)
+</pre></div>
+<p>returns -1.0 and sets <var>quo</var>=10, and
+</p><div class="smallexample">
+<pre class="smallexample">	remquo(-98307.0, 3.0, &amp;<var>quo</var>)
+</pre></div>
+<p>returns -0.0 and sets <var>quo</var>=-32769, although for 16-bit int, <var>quo</var>=-1.  In
+the latter case, the actual quotient of -(32769=0x8001) is reduced to -1
+because of the 15-bit limitation for the quotient.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+When either argument is NaN, NaN is returned.  If <var>y</var> is 0 or <var>x</var> is
+infinite (and neither is NaN), a domain error occurs (i.e. the &quot;invalid&quot;
+floating point exception is raised or errno is set to EDOM), and NaN is
+returned.
+Otherwise, the <code>remquo</code> functions return <var>x</var> REM <var>y</var>.
+</p>
+<br>
+<p><strong>Bugs</strong><br>
+IEEE754-2008 calls for <code>remquo</code>(subnormal, inf) to cause the &quot;underflow&quot;
+floating-point exception.  This implementation does not.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+C99, POSIX.
+</p>
+
+<br>
+
+
+
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Integer Division</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Integer Division">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Integer-Functions.html#Integer-Functions" rel="up" title="Integer Functions">
+<link href="Integer-Exponentiation.html#Integer-Exponentiation" rel="next" title="Integer Exponentiation">
+<link href="Integer-Arithmetic.html#Integer-Arithmetic" rel="prev" title="Integer Arithmetic">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Integer-Division"></a>
+<div class="header">
+<p>
+Next: <a href="Integer-Exponentiation.html#Integer-Exponentiation" accesskey="n" rel="next">Integer Exponentiation</a>, Previous: <a href="Integer-Arithmetic.html#Integer-Arithmetic" accesskey="p" rel="prev">Integer Arithmetic</a>, Up: <a href="Integer-Functions.html#Integer-Functions" accesskey="u" rel="up">Integer Functions</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Division-Functions"></a>
+<h3 class="section">5.6 Division Functions</h3>
+<a name="index-Integer-division-functions"></a>
+<a name="index-Division-functions"></a>
+
+<p>Division is undefined if the divisor is zero.  Passing a zero divisor to the
+division or modulo functions (including the modular powering functions
+<code>mpz_powm</code> and <code>mpz_powm_ui</code>), will cause an intentional division by
+zero.  This lets a program handle arithmetic exceptions in these functions the
+same way as for normal C <code>int</code> arithmetic.
+</p>
+
+<dl>
+<dt><a name="index-mpz_005fcdiv_005fq"></a>Function: <em>void</em> <strong>mpz_cdiv_q</strong> <em>(mpz_t <var>q</var>, const mpz_t <var>n</var>, const mpz_t <var>d</var>)</em></dt>
+<dt><a name="index-mpz_005fcdiv_005fr"></a>Function: <em>void</em> <strong>mpz_cdiv_r</strong> <em>(mpz_t <var>r</var>, const mpz_t <var>n</var>, const mpz_t <var>d</var>)</em></dt>
+<dt><a name="index-mpz_005fcdiv_005fqr"></a>Function: <em>void</em> <strong>mpz_cdiv_qr</strong> <em>(mpz_t <var>q</var>, mpz_t <var>r</var>, const mpz_t <var>n</var>, const mpz_t <var>d</var>)</em></dt>
+<dt><a name="index-mpz_005fcdiv_005fq_005fui"></a>Function: <em>unsigned long int</em> <strong>mpz_cdiv_q_ui</strong> <em>(mpz_t <var>q</var>, const mpz_t <var>n</var>, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dt><a name="index-mpz_005fcdiv_005fr_005fui"></a>Function: <em>unsigned long int</em> <strong>mpz_cdiv_r_ui</strong> <em>(mpz_t <var>r</var>, const mpz_t <var>n</var>, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dt><a name="index-mpz_005fcdiv_005fqr_005fui"></a>Function: <em>unsigned long int</em> <strong>mpz_cdiv_qr_ui</strong> <em>(mpz_t <var>q</var>, mpz_t <var>r</var>, const&nbsp;<span class="nolinebreak">mpz_t</span>&nbsp;<var>n</var><!-- /@w -->, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dt><a name="index-mpz_005fcdiv_005fui"></a>Function: <em>unsigned long int</em> <strong>mpz_cdiv_ui</strong> <em>(const mpz_t <var>n</var>, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dt><a name="index-mpz_005fcdiv_005fq_005f2exp"></a>Function: <em>void</em> <strong>mpz_cdiv_q_2exp</strong> <em>(mpz_t <var>q</var>, const mpz_t <var>n</var>, <span class="nolinebreak">mp_bitcnt_t</span>&nbsp;<var>b</var><!-- /@w -->)</em></dt>
+<dt><a name="index-mpz_005fcdiv_005fr_005f2exp"></a>Function: <em>void</em> <strong>mpz_cdiv_r_2exp</strong> <em>(mpz_t <var>r</var>, const mpz_t <var>n</var>, <span class="nolinebreak">mp_bitcnt_t</span>&nbsp;<var>b</var><!-- /@w -->)</em></dt>
+</dl>
+
+<dl>
+<dt><a name="index-mpz_005ffdiv_005fq"></a>Function: <em>void</em> <strong>mpz_fdiv_q</strong> <em>(mpz_t <var>q</var>, const mpz_t <var>n</var>, const mpz_t <var>d</var>)</em></dt>
+<dt><a name="index-mpz_005ffdiv_005fr"></a>Function: <em>void</em> <strong>mpz_fdiv_r</strong> <em>(mpz_t <var>r</var>, const mpz_t <var>n</var>, const mpz_t <var>d</var>)</em></dt>
+<dt><a name="index-mpz_005ffdiv_005fqr"></a>Function: <em>void</em> <strong>mpz_fdiv_qr</strong> <em>(mpz_t <var>q</var>, mpz_t <var>r</var>, const mpz_t <var>n</var>, const mpz_t <var>d</var>)</em></dt>
+<dt><a name="index-mpz_005ffdiv_005fq_005fui"></a>Function: <em>unsigned long int</em> <strong>mpz_fdiv_q_ui</strong> <em>(mpz_t <var>q</var>, const mpz_t <var>n</var>, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dt><a name="index-mpz_005ffdiv_005fr_005fui"></a>Function: <em>unsigned long int</em> <strong>mpz_fdiv_r_ui</strong> <em>(mpz_t <var>r</var>, const mpz_t <var>n</var>, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dt><a name="index-mpz_005ffdiv_005fqr_005fui"></a>Function: <em>unsigned long int</em> <strong>mpz_fdiv_qr_ui</strong> <em>(mpz_t <var>q</var>, mpz_t <var>r</var>, const&nbsp;<span class="nolinebreak">mpz_t</span>&nbsp;<var>n</var><!-- /@w -->, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dt><a name="index-mpz_005ffdiv_005fui"></a>Function: <em>unsigned long int</em> <strong>mpz_fdiv_ui</strong> <em>(const mpz_t <var>n</var>, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dt><a name="index-mpz_005ffdiv_005fq_005f2exp"></a>Function: <em>void</em> <strong>mpz_fdiv_q_2exp</strong> <em>(mpz_t <var>q</var>, const mpz_t <var>n</var>, <span class="nolinebreak">mp_bitcnt_t</span>&nbsp;<var>b</var><!-- /@w -->)</em></dt>
+<dt><a name="index-mpz_005ffdiv_005fr_005f2exp"></a>Function: <em>void</em> <strong>mpz_fdiv_r_2exp</strong> <em>(mpz_t <var>r</var>, const mpz_t <var>n</var>, <span class="nolinebreak">mp_bitcnt_t</span>&nbsp;<var>b</var><!-- /@w -->)</em></dt>
+</dl>
+
+<dl>
+<dt><a name="index-mpz_005ftdiv_005fq"></a>Function: <em>void</em> <strong>mpz_tdiv_q</strong> <em>(mpz_t <var>q</var>, const mpz_t <var>n</var>, const mpz_t <var>d</var>)</em></dt>
+<dt><a name="index-mpz_005ftdiv_005fr"></a>Function: <em>void</em> <strong>mpz_tdiv_r</strong> <em>(mpz_t <var>r</var>, const mpz_t <var>n</var>, const mpz_t <var>d</var>)</em></dt>
+<dt><a name="index-mpz_005ftdiv_005fqr"></a>Function: <em>void</em> <strong>mpz_tdiv_qr</strong> <em>(mpz_t <var>q</var>, mpz_t <var>r</var>, const mpz_t <var>n</var>, const mpz_t <var>d</var>)</em></dt>
+<dt><a name="index-mpz_005ftdiv_005fq_005fui"></a>Function: <em>unsigned long int</em> <strong>mpz_tdiv_q_ui</strong> <em>(mpz_t <var>q</var>, const mpz_t <var>n</var>, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dt><a name="index-mpz_005ftdiv_005fr_005fui"></a>Function: <em>unsigned long int</em> <strong>mpz_tdiv_r_ui</strong> <em>(mpz_t <var>r</var>, const mpz_t <var>n</var>, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dt><a name="index-mpz_005ftdiv_005fqr_005fui"></a>Function: <em>unsigned long int</em> <strong>mpz_tdiv_qr_ui</strong> <em>(mpz_t <var>q</var>, mpz_t <var>r</var>, const&nbsp;<span class="nolinebreak">mpz_t</span>&nbsp;<var>n</var><!-- /@w -->, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dt><a name="index-mpz_005ftdiv_005fui"></a>Function: <em>unsigned long int</em> <strong>mpz_tdiv_ui</strong> <em>(const mpz_t <var>n</var>, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dt><a name="index-mpz_005ftdiv_005fq_005f2exp"></a>Function: <em>void</em> <strong>mpz_tdiv_q_2exp</strong> <em>(mpz_t <var>q</var>, const mpz_t <var>n</var>, <span class="nolinebreak">mp_bitcnt_t</span>&nbsp;<var>b</var><!-- /@w -->)</em></dt>
+<dt><a name="index-mpz_005ftdiv_005fr_005f2exp"></a>Function: <em>void</em> <strong>mpz_tdiv_r_2exp</strong> <em>(mpz_t <var>r</var>, const mpz_t <var>n</var>, <span class="nolinebreak">mp_bitcnt_t</span>&nbsp;<var>b</var><!-- /@w -->)</em></dt>
+<dd><a name="index-Bit-shift-right"></a>
+
+<br>
+<p>Divide <var>n</var> by <var>d</var>, forming a quotient <var>q</var> and/or remainder
+<var>r</var>.  For the <code>2exp</code> functions, <em><var>d</var>=2^<var>b</var></em>.
+The rounding is in three styles, each suiting different applications.
+</p>
+<ul>
+<li> <code>cdiv</code> rounds <var>q</var> up towards <em>+infinity</em>, and <var>r</var> will
+have the opposite sign to <var>d</var>.  The <code>c</code> stands for &ldquo;ceil&rdquo;.
+
+</li><li> <code>fdiv</code> rounds <var>q</var> down towards <em>-infinity</em>, and
+<var>r</var> will have the same sign as <var>d</var>.  The <code>f</code> stands for
+&ldquo;floor&rdquo;.
+
+</li><li> <code>tdiv</code> rounds <var>q</var> towards zero, and <var>r</var> will have the same sign
+as <var>n</var>.  The <code>t</code> stands for &ldquo;truncate&rdquo;.
+</li></ul>
+
+<p>In all cases <var>q</var> and <var>r</var> will satisfy
+<em><var>n</var>=<var>q</var>*<var>d</var>+<var>r</var></em>, and
+<var>r</var> will satisfy <em>0&lt;=abs(<var>r</var>)&lt;abs(<var>d</var>)</em>.
+</p>
+<p>The <code>q</code> functions calculate only the quotient, the <code>r</code> functions
+only the remainder, and the <code>qr</code> functions calculate both.  Note that for
+<code>qr</code> the same variable cannot be passed for both <var>q</var> and <var>r</var>, or
+results will be unpredictable.
+</p>
+<p>For the <code>ui</code> variants the return value is the remainder, and in fact
+returning the remainder is all the <code>div_ui</code> functions do.  For
+<code>tdiv</code> and <code>cdiv</code> the remainder can be negative, so for those the
+return value is the absolute value of the remainder.
+</p>
+<p>For the <code>2exp</code> variants the divisor is <em>2^<var>b</var></em>.  These
+functions are implemented as right shifts and bit masks, but of course they
+round the same as the other functions.
+</p>
+<p>For positive <var>n</var> both <code>mpz_fdiv_q_2exp</code> and <code>mpz_tdiv_q_2exp</code>
+are simple bitwise right shifts.  For negative <var>n</var>, <code>mpz_fdiv_q_2exp</code>
+is effectively an arithmetic right shift treating <var>n</var> as twos complement
+the same as the bitwise logical functions do, whereas <code>mpz_tdiv_q_2exp</code>
+effectively treats <var>n</var> as sign and magnitude.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpz_005fmod"></a>Function: <em>void</em> <strong>mpz_mod</strong> <em>(mpz_t <var>r</var>, const mpz_t <var>n</var>, const mpz_t <var>d</var>)</em></dt>
+<dt><a name="index-mpz_005fmod_005fui"></a>Function: <em>unsigned long int</em> <strong>mpz_mod_ui</strong> <em>(mpz_t <var>r</var>, const mpz_t <var>n</var>, unsigned&nbsp;long&nbsp;int&nbsp;<var>d</var><!-- /@w -->)</em></dt>
+<dd><p>Set <var>r</var> to <var>n</var> <code>mod</code> <var>d</var>.  The sign of the divisor is
+ignored; the result is always non-negative.
+</p>
+<p><code>mpz_mod_ui</code> is identical to <code>mpz_fdiv_r_ui</code> above, returning the
+remainder as well as setting <var>r</var>.  See <code>mpz_fdiv_ui</code> above if only
+the return value is wanted.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpz_005fdivexact"></a>Function: <em>void</em> <strong>mpz_divexact</strong> <em>(mpz_t <var>q</var>, const mpz_t <var>n</var>, const mpz_t <var>d</var>)</em></dt>
+<dt><a name="index-mpz_005fdivexact_005fui"></a>Function: <em>void</em> <strong>mpz_divexact_ui</strong> <em>(mpz_t <var>q</var>, const mpz_t <var>n</var>, unsigned long <var>d</var>)</em></dt>
+<dd><a name="index-Exact-division-functions"></a>
+<p>Set <var>q</var> to <var>n</var>/<var>d</var>.  These functions produce correct results only
+when it is known in advance that <var>d</var> divides <var>n</var>.
+</p>
+<p>These routines are much faster than the other division functions, and are the
+best choice when exact division is known to occur, for example reducing a
+rational to lowest terms.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpz_005fdivisible_005fp"></a>Function: <em>int</em> <strong>mpz_divisible_p</strong> <em>(const mpz_t <var>n</var>, const mpz_t <var>d</var>)</em></dt>
+<dt><a name="index-mpz_005fdivisible_005fui_005fp"></a>Function: <em>int</em> <strong>mpz_divisible_ui_p</strong> <em>(const mpz_t <var>n</var>, unsigned long int <var>d</var>)</em></dt>
+<dt><a name="index-mpz_005fdivisible_005f2exp_005fp"></a>Function: <em>int</em> <strong>mpz_divisible_2exp_p</strong> <em>(const mpz_t <var>n</var>, mp_bitcnt_t <var>b</var>)</em></dt>
+<dd><a name="index-Divisibility-functions"></a>
+<p>Return non-zero if <var>n</var> is exactly divisible by <var>d</var>, or in the case of
+<code>mpz_divisible_2exp_p</code> by <em>2^<var>b</var></em>.
+</p>
+<p><var>n</var> is divisible by <var>d</var> if there exists an integer <var>q</var> satisfying
+<em><var>n</var> = <var>q</var>*<var>d</var></em>.  Unlike the other division
+functions, <em><var>d</var>=0</em> is accepted and following the rule it can be seen
+that only 0 is considered divisible by 0.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpz_005fcongruent_005fp"></a>Function: <em>int</em> <strong>mpz_congruent_p</strong> <em>(const mpz_t <var>n</var>, const mpz_t <var>c</var>, const mpz_t <var>d</var>)</em></dt>
+<dt><a name="index-mpz_005fcongruent_005fui_005fp"></a>Function: <em>int</em> <strong>mpz_congruent_ui_p</strong> <em>(const mpz_t <var>n</var>, unsigned long int <var>c</var>, unsigned long int <var>d</var>)</em></dt>
+<dt><a name="index-mpz_005fcongruent_005f2exp_005fp"></a>Function: <em>int</em> <strong>mpz_congruent_2exp_p</strong> <em>(const mpz_t <var>n</var>, const mpz_t <var>c</var>, mp_bitcnt_t <var>b</var>)</em></dt>
+<dd><a name="index-Divisibility-functions-1"></a>
+<a name="index-Congruence-functions"></a>
+<p>Return non-zero if <var>n</var> is congruent to <var>c</var> modulo <var>d</var>, or in the
+case of <code>mpz_congruent_2exp_p</code> modulo <em>2^<var>b</var></em>.
+</p>
+<p><var>n</var> is congruent to <var>c</var> mod <var>d</var> if there exists an integer <var>q</var>
+satisfying <em><var>n</var> = <var>c</var> + <var>q</var>*<var>d</var></em>.  Unlike
+the other division functions, <em><var>d</var>=0</em> is accepted and following the
+rule it can be seen that <var>n</var> and <var>c</var> are considered congruent mod 0
+only when exactly equal.
+</p></dd></dl>
+
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Integer-Exponentiation.html#Integer-Exponentiation" accesskey="n" rel="next">Integer Exponentiation</a>, Previous: <a href="Integer-Arithmetic.html#Integer-Arithmetic" accesskey="p" rel="prev">Integer Arithmetic</a>, Up: <a href="Integer-Functions.html#Integer-Functions" accesskey="u" rel="up">Integer Functions</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Square Root Algorithm</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Square Root Algorithm">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Root-Extraction-Algorithms.html#Root-Extraction-Algorithms" rel="up" title="Root Extraction Algorithms">
+<link href="Nth-Root-Algorithm.html#Nth-Root-Algorithm" rel="next" title="Nth Root Algorithm">
+<link href="Root-Extraction-Algorithms.html#Root-Extraction-Algorithms" rel="prev" title="Root Extraction Algorithms">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Square-Root-Algorithm"></a>
+<div class="header">
+<p>
+Next: <a href="Nth-Root-Algorithm.html#Nth-Root-Algorithm" accesskey="n" rel="next">Nth Root Algorithm</a>, Previous: <a href="Root-Extraction-Algorithms.html#Root-Extraction-Algorithms" accesskey="p" rel="prev">Root Extraction Algorithms</a>, Up: <a href="Root-Extraction-Algorithms.html#Root-Extraction-Algorithms" accesskey="u" rel="up">Root Extraction Algorithms</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Square-Root"></a>
+<h4 class="subsection">15.5.1 Square Root</h4>
+<a name="index-Square-root-algorithm"></a>
+<a name="index-Karatsuba-square-root-algorithm"></a>
+
+<p>Square roots are taken using the &ldquo;Karatsuba Square Root&rdquo; algorithm by Paul
+Zimmermann (see <a href="References.html#References">References</a>).
+</p>
+<p>An input <em>n</em> is split into four parts of <em>k</em> bits each, so with
+<em>b=2^k</em> we have <em>n = a3*b^3 + a2*b^2
++ a1*b + a0</em>.  Part a3 must be &ldquo;normalized&rdquo; so that either the high or
+second highest bit is set.  In GMP, <em>k</em> is kept on a limb boundary and
+the input is left shifted (by an even number of bits) to normalize.
+</p>
+<p>The square root of the high two parts is taken, by recursive application of
+the algorithm (bottoming out in a one-limb Newton&rsquo;s method),
+</p>
+<div class="example">
+<pre class="example">s1,r1 = sqrtrem (a3*b + a2)
+</pre></div>
+
+<p>This is an approximation to the desired root and is extended by a division to
+give <em>s</em>,<em>r</em>,
+</p>
+<div class="example">
+<pre class="example">q,u = divrem (r1*b + a1, 2*s1)
+s = s1*b + q
+r = u*b + a0 - q^2
+</pre></div>
+
+<p>The normalization requirement on a3 means at this point <em>s</em> is
+either correct or 1 too big.  <em>r</em> is negative in the latter case, so
+</p>
+<div class="example">
+<pre class="example">if r &lt; 0 then
+  r = r + 2*s - 1
+  s = s - 1
+</pre></div>
+
+<p>The algorithm is expressed in a divide and conquer form, but as noted in the
+paper it can also be viewed as a discrete variant of Newton&rsquo;s method, or as a
+variation on the schoolboy method (no longer taught) for square roots two
+digits at a time.
+</p>
+<p>If the remainder <em>r</em> is not required then usually only a few high limbs
+of <em>r</em> and <em>u</em> need to be calculated to determine whether an
+adjustment to <em>s</em> is required.  This optimization is not currently
+implemented.
+</p>
+<p>In the Karatsuba multiplication range this algorithm is <em>O(1.5*M(N/2))</em>, where <em>M(n)</em> is the time to multiply two numbers
+of <em>n</em> limbs.  In the FFT multiplication range this grows to a bound of
+<em>O(6*M(N/2))</em>.  In practice a factor of about 1.5 to 1.8 is
+found in the Karatsuba and Toom-3 ranges, growing to 2 or 3 in the FFT range.
+</p>
+<p>The algorithm does all its calculations in integers and the resulting
+<code>mpn_sqrtrem</code> is used for both <code>mpz_sqrt</code> and <code>mpf_sqrt</code>.
+The extended precision given by <code>mpf_sqrt_ui</code> is obtained by
+padding with zero limbs.
+</p>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Nth-Root-Algorithm.html#Nth-Root-Algorithm" accesskey="n" rel="next">Nth Root Algorithm</a>, Previous: <a href="Root-Extraction-Algorithms.html#Root-Extraction-Algorithms" accesskey="p" rel="prev">Root Extraction Algorithms</a>, Up: <a href="Root-Extraction-Algorithms.html#Root-Extraction-Algorithms" accesskey="u" rel="up">Root Extraction Algorithms</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

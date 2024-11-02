@@ -1,0 +1,237 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 1988-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "Funding Free Software", the Front-Cover
+Texts being (a) (see below), and with the Back-Cover Texts being (b)
+(see below).  A copy of the license is included in the section entitled
+"GNU Free Documentation License".
+
+(a) The FSF's Front-Cover Text is:
+
+A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Using the GNU Compiler Collection (GCC): BPF Kernel Helpers</title>
+
+<meta name="description" content="Using the GNU Compiler Collection (GCC): BPF Kernel Helpers">
+<meta name="keywords" content="Using the GNU Compiler Collection (GCC): BPF Kernel Helpers">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Option-Index.html#Option-Index" rel="index" title="Option Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Target-Builtins.html#Target-Builtins" rel="up" title="Target Builtins">
+<link href="FR_002dV-Built_002din-Functions.html#FR_002dV-Built_002din-Functions" rel="next" title="FR-V Built-in Functions">
+<link href="BPF-Built_002din-Functions.html#BPF-Built_002din-Functions" rel="prev" title="BPF Built-in Functions">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="BPF-Kernel-Helpers"></a>
+<div class="header">
+<p>
+Next: <a href="FR_002dV-Built_002din-Functions.html#FR_002dV-Built_002din-Functions" accesskey="n" rel="next">FR-V Built-in Functions</a>, Previous: <a href="BPF-Built_002din-Functions.html#BPF-Built_002din-Functions" accesskey="p" rel="prev">BPF Built-in Functions</a>, Up: <a href="Target-Builtins.html#Target-Builtins" accesskey="u" rel="up">Target Builtins</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Option-Index.html#Option-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="BPF-Kernel-Helpers-1"></a>
+<h4 class="subsection">6.60.13 BPF Kernel Helpers</h4>
+
+<p>These built-in functions are available for calling kernel helpers, and
+they are available depending on the kernel version selected as the
+CPU.
+</p>
+<p>Rather than using the built-ins directly, it is preferred for programs
+to include <samp>bpf-helpers.h</samp> and use the wrappers defined there.
+</p>
+<p>For a full description of what the helpers do, the arguments they
+take, and the returned value, see the
+<samp>linux/include/uapi/linux/bpf.h</samp> in a Linux source tree.
+</p>
+<div class="smallexample">
+<pre class="smallexample">void *__builtin_bpf_helper_map_lookup_elem (void *map, void *key)
+int   __builtin_bpf_helper_map_update_elem (void *map, void *key,
+                                            void *value,
+                                            unsigned long long flags)
+int   __builtin_bpf_helper_map_delete_elem (void *map, const void *key)
+int   __builtin_bpf_helper_map_push_elem (void *map, const void *value,
+                                          unsigned long long flags)
+int   __builtin_bpf_helper_map_pop_elem (void *map, void *value)
+int   __builtin_bpf_helper_map_peek_elem (void *map, void *value)
+int __builtin_bpf_helper_clone_redirect (void *skb,
+                                         unsigned int ifindex,
+                                         unsigned long long flags)
+int __builtin_bpf_helper_skb_get_tunnel_key (void *ctx, void *key, int size, int flags)
+int __builtin_bpf_helper_skb_set_tunnel_key (void *ctx, void *key, int size, int flags)
+int __builtin_bpf_helper_skb_get_tunnel_opt (void *ctx, void *md, int size)
+int __builtin_bpf_helper_skb_set_tunnel_opt (void *ctx, void *md, int size)
+int __builtin_bpf_helper_skb_get_xfrm_state (void *ctx, int index, void *state,
+				     int size, int flags)
+static unsigned long long __builtin_bpf_helper_skb_cgroup_id (void *ctx)
+static unsigned long long __builtin_bpf_helper_skb_ancestor_cgroup_id
+                                         (void *ctx, int level)
+int __builtin_bpf_helper_skb_vlan_push (void *ctx, __be16 vlan_proto, __u16 vlan_tci)
+int __builtin_bpf_helper_skb_vlan_pop (void *ctx)
+int __builtin_bpf_helper_skb_ecn_set_ce (void *ctx)
+
+int __builtin_bpf_helper_skb_load_bytes (void *ctx, int off, void *to, int len)
+int __builtin_bpf_helper_skb_load_bytes_relative (void *ctx, int off, void *to, int len, __u32 start_header)
+int __builtin_bpf_helper_skb_store_bytes (void *ctx, int off, void *from, int len, int flags)
+int __builtin_bpf_helper_skb_under_cgroup (void *ctx, void *map, int index)
+int __builtin_bpf_helper_skb_change_head (void *, int len, int flags)
+int __builtin_bpf_helper_skb_pull_data (void *, int len)
+int __builtin_bpf_helper_skb_change_proto (void *ctx, __be16 proto, __u64 flags)
+int __builtin_bpf_helper_skb_change_type (void *ctx, __u32 type)
+int __builtin_bpf_helper_skb_change_tail (void *ctx, __u32 len, __u64 flags)
+int __builtin_bpf_helper_skb_adjust_room (void *ctx, __s32 len_diff, __u32 mode,
+    				  unsigned long long flags)
+</pre></div>
+
+<p>Other helpers:
+</p>
+<div class="smallexample">
+<pre class="smallexample">int __builtin_bpf_helper_probe_read (void *dst, unsigned int size, void *src)
+unsigned long long __builtin_bpf_helper_ktime_get_ns (void)
+int __builtin_bpf_helper_trace_printk (const char *fmt, unsigned int fmt_size, ...)
+void __builtin_bpf_helper_tail_call (void *ctx, void *prog_array_map, unsigned int index)
+unsigned int __builtin_bpf_helper_get_smp_processor_id (void)
+unsigned long long __builtin_bpf_helper_get_current_pid_tgid (void)
+unsigned long long __builtin_bpf_helper_get_current_uid_gid (void)
+int __builtin_bpf_helper_get_current_comm (void *buf, unsigned int size_of_buf)
+unsigned long long __builtin_bpf_helper_perf_event_read (void *map, unsigned long long flags)
+
+int __builtin_bpf_helper_redirect (unsigned int ifindex, unsigned long long flags)
+int __builtin_bpf_helper_redirect_map (void *map, unsigned int key, unsigned long long flags)
+int __builtin_bpf_helper_perf_event_output (void *ctx,void *map, unsigned long long flags, void *data, unsigned long long size)
+int __builtin_bpf_helper_get_stackid (void *ctx, void *map, unsigned long long flags)
+int __builtin_bpf_helper_probe_write_user (void *dst, const void *src, unsigned int len)
+int __builtin_bpf_helper_current_task_under_cgroup (void *map, unsigned int index)
+
+static unsigned long long __builtin_bpf_helper_get_prandom_u32 (void)
+int __builtin_bpf_helper_xdp_adjust_head (void *ctx, int offset)
+int __builtin_bpf_helper_xdp_adjust_meta (void *ctx, int offset)
+int __builtin_bpf_helper_get_socket_cookie (void *ctx)
+int __builtin_bpf_helper_setsockopt (void *ctx, int level, int optname, void *optval,
+			     int optlen)
+int __builtin_bpf_helper_getsockopt (void *ctx, int level, int optname, void *optval,
+			     int optlen)
+int __builtin_bpf_helper_sock_ops_cb_flags_set (void *ctx, int flags)
+int __builtin_bpf_helper_sk_redirect_map (void *ctx, void *map, int key, int flags)
+int __builtin_bpf_helper_sk_redirect_hash (void *ctx, void *map, void *key, int flags)
+int __builtin_bpf_helper_sock_map_update (void *map, void *key, void *value,
+				  unsigned long long flags)
+int __builtin_bpf_helper_sock_hash_update (void *map, void *key, void *value,
+				   unsigned long long flags)
+int __builtin_bpf_helper_perf_event_read_value (void *map, unsigned long long flags,
+					void *buf, unsigned int buf_size)
+int __builtin_bpf_helper_perf_prog_read_value (void *ctx, void *buf,
+				       unsigned int buf_size)
+
+int __builtin_bpf_helper_override_return (void *ctx, unsigned long rc)
+int __builtin_bpf_helper_msg_redirect_map (void *ctx, void *map, int key, int flags)
+int __builtin_bpf_helper_msg_redirect_hash (void *ctx,
+				    void *map, void *key, int flags)
+int __builtin_bpf_helper_msg_apply_bytes (void *ctx, int len)
+int __builtin_bpf_helper_msg_cork_bytes (void *ctx, int len)
+int __builtin_bpf_helper_msg_pull_data (void *ctx, int start, int end, int flags)
+int __builtin_bpf_helper_msg_push_data (void *ctx, int start, int end, int flags)
+int __builtin_bpf_helper_msg_pop_data (void *ctx, int start, int cut, int flags)
+int __builtin_bpf_helper_bind (void *ctx, void *addr, int addr_len)
+int __builtin_bpf_helper_xdp_adjust_tail (void *ctx, int offset)
+int __builtin_bpf_helper_sk_select_reuseport (void *ctx, void *map, void *key, __u32 flags)
+int __builtin_bpf_helper_get_stack (void *ctx, void *buf, int size, int flags)
+int __builtin_bpf_helper_fib_lookup (void *ctx, struct bpf_fib_lookup *params,
+			     int plen, __u32 flags)
+
+int __builtin_bpf_helper_lwt_push_encap (void *ctx, unsigned int type, void *hdr,
+				 unsigned int len)
+int __builtin_bpf_helper_lwt_seg6_store_bytes (void *ctx, unsigned int offset,
+				       void *from, unsigned int len)
+int __builtin_bpf_helper_lwt_seg6_action (void *ctx, unsigned int action, void *param,
+				  unsigned int param_len)
+int __builtin_bpf_helper_lwt_seg6_adjust_srh (void *ctx, unsigned int offset,
+				      unsigned int len)
+int __builtin_bpf_helper_rc_repeat (void *ctx)
+int __builtin_bpf_helper_rc_keydown (void *ctx, unsigned int protocol,
+			     unsigned long long scancode, unsigned int toggle)
+static unsigned long long __builtin_bpf_helper_get_current_cgroup_id (void)
+static void *__builtin_bpf_helper_get_local_storage (void *map, unsigned long long flags)
+static struct bpf_sock *__builtin_bpf_helper_sk_lookup_tcp (void *ctx, void *tuple, int size, unsigned long long netns_id, unsigned long long flags)
+static struct bpf_sock *__builtin_bpf_helper_sk_lookup_udp (void *ctx, void *tuple, int size, unsigned long long netns_id, unsigned long long flags)
+int __builtin_bpf_helper_sk_release (struct bpf_sock *sk)
+int __builtin_bpf_helper_rc_pointer_rel (void *ctx, int rel_x, int rel_y)
+static void __builtin_bpf_helper_spin_lock (struct bpf_spin_lock *lock)
+static void __builtin_bpf_helper_spin_unlock (struct bpf_spin_lock *lock)
+
+static struct bpf_sock *__builtin_bpf_helper_sk_fullsock (struct bpf_sock *sk)
+static struct bpf_tcp_sock *__builtin_bpf_helper_tcp_sock (struct bpf_sock *sk)
+static struct bpf_sock *__builtin_bpf_helper_get_listener_sock (struct bpf_sock *sk)
+
+int __builtin_bpf_helper_l3_csum_replace (void *ctx, int off, int from, int to, int flags)
+int __builtin_bpf_helper_l4_csum_replace (void *ctx, int off, int from, int to, int flags)
+int __builtin_bpf_helper_csum_diff (void *from, int from_size, void *to, int to_size, int seed)
+
+static unsigned int __builtin_bpf_helper_get_cgroup_classid (void *ctx)
+static unsigned int __builtin_bpf_helper_get_route_realm (void *ctx)
+static unsigned int __builtin_bpf_helper_get_hash_recalc (void *ctx)
+static unsigned long long __builtin_bpf_helper_get_current_task (void *ctx)
+
+static long long __builtin_bpf_helper_csum_update (void *ctx, __u32 csum)
+static void __builtin_bpf_helper_set_hash_invalid (void *ctx)
+int __builtin_bpf_helper_get_numa_node_id (void)
+int __builtin_bpf_helper_probe_read_str (void *ctx, __u32 size,
+				 const void *unsafe_ptr)
+static unsigned int __builtin_bpf_helper_get_socket_uid (void *ctx)
+static unsigned int __builtin_bpf_helper_set_hash (void *ctx, __u32 hash)
+</pre></div>
+
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="FR_002dV-Built_002din-Functions.html#FR_002dV-Built_002din-Functions" accesskey="n" rel="next">FR-V Built-in Functions</a>, Previous: <a href="BPF-Built_002din-Functions.html#BPF-Built_002din-Functions" accesskey="p" rel="prev">BPF Built-in Functions</a>, Up: <a href="Target-Builtins.html#Target-Builtins" accesskey="u" rel="up">Target Builtins</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Option-Index.html#Option-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

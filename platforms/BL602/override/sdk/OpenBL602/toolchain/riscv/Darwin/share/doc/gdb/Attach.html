@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 1988-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "Free Software" and "Free Software Needs
+Free Documentation", with the Front-Cover Texts being "A GNU Manual,"
+and with the Back-Cover Texts as in (a) below.
+
+(a) The FSF's Back-Cover Text is: "You are free to copy and modify
+this GNU Manual.  Buying copies from GNU Press supports the FSF in
+developing GNU and promoting software freedom." -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Attach (Debugging with GDB)</title>
+
+<meta name="description" content="Attach (Debugging with GDB)">
+<meta name="keywords" content="Attach (Debugging with GDB)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="Concept-Index.html" rel="index" title="Concept Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Running.html" rel="up" title="Running">
+<link href="Kill-Process.html" rel="next" title="Kill Process">
+<link href="Input_002fOutput.html" rel="prev" title="Input/Output">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="Attach"></span><div class="header">
+<p>
+Next: <a href="Kill-Process.html" accesskey="n" rel="next">Kill Process</a>, Previous: <a href="Input_002fOutput.html" accesskey="p" rel="prev">Input/Output</a>, Up: <a href="Running.html" accesskey="u" rel="up">Running</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Debugging-an-Already_002drunning-Process"></span><h3 class="section">4.7 Debugging an Already-running Process</h3>
+<span id="index-attach-1"></span>
+<span id="index-attach"></span>
+
+<dl compact="compact">
+<dt><code>attach <var>process-id</var></code></dt>
+<dd><p>This command attaches to a running process&mdash;one that was started
+outside <small>GDB</small>.  (<code>info files</code> shows your active
+targets.)  The command takes as argument a process ID.  The usual way to
+find out the <var>process-id</var> of a Unix process is with the <code>ps</code> utility,
+or with the &lsquo;<samp>jobs -l</samp>&rsquo; shell command.
+</p>
+<p><code>attach</code> does not repeat if you press <tt class="key">RET</tt> a second time after
+executing the command.
+</p></dd>
+</dl>
+
+<p>To use <code>attach</code>, your program must be running in an environment
+which supports processes; for example, <code>attach</code> does not work for
+programs on bare-board targets that lack an operating system.  You must
+also have permission to send the process a signal.
+</p>
+<p>When you use <code>attach</code>, the debugger finds the program running in
+the process first by looking in the current working directory, then (if
+the program is not found) by using the source file search path
+(see <a href="Source-Path.html">Specifying Source Directories</a>).  You can also use
+the <code>file</code> command to load the program.  See <a href="Files.html">Commands to
+Specify Files</a>.
+</p>
+<span id="set-exec_002dfile_002dmismatch"></span><p>If the debugger can determine that the executable file running in the
+process it is attaching to does not match the current exec-file loaded
+by <small>GDB</small>, the option <code>exec-file-mismatch</code> specifies how to
+handle the mismatch.  <small>GDB</small> tries to compare the files by
+comparing their build IDs (see <a href="Separate-Debug-Files.html#build-ID">build ID</a>), if available.
+</p>
+<dl compact="compact">
+<dd><span id="index-exec_002dfile_002dmismatch"></span>
+<span id="index-set-exec_002dfile_002dmismatch"></span>
+</dd>
+<dt><code>set exec-file-mismatch &lsquo;<samp>ask|warn|off</samp>&rsquo;</code></dt>
+<dd>
+<p>Whether to detect mismatch between the current executable file loaded
+by <small>GDB</small> and the executable file used to start the process.  If
+&lsquo;<samp>ask</samp>&rsquo;, the default, display a warning and ask the user whether to
+load the process executable file; if &lsquo;<samp>warn</samp>&rsquo;, just display a
+warning; if &lsquo;<samp>off</samp>&rsquo;, don&rsquo;t attempt to detect a mismatch.
+If the user confirms loading the process executable file, then its symbols
+will be loaded as well.
+</p>
+<span id="index-show-exec_002dfile_002dmismatch"></span>
+</dd>
+<dt><code>show exec-file-mismatch</code></dt>
+<dd><p>Show the current value of <code>exec-file-mismatch</code>.
+</p>
+</dd>
+</dl>
+
+<p>The first thing <small>GDB</small> does after arranging to debug the specified
+process is to stop it.  You can examine and modify an attached process
+with all the <small>GDB</small> commands that are ordinarily available when
+you start processes with <code>run</code>.  You can insert breakpoints; you
+can step and continue; you can modify storage.  If you would rather the
+process continue running, you may use the <code>continue</code> command after
+attaching <small>GDB</small> to the process.
+</p>
+<dl compact="compact">
+<dd><span id="index-detach"></span>
+</dd>
+<dt><code>detach</code></dt>
+<dd><p>When you have finished debugging the attached process, you can use the
+<code>detach</code> command to release it from <small>GDB</small> control.  Detaching
+the process continues its execution.  After the <code>detach</code> command,
+that process and <small>GDB</small> become completely independent once more, and you
+are ready to <code>attach</code> another process or start one with <code>run</code>.
+<code>detach</code> does not repeat if you press <tt class="key">RET</tt> again after
+executing the command.
+</p></dd>
+</dl>
+
+<p>If you exit <small>GDB</small> while you have an attached process, you detach
+that process.  If you use the <code>run</code> command, you kill that process.
+By default, <small>GDB</small> asks for confirmation if you try to do either of these
+things; you can control whether or not you need to confirm by using the
+<code>set confirm</code> command (see <a href="Messages_002fWarnings.html">Optional Warnings and
+Messages</a>).
+</p>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Kill-Process.html" accesskey="n" rel="next">Kill Process</a>, Previous: <a href="Input_002fOutput.html" accesskey="p" rel="prev">Input/Output</a>, Up: <a href="Running.html" accesskey="u" rel="up">Running</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

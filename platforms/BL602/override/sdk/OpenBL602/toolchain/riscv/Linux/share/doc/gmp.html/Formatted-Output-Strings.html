@@ -1,0 +1,234 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Formatted Output Strings</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Formatted Output Strings">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Formatted-Output.html#Formatted-Output" rel="up" title="Formatted Output">
+<link href="Formatted-Output-Functions.html#Formatted-Output-Functions" rel="next" title="Formatted Output Functions">
+<link href="Formatted-Output.html#Formatted-Output" rel="prev" title="Formatted Output">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Formatted-Output-Strings"></a>
+<div class="header">
+<p>
+Next: <a href="Formatted-Output-Functions.html#Formatted-Output-Functions" accesskey="n" rel="next">Formatted Output Functions</a>, Previous: <a href="Formatted-Output.html#Formatted-Output" accesskey="p" rel="prev">Formatted Output</a>, Up: <a href="Formatted-Output.html#Formatted-Output" accesskey="u" rel="up">Formatted Output</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Format-Strings"></a>
+<h3 class="section">10.1 Format Strings</h3>
+
+<p><code>gmp_printf</code> and friends accept format strings similar to the standard C
+<code>printf</code> (see <a href="http://www.gnu.org/software/libc/manual/html_node/Formatted-Output.html#Formatted-Output">Formatted Output</a> in <cite>The GNU C
+Library Reference Manual</cite>).  A format specification is of the form
+</p>
+<div class="example">
+<pre class="example">% [flags] [width] [.[precision]] [type] conv
+</pre></div>
+
+<p>GMP adds types &lsquo;<samp>Z</samp>&rsquo;, &lsquo;<samp>Q</samp>&rsquo; and &lsquo;<samp>F</samp>&rsquo; for <code>mpz_t</code>, <code>mpq_t</code>
+and <code>mpf_t</code> respectively, &lsquo;<samp>M</samp>&rsquo; for <code>mp_limb_t</code>, and &lsquo;<samp>N</samp>&rsquo; for
+an <code>mp_limb_t</code> array.  &lsquo;<samp>Z</samp>&rsquo;, &lsquo;<samp>Q</samp>&rsquo;, &lsquo;<samp>M</samp>&rsquo; and &lsquo;<samp>N</samp>&rsquo; behave
+like integers.  &lsquo;<samp>Q</samp>&rsquo; will print a &lsquo;<samp>/</samp>&rsquo; and a denominator, if needed.
+&lsquo;<samp>F</samp>&rsquo; behaves like a float.  For example,
+</p>
+<div class="example">
+<pre class="example">mpz_t z;
+gmp_printf (&quot;%s is an mpz %Zd\n&quot;, &quot;here&quot;, z);
+
+mpq_t q;
+gmp_printf (&quot;a hex rational: %#40Qx\n&quot;, q);
+
+mpf_t f;
+int   n;
+gmp_printf (&quot;fixed point mpf %.*Ff with %d digits\n&quot;, n, f, n);
+
+mp_limb_t l;
+gmp_printf (&quot;limb %Mu\n&quot;, l);
+
+const mp_limb_t *ptr;
+mp_size_t       size;
+gmp_printf (&quot;limb array %Nx\n&quot;, ptr, size);
+</pre></div>
+
+<p>For &lsquo;<samp>N</samp>&rsquo; the limbs are expected least significant first, as per the
+<code>mpn</code> functions (see <a href="Low_002dlevel-Functions.html#Low_002dlevel-Functions">Low-level Functions</a>).  A negative size can be
+given to print the value as a negative.
+</p>
+<p>All the standard C <code>printf</code> types behave the same as the C library
+<code>printf</code>, and can be freely intermixed with the GMP extensions.  In the
+current implementation the standard parts of the format string are simply
+handed to <code>printf</code> and only the GMP extensions handled directly.
+</p>
+<p>The flags accepted are as follows.  GLIBC style &lsquo;<samp>'</samp>&rsquo; is only for the
+standard C types (not the GMP types), and only if the C library supports it.
+</p>
+<blockquote>
+<table>
+<tr><td><code>0</code></td><td>pad with zeros (rather than spaces)</td></tr>
+<tr><td><code>#</code></td><td>show the base with &lsquo;<samp>0x</samp>&rsquo;, &lsquo;<samp>0X</samp>&rsquo; or &lsquo;<samp>0</samp>&rsquo;</td></tr>
+<tr><td><code>+</code></td><td>always show a sign</td></tr>
+<tr><td>(space)</td><td>show a space or a &lsquo;<samp>-</samp>&rsquo; sign</td></tr>
+<tr><td><code>'</code></td><td>group digits, GLIBC style (not GMP types)</td></tr>
+</table>
+</blockquote>
+
+<p>The optional width and precision can be given as a number within the format
+string, or as a &lsquo;<samp>*</samp>&rsquo; to take an extra parameter of type <code>int</code>, the
+same as the standard <code>printf</code>.
+</p>
+<p>The standard types accepted are as follows.  &lsquo;<samp>h</samp>&rsquo; and &lsquo;<samp>l</samp>&rsquo; are
+portable, the rest will depend on the compiler (or include files) for the type
+and the C library for the output.
+</p>
+<blockquote>
+<table>
+<tr><td><code>h</code></td><td><code>short</code></td></tr>
+<tr><td><code>hh</code></td><td><code>char</code></td></tr>
+<tr><td><code>j</code></td><td><code>intmax_t</code> or <code>uintmax_t</code></td></tr>
+<tr><td><code>l</code></td><td><code>long</code> or <code>wchar_t</code></td></tr>
+<tr><td><code>ll</code></td><td><code>long long</code></td></tr>
+<tr><td><code>L</code></td><td><code>long double</code></td></tr>
+<tr><td><code>q</code></td><td><code>quad_t</code> or <code>u_quad_t</code></td></tr>
+<tr><td><code>t</code></td><td><code>ptrdiff_t</code></td></tr>
+<tr><td><code>z</code></td><td><code>size_t</code></td></tr>
+</table>
+</blockquote>
+
+<p>The GMP types are
+</p>
+<blockquote>
+<table>
+<tr><td><code>F</code></td><td><code>mpf_t</code>, float conversions</td></tr>
+<tr><td><code>Q</code></td><td><code>mpq_t</code>, integer conversions</td></tr>
+<tr><td><code>M</code></td><td><code>mp_limb_t</code>, integer conversions</td></tr>
+<tr><td><code>N</code></td><td><code>mp_limb_t</code> array, integer conversions</td></tr>
+<tr><td><code>Z</code></td><td><code>mpz_t</code>, integer conversions</td></tr>
+</table>
+</blockquote>
+
+<p>The conversions accepted are as follows.  &lsquo;<samp>a</samp>&rsquo; and &lsquo;<samp>A</samp>&rsquo; are always
+supported for <code>mpf_t</code> but depend on the C library for standard C float
+types.  &lsquo;<samp>m</samp>&rsquo; and &lsquo;<samp>p</samp>&rsquo; depend on the C library.
+</p>
+<blockquote>
+<table>
+<tr><td><code>a</code> <code>A</code></td><td>hex floats, C99 style</td></tr>
+<tr><td><code>c</code></td><td>character</td></tr>
+<tr><td><code>d</code></td><td>decimal integer</td></tr>
+<tr><td><code>e</code> <code>E</code></td><td>scientific format float</td></tr>
+<tr><td><code>f</code></td><td>fixed point float</td></tr>
+<tr><td><code>i</code></td><td>same as <code>d</code></td></tr>
+<tr><td><code>g</code> <code>G</code></td><td>fixed or scientific float</td></tr>
+<tr><td><code>m</code></td><td><code>strerror</code> string, GLIBC style</td></tr>
+<tr><td><code>n</code></td><td>store characters written so far</td></tr>
+<tr><td><code>o</code></td><td>octal integer</td></tr>
+<tr><td><code>p</code></td><td>pointer</td></tr>
+<tr><td><code>s</code></td><td>string</td></tr>
+<tr><td><code>u</code></td><td>unsigned integer</td></tr>
+<tr><td><code>x</code> <code>X</code></td><td>hex integer</td></tr>
+</table>
+</blockquote>
+
+<p>&lsquo;<samp>o</samp>&rsquo;, &lsquo;<samp>x</samp>&rsquo; and &lsquo;<samp>X</samp>&rsquo; are unsigned for the standard C types, but for
+types &lsquo;<samp>Z</samp>&rsquo;, &lsquo;<samp>Q</samp>&rsquo; and &lsquo;<samp>N</samp>&rsquo; they are signed.  &lsquo;<samp>u</samp>&rsquo; is not
+meaningful for &lsquo;<samp>Z</samp>&rsquo;, &lsquo;<samp>Q</samp>&rsquo; and &lsquo;<samp>N</samp>&rsquo;.
+</p>
+<p>&lsquo;<samp>M</samp>&rsquo; is a proxy for the C library &lsquo;<samp>l</samp>&rsquo; or &lsquo;<samp>L</samp>&rsquo;, according to the
+size of <code>mp_limb_t</code>.  Unsigned conversions will be usual, but a signed
+conversion can be used and will interpret the value as a twos complement
+negative.
+</p>
+<p>&lsquo;<samp>n</samp>&rsquo; can be used with any type, even the GMP types.
+</p>
+<p>Other types or conversions that might be accepted by the C library
+<code>printf</code> cannot be used through <code>gmp_printf</code>, this includes for
+instance extensions registered with GLIBC <code>register_printf_function</code>.
+Also currently there&rsquo;s no support for POSIX &lsquo;<samp>$</samp>&rsquo; style numbered arguments
+(perhaps this will be added in the future).
+</p>
+<p>The precision field has its usual meaning for integer &lsquo;<samp>Z</samp>&rsquo; and float
+&lsquo;<samp>F</samp>&rsquo; types, but is currently undefined for &lsquo;<samp>Q</samp>&rsquo; and should not be used
+with that.
+</p>
+<p><code>mpf_t</code> conversions only ever generate as many digits as can be
+accurately represented by the operand, the same as <code>mpf_get_str</code> does.
+Zeros will be used if necessary to pad to the requested precision.  This
+happens even for an &lsquo;<samp>f</samp>&rsquo; conversion of an <code>mpf_t</code> which is an
+integer, for instance <em>2^1024<!-- /@w --></em> in an <code>mpf_t</code> of 128 bits
+precision will only produce about 40 digits, then pad with zeros to the
+decimal point.  An empty precision field like &lsquo;<samp>%.Fe</samp>&rsquo; or &lsquo;<samp>%.Ff</samp>&rsquo; can
+be used to specifically request just the significant digits.  Without any dot
+and thus no precision field, a precision value of 6 will be used.  Note that
+these rules mean that &lsquo;<samp>%Ff</samp>&rsquo;, &lsquo;<samp>%.Ff</samp>&rsquo;, and &lsquo;<samp>%.0Ff</samp>&rsquo; will all be
+different.
+</p>
+<p>The decimal point character (or string) is taken from the current locale
+settings on systems which provide <code>localeconv</code> (see <a href="http://www.gnu.org/software/libc/manual/html_node/Locales.html#Locales">Locales
+and Internationalization</a> in <cite>The GNU C Library Reference Manual</cite>).  The C
+library will normally do the same for standard float output.
+</p>
+<p>The format string is only interpreted as plain <code>char</code>s, multibyte
+characters are not recognised.  Perhaps this will change in the future.
+</p>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Formatted-Output-Functions.html#Formatted-Output-Functions" accesskey="n" rel="next">Formatted Output Functions</a>, Previous: <a href="Formatted-Output.html#Formatted-Output" accesskey="p" rel="prev">Formatted Output</a>, Up: <a href="Formatted-Output.html#Formatted-Output" accesskey="u" rel="up">Formatted Output</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This file documents the BFD library.
+
+Copyright (C) 1991-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "GNU General Public License" and "Funding
+Free Software", the Front-Cover texts being (a) (see below), and with
+the Back-Cover Texts being (b) (see below).  A copy of the license is
+included in the section entitled "GNU Free Documentation License".
+
+(a) The FSF's Front-Cover Text is:
+
+A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Untitled Document: Formats</title>
+
+<meta name="description" content="Untitled Document: Formats">
+<meta name="keywords" content="Untitled Document: Formats">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="BFD-Index.html#BFD-Index" rel="index" title="BFD Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="BFD-front-end.html#BFD-front-end" rel="up" title="BFD front end">
+<link href="Relocations.html#Relocations" rel="next" title="Relocations">
+<link href="Archives.html#Archives" rel="prev" title="Archives">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Formats"></a>
+<div class="header">
+<p>
+Next: <a href="Relocations.html#Relocations" accesskey="n" rel="next">Relocations</a>, Previous: <a href="Archives.html#Archives" accesskey="p" rel="prev">Archives</a>, Up: <a href="BFD-front-end.html#BFD-front-end" accesskey="u" rel="up">BFD front end</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="BFD-Index.html#BFD-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="File-formats"></a>
+<h3 class="section">2.9 File formats</h3>
+<p>A format is a BFD concept of high level file contents type. The
+formats supported by BFD are:
+</p>
+<ul>
+<li> <code>bfd_object</code>
+</li></ul>
+<p>The BFD may contain data, symbols, relocations and debug info.
+</p>
+<ul>
+<li> <code>bfd_archive</code>
+</li></ul>
+<p>The BFD contains other BFDs and an optional index.
+</p>
+<ul>
+<li> <code>bfd_core</code>
+</li></ul>
+<p>The BFD contains the result of an executable core dump.
+</p>
+<a name="File-format-functions"></a>
+<h4 class="subsection">2.9.1 File format functions</h4>
+
+
+<a name="index-bfd_005fcheck_005fformat"></a>
+<a name="bfd_005fcheck_005fformat"></a>
+<h4 class="subsubsection">2.9.1.1 <code>bfd_check_format</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd_boolean bfd_check_format (bfd *abfd, bfd_format format);
+</pre></div>
+<p><strong>Description</strong><br>
+Verify if the file attached to the BFD <var>abfd</var> is compatible
+with the format <var>format</var> (i.e., one of <code>bfd_object</code>,
+<code>bfd_archive</code> or <code>bfd_core</code>).
+</p>
+<p>If the BFD has been set to a specific target before the
+call, only the named target and format combination is
+checked. If the target has not been set, or has been set to
+<code>default</code>, then all the known target backends is
+interrogated to determine a match.  If the default target
+matches, it is used.  If not, exactly one target must recognize
+the file, or an error results.
+</p>
+<p>The function returns <code>TRUE</code> on success, otherwise <code>FALSE</code>
+with one of the following error codes:
+</p>
+<ul>
+<li> <code>bfd_error_invalid_operation</code> -
+if <code>format</code> is not one of <code>bfd_object</code>, <code>bfd_archive</code> or
+<code>bfd_core</code>.
+
+</li><li> <code>bfd_error_system_call</code> -
+if an error occured during a read - even some file mismatches
+can cause bfd_error_system_calls.
+
+</li><li> <code>file_not_recognised</code> -
+none of the backends recognised the file format.
+
+</li><li> <code>bfd_error_file_ambiguously_recognized</code> -
+more than one backend recognised the file format.
+</li></ul>
+
+<a name="index-bfd_005fcheck_005fformat_005fmatches"></a>
+<a name="bfd_005fcheck_005fformat_005fmatches"></a>
+<h4 class="subsubsection">2.9.1.2 <code>bfd_check_format_matches</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd_boolean bfd_check_format_matches
+   (bfd *abfd, bfd_format format, char ***matching);
+</pre></div>
+<p><strong>Description</strong><br>
+Like <code>bfd_check_format</code>, except when it returns FALSE with
+<code>bfd_errno</code> set to <code>bfd_error_file_ambiguously_recognized</code>.  In that
+case, if <var>matching</var> is not NULL, it will be filled in with
+a NULL-terminated list of the names of the formats that matched,
+allocated with <code>malloc</code>.
+Then the user may choose a format and try again.
+</p>
+<p>When done with the list that <var>matching</var> points to, the caller
+should free it.
+</p>
+<a name="index-bfd_005fset_005fformat"></a>
+<a name="bfd_005fset_005fformat"></a>
+<h4 class="subsubsection">2.9.1.3 <code>bfd_set_format</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd_boolean bfd_set_format (bfd *abfd, bfd_format format);
+</pre></div>
+<p><strong>Description</strong><br>
+This function sets the file format of the BFD <var>abfd</var> to the
+format <var>format</var>. If the target set in the BFD does not
+support the format requested, the format is invalid, or the BFD
+is not open for writing, then an error occurs.
+</p>
+<a name="index-bfd_005fformat_005fstring"></a>
+<a name="bfd_005fformat_005fstring"></a>
+<h4 class="subsubsection">2.9.1.4 <code>bfd_format_string</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">const char *bfd_format_string (bfd_format format);
+</pre></div>
+<p><strong>Description</strong><br>
+Return a pointer to a const string
+<code>invalid</code>, <code>object</code>, <code>archive</code>, <code>core</code>, or <code>unknown</code>,
+depending upon the value of <var>format</var>.
+</p>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Relocations.html#Relocations" accesskey="n" rel="next">Relocations</a>, Previous: <a href="Archives.html#Archives" accesskey="p" rel="prev">Archives</a>, Up: <a href="BFD-front-end.html#BFD-front-end" accesskey="u" rel="up">BFD front end</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="BFD-Index.html#BFD-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

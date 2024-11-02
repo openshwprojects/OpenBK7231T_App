@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Initializing Rationals</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Initializing Rationals">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Rational-Number-Functions.html#Rational-Number-Functions" rel="up" title="Rational Number Functions">
+<link href="Rational-Conversions.html#Rational-Conversions" rel="next" title="Rational Conversions">
+<link href="Rational-Number-Functions.html#Rational-Number-Functions" rel="prev" title="Rational Number Functions">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Initializing-Rationals"></a>
+<div class="header">
+<p>
+Next: <a href="Rational-Conversions.html#Rational-Conversions" accesskey="n" rel="next">Rational Conversions</a>, Previous: <a href="Rational-Number-Functions.html#Rational-Number-Functions" accesskey="p" rel="prev">Rational Number Functions</a>, Up: <a href="Rational-Number-Functions.html#Rational-Number-Functions" accesskey="u" rel="up">Rational Number Functions</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Initialization-and-Assignment-Functions"></a>
+<h3 class="section">6.1 Initialization and Assignment Functions</h3>
+<a name="index-Rational-assignment-functions"></a>
+<a name="index-Assignment-functions-2"></a>
+<a name="index-Rational-initialization-functions"></a>
+<a name="index-Initialization-functions-2"></a>
+
+<dl>
+<dt><a name="index-mpq_005finit"></a>Function: <em>void</em> <strong>mpq_init</strong> <em>(mpq_t <var>x</var>)</em></dt>
+<dd><p>Initialize <var>x</var> and set it to 0/1.  Each variable should normally only be
+initialized once, or at least cleared out (using the function <code>mpq_clear</code>)
+between each initialization.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpq_005finits"></a>Function: <em>void</em> <strong>mpq_inits</strong> <em>(mpq_t <var>x</var>, ...)</em></dt>
+<dd><p>Initialize a NULL-terminated list of <code>mpq_t</code> variables, and set their
+values to 0/1.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpq_005fclear"></a>Function: <em>void</em> <strong>mpq_clear</strong> <em>(mpq_t <var>x</var>)</em></dt>
+<dd><p>Free the space occupied by <var>x</var>.  Make sure to call this function for all
+<code>mpq_t</code> variables when you are done with them.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpq_005fclears"></a>Function: <em>void</em> <strong>mpq_clears</strong> <em>(mpq_t <var>x</var>, ...)</em></dt>
+<dd><p>Free the space occupied by a NULL-terminated list of <code>mpq_t</code> variables.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpq_005fset"></a>Function: <em>void</em> <strong>mpq_set</strong> <em>(mpq_t <var>rop</var>, const mpq_t <var>op</var>)</em></dt>
+<dt><a name="index-mpq_005fset_005fz"></a>Function: <em>void</em> <strong>mpq_set_z</strong> <em>(mpq_t <var>rop</var>, const mpz_t <var>op</var>)</em></dt>
+<dd><p>Assign <var>rop</var> from <var>op</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpq_005fset_005fui"></a>Function: <em>void</em> <strong>mpq_set_ui</strong> <em>(mpq_t <var>rop</var>, unsigned long int <var>op1</var>, unsigned long int <var>op2</var>)</em></dt>
+<dt><a name="index-mpq_005fset_005fsi"></a>Function: <em>void</em> <strong>mpq_set_si</strong> <em>(mpq_t <var>rop</var>, signed long int <var>op1</var>, unsigned long int <var>op2</var>)</em></dt>
+<dd><p>Set the value of <var>rop</var> to <var>op1</var>/<var>op2</var>.  Note that if <var>op1</var> and
+<var>op2</var> have common factors, <var>rop</var> has to be passed to
+<code>mpq_canonicalize</code> before any operations are performed on <var>rop</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpq_005fset_005fstr"></a>Function: <em>int</em> <strong>mpq_set_str</strong> <em>(mpq_t <var>rop</var>, const char *<var>str</var>, int <var>base</var>)</em></dt>
+<dd><p>Set <var>rop</var> from a null-terminated string <var>str</var> in the given <var>base</var>.
+</p>
+<p>The string can be an integer like &ldquo;41&rdquo; or a fraction like &ldquo;41/152&rdquo;.  The
+fraction must be in canonical form (see <a href="Rational-Number-Functions.html#Rational-Number-Functions">Rational Number Functions</a>), or if
+not then <code>mpq_canonicalize</code> must be called.
+</p>
+<p>The numerator and optional denominator are parsed the same as in
+<code>mpz_set_str</code> (see <a href="Assigning-Integers.html#Assigning-Integers">Assigning Integers</a>).  White space is allowed in
+the string, and is simply ignored.  The <var>base</var> can vary from 2 to 62, or
+if <var>base</var> is 0 then the leading characters are used: <code>0x</code> or <code>0X</code> for hex,
+<code>0b</code> or <code>0B</code> for binary,
+<code>0</code> for octal, or decimal otherwise.  Note that this is done separately
+for the numerator and denominator, so for instance <code>0xEF/100</code> is 239/100,
+whereas <code>0xEF/0x100</code> is 239/256.
+</p>
+<p>The return value is 0 if the entire string is a valid number, or -1 if
+not.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpq_005fswap"></a>Function: <em>void</em> <strong>mpq_swap</strong> <em>(mpq_t <var>rop1</var>, mpq_t <var>rop2</var>)</em></dt>
+<dd><p>Swap the values <var>rop1</var> and <var>rop2</var> efficiently.
+</p></dd></dl>
+
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Rational-Conversions.html#Rational-Conversions" accesskey="n" rel="next">Rational Conversions</a>, Previous: <a href="Rational-Number-Functions.html#Rational-Number-Functions" accesskey="p" rel="prev">Rational Number Functions</a>, Up: <a href="Rational-Number-Functions.html#Rational-Number-Functions" accesskey="u" rel="up">Rational Number Functions</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

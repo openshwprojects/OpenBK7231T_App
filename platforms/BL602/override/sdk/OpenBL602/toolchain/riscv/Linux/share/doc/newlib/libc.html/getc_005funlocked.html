@@ -1,0 +1,101 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: getc_unlocked</title>
+
+<meta name="description" content="The Red Hat newlib C Library: getc_unlocked">
+<meta name="keywords" content="The Red Hat newlib C Library: getc_unlocked">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="getchar.html#getchar" rel="next" title="getchar">
+<link href="getc.html#getc" rel="prev" title="getc">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="getc_005funlocked"></a>
+<div class="header">
+<p>
+Next: <a href="getchar.html#getchar" accesskey="n" rel="next">getchar</a>, Previous: <a href="getc.html#getc" accesskey="p" rel="prev">getc</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="getc_005funlocked_002d_002d_002dnon_002dthread_002dsafe-version-of-getc-_0028macro_0029"></a>
+<h3 class="section">4.34 <code>getc_unlocked</code>&mdash;non-thread-safe version of getc (macro)</h3>
+<a name="index-getc_005funlocked"></a>
+<a name="index-_005fgetc_005funlocked_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+int getc_unlocked(FILE *<var>fp</var>);
+
+#include &lt;stdio.h&gt;
+int _getc_unlocked_r(FILE *<var>fp</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>getc_unlocked</code> is a non-thread-safe version of <code>getc</code> declared in
+<code>stdio.h</code>.  <code>getc_unlocked</code> may only safely be used within a scope
+protected by flockfile() (or ftrylockfile()) and funlockfile().  These
+functions may safely be used in a multi-threaded program if and only
+if they are called while the invoking thread owns the ( FILE *)
+object, as is the case after a successful call to the flockfile() or
+ftrylockfile() functions.  If threads are disabled, then
+<code>getc_unlocked</code> is equivalent to <code>getc</code>.
+</p>
+<p>The <code>_getc_unlocked_r</code> function is simply the reentrant version of
+<code>get_unlocked</code> which passes an additional reentrancy structure pointer
+argument: <var>ptr</var>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+See <code>getc</code>.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+POSIX 1003.1 requires <code>getc_unlocked</code>.  <code>getc_unlocked</code> may be
+implemented as a macro, so arguments should not have side-effects.
+</p>
+<p>Supporting OS subroutines required: <code>close</code>, <code>fstat</code>, <code>isatty</code>,
+<code>lseek</code>, <code>read</code>, <code>sbrk</code>, <code>write</code>.  
+</p><br>
+
+
+
+
+</body>
+</html>

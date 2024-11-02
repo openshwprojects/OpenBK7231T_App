@@ -1,0 +1,143 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual is for GNU MPC, a library for multiple precision complex arithmetic,
+version 1.0.3 of February 2015.
+
+Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 INRIA
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections. A copy of the license is included in the section
+entitled "GNU Free Documentation License." -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MPC 1.0.3: Initializing Complex Numbers</title>
+
+<meta name="description" content="GNU MPC 1.0.3: Initializing Complex Numbers">
+<meta name="keywords" content="GNU MPC 1.0.3: Initializing Complex Numbers">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Complex-Functions.html#Complex-Functions" rel="up" title="Complex Functions">
+<link href="Assigning-Complex-Numbers.html#Assigning-Complex-Numbers" rel="next" title="Assigning Complex Numbers">
+<link href="Complex-Functions.html#Complex-Functions" rel="prev" title="Complex Functions">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Initializing-Complex-Numbers"></a>
+<div class="header">
+<p>
+Next: <a href="Assigning-Complex-Numbers.html#Assigning-Complex-Numbers" accesskey="n" rel="next">Assigning Complex Numbers</a>, Up: <a href="Complex-Functions.html#Complex-Functions" accesskey="u" rel="up">Complex Functions</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Initialization-Functions"></a>
+<h3 class="section">5.1 Initialization Functions</h3>
+
+<p>An <code>mpc_t</code> object must be initialized before storing the first value in
+it.  The functions <code>mpc_init2</code> and <code>mpc_init3</code>
+are used for that purpose.
+</p>
+<dl>
+<dt><a name="index-mpc_005finit2"></a>Function: <em>void</em> <strong>mpc_init2</strong> <em>(mpc_t <var>z</var>, mpfr_prec_t <var>prec</var>)</em></dt>
+<dd><p>Initialize <var>z</var> to precision <var>prec</var> bits
+and set its real and imaginary parts to NaN.
+Normally, a variable should be initialized once only
+or at least be cleared, using <code>mpc_clear</code>, between initializations.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpc_005finit3"></a>Function: <em>void</em> <strong>mpc_init3</strong> <em>(mpc_t <var>z</var>, mpfr_prec_t <var>prec_r</var>, mpfr_prec_t <var>prec_i</var>)</em></dt>
+<dd><p>Initialize <var>z</var> with the precision of its real part being
+<var>prec_r</var> bits and the precision of its imaginary part being
+<var>prec_i</var> bits, and set the real and imaginary parts to NaN.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpc_005fclear"></a>Function: <em>void</em> <strong>mpc_clear</strong> <em>(mpc_t <var>z</var>)</em></dt>
+<dd><p>Free the space occupied by <var>z</var>.  Make sure to call this function for all
+<code>mpc_t</code> variables when you are done with them.
+</p></dd></dl>
+
+<p>Here is an example on how to initialize complex variables:
+</p><div class="example">
+<pre class="example">{
+  mpc_t x, y;
+  mpc_init2 (x, 256);		/* precision <em>exactly</em> 256 bits */
+  mpc_init3 (y, 100, 50);	/* 100/50 bits for the real/imaginary part */
+  &hellip;
+  mpc_clear (x);
+  mpc_clear (y);
+}
+</pre></div>
+
+<p>The following function is useful for changing the precision during a
+calculation.  A typical use would be for adjusting the precision gradually in
+iterative algorithms like Newton-Raphson, making the computation precision
+closely match the actual accurate part of the numbers.
+</p>
+<dl>
+<dt><a name="index-mpc_005fset_005fprec"></a>Function: <em>void</em> <strong>mpc_set_prec</strong> <em>(mpc_t <var>x</var>, mpfr_prec_t <var>prec</var>)</em></dt>
+<dd><p>Reset the precision of <var>x</var> to be <strong>exactly</strong> <var>prec</var> bits,
+and set its real/imaginary parts to NaN.
+The previous value stored in <var>x</var> is lost. It is equivalent to
+a call to <code>mpc_clear(x)</code> followed by a call to
+<code>mpc_init2(x, prec)</code>, but more efficient as no allocation is done in
+case the current allocated space for the mantissa of <var>x</var> is sufficient.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpc_005fget_005fprec"></a>Function: <em>mpfr_prec_t</em> <strong>mpc_get_prec</strong> <em>(mpc_t <var>x</var>)</em></dt>
+<dd><p>If the real and imaginary part of <var>x</var> have the same precision, it is returned,
+otherwise, 0 is returned.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpc_005fget_005fprec2"></a>Function: <em>void</em> <strong>mpc_get_prec2</strong> <em>(mpfr_prec_t* <var>pr</var>, mpfr_prec_t* <var>pi</var>, mpc_t <var>x</var>)</em></dt>
+<dd><p>Returns the precision of the real part of <var>x</var> via <var>pr</var> and of its imaginary part
+via <var>pi</var>.
+</p></dd></dl>
+
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Assigning-Complex-Numbers.html#Assigning-Complex-Numbers" accesskey="n" rel="next">Assigning Complex Numbers</a>, Up: <a href="Complex-Functions.html#Complex-Functions" accesskey="u" rel="up">Complex Functions</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

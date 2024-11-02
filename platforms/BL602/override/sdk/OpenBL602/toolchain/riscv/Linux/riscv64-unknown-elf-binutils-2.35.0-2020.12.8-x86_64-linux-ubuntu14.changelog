@@ -1,0 +1,23 @@
+[Wed Jan 20 21:36:19 2021 +0800] Correct FREEDOM_BINUTILS_METAL_RISCV_TAGS
+[Wed Jan 20 10:43:23 2021 +0800] Fix dwarf info and bump binutils
+[Tue Jan 19 12:41:08 2021 -0800] Bumping package version number
+[Mon Jan 18 15:35:25 2021 -0800] New location of libwinpthread.dll in new mingw toolchain
+[Sat Jan 16 17:38:57 2021 -0800] Adding a statement for debug status
+[Thu Jan 14 00:26:57 2021 +0800] Bump binutils for fix TOOLCHAIN-1176
+[Fri Jan 8 20:35:46 2021 +0800] Bump version to 2020.12.3
+[Mon Jan 4 15:08:05 2021 +0800] Bump version to 2020.12.1
+[Mon Jan 4 14:35:58 2021 +0800] Bump version to 2020.12.1-rc1
+[Thu Dec 31 15:31:39 2020 +0800] Bump version
+[Wed Dec 30 13:48:31 2020 +0800] Workaround for CentOS random build fail issue
+[Wed Dec 23 06:31:15 2020 -0800] Bump binutils and update version
+[Wed Dec 16 12:30:25 2020 -0800] Adding more checks and bundle generation
+[Tue Oct 6 14:35:07 2020 -0700] Fixing windows packaging
+[Mon Oct 5 16:01:09 2020 -0700] Adding more usage of dyn libs checks
+[Mon Oct 5 15:45:35 2020 -0700] Updating scripts and submodule
+[Thu Jun 18 13:22:01 2020 -0700] Fixing reusable build script
+[Thu Jun 18 09:59:28 2020 -0700] Refactoring binutils build script into sharable file
+[Tue Jun 16 10:12:49 2020 -0700] Adding flush Makefile target
+[Sun Jun 14 22:03:11 2020 -0700] Adding regress make target
+[Thu Jun 4 22:06:50 2020 -0700] Second real commit
+[Fri May 29 13:46:25 2020 -0700] First real commit
+[Tue May 26 12:08:32 2020 -0700] Initial commit

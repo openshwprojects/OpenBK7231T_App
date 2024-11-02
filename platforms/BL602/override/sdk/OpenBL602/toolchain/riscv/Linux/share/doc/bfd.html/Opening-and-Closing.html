@@ -1,0 +1,686 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This file documents the BFD library.
+
+Copyright (C) 1991-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "GNU General Public License" and "Funding
+Free Software", the Front-Cover texts being (a) (see below), and with
+the Back-Cover Texts being (b) (see below).  A copy of the license is
+included in the section entitled "GNU Free Documentation License".
+
+(a) The FSF's Front-Cover Text is:
+
+A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Untitled Document: Opening and Closing</title>
+
+<meta name="description" content="Untitled Document: Opening and Closing">
+<meta name="keywords" content="Untitled Document: Opening and Closing">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="BFD-Index.html#BFD-Index" rel="index" title="BFD Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="BFD-front-end.html#BFD-front-end" rel="up" title="BFD front end">
+<link href="Internal.html#Internal" rel="next" title="Internal">
+<link href="Architectures.html#Architectures" rel="prev" title="Architectures">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Opening-and-Closing"></a>
+<div class="header">
+<p>
+Next: <a href="Internal.html#Internal" accesskey="n" rel="next">Internal</a>, Previous: <a href="Architectures.html#Architectures" accesskey="p" rel="prev">Architectures</a>, Up: <a href="BFD-front-end.html#BFD-front-end" accesskey="u" rel="up">BFD front end</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="BFD-Index.html#BFD-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+
+<div class="example">
+<pre class="example">/* Set to N to open the next N BFDs using an alternate id space.  */
+extern unsigned int bfd_use_reserved_id;
+</pre></div>
+<a name="Opening-and-closing-BFDs"></a>
+<h3 class="section">2.14 Opening and closing BFDs</h3>
+
+
+<a name="Functions-for-opening-and-closing"></a>
+<h4 class="subsection">2.14.1 Functions for opening and closing</h4>
+
+
+<a name="index-bfd_005ffopen"></a>
+<a name="bfd_005ffopen"></a>
+<h4 class="subsubsection">2.14.1.1 <code>bfd_fopen</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd *bfd_fopen (const char *filename, const char *target,
+    const char *mode, int fd);
+</pre></div>
+<p><strong>Description</strong><br>
+Open the file <var>filename</var> with the target <var>target</var>.
+Return a pointer to the created BFD.  If <var>fd</var> is not -1,
+then <code>fdopen</code> is used to open the file; otherwise, <code>fopen</code>
+is used.  <var>mode</var> is passed directly to <code>fopen</code> or
+<code>fdopen</code>.
+</p>
+<p>Calls <code>bfd_find_target</code>, so <var>target</var> is interpreted as by
+that function.
+</p>
+<p>The new BFD is marked as cacheable iff <var>fd</var> is -1.
+</p>
+<p>If <code>NULL</code> is returned then an error has occured.   Possible errors
+are <code>bfd_error_no_memory</code>, <code>bfd_error_invalid_target</code> or
+<code>system_call</code> error.
+</p>
+<p>On error, <var>fd</var> is always closed.
+</p>
+<p>A copy of the <var>filename</var> argument is stored in the newly created
+BFD.  It can be accessed via the bfd_get_filename() macro.
+</p>
+<a name="index-bfd_005fopenr"></a>
+<a name="bfd_005fopenr"></a>
+<h4 class="subsubsection">2.14.1.2 <code>bfd_openr</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd *bfd_openr (const char *filename, const char *target);
+</pre></div>
+<p><strong>Description</strong><br>
+Open the file <var>filename</var> (using <code>fopen</code>) with the target
+<var>target</var>.  Return a pointer to the created BFD.
+</p>
+<p>Calls <code>bfd_find_target</code>, so <var>target</var> is interpreted as by
+that function.
+</p>
+<p>If <code>NULL</code> is returned then an error has occured.   Possible errors
+are <code>bfd_error_no_memory</code>, <code>bfd_error_invalid_target</code> or
+<code>system_call</code> error.
+</p>
+<p>A copy of the <var>filename</var> argument is stored in the newly created
+BFD.  It can be accessed via the bfd_get_filename() macro.
+</p>
+<a name="index-bfd_005ffdopenr"></a>
+<a name="bfd_005ffdopenr"></a>
+<h4 class="subsubsection">2.14.1.3 <code>bfd_fdopenr</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd *bfd_fdopenr (const char *filename, const char *target, int fd);
+</pre></div>
+<p><strong>Description</strong><br>
+<code>bfd_fdopenr</code> is to <code>bfd_fopenr</code> much like <code>fdopen</code> is to
+<code>fopen</code>.  It opens a BFD on a file already described by the
+<var>fd</var> supplied.
+</p>
+<p>When the file is later <code>bfd_close</code>d, the file descriptor will
+be closed.  If the caller desires that this file descriptor be
+cached by BFD (opened as needed, closed as needed to free
+descriptors for other opens), with the supplied <var>fd</var> used as
+an initial file descriptor (but subject to closure at any time),
+call bfd_set_cacheable(bfd, 1) on the returned BFD.  The default
+is to assume no caching; the file descriptor will remain open
+until <code>bfd_close</code>, and will not be affected by BFD operations
+on other files.
+</p>
+<p>Possible errors are <code>bfd_error_no_memory</code>,
+<code>bfd_error_invalid_target</code> and <code>bfd_error_system_call</code>.
+</p>
+<p>On error, <var>fd</var> is closed.
+</p>
+<p>A copy of the <var>filename</var> argument is stored in the newly created
+BFD.  It can be accessed via the bfd_get_filename() macro.
+</p>
+<a name="index-bfd_005fopenstreamr"></a>
+<a name="bfd_005fopenstreamr"></a>
+<h4 class="subsubsection">2.14.1.4 <code>bfd_openstreamr</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd *bfd_openstreamr (const char * filename, const char * target,
+    void * stream);
+</pre></div>
+<p><strong>Description</strong><br>
+Open a BFD for read access on an existing stdio stream.  When
+the BFD is passed to <code>bfd_close</code>, the stream will be closed.
+</p>
+<p>A copy of the <var>filename</var> argument is stored in the newly created
+BFD.  It can be accessed via the bfd_get_filename() macro.
+</p>
+<a name="index-bfd_005fopenr_005fiovec"></a>
+<a name="bfd_005fopenr_005fiovec"></a>
+<h4 class="subsubsection">2.14.1.5 <code>bfd_openr_iovec</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd *bfd_openr_iovec (const char *filename, const char *target,
+    void *(*open_func) (struct bfd *nbfd,
+    void *open_closure),
+    void *open_closure,
+    file_ptr (*pread_func) (struct bfd *nbfd,
+    void *stream,
+    void *buf,
+    file_ptr nbytes,
+    file_ptr offset),
+    int (*close_func) (struct bfd *nbfd,
+    void *stream),
+    int (*stat_func) (struct bfd *abfd,
+    void *stream,
+    struct stat *sb));
+</pre></div>
+<p><strong>Description</strong><br>
+Create and return a BFD backed by a read-only <var>stream</var>.
+The <var>stream</var> is created using <var>open_func</var>, accessed using
+<var>pread_func</var> and destroyed using <var>close_func</var>.
+</p>
+<p>Calls <code>bfd_find_target</code>, so <var>target</var> is interpreted as by
+that function.
+</p>
+<p>Calls <var>open_func</var> (which can call <code>bfd_zalloc</code> and
+<code>bfd_get_filename</code>) to obtain the read-only stream backing
+the BFD.  <var>open_func</var> either succeeds returning the
+non-<code>NULL</code> <var>stream</var>, or fails returning <code>NULL</code>
+(setting <code>bfd_error</code>).
+</p>
+<p>Calls <var>pread_func</var> to request <var>nbytes</var> of data from
+<var>stream</var> starting at <var>offset</var> (e.g., via a call to
+<code>bfd_read</code>).  <var>pread_func</var> either succeeds returning the
+number of bytes read (which can be less than <var>nbytes</var> when
+end-of-file), or fails returning -1 (setting <code>bfd_error</code>).
+</p>
+<p>Calls <var>close_func</var> when the BFD is later closed using
+<code>bfd_close</code>.  <var>close_func</var> either succeeds returning 0, or
+fails returning -1 (setting <code>bfd_error</code>).
+</p>
+<p>Calls <var>stat_func</var> to fill in a stat structure for bfd_stat,
+bfd_get_size, and bfd_get_mtime calls.  <var>stat_func</var> returns 0
+on success, or returns -1 on failure (setting <code>bfd_error</code>).
+</p>
+<p>If <code>bfd_openr_iovec</code> returns <code>NULL</code> then an error has
+occurred.  Possible errors are <code>bfd_error_no_memory</code>,
+<code>bfd_error_invalid_target</code> and <code>bfd_error_system_call</code>.
+</p>
+<p>A copy of the <var>filename</var> argument is stored in the newly created
+BFD.  It can be accessed via the bfd_get_filename() macro.
+</p>
+<a name="index-bfd_005fopenw"></a>
+<a name="bfd_005fopenw"></a>
+<h4 class="subsubsection">2.14.1.6 <code>bfd_openw</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd *bfd_openw (const char *filename, const char *target);
+</pre></div>
+<p><strong>Description</strong><br>
+Create a BFD, associated with file <var>filename</var>, using the
+file format <var>target</var>, and return a pointer to it.
+</p>
+<p>Possible errors are <code>bfd_error_system_call</code>, <code>bfd_error_no_memory</code>,
+<code>bfd_error_invalid_target</code>.
+</p>
+<p>A copy of the <var>filename</var> argument is stored in the newly created
+BFD.  It can be accessed via the bfd_get_filename() macro.
+</p>
+<a name="index-bfd_005fclose"></a>
+<a name="bfd_005fclose"></a>
+<h4 class="subsubsection">2.14.1.7 <code>bfd_close</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd_boolean bfd_close (bfd *abfd);
+</pre></div>
+<p><strong>Description</strong><br>
+Close a BFD. If the BFD was open for writing, then pending
+operations are completed and the file written out and closed.
+If the created file is executable, then <code>chmod</code> is called
+to mark it as such.
+</p>
+<p>All memory attached to the BFD is released.
+</p>
+<p>The file descriptor associated with the BFD is closed (even
+if it was passed in to BFD by <code>bfd_fdopenr</code>).
+</p>
+<p><strong>Returns</strong><br>
+<code>TRUE</code> is returned if all is ok, otherwise <code>FALSE</code>.
+</p>
+<a name="index-bfd_005fclose_005fall_005fdone"></a>
+<a name="bfd_005fclose_005fall_005fdone"></a>
+<h4 class="subsubsection">2.14.1.8 <code>bfd_close_all_done</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd_boolean bfd_close_all_done (bfd *);
+</pre></div>
+<p><strong>Description</strong><br>
+Close a BFD.  Differs from <code>bfd_close</code> since it does not
+complete any pending operations.  This routine would be used
+if the application had just used BFD for swapping and didn&rsquo;t
+want to use any of the writing code.
+</p>
+<p>If the created file is executable, then <code>chmod</code> is called
+to mark it as such.
+</p>
+<p>All memory attached to the BFD is released.
+</p>
+<p><strong>Returns</strong><br>
+<code>TRUE</code> is returned if all is ok, otherwise <code>FALSE</code>.
+</p>
+<a name="index-bfd_005fcreate"></a>
+<a name="bfd_005fcreate"></a>
+<h4 class="subsubsection">2.14.1.9 <code>bfd_create</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd *bfd_create (const char *filename, bfd *templ);
+</pre></div>
+<p><strong>Description</strong><br>
+Create a new BFD in the manner of <code>bfd_openw</code>, but without
+opening a file. The new BFD takes the target from the target
+used by <var>templ</var>. The format is always set to <code>bfd_object</code>.
+</p>
+<p>A copy of the <var>filename</var> argument is stored in the newly created
+BFD.  It can be accessed via the bfd_get_filename() macro.
+</p>
+<a name="index-bfd_005fmake_005fwritable"></a>
+<a name="bfd_005fmake_005fwritable"></a>
+<h4 class="subsubsection">2.14.1.10 <code>bfd_make_writable</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd_boolean bfd_make_writable (bfd *abfd);
+</pre></div>
+<p><strong>Description</strong><br>
+Takes a BFD as created by <code>bfd_create</code> and converts it
+into one like as returned by <code>bfd_openw</code>.  It does this
+by converting the BFD to BFD_IN_MEMORY.  It&rsquo;s assumed that
+you will call <code>bfd_make_readable</code> on this bfd later.
+</p>
+<p><strong>Returns</strong><br>
+<code>TRUE</code> is returned if all is ok, otherwise <code>FALSE</code>.
+</p>
+<a name="index-bfd_005fmake_005freadable"></a>
+<a name="bfd_005fmake_005freadable"></a>
+<h4 class="subsubsection">2.14.1.11 <code>bfd_make_readable</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd_boolean bfd_make_readable (bfd *abfd);
+</pre></div>
+<p><strong>Description</strong><br>
+Takes a BFD as created by <code>bfd_create</code> and
+<code>bfd_make_writable</code> and converts it into one like as
+returned by <code>bfd_openr</code>.  It does this by writing the
+contents out to the memory buffer, then reversing the
+direction.
+</p>
+<p><strong>Returns</strong><br>
+<code>TRUE</code> is returned if all is ok, otherwise <code>FALSE</code>.
+</p>
+<a name="index-bfd_005falloc"></a>
+<a name="bfd_005falloc"></a>
+<h4 class="subsubsection">2.14.1.12 <code>bfd_alloc</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">void *bfd_alloc (bfd *abfd, bfd_size_type wanted);
+</pre></div>
+<p><strong>Description</strong><br>
+Allocate a block of <var>wanted</var> bytes of memory attached to
+<code>abfd</code> and return a pointer to it.
+</p>
+<a name="index-bfd_005fzalloc"></a>
+<a name="bfd_005fzalloc"></a>
+<h4 class="subsubsection">2.14.1.13 <code>bfd_zalloc</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">void *bfd_zalloc (bfd *abfd, bfd_size_type wanted);
+</pre></div>
+<p><strong>Description</strong><br>
+Allocate a block of <var>wanted</var> bytes of zeroed memory
+attached to <code>abfd</code> and return a pointer to it.
+</p>
+<a name="index-bfd_005fcalc_005fgnu_005fdebuglink_005fcrc32"></a>
+<a name="bfd_005fcalc_005fgnu_005fdebuglink_005fcrc32"></a>
+<h4 class="subsubsection">2.14.1.14 <code>bfd_calc_gnu_debuglink_crc32</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">unsigned long bfd_calc_gnu_debuglink_crc32
+   (unsigned long crc, const unsigned char *buf, bfd_size_type len);
+</pre></div>
+<p><strong>Description</strong><br>
+Computes a CRC value as used in the .gnu_debuglink section.
+Advances the previously computed <var>crc</var> value by computing
+and adding in the crc32 for <var>len</var> bytes of <var>buf</var>.
+</p>
+<p><strong>Returns</strong><br>
+Return the updated CRC32 value.
+</p>
+<a name="index-bfd_005fget_005fdebug_005flink_005finfo_005f1"></a>
+<a name="bfd_005fget_005fdebug_005flink_005finfo_005f1"></a>
+<h4 class="subsubsection">2.14.1.15 <code>bfd_get_debug_link_info_1</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">char *bfd_get_debug_link_info_1 (bfd *abfd, void *crc32_out);
+</pre></div>
+<p><strong>Description</strong><br>
+Extracts the filename and CRC32 value for any separate debug
+information file associated with <var>abfd</var>.
+</p>
+<p>The <var>crc32_out</var> parameter is an untyped pointer because
+this routine is used as a <code>get_func_type</code> function, but it
+is expected to be an unsigned long pointer.
+</p>
+<p><strong>Returns</strong><br>
+The filename of the associated debug information file, or NULL
+if there is no such file.  If the filename was found then the
+contents of <var>crc32_out</var> are updated to hold the corresponding
+CRC32 value for the file.
+</p>
+<p>The returned filename is allocated with <code>malloc</code>; freeing
+it is the responsibility of the caller.
+</p>
+<a name="index-bfd_005fget_005fdebug_005flink_005finfo"></a>
+<a name="bfd_005fget_005fdebug_005flink_005finfo"></a>
+<h4 class="subsubsection">2.14.1.16 <code>bfd_get_debug_link_info</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">char *bfd_get_debug_link_info (bfd *abfd, unsigned long *crc32_out);
+</pre></div>
+<p><strong>Description</strong><br>
+Extracts the filename and CRC32 value for any separate debug
+information file associated with <var>abfd</var>.
+</p>
+<p><strong>Returns</strong><br>
+The filename of the associated debug information file, or NULL
+if there is no such file.  If the filename was found then the
+contents of <var>crc32_out</var> are updated to hold the corresponding
+CRC32 value for the file.
+</p>
+<p>The returned filename is allocated with <code>malloc</code>; freeing
+it is the responsibility of the caller.
+</p>
+<a name="index-bfd_005fget_005falt_005fdebug_005flink_005finfo"></a>
+<a name="bfd_005fget_005falt_005fdebug_005flink_005finfo"></a>
+<h4 class="subsubsection">2.14.1.17 <code>bfd_get_alt_debug_link_info</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">char *bfd_get_alt_debug_link_info (bfd * abfd,
+    bfd_size_type *buildid_len,
+    bfd_byte **buildid_out);
+</pre></div>
+<p><strong>Description</strong><br>
+Fetch the filename and BuildID value for any alternate debuginfo
+associated with <var>abfd</var>.  Return NULL if no such info found,
+otherwise return filename and update <var>buildid_len</var> and
+<var>buildid_out</var>.  The returned filename and build_id are
+allocated with <code>malloc</code>; freeing them is the responsibility
+of the caller.
+</p>
+<a name="index-separate_005fdebug_005ffile_005fexists"></a>
+<a name="separate_005fdebug_005ffile_005fexists"></a>
+<h4 class="subsubsection">2.14.1.18 <code>separate_debug_file_exists</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd_boolean separate_debug_file_exists
+   (char *name, void *crc32_p);
+</pre></div>
+<p><strong>Description</strong><br>
+Checks to see if <var>name</var> is a file and if its contents
+match <var>crc32</var>, which is a pointer to an <code>unsigned
+long</code> containing a CRC32.
+</p>
+<p>The <var>crc32_p</var> parameter is an untyped pointer because
+this routine is used as a <code>check_func_type</code> function.
+</p>
+<a name="index-separate_005falt_005fdebug_005ffile_005fexists"></a>
+<a name="separate_005falt_005fdebug_005ffile_005fexists"></a>
+<h4 class="subsubsection">2.14.1.19 <code>separate_alt_debug_file_exists</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd_boolean separate_alt_debug_file_exists
+   (char *name, void *unused);
+</pre></div>
+<p><strong>Description</strong><br>
+Checks to see if <var>name</var> is a file.
+</p>
+<a name="index-find_005fseparate_005fdebug_005ffile"></a>
+<a name="find_005fseparate_005fdebug_005ffile"></a>
+<h4 class="subsubsection">2.14.1.20 <code>find_separate_debug_file</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">char *find_separate_debug_file
+   (bfd *abfd, const char *dir, bfd_boolean include_dirs,
+    get_func_type get, check_func_type check, void *data);
+</pre></div>
+<p><strong>Description</strong><br>
+Searches for a debug information file corresponding to <var>abfd</var>.
+</p>
+<p>The name of the separate debug info file is returned by the
+<var>get</var> function.  This function scans various fixed locations
+in the filesystem, including the file tree rooted at <var>dir</var>.
+If the <var>include_dirs</var> parameter is true then the directory
+components of <var>abfd</var>&rsquo;s filename will be included in the
+searched locations.
+</p>
+<p><var>data</var> is passed unmodified to the <var>get</var> and <var>check</var>
+functions.  It is generally used to implement build-id-like
+matching in the callback functions.
+</p>
+<p><strong>Returns</strong><br>
+Returns the filename of the first file to be found which
+receives a TRUE result from the <var>check</var> function.
+Returns NULL if no valid file could be found.
+</p>
+<a name="index-bfd_005ffollow_005fgnu_005fdebuglink"></a>
+<a name="bfd_005ffollow_005fgnu_005fdebuglink"></a>
+<h4 class="subsubsection">2.14.1.21 <code>bfd_follow_gnu_debuglink</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">char *bfd_follow_gnu_debuglink (bfd *abfd, const char *dir);
+</pre></div>
+<p><strong>Description</strong><br>
+Takes a BFD and searches it for a .gnu_debuglink section.  If this
+section is found, it examines the section for the name and checksum
+of a &rsquo;.debug&rsquo; file containing auxiliary debugging information.  It
+then searches the filesystem for this .debug file in some standard
+locations, including the directory tree rooted at <var>dir</var>, and if
+found returns the full filename.
+</p>
+<p>If <var>dir</var> is NULL, the search will take place starting at
+the current directory.
+</p>
+<p><strong>Returns</strong><br>
+<code>NULL</code> on any errors or failure to locate the .debug file,
+otherwise a pointer to a heap-allocated string containing the
+filename.  The caller is responsible for freeing this string.
+</p>
+<a name="index-bfd_005ffollow_005fgnu_005fdebugaltlink"></a>
+<a name="bfd_005ffollow_005fgnu_005fdebugaltlink"></a>
+<h4 class="subsubsection">2.14.1.22 <code>bfd_follow_gnu_debugaltlink</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">char *bfd_follow_gnu_debugaltlink (bfd *abfd, const char *dir);
+</pre></div>
+<p><strong>Description</strong><br>
+Takes a BFD and searches it for a .gnu_debugaltlink section.  If this
+section is found, it examines the section for the name of a file
+containing auxiliary debugging information.  It then searches the
+filesystem for this file in a set of standard locations, including
+the directory tree rooted at <var>dir</var>, and if found returns the
+full filename.
+</p>
+<p>If <var>dir</var> is NULL, the search will take place starting at
+the current directory.
+</p>
+<p><strong>Returns</strong><br>
+<code>NULL</code> on any errors or failure to locate the debug file,
+otherwise a pointer to a heap-allocated string containing the
+filename.  The caller is responsible for freeing this string.
+</p>
+<a name="index-bfd_005fcreate_005fgnu_005fdebuglink_005fsection"></a>
+<a name="bfd_005fcreate_005fgnu_005fdebuglink_005fsection"></a>
+<h4 class="subsubsection">2.14.1.23 <code>bfd_create_gnu_debuglink_section</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">struct bfd_section *bfd_create_gnu_debuglink_section
+   (bfd *abfd, const char *filename);
+</pre></div>
+<p><strong>Description</strong><br>
+Takes a <var>BFD</var> and adds a .gnu_debuglink section to it.  The
+section is sized to be big enough to contain a link to the specified
+<var>filename</var>.
+</p>
+<p><strong>Returns</strong><br>
+A pointer to the new section is returned if all is ok.  Otherwise
+<code>NULL</code> is returned and bfd_error is set.
+</p>
+<a name="index-bfd_005ffill_005fin_005fgnu_005fdebuglink_005fsection"></a>
+<a name="bfd_005ffill_005fin_005fgnu_005fdebuglink_005fsection"></a>
+<h4 class="subsubsection">2.14.1.24 <code>bfd_fill_in_gnu_debuglink_section</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd_boolean bfd_fill_in_gnu_debuglink_section
+   (bfd *abfd, struct bfd_section *sect, const char *filename);
+</pre></div>
+<p><strong>Description</strong><br>
+Takes a <var>BFD</var> and containing a .gnu_debuglink section <var>SECT</var>
+and fills in the contents of the section to contain a link to the
+specified <var>filename</var>.  The filename should be relative to the
+current directory.
+</p>
+<p><strong>Returns</strong><br>
+<code>TRUE</code> is returned if all is ok.  Otherwise <code>FALSE</code> is returned
+and bfd_error is set.
+</p>
+<a name="index-get_005fbuild_005fid"></a>
+<a name="get_005fbuild_005fid"></a>
+<h4 class="subsubsection">2.14.1.25 <code>get_build_id</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">struct bfd_build_id * get_build_id (bfd *abfd);
+</pre></div>
+<p><strong>Description</strong><br>
+Finds the build-id associated with <var>abfd</var>.  If the build-id is
+extracted from the note section then a build-id structure is built
+for it, using memory allocated to <var>abfd</var>, and this is then
+attached to the <var>abfd</var>.
+</p>
+<p><strong>Returns</strong><br>
+Returns a pointer to the build-id structure if a build-id could be
+found.  If no build-id is found NULL is returned and error code is
+set.
+</p>
+<a name="index-get_005fbuild_005fid_005fname"></a>
+<a name="get_005fbuild_005fid_005fname"></a>
+<h4 class="subsubsection">2.14.1.26 <code>get_build_id_name</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">char * get_build_id_name (bfd *abfd, void *build_id_out_p)
+</pre></div>
+<p><strong>Description</strong><br>
+Searches <var>abfd</var> for a build-id, and then constructs a pathname
+from it.  The path is computed as .build-id/NN/NN+NN.debug where
+NNNN+NN is the build-id value as a hexadecimal string.
+</p>
+<p><strong>Returns</strong><br>
+Returns the constructed filename or NULL upon error.
+It is the caller&rsquo;s responsibility to free the memory used to hold the
+filename.
+If a filename is returned then the <var>build_id_out_p</var>
+parameter (which points to a <code>struct bfd_build_id</code>
+pointer) is set to a pointer to the build_id structure.
+</p>
+<a name="index-check_005fbuild_005fid_005ffile"></a>
+<a name="check_005fbuild_005fid_005ffile"></a>
+<h4 class="subsubsection">2.14.1.27 <code>check_build_id_file</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd_boolean check_build_id_file (char *name, void *buildid_p);
+</pre></div>
+<p><strong>Description</strong><br>
+Checks to see if <var>name</var> is a readable file and if its build-id
+matches <var>buildid</var>.
+</p>
+<p><strong>Returns</strong><br>
+Returns TRUE if the file exists, is readable, and contains a
+build-id which matches the build-id pointed at by
+<var>build_id_p</var> (which is really a <code>struct bfd_build_id **</code>).
+</p>
+<a name="index-bfd_005ffollow_005fbuild_005fid_005fdebuglink"></a>
+<a name="bfd_005ffollow_005fbuild_005fid_005fdebuglink"></a>
+<h4 class="subsubsection">2.14.1.28 <code>bfd_follow_build_id_debuglink</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">char *bfd_follow_build_id_debuglink (bfd *abfd, const char *dir);
+</pre></div>
+<p><strong>Description</strong><br>
+Takes <var>abfd</var> and searches it for a .note.gnu.build-id section.
+If this section is found, it extracts the value of the NT_GNU_BUILD_ID
+note, which should be a hexadecimal value <var>NNNN+NN</var> (for
+32+ hex digits).  It then searches the filesystem for a file named
+<var>.build-id/NN/NN+NN.debug</var> in a set of standard locations,
+including the directory tree rooted at <var>dir</var>.  The filename
+of the first matching file to be found is returned.  A matching
+file should contain a .note.gnu.build-id section with the same
+<var>NNNN+NN</var> note as <var>abfd</var>, although this check is currently
+not implemented.
+</p>
+<p>If <var>dir</var> is NULL, the search will take place starting at
+the current directory.
+</p>
+<p><strong>Returns</strong><br>
+<code>NULL</code> on any errors or failure to locate the debug file,
+otherwise a pointer to a heap-allocated string containing the
+filename.  The caller is responsible for freeing this string.
+</p>
+<a name="index-bfd_005fset_005ffilename"></a>
+<a name="bfd_005fset_005ffilename"></a>
+<h4 class="subsubsection">2.14.1.29 <code>bfd_set_filename</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">const char *bfd_set_filename (bfd *abfd, const char *filename);
+</pre></div>
+<p><strong>Description</strong><br>
+Set the filename of <var>abfd</var>, copying the FILENAME parameter to
+bfd_alloc&rsquo;d memory owned by <var>abfd</var>.  Returns a pointer the
+newly allocated name, or NULL if the allocation failed.
+</p>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Internal.html#Internal" accesskey="n" rel="next">Internal</a>, Previous: <a href="Architectures.html#Architectures" accesskey="p" rel="prev">Architectures</a>, Up: <a href="BFD-front-end.html#BFD-front-end" accesskey="u" rel="up">BFD front end</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="BFD-Index.html#BFD-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

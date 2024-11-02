@@ -1,0 +1,107 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Embed with GNU: Misc Support</title>
+
+<meta name="description" content="Embed with GNU: Misc Support">
+<meta name="keywords" content="Embed with GNU: Misc Support">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="leds_002ec.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Libc.html#Libc" rel="up" title="Libc">
+<link href="Debugging.html#Debugging" rel="next" title="Debugging">
+<link href="Memory-Support.html#Memory-Support" rel="prev" title="Memory Support">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Misc-Support"></a>
+<div class="header">
+<p>
+Next: <a href="Debugging.html#Debugging" accesskey="n" rel="next">Debugging</a>, Previous: <a href="Memory-Support.html#Memory-Support" accesskey="p" rel="prev">Memory Support</a>, Up: <a href="Libc.html#Libc" accesskey="u" rel="up">Libc</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<a name="Misc-support-routines"></a>
+<h4 class="subsection">3.4.3 Misc support routines</h4>
+
+<p>These are called by <code>newlib</code> but don&rsquo;t apply to the embedded
+environment. <code>isatty()</code> is self explanatory. <code>kill()</code> doesn&rsquo;t
+apply either in an environment withno process control, so it justs
+exits, which is a similar enough behavior. <code>getpid()</code> can safely
+return any value greater than 1. The value doesn&rsquo;t effect anything in
+<code>newlib</code> because once again there is no process control.
+</p>
+<div class="smallexample">
+<pre class="smallexample">/*
+ * isatty -- returns 1 if connected to a terminal device,
+ *           returns 0 if not. Since we're hooked up to a
+ *           serial port, we'll say yes and return a 1.
+ */
+int
+isatty(fd)
+     int fd;
+{
+  return (1);
+}
+
+/*
+ * getpid -- only one process, so just return 1.
+ */
+#define __MYPID 1
+int
+getpid()
+{
+  return __MYPID;
+}
+
+/*
+ * kill -- go out via exit...
+ */
+int
+kill(pid, sig)
+     int pid;
+     int sig;
+{
+  if(pid == __MYPID)
+    _exit(sig);
+  return 0;
+}
+</pre></div>
+
+
+
+
+</body>
+</html>

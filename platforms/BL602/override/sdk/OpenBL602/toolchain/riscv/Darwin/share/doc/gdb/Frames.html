@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 1988-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "Free Software" and "Free Software Needs
+Free Documentation", with the Front-Cover Texts being "A GNU Manual,"
+and with the Back-Cover Texts as in (a) below.
+
+(a) The FSF's Back-Cover Text is: "You are free to copy and modify
+this GNU Manual.  Buying copies from GNU Press supports the FSF in
+developing GNU and promoting software freedom." -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Frames (Debugging with GDB)</title>
+
+<meta name="description" content="Frames (Debugging with GDB)">
+<meta name="keywords" content="Frames (Debugging with GDB)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="Concept-Index.html" rel="index" title="Concept Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stack.html" rel="up" title="Stack">
+<link href="Backtrace.html" rel="next" title="Backtrace">
+<link href="Stack.html" rel="prev" title="Stack">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="Frames"></span><div class="header">
+<p>
+Next: <a href="Backtrace.html" accesskey="n" rel="next">Backtrace</a>, Up: <a href="Stack.html" accesskey="u" rel="up">Stack</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Stack-Frames"></span><h3 class="section">8.1 Stack Frames</h3>
+
+<span id="index-frame_002c-definition"></span>
+<span id="index-stack-frame"></span>
+<p>The call stack is divided up into contiguous pieces called <em>stack
+frames</em>, or <em>frames</em> for short; each frame is the data associated
+with one call to one function.  The frame contains the arguments given
+to the function, the function&rsquo;s local variables, and the address at
+which the function is executing.
+</p>
+<span id="index-initial-frame"></span>
+<span id="index-outermost-frame"></span>
+<span id="index-innermost-frame"></span>
+<p>When your program is started, the stack has only one frame, that of the
+function <code>main</code>.  This is called the <em>initial</em> frame or the
+<em>outermost</em> frame.  Each time a function is called, a new frame is
+made.  Each time a function returns, the frame for that function invocation
+is eliminated.  If a function is recursive, there can be many frames for
+the same function.  The frame for the function in which execution is
+actually occurring is called the <em>innermost</em> frame.  This is the most
+recently created of all the stack frames that still exist.
+</p>
+<span id="index-frame-pointer"></span>
+<p>Inside your program, stack frames are identified by their addresses.  A
+stack frame consists of many bytes, each of which has its own address; each
+kind of computer has a convention for choosing one byte whose
+address serves as the address of the frame.  Usually this address is kept
+in a register called the <em>frame pointer register</em>
+(see <a href="Registers.html">$fp</a>) while execution is going on in that frame.
+</p>
+<span id="index-frame-level"></span>
+<span id="index-frame-number"></span>
+<p><small>GDB</small> labels each existing stack frame with a <em>level</em>, a
+number that is zero for the innermost frame, one for the frame that
+called it, and so on upward.  These level numbers give you a way of
+designating stack frames in <small>GDB</small> commands.  The terms
+<em>frame number</em> and <em>frame level</em> can be used interchangeably to
+describe this number.
+</p>
+<span id="index-frameless-execution"></span>
+<p>Some compilers provide a way to compile functions so that they operate
+without stack frames.  (For example, the <small>GCC</small> option
+</p><div class="example">
+<pre class="example">&lsquo;<samp>-fomit-frame-pointer</samp>&rsquo;
+</pre></div>
+<p>generates functions without a frame.)
+This is occasionally done with heavily used library functions to save
+the frame setup time.  <small>GDB</small> has limited facilities for dealing
+with these function invocations.  If the innermost function invocation
+has no stack frame, <small>GDB</small> nevertheless regards it as though
+it had a separate frame, which is numbered zero as usual, allowing
+correct tracing of the function call chain.  However, <small>GDB</small> has
+no provision for frameless functions elsewhere in the stack.
+</p>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Backtrace.html" accesskey="n" rel="next">Backtrace</a>, Up: <a href="Stack.html" accesskey="u" rel="up">Stack</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: Signals</title>
+
+<meta name="description" content="The Red Hat newlib C Library: Signals">
+<meta name="keywords" content="The Red Hat newlib C Library: Signals">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="index.html#Top" rel="up" title="Top">
+<link href="psignal.html#psignal" rel="next" title="psignal">
+<link href="wcwidth.html#wcwidth" rel="prev" title="wcwidth">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Signals"></a>
+<div class="header">
+<p>
+Next: <a href="Timefns.html#Timefns" accesskey="n" rel="next">Timefns</a>, Previous: <a href="Wchar-strings.html#Wchar-strings" accesskey="p" rel="prev">Wchar strings</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Signal-Handling-_0028signal_002eh_0029"></a>
+<h2 class="chapter">7 Signal Handling (<samp>signal.h</samp>)</h2>
+
+<p>A <em>signal</em> is an event that interrupts the normal flow of control
+in your program.  Your operating environment normally defines the full
+set of signals available (see <samp>sys/signal.h</samp>), as well as the
+default means of dealing with them&mdash;typically, either printing an
+error message and aborting your program, or ignoring the signal.
+</p>
+<p>All systems support at least the following signals:
+</p><dl compact="compact">
+<dt><code>SIGABRT</code></dt>
+<dd><p>Abnormal termination of a program; raised by the <code>abort</code> function.
+</p>
+</dd>
+<dt><code>SIGFPE</code></dt>
+<dd><p>A domain error in arithmetic, such as overflow, or division by zero.
+</p>
+</dd>
+<dt><code>SIGILL</code></dt>
+<dd><p>Attempt to execute as a function data that is not executable.
+</p>
+</dd>
+<dt><code>SIGINT</code></dt>
+<dd><p>Interrupt; an interactive attention signal.
+</p>
+</dd>
+<dt><code>SIGSEGV</code></dt>
+<dd><p>An attempt to access a memory location that is not available.
+</p>
+</dd>
+<dt><code>SIGTERM</code></dt>
+<dd><p>A request that your program end execution.
+</p></dd>
+</dl>
+
+<p>Two functions are available for dealing with asynchronous
+signals&mdash;one to allow your program to send signals to itself (this is
+called <em>raising</em> a signal), and one to specify subroutines (called
+<em>handlers</em> to handle particular signals that you anticipate may
+occur&mdash;whether raised by your own program or the operating environment.
+</p>
+<p>To support these functions, <samp>signal.h</samp> defines three macros:
+</p>
+<dl compact="compact">
+<dt><code>SIG_DFL</code></dt>
+<dd><p>Used with the <code>signal</code> function in place of a pointer to a
+handler subroutine, to select the operating environment&rsquo;s default
+handling of a signal.
+</p>
+</dd>
+<dt><code>SIG_IGN</code></dt>
+<dd><p>Used with the <code>signal</code> function in place of a pointer to a
+handler, to ignore a particular signal.
+</p>
+</dd>
+<dt><code>SIG_ERR</code></dt>
+<dd><p>Returned by the <code>signal</code> function in place of a pointer to a
+handler, to indicate that your request to set up a handler could not
+be honored for some reason.
+</p></dd>
+</dl>
+
+<p><samp>signal.h</samp> also defines an integral type, <code>sig_atomic_t</code>.
+This type is not used in any function declarations; it exists only to
+allow your signal handlers to declare a static storage location where
+they may store a signal value.  (Static storage is not otherwise
+reliable from signal handlers.)
+</p>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="psignal.html#psignal" accesskey="1">psignal</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Print a signal message to standard error
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="raise.html#raise" accesskey="2">raise</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Send a signal
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="signal.html#signal" accesskey="3">signal</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Specify handler subroutine for a signal
+</td></tr>
+</table>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Timefns.html#Timefns" accesskey="n" rel="next">Timefns</a>, Previous: <a href="Wchar-strings.html#Wchar-strings" accesskey="p" rel="prev">Wchar strings</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

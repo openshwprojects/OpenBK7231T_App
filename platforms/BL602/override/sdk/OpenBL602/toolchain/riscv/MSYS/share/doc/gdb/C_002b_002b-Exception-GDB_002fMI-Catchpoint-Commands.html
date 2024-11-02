@@ -1,0 +1,229 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 1988-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "Free Software" and "Free Software Needs
+Free Documentation", with the Front-Cover Texts being "A GNU Manual,"
+and with the Back-Cover Texts as in (a) below.
+
+(a) The FSF's Back-Cover Text is: "You are free to copy and modify
+this GNU Manual.  Buying copies from GNU Press supports the FSF in
+developing GNU and promoting software freedom." -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Debugging with GDB: C++ Exception GDB/MI Catchpoint Commands</title>
+
+<meta name="description" content="Debugging with GDB: C++ Exception GDB/MI Catchpoint Commands">
+<meta name="keywords" content="Debugging with GDB: C++ Exception GDB/MI Catchpoint Commands">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="GDB_002fMI-Catchpoint-Commands.html#GDB_002fMI-Catchpoint-Commands" rel="up" title="GDB/MI Catchpoint Commands">
+<link href="GDB_002fMI-Program-Context.html#GDB_002fMI-Program-Context" rel="next" title="GDB/MI Program Context">
+<link href="Ada-Exception-GDB_002fMI-Catchpoint-Commands.html#Ada-Exception-GDB_002fMI-Catchpoint-Commands" rel="prev" title="Ada Exception GDB/MI Catchpoint Commands">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="C_002b_002b-Exception-GDB_002fMI-Catchpoint-Commands"></a>
+<div class="header">
+<p>
+Previous: <a href="Ada-Exception-GDB_002fMI-Catchpoint-Commands.html#Ada-Exception-GDB_002fMI-Catchpoint-Commands" accesskey="p" rel="prev">Ada Exception GDB/MI Catchpoint Commands</a>, Up: <a href="GDB_002fMI-Catchpoint-Commands.html#GDB_002fMI-Catchpoint-Commands" accesskey="u" rel="up">GDB/MI Catchpoint Commands</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="C_002b_002b-Exception-GDB_002fMI-Catchpoints"></a>
+<h4 class="subsection">27.9.3 C<tt>++</tt> Exception <small>GDB/MI</small> Catchpoints</h4>
+
+<p>The following <small>GDB/MI</small> commands can be used to create catchpoints
+that stop the execution when C<tt>++</tt> exceptions are being throw, rethrown,
+or caught.
+</p>
+<a name="The-_002dcatch_002dthrow-Command"></a>
+<h4 class="subheading">The <code>-catch-throw</code> Command</h4>
+<a name="index-_002dcatch_002dthrow"></a>
+
+<a name="Synopsis-18"></a>
+<h4 class="subsubheading">Synopsis</h4>
+
+<div class="smallexample">
+<pre class="smallexample"> -catch-throw [ -t ] [ -r <var>regexp</var>]
+</pre></div>
+
+<p>Stop when the debuggee throws a C<tt>++</tt> exception.  If <var>regexp</var> is
+given, then only exceptions whose type matches the regular expression
+will be caught.
+</p>
+<p>If &lsquo;<samp>-t</samp>&rsquo; is given, then the catchpoint is enabled only for one
+stop, the catchpoint is automatically deleted after stopping once for
+the event.
+</p>
+<a name="GDB-Command-17"></a>
+<h4 class="subsubheading"><small>GDB</small> Command</h4>
+
+<p>The corresponding <small>GDB</small> commands are &lsquo;<samp>catch throw</samp>&rsquo;
+and &lsquo;<samp>tcatch throw</samp>&rsquo; (see <a href="Set-Catchpoints.html#Set-Catchpoints">Set Catchpoints</a>).
+</p>
+<a name="Example-17"></a>
+<h4 class="subsubheading">Example</h4>
+
+<div class="smallexample">
+<pre class="smallexample">-catch-throw -r exception_type
+^done,bkpt={number=&quot;1&quot;,type=&quot;catchpoint&quot;,disp=&quot;keep&quot;,enabled=&quot;y&quot;,
+  what=&quot;exception throw&quot;,catch-type=&quot;throw&quot;,
+  thread-groups=[&quot;i1&quot;],
+  regexp=&quot;exception_type&quot;,times=&quot;0&quot;}
+(gdb)
+-exec-run
+^running
+(gdb)
+~&quot;\n&quot;
+~&quot;Catchpoint 1 (exception thrown), 0x00007ffff7ae00ed
+  in __cxa_throw () from /lib64/libstdc++.so.6\n&quot;
+*stopped,bkptno=&quot;1&quot;,reason=&quot;breakpoint-hit&quot;,disp=&quot;keep&quot;,
+  frame={addr=&quot;0x00007ffff7ae00ed&quot;,func=&quot;__cxa_throw&quot;,
+  args=[],from=&quot;/lib64/libstdc++.so.6&quot;,arch=&quot;i386:x86-64&quot;},
+  thread-id=&quot;1&quot;,stopped-threads=&quot;all&quot;,core=&quot;6&quot;
+(gdb)
+</pre></div>
+
+<a name="The-_002dcatch_002drethrow-Command"></a>
+<h4 class="subheading">The <code>-catch-rethrow</code> Command</h4>
+<a name="index-_002dcatch_002drethrow"></a>
+
+<a name="Synopsis-19"></a>
+<h4 class="subsubheading">Synopsis</h4>
+
+<div class="smallexample">
+<pre class="smallexample"> -catch-rethrow [ -t ] [ -r <var>regexp</var>]
+</pre></div>
+
+<p>Stop when a C<tt>++</tt> exception is re-thrown.  If <var>regexp</var> is given,
+then only exceptions whose type matches the regular expression will be
+caught.
+</p>
+<p>If &lsquo;<samp>-t</samp>&rsquo; is given, then the catchpoint is enabled only for one
+stop, the catchpoint is automatically deleted after the first event is
+caught.
+</p>
+<a name="GDB-Command-18"></a>
+<h4 class="subsubheading"><small>GDB</small> Command</h4>
+
+<p>The corresponding <small>GDB</small> commands are &lsquo;<samp>catch rethrow</samp>&rsquo;
+and &lsquo;<samp>tcatch rethrow</samp>&rsquo; (see <a href="Set-Catchpoints.html#Set-Catchpoints">Set Catchpoints</a>).
+</p>
+<a name="Example-18"></a>
+<h4 class="subsubheading">Example</h4>
+
+<div class="smallexample">
+<pre class="smallexample">-catch-rethrow -r exception_type
+^done,bkpt={number=&quot;1&quot;,type=&quot;catchpoint&quot;,disp=&quot;keep&quot;,enabled=&quot;y&quot;,
+  what=&quot;exception rethrow&quot;,catch-type=&quot;rethrow&quot;,
+  thread-groups=[&quot;i1&quot;],
+  regexp=&quot;exception_type&quot;,times=&quot;0&quot;}
+(gdb)
+-exec-run
+^running
+(gdb)
+~&quot;\n&quot;
+~&quot;Catchpoint 1 (exception rethrown), 0x00007ffff7ae00ed
+  in __cxa_rethrow () from /lib64/libstdc++.so.6\n&quot;
+*stopped,bkptno=&quot;1&quot;,reason=&quot;breakpoint-hit&quot;,disp=&quot;keep&quot;,
+  frame={addr=&quot;0x00007ffff7ae00ed&quot;,func=&quot;__cxa_rethrow&quot;,
+  args=[],from=&quot;/lib64/libstdc++.so.6&quot;,arch=&quot;i386:x86-64&quot;},
+  thread-id=&quot;1&quot;,stopped-threads=&quot;all&quot;,core=&quot;6&quot;
+(gdb)
+</pre></div>
+
+<a name="The-_002dcatch_002dcatch-Command"></a>
+<h4 class="subheading">The <code>-catch-catch</code> Command</h4>
+<a name="index-_002dcatch_002dcatch"></a>
+
+<a name="Synopsis-20"></a>
+<h4 class="subsubheading">Synopsis</h4>
+
+<div class="smallexample">
+<pre class="smallexample"> -catch-catch [ -t ] [ -r <var>regexp</var>]
+</pre></div>
+
+<p>Stop when the debuggee catches a C<tt>++</tt> exception.  If <var>regexp</var>
+is given, then only exceptions whose type matches the regular
+expression will be caught.
+</p>
+<p>If &lsquo;<samp>-t</samp>&rsquo; is given, then the catchpoint is enabled only for one
+stop, the catchpoint is automatically deleted after the first event is
+caught.
+</p>
+<a name="GDB-Command-19"></a>
+<h4 class="subsubheading"><small>GDB</small> Command</h4>
+
+<p>The corresponding <small>GDB</small> commands are &lsquo;<samp>catch catch</samp>&rsquo;
+and &lsquo;<samp>tcatch catch</samp>&rsquo; (see <a href="Set-Catchpoints.html#Set-Catchpoints">Set Catchpoints</a>).
+</p>
+<a name="Example-19"></a>
+<h4 class="subsubheading">Example</h4>
+
+<div class="smallexample">
+<pre class="smallexample">-catch-catch -r exception_type
+^done,bkpt={number=&quot;1&quot;,type=&quot;catchpoint&quot;,disp=&quot;keep&quot;,enabled=&quot;y&quot;,
+  what=&quot;exception catch&quot;,catch-type=&quot;catch&quot;,
+  thread-groups=[&quot;i1&quot;],
+  regexp=&quot;exception_type&quot;,times=&quot;0&quot;}
+(gdb)
+-exec-run
+^running
+(gdb)
+~&quot;\n&quot;
+~&quot;Catchpoint 1 (exception caught), 0x00007ffff7ae00ed
+  in __cxa_begin_catch () from /lib64/libstdc++.so.6\n&quot;
+*stopped,bkptno=&quot;1&quot;,reason=&quot;breakpoint-hit&quot;,disp=&quot;keep&quot;,
+  frame={addr=&quot;0x00007ffff7ae00ed&quot;,func=&quot;__cxa_begin_catch&quot;,
+  args=[],from=&quot;/lib64/libstdc++.so.6&quot;,arch=&quot;i386:x86-64&quot;},
+  thread-id=&quot;1&quot;,stopped-threads=&quot;all&quot;,core=&quot;6&quot;
+(gdb)
+</pre></div>
+
+<hr>
+<div class="header">
+<p>
+Previous: <a href="Ada-Exception-GDB_002fMI-Catchpoint-Commands.html#Ada-Exception-GDB_002fMI-Catchpoint-Commands" accesskey="p" rel="prev">Ada Exception GDB/MI Catchpoint Commands</a>, Up: <a href="GDB_002fMI-Catchpoint-Commands.html#GDB_002fMI-Catchpoint-Commands" accesskey="u" rel="up">GDB/MI Catchpoint Commands</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

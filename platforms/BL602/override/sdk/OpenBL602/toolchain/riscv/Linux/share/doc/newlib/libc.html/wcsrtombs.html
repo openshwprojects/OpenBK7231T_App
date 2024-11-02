@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: wcsrtombs</title>
+
+<meta name="description" content="The Red Hat newlib C Library: wcsrtombs">
+<meta name="keywords" content="The Red Hat newlib C Library: wcsrtombs">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdlib.html#Stdlib" rel="up" title="Stdlib">
+<link href="wcstod.html#wcstod" rel="next" title="wcstod">
+<link href="strtoull.html#strtoull" rel="prev" title="strtoull">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="wcsrtombs"></a>
+<div class="header">
+<p>
+Next: <a href="wcstod.html#wcstod" accesskey="n" rel="next">wcstod</a>, Previous: <a href="strtoull.html#strtoull" accesskey="p" rel="prev">strtoull</a>, Up: <a href="Stdlib.html#Stdlib" accesskey="u" rel="up">Stdlib</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="wcsrtombs_002c-wcsnrtombs_002d_002d_002dconvert-a-wide_002dcharacter-string-to-a-character-string"></a>
+<h3 class="section">2.42 <code>wcsrtombs</code>, <code>wcsnrtombs</code>&mdash;convert a wide-character string to a character string</h3>
+<a name="index-wcsrtombs"></a>
+<a name="index-_005fwcsrtombs_005fr"></a>
+<a name="index-wcsnrtombs"></a>
+<a name="index-_005fwcsnrtombs_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;wchar.h&gt;
+size_t wcsrtombs(char *__restrict <var>dst</var>,
+    const wchar_t **__restrict <var>src</var>, size_t <var>len</var>,
+    mbstate_t *__restrict <var>ps</var>);
+
+#include &lt;wchar.h&gt;
+size_t _wcsrtombs_r(struct _reent *<var>ptr</var>, char *<var>dst</var>,
+    const wchar_t **<var>src</var>, size_t <var>len</var>,
+    mbstate_t *<var>ps</var>);
+
+#include &lt;wchar.h&gt;
+size_t wcsnrtombs(char *__restrict <var>dst</var>,
+    const wchar_t **__restrict <var>src</var>,
+    size_t <var>nwc</var>, size_t <var>len</var>,
+    mbstate_t *__restrict <var>ps</var>);
+
+#include &lt;wchar.h&gt;
+size_t _wcsnrtombs_r(struct _reent *<var>ptr</var>, char *<var>dst</var>,
+    const wchar_t **<var>src</var>, size_t <var>nwc</var>,
+    size_t <var>len</var>, mbstate_t *<var>ps</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+The <code>wcsrtombs</code> function converts a string of wide characters indirectly
+pointed to by <var>src</var> to a corresponding multibyte character string stored in
+the array pointed to by <var>dst</var>.  No more than <var>len</var> bytes are written to
+<var>dst</var>.
+</p>
+<p>If <var>dst</var> is NULL, no characters are stored.
+</p>
+<p>If <var>dst</var> is not NULL, the pointer pointed to by <var>src</var> is updated to point
+to the character after the one that conversion stopped at.  If conversion
+stops because a null character is encountered, *<var>src</var> is set to NULL.
+</p>
+<p>The mbstate_t argument, <var>ps</var>, is used to keep track of the shift state.  If
+it is NULL, <code>wcsrtombs</code> uses an internal, static mbstate_t object, which
+is initialized to the initial conversion state at program startup.
+</p>
+<p>The <code>wcsnrtombs</code> function behaves identically to <code>wcsrtombs</code>, except that
+conversion stops after reading at most <var>nwc</var> characters from the buffer
+pointed to by <var>src</var>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+The <code>wcsrtombs</code> and <code>wcsnrtombs</code> functions return the number of bytes
+stored in the array pointed to by <var>dst</var> (not including any terminating
+null), if successful, otherwise it returns (size_t)-1.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>wcsrtombs</code> is defined by C99 standard.
+<code>wcsnrtombs</code> is defined by the POSIX.1-2008 standard.
+</p>
+<br>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="wcstod.html#wcstod" accesskey="n" rel="next">wcstod</a>, Previous: <a href="strtoull.html#strtoull" accesskey="p" rel="prev">strtoull</a>, Up: <a href="Stdlib.html#Stdlib" accesskey="u" rel="up">Stdlib</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

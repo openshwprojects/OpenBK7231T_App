@@ -1,0 +1,138 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 1988-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "Free Software" and "Free Software Needs
+Free Documentation", with the Front-Cover Texts being "A GNU Manual,"
+and with the Back-Cover Texts as in (a) below.
+
+(a) The FSF's Back-Cover Text is: "You are free to copy and modify
+this GNU Manual.  Buying copies from GNU Press supports the FSF in
+developing GNU and promoting software freedom." -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>GDB/MI Simple Examples (Debugging with GDB)</title>
+
+<meta name="description" content="GDB/MI Simple Examples (Debugging with GDB)">
+<meta name="keywords" content="GDB/MI Simple Examples (Debugging with GDB)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="Concept-Index.html" rel="index" title="Concept Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="GDB_002fMI.html" rel="up" title="GDB/MI">
+<link href="GDB_002fMI-Command-Description-Format.html" rel="next" title="GDB/MI Command Description Format">
+<link href="GDB_002fMI-Ada-Exception-Information.html" rel="prev" title="GDB/MI Ada Exception Information">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="GDB_002fMI-Simple-Examples"></span><div class="header">
+<p>
+Next: <a href="GDB_002fMI-Command-Description-Format.html" accesskey="n" rel="next">GDB/MI Command Description Format</a>, Previous: <a href="GDB_002fMI-Output-Records.html" accesskey="p" rel="prev">GDB/MI Output Records</a>, Up: <a href="GDB_002fMI.html" accesskey="u" rel="up">GDB/MI</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Simple-Examples-of-GDB_002fMI-Interaction"></span><h3 class="section">27.6 Simple Examples of <small>GDB/MI</small> Interaction</h3>
+<span id="index-GDB_002fMI_002c-simple-examples"></span>
+
+<p>This subsection presents several simple examples of interaction using
+the <small>GDB/MI</small> interface.  In these examples, &lsquo;<samp>-&gt;</samp>&rsquo; means that the
+following line is passed to <small>GDB/MI</small> as input, while &lsquo;<samp>&lt;-</samp>&rsquo; means
+the output received from <small>GDB/MI</small>.
+</p>
+<p>Note the line breaks shown in the examples are here only for
+readability, they don&rsquo;t appear in the real output.
+</p>
+<span id="Setting-a-Breakpoint"></span><h4 class="subheading">Setting a Breakpoint</h4>
+
+<p>Setting a breakpoint generates synchronous output which contains detailed
+information of the breakpoint.
+</p>
+<div class="example">
+<pre class="example">-&gt; -break-insert main
+&lt;- ^done,bkpt={number=&quot;1&quot;,type=&quot;breakpoint&quot;,disp=&quot;keep&quot;,
+    enabled=&quot;y&quot;,addr=&quot;0x08048564&quot;,func=&quot;main&quot;,file=&quot;myprog.c&quot;,
+    fullname=&quot;/home/nickrob/myprog.c&quot;,line=&quot;68&quot;,thread-groups=[&quot;i1&quot;],
+    times=&quot;0&quot;}
+&lt;- (gdb)
+</pre></div>
+
+<span id="Program-Execution"></span><h4 class="subheading">Program Execution</h4>
+
+<p>Program execution generates asynchronous records and MI gives the
+reason that execution stopped.
+</p>
+<div class="example">
+<pre class="example">-&gt; -exec-run
+&lt;- ^running
+&lt;- (gdb)
+&lt;- *stopped,reason=&quot;breakpoint-hit&quot;,disp=&quot;keep&quot;,bkptno=&quot;1&quot;,thread-id=&quot;0&quot;,
+   frame={addr=&quot;0x08048564&quot;,func=&quot;main&quot;,
+   args=[{name=&quot;argc&quot;,value=&quot;1&quot;},{name=&quot;argv&quot;,value=&quot;0xbfc4d4d4&quot;}],
+   file=&quot;myprog.c&quot;,fullname=&quot;/home/nickrob/myprog.c&quot;,line=&quot;68&quot;,
+   arch=&quot;i386:x86_64&quot;}
+&lt;- (gdb)
+-&gt; -exec-continue
+&lt;- ^running
+&lt;- (gdb)
+&lt;- *stopped,reason=&quot;exited-normally&quot;
+&lt;- (gdb)
+</pre></div>
+
+<span id="Quitting-GDB-2"></span><h4 class="subheading">Quitting <small>GDB</small></h4>
+
+<p>Quitting <small>GDB</small> just prints the result class &lsquo;<samp>^exit</samp>&rsquo;.
+</p>
+<div class="example">
+<pre class="example">-&gt; (gdb)
+&lt;- -gdb-exit
+&lt;- ^exit
+</pre></div>
+
+<p>Please note that &lsquo;<samp>^exit</samp>&rsquo; is printed immediately, but it might
+take some time for <small>GDB</small> to actually exit.  During that time, <small>GDB</small>
+performs necessary cleanups, including killing programs being debugged
+or disconnecting from debug hardware, so the frontend should wait till
+<small>GDB</small> exits and should only forcibly kill <small>GDB</small> if it
+fails to exit in reasonable time.
+</p>
+<span id="A-Bad-Command"></span><h4 class="subheading">A Bad Command</h4>
+
+<p>Here&rsquo;s what happens if you pass a non-existent command:
+</p>
+<div class="example">
+<pre class="example">-&gt; -rubbish
+&lt;- ^error,msg=&quot;Undefined MI command: rubbish&quot;
+&lt;- (gdb)
+</pre></div>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: wcscmp</title>
+
+<meta name="description" content="The Red Hat newlib C Library: wcscmp">
+<meta name="keywords" content="The Red Hat newlib C Library: wcscmp">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Wchar-strings.html#Wchar-strings" rel="up" title="Wchar strings">
+<link href="wcscoll.html#wcscoll" rel="next" title="wcscoll">
+<link href="wcschr.html#wcschr" rel="prev" title="wcschr">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="wcscmp"></a>
+<div class="header">
+<p>
+Next: <a href="wcscoll.html#wcscoll" accesskey="n" rel="next">wcscoll</a>, Previous: <a href="wcschr.html#wcschr" accesskey="p" rel="prev">wcschr</a>, Up: <a href="Wchar-strings.html#Wchar-strings" accesskey="u" rel="up">Wchar strings</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="wcscmp_002d_002d_002dcompare-two-wide_002dcharacter-strings"></a>
+<h3 class="section">6.9 <code>wcscmp</code>&mdash;compare two wide-character strings</h3>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;wchar.h&gt;
+int wcscmp(const wchar_t *<var>s1</var>, *<var>s2</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+The <code>wcscmp</code> function compares the wide-character string pointed to
+by <var>s1</var> to the wide-character string pointed to by <var>s2</var>.
+</p>
+<p>The sign of a non-zero return value is determined by the sign of the
+difference between the values of the first pair of wide-character codes
+that differ in the objects being compared.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+Upon completion, <code>wcscmp</code> returns an integer greater than, equal to
+or less than 0, if the wide-character string pointed to by <var>s1</var> is
+greater than, equal to or less than the wide-character string pointed
+to by <var>s2</var> respectively. 
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>wcscmp</code> is ISO/IEC 9899/AMD1:1995 (ISO C).
+</p>
+<p>No supporting OS subroutines are required.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

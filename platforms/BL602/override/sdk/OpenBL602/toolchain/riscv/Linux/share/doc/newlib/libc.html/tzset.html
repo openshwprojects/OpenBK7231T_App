@@ -1,0 +1,123 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: tzset</title>
+
+<meta name="description" content="The Red Hat newlib C Library: tzset">
+<meta name="keywords" content="The Red Hat newlib C Library: tzset">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Timefns.html#Timefns" rel="up" title="Timefns">
+<link href="Locale.html#Locale" rel="next" title="Locale">
+<link href="_005f_005ftz_005flock.html#g_t_005f_005ftz_005flock" rel="prev" title="__tz_lock">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="tzset"></a>
+<div class="header">
+<p>
+Previous: <a href="_005f_005ftz_005flock.html#g_t_005f_005ftz_005flock" accesskey="p" rel="prev">__tz_lock</a>, Up: <a href="Timefns.html#Timefns" accesskey="u" rel="up">Timefns</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="tzset_002d_002d_002dset-timezone-characteristics-from-TZ-environment-variable"></a>
+<h3 class="section">8.11 <code>tzset</code>&mdash;set timezone characteristics from TZ environment variable</h3>
+<a name="index-tzset"></a>
+<a name="index-_005ftzset_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;time.h&gt;
+void tzset(void);
+void _tzset_r (struct _reent *<var>reent_ptr</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>tzset</code> examines the TZ environment variable and sets up the three
+external variables: <code>_timezone</code>, <code>_daylight</code>, and <code>tzname</code>.  The
+value of <code>_timezone</code> shall be the offset from the current time zone
+to GMT.  The value of <code>_daylight</code> shall be 0 if there is no daylight
+savings time for the current time zone, otherwise it will be non-zero.
+The <code>tzname</code> array has two entries: the first is the name of the
+standard time zone, the second is the name of the daylight-savings time
+zone.
+</p>
+<p>The TZ environment variable is expected to be in the following POSIX
+format:
+</p>
+<p>stdoffset1[dst[offset2][,start[/time1],end[/time2]]]
+</p>
+<p>where: std is the name of the standard time-zone (minimum 3 chars)
+offset1 is the value to add to local time to arrive at Universal time
+it has the form:  hh[:mm[:ss]]
+dst is the name of the alternate (daylight-savings) time-zone (min 3 chars)
+offset2 is the value to add to local time to arrive at Universal time
+it has the same format as the std offset
+start is the day that the alternate time-zone starts
+time1 is the optional time that the alternate time-zone starts
+(this is in local time and defaults to 02:00:00 if not specified)
+end is the day that the alternate time-zone ends
+time2 is the time that the alternate time-zone ends
+(it is in local time and defaults to 02:00:00 if not specified)
+</p>
+<p>Note that there is no white-space padding between fields.  Also note that
+if TZ is null, the default is Universal GMT which has no daylight-savings
+time.  If TZ is empty, the default EST5EDT is used.
+</p>
+<p>The function <code>_tzset_r</code> is identical to <code>tzset</code> only it is reentrant
+and is used for applications that use multiple threads.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+There is no return value.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>tzset</code> is part of the POSIX standard.
+</p>
+<p>Supporting OS subroutine required: None
+</p>
+<br>
+<hr>
+<div class="header">
+<p>
+Previous: <a href="_005f_005ftz_005flock.html#g_t_005f_005ftz_005flock" accesskey="p" rel="prev">__tz_lock</a>, Up: <a href="Timefns.html#Timefns" accesskey="u" rel="up">Timefns</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

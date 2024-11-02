@@ -1,0 +1,252 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Embed with GNU: GNU remote protocol</title>
+
+<meta name="description" content="Embed with GNU: GNU remote protocol">
+<meta name="keywords" content="Embed with GNU: GNU remote protocol">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="leds_002ec.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="GDB.html#GDB" rel="up" title="GDB">
+<link href="Exception-handler.html#Exception-handler" rel="next" title="Exception handler">
+<link href="GDB.html#GDB" rel="prev" title="GDB">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="GNU-remote-protocol"></a>
+<div class="header">
+<p>
+Next: <a href="Exception-handler.html#Exception-handler" accesskey="n" rel="next">Exception handler</a>, Up: <a href="GDB.html#GDB" accesskey="u" rel="up">GDB</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<a name="The-standard-remote-protocol"></a>
+<h3 class="section">4.1 The standard remote protocol</h3>
+
+<p>The standard remote protocol is a simple, packet based scheme. A debug
+packet whose contents are <em>&lt;data&gt;</em> is encapsulated for transmission
+in the form:
+</p>
+<div class="smallexample">
+<pre class="smallexample">	$ &lt;data&gt; # CSUM1 CSUM2
+</pre></div>
+
+<p><em>&lt;data&gt;</em> must be ASCII alphanumeric and cannot include characters
+<code>$</code> or <code>#</code>.  If <em>&lt;data&gt;</em> starts with two characters
+followed by <code>:</code>, then the existing stubs interpret this as a
+sequence number. For example, the command <code>g</code> is used to read the
+values of the registers. So, a packet to do this would look like
+</p>
+<div class="smallexample">
+<pre class="smallexample">        $g#67
+</pre></div>
+
+<p><em>CSUM1</em> and <em>CSUM2</em> are an ascii representation in hex of an
+8-bit checksum of <em>&lt;data&gt;</em>, the most significant nibble is sent first.
+the hex digits 0-9,a-f are used.
+</p>
+<p>A simple protocol is used when communicating with the target. This is
+mainly to give a degree of error handling over the serial cable. For
+each packet transmitted successfully, the target responds with a
+<code>+</code> (<code>ACK</code>). If there was a transmission error, then the target
+responds with a <code>-</code> (<code>NAK</code>). An error is determined when the
+checksum doesn&rsquo;t match the calculated checksum for that data record.
+Upon reciept of the <code>ACK</code>, <code>GDB</code> can then transmit the next
+packet. 
+</p>
+<p>Here is a list of the main functions that need to be supported. Each data
+packet is a command with a set number of bytes in the command packet.
+Most commands either return data, or respond with a <code>NAK</code>. Commands
+that don&rsquo;t return data respond with an <code>ACK</code>. All data values are
+ascii hex digits. Every byte needs two hex digits to represent t. This
+means that a byte with the value &lsquo;<samp>7</samp>&rsquo; becomes &lsquo;<samp>07</samp>&rsquo;. On a 32 bit
+machine this works out to 8 characters per word. All of the bytes in a
+word are stored in the target byte order. When writing the host side of
+the GDB protocol, be careful of byte order, and make sure that the code
+will run on both big and little endian hosts and produce the same answers.
+</p>
+<p>These functions are the minimum required to make a GDB backend work. All
+other commands are optional, and not supported by all GDB backends.
+</p>
+<dl compact="compact">
+<dt>&lsquo;<samp>read registers  <code>g</code></samp>&rsquo;</dt>
+<dd>
+<p>returns <code>XXXXXXXX...</code>
+</p>
+<p>Registers are in the internal order for GDB, and the bytes in a register
+are in the same order the machine uses. All values are in sequence
+starting with register 0. All registers are listed in the same packet. A
+sample packet would look like <code>$g#</code>.
+</p>
+</dd>
+<dt>&lsquo;<samp>write registers	<code>GXXXXXXXX...</code></samp>&rsquo;</dt>
+<dd><p><code>XXXXXXXX</code> is the value to set the register to.  Registers are in
+the internal order for GDB, and the bytes in a register are in the same
+order the machine uses. All values are in sequence starting with
+register 0. All registers values are listed in the same packet. A sample
+packet would look like <code>$G000000001111111122222222...#</code>
+</p>
+<p>returns <code>ACK</code> or <code>NAK</code>
+</p>
+</dd>
+<dt>&lsquo;<samp>read memory     <code>mAAAAAAAA,LLLL</code></samp>&rsquo;</dt>
+<dd><p><code>AAAAAAAA</code> is address, <code>LLLL</code> is length. A sample packet would
+look like <code>$m00005556,0024#</code>. This would request 24 bytes starting
+at address <em>00005556</em>
+</p>
+<p>returns <code>XXXXXXXX...</code>
+<code>XXXXXXXX</code> is the memory contents. Fewer bytes than requested will
+be returned if only part of the data can be read. This can be determined
+by counting the values till the end of packet <code>#</code> is seen and
+comparing that with the total count of bytes that was requested.
+</p>
+</dd>
+<dt>&lsquo;<samp>write memory	<code>MAAAAAAAA,LLLL:XXXXXXXX</code></samp>&rsquo;</dt>
+<dd><p><code>AAAAAAAA</code> is the starting address, <code>LLLL</code> is the number of
+bytes to be written, and <code>XXXXXXXX</code> is value to be written. A
+sample packet would look like
+<code>$M00005556,0024:101010101111111100000000...#</code>
+</p>
+<p>returns <code>ACK</code> or <code>NAK</code> for an error. <code>NAK</code> is also
+returned when only part of the data is written.
+</p>
+</dd>
+<dt>&lsquo;<samp>continue	<code>cAAAAAAAAA</code></samp>&rsquo;</dt>
+<dd><p><code>AAAAAAAA</code> is address to resume execution at. If <code>AAAAAAAA</code> is
+omitted, resume at the curent address of the <code>pc</code> register.
+</p>
+<p>returns the same replay as <code>last signal</code>. There is no immediate
+replay to <code>cont</code> until the next breakpoint is reached, and the
+program stops executing.
+</p>
+</dd>
+<dt>&lsquo;<samp>step		sAA..AA</samp>&rsquo;</dt>
+<dd><p><code>AA..AA</code> is address to resume
+If <code>AA..AA</code> is omitted, resume at same address.
+</p>
+<p>returns the same replay as <code>last signal</code>. There is no immediate
+replay to <code>step</code> until the next breakpoint is reached, and the
+program stops executing.
+</p>
+</dd>
+<dt>&lsquo;<samp>last signal     <code>?</code></samp>&rsquo;</dt>
+<dd>
+<p>This returns one of the following:
+</p>
+<ul>
+<li> <code>SAA</code>
+Where <code>AA</code> is the number of the last signal.
+Exceptions on the target are converted to the most similar Unix style
+signal number, like <code>SIGSEGV</code>. A sample response of this type would
+look like <code>$S05#</code>.
+
+</li><li> TAAnn:XXXXXXXX;nn:XXXXXXXX;nn:XXXXXXXX;
+<code>AA</code> is the signal number.
+<code>nn</code> is the register number.
+<code>XXXXXXXX</code> is the register value.
+
+</li><li> WAA
+The process exited, and <code>AA</code> is the exit status.  This is only
+applicable for certains sorts of targets.
+
+</li></ul>
+
+<p>These are used in some GDB backends, but not all. 
+</p>
+</dd>
+<dt>&lsquo;<samp>write reg         <code>Pnn=XXXXXXXX</code></samp>&rsquo;</dt>
+<dd><p>Write register <code>nn</code> with value <code>XXXXXXXX</code>.
+</p>
+<p>returns <code>ACK</code> or <code>NAK</code>
+</p>
+</dd>
+<dt>&lsquo;<samp>kill request	k</samp>&rsquo;</dt>
+<dt>&lsquo;<samp>toggle debug	d</samp>&rsquo;</dt>
+<dd><p>toggle debug flag (see 386 &amp; 68k stubs)
+</p>
+</dd>
+<dt>&lsquo;<samp>reset		r</samp>&rsquo;</dt>
+<dd><p>reset &ndash; see sparc stub.
+</p>
+</dd>
+<dt>&lsquo;<samp>reserved	<code>other</code></samp>&rsquo;</dt>
+<dd><p>On other requests, the stub should ignore the request and send an empty
+response <code>$#&lt;checksum&gt;</code>.  This way we can extend the protocol and GDB
+can tell whether the stub it is	talking to uses the old or the new.
+</p>
+</dd>
+<dt>&lsquo;<samp>search		<code>tAA:PP,MM</code></samp>&rsquo;</dt>
+<dd><p>Search backwards starting at address <code>AA</code> for a match with pattern
+PP and mask <code>MM</code>. <code>PP</code> and <code>MM</code> are 4 bytes.
+</p>
+</dd>
+<dt>&lsquo;<samp>general query	<code>qXXXX</code></samp>&rsquo;</dt>
+<dd><p>Request info about XXXX.
+</p>
+</dd>
+<dt>&lsquo;<samp>general set	<code>QXXXX=yyyy</code></samp>&rsquo;</dt>
+<dd><p>Set value of <code>XXXX</code> to <code>yyyy</code>.
+</p>
+</dd>
+<dt>&lsquo;<samp>query sect offs	<code>qOffsets</code></samp>&rsquo;</dt>
+<dd><p>Get section offsets.  Reply is <code>Text=xxx;Data=yyy;Bss=zzz</code>
+</p>
+</dd>
+<dt>&lsquo;<samp>console output	Otext</samp>&rsquo;</dt>
+<dd><p>Send text to stdout. The text gets display from the target side of the
+serial connection.
+</p>
+</dd>
+</dl>
+
+<p>Responses can be run-length encoded to save space.  A <code>*</code>means that
+the next character is an ASCII encoding giving a repeat count which
+stands for that many repetitions of the character preceding the <code>*</code>.
+The encoding is n+29, yielding a printable character where n &gt;=3 
+(which is where run length encoding starts to win). You can&rsquo;t use a
+value of where n &gt;126 because it&rsquo;s only a two byte value. An example
+would be a <code>0*03</code> means the same thing as <code>0000</code>.
+</p>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Exception-handler.html#Exception-handler" accesskey="n" rel="next">Exception handler</a>, Up: <a href="GDB.html#GDB" accesskey="u" rel="up">GDB</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+
+
+
+</body>
+</html>

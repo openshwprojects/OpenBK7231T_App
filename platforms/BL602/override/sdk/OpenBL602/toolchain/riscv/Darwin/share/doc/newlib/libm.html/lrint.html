@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>lrint (LIBM)</title>
+
+<meta name="description" content="lrint (LIBM)">
+<meta name="keywords" content="lrint (LIBM)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="Document-Index.html" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Math.html" rel="up" title="Math">
+<link href="lround.html" rel="next" title="lround">
+<link href="logb.html" rel="prev" title="logb">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="lrint"></span><div class="header">
+<p>
+Next: <a href="lround.html" accesskey="n" rel="next">lround</a>, Previous: <a href="logb.html" accesskey="p" rel="prev">logb</a>, Up: <a href="Math.html" accesskey="u" rel="up">Math</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="lrint_002c-lrintf_002c-llrint_002c-llrintf_002d_002d_002dround-to-integer"></span><h3 class="section">1.39 <code>lrint</code>, <code>lrintf</code>, <code>llrint</code>, <code>llrintf</code>&mdash;round to integer</h3>
+<span id="index-lrint"></span>
+<span id="index-lrintf"></span>
+<span id="index-llrint"></span>
+<span id="index-llrintf"></span>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;math.h&gt;
+long int lrint(double <var>x</var>);
+long int lrintf(float <var>x</var>);
+long long int llrint(double <var>x</var>);
+long long int llrintf(float <var>x</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+The <code>lrint</code> and <code>llrint</code> functions round their argument to the nearest
+integer value, using the current rounding direction.  If the rounded value is
+outside the range of the return type, the numeric result is unspecified.  A
+range error may occur if the magnitude of <var>x</var> is too large.
+The &quot;inexact&quot; floating-point exception is raised in implementations that
+support it when the result differs in value from the argument (i.e., when
+a fraction actually has been truncated).
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<var>x</var> rounded to an integral value, using the current rounding direction.
+</p>
+<br>
+<p><strong>See Also</strong><br>
+<code>lround</code>
+</p>
+<br>
+<p><strong>Portability</strong><br>
+ANSI C, POSIX
+</p>
+
+<br>
+
+
+
+</body>
+</html>

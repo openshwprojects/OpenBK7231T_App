@@ -1,0 +1,91 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>LIBM: signbit</title>
+
+<meta name="description" content="LIBM: signbit">
+<meta name="keywords" content="LIBM: signbit">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Math.html#Math" rel="up" title="Math">
+<link href="sin.html#sin" rel="next" title="sin">
+<link href="scalbn.html#scalbn" rel="prev" title="scalbn">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="signbit"></a>
+<div class="header">
+<p>
+Next: <a href="sin.html#sin" accesskey="n" rel="next">sin</a>, Previous: <a href="scalbn.html#scalbn" accesskey="p" rel="prev">scalbn</a>, Up: <a href="Math.html#Math" accesskey="u" rel="up">Math</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="signbit_002d_002d_002dDoes-floating_002dpoint-number-have-negative-sign_003f"></a>
+<h3 class="section">1.52 <code>signbit</code>&mdash;Does floating-point number have negative sign?</h3>
+<a name="index-signbit"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;math.h&gt;
+int signbit(real-floating <var>x</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+The <code>signbit</code> macro determines whether the sign of its argument value is
+negative.  The macro reports the sign of all values, including infinities,
+zeros, and NaNs.  If zero is unsigned, it is treated as positive.  As shown in
+the synopsis, the argument is &quot;real-floating,&quot; meaning that any of the real
+floating-point types (float, double, etc.) may be given to it.
+</p>
+<p>Note that because of the possibilities of signed 0 and NaNs, the expression
+&quot;<var>x</var> &lt; 0.0&quot; does not give the same result as <code>signbit</code> in all cases.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+The <code>signbit</code> macro returns a nonzero value if and only if the sign of its
+argument value is negative.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+C99, POSIX.
+</p>
+
+<br>
+
+
+
+</body>
+</html>

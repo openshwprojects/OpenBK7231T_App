@@ -1,0 +1,225 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual is for GNU MPC, a library for multiple precision complex arithmetic,
+version 1.0.3 of February 2015.
+
+Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 INRIA
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections. A copy of the license is included in the section
+entitled "GNU Free Documentation License." -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MPC 1.0.3: Installing GNU MPC</title>
+
+<meta name="description" content="GNU MPC 1.0.3: Installing GNU MPC">
+<meta name="keywords" content="GNU MPC 1.0.3: Installing GNU MPC">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="index.html#Top" rel="up" title="Top">
+<link href="Reporting-Bugs.html#Reporting-Bugs" rel="next" title="Reporting Bugs">
+<link href="Introduction-to-GNU-MPC.html#Introduction-to-GNU-MPC" rel="prev" title="Introduction to GNU MPC">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Installing-GNU-MPC"></a>
+<div class="header">
+<p>
+Next: <a href="Reporting-Bugs.html#Reporting-Bugs" accesskey="n" rel="next">Reporting Bugs</a>, Previous: <a href="Introduction-to-GNU-MPC.html#Introduction-to-GNU-MPC" accesskey="p" rel="prev">Introduction to GNU MPC</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Installing-GNU-MPC-1"></a>
+<h2 class="chapter">2 Installing GNU MPC</h2>
+<a name="index-Installation"></a>
+
+<p>To build GNU MPC, you first have to install GNU MP (version 4.3.2 or higher) and
+GNU MPFR (version 2.4.2 or higher) on your computer.  You need a C compiler;
+GCC version 4.4 or higher is recommended, since GNU MPC may trigger a bug in previous
+versions, see the thread at
+<a href="http://lists.gforge.inria.fr/pipermail/mpc-discuss/2011-February/000823.html">http://lists.gforge.inria.fr/pipermail/mpc-discuss/2011-February/000823.html</a>.
+And you need a
+standard Unix &lsquo;<samp>make</samp>&rsquo; program, plus some other standard Unix utility
+programs.
+</p>
+<p>Here are the steps needed to install the library on Unix systems:
+</p>
+<ol>
+<li> &lsquo;<samp>tar xzf mpc-1.0.3.tar.gz</samp>&rsquo;
+
+</li><li> &lsquo;<samp>cd mpc-1.0.3</samp>&rsquo;
+
+</li><li> &lsquo;<samp>./configure</samp>&rsquo;
+
+<p>if GMP and GNU MPFR are installed into standard directories, that is, directories
+that are searched by default by the compiler and the linking tools.
+</p>
+<p>&lsquo;<samp>./configure --with-gmp=&lt;gmp_install_dir&gt;</samp>&rsquo;
+</p>
+<p>is used to indicate a different location where GMP is
+installed. Alternatively, you can specify directly GMP include and GMP lib
+directories with &lsquo;<samp>./configure --with-gmp-lib=&lt;gmp_lib_dir&gt;
+--with-gmp-include=&lt;gmp_include_dir&gt;</samp>&rsquo;.
+</p>
+<p>&lsquo;<samp>./configure --with-mpfr=&lt;mpfr_install_dir&gt;</samp>&rsquo;
+</p>
+<p>is used to indicate a different location where GNU MPFR is
+installed. Alternatively, you can specify directly GNU MPFR include and GNU MPFR lib
+directories with &lsquo;<samp>./configure --with-mpf-lib=&lt;mpfr_lib_dir&gt;
+--with-mpfr-include=&lt;mpfr_include_dir&gt;</samp>&rsquo;.
+</p>
+<p>Another useful parameter is &lsquo;<samp>--prefix</samp>&rsquo;, which can be used to
+specify an alternative installation location instead of
+<samp>/usr/local</samp>; see &lsquo;<samp>make install</samp>&rsquo; below.
+</p>
+<p>To enable checking for memory leaks using <code>valgrind</code> during
+<code>make check</code>, add the parameter <code>--enable-valgrind-tests</code>.
+</p>
+<p>If for debugging purposes you wish to log calls to GNU MPC functions from
+within your code, add the parameter &lsquo;<samp>--enable-logging</samp>&rsquo;.
+In your code, replace the inclusion of <samp>mpc.h</samp> by <samp>mpc-log.h</samp>
+and link the executable dynamically.
+Then all calls to functions with only complex arguments are printed to
+<samp>stderr</samp> in the following form: First, the function name is given,
+followed by its type such as &lsquo;<samp>c_cc</samp>&rsquo;, meaning that the function has
+one complex result (one &lsquo;<samp>c</samp>&rsquo; in front of the &lsquo;<samp>_</samp>&rsquo;), computed from
+two complex arguments (two &lsquo;<samp>c</samp>&rsquo; after the &lsquo;<samp>_</samp>&rsquo;). Then, the
+precisions of the real and the imaginary part of the first result is given,
+followed by the second one and so on. Finally, for each argument, the
+precisions of its real and imaginary part are specified and the argument
+itself is printed in hexadecimal via the function
+<code>mpc_out_str</code>
+(see <a href="String-and-Stream-Input-and-Output.html#String-and-Stream-Input-and-Output">String and Stream Input and Output</a>).
+The option requires a dynamic library, so it may not be combined with
+<code>--disable-shared</code>.
+</p>
+<p>Use &lsquo;<samp>./configure --help</samp>&rsquo; for an exhaustive list of parameters.
+</p>
+</li><li> &lsquo;<samp>make</samp>&rsquo;
+
+<p>This compiles GNU MPC in the working directory.
+</p>
+</li><li> &lsquo;<samp>make check</samp>&rsquo;
+
+<p>This will make sure GNU MPC was built correctly.
+</p>
+<p>If you get error messages, please report them to
+&lsquo;<samp>mpc-discuss@lists.gforge.inria.fr</samp>&rsquo; (See <a href="Reporting-Bugs.html#Reporting-Bugs">Reporting Bugs</a>, for
+information on what to include in useful bug reports).
+</p>
+</li><li> &lsquo;<samp>make install</samp>&rsquo;
+
+<p>This will copy the file <samp>mpc.h</samp> to the directory
+<samp>/usr/local/include</samp>, the file <samp>libmpc.a</samp> to the directory
+<samp>/usr/local/lib</samp>, and the file <samp>mpc.info</samp> to the directory
+<samp>/usr/local/share/info</samp> (or if you passed the &lsquo;<samp>--prefix</samp>&rsquo; option to
+<samp>configure</samp>, using the prefix directory given as argument to
+&lsquo;<samp>--prefix</samp>&rsquo; instead of <samp>/usr/local</samp>). Note: you need write permissions
+on these directories.
+</p>
+</li></ol>
+
+
+<a name="Other-_0060make_0027-Targets"></a>
+<h3 class="section">2.1 Other &lsquo;make&rsquo; Targets</h3>
+
+<p>There are some other useful make targets:
+</p>
+<ul>
+<li> &lsquo;<samp>info</samp>&rsquo;
+
+<p>Create an info version of the manual, in <samp>mpc.info</samp>.
+</p>
+</li><li> &lsquo;<samp>pdf</samp>&rsquo;
+
+<p>Create a PDF version of the manual, in <samp>doc/mpc.pdf</samp>.
+</p>
+</li><li> &lsquo;<samp>dvi</samp>&rsquo;
+
+<p>Create a DVI version of the manual, in <samp>doc/mpc.dvi</samp>.
+</p>
+</li><li> &lsquo;<samp>ps</samp>&rsquo;
+
+<p>Create a Postscript version of the manual, in <samp>doc/mpc.ps</samp>.
+</p>
+</li><li> &lsquo;<samp>html</samp>&rsquo;
+
+<p>Create an HTML version of the manual, in several pages in the
+directory <samp>doc/mpc.html</samp>; if you want only one output HTML file,
+then type &lsquo;<samp>makeinfo --html --no-split mpc.texi</samp>&rsquo; instead.
+</p>
+</li><li> &lsquo;<samp>clean</samp>&rsquo;
+
+<p>Delete all object files and archive files, but not the configuration files.
+</p>
+</li><li> &lsquo;<samp>distclean</samp>&rsquo;
+
+<p>Delete all files not included in the distribution.
+</p>
+</li><li> &lsquo;<samp>uninstall</samp>&rsquo;
+
+<p>Delete all files copied by &lsquo;<samp>make install</samp>&rsquo;.
+</p></li></ul>
+
+
+
+<a name="Known-Build-Problems"></a>
+<h3 class="section">2.2 Known Build Problems</h3>
+
+<p>On AIX, if GMP was built with the 64-bit ABI, before building and testing GNU MPC,
+it might be necessary to set the &lsquo;<samp>OBJECT_MODE</samp>&rsquo; environment variable to 64
+by, e.g.,
+</p>
+<p>&lsquo;<samp>export OBJECT_MODE=64</samp>&rsquo;
+</p>
+<p>This has been tested with the C compiler IBM XL C/C++ Enterprise Edition
+V8.0 for AIX, version: 08.00.0000.0021, GMP 4.2.4 and GNU MPFR 2.4.1.
+</p>
+<p>Please report any other problems you encounter to
+&lsquo;<samp>mpc-discuss@lists.gforge.inria.fr</samp>&rsquo;.
+See <a href="Reporting-Bugs.html#Reporting-Bugs">Reporting Bugs</a>.
+</p>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Reporting-Bugs.html#Reporting-Bugs" accesskey="n" rel="next">Reporting Bugs</a>, Previous: <a href="Introduction-to-GNU-MPC.html#Introduction-to-GNU-MPC" accesskey="p" rel="prev">Introduction to GNU MPC</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

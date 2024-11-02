@@ -1,0 +1,87 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>LIBM: cexp</title>
+
+<meta name="description" content="LIBM: cexp">
+<meta name="keywords" content="LIBM: cexp">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Complex.html#Complex" rel="up" title="Complex">
+<link href="cimag.html#cimag" rel="next" title="cimag">
+<link href="ccosh.html#ccosh" rel="prev" title="ccosh">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="cexp"></a>
+<div class="header">
+<p>
+Next: <a href="cimag.html#cimag" accesskey="n" rel="next">cimag</a>, Previous: <a href="ccosh.html#ccosh" accesskey="p" rel="prev">ccosh</a>, Up: <a href="Complex.html#Complex" accesskey="u" rel="up">Complex</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="cexp_002c-cexpf_002d_002d_002dcomplex-base_002de-exponential"></a>
+<h3 class="section">2.11 <code>cexp</code>, <code>cexpf</code>&mdash;complex base-e exponential</h3>
+<a name="index-cexp"></a>
+<a name="index-cexpf"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;complex.h&gt;
+double complex cexp(double complex <var>z</var>);
+float complex cexpf(float complex <var>z</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+These functions compute  the complex base-<var>e</var> exponential of <var>z</var>.
+</p>
+<p><code>cexpf</code> is identical to <code>cexp</code>, except that it performs
+its calculations on <code>floats complex</code>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+The cexp functions return the complex base-<var>e</var> exponential value.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>cexp</code> and <code>cexpf</code> are ISO C99
+</p>
+<br>
+
+
+
+</body>
+</html>

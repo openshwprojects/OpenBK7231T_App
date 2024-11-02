@@ -1,0 +1,135 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: setvbuf</title>
+
+<meta name="description" content="The Red Hat newlib C Library: setvbuf">
+<meta name="keywords" content="The Red Hat newlib C Library: setvbuf">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="siprintf.html#siprintf" rel="next" title="siprintf">
+<link href="setlinebuf.html#setlinebuf" rel="prev" title="setlinebuf">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="setvbuf"></a>
+<div class="header">
+<p>
+Next: <a href="siprintf.html#siprintf" accesskey="n" rel="next">siprintf</a>, Previous: <a href="setlinebuf.html#setlinebuf" accesskey="p" rel="prev">setlinebuf</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="setvbuf_002d_002d_002dspecify-file-or-stream-buffering"></a>
+<h3 class="section">4.58 <code>setvbuf</code>&mdash;specify file or stream buffering</h3>
+<a name="index-setvbuf"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+int setvbuf(FILE *<var>fp</var>, char *<var>buf</var>,
+    int <var>mode</var>, size_t <var>size</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+Use <code>setvbuf</code> to specify what kind of buffering you want for the
+file or stream identified by <var>fp</var>, by using one of the following
+values (from <code>stdio.h</code>) as the <var>mode</var> argument:
+</p>
+<dl compact="compact">
+<dt><code>_IONBF</code></dt>
+<dd><p>Do not use a buffer: send output directly to the host system for the
+file or stream identified by <var>fp</var>.
+</p>
+</dd>
+<dt><code>_IOFBF</code></dt>
+<dd><p>Use full output buffering: output will be passed on to the host system
+only when the buffer is full, or when an input operation intervenes.
+</p>
+</dd>
+<dt><code>_IOLBF</code></dt>
+<dd><p>Use line buffering: pass on output to the host system at every
+newline, as well as when the buffer is full, or when an input
+operation intervenes.
+</p></dd>
+</dl>
+
+
+<p>Use the <var>size</var> argument to specify how large a buffer you wish.  You
+can supply the buffer itself, if you wish, by passing a pointer to a
+suitable area of memory as <var>buf</var>.  Otherwise, you may pass <code>NULL</code>
+as the <var>buf</var> argument, and <code>setvbuf</code> will allocate the buffer.
+</p>
+<br>
+<p><strong>Warnings</strong><br>
+You may only use <code>setvbuf</code> before performing any file operation other
+than opening the file.
+</p>
+<p>If you supply a non-null <var>buf</var>, you must ensure that the associated
+storage continues to be available until you close the stream
+identified by <var>fp</var>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+A <code>0</code> result indicates success, <code>EOF</code> failure (invalid <var>mode</var> or
+<var>size</var> can cause failure).
+</p>
+<br>
+<p><strong>Portability</strong><br>
+Both ANSI C and the System V Interface Definition (Issue 2) require
+<code>setvbuf</code>. However, they differ on the meaning of a <code>NULL</code> buffer
+pointer: the SVID issue 2 specification says that a <code>NULL</code> buffer
+pointer requests unbuffered output.  For maximum portability, avoid
+<code>NULL</code> buffer pointers.
+</p>
+<p>Both specifications describe the result on failure only as a
+nonzero value.
+</p>
+<p>Supporting OS subroutines required: <code>close</code>, <code>fstat</code>, <code>isatty</code>,
+<code>lseek</code>, <code>read</code>, <code>sbrk</code>, <code>write</code>.
+</p>
+<br>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="siprintf.html#siprintf" accesskey="n" rel="next">siprintf</a>, Previous: <a href="setlinebuf.html#setlinebuf" accesskey="p" rel="prev">setlinebuf</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Miscellaneous Float Functions</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Miscellaneous Float Functions">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Floating_002dpoint-Functions.html#Floating_002dpoint-Functions" rel="up" title="Floating-point Functions">
+<link href="Low_002dlevel-Functions.html#Low_002dlevel-Functions" rel="next" title="Low-level Functions">
+<link href="I_002fO-of-Floats.html#I_002fO-of-Floats" rel="prev" title="I/O of Floats">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Miscellaneous-Float-Functions"></a>
+<div class="header">
+<p>
+Previous: <a href="I_002fO-of-Floats.html#I_002fO-of-Floats" accesskey="p" rel="prev">I/O of Floats</a>, Up: <a href="Floating_002dpoint-Functions.html#Floating_002dpoint-Functions" accesskey="u" rel="up">Floating-point Functions</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Miscellaneous-Functions-1"></a>
+<h3 class="section">7.8 Miscellaneous Functions</h3>
+<a name="index-Miscellaneous-float-functions"></a>
+<a name="index-Float-miscellaneous-functions"></a>
+
+<dl>
+<dt><a name="index-mpf_005fceil"></a>Function: <em>void</em> <strong>mpf_ceil</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op</var>)</em></dt>
+<dt><a name="index-mpf_005ffloor"></a>Function: <em>void</em> <strong>mpf_floor</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op</var>)</em></dt>
+<dt><a name="index-mpf_005ftrunc"></a>Function: <em>void</em> <strong>mpf_trunc</strong> <em>(mpf_t <var>rop</var>, const mpf_t <var>op</var>)</em></dt>
+<dd><a name="index-Rounding-functions"></a>
+<a name="index-Float-rounding-functions"></a>
+<p>Set <var>rop</var> to <var>op</var> rounded to an integer.  <code>mpf_ceil</code> rounds to the
+next higher integer, <code>mpf_floor</code> to the next lower, and <code>mpf_trunc</code>
+to the integer towards zero.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpf_005finteger_005fp"></a>Function: <em>int</em> <strong>mpf_integer_p</strong> <em>(const mpf_t <var>op</var>)</em></dt>
+<dd><p>Return non-zero if <var>op</var> is an integer.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpf_005ffits_005fulong_005fp"></a>Function: <em>int</em> <strong>mpf_fits_ulong_p</strong> <em>(const mpf_t <var>op</var>)</em></dt>
+<dt><a name="index-mpf_005ffits_005fslong_005fp"></a>Function: <em>int</em> <strong>mpf_fits_slong_p</strong> <em>(const mpf_t <var>op</var>)</em></dt>
+<dt><a name="index-mpf_005ffits_005fuint_005fp"></a>Function: <em>int</em> <strong>mpf_fits_uint_p</strong> <em>(const mpf_t <var>op</var>)</em></dt>
+<dt><a name="index-mpf_005ffits_005fsint_005fp"></a>Function: <em>int</em> <strong>mpf_fits_sint_p</strong> <em>(const mpf_t <var>op</var>)</em></dt>
+<dt><a name="index-mpf_005ffits_005fushort_005fp"></a>Function: <em>int</em> <strong>mpf_fits_ushort_p</strong> <em>(const mpf_t <var>op</var>)</em></dt>
+<dt><a name="index-mpf_005ffits_005fsshort_005fp"></a>Function: <em>int</em> <strong>mpf_fits_sshort_p</strong> <em>(const mpf_t <var>op</var>)</em></dt>
+<dd><p>Return non-zero if <var>op</var> would fit in the respective C data type, when
+truncated to an integer.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpf_005furandomb"></a>Function: <em>void</em> <strong>mpf_urandomb</strong> <em>(mpf_t <var>rop</var>, gmp_randstate_t <var>state</var>, mp_bitcnt_t <var>nbits</var>)</em></dt>
+<dd><a name="index-Random-number-functions-1"></a>
+<a name="index-Float-random-number-functions"></a>
+<p>Generate a uniformly distributed random float in <var>rop</var>, such that <em>0
+&lt;= <var>rop</var> &lt; 1</em>, with <var>nbits</var> significant bits in the mantissa or
+less if the precision of <var>rop</var> is smaller.
+</p>
+<p>The variable <var>state</var> must be initialized by calling one of the
+<code>gmp_randinit</code> functions (<a href="Random-State-Initialization.html#Random-State-Initialization">Random State Initialization</a>) before
+invoking this function.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpf_005frandom2"></a>Function: <em>void</em> <strong>mpf_random2</strong> <em>(mpf_t <var>rop</var>, mp_size_t <var>max_size</var>, mp_exp_t <var>exp</var>)</em></dt>
+<dd><p>Generate a random float of at most <var>max_size</var> limbs, with long strings of
+zeros and ones in the binary representation.  The exponent of the number is in
+the interval -<var>exp</var> to <var>exp</var> (in limbs).  This function is
+useful for testing functions and algorithms, since these kind of random
+numbers have proven to be more likely to trigger corner-case bugs.  Negative
+random numbers are generated when <var>max_size</var> is negative.
+</p></dd></dl>
+
+
+
+<hr>
+<div class="header">
+<p>
+Previous: <a href="I_002fO-of-Floats.html#I_002fO-of-Floats" accesskey="p" rel="prev">I/O of Floats</a>, Up: <a href="Floating_002dpoint-Functions.html#Floating_002dpoint-Functions" accesskey="u" rel="up">Floating-point Functions</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

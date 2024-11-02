@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: atoll</title>
+
+<meta name="description" content="The Red Hat newlib C Library: atoll">
+<meta name="keywords" content="The Red Hat newlib C Library: atoll">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdlib.html#Stdlib" rel="up" title="Stdlib">
+<link href="bsearch.html#bsearch" rel="next" title="bsearch">
+<link href="atoi.html#atoi" rel="prev" title="atoi">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="atoll"></a>
+<div class="header">
+<p>
+Next: <a href="bsearch.html#bsearch" accesskey="n" rel="next">bsearch</a>, Previous: <a href="atoi.html#atoi" accesskey="p" rel="prev">atoi</a>, Up: <a href="Stdlib.html#Stdlib" accesskey="u" rel="up">Stdlib</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="atoll_002d_002d_002dconvert-a-string-to-a-long-long-integer"></a>
+<h3 class="section">2.9 <code>atoll</code>&mdash;convert a string to a long long integer</h3>
+<a name="index-atoll"></a>
+<a name="index-_005fatoll_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdlib.h&gt;
+long long atoll(const char *<var>str</var>);
+long long _atoll_r(struct _reent *<var>ptr</var>, const char *<var>str</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+The function <code>atoll</code> converts the initial portion of the string 
+pointed to by <code>*<var>str</var></code> to a type <code>long long</code>.  A call to
+atoll(str) in this implementation is equivalent to 
+strtoll(str, (char **)NULL, 10) including behavior on error.
+</p>
+<p>The alternate function <code>_atoll_r</code> is a reentrant version.  The
+extra argument <var>reent</var> is a pointer to a reentrancy structure.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+The converted value.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>atoll</code> is ISO 9899 (C99) and POSIX 1003.1-2001 compatable.
+</p>
+<p>No supporting OS subroutines are required.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: funopen</title>
+
+<meta name="description" content="The Red Hat newlib C Library: funopen">
+<meta name="keywords" content="The Red Hat newlib C Library: funopen">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="fwide.html#fwide" rel="next" title="fwide">
+<link href="ftell.html#ftell" rel="prev" title="ftell">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="funopen"></a>
+<div class="header">
+<p>
+Next: <a href="fwide.html#fwide" accesskey="n" rel="next">fwide</a>, Previous: <a href="ftell.html#ftell" accesskey="p" rel="prev">ftell</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="funopen_002c-fropen_002c-fwopen_002d_002d_002dopen-a-stream-with-custom-callbacks"></a>
+<h3 class="section">4.30 <code>funopen</code>, <code>fropen</code>, <code>fwopen</code>&mdash;open a stream with custom callbacks</h3>
+<a name="index-funopen"></a>
+<a name="index-fropen"></a>
+<a name="index-fwopen"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+FILE *funopen(const void *<var>cookie</var>,
+    int (*<var>readfn</var>) (void *cookie, char *buf, int n),
+    int (*<var>writefn</var>) (void *cookie, const char *buf, int n),
+    fpos_t (*<var>seekfn</var>) (void *cookie, fpos_t off, int whence),
+    int (*<var>closefn</var>) (void *cookie));
+FILE *fropen(const void *<var>cookie</var>,
+    int (*<var>readfn</var>) (void *cookie, char *buf, int n));
+FILE *fwopen(const void *<var>cookie</var>,
+    int (*<var>writefn</var>) (void *cookie, const char *buf, int n));
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>funopen</code> creates a <code>FILE</code> stream where I/O is performed using
+custom callbacks.  At least one of <var>readfn</var> and <var>writefn</var> must be
+provided, which determines whether the stream behaves with mode &lt;&quot;r&quot;&gt;,
+&lt;&quot;w&quot;&gt;, or &lt;&quot;r+&quot;&gt;.
+</p>
+<p><var>readfn</var> should return -1 on failure, or else the number of bytes
+read (0 on EOF).  It is similar to <code>read</code>, except that &lt;int&gt; rather
+than &lt;size_t&gt; bounds a transaction size, and <var>cookie</var> will be passed
+as the first argument.  A NULL <var>readfn</var> makes attempts to read the
+stream fail.
+</p>
+<p><var>writefn</var> should return -1 on failure, or else the number of bytes
+written.  It is similar to <code>write</code>, except that &lt;int&gt; rather than
+&lt;size_t&gt; bounds a transaction size, and <var>cookie</var> will be passed as
+the first argument.  A NULL <var>writefn</var> makes attempts to write the
+stream fail.
+</p>
+<p><var>seekfn</var> should return (fpos_t)-1 on failure, or else the current
+file position.  It is similar to <code>lseek</code>, except that <var>cookie</var>
+will be passed as the first argument.  A NULL <var>seekfn</var> makes the
+stream behave similarly to a pipe in relation to stdio functions that
+require positioning.  This implementation assumes fpos_t and off_t are
+the same type.
+</p>
+<p><var>closefn</var> should return -1 on failure, or 0 on success.  It is
+similar to <code>close</code>, except that <var>cookie</var> will be passed as the
+first argument.  A NULL <var>closefn</var> merely flushes all data then lets
+<code>fclose</code> succeed.  A failed close will still invalidate the stream.
+</p>
+<p>Read and write I/O functions are allowed to change the underlying
+buffer on fully buffered or line buffered streams by calling
+<code>setvbuf</code>.  They are also not required to completely fill or empty
+the buffer.  They are not, however, allowed to change streams from
+unbuffered to buffered or to change the state of the line buffering
+flag.  They must also be prepared to have read or write calls occur on
+buffers other than the one most recently specified.
+</p>
+<p>The functions <code>fropen</code> and <code>fwopen</code> are convenience macros around
+<code>funopen</code> that only use the specified callback.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+The return value is an open FILE pointer on success.  On error,
+<code>NULL</code> is returned, and <code>errno</code> will be set to EINVAL if a
+function pointer is missing, ENOMEM if the stream cannot be created,
+or EMFILE if too many streams are already open.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+This function is a newlib extension, copying the prototype from BSD.
+It is not portable.  See also the <code>fopencookie</code> interface from Linux.
+</p>
+<p>Supporting OS subroutines required: <code>sbrk</code>.
+</p>
+<br>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="fwide.html#fwide" accesskey="n" rel="next">fwide</a>, Previous: <a href="ftell.html#ftell" accesskey="p" rel="prev">ftell</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

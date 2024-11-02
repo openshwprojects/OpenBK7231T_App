@@ -1,0 +1,26 @@
+[Tue Jan 19 12:44:47 2021 -0800] Bumping package version number
+[Mon Jan 18 15:36:35 2021 -0800] New location of libwinpthread.dll in new mingw toolchain
+[Sat Jan 16 17:40:39 2021 -0800] Adding a statement for debug status
+[Mon Jan 4 15:07:26 2021 +0800] Bump version to 2020.12.1
+[Mon Jan 4 14:35:16 2021 +0800] Bump version to 2020.12.1-rc1
+[Thu Dec 31 15:31:00 2020 +0800] Bump version
+[Thu Dec 31 14:18:35 2020 +0800] Bump gdb for RNMI CSRs and MNRET instruction.
+[Wed Dec 30 15:53:17 2020 +0800] Workaround for CentOS random build fail issue
+[Thu Dec 24 11:08:01 2020 +0800] Disable guile for gdb
+[Wed Dec 23 06:40:25 2020 -0800] Bump gdb
+[Fri Dec 18 14:57:53 2020 -0800] Adding extra libraries needed
+[Fri Dec 18 14:19:18 2020 -0800] Remember to check gdb-py
+[Fri Dec 18 13:52:53 2020 -0800] Fixing copy-paste error
+[Fri Dec 18 13:43:23 2020 -0800] Adding gdb-python build
+[Fri Dec 18 11:33:43 2020 -0800] Fixing package heading
+[Fri Dec 18 09:53:38 2020 -0800] Removing duplicate file with different casing
+[Fri Dec 18 09:15:15 2020 -0800] Fixing library dependencies
+[Thu Dec 17 23:04:55 2020 -0800] Adding 2020.08 functioning riscv-gdb submodule
+[Thu Dec 17 23:00:13 2020 -0800] Removing old non-functioning riscv-gdb
+[Wed Dec 16 12:32:30 2020 -0800] Adding more checks and bundle generation
+[Wed Jun 17 15:02:52 2020 -0700] Adding missing dll's to win64 build
+[Tue Jun 16 10:13:59 2020 -0700] Adding flush Makefile target
+[Sun Jun 14 22:04:11 2020 -0700] Adding regress make target
+[Thu Jun 4 22:06:20 2020 -0700] Second real commit
+[Mon Jun 1 11:57:36 2020 -0700] First real commit
+[Tue May 26 12:09:14 2020 -0700] Initial commit

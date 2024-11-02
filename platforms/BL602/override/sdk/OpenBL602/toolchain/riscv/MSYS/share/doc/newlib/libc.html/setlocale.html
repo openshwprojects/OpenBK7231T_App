@@ -1,0 +1,187 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: setlocale</title>
+
+<meta name="description" content="The Red Hat newlib C Library: setlocale">
+<meta name="keywords" content="The Red Hat newlib C Library: setlocale">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Locale.html#Locale" rel="up" title="Locale">
+<link href="Reentrancy.html#Reentrancy" rel="next" title="Reentrancy">
+<link href="Locale.html#Locale" rel="prev" title="Locale">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="setlocale"></a>
+<div class="header">
+<p>
+Up: <a href="Locale.html#Locale" accesskey="u" rel="up">Locale</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="setlocale_002c-localeconv_002d_002d_002dselect-or-query-locale"></a>
+<h3 class="section">9.1 <code>setlocale</code>, <code>localeconv</code>&mdash;select or query locale</h3>
+<a name="index-setlocale"></a>
+<a name="index-localeconv"></a>
+<a name="index-_005fsetlocale_005fr"></a>
+<a name="index-_005flocaleconv_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;locale.h&gt;
+char *setlocale(int <var>category</var>, const char *<var>locale</var>);
+lconv *localeconv(void);
+
+char *_setlocale_r(void *<var>reent</var>,
+    int <var>category</var>, const char *<var>locale</var>);
+lconv *_localeconv_r(void *<var>reent</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>setlocale</code> is the facility defined by ANSI C to condition the
+execution environment for international collating and formatting
+information; <code>localeconv</code> reports on the settings of the current
+locale.
+</p>
+<p>This is a minimal implementation, supporting only the required <code>&quot;POSIX&quot;</code>
+and <code>&quot;C&quot;</code> values for <var>locale</var>; strings representing other locales are not
+honored unless _MB_CAPABLE is defined.
+</p>
+<p>If _MB_CAPABLE is defined, POSIX locale strings are allowed, following
+the form
+</p>
+<p>language[_TERRITORY][.charset][@modifier]
+</p>
+<p><code>&quot;language&quot;</code> is a two character string per ISO 639, or, if not available
+for a given language, a three character string per ISO 639-3.
+<code>&quot;TERRITORY&quot;</code> is a country code per ISO 3166.  For <code>&quot;charset&quot;</code> and
+<code>&quot;modifier&quot;</code> see below.
+</p>
+<p>Additionally to the POSIX specifier, the following extension is supported
+for backward compatibility with older implementations using newlib:
+<code>&quot;C-charset&quot;</code>.
+Instead of <code>&quot;C-&quot;</code>, you can also specify <code>&quot;C.&quot;</code>.  Both variations allow
+to specify language neutral locales while using other charsets than ASCII,
+for instance <code>&quot;C.UTF-8&quot;</code>, which keeps all settings as in the C locale,
+but uses the UTF-8 charset.
+</p>
+<p>The following charsets are recognized:
+<code>&quot;UTF-8&quot;</code>, <code>&quot;JIS&quot;</code>, <code>&quot;EUCJP&quot;</code>, <code>&quot;SJIS&quot;</code>, <code>&quot;KOI8-R&quot;</code>, <code>&quot;KOI8-U&quot;</code>,
+<code>&quot;GEORGIAN-PS&quot;</code>, <code>&quot;PT154&quot;</code>, <code>&quot;TIS-620&quot;</code>, <code>&quot;ISO-8859-x&quot;</code> with
+1 &lt;= x &lt;= 16, or <code>&quot;CPxxx&quot;</code> with xxx in [437, 720, 737, 775, 850, 852, 855,
+857, 858, 862, 866, 874, 932, 1125, 1250, 1251, 1252, 1253, 1254, 1255, 1256,
+1257, 1258].
+</p>
+<p>Charsets are case insensitive.  For instance, <code>&quot;EUCJP&quot;</code> and <code>&quot;eucJP&quot;</code>
+are equivalent.  Charset names with dashes can also be written without
+dashes, as in <code>&quot;UTF8&quot;</code>, <code>&quot;iso88591&quot;</code> or <code>&quot;koi8r&quot;</code>.  <code>&quot;EUCJP&quot;</code> and
+<code>&quot;EUCKR&quot;</code> are also recognized with dash, <code>&quot;EUC-JP&quot;</code> and <code>&quot;EUC-KR&quot;</code>.
+</p>
+<p>Full support for all of the above charsets requires that newlib has been
+build with multibyte support and support for all ISO and Windows Codepage.
+Otherwise all singlebyte charsets are simply mapped to ASCII.  Right now,
+only newlib for Cygwin is built with full charset support by default.
+Under Cygwin, this implementation additionally supports the charsets
+<code>&quot;GBK&quot;</code>, <code>&quot;GB2312&quot;</code>, <code>&quot;eucCN&quot;</code>, <code>&quot;eucKR&quot;</code>, and <code>&quot;Big5&quot;</code>.  Cygwin
+does not support <code>&quot;JIS&quot;</code>.
+</p>
+<p>Cygwin additionally supports locales from the file
+/usr/share/locale/locale.alias.
+</p>
+<p>(<code>&quot;&quot;</code> is also accepted; if given, the settings are read from the
+corresponding LC_* environment variables and $LANG according to POSIX rules.)
+</p>
+<p>This implementation also supports the modifiers <code>&quot;cjknarrow&quot;</code> and
+<code>&quot;cjkwide&quot;</code>, which affect how the functions <code>wcwidth</code> and <code>wcswidth</code>
+handle characters from the &quot;CJK Ambiguous Width&quot; category of characters
+described at http://www.unicode.org/reports/tr11/#Ambiguous.
+These characters have a width of 1 for singlebyte charsets and UTF-8,
+and a width of 2 for multibyte charsets other than UTF-8. Specifying
+<code>&quot;cjknarrow&quot;</code> or <code>&quot;cjkwide&quot;</code> forces a width of 1 or 2, respectively.
+</p>
+<p>This implementation also supports the modifier <code>&quot;cjksingle&quot;</code>
+to enforce single-width character properties.
+</p>
+<p>If you use <code>NULL</code> as the <var>locale</var> argument, <code>setlocale</code> returns a
+pointer to the string representing the current locale.  The acceptable
+values for <var>category</var> are defined in &lsquo;<code>locale.h</code>&rsquo; as macros
+beginning with <code>&quot;LC_&quot;</code>.
+</p>
+<p><code>localeconv</code> returns a pointer to a structure (also defined in
+&lsquo;<code>locale.h</code>&rsquo;) describing the locale-specific conventions currently
+in effect.  
+</p>
+<p><code>_localeconv_r</code> and <code>_setlocale_r</code> are reentrant versions of
+<code>localeconv</code> and <code>setlocale</code> respectively.  The extra argument
+<var>reent</var> is a pointer to a reentrancy structure.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+A successful call to <code>setlocale</code> returns a pointer to a string
+associated with the specified category for the new locale.  The string
+returned by <code>setlocale</code> is such that a subsequent call using that
+string will restore that category (or all categories in case of LC_ALL),
+to that state.  The application shall not modify the string returned
+which may be overwritten by a subsequent call to <code>setlocale</code>.
+On error, <code>setlocale</code> returns <code>NULL</code>.
+</p>
+<p><code>localeconv</code> returns a pointer to a structure of type <code>lconv</code>,
+which describes the formatting and collating conventions in effect (in
+this implementation, always those of the C locale).
+</p>
+<br>
+<p><strong>Portability</strong><br>
+ANSI C requires <code>setlocale</code>, but the only locale required across all
+implementations is the C locale.
+</p>
+<br>
+<p><strong>Notes</strong><br>
+There is no ISO-8859-12 codepage.  It&rsquo;s also refused by this implementation.
+</p>
+<p>No supporting OS subroutines are required.
+</p>
+<br>
+<hr>
+<div class="header">
+<p>
+Up: <a href="Locale.html#Locale" accesskey="u" rel="up">Locale</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

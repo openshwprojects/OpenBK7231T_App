@@ -1,0 +1,113 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: ecvtbuf</title>
+
+<meta name="description" content="The Red Hat newlib C Library: ecvtbuf">
+<meta name="keywords" content="The Red Hat newlib C Library: ecvtbuf">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdlib.html#Stdlib" rel="up" title="Stdlib">
+<link href="_005f_005fenv_005flock.html#g_t_005f_005fenv_005flock" rel="next" title="__env_lock">
+<link href="gcvt.html#gcvt" rel="prev" title="gcvt">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="ecvtbuf"></a>
+<div class="header">
+<p>
+Next: <a href="_005f_005fenv_005flock.html#g_t_005f_005fenv_005flock" accesskey="n" rel="next">__env_lock</a>, Previous: <a href="gcvt.html#gcvt" accesskey="p" rel="prev">gcvt</a>, Up: <a href="Stdlib.html#Stdlib" accesskey="u" rel="up">Stdlib</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="ecvtbuf_002c-fcvtbuf_002d_002d_002ddouble-or-float-to-string"></a>
+<h3 class="section">2.15 <code>ecvtbuf</code>, <code>fcvtbuf</code>&mdash;double or float to string</h3>
+<a name="index-ecvtbuf"></a>
+<a name="index-fcvtbuf"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+
+char *ecvtbuf(double <var>val</var>, int <var>chars</var>, int *<var>decpt</var>,
+    int *<var>sgn</var>, char *<var>buf</var>);
+
+char *fcvtbuf(double <var>val</var>, int <var>decimals</var>, int *<var>decpt</var>,
+    int *<var>sgn</var>, char *<var>buf</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>ecvtbuf</code> and <code>fcvtbuf</code> produce (null-terminated) strings
+of digits representating the <code>double</code> number <var>val</var>.
+</p>
+<p>The only difference between <code>ecvtbuf</code> and <code>fcvtbuf</code> is the
+interpretation of the second argument (<var>chars</var> or
+<var>decimals</var>). For <code>ecvtbuf</code>, the second argument <var>chars</var>
+specifies the total number of characters to write (which is
+also the number of significant digits in the formatted string,
+since these two functions write only digits). For <code>fcvtbuf</code>,
+the second argument <var>decimals</var> specifies the number of
+characters to write after the decimal point; all digits for
+the integer part of <var>val</var> are always included.
+</p>
+<p>Since <code>ecvtbuf</code> and <code>fcvtbuf</code> write only digits in the
+output string, they record the location of the decimal point
+in <code>*<var>decpt</var></code>, and the sign of the number in <code>*<var>sgn</var></code>.
+After formatting a number, <code>*<var>decpt</var></code> contains the number
+of digits to the left of the decimal point.  <code>*<var>sgn</var></code>
+contains <code>0</code> if the number is positive, and <code>1</code> if it is
+negative.  For both functions, you supply a pointer <var>buf</var> to
+an area of memory to hold the converted string.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+Both functions return a pointer to <var>buf</var>, the string
+containing a character representation of <var>val</var>.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+Neither function is ANSI C.
+</p>
+<p>Supporting OS subroutines required: <code>close</code>, <code>fstat</code>, <code>isatty</code>,
+<code>lseek</code>, <code>read</code>, <code>sbrk</code>, <code>write</code>.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

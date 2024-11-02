@@ -1,0 +1,80 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>mktime (The Red Hat newlib C Library)</title>
+
+<meta name="description" content="mktime (The Red Hat newlib C Library)">
+<meta name="keywords" content="mktime (The Red Hat newlib C Library)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Timefns.html" rel="up" title="Timefns">
+<link href="strftime.html" rel="next" title="strftime">
+<link href="localtime.html" rel="prev" title="localtime">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="mktime"></span><div class="header">
+<p>
+Next: <a href="strftime.html" accesskey="n" rel="next">strftime</a>, Previous: <a href="localtime.html" accesskey="p" rel="prev">localtime</a>, Up: <a href="Timefns.html" accesskey="u" rel="up">Timefns</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="mktime_002d_002d_002dconvert-time-to-arithmetic-representation"></span><h3 class="section">8.7 <code>mktime</code>&mdash;convert time to arithmetic representation</h3>
+<span id="index-mktime"></span>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;time.h&gt;
+time_t mktime(struct tm *<var>timp</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>mktime</code> assumes the time at <var>timp</var> is a local time, and converts
+its representation from the traditional representation defined by
+<code>struct tm</code> into a representation suitable for arithmetic.
+</p>
+<p><code>localtime</code> is the inverse of <code>mktime</code>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+If the contents of the structure at <var>timp</var> do not form a valid
+calendar time representation, the result is <code>-1</code>.  Otherwise, the
+result is the time, converted to a <code>time_t</code> value.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+ANSI C requires <code>mktime</code>.
+</p>
+<p><code>mktime</code> requires no supporting OS subroutines.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

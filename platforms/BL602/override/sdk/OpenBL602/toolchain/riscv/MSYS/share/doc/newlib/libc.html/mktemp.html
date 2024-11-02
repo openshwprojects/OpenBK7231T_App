@@ -1,0 +1,162 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: mktemp</title>
+
+<meta name="description" content="The Red Hat newlib C Library: mktemp">
+<meta name="keywords" content="The Red Hat newlib C Library: mktemp">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="open_005fmemstream.html#open_005fmemstream" rel="next" title="open_memstream">
+<link href="getwchar.html#getwchar" rel="prev" title="getwchar">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="mktemp"></a>
+<div class="header">
+<p>
+Next: <a href="open_005fmemstream.html#open_005fmemstream" accesskey="n" rel="next">open_memstream</a>, Previous: <a href="getwchar.html#getwchar" accesskey="p" rel="prev">getwchar</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="mktemp_002c-mkstemp_002c-mkostemp_002c-mkstemps_002c"></a>
+<h3 class="section">4.42 <code>mktemp</code>, <code>mkstemp</code>, <code>mkostemp</code>, <code>mkstemps</code>,</h3>
+<a name="index-mktemp"></a>
+<a name="index-mkdtemp"></a>
+<a name="index-mkstemp"></a>
+<a name="index-mkstemps"></a>
+<a name="index-mkostemp"></a>
+<a name="index-mkostemps"></a>
+<a name="index-_005fmktemp_005fr"></a>
+<a name="index-_005fmkdtemp_005fr"></a>
+<a name="index-_005fmkstemp_005fr"></a>
+<a name="index-_005fmkstemps_005fr"></a>
+<a name="index-_005fmkostemp_005fr"></a>
+<a name="index-_005fmkostemps_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdlib.h&gt;
+char *mktemp(char *<var>path</var>);
+char *mkdtemp(char *<var>path</var>);
+int mkstemp(char *<var>path</var>);
+int mkstemps(char *<var>path</var>, int <var>suffixlen</var>);
+int mkostemp(char *<var>path</var>, int <var>flags</var>);
+int mkostemps(char *<var>path</var>, int <var>suffixlen</var>, int <var>flags</var>);
+
+char *_mktemp_r(struct _reent *<var>reent</var>, char *<var>path</var>);
+char *_mkdtemp_r(struct _reent *<var>reent</var>, char *<var>path</var>);
+int *_mkstemp_r(struct _reent *<var>reent</var>, char *<var>path</var>);
+int *_mkstemps_r(struct _reent *<var>reent</var>, char *<var>path</var>, int <var>len</var>);
+int *_mkostemp_r(struct _reent *<var>reent</var>, char *<var>path</var>,
+    int <var>flags</var>);
+int *_mkostemps_r(struct _reent *<var>reent</var>, char *<var>path</var>, int <var>len</var>,
+    int <var>flags</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>mktemp</code>, <code>mkstemp</code>, and <code>mkstemps</code> attempt to generate a file name
+that is not yet in use for any existing file.  <code>mkstemp</code> and <code>mkstemps</code>
+create the file and open it for reading and writing; <code>mktemp</code> simply
+generates the file name (making <code>mktemp</code> a security risk).  <code>mkostemp</code>
+and <code>mkostemps</code> allow the addition of other <code>open</code> flags, such
+as <code>O_CLOEXEC</code>, <code>O_APPEND</code>, or <code>O_SYNC</code>.  On platforms with a
+separate text mode, <code>mkstemp</code> forces <code>O_BINARY</code>, while <code>mkostemp</code>
+allows the choice between <code>O_BINARY</code>, <code>O_TEXT</code>, or 0 for default.
+<code>mkdtemp</code> attempts to create a directory instead of a file, with a
+permissions mask of 0700.
+</p>
+<p>You supply a simple pattern for the generated file name, as the string
+at <var>path</var>.  The pattern should be a valid filename (including path
+information if you wish) ending with at least six &lsquo;<code>X</code>&rsquo;
+characters.  The generated filename will match the leading part of the
+name you supply, with the trailing &lsquo;<code>X</code>&rsquo; characters replaced by some
+combination of digits and letters.  With <code>mkstemps</code>, the &lsquo;<code>X</code>&rsquo;
+characters end <var>suffixlen</var> bytes before the end of the string.
+</p>
+<p>The alternate functions <code>_mktemp_r</code>, <code>_mkdtemp_r</code>, <code>_mkstemp_r</code>,
+<code>_mkostemp_r</code>, <code>_mkostemps_r</code>, and <code>_mkstemps_r</code> are reentrant
+versions.  The extra argument <var>reent</var> is a pointer to a reentrancy
+structure.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>mktemp</code> returns the pointer <var>path</var> to the modified string
+representing an unused filename, unless it could not generate one, or
+the pattern you provided is not suitable for a filename; in that case,
+it returns <code>NULL</code>.  Be aware that there is an inherent race between
+generating the name and attempting to create a file by that name;
+you are advised to use <code>O_EXCL|O_CREAT</code>.
+</p>
+<p><code>mkdtemp</code> returns the pointer <var>path</var> to the modified string if the
+directory was created, otherwise it returns <code>NULL</code>.
+</p>
+<p><code>mkstemp</code>, <code>mkstemps</code>, <code>mkostemp</code>, and <code>mkostemps</code> return a file
+descriptor to the newly created file, unless it could not generate an
+unused filename, or the pattern you provided is not suitable for a
+filename; in that case, it returns <code>-1</code>.
+</p>
+<br>
+<p><strong>Notes</strong><br>
+Never use <code>mktemp</code>.  The generated filenames are easy to guess and
+there&rsquo;s a race between the test if the file exists and the creation
+of the file.  In combination this makes <code>mktemp</code> prone to attacks
+and using it is a security risk.  Whenever possible use <code>mkstemp</code>
+instead.  It doesn&rsquo;t suffer the race condition.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+ANSI C does not require either <code>mktemp</code> or <code>mkstemp</code>; the System
+V Interface Definition requires <code>mktemp</code> as of Issue 2.  POSIX 2001
+requires <code>mkstemp</code>, and POSIX 2008 requires <code>mkdtemp</code> while
+deprecating <code>mktemp</code>.  <code>mkstemps</code>, <code>mkostemp</code>, and <code>mkostemps</code>
+are not standardized.
+</p>
+<p>Supporting OS subroutines required: <code>getpid</code>, <code>mkdir</code>, <code>open</code>, <code>stat</code>.
+</p>
+<br>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="open_005fmemstream.html#open_005fmemstream" accesskey="n" rel="next">open_memstream</a>, Previous: <a href="getwchar.html#getwchar" accesskey="p" rel="prev">getwchar</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

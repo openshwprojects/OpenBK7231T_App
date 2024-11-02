@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual documents how to install and use the Multiple Precision
+Floating-Point Reliable Library, version 3.1.4.
+
+Copyright 1991, 1993-2016 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with no Front-Cover Texts, and with no Back-Cover Texts.  A copy of the
+license is included in GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MPFR 3.1.4: Custom Interface</title>
+
+<meta name="description" content="How to install and use GNU MPFR, a library for reliable multiple precision
+floating-point arithmetic, version 3.1.4.">
+<meta name="keywords" content="GNU MPFR 3.1.4: Custom Interface">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="MPFR-Interface.html#MPFR-Interface" rel="up" title="MPFR Interface">
+<link href="Internals.html#Internals" rel="next" title="Internals">
+<link href="Compatibility-with-MPF.html#Compatibility-with-MPF" rel="prev" title="Compatibility with MPF">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Custom-Interface"></a>
+<div class="header">
+<p>
+Next: <a href="Internals.html#Internals" accesskey="n" rel="next">Internals</a>, Previous: <a href="Compatibility-with-MPF.html#Compatibility-with-MPF" accesskey="p" rel="prev">Compatibility with MPF</a>, Up: <a href="MPFR-Interface.html#MPFR-Interface" accesskey="u" rel="up">MPFR Interface</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="index-Custom-interface"></a>
+<a name="Custom-Interface-1"></a>
+<h3 class="section">5.15 Custom Interface</h3>
+
+<p>Some applications use a stack to handle the memory and their objects.
+However, the MPFR memory design is not well suited for such a thing. So that
+such applications are able to use MPFR, an auxiliary memory interface has
+been created: the Custom Interface.
+</p>
+<p>The following interface allows one to use MPFR in two ways:
+</p>
+<ul>
+<li> Either directly store a floating-point number as a <code>mpfr_t</code>
+on the stack.
+
+</li><li> Either store its own representation on the
+stack and construct a new temporary <code>mpfr_t</code> each time it is needed.
+
+</li></ul>
+
+<p>Nothing has to be done to destroy the floating-point
+numbers except garbaging the used
+memory: all the memory management (allocating, destroying, garbaging) is left
+to the application.
+</p>
+<p>Each function in this interface is also implemented as a macro for
+efficiency reasons: for example <code>mpfr_custom_init (s, p)</code>
+uses the macro, while <code>(mpfr_custom_init) (s, p)</code> uses the function.
+</p>
+<p>Note 1: MPFR functions may still initialize temporary floating-point numbers
+using <code>mpfr_init</code> and similar functions. See Custom Allocation (GNU MP).
+</p>
+<p>Note 2: MPFR functions may use the cached functions (<code>mpfr_const_pi</code> for
+example), even if they are not explicitly called. You have to call
+<code>mpfr_free_cache</code> each time you garbage the memory iff <code>mpfr_init</code>,
+through GMP Custom Allocation, allocates its memory on the application stack.
+</p>
+<dl>
+<dt><a name="index-mpfr_005fcustom_005fget_005fsize"></a>Function: <em>size_t</em> <strong>mpfr_custom_get_size</strong> <em>(mpfr_prec_t <var>prec</var>)</em></dt>
+<dd><p>Return the needed size in bytes to store the significand of a floating-point
+number of precision <var>prec</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fcustom_005finit"></a>Function: <em>void</em> <strong>mpfr_custom_init</strong> <em>(void *<var>significand</var>, mpfr_prec_t <var>prec</var>)</em></dt>
+<dd><p>Initialize a significand of precision <var>prec</var>, where
+<var>significand</var> must be an area of <code>mpfr_custom_get_size (prec)</code> bytes
+at least and be suitably aligned for an array of <code>mp_limb_t</code> (GMP type,
+see <a href="Internals.html#Internals">Internals</a>).
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fcustom_005finit_005fset"></a>Function: <em>void</em> <strong>mpfr_custom_init_set</strong> <em>(mpfr_t <var>x</var>, int <var>kind</var>, mpfr_exp_t <var>exp</var>, mpfr_prec_t <var>prec</var>, void *<var>significand</var>)</em></dt>
+<dd><p>Perform a dummy initialization of a <code>mpfr_t</code> and set it to:
+</p><ul>
+<li> if <code>ABS(kind) == MPFR_NAN_KIND</code>, <var>x</var> is set to NaN;
+</li><li> if <code>ABS(kind) == MPFR_INF_KIND</code>, <var>x</var> is set to the infinity
+of sign <code>sign(kind)</code>;
+</li><li> if <code>ABS(kind) == MPFR_ZERO_KIND</code>, <var>x</var> is set to the zero of
+sign <code>sign(kind)</code>;
+</li><li> if <code>ABS(kind) == MPFR_REGULAR_KIND</code>, <var>x</var> is set to a regular
+number: <code>x = sign(kind)*significand*2^exp</code>.
+</li></ul>
+<p>In all cases, it uses <var>significand</var> directly for further computing
+involving <var>x</var>. It will not allocate anything.
+A floating-point number initialized with this function cannot be resized using
+<code>mpfr_set_prec</code> or <code>mpfr_prec_round</code>,
+or cleared using <code>mpfr_clear</code>!
+The <var>significand</var> must have been initialized with <code>mpfr_custom_init</code>
+using the same precision <var>prec</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fcustom_005fget_005fkind"></a>Function: <em>int</em> <strong>mpfr_custom_get_kind</strong> <em>(mpfr_t <var>x</var>)</em></dt>
+<dd><p>Return the current kind of a <code>mpfr_t</code> as created by
+<code>mpfr_custom_init_set</code>.
+The behavior of this function for any <code>mpfr_t</code> not initialized
+with <code>mpfr_custom_init_set</code> is undefined.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fcustom_005fget_005fsignificand"></a>Function: <em>void *</em> <strong>mpfr_custom_get_significand</strong> <em>(mpfr_t <var>x</var>)</em></dt>
+<dd><p>Return a pointer to the significand used by a <code>mpfr_t</code> initialized with
+<code>mpfr_custom_init_set</code>.
+The behavior of this function for any <code>mpfr_t</code> not initialized
+with <code>mpfr_custom_init_set</code> is undefined.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fcustom_005fget_005fexp"></a>Function: <em>mpfr_exp_t</em> <strong>mpfr_custom_get_exp</strong> <em>(mpfr_t <var>x</var>)</em></dt>
+<dd><p>Return the exponent of <var>x</var>, assuming that <var>x</var> is a non-zero ordinary
+number. The return value for NaN, Infinity or zero is unspecified but does not
+produce any trap.
+The behavior of this function for any <code>mpfr_t</code> not initialized
+with <code>mpfr_custom_init_set</code> is undefined.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fcustom_005fmove"></a>Function: <em>void</em> <strong>mpfr_custom_move</strong> <em>(mpfr_t <var>x</var>, void *<var>new_position</var>)</em></dt>
+<dd><p>Inform MPFR that the significand of <var>x</var> has moved due to a garbage collect
+and update its new position to <code>new_position</code>.
+However the application has to move the significand and the <code>mpfr_t</code>
+itself.
+The behavior of this function for any <code>mpfr_t</code> not initialized
+with <code>mpfr_custom_init_set</code> is undefined.
+</p></dd></dl>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Internals.html#Internals" accesskey="n" rel="next">Internals</a>, Previous: <a href="Compatibility-with-MPF.html#Compatibility-with-MPF" accesskey="p" rel="prev">Compatibility with MPF</a>, Up: <a href="MPFR-Interface.html#MPFR-Interface" accesskey="u" rel="up">MPFR Interface</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Debugging</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Debugging">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="GMP-Basics.html#GMP-Basics" rel="up" title="GMP Basics">
+<link href="Profiling.html#Profiling" rel="next" title="Profiling">
+<link href="Efficiency.html#Efficiency" rel="prev" title="Efficiency">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Debugging"></a>
+<div class="header">
+<p>
+Next: <a href="Profiling.html#Profiling" accesskey="n" rel="next">Profiling</a>, Previous: <a href="Efficiency.html#Efficiency" accesskey="p" rel="prev">Efficiency</a>, Up: <a href="GMP-Basics.html#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Debugging-1"></a>
+<h3 class="section">3.12 Debugging</h3>
+<a name="index-Debugging"></a>
+
+<dl compact="compact">
+<dt>Stack Overflow</dt>
+<dd><a name="index-Stack-overflow-1"></a>
+<a name="index-Segmentation-violation"></a>
+<a name="index-Bus-error"></a>
+<p>Depending on the system, a segmentation violation or bus error might be the
+only indication of stack overflow.  See &lsquo;<samp>--enable-alloca</samp>&rsquo; choices in
+<a href="Build-Options.html#Build-Options">Build Options</a>, for how to address this.
+</p>
+<p>In new enough versions of GCC, &lsquo;<samp>-fstack-check</samp>&rsquo; may be able to ensure an
+overflow is recognised by the system before too much damage is done, or
+&lsquo;<samp>-fstack-limit-symbol</samp>&rsquo; or &lsquo;<samp>-fstack-limit-register</samp>&rsquo; may be able to
+add checking if the system itself doesn&rsquo;t do any (see <a href="http://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code-Gen-Options">Options for Code Generation</a> in <cite>Using the GNU Compiler Collection (GCC)</cite>).
+These options must be added to the &lsquo;<samp>CFLAGS</samp>&rsquo; used in the GMP build
+(see <a href="Build-Options.html#Build-Options">Build Options</a>), adding them just to an application will have no
+effect.  Note also they&rsquo;re a slowdown, adding overhead to each function call
+and each stack allocation.
+</p>
+</dd>
+<dt>Heap Problems</dt>
+<dd><a name="index-Heap-problems"></a>
+<a name="index-Malloc-problems"></a>
+<p>The most likely cause of application problems with GMP is heap corruption.
+Failing to <code>init</code> GMP variables will have unpredictable effects, and
+corruption arising elsewhere in a program may well affect GMP.  Initializing
+GMP variables more than once or failing to clear them will cause memory leaks.
+</p>
+<a name="index-Malloc-debugger"></a>
+<p>In all such cases a <code>malloc</code> debugger is recommended.  On a GNU or BSD
+system the standard C library <code>malloc</code> has some diagnostic facilities,
+see <a href="http://www.gnu.org/software/libc/manual/html_node/Allocation-Debugging.html#Allocation-Debugging">Allocation Debugging</a> in <cite>The GNU C Library
+Reference Manual</cite>, or &lsquo;<samp>man 3 malloc</samp>&rsquo;.  Other possibilities, in no
+particular order, include
+</p>
+<div class="display">
+<pre class="display"><a href="http://www.inf.ethz.ch/personal/biere/projects/ccmalloc/">http://www.inf.ethz.ch/personal/biere/projects/ccmalloc/</a>
+<a href="http://dmalloc.com/">http://dmalloc.com/</a>
+<a href="http://www.perens.com/FreeSoftware/">http://www.perens.com/FreeSoftware/</a> &nbsp;(electric fence)
+<a href="http://packages.debian.org/stable/devel/fda">http://packages.debian.org/stable/devel/fda</a>
+<a href="http://www.gnupdate.org/components/leakbug/">http://www.gnupdate.org/components/leakbug/</a>
+<a href="http://people.redhat.com/~otaylor/memprof/">http://people.redhat.com/~otaylor/memprof/</a>
+<a href="http://www.cbmamiga.demon.co.uk/mpatrol/">http://www.cbmamiga.demon.co.uk/mpatrol/</a>
+</pre></div>
+
+<p>The GMP default allocation routines in <samp>memory.c</samp> also have a simple
+sentinel scheme which can be enabled with <code>#define DEBUG</code> in that file.
+This is mainly designed for detecting buffer overruns during GMP development,
+but might find other uses.
+</p>
+</dd>
+<dt>Stack Backtraces</dt>
+<dd><a name="index-Stack-backtrace"></a>
+<p>On some systems the compiler options GMP uses by default can interfere with
+debugging.  In particular on x86 and 68k systems &lsquo;<samp>-fomit-frame-pointer</samp>&rsquo;
+is used and this generally inhibits stack backtracing.  Recompiling without
+such options may help while debugging, though the usual caveats about it
+potentially moving a memory problem or hiding a compiler bug will apply.
+</p>
+</dd>
+<dt>GDB, the GNU Debugger</dt>
+<dd><a name="index-GDB"></a>
+<a name="index-GNU-Debugger"></a>
+<p>A sample <samp>.gdbinit</samp> is included in the distribution, showing how to call
+some undocumented dump functions to print GMP variables from within GDB.  Note
+that these functions shouldn&rsquo;t be used in final application code since they&rsquo;re
+undocumented and may be subject to incompatible changes in future versions of
+GMP.
+</p>
+</dd>
+<dt>Source File Paths</dt>
+<dd><p>GMP has multiple source files with the same name, in different directories.
+For example <samp>mpz</samp>, <samp>mpq</samp> and <samp>mpf</samp> each have an
+<samp>init.c</samp>.  If the debugger can&rsquo;t already determine the right one it may
+help to build with absolute paths on each C file.  One way to do that is to
+use a separate object directory with an absolute path to the source directory.
+</p>
+<div class="example">
+<pre class="example">cd /my/build/dir
+/my/source/dir/gmp-6.1.0/configure
+</pre></div>
+
+<p>This works via <code>VPATH</code>, and might require GNU <code>make</code>.
+Alternately it might be possible to change the <code>.c.lo</code> rules
+appropriately.
+</p>
+</dd>
+<dt>Assertion Checking</dt>
+<dd><a name="index-Assertion-checking-1"></a>
+<p>The build option <samp>--enable-assert</samp> is available to add some consistency
+checks to the library (see <a href="Build-Options.html#Build-Options">Build Options</a>).  These are likely to be of
+limited value to most applications.  Assertion failures are just as likely to
+indicate memory corruption as a library or compiler bug.
+</p>
+<p>Applications using the low-level <code>mpn</code> functions, however, will benefit
+from <samp>--enable-assert</samp> since it adds checks on the parameters of most
+such functions, many of which have subtle restrictions on their usage.  Note
+however that only the generic C code has checks, not the assembly code, so
+<samp>--disable-assembly</samp> should be used for maximum checking.
+</p>
+</dd>
+<dt>Temporary Memory Checking</dt>
+<dd><p>The build option <samp>--enable-alloca=debug</samp> arranges that each block of
+temporary memory in GMP is allocated with a separate call to <code>malloc</code> (or
+the allocation function set with <code>mp_set_memory_functions</code>).
+</p>
+<p>This can help a malloc debugger detect accesses outside the intended bounds,
+or detect memory not released.  In a normal build, on the other hand,
+temporary memory is allocated in blocks which GMP divides up for its own use,
+or may be allocated with a compiler builtin <code>alloca</code> which will go
+nowhere near any malloc debugger hooks.
+</p>
+</dd>
+<dt>Maximum Debuggability</dt>
+<dd><p>To summarize the above, a GMP build for maximum debuggability would be
+</p>
+<div class="example">
+<pre class="example">./configure --disable-shared --enable-assert \
+  --enable-alloca=debug --disable-assembly CFLAGS=-g
+</pre></div>
+
+<p>For C++, add &lsquo;<samp>--enable-cxx CXXFLAGS=-g</samp>&rsquo;.
+</p>
+</dd>
+<dt>Checker</dt>
+<dd><a name="index-Checker"></a>
+<a name="index-GCC-Checker"></a>
+<p>The GCC checker (<a href="https://savannah.nongnu.org/projects/checker/">https://savannah.nongnu.org/projects/checker/</a>) can be
+used with GMP.  It contains a stub library which means GMP applications
+compiled with checker can use a normal GMP build.
+</p>
+<p>A build of GMP with checking within GMP itself can be made.  This will run
+very very slowly.  On GNU/Linux for example,
+</p>
+<a name="index-checkergcc"></a>
+<div class="example">
+<pre class="example">./configure --disable-assembly CC=checkergcc
+</pre></div>
+
+<p><samp>--disable-assembly</samp> must be used, since the GMP assembly code doesn&rsquo;t
+support the checking scheme.  The GMP C++ features cannot be used, since
+current versions of checker (0.9.9.1) don&rsquo;t yet support the standard C++
+library.
+</p>
+</dd>
+<dt>Valgrind</dt>
+<dd><a name="index-Valgrind"></a>
+<p>Valgrind (<a href="http://valgrind.org/">http://valgrind.org/</a>) is a memory checker for x86, ARM, MIPS,
+PowerPC, and S/390.  It translates and emulates machine instructions to do
+strong checks for uninitialized data (at the level of individual bits), memory
+accesses through bad pointers, and memory leaks.
+</p>
+<p>Valgrind does not always support every possible instruction, in particular
+ones recently added to an ISA.  Valgrind might therefore be incompatible with
+a recent GMP or even a less recent GMP which is compiled using a recent GCC.
+</p>
+<p>GMP&rsquo;s assembly code sometimes promotes a read of the limbs to some larger size,
+for efficiency.  GMP will do this even at the start and end of a multilimb
+operand, using naturally aligned operations on the larger type.  This may lead
+to benign reads outside of allocated areas, triggering complaints from
+Valgrind.  Valgrind&rsquo;s option &lsquo;<samp>--partial-loads-ok=yes</samp>&rsquo; should help.
+</p>
+</dd>
+<dt>Other Problems</dt>
+<dd><p>Any suspected bug in GMP itself should be isolated to make sure it&rsquo;s not an
+application problem, see <a href="Reporting-Bugs.html#Reporting-Bugs">Reporting Bugs</a>.
+</p></dd>
+</dl>
+
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Profiling.html#Profiling" accesskey="n" rel="next">Profiling</a>, Previous: <a href="Efficiency.html#Efficiency" accesskey="p" rel="prev">Efficiency</a>, Up: <a href="GMP-Basics.html#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

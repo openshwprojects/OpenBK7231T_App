@@ -1,0 +1,168 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 1988-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "Funding Free Software", the Front-Cover
+Texts being (a) (see below), and with the Back-Cover Texts being (b)
+(see below).  A copy of the license is included in the section entitled
+"GNU Free Documentation License".
+
+(a) The FSF's Front-Cover Text is:
+
+A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development. -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>PowerPC Matrix-Multiply Assist Built-in Functions (Using the GNU Compiler Collection (GCC))</title>
+
+<meta name="description" content="PowerPC Matrix-Multiply Assist Built-in Functions (Using the GNU Compiler Collection (GCC))">
+<meta name="keywords" content="PowerPC Matrix-Multiply Assist Built-in Functions (Using the GNU Compiler Collection (GCC))">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="Option-Index.html" rel="index" title="Option Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Target-Builtins.html" rel="up" title="Target Builtins">
+<link href="RX-Built_002din-Functions.html" rel="next" title="RX Built-in Functions">
+<link href="PowerPC-Atomic-Memory-Operation-Functions.html" rel="prev" title="PowerPC Atomic Memory Operation Functions">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="PowerPC-Matrix_002dMultiply-Assist-Built_002din-Functions"></span><div class="header">
+<p>
+Next: <a href="RX-Built_002din-Functions.html" accesskey="n" rel="next">RX Built-in Functions</a>, Previous: <a href="PowerPC-Atomic-Memory-Operation-Functions.html" accesskey="p" rel="prev">PowerPC Atomic Memory Operation Functions</a>, Up: <a href="Target-Builtins.html" accesskey="u" rel="up">Target Builtins</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Option-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="PowerPC-Matrix_002dMultiply-Assist-Built_002din-Functions-1"></span><h4 class="subsection">6.60.27 PowerPC Matrix-Multiply Assist Built-in Functions</h4>
+<p>ISA 3.1 of the PowerPC added new Matrix-Multiply Assist (MMA) instructions.
+GCC provides support for these instructions through the following built-in
+functions which are enabled with the <code>-mmma</code> option.  The vec_t type
+below is defined to be a normal vector unsigned char type.  The uint2, uint4
+and uint8 parameters are 2-bit, 4-bit and 8-bit unsigned integer constants
+respectively.  The compiler will verify that they are constants and that
+their values are within range. 
+</p>
+<p>The built-in functions supported are:
+</p>
+<div class="example">
+<pre class="example">void __builtin_mma_xvi4ger8 (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvi8ger4 (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvi16ger2 (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvi16ger2s (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvf16ger2 (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvbf16ger2 (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvf32ger (__vector_quad *, vec_t, vec_t);
+
+void __builtin_mma_xvi4ger8pp (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvi8ger4pp (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvi8ger4spp(__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvi16ger2pp (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvi16ger2spp (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvf16ger2pp (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvf16ger2pn (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvf16ger2np (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvf16ger2nn (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvbf16ger2pp (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvbf16ger2pn (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvbf16ger2np (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvbf16ger2nn (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvf32gerpp (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvf32gerpn (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvf32gernp (__vector_quad *, vec_t, vec_t);
+void __builtin_mma_xvf32gernn (__vector_quad *, vec_t, vec_t);
+
+void __builtin_mma_pmxvi4ger8 (__vector_quad *, vec_t, vec_t, uint4, uint4, uint8);
+void __builtin_mma_pmxvi4ger8pp (__vector_quad *, vec_t, vec_t, uint4, uint4, uint8);
+
+void __builtin_mma_pmxvi8ger4 (__vector_quad *, vec_t, vec_t, uint4, uint4, uint4);
+void __builtin_mma_pmxvi8ger4pp (__vector_quad *, vec_t, vec_t, uint4, uint4, uint4);
+void __builtin_mma_pmxvi8ger4spp(__vector_quad *, vec_t, vec_t, uint4, uint4, uint4);
+
+void __builtin_mma_pmxvi16ger2 (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+void __builtin_mma_pmxvi16ger2s (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+void __builtin_mma_pmxvf16ger2 (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+void __builtin_mma_pmxvbf16ger2 (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+
+void __builtin_mma_pmxvi16ger2pp (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+void __builtin_mma_pmxvi16ger2spp (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+void __builtin_mma_pmxvf16ger2pp (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+void __builtin_mma_pmxvf16ger2pn (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+void __builtin_mma_pmxvf16ger2np (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+void __builtin_mma_pmxvf16ger2nn (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+void __builtin_mma_pmxvbf16ger2pp (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+void __builtin_mma_pmxvbf16ger2pn (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+void __builtin_mma_pmxvbf16ger2np (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+void __builtin_mma_pmxvbf16ger2nn (__vector_quad *, vec_t, vec_t, uint4, uint4, uint2);
+
+void __builtin_mma_pmxvf32ger (__vector_quad *, vec_t, vec_t, uint4, uint4);
+void __builtin_mma_pmxvf32gerpp (__vector_quad *, vec_t, vec_t, uint4, uint4);
+void __builtin_mma_pmxvf32gerpn (__vector_quad *, vec_t, vec_t, uint4, uint4);
+void __builtin_mma_pmxvf32gernp (__vector_quad *, vec_t, vec_t, uint4, uint4);
+void __builtin_mma_pmxvf32gernn (__vector_quad *, vec_t, vec_t, uint4, uint4);
+
+void __builtin_mma_xvf64ger (__vector_quad *, __vector_pair, vec_t);
+void __builtin_mma_xvf64gerpp (__vector_quad *, __vector_pair, vec_t);
+void __builtin_mma_xvf64gerpn (__vector_quad *, __vector_pair, vec_t);
+void __builtin_mma_xvf64gernp (__vector_quad *, __vector_pair, vec_t);
+void __builtin_mma_xvf64gernn (__vector_quad *, __vector_pair, vec_t);
+
+void __builtin_mma_pmxvf64ger (__vector_quad *, __vector_pair, vec_t, uint4, uint2);
+void __builtin_mma_pmxvf64gerpp (__vector_quad *, __vector_pair, vec_t, uint4, uint2);
+void __builtin_mma_pmxvf64gerpn (__vector_quad *, __vector_pair, vec_t, uint4, uint2);
+void __builtin_mma_pmxvf64gernp (__vector_quad *, __vector_pair, vec_t, uint4, uint2);
+void __builtin_mma_pmxvf64gernn (__vector_quad *, __vector_pair, vec_t, uint4, uint2);
+
+void __builtin_mma_xxmtacc (__vector_quad *);
+void __builtin_mma_xxmfacc (__vector_quad *);
+void __builtin_mma_xxsetaccz (__vector_quad *);
+
+void __builtin_mma_assemble_acc (__vector_quad *, vec_t, vec_t, vec_t, vec_t);
+void __builtin_mma_disassemble_acc (void *, __vector_quad *);
+
+void __builtin_mma_assemble_pair (__vector_pair *, vec_t, vec_t);
+void __builtin_mma_disassemble_pair (void *, __vector_pair *);
+
+vec_t __builtin_vsx_xvcvspbf16 (vec_t);
+vec_t __builtin_vsx_xvcvbf16sp (vec_t);
+</pre></div>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="RX-Built_002din-Functions.html" accesskey="n" rel="next">RX Built-in Functions</a>, Previous: <a href="PowerPC-Atomic-Memory-Operation-Functions.html" accesskey="p" rel="prev">PowerPC Atomic Memory Operation Functions</a>, Up: <a href="Target-Builtins.html" accesskey="u" rel="up">Target Builtins</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Option-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

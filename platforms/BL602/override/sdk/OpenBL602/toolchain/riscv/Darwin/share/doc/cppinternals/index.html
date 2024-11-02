@@ -1,0 +1,164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Top (The GNU C Preprocessor Internals)</title>
+
+<meta name="description" content="Top (The GNU C Preprocessor Internals)">
+<meta name="keywords" content="Top (The GNU C Preprocessor Internals)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="#Top" rel="start" title="Top">
+<link href="Concept-Index.html" rel="index" title="Concept Index">
+<link href="#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Conventions.html" rel="next" title="Conventions">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<h1 class="settitle" align="center">The GNU C Preprocessor Internals</h1>
+
+
+
+
+
+
+
+
+
+
+<span id="SEC_Contents"></span>
+<h2 class="contents-heading">Table of Contents</h2>
+
+<div class="contents">
+
+<ul class="no-bullet">
+  <li><a id="toc-Cpplib_002d_002d_002dthe-GNU-C-Preprocessor" href="#Cpplib_002d_002d_002dthe-GNU-C-Preprocessor">1 Cpplib&mdash;the GNU C Preprocessor</a></li>
+  <li><a id="toc-Conventions-1" href="Conventions.html#Conventions">Conventions</a></li>
+  <li><a id="toc-The-Lexer" href="Lexer.html#Lexer">The Lexer</a>
+  <ul class="no-bullet">
+    <li><a id="toc-Overview" href="Lexer.html#Overview">Overview</a></li>
+    <li><a id="toc-Lexing-a-token" href="Lexer.html#Lexing-a-token">Lexing a token</a></li>
+    <li><a id="toc-Lexing-a-line-1" href="Lexer.html#Lexing-a-line-1">Lexing a line</a></li>
+  </ul></li>
+  <li><a id="toc-Hash-Nodes-1" href="Hash-Nodes.html#Hash-Nodes">Hash Nodes</a></li>
+  <li><a id="toc-Macro-Expansion-Algorithm" href="Macro-Expansion.html#Macro-Expansion">Macro Expansion Algorithm</a>
+  <ul class="no-bullet">
+    <li><a id="toc-Internal-representation-of-macros" href="Macro-Expansion.html#Internal-representation-of-macros">Internal representation of macros</a></li>
+    <li><a id="toc-Macro-expansion-overview" href="Macro-Expansion.html#Macro-expansion-overview">Macro expansion overview</a></li>
+    <li><a id="toc-Scanning-the-replacement-list-for-macros-to-expand" href="Macro-Expansion.html#Scanning-the-replacement-list-for-macros-to-expand">Scanning the replacement list for macros to expand</a></li>
+    <li><a id="toc-Looking-for-a-function_002dlike-macro_0027s-opening-parenthesis" href="Macro-Expansion.html#Looking-for-a-function_002dlike-macro_0027s-opening-parenthesis">Looking for a function-like macro&rsquo;s opening parenthesis</a></li>
+    <li><a id="toc-Marking-tokens-ineligible-for-future-expansion" href="Macro-Expansion.html#Marking-tokens-ineligible-for-future-expansion">Marking tokens ineligible for future expansion</a></li>
+  </ul></li>
+  <li><a id="toc-Token-Spacing-1" href="Token-Spacing.html#Token-Spacing">Token Spacing</a></li>
+  <li><a id="toc-Line-numbering" href="Line-Numbering.html#Line-Numbering">Line numbering</a>
+  <ul class="no-bullet">
+    <li><a id="toc-Just-which-line-number-anyway_003f" href="Line-Numbering.html#Just-which-line-number-anyway_003f">Just which line number anyway?</a></li>
+    <li><a id="toc-Representation-of-line-numbers" href="Line-Numbering.html#Representation-of-line-numbers">Representation of line numbers</a></li>
+  </ul></li>
+  <li><a id="toc-The-Multiple_002dInclude-Optimization" href="Guard-Macros.html#Guard-Macros">The Multiple-Include Optimization</a></li>
+  <li><a id="toc-File-Handling" href="Files.html#Files">File Handling</a></li>
+  <li><a id="toc-Concept-Index-1" href="Concept-Index.html#Concept-Index" rel="index">Concept Index</a></li>
+</ul>
+</div>
+
+
+<span id="Top"></span><div class="header">
+<p>
+Next: <a href="Conventions.html" accesskey="n" rel="next">Conventions</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="SEC_Top"></span><table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="Conventions.html" accesskey="1">Conventions</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Lexer.html" accesskey="2">The Lexer</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Hash-Nodes.html" accesskey="3">Hash Nodes</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Macro-Expansion.html" accesskey="4">Macro Expansion Algorithm</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Token-Spacing.html" accesskey="5">Token Spacing</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Line-Numbering.html" accesskey="6">Line numbering</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Guard-Macros.html" accesskey="7">The Multiple-Include Optimization</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Files.html" accesskey="8">File Handling</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Concept-Index.html" rel="index" accesskey="9">Concept Index</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+</table>
+
+<span id="Cpplib_002d_002d_002dthe-GNU-C-Preprocessor"></span><h2 class="chapter">1 Cpplib&mdash;the GNU C Preprocessor</h2>
+
+<p>The GNU C preprocessor is
+implemented as a library, <em>cpplib</em>, so it can be easily shared between
+a stand-alone preprocessor, and a preprocessor integrated with the C,
+C++ and Objective-C front ends.  It is also available for use by other
+programs, though this is not recommended as its exposed interface has
+not yet reached a point of reasonable stability.
+</p>
+<p>The library has been written to be re-entrant, so that it can be used
+to preprocess many files simultaneously if necessary.  It has also been
+written with the preprocessing token as the fundamental unit; the
+preprocessor in previous versions of GCC would operate on text strings
+as the fundamental unit.
+</p>
+<p>This brief manual documents the internals of cpplib, and explains some
+of the tricky issues.  It is intended that, along with the comments in
+the source code, a reasonably competent C programmer should be able to
+figure out what the code is doing, and why things have been implemented
+the way they have.
+</p>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="Conventions.html" accesskey="1">Conventions</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Conventions used in the code.
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Lexer.html" accesskey="2">Lexer</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">The combined C, C++ and Objective-C Lexer.
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Hash-Nodes.html" accesskey="3">Hash Nodes</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">All identifiers are entered into a hash table.
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Macro-Expansion.html" accesskey="4">Macro Expansion</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Macro expansion algorithm.
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Token-Spacing.html" accesskey="5">Token Spacing</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Spacing and paste avoidance issues.
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Line-Numbering.html" accesskey="6">Line Numbering</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Tracking location within files.
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Guard-Macros.html" accesskey="7">Guard Macros</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Optimizing header files with guard macros.
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Files.html" accesskey="8">Files</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">File handling.
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Concept-Index.html" rel="index" accesskey="9">Concept Index</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Index.
+</td></tr>
+</table>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Conventions.html" accesskey="n" rel="next">Conventions</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

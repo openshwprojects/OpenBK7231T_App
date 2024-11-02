@@ -1,0 +1,166 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual documents how to install and use the Multiple Precision
+Floating-Point Reliable Library, version 3.1.4.
+
+Copyright 1991, 1993-2016 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with no Front-Cover Texts, and with no Back-Cover Texts.  A copy of the
+license is included in GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MPFR 3.1.4: Rounding Related Functions</title>
+
+<meta name="description" content="How to install and use GNU MPFR, a library for reliable multiple precision
+floating-point arithmetic, version 3.1.4.">
+<meta name="keywords" content="GNU MPFR 3.1.4: Rounding Related Functions">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="MPFR-Interface.html#MPFR-Interface" rel="up" title="MPFR Interface">
+<link href="Miscellaneous-Functions.html#Miscellaneous-Functions" rel="next" title="Miscellaneous Functions">
+<link href="Integer-Related-Functions.html#Integer-Related-Functions" rel="prev" title="Integer Related Functions">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Rounding-Related-Functions"></a>
+<div class="header">
+<p>
+Next: <a href="Miscellaneous-Functions.html#Miscellaneous-Functions" accesskey="n" rel="next">Miscellaneous Functions</a>, Previous: <a href="Integer-Related-Functions.html#Integer-Related-Functions" accesskey="p" rel="prev">Integer Related Functions</a>, Up: <a href="MPFR-Interface.html#MPFR-Interface" accesskey="u" rel="up">MPFR Interface</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="index-Rounding-mode-related-functions"></a>
+<a name="Rounding-Related-Functions-1"></a>
+<h3 class="section">5.11 Rounding Related Functions</h3>
+
+<dl>
+<dt><a name="index-mpfr_005fset_005fdefault_005frounding_005fmode"></a>Function: <em>void</em> <strong>mpfr_set_default_rounding_mode</strong> <em>(mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set the default rounding mode to <var>rnd</var>.
+The default rounding mode is to nearest initially.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fget_005fdefault_005frounding_005fmode"></a>Function: <em>mpfr_rnd_t</em> <strong>mpfr_get_default_rounding_mode</strong> <em>(void)</em></dt>
+<dd><p>Get the default rounding mode.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fprec_005fround"></a>Function: <em>int</em> <strong>mpfr_prec_round</strong> <em>(mpfr_t <var>x</var>, mpfr_prec_t <var>prec</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Round <var>x</var> according to <var>rnd</var> with precision <var>prec</var>, which
+must be an integer between <code>MPFR_PREC_MIN</code> and <code>MPFR_PREC_MAX</code>
+(otherwise the behavior is undefined).
+If <var>prec</var> is greater or equal to the precision of <var>x</var>, then new
+space is allocated for the significand, and it is filled with zeros.
+Otherwise, the significand is rounded to precision <var>prec</var> with the given
+direction. In both cases, the precision of <var>x</var> is changed to <var>prec</var>.
+</p>
+<p>Here is an example of how to use <code>mpfr_prec_round</code> to implement
+Newton&rsquo;s algorithm to compute the inverse of <var>a</var>, assuming <var>x</var> is
+already an approximation to <var>n</var> bits:
+</p><div class="example">
+<pre class="example">  mpfr_set_prec (t, 2 * n);
+  mpfr_set (t, a, MPFR_RNDN);         /* round a to 2n bits */
+  mpfr_mul (t, t, x, MPFR_RNDN);      /* t is correct to 2n bits */
+  mpfr_ui_sub (t, 1, t, MPFR_RNDN);   /* high n bits cancel with 1 */
+  mpfr_prec_round (t, n, MPFR_RNDN);  /* t is correct to n bits */
+  mpfr_mul (t, t, x, MPFR_RNDN);      /* t is correct to n bits */
+  mpfr_prec_round (x, 2 * n, MPFR_RNDN); /* exact */
+  mpfr_add (x, x, t, MPFR_RNDN);      /* x is correct to 2n bits */
+</pre></div>
+
+<p>Warning! You must not use this function if <var>x</var> was initialized
+with <code>MPFR_DECL_INIT</code> or with <code>mpfr_custom_init_set</code>
+(see <a href="Custom-Interface.html#Custom-Interface">Custom Interface</a>).
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fcan_005fround"></a>Function: <em>int</em> <strong>mpfr_can_round</strong> <em>(mpfr_t <var>b</var>, mpfr_exp_t <var>err</var>, mpfr_rnd_t <var>rnd1</var>, mpfr_rnd_t <var>rnd2</var>, mpfr_prec_t <var>prec</var>)</em></dt>
+<dd><p>Assuming <var>b</var> is an approximation of an unknown number
+<var>x</var> in the direction <var>rnd1</var> with error at most two to the power
+E(b)-<var>err</var> where E(b) is the exponent of <var>b</var>, return a non-zero
+value if one is able to round correctly <var>x</var> to precision
+<var>prec</var> with the direction <var>rnd2</var>,
+and 0 otherwise (including for NaN and Inf).
+This function <strong>does not modify</strong> its arguments.
+</p>
+<p>If <var>rnd1</var> is <code>MPFR_RNDN</code>, then the sign of the error is
+unknown, but its absolute value is the same, so that the possible range
+is twice as large as with a directed rounding for <var>rnd1</var>.
+</p>
+<p>Note: if one wants to also determine the correct <a href="Rounding-Modes.html#ternary-value">ternary value</a> when
+rounding <var>b</var> to precision <var>prec</var> with rounding mode <var>rnd</var>,
+a useful trick is the following:
+</p><div class="example">
+<pre class="example">if (mpfr_can_round (b, err, MPFR_RNDN, MPFR_RNDZ,
+    prec + (rnd == MPFR_RNDN)))
+   ...
+</pre></div>
+<p>Indeed, if <var>rnd</var> is <code>MPFR_RNDN</code>, this will check if one can
+round to <var>prec</var>+1 bits with a directed rounding:
+if so, one can surely round to nearest to <var>prec</var> bits,
+and in addition one can determine the correct ternary value, which would not
+be the case when <var>b</var> is near from a value exactly representable on
+<var>prec</var> bits.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fmin_005fprec"></a>Function: <em>mpfr_prec_t</em> <strong>mpfr_min_prec</strong> <em>(mpfr_t <var>x</var>)</em></dt>
+<dd><p>Return the minimal number of bits required to store the significand of
+<var>x</var>, and 0 for special values, including 0. (Warning: the returned
+value can be less than <code>MPFR_PREC_MIN</code>.)
+</p>
+<p>The function name is subject to change.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fprint_005frnd_005fmode"></a>Function: <em>const char *</em> <strong>mpfr_print_rnd_mode</strong> <em>(mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Return a string (&quot;MPFR_RNDD&quot;, &quot;MPFR_RNDU&quot;, &quot;MPFR_RNDN&quot;, &quot;MPFR_RNDZ&quot;,
+&quot;MPFR_RNDA&quot;) corresponding to the rounding mode <var>rnd</var>, or a null pointer
+if <var>rnd</var> is an invalid rounding mode.
+</p></dd></dl>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Miscellaneous-Functions.html#Miscellaneous-Functions" accesskey="n" rel="next">Miscellaneous Functions</a>, Previous: <a href="Integer-Related-Functions.html#Integer-Related-Functions" accesskey="p" rel="prev">Integer Related Functions</a>, Up: <a href="MPFR-Interface.html#MPFR-Interface" accesskey="u" rel="up">MPFR Interface</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

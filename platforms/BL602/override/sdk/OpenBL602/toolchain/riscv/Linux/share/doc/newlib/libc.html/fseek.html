@@ -1,0 +1,123 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: fseek</title>
+
+<meta name="description" content="The Red Hat newlib C Library: fseek">
+<meta name="keywords" content="The Red Hat newlib C Library: fseek">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="_005f_005ffsetlocking.html#g_t_005f_005ffsetlocking" rel="next" title="__fsetlocking">
+<link href="freopen.html#freopen" rel="prev" title="freopen">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="fseek"></a>
+<div class="header">
+<p>
+Next: <a href="_005f_005ffsetlocking.html#g_t_005f_005ffsetlocking" accesskey="n" rel="next">__fsetlocking</a>, Previous: <a href="freopen.html#freopen" accesskey="p" rel="prev">freopen</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="fseek_002c-fseeko_002d_002d_002dset-file-position"></a>
+<h3 class="section">4.26 <code>fseek</code>, <code>fseeko</code>&mdash;set file position</h3>
+<a name="index-fseek"></a>
+<a name="index-fseeko"></a>
+<a name="index-_005ffseek_005fr"></a>
+<a name="index-_005ffseeko_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+int fseek(FILE *<var>fp</var>, long <var>offset</var>, int <var>whence</var>);
+int fseeko(FILE *<var>fp</var>, off_t <var>offset</var>, int <var>whence</var>);
+int _fseek_r(struct _reent *<var>ptr</var>, FILE *<var>fp</var>,
+    long <var>offset</var>, int <var>whence</var>);
+int _fseeko_r(struct _reent *<var>ptr</var>, FILE *<var>fp</var>,
+    off_t <var>offset</var>, int <var>whence</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+Objects of type <code>FILE</code> can have a &ldquo;position&rdquo; that records how much
+of the file your program has already read.  Many of the <code>stdio</code> functions
+depend on this position, and many change it as a side effect.
+</p>
+<p>You can use <code>fseek</code>/<code>fseeko</code> to set the position for the file identified by
+<var>fp</var>.  The value of <var>offset</var> determines the new position, in one
+of three ways selected by the value of <var>whence</var> (defined as macros
+in &lsquo;<code>stdio.h</code>&rsquo;):
+</p>
+<p><code>SEEK_SET</code>&mdash;<var>offset</var> is the absolute file position (an offset
+from the beginning of the file) desired.  <var>offset</var> must be positive.
+</p>
+<p><code>SEEK_CUR</code>&mdash;<var>offset</var> is relative to the current file position.
+<var>offset</var> can meaningfully be either positive or negative.
+</p>
+<p><code>SEEK_END</code>&mdash;<var>offset</var> is relative to the current end of file.
+<var>offset</var> can meaningfully be either positive (to increase the size
+of the file) or negative.
+</p>
+<p>See <code>ftell</code>/<code>ftello</code> to determine the current file position.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>fseek</code>/<code>fseeko</code> return <code>0</code> when successful.  On failure, the
+result is <code>EOF</code>.  The reason for failure is indicated in <code>errno</code>:
+either <code>ESPIPE</code> (the stream identified by <var>fp</var> doesn&rsquo;t support
+repositioning) or <code>EINVAL</code> (invalid file position).
+</p>
+<br>
+<p><strong>Portability</strong><br>
+ANSI C requires <code>fseek</code>.
+</p>
+<p><code>fseeko</code> is defined by the Single Unix specification.
+</p>
+<p>Supporting OS subroutines required: <code>close</code>, <code>fstat</code>, <code>isatty</code>,
+<code>lseek</code>, <code>read</code>, <code>sbrk</code>, <code>write</code>.
+</p>
+<br>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="_005f_005ffsetlocking.html#g_t_005f_005ffsetlocking" accesskey="n" rel="next">__fsetlocking</a>, Previous: <a href="freopen.html#freopen" accesskey="p" rel="prev">freopen</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

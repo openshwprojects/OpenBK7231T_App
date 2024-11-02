@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: psignal</title>
+
+<meta name="description" content="The Red Hat newlib C Library: psignal">
+<meta name="keywords" content="The Red Hat newlib C Library: psignal">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Signals.html#Signals" rel="up" title="Signals">
+<link href="raise.html#raise" rel="next" title="raise">
+<link href="Signals.html#Signals" rel="prev" title="Signals">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="psignal"></a>
+<div class="header">
+<p>
+Next: <a href="raise.html#raise" accesskey="n" rel="next">raise</a>, Up: <a href="Signals.html#Signals" accesskey="u" rel="up">Signals</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="psignal_002d_002d_002dprint-a-signal-message-on-standard-error"></a>
+<h3 class="section">7.1 <code>psignal</code>&mdash;print a signal message on standard error</h3>
+<a name="index-psignal"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+void psignal(int <var>signal</var>, const char *<var>prefix</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+Use <code>psignal</code> to print (on standard error) a signal message
+corresponding to the value of the signal number <var>signal</var>.
+Unless you use <code>NULL</code> as the value of the argument <var>prefix</var>, the
+signal message will begin with the string at <var>prefix</var>, followed by a
+colon and a space (<code>: </code>). The remainder of the signal message is one
+of the strings described for <code>strsignal</code>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>psignal</code> returns no result.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+POSIX.1-2008 requires <code>psignal</code>, but the strings issued vary from one
+implementation to another.
+</p>
+<p>Supporting OS subroutines required: <code>close</code>, <code>fstat</code>, <code>isatty</code>,
+<code>lseek</code>, <code>read</code>, <code>sbrk</code>, <code>write</code>.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

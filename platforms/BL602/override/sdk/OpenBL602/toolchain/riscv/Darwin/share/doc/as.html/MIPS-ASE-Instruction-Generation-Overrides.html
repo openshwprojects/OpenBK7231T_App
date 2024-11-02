@@ -1,0 +1,218 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This file documents the GNU Assembler "as".
+
+Copyright (C) 1991-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3
+or any later version published by the Free Software Foundation;
+with no Invariant Sections, with no Front-Cover Texts, and with no
+Back-Cover Texts.  A copy of the license is included in the
+section entitled "GNU Free Documentation License".
+ -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>MIPS ASE Instruction Generation Overrides (Using as)</title>
+
+<meta name="description" content="MIPS ASE Instruction Generation Overrides (Using as)">
+<meta name="keywords" content="MIPS ASE Instruction Generation Overrides (Using as)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="AS-Index.html" rel="index" title="AS Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="MIPS_002dDependent.html" rel="up" title="MIPS-Dependent">
+<link href="MIPS-Floating_002dPoint.html" rel="next" title="MIPS Floating-Point">
+<link href="MIPS-Option-Stack.html" rel="prev" title="MIPS Option Stack">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="MIPS-ASE-Instruction-Generation-Overrides"></span><div class="header">
+<p>
+Next: <a href="MIPS-Floating_002dPoint.html" accesskey="n" rel="next">MIPS Floating-Point</a>, Previous: <a href="MIPS-Option-Stack.html" accesskey="p" rel="prev">MIPS Option Stack</a>, Up: <a href="MIPS_002dDependent.html" accesskey="u" rel="up">MIPS-Dependent</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="AS-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Directives-to-control-generation-of-MIPS-ASE-instructions"></span><h4 class="subsection">9.27.12 Directives to control generation of MIPS ASE instructions</h4>
+
+<span id="index-MIPS-MIPS_002d3D-instruction-generation-override"></span>
+<span id="index-_002eset-mips3d"></span>
+<span id="index-_002eset-nomips3d"></span>
+<p>The directive <code>.set mips3d</code> makes the assembler accept instructions
+from the MIPS-3D Application Specific Extension from that point on
+in the assembly.  The <code>.set nomips3d</code> directive prevents MIPS-3D
+instructions from being accepted.
+</p>
+<span id="index-SmartMIPS-instruction-generation-override"></span>
+<span id="index-_002eset-smartmips"></span>
+<span id="index-_002eset-nosmartmips"></span>
+<p>The directive <code>.set smartmips</code> makes the assembler accept
+instructions from the SmartMIPS Application Specific Extension to the
+MIPS32 ISA from that point on in the assembly.  The
+<code>.set nosmartmips</code> directive prevents SmartMIPS instructions from
+being accepted.
+</p>
+<span id="index-MIPS-MDMX-instruction-generation-override"></span>
+<span id="index-_002eset-mdmx"></span>
+<span id="index-_002eset-nomdmx"></span>
+<p>The directive <code>.set mdmx</code> makes the assembler accept instructions
+from the MDMX Application Specific Extension from that point on
+in the assembly.  The <code>.set nomdmx</code> directive prevents MDMX
+instructions from being accepted.
+</p>
+<span id="index-MIPS-DSP-Release-1-instruction-generation-override"></span>
+<span id="index-_002eset-dsp"></span>
+<span id="index-_002eset-nodsp"></span>
+<p>The directive <code>.set dsp</code> makes the assembler accept instructions
+from the DSP Release 1 Application Specific Extension from that point
+on in the assembly.  The <code>.set nodsp</code> directive prevents DSP
+Release 1 instructions from being accepted.
+</p>
+<span id="index-MIPS-DSP-Release-2-instruction-generation-override"></span>
+<span id="index-_002eset-dspr2"></span>
+<span id="index-_002eset-nodspr2"></span>
+<p>The directive <code>.set dspr2</code> makes the assembler accept instructions
+from the DSP Release 2 Application Specific Extension from that point
+on in the assembly.  This directive implies <code>.set dsp</code>.  The
+<code>.set nodspr2</code> directive prevents DSP Release 2 instructions from
+being accepted.
+</p>
+<span id="index-MIPS-DSP-Release-3-instruction-generation-override"></span>
+<span id="index-_002eset-dspr3"></span>
+<span id="index-_002eset-nodspr3"></span>
+<p>The directive <code>.set dspr3</code> makes the assembler accept instructions
+from the DSP Release 3 Application Specific Extension from that point
+on in the assembly.  This directive implies <code>.set dsp</code> and
+<code>.set dspr2</code>.  The <code>.set nodspr3</code> directive prevents DSP
+Release 3 instructions from being accepted.
+</p>
+<span id="index-MIPS-MT-instruction-generation-override"></span>
+<span id="index-_002eset-mt"></span>
+<span id="index-_002eset-nomt"></span>
+<p>The directive <code>.set mt</code> makes the assembler accept instructions
+from the MT Application Specific Extension from that point on
+in the assembly.  The <code>.set nomt</code> directive prevents MT
+instructions from being accepted.
+</p>
+<span id="index-MIPS-MCU-instruction-generation-override"></span>
+<span id="index-_002eset-mcu"></span>
+<span id="index-_002eset-nomcu"></span>
+<p>The directive <code>.set mcu</code> makes the assembler accept instructions
+from the MCU Application Specific Extension from that point on
+in the assembly.  The <code>.set nomcu</code> directive prevents MCU
+instructions from being accepted.
+</p>
+<span id="index-MIPS-SIMD-Architecture-instruction-generation-override"></span>
+<span id="index-_002eset-msa"></span>
+<span id="index-_002eset-nomsa"></span>
+<p>The directive <code>.set msa</code> makes the assembler accept instructions
+from the MIPS SIMD Architecture Extension from that point on
+in the assembly.  The <code>.set nomsa</code> directive prevents MSA
+instructions from being accepted.
+</p>
+<span id="index-Virtualization-instruction-generation-override"></span>
+<span id="index-_002eset-virt"></span>
+<span id="index-_002eset-novirt"></span>
+<p>The directive <code>.set virt</code> makes the assembler accept instructions
+from the Virtualization Application Specific Extension from that point
+on in the assembly.  The <code>.set novirt</code> directive prevents Virtualization
+instructions from being accepted.
+</p>
+<span id="index-MIPS-eXtended-Physical-Address-_0028XPA_0029-instruction-generation-override"></span>
+<span id="index-_002eset-xpa"></span>
+<span id="index-_002eset-noxpa"></span>
+<p>The directive <code>.set xpa</code> makes the assembler accept instructions
+from the XPA Extension from that point on in the assembly.  The 
+<code>.set noxpa</code> directive prevents XPA instructions from being accepted.
+</p>
+<span id="index-MIPS16e2-instruction-generation-override"></span>
+<span id="index-_002eset-mips16e2"></span>
+<span id="index-_002eset-nomips16e2"></span>
+<p>The directive <code>.set mips16e2</code> makes the assembler accept instructions
+from the MIPS16e2 Application Specific Extension from that point on in the
+assembly, whenever in MIPS16 mode.  The <code>.set nomips16e2</code> directive
+prevents MIPS16e2 instructions from being accepted, in MIPS16 mode.  Neither
+directive affects the state of MIPS16 mode being active itself which has
+separate controls.
+</p>
+<span id="index-MIPS-cyclic-redundancy-check-_0028CRC_0029-instruction-generation-override"></span>
+<span id="index-_002eset-crc"></span>
+<span id="index-_002eset-nocrc"></span>
+<p>The directive <code>.set crc</code> makes the assembler accept instructions
+from the CRC Extension from that point on in the assembly.  The
+<code>.set nocrc</code> directive prevents CRC instructions from being accepted.
+</p>
+<span id="index-MIPS-Global-INValidate-_0028GINV_0029-instruction-generation-override"></span>
+<span id="index-_002eset-ginv"></span>
+<span id="index-_002eset-noginv"></span>
+<p>The directive <code>.set ginv</code> makes the assembler accept instructions
+from the GINV Extension from that point on in the assembly.  The
+<code>.set noginv</code> directive prevents GINV instructions from being accepted.
+</p>
+<span id="index-Loongson-MultiMedia-extensions-Instructions-_0028MMI_0029-generation-override"></span>
+<span id="index-_002eset-loongson_002dmmi"></span>
+<span id="index-_002eset-noloongson_002dmmi"></span>
+<p>The directive <code>.set loongson-mmi</code> makes the assembler accept
+instructions from the MMI Extension from that point on in the assembly.
+The <code>.set noloongson-mmi</code> directive prevents MMI instructions from
+being accepted.
+</p>
+<span id="index-Loongson-Content-Address-Memory-_0028CAM_0029-generation-override"></span>
+<span id="index-_002eset-loongson_002dcam"></span>
+<span id="index-_002eset-noloongson_002dcam"></span>
+<p>The directive <code>.set loongson-cam</code> makes the assembler accept
+instructions from the Loongson CAM from that point on in the assembly.
+The <code>.set noloongson-cam</code> directive prevents Loongson CAM instructions
+from being accepted.
+</p>
+<span id="index-Loongson-EXTensions-_0028EXT_0029-instructions-generation-override"></span>
+<span id="index-_002eset-loongson_002dext"></span>
+<span id="index-_002eset-noloongson_002dext"></span>
+<p>The directive <code>.set loongson-ext</code> makes the assembler accept
+instructions from the Loongson EXT from that point on in the assembly.
+The <code>.set noloongson-ext</code> directive prevents Loongson EXT instructions
+from being accepted.
+</p>
+<span id="index-Loongson-EXTensions-R2-_0028EXT2_0029-instructions-generation-override"></span>
+<span id="index-_002eset-loongson_002dext2"></span>
+<span id="index-_002eset-noloongson_002dext2"></span>
+<p>The directive <code>.set loongson-ext2</code> makes the assembler accept
+instructions from the Loongson EXT2 from that point on in the assembly.
+This directive implies <code>.set loognson-ext</code>.
+The <code>.set noloongson-ext2</code> directive prevents Loongson EXT2 instructions
+from being accepted.
+</p>
+<p>Traditional MIPS assemblers do not support these directives.
+</p>
+<hr>
+<div class="header">
+<p>
+Next: <a href="MIPS-Floating_002dPoint.html" accesskey="n" rel="next">MIPS Floating-Point</a>, Previous: <a href="MIPS-Option-Stack.html" accesskey="p" rel="prev">MIPS Option Stack</a>, Up: <a href="MIPS_002dDependent.html" accesskey="u" rel="up">MIPS-Dependent</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="AS-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

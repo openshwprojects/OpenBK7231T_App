@@ -1,0 +1,111 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>atof (The Red Hat newlib C Library)</title>
+
+<meta name="description" content="atof (The Red Hat newlib C Library)">
+<meta name="keywords" content="atof (The Red Hat newlib C Library)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdlib.html" rel="up" title="Stdlib">
+<link href="atoi.html" rel="next" title="atoi">
+<link href="atexit.html" rel="prev" title="atexit">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="atof"></span><div class="header">
+<p>
+Next: <a href="atoi.html" accesskey="n" rel="next">atoi</a>, Previous: <a href="atexit.html" accesskey="p" rel="prev">atexit</a>, Up: <a href="Stdlib.html" accesskey="u" rel="up">Stdlib</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="atof_002c-atoff_002d_002d_002dstring-to-double-or-float"></span><h3 class="section">2.7 <code>atof</code>, <code>atoff</code>&mdash;string to double or float</h3>
+<span id="index-atof"></span>
+<span id="index-atoff"></span>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdlib.h&gt;
+double atof(const char *<var>s</var>);
+float atoff(const char *<var>s</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>atof</code> converts the initial portion of a string to a <code>double</code>.
+<code>atoff</code> converts the initial portion of a string to a <code>float</code>.
+</p>
+<p>The functions parse the character string <var>s</var>,
+locating a substring which can be converted to a floating-point
+value. The substring must match the format:
+</p><div class="example">
+<pre class="example"> [+|-]<var>digits</var>[.][<var>digits</var>][(e|E)[+|-]<var>digits</var>]
+</pre></div>
+<p>The substring converted is the longest initial
+fragment of <var>s</var> that has the expected format, beginning with
+the first non-whitespace character.  The substring
+is empty if <code>str</code> is empty, consists entirely
+of whitespace, or if the first non-whitespace character is
+something other than <code>+</code>, <code>-</code>, <code>.</code>, or a digit.
+</p>
+<p><code>atof(<var>s</var>)</code> is implemented as <code>strtod(<var>s</var>, NULL)</code>.
+<code>atoff(<var>s</var>)</code> is implemented as <code>strtof(<var>s</var>, NULL)</code>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>atof</code> returns the converted substring value, if any, as a
+<code>double</code>; or <code>0.0</code>,  if no conversion could be performed.
+If the correct value is out of the range of representable values, plus
+or minus <code>HUGE_VAL</code> is returned, and <code>ERANGE</code> is stored in
+<code>errno</code>.
+If the correct value would cause underflow, <code>0.0</code> is returned
+and <code>ERANGE</code> is stored in <code>errno</code>.
+</p>
+<p><code>atoff</code> obeys the same rules as <code>atof</code>, except that it
+returns a <code>float</code>.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>atof</code> is ANSI C. <code>atof</code>, <code>atoi</code>, and <code>atol</code> are subsumed by <code>strod</code>
+and <code>strol</code>, but are used extensively in existing code. These functions are
+less reliable, but may be faster if the argument is verified to be in a valid
+range.
+</p>
+<p>Supporting OS subroutines required: <code>close</code>, <code>fstat</code>, <code>isatty</code>,
+<code>lseek</code>, <code>read</code>, <code>sbrk</code>, <code>write</code>.
+</p>
+<br>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="atoi.html" accesskey="n" rel="next">atoi</a>, Previous: <a href="atexit.html" accesskey="p" rel="prev">atexit</a>, Up: <a href="Stdlib.html" accesskey="u" rel="up">Stdlib</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

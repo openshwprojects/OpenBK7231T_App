@@ -1,0 +1,80 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>fmod (LIBM)</title>
+
+<meta name="description" content="fmod (LIBM)">
+<meta name="keywords" content="fmod (LIBM)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="Document-Index.html" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Math.html" rel="up" title="Math">
+<link href="frexp.html" rel="next" title="frexp">
+<link href="fmin.html" rel="prev" title="fmin">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="fmod"></span><div class="header">
+<p>
+Next: <a href="frexp.html" accesskey="n" rel="next">frexp</a>, Previous: <a href="fmin.html" accesskey="p" rel="prev">fmin</a>, Up: <a href="Math.html" accesskey="u" rel="up">Math</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="fmod_002c-fmodf_002d_002d_002dfloating_002dpoint-remainder-_0028modulo_0029"></span><h3 class="section">1.25 <code>fmod</code>, <code>fmodf</code>&mdash;floating-point remainder (modulo)</h3>
+<span id="index-fmod"></span>
+<span id="index-fmodf"></span>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;math.h&gt;
+double fmod(double <var>x</var>, double <var>y</var>);
+float fmodf(float <var>x</var>, float <var>y</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+The <code>fmod</code> and <code>fmodf</code> functions compute the floating-point
+remainder of <var>x</var>/<var>y</var> (<var>x</var> modulo <var>y</var>).
+</p>
+<br>
+<p><strong>Returns</strong><br>
+The <code>fmod</code> function returns the value 
+<var>x</var>-<var>i</var>*<var>y</var>, 
+for the largest integer <var>i</var> such that, if <var>y</var> is nonzero, the
+result has the same sign as <var>x</var> and magnitude less than the
+magnitude of <var>y</var>. 
+</p>
+<p><code>fmod(<var>x</var>,0)</code> returns NaN, and sets <code>errno</code> to <code>EDOM</code>.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>fmod</code> is ANSI C. <code>fmodf</code> is an extension.
+</p>
+<br>
+
+
+
+</body>
+</html>

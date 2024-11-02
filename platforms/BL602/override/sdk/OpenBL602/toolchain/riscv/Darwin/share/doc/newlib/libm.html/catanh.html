@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>catanh (LIBM)</title>
+
+<meta name="description" content="catanh (LIBM)">
+<meta name="keywords" content="catanh (LIBM)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="Document-Index.html" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Complex.html" rel="up" title="Complex">
+<link href="ccos.html" rel="next" title="ccos">
+<link href="catan.html" rel="prev" title="catan">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="catanh"></span><div class="header">
+<p>
+Next: <a href="ccos.html" accesskey="n" rel="next">ccos</a>, Previous: <a href="catan.html" accesskey="p" rel="prev">catan</a>, Up: <a href="Complex.html" accesskey="u" rel="up">Complex</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="catanh_002c-catanhf_002d_002d_002dcomplex-arc-hyperbolic-tangent"></span><h3 class="section">2.8 <code>catanh</code>, <code>catanhf</code>&mdash;complex arc hyperbolic tangent</h3>
+<span id="index-catanh"></span>
+<span id="index-catanhf"></span>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;complex.h&gt;
+double complex catanh(double complex <var>z</var>);
+float complex catanhf(float complex <var>z</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+These functions compute the complex arc hyperbolic tan of <var>z</var>,
+with branch cuts outside the interval [-1, +1] along the
+real axis.
+</p>
+<p><code>catanhf</code> is identical to <code>catanh</code>, except that it performs
+its calculations on <code>floats complex</code>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+These functions return the complex arc hyperbolic tangent value,
+in the range of a strip mathematically unbounded along the
+real axis and in the interval [-i*p/2, +i*p/2] along the
+imaginary axis.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>catanh</code> and <code>catanhf</code> are ISO C99
+</p>
+<br>
+
+
+
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: fgetpos</title>
+
+<meta name="description" content="The Red Hat newlib C Library: fgetpos">
+<meta name="keywords" content="The Red Hat newlib C Library: fgetpos">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="fgets.html#fgets" rel="next" title="fgets">
+<link href="fgetc.html#fgetc" rel="prev" title="fgetc">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="fgetpos"></a>
+<div class="header">
+<p>
+Next: <a href="fgets.html#fgets" accesskey="n" rel="next">fgets</a>, Previous: <a href="fgetc.html#fgetc" accesskey="p" rel="prev">fgetc</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="fgetpos_002d_002d_002drecord-position-in-a-stream-or-file"></a>
+<h3 class="section">4.11 <code>fgetpos</code>&mdash;record position in a stream or file</h3>
+<a name="index-fgetpos"></a>
+<a name="index-_005ffgetpos_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+int fgetpos(FILE *restrict <var>fp</var>, fpos_t *restrict <var>pos</var>);
+int _fgetpos_r(struct _reent *<var>ptr</var>, FILE *restrict <var>fp</var>, fpos_t *restrict <var>pos</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+Objects of type <code>FILE</code> can have a &ldquo;position&rdquo; that records how much
+of the file your program has already read.  Many of the <code>stdio</code> functions
+depend on this position, and many change it as a side effect.
+</p>
+<p>You can use <code>fgetpos</code> to report on the current position for a file
+identified by <var>fp</var>; <code>fgetpos</code> will write a value
+representing that position at <code>*<var>pos</var></code>.  Later, you can
+use this value with <code>fsetpos</code> to return the file to this
+position.
+</p>
+<p>In the current implementation, <code>fgetpos</code> simply uses a character
+count to represent the file position; this is the same number that
+would be returned by <code>ftell</code>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>fgetpos</code> returns <code>0</code> when successful.  If <code>fgetpos</code> fails, the
+result is <code>1</code>.  Failure occurs on streams that do not support
+positioning; the global <code>errno</code> indicates this condition with the
+value <code>ESPIPE</code>.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>fgetpos</code> is required by the ANSI C standard, but the meaning of the
+value it records is not specified beyond requiring that it be
+acceptable as an argument to <code>fsetpos</code>.  In particular, other
+conforming C implementations may return a different result from
+<code>ftell</code> than what <code>fgetpos</code> writes at <code>*<var>pos</var></code>.
+</p>
+<p>No supporting OS subroutines are required.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

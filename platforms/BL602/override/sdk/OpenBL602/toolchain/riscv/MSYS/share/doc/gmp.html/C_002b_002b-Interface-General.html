@@ -1,0 +1,181 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: C++ Interface General</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: C++ Interface General">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="C_002b_002b-Class-Interface.html#C_002b_002b-Class-Interface" rel="up" title="C++ Class Interface">
+<link href="C_002b_002b-Interface-Integers.html#C_002b_002b-Interface-Integers" rel="next" title="C++ Interface Integers">
+<link href="C_002b_002b-Class-Interface.html#C_002b_002b-Class-Interface" rel="prev" title="C++ Class Interface">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="C_002b_002b-Interface-General"></a>
+<div class="header">
+<p>
+Next: <a href="C_002b_002b-Interface-Integers.html#C_002b_002b-Interface-Integers" accesskey="n" rel="next">C++ Interface Integers</a>, Previous: <a href="C_002b_002b-Class-Interface.html#C_002b_002b-Class-Interface" accesskey="p" rel="prev">C++ Class Interface</a>, Up: <a href="C_002b_002b-Class-Interface.html#C_002b_002b-Class-Interface" accesskey="u" rel="up">C++ Class Interface</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="C_002b_002b-Interface-General-1"></a>
+<h3 class="section">12.1 C++ Interface General</h3>
+
+<p>All the C++ classes and functions are available with
+</p>
+<a name="index-gmpxx_002eh"></a>
+<div class="example">
+<pre class="example">#include &lt;gmpxx.h&gt;
+</pre></div>
+
+<p>Programs should be linked with the <samp>libgmpxx</samp> and <samp>libgmp</samp>
+libraries.  For example,
+</p>
+<div class="example">
+<pre class="example">g++ mycxxprog.cc -lgmpxx -lgmp
+</pre></div>
+
+<p>The classes defined are
+</p>
+<dl>
+<dt><a name="index-mpz_005fclass"></a>Class: <strong>mpz_class</strong></dt>
+<dt><a name="index-mpq_005fclass"></a>Class: <strong>mpq_class</strong></dt>
+<dt><a name="index-mpf_005fclass"></a>Class: <strong>mpf_class</strong></dt>
+</dl>
+
+<p>The standard operators and various standard functions are overloaded to allow
+arithmetic with these classes.  For example,
+</p>
+<div class="example">
+<pre class="example">int
+main (void)
+{
+  mpz_class a, b, c;
+
+  a = 1234;
+  b = &quot;-5678&quot;;
+  c = a+b;
+  cout &lt;&lt; &quot;sum is &quot; &lt;&lt; c &lt;&lt; &quot;\n&quot;;
+  cout &lt;&lt; &quot;absolute value is &quot; &lt;&lt; abs(c) &lt;&lt; &quot;\n&quot;;
+
+  return 0;
+}
+</pre></div>
+
+<p>An important feature of the implementation is that an expression like
+<code>a=b+c</code> results in a single call to the corresponding <code>mpz_add</code>,
+without using a temporary for the <code>b+c</code> part.  Expressions which by their
+nature imply intermediate values, like <code>a=b*c+d*e</code>, still use temporaries
+though.
+</p>
+<p>The classes can be freely intermixed in expressions, as can the classes and
+the standard types <code>long</code>, <code>unsigned long</code> and <code>double</code>.
+Smaller types like <code>int</code> or <code>float</code> can also be intermixed, since
+C++ will promote them.
+</p>
+<p>Note that <code>bool</code> is not accepted directly, but must be explicitly cast to
+an <code>int</code> first.  This is because C++ will automatically convert any
+pointer to a <code>bool</code>, so if GMP accepted <code>bool</code> it would make all
+sorts of invalid class and pointer combinations compile but almost certainly
+not do anything sensible.
+</p>
+<p>Conversions back from the classes to standard C++ types aren&rsquo;t done
+automatically, instead member functions like <code>get_si</code> are provided (see
+the following sections for details).
+</p>
+<p>Also there are no automatic conversions from the classes to the corresponding
+GMP C types, instead a reference to the underlying C object can be obtained
+with the following functions,
+</p>
+<dl>
+<dt><a name="index-mpz_005fclass_003a_003aget_005fmpz_005ft"></a>Function: <em>mpz_t</em> <strong>mpz_class::get_mpz_t</strong> <em>()</em></dt>
+<dt><a name="index-mpq_005fclass_003a_003aget_005fmpq_005ft"></a>Function: <em>mpq_t</em> <strong>mpq_class::get_mpq_t</strong> <em>()</em></dt>
+<dt><a name="index-mpf_005fclass_003a_003aget_005fmpf_005ft"></a>Function: <em>mpf_t</em> <strong>mpf_class::get_mpf_t</strong> <em>()</em></dt>
+</dl>
+
+<p>These can be used to call a C function which doesn&rsquo;t have a C++ class
+interface.  For example to set <code>a</code> to the GCD of <code>b</code> and <code>c</code>,
+</p>
+<div class="example">
+<pre class="example">mpz_class a, b, c;
+...
+mpz_gcd (a.get_mpz_t(), b.get_mpz_t(), c.get_mpz_t());
+</pre></div>
+
+<p>In the other direction, a class can be initialized from the corresponding GMP
+C type, or assigned to if an explicit constructor is used.  In both cases this
+makes a copy of the value, it doesn&rsquo;t create any sort of association.  For
+example,
+</p>
+<div class="example">
+<pre class="example">mpz_t z;
+// ... init and calculate z ...
+mpz_class x(z);
+mpz_class y;
+y = mpz_class (z);
+</pre></div>
+
+<p>There are no namespace setups in <samp>gmpxx.h</samp>, all types and functions are
+simply put into the global namespace.  This is what <samp>gmp.h</samp> has done in
+the past, and continues to do for compatibility.  The extras provided by
+<samp>gmpxx.h</samp> follow GMP naming conventions and are unlikely to clash with
+anything.
+</p>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="C_002b_002b-Interface-Integers.html#C_002b_002b-Interface-Integers" accesskey="n" rel="next">C++ Interface Integers</a>, Previous: <a href="C_002b_002b-Class-Interface.html#C_002b_002b-Class-Interface" accesskey="p" rel="prev">C++ Class Interface</a>, Up: <a href="C_002b_002b-Class-Interface.html#C_002b_002b-Class-Interface" accesskey="u" rel="up">C++ Class Interface</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

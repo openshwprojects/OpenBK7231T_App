@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 1988-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "Free Software" and "Free Software Needs
+Free Documentation", with the Front-Cover Texts being "A GNU Manual,"
+and with the Back-Cover Texts as in (a) below.
+
+(a) The FSF's Back-Cover Text is: "You are free to copy and modify
+this GNU Manual.  Buying copies from GNU Press supports the FSF in
+developing GNU and promoting software freedom." -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Command aliases default args (Debugging with GDB)</title>
+
+<meta name="description" content="Command aliases default args (Debugging with GDB)">
+<meta name="keywords" content="Command aliases default args (Debugging with GDB)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="Concept-Index.html" rel="index" title="Concept Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Commands.html" rel="up" title="Commands">
+<link href="Help.html" rel="next" title="Help">
+<link href="Command-Options.html" rel="prev" title="Command Options">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="Command-aliases-default-args"></span><div class="header">
+<p>
+Next: <a href="Help.html" accesskey="n" rel="next">Help</a>, Previous: <a href="Command-Options.html" accesskey="p" rel="prev">Command Options</a>, Up: <a href="Commands.html" accesskey="u" rel="up">Commands</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Automatically-prepend-default-arguments-to-user_002ddefined-aliases"></span><h3 class="section">3.5 Automatically prepend default arguments to user-defined aliases</h3>
+
+<p>You can tell <small>GDB</small> to always prepend some default arguments to
+the list of arguments provided explicitly by the user when using a
+user-defined alias.
+</p>
+<p>If you repeatedly use the same arguments or options for a command, you
+can define an alias for this command and tell <small>GDB</small> to
+automatically prepend these arguments or options to the list of
+arguments you type explicitly when using the alias<a id="DOCF3" href="#FOOT3"><sup>3</sup></a>.
+</p>
+<p>For example, if you often use the command <code>thread apply all</code>
+specifying to work on the threads in ascending order and to continue in case it
+encounters an error, you can tell <small>GDB</small> to automatically preprend
+the <code>-ascending</code> and <code>-c</code> options by using:
+</p>
+<div class="example">
+<pre class="example">(gdb) alias thread apply asc-all = thread apply all -ascending -c
+</pre></div>
+
+<p>Once you have defined this alias with its default args, any time you type
+the <code>thread apply asc-all</code> followed by <code>some arguments</code>,
+<small>GDB</small> will execute  <code>thread apply all -ascending -c some arguments</code>.
+</p>
+<p>To have even less to type, you can also define a one word alias:
+</p><div class="example">
+<pre class="example">(gdb) alias t_a_c = thread apply all -ascending -c
+</pre></div>
+
+<p>As usual, unambiguous abbreviations can be used for <var>alias</var>
+and <var>default-args</var>.
+</p>
+<p>The different aliases of a command do not share their default args.
+For example, you define a new alias <code>bt_ALL</code> showing all possible
+information and another alias <code>bt_SMALL</code> showing very limited information
+using:
+</p><div class="example">
+<pre class="example">(gdb) alias bt_ALL = backtrace -entry-values both -frame-arg all \
+   -past-main -past-entry -full
+(gdb) alias bt_SMALL = backtrace -entry-values no -frame-arg none \
+   -past-main off -past-entry off
+</pre></div>
+
+<p>(For more on using the <code>alias</code> command, see <a href="Aliases.html">Aliases</a>.)
+</p>
+<p>Default args are not limited to the arguments and options of <var>command</var>,
+but can specify nested commands if <var>command</var> accepts such a nested command
+as argument.
+For example, the below defines <code>faalocalsoftype</code> that lists the
+frames having locals of a certain type, together with the matching
+local vars:
+</p><div class="example">
+<pre class="example">(gdb) alias faalocalsoftype = frame apply all info locals -q -t
+(gdb) faalocalsoftype int
+#1  0x55554f5e in sleeper_or_burner (v=0xdf50) at sleepers.c:86
+i = 0
+ret = 21845
+</pre></div>
+
+<p>This is also very useful to define an alias for a set of nested <code>with</code>
+commands to have a particular combination of temporary settings.  For example,
+the below defines the alias <code>pp10</code> that pretty prints an expression
+argument, with a maximum of 10 elements if the expression is a string or
+an array:
+</p><div class="example">
+<pre class="example">(gdb) alias pp10 = with print pretty -- with print elements 10 -- print
+</pre></div>
+<p>This defines the alias  <code>pp10</code> as being a sequence of 3 commands.
+The first part <code>with print pretty --</code> temporarily activates the setting
+<code>set print pretty</code>, then launches the command that follows the separator
+<code>--</code>.
+The command following the first part is also a <code>with</code> command that
+temporarily changes the setting <code>set print elements</code> to 10, then
+launches the command that follows the second separator <code>--</code>.
+The third part <code>print</code> is the command the <code>pp10</code> alias will launch,
+using the temporary values of the settings and the arguments explicitly given
+by the user.
+For more information about the <code>with</code> command usage,
+see <a href="Command-Settings.html">Command Settings</a>.
+</p>
+<div class="footnote">
+<hr>
+<h4 class="footnotes-heading">Footnotes</h4>
+
+<h5><a id="FOOT3" href="#DOCF3">(3)</a></h3>
+<p><small>GDB</small>
+could easily accept default arguments for pre-defined commands and aliases,
+but it was deemed this would be confusing, and so is not allowed.</p>
+</div>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Help.html" accesskey="n" rel="next">Help</a>, Previous: <a href="Command-Options.html" accesskey="p" rel="prev">Command Options</a>, Up: <a href="Commands.html" accesskey="u" rel="up">Commands</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

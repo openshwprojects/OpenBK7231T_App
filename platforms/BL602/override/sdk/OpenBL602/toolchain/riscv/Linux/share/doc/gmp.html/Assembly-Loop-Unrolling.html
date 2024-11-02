@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Assembly Loop Unrolling</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Assembly Loop Unrolling">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Assembly-Coding.html#Assembly-Coding" rel="up" title="Assembly Coding">
+<link href="Assembly-Writing-Guide.html#Assembly-Writing-Guide" rel="next" title="Assembly Writing Guide">
+<link href="Assembly-Software-Pipelining.html#Assembly-Software-Pipelining" rel="prev" title="Assembly Software Pipelining">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Assembly-Loop-Unrolling"></a>
+<div class="header">
+<p>
+Next: <a href="Assembly-Writing-Guide.html#Assembly-Writing-Guide" accesskey="n" rel="next">Assembly Writing Guide</a>, Previous: <a href="Assembly-Software-Pipelining.html#Assembly-Software-Pipelining" accesskey="p" rel="prev">Assembly Software Pipelining</a>, Up: <a href="Assembly-Coding.html#Assembly-Coding" accesskey="u" rel="up">Assembly Coding</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Loop-Unrolling"></a>
+<h4 class="subsection">15.8.9 Loop Unrolling</h4>
+<a name="index-Assembly-loop-unrolling"></a>
+
+<p>Loop unrolling consists of replicating code so that several limbs are
+processed in each loop.  At a minimum this reduces loop overheads by a
+corresponding factor, but it can also allow better register usage, for example
+alternately using one register combination and then another.  Judicious use of
+<code>m4</code> macros can help avoid lots of duplication in the source code.
+</p>
+<p>Any amount of unrolling can be handled with a loop counter that&rsquo;s decremented
+by <em>N</em> each time, stopping when the remaining count is less than the
+further <em>N</em> the loop will process.  Or by subtracting <em>N</em> at the
+start, the termination condition becomes when the counter <em>C</em> is less
+than 0 (and the count of remaining limbs is <em>C+N</em>).
+</p>
+<p>Alternately for a power of 2 unroll the loop count and remainder can be
+established with a shift and mask.  This is convenient if also making a
+computed jump into the middle of a large loop.
+</p>
+<p>The limbs not a multiple of the unrolling can be handled in various ways, for
+example
+</p>
+<ul>
+<li> A simple loop at the end (or the start) to process the excess.  Care will be
+wanted that it isn&rsquo;t too much slower than the unrolled part.
+
+</li><li> A set of binary tests, for example after an 8-limb unrolling, test for 4 more
+limbs to process, then a further 2 more or not, and finally 1 more or not.
+This will probably take more code space than a simple loop.
+
+</li><li> A <code>switch</code> statement, providing separate code for each possible excess,
+for example an 8-limb unrolling would have separate code for 0 remaining, 1
+remaining, etc, up to 7 remaining.  This might take a lot of code, but may be
+the best way to optimize all cases in combination with a deep pipelined loop.
+
+</li><li> A computed jump into the middle of the loop, thus making the first iteration
+handle the excess.  This should make times smoothly increase with size, which
+is attractive, but setups for the jump and adjustments for pointers can be
+tricky and could become quite difficult in combination with deep pipelining.
+</li></ul>
+
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Assembly-Writing-Guide.html#Assembly-Writing-Guide" accesskey="n" rel="next">Assembly Writing Guide</a>, Previous: <a href="Assembly-Software-Pipelining.html#Assembly-Software-Pipelining" accesskey="p" rel="prev">Assembly Software Pipelining</a>, Up: <a href="Assembly-Coding.html#Assembly-Coding" accesskey="u" rel="up">Assembly Coding</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,365 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: strftime</title>
+
+<meta name="description" content="The Red Hat newlib C Library: strftime">
+<meta name="keywords" content="The Red Hat newlib C Library: strftime">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Timefns.html#Timefns" rel="up" title="Timefns">
+<link href="time.html#time" rel="next" title="time">
+<link href="mktime.html#mktime" rel="prev" title="mktime">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="strftime"></a>
+<div class="header">
+<p>
+Next: <a href="time.html#time" accesskey="n" rel="next">time</a>, Previous: <a href="mktime.html#mktime" accesskey="p" rel="prev">mktime</a>, Up: <a href="Timefns.html#Timefns" accesskey="u" rel="up">Timefns</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="strftime_002c-strftime_005fl_002d_002d_002dconvert-date-and-time-to-a-formatted-string"></a>
+<h3 class="section">8.8 <code>strftime</code>, <code>strftime_l</code>&mdash;convert date and time to a formatted string</h3>
+<a name="index-strftime"></a>
+<a name="index-strftime_005fl"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;time.h&gt;
+size_t strftime(char *restrict <var>s</var>, size_t <var>maxsize</var>,
+    const char *restrict <var>format</var>,
+    const struct tm *restrict <var>timp</var>);
+size_t strftime_l(char *restrict <var>s</var>, size_t <var>maxsize</var>,
+    const char *restrict <var>format</var>,
+    const struct tm *restrict <var>timp</var>,
+    locale_t <var>locale</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>strftime</code> converts a <code>struct tm</code> representation of the time (at
+<var>timp</var>) into a null-terminated string, starting at <var>s</var> and occupying
+no more than <var>maxsize</var> characters.
+</p>
+<p><code>strftime_l</code> is like <code>strftime</code> but creates a string in a format
+as expected in locale <var>locale</var>.  If <var>locale</var> is LC_GLOBAL_LOCALE or
+not a valid locale object, the behaviour is undefined.
+</p>
+<p>You control the format of the output using the string at <var>format</var>.
+<code>*<var>format</var></code> can contain two kinds of specifications: text to be
+copied literally into the formatted string, and time conversion
+specifications.  Time conversion specifications are two- and
+three-character sequences beginning with &lsquo;<code>%</code>&rsquo; (use &lsquo;<code>%%</code>&rsquo; to
+include a percent sign in the output).  Each defined conversion
+specification selects only the specified field(s) of calendar time
+data from <code>*<var>timp</var></code>, and converts it to a string in one of the
+following ways:
+</p>
+<dl compact="compact">
+<dt><code>%a</code></dt>
+<dd><p>The abbreviated weekday name according to the current locale. [tm_wday]
+</p>
+</dd>
+<dt><code>%A</code></dt>
+<dd><p>The full weekday name according to the current locale.
+In the default &quot;C&quot; locale, one of &lsquo;<code>Sunday</code>&rsquo;, &lsquo;<code>Monday</code>&rsquo;, &lsquo;<code>Tuesday</code>&rsquo;,
+&lsquo;<code>Wednesday</code>&rsquo;, &lsquo;<code>Thursday</code>&rsquo;, &lsquo;<code>Friday</code>&rsquo;, &lsquo;<code>Saturday</code>&rsquo;. [tm_wday]
+</p>
+</dd>
+<dt><code>%b</code></dt>
+<dd><p>The abbreviated month name according to the current locale. [tm_mon]
+</p>
+</dd>
+<dt><code>%B</code></dt>
+<dd><p>The full month name according to the current locale.
+In the default &quot;C&quot; locale, one of &lsquo;<code>January</code>&rsquo;, &lsquo;<code>February</code>&rsquo;,
+&lsquo;<code>March</code>&rsquo;, &lsquo;<code>April</code>&rsquo;, &lsquo;<code>May</code>&rsquo;, &lsquo;<code>June</code>&rsquo;, &lsquo;<code>July</code>&rsquo;,
+&lsquo;<code>August</code>&rsquo;, &lsquo;<code>September</code>&rsquo;, &lsquo;<code>October</code>&rsquo;, &lsquo;<code>November</code>&rsquo;,
+&lsquo;<code>December</code>&rsquo;. [tm_mon]
+</p>
+</dd>
+<dt><code>%c</code></dt>
+<dd><p>The preferred date and time representation for the current locale.
+[tm_sec, tm_min, tm_hour, tm_mday, tm_mon, tm_year, tm_wday]
+</p>
+</dd>
+<dt><code>%C</code></dt>
+<dd><p>The century, that is, the year divided by 100 then truncated.  For
+4-digit years, the result is zero-padded and exactly two characters;
+but for other years, there may a negative sign or more digits.  In
+this way, &lsquo;<code>%C%y</code>&rsquo; is equivalent to &lsquo;<code>%Y</code>&rsquo;. [tm_year]
+</p>
+</dd>
+<dt><code>%d</code></dt>
+<dd><p>The day of the month, formatted with two digits (from &lsquo;<code>01</code>&rsquo; to
+&lsquo;<code>31</code>&rsquo;). [tm_mday]
+</p>
+</dd>
+<dt><code>%D</code></dt>
+<dd><p>A string representing the date, in the form &lsquo;<code>&quot;%m/%d/%y&quot;</code>&rsquo;.
+[tm_mday, tm_mon, tm_year]
+</p>
+</dd>
+<dt><code>%e</code></dt>
+<dd><p>The day of the month, formatted with leading space if single digit
+(from &lsquo;<code>1</code>&rsquo; to &lsquo;<code>31</code>&rsquo;). [tm_mday]
+</p>
+</dd>
+<dt><code>%E<code>x</code></code></dt>
+<dd><p>In some locales, the E modifier selects alternative representations of
+certain modifiers <code>x</code>.  In newlib, it is ignored, and treated as %<code>x</code>.
+</p>
+</dd>
+<dt><code>%F</code></dt>
+<dd><p>A string representing the ISO 8601:2000 date format, in the form
+&lsquo;<code>&quot;%Y-%m-%d&quot;</code>&rsquo;. [tm_mday, tm_mon, tm_year]
+</p>
+</dd>
+<dt><code>%g</code></dt>
+<dd><p>The last two digits of the week-based year, see specifier %G (from
+&lsquo;<code>00</code>&rsquo; to &lsquo;<code>99</code>&rsquo;). [tm_year, tm_wday, tm_yday]
+</p>
+</dd>
+<dt><code>%G</code></dt>
+<dd><p>The week-based year. In the ISO 8601:2000 calendar, week 1 of the year
+includes January 4th, and begin on Mondays. Therefore, if January 1st,
+2nd, or 3rd falls on a Sunday, that day and earlier belong to the last
+week of the previous year; and if December 29th, 30th, or 31st falls
+on Monday, that day and later belong to week 1 of the next year.  For
+consistency with %Y, it always has at least four characters.
+Example: &quot;%G&quot; for Saturday 2nd January 1999 gives &quot;1998&quot;, and for
+Tuesday 30th December 1997 gives &quot;1998&quot;. [tm_year, tm_wday, tm_yday]
+</p>
+</dd>
+<dt><code>%h</code></dt>
+<dd><p>Synonym for &quot;%b&quot;. [tm_mon]
+</p>
+</dd>
+<dt><code>%H</code></dt>
+<dd><p>The hour (on a 24-hour clock), formatted with two digits (from
+&lsquo;<code>00</code>&rsquo; to &lsquo;<code>23</code>&rsquo;). [tm_hour]
+</p>
+</dd>
+<dt><code>%I</code></dt>
+<dd><p>The hour (on a 12-hour clock), formatted with two digits (from
+&lsquo;<code>01</code>&rsquo; to &lsquo;<code>12</code>&rsquo;). [tm_hour]
+</p>
+</dd>
+<dt><code>%j</code></dt>
+<dd><p>The count of days in the year, formatted with three digits
+(from &lsquo;<code>001</code>&rsquo; to &lsquo;<code>366</code>&rsquo;). [tm_yday]
+</p>
+</dd>
+<dt><code>%k</code></dt>
+<dd><p>The hour (on a 24-hour clock), formatted with leading space if single
+digit (from &lsquo;<code>0</code>&rsquo; to &lsquo;<code>23</code>&rsquo;). Non-POSIX extension (c.p. %I). [tm_hour]
+</p>
+</dd>
+<dt><code>%l</code></dt>
+<dd><p>The hour (on a 12-hour clock), formatted with leading space if single
+digit (from &lsquo;<code>1</code>&rsquo; to &lsquo;<code>12</code>&rsquo;). Non-POSIX extension (c.p. %H). [tm_hour]
+</p>
+</dd>
+<dt><code>%m</code></dt>
+<dd><p>The month number, formatted with two digits (from &lsquo;<code>01</code>&rsquo; to &lsquo;<code>12</code>&rsquo;).
+[tm_mon]
+</p>
+</dd>
+<dt><code>%M</code></dt>
+<dd><p>The minute, formatted with two digits (from &lsquo;<code>00</code>&rsquo; to &lsquo;<code>59</code>&rsquo;). [tm_min]
+</p>
+</dd>
+<dt><code>%n</code></dt>
+<dd><p>A newline character (&lsquo;<code>\n</code>&rsquo;).
+</p>
+</dd>
+<dt><code>%O<code>x</code></code></dt>
+<dd><p>In some locales, the O modifier selects alternative digit characters
+for certain modifiers <code>x</code>.  In newlib, it is ignored, and treated as %<code>x</code>.
+</p>
+</dd>
+<dt><code>%p</code></dt>
+<dd><p>Either &lsquo;<code>AM</code>&rsquo; or &lsquo;<code>PM</code>&rsquo; as appropriate, or the corresponding strings for
+the current locale. [tm_hour]
+</p>
+</dd>
+<dt><code>%P</code></dt>
+<dd><p>Same as &rsquo;<code>%p</code>&rsquo;, but in lowercase.  This is a GNU extension. [tm_hour]
+</p>
+</dd>
+<dt><code>%r</code></dt>
+<dd><p>Replaced by the time in a.m. and p.m. notation.  In the &quot;C&quot; locale this
+is equivalent to &quot;%I:%M:%S %p&quot;.  In locales which don&rsquo;t define a.m./p.m.
+notations, the result is an empty string. [tm_sec, tm_min, tm_hour]
+</p>
+</dd>
+<dt><code>%R</code></dt>
+<dd><p>The 24-hour time, to the minute.  Equivalent to &quot;%H:%M&quot;. [tm_min, tm_hour]
+</p>
+</dd>
+<dt><code>%s</code></dt>
+<dd><p>The time elapsed, in seconds, since the start of the Unix epoch at
+1970-01-01 00:00:00 UTC.
+</p>
+</dd>
+<dt><code>%S</code></dt>
+<dd><p>The second, formatted with two digits (from &lsquo;<code>00</code>&rsquo; to &lsquo;<code>60</code>&rsquo;).  The
+value 60 accounts for the occasional leap second. [tm_sec]
+</p>
+</dd>
+<dt><code>%t</code></dt>
+<dd><p>A tab character (&lsquo;<code>\t</code>&rsquo;).
+</p>
+</dd>
+<dt><code>%T</code></dt>
+<dd><p>The 24-hour time, to the second.  Equivalent to &quot;%H:%M:%S&quot;. [tm_sec,
+tm_min, tm_hour]
+</p>
+</dd>
+<dt><code>%u</code></dt>
+<dd><p>The weekday as a number, 1-based from Monday (from &lsquo;<code>1</code>&rsquo; to
+&lsquo;<code>7</code>&rsquo;). [tm_wday]
+</p>
+</dd>
+<dt><code>%U</code></dt>
+<dd><p>The week number, where weeks start on Sunday, week 1 contains the first
+Sunday in a year, and earlier days are in week 0.  Formatted with two
+digits (from &lsquo;<code>00</code>&rsquo; to &lsquo;<code>53</code>&rsquo;).  See also <code>%W</code>. [tm_wday, tm_yday]
+</p>
+</dd>
+<dt><code>%V</code></dt>
+<dd><p>The week number, where weeks start on Monday, week 1 contains January 4th,
+and earlier days are in the previous year.  Formatted with two digits
+(from &lsquo;<code>01</code>&rsquo; to &lsquo;<code>53</code>&rsquo;).  See also <code>%G</code>. [tm_year, tm_wday, tm_yday]
+</p>
+</dd>
+<dt><code>%w</code></dt>
+<dd><p>The weekday as a number, 0-based from Sunday (from &lsquo;<code>0</code>&rsquo; to &lsquo;<code>6</code>&rsquo;).
+[tm_wday]
+</p>
+</dd>
+<dt><code>%W</code></dt>
+<dd><p>The week number, where weeks start on Monday, week 1 contains the first
+Monday in a year, and earlier days are in week 0.  Formatted with two
+digits (from &lsquo;<code>00</code>&rsquo; to &lsquo;<code>53</code>&rsquo;). [tm_wday, tm_yday]
+</p>
+</dd>
+<dt><code>%x</code></dt>
+<dd><p>Replaced by the preferred date representation in the current locale.
+In the &quot;C&quot; locale this is equivalent to &quot;%m/%d/%y&quot;.
+[tm_mon, tm_mday, tm_year]
+</p>
+</dd>
+<dt><code>%X</code></dt>
+<dd><p>Replaced by the preferred time representation in the current locale.
+In the &quot;C&quot; locale this is equivalent to &quot;%H:%M:%S&quot;. [tm_sec, tm_min, tm_hour]
+</p>
+</dd>
+<dt><code>%y</code></dt>
+<dd><p>The last two digits of the year (from &lsquo;<code>00</code>&rsquo; to &lsquo;<code>99</code>&rsquo;). [tm_year]
+(Implementation interpretation:  always positive, even for negative years.)
+</p>
+</dd>
+<dt><code>%Y</code></dt>
+<dd><p>The full year, equivalent to <code>%C%y</code>.  It will always have at least four
+characters, but may have more.  The year is accurate even when tm_year
+added to the offset of 1900 overflows an int. [tm_year]
+</p>
+</dd>
+<dt><code>%z</code></dt>
+<dd><p>The offset from UTC.  The format consists of a sign (negative is west of
+Greewich), two characters for hour, then two characters for minutes
+(-hhmm or +hhmm).  If tm_isdst is negative, the offset is unknown and no
+output is generated; if it is zero, the offset is the standard offset for
+the current time zone; and if it is positive, the offset is the daylight
+savings offset for the current timezone. The offset is determined from
+the TZ environment variable, as if by calling tzset(). [tm_isdst]
+</p>
+</dd>
+<dt><code>%Z</code></dt>
+<dd><p>The time zone name.  If tm_isdst is negative, no output is generated.
+Otherwise, the time zone name is based on the TZ environment variable,
+as if by calling tzset(). [tm_isdst]
+</p>
+</dd>
+<dt><code>%%</code></dt>
+<dd><p>A single character, &lsquo;<code>%</code>&rsquo;.
+</p></dd>
+</dl>
+
+
+<br>
+<p><strong>Returns</strong><br>
+When the formatted time takes up no more than <var>maxsize</var> characters,
+the result is the length of the formatted string.  Otherwise, if the
+formatting operation was abandoned due to lack of room, the result is
+<code>0</code>, and the string starting at <var>s</var> corresponds to just those
+parts of <code>*<var>format</var></code> that could be completely filled in within the
+<var>maxsize</var> limit.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+ANSI C requires <code>strftime</code>, but does not specify the contents of
+<code>*<var>s</var></code> when the formatted string would require more than
+<var>maxsize</var> characters.  Unrecognized specifiers and fields of
+<code>timp</code> that are out of range cause undefined results.  Since some
+formats expand to 0 bytes, it is wise to set <code>*<var>s</var></code> to a nonzero
+value beforehand to distinguish between failure and an empty string.
+This implementation does not support <code>s</code> being NULL, nor overlapping
+<code>s</code> and <code>format</code>.
+</p>
+<p><code>strftime_l</code> is POSIX-1.2008.
+</p>
+<p><code>strftime</code> and <code>strftime_l</code> require no supporting OS subroutines.
+</p>
+<br>
+<p><strong>Bugs</strong><br>
+(NOT Cygwin:) <code>strftime</code> ignores the LC_TIME category of the current
+locale, hard-coding the &quot;C&quot; locale settings.
+</p>
+<br>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="time.html#time" accesskey="n" rel="next">time</a>, Previous: <a href="mktime.html#mktime" accesskey="p" rel="prev">mktime</a>, Up: <a href="Timefns.html#Timefns" accesskey="u" rel="up">Timefns</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

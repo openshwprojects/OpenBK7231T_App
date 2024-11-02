@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual documents how to install and use the Multiple Precision
+Floating-Point Reliable Library, version 3.1.4.
+
+Copyright 1991, 1993-2016 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with no Front-Cover Texts, and with no Back-Cover Texts.  A copy of the
+license is included in GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MPFR 3.1.4: Combined Initialization and Assignment Functions</title>
+
+<meta name="description" content="How to install and use GNU MPFR, a library for reliable multiple precision
+floating-point arithmetic, version 3.1.4.">
+<meta name="keywords" content="GNU MPFR 3.1.4: Combined Initialization and Assignment Functions">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="MPFR-Interface.html#MPFR-Interface" rel="up" title="MPFR Interface">
+<link href="Conversion-Functions.html#Conversion-Functions" rel="next" title="Conversion Functions">
+<link href="Assignment-Functions.html#Assignment-Functions" rel="prev" title="Assignment Functions">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Combined-Initialization-and-Assignment-Functions"></a>
+<div class="header">
+<p>
+Next: <a href="Conversion-Functions.html#Conversion-Functions" accesskey="n" rel="next">Conversion Functions</a>, Previous: <a href="Assignment-Functions.html#Assignment-Functions" accesskey="p" rel="prev">Assignment Functions</a>, Up: <a href="MPFR-Interface.html#MPFR-Interface" accesskey="u" rel="up">MPFR Interface</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="index-Combined-initialization-and-assignment-functions"></a>
+<a name="Combined-Initialization-and-Assignment-Functions-1"></a>
+<h3 class="section">5.3 Combined Initialization and Assignment Functions</h3>
+
+<dl>
+<dt><a name="index-mpfr_005finit_005fset"></a>Macro: <em>int</em> <strong>mpfr_init_set</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005finit_005fset_005fui"></a>Macro: <em>int</em> <strong>mpfr_init_set_ui</strong> <em>(mpfr_t <var>rop</var>, unsigned long int <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005finit_005fset_005fsi"></a>Macro: <em>int</em> <strong>mpfr_init_set_si</strong> <em>(mpfr_t <var>rop</var>, long int <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005finit_005fset_005fd"></a>Macro: <em>int</em> <strong>mpfr_init_set_d</strong> <em>(mpfr_t <var>rop</var>, double <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005finit_005fset_005fld"></a>Macro: <em>int</em> <strong>mpfr_init_set_ld</strong> <em>(mpfr_t <var>rop</var>, long double <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005finit_005fset_005fz"></a>Macro: <em>int</em> <strong>mpfr_init_set_z</strong> <em>(mpfr_t <var>rop</var>, mpz_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005finit_005fset_005fq"></a>Macro: <em>int</em> <strong>mpfr_init_set_q</strong> <em>(mpfr_t <var>rop</var>, mpq_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005finit_005fset_005ff"></a>Macro: <em>int</em> <strong>mpfr_init_set_f</strong> <em>(mpfr_t <var>rop</var>, mpf_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Initialize <var>rop</var> and set its value from <var>op</var>, rounded in the direction
+<var>rnd</var>.
+The precision of <var>rop</var> will be taken from the active default precision,
+as set by <code>mpfr_set_default_prec</code>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005finit_005fset_005fstr"></a>Function: <em>int</em> <strong>mpfr_init_set_str</strong> <em>(mpfr_t <var>x</var>, const char *<var>s</var>, int <var>base</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Initialize <var>x</var> and set its value from
+the string <var>s</var> in base <var>base</var>,
+rounded in the direction <var>rnd</var>.
+See <code>mpfr_set_str</code>.
+</p></dd></dl>
+
+
+
+
+</body>
+</html>

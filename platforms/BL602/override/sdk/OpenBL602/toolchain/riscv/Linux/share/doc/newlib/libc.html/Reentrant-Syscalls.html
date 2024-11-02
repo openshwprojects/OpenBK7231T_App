@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: Reentrant Syscalls</title>
+
+<meta name="description" content="The Red Hat newlib C Library: Reentrant Syscalls">
+<meta name="keywords" content="The Red Hat newlib C Library: Reentrant Syscalls">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Syscalls.html#Syscalls" rel="up" title="Syscalls">
+<link href="_005fclose_005fr.html#g_t_005fclose_005fr" rel="next" title="_close_r">
+<link href="Stubs.html#Stubs" rel="prev" title="Stubs">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Reentrant-Syscalls"></a>
+<div class="header">
+<p>
+Previous: <a href="Stubs.html#Stubs" accesskey="p" rel="prev">Stubs</a>, Up: <a href="Syscalls.html#Syscalls" accesskey="u" rel="up">Syscalls</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Reentrant-covers-for-OS-subroutines"></a>
+<h3 class="section">13.2 Reentrant covers for OS subroutines</h3>
+
+<p>Since the system subroutines are used by other library routines that
+require reentrancy, <samp>libc.a</samp> provides cover routines (for example,
+the reentrant version of <code>fork</code> is <code>_fork_r</code>).  These cover
+routines are consistent with the other reentrant subroutines in this
+library, and achieve reentrancy by using a reserved global data block
+(see <a href="Reentrancy.html#Reentrancy">Reentrancy</a>).
+</p>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="_005fclose_005fr.html#g_t_005fclose_005fr" accesskey="1">_close_r</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Reentrant version of close
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="_005fexecve_005fr.html#g_t_005fexecve_005fr" accesskey="2">_execve_r</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Reentrant version of execve
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="_005ffork_005fr.html#g_t_005ffork_005fr" accesskey="3">_fork_r</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Reentrant version of fork
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="_005ffstat_005fr.html#g_t_005ffstat_005fr" accesskey="4">_fstat_r</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Reentrant version of fstat
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="_005fgetpid_005fr.html#g_t_005fgetpid_005fr" accesskey="5">_getpid_r</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Reentrant version of getpid
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="_005fkill_005fr.html#g_t_005fkill_005fr" accesskey="6">_kill_r</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Reentrant version of kill
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="_005flink_005fr.html#g_t_005flink_005fr" accesskey="7">_link_r</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Reentrant version of link
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="_005flseek_005fr.html#g_t_005flseek_005fr" accesskey="8">_lseek_r</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Reentrant version of lseek
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="_005fopen_005fr.html#g_t_005fopen_005fr" accesskey="9">_open_r</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Reentrant version of open
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="_005fread_005fr.html#g_t_005fread_005fr">_read_r</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Reentrant version of read
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="_005fsbrk_005fr.html#g_t_005fsbrk_005fr">_sbrk_r</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Reentrant version of sbrk
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="_005fstat_005fr.html#g_t_005fstat_005fr">_stat_r</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Reentrant version of stat
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="_005ftimes_005fr.html#g_t_005ftimes_005fr">_times_r</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Reentrant version of times
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="_005funlink_005fr.html#g_t_005funlink_005fr">_unlink_r</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Reentrant version of unlink
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="_005fwait_005fr.html#g_t_005fwait_005fr">_wait_r</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Reentrant version of wait
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="_005fwrite_005fr.html#g_t_005fwrite_005fr">_write_r</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Reentrant version of write
+</td></tr>
+</table>
+
+
+
+
+</body>
+</html>

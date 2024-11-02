@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This file documents the BFD library.
+
+Copyright (C) 1991-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "GNU General Public License" and "Funding
+Free Software", the Front-Cover texts being (a) (see below), and with
+the Back-Cover Texts being (b) (see below).  A copy of the license is
+included in the section entitled "GNU Free Documentation License".
+
+(a) The FSF's Front-Cover Text is:
+
+A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Untitled Document: Adding symbols from an object file</title>
+
+<meta name="description" content="Untitled Document: Adding symbols from an object file">
+<meta name="keywords" content="Untitled Document: Adding symbols from an object file">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="BFD-Index.html#BFD-Index" rel="index" title="BFD Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Adding-Symbols-to-the-Hash-Table.html#Adding-Symbols-to-the-Hash-Table" rel="up" title="Adding Symbols to the Hash Table">
+<link href="Adding-symbols-from-an-archive.html#Adding-symbols-from-an-archive" rel="next" title="Adding symbols from an archive">
+<link href="Differing-file-formats.html#Differing-file-formats" rel="prev" title="Differing file formats">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Adding-symbols-from-an-object-file"></a>
+<div class="header">
+<p>
+Next: <a href="Adding-symbols-from-an-archive.html#Adding-symbols-from-an-archive" accesskey="n" rel="next">Adding symbols from an archive</a>, Previous: <a href="Differing-file-formats.html#Differing-file-formats" accesskey="p" rel="prev">Differing file formats</a>, Up: <a href="Adding-Symbols-to-the-Hash-Table.html#Adding-Symbols-to-the-Hash-Table" accesskey="u" rel="up">Adding Symbols to the Hash Table</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="BFD-Index.html#BFD-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Adding-symbols-from-an-object-file-1"></a>
+<h4 class="subsubsection">2.17.2.2 Adding symbols from an object file</h4>
+<p>When the <code>_bfd_link_add_symbols</code> routine is passed an object
+file, it must add all externally visible symbols in that
+object file to the hash table.  The actual work of adding the
+symbol to the hash table is normally handled by the function
+<code>_bfd_generic_link_add_one_symbol</code>.  The
+<code>_bfd_link_add_symbols</code> routine is responsible for reading
+all the symbols from the object file and passing the correct
+information to <code>_bfd_generic_link_add_one_symbol</code>.
+</p>
+<p>The <code>_bfd_link_add_symbols</code> routine should not use
+<code>bfd_canonicalize_symtab</code> to read the symbols.  The point of
+providing this routine is to avoid the overhead of converting
+the symbols into generic <code>asymbol</code> structures.
+</p>
+<a name="index-_005fbfd_005fgeneric_005flink_005fadd_005fone_005fsymbol"></a>
+<p><code>_bfd_generic_link_add_one_symbol</code> handles the details of
+combining common symbols, warning about multiple definitions,
+and so forth.  It takes arguments which describe the symbol to
+add, notably symbol flags, a section, and an offset.  The
+symbol flags include such things as <code>BSF_WEAK</code> or
+<code>BSF_INDIRECT</code>.  The section is a section in the object
+file, or something like <code>bfd_und_section_ptr</code> for an undefined
+symbol or <code>bfd_com_section_ptr</code> for a common symbol.
+</p>
+<p>If the <code>_bfd_final_link</code> routine is also going to need to
+read the symbol information, the <code>_bfd_link_add_symbols</code>
+routine should save it somewhere attached to the object file
+BFD.  However, the information should only be saved if the
+<code>keep_memory</code> field of the <code>info</code> argument is TRUE, so
+that the <code>-no-keep-memory</code> linker switch is effective.
+</p>
+<p>The a.out function which adds symbols from an object file is
+<code>aout_link_add_object_symbols</code>, and most of the interesting
+work is in <code>aout_link_add_symbols</code>.  The latter saves
+pointers to the hash tables entries created by
+<code>_bfd_generic_link_add_one_symbol</code> indexed by symbol number,
+so that the <code>_bfd_final_link</code> routine does not have to call
+the hash table lookup routine to locate the entry.
+</p>
+<hr>
+<div class="header">
+<p>
+Next: <a href="Adding-symbols-from-an-archive.html#Adding-symbols-from-an-archive" accesskey="n" rel="next">Adding symbols from an archive</a>, Previous: <a href="Differing-file-formats.html#Differing-file-formats" accesskey="p" rel="prev">Differing file formats</a>, Up: <a href="Adding-Symbols-to-the-Hash-Table.html#Adding-Symbols-to-the-Hash-Table" accesskey="u" rel="up">Adding Symbols to the Hash Table</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="BFD-Index.html#BFD-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

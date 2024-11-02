@@ -1,0 +1,215 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Embed with GNU: Linker Scripts</title>
+
+<meta name="description" content="Embed with GNU: Linker Scripts">
+<meta name="keywords" content="Embed with GNU: Linker Scripts">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="leds_002ec.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Libraries.html#Libraries" rel="up" title="Libraries">
+<link href="What-to-do-now.html#What-to-do-now" rel="next" title="What to do now">
+<link href="Crt0.html#Crt0" rel="prev" title="Crt0">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Linker-Scripts"></a>
+<div class="header">
+<p>
+Next: <a href="What-to-do-now.html#What-to-do-now" accesskey="n" rel="next">What to do now</a>, Previous: <a href="Crt0.html#Crt0" accesskey="p" rel="prev">Crt0</a>, Up: <a href="Libraries.html#Libraries" accesskey="u" rel="up">Libraries</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<a name="Linker-scripts-for-memory-management"></a>
+<h3 class="section">3.2 Linker scripts for memory management</h3>
+
+<p>The linker script sets up the memory map of an application. It also
+sets up default values for variables used elsewhere by sbrk() and the
+crt0. These default variables are typically called <code>_bss_start</code> and
+<code>_end</code>.
+</p>
+<p>For G++, the constructor and destructor tables must also be setup here.
+The actual section names vary depending on the object file format. For
+<code>a.out</code> and <code>coff</code>, the three main sections are <code>.text</code>,
+<code>.data</code>, and <code>.bss</code>.
+</p>
+<p>Now that you have an image, you can test to make sure it got the
+memory map right. You can do this by having the linker create a memory
+map (by using the <code>-Map</code> option), or afterwards by using <code>nm</code> to
+check a few critical addresses like <code>start</code>, <code>bss_end</code>, and
+<code>_etext</code>.
+</p>
+<p>Here&rsquo;s a breakdown of a linker script for a m68k based target board.
+See the file <code>libgloss/m68k/idp.ld</code>, or go to the appendixes in
+the end of the manual. <a href="idp_002eld.html#idp_002eld">Example Linker Script</a>. 
+</p>
+<div class="smallexample">
+<pre class="smallexample">STARTUP(crt0.o)
+OUTPUT_ARCH(m68k)
+INPUT(idp.o)
+SEARCH_DIR(.)
+__DYNAMIC  =  0;
+</pre></div>
+
+<p>The <code>STARTUP</code> command loads the file specified so that it&rsquo;s
+first. In this case it also doubles to load the file as well, because
+the m68k-coff configuration defaults to not linking in the crt0.o by
+default. It assumes that the developer probably has their own crt0.o.
+This behavior is controlled in the config file for each architecture.
+It&rsquo;s a macro called <code>STARTFILE_SPEC</code>, and if it&rsquo;s set to
+<code>null</code>, then when <code>gcc</code> formats it&rsquo;s command line, it doesn&rsquo;t
+add <code>crto.o</code>. Any file name can be specified here, but the default
+is always <code>crt0.o</code>.
+</p>
+<p>Course if you only use <code>ld</code> to link, then the control of whether or
+not to link in <code>crt0.o</code> is done on the command line. If you have
+multiple crto files, then you can leave this out all together, and link
+in the <code>crt0.o</code> in the makefile, or by having different linker
+scripts. Sometimes this is done for initializing floating point
+optionally, or to add device support.
+</p>
+<p>The <code>OUTPUT_ARCH</code> sets architecture the output file is for.
+</p>
+<p><code>INPUT</code> loads in the file specified. In this case, it&rsquo;s a relocated
+library that contains the definitions for the low-level functions need
+by libc.a.  This could have also been specified on the command line, but
+as it&rsquo;s always needed, it might as well be here as a default.
+<code>SEARCH_DIR</code> specifies the path to look for files, and
+<code>_DYNAMIC</code> means in this case there are no shared libraries. 
+</p>
+<div class="smallexample">
+<pre class="smallexample">/*
+ * Setup the memory map of the MC68ec0x0 Board (IDP)
+ * stack grows up towards high memory. This works for
+ * both the rom68k and the mon68k monitors.
+ */
+MEMORY
+{
+  ram     : ORIGIN = 0x10000, LENGTH = 2M
+}
+</pre></div>
+
+<p>This specifies a name for a section that can be referred to later in the 
+script. In this case, it&rsquo;s only a pointer to the beginning of free RAM
+space, with an upper limit at 2M. If the output file exceeds the upper
+limit, it will produce an error message.
+</p>
+<div class="smallexample">
+<pre class="smallexample">/*
+ * stick everything in ram (of course)
+ */
+SECTIONS
+{
+  .text :
+  {
+    CREATE_OBJECT_SYMBOLS
+    *(.text)
+     etext  =  .;
+     __CTOR_LIST__ = .;
+     LONG((__CTOR_END__ - __CTOR_LIST__) / 4 - 2)
+    *(.ctors)
+     LONG(0)
+     __CTOR_END__ = .;
+     __DTOR_LIST__ = .;
+     LONG((__DTOR_END__ - __DTOR_LIST__) / 4 - 2)
+    *(.dtors)
+     LONG(0)
+     __DTOR_END__ = .;
+    *(.lit)
+    *(.shdata)
+  }  &gt; ram
+  .shbss SIZEOF(.text) + ADDR(.text) :	{
+    *(.shbss)
+  }
+</pre></div>
+
+<p>Set up the <code>.text</code> section. In a <code>COFF</code> file, .text is where
+all the actual instructions are. This also sets up the <em>CONTRUCTOR</em>
+and the <em>DESTRUCTOR</em> tables for <code>G++</code>. Notice that the section
+description redirects itself to the <em>ram</em> variable setup earlier.
+</p>
+<div class="smallexample">
+<pre class="smallexample">  .talias :	 { }  &gt; ram
+  .data  : {
+    *(.data)
+    CONSTRUCTORS
+    _edata  =  .;
+  } &gt; ram
+</pre></div>
+
+<p>Setup the <code>.data</code> section. In a <code>coff</code> file, this is where all
+he initialized data goes. <code>CONSTRUCTORS</code> is a special command used
+by <code>ld</code>.
+</p>
+<div class="smallexample">
+<pre class="smallexample">  .bss SIZEOF(.data) + ADDR(.data) :
+  {
+   __bss_start = ALIGN(0x8);
+   *(.bss)
+   *(COMMON)
+      end = ALIGN(0x8);
+      _end = ALIGN(0x8);
+      __end = ALIGN(0x8);
+  }
+  .mstack  : { }  &gt; ram
+  .rstack  : { }  &gt; ram
+  .stab  . (NOLOAD) : 
+  {
+    [ .stab ]
+  }
+  .stabstr  . (NOLOAD) :
+  {
+    [ .stabstr ]
+  }
+}
+</pre></div>
+
+<p>Setup the <code>.bss</code> section. In a <code>COFF</code> file, this is where
+unitialized data goes. The symbols <code>_bss_start</code> and <code>_end</code>
+are setup here for use by the <code>crt0.o</code> when it zero&rsquo;s the
+<code>.bss</code> section. 
+</p>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="What-to-do-now.html#What-to-do-now" accesskey="n" rel="next">What to do now</a>, Previous: <a href="Crt0.html#Crt0" accesskey="p" rel="prev">Crt0</a>, Up: <a href="Libraries.html#Libraries" accesskey="u" rel="up">Libraries</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+
+
+
+</body>
+</html>

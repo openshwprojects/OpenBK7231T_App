@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>LIBM: cproj</title>
+
+<meta name="description" content="LIBM: cproj">
+<meta name="keywords" content="LIBM: cproj">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Complex.html#Complex" rel="up" title="Complex">
+<link href="creal.html#creal" rel="next" title="creal">
+<link href="cpow.html#cpow" rel="prev" title="cpow">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="cproj"></a>
+<div class="header">
+<p>
+Next: <a href="creal.html#creal" accesskey="n" rel="next">creal</a>, Previous: <a href="cpow.html#cpow" accesskey="p" rel="prev">cpow</a>, Up: <a href="Complex.html#Complex" accesskey="u" rel="up">Complex</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="cproj_002c-cprojf_002d_002d_002d-Riemann-sphere-projection"></a>
+<h3 class="section">2.17 <code>cproj</code>, <code>cprojf</code>&mdash; Riemann sphere projection</h3>
+<a name="index-cproj"></a>
+<a name="index-cprojf"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;complex.h&gt;
+double complex cproj(double complex <var>z</var>);
+float complex cprojf(float complex <var>z</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+These functions compute a projection of <var>z</var> onto the Riemann 
+sphere: <var>z</var> projects to <var>z</var> except that all complex infinities 
+(even those with one infinite part and one NaN part) project 
+to positive infinity on the real axis. If <var>z</var> has an infinite part,
+then <code>cproj</code>(<var>z</var>) is equivalent to
+</p>
+<p>INFINITY + I * copysign(0.0, cimag(z))
+</p>
+<p><code>cprojf</code> is identical to <code>cproj</code>, except that it performs
+its calculations on <code>floats complex</code>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+The cproj functions return the value of the projection onto 
+the Riemann sphere.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>cproj</code> and <code>cprojf</code> are ISO C99
+</p>
+<br>
+
+
+
+</body>
+</html>

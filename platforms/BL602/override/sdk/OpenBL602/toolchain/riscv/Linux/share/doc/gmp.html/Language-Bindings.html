@@ -1,0 +1,234 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Language Bindings</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Language Bindings">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="index.html#Top" rel="up" title="Top">
+<link href="Algorithms.html#Algorithms" rel="next" title="Algorithms">
+<link href="Custom-Allocation.html#Custom-Allocation" rel="prev" title="Custom Allocation">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Language-Bindings"></a>
+<div class="header">
+<p>
+Next: <a href="Algorithms.html#Algorithms" accesskey="n" rel="next">Algorithms</a>, Previous: <a href="Custom-Allocation.html#Custom-Allocation" accesskey="p" rel="prev">Custom Allocation</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Language-Bindings-1"></a>
+<h2 class="chapter">14 Language Bindings</h2>
+<a name="index-Language-bindings"></a>
+<a name="index-Other-languages"></a>
+
+<p>The following packages and projects offer access to GMP from languages other
+than C, though perhaps with varying levels of functionality and efficiency.
+</p>
+
+<br>
+<dl compact="compact">
+<dt>C++</dt>
+<dd><ul>
+<li> GMP C++ class interface, see <a href="C_002b_002b-Class-Interface.html#C_002b_002b-Class-Interface">C++ Class Interface</a> <br> Straightforward
+interface, expression templates to eliminate temporaries.
+</li><li> ALP <a href="https://www-sop.inria.fr/saga/logiciels/ALP/">https://www-sop.inria.fr/saga/logiciels/ALP/</a> <br> Linear algebra and
+polynomials using templates.
+</li><li> Arithmos <a href="http://cant.ua.ac.be/old/arithmos/">http://cant.ua.ac.be/old/arithmos/</a> <br> Rationals
+with infinities and square roots.
+</li><li> CLN <a href="http://www.ginac.de/CLN/">http://www.ginac.de/CLN/</a> <br> High level classes for arithmetic.
+</li><li> Linbox <a href="http://www.linalg.org/">http://www.linalg.org/</a> <br> Sparse vectors and matrices.
+</li><li> NTL <a href="http://www.shoup.net/ntl/">http://www.shoup.net/ntl/</a> <br> A C++ number theory library.
+</li></ul>
+
+
+</dd>
+<dt>Eiffel</dt>
+<dd><ul>
+<li> Eiffelroom <a href="http://www.eiffelroom.org/node/442">http://www.eiffelroom.org/node/442</a>
+</li></ul>
+
+
+</dd>
+<dt>Haskell</dt>
+<dd><ul>
+<li> Glasgow Haskell Compiler <a href="https://www.haskell.org/ghc/">https://www.haskell.org/ghc/</a>
+</li></ul>
+
+</dd>
+<dt>Java</dt>
+<dd><ul>
+<li> Kaffe <a href="https://github.com/kaffe/kaffe">https://github.com/kaffe/kaffe</a>
+</li></ul>
+
+</dd>
+<dt>Lisp</dt>
+<dd><ul>
+<li> GNU Common Lisp <a href="https://www.gnu.org/software/gcl/gcl.html">https://www.gnu.org/software/gcl/gcl.html</a>
+</li><li> Librep <a href="http://librep.sourceforge.net/">http://librep.sourceforge.net/</a>
+</li><li> XEmacs (21.5.18 beta and up) <a href="http://www.xemacs.org">http://www.xemacs.org</a> <br> Optional
+big integers, rationals and floats using GMP.
+</li></ul>
+
+</dd>
+<dt>M4</dt>
+<dd><ul>
+<li> GNU m4 betas <a href="http://www.seindal.dk/rene/gnu/">http://www.seindal.dk/rene/gnu/</a> <br> Optionally provides
+an arbitrary precision <code>mpeval</code>.
+</li></ul>
+
+</dd>
+<dt>ML</dt>
+<dd><ul>
+<li> MLton compiler <a href="http://mlton.org/">http://mlton.org/</a>
+</li></ul>
+
+</dd>
+<dt>Objective Caml</dt>
+<dd><ul>
+<li> MLGMP <a href="http://opam.ocamlpro.com/pkg/mlgmp.20120224.html">http://opam.ocamlpro.com/pkg/mlgmp.20120224.html</a>
+</li><li> Numerix <a href="http://pauillac.inria.fr/~quercia/">http://pauillac.inria.fr/~quercia/</a> <br> Optionally using
+GMP.
+</li></ul>
+
+</dd>
+<dt>Oz</dt>
+<dd><ul>
+<li> Mozart <a href="http://mozart.github.io/">http://mozart.github.io/</a>
+</li></ul>
+
+</dd>
+<dt>Pascal</dt>
+<dd><ul>
+<li> GNU Pascal Compiler <a href="http://www.gnu-pascal.de/">http://www.gnu-pascal.de/</a> <br> GMP unit.
+</li><li> Numerix <a href="http://pauillac.inria.fr/~quercia/">http://pauillac.inria.fr/~quercia/</a> <br> For Free Pascal,
+optionally using GMP.
+</li></ul>
+
+</dd>
+<dt>Perl</dt>
+<dd><ul>
+<li> GMP module, see <samp>demos/perl</samp> in the GMP sources (see <a href="Demonstration-Programs.html#Demonstration-Programs">Demonstration Programs</a>).
+</li><li> Math::GMP <a href="http://www.cpan.org/">http://www.cpan.org/</a> <br> Compatible with Math::BigInt, but
+not as many functions as the GMP module above.
+</li><li> Math::BigInt::GMP <a href="http://www.cpan.org/">http://www.cpan.org/</a> <br> Plug Math::GMP into
+normal Math::BigInt operations.
+</li></ul>
+
+</dd>
+<dt>Pike</dt>
+<dd><ul>
+<li> mpz module in the standard distribution, <a href="http://pike.ida.liu.se/">http://pike.ida.liu.se/</a>
+</li></ul>
+
+</dd>
+<dt>Prolog</dt>
+<dd><ul>
+<li> SWI Prolog <a href="http://www.swi-prolog.org/">http://www.swi-prolog.org/</a> <br>
+Arbitrary precision floats.
+</li></ul>
+
+</dd>
+<dt>Python</dt>
+<dd><ul>
+<li> GMPY <a href="https://code.google.com/p/gmpy/">https://code.google.com/p/gmpy/</a>
+</li></ul>
+
+</dd>
+<dt>Ruby</dt>
+<dd><ul>
+<li> http://rubygems.org/gems/gmp
+</li></ul>
+
+</dd>
+<dt>Scheme</dt>
+<dd><ul>
+<li> GNU Guile <a href="https://www.gnu.org/software/guile/guile.html">https://www.gnu.org/software/guile/guile.html</a>
+</li><li> RScheme <a href="http://www.rscheme.org/">http://www.rscheme.org/</a>
+</li><li> STklos <a href="http://www.stklos.net/">http://www.stklos.net/</a>
+</li></ul>
+
+</dd>
+<dt>Smalltalk</dt>
+<dd><ul>
+<li> GNU Smalltalk <a href="http://www.smalltalk.org/versions/GNUSmalltalk.html">http://www.smalltalk.org/versions/GNUSmalltalk.html</a>
+</li></ul>
+
+</dd>
+<dt>Other</dt>
+<dd><ul>
+<li> Axiom <a href="https://savannah.nongnu.org/projects/axiom">https://savannah.nongnu.org/projects/axiom</a> <br> Computer algebra
+using GCL.
+</li><li> DrGenius <a href="http://drgenius.seul.org/">http://drgenius.seul.org/</a> <br> Geometry system and
+mathematical programming language.
+</li><li> GiNaC <a href="http://www.ginac.de/">http://www.ginac.de/</a> <br> C++ computer algebra using CLN.
+</li><li> GOO <a href="https://www.eecs.berkeley.edu/~jrb/goo/">https://www.eecs.berkeley.edu/~jrb/goo/</a> <br> Dynamic object oriented
+language.
+</li><li> Maxima <a href="https://www.ma.utexas.edu/users/wfs/maxima.html">https://www.ma.utexas.edu/users/wfs/maxima.html</a> <br> Macsyma
+computer algebra using GCL.
+</li><li> Regina <a href="http://regina.sourceforge.net/">http://regina.sourceforge.net/</a> <br> Topological calculator.
+</li><li> Yacas <a href="http://yacas.sourceforge.net">http://yacas.sourceforge.net</a> <br> Yet another computer algebra system.
+</li></ul>
+
+</dd>
+</dl>
+
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Algorithms.html#Algorithms" accesskey="n" rel="next">Algorithms</a>, Previous: <a href="Custom-Allocation.html#Custom-Allocation" accesskey="p" rel="prev">Custom Allocation</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

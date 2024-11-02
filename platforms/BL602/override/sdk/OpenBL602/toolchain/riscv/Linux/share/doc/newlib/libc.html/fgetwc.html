@@ -1,0 +1,152 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: fgetwc</title>
+
+<meta name="description" content="The Red Hat newlib C Library: fgetwc">
+<meta name="keywords" content="The Red Hat newlib C Library: fgetwc">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="fgetws.html#fgetws" rel="next" title="fgetws">
+<link href="fgets.html#fgets" rel="prev" title="fgets">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="fgetwc"></a>
+<div class="header">
+<p>
+Next: <a href="fgetws.html#fgetws" accesskey="n" rel="next">fgetws</a>, Previous: <a href="fgets.html#fgets" accesskey="p" rel="prev">fgets</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="fgetwc_002c-getwc_002c-fgetwc_005funlocked_002c-getwc_005funlocked_002d_002d_002dget-a-wide-character-from-a-file-or-stream"></a>
+<h3 class="section">4.13 <code>fgetwc</code>, <code>getwc</code>, <code>fgetwc_unlocked</code>, <code>getwc_unlocked</code>&mdash;get a wide character from a file or stream</h3>
+<a name="index-fgetwc"></a>
+<a name="index-fgetwc_005funlocked"></a>
+<a name="index-_005ffgetwc_005fr"></a>
+<a name="index-_005ffgetwc_005funlocked_005fr"></a>
+<a name="index-getwc"></a>
+<a name="index-getwc_005funlocked"></a>
+<a name="index-_005fgetwc_005fr"></a>
+<a name="index-_005fgetwc_005funlocked_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+#include &lt;wchar.h&gt;
+wint_t fgetwc(FILE *<var>fp</var>);
+
+#define _GNU_SOURCE
+#include &lt;stdio.h&gt;
+#include &lt;wchar.h&gt;
+wint_t fgetwc_unlocked(FILE *<var>fp</var>);
+
+#include &lt;stdio.h&gt;
+#include &lt;wchar.h&gt;
+wint_t _fgetwc_r(struct _reent *<var>ptr</var>, FILE *<var>fp</var>);
+
+#include &lt;stdio.h&gt;
+#include &lt;wchar.h&gt;
+wint_t _fgetwc_unlocked_r(struct _reent *<var>ptr</var>, FILE *<var>fp</var>);
+
+#include &lt;stdio.h&gt;
+#include &lt;wchar.h&gt;
+wint_t getwc(FILE *<var>fp</var>);
+
+#define _GNU_SOURCE
+#include &lt;stdio.h&gt;
+#include &lt;wchar.h&gt;
+wint_t getwc_unlocked(FILE *<var>fp</var>);
+
+#include &lt;stdio.h&gt;
+#include &lt;wchar.h&gt;
+wint_t _getwc_r(struct _reent *<var>ptr</var>, FILE *<var>fp</var>);
+
+#include &lt;stdio.h&gt;
+#include &lt;wchar.h&gt;
+wint_t _getwc_unlocked_r(struct _reent *<var>ptr</var>, FILE *<var>fp</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+Use <code>fgetwc</code> to get the next wide character from the file or stream
+identified by <var>fp</var>.  As a side effect, <code>fgetwc</code> advances the file&rsquo;s
+current position indicator.
+</p>
+<p><code>fgetwc_unlocked</code> is a non-thread-safe version of <code>fgetwc</code>.
+<code>fgetwc_unlocked</code> may only safely be used within a scope
+protected by flockfile() (or ftrylockfile()) and funlockfile().  This
+function may safely be used in a multi-threaded program if and only
+if they are called while the invoking thread owns the (FILE *)
+object, as is the case after a successful call to the flockfile() or
+ftrylockfile() functions.  If threads are disabled, then
+<code>fgetwc_unlocked</code> is equivalent to <code>fgetwc</code>.
+</p>
+<p>The <code>getwc</code> and <code>getwc_unlocked</code> functions or macros functions identically
+to <code>fgetwc</code> and <code>fgetwc_unlocked</code>.  It may be implemented as a macro, and
+may evaluate its argument more than once. There is no reason ever to use it.
+</p>
+<p><code>_fgetwc_r</code>, <code>_getwc_r</code>, <code>_fgetwc_unlocked_r</code>, and <code>_getwc_unlocked_r</code>
+are simply reentrant versions of the above functions that are passed the
+additional reentrant structure pointer argument: <var>ptr</var>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+The next wide character cast to <code>wint_t</code>, unless there is no more data,
+or the host system reports a read error; in either of these situations,
+<code>fgetwc</code> and <code>getwc</code> return <code>WEOF</code>.
+</p>
+<p>You can distinguish the two situations that cause an <code>EOF</code> result by
+using the <code>ferror</code> and <code>feof</code> functions.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>fgetwc</code> and <code>getwc</code> are required by C99 and POSIX.1-2001.
+</p>
+<p><code>fgetwc_unlocked</code> and <code>getwc_unlocked</code> are GNU extensions.
+</p>
+<br>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="fgetws.html#fgetws" accesskey="n" rel="next">fgetws</a>, Previous: <a href="fgets.html#fgets" accesskey="p" rel="prev">fgets</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: C++ Interface Internals</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: C++ Interface Internals">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Internals.html#Internals" rel="up" title="Internals">
+<link href="Contributors.html#Contributors" rel="next" title="Contributors">
+<link href="Raw-Output-Internals.html#Raw-Output-Internals" rel="prev" title="Raw Output Internals">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="C_002b_002b-Interface-Internals"></a>
+<div class="header">
+<p>
+Previous: <a href="Raw-Output-Internals.html#Raw-Output-Internals" accesskey="p" rel="prev">Raw Output Internals</a>, Up: <a href="Internals.html#Internals" accesskey="u" rel="up">Internals</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="C_002b_002b-Interface-Internals-1"></a>
+<h3 class="section">16.5 C++ Interface Internals</h3>
+<a name="index-C_002b_002b-interface-internals"></a>
+
+<p>A system of expression templates is used to ensure something like <code>a=b+c</code>
+turns into a simple call to <code>mpz_add</code> etc.  For <code>mpf_class</code>
+the scheme also ensures the precision of the final
+destination is used for any temporaries within a statement like
+<code>f=w*x+y*z</code>.  These are important features which a naive implementation
+cannot provide.
+</p>
+<p>A simplified description of the scheme follows.  The true scheme is
+complicated by the fact that expressions have different return types.  For
+detailed information, refer to the source code.
+</p>
+<p>To perform an operation, say, addition, we first define a &ldquo;function object&rdquo;
+evaluating it,
+</p>
+<div class="example">
+<pre class="example">struct __gmp_binary_plus
+{
+  static void eval(mpf_t f, const mpf_t g, const mpf_t h)
+  {
+    mpf_add(f, g, h);
+  }
+};
+</pre></div>
+
+<p>And an &ldquo;additive expression&rdquo; object,
+</p>
+<div class="example">
+<pre class="example">__gmp_expr&lt;__gmp_binary_expr&lt;mpf_class, mpf_class, __gmp_binary_plus&gt; &gt;
+operator+(const mpf_class &amp;f, const mpf_class &amp;g)
+{
+  return __gmp_expr
+    &lt;__gmp_binary_expr&lt;mpf_class, mpf_class, __gmp_binary_plus&gt; &gt;(f, g);
+}
+</pre></div>
+
+<p>The seemingly redundant <code>__gmp_expr&lt;__gmp_binary_expr&lt;&hellip;&gt;&gt;</code> is used to
+encapsulate any possible kind of expression into a single template type.  In
+fact even <code>mpf_class</code> etc are <code>typedef</code> specializations of
+<code>__gmp_expr</code>.
+</p>
+<p>Next we define assignment of <code>__gmp_expr</code> to <code>mpf_class</code>.
+</p>
+<div class="example">
+<pre class="example">template &lt;class T&gt;
+mpf_class &amp; mpf_class::operator=(const __gmp_expr&lt;T&gt; &amp;expr)
+{
+  expr.eval(this-&gt;get_mpf_t(), this-&gt;precision());
+  return *this;
+}
+
+template &lt;class Op&gt;
+void __gmp_expr&lt;__gmp_binary_expr&lt;mpf_class, mpf_class, Op&gt; &gt;::eval
+(mpf_t f, mp_bitcnt_t precision)
+{
+  Op::eval(f, expr.val1.get_mpf_t(), expr.val2.get_mpf_t());
+}
+</pre></div>
+
+<p>where <code>expr.val1</code> and <code>expr.val2</code> are references to the expression&rsquo;s
+operands (here <code>expr</code> is the <code>__gmp_binary_expr</code> stored within the
+<code>__gmp_expr</code>).
+</p>
+<p>This way, the expression is actually evaluated only at the time of assignment,
+when the required precision (that of <code>f</code>) is known.  Furthermore the
+target <code>mpf_t</code> is now available, thus we can call <code>mpf_add</code> directly
+with <code>f</code> as the output argument.
+</p>
+<p>Compound expressions are handled by defining operators taking subexpressions
+as their arguments, like this:
+</p>
+<div class="example">
+<pre class="example">template &lt;class T, class U&gt;
+__gmp_expr
+&lt;__gmp_binary_expr&lt;__gmp_expr&lt;T&gt;, __gmp_expr&lt;U&gt;, __gmp_binary_plus&gt; &gt;
+operator+(const __gmp_expr&lt;T&gt; &amp;expr1, const __gmp_expr&lt;U&gt; &amp;expr2)
+{
+  return __gmp_expr
+    &lt;__gmp_binary_expr&lt;__gmp_expr&lt;T&gt;, __gmp_expr&lt;U&gt;, __gmp_binary_plus&gt; &gt;
+    (expr1, expr2);
+}
+</pre></div>
+
+<p>And the corresponding specializations of <code>__gmp_expr::eval</code>:
+</p>
+<div class="example">
+<pre class="example">template &lt;class T, class U, class Op&gt;
+void __gmp_expr
+&lt;__gmp_binary_expr&lt;__gmp_expr&lt;T&gt;, __gmp_expr&lt;U&gt;, Op&gt; &gt;::eval
+(mpf_t f, mp_bitcnt_t precision)
+{
+  // declare two temporaries
+  mpf_class temp1(expr.val1, precision), temp2(expr.val2, precision);
+  Op::eval(f, temp1.get_mpf_t(), temp2.get_mpf_t());
+}
+</pre></div>
+
+<p>The expression is thus recursively evaluated to any level of complexity and
+all subexpressions are evaluated to the precision of <code>f</code>.
+</p>
+
+<hr>
+<div class="header">
+<p>
+Previous: <a href="Raw-Output-Internals.html#Raw-Output-Internals" accesskey="p" rel="prev">Raw Output Internals</a>, Up: <a href="Internals.html#Internals" accesskey="u" rel="up">Internals</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>LIBM: fma</title>
+
+<meta name="description" content="LIBM: fma">
+<meta name="keywords" content="LIBM: fma">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Math.html#Math" rel="up" title="Math">
+<link href="fmax.html#fmax" rel="next" title="fmax">
+<link href="floor.html#floor" rel="prev" title="floor">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="fma"></a>
+<div class="header">
+<p>
+Next: <a href="fmax.html#fmax" accesskey="n" rel="next">fmax</a>, Previous: <a href="floor.html#floor" accesskey="p" rel="prev">floor</a>, Up: <a href="Math.html#Math" accesskey="u" rel="up">Math</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="fma_002c-fmaf_002d_002d_002dfloating-multiply-add"></a>
+<h3 class="section">1.22 <code>fma</code>, <code>fmaf</code>&mdash;floating multiply add</h3>
+<a name="index-fma"></a>
+<a name="index-fmaf"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;math.h&gt;
+double fma(double <var>x</var>, double <var>y</var>, double <var>z</var>);
+float fmaf(float <var>x</var>, float <var>y</var>, float <var>z</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+The <code>fma</code> functions compute (<var>x</var> * <var>y</var>) + <var>z</var>, rounded as one ternary
+operation:  they compute the value (as if) to infinite precision and round once
+to the result format, according to the rounding mode characterized by the value
+of FLT_ROUNDS.  That is, they are supposed to do this:  see below.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+The <code>fma</code> functions return (<var>x</var> * <var>y</var>) + <var>z</var>, rounded as one ternary
+operation.
+</p>
+<br>
+<p><strong>Bugs</strong><br>
+This implementation does not provide the function that it should, purely
+returning &quot;(<var>x</var> * <var>y</var>) + <var>z</var>;&quot; with no attempt at all to provide the
+simulated infinite precision intermediates which are required.  DO NOT USE THEM.
+</p>
+<p>If double has enough more precision than float, then <code>fmaf</code> should provide
+the expected numeric results, as it does use double for the calculation.  But
+since this is not the case for all platforms, this manual cannot determine
+if it is so for your case.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+ANSI C, POSIX.
+</p>
+
+<br>
+
+
+
+</body>
+</html>

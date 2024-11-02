@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>acosh (LIBM)</title>
+
+<meta name="description" content="acosh (LIBM)">
+<meta name="keywords" content="acosh (LIBM)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="Document-Index.html" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Math.html" rel="up" title="Math">
+<link href="asin.html" rel="next" title="asin">
+<link href="acos.html" rel="prev" title="acos">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="acosh"></span><div class="header">
+<p>
+Next: <a href="asin.html" accesskey="n" rel="next">asin</a>, Previous: <a href="acos.html" accesskey="p" rel="prev">acos</a>, Up: <a href="Math.html" accesskey="u" rel="up">Math</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="acosh_002c-acoshf_002d_002d_002dinverse-hyperbolic-cosine"></span><h3 class="section">1.4 <code>acosh</code>, <code>acoshf</code>&mdash;inverse hyperbolic cosine</h3>
+<span id="index-acosh"></span>
+<span id="index-acoshf"></span>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;math.h&gt;
+double acosh(double <var>x</var>);
+float acoshf(float <var>x</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>acosh</code> calculates the inverse hyperbolic cosine of <var>x</var>.
+<code>acosh</code> is defined as 
+</p><div class="example">
+<pre class="example"> log(<var>x</var> + sqrt(<var>x</var>*<var>x</var>-1))
+</pre></div>
+
+<p><var>x</var> must be a number greater than or equal to 1.
+</p>
+<p><code>acoshf</code> is identical, other than taking and returning floats.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>acosh</code> and <code>acoshf</code> return the calculated value.  If <var>x</var> 
+less than 1, the return value is NaN and <code>errno</code> is set to <code>EDOM</code>.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+Neither <code>acosh</code> nor <code>acoshf</code> are ANSI C.  They are not recommended
+for portable programs.
+</p>
+<br>
+
+
+
+</body>
+</html>

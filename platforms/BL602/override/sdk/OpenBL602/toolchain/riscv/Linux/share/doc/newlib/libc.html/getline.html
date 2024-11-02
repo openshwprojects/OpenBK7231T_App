@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: getline</title>
+
+<meta name="description" content="The Red Hat newlib C Library: getline">
+<meta name="keywords" content="The Red Hat newlib C Library: getline">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="gets.html#gets" rel="next" title="gets">
+<link href="getdelim.html#getdelim" rel="prev" title="getdelim">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="getline"></a>
+<div class="header">
+<p>
+Next: <a href="gets.html#gets" accesskey="n" rel="next">gets</a>, Previous: <a href="getdelim.html#getdelim" accesskey="p" rel="prev">getdelim</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="getline_002d_002d_002dread-a-line-from-a-file"></a>
+<h3 class="section">4.38 <code>getline</code>&mdash;read a line from a file</h3>
+<a name="index-getline"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+ssize_t getline(char **<var>bufptr</var>, size_t *<var>n</var>, FILE *<var>fp</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>getline</code> reads a file <var>fp</var> up to and possibly including the
+newline character.  The line is read into a buffer pointed to
+by <var>bufptr</var> and designated with size *<var>n</var>.  If the buffer is
+not large enough, it will be dynamically grown by <code>getdelim</code>.
+As the buffer is grown, the pointer to the size <var>n</var> will be
+updated.
+</p>
+<p><code>getline</code> is equivalent to getdelim(bufptr, n, &rsquo;\n&rsquo;, fp);
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>getline</code> returns <code>-1</code> if no characters were successfully read,
+otherwise, it returns the number of bytes successfully read.
+at end of file, the result is nonzero.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>getline</code> is a glibc extension.
+</p>
+<p>No supporting OS subroutines are directly required.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

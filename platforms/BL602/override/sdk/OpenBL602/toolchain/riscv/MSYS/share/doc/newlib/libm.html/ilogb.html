@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>LIBM: ilogb</title>
+
+<meta name="description" content="LIBM: ilogb">
+<meta name="keywords" content="LIBM: ilogb">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Math.html#Math" rel="up" title="Math">
+<link href="infinity.html#infinity" rel="next" title="infinity">
+<link href="hypot.html#hypot" rel="prev" title="hypot">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="ilogb"></a>
+<div class="header">
+<p>
+Next: <a href="infinity.html#infinity" accesskey="n" rel="next">infinity</a>, Previous: <a href="hypot.html#hypot" accesskey="p" rel="prev">hypot</a>, Up: <a href="Math.html#Math" accesskey="u" rel="up">Math</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="ilogb_002c-ilogbf_002d_002d_002dget-exponent-of-floating_002dpoint-number"></a>
+<h3 class="section">1.29 <code>ilogb</code>, <code>ilogbf</code>&mdash;get exponent of floating-point number</h3>
+<a name="index-ilogb"></a>
+<a name="index-ilogbf"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;math.h&gt;
+int ilogb(double <var>val</var>);
+int ilogbf(float <var>val</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+</p>
+<p>All nonzero, normal numbers can be described as <var>m</var> *
+2**<var>p</var>.  <code>ilogb</code> and <code>ilogbf</code> examine the argument
+<var>val</var>, and return <var>p</var>.  The functions <code>frexp</code> and
+<code>frexpf</code> are similar to <code>ilogb</code> and <code>ilogbf</code>, but also
+return <var>m</var>.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+</p>
+<p><code>ilogb</code> and <code>ilogbf</code> return the power of two used to form the
+floating-point argument.
+If <var>val</var> is <code>0</code>, they return <code>FP_ILOGB0</code>.
+If <var>val</var> is infinite, they return <code>INT_MAX</code>.
+If <var>val</var> is NaN, they return <code>FP_ILOGBNAN</code>.
+(<code>FP_ILOGB0</code> and <code>FP_ILOGBNAN</code> are defined in math.h, but in turn are
+defined as INT_MIN or INT_MAX from limits.h.  The value of FP_ILOGB0 may be
+either INT_MIN or -INT_MAX.  The value of FP_ILOGBNAN may be either INT_MAX or
+INT_MIN.)
+</p>
+
+<br>
+<p><strong>Portability</strong><br>
+C99, POSIX
+</p>
+<br>
+
+
+
+</body>
+</html>

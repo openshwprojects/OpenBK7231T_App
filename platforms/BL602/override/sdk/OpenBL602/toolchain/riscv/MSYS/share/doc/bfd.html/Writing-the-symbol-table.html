@@ -1,0 +1,313 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This file documents the BFD library.
+
+Copyright (C) 1991-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "GNU General Public License" and "Funding
+Free Software", the Front-Cover texts being (a) (see below), and with
+the Back-Cover Texts being (b) (see below).  A copy of the license is
+included in the section entitled "GNU Free Documentation License".
+
+(a) The FSF's Front-Cover Text is:
+
+A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Untitled Document: Writing the symbol table</title>
+
+<meta name="description" content="Untitled Document: Writing the symbol table">
+<meta name="keywords" content="Untitled Document: Writing the symbol table">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="BFD-Index.html#BFD-Index" rel="index" title="BFD Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Performing-the-Final-Link.html#Performing-the-Final-Link" rel="up" title="Performing the Final Link">
+<link href="Hash-Tables.html#Hash-Tables" rel="next" title="Hash Tables">
+<link href="Relocating-the-section-contents.html#Relocating-the-section-contents" rel="prev" title="Relocating the section contents">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Writing-the-symbol-table"></a>
+<div class="header">
+<p>
+Previous: <a href="Relocating-the-section-contents.html#Relocating-the-section-contents" accesskey="p" rel="prev">Relocating the section contents</a>, Up: <a href="Performing-the-Final-Link.html#Performing-the-Final-Link" accesskey="u" rel="up">Performing the Final Link</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="BFD-Index.html#BFD-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Writing-the-symbol-table-1"></a>
+<h4 class="subsubsection">2.17.3.3 Writing the symbol table</h4>
+<p>The <code>_bfd_final_link</code> function must gather all the symbols
+in the input files and write them out.  It must also write out
+all the symbols in the global hash table.  This must be
+controlled by the <code>strip</code> and <code>discard</code> fields of the
+<code>bfd_link_info</code> structure.
+</p>
+<p>The local symbols of the input files will not have been
+entered into the linker hash table.  The <code>_bfd_final_link</code>
+routine must consider each input file and include the symbols
+in the output file.  It may be convenient to do this when
+looking through the <code>link_order</code> structures, or it may be
+done by stepping through the <code>input_bfds</code> list.
+</p>
+<p>The <code>_bfd_final_link</code> routine must also traverse the global
+hash table to gather all the externally visible symbols.  It
+is possible that most of the externally visible symbols may be
+written out when considering the symbols of each input file,
+but it is still necessary to traverse the hash table since the
+linker script may have defined some symbols that are not in
+any of the input files.
+</p>
+<p>The <code>strip</code> field of the <code>bfd_link_info</code> structure
+controls which symbols are written out.  The possible values
+are listed in <code>bfdlink.h</code>.  If the value is <code>strip_some</code>,
+then the <code>keep_hash</code> field of the <code>bfd_link_info</code>
+structure is a hash table of symbols to keep; each symbol
+should be looked up in this hash table, and only symbols which
+are present should be included in the output file.
+</p>
+<p>If the <code>strip</code> field of the <code>bfd_link_info</code> structure
+permits local symbols to be written out, the <code>discard</code> field
+is used to further controls which local symbols are included
+in the output file.  If the value is <code>discard_l</code>, then all
+local symbols which begin with a certain prefix are discarded;
+this is controlled by the <code>bfd_is_local_label_name</code> entry point.
+</p>
+<p>The a.out backend handles symbols by calling
+<code>aout_link_write_symbols</code> on each input BFD and then
+traversing the global hash table with the function
+<code>aout_link_write_other_symbol</code>.  It builds a string table
+while writing out the symbols, which is written to the output
+file at the end of <code>NAME(aout,final_link)</code>.
+</p>
+<a name="index-bfd_005flink_005fsplit_005fsection"></a>
+<a name="bfd_005flink_005fsplit_005fsection"></a>
+<h4 class="subsubsection">2.17.3.4 <code>bfd_link_split_section</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd_boolean bfd_link_split_section (bfd *abfd, asection *sec);
+</pre></div>
+<p><strong>Description</strong><br>
+Return nonzero if <var>sec</var> should be split during a
+reloceatable or final link.
+</p><div class="example">
+<pre class="example">#define bfd_link_split_section(abfd, sec) \
+       BFD_SEND (abfd, _bfd_link_split_section, (abfd, sec))
+
+</pre></div>
+
+<a name="index-bfd_005fsection_005falready_005flinked"></a>
+<a name="bfd_005fsection_005falready_005flinked"></a>
+<h4 class="subsubsection">2.17.3.5 <code>bfd_section_already_linked</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd_boolean bfd_section_already_linked (bfd *abfd,
+    asection *sec,
+    struct bfd_link_info *info);
+</pre></div>
+<p><strong>Description</strong><br>
+Check if <var>data</var> has been already linked during a reloceatable
+or final link.  Return TRUE if it has.
+</p><div class="example">
+<pre class="example">#define bfd_section_already_linked(abfd, sec, info) \
+       BFD_SEND (abfd, _section_already_linked, (abfd, sec, info))
+
+</pre></div>
+
+<a name="index-bfd_005fgeneric_005fdefine_005fcommon_005fsymbol"></a>
+<a name="bfd_005fgeneric_005fdefine_005fcommon_005fsymbol"></a>
+<h4 class="subsubsection">2.17.3.6 <code>bfd_generic_define_common_symbol</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd_boolean bfd_generic_define_common_symbol
+   (bfd *output_bfd, struct bfd_link_info *info,
+    struct bfd_link_hash_entry *h);
+</pre></div>
+<p><strong>Description</strong><br>
+Convert common symbol <var>h</var> into a defined symbol.
+Return TRUE on success and FALSE on failure.
+</p><div class="example">
+<pre class="example">#define bfd_define_common_symbol(output_bfd, info, h) \
+       BFD_SEND (output_bfd, _bfd_define_common_symbol, (output_bfd, info, h))
+
+</pre></div>
+
+<a name="index-_005fbfd_005fgeneric_005flink_005fhide_005fsymbol"></a>
+<a name="g_t_005fbfd_005fgeneric_005flink_005fhide_005fsymbol"></a>
+<h4 class="subsubsection">2.17.3.7 <code>_bfd_generic_link_hide_symbol</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">void _bfd_generic_link_hide_symbol
+   (bfd *output_bfd, struct bfd_link_info *info,
+    struct bfd_link_hash_entry *h);
+</pre></div>
+<p><strong>Description</strong><br>
+Hide symbol <var>h</var>.
+This is an internal function.  It should not be called from
+outside the BFD library.
+</p><div class="example">
+<pre class="example">#define bfd_link_hide_symbol(output_bfd, info, h) \
+       BFD_SEND (output_bfd, _bfd_link_hide_symbol, (output_bfd, info, h))
+
+</pre></div>
+
+<a name="index-bfd_005fgeneric_005fdefine_005fstart_005fstop"></a>
+<a name="bfd_005fgeneric_005fdefine_005fstart_005fstop"></a>
+<h4 class="subsubsection">2.17.3.8 <code>bfd_generic_define_start_stop</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">struct bfd_link_hash_entry *bfd_generic_define_start_stop
+   (struct bfd_link_info *info,
+    const char *symbol, asection *sec);
+</pre></div>
+<p><strong>Description</strong><br>
+Define a __start, __stop, .startof. or .sizeof. symbol.
+Return the symbol or NULL if no such undefined symbol exists.
+</p><div class="example">
+<pre class="example">#define bfd_define_start_stop(output_bfd, info, symbol, sec) \
+       BFD_SEND (output_bfd, _bfd_define_start_stop, (info, symbol, sec))
+
+</pre></div>
+
+<a name="index-bfd_005ffind_005fversion_005ffor_005fsym"></a>
+<a name="bfd_005ffind_005fversion_005ffor_005fsym"></a>
+<h4 class="subsubsection">2.17.3.9 <code>bfd_find_version_for_sym</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">struct bfd_elf_version_tree * bfd_find_version_for_sym
+   (struct bfd_elf_version_tree *verdefs,
+    const char *sym_name, bfd_boolean *hide);
+</pre></div>
+<p><strong>Description</strong><br>
+Search an elf version script tree for symbol versioning
+info and export / don&rsquo;t-export status for a given symbol.
+Return non-NULL on success and NULL on failure; also sets
+the output &lsquo;<samp>hide</samp>&rsquo; boolean parameter.
+</p>
+<a name="index-bfd_005fhide_005fsym_005fby_005fversion"></a>
+<a name="bfd_005fhide_005fsym_005fby_005fversion"></a>
+<h4 class="subsubsection">2.17.3.10 <code>bfd_hide_sym_by_version</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd_boolean bfd_hide_sym_by_version
+   (struct bfd_elf_version_tree *verdefs, const char *sym_name);
+</pre></div>
+<p><strong>Description</strong><br>
+Search an elf version script tree for symbol versioning
+info for a given symbol.  Return TRUE if the symbol is hidden.
+</p>
+<a name="index-bfd_005flink_005fcheck_005frelocs"></a>
+<a name="bfd_005flink_005fcheck_005frelocs"></a>
+<h4 class="subsubsection">2.17.3.11 <code>bfd_link_check_relocs</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd_boolean bfd_link_check_relocs
+   (bfd *abfd, struct bfd_link_info *info);
+</pre></div>
+<p><strong>Description</strong><br>
+Checks the relocs in ABFD for validity.
+Does not execute the relocs.
+Return TRUE if everything is OK, FALSE otherwise.
+This is the external entry point to this code.
+</p>
+<a name="index-_005fbfd_005fgeneric_005flink_005fcheck_005frelocs"></a>
+<a name="g_t_005fbfd_005fgeneric_005flink_005fcheck_005frelocs"></a>
+<h4 class="subsubsection">2.17.3.12 <code>_bfd_generic_link_check_relocs</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd_boolean _bfd_generic_link_check_relocs
+   (bfd *abfd, struct bfd_link_info *info);
+</pre></div>
+<p><strong>Description</strong><br>
+Stub function for targets that do not implement reloc checking.
+Return TRUE.
+This is an internal function.  It should not be called from
+outside the BFD library.
+</p>
+<a name="index-bfd_005fmerge_005fprivate_005fbfd_005fdata"></a>
+<a name="bfd_005fmerge_005fprivate_005fbfd_005fdata"></a>
+<h4 class="subsubsection">2.17.3.13 <code>bfd_merge_private_bfd_data</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd_boolean bfd_merge_private_bfd_data
+   (bfd *ibfd, struct bfd_link_info *info);
+</pre></div>
+<p><strong>Description</strong><br>
+Merge private BFD information from the BFD <var>ibfd</var> to the
+the output file BFD when linking.  Return <code>TRUE</code> on success,
+<code>FALSE</code> on error.  Possible error returns are:
+</p>
+<ul>
+<li> <code>bfd_error_no_memory</code> -
+Not enough memory exists to create private data for <var>obfd</var>.
+</li></ul>
+<div class="example">
+<pre class="example">#define bfd_merge_private_bfd_data(ibfd, info) \
+       BFD_SEND ((info)-&gt;output_bfd, _bfd_merge_private_bfd_data, \
+                 (ibfd, info))
+</pre></div>
+
+<a name="index-_005fbfd_005fgeneric_005fverify_005fendian_005fmatch"></a>
+<a name="g_t_005fbfd_005fgeneric_005fverify_005fendian_005fmatch"></a>
+<h4 class="subsubsection">2.17.3.14 <code>_bfd_generic_verify_endian_match</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd_boolean _bfd_generic_verify_endian_match
+   (bfd *ibfd, struct bfd_link_info *info);
+</pre></div>
+<p><strong>Description</strong><br>
+Can be used from / for bfd_merge_private_bfd_data to check that
+endianness matches between input and output file.  Returns
+TRUE for a match, otherwise returns FALSE and emits an error.
+</p>
+
+<hr>
+<div class="header">
+<p>
+Previous: <a href="Relocating-the-section-contents.html#Relocating-the-section-contents" accesskey="p" rel="prev">Relocating the section contents</a>, Up: <a href="Performing-the-Final-Link.html#Performing-the-Final-Link" accesskey="u" rel="up">Performing the Final Link</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="BFD-Index.html#BFD-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 1988-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "Funding Free Software", the Front-Cover
+Texts being (a) (see below), and with the Back-Cover Texts being (b)
+(see below).  A copy of the license is included in the section entitled
+"GNU Free Documentation License".
+
+(a) The FSF's Front-Cover Text is:
+
+A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU Compiler Collection (GCC) Internals: Debugging the Analyzer</title>
+
+<meta name="description" content="GNU Compiler Collection (GCC) Internals: Debugging the Analyzer">
+<meta name="keywords" content="GNU Compiler Collection (GCC) Internals: Debugging the Analyzer">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Option-Index.html#Option-Index" rel="index" title="Option Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Static-Analyzer.html#Static-Analyzer" rel="up" title="Static Analyzer">
+<link href="User-Experience-Guidelines.html#User-Experience-Guidelines" rel="next" title="User Experience Guidelines">
+<link href="Analyzer-Internals.html#Analyzer-Internals" rel="prev" title="Analyzer Internals">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Debugging-the-Analyzer"></a>
+<div class="header">
+<p>
+Previous: <a href="Analyzer-Internals.html#Analyzer-Internals" accesskey="p" rel="prev">Analyzer Internals</a>, Up: <a href="Static-Analyzer.html#Static-Analyzer" accesskey="u" rel="up">Static Analyzer</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Option-Index.html#Option-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Debugging-the-Analyzer-1"></a>
+<h3 class="section">27.2 Debugging the Analyzer</h3>
+<a name="index-analyzer_002c-debugging"></a>
+<a name="index-static-analyzer_002c-debugging"></a>
+
+<a name="Special-Functions-for-Debugging-the-Analyzer"></a>
+<h4 class="subsection">27.2.1 Special Functions for Debugging the Analyzer</h4>
+
+<p>The analyzer recognizes various special functions by name, for use
+in debugging the analyzer.  Declarations can be seen in the testsuite
+in <samp>analyzer-decls.h</samp>.  None of these functions are actually
+implemented.
+</p>
+<p>Add:
+</p><div class="smallexample">
+<pre class="smallexample">  __analyzer_break ();
+</pre></div>
+<p>to the source being analyzed to trigger a breakpoint in the analyzer when
+that source is reached.  By putting a series of these in the source, it&rsquo;s
+much easier to effectively step through the program state as it&rsquo;s analyzed.
+</p>
+<div class="smallexample">
+<pre class="smallexample">__analyzer_dump ();
+</pre></div>
+
+<p>will dump the copious information about the analyzer&rsquo;s state each time it
+reaches the call in its traversal of the source.
+</p>
+<div class="smallexample">
+<pre class="smallexample">__analyzer_dump_path ();
+</pre></div>
+
+<p>will emit a placeholder &ldquo;note&rdquo; diagnostic with a path to that call site,
+if the analyzer finds a feasible path to it.
+</p>
+<p>The builtin <code>__analyzer_dump_exploded_nodes</code> will emit a warning
+after analysis containing information on all of the exploded nodes at that
+program point:
+</p>
+<div class="smallexample">
+<pre class="smallexample">  __analyzer_dump_exploded_nodes (0);
+</pre></div>
+
+<p>will output the number of &ldquo;processed&rdquo; nodes, and the IDs of
+both &ldquo;processed&rdquo; and &ldquo;merger&rdquo; nodes, such as:
+</p>
+<div class="smallexample">
+<pre class="smallexample">warning: 2 processed enodes: [EN: 56, EN: 58] merger(s): [EN: 54-55, EN: 57, EN: 59]
+</pre></div>
+
+<p>With a non-zero argument
+</p>
+<div class="smallexample">
+<pre class="smallexample">  __analyzer_dump_exploded_nodes (1);
+</pre></div>
+
+<p>it will also dump all of the states within the &ldquo;processed&rdquo; nodes.
+</p>
+<div class="smallexample">
+<pre class="smallexample">   __analyzer_dump_region_model ();
+</pre></div>
+<p>will dump the region_model&rsquo;s state to stderr.
+</p>
+<div class="smallexample">
+<pre class="smallexample">__analyzer_eval (expr);
+</pre></div>
+<p>will emit a warning with text &quot;TRUE&quot;, FALSE&quot; or &quot;UNKNOWN&quot; based on the
+truthfulness of the argument.  This is useful for writing DejaGnu tests.
+</p>
+
+<a name="Other-Debugging-Techniques"></a>
+<h4 class="subsection">27.2.2 Other Debugging Techniques</h4>
+
+<p>One approach when tracking down where a particular bogus state is
+introduced into the <code>exploded_graph</code> is to add custom code to
+<code>region_model::validate</code>.
+</p>
+<p>For example, this custom code (added to <code>region_model::validate</code>)
+breaks with an assertion failure when a variable called <code>ptr</code>
+acquires a value that&rsquo;s unknown, using
+<code>region_model::get_value_by_name</code> to locate the variable
+</p>
+<div class="smallexample">
+<pre class="smallexample">    /* Find a variable matching &quot;ptr&quot;.  */
+    svalue_id sid = get_value_by_name (&quot;ptr&quot;);
+    if (!sid.null_p ())
+      {
+	svalue *sval = get_svalue (sid);
+	gcc_assert (sval-&gt;get_kind () != SK_UNKNOWN);
+      }
+</pre></div>
+
+<p>making it easier to investigate further in a debugger when this occurs.
+</p>
+<hr>
+<div class="header">
+<p>
+Previous: <a href="Analyzer-Internals.html#Analyzer-Internals" accesskey="p" rel="prev">Analyzer Internals</a>, Up: <a href="Static-Analyzer.html#Static-Analyzer" accesskey="u" rel="up">Static Analyzer</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Option-Index.html#Option-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

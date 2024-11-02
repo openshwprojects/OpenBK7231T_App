@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: va_arg</title>
+
+<meta name="description" content="The Red Hat newlib C Library: va_arg">
+<meta name="keywords" content="The Red Hat newlib C Library: va_arg">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdarg.html#Stdarg" rel="up" title="Stdarg">
+<link href="va_005fend.html#va_005fend" rel="next" title="va_end">
+<link href="va_005fstart.html#va_005fstart" rel="prev" title="va_start">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="va_005farg"></a>
+<div class="header">
+<p>
+Next: <a href="va_005fend.html#va_005fend" accesskey="n" rel="next">va_end</a>, Previous: <a href="va_005fstart.html#va_005fstart" accesskey="p" rel="prev">va_start</a>, Up: <a href="Stdarg.html#Stdarg" accesskey="u" rel="up">Stdarg</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Extract-a-value-from-argument-list"></a>
+<h4 class="subsection">14.1.2 Extract a value from argument list</h4>
+<a name="index-va_005farg"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdarg.h&gt;
+<var>type</var> va_arg(va_list <var>ap</var>, <var>type</var>);
+</pre></div>
+
+<p><strong>Description</strong><br>
+<code>va_arg</code> returns the next unprocessed value from a variable
+argument list <var>ap</var> (which you must previously create with
+<var>va_start</var>).  Specify the type for the value as the second parameter
+to the macro, <var>type</var>.
+</p>
+<p>You may pass a <code>va_list</code> object <var>ap</var> to a subfunction, and use
+<code>va_arg</code> from the subfunction rather than from the function
+actually declared with an ellipsis in the header; however, in that case
+you may <em>only</em> use <code>va_arg</code> from the subfunction.  ANSI C does
+not permit extracting successive values from a single variable-argument
+list from different levels of the calling stack.
+</p>
+<p>There is no mechanism for testing whether there is actually a next
+argument available; you might instead pass an argument count (or some
+other data that implies an argument count) as one of the fixed arguments
+in your function call.
+</p>
+<p><strong>Returns</strong><br>
+<code>va_arg</code> returns the next argument, an object of type <var>type</var>.
+</p>
+<p><strong>Portability</strong><br>
+ANSI C requires <code>va_arg</code>.
+</p>
+
+
+
+</body>
+</html>

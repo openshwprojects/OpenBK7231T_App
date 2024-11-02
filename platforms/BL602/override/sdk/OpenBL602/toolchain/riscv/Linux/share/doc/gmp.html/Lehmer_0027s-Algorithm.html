@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Lehmer's Algorithm</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Lehmer's Algorithm">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Greatest-Common-Divisor-Algorithms.html#Greatest-Common-Divisor-Algorithms" rel="up" title="Greatest Common Divisor Algorithms">
+<link href="Subquadratic-GCD.html#Subquadratic-GCD" rel="next" title="Subquadratic GCD">
+<link href="Binary-GCD.html#Binary-GCD" rel="prev" title="Binary GCD">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Lehmer_0027s-Algorithm"></a>
+<div class="header">
+<p>
+Next: <a href="Subquadratic-GCD.html#Subquadratic-GCD" accesskey="n" rel="next">Subquadratic GCD</a>, Previous: <a href="Binary-GCD.html#Binary-GCD" accesskey="p" rel="prev">Binary GCD</a>, Up: <a href="Greatest-Common-Divisor-Algorithms.html#Greatest-Common-Divisor-Algorithms" accesskey="u" rel="up">Greatest Common Divisor Algorithms</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Lehmer_0027s-algorithm"></a>
+<h4 class="subsection">15.3.2 Lehmer&rsquo;s algorithm</h4>
+
+<p>Lehmer&rsquo;s improvement of the Euclidean algorithms is based on the observation
+that the initial part of the quotient sequence depends only on the most
+significant parts of the inputs. The variant of Lehmer&rsquo;s algorithm used in GMP
+splits off the most significant two limbs, as suggested, e.g., in &ldquo;A
+Double-Digit Lehmer-Euclid Algorithm&rdquo; by Jebelean (see <a href="References.html#References">References</a>). The
+quotients of two double-limb inputs are collected as a 2 by 2 matrix with
+single-limb elements. This is done by the function <code>mpn_hgcd2</code>. The
+resulting matrix is applied to the inputs using <code>mpn_mul_1</code> and
+<code>mpn_submul_1</code>. Each iteration usually reduces the inputs by almost one
+limb. In the rare case of a large quotient, no progress can be made by
+examining just the most significant two limbs, and the quotient is computed
+using plain division.
+</p>
+<p>The resulting algorithm is asymptotically <em>O(N^2)</em>, just as the Euclidean
+algorithm and the binary algorithm. The quadratic part of the work are
+the calls to <code>mpn_mul_1</code> and <code>mpn_submul_1</code>. For small sizes, the
+linear work is also significant. There are roughly <em>N</em> calls to the
+<code>mpn_hgcd2</code> function. This function uses a couple of important
+optimizations:
+</p>
+<ul>
+<li> It uses the same relaxed notion of correctness as <code>mpn_hgcd</code> (see next
+section). This means that when called with the most significant two limbs of
+two large numbers, the returned matrix does not always correspond exactly to
+the initial quotient sequence for the two large numbers; the final quotient
+may sometimes be one off.
+
+</li><li> It takes advantage of the fact the quotients are usually small. The division
+operator is not used, since the corresponding assembler instruction is very
+slow on most architectures. (This code could probably be improved further, it
+uses many branches that are unfriendly to prediction).
+
+</li><li> It switches from double-limb calculations to single-limb calculations half-way
+through, when the input numbers have been reduced in size from two limbs to
+one and a half.
+
+</li></ul>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Subquadratic-GCD.html#Subquadratic-GCD" accesskey="n" rel="next">Subquadratic GCD</a>, Previous: <a href="Binary-GCD.html#Binary-GCD" accesskey="p" rel="prev">Binary GCD</a>, Up: <a href="Greatest-Common-Divisor-Algorithms.html#Greatest-Common-Divisor-Algorithms" accesskey="u" rel="up">Greatest Common Divisor Algorithms</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

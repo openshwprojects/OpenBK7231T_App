@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: abort</title>
+
+<meta name="description" content="The Red Hat newlib C Library: abort">
+<meta name="keywords" content="The Red Hat newlib C Library: abort">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdlib.html#Stdlib" rel="up" title="Stdlib">
+<link href="abs.html#abs" rel="next" title="abs">
+<link href="a64l.html#a64l" rel="prev" title="a64l">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="abort"></a>
+<div class="header">
+<p>
+Next: <a href="abs.html#abs" accesskey="n" rel="next">abs</a>, Previous: <a href="a64l.html#a64l" accesskey="p" rel="prev">a64l</a>, Up: <a href="Stdlib.html#Stdlib" accesskey="u" rel="up">Stdlib</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="abort_002d_002d_002dabnormal-termination-of-a-program"></a>
+<h3 class="section">2.3 <code>abort</code>&mdash;abnormal termination of a program</h3>
+<a name="index-abort"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdlib.h&gt;
+void abort(void);
+
+</pre></div>
+<p><strong>Description</strong><br>
+Use <code>abort</code> to signal that your program has detected a condition it
+cannot deal with.  Normally, <code>abort</code> ends your program&rsquo;s execution.
+</p>
+<p>Before terminating your program, <code>abort</code> raises the exception <code>SIGABRT</code>
+(using &lsquo;<code>raise(SIGABRT)</code>&rsquo;).  If you have used <code>signal</code> to register
+an exception handler for this condition, that handler has the
+opportunity to retain control, thereby avoiding program termination.
+</p>
+<p>In this implementation, <code>abort</code> does not perform any stream- or
+file-related cleanup (the host environment may do so; if not, you can
+arrange for your program to do its own cleanup with a <code>SIGABRT</code>
+exception handler).
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>abort</code> does not return to its caller.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+ANSI C requires <code>abort</code>.
+</p>
+<p>Supporting OS subroutines required: <code>_exit</code> and optionally, <code>write</code>.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

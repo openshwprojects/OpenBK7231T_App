@@ -1,0 +1,911 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Low-level Functions</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Low-level Functions">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="index.html#Top" rel="up" title="Top">
+<link href="Random-Number-Functions.html#Random-Number-Functions" rel="next" title="Random Number Functions">
+<link href="Miscellaneous-Float-Functions.html#Miscellaneous-Float-Functions" rel="prev" title="Miscellaneous Float Functions">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Low_002dlevel-Functions"></a>
+<div class="header">
+<p>
+Next: <a href="Random-Number-Functions.html#Random-Number-Functions" accesskey="n" rel="next">Random Number Functions</a>, Previous: <a href="Floating_002dpoint-Functions.html#Floating_002dpoint-Functions" accesskey="p" rel="prev">Floating-point Functions</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Low_002dlevel-Functions-1"></a>
+<h2 class="chapter">8 Low-level Functions</h2>
+<a name="index-Low_002dlevel-functions"></a>
+
+<p>This chapter describes low-level GMP functions, used to implement the
+high-level GMP functions, but also intended for time-critical user code.
+</p>
+<p>These functions start with the prefix <code>mpn_</code>.
+</p>
+
+<p>The <code>mpn</code> functions are designed to be as fast as possible, <strong>not</strong>
+to provide a coherent calling interface.  The different functions have somewhat
+similar interfaces, but there are variations that make them hard to use.  These
+functions do as little as possible apart from the real multiple precision
+computation, so that no time is spent on things that not all callers need.
+</p>
+<p>A source operand is specified by a pointer to the least significant limb and a
+limb count.  A destination operand is specified by just a pointer.  It is the
+responsibility of the caller to ensure that the destination has enough space
+for storing the result.
+</p>
+<p>With this way of specifying operands, it is possible to perform computations on
+subranges of an argument, and store the result into a subrange of a
+destination.
+</p>
+<p>A common requirement for all functions is that each source area needs at least
+one limb.  No size argument may be zero.  Unless otherwise stated, in-place
+operations are allowed where source and destination are the same, but not where
+they only partly overlap.
+</p>
+<p>The <code>mpn</code> functions are the base for the implementation of the
+<code>mpz_</code>, <code>mpf_</code>, and <code>mpq_</code> functions.
+</p>
+<p>This example adds the number beginning at <var>s1p</var> and the number beginning at
+<var>s2p</var> and writes the sum at <var>destp</var>.  All areas have <var>n</var> limbs.
+</p>
+<div class="example">
+<pre class="example">cy = mpn_add_n (destp, s1p, s2p, n)
+</pre></div>
+
+<p>It should be noted that the <code>mpn</code> functions make no attempt to identify
+high or low zero limbs on their operands, or other special forms.  On random
+data such cases will be unlikely and it&rsquo;d be wasteful for every function to
+check every time.  An application knowing something about its data can take
+steps to trim or perhaps split its calculations.
+</p>
+<br>
+<p>In the notation used below, a source operand is identified by the pointer to
+the least significant limb, and the limb count in braces.  For example,
+{<var>s1p</var>, <var>s1n</var>}.
+</p>
+<dl>
+<dt><a name="index-mpn_005fadd_005fn"></a>Function: <em>mp_limb_t</em> <strong>mpn_add_n</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>s1p</var>, const mp_limb_t *<var>s2p</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Add {<var>s1p</var>, <var>n</var>} and {<var>s2p</var>, <var>n</var>}, and write the <var>n</var>
+least significant limbs of the result to <var>rp</var>.  Return carry, either 0 or
+1.
+</p>
+<p>This is the lowest-level function for addition.  It is the preferred function
+for addition, since it is written in assembly for most CPUs.  For addition of
+a variable to itself (i.e., <var>s1p</var> equals <var>s2p</var>) use <code>mpn_lshift</code>
+with a count of 1 for optimal speed.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fadd_005f1"></a>Function: <em>mp_limb_t</em> <strong>mpn_add_1</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>s1p</var>, mp_size_t <var>n</var>, mp_limb_t <var>s2limb</var>)</em></dt>
+<dd><p>Add {<var>s1p</var>, <var>n</var>} and <var>s2limb</var>, and write the <var>n</var> least
+significant limbs of the result to <var>rp</var>.  Return carry, either 0 or 1.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fadd"></a>Function: <em>mp_limb_t</em> <strong>mpn_add</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>s1p</var>, mp_size_t <var>s1n</var>, const mp_limb_t *<var>s2p</var>, mp_size_t <var>s2n</var>)</em></dt>
+<dd><p>Add {<var>s1p</var>, <var>s1n</var>} and {<var>s2p</var>, <var>s2n</var>}, and write the
+<var>s1n</var> least significant limbs of the result to <var>rp</var>.  Return carry,
+either 0 or 1.
+</p>
+<p>This function requires that <var>s1n</var> is greater than or equal to <var>s2n</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fsub_005fn"></a>Function: <em>mp_limb_t</em> <strong>mpn_sub_n</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>s1p</var>, const mp_limb_t *<var>s2p</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Subtract {<var>s2p</var>, <var>n</var>} from {<var>s1p</var>, <var>n</var>}, and write the
+<var>n</var> least significant limbs of the result to <var>rp</var>.  Return borrow,
+either 0 or 1.
+</p>
+<p>This is the lowest-level function for subtraction.  It is the preferred
+function for subtraction, since it is written in assembly for most CPUs.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fsub_005f1"></a>Function: <em>mp_limb_t</em> <strong>mpn_sub_1</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>s1p</var>, mp_size_t <var>n</var>, mp_limb_t <var>s2limb</var>)</em></dt>
+<dd><p>Subtract <var>s2limb</var> from {<var>s1p</var>, <var>n</var>}, and write the <var>n</var> least
+significant limbs of the result to <var>rp</var>.  Return borrow, either 0 or 1.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fsub"></a>Function: <em>mp_limb_t</em> <strong>mpn_sub</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>s1p</var>, mp_size_t <var>s1n</var>, const mp_limb_t *<var>s2p</var>, mp_size_t <var>s2n</var>)</em></dt>
+<dd><p>Subtract {<var>s2p</var>, <var>s2n</var>} from {<var>s1p</var>, <var>s1n</var>}, and write the
+<var>s1n</var> least significant limbs of the result to <var>rp</var>.  Return borrow,
+either 0 or 1.
+</p>
+<p>This function requires that <var>s1n</var> is greater than or equal to
+<var>s2n</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fneg"></a>Function: <em>mp_limb_t</em> <strong>mpn_neg</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>sp</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Perform the negation of {<var>sp</var>, <var>n</var>}, and write the result to
+{<var>rp</var>, <var>n</var>}.  This is equivalent to calling <code>mpn_sub_n</code> with a
+<var>n</var>-limb zero minuend and passing {<var>sp</var>, <var>n</var>} as subtrahend.
+Return borrow, either 0 or 1.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fmul_005fn"></a>Function: <em>void</em> <strong>mpn_mul_n</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>s1p</var>, const mp_limb_t *<var>s2p</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Multiply {<var>s1p</var>, <var>n</var>} and {<var>s2p</var>, <var>n</var>}, and write the
+2*<var>n</var>-limb result to <var>rp</var>.
+</p>
+<p>The destination has to have space for 2*<var>n</var> limbs, even if the product&rsquo;s
+most significant limb is zero.  No overlap is permitted between the
+destination and either source.
+</p>
+<p>If the two input operands are the same, use <code>mpn_sqr</code>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fmul"></a>Function: <em>mp_limb_t</em> <strong>mpn_mul</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>s1p</var>, mp_size_t <var>s1n</var>, const mp_limb_t *<var>s2p</var>, mp_size_t <var>s2n</var>)</em></dt>
+<dd><p>Multiply {<var>s1p</var>, <var>s1n</var>} and {<var>s2p</var>, <var>s2n</var>}, and write the
+(<var>s1n</var>+<var>s2n</var>)-limb result to <var>rp</var>.  Return the most significant
+limb of the result.
+</p>
+<p>The destination has to have space for <var>s1n</var> + <var>s2n</var> limbs, even if the
+product&rsquo;s most significant limb is zero.  No overlap is permitted between the
+destination and either source.
+</p>
+<p>This function requires that <var>s1n</var> is greater than or equal to <var>s2n</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fsqr"></a>Function: <em>void</em> <strong>mpn_sqr</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>s1p</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Compute the square of {<var>s1p</var>, <var>n</var>} and write the 2*<var>n</var>-limb
+result to <var>rp</var>.
+</p>
+<p>The destination has to have space for 2<var>n</var> limbs, even if the result&rsquo;s
+most significant limb is zero.  No overlap is permitted between the
+destination and the source.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fmul_005f1"></a>Function: <em>mp_limb_t</em> <strong>mpn_mul_1</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>s1p</var>, mp_size_t <var>n</var>, mp_limb_t <var>s2limb</var>)</em></dt>
+<dd><p>Multiply {<var>s1p</var>, <var>n</var>} by <var>s2limb</var>, and write the <var>n</var> least
+significant limbs of the product to <var>rp</var>.  Return the most significant
+limb of the product.  {<var>s1p</var>, <var>n</var>} and {<var>rp</var>, <var>n</var>} are
+allowed to overlap provided <em><var>rp</var> &lt;= <var>s1p</var></em>.
+</p>
+<p>This is a low-level function that is a building block for general
+multiplication as well as other operations in GMP.  It is written in assembly
+for most CPUs.
+</p>
+<p>Don&rsquo;t call this function if <var>s2limb</var> is a power of 2; use <code>mpn_lshift</code>
+with a count equal to the logarithm of <var>s2limb</var> instead, for optimal speed.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005faddmul_005f1"></a>Function: <em>mp_limb_t</em> <strong>mpn_addmul_1</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>s1p</var>, mp_size_t <var>n</var>, mp_limb_t <var>s2limb</var>)</em></dt>
+<dd><p>Multiply {<var>s1p</var>, <var>n</var>} and <var>s2limb</var>, and add the <var>n</var> least
+significant limbs of the product to {<var>rp</var>, <var>n</var>} and write the result
+to <var>rp</var>.  Return the most significant limb of the product, plus carry-out
+from the addition.  {<var>s1p</var>, <var>n</var>} and {<var>rp</var>, <var>n</var>} are
+allowed to overlap provided <em><var>rp</var> &lt;= <var>s1p</var></em>.
+</p>
+<p>This is a low-level function that is a building block for general
+multiplication as well as other operations in GMP.  It is written in assembly
+for most CPUs.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fsubmul_005f1"></a>Function: <em>mp_limb_t</em> <strong>mpn_submul_1</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>s1p</var>, mp_size_t <var>n</var>, mp_limb_t <var>s2limb</var>)</em></dt>
+<dd><p>Multiply {<var>s1p</var>, <var>n</var>} and <var>s2limb</var>, and subtract the <var>n</var>
+least significant limbs of the product from {<var>rp</var>, <var>n</var>} and write the
+result to <var>rp</var>.  Return the most significant limb of the product, plus
+borrow-out from the subtraction.  {<var>s1p</var>, <var>n</var>} and {<var>rp</var>,
+<var>n</var>} are allowed to overlap provided <em><var>rp</var> &lt;= <var>s1p</var></em>.
+</p>
+<p>This is a low-level function that is a building block for general
+multiplication and division as well as other operations in GMP.  It is written
+in assembly for most CPUs.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005ftdiv_005fqr"></a>Function: <em>void</em> <strong>mpn_tdiv_qr</strong> <em>(mp_limb_t *<var>qp</var>, mp_limb_t *<var>rp</var>, mp_size_t <var>qxn</var>, const mp_limb_t *<var>np</var>, mp_size_t <var>nn</var>, const mp_limb_t *<var>dp</var>, mp_size_t <var>dn</var>)</em></dt>
+<dd><p>Divide {<var>np</var>, <var>nn</var>} by {<var>dp</var>, <var>dn</var>} and put the quotient
+at {<var>qp</var>, <var>nn</var>-<var>dn</var>+1} and the remainder at {<var>rp</var>,
+<var>dn</var>}.  The quotient is rounded towards 0.
+</p>
+<p>No overlap is permitted between arguments, except that <var>np</var> might equal
+<var>rp</var>.  The dividend size <var>nn</var> must be greater than or equal to divisor
+size <var>dn</var>.  The most significant limb of the divisor must be non-zero.  The
+<var>qxn</var> operand must be zero.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fdivrem"></a>Function: <em>mp_limb_t</em> <strong>mpn_divrem</strong> <em>(mp_limb_t *<var>r1p</var>, mp_size_t <var>qxn</var>, mp_limb_t *<var>rs2p</var>, mp_size_t <var>rs2n</var>, const mp_limb_t *<var>s3p</var>, mp_size_t <var>s3n</var>)</em></dt>
+<dd><p>[This function is obsolete.  Please call <code>mpn_tdiv_qr</code> instead for best
+performance.]
+</p>
+<p>Divide {<var>rs2p</var>, <var>rs2n</var>} by {<var>s3p</var>, <var>s3n</var>}, and write the
+quotient at <var>r1p</var>, with the exception of the most significant limb, which
+is returned.  The remainder replaces the dividend at <var>rs2p</var>; it will be
+<var>s3n</var> limbs long (i.e., as many limbs as the divisor).
+</p>
+<p>In addition to an integer quotient, <var>qxn</var> fraction limbs are developed, and
+stored after the integral limbs.  For most usages, <var>qxn</var> will be zero.
+</p>
+<p>It is required that <var>rs2n</var> is greater than or equal to <var>s3n</var>.  It is
+required that the most significant bit of the divisor is set.
+</p>
+<p>If the quotient is not needed, pass <var>rs2p</var> + <var>s3n</var> as <var>r1p</var>.  Aside
+from that special case, no overlap between arguments is permitted.
+</p>
+<p>Return the most significant limb of the quotient, either 0 or 1.
+</p>
+<p>The area at <var>r1p</var> needs to be <var>rs2n</var> - <var>s3n</var> + <var>qxn</var>
+limbs large.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fdivrem_005f1"></a>Function: <em>mp_limb_t</em> <strong>mpn_divrem_1</strong> <em>(mp_limb_t *<var>r1p</var>, mp_size_t <var>qxn</var>, <span class="nolinebreak">mp_limb_t</span>&nbsp;*<var>s2p</var><!-- /@w -->, mp_size_t <var>s2n</var>, mp_limb_t <var>s3limb</var>)</em></dt>
+<dt><a name="index-mpn_005fdivmod_005f1"></a>Macro: <em>mp_limb_t</em> <strong>mpn_divmod_1</strong> <em>(mp_limb_t *<var>r1p</var>, mp_limb_t *<var>s2p</var>, <span class="nolinebreak">mp_size_t</span>&nbsp;<var>s2n</var><!-- /@w -->, <span class="nolinebreak">mp_limb_t</span>&nbsp;<var>s3limb</var><!-- /@w -->)</em></dt>
+<dd><p>Divide {<var>s2p</var>, <var>s2n</var>} by <var>s3limb</var>, and write the quotient at
+<var>r1p</var>.  Return the remainder.
+</p>
+<p>The integer quotient is written to {<var>r1p</var>+<var>qxn</var>, <var>s2n</var>} and in
+addition <var>qxn</var> fraction limbs are developed and written to {<var>r1p</var>,
+<var>qxn</var>}.  Either or both <var>s2n</var> and <var>qxn</var> can be zero.  For most
+usages, <var>qxn</var> will be zero.
+</p>
+<p><code>mpn_divmod_1</code> exists for upward source compatibility and is simply a
+macro calling <code>mpn_divrem_1</code> with a <var>qxn</var> of 0.
+</p>
+<p>The areas at <var>r1p</var> and <var>s2p</var> have to be identical or completely
+separate, not partially overlapping.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fdivmod"></a>Function: <em>mp_limb_t</em> <strong>mpn_divmod</strong> <em>(mp_limb_t *<var>r1p</var>, mp_limb_t *<var>rs2p</var>, mp_size_t <var>rs2n</var>, const mp_limb_t *<var>s3p</var>, mp_size_t <var>s3n</var>)</em></dt>
+<dd><p>[This function is obsolete.  Please call <code>mpn_tdiv_qr</code> instead for best
+performance.]
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fdivexact_005f1"></a>Function: <em>void</em> <strong>mpn_divexact_1</strong> <em>(mp_limb_t * <var>rp</var>, const mp_limb_t * <var>sp</var>, mp_size_t <var>n</var>, mp_limb_t <var>d</var>)</em></dt>
+<dd><p>Divide {<var>sp</var>, <var>n</var>} by <var>d</var>, expecting it to divide exactly, and
+writing the result to {<var>rp</var>, <var>n</var>}. If <var>d</var> doesn&rsquo;t divide
+exactly, the value written to {<var>rp</var>, <var>n</var>} is undefined. The areas at
+<var>rp</var> and <var>sp</var> have to be identical or completely separate, not
+partially overlapping.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fdivexact_005fby3"></a>Macro: <em>mp_limb_t</em> <strong>mpn_divexact_by3</strong> <em>(mp_limb_t *<var>rp</var>, mp_limb_t *<var>sp</var>, <span class="nolinebreak">mp_size_t</span>&nbsp;<var>n</var><!-- /@w -->)</em></dt>
+<dt><a name="index-mpn_005fdivexact_005fby3c"></a>Function: <em>mp_limb_t</em> <strong>mpn_divexact_by3c</strong> <em>(mp_limb_t *<var>rp</var>, mp_limb_t *<var>sp</var>, <span class="nolinebreak">mp_size_t</span>&nbsp;<var>n</var><!-- /@w -->, mp_limb_t <var>carry</var>)</em></dt>
+<dd><p>Divide {<var>sp</var>, <var>n</var>} by 3, expecting it to divide exactly, and writing
+the result to {<var>rp</var>, <var>n</var>}.  If 3 divides exactly, the return value is
+zero and the result is the quotient.  If not, the return value is non-zero and
+the result won&rsquo;t be anything useful.
+</p>
+<p><code>mpn_divexact_by3c</code> takes an initial carry parameter, which can be the
+return value from a previous call, so a large calculation can be done piece by
+piece from low to high.  <code>mpn_divexact_by3</code> is simply a macro calling
+<code>mpn_divexact_by3c</code> with a 0 carry parameter.
+</p>
+<p>These routines use a multiply-by-inverse and will be faster than
+<code>mpn_divrem_1</code> on CPUs with fast multiplication but slow division.
+</p>
+<p>The source <em>a</em>, result <em>q</em>, size <em>n</em>, initial carry <em>i</em>,
+and return value <em>c</em> satisfy <em>c*b^n + a-i = 3*q</em>, where
+<em>b=2^GMP_NUMB_BITS</em>.  The
+return <em>c</em> is always 0, 1 or 2, and the initial carry <em>i</em> must also
+be 0, 1 or 2 (these are both borrows really).  When <em>c=0</em> clearly
+<em>q=(a-i)/3</em>.  When <em>c!=0</em>, the remainder <em>(a-i) mod
+3</em> is given by <em>3-c</em>, because <em>b &equiv; 1 mod 3</em> (when
+<code>mp_bits_per_limb</code> is even, which is always so currently).
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fmod_005f1"></a>Function: <em>mp_limb_t</em> <strong>mpn_mod_1</strong> <em>(const mp_limb_t *<var>s1p</var>, mp_size_t <var>s1n</var>, mp_limb_t <var>s2limb</var>)</em></dt>
+<dd><p>Divide {<var>s1p</var>, <var>s1n</var>} by <var>s2limb</var>, and return the remainder.
+<var>s1n</var> can be zero.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005flshift"></a>Function: <em>mp_limb_t</em> <strong>mpn_lshift</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>sp</var>, mp_size_t <var>n</var>, unsigned int <var>count</var>)</em></dt>
+<dd><p>Shift {<var>sp</var>, <var>n</var>} left by <var>count</var> bits, and write the result to
+{<var>rp</var>, <var>n</var>}.  The bits shifted out at the left are returned in the
+least significant <var>count</var> bits of the return value (the rest of the return
+value is zero).
+</p>
+<p><var>count</var> must be in the range 1 to <code>mp_bits_per_limb</code>-1.  The
+regions {<var>sp</var>, <var>n</var>} and {<var>rp</var>, <var>n</var>} may overlap, provided
+<em><var>rp</var> &gt;= <var>sp</var></em>.
+</p>
+<p>This function is written in assembly for most CPUs.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005frshift"></a>Function: <em>mp_limb_t</em> <strong>mpn_rshift</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>sp</var>, mp_size_t <var>n</var>, unsigned int <var>count</var>)</em></dt>
+<dd><p>Shift {<var>sp</var>, <var>n</var>} right by <var>count</var> bits, and write the result to
+{<var>rp</var>, <var>n</var>}.  The bits shifted out at the right are returned in the
+most significant <var>count</var> bits of the return value (the rest of the return
+value is zero).
+</p>
+<p><var>count</var> must be in the range 1 to <code>mp_bits_per_limb</code>-1.  The
+regions {<var>sp</var>, <var>n</var>} and {<var>rp</var>, <var>n</var>} may overlap, provided
+<em><var>rp</var> &lt;= <var>sp</var></em>.
+</p>
+<p>This function is written in assembly for most CPUs.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fcmp"></a>Function: <em>int</em> <strong>mpn_cmp</strong> <em>(const mp_limb_t *<var>s1p</var>, const mp_limb_t *<var>s2p</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Compare {<var>s1p</var>, <var>n</var>} and {<var>s2p</var>, <var>n</var>} and return a
+positive value if <em><var>s1</var> &gt; <var>s2</var></em>, 0 if they are equal, or a
+negative value if <em><var>s1</var> &lt; <var>s2</var></em>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fzero_005fp"></a>Function: <em>int</em> <strong>mpn_zero_p</strong> <em>(const mp_limb_t *<var>sp</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Test {<var>sp</var>, <var>n</var>} and return 1 if the operand is zero, 0 otherwise.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fgcd"></a>Function: <em>mp_size_t</em> <strong>mpn_gcd</strong> <em>(mp_limb_t *<var>rp</var>, mp_limb_t *<var>xp</var>, mp_size_t <var>xn</var>, mp_limb_t *<var>yp</var>, mp_size_t <var>yn</var>)</em></dt>
+<dd><p>Set {<var>rp</var>, <var>retval</var>} to the greatest common divisor of {<var>xp</var>,
+<var>xn</var>} and {<var>yp</var>, <var>yn</var>}.  The result can be up to <var>yn</var> limbs,
+the return value is the actual number produced.  Both source operands are
+destroyed.
+</p>
+<p>It is required that <em><var>xn</var> &gt;= <var>yn</var> &gt; 0</em>, and the most significant
+limb of {<var>yp</var>, <var>yn</var>} must be non-zero.  No overlap is permitted
+between {<var>xp</var>, <var>xn</var>} and {<var>yp</var>, <var>yn</var>}.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fgcd_005f1"></a>Function: <em>mp_limb_t</em> <strong>mpn_gcd_1</strong> <em>(const mp_limb_t *<var>xp</var>, mp_size_t <var>xn</var>, mp_limb_t <var>ylimb</var>)</em></dt>
+<dd><p>Return the greatest common divisor of {<var>xp</var>, <var>xn</var>} and <var>ylimb</var>.
+Both operands must be non-zero.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fgcdext"></a>Function: <em>mp_size_t</em> <strong>mpn_gcdext</strong> <em>(mp_limb_t *<var>gp</var>, mp_limb_t *<var>sp</var>, mp_size_t *<var>sn</var>, mp_limb_t *<var>up</var>, mp_size_t <var>un</var>, mp_limb_t *<var>vp</var>, mp_size_t <var>vn</var>)</em></dt>
+<dd><p>Let <em><var>U</var></em> be defined by {<var>up</var>, <var>un</var>} and let <em><var>V</var></em> be
+defined by {<var>vp</var>, <var>vn</var>}.
+</p>
+<p>Compute the greatest common divisor <em>G</em> of <em>U</em> and <em>V</em>.  Compute
+a cofactor <em>S</em> such that <em>G = US + VT</em>.  The second cofactor <var>T</var>
+is not computed but can easily be obtained from <em>(<var>G</var> -
+<var>U</var>*<var>S</var>) / <var>V</var></em> (the division will be exact).  It is required that
+<em><var>un</var> &gt;= <var>vn</var> &gt; 0</em>, and the most significant
+limb of {<var>vp</var>, <var>vn</var>} must be non-zero.
+</p>
+<p><em>S</em> satisfies <em>S = 1</em> or <em>abs(S) &lt; V / (2 G)</em>. <em>S =
+0</em> if and only if <em>V</em> divides <em>U</em> (i.e., <em>G = V</em>).
+</p>
+<p>Store <em>G</em> at <var>gp</var> and let the return value define its limb count.
+Store <em>S</em> at <var>sp</var> and let |*<var>sn</var>| define its limb count.  <em>S</em>
+can be negative; when this happens *<var>sn</var> will be negative.  The area at
+<var>gp</var> should have room for <var>vn</var> limbs and the area at <var>sp</var> should
+have room for <em><var>vn</var>+1</em> limbs.
+</p>
+<p>Both source operands are destroyed.
+</p>
+<p>Compatibility notes: GMP 4.3.0 and 4.3.1 defined <em>S</em> less strictly.
+Earlier as well as later GMP releases define <em>S</em> as described here.
+GMP releases before GMP 4.3.0 required additional space for both input and output
+areas. More precisely, the areas {<var>up</var>, <em><var>un</var>+1</em>} and
+{<var>vp</var>, <em><var>vn</var>+1</em>} were destroyed (i.e. the operands plus an
+extra limb past the end of each), and the areas pointed to by <var>gp</var> and
+<var>sp</var> should each have room for <em><var>un</var>+1</em> limbs.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fsqrtrem"></a>Function: <em>mp_size_t</em> <strong>mpn_sqrtrem</strong> <em>(mp_limb_t *<var>r1p</var>, mp_limb_t *<var>r2p</var>, const mp_limb_t *<var>sp</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Compute the square root of {<var>sp</var>, <var>n</var>} and put the result at
+{<var>r1p</var>, <em>ceil(<var>n</var>/2)</em>} and the remainder at {<var>r2p</var>,
+<var>retval</var>}.  <var>r2p</var> needs space for <var>n</var> limbs, but the return value
+indicates how many are produced.
+</p>
+<p>The most significant limb of {<var>sp</var>, <var>n</var>} must be non-zero.  The
+areas {<var>r1p</var>, <em>ceil(<var>n</var>/2)</em>} and {<var>sp</var>, <var>n</var>} must
+be completely separate.  The areas {<var>r2p</var>, <var>n</var>} and {<var>sp</var>,
+<var>n</var>} must be either identical or completely separate.
+</p>
+<p>If the remainder is not wanted then <var>r2p</var> can be <code>NULL</code>, and in this
+case the return value is zero or non-zero according to whether the remainder
+would have been zero or non-zero.
+</p>
+<p>A return value of zero indicates a perfect square.  See also
+<code>mpn_perfect_square_p</code>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fsizeinbase"></a>Function: <em>size_t</em> <strong>mpn_sizeinbase</strong> <em>(const mp_limb_t *<var>xp</var>, mp_size_t <var>n</var>, int <var>base</var>)</em></dt>
+<dd><p>Return the size of {<var>xp</var>,<var>n</var>} measured in number of digits in the
+given <var>base</var>.  <var>base</var> can vary from 2 to 62.  Requires <em><var>n</var> &gt; 0</em>
+and <em><var>xp</var>[<var>n</var>-1] &gt; 0</em>.  The result will be either exact or
+1 too big.  If <var>base</var> is a power of 2, the result is always exact.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fget_005fstr"></a>Function: <em>mp_size_t</em> <strong>mpn_get_str</strong> <em>(unsigned char *<var>str</var>, int <var>base</var>, mp_limb_t *<var>s1p</var>, mp_size_t <var>s1n</var>)</em></dt>
+<dd><p>Convert {<var>s1p</var>, <var>s1n</var>} to a raw unsigned char array at <var>str</var> in
+base <var>base</var>, and return the number of characters produced.  There may be
+leading zeros in the string.  The string is not in ASCII; to convert it to
+printable format, add the ASCII codes for &lsquo;<samp>0</samp>&rsquo; or &lsquo;<samp>A</samp>&rsquo;, depending on
+the base and range.  <var>base</var> can vary from 2 to 256.
+</p>
+<p>The most significant limb of the input {<var>s1p</var>, <var>s1n</var>} must be
+non-zero.  The input {<var>s1p</var>, <var>s1n</var>} is clobbered, except when
+<var>base</var> is a power of 2, in which case it&rsquo;s unchanged.
+</p>
+<p>The area at <var>str</var> has to have space for the largest possible number
+represented by a <var>s1n</var> long limb array, plus one extra character.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fset_005fstr"></a>Function: <em>mp_size_t</em> <strong>mpn_set_str</strong> <em>(mp_limb_t *<var>rp</var>, const unsigned char *<var>str</var>, size_t <var>strsize</var>, int <var>base</var>)</em></dt>
+<dd><p>Convert bytes {<var>str</var>,<var>strsize</var>} in the given <var>base</var> to limbs at
+<var>rp</var>.
+</p>
+<p><em><var>str</var>[0]</em> is the most significant input byte and
+<em><var>str</var>[<var>strsize</var>-1]</em> is the least significant input byte.  Each
+byte should be a value in the range 0 to <em><var>base</var>-1</em>, not an ASCII
+character.  <var>base</var> can vary from 2 to 256.
+</p>
+<p>The converted value is {<var>rp</var>,<var>rn</var>} where <var>rn</var> is the return
+value.  If the most significant input byte <em><var>str</var>[0]</em> is non-zero,
+then <em><var>rp</var>[<var>rn</var>-1]</em> will be non-zero, else
+<em><var>rp</var>[<var>rn</var>-1]</em> and some number of subsequent limbs may be zero.
+</p>
+<p>The area at <var>rp</var> has to have space for the largest possible number with
+<var>strsize</var> digits in the chosen base, plus one extra limb.
+</p>
+<p>The input must have at least one byte, and no overlap is permitted between
+{<var>str</var>,<var>strsize</var>} and the result at <var>rp</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fscan0"></a>Function: <em>mp_bitcnt_t</em> <strong>mpn_scan0</strong> <em>(const mp_limb_t *<var>s1p</var>, mp_bitcnt_t <var>bit</var>)</em></dt>
+<dd><p>Scan <var>s1p</var> from bit position <var>bit</var> for the next clear bit.
+</p>
+<p>It is required that there be a clear bit within the area at <var>s1p</var> at or
+beyond bit position <var>bit</var>, so that the function has something to return.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fscan1"></a>Function: <em>mp_bitcnt_t</em> <strong>mpn_scan1</strong> <em>(const mp_limb_t *<var>s1p</var>, mp_bitcnt_t <var>bit</var>)</em></dt>
+<dd><p>Scan <var>s1p</var> from bit position <var>bit</var> for the next set bit.
+</p>
+<p>It is required that there be a set bit within the area at <var>s1p</var> at or
+beyond bit position <var>bit</var>, so that the function has something to return.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005frandom"></a>Function: <em>void</em> <strong>mpn_random</strong> <em>(mp_limb_t *<var>r1p</var>, mp_size_t <var>r1n</var>)</em></dt>
+<dt><a name="index-mpn_005frandom2"></a>Function: <em>void</em> <strong>mpn_random2</strong> <em>(mp_limb_t *<var>r1p</var>, mp_size_t <var>r1n</var>)</em></dt>
+<dd><p>Generate a random number of length <var>r1n</var> and store it at <var>r1p</var>.  The
+most significant limb is always non-zero.  <code>mpn_random</code> generates
+uniformly distributed limb data, <code>mpn_random2</code> generates long strings of
+zeros and ones in the binary representation.
+</p>
+<p><code>mpn_random2</code> is intended for testing the correctness of the <code>mpn</code>
+routines.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fpopcount"></a>Function: <em>mp_bitcnt_t</em> <strong>mpn_popcount</strong> <em>(const mp_limb_t *<var>s1p</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Count the number of set bits in {<var>s1p</var>, <var>n</var>}.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fhamdist"></a>Function: <em>mp_bitcnt_t</em> <strong>mpn_hamdist</strong> <em>(const mp_limb_t *<var>s1p</var>, const mp_limb_t *<var>s2p</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Compute the hamming distance between {<var>s1p</var>, <var>n</var>} and {<var>s2p</var>,
+<var>n</var>}, which is the number of bit positions where the two operands have
+different bit values.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fperfect_005fsquare_005fp"></a>Function: <em>int</em> <strong>mpn_perfect_square_p</strong> <em>(const mp_limb_t *<var>s1p</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Return non-zero iff {<var>s1p</var>, <var>n</var>} is a perfect square.
+The most significant limb of the input {<var>s1p</var>, <var>n</var>} must be
+non-zero.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fand_005fn"></a>Function: <em>void</em> <strong>mpn_and_n</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>s1p</var>, const mp_limb_t *<var>s2p</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Perform the bitwise logical and of {<var>s1p</var>, <var>n</var>} and {<var>s2p</var>,
+<var>n</var>}, and write the result to {<var>rp</var>, <var>n</var>}.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fior_005fn"></a>Function: <em>void</em> <strong>mpn_ior_n</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>s1p</var>, const mp_limb_t *<var>s2p</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Perform the bitwise logical inclusive or of {<var>s1p</var>, <var>n</var>} and
+{<var>s2p</var>, <var>n</var>}, and write the result to {<var>rp</var>, <var>n</var>}.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fxor_005fn"></a>Function: <em>void</em> <strong>mpn_xor_n</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>s1p</var>, const mp_limb_t *<var>s2p</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Perform the bitwise logical exclusive or of {<var>s1p</var>, <var>n</var>} and
+{<var>s2p</var>, <var>n</var>}, and write the result to {<var>rp</var>, <var>n</var>}.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fandn_005fn"></a>Function: <em>void</em> <strong>mpn_andn_n</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>s1p</var>, const mp_limb_t *<var>s2p</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Perform the bitwise logical and of {<var>s1p</var>, <var>n</var>} and the bitwise
+complement of {<var>s2p</var>, <var>n</var>}, and write the result to {<var>rp</var>, <var>n</var>}.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fiorn_005fn"></a>Function: <em>void</em> <strong>mpn_iorn_n</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>s1p</var>, const mp_limb_t *<var>s2p</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Perform the bitwise logical inclusive or of {<var>s1p</var>, <var>n</var>} and the bitwise
+complement of {<var>s2p</var>, <var>n</var>}, and write the result to {<var>rp</var>, <var>n</var>}.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fnand_005fn"></a>Function: <em>void</em> <strong>mpn_nand_n</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>s1p</var>, const mp_limb_t *<var>s2p</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Perform the bitwise logical and of {<var>s1p</var>, <var>n</var>} and {<var>s2p</var>,
+<var>n</var>}, and write the bitwise complement of the result to {<var>rp</var>, <var>n</var>}.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fnior_005fn"></a>Function: <em>void</em> <strong>mpn_nior_n</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>s1p</var>, const mp_limb_t *<var>s2p</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Perform the bitwise logical inclusive or of {<var>s1p</var>, <var>n</var>} and
+{<var>s2p</var>, <var>n</var>}, and write the bitwise complement of the result to
+{<var>rp</var>, <var>n</var>}.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fxnor_005fn"></a>Function: <em>void</em> <strong>mpn_xnor_n</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>s1p</var>, const mp_limb_t *<var>s2p</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Perform the bitwise logical exclusive or of {<var>s1p</var>, <var>n</var>} and
+{<var>s2p</var>, <var>n</var>}, and write the bitwise complement of the result to
+{<var>rp</var>, <var>n</var>}.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fcom"></a>Function: <em>void</em> <strong>mpn_com</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>sp</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Perform the bitwise complement of {<var>sp</var>, <var>n</var>}, and write the result
+to {<var>rp</var>, <var>n</var>}.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fcopyi"></a>Function: <em>void</em> <strong>mpn_copyi</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>s1p</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Copy from {<var>s1p</var>, <var>n</var>} to {<var>rp</var>, <var>n</var>}, increasingly.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fcopyd"></a>Function: <em>void</em> <strong>mpn_copyd</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>s1p</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Copy from {<var>s1p</var>, <var>n</var>} to {<var>rp</var>, <var>n</var>}, decreasingly.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fzero"></a>Function: <em>void</em> <strong>mpn_zero</strong> <em>(mp_limb_t *<var>rp</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>Zero {<var>rp</var>, <var>n</var>}.
+</p></dd></dl>
+
+<br>
+<a name="Low_002dlevel-functions-for-cryptography"></a>
+<h3 class="section">8.1 Low-level functions for cryptography</h3>
+<a name="index-Low_002dlevel-functions-for-cryptography"></a>
+<a name="index-Cryptography-functions_002c-low_002dlevel"></a>
+
+<p>The functions prefixed with <code>mpn_sec_</code> and <code>mpn_cnd_</code> are designed to
+perform the exact same low-level operations and have the same cache access
+patterns for any two same-size arguments, assuming that function arguments are
+placed at the same position and that the machine state is identical upon
+function entry.  These functions are intended for cryptographic purposes, where
+resilience to side-channel attacks is desired.
+</p>
+<p>These functions are less efficient than their &ldquo;leaky&rdquo; counterparts; their
+performance for operands of the sizes typically used for cryptographic
+applications is between 15% and 100% worse.  For larger operands, these
+functions might be inadequate, since they rely on asymptotically elementary
+algorithms.
+</p>
+<p>These functions do not make any explicit allocations.  Those of these functions
+that need scratch space accept a scratch space operand.  This convention allows
+callers to keep sensitive data in designated memory areas.  Note however that
+compilers may choose to spill scalar values used within these functions to
+their stack frame and that such scalars may contain sensitive data.
+</p>
+<p>In addition to these specially crafted functions, the following <code>mpn</code>
+functions are naturally side-channel resistant: <code>mpn_add_n</code>,
+<code>mpn_sub_n</code>, <code>mpn_lshift</code>, <code>mpn_rshift</code>, <code>mpn_zero</code>,
+<code>mpn_copyi</code>, <code>mpn_copyd</code>, <code>mpn_com</code>, and the logical function
+(<code>mpn_and_n</code>, etc).
+</p>
+<p>There are some exceptions from the side-channel resilience: (1) Some assembly
+implementations of <code>mpn_lshift</code> identify shift-by-one as a special case.
+This is a problem iff the shift count is a function of sensitive data.  (2)
+Alpha ev6 and Pentium4 using 64-bit limbs have leaky <code>mpn_add_n</code> and
+<code>mpn_sub_n</code>.  (3) Alpha ev6 has a leaky <code>mpn_mul_1</code> which also makes
+<code>mpn_sec_mul</code> on those systems unsafe.
+</p>
+<dl>
+<dt><a name="index-mpn_005fcnd_005fadd_005fn"></a>Function: <em>mp_limb_t</em> <strong>mpn_cnd_add_n</strong> <em>(mp_limb_t <var>cnd</var>, mp_limb_t *<var>rp</var>, const mp_limb_t *<var>s1p</var>, const mp_limb_t *<var>s2p</var>, mp_size_t <var>n</var>)</em></dt>
+<dt><a name="index-mpn_005fcnd_005fsub_005fn"></a>Function: <em>mp_limb_t</em> <strong>mpn_cnd_sub_n</strong> <em>(mp_limb_t <var>cnd</var>, mp_limb_t *<var>rp</var>, const mp_limb_t *<var>s1p</var>, const mp_limb_t *<var>s2p</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>These functions do conditional addition and subtraction.  If <var>cnd</var> is
+non-zero, they produce the same result as a regular <code>mpn_add_n</code> or
+<code>mpn_sub_n</code>, and if <var>cnd</var> is zero, they copy {<var>s1p</var>,<var>n</var>} to
+the result area and return zero.  The functions are designed to have timing and
+memory access patterns depending only on size and location of the data areas,
+but independent of the condition <var>cnd</var>.  Like for <code>mpn_add_n</code> and
+<code>mpn_sub_n</code>, on most machines, the timing will also be independent of the
+actual limb values.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fsec_005fadd_005f1"></a>Function: <em>mp_limb_t</em> <strong>mpn_sec_add_1</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>ap</var>, mp_size_t <var>n</var>, mp_limb_t <var>b</var>, mp_limb_t *<var>tp</var>)</em></dt>
+<dt><a name="index-mpn_005fsec_005fsub_005f1"></a>Function: <em>mp_limb_t</em> <strong>mpn_sec_sub_1</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>ap</var>, mp_size_t <var>n</var>, mp_limb_t <var>b</var>, mp_limb_t *<var>tp</var>)</em></dt>
+<dd><p>Set <var>R</var> to <var>A</var> + <var>b</var> or <var>A</var> - <var>b</var>, respectively, where
+<var>R</var> = {<var>rp</var>,<var>n</var>}, <var>A</var> = {<var>ap</var>,<var>n</var>}, and <var>b</var> is
+a single limb. Returns carry.
+</p>
+<p>These functions take <em>O(N)</em> time, unlike the leaky functions
+<code>mpn_add_1</code> which are <em>O(1)</em> on average. They require scratch space
+of <code>mpn_sec_add_1_itch(<var>n</var>)</code> and <code>mpn_sec_sub_1_itch(<var>n</var>)</code>
+limbs, respectively, to be passed in the <var>tp</var> parameter. The scratch space
+requirements are guaranteed to be at most <var>n</var> limbs, and increase
+monotonously in the operand size.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fcnd_005fswap"></a>Function: <em>void</em> <strong>mpn_cnd_swap</strong> <em>(mp_limb_t <var>cnd</var>, volatile mp_limb_t *<var>ap</var>, volatile mp_limb_t *<var>bp</var>, mp_size_t <var>n</var>)</em></dt>
+<dd><p>If <var>cnd</var> is non-zero, swaps the contents of the areas {<var>ap</var>,<var>n</var>}
+and {<var>bp</var>,<var>n</var>}. Otherwise, the areas are left unmodified.
+Implemented using logical operations on the limbs, with the same memory
+accesses independent of the value of <var>cnd</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fsec_005fmul"></a>Function: <em>void</em> <strong>mpn_sec_mul</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>ap</var>, mp_size_t <var>an</var>, const mp_limb_t *<var>bp</var>, mp_size_t <var>bn</var>, mp_limb_t *<var>tp</var>)</em></dt>
+<dt><a name="index-mpn_005fsec_005fmul_005fitch"></a>Function: <em>mp_size_t</em> <strong>mpn_sec_mul_itch</strong> <em>(mp_size_t <var>an</var>, mp_size_t <var>bn</var>)</em></dt>
+<dd><p>Set <var>R</var> to <em>A * B</em>, where <var>A</var> = {<var>ap</var>,<var>an</var>},
+<var>B</var> = {<var>bp</var>,<var>bn</var>}, and <var>R</var> =
+{<var>rp</var>,<em><var>an</var>+<var>bn</var></em>}.
+</p>
+<p>It is required that <em><var>an</var> &gt;= <var>bn</var> &gt; 0</em>.
+</p>
+<p>No overlapping between <var>R</var> and the input operands is allowed.  For
+<em><var>A</var> = <var>B</var></em>, use <code>mpn_sec_sqr</code> for optimal performance.
+</p>
+<p>This function requires scratch space of <code>mpn_sec_mul_itch(<var>an</var>,
+<var>bn</var>)</code> limbs to be passed in the <var>tp</var> parameter.  The scratch space
+requirements are guaranteed to increase monotonously in the operand sizes.
+</p></dd></dl>
+
+
+<dl>
+<dt><a name="index-mpn_005fsec_005fsqr"></a>Function: <em>void</em> <strong>mpn_sec_sqr</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>ap</var>, mp_size_t <var>an</var>, mp_limb_t *<var>tp</var>)</em></dt>
+<dt><a name="index-mpn_005fsec_005fsqr_005fitch"></a>Function: <em>mp_size_t</em> <strong>mpn_sec_sqr_itch</strong> <em>(mp_size_t <var>an</var>)</em></dt>
+<dd><p>Set <var>R</var> to <em>A^2</em>, where <var>A</var> = {<var>ap</var>,<var>an</var>}, and <var>R</var> =
+{<var>rp</var>,<em>2<var>an</var></em>}.
+</p>
+<p>It is required that <em><var>an</var> &gt; 0</em>.
+</p>
+<p>No overlapping between <var>R</var> and the input operands is allowed.
+</p>
+<p>This function requires scratch space of <code>mpn_sec_sqr_itch(<var>an</var>)</code> limbs
+to be passed in the <var>tp</var> parameter.  The scratch space requirements are
+guaranteed to increase monotonously in the operand size.
+</p></dd></dl>
+
+
+<dl>
+<dt><a name="index-mpn_005fsec_005fpowm"></a>Function: <em>void</em> <strong>mpn_sec_powm</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>bp</var>, mp_size_t <var>bn</var>, const mp_limb_t *<var>ep</var>, mp_bitcnt_t <var>enb</var>,  const mp_limb_t *<var>mp</var>, mp_size_t <var>n</var>, mp_limb_t *<var>tp</var>)</em></dt>
+<dt><a name="index-mpn_005fsec_005fpowm_005fitch"></a>Function: <em>mp_size_t</em> <strong>mpn_sec_powm_itch</strong> <em>(mp_size_t <var>bn</var>, mp_bitcnt_t <var>enb</var>, size_t <var>n</var>)</em></dt>
+<dd><p>Set <var>R</var> to <em>(<var>B</var> raised to <var>E</var>) modulo
+<var>M</var></em>, where <var>R</var> = {<var>rp</var>,<var>n</var>}, <var>M</var> = {<var>mp</var>,<var>n</var>},
+and <var>E</var> = {<var>ep</var>,<em>ceil(<var>enb</var> /
+<code>GMP\_NUMB\_BITS</code>)</em>}.
+</p>
+<p>It is required that <em><var>B</var> &gt; 0</em>, that <em><var>M</var> &gt; 0</em> is odd, and
+that <em><var>E</var> &lt; 2^<var>enb</var></em>.
+</p>
+<p>No overlapping between <var>R</var> and the input operands is allowed.
+</p>
+<p>This function requires scratch space of <code>mpn_sec_powm_itch(<var>bn</var>,
+<var>enb</var>, <var>n</var>)</code> limbs to be passed in the <var>tp</var> parameter.  The scratch
+space requirements are guaranteed to increase monotonously in the operand
+sizes.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fsec_005ftabselect"></a>Function: <em>void</em> <strong>mpn_sec_tabselect</strong> <em>(mp_limb_t *<var>rp</var>, const mp_limb_t *<var>tab</var>, mp_size_t <var>n</var>, mp_size_t <var>nents</var>, mp_size_t <var>which</var>)</em></dt>
+<dd><p>Select entry <var>which</var> from table <var>tab</var>, which has <var>nents</var> entries, each <var>n</var>
+limbs.  Store the selected entry at <var>rp</var>.
+</p>
+<p>This function reads the entire table to avoid side-channel information leaks.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fsec_005fdiv_005fqr"></a>Function: <em>mp_limb_t</em> <strong>mpn_sec_div_qr</strong> <em>(mp_limb_t *<var>qp</var>, mp_limb_t *<var>np</var>, mp_size_t <var>nn</var>, const mp_limb_t *<var>dp</var>, mp_size_t <var>dn</var>, mp_limb_t *<var>tp</var>)</em></dt>
+<dt><a name="index-mpn_005fsec_005fdiv_005fqr_005fitch"></a>Function: <em>mp_size_t</em> <strong>mpn_sec_div_qr_itch</strong> <em>(mp_size_t <var>nn</var>, mp_size_t <var>dn</var>)</em></dt>
+<dd>
+<p>Set <var>Q</var> to <em>the truncated quotient
+<var>N</var> / <var>D</var></em> and <var>R</var> to <em><var>N</var> modulo
+<var>D</var></em>, where <var>N</var> = {<var>np</var>,<var>nn</var>}, <var>D</var> =
+{<var>dp</var>,<var>dn</var>}, <var>Q</var>&rsquo;s most significant limb is the function return
+value and the remaining limbs are {<var>qp</var>,<var>nn-dn</var>}, and <var>R</var> =
+{<var>np</var>,<var>dn</var>}.
+</p>
+<p>It is required that <em><var>nn</var> &gt;= <var>dn</var> &gt;= 1</em>, and that
+<em><var>dp</var>[<var>dn</var>-1] != 0</em>.  This does not
+imply that <em><var>N</var> &gt;= <var>D</var></em> since <var>N</var> might be zero-padded.
+</p>
+<p>Note the overlapping between <var>N</var> and <var>R</var>.  No other operand overlapping
+is allowed.  The entire space occupied by <var>N</var> is overwritten.
+</p>
+<p>This function requires scratch space of <code>mpn_sec_div_qr_itch(<var>nn</var>,
+<var>dn</var>)</code> limbs to be passed in the <var>tp</var> parameter.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fsec_005fdiv_005fr"></a>Function: <em>void</em> <strong>mpn_sec_div_r</strong> <em>(mp_limb_t *<var>np</var>, mp_size_t <var>nn</var>, const mp_limb_t *<var>dp</var>, mp_size_t <var>dn</var>, mp_limb_t *<var>tp</var>)</em></dt>
+<dt><a name="index-mpn_005fsec_005fdiv_005fr_005fitch"></a>Function: <em>mp_size_t</em> <strong>mpn_sec_div_r_itch</strong> <em>(mp_size_t <var>nn</var>, mp_size_t <var>dn</var>)</em></dt>
+<dd>
+<p>Set <var>R</var> to <em><var>N</var> modulo <var>D</var></em>, where <var>N</var>
+= {<var>np</var>,<var>nn</var>}, <var>D</var> = {<var>dp</var>,<var>dn</var>}, and <var>R</var> =
+{<var>np</var>,<var>dn</var>}.
+</p>
+<p>It is required that <em><var>nn</var> &gt;= <var>dn</var> &gt;= 1</em>, and that
+<em><var>dp</var>[<var>dn</var>-1] != 0</em>.  This does not
+imply that <em><var>N</var> &gt;= <var>D</var></em> since <var>N</var> might be zero-padded.
+</p>
+<p>Note the overlapping between <var>N</var> and <var>R</var>.  No other operand overlapping
+is allowed.  The entire space occupied by <var>N</var> is overwritten.
+</p>
+<p>This function requires scratch space of <code>mpn_sec_div_r_itch(<var>nn</var>,
+<var>dn</var>)</code> limbs to be passed in the <var>tp</var> parameter.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpn_005fsec_005finvert"></a>Function: <em>int</em> <strong>mpn_sec_invert</strong> <em>(mp_limb_t *<var>rp</var>, mp_limb_t *<var>ap</var>, const mp_limb_t *<var>mp</var>, mp_size_t <var>n</var>, mp_bitcnt_t <var>nbcnt</var>, mp_limb_t *<var>tp</var>)</em></dt>
+<dt><a name="index-mpn_005fsec_005finvert_005fitch"></a>Function: <em>mp_size_t</em> <strong>mpn_sec_invert_itch</strong> <em>(mp_size_t <var>n</var>)</em></dt>
+<dd><p>Set <var>R</var> to <em>the inverse of <var>A</var> modulo
+<var>M</var></em>, where <var>R</var> = {<var>rp</var>,<var>n</var>}, <var>A</var> = {<var>ap</var>,<var>n</var>},
+and <var>M</var> = {<var>mp</var>,<var>n</var>}.  <strong>This function&rsquo;s interface is
+preliminary.</strong>
+</p>
+<p>If an inverse exists, return 1, otherwise return 0 and leave <var>R</var>
+undefined. In either case, the input <var>A</var> is destroyed.
+</p>
+<p>It is required that <var>M</var> is odd, and that <em><var>nbcnt</var> &gt;=
+ceil(\log(<var>A</var>+1)) + ceil(\log(<var>M</var>+1))</em>.  A safe choice is
+<em><var>nbcnt</var> = 2
+* <var>n</var> * GMP_NUMB_BITS</em>, but a smaller value might improve
+performance if <var>M</var> or <var>A</var> are known to have leading zero bits.
+</p>
+<p>This function requires scratch space of <code>mpn_sec_invert_itch(<var>n</var>)</code>
+limbs to be passed in the <var>tp</var> parameter.
+</p></dd></dl>
+
+
+<br>
+<a name="Nails"></a>
+<h3 class="section">8.2 Nails</h3>
+<a name="index-Nails"></a>
+
+<p><strong>Everything in this section is highly experimental and may disappear or
+be subject to incompatible changes in a future version of GMP.</strong>
+</p>
+<p>Nails are an experimental feature whereby a few bits are left unused at the
+top of each <code>mp_limb_t</code>.  This can significantly improve carry handling
+on some processors.
+</p>
+<p>All the <code>mpn</code> functions accepting limb data will expect the nail bits to
+be zero on entry, and will return data with the nails similarly all zero.
+This applies both to limb vectors and to single limb arguments.
+</p>
+<p>Nails can be enabled by configuring with &lsquo;<samp>--enable-nails</samp>&rsquo;.  By default
+the number of bits will be chosen according to what suits the host processor,
+but a particular number can be selected with &lsquo;<samp>--enable-nails=N</samp>&rsquo;.
+</p>
+<p>At the mpn level, a nail build is neither source nor binary compatible with a
+non-nail build, strictly speaking.  But programs acting on limbs only through
+the mpn functions are likely to work equally well with either build, and
+judicious use of the definitions below should make any program compatible with
+either build, at the source level.
+</p>
+<p>For the higher level routines, meaning <code>mpz</code> etc, a nail build should be
+fully source and binary compatible with a non-nail build.
+</p>
+<dl>
+<dt><a name="index-GMP_005fNAIL_005fBITS"></a>Macro: <strong>GMP_NAIL_BITS</strong></dt>
+<dt><a name="index-GMP_005fNUMB_005fBITS"></a>Macro: <strong>GMP_NUMB_BITS</strong></dt>
+<dt><a name="index-GMP_005fLIMB_005fBITS"></a>Macro: <strong>GMP_LIMB_BITS</strong></dt>
+<dd><p><code>GMP_NAIL_BITS</code> is the number of nail bits, or 0 when nails are not in
+use.  <code>GMP_NUMB_BITS</code> is the number of data bits in a limb.
+<code>GMP_LIMB_BITS</code> is the total number of bits in an <code>mp_limb_t</code>.  In
+all cases
+</p>
+<div class="example">
+<pre class="example">GMP_LIMB_BITS == GMP_NAIL_BITS + GMP_NUMB_BITS
+</pre></div>
+</dd></dl>
+
+<dl>
+<dt><a name="index-GMP_005fNAIL_005fMASK"></a>Macro: <strong>GMP_NAIL_MASK</strong></dt>
+<dt><a name="index-GMP_005fNUMB_005fMASK"></a>Macro: <strong>GMP_NUMB_MASK</strong></dt>
+<dd><p>Bit masks for the nail and number parts of a limb.  <code>GMP_NAIL_MASK</code> is 0
+when nails are not in use.
+</p>
+<p><code>GMP_NAIL_MASK</code> is not often needed, since the nail part can be obtained
+with <code>x &gt;&gt; GMP_NUMB_BITS</code>, and that means one less large constant, which
+can help various RISC chips.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-GMP_005fNUMB_005fMAX"></a>Macro: <strong>GMP_NUMB_MAX</strong></dt>
+<dd><p>The maximum value that can be stored in the number part of a limb.  This is
+the same as <code>GMP_NUMB_MASK</code>, but can be used for clarity when doing
+comparisons rather than bit-wise operations.
+</p></dd></dl>
+
+<p>The term &ldquo;nails&rdquo; comes from finger or toe nails, which are at the ends of a
+limb (arm or leg).  &ldquo;numb&rdquo; is short for number, but is also how the
+developers felt after trying for a long time to come up with sensible names
+for these things.
+</p>
+<p>In the future (the distant future most likely) a non-zero nail might be
+permitted, giving non-unique representations for numbers in a limb vector.
+This would help vector processors since carries would only ever need to
+propagate one or two limbs.
+</p>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Random-Number-Functions.html#Random-Number-Functions" accesskey="n" rel="next">Random Number Functions</a>, Previous: <a href="Floating_002dpoint-Functions.html#Floating_002dpoint-Functions" accesskey="p" rel="prev">Floating-point Functions</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

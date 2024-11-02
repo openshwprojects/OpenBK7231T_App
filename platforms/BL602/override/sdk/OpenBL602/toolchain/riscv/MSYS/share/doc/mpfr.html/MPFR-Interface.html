@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual documents how to install and use the Multiple Precision
+Floating-Point Reliable Library, version 3.1.4.
+
+Copyright 1991, 1993-2016 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with no Front-Cover Texts, and with no Back-Cover Texts.  A copy of the
+license is included in GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MPFR 3.1.4: MPFR Interface</title>
+
+<meta name="description" content="How to install and use GNU MPFR, a library for reliable multiple precision
+floating-point arithmetic, version 3.1.4.">
+<meta name="keywords" content="GNU MPFR 3.1.4: MPFR Interface">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="index.html#Top" rel="up" title="Top">
+<link href="Initialization-Functions.html#Initialization-Functions" rel="next" title="Initialization Functions">
+<link href="Memory-Handling.html#Memory-Handling" rel="prev" title="Memory Handling">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="MPFR-Interface"></a>
+<div class="header">
+<p>
+Next: <a href="API-Compatibility.html#API-Compatibility" accesskey="n" rel="next">API Compatibility</a>, Previous: <a href="MPFR-Basics.html#MPFR-Basics" accesskey="p" rel="prev">MPFR Basics</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="MPFR-Interface-1"></a>
+<h2 class="chapter">5 MPFR Interface</h2>
+<a name="index-Floating_002dpoint-functions"></a>
+<a name="index-Float-functions"></a>
+
+<p>The floating-point functions expect arguments of type <code>mpfr_t</code>.
+</p>
+<p>The MPFR floating-point functions have an interface that is similar to the
+GNU MP
+functions.  The function prefix for floating-point operations is <code>mpfr_</code>.
+</p>
+<p>The user has
+to specify the precision of each variable.  A computation that assigns a
+variable will take place with the precision of the assigned variable; the
+cost of that computation should not depend on the
+precision of variables used as input (on average).
+</p>
+<a name="index-Precision-1"></a>
+<p>The semantics of a calculation in MPFR is specified as follows: Compute the
+requested operation exactly (with &ldquo;infinite accuracy&rdquo;), and round the result
+to the precision of the destination variable, with the given rounding mode.
+The MPFR floating-point functions are intended to be a smooth extension
+of the IEEE 754 arithmetic. The results obtained on a given computer are
+identical to those obtained on a computer with a different word size,
+or with a different compiler or operating system.
+</p>
+<a name="index-Accuracy"></a>
+<p>MPFR <em>does not keep track</em> of the accuracy of a computation. This is left
+to the user or to a higher layer (for example the MPFI library for interval
+arithmetic).
+As a consequence, if two variables are used to store
+only a few significant bits, and their product is stored in a variable with large
+precision, then MPFR will still compute the result with full precision.
+</p>
+<p>The value of the standard C macro <code>errno</code> may be set to non-zero by
+any MPFR function or macro, whether or not there is an error.
+</p>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="Initialization-Functions.html#Initialization-Functions" accesskey="1">Initialization Functions</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Assignment-Functions.html#Assignment-Functions" accesskey="2">Assignment Functions</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Combined-Initialization-and-Assignment-Functions.html#Combined-Initialization-and-Assignment-Functions" accesskey="3">Combined Initialization and Assignment Functions</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Conversion-Functions.html#Conversion-Functions" accesskey="4">Conversion Functions</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Basic-Arithmetic-Functions.html#Basic-Arithmetic-Functions" accesskey="5">Basic Arithmetic Functions</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Comparison-Functions.html#Comparison-Functions" accesskey="6">Comparison Functions</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Special-Functions.html#Special-Functions" accesskey="7">Special Functions</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Input-and-Output-Functions.html#Input-and-Output-Functions" accesskey="8">Input and Output Functions</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Formatted-Output-Functions.html#Formatted-Output-Functions" accesskey="9">Formatted Output Functions</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Integer-Related-Functions.html#Integer-Related-Functions">Integer Related Functions</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Rounding-Related-Functions.html#Rounding-Related-Functions">Rounding Related Functions</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Miscellaneous-Functions.html#Miscellaneous-Functions">Miscellaneous Functions</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Exception-Related-Functions.html#Exception-Related-Functions">Exception Related Functions</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Compatibility-with-MPF.html#Compatibility-with-MPF">Compatibility with MPF</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Custom-Interface.html#Custom-Interface">Custom Interface</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Internals.html#Internals">Internals</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+</table>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="API-Compatibility.html#API-Compatibility" accesskey="n" rel="next">API Compatibility</a>, Previous: <a href="MPFR-Basics.html#MPFR-Basics" accesskey="p" rel="prev">MPFR Basics</a>, Up: <a href="index.html#Top" accesskey="u" rel="up">Top</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

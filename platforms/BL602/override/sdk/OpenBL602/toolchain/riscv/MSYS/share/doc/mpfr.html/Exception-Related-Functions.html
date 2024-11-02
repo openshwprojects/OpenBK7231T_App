@@ -1,0 +1,236 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual documents how to install and use the Multiple Precision
+Floating-Point Reliable Library, version 3.1.4.
+
+Copyright 1991, 1993-2016 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with no Front-Cover Texts, and with no Back-Cover Texts.  A copy of the
+license is included in GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MPFR 3.1.4: Exception Related Functions</title>
+
+<meta name="description" content="How to install and use GNU MPFR, a library for reliable multiple precision
+floating-point arithmetic, version 3.1.4.">
+<meta name="keywords" content="GNU MPFR 3.1.4: Exception Related Functions">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="MPFR-Interface.html#MPFR-Interface" rel="up" title="MPFR Interface">
+<link href="Compatibility-with-MPF.html#Compatibility-with-MPF" rel="next" title="Compatibility with MPF">
+<link href="Miscellaneous-Functions.html#Miscellaneous-Functions" rel="prev" title="Miscellaneous Functions">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Exception-Related-Functions"></a>
+<div class="header">
+<p>
+Next: <a href="Compatibility-with-MPF.html#Compatibility-with-MPF" accesskey="n" rel="next">Compatibility with MPF</a>, Previous: <a href="Miscellaneous-Functions.html#Miscellaneous-Functions" accesskey="p" rel="prev">Miscellaneous Functions</a>, Up: <a href="MPFR-Interface.html#MPFR-Interface" accesskey="u" rel="up">MPFR Interface</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="index-Exception-related-functions"></a>
+<a name="Exception-Related-Functions-1"></a>
+<h3 class="section">5.13 Exception Related Functions</h3>
+
+<dl>
+<dt><a name="index-mpfr_005fget_005femin"></a>Function: <em>mpfr_exp_t</em> <strong>mpfr_get_emin</strong> <em>(void)</em></dt>
+<dt><a name="index-mpfr_005fget_005femax"></a>Function: <em>mpfr_exp_t</em> <strong>mpfr_get_emax</strong> <em>(void)</em></dt>
+<dd><p>Return the (current) smallest and largest exponents allowed for a
+floating-point variable. The smallest positive value of a floating-point
+variable is <em>one half times 2 raised to the
+smallest exponent</em> and the largest value has the form <em>(1 - epsilon) times 2 raised to the largest exponent</em>,
+where <em>epsilon</em> depends on the precision of the considered
+variable.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fset_005femin"></a>Function: <em>int</em> <strong>mpfr_set_emin</strong> <em>(mpfr_exp_t <var>exp</var>)</em></dt>
+<dt><a name="index-mpfr_005fset_005femax"></a>Function: <em>int</em> <strong>mpfr_set_emax</strong> <em>(mpfr_exp_t <var>exp</var>)</em></dt>
+<dd><p>Set the smallest and largest exponents allowed for a floating-point variable.
+Return a non-zero value when <var>exp</var> is not in the range accepted by the
+implementation (in that case the smallest or largest exponent is not changed),
+and zero otherwise.
+If the user changes the exponent range, it is her/his responsibility to check
+that all current floating-point variables are in the new allowed range
+(for example using <code>mpfr_check_range</code>), otherwise the subsequent
+behavior will be undefined, in the sense of the ISO C standard.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fget_005femin_005fmin"></a>Function: <em>mpfr_exp_t</em> <strong>mpfr_get_emin_min</strong> <em>(void)</em></dt>
+<dt><a name="index-mpfr_005fget_005femin_005fmax"></a>Function: <em>mpfr_exp_t</em> <strong>mpfr_get_emin_max</strong> <em>(void)</em></dt>
+<dt><a name="index-mpfr_005fget_005femax_005fmin"></a>Function: <em>mpfr_exp_t</em> <strong>mpfr_get_emax_min</strong> <em>(void)</em></dt>
+<dt><a name="index-mpfr_005fget_005femax_005fmax"></a>Function: <em>mpfr_exp_t</em> <strong>mpfr_get_emax_max</strong> <em>(void)</em></dt>
+<dd><p>Return the minimum and maximum of the exponents
+allowed for <code>mpfr_set_emin</code> and <code>mpfr_set_emax</code> respectively.
+These values are implementation dependent, thus a program using
+<code>mpfr_set_emax(mpfr_get_emax_max())</code>
+or <code>mpfr_set_emin(mpfr_get_emin_min())</code> may not be portable.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fcheck_005frange"></a>Function: <em>int</em> <strong>mpfr_check_range</strong> <em>(mpfr_t <var>x</var>, int <var>t</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>This function assumes that <var>x</var> is the correctly-rounded value of some
+real value <var>y</var> in the direction <var>rnd</var> and some extended exponent
+range, and that <var>t</var> is the corresponding <a href="Rounding-Modes.html#ternary-value">ternary value</a>.
+For example, one performed <code>t = mpfr_log (x, u, rnd)</code>, and <var>y</var> is the
+exact logarithm of <var>u</var>.
+Thus <var>t</var> is negative if <var>x</var> is smaller than <var>y</var>,
+positive if <var>x</var> is larger than <var>y</var>, and zero if <var>x</var> equals <var>y</var>.
+This function modifies <var>x</var> if needed
+to be in the current range of acceptable values: It
+generates an underflow or an overflow if the exponent of <var>x</var> is
+outside the current allowed range; the value of <var>t</var> may be used
+to avoid a double rounding. This function returns zero if the new value of
+<var>x</var> equals the exact one <var>y</var>, a positive value if that new value
+is larger than <var>y</var>, and a negative value if it is smaller than <var>y</var>.
+Note that unlike most functions,
+the new result <var>x</var> is compared to the (unknown) exact one <var>y</var>,
+not the input value <var>x</var>, i.e., the ternary value is propagated.
+</p>
+<p>Note: If <var>x</var> is an infinity and <var>t</var> is different from zero (i.e.,
+if the rounded result is an inexact infinity), then the overflow flag is
+set. This is useful because <code>mpfr_check_range</code> is typically called
+(at least in MPFR functions) after restoring the flags that could have
+been set due to internal computations.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fsubnormalize"></a>Function: <em>int</em> <strong>mpfr_subnormalize</strong> <em>(mpfr_t <var>x</var>, int <var>t</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>This function rounds <var>x</var> emulating subnormal number arithmetic:
+if <var>x</var> is outside the subnormal exponent range, it just propagates the
+<a href="Rounding-Modes.html#ternary-value">ternary value</a> <var>t</var>; otherwise, it rounds <var>x</var> to precision
+<code>EXP(x)-emin+1</code> according to rounding mode <var>rnd</var> and previous
+ternary value <var>t</var>, avoiding double rounding problems.
+More precisely in the subnormal domain, denoting by <var>e</var> the value of
+<code>emin</code>, <var>x</var> is rounded in fixed-point
+arithmetic to an integer multiple of <em>two to the power
+<var>e</var>−1</em>; as a consequence, <em>1.5 multiplied by two to the power <var>e</var>−1</em> when <var>t</var> is zero
+is rounded to <em>two to the power <var>e</var></em> with rounding to nearest.
+</p>
+<p><code>PREC(x)</code> is not modified by this function.
+<var>rnd</var> and <var>t</var> must be the rounding mode
+and the returned ternary value used when computing <var>x</var>
+(as in <code>mpfr_check_range</code>).
+The subnormal exponent range is from <code>emin</code> to <code>emin+PREC(x)-1</code>.
+If the result cannot be represented in the current exponent range
+(due to a too small <code>emax</code>), the behavior is undefined.
+Note that unlike most functions, the result is compared to the exact one,
+not the input value <var>x</var>, i.e., the ternary value is propagated.
+</p>
+<p>As usual, if the returned ternary value is non zero, the inexact flag is set.
+Moreover, if a second rounding occurred (because the input <var>x</var> was in the
+subnormal range), the underflow flag is set.
+</p></dd></dl>
+
+<p>This is an example of how to emulate binary double IEEE 754 arithmetic
+(binary64 in IEEE 754-2008) using MPFR:
+</p>
+<div class="example">
+<pre class="example">{
+  mpfr_t xa, xb; int i; volatile double a, b;
+
+  mpfr_set_default_prec (53);
+  mpfr_set_emin (-1073); mpfr_set_emax (1024);
+
+  mpfr_init (xa); mpfr_init (xb);
+
+  b = 34.3; mpfr_set_d (xb, b, MPFR_RNDN);
+  a = 0x1.1235P-1021; mpfr_set_d (xa, a, MPFR_RNDN);
+
+  a /= b;
+  i = mpfr_div (xa, xa, xb, MPFR_RNDN);
+  i = mpfr_subnormalize (xa, i, MPFR_RNDN); /* new ternary value */
+
+  mpfr_clear (xa); mpfr_clear (xb);
+}
+</pre></div>
+
+<p>Warning: this emulates a double IEEE 754 arithmetic with correct rounding
+in the subnormal range, which may not be the case for your hardware.
+</p>
+<dl>
+<dt><a name="index-mpfr_005fclear_005funderflow"></a>Function: <em>void</em> <strong>mpfr_clear_underflow</strong> <em>(void)</em></dt>
+<dt><a name="index-mpfr_005fclear_005foverflow"></a>Function: <em>void</em> <strong>mpfr_clear_overflow</strong> <em>(void)</em></dt>
+<dt><a name="index-mpfr_005fclear_005fdivby0"></a>Function: <em>void</em> <strong>mpfr_clear_divby0</strong> <em>(void)</em></dt>
+<dt><a name="index-mpfr_005fclear_005fnanflag"></a>Function: <em>void</em> <strong>mpfr_clear_nanflag</strong> <em>(void)</em></dt>
+<dt><a name="index-mpfr_005fclear_005finexflag"></a>Function: <em>void</em> <strong>mpfr_clear_inexflag</strong> <em>(void)</em></dt>
+<dt><a name="index-mpfr_005fclear_005ferangeflag"></a>Function: <em>void</em> <strong>mpfr_clear_erangeflag</strong> <em>(void)</em></dt>
+<dd><p>Clear the underflow, overflow, divide-by-zero, invalid,
+inexact and <em>erange</em> flags.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fset_005funderflow"></a>Function: <em>void</em> <strong>mpfr_set_underflow</strong> <em>(void)</em></dt>
+<dt><a name="index-mpfr_005fset_005foverflow"></a>Function: <em>void</em> <strong>mpfr_set_overflow</strong> <em>(void)</em></dt>
+<dt><a name="index-mpfr_005fset_005fdivby0"></a>Function: <em>void</em> <strong>mpfr_set_divby0</strong> <em>(void)</em></dt>
+<dt><a name="index-mpfr_005fset_005fnanflag"></a>Function: <em>void</em> <strong>mpfr_set_nanflag</strong> <em>(void)</em></dt>
+<dt><a name="index-mpfr_005fset_005finexflag"></a>Function: <em>void</em> <strong>mpfr_set_inexflag</strong> <em>(void)</em></dt>
+<dt><a name="index-mpfr_005fset_005ferangeflag"></a>Function: <em>void</em> <strong>mpfr_set_erangeflag</strong> <em>(void)</em></dt>
+<dd><p>Set the underflow, overflow, divide-by-zero, invalid,
+inexact and <em>erange</em> flags.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fclear_005fflags"></a>Function: <em>void</em> <strong>mpfr_clear_flags</strong> <em>(void)</em></dt>
+<dd><p>Clear all global flags (underflow, overflow, divide-by-zero, invalid,
+inexact, <em>erange</em>).
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005funderflow_005fp"></a>Function: <em>int</em> <strong>mpfr_underflow_p</strong> <em>(void)</em></dt>
+<dt><a name="index-mpfr_005foverflow_005fp"></a>Function: <em>int</em> <strong>mpfr_overflow_p</strong> <em>(void)</em></dt>
+<dt><a name="index-mpfr_005fdivby0_005fp"></a>Function: <em>int</em> <strong>mpfr_divby0_p</strong> <em>(void)</em></dt>
+<dt><a name="index-mpfr_005fnanflag_005fp"></a>Function: <em>int</em> <strong>mpfr_nanflag_p</strong> <em>(void)</em></dt>
+<dt><a name="index-mpfr_005finexflag_005fp"></a>Function: <em>int</em> <strong>mpfr_inexflag_p</strong> <em>(void)</em></dt>
+<dt><a name="index-mpfr_005ferangeflag_005fp"></a>Function: <em>int</em> <strong>mpfr_erangeflag_p</strong> <em>(void)</em></dt>
+<dd><p>Return the corresponding (underflow, overflow, divide-by-zero, invalid,
+inexact, <em>erange</em>) flag, which is non-zero iff the flag is set.
+</p></dd></dl>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Compatibility-with-MPF.html#Compatibility-with-MPF" accesskey="n" rel="next">Compatibility with MPF</a>, Previous: <a href="Miscellaneous-Functions.html#Miscellaneous-Functions" accesskey="p" rel="prev">Miscellaneous Functions</a>, Up: <a href="MPFR-Interface.html#MPFR-Interface" accesskey="u" rel="up">MPFR Interface</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

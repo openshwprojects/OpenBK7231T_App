@@ -1,0 +1,244 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Embed with GNU: mvme.S</title>
+
+<meta name="description" content="Embed with GNU: mvme.S">
+<meta name="keywords" content="Embed with GNU: mvme.S">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="leds_002ec.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Code-Listings.html#Code-Listings" rel="up" title="Code Listings">
+<link href="io_002ec.html#io_002ec" rel="next" title="io.c">
+<link href="glue_002ec.html#glue_002ec" rel="prev" title="glue.c">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="mvme_002eS"></a>
+<div class="header">
+<p>
+Next: <a href="io_002ec.html#io_002ec" accesskey="n" rel="next">io.c</a>, Previous: <a href="glue_002ec.html#glue_002ec" accesskey="p" rel="prev">glue.c</a>, Up: <a href="Code-Listings.html#Code-Listings" accesskey="u" rel="up">Code Listings</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+<hr>
+<a name="I_002fO-assembler-code-sample"></a>
+<h3 class="section">A.4 I/O assembler code sample</h3>
+
+<div class="example">
+<pre class="example">/*
+ * mvme.S -- board support for m68k
+ */
+
+	.title &quot;mvme.S for m68k-coff&quot;
+
+/* These are predefined by new versions of GNU cpp.  */
+
+#ifndef __USER_LABEL_PREFIX__
+#define __USER_LABEL_PREFIX__ _
+#endif
+
+#ifndef __REGISTER_PREFIX__
+#define __REGISTER_PREFIX__
+#endif
+
+/* ANSI concatenation macros.  */
+
+#define CONCAT1(a, b) CONCAT2(a, b)
+#define CONCAT2(a, b) a ## b
+
+/* Use the right prefix for global labels.  */
+
+#define SYM(x) CONCAT1 (__USER_LABEL_PREFIX__, x)
+
+/* Use the right prefix for registers.  */
+
+#define REG(x) CONCAT1 (__REGISTER_PREFIX__, x)
+
+#define d0 REG (d0)
+#define d1 REG (d1)
+#define d2 REG (d2)
+#define d3 REG (d3)
+#define d4 REG (d4)
+#define d5 REG (d5)
+#define d6 REG (d6)
+#define d7 REG (d7)
+#define a0 REG (a0)
+#define a1 REG (a1)
+#define a2 REG (a2)
+#define a3 REG (a3)
+#define a4 REG (a4)
+#define a5 REG (a5)
+#define a6 REG (a6)
+#define fp REG (fp)
+#define sp REG (sp)
+#define vbr REG (vbr)
+
+	.align	2
+	.text
+	.global SYM (_exit)
+	.global SYM (outln)
+	.global SYM (outbyte)
+	.global SYM (putDebugChar)
+	.global SYM (inbyte)
+	.global SYM (getDebugChar)
+	.global SYM (havebyte)
+	.global SYM (exceptionHandler)
+
+	.set	vbr_size, 0x400
+	.comm	SYM (vbr_table), vbr_size
+
+/*
+ * inbyte -- get a byte from the serial port
+ *	d0 - contains the byte read in
+ */
+	.align	2
+SYM (getDebugChar):		/* symbol name used by m68k-stub */
+SYM (inbyte):
+	link	a6, #-8
+	trap 	#15
+	.word	inchr
+	moveb 	sp@, d0
+	extbl	d0
+	unlk	a6
+	rts
+
+/*
+ * outbyte -- sends a byte out the serial port
+ *	d0 - contains the byte to be sent
+ */
+	.align	2
+SYM (putDebugChar):		/* symbol name used by m68k-stub */
+SYM (outbyte):
+	link	fp, #-4
+ 	moveb	fp@(11), sp@
+	trap 	#15
+	.word	outchr
+	unlk	fp
+	rts
+
+/*
+ * outln -- sends a string of bytes out the serial port with a CR/LF
+ *	a0 - contains the address of the string's first byte
+ *	a1 - contains the address of the string's last byte
+ */
+	.align	2
+SYM (outln):
+	link	a6, #-8
+	moveml	a0/a1, sp@
+	trap 	#15
+	.word 	outln
+	unlk	a6
+	rts
+
+/*
+ * outstr -- sends a string of bytes out the serial port without a CR/LF
+ *	a0 - contains the address of the string's first byte
+ *	a1 - contains the address of the string's last byte
+ */
+	.align	2
+SYM (outstr):
+	link	a6, #-8
+	moveml	a0/a1, sp@
+	trap 	#15
+	.word 	outstr
+	unlk	a6
+	rts
+
+/*
+ * havebyte -- checks to see if there is a byte in the serial port,
+ *	     returns 1 if there is a byte, 0 otherwise.
+ */
+SYM (havebyte):
+	trap 	#15
+	.word	instat
+	beqs	empty
+	movel 	#1, d0
+	rts
+empty:
+	movel	#0, d0
+	rts
+
+/*
+ * These constants are for the MVME-135 board's boot monitor. They
+ * are used with a TRAP #15 call to access the monitor's I/O routines.
+ * they must be in the word following the trap call.
+ */
+	.set inchr, 0x0
+	.set instat, 0x1
+	.set inln, 0x2
+	.set readstr, 0x3
+	.set readln, 0x4
+	.set chkbrk, 0x5
+
+	.set outchr, 0x20
+	.set outstr, 0x21
+	.set outln, 0x22
+	.set write, 0x23
+	.set writeln, 0x24
+	.set writdln, 0x25
+	.set pcrlf, 0x26
+	.set eraseln, 0x27
+	.set writd, 0x28
+	.set sndbrk, 0x29
+
+	.set tm_ini, 0x40
+	.set dt_ini, 0x42
+	.set tm_disp, 0x43
+	.set tm_rd, 0x44
+
+	.set redir, 0x60
+	.set redir_i, 0x61
+	.set redir_o, 0x62
+	.set return, 0x63
+	.set bindec, 0x64
+
+	.set changev, 0x67
+	.set strcmp, 0x68
+	.set mulu32, 0x69
+	.set divu32, 0x6A
+	.set chk_sum, 0x6B
+
+</pre></div>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="io_002ec.html#io_002ec" accesskey="n" rel="next">io.c</a>, Previous: <a href="glue_002ec.html#glue_002ec" accesskey="p" rel="prev">glue.c</a>, Up: <a href="Code-Listings.html#Code-Listings" accesskey="u" rel="up">Code Listings</a> &nbsp; [<a href="leds_002ec.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</p>
+</div>
+
+
+
+</body>
+</html>

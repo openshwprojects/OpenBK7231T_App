@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: puts</title>
+
+<meta name="description" content="The Red Hat newlib C Library: puts">
+<meta name="keywords" content="The Red Hat newlib C Library: puts">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="putw.html#putw" rel="next" title="putw">
+<link href="putchar_005funlocked.html#putchar_005funlocked" rel="prev" title="putchar_unlocked">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="puts"></a>
+<div class="header">
+<p>
+Next: <a href="putw.html#putw" accesskey="n" rel="next">putw</a>, Previous: <a href="putchar_005funlocked.html#putchar_005funlocked" accesskey="p" rel="prev">putchar_unlocked</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="puts_002d_002d_002dwrite-a-character-string"></a>
+<h3 class="section">4.49 <code>puts</code>&mdash;write a character string</h3>
+<a name="index-puts"></a>
+<a name="index-_005fputs_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;stdio.h&gt;
+int puts(const char *<var>s</var>);
+
+int _puts_r(struct _reent *<var>reent</var>, const char *<var>s</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>puts</code> writes the string at <var>s</var> (followed by a newline, instead of
+the trailing null) to the standard output stream.
+</p>
+<p>The alternate function <code>_puts_r</code> is a reentrant version.  The extra
+argument <var>reent</var> is a pointer to a reentrancy structure.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+If successful, the result is a nonnegative integer; otherwise, the
+result is <code>EOF</code>.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+ANSI C requires <code>puts</code>, but does not specify that the result on
+success must be <code>0</code>; any non-negative value is permitted.
+</p>
+<p>Supporting OS subroutines required: <code>close</code>, <code>fstat</code>, <code>isatty</code>,
+<code>lseek</code>, <code>read</code>, <code>sbrk</code>, <code>write</code>.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

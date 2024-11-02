@@ -1,0 +1,103 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Copyright (C) 1988-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "Free Software" and "Free Software Needs
+Free Documentation", with the Front-Cover Texts being "A GNU Manual,"
+and with the Back-Cover Texts as in (a) below.
+
+(a) The FSF's Back-Cover Text is: "You are free to copy and modify
+this GNU Manual.  Buying copies from GNU Press supports the FSF in
+developing GNU and promoting software freedom." -->
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Ada (Debugging with GDB)</title>
+
+<meta name="description" content="Ada (Debugging with GDB)">
+<meta name="keywords" content="Ada (Debugging with GDB)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<link href="index.html" rel="start" title="Top">
+<link href="Concept-Index.html" rel="index" title="Concept Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Supported-Languages.html" rel="up" title="Supported Languages">
+<link href="Ada-Mode-Intro.html" rel="next" title="Ada Mode Intro">
+<link href="GDB_002fM2.html" rel="prev" title="GDB/M2">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<span id="Ada"></span><div class="header">
+<p>
+Previous: <a href="Modula_002d2.html" accesskey="p" rel="prev">Modula-2</a>, Up: <a href="Supported-Languages.html" accesskey="u" rel="up">Supported Languages</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Concept-Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Ada-1"></span><h4 class="subsection">15.4.10 Ada</h4>
+<span id="index-Ada"></span>
+
+<p>The extensions made to <small>GDB</small> for Ada only support
+output from the <small>GNU</small> Ada (GNAT) compiler.
+Other Ada compilers are not currently supported, and
+attempting to debug executables produced by them is most likely
+to be difficult.
+</p>
+
+<span id="index-expressions-in-Ada"></span>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="Ada-Mode-Intro.html" accesskey="1">Ada Mode Intro</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">General remarks on the Ada syntax 
+                                   and semantics supported by Ada mode 
+                                   in <small>GDB</small>.
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Omissions-from-Ada.html" accesskey="2">Omissions from Ada</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Restrictions on the Ada expression syntax.
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Additions-to-Ada.html" accesskey="3">Additions to Ada</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Extensions of the Ada expression syntax.
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Overloading-support-for-Ada.html" accesskey="4">Overloading support for Ada</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Support for expressions involving overloaded
+                                   subprograms.
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Stopping-Before-Main-Program.html" accesskey="5">Stopping Before Main Program</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Debugging the program during elaboration.
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Ada-Exceptions.html" accesskey="6">Ada Exceptions</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Ada Exceptions
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Ada-Tasks.html" accesskey="7">Ada Tasks</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Listing and setting breakpoints in tasks.
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Ada-Tasks-and-Core-Files.html" accesskey="8">Ada Tasks and Core Files</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Tasking Support when Debugging Core Files
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Ravenscar-Profile.html" accesskey="9">Ravenscar Profile</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Tasking Support when using the Ravenscar
+                                   Profile
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Ada-Settings.html">Ada Settings</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">New settable GDB parameters for Ada.
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Ada-Glitches.html">Ada Glitches</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">Known peculiarities of Ada mode.
+</td></tr>
+</table>
+
+
+
+
+</body>
+</html>

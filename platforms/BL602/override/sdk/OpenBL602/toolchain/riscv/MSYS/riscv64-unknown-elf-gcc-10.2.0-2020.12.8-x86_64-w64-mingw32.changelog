@@ -1,0 +1,52 @@
+[Wed Jan 27 11:39:38 2021 +0800] Bump gcc
+[Wed Jan 27 11:34:43 2021 +0800] Add no-A variant for rv64 to multilib-list
+[Wed Jan 20 21:35:47 2021 +0800] Correct FREEDOM_GCC_METAL_RISCV_TAGS
+[Wed Jan 20 10:45:17 2021 +0800] Bump binutils and gcc
+[Tue Jan 19 12:43:29 2021 -0800] Bumping package version number
+[Tue Jan 19 21:48:45 2021 +0800] Fix crt0.o issue
+[Tue Jan 19 17:44:10 2021 +0800] Add -v for cp for easier debug
+[Mon Jan 18 15:36:00 2021 -0800] New location of libwinpthread.dll in new mingw toolchain
+[Sat Jan 16 17:39:51 2021 -0800] Adding a statement for debug status
+[Thu Jan 14 00:28:00 2021 +0800] Bump binutils
+[Mon Jan 11 13:10:59 2021 +0800] Bump version
+[Mon Jan 11 13:10:45 2021 +0800] Update multi-lib list
+[Fri Jan 8 20:36:24 2021 +0800] Bump version to 2020.12.3 for RVB 0.93
+[Wed Jan 6 16:37:16 2021 +0800] Bump GCC for fix MacOS build
+[Mon Jan 4 15:07:43 2021 +0800] Bump version to 2020.12.1
+[Mon Jan 4 14:36:14 2021 +0800] Bump version to 2020.12.1-rc1
+[Thu Dec 31 15:30:43 2020 +0800] Bump version
+[Thu Dec 31 14:17:14 2020 +0800] Bump gcc for addu.w fix
+[Wed Dec 30 16:23:32 2020 +0800] Bump newlib for optimized strcmp with zbb
+[Wed Dec 30 13:51:48 2020 +0800] Workaround for CentOS random build fail issue
+[Tue Dec 29 15:27:16 2020 +0800] Bump version
+[Tue Dec 29 15:25:56 2020 +0800] Add compact code model to multi-lib list
+[Tue Dec 29 15:25:12 2020 +0800] Revert "Drop rv64iafd-lp64d-- in multi-lib list, it's default one"
+[Tue Dec 29 15:24:40 2020 +0800] Bump newlib and gcc for compact code model
+[Sun Dec 27 19:10:43 2020 -0800] Update version
+[Sun Dec 27 19:07:39 2020 -0800] Drop rv64iafd-lp64d-- in multi-lib list, it's default one
+[Wed Dec 23 06:36:41 2020 -0800] Drop multi-lib reuse part, GCC has implemented new multi-lib selection scheme
+[Wed Dec 23 06:37:49 2020 -0800] Bump version
+[Wed Dec 23 06:31:43 2020 -0800] Bump binutils
+[Wed Dec 23 06:27:01 2020 -0800] Bump gcc and bump newlib
+[Wed Dec 16 12:31:18 2020 -0800] Adding more checks and bundle generation
+[Wed Oct 14 10:28:07 2020 -0700] Fixing abi and arch options
+[Mon Oct 12 16:37:03 2020 -0700] Fixing win64 to ubuntu dependency
+[Mon Oct 12 12:55:48 2020 -0700] Updating build scripts
+[Mon Oct 12 12:33:53 2020 -0700] Bumping binutils-metal submodule
+[Fri Oct 9 12:08:03 2020 -0700] Updating gcc submodule
+[Thu Jun 18 15:58:02 2020 -0700] Now using freedom-binutils-metal instead of riscv-binutils
+[Thu Jun 18 15:04:59 2020 -0700] Changing to use shared binutils build script
+[Tue Jun 16 10:13:30 2020 -0700] Adding flush Makefile target
+[Mon Jun 15 22:48:28 2020 -0700] Trying again to make it build for win64
+[Mon Jun 15 21:02:23 2020 -0700] Trying to make it build for win64
+[Mon Jun 15 16:16:54 2020 -0700] Saving native binutils files for win build
+[Sun Jun 14 22:03:41 2020 -0700] Adding regress make target
+[Sun Jun 7 23:24:35 2020 -0700] Only search for -type f in binutils installation
+[Fri Jun 5 17:14:16 2020 -0700] Adding build-flag for selecting basic multilibs set
+[Fri Jun 5 13:42:35 2020 -0700] Stripping binutils files from package
+[Fri Jun 5 10:00:45 2020 -0700] Type
+[Fri Jun 5 09:34:16 2020 -0700] Adding newlib
+[Thu Jun 4 22:36:19 2020 -0700] Type
+[Thu Jun 4 22:32:34 2020 -0700] Search and replace fix
+[Thu Jun 4 22:24:16 2020 -0700] First real commit
+[Tue May 26 12:09:50 2020 -0700] Initial commit

@@ -1,0 +1,101 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: isspace</title>
+
+<meta name="description" content="The Red Hat newlib C Library: isspace">
+<meta name="keywords" content="The Red Hat newlib C Library: isspace">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Ctype.html#Ctype" rel="up" title="Ctype">
+<link href="isupper.html#isupper" rel="next" title="isupper">
+<link href="ispunct.html#ispunct" rel="prev" title="ispunct">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="isspace"></a>
+<div class="header">
+<p>
+Next: <a href="isupper.html#isupper" accesskey="n" rel="next">isupper</a>, Previous: <a href="ispunct.html#ispunct" accesskey="p" rel="prev">ispunct</a>, Up: <a href="Ctype.html#Ctype" accesskey="u" rel="up">Ctype</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="isspace_002c-isspace_005fl_002d_002d_002dwhitespace-character-predicate"></a>
+<h3 class="section">3.10 <code>isspace</code>, <code>isspace_l</code>&mdash;whitespace character predicate</h3>
+<a name="index-isspace"></a>
+<a name="index-isspace_005fl"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;ctype.h&gt;
+int isspace(int <var>c</var>);
+
+#include &lt;ctype.h&gt;
+int isspace_l(int <var>c</var>, locale_t <var>locale</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>isspace</code> is a macro which classifies singlebyte charset values by table
+lookup.  It is a predicate returning non-zero for whitespace
+characters, and 0 for other characters.  It is defined only when <code>isascii</code>(<var>c</var>) is true or <var>c</var> is EOF.
+</p>
+<p><code>isspace_l</code> is like <code>isspace</code> but performs the check based on the
+locale specified by the locale object locale.  If <var>locale</var> is
+LC_GLOBAL_LOCALE or not a valid locale object, the behaviour is undefined.
+</p>
+<p>You can use a compiled subroutine instead of the macro definition by
+undefining the macro using &lsquo;<code>#undef isspace</code>&rsquo; or &lsquo;<code>#undef isspace_l</code>&rsquo;.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<code>isspace</code>, <code>isspace_l</code> return non-zero if <var>c</var> is a space, tab,
+carriage return, new line, vertical tab, or formfeed (<code>0x09</code>&ndash;<code>0x0D</code>,
+<code>0x20</code>), or one of the other space characters in non-ASCII charsets.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>isspace</code> is ANSI C.
+<code>isspace_l</code> is POSIX-1.2008.
+</p>
+<p>No supporting OS subroutines are required.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

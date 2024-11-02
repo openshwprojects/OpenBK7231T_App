@@ -1,0 +1,155 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Converting Floats</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Converting Floats">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Floating_002dpoint-Functions.html#Floating_002dpoint-Functions" rel="up" title="Floating-point Functions">
+<link href="Float-Arithmetic.html#Float-Arithmetic" rel="next" title="Float Arithmetic">
+<link href="Simultaneous-Float-Init-_0026-Assign.html#Simultaneous-Float-Init-_0026-Assign" rel="prev" title="Simultaneous Float Init &amp; Assign">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Converting-Floats"></a>
+<div class="header">
+<p>
+Next: <a href="Float-Arithmetic.html#Float-Arithmetic" accesskey="n" rel="next">Float Arithmetic</a>, Previous: <a href="Simultaneous-Float-Init-_0026-Assign.html#Simultaneous-Float-Init-_0026-Assign" accesskey="p" rel="prev">Simultaneous Float Init &amp; Assign</a>, Up: <a href="Floating_002dpoint-Functions.html#Floating_002dpoint-Functions" accesskey="u" rel="up">Floating-point Functions</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Conversion-Functions-2"></a>
+<h3 class="section">7.4 Conversion Functions</h3>
+<a name="index-Float-conversion-functions"></a>
+<a name="index-Conversion-functions-2"></a>
+
+<dl>
+<dt><a name="index-mpf_005fget_005fd"></a>Function: <em>double</em> <strong>mpf_get_d</strong> <em>(const mpf_t <var>op</var>)</em></dt>
+<dd><p>Convert <var>op</var> to a <code>double</code>, truncating if necessary (i.e. rounding
+towards zero).
+</p>
+<p>If the exponent in <var>op</var> is too big or too small to fit a <code>double</code>
+then the result is system dependent.  For too big an infinity is returned when
+available.  For too small <em>0.0</em> is normally returned.  Hardware overflow,
+underflow and denorm traps may or may not occur.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpf_005fget_005fd_005f2exp"></a>Function: <em>double</em> <strong>mpf_get_d_2exp</strong> <em>(signed long int *<var>exp</var>, const mpf_t <var>op</var>)</em></dt>
+<dd><p>Convert <var>op</var> to a <code>double</code>, truncating if necessary (i.e. rounding
+towards zero), and with an exponent returned separately.
+</p>
+<p>The return value is in the range <em>0.5&lt;=abs(<var>d</var>)&lt;1</em> and the
+exponent is stored to <code>*<var>exp</var></code>.  <em><var>d</var> * 2^<var>exp</var></em> is the (truncated) <var>op</var> value.  If <var>op</var> is zero,
+the return is <em>0.0</em> and 0 is stored to <code>*<var>exp</var></code>.
+</p>
+<a name="index-frexp-1"></a>
+<p>This is similar to the standard C <code>frexp</code> function (see <a href="http://www.gnu.org/software/libc/manual/html_node/Normalization-Functions.html#Normalization-Functions">Normalization
+Functions</a> in <cite>The GNU C Library Reference Manual</cite>).
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpf_005fget_005fsi"></a>Function: <em>long</em> <strong>mpf_get_si</strong> <em>(const mpf_t <var>op</var>)</em></dt>
+<dt><a name="index-mpf_005fget_005fui"></a>Function: <em>unsigned long</em> <strong>mpf_get_ui</strong> <em>(const mpf_t <var>op</var>)</em></dt>
+<dd><p>Convert <var>op</var> to a <code>long</code> or <code>unsigned long</code>, truncating any
+fraction part.  If <var>op</var> is too big for the return type, the result is
+undefined.
+</p>
+<p>See also <code>mpf_fits_slong_p</code> and <code>mpf_fits_ulong_p</code>
+(see <a href="Miscellaneous-Float-Functions.html#Miscellaneous-Float-Functions">Miscellaneous Float Functions</a>).
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpf_005fget_005fstr"></a>Function: <em>char *</em> <strong>mpf_get_str</strong> <em>(char *<var>str</var>, mp_exp_t *<var>expptr</var>, int <var>base</var>, size_t <var>n_digits</var>, const mpf_t <var>op</var>)</em></dt>
+<dd><p>Convert <var>op</var> to a string of digits in base <var>base</var>.  The base argument
+may vary from 2 to 62 or from -2 to -36.  Up to <var>n_digits</var>
+digits will be generated.  Trailing zeros are not returned.  No more digits
+than can be accurately represented by <var>op</var> are ever generated.  If
+<var>n_digits</var> is 0 then that accurate maximum number of digits are generated.
+</p>
+<p>For <var>base</var> in the range 2..36, digits and lower-case letters are used; for
+-2..-36, digits and upper-case letters are used; for 37..62,
+digits, upper-case letters, and lower-case letters (in that significance order)
+are used.
+</p>
+<p>If <var>str</var> is <code>NULL</code>, the result string is allocated using the current
+allocation function (see <a href="Custom-Allocation.html#Custom-Allocation">Custom Allocation</a>).  The block will be
+<code>strlen(str)+1</code> bytes, that being exactly enough for the string and
+null-terminator.
+</p>
+<p>If <var>str</var> is not <code>NULL</code>, it should point to a block of
+<em><var>n_digits</var> + 2</em> bytes, that being enough for the mantissa, a
+possible minus sign, and a null-terminator.  When <var>n_digits</var> is 0 to get
+all significant digits, an application won&rsquo;t be able to know the space
+required, and <var>str</var> should be <code>NULL</code> in that case.
+</p>
+<p>The generated string is a fraction, with an implicit radix point immediately
+to the left of the first digit.  The applicable exponent is written through
+the <var>expptr</var> pointer.  For example, the number 3.1416 would be returned as
+string <code>&quot;31416&quot;</code> and exponent 1.
+</p>
+<p>When <var>op</var> is zero, an empty string is produced and the exponent returned
+is 0.
+</p>
+<p>A pointer to the result string is returned, being either the allocated block
+or the given <var>str</var>.
+</p></dd></dl>
+
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Float-Arithmetic.html#Float-Arithmetic" accesskey="n" rel="next">Float Arithmetic</a>, Previous: <a href="Simultaneous-Float-Init-_0026-Assign.html#Simultaneous-Float-Init-_0026-Assign" accesskey="p" rel="prev">Simultaneous Float Init &amp; Assign</a>, Up: <a href="Floating_002dpoint-Functions.html#Floating_002dpoint-Functions" accesskey="u" rel="up">Floating-point Functions</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

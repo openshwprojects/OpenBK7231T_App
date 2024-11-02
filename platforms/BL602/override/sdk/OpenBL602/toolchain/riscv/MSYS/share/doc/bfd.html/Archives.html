@@ -1,0 +1,199 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This file documents the BFD library.
+
+Copyright (C) 1991-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "GNU General Public License" and "Funding
+Free Software", the Front-Cover texts being (a) (see below), and with
+the Back-Cover Texts being (b) (see below).  A copy of the license is
+included in the section entitled "GNU Free Documentation License".
+
+(a) The FSF's Front-Cover Text is:
+
+A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Untitled Document: Archives</title>
+
+<meta name="description" content="Untitled Document: Archives">
+<meta name="keywords" content="Untitled Document: Archives">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="BFD-Index.html#BFD-Index" rel="index" title="BFD Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="BFD-front-end.html#BFD-front-end" rel="up" title="BFD front end">
+<link href="Formats.html#Formats" rel="next" title="Formats">
+<link href="symbol-handling-functions.html#symbol-handling-functions" rel="prev" title="symbol handling functions">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Archives"></a>
+<div class="header">
+<p>
+Next: <a href="Formats.html#Formats" accesskey="n" rel="next">Formats</a>, Previous: <a href="Symbols.html#Symbols" accesskey="p" rel="prev">Symbols</a>, Up: <a href="BFD-front-end.html#BFD-front-end" accesskey="u" rel="up">BFD front end</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="BFD-Index.html#BFD-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Archives-1"></a>
+<h3 class="section">2.8 Archives</h3>
+
+
+<p><strong>Description</strong><br>
+An archive (or library) is just another BFD.  It has a symbol
+table, although there&rsquo;s not much a user program will do with it.
+</p>
+<p>The big difference between an archive BFD and an ordinary BFD
+is that the archive doesn&rsquo;t have sections.  Instead it has a
+chain of BFDs that are considered its contents.  These BFDs can
+be manipulated like any other.  The BFDs contained in an
+archive opened for reading will all be opened for reading.  You
+may put either input or output BFDs into an archive opened for
+output; they will be handled correctly when the archive is closed.
+</p>
+<p>Use <code>bfd_openr_next_archived_file</code> to step through
+the contents of an archive opened for input.  You don&rsquo;t
+have to read the entire archive if you don&rsquo;t want
+to!  Read it until you find what you want.
+</p>
+<p>A BFD returned by <code>bfd_openr_next_archived_file</code> can be
+closed manually with <code>bfd_close</code>.  If you do not close it,
+then a second iteration through the members of an archive may
+return the same BFD.  If you close the archive BFD, then all
+the member BFDs will automatically be closed as well.
+</p>
+<p>Archive contents of output BFDs are chained through the
+<code>archive_next</code> pointer in a BFD.  The first one is findable
+through the <code>archive_head</code> slot of the archive.  Set it with
+<code>bfd_set_archive_head</code> (q.v.).  A given BFD may be in only
+one open output archive at a time.
+</p>
+<p>As expected, the BFD archive code is more general than the
+archive code of any given environment.  BFD archives may
+contain files of different formats (e.g., a.out and coff) and
+even different architectures.  You may even place archives
+recursively into archives!
+</p>
+<p>This can cause unexpected confusion, since some archive
+formats are more expressive than others.  For instance, Intel
+COFF archives can preserve long filenames; SunOS a.out archives
+cannot.  If you move a file from the first to the second
+format and back again, the filename may be truncated.
+Likewise, different a.out environments have different
+conventions as to how they truncate filenames, whether they
+preserve directory names in filenames, etc.  When
+interoperating with native tools, be sure your files are
+homogeneous.
+</p>
+<p>Beware: most of these formats do not react well to the
+presence of spaces in filenames.  We do the best we can, but
+can&rsquo;t always handle this case due to restrictions in the format of
+archives.  Many Unix utilities are braindead in regards to
+spaces and such in filenames anyway, so this shouldn&rsquo;t be much
+of a restriction.
+</p>
+<p>Archives are supported in BFD in <code>archive.c</code>.
+</p>
+<a name="Archive-functions"></a>
+<h4 class="subsection">2.8.1 Archive functions</h4>
+
+
+<a name="index-bfd_005fget_005fnext_005fmapent"></a>
+<a name="bfd_005fget_005fnext_005fmapent"></a>
+<h4 class="subsubsection">2.8.1.1 <code>bfd_get_next_mapent</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">symindex bfd_get_next_mapent
+   (bfd *abfd, symindex previous, carsym **sym);
+</pre></div>
+<p><strong>Description</strong><br>
+Step through archive <var>abfd</var>&rsquo;s symbol table (if it
+has one).  Successively update <var>sym</var> with the next symbol&rsquo;s
+information, returning that symbol&rsquo;s (internal) index into the
+symbol table.
+</p>
+<p>Supply <code>BFD_NO_MORE_SYMBOLS</code> as the <var>previous</var> entry to get
+the first one; returns <code>BFD_NO_MORE_SYMBOLS</code> when you&rsquo;ve already
+got the last one.
+</p>
+<p>A <code>carsym</code> is a canonical archive symbol.  The only
+user-visible element is its name, a null-terminated string.
+</p>
+<a name="index-bfd_005fset_005farchive_005fhead"></a>
+<a name="bfd_005fset_005farchive_005fhead"></a>
+<h4 class="subsubsection">2.8.1.2 <code>bfd_set_archive_head</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd_boolean bfd_set_archive_head (bfd *output, bfd *new_head);
+</pre></div>
+<p><strong>Description</strong><br>
+Set the head of the chain of
+BFDs contained in the archive <var>output</var> to <var>new_head</var>.
+</p>
+<a name="index-bfd_005fopenr_005fnext_005farchived_005ffile"></a>
+<a name="bfd_005fopenr_005fnext_005farchived_005ffile"></a>
+<h4 class="subsubsection">2.8.1.3 <code>bfd_openr_next_archived_file</code></h4>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">bfd *bfd_openr_next_archived_file (bfd *archive, bfd *previous);
+</pre></div>
+<p><strong>Description</strong><br>
+Provided a BFD, <var>archive</var>, containing an archive and NULL, open
+an input BFD on the first contained element and returns that.
+Subsequent calls should pass the archive and the previous return
+value to return a created BFD to the next contained element.  NULL
+is returned when there are no more.
+Note - if you want to process the bfd returned by this call be
+sure to call bfd_check_format() on it first.
+</p>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Formats.html#Formats" accesskey="n" rel="next">Formats</a>, Previous: <a href="Symbols.html#Symbols" accesskey="p" rel="prev">Symbols</a>, Up: <a href="BFD-front-end.html#BFD-front-end" accesskey="u" rel="up">BFD front end</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="BFD-Index.html#BFD-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

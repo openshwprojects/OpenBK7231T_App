@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>LIBM: lrint</title>
+
+<meta name="description" content="LIBM: lrint">
+<meta name="keywords" content="LIBM: lrint">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Math.html#Math" rel="up" title="Math">
+<link href="lround.html#lround" rel="next" title="lround">
+<link href="logb.html#logb" rel="prev" title="logb">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="lrint"></a>
+<div class="header">
+<p>
+Next: <a href="lround.html#lround" accesskey="n" rel="next">lround</a>, Previous: <a href="logb.html#logb" accesskey="p" rel="prev">logb</a>, Up: <a href="Math.html#Math" accesskey="u" rel="up">Math</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="lrint_002c-lrintf_002c-llrint_002c-llrintf_002d_002d_002dround-to-integer"></a>
+<h3 class="section">1.39 <code>lrint</code>, <code>lrintf</code>, <code>llrint</code>, <code>llrintf</code>&mdash;round to integer</h3>
+<a name="index-lrint"></a>
+<a name="index-lrintf"></a>
+<a name="index-llrint"></a>
+<a name="index-llrintf"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;math.h&gt;
+long int lrint(double <var>x</var>);
+long int lrintf(float <var>x</var>);
+long long int llrint(double <var>x</var>);
+long long int llrintf(float <var>x</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+The <code>lrint</code> and <code>llrint</code> functions round their argument to the nearest
+integer value, using the current rounding direction.  If the rounded value is
+outside the range of the return type, the numeric result is unspecified.  A
+range error may occur if the magnitude of <var>x</var> is too large.
+The &quot;inexact&quot; floating-point exception is raised in implementations that
+support it when the result differs in value from the argument (i.e., when
+a fraction actually has been truncated).
+</p>
+<br>
+<p><strong>Returns</strong><br>
+<var>x</var> rounded to an integral value, using the current rounding direction.
+</p>
+<br>
+<p><strong>See Also</strong><br>
+<code>lround</code>
+</p>
+<br>
+<p><strong>Portability</strong><br>
+ANSI C, POSIX
+</p>
+
+<br>
+
+
+
+</body>
+</html>

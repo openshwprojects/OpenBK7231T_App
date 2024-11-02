@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: wcslcat</title>
+
+<meta name="description" content="The Red Hat newlib C Library: wcslcat">
+<meta name="keywords" content="The Red Hat newlib C Library: wcslcat">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Wchar-strings.html#Wchar-strings" rel="up" title="Wchar strings">
+<link href="wcslcpy.html#wcslcpy" rel="next" title="wcslcpy">
+<link href="wcsftime.html#wcsftime" rel="prev" title="wcsftime">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="wcslcat"></a>
+<div class="header">
+<p>
+Next: <a href="wcslcpy.html#wcslcpy" accesskey="n" rel="next">wcslcpy</a>, Previous: <a href="wcsftime.html#wcsftime" accesskey="p" rel="prev">wcsftime</a>, Up: <a href="Wchar-strings.html#Wchar-strings" accesskey="u" rel="up">Wchar strings</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="wcslcat_002d_002d_002dconcatenate-wide_002dcharacter-strings-to-specified-length"></a>
+<h3 class="section">6.15 <code>wcslcat</code>&mdash;concatenate wide-character strings to specified length</h3>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;wchar.h&gt;
+size_t wcslcat(wchar_t *<var>dst</var>, const wchar_t *<var>src</var>, size_t <var>siz</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+The <code>wcslcat</code> function appends wide characters from <var>src</var> to
+end of the <var>dst</var> wide-character string so that the resultant
+wide-character string is not more than <var>siz</var> wide characters
+including the terminating null wide-character code.  A terminating
+null wide character is always added unless <var>siz</var> is 0.  Thus,
+the maximum number of wide characters that can be appended from
+<var>src</var> is <var>siz</var> - 1. If copying takes place between objects 
+that overlap, the behaviour is undefined.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+Wide-character string length of initial <var>dst</var> plus the
+wide-character string length of <var>src</var> (does not include
+terminating null wide-characters).  If the return value is
+greater than or equal to <var>siz</var>, then truncation occurred and
+not all wide characters from <var>src</var> were appended.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+No supporting OS subroutines are required.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

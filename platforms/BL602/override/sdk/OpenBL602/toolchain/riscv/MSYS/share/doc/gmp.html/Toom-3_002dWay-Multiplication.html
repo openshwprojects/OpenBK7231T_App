@@ -1,0 +1,235 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Toom 3-Way Multiplication</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Toom 3-Way Multiplication">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Multiplication-Algorithms.html#Multiplication-Algorithms" rel="up" title="Multiplication Algorithms">
+<link href="Toom-4_002dWay-Multiplication.html#Toom-4_002dWay-Multiplication" rel="next" title="Toom 4-Way Multiplication">
+<link href="Karatsuba-Multiplication.html#Karatsuba-Multiplication" rel="prev" title="Karatsuba Multiplication">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Toom-3_002dWay-Multiplication"></a>
+<div class="header">
+<p>
+Next: <a href="Toom-4_002dWay-Multiplication.html#Toom-4_002dWay-Multiplication" accesskey="n" rel="next">Toom 4-Way Multiplication</a>, Previous: <a href="Karatsuba-Multiplication.html#Karatsuba-Multiplication" accesskey="p" rel="prev">Karatsuba Multiplication</a>, Up: <a href="Multiplication-Algorithms.html#Multiplication-Algorithms" accesskey="u" rel="up">Multiplication Algorithms</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Toom-3_002dWay-Multiplication-1"></a>
+<h4 class="subsection">15.1.3 Toom 3-Way Multiplication</h4>
+<a name="index-Toom-multiplication"></a>
+
+<p>The Karatsuba formula is the simplest case of a general approach to splitting
+inputs that leads to both Toom and FFT algorithms.  A description of
+Toom can be found in Knuth section 4.3.3, with an example 3-way
+calculation after Theorem A.  The 3-way form used in GMP is described here.
+</p>
+<p>The operands are each considered split into 3 pieces of equal length (or the
+most significant part 1 or 2 limbs shorter than the other two).
+</p>
+<div class="example">
+<pre class="example"> high                         low
++----------+----------+----------+
+|    x2    |    x1    |    x0    |
++----------+----------+----------+
+
++----------+----------+----------+
+|    y2    |    y1    |    y0    |
++----------+----------+----------+
+</pre></div>
+
+<p>These parts are treated as the coefficients of two polynomials
+</p>
+<div class="display">
+<pre class="display"><em>X(t) = x2*t^2 + x1*t + x0</em>
+<em>Y(t) = y2*t^2 + y1*t + y0</em>
+</pre></div>
+
+<p>Let <em>b</em> equal the power of 2 which is the size of the x0, x1,
+y0 and y1 pieces, i.e. if they&rsquo;re <em>k</em> limbs each then
+<em>b=2^(k*mp_bits_per_limb)</em>.
+With this <em>x=X(b)</em> and <em>y=Y(b)</em>.
+</p>
+<p>Let a polynomial <em>W(t)=X(t)*Y(t)</em> and suppose its coefficients
+are
+</p>
+<div class="display">
+<pre class="display"><em>W(t) = w4*t^4 + w3*t^3 + w2*t^2 + w1*t + w0</em>
+</pre></div>
+
+<p>The <em>w[i]</em> are going to be determined, and when they are they&rsquo;ll give
+the final result using <em>w=W(b)</em>, since
+<em>x*y=X(b)*Y(b)=W(b)</em>.  The coefficients will be roughly
+<em>b^2</em> each, and the final <em>W(b)</em> will be an addition like,
+</p>
+<div class="example">
+<pre class="example"> high                                        low
++-------+-------+
+|       w4      |
++-------+-------+
+       +--------+-------+
+       |        w3      |
+       +--------+-------+
+               +--------+-------+
+               |        w2      |
+               +--------+-------+
+                       +--------+-------+
+                       |        w1      |
+                       +--------+-------+
+                                +-------+-------+
+                                |       w0      |
+                                +-------+-------+
+</pre></div>
+
+<p>The <em>w[i]</em> coefficients could be formed by a simple set of cross
+products, like <em>w4=x2*y2</em>, <em>w3=x2*y1+x1*y2</em>,
+<em>w2=x2*y0+x1*y1+x0*y2</em> etc, but this would need all
+nine <em>x[i]*y[j]</em> for <em>i,j=0,1,2</em>, and would be equivalent merely
+to a basecase multiply.  Instead the following approach is used.
+</p>
+<p><em>X(t)</em> and <em>Y(t)</em> are evaluated and multiplied at 5 points, giving
+values of <em>W(t)</em> at those points.  In GMP the following points are used,
+</p>
+<blockquote>
+<table>
+<tr><td>Point</td><td>Value</td></tr>
+<tr><td><em>t=0</em></td><td><em>x0 * y0</em>, which gives w0 immediately</td></tr>
+<tr><td><em>t=1</em></td><td><em>(x2+x1+x0) * (y2+y1+y0)</em></td></tr>
+<tr><td><em>t=-1</em></td><td><em>(x2-x1+x0) * (y2-y1+y0)</em></td></tr>
+<tr><td><em>t=2</em></td><td><em>(4*x2+2*x1+x0) * (4*y2+2*y1+y0)</em></td></tr>
+<tr><td><em>t=inf</em></td><td><em>x2 * y2</em>, which gives w4 immediately</td></tr>
+</table>
+</blockquote>
+
+<p>At <em>t=-1</em> the values can be negative and that&rsquo;s handled using the
+absolute values and tracking the sign separately.  At <em>t=inf</em> the
+value is actually <em>X(t)*Y(t)/t^4 in
+the limit as t approaches infinity</em>, but it&rsquo;s much easier to think of as
+simply <em>x2*y2</em> giving w4 immediately (much like
+<em>x0*y0</em> at <em>t=0</em> gives w0 immediately).
+</p>
+<p>Each of the points substituted into
+<em>W(t)=w4*t^4+&hellip;+w0</em> gives a linear combination
+of the <em>w[i]</em> coefficients, and the value of those combinations has just
+been calculated.
+</p>
+<div class="example">
+<pre class="example">W(0)   =                              w0
+W(1)   =    w4 +   w3 +   w2 +   w1 + w0
+W(-1)  =    w4 -   w3 +   w2 -   w1 + w0
+W(2)   = 16*w4 + 8*w3 + 4*w2 + 2*w1 + w0
+W(inf) =    w4
+</pre></div>
+
+<p>This is a set of five equations in five unknowns, and some elementary linear
+algebra quickly isolates each <em>w[i]</em>.  This involves adding or
+subtracting one <em>W(t)</em> value from another, and a couple of divisions by
+powers of 2 and one division by 3, the latter using the special
+<code>mpn_divexact_by3</code> (see <a href="Exact-Division.html#Exact-Division">Exact Division</a>).
+</p>
+<p>The conversion of <em>W(t)</em> values to the coefficients is interpolation.  A
+polynomial of degree 4 like <em>W(t)</em> is uniquely determined by values known
+at 5 different points.  The points are arbitrary and can be chosen to make the
+linear equations come out with a convenient set of steps for quickly isolating
+the <em>w[i]</em>.
+</p>
+<p>Squaring follows the same procedure as multiplication, but there&rsquo;s only one
+<em>X(t)</em> and it&rsquo;s evaluated at the 5 points, and those values squared to
+give values of <em>W(t)</em>.  The interpolation is then identical, and in fact
+the same <code>toom_interpolate_5pts</code> subroutine is used for both squaring and
+multiplying.
+</p>
+<p>Toom-3 is asymptotically <em>O(N^1.465<!-- /@w -->)</em>, the exponent being
+<em>log(5)/log(3)</em>, representing 5 recursive multiplies of 1/3 the
+original size each.  This is an improvement over Karatsuba at
+<em>O(N^1.585<!-- /@w -->)</em>, though Toom does more work in the evaluation and
+interpolation and so it only realizes its advantage above a certain size.
+</p>
+<p>Near the crossover between Toom-3 and Karatsuba there&rsquo;s generally a range of
+sizes where the difference between the two is small.
+<code>MUL_TOOM33_THRESHOLD</code> is a somewhat arbitrary point in that range and
+successive runs of the tune program can give different values due to small
+variations in measuring.  A graph of time versus size for the two shows the
+effect, see <samp>tune/README</samp>.
+</p>
+<p>At the fairly small sizes where the Toom-3 thresholds occur it&rsquo;s worth
+remembering that the asymptotic behaviour for Karatsuba and Toom-3 can&rsquo;t be
+expected to make accurate predictions, due of course to the big influence of
+all sorts of overheads, and the fact that only a few recursions of each are
+being performed.  Even at large sizes there&rsquo;s a good chance machine dependent
+effects like cache architecture will mean actual performance deviates from
+what might be predicted.
+</p>
+<p>The formula given for the Karatsuba algorithm (see <a href="Karatsuba-Multiplication.html#Karatsuba-Multiplication">Karatsuba Multiplication</a>) has an equivalent for Toom-3 involving only five multiplies,
+but this would be complicated and unenlightening.
+</p>
+<p>An alternate view of Toom-3 can be found in Zuras (see <a href="References.html#References">References</a>), using
+a vector to represent the <em>x</em> and <em>y</em> splits and a matrix
+multiplication for the evaluation and interpolation stages.  The matrix
+inverses are not meant to be actually used, and they have elements with values
+much greater than in fact arise in the interpolation steps.  The diagram shown
+for the 3-way is attractive, but again doesn&rsquo;t have to be implemented that way
+and for example with a bit of rearrangement just one division by 6 can be
+done.
+</p>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Toom-4_002dWay-Multiplication.html#Toom-4_002dWay-Multiplication" accesskey="n" rel="next">Toom 4-Way Multiplication</a>, Previous: <a href="Karatsuba-Multiplication.html#Karatsuba-Multiplication" accesskey="p" rel="prev">Karatsuba Multiplication</a>, Up: <a href="Multiplication-Algorithms.html#Multiplication-Algorithms" accesskey="u" rel="up">Multiplication Algorithms</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

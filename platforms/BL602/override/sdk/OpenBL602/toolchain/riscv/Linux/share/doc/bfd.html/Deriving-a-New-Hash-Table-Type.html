@@ -1,0 +1,111 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This file documents the BFD library.
+
+Copyright (C) 1991-2020 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "GNU General Public License" and "Funding
+Free Software", the Front-Cover texts being (a) (see below), and with
+the Back-Cover Texts being (b) (see below).  A copy of the license is
+included in the section entitled "GNU Free Documentation License".
+
+(a) The FSF's Front-Cover Text is:
+
+A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Untitled Document: Deriving a New Hash Table Type</title>
+
+<meta name="description" content="Untitled Document: Deriving a New Hash Table Type">
+<meta name="keywords" content="Untitled Document: Deriving a New Hash Table Type">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="BFD-Index.html#BFD-Index" rel="index" title="BFD Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Hash-Tables.html#Hash-Tables" rel="up" title="Hash Tables">
+<link href="Define-the-Derived-Structures.html#Define-the-Derived-Structures" rel="next" title="Define the Derived Structures">
+<link href="Traversing-a-Hash-Table.html#Traversing-a-Hash-Table" rel="prev" title="Traversing a Hash Table">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Deriving-a-New-Hash-Table-Type"></a>
+<div class="header">
+<p>
+Previous: <a href="Traversing-a-Hash-Table.html#Traversing-a-Hash-Table" accesskey="p" rel="prev">Traversing a Hash Table</a>, Up: <a href="Hash-Tables.html#Hash-Tables" accesskey="u" rel="up">Hash Tables</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="BFD-Index.html#BFD-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Deriving-a-new-hash-table-type"></a>
+<h4 class="subsection">2.18.4 Deriving a new hash table type</h4>
+<p>Many uses of hash tables want to store additional information
+which each entry in the hash table.  Some also find it
+convenient to store additional information with the hash table
+itself.  This may be done using a derived hash table.
+</p>
+<p>Since C is not an object oriented language, creating a derived
+hash table requires sticking together some boilerplate
+routines with a few differences specific to the type of hash
+table you want to create.
+</p>
+<p>An example of a derived hash table is the linker hash table.
+The structures for this are defined in <code>bfdlink.h</code>.  The
+functions are in <code>linker.c</code>.
+</p>
+<p>You may also derive a hash table from an already derived hash
+table.  For example, the a.out linker backend code uses a hash
+table derived from the linker hash table.
+</p>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="Define-the-Derived-Structures.html#Define-the-Derived-Structures" accesskey="1">Define the Derived Structures</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Write-the-Derived-Creation-Routine.html#Write-the-Derived-Creation-Routine" accesskey="2">Write the Derived Creation Routine</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Write-Other-Derived-Routines.html#Write-Other-Derived-Routines" accesskey="3">Write Other Derived Routines</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+</table>
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual is for GNU MPC, a library for multiple precision complex arithmetic,
+version 1.0.3 of February 2015.
+
+Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 INRIA
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections. A copy of the license is included in the section
+entitled "GNU Free Documentation License." -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MPC 1.0.3: Advanced Functions</title>
+
+<meta name="description" content="GNU MPC 1.0.3: Advanced Functions">
+<meta name="keywords" content="GNU MPC 1.0.3: Advanced Functions">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Complex-Functions.html#Complex-Functions" rel="up" title="Complex Functions">
+<link href="Internals.html#Internals" rel="next" title="Internals">
+<link href="Miscellaneous-Complex-Functions.html#Miscellaneous-Complex-Functions" rel="prev" title="Miscellaneous Complex Functions">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Advanced-Functions"></a>
+<div class="header">
+<p>
+Next: <a href="Internals.html#Internals" accesskey="n" rel="next">Internals</a>, Previous: <a href="Miscellaneous-Complex-Functions.html#Miscellaneous-Complex-Functions" accesskey="p" rel="prev">Miscellaneous Complex Functions</a>, Up: <a href="Complex-Functions.html#Complex-Functions" accesskey="u" rel="up">Complex Functions</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Advanced-Functions-1"></a>
+<h3 class="section">5.11 Advanced Functions</h3>
+
+<dl>
+<dt><a name="index-MPC_005fSET_005fX_005fY"></a>Macro: <strong>MPC_SET_X_Y</strong> <em>(<var>real_suffix</var>, <var>imag_suffix</var>, <var>rop</var>, <var>real</var>, <var>imag</var>, <var>rnd</var>)</em></dt>
+<dd><p>The macro MPC_SET_X_Y is designed to serve as the body of an assignment
+function and cannot be used by itself.
+The <var>real_suffix</var> and <var>imag_suffix</var> parameters are the
+types of the real and imaginary part, that is, the <code>x</code> in the
+<code>mpfr_set_x</code> function one would use to set the part;
+for the mpfr type, use <code>fr</code>.
+<var>real</var> (respectively <var>imag</var>) is the value you want to assign to the
+real (resp. imaginary) part, its type must conform to <var>real_suffix</var>
+(resp. <var>imag_suffix</var>).
+<var>rnd</var> is the <code>mpc_rnd_t</code> rounding mode.
+The return value is the usual inexact value (see <a href="GNU-MPC-Basics.html#return_002dvalue">Return
+Value</a>).
+</p>
+<p>For instance, you can define mpc_set_ui_fr as follows:
+</p><div class="example">
+<pre class="example">int mpc_set_ui_fr (mpc_t rop, long int re, double im, mpc_rnd_t rnd)
+    MPC_SET_X_Y (ui, fr, rop, re, im, rnd);
+</pre></div>
+</dd></dl>
+
+
+
+
+
+</body>
+</html>

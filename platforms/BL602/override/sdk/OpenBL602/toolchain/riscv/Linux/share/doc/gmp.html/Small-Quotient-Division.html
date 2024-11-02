@@ -1,0 +1,101 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Small Quotient Division</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Small Quotient Division">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Division-Algorithms.html#Division-Algorithms" rel="up" title="Division Algorithms">
+<link href="Greatest-Common-Divisor-Algorithms.html#Greatest-Common-Divisor-Algorithms" rel="next" title="Greatest Common Divisor Algorithms">
+<link href="Exact-Remainder.html#Exact-Remainder" rel="prev" title="Exact Remainder">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Small-Quotient-Division"></a>
+<div class="header">
+<p>
+Previous: <a href="Exact-Remainder.html#Exact-Remainder" accesskey="p" rel="prev">Exact Remainder</a>, Up: <a href="Division-Algorithms.html#Division-Algorithms" accesskey="u" rel="up">Division Algorithms</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Small-Quotient-Division-1"></a>
+<h4 class="subsection">15.2.7 Small Quotient Division</h4>
+
+<p>An NxM division where the number of quotient limbs Q=N-M is
+small can be optimized somewhat.
+</p>
+<p>An ordinary basecase division normalizes the divisor by shifting it to make
+the high bit set, shifting the dividend accordingly, and shifting the
+remainder back down at the end of the calculation.  This is wasteful if only a
+few quotient limbs are to be formed.  Instead a division of just the top
+<em>2*Q</em> limbs of the dividend by the top Q limbs of the divisor can be
+used to form a trial quotient.  This requires only those limbs normalized, not
+the whole of the divisor and dividend.
+</p>
+<p>A multiply and subtract then applies the trial quotient to the M-Q
+unused limbs of the divisor and N-Q dividend limbs (which includes Q
+limbs remaining from the trial quotient division).  The starting trial
+quotient can be 1 or 2 too big, but all cases of 2 too big and most cases of 1
+too big are detected by first comparing the most significant limbs that will
+arise from the subtraction.  An addback is done if the quotient still turns
+out to be 1 too big.
+</p>
+<p>This whole procedure is essentially the same as one step of the basecase
+algorithm done in a Q limb base, though with the trial quotient test done only
+with the high limbs, not an entire Q limb &ldquo;digit&rdquo; product.  The correctness
+of this weaker test can be established by following the argument of Knuth
+section 4.3.1 exercise 20 but with the <em>v2*q&gt;b*r+u2</em> condition appropriately relaxed.
+</p>
+
+
+
+
+</body>
+</html>

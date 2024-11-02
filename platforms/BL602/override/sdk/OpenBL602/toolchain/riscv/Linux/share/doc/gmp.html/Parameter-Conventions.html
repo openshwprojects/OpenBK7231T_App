@@ -1,0 +1,132 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Parameter Conventions</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Parameter Conventions">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="GMP-Basics.html#GMP-Basics" rel="up" title="GMP Basics">
+<link href="Memory-Management.html#Memory-Management" rel="next" title="Memory Management">
+<link href="Variable-Conventions.html#Variable-Conventions" rel="prev" title="Variable Conventions">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Parameter-Conventions"></a>
+<div class="header">
+<p>
+Next: <a href="Memory-Management.html#Memory-Management" accesskey="n" rel="next">Memory Management</a>, Previous: <a href="Variable-Conventions.html#Variable-Conventions" accesskey="p" rel="prev">Variable Conventions</a>, Up: <a href="GMP-Basics.html#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Parameter-Conventions-1"></a>
+<h3 class="section">3.5 Parameter Conventions</h3>
+<a name="index-Parameter-conventions"></a>
+<a name="index-Conventions-for-parameters"></a>
+
+<p>When a GMP variable is used as a function parameter, it&rsquo;s effectively a
+call-by-reference, meaning if the function stores a value there it will change
+the original in the caller.  Parameters which are input-only can be designated
+<code>const</code> to provoke a compiler error or warning on attempting to modify
+them.
+</p>
+<p>When a function is going to return a GMP result, it should designate a
+parameter that it sets, like the library functions do.  More than one value
+can be returned by having more than one output parameter, again like the
+library functions.  A <code>return</code> of an <code>mpz_t</code> etc doesn&rsquo;t return the
+object, only a pointer, and this is almost certainly not what&rsquo;s wanted.
+</p>
+<p>Here&rsquo;s an example accepting an <code>mpz_t</code> parameter, doing a calculation,
+and storing the result to the indicated parameter.
+</p>
+<div class="example">
+<pre class="example">void
+foo (mpz_t result, const mpz_t param, unsigned long n)
+{
+  unsigned long  i;
+  mpz_mul_ui (result, param, n);
+  for (i = 1; i &lt; n; i++)
+    mpz_add_ui (result, result, i*7);
+}
+
+int
+main (void)
+{
+  mpz_t  r, n;
+  mpz_init (r);
+  mpz_init_set_str (n, &quot;123456&quot;, 0);
+  foo (r, n, 20L);
+  gmp_printf (&quot;%Zd\n&quot;, r);
+  return 0;
+}
+</pre></div>
+
+<p><code>foo</code> works even if the mainline passes the same variable for
+<code>param</code> and <code>result</code>, just like the library functions.  But
+sometimes it&rsquo;s tricky to make that work, and an application might not want to
+bother supporting that sort of thing.
+</p>
+<p>For interest, the GMP types <code>mpz_t</code> etc are implemented as one-element
+arrays of certain structures.  This is why declaring a variable creates an
+object with the fields GMP needs, but then using it as a parameter passes a
+pointer to the object.  Note that the actual fields in each <code>mpz_t</code> etc
+are for internal use only and should not be accessed directly by code that
+expects to be compatible with future GMP releases.
+</p>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Memory-Management.html#Memory-Management" accesskey="n" rel="next">Memory Management</a>, Previous: <a href="Variable-Conventions.html#Variable-Conventions" accesskey="p" rel="prev">Variable Conventions</a>, Up: <a href="GMP-Basics.html#GMP-Basics" accesskey="u" rel="up">GMP Basics</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

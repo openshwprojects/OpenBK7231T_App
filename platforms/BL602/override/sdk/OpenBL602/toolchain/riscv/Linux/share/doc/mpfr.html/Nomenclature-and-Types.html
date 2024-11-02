@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual documents how to install and use the Multiple Precision
+Floating-Point Reliable Library, version 3.1.4.
+
+Copyright 1991, 1993-2016 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with no Front-Cover Texts, and with no Back-Cover Texts.  A copy of the
+license is included in GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MPFR 3.1.4: Nomenclature and Types</title>
+
+<meta name="description" content="How to install and use GNU MPFR, a library for reliable multiple precision
+floating-point arithmetic, version 3.1.4.">
+<meta name="keywords" content="GNU MPFR 3.1.4: Nomenclature and Types">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="MPFR-Basics.html#MPFR-Basics" rel="up" title="MPFR Basics">
+<link href="MPFR-Variable-Conventions.html#MPFR-Variable-Conventions" rel="next" title="MPFR Variable Conventions">
+<link href="Headers-and-Libraries.html#Headers-and-Libraries" rel="prev" title="Headers and Libraries">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Nomenclature-and-Types"></a>
+<div class="header">
+<p>
+Next: <a href="MPFR-Variable-Conventions.html#MPFR-Variable-Conventions" accesskey="n" rel="next">MPFR Variable Conventions</a>, Previous: <a href="Headers-and-Libraries.html#Headers-and-Libraries" accesskey="p" rel="prev">Headers and Libraries</a>, Up: <a href="MPFR-Basics.html#MPFR-Basics" accesskey="u" rel="up">MPFR Basics</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Nomenclature-and-Types-1"></a>
+<h3 class="section">4.2 Nomenclature and Types</h3>
+
+<a name="index-Floating_002dpoint-number"></a>
+<a name="index-mpfr_005ft"></a>
+<p>A <em>floating-point number</em>, or <em>float</em> for short, is an arbitrary
+precision significand (also called mantissa) with a limited precision
+exponent. The C data type
+for such objects is <code>mpfr_t</code> (internally defined as a one-element
+array of a structure, and <code>mpfr_ptr</code> is the C data type representing
+a pointer to this structure). A floating-point number can have
+three special values: Not-a-Number (NaN) or plus or minus Infinity. NaN
+represents an uninitialized object, the result of an invalid operation
+(like 0 divided by 0), or a value that cannot be determined (like
++Infinity minus +Infinity). Moreover, like in the IEEE 754 standard,
+zero is signed, i.e., there are both +0 and −0; the behavior
+is the same as in the IEEE 754 standard and it is generalized to
+the other functions supported by MPFR. Unless documented otherwise,
+the sign bit of a NaN is unspecified.
+</p>
+<a name="index-Precision"></a>
+<a name="index-mpfr_005fprec_005ft"></a>
+<p>The <em>precision</em> is the number of bits used to represent the significand
+of a floating-point number;
+the corresponding C data type is <code>mpfr_prec_t</code>.
+The precision can be any integer between <code>MPFR_PREC_MIN</code> and
+<code>MPFR_PREC_MAX</code>. In the current implementation, <code>MPFR_PREC_MIN</code>
+is equal to 2.
+</p>
+<p>Warning! MPFR needs to increase the precision internally, in order to
+provide accurate results (and in particular, correct rounding). Do not
+attempt to set the precision to any value near <code>MPFR_PREC_MAX</code>,
+otherwise MPFR will abort due to an assertion failure. Moreover, you
+may reach some memory limit on your platform, in which case the program
+may abort, crash or have undefined behavior (depending on your C
+implementation).
+</p>
+<a name="index-Rounding-Modes"></a>
+<a name="index-mpfr_005frnd_005ft"></a>
+<p>The <em>rounding mode</em> specifies the way to round the result of a
+floating-point operation, in case the exact result can not be represented
+exactly in the destination significand;
+the corresponding C data type is <code>mpfr_rnd_t</code>.
+</p>
+<hr>
+<div class="header">
+<p>
+Next: <a href="MPFR-Variable-Conventions.html#MPFR-Variable-Conventions" accesskey="n" rel="next">MPFR Variable Conventions</a>, Previous: <a href="Headers-and-Libraries.html#Headers-and-Libraries" accesskey="p" rel="prev">Headers and Libraries</a>, Up: <a href="MPFR-Basics.html#MPFR-Basics" accesskey="u" rel="up">MPFR Basics</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

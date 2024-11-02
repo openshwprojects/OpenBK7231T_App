@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: Varargs</title>
+
+<meta name="description" content="The Red Hat newlib C Library: Varargs">
+<meta name="keywords" content="The Red Hat newlib C Library: Varargs">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Arglists.html#Arglists" rel="up" title="Arglists">
+<link href="va_005falist.html#va_005falist" rel="next" title="va_alist">
+<link href="va_005fend.html#va_005fend" rel="prev" title="va_end">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Varargs"></a>
+<div class="header">
+<p>
+Previous: <a href="Stdarg.html#Stdarg" accesskey="p" rel="prev">Stdarg</a>, Up: <a href="Arglists.html#Arglists" accesskey="u" rel="up">Arglists</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Traditional-macros_002c-varargs_002eh"></a>
+<h3 class="section">14.2 Traditional macros, <samp>varargs.h</samp></h3>
+
+<p>If your C compiler predates ANSI C, you may still be able to use
+variable argument lists using the macros from the <samp>varargs.h</samp>
+header file.  These macros resemble their ANSI counterparts, but have
+important differences in usage.   In particular, since traditional C has
+no declaration mechanism for variable argument lists, two additional
+macros are provided simply for the purpose of defining functions with
+variable argument lists.  
+</p>
+<p>As with <samp>stdarg.h</samp>, the type <code>va_list</code> is used to hold a data
+structure representing a variable argument list.
+</p>
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="va_005falist.html#va_005falist" accesskey="1">va_alist</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="va_005fstart_002dtrad.html#va_005fstart_002dtrad" accesskey="2">va_start-trad</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="va_005farg_002dtrad.html#va_005farg_002dtrad" accesskey="3">va_arg-trad</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="va_005fend_002dtrad.html#va_005fend_002dtrad" accesskey="4">va_end-trad</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+</table>
+
+
+
+
+</body>
+</html>

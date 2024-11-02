@@ -1,0 +1,252 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual documents how to install and use the Multiple Precision
+Floating-Point Reliable Library, version 3.1.4.
+
+Copyright 1991, 1993-2016 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.2 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with no Front-Cover Texts, and with no Back-Cover Texts.  A copy of the
+license is included in GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MPFR 3.1.4: Basic Arithmetic Functions</title>
+
+<meta name="description" content="How to install and use GNU MPFR, a library for reliable multiple precision
+floating-point arithmetic, version 3.1.4.">
+<meta name="keywords" content="GNU MPFR 3.1.4: Basic Arithmetic Functions">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="MPFR-Interface.html#MPFR-Interface" rel="up" title="MPFR Interface">
+<link href="Comparison-Functions.html#Comparison-Functions" rel="next" title="Comparison Functions">
+<link href="Conversion-Functions.html#Conversion-Functions" rel="prev" title="Conversion Functions">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Basic-Arithmetic-Functions"></a>
+<div class="header">
+<p>
+Next: <a href="Comparison-Functions.html#Comparison-Functions" accesskey="n" rel="next">Comparison Functions</a>, Previous: <a href="Conversion-Functions.html#Conversion-Functions" accesskey="p" rel="prev">Conversion Functions</a>, Up: <a href="MPFR-Interface.html#MPFR-Interface" accesskey="u" rel="up">MPFR Interface</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="index-Basic-arithmetic-functions"></a>
+<a name="index-Float-arithmetic-functions"></a>
+<a name="index-Arithmetic-functions"></a>
+<a name="Basic-Arithmetic-Functions-1"></a>
+<h3 class="section">5.5 Basic Arithmetic Functions</h3>
+
+<dl>
+<dt><a name="index-mpfr_005fadd"></a>Function: <em>int</em> <strong>mpfr_add</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, mpfr_t <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fadd_005fui"></a>Function: <em>int</em> <strong>mpfr_add_ui</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, unsigned long int <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fadd_005fsi"></a>Function: <em>int</em> <strong>mpfr_add_si</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, long int <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fadd_005fd"></a>Function: <em>int</em> <strong>mpfr_add_d</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, double <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fadd_005fz"></a>Function: <em>int</em> <strong>mpfr_add_z</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, mpz_t <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fadd_005fq"></a>Function: <em>int</em> <strong>mpfr_add_q</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, mpq_t <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em><var>op1</var> + <var>op2</var></em> rounded in the direction
+<var>rnd</var>.  The IEEE-754 rules are used, in particular for signed zeros.
+But for types having no signed zeros, 0 is considered unsigned
+(i.e., (+0) + 0 = (+0) and (−0) + 0 = (−0)).
+The <code>mpfr_add_d</code> function assumes that the radix of the <code>double</code> type
+is a power of 2, with a precision at most that declared by the C implementation
+(macro <code>IEEE_DBL_MANT_DIG</code>, and if not defined 53 bits).
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fsub"></a>Function: <em>int</em> <strong>mpfr_sub</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, mpfr_t <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fui_005fsub"></a>Function: <em>int</em> <strong>mpfr_ui_sub</strong> <em>(mpfr_t <var>rop</var>, unsigned long int <var>op1</var>, mpfr_t <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fsub_005fui"></a>Function: <em>int</em> <strong>mpfr_sub_ui</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, unsigned long int <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fsi_005fsub"></a>Function: <em>int</em> <strong>mpfr_si_sub</strong> <em>(mpfr_t <var>rop</var>, long int <var>op1</var>, mpfr_t <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fsub_005fsi"></a>Function: <em>int</em> <strong>mpfr_sub_si</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, long int <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fd_005fsub"></a>Function: <em>int</em> <strong>mpfr_d_sub</strong> <em>(mpfr_t <var>rop</var>, double <var>op1</var>, mpfr_t <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fsub_005fd"></a>Function: <em>int</em> <strong>mpfr_sub_d</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, double <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fz_005fsub"></a>Function: <em>int</em> <strong>mpfr_z_sub</strong> <em>(mpfr_t <var>rop</var>, mpz_t <var>op1</var>, mpfr_t <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fsub_005fz"></a>Function: <em>int</em> <strong>mpfr_sub_z</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, mpz_t <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fsub_005fq"></a>Function: <em>int</em> <strong>mpfr_sub_q</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, mpq_t <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em><var>op1</var> - <var>op2</var></em> rounded in the direction
+<var>rnd</var>.  The IEEE-754 rules are used, in particular for signed zeros.
+But for types having no signed zeros, 0 is considered unsigned
+(i.e., (+0) − 0 = (+0), (−0) − 0 = (−0),
+0 − (+0) = (−0) and 0 − (−0) = (+0)).
+The same restrictions than for <code>mpfr_add_d</code> apply to <code>mpfr_d_sub</code>
+and <code>mpfr_sub_d</code>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fmul"></a>Function: <em>int</em> <strong>mpfr_mul</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, mpfr_t <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fmul_005fui"></a>Function: <em>int</em> <strong>mpfr_mul_ui</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, unsigned long int <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fmul_005fsi"></a>Function: <em>int</em> <strong>mpfr_mul_si</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, long int <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fmul_005fd"></a>Function: <em>int</em> <strong>mpfr_mul_d</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, double <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fmul_005fz"></a>Function: <em>int</em> <strong>mpfr_mul_z</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, mpz_t <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fmul_005fq"></a>Function: <em>int</em> <strong>mpfr_mul_q</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, mpq_t <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em><var>op1</var> times <var>op2</var></em> rounded in the
+direction <var>rnd</var>.
+When a result is zero, its sign is the product of the signs of the operands
+(for types having no signed zeros, 0 is considered positive).
+The same restrictions than for <code>mpfr_add_d</code> apply to <code>mpfr_mul_d</code>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fsqr"></a>Function: <em>int</em> <strong>mpfr_sqr</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em>the square of <var>op</var></em>
+rounded in the direction <var>rnd</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fdiv"></a>Function: <em>int</em> <strong>mpfr_div</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, mpfr_t <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fui_005fdiv"></a>Function: <em>int</em> <strong>mpfr_ui_div</strong> <em>(mpfr_t <var>rop</var>, unsigned long int <var>op1</var>, mpfr_t <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fdiv_005fui"></a>Function: <em>int</em> <strong>mpfr_div_ui</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, unsigned long int <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fsi_005fdiv"></a>Function: <em>int</em> <strong>mpfr_si_div</strong> <em>(mpfr_t <var>rop</var>, long int <var>op1</var>, mpfr_t <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fdiv_005fsi"></a>Function: <em>int</em> <strong>mpfr_div_si</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, long int <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fd_005fdiv"></a>Function: <em>int</em> <strong>mpfr_d_div</strong> <em>(mpfr_t <var>rop</var>, double <var>op1</var>, mpfr_t <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fdiv_005fd"></a>Function: <em>int</em> <strong>mpfr_div_d</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, double <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fdiv_005fz"></a>Function: <em>int</em> <strong>mpfr_div_z</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, mpz_t <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fdiv_005fq"></a>Function: <em>int</em> <strong>mpfr_div_q</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, mpq_t <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em><var>op1</var>/<var>op2</var></em> rounded in the direction <var>rnd</var>.
+When a result is zero, its sign is the product of the signs of the operands
+(for types having no signed zeros, 0 is considered positive).
+The same restrictions than for <code>mpfr_add_d</code> apply to <code>mpfr_d_div</code>
+and <code>mpfr_div_d</code>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fsqrt"></a>Function: <em>int</em> <strong>mpfr_sqrt</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fsqrt_005fui"></a>Function: <em>int</em> <strong>mpfr_sqrt_ui</strong> <em>(mpfr_t <var>rop</var>, unsigned long int <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em>the square root of <var>op</var></em>
+rounded in the direction <var>rnd</var>.  Set <var>rop</var> to −0 if
+<var>op</var> is −0, to be consistent with the IEEE 754 standard.
+Set <var>rop</var> to NaN if <var>op</var> is negative.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005frec_005fsqrt"></a>Function: <em>int</em> <strong>mpfr_rec_sqrt</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em>the reciprocal square root of <var>op</var></em>
+rounded in the direction <var>rnd</var>.  Set <var>rop</var> to +Inf if <var>op</var> is
+±0, +0 if <var>op</var> is +Inf, and NaN if <var>op</var> is negative.  Warning!
+Therefore the result on −0 is different from the one of the rSqrt
+function recommended by the IEEE 754-2008 standard (Section 9.2.1), which
+is −Inf instead of +Inf.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fcbrt"></a>Function: <em>int</em> <strong>mpfr_cbrt</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005froot"></a>Function: <em>int</em> <strong>mpfr_root</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, unsigned long int <var>k</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the cubic root (resp. the <var>k</var>th root)
+of <var>op</var> rounded in the direction <var>rnd</var>.
+For <var>k</var> odd (resp. even) and <var>op</var> negative (including −Inf),
+set <var>rop</var> to a negative number (resp. NaN).
+The <var>k</var>th root of −0 is defined to be −0,
+whatever the parity of <var>k</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fpow"></a>Function: <em>int</em> <strong>mpfr_pow</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, mpfr_t <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fpow_005fui"></a>Function: <em>int</em> <strong>mpfr_pow_ui</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, unsigned long int <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fpow_005fsi"></a>Function: <em>int</em> <strong>mpfr_pow_si</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, long int <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fpow_005fz"></a>Function: <em>int</em> <strong>mpfr_pow_z</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, mpz_t <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fui_005fpow_005fui"></a>Function: <em>int</em> <strong>mpfr_ui_pow_ui</strong> <em>(mpfr_t <var>rop</var>, unsigned long int <var>op1</var>, unsigned long int <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fui_005fpow"></a>Function: <em>int</em> <strong>mpfr_ui_pow</strong> <em>(mpfr_t <var>rop</var>, unsigned long int <var>op1</var>, mpfr_t <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em><var>op1</var> raised to <var>op2</var></em>,
+rounded in the direction <var>rnd</var>.
+Special values are handled as described in the ISO C99 and IEEE 754-2008
+standards for the <code>pow</code> function:
+</p><ul>
+<li> <code>pow(±0, <var>y</var>)</code> returns plus or minus infinity for <var>y</var> a negative odd integer.
+</li><li> <code>pow(±0, <var>y</var>)</code> returns plus infinity for <var>y</var> negative and not an odd integer.
+</li><li> <code>pow(±0, <var>y</var>)</code> returns plus or minus zero for <var>y</var> a positive odd integer.
+</li><li> <code>pow(±0, <var>y</var>)</code> returns plus zero for <var>y</var> positive and not an odd integer.
+</li><li> <code>pow(-1, ±Inf)</code> returns 1.
+</li><li> <code>pow(+1, <var>y</var>)</code> returns 1 for any <var>y</var>, even a NaN.
+</li><li> <code>pow(<var>x</var>, ±0)</code> returns 1 for any <var>x</var>, even a NaN.
+</li><li> <code>pow(<var>x</var>, <var>y</var>)</code> returns NaN for finite negative <var>x</var> and finite non-integer <var>y</var>.
+</li><li> <code>pow(<var>x</var>, -Inf)</code> returns plus infinity for <em>0 &lt; abs(x) &lt; 1</em>, and plus zero for <em>abs(x) &gt; 1</em>.
+</li><li> <code>pow(<var>x</var>, +Inf)</code> returns plus zero for <em>0 &lt; abs(x) &lt; 1</em>, and plus infinity for <em>abs(x) &gt; 1</em>.
+</li><li> <code>pow(-Inf, <var>y</var>)</code> returns minus zero for <var>y</var> a negative odd integer.
+</li><li> <code>pow(-Inf, <var>y</var>)</code> returns plus zero for <var>y</var> negative and not an odd integer.
+</li><li> <code>pow(-Inf, <var>y</var>)</code> returns minus infinity for <var>y</var> a positive odd integer.
+</li><li> <code>pow(-Inf, <var>y</var>)</code> returns plus infinity for <var>y</var> positive and not an odd integer.
+</li><li> <code>pow(+Inf, <var>y</var>)</code> returns plus zero for <var>y</var> negative, and plus infinity for <var>y</var> positive.
+</li></ul>
+</dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fneg"></a>Function: <em>int</em> <strong>mpfr_neg</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fabs"></a>Function: <em>int</em> <strong>mpfr_abs</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em>-<var>op</var></em> and the absolute value of <var>op</var>
+respectively, rounded in the direction <var>rnd</var>.
+Just changes or adjusts
+the sign if <var>rop</var> and <var>op</var> are the same variable,
+otherwise a rounding might occur if the precision of <var>rop</var> is less than
+that of <var>op</var>.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fdim"></a>Function: <em>int</em> <strong>mpfr_dim</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, mpfr_t <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to the positive difference of <var>op1</var> and <var>op2</var>, i.e.,
+<em><var>op1</var> - <var>op2</var></em> rounded in the direction <var>rnd</var>
+if <em><var>op1</var> &gt; <var>op2</var></em>, +0 if <em><var>op1</var> &lt;= <var>op2</var></em>,
+and NaN if <var>op1</var> or <var>op2</var> is NaN.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fmul_005f2ui"></a>Function: <em>int</em> <strong>mpfr_mul_2ui</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, unsigned long int <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fmul_005f2si"></a>Function: <em>int</em> <strong>mpfr_mul_2si</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, long int <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em><var>op1</var> times 2 raised
+to <var>op2</var></em>
+rounded in the direction <var>rnd</var>. Just increases the exponent by <var>op2</var>
+when <var>rop</var> and <var>op1</var> are identical.
+</p></dd></dl>
+
+<dl>
+<dt><a name="index-mpfr_005fdiv_005f2ui"></a>Function: <em>int</em> <strong>mpfr_div_2ui</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, unsigned long int <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dt><a name="index-mpfr_005fdiv_005f2si"></a>Function: <em>int</em> <strong>mpfr_div_2si</strong> <em>(mpfr_t <var>rop</var>, mpfr_t <var>op1</var>, long int <var>op2</var>, mpfr_rnd_t <var>rnd</var>)</em></dt>
+<dd><p>Set <var>rop</var> to <em><var>op1</var> divided by 2 raised
+to <var>op2</var></em>
+rounded in the direction <var>rnd</var>. Just decreases the exponent by <var>op2</var>
+when <var>rop</var> and <var>op1</var> are identical.
+</p></dd></dl>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="Comparison-Functions.html#Comparison-Functions" accesskey="n" rel="next">Comparison Functions</a>, Previous: <a href="Conversion-Functions.html#Conversion-Functions" accesskey="p" rel="prev">Conversion Functions</a>, Up: <a href="MPFR-Interface.html#MPFR-Interface" accesskey="u" rel="up">MPFR Interface</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>The Red Hat newlib C Library: getwchar</title>
+
+<meta name="description" content="The Red Hat newlib C Library: getwchar">
+<meta name="keywords" content="The Red Hat newlib C Library: getwchar">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Stdio.html#Stdio" rel="up" title="Stdio">
+<link href="mktemp.html#mktemp" rel="next" title="mktemp">
+<link href="getw.html#getw" rel="prev" title="getw">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="getwchar"></a>
+<div class="header">
+<p>
+Next: <a href="mktemp.html#mktemp" accesskey="n" rel="next">mktemp</a>, Previous: <a href="getw.html#getw" accesskey="p" rel="prev">getw</a>, Up: <a href="Stdio.html#Stdio" accesskey="u" rel="up">Stdio</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="getwchar_002c-getwchar_005funlocked_002d_002d_002dread-a-wide-character-from-standard-input"></a>
+<h3 class="section">4.41 <code>getwchar</code>, <code>getwchar_unlocked</code>&mdash;read a wide character from standard input</h3>
+<a name="index-getwchar"></a>
+<a name="index-getwchar_005funlocked"></a>
+<a name="index-_005fgetwchar_005fr"></a>
+<a name="index-_005fgetwchar_005funlocked_005fr"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;wchar.h&gt;
+wint_t getwchar(void);
+
+#define _GNU_SOURCE
+#include &lt;wchar.h&gt;
+wint_t getwchar_unlocked(void);
+
+#include &lt;wchar.h&gt;
+wint_t _getwchar_r(struct _reent *<var>reent</var>);
+
+#include &lt;wchar.h&gt;
+wint_t _getwchar_unlocked_r(struct _reent *<var>reent</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+<code>getwchar</code> function or macro is the wide character equivalent of
+the <code>getchar</code> function.  You can use <code>getwchar</code> to get the next
+wide character from the standard input stream.  As a side effect,
+<code>getwchar</code> advances the standard input&rsquo;s current position indicator.
+</p>
+<p><code>getwchar_unlocked</code> is a non-thread-safe version of <code>getwchar</code>.
+<code>getwchar_unlocked</code> may only safely be used within a scope
+protected by flockfile() (or ftrylockfile()) and funlockfile().  This
+function may safely be used in a multi-threaded program if and only
+if they are called while the invoking thread owns the (FILE *)
+object, as is the case after a successful call to the flockfile() or
+ftrylockfile() functions.  If threads are disabled, then
+<code>getwchar_unlocked</code> is equivalent to <code>getwchar</code>.
+</p>
+<p>The alternate functions <code>_getwchar_r</code> and <code>_getwchar_unlocked_r</code> are
+reentrant versions of the above.  The extra argument <var>reent</var> is a pointer to
+a reentrancy structure.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+The next wide character cast to <code>wint_t</code>, unless there is no more
+data, or the host system reports a read error; in either of these
+situations, <code>getwchar</code> returns <code>WEOF</code>.
+</p>
+<p>You can distinguish the two situations that cause an <code>WEOF</code> result by
+using &lsquo;<code>ferror(stdin)</code>&rsquo; and &lsquo;<code>feof(stdin)</code>&rsquo;.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+<code>getwchar</code> is required by C99.
+</p>
+<p><code>getwchar_unlocked</code> is a GNU extension.
+</p>
+<br>
+
+
+
+
+</body>
+</html>

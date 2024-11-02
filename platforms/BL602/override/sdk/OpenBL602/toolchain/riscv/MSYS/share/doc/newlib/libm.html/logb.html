@@ -1,0 +1,104 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>LIBM: logb</title>
+
+<meta name="description" content="LIBM: logb">
+<meta name="keywords" content="LIBM: logb">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Document-Index.html#Document-Index" rel="index" title="Document Index">
+<link href="Document-Index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Math.html#Math" rel="up" title="Math">
+<link href="lrint.html#lrint" rel="next" title="lrint">
+<link href="log2.html#log2" rel="prev" title="log2">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="logb"></a>
+<div class="header">
+<p>
+Next: <a href="lrint.html#lrint" accesskey="n" rel="next">lrint</a>, Previous: <a href="log2.html#log2" accesskey="p" rel="prev">log2</a>, Up: <a href="Math.html#Math" accesskey="u" rel="up">Math</a> &nbsp; [<a href="Document-Index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Document-Index.html#Document-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="logb_002c-logbf_002d_002d_002dget-exponent-of-floating_002dpoint-number"></a>
+<h3 class="section">1.38 <code>logb</code>, <code>logbf</code>&mdash;get exponent of floating-point number</h3>
+<a name="index-logb"></a>
+<a name="index-logbf"></a>
+<p><strong>Synopsis</strong>
+</p><div class="example">
+<pre class="example">#include &lt;math.h&gt;
+double logb(double <var>x</var>);
+float logbf(float <var>x</var>);
+
+</pre></div>
+<p><strong>Description</strong><br>
+The <code>logb</code> functions extract the exponent of <var>x</var>, as a signed integer value
+in floating-point format.  If <var>x</var> is subnormal it is treated as though it were
+normalized; thus, for positive finite <var>x</var>,
+1 &lt;= (<var>x</var> * FLT_RADIX to the power (-logb(<var>x</var>))) &lt; FLT_RADIX.
+A domain error may occur if the argument is zero.
+In this floating-point implementation, FLT_RADIX is 2.  Which also means
+that for finite <var>x</var>, <code>logb</code>(<var>x</var>) = <code>floor</code>(<code>log2</code>(<code>fabs</code>(<var>x</var>))).
+</p>
+<p>All nonzero, normal numbers can be described as
+<var>m</var> * 2**<var>p</var>, where 1.0 &lt;= <var>m</var> &lt; 2.0.
+The <code>logb</code> functions examine the argument <var>x</var>, and return <var>p</var>.
+The <code>frexp</code> functions are similar to the <code>logb</code> functions, but
+returning <var>m</var> adjusted to the interval [.5, 1) or 0, and <var>p</var>+1.
+</p>
+<br>
+<p><strong>Returns</strong><br>
+When <var>x</var> is:<br>
++inf or -inf, +inf is returned;<br>
+NaN, NaN is returned;<br>
+0, -inf is returned, and the divide-by-zero exception is raised;<br>
+otherwise, the <code>logb</code> functions return the signed exponent of <var>x</var>.
+</p>
+<br>
+<p><strong>Portability</strong><br>
+ANSI C, POSIX
+</p>
+<br>
+<p><strong>See Also</strong><br>
+frexp, ilogb
+</p>
+<br>
+
+
+
+</body>
+</html>

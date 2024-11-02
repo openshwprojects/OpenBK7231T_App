@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual describes how to install and use the GNU multiple precision
+arithmetic library, version 6.1.0.
+
+Copyright 1991, 1993-2015 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document under
+the terms of the GNU Free Documentation License, Version 1.3 or any later
+version published by the Free Software Foundation; with no Invariant Sections,
+with the Front-Cover Texts being "A GNU Manual", and with the Back-Cover
+Texts being "You have freedom to copy and modify this GNU Manual, like GNU
+software".  A copy of the license is included in
+GNU Free Documentation License. -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>GNU MP 6.1.0: Assembly Software Pipelining</title>
+
+<meta name="description" content="How to install and use the GNU multiple precision arithmetic library, version 6.1.0.">
+<meta name="keywords" content="GNU MP 6.1.0: Assembly Software Pipelining">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="index.html#Top" rel="start" title="Top">
+<link href="Concept-Index.html#Concept-Index" rel="index" title="Concept Index">
+<link href="Assembly-Coding.html#Assembly-Coding" rel="up" title="Assembly Coding">
+<link href="Assembly-Loop-Unrolling.html#Assembly-Loop-Unrolling" rel="next" title="Assembly Loop Unrolling">
+<link href="Assembly-SIMD-Instructions.html#Assembly-SIMD-Instructions" rel="prev" title="Assembly SIMD Instructions">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<a name="Assembly-Software-Pipelining"></a>
+<div class="header">
+<p>
+Next: <a href="Assembly-Loop-Unrolling.html#Assembly-Loop-Unrolling" accesskey="n" rel="next">Assembly Loop Unrolling</a>, Previous: <a href="Assembly-SIMD-Instructions.html#Assembly-SIMD-Instructions" accesskey="p" rel="prev">Assembly SIMD Instructions</a>, Up: <a href="Assembly-Coding.html#Assembly-Coding" accesskey="u" rel="up">Assembly Coding</a> &nbsp; [<a href="Concept-Index.html#Concept-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Software-Pipelining"></a>
+<h4 class="subsection">15.8.8 Software Pipelining</h4>
+<a name="index-Assembly-software-pipelining"></a>
+
+<p>Software pipelining consists of scheduling instructions around the branch
+point in a loop.  For example a loop might issue a load not for use in the
+present iteration but the next, thereby allowing extra cycles for the data to
+arrive from memory.
+</p>
+<p>Naturally this is wanted only when doing things like loads or multiplies that
+take several cycles to complete, and only where a CPU has multiple functional
+units so that other work can be done in the meantime.
+</p>
+<p>A pipeline with several stages will have a data value in progress at each
+stage and each loop iteration moves them along one stage.  This is like
+juggling.
+</p>
+<p>If the latency of some instruction is greater than the loop time then it will
+be necessary to unroll, so one register has a result ready to use while
+another (or multiple others) are still in progress.  (see <a href="Assembly-Loop-Unrolling.html#Assembly-Loop-Unrolling">Assembly Loop Unrolling</a>).
+</p>
+
+
+
+
+</body>
+</html>
