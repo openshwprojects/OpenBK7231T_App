@@ -1265,12 +1265,12 @@ int http_fn_cfg_wifi(http_request_t* request) {
 	}
 	poststr(request, "<form action=\"/cfg_wifi\">\
 <input type=\"hidden\" id=\"scan\" name=\"scan\" value=\"1\">\
-<input type=\"submit\" value=\"Scan local networks!\">\
+<input type=\"submit\" value=\"Scan Local Networks\">\
 </form>");
 	poststr_h4(request, "Use this to disconnect from your WiFi");
 	poststr(request, "<form action=\"/cfg_wifi_set\">\
 <input type=\"hidden\" id=\"open\" name=\"open\" value=\"1\">\
-<input type=\"submit\" value=\"Convert to open access WiFi\" onclick=\"return confirm('Are you sure you want to switch to open access WiFi?')\">\
+<input type=\"submit\" value=\"Convert To Open Access WiFi\" onclick=\"return confirm('Are you sure you want to switch to open access WiFi?')\">\
 </form>");
 	poststr_h2(request, "Use this to connect to your WiFi");
 	add_label_text_field(request, "SSID", "ssid", CFG_GetWiFiSSID(), "<form action=\"/cfg_wifi_set\">");
