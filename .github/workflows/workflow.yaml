@@ -156,7 +156,7 @@ jobs:
             uses: actions/upload-artifact/merge@v4
             with:
               name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
-              delete-merged: true
+              delete-merged: false
   
   release:
         name: Semantic Release Images and Artifacts
