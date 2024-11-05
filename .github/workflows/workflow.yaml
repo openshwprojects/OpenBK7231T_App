@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: 
       - '**'
-
+      
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   APP_NAME: ${{ github.event.repository.name }}
@@ -22,7 +22,7 @@ jobs:
       new_release: ${{ steps.refs.outputs.new_release }}
     steps:
       - name: Source checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive        
       - name: Update SDKs if required
@@ -52,12 +52,10 @@ jobs:
           else
             export VERSION=${BRANCHTRANSLATED}_$(git rev-parse --short=12 HEAD)
           fi
-          echo "new_release: ${{ steps.semantic.outputs.new_release_published }}"
-          echo "version: ${VERSION}"
-          echo "::set-output name=new_release::${{ steps.semantic.outputs.new_release_published }}"
-          echo "::set-output name=short_ref::${BRANCHTRANSLATED}"
-          echo "::set-output name=sha_short::SHA-$(git rev-parse --short=12 HEAD)"
-          echo "::set-output name=version::${VERSION}"
+          echo "new_release=${{ steps.semantic.outputs.new_release_published }}" >> $GITHUB_OUTPUT
+          echo "short_ref=${BRANCHTRANSLATED}" >> $GITHUB_OUTPUT
+          echo "sha_short=SHA-$(git rev-parse --short=12 HEAD)" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
   build2:
     name: Build Simulator
     needs: refs
@@ -65,17 +63,16 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v2
 
     - name: Checkout simulator repository
       run: |
         git clone https://github.com/openshwprojects/obkSimulator
         mkdir -p ./libs_for_simulator
         cp -r ./obkSimulator/simulator/libs_for_simulator/* ./libs_for_simulator
-
     - name: Build project
       run: msbuild openBeken_win32_mvsc2017.vcxproj /p:Configuration=Release /p:PlatformToolset=v143
     - name: Flatten build assets
@@ -97,90 +94,99 @@ jobs:
         mkdir -Force output/${{ needs.refs.outputs.version }}
         cp obkSimulator_win32_${{ needs.refs.outputs.version }}.zip output/${{ needs.refs.outputs.version }}/obkSimulator_${{ needs.refs.outputs.version }}.zip
     - name: Upload build assets
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
+        name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_obkSimulator_win32
         path: output/${{ needs.refs.outputs.version }}/obkSimulator_${{ needs.refs.outputs.version }}.zip
   build:
-    name: Build
-    needs: refs
-    runs-on: ubuntu-20.04
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [OpenBK7231T, OpenBK7231N, OpenXR809, OpenBL602, OpenW800, OpenW600, OpenLN882H]
-    steps:
-      - name: Source checkout
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive        
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
-          architecture: 'x64'
-      - name: Install dependencies
-        run: |
-          sudo dpkg --add-architecture i386
-          sudo apt-get update
-          sudo apt-get -y install libc6-i386 make cmake gcc-arm-none-eabi
-          pip3 install pycryptodomex
-          pip3 install configobj
-          pip3 install toml
-          pip3 install fdt
-      - run: ls -la
-      - name: Run make
-        run: make APP_VERSION=${{ needs.refs.outputs.version }} APP_NAME=${{ matrix.platform }} ${{ matrix.platform }}
-      - name: Save build assets
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
-          path: |
-            output/${{ needs.refs.outputs.version }}/OpenBK7231T_UA_${{ needs.refs.outputs.version }}.bin
-            output/${{ needs.refs.outputs.version }}/OpenBK7231T_UG_${{ needs.refs.outputs.version }}.bin
-            output/${{ needs.refs.outputs.version }}/OpenBK7231T_QIO_${{ needs.refs.outputs.version }}.bin
-            output/${{ needs.refs.outputs.version }}/OpenBK7231N_QIO_${{ needs.refs.outputs.version }}.bin
-            output/${{ needs.refs.outputs.version }}/OpenBK7231N_UG_${{ needs.refs.outputs.version }}.bin
-            output/${{ needs.refs.outputs.version }}/OpenBK7231M_QIO_${{ needs.refs.outputs.version }}.bin
-            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.rbl
-            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.img
-            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.bin
-            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.fls
-            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_ota.img
-            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_gz.img
-            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin      
-            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin.xz            
-            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin.xz.ota
-          if-no-files-found: warn
-
+        name: Build
+        needs: refs
+        runs-on: ubuntu-20.04
+        strategy:
+            fail-fast: false
+            matrix:
+                platform: [OpenBK7231T, OpenBK7231N, OpenXR809, OpenBL602, OpenW800, OpenW600, OpenLN882H]
+        steps:
+            - name: Source checkout
+              uses: actions/checkout@v4
+              with:
+                  submodules: recursive
+            - uses: actions/setup-python@v5
+              with:
+                  python-version: "3.10"
+                  architecture: "x64"
+            - name: Install dependencies
+              run: |
+                  sudo dpkg --add-architecture i386
+                  sudo apt-get update
+                  sudo apt-get -y install libc6-i386 make cmake gcc-arm-none-eabi
+                  pip3 install pycryptodomex
+                  pip3 install configobj
+                  pip3 install toml
+                  pip3 install fdt
+            - run: ls -la
+            - name: Run make
+              run: make APP_VERSION=${{ needs.refs.outputs.version }} APP_NAME=${{ matrix.platform }} ${{ matrix.platform }}
+            - name: Save build assets
+              uses: actions/upload-artifact@v4
+              with:
+                  name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_${{ matrix.platform }}
+                  path: |
+                      output/${{ needs.refs.outputs.version }}/OpenBK7231T_UA_${{ needs.refs.outputs.version }}.bin
+                      output/${{ needs.refs.outputs.version }}/OpenBK7231T_UG_${{ needs.refs.outputs.version }}.bin
+                      output/${{ needs.refs.outputs.version }}/OpenBK7231T_QIO_${{ needs.refs.outputs.version }}.bin
+                      output/${{ needs.refs.outputs.version }}/OpenBK7231N_QIO_${{ needs.refs.outputs.version }}.bin
+                      output/${{ needs.refs.outputs.version }}/OpenBK7231N_UG_${{ needs.refs.outputs.version }}.bin
+                      output/${{ needs.refs.outputs.version }}/OpenBK7231M_QIO_${{ needs.refs.outputs.version }}.bin
+                      output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.rbl
+                      output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.img
+                      output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.bin
+                      output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.fls
+                      output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_ota.img
+                      output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_gz.img
+                      output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin      
+                      output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin.xz            
+                      output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin.xz.ota
+                  if-no-files-found: warn
+  merge:
+      runs-on: ubuntu-20.04
+      needs: [refs, build, build2]
+      steps:
+          - name: Merge Artifacts
+            uses: actions/upload-artifact/merge@v4
+            with:
+              name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
+              delete-merged: true
+  
   release:
-    name: Semantic Release Images and Artifacts
-    runs-on: ubuntu-20.04
-    needs: [ refs, build, build2 ]
-    if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
-    steps:
-      - name: Source checkout
-        uses: actions/checkout@v3
-      - name: Fetch build assets
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
-          path: output/${{ needs.refs.outputs.version }}
-      - name: Run Semantic Release
-        id: semantic
-        uses: cycjimmy/semantic-release-action@v4
-        with:
-          dry_run: false
-          semantic_version: 21
-          extra_plugins: |
-            @semantic-release/changelog
-            @semantic-release/git
-            conventional-changelog-conventionalcommits@7
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Echo Semantic Release Versions
-        if: steps.semantic.outputs.new_release_published == 'true'
-        run: |
-          echo ${{ steps.semantic.outputs.new_release_version }}
-          echo ${{ steps.semantic.outputs.new_release_major_version }}
-          echo ${{ steps.semantic.outputs.new_release_minor_version }}
-          echo ${{ steps.semantic.outputs.new_release_patch_version }}
+        name: Semantic Release Images and Artifacts
+        runs-on: ubuntu-20.04
+        needs: [merge, refs]
+        if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
+        steps:
+            - name: Source checkout
+              uses: actions/checkout@v4
+            - name: Fetch build assets
+              uses: actions/download-artifact@v4
+              with:
+                  name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
+                  path: output/${{ needs.refs.outputs.version }}
+            - name: Run Semantic Release
+              id: semantic
+              uses: cycjimmy/semantic-release-action@v4
+              with:
+                  dry_run: false
+                  semantic_version: 21
+                  extra_plugins: |
+                      @semantic-release/changelog
+                      @semantic-release/git
+                      conventional-changelog-conventionalcommits@7
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - name: Echo Semantic Release Versions
+              if: steps.semantic.outputs.new_release_published == 'true'
+              run: |
+                  echo ${{ steps.semantic.outputs.new_release_version }}
+                  echo ${{ steps.semantic.outputs.new_release_major_version }}
+                  echo ${{ steps.semantic.outputs.new_release_minor_version }}
+                  echo ${{ steps.semantic.outputs.new_release_patch_version }}
