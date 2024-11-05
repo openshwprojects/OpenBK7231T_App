@@ -14,7 +14,7 @@
 #ifndef WINDOWS
 #include <lwip/dns.h>
 #endif
-
+// 12345
 #define BUILD_AND_VERSION_FOR_MQTT "Open" PLATFORM_MCU_NAME " " USER_SW_VER " " __DATE__ " " __TIME__ 
 
 #ifndef LWIP_MQTT_EXAMPLE_IPADDR_INIT
