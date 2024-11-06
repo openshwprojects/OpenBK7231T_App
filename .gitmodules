@@ -24,4 +24,5 @@
 	branch = master
 [submodule "sdk/OpenLN882H"]
 	path = sdk/OpenLN882H
-	url = https://github.com/openshwprojects/OpenLN882H.git
+	url = https://github.com/jasperro/OpenLN882H.git
+	branch = jasperroLN882H-WS2811
