@@ -99,7 +99,7 @@ jobs:
     - name: Upload build assets
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
+        name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_${{ github.run_id }}
         path: output/${{ needs.refs.outputs.version }}/obkSimulator_${{ needs.refs.outputs.version }}.zip
   build:
     name: Build
@@ -108,7 +108,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [OpenBK7231T, OpenBK7231N]
+        platform: [OpenBK7231T]
     steps:
       - name: Source checkout
         uses: actions/checkout@v3
