@@ -687,37 +687,42 @@ const char *CMD_ExpandConstantString(const char *s, const char *stop, char *out,
 }
 #endif
 
-const char *CMD_ExpandConstantToString(const char *constant, char *out, char *stop) {
-int outLen;
-float value;
-int valueInt;
-const char *after;
-float delta;
+const char* CMD_ExpandConstantToString(const char* constant, char* out, char* stop)
+{
+	int outLen;
+	float value = 0;
+	int valueInt;
+	const char* after;
+	float delta;
 
-outLen = (stop - out) - 1;
+	outLen = (stop - out) - 1;
 
-after = CMD_ExpandConstant(constant, 0, &value);
+	after = CMD_ExpandConstant(constant, 0, &value);
 #if WINDOWS
-if (after == 0) {
-	after = CMD_ExpandConstantString(constant, 0, out, outLen);
+	if(after == 0)
+	{
+		after = CMD_ExpandConstantString(constant, 0, out, outLen);
+		return after;
+	}
+#endif
+	if(after == 0)
+		return 0;
+
+	valueInt = (int)value;
+	delta = valueInt - value;
+	if(delta < 0)
+		delta = -delta;
+	if(delta < 0.001f)
+	{
+		snprintf(out, outLen, "%i", valueInt);
+	}
+	else
+	{
+		snprintf(out, outLen, "%f", value);
+	}
 	return after;
 }
-#endif
-if (after == 0)
-return 0;
 
-valueInt = (int)value;
-delta = valueInt - value;
-if (delta < 0)
-	delta = -delta;
-if (delta < 0.001f) {
-	snprintf(out, outLen, "%i", valueInt);
-}
-else {
-	snprintf(out, outLen, "%f", value);
-}
-return after;
-}
 void CMD_ExpandConstantsWithinString(const char *in, char *out, int outLen) {
 	char *outStop;
 	const char *tmp;

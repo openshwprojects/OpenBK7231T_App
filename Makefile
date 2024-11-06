@@ -35,7 +35,7 @@ else
 endif
 
 update-submodules: submodules
-	git add sdk/OpenBK7231T sdk/OpenBK7231N sdk/OpenXR809 sdk/OpenBL602 sdk/OpenW800 sdk/OpenW600 sdk/OpenLN882H
+	git add sdk/OpenBK7231T sdk/OpenBK7231N sdk/OpenXR809 sdk/OpenBL602 sdk/OpenW800 sdk/OpenW600 sdk/OpenLN882H sdk/esp-idf
 ifdef GITHUB_ACTIONS
 	git config user.name github-actions
 	git config user.email github-actions@github.com
@@ -74,7 +74,7 @@ sdk/OpenLN882H/project/OpenBeken/app:
 	@mkdir -p "sdk/OpenLN882H/project/OpenBeken"
 	ln -s "$(shell pwd)/" "sdk/OpenLN882H/project/OpenBeken/app"
 
-.PHONY: prebuild_OpenBK7231N prebuild_OpenBK7231T prebuild_OpenBL602 prebuild_OpenLN882H prebuild_OpenW600 prebuild_OpenW800 prebuild_OpenXR809
+.PHONY: prebuild_OpenBK7231N prebuild_OpenBK7231T prebuild_OpenBL602 prebuild_OpenLN882H prebuild_OpenW600 prebuild_OpenW800 prebuild_OpenXR809 prebuild_ESPIDF
 
 prebuild_OpenBK7231N:
 	@if [ -e platforms/BK7231N/pre_build.sh ]; then \
@@ -83,14 +83,12 @@ prebuild_OpenBK7231N:
 	else echo "prebuild for OpenBK7231N not found ... "; \
 	fi
 
-
 prebuild_OpenBK7231T:
 	@if [ -e platforms/BK7231T/pre_build.sh ]; then \
 		echo "prebuild found for OpenBK7231T"; \
 		sh platforms/BK7231T/pre_build.sh; \
 	else echo "prebuild for OpenBK7231T not found ... "; \
 	fi
-
 
 prebuild_OpenBL602:
 	@if [ -e platforms/BL602/pre_build.sh ]; then \
@@ -99,14 +97,12 @@ prebuild_OpenBL602:
 	else echo "prebuild for OpenBL602 not found ... "; \
 	fi
 
-
 prebuild_OpenLN882H:
 	@if [ -e platforms/LN882H/pre_build.sh ]; then \
 		echo "prebuild found for OpenLN882H"; \
 		sh platforms/LN882H/pre_build.sh; \
 	else echo "prebuild for OpenLN882H not found ... "; \
 	fi
-
 
 prebuild_OpenW600:
 	@if [ -e platforms/W600/pre_build.sh ]; then \
@@ -115,14 +111,12 @@ prebuild_OpenW600:
 	else echo "prebuild for OpenW600 not found ... "; \
 	fi
 
-
 prebuild_OpenW800:
 	@if [ -e platforms/W800/pre_build.sh ]; then \
 		echo "prebuild found for OpenW800"; \
 		sh platforms/W800/pre_build.sh; \
 	else echo "prebuild for OpenW800 not found ... "; \
 	fi
-
 
 prebuild_OpenXR809:
 	@if [ -e platforms/XR809/pre_build.sh ]; then \
@@ -131,10 +125,12 @@ prebuild_OpenXR809:
 	else echo "prebuild for OpenXR809 not found ... "; \
 	fi
 
-
-
-
-
+prebuild_ESPIDF:
+	@if [ -e platforms/ESP-IDF/pre_build.sh ]; then \
+		echo "prebuild found for ESP-IDF"; \
+		sh platforms/ESP-IDF/pre_build.sh; \
+	else echo "prebuild for ESP-IDF not found ... "; \
+	fi
 
 # Build main binaries
 OpenBK7231T: prebuild_OpenBK7231T
@@ -209,6 +205,60 @@ OpenLN882H: submodules sdk/OpenLN882H/project/OpenBeken/app prebuild_OpenLN882H
 	cp sdk/OpenLN882H/build/bin/flashimage.bin output/$(APP_VERSION)/OpenLN882H_$(APP_VERSION).bin
 	cp sdk/OpenLN882H/build/bin/flashimage-ota-xz-v0.1.bin output/$(APP_VERSION)/OpenLN882H_$(APP_VERSION)_OTA.bin
 
+.PHONY: OpenESP32
+OpenESP32: prebuild_ESPIDF
+	-rm platforms/ESP-IDF/sdkconfig
+	IDF_TARGET="esp32" USER_SW_VER=$(APP_VERSION) cmake platforms/ESP-IDF -B platforms/ESP-IDF/build-32 
+	IDF_TARGET="esp32" USER_SW_VER=$(APP_VERSION) cmake --build ./platforms/ESP-IDF/build-32 -j $(shell nproc)
+	mkdir -p output/$(APP_VERSION)
+	esptool.py -c esp32 merge_bin -o output/$(APP_VERSION)/OpenESP32_$(APP_VERSION).factory.bin --flash_mode dio --flash_size 4MB 0x1000 ./platforms/ESP-IDF/build-32/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-32/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-32/OpenBeken.bin
+	cp ./platforms/ESP-IDF/build-32/OpenBeken.bin output/$(APP_VERSION)/OpenESP32_$(APP_VERSION).img
+
+.PHONY: OpenESP32C3
+OpenESP32C3: prebuild_ESPIDF
+	-rm platforms/ESP-IDF/sdkconfig
+	IDF_TARGET="esp32c3" USER_SW_VER=$(APP_VERSION) cmake platforms/ESP-IDF -B platforms/ESP-IDF/build-c3 
+	IDF_TARGET="esp32c3" USER_SW_VER=$(APP_VERSION) cmake --build ./platforms/ESP-IDF/build-c3 -j $(shell nproc)
+	mkdir -p output/$(APP_VERSION)
+	esptool.py -c esp32c3 merge_bin -o output/$(APP_VERSION)/OpenESP32C3_$(APP_VERSION).factory.bin --flash_mode dio --flash_size 2MB 0x0 ./platforms/ESP-IDF/build-c3/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-c3/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-c3/OpenBeken.bin
+	cp ./platforms/ESP-IDF/build-c3/OpenBeken.bin output/$(APP_VERSION)/OpenESP32C3_$(APP_VERSION).img
+
+.PHONY: OpenESP32C2
+OpenESP32C2: prebuild_ESPIDF
+	-rm platforms/ESP-IDF/sdkconfig
+	IDF_TARGET="esp32c2" USER_SW_VER=$(APP_VERSION) cmake platforms/ESP-IDF -B platforms/ESP-IDF/build-c2 
+	IDF_TARGET="esp32c2" USER_SW_VER=$(APP_VERSION) cmake --build ./platforms/ESP-IDF/build-c2 -j $(shell nproc)
+	mkdir -p output/$(APP_VERSION)
+	esptool.py -c esp32c2 merge_bin -o output/$(APP_VERSION)/OpenESP32C2_$(APP_VERSION).factory.bin --flash_mode dio --flash_size 2MB 0x0 ./platforms/ESP-IDF/build-c2/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-c2/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-c2/OpenBeken.bin
+	cp ./platforms/ESP-IDF/build-c2/OpenBeken.bin output/$(APP_VERSION)/OpenESP32C2_$(APP_VERSION).img
+
+.PHONY: OpenESP32C6
+OpenESP32C6: prebuild_ESPIDF
+	-rm platforms/ESP-IDF/sdkconfig
+	IDF_TARGET="esp32c6" USER_SW_VER=$(APP_VERSION) cmake platforms/ESP-IDF -B platforms/ESP-IDF/build-c6 
+	IDF_TARGET="esp32c6" USER_SW_VER=$(APP_VERSION) cmake --build ./platforms/ESP-IDF/build-c6 -j $(shell nproc)
+	mkdir -p output/$(APP_VERSION)
+	esptool.py -c esp32c6 merge_bin -o output/$(APP_VERSION)/OpenESP32C6_$(APP_VERSION).factory.bin --flash_mode dio --flash_size 4MB 0x0 ./platforms/ESP-IDF/build-c6/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-c6/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-c6/OpenBeken.bin
+	cp ./platforms/ESP-IDF/build-c6/OpenBeken.bin output/$(APP_VERSION)/OpenESP32C6_$(APP_VERSION).img
+
+.PHONY: OpenESP32S2
+OpenESP32S2: prebuild_ESPIDF
+	-rm platforms/ESP-IDF/sdkconfig
+	IDF_TARGET="esp32s2" USER_SW_VER=$(APP_VERSION) cmake platforms/ESP-IDF -B platforms/ESP-IDF/build-s2 
+	IDF_TARGET="esp32s2" USER_SW_VER=$(APP_VERSION) cmake --build ./platforms/ESP-IDF/build-s2 -j $(shell nproc)
+	mkdir -p output/$(APP_VERSION)
+	esptool.py -c esp32s2 merge_bin -o output/$(APP_VERSION)/OpenESP32S2_$(APP_VERSION).factory.bin --flash_mode dio --flash_size 4MB 0x1000 ./platforms/ESP-IDF/build-s2/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-s2/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-s2/OpenBeken.bin
+	cp ./platforms/ESP-IDF/build-s2/OpenBeken.bin output/$(APP_VERSION)/OpenESP32S2_$(APP_VERSION).img
+
+.PHONY: OpenESP32S3
+OpenESP32S3: prebuild_ESPIDF
+	-rm platforms/ESP-IDF/sdkconfig
+	IDF_TARGET="esp32s3" USER_SW_VER=$(APP_VERSION) cmake platforms/ESP-IDF -B platforms/ESP-IDF/build-s3 
+	IDF_TARGET="esp32s3" USER_SW_VER=$(APP_VERSION) cmake --build ./platforms/ESP-IDF/build-s3 -j $(shell nproc)
+	mkdir -p output/$(APP_VERSION)
+	esptool.py -c esp32s3 merge_bin -o output/$(APP_VERSION)/OpenESP32S3_$(APP_VERSION).factory.bin --flash_mode dio --flash_size 4MB 0x0 ./platforms/ESP-IDF/build-s3/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-s3/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-s3/OpenBeken.bin
+	cp ./platforms/ESP-IDF/build-s3/OpenBeken.bin output/$(APP_VERSION)/OpenESP32S3_$(APP_VERSION).img
+
 # clean .o files and output directory
 .PHONY: clean
 clean: 
@@ -219,6 +269,12 @@ clean:
 	$(MAKE) -C sdk/OpenW800 clean
 	$(MAKE) -C sdk/OpenW600 clean
 	test -d ./sdk/OpenLN882H/build && cmake --build ./sdk/OpenLN882H/build --target clean
+	test -d ./platforms/ESP-IDF/build-32 && cmake --build ./platforms/ESP-IDF/build-32 --target clean
+	test -d ./platforms/ESP-IDF/build-c3 && cmake --build ./platforms/ESP-IDF/build-c3 --target clean
+	test -d ./platforms/ESP-IDF/build-c2 && cmake --build ./platforms/ESP-IDF/build-c2 --target clean
+	test -d ./platforms/ESP-IDF/build-c6 && cmake --build ./platforms/ESP-IDF/build-c6 --target clean
+	test -d ./platforms/ESP-IDF/build-s2 && cmake --build ./platforms/ESP-IDF/build-s2 --target clean
+	test -d ./platforms/ESP-IDF/build-s3 && cmake --build ./platforms/ESP-IDF/build-s3 --target clean
 
 # Add custom Makefile if required
 -include custom.mk
