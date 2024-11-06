@@ -34,6 +34,7 @@ jobs:
           dry_run: true
           semantic_version: 21
           extra_plugins: |
+            @semantic-release/github
             @semantic-release/changelog
             @semantic-release/git
             conventional-changelog-conventionalcommits@7
@@ -172,9 +173,9 @@ jobs:
           dry_run: false
           semantic_version: 21
           extra_plugins: |
+            @semantic-release/github
             @semantic-release/changelog
             @semantic-release/git
-            @semantic-release/github
             conventional-changelog-conventionalcommits@7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
