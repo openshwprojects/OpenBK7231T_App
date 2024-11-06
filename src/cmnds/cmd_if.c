@@ -678,6 +678,11 @@ const char *CMD_ExpandConstantString(const char *s, const char *stop, char *out,
 		SIM_GenerateRepeatingEventsDesc(out, outLen);
 		return ret;
 	}
+	ret = strCompareBound(s, "$simPowerState", stop, false);
+	if (ret) {
+		SIM_GeneratePowerStateDesc(out, outLen);
+		return ret;
+	}
 	return false;
 }
 #endif

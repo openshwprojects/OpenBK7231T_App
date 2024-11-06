@@ -199,7 +199,7 @@ jobs:
   release:
     name: Semantic Release Images and Artifacts
     runs-on: ubuntu-20.04
-    needs: [ refs, build, build_idf ]
+    needs: [ refs, build, build_idf, build2 ]
     if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
     steps:
       - name: Source checkout

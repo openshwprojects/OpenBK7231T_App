@@ -19,6 +19,7 @@
 #include "Tool_Delete.h"
 #include "CursorManager.h"
 #include "Controller_Button.h"
+#include "Controller_SimulatorLink.h"
 
 #pragma comment (lib, "SDL2.lib")
 #pragma comment (lib, "Opengl32.lib")
@@ -173,6 +174,23 @@ bool FS_WriteTextFile(const char *data, const char *fname) {
 	return false;
 }
 CSimulator *g_sim;
+
+extern "C" void SIM_GeneratePowerStateDesc(char *o, int outLen) {
+	class CSimulation *sim = g_sim->getSim();
+	if (sim == 0) {
+		strcpy(o, "No simulation");
+		return;
+	}
+	CControllerSimulatorLink *w = sim->findFirstControllerOfType<CControllerSimulatorLink>();
+	// TODO
+	if (w->isPowered()) {
+		strcpy(o, "Power on");
+	}
+	else {
+		strcpy(o, "Power off");
+	}
+}
+
 extern "C" int SIM_CreateWindow(int argc, char **argv)
 {
 	glutInit(&argc, argv);

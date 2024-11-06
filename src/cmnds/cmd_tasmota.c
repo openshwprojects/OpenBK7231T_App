@@ -433,19 +433,24 @@ int taslike_commands_init(){
 	// those are stubs, they are handled elsewhere so we can have Tasmota style replies
 
 	//cmddetail:{"name":"State","args":"NULL",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:"descr":"A stub for Tasmota",
 	//cmddetail:"fn":"cmnd_stub","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("State", cmnd_stub, NULL);
 	//cmddetail:{"name":"Sensor","args":"NULL",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:"descr":"A stub for Tasmota",
 	//cmddetail:"fn":"cmnd_stub","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Sensor", cmnd_stub, NULL);
 	//cmddetail:{"name":"Status","args":"NULL",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:"descr":"A stub for Tasmota",
 	//cmddetail:"fn":"cmnd_stub","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Status", cmnd_stub, NULL);
+	//cmddetail:{"name":"Result","args":"NULL",
+	//cmddetail:"descr":"A stub for Tasmota",
+	//cmddetail:"fn":"cmnd_stub","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("Result", cmnd_stub, NULL);
     return 0;
 }

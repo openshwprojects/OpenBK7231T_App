@@ -774,7 +774,7 @@ int http_fn_index(http_request_t* request) {
 
   // display temperature - thanks to giedriuslt
   // only in Normal mode, and if boot is not failing
-	hprintf255(request, "<h5>Internal temperature: %.1f°C</h5>", g_wifi_temperature);
+	hprintf255(request, "<h5>Chip temperature: %.1f°C</h5>", g_wifi_temperature);
 
 	inputName = CFG_GetPingHost();
 	if (inputName && *inputName && CFG_GetPingDisconnectedSecondsToRestart()) {
@@ -1233,7 +1233,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 	if(bChanged) {
 		poststr(request,"<h4> Device will reconnect after restarting</h4>");
 	}*/
-	poststr(request, "<h2> Check networks reachable by module</h2> This will lag few seconds.<br>");
+	poststr(request, "<h2> Check networks reachable by module</h2> This will take a few seconds<br>");
 	if (http_getArg(request->url, "scan", tmpA, sizeof(tmpA))) {
 #ifdef WINDOWS
 
@@ -1305,22 +1305,22 @@ int http_fn_cfg_wifi(http_request_t* request) {
 	}
 	poststr(request, "<form action=\"/cfg_wifi\">\
 <input type=\"hidden\" id=\"scan\" name=\"scan\" value=\"1\">\
-<input type=\"submit\" value=\"Scan local networks!\">\
+<input type=\"submit\" value=\"Scan Local Networks\">\
 </form>");
 	poststr_h4(request, "Use this to disconnect from your WiFi");
 	poststr(request, "<form action=\"/cfg_wifi_set\">\
 <input type=\"hidden\" id=\"open\" name=\"open\" value=\"1\">\
-<input type=\"submit\" value=\"Convert to open access wifi\" onclick=\"return confirm('Are you sure to convert module to open access WiFi?')\">\
+<input type=\"submit\" value=\"Convert to Open Access WiFi\" onclick=\"return confirm('Are you sure you want to switch to open access WiFi?')\">\
 </form>");
 	poststr_h2(request, "Use this to connect to your WiFi");
 	add_label_text_field(request, "SSID", "ssid", CFG_GetWiFiSSID(), "<form action=\"/cfg_wifi_set\">");
-	add_label_password_field(request, "", "pass", CFG_GetWiFiPass(), "<br>Password <span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears password)</span>");
+	add_label_password_field(request, "", "pass", CFG_GetWiFiPass(), "<br>Password<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears existing)</span>");
 	poststr_h2(request, "Alternate WiFi (used when first one is not responding)");
 #ifndef PLATFORM_BEKEN
-	poststr_h2(request, "SSID2 only on Beken Platform (BK7231T,BK7231N)");
+	poststr_h2(request, "SSID2 only on Beken Platform (BK7231T, BK7231N)");
 #endif
 	add_label_text_field(request, "SSID2", "ssid2", CFG_GetWiFiSSID2(), "");
-	add_label_password_field(request, "", "pass2", CFG_GetWiFiPass2(), "<br>Password2 <span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass2');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears password)</span>");
+	add_label_password_field(request, "", "pass2", CFG_GetWiFiPass2(), "<br>Password2<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass2');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears existing)</span>");
 #if ALLOW_WEB_PASSWORD
 	int web_password_enabled = strcmp(CFG_GetWebPassword(), "") == 0 ? 0 : 1;
 	poststr_h2(request, "Web Authentication");
@@ -1330,7 +1330,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 	add_label_password_field(request, "Admin Password", "web_admin_password", CFG_GetWebPassword(), "");
 #endif
 	poststr(request, "<br><br>\
-<input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check SSID and pass twice?')\">\
+<input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please double-check SSID and password.')\">\
 </form>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
@@ -1948,6 +1948,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				dev_info = hass_init_sensor_device_info(ILLUMINANCE_SENSOR, i, -1, -1, 1);
 			}
 			break;
+			case ChType_Custom:
 			case ChType_ReadOnly:
 			{
 				dev_info = hass_init_sensor_device_info(CUSTOM_SENSOR, i, -1, -1, 1);
@@ -2457,13 +2458,13 @@ int http_fn_cfg(http_request_t* request) {
 	postFormAction(request, "cfg_mqtt", "Configure MQTT");
 	postFormAction(request, "cfg_name", "Configure Names");
 	postFormAction(request, "cfg_mac", "Change MAC");
-	postFormAction(request, "cfg_ping", "Ping Watchdog (Network lost restarter)");
-	postFormAction(request, "cfg_webapp", "Configure Webapp");
+	postFormAction(request, "cfg_ping", "Ping Watchdog (network lost restarter)");
+	postFormAction(request, "cfg_webapp", "Configure WebApp");
 	postFormAction(request, "ha_cfg", "Home Assistant Configuration");
 	postFormAction(request, "ota", "OTA (update software by WiFi)");
-	postFormAction(request, "cmd_tool", "Execute custom command");
+	postFormAction(request, "cmd_tool", "Execute Custom Command");
 	//postFormAction(request, "flash_read_tool", "Flash Read Tool");
-	postFormAction(request, "startup_command", "Change startup command text");
+	postFormAction(request, "startup_command", "Change Startup Command Text");
 
 #if 0
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
@@ -2798,7 +2799,7 @@ int http_fn_cfg_generic(http_request_t* request) {
 	poststr(request, "<input type=\"hidden\" id=\"setFlags\" name=\"setFlags\" value=\"1\">");
 	poststr(request, SUBMIT_AND_END_FORM);
 
-	add_label_numeric_field(request, "Uptime seconds required to mark boot as OK", "boot_ok_delay",
+	add_label_numeric_field(request, "Uptime in seconds required to mark boot as OK", "boot_ok_delay",
 		CFG_GetBootOkSeconds(), "<form action=\"/cfg_generic\">");
 	poststr(request, "<br><input type=\"submit\" value=\"Save\"/></form>");
 
