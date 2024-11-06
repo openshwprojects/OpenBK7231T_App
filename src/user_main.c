@@ -536,6 +536,7 @@ float g_wifi_temperature = 0;
 static byte g_secondsSpentInLowMemoryWarning = 0;
 void Main_OnEverySecond()
 {
+	printf("[TRACE] Entering OnEverySecond\n");
 	int newMQTTState;
 	const char* safe;
 	int i;
@@ -543,7 +544,7 @@ void Main_OnEverySecond()
 #ifdef WINDOWS
 	g_bHasWiFiConnected = 1;
 #endif
-
+	printf("[TRACE] Before reading temp \n");
 	// display temperature - thanks to giedriuslt
 // only in Normal mode, and if boot is not failing
 	if (!bSafeMode && g_bootFailures <= 1)
@@ -557,26 +558,35 @@ void Main_OnEverySecond()
 		g_wifi_temperature = (-0.457f * temperature) + 188.474f;
 #endif
 #elif PLATFORM_BL602
-		get_tsen_adc(&g_wifi_temperature, 0);
+		//do not read temp, sometimes it's to slow and causes reboot
+		//get_tsen_adc(&g_wifi_temperature, 0);
 #elif PLATFORM_LN882H
 		// this is set externally, I am just leaving comment here
 #endif
 	}
+	printf("[TRACE] After reading temp\n");
 	// run_adc_test();
 	newMQTTState = MQTT_RunEverySecondUpdate();
+	printf("[TRACE] After MQTT_RunEverySecondUpdate\n");
 	if (newMQTTState != bMQTTconnected) {
 		bMQTTconnected = newMQTTState;
 		if (newMQTTState) {
+			printf("[TRACE] Before CMD_EVENT_MQTT_STATE 1\n");
 			EventHandlers_FireEvent(CMD_EVENT_MQTT_STATE, 1);
+			printf("[TRACE] After CMD_EVENT_MQTT_STATE 1\n");
 		}
 		else {
+			printf("[TRACE] Before CMD_EVENT_MQTT_STATE 0\n");
 			EventHandlers_FireEvent(CMD_EVENT_MQTT_STATE, 0);
+			printf("[TRACE] After CMD_EVENT_MQTT_STATE 0\n");
 		}
 	}
 	if (g_newWiFiStatus != g_prevWiFiStatus) {
 		g_prevWiFiStatus = g_newWiFiStatus;
 		// Argument type here is HALWifiStatus_t enumeration
+		printf("[TRACE] Before CMD_EVENT_WIFI_STATE\n");
 		EventHandlers_FireEvent(CMD_EVENT_WIFI_STATE, g_newWiFiStatus);
+		printf("[TRACE] After CMD_EVENT_WIFI_STATE\n");
 	}
 	// Update time with no MQTT
 	if (bMQTTconnected) {
@@ -586,15 +596,20 @@ void Main_OnEverySecond()
 	}
 	// 'i' is a new value
 	EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_NOMQTTTIME, g_noMQTTTime, i);
+	printf("[TRACE] After CMD_EVENT_CHANGE_NOMQTTTIME\n");
 	// save new value
 	g_noMQTTTime = i;
 
 	MQTT_Dedup_Tick();
+	printf("[TRACE] After MQTT_Dedup_Tick\n");
 	LED_RunOnEverySecond();
+	printf("[TRACE] After LED_RunOnEverySecond\n");
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();
+	printf("[TRACE] After DRV_OnEverySecond\n");
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602)
 	UART_RunEverySecond();
+	printf("[TRACE] After UART_RunEverySecond\n");
 #endif
 #endif
 
@@ -607,6 +622,7 @@ void Main_OnEverySecond()
 #endif
 	{
 		CFG_Save_IfThereArePendingChanges();
+		printf("[TRACE] After CFG_Save_IfThereArePendingChanges\n");
 	}
 
 	// On Beken, do reboot if we ran into heap size problem
@@ -626,14 +642,21 @@ void Main_OnEverySecond()
 		const char* ip = HAL_GetMyIPString();
 		// this will return non-zero if there were any changes
 		if (strcpy_safe_checkForChanges(g_currentIPString, ip, sizeof(g_currentIPString))) {
+			printf("[TRACE] After strcpy_safe_checkForChanges\n");
 			if (MQTT_IsReady()) {
+				printf("[TRACE] Before MQTT_DoItemPublish\n");
 				MQTT_DoItemPublish(PUBLISHITEM_SELF_IP);
+				printf("[TRACE] After MQTT_DoItemPublish\n");
 			}
+			printf("[TRACE] Before CMD_EVENT_IPCHANGE 0\n");
 			EventHandlers_FireEvent(CMD_EVENT_IPCHANGE, 0);
+			printf("[TRACE] After CMD_EVENT_IPCHANGE 0\n");
 
 			//Invoke Hass discovery if ipaddr changed
 			if (CFG_HasFlag(OBK_FLAG_AUTOMAIC_HASS_DISCOVERY)) {
+				printf("[TRACE] Before Main_ScheduleHomeAssistantDiscovery\n");
 				Main_ScheduleHomeAssistantDiscovery(1);
+				printf("[TRACE] After Main_ScheduleHomeAssistantDiscovery\n");
 			}
 		}
 	}
@@ -670,15 +693,17 @@ void Main_OnEverySecond()
 			if (g_cfg.pins.roles[i] == IOR_ADC)
 			{
 				int value;
+				printf("[TRACE] Before HAL_ADC_Read\n");
 
 				value = HAL_ADC_Read(i);
 
 				//	ADDLOGF_INFO("ADC %i=%i\r\n", i,value);
 				CHANNEL_Set(g_cfg.pins.channels[i], value, CHANNEL_SET_FLAG_SILENT);
+				printf("[TRACE] After HAL_ADC_Read\n");
 			}
 		}
 	}
-
+	printf("[TRACE] Before scheduled driver starts\n");
 	// allow for up to 4 scheduled driver starts.
 	for (i = 0; i < 4; i++) {
 		if (scheduledDelay[i] > 0) {
@@ -694,6 +719,7 @@ void Main_OnEverySecond()
 			}
 		}
 	}
+	printf("[TRACE] After scheduled driver starts\n");
 
 	g_secondsElapsed++;
 	if (bSafeMode) {
@@ -725,7 +751,9 @@ void Main_OnEverySecond()
 	// print network info
 	if (!(g_secondsElapsed % 10))
 	{
+		printf("[TRACE] Before HAL_PrintNetworkInfo\n");
 		HAL_PrintNetworkInfo();
+		printf("[TRACE] After HAL_PrintNetworkInfo\n");
 
 	}
 	// IR TESTING ONLY!!!!
@@ -809,7 +837,9 @@ void Main_OnEverySecond()
 		g_connectToWiFi--;
 		if (0 == g_connectToWiFi && g_bHasWiFiConnected == 0)
 		{
+			printf("[TRACE] Before Main_ConnectToWiFiNow\n");
 			Main_ConnectToWiFiNow();
+			printf("[TRACE] After Main_ConnectToWiFiNow\n");
 		}
 	}
 
@@ -817,7 +847,9 @@ void Main_OnEverySecond()
 	if (g_saveCfgAfter) {
 		g_saveCfgAfter--;
 		if (!g_saveCfgAfter) {
+			printf("[TRACE] Before CFG_Save_IfThereArePendingChanges\n");
 			CFG_Save_IfThereArePendingChanges();
+			printf("[TRACE] After CFG_Save_IfThereArePendingChanges\n");
 		}
 	}
 	if (g_doUnsafeInitIn) {
@@ -835,7 +867,9 @@ void Main_OnEverySecond()
 #ifdef ENABLE_DRIVER_BL0937
 			if (DRV_IsMeasuringPower())
 			{
+				printf("[TRACE] Before BL09XX_SaveEmeteringStatistics\n");
 				BL09XX_SaveEmeteringStatistics();
+				printf("[TRACE] After BL09XX_SaveEmeteringStatistics\n");
 			}
 #endif            
 			ADDLOGF_INFO("Going to call HAL_RebootModule\r\n");
@@ -850,7 +884,9 @@ void Main_OnEverySecond()
 #if ENABLE_DRIVER_DHT
 	if (g_dhtsCount > 0) {
 		if (bSafeMode == 0) {
+			printf("[TRACE] Before DHT_OnEverySecond\n");
 			DHT_OnEverySecond();
+			printf("[TRACE] After DHT_OnEverySecond\n");
 		}
 	}
 #endif
@@ -863,9 +899,11 @@ void Main_OnEverySecond()
 #elif PLATFORM_LN882H
 	hal_wdt_cnt_restart(WDT_BASE);
 #endif
+	printf("[TRACE] After watchdog reset\n");
 	// force it to sleep...  we MUST have some idle task processing
 	// else task memory doesn't get freed
 	rtos_delay_milliseconds(1);
+	printf("[TRACE] Exiting OnEverySecond\n");
 
 }
 
