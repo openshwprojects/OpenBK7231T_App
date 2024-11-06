@@ -330,9 +330,12 @@ int OWTouchByte(int Pin, int data)
 
 uint8_t Crc8CQuick(uint8_t* Buffer, uint8_t Size)
 {
-	static const uint8_t CrcTable[] = { // Nibble table for polynomial 0x8C
-   0x00,0x9D,0x23,0xBE,0x46,0xDB,0x65,0xF8,
-   0x8C,0x11,0xAF,0x32,0xCA,0x57,0xE9,0x74 };
+	// Nibble table for polynomial 0x8C
+	static const uint8_t CrcTable[] =
+	{
+		0x00,0x9D,0x23,0xBE,0x46,0xDB,0x65,0xF8,
+		0x8C,0x11,0xAF,0x32,0xCA,0x57,0xE9,0x74
+	};
 	uint8_t Crc = 0x00;
 	while(Size--)
 	{
@@ -406,7 +409,7 @@ void DS1820_OnEverySecond()
 	Pin = PIN_FindPinIndexForRole(IOR_DS1820_IO, 99);
 	uint8_t scratchpad[9], crc;
 	if(Pin != 99)
-	{	
+	{
 		// only if pin is set
 		// request temp if conversion was requested two seconds after request
 		// if (dsread == 1 && g_secondsElapsed % 5 == 2) {
@@ -441,7 +444,7 @@ void DS1820_OnEverySecond()
 				int16_t raw = (scratchpad[1] << 8) | scratchpad[0];
 
 				if(ds18_family == 0x10)
-				{ 
+				{
 					// DS18S20 or old DS1820
 					int16_t dT = 128 * (scratchpad[7] - scratchpad[6]);
 					dT /= scratchpad[7];

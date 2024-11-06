@@ -74,7 +74,7 @@ sdk/OpenLN882H/project/OpenBeken/app:
 	@mkdir -p "sdk/OpenLN882H/project/OpenBeken"
 	ln -s "$(shell pwd)/" "sdk/OpenLN882H/project/OpenBeken/app"
 
-.PHONY: prebuild_OpenBK7231N prebuild_OpenBK7231T prebuild_OpenBL602 prebuild_OpenLN882H prebuild_OpenW600 prebuild_OpenW800 prebuild_OpenXR809
+.PHONY: prebuild_OpenBK7231N prebuild_OpenBK7231T prebuild_OpenBL602 prebuild_OpenLN882H prebuild_OpenW600 prebuild_OpenW800 prebuild_OpenXR809 prebuild_ESPIDF
 
 prebuild_OpenBK7231N:
 	@if [ -e platforms/BK7231N/pre_build.sh ]; then \
