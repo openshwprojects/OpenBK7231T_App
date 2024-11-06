@@ -384,7 +384,7 @@ int DS1820_DiscoverFamily()
 	if(crc != ROM[7])
 	{
 		// This might mean bad signal integrity or multiple 1-wire devices on the bus
-		DS1820_LOG(DEBUG, "Discover CRC failed (CRC=%x != calculated:%x)", ROM[7], crc);
+		DS1820_LOG(DEBUG, "Discover CRC failed (CRC=0x%02X != calculated:0x%02X)", ROM[7], crc);
 		return 0;
 	}
 
@@ -393,12 +393,12 @@ int DS1820_DiscoverFamily()
 	if(family == 0x10 || family == 0x28)
 	{
 		ds18_family = family;
-		DS1820_LOG(INFO, "Discover Family - discovered %x", family);
+		DS1820_LOG(INFO, "Discover Family - discovered 0x%02X", family);
 		return 1;
 	}
 	else
 	{
-		DS1820_LOG(DEBUG, "Discover Family %x not supported", family);
+		DS1820_LOG(DEBUG, "Discover Family 0x%02X not supported", family);
 		return 0;
 	}
 }
@@ -432,8 +432,8 @@ void DS1820_OnEverySecond()
 			if(crc != scratchpad[8])
 			{
 				errcount++;
-				DS1820_LOG(ERROR, "Read CRC=%x != calculated:%x (errcount=%i)", scratchpad[8], crc, errcount);
-				DS1820_LOG(ERROR, "Scratchpad Data Read: %x %x %x %x %x %x %x %x %x",
+				DS1820_LOG(ERROR, "Read CRC=0x%02X != calculated:0x%02X (errcount=%i)", scratchpad[8], crc, errcount);
+				DS1820_LOG(ERROR, "Scratchpad Data Read: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X",
 					scratchpad[0], scratchpad[1], scratchpad[2], scratchpad[3], scratchpad[4],
 					scratchpad[5], scratchpad[6], scratchpad[7], scratchpad[8]);
 
@@ -449,7 +449,7 @@ void DS1820_OnEverySecond()
 					int16_t dT = 128 * (scratchpad[7] - scratchpad[6]);
 					dT /= scratchpad[7];
 					raw = 64 * (raw & 0xFFFE) - 32 + dT;
-					DS1820_LOG(DEBUG, "family=%x, raw=%i, count_remain=%i, count_per_c=%i, dT=%i", ds18_family, raw, scratchpad[6], scratchpad[7], dT);
+					DS1820_LOG(DEBUG, "family=0x%02X, raw=%i, count_remain=%i, count_per_c=%i, dT=%i", ds18_family, raw, scratchpad[6], scratchpad[7], dT);
 				}
 				else
 				{ // DS18B20
@@ -458,18 +458,19 @@ void DS1820_OnEverySecond()
 					else if(cfg == 0x20) raw = raw & ~3; // 10 bit res, 187.5 ms
 					else if(cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
 					raw = raw << 3; // multiply by 8
-					DS1820_LOG(DEBUG, "family=%x, raw=%i, cfg=%x (%i bit resolution)", ds18_family, raw, cfg, 9 + (cfg) / 32);
+					DS1820_LOG(DEBUG, "family=0x%02X, raw=%i, cfg=0x%02X (%i bit resolution)", ds18_family, raw, cfg, 9 + (cfg) / 32);
 				}
 
 				// Raw is t * 128
 				t = (raw / 128) * 100; // Whole degrees
 				int frac = (raw % 128) * 100 / 128; // Fractional degrees
-				t += t > 0 ? frac : -frac;
+				t += frac;
 
 				dsread = 0;
 				lastconv = g_secondsElapsed;
 				CHANNEL_Set(g_cfg.pins.channels[Pin], t, CHANNEL_SET_FLAG_SILENT);
-				DS1820_LOG(INFO, "Temp=%i.%02i", (int)t / 100, (int)t % 100);
+				DS1820_LOG(INFO, "Temp=%0.2f", (float)t / 100);
+
 			}
 		}
 		else if(dsread == 0 && (g_secondsElapsed % ds18_conversionPeriod == 0 || lastconv == 0))
