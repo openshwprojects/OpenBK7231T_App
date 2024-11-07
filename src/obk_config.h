@@ -1,4 +1,4 @@
-/////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
 // specify which parts of the app we wish to be active
 //
 #ifndef OBK_CONFIG_H
@@ -168,6 +168,30 @@
 #define ENABLE_DRIVER_DS1820		1
 #define ENABLE_DRIVER_DDP		1
 #define ENABLE_DRIVER_WS2811		1
+
+#elif PLATFORM_ESPIDF
+
+#define ENABLE_I2C					1
+#define ENABLE_NTP					1
+#define ENABLE_DRIVER_LED			1
+#define ENABLE_DRIVER_TUYAMCU		1
+#define ENABLE_LITTLEFS				1
+#define ENABLE_DRIVER_BMPI2C		1
+#define ENABLE_DRIVER_DS1820		1
+#define ENABLE_DRIVER_DHT			1
+#define ENABLE_DRIVER_AHT2X			1
+#define ENABLE_DRIVER_BATTERY		1
+#define ENABLE_DRIVER_CHARTS		1
+#define ENABLE_EXPAND_CONSTANT		1
+#define ENABLE_DRIVER_HUE			1
+#define ENABLE_DRIVER_WEMO			1
+#define ENABLE_DRIVER_BL0937		1
+#define ENABLE_TASMOTADEVICEGROUPS	1
+#define ENABLE_TASMOTA_JSON			1
+#define ENABLE_CALENDAR_EVENTS		1
+#define ENABLE_DRIVER_DDP			1
+#define ENABLE_DRIVER_SSDP			1
+#define ENABLE_DRIVER_CHT83XX		1
 
 #else
 

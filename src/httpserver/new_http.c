@@ -287,6 +287,10 @@ void http_html_end(http_request_t* request) {
 	poststr(request, upTimeStr);
 	snprintf(upTimeStr, sizeof(upTimeStr), "<br>Short name: %s, Chipset %s", CFG_GetShortDeviceName(), PLATFORM_MCU_NAME);
 	poststr(request, upTimeStr);
+#ifdef PLATFORM_ESPIDF
+	snprintf(upTimeStr, sizeof(upTimeStr), " ESP-IDF %s", esp_get_idf_version());
+	poststr(request, upTimeStr);
+#endif
 
 	poststr(request, htmlBodyEnd);
 	poststr(request, pageScriptPart1);
