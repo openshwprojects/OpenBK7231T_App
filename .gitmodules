@@ -23,8 +23,6 @@
 	url = https://github.com/openshwprojects/OpenW600.git
 	branch = master
 [submodule "sdk/OpenLN882H"]
-	path = sdk/OpenLN882H
-[submodule "sdk/OpenLN882H"]
   path = sdk/OpenLN882H
   url = https://github.com/jasperro/OpenLN882H.git
   branch = jasperroLN8828H-WS2811
