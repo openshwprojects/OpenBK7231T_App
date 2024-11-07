@@ -11,11 +11,10 @@
 
 #define WS2811_DMA_CH DMA_CH_2
 #define WS2811_BAUD_RATE 16
-#define WS2811_MULTIPLEX_PIN GPIO_PIN_11
-#define WS2811_DATA_PIN GPIO_PIN_6
+#define WS2811_DATA_PIN 6
 
 typedef struct ws2811Data_s {
-    char *buf;
+    byte *buf;
     bool ready;
 } ws2811Data_t;
 

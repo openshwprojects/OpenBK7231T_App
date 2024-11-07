@@ -9,10 +9,11 @@
 #include "../httpserver/new_http.h"
 #include "../logging/logging.h"
 #include "../mqtt/new_mqtt.h"
-#include "../../sdk/OpenLN882H/mcu/driver_ln882h/hal/hal_gpio.h"
-#include "../../sdk/OpenLN882H/mcu/driver_ln882h/hal/hal_dma.h"
-#include "../../sdk/OpenLN882H/mcu/driver_ln882h/hal/hal_ws2811.h"
+#include "hal/hal_gpio.h"
+#include "hal/hal_dma.h"
+#include "hal/hal_ws2811.h"
 #include "drv_ws2811.h"
+#include "../hal/ln882h/pin_mapping_ln882h.h"
 
 /*
 WS2811 peripheral test instructions:
@@ -60,14 +61,15 @@ void WS2811_SendData(unsigned char *send_data,unsigned int data_len)
     hal_dma_en(WS2811_DMA_CH,HAL_DISABLE);
 }
 
-void WS2811_InitAll(uint32_t gpio_base, gpio_pin_t pin, uint8_t br)
+void WS2811_InitAll(int index, uint8_t br)
 {
+    lnPinMapping_t *pin = g_pins + index;
     // Initialize the buffer
     ws2811Data.buf = (char *)os_malloc(sizeof(char) * pixel_count * 3);
 
     // 1. Configure WS2811 pin multiplexing
-    hal_gpio_pin_afio_select(gpio_base,pin,WS2811_OUT);
-    hal_gpio_pin_afio_en(gpio_base,pin,HAL_ENABLE);
+    hal_gpio_pin_afio_select(pin->base,pin->pin,WS2811_OUT);
+    hal_gpio_pin_afio_en(pin->base,pin->pin,HAL_ENABLE);
     
     // 2. Initialize WS2811 configuration
     ws2811_init_t_def ws2811_init;
@@ -147,7 +149,6 @@ void WS2811_setAllPixels(char r, char g, char b) {
         return;
     
     char b0, b1, b2;
-    char *dst = ws2811Data.buf;
 
     if (color_order == WS2811_COLOR_ORDER_RGB) {
         b0 = r;
@@ -181,9 +182,9 @@ void WS2811_setAllPixels(char r, char g, char b) {
     }
 
     for (int i = 0; i < pixel_count; i++) {
-        *dst++ = b0;
-        *dst++ = b1;
-        *dst++ = b2;
+        ws2811Data.buf[i * 3] = b0;
+        ws2811Data.buf[i * 3 + 1] = b1;
+        ws2811Data.buf[i * 3 + 2] = b2;
     }
 }
 
@@ -267,9 +268,9 @@ commandResult_t WS2811_CMD_SetPixel(const void *context, const char *cmd, const 
         pixel = Tokenizer_GetArgInteger(0);
         all = 0;
     }
-    char r = (char) Tokenizer_GetArgIntegerRange(1, 0, 255);
-    char g = (char) Tokenizer_GetArgIntegerRange(2, 0, 255);
-    char b = (char) Tokenizer_GetArgIntegerRange(3, 0, 255);
+    byte r = (byte) Tokenizer_GetArgIntegerRange(1, 0, 255);
+    byte g = (byte) Tokenizer_GetArgIntegerRange(2, 0, 255);
+    byte b = (byte) Tokenizer_GetArgIntegerRange(3, 0, 255);
 
     ADDLOG_INFO(LOG_FEATURE_CMD, "Set Pixel %i to R %i G %i B %i", pixel, r, g, b);
 
@@ -294,11 +295,11 @@ void WS2811_setMultiplePixel(int pixel, const char *data, bool push) {
     if (pixel > pixel_count)
         pixel = pixel_count;
     
-    char *dst = ws2811Data.buf;
+    byte *dst = ws2811Data.buf;
 
     // Iterate over pixel
     for (int i = 0; i < pixel; i++) {
-        char b0, b1, b2;
+        byte b0, b1, b2;
         if (color_order == WS2811_COLOR_ORDER_RGB) {
             b0 = *data++;
             b1 = *data++;
@@ -380,13 +381,8 @@ commandResult_t WS2811_InitForLEDCount(const void *context, const char *cmd, con
 
     ADDLOG_INFO(LOG_FEATURE_CMD, "Register driver with %i LEDs", pixel_count);
 
-    WS2811_InitAll(GPIOA_BASE, WS2811_DATA_PIN, WS2811_BAUD_RATE);
-    // Turn off white LEDs
-    currentDirection = GPIO_INPUT;
-    hal_gpio_pin_direction_set(GPIOA_BASE, WS2811_MULTIPLEX_PIN, currentDirection);
-    hal_gpio_pin_set(GPIOA_BASE, WS2811_MULTIPLEX_PIN);
-    hal_gpio_pin_set(GPIOA_BASE, GPIO_PIN_7);
-    
+    WS2811_InitAll(WS2811_DATA_PIN, WS2811_BAUD_RATE);
+
     return CMD_RES_OK;
 }
 
@@ -404,39 +400,10 @@ void WS2811_IRQHandler(void)
     hal_ws2811_set_data(WS2811_BASE, 11);
 }
 
-commandResult_t WS2811_Multiplex(const void *context, const char *cmd, const char *args, int flags) {
-    Tokenizer_TokenizeString(args, 0);
-
-    if (Tokenizer_GetArgsCount() == 0) {
-        ADDLOG_INFO(LOG_FEATURE_CMD, "Not Enough Arguments for multiplex: Direction missing");
-        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-    }
-
-    const char *direction = Tokenizer_GetArg(0);
-
-    if (!stricmp(direction, "input")) {
-        currentDirection = GPIO_INPUT;
-        hal_gpio_pin_direction_set(GPIOA_BASE, WS2811_MULTIPLEX_PIN, currentDirection);
-        hal_gpio_pin_set(GPIOA_BASE, WS2811_MULTIPLEX_PIN);
-        hal_gpio_pin_set(GPIOA_BASE, GPIO_PIN_7);
-    } else if (!stricmp(direction, "output")) {
-        currentDirection = GPIO_OUTPUT;
-        hal_gpio_pin_direction_set(GPIOA_BASE, WS2811_MULTIPLEX_PIN, currentDirection);
-        hal_gpio_pin_set(GPIOA_BASE, WS2811_MULTIPLEX_PIN);
-        hal_gpio_pin_set(GPIOA_BASE, GPIO_PIN_7);
-    } else {
-        ADDLOG_INFO(LOG_FEATURE_CMD, "Invalid direction, should be input or output", direction);
-        return CMD_RES_ERROR;
-    }
-
-    return CMD_RES_OK;
-}
-
 void WS2811_Init() {
     CMD_RegisterCommand("WS2811_Init", WS2811_InitForLEDCount, NULL);
     CMD_RegisterCommand("WS2811_SetPixel", WS2811_CMD_SetPixel, NULL);
     CMD_RegisterCommand("WS2811_SetRaw", WS2811_CMD_setRaw, NULL);
-    CMD_RegisterCommand("WS2811_Multiplex", WS2811_Multiplex, NULL);
     CMD_RegisterCommand("WS2811_Show", WS2811_CMD_Start, NULL);
 }
 
