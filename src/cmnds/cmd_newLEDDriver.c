@@ -599,7 +599,7 @@ void apply_smart_light() {
 #elif ENABLE_DRIVER_WS2811
 	if (pixel_count > 0 && (g_lightMode != Light_Anim || g_lightEnableAll == 0)) {
 		WS2811_setAllPixels((byte) (finalColors[0]), (byte) (finalColors[1]), (byte) (finalColors[2]));
-		WS2811_Show();
+		WS2811_show();
 	}
 #endif
 	

@@ -43,368 +43,392 @@ int color_order = WS2811_COLOR_ORDER_RGB; // default to RGB
 int pixel_count = 0;
 gpio_direction_t currentDirection = GPIO_INPUT;
 
-ws2811Data_t ws2811Data = {.ready = false};
+ws2811Data_t ws2811Data = {
+	.ready = false,
+	.pin_data = WS2811_DEFAULT_DATA_PIN
+};
 
-void WS2811_SendData(unsigned char *send_data,unsigned int data_len)
+void WS2811_sendData(uint8_t *send_data, unsigned int data_len)
 {
-    // Configure DMA transfer parameters
-    hal_dma_set_mem_addr(WS2811_DMA_CH,(uint32_t)send_data);
-    hal_dma_set_data_num(WS2811_DMA_CH,data_len);
-    
-    // Start data transfer
-    hal_dma_en(WS2811_DMA_CH,HAL_ENABLE);
-    
-    // Wait for transfer to complete
-    while( hal_dma_get_data_num(WS2811_DMA_CH) != 0);
-    
-    // After sending, close DMA in time to prepare for the next configuration of DMA parameters.
-    hal_dma_en(WS2811_DMA_CH,HAL_DISABLE);
+	// Configure DMA transfer parameters
+	hal_dma_set_mem_addr(WS2811_DMA_CH,(uint32_t)send_data);
+	hal_dma_set_data_num(WS2811_DMA_CH,data_len);
+	
+	// Start data transfer
+	hal_dma_en(WS2811_DMA_CH,HAL_ENABLE);
+	
+	// Wait for transfer to complete
+	while(hal_dma_get_data_num(WS2811_DMA_CH) != 0);
+	
+	// After sending, close DMA in time to prepare for the next configuration of DMA parameters.
+	hal_dma_en(WS2811_DMA_CH,HAL_DISABLE);
 }
 
-void WS2811_InitAll(int index, uint8_t br)
-{
-    lnPinMapping_t *pin = g_pins + index;
-    // Initialize the buffer
-    ws2811Data.buf = (char *)os_malloc(sizeof(char) * pixel_count * 3);
-
-    // 1. Configure WS2811 pin multiplexing
-    hal_gpio_pin_afio_select(pin->base,pin->pin,WS2811_OUT);
-    hal_gpio_pin_afio_en(pin->base,pin->pin,HAL_ENABLE);
-    
-    // 2. Initialize WS2811 configuration
-    ws2811_init_t_def ws2811_init;
-    
-    ws2811_init.br = br;                                // baud rate = (br+1)*5 * (1 / pclk)
-    hal_ws2811_init(WS2811_BASE,&ws2811_init);          // Initialize WS2811
-    
-    hal_ws2811_en(WS2811_BASE,HAL_ENABLE);              // Enable WS2811
-    hal_ws2811_dma_en(WS2811_BASE,HAL_ENABLE);          // Enable WS2811 DMA
-    
-    hal_ws2811_it_cfg(WS2811_BASE,WS2811_IT_EMPTY_FLAG,HAL_ENABLE); // Configure WS2811 interrupts
-    
-    NVIC_EnableIRQ(WS2811_IRQn);                        // Enable WS2811 interrupt
-    NVIC_SetPriority(WS2811_IRQn,     1);               // Set WS2811 interrupt priority
-    
-    // 3. Configure DMA
-    dma_init_t_def dma_init;    
-    memset(&dma_init,0,sizeof(dma_init));
-
-    dma_init.dma_mem_addr = (uint32_t)ws2811Data.buf;   // Configure memory address
-    dma_init.dma_data_num = 0;                          // Set the number of transfers
-    dma_init.dma_dir = DMA_READ_FORM_MEM;               // Set the transfer direction
-    dma_init.dma_mem_inc_en = DMA_MEM_INC_EN;           // Enable memory to increase automatically
-    dma_init.dma_p_addr = WS2811_DATA_REG;              // Set peripheral address
-    
-    hal_dma_init(WS2811_DMA_CH,&dma_init);              // Initialize DMA
-    hal_dma_en(WS2811_DMA_CH,HAL_DISABLE);              // Enable DMA
-
-    ws2811Data.ready = true;
+void WS2811_show() {
+	WS2811_sendData(ws2811Data.buf, pixel_count * 3);
 }
 
-void WS2811_setPixel(int pixel, char r, char g, char b) {
-    if (!ws2811Data.ready)
-        return;
-    if (pixel >= pixel_count) return;
+void WS2811_initAll()
+{
+	lnPinMapping_t *pin = g_pins + ws2811Data.pin_data;
+	// Initialize the buffer
+	ws2811Data.buf = (uint8_t *)os_malloc(sizeof(uint8_t) * pixel_count * 3);
 
-    char b0, b1, b2;
+	// 1. Configure WS2811 pin multiplexing
+	hal_gpio_pin_afio_select(pin->base,pin->pin,WS2811_OUT);
+	hal_gpio_pin_afio_en(pin->base,pin->pin,HAL_ENABLE);
+	
+	// 2. Initialize WS2811 configuration
+	ws2811_init_t_def ws2811_init;
+	
+	ws2811_init.br = WS2811_BAUD_RATE;					// baud rate = (br+1)*5 * (1 / pclk)
+	hal_ws2811_init(WS2811_BASE,&ws2811_init);			// Initialize WS2811
+	
+	hal_ws2811_en(WS2811_BASE,HAL_ENABLE);				// Enable WS2811
+	hal_ws2811_dma_en(WS2811_BASE,HAL_ENABLE);			// Enable WS2811 DMA
+	
+	hal_ws2811_it_cfg(WS2811_BASE,WS2811_IT_EMPTY_FLAG,HAL_ENABLE); // Configure WS2811 interrupts
+	
+	NVIC_EnableIRQ(WS2811_IRQn);						// Enable WS2811 interrupt
+	NVIC_SetPriority(WS2811_IRQn,	 1);				// Set WS2811 interrupt priority
+	
+	// 3. Configure DMA
+	dma_init_t_def dma_init;	
+	memset(&dma_init,0,sizeof(dma_init));
+
+	dma_init.dma_mem_addr = (uint32_t)ws2811Data.buf;	// Configure memory address
+	dma_init.dma_data_num = 0;							// Set the number of transfers
+	dma_init.dma_dir = DMA_READ_FORM_MEM;				// Set the transfer direction
+	dma_init.dma_mem_inc_en = DMA_MEM_INC_EN;			// Enable memory to increase automatically
+	dma_init.dma_p_addr = WS2811_DATA_REG;				// Set peripheral address
+	
+	hal_dma_init(WS2811_DMA_CH,&dma_init);				// Initialize DMA
+	hal_dma_en(WS2811_DMA_CH,HAL_DISABLE);				// Enable DMA
+
+	ws2811Data.ready = true;
+}
+
+void WS2811_setPixel(int pixel, uint8_t r, uint8_t g, uint8_t b) {
+	if (!ws2811Data.ready)
+		return;
+	if (pixel >= pixel_count) return;
+
+	uint8_t b0, b1, b2;
  
-    if (color_order == WS2811_COLOR_ORDER_RGB) {
-        b0 = r;
-        b1 = g;
-        b2 = b;
-    }
-    if (color_order == WS2811_COLOR_ORDER_RBG) {
-        b0 = r;
-        b1 = b;
-        b2 = g;
-    }
-    if (color_order == WS2811_COLOR_ORDER_BRG) {
-        b0 = b;
-        b1 = r;
-        b2 = g;
-    }
-    if (color_order == WS2811_COLOR_ORDER_BGR) {
-        b0 = b;
-        b1 = g;
-        b2 = r;
-    }
-    if (color_order == WS2811_COLOR_ORDER_GRB) {
-        b0 = g;
-        b1 = r;
-        b2 = b;
-    }
-    if (color_order == WS2811_COLOR_ORDER_GBR) {
-        b0 = g;
-        b1 = b;
-        b2 = r;
-    }
+	if (color_order == WS2811_COLOR_ORDER_RGB) {
+		b0 = r;
+		b1 = g;
+		b2 = b;
+	}
+	if (color_order == WS2811_COLOR_ORDER_RBG) {
+		b0 = r;
+		b1 = b;
+		b2 = g;
+	}
+	if (color_order == WS2811_COLOR_ORDER_BRG) {
+		b0 = b;
+		b1 = r;
+		b2 = g;
+	}
+	if (color_order == WS2811_COLOR_ORDER_BGR) {
+		b0 = b;
+		b1 = g;
+		b2 = r;
+	}
+	if (color_order == WS2811_COLOR_ORDER_GRB) {
+		b0 = g;
+		b1 = r;
+		b2 = b;
+	}
+	if (color_order == WS2811_COLOR_ORDER_GBR) {
+		b0 = g;
+		b1 = b;
+		b2 = r;
+	}
 
-    ws2811Data.buf[pixel * 3] = b0;
-    ws2811Data.buf[pixel * 3 + 1] = b1;
-    ws2811Data.buf[pixel * 3 + 2] = b2;
+	ws2811Data.buf[pixel * 3] = b0;
+	ws2811Data.buf[pixel * 3 + 1] = b1;
+	ws2811Data.buf[pixel * 3 + 2] = b2;
 }
 
-void WS2811_setAllPixels(char r, char g, char b) {
-    if (!ws2811Data.ready)
-        return;
-    
-    char b0, b1, b2;
+void WS2811_setMultiplePixel(int pixel, const uint8_t *data, bool push) {
+	// Return if driver is not loaded
+	if (!ws2811Data.ready)
+		return;
 
-    if (color_order == WS2811_COLOR_ORDER_RGB) {
-        b0 = r;
-        b1 = g;
-        b2 = b;
-    }
-    if (color_order == WS2811_COLOR_ORDER_RBG) {
-        b0 = r;
-        b1 = b;
-        b2 = g;
-    }
-    if (color_order == WS2811_COLOR_ORDER_BRG) {
-        b0 = b;
-        b1 = r;
-        b2 = g;
-    }
-    if (color_order == WS2811_COLOR_ORDER_BGR) {
-        b0 = b;
-        b1 = g;
-        b2 = r;
-    }
-    if (color_order == WS2811_COLOR_ORDER_GRB) {
-        b0 = g;
-        b1 = r;
-        b2 = b;
-    }
-    if (color_order == WS2811_COLOR_ORDER_GBR) {
-        b0 = g;
-        b1 = b;
-        b2 = r;
-    }
+	// Check max pixel
+	if (pixel > pixel_count)
+		pixel = pixel_count;
+	
+	uint8_t *dst = ws2811Data.buf;
 
-    for (int i = 0; i < pixel_count; i++) {
-        ws2811Data.buf[i * 3] = b0;
-        ws2811Data.buf[i * 3 + 1] = b1;
-        ws2811Data.buf[i * 3 + 2] = b2;
-    }
+	// Iterate over pixel
+	for (int i = 0; i < pixel; i++) {
+		uint8_t b0, b1, b2;
+		if (color_order == WS2811_COLOR_ORDER_RGB) {
+			b0 = *data++;
+			b1 = *data++;
+			b2 = *data++;
+		}
+		if (color_order == WS2811_COLOR_ORDER_RBG) {
+			b0 = *data++;
+			b2 = *data++;
+			b1 = *data++;
+		}
+		if (color_order == WS2811_COLOR_ORDER_BRG) {
+			b2 = *data++;
+			b0 = *data++;
+			b1 = *data++;
+		}
+		if (color_order == WS2811_COLOR_ORDER_BGR) {
+			b2 = *data++;
+			b1 = *data++;
+			b0 = *data++;
+		}
+		if (color_order == WS2811_COLOR_ORDER_GRB) {
+			b1 = *data++;
+			b0 = *data++;
+			b2 = *data++;
+		}
+		if (color_order == WS2811_COLOR_ORDER_GBR) {
+			b1 = *data++;
+			b2 = *data++;
+			b0 = *data++;
+		}
+
+		*dst++ = b0;
+		*dst++ = b1;
+		*dst++ = b2;
+	}
+	if (push) {
+		WS2811_show();
+	}
 }
 
-void WS2811_SetRawHexString(const char *s, int push) {
-    if (!ws2811Data.ready)
-        return;
+void WS2811_setAllPixels(uint8_t r, uint8_t g, uint8_t b) {
+	if (!ws2811Data.ready)
+		return;
+	
+	uint8_t b0, b1, b2;
 
-    char *dst = ws2811Data.buf;
-    // parse hex string like FFAABB0011 byte by byte
-    while (s[0] && s[1] && s[2] && s[3] && s[4] && s[5]) {
-        char b0, b1, b2;
-        char r, g, b;
-        r = hexbyte(s);
-        s+=2;
-        g = hexbyte(s);
-        s+=2;
-        b = hexbyte(s);
-        s+=2;
+	if (color_order == WS2811_COLOR_ORDER_RGB) {
+		b0 = r;
+		b1 = g;
+		b2 = b;
+	}
+	if (color_order == WS2811_COLOR_ORDER_RBG) {
+		b0 = r;
+		b1 = b;
+		b2 = g;
+	}
+	if (color_order == WS2811_COLOR_ORDER_BRG) {
+		b0 = b;
+		b1 = r;
+		b2 = g;
+	}
+	if (color_order == WS2811_COLOR_ORDER_BGR) {
+		b0 = b;
+		b1 = g;
+		b2 = r;
+	}
+	if (color_order == WS2811_COLOR_ORDER_GRB) {
+		b0 = g;
+		b1 = r;
+		b2 = b;
+	}
+	if (color_order == WS2811_COLOR_ORDER_GBR) {
+		b0 = g;
+		b1 = b;
+		b2 = r;
+	}
 
-        if (color_order == WS2811_COLOR_ORDER_RGB) {
-            b0 = r;
-            b1 = g;
-            b2 = b;
-        } else if (color_order == WS2811_COLOR_ORDER_RBG) {
-            b0 = r;
-            b1 = b;
-            b2 = g;
-        } else if (color_order == WS2811_COLOR_ORDER_BRG) {
-            b0 = b;
-            b1 = r;
-            b2 = g;
-        } else if (color_order == WS2811_COLOR_ORDER_BGR) {
-            b0 = b;
-            b1 = g;
-            b2 = r;
-        } else if (color_order == WS2811_COLOR_ORDER_GRB) {
-            b0 = g;
-            b1 = r;
-            b2 = b;
-        } else if (color_order == WS2811_COLOR_ORDER_GBR) {
-            b0 = g;
-            b1 = b;
-            b2 = r;
-        }
-
-        *dst++ = b0;
-        *dst++ = b1;
-        *dst++ = b2;
-    }
-    if (push) {
-        WS2811_Show();
-    }
+	for (int i = 0; i < pixel_count; i++) {
+		ws2811Data.buf[i * 3] = b0;
+		ws2811Data.buf[i * 3 + 1] = b1;
+		ws2811Data.buf[i * 3 + 2] = b2;
+	}
 }
 
-// WS2811_SetRaw bUpdate byteOfs HexData
+void WS2811_setRawHexString(int pixel_offset, const char *s, int push) {
+	if (!ws2811Data.ready)
+		return;
+
+	// every pixel is 3 bytes, so *3
+	uint8_t *dst = ws2811Data.buf + pixel_offset * 3;
+	// parse hex string like FFAABB0011 byte by byte
+	while (s[0] && s[1] && s[2] && s[3] && s[4] && s[5]) {
+		uint8_t b0, b1, b2;
+		uint8_t r, g, b;
+		r = hexbyte(s);
+		s+=2;
+		g = hexbyte(s);
+		s+=2;
+		b = hexbyte(s);
+		s+=2;
+
+		if (color_order == WS2811_COLOR_ORDER_RGB) {
+			b0 = r;
+			b1 = g;
+			b2 = b;
+		} else if (color_order == WS2811_COLOR_ORDER_RBG) {
+			b0 = r;
+			b1 = b;
+			b2 = g;
+		} else if (color_order == WS2811_COLOR_ORDER_BRG) {
+			b0 = b;
+			b1 = r;
+			b2 = g;
+		} else if (color_order == WS2811_COLOR_ORDER_BGR) {
+			b0 = b;
+			b1 = g;
+			b2 = r;
+		} else if (color_order == WS2811_COLOR_ORDER_GRB) {
+			b0 = g;
+			b1 = r;
+			b2 = b;
+		} else if (color_order == WS2811_COLOR_ORDER_GBR) {
+			b0 = g;
+			b1 = b;
+			b2 = r;
+		}
+
+		*dst++ = b0;
+		*dst++ = b1;
+		*dst++ = b2;
+	}
+	if (push) {
+		WS2811_show();
+	}
+}
+
+// WS2811_SetRaw bUpdate pixelOfs HexData
 // WS2811_SetRaw 1 0 FF000000FF000000FF
-commandResult_t WS2811_CMD_setRaw(const void *context, const char *cmd, const char *args, int flags) {
-    int ofs, bPush;
-    Tokenizer_TokenizeString(args, 0);
-    bPush = Tokenizer_GetArgInteger(0);
-    ofs = Tokenizer_GetArgInteger(1);
-    WS2811_SetRawHexString(Tokenizer_GetArg(2), bPush);
-    return CMD_RES_OK;
+commandResult_t WS2811_CMD_SetRaw(const void *context, const char *cmd, const char *args, int flags) {
+	int ofs, bPush;
+	Tokenizer_TokenizeString(args, 0);
+	bPush = Tokenizer_GetArgInteger(0);
+	ofs = Tokenizer_GetArgInteger(1);
+	WS2811_setRawHexString(ofs, Tokenizer_GetArg(2), bPush);
+	return CMD_RES_OK;
 }
 
 commandResult_t WS2811_CMD_SetPixel(const void *context, const char *cmd, const char *args, int flags) {
-    int pixel = 0;
-    const char *all = 0;
-    Tokenizer_TokenizeString(args, 0);
+	int pixel = 0;
+	const char *all = 0;
+	Tokenizer_TokenizeString(args, 0);
 
-    if (Tokenizer_GetArgsCount() != 4) {
-        ADDLOG_INFO(LOG_FEATURE_CMD, "Not Enough Arguments for init WS2811: Amount of LEDs missing");
-        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-    }
+	if (Tokenizer_GetArgsCount() != 4) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Not Enough Arguments for init WS2811: Amount of LEDs missing");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 
-    all = Tokenizer_GetArg(0);
-    if (*all == 'a') {
+	all = Tokenizer_GetArg(0);
+	if (*all == 'a') {
 
-    }
-    else {
-        pixel = Tokenizer_GetArgInteger(0);
-        all = 0;
-    }
-    byte r = (byte) Tokenizer_GetArgIntegerRange(1, 0, 255);
-    byte g = (byte) Tokenizer_GetArgIntegerRange(2, 0, 255);
-    byte b = (byte) Tokenizer_GetArgIntegerRange(3, 0, 255);
+	}
+	else {
+		pixel = Tokenizer_GetArgInteger(0);
+		all = 0;
+	}
+	uint8_t r = (uint8_t) Tokenizer_GetArgIntegerRange(1, 0, 255);
+	uint8_t g = (uint8_t) Tokenizer_GetArgIntegerRange(2, 0, 255);
+	uint8_t b = (uint8_t) Tokenizer_GetArgIntegerRange(3, 0, 255);
 
-    ADDLOG_INFO(LOG_FEATURE_CMD, "Set Pixel %i to R %i G %i B %i", pixel, r, g, b);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Set Pixel %i to R %i G %i B %i", pixel, r, g, b);
 
-    if (all) {
-        for (int i = 0; i < pixel_count; i++) {
-            WS2811_setPixel(i, r, g, b);
-        }
-    }
-    else {
-        WS2811_setPixel(pixel, r, g, b);
-    }
+	if (all) {
+		for (int i = 0; i < pixel_count; i++) {
+			WS2811_setPixel(i, r, g, b);
+		}
+	}
+	else {
+		WS2811_setPixel(pixel, r, g, b);
+	}
 
-    return CMD_RES_OK;
+	return CMD_RES_OK;
 }
 
-void WS2811_setMultiplePixel(int pixel, const char *data, bool push) {
-    // Return if driver is not loaded
-    if (!ws2811Data.ready)
-        return;
+commandResult_t WS2811_CMD_Init(const void *context, const char *cmd, const char *args, int flags) {
 
-    // Check max pixel
-    if (pixel > pixel_count)
-        pixel = pixel_count;
-    
-    byte *dst = ws2811Data.buf;
+	Tokenizer_TokenizeString(args, 0);
 
-    // Iterate over pixel
-    for (int i = 0; i < pixel; i++) {
-        byte b0, b1, b2;
-        if (color_order == WS2811_COLOR_ORDER_RGB) {
-            b0 = *data++;
-            b1 = *data++;
-            b2 = *data++;
-        }
-        if (color_order == WS2811_COLOR_ORDER_RBG) {
-            b0 = *data++;
-            b2 = *data++;
-            b1 = *data++;
-        }
-        if (color_order == WS2811_COLOR_ORDER_BRG) {
-            b2 = *data++;
-            b0 = *data++;
-            b1 = *data++;
-        }
-        if (color_order == WS2811_COLOR_ORDER_BGR) {
-            b2 = *data++;
-            b1 = *data++;
-            b0 = *data++;
-        }
-        if (color_order == WS2811_COLOR_ORDER_GRB) {
-            b1 = *data++;
-            b0 = *data++;
-            b2 = *data++;
-        }
-        if (color_order == WS2811_COLOR_ORDER_GBR) {
-            b1 = *data++;
-            b2 = *data++;
-            b0 = *data++;
-        }
+	if (Tokenizer_GetArgsCount() == 0) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Not Enough Arguments for init WS2811: Amount of LEDs missing");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 
-        *dst++ = b0;
-        *dst++ = b1;
-        *dst++ = b2;
-    }
-    if (push) {
-        WS2811_Show();
-    }
+	// First arg: number of pixel to address
+	pixel_count = Tokenizer_GetArgIntegerRange(0, 0, 255);
+
+	// Second arg (optional, default "RGB"): pixel format of "RGB" or "GRB"
+	if (Tokenizer_GetArgsCount() > 1) {
+		const char *format = Tokenizer_GetArg(1);
+		if (!stricmp(format, "RGB")) {
+			color_order = WS2811_COLOR_ORDER_RGB;
+		}
+		else if (!stricmp(format, "RBG")) {
+			color_order = WS2811_COLOR_ORDER_RBG;
+		}
+		else if (!stricmp(format, "BRG")) {
+			color_order = WS2811_COLOR_ORDER_BRG;
+		}
+		else if (!stricmp(format, "BGR")) {
+			color_order = WS2811_COLOR_ORDER_BGR;
+		}
+		else if (!stricmp(format, "GRB")) {
+			color_order = WS2811_COLOR_ORDER_GRB;
+		}
+		else if (!stricmp(format, "GBR")) {
+			color_order = WS2811_COLOR_ORDER_GBR;
+		}
+		else {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "Invalid color format, should be combination of R,G,B", format);
+			return CMD_RES_ERROR;
+		}
+	}
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Register driver with %i LEDs", pixel_count);
+
+	WS2811_initAll();
+
+	return CMD_RES_OK;
 }
 
-commandResult_t WS2811_InitForLEDCount(const void *context, const char *cmd, const char *args, int flags) {
-
-    Tokenizer_TokenizeString(args, 0);
-
-    if (Tokenizer_GetArgsCount() == 0) {
-        ADDLOG_INFO(LOG_FEATURE_CMD, "Not Enough Arguments for init WS2811: Amount of LEDs missing");
-        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-    }
-
-    // First arg: number of pixel to address
-    pixel_count = Tokenizer_GetArgIntegerRange(0, 0, 255);
-
-    // Second arg (optional, default "RGB"): pixel format of "RGB" or "GRB"
-    if (Tokenizer_GetArgsCount() > 1) {
-        const char *format = Tokenizer_GetArg(1);
-        if (!stricmp(format, "RGB")) {
-            color_order = WS2811_COLOR_ORDER_RGB;
-        }
-        else if (!stricmp(format, "RBG")) {
-            color_order = WS2811_COLOR_ORDER_RBG;
-        }
-        else if (!stricmp(format, "BRG")) {
-            color_order = WS2811_COLOR_ORDER_BRG;
-        }
-        else if (!stricmp(format, "BGR")) {
-            color_order = WS2811_COLOR_ORDER_BGR;
-        }
-        else if (!stricmp(format, "GRB")) {
-            color_order = WS2811_COLOR_ORDER_GRB;
-        }
-        else if (!stricmp(format, "GBR")) {
-            color_order = WS2811_COLOR_ORDER_GBR;
-        }
-        else {
-            ADDLOG_INFO(LOG_FEATURE_CMD, "Invalid color format, should be combination of R,G,B", format);
-            return CMD_RES_ERROR;
-        }
-    }
-
-    ADDLOG_INFO(LOG_FEATURE_CMD, "Register driver with %i LEDs", pixel_count);
-
-    WS2811_InitAll(WS2811_DATA_PIN, WS2811_BAUD_RATE);
-
-    return CMD_RES_OK;
-}
-
-void WS2811_Show() {
-    WS2811_SendData(ws2811Data.buf, pixel_count * 3);
-}
-
-commandResult_t WS2811_CMD_Start(const void *context, const char *cmd, const char *args, int flags) {
-    WS2811_Show();
-    return CMD_RES_OK;
+static commandResult_t WS2811_CMD_Start(const void *context, const char *cmd, const char *args, int flags) {
+	if (!ws2811Data.ready)
+		return CMD_RES_ERROR;
+	WS2811_show();
+	return CMD_RES_OK;
 }
 
 void WS2811_IRQHandler(void)
 {
-    hal_ws2811_set_data(WS2811_BASE, 11);
+	hal_ws2811_set_data(WS2811_BASE, 11);
 }
 
 void WS2811_Init() {
-    CMD_RegisterCommand("WS2811_Init", WS2811_InitForLEDCount, NULL);
-    CMD_RegisterCommand("WS2811_SetPixel", WS2811_CMD_SetPixel, NULL);
-    CMD_RegisterCommand("WS2811_SetRaw", WS2811_CMD_setRaw, NULL);
-    CMD_RegisterCommand("WS2811_Show", WS2811_CMD_Start, NULL);
+	ws2811Data.pin_data = PIN_FindPinIndexForRole(IOR_WS2811_DIN, WS2811_DEFAULT_DATA_PIN);
+
+	//cmddetail:{"name":"WS2811_Init","args":"[NumberOfLEDs][ColorOrder]",
+	//cmddetail:"descr":"This will setup LN882H WS2811 LED driver for a strip with given number of LEDs. You can optionally set the color order with either RGB, RBG, BRG, BGB, GRB or GBR (default RGB).",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_ws2811.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("WS2811_Init", WS2811_CMD_Init, NULL);
+	//cmddetail:{"name":"WS2811_Start","args":"",
+	//cmddetail:"descr":"This will send the currently set data to the strip.",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_ws2811.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("WS2811_Start", WS2811_CMD_Start, NULL);
+	//cmddetail:{"name":"WS2811_SetPixel","args":"[index/all] [R] [G] [B]",
+	//cmddetail:"descr":"Sets a pixel for LN882H WS2811 LED strip. Index can be a number or 'all' keyword to set all. Then, 3 integer values for R, G and B.",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_ws2811.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("WS2811_SetPixel", WS2811_CMD_SetPixel, NULL);
+	//cmddetail:{"name":"WS2811_SetRaw","args":"[bUpdate] [pixelOfs] [HexData]",
+	//cmddetail:"descr":"Sets the raw data bytes (modified by color order setting) for the LN882H WS2811 driver at the given offset. Hex data should be as a hex string, for example, FF00AA, etc. The bUpdate, if set to 1, will run WS2811_Start automatically after setting data. pixelOfs is the starting pixel index.",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_ws2811.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("WS2811_SetRaw", WS2811_CMD_SetRaw, NULL);
 }
 
 #endif
