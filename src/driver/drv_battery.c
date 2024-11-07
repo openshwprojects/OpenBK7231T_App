@@ -38,6 +38,7 @@ static void Batt_Measure() {
 		//channel_rel = g_cfg.pins.channels[g_pin_rel];
 		//}
 	}
+	// maybe move init code to Batt_Init?
 	HAL_ADC_Init(g_pin_adc);
 	g_battlevel = HAL_ADC_Read(g_pin_adc);
 	if (g_battlevel < 1024) {
