@@ -1000,6 +1000,22 @@ typedef enum channelType_e {
 #define PLATFORM_GPIO_MAX 44
 #elif PLATFORM_LN882H
 #define PLATFORM_GPIO_MAX 26
+#elif PLATFORM_ESPIDF
+#ifdef CONFIG_IDF_TARGET_ESP32C3
+#define PLATFORM_GPIO_MAX 22
+#elif CONFIG_IDF_TARGET_ESP32C2
+#define PLATFORM_GPIO_MAX 21
+#elif CONFIG_IDF_TARGET_ESP32S2
+#define PLATFORM_GPIO_MAX 47
+#elif CONFIG_IDF_TARGET_ESP32S3
+#define PLATFORM_GPIO_MAX 49
+#elif CONFIG_IDF_TARGET_ESP32C6
+#define PLATFORM_GPIO_MAX 31
+#elif CONFIG_IDF_TARGET_ESP32
+#define PLATFORM_GPIO_MAX 40
+#else
+#define PLATFORM_GPIO_MAX 0
+#endif
 #else
 #define PLATFORM_GPIO_MAX 29
 #endif
@@ -1040,6 +1056,23 @@ typedef struct pinsState_s {
 	// buttons, so button can toggle one relay on single click
 	// and other relay on double click
 	byte channels2[48];
+	// This single field above, is indexed by CHANNEL INDEX
+	// (not by pin index)
+	byte channelTypes[CHANNEL_MAX];
+} pinsState_t;
+
+#elif PLATFORM_ESPIDF
+
+typedef struct pinsState_s
+{
+	// All above values are indexed by physical pin index
+	// (so we assume we have maximum of 32 pins)
+	byte roles[50];
+	byte channels[50];
+	// extra channels array - this is needed for
+	// buttons, so button can toggle one relay on single click
+	// and other relay on double click
+	byte channels2[50];
 	// This single field above, is indexed by CHANNEL INDEX
 	// (not by pin index)
 	byte channelTypes[CHANNEL_MAX];
@@ -1271,6 +1304,8 @@ typedef struct mainConfig_s {
 	int loggerFlags;
 #if PLATFORM_W800
 	byte unusedSectorAB[51];
+#elif PLATFORM_ESPIDF
+	byte unusedSectorAB[43];
 #else    
 	byte unusedSectorAB[99];
 #endif    
