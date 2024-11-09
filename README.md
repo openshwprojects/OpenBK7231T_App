@@ -1,6 +1,7 @@
 # Fork intention
-Fork from "official" OpenBK7231T/OpenBeken to experiment with improvement of home assissten auto detection feature by implementing more precise value templates (val_tmp)
+Fork from "official" OpenBK7231T/OpenBeken to experiment with improvement of home assistant auto detection feature by implementing more precise value templates (val_tmp)
 Use case: TuYaMCU based Thermostat, with temperature devider /2 instead of /10
+Edit: it seems, that this functionality has been already implemented, but buggy.
 
 # Introduction
 
