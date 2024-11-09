@@ -1,7 +1,8 @@
-# Introduction
-
+# Fork intention
 Fork from "official" OpenBK7231T/OpenBeken to experiment with improvement of home assissten auto detection feature by implementing more precise value templates (val_tmp)
 Use case: TuYaMCU based Thermostat, with temperature devider /2 instead of /10
+
+# Introduction
 
 OpenBK7231T/OpenBeken is a Tasmota/Esphome replacement for new Tuya modules featuring MQTT and Home Assistant compatibility.
 This repository is named "OpenBK7231T_App", but now it's a multiplatform app, supporting build for multiple separate chips:
