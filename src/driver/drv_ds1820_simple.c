@@ -9,11 +9,21 @@
 #define interrupts() taskEXIT_CRITICAL()
 #endif
 
+// temperature value meaning "undefined"
+// -12700 ~ -127.00° 
+#define DSUNDEFTEMP -12700
+// timeout in seconds for unsudccessfull readings of sensor
+// temperature will be set "undefined" after this time
+// 300 seconds = 5 Minutes
+#define DSTIMEOUT 30
+
+
+
 static uint8_t dsread = 0;
 static int Pin;
-static int t = -127;
+static int t = DSUNDEFTEMP;
 static int errcount = 0;
-static int lastconv; // secondsElapsed on last successfull reading
+static int lastconv=0; // secondsElapsed on last successfull reading
 static uint8_t ds18_family = 0;
 static int ds18_conversionPeriod = 0;
 
@@ -360,7 +370,9 @@ void DS1820_driver_Init()
 
 void DS1820_AppendInformationToHTTPIndexPage(http_request_t* request)
 {
-	hprintf255(request, "<h5>DS1820 Temperature: %.2f C (read %i secs ago)</h5>", (float)t / 100, g_secondsElapsed - lastconv);
+	hprintf255(request, "<h5>DS1820 Temperature: ");
+	if (t  != DSUNDEFTEMP) 	hprintf255(request, "%.2f C (read %i secs ago)</h5>", (float)t / 100, g_secondsElapsed - lastconv);
+	else  	hprintf255(request, "-</h5>");
 }
 
 int DS1820_DiscoverFamily()
@@ -408,6 +420,10 @@ void DS1820_OnEverySecond()
 	// for now just find the pin used
 	Pin = PIN_FindPinIndexForRole(IOR_DS1820_IO, 99);
 	uint8_t scratchpad[9], crc;
+	if ( (t != DSUNDEFTEMP) && lastconv && (g_secondsElapsed - lastconv > DSTIMEOUT)) { 
+		t = DSUNDEFTEMP;
+		CHANNEL_Set(g_cfg.pins.channels[Pin], t, CHANNEL_SET_FLAG_SILENT);
+	}
 	if(Pin != 99)
 	{
 		// only if pin is set
