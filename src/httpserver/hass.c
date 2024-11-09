@@ -507,9 +507,7 @@ HassDeviceInfo* hass_init_energy_sensor_device_info(int index) {
 // {{ float(value)*0.1 }} for value=12 give 1.2000000000000002, using round() to limit the decimal places
 // 2023 10 19 - it is not a perfect solution, it's better to use:
 // {{ '%0.2f'|format(states('sensor.varasto2_osram_temp')|float + 0.7) }}
-//
 char *hass_generate_multiplyAndRound_template(int decimalPlacesForRounding, int decimalPointOffset, int divider) {
-#if 1
 	char tmp[8];
 	int i;
 
@@ -522,28 +520,11 @@ char *hass_generate_multiplyAndRound_template(int decimalPlacesForRounding, int 
 		for (i = 1; i < decimalPointOffset; i++) {
 			strcat(g_hassBuffer, "0");
 		}
-		strcat(g_hassBuffer, "1");
+		sprintf(tmp, "%i", divider);
+		strcat(g_hassBuffer, tmp);
 	}
 	strcat(g_hassBuffer, ") }}");
-#else
-	char tmp[8];
-	int i;
 
-	strcpy(g_hassBuffer, "{{ float(value)*");
-	if (decimalPointOffset != 0) {
-		strcat(g_hassBuffer, "0.");
-		for (i = 1; i < decimalPointOffset; i++) {
-			strcat(g_hassBuffer, "0");
-		}
-	}
-	// usually it's 1
-	sprintf(tmp, "%i", divider);
-	strcat(g_hassBuffer, tmp);
-	strcat(g_hassBuffer, "|round(");
-	sprintf(tmp, "%i", decimalPlacesForRounding);
-	strcat(g_hassBuffer, tmp);
-	strcat(g_hassBuffer, ") }}");
-#endif
 	return g_hassBuffer;
 }
 
