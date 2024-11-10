@@ -370,7 +370,7 @@ void DS1820_driver_Init()
 
 void DS1820_AppendInformationToHTTPIndexPage(http_request_t* request)
 {
-	hprintf255(request, "<h5>DS18%s20 Temperature: ", family == 0x28 ? "B" : "20/DS18S20");
+	hprintf255(request, "<h5>DS18%s20 Temperature: ", ds18_family == 0x28 ? "B" : "20/DS18S20");
 	if (t  != DSUNDEFTEMP) 	hprintf255(request, "%.2f C (read %i secs ago)</h5>", (float)t / 100, g_secondsElapsed - lastconv);
 	else  	hprintf255(request, "-</h5>");
 }
