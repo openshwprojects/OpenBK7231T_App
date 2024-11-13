@@ -2508,6 +2508,8 @@ int http_fn_cfg(http_request_t* request) {
 			<input type=\"submit\" value=\"Set device clock to browser time\">\
 			</form>");
 #endif
+
+
 #if 0
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
 	{
