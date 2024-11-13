@@ -622,7 +622,7 @@ int channelSet(obk_mqtt_request_t* request) {
 	//addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelSet channel %i", channel);
 
 	// if channel out of range, stop here.
-	if ((channel < 0) || (channel > 32)) {
+	if ((channel < 0) || (channel > CHANNEL_MAX)) {
 		return 0;
 	}
 

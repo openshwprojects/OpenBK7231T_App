@@ -598,6 +598,43 @@ void Test_MQTT_Topic_With_Slashes() {
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/kitchen/mySwitch1/1/get", "0", false);
 	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
 	SIM_ClearMQTTHistory();
+
+	// try channel 10
+	PIN_SetPinChannelForPinIndex(24, 10);
+
+	SIM_SendFakeMQTTRawChannelSet(10, "1");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/kitchen/mySwitch1/10/get", "1", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	// try channel 39
+	PIN_SetPinChannelForPinIndex(24, 39);
+
+	SIM_SendFakeMQTTRawChannelSet(39, "1");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/kitchen/mySwitch1/39/get", "1", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	int last = CHANNEL_MAX - 1;
+	char tmp[512];
+	sprintf(tmp, "obk/kitchen/mySwitch1/%i/get", last);
+	// try channel last
+	PIN_SetPinChannelForPinIndex(24, last);
+
+	SIM_SendFakeMQTTRawChannelSet(last, "1");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR(tmp, "1", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SIM_SendFakeMQTTRawChannelSet(last, "0");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR(tmp, "0", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SIM_SendFakeMQTTRawChannelSet(last, "123");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR(tmp, "123", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
 }
 
 void Test_MQTT_Topic_With_Slash() {
