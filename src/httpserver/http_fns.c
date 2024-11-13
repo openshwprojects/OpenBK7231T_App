@@ -2502,14 +2502,6 @@ int http_fn_cfg(http_request_t* request) {
 	postFormAction(request, "ota", "OTA (update software by WiFi)");
 	postFormAction(request, "cmd_tool", "Execute Custom Command");
 	//postFormAction(request, "flash_read_tool", "Flash Read Tool");
-	postFormAction(request, "startup_command", "Change Startup Command Text");
-#if ENABLE_LOCAL_CLOCK
-	poststr(request, "<form action=\"javascript:location.href=PoorMansNTP() \">\
-			<input type=\"submit\" value=\"Set device clock to browser time\">\
-			</form>");
-#endif
-
-
 #if 0
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
 	{
