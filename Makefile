@@ -226,6 +226,17 @@ endif
 		sh platforms/ESP-IDF/pre_build.sh; \
 	else echo "prebuild for ESP-IDF not found ... "; \
 	fi
+	
+prebuild_ESP8266: berry
+	#git submodule update --init --recursive --depth=1 sdk/ESP8266_RTOS_SDK
+	-rm platforms/ESP8266/sdkconfig
+	-rm platforms/ESP8266/partitions.csv
+	cp platforms/ESP8266/partitions-2mb.csv platforms/ESP8266/partitions.csv
+	@if [ -e platforms/ESP8266/pre_build.sh ]; then \
+		echo "prebuild found for ESP8266"; \
+		sh platforms/ESP8266/pre_build.sh; \
+	else echo "prebuild for ESP8266 not found ... "; \
+	fi
 
 prebuild_OpenTR6260: berry
 	git submodule update --init --recursive --depth=1 sdk/OpenTR6260
@@ -486,6 +497,18 @@ OpenESP32S3: prebuild_ESPIDF
 	mkdir -p output/$(APP_VERSION)
 	esptool.py -c esp32s3 merge_bin -o output/$(APP_VERSION)/OpenESP32S3_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x0 ./platforms/ESP-IDF/build-s3/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-s3/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-s3/OpenBeken.bin
 	cp ./platforms/ESP-IDF/build-s3/OpenBeken.bin output/$(APP_VERSION)/OpenESP32S3_$(APP_VERSION).img
+
+.PHONY: OpenESP8266
+OpenESP8266: prebuild_ESP8266
+	APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake platforms/ESP8266 -B platforms/ESP8266/build
+	APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake --build ./platforms/ESP8266/build -j $(shell nproc)
+	mkdir -p output/$(APP_VERSION)
+	python3 -m esptool -c esp8266 merge_bin -o output/$(APP_VERSION)/OpenESP8266_2MB_$(APP_VERSION).factory.bin --flash_mode dio --flash_size 2MB 0x0 ./platforms/ESP8266/build/bootloader/bootloader.bin 0x8000 ./platforms/ESP8266/build/partition_table/partition-table.bin 0x10000 ./platforms/ESP8266/build/OpenBeken.bin
+	-rm platforms/ESP-IDF/partitions.csv
+	cp platforms/ESP8266/partitions-1mb.csv platforms/ESP8266/partitions.csv
+	cd platforms/ESP8266/ && idf.py partition_table
+	python3 -m esptool -c esp8266 merge_bin -o output/$(APP_VERSION)/OpenESP8266_1MB_$(APP_VERSION).factory.bin --flash_mode dio --flash_size 2MB 0x0 ./platforms/ESP8266/build/bootloader/bootloader.bin 0x8000 ./platforms/ESP8266/build/partition_table/partition-table.bin 0x10000 ./platforms/ESP8266/build/OpenBeken.bin
+	cp ./platforms/ESP8266/build/OpenBeken.bin output/$(APP_VERSION)/OpenESP8266_$(APP_VERSION).img
 	
 .PHONY: OpenTR6260
 OpenTR6260: prebuild_OpenTR6260

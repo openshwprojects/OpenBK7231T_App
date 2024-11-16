@@ -1,4 +1,4 @@
-#ifdef PLATFORM_ESPIDF
+#if PLATFORM_ESPIDF || PLATFORM_ESP8266
 
 #include "../../new_cfg.h"
 #include "../../logging/logging.h"
@@ -10,45 +10,73 @@
 #include "esp_system.h"
 #include "esp_wifi.h"
 #include "esp_event.h"
-#include "esp_mac.h"
 #include "esp_log.h"
 #include "esp_netif.h"
-#include "esp_netif_net_stack.h"
 #include "lwip/err.h"
 #include "lwip/sys.h"
+#include "dhcpserver/dhcpserver.h"
+
+#if PLATFORM_ESPIDF
+#include "esp_mac.h"
+#include "esp_netif_net_stack.h"
+static esp_netif_t* sta_netif = NULL;
+static esp_netif_t* ap_netif = NULL;
+#else
+#include "tcpip_adapter.h"
+#define ESP_MAC_BASE ESP_MAC_WIFI_STA
+#define esp_netif_ip_info_t tcpip_adapter_ip_info_t
+#define esp_event_handler_instance_t esp_event_handler_t
+#define esp_event_handler_instance_register(a,b,c,d,e) esp_event_handler_register(a,b,c,e)
+#define esp_netif_t tcpip_adapter_if_t
+#define esp_netif_set_hostname tcpip_adapter_set_hostname
+#define esp_netif_get_ip_info tcpip_adapter_get_ip_info
+#define esp_netif_create_default_wifi_ap() TCPIP_ADAPTER_IF_AP
+#define esp_netif_create_default_wifi_sta() TCPIP_ADAPTER_IF_STA
+#define esp_netif_destroy(...)
+static tcpip_adapter_if_t sta_netif = TCPIP_ADAPTER_IF_STA;
+static tcpip_adapter_if_t ap_netif = TCPIP_ADAPTER_IF_AP;
+#endif
 
 static void (*g_wifiStatusCallback)(int code);
 static int g_bOpenAccessPointMode = 0;
 static esp_netif_ip_info_t g_ip_info;
-static esp_netif_t* sta_netif = NULL;
-static esp_netif_t* ap_netif = NULL;
-static char g_ip[16];
-static char g_gw[16];
-static char g_ms[16];
+//static char g_ip[16];
+//static char g_gw[16];
+//static char g_ms[16];
+esp_event_handler_instance_t instance_any_id, instance_got_ip;
+bool handlers_registered = false;
 
 // This must return correct IP for both SOFT_AP and STATION modes,
 // because, for example, javascript control panel requires it
 const char* HAL_GetMyIPString()
 {
-	sprintf(g_ip, IPSTR, IP2STR(&g_ip_info.ip));
-	return g_ip;
+	return ipaddr_ntoa(&g_ip_info.ip);
+	//sprintf(g_ip, IPSTR, IP2STR(&g_ip_info.ip));
+	//return g_ip;
 }
 
 const char* HAL_GetMyGatewayString()
 {
-	sprintf(g_gw, IPSTR, IP2STR(&g_ip_info.gw));
-	return g_gw;
+	return ipaddr_ntoa(&g_ip_info.gw);
+	//sprintf(g_gw, IPSTR, IP2STR(&g_ip_info.gw));
+	//return g_gw;
 }
 
 const char* HAL_GetMyDNSString()
 {
+#if PLATFORM_ESP8266
+	ip4_addr_t dns = dhcps_dns_getserver();
+	return ipaddr_ntoa(&dns);
+#else
 	return "error";
+#endif
 }
 
 const char* HAL_GetMyMaskString()
 {
-	sprintf(g_ms, IPSTR, IP2STR(&g_ip_info.netmask));
-	return g_ms;
+	return ipaddr_ntoa(&g_ip_info.netmask);
+	//sprintf(g_ms, IPSTR, IP2STR(&g_ip_info.netmask));
+	//return g_ms;
 }
 
 
@@ -65,6 +93,13 @@ void WiFI_GetMacAddress(char* mac)
 const char* HAL_GetMACStr(char* macstr)
 {
 	uint8_t mac[6];
+#if PLATFORM_ESP8266
+	if(esp_base_mac_addr_get(&mac) == ESP_ERR_INVALID_MAC)
+	{
+		esp_read_mac(mac, ESP_MAC_BASE);
+		esp_base_mac_addr_set(&mac);
+	}
+#endif
 	esp_read_mac(mac, ESP_MAC_BASE);
 	sprintf(macstr, MACSTR, MAC2STR(mac));
 	return macstr;
@@ -135,7 +170,11 @@ void event_handler(void* arg, esp_event_base_t event_base,
 
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
 {
+#if PLATFORM_ESPIDF
 	if(sta_netif != NULL)
+#else
+	if(0)
+#endif
 	{
 		esp_wifi_stop();
 		esp_netif_destroy(sta_netif);
@@ -144,18 +183,20 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 	}
 	else
 	{
-		esp_event_handler_instance_t instance_any_id, instance_got_ip;
-
-		esp_event_handler_instance_register(WIFI_EVENT,
-			ESP_EVENT_ANY_ID,
-			&event_handler,
-			NULL,
-			&instance_any_id);
-		esp_event_handler_instance_register(IP_EVENT,
-			IP_EVENT_STA_GOT_IP,
-			&event_handler,
-			NULL,
-			&instance_got_ip);
+		if(!handlers_registered)
+		{
+			esp_event_handler_instance_register(WIFI_EVENT,
+				ESP_EVENT_ANY_ID,
+				&event_handler,
+				NULL,
+				&instance_any_id);
+			esp_event_handler_instance_register(IP_EVENT,
+				IP_EVENT_STA_GOT_IP,
+				&event_handler,
+				NULL,
+				&instance_got_ip);
+			handlers_registered = true;
+		}
 	}
 
 	sta_netif = esp_netif_create_default_wifi_sta();
@@ -173,12 +214,13 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 		strncpy((char*)wifi_config.sta.password, (char*)connect_key, 64);
 	}
 
-	esp_netif_set_hostname(sta_netif, CFG_GetDeviceName());
 
 	esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
 	esp_wifi_set_mode(WIFI_MODE_STA);
 
 	esp_wifi_start();
+
+	esp_netif_set_hostname(sta_netif, CFG_GetDeviceName());
 }
 
 void HAL_DisconnectFromWifi()
@@ -190,12 +232,10 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
 	g_bOpenAccessPointMode = 1;
 	ap_netif = esp_netif_create_default_wifi_ap();
-	esp_netif_create_default_wifi_sta();
+	sta_netif = esp_netif_create_default_wifi_sta();
 	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
 	cfg.nvs_enable = false;
 	esp_wifi_init(&cfg);
-
-	esp_event_handler_instance_t instance_any_id;
 
 	esp_event_handler_instance_register(WIFI_EVENT,
 		ESP_EVENT_ANY_ID,
@@ -211,10 +251,12 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 			.channel = 1,
 			.max_connection = 1,
 			.authmode = WIFI_AUTH_OPEN,
+#if !PLATFORM_ESP8266
 			.pmf_cfg =
 			{
 				.required = false,
 			},
+#endif
 		},
 	};
 

@@ -1048,6 +1048,8 @@ typedef enum channelType_e {
 #else
 #define PLATFORM_GPIO_MAX 0
 #endif
+#elif PLATFORM_ESP8266
+#define PLATFORM_GPIO_MAX 10
 #elif PLATFORM_TR6260
 #define PLATFORM_GPIO_MAX 25
 #elif PLATFORM_RTL87X0C

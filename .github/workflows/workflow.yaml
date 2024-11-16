@@ -319,6 +319,59 @@ jobs:
             output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.img
             output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.factory.bin
           if-no-files-found: warn
+          
+  build_8266:
+    name: Build ESP8266
+    needs: refs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    container:
+      image: coatldev/six:latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: OpenESP8266
+            variant: default
+    steps:
+      - name: Source checkout
+        uses: actions/checkout@v4
+      - name: SDK checkout
+        uses: actions/checkout@v4
+        with:
+          repository: espressif/ESP8266_RTOS_SDK
+          path: sdk/ESP8266_RTOS_SDK
+          ref: release/v3.4
+          submodules: recursive
+          fetch-tags: true
+          fetch-depth: '200'
+      - name: Install dependencies
+        run: |
+          apt-get update && apt-get -y install cmake
+          pip2 install virtualenv
+          pip2 install esptool
+          patch -p1 -d sdk/ESP8266_RTOS_SDK < platforms/ESP8266/sdk.patch
+          python2 -m pip install --user -r sdk/ESP8266_RTOS_SDK/requirements.txt
+          python3 -m pip install esptool
+      - name: Run make
+        run: |
+          cd sdk/ESP8266_RTOS_SDK
+          ./install.sh > /dev/null
+          . ./export.sh
+          . ./add_path.sh
+          cd ../..
+          make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }}
+      - name: Save build assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_${{ matrix.platform }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}
+          path: |
+            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.img
+            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_2MB_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.factory.bin
+            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_1MB_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.factory.bin
+          if-no-files-found: warn
 
   build_beken:
     name: Build beken alt

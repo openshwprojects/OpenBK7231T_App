@@ -164,6 +164,11 @@ typedef long BaseType_t;
 #define DEVICENAME_PREFIX_SHORT "ecr6600"
 #define PLATFORM_MCU_NAME "ECR6600"
 #define MANUFACTURER "ESWIN"
+#elif PLATFORM_ESP8266
+#define DEVICENAME_PREFIX_FULL "OpenESP8266"
+#define DEVICENAME_PREFIX_SHORT "esp8266"
+#define PLATFORM_MCU_NAME "ESP8266"
+#define MANUFACTURER "Espressif"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -215,6 +220,8 @@ This platform is not supported, error!
 #define USER_SW_VER "BK7252N_Test"
 #elif PLATFORM_ECR6600
 #define USER_SW_VER "ECR6600_Test"
+#elif PLATFORM_ESP8266
+#define USER_SW_VER "ESP8266_Test"
 #else
 #warning "USER_SW_VER undefined"
 #define USER_SW_VER "unknown"
@@ -547,7 +554,7 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define OBK_OTA_EXTENSION		".bin"
 #define OBK_OTA_NAME_EXTENSION	"_OTA"
 
-#elif PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 
 #include <stdbool.h>
 #include <arch/sys_arch.h>
@@ -590,6 +597,10 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define UINT32 uint32_t
 
 #define OBK_OTA_EXTENSION ".img"
+
+#if PLATFORM_ESP8266
+#define xPortGetFreeHeapSize() esp_get_free_heap_size()
+#endif
 
 #elif PLATFORM_TR6260
 
@@ -876,7 +887,8 @@ int strcpy_safe_checkForChanges(char *tg, const char *src, int tgMaxLen);
 void urldecode2_safe(char *dst, const char *srcin, int maxDstLen);
 int strIsInteger(const char *s);
 
-#if !defined(PLATFORM_ESPIDF) && !defined(PLATFORM_TR6260) && !defined(PLATFORM_ECR6600) && !defined(PLATFORM_BL602)
+#if !defined(PLATFORM_ESPIDF) && !defined(PLATFORM_TR6260) && !defined(PLATFORM_ECR6600) && !defined(PLATFORM_BL602) && \
+	!defined(PLATFORM_ESP8266)
 
 const char* strcasestr(const char* str1, const char* str2);
 #endif
@@ -910,7 +922,7 @@ int LWIP_GetMaxSockets();
 int LWIP_GetActiveSockets();
 
 #ifndef LINUX
-#ifndef PLATFORM_ESPIDF
+#if !PLATFORM_ESPIDF && !PLATFORM_ESP8266
 //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 void usleep(int r);
 #endif

@@ -38,7 +38,7 @@ uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
 #include "hal/hal_flash.h"
 #include "flash_partition_table.h"
 
-#elif PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 
 #include "esp_system.h"
 #include "esp_ota_ops.h"
@@ -48,8 +48,16 @@ uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
 #include "nvs.h"
 #include "nvs_flash.h"
 #include "esp_wifi.h"
-#include "esp_pm.h"
+#if PLATFORM_ESPIDF
 #include "esp_flash.h"
+#include "esp_pm.h"
+#else
+#include "esp_image_format.h"
+#include "spi_flash.h"
+#define esp_flash_read(a,b,c,d) spi_flash_read(c,b,d)
+#define OTA_WITH_SEQUENTIAL_WRITES (fsize > 0xE0000 ? 0xE0000 : fsize)
+#define esp_ota_abort esp_ota_end
+#endif
 
 #elif PLATFORM_REALTEK
 
@@ -309,7 +317,7 @@ static int http_rest_post(http_request_t* request) {
 		return http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_LN882H
 		return http_rest_post_flash(request, -1, -1);
-#elif PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 		return http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_REALTEK
 		return http_rest_post_flash(request, 0, -1);
@@ -2141,7 +2149,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	}
 
 
-#elif PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 
 	ADDLOG_DEBUG(LOG_FEATURE_OTA, "Ota start!\r\n");
 	esp_err_t err;
@@ -2197,7 +2205,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 			return -1;
 		}
 
-		ADDLOG_DEBUG(LOG_FEATURE_OTA, "OTA in progress: %.1f%%", (100 - ((float)towrite / fsize) * 100));
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Writelen %i at %i", writelen, total);
 		total += writelen;
 		startaddr += writelen;
 		towrite -= writelen;
@@ -3289,7 +3297,7 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 		res = tls_fls_read(startaddr, (uint8_t*)buffer, readlen);
 #elif PLATFORM_LN882H
 		res = hal_flash_read(startaddr, readlen, (uint8_t *)buffer);
-#elif PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 		res = esp_flash_read(NULL, (void*)buffer, startaddr, readlen);
 #elif PLATFORM_TR6260
 		res = hal_spiflash_read(startaddr, (uint8_t*)buffer, readlen);
