@@ -420,9 +420,11 @@ void DS1820_OnEverySecond()
 	// for now just find the pin used
 	Pin = PIN_FindPinIndexForRole(IOR_DS1820_IO, 99);
 	uint8_t scratchpad[9], crc;
+	// handle reading timout - set local temp to "UNDEF" value ...
 	if ( (t != DSUNDEFTEMP) && lastconv && (g_secondsElapsed - lastconv > DSTIMEOUT)) { 
 		t = DSUNDEFTEMP;
-		CHANNEL_Set(g_cfg.pins.channels[Pin], t, CHANNEL_SET_FLAG_SILENT);
+		// .. but don't publish this value - so value can "time out"
+		// CHANNEL_Set(g_cfg.pins.channels[Pin], t, CHANNEL_SET_FLAG_SILENT);
 	}
 	if(Pin != 99)
 	{
