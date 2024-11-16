@@ -27,6 +27,9 @@ int NTP_PrintEventList();
 int NTP_GetEventTime(int id);
 int NTP_RemoveClockEvent(int id);
 int NTP_ClearEvents();
+#if ENABLE_NTP_DST
+int Time_IsDST();
+#endif
 
 extern time_t g_ntpTime;
 extern struct SUN_DATA {  /* sunrise / sunset globals */

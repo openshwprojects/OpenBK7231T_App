@@ -22,6 +22,12 @@ extern void NTP_CalculateSunrise(byte *outHour, byte *outMinute);
 extern void NTP_CalculateSunset(byte *outHour, byte *outMinute);
 #endif
 
+#if ENABLE_NTP_DST
+static uint32_t Start_DST_epoch=0 , End_DST_epoch=0;
+static uint8_t nthWeekEnd, monthEnd, dayEnd, hourEnd, nthWeekStart, monthStart, dayStart, hourStart;
+const uint32_t SECS_PER_DAY = 3600UL * 24UL;
+#endif
+
 #define LOG_FEATURE LOG_FEATURE_NTP
 
 typedef struct
@@ -185,6 +191,128 @@ commandResult_t NTP_Info(const void *context, const char *cmd, const char *args,
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "Server=%s, Time offset=%d", CFG_GetNTPServer(), g_timeOffsetSeconds);
     return CMD_RES_OK;
 }
+
+#if ENABLE_NTP_DST
+
+// derived from tasmotas "RuleToTime"
+uint32_t RuleToTime(uint8_t dow, uint8_t mo, uint8_t week,  uint8_t hr, int yr) {
+  struct tm tm={0};
+  uint32_t t;
+  uint8_t m=mo-1;		// we use struct tm here, so month values are 0..11
+  uint8_t w=week;		// m and w are copies of mo(nth) and week
+
+  if (0 == w) {			// for "Last XX" (w=0), we compute first occurence in following month and go back 7 days
+    if (++m > 11) {		// so go to the next month ...
+      m = 0;			// .. and to next year, if we need last XX in December
+      yr++;
+    }
+    w = 1;			// search first week of next month, we will subtract 7 days later
+  }
+  tm.tm_hour = hr;
+// tm is set to {0}, so no need to set minute or second values equal to "0"
+  tm.tm_mday = 1;		// first day of (next) month
+  tm.tm_mon = m ;
+  tm.tm_year = yr - 1900;
+  t = (uint32_t)mktime(&tm);         // First day of the month, or first day of next month for "Last" rules
+//  since we use time functions, weekdays are 0 to 6 but tasmota settings use 1 to 7 (e.g. Sunday = 1)
+// so we have to subtract 1 from dow to match tm_weekday here
+  t += (7 * (w - 1) + (dow - 1 - tm.tm_wday + 7) % 7) * SECS_PER_DAY;
+  if (0 == week) {
+    t -= 7 * SECS_PER_DAY;  // back one week if this is a "Last XX" rule
+  }
+  return t;
+}
+
+void printtime(uint32_t time, char* string){
+	time_t tmpt=(time_t)time;
+	struct tm * tm=gmtime(&tmpt);
+	// e.g. "Sun, 2024-10-27 01:00:00 local time"
+	strftime(string,40,"%a, %F %T local time",tm);
+}
+
+
+int IsDST()
+{
+	// DST calculation was done before, so we compare local time to DST switching values
+	int year=NTP_GetYear();
+
+	char tmp[40];	// to hold date string of timestamp
+	Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year);
+	End_DST_epoch = RuleToTime(dayEnd,monthEnd,nthWeekEnd,hourEnd,year);
+
+	if ( Start_DST_epoch < End_DST_epoch ) {	// Northern --> begin before end
+		if (g_ntpTime < Start_DST_epoch) {
+			printtime(Start_DST_epoch,tmp);
+			ADDLOG_INFO(LOG_FEATURE_RAW, "Before first DST switch in %i. Info: DST starts at %lu (%s)\r\n",year,Start_DST_epoch,tmp);
+			return 0;
+		} else if (g_ntpTime < End_DST_epoch ){
+			printtime(End_DST_epoch,tmp);
+			ADDLOG_INFO(LOG_FEATURE_RAW, "In DST of %i. Info: DST ends at %lu (%s)\r\n",year,End_DST_epoch,tmp);
+			return 1;
+		} else {
+			Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year+1);
+			printtime(Start_DST_epoch,tmp);
+			ADDLOG_INFO(LOG_FEATURE_RAW, "After DST in %i. Info: Next DST start in next year at %lu (%s)\r\n",year,Start_DST_epoch,tmp);
+			return 0;
+		}
+	} else {	// so end of DST before begin of DST --> southern
+			if (g_ntpTime < End_DST_epoch) {
+			printtime(End_DST_epoch,tmp);
+			ADDLOG_INFO(LOG_FEATURE_RAW, "In first DST period of %i. Info: DST ends at %lu (%s)\r\n",year,End_DST_epoch,tmp);
+			return 1;
+		} else if (g_ntpTime < Start_DST_epoch ){
+			printtime(Start_DST_epoch,tmp);
+			ADDLOG_INFO(LOG_FEATURE_RAW, "Regular time of %i. Info: DST starts at %lu (%s)\r\n",year,Start_DST_epoch,tmp);
+			return 0;
+		} else {
+			End_DST_epoch = RuleToTime(dayEnd,monthEnd,nthWeekEnd,hourEnd,year+1);
+			printtime(End_DST_epoch,tmp);
+			ADDLOG_INFO(LOG_FEATURE_RAW, "In second DST of %i. Info: DST ends next year at %lu (%s)\r\n",year,End_DST_epoch,tmp);
+			return 1;
+		}
+	}
+
+
+}
+
+commandResult_t CLOCK_CalcDST(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int year=NTP_GetYear();
+	char b[40],e[40];	// to hold date string of timestamp
+
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 8)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	ADDLOG_INFO(LOG_FEATURE_RAW, "CLOCK_SetConfigs: we have %u Args\r\n", Tokenizer_GetArgsCount());
+	nthWeekEnd = Tokenizer_GetArgInteger(0);
+	monthEnd = Tokenizer_GetArgInteger(1);
+	dayEnd = Tokenizer_GetArgInteger(2);
+	hourEnd = Tokenizer_GetArgInteger(3);
+	nthWeekStart = Tokenizer_GetArgInteger(4);
+	monthStart = Tokenizer_GetArgInteger(5);
+	dayStart = Tokenizer_GetArgInteger(6);
+	hourStart = Tokenizer_GetArgInteger(7);
+	ADDLOG_INFO(LOG_FEATURE_RAW, "read values: %u,%u,%u,%u,%u,%u,%u,%u\r\n",  nthWeekEnd, monthEnd, dayEnd, hourEnd, nthWeekStart, monthStart, dayStart, hourStart);
+
+	Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year);
+	End_DST_epoch = RuleToTime(dayEnd,monthEnd,nthWeekEnd,hourEnd,year);
+	printtime(Start_DST_epoch,b);
+	printtime(End_DST_epoch,e);
+	
+	ADDLOG_INFO(LOG_FEATURE_RAW, "Calculated DST switch epochs in %i. DST start at %lu (%s) - DST end at %lu (%s)\r\n",year,Start_DST_epoch,b,End_DST_epoch,e);
+	  return CMD_RES_OK;
+};
+
+
+
+#endif
+
+
+
 int NTP_GetWeekDay() {
 	struct tm *ltm;
 
@@ -269,6 +397,11 @@ int NTP_GetYear() {
 
 	return ltm->tm_year+1900;
 }
+#if ENABLE_NTP_DST
+int Time_IsDST(){ 
+	return IsDST();
+}
+#endif
 #if WINDOWS
 bool b_ntp_simulatedTime = false;
 void NTP_SetSimulatedTime(unsigned int timeNow) {
@@ -309,7 +442,13 @@ void NTP_Init() {
 #if ENABLE_CALENDAR_EVENTS
 	NTP_Init_Events();
 #endif
-
+#if ENABLE_NTP_DST
+	//cmddetail:{"name":"CLOCK_CalcDST","args":"[nthWeekEnd monthEnd dayEnd hourEnd nthWeekStart monthStart dayStart hourStart]",
+	//cmddetail:"descr":"Checks, if actual time is during DST or not.",
+	//cmddetail:"fn":"CLOCK_CalcDST","file":"driver/drv_ntp.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("clock_calcDST",CLOCK_CalcDST, NULL);
+#endif
 
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP driver initialized with server=%s, offset=%d", CFG_GetNTPServer(), g_timeOffsetSeconds);
     g_synced = false;
