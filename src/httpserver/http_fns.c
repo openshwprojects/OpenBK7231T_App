@@ -39,7 +39,9 @@ static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"
 #include "BkDriverFlash.h"
 #include "temp_detect_pub.h"
 #elif defined(PLATFORM_LN882H)
-
+#elif defined(PLATFORM_ESPIDF)
+#include "esp_wifi.h"
+#include "esp_system.h"
 #else
 // REALLY? A typo in Tuya SDK? Storge?
 // tuya-iotos-embeded-sdk-wifi-ble-bk7231t/platforms/bk7231t/tuya_os_adapter/include/driver/tuya_hal_storge.h
@@ -772,7 +774,7 @@ int http_fn_index(http_request_t* request) {
 
   // display temperature - thanks to giedriuslt
   // only in Normal mode, and if boot is not failing
-	hprintf255(request, "<h5>Internal temperature: %.1f°C</h5>", g_wifi_temperature);
+	hprintf255(request, "<h5>Chip temperature: %.1f°C</h5>", g_wifi_temperature);
 
 	inputName = CFG_GetPingHost();
 	if (inputName && *inputName && CFG_GetPingDisconnectedSecondsToRestart()) {
@@ -841,6 +843,30 @@ typedef enum {
 			s = "Wdt";
 		hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", g_rebootReason, s);
 	}
+#elif PLATFORM_ESPIDF
+	esp_reset_reason_t reason = esp_reset_reason();
+	const char* s = "Unknown";
+	switch(reason)
+	{
+	case ESP_RST_UNKNOWN:    s = "ESP_RST_UNKNOWN"; break;
+	case ESP_RST_POWERON:    s = "ESP_RST_POWERON"; break;
+	case ESP_RST_EXT:        s = "ESP_RST_EXT"; break;
+	case ESP_RST_SW:         s = "ESP_RST_SW"; break;
+	case ESP_RST_PANIC:      s = "ESP_RST_PANIC"; break;
+	case ESP_RST_INT_WDT:    s = "ESP_RST_INT_WDT"; break;
+	case ESP_RST_TASK_WDT:   s = "ESP_RST_TASK_WDT"; break;
+	case ESP_RST_WDT:        s = "ESP_RST_WDT"; break;
+	case ESP_RST_DEEPSLEEP:  s = "ESP_RST_DEEPSLEEP"; break;
+	case ESP_RST_BROWNOUT:   s = "ESP_RST_BROWNOUT"; break;
+	case ESP_RST_SDIO:       s = "ESP_RST_SDIO"; break;
+	case ESP_RST_USB:        s = "ESP_RST_USB"; break;
+	case ESP_RST_JTAG:       s = "ESP_RST_JTAG"; break;
+	case ESP_RST_EFUSE:      s = "ESP_RST_EFUSE"; break;
+	case ESP_RST_PWR_GLITCH: s = "ESP_RST_PWR_GLITCH"; break;
+	case ESP_RST_CPU_LOCKUP: s = "ESP_RST_CPU_LOCKUP"; break;
+	default: break;
+	}
+	hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", reason, s);
 #endif
 	if (CFG_GetMQTTHost()[0] == 0) {
 		hprintf255(request, "<h5>MQTT State: not configured<br>");
@@ -896,6 +922,22 @@ typedef enum {
 		hprintf255(request, "</h5>");
 	}
 
+#if ENABLE_DRIVER_CHARTS		
+/*	// moved from drv_charts.c:
+	// on every "state" request, JS code will be loaded and canvas is redrawn
+	// this leads to a flickering graph
+	// so put this right below the "state" div
+	// with a "#ifdef 
+	// drawback : We need to take care, if driver is loaded and canvas will be displayed only on a reload of the page
+	// or we might try and hide/unhide it ...
+*/
+	// since we can't simply stop showing the graph in updated status, we need to "hide" it if driver was stopped
+	if (! DRV_IsRunning("Charts")) {
+		poststr(request, "<style onload=\"document.getElementById('obkChart').style.display='none'\"></style>");		
+	};
+
+#endif
+
 #if WINDOWS
 #elif PLATFORM_BL602
 #elif PLATFORM_W600 || PLATFORM_W800
@@ -915,6 +957,22 @@ typedef enum {
 	// for normal page loads, show the rest of the HTML
 	if (!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
 		poststr(request, "</div>"); // end div#state
+#if ENABLE_DRIVER_CHARTS		
+/*	// moved from drv_charts.c:
+	// on every "state" request, JS code will be loaded and canvas is redrawn
+	// this leads to a flickering graph
+	// so put this right below the "state" div
+	// with a "#ifdef 
+	// drawback : We need to take care, if driver is loaded and canvas will be displayed only on a reload of the page
+	// or we might try and hide/unhide it ...
+*/
+//	if (DRV_IsRunning("Charts")) {
+		poststr(request, "<canvas style='display: none' id=\"obkChart\" width=\"400\" height=\"200\"></canvas>");
+		poststr(request, "<script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>");
+//	};
+
+#endif
+
 
 		// Shared UI elements 
 		poststr(request, "<form action=\"cfg\"><input type=\"submit\" value=\"Config\"/></form>");
@@ -987,18 +1045,22 @@ int http_fn_cfg_ip(http_request_t* request) {
 
 	if (http_getArg(request->url, "IP", tmp, sizeof(tmp))) {
 		str_to_ip(tmp, g_cfg.staticIP.localIPAddr);
+//hprintf255(request, "<br>IP=%s (%02x %02x %02x %02x)<br>",tmp,g_cfg.staticIP.localIPAddr[0],g_cfg.staticIP.localIPAddr[1],g_cfg.staticIP.localIPAddr[2],g_cfg.staticIP.localIPAddr[3]);
 		g_changes++;
 	}
 	if (http_getArg(request->url, "mask", tmp, sizeof(tmp))) {
 		str_to_ip(tmp, g_cfg.staticIP.netMask);
+//hprintf255(request, "<br>Mask=%s (%02x %02x %02x %02x)<br>",tmp, g_cfg.staticIP.netMask[0], g_cfg.staticIP.netMask[1], g_cfg.staticIP.netMask[2], g_cfg.staticIP.netMask[3]);
 		g_changes++;
 	}
 	if (http_getArg(request->url, "dns", tmp, sizeof(tmp))) {
 		str_to_ip(tmp, g_cfg.staticIP.dnsServerIpAddr);
+//hprintf255(request, "<br>DNS=%s (%02x %02x %02x %02x)<br>",tmp, g_cfg.staticIP.dnsServerIpAddr[0], g_cfg.staticIP.dnsServerIpAddr[1], g_cfg.staticIP.dnsServerIpAddr[2], g_cfg.staticIP.dnsServerIpAddr[3]);
 		g_changes++;
 	}
 	if (http_getArg(request->url, "gate", tmp, sizeof(tmp))) {
 		str_to_ip(tmp, g_cfg.staticIP.gatewayIPAddr);
+//hprintf255(request, "<br>GW=%s (%02x %02x %02x %02x)<br>",tmp, g_cfg.staticIP.gatewayIPAddr[0], g_cfg.staticIP.gatewayIPAddr[1], g_cfg.staticIP.gatewayIPAddr[2], g_cfg.staticIP.gatewayIPAddr[3]);
 		g_changes++;
 	}
 	if (g_changes) {
@@ -1171,7 +1233,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 	if(bChanged) {
 		poststr(request,"<h4> Device will reconnect after restarting</h4>");
 	}*/
-	poststr(request, "<h2> Check networks reachable by module</h2> This will lag few seconds.<br>");
+	poststr(request, "<h2> Check networks reachable by module</h2> This will take a few seconds<br>");
 	if (http_getArg(request->url, "scan", tmpA, sizeof(tmpA))) {
 #ifdef WINDOWS
 
@@ -1222,6 +1284,20 @@ int http_fn_cfg_wifi(http_request_t* request) {
 #elif PLATFORM_LN882H
 // TODO:LN882H action
         poststr(request, "TODO LN882H<br>");
+#elif PLATFORM_ESPIDF
+		// doesn't work in ap mode, only sta/apsta
+		uint16_t ap_count = 0, number = 30;
+		wifi_ap_record_t ap_info[number];
+		memset(ap_info, 0, sizeof(ap_info));
+		bk_printf("Scan begin...\r\n");
+		esp_wifi_scan_start(NULL, true);
+		esp_wifi_scan_get_ap_num(&ap_count);
+		bk_printf("Scan returned %i networks, max allowed: %i\r\n", ap_count, number);
+		esp_wifi_scan_get_ap_records(&number, ap_info);
+		for(int i = 0; i < number; i++)
+		{
+			hprintf255(request, "[%i/%u] SSID: %s, Channel: %i, Signal %i<br>", i + 1, number, ap_info[i].ssid, ap_info[i].primary, ap_info[i].rssi);
+		}
 #else
 #error "Unknown platform"
 		poststr(request, "Unknown platform<br>");
@@ -1229,19 +1305,22 @@ int http_fn_cfg_wifi(http_request_t* request) {
 	}
 	poststr(request, "<form action=\"/cfg_wifi\">\
 <input type=\"hidden\" id=\"scan\" name=\"scan\" value=\"1\">\
-<input type=\"submit\" value=\"Scan local networks!\">\
+<input type=\"submit\" value=\"Scan Local Networks\">\
 </form>");
 	poststr_h4(request, "Use this to disconnect from your WiFi");
 	poststr(request, "<form action=\"/cfg_wifi_set\">\
 <input type=\"hidden\" id=\"open\" name=\"open\" value=\"1\">\
-<input type=\"submit\" value=\"Convert to open access wifi\" onclick=\"return confirm('Are you sure to convert module to open access WiFi?')\">\
+<input type=\"submit\" value=\"Convert to Open Access WiFi\" onclick=\"return confirm('Are you sure you want to switch to open access WiFi?')\">\
 </form>");
 	poststr_h2(request, "Use this to connect to your WiFi");
 	add_label_text_field(request, "SSID", "ssid", CFG_GetWiFiSSID(), "<form action=\"/cfg_wifi_set\">");
-	add_label_password_field(request, "", "pass", CFG_GetWiFiPass(), "<br>Password <span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears password)</span>");
+	add_label_password_field(request, "", "pass", CFG_GetWiFiPass(), "<br>Password<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears existing)</span>");
 	poststr_h2(request, "Alternate WiFi (used when first one is not responding)");
+#ifndef PLATFORM_BEKEN
+	poststr_h2(request, "SSID2 only on Beken Platform (BK7231T, BK7231N)");
+#endif
 	add_label_text_field(request, "SSID2", "ssid2", CFG_GetWiFiSSID2(), "");
-	add_label_password_field(request, "", "pass2", CFG_GetWiFiPass2(), "<br>Password2 <span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass2');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears password)</span>");
+	add_label_password_field(request, "", "pass2", CFG_GetWiFiPass2(), "<br>Password2<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass2');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears existing)</span>");
 #if ALLOW_WEB_PASSWORD
 	int web_password_enabled = strcmp(CFG_GetWebPassword(), "") == 0 ? 0 : 1;
 	poststr_h2(request, "Web Authentication");
@@ -1251,7 +1330,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 	add_label_password_field(request, "Admin Password", "web_admin_password", CFG_GetWebPassword(), "");
 #endif
 	poststr(request, "<br><br>\
-<input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please check SSID and pass twice?')\">\
+<input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please double-check SSID and password.')\">\
 </form>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
@@ -1645,7 +1724,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		topic = "homeassistant";
 	}
 
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#ifdef ENABLE_DRIVER_BL0937
 	measuringPower = DRV_IsMeasuringPower();
 	measuringBattery = DRV_IsMeasuringBattery();
 #endif
@@ -1750,7 +1829,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		}
 	}
 
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#ifdef ENABLE_DRIVER_BL0937
 	if (measuringPower == true) {
 		for (i = OBK__FIRST; i <= OBK__LAST; i++)
 		{
@@ -1869,6 +1948,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				dev_info = hass_init_sensor_device_info(ILLUMINANCE_SENSOR, i, -1, -1, 1);
 			}
 			break;
+			case ChType_Custom:
 			case ChType_ReadOnly:
 			{
 				dev_info = hass_init_sensor_device_info(CUSTOM_SENSOR, i, -1, -1, 1);
@@ -2378,13 +2458,13 @@ int http_fn_cfg(http_request_t* request) {
 	postFormAction(request, "cfg_mqtt", "Configure MQTT");
 	postFormAction(request, "cfg_name", "Configure Names");
 	postFormAction(request, "cfg_mac", "Change MAC");
-	postFormAction(request, "cfg_ping", "Ping Watchdog (Network lost restarter)");
-	postFormAction(request, "cfg_webapp", "Configure Webapp");
+	postFormAction(request, "cfg_ping", "Ping Watchdog (network lost restarter)");
+	postFormAction(request, "cfg_webapp", "Configure WebApp");
 	postFormAction(request, "ha_cfg", "Home Assistant Configuration");
 	postFormAction(request, "ota", "OTA (update software by WiFi)");
-	postFormAction(request, "cmd_tool", "Execute custom command");
+	postFormAction(request, "cmd_tool", "Execute Custom Command");
 	//postFormAction(request, "flash_read_tool", "Flash Read Tool");
-	postFormAction(request, "startup_command", "Change startup command text");
+	postFormAction(request, "startup_command", "Change Startup Command Text");
 
 #if 0
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
@@ -2495,6 +2575,8 @@ int http_fn_cfg_pins(http_request_t* request) {
 	}
 	poststr(request, "];");
 
+	poststr(request, "var  sr = r.map((e,i)=>{return e[0]+'#'+i}).sort(Intl.Collator().compare).map(e=>e.split('#'));");
+	
 	poststr(request, "function hide_show() {"
 		"n=this.name;"
 		"er=getElement('r'+n);"
@@ -2508,20 +2590,18 @@ int http_fn_cfg_pins(http_request_t* request) {
 		"let f = document.getElementById(\"x\");"
 		"let d = document.createElement(\"div\");"
 		"d.className = \"hdiv\";"
-		"d.innerText = alias;"
+		"d.innerHTML = \"<span class='disp-inline' style='min-width: 15ch'>\"+alias+\"</span>\";"
 		"f.appendChild(d);"
 		"let s = document.createElement(\"select\");"
 		"s.className = \"hele\";"
 		"s.name = id;"
 		"d.appendChild(s);"
-		"	for (var i = 0; i < r.length; i++) {"
-		"	if(b && r[i][0].startsWith(\"PWM\")) continue; "
+		"	for (var i = 0; i < sr.length; i++) {"
+		"	if(b && sr[i][0].startsWith(\"PWM\")) continue; "
 		"var o = document.createElement(\"option\");"
-		"	o.text = r[i][0];"
-		"	o.value = i;"
-		"	if (i == c) {"
-		"		o.selected = true;"
-		"	}"
+		"	o.text = sr[i][0];"
+		"	o.value = sr[i][1];"
+		"	o.selected = (sr[i][1] == c);"
 		"s.add(o);s.onchange = hide_show;"
 		"}"
 		"var y = document.createElement(\"input\");"
@@ -2547,7 +2627,6 @@ int http_fn_cfg_pins(http_request_t* request) {
 		// But on Beken chips, only certain pins can be PWM
 		int bCanThisPINbePWM;
 		int si, ch, ch2;
-		int j;
 		const char* alias;
 
 		si = PIN_GetPinRoleForPinIndex(i);
@@ -2656,6 +2735,7 @@ const char* g_obk_flagNames[] = {
 	"[TuyaMCU] Store ALL data",
 	"[PWR] Invert AC dir",
 	"[HTTP] Hide ON/OFF for relays (only red/green buttons)",
+	"[MQTT] Never add get sufix",
 	"error",
 	"error",
 	"error",
@@ -2719,7 +2799,7 @@ int http_fn_cfg_generic(http_request_t* request) {
 	poststr(request, "<input type=\"hidden\" id=\"setFlags\" name=\"setFlags\" value=\"1\">");
 	poststr(request, SUBMIT_AND_END_FORM);
 
-	add_label_numeric_field(request, "Uptime seconds required to mark boot as OK", "boot_ok_delay",
+	add_label_numeric_field(request, "Uptime in seconds required to mark boot as OK", "boot_ok_delay",
 		CFG_GetBootOkSeconds(), "<form action=\"/cfg_generic\">");
 	poststr(request, "<br><input type=\"submit\" value=\"Save\"/></form>");
 
@@ -2890,7 +2970,7 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 
 #elif PLATFORM_LN882H
 
-
+#elif PLATFORM_ESPIDF
 #elif PLATFORM_W600 || PLATFORM_W800
 	t_http_fwup(s);
 #elif PLATFORM_XR809

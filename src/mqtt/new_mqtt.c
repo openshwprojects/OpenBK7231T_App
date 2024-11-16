@@ -32,7 +32,6 @@
 extern void MQTT_TriggerRead();
 #endif
 
-
 // these won't exist except on Beken?
 #ifndef LOCK_TCPIP_CORE
 #define LOCK_TCPIP_CORE()
@@ -223,7 +222,7 @@ int mqtt_reconnect = 0;
 // set for the device to broadcast self state on start
 int g_bPublishAllStatesNow = 0;
 int g_publishItemIndex = PUBLISHITEM_ALL_INDEX_FIRST;
-static bool g_firstFullBroadcast = true;  //Flag indicating that we need to do a full broadcast
+//static bool g_firstFullBroadcast = true;  //Flag indicating that we need to do a full broadcast
 
 int g_memoryErrorsThisSession = 0;
 int g_mqtt_bBaseTopicDirty = 0;
@@ -242,7 +241,8 @@ void MQTT_PublishWholeDeviceState_Internal(bool bAll)
 void MQTT_PublishWholeDeviceState()
 {
 	//Publish all status items once. Publish only dynamic items after that.
-	MQTT_PublishWholeDeviceState_Internal(g_firstFullBroadcast);
+	//MQTT_PublishWholeDeviceState_Internal(g_firstFullBroadcast);
+	MQTT_PublishWholeDeviceState_Internal(1);
 }
 
 void MQTT_PublishOnlyDeviceChannelsIfPossible()
@@ -585,7 +585,7 @@ int channelGet(obk_mqtt_request_t* request) {
 	// atoi won't parse any non-decimal chars, so it should skip over the rest of the topic.
 	channel = atoi(p);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelGet channel %i", channel);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelGet channel %i", channel);
 
 	// if channel out of range, stop here.
 	if ((channel < 0) || (channel > 32)) {
@@ -622,7 +622,7 @@ int channelSet(obk_mqtt_request_t* request) {
 	//addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelSet channel %i", channel);
 
 	// if channel out of range, stop here.
-	if ((channel < 0) || (channel > 32)) {
+	if ((channel < 0) || (channel > CHANNEL_MAX)) {
 		return 0;
 	}
 
@@ -841,6 +841,10 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 		retain = 1;
 	}
 	if (flags & OBK_PUBLISH_FLAG_FORCE_REMOVE_GET)
+	{
+		appendGet = false;
+	}
+	if (CFG_HasFlag(OBK_FLAG_MQTT_NEVERAPPENDGET))
 	{
 		appendGet = false;
 	}
@@ -1390,7 +1394,7 @@ commandResult_t MQTT_PublishCommand(const void* context, const char* cmd, const 
 	OBK_Publish_Result ret;
 	int flags = 0;
 
-	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS);
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS | TOKENIZER_EXPAND_EARLY);
 
 	if (Tokenizer_GetArgsCount() < 2) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish command requires two arguments (topic and value)");
@@ -1630,19 +1634,11 @@ static BENCHMARK_TEST_INFO* info = NULL;
 
 #if WINDOWS
 
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF
 static void mqtt_timer_thread(void* param)
 {
 	while (1)
 	{
-		vTaskDelay(MQTT_TMR_DURATION);
-		MQTT_Test_Tick(param);
-	}
-}
-#elif PLATFORM_W600 || PLATFORM_W800
-static void mqtt_timer_thread(void* param)
-{
-	while (1) {
 		vTaskDelay(MQTT_TMR_DURATION);
 		MQTT_Test_Tick(param);
 	}
@@ -1678,9 +1674,7 @@ commandResult_t MQTT_StartMQTTTestThread(const void* context, const char* cmd, c
 
 #if WINDOWS
 
-#elif PLATFORM_BL602
-	xTaskCreate(mqtt_timer_thread, "mqtt", 1024, (void*)info, 15, NULL);
-#elif PLATFORM_W600 || PLATFORM_W800
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF
 	xTaskCreate(mqtt_timer_thread, "mqtt", 1024, (void*)info, 15, NULL);
 #elif PLATFORM_XR809 || PLATFORM_LN882H
 	OS_TimerSetInvalid(&timer);
@@ -1938,7 +1932,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 		return MQTT_DoItemPublishString("freeheap", dataStr);
 
 	case PUBLISHITEM_SELF_IP:
-		g_firstFullBroadcast = false; //We published the last status item, disable full broadcast
+		//g_firstFullBroadcast = false; //We published the last status item, disable full broadcast
 		return MQTT_DoItemPublishString("ip", HAL_GetMyIPString());
 
 	default:

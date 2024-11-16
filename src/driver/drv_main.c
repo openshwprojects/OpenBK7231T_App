@@ -75,14 +75,14 @@ static driver_t g_drivers[] = {
 #if WINDOWS
 	//drvdetail:{"name":"TestCharts",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":".",
+	//drvdetail:"descr":"Development only driver - a sample of chart generation with chart.js.",
 	//drvdetail:"requires":""}
 	{ "TestCharts",		NULL,			NULL,			DRV_Test_Charts_AddToHtmlPage, NULL, NULL, NULL, false },
 #endif
-#if WINDOWS
+#if ENABLE_DRIVER_CHARTS
 	//drvdetail:{"name":"Charts",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":".",
+	//drvdetail:"descr":"Charts driver allows you to create a customizable chart directly on your device. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
 	//drvdetail:"requires":""}
 	{ "Charts",		DRV_Charts_Init,			NULL,			DRV_Charts_AddToHtmlPage, NULL, NULL, NULL, false },
 #endif
@@ -254,7 +254,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"PWMToggler is a custom abstraction layer that can run on top of raw PWM channels. It provides ability to turn off/on the PWM while keeping it's value, which is not possible by direct channel operations. It can be used for some custom devices with extra lights/lasers. See example [here](https://www.elektroda.com/rtvforum/topic3939064.html).",
 	//drvdetail:"requires":""}
-	{ "PWMToggler",	DRV_InitPWMToggler, NULL, DRV_Toggler_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	{ "PWMToggler",	DRV_InitPWMToggler, NULL, DRV_Toggler_AppendInformationToHTTPIndexPage, DRV_Toggler_QuickTick, NULL, NULL, false },
 	//drvdetail:{"name":"DoorSensor",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"DoorSensor is using deep sleep to preserve battery. This is used for devices without TuyaMCU, where BK deep sleep and wakeup on GPIO is used. This drives requires you to set a DoorSensor pin. Change on door sensor pin wakes up the device. If there are no changes for some time, device goes to sleep. See example [here](https://www.elektroda.com/rtvforum/topic3960149.html). If your door sensor does not wake up in certain pos, please use DSEdge command (try all 3 options, default is 2). ",
@@ -326,7 +326,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "CHT83XX",	CHT83XX_Init,		CHT83XX_OnEverySecond,		CHT83XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_ESPIDF)
 	//drvdetail:{"name":"MCP9808",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"MCP9808 is a Temperature sensor with I2C interface and an external wakeup pin, see [docs](https://www.elektroda.pl/rtvforum/topic3988466.html).",

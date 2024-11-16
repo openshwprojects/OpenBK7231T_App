@@ -10,7 +10,7 @@ void SIM_SendFakeMQTT(const char *text, const char *arguments) {
 void SIM_SendFakeMQTTAndRunSimFrame_CMND_Generic(const char *myName , const char *command, const char *arguments) {
 
 	char buffer[4096];
-	sprintf(buffer, "cmnd/%s/%s", myName, command);
+	snprintf(buffer,sizeof(buffer), "cmnd/%s/%s", myName, command);
 
 	SIM_SendFakeMQTT(buffer, arguments);
 
@@ -25,7 +25,7 @@ void SIM_SendFakeMQTTAndRunSimFrame_CMND(const char *command, const char *argume
 }
 void SIM_SendFakeMQTTRawChannelSet_Generic(const char *myName, int channelIndex, const char *arguments) {
 	char buffer[4096];
-	sprintf(buffer, "%s/%i/set", myName, channelIndex);
+	snprintf(buffer, sizeof(buffer), "%s/%i/set", myName, channelIndex);
 	SIM_SendFakeMQTT(buffer, arguments);
 }
 void SIM_SendFakeMQTTRawChannelSet(int channelIndex, const char *arguments) {

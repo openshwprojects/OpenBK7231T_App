@@ -8,6 +8,12 @@
 #include <time.h>
 #include <stdarg.h>
 
+#if WINDOWS
+#include <crtdbg.h>
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#endif
+
 #include "obk_config.h"
 
 typedef int OBK_Publish_Result;
@@ -75,6 +81,25 @@ typedef long BaseType_t;
 #define DEVICENAME_PREFIX_SHORT "ln882h"
 #define PLATFORM_MCU_NAME "LN882H"
 #define MANUFACTURER "LightningSemi"
+#elif PLATFORM_ESPIDF
+#define MANUFACTURER "Espressif"
+#define DEVICENAME_PREFIX_SHORT "esp"
+#ifdef CONFIG_IDF_TARGET_ESP32C3
+#define PLATFORM_MCU_NAME "ESP32C3"
+#elif CONFIG_IDF_TARGET_ESP32C2
+#define PLATFORM_MCU_NAME "ESP32C2"
+#elif CONFIG_IDF_TARGET_ESP32
+#define PLATFORM_MCU_NAME "ESP32"
+#elif CONFIG_IDF_TARGET_ESP32C6
+#define PLATFORM_MCU_NAME "ESP32C6"
+#elif CONFIG_IDF_TARGET_ESP32S2
+#define PLATFORM_MCU_NAME "ESP32S2"
+#elif CONFIG_IDF_TARGET_ESP32S3
+#define PLATFORM_MCU_NAME "ESP32S3"
+#else
+#define PLATFORM_MCU_NAME MANUFACTURER
+#endif
+#define DEVICENAME_PREFIX_FULL "Open" PLATFORM_MCU_NAME
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -100,6 +125,8 @@ This platform is not supported, error!
 #define USER_SW_VER "W800_Test"
 #elif defined(PLATFORM_LN882H)
 #define USER_SW_VER "LN882H_Test"
+#elif defined(PLATFORM_ESPIDF)
+#define USER_SW_VER PLATFORM_MCU_NAME "_Test"
 #else
 #define USER_SW_VER "unknown"
 #endif
@@ -159,6 +186,8 @@ typedef unsigned short u16_t;
 #define		LWIP_UNUSED_ARG(x)
 #define 	LWIP_CONST_CAST(target_type, val)   ((target_type)(val))
 
+void doNothing();
+
 #define 	GLOBAL_INT_DECLARATION		doNothing
 #define 	GLOBAL_INT_DISABLE			doNothing
 #define 	GLOBAL_INT_RESTORE			doNothing
@@ -183,6 +212,9 @@ typedef int SemaphoreHandle_t;
 #define pdTRUE 1
 #define pdFALSE 0
 typedef int OSStatus;
+
+int rtos_delay_milliseconds(int sec);
+int delay_ms(int sec);
 
 enum {
 	kNoErr = 0,
@@ -349,6 +381,47 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 							beken_thread_function_t function,
 							uint32_t stack_size, beken_thread_arg_t arg );
 
+#elif PLATFORM_ESPIDF
+
+#include <stdbool.h>
+#include <arch/sys_arch.h>
+#include "esp_timer.h"
+#include "esp_log.h"
+#include "esp_idf_version.h"
+
+#define ASSERT
+#define os_strcpy strcpy
+#define os_malloc malloc
+#define os_free free
+#define os_memset memset
+
+//#define bk_printf printf
+
+#define bk_printf(...) ESP_LOGI("OpenBeken", __VA_ARGS__);
+
+#define kNoErr                      0       //! No error occurred.
+#define rtos_delay_milliseconds sys_delay_ms
+typedef void* beken_thread_arg_t;
+typedef void* beken_thread_t;
+typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
+typedef int OSStatus;
+
+#define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
+#define BEKEN_APPLICATION_PRIORITY         (7)
+
+// wrappers for XR809??? threads to work like bekken
+OSStatus rtos_delete_thread(beken_thread_t* thread);
+OSStatus rtos_create_thread(beken_thread_t* thread,
+	uint8_t priority, const char* name,
+	beken_thread_function_t function,
+	uint32_t stack_size, beken_thread_arg_t arg);
+
+#define portTICK_RATE_MS portTICK_PERIOD_MS
+#define portTickType TickType_t
+#define xTaskHandle TaskHandle_t
+#define delay_ms sys_delay_ms
+#define UINT32 uint32_t
+
 #else
 
 #include "gw_intf.h"
@@ -406,11 +479,11 @@ typedef unsigned char byte;
 
 int wal_stricmp(const char *a, const char *b) ;
 #define stricmp wal_stricmp
+char *strdup(const char *s);
 
 #endif
 
 const char* skipToNextWord(const char* p);
-char *strdup(const char *s);
 void stripDecimalPlaces(char *p, int maxDecimalPlaces);
 int wal_stricmp(const char *a, const char *b);
 int wal_strnicmp(const char *a, const char *b, int count);
@@ -419,7 +492,10 @@ int strcpy_safe(char *tg, const char *src, int tgMaxLen);
 int strcpy_safe_checkForChanges(char *tg, const char *src, int tgMaxLen);
 void urldecode2_safe(char *dst, const char *srcin, int maxDstLen);
 int strIsInteger(const char *s);
+
+#ifndef PLATFORM_ESPIDF
 const char* strcasestr(const char* str1, const char* str2);
+#endif
 
 // user_main.c
 char Tiny_CRC8(const char *data,int length);
@@ -445,8 +521,10 @@ int PingWatchDog_GetTotalReceived();
 int LWIP_GetMaxSockets();
 int LWIP_GetActiveSockets();
 
+#ifndef PLATFORM_ESPIDF
 //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 void usleep(int r);
+#endif
 
 #define RESTARTS_REQUIRED_FOR_SAFE_MODE 4
 
@@ -468,8 +546,11 @@ typedef enum
     EXCELLENT,
 } WIFI_RSSI_LEVEL;
 
+#if PLATFORM_LN882H
+#define IP_STRING_FORMAT	"%u.%u.%u.%u"
+#else
 #define IP_STRING_FORMAT	"%hhu.%hhu.%hhu.%hhu"
-
+#endif
 WIFI_RSSI_LEVEL wifi_rssi_scale(int8_t rssi_value);
 extern const char *str_rssi[];
 extern int bSafeMode;

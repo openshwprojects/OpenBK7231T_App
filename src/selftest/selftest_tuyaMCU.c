@@ -168,6 +168,64 @@ void Test_TuyaMCU_Mult() {
 	Test_TuyaMCU_Mult_Internal(0.5f);
 	Test_TuyaMCU_Mult_Internal(100.0f);
 }
+void Test_TuyaMCU_Boolean() {
+	SIM_ClearOBK(0);
+	SIM_UART_InitReceiveRingBuffer(2048);
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 2 bool 2", 0);
+
+	CMD_ExecuteCommand("setChannel 2 1", 0);
+	/*
+	55 AA    00    06        00 05    0201000101    0F    
+	HEADER    VER=00    SetDP        LEN    dpId=2 Bool V=1        CHK    
+	*/
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA    00    06        00 05    0201000101    0F");
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	//CMD_ExecuteCommand("setChannel 2 0", 0);
+	/*
+	55 AA    00    06        00 05    0201000100    0E    
+	HEADER    VER=00    SetDP        LEN    dpId=2 Bool V=0        CHK    
+	*/
+	//SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA    00    06        00 05    0201000100    0E");
+	//SELFTEST_ASSERT_HAS_UART_EMPTY();
+
+}
+void Test_TuyaMCU_DP22() {
+	SIM_ClearOBK(0);
+	SIM_UART_InitReceiveRingBuffer(2048);
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 1 bool 1", 0);
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 2 bool 2", 0);
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 3 bool 3", 0);
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 4 bool 4", 0);
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 5 bool 5", 0);
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 6 bool 6", 0);
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 101 bool 11", 0);
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 102 bool 12", 0);
+	CMD_ExecuteCommand("setChannel 1 123", 0);
+	CMD_ExecuteCommand("setChannel 2 234", 0);
+	CMD_ExecuteCommand("setChannel 3 456", 0);
+	CMD_ExecuteCommand("setChannel 4 567", 0);
+	CMD_ExecuteCommand("setChannel 5 653", 0);
+	CMD_ExecuteCommand("setChannel 6 777", 0);
+	CMD_ExecuteCommand("setChannel 7 777", 0); // not set
+	CMD_ExecuteCommand("setChannel 11 777", 0);
+	CMD_ExecuteCommand("setChannel 12 777", 0);
+
+	CMD_ExecuteCommand("uartFakeHex 55AA03220028010100010002010001000301000100040100010005010001000601000100650100010066010001003C", 0);
+
+	Sim_RunFrames(1000, false);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+	SELFTEST_ASSERT_CHANNEL(6, 0);
+	SELFTEST_ASSERT_CHANNEL(7, 777);
+	SELFTEST_ASSERT_CHANNEL(11, 0);
+	SELFTEST_ASSERT_CHANNEL(12, 0);
+}
 void Test_TuyaMCU_Basic() {
 	// reset whole device
 	SIM_ClearOBK(0);
@@ -477,6 +535,34 @@ void Test_TuyaMCU_Basic() {
 	SIM_ClearUART();
 
 
+	CMD_ExecuteCommand("tuyaMcu_sendCmd 0x06 19030036303035413030303130303738303345383033453830303030303030303030303030313030303030303030303030303030303030303030", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA 00 06 00 3A 19030036303035413030303130303738303345383033453830303030303030303030303030313030303030303030303030303030303030303030 18");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	SIM_ClearMQTTHistory();
+
+	// check to see if we can execute a file from within LFS
+	Test_FakeHTTPClientPacket_POST("api/lfs/tuyamcu1.txt", "tuyaMcu_sendCmd 0x06 19030036303035413030303130303738303345383033453830303030303030303030303030313030303030303030303030303030303030303030");
+	// exec will execute a script file in-place, all commands at once
+	CMD_ExecuteCommand("exec tuyamcu1.txt", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA 00 06 00 3A 19030036303035413030303130303738303345383033453830303030303030303030303030313030303030303030303030303030303030303030 18");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("alias xyz123 tuyaMcu_sendCmd 0x06 19030036303035413030303130303738303345383033453830303030303030303030303030313030303030303030303030303030303030303030",0);
+	CMD_ExecuteCommand("xyz123", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA 00 06 00 3A 19030036303035413030303130303738303345383033453830303030303030303030303030313030303030303030303030303030303030303030 18");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	// twice
+	CMD_ExecuteCommand("xyz123", 0);
+	CMD_ExecuteCommand("xyz123", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA 00 06 00 3A 19030036303035413030303130303738303345383033453830303030303030303030303030313030303030303030303030303030303030303030 18");
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA 00 06 00 3A 19030036303035413030303130303738303345383033453830303030303030303030303030313030303030303030303030303030303030303030 18");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	SIM_ClearMQTTHistory();
 	// cause error
 	//SELFTEST_ASSERT_CHANNEL(15, 666);
 }

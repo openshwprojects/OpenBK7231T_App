@@ -66,6 +66,8 @@ void usleep2(int r) //delay function do 10*r nops, because rtos_delay_millisecon
 		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
 		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
 	}
+#elif PLATFORM_ESPIDF
+	usleep(r);
 #else
 	for (volatile int i = 0; i < r; i++) {
 		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
@@ -276,7 +278,7 @@ float DHT_computeHeatIndexInternal(dht_t *dht, float temperature, float percentH
  *  @param  force
  *          true if using force mode
  *	@return float value
- */
+ */	
 bool DHT_read(dht_t *dht, bool force) {
 	byte *data = dht->data;
 	// Check if sensor was read less than two seconds ago and return early
@@ -288,14 +290,11 @@ bool DHT_read(dht_t *dht, bool force) {
 	dht->_lastreadtime = currenttime;
 
 #if WINDOWS
+	bool SIM_ReadDHT11(int pin, byte *data);
+
 	dht->_lastresult = true;
-	data[0] = data[1] = data[2] = data[3] = data[4] = 0;
-	// temp 19
-	data[2] = 19;
-	// humidity 67.8
-	data[0] = 67;
-	data[1] = 0;
-	return true;
+
+	return SIM_ReadDHT11(dht->_pin, data);
 #endif
 	// Reset 40 bits of received data to zero.
 	data[0] = data[1] = data[2] = data[3] = data[4] = 0;

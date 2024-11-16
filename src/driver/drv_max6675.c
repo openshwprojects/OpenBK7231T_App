@@ -52,7 +52,7 @@ float MAX6675_ReadTemperature() {
 
 	v >>= 3;
 
-	return v * 0.25;
+	return v * 0.25F;
 }
 void MAX6675_RunEverySecond() {
 	float f = MAX6675_ReadTemperature();

@@ -30,6 +30,24 @@
     "requires": ""
   },
   {
+    "name": "HGS02",
+    "title": "TODO",
+    "descr": "[HGS02](https://www.elektroda.com/rtvforum/viewtopic.php?p=21177061#21177061)",
+    "requires": ""
+  },
+  {
+    "name": "TestCharts",
+    "title": "TODO",
+    "descr": "Development only driver - a sample of chart generation with chart.js.",
+    "requires": ""
+  },
+  {
+    "name": "Charts",
+    "title": "TODO",
+    "descr": "Charts driver allows you to create a customizable chart directly on your device. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "requires": ""
+  },
+  {
     "name": "NTP",
     "title": "TODO",
     "descr": "NTP driver is required to get current time and date from web. Without it, there is no correct datetime. Put 'startDriver NTP' in short startup line or autoexec.bat to run it on start.",
@@ -138,6 +156,12 @@
     "requires": ""
   },
   {
+    "name": "IR2",
+    "title": "IR2",
+    "descr": "TODO",
+    "requires": ""
+  },
+  {
     "name": "DDP",
     "title": "TODO",
     "descr": "DDP is a LED control protocol that is using UDP. You can use xLights or any other app to control OBK LEDs that way. See [DDP topic](https://www.elektroda.com/rtvforum/topic4040325.html)",
@@ -234,9 +258,9 @@
     "requires": ""
   },
   {
-    "name": "CHT8305",
+    "name": "CHT83XX",
     "title": "TODO",
-    "descr": "CHT8305 is a Temperature and Humidity sensor with I2C interface.",
+    "descr": "CHT8305, CHT8310 and CHT8315 are a Temperature and Humidity sensors with I2C interface.",
     "requires": ""
   },
   {
@@ -279,6 +303,12 @@
     "name": "AHT2X",
     "title": "TODO",
     "descr": "AHT Humidity/temperature sensor. Supported sensors are: AHT10, AHT2X, AHT30. See [presentation guide](https://www.elektroda.com/rtvforum/topic4052685.html)",
+    "requires": ""
+  },
+  {
+    "name": "DS1820",
+    "title": "TODO",
+    "descr": "Very simple driver for oneWire temperature sensor DS1820.",
     "requires": ""
   },
   {

@@ -1330,6 +1330,14 @@ commandResult_t LED_SetBaseColor(const void *context, const char *cmd, const cha
 					led_baseColors[3] = rand()%255;
 					led_baseColors[4] = rand()%255;
 				}
+			}
+			else if (strchr(c, ',')) {
+				// parse format like: 255,50,0
+				int r, g, b;
+				sscanf(c, "%d,%d,%d", &r, &g, &b);
+				led_baseColors[0] = r;
+				led_baseColors[1] = g;
+				led_baseColors[2] = b;
 			} else {
 				while (*c && g_numBaseColors < 5){
 					char tmp[3];

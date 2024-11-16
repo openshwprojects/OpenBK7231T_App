@@ -92,6 +92,7 @@ void DRV_Charts_Init();
 void DRV_Toggler_ProcessChanges(http_request_t* request);
 void DRV_Toggler_AddToHtmlPage(http_request_t* request);
 void DRV_Toggler_AppendInformationToHTTPIndexPage(http_request_t* request);
+void DRV_Toggler_QuickTick();
 void DRV_InitPWMToggler();
 
 

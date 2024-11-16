@@ -160,6 +160,7 @@ enum LightMode {
 // force single argument mode
 #define TOKENIZER_FORCE_SINGLE_ARGUMENT_MODE	8
 #define TOKENIZER_ALLOW_ESCAPING_QUOTATIONS		16
+#define TOKENIZER_EXPAND_EARLY					32
 
 // cmd_tokenizer.c
 int Tokenizer_GetArgsCount();
@@ -177,6 +178,7 @@ void Tokenizer_TokenizeString(const char* s, int flags);
 void RepeatingEvents_Init();
 void RepeatingEvents_RunUpdate(float deltaTimeSeconds);
 void SIM_GenerateRepeatingEventsDesc(char *o, int outLen);
+void SIM_GeneratePowerStateDesc(char *o, int outLen);
 // cmd_eventHandlers.c
 void EventHandlers_Init();
 // This is useful to fire an event when a certain UART string command is received.
