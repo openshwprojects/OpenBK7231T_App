@@ -198,7 +198,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | PWMG_Raw |  | PWM grouping (synchronous PWM).<br/><br/>See also [PWMG_Raw on forum](https://www.elektroda.com/rtvforum/find.php?q=PWMG_Raw). |
 | PWMG_Set | Duty1Percent Duty2Percent DeadTimePercent Frequency PinA PinB | PWM grouping (synchronous PWM).<br/><br/>See also [PWMG_Set on forum](https://www.elektroda.com/rtvforum/find.php?q=PWMG_Set). |
 | reboot |  | Same as restart. Needed for bkWriter 1.60 which sends 'reboot' cmd before trying to get bus via UART. Thanks to this, if you enable command line on UART1, you don't need to manually reboot while flashing via UART.<br/><br/>See also [reboot on forum](https://www.elektroda.com/rtvforum/find.php?q=reboot). |
-| removeClockEvent | [ID] | Removes clock event wtih given ID.<br/><br/>See also [removeClockEvent on forum](https://www.elektroda.com/rtvforum/find.php?q=removeClockEvent). |
+| removeClockEvent | [ID] | Removes clock event with given ID.<br/><br/>See also [removeClockEvent on forum](https://www.elektroda.com/rtvforum/find.php?q=removeClockEvent). |
 | resetSVM |  | Resets all SVM and clears all scripts.<br/><br/>See also [resetSVM on forum](https://www.elektroda.com/rtvforum/find.php?q=resetSVM). |
 | restart |  | Reboots the module.<br/><br/>See also [restart on forum](https://www.elektroda.com/rtvforum/find.php?q=restart). |
 | return |  | Script-only command. Currently it just stops totally current script thread.<br/><br/>See also [return on forum](https://www.elektroda.com/rtvforum/find.php?q=return). |
