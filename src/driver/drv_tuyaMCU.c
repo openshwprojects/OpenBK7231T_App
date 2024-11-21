@@ -1050,7 +1050,13 @@ void TuyaMCU_SendNetworkStatus()
 		state = TUYA_NETWORK_STATUS_AP_MODE;
 	}
 	else if (Main_HasWiFiConnected() != 0) {
-		state = Main_HasMQTTConnected() != 0 ? TUYA_NETWORK_STATUS_CONNECTED_TO_CLOUD : TUYA_NETWORK_STATUS_CONNECTED_TO_ROUTER;
+		if (g_cfg.mqtt_host[0] == 0) {
+			// if not MQTT configured at all
+			state = TUYA_NETWORK_STATUS_CONNECTED_TO_CLOUD;
+		} else {
+			// otherwise, wait for MQTT connection
+			state = Main_HasMQTTConnected() != 0 ? TUYA_NETWORK_STATUS_CONNECTED_TO_CLOUD : TUYA_NETWORK_STATUS_CONNECTED_TO_ROUTER;
+		}
 	}
 	// allow override
 	if (state < g_defaultTuyaMCUWiFiState) {
