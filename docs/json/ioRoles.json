@@ -304,6 +304,14 @@
     "driver": ""
   },
   {
+    "name": "WS2811_DIN",
+    "title": "TODO",
+    "descr": "WIP driver, write a post on Elektroda if you need it working",
+    "enum": "IOR_WS2811_DIN",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
     "name": "Button_NextTemperature",
     "title": "TODO",
     "descr": "Button that automatically allows you to control temperature of your LED device",
