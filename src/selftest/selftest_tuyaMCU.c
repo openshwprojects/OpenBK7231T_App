@@ -565,6 +565,23 @@ void Test_TuyaMCU_Basic() {
 	SIM_ClearMQTTHistory();
 	// cause error
 	//SELFTEST_ASSERT_CHANNEL(15, 666);
+
+
+
+	// fake time request
+	NTP_SetSimulatedTime(1732094000);
+	// Simulate TuyaMCU sending 0x1C request to OBK
+	CMD_ExecuteCommand("uartFakeHex 55 AA 03 1C 00 00 1E", 0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(100, false);
+	// OBK will reply with 0x1C packet (TUYA_CMD_SET_TIME)
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55AA001C000801180B14090D140388");
+	// skip optional heartbeat
+	SIM_UART_ExpectAndConsumeHexStr("55AA00000000FF");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+
+	SIM_ClearUART();
 }
 
 #endif
