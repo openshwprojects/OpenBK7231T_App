@@ -484,7 +484,7 @@ HassDeviceInfo* hass_init_energy_sensor_device_info(int index) {
 		//20241024 XJIKKA skip measurement for timestamp - HASS log:
 		//HASS:	energy_clear_date (<class 'homeassistant.components.mqtt.sensor.MqttSensor'>) is using state class 'measurement' 
 		//		which is impossible considering device class ('timestamp') it is using; expected None; 
-		if (!strcmp(DRV_GetEnergySensorNames(index)->hass_dev_class,"timestamp")) {
+		if (strcmp(DRV_GetEnergySensorNames(index)->hass_dev_class,"timestamp")) {
 			cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
 		}
 		//20241024 XJIKKA if unit is not set (drv_bl_shared.c @ "power_factor"), mqtt value unit_of_meas was empty - HASS log:
