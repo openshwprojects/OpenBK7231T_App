@@ -118,6 +118,8 @@ int g_uart_init_counter = 0;
 int g_uart_manualInitCounter = -1;
 
 void UART_InitReceiveRingBuffer(int size){
+    //XJIKKA 20241122 - Note that the actual usable buffer size must be g_recvBufSize-1, 
+    //otherwise there would be no difference between an empty and a full buffer.
 	if(g_recvBuf!=0)
         free(g_recvBuf);
 	g_recvBuf = (byte*)malloc(size);
@@ -130,7 +132,7 @@ void UART_InitReceiveRingBuffer(int size){
 int UART_GetDataSize() {
     return (g_recvBufIn >= g_recvBufOut
                 ? g_recvBufIn - g_recvBufOut
-                : g_recvBufIn + (g_recvBufSize - g_recvBufOut) + 1);
+                : g_recvBufIn + (g_recvBufSize - g_recvBufOut)); //XJIKKA 20241122 fixed buffer size calculation on ring bufferroverflow
 }
 
 byte UART_GetByte(int idx) {
@@ -146,6 +148,13 @@ void UART_AppendByteToReceiveRingBuffer(int rc) {
     if (UART_GetDataSize() < (g_recvBufSize - 1)) {
         g_recvBuf[g_recvBufIn++] = rc;
         g_recvBufIn %= g_recvBufSize;
+    }
+    //XJIKKA 20241122 if the same pointer is reached (in and out), we must also advance 
+    //the outbuffer pointer, otherwise UART_GetDataSize will return g_recvBufSize.
+    //This way now we always have the last (g_recvBufSize - 1) bytes
+    if (g_recvBufIn == g_recvBufOut) {
+      g_recvBufOut++;
+      g_recvBufOut %= g_recvBufSize;
     }
 }
 
