@@ -2313,7 +2313,7 @@ void TuyaMCU_Init()
 	}
 
 	UART_InitUART(g_baudRate, 0);
-	UART_InitReceiveRingBuffer(512);
+	UART_InitReceiveRingBuffer(1024);
 	// uartSendHex 55AA0008000007
 	//cmddetail:{"name":"tuyaMcu_testSendTime","args":"",
 	//cmddetail:"descr":"Sends a example date by TuyaMCU to clock/callendar MCU",
