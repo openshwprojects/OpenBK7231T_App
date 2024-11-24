@@ -2103,10 +2103,17 @@ void TuyaMCU_RunStateMachine_V3() {
 			}
 			else if ((wifi_state_valid == false) && (self_processing_mode == false))
 			{
-				/* Reset wifi state -> Aquirring network connection */
-				Tuya_SetWifiState(g_defaultTuyaMCUWiFiState);
-				addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_WIFI_STATE.\n");
-				TuyaMCU_SendCommandWithData(TUYA_CMD_WIFI_STATE, NULL, 0);
+				if (1) {
+					TuyaMCU_SendCommandWithData(0x08, NULL, 0);
+					addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send 0x08.\n");
+				}
+				else {
+
+					/* Reset wifi state -> Aquirring network connection */
+					Tuya_SetWifiState(g_defaultTuyaMCUWiFiState);
+					addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_WIFI_STATE.\n");
+					TuyaMCU_SendCommandWithData(TUYA_CMD_WIFI_STATE, NULL, 0);
+				}
 			}
 			else if (state_updated == false)
 			{
