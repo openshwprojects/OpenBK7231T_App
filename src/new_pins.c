@@ -38,6 +38,23 @@ int BTN_HOLD_REPEAT_MS;
 byte *g_defaultWakeEdge = 0;
 int g_initialPinStates = 0;
 
+#if ALLOW_SSID2
+int g_LastSSIDRetainChannel = -1; // -1 disabled, 0..MAX_RETAIN_CHANNELS-1 channel to store last SSID
+
+int FV_GetLastSSID_StoredValue(int adefault) {
+	if ((g_LastSSIDRetainChannel < 0) || (g_LastSSIDRetainChannel >= MAX_RETAIN_CHANNELS)) return adefault;
+	int fval = HAL_FlashVars_GetChannelValue(g_LastSSIDRetainChannel);
+	return (fval & 1);	////only SSID1 (0) and SSID2 (1) allowed
+}
+void FV_UpdateLastSSIDIfChanged_StoredValue(int assidindex) {
+	if ((g_LastSSIDRetainChannel < 0) || (g_LastSSIDRetainChannel >= MAX_RETAIN_CHANNELS)) return;
+	if ((assidindex < 0) && (assidindex > 1)) return;	//only SSID1 (0) and SSID2 (1) allowed
+	int fval = HAL_FlashVars_GetChannelValue(g_LastSSIDRetainChannel);
+	if (fval == g_LastSSIDRetainChannel) return;	//same value, no update
+	HAL_FlashVars_SaveChannel(g_LastSSIDRetainChannel,assidindex);
+}
+#endif
+
 void PIN_DeepSleep_MakeSureEdgesAreAlloced() {
 	int i;
 	if (g_defaultWakeEdge == 0) {
@@ -2172,7 +2189,26 @@ static commandResult_t CMD_SetChannelType(const void* context, const char* cmd, 
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Channel %i type changed to %s", channel, type);
 	return CMD_RES_OK;
 }
+// setLastSSIDChannel [-1 or RetainChannelIndex]
+static commandResult_t CMD_setLastSSIDChannel(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() >= 1) {
+		int fval = Tokenizer_GetArgInteger(0);
+		if ((fval < -1) || (fval >= MAX_RETAIN_CHANNELS - 1)) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "LastSSIDChannel value error: %i Allowed values (-1, 0..%i)", fval, MAX_RETAIN_CHANNELS - 1);
+			return CMD_RES_BAD_ARGUMENT;
+		}
+		g_LastSSIDRetainChannel = fval;
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "LastSSIDChannel changed to %i", g_LastSSIDRetainChannel);
+	}
+	else {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "LastSSIDChannel is %i", g_LastSSIDRetainChannel);
+	}
+
+	return CMD_RES_OK;
+}
 /// @brief Computes the Relay and PWM count.
 /// @param relayCount Number of relay and LED channels.
 /// @param pwmCount Number of PWM channels.
@@ -2334,5 +2370,10 @@ void PIN_AddCommands(void)
 	//cmddetail:"fn":"CMD_setButtonHoldRepeat","file":"new_pins.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("setButtonHoldRepeat", CMD_setButtonHoldRepeat, NULL);
+	//cmddetail:{"name":"setLastSSIDChannel","args":"[Value]",
+	//cmddetail:"descr":"Sets retain channel number to store last used SSID, 0..MAX_RETAIN_CHANNELS-1, -1 to disable. Suggested channel number is 7 (MAXMAX_RETAIN_CHANNELS-5). Last four a",
+	//cmddetail:"fn":"CMD_setButtonHoldRepeat","file":"new_pins.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("setLastSSIDChannel", CMD_setLastSSIDChannel, NULL);
 
 }
