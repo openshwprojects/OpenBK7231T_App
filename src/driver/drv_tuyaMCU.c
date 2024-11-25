@@ -351,7 +351,7 @@ tuyaMCUMapping_t* TuyaMCU_MapIDToChannel(int dpId, int dpType, int channel, int 
 
 // now you can detect TuyaMCU faults with event handler
 // addChangeHandler MissedHeartbeats > 4 setChannel 0 1
-void TuyaMCU_SetHeartbeatTimer(int v) {
+void TuyaMCU_SetHeartbeatCounter(int v) {
 	EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_MISSEDHEARTBEATS, heartbeat_counter, v);
 	heartbeat_counter = v;
 }
@@ -1771,7 +1771,7 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 	{
 	case TUYA_CMD_HEARTBEAT:
 		heartbeat_valid = true;
-		TuyaMCU_SetHeartbeatTimer(0);
+		TuyaMCU_SetHeartbeatCounter(0);
 		break;
 	case TUYA_CMD_MCU_CONF:
 		working_mode_valid = true;
@@ -2069,7 +2069,7 @@ void TuyaMCU_RunStateMachine_V3() {
 		/* Generate heartbeat to keep communication alove */
 		TuyaMCU_SendCommandWithData(TUYA_CMD_HEARTBEAT, NULL, 0);
 		heartbeat_timer = 3;
-		TuyaMCU_SetHeartbeatTimer(heartbeat_counter+1);
+		TuyaMCU_SetHeartbeatCounter(heartbeat_counter+1);
 		if (heartbeat_counter >= 4)
 		{
 			/* unanswerred heartbeats -> lost communication */
