@@ -1297,7 +1297,8 @@ static int ota_persistent_start(void)
  */
 static int ota_persistent_write(const char *buf, const int32_t buf_len)
 {
-	int part_len = 0; // [0, 1, 2, ..., 4K-1], 0, 1, 2, ..., (part_len-1)
+	int part_len = SECTOR_SIZE_4KB; // we might have a buffer so large, that we need to write multiple 4K segments ...
+	int buf_offset = 0; // ... and we need to keep track, what is already written
 
 	if (!is_persistent_started) {
 		return LN_TRUE;
@@ -1309,34 +1310,35 @@ static int ota_persistent_write(const char *buf, const int32_t buf_len)
 		temp4k_offset += buf_len;
 		part_len = 0;
 	}
-	else {
+	while (part_len >= SECTOR_SIZE_4KB) {           // so we didn't copy all data to buffer (part_len would be 0 then)
 		// just copy part of buf to temp4K_buf
-		part_len = temp4k_offset + buf_len - SECTOR_SIZE_4KB;
-		memcpy(temp4K_buf + temp4k_offset, buf, buf_len - part_len);
-		temp4k_offset += buf_len - part_len;
-	}
-	if (temp4k_offset >= (SECTOR_SIZE_4KB - 1)) {
-		// write to flash
-		ADDLOG_DEBUG(LOG_FEATURE_OTA, "write at flash: 0x%08x\r\n", flash_ota_start_addr + flash_ota_offset);
+		part_len = temp4k_offset + buf_len - buf_offset - SECTOR_SIZE_4KB;		// beware, this can be > SECTOR_SIZE_4KB !!!
+		memcpy(temp4K_buf + temp4k_offset, buf + buf_offset, buf_len - buf_offset - part_len);
+		temp4k_offset += buf_len - buf_offset - part_len;
+		buf_offset = buf_len - part_len;
 
-		if (flash_ota_offset == 0) {
-			if (LN_TRUE != ota_download_precheck(APP_SPACE_OFFSET, (image_hdr_t *)temp4K_buf)) 
-			{
-				ADDLOG_DEBUG(LOG_FEATURE_OTA, "ota download precheck failed!\r\n");
-				is_precheck_ok = LN_FALSE;
-				return LN_FALSE;
+		if (temp4k_offset >= SECTOR_SIZE_4KB ) {		
+			// write to flash
+			ADDLOG_DEBUG(LOG_FEATURE_OTA, "write at flash: 0x%08x (temp4k_offset=%i)\r\n", flash_ota_start_addr + flash_ota_offset,temp4k_offset);
+
+			if (flash_ota_offset == 0) {
+				if (LN_TRUE != ota_download_precheck(APP_SPACE_OFFSET, (image_hdr_t *)temp4K_buf)) 
+				{
+					ADDLOG_DEBUG(LOG_FEATURE_OTA, "ota download precheck failed!\r\n");
+					is_precheck_ok = LN_FALSE;
+					return LN_FALSE;
+				}
+			is_precheck_ok = LN_TRUE;
 			}
-		is_precheck_ok = LN_TRUE;
+
+			hal_flash_erase(flash_ota_start_addr + flash_ota_offset, SECTOR_SIZE_4KB);
+			hal_flash_program(flash_ota_start_addr + flash_ota_offset, SECTOR_SIZE_4KB, (uint8_t *)temp4K_buf);
+
+			flash_ota_offset += SECTOR_SIZE_4KB;
+			memset(temp4K_buf, 0, SECTOR_SIZE_4KB);
+			temp4k_offset = 0;
 		}
-
-		hal_flash_erase(flash_ota_start_addr + flash_ota_offset, SECTOR_SIZE_4KB);
-		hal_flash_program(flash_ota_start_addr + flash_ota_offset, SECTOR_SIZE_4KB, (uint8_t *)temp4K_buf);
-
-		flash_ota_offset += SECTOR_SIZE_4KB;
-		memset(temp4K_buf, 0, SECTOR_SIZE_4KB);
-		temp4k_offset = 0;
 	}
-
 	if (part_len > 0) {
 		memcpy(temp4K_buf + temp4k_offset, buf + (buf_len - part_len), part_len);
 		temp4k_offset += part_len;
