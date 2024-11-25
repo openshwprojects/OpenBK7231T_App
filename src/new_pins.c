@@ -39,6 +39,10 @@ byte *g_defaultWakeEdge = 0;
 int g_initialPinStates = 0;
 
 #if ALLOW_SSID2
+//20241125 XJIKKA SSID retain - last used SSID will be preserved
+// To enable this feature, the channel that will be used to store the last SSID 
+// must be set using the setStartupSSIDChannel command in early.bat. 
+// It has to be in early.bat.Autoexec.bat is processed after the wifi data is loaded.
 int g_StartupSSIDRetainChannel = -1; // -1 disabled, 0..MAX_RETAIN_CHANNELS-1 channel to store last SSID
 
 int FV_GetStartupSSID_StoredValue(int adefault) {
