@@ -314,7 +314,7 @@ void CheckForSSID12_Switch() {
 //Note that it must be set in early.bat using CMD_setLastSSIDChannel
 void Init_WiFiSSIDactual_FromChannelIfSet(void) {
 #if ALLOW_SSID2
-	g_SSIDactual = FV_TryGetLastSSID_StoredValue(SSID_USE_SSID1);
+	g_SSIDactual = FV_GetLastSSID_StoredValue(SSID_USE_SSID1);
 #endif
 }
 const char* CFG_GetWiFiSSIDX() {
