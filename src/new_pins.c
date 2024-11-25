@@ -39,22 +39,22 @@ byte *g_defaultWakeEdge = 0;
 int g_initialPinStates = 0;
 
 #if ALLOW_SSID2
-int g_LastSSIDRetainChannel = -1; // -1 disabled, 0..MAX_RETAIN_CHANNELS-1 channel to store last SSID
+int g_StartupSSIDRetainChannel = -1; // -1 disabled, 0..MAX_RETAIN_CHANNELS-1 channel to store last SSID
 
-int FV_GetLastSSID_StoredValue(int adefault) {
-	if ((g_LastSSIDRetainChannel < 0) || (g_LastSSIDRetainChannel >= MAX_RETAIN_CHANNELS)) return adefault;
-	int fval = HAL_FlashVars_GetChannelValue(g_LastSSIDRetainChannel);
+int FV_GetStartupSSID_StoredValue(int adefault) {
+	if ((g_StartupSSIDRetainChannel < 0) || (g_StartupSSIDRetainChannel >= MAX_RETAIN_CHANNELS)) return adefault;
+	int fval = HAL_FlashVars_GetChannelValue(g_StartupSSIDRetainChannel);
 	return (fval & 1);	////only SSID1 (0) and SSID2 (1) allowed
 }
-void FV_UpdateLastSSIDIfChanged_StoredValue(int assidindex) {
-	if ((g_LastSSIDRetainChannel < 0) || (g_LastSSIDRetainChannel >= MAX_RETAIN_CHANNELS)) return;
+void FV_UpdateStartupSSIDIfChanged_StoredValue(int assidindex) {
+	if ((g_StartupSSIDRetainChannel < 0) || (g_StartupSSIDRetainChannel >= MAX_RETAIN_CHANNELS)) return;
 	if ((assidindex < 0) && (assidindex > 1)) return;	//only SSID1 (0) and SSID2 (1) allowed
-	int fval = HAL_FlashVars_GetChannelValue(g_LastSSIDRetainChannel);
+	int fval = HAL_FlashVars_GetChannelValue(g_StartupSSIDRetainChannel);
 	if (fval == assidindex) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "WiFi unchanged (SSID%i), HAL_FlashVars_SaveChannel skipped", assidindex+1);
 		return;	//same value, no update
 	}
-	HAL_FlashVars_SaveChannel(g_LastSSIDRetainChannel,assidindex);
+	HAL_FlashVars_SaveChannel(g_StartupSSIDRetainChannel,assidindex);
 }
 #endif
 
@@ -2192,24 +2192,47 @@ static commandResult_t CMD_SetChannelType(const void* context, const char* cmd, 
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Channel %i type changed to %s", channel, type);
 	return CMD_RES_OK;
 }
-// setLastSSIDChannel [-1 or RetainChannelIndex]
-static commandResult_t CMD_setLastSSIDChannel(const void* context, const char* cmd, const char* args, int cmdFlags) {
+// setStartupSSIDChannel [-1 or RetainChannelIndex]
+static commandResult_t CMD_setStartupSSIDChannel(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, 0);
 
 	if (Tokenizer_GetArgsCount() >= 1) {
 		int fval = Tokenizer_GetArgInteger(0);
 		if ((fval < -1) || (fval >= MAX_RETAIN_CHANNELS - 1)) {
-			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "LastSSIDChannel value error: %i Allowed values (-1, 0..%i)", fval, MAX_RETAIN_CHANNELS - 1);
+			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "StartupSSIDChannel value error: %i Allowed values (-1, 0..%i)", fval, MAX_RETAIN_CHANNELS - 1);
 			return CMD_RES_BAD_ARGUMENT;
 		}
-		g_LastSSIDRetainChannel = fval;
-		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "LastSSIDChannel changed to %i", g_LastSSIDRetainChannel);
+		g_StartupSSIDRetainChannel = fval;
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "StartupSSIDChannel changed to %i", g_StartupSSIDRetainChannel);
 	}
 	else {
-		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "LastSSIDChannel is %i", g_LastSSIDRetainChannel);
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "StartupSSIDChannel is %i", g_StartupSSIDRetainChannel);
 	}
+	return CMD_RES_OK;
+}
+// setStartupSSID [0/1]  
+// Sets startup SSID - 0=SSID1 1=SSID2 - which SSID will be used after reboot, setStartupSSIDChannel and SSID2 must be set
+static commandResult_t CMD_setStartupSSID(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
+	Tokenizer_TokenizeString(args, 0);
+
+	int fold = FV_GetStartupSSID_StoredValue(0);
+	if (Tokenizer_GetArgsCount() >= 1) {
+		int fval = Tokenizer_GetArgInteger(0);
+		if ((fval < 0) || (fval >1)) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "StartupSSID value error: %i Allowed values (0, 1)", fval);
+			return CMD_RES_BAD_ARGUMENT;
+		}
+		if (g_StartupSSIDRetainChannel<0) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Cannot set setStartupSSID, StartupSSIDChannel not set. Use setStartupSSIDChannel first");
+			return CMD_RES_BAD_ARGUMENT;
+		}
+		if (!(fval==fold)) FV_UpdateStartupSSIDIfChanged_StoredValue(fval);	//update ony on change
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "StartupSSID changed to %i", fval);
+	} else {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "StartupSSID is %i", fold);
+	}
 	return CMD_RES_OK;
 }
 /// @brief Computes the Relay and PWM count.
@@ -2373,10 +2396,14 @@ void PIN_AddCommands(void)
 	//cmddetail:"fn":"CMD_setButtonHoldRepeat","file":"new_pins.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("setButtonHoldRepeat", CMD_setButtonHoldRepeat, NULL);
-	//cmddetail:{"name":"setLastSSIDChannel","args":"[Value]",
-	//cmddetail:"descr":"Sets retain channel number to store last used SSID, 0..MAX_RETAIN_CHANNELS-1, -1 to disable. Suggested channel number is 7 (MAXMAX_RETAIN_CHANNELS-5). Last four a",
-	//cmddetail:"fn":"CMD_setButtonHoldRepeat","file":"new_pins.c","requires":"",
+	//cmddetail:{"name":"setStartupSSIDChannel","args":"[Value]",
+	//cmddetail:"descr":"Sets retain channel number to store last used SSID, 0..MAX_RETAIN_CHANNELS-1, -1 to disable. Suggested channel number is 7 (MAXMAX_RETAIN_CHANNELS-5)",
+	//cmddetail:"fn":"CMD_setStartupSSIDChannel","file":"new_pins.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("setLastSSIDChannel", CMD_setLastSSIDChannel, NULL);
-
+	CMD_RegisterCommand("setStartupSSIDChannel", CMD_setStartupSSIDChannel, NULL);
+	//cmddetail:{"name":"setStartupSSID","args":"[Value]",
+	//cmddetail:"descr":"Sets startup SSID, 0 (SSID0) 1 (SSID1)",
+	//cmddetail:"fn":"CMD_setStartupSSID","file":"new_pins.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("setStartupSSID", CMD_setStartupSSID, NULL);
 }

@@ -1435,8 +1435,8 @@ int PIN_IOR_NofChan(int test);
 extern const char* g_channelTypeNames[];
 
 #if ALLOW_SSID2
-int FV_GetLastSSID_StoredValue(int adefault);
-void FV_UpdateLastSSIDIfChanged_StoredValue(int assidindex);
+int FV_GetStartupSSID_StoredValue(int adefault);
+void FV_UpdateStartupSSIDIfChanged_StoredValue(int assidindex);
 #endif
 
 #endif

@@ -311,10 +311,10 @@ void CheckForSSID12_Switch() {
 }
 
 //20241125 XJIKKA Init last stored SSID from RetailChannel if set
-//Note that it must be set in early.bat using CMD_setLastSSIDChannel
+//Note that it must be set in early.bat using CMD_setStartupSSIDChannel
 void Init_WiFiSSIDactual_FromChannelIfSet(void) {
 #if ALLOW_SSID2
-	g_SSIDactual = FV_GetLastSSID_StoredValue(SSID_USE_SSID1);
+	g_SSIDactual = FV_GetStartupSSID_StoredValue(SSID_USE_SSID1);
 #endif
 }
 const char* CFG_GetWiFiSSIDX() {
@@ -380,7 +380,7 @@ void Main_OnWiFiStatusChange(int code)
 		break;
 	case WIFI_STA_CONNECTED:
 #if ALLOW_SSID2
-		if (!g_bHasWiFiConnected) FV_UpdateLastSSIDIfChanged_StoredValue(g_SSIDactual);	//update ony on first connect
+		if (!g_bHasWiFiConnected) FV_UpdateStartupSSIDIfChanged_StoredValue(g_SSIDactual);	//update ony on first connect
 #endif
 		g_bHasWiFiConnected = 1;
 #if ALLOW_SSID2
@@ -1356,7 +1356,7 @@ void Main_Init_After_Delay()
 		ADDLOGF_INFO("###### safe mode activated - boot failures %d", g_bootFailures);
 	}
 #if ALLOW_SSID2
-	Init_WiFiSSIDactual_FromChannelIfSet();//Channel must be set in early.bat using CMD_setLastSSIDChannel
+	Init_WiFiSSIDactual_FromChannelIfSet();//Channel must be set in early.bat using CMD_setStartupSSIDChannel
 #endif
 	wifi_ssid = CFG_GetWiFiSSIDX();
 	wifi_pass = CFG_GetWiFiPassX();
