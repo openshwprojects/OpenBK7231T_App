@@ -50,7 +50,10 @@ void FV_UpdateLastSSIDIfChanged_StoredValue(int assidindex) {
 	if ((g_LastSSIDRetainChannel < 0) || (g_LastSSIDRetainChannel >= MAX_RETAIN_CHANNELS)) return;
 	if ((assidindex < 0) && (assidindex > 1)) return;	//only SSID1 (0) and SSID2 (1) allowed
 	int fval = HAL_FlashVars_GetChannelValue(g_LastSSIDRetainChannel);
-	if (fval == g_LastSSIDRetainChannel) return;	//same value, no update
+	if (fval == assidindex) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "WiFi unchanged (SSID%i), HAL_FlashVars_SaveChannel skipped", assidindex+1);
+		return;	//same value, no update
+	}
 	HAL_FlashVars_SaveChannel(g_LastSSIDRetainChannel,assidindex);
 }
 #endif
