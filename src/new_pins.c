@@ -2228,8 +2228,12 @@ static commandResult_t CMD_setStartupSSID(const void* context, const char* cmd, 
 			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Cannot set setStartupSSID, StartupSSIDChannel not set. Use setStartupSSIDChannel first");
 			return CMD_RES_BAD_ARGUMENT;
 		}
-		if (!(fval==fold)) FV_UpdateStartupSSIDIfChanged_StoredValue(fval);	//update ony on change
-		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "StartupSSID changed to %i", fval);
+		if (!(fval==fold)) {
+			FV_UpdateStartupSSIDIfChanged_StoredValue(fval);	//update ony on change
+			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "StartupSSID changed to %i", fval);
+		} else {
+			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "StartupSSID unchanged %i", fval);
+		}
 	} else {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "StartupSSID is %i", fold);
 	}
