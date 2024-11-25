@@ -2196,6 +2196,7 @@ static commandResult_t CMD_SetChannelType(const void* context, const char* cmd, 
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Channel %i type changed to %s", channel, type);
 	return CMD_RES_OK;
 }
+#if ALLOW_SSID2
 // setStartupSSIDChannel [-1 or RetainChannelIndex]
 static commandResult_t CMD_setStartupSSIDChannel(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
@@ -2244,6 +2245,7 @@ static commandResult_t CMD_setStartupSSID(const void* context, const char* cmd, 
 	}
 	return CMD_RES_OK;
 }
+#endif
 /// @brief Computes the Relay and PWM count.
 /// @param relayCount Number of relay and LED channels.
 /// @param pwmCount Number of PWM channels.
@@ -2405,6 +2407,7 @@ void PIN_AddCommands(void)
 	//cmddetail:"fn":"CMD_setButtonHoldRepeat","file":"new_pins.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("setButtonHoldRepeat", CMD_setButtonHoldRepeat, NULL);
+#if ALLOW_SSID2
 	//cmddetail:{"name":"setStartupSSIDChannel","args":"[Value]",
 	//cmddetail:"descr":"Sets retain channel number to store last used SSID, 0..MAX_RETAIN_CHANNELS-1, -1 to disable. Suggested channel number is 7 (MAXMAX_RETAIN_CHANNELS-5)",
 	//cmddetail:"fn":"CMD_setStartupSSIDChannel","file":"new_pins.c","requires":"",
@@ -2415,4 +2418,5 @@ void PIN_AddCommands(void)
 	//cmddetail:"fn":"CMD_setStartupSSID","file":"new_pins.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("setStartupSSID", CMD_setStartupSSID, NULL);
+#endif
 }
