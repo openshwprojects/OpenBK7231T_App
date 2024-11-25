@@ -2212,7 +2212,8 @@ static commandResult_t CMD_setStartupSSIDChannel(const void* context, const char
 	return CMD_RES_OK;
 }
 // setStartupSSID [0/1]  
-// Sets startup SSID - 0=SSID1 1=SSID2 - which SSID will be used after reboot, setStartupSSIDChannel and SSID2 must be set
+// Sets startup SSID - 0=SSID1 1=SSID2 - which SSID will be used after reboot. 
+// for this to work, setStartupSSIDChannel and SSID2 must be set
 static commandResult_t CMD_setStartupSSID(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, 0);
@@ -2225,11 +2226,11 @@ static commandResult_t CMD_setStartupSSID(const void* context, const char* cmd, 
 			return CMD_RES_BAD_ARGUMENT;
 		}
 		if (g_StartupSSIDRetainChannel<0) {
-			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Cannot set setStartupSSID, StartupSSIDChannel not set. Use setStartupSSIDChannel first");
+			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Cannot set StartupSSID, StartupSSIDChannel is not set.");
 			return CMD_RES_BAD_ARGUMENT;
 		}
 		if (!(fval==fold)) {
-			FV_UpdateStartupSSIDIfChanged_StoredValue(fval);	//update ony on change
+			FV_UpdateStartupSSIDIfChanged_StoredValue(fval);//update flash only when changed
 			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "StartupSSID changed to %i", fval);
 		} else {
 			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "StartupSSID unchanged %i", fval);
