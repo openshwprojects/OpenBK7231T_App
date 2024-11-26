@@ -193,7 +193,7 @@ void Test_Scripting_StartScript() {
 	CMD_ExecuteCommand("runAdder", 0);
 	Sim_RunFrames(50, false);
 	SELFTEST_ASSERT_CHANNEL(16, 4);
-	CMD_ExecuteCommand("backlog runSubber; runSubber", 0); // both
+	CMD_ExecuteCommand("backlog runSubber; runAdder", 0); // both
 	Sim_RunFrames(50, false);
 	SELFTEST_ASSERT_CHANNEL(16, 4);
 }
