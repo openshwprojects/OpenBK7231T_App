@@ -118,7 +118,7 @@ int g_uart_init_counter = 0;
 int g_uart_manualInitCounter = -1;
 
 void UART_InitReceiveRingBuffer(int size){
-    //XJIKKA 20241122 - Note that the actual usable buffer size must be g_recvBufSize-1, 
+    //XJIKKA 20241122 - Note, that the actual usable buffer size must be g_recvBufSize-1, 
     //otherwise there would be no difference between an empty and a full buffer.
 	if(g_recvBuf!=0)
         free(g_recvBuf);
