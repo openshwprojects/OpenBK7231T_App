@@ -77,7 +77,33 @@ bool ST_IsIntegerString(const char *s) {
 	}
 	return true;
 }
-bool SIM_HasMQTTHistoryStringWithJSONPayload(const char *topic, bool bPrefixMode, const char *object1, const char *object2, const char *key, const char *value) {
+bool CheckForKeyVal(cJSON *tmp, const char *key, const char *value) {
+	tmp = cJSON_GetObjectItemCaseSensitive(tmp, key);
+	if (tmp) {
+		if (tmp->valuestring) {
+			const char *ret = tmp->valuestring;
+			if (!strcmp(ret, value)) {
+				return true;
+			}
+		}
+		else {
+			if (ST_IsIntegerString(value)) {
+				if (atoi(value) == tmp->valueint) {
+					return true;
+				}
+			}
+			else {
+				printf("TODO: float compare selftest");
+			}
+		}
+	}
+	return false;
+}
+bool SIM_HasMQTTHistoryStringWithJSONPayload(const char *topic, bool bPrefixMode, 
+	const char *object1, const char *object2, 
+	const char *key, const char *value,
+	const char *key2, const char *value2,
+	const char *key3, const char *value3) {
 	mqttHistoryEntry_t *ne;
 	int cur = history_tail;
 	while (cur != history_head) {
@@ -106,25 +132,22 @@ bool SIM_HasMQTTHistoryStringWithJSONPayload(const char *topic, bool bPrefixMode
 						tmp = cJSON_GetObjectItemCaseSensitive(tmp, object2);
 					}
 					if (tmp) {
-						tmp = cJSON_GetObjectItemCaseSensitive(tmp, key);
-						if (tmp) {
-							if (tmp->valuestring) {
-								const char *ret = tmp->valuestring;
-								if (!strcmp(ret, value)) {
-									return true;
-								}
-							}
-							else {
-								if (ST_IsIntegerString(value)) {
-									if (atoi(value) == tmp->valueint) {
-										return true;
-									}
-								}
-								else {
-									printf("TODO: float compare selftest");
-								}
+						bool bOk = true;
+						if (CheckForKeyVal(tmp, key, value) == false) {
+							bOk = false;
+						}
+						if (key2) {
+							if (CheckForKeyVal(tmp, key2, value2) == false) {
+								bOk = false;
 							}
 						}
+						if (key3) {
+							if (CheckForKeyVal(tmp, key3, value3) == false) {
+								bOk = false;
+							}
+						}
+						if (bOk)
+							return true;
 					}
 
 				}

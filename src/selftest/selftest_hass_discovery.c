@@ -310,6 +310,37 @@ void Test_HassDiscovery_SHTSensor() {
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "%");
 	
 }
+void Test_VerifyForCommonPowerMeteringStuff() {
+
+	// generic tests to see if something power-related was published
+
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_3KEY("homeassistant", true, 0, 0,
+		"dev_cla", "voltage",
+		"stat_t", "~/voltage/get",
+		"unit_of_meas", "V");
+
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_3KEY("homeassistant", true, 0, 0,
+		"dev_cla", "power",
+		"stat_t", "~/power/get",
+		"unit_of_meas", "W");
+
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_3KEY("homeassistant", true, 0, 0,
+		"dev_cla", "current",
+		"stat_t", "~/current/get",
+		"unit_of_meas", "A");
+
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_3KEY("homeassistant", true, 0, 0,
+		"dev_cla", "energy",
+		"stat_t", "~/energycounter/get",
+		"unit_of_meas", "Wh");
+
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_3KEY("homeassistant", true, 0, 0,
+		"dev_cla", "energy",
+		"stat_t", "~/energycounter_last_hour/get",
+		"unit_of_meas", "Wh");
+
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_cla", "measurement");
+}
 void Test_HassDiscovery_BL0942() {
 	const char *shortName = "PowerMeteringFake";
 	const char *fullName = "Windows Fake BL0942";
@@ -327,20 +358,7 @@ void Test_HassDiscovery_BL0942() {
 	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
 	Sim_RunSeconds(10, false);
 
-	// generic tests to see if something power-related was published
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "V");
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "W");
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "Wh");
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "A");
-
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "dev_cla", "voltage");
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "dev_cla", "power");
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "dev_cla", "current");
-
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/power/get");
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/current/get");
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/voltage/get");
-
+	Test_VerifyForCommonPowerMeteringStuff();
 }
 void Test_HassDiscovery_BL0937() {
 	const char *shortName = "PowerMeteringFake";
@@ -363,20 +381,7 @@ void Test_HassDiscovery_BL0937() {
 	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
 	Sim_RunSeconds(10, false);
 
-	// generic tests to see if something power-related was published
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "V");
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "W");
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "Wh");
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "A");
-
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "dev_cla", "voltage");
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "dev_cla", "power");
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "dev_cla", "current");
-
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/power/get");
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/current/get");
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/voltage/get");
-
+	Test_VerifyForCommonPowerMeteringStuff();
 }
 void Test_HassDiscovery_digitalInput() {
 	const char *shortName = "DigitalInputTest";
