@@ -57,6 +57,23 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
 
 	return 0;
 }
+int HAL_SetupWiFiAccessPoint(const char *ssid, const char *key) {
+	
+	if ( key && strlen(key) < 8){
+		printf("ERROR! key(%s) needs to be at least 8 characters!\r\n", key);
+		if (g_wifiStatusCallback != 0) {
+			g_wifiStatusCallback(WIFI_AP_FAILED);
+		}
+		return -1;
+	}
+
+	net_switch_mode(WLAN_MODE_HOSTAP);
+	wlan_ap_disable();
+	wlan_ap_set((uint8_t *)ssid, strlen(ssid), (uint8_t *)key);
+	wlan_ap_enable();
+
+	return 0;
+}
 static void wlan_msg_recv(uint32_t event, uint32_t data, void *arg)
 {
 	uint16_t type = EVENT_SUBTYPE(event);
