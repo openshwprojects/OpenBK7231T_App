@@ -103,7 +103,8 @@ bool SIM_HasMQTTHistoryStringWithJSONPayload(const char *topic, bool bPrefixMode
 	const char *object1, const char *object2, 
 	const char *key, const char *value,
 	const char *key2, const char *value2,
-	const char *key3, const char *value3) {
+	const char *key3, const char *value3,
+	const char *key4, const char *value4) {
 	mqttHistoryEntry_t *ne;
 	int cur = history_tail;
 	while (cur != history_head) {
@@ -146,10 +147,14 @@ bool SIM_HasMQTTHistoryStringWithJSONPayload(const char *topic, bool bPrefixMode
 								bOk = false;
 							}
 						}
+						if (key4) {
+							if (CheckForKeyVal(tmp, key4, value4) == false) {
+								bOk = false;
+							}
+						}
 						if (bOk)
 							return true;
 					}
-
 				}
 				cJSON_Delete(json);
 			}

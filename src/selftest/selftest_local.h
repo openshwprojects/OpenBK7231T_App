@@ -51,9 +51,10 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 #define SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT(topic, value, bRetain) SELFTEST_ASSERT(SIM_CheckMQTTHistoryForFloat(topic,value,bRetain));
 #define SELFTEST_ASSERT_FLAG(flag, value) SELFTEST_ASSERT(CFG_HasFlag(flag)==value);
 #define SELFTEST_ASSERT_HAS_MQTT_JSON_SENT(topic, bPrefixMode) SELFTEST_ASSERT(!SIM_BeginParsingMQTTJSON(topic, bPrefixMode));
-#define SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY(topic, bPrefixMode, object1, object2, key, value) SELFTEST_ASSERT(SIM_HasMQTTHistoryStringWithJSONPayload(topic, bPrefixMode, object1, object2, key, value, 0, 0, 0, 0));
-#define SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_TWOKEY(topic, bPrefixMode, object1, object2, key, value, key2, value2) SELFTEST_ASSERT(SIM_HasMQTTHistoryStringWithJSONPayload(topic, bPrefixMode, object1, object2, key, value, key2, value2, 0, 0));
-#define SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_3KEY(topic, bPrefixMode, object1, object2, key, value, key2, value2, key3, value3) SELFTEST_ASSERT(SIM_HasMQTTHistoryStringWithJSONPayload(topic, bPrefixMode, object1, object2, key, value, key2, value2, key3, value3));
+#define SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY(topic, bPrefixMode, object1, object2, key, value) SELFTEST_ASSERT(SIM_HasMQTTHistoryStringWithJSONPayload(topic, bPrefixMode, object1, object2, key, value, 0, 0, 0, 0, 0, 0));
+#define SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_TWOKEY(topic, bPrefixMode, object1, object2, key, value, key2, value2) SELFTEST_ASSERT(SIM_HasMQTTHistoryStringWithJSONPayload(topic, bPrefixMode, object1, object2, key, value, key2, value2, 0, 0, 0, 0));
+#define SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_3KEY(topic, bPrefixMode, object1, object2, key, value, key2, value2, key3, value3) SELFTEST_ASSERT(SIM_HasMQTTHistoryStringWithJSONPayload(topic, bPrefixMode, object1, object2, key, value, key2, value2, key3, value3, 0, 0));
+#define SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY(topic, bPrefixMode, object1, object2, key, value, key2, value2, key3, value3, key4, value4) SELFTEST_ASSERT(SIM_HasMQTTHistoryStringWithJSONPayload(topic, bPrefixMode, object1, object2, key, value, key2, value2, key3, value3, key4, value4));
 #define SELFTEST_ASSERT_HAS_SENT_UART_STRING(str) SELFTEST_ASSERT(SIM_UART_ExpectAndConsumeHexStr(str));
 #define SELFTEST_ASSERT_HAS_UART_EMPTY() SELFTEST_ASSERT(SIM_UART_GetDataSize()==0);
 
@@ -192,7 +193,7 @@ bool SIM_CheckMQTTHistoryForString(const char *topic, const char *value, bool bR
 bool SIM_HasMQTTHistoryStringWithJSONPayload(const char *topic, bool bPrefixMode, 
 	const char *object1, const char *object2,
 	const char *key, const char *value, const char *key2, const char *val2,
-	const char *key3, const char *val3);
+	const char *key3, const char *val3, const char *key4, const char *val4);
 bool SIM_CheckMQTTHistoryForFloat(const char *topic, float value, bool bRetain);
 const char *SIM_GetMQTTHistoryString(const char *topic, bool bPrefixMode);
 bool SIM_BeginParsingMQTTJSON(const char *topic, bool bPrefixMode);
