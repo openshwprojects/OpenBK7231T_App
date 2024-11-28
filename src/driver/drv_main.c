@@ -50,6 +50,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "Freeze",		Freeze_Init,			Freeze_OnEverySecond,			NULL, Freeze_RunFrame, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_TUYAMCU_PIXELLED
+	//drvdetail:{"name":"tmPixLED",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"qqqqqs",
+	//drvdetail:"requires":""}
+	{ "tmPixLED",		TuyaMCU_PixelLED_Init,			NULL,			TuyaMCU_PixelLED_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+#endif
 #if ENABLE_DRIVER_PIXELANIM
 	//drvdetail:{"name":"PixelAnim",
 	//drvdetail:"title":"TODO",

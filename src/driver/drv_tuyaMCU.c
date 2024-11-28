@@ -580,6 +580,10 @@ void TuyaMCU_SendHexString(uint8_t id, char data[]) {
 }
 
 void TuyaMCU_SendString(uint8_t id, char data[]) {
+	if (g_tuyaMCUpayloadBuffer == 0) {
+		// TuyaMCU not ran
+		return;
+	}
 	uint16_t len = strlen(data);
 	uint16_t payload_len = 4 + len;
 	g_tuyaMCUpayloadBuffer[0] = id;
