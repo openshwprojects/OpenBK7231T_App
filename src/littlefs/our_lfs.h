@@ -47,8 +47,8 @@
 #define LFS_BLOCKS_END 0x1D0000
 #elif PLATFORM_BL602
 // start media partition in bldevcube 1.4.8 partition config
-#define LFS_BLOCKS_START 0x1A2000
-#define LFS_BLOCKS_START_MIN 0x1A2000
+#define LFS_BLOCKS_START 0x190000
+#define LFS_BLOCKS_START_MIN 0x190000
 // end media partition
 #define LFS_BLOCKS_END 0x1E9000
 
