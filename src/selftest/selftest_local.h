@@ -189,6 +189,7 @@ void SIM_SendFakeMQTTAndRunSimFrame_CMND_ViaGroupTopic(const char *command, cons
 void SIM_SendFakeMQTTRawChannelSet(int channelIndex, const char *arguments);
 void SIM_SendFakeMQTTRawChannelSet_ViaGroupTopic(int channelIndex, const char *arguments);
 void SIM_ClearMQTTHistory();
+void SIM_DumpMQTTHistory();
 bool SIM_CheckMQTTHistoryForString(const char *topic, const char *value, bool bRetain);
 bool SIM_HasMQTTHistoryStringWithJSONPayload(const char *topic, bool bPrefixMode, 
 	const char *object1, const char *object2,

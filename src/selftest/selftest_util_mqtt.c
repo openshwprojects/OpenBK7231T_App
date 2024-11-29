@@ -99,6 +99,30 @@ bool CheckForKeyVal(cJSON *tmp, const char *key, const char *value) {
 	}
 	return false;
 }
+void SIM_DumpMQTTHistory() {
+	int cur = history_tail;
+	int index = 0;
+
+	printf("MQTT history dump (total entries: %d):\n",
+		(history_head >= history_tail) ? (history_head - history_tail)
+		: (MAX_MQTT_HISTORY - history_tail + history_head));
+	printf("-------------------------------------------------------------\n");
+	while (cur != history_head) {
+		mqttHistoryEntry_t *entry = &mqtt_history[cur];
+		printf("Entry %d:\n", index++);
+		printf("  Topic:   %s\n", entry->topic);
+		printf("  Payload: %s\n", entry->value);
+		printf("  QoS:     %d\n", entry->qos);
+		printf("  Retain:  %s\n", entry->bRetain ? "True" : "False");
+		printf("-------------------------------------------------------------\n");
+
+		cur++;
+		cur %= MAX_MQTT_HISTORY;
+	}
+	if (index == 0) {
+		printf("No MQTT history available.\n");
+	}
+}
 bool SIM_HasMQTTHistoryStringWithJSONPayload(const char *topic, bool bPrefixMode, 
 	const char *object1, const char *object2, 
 	const char *key, const char *value,
