@@ -1415,6 +1415,7 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 	if (http_getArg(request->url, "pass2", tmpA, sizeof(tmpA))) {
 		bChanged |= CFG_SetWiFiPass2(tmpA);
 	}
+#if ALLOW_SSID2
 	if (http_getArg(request->url, "startSSID", tmpA, sizeof(tmpA))) {
 		int start_SSID = atoi(tmpA);
 		addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, "start_SSID with value %i", start_SSID);
@@ -1442,7 +1443,7 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 			break;
 		}
 	}
-	
+#endif	
 #if ALLOW_WEB_PASSWORD
 	if (http_getArg(request->url, "web_admin_password_enabled", tmpA, sizeof(tmpA))) {
 		int web_password_enabled = atoi(tmpA);
