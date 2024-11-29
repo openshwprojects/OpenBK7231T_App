@@ -37,7 +37,7 @@ void SIM_SendFakeMQTTRawChannelSet_ViaGroupTopic(int channelIndex, const char *a
 	SIM_SendFakeMQTTRawChannelSet_Generic(myName, channelIndex, arguments);
 }
 
-#define MAX_MQTT_HISTORY 64
+#define MAX_MQTT_HISTORY 256
 typedef struct mqttHistoryEntry_s {
 	char topic[256];
 	char value[4096];
