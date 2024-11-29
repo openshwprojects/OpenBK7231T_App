@@ -1435,8 +1435,25 @@ int PIN_IOR_NofChan(int test);
 extern const char* g_channelTypeNames[];
 
 #if ALLOW_SSID2
+/*
 int FV_GetStartupSSID_StoredValue(int adefault);
 void FV_UpdateStartupSSIDIfChanged_StoredValue(int assidindex);
+*/
+#define SSIDRetainChannel  7
+// we will use this channel to store all information for the retain SSID feature:
+// if retaining is set and 
+// which was the last used channel
+// the fixed starting SSID
+//
+// we need two values:
+// we use 999<0/1> 	as "magic numbers" for retain setting
+// we use 9999<0/1> 	as "magic numbers" for "static" setting
+
+// retaining is set and SSID1 was last	--> 990
+// retaining is set and SSID2 was last  --> 991
+// retain is unset - start with SSID1	--> 9990
+// retain is unset - start with SSID2	--> 9991
+void UpdateSSIDretainedIfChanged_StoredValue(int val);  // needs g_SSIDactual, so defined in user_main.c
 #endif
 
 #endif

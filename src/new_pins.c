@@ -43,6 +43,7 @@ int g_initialPinStates = 0;
 // To enable this feature, the channel that will be used to store the last SSID 
 // must be set using the setStartupSSIDChannel command in early.bat. 
 // It has to be in early.bat.Autoexec.bat is processed after the wifi data is loaded.
+/*
 int g_StartupSSIDRetainChannel = -1; // -1 disabled, 0..MAX_RETAIN_CHANNELS-1 channel to store last SSID
 
 int FV_GetStartupSSID_StoredValue(int adefault) {
@@ -60,6 +61,7 @@ void FV_UpdateStartupSSIDIfChanged_StoredValue(int assidindex) {
 	}
 	HAL_FlashVars_SaveChannel(g_StartupSSIDRetainChannel,assidindex);
 }
+*/
 #endif
 
 void PIN_DeepSleep_MakeSureEdgesAreAlloced() {
@@ -2197,11 +2199,11 @@ static commandResult_t CMD_SetChannelType(const void* context, const char* cmd, 
 	return CMD_RES_OK;
 }
 #if ALLOW_SSID2
+/*
 // setStartupSSIDChannel [-1 or RetainChannelIndex]
 static commandResult_t CMD_setStartupSSIDChannel(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, 0);
-
 	if (Tokenizer_GetArgsCount() >= 1) {
 		int fval = Tokenizer_GetArgInteger(0);
 		if ((fval < -1) || (fval >= MAX_RETAIN_CHANNELS - 1)) {
@@ -2219,6 +2221,7 @@ static commandResult_t CMD_setStartupSSIDChannel(const void* context, const char
 // setStartupSSID [0/1]  
 // Sets startup SSID - 0=SSID1 1=SSID2 - which SSID will be used after reboot. 
 // for this to work, setStartupSSIDChannel and SSID2 must be set
+
 static commandResult_t CMD_setStartupSSID(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, 0);
@@ -2245,6 +2248,7 @@ static commandResult_t CMD_setStartupSSID(const void* context, const char* cmd, 
 	}
 	return CMD_RES_OK;
 }
+*/
 #endif
 /// @brief Computes the Relay and PWM count.
 /// @param relayCount Number of relay and LED channels.
@@ -2407,6 +2411,7 @@ void PIN_AddCommands(void)
 	//cmddetail:"fn":"CMD_setButtonHoldRepeat","file":"new_pins.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("setButtonHoldRepeat", CMD_setButtonHoldRepeat, NULL);
+/*
 #if ALLOW_SSID2
 	//cmddetail:{"name":"setStartupSSIDChannel","args":"[Value]",
 	//cmddetail:"descr":"Sets retain channel number to store last used SSID, 0..MAX_RETAIN_CHANNELS-1, -1 to disable. Suggested channel number is 7 (MAXMAX_RETAIN_CHANNELS-5)",
@@ -2419,4 +2424,5 @@ void PIN_AddCommands(void)
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("setStartupSSID", CMD_setStartupSSID, NULL);
 #endif
+*/
 }

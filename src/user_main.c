@@ -289,9 +289,50 @@ void LN882H_ApplyPowerSave(int bOn);
 
 // SSID switcher by xjikka 20240525
 #if ALLOW_SSID2
-#define SSID_USE_SSID1  0
-#define SSID_USE_SSID2  1
-static int g_SSIDactual = SSID_USE_SSID1;       // -1 not initialized,  0=SSID1 1=SSID2
+//#define SSID_USE_SSID1  0
+//#define SSID_USE_SSID2  1
+// static int g_SSIDactual = SSID_USE_SSID1;       // -1 not initialized,  0=SSID1 1=SSID2
+
+// settings for retain SSID feature
+// strictly speaking we only have to take into account one situation:
+// "retaining" is set and SSID2 should be used first
+// else it's SSID1
+// and doesn't matter if we start with SSID1 because it's default
+// of if SSID1 was the last one used ...
+
+// retaining is set and SSID1 was last	--> 990
+// retaining is set and SSID2 was last  --> 991
+// everything else: retain is unset
+// only if there is a value 991, we need to use SSID2 (g_SSIDactual = 1)
+// in all other cases use SSID1 (g_SSIDactual = 0)
+static int g_SSIDactual=0;
+
+// set the retained SSID
+// 
+void UpdateSSIDretainedIfChanged_StoredValue(int val) {
+	int fval = HAL_FlashVars_GetChannelValue(SSIDRetainChannel);
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, "UpdateSSIDretainedIfChanged_StoredValue value %i", val);
+	switch(val)
+	{
+	case 990:
+		val += g_SSIDactual; 	// 990 means "actual SSID"
+		break;
+	case 9990:	 		// 990 means "use SSID1"
+	case 9991:	 		// 990 means "use SSID2"
+		break;
+	default:
+		val = -9999;		// unknown value
+		break;
+	}
+	if (val == -9999) return;
+	if (fval == val) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "first startup SSID unchanged (SSID%i), HAL_FlashVars_SaveChannel skipped", val);
+		return;	//same value, no update
+	}
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "setting first startup SSID to SSID%i, HAL_FlashVars_SaveChannel skipped", val);
+	HAL_FlashVars_SaveChannel(SSIDRetainChannel, val);
+}
+
 static int g_SSIDSwitchAfterTry = 3;// switch to opposite SSID after
 static int g_SSIDSwitchCnt = 0;     // switch counter
 #endif
@@ -309,7 +350,7 @@ void CheckForSSID12_Switch() {
 	ADDLOGF_INFO("WiFi SSID: switching to SSID%i\r\n", g_SSIDactual + 1);
 #endif
 }
-
+/*
 //20241125 XJIKKA Init last stored SSID from RetailChannel if set
 //Note that it must be set in early.bat using CMD_setStartupSSIDChannel
 void Init_WiFiSSIDactual_FromChannelIfSet(void) {
@@ -317,6 +358,7 @@ void Init_WiFiSSIDactual_FromChannelIfSet(void) {
 	g_SSIDactual = FV_GetStartupSSID_StoredValue(SSID_USE_SSID1);
 #endif
 }
+*/
 const char* CFG_GetWiFiSSIDX() {
 #if ALLOW_SSID2
 	if (g_SSIDactual) {
@@ -379,8 +421,31 @@ void Main_OnWiFiStatusChange(int code)
 		ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_AUTH_FAILED - %i\r\n", code);
 		break;
 	case WIFI_STA_CONNECTED:
+	   {
 #if ALLOW_SSID2
-		if (!g_bHasWiFiConnected) FV_UpdateStartupSSIDIfChanged_StoredValue(g_SSIDactual);	//update ony on first connect
+		int actval = HAL_FlashVars_GetChannelValue(SSIDRetainChannel);
+		//update retain value 
+		// only if
+		// on first connect and
+		// retain is set and
+		// value is different
+		
+		// remember: 	actval == 990 if SSID1 is used --> g_SSIDactual = 0
+		//		actval == 991 if SSID2 is used --> g_SSIDactual = 1
+		
+		// we only need to store SSID value, if this is NOT the case, because g_SSIDactual doesn't match the retain value
+		// actval == 990 but g_SSIDactual == 1  --> we need to store 991
+		// actval == 991 but g_SSIDactual == 0  --> we need to store 990
+		// --> in both cases: 	actval + g_SSIDactual = 991 
+		//
+		// countercheck: in both other cases (if retained vale eaquals actual value):
+		// 	actval + g_SSIDactual is <> 991 ( it's 990 or 992)
+		//
+		// so testing for actval + g_SSIDactual == 991 is o.k. to test
+		// retain is set and value is different in one test !!
+
+		if ( !g_bHasWiFiConnected && ( (actval + g_SSIDactual ) == 991 ) ) 
+			HAL_FlashVars_SaveChannel(SSIDRetainChannel, 990 + g_SSIDactual);
 #endif
 		g_bHasWiFiConnected = 1;
 #if ALLOW_SSID2
@@ -408,6 +473,7 @@ void Main_OnWiFiStatusChange(int code)
 			g_ln882h_pendingPowerSaveCommand = -1;
 		}
 #endif
+	  }
 		break;
 		/* for softap mode */
 	case WIFI_AP_CONNECTED:
@@ -1356,7 +1422,10 @@ void Main_Init_After_Delay()
 		ADDLOGF_INFO("###### safe mode activated - boot failures %d", g_bootFailures);
 	}
 #if ALLOW_SSID2
-	Init_WiFiSSIDactual_FromChannelIfSet();//Channel must be set in early.bat using CMD_setStartupSSIDChannel
+//	Init_WiFiSSIDactual_FromChannelIfSet();//Channel must be set in early.bat using CMD_setStartupSSIDChannel
+	int ssidret=HAL_FlashVars_GetChannelValue(SSIDRetainChannel) ;
+	g_SSIDactual = ( (ssidret == 991) || (ssidret == 9991) );        // 0=SSID1 1=SSID2
+	ADDLOGF_INFO("setting g_SSIDactual to %i (CH7 val=%i)", g_SSIDactual , HAL_FlashVars_GetChannelValue(SSIDRetainChannel) );
 #endif
 	wifi_ssid = CFG_GetWiFiSSIDX();
 	wifi_pass = CFG_GetWiFiPassX();
