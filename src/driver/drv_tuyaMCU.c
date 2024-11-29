@@ -1795,6 +1795,8 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		else if (dataCount == 2)
 		{
 			self_processing_mode = false;
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "IMPORTANT!!! mcu conf pins: %i %i",
+				(int)(data[6]), (int)(data[7]));
 		}
 		if (5 + dataCount + 2 != len) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: TUYA_CMD_MCU_CONF had wrong data lenght?");
