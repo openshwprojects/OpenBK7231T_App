@@ -258,6 +258,12 @@ OpenESP32S3: prebuild_ESPIDF
 	mkdir -p output/$(APP_VERSION)
 	esptool.py -c esp32s3 merge_bin -o output/$(APP_VERSION)/OpenESP32S3_$(APP_VERSION).factory.bin --flash_mode dio --flash_size 4MB 0x0 ./platforms/ESP-IDF/build-s3/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-s3/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-s3/OpenBeken.bin
 	cp ./platforms/ESP-IDF/build-s3/OpenBeken.bin output/$(APP_VERSION)/OpenESP32S3_$(APP_VERSION).img
+	
+.PHONY: OpenTR6260
+OpenTR6260:
+	cd sdk/OpenTR6260/scripts && APP_VERSION=$(APP_VERSION) bash build_tr6260s1.sh
+	mkdir -p output/$(APP_VERSION)
+	cp sdk/OpenTR6260/out/tr6260s1/standalone/tr6260s1_0x007000.bin output/$(APP_VERSION)/OpenTR6260_$(APP_VERSION).bin
 
 # clean .o files and output directory
 .PHONY: clean
@@ -268,6 +274,7 @@ clean:
 	$(MAKE) -C sdk/OpenXR809/project/oxr_sharedApp/gcc clean
 	$(MAKE) -C sdk/OpenW800 clean
 	$(MAKE) -C sdk/OpenW600 clean
+	$(MAKE) -C sdk/OpenTR6260/scripts tr6260s1_clean
 	test -d ./sdk/OpenLN882H/build && cmake --build ./sdk/OpenLN882H/build --target clean
 	test -d ./platforms/ESP-IDF/build-32 && cmake --build ./platforms/ESP-IDF/build-32 --target clean
 	test -d ./platforms/ESP-IDF/build-c3 && cmake --build ./platforms/ESP-IDF/build-c3 --target clean

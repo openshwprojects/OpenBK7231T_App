@@ -196,6 +196,10 @@
 #define ENABLE_DRIVER_SSDP			1
 #define ENABLE_DRIVER_CHT83XX		1
 
+#elif PLATFORM_TR6260
+
+#define OBK_DISABLE_ALL_DRIVERS		1
+
 #else
 
 #error "Platform not defined"
