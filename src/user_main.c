@@ -289,7 +289,9 @@ void LN882H_ApplyPowerSave(int bOn);
 
 // SSID switcher by xjikka 20240525
 #if ALLOW_SSID2
-static int g_SSIDactual = 0;        // 0=SSID1 1=SSID2
+#define SSID_USE_SSID1  0
+#define SSID_USE_SSID2  1
+static int g_SSIDactual = SSID_USE_SSID1;       // -1 not initialized,  0=SSID1 1=SSID2
 static int g_SSIDSwitchAfterTry = 3;// switch to opposite SSID after
 static int g_SSIDSwitchCnt = 0;     // switch counter
 #endif
@@ -308,6 +310,13 @@ void CheckForSSID12_Switch() {
 #endif
 }
 
+//20241125 XJIKKA Init last stored SSID from RetailChannel if set
+//Note that it must be set in early.bat using CMD_setStartupSSIDChannel
+void Init_WiFiSSIDactual_FromChannelIfSet(void) {
+#if ALLOW_SSID2
+	g_SSIDactual = FV_GetStartupSSID_StoredValue(SSID_USE_SSID1);
+#endif
+}
 const char* CFG_GetWiFiSSIDX() {
 #if ALLOW_SSID2
 	if (g_SSIDactual) {
@@ -370,6 +379,9 @@ void Main_OnWiFiStatusChange(int code)
 		ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_AUTH_FAILED - %i\r\n", code);
 		break;
 	case WIFI_STA_CONNECTED:
+#if ALLOW_SSID2
+		if (!g_bHasWiFiConnected) FV_UpdateStartupSSIDIfChanged_StoredValue(g_SSIDactual);	//update ony on first connect
+#endif
 		g_bHasWiFiConnected = 1;
 #if ALLOW_SSID2
 		g_SSIDSwitchCnt = 0;
@@ -1343,9 +1355,11 @@ void Main_Init_After_Delay()
 	if (bSafeMode) {
 		ADDLOGF_INFO("###### safe mode activated - boot failures %d", g_bootFailures);
 	}
-
-	wifi_ssid = CFG_GetWiFiSSID();
-	wifi_pass = CFG_GetWiFiPass();
+#if ALLOW_SSID2
+	Init_WiFiSSIDactual_FromChannelIfSet();//Channel must be set in early.bat using CMD_setStartupSSIDChannel
+#endif
+	wifi_ssid = CFG_GetWiFiSSIDX();
+	wifi_pass = CFG_GetWiFiPassX();
 
 #if 0
 	// you can use this if you bricked your module by setting wrong access point data

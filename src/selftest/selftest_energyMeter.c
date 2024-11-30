@@ -211,6 +211,7 @@ void Test_EnergyMeter_TurnOffScript() {
 	CMD_ExecuteCommand("SetupTestPower 230 0.01 0.5 0", 0);
 	int prevChannel10 = CHANNEL_Get(10);
 	for (int i = 0; i < 10; i++) {
+		Test_Power_RunEverySecond();
 		Sim_RunSeconds(1.5f, false);
 		int now10 = CHANNEL_Get(10);
 		SELFTEST_ASSERT(now10 > prevChannel10);
@@ -220,6 +221,7 @@ void Test_EnergyMeter_TurnOffScript() {
 	// now reset will kick in
 	CMD_ExecuteCommand("SetupTestPower 230 0.01 1.5 0", 0);
 	for (int i = 0; i < 10; i++) {
+		Test_Power_RunEverySecond();
 		Sim_RunSeconds(1.5f, false);
 		int now10 = CHANNEL_Get(10);
 		SELFTEST_ASSERT(now10 == 0);
@@ -231,6 +233,7 @@ void Test_EnergyMeter_TurnOffScript() {
 	Sim_RunSeconds(1.5f, false);
 	prevChannel10 = CHANNEL_Get(10);
 	for (int i = 0; i < 10; i++) {
+		Test_Power_RunEverySecond();
 		Sim_RunSeconds(1.5f, false);
 		int now10 = CHANNEL_Get(10);
 		SELFTEST_ASSERT(now10 > prevChannel10);
@@ -240,6 +243,7 @@ void Test_EnergyMeter_TurnOffScript() {
 	// now reset will kick in
 	CMD_ExecuteCommand("SetupTestPower 230 0.01 1.5 0", 0);
 	for (int i = 0; i < 10; i++) {
+		Test_Power_RunEverySecond();
 		Sim_RunSeconds(1.5f, false);
 		int now10 = CHANNEL_Get(10);
 		SELFTEST_ASSERT(now10 == 0);
@@ -249,6 +253,7 @@ void Test_EnergyMeter_TurnOffScript() {
 	CMD_ExecuteCommand("SetupTestPower 230 0.01 0.5 0", 0);
 	prevChannel10 = CHANNEL_Get(10);
 	for (int i = 0; i < 12; i++) {
+		Test_Power_RunEverySecond();
 		Sim_RunSeconds(1.5f, false);
 		int now10 = CHANNEL_Get(10);
 		SELFTEST_ASSERT(now10 > prevChannel10);
@@ -258,6 +263,7 @@ void Test_EnergyMeter_TurnOffScript() {
 	// this loop should trigger turn off
 	prevChannel10 = CHANNEL_Get(10);
 	for (int i = 0; i < 3; i++) {
+		Test_Power_RunEverySecond();
 		Sim_RunSeconds(1.5f, false);
 		int now10 = CHANNEL_Get(10);
 		SELFTEST_ASSERT(now10 > prevChannel10);

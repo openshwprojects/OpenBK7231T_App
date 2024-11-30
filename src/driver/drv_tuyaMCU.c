@@ -137,6 +137,7 @@ const char* TuyaMCU_GetCommandTypeLabel(int t) {
 		return "TUYA_CMD_REPORT_STATUS_RECORD_TYPE";
 	return "Unknown";
 }
+
 typedef struct rtcc_s {
 	uint8_t       second;
 	uint8_t       minute;
@@ -348,6 +349,12 @@ tuyaMCUMapping_t* TuyaMCU_MapIDToChannel(int dpId, int dpType, int channel, int 
 	return cur;
 }
 
+// now you can detect TuyaMCU faults with event handler
+// addChangeHandler MissedHeartbeats > 4 setChannel 0 1
+void TuyaMCU_SetHeartbeatCounter(int v) {
+	EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_MISSEDHEARTBEATS, heartbeat_counter, v);
+	heartbeat_counter = v;
+}
 
 // header version command lenght data checksum
 // 55AA     00      00      0000   xx   00
@@ -1764,7 +1771,7 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 	{
 	case TUYA_CMD_HEARTBEAT:
 		heartbeat_valid = true;
-		heartbeat_counter = 0;
+		TuyaMCU_SetHeartbeatCounter(0);
 		break;
 	case TUYA_CMD_MCU_CONF:
 		working_mode_valid = true;
@@ -1788,6 +1795,8 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		else if (dataCount == 2)
 		{
 			self_processing_mode = false;
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "IMPORTANT!!! mcu conf pins: %i %i",
+				(int)(data[6]), (int)(data[7]));
 		}
 		if (5 + dataCount + 2 != len) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: TUYA_CMD_MCU_CONF had wrong data lenght?");
@@ -2062,7 +2071,7 @@ void TuyaMCU_RunStateMachine_V3() {
 		/* Generate heartbeat to keep communication alove */
 		TuyaMCU_SendCommandWithData(TUYA_CMD_HEARTBEAT, NULL, 0);
 		heartbeat_timer = 3;
-		heartbeat_counter++;
+		TuyaMCU_SetHeartbeatCounter(heartbeat_counter+1);
 		if (heartbeat_counter >= 4)
 		{
 			/* unanswerred heartbeats -> lost communication */
@@ -2313,7 +2322,7 @@ void TuyaMCU_Init()
 	}
 
 	UART_InitUART(g_baudRate, 0);
-	UART_InitReceiveRingBuffer(512);
+	UART_InitReceiveRingBuffer(1024);
 	// uartSendHex 55AA0008000007
 	//cmddetail:{"name":"tuyaMcu_testSendTime","args":"",
 	//cmddetail:"descr":"Sends a example date by TuyaMCU to clock/callendar MCU",

@@ -139,6 +139,7 @@ void Win_DoUnitTests() {
 	Test_Command_If_Else();
 	Test_MQTT();
 	Test_ChargeLimitDriver();
+	Test_EnergyMeter();
 	// this is slowest
 	Test_TuyaMCU_Basic();
 	Test_TuyaMCU_Mult();
@@ -171,7 +172,6 @@ void Win_DoUnitTests() {
 	Test_MultiplePinsOnChannel();
 	Test_Flags();
 	Test_DHT();
-	Test_EnergyMeter();
 	Test_Tasmota();
 	Test_NTP();
 	Test_NTP_SunsetSunrise();

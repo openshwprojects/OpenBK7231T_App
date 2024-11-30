@@ -41,6 +41,23 @@ const char *demo_nested_loop =
 "    if $CH30<3 then goto outer_loop\r\n"
 "setChannel 32 100\r\n";
 
+const char *demo_startScript =
+"alias runAdder startScript myScr.txt adder\r\n"
+"alias runSubber startScript myScr.txt subber\r\n"
+"alias runZeroer startScript myScr.txt zeroer\r\n"
+"setChannel 16 143\r\n"
+"return\r\n"
+"adder:\r\n"
+"    addChannel 16 4\r\n"
+"    return\r\n"
+"subber:\r\n"
+"    addChannel 16 -4\r\n"
+"    return\r\n"
+"zeroer:\r\n"
+"    setChannel 16 0\r\n"
+"    return\r\n";
+
+
 void Test_Scripting_Loop1() {
 	// reset whole device
 	SIM_ClearOBK(0);
@@ -138,11 +155,54 @@ void Test_Scripting_NestedLoop() {
 	SELFTEST_ASSERT_CHANNEL(31, 5); // Ensure inner loop executed 5 times
 	SELFTEST_ASSERT_CHANNEL(32, 100);
 }
+void Test_Scripting_StartScript() {
+	// reset whole device
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("lfs_format", 0);
+
+	// put file in LittleFS
+	Test_FakeHTTPClientPacket_POST("api/lfs/myScr.txt", demo_startScript);
+	// get this file 
+	Test_FakeHTTPClientPacket_GET("api/lfs/myScr.txt");
+	SELFTEST_ASSERT_HTML_REPLY(demo_startScript);
+
+	CMD_ExecuteCommand("startScript myScr.txt", 0);
+	Sim_RunFrames(50, false);
+	SELFTEST_ASSERT_CHANNEL(16, 143);
+	CMD_ExecuteCommand("runAdder", 0);
+	Sim_RunFrames(50, false);
+	SELFTEST_ASSERT_CHANNEL(16, 143 + 4);
+	CMD_ExecuteCommand("runAdder", 0);
+	Sim_RunFrames(50, false);
+	SELFTEST_ASSERT_CHANNEL(16, 143 + 4 + 4);
+	CMD_ExecuteCommand("runAdder", 0);
+	Sim_RunFrames(50, false);
+	SELFTEST_ASSERT_CHANNEL(16, 143 + 4 + 4 + 4);
+	CMD_ExecuteCommand("runSubber", 0);
+	Sim_RunFrames(50, false);
+	SELFTEST_ASSERT_CHANNEL(16, 143 + 4 + 4);
+	CMD_ExecuteCommand("runSubber", 0);
+	Sim_RunFrames(50, false);
+	SELFTEST_ASSERT_CHANNEL(16, 143 + 4);
+	CMD_ExecuteCommand("backlog runSubber; runSubber", 0); // twice
+	Sim_RunFrames(50, false);
+	SELFTEST_ASSERT_CHANNEL(16, 143 - 4); // twice
+	CMD_ExecuteCommand("runZeroer", 0);
+	Sim_RunFrames(50, false);
+	SELFTEST_ASSERT_CHANNEL(16, 0);
+	CMD_ExecuteCommand("runAdder", 0);
+	Sim_RunFrames(50, false);
+	SELFTEST_ASSERT_CHANNEL(16, 4);
+	CMD_ExecuteCommand("backlog runSubber; runAdder", 0); // both
+	Sim_RunFrames(50, false);
+	SELFTEST_ASSERT_CHANNEL(16, 4);
+}
 void Test_Scripting() {
 	Test_Scripting_Loop1();
 	Test_Scripting_Loop2();
 	Test_Scripting_Loop3();
 	Test_Scripting_NestedLoop();
+	Test_Scripting_StartScript();
 }
 
 #endif
