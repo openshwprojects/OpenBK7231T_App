@@ -239,7 +239,7 @@ int IsDST()
 			return 0;
 		} else if (g_ntpTime < End_DST_epoch ){
 			tempt = (time_t)End_DST_epoch;
-			ADDLOG_INFO(LOG_FEATURE_RAW, "In DST of %i. Info: DST ends at %lu (%.24s local time)\r\n",year,ctime(&tempt));
+			ADDLOG_INFO(LOG_FEATURE_RAW, "In DST of %i. Info: DST ends at %lu (%.24s local time)\r\n",year,End_DST_epoch,ctime(&tempt));
 			return 1;
 		} else {
 			Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year+1);

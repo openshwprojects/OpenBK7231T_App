@@ -88,62 +88,79 @@ void Test_NTP_DST() {
 	// some more tests with directly setting the ntp time
 	// just checking DST function ...
 
-	// 1743296395 = So 30. Mär 01:59:55 CET 2025
+	// 1743296395 = Sun, Mar 30 2025 01:59:55 CET
+	CMD_ExecuteCommand("ntp_timeZoneOfs 1", 0);
 	NTP_SetSimulatedTime(1743296395);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 0);
 	Sim_RunSeconds(6, false);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
-	// 1761440395 = So 26. Okt 02:59:55 CEST 2025
+	// 1761440395 = Sun, Oct 26 2025 02:59:55 CEST
+	CMD_ExecuteCommand("ntp_timeZoneOfs 2", 0);
 	NTP_SetSimulatedTime(1761440395);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
 	Sim_RunSeconds(6, false);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 0);
-	// 1774745995 = So 29. Mär 01:59:55 CET 2026
+	
+	// 1774745995 = Sun, Mar 29 2026 01:59:55 CET
+	CMD_ExecuteCommand("ntp_timeZoneOfs 1", 0);
 	NTP_SetSimulatedTime(1774745995);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 0);
 	Sim_RunSeconds(6, false);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
-	// 1792889995 = So 25. Okt 02:59:55 CEST 2026
+	// 1792889995 = Sun, Oct 25 2026 02:59:55 CEST
+	CMD_ExecuteCommand("ntp_timeZoneOfs 2", 0);
 	NTP_SetSimulatedTime(1792889995);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
 	Sim_RunSeconds(6, false);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 0);
-	// 1806195595 = So 28. Mär 01:59:55 CET 2027
+	
+	// 1806195595 = Sun, Mar 28 2027 01:59:55 CET
+	CMD_ExecuteCommand("ntp_timeZoneOfs 1", 0);
 	NTP_SetSimulatedTime(1806195595);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 0);
 	Sim_RunSeconds(6, false);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
-	// 1824944395 = So 31. Okt 02:59:55 CEST 2027
+	// 1824944395 = Sun, Oct 31 2027 02:59:55 CEST
+	CMD_ExecuteCommand("ntp_timeZoneOfs 2", 0);
 	NTP_SetSimulatedTime(1824944395);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
 	Sim_RunSeconds(6, false);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 0);
-	// 1837645195 = So 26. Mär 01:59:55 CET 2028
+
+	// 1837645195 = Sun, Mar 26 2028 01:59:55 CET
+	CMD_ExecuteCommand("ntp_timeZoneOfs 1", 0);
 	NTP_SetSimulatedTime(1837645195);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 0);
 	Sim_RunSeconds(6, false);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
-	// 1856393995 = So 29. Okt 02:59:55 CEST 2028
+	// 1856393995 = Sun, Oct 29 2028 02:59:55 CEST
+	CMD_ExecuteCommand("ntp_timeZoneOfs 2", 0);
 	NTP_SetSimulatedTime(1856393995);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
 	Sim_RunSeconds(6, false);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 0);
-	// 1869094795 = So 25. Mär 01:59:55 CET 2029
+
+	// 1869094795 = Sun, Mar 25 2029 01:59:55 CET
+	CMD_ExecuteCommand("ntp_timeZoneOfs 1", 0);
 	NTP_SetSimulatedTime(1869094795);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 0);
 	Sim_RunSeconds(6, false);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
-	// 1887843595 = So 28. Okt 02:59:55 CEST 2029
+	// 1887843595 = Sun, Oct 28 2029 02:59:55 CEST
+	CMD_ExecuteCommand("ntp_timeZoneOfs 2", 0);
 	NTP_SetSimulatedTime(1887843595);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
 	Sim_RunSeconds(6, false);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 0);
-	// 1901149195 = So 31. Mär 01:59:55 CET 2030
+
+	// 1901149195 = Sun, Mar 31 2030 01:59:55 CET
+	CMD_ExecuteCommand("ntp_timeZoneOfs 1", 0);
 	NTP_SetSimulatedTime(1901149195);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 0);
 	Sim_RunSeconds(6, false);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
-	// 1919293195 = So 27. Okt 02:59:55 CEST 2030
+	// 1919293195 = Sun, Oct 27 2030 02:59:55 CEST
+	CMD_ExecuteCommand("ntp_timeZoneOfs 2", 0);
 	NTP_SetSimulatedTime(1919293195);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
 	Sim_RunSeconds(6, false);
