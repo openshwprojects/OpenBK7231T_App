@@ -223,51 +223,43 @@ uint32_t RuleToTime(uint8_t dow, uint8_t mo, uint8_t week,  uint8_t hr, int yr) 
   return t;
 }
 
-void printtime(uint32_t time, char* string){
-	time_t tmpt=(time_t)time;
-	struct tm * tm=gmtime(&tmpt);
-	// e.g. "Sun, 2024-10-27 01:00:00 local time"
-	strftime(string,40,"%a, %F %T local time",tm);
-}
-
-
 int IsDST()
 {
 	// DST calculation was done before, so we compare local time to DST switching values
 	int year=NTP_GetYear();
-
+	time_t tempt;
 	char tmp[40];	// to hold date string of timestamp
 	Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year);
 	End_DST_epoch = RuleToTime(dayEnd,monthEnd,nthWeekEnd,hourEnd,year);
 
 	if ( Start_DST_epoch < End_DST_epoch ) {	// Northern --> begin before end
 		if (g_ntpTime < Start_DST_epoch) {
-			printtime(Start_DST_epoch,tmp);
-			ADDLOG_INFO(LOG_FEATURE_RAW, "Before first DST switch in %i. Info: DST starts at %lu (%s)\r\n",year,Start_DST_epoch,tmp);
+			tempt = (time_t)Start_DST_epoch;
+			ADDLOG_INFO(LOG_FEATURE_RAW, "Before first DST switch in %i. Info: DST starts at %lu (%.24s local time)\r\n",year,Start_DST_epoch,ctime(&tempt));
 			return 0;
 		} else if (g_ntpTime < End_DST_epoch ){
-			printtime(End_DST_epoch,tmp);
-			ADDLOG_INFO(LOG_FEATURE_RAW, "In DST of %i. Info: DST ends at %lu (%s)\r\n",year,End_DST_epoch,tmp);
+			tempt = (time_t)End_DST_epoch;
+			ADDLOG_INFO(LOG_FEATURE_RAW, "In DST of %i. Info: DST ends at %lu (%.24s local time)\r\n",year,ctime(&tempt));
 			return 1;
 		} else {
 			Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year+1);
-			printtime(Start_DST_epoch,tmp);
-			ADDLOG_INFO(LOG_FEATURE_RAW, "After DST in %i. Info: Next DST start in next year at %lu (%s)\r\n",year,Start_DST_epoch,tmp);
+			tempt = (time_t)Start_DST_epoch;
+			ADDLOG_INFO(LOG_FEATURE_RAW, "After DST in %i. Info: Next DST start in next year at %lu (%.24s local time)\r\n",year,Start_DST_epoch,ctime(&tempt));
 			return 0;
 		}
 	} else {	// so end of DST before begin of DST --> southern
 			if (g_ntpTime < End_DST_epoch) {
-			printtime(End_DST_epoch,tmp);
-			ADDLOG_INFO(LOG_FEATURE_RAW, "In first DST period of %i. Info: DST ends at %lu (%s)\r\n",year,End_DST_epoch,tmp);
+			tempt = (time_t)End_DST_epoch;
+			ADDLOG_INFO(LOG_FEATURE_RAW, "In first DST period of %i. Info: DST ends at %lu (%.24s local time)\r\n",year,End_DST_epoch,ctime(&tempt));
 			return 1;
 		} else if (g_ntpTime < Start_DST_epoch ){
-			printtime(Start_DST_epoch,tmp);
-			ADDLOG_INFO(LOG_FEATURE_RAW, "Regular time of %i. Info: DST starts at %lu (%s)\r\n",year,Start_DST_epoch,tmp);
+			tempt = (time_t)Start_DST_epoch;
+			ADDLOG_INFO(LOG_FEATURE_RAW, "Regular time of %i. Info: DST starts at %lu (%.24s local time)\r\n",year,Start_DST_epoch,ctime(&tempt));
 			return 0;
 		} else {
 			End_DST_epoch = RuleToTime(dayEnd,monthEnd,nthWeekEnd,hourEnd,year+1);
-			printtime(End_DST_epoch,tmp);
-			ADDLOG_INFO(LOG_FEATURE_RAW, "In second DST of %i. Info: DST ends next year at %lu (%s)\r\n",year,End_DST_epoch,tmp);
+			tempt = (time_t)End_DST_epoch;
+			ADDLOG_INFO(LOG_FEATURE_RAW, "In second DST of %i. Info: DST ends next year at %lu (%.24s local time)\r\n",year,End_DST_epoch,ctime(&tempt));
 			return 1;
 		}
 	}
@@ -277,7 +269,7 @@ int IsDST()
 
 commandResult_t CLOCK_CalcDST(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int year=NTP_GetYear();
-	char b[40],e[40];	// to hold date string of timestamp
+	time_t te,tb;		// time_t of timestamps needed for ctime() to get string of timestamp
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 	// following check must be done after 'Tokenizer_TokenizeString',
@@ -300,10 +292,10 @@ commandResult_t CLOCK_CalcDST(const void *context, const char *cmd, const char *
 
 	Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year);
 	End_DST_epoch = RuleToTime(dayEnd,monthEnd,nthWeekEnd,hourEnd,year);
-	printtime(Start_DST_epoch,b);
-	printtime(End_DST_epoch,e);
+	te=(time_t)End_DST_epoch;
+	tb=(time_t)Start_DST_epoch;
 	
-	ADDLOG_INFO(LOG_FEATURE_RAW, "Calculated DST switch epochs in %i. DST start at %lu (%s) - DST end at %lu (%s)\r\n",year,Start_DST_epoch,b,End_DST_epoch,e);
+	ADDLOG_INFO(LOG_FEATURE_RAW, "Calculated DST switch epochs in %i. DST start at %lu (%.24s local time) - DST end at %lu (%.24s local time)\r\n",year,Start_DST_epoch,ctime(&tb),End_DST_epoch,ctime(&te));
 	  return CMD_RES_OK;
 };
 
