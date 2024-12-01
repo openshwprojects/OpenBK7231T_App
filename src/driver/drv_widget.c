@@ -101,8 +101,24 @@ static commandResult_t CMD_Widget_Create(const void *context, const char *cmd, c
 	Widget_Add(&g_widgets, n);
 	return CMD_RES_OK;
 }
-void DRV_Widget_Init() {
+static commandResult_t CMD_Widget_ClearAll(const void *context, const char *cmd, const char *args, int flags) {
+	widget_t *current = g_widgets;
+	while (current) {
+		widget_t *next = current->next;
+		free(current->fname);
+		if (current->cached) {
+			free(current->cached);
+		}
+		free(current);
+		current = next;
+	}
+	g_widgets = NULL;
+	return CMD_RES_OK;
+}
 
+void DRV_Widget_Init() {
+	
+	CMD_RegisterCommand("widget_clearAll", CMD_Widget_ClearAll, NULL);
 
 	CMD_RegisterCommand("widget_create", CMD_Widget_Create, NULL);
 
