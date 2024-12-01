@@ -1324,14 +1324,17 @@ int http_fn_cfg_wifi(http_request_t* request) {
 #endif
 	"<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears existing)</span>");
 #if PLATFORM_BEKEN
-	int fval = HAL_FlashVars_GetChannelValue(SSIDRetainChannel);
+	int fval = (HAL_FlashVars_GetChannelValue(SSIDRetainChannel)%1000)/100;
 	poststr_h4(request, "Alternate WiFi (used when first one is not responding)");
 //	poststr_h2(request, "SSID2 only on Beken Platform (BK7231T, BK7231N)");
 	add_label_text_field(request, "SSID2", "ssid2", CFG_GetWiFiSSID2(), "");
 	add_label_password_field(request, "", "pass2", CFG_GetWiFiPass2(), "<br>Password2<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass2');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears existing)</span>");
-	hprintf255(request, "<p>Select SSID used first:  <select class='hele' name='startSSID'>"
-		"<option value='0'>SSID1</option><option value='1' %s>SSID2</option>"
-		"<option value='2' %s>Last used SSID</option></select>",(fval==9991) ? "selected":"",(fval==990 ||  fval==991) ? "selected":"");
+	poststr(request, "<p>Select SSID used first:  <select class='hele' name='startSSID'><option value='0'>SSID1</option>");
+	hprintf255(request, "<option value='1' %s>SSID2</option>"
+			    "<option value='2' %s>Last used SSID</option>"
+			    "<option value='4' %s>Only SSID1 (no switch to SSID2)</option>"
+			    "<option value='5' %s>Only SSID2 (no switch to SSID1)</option>"
+			    "</select>",(fval==1) ? "selected":"",(fval==2 ||  fval==3) ? "selected":"",(fval==4) ? "selected":"",(fval==5) ? "selected":"");
 #endif
 #if ALLOW_WEB_PASSWORD
 	int web_password_enabled = strcmp(CFG_GetWebPassword(), "") == 0 ? 0 : 1;
@@ -1419,29 +1422,7 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 	if (http_getArg(request->url, "startSSID", tmpA, sizeof(tmpA))) {
 		int start_SSID = atoi(tmpA);
 		addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, "start_SSID with value %i", start_SSID);
-		// start values:
-		// 0 --> SSID1
-		// 1 --> SSID2
-		// 2 --> remember last SSID
-		// channel values for this cases:
-		// SSID2 --> 9991
-		// retain, actual SSID1	-->  990
-		// retain, actual SSID2	-->  991
-		// SSID1 --> all other values (e.g. 9990)
-		
-		// during enabling the feature, we need to set the "actual" SSID
-		switch (start_SSID)
-		{
-		case 0:
-			UpdateSSIDretainedIfChanged_StoredValue(9990); // start SSID1
-			break;
-		case 1:
-			UpdateSSIDretainedIfChanged_StoredValue(9991); // start SSID2
-			break;
-		case 2:
-			UpdateSSIDretainedIfChanged_StoredValue(990); // store actual SSID
-			break;
-		}
+		HandleSSIDretainedFromGUI(start_SSID); 		// handle in user_main.c - needs access to actual SSID used (g_SSIDactual) - defined "static"
 	}
 #endif	
 #if ALLOW_WEB_PASSWORD
