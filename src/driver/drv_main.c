@@ -72,6 +72,15 @@ static driver_t g_drivers[] = {
 	{ "HGS02",		HGS02_Init,			HGS02_RunEverySecond,			NULL, NULL, NULL, NULL, false },
 #endif
 
+
+
+#if ENABLE_DRIVER_WIDGET
+	//drvdetail:{"name":"Widget",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Widget .",
+	//drvdetail:"requires":""}
+	{ "Widget",		DRV_Widget_Init,			NULL,			DRV_Widget_AddToHtmlPage, NULL, NULL, NULL, false },
+#endif
 #if WINDOWS
 	//drvdetail:{"name":"TestCharts",
 	//drvdetail:"title":"TODO",
