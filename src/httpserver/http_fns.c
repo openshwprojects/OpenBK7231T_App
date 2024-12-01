@@ -312,6 +312,13 @@ int http_fn_index(http_request_t* request) {
 			MAIN_ScheduleUnsafeInit(3);
 		}
 		poststr(request, "</div>"); // end div#change
+
+
+#if defined(ENABLE_DRIVER_WIDGET)
+		if (DRV_IsRunning("Widget")) {
+			DRV_Widget_BeforeState(request);
+		}
+#endif
 		poststr(request, "<div id=\"state\">"); // replaceable content follows
 	}
 

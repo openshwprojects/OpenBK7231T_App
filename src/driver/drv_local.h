@@ -96,6 +96,7 @@ void DRV_Toggler_QuickTick();
 void DRV_InitPWMToggler();
 
 void DRV_Widget_AddToHtmlPage(http_request_t *request);
+void DRV_Widget_BeforeState(http_request_t* request);
 void DRV_Widget_Init();
 
 void DRV_HTTPButtons_ProcessChanges(http_request_t* request);
