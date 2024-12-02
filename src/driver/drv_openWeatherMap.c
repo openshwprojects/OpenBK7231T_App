@@ -21,7 +21,7 @@ static void weather_thread(beken_thread_arg_t arg) {
 	struct hostent *he;
 	char hostname[] = "api.openweathermap.org";
 	struct in_addr **addr_list;
-	SOCKET s;
+	int s;
 
 	he = gethostbyname(hostname);
 	if (he == NULL) {
@@ -31,7 +31,7 @@ static void weather_thread(beken_thread_arg_t arg) {
 	addr_list = (struct in_addr **)he->h_addr_list;
 	ADDLOG_ERROR(LOG_FEATURE_HTTP, "Resolved IP address: %s\n", inet_ntoa(*addr_list[0]));
 
-	if ((s = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
+	if ((s = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Could not create socket.");
 		return;
 	}
