@@ -415,7 +415,7 @@ extern "C" void DRV_IR_ISR(UINT8 t){
                 duty = 0;
             }
         }
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
         bk_pwm_update_param((bk_pwm_t)pIRsend->pwmIndex, pIRsend->pwmperiod, duty,0,0);
 #else
         bk_pwm_update_param((bk_pwm_t)pIRsend->pwmIndex, pIRsend->pwmperiod, duty);
@@ -644,7 +644,7 @@ extern "C" void DRV_IR_Init(){
             uint32_t pwmfrequency = 38000;
             uint32_t period = (26000000 / pwmfrequency);
             uint32_t duty = period/2;
-    #if PLATFORM_BK7231N
+    #if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
             // OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
             bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty, 0, 0);
     #else

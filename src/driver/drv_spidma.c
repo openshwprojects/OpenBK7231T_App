@@ -1,4 +1,4 @@
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
 #include "arm_arch.h"
 
 #include "drv_model_pub.h"

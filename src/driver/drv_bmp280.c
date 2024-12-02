@@ -10,6 +10,8 @@
 #include "../httpserver/new_http.h"
 #include "../hal/hal_pins.h"
 
+#ifdef ENABLE_DRIVER_BMP280
+
 static int32_t g_temperature;
 static uint32_t g_pressure, g_humidity;
 static char g_targetChannelTemperature = -1, g_targetChannelPressure = -1, g_targetChannelHumidity = -1;
@@ -99,3 +101,4 @@ void BMP280_AppendInformationToHTTPIndexPage(http_request_t* request)
 	hprintf255(request, "</h2>");
 }
 
+#endif
