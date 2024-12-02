@@ -57,6 +57,17 @@ static void weather_thread(beken_thread_arg_t arg) {
 		return 1;
 	}
 
+	char buffer[512];
+	int recv_size;
+	do {
+		recv_size = recv(s, buffer, sizeof(buffer) - 1, 0);
+		if (recv_size > 0) {
+			buffer[recv_size] = '\0';
+			ADDLOG_ERROR(LOG_FEATURE_HTTP, buffer);
+		}
+	} while (recv_size > 0);
+
+	closesocket(s);
 }
 void startWeatherThread() {
 	OSStatus err = kNoErr;
