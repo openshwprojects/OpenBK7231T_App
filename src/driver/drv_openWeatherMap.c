@@ -96,7 +96,8 @@ static void weather_thread2(beken_thread_arg_t arg) {
 		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Connect fail.");
 		return;
 	}
-	if (HAL_TCP_Write(s, request, strlen(request), 1000) != len) {
+	int len = strlen(request);
+	if (HAL_TCP_Write(s, request, len, 1000) != len) {
 		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Send failed");
 		rtos_delay_milliseconds(250);
 		closesocket(s);
