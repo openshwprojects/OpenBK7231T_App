@@ -6,6 +6,7 @@
 #include "../driver/drv_public.h"
 #include <ctype.h>
 #include "cmd_local.h"
+#include "../hal/hal_flashVars.h"
 
 // bit mask telling which channels are hidden from HTTP
 // If given bit is set, then given channel is hidden
