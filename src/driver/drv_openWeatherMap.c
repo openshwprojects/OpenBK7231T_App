@@ -87,7 +87,7 @@ static void weather_thread(beken_thread_arg_t arg) {
 	//HAL_TCP_Destroy(s);
 	//lwip_close_force(s);
 
-	//closesocket(s);
+	closesocket(s);
     // remove this thread
 	rtos_delete_thread(NULL);
 }
@@ -144,7 +144,7 @@ static void weather_thread2(beken_thread_arg_t arg) {
 			ADDLOG_ERROR(LOG_FEATURE_HTTP, buffer);
 		}
 	} while (recv_size > 0);
-	//HAL_TCP_Destroy(s);
+	HAL_TCP_Destroy(s);
 	//lwip_close_force(s);
 
 	
