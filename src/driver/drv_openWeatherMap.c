@@ -35,6 +35,28 @@ static void weather_thread(beken_thread_arg_t arg) {
 		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Could not create socket.");
 		return;
 	}
+
+	struct sockaddr_in server;
+	server.sin_addr = *addr_list[0];
+	server.sin_family = AF_INET;
+	server.sin_port = htons(80);
+
+	if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0) {
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Connection failed.");
+		closesocket(s);
+		return 1;
+	}
+	// let's just assume that you didn't see my key here, ok? 
+	const char *request = "GET /data/2.5/weather?lat=40.7128&lon=-74.0060&appid=d6fae53c4278ffb3fe4c17c23fc6a7c6 HTTP/1.1\r\n"
+		"Host: api.openweathermap.org\r\n"
+		"Connection: close\r\n\r\n";
+
+	if (send(s, request, strlen(request), 0) < 0) {
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Send failed");
+		closesocket(s);
+		return 1;
+	}
+
 }
 void startWeatherThread() {
 	OSStatus err = kNoErr;
