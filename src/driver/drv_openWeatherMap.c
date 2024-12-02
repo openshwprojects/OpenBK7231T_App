@@ -8,11 +8,17 @@
 #include "../hal/hal_pins.h"
 #include "../httpserver/new_http.h"
 #include "drv_ntp.h"
+#ifndef WINDOWS
+#include <lwip/dns.h>
+#endif
 
 xTaskHandle g_weather_thread = NULL;
 
 static void weather_thread(beken_thread_arg_t arg) {
+	struct hostent *he;
+	char hostname[] = "api.openweathermap.org";
 
+	he = gethostbyname(hostname);
 }
 void startWeatherThread() {
 	OSStatus err = kNoErr;
