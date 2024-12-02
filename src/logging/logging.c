@@ -235,7 +235,7 @@ void LOG_SetCommandHTTPRedirectReply(http_request_t* request) {
 
 
 
-#ifdef PLATFORM_BEKEN
+#if defined(PLATFORM_BEKEN) && !defined(PLATFORM_BK7238)
 // run serial via timer thread.
 	OSStatus OBK_rtos_callback_in_timer_thread( PendedFunction_t xFunctionToPend, void *pvParameter1, uint32_t ulParameter2, uint32_t delay_ms);
 	void RunSerialLog();
@@ -345,6 +345,9 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 //#if PLATFORM_BL602
 	//printf(tmp);
 //#endif
+#if PLATFORM_BK7238
+	bk_printf(tmp);
+#endif
 	// This is used by HTTP console
 	if (g_log_alsoPrintToHTTP) {
 		// guard here is used for the rare case when poststr attempts to do an addLogAdv as well
@@ -398,7 +401,7 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 	if (taken == pdTRUE) {
 		xSemaphoreGive(logMemory.mutex);
 	}
-#ifdef PLATFORM_BEKEN
+#if defined(PLATFORM_BEKEN) && !defined(PLATFORM_BK7238)
 	trigger_log_send();
 #endif	
 	if (log_delay != 0) 
@@ -451,7 +454,7 @@ static int getData(char* buff, int buffsize, int* tail) {
 	return count;
 }
 
-#if PLATFORM_BEKEN
+#if defined(PLATFORM_BEKEN) && !defined(PLATFORM_BK7238)
 
 // for T & N, we can send bytes if TX fifo is not full,
 // and not wait.
@@ -537,7 +540,7 @@ void startSerialLog() {
 
 #else
 
-#ifndef PLATFORM_BEKEN
+#if !defined(PLATFORM_BEKEN) || defined(PLATFORM_BK7238)
 	OSStatus err = kNoErr;
 	err = rtos_create_thread(NULL, BEKEN_APPLICATION_PRIORITY,
 		"log_serial",
@@ -589,7 +592,7 @@ void log_server_thread(beken_thread_arg_t arg)
 			if (client_fd >= 0)
 			{
 				os_strcpy(client_ip_str, inet_ntoa(client_addr.sin_addr));
-#ifdef PLATFORM_BEKEN
+#if defined(PLATFORM_BEKEN) && !defined(PLATFORM_BK7238)
 				// Just note the new client port, if we have an available slot out of the two we record.
 				int found_port_slot = 0;
 				for (int i = 0; i < MAX_TCP_LOG_PORTS; i++) {
@@ -631,7 +634,7 @@ void log_server_thread(beken_thread_arg_t arg)
 #define TCPLOGBUFSIZE 128
 static char tcplogbuf[TCPLOGBUFSIZE];
 
-#ifdef PLATFORM_BEKEN
+#if defined(PLATFORM_BEKEN) && !defined(PLATFORM_BK7238)
 static void send_to_tcp(){
 	int i;
 	for (i = 0; i < MAX_TCP_LOG_PORTS; i++){
@@ -664,7 +667,7 @@ static void send_to_tcp(){
 #endif
 
 // on beken, we trigger log send from timer thread
-#ifndef PLATFORM_BEKEN
+#if !defined(PLATFORM_BEKEN) || defined(PLATFORM_BK7238)
 
 // non-beken
 static void log_client_thread(beken_thread_arg_t arg)

@@ -202,7 +202,7 @@ void extended_app_waiting_for_launch2(void) {
 #endif
 
 
-#if defined(PLATFORM_LN882H) || defined(PLATFORM_ESPIDF)
+#if defined(PLATFORM_LN882H) || defined(PLATFORM_ESPIDF) || PLATFORM_BK7238
 
 int LWIP_GetMaxSockets() {
 	return 0;
@@ -1293,7 +1293,7 @@ void Main_Init_Before_Delay()
 	// read or initialise the boot count flash area
 	HAL_FlashVars_IncreaseBootCount();
 
-#ifdef PLATFORM_BEKEN
+#if defined(PLATFORM_BEKEN) && !defined(PLATFORM_BK7238)
 	// this just increments our idle counter variable.
 	// it registers a cllback from RTOS IDLE function.
 	// why is it called IRDA??  is this where they check for IR?

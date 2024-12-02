@@ -1,5 +1,6 @@
 
 #ifndef PLATFORM_BL602
+#ifndef PLATFORM_BK7238
 
 #include "drv_local.h"
 #include "../new_common.h"
@@ -344,4 +345,5 @@ void DRV_IR2_Init() {
 
 }
 
+#endif
 #endif

@@ -58,6 +58,11 @@ void OTA_RequestDownloadFromHTTP(const char *s);
 #define DEVICENAME_PREFIX_SHORT "obk"
 #define PLATFORM_MCU_NAME "BK7231T"
 #define MANUFACTURER "Beken Corporation"
+#elif PLATFORM_BK7238
+#define DEVICENAME_PREFIX_FULL "OpenBK7238"
+#define DEVICENAME_PREFIX_SHORT "obk"
+#define PLATFORM_MCU_NAME "BK7238"
+#define MANUFACTURER "Beken Corporation"
 #elif PLATFORM_BL602
 #define DEVICENAME_PREFIX_FULL "OpenBL602"
 #define DEVICENAME_PREFIX_SHORT "obl"
@@ -127,6 +132,8 @@ This platform is not supported, error!
 #define USER_SW_VER "LN882H_Test"
 #elif defined(PLATFORM_ESPIDF)
 #define USER_SW_VER PLATFORM_MCU_NAME "_Test"
+#elif defined(PLATFORM_BK7238)
+#define USER_SW_VER "BK7238_Test"
 #else
 #define USER_SW_VER "unknown"
 #endif
@@ -440,6 +447,12 @@ OSStatus rtos_create_thread(beken_thread_t* thread,
 
 void delay_ms(UINT32 ms_count);
 
+#ifdef PLATFORM_BK7238
+
+#define lwip_close_force lwip_close
+
+#endif
+
 #endif
 
 typedef unsigned char byte;
@@ -494,7 +507,7 @@ void urldecode2_safe(char *dst, const char *srcin, int maxDstLen);
 int strIsInteger(const char *s);
 
 #ifndef PLATFORM_ESPIDF
-const char* strcasestr(const char* str1, const char* str2);
+//const char* strcasestr(const char* str1, const char* str2);
 #endif
 
 // user_main.c

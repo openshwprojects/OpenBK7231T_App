@@ -214,6 +214,7 @@ void PINS_BeginDeepSleepWithPinWakeUp(unsigned int wakeUpTime) {
 #ifdef PLATFORM_BK7231T
 	extern void deep_sleep_wakeup_with_gpio(UINT32 gpio_index_map, UINT32 gpio_edge_map);
 	deep_sleep_wakeup_with_gpio(g_gpio_index_map[0], g_gpio_edge_map[0]);
+#elif PLATFORM_BK7238
 #else
 	extern void bk_enter_deep_sleep(UINT32 g_gpio_index_map, UINT32 g_gpio_edge_map);
 	extern void deep_sleep_wakeup(const UINT32* g_gpio_index_map,

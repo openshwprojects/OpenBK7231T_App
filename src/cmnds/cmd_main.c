@@ -92,6 +92,7 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	
 
 #ifdef PLATFORM_BEKEN
+#if !defined(PLATFORM_BK7238)
 	extern int bk_wlan_power_save_set_level(BK_PS_LEVEL level);
 	if (bOn) {
 		bk_wlan_power_save_set_level(/*PS_DEEP_SLEEP_BIT */  PS_RF_SLEEP_BIT | PS_MCU_SLEEP_BIT);
@@ -99,6 +100,7 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	else {
 		bk_wlan_power_save_set_level(0);
 	}
+#endif
 #elif defined(PLATFORM_W600)
 	if (bOn) {
 		tls_wifi_set_psflag(1, 0);	//Enable powersave but don't save to flash
@@ -181,6 +183,7 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 
 	timeMS = Tokenizer_GetArgInteger(0);
 #ifdef PLATFORM_BEKEN
+#if !defined(PLATFORM_BK7238)
 	// It requires a define in SDK file:
 	// OpenBK7231T\platforms\bk7231t\bk7231t_os\beken378\func\include\manual_ps_pub.h
 	// define there:
@@ -188,6 +191,7 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 	extern void bk_wlan_ps_wakeup_with_timer(UINT32 sleep_time);
 	bk_wlan_ps_wakeup_with_timer(timeMS);
 	return CMD_RES_OK;
+#endif
 #elif defined(PLATFORM_W600)
 #elif defined(PLATFORM_ESPIDF)
 	esp_sleep_enable_timer_wakeup(timeMS * 1000000);

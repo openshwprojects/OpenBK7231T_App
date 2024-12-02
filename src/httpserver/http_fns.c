@@ -1281,7 +1281,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 			hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", i + 1, (int)num, ar[i].ssid, ar[i].channel, ar[i].rssi);
 		}
 		tuya_os_adapt_wifi_release_ap(ar);
-#elif PLATFORM_LN882H
+#elif PLATFORM_LN882H || PLATFORM_BK7238
 // TODO:LN882H action
         poststr(request, "TODO LN882H<br>");
 #elif PLATFORM_ESPIDF

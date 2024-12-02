@@ -8,7 +8,9 @@
 
 #include "../../beken378/func/include/net_param_pub.h"
 #include "../../beken378/func/user_driver/BkDriverPwm.h"
+#ifndef PLATFORM_BK7238
 #include "../../beken378/func/user_driver/BkDriverI2c.h"
+#endif
 #include "../../beken378/driver/i2c/i2c1.h"
 #include "../../beken378/driver/gpio/gpio.h"
 
