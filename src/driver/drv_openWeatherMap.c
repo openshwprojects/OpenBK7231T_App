@@ -20,7 +20,7 @@ static void weather_thread(beken_thread_arg_t arg) {
 
 	he = gethostbyname(hostname);
 	if (he == NULL) {
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Failed to resolve hostname."));
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Failed to resolve hostname.");
 		return;
 	}
 	addr_list = (struct in_addr **)he->h_addr_list;
