@@ -19,9 +19,7 @@
 xTaskHandle g_weather_thread = NULL;
 
 // let's just assume that you didn't see my key here, ok? 
-static const char *request = "GET /data/2.5/weather?lat=40.7128&lon=-74.0060&appid=d6fae53c4278ffb3fe4c17c23fc6a7c6 HTTP/1.1\r\n"
-"Host: api.openweathermap.org\r\n"
-"Connection: close\r\n\r\n";
+static char request[512]; // Adjust size as needed
 
 static void weather_thread(beken_thread_arg_t arg) {
 	struct hostent *he;
@@ -41,38 +39,21 @@ static void weather_thread(beken_thread_arg_t arg) {
 		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Could not create socket.");
 		return;
 	}
-	rtos_delay_milliseconds(250);
-	ADDLOG_ERROR(LOG_FEATURE_HTTP, "Socket created.");
 
 	struct sockaddr_in server;
 	server.sin_addr = *addr_list[0];
 	server.sin_family = AF_INET;
 	server.sin_port = htons(80);
 
-	rtos_delay_milliseconds(250);
 	if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0) {
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Connection failed.");
 		closesocket(s);
 		return 1;
 	}
-	ADDLOG_ERROR(LOG_FEATURE_HTTP, "Connected.");
-	rtos_delay_milliseconds(250);
-
-	int len = strlen(request);
-
-	ADDLOG_ERROR(LOG_FEATURE_HTTP, "Will send %i",len);
-	rtos_delay_milliseconds(250);
-
 	if (send(s, request, strlen(request), 0) < 0) {
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Send failed");
-		rtos_delay_milliseconds(250);
 		closesocket(s);
 		return 1;
 	}
-	ADDLOG_ERROR(LOG_FEATURE_HTTP, "Sent.");
-	rtos_delay_milliseconds(250);
-
-	char buffer[256];
+	char buffer[512];
 	int recv_size;
 	do {
 		recv_size = recv(s, buffer, sizeof(buffer) - 1, 0);
@@ -86,9 +67,7 @@ static void weather_thread(beken_thread_arg_t arg) {
 
 	//HAL_TCP_Destroy(s);
 	//lwip_close_force(s);
-
 	closesocket(s);
-    // remove this thread
 	rtos_delete_thread(NULL);
 }
 void startWeatherThread() {
@@ -117,23 +96,13 @@ static void weather_thread2(beken_thread_arg_t arg) {
 		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Connect fail.");
 		return;
 	}
-	ADDLOG_ERROR(LOG_FEATURE_HTTP, "Connect ok.");
-	rtos_delay_milliseconds(250);
-
-	int len = strlen(request);
-	ADDLOG_ERROR(LOG_FEATURE_HTTP, "Will send %i", len);
-	rtos_delay_milliseconds(250);
-
-	if (HAL_TCP_Write(s, request, len, 1000) != len) {
+	if (HAL_TCP_Write(s, request, strlen(request), 1000) != len) {
 		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Send failed");
 		rtos_delay_milliseconds(250);
 		closesocket(s);
 		return 1;
 	}
-	ADDLOG_ERROR(LOG_FEATURE_HTTP, "Sent.");
-	rtos_delay_milliseconds(250);
-
-	char buffer[256];
+	char buffer[512];
 	int recv_size;
 	do {
 		recv_size = HAL_TCP_Read(s, buffer, sizeof(buffer) - 1, 1000);
@@ -145,11 +114,6 @@ static void weather_thread2(beken_thread_arg_t arg) {
 		}
 	} while (recv_size > 0);
 	HAL_TCP_Destroy(s);
-	//lwip_close_force(s);
-
-	
-	//closesocket(s);
-    // remove this thread
 	rtos_delete_thread(NULL);
 }
 void startWeatherThread2() {
@@ -172,8 +136,29 @@ static commandResult_t CMD_OWM_Request2(const void *context, const char *cmd, co
 
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_OWM_Setup(const void *context, const char *cmd, const char *args, int flags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+	const char *lat = Tokenizer_GetArg(0);
+	const char *lng = Tokenizer_GetArg(1);
+	const char *key = Tokenizer_GetArg(2);
+
+	snprintf(request, sizeof(request),
+		"GET /data/2.5/weather?lat=%s&lon=%s&appid=%s HTTP/1.1\r\n"
+		"Host: api.openweathermap.org\r\n"
+		"Connection: close\r\n\r\n",
+		lat, lng, key);
+
+	ADDLOG_ERROR(LOG_FEATURE_HTTP, request);
+
+	return CMD_RES_OK;
+}
+/*
+startDriver OpenWeatherMap
+owm_setup 40.7128 -74.0060 d6fae53c4278ffb3fe4c17c23fc6a7c6 
+owm_request
+*/
 void DRV_OpenWeatherMap_Init() {
-	
+	CMD_RegisterCommand("owm_setup", CMD_OWM_Setup, NULL);
 	CMD_RegisterCommand("owm_request", CMD_OWM_Request, NULL);
 	CMD_RegisterCommand("owm_request2", CMD_OWM_Request2, NULL);
 
