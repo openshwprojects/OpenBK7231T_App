@@ -7,6 +7,7 @@
 #include "../driver/drv_public.h"
 #include "../driver/drv_battery.h"
 #include "../driver/drv_ntp.h"
+#include "../hal/hal_flashVars.h"
 #include <ctype.h> // isspace
 
 /*
