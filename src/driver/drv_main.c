@@ -74,6 +74,14 @@ static driver_t g_drivers[] = {
 
 
 
+
+#if ENABLE_DRIVER_OPENWEATHERMAP
+	//drvdetail:{"name":"OpenWeatherMap",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Widget .",
+	//drvdetail:"requires":""}
+	{ "OpenWeatherMap",		DRV_OpenWeatherMap_Init,			NULL,			NULL, NULL, NULL, NULL, false },
+#endif
 #if ENABLE_DRIVER_WIDGET
 	//drvdetail:{"name":"Widget",
 	//drvdetail:"title":"TODO",
