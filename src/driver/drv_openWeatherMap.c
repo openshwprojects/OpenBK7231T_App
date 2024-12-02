@@ -7,6 +7,7 @@
 #include "../logging/logging.h"
 #include "../hal/hal_pins.h"
 #include "../httpserver/new_http.h"
+#include "../httpclient/utils_net.h"
 #include "drv_ntp.h"
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
@@ -83,7 +84,8 @@ static void weather_thread(beken_thread_arg_t arg) {
 		}
 	} while (recv_size > 0);
 
-	closesocket(s);
+	HAL_TCP_Destroy(s);
+	//closesocket(s);
 }
 void startWeatherThread() {
 	OSStatus err = kNoErr;
@@ -105,9 +107,66 @@ static commandResult_t CMD_OWM_Request(const void *context, const char *cmd, con
 
 	return CMD_RES_OK;
 }
+static void weather_thread2(beken_thread_arg_t arg) {
+	int s = HAL_TCP_Establish("api.openweathermap.org", 80);
+	if (s == 0) {
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Connect fail.");
+		return;
+	}
+	ADDLOG_ERROR(LOG_FEATURE_HTTP, "Connect ok.");
+	rtos_delay_milliseconds(250);
+
+	int len = strlen(request);
+	ADDLOG_ERROR(LOG_FEATURE_HTTP, "Will send %i", len);
+	rtos_delay_milliseconds(250);
+
+	if (HAL_TCP_Write(s, request, len, 1000) != len) {
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Send failed");
+		rtos_delay_milliseconds(250);
+		closesocket(s);
+		return 1;
+	}
+	ADDLOG_ERROR(LOG_FEATURE_HTTP, "Sent.");
+	rtos_delay_milliseconds(250);
+
+	char buffer[256];
+	int recv_size;
+	do {
+		recv_size = HAL_TCP_Read(s, buffer, sizeof(buffer) - 1, 1000);
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Rec %i", recv_size);
+		rtos_delay_milliseconds(250);
+		if (recv_size > 0) {
+			buffer[recv_size] = '\0';
+			ADDLOG_ERROR(LOG_FEATURE_HTTP, buffer);
+		}
+	} while (recv_size > 0);
+	HAL_TCP_Destroy(s);
+	//closesocket(s);
+}
+void startWeatherThread2() {
+	OSStatus err = kNoErr;
+
+	err = rtos_create_thread(&g_weather_thread, BEKEN_APPLICATION_PRIORITY,
+		"OWM",
+		(beken_thread_function_t)weather_thread2,
+		8192,
+		(beken_thread_arg_t)0);
+	if (err != kNoErr)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "create \"OWM\" thread failed with %i!\r\n", err);
+	}
+}
+static commandResult_t CMD_OWM_Request2(const void *context, const char *cmd, const char *args, int flags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+
+	startWeatherThread2();
+
+	return CMD_RES_OK;
+}
 void DRV_OpenWeatherMap_Init() {
 	
 	CMD_RegisterCommand("owm_request", CMD_OWM_Request, NULL);
+	CMD_RegisterCommand("owm_request2", CMD_OWM_Request2, NULL);
 
 
 }
