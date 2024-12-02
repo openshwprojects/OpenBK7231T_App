@@ -85,7 +85,7 @@ static void weather_thread(beken_thread_arg_t arg) {
 	} while (recv_size > 0);
 
 	//HAL_TCP_Destroy(s);
-	lwip_close_force(s);
+	//lwip_close_force(s);
 
 	//closesocket(s);
 }
@@ -143,7 +143,7 @@ static void weather_thread2(beken_thread_arg_t arg) {
 		}
 	} while (recv_size > 0);
 	//HAL_TCP_Destroy(s);
-	lwip_close_force(s);
+	//lwip_close_force(s);
 
 	
 	//closesocket(s);
