@@ -17,6 +17,11 @@
 
 xTaskHandle g_weather_thread = NULL;
 
+// let's just assume that you didn't see my key here, ok? 
+static const char *request = "GET /data/2.5/weather?lat=40.7128&lon=-74.0060&appid=d6fae53c4278ffb3fe4c17c23fc6a7c6 HTTP/1.1\r\n"
+"Host: api.openweathermap.org\r\n"
+"Connection: close\r\n\r\n";
+
 static void weather_thread(beken_thread_arg_t arg) {
 	struct hostent *he;
 	char hostname[] = "api.openweathermap.org";
@@ -52,24 +57,26 @@ static void weather_thread(beken_thread_arg_t arg) {
 	ADDLOG_ERROR(LOG_FEATURE_HTTP, "Connected.");
 	rtos_delay_milliseconds(250);
 
+	int len = strlen(request);
 
-	// let's just assume that you didn't see my key here, ok? 
-	const char *request = "GET /data/2.5/weather?lat=40.7128&lon=-74.0060&appid=d6fae53c4278ffb3fe4c17c23fc6a7c6 HTTP/1.1\r\n"
-		"Host: api.openweathermap.org\r\n"
-		"Connection: close\r\n\r\n";
+	ADDLOG_ERROR(LOG_FEATURE_HTTP, "Will send %i",len);
+	rtos_delay_milliseconds(250);
 
 	if (send(s, request, strlen(request), 0) < 0) {
 		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Send failed");
+		rtos_delay_milliseconds(250);
 		closesocket(s);
 		return 1;
 	}
 	ADDLOG_ERROR(LOG_FEATURE_HTTP, "Sent.");
 	rtos_delay_milliseconds(250);
 
-	char buffer[512];
+	char buffer[256];
 	int recv_size;
 	do {
 		recv_size = recv(s, buffer, sizeof(buffer) - 1, 0);
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Rec %i",recv_size);
+		rtos_delay_milliseconds(250);
 		if (recv_size > 0) {
 			buffer[recv_size] = '\0';
 			ADDLOG_ERROR(LOG_FEATURE_HTTP, buffer);
