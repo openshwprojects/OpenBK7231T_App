@@ -8,6 +8,9 @@
 #include "../hal/hal_pins.h"
 #include "../httpserver/new_http.h"
 #include "drv_ntp.h"
+#include "lwip/sockets.h"
+#include "lwip/ip_addr.h"
+#include "lwip/inet.h"
 #ifndef WINDOWS
 #include <lwip/dns.h>
 #endif
