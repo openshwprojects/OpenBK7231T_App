@@ -17,6 +17,8 @@ xTaskHandle g_weather_thread = NULL;
 static void weather_thread(beken_thread_arg_t arg) {
 	struct hostent *he;
 	char hostname[] = "api.openweathermap.org";
+	struct in_addr **addr_list;
+	SOCKET s;
 
 	he = gethostbyname(hostname);
 	if (he == NULL) {
