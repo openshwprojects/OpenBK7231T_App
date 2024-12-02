@@ -88,6 +88,8 @@ static void weather_thread(beken_thread_arg_t arg) {
 	//lwip_close_force(s);
 
 	//closesocket(s);
+    // remove this thread
+	rtos_delete_thread(NULL);
 }
 void startWeatherThread() {
 	OSStatus err = kNoErr;
@@ -147,6 +149,8 @@ static void weather_thread2(beken_thread_arg_t arg) {
 
 	
 	//closesocket(s);
+    // remove this thread
+	rtos_delete_thread(NULL);
 }
 void startWeatherThread2() {
 	OSStatus err = kNoErr;
