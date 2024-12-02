@@ -262,10 +262,11 @@ OpenESP32S3: prebuild_ESPIDF
 .PHONY: OpenBK7238
 OpenBK7238:
 	cd sdk/OpenBK7238 && sh build.sh $(APP_VERSION)
-	cp ./sdk/OpenBK7238/output/OpenBK7238_QIO_${APP_VERSION}.bin output
-	cp ./sdk/OpenBK7238/output/OpenBK7238_UA_${APP_VERSION}.bin output
-	cp ./sdk/OpenBK7238/output/OpenBK7238_UG_${APP_VERSION}.bin output
-	cp ./sdk/OpenBK7238/output/OpenBK7238_${APP_VERSION}.rbl output
+	mkdir -p output/$(APP_VERSION)
+	cp ./sdk/OpenBK7238/output/OpenBK7238_QIO_${APP_VERSION}.bin output/$(APP_VERSION)/OpenBK7238_QIO_${APP_VERSION}.bin
+	cp ./sdk/OpenBK7238/output/OpenBK7238_UA_${APP_VERSION}.bin output/$(APP_VERSION)/OpenBK7238_UA_${APP_VERSION}.bin 
+	cp ./sdk/OpenBK7238/output/OpenBK7238_UG_${APP_VERSION}.bin output/$(APP_VERSION)/OpenBK7238_UG_${APP_VERSION}.bin 
+	cp ./sdk/OpenBK7238/output/OpenBK7238_${APP_VERSION}.rbl output/$(APP_VERSION)/OpenBK7238_${APP_VERSION}.rbl    
 
 # clean .o files and output directory
 .PHONY: clean
