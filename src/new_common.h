@@ -63,6 +63,11 @@ void OTA_RequestDownloadFromHTTP(const char *s);
 #define DEVICENAME_PREFIX_SHORT "obk"
 #define PLATFORM_MCU_NAME "BK7231T"
 #define MANUFACTURER "Beken Corporation"
+#elif PLATFORM_BK7238
+#define DEVICENAME_PREFIX_FULL "OpenBK7238"
+#define DEVICENAME_PREFIX_SHORT "obk"
+#define PLATFORM_MCU_NAME "BK7238"
+#define MANUFACTURER "Beken Corporation"
 #elif PLATFORM_BL602
 #define DEVICENAME_PREFIX_FULL "OpenBL602"
 #define DEVICENAME_PREFIX_SHORT "obl"
@@ -158,6 +163,10 @@ This platform is not supported, error!
 #define USER_SW_VER "RTL87X0C_Test"
 #elif defined(PLATFORM_RTL8710B)
 #define USER_SW_VER "RTL8710B_Test"
+#elif defined(PLATFORM_RTL8710A)
+#define USER_SW_VER "RTL8710A_Test"
+#elif defined(PLATFORM_BK7238)
+#define USER_SW_VER "BK7238_Test"
 #else
 #define USER_SW_VER "unknown"
 #endif
