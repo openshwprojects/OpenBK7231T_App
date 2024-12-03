@@ -16,10 +16,18 @@
 #include <lwip/dns.h>
 #endif
 
+#ifdef WINDOWS
+typedef int xTaskHandle;
+#endif
+
 xTaskHandle g_weather_thread = NULL;
 
-// let's just assume that you didn't see my key here, ok? 
-static char request[512]; // Adjust size as needed
+static char g_request[512]; // Adjust size as needed
+static char g_reply[1024];
+
+void Weather_SetReply(const char *s) {
+	strcpy_safe(g_reply, s, sizeof(g_reply));
+}
 
 static void weather_thread(beken_thread_arg_t arg) {
 	struct hostent *he;
@@ -49,21 +57,18 @@ static void weather_thread(beken_thread_arg_t arg) {
 		closesocket(s);
 		return 1;
 	}
-	if (send(s, request, strlen(request), 0) < 0) {
+	if (send(s, g_request, strlen(g_request), 0) < 0) {
 		closesocket(s);
 		return 1;
 	}
-	char buffer[512];
-	int recv_size;
-	do {
-		recv_size = recv(s, buffer, sizeof(buffer) - 1, 0);
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Rec %i",recv_size);
-		rtos_delay_milliseconds(250);
-		if (recv_size > 0) {
-			buffer[recv_size] = '\0';
-			ADDLOG_ERROR(LOG_FEATURE_HTTP, buffer);
-		}
-	} while (recv_size > 0);
+	char buffer[1024];
+	int recv_size = recv(s, buffer, sizeof(buffer) - 1, 0);
+	ADDLOG_ERROR(LOG_FEATURE_HTTP, "Rec %i",recv_size);
+	if (recv_size > 0) {
+		buffer[recv_size] = '\0';
+		Weather_SetReply(buffer);
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, buffer);
+	}
 
 	//HAL_TCP_Destroy(s);
 	//lwip_close_force(s);
@@ -96,24 +101,22 @@ static void weather_thread2(beken_thread_arg_t arg) {
 		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Connect fail.");
 		return;
 	}
-	int len = strlen(request);
-	if (HAL_TCP_Write(s, request, len, 1000) != len) {
+	int len = strlen(g_request);
+	if (HAL_TCP_Write(s, g_request, len, 1000) != len) {
 		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Send failed");
 		rtos_delay_milliseconds(250);
 		closesocket(s);
 		return 1;
 	}
-	char buffer[512];
-	int recv_size;
-	do {
-		recv_size = HAL_TCP_Read(s, buffer, sizeof(buffer) - 1, 1000);
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Rec %i", recv_size);
-		rtos_delay_milliseconds(250);
-		if (recv_size > 0) {
-			buffer[recv_size] = '\0';
-			ADDLOG_ERROR(LOG_FEATURE_HTTP, buffer);
-		}
-	} while (recv_size > 0);
+	char buffer[1024];
+	int recv_size = HAL_TCP_Read(s, buffer, sizeof(buffer) - 1, 1000);
+	ADDLOG_ERROR(LOG_FEATURE_HTTP, "Rec %i", recv_size);
+	if (recv_size > 0) {
+		buffer[recv_size] = '\0';
+		Weather_SetReply(buffer);
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, buffer);
+	}
+
 	HAL_TCP_Destroy(s);
 	rtos_delete_thread(NULL);
 }
@@ -143,15 +146,27 @@ static commandResult_t CMD_OWM_Setup(const void *context, const char *cmd, const
 	const char *lng = Tokenizer_GetArg(1);
 	const char *key = Tokenizer_GetArg(2);
 
-	snprintf(request, sizeof(request),
+	snprintf(g_request, sizeof(g_request),
 		"GET /data/2.5/weather?lat=%s&lon=%s&appid=%s HTTP/1.1\r\n"
 		"Host: api.openweathermap.org\r\n"
 		"Connection: close\r\n\r\n",
 		lat, lng, key);
 
-	ADDLOG_ERROR(LOG_FEATURE_HTTP, request);
+	ADDLOG_ERROR(LOG_FEATURE_HTTP, g_request);
 
 	return CMD_RES_OK;
+}
+void OWM_AppendInformationToHTTPIndexPage(http_request_t *request) {
+
+	hprintf255(request, "<h4>OpenWeatherMap Integration</h4>");
+	if (1) {
+		hprintf255(request, "<h6>Raw Reply (only in DEBUG)</h6>");
+		if (strlen(g_reply) > 0) {
+			poststr(request, "<textarea style='width:100%%; height:200px;'>");
+			poststr(request, g_reply);
+			poststr(request, "</textarea>");
+		}
+	}
 }
 /*
 startDriver OpenWeatherMap
