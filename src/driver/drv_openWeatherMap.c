@@ -26,7 +26,18 @@ static char g_request[512]; // Adjust size as needed
 static char g_reply[1024];
 
 void Weather_SetReply(const char *s) {
+#if 0
 	strcpy_safe(g_reply, s, sizeof(g_reply));
+#else
+	const char *json_start = strstr(s, "\r\n\r\n");
+	if (json_start) {
+		json_start += 4; // skip the "\r\n\r\n"
+		strcpy_safe(g_reply, json_start, sizeof(g_reply));
+	}
+	else {
+		g_reply[0] = 0;
+	}
+#endif
 }
 
 static void weather_thread(beken_thread_arg_t arg) {
