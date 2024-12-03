@@ -343,6 +343,7 @@
     <ClCompile Include="src\sim\Controller_Switch.cpp" />
     <ClCompile Include="src\sim\Controller_DHT11.cpp" />
     <ClCompile Include="src\driver\drv_widget.c" />
+    <ClCompile Include="src\driver\drv_openWeatherMap.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\base64\base64.h" />
