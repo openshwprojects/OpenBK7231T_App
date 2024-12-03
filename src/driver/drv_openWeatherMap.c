@@ -184,7 +184,7 @@ static void weather_thread2(beken_thread_arg_t arg) {
 		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Send failed");
 		rtos_delay_milliseconds(250);
 		closesocket(s);
-		return 1;
+		return;
 	}
 	char buffer[1024];
 	int recv_size = HAL_TCP_Read(s, buffer, sizeof(buffer) - 1, 1000);
