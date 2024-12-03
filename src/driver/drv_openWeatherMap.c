@@ -12,6 +12,8 @@
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
+#include "../cJSON/cJSON.h"
+
 #ifndef WINDOWS
 #include <lwip/dns.h>
 #endif
@@ -24,20 +26,65 @@ xTaskHandle g_weather_thread = NULL;
 
 static char g_request[512]; // Adjust size as needed
 static char g_reply[1024];
+typedef struct weatherData_s {
+	double lon;
+	double lat;
+	char main_weather[32];
+	char description[32];
+	double temp;
+	int pressure;
+	int humidity;
+	int timezone;
+	int sunrise;
+	int sunset;
+} weatherData_t;
+
+weatherData_t g_weather;
 
 void Weather_SetReply(const char *s) {
-#if 0
-	strcpy_safe(g_reply, s, sizeof(g_reply));
-#else
 	const char *json_start = strstr(s, "\r\n\r\n");
 	if (json_start) {
-		json_start += 4; // skip the "\r\n\r\n"
+		json_start += 4;
 		strcpy_safe(g_reply, json_start, sizeof(g_reply));
+
+		cJSON *json = cJSON_Parse(json_start);
+		if (json) {
+			cJSON *coord = cJSON_GetObjectItem(json, "coord");
+			if (coord) {
+				g_weather.lon = cJSON_GetObjectItem(coord, "lon") ? cJSON_GetObjectItem(coord, "lon")->valuedouble : 0.0;
+				g_weather.lat = cJSON_GetObjectItem(coord, "lat") ? cJSON_GetObjectItem(coord, "lat")->valuedouble : 0.0;
+			}
+
+			cJSON *weather_array = cJSON_GetObjectItem(json, "weather");
+			if (weather_array && cJSON_IsArray(weather_array)) {
+				cJSON *weather = cJSON_GetArrayItem(weather_array, 0);
+				if (weather) {
+					strncpy(g_weather.main_weather, cJSON_GetObjectItem(weather, "main") ? cJSON_GetObjectItem(weather, "main")->valuestring : "Unknown", sizeof(g_weather.main_weather) - 1);
+					strncpy(g_weather.description, cJSON_GetObjectItem(weather, "description") ? cJSON_GetObjectItem(weather, "description")->valuestring : "Unknown", sizeof(g_weather.description) - 1);
+				}
+			}
+
+			cJSON *main = cJSON_GetObjectItem(json, "main");
+			if (main) {
+				g_weather.temp = cJSON_GetObjectItem(main, "temp") ? cJSON_GetObjectItem(main, "temp")->valuedouble : 0.0;
+				g_weather.pressure = cJSON_GetObjectItem(main, "pressure") ? cJSON_GetObjectItem(main, "pressure")->valueint : 0;
+				g_weather.humidity = cJSON_GetObjectItem(main, "humidity") ? cJSON_GetObjectItem(main, "humidity")->valueint : 0;
+			}
+
+			g_weather.timezone = cJSON_GetObjectItem(json, "timezone") ? cJSON_GetObjectItem(json, "timezone")->valueint : 0;
+			g_weather.sunrise = cJSON_GetObjectItem(json, "sys") ? cJSON_GetObjectItem(cJSON_GetObjectItem(json, "sys"), "sunrise")->valueint : 0;
+			g_weather.sunset = cJSON_GetObjectItem(json, "sys") ? cJSON_GetObjectItem(cJSON_GetObjectItem(json, "sys"), "sunset")->valueint : 0;
+
+			cJSON_Delete(json);
+		}
+		else {
+			ADDLOG_ERROR(LOG_FEATURE_HTTP, "Failed to parse JSON");
+		}
 	}
 	else {
-		g_reply[0] = 0;
+		g_reply[0] = '\0';
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "No JSON found in reply");
 	}
-#endif
 }
 
 static void weather_thread(beken_thread_arg_t arg) {
@@ -158,7 +205,7 @@ static commandResult_t CMD_OWM_Setup(const void *context, const char *cmd, const
 	const char *key = Tokenizer_GetArg(2);
 
 	snprintf(g_request, sizeof(g_request),
-		"GET /data/2.5/weather?lat=%s&lon=%s&appid=%s HTTP/1.1\r\n"
+		"GET /data/2.5/weather?lat=%s&lon=%s&appid=%s&units=metric HTTP/1.1\r\n"
 		"Host: api.openweathermap.org\r\n"
 		"Connection: close\r\n\r\n",
 		lat, lng, key);
@@ -177,6 +224,19 @@ void OWM_AppendInformationToHTTPIndexPage(http_request_t *request) {
 			poststr(request, g_reply);
 			poststr(request, "</textarea>");
 		}
+	}
+	if (strlen(g_reply) > 0) {
+		char buff[16];
+
+		hprintf255(request, "<h5>Weather: %s (%s)</h5>", g_weather.main_weather, g_weather.description);
+		hprintf255(request, "<h5>Temperature: %.2f C, Pressure: %d hPa, Humidity: %d%%</h5>", g_weather.temp, g_weather.pressure, g_weather.humidity);
+
+		struct tm *tm = gmtime(&g_weather.sunrise);
+		strftime(buff, sizeof(buff), "%H:%M:%S", tm);
+		hprintf255(request, "<h5>Timezone: %d, Sunrise: %s, ", g_weather.timezone, buff);
+		tm = gmtime(&g_weather.sunrise);
+		strftime(buff, sizeof(buff), "%H:%M:%S", tm);
+		hprintf255(request, "Sunset: %s</h5>", buff);
 	}
 }
 /*
