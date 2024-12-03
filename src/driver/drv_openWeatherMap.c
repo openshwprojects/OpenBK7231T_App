@@ -215,9 +215,9 @@ static commandResult_t CMD_OWM_Channels(const void *context, const char *cmd, co
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 
 	g_channels.bInitialized = 1;
-	g_channels.temperature = Tokenizer_GetArgInteger(0,-1);
-	g_channels.humidity = Tokenizer_GetArgInteger(1, -1);
-	g_channels.pressure = Tokenizer_GetArgInteger(2, -1);
+	g_channels.temperature = Tokenizer_GetArgIntegerDefault(0,-1);
+	g_channels.humidity = Tokenizer_GetArgIntegerDefault(1, -1);
+	g_channels.pressure = Tokenizer_GetArgIntegerDefault(2, -1);
 
 
 
