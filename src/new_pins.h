@@ -1386,6 +1386,7 @@ void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex));
 void CHANNEL_ClearAllChannels();
 // CHANNEL_SET_FLAG_*
 void CHANNEL_Set(int ch, int iVal, int iFlags);
+void CHANNEL_SetSmart(int ch, float fVal, int iFlags);
 void CHANNEL_Set_FloatPWM(int ch, float fVal, int iFlags);
 void CHANNEL_Add(int ch, int iVal);
 void CHANNEL_AddClamped(int ch, int iVal, int min, int max, int bWrapInsteadOfClamp);
