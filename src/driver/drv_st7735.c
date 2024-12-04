@@ -32,6 +32,7 @@ as well as Adafruit raw 1.8" TFT display
 #include "../hal/hal_pins.h"
 
 #include "drv_st7735.h"
+#include "driver/gpio.h"
 
 static uint8_t tabcolor;
 static volatile uint32_t *dataport, *clkport, *csport, *rsport;
