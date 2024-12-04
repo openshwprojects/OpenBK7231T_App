@@ -34,6 +34,7 @@ as well as Adafruit raw 1.8" TFT display
 #include "drv_st7735.h"
 #ifdef PLATFORM_ESPIDF
 #include "driver/gpio.h"
+#include "soc/gpio_reg.h.h"
 #endif
 
 
@@ -285,9 +286,10 @@ Bcmd[] = {                     // Initialization commands for 7735B screens
 #define digitalPinToPort(pin)    (0)
 #if WINDOWS
 #define portOutputRegister(port) (0)
-#else
+#elif PLATFORM_ESPIDF
 #define portOutputRegister(port) ((volatile uint32_t *)GPIO_OUT_REG)
-
+#else
+#define portOutputRegister(port) (0)
 #endif
 #define digitalPinToBitMask(pin) (1UL << (pin))
 
