@@ -274,7 +274,7 @@ Bcmd[] = {                     // Initialization commands for 7735B screens
 						100 };                                                                                                                //     100 ms delay
 
 
-#define pgm_read_byte(x) x
+#define pgm_read_byte(addr)   (*(const unsigned char *)(addr))
 // Companion code to the above tables.  Reads and issues
 // a series of LCD commands stored in PROGMEM byte array.
 	void commandList(const uint8_t *addr)
