@@ -246,6 +246,38 @@ Bcmd[] = {                     // Initialization commands for 7735B screens
 						100 };                                                                                                                //     100 ms delay
 
 
+
+// Companion code to the above tables.  Reads and issues
+// a series of LCD commands stored in PROGMEM byte array.
+	void commandList(const uint8_t *addr)
+	{
+
+		uint8_t numCommands, numArgs;
+		uint16_t ms;
+
+		numCommands = pgm_read_byte(addr++); // Number of commands to follow
+		while (numCommands--)
+		{                                      // For each command...
+			writecommand(pgm_read_byte(addr++)); //   Read, issue command
+			numArgs = pgm_read_byte(addr++);     //   Number of args to follow
+			ms = numArgs & DELAY;                //   If hibit set, delay follows args
+			numArgs &= ~DELAY;                   //   Mask out delay bit
+			while (numArgs--)
+			{                                   //   For each argument...
+				writedata(pgm_read_byte(addr++)); //     Read, issue argument
+			}
+
+			if (ms)
+			{
+				ms = pgm_read_byte(addr++); // Read post-command delay time (ms)
+				if (ms == 255)
+					ms = 500; // If 255, delay for 500 ms
+				delay(ms);
+			}
+		}
+	}
+
+
 static commandResult_t CMD_ST7735_Test(const void *context, const char *cmd, const char *args, int flags) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 
