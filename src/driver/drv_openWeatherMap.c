@@ -24,8 +24,9 @@ typedef int xTaskHandle;
 
 xTaskHandle g_weather_thread = NULL;
 
-static char g_request[512]; // Adjust size as needed
+static char g_request[512];
 static char g_reply[1024];
+
 typedef struct weatherData_s {
 	double lon;
 	double lat;
@@ -39,7 +40,15 @@ typedef struct weatherData_s {
 	int sunset;
 } weatherData_t;
 
+typedef struct weatherChannels_s {
+	byte bInitialized;
+	char temperature;
+	char humidity;
+	char pressure;
+} weatherChannels_t;
+
 weatherData_t g_weather;
+weatherChannels_t g_channels;
 
 void Weather_SetReply(const char *s) {
 	const char *json_start = strstr(s, "\r\n\r\n");
@@ -85,9 +94,47 @@ void Weather_SetReply(const char *s) {
 		g_reply[0] = '\0';
 		ADDLOG_ERROR(LOG_FEATURE_HTTP, "No JSON found in reply");
 	}
+	if (g_channels.bInitialized) {
+		if (g_channels.temperature != -1) {
+			CHANNEL_SetSmart(g_channels.temperature, g_weather.temp, 0);
+		}
+		if (g_channels.humidity != -1) {
+			CHANNEL_SetSmart(g_channels.humidity, g_weather.humidity, 0);
+		}
+		if (g_channels.pressure != -1) {
+			CHANNEL_SetSmart(g_channels.pressure, g_weather.pressure, 0);
+		}
+	}
 }
+#if 0
 
-static void weather_thread(beken_thread_arg_t arg) {
+static void sendQueryThreadInternal() {
+	int s = HAL_TCP_Establish("api.openweathermap.org", 80);
+	if (s == 0) {
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Connect fail.");
+		return;
+	}
+	int len = strlen(g_request);
+	if (HAL_TCP_Write(s, g_request, len, 1000) != len) {
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Send failed");
+		rtos_delay_milliseconds(250);
+		closesocket(s);
+		return;
+	}
+	char buffer[1024];
+	int recv_size = HAL_TCP_Read(s, buffer, sizeof(buffer) - 1, 1000);
+	ADDLOG_ERROR(LOG_FEATURE_HTTP, "Rec %i", recv_size);
+	if (recv_size > 0) {
+		buffer[recv_size] = '\0';
+		Weather_SetReply(buffer);
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, buffer);
+	}
+
+	HAL_TCP_Destroy(s);
+}
+#else
+
+static void sendQueryThreadInternal() {
 	struct hostent *he;
 	char hostname[] = "api.openweathermap.org";
 	struct in_addr **addr_list;
@@ -121,7 +168,7 @@ static void weather_thread(beken_thread_arg_t arg) {
 	}
 	char buffer[1024];
 	int recv_size = recv(s, buffer, sizeof(buffer) - 1, 0);
-	ADDLOG_ERROR(LOG_FEATURE_HTTP, "Rec %i",recv_size);
+	ADDLOG_ERROR(LOG_FEATURE_HTTP, "Rec %i", recv_size);
 	if (recv_size > 0) {
 		buffer[recv_size] = '\0';
 		Weather_SetReply(buffer);
@@ -131,6 +178,11 @@ static void weather_thread(beken_thread_arg_t arg) {
 	//HAL_TCP_Destroy(s);
 	//lwip_close_force(s);
 	closesocket(s);
+
+}
+#endif
+static void weather_thread(beken_thread_arg_t arg) {
+	sendQueryThreadInternal();
 	rtos_delete_thread(NULL);
 }
 void startWeatherThread() {
@@ -153,48 +205,15 @@ static commandResult_t CMD_OWM_Request(const void *context, const char *cmd, con
 
 	return CMD_RES_OK;
 }
-static void weather_thread2(beken_thread_arg_t arg) {
-	int s = HAL_TCP_Establish("api.openweathermap.org", 80);
-	if (s == 0) {
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Connect fail.");
-		return;
-	}
-	int len = strlen(g_request);
-	if (HAL_TCP_Write(s, g_request, len, 1000) != len) {
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Send failed");
-		rtos_delay_milliseconds(250);
-		closesocket(s);
-		return 1;
-	}
-	char buffer[1024];
-	int recv_size = HAL_TCP_Read(s, buffer, sizeof(buffer) - 1, 1000);
-	ADDLOG_ERROR(LOG_FEATURE_HTTP, "Rec %i", recv_size);
-	if (recv_size > 0) {
-		buffer[recv_size] = '\0';
-		Weather_SetReply(buffer);
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, buffer);
-	}
-
-	HAL_TCP_Destroy(s);
-	rtos_delete_thread(NULL);
-}
-void startWeatherThread2() {
-	OSStatus err = kNoErr;
-
-	err = rtos_create_thread(&g_weather_thread, BEKEN_APPLICATION_PRIORITY,
-		"OWM",
-		(beken_thread_function_t)weather_thread2,
-		8192,
-		(beken_thread_arg_t)0);
-	if (err != kNoErr)
-	{
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, "create \"OWM\" thread failed with %i!\r\n", err);
-	}
-}
-static commandResult_t CMD_OWM_Request2(const void *context, const char *cmd, const char *args, int flags) {
+static commandResult_t CMD_OWM_Channels(const void *context, const char *cmd, const char *args, int flags) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 
-	startWeatherThread2();
+	g_channels.bInitialized = 1;
+	g_channels.temperature = Tokenizer_GetArgIntegerDefault(0,-1);
+	g_channels.humidity = Tokenizer_GetArgIntegerDefault(1, -1);
+	g_channels.pressure = Tokenizer_GetArgIntegerDefault(2, -1);
+
+
 
 	return CMD_RES_OK;
 }
@@ -241,13 +260,22 @@ void OWM_AppendInformationToHTTPIndexPage(http_request_t *request) {
 }
 /*
 startDriver OpenWeatherMap
+// owm_setup lat long APIkey
 owm_setup 40.7128 -74.0060 d6fae53c4278ffb3fe4c17c23fc6a7c6 
+setChannelType 3 Temperature_div10
+setChannelType 4 Humidity
+setChannelType 5 Pressure_div100
+// owm_channels temperature humidity pressure
+owm_channels 3 4 5
+// must have wifi
+waitFor WiFiState 4
+// this will send a HTTP GET once
 owm_request
 */
 void DRV_OpenWeatherMap_Init() {
 	CMD_RegisterCommand("owm_setup", CMD_OWM_Setup, NULL);
 	CMD_RegisterCommand("owm_request", CMD_OWM_Request, NULL);
-	CMD_RegisterCommand("owm_request2", CMD_OWM_Request2, NULL);
+	CMD_RegisterCommand("owm_channels", CMD_OWM_Channels, NULL);
 
 
 }
