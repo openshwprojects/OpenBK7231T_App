@@ -318,12 +318,12 @@ Bcmd[] = {                     // Initialization commands for 7735B screens
 		*csport &= ~cspinmask;
 		if (_rst)
 		{
-			//pinMode(_rst, OUTPUT);
-			//digitalWrite(_rst, HIGH);
+			HAL_PIN_Setup_Output(_rst, OUTPUT);
+			HAL_PIN_SetOutputValue(_rst, 1);
 			delay_ms(500);
-			//digitalWrite(_rst, LOW);
+			HAL_PIN_SetOutputValue(_rst, 0);
 			delay_ms(500);
-			//digitalWrite(_rst, HIGH);
+			HAL_PIN_SetOutputValue(_rst, 1);
 			delay_ms(500);
 		}
 
@@ -653,6 +653,17 @@ static commandResult_t Cmd_ST7735_Init(const void *context, const char *cmd, con
 
 	return CMD_RES_OK;
 }
+/*
+startDriver ST7735
+ST7735_Init
+
+again:
+delay_s 1
+ST7735_Test
+delay_s 1
+ST7735_Test2
+goto again
+*/
 void ST7735_Init() {
 	CMD_RegisterCommand("ST7735_Test", CMD_ST7735_Test, NULL);
 	CMD_RegisterCommand("ST7735_Test2", CMD_ST7735_Test2, NULL);
