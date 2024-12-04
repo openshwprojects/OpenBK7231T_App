@@ -267,6 +267,8 @@ setChannelType 4 Humidity
 setChannelType 5 Pressure_div100
 // owm_channels temperature humidity pressure
 owm_channels 3 4 5
+// must have wifi
+waitFor WiFiState 4
 // this will send a HTTP GET once
 owm_request
 */
