@@ -246,7 +246,7 @@ Bcmd[] = {                     // Initialization commands for 7735B screens
 						100 };                                                                                                                //     100 ms delay
 
 
-
+#define pgm_read_byte(x) x
 // Companion code to the above tables.  Reads and issues
 // a series of LCD commands stored in PROGMEM byte array.
 	void commandList(const uint8_t *addr)
@@ -272,12 +272,89 @@ Bcmd[] = {                     // Initialization commands for 7735B screens
 				ms = pgm_read_byte(addr++); // Read post-command delay time (ms)
 				if (ms == 255)
 					ms = 500; // If 255, delay for 500 ms
-				delay(ms);
+				delay_ms(ms);
 			}
 		}
 	}
 
+	// Initialization code common to both 'B' and 'R' type displays
+	void commonInit(const uint8_t *cmdList)
+	{
+		colstart = rowstart = 0; // May be overridden in init func
 
+	//	pinMode(_rs, OUTPUT);
+	//	pinMode(_cs, OUTPUT);
+	//	csport = portOutputRegister(digitalPinToPort(_cs));
+	//	rsport = portOutputRegister(digitalPinToPort(_rs));
+		//cspinmask = digitalPinToBitMask(_cs);
+		//rspinmask = digitalPinToBitMask(_rs);
+
+		//pinMode(_sclk, OUTPUT);
+		//pinMode(_sid, OUTPUT);
+	//	clkport = portOutputRegister(digitalPinToPort(_sclk));
+	//	dataport = portOutputRegister(digitalPinToPort(_sid));
+	//	clkpinmask = digitalPinToBitMask(_sclk);
+		//datapinmask = digitalPinToBitMask(_sid);
+		*clkport &= ~clkpinmask;
+		*dataport &= ~datapinmask;
+
+		// toggle RST low to reset; CS low so it'll listen to us
+		*csport &= ~cspinmask;
+		if (_rst)
+		{
+			//pinMode(_rst, OUTPUT);
+			//digitalWrite(_rst, HIGH);
+			delay_ms(500);
+			//digitalWrite(_rst, LOW);
+			delay_ms(500);
+			//digitalWrite(_rst, HIGH);
+			delay_ms(500);
+		}
+
+		if (cmdList)
+			commandList(cmdList);
+	}
+
+
+	// Initialization for ST7735B screens
+	void ST7735_initB(void)
+	{
+		commonInit(Bcmd);
+	}
+
+	// Initialization for ST7735R screens (green or red tabs)
+	void ST7735_initR(uint8_t options)
+	{
+		commonInit(Rcmd1);
+		if (options == Adafruit_initR_GREENTAB)
+		{
+			commandList(Rcmd2green);
+			colstart = 2;
+			rowstart = 1;
+		}
+		else if (options == Adafruit_initR_144GREENTAB)
+		{
+			_height = ST7735_TFTHEIGHT_144;
+			commandList(Rcmd2green144);
+			colstart = 2;
+			rowstart = 3;
+		}
+		else
+		{
+			// colstart, rowstart left at default '0' values
+			commandList(Rcmd2red);
+		}
+		commandList(Rcmd3);
+
+		// if black, change MADCTL color filter
+		if (options == Adafruit_initR_BLACKTAB)
+		{
+			writecommand(ST7735_MADCTL);
+			writedata(0xC0);
+		}
+
+		tabcolor = options;
+	}
 static commandResult_t CMD_ST7735_Test(const void *context, const char *cmd, const char *args, int flags) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 
