@@ -620,7 +620,7 @@ static commandResult_t CMD_ST7735_Test2(const void *context, const char *cmd, co
 	return CMD_RES_OK;
 }
 
-static commandResult_t ST7735_Init(const void *context, const char *cmd, const char *args, int flags) {
+static commandResult_t Cmd_ST7735_Init(const void *context, const char *cmd, const char *args, int flags) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 
 #define SD_CS 5
@@ -640,7 +640,7 @@ static commandResult_t ST7735_Init(const void *context, const char *cmd, const c
 void ST7735_Init() {
 	CMD_RegisterCommand("ST7735_Test", CMD_ST7735_Test, NULL);
 	CMD_RegisterCommand("ST7735_Test2", CMD_ST7735_Test2, NULL);
-	CMD_RegisterCommand("ST7735_Init", ST7735_Init, NULL);
+	CMD_RegisterCommand("ST7735_Init", Cmd_ST7735_Init, NULL);
 
 }
 
