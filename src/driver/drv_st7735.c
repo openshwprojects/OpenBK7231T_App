@@ -318,7 +318,7 @@ Bcmd[] = {                     // Initialization commands for 7735B screens
 		*csport &= ~cspinmask;
 		if (_rst)
 		{
-			HAL_PIN_Setup_Output(_rst, OUTPUT);
+			HAL_PIN_Setup_Output(_rst);
 			HAL_PIN_SetOutputValue(_rst, 1);
 			delay_ms(500);
 			HAL_PIN_SetOutputValue(_rst, 0);
