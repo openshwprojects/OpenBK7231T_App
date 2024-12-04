@@ -34,7 +34,7 @@ as well as Adafruit raw 1.8" TFT display
 #include "drv_st7735.h"
 #ifdef PLATFORM_ESPIDF
 #include "driver/gpio.h"
-#include "soc/gpio_reg.h.h"
+#include "soc/gpio_reg.h"
 #endif
 
 
