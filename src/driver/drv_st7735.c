@@ -608,12 +608,39 @@ static commandResult_t CMD_ST7735_Test(const void *context, const char *cmd, con
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 
 
+	ST7735_fillScreen(ST7735_BLUE);
 	return CMD_RES_OK;
 }
 
+static commandResult_t CMD_ST7735_Test2(const void *context, const char *cmd, const char *args, int flags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+
+
+	ST7735_fillScreen(ST7735_RED);
+	return CMD_RES_OK;
+}
+
+static commandResult_t ST7735_Init(const void *context, const char *cmd, const char *args, int flags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+
+#define SD_CS 5
+#define TFT_CS 2
+#define TFT_DC 0
+#define TFT_RST 5
+#define MOSI_PIN 4
+#define SCK_PIN 3
+
+
+	ST7735_init(TFT_CS, TFT_DC, MOSI_PIN, SCK_PIN, TFT_RST);
+	ST7735_initR(Adafruit_initR_BLACKTAB);
+	ST7735_fillScreen(0x001F);
+
+	return CMD_RES_OK;
+}
 void ST7735_Init() {
 	CMD_RegisterCommand("ST7735_Test", CMD_ST7735_Test, NULL);
-
+	CMD_RegisterCommand("ST7735_Test2", CMD_ST7735_Test2, NULL);
+	CMD_RegisterCommand("ST7735_Init", ST7735_Init, NULL);
 
 }
 
