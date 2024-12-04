@@ -277,6 +277,11 @@ Bcmd[] = {                     // Initialization commands for 7735B screens
 		}
 	}
 
+	// https://github.com/espressif/arduino-esp32/blob/c7022caeda46c216bb2a00081deb9810d66f33ed/cores/esp32/Arduino.h#L116
+#define digitalPinToPort(pin)    (0)
+#define portOutputRegister(port) ((volatile uint32_t *)GPIO_OUT_REG)
+#define digitalPinToBitMask(pin) (1UL << digitalPinToGPIONumber(pin))
+
 	// Initialization code common to both 'B' and 'R' type displays
 	void commonInit(const uint8_t *cmdList)
 	{
@@ -284,17 +289,17 @@ Bcmd[] = {                     // Initialization commands for 7735B screens
 
 	//	pinMode(_rs, OUTPUT);
 	//	pinMode(_cs, OUTPUT);
-	//	csport = portOutputRegister(digitalPinToPort(_cs));
-	//	rsport = portOutputRegister(digitalPinToPort(_rs));
-		//cspinmask = digitalPinToBitMask(_cs);
-		//rspinmask = digitalPinToBitMask(_rs);
+		csport = portOutputRegister(digitalPinToPort(_cs));
+		rsport = portOutputRegister(digitalPinToPort(_rs));
+		cspinmask = digitalPinToBitMask(_cs);
+		rspinmask = digitalPinToBitMask(_rs);
 
 		//pinMode(_sclk, OUTPUT);
 		//pinMode(_sid, OUTPUT);
-	//	clkport = portOutputRegister(digitalPinToPort(_sclk));
-	//	dataport = portOutputRegister(digitalPinToPort(_sid));
-	//	clkpinmask = digitalPinToBitMask(_sclk);
-		//datapinmask = digitalPinToBitMask(_sid);
+		clkport = portOutputRegister(digitalPinToPort(_sclk));
+		dataport = portOutputRegister(digitalPinToPort(_sid));
+		clkpinmask = digitalPinToBitMask(_sclk);
+		datapinmask = digitalPinToBitMask(_sid);
 		*clkport &= ~clkpinmask;
 		*dataport &= ~datapinmask;
 
