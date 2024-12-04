@@ -217,13 +217,6 @@ static commandResult_t CMD_OWM_Channels(const void *context, const char *cmd, co
 
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_OWM_Request2(const void *context, const char *cmd, const char *args, int flags) {
-	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
-
-	startWeatherThread2();
-
-	return CMD_RES_OK;
-}
 static commandResult_t CMD_OWM_Setup(const void *context, const char *cmd, const char *args, int flags) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 	const char *lat = Tokenizer_GetArg(0);
