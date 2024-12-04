@@ -355,6 +355,255 @@ Bcmd[] = {                     // Initialization commands for 7735B screens
 
 		tabcolor = options;
 	}
+
+
+	void setAddrWindow(uint8_t x0, uint8_t y0, uint8_t x1,
+		uint8_t y1)
+	{
+
+		writecommand(ST7735_CASET); // Column addr set
+		writedata(0x00);
+		writedata(x0 + colstart); // XSTART
+		writedata(0x00);
+		writedata(x1 + colstart); // XEND
+
+		writecommand(ST7735_RASET); // Row addr set
+		writedata(0x00);
+		writedata(y0 + rowstart); // YSTART
+		writedata(0x00);
+		writedata(y1 + rowstart); // YEND
+
+		writecommand(ST7735_RAMWR); // write to RAM
+	}
+
+	void pushColor(uint16_t color)
+	{
+		*rsport |= rspinmask;
+		*csport &= ~cspinmask;
+
+		spiwrite(color >> 8);
+		spiwrite(color);
+
+		*csport |= cspinmask;
+	}
+
+
+	void drawPixel(int16_t x, int16_t y, uint16_t color)
+	{
+
+		if ((x < 0) || (x >= _width) || (y < 0) || (y >= _height))
+			return;
+
+		setAddrWindow(x, y, x + 1, y + 1);
+
+		*rsport |= rspinmask;
+		*csport &= ~cspinmask;
+
+		spiwrite(color >> 8);
+		spiwrite(color);
+
+		*csport |= cspinmask;
+	}
+
+	void drawFastVLine(int16_t x, int16_t y, int16_t h,
+		uint16_t color)
+	{
+
+		// Rudimentary clipping
+		if ((x >= _width) || (y >= _height))
+			return;
+		if ((y + h - 1) >= _height)
+			h = _height - y;
+		setAddrWindow(x, y, x, y + h - 1);
+
+		uint8_t hi = color >> 8, lo = color;
+
+		*rsport |= rspinmask;
+		*csport &= ~cspinmask;
+		while (h--)
+		{
+			spiwrite(hi);
+			spiwrite(lo);
+		}
+		*csport |= cspinmask;
+	}
+
+	void drawFastHLine(int16_t x, int16_t y, int16_t w,
+		uint16_t color)
+	{
+
+		// Rudimentary clipping
+		if ((x >= _width) || (y >= _height))
+			return;
+		if ((x + w - 1) >= _width)
+			w = _width - x;
+		setAddrWindow(x, y, x + w - 1, y);
+
+		uint8_t hi = color >> 8, lo = color;
+
+		*rsport |= rspinmask;
+		*csport &= ~cspinmask;
+		while (w--)
+		{
+			spiwrite(hi);
+			spiwrite(lo);
+		}
+		*csport |= cspinmask;
+	}
+
+
+	// fill a rectangle
+	void ST7735_fillRect(int16_t x, int16_t y, int16_t w, int16_t h,
+		uint16_t color)
+	{
+
+		// rudimentary clipping (drawChar w/big text requires this)
+		if ((x >= _width) || (y >= _height))
+			return;
+		if ((x + w - 1) >= _width)
+			w = _width - x;
+		if ((y + h - 1) >= _height)
+			h = _height - y;
+
+		setAddrWindow(x, y, x + w - 1, y + h - 1);
+
+		uint8_t hi = color >> 8, lo = color;
+
+		*rsport |= rspinmask;
+		*csport &= ~cspinmask;
+		for (y = h; y > 0; y--)
+		{
+			for (x = w; x > 0; x--)
+			{
+				spiwrite(hi);
+				spiwrite(lo);
+			}
+		}
+
+		*csport |= cspinmask;
+	}
+
+	void ST7735_fillScreen(uint16_t color)
+	{
+		ST7735_fillRect(0, 0, _width, _height, color);
+	}
+	// Pass 8-bit (each) R,G,B, get back 16-bit packed color
+	uint16_t Color565(uint8_t r, uint8_t g, uint8_t b)
+	{
+		return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
+	}
+
+#define MADCTL_MY 0x80
+#define MADCTL_MX 0x40
+#define MADCTL_MV 0x20
+#define MADCTL_ML 0x10
+#define MADCTL_RGB 0x00
+#define MADCTL_BGR 0x08
+#define MADCTL_MH 0x04
+
+	void setRotation(uint8_t m)
+	{
+
+		writecommand(ST7735_MADCTL);
+		rotation = m % 4; // can't be higher than 3
+		switch (rotation)
+		{
+		case 0:
+			if (tabcolor == Adafruit_initR_BLACKTAB)
+			{
+				writedata(MADCTL_MX | MADCTL_MY | MADCTL_RGB);
+			}
+			else
+			{
+				writedata(MADCTL_MX | MADCTL_MY | MADCTL_BGR);
+			}
+			_width = ST7735_TFTWIDTH;
+
+			if (tabcolor == Adafruit_initR_144GREENTAB)
+				_height = ST7735_TFTHEIGHT_144;
+			else
+				_height = ST7735_TFTHEIGHT_18;
+
+			break;
+		case 1:
+			if (tabcolor == Adafruit_initR_BLACKTAB)
+			{
+				writedata(MADCTL_MY | MADCTL_MV | MADCTL_RGB);
+			}
+			else
+			{
+				writedata(MADCTL_MY | MADCTL_MV | MADCTL_BGR);
+			}
+
+			if (tabcolor == Adafruit_initR_144GREENTAB)
+				_width = ST7735_TFTHEIGHT_144;
+			else
+				_width = ST7735_TFTHEIGHT_18;
+
+			_height = ST7735_TFTWIDTH;
+			break;
+		case 2:
+			if (tabcolor == Adafruit_initR_BLACKTAB)
+			{
+				writedata(MADCTL_RGB);
+			}
+			else
+			{
+				writedata(MADCTL_BGR);
+			}
+			_width = ST7735_TFTWIDTH;
+			if (tabcolor == Adafruit_initR_144GREENTAB)
+				_height = ST7735_TFTHEIGHT_144;
+			else
+				_height = ST7735_TFTHEIGHT_18;
+
+			break;
+		case 3:
+			if (tabcolor == Adafruit_initR_BLACKTAB)
+			{
+				writedata(MADCTL_MX | MADCTL_MV | MADCTL_RGB);
+			}
+			else
+			{
+				writedata(MADCTL_MX | MADCTL_MV | MADCTL_BGR);
+			}
+			if (tabcolor == Adafruit_initR_144GREENTAB)
+				_width = ST7735_TFTHEIGHT_144;
+			else
+				_width = ST7735_TFTHEIGHT_18;
+
+			_height = ST7735_TFTWIDTH;
+			break;
+		}
+	}
+
+	void invertDisplay(int i)
+	{
+		writecommand(i ? ST7735_INVON : ST7735_INVOFF);
+	}
+
+	// image must be uint16_t[h][w]
+	void fillImage(void *image, int x, int y, int w, int h)
+	{
+		setAddrWindow(y, x, y + h - 1, x + w - 1);
+		*rsport |= rspinmask;
+		*csport &= ~cspinmask;
+		uint16_t *p = (uint16_t *)image;
+		for (int j = 0; j < w; ++j)
+		{
+			for (int i = 0; i < h; ++i)
+			{
+				spiwrite((uint8_t)(p[i * w + j] >> 8));
+				spiwrite((uint8_t)p[i * w + j]);
+			}
+		}
+		*csport |= cspinmask;
+	}
+
+
+
+
+
 static commandResult_t CMD_ST7735_Test(const void *context, const char *cmd, const char *args, int flags) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 
