@@ -53,6 +53,27 @@ uint16_t swapcolor(uint16_t x)
 	return (x << 11) | (x & 0x07E0) | (x >> 11);
 }
 
+#if 0
+#define SET_DATA_HIGH *dataport |= datapinmask;
+#define SET_DATA_LOW *dataport &= ~datapinmask;
+#define SET_CLK_LOW *clkport &= ~clkpinmask;
+#define SET_CLK_HIGH *clkport |= clkpinmask;
+#define SET_CS_LOW *csport &= ~cspinmask;
+#define SET_CS_HIGH *csport |= cspinmask;
+#define SET_RS_HIGH *rsport |= rspinmask;
+#define SET_RS_LOW *rsport &= ~rspinmask;
+#else
+#define SET_DATA_HIGH HAL_PIN_SetOutputValue(_sid,1);
+#define SET_DATA_LOW HAL_PIN_SetOutputValue(_sid,0);
+#define SET_CLK_LOW HAL_PIN_SetOutputValue(_sclk,0);
+#define SET_CLK_HIGH HAL_PIN_SetOutputValue(_sclk,1);
+#define SET_CS_LOW HAL_PIN_SetOutputValue(_cs,0);
+#define SET_CS_HIGH HAL_PIN_SetOutputValue(_cs,1);
+#define SET_RS_LOW HAL_PIN_SetOutputValue(_rs,0);
+#define SET_RS_HIGH HAL_PIN_SetOutputValue(_rs,1);
+
+#endif
+
 void spiwrite(uint8_t),
 writecommand(uint8_t c),
 writedata(uint8_t d),
@@ -81,34 +102,34 @@ inline void spiwrite(uint8_t c)
 	for (uint8_t bit = 0x80; bit; bit >>= 1)
 	{
 		if (c & bit)
-			*dataport |= datapinmask;
+			SET_DATA_HIGH;
 		else
-			*dataport &= ~datapinmask;
-		*clkport |= clkpinmask;
-		*clkport &= ~clkpinmask;
+			SET_DATA_LOW;
+		SET_CLK_HIGH;
+		SET_CLK_LOW;
 	}
 }
 
 void writecommand(uint8_t c)
 {
-	*rsport &= ~rspinmask;
-	*csport &= ~cspinmask;
+	SET_RS_LOW;
+	SET_CS_LOW;
 
 	// Serial.print("C ");
 	spiwrite(c);
 
-	*csport |= cspinmask;
+	SET_CS_HIGH;
 }
 
 void writedata(uint8_t c)
 {
-	*rsport |= rspinmask;
-	*csport &= ~cspinmask;
+	SET_RS_HIGH;
+	SET_CS_LOW;
 
 	// Serial.print("D ");
 	spiwrite(c);
 
-	*csport |= cspinmask;
+	SET_CS_HIGH;
 }
 
 #ifndef PROGMEM
@@ -311,11 +332,11 @@ Bcmd[] = {                     // Initialization commands for 7735B screens
 		dataport = portOutputRegister(digitalPinToPort(_sid));
 		clkpinmask = digitalPinToBitMask(_sclk);
 		datapinmask = digitalPinToBitMask(_sid);
-		*clkport &= ~clkpinmask;
-		*dataport &= ~datapinmask;
+		SET_CLK_LOW;
+		SET_DATA_LOW;
 
 		// toggle RST low to reset; CS low so it'll listen to us
-		*csport &= ~cspinmask;
+		SET_CS_LOW;
 		if (_rst)
 		{
 			HAL_PIN_Setup_Output(_rst);
@@ -394,13 +415,13 @@ Bcmd[] = {                     // Initialization commands for 7735B screens
 
 	void pushColor(uint16_t color)
 	{
-		*rsport |= rspinmask;
-		*csport &= ~cspinmask;
+		SET_RS_HIGH;
+		SET_CS_LOW;
 
 		spiwrite(color >> 8);
 		spiwrite(color);
 
-		*csport |= cspinmask;
+		SET_CS_HIGH;
 	}
 
 
@@ -412,13 +433,13 @@ Bcmd[] = {                     // Initialization commands for 7735B screens
 
 		setAddrWindow(x, y, x + 1, y + 1);
 
-		*rsport |= rspinmask;
-		*csport &= ~cspinmask;
+		SET_RS_HIGH;
+		SET_CS_LOW;
 
 		spiwrite(color >> 8);
 		spiwrite(color);
 
-		*csport |= cspinmask;
+		SET_CS_HIGH;
 	}
 
 	void drawFastVLine(int16_t x, int16_t y, int16_t h,
@@ -434,14 +455,14 @@ Bcmd[] = {                     // Initialization commands for 7735B screens
 
 		uint8_t hi = color >> 8, lo = color;
 
-		*rsport |= rspinmask;
-		*csport &= ~cspinmask;
+		SET_RS_HIGH;
+		SET_CS_LOW;
 		while (h--)
 		{
 			spiwrite(hi);
 			spiwrite(lo);
 		}
-		*csport |= cspinmask;
+		SET_CS_HIGH;
 	}
 
 	void drawFastHLine(int16_t x, int16_t y, int16_t w,
@@ -457,14 +478,14 @@ Bcmd[] = {                     // Initialization commands for 7735B screens
 
 		uint8_t hi = color >> 8, lo = color;
 
-		*rsport |= rspinmask;
-		*csport &= ~cspinmask;
+		SET_RS_HIGH;
+		SET_CS_LOW;
 		while (w--)
 		{
 			spiwrite(hi);
 			spiwrite(lo);
 		}
-		*csport |= cspinmask;
+		SET_CS_HIGH;
 	}
 
 
@@ -485,8 +506,8 @@ Bcmd[] = {                     // Initialization commands for 7735B screens
 
 		uint8_t hi = color >> 8, lo = color;
 
-		*rsport |= rspinmask;
-		*csport &= ~cspinmask;
+		SET_RS_HIGH;
+		SET_CS_LOW;
 		for (y = h; y > 0; y--)
 		{
 			for (x = w; x > 0; x--)
@@ -496,7 +517,7 @@ Bcmd[] = {                     // Initialization commands for 7735B screens
 			}
 		}
 
-		*csport |= cspinmask;
+		SET_CS_HIGH;
 	}
 
 	void ST7735_fillScreen(uint16_t color)
@@ -602,8 +623,8 @@ Bcmd[] = {                     // Initialization commands for 7735B screens
 	void fillImage(void *image, int x, int y, int w, int h)
 	{
 		setAddrWindow(y, x, y + h - 1, x + w - 1);
-		*rsport |= rspinmask;
-		*csport &= ~cspinmask;
+		SET_RS_HIGH;
+		SET_CS_LOW;
 		uint16_t *p = (uint16_t *)image;
 		for (int j = 0; j < w; ++j)
 		{
@@ -613,7 +634,7 @@ Bcmd[] = {                     // Initialization commands for 7735B screens
 				spiwrite((uint8_t)p[i * w + j]);
 			}
 		}
-		*csport |= cspinmask;
+		SET_CS_HIGH;
 	}
 
 
