@@ -101,10 +101,12 @@ inline void spiwrite(uint8_t c)
 	// Fast SPI bitbang swiped from LPD8806 library
 	for (uint8_t bit = 0x80; bit; bit >>= 1)
 	{
-		if (c & bit)
+		if (c & bit) {
 			SET_DATA_HIGH;
-		else
+		}
+		else {
 			SET_DATA_LOW;
+		}
 		SET_CLK_HIGH;
 		SET_CLK_LOW;
 	}
