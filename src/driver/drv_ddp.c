@@ -119,13 +119,22 @@ void DRV_DDP_CreateSocket_Receive() {
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"Waiting for packets\n");
 }
+static char buffer[512];
 void DDP_Parse(byte *data, int len) {
 	if(len > 12) {
 		byte r, g, b;
 		r = data[10];
 		g = data[11];
 		b = data[12];
+		
+		int bufferIdx = 0;
+		for (int i = 0; i < len && bufferIdx < sizeof(buffer) - 3; i++) {
+			bufferIdx += sprintf(&buffer[bufferIdx], "%02X", data[i]);
+		}
+		buffer[bufferIdx] = '\0';
 
+		addLogAdv(LOG_INFO, LOG_FEATURE_DDP, "Packet: %s, Length: %d\n", buffer, len);
+		
 #if ENABLE_DRIVER_SM16703P
 		if (spiLED.ready) {
 			// Note that this is limited by DDP msgbuf size
