@@ -441,11 +441,11 @@ HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse) {
 	const char *payload_on;
 	const char *payload_off;
 	if (bInverse) {
-		payload_on = "1";
-		payload_off = "0";
-	} else {
 		payload_off = "1";
 		payload_on = "0";
+	} else {
+		payload_off = "0";
+		payload_on = "1";
 	}
 	HassDeviceInfo* info = hass_init_device_info(BINARY_SENSOR, index, payload_on, payload_off);
 
