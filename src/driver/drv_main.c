@@ -71,10 +71,17 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "HGS02",		HGS02_Init,			HGS02_RunEverySecond,			NULL, NULL, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_ST7735
+	//drvdetail:{"name":"ST7735",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"",
+	//drvdetail:"requires":""}
+	{ "ST7735",		ST7735_Init,			NULL,			NULL, NULL, NULL, NULL, false },
+#endif
 
 
 
-
+	
 #if ENABLE_DRIVER_OPENWEATHERMAP
 	//drvdetail:{"name":"OpenWeatherMap",
 	//drvdetail:"title":"TODO",

@@ -180,6 +180,8 @@ void Drawers_QuickTick();
 void HGS02_Init(void);
 void HGS02_RunEverySecond(void);
 
+void ST7735_Init(void);
+
 #define SM2135_DELAY         4
 
 // Software I2C 
