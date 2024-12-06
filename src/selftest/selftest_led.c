@@ -475,6 +475,7 @@ void Test_LEDDriver_RGBCW() {
 	SELFTEST_ASSERT_CHANNEL(1 + 3, 0);
 	SELFTEST_ASSERT_CHANNEL(1 + 4, 0);
 
+	// RGB
 	DDP_SimulatePacket("410300010000000000030000FF");
 	SELFTEST_ASSERT_CHANNEL(1, 0);
 	SELFTEST_ASSERT_CHANNEL(1 + 1, 0);
@@ -482,8 +483,51 @@ void Test_LEDDriver_RGBCW() {
 	SELFTEST_ASSERT_CHANNEL(1 + 3, 0);
 	SELFTEST_ASSERT_CHANNEL(1 + 4, 0);
 
+	// RGBW
+	DDP_SimulatePacket("410F00010000000000040000FF00");
+	printf("Channel R is %i, channel G is %i, channel B is %i, channel C is %i, channel W is %i\n",
+		CHANNEL_Get(1), CHANNEL_Get(2), CHANNEL_Get(3), CHANNEL_Get(4), CHANNEL_Get(5));
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 1, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 2, 100);
+	SELFTEST_ASSERT_CHANNEL(1 + 3, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 4, 0);
+	DDP_SimulatePacket("410F000100000000000400FFFF00");
+	printf("Channel R is %i, channel G is %i, channel B is %i, channel C is %i, channel W is %i\n",
+		CHANNEL_Get(1), CHANNEL_Get(2), CHANNEL_Get(3), CHANNEL_Get(4), CHANNEL_Get(5));
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 1, 100);
+	SELFTEST_ASSERT_CHANNEL(1 + 2, 100);
+	SELFTEST_ASSERT_CHANNEL(1 + 3, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 4, 0);
+	DDP_SimulatePacket("410F0001000000000004FF00FF00");
+	printf("Channel R is %i, channel G is %i, channel B is %i, channel C is %i, channel W is %i\n",
+		CHANNEL_Get(1), CHANNEL_Get(2), CHANNEL_Get(3), CHANNEL_Get(4), CHANNEL_Get(5));
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	SELFTEST_ASSERT_CHANNEL(1 + 1, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 2, 100);
+	SELFTEST_ASSERT_CHANNEL(1 + 3, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 4, 0);
+	// WHITE AS COOL + WARM ?
+	DDP_SimulatePacket("410F0001000000000004000000FF");
+	printf("Channel R is %i, channel G is %i, channel B is %i, channel C is %i, channel W is %i\n",
+		CHANNEL_Get(1), CHANNEL_Get(2), CHANNEL_Get(3), CHANNEL_Get(4), CHANNEL_Get(5));
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 1, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 2, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 3, 49);
+	SELFTEST_ASSERT_CHANNEL(1 + 4, 49);
+
 	//CMD_ExecuteCommand("{\"color\":{\"b\":255,\"c\":0,\"g\":255,\"r\":255},\"state\":\"1\"}", "");
 
+	// Set 100% Blue (Tasmota)
+	CMD_ExecuteCommand("Color 0,0,255", 0);
+
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 100);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
 }
 void Test_LEDDriver_RGB(int firstChannel) {
 	// reset whole device
@@ -596,8 +640,20 @@ void Test_LEDDriver_RGB(int firstChannel) {
 	SELFTEST_ASSERT_CHANNEL(firstChannel + 1, 100);
 	SELFTEST_ASSERT_CHANNEL(firstChannel + 2, 0);
 
+
+	// Set 100% Blue (Tasmota)
+	CMD_ExecuteCommand("Color 0,0,255", 0);
+
+	SELFTEST_ASSERT_CHANNEL(firstChannel, 0);
+	SELFTEST_ASSERT_CHANNEL(firstChannel+1, 0);
+	SELFTEST_ASSERT_CHANNEL(firstChannel+2, 100);
+	SELFTEST_ASSERT_CHANNEL(firstChannel+3, 0);
+	SELFTEST_ASSERT_CHANNEL(firstChannel+4, 0);
+
+
 	// make error
 	//SELFTEST_ASSERT_CHANNEL(firstChannel+2, 666);
+
 }
 void Test_LEDDriver() {
 

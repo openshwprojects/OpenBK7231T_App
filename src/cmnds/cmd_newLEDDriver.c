@@ -1204,6 +1204,23 @@ void LED_SetFinalCW(byte c, byte w) {
 
 	apply_smart_light();
 }
+void LED_SetFinalRGBW(byte r, byte g, byte b, byte w) {
+	SET_LightMode(Light_All);
+	led_baseColors[0] = r;
+	led_baseColors[1] = g;
+	led_baseColors[2] = b;
+	// half between Cool and Warm
+	led_baseColors[3] = w / 2;
+	led_baseColors[4] = w / 2;
+
+	RGBtoHSV(led_baseColors[0] / 255.0f, led_baseColors[1] / 255.0f, led_baseColors[2] / 255.0f, &g_hsv_h, &g_hsv_s, &g_hsv_v);
+
+	if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_ANY_ACTION)) {
+		LED_SetEnableAll(true);
+	}
+
+	apply_smart_light();
+}
 void LED_SetFinalRGB(byte r, byte g, byte b) {
 	SET_LightMode(Light_RGB);
 
