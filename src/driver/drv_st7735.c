@@ -676,6 +676,29 @@ static commandResult_t Cmd_ST7735_Init(const void *context, const char *cmd, con
 
 	return CMD_RES_OK;
 }
+static inline byte hex2dec(char c) {
+	return (c >= '0' && c <= '9') ? c - '0' : (c >= 'A' && c <= 'F') ? c - 'A' + 10 : 0;
+}
+
+static commandResult_t CMD_ST7735_Clear(const void *context, const char *cmd, const char *args, int flags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+
+	const char *rgbStr = "FFFFFF";
+	if (Tokenizer_GetArgsCount() > 0) {
+		rgbStr = Tokenizer_GetArg(0);
+	}
+
+	byte rgb[3] = {
+		(byte)((hex2dec(rgbStr[0]) << 4) | hex2dec(rgbStr[1])),
+		(byte)((hex2dec(rgbStr[2]) << 4) | hex2dec(rgbStr[3])),
+		(byte)((hex2dec(rgbStr[4]) << 4) | hex2dec(rgbStr[5]))
+	};
+
+	int fin = Color565(rgb[0], rgb[1], rgb[2]);
+	ST7735_fillScreen(fin);
+	return CMD_RES_OK;
+}
+
 /*
 startDriver ST7735
 ST7735_Init
@@ -690,6 +713,7 @@ goto again
 void ST7735_Init() {
 	CMD_RegisterCommand("ST7735_Test", CMD_ST7735_Test, NULL);
 	CMD_RegisterCommand("ST7735_Test2", CMD_ST7735_Test2, NULL);
+	CMD_RegisterCommand("ST7735_Clear", CMD_ST7735_Clear, NULL);
 	CMD_RegisterCommand("ST7735_Init", Cmd_ST7735_Init, NULL);
 
 }
