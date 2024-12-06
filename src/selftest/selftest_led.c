@@ -2,6 +2,21 @@
 
 #include "selftest_local.h"
 
+void DDP_SimulatePacket(const char *s) {
+	// accept strings like 41030001000000000003FFFFFF and call DDP_Parse
+	size_t len = strlen(s);
+	if (len % 2 != 0) {
+		return;
+	}
+	size_t byteCount = len / 2;
+	byte buffer[512];
+	for (size_t i = 0; i < byteCount; i++) {
+		buffer[i] = hexbyte(s);
+		s += 2;
+	}
+	DDP_Parse(buffer, byteCount);
+}
+
 void Test_LEDDriver_CW() {
 	int i;
 	// reset whole device
@@ -441,6 +456,32 @@ void Test_LEDDriver_RGBCW() {
 	SELFTEST_ASSERT_CHANNEL(4, 0);
 	SELFTEST_ASSERT_CHANNEL(5, 0);
 
+
+	DRV_DGR_processPower(1, 1);
+	// set 100% brightness - FIXME
+	CMD_ExecuteCommand("led_dimmer 100", 0);
+	// Added for https://www.elektroda.com/rtvforum/viewtopic.php?p=21335096#21335096
+	DDP_SimulatePacket("41030001000000000003FFFFFF");
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	SELFTEST_ASSERT_CHANNEL(1 + 1, 100);
+	SELFTEST_ASSERT_CHANNEL(1 + 2, 100);
+	SELFTEST_ASSERT_CHANNEL(1 + 3, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 4, 0);
+
+	DDP_SimulatePacket("4103000100000000000300FFFF");
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 1, 100);
+	SELFTEST_ASSERT_CHANNEL(1 + 2, 100);
+	SELFTEST_ASSERT_CHANNEL(1 + 3, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 4, 0);
+
+	DDP_SimulatePacket("410300010000000000030000FF");
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 1, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 2, 100);
+	SELFTEST_ASSERT_CHANNEL(1 + 3, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 4, 0);
+
 	//CMD_ExecuteCommand("{\"color\":{\"b\":255,\"c\":0,\"g\":255,\"r\":255},\"state\":\"1\"}", "");
 
 }
@@ -536,6 +577,24 @@ void Test_LEDDriver_RGB(int firstChannel) {
 	SELFTEST_ASSERT_CHANNEL(firstChannel, 0);
 	SELFTEST_ASSERT_CHANNEL(firstChannel+1, 0);
 	SELFTEST_ASSERT_CHANNEL(firstChannel+2, 79);
+
+	// set 100% brightness - FIXME
+	CMD_ExecuteCommand("led_dimmer 100", 0);
+	// Added for https://www.elektroda.com/rtvforum/viewtopic.php?p=21335096#21335096
+	DDP_SimulatePacket("41030001000000000003FFFFFF");
+	SELFTEST_ASSERT_CHANNEL(firstChannel, 100);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 1, 100);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 2, 100);
+
+	DDP_SimulatePacket("41030001000000000003FFFF00");
+	SELFTEST_ASSERT_CHANNEL(firstChannel, 100);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 1, 100);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 2, 0);
+
+	DDP_SimulatePacket("4103000100000000000300FF00");
+	SELFTEST_ASSERT_CHANNEL(firstChannel, 0);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 1, 100);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 2, 0);
 
 	// make error
 	//SELFTEST_ASSERT_CHANNEL(firstChannel+2, 666);
