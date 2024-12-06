@@ -622,8 +622,16 @@ void Test_LEDDriver_RGB(int firstChannel) {
 	SELFTEST_ASSERT_CHANNEL(firstChannel+1, 0);
 	SELFTEST_ASSERT_CHANNEL(firstChannel+2, 79);
 
-	// set 100% brightness - FIXME
+	// set 100% brightness
 	CMD_ExecuteCommand("led_dimmer 100", 0);
+	// Added for https://www.elektroda.com/rtvforum/viewtopic.php?p=21335096#21335096
+	DDP_SimulatePacket("41030001000000000003FFFFFF");
+	SELFTEST_ASSERT_CHANNEL(firstChannel, 100);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 1, 100);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 2, 100);
+
+	// set 50% brightness - DDP shall reset it to 100
+	CMD_ExecuteCommand("led_dimmer 50", 0);
 	// Added for https://www.elektroda.com/rtvforum/viewtopic.php?p=21335096#21335096
 	DDP_SimulatePacket("41030001000000000003FFFFFF");
 	SELFTEST_ASSERT_CHANNEL(firstChannel, 100);

@@ -1052,6 +1052,11 @@ void LED_NextDimmerHold() {
 void LED_SetDimmerForDisplayOnly(int iVal) {
 	g_brightness0to100 = iVal;
 }
+void LED_SetDimmerIfChanged(int iVal) {
+	if (g_brightness0to100 != iVal) {
+		LED_SetDimmer(iVal);
+	}
+}
 void LED_SetDimmer(int iVal) {
 
 	g_brightness0to100 = iVal;
