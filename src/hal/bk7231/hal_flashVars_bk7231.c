@@ -11,7 +11,7 @@
 */
 
 #ifndef PLATFORM_XR809
-
+#define DISABLE_FLASH_VARS_VARS
 #include "include.h"
 #include "mem_pub.h"
 #include "drv_model_pub.h"

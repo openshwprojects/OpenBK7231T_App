@@ -10,6 +10,21 @@
 #include "../../beken378/app/config/param_config.h"
 #include "lwip/netdb.h"
 
+#ifdef PLATFORM_BK7238
+
+#define SOFT_AP						BK_SOFT_AP
+#define STATION						BK_STATION
+#define SECURITY_TYPE_NONE			BK_SECURITY_TYPE_NONE
+#define SECURITY_TYPE_WEP			BK_SECURITY_TYPE_WEP
+#define SECURITY_TYPE_WPA_TKIP		BK_SECURITY_TYPE_WPA_TKIP
+#define SECURITY_TYPE_WPA2_AES		BK_SECURITY_TYPE_WPA2_AES
+#define SECURITY_TYPE_WPA2_MIXED	BK_SECURITY_TYPE_WPA2_MIXED
+#define SECURITY_TYPE_AUTO			BK_SECURITY_TYPE_AUTO
+
+#define SOFT_AP BK_SOFT_AP
+
+#endif
+
 static void (*g_wifiStatusCallback)(int code);
 
 // lenght of "192.168.103.103" is 15 but we also need a NULL terminating character
@@ -182,8 +197,10 @@ void wl_status(void* ctxt)
 
 	switch (stat) {
 	case RW_EVT_STA_IDLE:
+#ifndef PLATFORM_BK7238
 	case RW_EVT_STA_SCANNING:
 	case RW_EVT_STA_SCAN_OVER:
+#endif
 	case RW_EVT_STA_CONNECTING:
 		if (g_wifiStatusCallback != 0) {
 			g_wifiStatusCallback(WIFI_STA_CONNECTING);

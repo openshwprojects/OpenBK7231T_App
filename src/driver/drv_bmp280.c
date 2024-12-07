@@ -1,3 +1,5 @@
+#ifdef ENABLE_DRIVER_BMP280
+
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
@@ -99,3 +101,4 @@ void BMP280_AppendInformationToHTTPIndexPage(http_request_t* request)
 	hprintf255(request, "</h2>");
 }
 
+#endif
