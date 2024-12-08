@@ -202,7 +202,7 @@ void extended_app_waiting_for_launch2(void) {
 #endif
 
 
-#if defined(PLATFORM_LN882H) || defined(PLATFORM_ESPIDF) || defined(PLATFORM_TR6260)
+#if defined(PLATFORM_LN882H) || defined(PLATFORM_ESPIDF)
 
 int LWIP_GetMaxSockets() {
 	return 0;
@@ -246,10 +246,20 @@ OSStatus rtos_create_thread(beken_thread_t* thread,
 }
 
 OSStatus rtos_delete_thread(beken_thread_t* thread) {
-	vTaskDelete(thread);
+	if(thread == NULL) vTaskDelete(thread);
+	else vTaskDelete(*thread);
 	return kNoErr;
 }
+
+OSStatus rtos_suspend_thread(beken_thread_t* thread)
+{
+	if(thread == NULL) vTaskSuspend(thread);
+	else vTaskSuspend(*thread);
+	return kNoErr;
+}
+
 #endif
+
 void MAIN_ScheduleUnsafeInit(int delSeconds) {
 	g_doUnsafeInitIn = delSeconds;
 }

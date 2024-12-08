@@ -84,6 +84,13 @@ static sys_err_t handle_wifi_event(void* ctx, system_event_t* event)
 	vif = event->vif;
 	switch(event->event_id)
 	{
+		case SYSTEM_EVENT_STA_START:
+		{
+			if(g_wifiStatusCallback != NULL)
+			{
+				g_wifiStatusCallback(WIFI_STA_CONNECTING);
+			}
+		}
 		case SYSTEM_EVENT_STA_GOT_IP:
 		{
 			if(g_wifiStatusCallback != NULL)
@@ -100,6 +107,9 @@ static sys_err_t handle_wifi_event(void* ctx, system_event_t* event)
 			{
 				g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
 			}
+			//HAL_DisconnectFromWifi();
+			//hal_lmac_reset_all();
+			HAL_RebootModule();
 			break;
 		}
 		case SYSTEM_EVENT_STA_ASSOC_REJECT:
@@ -138,10 +148,6 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 	unsigned int sta_ip = 0, count = 0;
 	printf("HAL_ConnectToWiFi");
 	wifi_set_opmode(WIFI_MODE_STA);
-	if(g_wifiStatusCallback != NULL)
-	{
-		g_wifiStatusCallback(WIFI_STA_CONNECTING);
-	}
 	wifi_remove_config_all(STATION_IF);
 	wifi_remove_config_all(SOFTAP_IF);
 	wifi_add_config(STATION_IF);

@@ -104,7 +104,7 @@ typedef long BaseType_t;
 #define DEVICENAME_PREFIX_FULL "OpenTR6260"
 #define DEVICENAME_PREFIX_SHORT "tr6260"
 #define PLATFORM_MCU_NAME "TR6260"
-#define MANUFACTURER "Beijing Eswin Technology"
+#define MANUFACTURER "Transa Semi"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -482,6 +482,10 @@ OSStatus rtos_create_thread(beken_thread_t* thread,
 	uint8_t priority, const char* name,
 	beken_thread_function_t function,
 	uint32_t stack_size, beken_thread_arg_t arg);
+
+#define GLOBAL_INT_DECLARATION()	;
+#define GLOBAL_INT_DISABLE()		;
+#define GLOBAL_INT_RESTORE()		;
 
 #else
 
