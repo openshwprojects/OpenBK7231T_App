@@ -74,7 +74,8 @@ sdk/OpenLN882H/project/OpenBeken/app:
 	@mkdir -p "sdk/OpenLN882H/project/OpenBeken"
 	ln -s "$(shell pwd)/" "sdk/OpenLN882H/project/OpenBeken/app"
 
-.PHONY: prebuild_OpenBK7231N prebuild_OpenBK7231T prebuild_OpenBL602 prebuild_OpenLN882H prebuild_OpenW600 prebuild_OpenW800 prebuild_OpenXR809 prebuild_ESPIDF
+.PHONY: prebuild_OpenBK7231N prebuild_OpenBK7231T prebuild_OpenBL602 prebuild_OpenLN882H 
+.PHONY: prebuild_OpenW600 prebuild_OpenW800 prebuild_OpenXR809 prebuild_ESPIDF prebuild_OpenTR6260
 
 prebuild_OpenBK7231N:
 	@if [ -e platforms/BK7231N/pre_build.sh ]; then \
@@ -130,6 +131,13 @@ prebuild_ESPIDF:
 		echo "prebuild found for ESP-IDF"; \
 		sh platforms/ESP-IDF/pre_build.sh; \
 	else echo "prebuild for ESP-IDF not found ... "; \
+	fi
+
+prebuild_OpenTR6260:
+	@if [ -e platforms/TR6260/pre_build.sh ]; then \
+		echo "prebuild found for TR6260"; \
+		sh platforms/TR6260/pre_build.sh; \
+	else echo "prebuild for TR6260 not found ... "; \
 	fi
 
 # Build main binaries
@@ -260,7 +268,7 @@ OpenESP32S3: prebuild_ESPIDF
 	cp ./platforms/ESP-IDF/build-s3/OpenBeken.bin output/$(APP_VERSION)/OpenESP32S3_$(APP_VERSION).img
 	
 .PHONY: OpenTR6260
-OpenTR6260:
+OpenTR6260: prebuild_OpenTR6260
 	if [ ! -e sdk/OpenTR6260/toolchain/nds32le-elf-mculib-v3 ]; then cd sdk/OpenTR6260/toolchain && xz -d < nds32le-elf-mculib-v3.txz | tar xvf - > /dev/null; fi
 	cd sdk/OpenTR6260/scripts && APP_VERSION=$(APP_VERSION) bash build_tr6260s1.sh
 	mkdir -p output/$(APP_VERSION)
