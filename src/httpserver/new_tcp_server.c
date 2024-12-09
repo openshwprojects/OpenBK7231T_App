@@ -19,11 +19,7 @@ void HTTPServer_Start();
 #define REPLY_BUFFER_SIZE			2048
 #define INCOMING_BUFFER_SIZE		1024
 #define INVALID_SOCK				-1
-#if NEW_TCP_USE_TASKS
-#define HTTP_CLIENT_STACK_SIZE		8192 / sizeof(StackType_t)
-#else
 #define HTTP_CLIENT_STACK_SIZE		8192
-#endif
 
 typedef struct
 {
@@ -123,11 +119,7 @@ exit:
 
 	lwip_close(fd);
 	arg->isCompleted = true;
-#if NEW_TCP_USE_TASKS
-	vTaskSuspend(NULL);
-#else
 	rtos_suspend_thread(NULL);
-#endif
 }
 
 static inline char* get_clientaddr(struct sockaddr_storage* source_addr)
@@ -184,11 +176,7 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 		}
 		if(sock[i].thread != NULL)
 		{
-#if NEW_TCP_USE_TASKS
-			vTaskDelete(sock[i].thread);
-#else
 			rtos_delete_thread(&sock[i].thread);
-#endif
 		}
 		sock[i].fd = INVALID_SOCK;
 		sock[i].thread = NULL;
@@ -218,7 +206,7 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Error occurred during listen");
 		goto error;
 	}
-	ADDLOG_EXTRADEBUG(LOG_FEATURE_HTTP, "Socket listening");
+	ADDLOG_INFO(LOG_FEATURE_HTTP, "TCP server listening");
 	while(true)
 	{
 		struct sockaddr_storage source_addr;
@@ -231,11 +219,7 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 			{
 				if(sock[new_idx].thread != NULL)
 				{
-#if NEW_TCP_USE_TASKS
-					vTaskDelete(sock[new_idx].thread);
-#else
 					rtos_delete_thread(&sock[new_idx].thread);
-#endif
 					sock[new_idx].thread = NULL;
 				}
 				sock[new_idx].isCompleted = false;
@@ -267,22 +251,12 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 				//ADDLOG_EXTRADEBUG(LOG_FEATURE_HTTP, "[sock=%d]: Connection accepted from IP:%s", sock[new_idx].fd, get_clientaddr(&source_addr));
 
 				rtos_delay_milliseconds(20);
-#if NEW_TCP_USE_TASKS
-				if(pdPASS != xTaskCreate(
-					(TaskFunction_t)tcp_client_thread, 
-					"HTTP Client",
-					HTTP_CLIENT_STACK_SIZE,
-					(void*)&sock[new_idx],
-					BEKEN_APPLICATION_PRIORITY,
-					&sock[new_idx].thread))
-#else
 				if(kNoErr != rtos_create_thread(&sock[new_idx].thread,
 					BEKEN_APPLICATION_PRIORITY,
 					"HTTP Client",
 					(beken_thread_function_t)tcp_client_thread,
 					HTTP_CLIENT_STACK_SIZE,
 					(beken_thread_arg_t)&sock[new_idx]))
-#endif
 				{
 					ADDLOG_ERROR(LOG_FEATURE_HTTP, "[sock=%d]: TCP Client thread creation failed!", sock[new_idx].fd);
 					lwip_close(sock[new_idx].fd);
@@ -305,11 +279,7 @@ error:
 	{
 		if(sock[i].thread != NULL)
 		{
-#if NEW_TCP_USE_TASKS
-			vTaskDelete(sock[i].thread);
-#else
 			rtos_delete_thread(&sock[i].thread);
-#endif
 			sock[i].thread = NULL;
 		}
 		if(sock[i].fd != INVALID_SOCK)
@@ -333,11 +303,7 @@ void HTTPServer_Start()
 
 	if(g_http_thread != NULL)
 	{
-#if NEW_TCP_USE_TASKS
-		vTaskDelete(g_http_thread);
-#else
 		rtos_delete_thread(&g_http_thread);
-#endif
 	}
 
 	err = rtos_create_thread(&g_http_thread, BEKEN_APPLICATION_PRIORITY,
