@@ -87,6 +87,8 @@ void usleepds(int r)
 	usleep(5 * r); // "5" seems o.k
 #elif PLATFORM_ESPIDF
 	usleep(r);
+#elif PLATFORM_TR6260
+	usdelay(r);
 #else
 	for(volatile int i = 0; i < r; i++)
 	{
