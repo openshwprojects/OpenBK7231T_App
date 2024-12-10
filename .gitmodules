@@ -29,3 +29,7 @@
 	path = sdk/esp-idf
 	url = https://github.com/espressif/esp-idf.git
 	branch = release/v5.3
+[submodule "sdk/OpenBK7238"]
+	path = sdk/OpenBK7238
+	url = https://github.com/NonPIayerCharacter/OpenBK7238_asdk.git
+	branch = master
