@@ -39,6 +39,7 @@ static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"
 #include "BkDriverFlash.h"
 #include "temp_detect_pub.h"
 #elif defined(PLATFORM_LN882H)
+#elif defined(PLATFORM_TR6260)
 #elif defined(PLATFORM_ESPIDF)
 #include "esp_wifi.h"
 #include "esp_system.h"
@@ -1305,6 +1306,8 @@ int http_fn_cfg_wifi(http_request_t* request) {
 		{
 			hprintf255(request, "[%i/%u] SSID: %s, Channel: %i, Signal %i<br>", i + 1, number, ap_info[i].ssid, ap_info[i].primary, ap_info[i].rssi);
 		}
+#elif PLATFORM_TR6260
+		poststr(request, "TODO TR6260<br>");
 #else
 #error "Unknown platform"
 		poststr(request, "Unknown platform<br>");
@@ -2979,6 +2982,7 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 #elif PLATFORM_LN882H
 
 #elif PLATFORM_ESPIDF
+#elif PLATFORM_TR6260
 #elif PLATFORM_W600 || PLATFORM_W800
 	t_http_fwup(s);
 #elif PLATFORM_XR809
