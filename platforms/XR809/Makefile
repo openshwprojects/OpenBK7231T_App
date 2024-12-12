@@ -53,6 +53,14 @@ SRCS += ../shared/src/hal/xr809/hal_pins_xr809
 SRCS += ../shared/src/hal/xr809/hal_flashConfig_xr809
 SRCS += ../shared/src/hal/xr809/hal_flashVars_xr809
 
+SRCS += ../shared/src/hal/generic/hal_adc_generic
+SRCS += ../shared/src/hal/generic/hal_flashConfig_generic
+SRCS += ../shared/src/hal/generic/hal_flashVars_generic
+SRCS += ../shared/src/hal/generic/hal_generic
+SRCS += ../shared/src/hal/generic/hal_main_generic
+SRCS += ../shared/src/hal/generic/hal_pins_generic
+SRCS += ../shared/src/hal/generic/hal_wifi_generic
+
 SRCS += ../shared/src/user_main
 
 

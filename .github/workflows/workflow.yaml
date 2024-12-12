@@ -22,9 +22,7 @@ jobs:
       new_release: ${{ steps.refs.outputs.new_release }}
     steps:
       - name: Source checkout
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive        
+        uses: actions/checkout@v4
       - name: Update SDKs if required
         run: make update-submodules
       - name: Semantic Release
@@ -52,12 +50,11 @@ jobs:
           else
             export VERSION=${BRANCHTRANSLATED}_$(git rev-parse --short=12 HEAD)
           fi
-          echo "new_release: ${{ steps.semantic.outputs.new_release_published }}"
-          echo "version: ${VERSION}"
-          echo "::set-output name=new_release::${{ steps.semantic.outputs.new_release_published }}"
-          echo "::set-output name=short_ref::${BRANCHTRANSLATED}"
-          echo "::set-output name=sha_short::SHA-$(git rev-parse --short=12 HEAD)"
-          echo "::set-output name=version::${VERSION}"
+          echo "new_release=${{ steps.semantic.outputs.new_release_published }}" >> $GITHUB_OUTPUT
+          echo "short_ref=${BRANCHTRANSLATED}" >> $GITHUB_OUTPUT
+          echo "sha_short=SHA-$(git rev-parse --short=12 HEAD)" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
 
   build2:
     name: Build Simulator
@@ -66,10 +63,10 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v2
 
     - name: Checkout simulator repository
       run: |
@@ -98,9 +95,9 @@ jobs:
         mkdir -Force output/${{ needs.refs.outputs.version }}
         cp obkSimulator_win32_${{ needs.refs.outputs.version }}.zip output/${{ needs.refs.outputs.version }}/obkSimulator_${{ needs.refs.outputs.version }}.zip
     - name: Upload build assets
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
+        name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_sim
         path: output/${{ needs.refs.outputs.version }}/obkSimulator_${{ needs.refs.outputs.version }}.zip
   
   build:
@@ -113,10 +110,8 @@ jobs:
         platform: [OpenBK7231T, OpenBK7231N, OpenXR809, OpenBL602, OpenW800, OpenW600, OpenLN882H, OpenTR6260]
     steps:
       - name: Source checkout
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive        
-      - uses: actions/setup-python@v2
+        uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.8'
           architecture: 'x64'
@@ -133,24 +128,21 @@ jobs:
       - name: Run make
         run: make APP_VERSION=${{ needs.refs.outputs.version }} APP_NAME=${{ matrix.platform }} ${{ matrix.platform }}
       - name: Save build assets
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
+          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_${{ matrix.platform }}
           path: |
-            output/${{ needs.refs.outputs.version }}/OpenBK7231T_UA_${{ needs.refs.outputs.version }}.bin
-            output/${{ needs.refs.outputs.version }}/OpenBK7231T_UG_${{ needs.refs.outputs.version }}.bin
-            output/${{ needs.refs.outputs.version }}/OpenBK7231T_QIO_${{ needs.refs.outputs.version }}.bin
-            output/${{ needs.refs.outputs.version }}/OpenBK7231N_QIO_${{ needs.refs.outputs.version }}.bin
-            output/${{ needs.refs.outputs.version }}/OpenBK7231N_UG_${{ needs.refs.outputs.version }}.bin
-            output/${{ needs.refs.outputs.version }}/OpenBK7231M_QIO_${{ needs.refs.outputs.version }}.bin
+            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_UA_${{ needs.refs.outputs.version }}.bin
+            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_UG_${{ needs.refs.outputs.version }}.bin
+            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_QIO_${{ needs.refs.outputs.version }}.bin
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.rbl
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.img
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.bin
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.fls
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_ota.img
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_gz.img
-            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin      
-            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin.xz            
+            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin
+            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin.xz
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}_OTA.bin.xz.ota
           if-no-files-found: warn
 
@@ -164,10 +156,15 @@ jobs:
         platform: [OpenESP32, OpenESP32C3, OpenESP32C2, OpenESP32C6, OpenESP32S3, OpenESP32S2]
     steps:
       - name: Source checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+      - name: SDK checkout
+        uses: actions/checkout@v4
         with:
-          submodules: recursive        
-      - uses: actions/setup-python@v2
+          repository: espressif/esp-idf
+          path: sdk/esp-idf
+          ref: v5.3.2
+          submodules: recursive
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.8'
           architecture: 'x64'
@@ -188,24 +185,36 @@ jobs:
           cd ../..
           make APP_VERSION=${{ needs.refs.outputs.version }} APP_NAME=${{ matrix.platform }} ${{ matrix.platform }}
       - name: Save build assets
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
+          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_${{ matrix.platform }}
           path: |
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.img
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.factory.bin
           if-no-files-found: warn
 
+  merge:
+    name: Merge Artifacts
+    runs-on: ubuntu-20.04
+    needs: [refs, build, build2, build_idf]
+    if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
+    steps:
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
+          delete-merged: true
+
   release:
     name: Semantic Release Images and Artifacts
     runs-on: ubuntu-20.04
-    needs: [ refs, build, build_idf, build2 ]
+    needs: [merge, refs]
     if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
     steps:
       - name: Source checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Fetch build assets
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
           path: output/${{ needs.refs.outputs.version }}
