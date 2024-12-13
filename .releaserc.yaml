@@ -179,6 +179,7 @@ publish:
       - path: "output/**/OpenW600*"
       - path: "output/**/OpenW800*"
       - path: "output/**/OpenLN882H*"
+      - path: "output/**/OpenTR6260*"
       - path: "output/**/obkSimulator*"
 
 success:
