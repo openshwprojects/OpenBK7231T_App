@@ -616,7 +616,8 @@ void Main_OnEverySecond()
 	LED_RunOnEverySecond();
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF)
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) \
+ || defined (PLATFORM_RTL87X0C)
 	UART_RunEverySecond();
 #endif
 #endif
