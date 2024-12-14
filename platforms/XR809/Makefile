@@ -60,6 +60,7 @@ SRCS += ../shared/src/hal/generic/hal_generic
 SRCS += ../shared/src/hal/generic/hal_main_generic
 SRCS += ../shared/src/hal/generic/hal_pins_generic
 SRCS += ../shared/src/hal/generic/hal_wifi_generic
+SRCS += ../shared/src/hal/generic/hal_uart_generic
 
 SRCS += ../shared/src/user_main
 

@@ -37,6 +37,7 @@ CSRCS  += hal/generic/hal_generic.c
 CSRCS  += hal/generic/hal_main_generic.c
 CSRCS  += hal/generic/hal_pins_generic.c
 CSRCS  += hal/generic/hal_wifi_generic.c
+CSRCS  += hal/generic/hal_uart_generic.c
 CSRCS  += httpserver/hass.c
 CSRCS  += httpserver/http_basic_auth.c
 CSRCS  += httpserver/http_fns.c

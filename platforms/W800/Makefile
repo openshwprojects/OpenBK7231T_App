@@ -41,6 +41,7 @@ CSRCS += $(_SHARED_APP)/hal/generic/hal_generic.c
 CSRCS += $(_SHARED_APP)/hal/generic/hal_main_generic.c
 CSRCS += $(_SHARED_APP)/hal/generic/hal_pins_generic.c
 CSRCS += $(_SHARED_APP)/hal/generic/hal_wifi_generic.c
+CSRCS += $(_SHARED_APP)/hal/generic/hal_uart_generic.c
 CSRCS += $(_SHARED_APP)/httpserver/hass.c
 CSRCS += $(_SHARED_APP)/httpserver/http_fns.c
 CSRCS += $(_SHARED_APP)/httpserver/http_tcp_server.c

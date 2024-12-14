@@ -103,6 +103,7 @@ set(PROJ_ALL_SRC
     app/src/hal/generic/hal_main_generic.c
     app/src/hal/generic/hal_pins_generic.c
     app/src/hal/generic/hal_wifi_generic.c
+    app/src/hal/generic/hal_uart_generic.c
     app/src/httpserver/hass.c
     app/src/httpserver/http_basic_auth.c
     app/src/httpserver/http_fns.c

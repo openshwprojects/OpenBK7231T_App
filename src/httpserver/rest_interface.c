@@ -1932,7 +1932,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 		return -1;
 	}
 
-#elif 1//PLATFORM_RTL87X0C
+#elif PLATFORM_RTL87X0C
 
 	uint32_t NewFWLen = 0, NewFWAddr = 0;
 	uint32_t address = 0;
