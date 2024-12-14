@@ -151,6 +151,8 @@ void CFG_SetDefaultConfig() {
 	strcpy_safe(g_cfg.mqtt_group, "esp", sizeof(g_cfg.mqtt_group));
 #elif PLATFORM_TR6260
 	strcpy_safe(g_cfg.mqtt_group, "tr6260", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_RTL87X0C
+	strcpy_safe(g_cfg.mqtt_group, "rtl87x0c", sizeof(g_cfg.mqtt_group));
 #elif WINDOWS
 	strcpy_safe(g_cfg.mqtt_group, "bekens", sizeof(g_cfg.mqtt_group));
 #else

@@ -76,6 +76,7 @@ sdk/OpenLN882H/project/OpenBeken/app:
 
 .PHONY: prebuild_OpenBK7231N prebuild_OpenBK7231T prebuild_OpenBL602 prebuild_OpenLN882H 
 .PHONY: prebuild_OpenW600 prebuild_OpenW800 prebuild_OpenXR809 prebuild_ESPIDF prebuild_OpenTR6260
+.PHONY: prebuild_OpenRTL87X0C
 
 prebuild_OpenBK7231N:
 	git submodule update --init --recursive sdk/OpenBK7231N
@@ -147,6 +148,14 @@ prebuild_OpenTR6260:
 		echo "prebuild found for OpenTR6260"; \
 		sh platforms/TR6260/pre_build.sh; \
 	else echo "prebuild for OpenTR6260 not found ... "; \
+	fi
+
+prebuild_OpenRTL87X0C:
+	git submodule update --init --recursive sdk/OpenRTL87X0C
+	@if [ -e platforms/RTL87X0C/pre_build.sh ]; then \
+		echo "prebuild found for OpenRTL87X0C"; \
+		sh platforms/RTL87X0C/pre_build.sh; \
+	else echo "prebuild for OpenRTL87X0C not found ... "; \
 	fi
 
 # Build main binaries
@@ -282,6 +291,13 @@ OpenTR6260: prebuild_OpenTR6260
 	cd sdk/OpenTR6260/scripts && APP_VERSION=$(APP_VERSION) bash build_tr6260s1.sh
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenTR6260/out/tr6260s1/standalone/tr6260s1_0x007000.bin output/$(APP_VERSION)/OpenTR6260_$(APP_VERSION).bin
+	
+.PHONY: OpenRTL87X0C
+OpenRTL87X0C: prebuild_OpenRTL87X0C
+	$(MAKE) -C sdk/OpenRTL87X0C/project/OpenBeken/GCC-RELEASE APP_VERSION=$(APP_VERSION) -j $(shell nproc)
+	mkdir -p output/$(APP_VERSION)
+	cp sdk/OpenRTL87X0C/project/OpenBeken/GCC-RELEASE/application_is/Debug/bin/flash_is.bin output/$(APP_VERSION)/OpenRTL87X0C_$(APP_VERSION).bin
+	cp sdk/OpenRTL87X0C/project/OpenBeken/GCC-RELEASE/application_is/Debug/bin/firmware_is.bin output/$(APP_VERSION)/OpenRTL87X0C_$(APP_VERSION)_ota.img
 
 # clean .o files and output directory
 .PHONY: clean
@@ -293,6 +309,7 @@ clean:
 	$(MAKE) -C sdk/OpenW800 clean
 	$(MAKE) -C sdk/OpenW600 clean
 	$(MAKE) -C sdk/OpenTR6260/scripts tr6260s1_clean
+	$(MAKE) -C sdk/OpenRTL87X0C/project/OpenBeken/GCC-RELEASE clean
 	test -d ./sdk/OpenLN882H/build && cmake --build ./sdk/OpenLN882H/build --target clean
 	test -d ./platforms/ESP-IDF/build-32 && cmake --build ./platforms/ESP-IDF/build-32 --target clean
 	test -d ./platforms/ESP-IDF/build-c3 && cmake --build ./platforms/ESP-IDF/build-c3 --target clean

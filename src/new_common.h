@@ -105,6 +105,11 @@ typedef long BaseType_t;
 #define DEVICENAME_PREFIX_SHORT "tr6260"
 #define PLATFORM_MCU_NAME "TR6260"
 #define MANUFACTURER "Transa Semi"
+#elif PLATFORM_RTL87X0C
+#define DEVICENAME_PREFIX_FULL "OpenRTL87X0C"
+#define DEVICENAME_PREFIX_SHORT "rtl87x0C"
+#define PLATFORM_MCU_NAME "RTL87X0C"
+#define MANUFACTURER "Realtek"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -134,6 +139,8 @@ This platform is not supported, error!
 #define USER_SW_VER PLATFORM_MCU_NAME "_Test"
 #elif defined(PLATFORM_TR6260)
 #define USER_SW_VER "TR6260_Test"
+#elif defined(PLATFORM_RTL87X0C)
+#define USER_SW_VER "RTL87X0C_Test"
 #else
 #define USER_SW_VER "unknown"
 #endif
@@ -486,6 +493,58 @@ OSStatus rtos_create_thread(beken_thread_t* thread,
 #define GLOBAL_INT_DECLARATION()	;
 #define GLOBAL_INT_DISABLE()		;
 #define GLOBAL_INT_RESTORE()		;
+
+#elif PLATFORM_RTL87X0C
+
+#include <stdbool.h>
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "queue.h"
+#include "event_groups.h"
+
+#include "lwip/err.h"
+#include "lwip/sockets.h"
+#include "lwip/sys.h"
+#include "lwip/netdb.h"
+#include "lwip/dns.h"
+#include "cmsis_os.h"
+
+typedef unsigned int UINT32;
+
+#undef ASSERT
+#define ASSERT
+
+#define os_malloc malloc
+#define os_free free
+#define os_memset memset
+#define os_strcpy strcpy
+
+#define bk_printf printf
+
+// OS_MSleep?
+#define rtos_delay_milliseconds(x) vTaskDelay(x / portTICK_PERIOD_MS)
+#define delay_ms(x) vTaskDelay(x / portTICK_PERIOD_MS)
+
+#define kNoErr                      0       //! No error occurred.
+typedef void* beken_thread_arg_t;
+typedef void* beken_thread_t;
+typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
+typedef int OSStatus;
+
+#define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
+#define BEKEN_APPLICATION_PRIORITY         (7)
+
+OSStatus rtos_delete_thread(beken_thread_t* thread);
+OSStatus rtos_create_thread(beken_thread_t* thread,
+	uint8_t priority, const char* name,
+	beken_thread_function_t function,
+	uint32_t stack_size, beken_thread_arg_t arg);
+
+#define GLOBAL_INT_DECLARATION()	;
+#define GLOBAL_INT_DISABLE()		;
+#define GLOBAL_INT_RESTORE()		;
+
 
 #else
 

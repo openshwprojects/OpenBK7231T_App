@@ -212,7 +212,7 @@ int LWIP_GetActiveSockets() {
 }
 #endif
 
-#if defined(PLATFORM_BL602) || defined(PLATFORM_W800) || defined(PLATFORM_W600) || defined(PLATFORM_LN882H) || defined(PLATFORM_ESPIDF) || defined(PLATFORM_TR6260)
+#if defined(PLATFORM_BL602) || defined(PLATFORM_W800) || defined(PLATFORM_W600) || defined(PLATFORM_LN882H) || defined(PLATFORM_ESPIDF) || defined(PLATFORM_TR6260) || defined(PLATFORM_RTL87X0C)
 
 OSStatus rtos_create_thread(beken_thread_t* thread,
 	uint8_t priority, const char* name,
@@ -932,7 +932,9 @@ void QuickTick(void* param)
 	g_last_time = g_time;
 
 
-#if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602) || (defined PLATFORM_LN882H) || (defined PLATFORM_ESPIDF) || (defined PLATFORM_TR6260)
+#if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602) \
+ || (defined PLATFORM_LN882H) || (defined PLATFORM_ESPIDF) || (defined PLATFORM_TR6260) \
+ || (defined PLATFORM_RTL87X0C)
 	SVM_RunThreads(g_deltaTimeMS);
 #endif
 	RepeatingEvents_RunUpdate(g_deltaTimeMS * 0.001f);
@@ -983,7 +985,7 @@ void QuickTick(void* param)
 // this is the bit which runs the quick tick timer
 #if WINDOWS
 
-#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_RTL87X0C)
 void quick_timer_thread(void* param)
 {
 	while (1) {
@@ -1002,7 +1004,7 @@ void QuickTick_StartThread(void)
 {
 #if WINDOWS
 
-#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_RTL87X0C)
 
 	xTaskCreate(quick_timer_thread, "quick", 1024, NULL, 15, NULL);
 #elif PLATFORM_ESPIDF

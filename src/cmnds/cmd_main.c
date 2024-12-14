@@ -293,7 +293,8 @@ static commandResult_t CMD_ClearAll(const void* context, const char* cmd, const 
 	CHANNEL_ClearAllChannels();
 	CMD_ClearAllHandlers(0, 0, 0, 0);
 	RepeatingEvents_Cmd_ClearRepeatingEvents(0, 0, 0, 0);
-#if defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_BEKEN) || defined(PLATFORM_LN882H) || defined(PLATFORM_TR6260)
+#if defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_BEKEN) || defined(PLATFORM_LN882H) \
+ || defined(PLATFORM_ESPIDF) || defined(PLATFORM_TR6260) || defined(PLATFORM_RTL87X0C)
 	CMD_resetSVM(0, 0, 0, 0);
 #endif
 
@@ -855,7 +856,8 @@ void CMD_Init_Early() {
 	CMD_RegisterCommand("IndexRefreshInterval", CMD_IndexRefreshInterval, NULL);
 	
 	
-#if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602) || (defined PLATFORM_LN882H) || (defined PLATFORM_ESPIDF) || defined(PLATFORM_TR6260)
+#if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602) || (defined PLATFORM_LN882H) \
+ || (defined PLATFORM_ESPIDF) || defined(PLATFORM_TR6260) || defined(PLATFORM_RTL87X0C)
 	CMD_InitScripting();
 #endif
 	if (!bSafeMode) {
@@ -872,7 +874,8 @@ void CMD_Init_Delayed() {
 	if (CFG_HasFlag(OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER)) {
 		CMD_StartTCPCommandLine();
 	}
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF)
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) \
+ || defined(PLATFORM_RTL87X0C)
 	UART_AddCommands();
 #endif
 }

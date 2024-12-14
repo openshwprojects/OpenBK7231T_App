@@ -50,6 +50,19 @@ uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
 
 #elif PLATFORM_ESPIDF
 
+#elif PLATFORM_RTL87X0C
+
+#include "flash_api.h"
+#include "device_lock.h"
+#include "ota_8710c.h"
+#include "sys_api.h"
+
+extern flash_t flash;
+extern uint32_t sys_update_ota_get_curr_fw_idx(void);
+extern uint32_t sys_update_ota_prepare_addr(void);
+extern void sys_disable_fast_boot(void);
+static flash_t flash_ota;
+
 #else
 
 extern UINT32 flash_read(char* user_buf, UINT32 count, UINT32 address);
@@ -248,6 +261,8 @@ static int http_rest_post(http_request_t* request) {
 		return http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_ESPIDF
 		return http_rest_post_flash(request, -1, -1);
+#elif PLATFORM_RTL87X0C
+		return http_rest_post_flash(request, 0, -1);
 #else
 		// TODO
 		ADDLOG_DEBUG(LOG_FEATURE_API, "No OTA");
@@ -1917,6 +1932,135 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 		return -1;
 	}
 
+#elif 1//PLATFORM_RTL87X0C
+
+	uint32_t NewFWLen = 0, NewFWAddr = 0;
+	uint32_t address = 0;
+	uint32_t curr_fw_idx = 0;
+	uint32_t flash_checksum = 0;
+	_file_checksum file_checksum;
+	file_checksum.u = 0;
+	unsigned char sig_backup[32];
+	int ret = 1;
+
+	if(request->contentLength >= 0)
+	{
+		towrite = request->contentLength;
+	}
+	NewFWAddr = sys_update_ota_prepare_addr();
+	if(NewFWAddr == -1)
+	{
+		ret = -1;
+		goto update_ota_exit;
+	}
+	curr_fw_idx = sys_update_ota_get_curr_fw_idx();
+	ADDLOG_INFO(LOG_FEATURE_OTA, "Current firmware index is %d", curr_fw_idx);
+	int reserase = update_ota_erase_upg_region(towrite, 0, NewFWAddr);
+	NewFWLen = towrite;
+	if(reserase == -1)
+	{
+		ret = -1;
+		goto update_ota_exit;
+	}
+	if(NewFWAddr != ~0x0)
+	{
+		address = NewFWAddr;
+		ADDLOG_INFO(LOG_FEATURE_OTA, "Start to read data %i bytes", NewFWLen);
+	}
+	do
+	{
+		// back up signature and only write it to flash till the end of OTA
+		if(startaddr < 32)
+		{
+			memcpy(sig_backup + startaddr, writebuf, (startaddr + writelen > 32 ? (32 - startaddr) : writelen));
+			memset(writebuf, 0xFF, (startaddr + writelen > 32 ? (32 - startaddr) : writelen));
+			ADDLOG_DEBUG(LOG_FEATURE_OTA, "sig_backup for% d bytes from index% d", (startaddr + writelen > 32 ? (32 - startaddr) : writelen), startaddr);
+		}
+
+		device_mutex_lock(RT_DEV_LOCK_FLASH);
+		if(flash_burst_write(&flash_ota, address + startaddr, writelen, (uint8_t*)writebuf) < 0)
+		{
+			ADDLOG_DEBUG(LOG_FEATURE_OTA, "Write stream failed");
+			device_mutex_unlock(RT_DEV_LOCK_FLASH);
+			ret = -1;
+			goto update_ota_exit;
+		}
+		device_mutex_unlock(RT_DEV_LOCK_FLASH);
+
+		rtos_delay_milliseconds(10);
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Writelen %i at %i", writelen, total);
+		total += writelen;
+		startaddr += writelen;
+		towrite -= writelen;
+
+		// checksum attached at file end
+		if(startaddr + writelen > NewFWLen - 4)
+		{
+			file_checksum.c[0] = writebuf[writelen - 4];
+			file_checksum.c[1] = writebuf[writelen - 3];
+			file_checksum.c[2] = writebuf[writelen - 2];
+			file_checksum.c[3] = writebuf[writelen - 1];
+		}
+		if(towrite > 0)
+		{
+			writebuf = request->received;
+			writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
+			if(writelen < 0)
+			{
+				ADDLOG_DEBUG(LOG_FEATURE_OTA, "recv returned %d - end of data - remaining %d", writelen, towrite);
+			}
+		}
+	} while((towrite > 0) && (writelen >= 0));
+	ADDLOG_DEBUG(LOG_FEATURE_OTA, "%d total bytes written, verifying checksum", total);
+	uint8_t* buf = (uint8_t*)os_malloc(2048);
+	memset(buf, 0, 2048);
+	// read flash data back and calculate checksum
+	for(int i = 0; i < NewFWLen; i += 2048)
+	{
+		int k;
+		int rlen = (startaddr - 4 - i) > 2048 ? 2048 : (startaddr - 4 - i);
+		device_mutex_lock(RT_DEV_LOCK_FLASH);
+		flash_stream_read(&flash_ota, NewFWAddr + i, rlen, buf);
+		device_mutex_unlock(RT_DEV_LOCK_FLASH);
+		for(k = 0; k < rlen; k++)
+		{
+			if(i + k < 32)
+			{
+				flash_checksum += sig_backup[i + k];
+			}
+			else
+			{
+				flash_checksum += buf[k];
+			}
+		}
+	}
+
+	ADDLOG_INFO(LOG_FEATURE_OTA, "flash checksum 0x%8x attached checksum 0x%8x", flash_checksum, file_checksum.u);
+
+	if(file_checksum.u != flash_checksum)
+	{
+		ADDLOG_INFO(LOG_FEATURE_OTA, "The checksum is wrong!");
+		ret = -1;
+		goto update_ota_exit;
+	}
+	ret = update_ota_signature(sig_backup, NewFWAddr);
+	if(ret == -1)
+	{
+		ADDLOG_INFO(LOG_FEATURE_OTA, "Update signature fail");
+		goto update_ota_exit;
+	}
+update_ota_exit:
+	if(ret != -1)
+	{
+		int otap;
+		if(curr_fw_idx == 0) otap = 1;
+		else otap = 0;
+		sys_recover_ota_signature();
+		sys_clear_ota_signature();
+		//sys_update_ota_set_boot_fw_idx(otap);
+		sys_disable_fast_boot();
+	}
+	if(buf) free(buf);
 #else
 
 	init_ota(startaddr);
@@ -2018,6 +2162,10 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 #elif PLATFORM_LN882H || PLATFORM_ESPIDF || PLATFORM_TR6260
 // TODO:LN882H flash read?
         res = 0;
+#elif PLATFORM_RTL87X0C
+		device_mutex_lock(RT_DEV_LOCK_FLASH);
+		flash_stream_read(&flash, startaddr, readlen, (uint8_t*)buffer);
+		device_mutex_unlock(RT_DEV_LOCK_FLASH);
 #else
 		res = flash_read((char*)buffer, readlen, startaddr);
 #endif

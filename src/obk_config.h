@@ -208,6 +208,11 @@
 #define ENABLE_DRIVER_LED 			1
 #define ENABLE_DRIVER_WEMO			1
 
+#elif PLATFORM_RTL87X0C
+
+#define ENABLE_LITTLEFS				1
+#define NEW_TCP_SERVER				1
+
 #else
 
 #error "Platform not defined"
