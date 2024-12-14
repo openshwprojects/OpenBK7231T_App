@@ -717,7 +717,7 @@ static commandResult_t Cmd_ST7735_FillRect(const void *context, const char *cmd,
 	};
 
 	int color = Color565(rgb[0], rgb[1], rgb[2]);
-	ST7735_fillRect(0, 0, _width, _height, color);
+	ST7735_fillRect(x, y, w, h, color);
 	return CMD_RES_OK;
 }
 /*
