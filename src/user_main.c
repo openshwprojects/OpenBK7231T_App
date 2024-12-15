@@ -990,7 +990,7 @@ void QuickTick(void* param)
 void quick_timer_thread(void* param)
 {
 	while (1) {
-		vTaskDelay(QUICK_TMR_DURATION);
+		vTaskDelay(QUICK_TMR_DURATION / portTICK_PERIOD_MS);
 		QuickTick(0);
 	}
 }
