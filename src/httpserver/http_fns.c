@@ -3016,6 +3016,7 @@ int http_fn_ota(http_request_t* request) {
 	poststr(request, "<br>\
 <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure?')\">\
 </form>");
+	poststr(request, "<p>Upload firmware file for OTA<br>!!!Be aware, no file check is done!!!<p>\<input id='otafile' type='file'> <input type='button' class='bred' onclick='doota();' value='DO OTA - No file check - reboot after OTA'><script>function doota(){ var input = document.getElementById('otafile');if (input.files[0]){fetch('/api/ota', {method: 'POST',body: input.files[0]}).then((resp) => {if(resp.ok){console.log('ota successfull; rebooting');fetch('/index?restart=1');} else console.log('ota not successfull');})}else alert('no file selected')}</script>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
 	poststr(request, NULL);
