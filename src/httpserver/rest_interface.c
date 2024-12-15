@@ -1938,6 +1938,10 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	uint32_t address = 0;
 	uint32_t curr_fw_idx = 0;
 	uint32_t flash_checksum = 0;
+	uint32_t targetFWaddr;
+	uint32_t currentFWaddr;
+	uint32_t fw1_sn;
+	uint32_t fw2_sn;
 	_file_checksum file_checksum;
 	file_checksum.u = 0;
 	unsigned char sig_backup[32];
@@ -1953,6 +1957,8 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 		ret = -1;
 		goto update_ota_exit;
 	}
+	get_fw_info(&targetFWaddr, &currentFWaddr, &fw1_sn, &fw2_sn);
+	ADDLOG_INFO(LOG_FEATURE_OTA, "Current FW addr: 0x%08X, target FW addr: 0x%08X, fw1 sn: %u, fw2 sn: %u", currentFWaddr, targetFWaddr, fw1_sn, fw2_sn);
 	curr_fw_idx = sys_update_ota_get_curr_fw_idx();
 	ADDLOG_INFO(LOG_FEATURE_OTA, "Current firmware index is %d", curr_fw_idx);
 	int reserase = update_ota_erase_upg_region(towrite, 0, NewFWAddr);
@@ -2052,12 +2058,11 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 update_ota_exit:
 	if(ret != -1)
 	{
-		int otap;
-		if(curr_fw_idx == 0) otap = 1;
-		else otap = 0;
-		sys_recover_ota_signature();
-		sys_clear_ota_signature();
-		//sys_update_ota_set_boot_fw_idx(otap);
+		device_mutex_lock(RT_DEV_LOCK_FLASH);
+		flash_write_word(&flash, targetFWaddr, 4294967295);
+		flash_write_word(&flash, currentFWaddr, 0);
+		device_mutex_unlock(RT_DEV_LOCK_FLASH);
+
 		sys_disable_fast_boot();
 	}
 	if(buf) free(buf);
