@@ -1914,11 +1914,12 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 		sprintf(dataStr, "%d", LWIP_GetActiveSockets());
 		return MQTT_DoItemPublishString("sockets", dataStr);
 
-
+#ifndef NO_CHIP_TEMPERATURE
 	case PUBLISHITEM_SELF_TEMP:
 		sprintf(dataStr, "%.2f", getInternalTemperature());
 		return MQTT_DoItemPublishString("temp", dataStr);
-		
+#endif
+
 	case PUBLISHITEM_SELF_RSSI:
 		sprintf(dataStr, "%d", HAL_GetWifiStrength());
 		return MQTT_DoItemPublishString("rssi", dataStr);

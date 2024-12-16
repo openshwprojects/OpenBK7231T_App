@@ -5,6 +5,7 @@
 #include "../../new_cfg.h"
 #include "../../new_pins.h"
 #include <gpio_api.h>
+#include "pwmout_api.h"
 
 extern int g_pwmFrequency;
 
@@ -14,6 +15,7 @@ typedef struct trPinMapping_s
 	PinName pin;
 	bool isInit;
 	gpio_t gpio;
+	pwmout_t pwm;
 } rtlPinMapping_t;
 
 rtlPinMapping_t g_pins[] = {
@@ -59,7 +61,8 @@ const char* HAL_PIN_GetPinNameAlias(int index)
 
 int HAL_PIN_CanThisPinBePWM(int index)
 {
-	return 0;
+	if(index > 6 && index < 11) return 0;
+	return 1;
 }
 
 void RTL_Gpio_Init(rtlPinMapping_t* pin)
@@ -130,20 +133,31 @@ void HAL_PIN_Setup_Output(int index)
 
 void HAL_PIN_PWM_Stop(int index)
 {
-	if(index >= g_numPins)
+	if(index >= g_numPins || !HAL_PIN_CanThisPinBePWM(index))
 		return;
+	rtlPinMapping_t* pin = g_pins + index;
+	//pwmout_stop(&pin->pwm);
+	pwmout_free(&pin->pwm);
+	pin->isInit = false;
 }
 
 void HAL_PIN_PWM_Start(int index)
 {
-	if(index >= g_numPins)
+	if(index >= g_numPins || !HAL_PIN_CanThisPinBePWM(index))
 		return;
+	rtlPinMapping_t* pin = g_pins + index;
+	pwmout_init(&pin->pwm, pin->pin);
+	pwmout_period_us(&pin->pwm, g_pwmFrequency);
+	pwmout_start(&pin->pwm);
+	pin->isInit = true;
 }
 
 void HAL_PIN_PWM_Update(int index, float value)
 {
-	if(index >= g_numPins)
+	if(index >= g_numPins || !HAL_PIN_CanThisPinBePWM(index))
 		return;
+	rtlPinMapping_t* pin = g_pins + index;
+	pwmout_write(&pin->pwm, value / 100);
 }
 
 unsigned int HAL_GetGPIOPin(int index)

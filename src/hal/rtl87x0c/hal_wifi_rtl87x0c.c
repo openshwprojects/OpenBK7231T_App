@@ -256,6 +256,10 @@ void HAL_DisconnectFromWifi()
 {
 	printf("HAL_DisconnectFromWifi");
 	wifi_disconnect();
+	if(g_wifiStatusCallback != NULL)
+	{
+		g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
+	}
 }
 
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)

@@ -540,11 +540,13 @@ const constant_t g_constants[] = {
 	//cnstdetail:"requires":""}
 	{ "$rebootReason", &getRebootReason },
 #endif
+#ifndef NO_CHIP_TEMPERATURE
 	//cnstdetail:{"name":"$intTemp",
 	//cnstdetail:"title":"$intTemp",
 	//cnstdetail:"descr":"Internal temperature (of WiFi module sensor)",
 	//cnstdetail:"requires":""}
 	{ "$intTemp", &getInternalTemperature },
+#endif
 };
 
 static int g_totalConstants = sizeof(g_constants) / sizeof(g_constants[0]);

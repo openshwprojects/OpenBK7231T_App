@@ -2,12 +2,18 @@
 #include "task.h"
 #include "diag.h"
 #include "main.h"
+#include "wifi_constants.h"
+#include "hal_misc.h"
+#include "hal_sys_ctrl.h"
 
-extern void console_init(void);
+extern uint32_t get_cur_fw_idx(void);
 void Main_Init();
 void Main_OnEverySecond();
 
+hal_reset_reason_t reset_reason;
+rtw_mode_t wifi_mode = RTW_MODE_STA;
 TaskHandle_t g_sys_task_handle1;
+uint32_t current_fw_idx = 0;
 
 #if defined(ENABLE_AMAZON_COMMON) || (defined(CONFIG_MATTER) && CONFIG_MATTER)
 static void *app_mbedtls_calloc_func(size_t nelements, size_t elementSize)
@@ -45,7 +51,8 @@ void sys_task1(void* pvParameters)
 
 int main(void)
 {
-	console_init();
+	rtl8710c_reset_reason_get(&reset_reason);
+	current_fw_idx = get_cur_fw_idx();
 
 	wlan_network();
 

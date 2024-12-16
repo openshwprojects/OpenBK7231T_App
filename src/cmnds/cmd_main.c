@@ -29,6 +29,8 @@ int cmd_uartInitIndex = 0;
 #include "driver/gpio.h"
 #include "driver/ledc.h"
 #include "esp_check.h"
+#elif PLATFORM_RTL87X0C
+#include "wifi_conf.h"
 #endif
 
 #define HASH_SIZE 128
@@ -160,6 +162,20 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	{
 		ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave disabled");
 		esp_wifi_set_ps(WIFI_PS_NONE);
+	}
+#elif PLATFORM_RTL87X0C
+	if(!wifi_is_up(RTW_STA_INTERFACE))
+	{
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "Wifi is not on or in AP mode, failed setting powersave!");
+		return CMD_RES_ERROR;
+	}
+	if(bOn)
+	{
+		wifi_enable_powersave();
+	}
+	else
+	{
+		wifi_disable_powersave();
 	}
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave is not implemented on this platform");

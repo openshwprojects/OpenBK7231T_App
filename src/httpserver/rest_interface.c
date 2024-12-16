@@ -2064,8 +2064,9 @@ update_ota_exit:
 		device_mutex_unlock(RT_DEV_LOCK_FLASH);
 
 		sys_disable_fast_boot();
+		if(buf) free(buf);
 	}
-	if(buf) free(buf);
+	else return -1;
 #else
 
 	init_ota(startaddr);
@@ -2104,6 +2105,7 @@ update_ota_exit:
 	http_setup(request, httpMimeTypeJson);
 	hprintf255(request, "{\"size\":%d}", total);
 	poststr(request, NULL);
+	CFG_IncrementOTACount();
 	return 0;
 }
 
