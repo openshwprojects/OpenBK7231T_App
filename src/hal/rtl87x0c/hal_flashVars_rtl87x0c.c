@@ -6,7 +6,6 @@
 #include <easyflash.h>
 
 FLASH_VARS_STRUCTURE flash_vars;
-static int flash_vars_init_flag = 0;
 static int g_loaded = 0;
 
 #define KV_KEY_FLASH_VARS "OBK_FV"
@@ -32,7 +31,7 @@ static int ReadFlashVars(void* target, int dataLen)
 static int SaveFlashVars(void* src, int dataLen)
 {
 	InitEasyFlashIfNeeded();
-	EfErrCode  res;
+	EfErrCode res;
 
 	res = ef_set_env_blob(KV_KEY_FLASH_VARS, src, dataLen);
 	if(res == EF_ENV_INIT_FAILED)

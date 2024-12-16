@@ -273,6 +273,7 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint8_t priority, const char* name,
 							beken_thread_function_t function,
 							uint32_t stack_size, beken_thread_arg_t arg );
+OSStatus rtos_suspend_thread(beken_thread_t* thread);
 typedef unsigned int u32;
 		
 
@@ -316,6 +317,7 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint8_t priority, const char* name,
 							beken_thread_function_t function,
 							uint32_t stack_size, beken_thread_arg_t arg );
+OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #include "common/framework/platform_init.h"
 
@@ -363,6 +365,7 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint8_t priority, const char* name,
 							beken_thread_function_t function,
 							uint32_t stack_size, beken_thread_arg_t arg );
+OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 
 #elif PLATFORM_LN882H
@@ -394,6 +397,7 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint8_t priority, const char* name,
 							beken_thread_function_t function,
 							uint32_t stack_size, beken_thread_arg_t arg );
+OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #elif PLATFORM_ESPIDF
 
@@ -429,6 +433,7 @@ OSStatus rtos_create_thread(beken_thread_t* thread,
 	uint8_t priority, const char* name,
 	beken_thread_function_t function,
 	uint32_t stack_size, beken_thread_arg_t arg);
+OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #define portTICK_RATE_MS portTICK_PERIOD_MS
 #define portTickType TickType_t
@@ -489,6 +494,7 @@ OSStatus rtos_create_thread(beken_thread_t* thread,
 	uint8_t priority, const char* name,
 	beken_thread_function_t function,
 	uint32_t stack_size, beken_thread_arg_t arg);
+OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #define GLOBAL_INT_DECLARATION()	;
 #define GLOBAL_INT_DISABLE()		;
@@ -540,6 +546,7 @@ OSStatus rtos_create_thread(beken_thread_t* thread,
 	uint8_t priority, const char* name,
 	beken_thread_function_t function,
 	uint32_t stack_size, beken_thread_arg_t arg);
+OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #define GLOBAL_INT_DECLARATION()	;
 #define GLOBAL_INT_DISABLE()		;

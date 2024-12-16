@@ -5,6 +5,7 @@
 #include "wifi_constants.h"
 #include "hal_misc.h"
 #include "hal_sys_ctrl.h"
+#include "efuse_logical_api.h"
 
 extern uint32_t get_cur_fw_idx(void);
 void Main_Init();
@@ -14,28 +15,7 @@ hal_reset_reason_t reset_reason;
 rtw_mode_t wifi_mode = RTW_MODE_STA;
 TaskHandle_t g_sys_task_handle1;
 uint32_t current_fw_idx = 0;
-
-#if defined(ENABLE_AMAZON_COMMON) || (defined(CONFIG_MATTER) && CONFIG_MATTER)
-static void *app_mbedtls_calloc_func(size_t nelements, size_t elementSize)
-{
-	size_t size;
-	void *ptr = NULL;
-
-	size = nelements * elementSize;
-	ptr = pvPortMalloc(size);
-
-	if (ptr) {
-		memset(ptr, 0, size);
-	}
-
-	return ptr;
-}
-
-void app_mbedtls_init(void)
-{
-	mbedtls_platform_set_calloc_free(app_mbedtls_calloc_func, vPortFree);
-}
-#endif
+uint8_t wmac[6] = { 0 };
 
 void print_wlan_help(void* arg) {}
 void hci_tp_close(void) {}
@@ -57,6 +37,8 @@ int main(void)
 	wlan_network();
 
 	hal_misc_swd_pin_ctrl(0);
+
+	efuse_logical_read(0x11A, 6, (uint8_t*)wmac);
 
 	xTaskCreate(
 		sys_task1,

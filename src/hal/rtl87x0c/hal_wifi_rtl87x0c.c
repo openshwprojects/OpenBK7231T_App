@@ -1,7 +1,9 @@
 #ifdef PLATFORM_RTL87X0C
 
 #include "../hal_wifi.h"
-#include "../../new_common.h"
+#include "../../new_cfg.h"
+#include "../../new_cfg.h"
+#include "../../logging/logging.h"
 #include <lwip/sockets.h>
 #include <lwip/netif.h>
 #include <wifi/wifi_conf.h>
@@ -12,20 +14,27 @@
 
 extern struct netif xnetif[NET_IF_NUM];
 
-static void (*g_wifiStatusCallback)(int code) = NULL;
+typedef struct
+{
+	char ssid[32];
+	char pwd[64];
+} wifi_data_t;
 
 bool g_STA_static_IP = 0;
 
+static void (*g_wifiStatusCallback)(int code) = NULL;
 static int g_bOpenAccessPointMode = 0;
+static wifi_data_t wdata = { 0 };
+extern uint8_t wmac[6];
 
 const char* HAL_GetMyIPString()
 {
-	return ipaddr_ntoa(&xnetif[g_bOpenAccessPointMode].ip_addr.addr);
+	return ipaddr_ntoa((const ip4_addr_t*)&xnetif[g_bOpenAccessPointMode].ip_addr.addr);
 }
 
 const char* HAL_GetMyGatewayString()
 {
-	return ipaddr_ntoa(&xnetif[g_bOpenAccessPointMode].gw.addr);
+	return ipaddr_ntoa((const ip4_addr_t*)&xnetif[g_bOpenAccessPointMode].gw.addr);
 }
 
 const char* HAL_GetMyDNSString()
@@ -35,7 +44,7 @@ const char* HAL_GetMyDNSString()
 
 const char* HAL_GetMyMaskString()
 {
-	return ipaddr_ntoa(&xnetif[g_bOpenAccessPointMode].netmask.addr);
+	return ipaddr_ntoa((const ip4_addr_t*)&xnetif[g_bOpenAccessPointMode].netmask.addr);
 }
 
 int WiFI_SetMacAddress(char* mac)
@@ -46,15 +55,13 @@ int WiFI_SetMacAddress(char* mac)
 
 void WiFI_GetMacAddress(char* mac)
 {
-	//wifi_get_mac_address(mac);
-	// https://github.com/libretiny-eu/libretiny/blob/0f6c31386bee9cd3f44c68a4d7edf45bec683743/cores/realtek-ambz2/base/api/lt_device.c#L7
-	efuse_logical_read(0x11A, 6, mac);
+	memcpy(mac, (char*)wmac, sizeof(wmac));
 }
 
 const char* HAL_GetMACStr(char* macstr)
 {
 	unsigned char mac[6];
-	WiFI_GetMacAddress(mac);
+	WiFI_GetMacAddress((char*)mac);
 	sprintf(macstr, MACSTR, MAC2STR(mac));
 	return macstr;
 }
@@ -62,14 +69,14 @@ const char* HAL_GetMACStr(char* macstr)
 void HAL_PrintNetworkInfo()
 {
 	uint8_t mac[6];
-	WiFI_GetMacAddress(mac);
-	bk_printf("+--------------- net device info ------------+\r\n");
-	bk_printf("|netif type    : %-16s            |\r\n", g_bOpenAccessPointMode == 0 ? "STA" : "AP");
-	bk_printf("|netif ip      = %-16s            |\r\n", HAL_GetMyIPString());
-	bk_printf("|netif mask    = %-16s            |\r\n", HAL_GetMyMaskString());
-	bk_printf("|netif gateway = %-16s            |\r\n", HAL_GetMyGatewayString());
-	bk_printf("|netif mac     : [%02X:%02X:%02X:%02X:%02X:%02X] %-7s |\r\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], "");
-	bk_printf("+--------------------------------------------+\r\n");
+	WiFI_GetMacAddress((char*)mac);
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------- net device info ------------+\r\n");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_bOpenAccessPointMode == 0 ? "STA" : "AP");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |\r\n", HAL_GetMyIPString());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |\r\n", HAL_GetMyMaskString());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif gateway = %-16s            |\r\n", HAL_GetMyGatewayString());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mac     : [%02X:%02X:%02X:%02X:%02X:%02X] %-7s |\r\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], "");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------------------------------------+\r\n");
 }
 
 int HAL_GetWifiStrength()
@@ -191,16 +198,11 @@ void wifi_af_hdl(u8* buf, u32 buf_len, u32 flags, void* userdata)
 	}
 }
 
-typedef struct
-{
-	char ssid[32];
-	char pwd[64];
-} wifi_data_t;
-static wifi_data_t wdata = { 0 };
 void ConnectToWiFiTask(void* args)
 {
 	rtw_security_t security_type = RTW_SECURITY_OPEN;
-	int security_retry_count = 0, connect_channel = 0;
+	int security_retry_count = 0;
+	uint8_t connect_channel = 0;
 	while(1)
 	{
 		if(_get_ap_security_mode(wdata.ssid, &security_type, &connect_channel))
@@ -218,11 +220,6 @@ void ConnectToWiFiTask(void* args)
 	{
 		g_wifiStatusCallback(WIFI_STA_CONNECTING);
 	}
-	netif_set_hostname(&xnetif[0], CFG_GetDeviceName());
-	wifi_reg_event_handler(WIFI_EVENT_DISCONNECT, (rtw_event_handler_t)wifi_dis_hdl, NULL);
-	//wifi_reg_event_handler(WIFI_EVENT_CONNECT, (rtw_event_handler_t)wifi_con_hdl, NULL);
-	wifi_reg_event_handler(WIFI_EVENT_STA_GOT_IP, (rtw_event_handler_t)wifi_conned_hdl, NULL);
-	wifi_reg_event_handler(WIFI_EVENT_CHALLENGE_FAIL, (rtw_event_handler_t)wifi_af_hdl, NULL);
 	int ret = wifi_connect(wdata.ssid, security_type, wdata.pwd, strlen(wdata.ssid),
 		strlen(wdata.pwd), NULL, NULL);
 	if(ret != RTW_SUCCESS)
@@ -232,16 +229,21 @@ void ConnectToWiFiTask(void* args)
 	}
 	LwIP_DHCP(0, DHCP_START);
 exit:
-	delay_ms(500);
 	vTaskDelete(NULL);
 }
 
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
 {
 	g_bOpenAccessPointMode = 0;
-	strcpy(&wdata.ssid, oob_ssid);
-	strcpy(&wdata.pwd, connect_key);
+	strcpy((char*)&wdata.ssid, oob_ssid);
+	strcpy((char*)&wdata.pwd, connect_key);
 	wifi_set_autoreconnect(0);
+
+	netif_set_hostname(&xnetif[0], CFG_GetDeviceName());
+	wifi_reg_event_handler(WIFI_EVENT_DISCONNECT, (rtw_event_handler_t)wifi_dis_hdl, NULL);
+	//wifi_reg_event_handler(WIFI_EVENT_CONNECT, (rtw_event_handler_t)wifi_con_hdl, NULL);
+	wifi_reg_event_handler(WIFI_EVENT_STA_GOT_IP, (rtw_event_handler_t)wifi_conned_hdl, NULL);
+	wifi_reg_event_handler(WIFI_EVENT_CHALLENGE_FAIL, (rtw_event_handler_t)wifi_af_hdl, NULL);
 
 	xTaskCreate(
 		(TaskFunction_t)ConnectToWiFiTask,
@@ -278,7 +280,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 		return 0;
 	}
 
-	if(wifi_start_ap(ssid, RTW_SECURITY_OPEN, NULL, strlen(ssid), 0, 1) < 0)
+	if(wifi_start_ap((char*)ssid, RTW_SECURITY_OPEN, NULL, strlen(ssid), 0, 1) < 0)
 	{
 		printf("wifi_start_ap failed!\r\n");
 	}
