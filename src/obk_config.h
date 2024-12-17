@@ -207,6 +207,7 @@
 #define ENABLE_DRIVER_DS1820		1
 #define ENABLE_DRIVER_LED 			1
 #define ENABLE_DRIVER_WEMO			1
+#define ENABLE_DRIVER_DHT  1
 
 #else
 
