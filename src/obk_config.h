@@ -172,6 +172,10 @@
 #define ENABLE_TASMOTA_JSON		1
 #define ENABLE_DRIVER_DS1820		1
 
+// add sunset_sunrise_scheduler
+#define ENABLE_NTP_SUNRISE_SUNSET	1
+#define ENABLE_CALENDAR_EVENTS	1
+
 #elif PLATFORM_ESPIDF
 
 #define ENABLE_I2C					1
