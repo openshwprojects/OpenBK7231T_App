@@ -33,3 +33,7 @@
 	path = sdk/OpenTR6260
 	url = https://github.com/NonPIayerCharacter/OpenTR6260.git
 	branch = master
+[submodule "sdk/OpenRTL87X0C"]
+	path = sdk/OpenRTL87X0C
+	url = https://github.com/NonPIayerCharacter/OpenRTL87X0C.git
+	branch = main

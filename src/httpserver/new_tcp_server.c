@@ -213,18 +213,21 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 		socklen_t addr_len = sizeof(source_addr);
 
 		int new_idx = 0;
+		for(int i = 0; i < max_socks; ++i)
+		{
+			if(sock[i].isCompleted)
+			{
+				if(sock[i].thread != NULL)
+				{
+					rtos_delete_thread(&sock[i].thread);
+					sock[i].thread = NULL;
+				}
+				sock[i].isCompleted = false;
+				sock[i].fd = INVALID_SOCK;
+			}
+		}
 		for(new_idx = 0; new_idx < max_socks; ++new_idx)
 		{
-			if(sock[new_idx].isCompleted)
-			{
-				if(sock[new_idx].thread != NULL)
-				{
-					rtos_delete_thread(&sock[new_idx].thread);
-					sock[new_idx].thread = NULL;
-				}
-				sock[new_idx].isCompleted = false;
-				sock[new_idx].fd = INVALID_SOCK;
-			}
 			if(sock[new_idx].fd == INVALID_SOCK)
 			{
 				break;
