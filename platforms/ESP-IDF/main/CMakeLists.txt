@@ -73,6 +73,7 @@ set(PROJ_ALL_SRC
 #	../../../src/driver/drv_spi.c
 #	../../../src/driver/drv_spidma.c
 	../../../src/driver/drv_ssdp.c
+	../../../src/driver/drv_st7735.c
 	../../../src/driver/drv_tasmotaDeviceGroups.c
 	../../../src/driver/drv_test_drivers.c
 	../../../src/driver/drv_textScroller.c
