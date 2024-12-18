@@ -31,7 +31,7 @@ static void uart_event_task(void* pvParameters)
 	{
 		if(xQueueReceive(uart_queue, (void*)&event, (TickType_t)portMAX_DELAY))
 		{
-			bzero(data, 256);
+			bzero(data, 512);
 			switch(event.type)
 			{
 				case UART_DATA:
@@ -39,7 +39,6 @@ static void uart_event_task(void* pvParameters)
 					for(int i = 0; i < event.size; i++)
 					{
 						UART_AppendByteToReceiveRingBuffer(data[i]);
-						vTaskDelay(3);
 					}
 					break;
 				case UART_BUFFER_FULL:
@@ -77,6 +76,7 @@ int HAL_UART_Init(int baud, int parity)
 	}
 	if(uart_is_driver_installed(uartnum))
 	{
+		uart_disable_rx_intr(uartnum);
 		uart_driver_delete(uartnum);
 	}
 	uart_config_t uart_config =
@@ -88,7 +88,7 @@ int HAL_UART_Init(int baud, int parity)
 		.flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
 		.source_clk = UART_SCLK_DEFAULT,
 	};
-	uart_driver_install(uartnum, 256, 0, 20, &uart_queue, 0);
+	uart_driver_install(uartnum, 512, 0, 20, &uart_queue, 0);
 	uart_param_config(uartnum, &uart_config);
 	if(uartnum == UART_NUM_0)
 	{
@@ -100,8 +100,8 @@ int HAL_UART_Init(int baud, int parity)
 	}
 	if(data == NULL)
 	{
-		data = (uint8_t*)malloc(256);
-		xTaskCreate(uart_event_task, "uart_event_task", 1024, NULL, 16, NULL);
+		data = (uint8_t*)malloc(512);
+		xTaskCreate(uart_event_task, "uart_event_task", 2048, NULL, 16, NULL);
 		uart_enable_rx_intr(uartnum);
 	}
 	return 1;
