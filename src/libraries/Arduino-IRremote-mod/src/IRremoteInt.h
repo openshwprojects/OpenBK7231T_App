@@ -522,6 +522,7 @@ public:
     void sendNEC2(uint16_t aAddress, uint8_t aCommand, int_fast8_t aNumberOfRepeats);
     void sendNECRaw(uint32_t aRawData, int_fast8_t aNumberOfRepeats = NO_REPEATS);
     // NEC variants
+    void sendNEC48(uint16_t aAddress, uint16_t aCommand, int_fast8_t aNumberOfRepeats);
     void sendOnkyo(uint16_t aAddress, uint16_t aCommand, int_fast8_t aNumberOfRepeats);
     void sendApple(uint8_t aAddress, uint8_t aCommand, int_fast8_t aNumberOfRepeats);
 

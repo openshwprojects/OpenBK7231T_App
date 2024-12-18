@@ -198,6 +198,18 @@
 #define ENABLE_DRIVER_CHT83XX		1
 #define ENABLE_DRIVER_ST7735		1
 
+#elif PLATFORM_TR6260
+
+#define ENABLE_LITTLEFS				1
+#define NEW_TCP_SERVER				1
+#define ENABLE_EXPAND_CONSTANT		1
+#define ENABLE_I2C					1
+#define ENABLE_DRIVER_AHT2X			1
+#define ENABLE_DRIVER_BMPI2C		1
+#define ENABLE_DRIVER_DS1820		1
+#define ENABLE_DRIVER_LED 			1
+#define ENABLE_DRIVER_WEMO			1
+
 #else
 
 #error "Platform not defined"

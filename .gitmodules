@@ -29,3 +29,7 @@
 	path = sdk/esp-idf
 	url = https://github.com/espressif/esp-idf.git
 	branch = release/v5.3
+[submodule "sdk/OpenTR6260"]
+	path = sdk/OpenTR6260
+	url = https://github.com/NonPIayerCharacter/OpenTR6260.git
+	branch = master
