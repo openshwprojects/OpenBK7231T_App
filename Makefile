@@ -193,7 +193,10 @@ sdk/OpenW600/tools/gcc-arm-none-eabi-4_9-2014q4/bin: submodules
 
 .PHONY: OpenW800
 OpenW800: sdk/OpenW800/tools/w800/csky/bin sdk/OpenW800/sharedAppContainer/sharedApp prebuild_OpenW800
-	$(MAKE) -C sdk/OpenW800 EXTRA_CCFLAGS=-DPLATFORM_W800 CONFIG_W800_USE_LIB=n CONFIG_W800_TOOLCHAIN_PATH="$(shell realpath sdk/OpenW800/tools/w800/csky/bin)/"
+	# if building new version, make sure "new_http.o" is deleted (it contains build time and version, so build time is set to actual time)
+	rm -rf sdk/OpenW800/bin/build/w800/obj/sharedAppContainer/sharedApp/src/httpserver/new_http.o
+	# define APP_Version so it's not "W800_Test" every time
+	$(MAKE) -C sdk/OpenW800 EXTRA_CCFLAGS="-DPLATFORM_W800 -DUSER_SW_VER=\\\"${APP_VERSION}\\\"" CONFIG_W800_USE_LIB=n CONFIG_W800_TOOLCHAIN_PATH="$(shell realpath sdk/OpenW800/tools/w800/csky/bin)/"
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenW800/bin/w800/w800.fls output/$(APP_VERSION)/OpenW800_$(APP_VERSION).fls
 	cp sdk/OpenW800/bin/w800/w800_ota.img output/$(APP_VERSION)/OpenW800_$(APP_VERSION)_ota.img
