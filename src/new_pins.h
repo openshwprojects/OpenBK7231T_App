@@ -1016,6 +1016,8 @@ typedef enum channelType_e {
 #else
 #define PLATFORM_GPIO_MAX 0
 #endif
+#elif PLATFORM_TR6260
+#define PLATFORM_GPIO_MAX 25
 #else
 #define PLATFORM_GPIO_MAX 29
 #endif
@@ -1386,6 +1388,7 @@ void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex));
 void CHANNEL_ClearAllChannels();
 // CHANNEL_SET_FLAG_*
 void CHANNEL_Set(int ch, int iVal, int iFlags);
+void CHANNEL_SetSmart(int ch, float fVal, int iFlags);
 void CHANNEL_Set_FloatPWM(int ch, float fVal, int iFlags);
 void CHANNEL_Add(int ch, int iVal);
 void CHANNEL_AddClamped(int ch, int iVal, int min, int max, int bWrapInsteadOfClamp);

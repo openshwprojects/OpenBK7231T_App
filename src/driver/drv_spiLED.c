@@ -145,6 +145,9 @@ void SPILED_SetRawBytes(int start_offset, byte *bytes, int numBytes, int push) {
 		SPIDMA_StartTX(spiLED.msg);
 	}
 }
+void SPILED_Shutdown() {
+	spiLED.ready = 0;
+}
 
 void SPILED_Init() {
 	uint32_t val;

@@ -24,3 +24,4 @@ void SPILED_InitDMA(int numBytes);
 void SPILED_SetRawHexString(int start_offset, const char *s, int push);
 void SPILED_SetRawBytes(int start_offset, byte *bytes, int numBytes, int push);
 void SPILED_Init();
+void SPILED_Shutdown();

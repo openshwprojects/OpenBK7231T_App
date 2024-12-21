@@ -2,6 +2,10 @@
 
 #include "selftest_local.h"
 
+void CheckForCommonVars() {
+
+	// TODO
+}
 void Test_HassDiscovery_Relay_1x() {
 	const char *shortName = "WinRelTest1x";
 	const char *fullName = "Windows Relay Test 1x";
@@ -205,6 +209,8 @@ void Test_HassDiscovery_LED_RGBW() {
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "cmd_t", "cmnd/testRGBW/led_enableAll");
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/led_enableAll/get");
 
+
+	//SIM_DumpMQTTHistory();
 }
 void Test_HassDiscovery_LED_SingleColor() {
 	// TODO
@@ -232,20 +238,21 @@ void Test_HassDiscovery_DHT11() {
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
 	//SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, "dev", 0, "name", shortName);
 	// first dev - as temperature
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "dev_cla", "temperature");
 	//SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "°C");
 	// old method - round
 	//SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "val_tpl", "{{ float(value)*0.1|round(2) }}");
 	// new method - format
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "val_tpl", "{{ '%0.2f'|format(float(value)*0.1) }}");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
+		"dev_cla", "temperature",
+		"stat_t", "~/15/get",
+		"val_tpl", "{{ '%0.2f'|format(float(value)*0.1) }}",
+		"stat_cla", "measurement");
 	// second dev - humidity
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "dev_cla", "humidity");
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "%");
-	// few lines above I have assigned channels 15 and 25 to humidity and temperature,
-	// let's see if their setting made to HA discovery correctly
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/25/get");
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/15/get");
-
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
+		"dev_cla", "humidity",
+		"stat_t", "~/25/get",
+		"unit_of_meas", "%",
+		"stat_cla", "measurement");
 }
 void Test_HassDiscovery_Battery() {
 	const char *shortName = "BatteryTest";
@@ -274,11 +281,17 @@ void Test_HassDiscovery_Battery() {
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, "dev", 0, "name", shortName);
 	// first dev - as battery
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "dev_cla", "battery");
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "%");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
+		"dev_cla", "battery",
+		"stat_t", "~/battery/get",
+		"unit_of_meas", "%",
+		"stat_cla", "measurement");
 	// second dev - as voltage
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "dev_cla", "voltage");
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "mV");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
+		"dev_cla", "voltage",
+		"stat_t", "~/voltage/get",
+		"unit_of_meas", "mV",
+		"stat_cla", "measurement");
 }
 void Test_HassDiscovery_SHTSensor() {
 	const char *shortName = "myShortName";
@@ -303,12 +316,19 @@ void Test_HassDiscovery_SHTSensor() {
 	Sim_RunSeconds(10, false);
 
 	// first dev -
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "dev_cla", "temperature");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_3KEY("homeassistant", true, 0, 0,
+		"dev_cla", "temperature",
+		"stat_t", "~/2/get",
+		"stat_cla", "measurement");
 	//SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "°C");
 	// second dev - 
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "dev_cla", "humidity");
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "%");
-	
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
+		"dev_cla", "humidity",
+		"stat_t", "~/0/get",
+		"unit_of_meas", "%",
+		"stat_cla", "measurement");
+
+	//SIM_DumpMQTTHistory();
 }
 void Test_VerifyForCommonPowerMeteringStuff() {
 
@@ -332,19 +352,19 @@ void Test_VerifyForCommonPowerMeteringStuff() {
 		"unit_of_meas", "A",
 		"stat_cla", "measurement");
 
-	SIM_DumpMQTTHistory();
-	/*SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
 		"dev_cla", "energy",
 		"stat_t", "~/energycounter/get",
 		"unit_of_meas", "Wh",
-		"stat_cla", "measurement");
+		"stat_cla", "total_increasing");
 
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
 		"dev_cla", "energy",
 		"stat_t", "~/energycounter_last_hour/get",
 		"unit_of_meas", "Wh",
-		"stat_cla", "measurement");*/
+		"stat_cla", "total_increasing");
 
+	//SIM_DumpMQTTHistory();
 }
 void Test_HassDiscovery_BL0942() {
 	const char *shortName = "PowerMeteringFake";
@@ -415,12 +435,13 @@ void Test_HassDiscovery_digitalInput() {
 	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mf", MANUFACTURER);
 	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mdl", PLATFORM_MCU_NAME);
 	SELFTEST_ASSERT_JSON_VALUE_STRING(NULL, "avty_t", "~/connected");
-	SELFTEST_ASSERT_JSON_VALUE_STRING(NULL, "pl_on", "0");
-	SELFTEST_ASSERT_JSON_VALUE_STRING(NULL, "pl_off", "1");
 	// we have used channel index 1
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/5/get");
 	// this label will be sent via HASS Discovery to Home Assistant
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "name", "myDigitalValue");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
+		"name", "myDigitalValue",
+		"stat_t", "~/5/get",
+		"pl_on", "0",
+		"pl_off", "1");
 
 }
 
@@ -453,12 +474,13 @@ void Test_HassDiscovery_digitalInputNoAVTY() {
 	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mf", MANUFACTURER);
 	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mdl", PLATFORM_MCU_NAME);
 	SELFTEST_ASSERT_JSON_VALUE_STRING_NOT_PRESENT(NULL, "avty_t"); // disabled avty
-	SELFTEST_ASSERT_JSON_VALUE_STRING(NULL, "pl_on", "0");
-	SELFTEST_ASSERT_JSON_VALUE_STRING(NULL, "pl_off", "1");
 	// we have used channel index 1
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/5/get");
 	// this label will be sent via HASS Discovery to Home Assistant
-	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "name", "myDigitalValue");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
+		"name", "myDigitalValue",
+		"stat_t", "~/5/get",
+		"pl_on", "0",
+		"pl_off", "1");
 
 }
 

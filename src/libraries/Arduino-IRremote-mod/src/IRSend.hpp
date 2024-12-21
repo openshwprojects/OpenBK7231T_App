@@ -194,7 +194,11 @@ size_t IRsend::write(IRData *aIRSendData, int_fast8_t aNumberOfRepeats) {
      * Order of protocols is in guessed relevance :-)
      */
     if (tProtocol == NEC) {
-        sendNEC(tAddress, tCommand, aNumberOfRepeats);
+        if (aIRSendData->numberOfBits == 48) {
+            sendNEC48(tAddress, tCommand, aNumberOfRepeats);
+        } else {
+            sendNEC(tAddress, tCommand, aNumberOfRepeats);
+        }
 
     } else if (tProtocol == SAMSUNG) {
         sendSamsung(tAddress, tCommand, aNumberOfRepeats);

@@ -183,6 +183,14 @@ void Test_MQTT_Channels() {
 	CMD_ExecuteCommand("publish myTestDevice/test \"{\\\"msg\\\":\\\"Hello World With Spaces\\\"}\" 1", 0);
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/test", "{\"msg\":\"Hello World With Spaces\"}", false);
 	SIM_ClearMQTTHistory();
+
+
+	CMD_ExecuteCommand("setChannel 1 225", 0);
+	CMD_ExecuteCommand("setChannel 2 66", 0);
+	CMD_ExecuteCommand("publish DATA {\"ROOM\":\"KITCHEN\",\"TEMPERATURE\":$CH1,\"HUMIDITY\":$CH2}", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/DATA/get", 
+		"{\"ROOM\":\"KITCHEN\",\"TEMPERATURE\":225,\"HUMIDITY\":66}", false);
+	SIM_ClearMQTTHistory();
 }
 void Test_MQTT_LED_CW() {
 	SIM_ClearOBK(0);

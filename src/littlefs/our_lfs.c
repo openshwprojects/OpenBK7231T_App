@@ -678,6 +678,51 @@ static int lfs_erase(const struct lfs_config* c, lfs_block_t block)
     return res;
 }
 
+#elif PLATFORM_TR6260
+
+static int lfs_read(const struct lfs_config* c, lfs_block_t block,
+    lfs_off_t off, void* buffer, lfs_size_t size)
+{
+    int res;
+
+    unsigned int startAddr = LFS_Start;
+    startAddr += block * LFS_BLOCK_SIZE;
+    startAddr += off;
+
+    res = hal_spiflash_read(startAddr, (unsigned char*)buffer, size);
+    return res;
+}
+
+// Program a region in a block. The block must have previously
+// been erased. Negative error codes are propogated to the user.
+// May return LFS_ERR_CORRUPT if the block should be considered bad.
+static int lfs_write(const struct lfs_config* c, lfs_block_t block,
+    lfs_off_t off, const void* buffer, lfs_size_t size)
+{
+    int res;
+
+    unsigned int startAddr = LFS_Start;
+    startAddr += block * LFS_BLOCK_SIZE;
+    startAddr += off;
+
+    res = hal_spiflash_write(startAddr, (unsigned char*)buffer, size);
+    return res;
+}
+
+// Erase a block. A block must be erased before being programmed.
+// The state of an erased block is undefined. Negative error codes
+// are propogated to the user.
+// May return LFS_ERR_CORRUPT if the block should be considered bad.
+static int lfs_erase(const struct lfs_config* c, lfs_block_t block)
+{
+    int res;
+
+    unsigned int startAddr = LFS_Start;
+    startAddr += block * LFS_BLOCK_SIZE;
+
+    res = hal_spiflash_erase(startAddr, LFS_BLOCK_SIZE);
+    return res;
+}
 
 #endif 
 

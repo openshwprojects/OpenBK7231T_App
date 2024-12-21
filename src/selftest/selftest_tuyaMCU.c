@@ -581,6 +581,31 @@ void Test_TuyaMCU_Basic() {
 	// nothing is sent by OBK at that point
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 
+
+	
+	SIM_ClearUART();
+
+
+	// this will write to channel 40, 41, and 42
+	// 232.6V 153mA 3.5W
+	// 0.0153*232.6 = 3.55878W
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 6 RAW_TAC2121C_VCP 40", 0);
+	CMD_ExecuteCommand("uartFakeHex 55AA03070014060000080916000099000023010200040000000310", 0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(100, false);
+	SELFTEST_ASSERT_CHANNEL(40, 2326);// voltage
+	SELFTEST_ASSERT_CHANNEL(41, 153);// current
+	SELFTEST_ASSERT_CHANNEL(42, 35);// power
+
+	// this will write to channel 45, 46 and 47
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 8 RAW_TAC2121C_VCP 45", 0);
+	CMD_ExecuteCommand("uartFakeHex 55 AA 03 07 00 0C 08 00 00 08 09 01 00 01 2E 00 00 43 A1 ", 0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(100, false);
+	SELFTEST_ASSERT_CHANNEL(45, 2305); // voltage
+	SELFTEST_ASSERT_CHANNEL(46, 302);// current
+	SELFTEST_ASSERT_CHANNEL(47, 67); // power
+
 	SIM_ClearUART();
 }
 

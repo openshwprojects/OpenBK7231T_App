@@ -1329,6 +1329,13 @@ void CHANNEL_Set_FloatPWM(int ch, float fVal, int iFlags) {
 		}
 	}
 }
+void CHANNEL_SetSmart(int ch, float fVal, int iFlags) {
+	if (ch < 0 || ch >= CHANNEL_MAX)
+		return;
+	int divider = ChannelType_GetDivider(g_cfg.pins.channelTypes[ch]);
+	int divided = fVal * divider;
+	CHANNEL_Set(ch, divided, iFlags);
+}
 void CHANNEL_Set(int ch, int iVal, int iFlags) {
 	int prevValue;
 	int bForce;

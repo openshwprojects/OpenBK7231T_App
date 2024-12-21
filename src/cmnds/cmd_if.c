@@ -7,6 +7,7 @@
 #include "../driver/drv_public.h"
 #include "../driver/drv_battery.h"
 #include "../driver/drv_ntp.h"
+#include "../hal/hal_flashVars.h"
 #include <ctype.h> // isspace
 
 /*
@@ -178,6 +179,10 @@ float getMQTTOn(const char *s) {
 float getChannelValue(const char *s) {
 	int idx = atoi(s + 3);
 	return CHANNEL_Get(idx);
+}
+float getFlashValue(const char *s) {
+	int idx = atoi(s + 5);
+	return HAL_FlashVars_GetChannelValue(idx);
 }
 float getFlagValue(const char *s) {
 	int idx = atoi(s + 5);
@@ -397,6 +402,11 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current number of active repeating events",
 	//cnstdetail:"requires":""}
 	{"$activeRepeatingEvents", &getActiveRepeatingEvents},
+	//cnstdetail:{"name":"$Flash*",
+	//cnstdetail:"title":"$Flash*",
+	//cnstdetail:"descr":"Provides flashvarse channel access, as above.",
+	//cnstdetail:"requires":""}
+	{"$Flash*", &getFlashValue},
 #ifdef ENABLE_DRIVER_BL0937
 	//cnstdetail:{"name":"$voltage",
 	//cnstdetail:"title":"$voltage",
