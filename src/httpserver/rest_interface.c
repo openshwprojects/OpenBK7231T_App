@@ -46,6 +46,9 @@ uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
 
 #elif PLATFORM_W800
 
+#include "wm_socket_fwup.h"
+#include "wm_fwup.h"
+
 #elif PLATFORM_LN882H
 
 #elif PLATFORM_ESPIDF
@@ -241,6 +244,8 @@ static int http_rest_post(http_request_t* request) {
 #elif PLATFORM_BK7231N
 		return http_rest_post_flash(request, START_ADR_OF_BK_PARTITION_OTA, LFS_BLOCKS_END);
 #elif PLATFORM_W600
+		return http_rest_post_flash(request, -1, -1);
+#elif PLATFORM_W800
 		return http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_BL602
 		return http_rest_post_flash(request, -1, -1);
@@ -1421,7 +1426,7 @@ static int ota_verify_download(void)
 static int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 {
 
-#if PLATFORM_XR809 || PLATFORM_W800 || PLATFORM_TR6260
+#if PLATFORM_XR809 || PLATFORM_TR6260
 	return 0;	//Operation not supported yet
 #endif
 
@@ -1547,6 +1552,138 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 		}
 	} while((nRetCode == 0) && (towrite > 0) && (writelen >= 0));
 
+	tls_mem_free(Buffer);
+
+	if(nRetCode != 0)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, error_message);
+		socket_fwup_err(0, nRetCode);
+		return http_rest_error(request, nRetCode, error_message);
+	}
+
+
+#elif PLATFORM_W800
+	int nRetCode = 0;
+	char error_message[256];
+
+	if(writelen < 0)
+	{
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "ABORTED: %d bytes to write", writelen);
+		return http_rest_error(request, -20, "writelen < 0");
+	}
+
+	struct pbuf* p;
+
+	//The code below is based on W600 code and adopted to the differences in sdk\OpenW800\src\app\ota\wm_http_fwup.c
+	// fiexd crashing caused by not checking "writelen" before doing memcpy
+	// e.g. if more than 2 packets arrived before next loop, writelen could be > 2048 !!
+#define FWUP_MSG_SIZE			 3
+#define MAX_BUFF_SIZE			 2048
+	char* Buffer = (char*)os_malloc(MAX_BUFF_SIZE + FWUP_MSG_SIZE);
+
+	if(request->contentLength >= 0)
+	{
+		towrite = request->contentLength;
+	}
+
+	int recvLen = 0;
+	int totalLen = 0;
+	uint8_t counter = 0;
+	printf("\ntowrite %d writelen=%d\n", towrite, writelen);
+
+	do
+	{
+		while(writelen > 0)
+		{
+			int actwrite = writelen < MAX_BUFF_SIZE ? writelen : MAX_BUFF_SIZE;	// mustn't write more than Buffers size! Will crash else!
+			//bk_printf("Copying %d from writebuf to Buffer (writelen=%d) towrite=%d -- free_heap:%d\n", actwrite, writelen, towrite, xPortGetFreeHeapSize());
+			memset(Buffer, 0, MAX_BUFF_SIZE + FWUP_MSG_SIZE);
+			memcpy(Buffer + FWUP_MSG_SIZE, writebuf, actwrite);
+			if(recvLen == 0)
+			{
+				IMAGE_HEADER_PARAM_ST *booter = (IMAGE_HEADER_PARAM_ST*)(Buffer + FWUP_MSG_SIZE);
+				bk_printf("magic_no=%u, img_type=%u, zip_type=%u, signature=%u\n",
+				booter->magic_no, booter->img_attr.b.img_type, booter->img_attr.b.zip_type, booter->img_attr.b.signature);
+
+				if(TRUE == tls_fwup_img_header_check(booter))
+				{
+					totalLen = booter->img_len + sizeof(IMAGE_HEADER_PARAM_ST);
+					if (booter->img_attr.b.signature)
+					{
+							totalLen += 128;
+					}
+				}
+				else
+				{
+					sprintf(error_message, "Image header check failed");
+					nRetCode = -19;
+					break;
+				}
+
+				nRetCode = socket_fwup_accept(0, ERR_OK);
+				if(nRetCode != ERR_OK)
+				{
+					sprintf(error_message, "Firmware update startup failed");
+					break;
+				}
+			}
+
+			p = pbuf_alloc(PBUF_TRANSPORT, actwrite + FWUP_MSG_SIZE, PBUF_REF);
+			if(!p)
+			{
+				sprintf(error_message, "Unable to allocate memory for buffer");
+				nRetCode = -18;
+				break;
+			}
+
+			if(recvLen == 0)
+			{
+				*Buffer = SOCKET_FWUP_START;
+			}
+			else if(recvLen == (totalLen - actwrite))
+			{
+				*Buffer = SOCKET_FWUP_END;
+			}
+			else
+			{
+				*Buffer = SOCKET_FWUP_DATA;
+			}
+
+			*(Buffer + 1) = (actwrite >> 8) & 0xFF;
+			*(Buffer + 2) = actwrite & 0xFF;
+			p->payload = Buffer;
+			p->len = p->tot_len = actwrite + FWUP_MSG_SIZE;
+
+			nRetCode = socket_fwup_recv(0, p, ERR_OK);
+			if(nRetCode != ERR_OK)
+			{
+				sprintf(error_message, "Firmware data processing failed");
+				break;
+			}
+			else
+			{
+				recvLen += actwrite;
+			}
+
+			towrite -= actwrite;
+			writelen -= actwrite;	// calculate, how much is left to write
+			writebuf += actwrite;	// in case, we only wrote part of buffer, advance in buffer
+		}
+
+		if(towrite > 0)
+		{
+			writebuf = request->received;
+			writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
+			if(writelen < 0)
+			{
+				sprintf(error_message, "recv returned %d - end of data - remaining %d", writelen, towrite);
+				nRetCode = -17;
+			}
+		}
+		if (counter++ % 5 == 0) bk_printf("Downloaded %d / %d\n", recvLen, totalLen);
+		rtos_delay_milliseconds(10);	// give some time for flashing - will else increase used memory fast 
+	} while((nRetCode == 0) && (towrite > 0) && (writelen >= 0));
+	bk_printf("Download completed (%d / %d)\n", recvLen, totalLen);
 	tls_mem_free(Buffer);
 
 	if(nRetCode != 0)
