@@ -485,11 +485,14 @@ int ADS1115_ReadChannel(i2cDevice_ADS1115_t *ads, int channel)
 
 	delay_ms(8);
 
-	unsigned short res;
+	byte dat[2];
 	DRV_I2C_Begin(ads->base.addr, ads->base.busType);
-	DRV_I2C_ReadBytes(CONVERSION_REGISTER, &res, 2);
+	DRV_I2C_ReadBytes(CONVERSION_REGISTER, dat, 2);
 	DRV_I2C_Close();
-	addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "ADS read %i", (int)res);
+	int res = (dat[0] << 8) | dat[1];
+	addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "ADS read frst %i", (int)res);
+	res = (dat[1] << 8) | dat[0];
+	addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "ADS read sec %i", (int)res);
 
 	return res;
 }
