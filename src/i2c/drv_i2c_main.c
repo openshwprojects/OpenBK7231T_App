@@ -40,6 +40,17 @@ void DRV_I2C_Write(byte addr, byte data)
     ddev_write(i2c_hdl, (char*)&data, 1, (UINT32)&i2c_operater);
 #endif
 }
+void DRV_I2C_WriteBytesSingle(byte *data, int len) {
+	if (current_bus == I2C_BUS_SOFT) {
+		Soft_I2C_Start(&g_softI2C, (tg_addr << 1) + 0);
+		for (int i = 0; i < len; i++) {
+			Soft_I2C_WriteByte(&g_softI2C, data[i]);
+		}
+		Soft_I2C_Stop(&g_softI2C);
+		return;
+	}
+
+}
 void DRV_I2C_WriteBytes(byte addr, byte *data, int len) {
 	if (current_bus == I2C_BUS_SOFT) {
 		Soft_I2C_Start(&g_softI2C, (tg_addr << 1) +0);
@@ -452,13 +463,19 @@ void DRV_I2C_Init()
 #define CONVERSION_REGISTER 0x00
 // default config for 16-bit resolution, single-ended, channels AIN0, AIN1, AIN2, AIN3
 #define CONFIG_DEFAULT 0xC183  // 16-bit, AIN0, single-ended
-
+/*
+// set SoftSDA and SoftSCL pins
+startDriver I2C
+// use adr here from scanI2C, I'm assuming 0x48
+addI2CDevice_ADS1115 Soft 0x48 0 1 2 3
+*/
 void ADS1115_WriteConfig(i2cDevice_ADS1115_t *ads, uint16_t config) {
-	byte payload[2];
-	payload[0] = (config >> 8) & 0xFF;
-	payload[1] = config & 0xFF;
+	byte payload[3];
+	payload[0]= CONFIG_REGISTER;
+	payload[1] = (config >> 8) & 0xFF;
+	payload[2] = config & 0xFF;
 	DRV_I2C_Begin(ads->base.addr, ads->base.busType);
-	DRV_I2C_WriteBytes(CONFIG_REGISTER, payload, 2);
+	DRV_I2C_WriteBytesSingle(payload, 3);
 	DRV_I2C_Close();
 }
 int ADS1115_ReadChannel(i2cDevice_ADS1115_t *ads, int channel)
