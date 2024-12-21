@@ -49,7 +49,7 @@ void DRV_I2C_WriteBytesSingle(byte *data, int len) {
 		Soft_I2C_Stop(&g_softI2C);
 		return;
 	}
-
+	// TODO - how to do it in BK I2C?
 }
 void DRV_I2C_WriteBytes(byte addr, byte *data, int len) {
 	if (current_bus == I2C_BUS_SOFT) {
@@ -485,7 +485,7 @@ int ADS1115_ReadChannel(i2cDevice_ADS1115_t *ads, int channel)
 
 	delay_ms(8);
 
-	short res;
+	unsigned short res;
 	DRV_I2C_Begin(ads->base.addr, ads->base.busType);
 	DRV_I2C_ReadBytes(CONVERSION_REGISTER, &res, 2);
 	DRV_I2C_Close();
