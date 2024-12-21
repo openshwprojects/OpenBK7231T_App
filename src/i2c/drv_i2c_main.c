@@ -92,7 +92,7 @@ void DRV_I2C_ReadBytes(byte addr, byte *data, int size)
 		Soft_I2C_Stop(&g_softI2C);
 		Soft_I2C_Start(&g_softI2C, (tg_addr << 1) + 1);
 		for (int i = 0; i < size; i++) {
-			data[i] = Soft_I2C_ReadByte(&g_softI2C, i < size-1);
+			data[i] = Soft_I2C_ReadByte(&g_softI2C, !(i < size-1));
 		}
 		Soft_I2C_Stop(&g_softI2C);
 		return;
