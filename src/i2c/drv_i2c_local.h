@@ -8,7 +8,8 @@ enum i2cDeviceType_e {
 	I2CDEV_TC74,
 	I2CDEV_MCP23017,
 	I2CDEV_LCD_PCF8574,
-};
+	I2CDEV_ADS1115,
+}; 
 
 typedef enum i2cBusType_e {
 	I2C_BUS_ERROR,
@@ -54,6 +55,12 @@ typedef struct i2cDevice_MCP23017_s {
 	// is pin an output or input?
 	//int pinDirections;
 } i2cDevice_MCP23017_t;
+
+typedef struct i2cDevice_ADS1115_s {
+	i2cDevice_t base;
+	byte channels[4];
+} i2cDevice_ADS1115_t;
+
 
 typedef struct i2cDevice_PCF8574_s {
 	i2cDevice_t base;
