@@ -3016,7 +3016,42 @@ int http_fn_ota(http_request_t* request) {
 	poststr(request, "<br>\
 <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure?')\">\
 </form>");
-	poststr(request, "<p>Upload firmware file for OTA - !!!Be aware, no file check is done!!!<p>\<input id='otafile' type='file'> <input type='button' class='bred' onclick='doota();' value='DO OTA - No file check - reboot after OTA'><script>function doota(){ var input = document.getElementById('otafile');if (input.files[0]){fetch('/api/ota', {method: 'POST',body: input.files[0]}).then((resp) => {if(resp.ok){console.log('ota successfull; rebooting');fetch('/index?restart=1');} else console.log('ota not successfull');})}else alert('no file selected')}</script>");
+	const char htmlOTA1[] = "<script>var input=document.getElementById('otafile'),d=document.querySelector('dialog'),CHIP='" DEVICENAME_PREFIX_FULL "'"; 
+#if PLATFORM_BEKEN
+	const char htmlOTA2[] = ",hint=document.getElementById('hint')";	// only for Beken N/T
+#endif
+	const char htmlOTA3[] = ",D='OTA started! Please wait ';function doota(){var f=input.files[0];if(f&&f.name.startsWith(CHIP)){d.showModal();var t=30;setTimeout((function(){d.close(),location.href='/'}),1e3*t),setInterval((function(){d.innerHTML=D+t--+' secs'}),1e3),fetch('/api/ota',{method:'POST',body:f}).then((e=>{e.ok&&fetch('/index?restart=1')}))}else alert(f?'filename must start with '+CHIP:'no file selected')}d.innerHTML=D";
+#if PLATFORM_BEKEN
+	const char htmlOTA4[] = ",input.addEventListener('change',(function(e){const t=e.target.files[0];if(!t)return;const n=new FileReader;n.onload=function(e){const t=e.target.result,n=t.slice(0,3),i=t.slice(12,23);'RBL'!=n?TEXT='<br><b>Selected file does not appear to be a Beken rbl file!</b><br>\"RBL\" not found in header! (Found: \"'+n+'\")':i!=CHIP&&(TEXT='Be sure to select the correct file for your device!<br> Newer images should contain the string \"'+CHIP+'\" which is not found in header! (Found: \"'+i+'\")'),hint.innerHTML='RBL'!=n||i!=CHIP?'Please check selection \"'+input.files[0].name+'\" before uploading!<br>'+TEXT:''},n.onerror=function(){alert('Error reading file')};const i=t.slice(0,32);n.readAsText(i)}));"; // only for Beken
+#endif
+	poststr(request, "<br><br><br><br>Expert feature: Upload firmware file for OTA<br>Use Web App if you are unsure what this is about!<br>");
+	hprintf255(request, "<input id='otafile' type='file'%s>",
+#if PLATFORM_BL602
+"accept='.bin.xz.ota'"
+#elif PLATFORM_LN882H
+"accept='.bin'"
+#elif PLATFORM_ESPIDF || PLATFORM_W600 || PLATFORM_W800
+"accept='.img'"
+#elif PLATFORM_BEKEN
+"accept='.rbl'"
+#else
+""
+#endif
+	);
+#if PLATFORM_BEKEN
+	poststr(request, "<div id='hint' style='color: #cfc;'></div>");
+#endif
+	poststr(request, "<input type='button' class='bred' onclick='doota();' value='START OTA - No file check - will reboot after OTA'><dialog></dialog>");
+	poststr(request, htmlOTA1);
+#if PLATFORM_BEKEN
+	poststr(request, htmlOTA2);
+#endif
+	poststr(request, htmlOTA3);
+#if PLATFORM_BEKEN
+	poststr(request, htmlOTA4);
+#endif
+	poststr(request, "</script>");
+
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
 	poststr(request, NULL);
