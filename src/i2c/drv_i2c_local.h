@@ -99,4 +99,6 @@ void DRV_I2C_TC74_RunDevice(i2cDevice_t *dev);
 // drv_i2c_lcd_pcf8574t.c
 void DRV_I2C_LCD_PCF8574_RunDevice(i2cDevice_t *dev);
 
+void DRV_I2C_ADS1115_RunDevice(i2cDevice_t *dev);
+
 #endif // __DRV_I2C_LOCAL_H__
