@@ -468,6 +468,12 @@ void DRV_I2C_Init()
 startDriver I2C
 // use adr here from scanI2C, I'm assuming 0x48
 addI2CDevice_ADS1115 Soft 0x48 0 1 2 3
+// Btw, if you are only using input 0, you can also do
+// addI2CDevice_ADS1115 Soft 0x48 0
+// Others will not be read.
+// You can also use 0xff to mark skip input
+// addI2CDevice_ADS1115 Soft 0x48 0 0xff 2 3
+
 */
 void ADS1115_WriteConfig(i2cDevice_ADS1115_t *ads, uint16_t config) {
 	byte payload[3];
@@ -494,6 +500,7 @@ int ADS1115_ReadChannel(i2cDevice_ADS1115_t *ads, int channel)
 	res = (dat[1] << 8) | dat[0];
 	addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "ADS read sec %i", (int)res);
 
+
 	return res;
 }
 void DRV_I2C_ADS1115_RunDevice(i2cDevice_t *dev)
@@ -502,9 +509,12 @@ void DRV_I2C_ADS1115_RunDevice(i2cDevice_t *dev)
 
 	ads = (i2cDevice_ADS1115_t*)dev;
 
-	//for (int i = 0; i < 4; i++) {
-		ADS1115_ReadChannel(dev, 0);
-	//}
+	for (int i = 0; i < 4; i++) {
+		if (ads->channels[i] != 0xff) {
+			int res = ADS1115_ReadChannel(dev, i);
+			CHANNEL_Set(ads->channels[i], res, 0);
+		}
+	}
 }
 void DRC_I2C_RunDevice(i2cDevice_t *dev)
 {
