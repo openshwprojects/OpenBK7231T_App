@@ -412,8 +412,9 @@ void DRV_I2C_Commands_Init() {
 
 // addRepeatingEvent 2 -1 backlog addChannel 12 1; lcd_goto Soft 0x23 1 1; lcd_printFloat Soft 0x23 $CH12
 // addRepeatingEvent 2 -1 backlog addChannel 12 1; lcd_goto Soft 0x23 1 1; lcd_printFloat Soft 0x23 $CH12 2; lcd_print Soft 0x23 " C"
-
 int c = 0;
+
+
 void DRV_I2C_LCD_PCF8574_RunDevice(i2cDevice_t *dev)
 {
 	i2cDevice_PCF8574_t *lcd;

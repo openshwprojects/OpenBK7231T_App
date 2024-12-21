@@ -73,6 +73,24 @@ void DRV_I2C_Read(byte addr, byte *data)
     ddev_read(i2c_hdl, (char*)data, 1, (UINT32)&i2c_operater);
 #endif
 }
+void DRV_I2C_ReadBytes(byte addr, byte *data, int size)
+{
+	if (current_bus == I2C_BUS_SOFT) {
+		Soft_I2C_Start(&g_softI2C, (tg_addr << 1) + 0);
+		Soft_I2C_WriteByte(&g_softI2C, addr);
+		Soft_I2C_Stop(&g_softI2C);
+		Soft_I2C_Start(&g_softI2C, (tg_addr << 1) + 1);
+		for (int i = 0; i < size; i++) {
+			data[i] = Soft_I2C_ReadByte(&g_softI2C, i < size-1);
+		}
+		Soft_I2C_Stop(&g_softI2C);
+		return;
+}
+#if PLATFORM_BK7231T
+	i2c_operater.op_addr = addr;
+	ddev_read(i2c_hdl, (char*)data, size, (UINT32)&i2c_operater);
+#endif
+}
 int DRV_I2C_Begin(int dev_adr, int busID) {
 
 #if PLATFORM_BK7231T
@@ -167,6 +185,19 @@ void DRV_I2C_AddDevice_MCP23017_Internal(int busType,int address) {
 
 	DRV_I2C_AddNextDevice((i2cDevice_t*)dev);
 }
+void DRV_I2C_AddDevice_ADS1115_Internal(int busType, int address, byte channels[4]) {
+	i2cDevice_ADS1115_t *dev;
+
+	dev = malloc(sizeof(i2cDevice_ADS1115_t));
+
+	dev->base.addr = address;
+	dev->base.busType = busType;
+	dev->base.type = I2CDEV_ADS1115;
+	dev->base.next = 0;
+	memcpy(dev->channels, channels, sizeof(dev->channels));
+
+	DRV_I2C_AddNextDevice((i2cDevice_t*)dev);
+}
 i2cDevice_t *DRV_I2C_FindDevice(int busType,int address) {
 	i2cDevice_t *dev;
 
@@ -245,6 +276,35 @@ commandResult_t DRV_I2C_AddDevice_MCP23017(const void *context, const char *cmd,
 
 
 	DRV_I2C_AddDevice_MCP23017_Internal(busType,address);
+
+	return CMD_RES_OK;
+}
+
+
+//
+commandResult_t DRV_I2C_AddDevice_ADS1115(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	const char *i2cModuleStr;
+	int address;
+	i2cBusType_t busType;
+	byte channels[4] ;
+
+	Tokenizer_TokenizeString(args, 0);
+	i2cModuleStr = Tokenizer_GetArg(0);
+	address = Tokenizer_GetArgInteger(1);
+
+	busType = DRV_I2C_ParseBusType(i2cModuleStr);
+
+	if (DRV_I2C_FindDevice(busType, address)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "DRV_I2C_AddDevice_ADS1115: there is already some device on this bus with such addr\n");
+		return CMD_RES_BAD_ARGUMENT;
+	}
+	addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "DRV_I2C_AddDevice_ADS1115: module %s, address %i\n", i2cModuleStr, address);
+
+	for (int i = 0; i < 4; i++) {
+		channels[i] = Tokenizer_GetArgIntegerDefault(2+i, 0xff);
+	}
+
+	DRV_I2C_AddDevice_ADS1115_Internal(busType, address, channels);
 
 	return CMD_RES_OK;
 }
@@ -373,6 +433,10 @@ void DRV_I2C_Init()
 	//cmddetail:"fn":"DRV_I2C_AddDevice_PCF8574","file":"i2c/drv_i2c_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("addI2CDevice_LCD_PCF8574", DRV_I2C_AddDevice_PCF8574, NULL);
+
+
+	CMD_RegisterCommand("addI2CDevice_ADS1115", DRV_I2C_AddDevice_ADS1115, NULL);
+
 	//cmddetail:{"name":"MCP23017_MapPinToChannel","args":"",
 	//cmddetail:"descr":"Maps port expander bit to OBK channel",
 	//cmddetail:"fn":"DRV_I2C_MCP23017_MapPinToChannel","file":"i2c/drv_i2c_main.c","requires":"",
@@ -383,6 +447,44 @@ void DRV_I2C_Init()
 	//cmddetail:"fn":"DRV_I2C_MCP23017_MapPinToChannel","file":"i2c/drv_i2c_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("scanI2C", DRV_I2C_Scan, NULL);
+}
+#define CONFIG_REGISTER 0x01
+#define CONVERSION_REGISTER 0x00
+// default config for 16-bit resolution, single-ended, channels AIN0, AIN1, AIN2, AIN3
+#define CONFIG_DEFAULT 0xC183  // 16-bit, AIN0, single-ended
+
+void ADS1115_WriteConfig(i2cDevice_ADS1115_t *ads, uint16_t config) {
+	byte payload[2];
+	payload[0] = (config >> 8) & 0xFF;
+	payload[1] = config & 0xFF;
+	DRV_I2C_Begin(ads->base.addr, ads->base.busType);
+	DRV_I2C_WriteBytes(CONFIG_REGISTER, payload, 2);
+	DRV_I2C_Close();
+}
+int ADS1115_ReadChannel(i2cDevice_ADS1115_t *ads, int channel)
+{
+	uint16_t config = CONFIG_DEFAULT | (channel << 12);
+	ADS1115_WriteConfig(ads,config);
+
+	delay_ms(8);
+
+	short res;
+	DRV_I2C_Begin(ads->base.addr, ads->base.busType);
+	DRV_I2C_ReadBytes(CONVERSION_REGISTER, &res, 2);
+	DRV_I2C_Close();
+	addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "ADS read %i", (int)res);
+
+	return res;
+}
+void DRV_I2C_ADS1115_RunDevice(i2cDevice_t *dev)
+{
+	i2cDevice_ADS1115_t *ads;
+
+	ads = (i2cDevice_ADS1115_t*)dev;
+
+	//for (int i = 0; i < 4; i++) {
+		ADS1115_ReadChannel(dev, 0);
+	//}
 }
 void DRC_I2C_RunDevice(i2cDevice_t *dev)
 {
@@ -397,11 +499,14 @@ void DRC_I2C_RunDevice(i2cDevice_t *dev)
 	case I2CDEV_LCD_PCF8574:
 		DRV_I2C_LCD_PCF8574_RunDevice(dev);
 		break;
+	case I2CDEV_ADS1115:
+		DRV_I2C_ADS1115_RunDevice(dev);
+		break;
 	default:
 		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRC_I2C_RunDevice: error, device of type %i at adr %i not handled\n", dev->type, dev->addr);
 		break;
 
-
+		
 	}
 }
 void DRV_I2C_EverySecond()
