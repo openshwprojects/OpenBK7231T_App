@@ -64,6 +64,8 @@ void DRV_I2C_AddDevice_TC74_Internal(int busType, int address, int targetChannel
 	dev->base.busType = busType;
 	dev->base.type = I2CDEV_TC74;
 	dev->base.next = 0;
+	dev->base.runFrame = DRV_I2C_TC74_RunDevice;
+	dev->base.channelChange = 0;
 	dev->targetChannel = targetChannel;
 
 	DRV_I2C_AddNextDevice((i2cDevice_t*)dev);

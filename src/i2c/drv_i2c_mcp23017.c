@@ -194,6 +194,8 @@ void DRV_I2C_AddDevice_MCP23017_Internal(int busType, int address) {
 	dev->base.busType = busType;
 	dev->base.type = I2CDEV_MCP23017;
 	dev->base.next = 0;
+	dev->base.runFrame = DRV_I2C_MCP23017_RunDevice;
+	dev->base.channelChange = DRV_I2C_MCP23017_OnChannelChanged;
 	memset(dev->pinMapping, 0xff, sizeof(dev->pinMapping));
 
 	DRV_I2C_AddNextDevice((i2cDevice_t*)dev);

@@ -86,6 +86,8 @@ void DRV_I2C_AddDevice_ADS1115_Internal(int busType, int address, byte channels[
 	dev->base.busType = busType;
 	dev->base.type = I2CDEV_ADS1115;
 	dev->base.next = 0;
+	dev->base.runFrame = DRV_I2C_ADS1115_RunDevice;
+	dev->base.channelChange = 0;
 	memcpy(dev->channels, channels, sizeof(dev->channels));
 
 	DRV_I2C_AddNextDevice((i2cDevice_t*)dev);

@@ -245,27 +245,8 @@ void DRV_I2C_Init()
 }
 void DRC_I2C_RunDevice(i2cDevice_t *dev)
 {
-	switch(dev->type)
-	{
-	case I2CDEV_TC74:
-		DRV_I2C_TC74_RunDevice(dev);
-		break;
-	case I2CDEV_MCP23017:
-		DRV_I2C_MCP23017_RunDevice(dev);
-		break;
-	case I2CDEV_LCD_PCF8574:
-		DRV_I2C_LCD_PCF8574_RunDevice(dev);
-		break;
-#if ENABLE_I2C_ADS1115
-	case I2CDEV_ADS1115:
-		DRV_I2C_ADS1115_RunDevice(dev);
-		break;
-#endif
-	default:
-		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRC_I2C_RunDevice: error, device of type %i at adr %i not handled\n", dev->type, dev->addr);
-		break;
-
-		
+	if (dev->runFrame) {
+		dev->runFrame(dev);
 	}
 }
 void DRV_I2C_EverySecond()
@@ -279,22 +260,15 @@ void DRV_I2C_EverySecond()
 		cur = cur->next;
 	}
 }
-void I2C_OnChannelChanged_Device(i2cDevice_t *dev, int channel, int iVal)
-{
-	switch(dev->type)
-	{
-	case I2CDEV_MCP23017:
-		DRV_I2C_MCP23017_OnChannelChanged(dev, channel, iVal);
-		break;
-	}
-}
 void I2C_OnChannelChanged(int channel,int iVal) {
 	i2cDevice_t *cur;
 
 	cur = g_i2c_devices;
 	while(cur) {
 		//addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_EverySecond: going to run device of type %i with addr %i\n", cur->type, cur->addr);
-		I2C_OnChannelChanged_Device(cur,channel,iVal);
+		if (cur->channelChange) {
+			cur->channelChange(cur, channel, iVal);
+		}
 		cur = cur->next;
 	}
 }

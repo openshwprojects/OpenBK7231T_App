@@ -468,6 +468,8 @@ void DRV_I2C_AddDevice_PCF8574_Internal(int busType, int address, byte lcd_cols,
 	dev->base.busType = busType;
 	dev->base.type = I2CDEV_LCD_PCF8574;
 	dev->base.next = 0;
+	dev->base.channelChange = 0;
+	dev->base.runFrame = DRV_I2C_LCD_PCF8574_RunDevice;
 	dev->lcd_cols = lcd_cols;
 	dev->lcd_rows = lcd_rows;
 	dev->charsize = charsize;

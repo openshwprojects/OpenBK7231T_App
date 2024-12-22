@@ -22,6 +22,8 @@ typedef struct i2cDevice_s {
 	int busType;
 	int addr;
 	int type;
+	void(*runFrame)(struct i2cDevice_s *ptr);
+	void(*channelChange)(struct i2cDevice_s *dev, int channel, int iVal);
 	struct i2cDevice_s *next;
 } i2cDevice_t;
 
@@ -39,20 +41,14 @@ void DRV_I2C_AddNextDevice(i2cDevice_t *t);
 
 
 // drv_i2c_mcp23017.c
-void DRV_I2C_MCP23017_RunDevice(i2cDevice_t *dev);
-commandResult_t DRV_I2C_MCP23017_MapPinToChannel(const void *context, const char *cmd, const char *args, int cmdFlags);
-void DRV_I2C_MCP23017_OnChannelChanged(i2cDevice_t *dev, int channel, int iVal);
 void DRV_I2C_MCP23017_PreInit();
 
 // drv_i2c_tc74.c
-void DRV_I2C_TC74_RunDevice(i2cDevice_t *dev);
 void DRV_I2C_TC74_PreInit();
 
 // drv_i2c_lcd_pcf8574t.c
-void DRV_I2C_LCD_PCF8574_RunDevice(i2cDevice_t *dev);
 void DRV_I2C_LCD_PCF8574_PreInit();
 
-void DRV_I2C_ADS1115_RunDevice(i2cDevice_t *dev);
 void DRV_I2C_ADS1115_PreInit();
 
 void DRV_I2C_LCM1602_PreInit();
