@@ -167,22 +167,6 @@ void DRV_I2C_AddNextDevice(i2cDevice_t *t) {
 	t->next = g_i2c_devices;
 	g_i2c_devices = t;
 }
-void DRV_I2C_AddDevice_PCF8574_Internal(int busType,int address, byte lcd_cols, byte lcd_rows, byte charsize) {
-	i2cDevice_PCF8574_t *dev;
-
-	dev = malloc(sizeof(i2cDevice_PCF8574_t));
-
-	dev->base.addr = address;
-	dev->base.busType = busType;
-	dev->base.type = I2CDEV_LCD_PCF8574;
-	dev->base.next = 0;
-	dev->lcd_cols = lcd_cols;
-	dev->lcd_rows = lcd_rows;
-	dev->charsize = charsize;
-	dev->LCD_BL_Status = 1;
-
-	DRV_I2C_AddNextDevice((i2cDevice_t*)dev);
-}
 void DRV_I2C_AddDevice_MCP23017_Internal(int busType,int address) {
 	i2cDevice_MCP23017_t *dev;
 
@@ -280,35 +264,6 @@ commandResult_t DRV_I2C_AddDevice_MCP23017(const void *context, const char *cmd,
 
 
 
-//
-commandResult_t DRV_I2C_AddDevice_PCF8574(const void *context, const char *cmd, const char *args, int cmdFlags) {
-	const char *i2cModuleStr;
-	int address;
-	i2cBusType_t busType;
-	byte lcd_cols, lcd_rows, charsize;
-
-	Tokenizer_TokenizeString(args,0);
-	i2cModuleStr = Tokenizer_GetArg(0);
-	address = Tokenizer_GetArgInteger(1);
-
-	busType = DRV_I2C_ParseBusType(i2cModuleStr);
-
-	if(DRV_I2C_FindDevice(busType,address)) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_AddDevice_PCF8574: there is already some device on this bus with such addr\n");
-		return CMD_RES_BAD_ARGUMENT;
-	}
-	addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_AddDevice_PCF8574: module %s, address %i\n", i2cModuleStr, address);
-
-	lcd_cols = Tokenizer_GetArgInteger(2);
-	lcd_rows = Tokenizer_GetArgInteger(3);
-	charsize = Tokenizer_GetArgInteger(4);
-	// DRV_I2C_AddDevice_LCM1602_Internal(busType,address);
-
-	DRV_I2C_AddDevice_PCF8574_Internal(busType,address,lcd_cols,lcd_rows,charsize);
-
-	return CMD_RES_OK;
-}
-
 commandResult_t DRV_I2C_AddDevice_LCM1602(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *i2cModuleStr;
 	int address;
@@ -399,15 +354,11 @@ void DRV_I2C_Init()
 	//cmddetail:"fn":"DRV_I2C_AddDevice_LCM1602","file":"i2c/drv_i2c_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("addI2CDevice_LCM1602", DRV_I2C_AddDevice_LCM1602, NULL);
-	//cmddetail:{"name":"addI2CDevice_LCD_PCF8574","args":"",
-	//cmddetail:"descr":"Adds a new I2C device - PCF8574",
-	//cmddetail:"fn":"DRV_I2C_AddDevice_PCF8574","file":"i2c/drv_i2c_main.c","requires":"",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("addI2CDevice_LCD_PCF8574", DRV_I2C_AddDevice_PCF8574, NULL);
 
 #if ENABLE_I2C_ADS1115
 	DRV_I2C_ADS1115_PreInit();
 #endif
+	DRV_I2C_LCD_PCF8574_PreInit();
 
 	//cmddetail:{"name":"MCP23017_MapPinToChannel","args":"",
 	//cmddetail:"descr":"Maps port expander bit to OBK channel",
