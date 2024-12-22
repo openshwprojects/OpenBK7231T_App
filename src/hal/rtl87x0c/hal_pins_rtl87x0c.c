@@ -4,19 +4,9 @@
 #include "../../logging/logging.h"
 #include "../../new_cfg.h"
 #include "../../new_pins.h"
-#include <gpio_api.h>
-#include "pwmout_api.h"
+#include "hal_generic_rtl87x0c.h"
 
 extern int g_pwmFrequency;
-
-typedef struct trPinMapping_s
-{
-	const char* name;
-	PinName pin;
-	bool isInit;
-	gpio_t gpio;
-	pwmout_t pwm;
-} rtlPinMapping_t;
 
 rtlPinMapping_t g_pins[] = {
 	{ "PA0 (RX1)",	PA_0,	false },

@@ -61,6 +61,7 @@ extern flash_t flash;
 extern uint32_t sys_update_ota_get_curr_fw_idx(void);
 extern uint32_t sys_update_ota_prepare_addr(void);
 extern void sys_disable_fast_boot(void);
+extern void get_fw_info(uint32_t* targetFWaddr, uint32_t* currentFWaddr, uint32_t* fw1_sn, uint32_t* fw2_sn);
 static flash_t flash_ota;
 
 #else
@@ -1965,6 +1966,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	NewFWLen = towrite;
 	if(reserase == -1)
 	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "Erase failed");
 		ret = -1;
 		goto update_ota_exit;
 	}
@@ -1986,7 +1988,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 		device_mutex_lock(RT_DEV_LOCK_FLASH);
 		if(flash_burst_write(&flash_ota, address + startaddr, writelen, (uint8_t*)writebuf) < 0)
 		{
-			ADDLOG_DEBUG(LOG_FEATURE_OTA, "Write stream failed");
+			ADDLOG_ERROR(LOG_FEATURE_OTA, "Write stream failed");
 			device_mutex_unlock(RT_DEV_LOCK_FLASH);
 			ret = -1;
 			goto update_ota_exit;
@@ -2045,14 +2047,14 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 
 	if(file_checksum.u != flash_checksum)
 	{
-		ADDLOG_INFO(LOG_FEATURE_OTA, "The checksum is wrong!");
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "The checksum is wrong!");
 		ret = -1;
 		goto update_ota_exit;
 	}
 	ret = update_ota_signature(sig_backup, NewFWAddr);
 	if(ret == -1)
 	{
-		ADDLOG_INFO(LOG_FEATURE_OTA, "Update signature fail");
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "Update signature fail");
 		goto update_ota_exit;
 	}
 update_ota_exit:
@@ -2066,7 +2068,11 @@ update_ota_exit:
 		sys_disable_fast_boot();
 		if(buf) free(buf);
 	}
-	else return -1;
+	else
+	{
+		if(buf) free(buf);
+		return http_rest_error(request, ret, "error");
+	}
 #else
 
 	init_ota(startaddr);

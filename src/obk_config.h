@@ -230,14 +230,13 @@
 #define ENABLE_DRIVER_CHT83XX		1
 #define ENABLE_DRIVER_DHT			1
 #define ENABLE_DRIVER_BL0942		1
+#define ENABLE_DRIVER_BL0937		1
 
 #else
 
 #error "Platform not defined"
 
 #endif
-
-
 
 // closing OBK_CONFIG_H
 #endif
