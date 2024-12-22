@@ -56,11 +56,6 @@ typedef struct i2cDevice_MCP23017_s {
 	//int pinDirections;
 } i2cDevice_MCP23017_t;
 
-typedef struct i2cDevice_ADS1115_s {
-	i2cDevice_t base;
-	byte channels[4];
-} i2cDevice_ADS1115_t;
-
 
 typedef struct i2cDevice_PCF8574_s {
 	i2cDevice_t base;
@@ -86,6 +81,7 @@ void DRV_I2C_Close();
 i2cBusType_t DRV_I2C_ParseBusType(const char *s);
 i2cDevice_t *DRV_I2C_FindDevice(int busType,int address);
 i2cDevice_t *DRV_I2C_FindDeviceExt(int busType,int address, int devType);
+void DRV_I2C_AddNextDevice(i2cDevice_t *t);
 
 
 // drv_i2c_mcp23017.c
@@ -100,5 +96,6 @@ void DRV_I2C_TC74_RunDevice(i2cDevice_t *dev);
 void DRV_I2C_LCD_PCF8574_RunDevice(i2cDevice_t *dev);
 
 void DRV_I2C_ADS1115_RunDevice(i2cDevice_t *dev);
+void DRV_I2C_ADS1115_PreInit();
 
 #endif // __DRV_I2C_LOCAL_H__

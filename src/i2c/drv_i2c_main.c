@@ -196,19 +196,6 @@ void DRV_I2C_AddDevice_MCP23017_Internal(int busType,int address) {
 
 	DRV_I2C_AddNextDevice((i2cDevice_t*)dev);
 }
-void DRV_I2C_AddDevice_ADS1115_Internal(int busType, int address, byte channels[4]) {
-	i2cDevice_ADS1115_t *dev;
-
-	dev = malloc(sizeof(i2cDevice_ADS1115_t));
-
-	dev->base.addr = address;
-	dev->base.busType = busType;
-	dev->base.type = I2CDEV_ADS1115;
-	dev->base.next = 0;
-	memcpy(dev->channels, channels, sizeof(dev->channels));
-
-	DRV_I2C_AddNextDevice((i2cDevice_t*)dev);
-}
 i2cDevice_t *DRV_I2C_FindDevice(int busType,int address) {
 	i2cDevice_t *dev;
 
@@ -292,33 +279,6 @@ commandResult_t DRV_I2C_AddDevice_MCP23017(const void *context, const char *cmd,
 }
 
 
-//
-commandResult_t DRV_I2C_AddDevice_ADS1115(const void *context, const char *cmd, const char *args, int cmdFlags) {
-	const char *i2cModuleStr;
-	int address;
-	i2cBusType_t busType;
-	byte channels[4] ;
-
-	Tokenizer_TokenizeString(args, 0);
-	i2cModuleStr = Tokenizer_GetArg(0);
-	address = Tokenizer_GetArgInteger(1);
-
-	busType = DRV_I2C_ParseBusType(i2cModuleStr);
-
-	if (DRV_I2C_FindDevice(busType, address)) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "DRV_I2C_AddDevice_ADS1115: there is already some device on this bus with such addr\n");
-		return CMD_RES_BAD_ARGUMENT;
-	}
-	addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "DRV_I2C_AddDevice_ADS1115: module %s, address %i\n", i2cModuleStr, address);
-
-	for (int i = 0; i < 4; i++) {
-		channels[i] = Tokenizer_GetArgIntegerDefault(2+i, 0xff);
-	}
-
-	DRV_I2C_AddDevice_ADS1115_Internal(busType, address, channels);
-
-	return CMD_RES_OK;
-}
 
 //
 commandResult_t DRV_I2C_AddDevice_PCF8574(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -445,8 +405,9 @@ void DRV_I2C_Init()
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("addI2CDevice_LCD_PCF8574", DRV_I2C_AddDevice_PCF8574, NULL);
 
-
-	CMD_RegisterCommand("addI2CDevice_ADS1115", DRV_I2C_AddDevice_ADS1115, NULL);
+#if ENABLE_I2C_ADS1115
+	DRV_I2C_ADS1115_PreInit();
+#endif
 
 	//cmddetail:{"name":"MCP23017_MapPinToChannel","args":"",
 	//cmddetail:"descr":"Maps port expander bit to OBK channel",
@@ -472,9 +433,11 @@ void DRC_I2C_RunDevice(i2cDevice_t *dev)
 	case I2CDEV_LCD_PCF8574:
 		DRV_I2C_LCD_PCF8574_RunDevice(dev);
 		break;
+#if ENABLE_I2C_ADS1115
 	case I2CDEV_ADS1115:
 		DRV_I2C_ADS1115_RunDevice(dev);
 		break;
+#endif
 	default:
 		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRC_I2C_RunDevice: error, device of type %i at adr %i not handled\n", dev->type, dev->addr);
 		break;
@@ -497,20 +460,9 @@ void I2C_OnChannelChanged_Device(i2cDevice_t *dev, int channel, int iVal)
 {
 	switch(dev->type)
 	{
-	case I2CDEV_TC74:
-		// not needed
-		break;
 	case I2CDEV_MCP23017:
 		DRV_I2C_MCP23017_OnChannelChanged(dev, channel, iVal);
 		break;
-	case I2CDEV_LCD_PCF8574:
-		// not needed
-		break;
-	default:
-		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"I2C_OnChannelChanged: error, device of type %i at adr %i not handled\n", dev->type, dev->addr);
-		break;
-
-
 	}
 }
 void I2C_OnChannelChanged(int channel,int iVal) {
