@@ -214,6 +214,16 @@ commandResult_t DRV_I2C_Scan(const void *context, const char *cmd, const char *a
 
 	return CMD_RES_OK;
 }
+void DRV_I2C_Shutdown()
+{
+	i2cDevice_t *d = g_i2c_devices;
+	g_i2c_devices = 0;
+	while (d) {
+		i2cDevice_t *n = d->next;
+		free(d);
+		d = n;
+	}
+}
 void DRV_I2C_Init()
 {
 
