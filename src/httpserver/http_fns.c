@@ -3013,7 +3013,6 @@ int http_fn_ota(http_request_t* request) {
 	http_html_start(request, "OTA system");
 #if NO_PLATFORM_OTA
 	poststr(request, "<p>Sorry, no OTA update implemented for " DEVICENAME_PREFIX_FULL " </p>");
-	return 0;
 #else
 	poststr(request, "<p>For a more user-friendly experience, it is recommended to use the OTA option in the Web Application, where you can easily drag and drop files without needing to set up a server. On Beken platforms, the .rbl file is used for OTA updates. In the OTA section below, paste the link to the .rbl file (an HTTP server is required).</p>");
 	add_label_text_field(request, "URL for new bin file", "host", "", "<form action=\"/ota_exec\">");
@@ -3067,12 +3066,11 @@ int http_fn_ota(http_request_t* request) {
 	poststr(request, "<input id='otafile' type='file'accept='" OTA_ACCEPT "'>");
 	poststr(request, "<input type='button' class='bred' onclick='doota();' value='START OTA - No file check - will reboot after OTA'><dialog></dialog>");
 	poststr(request, htmlOTA);
-
+#endif
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
 	poststr(request, NULL);
 	return 0;
-#endif
 }
 
 int http_fn_other(http_request_t* request) {
