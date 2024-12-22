@@ -25,12 +25,6 @@ typedef struct i2cDevice_s {
 	struct i2cDevice_s *next;
 } i2cDevice_t;
 
-typedef struct i2cDevice_TC74_s {
-	i2cDevice_t base;
-	// private TC74 variables
-	// Our channel index to save the result temp
-	int targetChannel;
-} i2cDevice_TC74_t;
 
 // https://www.elektroda.pl/rtvforum/viewtopic.php?t=3880540&highlight=
 //typedef struct i2cDevice_SM2135_s {
@@ -44,18 +38,6 @@ typedef struct i2cDevice_TC74_s {
 //	int sourceChannel_C;
 //	int sourceChannel_W;
 //} i2cDevice_SM2135_t;
-
-// Right now, MCP23017 port expander supports only output mode
-// (map channel to MCP23017 output)
-typedef struct i2cDevice_MCP23017_s {
-	i2cDevice_t base;
-	// private MCP23017 variables
-	// Channel indices (0xff = none)
-	byte pinMapping[16];
-	// is pin an output or input?
-	//int pinDirections;
-} i2cDevice_MCP23017_t;
-
 
 
 void DRV_I2C_Write(byte addr, byte data);
@@ -74,9 +56,11 @@ void DRV_I2C_AddNextDevice(i2cDevice_t *t);
 void DRV_I2C_MCP23017_RunDevice(i2cDevice_t *dev);
 commandResult_t DRV_I2C_MCP23017_MapPinToChannel(const void *context, const char *cmd, const char *args, int cmdFlags);
 void DRV_I2C_MCP23017_OnChannelChanged(i2cDevice_t *dev, int channel, int iVal);
+void DRV_I2C_MCP23017_PreInit();
 
 // drv_i2c_tc74.c
 void DRV_I2C_TC74_RunDevice(i2cDevice_t *dev);
+void DRV_I2C_TC74_PreInit();
 
 // drv_i2c_lcd_pcf8574t.c
 void DRV_I2C_LCD_PCF8574_RunDevice(i2cDevice_t *dev);

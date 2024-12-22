@@ -8,6 +8,20 @@
 // addresses, banks, etc, defines
 #include "drv_i2c_mcp23017.h"
 
+
+// Right now, MCP23017 port expander supports only output mode
+// (map channel to MCP23017 output)
+typedef struct i2cDevice_MCP23017_s {
+	i2cDevice_t base;
+	// private MCP23017 variables
+	// Channel indices (0xff = none)
+	byte pinMapping[16];
+	// is pin an output or input?
+	//int pinDirections;
+} i2cDevice_MCP23017_t;
+
+
+
 static byte MCP23017_readByte(i2cDevice_MCP23017_t *mcp, byte tgRegAddr )
 {
     byte bufferRead;
@@ -157,3 +171,56 @@ void DRV_I2C_MCP23017_RunDevice(i2cDevice_t *dev)
 
 	// Nothing to do here right now, as we are using on change pin callback
 }
+
+void DRV_I2C_AddDevice_MCP23017_Internal(int busType, int address) {
+	i2cDevice_MCP23017_t *dev;
+
+	dev = malloc(sizeof(i2cDevice_MCP23017_t));
+
+	dev->base.addr = address;
+	dev->base.busType = busType;
+	dev->base.type = I2CDEV_MCP23017;
+	dev->base.next = 0;
+	memset(dev->pinMapping, 0xff, sizeof(dev->pinMapping));
+
+	DRV_I2C_AddNextDevice((i2cDevice_t*)dev);
+}
+commandResult_t DRV_I2C_AddDevice_MCP23017(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	const char *i2cModuleStr;
+	int address;
+	i2cBusType_t busType;
+
+	Tokenizer_TokenizeString(args, 0);
+	i2cModuleStr = Tokenizer_GetArg(0);
+	address = Tokenizer_GetArgInteger(1);
+
+	busType = DRV_I2C_ParseBusType(i2cModuleStr);
+
+	if (DRV_I2C_FindDevice(busType, address)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "DRV_I2C_AddDevice_MCP23017: there is already some device on this bus with such addr\n");
+		return CMD_RES_BAD_ARGUMENT;
+	}
+	addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "DRV_I2C_AddDevice_MCP23017: module %s, address %i\n", i2cModuleStr, address);
+
+
+	DRV_I2C_AddDevice_MCP23017_Internal(busType, address);
+
+	return CMD_RES_OK;
+}
+
+
+void DRV_I2C_MCP23017_PreInit() {
+
+	//cmddetail:{"name":"MCP23017_MapPinToChannel","args":"",
+	//cmddetail:"descr":"Maps port expander bit to OBK channel",
+	//cmddetail:"fn":"DRV_I2C_MCP23017_MapPinToChannel","file":"i2c/drv_i2c_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("MCP23017_MapPinToChannel", DRV_I2C_MCP23017_MapPinToChannel, NULL);
+	//cmddetail:{"name":"addI2CDevice_MCP23017","args":"",
+	//cmddetail:"descr":"Adds a new I2C device - MCP23017",
+	//cmddetail:"fn":"DRV_I2C_AddDevice_MCP23017","file":"i2c/drv_i2c_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("addI2CDevice_MCP23017", DRV_I2C_AddDevice_MCP23017, NULL);
+}
+
+

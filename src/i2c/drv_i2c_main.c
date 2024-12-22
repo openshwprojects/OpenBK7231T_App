@@ -167,19 +167,6 @@ void DRV_I2C_AddNextDevice(i2cDevice_t *t) {
 	t->next = g_i2c_devices;
 	g_i2c_devices = t;
 }
-void DRV_I2C_AddDevice_MCP23017_Internal(int busType,int address) {
-	i2cDevice_MCP23017_t *dev;
-
-	dev = malloc(sizeof(i2cDevice_MCP23017_t));
-
-	dev->base.addr = address;
-	dev->base.busType = busType;
-	dev->base.type = I2CDEV_MCP23017;
-	dev->base.next = 0;
-	memset(dev->pinMapping,0xff,sizeof(dev->pinMapping));
-
-	DRV_I2C_AddNextDevice((i2cDevice_t*)dev);
-}
 i2cDevice_t *DRV_I2C_FindDevice(int busType,int address) {
 	i2cDevice_t *dev;
 
@@ -202,67 +189,6 @@ i2cDevice_t *DRV_I2C_FindDeviceExt(int busType,int address, int devType) {
 	}
 	return 0;
 }
-void DRV_I2C_AddDevice_TC74_Internal(int busType,int address, int targetChannel) {
-	i2cDevice_TC74_t *dev;
-
-	dev = malloc(sizeof(i2cDevice_TC74_t));
-
-	dev->base.addr = address;
-	dev->base.busType = busType;
-	dev->base.type = I2CDEV_TC74;
-	dev->base.next = 0;
-	dev->targetChannel = targetChannel;
-
-	DRV_I2C_AddNextDevice((i2cDevice_t*)dev);
-}
-commandResult_t DRV_I2C_AddDevice_TC74(const void *context, const char *cmd, const char *args, int cmdFlags) {
-	const char *i2cModuleStr;
-	int address;
-	int targetChannel;
-	i2cBusType_t busType;
-
-	Tokenizer_TokenizeString(args,0);
-	i2cModuleStr = Tokenizer_GetArg(0);
-	address = Tokenizer_GetArgInteger(1);
-	targetChannel = Tokenizer_GetArgInteger(2);
-
-	busType = DRV_I2C_ParseBusType(i2cModuleStr);
-
-	if(DRV_I2C_FindDevice(busType,address)) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_AddDevice_TC74: there is already some device on this bus with such addr\n");
-		return CMD_RES_BAD_ARGUMENT;
-	}
-
-	addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_AddDevice_TC74: module %s, address %i, target %i\n", i2cModuleStr, address, targetChannel);
-
-	DRV_I2C_AddDevice_TC74_Internal(busType,address,targetChannel);
-
-	return CMD_RES_OK;
-}
-commandResult_t DRV_I2C_AddDevice_MCP23017(const void *context, const char *cmd, const char *args, int cmdFlags) {
-	const char *i2cModuleStr;
-	int address;
-	i2cBusType_t busType;
-
-	Tokenizer_TokenizeString(args,0);
-	i2cModuleStr = Tokenizer_GetArg(0);
-	address = Tokenizer_GetArgInteger(1);
-
-	busType = DRV_I2C_ParseBusType(i2cModuleStr);
-
-	if(DRV_I2C_FindDevice(busType,address)) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_AddDevice_MCP23017: there is already some device on this bus with such addr\n");
-		return CMD_RES_BAD_ARGUMENT;
-	}
-	addLogAdv(LOG_INFO, LOG_FEATURE_I2C,"DRV_I2C_AddDevice_MCP23017: module %s, address %i\n", i2cModuleStr, address);
-
-
-	DRV_I2C_AddDevice_MCP23017_Internal(busType,address);
-
-	return CMD_RES_OK;
-}
-
-
 
 commandResult_t DRV_I2C_AddDevice_LCM1602(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *i2cModuleStr;
@@ -339,16 +265,7 @@ addI2CDevice_TC74 Soft 0x4D 6
 
 void DRV_I2C_Init()
 {
-	//cmddetail:{"name":"addI2CDevice_TC74","args":"",
-	//cmddetail:"descr":"Adds a new I2C device - TC74",
-	//cmddetail:"fn":"DRV_I2C_AddDevice_TC74","file":"i2c/drv_i2c_main.c","requires":"",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("addI2CDevice_TC74", DRV_I2C_AddDevice_TC74, NULL);
-	//cmddetail:{"name":"addI2CDevice_MCP23017","args":"",
-	//cmddetail:"descr":"Adds a new I2C device - MCP23017",
-	//cmddetail:"fn":"DRV_I2C_AddDevice_MCP23017","file":"i2c/drv_i2c_main.c","requires":"",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("addI2CDevice_MCP23017", DRV_I2C_AddDevice_MCP23017, NULL);
+
 	//cmddetail:{"name":"addI2CDevice_LCM1602","args":"",
 	//cmddetail:"descr":"Adds a new I2C device - LCM1602",
 	//cmddetail:"fn":"DRV_I2C_AddDevice_LCM1602","file":"i2c/drv_i2c_main.c","requires":"",
@@ -359,12 +276,8 @@ void DRV_I2C_Init()
 	DRV_I2C_ADS1115_PreInit();
 #endif
 	DRV_I2C_LCD_PCF8574_PreInit();
-
-	//cmddetail:{"name":"MCP23017_MapPinToChannel","args":"",
-	//cmddetail:"descr":"Maps port expander bit to OBK channel",
-	//cmddetail:"fn":"DRV_I2C_MCP23017_MapPinToChannel","file":"i2c/drv_i2c_main.c","requires":"",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("MCP23017_MapPinToChannel", DRV_I2C_MCP23017_MapPinToChannel, NULL);
+	DRV_I2C_TC74_PreInit();
+	DRV_I2C_MCP23017_PreInit();
 	//cmddetail:{"name":"scanI2C","args":"[Soft/I2C1/I2C2]",
 	//cmddetail:"descr":"Scans given I2C line for addresses. I2C driver must be started first.",
 	//cmddetail:"fn":"DRV_I2C_MCP23017_MapPinToChannel","file":"i2c/drv_i2c_main.c","requires":"",
