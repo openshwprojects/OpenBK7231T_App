@@ -217,7 +217,9 @@ commandResult_t DRV_I2C_Scan(const void *context, const char *cmd, const char *a
 void DRV_I2C_Init()
 {
 
+#if ENABLE_I2C_LCM1602
 	DRV_I2C_LCM1602_PreInit();
+#endif
 #if ENABLE_I2C_ADS1115
 	DRV_I2C_ADS1115_PreInit();
 #endif
