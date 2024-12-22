@@ -54,12 +54,12 @@ int ADS1115_ReadChannel(i2cDevice_ADS1115_t *ads, int channel)
 	DRV_I2C_ReadBytes(CONVERSION_REGISTER, dat, 2);
 	DRV_I2C_Close();
 	int res = (dat[0] << 8) | dat[1];
-	addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "ADS adr %i AN%i is %i", ads->base.addr, channel, (int)res);
 	// DeDaMrAz hack?
 	if (res > 60000) {
-		return 0;
+		res = 0;
 	}
 
+	addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "ADS adr %i AN%i is %i", ads->base.addr, channel, (int)res);
 	return res;
 }
 void DRV_I2C_ADS1115_RunDevice(i2cDevice_t *dev)
