@@ -26,20 +26,6 @@ typedef struct i2cDevice_s {
 } i2cDevice_t;
 
 
-// https://www.elektroda.pl/rtvforum/viewtopic.php?t=3880540&highlight=
-//typedef struct i2cDevice_SM2135_s {
-//	i2cDevice_t base;
-//	// private SM2135 variables
-//	// Input channel indices.
-//	// Device will listen to changes in those channels and update accordingly.
-//	int sourceChannel_R;
-//	int sourceChannel_G;
-//	int sourceChannel_B;
-//	int sourceChannel_C;
-//	int sourceChannel_W;
-//} i2cDevice_SM2135_t;
-
-
 void DRV_I2C_Write(byte addr, byte data);
 void DRV_I2C_WriteBytes(byte addr, byte *data, int len);
 void DRV_I2C_Read(byte addr, byte *data);
@@ -68,5 +54,7 @@ void DRV_I2C_LCD_PCF8574_PreInit();
 
 void DRV_I2C_ADS1115_RunDevice(i2cDevice_t *dev);
 void DRV_I2C_ADS1115_PreInit();
+
+void DRV_I2C_LCM1602_PreInit();
 
 #endif // __DRV_I2C_LOCAL_H__

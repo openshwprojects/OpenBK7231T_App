@@ -1,3 +1,16 @@
+//
+//	MCP23017 - I2C 16 bit port expander - both inputs and outputs, right now we use it only as outputs
+//
+// MCP23017 with A0=1, A1=1, A2=1
+// addI2CDevice_MCP23017 I2C1 0x27
+
+// maps channels 5 and 6 to GPIO A7 and A6 of MCP23017
+// backlog setChannelType 5 toggle; setChannelType 6 toggle; addI2CDevice_MCP23017 I2C1 0x27; MCP23017_MapPinToChannel I2C1 0x27 7 5; MCP23017_MapPinToChannel I2C1 0x27 6 6
+
+// maps channels 5 6 7 8 etc
+// backlog setChannelType 5 toggle; setChannelType 6 toggle; setChannelType 7 toggle; setChannelType 8 toggle; setChannelType 9 toggle; setChannelType 10 toggle; setChannelType 11 toggle; addI2CDevice_MCP23017 I2C1 0x27; MCP23017_MapPinToChannel I2C1 0x27 7 5; MCP23017_MapPinToChannel I2C1 0x27 6 6; MCP23017_MapPinToChannel I2C1 0x27 5 7; MCP23017_MapPinToChannel I2C1 0x27 4 8; MCP23017_MapPinToChannel I2C1 0x27 3 9; MCP23017_MapPinToChannel I2C1 0x27 2 10; MCP23017_MapPinToChannel I2C1 0x27 1 11
+
+
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"

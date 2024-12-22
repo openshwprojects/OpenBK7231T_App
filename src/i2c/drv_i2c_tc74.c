@@ -1,3 +1,18 @@
+
+//
+//	TC74 - I2C temperature sensor - read only single integer value, temperature in C
+//
+/*
+// TC74 A0 (address type 0)
+// setChannelType 5 temperature
+// addI2CDevice_TC74 I2C1 0x48 5
+// TC74 A2 (address type 2)
+// setChannelType 6 temperature
+// addI2CDevice_TC74 I2C1 0x4A 6
+// TC74 A5 (address type 5)
+setChannelType 6 temperature
+addI2CDevice_TC74 Soft 0x4D 6
+*/
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
