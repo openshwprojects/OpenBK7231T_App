@@ -197,13 +197,13 @@ jobs:
     name: Merge Artifacts
     runs-on: ubuntu-20.04
     needs: [refs, build, build2, build_idf]
-    if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
+    #if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
     steps:
       - name: Merge Artifacts
         uses: actions/upload-artifact/merge@v4
         with:
           name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
-          delete-merged: true
+          #delete-merged: true
 
   release:
     name: Semantic Release Images and Artifacts
