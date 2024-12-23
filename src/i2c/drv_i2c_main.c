@@ -233,9 +233,13 @@ void DRV_I2C_Init()
 #if ENABLE_I2C_ADS1115
 	DRV_I2C_ADS1115_PreInit();
 #endif
+#if ENABLE_I2C_LCD_PCF8574
 	DRV_I2C_LCD_PCF8574_PreInit();
+#endif
 	DRV_I2C_TC74_PreInit();
+#if ENABLE_I2C_MCP23017
 	DRV_I2C_MCP23017_PreInit();
+#endif
 
 	//cmddetail:{"name":"scanI2C","args":"[Soft/I2C1/I2C2]",
 	//cmddetail:"descr":"Scans given I2C line for addresses. I2C driver must be started first.",
