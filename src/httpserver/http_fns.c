@@ -3011,8 +3011,8 @@ int http_fn_ota_exec(http_request_t* request) {
 int http_fn_ota(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "OTA system");
-#if NO_PLATFORM_OTA
-	poststr(request, "<p>Sorry, no OTA update implemented for " DEVICENAME_PREFIX_FULL " </p>");
+#ifndef OBK_OTA_EXTENSION
+	poststr(request, "<h3>Sorry, OTA update not implemented for " DEVICENAME_PREFIX_FULL " </h3>");
 #else
 	poststr(request, "<p>For a more user-friendly experience, it is recommended to use the OTA option in the Web Application, where you can easily drag and drop files without needing to set up a server. On Beken platforms, the .rbl file is used for OTA updates. In the OTA section below, paste the link to the .rbl file (an HTTP server is required).</p>");
 	add_label_text_field(request, "URL for new bin file", "host", "", "<form action=\"/ota_exec\">");
@@ -3021,49 +3021,13 @@ int http_fn_ota(http_request_t* request) {
 </form>");
 
 
-#if PLATFORM_BL602
-#define OTA_EXT "_OTA"
-#define OTA_ACCEPT ".bin.xz.ota"
-
-#elif PLATFORM_LN882H
-#define OTA_EXT "_OTA"
-#define OTA_ACCEPT ".bin"
-
-#elif PLATFORM_W600
-#define OTA_EXT "_gz"
-#define OTA_ACCEPT ".img"
-
-#elif PLATFORM_W800
-#define OTA_EXT "_ota"
-#define OTA_ACCEPT ".img"
-
-// we will prepend DEVICENAME_PREFIX_FULL, so extensions are identical
-#elif PLATFORM_BEKEN
-#define OTA_EXT ""
-#define OTA_ACCEPT ".rbl"
-
-// we will prepend DEVICENAME_PREFIX_FULL, so extensions are identical
-#elif PLATFORM_ESPIDF
-#define OTA_EXT ""
-#define OTA_ACCEPT ".img"
-
-#elif PLATFORM_OpenRTL87X0C
-#define OTA_EXT "_ota"
-#define OTA_ACCEPT ".img"
-
-#else	// just in case, should not be needed...
-#define OTA_EXT 
-#define OTA_ACCEPT 
-
-#endif
-
-#define OTA_REGEXP "/^" DEVICENAME_PREFIX_FULL "_.*" OTA_EXT OTA_ACCEPT "$/"
+//#define OTA_REGEXP "/^" DEVICENAME_PREFIX_FULL "_.*" OBK_OTA_EXTENSION "$/"
 
 
-	const char htmlOTA[] = "<script>var o=document.getElementById('otafile'),d=document.querySelector('dialog'),h=document.getElementById('hint'),D='OTA started! Please wait ';function doota(){var f=o.files[0];if(f&&f.name.match(" OTA_REGEXP ")){d.showModal();var t=30;setTimeout((function(){d.close(),location.href='/'}),1e3*t),setInterval((function(){d.innerHTML=D+t--+' secs'}),1e3),fetch('/api/ota',{method:'POST',body:f}).then((e=>{e.ok&&fetch('/index?restart=1')}))}else alert(f?'filename invalid':'no file selected')}d.innerHTML=D,o.addEventListener('change',(function(e){const t=e.target.files[0];if(!t)return;h.innerHTML=t.name.match(" OTA_REGEXP ")?'':'Selected file does <b>not match!</b>!'}))</script>";
+	const char htmlOTA[] = "<script>var o=document.getElementById('otafile'),d=document.querySelector('dialog'),h=document.getElementById('hint'),D='OTA started! Please wait ',R=/^" DEVICENAME_PREFIX_FULL "_.*" OBK_OTA_EXTENSION "$/;function doota(){var f=o.files[0];if(f&&f.name.match(R)){d.showModal();var t=30;setTimeout((function(){d.close(),location.href='/'}),1e3*t),setInterval((function(){d.innerHTML=D+t--+' secs'}),1e3),fetch('/api/ota',{method:'POST',body:f}).then((e=>{e.ok&&fetch('/index?restart=1')}))}else alert(f?'filename invalid':'no file selected')}d.innerHTML=D,o.addEventListener('change',(function(e){const t=e.target.files[0];if(!t)return;h.innerHTML=t.name.match(R)?'':'Selected file does <b>not match!</b>!'}))</script>";
 
-	poststr(request, "<br><br><br><br>Expert feature: Upload firmware file for OTA<br>Use Web App if you are unsure what this is about!<br>Files must match '" DEVICENAME_PREFIX_FULL "_*"  OTA_EXT OTA_ACCEPT "'. &nbsp;&nbsp; <span id='hint' style='color: yellow;'></span><br><br>");
-	poststr(request, "<input id='otafile' type='file'accept='" OTA_ACCEPT "'>");
+	poststr(request, "<br><br><br><br>Expert feature: Upload firmware file for OTA<br>Use Web App if you are unsure what this is about!<br>Files must match '" DEVICENAME_PREFIX_FULL "_*"  OBK_OTA_EXTENSION "'. &nbsp;&nbsp; <span id='hint' style='color: yellow;'></span><br><br>");
+	poststr(request, "<input id='otafile' type='file'accept='" OBK_OTA_EXTENSION "'>");
 	poststr(request, "<input type='button' class='bred' onclick='doota();' value='START OTA - No file check - will reboot after OTA'><dialog></dialog>");
 	poststr(request, htmlOTA);
 #endif
