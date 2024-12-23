@@ -3,6 +3,8 @@
 #include "hal/hal_wdt.h"
 #include "utils/reboot_trace/reboot_trace.h"
 
+extern void ln_block_delayus(uint32_t us);
+
 void HAL_RebootModule() 
 {
 	ln_chip_reboot();
@@ -29,6 +31,11 @@ void HAL_Configure_WDT()
 void HAL_Run_WDT()
 {
 	hal_wdt_cnt_restart(WDT_BASE);
+}
+
+void HAL_Delay_us(int delay)
+{
+	ln_block_delayus(delay);
 }
 
 #endif // PLATFORM_LN882H
