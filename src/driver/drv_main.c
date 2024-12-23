@@ -134,7 +134,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Generic I2C, not used for LED drivers, but may be useful for displays or port expanders. Supports both hardware and software I2C.",
 	//drvdetail:"requires":""}
-	{ "I2C",		DRV_I2C_Init,		DRV_I2C_EverySecond,		NULL, NULL, NULL, NULL, false },
+	{ "I2C",		DRV_I2C_Init,		DRV_I2C_EverySecond,		NULL, NULL, DRV_I2C_Shutdown, NULL, false },
 #endif
 #if ENABLE_DRIVER_BL0942
 	//drvdetail:{"name":"RN8209",

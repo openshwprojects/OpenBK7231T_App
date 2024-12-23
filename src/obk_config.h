@@ -155,6 +155,12 @@
 
 //#define ENABLE_DRIVER_OPENWEATHERMAP	1
 
+// ENABLE_I2C_ is a syntax for
+// our I2C system defines for drv_i2c_main.c
+//#define ENABLE_I2C_ADS1115		1
+//#define ENABLE_I2C_MCP23017		1
+//#define ENABLE_I2C_LCD_PCF8574	1
+
 #elif PLATFORM_LN882H
 
 //#define OBK_DISABLE_ALL_DRIVERS       1
