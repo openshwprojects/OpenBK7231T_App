@@ -92,6 +92,15 @@ set(PROJ_ALL_SRC
 	../../../src/hal/espidf/hal_main_espidf.c
 	../../../src/hal/espidf/hal_pins_espidf.c
 	../../../src/hal/espidf/hal_wifi_espidf.c
+	../../../src/hal/espidf/hal_uart_espidf.c
+	../../../src/hal/generic/hal_adc_generic.c
+	../../../src/hal/generic/hal_flashConfig_generic.c
+	../../../src/hal/generic/hal_flashVars_generic.c
+	../../../src/hal/generic/hal_generic.c
+	../../../src/hal/generic/hal_main_generic.c
+	../../../src/hal/generic/hal_pins_generic.c
+	../../../src/hal/generic/hal_wifi_generic.c
+	../../../src/hal/generic/hal_uart_generic.c
 	../../../src/httpserver/hass.c
 	../../../src/httpserver/http_basic_auth.c
 	../../../src/httpserver/http_fns.c

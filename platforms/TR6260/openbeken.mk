@@ -1,6 +1,7 @@
 VPATH  += $(OBK_PATH)
 DEFINE += -DUSER_SW_VER='"$(APP_VERSION)"'
 DEFINE += -DPLATFORM_TR6260
+DEFINE += -DTCP_MSL=1000
 
 CSRCS  += base64/base64.c
 CSRCS  += bitmessage/bitmessage_read.c
@@ -30,6 +31,14 @@ CSRCS  += hal/tr6260/hal_generic_tr6260.c
 CSRCS  += hal/tr6260/hal_main_tr6260.c
 CSRCS  += hal/tr6260/hal_pins_tr6260.c
 CSRCS  += hal/tr6260/hal_wifi_tr6260.c
+CSRCS  += hal/generic/hal_adc_generic.c
+CSRCS  += hal/generic/hal_flashConfig_generic.c
+CSRCS  += hal/generic/hal_flashVars_generic.c
+CSRCS  += hal/generic/hal_generic.c
+CSRCS  += hal/generic/hal_main_generic.c
+CSRCS  += hal/generic/hal_pins_generic.c
+CSRCS  += hal/generic/hal_wifi_generic.c
+CSRCS  += hal/generic/hal_uart_generic.c
 CSRCS  += httpserver/hass.c
 CSRCS  += httpserver/http_basic_auth.c
 CSRCS  += httpserver/http_fns.c
