@@ -121,7 +121,7 @@ commandResult_t DRV_I2C_AddDevice_ADS1115(const void *context, const char *cmd, 
 }
 void DRV_I2C_ADS1115_PreInit() {
 
-	//cmddetail:{"name":"addI2CDevice_ADS1115","args":"DRV_I2C_AddDevice_ADS1115",
+	//cmddetail:{"name":"addI2CDevice_ADS1115","args":"",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"NULL);","file":"i2c/drv_i2c_ads1115.c","requires":"",
 	//cmddetail:"examples":""}

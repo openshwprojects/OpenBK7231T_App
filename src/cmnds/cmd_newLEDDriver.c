@@ -1638,7 +1638,7 @@ void NewLED_InitCommands(){
 	//cmddetail:"fn":"basecolor_rgb","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Color", basecolor_rgb, NULL);
-	//cmddetail:{"name":"led_basecolor_rgbcw","args":"",
+	//cmddetail:{"name":"led_basecolor_rgbcw","args":"[HexValue]",
 	//cmddetail:"descr":"set PWN color using #RRGGBB[cw][ww]",
 	//cmddetail:"fn":"basecolor_rgbcw","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
