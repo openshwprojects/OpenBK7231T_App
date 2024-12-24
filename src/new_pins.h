@@ -912,7 +912,7 @@ typedef enum channelType_e {
 	ChType_Temperature_div100,
 	//chandetail:{"name":"LeakageCurrent_div1000",
 	//chandetail:"title":"TODO",
-	//chandetail:"descr":".",
+	//chandetail:"descr":"Leakage current in mA",
 	//chandetail:"enum":"ChType_LeakageCurrent_div1000",
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}

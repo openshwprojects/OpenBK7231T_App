@@ -1614,7 +1614,7 @@ void NewLED_InitCommands(){
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_dimmer", dimmer, NULL);
 	//cmddetail:{"name":"Dimmer","args":"[Value]",
-	//cmddetail:"descr":"Alias for led_dimmer",
+	//cmddetail:"descr":"Alias for led_dimmer, added for Tasmota.",
 	//cmddetail:"fn":"dimmer","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Dimmer", dimmer, NULL);
@@ -1654,7 +1654,7 @@ void NewLED_InitCommands(){
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_temperature", temperature, NULL);
 	//cmddetail:{"name":"CT","args":"[TempValue]",
-	//cmddetail:"descr":"Same as led_temperature",
+	//cmddetail:"descr":"Sets the LED temperature. Same as led_temperature but with Tasmota syntax.",
 	//cmddetail:"fn":"temperature","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("CT", temperature, NULL);
