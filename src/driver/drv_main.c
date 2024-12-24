@@ -139,7 +139,7 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_BL0942
 	//drvdetail:{"name":"RN8209",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"Bqqqqqqqqqq ",
+	//drvdetail:"descr":"WIP driver for power-metering chip RN8209 found in one of Zmai-90 versions.",
 	//drvdetail:"requires":""}
 	{ "RN8209", RN8209_Init, RN8029_RunEverySecond, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
