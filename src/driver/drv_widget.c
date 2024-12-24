@@ -11,6 +11,7 @@
 
 /*
 startDriver widget
+// widget_create [LocationIndex][bAllowCache][FileName]
 widget_create 0 0 demo1.html
 
 */
@@ -118,13 +119,13 @@ static commandResult_t CMD_Widget_ClearAll(const void *context, const char *cmd,
 
 void DRV_Widget_Init() {
 	
-	//cmddetail:{"name":"widget_clearAll","args":"CMD_Widget_ClearAll",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"widget_clearAll","args":"",
+	//cmddetail:"descr":"Removes all registered widgets",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_widget.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("widget_clearAll", CMD_Widget_ClearAll, NULL);
 
-	//cmddetail:{"name":"widget_create","args":"CMD_Widget_Create",
+	//cmddetail:{"name":"widget_create","args":"[LocationIndex][bAllowCache][FileName]",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_widget.c","requires":"",
 	//cmddetail:"examples":""}
