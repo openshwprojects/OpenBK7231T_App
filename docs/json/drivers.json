@@ -92,7 +92,7 @@
   {
     "name": "RN8209",
     "title": "TODO",
-    "descr": "Bqqqqqqqqqq ",
+    "descr": "WIP driver for power-metering chip RN8209 found in one of Zmai-90 versions.",
     "requires": ""
   },
   {
@@ -104,7 +104,7 @@
   {
     "name": "PWMG",
     "title": "TODO",
-    "descr": " ",
+    "descr": "PWM Groups (synchronized PWMs) driver for OpenBeken.",
     "requires": ""
   },
   {
@@ -146,7 +146,7 @@
   {
     "name": "TextScroller",
     "title": "TODO",
-    "descr": "BQQQK",
+    "descr": "Wrapper utility that can do text scrolling animation on implemented displays (WIP)",
     "requires": ""
   },
   {
@@ -290,7 +290,7 @@
   {
     "name": "ADCSmoother",
     "title": "TODO",
-    "descr": "qq",
+    "descr": "ADCSmoother is used for 3-way stairs switches synchronized via extra wire.",
     "requires": ""
   },
   {
