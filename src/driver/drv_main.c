@@ -78,14 +78,14 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_OPENWEATHERMAP
 	//drvdetail:{"name":"OpenWeatherMap",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"Widget .",
+	//drvdetail:"descr":"OpenWeatherMap integration allows you to fetch current weather for your lat/long. You can later extract temperatura, humidity and pressure data and display it on main page.",
 	//drvdetail:"requires":""}
 	{ "OpenWeatherMap",		DRV_OpenWeatherMap_Init,			NULL, OWM_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_WIDGET
 	//drvdetail:{"name":"Widget",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"Widget .",
+	//drvdetail:"descr":"Widget driver allows you to create custom HTML snippets that are displayed on main OBK page. Snippets are loaded from LittleFS file system and can use OBK REST API.",
 	//drvdetail:"requires":""}
 	{ "Widget",		DRV_Widget_Init,			NULL,			DRV_Widget_AddToHtmlPage, NULL, NULL, NULL, false },
 #endif

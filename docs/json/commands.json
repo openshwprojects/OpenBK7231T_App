@@ -343,7 +343,7 @@
   },
   {
     "name": "chart_add",
-    "args": "",
+    "args": "[ntp_time][val1][val2]...[valN]",
     "descr": "Adds data to the chart with specified variables at a specific NTP time. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
     "fn": "NULL);",
     "file": "driver/drv_charts.c",
@@ -352,7 +352,7 @@
   },
   {
     "name": "chart_addNow",
-    "args": "",
+    "args": "[val1][val2]...[valN]",
     "descr": "Adds data to the chart using the current NTP time. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
     "fn": "NULL);",
     "file": "driver/drv_charts.c",
@@ -361,7 +361,7 @@
   },
   {
     "name": "chart_create",
-    "args": "",
+    "args": "[max_samples][num_vars][num_axes]",
     "descr": "Creates a chart with a specified number of samples, variables, and axes. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
     "fn": "NULL);",
     "file": "driver/drv_charts.c",
@@ -370,7 +370,7 @@
   },
   {
     "name": "chart_setAxis",
-    "args": "",
+    "args": "[axis_index][name][flags][label]",
     "descr": "Sets up an axis with a name, flags, and label. Currently flags can be 0 (left axis) or 1 (right axis). See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
     "fn": "NULL);",
     "file": "driver/drv_charts.c",
@@ -379,7 +379,7 @@
   },
   {
     "name": "chart_setVar",
-    "args": "",
+    "args": "[var_index][title][axis]",
     "descr": "Associates a variable with a specific axis. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
     "fn": "NULL);",
     "file": "driver/drv_charts.c",
