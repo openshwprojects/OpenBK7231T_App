@@ -153,7 +153,7 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_PWM_GROUP
 	//drvdetail:{"name":"PWMG",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":" ",
+	//drvdetail:"descr":"PWM Groups (synchronized PWMs) driver for OpenBeken.",
 	//drvdetail:"requires":""}
 	{ "PWMG",		PWMG_Init,	NULL,		NULL, NULL, NULL, NULL, false },
 #endif
@@ -202,7 +202,7 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_TEXTSCROLLER
 	//drvdetail:{"name":"TextScroller",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"BQQQK",
+	//drvdetail:"descr":"Wrapper utility that can do text scrolling animation on implemented displays (WIP)",
 	//drvdetail:"requires":""}
 	{ "TextScroller",	TS_Init,		NULL,			NULL, TS_RunQuickTick, NULL, NULL, false },
 #endif
@@ -356,7 +356,7 @@ static driver_t g_drivers[] = {
 	{ "KP18058",		KP18058_Init,		NULL,			NULL, NULL, NULL, NULL, false },
 	//drvdetail:{"name":"ADCSmoother",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"qq",
+	//drvdetail:"descr":"ADCSmoother is used for 3-way stairs switches synchronized via extra wire.",
 	//drvdetail:"requires":""}
 	{ "ADCSmoother", DRV_ADCSmoother_Init, NULL, NULL, DRV_ADCSmoother_RunFrame, NULL, NULL, false },
 	//drvdetail:{"name":"SHT3X",
