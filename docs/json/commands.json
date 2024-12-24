@@ -54,6 +54,15 @@
     "examples": ""
   },
   {
+    "name": "addI2CDevice_ADS1115",
+    "args": "DRV_I2C_AddDevice_ADS1115",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "i2c/drv_i2c_ads1115.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "addI2CDevice_LCD_PCF8574",
     "args": "",
     "descr": "Adds a new I2C device - PCF8574",
@@ -1521,6 +1530,33 @@
     "examples": ""
   },
   {
+    "name": "owm_channels",
+    "args": "CMD_OWM_Channels",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_openWeatherMap.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "owm_request",
+    "args": "CMD_OWM_Request",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_openWeatherMap.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "owm_setup",
+    "args": "CMD_OWM_Setup",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_openWeatherMap.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "Password1",
     "args": "[ValueString]",
     "descr": "Sets the Pass of target WiFi. Command keeps Tasmota syntax",
@@ -1737,6 +1773,15 @@
     "examples": ""
   },
   {
+    "name": "Result",
+    "args": "NULL",
+    "descr": "A stub for Tasmota",
+    "fn": "cmnd_stub",
+    "file": "cmnds/cmd_tasmota.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "return",
     "args": "",
     "descr": "Script-only command. Currently it just stops totally current script thread.",
@@ -1796,6 +1841,15 @@
     "descr": "Sends a HTTP POST request to target URL. Arguments can contain variable expansion.",
     "fn": "CMD_SendPOST",
     "file": "cmnds/cmd_send.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Sensor",
+    "args": "NULL",
+    "descr": "A stub for Tasmota",
+    "fn": "cmnd_stub",
+    "file": "cmnds/cmd_tasmota.c",
     "requires": "",
     "examples": ""
   },
@@ -1926,6 +1980,15 @@
     "examples": ""
   },
   {
+    "name": "SetFlash",
+    "args": "[FlashIndex][FlashValue]",
+    "descr": "Sets a a flashVars channel directly (if you are using remember state for given channel, it will overwrite, it uses same space for channels memory).",
+    "fn": "CMD_SetFlash",
+    "file": "cmnds/cmd_channels.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "SetPinChannel",
     "args": "[PinIndex][ChannelIndex][optionalChannel2Index]",
     "descr": "This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command.",
@@ -1940,6 +2003,24 @@
     "descr": "This allows you to set a pin role, for example a Relay role, or Button, etc. Usually it's easier to do this through WWW panel, so you don't have to use this command.",
     "fn": "CMD_SetPinRole",
     "file": "cmnds/cmd_channels.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "setStartupSSID",
+    "args": "[Value]",
+    "descr": "Sets startup SSID, 0 (SSID0) 1 (SSID1)",
+    "fn": "CMD_setStartupSSID",
+    "file": "new_pins.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "setStartupSSIDChannel",
+    "args": "[Value]",
+    "descr": "Sets retain channel number to store last used SSID, 0..MAX_RETAIN_CHANNELS-1, -1 to disable. Suggested channel number is 7 (MAXMAX_RETAIN_CHANNELS-5)",
+    "fn": "CMD_setStartupSSIDChannel",
+    "file": "new_pins.c",
     "requires": "",
     "examples": ""
   },
@@ -2342,8 +2423,17 @@
   {
     "name": "State",
     "args": "NULL",
-    "descr": "NULL",
-    "fn": "cmnd_State",
+    "descr": "A stub for Tasmota",
+    "fn": "cmnd_stub",
+    "file": "cmnds/cmd_tasmota.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Status",
+    "args": "NULL",
+    "descr": "A stub for Tasmota",
+    "fn": "cmnd_stub",
     "file": "cmnds/cmd_tasmota.c",
     "requires": "",
     "examples": ""
@@ -2822,6 +2912,24 @@
     "descr": "Wait forever for event. Can be used within script. For example, you can do: waitFor MQTTState 1 or waitFor NTPState 1. You can also do waitFor NoPingTime 600 to wait for 600 seconds without ping watchdog getting successful reply",
     "fn": "CMD_waitFor",
     "file": "cmnds/cmd_script.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "widget_clearAll",
+    "args": "CMD_Widget_ClearAll",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_widget.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "widget_create",
+    "args": "CMD_Widget_Create",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_widget.c",
     "requires": "",
     "examples": ""
   }

@@ -36,6 +36,18 @@
     "requires": ""
   },
   {
+    "name": "OpenWeatherMap",
+    "title": "TODO",
+    "descr": "Widget .",
+    "requires": ""
+  },
+  {
+    "name": "Widget",
+    "title": "TODO",
+    "descr": "Widget .",
+    "requires": ""
+  },
+  {
     "name": "TestCharts",
     "title": "TODO",
     "descr": "Development only driver - a sample of chart generation with chart.js.",

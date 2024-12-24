@@ -273,8 +273,20 @@ waitFor WiFiState 4
 owm_request
 */
 void DRV_OpenWeatherMap_Init() {
+	//cmddetail:{"name":"owm_setup","args":"CMD_OWM_Setup",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_openWeatherMap.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("owm_setup", CMD_OWM_Setup, NULL);
+	//cmddetail:{"name":"owm_request","args":"CMD_OWM_Request",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_openWeatherMap.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("owm_request", CMD_OWM_Request, NULL);
+	//cmddetail:{"name":"owm_channels","args":"CMD_OWM_Channels",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_openWeatherMap.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("owm_channels", CMD_OWM_Channels, NULL);
 
 

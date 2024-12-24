@@ -118,8 +118,16 @@ static commandResult_t CMD_Widget_ClearAll(const void *context, const char *cmd,
 
 void DRV_Widget_Init() {
 	
+	//cmddetail:{"name":"widget_clearAll","args":"CMD_Widget_ClearAll",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_widget.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("widget_clearAll", CMD_Widget_ClearAll, NULL);
 
+	//cmddetail:{"name":"widget_create","args":"CMD_Widget_Create",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_widget.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("widget_create", CMD_Widget_Create, NULL);
 
 }
