@@ -156,10 +156,7 @@ void BMPI2C_Init()
 		}
 
 		//cmddetail:{"name":"BMPI2C_Configure","args":"[Mode][TempSampling][PressureSampling][HumSampling][IIRFilter][StandbyTime]",
-		//cmddetail:"descr":"Manual sensor configuration. Modes: 0 - normal, 1 - forced, 2 - sleep. Overampling range: -1 - skipped, 2^0 to 2^4. Default is X1
-		//cmddetail:IIRFilter range: 0 - off, 2^1 to 2^4 for most, up to 2^7 for BME68X",
-		//cmddetail:StandbyTime: 1 for 0.5ms, 63 for 62.5ms, 125, 250, 500, 1000, 2000, 4000. Mode and StandbyTime are not needed on BME68X
-		//cmddetail:All values will be rounded down to closest available (like sampling 10 will choose 8x)
+		//cmddetail:"descr":"Manual sensor configuration. Modes: 0 - normal, 1 - forced, 2 - sleep. Overampling range: -1 - skipped, 2^0 to 2^4. Default is X1. IIRFilter range: 0 - off, 2^1 to 2^4 for most, up to 2^7 for BME68X, StandbyTime: 1 for 0.5ms, 63 for 62.5ms, 125, 250, 500, 1000, 2000, 4000. Mode and StandbyTime are not needed on BME68X, All values will be rounded down to closest available (like sampling 10 will choose 8x)",
 		//cmddetail:"fn":"BMPI2C_Configure","file":"driver/drv_bmpi2c.c","requires":"",
 		//cmddetail:"examples":"BMPI2C_Configure 0 8 2 4 16 125 <br />"}
 		CMD_RegisterCommand("BMPI2C_Configure", BMPI2C_Configure, NULL);
