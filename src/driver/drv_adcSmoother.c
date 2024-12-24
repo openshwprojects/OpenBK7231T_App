@@ -19,10 +19,14 @@ static int g_timeAccum = 0;
 static int g_adcPin = 0;
 static int g_margin = 0;
 static int g_smoothed = -1;
+static int g_min = -1;
+static int g_max = -1;
 static int g_lh = -1;
 // targets
 static int g_channel_smoothed = 0;
 static int g_channel_lh = 0;
+static int g_channel_min = -1;
+static int g_channel_max = -1;
 
 void ADCSmoother_SetupWindow(int size) {
 	g_samples = realloc(g_samples, sizeof(int) * size);
@@ -40,15 +44,19 @@ float ADCSmoother_Sample() {
 	float s = 0;
 	for (int i = 0; i < g_samplesCount; i++) {
 		s += g_samples[i];
+		g_min = g_min == -1 ? g_samples[i] : MIN(g_min, g_samples[i]);
+		g_max = g_max == -1 ? g_samples[i] : MAX(g_max, g_samples[i]);
 	}
 	s /= g_samplesCount;
 	return s;
 }
 
-// ADCSmoother [Pindex] [TotalSamples] [SampleIntervalMS] [TargetChannelADCValue] [MarginValue] [TargetChannel0or1]
+// ADCSmoother [Pindex] [TotalSamples] [SampleIntervalMS] [TargetChannelADCValue] [MarginValue] [TargetChannel0or1] [TargetChannelMin] [TargetChannelMax]
 // TargetChannelADCValue is a channel which will get smoother value, like 640, etc
 // MarginValue is a value that used to tell which smoothed adc values are considered high and which are low
 // TargetChannel0or1 will be set depending on MarginValue to either 0 or 1
+// TargetChannelMin is optional, if set, it will be set to the minimum value of smoothed adc
+// TargetChannelMax is optional, if set, it will be set to the maximum value of smoothed adc
 // something like:
 // StartDriver ADCSmoother
 // ADCSmoother 27 10 50 10 2048 11
@@ -70,6 +78,11 @@ commandResult_t Cmd_SetupADCSmoother(const void* context, const char* cmd, const
 	g_channel_smoothed = Tokenizer_GetArgInteger(3);
 	g_margin = Tokenizer_GetArgInteger(4);
 	g_channel_lh = Tokenizer_GetArgInteger(5);
+
+	if (Tokenizer_GetArgsCount() > 7) {
+		g_channel_min = Tokenizer_GetArgInteger(6);
+		g_channel_max = Tokenizer_GetArgInteger(7);
+	}
 
 	HAL_ADC_Init(g_adcPin);
 
@@ -95,9 +108,18 @@ void DRV_ADCSmootherDoSmooth() {
 		g_smoothed = smoothed;
 		CHANNEL_Set(g_channel_smoothed, g_smoothed, 0);
 	}
+
 	if (lowHigh != g_lh) {
 		g_lh = lowHigh;
 		CHANNEL_Set(g_channel_lh, g_lh, 0);
+	}
+
+	if (g_channel_min != -1) {
+		CHANNEL_Set(g_channel_min, g_min, 0);
+	}
+
+	if (g_channel_max != -1) {
+		CHANNEL_Set(g_channel_max, g_max, 0);
 	}
 }
 
