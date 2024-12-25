@@ -122,6 +122,7 @@ void DRV_DDP_CreateSocket_Receive() {
 void DDP_Parse(byte *data, int len) {
 	if(len > 12) {
 		byte r, g, b;
+
 		r = data[10];
 		g = data[11];
 		b = data[12];
@@ -132,12 +133,17 @@ void DDP_Parse(byte *data, int len) {
 			uint32_t pixel = (len - 10) / 3;
 			// This immediately activates the pixels, maybe we should read the PUSH flag
 			SM16703P_setMultiplePixel(pixel, &data[10], true);
-		} else {
-			LED_SetFinalRGB(r,g,b);
-		}
-#else
-		LED_SetFinalRGB(r,g,b);
+		} else
 #endif
+		{
+			LED_SetDimmerIfChanged(100);
+			if (data[9] == 4) {
+				LED_SetFinalRGBW(r, g, b, data[13]);
+			}
+			else {
+				LED_SetFinalRGB(r, g, b);
+			}
+		}
 	}
 }
 void DRV_DDP_RunFrame() {

@@ -6,6 +6,7 @@
 #include "../driver/drv_public.h"
 #include <ctype.h>
 #include "cmd_local.h"
+#include "../hal/hal_flashVars.h"
 
 // bit mask telling which channels are hidden from HTTP
 // If given bit is set, then given channel is hidden
@@ -132,6 +133,24 @@ static commandResult_t CMD_SetChannel(const void *context, const char *cmd, cons
 	val = Tokenizer_GetArgInteger(1);
 
 	CHANNEL_Set(ch,val, false);
+
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_SetFlash(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int ch, val;
+
+	Tokenizer_TokenizeString(args, 0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	ch = Tokenizer_GetArgInteger(0);
+	val = Tokenizer_GetArgInteger(1);
+
+	HAL_FlashVars_SaveChannel(ch, val);
 
 	return CMD_RES_OK;
 }
@@ -500,6 +519,11 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_SetChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SetChannel", CMD_SetChannel, NULL);
+	//cmddetail:{"name":"SetFlash","args":"[FlashIndex][FlashValue]",
+	//cmddetail:"descr":"Sets a a flashVars channel directly (if you are using remember state for given channel, it will overwrite, it uses same space for channels memory).",
+	//cmddetail:"fn":"CMD_SetFlash","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("SetFlash", CMD_SetFlash, NULL);
 	//cmddetail:{"name":"SetChannelFloat","args":"[ChannelIndex][ChannelValue]",
 	//cmddetail:"descr":"Sets a raw channel to given float value. Currently only used for LED PWM channels.",
 	//cmddetail:"fn":"CMD_SetChannelFloat","file":"cmnds/cmd_channels.c","requires":"",

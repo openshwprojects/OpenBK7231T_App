@@ -505,14 +505,14 @@ static int http_tasmota_json_status_FWR(void* request, jsonCb_t printer) {
 	printer(request, "}");
 	return 0;
 }
-static int http_obk_json_channels(void* request, jsonCb_t printer) {
+static int http_obk_json_channels(void* request, jsonCb_t printer, int includeIndex) {
 	int i;
 	int iCnt = 0;
 	char tmp[8];
 
 	printer(request, "{");
 	for (i = 0; i < CHANNEL_MAX; i++) {
-		if (CHANNEL_IsInUse(i)) {
+		if (CHANNEL_IsInUse(i) || i == includeIndex) {
 			if (iCnt) {
 				printer(request, ",");
 			}
@@ -1057,7 +1057,11 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		printer(request, "}");
 	}
 	else if (!wal_strnicmp(cmd, "Ch", 2)) {
-		http_obk_json_channels(request, printer);
+		int includeIndex = -1;
+		if (cmd[2]) {
+			includeIndex = atoi(cmd + 2);
+		}
+		http_obk_json_channels(request, printer, includeIndex);
 	}
 #ifndef OBK_DISABLE_ALL_DRIVERS
 #if ENABLE_DRIVER_TUYAMCU

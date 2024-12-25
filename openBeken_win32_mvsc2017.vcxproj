@@ -177,6 +177,7 @@
     <ClCompile Include="src\driver\drv_mcp9808.c" />
     <ClCompile Include="src\driver\drv_ntp.c" />
     <ClCompile Include="src\driver\drv_ntp_events.c" />
+    <ClCompile Include="src\driver\drv_openWeatherMap.c" />
     <ClCompile Include="src\driver\drv_pixelAnim.c" />
     <ClCompile Include="src\driver\drv_pt6523.c" />
     <ClCompile Include="src\driver\drv_pwmToggler.c" />
@@ -205,6 +206,7 @@
     <ClCompile Include="src\driver\drv_wemo.c" />
     <ClCompile Include="src\driver\drv_uart.c" />
     <ClCompile Include="src\driver\drv_ucs1912.c" />
+    <ClCompile Include="src\driver\drv_widget.c" />
     <ClCompile Include="src\hal\bk7231\hal_adc_bk7231.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>

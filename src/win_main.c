@@ -113,6 +113,7 @@ void SIM_ClearOBK(const char *flashPath) {
 #endif
 		SIM_Hack_ClearSimulatedPinRoles();
 		WIN_ResetMQTT();
+		SPILED_Shutdown(); // won't hurt
 		UART_ResetForSimulator();
 		CMD_ExecuteCommand("clearAll", 0);
 		CMD_ExecuteCommand("led_expoMode", 0);

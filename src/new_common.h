@@ -100,6 +100,11 @@ typedef long BaseType_t;
 #define PLATFORM_MCU_NAME MANUFACTURER
 #endif
 #define DEVICENAME_PREFIX_FULL "Open" PLATFORM_MCU_NAME
+#elif PLATFORM_TR6260
+#define DEVICENAME_PREFIX_FULL "OpenTR6260"
+#define DEVICENAME_PREFIX_SHORT "tr6260"
+#define PLATFORM_MCU_NAME "TR6260"
+#define MANUFACTURER "Transa Semi"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -127,6 +132,8 @@ This platform is not supported, error!
 #define USER_SW_VER "LN882H_Test"
 #elif defined(PLATFORM_ESPIDF)
 #define USER_SW_VER PLATFORM_MCU_NAME "_Test"
+#elif defined(PLATFORM_TR6260)
+#define USER_SW_VER "TR6260_Test"
 #else
 #define USER_SW_VER "unknown"
 #endif
@@ -422,6 +429,64 @@ OSStatus rtos_create_thread(beken_thread_t* thread,
 #define delay_ms sys_delay_ms
 #define UINT32 uint32_t
 
+#elif PLATFORM_TR6260
+
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "queue.h"
+#include "event_groups.h"
+
+#include "lwip/err.h"
+#include "lwip/sockets.h"
+#include "lwip/sys.h"
+#include "lwip/netdb.h"
+#include "lwip/dns.h"
+
+typedef unsigned int UINT32;
+
+#define ASSERT
+#define free    os_free
+#define malloc  os_malloc
+#define realloc  os_realloc
+#define strlen  os_strlen
+#define memset  os_memset
+#define memcpy  os_memcpy
+#define strstr  os_strstr
+#define strncpy  os_strncpy
+#define strchr  os_strchr
+#define strcmp  os_strcmp
+#define memmove os_memmove
+//#define strcat  os_strcat
+#define os_strcpy strcpy
+
+#define close lwip_close
+#define bk_printf system_printf
+#define printf system_printf
+
+// OS_MSleep?
+#define rtos_delay_milliseconds sys_delay_ms
+#define delay_ms sys_delay_ms
+
+#define kNoErr                      0       //! No error occurred.
+typedef void* beken_thread_arg_t;
+typedef void* beken_thread_t;
+typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
+typedef int OSStatus;
+
+#define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
+#define BEKEN_APPLICATION_PRIORITY         (7)
+
+OSStatus rtos_delete_thread(beken_thread_t* thread);
+OSStatus rtos_create_thread(beken_thread_t* thread,
+	uint8_t priority, const char* name,
+	beken_thread_function_t function,
+	uint32_t stack_size, beken_thread_arg_t arg);
+
+#define GLOBAL_INT_DECLARATION()	;
+#define GLOBAL_INT_DISABLE()		;
+#define GLOBAL_INT_RESTORE()		;
+
 #else
 
 #include "gw_intf.h"
@@ -493,7 +558,7 @@ int strcpy_safe_checkForChanges(char *tg, const char *src, int tgMaxLen);
 void urldecode2_safe(char *dst, const char *srcin, int maxDstLen);
 int strIsInteger(const char *s);
 
-#ifndef PLATFORM_ESPIDF
+#if !defined(PLATFORM_ESPIDF) && !defined(PLATFORM_TR6260)
 const char* strcasestr(const char* str1, const char* str2);
 #endif
 

@@ -1052,6 +1052,11 @@ void LED_NextDimmerHold() {
 void LED_SetDimmerForDisplayOnly(int iVal) {
 	g_brightness0to100 = iVal;
 }
+void LED_SetDimmerIfChanged(int iVal) {
+	if (g_brightness0to100 != iVal) {
+		LED_SetDimmer(iVal);
+	}
+}
 void LED_SetDimmer(int iVal) {
 
 	g_brightness0to100 = iVal;
@@ -1201,6 +1206,23 @@ void LED_SetFinalCW(byte c, byte w) {
 
 	led_baseColors[3] = c;
 	led_baseColors[4] = w;
+
+	apply_smart_light();
+}
+void LED_SetFinalRGBW(byte r, byte g, byte b, byte w) {
+	SET_LightMode(Light_All);
+	led_baseColors[0] = r;
+	led_baseColors[1] = g;
+	led_baseColors[2] = b;
+	// half between Cool and Warm
+	led_baseColors[3] = w / 2;
+	led_baseColors[4] = w / 2;
+
+	RGBtoHSV(led_baseColors[0] / 255.0f, led_baseColors[1] / 255.0f, led_baseColors[2] / 255.0f, &g_hsv_h, &g_hsv_s, &g_hsv_v);
+
+	if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_ANY_ACTION)) {
+		LED_SetEnableAll(true);
+	}
 
 	apply_smart_light();
 }
@@ -1592,7 +1614,7 @@ void NewLED_InitCommands(){
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_dimmer", dimmer, NULL);
 	//cmddetail:{"name":"Dimmer","args":"[Value]",
-	//cmddetail:"descr":"Alias for led_dimmer",
+	//cmddetail:"descr":"Alias for led_dimmer, added for Tasmota.",
 	//cmddetail:"fn":"dimmer","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Dimmer", dimmer, NULL);
@@ -1616,7 +1638,7 @@ void NewLED_InitCommands(){
 	//cmddetail:"fn":"basecolor_rgb","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Color", basecolor_rgb, NULL);
-	//cmddetail:{"name":"led_basecolor_rgbcw","args":"",
+	//cmddetail:{"name":"led_basecolor_rgbcw","args":"[HexValue]",
 	//cmddetail:"descr":"set PWN color using #RRGGBB[cw][ww]",
 	//cmddetail:"fn":"basecolor_rgbcw","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
@@ -1632,7 +1654,7 @@ void NewLED_InitCommands(){
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("led_temperature", temperature, NULL);
 	//cmddetail:{"name":"CT","args":"[TempValue]",
-	//cmddetail:"descr":"Same as led_temperature",
+	//cmddetail:"descr":"Sets the LED temperature. Same as led_temperature but with Tasmota syntax.",
 	//cmddetail:"fn":"temperature","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("CT", temperature, NULL);
