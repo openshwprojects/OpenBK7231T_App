@@ -40,7 +40,6 @@
 extern rtlPinMapping_t g_pins[];
 rtlPinMapping_t* rtl_cf;
 rtlPinMapping_t* rtl_cf1;
-gpio_irq_t irqcf, irqcf1;
 
 #else
 
@@ -221,8 +220,12 @@ void BL0937_Shutdown_Pins()
 
 #elif PLATFORM_RTL87X0C
 
-	gpio_irq_free(&irqcf1);
-	gpio_irq_free(&irqcf);
+	gpio_irq_free(rtl_cf1->irq);
+	gpio_irq_free(rtl_cf->irq);
+	os_free(rtl_cf1->irq);
+	os_free(rtl_cf->irq);
+	rtl_cf1->irq = NULL;
+	rtl_cf->irq = NULL;
 
 #endif
 }
@@ -257,16 +260,22 @@ void BL0937_Init_Pins()
 
 	rtl_cf = g_pins + GPIO_HLW_CF;
 	rtl_cf1 = g_pins + GPIO_HLW_CF1;
-	if(rtl_cf->isInit)
+	if(rtl_cf->gpio != NULL)
 	{
 		hal_pinmux_unregister(rtl_cf->pin, PID_GPIO);
+		os_free(rtl_cf->gpio);
+		rtl_cf->gpio = NULL;
 	}
-	if(rtl_cf1->isInit)
+	if(rtl_cf1->gpio != NULL)
 	{
 		hal_pinmux_unregister(rtl_cf1->pin, PID_GPIO);
+		os_free(rtl_cf1->gpio);
+		rtl_cf1->gpio = NULL;
 	}
-	rtl_cf->isInit = true;
-	rtl_cf1->isInit = true;
+	rtl_cf1->irq = os_malloc(sizeof(gpio_irq_t));
+	rtl_cf->irq = os_malloc(sizeof(gpio_irq_t));
+	memset(rtl_cf1->irq, 0, sizeof(gpio_irq_t));
+	memset(rtl_cf->irq, 0, sizeof(gpio_irq_t));
 
 #endif
 
@@ -300,9 +309,9 @@ void BL0937_Init_Pins()
 
 #elif PLATFORM_RTL87X0C
 
-	gpio_irq_init(&irqcf1, rtl_cf1->pin, cf1_irq_handler, NULL);
-	gpio_irq_set(&irqcf1, IRQ_FALL, 1);
-	gpio_irq_enable(&irqcf1);
+	gpio_irq_init(rtl_cf1->irq, rtl_cf1->pin, cf1_irq_handler, NULL);
+	gpio_irq_set(rtl_cf1->irq, IRQ_FALL, 1);
+	gpio_irq_enable(rtl_cf1->irq);
 
 #endif
 
@@ -331,9 +340,9 @@ void BL0937_Init_Pins()
 
 #elif PLATFORM_RTL87X0C
 
-	gpio_irq_init(&irqcf, rtl_cf->pin, cf_irq_handler, NULL);
-	gpio_irq_set(&irqcf, IRQ_FALL, 1);
-	gpio_irq_enable(&irqcf);
+	gpio_irq_init(rtl_cf->irq, rtl_cf->pin, cf_irq_handler, NULL);
+	gpio_irq_set(rtl_cf->irq, IRQ_FALL, 1);
+	gpio_irq_enable(rtl_cf->irq);
 
 #endif
 

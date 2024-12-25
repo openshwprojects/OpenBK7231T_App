@@ -521,8 +521,8 @@ typedef unsigned int UINT32;
 #undef ASSERT
 #define ASSERT
 
-#define os_malloc malloc
-#define os_free free
+#define os_malloc pvPortMalloc
+#define os_free vPortFree
 #define os_memset memset
 #define os_strcpy strcpy
 

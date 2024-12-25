@@ -9,30 +9,30 @@
 extern int g_pwmFrequency;
 
 rtlPinMapping_t g_pins[] = {
-	{ "PA0 (RX1)",	PA_0,	false },
-	{ "PA1 (TX1)",	PA_1,	false },
-	{ "PA2 (RX1)",	PA_2,	false },
-	{ "PA3 (TX1)",	PA_3,	false },
-	{ "PA4",		PA_4,	false },
-	{ "PA5",		PA_5,	false },
-	{ "PA6",		PA_6,	false },
-	{ "PA7",		PA_7,	false },
-	{ "PA8",		PA_8,	false },
-	{ "PA9",		PA_9,	false },
-	{ "PA10",		PA_10,	false },
-	{ "PA11",		PA_11,	false },
-	{ "PA12",		PA_12,	false },
-	{ "PA13 (RX0)",	PA_13,	false },
-	{ "PA14 (TX0)",	PA_14,	false },
-	{ "PA15 (RX2)",	PA_15,	false },
-	{ "PA16 (TX2)",	PA_16,	false },
-	{ "PA17",		PA_17,	false },
-	{ "PA18",		PA_18,	false },
-	{ "PA19",		PA_19,	false },
-	{ "PA20",		PA_20,	false },
-	{ "PA21",		PA_21,	false },
-	{ "PA22",		PA_22,	false },
-	{ "PA23",		PA_23,	false },
+	{ "PA0 (RX1)",	PA_0,	NULL, NULL },
+	{ "PA1 (TX1)",	PA_1,	NULL, NULL },
+	{ "PA2 (RX1)",	PA_2,	NULL, NULL },
+	{ "PA3 (TX1)",	PA_3,	NULL, NULL },
+	{ "PA4",		PA_4,	NULL, NULL },
+	{ "PA5",		PA_5,	NULL, NULL },
+	{ "PA6",		PA_6,	NULL, NULL },
+	{ "PA7",		PA_7,	NULL, NULL },
+	{ "PA8",		PA_8,	NULL, NULL },
+	{ "PA9",		PA_9,	NULL, NULL },
+	{ "PA10",		PA_10,	NULL, NULL },
+	{ "PA11",		PA_11,	NULL, NULL },
+	{ "PA12",		PA_12,	NULL, NULL },
+	{ "PA13 (RX0)",	PA_13,	NULL, NULL },
+	{ "PA14 (TX0)",	PA_14,	NULL, NULL },
+	{ "PA15 (RX2)",	PA_15,	NULL, NULL },
+	{ "PA16 (TX2)",	PA_16,	NULL, NULL },
+	{ "PA17",		PA_17,	NULL, NULL },
+	{ "PA18",		PA_18,	NULL, NULL },
+	{ "PA19",		PA_19,	NULL, NULL },
+	{ "PA20",		PA_20,	NULL, NULL },
+	{ "PA21",		PA_21,	NULL, NULL },
+	{ "PA22",		PA_22,	NULL, NULL },
+	{ "PA23",		PA_23,	NULL, NULL },
 };
 
 static int g_numPins = sizeof(g_pins) / sizeof(g_pins[0]);
@@ -55,14 +55,25 @@ int HAL_PIN_CanThisPinBePWM(int index)
 	return 1;
 }
 
-void RTL_Gpio_Init(rtlPinMapping_t* pin)
+void RTL_GPIO_Init(rtlPinMapping_t* pin)
 {
-	if(pin->isInit)
+	if(pin->gpio != NULL)
 	{
 		return;
 	}
-	gpio_init(&pin->gpio, pin->pin);
-	pin->isInit = true;
+	//if(pin->irq != NULL)
+	//{
+	//	hal_pinmux_unregister(pin->pin, PID_GPIO);
+	//	pin->irq = NULL;
+	//}
+	//if(pin->pwm != NULL)
+	//{
+	//	pwmout_free(pin->pwm);
+	//	pin->pwm = NULL;
+	//}
+	pin->gpio = os_malloc(sizeof(gpio_t));
+	memset(pin->gpio, 0, sizeof(gpio_t));
+	gpio_init(pin->gpio, pin->pin);
 }
 
 void HAL_PIN_SetOutputValue(int index, int iVal)
@@ -70,7 +81,7 @@ void HAL_PIN_SetOutputValue(int index, int iVal)
 	if(index >= g_numPins)
 		return;
 	rtlPinMapping_t* pin = g_pins + index;
-	gpio_write(&pin->gpio, iVal ? 1 : 0);
+	gpio_write(pin->gpio, iVal ? 1 : 0);
 }
 
 int HAL_PIN_ReadDigitalInput(int index)
@@ -78,7 +89,7 @@ int HAL_PIN_ReadDigitalInput(int index)
 	if(index >= g_numPins)
 		return 0;
 	rtlPinMapping_t* pin = g_pins + index;
-	return gpio_read(&pin->gpio);
+	return gpio_read(pin->gpio);
 }
 
 void HAL_PIN_Setup_Input_Pullup(int index)
@@ -86,9 +97,9 @@ void HAL_PIN_Setup_Input_Pullup(int index)
 	if(index >= g_numPins)
 		return;
 	rtlPinMapping_t* pin = g_pins + index;
-	RTL_Gpio_Init(pin);
-	gpio_dir(&pin->gpio, PIN_INPUT);
-	gpio_mode(&pin->gpio, PullUp);
+	RTL_GPIO_Init(pin);
+	gpio_dir(pin->gpio, PIN_INPUT);
+	gpio_mode(pin->gpio, PullUp);
 }
 
 void HAL_PIN_Setup_Input_Pulldown(int index)
@@ -96,9 +107,9 @@ void HAL_PIN_Setup_Input_Pulldown(int index)
 	if(index >= g_numPins)
 		return;
 	rtlPinMapping_t* pin = g_pins + index;
-	RTL_Gpio_Init(pin);
-	gpio_dir(&pin->gpio, PIN_INPUT);
-	gpio_mode(&pin->gpio, PullDown);
+	RTL_GPIO_Init(pin);
+	gpio_dir(pin->gpio, PIN_INPUT);
+	gpio_mode(pin->gpio, PullDown);
 }
 
 void HAL_PIN_Setup_Input(int index)
@@ -106,9 +117,9 @@ void HAL_PIN_Setup_Input(int index)
 	if(index >= g_numPins)
 		return;
 	rtlPinMapping_t* pin = g_pins + index;
-	RTL_Gpio_Init(pin);
-	gpio_dir(&pin->gpio, PIN_INPUT);
-	gpio_mode(&pin->gpio, PullNone);
+	RTL_GPIO_Init(pin);
+	gpio_dir(pin->gpio, PIN_INPUT);
+	gpio_mode(pin->gpio, PullNone);
 }
 
 void HAL_PIN_Setup_Output(int index)
@@ -116,9 +127,9 @@ void HAL_PIN_Setup_Output(int index)
 	if(index >= g_numPins)
 		return;
 	rtlPinMapping_t* pin = g_pins + index;
-	RTL_Gpio_Init(pin);
-	gpio_dir(&pin->gpio, PIN_OUTPUT);
-	gpio_mode(&pin->gpio, PullUp);
+	RTL_GPIO_Init(pin);
+	gpio_dir(pin->gpio, PIN_OUTPUT);
+	gpio_mode(pin->gpio, PullUp);
 }
 
 void HAL_PIN_PWM_Stop(int index)
@@ -126,9 +137,11 @@ void HAL_PIN_PWM_Stop(int index)
 	if(index >= g_numPins || !HAL_PIN_CanThisPinBePWM(index))
 		return;
 	rtlPinMapping_t* pin = g_pins + index;
-	//pwmout_stop(&pin->pwm);
-	pwmout_free(&pin->pwm);
-	pin->isInit = false;
+	if(pin->pwm == NULL) return;
+	//pwmout_stop(pin->pwm);
+	pwmout_free(pin->pwm);
+	os_free(pin->pwm);
+	pin->pwm = NULL;
 }
 
 void HAL_PIN_PWM_Start(int index)
@@ -136,10 +149,12 @@ void HAL_PIN_PWM_Start(int index)
 	if(index >= g_numPins || !HAL_PIN_CanThisPinBePWM(index))
 		return;
 	rtlPinMapping_t* pin = g_pins + index;
-	pwmout_init(&pin->pwm, pin->pin);
-	pwmout_period_us(&pin->pwm, g_pwmFrequency);
-	pwmout_start(&pin->pwm);
-	pin->isInit = true;
+	if(pin->pwm != NULL) return;
+	pin->pwm = os_malloc(sizeof(pwmout_t));
+	memset(pin->pwm, 0, sizeof(pwmout_t));
+	pwmout_init(pin->pwm, pin->pin);
+	pwmout_period_us(pin->pwm, g_pwmFrequency);
+	pwmout_start(pin->pwm);
 }
 
 void HAL_PIN_PWM_Update(int index, float value)
@@ -147,7 +162,8 @@ void HAL_PIN_PWM_Update(int index, float value)
 	if(index >= g_numPins || !HAL_PIN_CanThisPinBePWM(index))
 		return;
 	rtlPinMapping_t* pin = g_pins + index;
-	pwmout_write(&pin->pwm, value / 100);
+	if(pin->pwm == NULL || !pin->pwm->is_init) return;
+	pwmout_write(pin->pwm, value / 100);
 }
 
 unsigned int HAL_GetGPIOPin(int index)
