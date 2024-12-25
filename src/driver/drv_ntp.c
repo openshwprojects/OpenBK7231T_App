@@ -23,9 +23,16 @@ extern void NTP_CalculateSunset(byte *outHour, byte *outMinute);
 #endif
 
 #if ENABLE_NTP_DST
-static uint32_t Start_DST_epoch=0 , End_DST_epoch=0;
+static uint32_t Start_DST_epoch=0 , End_DST_epoch=0, next_DST_switch_epoch=0;
 static uint8_t nthWeekEnd, monthEnd, dayEnd, hourEnd, nthWeekStart, monthStart, dayStart, hourStart;
+static int8_t g_DST_offset=0, g_DST=-128;	// g_DST_offset: offset during DST; 0: unset / g_DST: actual DST_offset in hours; -128: not initialised
+#define useDST (g_DST_offset)
+const uint32_t SECS_PER_MIN = 60UL;
+const uint32_t SECS_PER_HOUR = 3600UL;
 const uint32_t SECS_PER_DAY = 3600UL * 24UL;
+const uint32_t MINS_PER_HOUR = 60UL;
+#define LEAP_YEAR(Y)  (((1970+Y)>0) && !((1970+Y)%4) && (((1970+Y)%100) || !((1970+Y)%400)))
+static const uint8_t DaysMonth[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 #endif
 
 #define LOG_FEATURE LOG_FEATURE_NTP
@@ -110,7 +117,18 @@ commandResult_t NTP_SetTimeZoneOfs(const void *context, const char *cmd, const c
 	}
 	g_ntpTime -= oldOfs;
 	g_ntpTime += g_timeOffsetSeconds;
-	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP offset set");
+#if ENABLE_NTP_DST
+// in rare cases time can be decreased so time of next DST is wrong
+// e.g. by mistake we set offset to two hours in EU and we have just passed start of summertime - next DST switch will be end of summertime
+// if we now adjust the clock to the correct offset of one hour, we are slightliy before start of summertime
+// so just to be sure, recalculate DST in any case
+    	setDST(1);	// setDST will take care of all details
+#endif
+	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP offset set"
+#if ENABLE_NTP_DST
+	" - DST offset set to %i hours",g_DST
+#endif	
+	);
 	return CMD_RES_OK;
 }
 
@@ -195,9 +213,11 @@ commandResult_t NTP_Info(const void *context, const char *cmd, const char *args,
 #if ENABLE_NTP_DST
 
 // derived from tasmotas "RuleToTime"
+
 uint32_t RuleToTime(uint8_t dow, uint8_t mo, uint8_t week,  uint8_t hr, int yr) {
   struct tm tm={0};
-  uint32_t t;
+  uint32_t t=0;
+  int i;
   uint8_t m=mo-1;		// we use struct tm here, so month values are 0..11
   uint8_t w=week;		// m and w are copies of mo(nth) and week
 
@@ -208,6 +228,29 @@ uint32_t RuleToTime(uint8_t dow, uint8_t mo, uint8_t week,  uint8_t hr, int yr) 
     }
     w = 1;			// search first week of next month, we will subtract 7 days later
   }
+
+  // avoid mktime - this enlarges the image especially for BL602!
+  // so calculate seconds from epoch locally
+  // we start by calculating the number of days since 1970 - will also be used to get weekday
+  uint16_t days;
+  days = (yr - 1970) * 365;			// days per full years 
+  for (i=1970; i < yr; i++) days += LEAP_YEAR(i);	// add one day every leap year 
+  for (i=0; i<m; i++){
+  	if (i==1 && LEAP_YEAR(yr)){
+  		days += 29 ;
+  	} else {
+  		days += DaysMonth[i];
+  	}
+  } 	
+ // we search for the first day of a month, so no offset for days needed
+
+ // calculate weekday from number of days since 1970
+ uint8_t wday = (days + 4) % 7 +1 ;	// 1970-01-01 is Thursday ( = 4) -- since tasmota defines Sunday=1, add 1
+ // calc seconds from days and add hours
+ t = days * SECS_PER_DAY + hr * SECS_PER_HOUR;
+
+
+/*
   tm.tm_hour = hr;
 // tm is set to {0}, so no need to set minute or second values equal to "0"
   tm.tm_mday = 1;		// first day of (next) month
@@ -217,54 +260,83 @@ uint32_t RuleToTime(uint8_t dow, uint8_t mo, uint8_t week,  uint8_t hr, int yr) 
 //  since we use time functions, weekdays are 0 to 6 but tasmota settings use 1 to 7 (e.g. Sunday = 1)
 // so we have to subtract 1 from dow to match tm_weekday here
   t += (7 * (w - 1) + (dow - 1 - tm.tm_wday + 7) % 7) * SECS_PER_DAY;
+*/
+
+
+  t += (7 * (w - 1) + (dow - wday + 7) % 7) * SECS_PER_DAY;
   if (0 == week) {
     t -= 7 * SECS_PER_DAY;  // back one week if this is a "Last XX" rule
   }
   return t;
 }
 
-int IsDST()
+uint32_t setDST(bool setNTP)
 {
-	// DST calculation was done before, so we compare local time to DST switching values
+   if (useDST && g_synced){
 	int year=NTP_GetYear();
 	time_t tempt;
+	int8_t old_DST=0;
 	char tmp[40];	// to hold date string of timestamp
 	Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year);
 	End_DST_epoch = RuleToTime(dayEnd,monthEnd,nthWeekEnd,hourEnd,year);
+	old_DST = g_DST%128;	// 0 if "unset" because -128%128 = 0 
 
 	if ( Start_DST_epoch < End_DST_epoch ) {	// Northern --> begin before end
 		if (g_ntpTime < Start_DST_epoch) {
-			tempt = (time_t)Start_DST_epoch;
-			ADDLOG_INFO(LOG_FEATURE_RAW, "Before first DST switch in %i. Info: DST starts at %lu (%.24s local time)\r\n",year,Start_DST_epoch,ctime(&tempt));
-			return 0;
+			// we are in winter time before start of summer time
+			next_DST_switch_epoch=Start_DST_epoch;
+			g_DST=0;
+//			tempt = (time_t)Start_DST_epoch;
+//			ADDLOG_INFO(LOG_FEATURE_RAW, "Before first DST switch in %i. Info: DST starts at %lu (%.24s local time)\r\n",year,Start_DST_epoch,ctime(&tempt));
 		} else if (g_ntpTime < End_DST_epoch ){
-			tempt = (time_t)End_DST_epoch;
-			ADDLOG_INFO(LOG_FEATURE_RAW, "In DST of %i. Info: DST ends at %lu (%.24s local time)\r\n",year,End_DST_epoch,ctime(&tempt));
-			return 1;
+			// we in summer time
+			next_DST_switch_epoch=End_DST_epoch;
+			g_DST=g_DST_offset;
+//			tempt = (time_t)End_DST_epoch;
+//			ADDLOG_INFO(LOG_FEATURE_RAW, "In DST of %i. Info: DST ends at %lu (%.24s local time)\r\n",year,End_DST_epoch,ctime(&tempt));
 		} else {
+			// we are in winter time, after summer time --> next DST starts in next year
 			Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year+1);
-			tempt = (time_t)Start_DST_epoch;
-			ADDLOG_INFO(LOG_FEATURE_RAW, "After DST in %i. Info: Next DST start in next year at %lu (%.24s local time)\r\n",year,Start_DST_epoch,ctime(&tempt));
-			return 0;
+			next_DST_switch_epoch=Start_DST_epoch;
+			g_DST=0;
+//			tempt = (time_t)Start_DST_epoch;
+//			ADDLOG_INFO(LOG_FEATURE_RAW, "After DST in %i. Info: Next DST start in next year at %lu (%.24s local time)\r\n",year,Start_DST_epoch,ctime(&tempt));
 		}
 	} else {	// so end of DST before begin of DST --> southern
 			if (g_ntpTime < End_DST_epoch) {
-			tempt = (time_t)End_DST_epoch;
-			ADDLOG_INFO(LOG_FEATURE_RAW, "In first DST period of %i. Info: DST ends at %lu (%.24s local time)\r\n",year,End_DST_epoch,ctime(&tempt));
-			return 1;
+			// we in summer time at beginning of the yeay
+			next_DST_switch_epoch=End_DST_epoch;
+			g_DST=g_DST_offset;
+//			tempt = (time_t)End_DST_epoch;
+//			ADDLOG_INFO(LOG_FEATURE_RAW, "In first DST period of %i. Info: DST ends at %lu (%.24s local time)\r\n",year,End_DST_epoch,ctime(&tempt));
 		} else if (g_ntpTime < Start_DST_epoch ){
-			tempt = (time_t)Start_DST_epoch;
-			ADDLOG_INFO(LOG_FEATURE_RAW, "Regular time of %i. Info: DST starts at %lu (%.24s local time)\r\n",year,Start_DST_epoch,ctime(&tempt));
-			return 0;
+			// we are in winter time 
+			next_DST_switch_epoch=Start_DST_epoch;
+			g_DST=0;
+//			tempt = (time_t)Start_DST_epoch;
+//			ADDLOG_INFO(LOG_FEATURE_RAW, "Regular time of %i. Info: DST starts at %lu (%.24s local time)\r\n",year,Start_DST_epoch,ctime(&tempt));
 		} else {
+			// we in summer time at the end of the year --> DST will end next year
 			End_DST_epoch = RuleToTime(dayEnd,monthEnd,nthWeekEnd,hourEnd,year+1);
-			tempt = (time_t)End_DST_epoch;
-			ADDLOG_INFO(LOG_FEATURE_RAW, "In second DST of %i. Info: DST ends next year at %lu (%.24s local time)\r\n",year,End_DST_epoch,ctime(&tempt));
-			return 1;
+			next_DST_switch_epoch=End_DST_epoch;
+			g_DST=g_DST_offset;
+//			tempt = (time_t)End_DST_epoch;
+//			ADDLOG_INFO(LOG_FEATURE_RAW, "In second DST of %i. Info: DST ends next year at %lu (%.24s local time)\r\n",year,End_DST_epoch,ctime(&tempt));
 		}
 	}
+	g_ntpTime += (g_DST-old_DST)*3600*setNTP;
+	tempt = (time_t)next_DST_switch_epoch;
+	ADDLOG_INFO(LOG_FEATURE_RAW, "In %s time - next DST switch at %lu (%.24s local time)\r\n",(g_DST)?"summer":"standard",next_DST_switch_epoch,ctime(&tempt));
+	return g_DST;
+  }
+  else return 0;	// DST not (yet) set or can't be calculated (if ntp not synced)
 
+}
 
+int IsDST()
+{
+	if (( g_DST == -128) || (g_ntpTime > next_DST_switch_epoch)) return (setDST(1));	// only in case we don't know DST status, calculate it - and while at it: set ntpTime correctly...
+	return (g_DST);										// otherwise we can safely return the prevously calkulated value
 }
 
 commandResult_t CLOCK_CalcDST(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -279,7 +351,7 @@ commandResult_t CLOCK_CalcDST(const void *context, const char *cmd, const char *
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
-	ADDLOG_INFO(LOG_FEATURE_RAW, "CLOCK_SetConfigs: we have %u Args\r\n", Tokenizer_GetArgsCount());
+//	ADDLOG_INFO(LOG_FEATURE_RAW, "CLOCK_SetConfigs: we have %u Args\r\n", Tokenizer_GetArgsCount());
 	nthWeekEnd = Tokenizer_GetArgInteger(0);
 	monthEnd = Tokenizer_GetArgInteger(1);
 	dayEnd = Tokenizer_GetArgInteger(2);
@@ -288,15 +360,17 @@ commandResult_t CLOCK_CalcDST(const void *context, const char *cmd, const char *
 	monthStart = Tokenizer_GetArgInteger(5);
 	dayStart = Tokenizer_GetArgInteger(6);
 	hourStart = Tokenizer_GetArgInteger(7);
-	ADDLOG_INFO(LOG_FEATURE_RAW, "read values: %u,%u,%u,%u,%u,%u,%u,%u\r\n",  nthWeekEnd, monthEnd, dayEnd, hourEnd, nthWeekStart, monthStart, dayStart, hourStart);
+	g_DST_offset=Tokenizer_GetArgIntegerDefault(8, 1);
+	ADDLOG_INFO(LOG_FEATURE_RAW, "read values: %u,%u,%u,%u,%u,%u,%u,%u,(%u)\r\n",  nthWeekEnd, monthEnd, dayEnd, hourEnd, nthWeekStart, monthStart, dayStart, hourStart,g_DST_offset);
 
-	Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year);
+/*	Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year);
 	End_DST_epoch = RuleToTime(dayEnd,monthEnd,nthWeekEnd,hourEnd,year);
 	te=(time_t)End_DST_epoch;
 	tb=(time_t)Start_DST_epoch;
 	
 	ADDLOG_INFO(LOG_FEATURE_RAW, "Calculated DST switch epochs in %i. DST start at %lu (%.24s local time) - DST end at %lu (%.24s local time)\r\n",year,Start_DST_epoch,ctime(&tb),End_DST_epoch,ctime(&te));
-	  return CMD_RES_OK;
+*/
+	return CMD_RES_OK;
 };
 
 
@@ -435,7 +509,7 @@ void NTP_Init() {
 	NTP_Init_Events();
 #endif
 #if ENABLE_NTP_DST
-	//cmddetail:{"name":"CLOCK_CalcDST","args":"[nthWeekEnd monthEnd dayEnd hourEnd nthWeekStart monthStart dayStart hourStart]",
+	//cmddetail:{"name":"CLOCK_CalcDST","args":"[nthWeekEnd monthEnd dayEnd hourEnd nthWeekStart monthStart dayStart hourStart [g_DSToffset hours - default is 1 if unset]",
 	//cmddetail:"descr":"Checks, if actual time is during DST or not.",
 	//cmddetail:"fn":"CLOCK_CalcDST","file":"driver/drv_ntp.c","requires":"",
 	//cmddetail:"examples":""}
@@ -450,7 +524,12 @@ unsigned int NTP_GetCurrentTime() {
     return g_ntpTime;
 }
 unsigned int NTP_GetCurrentTimeWithoutOffset() {
+#if ENABLE_NTP_DST
+	return g_ntpTime - g_timeOffsetSeconds - g_DST%128;	// if g_DST is unset, it's -128 --> -128%128 = 0 as needed
+#else
 	return g_ntpTime - g_timeOffsetSeconds;
+#endif	
+
 }
 
 
@@ -571,6 +650,9 @@ void NTP_CheckForReceive() {
 
     g_ntpTime = secsSince1900 - NTP_OFFSET;
     g_ntpTime += g_timeOffsetSeconds;
+#if ENABLE_NTP_DST
+    	g_ntpTime += setDST(0)*3600;	// just to be sure: recalculate DST before setting, in case we somehow "moved back in time" we start with freshly set g_ntpTime, so don't change it inside setDST()!
+#endif
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u",(unsigned int)g_ntpTime);
     ltm = gmtime(&g_ntpTime);
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Local Time : %04d-%02d-%02d %02d:%02d:%02d",
@@ -606,6 +688,13 @@ void NTP_SendRequest_BlockingMode() {
 void NTP_OnEverySecond()
 {
     g_ntpTime++;
+#if ENABLE_NTP_DST
+    if (useDST && (g_ntpTime >= next_DST_switch_epoch)){
+    	int8_t old_DST=g_DST;
+	setDST(1);
+    	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Passed DST switch time - recalculated DST offset. Was:%i - now:%i",old_DST,g_DST);
+    }
+#endif
 
 #if ENABLE_CALENDAR_EVENTS
 	NTP_RunEvents(g_ntpTime, g_synced);
