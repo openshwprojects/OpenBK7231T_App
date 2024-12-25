@@ -228,7 +228,7 @@ uint32_t RuleToTime(uint8_t dow, uint8_t mo, uint8_t week,  uint8_t hr, int yr) 
     }
     w = 1;			// search first week of next month, we will subtract 7 days later
   }
-
+/*
   // avoid mktime - this enlarges the image especially for BL602!
   // so calculate seconds from epoch locally
   // we start by calculating the number of days since 1970 - will also be used to get weekday
@@ -249,8 +249,10 @@ uint32_t RuleToTime(uint8_t dow, uint8_t mo, uint8_t week,  uint8_t hr, int yr) 
  // calc seconds from days and add hours
  t = days * SECS_PER_DAY + hr * SECS_PER_HOUR;
 
+  t += (7 * (w - 1) + (dow - wday + 7) % 7) * SECS_PER_DAY;
 
-/*
+*/
+
   tm.tm_hour = hr;
 // tm is set to {0}, so no need to set minute or second values equal to "0"
   tm.tm_mday = 1;		// first day of (next) month
@@ -260,10 +262,9 @@ uint32_t RuleToTime(uint8_t dow, uint8_t mo, uint8_t week,  uint8_t hr, int yr) 
 //  since we use time functions, weekdays are 0 to 6 but tasmota settings use 1 to 7 (e.g. Sunday = 1)
 // so we have to subtract 1 from dow to match tm_weekday here
   t += (7 * (w - 1) + (dow - 1 - tm.tm_wday + 7) % 7) * SECS_PER_DAY;
-*/
 
 
-  t += (7 * (w - 1) + (dow - wday + 7) % 7) * SECS_PER_DAY;
+
   if (0 == week) {
     t -= 7 * SECS_PER_DAY;  // back one week if this is a "Last XX" rule
   }
