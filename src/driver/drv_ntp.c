@@ -474,7 +474,7 @@ void NTP_SetSimulatedTime(unsigned int timeNow) {
 	g_ntpTime = timeNow;
 	g_ntpTime += g_timeOffsetSeconds;
 #if ENABLE_NTP_DST
-    	setDST(1);	// setDST will take care of all details
+    	g_ntpTime += setDST(0)*3600;	
 #endif
 	g_synced = true;
 	b_ntp_simulatedTime = true;
