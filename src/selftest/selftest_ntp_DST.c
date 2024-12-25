@@ -40,20 +40,15 @@ void Test_NTP_DST() {
 	Sim_RunSeconds(6, false);
 
 	// check time
-	SELFTEST_ASSERT_EXPRESSION("$hour", 2);
+	// DST switch should have been done by system
+
+	SELFTEST_ASSERT_EXPRESSION("$hour", 3);
 	SELFTEST_ASSERT_EXPRESSION("$minute",00);
 	SELFTEST_ASSERT_EXPRESSION("$second", 01);
 	// test, that we are _in_ DST now
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
-	// adjust NTP offset, it's 2 hours durin summer time
-	CMD_ExecuteCommand("ntp_timeZoneOfs 2", 0);
-	// check time
-	SELFTEST_ASSERT_EXPRESSION("$hour", 3);
-	SELFTEST_ASSERT_EXPRESSION("$minute",00);
-	SELFTEST_ASSERT_EXPRESSION("$second", 01);
 
 	// set Sunday, Oct 27 2024 02:59:55 CEST
-	// remember: we set NTP offset to 2 before!
 	// it's summertime now (for another 5 seconds)
 	// because that's 5 seconds before DST ends in Europe
 	NTP_SetSimulatedTime(1729990795);
@@ -71,19 +66,13 @@ void Test_NTP_DST() {
 	// advace 6 seconds, so we are 1 second after 3:00, hence summertime ended
 	Sim_RunSeconds(6, false);
 
-	// check time (again: strictly speaking hour would be still 2, since clock was 
-	// turned back for 1 hour, but since we didn't alter offset yet ...
-	SELFTEST_ASSERT_EXPRESSION("$hour", 3);
+	// check time - DST switch should have hapened, so clock was 
+	// turned back for 1 hour
+	SELFTEST_ASSERT_EXPRESSION("$hour", 2);
 	SELFTEST_ASSERT_EXPRESSION("$minute",00);
 	SELFTEST_ASSERT_EXPRESSION("$second", 01);
 	// test, that we are _not_ in DST any more
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 0);
-	// adjust NTP offset, it's 1 hours durin standard time
-	CMD_ExecuteCommand("ntp_timeZoneOfs 1", 0);
-	// check time
-	SELFTEST_ASSERT_EXPRESSION("$hour", 2);
-	SELFTEST_ASSERT_EXPRESSION("$minute",00);
-	SELFTEST_ASSERT_EXPRESSION("$second", 01);
 
 	// some more tests with directly setting the ntp time
 	// just checking DST function ...
@@ -95,7 +84,7 @@ void Test_NTP_DST() {
 	Sim_RunSeconds(6, false);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
 	// 1761440395 = Sun, Oct 26 2025 02:59:55 CEST
-	CMD_ExecuteCommand("ntp_timeZoneOfs 2", 0);
+//	CMD_ExecuteCommand("ntp_timeZoneOfs 2", 0);
 	NTP_SetSimulatedTime(1761440395);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
 	Sim_RunSeconds(6, false);
@@ -108,7 +97,7 @@ void Test_NTP_DST() {
 	Sim_RunSeconds(6, false);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
 	// 1792889995 = Sun, Oct 25 2026 02:59:55 CEST
-	CMD_ExecuteCommand("ntp_timeZoneOfs 2", 0);
+//	CMD_ExecuteCommand("ntp_timeZoneOfs 2", 0);
 	NTP_SetSimulatedTime(1792889995);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
 	Sim_RunSeconds(6, false);
@@ -121,7 +110,7 @@ void Test_NTP_DST() {
 	Sim_RunSeconds(6, false);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
 	// 1824944395 = Sun, Oct 31 2027 02:59:55 CEST
-	CMD_ExecuteCommand("ntp_timeZoneOfs 2", 0);
+//	CMD_ExecuteCommand("ntp_timeZoneOfs 2", 0);
 	NTP_SetSimulatedTime(1824944395);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
 	Sim_RunSeconds(6, false);
@@ -134,7 +123,7 @@ void Test_NTP_DST() {
 	Sim_RunSeconds(6, false);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
 	// 1856393995 = Sun, Oct 29 2028 02:59:55 CEST
-	CMD_ExecuteCommand("ntp_timeZoneOfs 2", 0);
+//	CMD_ExecuteCommand("ntp_timeZoneOfs 2", 0);
 	NTP_SetSimulatedTime(1856393995);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
 	Sim_RunSeconds(6, false);
@@ -147,7 +136,7 @@ void Test_NTP_DST() {
 	Sim_RunSeconds(6, false);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
 	// 1887843595 = Sun, Oct 28 2029 02:59:55 CEST
-	CMD_ExecuteCommand("ntp_timeZoneOfs 2", 0);
+//	CMD_ExecuteCommand("ntp_timeZoneOfs 2", 0);
 	NTP_SetSimulatedTime(1887843595);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
 	Sim_RunSeconds(6, false);
@@ -160,7 +149,7 @@ void Test_NTP_DST() {
 	Sim_RunSeconds(6, false);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
 	// 1919293195 = Sun, Oct 27 2030 02:59:55 CEST
-	CMD_ExecuteCommand("ntp_timeZoneOfs 2", 0);
+//	CMD_ExecuteCommand("ntp_timeZoneOfs 2", 0);
 	NTP_SetSimulatedTime(1919293195);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
 	Sim_RunSeconds(6, false);
