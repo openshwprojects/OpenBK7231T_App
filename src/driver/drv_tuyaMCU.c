@@ -872,7 +872,7 @@ commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void* context, const ch
 	dpId = Tokenizer_GetArgInteger(0);
 	dpTypeString = Tokenizer_GetArg(1);
 	dpType = TuyaMCU_ParseDPType(dpTypeString);
-	if (argsCount < 2) {
+	if (argsCount < 3) {
 		channelID = -999;
 	}
 	else {
