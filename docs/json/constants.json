@@ -96,6 +96,12 @@
     "requires": ""
   },
   {
+    "name": "$Flash*",
+    "title": "$Flash*",
+    "descr": "Provides flashvarse channel access, as above.",
+    "requires": ""
+  },
+  {
     "name": "$voltage",
     "title": "$voltage",
     "descr": "Current value of voltage from energy metering chip. You can use those variables to make, for example, a change handler that fires when voltage is above 245, etc.",

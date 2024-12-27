@@ -57,7 +57,7 @@ void SM15155E_Write(float *rgbcw) {
 
 // startDriver SM15155E
 void SM15155E_Init() {
-	//cmddetail:{"name":"LED_Map","args":"CMD_LEDDriver_Map",
+	//cmddetail:{"name":"LED_Map","args":"[Ch0][Ch1][Ch2][Ch3][Ch4]",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_sm15155e.c","requires":"",
 	//cmddetail:"examples":""}

@@ -182,6 +182,17 @@ void Test_Commands_Generic() {
 	CMD_ExecuteCommand("SetChannel 10 2", 0);
 	CMD_ExecuteCommand("Choice $CH10+1 \"SetChannel 12 222\" \"SetChannel 12 333\" \"SetChannel 12 444\" \"SetChannel 12 555\" \"SetChannel 12 666\"", 0);
 	SELFTEST_ASSERT_CHANNEL(12, 555);
+
+
+
+	CMD_ExecuteCommand("Flags 123455", 0);
+	SELFTEST_ASSERT(CFG_GetFlags()== 123455);
+	SELFTEST_ASSERT(CFG_GetFlags64() == 123455);
+	CMD_ExecuteCommand("Flags 444", 0);
+	SELFTEST_ASSERT(CFG_GetFlags() == 444);
+	SELFTEST_ASSERT(CFG_GetFlags64() == 444);
+	//CMD_ExecuteCommand("Flags 8589934592", 0);
+	//SELFTEST_ASSERT(CFG_GetFlags64() == 8589934592);
 }
 
 
