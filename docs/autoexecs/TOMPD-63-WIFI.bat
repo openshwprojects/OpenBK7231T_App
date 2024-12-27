@@ -1,4 +1,3 @@
-
 // This script provides extra REST page for hosting in LittleFS
 // Please see: https://www.elektroda.com/rtvforum/topic4040354.html
 // Script taken from: https://www.elektroda.com/rtvforum/viewtopic.php?p=20990058#20990058
@@ -31,7 +30,7 @@ linkTuyaMCUOutputToChannel 19 str 0
 setChannelType 0 ReadOnly
 setChannelLabel 0 "Breaker ID"
 
-// Main Relay - Dpid 16 "switch" -> Channel 1
+// Main Relay - Dpid 16 "switch" -> channel 1
 linkTuyaMCUOutputToChannel 16 bool 1
 setChannelType 1 toggle
 setChannelLabel 1 "Relay"
@@ -51,10 +50,10 @@ linkTuyaMCUOutputToChannel 1 val 4
 setChannelType 4 EnergyTotal_kWh_div100
 setChannelLabel 4 "Total Energy"
 
-// Measurements - Dpid 6 "phase_a" - channel RAW_TAC2121C_VCP -> 5,6,7
+// Measurements - Dpid 6 "phase_a" - channel RAW_TAC2121C_VCP -> channels 5,6,7
 // TAC2121C VoltageCurrentPower Packet
 // This will automatically set voltage, power and current
-linkTuyaMCUOutputToChannel 6 RAW_TAC2121C_VCP
+linkTuyaMCUOutputToChannel 6 RAW_TAC2121C_VCP 5
 setChannelType 5 Voltage_div10
 setChannelLabel 5 "Voltage"
 setChannelType 6 Power
@@ -84,12 +83,12 @@ setChannelLabel 11 "Total Prepaid Energy"
 
 // The above are read only channels. Except Settings 2 (mapped on channel 10), but since we cannot set it due to wrong parse of TuyaMCU driver - for now read only
 
-// Charge Prepayment - Dpid 14 "charge_energy" - channel 12
+// Charge Prepayment - Dpid 14 "charge_energy" -> channel 12
 linkTuyaMCUOutputToChannel 14 val 12
 setChannelType 12 TextField
 setChannelLabel 12 "Purchased Energy [kWh*100], i.e. 1kWh = 100"
 
-// Settings 1 - Dpid 17 "alarm_set_1" - channel 13
+// Settings 1 - Dpid 17 "alarm_set_1" -> channel 13
 linkTuyaMCUOutputToChannel 17 val 13
 setChannelType 13 TextField
 setChannelLabel 13 "Leakage Current Protection Settings"
@@ -104,10 +103,4 @@ linkTuyaMCUOutputToChannel 105 val 15
 setChannelType 15 TextField
 setChannelLabel 15 "Protection Recovery Time [s]"
 
-// NOTE: addRepeatingEvent [RepeatTime] [RepeatCount]
-// code below will forever Send query state command every 5 seconds
-// addRepeatingEvent 5 -1 tuyaMcu_sendQueryState 
-
-// AngelOfDeath - We don't need it forever, since TuyaMCU sends everything when necessary
-// we need it just first time to obtain initial status. Some dpIDs not reported without asking
 tuyaMcu_sendQueryState
