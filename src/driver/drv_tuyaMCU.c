@@ -155,14 +155,14 @@ typedef struct rtcc_s {
 typedef struct tuyaMCUMapping_s {
 	// internal Tuya variable index
 	byte dpId;
-	// target channel
-	byte channel;
 	// data point type (one of the DP_TYPE_xxx defines)
 	byte dpType;
 	// true if it's supposed to be sent in dp cache
 	byte bDPCache;
 	// could be renamed to flags later?
 	byte inv;
+	// target channel
+	short channel;
 	// store last channel value to avoid sending it again
 	int prevValue;
 	// allow storing raw data for later usage
