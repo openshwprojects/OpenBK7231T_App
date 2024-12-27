@@ -14,6 +14,9 @@
 
 #include "drv_ntp.h"
 
+#define LTSTR "Local Time: %04d-%02d-%02d %02d:%02d:%02d"
+#define LTM2TIME(T) (T)->tm_year+1900, (T)->tm_mon+1, (T)->tm_mday, (T)->tm_hour, (T)->tm_min, (T)->tm_sec
+
 extern void NTP_Init_Events(void);
 extern void NTP_RunEvents(unsigned int newTime, bool bTimeValid);
 
@@ -31,7 +34,7 @@ const uint32_t SECS_PER_MIN = 60UL;
 const uint32_t SECS_PER_HOUR = 3600UL;
 const uint32_t SECS_PER_DAY = 3600UL * 24UL;
 const uint32_t MINS_PER_HOUR = 60UL;
-#define LEAP_YEAR(Y)  (((1970+Y)>0) && !((1970+Y)%4) && (((1970+Y)%100) || !((1970+Y)%400)))
+#define LEAP_YEAR(Y)  ((!(Y%4) && (Y%100)) || !(Y%400))
 static const uint8_t DaysMonth[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 #endif
 
@@ -228,13 +231,14 @@ uint32_t RuleToTime(uint8_t dow, uint8_t mo, uint8_t week,  uint8_t hr, int yr) 
     }
     w = 1;			// search first week of next month, we will subtract 7 days later
   }
-/*
+
   // avoid mktime - this enlarges the image especially for BL602!
   // so calculate seconds from epoch locally
   // we start by calculating the number of days since 1970 - will also be used to get weekday
   uint16_t days;
-  days = (yr - 1970) * 365;			// days per full years 
-  for (i=1970; i < yr; i++) days += LEAP_YEAR(i);	// add one day every leap year 
+  days = (yr - 1970) * 365;			// days per full years
+  // add one day every leap year - first leap after 1970 is 1972, possible leap years every 4 years
+  for (i=1972; i < yr; i+=4) days += LEAP_YEAR(i);
   for (i=0; i<m; i++){
   	if (i==1 && LEAP_YEAR(yr)){
   		days += 29 ;
@@ -251,8 +255,8 @@ uint32_t RuleToTime(uint8_t dow, uint8_t mo, uint8_t week,  uint8_t hr, int yr) 
 
   t += (7 * (w - 1) + (dow - wday + 7) % 7) * SECS_PER_DAY;
 
-*/
 
+/*
   tm.tm_hour = hr;
 // tm is set to {0}, so no need to set minute or second values equal to "0"
   tm.tm_mday = 1;		// first day of (next) month
@@ -263,7 +267,7 @@ uint32_t RuleToTime(uint8_t dow, uint8_t mo, uint8_t week,  uint8_t hr, int yr) 
 // so we have to subtract 1 from dow to match tm_weekday here
   t += (7 * (w - 1) + (dow - 1 - tm.tm_wday + 7) % 7) * SECS_PER_DAY;
 
-
+*/
 
   if (0 == week) {
     t -= 7 * SECS_PER_DAY;  // back one week if this is a "Last XX" rule
@@ -327,7 +331,11 @@ uint32_t setDST(bool setNTP)
 	}
 	g_ntpTime += (g_DST-old_DST)*3600*setNTP;
 	tempt = (time_t)next_DST_switch_epoch;
-	ADDLOG_INFO(LOG_FEATURE_RAW, "In %s time - next DST switch at %lu (%.24s local time)\r\n",(g_DST)?"summer":"standard",next_DST_switch_epoch,ctime(&tempt));
+
+	struct tm *ltm;
+	ltm = gmtime(&tempt);
+	ADDLOG_INFO(LOG_FEATURE_RAW, "In %s time - next DST switch at %lu (" LTSTR ")\r\n",
+	(g_DST)?"summer":"standard", next_DST_switch_epoch, LTM2TIME(ltm));
 	return g_DST;
   }
   else return 0;	// DST not (yet) set or can't be calculated (if ntp not synced)
@@ -659,8 +667,7 @@ void NTP_CheckForReceive() {
 #endif
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u",(unsigned int)g_ntpTime);
     ltm = gmtime(&g_ntpTime);
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Local Time : %04d-%02d-%02d %02d:%02d:%02d",
-            ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, LTSTR, LTM2TIME(ltm));
 
 	if (g_synced == false) {
 		EventHandlers_FireEvent(CMD_EVENT_NTP_STATE, 1);
@@ -747,8 +754,8 @@ void NTP_AppendInformationToHTTPIndexPage(http_request_t* request)
     ltm = gmtime(&g_ntpTime);
 
     if (g_synced == true)
-        hprintf255(request, "<h5>NTP (%s): Local Time: %04d-%02d-%02d %02d:%02d:%02d </h5>",
-			CFG_GetNTPServer(),ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+        hprintf255(request, "<h5>NTP (%s): " LTSTR " </h5>",
+			CFG_GetNTPServer(),LTM2TIME(ltm));
     else 
         hprintf255(request, "<h5>NTP: Syncing with %s....</h5>",CFG_GetNTPServer());
 }
