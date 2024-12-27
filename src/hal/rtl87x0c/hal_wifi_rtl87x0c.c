@@ -26,6 +26,7 @@ static void (*g_wifiStatusCallback)(int code) = NULL;
 static int g_bOpenAccessPointMode = 0;
 static wifi_data_t wdata = { 0 };
 extern uint8_t wmac[6];
+extern bool g_powersave;
 
 const char* HAL_GetMyIPString()
 {
@@ -49,7 +50,7 @@ const char* HAL_GetMyMaskString()
 
 int WiFI_SetMacAddress(char* mac)
 {
-	printf("WiFI_SetMacAddress");
+	printf("WiFI_SetMacAddress\r\n");
 	return 0; // error
 }
 
@@ -88,7 +89,7 @@ int HAL_GetWifiStrength()
 
 void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 {
-	printf("HAL_WiFi_SetupStatusCallback");
+	printf("HAL_WiFi_SetupStatusCallback\r\n");
 	g_wifiStatusCallback = cb;
 }
 
@@ -228,6 +229,7 @@ void ConnectToWiFiTask(void* args)
 		goto exit;
 	}
 	LwIP_DHCP(0, DHCP_START);
+	if(wifi_is_up(RTW_STA_INTERFACE) && g_powersave) wifi_enable_powersave();
 exit:
 	vTaskDelete(NULL);
 }
@@ -256,12 +258,8 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 
 void HAL_DisconnectFromWifi()
 {
-	printf("HAL_DisconnectFromWifi");
-	wifi_disconnect();
-	if(g_wifiStatusCallback != NULL)
-	{
-		g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
-	}
+	printf("HAL_DisconnectFromWifi\r\n");
+	if(wifi_is_connected_to_ap()) wifi_disconnect();
 }
 
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
