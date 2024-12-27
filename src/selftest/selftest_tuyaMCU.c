@@ -624,7 +624,7 @@ void Test_TuyaMCU_Basic() {
 	SELFTEST_ASSERT_CHANNEL(0, 12345); // not changed
 	SELFTEST_ASSERT_CHANNEL(3, 2305); // voltage
 	SELFTEST_ASSERT_CHANNEL(7, 302);// current
-	SELFTEST_ASSERT_CHANNEL(8, 67); // power
+	SELFTEST_ASSERT_CHANNEL(9, 67); // power
 
 
 	SIM_ClearUART();
