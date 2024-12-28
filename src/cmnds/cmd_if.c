@@ -298,7 +298,11 @@ float getMonth(const char *s) {
 float getMDay(const char *s) {
 	return NTP_GetMDay();
 }
-
+#if ENABLE_NTP_DST
+float isDST(const char *s){
+	return Time_IsDST();
+}
+#endif
 #if ENABLE_NTP_SUNRISE_SUNSET
 
 float getSunrise(const char *s) {
@@ -475,6 +479,13 @@ const constant_t g_constants[] = {
 	////cnstdetail:"descr":"",
 	////cnstdetail:"requires":""}
 	{ "$today", &getToday },
+#if ENABLE_NTP_DST
+	////cnstdetail:{"name":"$isDST",
+	////cnstdetail:"title":"$isDST",
+	////cnstdetail:"descr":"",
+	////cnstdetail:"requires":""}
+	{ "$isDST", &isDST },
+#endif
 #if ENABLE_NTP_SUNRISE_SUNSET
 	////cnstdetail:{"name":"$sunrise",
 	////cnstdetail:"title":"$sunrise",
