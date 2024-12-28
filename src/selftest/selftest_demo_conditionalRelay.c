@@ -33,6 +33,7 @@ static const char *g_scr = "\
 
 void Test_Demo_ConditionalRelay() {
 
+	SIM_ClearOBK(0);
 	CMD_ExecuteCommand("lfs_format", 0);
 
 	// put file in LittleFS

@@ -104,6 +104,7 @@ void Sim_RunFrames(int n, bool bApplyRealtimeWait) {
 bool bObkStarted = false;
 void SIM_Hack_ClearSimulatedPinRoles();
 
+void CHANNEL_FreeLabels();
 
 void SIM_ClearOBK(const char *flashPath) {
 	if (bObkStarted) {
@@ -114,6 +115,7 @@ void SIM_ClearOBK(const char *flashPath) {
 		SIM_Hack_ClearSimulatedPinRoles();
 		WIN_ResetMQTT();
 		SPILED_Shutdown(); // won't hurt
+		CHANNEL_FreeLabels();
 		UART_ResetForSimulator();
 		CMD_ExecuteCommand("clearAll", 0);
 		CMD_ExecuteCommand("led_expoMode", 0);

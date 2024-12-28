@@ -16,6 +16,14 @@ static int g_bHideTogglePrefix = 0;
 // same, for hiding from MQTT
 int g_doNotPublishChannels = 0;
 
+void CHANNEL_FreeLabels() {
+	for (int ch = 0; ch < CHANNEL_MAX; ch++) {
+		if (g_channelLabels[ch]) {
+			free(g_channelLabels[ch]);
+			g_channelLabels[ch] = 0;
+		}
+	}
+}
 void CHANNEL_SetLabel(int ch, const char *s, int bHideTogglePrefix) {
 	if (ch < 0)
 		return;
