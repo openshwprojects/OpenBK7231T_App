@@ -155,14 +155,14 @@ typedef struct rtcc_s {
 typedef struct tuyaMCUMapping_s {
 	// internal Tuya variable index
 	byte dpId;
-	// target channel
-	byte channel;
 	// data point type (one of the DP_TYPE_xxx defines)
 	byte dpType;
 	// true if it's supposed to be sent in dp cache
 	byte bDPCache;
 	// could be renamed to flags later?
 	byte inv;
+	// target channel
+	short channel;
 	// store last channel value to avoid sending it again
 	int prevValue;
 	// allow storing raw data for later usage
@@ -872,7 +872,7 @@ commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void* context, const ch
 	dpId = Tokenizer_GetArgInteger(0);
 	dpTypeString = Tokenizer_GetArg(1);
 	dpType = TuyaMCU_ParseDPType(dpTypeString);
-	if (argsCount < 2) {
+	if (argsCount < 3) {
 		channelID = -999;
 	}
 	else {

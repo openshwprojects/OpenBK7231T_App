@@ -607,6 +607,27 @@ void Test_TuyaMCU_Basic() {
 	SELFTEST_ASSERT_CHANNEL(47, 67); // power
 
 	SIM_ClearUART();
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+
+	g_cfg.pins.channelTypes[3] = ChType_Voltage_div10;
+	g_cfg.pins.channelTypes[7] = ChType_Current_div1000;
+	g_cfg.pins.channelTypes[9] = ChType_Power;
+
+	CMD_ExecuteCommand("setChannel 0 12345", 0);
+	// this will write to auto-found channels
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 8 RAW_TAC2121C_VCP", 0);
+	CMD_ExecuteCommand("uartFakeHex 55 AA 03 07 00 0C 08 00 00 08 09 01 00 01 2E 00 00 43 A1 ", 0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(100, false);
+
+	SELFTEST_ASSERT_CHANNEL(0, 12345); // not changed
+	SELFTEST_ASSERT_CHANNEL(3, 2305); // voltage
+	SELFTEST_ASSERT_CHANNEL(7, 302);// current
+	SELFTEST_ASSERT_CHANNEL(9, 67); // power
+
+
+	SIM_ClearUART();
 }
 
 #endif
