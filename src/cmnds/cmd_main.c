@@ -865,7 +865,7 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PWMFrequency", CMD_PWMFrequency, NULL);
 
-	//cmddetail:{"name":"IndexRefreshInterval","args":"CMD_IndexRefreshInterval",
+	//cmddetail:{"name":"IndexRefreshInterval","args":"[Interval]",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}

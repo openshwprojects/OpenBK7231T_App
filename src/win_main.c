@@ -104,6 +104,7 @@ void Sim_RunFrames(int n, bool bApplyRealtimeWait) {
 bool bObkStarted = false;
 void SIM_Hack_ClearSimulatedPinRoles();
 
+void CHANNEL_FreeLabels();
 
 void SIM_ClearOBK(const char *flashPath) {
 	if (bObkStarted) {
@@ -114,6 +115,7 @@ void SIM_ClearOBK(const char *flashPath) {
 		SIM_Hack_ClearSimulatedPinRoles();
 		WIN_ResetMQTT();
 		SPILED_Shutdown(); // won't hurt
+		CHANNEL_FreeLabels();
 		UART_ResetForSimulator();
 		CMD_ExecuteCommand("clearAll", 0);
 		CMD_ExecuteCommand("led_expoMode", 0);
@@ -131,6 +133,7 @@ void Win_DoUnitTests() {
 	Test_TuyaMCU_DP22();
 
 
+	Test_Demo_ConditionalRelay();
 	Test_Expressions_RunTests_Braces();
 	Test_Expressions_RunTests_Basic();
 	//Test_Enums();
@@ -175,6 +178,7 @@ void Win_DoUnitTests() {
 	Test_DHT();
 	Test_Tasmota();
 	Test_NTP();
+	Test_NTP_DST();
 	Test_NTP_SunsetSunrise();
 	Test_HTTP_Client();
 	Test_ExpandConstant();
@@ -303,6 +307,7 @@ int __cdecl main(int argc, char **argv)
 	printf("sizeof(double) = %d\n", (int)sizeof(double));
 	printf("sizeof(long double) = %d\n", (int)sizeof(long double));
 	printf("sizeof(led_corr_t) = %d\n", (int)sizeof(led_corr_t));
+	printf("sizeof(mainConfig_t) = %d\n", (int)sizeof(mainConfig_t));
 	
 	if (sizeof(FLASH_VARS_STRUCTURE) != MAGIC_FLASHVARS_SIZE) {
 		printf("sizeof(FLASH_VARS_STRUCTURE) != MAGIC_FLASHVARS_SIZE!: %i\n", sizeof(FLASH_VARS_STRUCTURE));

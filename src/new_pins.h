@@ -898,7 +898,7 @@ typedef enum channelType_e {
 	ChType_PowerFactor_div100,
 	//chandetail:{"name":"Pressure_div100",
 	//chandetail:"title":"TODO",
-	//chandetail:"descr":".",
+	//chandetail:"descr":"Pressure in hPa, but divided by 100",
 	//chandetail:"enum":"Pressure_div100",
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
@@ -912,7 +912,7 @@ typedef enum channelType_e {
 	ChType_Temperature_div100,
 	//chandetail:{"name":"LeakageCurrent_div1000",
 	//chandetail:"title":"TODO",
-	//chandetail:"descr":".",
+	//chandetail:"descr":"Leakage current in mA",
 	//chandetail:"enum":"ChType_LeakageCurrent_div1000",
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}

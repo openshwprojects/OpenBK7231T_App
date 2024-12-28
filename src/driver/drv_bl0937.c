@@ -358,8 +358,8 @@ void BL0937_Init(void)
 	PwrCal_Init(PWR_CAL_MULTIPLY, DEFAULT_VOLTAGE_CAL, DEFAULT_CURRENT_CAL,
 		DEFAULT_POWER_CAL);
 
-	//cmddetail:{"name":"PowerMax","args":"BL0937_PowerMax",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"PowerMax","args":"[MaxPowerInW]",
+	//cmddetail:"descr":"Sets the maximum power limit for BL measurement used to filter incorrect values",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PowerMax", BL0937_PowerMax, NULL);
