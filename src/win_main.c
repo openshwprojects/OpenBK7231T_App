@@ -131,6 +131,7 @@ void Win_DoUnitTests() {
 	Test_TuyaMCU_DP22();
 
 
+	Test_Demo_ConditionalRelay();
 	Test_Expressions_RunTests_Braces();
 	Test_Expressions_RunTests_Basic();
 	//Test_Enums();
@@ -303,6 +304,7 @@ int __cdecl main(int argc, char **argv)
 	printf("sizeof(double) = %d\n", (int)sizeof(double));
 	printf("sizeof(long double) = %d\n", (int)sizeof(long double));
 	printf("sizeof(led_corr_t) = %d\n", (int)sizeof(led_corr_t));
+	printf("sizeof(mainConfig_t) = %d\n", (int)sizeof(mainConfig_t));
 	
 	if (sizeof(FLASH_VARS_STRUCTURE) != MAGIC_FLASHVARS_SIZE) {
 		printf("sizeof(FLASH_VARS_STRUCTURE) != MAGIC_FLASHVARS_SIZE!: %i\n", sizeof(FLASH_VARS_STRUCTURE));
