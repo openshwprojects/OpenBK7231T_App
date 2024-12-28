@@ -178,6 +178,7 @@ void Win_DoUnitTests() {
 	Test_DHT();
 	Test_Tasmota();
 	Test_NTP();
+	Test_NTP_DST();
 	Test_NTP_SunsetSunrise();
 	Test_HTTP_Client();
 	Test_ExpandConstant();
