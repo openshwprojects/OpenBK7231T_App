@@ -115,6 +115,7 @@ void Test_RepeatingEvents();
 void Test_HTTP_Client();
 void Test_DeviceGroups();
 void Test_NTP();
+void Test_NTP_DST();
 void Test_NTP_SunsetSunrise();
 void Test_MQTT();
 void Test_Tasmota();
@@ -155,6 +156,7 @@ void Test_Expressions_RunTests_Basic();
 void Test_Expressions_RunTests_Braces();
 void Test_ButtonEvents();
 void Test_Http();
+void Test_Demo_ConditionalRelay();
 
 void Test_GetJSONValue_Setup(const char *text);
 void Test_FakeHTTPClientPacket_GET(const char *tg);
