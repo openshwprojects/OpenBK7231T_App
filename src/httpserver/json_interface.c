@@ -226,6 +226,9 @@ static int http_tasmota_json_ENERGY(void* request, jsonCb_t printer) {
 		printer(request, "\"ConsumptionTotal\":%f,", _getReading_NanToZero(OBK_CONSUMPTION_TOTAL));
 		printer(request, "\"Yesterday\": %f,", _getReading_NanToZero(OBK_CONSUMPTION_YESTERDAY));
 		printer(request, "\"ConsumptionLastHour\":%f", _getReading_NanToZero(OBK_CONSUMPTION_LAST_HOUR));
+		if(CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)) {
+			printer(request, "\"GenerationtionTotal\":%f,", _getReading_NanToZero(OBK_GENERATION_TOTAL));
+		}
 		// close ENERGY block
 		printer(request, "}");
 	}

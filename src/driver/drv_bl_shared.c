@@ -43,6 +43,7 @@ struct {
 	{{"apparent_power",	"VA",		"Apparent Power",		"power_apparent",			"9",		},	2,			0.25,		},	// OBK_POWER_APPARENT
 	{{"reactive_power",	"var",		"Reactive Power",		"power_reactive",			"10",		},	2,			0.25,		},	// OBK_POWER_REACTIVE
 	{{"power_factor",	"",			"Power Factor",			"power_factor",				"11",		},	2,			0.05,		},	// OBK_POWER_FACTOR
+	{{"energy",		    UNIT_WH,	"Total Generation",     "energycounter_generation", "14",       },  3,          0.1,        },	// OBK_GENERATION_TOTAL	
 	{{"energy",			UNIT_WH,	"Energy Total",			"energycounter",			"3",		},	3,			0.1,		},	// OBK_CONSUMPTION_TOTAL
 	{{"energy",			UNIT_WH,	"Energy Last Hour",		"energycounter_last_hour",	"4",		},	3,			0.1,		},	// OBK_CONSUMPTION_LAST_HOUR
 	//{{"",				"",			"Consumption Stats",	"consumption_stats",		"5",		},	0,			0,			},	// OBK_CONSUMPTION_STATS
@@ -105,13 +106,15 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t *request)
     }
 
 	for (int i = OBK__FIRST; i <= OBK_CONSUMPTION__DAILY_LAST; i++) {
+        if (i == OBK_GENERATION_TOTAL && (!CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE))){i++;}
+
 		if (i <= OBK__NUM_MEASUREMENTS || NTP_IsTimeSynced()) {
 			poststr(request, "<tr><td><b>");
 			poststr(request, sensors[i].names.name_friendly);
 			poststr(request, "</b></td><td style='text-align: right;'>");
 			hprintf255(request, "%.*f</td><td>%s</td>", sensors[i].rounding_decimals, 
-					(i == OBK_CONSUMPTION_TOTAL ? 0.001 : 1) * sensors[i].lastReading, //always display OBK_CONSUMPTION_TOTAL in kwh
-					i == OBK_CONSUMPTION_TOTAL ? "kWh": sensors[i].names.units);
+					((i == OBK_CONSUMPTION_TOTAL || i == OBK_GENERATION_TOTAL) ? 0.001 : 1) * sensors[i].lastReading, //always display OBK_CONSUMPTION_TOTAL and OBK_GENERATION_TOTAL in kwh
+					(i == OBK_CONSUMPTION_TOTAL || i == OBK_GENERATION_TOTAL) ? "kWh": sensors[i].names.units);
 		}
 	};
 
@@ -181,6 +184,7 @@ void BL09XX_SaveEmeteringStatistics()
     memset(&data, 0, sizeof(ENERGY_METERING_DATA));
 
     data.TotalConsumption = sensors[OBK_CONSUMPTION_TOTAL].lastReading;
+    data.TotalGeneration = sensors[OBK_GENERATION_TOTAL].lastReading;
     data.TodayConsumpion = sensors[OBK_CONSUMPTION_TODAY].lastReading;
     data.YesterdayConsumption = sensors[OBK_CONSUMPTION_YESTERDAY].lastReading;
     data.actual_mday = actual_mday;
@@ -201,6 +205,7 @@ commandResult_t BL09XX_ResetEnergyCounter(const void *context, const char *cmd, 
     if(args==0||*args==0) 
     {
         sensors[OBK_CONSUMPTION_TOTAL].lastReading = 0.0;
+        sensors[OBK_GENERATION_TOTAL].lastReading = 0.0;
         energyCounterStamp = xTaskGetTickCount();
         if (energyCounterStatsEnable == true)
         {
@@ -507,21 +512,35 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 	lastReadingFrequency = frequency;
 
     float energy = 0;
+    float generation = 0;
     if (isnan(energyWh)) {
         xPassedTicks = (int)(xTaskGetTickCount() - energyCounterStamp);
         // FIXME: Wrong calculation if tick count overflows
         if (xPassedTicks <= 0)
             xPassedTicks = 1;
         energy = xPassedTicks * power / (3600000.0f / portTICK_PERIOD_MS);
-    } else
+   } else {
         energy = energyWh;
-
-    if (energy < 0)
-        energy = 0.0;
+   }
+   
+    if(power < 0) {
+        if(CFG_HasFlag(OBK_FLAG_POWER_ALLOW_NEGATIVE)) {
+            // If energy is negative, account as generation
+            generation = energy;
+            energy = 0.0;
+        } else {
+            // If negative flag is disable, make sure that energy is positive
+            energy = 0.0;
+        }
+    }
 
     sensors[OBK_CONSUMPTION_TOTAL].lastReading += (double)energy;
+    sensors[OBK_GENERATION_TOTAL].lastReading += (double)generation;
+
+
     energyCounterStamp = xTaskGetTickCount();
     HAL_FlashVars_SaveTotalConsumption(sensors[OBK_CONSUMPTION_TOTAL].lastReading);
+    HAL_FlashVars_SaveTotalConsumption(sensors[OBK_GENERATION_TOTAL].lastReading);
 	sensors[OBK_CONSUMPTION_TODAY].lastReading  += energy;
 
     if (NTP_IsTimeSynced()) {
@@ -577,6 +596,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
                 root = cJSON_CreateObject();
                 cJSON_AddNumberToObject(root, "uptime", g_secondsElapsed);
                 cJSON_AddNumberToObject(root, "consumption_total", BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_TOTAL)));
+                cJSON_AddNumberToObject(root, "consumption_generation", BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_GENERATION_TOTAL)));
                 cJSON_AddNumberToObject(root, "consumption_last_hour", BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_LAST_HOUR)));
                 cJSON_AddNumberToObject(root, "consumption_stat_index", energyCounterMinutesIndex);
                 cJSON_AddNumberToObject(root, "consumption_sample_count", energyCounterSampleCount);
@@ -673,6 +693,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 			case OBK_CURRENT:				eventChangeCode = CMD_EVENT_CHANGE_CURRENT;	break;
 			case OBK_POWER:					eventChangeCode = CMD_EVENT_CHANGE_POWER; break;
 			case OBK_CONSUMPTION_TOTAL:		eventChangeCode = CMD_EVENT_CHANGE_CONSUMPTION_TOTAL; break;
+			case OBK_GENERATION_TOTAL:		eventChangeCode = CMD_EVENT_CHANGE_GENERATION_TOTAL; break;
 			case OBK_CONSUMPTION_LAST_HOUR:	eventChangeCode = CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR; break;
 			default:						eventChangeCode = CMD_EVENT_NONE; break;
 			}
@@ -772,6 +793,7 @@ void BL_Shared_Init(void)
 
     HAL_GetEnergyMeterStatus(&data);
     sensors[OBK_CONSUMPTION_TOTAL].lastReading = data.TotalConsumption;
+    sensors[OBK_GENERATION_TOTAL].lastReading = data.TotalGeneration;
     sensors[OBK_CONSUMPTION_TODAY].lastReading = data.TodayConsumpion;
     sensors[OBK_CONSUMPTION_YESTERDAY].lastReading = data.YesterdayConsumption;
     actual_mday = data.actual_mday;    
