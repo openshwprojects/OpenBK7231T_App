@@ -13,6 +13,8 @@
 #include "driver/drv_public.h"
 //#include "ir/ir_local.h"
 
+#include "driver/drv_deviceclock.h"
+
 // Commands register, execution API and cmd tokenizer
 #include "cmnds/cmd_public.h"
 
@@ -1274,6 +1276,9 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 //				DRV_StartDriver("TM1638");
 //#endif
 //			}
+#ifndef OBK_DISABLE_ALL_DRIVERS
+				DRV_StartDriver("CLOCK");	// allways start "CLOCK" driver, will do nothing but return time 0 if ntp not running
+#endif			
 		}
 	}
 

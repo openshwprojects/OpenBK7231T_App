@@ -53,8 +53,10 @@ set(PROJ_ALL_SRC
 	../../../src/driver/drv_max72xx_internal.c
 	../../../src/driver/drv_max72xx_single.c
 	../../../src/driver/drv_mcp9808.c
-	../../../src/driver/drv_ntp_events.c
+#	../../../src/driver/drv_ntp_events.c
 	../../../src/driver/drv_ntp.c
+	../../../src/driver/drv_timed_events.c
+	../../../src/driver/drv_deviceclock.c
 	../../../src/driver/drv_pt6523.c
 	../../../src/driver/drv_pwm_groups.c
 	../../../src/driver/drv_pwmToggler.c
