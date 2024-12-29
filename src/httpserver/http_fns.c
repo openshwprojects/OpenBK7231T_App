@@ -17,6 +17,7 @@
 #include "../cJSON/cJSON.h"
 #include <time.h>
 #include "../driver/drv_ntp.h"
+#include "../driver/drv_deviceclock.h"		// to set clock via Javascript in pmntp
 #include "../driver/drv_local.h"
 
 static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"></form>";
@@ -178,6 +179,7 @@ int http_fn_testmsg(http_request_t* request) {
 	return 0;
 
 }
+
 
 // bit mask telling which channels are hidden from HTTP
 // If given bit is set, then given channel is hidden

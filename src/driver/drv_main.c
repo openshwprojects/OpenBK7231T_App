@@ -7,6 +7,7 @@
 #include "drv_ir.h"
 #include "drv_local.h"
 #include "drv_ntp.h"
+#include "drv_deviceclock.h"
 #include "drv_public.h"
 #include "drv_ssdp.h"
 #include "drv_test_drivers.h"
@@ -108,8 +109,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"NTP driver is required to get current time and date from web. Without it, there is no correct datetime. Put 'startDriver NTP' in short startup line or autoexec.bat to run it on start.",
 	//drvdetail:"requires":""}
-	{ "NTP",		NTP_Init,			NTP_OnEverySecond,			NTP_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+	{ "NTP",		NTP_Init,			NTP_OnEverySecond,			NTP_AppendInformationToHTTPIndexPage, NULL, NTP_Stop , NULL, false },
 #endif
+	//drvdetail:{"name":"CLOCK",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"CLOCK driver will allways run. It will usually get time from NTP and handle timed events",
+	//drvdetail:"requires":""}
+	{ "CLOCK",		CLOCK_Init,			CLOCK_OnEverySecond,			NULL, NULL, NULL , NULL, false },
 #if ENABLE_HTTPBUTTONS
 	//drvdetail:{"name":"HTTPButtons",
 	//drvdetail:"title":"TODO",
