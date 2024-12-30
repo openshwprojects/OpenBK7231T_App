@@ -3014,20 +3014,24 @@ int http_fn_ota(http_request_t* request) {
 #ifndef OBK_OTA_EXTENSION
 	poststr(request, "<h3>Sorry, OTA update not implemented for " DEVICENAME_PREFIX_FULL " </h3>");
 #else
-	poststr(request, "<p>For a more user-friendly experience, it is recommended to use the OTA option in the Web Application, where you can easily drag and drop files without needing to set up a server. On Beken platforms, the .rbl file is used for OTA updates. In the OTA section below, paste the link to the .rbl file (an HTTP server is required).</p>");
-	add_label_text_field(request, "URL for new bin file", "host", "", "<form action=\"/ota_exec\">");
+	poststr(request, "<p>It's recommended to use the OTA option in the Web Application, where you can easily drag and drop files.<br><br>If you have an HTTP server providing the OTA file, you may enter the URL below. "
+#if PLATFORM_BEKEN
+	" On Beken platforms, the .rbl file is used for OTA updates."
+#endif
+	"</p>");
+	add_label_text_field(request, "URL for ota firmware file", "host", "", "<form action=\"/ota_exec\">");
 	poststr(request, "<br>\
 <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure?')\">\
 </form>");
 
+	const char htmlOTA[] = "<script>var o=document.getElementById('otafile'),d=document.querySelector('dialog'),h=document.getElementById('hint'),D='OTA started! Please wait ',R=/" DEVICENAME_PREFIX_FULL "_.*" 
+#ifdef OBK_OTA_NAME_EXTENSION
+	OBK_OTA_NAME_EXTENSION
+#endif
+	OBK_OTA_EXTENSION "/,SR=R.source,mr=(e)=>e.name.match(R);doota=()=>{f=o.files[0];if(f&&(f)){d.showModal();var t=30;setTimeout(()=>{d.close(),location.href='/'},1e3*t),setInterval(()=>d.innerHTML=D+t--+' secs',1e3),fetch('/api/ota',{method:'POST',body:f}).then((e)=>{e.ok&&fetch('/index?restart=1')})}else alert(f?'filename invalid':'no file selected')};d.innerHTML=D,o.addEventListener('change',((e)=>{const t=e.target.files[0];if(!t)return;h.innerHTML=mr(t)?'':'Selected file does <b>not</b> match reqired format '+SR+'!'}))</script>";
 
-//#define OTA_REGEXP "/^" DEVICENAME_PREFIX_FULL "_.*" OBK_OTA_EXTENSION "$/"
-
-
-	const char htmlOTA[] = "<script>var o=document.getElementById('otafile'),d=document.querySelector('dialog'),h=document.getElementById('hint'),D='OTA started! Please wait ',R=/^" DEVICENAME_PREFIX_FULL "_.*" OBK_OTA_EXTENSION "$/;function doota(){var f=o.files[0];if(f&&f.name.match(R)){d.showModal();var t=30;setTimeout((function(){d.close(),location.href='/'}),1e3*t),setInterval((function(){d.innerHTML=D+t--+' secs'}),1e3),fetch('/api/ota',{method:'POST',body:f}).then((e=>{e.ok&&fetch('/index?restart=1')}))}else alert(f?'filename invalid':'no file selected')}d.innerHTML=D,o.addEventListener('change',(function(e){const t=e.target.files[0];if(!t)return;h.innerHTML=t.name.match(R)?'':'Selected file does <b>not match!</b>!'}))</script>";
-
-	poststr(request, "<br><br><br><br>Expert feature: Upload firmware file for OTA<br>Use Web App if you are unsure what this is about!<br>Files must match '" DEVICENAME_PREFIX_FULL "_*"  OBK_OTA_EXTENSION "'. &nbsp;&nbsp; <span id='hint' style='color: yellow;'></span><br><br>");
-	poststr(request, "<input id='otafile' type='file'accept='" OBK_OTA_EXTENSION "'>");
+	poststr(request, "<br><br><br>Expert feature: Upload firmware OTA file.<br>If unsure, please use Web App!<br><span id='hint' style='color: yellow;'></span><br><br>");
+	poststr(request, "<input id='otafile' type='file' accept='" OBK_OTA_EXTENSION "'>");
 	poststr(request, "<input type='button' class='bred' onclick='doota();' value='START OTA - No file check - will reboot after OTA'><dialog></dialog>");
 	poststr(request, htmlOTA);
 #endif
