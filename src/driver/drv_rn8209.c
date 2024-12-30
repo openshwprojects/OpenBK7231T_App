@@ -138,7 +138,7 @@ void RN8029_RunEverySecond(void) {
 		"V %u, C %u %u, P %u %u\n", g_voltage, g_currentA, g_currentB, g_powerA, g_powerB);
 
 	PwrCal_Scale(g_voltage, g_currentA, g_powerA, &final_v, &final_c, &final_p);
-	BL_ProcessUpdate(final_v, final_c, final_p, NAN, NAN);
+	BL_ProcessUpdate(final_v, final_c, final_p);
 }
 /*
 Send: 36 (command code)

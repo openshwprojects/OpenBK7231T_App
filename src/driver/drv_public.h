@@ -24,7 +24,9 @@ typedef enum energySensor_e {
 	OBK_CONSUMPTION_TODAY = OBK_CONSUMPTION__DAILY_FIRST, 
 	OBK_CONSUMPTION_YESTERDAY,
 	OBK_CONSUMPTION_2_DAYS_AGO,
+	OBK_EXPORT_TOAL = OBK_CONSUMPTION_2_DAYS_AGO,
 	OBK_CONSUMPTION_3_DAYS_AGO,
+	OBK_EXPORT_TODAY = OBK_CONSUMPTION_3_DAYS_AGO,
 	OBK_CONSUMPTION__DAILY_LAST = OBK_CONSUMPTION_3_DAYS_AGO,
 
 	OBK_CONSUMPTION_CLEAR_DATE,
@@ -35,8 +37,8 @@ typedef enum energySensor_e {
 typedef struct energySensorNames_s {	
 	const char* const hass_dev_class;
 	const char* const units;
-	const char* const name_friendly;
-	const char* const name_mqtt;
+	const char* name_friendly;
+	const char* name_mqtt;
 	const char* const hass_uniq_id_suffix; //keep identifiers persistent in case OBK_ENERG_SENSOR changes
 } energySensorNames_t;
 

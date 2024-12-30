@@ -48,7 +48,7 @@ void Test_Power_RunEverySecond(void) {
 		final_v += (rand() % 100) * 0.1f;
 		final_p += (rand() % 100) * 0.1f;
 	}
-	BL_ProcessUpdate(final_v, final_c, final_p, NAN, NAN);
+	BL_ProcessUpdate(final_v, final_c, final_p);
 }
 
 //Test LED driver
