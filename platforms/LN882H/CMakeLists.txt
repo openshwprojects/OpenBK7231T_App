@@ -57,7 +57,7 @@ set(PROJ_ALL_SRC
     app/src/driver/drv_max72xx_internal.c
     app/src/driver/drv_max72xx_single.c
     app/src/driver/drv_mcp9808.c
-#    app/src/driver/drv_ntp_events.c
+    app/src/driver/drv_ntp_events.c
     app/src/driver/drv_ntp.c
     app/src/driver/drv_pt6523.c
     app/src/driver/drv_pwm_groups.c
