@@ -28,6 +28,7 @@
 #define ENABLE_DRIVER_BL0937    1
 #define ENABLE_DRIVER_DHT		1
 #define ENABLE_TASMOTA_JSON		1
+#define OBK_OTA_EXTENSION 		".img"
 
 #elif PLATFORM_W800
 
@@ -35,6 +36,7 @@
 //#define OBK_DISABLE_ALL_DRIVERS 1
 #define ENABLE_TASMOTA_JSON		1
 #define ENABLE_DRIVER_DS1820		1
+#define OBK_OTA_EXTENSION 		".img"
 
 
 #elif WINDOWS
@@ -105,6 +107,8 @@
 #define ENABLE_DRIVER_SSDP		1
 #define ENABLE_DRIVER_CHT83XX 1
 #define ENABLE_DRIVER_DS1820		1
+#define OBK_OTA_EXTENSION 		".bin.xz.ota"
+
 
 #elif PLATFORM_BEKEN
 
@@ -156,8 +160,8 @@
 #define ENABLE_DRIVER_IR2		0
 #define ENABLE_DRIVER_DS1820		1
 #define ENABLE_DRIVER_CHT83XX 1
-
 //#define ENABLE_DRIVER_OPENWEATHERMAP	1
+#define OBK_OTA_EXTENSION 		".rbl"
 
 // ENABLE_I2C_ is a syntax for
 // our I2C system defines for drv_i2c_main.c
@@ -182,6 +186,8 @@
 //#define	ENABLE_DRIVER_TMGN		1
 #define ENABLE_TASMOTA_JSON		1
 #define ENABLE_DRIVER_DS1820		1
+#define OBK_OTA_EXTENSION 		".bin"
+#define OBK_OTA_NAME_EXTENSION 		"_OTA"
 
 #elif PLATFORM_ESPIDF
 
@@ -207,6 +213,7 @@
 #define ENABLE_DRIVER_DDP			1
 #define ENABLE_DRIVER_SSDP			1
 #define ENABLE_DRIVER_CHT83XX		1
+#define OBK_OTA_EXTENSION 		".img"
 
 #elif PLATFORM_TR6260
 
