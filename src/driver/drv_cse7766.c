@@ -185,7 +185,7 @@ int CSE7766_TryToGetNextCSE7766Packet() {
         float voltage, current, power;
         PwrCal_Scale(raw_unscaled_voltage, raw_unscaled_current,
                      raw_unscaled_power, &voltage, &current, &power);
-        BL_ProcessUpdate(voltage, current, power, NAN, NAN);
+        BL_ProcessUpdate(voltage, current, power);
     }
 
 #if 0
