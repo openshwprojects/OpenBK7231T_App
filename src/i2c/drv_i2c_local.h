@@ -30,6 +30,8 @@ typedef struct i2cDevice_s {
 
 void DRV_I2C_Write(byte addr, byte data);
 void DRV_I2C_WriteBytes(byte addr, byte *data, int len);
+void DRV_I2C_WriteBytesSingle(byte *data, int len);
+void DRV_I2C_ReadBytes(byte addr, byte *data, int size);
 void DRV_I2C_Read(byte addr, byte *data);
 int DRV_I2C_Begin(int dev_adr, int busID);
 void DRV_I2C_Close();
