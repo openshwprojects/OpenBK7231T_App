@@ -108,6 +108,7 @@
 #define ENABLE_DRIVER_CHT83XX 1
 #define ENABLE_DRIVER_DS1820		1
 #define OBK_OTA_EXTENSION 		".bin.xz.ota"
+#define ENABLE_I2C					1
 
 
 #elif PLATFORM_BEKEN
@@ -131,7 +132,7 @@
 //#define ENABLE_DRIVER_HT16K33   1
 //#define ENABLE_DRIVER_MAX72XX	  1
 //#define ENABLE_DRIVER_ADCBUTTON 1
-//#define ENABLE_I2C			    1
+#define ENABLE_I2C			    1
 //#define ENABLE_TEST_COMMANDS	1
 #define ENABLE_CALENDAR_EVENTS	1
 #define ENABLE_DRIVER_BRIDGE	1
@@ -191,7 +192,7 @@
 
 #elif PLATFORM_ESPIDF
 
-//#define ENABLE_I2C					1
+#define ENABLE_I2C					1
 #define ENABLE_NTP					1
 //#define ENABLE_NTP_DST			1
 #define ENABLE_DRIVER_LED			1
@@ -220,7 +221,7 @@
 #define ENABLE_LITTLEFS				1
 #define NEW_TCP_SERVER				1
 #define ENABLE_EXPAND_CONSTANT		1
-//#define ENABLE_I2C					1
+#define ENABLE_I2C					1
 #define ENABLE_DRIVER_AHT2X			1
 #define ENABLE_DRIVER_BMPI2C		1
 #define ENABLE_DRIVER_DS1820		1
