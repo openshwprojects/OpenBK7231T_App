@@ -55,6 +55,16 @@ void CControllerBL0942::onDrawn() {
 	}
 	checksum ^= 0xFF;
 	data[BL0942_PACKET_LEN - 1] = checksum;
+
+	if (0) {
+		printf("BL0942 packet: ");
+		for (i = 0; i < BL0942_PACKET_LEN; i++) {
+			printf("%02X ", data[i]);
+		}
+		printf("\n");
+		printf("Voltage = %.2f, Current = %.3f, Power = %.2f\n", realVoltage, realCurrent, realPower);
+	}
+
 	for (i = 0; i < BL0942_PACKET_LEN; i++) {
 		UART_AppendByteToReceiveRingBuffer(data[i]);
 	}

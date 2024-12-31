@@ -2505,6 +2505,13 @@ int http_fn_cfg_pins(http_request_t* request) {
 
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Pin config");
+
+#if 0
+	poststr(request, "<script src=\"https://openbekeniot.github.io/webapp/test1.js\"></script>");
+	//poststr(request, "<script src=\"http://localhost:8080/test1.js\"></script>");
+	poststr(request, "<script>createBeforeMain();</script>");
+#endif
+
 	poststr(request, "<p>The first field assigns a role to the given pin. The next field is used to enter channel index (relay index), used to support multiple relays and buttons. ");
 	poststr(request, "So, first button and first relay should have channel 1, second button and second relay have channel 2, etc.</p>");
 	poststr(request, "<p>Only for button roles another field will be provided to enter channel to toggle when doing double click. ");
