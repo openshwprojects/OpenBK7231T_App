@@ -40,6 +40,10 @@ static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"
 #include "temp_detect_pub.h"
 #elif defined(PLATFORM_LN882H)
 #elif defined(PLATFORM_TR6260)
+#elif defined(PLATFORM_RTL87X0C)
+#include "hal_sys_ctrl.h"
+extern hal_reset_reason_t reset_reason;
+extern uint32_t current_fw_idx;
 #elif defined(PLATFORM_ESPIDF)
 #include "esp_wifi.h"
 #include "esp_system.h"
@@ -782,7 +786,9 @@ int http_fn_index(http_request_t* request) {
 
   // display temperature - thanks to giedriuslt
   // only in Normal mode, and if boot is not failing
+#ifndef NO_CHIP_TEMPERATURE
 	hprintf255(request, "<h5>Chip temperature: %.1f°C</h5>", g_wifi_temperature);
+#endif
 
 	inputName = CFG_GetPingHost();
 	if (inputName && *inputName && CFG_GetPingDisconnectedSecondsToRestart()) {
@@ -875,6 +881,17 @@ typedef enum {
 	default: break;
 	}
 	hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", reason, s);
+#elif PLATFORM_RTL87X0C
+	const char* s = "Unk";
+	switch(reset_reason)
+	{
+		case HAL_RESET_REASON_POWER_ON: s = "Pwr"; break;
+		case HAL_RESET_REASON_SOFTWARE: s = "Soft"; break;
+		case HAL_RESET_REASON_WATCHDOG: s = "Wdt"; break;
+		default: break;
+	}
+	hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", reset_reason, s);
+	hprintf255(request, "<h5>Current fw: FW%i</h5>", current_fw_idx);
 #endif
 	if (CFG_GetMQTTHost()[0] == 0) {
 		hprintf255(request, "<h5>MQTT State: not configured<br>");
@@ -1308,6 +1325,8 @@ int http_fn_cfg_wifi(http_request_t* request) {
 		}
 #elif PLATFORM_TR6260
 		poststr(request, "TODO TR6260<br>");
+#elif defined(PLATFORM_RTL87X0C)
+		poststr(request, "TODO RTL87X0C<br>");
 #else
 #error "Unknown platform"
 		poststr(request, "Unknown platform<br>");
@@ -2990,6 +3009,7 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 
 #elif PLATFORM_ESPIDF
 #elif PLATFORM_TR6260
+#elif PLATFORM_RTL87X0C
 #elif PLATFORM_W600 || PLATFORM_W800
 	t_http_fwup(s);
 #elif PLATFORM_XR809
