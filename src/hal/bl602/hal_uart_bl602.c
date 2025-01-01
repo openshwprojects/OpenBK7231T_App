@@ -8,71 +8,10 @@
 
 #include "../hal_uart.h"
 #include <vfs.h>
-#include <bl_uart.h>
-#include <bl_irq.h>
-#include <event_device.h>
-#include <cli.h>
-#include <aos/kernel.h>
-#include <aos/yloop.h>
-
-#include <FreeRTOS.h>
-#include <task.h>
-#include <timers.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-
-#include <vfs.h>
-#include <aos/kernel.h>
-#include <aos/yloop.h>
-#include <event_device.h>
-#include <cli.h>
-
-#include <lwip/tcpip.h>
-#include <lwip/sockets.h>
-#include <lwip/netdb.h>
-#include <lwip/tcp.h>
-#include <lwip/err.h>
-#include <http_client.h>
-#include <netutils/netutils.h>
-
-#include <bl602_glb.h>
-#include <bl602_hbn.h>
-
-#include <bl_uart.h>
-#include <bl_chip.h>
-#include <bl_wifi.h>
-#include <hal_wifi.h>
-#include <bl_sec.h>
-#include <bl_cks.h>
-#include <bl_irq.h>
-#include <bl_dma.h>
-#include <bl_timer.h>
-#include <bl_gpio_cli.h>
-#include <bl_wdt_cli.h>
-#include <hal_uart.h>
-#include <hal_sys.h>
-#include <hal_gpio.h>
-#include <hal_boot2.h>
-#include <hal_board.h>
-#include <looprt.h>
-#include <loopset.h>
-#include <sntp.h>
-#include <bl_sys_time.h>
-#include <bl_sys.h>
-#include <bl_sys_ota.h>
-#include <bl_romfs.h>
-#include <fdt.h>
 #include <device/vfs_uart.h>
-#include <utils_log.h>
+#include <bl_uart.h>
 #include <bl602_uart.h>
-
-#include <easyflash.h>
-#include <bl60x_fw_api.h>
-#include <wifi_mgmr_ext.h>
-#include <utils_log.h>
-#include <libfdt.h>
-#include <blog.h>
+#include <aos/yloop.h>
 
 //int g_fd;
 uint8_t g_id = 1;
@@ -151,13 +90,12 @@ int HAL_UART_Init(int baud, int parity)
 		if(fd_console >= 0)
 		{
 			aos_ioctl(fd_console, IOCTL_UART_IOC_BAUD_MODE, baud);
-			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Init CLI with event Driven\r\n");
-			aos_cli_init(0);
 			aos_poll_read_fd(fd_console, console_cb_read, (void*)0x12345678);
+			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "UART init done\r\n");
 		}
 		else
 		{
-			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "failed CLI with event Driven\r\n");
+			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "UART init failed\r\n");
 		}
 	}
 	return 1;

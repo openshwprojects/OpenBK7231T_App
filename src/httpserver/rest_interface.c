@@ -19,24 +19,8 @@ uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
 #define FLASH_INDEX_XR809 0
 
 #elif PLATFORM_BL602
-#include <stdio.h>
-#include <string.h>
-
-#include <FreeRTOS.h>
-#include <task.h>
-#include <lwip/mem.h>
-#include <lwip/memp.h>
-#include <lwip/dhcp.h>
-#include <lwip/tcpip.h>
-#include <lwip/ip_addr.h>
-#include <lwip/sockets.h>
-#include <lwip/netdb.h>
-
-#include <cli.h>
 #include <hal_boot2.h>
-#include <hal_sys.h>
 #include <utils_sha256.h>
-#include <bl_sys_ota.h>
 #include <bl_mtd.h>
 #include <bl_flash.h>
 #elif PLATFORM_W600

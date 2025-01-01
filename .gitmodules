@@ -12,7 +12,7 @@
 	branch = master
 [submodule "sdk/OpenBL602"]
 	path = sdk/OpenBL602
-	url = https://github.com/openshwprojects/OpenBL602.git
+	url = https://github.com/giedriuslt/OpenBL602.git
 	branch = master
 [submodule "sdk/OpenW800"]
 	path = sdk/OpenW800

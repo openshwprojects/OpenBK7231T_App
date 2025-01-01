@@ -110,10 +110,10 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	}
 #elif defined(PLATFORM_BL602)
 	if (bOn) {
-		wifi_mgmr_sta_powersaving(2);
+		wifi_mgmr_sta_ps_enter(2);
 	}
 	else {
-		wifi_mgmr_sta_powersaving(0);
+		wifi_mgmr_sta_ps_exit();
 	}
 #elif defined(PLATFORM_LN882H)
 	// this will be applied after WiFi connect

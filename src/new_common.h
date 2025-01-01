@@ -623,8 +623,7 @@ int strcpy_safe(char *tg, const char *src, int tgMaxLen);
 int strcpy_safe_checkForChanges(char *tg, const char *src, int tgMaxLen);
 void urldecode2_safe(char *dst, const char *srcin, int maxDstLen);
 int strIsInteger(const char *s);
-
-#if !defined(PLATFORM_ESPIDF) && !defined(PLATFORM_TR6260)
+#if !defined(PLATFORM_ESPIDF) && !defined(PLATFORM_TR6260) && !defined(PLATFORM_BL602)
 const char* strcasestr(const char* str1, const char* str2);
 #endif
 
