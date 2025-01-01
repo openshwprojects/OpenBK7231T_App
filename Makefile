@@ -210,7 +210,7 @@ sdk/OpenW600/tools/gcc-arm-none-eabi-4_9-2014q4/bin: submodules
 	cd sdk/OpenW600/tools && tar -xf ../support/*.tar.bz2
 
 .PHONY: OpenW800
-OpenW800: prebuild_OpenW800 sdk/OpenW800/tools/w800/csky/bin sdk/OpenW800/sharedAppContainer/sharedApp prebuild_OpenW800
+OpenW800: prebuild_OpenW800 sdk/OpenW800/tools/w800/csky/bin sdk/OpenW800/sharedAppContainer/sharedApp
 	# if building new version, make sure "new_http.o" is deleted (it contains build time and version, so build time is set to actual time)
 	rm -rf sdk/OpenW800/bin/build/w800/obj/sharedAppContainer/sharedApp/src/httpserver/new_http.o
 	# define APP_Version so it's not "W800_Test" every time
