@@ -85,6 +85,9 @@ generateNotes:
         - W800 (W800-C400, WinnerMicro WiFi & Bluetooth), W801
         - W600 (TW-01, TW-02, TW-03 etc), W601 (WIS600, ESP-01W etc)
         - LN882H (LN-02, WL2S, WL2H etc)
+        - ESP32
+        - TR6260
+        - RTL87X0C (WBR2, WBR3 etc)
 
       footerPartial: |
         {{#if noteGroups}}
@@ -119,8 +122,10 @@ generateNotes:
         | LN882H   | OTA Update | [OpenLN882H_{{version}}_OTA.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenLN882H_{{version}}_OTA.bin)   |
         | LN882H   | UART Flash | [OpenLN882H_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenLN882H_{{version}}.bin)           |        
         | BK7231M  | UART Flash | [OpenBK7231M_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231M_QIO_{{version}}.bin) |
-        | TR6260  | UART Flash | [OpenTR6260_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenTR6260_{{version}}.bin) |
-        | Win32  | - | [obkSimulator_{{version}}.zip]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/obkSimulator_{{version}}.zip) |
+        | TR6260   | UART Flash | [OpenTR6260_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenTR6260_{{version}}.bin) |
+        | RTL87X0C | UART Flash | [OpenRTL87X0C_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL87X0C_{{version}}.bin)               |
+        | RTL87X0C | OTA Update | [OpenRTL87X0C_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL87X0C_{{version}}_ota.img)         |
+        | Win32    | - | [obkSimulator_{{version}}.zip]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/obkSimulator_{{version}}.zip) |
 
         CCtr Flash = Tuya cloud Cutter flash
         SPI Flash can be flashed through SPI, even if you broke BK bootloader
@@ -180,6 +185,7 @@ publish:
       - path: "output/**/OpenW800*"
       - path: "output/**/OpenLN882H*"
       - path: "output/**/OpenTR6260*"
+      - path: "output/**/OpenRTL87*"
       - path: "output/**/obkSimulator*"
 
 success:
