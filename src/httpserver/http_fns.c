@@ -39,6 +39,7 @@ static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"
 #include "BkDriverFlash.h"
 #include "temp_detect_pub.h"
 #elif defined(PLATFORM_LN882H)
+#include "reboot_trace.h"
 #elif defined(PLATFORM_TR6260)
 #elif defined(PLATFORM_RTL87X0C)
 #include "hal_sys_ctrl.h"
