@@ -1214,7 +1214,7 @@ static int _check_ota_header(ota_header_t *ota_header, uint32_t *ota_len, int *u
 #include "hal/hal_flash.h"
 #include "netif/ethernetif.h"
 #include "flash_partition_table.h"
-
+#include "ln_nvds.h"
 
 #define KV_OTA_UPG_STATE           ("kv_ota_upg_state")
 #define HTTP_OTA_DEMO_STACK_SIZE   (1024 * 16)

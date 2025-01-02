@@ -1,5 +1,6 @@
 #ifdef PLATFORM_LN882H
 
+#include "../../new_cfg.h"
 #include "../hal_wifi.h"
 #include "wifi.h"
 #include "wifi_port.h"
@@ -13,6 +14,7 @@
 #include "ln_psk_calc.h"
 #include "utils/sysparam_factory_setting.h"
 #include <lwip/sockets.h>
+#include <lwip/dns.h>
 #include <stdbool.h>	// for bool "g_STA_static_IP"
 
 
@@ -238,7 +240,7 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
             ip_info.gw.addr      = ipaddr_addr((const char *)g_IP);
 	
             netdev_set_ip_info(NETIF_IDX_STA, &ip_info);
-            dns_setserver(0,&ip->dnsServerIpAddr);
+            dns_setserver(0, (ip_addr_t *)&ip->dnsServerIpAddr);
        } else  LOG(LOG_LVL_INFO, "INSIDE wifi_init_sta, no static IP - using DHCP\r\n");
 
     netdev_set_active(NETIF_IDX_STA);
