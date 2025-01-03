@@ -20,6 +20,8 @@ const char httpHeader[] = "HTTP/1.1 %d OK\nContent-type: %s";  // HTTP header
 const char httpMimeTypeHTML[] = "text/html";              // HTML MIME type
 const char httpMimeTypeText[] = "text/plain";           // TEXT MIME type
 const char httpMimeTypeXML[] = "text/xml";           // TEXT MIME type
+const char httpMimeTypeCSS[] = "text/css";           // CSS MIME type
+const char httpMimeTypeJavascript[] = "application/javascript";   // NOTE: According to RFC 4329 text/javascript became obsolete see: https://www.rfc-editor.org/rfc/rfc4329.html#section-7.2
 const char httpMimeTypeJson[] = "application/json";           // TEXT MIME type
 const char httpMimeTypeBinary[] = "application/octet-stream";   // binary/file MIME type
 
