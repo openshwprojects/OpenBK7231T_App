@@ -23,8 +23,10 @@
 
 // Some limited drivers are supported on W600, OBK_DISABLE_ALL_DRIVERS is not defined
 #define ENABLE_TASMOTADEVICEGROUPS 1
-#define ENABLE_NTP				1
+#define ENABLE_NTP    1
 #define ENABLE_CLOCK_DST			1
+#define ENABLE_CALENDAR_EVENTS	1
+#define ENABLE_CLOCK_SUNRISE_SUNSET	1
 #define ENABLE_DRIVER_BL0937    1
 #define ENABLE_DRIVER_DHT		1
 #define ENABLE_TASMOTA_JSON		1
@@ -227,6 +229,10 @@
 #define ENABLE_DRIVER_DS1820		1
 #define ENABLE_DRIVER_LED 			1
 #define ENABLE_DRIVER_WEMO			1
+#define ENABLE_NTP    1
+#define ENABLE_CLOCK_DST			1
+#define ENABLE_CALENDAR_EVENTS	1
+#define ENABLE_CLOCK_SUNRISE_SUNSET	1
 
 #else
 
