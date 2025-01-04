@@ -536,6 +536,10 @@ extern int g_sleepfactor;
 
 #define bk_printf printf
 
+#ifdef PLATFORM_RTL8710B
+#define atoi __wrap_atoi
+#endif
+
 // OS_MSleep?
 #define rtos_delay_milliseconds(x) vTaskDelay(x / portTICK_PERIOD_MS / g_sleepfactor)
 #define delay_ms(x) vTaskDelay(x / portTICK_PERIOD_MS / g_sleepfactor)

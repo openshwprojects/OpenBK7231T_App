@@ -14,6 +14,7 @@ rtw_mode_t wifi_mode = RTW_MODE_NONE;
 TaskHandle_t g_sys_task_handle1;
 uint8_t wmac[6] = { 0 };
 char set_key[40];
+uint32_t current_fw_idx;
 
 void LOGUART_SetBaud_FromFlash(void) {}
 
@@ -37,6 +38,8 @@ int main(void)
 	EFUSE_LogicalMap_Read(efuse);
 	memcpy(wmac, efuse + 0x11A, 6);
 	free(efuse);
+
+	current_fw_idx = ota_get_cur_index();
 
 	xTaskCreate(
 		obk_task,

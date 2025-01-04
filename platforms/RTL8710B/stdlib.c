@@ -27,7 +27,28 @@ ROM char* _strsep(char** stringp, const char* delim);
 
 int __wrap_atoi(const char* str)
 {
-	return prvAtoi(str);
+	register int num, neg;
+	register char c;
+	num = neg = 0;
+	c = *str;
+	while((c == ' ') || (c == '\n') || (c == '\r') || (c == '\t'))c = *++str;
+	if(c == '-')
+	{ /* get an optional sign */
+		neg = 1;
+		c = *++str;
+	}
+	else if(c == '+')
+	{
+		c = *++str;
+	}
+
+	while((c >= '0') && (c <= '9'))
+	{
+		num = (10 * num) + (c - '0');
+		c = *++str;
+	}
+	if(neg)return(0 - num);
+	return(num);
 }
 
 long __wrap_atol(const char* str)

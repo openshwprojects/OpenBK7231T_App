@@ -158,6 +158,14 @@ prebuild_OpenRTL87X0C:
 	else echo "prebuild for OpenRTL87X0C not found ... "; \
 	fi
 
+prebuild_OpenRTL8710B:
+	#git submodule update --init --recursive sdk/OpenRTL8710A_B
+	@if [ -e platforms/RTL8710B/pre_build.sh ]; then \
+		echo "prebuild found for OpenRTL8710B"; \
+		sh platforms/RTL8710B/pre_build.sh; \
+	else echo "prebuild for OpenRTL8710B not found ... "; \
+	fi
+
 # Build main binaries
 OpenBK7231T: prebuild_OpenBK7231T
 	$(MAKE) APP_NAME=OpenBK7231T TARGET_PLATFORM=bk7231t SDK_PATH=sdk/OpenBK7231T APPS_BUILD_PATH=../bk7231t_os build-BK7231
@@ -301,6 +309,19 @@ OpenRTL87X0C: prebuild_OpenRTL87X0C
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenRTL87X0C/project/OpenBeken/GCC-RELEASE/application_is/Debug/bin/flash_is.bin output/$(APP_VERSION)/OpenRTL87X0C_$(APP_VERSION).bin
 	cp sdk/OpenRTL87X0C/project/OpenBeken/GCC-RELEASE/application_is/Debug/bin/firmware_is.bin output/$(APP_VERSION)/OpenRTL87X0C_$(APP_VERSION)_ota.img
+	
+.PHONY: OpenRTL8710B
+OpenRTL8710B: prebuild_OpenRTL8710B
+	$(MAKE) -C sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE APP_VERSION=$(APP_VERSION) -j $(shell nproc)
+	$(MAKE) -C sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE APP_VERSION=$(APP_VERSION) ota_idx=2
+	mkdir -p output/$(APP_VERSION)
+	cp sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/boot_all.bin output/$(APP_VERSION)/OpenRTL8710B_boot.bin
+	cp sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/image2_all_ota1.bin output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION).bin
+	touch output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION)_ota.img
+	echo "OBK_OTA_IDX1" >> output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION)_ota.img
+	@cat sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/image2_all_ota1.bin >> output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION)_ota.img
+	echo "OBK_OTA_IDX2" >> output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION)_ota.img
+	@cat sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/image2_all_ota2.bin >> output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION)_ota.img
 
 # clean .o files and output directory
 .PHONY: clean
@@ -313,6 +334,7 @@ clean:
 	$(MAKE) -C sdk/OpenW600 clean
 	$(MAKE) -C sdk/OpenTR6260/scripts tr6260s1_clean
 	$(MAKE) -C sdk/OpenRTL87X0C/project/OpenBeken/GCC-RELEASE clean
+	$(MAKE) -C sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE clean
 	test -d ./sdk/OpenLN882H/build && cmake --build ./sdk/OpenLN882H/build --target clean
 	test -d ./platforms/ESP-IDF/build-32 && cmake --build ./platforms/ESP-IDF/build-32 --target clean
 	test -d ./platforms/ESP-IDF/build-c3 && cmake --build ./platforms/ESP-IDF/build-c3 --target clean

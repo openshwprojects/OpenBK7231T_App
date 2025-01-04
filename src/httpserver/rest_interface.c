@@ -75,6 +75,7 @@ static flash_t flash_ota;
 #include "rtl8710b_ota.h"
 
 extern flash_t flash;
+extern uint32_t current_fw_idx;
 
 #else
 
@@ -2222,7 +2223,8 @@ update_ota_exit:
 
 #elif PLATFORM_RTL8710B
 
-	uint32_t NewFWLen = 0, NewFWAddr = 0, NewImg2BlkSize = 0;
+	int NewImg2BlkSize = 0;
+	uint32_t NewFWLen = 0, NewFWAddr = 0;
 	uint32_t address = 0;
 	uint32_t curr_fw_idx = 0;
 	uint32_t flash_checksum = 0;
@@ -2232,6 +2234,7 @@ update_ota_exit:
 	IMAGE_HEADER* OTA1Hdr = NULL;
 	IMAGE_HEADER* FlashImgDataHdr = NULL;
 	union { uint32_t u; unsigned char c[4]; } file_checksum;
+	unsigned char sig_backup[32];
 	int ret = 1;
 
 	if(request->contentLength > 0)
@@ -2256,33 +2259,86 @@ update_ota_exit:
 	if(NewFWAddr == OTA1_ADDR)
 	{
 		if(NewFWLen > (OTA2_ADDR - OTA1_ADDR))
-		{	// firmware size too large
+		{
+			// firmware size too large
 			ret = -1;
 			ADDLOG_ERROR(LOG_FEATURE_OTA, "image size should not cross OTA2");
 			goto update_ota_exit;
 		}
 	}
-	if(NewFWAddr == 0xFFFFFFFF)
+	else if(NewFWAddr == OTA2_ADDR)
+	{
+		if(NewFWLen > (0x195000 + SPI_FLASH_BASE - OTA2_ADDR))
+		{
+			ret = -1;
+			ADDLOG_ERROR(LOG_FEATURE_OTA, "image size crosses OTA2 boundry");
+			goto update_ota_exit;
+		}
+	}
+	else if(NewFWAddr == 0xFFFFFFFF)
 	{
 		ret = -1;
 		ADDLOG_ERROR(LOG_FEATURE_OTA, "update address is invalid");
 		goto update_ota_exit;
 	}
-	NewImg2BlkSize = ((NewFWLen - 5) / 4096) + 1;
+	address = NewFWAddr - SPI_FLASH_BASE;
+	NewImg2BlkSize = ((NewFWLen - 1) / 4096) + 1;
 	device_mutex_lock(RT_DEV_LOCK_FLASH);
 	for(int i = 0; i < NewImg2BlkSize; i++)
 	{
-		if(NewFWAddr - SPI_FLASH_BASE + i * 4096 >= 0x195000) break;
-		flash_erase_sector(&flash, NewFWAddr - SPI_FLASH_BASE + i * 4096);
-		rtos_delay_milliseconds(10);
-		ADDLOG_ERROR(LOG_FEATURE_OTA, "erase: %#010x", NewFWAddr - SPI_FLASH_BASE + i * 4096);
+		flash_erase_sector(&flash, address + i * 4096);
 	}
 	device_mutex_unlock(RT_DEV_LOCK_FLASH);
-	OTF_Mask(1, (NewFWAddr - SPI_FLASH_BASE), NewImg2BlkSize, 1);
-	address = NewFWAddr - SPI_FLASH_BASE;
+	OTF_Mask(1, (address), NewImg2BlkSize, 1);
+	char* hbuf = NULL;
+	bool foundhdr = false;
 
 	do
 	{
+		if(!foundhdr)
+		{
+			if(current_fw_idx == OTA_INDEX_1)
+			{
+				do
+				{
+					writebuf = request->received;
+					writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
+					char* ptr = strstr(writebuf, "OBK_OTA_IDX2\n");
+					if(ptr != NULL)
+					{
+						int len = ptr + 13 - writebuf;
+						ADDLOG_DEBUG(LOG_FEATURE_OTA, "OBK_OTA_IDX2, remaining length:", len);
+						if(len > 0)
+						{
+							hbuf = os_malloc(len);
+							memcpy(hbuf, ptr + 13, len);
+							free(request->received);
+							request->received = hbuf;
+							writelen = len;
+						}
+						foundhdr = true;
+						break;
+					}
+				} while(writelen >= 0);
+			}
+			else
+			{
+				ADDLOG_ERROR(LOG_FEATURE_OTA, "OTA1!!!!");
+			}
+			if(writelen < 0)
+			{
+				ADDLOG_ERROR(LOG_FEATURE_OTA, "Failed to find OBK_OTA_IDX, try again");
+				ret = -1;
+				goto update_ota_exit;
+			}
+		}
+
+		if(startaddr < 32)
+		{
+			memcpy(sig_backup + startaddr, writebuf, (startaddr + writelen > 32 ? (32 - startaddr) : writelen));
+			memset(writebuf, 0xFF, (startaddr + writelen > 32 ? (32 - startaddr) : writelen));
+			ADDLOG_DEBUG(LOG_FEATURE_OTA, "sig_backup for% d bytes from index% d", (startaddr + writelen > 32 ? (32 - startaddr) : writelen), startaddr);
+		}
 		device_mutex_lock(RT_DEV_LOCK_FLASH);
 		if(flash_burst_write(&flash, address + startaddr, writelen, (uint8_t*)writebuf) < 0)
 		{
@@ -2319,16 +2375,27 @@ update_ota_exit:
 	} while((towrite > 0) && (writelen >= 0));
 	uint8_t* buf = (uint8_t*)os_malloc(2048);
 	memset(buf, 0, 2048);
-	for(int i = 0; i < total; i += 2048)
+	for(int i = 0; i < NewFWLen; i += 2048)
 	{
 		int k;
-		int rlen = (total - i) > 2048 ? 2048 : (total - i);
-		flash_stream_read(&flash, NewFWAddr - SPI_FLASH_BASE + i, rlen, buf);
+		int rlen = (startaddr - 4 - i) > 2048 ? 2048 : (startaddr - 4 - i);
+		device_mutex_lock(RT_DEV_LOCK_FLASH);
+		flash_stream_read(&flash, address + i, rlen, buf);
+		device_mutex_unlock(RT_DEV_LOCK_FLASH);
 		for(k = 0; k < rlen; k++)
-			flash_checksum += buf[k];
+		{
+			if(i + k < 32)
+			{
+				flash_checksum += sig_backup[i + k];
+			}
+			else
+			{
+				flash_checksum += buf[k];
+			}
+		}
 	}
-	ADDLOG_INFO(LOG_FEATURE_OTA, "Update file size = %d flash checksum 0x%8x attached checksum 0x%8x", total, flash_checksum, file_checksum.u);
-	OTF_Mask(1, (NewFWAddr - SPI_FLASH_BASE), NewImg2BlkSize, 0);
+	ADDLOG_INFO(LOG_FEATURE_OTA, "Update file size = %d flash checksum 0x%8x attached checksum 0x%8x", NewFWLen, flash_checksum, file_checksum.u);
+	OTF_Mask(1, (address), NewImg2BlkSize, 0);
 	if(file_checksum.u == flash_checksum)
 	{
 		ADDLOG_INFO(LOG_FEATURE_OTA, "Update OTA success!");
@@ -2340,24 +2407,45 @@ update_ota_exit:
 		/*if checksum error, clear the signature zone which has been
 		written in flash in case of boot from the wrong firmware*/
 		device_mutex_lock(RT_DEV_LOCK_FLASH);
-		flash_erase_sector(&flash, NewFWAddr - SPI_FLASH_BASE);
+		flash_erase_sector(&flash, address);
 		device_mutex_unlock(RT_DEV_LOCK_FLASH);
 		ret = -1;
+	}
+	// make it to be similar to rtl8720c - write signature only after success - to prevent boot failure if something goes wrong
+	if(flash_burst_write(&flash, address + 16, 16, sig_backup + 16) < 0)
+	{
+		ret = -1;
+	}
+	else
+	{
+		if(flash_burst_write(&flash, address, 16, sig_backup) < 0)
+		{
+			ret = -1;
+		}
 	}
 update_ota_exit:
 	if(ret != -1)
 	{
 		device_mutex_lock(RT_DEV_LOCK_FLASH);
-		if(ota_get_cur_index() == OTA_INDEX_1)
+		if(current_fw_idx == OTA_INDEX_1)
 		{
 			OTA_Change(OTA_INDEX_2);
+			//ota_write_ota2_addr(OTA2_ADDR);
 		}
 		else
 		{
 			OTA_Change(OTA_INDEX_1);
+			//ota_write_ota2_addr(0xffffffff);
 		}
 		device_mutex_unlock(RT_DEV_LOCK_FLASH);
 		if(buf) free(buf);
+		http_setup(request, httpMimeTypeJson);
+		hprintf255(request, "{\"size\":%d}", total);
+		poststr(request, NULL);
+		CFG_IncrementOTACount();
+		delay_ms(2500);
+		// reboot is not enough, must completely reset the cpu
+		ota_platform_reset();
 	}
 	else
 	{
