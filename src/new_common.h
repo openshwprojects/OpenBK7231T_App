@@ -110,6 +110,11 @@ typedef long BaseType_t;
 #define DEVICENAME_PREFIX_SHORT "rtl87x0C"
 #define PLATFORM_MCU_NAME "RTL87X0C"
 #define MANUFACTURER "Realtek"
+#elif PLATFORM_RTL8710B
+#define DEVICENAME_PREFIX_FULL "OpenRTL8710B"
+#define DEVICENAME_PREFIX_SHORT "rtl8710b"
+#define PLATFORM_MCU_NAME "RTL8710B"
+#define MANUFACTURER "Realtek"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -141,6 +146,8 @@ This platform is not supported, error!
 #define USER_SW_VER "TR6260_Test"
 #elif defined(PLATFORM_RTL87X0C)
 #define USER_SW_VER "RTL87X0C_Test"
+#elif defined(PLATFORM_RTL8710B)
+#define USER_SW_VER "RTL8710B_Test"
 #else
 #define USER_SW_VER "unknown"
 #endif
@@ -500,7 +507,7 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define GLOBAL_INT_DISABLE()		;
 #define GLOBAL_INT_RESTORE()		;
 
-#elif PLATFORM_RTL87X0C
+#elif PLATFORM_REALTEK
 
 #include <stdbool.h>
 #include "FreeRTOS.h"
@@ -517,6 +524,7 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #include "cmsis_os.h"
 
 typedef unsigned int UINT32;
+extern int g_sleepfactor;
 
 #undef ASSERT
 #define ASSERT
@@ -529,8 +537,8 @@ typedef unsigned int UINT32;
 #define bk_printf printf
 
 // OS_MSleep?
-#define rtos_delay_milliseconds(x) vTaskDelay(x / portTICK_PERIOD_MS)
-#define delay_ms(x) vTaskDelay(x / portTICK_PERIOD_MS)
+#define rtos_delay_milliseconds(x) vTaskDelay(x / portTICK_PERIOD_MS / g_sleepfactor)
+#define delay_ms(x) vTaskDelay(x / portTICK_PERIOD_MS / g_sleepfactor)
 
 #define kNoErr                      0       //! No error occurred.
 typedef void* beken_thread_arg_t;

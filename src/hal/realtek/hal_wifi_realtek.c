@@ -1,4 +1,4 @@
-#ifdef PLATFORM_RTL87X0C
+#ifdef PLATFORM_REALTEK
 
 #include "../hal_wifi.h"
 #include "../../new_cfg.h"
@@ -212,7 +212,8 @@ void ConnectToWiFiTask(void* args)
 			break;
 		}
 		security_retry_count++;
-		if(security_retry_count >= 3)
+		delay_ms(50);
+		if(security_retry_count >= 5)
 		{
 			printf("Can't get AP security mode and channel.\r\n");
 			goto exit;
@@ -233,7 +234,13 @@ void ConnectToWiFiTask(void* args)
 	    LwIP_DHCP(0, DHCP_START);
 	}
 	if(wifi_is_up(RTW_STA_INTERFACE) && g_powersave) wifi_enable_powersave();
+	vTaskDelete(NULL);
+	return;
 exit:
+	if(g_wifiStatusCallback != NULL)
+	{
+		g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
+	}
 	vTaskDelete(NULL);
 }
 
@@ -319,4 +326,4 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	return 0;
 }
 
-#endif // PLATFORM_RTL87X0C
+#endif // PLATFORM_REALTEK

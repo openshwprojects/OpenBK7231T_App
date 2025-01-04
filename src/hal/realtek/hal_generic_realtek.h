@@ -1,5 +1,9 @@
-#ifdef PLATFORM_RTL87X0C
+#ifdef PLATFORM_REALTEK
 
+#include "../../new_common.h"
+#include "../../logging/logging.h"
+#include "../../new_cfg.h"
+#include "../../new_pins.h"
 #include <gpio_api.h>
 #include "pwmout_api.h"
 
@@ -12,4 +16,4 @@ typedef struct rtlPinMapping_s
 	pwmout_t* pwm;
 } rtlPinMapping_t;
 
-#endif // PLATFORM_RTL87X0C
+#endif // PLATFORM_REALTEK

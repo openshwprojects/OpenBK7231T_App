@@ -47,7 +47,7 @@ extern uint32_t current_fw_idx;
 #elif defined(PLATFORM_ESPIDF)
 #include "esp_wifi.h"
 #include "esp_system.h"
-#else
+#elif defined(PLATFORM_BK7231T)
 // REALLY? A typo in Tuya SDK? Storge?
 // tuya-iotos-embeded-sdk-wifi-ble-bk7231t/platforms/bk7231t/tuya_os_adapter/include/driver/tuya_hal_storge.h
 #include "tuya_hal_storge.h"
@@ -1326,6 +1326,8 @@ int http_fn_cfg_wifi(http_request_t* request) {
 #elif PLATFORM_TR6260
 		poststr(request, "TODO TR6260<br>");
 #elif defined(PLATFORM_RTL87X0C)
+		poststr(request, "TODO RTL87X0C<br>");
+#elif defined(PLATFORM_RTL8710B)
 		poststr(request, "TODO RTL87X0C<br>");
 #else
 #error "Unknown platform"
@@ -3015,6 +3017,7 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 #elif PLATFORM_ESPIDF
 #elif PLATFORM_TR6260
 #elif PLATFORM_RTL87X0C
+#elif PLATFORM_RTL8710B
 #elif PLATFORM_W600 || PLATFORM_W800
 	t_http_fwup(s);
 #elif PLATFORM_XR809
