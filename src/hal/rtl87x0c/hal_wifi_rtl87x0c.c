@@ -27,6 +27,7 @@ static int g_bOpenAccessPointMode = 0;
 static wifi_data_t wdata = { 0 };
 extern uint8_t wmac[6];
 extern bool g_powersave;
+static int g_bStaticIP = 0;
 
 const char* HAL_GetMyIPString()
 {
@@ -228,7 +229,9 @@ void ConnectToWiFiTask(void* args)
 		printf("ERROR: Can't connect to AP\r\n");
 		goto exit;
 	}
-	LwIP_DHCP(0, DHCP_START);
+	if(g_bStaticIP == 0) {
+	    LwIP_DHCP(0, DHCP_START);
+	}
 	if(wifi_is_up(RTW_STA_INTERFACE) && g_powersave) wifi_enable_powersave();
 exit:
 	vTaskDelete(NULL);
@@ -236,11 +239,30 @@ exit:
 
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
 {
+	struct ip_addr ipaddr;
+	struct ip_addr netmask;
+	struct ip_addr gw;
 	g_bOpenAccessPointMode = 0;
 	strcpy((char*)&wdata.ssid, oob_ssid);
 	strcpy((char*)&wdata.pwd, connect_key);
 	wifi_set_autoreconnect(0);
 
+
+
+	if (ip->localIPAddr[0] == 0) {
+         	//dhcps_init(&xnetif[0]);
+		g_bStaticIP = 0;
+	}
+	else {
+	       // dhcps_deinit();    
+		g_bStaticIP = 1;
+
+		IP4_ADDR(ip_2_ip4(&ipaddr), ip->localIPAddr[0], ip->localIPAddr[1], ip->localIPAddr[2], ip->localIPAddr[3]);
+		IP4_ADDR(ip_2_ip4(&netmask), ip->netMask[0], ip->netMask[1], ip->netMask[2], ip->netMask[3]);
+		IP4_ADDR(ip_2_ip4(&gw), ip->gatewayIPAddr[0], ip->gatewayIPAddr[1], ip->gatewayIPAddr[2], ip->gatewayIPAddr[3]);
+		netif_set_addr(pnetif, ip_2_ip4(&ipaddr), ip_2_ip4(&netmask), ip_2_ip4(&gw));
+	}
+	
 	netif_set_hostname(&xnetif[0], CFG_GetDeviceName());
 	wifi_reg_event_handler(WIFI_EVENT_DISCONNECT, (rtw_event_handler_t)wifi_dis_hdl, NULL);
 	//wifi_reg_event_handler(WIFI_EVENT_CONNECT, (rtw_event_handler_t)wifi_con_hdl, NULL);
