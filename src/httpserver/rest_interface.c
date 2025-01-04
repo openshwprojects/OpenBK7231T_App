@@ -465,8 +465,8 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 					mimetype = "image/x-icon";
 					break;
 				}
-				if (EndsWith(fpath, ".js")) {
-					mimetype = "text/javascript";
+				if (EndsWith(fpath, ".js") || EndsWith(fpath, ".vue")) {
+					mimetype = httpMimeTypeJavascript;
 					break;
 				}
 				if (EndsWith(fpath, ".json")) {
@@ -474,11 +474,11 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 					break;
 				}
 				if (EndsWith(fpath, ".html")) {
-					mimetype = "text/html";
+					mimetype = httpMimeTypeHTML;
 					break;
 				}
-				if (EndsWith(fpath, ".vue")) {
-					mimetype = "application/javascript";
+				if (EndsWith(fpath, ".css")) {
+					mimetype = httpMimeTypeCSS;
 					break;
 				}
 				break;

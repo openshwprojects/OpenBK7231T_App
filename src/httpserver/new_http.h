@@ -8,6 +8,8 @@ extern const char httpMimeTypeText[];           // TEXT MIME type
 extern const char httpMimeTypeJson[];
 extern const char httpMimeTypeBinary[];
 extern const char httpMimeTypeXML[];
+extern const char httpMimeTypeCSS[];           // CSS MIME type
+extern const char httpMimeTypeJavascript[];   // JS MIME type
 
 extern const char htmlShortcutIcon[];
 extern const char htmlDoctype[];
