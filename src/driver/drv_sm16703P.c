@@ -53,7 +53,7 @@ bool SM16703P_VerifyPixel(uint32_t pixel, byte r, byte g, byte b) {
 
 
 void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
-
+	ADDLOG_INFO(LOG_FEATURE_CMD, "SM16703P_setMultiplePixel %d", pixel);
 	// Return if driver is not loaded
 	if (!spiLED.ready)
 		return;
@@ -96,6 +96,9 @@ void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 			b = *data++;
 			r = *data++;
 		}
+
+ 		// Debug log RGB values
+        ADDLOG_INFO(LOG_FEATURE_CMD, "Pixel %d: R=%d G=%d B=%d\n", i, r, g, b);
 
 		*dst++ = translate_2bit((r >> 6));
 		*dst++ = translate_2bit((r >> 4));
