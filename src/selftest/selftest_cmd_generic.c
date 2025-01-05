@@ -191,8 +191,13 @@ void Test_Commands_Generic() {
 	CMD_ExecuteCommand("Flags 444", 0);
 	SELFTEST_ASSERT(CFG_GetFlags() == 444);
 	SELFTEST_ASSERT(CFG_GetFlags64() == 444);
-	//CMD_ExecuteCommand("Flags 8589934592", 0);
-	//SELFTEST_ASSERT(CFG_GetFlags64() == 8589934592);
+	CMD_ExecuteCommand("Flags 8589934592", 0);
+	SELFTEST_ASSERT(CFG_GetFlags64() == 8589934592);
+	CMD_ExecuteCommand("Flags 8589934594", 0);
+	SELFTEST_ASSERT(CFG_GetFlags64() == 8589934594);
+	CMD_ExecuteCommand("Flags 8589934593", 0);
+	SELFTEST_ASSERT(CFG_GetFlags64() == 8589934593);
+
 }
 
 
