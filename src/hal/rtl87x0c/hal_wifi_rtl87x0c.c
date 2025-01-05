@@ -243,8 +243,13 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 
 	netif_set_hostname(&xnetif[0], CFG_GetDeviceName());
 	wifi_reg_event_handler(WIFI_EVENT_DISCONNECT, (rtw_event_handler_t)wifi_dis_hdl, NULL);
-	//wifi_reg_event_handler(WIFI_EVENT_CONNECT, (rtw_event_handler_t)wifi_con_hdl, NULL);
-	wifi_reg_event_handler(WIFI_EVENT_STA_GOT_IP, (rtw_event_handler_t)wifi_conned_hdl, NULL);
+	if (g_bStaticIP) {
+		wifi_reg_event_handler(WIFI_EVENT_CONNECT, (rtw_event_handler_t)wifi_con_hdl, NULL);
+	}
+	else {
+		// GOT IP won't get called if DHCP is off
+		wifi_reg_event_handler(WIFI_EVENT_STA_GOT_IP, (rtw_event_handler_t)wifi_conned_hdl, NULL);
+	}
 	wifi_reg_event_handler(WIFI_EVENT_CHALLENGE_FAIL, (rtw_event_handler_t)wifi_af_hdl, NULL);
 
 	xTaskCreate(
