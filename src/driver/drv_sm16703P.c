@@ -66,49 +66,10 @@ void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 	uint8_t *dst = spiLED.buf + spiLED.ofs;
 	for (uint32_t i = 0; i < pixel; i++) {
 		uint8_t r, g, b;
-		if (color_order == SM16703P_COLOR_ORDER_RGB) {
-			r = *data++;
-			g = *data++;
-			b = *data++;
-		}
-		if (color_order == SM16703P_COLOR_ORDER_RBG) {
-			r = *data++;
-			b = *data++;
-			g = *data++;
-		}
-		if (color_order == SM16703P_COLOR_ORDER_BRG) {
-			b = *data++;
-			r = *data++;
-			g = *data++;
-		}
-		if (color_order == SM16703P_COLOR_ORDER_BGR) {
-			b = *data++;
-			g = *data++;
-			r = *data++;
-		}
-		if (color_order == SM16703P_COLOR_ORDER_GRB) {
-			g = *data++;
-			r = *data++;
-			b = *data++;
-		}
-		if (color_order == SM16703P_COLOR_ORDER_GBR) {
-			g = *data++;
-			b = *data++;
-			r = *data++;
-		}
-
-		*dst++ = translate_2bit((r >> 6));
-		*dst++ = translate_2bit((r >> 4));
-		*dst++ = translate_2bit((r >> 2));
-		*dst++ = translate_2bit(r);
-		*dst++ = translate_2bit((g >> 6));
-		*dst++ = translate_2bit((g >> 4));
-		*dst++ = translate_2bit((g >> 2));
-		*dst++ = translate_2bit(g);
-		*dst++ = translate_2bit((b >> 6));
-		*dst++ = translate_2bit((b >> 4));
-		*dst++ = translate_2bit((b >> 2));
-		*dst++ = translate_2bit(b);
+		r = *data++;
+		g = *data++;
+		b = *data++;
+		SM16703P_setPixel((int) i, (int) r, (int) g, (int)b);
 	}
 	if (push) {
 		SPIDMA_StartTX(spiLED.msg);
