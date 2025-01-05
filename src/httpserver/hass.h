@@ -37,7 +37,7 @@ typedef enum {
 	/// @brief Humidity sensor
 	HUMIDITY_SENSOR,
 
-	/// @brief Battery level sensor in perc
+	/// @brief Battery level sensor in perc, under battery topic
 	BATTERY_SENSOR,
 	/// @brief Battery votage sensor in mV
 	BATTERY_VOLTAGE_SENSOR,
@@ -89,6 +89,8 @@ typedef enum {
 	WATER_QUALITY_ORP,
 	// TDS
 	WATER_QUALITY_TDS,
+	/// @brief Battery level sensor in perc, under channel topic
+	BATTERY_CHANNEL_SENSOR,
 
 } ENTITY_TYPE;
 

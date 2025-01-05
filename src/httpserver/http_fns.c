@@ -1967,6 +1967,11 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			{
 				dev_info = hass_init_sensor_device_info(READONLYLOWMIDHIGH_SENSOR, i, -1, -1, 1);
 			}
+			break; 
+			case ChType_BatteryLevelPercent:
+			{
+				dev_info = hass_init_sensor_device_info(BATTERY_CHANNEL_SENSOR, i, -1, -1, 1);
+			}
 			break;
 			case ChType_SmokePercent:
 			{
