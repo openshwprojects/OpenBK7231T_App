@@ -119,10 +119,6 @@
 
 #elif PLATFORM_BEKEN
 
-#define ENABLE_DRIVER_BL0937    1
-#define ENABLE_DRIVER_BL0942    1
-#define ENABLE_DRIVER_BL0942SPI 1
-#define ENABLE_DRIVER_CSE7766   1
 
 #define OBK_OTA_EXTENSION 		".rbl"
 
@@ -213,6 +209,11 @@
 
 #error "Platform not defined"
 
+#endif
+
+
+#if ENABLE_DRIVER_BL0937 || ENABLE_DRIVER_BL0942 || ENABLE_DRIVER_BL0942SPI || ENABLE_DRIVER_CSE7766
+#define ENABLE_BL_SHARED	1
 #endif
 
 // closing OBK_CONFIG_H
