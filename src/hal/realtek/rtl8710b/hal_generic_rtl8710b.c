@@ -7,7 +7,8 @@ extern int g_sleepfactor;
 
 void HAL_RebootModule()
 {
-	sys_cpu_reset();
+	//sys_cpu_reset();
+	ota_platform_reset();
 }
 
 void HAL_Delay_us(int delay)

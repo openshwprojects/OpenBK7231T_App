@@ -2,6 +2,8 @@ OBK_DIR = ../../../../..
 
 CFLAGS +=  -DPLATFORM_RTL87X0C -DPLATFORM_REALTEK -DUSER_SW_VER='"$(APP_VERSION)"'
 
+INCLUDES += -I$(OBK_DIR)/libraries/easyflash/inc
+
 SRC_C  += ../../../../../platforms/RTL87X0C/main.c
 
 SRC_C  += $(OBK_DIR)/src/base64/base64.c
@@ -138,3 +140,13 @@ SRC_C  += $(OBK_DIR)/src/littlefs/our_lfs.c
 #SRC_C += $(OBK_DIR)/src/memory/memtest.c
 #SRC_C += $(OBK_DIR)/src/ota/ota.c
 #SRC_C += $(OBK_DIR)/src/sim/sim_uart.c
+
+SRC_C += $(OBK_DIR)/libraries/easyflash/ports/ef_port.c
+SRC_C += $(OBK_DIR)/libraries/easyflash/src/easyflash.c
+#SRC_C += $(OBK_DIR)/libraries/easyflash/src/ef_cmd.c
+SRC_C += $(OBK_DIR)/libraries/easyflash/src/ef_env.c
+SRC_C += $(OBK_DIR)/libraries/easyflash/src/ef_env_legacy.c
+SRC_C += $(OBK_DIR)/libraries/easyflash/src/ef_env_legacy_wl.c
+SRC_C += $(OBK_DIR)/libraries/easyflash/src/ef_iap.c
+SRC_C += $(OBK_DIR)/libraries/easyflash/src/ef_log.c
+SRC_C += $(OBK_DIR)/libraries/easyflash/src/ef_utils.c

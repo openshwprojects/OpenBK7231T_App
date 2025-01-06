@@ -33,10 +33,10 @@
 #include "../../sdk/OpenLN882H/mcu/driver_ln882h/hal/hal_common.h"
 #include "../../sdk/OpenLN882H/mcu/driver_ln882h/hal/hal_gpio.h"
 
-#elif PLATFORM_RTL87X0C
+#elif PLATFORM_REALTEK
 
 #include "gpio_irq_api.h"
-#include "../hal/rtl87x0c/hal_generic_rtl87x0c.h"
+#include "../hal/realtek/hal_generic_realtek.h"
 extern rtlPinMapping_t g_pins[];
 rtlPinMapping_t* rtl_cf;
 rtlPinMapping_t* rtl_cf1;
@@ -153,7 +153,7 @@ void GPIOB_IRQHandler()
 	}
 }
 
-#elif PLATFORM_RTL87X0C
+#elif PLATFORM_REALTEK
 
 void cf_irq_handler(uint32_t id, gpio_irq_event event)
 {
@@ -218,7 +218,7 @@ void BL0937_Shutdown_Pins()
 	gpio_int_disable(GPIO_HLW_CF1);
 	gpio_int_disable(GPIO_HLW_CF);
 
-#elif PLATFORM_RTL87X0C
+#elif PLATFORM_REALTEK
 
 	gpio_irq_free(rtl_cf1->irq);
 	gpio_irq_free(rtl_cf->irq);
@@ -256,10 +256,11 @@ void BL0937_Init_Pins()
 	//printf("GPIO_HLW_CF=%d GPIO_HLW_CF1=%d\n", GPIO_HLW_CF, GPIO_HLW_CF1);
 	//printf("GPIO_HLW_CF1_pin=%d GPIO_HLW_CF_pin=%d\n", GPIO_HLW_CF1_pin, GPIO_HLW_CF_pin);
 
-#elif PLATFORM_RTL87X0C
+#elif PLATFORM_REALTEK
 
 	rtl_cf = g_pins + GPIO_HLW_CF;
 	rtl_cf1 = g_pins + GPIO_HLW_CF1;
+#if PLATFORM_RTL87X0C
 	if(rtl_cf->gpio != NULL)
 	{
 		hal_pinmux_unregister(rtl_cf->pin, PID_GPIO);
@@ -272,6 +273,7 @@ void BL0937_Init_Pins()
 		os_free(rtl_cf1->gpio);
 		rtl_cf1->gpio = NULL;
 	}
+#endif
 	rtl_cf1->irq = os_malloc(sizeof(gpio_irq_t));
 	rtl_cf->irq = os_malloc(sizeof(gpio_irq_t));
 	memset(rtl_cf1->irq, 0, sizeof(gpio_irq_t));
@@ -307,7 +309,7 @@ void BL0937_Init_Pins()
 
 	gpio_int_enable(GPIO_HLW_CF1, IRQ_TRIGGER_FALLING_EDGE, HlwCf1Interrupt);
 
-#elif PLATFORM_RTL87X0C
+#elif PLATFORM_REALTEK
 
 	gpio_irq_init(rtl_cf1->irq, rtl_cf1->pin, cf1_irq_handler, NULL);
 	gpio_irq_set(rtl_cf1->irq, IRQ_FALL, 1);
@@ -338,7 +340,7 @@ void BL0937_Init_Pins()
 
 	gpio_int_enable(GPIO_HLW_CF, IRQ_TRIGGER_FALLING_EDGE, HlwCfInterrupt);
 
-#elif PLATFORM_RTL87X0C
+#elif PLATFORM_REALTEK
 
 	gpio_irq_init(rtl_cf->irq, rtl_cf->pin, cf_irq_handler, NULL);
 	gpio_irq_set(rtl_cf->irq, IRQ_FALL, 1);
