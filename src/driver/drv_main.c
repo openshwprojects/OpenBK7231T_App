@@ -138,7 +138,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "I2C",		DRV_I2C_Init,		DRV_I2C_EverySecond,		NULL, NULL, DRV_I2C_Shutdown, NULL, false },
 #endif
-#if ENABLE_DRIVER_BL0942
+#if ENABLE_DRIVER_RN8209
 	//drvdetail:{"name":"RN8209",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"WIP driver for power-metering chip RN8209 found in one of Zmai-90 versions.",

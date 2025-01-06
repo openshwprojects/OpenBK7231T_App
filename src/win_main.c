@@ -143,7 +143,9 @@ void Win_DoUnitTests() {
 	Test_Command_If_Else();
 	Test_MQTT();
 	Test_ChargeLimitDriver();
+#if ENABLE_BL_SHARED
 	Test_EnergyMeter();
+#endif
 	// this is slowest
 	Test_TuyaMCU_Basic();
 	Test_TuyaMCU_Mult();
