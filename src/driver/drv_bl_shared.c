@@ -1,4 +1,7 @@
 #include "drv_bl_shared.h"
+#include "../obk_config.h"
+
+#if ENABLE_BL_SHARED
 
 #include "../new_cfg.h"
 #include "../new_pins.h"
@@ -826,3 +829,6 @@ energySensorNames_t* DRV_GetEnergySensorNames(energySensor_t type)
 {
 	return &sensors[type].names;
 }
+
+#endif
+
