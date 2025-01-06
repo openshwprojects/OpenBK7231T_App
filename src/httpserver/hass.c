@@ -367,6 +367,7 @@ HassDeviceInfo* hass_init_relay_device_info(int index, ENTITY_TYPE type, bool bT
 	return info;
 }
 
+#if ENABLE_LED_BASIC
 /// @brief Initializes HomeAssistant light device discovery storage.
 /// @param type 
 /// @return 
@@ -433,6 +434,7 @@ HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type) {
 
 	return info;
 }
+#endif
 
 /// @brief Initializes HomeAssistant binary sensor device discovery storage.
 /// @param index

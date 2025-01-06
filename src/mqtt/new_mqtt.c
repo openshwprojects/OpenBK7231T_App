@@ -560,7 +560,7 @@ int channelGet(obk_mqtt_request_t* request) {
 	}
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelGet part topic %s", p);
-
+#if ENABLE_LED_BASIC
 	if (stribegins(p, "led_enableAll")) {
 		LED_SendEnableAllState();
 		return 1;
@@ -581,6 +581,7 @@ int channelGet(obk_mqtt_request_t* request) {
 		sendColorChange();
 		return 1;
 	}
+#endif
 
 	// atoi won't parse any non-decimal chars, so it should skip over the rest of the topic.
 	channel = atoi(p);
