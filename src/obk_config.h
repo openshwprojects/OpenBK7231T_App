@@ -116,13 +116,11 @@
 
 // set to 0 to disable
 #define ENABLE_LITTLEFS			1
-#define ENABLE_NTP    1
 #define ENABLE_DRIVER_BL0937    1
 #define ENABLE_DRIVER_BL0942    1
 #define ENABLE_DRIVER_BL0942SPI 1
 #define ENABLE_DRIVER_CSE7766   1
 // parse things like $CH1 or $hour etc
-#define ENABLE_EXPAND_CONSTANT	1
 //#define ENABLE_DRIVER_BMPI2C 1
 //#define ENABLE_DRIVER_OPENWEATHERMAP	1
 #define OBK_OTA_EXTENSION 		".rbl"
