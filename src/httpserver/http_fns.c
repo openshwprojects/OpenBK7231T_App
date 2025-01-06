@@ -1495,7 +1495,7 @@ int http_fn_cfg_loglevel_set(http_request_t* request) {
 	return 0;
 }
 
-
+#if ENABLE_HTTP_MAC
 int http_fn_cfg_mac(http_request_t* request) {
 	// must be unsigned, else print below prints negatives as e.g. FFFFFFFe
 	unsigned char mac[6];
@@ -1535,6 +1535,7 @@ int http_fn_cfg_mac(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
+#endif
 //
 //int http_fn_flash_read_tool(http_request_t* request) {
 //	int len = 16;
@@ -2498,7 +2499,9 @@ int http_fn_cfg(http_request_t* request) {
 	postFormAction(request, "cfg_ip", "Configure IP");
 	postFormAction(request, "cfg_mqtt", "Configure MQTT");
 	postFormAction(request, "cfg_name", "Configure Names");
+#if ENABLE_HTTP_MAC
 	postFormAction(request, "cfg_mac", "Change MAC");
+#endif
 	postFormAction(request, "cfg_ping", "Ping Watchdog (network lost restarter)");
 	postFormAction(request, "cfg_webapp", "Configure WebApp");
 	postFormAction(request, "ha_cfg", "Home Assistant Configuration");

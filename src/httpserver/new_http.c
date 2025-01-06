@@ -777,7 +777,9 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	if (http_checkUrlBase(urlStr, "cfg_wifi_set")) return http_fn_cfg_wifi_set(request);
 
 	if (http_checkUrlBase(urlStr, "cfg_loglevel_set")) return http_fn_cfg_loglevel_set(request);
+#if ENABLE_HTTP_MAC
 	if (http_checkUrlBase(urlStr, "cfg_mac")) return http_fn_cfg_mac(request);
+#endif
 
 //	if (http_checkUrlBase(urlStr, "flash_read_tool")) return http_fn_flash_read_tool(request);
 	if (http_checkUrlBase(urlStr, "cmd_tool")) return http_fn_cmd_tool(request);
