@@ -42,6 +42,7 @@ void JSON_PrintKeyValue_Float(void* request, jsonCb_t printer, const char* key, 
 	}
 }
 
+#if ENABLE_LED_BASIC
 static int http_tasmota_json_Dimmer(void* request, jsonCb_t printer) {
 	int dimmer;
 	dimmer = LED_GetDimmer();
@@ -56,6 +57,7 @@ static int http_tasmota_json_CT(void* request, jsonCb_t printer) {
 	JSON_PrintKeyValue_Int(request, printer, "CT", temperature, false);
 	return 0;
 }
+#endif
 // https://tasmota.github.io/docs/Commands/#with-mqtt
 /*
 http://<ip>/cm?cmnd=Power%20TOGGLE
@@ -87,6 +89,7 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 	numPWMs = PIN_CountPinsWithRoleOrRole(IOR_PWM, IOR_PWM_n);
 	numRelays = 0;
 
+#if ENABLE_LED_BASIC
 	// LED driver (if has PWMs)
 	if (LED_IsLEDRunning()) {
 		http_tasmota_json_Dimmer(request, printer);
@@ -141,7 +144,9 @@ static int http_tasmota_json_power(void* request, jsonCb_t printer) {
 			JSON_PrintKeyValue_String(request, printer, "POWER", "ON", false);
 		}
 	}
-	else {
+	else 
+#endif
+	{
 		// relays driver
 		for (i = 0; i < CHANNEL_MAX; i++) {
 			if (h_isChannelRelay(i) || CHANNEL_GetType(i) == ChType_Toggle) {
@@ -615,10 +620,14 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 
 	PIN_get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
 
+#if ENABLE_LED_BASIC
 	if (LED_IsLEDRunning()) {
 		powerCode = LED_GetEnableAll();
 	}
-	else {
+	else
+#endif
+	
+	{
 		powerCode = 0;
 		for (i = 0; i < CHANNEL_MAX; i++) {
 			bool bRelay;
@@ -874,6 +883,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		JSON_PrintKeyValue_String(request, printer, "TelePeriod", "300", false);
 		printer(request, "}");
 	}
+#if ENABLE_LED_BASIC
 	else if (!wal_strnicmp(cmd, "CT", 2)) {
 		printer(request, "{");
 		if (*arg == 0) {
@@ -913,6 +923,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "RESULT");
 		}
 	}
+#endif
 	else if (!wal_strnicmp(cmd, "STATE", 5)) {
 		http_tasmota_json_status_STS(request, printer, false);
 		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
@@ -1012,6 +1023,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 
 		printer(request, "%i", i);
 	}
+#if ENABLE_LED_BASIC
 	else if (!wal_strnicmp(cmd, "led_basecolor_rgb", 17)) {
 		// OBK-specific
 		char tmp[16];
@@ -1020,6 +1032,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		JSON_PrintKeyValue_String(request, printer, "led_basecolor_rgb", tmp, false);
 		printer(request, "}");
 	}
+#endif
 	else if (!wal_strnicmp(cmd, "MQTTClient", 8)) {
 		printer(request, "{");
 		JSON_PrintKeyValue_String(request, printer, "MQTTClient", CFG_GetMQTTClientId(), false);
