@@ -56,6 +56,14 @@ typedef struct {
 
 static uint32_t PrevCfCnt = CF_CNT_INVALID;
 
+// BL0942 cannot count import/positive and export/negative energy independently.
+// It can sum the energy signed or absolute. The default is absolute. Thus it
+// counts import and export together.
+// By summing up the import and export power, the counted energy can be split
+// into import and export. 
+static int32_t PowerSumImport = 0;
+static int32_t PowerSumExport = 0;
+
 static int32_t Int24ToInt32(int32_t val) {
     return (val & (1 << 23) ? val | (0xFF << 24) : val);
 }
@@ -67,17 +75,31 @@ static void ScaleAndUpdate(bl0942_data_t *data) {
 
     float frequency = 2 * 500000.0f / data->freq;
 
-    float energyWh = 0;
-    if (PrevCfCnt != CF_CNT_INVALID) {
+	if (power > 0)
+		PowerSumImport += power;
+	else
+    	PowerSumExport -= power;
+
+	float importWh = 0;
+	float exportWh = 0;
+    if (PrevCfCnt != CF_CNT_INVALID && data->cf_cnt != PrevCfCnt) {
         int diff = (data->cf_cnt < PrevCfCnt
                         ? data->cf_cnt + (0xFFFFFF - PrevCfCnt) + 1
                         : data->cf_cnt - PrevCfCnt);
-        energyWh =
+        float energyWh =
             fabsf(PwrCal_ScalePowerOnly(diff)) * 1638.4f * 256.0f / 3600.0f;
+		
+		float powerSum = PowerSumImport + PowerSumExport;
+		if (powerSum != 0) { 
+            importWh = energyWh * PowerSumImport / powerSum;
+		    exportWh = energyWh - importWh;
+		}
+		PowerSumImport = 0;
+		PowerSumExport = 0;
     }
     PrevCfCnt = data->cf_cnt;
 
-    BL_ProcessUpdate(voltage, current, power, frequency, energyWh);
+    BL_ProcessUpdateExt(voltage, current, power, frequency, importWh, exportWh);
 }
 
 static int BL0942_UART_TryToGetNextPacket(void) {

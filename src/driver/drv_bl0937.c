@@ -497,5 +497,5 @@ void BL0937_RunEverySecond(void)
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, dbg);
 	}
 #endif
-	BL_ProcessUpdate(final_v, final_c, final_p, NAN, NAN);
+	BL_ProcessUpdate(final_v, final_c, final_p);
 }
