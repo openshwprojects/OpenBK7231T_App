@@ -21,6 +21,7 @@ int cmd_uartInitIndex = 0;
 #elif PLATFORM_LN882H
 #include <wifi.h>
 #include <power_mgmt/ln_pm.h>
+#include <system_parameter.h>
 #elif PLATFORM_ESPIDF
 #include "esp_wifi.h"
 #include "esp_pm.h"
