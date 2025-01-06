@@ -856,7 +856,7 @@ void Main_OnEverySecond()
 		if (!g_reset) {
 			// ensure any config changes are saved before reboot.
 			CFG_Save_IfThereArePendingChanges();
-#ifdef ENABLE_DRIVER_BL0937
+#if ENABLE_BL_SHARED
 			if (DRV_IsMeasuringPower())
 			{
 				BL09XX_SaveEmeteringStatistics();
