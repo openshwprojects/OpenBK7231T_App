@@ -129,6 +129,7 @@ void SIM_ClearOBK(const char *flashPath) {
 	Main_Init();
 }
 void Win_DoUnitTests() {
+	Test_Commands_Generic();
 	Test_TuyaMCU_Boolean();
 	Test_TuyaMCU_DP22();
 
@@ -166,7 +167,6 @@ void Win_DoUnitTests() {
 	Test_Demo_ButtonScrollingChannelValues();
 	Test_CFG_Via_HTTP();
 	Test_Commands_Calendar();
-	Test_Commands_Generic();
 	Test_Demo_SimpleShuttersScript();
 	Test_Role_ToggleAll();
 	Test_Demo_FanCyclingRelays();

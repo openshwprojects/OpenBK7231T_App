@@ -563,8 +563,8 @@ bool CFG_HasLoggerFlag(int flag) {
 int CFG_GetFlags() {
 	return g_cfg.genericFlags;
 }
-unsigned long CFG_GetFlags64() {
-	unsigned long* pAllGenericFlags = (unsigned long*)&g_cfg.genericFlags;
+unsigned long long CFG_GetFlags64() {
+	unsigned long long* pAllGenericFlags = (unsigned long long*)&g_cfg.genericFlags;
 	return *pAllGenericFlags;
 }
 bool CFG_HasFlag(int flag) {

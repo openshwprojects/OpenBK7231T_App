@@ -248,27 +248,22 @@ static commandResult_t CMD_SetFlag(const void* context, const char* cmd, const c
 	return CMD_RES_OK;
 }
 static commandResult_t CMD_Flags(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	union {
-		long long newValue;
-		struct {
-			int ints[2];
-			int dummy[2]; // just to be safe
-		};
-	} u;
+	long long newValue;
 	// TODO: check on other platforms, on Beken it's 8, 64 bit
 	// On Windows simulator it's 8 as well
 	//ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Flags: sizeof(newValue) = %i", sizeof(u.newValue));
 	if (args && *args) {
-		if (1 != sscanf(args, "%lld", &u.newValue)) {
+		if (1 != sscanf(args, "%llu", &newValue)) {
 			//ADDLOG_INFO(LOG_FEATURE_CMD, "Argument/sscanf error!");
 			return CMD_RES_BAD_ARGUMENT;
 		}
 	}
 	else {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Flags are %llu",&g_cfg.genericFlags);
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-
-	CFG_SetFlags(u.ints[0], u.ints[1]);
+	int *ints = (int)&newValue;
+	CFG_SetFlags(ints[0], ints[1]);
 	ADDLOG_INFO(LOG_FEATURE_CMD, "New flags set!");
 
 	return CMD_RES_OK;
