@@ -2485,9 +2485,15 @@ int http_fn_cfg(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Config");
 	postFormAction(request, "cfg_pins", "Configure Module");
+#if ENABLE_HTTP_FLAGS
 	postFormAction(request, "cfg_generic", "Configure General/Flags");
+#endif
+#if ENABLE_HTTP_STARTUP
 	postFormAction(request, "cfg_startup", "Configure Startup");
+#endif
+#if ENABLE_HTTP_DGR
 	postFormAction(request, "cfg_dgr", "Configure Device Groups");
+#endif
 	postFormAction(request, "cfg_wifi", "Configure WiFi &amp; Web");
 	postFormAction(request, "cfg_ip", "Configure IP");
 	postFormAction(request, "cfg_mqtt", "Configure MQTT");
@@ -2723,6 +2729,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 	return 0;
 }
 
+#if ENABLE_HTTP_FLAGS
 
 const char* g_obk_flagNames[] = {
 	"[MQTT] Broadcast led params together (send dimmer and color when dimmer or color changes, topic name: YourDevName/led_basecolor_rgb/get, YourDevName/led_dimmer/get)",
@@ -2850,6 +2857,8 @@ int http_fn_cfg_generic(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
+#endif
+#if ENABLE_HTTP_STARTUP
 int http_fn_cfg_startup(http_request_t* request) {
 	int channelIndex;
 	int newValue;
@@ -2904,7 +2913,8 @@ int http_fn_cfg_startup(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
-
+#endif
+#if ENABLE_HTTP_DGR
 int http_fn_cfg_dgr(http_request_t* request) {
 	char tmpA[128];
 	bool bForceSet;
@@ -3002,6 +3012,7 @@ int http_fn_cfg_dgr(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
+#endif
 
 void XR809_RequestOTAHTTP(const char* s);
 

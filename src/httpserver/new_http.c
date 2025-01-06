@@ -781,10 +781,16 @@ int HTTP_ProcessPacket(http_request_t* request) {
 
 //	if (http_checkUrlBase(urlStr, "flash_read_tool")) return http_fn_flash_read_tool(request);
 	if (http_checkUrlBase(urlStr, "cmd_tool")) return http_fn_cmd_tool(request);
-	if (http_checkUrlBase(urlStr, "startup_command")) return http_fn_startup_command(request);
+	if (http_checkUrlBase(urlStr, "startup_command")) return http_fn_startup_command(request); 
+#if ENABLE_HTTP_FLAGS
 	if (http_checkUrlBase(urlStr, "cfg_generic")) return http_fn_cfg_generic(request);
+#endif
+#if ENABLE_HTTP_STARTUP
 	if (http_checkUrlBase(urlStr, "cfg_startup")) return http_fn_cfg_startup(request);
+#endif
+#if ENABLE_HTTP_DGR
 	if (http_checkUrlBase(urlStr, "cfg_dgr")) return http_fn_cfg_dgr(request);
+#endif
 
 	if (http_checkUrlBase(urlStr, "ha_cfg")) return http_fn_ha_cfg(request);
 	if (http_checkUrlBase(urlStr, "ha_discovery")) return http_fn_ha_discovery(request);
