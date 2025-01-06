@@ -363,101 +363,85 @@ char* MQTT_GetStatusMessage(void)
 	return mqtt_status_message;
 }
 
-void MQTT_ClearCallbacks() {
-	int i;
-	for (i = 0; i < MAX_MQTT_CALLBACKS; i++) {
-		if (callbacks[i]) {
-			free(callbacks[i]->topic);
-			free(callbacks[i]->subscriptionTopic);
-			free(callbacks[i]);
-			callbacks[i] = 0;
-		}
+void MQTT_ClearCallbacks(void) {
+	for (int i = 0; i < numCallbacks; i++) {
+		os_free(callbacks[i]->topic);
+		os_free(callbacks[i]->subscriptionTopic);
+		os_free(callbacks[i]);
+		callbacks[i] = 0;
 	}
+	numCallbacks = 0;
 }
+
+static int set_string(char **dst, const char *val) {
+	if (*dst) {
+		// unchanged
+		if (strcmp(*dst, val) == 0)
+			return 0;
+		os_free(*dst);
+	}
+	*dst = (char*)os_malloc(strlen(val) + 1);
+	if (*dst) {
+		// changed successfully
+		strcpy(*dst, val);
+		return 1;
+	}
+
+	// oom
+	return -1;
+}
+
 // this can REPLACE callbacks, since we MAY wish to change the root topic....
 // in which case we would re-resigster all callbacks?
-int MQTT_RegisterCallback(const char* basetopic, const char* subscriptiontopic, int ID, mqtt_callback_fn callback) {
-	int index;
-	int i;
-	int subscribechange = 0;
-	if (!basetopic || !subscriptiontopic || !callback) {
+int MQTT_RegisterCallback(const char* basetopic, const char* subscriptiontopic, int ID, mqtt_callback_fn callbackfn) {
+	int subscribechange = 1;
+	mqtt_callback_t *callback = NULL;
+
+	if (!basetopic || !subscriptiontopic || !callbackfn) {
 		return -1;
 	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT_RegisterCallback called for bT %s subT %s", basetopic, subscriptiontopic);
 
 	// find existing to replace
-	for (index = 0; index < numCallbacks; index++) {
-		if (callbacks[index]) {
-			if (callbacks[index]->ID == ID) {
-				break;
+	for (int i = 0; i < numCallbacks; i++) {
+		if (callbacks[i]->ID == ID) {
+			callback = callbacks[i];
+			break;
+		}
+	}
+
+	if (!callback) {
+		// find empty if any (empty by MQTT_RemoveCallback)
+		if (numCallbacks < MAX_MQTT_CALLBACKS) {
+			callback = (mqtt_callback_t*)os_malloc(sizeof(mqtt_callback_t));
+			if (callback) {
+				callbacks[numCallbacks++] = callback;
+				memset(callback, 0, sizeof(mqtt_callback_t));
+				callback->ID = ID;
+			} else {
+				return -2;
 			}
+		} else {
+			return -4;
 		}
 	}
 
-	// find empty if any (empty by MQTT_RemoveCallback)
-	if (index == numCallbacks) {
-		for (index = 0; index < numCallbacks; index++) {
-			if (!callbacks[index]) {
-				break;
-			}
-		}
+	if (set_string(&callback->topic, basetopic) < 0
+		|| set_string(&callback->subscriptionTopic, subscriptiontopic) < 0) {
+		MQTT_RemoveCallback(ID);
+		return -3;
 	}
 
-	if (index >= MAX_MQTT_CALLBACKS) {
-		return -4;
-	}
-	if (!callbacks[index]) {
-		callbacks[index] = (mqtt_callback_t*)os_malloc(sizeof(mqtt_callback_t));
-		if (callbacks[index] != 0) {
-			memset(callbacks[index], 0, sizeof(mqtt_callback_t));
-		}
-	}
-	if (!callbacks[index]) {
-		return -2;
-	}
-	if (!callbacks[index]->topic || strcmp(callbacks[index]->topic, basetopic)) {
-		if (callbacks[index]->topic) {
-			os_free(callbacks[index]->topic);
-		}
-		callbacks[index]->topic = (char*)os_malloc(strlen(basetopic) + 1);
-		if (!callbacks[index]->topic) {
-			os_free(callbacks[index]);
-			return -3;
-		}
-		strcpy(callbacks[index]->topic, basetopic);
-	}
+	callback->callback = callbackfn;
 
-	if (!callbacks[index]->subscriptionTopic || strcmp(callbacks[index]->subscriptionTopic, subscriptiontopic)) {
-		if (callbacks[index]->subscriptionTopic) {
-			os_free(callbacks[index]->subscriptionTopic);
+	// find out if this subscription is new.
+	for (int i = 0; i < numCallbacks; i++) {
+		if (callbacks[i] != callback
+			&& callbacks[i]->subscriptionTopic
+			&& !strcmp(callbacks[i]->subscriptionTopic, subscriptiontopic)) {
+			subscribechange = 0;
+			break;
 		}
-		callbacks[index]->subscriptionTopic = (char*)os_malloc(strlen(subscriptiontopic) + 1);
-		callbacks[index]->subscriptionTopic[0] = '\0';
-		if (!callbacks[index]->subscriptionTopic) {
-			os_free(callbacks[index]->topic);
-			os_free(callbacks[index]);
-			return -3;
-		}
-
-		// find out if this subscription is new.
-		for (i = 0; i < numCallbacks; i++) {
-			if (callbacks[i]) {
-				if (callbacks[i]->subscriptionTopic &&
-					!strcmp(callbacks[i]->subscriptionTopic, subscriptiontopic)) {
-					break;
-				}
-			}
-		}
-		strcpy(callbacks[index]->subscriptionTopic, subscriptiontopic);
-		// if this subscription is new, must reconnect
-		if (i == numCallbacks) {
-			subscribechange++;
-		}
-	}
-
-	callbacks[index]->callback = callback;
-	if (index == numCallbacks) {
-		numCallbacks++;
 	}
 
 	if (subscribechange) {
@@ -473,23 +457,20 @@ int MQTT_RemoveCallback(int ID) {
 	int index;
 
 	for (index = 0; index < numCallbacks; index++) {
-		if (callbacks[index]) {
-			if (callbacks[index]->ID == ID) {
-				if (callbacks[index]->topic) {
-					os_free(callbacks[index]->topic);
-					callbacks[index]->topic = NULL;
-				}
-				if (callbacks[index]->subscriptionTopic) {
-					os_free(callbacks[index]->subscriptionTopic);
-					callbacks[index]->subscriptionTopic = NULL;
-				}
-				os_free(callbacks[index]);
-				callbacks[index] = NULL;
-				if (mqtt_client) {
-					mqtt_reconnect = 8;
-				}
-				return 1;
+		if (callbacks[index]->ID == ID) {
+			os_free(callbacks[index]->topic);
+			callbacks[index]->topic = NULL;
+			os_free(callbacks[index]->subscriptionTopic);
+			callbacks[index]->subscriptionTopic = NULL;
+			os_free(callbacks[index]);
+			callbacks[index] = NULL;
+			numCallbacks -= 1;
+			if (numCallbacks)
+				callbacks[index] = callbacks[numCallbacks];
+			if (mqtt_client) {
+				mqtt_reconnect = 8;
 			}
+			return 1;
 		}
 	}
 	return 0;
