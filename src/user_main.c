@@ -11,6 +11,7 @@
 
 //#include "driver/drv_ir.h"
 #include "driver/drv_public.h"
+#include "driver/drv_bl_shared.h"
 //#include "ir/ir_local.h"
 
 // Commands register, execution API and cmd tokenizer

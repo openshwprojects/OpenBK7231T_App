@@ -1,4 +1,9 @@
 #include "drv_bl0942.h"
+#include "../obk_config.h"
+
+
+
+#if ENABLE_DRIVER_BL0942 
 
 #include <math.h>
 #include <stdint.h>
@@ -270,3 +275,7 @@ void BL0942_SPI_RunEverySecond(void) {
     SPI_ReadReg(BL0942_REG_FREQ, &data.freq);
     ScaleAndUpdate(&data);
 }
+
+
+// close ENABLE_DRIVER_BL0942 
+#endif
