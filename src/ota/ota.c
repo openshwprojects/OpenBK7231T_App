@@ -14,6 +14,7 @@
 #include "../logging/logging.h"
 #include "../httpclient/http_client.h"
 #include "../driver/drv_public.h"
+#include "../driver/drv_bl_shared.h"
 
 static unsigned char *sector = (void *)0;
 int sectorlen = 0;
