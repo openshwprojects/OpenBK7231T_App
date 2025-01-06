@@ -117,12 +117,14 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "HTTPButtons",	DRV_InitHTTPButtons, NULL, NULL, NULL, NULL, NULL, false },
 #endif
-#if ENABLE_TEST_DRIVERS
+#if ENABLE_DRIVER_TESTPOWER
 	//drvdetail:{"name":"TESTPOWER",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This is a fake POWER measuring socket driver, only for testing",
 	//drvdetail:"requires":""}
 	{ "TESTPOWER",	Test_Power_Init,	 Test_Power_RunEverySecond,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_TESTLED
 	//drvdetail:{"name":"TESTLED",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This is a fake I2C LED driver, only for testing",
