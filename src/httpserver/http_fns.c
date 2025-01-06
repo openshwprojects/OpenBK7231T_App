@@ -615,6 +615,7 @@ int http_fn_index(http_request_t* request) {
 		}
 	}
 
+#if ENABLE_LED_BASIC
 	if (bRawPWMs == 0 || bForceShowRGBCW || bForceShowRGB) {
 		int c_pwms;
 		int lm;
@@ -722,6 +723,7 @@ int http_fn_index(http_request_t* request) {
 		}
 
 	}
+#endif
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	if (DRV_IsRunning("PWMToggler")) {
 		DRV_Toggler_AddToHtmlPage(request);

@@ -198,6 +198,7 @@ int EventHandlers_GetActiveCount();
 // cmd_tasmota.c
 int taslike_commands_init();
 // cmd_newLEDDriver.c
+#if ENABLE_LED_BASIC
 void NewLED_InitCommands();
 void NewLED_RestoreSavedStateIfNeeded();
 float LED_GetDimmer();
@@ -253,6 +254,8 @@ OBK_Publish_Result LED_SendCurrentLightModeParam_TempOrColor();
 void LED_ResetGlobalVariablesToDefaults();
 extern float led_temperature_min;
 extern float led_temperature_max;
+#endif
+
 // cmd_test.c
 int CMD_InitTestCommands();
 // cmd_channels.c

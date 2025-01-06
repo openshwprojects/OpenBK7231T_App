@@ -951,9 +951,11 @@ void QuickTick(void* param)
 	// process recieved messages here..
 	MQTT_RunQuickTick();
 
+#if ENABLE_LED_BASIC
 	if (CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == true) {
 		LED_RunQuickColorLerp(g_deltaTimeMS);
 	}
+#endif
 
 	// WiFi LED
 	// In Open Access point mode, fast blink
@@ -1134,7 +1136,9 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 #if ENABLE_TEST_COMMANDS
 	CMD_InitTestCommands();
 #endif
+#if ENABLE_LED_BASIC
 	NewLED_InitCommands();
+#endif
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	CMD_InitSendCommands();
 #endif
@@ -1255,7 +1259,9 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	PIN_SetupPins();
 	QuickTick_StartThread();
 
+#if ENABLE_LED_BASIC
 	NewLED_RestoreSavedStateIfNeeded();
+#endif
 }
 void Main_ForceUnsafeInit() {
 	if (g_unsafeInitDone) {

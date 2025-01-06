@@ -1,9 +1,12 @@
 
+#include "../obk_config.h"
+
+#if ENABLE_LED_BASIC
+
 #include "../logging/logging.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "cmd_public.h"
-#include "../obk_config.h"
 #include "../driver/drv_public.h"
 #include "../driver/drv_local.h"
 #include "../hal/hal_flashVars.h"
@@ -1766,3 +1769,4 @@ void NewLED_RestoreSavedStateIfNeeded() {
 
 	// "cmnd/obk8D38570E/led_dimmer_get""
 }
+#endif
