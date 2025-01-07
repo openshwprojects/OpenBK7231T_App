@@ -153,7 +153,9 @@ void Win_DoUnitTests() {
 	Test_Battery();
 	Test_TuyaMCU_BatteryPowered();
 	Test_JSON_Lib();
+#if ENABLE_LED_BASIC
 	Test_MQTT_Get_LED_EnableAll();
+#endif
 	Test_MQTT_Get_Relay();
 	Test_Commands_Startup();
 	Test_IF_Inside_Backlog();

@@ -47,7 +47,7 @@
 #define ENABLE_NTP				1
 #define ENABLE_NTP_DST			1
 #define ENABLE_DRIVER_LED       1
-
+#define ENABLE_LED_BASIC		1
 #define ENABLE_DRIVER_HT16K33   1
 #define ENABLE_DRIVER_MAX72XX	1
 #define ENABLE_DRIVER_TUYAMCU   1

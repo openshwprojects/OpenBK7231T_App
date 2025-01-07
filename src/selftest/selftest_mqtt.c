@@ -733,9 +733,11 @@ void Test_MQTT(){
 	Test_MQTT_Misc();
 	Test_MQTT_Get_And_Reply();
 	Test_MQTT_Channels();
+#if ENABLE_LED_BASIC
 	Test_MQTT_LED_CW();
 	Test_MQTT_LED_RGB();
 	Test_MQTT_LED_RGBCW();
+#endif
 	Test_MQTT_Topic_With_Slash();
 	Test_MQTT_Topic_With_Slashes();
 	Test_MQTT_Average();
