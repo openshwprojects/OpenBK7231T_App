@@ -43,21 +43,6 @@ static commandResult_t CMD_SendPOST(const void* context, const char* cmd, const 
 #endif
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_TestPOST(const void* context, const char* cmd, const char* args, int cmdFlags) {
-
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
-	HTTPClient_Async_SendPost("http://localhost:3000/",
-		3000,
-		"application/json",
-		"{ \"a\":123, \"b\":77 }",
-		0);
-#else
-	ADDLOG_INFO(LOG_FEATURE_CMD, " CMD_SendPOST not supported!");
-
-#endif
-	return CMD_RES_OK;
-}
-
 
 int CMD_InitSendCommands() {
 	//cmddetail:{"name":"sendGet","args":"[TargetURL]",
@@ -75,6 +60,5 @@ int CMD_InitSendCommands() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("sendPOST", CMD_SendPOST, NULL);
 
-	//CMD_RegisterCommand("testPost", CMD_TestPOST, NULL);
 	return 0;
 }
