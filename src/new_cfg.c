@@ -430,7 +430,9 @@ void CFG_SetMQTTClientId(const char *s) {
 	if(strcpy_safe_checkForChanges(g_cfg.mqtt_clientId, s,sizeof(g_cfg.mqtt_clientId))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
+#if ENABLE_MQTT
 		g_mqtt_bBaseTopicDirty++;
+#endif
 	}
 }
 void CFG_SetMQTTGroupTopic(const char *s) {
@@ -438,7 +440,9 @@ void CFG_SetMQTTGroupTopic(const char *s) {
 	if (strcpy_safe_checkForChanges(g_cfg.mqtt_group, s, sizeof(g_cfg.mqtt_group))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
+#if ENABLE_MQTT
 		g_mqtt_bBaseTopicDirty++;
+#endif
 	}
 }
 void CFG_SetMQTTUserName(const char *s) {

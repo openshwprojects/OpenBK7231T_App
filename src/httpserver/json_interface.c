@@ -799,7 +799,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 	}
 	else if (!wal_strnicmp(cmd, "SensorRetain", 12)) {
 		printer(request, "{");
-		if (CFG_HasFlag(OBK_PUBLISH_FLAG_RETAIN))
+		if (CFG_HasFlag(OBK_FLAG_MQTT_ALWAYSSETRETAIN))
 		{
 			JSON_PrintKeyValue_String(request, printer, "SensorRetain", "ON", false);
 		}

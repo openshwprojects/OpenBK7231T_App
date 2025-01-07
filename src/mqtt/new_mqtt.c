@@ -1,4 +1,8 @@
 
+#include "../obk_config.h"
+
+#if ENABLE_MQTT 
+
 #include "new_mqtt.h"
 #include "../new_common.h"
 #include "../new_pins.h"
@@ -2372,3 +2376,4 @@ bool MQTT_IsReady() {
 	return mqtt_client && res;
 }
 
+#endif // ENABLE_MQTT

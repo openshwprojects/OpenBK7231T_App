@@ -1505,7 +1505,9 @@ void TuyaMCU_PublishDPToMQTT(const byte *data, int ofs) {
 	if (*s == 0)
 		return;
 
+#if ENABLE_MQTT
 	MQTT_PublishMain_StringString(sName, s, OBK_PUBLISH_FLAG_FORCE_REMOVE_GET);
+#endif
 }
 void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 	tuyaMCUMapping_t* mapping;

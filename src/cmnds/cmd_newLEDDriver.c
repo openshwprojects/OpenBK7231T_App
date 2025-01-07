@@ -211,25 +211,6 @@ int shouldSendRGB() {
 }
 
 
-// One user requested ability to broadcast full RGBCW
-static void sendFullRGBCW_IfEnabled() {
-	char s[16];
-	byte c[5];
-
-	if(CFG_HasFlag(OBK_FLAG_LED_BROADCAST_FULL_RGBCW) == false) {
-		return;
-	}
-
-	c[0] = (byte)(finalColors[0]);
-	c[1] = (byte)(finalColors[1]);
-	c[2] = (byte)(finalColors[2]);
-	c[3] = (byte)(finalColors[3]);
-	c[4] = (byte)(finalColors[4]);
-
-	snprintf(s, sizeof(s),"%02X%02X%02X%02X%02X",c[0],c[1],c[2],c[3],c[4]);
-
-	MQTT_PublishMain_StringString_DeDuped(DEDUP_LED_FINALCOLOR_RGBCW,DEDUP_EXPIRE_TIME,"led_finalcolor_rgbcw",s, 0);
-}
 
 float led_rawLerpCurrent[5] = { 0 };
 float Mathf_MoveTowards(float cur, float tg, float dt) {
@@ -694,22 +675,7 @@ commandResult_t led_gamma_control (const void *context, const char *cmd, const c
 	return CMD_RES_OK;
 } //
 
-OBK_Publish_Result sendColorChange() {
-	char s[16];
-	byte c[3];
 
-	if(shouldSendRGB()==0) {
-		return OBK_PUBLISH_WAS_NOT_REQUIRED;
-	}
-
-	c[0] = (byte)(led_baseColors[0]);
-	c[1] = (byte)(led_baseColors[1]);
-	c[2] = (byte)(led_baseColors[2]);
-
-	snprintf(s, sizeof(s), "%02X%02X%02X",c[0],c[1],c[2]);
-
-	return MQTT_PublishMain_StringString_DeDuped(DEDUP_LED_BASECOLOR_RGB,DEDUP_EXPIRE_TIME,"led_basecolor_rgb",s, 0);
-}
 void LED_GetBaseColorString(char * s) {
 	byte c[3];
 
@@ -719,11 +685,61 @@ void LED_GetBaseColorString(char * s) {
 
 	sprintf(s, "%02X%02X%02X",c[0],c[1],c[2]);
 }
+#if ENABLE_MQTT
+
+OBK_Publish_Result sendColorChange() {
+	char s[16];
+	byte c[3];
+
+	if (shouldSendRGB() == 0) {
+		return OBK_PUBLISH_WAS_NOT_REQUIRED;
+	}
+
+	c[0] = (byte)(led_baseColors[0]);
+	c[1] = (byte)(led_baseColors[1]);
+	c[2] = (byte)(led_baseColors[2]);
+
+	snprintf(s, sizeof(s), "%02X%02X%02X", c[0], c[1], c[2]);
+
+	return MQTT_PublishMain_StringString_DeDuped(DEDUP_LED_BASECOLOR_RGB, DEDUP_EXPIRE_TIME, "led_basecolor_rgb", s, 0);
+}
+// One user requested ability to broadcast full RGBCW
+static void sendFullRGBCW_IfEnabled() {
+	char s[16];
+	byte c[5];
+
+	if (CFG_HasFlag(OBK_FLAG_LED_BROADCAST_FULL_RGBCW) == false) {
+		return;
+	}
+
+	c[0] = (byte)(finalColors[0]);
+	c[1] = (byte)(finalColors[1]);
+	c[2] = (byte)(finalColors[2]);
+	c[3] = (byte)(finalColors[3]);
+	c[4] = (byte)(finalColors[4]);
+
+	snprintf(s, sizeof(s), "%02X%02X%02X%02X%02X", c[0], c[1], c[2], c[3], c[4]);
+
+	MQTT_PublishMain_StringString_DeDuped(DEDUP_LED_FINALCOLOR_RGBCW, DEDUP_EXPIRE_TIME, "led_finalcolor_rgbcw", s, 0);
+}
+OBK_Publish_Result LED_SendEnableAllState() {
+	return MQTT_PublishMain_StringInt_DeDuped(DEDUP_LED_ENABLEALL, DEDUP_EXPIRE_TIME, "led_enableAll", g_lightEnableAll, 0);
+}
+OBK_Publish_Result LED_SendCurrentLightModeParam_TempOrColor() {
+
+	if (g_lightMode == Light_Temperature) {
+		return sendTemperatureChange();
+	}
+	else if (g_lightMode == Light_RGB) {
+		return sendColorChange();
+	}
+	return OBK_PUBLISH_WAS_NOT_REQUIRED;
+}
 OBK_Publish_Result sendFinalColor() {
 	char s[16];
 	byte c[3];
 
-	if(shouldSendRGB()==0) {
+	if (shouldSendRGB() == 0) {
 		return OBK_PUBLISH_WAS_NOT_REQUIRED;
 	}
 
@@ -731,20 +747,21 @@ OBK_Publish_Result sendFinalColor() {
 	c[1] = (byte)(finalColors[1]);
 	c[2] = (byte)(finalColors[2]);
 
-	snprintf(s, sizeof(s),"%02X%02X%02X",c[0],c[1],c[2]);
+	snprintf(s, sizeof(s), "%02X%02X%02X", c[0], c[1], c[2]);
 
-	return MQTT_PublishMain_StringString_DeDuped(DEDUP_LED_FINALCOLOR_RGB,DEDUP_EXPIRE_TIME,"led_finalcolor_rgb",s, 0);
+	return MQTT_PublishMain_StringString_DeDuped(DEDUP_LED_FINALCOLOR_RGB, DEDUP_EXPIRE_TIME, "led_finalcolor_rgb", s, 0);
 }
 OBK_Publish_Result LED_SendDimmerChange() {
 	int iValue;
 
 	iValue = g_brightness0to100;
 
-	return MQTT_PublishMain_StringInt_DeDuped(DEDUP_LED_DIMMER,DEDUP_EXPIRE_TIME,"led_dimmer", iValue, 0);
+	return MQTT_PublishMain_StringInt_DeDuped(DEDUP_LED_DIMMER, DEDUP_EXPIRE_TIME, "led_dimmer", iValue, 0);
 }
-OBK_Publish_Result sendTemperatureChange(){
-	return MQTT_PublishMain_StringInt_DeDuped(DEDUP_LED_TEMPERATURE,DEDUP_EXPIRE_TIME,"led_temperature", (int)led_temperature_current,0);
+OBK_Publish_Result sendTemperatureChange() {
+	return MQTT_PublishMain_StringInt_DeDuped(DEDUP_LED_TEMPERATURE, DEDUP_EXPIRE_TIME, "led_temperature", (int)led_temperature_current, 0);
 }
+#endif
 float LED_GetTemperature() {
 	return led_temperature_current;
 }
@@ -784,15 +801,6 @@ void LED_SetBaseColorByIndex(int i, float f, bool bApply) {
 		sendColorChange();
 		apply_smart_light();
 	}
-}
-OBK_Publish_Result LED_SendCurrentLightModeParam_TempOrColor() {
-
-	if(g_lightMode == Light_Temperature) {
-		return sendTemperatureChange();
-	} else if(g_lightMode == Light_RGB) {
-		return sendColorChange();
-	}
-	return OBK_PUBLISH_WAS_NOT_REQUIRED;
 }
 void LED_SetTemperature0to1Range(float f) {
 	led_temperature_current = led_temperature_min + (led_temperature_max-led_temperature_min) * f;
@@ -849,10 +857,6 @@ static commandResult_t temperature(const void *context, const char *cmd, const c
 	//}
 	//return 0;
 }
-OBK_Publish_Result LED_SendEnableAllState() {
-	return MQTT_PublishMain_StringInt_DeDuped(DEDUP_LED_ENABLEALL,DEDUP_EXPIRE_TIME,"led_enableAll",g_lightEnableAll,0);
-}
-
 void LED_ToggleEnabled() {
 	LED_SetEnableAll(!g_lightEnableAll);
 }
