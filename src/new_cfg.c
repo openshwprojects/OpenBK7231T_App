@@ -536,9 +536,11 @@ void CFG_SetFlag(int flag, bool bValue) {
 		if(bValue && flag == OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER) {
 			CMD_StartTCPCommandLine();
 		}
+#if ENABLE_LED_BASIC
 		if (bValue && flag == OBK_FLAG_LED_REMEMBERLASTSTATE) {
 			LED_SaveStateToFlashVarsNow();
 		}
+#endif
 	}
 }
 void CFG_SetLoggerFlag(int flag, bool bValue) {

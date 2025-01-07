@@ -208,11 +208,16 @@ int http_fn_index(http_request_t* request) {
 		if (DRV_IsRunning("SM16703P")) {
 			bForceShowRGB = true;
 		}
-		else
+		else 
 #endif
+#if ENABLE_LED_BASIC
 		if (LED_IsLedDriverChipRunning()) {
 			bForceShowRGBCW = true;
 		}
+#else
+		{
+		}
+#endif
 	}
 	http_setup(request, httpMimeTypeHTML);	//Add mimetype regardless of the request
 
@@ -246,6 +251,7 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "<h3>Enabled %s!</h3>", CHANNEL_GetLabel(j));
 			CHANNEL_Set(j, 255, 1);
 		}
+#if ENABLE_LED_BASIC
 		if (http_getArg(request->url, "rgb", tmpA, sizeof(tmpA))) {
 			hprintf255(request, "<h3>Set RGB to %s!</h3>", tmpA);
 			LED_SetBaseColor(0, "led_basecolor", tmpA, 0);
@@ -255,7 +261,7 @@ int http_fn_index(http_request_t* request) {
 				LED_SetEnableAll(true);
 			}
 		}
-
+#endif
 		if (http_getArg(request->url, "off", tmpA, sizeof(tmpA))) {
 			j = atoi(tmpA);
 			hprintf255(request, "<h3>Disabled %s!</h3>", CHANNEL_GetLabel(j));
@@ -273,6 +279,7 @@ int http_fn_index(http_request_t* request) {
 			}
 			CHANNEL_Set(j, newPWMValue, 1);
 
+#if ENABLE_LED_BASIC
 			if (j == SPECIAL_CHANNEL_TEMPERATURE) {
 				// auto enable - but only for changes made from WWW panel
 				// This happens when users changes TEMPERATURE
@@ -280,6 +287,7 @@ int http_fn_index(http_request_t* request) {
 					LED_SetEnableAll(true);
 				}
 			}
+#endif
 		}
 		if (http_getArg(request->url, "dim", tmpA, sizeof(tmpA))) {
 			int newDimmerValue = atoi(tmpA);
@@ -293,6 +301,7 @@ int http_fn_index(http_request_t* request) {
 			}
 			CHANNEL_Set(j, newDimmerValue, 1);
 
+#if ENABLE_LED_BASIC
 			if (j == SPECIAL_CHANNEL_BRIGHTNESS) {
 				// auto enable - but only for changes made from WWW panel
 				// This happens when users changes DIMMER
@@ -300,6 +309,7 @@ int http_fn_index(http_request_t* request) {
 					LED_SetEnableAll(true);
 				}
 			}
+#endif
 		}
 		if (http_getArg(request->url, "set", tmpA, sizeof(tmpA))) {
 			int newSetValue = atoi(tmpA);
@@ -1679,7 +1689,11 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	PIN_get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
 	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HASS counts: %i rels, %i pwms, %i inps, %i excluded", relayCount, pwmCount, dInputCount, excludedCount);
 
+#if ENABLE_LED_BASIC
 	ledDriverChipRunning = LED_IsLedDriverChipRunning();
+#else
+	ledDriverChipRunning = 0;
+#endif
 
 	hooks.malloc_fn = os_malloc;
 	hooks.free_fn = os_free;
@@ -2240,6 +2254,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 			}
 		}
 	}
+#if ENABLE_LED_BASIC
 	if (pwmCount == 5 || LED_IsLedDriverChipRunning()) {
 		// Enable + RGB control + CW control
 		if (mqttAdded == 0) {
@@ -2335,6 +2350,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 				}
 			}
 		}
+#endif
 
 	poststr(request, "</textarea>");
 	poststr(request, "<br/><div><label for=\"ha_disc_topic\">Discovery topic:</label><input id=\"ha_disc_topic\" value=\"homeassistant\"><button onclick=\"send_ha_disc();\">Start Home Assistant Discovery</button>&nbsp;<form action=\"cfg_mqtt\" class='disp-inline'><button type=\"submit\">Configure MQTT</button></form></div><br/>");

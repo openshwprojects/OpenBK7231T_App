@@ -614,7 +614,9 @@ void Main_OnEverySecond()
 	g_noMQTTTime = i;
 
 	MQTT_Dedup_Tick();
+#if ENABLE_LED_BASIC
 	LED_RunOnEverySecond();
+#endif
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) \
@@ -1412,8 +1414,10 @@ void Main_Init()
 	g_unsafeInitDone = false;
 
 #ifdef WINDOWS
+#if ENABLE_LED_BASIC
 	// on windows, Main_Init may happen multiple time so we need to reset variables
 	LED_ResetGlobalVariablesToDefaults();
+#endif
 	// on windows, we don't want to remember commands from previous session
 	CMD_FreeAllCommands();
 #endif
