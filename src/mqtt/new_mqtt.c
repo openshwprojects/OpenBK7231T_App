@@ -1635,7 +1635,7 @@ static BENCHMARK_TEST_INFO* info = NULL;
 #if WINDOWS
 
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF || PLATFORM_TR6260 \
-	|| PLATFORM_RTL87X0C || PLATFORM_RTL8710B
+	|| PLATFORM_REALTEK
 static void mqtt_timer_thread(void* param)
 {
 	while (1)
@@ -1676,7 +1676,7 @@ commandResult_t MQTT_StartMQTTTestThread(const void* context, const char* cmd, c
 #if WINDOWS
 
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF || PLATFORM_TR6260 \
-	|| PLATFORM_RTL87X0C || PLATFORM_RTL8710B
+	|| PLATFORM_REALTEK
 	xTaskCreate(mqtt_timer_thread, "mqtt", 1024, (void*)info, 15, NULL);
 #elif PLATFORM_XR809 || PLATFORM_LN882H
 	OS_TimerSetInvalid(&timer);

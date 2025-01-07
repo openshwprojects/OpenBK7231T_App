@@ -115,6 +115,11 @@ typedef long BaseType_t;
 #define DEVICENAME_PREFIX_SHORT "rtl8710b"
 #define PLATFORM_MCU_NAME "RTL8710B"
 #define MANUFACTURER "Realtek"
+#elif PLATFORM_RTL8710A
+#define DEVICENAME_PREFIX_FULL "OpenRTL8710A"
+#define DEVICENAME_PREFIX_SHORT "rtl8710a"
+#define PLATFORM_MCU_NAME "RTL8710A"
+#define MANUFACTURER "Realtek"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -536,7 +541,7 @@ extern int g_sleepfactor;
 
 #define bk_printf printf
 
-#ifdef PLATFORM_RTL8710B
+#if PLATFORM_RTL8710B || PLATFORM_RTL8710A
 #define atoi __wrap_atoi
 #endif
 

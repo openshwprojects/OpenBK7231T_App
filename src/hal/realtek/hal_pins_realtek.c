@@ -125,7 +125,9 @@ void HAL_PIN_PWM_Start(int index)
 	memset(pin->pwm, 0, sizeof(pwmout_t));
 	pwmout_init(pin->pwm, pin->pin);
 	pwmout_period_us(pin->pwm, g_pwmFrequency);
+#ifndef PLATFORM_RTL8710A
 	pwmout_start(pin->pwm);
+#endif
 }
 
 void HAL_PIN_PWM_Update(int index, float value)

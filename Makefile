@@ -159,11 +159,19 @@ prebuild_OpenRTL87X0C:
 	fi
 
 prebuild_OpenRTL8710B:
-	#git submodule update --init --recursive sdk/OpenRTL8710A_B
+	git submodule update --init --recursive sdk/OpenRTL8710A_B
 	@if [ -e platforms/RTL8710B/pre_build.sh ]; then \
 		echo "prebuild found for OpenRTL8710B"; \
 		sh platforms/RTL8710B/pre_build.sh; \
 	else echo "prebuild for OpenRTL8710B not found ... "; \
+	fi
+
+prebuild_OpenRTL8710A:
+	git submodule update --init --recursive sdk/OpenRTL8710A_B
+	@if [ -e platforms/RTL8710A/pre_build.sh ]; then \
+		echo "prebuild found for OpenRTL8710A"; \
+		sh platforms/RTL8710A/pre_build.sh; \
+	else echo "prebuild for OpenRTL8710A not found ... "; \
 	fi
 
 # Build main binaries
@@ -324,6 +332,13 @@ OpenRTL8710B: prebuild_OpenRTL8710B
 	@cat sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/image2_all_ota1.bin >> output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION)_ota.img
 	echo "OBK_OTA_IDX2" >> output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION)_ota.img
 	@cat sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/image2_all_ota2.bin >> output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION)_ota.img
+	
+.PHONY: OpenRTL8710A
+OpenRTL8710A: prebuild_OpenRTL8710A
+	$(MAKE) -C sdk/OpenRTL8710A_B/project/obk_ameba1/GCC-RELEASE APP_VERSION=$(APP_VERSION) -j $(shell nproc)
+	mkdir -p output/$(APP_VERSION)
+	cp sdk/OpenRTL8710A_B/project/obk_ameba1/GCC-RELEASE/application/Debug/bin/ram_all.bin output/$(APP_VERSION)/OpenRTL8710A_$(APP_VERSION).bin
+	cp sdk/OpenRTL8710A_B/project/obk_ameba1/GCC-RELEASE/application/Debug/bin/ota.bin output/$(APP_VERSION)/OpenRTL8710A_$(APP_VERSION)_ota.img
 
 # clean .o files and output directory
 .PHONY: clean
@@ -337,6 +352,7 @@ clean:
 	$(MAKE) -C sdk/OpenTR6260/scripts tr6260s1_clean
 	$(MAKE) -C sdk/OpenRTL87X0C/project/OpenBeken/GCC-RELEASE clean
 	$(MAKE) -C sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE clean
+	$(MAKE) -C sdk/OpenRTL8710A_B/project/obk_ameba1/GCC-RELEASE clean
 	test -d ./sdk/OpenLN882H/build && cmake --build ./sdk/OpenLN882H/build --target clean
 	test -d ./platforms/ESP-IDF/build-32 && cmake --build ./platforms/ESP-IDF/build-32 --target clean
 	test -d ./platforms/ESP-IDF/build-c3 && cmake --build ./platforms/ESP-IDF/build-c3 --target clean

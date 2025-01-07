@@ -1329,10 +1329,8 @@ int http_fn_cfg_wifi(http_request_t* request) {
 		}
 #elif PLATFORM_TR6260
 		poststr(request, "TODO TR6260<br>");
-#elif defined(PLATFORM_RTL87X0C)
-		poststr(request, "TODO RTL87X0C<br>");
-#elif defined(PLATFORM_RTL8710B)
-		poststr(request, "TODO RTL87X0C<br>");
+#elif defined(PLATFORM_REALTEK)
+		poststr(request, "TODO Realtek<br>");
 #else
 #error "Unknown platform"
 		poststr(request, "Unknown platform<br>");
@@ -3021,7 +3019,7 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 #elif PLATFORM_ESPIDF
 #elif PLATFORM_TR6260
 #elif PLATFORM_RTL87X0C
-#elif PLATFORM_RTL8710B
+#elif PLATFORM_RTL8710B || PLATFORM_RTL8710A
 #elif PLATFORM_W600 || PLATFORM_W800
 	t_http_fwup(s);
 #elif PLATFORM_XR809

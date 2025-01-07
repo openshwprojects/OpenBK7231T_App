@@ -11,6 +11,8 @@
 #include "../littlefs/our_lfs.h"
 #include "lwip/sockets.h"
 
+#define DEFAULT_FLASH_LEN 0x200000
+
 #if PLATFORM_XR809
 
 #include <image/flash.h>
@@ -78,6 +80,18 @@ static flash_t flash_ota;
 
 extern flash_t flash;
 extern uint32_t current_fw_idx;
+
+#elif PLATFORM_RTL8710A
+
+#include "flash_api.h"
+#include "device_lock.h"
+#include "sys_api.h"
+
+extern flash_t flash;
+extern uint32_t current_fw_idx;
+
+#undef DEFAULT_FLASH_LEN
+#define DEFAULT_FLASH_LEN 0x400000
 
 #else
 
@@ -279,7 +293,7 @@ static int http_rest_post(http_request_t* request) {
 		return http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_ESPIDF
 		return http_rest_post_flash(request, -1, -1);
-#elif PLATFORM_RTL87X0C || PLATFORM_RTL8710B
+#elif PLATFORM_REALTEK
 		return http_rest_post_flash(request, 0, -1);
 #else
 		// TODO
@@ -2479,6 +2493,120 @@ update_ota_exit:
 		ADDLOG_ERROR(LOG_FEATURE_OTA, "OTA failed");
 		return http_rest_error(request, ret, "error");
 	}
+
+#elif PLATFORM_RTL8710A
+
+	uint32_t NewFWLen = 0, NewFWAddr = 0;
+	uint32_t address = 0;
+	uint32_t flash_checksum = 0;
+	union { uint32_t u; unsigned char c[4]; } file_checksum;
+	int ret = 0;
+
+	if(request->contentLength > 0)
+	{
+		towrite = request->contentLength;
+	}
+	else
+	{
+		ret = -1;
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "Content-length is 0");
+		goto update_ota_exit;
+	}
+
+	NewFWAddr = update_ota_prepare_addr();
+	if(NewFWAddr == -1)
+	{
+		goto update_ota_exit;
+	}
+
+	int reserase = update_ota_erase_upg_region(towrite, 0, NewFWAddr);
+	NewFWLen = towrite;
+	if(reserase == -1)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "Erase failed");
+		ret = -1;
+		goto update_ota_exit;
+	}
+
+	address = NewFWAddr;
+	ADDLOG_INFO(LOG_FEATURE_OTA, "Start to read data %i bytes, flash address: 0x%8x", NewFWLen, address);
+
+	do
+	{
+		device_mutex_lock(RT_DEV_LOCK_FLASH);
+		if(flash_stream_write(&flash, address + startaddr, writelen, (uint8_t*)writebuf) < 0)
+		{
+			ADDLOG_ERROR(LOG_FEATURE_OTA, "Write stream failed");
+			device_mutex_unlock(RT_DEV_LOCK_FLASH);
+			ret = -1;
+			goto update_ota_exit;
+		}
+		device_mutex_unlock(RT_DEV_LOCK_FLASH);
+
+		rtos_delay_milliseconds(10);
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Writelen %i at %i", writelen, total);
+		total += writelen;
+		startaddr += writelen;
+		towrite -= writelen;
+
+		// checksum attached at file end
+		if(startaddr + writelen > NewFWLen - 4)
+		{
+			file_checksum.c[0] = writebuf[writelen - 4];
+			file_checksum.c[1] = writebuf[writelen - 3];
+			file_checksum.c[2] = writebuf[writelen - 2];
+			file_checksum.c[3] = writebuf[writelen - 1];
+		}
+		if(towrite > 0)
+		{
+			writebuf = request->received;
+			writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
+			if(writelen < 0)
+			{
+				ADDLOG_DEBUG(LOG_FEATURE_OTA, "recv returned %d - end of data - remaining %d", writelen, towrite);
+			}
+		}
+	} while((towrite > 0) && (writelen >= 0));
+	ADDLOG_DEBUG(LOG_FEATURE_OTA, "%d total bytes written, verifying checksum %u", total, flash_checksum);
+	uint8_t* buf = (uint8_t*)os_malloc(512);
+	memset(buf, 0, 512);
+	// read flash data back and calculate checksum
+	for(int i = 0; i < NewFWLen; i += 512)
+	{
+		int k;
+		int rlen = (NewFWLen - 4 - i) > 512 ? 512 : (NewFWLen - 4 - i);
+		device_mutex_lock(RT_DEV_LOCK_FLASH);
+		flash_stream_read(&flash, NewFWAddr + i, rlen, buf);
+		device_mutex_unlock(RT_DEV_LOCK_FLASH);
+		for(k = 0; k < rlen; k++)
+		{
+			flash_checksum += buf[k];
+		}
+	}
+
+	ADDLOG_INFO(LOG_FEATURE_OTA, "flash checksum 0x%8x attached checksum 0x%8x", flash_checksum, file_checksum.u);
+	delay_ms(50);
+
+	ret = update_ota_checksum(&file_checksum, flash_checksum, NewFWAddr);
+	if(ret == -1)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "The checksum is wrong!");
+		goto update_ota_exit;
+	}
+
+update_ota_exit:
+	if(ret != -1)
+	{
+		//device_mutex_lock(RT_DEV_LOCK_FLASH);
+		//device_mutex_unlock(RT_DEV_LOCK_FLASH);
+		if(buf) free(buf);
+	}
+	else
+	{
+		if(buf) free(buf);
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "OTA failed");
+		return http_rest_error(request, ret, "error");
+	}
 #else
 
 	init_ota(startaddr);
@@ -2558,7 +2686,7 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 	char* buffer;
 	int res;
 
-	if (startaddr < 0 || (startaddr + len > 0x200000)) {
+	if (startaddr < 0 || (startaddr + len > DEFAULT_FLASH_LEN)) {
 		return http_rest_error(request, -1, "requested flash read out of range");
 	}
 
@@ -2581,7 +2709,7 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 #elif PLATFORM_LN882H || PLATFORM_ESPIDF || PLATFORM_TR6260
 // TODO:LN882H flash read?
         res = 0;
-#elif PLATFORM_RTL87X0C || PLATFORM_RTL8710B
+#elif PLATFORM_REALTEK
 		device_mutex_lock(RT_DEV_LOCK_FLASH);
 		flash_stream_read(&flash, startaddr, readlen, (uint8_t*)buffer);
 		device_mutex_unlock(RT_DEV_LOCK_FLASH);

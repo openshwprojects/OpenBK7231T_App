@@ -1,16 +1,11 @@
-#ifdef PLATFORM_RTL87X0C
+#ifdef PLATFORM_RTL8710A
 
 #include "../../../new_pins.h"
 #include "../../../new_cfg.h"
 #include "../../hal_uart.h"
 #include "serial_api.h"
-#include "hal_uart.h"
-#define UART0_TX	PA_14
-#define UART0_RX	PA_13
-#define UART1_0_TX	PA_3
-#define UART1_0_RX	PA_2
-#define UART1_1_TX	PA_1
-#define UART1_1_RX	PA_0
+#define UART0_TX	PA_7
+#define UART0_RX	PA_6
 
 serial_t sobj;
 static bool isInitialized;
@@ -21,17 +16,14 @@ static void uart_cb(uint32_t id, SerialIrq event)
 		return;
 
 	serial_t* obj = (void*)id;
-	uint8_t c;
-	while(hal_uart_rgetc(&obj->uart_adp, (char*)&c))
-	{
-		UART_AppendByteToReceiveRingBuffer(c);
-	}
+	uint8_t c = (uint8_t)serial_getc(obj);
+	UART_AppendByteToReceiveRingBuffer(c);
 }
 
 void HAL_UART_SendByte(byte b)
 {
-	while(!hal_uart_writeable(&sobj.uart_adp));
-	hal_uart_putc(&sobj.uart_adp, b);
+	while(!serial_writable(&sobj));
+	serial_putc(&sobj, b);
 }
 
 int HAL_UART_Init(int baud, int parity)
@@ -41,11 +33,11 @@ int HAL_UART_Init(int baud, int parity)
 		serial_free(&sobj);
 	}
 	PinName tx = UART0_TX, rx = UART0_RX;
-	if(CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART))
-	{
-		tx = UART1_0_TX;
-		rx = UART1_0_RX;
-	}
+	//if(CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART))
+	//{
+	//	tx = UART2_TX;
+	//	rx = UART2_RX;
+	//}
 	serial_init(&sobj, tx, rx);
 	serial_baud(&sobj, baud);
 	serial_format(&sobj, 8, parity, 1);

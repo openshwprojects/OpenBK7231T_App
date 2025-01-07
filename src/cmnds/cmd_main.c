@@ -914,7 +914,7 @@ void CMD_Init_Early() {
 	
 	
 #if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602) || (defined PLATFORM_LN882H) \
- || (defined PLATFORM_ESPIDF) || defined(PLATFORM_TR6260) || defined(PLATFORM_RTL87X0C) || defined(PLATFORM_RTL8710B)
+ || (defined PLATFORM_ESPIDF) || defined(PLATFORM_TR6260) || defined(PLATFORM_REALTEK)
 	CMD_InitScripting();
 #endif
 	if (!bSafeMode) {
@@ -932,7 +932,7 @@ void CMD_Init_Delayed() {
 		CMD_StartTCPCommandLine();
 	}
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) \
- || defined(PLATFORM_RTL87X0C) || defined(PLATFORM_RTL8710B)
+ || defined(PLATFORM_REALTEK)
 	UART_AddCommands();
 #endif
 }

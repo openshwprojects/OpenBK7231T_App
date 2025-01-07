@@ -254,14 +254,14 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 	strcpy((char*)&wdata.pwd, connect_key);
 	wifi_set_autoreconnect(0);
 
-
-
-	if (ip->localIPAddr[0] == 0) {
-         	//dhcps_init(&xnetif[0]);
+	if (ip->localIPAddr[0] == 0) 
+	{
+		//dhcps_init(&xnetif[0]);
 		g_bStaticIP = 0;
 	}
-	else {
-	       // dhcps_deinit();    
+	else 
+	{
+		// dhcps_deinit();
 		g_bStaticIP = 1;
 
 		IP4_ADDR(ip_2_ip4(&ipaddr), ip->localIPAddr[0], ip->localIPAddr[1], ip->localIPAddr[2], ip->localIPAddr[3]);
@@ -272,15 +272,12 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 	
 	netif_set_hostname(&xnetif[0], CFG_GetDeviceName());
 	wifi_reg_event_handler(WIFI_EVENT_DISCONNECT, (rtw_event_handler_t)wifi_dis_hdl, NULL);
-	if (g_bStaticIP) {
+	if (g_bStaticIP) 
+	{
 		// with static IP, assume  that connect is enough?
 		wifi_reg_event_handler(WIFI_EVENT_CONNECT, (rtw_event_handler_t)wifi_conned_hdl, NULL);
 	}
-	else {
-		//wifi_reg_event_handler(WIFI_EVENT_CONNECT, (rtw_event_handler_t)wifi_con_hdl, NULL);
-		// GOT IP won't get called if DHCP is off
-		wifi_reg_event_handler(WIFI_EVENT_STA_GOT_IP, (rtw_event_handler_t)wifi_conned_hdl, NULL);
-	}
+	wifi_reg_event_handler(WIFI_EVENT_STA_GOT_IP, (rtw_event_handler_t)wifi_conned_hdl, NULL);
 	wifi_reg_event_handler(WIFI_EVENT_CHALLENGE_FAIL, (rtw_event_handler_t)wifi_af_hdl, NULL);
 
 	xTaskCreate(
