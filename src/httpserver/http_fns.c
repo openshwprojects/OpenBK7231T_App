@@ -1048,7 +1048,45 @@ int http_fn_about(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
+#if ENABLE_HTTP_MQTT
 
+int http_fn_cfg_mqtt_set(http_request_t* request) {
+	char tmpA[128];
+	http_setup(request, httpMimeTypeHTML);
+	http_html_start(request, "Saving MQTT");
+
+	if (http_getArg(request->url, "host", tmpA, sizeof(tmpA))) {
+	}
+	// FIX: always set, so people can clear field
+	CFG_SetMQTTHost(tmpA);
+	if (http_getArg(request->url, "port", tmpA, sizeof(tmpA))) {
+		CFG_SetMQTTPort(atoi(tmpA));
+	}
+	if (http_getArg(request->url, "user", tmpA, sizeof(tmpA))) {
+		CFG_SetMQTTUserName(tmpA);
+	}
+	if (http_getArg(request->url, "password", tmpA, sizeof(tmpA))) {
+		CFG_SetMQTTPass(tmpA);
+	}
+	if (http_getArg(request->url, "client", tmpA, sizeof(tmpA))) {
+		CFG_SetMQTTClientId(tmpA);
+	}
+	if (http_getArg(request->url, "group", tmpA, sizeof(tmpA))) {
+		CFG_SetMQTTGroupTopic(tmpA);
+	}
+
+	CFG_Save_SetupTimer();
+
+	poststr(request, "Please wait for module to connect... if there is problem, restart it from Index html page...");
+
+	g_mqtt_bBaseTopicDirty = 1;
+
+	poststr(request, "<br><a href=\"cfg_mqtt\">Return to MQTT settings</a><br>");
+	poststr(request, htmlFooterReturnToCfgOrMainPage);
+	http_html_end(request);
+	poststr(request, NULL);
+	return 0;
+}
 int http_fn_cfg_mqtt(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "MQTT");
@@ -1071,6 +1109,7 @@ int http_fn_cfg_mqtt(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
+#endif
 #if ENABLE_HTTP_IP
 int http_fn_cfg_ip(http_request_t* request) {
 	char tmp[64];
@@ -1122,44 +1161,6 @@ int http_fn_cfg_ip(http_request_t* request) {
 	return 0;
 }
 #endif
-
-int http_fn_cfg_mqtt_set(http_request_t* request) {
-	char tmpA[128];
-	http_setup(request, httpMimeTypeHTML);
-	http_html_start(request, "Saving MQTT");
-
-	if (http_getArg(request->url, "host", tmpA, sizeof(tmpA))) {
-	}
-	// FIX: always set, so people can clear field
-	CFG_SetMQTTHost(tmpA);
-	if (http_getArg(request->url, "port", tmpA, sizeof(tmpA))) {
-		CFG_SetMQTTPort(atoi(tmpA));
-	}
-	if (http_getArg(request->url, "user", tmpA, sizeof(tmpA))) {
-		CFG_SetMQTTUserName(tmpA);
-	}
-	if (http_getArg(request->url, "password", tmpA, sizeof(tmpA))) {
-		CFG_SetMQTTPass(tmpA);
-	}
-	if (http_getArg(request->url, "client", tmpA, sizeof(tmpA))) {
-		CFG_SetMQTTClientId(tmpA);
-	}
-	if (http_getArg(request->url, "group", tmpA, sizeof(tmpA))) {
-		CFG_SetMQTTGroupTopic(tmpA);
-	}
-
-	CFG_Save_SetupTimer();
-
-	poststr(request, "Please wait for module to connect... if there is problem, restart it from Index html page...");
-
-	g_mqtt_bBaseTopicDirty = 1;
-
-	poststr(request, "<br><a href=\"cfg_mqtt\">Return to MQTT settings</a><br>");
-	poststr(request, htmlFooterReturnToCfgOrMainPage);
-	http_html_end(request);
-	poststr(request, NULL);
-	return 0;
-}
 
 #if ENABLE_HTTP_WEBAPP
 int http_fn_cfg_webapp(http_request_t* request) {
@@ -1654,6 +1655,7 @@ int http_fn_startup_command(http_request_t* request) {
 }
 #endif
 
+#if ENABLE_HA_DISCOVERY
 void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	int i;
 	int relayCount;
@@ -2158,6 +2160,7 @@ int http_fn_ha_discovery(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
+#endif
 
 #if ENABLE_OLD_YAML_GENERATOR
 void http_generate_singleColor_cfg(http_request_t* request, const char* clientId) {
@@ -2193,6 +2196,7 @@ void hprintf_qos_payload(http_request_t* request, const char* clientId) {
 	hprintf255(request, "      - topic: \"%s/connected\"\n", clientId);
 }
 #endif
+#if ENABLE_HA_DISCOVERY
 int http_fn_ha_cfg(http_request_t* request) {
 	int relayCount;
 	int pwmCount;
@@ -2370,6 +2374,8 @@ int http_fn_ha_cfg(http_request_t* request) {
 	return 0;
 }
 
+#endif
+
 void runHTTPCommandInternal(http_request_t* request, const char *cmd) {
 	bool bEchoHack = strncmp(cmd, "echo", 4) == 0;
 	CMD_ExecuteCommand(cmd, COMMAND_FLAG_SOURCE_HTTP);
@@ -2455,7 +2461,9 @@ int http_fn_cfg(http_request_t* request) {
 #if ENABLE_HTTP_WEBAPP
 	postFormAction(request, "cfg_webapp", "Configure WebApp");
 #endif
+#if ENABLE_HA_DISCOVERY
 	postFormAction(request, "ha_cfg", "Home Assistant Configuration");
+#endif
 	postFormAction(request, "ota", "OTA (update software by WiFi)");
 	postFormAction(request, "cmd_tool", "Execute Custom Command");
 #if ENABLE_HTTP_STARTUP
@@ -2559,9 +2567,11 @@ int http_fn_cfg_pins(http_request_t* request) {
 		CFG_Save_IfThereArePendingChanges();
 
 		// Invoke Hass discovery if configuration has changed and not in safe mode.
+#if ENABLE_HA_DISCOVERY
 		if (!bSafeMode && CFG_HasFlag(OBK_FLAG_AUTOMAIC_HASS_DISCOVERY)) {
 			Main_ScheduleHomeAssistantDiscovery(1);
 		}
+#endif
 		hprintf255(request, "Pins update - %i reqs, %i changed!<br><br>", iChangedRequested, iChanged);
 	}
 	//	strcat(outbuf,"<button type=\"button\">Click Me!</button>");

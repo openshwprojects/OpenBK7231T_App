@@ -764,9 +764,11 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	if (http_checkUrlBase(urlStr, "index")) return http_fn_index(request);
 
 	if (http_checkUrlBase(urlStr, "about")) return http_fn_about(request);
-
+	
+#if ENABLE_HTTP_MQTT
 	if (http_checkUrlBase(urlStr, "cfg_mqtt")) return http_fn_cfg_mqtt(request);
 	if (http_checkUrlBase(urlStr, "cfg_mqtt_set")) return http_fn_cfg_mqtt_set(request);
+#endif
 #if ENABLE_HTTP_IP
 	if (http_checkUrlBase(urlStr, "cfg_ip")) return http_fn_cfg_ip(request);
 #endif
@@ -801,8 +803,10 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	if (http_checkUrlBase(urlStr, "cfg_dgr")) return http_fn_cfg_dgr(request);
 #endif
 
+#if ENABLE_HA_DISCOVERY
 	if (http_checkUrlBase(urlStr, "ha_cfg")) return http_fn_ha_cfg(request);
 	if (http_checkUrlBase(urlStr, "ha_discovery")) return http_fn_ha_discovery(request);
+#endif
 	if (http_checkUrlBase(urlStr, "cfg")) return http_fn_cfg(request);
 
 	if (http_checkUrlBase(urlStr, "cfg_pins")) return http_fn_cfg_pins(request);

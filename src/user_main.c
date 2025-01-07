@@ -512,9 +512,12 @@ void Main_LogPowerSave() {
 
 /// @brief Schedule HomeAssistant discovery. The caller should check OBK_FLAG_AUTOMAIC_HASS_DISCOVERY if necessary.
 /// @param seconds 
+#if ENABLE_HA_DISCOVERY
 void Main_ScheduleHomeAssistantDiscovery(int seconds) {
 	g_doHomeAssistantDiscoveryIn = seconds;
 }
+#endif
+
 
 void Main_ConnectToWiFiNow() {
 	const char* wifi_ssid, * wifi_pass;
@@ -657,11 +660,12 @@ void Main_OnEverySecond()
 				MQTT_DoItemPublish(PUBLISHITEM_SELF_IP);
 			}
 			EventHandlers_FireEvent(CMD_EVENT_IPCHANGE, 0);
-
+#if ENABLE_HA_DISCOVERY
 			//Invoke Hass discovery if ipaddr changed
 			if (CFG_HasFlag(OBK_FLAG_AUTOMAIC_HASS_DISCOVERY)) {
 				Main_ScheduleHomeAssistantDiscovery(1);
 			}
+#endif
 		}
 	}
 
@@ -773,6 +777,8 @@ void Main_OnEverySecond()
 		}
 	}
 
+
+#if ENABLE_HA_DISCOVERY
 	if (g_doHomeAssistantDiscoveryIn) {
 		if (MQTT_IsReady()) {
 			g_doHomeAssistantDiscoveryIn--;
@@ -788,6 +794,7 @@ void Main_OnEverySecond()
 			ADDLOGF_INFO("HA discovery is scheduled, but MQTT connection is not present yet\n");
 		}
 	}
+#endif
 	if (g_openAP)
 	{
 		if (g_bHasWiFiConnected)
@@ -1369,11 +1376,12 @@ void Main_Init_After_Delay()
 	// only initialise certain things if we are not in AP mode
 	if (!bSafeMode)
 	{
+#if ENABLE_HA_DISCOVERY
 		//Always invoke discovery on startup. This accounts for change in ipaddr before startup and firmware update.
 		if (CFG_HasFlag(OBK_FLAG_AUTOMAIC_HASS_DISCOVERY)) {
 			Main_ScheduleHomeAssistantDiscovery(1);
 		}
-
+#endif
 		Main_Init_AfterDelay_Unsafe(true);
 	}
 

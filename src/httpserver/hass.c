@@ -6,6 +6,8 @@
 #include "../driver/drv_public.h"
 #include "../new_pins.h"
 
+#if ENABLE_HA_DISCOVERY
+
 /*
 Abbreviated node names - https://www.home-assistant.io/docs/mqtt/discovery/
 Light - https://www.home-assistant.io/integrations/light.mqtt/
@@ -760,3 +762,5 @@ void hass_free_device_info(HassDeviceInfo* info) {
 
 	os_free(info);
 }
+
+#endif // ENABLE_HA_DISCOVERY
