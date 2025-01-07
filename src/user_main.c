@@ -1141,7 +1141,7 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 #if ENABLE_LED_BASIC
 	NewLED_InitCommands();
 #endif
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+#if ENABLE_HTTP_SEND
 	CMD_InitSendCommands();
 #endif
 	CMD_InitChannelCommands();
