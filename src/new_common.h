@@ -643,9 +643,11 @@ int Main_HasWiFiConnected();
 void Main_OnPingCheckerReply(int ms);
 
 // new_ping.c
+#if ENABLE_PING_WATCHDOG
 void Main_SetupPingWatchDog(const char *target/*, int delayBetweenPings_Seconds*/);
 int PingWatchDog_GetTotalLost();
 int PingWatchDog_GetTotalReceived();
+#endif
 
 // my addon to LWIP library
 

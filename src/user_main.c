@@ -820,8 +820,9 @@ void Main_OnEverySecond()
 				{
 					// mark as enabled
 					g_timeSinceLastPingReply = 0;
-					//Main_SetupPingWatchDog(pingTargetServer,pingInterval);
+#if ENABLE_PING_WATCHDOG
 					Main_SetupPingWatchDog(pingTargetServer);
+#endif
 				}
 				else {
 					// mark as disabled
