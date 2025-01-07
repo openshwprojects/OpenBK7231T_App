@@ -1621,6 +1621,7 @@ int http_fn_cmd_tool(http_request_t* request) {
 	return 0;
 }
 
+#if ENABLE_HTTP_STARTUP
 int http_fn_startup_command(http_request_t* request) {
 	char tmpA[512];
 	http_setup(request, httpMimeTypeHTML);
@@ -1649,6 +1650,7 @@ int http_fn_startup_command(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
+#endif
 
 void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	int i;
@@ -2454,8 +2456,9 @@ int http_fn_cfg(http_request_t* request) {
 	postFormAction(request, "ha_cfg", "Home Assistant Configuration");
 	postFormAction(request, "ota", "OTA (update software by WiFi)");
 	postFormAction(request, "cmd_tool", "Execute Custom Command");
-	//postFormAction(request, "flash_read_tool", "Flash Read Tool");
+#if ENABLE_HTTP_STARTUP
 	postFormAction(request, "startup_command", "Change Startup Command Text");
+#endif
 
 #if 0
 #if PLATFORM_BK7231T | PLATFORM_BK7231N

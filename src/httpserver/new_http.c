@@ -786,10 +786,11 @@ int HTTP_ProcessPacket(http_request_t* request) {
 #if ENABLE_HTTP_MAC
 	if (http_checkUrlBase(urlStr, "cfg_mac")) return http_fn_cfg_mac(request);
 #endif
-
-//	if (http_checkUrlBase(urlStr, "flash_read_tool")) return http_fn_flash_read_tool(request);
 	if (http_checkUrlBase(urlStr, "cmd_tool")) return http_fn_cmd_tool(request);
+
+#if ENABLE_HTTP_STARTUP
 	if (http_checkUrlBase(urlStr, "startup_command")) return http_fn_startup_command(request); 
+#endif
 #if ENABLE_HTTP_FLAGS
 	if (http_checkUrlBase(urlStr, "cfg_generic")) return http_fn_cfg_generic(request);
 #endif
