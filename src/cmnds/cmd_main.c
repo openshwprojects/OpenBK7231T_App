@@ -888,9 +888,11 @@ void CMD_Init_Early() {
 
 
 void CMD_Init_Delayed() {
+#if ENABLE_TCP_COMMANDLINE
 	if (CFG_HasFlag(OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER)) {
 		CMD_StartTCPCommandLine();
 	}
+#endif
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) \
  || defined(PLATFORM_RTL87X0C)
 	UART_AddCommands();

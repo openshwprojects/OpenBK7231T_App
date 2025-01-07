@@ -533,9 +533,11 @@ void CFG_SetFlag(int flag, bool bValue) {
 		*cfgValue = nf;
 		g_cfg_pendingChanges++;
 		// this will start only if it wasnt running
+#if ENABLE_TCP_COMMANDLINE
 		if(bValue && flag == OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER) {
 			CMD_StartTCPCommandLine();
 		}
+#endif
 #if ENABLE_LED_BASIC
 		if (bValue && flag == OBK_FLAG_LED_REMEMBERLASTSTATE) {
 			LED_SaveStateToFlashVarsNow();
