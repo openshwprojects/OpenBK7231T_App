@@ -112,6 +112,7 @@ static void store_sector(unsigned int addr, unsigned char *data){
     OTA_IncrementProgress(SECTOR_SIZE);
 }
 
+#if ENABLE_HTTP_SEND
 
 httprequest_t httprequest;
 
@@ -220,6 +221,12 @@ void otarequest(const char *urlin){
   OTA_ResetProgress();
   OTA_IncrementProgress(1);
  }
+#else
+
+void otarequest(const char *urlin) {
+	addLogAdv(LOG_INFO, LOG_FEATURE_OTA, "");
+}
+#endif
 
 #endif
 
