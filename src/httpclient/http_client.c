@@ -7,6 +7,7 @@
  */
 
 #include "../new_common.h"
+#include "../obk_config.h"
 #include "../cmnds/cmd_public.h"
 #include "include.h"
 #include "utils_timer.h"
@@ -14,6 +15,8 @@
 #include "http_client.h"
 #include "rtos_pub.h"
 #include "../logging/logging.h"
+
+#if ENABLE_HTTP_SEND
 
 #include "iot_export_errno.h"
 
@@ -1321,3 +1324,6 @@ int HTTPClient_Async_SendPost(const char *url_in, int http_port, const char *con
 
 	return 0;
 }
+
+#endif // ENABLE_HTTP_SEND
+
