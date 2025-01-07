@@ -2206,6 +2206,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 	http_html_start(request, "Home Assistant Setup");
 	poststr_h4(request, "Home Assistant Cfg");
 	hprintf255(request, "<h4>Note that your short device name is: %s</h4>", shortDeviceName);
+#if ENABLE_OLD_YAML_GENERATOR
 	poststr_h4(request, "Paste this to configuration yaml");
 	poststr(request, "<h5>Make sure that you have \"switch:\" keyword only once! Home Assistant doesn't like dup keywords.</h5>");
 	poststr(request, "<h5>You can also use \"switch MyDeviceName:\" to avoid keyword duplication!</h5>");
@@ -2353,6 +2354,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 #endif
 
 	poststr(request, "</textarea>");
+#endif
 	poststr(request, "<br/><div><label for=\"ha_disc_topic\">Discovery topic:</label><input id=\"ha_disc_topic\" value=\"homeassistant\"><button onclick=\"send_ha_disc();\">Start Home Assistant Discovery</button>&nbsp;<form action=\"cfg_mqtt\" class='disp-inline'><button type=\"submit\">Configure MQTT</button></form></div><br/>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
