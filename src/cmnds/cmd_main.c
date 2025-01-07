@@ -362,6 +362,7 @@ static commandResult_t CMD_StartupCommand(const void* context, const char* cmd, 
 	// so we know arguments count in Tokenizer. 'cmd' argument is
 	// only for warning display
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Cmd is %s",g_cfg.initCommandLine);
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	cmdToSet = Tokenizer_GetArg(0);

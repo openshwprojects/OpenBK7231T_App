@@ -766,8 +766,10 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	if (http_checkUrlBase(urlStr, "about")) return http_fn_about(request);
 
 	if (http_checkUrlBase(urlStr, "cfg_mqtt")) return http_fn_cfg_mqtt(request);
-	if (http_checkUrlBase(urlStr, "cfg_ip")) return http_fn_cfg_ip(request);
 	if (http_checkUrlBase(urlStr, "cfg_mqtt_set")) return http_fn_cfg_mqtt_set(request);
+#if ENABLE_HTTP_IP
+	if (http_checkUrlBase(urlStr, "cfg_ip")) return http_fn_cfg_ip(request);
+#endif
 
 #if ENABLE_HTTP_WEBAPP
 	if (http_checkUrlBase(urlStr, "cfg_webapp")) return http_fn_cfg_webapp(request);

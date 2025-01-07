@@ -1069,7 +1069,7 @@ int http_fn_cfg_mqtt(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
-
+#if ENABLE_HTTP_IP
 int http_fn_cfg_ip(http_request_t* request) {
 	char tmp[64];
 	int g_changes = 0;
@@ -1119,6 +1119,7 @@ int http_fn_cfg_ip(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
+#endif
 
 int http_fn_cfg_mqtt_set(http_request_t* request) {
 	char tmpA[128];
@@ -2154,6 +2155,7 @@ int http_fn_ha_discovery(http_request_t* request) {
 	return 0;
 }
 
+#if ENABLE_OLD_YAML_GENERATOR
 void http_generate_singleColor_cfg(http_request_t* request, const char* clientId) {
 	hprintf255(request, "    command_topic: \"cmnd/%s/led_enableAll\"\n", clientId);
 	hprintf255(request, "    state_topic: \"%s/led_enableAll/get\"\n", clientId);
@@ -2186,6 +2188,7 @@ void hprintf_qos_payload(http_request_t* request, const char* clientId) {
 	hprintf255(request, "    availability:\n");
 	hprintf255(request, "      - topic: \"%s/connected\"\n", clientId);
 }
+#endif
 int http_fn_ha_cfg(http_request_t* request) {
 	int relayCount;
 	int pwmCount;
@@ -2432,7 +2435,9 @@ int http_fn_cfg(http_request_t* request) {
 	postFormAction(request, "cfg_dgr", "Configure Device Groups");
 #endif
 	postFormAction(request, "cfg_wifi", "Configure WiFi &amp; Web");
+#if ENABLE_HTTP_IP
 	postFormAction(request, "cfg_ip", "Configure IP");
+#endif
 	postFormAction(request, "cfg_mqtt", "Configure MQTT");
 #if ENABLE_HTTP_NAMES
 	postFormAction(request, "cfg_name", "Configure Names");
