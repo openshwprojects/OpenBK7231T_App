@@ -162,9 +162,11 @@ void Win_DoUnitTests() {
 	Test_WaitFor();
 	Test_TwoPWMsOneChannel();
 	Test_ClockEvents();
+#if ENABLE_HA_DISCOVERY
 	Test_HassDiscovery_Base();
 	Test_HassDiscovery();
 	Test_HassDiscovery_Ext();
+#endif
 	Test_Role_ToggleAll_2();
 	Test_Demo_ButtonToggleGroup();
 	Test_Demo_ButtonScrollingChannelValues();
