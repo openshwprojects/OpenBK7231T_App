@@ -798,7 +798,9 @@ void LED_SetBaseColorByIndex(int i, float f, bool bApply) {
 
 		// set g_lightMode
 		SET_LightMode(Light_RGB);
+#if ENABLE_MQTT
 		sendColorChange();
+#endif
 		apply_smart_light();
 	}
 }
@@ -835,7 +837,9 @@ void LED_SetTemperature(int tmpInteger, bool bApply) {
 
 		// set g_lightMode
 		SET_LightMode(Light_Temperature);
+#if ENABLE_MQTT
 		sendTemperatureChange();
+#endif
 		apply_smart_light();
 	}
 
@@ -894,6 +898,7 @@ void LED_SetEnableAll(int bEnable) {
 #if	ENABLE_TASMOTADEVICEGROUPS
 	DRV_DGR_OnLedEnableAllChange(bEnable);
 #endif
+#if ENABLE_MQTT
 	LED_SendEnableAllState();
 	if (bEnableAllWasSetTo1) {
 		// if enable all was set to 1 this frame, also send dimmer
@@ -901,6 +906,7 @@ void LED_SetEnableAll(int bEnable) {
 		// TODO: check if it's OK 
 		LED_SendDimmerChange();
 	}
+#endif
 }
 int LED_GetEnableAll() {
 	return g_lightEnableAll;
@@ -1077,6 +1083,7 @@ void LED_SetDimmer(int iVal) {
 #endif
 
 	apply_smart_light();
+#if ENABLE_MQTT
 	LED_SendDimmerChange();
 
 	if(shouldSendRGB()) {
@@ -1087,6 +1094,7 @@ void LED_SetDimmer(int iVal) {
 			sendFinalColor();
 		}
 	}
+#endif
 
 }
 static commandResult_t add_temperature(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -1248,6 +1256,7 @@ void LED_SetFinalRGB(byte r, byte g, byte b) {
 
 	apply_smart_light();
 
+#if ENABLE_MQTT
 	// TODO
 	if(0) {
 		sendColorChange();
@@ -1258,6 +1267,7 @@ void LED_SetFinalRGB(byte r, byte g, byte b) {
 			sendFinalColor();
 		}
 	}
+#endif
 }
 static void onHSVChanged() {
 	float r, g, b;
@@ -1272,14 +1282,16 @@ static void onHSVChanged() {
 		LED_SetEnableAll(true);
 	}
 
-	sendColorChange();
 
 	apply_smart_light();
 
 
+#if ENABLE_MQTT
+	sendColorChange();
 	if (CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTLEDFINALCOLOR)) {
 		sendFinalColor();
 	}
+#endif
 }
 commandResult_t LED_SetBaseColor_HSB(const void *context, const char *cmd, const char *args, int bAll) {
 	int hue, sat, bri;
@@ -1399,6 +1411,7 @@ commandResult_t LED_SetBaseColor(const void *context, const char *cmd, const cha
 				LED_SetEnableAll(true);
 			}
 			apply_smart_light();
+#if ENABLE_MQTT
 			sendColorChange();
 			if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTLEDPARAMSTOGETHER)) {
 				LED_SendDimmerChange();
@@ -1406,6 +1419,7 @@ commandResult_t LED_SetBaseColor(const void *context, const char *cmd, const cha
 			if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTLEDFINALCOLOR)) {
 				sendFinalColor();
 			}
+#endif
 
         return CMD_RES_OK;
   //  }

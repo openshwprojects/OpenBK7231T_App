@@ -589,6 +589,8 @@ void Main_OnEverySecond()
 		g_wifi_temperature = HAL_ADC_Temp();
 #endif
 	}
+
+#if ENABLE_MQTT
 	// run_adc_test();
 	newMQTTState = MQTT_RunEverySecondUpdate();
 	if (newMQTTState != bMQTTconnected) {
@@ -600,6 +602,7 @@ void Main_OnEverySecond()
 			EventHandlers_FireEvent(CMD_EVENT_MQTT_STATE, 0);
 		}
 	}
+#endif
 	if (g_newWiFiStatus != g_prevWiFiStatus) {
 		g_prevWiFiStatus = g_newWiFiStatus;
 		// Argument type here is HALWifiStatus_t enumeration
@@ -616,7 +619,10 @@ void Main_OnEverySecond()
 	// save new value
 	g_noMQTTTime = i;
 
+
+#if ENABLE_MQTT
 	MQTT_Dedup_Tick();
+#endif
 #if ENABLE_LED_BASIC
 	LED_RunOnEverySecond();
 #endif
@@ -961,7 +967,9 @@ void QuickTick(void* param)
 	CMD_RunUartCmndIfRequired();
 
 	// process recieved messages here..
+#if ENABLE_MQTT
 	MQTT_RunQuickTick();
+#endif
 
 #if ENABLE_LED_BASIC
 	if (CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == true) {
@@ -1090,7 +1098,9 @@ void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
 
 	// initialise MQTT - just sets up variables.
 	// all MQTT happens in timer thread?
+#if ENABLE_MQTT
 	MQTT_init();
+#endif
 
 	CMD_Init_Delayed();
 
