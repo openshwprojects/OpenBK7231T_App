@@ -119,6 +119,7 @@
 
 #elif PLATFORM_BEKEN
 
+#define OBK_DISABLE_ALL_DRIVERS       1
 
 #define OBK_OTA_EXTENSION 		".rbl"
 
