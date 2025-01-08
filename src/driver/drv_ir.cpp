@@ -1,5 +1,7 @@
 
-#if PLATFORM_BEKEN
+#include "../obk_config.h"
+
+#if ENABLE_DRIVER_IR
 
 extern "C" {
     // these cause error: conflicting declaration of 'int bk_wlan_mcu_suppress_and_sleep(unsigned int)' with 'C' linkage
@@ -908,5 +910,6 @@ void cpptest(){
 }
 #endif
 
-#endif
+// close ENABLE_DRIVER_IR
+#endif 
 

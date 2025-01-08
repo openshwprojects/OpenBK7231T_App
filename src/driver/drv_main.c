@@ -222,7 +222,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "SM15155E",	SM15155E_Init,		NULL,						NULL, NULL, NULL, NULL, false },
 #endif
-#if PLATFORM_BEKEN
+#if ENABLE_DRIVER_IR
 	//drvdetail:{"name":"IR",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"IRLibrary wrapper, so you can receive remote signals and send them. See [forum discussion here](https://www.elektroda.com/rtvforum/topic3920360.html), also see [LED strip and IR YT video](https://www.youtube.com/watch?v=KU0tDwtjfjw)",
