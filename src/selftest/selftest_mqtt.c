@@ -9,11 +9,13 @@ void SIM_ClearAndPrepareForMQTTTesting(const char *clientName, const char *group
 	Main_OnWiFiStatusChange(WIFI_STA_CONNECTED);
 	CFG_SetMQTTClientId(clientName);
 	CFG_SetMQTTGroupTopic(groupName);
+#if ENABLE_MQTT
 	MQTT_init();
 
 	for (int i = 0; i < 20; i++) {
 		MQTT_RunEverySecondUpdate();
 	}
+#endif
 }
 void Test_MQTT_Get_And_Reply() {
 	SIM_ClearOBK(0);
