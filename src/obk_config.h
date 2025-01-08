@@ -300,7 +300,8 @@
 
 #else
 
-#error "Platform not defined"
+//#error "Platform not defined"
+#warning "Platform not defined"
 
 #endif
 
