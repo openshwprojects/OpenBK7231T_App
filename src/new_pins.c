@@ -1100,11 +1100,13 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 			}
 		}
 	}
+#if ENABLE_MQTT
 	if ((iFlags & CHANNEL_SET_FLAG_SKIP_MQTT) == 0) {
 		if (CHANNEL_ShouldBePublished(ch)) {
 			MQTT_ChannelPublish(ch, 0);
 		}
 	}
+#endif
 	// Simple event - it just says that there was a change
 	EventHandlers_FireEvent(CMD_EVENT_CHANNEL_ONCHANGE, ch);
 	// more advanced events - change FROM value TO value

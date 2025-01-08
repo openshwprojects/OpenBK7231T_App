@@ -1067,6 +1067,7 @@ void TuyaMCU_SendNetworkStatus()
 	TuyaMCU_SendCommandWithData(0x2B, &state, 1);
 }
 void TuyaMCU_ForcePublishChannelValues() {
+#if ENABLE_MQTT
 	tuyaMCUMapping_t* cur;
 
 	cur = g_tuyaMappings;
@@ -1074,6 +1075,7 @@ void TuyaMCU_ForcePublishChannelValues() {
 		MQTT_ChannelPublish(cur->channel, 0);
 		cur = cur->next;
 	}
+#endif
 }
 // ntp_timeZoneOfs 2
 // addRepeatingEvent 10 -1 uartSendHex 55AA0008000007

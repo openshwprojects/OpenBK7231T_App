@@ -793,9 +793,11 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		printer(request, "{");
 		http_tasmota_json_power(request, printer);
 		printer(request, "}");
+#if ENABLE_MQTT
 		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
 			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "RESULT");
 		}
+#endif
 	}
 	else if (!wal_strnicmp(cmd, "SensorRetain", 12)) {
 		printer(request, "{");
@@ -893,9 +895,11 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 			http_tasmota_json_power(request, printer);
 		}
 		printer(request, "}");
+#if ENABLE_MQTT
 		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
 			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "RESULT");
 		}
+#endif
 	}
 	else if (!wal_strnicmp(cmd, "Dimmer", 6)) {
 		printer(request, "{");
@@ -906,9 +910,11 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 			http_tasmota_json_power(request, printer);
 		}
 		printer(request, "}");
+#if ENABLE_MQTT
 		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
 			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "RESULT");
 		}
+#endif
 	}
 	else if (!wal_strnicmp(cmd, "Color", 5) || !wal_strnicmp(cmd, "HsbColor", 8)) {
 		printer(request, "{");
@@ -919,32 +925,39 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		http_tasmota_json_power(request, printer);
 		//}
 		printer(request, "}");
+#if ENABLE_MQTT
 		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
 			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "RESULT");
 		}
+#endif
 	}
 #endif
 	else if (!wal_strnicmp(cmd, "STATE", 5)) {
 		http_tasmota_json_status_STS(request, printer, false);
+#if ENABLE_MQTT
 		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
 			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "RESULT");
 		}
 		if (flags == COMMAND_FLAG_SOURCE_TELESENDER) {
 			MQTT_PublishPrinterContentsToTele((struct obk_mqtt_publishReplyPrinter_s*)request, "STATE");
 		}
+#endif
 	}
 	else if (!wal_strnicmp(cmd, "SENSOR", 5)) {
 		// not a Tasmota command, but still required for us
 		http_tasmota_json_status_SNS(request, printer, false);
+#if ENABLE_MQTT
 		if (flags == COMMAND_FLAG_SOURCE_TELESENDER) {
 			MQTT_PublishPrinterContentsToTele((struct obk_mqtt_publishReplyPrinter_s*)request, "SENSOR");
 		}
+#endif
 	}
 	else if (!wal_strnicmp(cmd, "STATUS", 6)) {
 		if (!stricmp(arg, "8") || !stricmp(arg, "10")) {
 			printer(request, "{");
 			http_tasmota_json_status_SNS(request, printer, true);
 			printer(request, "}");
+#if ENABLE_MQTT
 			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
 				if (arg[0] == '8') {
 					MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "STATUS8");
@@ -953,60 +966,75 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 					MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "STATUS10");
 				}
 			}
+#endif
 		}
 		else if (!stricmp(arg, "6")) {
 			printer(request, "{");
 			http_tasmota_json_status_MQT(request, printer);
 			printer(request, "}");
+#if ENABLE_MQTT
 			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
 				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "STATUS6");
 			}
+#endif
 		}
 		else if (!stricmp(arg, "7")) {
 			printer(request, "{");
 			http_tasmota_json_status_TIM(request, printer);
 			printer(request, "}");
+#if ENABLE_MQTT
 			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
 				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "STATUS7");
 			}
+#endif
 		}
 		else if (!stricmp(arg, "5")) {
 			printer(request, "{");
 			http_tasmota_json_status_NET(request, printer);
 			printer(request, "}");
+#if ENABLE_MQTT
 			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
 				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "STATUS5");
 			}
+#endif
 		}
 		else if (!stricmp(arg, "4")) {
 			printer(request, "{");
 			http_tasmota_json_status_MEM(request, printer);
 			printer(request, "}");
+#if ENABLE_MQTT
 			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
 				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "STATUS4");
 			}
+#endif
 		}
 		else if (!stricmp(arg, "11")) {
 			printer(request, "{");
 			http_tasmota_json_status_STS(request, printer, true);
 			printer(request, "}");
+#if ENABLE_MQTT
 			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
 				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "STATUS11");
 			}
+#endif
 		}
 		else if (!stricmp(arg, "2")) {
 			printer(request, "{");
 			http_tasmota_json_status_FWR(request, printer);
 			printer(request, "}");
+#if ENABLE_MQTT
 			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
 				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "STATUS2");
 			}
+#endif
 		}
 		else {
 			http_tasmota_json_status_generic(request, printer);
+#if ENABLE_MQTT
 			if (flags == COMMAND_FLAG_SOURCE_MQTT) {
 				MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "STATUS");
 			}
+#endif
 		}
 	}
 	else if (!wal_strnicmp(cmd, "SetChannelType", 14)) {
@@ -1084,9 +1112,11 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 			sscanf(cmd + 2, "%i", &id);
 		}
 		http_obk_json_dps(id,request, printer);
+#if ENABLE_MQTT
 		if (flags == COMMAND_FLAG_SOURCE_MQTT) {
 			MQTT_PublishPrinterContentsToStat((struct obk_mqtt_publishReplyPrinter_s*)request, "DP");
 		}
+#endif
 	}
 #endif
 #endif

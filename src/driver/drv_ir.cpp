@@ -806,7 +806,9 @@ extern "C" void DRV_IR_RunFrame(){
         				//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR MQTT publish %s", out);
 
                         uint32_t counter_in = ir_counter;
+#if ENABLE_MQTT
                         MQTT_PublishMain_StringString("ir",out, 0);
+#endif
                         uint32_t counter_dur = ((ir_counter - counter_in)*50)/1000;
         				ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR MQTT publish %s took %dms", out, counter_dur);
                     } else {
@@ -816,6 +818,7 @@ extern "C" void DRV_IR_RunFrame(){
             		ADDLOG_INFO(LOG_FEATURE_IR, (char *)"IR %s", out);
                 }
 
+#if ENABLE_MQTT
 				if (CFG_HasFlag(OBK_FLAG_IR_PUBLISH_RECEIVED_IN_JSON)) {
 					// {"IrReceived":{"Protocol":"RC_5","Bits":0x1,"Data":"0xC"}}
 					// 
@@ -823,6 +826,7 @@ extern "C" void DRV_IR_RunFrame(){
 						name, (int)ourReceiver->decodedIRData.numberOfBits, (unsigned long)ourReceiver->decodedIRData.decodedRawData);
 					MQTT_PublishMain_StringString("RESULT", out, OBK_PUBLISH_FLAG_FORCE_REMOVE_GET);
 				}
+#endif
 
 				if(ourReceiver->decodedIRData.protocol != UNKNOWN) {
 					snprintf(out, sizeof(out), "%X", ourReceiver->decodedIRData.command);
