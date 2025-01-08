@@ -99,6 +99,19 @@ void Test_EnergyMeter_BL0942() {
 	Sim_SendFakeBL0942Packet(230, 0.13, 60);
 	Sim_RunSeconds(1, false);
 	SELFTEST_ASSERT_EXPRESSION("$power", 120);
+	// as above, but non-integer
+	Sim_SendFakeBL0942Packet(230, 0.13, 30);
+	Sim_RunSeconds(1, false);
+	CMD_ExecuteCommand("PowerSet 60.5", 0);
+	Sim_SendFakeBL0942Packet(230, 0.13, 30);
+	Sim_RunSeconds(1, false);
+	SELFTEST_ASSERT_EXPRESSION("$power", 60.5);
+	Sim_RunSeconds(1, false);
+	// now. if 30W from BL0942 is 60.5W IRL,
+	// then 60W frm BL0942 should give us 121W
+	Sim_SendFakeBL0942Packet(230, 0.13, 60);
+	Sim_RunSeconds(1, false);
+	SELFTEST_ASSERT_EXPRESSION("$power", 121);
 
 	SIM_ClearMQTTHistory();
 }
