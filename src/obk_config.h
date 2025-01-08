@@ -30,12 +30,14 @@
 
 #if PLATFORM_XR809
 
+#define ENABLE_MQTT 1
 #define NO_CHIP_TEMPERATURE			1
 #define OBK_DISABLE_ALL_DRIVERS		1
 
 #elif PLATFORM_W600
 
 // Some limited drivers are supported on W600, OBK_DISABLE_ALL_DRIVERS is not defined
+#define ENABLE_MQTT 1
 #define ENABLE_TASMOTADEVICEGROUPS 1
 #define ENABLE_NTP				1
 //#define ENABLE_NTP_DST			1
@@ -48,6 +50,7 @@
 
 // try enabling drivers - e.g. to access charts
 //#define OBK_DISABLE_ALL_DRIVERS 1
+#define ENABLE_MQTT 1
 #define ENABLE_TASMOTA_JSON		1
 #define ENABLE_DRIVER_DS1820		1
 #define OBK_OTA_EXTENSION 		".img"
@@ -97,7 +100,7 @@
 #define ENABLE_DRIVER_SSDP		1
 #define ENABLE_DRIVER_ADCBUTTON	1
 #define ENABLE_DRIVER_SM15155E	1
-#define ENABLE_DRIVER_IR		1
+//#define ENABLE_DRIVER_IR		1
 //#define ENABLE_DRIVER_IR2		1
 #define ENABLE_DRIVER_CHARTS	1
 #define ENABLE_DRIVER_WIDGET	1
