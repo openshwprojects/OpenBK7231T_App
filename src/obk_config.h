@@ -15,7 +15,7 @@
 //ENABLE_DRIVER_TUYAMCU - Enable support for TuyaMCU and tmSensor
 
 // not yet implemented
-#define ENABLE_MQTT 1 
+//#define ENABLE_MQTT 1 
 
 #if PLATFORM_XR809
 
