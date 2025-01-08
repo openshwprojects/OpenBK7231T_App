@@ -24,6 +24,7 @@
 #define ENABLE_HTTP_STARTUP		1
 #define ENABLE_HTTP_DGR			1
 #define ENABLE_HTTP_PING		1
+#define ENABLE_LED_BASIC		1
 
 
 
