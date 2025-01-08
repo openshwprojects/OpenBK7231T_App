@@ -12,6 +12,7 @@
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
+#include "lwip/netdb.h"
 #include "../cJSON/cJSON.h"
 
 #ifndef WINDOWS
