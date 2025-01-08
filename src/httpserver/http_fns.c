@@ -1080,9 +1080,9 @@ int http_fn_cfg_mqtt_set(http_request_t* request) {
 	CFG_Save_SetupTimer();
 
 	poststr(request, "Please wait for module to connect... if there is problem, restart it from Index html page...");
-
+#if ENABLE_MQTT
 	g_mqtt_bBaseTopicDirty = 1;
-
+#endif
 	poststr(request, "<br><a href=\"cfg_mqtt\">Return to MQTT settings</a><br>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
