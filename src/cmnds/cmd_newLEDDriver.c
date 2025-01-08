@@ -662,7 +662,9 @@ void apply_smart_light() {
 	
 	// I am not sure if it's the best place to do it
 	// NOTE: this will broadcast MQTT only if a flag is set
+#if ENABLE_MQTT
 	sendFullRGBCW_IfEnabled();
+#endif
 }
 
 void led_gamma_list (void) { // list RGB gamma settings
@@ -1352,7 +1354,9 @@ commandResult_t LED_SetBaseColor(const void *context, const char *cmd, const cha
 			if (CFG_HasFlag(OBK_FLAG_LED_SETTING_WHITE_RGB_ENABLES_CW)) {
 				if (!stricmp(c, "FFFFFF")) {
 					SET_LightMode(Light_Temperature);
+#if ENABLE_MQTT
 					sendTemperatureChange();
+#endif
 					apply_smart_light();
 					return CMD_RES_OK;
 				}

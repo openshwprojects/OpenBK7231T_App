@@ -121,7 +121,9 @@ void DoorDeepSleep_OnEverySecond() {
 	} else if (Main_HasMQTTConnected() && Main_HasWiFiConnected()) { // executes every second when connection is established
 			
 			DoorDeepSleep_QueueNewEvents();
+#if ENABLE_MQTT
 			PublishQueuedItems(); // publish those items that were queued when device was offline
+#endif
 			
 			g_noChangeTimePassed++;
 			if (g_noChangeTimePassed >= setting_timeRequiredUntilDeepSleep) {
