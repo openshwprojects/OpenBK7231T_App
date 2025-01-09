@@ -694,7 +694,7 @@ typedef enum
     EXCELLENT,
 } WIFI_RSSI_LEVEL;
 
-#if PLATFORM_LN882H || PLATFORM_RTL87X0C
+#if PLATFORM_LN882H || PLATFORM_REALTEK
 #define IP_STRING_FORMAT	"%u.%u.%u.%u"
 #else
 #define IP_STRING_FORMAT	"%hhu.%hhu.%hhu.%hhu"
