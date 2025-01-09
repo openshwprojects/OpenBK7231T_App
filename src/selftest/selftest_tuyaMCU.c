@@ -270,50 +270,49 @@ void Test_TuyaMCU_Basic() {
 	//
 	// check sending from OBK to MCU
 	//
-	// OBK sends: 
-	// 55 AA	00	06		00 05	1001000100	1C
+	// OBK sends:   55 AA	00	06		00 05	1001000100	1C
 	//HEADER	VER = 00	SetDP		LEN	dpId = 16 Bool V = 0	CHK
 	CMD_ExecuteCommand("tuyaMcu_sendState 16 1 0", 0);
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	06		00 05	1001000100	1C");
 	// nothing is sent by OBK at that point
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 
-	// OBK sends: 
-	// 55 AA	00	06		00 05	0101000101	0E
+	// OBK sends:  55 AA	00	06		00 05	0101000101	0E
 	// HEADER	VER = 00	Unk		LEN	dpId = 1 Bool V = 1	CHK
 	CMD_ExecuteCommand("tuyaMcu_sendState 1 1 1", 0);
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	06		00 05	0101000101	0E");
 	// nothing is sent by OBK at that point
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 
-	// OBK sends: 
-	// 55 AA	00	06		00 05	0101000100	0D
+	// OBK sends:  55 AA	00	06		00 05	0101000100	0D
 	// HEADER	VER = 00	Unk		LEN	dpId = 1 Bool V = 0	CHK
 	CMD_ExecuteCommand("tuyaMcu_sendState 1 1 0", 0);
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	06		00 05	0101000100	0D");
 	// nothing is sent by OBK at that point
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 	
-
-	// OBK sends: 
-	// 55 AA	00	06		00 05	6C01000101	79
+	// OBK sends:  55 AA	00	06		00 05	6C01000101	79
 	// HEADER	VER = 00	Unk		LEN	dpId = 108 Bool V = 1	CHK
-	CMD_ExecuteCommand("tuyaMcu_sendState 108 1 1", 0);
+	CMD_ExecuteCommand("tuyaMcu_sendState 108 bool 1", 0);
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	06		00 05	6C01000101	79");
 	// nothing is sent by OBK at that point
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 
-
-
-	// OBK sends: 
-	// 55 AA	00	06		00 05	6D04000110	8C
+	// OBK sends:   55 AA	00	06		00 05	6D04000110	8C
 	// HEADER	VER = 00	Unk		LEN	dpId = 109 Enum V = 16	CHK
 	CMD_ExecuteCommand("tuyaMcu_sendState 109 4 16", 0);
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	06		00 05	6D04000110	8C");
 	// nothing is sent by OBK at that point
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 
-	
+	// OBK sends:  55 AA	00	06		00 05	6D04000110	8C
+	// HEADER	VER = 00	Unk		LEN	dpId = 109 Enum V = 16	CHK
+	CMD_ExecuteCommand("tuyaMcu_sendState 109 enum 16", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	06		00 05	6D04000110	8C");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+
+
 		
 
 		
