@@ -413,7 +413,7 @@ void DS1820_OnEverySecond()
 				// if all is well, it should take 50ms and 100ms
 				// if not, we need to "calibrate" the loop
 				int tempsleep = 5000;
-				TickType_t actTick = portTICK_RATE_MS * xTaskGetTickCount();
+				int actTick = portTICK_RATE_MS * xTaskGetTickCount();
 				usleepds(tempsleep);
 				int duration = (int)(portTICK_RATE_MS * xTaskGetTickCount() - actTick);
 
