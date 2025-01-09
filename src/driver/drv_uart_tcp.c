@@ -4,7 +4,8 @@
 #include "../quicktick.h"
 #include "../logging/logging.h"
 #include "errno.h"
-#include "sockets.h"
+#include <lwip/sockets.h>
+
 #if ENABLE_DRIVER_UART_TCP
 
 #define DEFAULT_BUF_SIZE		512
