@@ -618,6 +618,9 @@ void SVM_StartScript(const char *fname, const char *label, int uniqueID) {
 
 	return;
 }
+void SVM_RunStartupCommandAsScript() {
+
+}
 
 static commandResult_t CMD_GoTo(const void *context, const char *cmd, const char *args, int cmdFlags){
 	const char *fname;
