@@ -96,6 +96,7 @@ CSRCS += $(_SHARED_APP)/driver/drv_ssdp.c
 CSRCS += $(_SHARED_APP)/driver/drv_ds1820_simple.c
 CSRCS += $(_SHARED_APP)/driver/drv_charts.c
 CSRCS += $(_SHARED_APP)/driver/drv_dht.c
+CSRCS += $(_SHARED_APP)/i2c/drv_i2c_main.c
 CSRCS += $(_SHARED_APP)/driver/drv_dht_internal.c
 CSRCS += $(_SHARED_APP)/driver/drv_openWeatherMap.c
 CSRCS += $(_SHARED_APP)/user_main.c
