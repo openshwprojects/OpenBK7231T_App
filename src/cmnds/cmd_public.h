@@ -271,8 +271,7 @@ const char* CMD_GetResultString(commandResult_t r);
 
 void SVM_RunThreads(int deltaMS);
 void CMD_InitScripting();
-typedef struct scriptInstance_s scriptInstance_t;
-scriptInstance_t *SVM_StartScriptAndRun(const char *fname, const char *label, int uniqueID);
+void SVM_StartScriptAndRun(const char *fname, const char *label, int uniqueID);
 byte* LFS_ReadFile(const char* fname);
 int LFS_WriteFile(const char *fname, const byte *data, int len, bool bAppend);
 
