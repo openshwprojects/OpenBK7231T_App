@@ -44,6 +44,8 @@
 
 #elif PLATFORM_W800
 
+// parse things like $CH1 or $hour etc
+#define ENABLE_EXPAND_CONSTANT	1
 #define	ENABLE_HA_DISCOVERY		1
 #define ENABLE_DRIVER_OPENWEATHERMAP	1
 #define ENABLE_DRIVER_SSDP		1
