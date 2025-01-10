@@ -299,7 +299,7 @@ scriptFile_t *SVM_RegisterFile(const char *fname) {
 	memset(r,0,sizeof(scriptFile_t));
 	r->fname = strdup(fname);
 	// cast from byte* to char*
-	if (!strcmp(fname, "$startup")) {
+	if (!strcmp(fname, "@startup")) {
 		r->data = strdup(CFG_GetShortStartupCommand());
 	}
 	else {
@@ -623,7 +623,7 @@ scriptInstance_t *SVM_StartScript(const char *fname, const char *label, int uniq
 	return th;
 }
 void SVM_RunStartupCommandAsScript() {
-	scriptInstance_t *th = SVM_StartScript("$startup", 0, 0);
+	scriptInstance_t *th = SVM_StartScript("@startup", 0, 0);
 	if (th) {
 		SVM_RunThread(th, 200);
 	}
