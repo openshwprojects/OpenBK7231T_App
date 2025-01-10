@@ -625,11 +625,14 @@ scriptInstance_t *SVM_StartScript(const char *fname, const char *label, int uniq
 void SVM_RunStartupCommandAsScript() {
 	scriptInstance_t *th = SVM_StartScript("@startup", 0, 0);
 	if (th) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "SVM_RunStartupCommandAsScript: started command run");
-		SVM_RunThread(th, 200);
+		//ADDLOG_INFO(LOG_FEATURE_CMD, "SVM_RunStartupCommandAsScript: started command run");
+		// Hacky as hell?
+		g_activeThread = th;
+		SVM_RunThread(g_activeThread, 200);
+		g_activeThread = 0;
 	}
 	else {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "SVM_RunStartupCommandAsScript: failed command run");
+		//ADDLOG_INFO(LOG_FEATURE_CMD, "SVM_RunStartupCommandAsScript: failed command run");
 	}
 
 }
