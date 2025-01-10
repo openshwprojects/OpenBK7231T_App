@@ -50,7 +50,6 @@
 #elif PLATFORM_W800
 
 // try enabling drivers - e.g. to access charts
-//#define OBK_DISABLE_ALL_DRIVERS 1
 #define ENABLE_MQTT 1
 #define ENABLE_TASMOTA_JSON		1
 #define ENABLE_DRIVER_DS1820		1
