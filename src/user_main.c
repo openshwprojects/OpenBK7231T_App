@@ -958,9 +958,7 @@ void QuickTick(void* param)
 	g_last_time = g_time;
 
 
-#if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602) \
- || (defined PLATFORM_LN882H) || (defined PLATFORM_ESPIDF) || (defined PLATFORM_TR6260) \
- || (defined PLATFORM_RTL87X0C)
+#if ENABLE_OBK_SCRIPTING
 	SVM_RunThreads(g_deltaTimeMS);
 #endif
 	RepeatingEvents_RunUpdate(g_deltaTimeMS * 0.001f);
