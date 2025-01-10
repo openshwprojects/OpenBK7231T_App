@@ -361,8 +361,7 @@ const char *SVM_FindLabel(const char *text, const char *label, const char *fname
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Label %s not found in %s - will go to the start of file",label,fname);
 	return text;
 }
-void SVM_RunThread(scriptInstance_t *t) {
-	int maxLoops = 10;
+void SVM_RunThread(scriptInstance_t *t, int maxLoops) {
 	int loop = 0;
 	const char *start, *end;
 	int len, p;
@@ -454,7 +453,7 @@ void SVM_RunThreads(int deltaMS) {
 				c_sleep++;
 			}
 			else {
-				SVM_RunThread(g_activeThread);
+				SVM_RunThread(g_activeThread, 20);
 				c_run++;
 			}
 		}
@@ -626,7 +625,7 @@ scriptInstance_t *SVM_StartScript(const char *fname, const char *label, int uniq
 void SVM_RunStartupCommandAsScript() {
 	scriptInstance_t *th = SVM_StartScript("$startup", 0, 0);
 	if (th) {
-		SVM_RunThread(th);
+		SVM_RunThread(th, 200);
 	}
 
 }
