@@ -299,7 +299,12 @@ scriptFile_t *SVM_RegisterFile(const char *fname) {
 	memset(r,0,sizeof(scriptFile_t));
 	r->fname = strdup(fname);
 	// cast from byte* to char*
-	r->data = (char*)LFS_ReadFile(fname);
+	if (!strcmp(fname, "$startup")) {
+		r->data = strdup(CFG_GetShortStartupCommand());
+	}
+	else {
+		r->data = (char*)LFS_ReadFile(fname);
+	}
 	r->next = g_scriptFiles;
 	g_scriptFiles = r;
 	if(r->data == 0)
@@ -585,7 +590,7 @@ void SVM_GoToLocal(scriptInstance_t *th, const char *label) {
 
 	return;
 }
-void SVM_StartScript(const char *fname, const char *label, int uniqueID) {
+scriptInstance_t *SVM_StartScript(const char *fname, const char *label, int uniqueID) {
 	scriptFile_t *f;
 	scriptInstance_t *th;
 
@@ -593,18 +598,18 @@ void SVM_StartScript(const char *fname, const char *label, int uniqueID) {
 	if(f == 0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: failed to get file %s",fname);
 
-		return;
+		return NULL;
 	}
 	if(f->data == 0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: failed to get file %s dataa",fname);
 
-		return;
+		return NULL;
 	}
 	th = SVM_RegisterThread();
 	if(th == 0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: failed to alloc thread");
 
-		return;
+		return NULL;
 	}
 	th->uniqueID = uniqueID;
 	th->curFile = f;
@@ -616,9 +621,13 @@ void SVM_StartScript(const char *fname, const char *label, int uniqueID) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: started %s at label %s",fname,label);
 	}
 
-	return;
+	return th;
 }
 void SVM_RunStartupCommandAsScript() {
+	scriptInstance_t *th = SVM_StartScript("$startup", 0, 0);
+	if (th) {
+		SVM_RunThread(th);
+	}
 
 }
 
