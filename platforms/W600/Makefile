@@ -34,6 +34,7 @@ CSRCS += $(_SHARED_APP)/cmnds/cmd_test.c
 CSRCS += $(_SHARED_APP)/cmnds/cmd_tcp.c
 CSRCS += $(_SHARED_APP)/cmnds/cmd_tokenizer.c
 CSRCS += $(_SHARED_APP)/cmnds/cmd_if.c
+CSRCS += $(_SHARED_APP)/cmnds/cmd_script.c
 CSRCS += $(_SHARED_APP)/cJSON/cJSON.c
 CSRCS += $(_SHARED_APP)/base64/base64.c
 CSRCS += $(_SHARED_APP)/devicegroups/deviceGroups_read.c
