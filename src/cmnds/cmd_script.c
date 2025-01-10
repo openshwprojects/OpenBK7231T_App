@@ -631,6 +631,9 @@ void SVM_StartScriptAndRun(const char *fname, const char *label, int uniqueID) {
 	}
 	SVM_RunThread(th);
 }
+void SVM_RunStartupCommand() {
+
+}
 static commandResult_t CMD_GoTo(const void *context, const char *cmd, const char *args, int cmdFlags){
 	const char *fname;
 	const char *label;
