@@ -1120,11 +1120,11 @@ void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
 
 		// NOTE: this will try to read autoexec.bat,
 		// so ALL commands expected in autoexec.bat should have been registered by now...
-#if ENABLE_OBK_SCRIPTING
-		SVM_StartScriptAndRun("$startup", 0, 0);
-#else
+//#if ENABLE_OBK_SCRIPTING
+//		SVM_StartScriptAndRun("$startup", 0, 0);
+//#else
 		CMD_ExecuteCommand(CFG_GetShortStartupCommand(), COMMAND_FLAG_SOURCE_SCRIPT);
-#endif
+//#endif
 		CMD_ExecuteCommand("startScript autoexec.bat", COMMAND_FLAG_SOURCE_SCRIPT);
 	}
 	HAL_Configure_WDT();
