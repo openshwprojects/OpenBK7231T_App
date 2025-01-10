@@ -407,7 +407,7 @@ void DS1820_OnEverySecond()
 			{
 				lastconv = -1; // reset lastconv to avoid immediate retry
 				DS1820_LOG(ERROR, "Reset failed");
-
+#if DS1820_DEBUG
 				// if device is not found, maybe "usleep" is not working as expected
 				// lets do usleepds() with numbers 50.000 and 100.00
 				// if all is well, it should take 50ms and 100ms
@@ -431,6 +431,7 @@ void DS1820_OnEverySecond()
 					// calc a new factor for usleepds
 					DS1820_LOG(ERROR, "usleepds duration divergates - proposed factor to adjust usleepds %f ", (float)100 / duration);
 				}
+#endif
 			}
 			else
 			{
