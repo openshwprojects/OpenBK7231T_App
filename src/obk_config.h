@@ -55,6 +55,7 @@
 #define ENABLE_TASMOTA_JSON		1
 #define ENABLE_DRIVER_DS1820		1
 #define ENABLE_DRIVER_DHT		1
+#define ENABLE_NTP				 1
 #define OBK_OTA_EXTENSION 		".img"
 
 
