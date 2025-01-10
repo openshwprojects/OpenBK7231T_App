@@ -876,8 +876,7 @@ void CMD_Init_Early() {
 	CMD_RegisterCommand("IndexRefreshInterval", CMD_IndexRefreshInterval, NULL);
 	
 	
-#if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602) || (defined PLATFORM_LN882H) \
- || (defined PLATFORM_ESPIDF) || defined(PLATFORM_TR6260) || defined(PLATFORM_RTL87X0C)
+#if ENABLE_OBK_SCRIPTING
 	CMD_InitScripting();
 #endif
 	if (!bSafeMode) {
