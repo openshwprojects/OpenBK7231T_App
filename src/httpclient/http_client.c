@@ -16,7 +16,7 @@
 #include "rtos_pub.h"
 #include "../logging/logging.h"
 
-#if ENABLE_HTTP_SEND
+#if ENABLE_SEND_POSTANDGET
 
 #include "iot_export_errno.h"
 
@@ -1325,5 +1325,5 @@ int HTTPClient_Async_SendPost(const char *url_in, int http_port, const char *con
 	return 0;
 }
 
-#endif // ENABLE_HTTP_SEND
+#endif // ENABLE_SEND_POSTANDGET
 

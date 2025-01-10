@@ -7,7 +7,7 @@
 
 #include "../obk_config.h"
 
-#if ENABLE_HTTP_SEND
+#if ENABLE_SEND_POSTANDGET
 
 #include "utils_net.h"
 
@@ -169,7 +169,7 @@ void HTTPClient_SetCustomHeader(httpclient_t *client, const char *header);
 }
 #endif
 
-#endif /* ENABLE_HTTP_SEND */
+#endif /* ENABLE_SEND_POSTANDGET */
 
 #endif /* __HTTPCLIENT_H__ */
 

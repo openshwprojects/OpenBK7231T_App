@@ -1167,7 +1167,7 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 #if ENABLE_LED_BASIC
 	NewLED_InitCommands();
 #endif
-#if ENABLE_HTTP_SEND
+#if ENABLE_SEND_POSTANDGET
 	CMD_InitSendCommands();
 #endif
 	CMD_InitChannelCommands();

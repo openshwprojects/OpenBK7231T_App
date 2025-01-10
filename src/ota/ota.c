@@ -112,7 +112,7 @@ static void store_sector(unsigned int addr, unsigned char *data){
     OTA_IncrementProgress(SECTOR_SIZE);
 }
 
-#if ENABLE_HTTP_SEND
+#if ENABLE_SEND_POSTANDGET
 
 httprequest_t httprequest;
 

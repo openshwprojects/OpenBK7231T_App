@@ -4,7 +4,7 @@
 #include "../httpclient/http_client.h"
 #include "cmd_local.h"
 
-#if ENABLE_HTTP_SEND
+#if ENABLE_SEND_POSTANDGET
 
 // SendGet http://192.168.0.112/cm?cmnd=Power0%20Toggle
 // addRepeatingEvent 5 -1 SendGet http://192.168.0.112/cm?cmnd=Power0%20Toggle

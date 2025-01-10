@@ -4,16 +4,13 @@
 #ifndef OBK_CONFIG_H
 #define OBK_CONFIG_H
 
-//Start with all driver flags undefined
+// Starts with all driver flags undefined
 
-//ENABLE_NTP - Enable support for Test drivers, NTP and HttpButton
-//ENABLE_DRIVER_LED - Enable support for all LED drivers
-//ENABLE_I2C - Enable support for I2C
-//ENABLE_DRIVER_BL0937 - Enable support for BL0937
-//ENABLE_DRIVER_BL0942 - Enable support for BL0942
-//ENABLE_DRIVER_CSE7766 - Enable support for CSE7766
-//ENABLE_DRIVER_TUYAMCU - Enable support for TuyaMCU and tmSensor
 
+// NOTE:
+// Defines for HTTP/HTMP (UI) pages: ENABLE_HTTP_*
+// Defines for drivers from drv_main.c: ENABLE_DRIVER_*
+// Other defines: ENABLE_* , for example: ENABLE_LED_BASIC
 
 #define ENABLE_HTTP_MQTT		1
 #define ENABLE_HTTP_IP			1
@@ -22,11 +19,8 @@
 #define ENABLE_HTTP_MAC			1
 #define ENABLE_HTTP_FLAGS		1
 #define ENABLE_HTTP_STARTUP		1
-#define ENABLE_HTTP_DGR			1
 #define ENABLE_HTTP_PING		1
 #define ENABLE_LED_BASIC		1
-
-
 
 #if PLATFORM_XR809
 
@@ -37,6 +31,7 @@
 #elif PLATFORM_W600
 
 // Some limited drivers are supported on W600, OBK_DISABLE_ALL_DRIVERS is not defined
+#define	ENABLE_HA_DISCOVERY		1
 #define ENABLE_MQTT 1
 #define ENABLE_TASMOTADEVICEGROUPS 1
 #define ENABLE_NTP				1
@@ -49,6 +44,7 @@
 
 #elif PLATFORM_W800
 
+#define	ENABLE_HA_DISCOVERY		1
 #define ENABLE_DRIVER_OPENWEATHERMAP	1
 #define ENABLE_DRIVER_SSDP		1
 #define ENABLE_DRIVER_CHARTS	1
@@ -66,7 +62,7 @@
 
 
 #define	ENABLE_HA_DISCOVERY		1
-#define ENABLE_HTTP_SEND		1
+#define ENABLE_SEND_POSTANDGET		1
 #define ENABLE_MQTT 1
 #define ENABLE_TASMOTADEVICEGROUPS 1
 #define ENABLE_LITTLEFS			1
@@ -85,7 +81,7 @@
 #define ENABLE_CALENDAR_EVENTS	1
 #define ENABLE_TEST_DRIVERS		1
 #define ENABLE_DRIVER_BRIDGE	1
-#define ENABLE_HTTPBUTTONS		1
+#define ENABLE_DRIVER_HTTPBUTTONS		1
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY 1
 #define ENABLE_DRIVER_WEMO		1
 #define ENABLE_DRIVER_HUE		1
@@ -152,7 +148,7 @@
 
 
 #define	ENABLE_HA_DISCOVERY		1
-#define ENABLE_HTTP_SEND		1
+#define ENABLE_SEND_POSTANDGET		1
 #define ENABLE_MQTT 1
 #define ENABLE_TASMOTADEVICEGROUPS 1
 #define ENABLE_LITTLEFS			1
@@ -176,7 +172,7 @@
 //#define ENABLE_TEST_COMMANDS	1
 #define ENABLE_CALENDAR_EVENTS	1
 #define ENABLE_DRIVER_BRIDGE	1
-#define ENABLE_HTTPBUTTONS		1
+#define ENABLE_DRIVER_HTTPBUTTONS		1
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY 1
 #define ENABLE_DRIVER_WEMO		1
 #define ENABLE_DRIVER_HUE		1
@@ -315,7 +311,13 @@
 
 #endif
 
+// if Tasmota DGR driver is enabled,
+// then also enable HTTP config page for that
+#if ENABLE_TASMOTADEVICEGROUPS
+#define ENABLE_HTTP_DGR			1
+#endif
 
+// if power metering chip is enabled, also enable backend for that
 #if ENABLE_DRIVER_BL0937 || ENABLE_DRIVER_BL0942 || ENABLE_DRIVER_BL0942SPI || ENABLE_DRIVER_CSE7766
 #define ENABLE_BL_SHARED	1
 #endif
