@@ -89,6 +89,7 @@ CSRCS += $(_SHARED_APP)/driver/drv_ntp_events.c
 CSRCS += $(_SHARED_APP)/driver/drv_pt6523.c
 CSRCS += $(_SHARED_APP)/driver/drv_pwmToggler.c
 CSRCS += $(_SHARED_APP)/driver/drv_sgp.c
+CSRCS += $(_SHARED_APP)/driver/drv_soft_i2c.c
 CSRCS += $(_SHARED_APP)/driver/drv_shiftRegister.c
 CSRCS += $(_SHARED_APP)/driver/drv_tasmotaDeviceGroups.c
 CSRCS += $(_SHARED_APP)/driver/drv_ssdp.c
