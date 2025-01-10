@@ -624,15 +624,8 @@ scriptInstance_t *SVM_StartScript(const char *fname, const char *label, int uniq
 	return th;
 }
 
-void SVM_StartScriptAndRun(const char *fname, const char *label, int uniqueID) {
-	scriptInstance_t *th = SVM_StartScript(fname, label, uniqueID);
-	if (th == 0) {
-		return;
-	}
-	SVM_RunThread(th);
-}
-void SVM_RunStartupCommand() {
 
+void SVM_RunStartupCommand() {
 }
 static commandResult_t CMD_GoTo(const void *context, const char *cmd, const char *args, int cmdFlags){
 	const char *fname;
