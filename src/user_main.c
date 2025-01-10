@@ -11,6 +11,7 @@
 
 //#include "driver/drv_ir.h"
 #include "driver/drv_public.h"
+#include "driver/drv_bl_shared.h"
 //#include "ir/ir_local.h"
 
 // Commands register, execution API and cmd tokenizer
@@ -511,9 +512,12 @@ void Main_LogPowerSave() {
 
 /// @brief Schedule HomeAssistant discovery. The caller should check OBK_FLAG_AUTOMAIC_HASS_DISCOVERY if necessary.
 /// @param seconds 
+#if ENABLE_HA_DISCOVERY
 void Main_ScheduleHomeAssistantDiscovery(int seconds) {
 	g_doHomeAssistantDiscoveryIn = seconds;
 }
+#endif
+
 
 void Main_ConnectToWiFiNow() {
 	const char* wifi_ssid, * wifi_pass;
@@ -585,6 +589,8 @@ void Main_OnEverySecond()
 		g_wifi_temperature = HAL_ADC_Temp();
 #endif
 	}
+
+#if ENABLE_MQTT
 	// run_adc_test();
 	newMQTTState = MQTT_RunEverySecondUpdate();
 	if (newMQTTState != bMQTTconnected) {
@@ -596,6 +602,7 @@ void Main_OnEverySecond()
 			EventHandlers_FireEvent(CMD_EVENT_MQTT_STATE, 0);
 		}
 	}
+#endif
 	if (g_newWiFiStatus != g_prevWiFiStatus) {
 		g_prevWiFiStatus = g_newWiFiStatus;
 		// Argument type here is HALWifiStatus_t enumeration
@@ -612,8 +619,13 @@ void Main_OnEverySecond()
 	// save new value
 	g_noMQTTTime = i;
 
+
+#if ENABLE_MQTT
 	MQTT_Dedup_Tick();
+#endif
+#if ENABLE_LED_BASIC
 	LED_RunOnEverySecond();
+#endif
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) \
@@ -650,15 +662,18 @@ void Main_OnEverySecond()
 		const char* ip = HAL_GetMyIPString();
 		// this will return non-zero if there were any changes
 		if (strcpy_safe_checkForChanges(g_currentIPString, ip, sizeof(g_currentIPString))) {
+#if ENABLE_MQTT
 			if (MQTT_IsReady()) {
 				MQTT_DoItemPublish(PUBLISHITEM_SELF_IP);
 			}
+#endif
 			EventHandlers_FireEvent(CMD_EVENT_IPCHANGE, 0);
-
+#if ENABLE_HA_DISCOVERY
 			//Invoke Hass discovery if ipaddr changed
 			if (CFG_HasFlag(OBK_FLAG_AUTOMAIC_HASS_DISCOVERY)) {
 				Main_ScheduleHomeAssistantDiscovery(1);
 			}
+#endif
 		}
 	}
 
@@ -731,10 +746,16 @@ void Main_OnEverySecond()
 		//int mqtt_max, mqtt_cur, mqtt_mem;
 		//MQTT_GetStats(&mqtt_cur, &mqtt_max, &mqtt_mem);
 		//ADDLOGF_INFO("mqtt req %i/%i, free mem %i\n", mqtt_cur,mqtt_max,mqtt_mem);
+#if ENABLE_MQTT
 		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i %s\n",
-			safe, g_secondsElapsed, idleCount, xPortGetFreeHeapSize(), bMQTTconnected, MQTT_GetConnectEvents(),
-			g_bHasWiFiConnected, g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets(),
+			safe, g_secondsElapsed, idleCount, xPortGetFreeHeapSize(), bMQTTconnected,
+			MQTT_GetConnectEvents(),g_bHasWiFiConnected, g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets(),
 			g_powersave ? "POWERSAVE" : "");
+#else
+		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d,  bWifi %i, secondsWithNoPing %i, socks %i/%i %s\n",
+			safe, g_secondsElapsed, idleCount, xPortGetFreeHeapSize(),g_bHasWiFiConnected, g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets(),
+			g_powersave ? "POWERSAVE" : "");
+#endif
 		// reset so it's a per-second counter.
 		idleCount = 0;
 	}
@@ -770,6 +791,8 @@ void Main_OnEverySecond()
 		}
 	}
 
+
+#if ENABLE_HA_DISCOVERY
 	if (g_doHomeAssistantDiscoveryIn) {
 		if (MQTT_IsReady()) {
 			g_doHomeAssistantDiscoveryIn--;
@@ -785,6 +808,7 @@ void Main_OnEverySecond()
 			ADDLOGF_INFO("HA discovery is scheduled, but MQTT connection is not present yet\n");
 		}
 	}
+#endif
 	if (g_openAP)
 	{
 		if (g_bHasWiFiConnected)
@@ -817,8 +841,9 @@ void Main_OnEverySecond()
 				{
 					// mark as enabled
 					g_timeSinceLastPingReply = 0;
-					//Main_SetupPingWatchDog(pingTargetServer,pingInterval);
+#if ENABLE_PING_WATCHDOG
 					Main_SetupPingWatchDog(pingTargetServer);
+#endif
 				}
 				else {
 					// mark as disabled
@@ -856,7 +881,7 @@ void Main_OnEverySecond()
 		if (!g_reset) {
 			// ensure any config changes are saved before reboot.
 			CFG_Save_IfThereArePendingChanges();
-#ifdef ENABLE_DRIVER_BL0937
+#if ENABLE_BL_SHARED
 			if (DRV_IsMeasuringPower())
 			{
 				BL09XX_SaveEmeteringStatistics();
@@ -948,11 +973,15 @@ void QuickTick(void* param)
 	CMD_RunUartCmndIfRequired();
 
 	// process recieved messages here..
+#if ENABLE_MQTT
 	MQTT_RunQuickTick();
+#endif
 
+#if ENABLE_LED_BASIC
 	if (CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == true) {
 		LED_RunQuickColorLerp(g_deltaTimeMS);
 	}
+#endif
 
 	// WiFi LED
 	// In Open Access point mode, fast blink
@@ -1075,7 +1104,9 @@ void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
 
 	// initialise MQTT - just sets up variables.
 	// all MQTT happens in timer thread?
+#if ENABLE_MQTT
 	MQTT_init();
+#endif
 
 	CMD_Init_Delayed();
 
@@ -1133,8 +1164,10 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 #if ENABLE_TEST_COMMANDS
 	CMD_InitTestCommands();
 #endif
+#if ENABLE_LED_BASIC
 	NewLED_InitCommands();
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+#endif
+#if ENABLE_SEND_POSTANDGET
 	CMD_InitSendCommands();
 #endif
 	CMD_InitChannelCommands();
@@ -1155,98 +1188,70 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 
 	if (bAutoRunScripts) {
 		CMD_ExecuteCommand("exec early.bat", COMMAND_FLAG_SOURCE_SCRIPT);
+#ifndef OBK_DISABLE_ALL_DRIVERS
 		if (!CFG_HasFlag(OBK_FLAG_DRV_DISABLE_AUTOSTART)) {
 			// autostart drivers
 			if (PIN_FindPinIndexForRole(IOR_SM2135_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SM2135_DAT, -1) != -1)
 			{
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("SM2135");
-#endif
 			}
 			if (PIN_FindPinIndexForRole(IOR_SM2235_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SM2235_DAT, -1) != -1)
 			{
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("SM2235");
-#endif
 			}
 			if (PIN_FindPinIndexForRole(IOR_BP5758D_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_BP5758D_DAT, -1) != -1)
 			{
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("BP5758D");
-#endif
 			}
 			if (PIN_FindPinIndexForRole(IOR_BP1658CJ_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_BP1658CJ_DAT, -1) != -1) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("BP1658CJ");
-#endif
 			}
 			if (PIN_FindPinIndexForRole(IOR_KP18058_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_KP18058_DAT, -1) != -1) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("KP18058");
-#endif
 			}
 			if (PIN_FindPinIndexForRole(IOR_BL0937_CF, -1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_CF1, -1) != -1
 				&& (PIN_FindPinIndexForRole(IOR_BL0937_SEL, -1) != -1 || PIN_FindPinIndexForRole(IOR_BL0937_SEL_n, -1) != -1)) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("BL0937");
-#endif
 			}
 			if ((PIN_FindPinIndexForRole(IOR_BridgeForward, -1) != -1) && (PIN_FindPinIndexForRole(IOR_BridgeReverse, -1) != -1))
 			{
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("Bridge");
-#endif
 			}
 			if ((PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep, -1) != -1) ||
 				(PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep_NoPup, -1) != -1) ||
 				(PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep_pd, -1) != -1))
 			{
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("DoorSensor");
-#endif
 			}
 			if (PIN_FindPinIndexForRole(IOR_CHT83XX_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_CHT83XX_DAT, -1) != -1) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("CHT83XX");
-#endif
 			}
 			if (PIN_FindPinIndexForRole(IOR_SHT3X_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SHT3X_DAT, -1) != -1) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("SHT3X");
-#endif
 			}
 			if (PIN_FindPinIndexForRole(IOR_SGP_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SGP_DAT, -1) != -1) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("SGP");
-#endif
 			}
 			if (PIN_FindPinIndexForRole(IOR_BAT_ADC, -1) != -1) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("Battery");
-#endif
 			}
 			if (PIN_FindPinIndexForRole(IOR_TM1637_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_TM1637_DIO, -1) != -1) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("TM1637");
-#endif
 			}
 			if ((PIN_FindPinIndexForRole(IOR_GN6932_CLK, -1) != -1) &&
 				(PIN_FindPinIndexForRole(IOR_GN6932_DAT, -1) != -1) &&
 				(PIN_FindPinIndexForRole(IOR_GN6932_STB, -1) != -1))
 			{
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("GN6932");
-#endif
 			}
 //			if ((PIN_FindPinIndexForRole(IOR_TM1638_CLK, -1) != -1) &&
 //				(PIN_FindPinIndexForRole(IOR_TM1638_DAT, -1) != -1) &&
 //				(PIN_FindPinIndexForRole(IOR_TM1638_STB, -1) != -1))
 //			{
-//#ifndef OBK_DISABLE_ALL_DRIVERS
 //				DRV_StartDriver("TM1638");
-//#endif
 //			}
 		}
+#endif
 	}
 
 	g_enable_pins = 1;
@@ -1254,7 +1259,9 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	PIN_SetupPins();
 	QuickTick_StartThread();
 
+#if ENABLE_LED_BASIC
 	NewLED_RestoreSavedStateIfNeeded();
+#endif
 }
 void Main_ForceUnsafeInit() {
 	if (g_unsafeInitDone) {
@@ -1366,7 +1373,9 @@ void Main_Init_After_Delay()
 		}
 		else {
 			if (Main_HasFastConnect()) {
+#if ENABLE_MQTT
 				mqtt_loopsWithDisconnected = 9999;
+#endif
 				Main_ConnectToWiFiNow();
 			}
 			else {
@@ -1387,11 +1396,12 @@ void Main_Init_After_Delay()
 	// only initialise certain things if we are not in AP mode
 	if (!bSafeMode)
 	{
+#if ENABLE_HA_DISCOVERY
 		//Always invoke discovery on startup. This accounts for change in ipaddr before startup and firmware update.
 		if (CFG_HasFlag(OBK_FLAG_AUTOMAIC_HASS_DISCOVERY)) {
 			Main_ScheduleHomeAssistantDiscovery(1);
 		}
-
+#endif
 		Main_Init_AfterDelay_Unsafe(true);
 	}
 
@@ -1405,8 +1415,10 @@ void Main_Init()
 	g_unsafeInitDone = false;
 
 #ifdef WINDOWS
+#if ENABLE_LED_BASIC
 	// on windows, Main_Init may happen multiple time so we need to reset variables
 	LED_ResetGlobalVariablesToDefaults();
+#endif
 	// on windows, we don't want to remember commands from previous session
 	CMD_FreeAllCommands();
 #endif

@@ -632,7 +632,9 @@ const char* strcasestr(const char* str1, const char* str2);
 char Tiny_CRC8(const char *data,int length);
 void RESET_ScheduleModuleReset(int delSeconds);
 void MAIN_ScheduleUnsafeInit(int delSeconds);
+#if ENABLE_HA_DISCOVERY
 void Main_ScheduleHomeAssistantDiscovery(int seconds);
+#endif
 int Main_IsConnectedToWiFi();
 int Main_IsOpenAccessPointMode();
 void Main_Init();
@@ -643,9 +645,11 @@ int Main_HasWiFiConnected();
 void Main_OnPingCheckerReply(int ms);
 
 // new_ping.c
+#if ENABLE_PING_WATCHDOG
 void Main_SetupPingWatchDog(const char *target/*, int delayBetweenPings_Seconds*/);
 int PingWatchDog_GetTotalLost();
 int PingWatchDog_GetTotalReceived();
+#endif
 
 // my addon to LWIP library
 

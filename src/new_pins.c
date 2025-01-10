@@ -417,11 +417,13 @@ void Button_OnInitialPressDown(int index)
 			CHANNEL_DoSpecialToggleAll();
 			return;
 		}
+#if ENABLE_LED_BASIC
 		if (g_cfg.pins.roles[index] == IOR_Button_NextColor || g_cfg.pins.roles[index] == IOR_Button_NextColor_n)
 		{
 			LED_NextColor();
 			return;
 		}
+#endif
 		if (g_cfg.pins.roles[index] == IOR_Button_NextDimmer || g_cfg.pins.roles[index] == IOR_Button_NextDimmer_n)
 		{
 
@@ -437,11 +439,14 @@ void Button_OnInitialPressDown(int index)
 
 			return;
 		}
+#if ENABLE_LED_BASIC
 		// is it a device with RGB/CW/single color/etc LED driver?
 		if (LED_IsLEDRunning()) {
 			LED_ToggleEnabled();
 		}
-		else {
+		else 
+#endif
+		{
 			// Relays
 			CHANNEL_Toggle(g_cfg.pins.channels[index]);
 		}
@@ -464,11 +469,13 @@ void Button_OnShortClick(int index)
 			CHANNEL_DoSpecialToggleAll();
 			return;
 		}
+#if ENABLE_LED_BASIC
 		if (g_cfg.pins.roles[index] == IOR_Button_NextColor || g_cfg.pins.roles[index] == IOR_Button_NextColor_n)
 		{
 			LED_NextColor();
 			return;
 		}
+#endif
 		if (g_cfg.pins.roles[index] == IOR_Button_NextDimmer || g_cfg.pins.roles[index] == IOR_Button_NextDimmer_n)
 		{
 			return;
@@ -481,11 +488,14 @@ void Button_OnShortClick(int index)
 		{
 			return;
 		}
+#if ENABLE_LED_BASIC
 		// is it a device with RGB/CW/single color/etc LED driver?
 		if (LED_IsLEDRunning()) {
 			LED_ToggleEnabled();
 		}
-		else {
+		else 
+#endif
+		{
 			// Relays
 			CHANNEL_Toggle(g_cfg.pins.channels[index]);
 		}
@@ -511,11 +521,13 @@ void Button_OnDoubleClick(int index)
 		// double click toggles SECOND CHANNEL linked to this button
 		CHANNEL_Toggle(g_cfg.pins.channels2[index]);
 	}
+#if ENABLE_LED_BASIC
 	if (g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs_n) {
 		LED_NextColor();
 		// make it easier for users, enable LED by default
 		LED_SetEnableAll(true);
 	}
+#endif
 	if (g_doubleClickCallback != 0) {
 		g_doubleClickCallback(index);
 	}
@@ -529,11 +541,13 @@ void Button_OnTripleClick(int index)
 	}
 	// fire event - button on pin <index> was 3clicked
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ON3CLICK, index);
+#if ENABLE_LED_BASIC
 	if (g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs_n) {
 		LED_NextTemperature();
 		// make it easier for users, enable LED by default
 		LED_SetEnableAll(true);
 	}
+#endif
 }
 void Button_OnQuadrupleClick(int index)
 {
@@ -564,6 +578,7 @@ void Button_OnLongPressHold(int index) {
 	// fire event - button on pin <index> was held
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ONHOLD, index);
 
+#if ENABLE_LED_BASIC
 	if (g_cfg.pins.roles[index] == IOR_Button_NextDimmer || g_cfg.pins.roles[index] == IOR_Button_NextDimmer_n) {
 		LED_NextDimmerHold();
 	}
@@ -575,6 +590,7 @@ void Button_OnLongPressHold(int index) {
 		// make it easier for users, enable LED by default
 		LED_SetEnableAll(true);
 	}
+#endif
 }
 void Button_OnLongPressHoldStart(int index) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i Button_OnLongPressHoldStart\r\n", index);
@@ -1084,11 +1100,13 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 			}
 		}
 	}
+#if ENABLE_MQTT
 	if ((iFlags & CHANNEL_SET_FLAG_SKIP_MQTT) == 0) {
 		if (CHANNEL_ShouldBePublished(ch)) {
 			MQTT_ChannelPublish(ch, 0);
 		}
 	}
+#endif
 	// Simple event - it just says that there was a change
 	EventHandlers_FireEvent(CMD_EVENT_CHANNEL_ONCHANGE, ch);
 	// more advanced events - change FROM value TO value
@@ -1282,6 +1300,7 @@ float CHANNEL_GetFloat(int ch) {
 	return g_channelValuesFloats[ch];
 }
 int CHANNEL_Get(int ch) {
+#if ENABLE_LED_BASIC
 	// special channels
 	if (ch == SPECIAL_CHANNEL_LEDPOWER) {
 		return LED_GetEnableAll();
@@ -1292,6 +1311,7 @@ int CHANNEL_Get(int ch) {
 	if (ch == SPECIAL_CHANNEL_TEMPERATURE) {
 		return LED_GetTemperature();
 	}
+#endif
 	if (ch >= SPECIAL_CHANNEL_BASECOLOR_FIRST && ch <= SPECIAL_CHANNEL_BASECOLOR_LAST) {
 		return 0; // TODO
 	}
@@ -1343,6 +1363,7 @@ void CHANNEL_Set(int ch, int iVal, int iFlags) {
 	bForce = iFlags & CHANNEL_SET_FLAG_FORCE;
 	bSilent = iFlags & CHANNEL_SET_FLAG_SILENT;
 
+#if ENABLE_LED_BASIC
 	// special channels
 	if (ch == SPECIAL_CHANNEL_LEDPOWER) {
 		LED_SetEnableAll(iVal);
@@ -1360,6 +1381,7 @@ void CHANNEL_Set(int ch, int iVal, int iFlags) {
 		LED_SetBaseColorByIndex(ch - SPECIAL_CHANNEL_BASECOLOR_FIRST, iVal, 1);
 		return;
 	}
+#endif
 	if (ch >= SPECIAL_CHANNEL_FLASHVARS_FIRST && ch <= SPECIAL_CHANNEL_FLASHVARS_LAST) {
 		HAL_FlashVars_SaveChannel(ch - SPECIAL_CHANNEL_FLASHVARS_FIRST, iVal);
 		return;
@@ -1484,11 +1506,13 @@ int CHANNEL_FindMaxValueForChannel(int ch) {
 void CHANNEL_Toggle(int ch) {
 	int prev;
 
+#if ENABLE_LED_BASIC
 	// special channels
 	if (ch == SPECIAL_CHANNEL_LEDPOWER) {
 		LED_SetEnableAll(!LED_GetEnableAll());
 		return;
 	}
+#endif
 	if (ch < 0 || ch >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Toggle: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
 		return;
@@ -1534,9 +1558,11 @@ int CHANNEL_HasChannelPinWithRole(int ch, int iorType) {
 	return 0;
 }
 bool CHANNEL_Check(int ch) {
+#if ENABLE_LED_BASIC
 	if (ch == SPECIAL_CHANNEL_LEDPOWER) {
 		return LED_GetEnableAll();
 	}
+#endif
 	if (ch < 0 || ch >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Check: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
 		return 0;

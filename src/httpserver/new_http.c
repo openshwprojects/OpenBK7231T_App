@@ -764,34 +764,56 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	if (http_checkUrlBase(urlStr, "index")) return http_fn_index(request);
 
 	if (http_checkUrlBase(urlStr, "about")) return http_fn_about(request);
-
+	
+#if ENABLE_HTTP_MQTT
 	if (http_checkUrlBase(urlStr, "cfg_mqtt")) return http_fn_cfg_mqtt(request);
-	if (http_checkUrlBase(urlStr, "cfg_ip")) return http_fn_cfg_ip(request);
 	if (http_checkUrlBase(urlStr, "cfg_mqtt_set")) return http_fn_cfg_mqtt_set(request);
+#endif
+#if ENABLE_HTTP_IP
+	if (http_checkUrlBase(urlStr, "cfg_ip")) return http_fn_cfg_ip(request);
+#endif
 
+#if ENABLE_HTTP_WEBAPP
 	if (http_checkUrlBase(urlStr, "cfg_webapp")) return http_fn_cfg_webapp(request);
 	if (http_checkUrlBase(urlStr, "cfg_webapp_set")) return http_fn_cfg_webapp_set(request);
+#endif
 
 	if (http_checkUrlBase(urlStr, "cfg_wifi")) return http_fn_cfg_wifi(request);
+#if ENABLE_HTTP_NAMES
 	if (http_checkUrlBase(urlStr, "cfg_name")) return http_fn_cfg_name(request);
+#endif
 	if (http_checkUrlBase(urlStr, "cfg_wifi_set")) return http_fn_cfg_wifi_set(request);
 
 	if (http_checkUrlBase(urlStr, "cfg_loglevel_set")) return http_fn_cfg_loglevel_set(request);
+#if ENABLE_HTTP_MAC
 	if (http_checkUrlBase(urlStr, "cfg_mac")) return http_fn_cfg_mac(request);
-
-//	if (http_checkUrlBase(urlStr, "flash_read_tool")) return http_fn_flash_read_tool(request);
+#endif
 	if (http_checkUrlBase(urlStr, "cmd_tool")) return http_fn_cmd_tool(request);
-	if (http_checkUrlBase(urlStr, "startup_command")) return http_fn_startup_command(request);
-	if (http_checkUrlBase(urlStr, "cfg_generic")) return http_fn_cfg_generic(request);
-	if (http_checkUrlBase(urlStr, "cfg_startup")) return http_fn_cfg_startup(request);
-	if (http_checkUrlBase(urlStr, "cfg_dgr")) return http_fn_cfg_dgr(request);
 
+#if ENABLE_HTTP_STARTUP
+	if (http_checkUrlBase(urlStr, "startup_command")) return http_fn_startup_command(request); 
+#endif
+#if ENABLE_HTTP_FLAGS
+	if (http_checkUrlBase(urlStr, "cfg_generic")) return http_fn_cfg_generic(request);
+#endif
+#if ENABLE_HTTP_STARTUP
+	if (http_checkUrlBase(urlStr, "cfg_startup")) return http_fn_cfg_startup(request);
+#endif
+#if ENABLE_HTTP_DGR
+	if (http_checkUrlBase(urlStr, "cfg_dgr")) return http_fn_cfg_dgr(request);
+#endif
+
+#if ENABLE_HA_DISCOVERY
 	if (http_checkUrlBase(urlStr, "ha_cfg")) return http_fn_ha_cfg(request);
 	if (http_checkUrlBase(urlStr, "ha_discovery")) return http_fn_ha_discovery(request);
+#endif
 	if (http_checkUrlBase(urlStr, "cfg")) return http_fn_cfg(request);
 
 	if (http_checkUrlBase(urlStr, "cfg_pins")) return http_fn_cfg_pins(request);
+#if ENABLE_HTTP_PING
 	if (http_checkUrlBase(urlStr, "cfg_ping")) return http_fn_cfg_ping(request);
+#endif
+
 
 	if (http_checkUrlBase(urlStr, "ota")) return http_fn_ota(request);
 	if (http_checkUrlBase(urlStr, "ota_exec")) return http_fn_ota_exec(request);

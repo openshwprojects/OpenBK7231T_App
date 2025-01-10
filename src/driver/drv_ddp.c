@@ -136,6 +136,7 @@ void DDP_Parse(byte *data, int len) {
 		} else
 #endif
 		{
+#if ENABLE_LED_BASIC
 			LED_SetDimmerIfChanged(100);
 			if (data[9] == 4) {
 				LED_SetFinalRGBW(r, g, b, data[13]);
@@ -143,6 +144,7 @@ void DDP_Parse(byte *data, int len) {
 			else {
 				LED_SetFinalRGB(r, g, b);
 			}
+#endif
 		}
 	}
 }

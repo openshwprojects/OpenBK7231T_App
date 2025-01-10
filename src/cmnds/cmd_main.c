@@ -215,7 +215,7 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 
 	return CMD_RES_OK;
 }
-
+#if ENABLE_HA_DISCOVERY
 static commandResult_t CMD_ScheduleHADiscovery(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int delay;
 
@@ -230,6 +230,7 @@ static commandResult_t CMD_ScheduleHADiscovery(const void* context, const char* 
 
 	return CMD_RES_OK;
 }
+#endif
 static commandResult_t CMD_SetFlag(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int flag, val;
 
@@ -362,6 +363,7 @@ static commandResult_t CMD_StartupCommand(const void* context, const char* cmd, 
 	// so we know arguments count in Tokenizer. 'cmd' argument is
 	// only for warning display
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Cmd is %s",g_cfg.initCommandLine);
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	cmdToSet = Tokenizer_GetArg(0);
@@ -799,11 +801,13 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_HTTPOTA","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("ota_http", CMD_HTTPOTA, NULL);
+#if ENABLE_HA_DISCOVERY
 	//cmddetail:{"name":"scheduleHADiscovery","args":"[Seconds]",
 	//cmddetail:"descr":"This will schedule HA discovery, the discovery will happen with given number of seconds, but timer only counts when MQTT is connected. It will not work without MQTT online, so you must set MQTT credentials first.",
 	//cmddetail:"fn":"CMD_ScheduleHADiscovery","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("scheduleHADiscovery", CMD_ScheduleHADiscovery, NULL);
+#endif
 	//cmddetail:{"name":"flags","args":"[IntegerValue]",
 	//cmddetail:"descr":"Sets the device flags",
 	//cmddetail:"fn":"CMD_Flags","file":"cmnds/cmd_main.c","requires":"",
@@ -887,9 +891,11 @@ void CMD_Init_Early() {
 
 
 void CMD_Init_Delayed() {
+#if ENABLE_TCP_COMMANDLINE
 	if (CFG_HasFlag(OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER)) {
 		CMD_StartTCPCommandLine();
 	}
+#endif
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) \
  || defined(PLATFORM_RTL87X0C)
 	UART_AddCommands();

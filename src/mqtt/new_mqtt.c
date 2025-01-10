@@ -1,4 +1,8 @@
 
+#include "../obk_config.h"
+
+#if ENABLE_MQTT 
+
 #include "new_mqtt.h"
 #include "../new_common.h"
 #include "../new_pins.h"
@@ -560,7 +564,7 @@ int channelGet(obk_mqtt_request_t* request) {
 	}
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelGet part topic %s", p);
-
+#if ENABLE_LED_BASIC
 	if (stribegins(p, "led_enableAll")) {
 		LED_SendEnableAllState();
 		return 1;
@@ -581,6 +585,7 @@ int channelGet(obk_mqtt_request_t* request) {
 		sendColorChange();
 		return 1;
 	}
+#endif
 
 	// atoi won't parse any non-decimal chars, so it should skip over the rest of the topic.
 	channel = atoi(p);
@@ -1862,23 +1867,29 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 
 	case PUBLISHITEM_SELF_DYNAMIC_LIGHTSTATE:
 	{
+#if ENABLE_LED_BASIC
 		if (LED_IsLEDRunning()) {
 			return LED_SendEnableAllState();
 		}
+#endif
 		return OBK_PUBLISH_WAS_NOT_REQUIRED;
 	}
 	case PUBLISHITEM_SELF_DYNAMIC_LIGHTMODE:
 	{
+#if ENABLE_LED_BASIC
 		if (LED_IsLEDRunning()) {
 			return LED_SendCurrentLightModeParam_TempOrColor();
 		}
+#endif
 		return OBK_PUBLISH_WAS_NOT_REQUIRED;
 	}
 	case PUBLISHITEM_SELF_DYNAMIC_DIMMER:
 	{
+#if ENABLE_LED_BASIC
 		if (LED_IsLEDRunning()) {
 			return LED_SendDimmerChange();
 		}
+#endif
 		return OBK_PUBLISH_WAS_NOT_REQUIRED;
 	}
 
@@ -2365,3 +2376,4 @@ bool MQTT_IsReady() {
 	return mqtt_client && res;
 }
 
+#endif // ENABLE_MQTT

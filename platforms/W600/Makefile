@@ -47,6 +47,7 @@ CSRCS += $(_SHARED_APP)/driver/drv_dht_internal.c
 CSRCS += $(_SHARED_APP)/driver/drv_httpButtons.c
 CSRCS += $(_SHARED_APP)/driver/drv_main.c
 CSRCS += $(_SHARED_APP)/driver/drv_ntp.c
+CSRCS += $(_SHARED_APP)/driver/drv_ds1820_simple.c
 CSRCS += $(_SHARED_APP)/driver/drv_tasmotaDeviceGroups.c
 CSRCS += $(_SHARED_APP)/driver/drv_test_drivers.c
 CSRCS += $(_SHARED_APP)/driver/drv_bridge_driver.c
