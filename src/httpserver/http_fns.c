@@ -1646,7 +1646,15 @@ int http_fn_startup_command(http_request_t* request) {
 		CFG_Save_IfThereArePendingChanges();
 	}
 
+#if ENABLE_OBK_SCRIPTING
+	poststr(request, "<form action=\"/startup_command\">");
+	poststr(request, "<label for='data'>Startup command</label><br>");
+	poststr(request, "<textarea id='data' name='data' rows='15' cols='40'>");
+	poststr(request, CFG_GetShortStartupCommand());
+	poststr(request, "</textarea><br>");
+#else
 	add_label_text_field(request, "Startup command", "data", CFG_GetShortStartupCommand(), "<form action=\"/startup_command\">");
+#endif
 	poststr(request, "<input type='hidden' name='startup_cmd' value='1'>");
 	poststr(request, SUBMIT_AND_END_FORM);
 
