@@ -1,4 +1,4 @@
-#ifdef PLATFORM_RTL87X0C
+#ifdef PLATFORM_REALTEK
 
 #include "../hal_flashConfig.h"
 #include <easyflash.h>
@@ -26,4 +26,4 @@ int HAL_Configuration_SaveConfigMemory(void* src, int dataLen)
 	return 1;
 }
 
-#endif // PLATFORM_RTL87X0C
+#endif // PLATFORM_REALTEK

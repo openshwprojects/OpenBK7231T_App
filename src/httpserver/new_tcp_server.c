@@ -17,7 +17,7 @@ void HTTPServer_Start();
 
 #define HTTP_SERVER_PORT			80
 #define REPLY_BUFFER_SIZE			2048
-#define INCOMING_BUFFER_SIZE		1024
+#define INCOMING_BUFFER_SIZE		2048
 #define INVALID_SOCK				-1
 #define HTTP_CLIENT_STACK_SIZE		8192
 
@@ -74,8 +74,8 @@ static void tcp_client_thread(tcp_thread_t* arg)
 		{
 			break;
 		}
-		// grow by 1024
-		request.receivedLenmax += 1024;
+		// grow by INCOMING_BUFFER_SIZE
+		request.receivedLenmax += INCOMING_BUFFER_SIZE;
 		GLOBAL_INT_DISABLE();
 		request.received = (char*)realloc(request.received, request.receivedLenmax + 2);
 		GLOBAL_INT_RESTORE();

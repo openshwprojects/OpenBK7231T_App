@@ -445,6 +445,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "Bridge",     Bridge_driver_Init, NULL,                       NULL, Bridge_driver_QuickFrame, Bridge_driver_DeInit, Bridge_driver_OnChannelChanged, false }
 #endif
+#if ENABLE_DRIVER_UART_TCP
+	//drvdetail:{"name":"UART to TCP bridge",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"UART to TCP, mainly for WiFi Zigbee coordinators.",
+	//drvdetail:"requires":""}
+	{ "UartTCP",		UART_TCP_Init,		NULL,	NULL, NULL, UART_TCP_Deinit, NULL, false }
+#endif
 };
 
 

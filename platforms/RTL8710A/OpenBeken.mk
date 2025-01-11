@@ -1,10 +1,11 @@
 OBK_DIR = ../../../../..
 
-CFLAGS +=  -DPLATFORM_RTL87X0C -DPLATFORM_REALTEK -DUSER_SW_VER='"$(APP_VERSION)"'
+CFLAGS +=  -DPLATFORM_RTL8710A -DPLATFORM_REALTEK -DUSER_SW_VER='"$(APP_VERSION)"'
 
 INCLUDES += -I$(OBK_DIR)/libraries/easyflash/inc
 
-SRC_C  += ../../../../../platforms/RTL87X0C/main.c
+SRC_C  += $(OBK_DIR)/platforms/RTL8710A/main.c
+SRC_C  += $(OBK_DIR)/platforms/RTL8710A/stdlib.c
 
 SRC_C  += $(OBK_DIR)/src/base64/base64.c
 SRC_C  += $(OBK_DIR)/src/bitmessage/bitmessage_read.c
@@ -27,13 +28,14 @@ SRC_C  += $(OBK_DIR)/src/devicegroups/deviceGroups_read.c
 SRC_C  += $(OBK_DIR)/src/devicegroups/deviceGroups_util.c
 SRC_C  += $(OBK_DIR)/src/devicegroups/deviceGroups_write.c
 SRC_C  += $(OBK_DIR)/src/driver/drv_main.c
-#SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl87x0c/hal_adc_rtl87x0c.c
-SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl87x0c/hal_generic_rtl87x0c.c
-#SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl87x0c/hal_main_rtl87x0c.c
-SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl87x0c/hal_pins_rtl87x0c.c
-SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl87x0c/hal_uart_rtl87x0c.c
+#SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl8710a/hal_adc_rtl8710a.c
+SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl8710a/hal_generic_rtl8710a.c
+#SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl8710a/hal_main_rtl8710a.c
+SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl8710a/hal_uart_rtl8710a.c
+SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl8710a/hal_pins_rtl8710a.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_flashConfig_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_flashVars_realtek.c
+SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_pins_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_wifi_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/generic/hal_adc_generic.c
 SRC_C  += $(OBK_DIR)/src/hal/generic/hal_flashConfig_generic.c
@@ -127,6 +129,7 @@ SRC_C  += $(OBK_DIR)/src/driver/drv_uart.c
 SRC_C  += $(OBK_DIR)/src/driver/drv_ucs1912.c
 SRC_C  += $(OBK_DIR)/src/driver/drv_wemo.c
 SRC_C  += $(OBK_DIR)/src/driver/drv_ds1820_simple.c
+SRC_C  += $(OBK_DIR)/src/driver/drv_uart_tcp.c
 #SRC_C += $(OBK_DIR)/src/httpclient/http_client.c
 #SRC_C += $(OBK_DIR)/src/httpclient/utils_net.c
 #SRC_C += $(OBK_DIR)/src/httpclient/utils_timer.c
@@ -140,6 +143,7 @@ SRC_C  += $(OBK_DIR)/src/littlefs/our_lfs.c
 #SRC_C += $(OBK_DIR)/src/memory/memtest.c
 #SRC_C += $(OBK_DIR)/src/ota/ota.c
 #SRC_C += $(OBK_DIR)/src/sim/sim_uart.c
+
 
 SRC_C += $(OBK_DIR)/libraries/easyflash/ports/ef_port.c
 SRC_C += $(OBK_DIR)/libraries/easyflash/src/easyflash.c

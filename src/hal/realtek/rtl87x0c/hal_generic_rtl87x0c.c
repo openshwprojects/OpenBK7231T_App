@@ -1,6 +1,6 @@
 #ifdef PLATFORM_RTL87X0C
 
-#include "../hal_generic.h"
+#include "../../hal_generic.h"
 #include "sys_api.h"
 #include "hal_timer.h"
 #include "hal_wdt.h"

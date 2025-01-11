@@ -1,8 +1,8 @@
 #ifdef PLATFORM_RTL87X0C
 
-#include "../../new_pins.h"
-#include "../../new_cfg.h"
-#include "../hal_uart.h"
+#include "../../../new_pins.h"
+#include "../../../new_cfg.h"
+#include "../../hal_uart.h"
 #include "serial_api.h"
 #include "hal_uart.h"
 #define UART0_TX	PA_14

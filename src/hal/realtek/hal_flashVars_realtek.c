@@ -1,4 +1,4 @@
-#ifdef PLATFORM_RTL87X0C
+#ifdef PLATFORM_REALTEK
 
 #include "../../new_common.h"
 #include "../hal_flashVars.h"
@@ -178,5 +178,5 @@ void HAL_FlashVars_SaveTotalConsumption(float total_consumption)
 	flash_vars.emetering.TotalConsumption = total_consumption;
 }
 
-#endif // PLATFORM_RTL87X0C
+#endif // PLATFORM_REALTEK
 

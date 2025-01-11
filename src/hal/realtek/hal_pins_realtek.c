@@ -1,41 +1,14 @@
-#ifdef PLATFORM_RTL87X0C
+#ifdef PLATFORM_REALTEK
 
 #include "../../new_common.h"
 #include "../../logging/logging.h"
 #include "../../new_cfg.h"
 #include "../../new_pins.h"
-#include "hal_generic_rtl87x0c.h"
+#include "hal_generic_realtek.h"
 
 extern int g_pwmFrequency;
-
-rtlPinMapping_t g_pins[] = {
-	{ "PA0 (RX1)",	PA_0,	NULL, NULL },
-	{ "PA1 (TX1)",	PA_1,	NULL, NULL },
-	{ "PA2 (RX1)",	PA_2,	NULL, NULL },
-	{ "PA3 (TX1)",	PA_3,	NULL, NULL },
-	{ "PA4",		PA_4,	NULL, NULL },
-	{ "PA5",		PA_5,	NULL, NULL },
-	{ "PA6",		PA_6,	NULL, NULL },
-	{ "PA7",		PA_7,	NULL, NULL },
-	{ "PA8",		PA_8,	NULL, NULL },
-	{ "PA9",		PA_9,	NULL, NULL },
-	{ "PA10",		PA_10,	NULL, NULL },
-	{ "PA11",		PA_11,	NULL, NULL },
-	{ "PA12",		PA_12,	NULL, NULL },
-	{ "PA13 (RX0)",	PA_13,	NULL, NULL },
-	{ "PA14 (TX0)",	PA_14,	NULL, NULL },
-	{ "PA15 (RX2)",	PA_15,	NULL, NULL },
-	{ "PA16 (TX2)",	PA_16,	NULL, NULL },
-	{ "PA17",		PA_17,	NULL, NULL },
-	{ "PA18",		PA_18,	NULL, NULL },
-	{ "PA19",		PA_19,	NULL, NULL },
-	{ "PA20",		PA_20,	NULL, NULL },
-	{ "PA21",		PA_21,	NULL, NULL },
-	{ "PA22",		PA_22,	NULL, NULL },
-	{ "PA23",		PA_23,	NULL, NULL },
-};
-
-static int g_numPins = sizeof(g_pins) / sizeof(g_pins[0]);
+extern rtlPinMapping_t g_pins[];
+extern int g_numPins;
 
 int PIN_GetPWMIndexForPinIndex(int pin)
 {
@@ -47,12 +20,6 @@ const char* HAL_PIN_GetPinNameAlias(int index)
 	if(index >= g_numPins)
 		return "error";
 	return g_pins[index].name;
-}
-
-int HAL_PIN_CanThisPinBePWM(int index)
-{
-	if(index > 6 && index < 11) return 0;
-	return 1;
 }
 
 void RTL_GPIO_Init(rtlPinMapping_t* pin)
@@ -150,7 +117,7 @@ void HAL_PIN_PWM_Start(int index)
 	if(pin->pwm != NULL) return;
 	if(pin->gpio != NULL)
 	{
-		hal_pinmux_unregister(pin->pin, PID_GPIO);
+		gpio_deinit(pin->gpio);
 		os_free(pin->gpio);
 		pin->gpio = NULL;
 	}
@@ -158,7 +125,9 @@ void HAL_PIN_PWM_Start(int index)
 	memset(pin->pwm, 0, sizeof(pwmout_t));
 	pwmout_init(pin->pwm, pin->pin);
 	pwmout_period_us(pin->pwm, g_pwmFrequency);
+#ifndef PLATFORM_RTL8710A
 	pwmout_start(pin->pwm);
+#endif
 }
 
 void HAL_PIN_PWM_Update(int index, float value)
@@ -166,7 +135,11 @@ void HAL_PIN_PWM_Update(int index, float value)
 	if(index >= g_numPins || !HAL_PIN_CanThisPinBePWM(index))
 		return;
 	rtlPinMapping_t* pin = g_pins + index;
+#ifdef PLATFORM_RTL87X0C
 	if(pin->pwm == NULL || !pin->pwm->is_init) return;
+#elif PLATFORM_RTL8710B
+	if(pin->pwm == NULL) return;
+#endif
 	pwmout_write(pin->pwm, value / 100);
 }
 
@@ -175,4 +148,4 @@ unsigned int HAL_GetGPIOPin(int index)
 	return index;
 }
 
-#endif // PLATFORM_RTL87X0C
+#endif // PLATFORM_REALTEK

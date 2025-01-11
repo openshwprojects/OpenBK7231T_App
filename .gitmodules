@@ -37,3 +37,7 @@
 	path = sdk/OpenRTL87X0C
 	url = https://github.com/NonPIayerCharacter/OpenRTL87X0C.git
 	branch = main
+[submodule "sdk/OpenRTL8710A_B"]
+	path = sdk/OpenRTL8710A_B
+	url = https://github.com/NonPIayerCharacter/OpenRTL8710A_B.git
+	branch = master
