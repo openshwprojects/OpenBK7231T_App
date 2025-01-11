@@ -545,9 +545,13 @@ extern int g_sleepfactor;
 #define atoi __wrap_atoi
 #endif
 
-// OS_MSleep?
+#if PLATFORM_RTL8710B
 #define rtos_delay_milliseconds(x) vTaskDelay(x / portTICK_PERIOD_MS / g_sleepfactor)
 #define delay_ms(x) vTaskDelay(x / portTICK_PERIOD_MS / g_sleepfactor)
+#else
+#define rtos_delay_milliseconds(x) vTaskDelay(x / portTICK_PERIOD_MS)
+#define delay_ms(x) vTaskDelay(x / portTICK_PERIOD_MS)
+#endif
 
 #define kNoErr                      0       //! No error occurred.
 typedef void* beken_thread_arg_t;
