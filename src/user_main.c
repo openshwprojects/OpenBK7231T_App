@@ -1415,7 +1415,8 @@ void Main_Init_After_Delay()
 #ifdef _MSC_VER
 #pragma comment(linker, "/alternatename:HAL_PIN_Find=Default_HAL_PIN_Find")
 #else
-int HAL_PIN_Find(const char *name) __attribute__((weak))  {
+int HAL_PIN_Find(const char *name) __attribute__((weak));
+int HAL_PIN_Find(const char *name) {
 	return atoi(name);
 }
 #endif
