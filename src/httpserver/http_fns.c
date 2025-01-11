@@ -1628,7 +1628,7 @@ int http_fn_cmd_tool(http_request_t* request) {
 
 #if ENABLE_HTTP_STARTUP
 int http_fn_startup_command(http_request_t* request) {
-	char tmpA[512];
+	char tmpA[8];
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Set startup command");
 	poststr_h4(request, "Set/Change/Clear startup command line");
@@ -1638,11 +1638,15 @@ int http_fn_startup_command(http_request_t* request) {
 		"Use backlog cmd1; cmd2; cmd3; etc to enter multiple commands</p>");
 
 	if (http_getArg(request->url, "startup_cmd", tmpA, sizeof(tmpA))) {
-		http_getArg(request->url, "data", tmpA, sizeof(tmpA));
-		//  hprintf255(request,"<h3>Set command to  %s!</h3>",tmpA);
-		// tmpA can be longer than 128 bytes and this would crash
-		hprintf255(request, "<h3>Command changed!</h3>");
-		CFG_SetShortStartupCommand(tmpA);
+		// direct config access to remove buffer on stack
+		int realSize = http_getArg(request->url, "data", g_cfg.initCommandLine, sizeof(g_cfg.initCommandLine));
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+		if (realSize >= sizeof(g_cfg.initCommandLine)) {
+			hprintf255(request, "<h3 style='color:red'>Command trimmed from %i to %i!</h3>",realSize, sizeof(g_cfg.initCommandLine));
+		} else {
+			hprintf255(request, "<h3>Command changed!</h3>");
+		}
 		CFG_Save_IfThereArePendingChanges();
 	}
 

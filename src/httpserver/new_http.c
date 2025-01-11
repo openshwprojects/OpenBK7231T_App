@@ -701,6 +701,11 @@ int HTTP_ProcessPacket(http_request_t* request) {
 			return 0;
 		}
 	}
+	else {
+		// if p is 0, then strchr below would crash
+		ADDLOGF_ERROR("invalid request\n");
+		return 0;
+	}
 
 	request->url = urlStr;
 
