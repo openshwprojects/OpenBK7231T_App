@@ -47,6 +47,7 @@ CSRCS += $(_SHARED_APP)/driver/drv_openWeatherMap.c
 CSRCS += $(_SHARED_APP)/driver/drv_pwrCal.c
 CSRCS += $(_SHARED_APP)/driver/drv_bmp280.c
 CSRCS += $(_SHARED_APP)/driver/drv_bmpi2c.c
+CSRCS += $(_SHARED_APP)/driver/drv_soft_i2c.c
 CSRCS += $(_SHARED_APP)/driver/drv_dht.c
 CSRCS += $(_SHARED_APP)/driver/drv_dht_internal.c
 CSRCS += $(_SHARED_APP)/driver/drv_httpButtons.c
