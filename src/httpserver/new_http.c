@@ -216,6 +216,12 @@ void poststr_escapedForJSON(http_request_t* request, char* str) {
 		case '\n':
 			foundChar = true;
 			break;
+		case '\r':
+			foundChar = true;
+			break;
+		case '\"':
+			foundChar = true;
+			break;
 		}
 	}
 
@@ -224,6 +230,12 @@ void poststr_escapedForJSON(http_request_t* request, char* str) {
 			switch (str[i]) {
 			case '\n':
 				postany(request, "\\n", 2);
+				break;
+			case '\r':
+				postany(request, "\\r", 2);
+				break;
+			case '\"':
+				postany(request, "\\\"", 2);
 				break;
 			default:
 				postany(request, str + i, 1);
