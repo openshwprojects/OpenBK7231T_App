@@ -223,7 +223,7 @@ void poststr_escapedForJSON(http_request_t* request, char* str) {
 		for (i = 0; i < len; i++) {
 			switch (str[i]) {
 			case '\n':
-				postany(request, "\\n", 3);
+				postany(request, "\\n", 2);
 				break;
 			default:
 				postany(request, str + i, 1);
