@@ -6,6 +6,7 @@
 
 #include "wm_include.h"
 #include "wm_uart.h"
+#include "wm_gpio_afsel.h" 	// for wm_uart1_rx_config and wm_uart1_tx_config
 #define UART_DEV_NAME "uart1"
 #define READ_BUF_SIZE 256
 static s16 obk_uart_rx(u16 len)
@@ -35,7 +36,7 @@ static s16 obk_uart_rx(u16 len)
 
 void HAL_UART_SendByte(byte b)
 {
-	tls_uart_write(TLS_UART_1, &b, 1);
+	tls_uart_write(TLS_UART_1, (char*)&b, 1);
 }
 
 int HAL_UART_Init(int baud, int parity)
