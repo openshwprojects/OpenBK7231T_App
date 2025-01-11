@@ -33,6 +33,8 @@
 // parse things like $CH1 or $hour etc
 #define ENABLE_EXPAND_CONSTANT	1
 #define	ENABLE_HA_DISCOVERY		1
+#define ENABLE_DRIVER_OPENWEATHERMAP	1
+#define ENABLE_DRIVER_SSDP		1
 #define ENABLE_MQTT 1
 #define ENABLE_TASMOTADEVICEGROUPS 1
 #define ENABLE_NTP				1
