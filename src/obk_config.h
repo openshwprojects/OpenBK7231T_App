@@ -4,44 +4,67 @@
 #ifndef OBK_CONFIG_H
 #define OBK_CONFIG_H
 
-//Start with all driver flags undefined
+// Starts with all driver flags undefined
 
-//ENABLE_NTP - Enable support for Test drivers, NTP and HttpButton
-//ENABLE_DRIVER_LED - Enable support for all LED drivers
-//ENABLE_I2C - Enable support for I2C
-//ENABLE_DRIVER_BL0937 - Enable support for BL0937
-//ENABLE_DRIVER_BL0942 - Enable support for BL0942
-//ENABLE_DRIVER_CSE7766 - Enable support for CSE7766
-//ENABLE_DRIVER_TUYAMCU - Enable support for TuyaMCU and tmSensor
 
+// NOTE:
+// Defines for HTTP/HTMP (UI) pages: ENABLE_HTTP_*
+// Defines for drivers from drv_main.c: ENABLE_DRIVER_*
+// Other defines: ENABLE_* , for example: ENABLE_LED_BASIC
+
+#define ENABLE_HTTP_MQTT		1
+#define ENABLE_HTTP_IP			1
+#define ENABLE_HTTP_WEBAPP		1
+#define ENABLE_HTTP_NAMES		1
+#define ENABLE_HTTP_MAC			1
+#define ENABLE_HTTP_FLAGS		1
+#define ENABLE_HTTP_STARTUP		1
+#define ENABLE_HTTP_PING		1
+#define ENABLE_LED_BASIC		1
 
 #if PLATFORM_XR809
 
+#define ENABLE_MQTT 1
 #define NO_CHIP_TEMPERATURE			1
 #define OBK_DISABLE_ALL_DRIVERS		1
 
 #elif PLATFORM_W600
 
 // Some limited drivers are supported on W600, OBK_DISABLE_ALL_DRIVERS is not defined
+#define	ENABLE_HA_DISCOVERY		1
+#define ENABLE_MQTT 1
 #define ENABLE_TASMOTADEVICEGROUPS 1
 #define ENABLE_NTP				1
 //#define ENABLE_NTP_DST			1
 #define ENABLE_DRIVER_BL0937    1
 #define ENABLE_DRIVER_DHT		1
 #define ENABLE_TASMOTA_JSON		1
+#define ENABLE_DRIVER_DS1820		1
 #define OBK_OTA_EXTENSION 		".img"
 
 #elif PLATFORM_W800
 
-// try enabling drivers - e.g. to access charts
-//#define OBK_DISABLE_ALL_DRIVERS 1
+#define	ENABLE_HA_DISCOVERY		1
+#define ENABLE_DRIVER_OPENWEATHERMAP	1
+#define ENABLE_DRIVER_SSDP		1
+#define ENABLE_DRIVER_CHARTS	1
+#define ENABLE_MQTT 1
 #define ENABLE_TASMOTA_JSON		1
 #define ENABLE_DRIVER_DS1820		1
+#define ENABLE_DRIVER_DHT		1
+#define ENABLE_NTP				 1
+#define ENABLE_DRIVER_BMP280 1
 #define OBK_OTA_EXTENSION 		".img"
+#define ENABLE_I2C					1
+#define ENABLE_OBK_SCRIPTING			1
 
 
 #elif WINDOWS
 
+
+#define	ENABLE_HA_DISCOVERY		1
+#define ENABLE_SEND_POSTANDGET		1
+#define ENABLE_MQTT 1
 #define ENABLE_TASMOTADEVICEGROUPS 1
 #define ENABLE_LITTLEFS			1
 #define ENABLE_NTP				1
@@ -51,6 +74,7 @@
 #define ENABLE_DRIVER_BL0942    1
 #define ENABLE_DRIVER_BL0942SPI 1
 #define ENABLE_DRIVER_CSE7766   1
+#define ENABLE_DRIVER_TESTPOWER	1
 #define ENABLE_DRIVER_HT16K33   1
 #define ENABLE_DRIVER_MAX72XX	1
 #define ENABLE_DRIVER_TUYAMCU   1
@@ -58,7 +82,7 @@
 #define ENABLE_CALENDAR_EVENTS	1
 #define ENABLE_TEST_DRIVERS		1
 #define ENABLE_DRIVER_BRIDGE	1
-#define ENABLE_HTTPBUTTONS		1
+#define ENABLE_DRIVER_HTTPBUTTONS		1
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY 1
 #define ENABLE_DRIVER_WEMO		1
 #define ENABLE_DRIVER_HUE		1
@@ -80,7 +104,8 @@
 #define ENABLE_DRIVER_SSDP		1
 #define ENABLE_DRIVER_ADCBUTTON	1
 #define ENABLE_DRIVER_SM15155E	1
-#define ENABLE_DRIVER_IR2		0
+//#define ENABLE_DRIVER_IR		1
+//#define ENABLE_DRIVER_IR2		1
 #define ENABLE_DRIVER_CHARTS	1
 #define ENABLE_DRIVER_WIDGET	1
 #define ENABLE_DRIVER_OPENWEATHERMAP	1
@@ -89,11 +114,14 @@
 #define ENABLE_DRIVER_ADCSMOOTHER		1
 #define ENABLE_DRIVER_SGP				1
 #define ENABLE_DRIVER_SHIFTREGISTER		1
-
+#define ENABLE_OBK_SCRIPTING			1
 
 #elif PLATFORM_BL602
 
+
+#define	ENABLE_HA_DISCOVERY		1
 // I have enabled drivers on BL602
+#define ENABLE_MQTT 1
 #define ENABLE_TASMOTADEVICEGROUPS 1
 #define ENABLE_LITTLEFS			1
 #define ENABLE_NTP    1
@@ -113,13 +141,17 @@
 #define ENABLE_DRIVER_SSDP		1
 #define ENABLE_DRIVER_CHT83XX 1
 #define ENABLE_DRIVER_DS1820		1
+#define ENABLE_OBK_SCRIPTING			1
 #define OBK_OTA_EXTENSION 		".bin.xz.ota"
 //#define ENABLE_I2C					1
 
 
 #elif PLATFORM_BEKEN
 
-// set to 0 to disable
+
+#define	ENABLE_HA_DISCOVERY		1
+#define ENABLE_SEND_POSTANDGET		1
+#define ENABLE_MQTT 1
 #define ENABLE_TASMOTADEVICEGROUPS 1
 #define ENABLE_LITTLEFS			1
 #define ENABLE_NTP    1
@@ -142,7 +174,7 @@
 //#define ENABLE_TEST_COMMANDS	1
 #define ENABLE_CALENDAR_EVENTS	1
 #define ENABLE_DRIVER_BRIDGE	1
-#define ENABLE_HTTPBUTTONS		1
+#define ENABLE_DRIVER_HTTPBUTTONS		1
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY 1
 #define ENABLE_DRIVER_WEMO		1
 #define ENABLE_DRIVER_HUE		1
@@ -164,11 +196,13 @@
 //#define ENABLE_DRIVER_BMPI2C 1
 #define ENABLE_DRIVER_DDP		1
 #define ENABLE_DRIVER_SSDP		1
-#define ENABLE_DRIVER_IR2		0
+#define ENABLE_DRIVER_IR		1
+//#define ENABLE_DRIVER_IR2		1
 #define ENABLE_DRIVER_DS1820		1
 #define ENABLE_DRIVER_CHT83XX 1
 #define ENABLE_DRIVER_KP18058			1
 #define ENABLE_DRIVER_ADCSMOOTHER		1
+#define ENABLE_OBK_SCRIPTING			1
 //#define ENABLE_DRIVER_OPENWEATHERMAP	1
 #define OBK_OTA_EXTENSION 		".rbl"
 
@@ -180,6 +214,9 @@
 
 #elif PLATFORM_LN882H
 
+
+#define	ENABLE_HA_DISCOVERY		1
+#define ENABLE_MQTT 1
 //#define OBK_DISABLE_ALL_DRIVERS       1
 #define ENABLE_TASMOTADEVICEGROUPS 1
 #define ENABLE_NTP			1
@@ -195,11 +232,15 @@
 //#define	ENABLE_DRIVER_TMGN		1
 #define ENABLE_TASMOTA_JSON		1
 #define ENABLE_DRIVER_DS1820		1
+#define ENABLE_OBK_SCRIPTING			1
 #define OBK_OTA_EXTENSION 		".bin"
 #define OBK_OTA_NAME_EXTENSION 		"_OTA"
 
 #elif PLATFORM_ESPIDF
 
+
+#define	ENABLE_HA_DISCOVERY		1
+#define ENABLE_MQTT 1
 #define ENABLE_I2C					1
 #define ENABLE_NTP					1
 //#define ENABLE_NTP_DST			1
@@ -222,10 +263,14 @@
 #define ENABLE_DRIVER_DDP			1
 #define ENABLE_DRIVER_SSDP			1
 #define ENABLE_DRIVER_CHT83XX		1
+#define ENABLE_OBK_SCRIPTING			1
 #define OBK_OTA_EXTENSION 		".img"
 
 #elif PLATFORM_TR6260
 
+
+#define	ENABLE_HA_DISCOVERY		1
+#define ENABLE_MQTT 1
 #define NO_CHIP_TEMPERATURE			1
 #define ENABLE_LITTLEFS				1
 #define NEW_TCP_SERVER				1
@@ -236,10 +281,14 @@
 #define ENABLE_DRIVER_DS1820		1
 #define ENABLE_DRIVER_LED 			1
 #define ENABLE_DRIVER_WEMO			1
-#define ENABLE_DRIVER_SSDP		1
+#define ENABLE_DRIVER_SSDP			1
+#define ENABLE_OBK_SCRIPTING		1
 
 #elif PLATFORM_RTL87X0C
 
+
+#define	ENABLE_HA_DISCOVERY		1
+#define ENABLE_MQTT 1
 #define NO_CHIP_TEMPERATURE			1
 #define ENABLE_LITTLEFS				1
 #define NEW_TCP_SERVER				1
@@ -261,6 +310,7 @@
 #define ENABLE_DRIVER_BL0937		1
 #define ENABLE_DRIVER_CSE7766		1
 #define OBK_OTA_EXTENSION 			".img"
+#define ENABLE_OBK_SCRIPTING		1
 
 #elif PLATFORM_RTL8710B || PLATFORM_RTL8710A
 
@@ -286,12 +336,26 @@
 #define ENABLE_DRIVER_CSE7766		1
 #define ENABLE_DRIVER_UART_TCP		1
 #define OBK_OTA_EXTENSION 			".img"
+#define ENABLE_OBK_SCRIPTING		1
 
 #else
 
-#error "Platform not defined"
+//#error "Platform not defined"
+#warning "Platform not defined"
 
+#endif
+
+// if Tasmota DGR driver is enabled,
+// then also enable HTTP config page for that
+#if ENABLE_TASMOTADEVICEGROUPS
+#define ENABLE_HTTP_DGR			1
+#endif
+
+// if power metering chip is enabled, also enable backend for that
+#if ENABLE_DRIVER_BL0937 || ENABLE_DRIVER_BL0942 || ENABLE_DRIVER_BL0942SPI || ENABLE_DRIVER_CSE7766
+#define ENABLE_BL_SHARED	1
 #endif
 
 // closing OBK_CONFIG_H
 #endif
+

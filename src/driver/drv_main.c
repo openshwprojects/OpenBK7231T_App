@@ -110,19 +110,21 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "NTP",		NTP_Init,			NTP_OnEverySecond,			NTP_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
-#if ENABLE_HTTPBUTTONS
+#if ENABLE_DRIVER_HTTPBUTTONS
 	//drvdetail:{"name":"HTTPButtons",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This driver allows you to create custom, scriptable buttons on main WWW page. You can create those buttons in autoexec.bat and assign commands to them",
 	//drvdetail:"requires":""}
 	{ "HTTPButtons",	DRV_InitHTTPButtons, NULL, NULL, NULL, NULL, NULL, false },
 #endif
-#if ENABLE_TEST_DRIVERS
+#if ENABLE_DRIVER_TESTPOWER
 	//drvdetail:{"name":"TESTPOWER",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This is a fake POWER measuring socket driver, only for testing",
 	//drvdetail:"requires":""}
 	{ "TESTPOWER",	Test_Power_Init,	 Test_Power_RunEverySecond,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_TESTLED
 	//drvdetail:{"name":"TESTLED",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This is a fake I2C LED driver, only for testing",
@@ -136,7 +138,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "I2C",		DRV_I2C_Init,		DRV_I2C_EverySecond,		NULL, NULL, DRV_I2C_Shutdown, NULL, false },
 #endif
-#if ENABLE_DRIVER_BL0942
+#if ENABLE_DRIVER_RN8209
 	//drvdetail:{"name":"RN8209",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"WIP driver for power-metering chip RN8209 found in one of Zmai-90 versions.",
@@ -220,7 +222,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "SM15155E",	SM15155E_Init,		NULL,						NULL, NULL, NULL, NULL, false },
 #endif
-#if PLATFORM_BEKEN
+#if ENABLE_DRIVER_IR
 	//drvdetail:{"name":"IR",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"IRLibrary wrapper, so you can receive remote signals and send them. See [forum discussion here](https://www.elektroda.com/rtvforum/topic3920360.html), also see [LED strip and IR YT video](https://www.youtube.com/watch?v=KU0tDwtjfjw)",

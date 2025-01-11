@@ -155,9 +155,11 @@ void SM16703P_setPixel(int pixel, int r, int g, int b) {
 }
 extern float g_brightness0to100;//TODO
 void SM16703P_setPixelWithBrig(int pixel, int r, int g, int b) {
+#if ENABLE_LED_BASIC
 	r = (int)(r * g_brightness0to100*0.01f);
 	g = (int)(g * g_brightness0to100*0.01f);
 	b = (int)(b * g_brightness0to100*0.01f);
+#endif
 	SM16703P_setPixel(pixel,r, g, b);
 }
 #define SCALE8_PIXEL(x, scale) (uint8_t)(((uint32_t)x * (uint32_t)scale) / 256)

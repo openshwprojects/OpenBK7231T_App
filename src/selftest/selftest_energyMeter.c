@@ -2,6 +2,9 @@
 
 #include "selftest_local.h"
 
+#if ENABLE_BL_SHARED
+
+
 void Test_EnergyMeter_Basic() {
 	SIM_ClearOBK(0);
 	SIM_ClearAndPrepareForMQTTTesting("miscDevice", "bekens");
@@ -344,4 +347,5 @@ void Test_EnergyMeter() {
 	Test_EnergyMeter_TurnOffScript();
 }
 
+#endif
 #endif

@@ -1067,6 +1067,7 @@ void TuyaMCU_SendNetworkStatus()
 	TuyaMCU_SendCommandWithData(0x2B, &state, 1);
 }
 void TuyaMCU_ForcePublishChannelValues() {
+#if ENABLE_MQTT
 	tuyaMCUMapping_t* cur;
 
 	cur = g_tuyaMappings;
@@ -1074,6 +1075,7 @@ void TuyaMCU_ForcePublishChannelValues() {
 		MQTT_ChannelPublish(cur->channel, 0);
 		cur = cur->next;
 	}
+#endif
 }
 // ntp_timeZoneOfs 2
 // addRepeatingEvent 10 -1 uartSendHex 55AA0008000007
@@ -1090,6 +1092,7 @@ void TuyaMCU_ApplyMapping(tuyaMCUMapping_t* mapping, int dpID, int value) {
 	int mappedValue = value;
 
 	// hardcoded values
+#if ENABLE_LED_BASIC
 	if (dpID == g_tuyaMCUled_id_power) {
 		LED_SetEnableAll(value);
 	}
@@ -1101,7 +1104,7 @@ void TuyaMCU_ApplyMapping(tuyaMCUMapping_t* mapping, int dpID, int value) {
 		// TuyaMCU sends in 0-1000 range, we need 0-100
 		LED_SetDimmerForDisplayOnly(value*0.1f);
 	}
-
+#endif
 
 	if (mapping == 0) {
 		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "ApplyMapping: id %i (val %i) not mapped\n", dpID, value);
@@ -1504,7 +1507,9 @@ void TuyaMCU_PublishDPToMQTT(const byte *data, int ofs) {
 	if (*s == 0)
 		return;
 
+#if ENABLE_MQTT
 	MQTT_PublishMain_StringString(sName, s, OBK_PUBLISH_FLAG_FORCE_REMOVE_GET);
+#endif
 }
 void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 	tuyaMCUMapping_t* mapping;

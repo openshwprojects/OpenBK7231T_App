@@ -6,6 +6,8 @@
 #include "../driver/drv_public.h"
 #include "../new_pins.h"
 
+#if ENABLE_HA_DISCOVERY
+
 /*
 Abbreviated node names - https://www.home-assistant.io/docs/mqtt/discovery/
 Light - https://www.home-assistant.io/integrations/light.mqtt/
@@ -367,6 +369,7 @@ HassDeviceInfo* hass_init_relay_device_info(int index, ENTITY_TYPE type, bool bT
 	return info;
 }
 
+#if ENABLE_LED_BASIC
 /// @brief Initializes HomeAssistant light device discovery storage.
 /// @param type 
 /// @return 
@@ -433,6 +436,7 @@ HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type) {
 
 	return info;
 }
+#endif
 
 /// @brief Initializes HomeAssistant binary sensor device discovery storage.
 /// @param index
@@ -758,3 +762,5 @@ void hass_free_device_info(HassDeviceInfo* info) {
 
 	os_free(info);
 }
+
+#endif // ENABLE_HA_DISCOVERY

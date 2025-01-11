@@ -1,4 +1,9 @@
 #include "drv_bl0937.h"
+#include "../obk_config.h"
+
+
+#if ENABLE_DRIVER_BL0937
+
 //dummy
 #include <math.h>
 
@@ -501,3 +506,7 @@ void BL0937_RunEverySecond(void)
 #endif
 	BL_ProcessUpdate(final_v, final_c, final_p, NAN, NAN);
 }
+
+// close ENABLE_DRIVER_BL0937
+#endif
+

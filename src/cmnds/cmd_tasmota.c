@@ -34,10 +34,13 @@ static commandResult_t power(const void *context, const char *cmd, const char *a
 		if (strlen(cmd) > 5) {
 			channel = atoi(cmd+5);
 
+#if ENABLE_LED_BASIC
 			if (LED_IsLEDRunning()) {
 				channel = SPECIAL_CHANNEL_LEDPOWER;
 			}
-			else {
+			else 
+#endif
+			{
 				if (bRelayIndexingStartsWithZero) {
 					channel--;
 					if (channel < 0)
@@ -45,10 +48,13 @@ static commandResult_t power(const void *context, const char *cmd, const char *a
 				}
 			}
 		} else {
+#if ENABLE_LED_BASIC
 			// if new LED driver active
 			if(LED_IsLEDRunning()) {
 				channel = SPECIAL_CHANNEL_LEDPOWER;
-			} else {
+			} else
+#endif
+			{
 				// find first active channel, because some people index with 0 and some with 1
 				for(i = 0; i < CHANNEL_MAX; i++) {
 					if (h_isChannelRelay(i) || CHANNEL_GetType(i) == ChType_Toggle) {

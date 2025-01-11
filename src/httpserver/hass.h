@@ -1,5 +1,9 @@
 
 #include "new_http.h"
+#include "../obk_config.h"
+
+#if ENABLE_HA_DISCOVERY
+
 #include "../cJSON/cJSON.h"
 #include "../new_pins.h"
 #include "../mqtt/new_mqtt.h"
@@ -128,3 +132,4 @@ const char* hass_build_discovery_json(HassDeviceInfo* info);
 void hass_free_device_info(HassDeviceInfo* info); 
 char *hass_generate_multiplyAndRound_template(int decimalPlacesForRounding, int decimalPointOffset, int divider);
 
+#endif // ENABLE_HA_DISCOVERY

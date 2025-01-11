@@ -189,6 +189,7 @@ float getFlagValue(const char *s) {
 	return CFG_HasFlag(idx);
 }
 
+#if ENABLE_LED_BASIC
 float getLedDimmer(const char *s) {
 	return LED_GetDimmer();
 }
@@ -220,6 +221,7 @@ float getLedSaturation(const char *s) {
 float getLedTemperature(const char *s) {
 	return LED_GetTemperature();
 }
+#endif
 
 float getActiveRepeatingEvents(const char *s) {
 	return RepeatingEvents_GetActiveCount();
@@ -369,6 +371,7 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Provides flag access, as above.",
 	//cnstdetail:"requires":""}
 	{"$FLAG*", &getFlagValue},
+#if ENABLE_LED_BASIC
 	//cnstdetail:{"name":"$led_dimmer",
 	//cnstdetail:"title":"$led_dimmer",
 	//cnstdetail:"descr":"Current value of LED dimmer, 0-100 range",
@@ -409,6 +412,7 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current LED temperature value",
 	//cnstdetail:"requires":""}
 	{"$led_temperature", &getLedTemperature},
+#endif
 	//cnstdetail:{"name":"$activeRepeatingEvents",
 	//cnstdetail:"title":"$activeRepeatingEvents",
 	//cnstdetail:"descr":"Current number of active repeating events",
