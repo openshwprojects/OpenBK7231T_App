@@ -40,6 +40,7 @@ CSRCS += $(_SHARED_APP)/base64/base64.c
 CSRCS += $(_SHARED_APP)/devicegroups/deviceGroups_read.c
 CSRCS += $(_SHARED_APP)/devicegroups/deviceGroups_write.c
 CSRCS += $(_SHARED_APP)/devicegroups/deviceGroups_util.c
+CSRCS += $(_SHARED_APP)/driver/drv_aht2x.c
 CSRCS += $(_SHARED_APP)/driver/drv_bl0937.c
 CSRCS += $(_SHARED_APP)/driver/drv_bl_shared.c
 CSRCS += $(_SHARED_APP)/driver/drv_ssdp.c
