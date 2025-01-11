@@ -1410,6 +1410,21 @@ void Main_Init_After_Delay()
 	ADDLOGF_INFO("Main_Init_After_Delay done");
 }
 
+// to be overriden
+// Translate name like RB5 for OBK pin index
+#ifdef _MSC_VER
+#pragma comment(linker, "/alternatename:HAL_PIN_Find=Default_HAL_PIN_Find")
+#else
+int HAL_PIN_Find(const char *name) __attribute__((weak))  {
+	return atoi(name);
+}
+#endif
+
+
+// Default implementation (used only if weak linkage applies and no other definition exists)
+int Default_HAL_PIN_Find(const char *name) {
+	return atoi(name); // Fallback behavior
+}
 
 
 void Main_Init()
