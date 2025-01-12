@@ -205,7 +205,7 @@ int http_fn_index(http_request_t* request) {
 	// user override is always stronger, so if no override set
 	if (bForceShowRGB == false && bForceShowRGBCW == false) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
-		if (DRV_IsRunning("SM16703P")) {
+		if (DRV_IsRunning("SM16703P") || DRV_IsRunning("WS2811")) {
 			bForceShowRGB = true;
 		}
 		else 

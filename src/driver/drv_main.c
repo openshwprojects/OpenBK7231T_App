@@ -215,6 +215,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "SM16703P",	SM16703P_Init,		NULL,						NULL, NULL, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_WS2811
+	//drvdetail:{"name":"WS2811",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"WS2811 is used for chained addressable LEDs. WS2811 is implemented on the LN882H platform.
+	//drvdetail:"requires":""}
+	{"WS2811", WS2811_Init, NULL, NULL, NULL, NULL, NULL, false},
+#endif
 #if ENABLE_DRIVER_SM15155E
 	//drvdetail:{"name":"SM15155E",
 	//drvdetail:"title":"TODO",

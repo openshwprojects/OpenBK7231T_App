@@ -145,6 +145,7 @@ bool LED_IsLedDriverChipRunning()
 		|| DRV_IsRunning("TESTLED") || DRV_IsRunning("SM2235") || DRV_IsRunning("BP1658CJ")
 		|| DRV_IsRunning("KP18058")
 		|| DRV_IsRunning("SM16703P")
+		|| DRV_IsRunning("WS2811")
 		|| DRV_IsRunning("SM15155E")
 		; 
 #else
@@ -657,6 +658,11 @@ void apply_smart_light() {
 	if (pixel_count > 0 && (g_lightMode != Light_Anim || g_lightEnableAll == 0)) {
 		SM16703P_setAllPixels(finalColors[0], finalColors[1], finalColors[2]);
 		SM16703P_Show();
+	}
+#elif ENABLE_DRIVER_WS2811
+	if (pixel_count > 0 && (g_lightMode != Light_Anim || g_lightEnableAll == 0)) {
+		WS2811_setAllPixels((byte) (finalColors[0]), (byte) (finalColors[1]), (byte) (finalColors[2]));
+		WS2811_show();
 	}
 #endif
 	

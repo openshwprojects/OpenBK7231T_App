@@ -2930,6 +2930,42 @@
     "descr": "",
     "fn": "NULL);",
     "file": "driver/drv_widget.c",
+	"requires": "",
+	"examples": ""
+  },
+  {
+    "name": "WS2811_Init",
+    "args": "[NumberOfLEDs][ColorOrder]",
+    "descr": "This will setup LN882H WS2811 LED driver for a strip with given number of LEDs. You can optionally set the color order with either RGB, RBG, BRG, BGB, GRB or GBR (default RGB).",
+    "fn": "NULL);",
+    "file": "driver/drv_ws2811.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "WS2811_SetPixel",
+    "args": "[index/all] [R] [G] [B]",
+    "descr": "Sets a pixel for LN882H WS2811 LED strip. Index can be a number or 'all' keyword to set all. Then, 3 integer values for R, G and B.",
+    "fn": "NULL);",
+    "file": "driver/drv_ws2811.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "WS2811_SetRaw",
+    "args": "[bUpdate] [pixelOfs] [HexData]",
+    "descr": "Sets the raw data bytes (modified by color order setting) for the LN882H WS2811 driver at the given offset. Hex data should be as a hex string, for example, FF00AA, etc. The bUpdate, if set to 1, will run WS2811_Start automatically after setting data. pixelOfs is the starting pixel index.",
+    "fn": "NULL);",
+    "file": "driver/drv_ws2811.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "WS2811_Start",
+    "args": "",
+    "descr": "This will send the currently set data to the strip.",
+    "fn": "NULL);",
+    "file": "driver/drv_ws2811.c",
     "requires": "",
     "examples": ""
   }

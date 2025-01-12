@@ -43,6 +43,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | AlwaysLow | always outputs 0 |
 | UCS1912_DIN | WIP driver, write a post on Elektroda if you need it working |
 | SM16703P_DIN | WIP driver, write a post on Elektroda if you need it working |
+| WS2811_DIN | WIP driver, write a post on Elektroda if you need it working |
 | Button_NextTemperature | Button that automatically allows you to control temperature of your LED device |
 | Button_NextTemperature_n | Like Button_NextTemperature, but inversed button logic |
 | Button_ScriptOnly | This button does nothing automatically, even the linked channel is not changed. Useful for scripts, but you can still also use any buttons for scripting. |
