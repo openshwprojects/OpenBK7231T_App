@@ -11,6 +11,8 @@ void HAL_PIN_PWM_Start(int index);
 void HAL_PIN_PWM_Update(int index, float value);
 int HAL_PIN_CanThisPinBePWM(int index);
 const char* HAL_PIN_GetPinNameAlias(int index);
+// Translate name like RB5 for OBK pin index
+int HAL_PIN_Find(const char *name);
 
 /// @brief Get the actual GPIO pin for the pin index.
 /// @param index 

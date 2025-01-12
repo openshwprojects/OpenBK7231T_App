@@ -156,7 +156,7 @@ void poststr_escaped(http_request_t* request, char* str) {
 	bool foundChar = false;
 	int len = strlen(str);
 
-	//Do a quick check if escaping is necessary
+	// Do a quick check if escaping is necessary
 	for (i = 0; (foundChar == false) && (i < len); i++) {
 		switch (str[i]) {
 		case '<':
@@ -200,6 +200,53 @@ void poststr_escaped(http_request_t* request, char* str) {
 	}
 }
 
+void poststr_escapedForJSON(http_request_t* request, char* str) {
+	if (str == NULL) {
+		postany(request, NULL, 0);
+		return;
+	}
+
+	int i;
+	bool foundChar = false;
+	int len = strlen(str);
+
+	// Do a quick check if escaping is necessary
+	for (i = 0; (foundChar == false) && (i < len); i++) {
+		switch (str[i]) {
+		case '\n':
+			foundChar = true;
+			break;
+		case '\r':
+			foundChar = true;
+			break;
+		case '\"':
+			foundChar = true;
+			break;
+		}
+	}
+
+	if (foundChar) {
+		for (i = 0; i < len; i++) {
+			switch (str[i]) {
+			case '\n':
+				postany(request, "\\n", 2);
+				break;
+			case '\r':
+				postany(request, "\\r", 2);
+				break;
+			case '\"':
+				postany(request, "\\\"", 2);
+				break;
+			default:
+				postany(request, str + i, 1);
+				break;
+			}
+		}
+	}
+	else {
+		postany(request, str, strlen(str));
+	}
+}
 bool http_startsWith(const char* base, const char* substr) {
 	while (*substr != 0) {
 		if (*base != *substr)
@@ -665,6 +712,11 @@ int HTTP_ProcessPacket(http_request_t* request) {
 			ADDLOGF_ERROR("invalid request\n");
 			return 0;
 		}
+	}
+	else {
+		// if p is 0, then strchr below would crash
+		ADDLOGF_ERROR("invalid request\n");
+		return 0;
 	}
 
 	request->url = urlStr;

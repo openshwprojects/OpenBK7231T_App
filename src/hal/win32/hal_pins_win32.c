@@ -38,6 +38,9 @@ static int adcToGpio[] = {
 };
 static int c_adcToGpio = sizeof(adcToGpio)/sizeof(adcToGpio[0]);
 
+int HAL_PIN_Find(const char *name) {
+	return atoi(name); 
+}
 
 static int gpioToAdc(int gpio) {
 	int i;

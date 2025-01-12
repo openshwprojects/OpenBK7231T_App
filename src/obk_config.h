@@ -30,8 +30,12 @@
 
 #elif PLATFORM_W600
 
-// Some limited drivers are supported on W600, OBK_DISABLE_ALL_DRIVERS is not defined
+// parse things like $CH1 or $hour etc
+#define ENABLE_EXPAND_CONSTANT	1
+#define ENABLE_DRIVER_BMP280 1
 #define	ENABLE_HA_DISCOVERY		1
+#define ENABLE_DRIVER_OPENWEATHERMAP	1
+#define ENABLE_DRIVER_SSDP		1
 #define ENABLE_MQTT 1
 #define ENABLE_TASMOTADEVICEGROUPS 1
 #define ENABLE_NTP				1
@@ -41,14 +45,18 @@
 #define ENABLE_TASMOTA_JSON		1
 #define ENABLE_DRIVER_DS1820		1
 #define OBK_OTA_EXTENSION 		".img"
+#define ENABLE_OBK_SCRIPTING			1
 
 #elif PLATFORM_W800
 
+// parse things like $CH1 or $hour etc
+#define ENABLE_EXPAND_CONSTANT	1
 #define	ENABLE_HA_DISCOVERY		1
 #define ENABLE_DRIVER_OPENWEATHERMAP	1
 #define ENABLE_DRIVER_SSDP		1
 #define ENABLE_DRIVER_CHARTS	1
 #define ENABLE_MQTT 1
+#define ENABLE_DRIVER_AHT2X 1
 #define ENABLE_TASMOTA_JSON		1
 #define ENABLE_DRIVER_DS1820		1
 #define ENABLE_DRIVER_DHT		1
@@ -189,7 +197,7 @@
 // parse things like $CH1 or $hour etc
 #define ENABLE_EXPAND_CONSTANT	1
 #define ENABLE_DRIVER_DHT		1
-//#define ENABLE_DRIVER_AHT2X 1
+#define ENABLE_DRIVER_AHT2X 1
 #define	ENABLE_DRIVER_TMGN		0
 #define ENABLE_DRIVER_DRAWERS	0
 #define ENABLE_TASMOTA_JSON		1

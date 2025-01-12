@@ -169,7 +169,8 @@ int Tokenizer_GetArgsCount();
 bool Tokenizer_CheckArgsCountAndPrintWarning(const char* cmdStr, int reqCount);
 const char* Tokenizer_GetArg(int i);
 const char* Tokenizer_GetArgFrom(int i);
-int Tokenizer_GetArgInteger(int i);
+int Tokenizer_GetArgInteger(int i); 
+int Tokenizer_GetPin(int i, int def);
 int Tokenizer_GetArgIntegerDefault(int i, int def);
 float Tokenizer_GetArgFloatDefault(int i, float def);
 bool Tokenizer_IsArgInteger(int i);
@@ -271,6 +272,7 @@ const char* CMD_GetResultString(commandResult_t r);
 
 void SVM_RunThreads(int deltaMS);
 void CMD_InitScripting();
+void SVM_RunStartupCommandAsScript();
 byte* LFS_ReadFile(const char* fname);
 int LFS_WriteFile(const char *fname, const byte *data, int len, bool bAppend);
 
