@@ -1,5 +1,5 @@
 
-#ifdef PLATFORM_BK7231N || PLATFORM_LN882H
+#if PLATFORM_BK7231N || PLATFORM_LN882H
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
@@ -12,8 +12,12 @@
 #include "lwip/inet.h"
 #include "../httpserver/new_http.h"
 
-#if ENABLE_DRIVER_SM16703P && PLATFORM_BK7231N
+#if ENABLE_DRIVER_SM16703P
+#if PLATFORM_BK7231N
 #include "drv_spiLED.h"
+#elif PLATFORM_LN882H
+#include "drv_ws2811_LN882H.h"
+#endif // Platform
 #endif
 
 static const char* group = "239.255.250.250";
