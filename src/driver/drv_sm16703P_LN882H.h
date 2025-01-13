@@ -1,5 +1,6 @@
 #pragma once
-// LN882H specific defines
+// This file containes LN882H specific defines for the sm16703P driver
+
 #define WS2811_DMA_CH DMA_CH_2
 #define WS2811_BAUD_RATE 16
 // 6 is the default pin number as used for the device in https://www.elektroda.com/rtvforum/topic4083817.html

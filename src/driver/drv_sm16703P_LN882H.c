@@ -10,7 +10,7 @@
 #include "../logging/logging.h"
 #include "../mqtt/new_mqtt.h"
 #include "./drv_sm16703P.h"
-#include "./drv_ws2811_LN882H.h"
+#include "./drv_sm16703P_LN882H.h"
 
 #include "hal/hal_gpio.h"
 #include "hal/hal_dma.h"
@@ -420,37 +420,13 @@ static commandResult_t SM16703P_StartTX(const void *context, const char *cmd, co
 	return CMD_RES_OK;
 }
 
-void WS2811_IRQHandler(void)
-{
-	hal_ws2811_set_data(WS2811_BASE, 11);
-}
-
 void SM16703P_Init() {
 	ws2811Data.pin_data = PIN_FindPinIndexForRole(IOR_SM16703P_DIN, WS2811_DEFAULT_DATA_PIN);
-
-	//cmddetail:{"name":"SM16703P_Init","args":"[NumberOfLEDs][ColorOrder]",
-	//cmddetail:"descr":"This will setup LED driver for a strip with given number of LEDs. Please note that it also works for WS2812B and similiar LEDs. You can optionally set the color order with either RGB, RBG, BRG, BGB, GRB or GBR (default RGB). See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_sm16703P.h","requires":"",
-	//cmddetail:"examples":""}
+	// All the command details are in the drv_sm16703P_BK7231N.c file
 	CMD_RegisterCommand("SM16703P_Init", SM16703P_InitForLEDCount, NULL);
-	//cmddetail:{"name":"SM16703P_Start","args":"",
-	//cmddetail:"descr":"This will send the currently set data to the strip. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_sm16703P.h","requires":"",
-	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SM16703P_Start", SM16703P_StartTX, NULL);
-	//cmddetail:{"name":"SM16703P_SetPixel","args":"[index/all] [R] [G] [B]",
-	//cmddetail:"descr":"Sets a pixel for LED strip. Index can be a number or 'all' keyword to set all. Then, 3 integer values for R, G and B. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_sm16703P.h","requires":"",
-	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SM16703P_SetPixel", SM16703P_CMD_setPixel, NULL);
-	// For the current LN882H version, the ofs parameter is unused.
-	//cmddetail:{"name":"SM16703P_SetRaw","args":"[bUpdate] [byteOfs] [HexData]",
-	//cmddetail:"descr":"Sets the raw data bytes for SPI DMA LED driver at the given offset. Hex data should be as a hex string, for example, FF00AA, etc. The bUpdate, if set to 1, will run SM16703P_Start automatically after setting data. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_sm16703P.h","requires":"",
-	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SM16703P_SetRaw", SM16703P_CMD_setRaw, NULL);
-
-	//CMD_RegisterCommand("SM16703P_SendBytes", SM16703P_CMD_sendBytes, NULL);
 }
 
 #endif

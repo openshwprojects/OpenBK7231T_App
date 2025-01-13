@@ -16,7 +16,7 @@
 #if PLATFORM_BK7231N
 #include "drv_spiLED.h"
 #elif PLATFORM_LN882H
-#include "drv_ws2811_LN882H.h"
+#include "drv_sm16703P_LN882H.h"
 #endif // Platform
 #endif
 
