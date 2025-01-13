@@ -254,7 +254,7 @@ void OWM_AppendInformationToHTTPIndexPage(http_request_t *request) {
 		struct tm *tm = gmtime(&g_weather.sunrise);
 		strftime(buff, sizeof(buff), "%H:%M:%S", tm);
 		hprintf255(request, "<h5>Timezone: %d, Sunrise: %s, ", g_weather.timezone, buff);
-		tm = gmtime(&g_weather.sunrise);
+		tm = gmtime(&g_weather.sunset);
 		strftime(buff, sizeof(buff), "%H:%M:%S", tm);
 		hprintf255(request, "Sunset: %s</h5>", buff);
 	}
