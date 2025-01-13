@@ -185,8 +185,8 @@ commandResult_t AHT2X_Reinit(const void* context, const char* cmd, const char* a
 
 void AHT2X_Init()
 {
-	g_softI2C.pin_clk = Tokenizer_GetArgIntegerDefault(1, 9);
-	g_softI2C.pin_data = Tokenizer_GetArgIntegerDefault(2, 14);
+	g_softI2C.pin_clk = Tokenizer_GetPin(1, 9);
+	g_softI2C.pin_data = Tokenizer_GetPin(2, 14);
 	channel_temp = Tokenizer_GetArgIntegerDefault(3, -1);
 	channel_humid = Tokenizer_GetArgIntegerDefault(4, -1);
 
