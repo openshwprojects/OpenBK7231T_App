@@ -1,5 +1,5 @@
 
-
+#ifdef PLATFORM_BK7231N || PLATFORM_LN882H
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
@@ -12,7 +12,7 @@
 #include "lwip/inet.h"
 #include "../httpserver/new_http.h"
 
-#if ENABLE_DRIVER_SM16703P
+#if ENABLE_DRIVER_SM16703P && PLATFORM_BK7231N
 #include "drv_spiLED.h"
 #endif
 
@@ -128,13 +128,21 @@ void DDP_Parse(byte *data, int len) {
 		b = data[12];
 
 #if ENABLE_DRIVER_SM16703P
+#if PLATFORM_BK7231N
 		if (spiLED.ready) {
 			// Note that this is limited by DDP msgbuf size
 			uint32_t pixel = (len - 10) / 3;
 			// This immediately activates the pixels, maybe we should read the PUSH flag
 			SM16703P_setMultiplePixel(pixel, &data[10], true);
 		} else
-#endif
+#elif PLATFORM_LN882H
+		if (ws2811Data.ready) {
+			// Note that this is limited by DDP msgbuf size
+			uint32_t pixel = (len - 10) / 3;
+			WS2811_setMultiplePixel(pixel, &data[10], true);
+		} else
+#endif // Platform
+#endif // Driver
 		{
 #if ENABLE_LED_BASIC
 			LED_SetDimmerIfChanged(100);
@@ -212,3 +220,4 @@ void DRV_DDP_Init()
 
 
 
+#endif

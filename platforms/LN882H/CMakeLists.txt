@@ -41,6 +41,7 @@ set(PROJ_ALL_SRC
     app/src/driver/drv_cht8305.c
     app/src/driver/drv_cse7766.c
     app/src/driver/drv_ddp.c
+    app/src/driver/drv_pixelAnim.c
     app/src/driver/drv_debouncer.c
     app/src/driver/drv_dht_internal.c
     app/src/driver/drv_dht.c
@@ -67,7 +68,7 @@ set(PROJ_ALL_SRC
     app/src/driver/drv_sgp.c
     app/src/driver/drv_shiftRegister.c
     app/src/driver/drv_sht3x.c
-#    app/src/driver/drv_sm16703P.c
+    app/src/driver/drv_sm16703P_LN882H.c
     app/src/driver/drv_sm2135.c
     app/src/driver/drv_sm2235.c
     app/src/driver/drv_soft_i2c.c
