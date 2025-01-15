@@ -116,7 +116,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"CLOCK driver will allways run. It will usually get time from NTP and handle timed events",
 	//drvdetail:"requires":""}
 	{ "CLOCK",		CLOCK_Init,			CLOCK_OnEverySecond,			NULL, NULL, NULL , NULL, false },
-#if ENABLE_HTTPBUTTONS
+#if ENABLE_DRIVER_HTTPBUTTONS
 	//drvdetail:{"name":"HTTPButtons",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This driver allows you to create custom, scriptable buttons on main WWW page. You can create those buttons in autoexec.bat and assign commands to them",
