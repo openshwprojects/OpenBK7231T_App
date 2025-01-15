@@ -255,7 +255,7 @@ uint32_t RuleToTime(uint8_t dow, uint8_t mo, uint8_t week,  uint8_t hr, int yr) 
 
 int8_t getDST_offset()
 {
-	return g_DST%128;	// return 0 if "unset" because -128%128 = 0 
+	return (g_DST%128)*60;	// return 0 if "unset" because -128%128 = 0 
 };
 
 
@@ -316,7 +316,7 @@ uint32_t setDST(bool setCLOCK)
 //			ADDLOG_INFO(LOG_FEATURE_RAW, "In second DST of %i. Info: DST ends next year at %lu (%.24s local time)\r\n",year,End_DST_epoch,ctime(&tempt));
 		}
 	}
-	g_ntpTime += (g_DST-old_DST)*3600*setCLOCK;
+	g_ntpTime += (g_DST-old_DST)*60*setCLOCK;
 	tempt = (time_t)next_DST_switch_epoch;
 
 	struct tm *ltm;
@@ -331,8 +331,8 @@ uint32_t setDST(bool setCLOCK)
 
 int IsDST()
 {
-	if (( g_DST == -128) || (g_ntpTime > next_DST_switch_epoch)) return (setDST(1));	// only in case we don't know DST status, calculate it - and while at it: set ntpTime correctly...
-	return (g_DST);										// otherwise we can safely return the prevously calkulated value
+	if (( g_DST == -128) || (g_ntpTime > next_DST_switch_epoch)) return setDST(1)!=0;	// only in case we don't know DST status, calculate it - and while at it: set ntpTime correctly...
+	return g_DST!=0;									// otherwise we can safely return the prevously calculated value
 }
 
 commandResult_t CLOCK_CalcDST(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -356,7 +356,7 @@ commandResult_t CLOCK_CalcDST(const void *context, const char *cmd, const char *
 	monthStart = Tokenizer_GetArgInteger(5);
 	dayStart = Tokenizer_GetArgInteger(6);
 	hourStart = Tokenizer_GetArgInteger(7);
-	g_DST_offset=Tokenizer_GetArgIntegerDefault(8, 1);
+	g_DST_offset=Tokenizer_GetArgIntegerDefault(8, 60);
 	ADDLOG_INFO(LOG_FEATURE_RAW, "read values: %u,%u,%u,%u,%u,%u,%u,%u,(%u)\r\n",  nthWeekEnd, monthEnd, dayEnd, hourEnd, nthWeekStart, monthStart, dayStart, hourStart,g_DST_offset);
 
 /*	Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year);
@@ -394,7 +394,7 @@ void CLOCK_Init() {
 	CLOCK_Init_Events();
 #endif
 #if ENABLE_CLOCK_DST
-	//cmddetail:{"name":"CLOCK_CalcDST","args":"[nthWeekEnd monthEnd dayEnd hourEnd nthWeekStart monthStart dayStart hourStart [g_DSToffset hours - default is 1 if unset]",
+	//cmddetail:{"name":"CLOCK_CalcDST","args":"[nthWeekEnd monthEnd dayEnd hourEnd nthWeekStart monthStart dayStart hourStart [g_DSToffset minutes - default is 60 minutes if unset]",
 	//cmddetail:"descr":"Checks, if actual time is during DST or not.",
 	//cmddetail:"fn":"CLOCK_CalcDST","file":"driver/drv_ntp.c","requires":"",
 	//cmddetail:"examples":""}

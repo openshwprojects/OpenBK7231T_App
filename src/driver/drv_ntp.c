@@ -111,9 +111,13 @@ commandResult_t NTP_SetTimeZoneOfs(const void *context, const char *cmd, const c
 // so just to be sure, recalculate DST in any case
     	setDST(1);	// setDST will take care of all details
 #endif
-	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP offset set"
+	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP offset set to %i seconds"
 #if ENABLE_CLOCK_DST
-	" - DST offset set to %i hours",getDST_offset()
+	" (DST offset %i seconds)"
+#endif	
+	,g_timeOffsetSeconds
+#if ENABLE_CLOCK_DST
+	,getDST_offset()
 #endif	
 	);
 	return CMD_RES_OK;
@@ -148,7 +152,7 @@ void NTP_SetSimulatedTime(unsigned int timeNow) {
 	g_ntpTime = timeNow;
 	g_ntpTime += g_timeOffsetSeconds;
 #if ENABLE_CLOCK_DST
-    	g_ntpTime += setDST(0)*3600;	
+	g_ntpTime += setDST(0)*60;
 #endif
 	g_synced = true;
 	b_ntp_simulatedTime = true;
@@ -316,7 +320,7 @@ void NTP_CheckForReceive() {
     g_ntpTime = secsSince1900 - NTP_OFFSET;
     g_ntpTime += g_timeOffsetSeconds;
 #if ENABLE_CLOCK_DST
-    	g_ntpTime += setDST(0)*3600;	// just to be sure: recalculate DST before setting, in case we somehow "moved back in time" we start with freshly set g_ntpTime, so don't change it inside setDST()!
+    g_ntpTime += setDST(0)*60;	// just to be sure: recalculate DST before setting, in case we somehow "moved back in time" we start with freshly set g_ntpTime, so don't change it inside setDST()!
 #endif
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u",(unsigned int)g_ntpTime);
     ltm = gmtime(&g_ntpTime);
