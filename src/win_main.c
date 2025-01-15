@@ -143,7 +143,9 @@ void Win_DoUnitTests() {
 	Test_Command_If_Else();
 	Test_MQTT();
 	Test_ChargeLimitDriver();
+#if ENABLE_BL_SHARED
 	Test_EnergyMeter();
+#endif
 	// this is slowest
 	Test_TuyaMCU_Basic();
 	Test_TuyaMCU_Mult();
@@ -151,16 +153,20 @@ void Win_DoUnitTests() {
 	Test_Battery();
 	Test_TuyaMCU_BatteryPowered();
 	Test_JSON_Lib();
+#if ENABLE_LED_BASIC
 	Test_MQTT_Get_LED_EnableAll();
+#endif
 	Test_MQTT_Get_Relay();
 	Test_Commands_Startup();
 	Test_IF_Inside_Backlog();
 	Test_WaitFor();
 	Test_TwoPWMsOneChannel();
 	Test_ClockEvents();
+#if ENABLE_HA_DISCOVERY
 	Test_HassDiscovery_Base();
 	Test_HassDiscovery();
 	Test_HassDiscovery_Ext();
+#endif
 	Test_Role_ToggleAll_2();
 	Test_Demo_ButtonToggleGroup();
 	Test_Demo_ButtonScrollingChannelValues();

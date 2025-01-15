@@ -35,6 +35,11 @@
 #include "esp_partition.h"
 esp_partition_t* esplfs = NULL;
 
+#elif PLATFORM_RTL87X0C
+
+#include "flash_api.h"
+#include "device_lock.h"
+
 #endif
 
 
@@ -722,6 +727,54 @@ static int lfs_erase(const struct lfs_config* c, lfs_block_t block)
 
     res = hal_spiflash_erase(startAddr, LFS_BLOCK_SIZE);
     return res;
+}
+
+#elif PLATFORM_RTL87X0C
+
+extern flash_t flash;
+
+static int lfs_read(const struct lfs_config* c, lfs_block_t block,
+    lfs_off_t off, void* buffer, lfs_size_t size)
+{
+    unsigned int startAddr = LFS_Start;
+    startAddr += block * LFS_BLOCK_SIZE;
+    startAddr += off;
+
+    device_mutex_lock(RT_DEV_LOCK_FLASH);
+    flash_stream_read(&flash, startAddr, size, (uint8_t*)buffer);
+    device_mutex_unlock(RT_DEV_LOCK_FLASH);
+    return LFS_ERR_OK;
+}
+
+// Program a region in a block. The block must have previously
+// been erased. Negative error codes are propogated to the user.
+// May return LFS_ERR_CORRUPT if the block should be considered bad.
+static int lfs_write(const struct lfs_config* c, lfs_block_t block,
+    lfs_off_t off, const void* buffer, lfs_size_t size)
+{
+    unsigned int startAddr = LFS_Start;
+    startAddr += block * LFS_BLOCK_SIZE;
+    startAddr += off;
+
+    device_mutex_lock(RT_DEV_LOCK_FLASH);
+    flash_stream_write(&flash, startAddr, size, (uint8_t*)buffer);
+    device_mutex_unlock(RT_DEV_LOCK_FLASH);
+    return LFS_ERR_OK;
+}
+
+// Erase a block. A block must be erased before being programmed.
+// The state of an erased block is undefined. Negative error codes
+// are propogated to the user.
+// May return LFS_ERR_CORRUPT if the block should be considered bad.
+static int lfs_erase(const struct lfs_config* c, lfs_block_t block)
+{
+    unsigned int startAddr = LFS_Start;
+    startAddr += block * LFS_BLOCK_SIZE;
+
+    device_mutex_lock(RT_DEV_LOCK_FLASH);
+    flash_erase_sector(&flash, startAddr);
+    device_mutex_unlock(RT_DEV_LOCK_FLASH);
+    return LFS_ERR_OK;
 }
 
 #endif 

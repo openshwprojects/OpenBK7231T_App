@@ -98,9 +98,11 @@ void DoorDeepSleep_QueueNewEvents() {
 			if (curr_value != g_lastEventState) {
 				g_lastEventState = curr_value;
 				sprintf(sValue, "%i", curr_value); // get the value of the channel
+#if ENABLE_MQTT
 				MQTT_QueuePublish(CFG_GetMQTTClientId(), sChannel, sValue, 0); // queue the publishing
 				// Current state (or state change) will be queued and published when device establishes 
 				// the connection to WiFi and MQTT Broker (300 seconds by default for that).  
+#endif
 			}
 		}
 	}
@@ -119,7 +121,9 @@ void DoorDeepSleep_OnEverySecond() {
 	} else if (Main_HasMQTTConnected() && Main_HasWiFiConnected()) { // executes every second when connection is established
 			
 			DoorDeepSleep_QueueNewEvents();
+#if ENABLE_MQTT
 			PublishQueuedItems(); // publish those items that were queued when device was offline
+#endif
 			
 			g_noChangeTimePassed++;
 			if (g_noChangeTimePassed >= setting_timeRequiredUntilDeepSleep) {

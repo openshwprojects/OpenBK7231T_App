@@ -12,6 +12,7 @@
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
+#include "lwip/netdb.h"
 #include "../cJSON/cJSON.h"
 
 #ifndef WINDOWS
@@ -160,11 +161,11 @@ static void sendQueryThreadInternal() {
 
 	if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0) {
 		closesocket(s);
-		return 1;
+		return;
 	}
 	if (send(s, g_request, strlen(g_request), 0) < 0) {
 		closesocket(s);
-		return 1;
+		return;
 	}
 	char buffer[1024];
 	int recv_size = recv(s, buffer, sizeof(buffer) - 1, 0);
