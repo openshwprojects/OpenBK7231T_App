@@ -165,6 +165,10 @@ prebuild_OpenRTL8710B:
 		sh platforms/RTL8710B/pre_build.sh; \
 	else echo "prebuild for OpenRTL8710B not found ... "; \
 	fi
+	@if [ -e platforms/RTL8710B/tools/amebaz_ota_combine ]; then \
+		echo "amebaz_ota_combine is already compiled"; \
+	else g++ -o platforms/RTL8710B/tools/amebaz_ota_combine platforms/RTL8710B/tools/amebaz_ota_combine.cpp --std=c++17 -lstdc++fs; \
+	fi
 
 prebuild_OpenRTL8710A:
 	git submodule update --init --recursive sdk/OpenRTL8710A_B
@@ -325,13 +329,7 @@ OpenRTL8710B: prebuild_OpenRTL8710B
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/boot_all.bin output/$(APP_VERSION)/OpenRTL8710B_boot.bin
 	cp sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/image2_all_ota1.bin output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION).bin
-	touch output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION)_ota.img
-	echo "OBK_OTA_IDX1" >> output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION)_ota.img
-	echo -n $(shell stat -c %s sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/image2_all_ota1.bin) >> output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION)_ota.img
-	echo -n \\0 >> output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION)_ota.img
-	@cat sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/image2_all_ota1.bin >> output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION)_ota.img
-	echo "OBK_OTA_IDX2" >> output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION)_ota.img
-	@cat sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/image2_all_ota2.bin >> output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION)_ota.img
+	./platforms/RTL8710B/tools/amebaz_ota_combine sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/image2_all_ota1.bin sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/image2_all_ota2.bin output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION)_ota.img
 	
 .PHONY: OpenRTL8710A
 OpenRTL8710A: prebuild_OpenRTL8710A

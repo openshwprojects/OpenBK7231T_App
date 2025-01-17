@@ -71,8 +71,6 @@ static flash_t flash_ota;
 
 #elif PLATFORM_RTL8710B
 
-#define HDR1_LEN 20
-
 #include "flash_api.h"
 #include "device_lock.h"
 #include "sys_api.h"
@@ -2260,126 +2258,103 @@ update_ota_exit:
 		ADDLOG_ERROR(LOG_FEATURE_OTA, "Content-length is 0");
 		goto update_ota_exit;
 	}
+	int ota1_len = 0, ota2_len = 0;
+	char* msg = "Incorrect amount of bytes received: %i, required: %i";
+
+	writebuf = request->received;
+	writelen = recv(request->fd, &ota1_len, sizeof(ota1_len), 0);
+	if(writelen != sizeof(ota1_len))
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, msg, writelen, sizeof(ota1_len));
+		ret = -1;
+		goto update_ota_exit;
+	}
+
+	writebuf = request->received;
+	writelen = recv(request->fd, &ota2_len, sizeof(ota2_len), 0);
+	if(writelen != sizeof(ota2_len))
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, msg, writelen, sizeof(ota2_len));
+		ret = -1;
+		goto update_ota_exit;
+	}
+	ADDLOG_INFO(LOG_FEATURE_OTA, "OTA1 len: %u, OTA2 len: %u", ota1_len, ota2_len);
+
+	if(ota1_len <= 0 || ota2_len <= 0)
+	{
+		ret = -1;
+		goto update_ota_exit;
+	}
+	towrite -= 8;
+
+	if(current_fw_idx == OTA_INDEX_1)
+	{
+		towrite = ota2_len;
+		// skip ota1
+		int toskip = ota1_len;
+		do
+		{
+			writebuf = request->received;
+			writelen = recv(request->fd, writebuf, request->receivedLenmax < toskip ? request->receivedLenmax : toskip, 0);
+			ADDLOG_EXTRADEBUG(LOG_FEATURE_OTA, "Skipping %i at %i", writelen, total);
+			total += writelen;
+			toskip -= writelen;
+		} while((toskip > 0) && (writelen >= 0));
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Skipped %i bytes, towrite: %i", total, towrite);
+	}
+	else
+	{
+		towrite = ota1_len;
+	}
+
+	writelen = 0;
+	total = 0;
+	NewFWAddr = update_ota_prepare_addr();
+	ADDLOG_INFO(LOG_FEATURE_OTA, "OTA address: %#010x, len: %u", NewFWAddr - SPI_FLASH_BASE, towrite);
+	if(NewFWAddr == -1 || NewFWAddr == 0xFFFFFFFF)
+	{
+		ret = -1;
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "Wrong OTA address:", NewFWAddr);
+		goto update_ota_exit;
+	}
+	NewFWLen = towrite;
+	if(NewFWAddr == OTA1_ADDR)
+	{
+		if(NewFWLen > (OTA2_ADDR - OTA1_ADDR))
+		{
+			// firmware size too large
+			ret = -1;
+			ADDLOG_ERROR(LOG_FEATURE_OTA, "image size should not cross OTA2");
+			goto update_ota_exit;
+		}
+	}
+	else if(NewFWAddr == OTA2_ADDR)
+	{
+		if(NewFWLen > (0x195000 + SPI_FLASH_BASE - OTA2_ADDR))
+		{
+			ret = -1;
+			ADDLOG_ERROR(LOG_FEATURE_OTA, "image size crosses OTA2 boundary");
+			goto update_ota_exit;
+		}
+	}
+	else if(NewFWAddr == 0xFFFFFFFF)
+	{
+		ret = -1;
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "update address is invalid");
+		goto update_ota_exit;
+	}
+	address = NewFWAddr - SPI_FLASH_BASE;
+	NewImg2BlkSize = ((NewFWLen - 1) / 4096) + 1;
+	device_mutex_lock(RT_DEV_LOCK_FLASH);
+	for(int i = 0; i < NewImg2BlkSize; i++)
+	{
+		flash_erase_sector(&flash, address + i * 4096);
+	}
+	device_mutex_unlock(RT_DEV_LOCK_FLASH);
+	OTF_Mask(1, (address), NewImg2BlkSize, 1);
 
 	do
 	{
-		if(!foundhdr)
-		{
-			if(current_fw_idx == OTA_INDEX_1)
-			{
-				// loop through the file until header is found
-				do
-				{
-					writebuf = request->received;
-					writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
-					ADDLOG_DEBUG(LOG_FEATURE_OTA, "Skipping %i at %i", writelen, total);
-					char stridx[13];
-					strcpy(stridx, "OBK_OTA_IDX");
-					strcat(stridx, "2\n");
-					int strl = 13;
-					char* ptr = memmem(writebuf, writelen, stridx, strl);
-					if(ptr != NULL)
-					{
-						int len = (ptr + strl - writebuf);
-						int rlen = writelen - (ptr + strl - writebuf);
-						ADDLOG_DEBUG(LOG_FEATURE_OTA, "OTA header found, remaining length: %i", len);
-						if(rlen)
-						{
-							hbuf = os_malloc(rlen);
-							memcpy(hbuf, ptr + strl, rlen);
-							//free(writebuf);
-							writebuf = hbuf;
-							towrite -= len;
-							writelen = rlen;
-						}
-						foundhdr = true;
-						break;
-					}
-					total += writelen;
-					towrite -= writelen;
-				} while(writelen >= 0);
-			}
-			else
-			{
-				writebuf = request->received;
-				writelen = recv(request->fd, writebuf, HDR1_LEN, 0);
-				if(writelen != HDR1_LEN)
-				{
-					ADDLOG_ERROR(LOG_FEATURE_OTA, "Incorrect amount of bytes received: %i, required: %i", writelen, HDR1_LEN);
-					ret = -1;
-					goto update_ota_exit;
-				}
-				char stridx[13];
-				strcpy(stridx, "OBK_OTA_IDX");
-				strcat(stridx, "1\n");
-				int strl = 13;
-				char* ptr = memmem(writebuf, writelen, stridx, strl);
-				if(ptr == NULL)
-				{
-					ADDLOG_ERROR(LOG_FEATURE_OTA, "Failed to find ota1 header");
-					ret = -1;
-					goto update_ota_exit;
-				}
-				foundhdr = true;
-				writelen = 0;
-				towrite = atoi(ptr + 13);
-			}
-
-			if(writelen < 0)
-			{
-				ADDLOG_ERROR(LOG_FEATURE_OTA, "Failed to find ota header, try again");
-				ret = -1;
-				goto update_ota_exit;
-			}
-			else
-			{
-				total = 0;
-				NewFWAddr = update_ota_prepare_addr();
-				ADDLOG_INFO(LOG_FEATURE_OTA, "OTA address: %#010x, len: %u", NewFWAddr - SPI_FLASH_BASE, towrite);
-				if(NewFWAddr == -1 || NewFWAddr == 0xFFFFFFFF)
-				{
-					ret = -1;
-					ADDLOG_ERROR(LOG_FEATURE_OTA, "Wrong OTA address:", NewFWAddr);
-					goto update_ota_exit;
-				}
-				NewFWLen = towrite;
-				if(NewFWAddr == OTA1_ADDR)
-				{
-					if(NewFWLen > (OTA2_ADDR - OTA1_ADDR))
-					{
-						// firmware size too large
-						ret = -1;
-						ADDLOG_ERROR(LOG_FEATURE_OTA, "image size should not cross OTA2");
-						goto update_ota_exit;
-					}
-				}
-				else if(NewFWAddr == OTA2_ADDR)
-				{
-					if(NewFWLen > (0x195000 + SPI_FLASH_BASE - OTA2_ADDR))
-					{
-						ret = -1;
-						ADDLOG_ERROR(LOG_FEATURE_OTA, "image size crosses OTA2 boundry");
-						goto update_ota_exit;
-					}
-				}
-				else if(NewFWAddr == 0xFFFFFFFF)
-				{
-					ret = -1;
-					ADDLOG_ERROR(LOG_FEATURE_OTA, "update address is invalid");
-					goto update_ota_exit;
-				}
-				address = NewFWAddr - SPI_FLASH_BASE;
-				NewImg2BlkSize = ((NewFWLen - 1) / 4096) + 1;
-				device_mutex_lock(RT_DEV_LOCK_FLASH);
-				for(int i = 0; i < NewImg2BlkSize; i++)
-				{
-					flash_erase_sector(&flash, address + i * 4096);
-				}
-				device_mutex_unlock(RT_DEV_LOCK_FLASH);
-				OTF_Mask(1, (address), NewImg2BlkSize, 1);
-			}
-		}
-
 		if(startaddr < 32)
 		{
 			memcpy(sig_backup + startaddr, writebuf, (startaddr + writelen > 32 ? (32 - startaddr) : writelen));
@@ -2420,6 +2395,7 @@ update_ota_exit:
 			}
 		}
 	} while((towrite > 0) && (writelen >= 0));
+
 	uint8_t* buf = (uint8_t*)os_malloc(2048);
 	memset(buf, 0, 2048);
 	for(int i = 0; i < NewFWLen; i += 2048)
@@ -2469,6 +2445,18 @@ update_ota_exit:
 		{
 			ret = -1;
 		}
+	}
+	if(current_fw_idx != OTA_INDEX_1)
+	{
+		// receive file fully
+		int toskip = ota2_len;
+		do
+		{
+			writebuf = request->received;
+			writelen = recv(request->fd, writebuf, request->receivedLenmax < toskip ? request->receivedLenmax : toskip, 0);
+			total += writelen;
+			toskip -= writelen;
+		} while((toskip > 0) && (writelen >= 0));
 	}
 update_ota_exit:
 	if(ret != -1)
