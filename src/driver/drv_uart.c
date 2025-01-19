@@ -246,7 +246,7 @@ void UART_ResetForSimulator() {
 
 int UART_InitUARTEx(int auartindex, int baud, int parity)
 {
-  if ((auartindex < 0) | (auartindex >= UART_BUF_CNT)) return;
+  if ((auartindex < 0) | (auartindex >= UART_BUF_CNT)) return 0;
   uartbuf[auartindex].g_uart_init_counter++;
 #ifdef UART_2_UARTS_CONCURRENT
     HAL_UART_InitEx(auartindex, baud, parity);
