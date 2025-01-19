@@ -17,6 +17,42 @@
 #include "hal/hal_pins.h"
 #include "hal/hal_adc.h"
 
+
+IOroles  IORoles[] =   {
+	// include generated array of struct IORoles (including HTTP-Name, # of Channels and "function" of the role)
+	// e.g.:  
+	//  IOroles  IOR[] = {
+	//  {" " , 1 , 0},
+	//  {"Rel" , 1 , 0},
+	//  {"Rel_n" , 1 , 0},
+	//  {"Btn" , 2 , 0},
+	//  {"Btn_n" , 2 , 0},
+	//  {"LED" , 1 , 0},
+	//  {"LED_n" , 1 , 0},
+	//  {"PWM" , 1 , 0},
+	//  {"WifiLED" , 0 , 0},
+	// ...
+	// };
+	#define  AS_IOR_STRUCT 1
+	#include "pins_and_roles.h"
+	#undef AS_IOR_STRUCT
+	// as before in "htmlPinRoleNames[]" of "new_http.c", just add some "error" lines, just in case
+	{"error" , 1 , 0},
+	{"error" , 1 , 0},
+	{"error" , 1 , 0},
+};
+
+
+// Idea: "Functions" of a role as "bits" in an int
+// 00000001		DHT		--> 1
+// 00000010		TEMP	--> 2
+// 00000100		HUM 	--> 4
+// 00001000		AIR 	--> 8
+// so it would be possible to 
+// (correctly) e.g. mark DHT sensors as DHT AND TEMP AND HUM with value 00000111 or 1+2+3=7
+// (though I don't know if this needed anywhere)
+//
+
 #ifdef PLATFORM_BEKEN
 #include <gpio_pub.h>
 #include "driver/drv_ir.h"
