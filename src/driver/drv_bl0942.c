@@ -240,9 +240,6 @@ void BL0942_UART_Init(void) {
 void BL0942_UART_RunEverySecond(void) {
     BL0942_UART_TryToGetNextPacket();
 
-    if (UART_GetReceiveRingBufferSize() != BL0942_UART_RECEIVE_BUFFER_SIZE) {
-      UART_InitReceiveRingBuffer(BL0942_UART_RECEIVE_BUFFER_SIZE);
-    }
     UART_InitUART(bl0942_baudRate, 0);
 
     UART_SendByte(BL0942_UART_CMD_READ(BL0942_UART_ADDR));

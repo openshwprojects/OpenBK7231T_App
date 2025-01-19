@@ -8,7 +8,7 @@
 #include "../hal/hal_uart.h"
 
 //#define UART_ALWAYSFIRSTBYTES 
-
+#define UART_DEFAULT_BUFIZE 512
 #ifdef UART_2_UARTS_CONCURRENT
 #define UART_BUF_CNT 2
 #else
@@ -115,9 +115,10 @@ void UART_ConsumeBytes(int idx) {
 
 void UART_AppendByteToReceiveRingBufferEx(int auartindex, int rc) {
   if (uartbuf[auartindex].g_recvBufSize <= 0) {
-      //if someone (uartFakeHex) send data without init
+      //if someone (uartFakeHex) send data without init, and if flag 26 changes(UART)
       addLogAdv(LOG_ERROR, LOG_FEATURE_DRV, "UART %i not initialized\n",auartindex);
-      return;       
+      //return;
+      UART_InitReceiveRingBufferEx(auartindex,UART_DEFAULT_BUFIZE);
     }
 #ifdef UART_ALWAYSFIRSTBYTES
     //20250119 old style, if g_recvBufSize-1 is reached, received byte was ignored
@@ -305,7 +306,7 @@ commandResult_t CMD_UART_Init(const void *context, const char *cmd, const char *
 
     baud = Tokenizer_GetArgInteger(0);
 
-    UART_InitReceiveRingBufferEx(fuartindex, 512);
+    UART_InitReceiveRingBufferEx(fuartindex, UART_DEFAULT_BUFIZE);
 
     UART_InitUARTEx(fuartindex, baud, 0);
     uartbuf[fuartindex].g_uart_manualInitCounter = uartbuf[fuartindex].g_uart_init_counter;
