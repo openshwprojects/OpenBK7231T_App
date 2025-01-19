@@ -57,7 +57,7 @@ int get_g_uart_init_counter() {
 }
 
 void UART_InitReceiveRingBufferEx(int auartindex, int size){
-
+  if ((auartindex<0) | (auartindex >=UART_BUF_CNT)) return;
   //XJIKKA 20241122 - Note that the actual usable buffer size must be g_recvBufSize-1, 
     //otherwise there would be no difference between an empty and a full buffer.
 	  if(uartbuf[auartindex].g_recvBuf!=0)
@@ -75,6 +75,7 @@ void UART_InitReceiveRingBuffer(int size) {
 }
 
 int UART_GetReceiveRingBufferSizeEx(int auartindex) {
+  if ((auartindex < 0) | (auartindex >= UART_BUF_CNT)) return 0;
   return uartbuf[auartindex].g_recvBufSize;
 }
 
@@ -84,7 +85,8 @@ int UART_GetReceiveRingBufferSize() {
 }
 
 int UART_GetDataSizeEx(int auartindex) {
-    return (uartbuf[auartindex].g_recvBufIn >= uartbuf[auartindex].g_recvBufOut
+  if ((auartindex < 0) | (auartindex >= UART_BUF_CNT)) return 0;
+  return (uartbuf[auartindex].g_recvBufIn >= uartbuf[auartindex].g_recvBufOut
                 ? uartbuf[auartindex].g_recvBufIn - uartbuf[auartindex].g_recvBufOut
                 : uartbuf[auartindex].g_recvBufIn + (uartbuf[auartindex].g_recvBufSize - uartbuf[auartindex].g_recvBufOut)); //XJIKKA 20241122 fixed buffer size calculation on ring bufferroverflow
 }
@@ -95,7 +97,8 @@ int UART_GetDataSize() {
 }
 
 byte UART_GetByteEx(int auartindex, int idx) {
-    return uartbuf[auartindex].g_recvBuf[(uartbuf[auartindex].g_recvBufOut + idx) % uartbuf[auartindex].g_recvBufSize];
+  if ((auartindex < 0) | (auartindex >= UART_BUF_CNT)) return 0;
+  return uartbuf[auartindex].g_recvBuf[(uartbuf[auartindex].g_recvBufOut + idx) % uartbuf[auartindex].g_recvBufSize];
 }
 
 byte UART_GetByte(int idx) {
@@ -104,6 +107,7 @@ byte UART_GetByte(int idx) {
 }
 
 void UART_ConsumeBytesEx(int auartindex, int idx) {
+  if ((auartindex < 0) | (auartindex >= UART_BUF_CNT)) return;
   uartbuf[auartindex].g_recvBufOut += idx;
   uartbuf[auartindex].g_recvBufOut %= uartbuf[auartindex].g_recvBufSize;
 }
@@ -114,6 +118,7 @@ void UART_ConsumeBytes(int idx) {
 }
 
 void UART_AppendByteToReceiveRingBufferEx(int auartindex, int rc) {
+  if ((auartindex < 0) | (auartindex >= UART_BUF_CNT)) return;
   if (uartbuf[auartindex].g_recvBufSize <= 0) {
       //if someone (uartFakeHex) send data without init, and if flag 26 changes(UART)
       addLogAdv(LOG_ERROR, LOG_FEATURE_DRV, "UART %i not initialized\n",auartindex);
@@ -148,6 +153,7 @@ void UART_AppendByteToReceiveRingBuffer(int rc) {
 
 void UART_SendByteEx(int auartindex, byte b) {
 #ifdef UART_2_UARTS_CONCURRENT
+  if ((auartindex < 0) | (auartindex >= UART_BUF_CNT)) return;
   HAL_UART_SendByteEx(auartindex, b);
 #else
   HAL_UART_SendByte(b);
@@ -240,7 +246,8 @@ void UART_ResetForSimulator() {
 
 int UART_InitUARTEx(int auartindex, int baud, int parity)
 {
-    uartbuf[auartindex].g_uart_init_counter++;
+  if ((auartindex < 0) | (auartindex >= UART_BUF_CNT)) return;
+  uartbuf[auartindex].g_uart_init_counter++;
 #ifdef UART_2_UARTS_CONCURRENT
     HAL_UART_InitEx(auartindex, baud, parity);
 #else
@@ -255,6 +262,7 @@ int UART_InitUART(int baud, int parity) {
 }
 
 void UART_LogBufState(int auartindex) {
+  if ((auartindex < 0) | (auartindex >= UART_BUF_CNT)) return;
   ADDLOG_WARN(LOG_INFO,
     "Uart ix %d inbuf %i inptr %i outptr %i \n",
     auartindex, UART_GetDataSizeEx(auartindex), uartbuf[auartindex].g_recvBufIn, uartbuf[auartindex].g_recvBufOut
