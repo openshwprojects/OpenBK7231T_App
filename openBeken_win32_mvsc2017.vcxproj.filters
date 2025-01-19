@@ -329,7 +329,7 @@
     <ClCompile Include="src\selftest\selftest_http_led.c" />
     <ClCompile Include="src\driver\drv_max6675.c" />
     <ClCompile Include="src\driver\drv_freeze.c" />
-    <ClCompile Include="src\driver\drv_sm16703P.c" />
+    <ClCompile Include="src\driver\drv_sm16703P_BK7231N.c" />
     <ClCompile Include="src\selftest\selftest_ws2812b.c" />
     <ClCompile Include="src\sim\Controller_WS2812.cpp" />
     <ClCompile Include="src\driver\drv_pixelAnim.c" />
@@ -360,6 +360,7 @@
     <ClInclude Include="src\driver\drv_sgp.h" />
     <ClInclude Include="src\driver\drv_sht3x.h" />
     <ClInclude Include="src\driver\drv_sm2235.h" />
+    <ClInclude Include="src\driver\drv_sm16703P.h" />
     <ClInclude Include="src\driver\drv_test_drivers.h" />
     <ClInclude Include="src\driver\drv_tm1637.h" />
     <ClInclude Include="src\driver\drv_tm_gn_display_shared.h" />
