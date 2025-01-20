@@ -64,6 +64,7 @@ enum OBK_Publish_Result_e {
 #define OBK_PUBLISH_FLAG_FORCE_REMOVE_GET		4
 // do not add anything to given topic
 #define OBK_PUBLISH_FLAG_RAW_TOPIC_NAME			8
+#define OBK_PUBLISH_FLAG_QOS_ZERO				16
 
 
 #include "new_mqtt_deduper.h"

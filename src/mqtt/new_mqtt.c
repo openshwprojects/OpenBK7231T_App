@@ -810,6 +810,10 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 {
 	err_t err;
 	u8_t qos = 1; /* 0 1 or 2, see MQTT specification */
+	if (flags & OBK_PUBLISH_FLAG_QOS_ZERO)
+	{
+		qos = 0;
+	}
 	u8_t retain = 0; /* No don't retain such crappy payload... */
 	size_t sVal_len;
 	char* pub_topic;
