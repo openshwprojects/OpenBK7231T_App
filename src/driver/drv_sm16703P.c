@@ -52,29 +52,6 @@ bool SM16703P_VerifyPixel(uint32_t pixel, byte r, byte g, byte b) {
 }
 
 
-void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
-
-	// Return if driver is not loaded
-	if (!spiLED.ready)
-		return;
-
-	// Check max pixel
-	if (pixel > pixel_count)
-		pixel = pixel_count;
-
-	// Iterate over pixel
-	uint8_t *dst = spiLED.buf + spiLED.ofs;
-	for (uint32_t i = 0; i < pixel; i++) {
-		uint8_t r, g, b;
-		r = *data++;
-		g = *data++;
-		b = *data++;
-		SM16703P_setPixel((int) i, (int) r, (int) g, (int)b);
-	}
-	if (push) {
-		SPIDMA_StartTX(spiLED.msg);
-	}
-}
 void SM16703P_setPixel(int pixel, int r, int g, int b) {
 	if (!spiLED.ready)
 		return;
@@ -113,6 +90,29 @@ void SM16703P_setPixel(int pixel, int r, int g, int b) {
 	translate_byte(b0, spiLED.buf + (spiLED.ofs + 0 + (pixel * 3 * 4)));
 	translate_byte(b1, spiLED.buf + (spiLED.ofs + 4 + (pixel * 3 * 4)));
 	translate_byte(b2, spiLED.buf + (spiLED.ofs + 8 + (pixel * 3 * 4)));
+}
+void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
+
+	// Return if driver is not loaded
+	if (!spiLED.ready)
+		return;
+
+	// Check max pixel
+	if (pixel > pixel_count)
+		pixel = pixel_count;
+
+	// Iterate over pixel
+	uint8_t *dst = spiLED.buf + spiLED.ofs;
+	for (uint32_t i = 0; i < pixel; i++) {
+		uint8_t r, g, b;
+		r = *data++;
+		g = *data++;
+		b = *data++;
+		SM16703P_setPixel((int)i, (int)r, (int)g, (int)b);
+	}
+	if (push) {
+		SPIDMA_StartTX(spiLED.msg);
+	}
 }
 extern float g_brightness0to100;//TODO
 void SM16703P_setPixelWithBrig(int pixel, int r, int g, int b) {
