@@ -62,27 +62,27 @@ void SM16703P_setPixel(int pixel, int r, int g, int b) {
 		b1 = g;
 		b2 = b;
 	}
-	if (color_order == SM16703P_COLOR_ORDER_RBG) {
+	else if (color_order == SM16703P_COLOR_ORDER_RBG) {
 		b0 = r;
 		b1 = b;
 		b2 = g;
 	}
-	if (color_order == SM16703P_COLOR_ORDER_BRG) {
+	else if (color_order == SM16703P_COLOR_ORDER_BRG) {
 		b0 = b;
 		b1 = r;
 		b2 = g;
 	}
-	if (color_order == SM16703P_COLOR_ORDER_BGR) {
+	else if (color_order == SM16703P_COLOR_ORDER_BGR) {
 		b0 = b;
 		b1 = g;
 		b2 = r;
 	}
-	if (color_order == SM16703P_COLOR_ORDER_GRB) {
+	else if (color_order == SM16703P_COLOR_ORDER_GRB) {
 		b0 = g;
 		b1 = r;
 		b2 = b;
 	}
-	if (color_order == SM16703P_COLOR_ORDER_GBR) {
+	else if (color_order == SM16703P_COLOR_ORDER_GBR) {
 		b0 = g;
 		b1 = b;
 		b2 = r;
