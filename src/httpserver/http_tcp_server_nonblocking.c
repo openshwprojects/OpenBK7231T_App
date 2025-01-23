@@ -113,7 +113,7 @@ void HTTPServer_RunQuickTick() {
 		// Receive until the peer shuts down the connection
 		do {
 
-			iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
+			iResult = recv(ClientSocket, recvbuf, recvbuflen-1, 0);
 			if (iResult > 0) {
 				http_request_t request;
 				memset(&request, 0, sizeof(request));
