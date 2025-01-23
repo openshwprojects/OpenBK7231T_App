@@ -304,7 +304,7 @@ void EventHandlers_ProcessVariableChange_Integer(byte eventCode, int oldValue, i
 		ev = ev->next;
 	}
 
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_LN882H) 
+#if ENABLE_OBK_SCRIPTING
 	CMD_Script_ProcessWaitersForEvent(eventCode, newValue);
 #endif
 }
@@ -388,7 +388,7 @@ void EventHandlers_FireEvent(byte eventCode, int argument) {
 		ev = ev->next;
 	}
 
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_LN882H)
+#if ENABLE_OBK_SCRIPTING
 	CMD_Script_ProcessWaitersForEvent(eventCode, argument);
 #endif
 }
