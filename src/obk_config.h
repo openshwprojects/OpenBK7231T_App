@@ -311,6 +311,7 @@
 #define ENABLE_DRIVER_CSE7766		1
 #define ENABLE_OBK_SCRIPTING			1
 #define OBK_OTA_EXTENSION       ".img"
+
 #else
 
 //#error "Platform not defined"
