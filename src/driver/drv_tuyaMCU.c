@@ -1836,6 +1836,13 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 			wifi_state_valid = true;
 		}
 		break;
+	case TUYA_CMD_WIFI_SELECT:
+		{
+		// it should have 1 payload byte, AP mode or EZ mode, but does it make difference for us?
+		
+
+		}
+		break;
 	case TUYA_CMD_WIFI_RESET:
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: 0x04 replying");
 		// added for https://www.elektroda.com/rtvforum/viewtopic.php?p=21095905#21095905
