@@ -185,8 +185,8 @@ commandResult_t AHT2X_Reinit(const void* context, const char* cmd, const char* a
 
 void AHT2X_Init()
 {
-	g_softI2C.pin_clk = Tokenizer_GetArgIntegerDefault(1, 9);
-	g_softI2C.pin_data = Tokenizer_GetArgIntegerDefault(2, 14);
+	g_softI2C.pin_clk = Tokenizer_GetPin(1, 9);
+	g_softI2C.pin_data = Tokenizer_GetPin(2, 14);
 	channel_temp = Tokenizer_GetArgIntegerDefault(3, -1);
 	channel_humid = Tokenizer_GetArgIntegerDefault(4, -1);
 
@@ -232,7 +232,7 @@ void AHT2X_OnEverySecond()
 
 void AHT2X_AppendInformationToHTTPIndexPage(http_request_t* request)
 {
-	hprintf255(request, "<h2>AHT2X Temperature=%f, Humidity=%f</h2>", g_temp, g_humid);
+	hprintf255(request, "<h2>AHT2X Temperature=%.1fC, Humidity=%.0f%%</h2>", g_temp, g_humid);
 	if(!isWorking)
 	{
 		hprintf255(request, "WARNING: AHT sensor appears to have failed initialization, check if configured pins are correct!");

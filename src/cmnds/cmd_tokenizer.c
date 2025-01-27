@@ -6,6 +6,7 @@
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "../logging/logging.h"
+#include "../hal/hal_pins.h"
 
 #define MAX_CMD_LEN 512
 #define MAX_ARGS 32
@@ -208,6 +209,14 @@ int Tokenizer_GetArgIntegerRange(int i, int rangeMin, int rangeMax) {
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "Argument %i (val=%i) was out of range [%i,%i], clamped",i,ret,rangeMax,rangeMin);
 	}
 	return ret;
+}
+int Tokenizer_GetPin(int i, int def) {
+	int r;
+
+	if (g_numArgs <= i) {
+		return def;
+	}
+	return HAL_PIN_Find(g_args[i]);
 }
 int Tokenizer_GetArgIntegerDefault(int i, int def) {
 	int r;

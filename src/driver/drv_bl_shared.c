@@ -716,7 +716,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				} else { //all other sensors
 					float val = sensors[i].lastReading;
 					if (sensors[i].names.units == UNIT_WH) val = BL_ChangeEnergyUnitIfNeeded(val);
-					MQTT_PublishMain_StringFloat(sensors[i].names.name_mqtt, val, sensors[i].rounding_decimals, 0);
+					MQTT_PublishMain_StringFloat(sensors[i].names.name_mqtt, val, sensors[i].rounding_decimals, OBK_PUBLISH_FLAG_QOS_ZERO);
 				}
 				stat_updatesSent++;
 			}

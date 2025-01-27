@@ -1119,7 +1119,15 @@ void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
 
 		// NOTE: this will try to read autoexec.bat,
 		// so ALL commands expected in autoexec.bat should have been registered by now...
+
+#if PLATFORM_BL602
+		// temporary fix
 		CMD_ExecuteCommand(CFG_GetShortStartupCommand(), COMMAND_FLAG_SOURCE_SCRIPT);
+#elif ENABLE_OBK_SCRIPTING
+		SVM_RunStartupCommandAsScript();
+#else
+		CMD_ExecuteCommand(CFG_GetShortStartupCommand(), COMMAND_FLAG_SOURCE_SCRIPT);
+#endif
 		CMD_ExecuteCommand("startScript autoexec.bat", COMMAND_FLAG_SOURCE_SCRIPT);
 	}
 	HAL_Configure_WDT();
@@ -1405,6 +1413,16 @@ void Main_Init_After_Delay()
 	ADDLOGF_INFO("Main_Init_After_Delay done");
 }
 
+// to be overriden
+// Translate name like RB5 for OBK pin index
+#ifdef _MSC_VER
+///#pragma comment(linker, "/alternatename:HAL_PIN_Find=Default_HAL_PIN_Find")
+#else
+int HAL_PIN_Find(const char *name) __attribute__((weak));
+int HAL_PIN_Find(const char *name) {
+	return atoi(name);
+}
+#endif
 
 
 void Main_Init()
