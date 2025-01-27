@@ -625,7 +625,13 @@ void Test_TuyaMCU_Basic() {
 	SELFTEST_ASSERT_CHANNEL(7, 302);// current
 	SELFTEST_ASSERT_CHANNEL(9, 67); // power
 
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 113 RAW_VCPPfF", 0);
+	CMD_ExecuteCommand("uartFakeHex 55 AA 03 07 00 13 71 00 00 0F 09 29 00 01 B7 00 03 FC 00 00 00 03 E8 C3 32 65", 0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(100, false);
 
+
+	
 	SIM_ClearUART();
 }
 

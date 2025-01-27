@@ -84,6 +84,7 @@ static byte g_resetWiFiEvents = 0;
 #define			DP_TYPE_RAW_TAC2121C_YESTERDAY	202
 #define			DP_TYPE_RAW_TAC2121C_LASTMONTH	203
 #define			DP_TYPE_PUBLISH_TO_MQTT			204
+#define			DP_TYPE_RAW_VCPPfF				205
 
 const char* TuyaMCU_GetDataTypeString(int dpId) {
 	if (DP_TYPE_RAW == dpId)
@@ -825,6 +826,9 @@ int TuyaMCU_ParseDPType(const char *dpTypeString) {
 	else if (!stricmp(dpTypeString, "RAW_TAC2121C_VCP")) {
 		// linkTuyaMCUOutputToChannel 6 RAW_TAC2121C_VCP
 		dpType = DP_TYPE_RAW_TAC2121C_VCP;
+	}
+	else if (!stricmp(dpTypeString, "RAW_VCPPfF")) {
+		dpType = DP_TYPE_RAW_VCPPfF;
 	}
 	else if (!stricmp(dpTypeString, "RAW_TAC2121C_Yesterday")) {
 		dpType = DP_TYPE_RAW_TAC2121C_YESTERDAY;
@@ -1599,6 +1603,40 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 						iVal = data[ofs + 6 + 4] << 8 | data[ofs + 7 + 4];
 						addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "DP_TYPE_RAW_TAC2121C_LASTMONTH: month %i, year %i, val %i\n",
 							month, year, iVal);
+
+					}
+				}
+				break; 
+				case DP_TYPE_RAW_VCPPfF:
+				{
+					if (sectorLen == 15) {
+						int iV, iC, iP, iPf, iF;
+						// voltage
+						iV = data[ofs + 0 + 4] << 8 | data[ofs + 1 + 4];
+						// current
+						iC = data[ofs + 3 + 4] << 8 | data[ofs + 4 + 4];
+						// power
+						iP = data[ofs + 6 + 4] << 8 | data[ofs + 7 + 4];
+						// pf
+						iPf = data[ofs + 11 + 4] << 8 | data[ofs + 12 + 4];
+						// freq
+						iF = data[ofs + 13 + 4] << 8 | data[ofs + 14 + 4];
+						if (mapping->channel < 0) {
+							CHANNEL_SetFirstChannelByType(ChType_Voltage_div10, iV);
+							CHANNEL_SetFirstChannelByType(ChType_Current_div1000, iC);
+							CHANNEL_SetFirstChannelByType(ChType_Power, iP);
+							CHANNEL_SetFirstChannelByType(ChType_PowerFactor_div1000, iPf);
+							CHANNEL_SetFirstChannelByType(ChType_Frequency_div100, iF);
+						}
+						else {
+							CHANNEL_Set(mapping->channel, iV, 0);
+							CHANNEL_Set(mapping->channel + 1, iC, 0);
+							CHANNEL_Set(mapping->channel + 2, iP, 0);
+							CHANNEL_Set(mapping->channel + 3, iPf, 0);
+							CHANNEL_Set(mapping->channel + 4, iF, 0);
+						}
+					}
+					else {
 
 					}
 				}
