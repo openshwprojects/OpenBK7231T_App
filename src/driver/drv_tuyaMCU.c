@@ -1838,9 +1838,18 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		break;
 	case TUYA_CMD_WIFI_SELECT:
 		{
-		// it should have 1 payload byte, AP mode or EZ mode, but does it make difference for us?
-		
-
+			// This was added for this user:
+			// https://www.elektroda.com/rtvforum/topic3937723.html
+			if (version == 0) {
+				// 0x05 packet for version 0 (not 0x03) of TuyaMCU
+				// This packet has no datetime stamp
+				TuyaMCU_V0_ParseRealTimeWithRecordStorage(data + 6, len - 6, false);
+			}
+			else {
+				// TUYA_CMD_WIFI_SELECT
+				// it should have 1 payload byte, AP mode or EZ mode, but does it make difference for us?
+			}
+			break;
 		}
 		break;
 	case TUYA_CMD_WIFI_RESET:
@@ -1912,17 +1921,6 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		TuyaMCU_V0_SendDPCacheReply();
 	}
 	break;
-	case 0x05:
-		// This was added for this user:
-		// https://www.elektroda.com/rtvforum/topic3937723.html
-		if (version == 0) {
-			// 0x05 packet for version 0 (not 0x03) of TuyaMCU
-			// This packet has no datetime stamp
-			TuyaMCU_V0_ParseRealTimeWithRecordStorage(data + 6, len - 6, false);
-		}
-		else {
-		}
-		break;
 	case TUYA_CMD_WEATHERDATA:
 		TuyaMCU_ParseWeatherData(data + 6, len - 6);
 		break;
