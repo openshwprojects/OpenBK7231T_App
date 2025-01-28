@@ -2034,6 +2034,11 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, i, 3, 2, 1);
 			}
 			break;
+			case ChType_Frequency_div1000:
+			{
+				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, i, 4, 3, 1);
+			}
+			break;
 			case ChType_Frequency_div10:
 			{
 				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, i, 3, 1, 1);

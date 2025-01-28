@@ -1626,7 +1626,7 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 							CHANNEL_SetFirstChannelByType(ChType_Current_div1000, iC);
 							CHANNEL_SetFirstChannelByType(ChType_Power, iP);
 							CHANNEL_SetFirstChannelByType(ChType_PowerFactor_div1000, iPf);
-							CHANNEL_SetFirstChannelByType(ChType_Frequency_div100, iF);
+							CHANNEL_SetFirstChannelByType(ChType_Frequency_div1000, iF);
 						}
 						else {
 							CHANNEL_Set(mapping->channel, iV, 0);
