@@ -6,6 +6,7 @@
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "../logging/logging.h"
+#include "../hal/hal_pins.h"
 
 #define MAX_CMD_LEN 512
 #define MAX_ARGS 32
@@ -21,8 +22,9 @@ static int tok_flags = 0;
 #define g_bAllowExpand (!(tok_flags&TOKENIZER_DONT_EXPAND))
 
 int str_to_ip(const char *s, byte *ip) {
-#if PLATFORM_W600
+#if PLATFORM_W600 || PLATFORM_LN882H || PLATFORM_RTL87X0C
 	//seems like sscanf in W600 does not support %hhu and uses it as %u, thus overwriting more memory, use temp array for it
+	// same for LN882h: %hhu isn't recognised, so we have to use %u for IP_STRING_FORMAT, which will lead to problems in sscanf, too
 	int tmp_ip[4];
 	int res; 
 	res = sscanf(s, IP_STRING_FORMAT, &tmp_ip[0], &tmp_ip[1], &tmp_ip[2], &tmp_ip[3]);
@@ -208,6 +210,14 @@ int Tokenizer_GetArgIntegerRange(int i, int rangeMin, int rangeMax) {
 	}
 	return ret;
 }
+int Tokenizer_GetPin(int i, int def) {
+	int r;
+
+	if (g_numArgs <= i) {
+		return def;
+	}
+	return HAL_PIN_Find(g_args[i]);
+}
 int Tokenizer_GetArgIntegerDefault(int i, int def) {
 	int r;
 
@@ -330,7 +340,12 @@ void Tokenizer_TokenizeString(const char *s, int flags) {
 	memset(g_argsFrom, 0, sizeof(g_argsFrom)); // backing buffer is s, original unmutated string
 	memset(g_argsExpanded, 0, sizeof(g_argsExpanded));
 
-	strcpy_safe(g_buffer, s, sizeof(g_buffer));
+	if (flags & TOKENIZER_EXPAND_EARLY) {
+		CMD_ExpandConstantsWithinString(s, g_buffer, sizeof(g_buffer) - 1);
+	}
+	else {
+		strcpy_safe(g_buffer, s, sizeof(g_buffer));
+	}
 
 	if (flags & TOKENIZER_FORCE_SINGLE_ARGUMENT_MODE) {
 		g_args[g_numArgs] = g_buffer;
@@ -363,13 +378,13 @@ void Tokenizer_TokenizeString(const char *s, int flags) {
 				g_numArgs++;
 			}
 		}
-		if(*p == ',') {
-			*p = 0;
-			g_args[g_numArgs] = p+1;
-			g_argsFrom[g_numArgs] = (s+((p+1)-g_buffer));
-			g_numArgs++;
-		}
-		if(g_bAllowQuotes && *p == '"') {
+		//if(*p == ',') {
+		//	*p = 0;
+		//	g_args[g_numArgs] = p+1;
+		//	g_argsFrom[g_numArgs] = (s+((p+1)-g_buffer));
+		//	g_numArgs++;
+		//}
+		if(g_bAllowQuotes && *p == '"' && ((p <= g_buffer) || isWhiteSpace(p[-1]))) {
 quote:
 			*p = 0;
 			g_argsFrom[g_numArgs] = (s+((p+1)-g_buffer));

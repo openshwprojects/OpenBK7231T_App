@@ -20,6 +20,8 @@ const char httpHeader[] = "HTTP/1.1 %d OK\nContent-type: %s";  // HTTP header
 const char httpMimeTypeHTML[] = "text/html";              // HTML MIME type
 const char httpMimeTypeText[] = "text/plain";           // TEXT MIME type
 const char httpMimeTypeXML[] = "text/xml";           // TEXT MIME type
+const char httpMimeTypeCSS[] = "text/css";           // CSS MIME type
+const char httpMimeTypeJavascript[] = "application/javascript";   // NOTE: According to RFC 4329 text/javascript became obsolete see: https://www.rfc-editor.org/rfc/rfc4329.html#section-7.2
 const char httpMimeTypeJson[] = "application/json";           // TEXT MIME type
 const char httpMimeTypeBinary[] = "application/octet-stream";   // binary/file MIME type
 
@@ -41,11 +43,11 @@ const char htmlBodyStart2[] =
 "</a></h1>";
 const char htmlBodyEnd[] = "</div></body></html>";
 
-const char htmlFooterReturnToMainPage[] = "<a href=\"index\">MAIN page</a>";
+const char htmlFooterReturnToMainPage[] = "<a href=\"index\">Home</a>";
 const char htmlFooterRefreshLink[] = "<a href=\"index\">Refresh</a>";
 const char htmlFooterReturnToCfgOrMainPage[] =
-"<a href=\"cfg\">Return to cfg</a> | "
-"<a href=\"index\">MAIN page</a>";
+"<a href=\"cfg\">Return to Config</a> | "
+"<a href=\"index\">Home</a>";
 
 const char htmlFooterInfo[] =
 "<a target=\"_blank\" "
@@ -57,11 +59,13 @@ const char htmlFooterInfo[] =
 "<a target=\"_blank\" "
 "href=\"https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/README.md\">Docs</a> | "
 "<a target=\"_blank\" "
-"href=\"https://paypal.me/openshwprojects\">Support project</a><br>";
+"href=\"https://paypal.me/openshwprojects\">Support Project</a><br>";
 
 const char* g_build_str = "Built on " __DATE__ " " __TIME__ " version " USER_SW_VER; // Show GIT version at Build line;
 
 const char httpCorsHeaders[] = "Access-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept";           // TEXT MIME type
+
+int g_indexAutoRefreshInterval = 1000; // 1s
 
 const char* methodNames[] = {
 	"GET",
@@ -152,7 +156,7 @@ void poststr_escaped(http_request_t* request, char* str) {
 	bool foundChar = false;
 	int len = strlen(str);
 
-	//Do a quick check if escaping is necessary
+	// Do a quick check if escaping is necessary
 	for (i = 0; (foundChar == false) && (i < len); i++) {
 		switch (str[i]) {
 		case '<':
@@ -196,6 +200,53 @@ void poststr_escaped(http_request_t* request, char* str) {
 	}
 }
 
+void poststr_escapedForJSON(http_request_t* request, char* str) {
+	if (str == NULL) {
+		postany(request, NULL, 0);
+		return;
+	}
+
+	int i;
+	bool foundChar = false;
+	int len = strlen(str);
+
+	// Do a quick check if escaping is necessary
+	for (i = 0; (foundChar == false) && (i < len); i++) {
+		switch (str[i]) {
+		case '\n':
+			foundChar = true;
+			break;
+		case '\r':
+			foundChar = true;
+			break;
+		case '\"':
+			foundChar = true;
+			break;
+		}
+	}
+
+	if (foundChar) {
+		for (i = 0; i < len; i++) {
+			switch (str[i]) {
+			case '\n':
+				postany(request, "\\n", 2);
+				break;
+			case '\r':
+				postany(request, "\\r", 2);
+				break;
+			case '\"':
+				postany(request, "\\\"", 2);
+				break;
+			default:
+				postany(request, str + i, 1);
+				break;
+			}
+		}
+	}
+	else {
+		postany(request, str, strlen(str));
+	}
+}
 bool http_startsWith(const char* base, const char* substr) {
 	while (*substr != 0) {
 		if (*base != *substr)
@@ -262,6 +313,12 @@ void http_html_start(http_request_t* request, const char* pagename) {
 	poststr(request, htmlBodyStart2);
 }
 
+
+const char pageScriptPart1[] = "<script type='text/javascript'>var firstTime,lastTime,onlineFor,req=null,onlineForEl=null,getElement=e=>document.getElementById(e);function showState(){clearTimeout(firstTime),clearTimeout(lastTime),null!=req&&req.abort(),(e=getElement(\"state\"))&&((req=new XMLHttpRequest).onreadystatechange=()=>{4==req.readyState&&\"OK\"==req.statusText&&((\"INPUT\"!=document.activeElement.tagName||\"number\"!=document.activeElement.type&&\"color\"!=document.activeElement.type)&&(e.innerHTML=req.responseText),clearTimeout(firstTime),clearTimeout(lastTime),lastTime=setTimeout(showState,";
+const char pageScriptPart2[] = "))},req.open(\"GET\",\"index?state=1\",!0),req.send()),firstTime=setTimeout(showState,";
+const char pageScriptPart3[] = ")}function fmtUpTime(e){var t,n,o=Math.floor(e/86400);return e%=86400,t=Math.floor(e/3600),e%=3600,n=Math.floor(e/60),e=e%60,0<o?o+` days, ${t} hours, ${n} minutes and ${e} seconds`:0<t?t+` hours, ${n} minutes and ${e} seconds`:0<n?n+` minutes and ${e} seconds`:`just ${e} seconds`}function updateOnlineFor(){onlineForEl.textContent=fmtUpTime(++onlineFor)}function onLoad(){(onlineForEl=getElement(\"onlineFor\"))&&(onlineFor=parseInt(onlineForEl.dataset.initial,10))&&setInterval(updateOnlineFor,1e3),showState()}function submitTemperature(e){var t=getElement(\"form132\");getElement(\"kelvin132\").value=Math.round(1e6/parseInt(e.value)),t.submit()}window.addEventListener(\"load\",onLoad),history.pushState(null,\"\",window.location.pathname.slice(1)),setTimeout(()=>{var e=getElement(\"changed\");e&&(e.innerHTML=\"\")},5e3);</script>";
+
+
 void http_html_end(http_request_t* request) {
 	char upTimeStr[128];
 	unsigned char mac[32];
@@ -279,9 +336,17 @@ void http_html_end(http_request_t* request) {
 	poststr(request, upTimeStr);
 	snprintf(upTimeStr, sizeof(upTimeStr), "<br>Short name: %s, Chipset %s", CFG_GetShortDeviceName(), PLATFORM_MCU_NAME);
 	poststr(request, upTimeStr);
+#ifdef PLATFORM_ESPIDF
+	snprintf(upTimeStr, sizeof(upTimeStr), " ESP-IDF %s", esp_get_idf_version());
+	poststr(request, upTimeStr);
+#endif
 
 	poststr(request, htmlBodyEnd);
-	poststr(request, pageScript);
+	poststr(request, pageScriptPart1);
+	hprintf255(request, "%i", g_indexAutoRefreshInterval);
+	poststr(request, pageScriptPart2);
+	hprintf255(request, "%i", g_indexAutoRefreshInterval);
+	poststr(request, pageScriptPart3);
 }
 
 const char* http_checkArg(const char* p, const char* n) {
@@ -648,6 +713,11 @@ int HTTP_ProcessPacket(http_request_t* request) {
 			return 0;
 		}
 	}
+	else {
+		// if p is 0, then strchr below would crash
+		ADDLOGF_ERROR("invalid request\n");
+		return 0;
+	}
 
 	request->url = urlStr;
 
@@ -746,34 +816,56 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	if (http_checkUrlBase(urlStr, "index")) return http_fn_index(request);
 
 	if (http_checkUrlBase(urlStr, "about")) return http_fn_about(request);
-
+	
+#if ENABLE_HTTP_MQTT
 	if (http_checkUrlBase(urlStr, "cfg_mqtt")) return http_fn_cfg_mqtt(request);
-	if (http_checkUrlBase(urlStr, "cfg_ip")) return http_fn_cfg_ip(request);
 	if (http_checkUrlBase(urlStr, "cfg_mqtt_set")) return http_fn_cfg_mqtt_set(request);
+#endif
+#if ENABLE_HTTP_IP
+	if (http_checkUrlBase(urlStr, "cfg_ip")) return http_fn_cfg_ip(request);
+#endif
 
+#if ENABLE_HTTP_WEBAPP
 	if (http_checkUrlBase(urlStr, "cfg_webapp")) return http_fn_cfg_webapp(request);
 	if (http_checkUrlBase(urlStr, "cfg_webapp_set")) return http_fn_cfg_webapp_set(request);
+#endif
 
 	if (http_checkUrlBase(urlStr, "cfg_wifi")) return http_fn_cfg_wifi(request);
+#if ENABLE_HTTP_NAMES
 	if (http_checkUrlBase(urlStr, "cfg_name")) return http_fn_cfg_name(request);
+#endif
 	if (http_checkUrlBase(urlStr, "cfg_wifi_set")) return http_fn_cfg_wifi_set(request);
 
 	if (http_checkUrlBase(urlStr, "cfg_loglevel_set")) return http_fn_cfg_loglevel_set(request);
+#if ENABLE_HTTP_MAC
 	if (http_checkUrlBase(urlStr, "cfg_mac")) return http_fn_cfg_mac(request);
-
-//	if (http_checkUrlBase(urlStr, "flash_read_tool")) return http_fn_flash_read_tool(request);
+#endif
 	if (http_checkUrlBase(urlStr, "cmd_tool")) return http_fn_cmd_tool(request);
-	if (http_checkUrlBase(urlStr, "startup_command")) return http_fn_startup_command(request);
-	if (http_checkUrlBase(urlStr, "cfg_generic")) return http_fn_cfg_generic(request);
-	if (http_checkUrlBase(urlStr, "cfg_startup")) return http_fn_cfg_startup(request);
-	if (http_checkUrlBase(urlStr, "cfg_dgr")) return http_fn_cfg_dgr(request);
 
+#if ENABLE_HTTP_STARTUP
+	if (http_checkUrlBase(urlStr, "startup_command")) return http_fn_startup_command(request); 
+#endif
+#if ENABLE_HTTP_FLAGS
+	if (http_checkUrlBase(urlStr, "cfg_generic")) return http_fn_cfg_generic(request);
+#endif
+#if ENABLE_HTTP_STARTUP
+	if (http_checkUrlBase(urlStr, "cfg_startup")) return http_fn_cfg_startup(request);
+#endif
+#if ENABLE_HTTP_DGR
+	if (http_checkUrlBase(urlStr, "cfg_dgr")) return http_fn_cfg_dgr(request);
+#endif
+
+#if ENABLE_HA_DISCOVERY
 	if (http_checkUrlBase(urlStr, "ha_cfg")) return http_fn_ha_cfg(request);
 	if (http_checkUrlBase(urlStr, "ha_discovery")) return http_fn_ha_discovery(request);
+#endif
 	if (http_checkUrlBase(urlStr, "cfg")) return http_fn_cfg(request);
 
 	if (http_checkUrlBase(urlStr, "cfg_pins")) return http_fn_cfg_pins(request);
+#if ENABLE_HTTP_PING
 	if (http_checkUrlBase(urlStr, "cfg_ping")) return http_fn_cfg_ping(request);
+#endif
+
 
 	if (http_checkUrlBase(urlStr, "ota")) return http_fn_ota(request);
 	if (http_checkUrlBase(urlStr, "ota_exec")) return http_fn_ota_exec(request);
@@ -794,10 +886,6 @@ See https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md for
 //region_start htmlHeadStyle
 const char htmlHeadStyle[] = "<style>div,fieldset,input,select{padding:5px;font-size:1em;margin:0 0 .2em}fieldset{background:#4f4f4f}p{margin:.5em 0}input{width:100%;box-sizing:border-box;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;background:#ddd;color:#000}form{margin-bottom:.5em}input[type=checkbox],input[type=radio]{width:1em;margin-right:6px;vertical-align:-1px}input[type=range]{width:99%}select{width:100%;background:#ddd;color:#000}textarea{resize:vertical;width:98%;height:318px;padding:5px;overflow:auto;background:#1f1f1f;color:#65c115}body{text-align:center;font-family:verdana,sans-serif}body,h1 a{background:#21333e;color:#eaeaea}td{padding:0}button,input[type=submit]{border:0;border-radius:.3rem;background:#1fa3ec;color:#faffff;line-height:2.4rem;font-size:1.2rem;cursor:pointer}input[type=submit]{width:100%;transition-duration:.4s}input[type=submit]:hover{background:#0e70a4}.bred{background:#d43535!important}.bred:hover{background:#931f1f!important}.bgrn{background:#47c266!important}.bgrn:hover{background:#5aaf6f!important}a{color:#1fa3ec;text-decoration:none}.p{float:left;text-align:left}.q{float:right;text-align:right}.r{border-radius:.3em;padding:2px;margin:6px 2px;background:linear-gradient(90deg,#ffa000,#a6d1ff)}.hf{display:none}.hdiv{width:95%;white-space:nowrap}.hele{width:210px;display:inline-block;margin-left:2px}div#state{padding:0}div#changed{padding:0;height:23px}div#main{text-align:left;display:inline-block;color:#eaeaea;min-width:340px;max-width:800px}table{table-layout:fixed;width:100%}.disp-none{display:none}.disp-inline{display:inline-block}.safe{color:red}form.indent{padding-left:16px}li{margin:5px 0}.off,.on{text-align:center;font-size:54px}.on{font-weight:700}</style>";
 //region_end htmlHeadStyle
-
-//region_start pageScript
-const char pageScript[] = "<script type='text/javascript'>var firstTime,lastTime,onlineFor,req=null,onlineForEl=null,getElement=e=>document.getElementById(e);function showState(){clearTimeout(firstTime),clearTimeout(lastTime),null!=req&&req.abort(),(req=new XMLHttpRequest).onreadystatechange=()=>{var e;4==req.readyState&&\"OK\"==req.statusText&&((\"INPUT\"!=document.activeElement.tagName||\"number\"!=document.activeElement.type&&\"color\"!=document.activeElement.type)&&(e=getElement(\"state\"))&&(e.innerHTML=req.responseText),clearTimeout(firstTime),clearTimeout(lastTime),lastTime=setTimeout(showState,3e3))},req.open(\"GET\",\"index?state=1\",!0),req.send(),firstTime=setTimeout(showState,3e3)}function fmtUpTime(e){var t,n,o=Math.floor(e/86400);return e%=86400,t=Math.floor(e/3600),e%=3600,n=Math.floor(e/60),e=e%60,0<o?o+` days, ${t} hours, ${n} minutes and ${e} seconds`:0<t?t+` hours, ${n} minutes and ${e} seconds`:0<n?n+` minutes and ${e} seconds`:`just ${e} seconds`}function updateOnlineFor(){onlineForEl.textContent=fmtUpTime(++onlineFor)}function onLoad(){(onlineForEl=getElement(\"onlineFor\"))&&(onlineFor=parseInt(onlineForEl.dataset.initial,10))&&setInterval(updateOnlineFor,1e3),showState()}function submitTemperature(e){var t=getElement(\"form132\");getElement(\"kelvin132\").value=Math.round(1e6/parseInt(e.value)),t.submit()}window.addEventListener(\"load\",onLoad),history.pushState(null,\"\",window.location.pathname.slice(1)),setTimeout(()=>{var e=getElement(\"changed\");e&&(e.innerHTML=\"\")},5e3);</script>";
-//region_end pageScript
 
 //region_start ha_discovery_script
 const char ha_discovery_script[] = "<script type='text/javascript'>function send_ha_disc(){var e=new XMLHttpRequest;e.open(\"GET\",\"/ha_discovery?prefix=\"+document.getElementById(\"ha_disc_topic\").value,!1),e.onload=function(){200===e.status?alert(e.responseText):404===e.status&&alert(\"Error invoking ha_discovery\")},e.onerror=function(){alert(\"Error invoking ha_discovery\")},e.send()}</script>";

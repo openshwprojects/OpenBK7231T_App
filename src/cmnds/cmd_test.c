@@ -106,7 +106,7 @@ static commandResult_t testRealloc(const void * context, const char *cmd, const 
 
 static commandResult_t testLog(const void * context, const char *cmd, const char *args, int cmdFlags){
 	int a = 123;
-	float b = 3.14;
+	float b = 3.14f;
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "This is an int - %i",a);
 	ADDLOG_INFO(LOG_FEATURE_CMD, "This is a float - %f",b);
@@ -116,7 +116,7 @@ static commandResult_t testLog(const void * context, const char *cmd, const char
 
 static commandResult_t testFloats(const void * context, const char *cmd, const char *args, int cmdFlags){
 	int a = 123;
-	float b = 3.14;
+	float b = 3.14f;
 	double d;
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "This is an int - %i",a);
@@ -278,7 +278,7 @@ static commandResult_t cmnd_json_test(const void * context, const char *cmd, con
 	cJSON* root;
 	cJSON* stats;
 	char *msg;
-	float dailyStats[4] = { 00000095.44071197,00000171.84954833,00000181.58737182,00000331.35061645 };
+	float dailyStats[4] = { 95.44071197f, 171.84954833f, 181.58737182f, 331.35061645f };
 
 	root = cJSON_CreateObject();
 	{
@@ -400,8 +400,8 @@ int CMD_InitTestCommands(){
 	//cmddetail:"fn":"cmnd_lfs_test3","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_test3", cmnd_lfs_test3, NULL);
-	//cmddetail:{"name":"json_test","args":"cmnd_json_test",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"json_test","args":"",
+	//cmddetail:"descr":"Developer-only command used to test CJSON library",
 	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("json_test", cmnd_json_test, NULL);

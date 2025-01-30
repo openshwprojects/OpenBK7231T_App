@@ -12,6 +12,7 @@ public:
 		sim = p;
 	}
 	void solveVoltages();
+	bool hasPath(class CJunction *a, class CJunction *b);
 };
 
 #endif

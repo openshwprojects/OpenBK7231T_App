@@ -20,6 +20,8 @@
 #ifdef PLATFORM_BEKEN
 #include <gpio_pub.h>
 #include "driver/drv_ir.h"
+#elif PLATFORM_ESPIDF
+#include "esp_sleep.h"
 #endif
 
 
@@ -35,6 +37,30 @@ int BTN_LONG_MS;
 int BTN_HOLD_REPEAT_MS;
 byte *g_defaultWakeEdge = 0;
 int g_initialPinStates = 0;
+
+#if ALLOW_SSID2
+//20241125 XJIKKA SSID retain - last used SSID will be preserved
+// To enable this feature, the channel that will be used to store the last SSID 
+// must be set using the setStartupSSIDChannel command in early.bat. 
+// It has to be in early.bat.Autoexec.bat is processed after the wifi data is loaded.
+int g_StartupSSIDRetainChannel = -1; // -1 disabled, 0..MAX_RETAIN_CHANNELS-1 channel to store last SSID
+
+int FV_GetStartupSSID_StoredValue(int adefault) {
+	if ((g_StartupSSIDRetainChannel < 0) || (g_StartupSSIDRetainChannel >= MAX_RETAIN_CHANNELS)) return adefault;
+	int fval = HAL_FlashVars_GetChannelValue(g_StartupSSIDRetainChannel);
+	return (fval & 1);	////only SSID1 (0) and SSID2 (1) allowed
+}
+void FV_UpdateStartupSSIDIfChanged_StoredValue(int assidindex) {
+	if ((g_StartupSSIDRetainChannel < 0) || (g_StartupSSIDRetainChannel >= MAX_RETAIN_CHANNELS)) return;
+	if ((assidindex < 0) && (assidindex > 1)) return;	//only SSID1 (0) and SSID2 (1) allowed
+	int fval = HAL_FlashVars_GetChannelValue(g_StartupSSIDRetainChannel);
+	if (fval == assidindex) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "WiFi unchanged (SSID%i), HAL_FlashVars_SaveChannel skipped", assidindex+1);
+		return;	//same value, no update
+	}
+	HAL_FlashVars_SaveChannel(g_StartupSSIDRetainChannel,assidindex);
+}
+#endif
 
 void PIN_DeepSleep_MakeSureEdgesAreAlloced() {
 	int i;
@@ -201,8 +227,19 @@ void PINS_BeginDeepSleepWithPinWakeUp(unsigned int wakeUpTime) {
 		bk_enter_deep_sleep(g_gpio_index_map[0], g_gpio_edge_map[0]);
 	}
 #endif
-#else
-
+#elif PLATFORM_ESPIDF
+//	if(wakeUpTime)
+//	{
+//		esp_sleep_enable_timer_wakeup(timeMS * 1000000);
+//	}
+//#if SOC_GPIO_SUPPORT_DEEPSLEEP_WAKEUP
+//	esp_deep_sleep_start();
+//#else
+//	addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "%s, doesn't support gpio deep sleep, entering light sleep.", PLATFORM_MCU_NAME);
+//	delay_ms(10);
+//	esp_sleep_enable_gpio_wakeup();
+//	esp_light_sleep_start();
+//#endif
 #endif
 }
 
@@ -267,7 +304,7 @@ void PIN_SetupPins() {
 	}
 #endif
 #endif
-#if defined(PLATFORM_BEKEN) || defined(PLATFORM_BL602) || defined(PLATFORM_W600) || defined(WINDOWS)
+#ifdef ENABLE_DRIVER_DHT
 	// TODO: better place to call?
 	DHT_OnPinsConfigChanged();
 #endif
@@ -380,11 +417,13 @@ void Button_OnInitialPressDown(int index)
 			CHANNEL_DoSpecialToggleAll();
 			return;
 		}
+#if ENABLE_LED_BASIC
 		if (g_cfg.pins.roles[index] == IOR_Button_NextColor || g_cfg.pins.roles[index] == IOR_Button_NextColor_n)
 		{
 			LED_NextColor();
 			return;
 		}
+#endif
 		if (g_cfg.pins.roles[index] == IOR_Button_NextDimmer || g_cfg.pins.roles[index] == IOR_Button_NextDimmer_n)
 		{
 
@@ -400,11 +439,14 @@ void Button_OnInitialPressDown(int index)
 
 			return;
 		}
+#if ENABLE_LED_BASIC
 		// is it a device with RGB/CW/single color/etc LED driver?
 		if (LED_IsLEDRunning()) {
 			LED_ToggleEnabled();
 		}
-		else {
+		else 
+#endif
+		{
 			// Relays
 			CHANNEL_Toggle(g_cfg.pins.channels[index]);
 		}
@@ -427,11 +469,13 @@ void Button_OnShortClick(int index)
 			CHANNEL_DoSpecialToggleAll();
 			return;
 		}
+#if ENABLE_LED_BASIC
 		if (g_cfg.pins.roles[index] == IOR_Button_NextColor || g_cfg.pins.roles[index] == IOR_Button_NextColor_n)
 		{
 			LED_NextColor();
 			return;
 		}
+#endif
 		if (g_cfg.pins.roles[index] == IOR_Button_NextDimmer || g_cfg.pins.roles[index] == IOR_Button_NextDimmer_n)
 		{
 			return;
@@ -444,11 +488,14 @@ void Button_OnShortClick(int index)
 		{
 			return;
 		}
+#if ENABLE_LED_BASIC
 		// is it a device with RGB/CW/single color/etc LED driver?
 		if (LED_IsLEDRunning()) {
 			LED_ToggleEnabled();
 		}
-		else {
+		else 
+#endif
+		{
 			// Relays
 			CHANNEL_Toggle(g_cfg.pins.channels[index]);
 		}
@@ -474,11 +521,13 @@ void Button_OnDoubleClick(int index)
 		// double click toggles SECOND CHANNEL linked to this button
 		CHANNEL_Toggle(g_cfg.pins.channels2[index]);
 	}
+#if ENABLE_LED_BASIC
 	if (g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs_n) {
 		LED_NextColor();
 		// make it easier for users, enable LED by default
 		LED_SetEnableAll(true);
 	}
+#endif
 	if (g_doubleClickCallback != 0) {
 		g_doubleClickCallback(index);
 	}
@@ -492,11 +541,13 @@ void Button_OnTripleClick(int index)
 	}
 	// fire event - button on pin <index> was 3clicked
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ON3CLICK, index);
+#if ENABLE_LED_BASIC
 	if (g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs_n) {
 		LED_NextTemperature();
 		// make it easier for users, enable LED by default
 		LED_SetEnableAll(true);
 	}
+#endif
 }
 void Button_OnQuadrupleClick(int index)
 {
@@ -527,6 +578,7 @@ void Button_OnLongPressHold(int index) {
 	// fire event - button on pin <index> was held
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ONHOLD, index);
 
+#if ENABLE_LED_BASIC
 	if (g_cfg.pins.roles[index] == IOR_Button_NextDimmer || g_cfg.pins.roles[index] == IOR_Button_NextDimmer_n) {
 		LED_NextDimmerHold();
 	}
@@ -538,6 +590,7 @@ void Button_OnLongPressHold(int index) {
 		// make it easier for users, enable LED by default
 		LED_SetEnableAll(true);
 	}
+#endif
 }
 void Button_OnLongPressHoldStart(int index) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i Button_OnLongPressHoldStart\r\n", index);
@@ -850,8 +903,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			//On the BK7231N Mini WiFi Smart Switch, the correct state of the ADC input pin
 			//can be readed 1000us after the pin is initialized. Maybe there is a capacitor?
 			//Without delay, g_lastValidState is after restart set to 0, so the light will toggle, if the switch on input pin is on (1).
-			//To be sure, we will wait for 2000us.
-			usleep(2000);
+			//To be sure, we will wait for 20000 us.
+			usleep(20000);
 #endif
 			g_lastValidState[index] = PIN_ReadDigitalInputValue_WithInversionIncluded(index);
 			// this is input - sample initial state down below
@@ -989,7 +1042,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 	}
 
 	if (bDHTChange) {
-#if defined(PLATFORM_BEKEN) || defined(PLATFORM_BL602) || defined(PLATFORM_W600) || defined(WINDOWS)
+#ifdef ENABLE_DRIVER_DHT
 		// TODO: better place to call?
 		DHT_OnPinsConfigChanged();
 #endif
@@ -1047,11 +1100,13 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 			}
 		}
 	}
+#if ENABLE_MQTT
 	if ((iFlags & CHANNEL_SET_FLAG_SKIP_MQTT) == 0) {
 		if (CHANNEL_ShouldBePublished(ch)) {
 			MQTT_ChannelPublish(ch, 0);
 		}
 	}
+#endif
 	// Simple event - it just says that there was a change
 	EventHandlers_FireEvent(CMD_EVENT_CHANNEL_ONCHANGE, ch);
 	// more advanced events - change FROM value TO value
@@ -1116,6 +1171,7 @@ int ChannelType_GetDivider(int type) {
 	case ChType_Current_div1000:
 	case ChType_LeakageCurrent_div1000:
 	case ChType_ReadOnly_div1000:
+	case ChType_Frequency_div1000:
 		return 1000;
 	case ChType_Temperature_div2:
 		return 2;
@@ -1143,6 +1199,7 @@ const char *ChannelType_GetUnit(int type) {
 		return "W";
 	case ChType_Frequency_div10:
 	case ChType_Frequency_div100:
+	case ChType_Frequency_div1000:
 		return "Hz";
 	case ChType_LeakageCurrent_div1000:
 	case ChType_Current_div1000:
@@ -1193,6 +1250,7 @@ const char *ChannelType_GetTitle(int type) {
 		return "Power";
 	case ChType_Frequency_div10:
 	case ChType_Frequency_div100:
+	case ChType_Frequency_div1000:
 		return "Frequency";
 	case ChType_Current_div1000:
 	case ChType_Current_div100:
@@ -1245,6 +1303,7 @@ float CHANNEL_GetFloat(int ch) {
 	return g_channelValuesFloats[ch];
 }
 int CHANNEL_Get(int ch) {
+#if ENABLE_LED_BASIC
 	// special channels
 	if (ch == SPECIAL_CHANNEL_LEDPOWER) {
 		return LED_GetEnableAll();
@@ -1255,6 +1314,7 @@ int CHANNEL_Get(int ch) {
 	if (ch == SPECIAL_CHANNEL_TEMPERATURE) {
 		return LED_GetTemperature();
 	}
+#endif
 	if (ch >= SPECIAL_CHANNEL_BASECOLOR_FIRST && ch <= SPECIAL_CHANNEL_BASECOLOR_LAST) {
 		return 0; // TODO
 	}
@@ -1292,6 +1352,13 @@ void CHANNEL_Set_FloatPWM(int ch, float fVal, int iFlags) {
 		}
 	}
 }
+void CHANNEL_SetSmart(int ch, float fVal, int iFlags) {
+	if (ch < 0 || ch >= CHANNEL_MAX)
+		return;
+	int divider = ChannelType_GetDivider(g_cfg.pins.channelTypes[ch]);
+	int divided = fVal * divider;
+	CHANNEL_Set(ch, divided, iFlags);
+}
 void CHANNEL_Set(int ch, int iVal, int iFlags) {
 	int prevValue;
 	int bForce;
@@ -1299,6 +1366,7 @@ void CHANNEL_Set(int ch, int iVal, int iFlags) {
 	bForce = iFlags & CHANNEL_SET_FLAG_FORCE;
 	bSilent = iFlags & CHANNEL_SET_FLAG_SILENT;
 
+#if ENABLE_LED_BASIC
 	// special channels
 	if (ch == SPECIAL_CHANNEL_LEDPOWER) {
 		LED_SetEnableAll(iVal);
@@ -1316,6 +1384,7 @@ void CHANNEL_Set(int ch, int iVal, int iFlags) {
 		LED_SetBaseColorByIndex(ch - SPECIAL_CHANNEL_BASECOLOR_FIRST, iVal, 1);
 		return;
 	}
+#endif
 	if (ch >= SPECIAL_CHANNEL_FLASHVARS_FIRST && ch <= SPECIAL_CHANNEL_FLASHVARS_LAST) {
 		HAL_FlashVars_SaveChannel(ch - SPECIAL_CHANNEL_FLASHVARS_FIRST, iVal);
 		return;
@@ -1440,11 +1509,13 @@ int CHANNEL_FindMaxValueForChannel(int ch) {
 void CHANNEL_Toggle(int ch) {
 	int prev;
 
+#if ENABLE_LED_BASIC
 	// special channels
 	if (ch == SPECIAL_CHANNEL_LEDPOWER) {
 		LED_SetEnableAll(!LED_GetEnableAll());
 		return;
 	}
+#endif
 	if (ch < 0 || ch >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Toggle: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
 		return;
@@ -1490,9 +1561,11 @@ int CHANNEL_HasChannelPinWithRole(int ch, int iorType) {
 	return 0;
 }
 bool CHANNEL_Check(int ch) {
+#if ENABLE_LED_BASIC
 	if (ch == SPECIAL_CHANNEL_LEDPOWER) {
 		return LED_GetEnableAll();
 	}
+#endif
 	if (ch < 0 || ch >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Check: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
 		return 0;
@@ -2057,6 +2130,8 @@ const char* g_channelTypeNames[] = {
 	"Ph",
 	"Orp",
 	"Tds",
+	"Motion_n",
+	"Frequency_div1000",
 	"error",
 	"error",
 };
@@ -2158,7 +2233,56 @@ static commandResult_t CMD_SetChannelType(const void* context, const char* cmd, 
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Channel %i type changed to %s", channel, type);
 	return CMD_RES_OK;
 }
+#if ALLOW_SSID2
+// setStartupSSIDChannel [-1 or RetainChannelIndex]
+static commandResult_t CMD_setStartupSSIDChannel(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() >= 1) {
+		int fval = Tokenizer_GetArgInteger(0);
+		if ((fval < -1) || (fval >= MAX_RETAIN_CHANNELS - 1)) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "StartupSSIDChannel value error: %i Allowed values (-1, 0..%i)", fval, MAX_RETAIN_CHANNELS - 1);
+			return CMD_RES_BAD_ARGUMENT;
+		}
+		g_StartupSSIDRetainChannel = fval;
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "StartupSSIDChannel changed to %i", g_StartupSSIDRetainChannel);
+	}
+	else {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "StartupSSIDChannel is %i", g_StartupSSIDRetainChannel);
+	}
+	return CMD_RES_OK;
+}
+// setStartupSSID [0/1]  
+// Sets startup SSID - 0=SSID1 1=SSID2 - which SSID will be used after reboot. 
+// for this to work, setStartupSSIDChannel and SSID2 must be set
+static commandResult_t CMD_setStartupSSID(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	Tokenizer_TokenizeString(args, 0);
+
+	int fold = FV_GetStartupSSID_StoredValue(0);
+	if (Tokenizer_GetArgsCount() >= 1) {
+		int fval = Tokenizer_GetArgInteger(0);
+		if ((fval < 0) || (fval >1)) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "StartupSSID value error: %i Allowed values (0, 1)", fval);
+			return CMD_RES_BAD_ARGUMENT;
+		}
+		if (g_StartupSSIDRetainChannel<0) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Cannot set StartupSSID, StartupSSIDChannel is not set.");
+			return CMD_RES_BAD_ARGUMENT;
+		}
+		if (!(fval==fold)) {
+			FV_UpdateStartupSSIDIfChanged_StoredValue(fval);//update flash only when changed
+			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "StartupSSID changed to %i", fval);
+		} else {
+			addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "StartupSSID unchanged %i", fval);
+		}
+	} else {
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "StartupSSID is %i", fold);
+	}
+	return CMD_RES_OK;
+}
+#endif
 /// @brief Computes the Relay and PWM count.
 /// @param relayCount Number of relay and LED channels.
 /// @param pwmCount Number of PWM channels.
@@ -2320,5 +2444,16 @@ void PIN_AddCommands(void)
 	//cmddetail:"fn":"CMD_setButtonHoldRepeat","file":"new_pins.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("setButtonHoldRepeat", CMD_setButtonHoldRepeat, NULL);
-
+#if ALLOW_SSID2
+	//cmddetail:{"name":"setStartupSSIDChannel","args":"[Value]",
+	//cmddetail:"descr":"Sets retain channel number to store last used SSID, 0..MAX_RETAIN_CHANNELS-1, -1 to disable. Suggested channel number is 7 (MAXMAX_RETAIN_CHANNELS-5)",
+	//cmddetail:"fn":"CMD_setStartupSSIDChannel","file":"new_pins.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("setStartupSSIDChannel", CMD_setStartupSSIDChannel, NULL);
+	//cmddetail:{"name":"setStartupSSID","args":"[Value]",
+	//cmddetail:"descr":"Sets startup SSID, 0 (SSID0) 1 (SSID1)",
+	//cmddetail:"fn":"CMD_setStartupSSID","file":"new_pins.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("setStartupSSID", CMD_setStartupSSID, NULL);
+#endif
 }

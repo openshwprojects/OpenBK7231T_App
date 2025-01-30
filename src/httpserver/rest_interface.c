@@ -46,7 +46,26 @@ uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
 
 #elif PLATFORM_W800
 
+#include "wm_socket_fwup.h"
+#include "wm_fwup.h"
+
 #elif PLATFORM_LN882H
+
+#elif PLATFORM_ESPIDF
+
+#elif PLATFORM_RTL87X0C
+
+#include "flash_api.h"
+#include "device_lock.h"
+#include "ota_8710c.h"
+#include "sys_api.h"
+
+extern flash_t flash;
+extern uint32_t sys_update_ota_get_curr_fw_idx(void);
+extern uint32_t sys_update_ota_prepare_addr(void);
+extern void sys_disable_fast_boot(void);
+extern void get_fw_info(uint32_t* targetFWaddr, uint32_t* currentFWaddr, uint32_t* fw1_sn, uint32_t* fw2_sn);
+static flash_t flash_ota;
 
 #else
 
@@ -240,10 +259,16 @@ static int http_rest_post(http_request_t* request) {
 		return http_rest_post_flash(request, START_ADR_OF_BK_PARTITION_OTA, LFS_BLOCKS_END);
 #elif PLATFORM_W600
 		return http_rest_post_flash(request, -1, -1);
+#elif PLATFORM_W800
+		return http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_BL602
 		return http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_LN882H
 		return http_rest_post_flash(request, -1, -1);
+#elif PLATFORM_ESPIDF
+		return http_rest_post_flash(request, -1, -1);
+#elif PLATFORM_RTL87X0C
+		return http_rest_post_flash(request, 0, -1);
 #else
 		// TODO
 		ADDLOG_DEBUG(LOG_FEATURE_API, "No OTA");
@@ -440,8 +465,8 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 					mimetype = "image/x-icon";
 					break;
 				}
-				if (EndsWith(fpath, ".js")) {
-					mimetype = "text/javascript";
+				if (EndsWith(fpath, ".js") || EndsWith(fpath, ".vue")) {
+					mimetype = httpMimeTypeJavascript;
 					break;
 				}
 				if (EndsWith(fpath, ".json")) {
@@ -449,11 +474,11 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 					break;
 				}
 				if (EndsWith(fpath, ".html")) {
-					mimetype = "text/html";
+					mimetype = httpMimeTypeHTML;
 					break;
 				}
-				if (EndsWith(fpath, ".vue")) {
-					mimetype = "application/javascript";
+				if (EndsWith(fpath, ".css")) {
+					mimetype = httpMimeTypeCSS;
 					break;
 				}
 				break;
@@ -732,9 +757,6 @@ static int http_rest_get_pins(http_request_t* request) {
 
 static int http_rest_get_channelTypes(http_request_t* request) {
 	int i;
-	int maxToPrint;
-
-	maxToPrint = 32;
 
 	http_setup(request, httpMimeTypeJson);
 	poststr(request, "{\"typenames\":[");
@@ -748,7 +770,7 @@ static int http_rest_get_channelTypes(http_request_t* request) {
 	}
 	poststr(request, "],\"types\":[");
 
-	for (i = 0; i < maxToPrint; i++) {
+	for (i = 0; i < CHANNEL_MAX; i++) {
 		if (i) {
 			hprintf255(request, ",%d", g_cfg.pins.channelTypes[i]);
 		}
@@ -885,7 +907,7 @@ static int http_rest_get_info(http_request_t* request) {
 	hprintf255(request, "\"shortName\":\"%s\",", CFG_GetShortDeviceName());
 	poststr(request, "\"startcmd\":\"");
 	// This can be longer than 255
-	poststr(request, CFG_GetShortStartupCommand());
+	poststr_escapedForJSON(request, CFG_GetShortStartupCommand());
 	poststr(request, "\",");
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	hprintf255(request, "\"supportsSSDP\":%d,", DRV_IsRunning("SSDP") ? 1 : 0);
@@ -1293,7 +1315,8 @@ static int ota_persistent_start(void)
  */
 static int ota_persistent_write(const char *buf, const int32_t buf_len)
 {
-	int part_len = 0; // [0, 1, 2, ..., 4K-1], 0, 1, 2, ..., (part_len-1)
+	int part_len = SECTOR_SIZE_4KB; // we might have a buffer so large, that we need to write multiple 4K segments ...
+	int buf_offset = 0; // ... and we need to keep track, what is already written
 
 	if (!is_persistent_started) {
 		return LN_TRUE;
@@ -1305,34 +1328,35 @@ static int ota_persistent_write(const char *buf, const int32_t buf_len)
 		temp4k_offset += buf_len;
 		part_len = 0;
 	}
-	else {
+	while (part_len >= SECTOR_SIZE_4KB) {           // so we didn't copy all data to buffer (part_len would be 0 then)
 		// just copy part of buf to temp4K_buf
-		part_len = temp4k_offset + buf_len - SECTOR_SIZE_4KB;
-		memcpy(temp4K_buf + temp4k_offset, buf, buf_len - part_len);
-		temp4k_offset += buf_len - part_len;
-	}
-	if (temp4k_offset >= (SECTOR_SIZE_4KB - 1)) {
-		// write to flash
-		ADDLOG_DEBUG(LOG_FEATURE_OTA, "write at flash: 0x%08x\r\n", flash_ota_start_addr + flash_ota_offset);
+		part_len = temp4k_offset + buf_len - buf_offset - SECTOR_SIZE_4KB;		// beware, this can be > SECTOR_SIZE_4KB !!!
+		memcpy(temp4K_buf + temp4k_offset, buf + buf_offset, buf_len - buf_offset - part_len);
+		temp4k_offset += buf_len - buf_offset - part_len;
+		buf_offset = buf_len - part_len;
 
-		if (flash_ota_offset == 0) {
-			if (LN_TRUE != ota_download_precheck(APP_SPACE_OFFSET, (image_hdr_t *)temp4K_buf)) 
-			{
-				ADDLOG_DEBUG(LOG_FEATURE_OTA, "ota download precheck failed!\r\n");
-				is_precheck_ok = LN_FALSE;
-				return LN_FALSE;
+		if (temp4k_offset >= SECTOR_SIZE_4KB ) {		
+			// write to flash
+			ADDLOG_DEBUG(LOG_FEATURE_OTA, "write at flash: 0x%08x (temp4k_offset=%i)\r\n", flash_ota_start_addr + flash_ota_offset,temp4k_offset);
+
+			if (flash_ota_offset == 0) {
+				if (LN_TRUE != ota_download_precheck(APP_SPACE_OFFSET, (image_hdr_t *)temp4K_buf)) 
+				{
+					ADDLOG_DEBUG(LOG_FEATURE_OTA, "ota download precheck failed!\r\n");
+					is_precheck_ok = LN_FALSE;
+					return LN_FALSE;
+				}
+			is_precheck_ok = LN_TRUE;
 			}
-		is_precheck_ok = LN_TRUE;
+
+			hal_flash_erase(flash_ota_start_addr + flash_ota_offset, SECTOR_SIZE_4KB);
+			hal_flash_program(flash_ota_start_addr + flash_ota_offset, SECTOR_SIZE_4KB, (uint8_t *)temp4K_buf);
+
+			flash_ota_offset += SECTOR_SIZE_4KB;
+			memset(temp4K_buf, 0, SECTOR_SIZE_4KB);
+			temp4k_offset = 0;
 		}
-
-		hal_flash_erase(flash_ota_start_addr + flash_ota_offset, SECTOR_SIZE_4KB);
-		hal_flash_program(flash_ota_start_addr + flash_ota_offset, SECTOR_SIZE_4KB, (uint8_t *)temp4K_buf);
-
-		flash_ota_offset += SECTOR_SIZE_4KB;
-		memset(temp4K_buf, 0, SECTOR_SIZE_4KB);
-		temp4k_offset = 0;
 	}
-
 	if (part_len > 0) {
 		memcpy(temp4K_buf + temp4k_offset, buf + (buf_len - part_len), part_len);
 		temp4k_offset += part_len;
@@ -1400,9 +1424,22 @@ static int ota_verify_download(void)
 }
 #endif
 
-static int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr) {
+#if PLATFORM_ESPIDF
+#include "esp_system.h"
+#include "esp_ota_ops.h"
+#include "esp_app_format.h"
+#include "esp_flash_partitions.h"
+#include "esp_partition.h"
+#include "nvs.h"
+#include "nvs_flash.h"
+#include "esp_wifi.h"
+#include "esp_pm.h"
+#endif
 
-#if PLATFORM_XR809 || PLATFORM_W800
+static int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
+{
+
+#if PLATFORM_XR809 || PLATFORM_TR6260
 	return 0;	//Operation not supported yet
 #endif
 
@@ -1411,6 +1448,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	int towrite = request->bodylen;
 	char* writebuf = request->bodystart;
 	int writelen = request->bodylen;
+	int fsize = 0;
 
 	ADDLOG_DEBUG(LOG_FEATURE_OTA, "OTA post len %d", request->contentLength);
 
@@ -1418,7 +1456,8 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	int nRetCode = 0;
 	char error_message[256];
 
-	if (writelen < 0) {
+	if(writelen < 0)
+	{
 		ADDLOG_DEBUG(LOG_FEATURE_OTA, "ABORTED: %d bytes to write", writelen);
 		return http_rest_error(request, -20, "writelen < 0");
 	}
@@ -1430,7 +1469,8 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	char* Buffer = (char*)os_malloc(2048 + 3);
 	memset(Buffer, 0, 2048 + 3);
 
-	if (request->contentLength >= 0) {
+	if(request->contentLength >= 0)
+	{
 		towrite = request->contentLength;
 	}
 
@@ -1440,15 +1480,17 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 
 	do
 	{
-		if (writelen > 0) {
+		if(writelen > 0)
+		{
 			//bk_printf("Copying %d from writebuf to Buffer towrite=%d\n", writelen, towrite);
 			memcpy(Buffer + 3, writebuf, writelen);
 
-			if (recvLen == 0) {
+			if(recvLen == 0)
+			{
 				T_BOOTER* booter = (T_BOOTER*)(Buffer + 3);
 				bk_printf("magic_no=%u, img_type=%u, zip_type=%u\n", booter->magic_no, booter->img_type, booter->zip_type);
 
-				if (TRUE == tls_fwup_img_header_check(booter))
+				if(TRUE == tls_fwup_img_header_check(booter))
 				{
 					totalLen = booter->upd_img_len + sizeof(T_BOOTER);
 					OTA_ResetProgress();
@@ -1462,26 +1504,31 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 				}
 
 				nRetCode = socket_fwup_accept(0, ERR_OK);
-				if (nRetCode != ERR_OK) {
+				if(nRetCode != ERR_OK)
+				{
 					sprintf(error_message, "Firmware update startup failed");
 					break;
 				}
 			}
 
 			p = pbuf_alloc(PBUF_TRANSPORT, writelen + 3, PBUF_REF);
-			if (!p) {
+			if(!p)
+			{
 				sprintf(error_message, "Unable to allocate memory for buffer");
 				nRetCode = -18;
 				break;
 			}
 
-			if (recvLen == 0) {
+			if(recvLen == 0)
+			{
 				*Buffer = SOCKET_FWUP_START;
 			}
-			else if (recvLen == (totalLen - writelen)) {
+			else if(recvLen == (totalLen - writelen))
+			{
 				*Buffer = SOCKET_FWUP_END;
 			}
-			else {
+			else
+			{
 				*Buffer = SOCKET_FWUP_DATA;
 			}
 
@@ -1491,11 +1538,13 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 			p->len = p->tot_len = writelen + 3;
 
 			nRetCode = socket_fwup_recv(0, p, ERR_OK);
-			if (nRetCode != ERR_OK) {
+			if(nRetCode != ERR_OK)
+			{
 				sprintf(error_message, "Firmware data processing failed");
 				break;
 			}
-			else {
+			else
+			{
 				OTA_IncrementProgress(writelen);
 				recvLen += writelen;
 				printf("Downloaded %d / %d\n", recvLen, totalLen);
@@ -1504,19 +1553,154 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 			towrite -= writelen;
 		}
 
-		if (towrite > 0) {
+		if(towrite > 0)
+		{
 			writebuf = request->received;
 			writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
-			if (writelen < 0) {
+			if(writelen < 0)
+			{
 				sprintf(error_message, "recv returned %d - end of data - remaining %d", writelen, towrite);
 				nRetCode = -17;
 			}
 		}
-	} while ((nRetCode == 0) && (towrite > 0) && (writelen >= 0));
+	} while((nRetCode == 0) && (towrite > 0) && (writelen >= 0));
 
 	tls_mem_free(Buffer);
 
-	if (nRetCode != 0) {
+	if(nRetCode != 0)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, error_message);
+		socket_fwup_err(0, nRetCode);
+		return http_rest_error(request, nRetCode, error_message);
+	}
+
+
+#elif PLATFORM_W800
+	int nRetCode = 0;
+	char error_message[256];
+
+	if(writelen < 0)
+	{
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "ABORTED: %d bytes to write", writelen);
+		return http_rest_error(request, -20, "writelen < 0");
+	}
+
+	struct pbuf* p;
+
+	//The code below is based on W600 code and adopted to the differences in sdk\OpenW800\src\app\ota\wm_http_fwup.c
+	// fiexd crashing caused by not checking "writelen" before doing memcpy
+	// e.g. if more than 2 packets arrived before next loop, writelen could be > 2048 !!
+#define FWUP_MSG_SIZE			 3
+#define MAX_BUFF_SIZE			 2048
+	char* Buffer = (char*)os_malloc(MAX_BUFF_SIZE + FWUP_MSG_SIZE);
+
+	if(request->contentLength >= 0)
+	{
+		towrite = request->contentLength;
+	}
+
+	int recvLen = 0;
+	int totalLen = 0;
+	uint8_t counter = 0;
+	printf("\ntowrite %d writelen=%d\n", towrite, writelen);
+
+	do
+	{
+		while(writelen > 0)
+		{
+			int actwrite = writelen < MAX_BUFF_SIZE ? writelen : MAX_BUFF_SIZE;	// mustn't write more than Buffers size! Will crash else!
+			//bk_printf("Copying %d from writebuf to Buffer (writelen=%d) towrite=%d -- free_heap:%d\n", actwrite, writelen, towrite, xPortGetFreeHeapSize());
+			memset(Buffer, 0, MAX_BUFF_SIZE + FWUP_MSG_SIZE);
+			memcpy(Buffer + FWUP_MSG_SIZE, writebuf, actwrite);
+			if(recvLen == 0)
+			{
+				IMAGE_HEADER_PARAM_ST *booter = (IMAGE_HEADER_PARAM_ST*)(Buffer + FWUP_MSG_SIZE);
+				bk_printf("magic_no=%u, img_type=%u, zip_type=%u, signature=%u\n",
+				booter->magic_no, booter->img_attr.b.img_type, booter->img_attr.b.zip_type, booter->img_attr.b.signature);
+
+				if(TRUE == tls_fwup_img_header_check(booter))
+				{
+					totalLen = booter->img_len + sizeof(IMAGE_HEADER_PARAM_ST);
+					if (booter->img_attr.b.signature)
+					{
+							totalLen += 128;
+					}
+				}
+				else
+				{
+					sprintf(error_message, "Image header check failed");
+					nRetCode = -19;
+					break;
+				}
+
+				nRetCode = socket_fwup_accept(0, ERR_OK);
+				if(nRetCode != ERR_OK)
+				{
+					sprintf(error_message, "Firmware update startup failed");
+					break;
+				}
+			}
+
+			p = pbuf_alloc(PBUF_TRANSPORT, actwrite + FWUP_MSG_SIZE, PBUF_REF);
+			if(!p)
+			{
+				sprintf(error_message, "Unable to allocate memory for buffer");
+				nRetCode = -18;
+				break;
+			}
+
+			if(recvLen == 0)
+			{
+				*Buffer = SOCKET_FWUP_START;
+			}
+			else if(recvLen == (totalLen - actwrite))
+			{
+				*Buffer = SOCKET_FWUP_END;
+			}
+			else
+			{
+				*Buffer = SOCKET_FWUP_DATA;
+			}
+
+			*(Buffer + 1) = (actwrite >> 8) & 0xFF;
+			*(Buffer + 2) = actwrite & 0xFF;
+			p->payload = Buffer;
+			p->len = p->tot_len = actwrite + FWUP_MSG_SIZE;
+
+			nRetCode = socket_fwup_recv(0, p, ERR_OK);
+			if(nRetCode != ERR_OK)
+			{
+				sprintf(error_message, "Firmware data processing failed");
+				break;
+			}
+			else
+			{
+				recvLen += actwrite;
+			}
+
+			towrite -= actwrite;
+			writelen -= actwrite;	// calculate, how much is left to write
+			writebuf += actwrite;	// in case, we only wrote part of buffer, advance in buffer
+		}
+
+		if(towrite > 0)
+		{
+			writebuf = request->received;
+			writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
+			if(writelen < 0)
+			{
+				sprintf(error_message, "recv returned %d - end of data - remaining %d", writelen, towrite);
+				nRetCode = -17;
+			}
+		}
+		if (counter++ % 5 == 0) bk_printf("Downloaded %d / %d\n", recvLen, totalLen);
+		rtos_delay_milliseconds(10);	// give some time for flashing - will else increase used memory fast 
+	} while((nRetCode == 0) && (towrite > 0) && (writelen >= 0));
+	bk_printf("Download completed (%d / %d)\n", recvLen, totalLen);
+	tls_mem_free(Buffer);
+
+	if(nRetCode != 0)
+	{
 		ADDLOG_ERROR(LOG_FEATURE_OTA, error_message);
 		socket_fwup_err(0, nRetCode);
 		return http_rest_error(request, nRetCode, error_message);
@@ -1526,8 +1710,8 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 #elif PLATFORM_BL602
 	int sockfd, i;
 	int ret;
-	struct hostent *hostinfo;
-	uint8_t *recv_buffer;
+	struct hostent* hostinfo;
+	uint8_t* recv_buffer;
 	struct sockaddr_in dest;
 	iot_sha256_context ctx;
 	uint8_t sha256_result[32];
@@ -1538,10 +1722,11 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 
 #define OTA_PROGRAM_SIZE (512)
 	int ota_header_found, use_xz;
-	ota_header_t *ota_header = 0;
+	ota_header_t* ota_header = 0;
 
 	ret = bl_mtd_open(BL_MTD_PARTITION_NAME_FW_DEFAULT, &handle, BL_MTD_OPEN_FLAG_BACKUP);
-	if (ret) {
+	if(ret)
+	{
 		return http_rest_error(request, -20, "Open Default FW partition failed");
 	}
 
@@ -1558,7 +1743,8 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 
 	printf("[OTA] [TEST] activeID is %u\r\n", activeID);
 
-	if (hal_boot2_get_active_entries(BOOT2_PARTITION_TYPE_FW, &ptEntry)) {
+	if(hal_boot2_get_active_entries(BOOT2_PARTITION_TYPE_FW, &ptEntry))
+	{
 		printf("PtTable_Get_Active_Entries fail\r\n");
 		vPortFree(recv_buffer);
 		bl_mtd_close(handle);
@@ -1582,10 +1768,10 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	//Erase in chunks, because erasing everything at once is slow and causes issues with http connection
 	uint32_t erase_offset = 0;
 	uint32_t erase_len = 0;
-	while (erase_offset < bin_size)
+	while(erase_offset < bin_size)
 	{
 		erase_len = bin_size - erase_offset;
-		if (erase_len > 0x10000)
+		if(erase_len > 0x10000)
 		{
 			erase_len = 0x10000; //Erase in 64kb chunks
 		}
@@ -1596,7 +1782,8 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	}
 	printf("[OTA] Done\r\n");
 
-	if (request->contentLength >= 0) {
+	if(request->contentLength >= 0)
+	{
 		towrite = request->contentLength;
 	}
 
@@ -1629,17 +1816,19 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	utils_sha256_init(&ctx);
 	utils_sha256_starts(&ctx);
 	memset(sha256_result, 0, sizeof(sha256_result));
-	do {
-		char *useBuf = writebuf;
+	do
+	{
+		char* useBuf = writebuf;
 		int useLen = writelen;
 
-		if (ota_header == 0) {
+		if(ota_header == 0)
+		{
 			int take_len;
 
 			// how much left for header?
 			take_len = OTA_PROGRAM_SIZE - buffer_offset;
 			// clamp to available len
-			if (take_len > useLen)
+			if(take_len > useLen)
 				take_len = useLen;
 			printf("Header takes %i. ", take_len);
 			memcpy(recv_buffer + buffer_offset, writebuf, take_len);
@@ -1647,19 +1836,23 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 			useBuf = writebuf + take_len;
 			useLen = writelen - take_len;
 
-			if (buffer_offset >= OTA_PROGRAM_SIZE) {
+			if(buffer_offset >= OTA_PROGRAM_SIZE)
+			{
 				ota_header = (ota_header_t*)recv_buffer;
-				if (strncmp((const char*)ota_header, "BL60X_OTA", 9)) {
+				if(strncmp((const char*)ota_header, "BL60X_OTA", 9))
+				{
 					return http_rest_error(request, -20, "Invalid header ident");
 				}
 			}
 		}
 
 
-		if (ota_header && useLen) {
+		if(ota_header && useLen)
+		{
 
 
-			if (flash_offset + useLen >= part_size) {
+			if(flash_offset + useLen >= part_size)
+			{
 				return http_rest_error(request, -20, "Too large bin");
 			}
 			//ADDLOG_DEBUG(LOG_FEATURE_OTA, "%d bytes to write", writelen);
@@ -1676,28 +1869,34 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 		towrite -= writelen;
 
 
-		if (towrite > 0) {
+		if(towrite > 0)
+		{
 			writebuf = request->received;
 			writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
-			if (writelen < 0) {
+			if(writelen < 0)
+			{
 				ADDLOG_DEBUG(LOG_FEATURE_OTA, "recv returned %d - end of data - remaining %d", writelen, towrite);
 			}
 		}
-	} while ((towrite > 0) && (writelen >= 0));
+	} while((towrite > 0) && (writelen >= 0));
 
-	if (ota_header == 0) {
+	if(ota_header == 0)
+	{
 		return http_rest_error(request, -20, "No header found");
 	}
 	utils_sha256_finish(&ctx, sha256_result);
 	puts("\r\nCalculated SHA256 Checksum:");
-	for (i = 0; i < sizeof(sha256_result); i++) {
+	for(i = 0; i < sizeof(sha256_result); i++)
+	{
 		printf("%02X", sha256_result[i]);
 	}
 	puts("\r\nHeader SHA256 Checksum:");
-	for (i = 0; i < sizeof(sha256_result); i++) {
+	for(i = 0; i < sizeof(sha256_result); i++)
+	{
 		printf("%02X", ota_header->u.s.sha256[i]);
 	}
-	if (memcmp(ota_header->u.s.sha256, sha256_result, sizeof(sha256_img))) {
+	if(memcmp(ota_header->u.s.sha256, sha256_result, sizeof(sha256_img)))
+	{
 		/*Error found*/
 		return http_rest_error(request, -20, "SHA256 NOT Correct");
 	}
@@ -1713,19 +1912,23 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 
 #elif PLATFORM_LN882H
 	ADDLOG_DEBUG(LOG_FEATURE_OTA, "Ota start!\r\n");
-	if (LN_TRUE != ota_persistent_start()) {
+	if(LN_TRUE != ota_persistent_start())
+	{
 		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Ota start error, exit...\r\n");
 		return 0;
 	}
 
-	if (request->contentLength >= 0) {
+	if(request->contentLength >= 0)
+	{
 		towrite = request->contentLength;
 	}
 
-	do {
+	do
+	{
 		//ADDLOG_DEBUG(LOG_FEATURE_OTA, "%d bytes to write", writelen);
 
-		if (LN_TRUE != ota_persistent_write(writebuf, writelen)) {
+		if(LN_TRUE != ota_persistent_write(writebuf, writelen))
+		{
 			//	ADDLOG_DEBUG(LOG_FEATURE_OTA, "ota write err.\r\n");
 			return -1;
 		}
@@ -1735,14 +1938,16 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 		total += writelen;
 		startaddr += writelen;
 		towrite -= writelen;
-		if (towrite > 0) {
+		if(towrite > 0)
+		{
 			writebuf = request->received;
 			writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
-			if (writelen < 0) {
+			if(writelen < 0)
+			{
 				ADDLOG_DEBUG(LOG_FEATURE_OTA, "recv returned %d - end of data - remaining %d", writelen, towrite);
 			}
 		}
-	} while ((towrite > 0) && (writelen >= 0));
+	} while((towrite > 0) && (writelen >= 0));
 
 	ota_persistent_finish();
 	is_ready_to_verify = LN_TRUE;
@@ -1750,54 +1955,297 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 
 
 	ADDLOG_DEBUG(LOG_FEATURE_OTA, "http client job done, exit...\r\n");
-	if (LN_TRUE == is_precheck_ok)
+	if(LN_TRUE == is_precheck_ok)
 	{
-		if ((LN_TRUE == is_ready_to_verify) && (LN_TRUE == ota_verify_download())) {
+		if((LN_TRUE == is_ready_to_verify) && (LN_TRUE == ota_verify_download()))
+		{
 			update_ota_state();
 			//ln_chip_reboot();
 		}
-		else {
+		else
+		{
 			ADDLOG_DEBUG(LOG_FEATURE_OTA, "Veri bad\r\n");
 		}
 	}
-	else {
+	else
+	{
 		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Precheck bad\r\n");
 	}
 
+
+#elif PLATFORM_ESPIDF
+
+	ADDLOG_DEBUG(LOG_FEATURE_OTA, "Ota start!\r\n");
+	esp_err_t err;
+	esp_ota_handle_t update_handle = 0;
+	const esp_partition_t* update_partition = NULL;
+	const esp_partition_t* running = esp_ota_get_running_partition();
+	update_partition = esp_ota_get_next_update_partition(NULL);
+	if(request->contentLength >= 0)
+	{
+		fsize = towrite = request->contentLength;
+	}
+
+	esp_wifi_set_ps(WIFI_PS_NONE);
+	bool image_header_was_checked = false;
+	do
+	{
+		if(image_header_was_checked == false)
+		{
+			esp_app_desc_t new_app_info;
+			if(towrite > sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t) + sizeof(esp_app_desc_t))
+			{
+				memcpy(&new_app_info, &writebuf[sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t)], sizeof(esp_app_desc_t));
+				ADDLOG_DEBUG(LOG_FEATURE_OTA, "New firmware version: %s", new_app_info.version);
+
+				esp_app_desc_t running_app_info;
+				if(esp_ota_get_partition_description(running, &running_app_info) == ESP_OK)
+				{
+					ADDLOG_DEBUG(LOG_FEATURE_OTA, "Running firmware version: %s", running_app_info.version);
+				}
+
+				image_header_was_checked = true;
+
+				err = esp_ota_begin(update_partition, OTA_WITH_SEQUENTIAL_WRITES, &update_handle);
+				if(err != ESP_OK)
+				{
+					ADDLOG_ERROR(LOG_FEATURE_OTA, "esp_ota_begin failed (%s)", esp_err_to_name(err));
+					esp_ota_abort(update_handle);
+					return -1;
+				}
+				ADDLOG_DEBUG(LOG_FEATURE_OTA, "esp_ota_begin succeeded");
+			}
+			else
+			{
+				ADDLOG_ERROR(LOG_FEATURE_OTA, "received package is not fit len");
+				esp_ota_abort(update_handle);
+				return -1;
+			}
+		}
+		err = esp_ota_write(update_handle, (const void*)writebuf, writelen);
+		if(err != ESP_OK)
+		{
+			esp_ota_abort(update_handle);
+			return -1;
+		}
+
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "OTA in progress: %.1f%%", (100 - ((float)towrite / fsize) * 100));
+		total += writelen;
+		startaddr += writelen;
+		towrite -= writelen;
+
+		if(towrite > 0)
+		{
+			writebuf = request->received;
+			writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
+			if(writelen < 0)
+			{
+				ADDLOG_DEBUG(LOG_FEATURE_OTA, "recv returned %d - end of data - remaining %d", writelen, towrite);
+			}
+		}
+	} while((towrite > 0) && (writelen >= 0));
+
+	ADDLOG_INFO(LOG_FEATURE_OTA, "OTA in progress: 100%%, total Write binary data length: %d", total);
+
+	err = esp_ota_end(update_handle);
+	if(err != ESP_OK)
+	{
+		if(err == ESP_ERR_OTA_VALIDATE_FAILED)
+		{
+			ADDLOG_ERROR(LOG_FEATURE_OTA, "Image validation failed, image is corrupted");
+		}
+		else
+		{
+			ADDLOG_ERROR(LOG_FEATURE_OTA, "esp_ota_end failed (%s)!", esp_err_to_name(err));
+		}
+		return -1;
+	}
+	err = esp_ota_set_boot_partition(update_partition);
+	if(err != ESP_OK)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "esp_ota_set_boot_partition failed (%s)!", esp_err_to_name(err));
+		return -1;
+	}
+
+#elif PLATFORM_RTL87X0C
+
+	uint32_t NewFWLen = 0, NewFWAddr = 0;
+	uint32_t address = 0;
+	uint32_t curr_fw_idx = 0;
+	uint32_t flash_checksum = 0;
+	uint32_t targetFWaddr;
+	uint32_t currentFWaddr;
+	uint32_t fw1_sn;
+	uint32_t fw2_sn;
+	_file_checksum file_checksum;
+	file_checksum.u = 0;
+	unsigned char sig_backup[32];
+	int ret = 1;
+
+	if(request->contentLength >= 0)
+	{
+		towrite = request->contentLength;
+	}
+	NewFWAddr = sys_update_ota_prepare_addr();
+	if(NewFWAddr == -1)
+	{
+		ret = -1;
+		goto update_ota_exit;
+	}
+	get_fw_info(&targetFWaddr, &currentFWaddr, &fw1_sn, &fw2_sn);
+	ADDLOG_INFO(LOG_FEATURE_OTA, "Current FW addr: 0x%08X, target FW addr: 0x%08X, fw1 sn: %u, fw2 sn: %u", currentFWaddr, targetFWaddr, fw1_sn, fw2_sn);
+	curr_fw_idx = sys_update_ota_get_curr_fw_idx();
+	ADDLOG_INFO(LOG_FEATURE_OTA, "Current firmware index is %d", curr_fw_idx);
+	int reserase = update_ota_erase_upg_region(towrite, 0, NewFWAddr);
+	NewFWLen = towrite;
+	if(reserase == -1)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "Erase failed");
+		ret = -1;
+		goto update_ota_exit;
+	}
+	if(NewFWAddr != ~0x0)
+	{
+		address = NewFWAddr;
+		ADDLOG_INFO(LOG_FEATURE_OTA, "Start to read data %i bytes", NewFWLen);
+	}
+	do
+	{
+		// back up signature and only write it to flash till the end of OTA
+		if(startaddr < 32)
+		{
+			memcpy(sig_backup + startaddr, writebuf, (startaddr + writelen > 32 ? (32 - startaddr) : writelen));
+			memset(writebuf, 0xFF, (startaddr + writelen > 32 ? (32 - startaddr) : writelen));
+			ADDLOG_DEBUG(LOG_FEATURE_OTA, "sig_backup for% d bytes from index% d", (startaddr + writelen > 32 ? (32 - startaddr) : writelen), startaddr);
+		}
+
+		device_mutex_lock(RT_DEV_LOCK_FLASH);
+		if(flash_burst_write(&flash_ota, address + startaddr, writelen, (uint8_t*)writebuf) < 0)
+		{
+			ADDLOG_ERROR(LOG_FEATURE_OTA, "Write stream failed");
+			device_mutex_unlock(RT_DEV_LOCK_FLASH);
+			ret = -1;
+			goto update_ota_exit;
+		}
+		device_mutex_unlock(RT_DEV_LOCK_FLASH);
+
+		rtos_delay_milliseconds(10);
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Writelen %i at %i", writelen, total);
+		total += writelen;
+		startaddr += writelen;
+		towrite -= writelen;
+
+		// checksum attached at file end
+		if(startaddr + writelen > NewFWLen - 4)
+		{
+			file_checksum.c[0] = writebuf[writelen - 4];
+			file_checksum.c[1] = writebuf[writelen - 3];
+			file_checksum.c[2] = writebuf[writelen - 2];
+			file_checksum.c[3] = writebuf[writelen - 1];
+		}
+		if(towrite > 0)
+		{
+			writebuf = request->received;
+			writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
+			if(writelen < 0)
+			{
+				ADDLOG_DEBUG(LOG_FEATURE_OTA, "recv returned %d - end of data - remaining %d", writelen, towrite);
+			}
+		}
+	} while((towrite > 0) && (writelen >= 0));
+	ADDLOG_DEBUG(LOG_FEATURE_OTA, "%d total bytes written, verifying checksum", total);
+	uint8_t* buf = (uint8_t*)os_malloc(2048);
+	memset(buf, 0, 2048);
+	// read flash data back and calculate checksum
+	for(int i = 0; i < NewFWLen; i += 2048)
+	{
+		int k;
+		int rlen = (startaddr - 4 - i) > 2048 ? 2048 : (startaddr - 4 - i);
+		device_mutex_lock(RT_DEV_LOCK_FLASH);
+		flash_stream_read(&flash_ota, NewFWAddr + i, rlen, buf);
+		device_mutex_unlock(RT_DEV_LOCK_FLASH);
+		for(k = 0; k < rlen; k++)
+		{
+			if(i + k < 32)
+			{
+				flash_checksum += sig_backup[i + k];
+			}
+			else
+			{
+				flash_checksum += buf[k];
+			}
+		}
+	}
+
+	ADDLOG_INFO(LOG_FEATURE_OTA, "flash checksum 0x%8x attached checksum 0x%8x", flash_checksum, file_checksum.u);
+
+	if(file_checksum.u != flash_checksum)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "The checksum is wrong!");
+		ret = -1;
+		goto update_ota_exit;
+	}
+	ret = update_ota_signature(sig_backup, NewFWAddr);
+	if(ret == -1)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "Update signature fail");
+		goto update_ota_exit;
+	}
+update_ota_exit:
+	if(ret != -1)
+	{
+		device_mutex_lock(RT_DEV_LOCK_FLASH);
+		flash_write_word(&flash, targetFWaddr, 4294967295);
+		flash_write_word(&flash, currentFWaddr, 0);
+		device_mutex_unlock(RT_DEV_LOCK_FLASH);
+
+		sys_disable_fast_boot();
+		if(buf) free(buf);
+	}
+	else
+	{
+		if(buf) free(buf);
+		return http_rest_error(request, ret, "error");
+	}
 #else
 
 	init_ota(startaddr);
 
-	if (request->contentLength >= 0) {
+	if(request->contentLength >= 0)
+	{
 		towrite = request->contentLength;
 	}
 
-	if (writelen < 0 || (startaddr + writelen > maxaddr)) {
+	if(writelen < 0 || (startaddr + writelen > maxaddr))
+	{
 		ADDLOG_DEBUG(LOG_FEATURE_OTA, "ABORTED: %d bytes to write", writelen);
 		return http_rest_error(request, -20, "writelen < 0 or end > 0x200000");
 	}
 
-	do {
+	do
+	{
 		//ADDLOG_DEBUG(LOG_FEATURE_OTA, "%d bytes to write", writelen);
 		add_otadata((unsigned char*)writebuf, writelen);
 		total += writelen;
 		startaddr += writelen;
 		towrite -= writelen;
-		if (towrite > 0) {
+		if(towrite > 0)
+		{
 			writebuf = request->received;
 			writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
-			if (writelen < 0) {
+			if(writelen < 0)
+			{
 				ADDLOG_DEBUG(LOG_FEATURE_OTA, "recv returned %d - end of data - remaining %d", writelen, towrite);
 			}
 		}
-	} while ((towrite > 0) && (writelen >= 0));
+	} while((towrite > 0) && (writelen >= 0));
 	close_ota();
 #endif
-
 	ADDLOG_DEBUG(LOG_FEATURE_OTA, "%d total bytes written", total);
 	http_setup(request, httpMimeTypeJson);
 	hprintf255(request, "{\"size\":%d}", total);
 	poststr(request, NULL);
+	CFG_IncrementOTACount();
 	return 0;
 }
 
@@ -1858,9 +2306,13 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 		res = bl_flash_read(startaddr, (uint8_t *)buffer, readlen);
 #elif PLATFORM_W600 || PLATFORM_W800
 		res = 0;
-#elif PLATFORM_LN882H
+#elif PLATFORM_LN882H || PLATFORM_ESPIDF || PLATFORM_TR6260
 // TODO:LN882H flash read?
         res = 0;
+#elif PLATFORM_RTL87X0C
+		device_mutex_lock(RT_DEV_LOCK_FLASH);
+		flash_stream_read(&flash, startaddr, readlen, (uint8_t*)buffer);
+		device_mutex_unlock(RT_DEV_LOCK_FLASH);
 #else
 		res = flash_read((char*)buffer, readlen, startaddr);
 #endif

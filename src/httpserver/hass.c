@@ -6,6 +6,8 @@
 #include "../driver/drv_public.h"
 #include "../new_pins.h"
 
+#if ENABLE_HA_DISCOVERY
+
 /*
 Abbreviated node names - https://www.home-assistant.io/docs/mqtt/discovery/
 Light - https://www.home-assistant.io/integrations/light.mqtt/
@@ -51,7 +53,7 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 		break;
 
 	case ENERGY_METER_SENSOR:
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#ifdef ENABLE_DRIVER_BL0937
 		sprintf(uniq_id, "%s_sensor_%s", longDeviceName, DRV_GetEnergySensorNames(index)->hass_uniq_id_suffix);
 #endif
 		break;
@@ -243,7 +245,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 			break;
 		case ENERGY_METER_SENSOR:
 			isSensor = true;
-	#ifndef OBK_DISABLE_ALL_DRIVERS
+	#ifdef ENABLE_DRIVER_BL0937
 			if (index <= OBK__LAST)
 				sprintf(g_hassBuffer, "%s", DRV_GetEnergySensorNames(index)->name_friendly);
 			else
@@ -324,13 +326,13 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 	cJSON_AddStringToObject(info->root, "~", CFG_GetMQTTClientId());      //base topic
 	// remove availability information for sensor to keep last value visible on Home Assistant
 	bool flagavty = false;
-	flagavty = CFG_HasFlag(OBK_FLAG_NOT_PUBLISH_AVAILABILITY_SENSOR);
+	flagavty = CFG_HasFlag(OBK_FLAG_NOT_PUBLISH_AVAILABILITY);
 	// if door sensor is running, then deep sleep will be invoked mostly, then we dont want availability
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	if (DRV_IsRunning("DoorSensor") == false && DRV_IsRunning("tmSensor") == false)
 #endif
 	{
-		if (!isSensor || !flagavty) {
+		if (!isSensor && !flagavty) {
 			cJSON_AddStringToObject(info->root, "avty_t", "~/connected");   //availability_topic, `online` value is broadcasted
 		}
 	}
@@ -367,6 +369,7 @@ HassDeviceInfo* hass_init_relay_device_info(int index, ENTITY_TYPE type, bool bT
 	return info;
 }
 
+#if ENABLE_LED_BASIC
 /// @brief Initializes HomeAssistant light device discovery storage.
 /// @param type 
 /// @return 
@@ -433,6 +436,7 @@ HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type) {
 
 	return info;
 }
+#endif
 
 /// @brief Initializes HomeAssistant binary sensor device discovery storage.
 /// @param index
@@ -455,7 +459,7 @@ HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse) {
 	return info;
 }
 
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#ifdef ENABLE_DRIVER_BL0937
 
 /// @brief Initializes HomeAssistant power sensor device discovery storage.
 /// @param index Index corresponding to energySensor_t.
@@ -471,8 +475,8 @@ HassDeviceInfo* hass_init_energy_sensor_device_info(int index) {
 	info = hass_init_device_info(ENERGY_METER_SENSOR, index, NULL, NULL);
 
 	cJSON_AddStringToObject(info->root, "dev_cla", DRV_GetEnergySensorNames(index)->hass_dev_class);   //device_class=voltage,current,power, energy, timestamp
-	cJSON_AddStringToObject(info->root, "unit_of_meas", DRV_GetEnergySensorNames(index)->units);   //unit_of_measurement. Sets as empty string if not present. HA doesn't seem to mind
-
+	//20241024 XJIKKA unit_of_meas is set bellow (was set twice)
+	//cJSON_AddStringToObject(info->root, "unit_of_meas", DRV_GetEnergySensorNames(index)->units);   //unit_of_measurement. Sets as empty string if not present. HA doesn't seem to mind
 	sprintf(g_hassBuffer, "~/%s/get", DRV_GetEnergySensorNames(index)->name_mqtt);
 	cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 
@@ -481,8 +485,19 @@ HassDeviceInfo* hass_init_energy_sensor_device_info(int index) {
 		cJSON_AddStringToObject(info->root, "stat_cla", "total_increasing");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH) ? "kWh" : "Wh");
 	} else {
-		cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
-		cJSON_AddStringToObject(info->root, "unit_of_meas", DRV_GetEnergySensorNames(index)->units);
+		//20241024 XJIKKA skip measurement for timestamp - HASS log:
+		//HASS:	energy_clear_date (<class 'homeassistant.components.mqtt.sensor.MqttSensor'>) is using state class 'measurement' 
+		//		which is impossible considering device class ('timestamp') it is using; expected None; 
+		if (strcmp(DRV_GetEnergySensorNames(index)->hass_dev_class,"timestamp")) {
+			cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
+		}
+		//20241024 XJIKKA if unit is not set (drv_bl_shared.c @ "power_factor"), mqtt value unit_of_meas was empty - HASS log:
+		//HASS:	sensor...power_factor is using native unit of measurement '' which is not a valid unit 
+		//		for the device class ('power_factor') it is using; expected one of ['no unit of measurement', '%']; 
+		//solution is to skip empty 
+		if (strlen(DRV_GetEnergySensorNames(index)->units)>0) {
+			cJSON_AddStringToObject(info->root, "unit_of_meas", DRV_GetEnergySensorNames(index)->units);
+		}
 	}
 	// if (index == OBK_CONSUMPTION_STATS) { //hide this as its not working anyway at present
 	// 	cJSON_AddStringToObject(info->root, "enabled_by_default ", "false");
@@ -496,9 +511,7 @@ HassDeviceInfo* hass_init_energy_sensor_device_info(int index) {
 // {{ float(value)*0.1 }} for value=12 give 1.2000000000000002, using round() to limit the decimal places
 // 2023 10 19 - it is not a perfect solution, it's better to use:
 // {{ '%0.2f'|format(states('sensor.varasto2_osram_temp')|float + 0.7) }}
-//
 char *hass_generate_multiplyAndRound_template(int decimalPlacesForRounding, int decimalPointOffset, int divider) {
-#if 1
 	char tmp[8];
 	int i;
 
@@ -511,28 +524,11 @@ char *hass_generate_multiplyAndRound_template(int decimalPlacesForRounding, int 
 		for (i = 1; i < decimalPointOffset; i++) {
 			strcat(g_hassBuffer, "0");
 		}
-		strcat(g_hassBuffer, "1");
+		sprintf(tmp, "%i", divider);
+		strcat(g_hassBuffer, tmp);
 	}
 	strcat(g_hassBuffer, ") }}");
-#else
-	char tmp[8];
-	int i;
 
-	strcpy(g_hassBuffer, "{{ float(value)*");
-	if (decimalPointOffset != 0) {
-		strcat(g_hassBuffer, "0.");
-		for (i = 1; i < decimalPointOffset; i++) {
-			strcat(g_hassBuffer, "0");
-		}
-	}
-	// usually it's 1
-	sprintf(tmp, "%i", divider);
-	strcat(g_hassBuffer, tmp);
-	strcat(g_hassBuffer, "|round(");
-	sprintf(tmp, "%i", decimalPlacesForRounding);
-	strcat(g_hassBuffer, tmp);
-	strcat(g_hassBuffer, ") }}");
-#endif
 	return g_hassBuffer;
 }
 
@@ -615,6 +611,12 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 		cJSON_AddStringToObject(info->root, "dev_cla", "battery");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "%");
 		cJSON_AddStringToObject(info->root, "stat_t", "~/battery/get");
+		break;
+	case BATTERY_CHANNEL_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "battery");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "%");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		break;
 	case BATTERY_VOLTAGE_SENSOR:
 		cJSON_AddStringToObject(info->root, "dev_cla", "voltage");
@@ -760,3 +762,5 @@ void hass_free_device_info(HassDeviceInfo* info) {
 
 	os_free(info);
 }
+
+#endif // ENABLE_HA_DISCOVERY

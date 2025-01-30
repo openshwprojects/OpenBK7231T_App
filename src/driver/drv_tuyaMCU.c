@@ -84,6 +84,7 @@ static byte g_resetWiFiEvents = 0;
 #define			DP_TYPE_RAW_TAC2121C_YESTERDAY	202
 #define			DP_TYPE_RAW_TAC2121C_LASTMONTH	203
 #define			DP_TYPE_PUBLISH_TO_MQTT			204
+#define			DP_TYPE_RAW_VCPPfF				205
 
 const char* TuyaMCU_GetDataTypeString(int dpId) {
 	if (DP_TYPE_RAW == dpId)
@@ -137,6 +138,7 @@ const char* TuyaMCU_GetCommandTypeLabel(int t) {
 		return "TUYA_CMD_REPORT_STATUS_RECORD_TYPE";
 	return "Unknown";
 }
+
 typedef struct rtcc_s {
 	uint8_t       second;
 	uint8_t       minute;
@@ -154,14 +156,14 @@ typedef struct rtcc_s {
 typedef struct tuyaMCUMapping_s {
 	// internal Tuya variable index
 	byte dpId;
-	// target channel
-	byte channel;
 	// data point type (one of the DP_TYPE_xxx defines)
 	byte dpType;
 	// true if it's supposed to be sent in dp cache
 	byte bDPCache;
 	// could be renamed to flags later?
 	byte inv;
+	// target channel
+	short channel;
 	// store last channel value to avoid sending it again
 	int prevValue;
 	// allow storing raw data for later usage
@@ -348,6 +350,12 @@ tuyaMCUMapping_t* TuyaMCU_MapIDToChannel(int dpId, int dpType, int channel, int 
 	return cur;
 }
 
+// now you can detect TuyaMCU faults with event handler
+// addChangeHandler MissedHeartbeats > 4 setChannel 0 1
+void TuyaMCU_SetHeartbeatCounter(int v) {
+	EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_MISSEDHEARTBEATS, heartbeat_counter, v);
+	heartbeat_counter = v;
+}
 
 // header version command lenght data checksum
 // 55AA     00      00      0000   xx   00
@@ -819,6 +827,9 @@ int TuyaMCU_ParseDPType(const char *dpTypeString) {
 		// linkTuyaMCUOutputToChannel 6 RAW_TAC2121C_VCP
 		dpType = DP_TYPE_RAW_TAC2121C_VCP;
 	}
+	else if (!stricmp(dpTypeString, "RAW_VCPPfF")) {
+		dpType = DP_TYPE_RAW_VCPPfF;
+	}
 	else if (!stricmp(dpTypeString, "RAW_TAC2121C_Yesterday")) {
 		dpType = DP_TYPE_RAW_TAC2121C_YESTERDAY;
 	}
@@ -865,7 +876,7 @@ commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void* context, const ch
 	dpId = Tokenizer_GetArgInteger(0);
 	dpTypeString = Tokenizer_GetArg(1);
 	dpType = TuyaMCU_ParseDPType(dpTypeString);
-	if (argsCount < 2) {
+	if (argsCount < 3) {
 		channelID = -999;
 	}
 	else {
@@ -1052,10 +1063,15 @@ void TuyaMCU_SendNetworkStatus()
 	else if (Main_HasWiFiConnected() != 0) {
 		state = Main_HasMQTTConnected() != 0 ? TUYA_NETWORK_STATUS_CONNECTED_TO_CLOUD : TUYA_NETWORK_STATUS_CONNECTED_TO_ROUTER;
 	}
+	// allow override
+	if (state < g_defaultTuyaMCUWiFiState) {
+		state = g_defaultTuyaMCUWiFiState;
+	}
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "SendNetworkStatus: sending status 0x%X to MCU \n", state);
 	TuyaMCU_SendCommandWithData(0x2B, &state, 1);
 }
 void TuyaMCU_ForcePublishChannelValues() {
+#if ENABLE_MQTT
 	tuyaMCUMapping_t* cur;
 
 	cur = g_tuyaMappings;
@@ -1063,6 +1079,7 @@ void TuyaMCU_ForcePublishChannelValues() {
 		MQTT_ChannelPublish(cur->channel, 0);
 		cur = cur->next;
 	}
+#endif
 }
 // ntp_timeZoneOfs 2
 // addRepeatingEvent 10 -1 uartSendHex 55AA0008000007
@@ -1079,6 +1096,7 @@ void TuyaMCU_ApplyMapping(tuyaMCUMapping_t* mapping, int dpID, int value) {
 	int mappedValue = value;
 
 	// hardcoded values
+#if ENABLE_LED_BASIC
 	if (dpID == g_tuyaMCUled_id_power) {
 		LED_SetEnableAll(value);
 	}
@@ -1090,7 +1108,7 @@ void TuyaMCU_ApplyMapping(tuyaMCUMapping_t* mapping, int dpID, int value) {
 		// TuyaMCU sends in 0-1000 range, we need 0-100
 		LED_SetDimmerForDisplayOnly(value*0.1f);
 	}
-
+#endif
 
 	if (mapping == 0) {
 		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "ApplyMapping: id %i (val %i) not mapped\n", dpID, value);
@@ -1190,7 +1208,6 @@ void TuyaMCU_OnChannelChanged(int channel, int iVal) {
 	if (iVal != mappediVal) {
 		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "OnChannelChanged: mapped value %d (OpenBK7321T_App range) to %d (TuyaMCU range)\n", iVal, mappediVal);
 	}
-
 	// send value to TuyaMCU
 	switch (mapping->dpType)
 	{
@@ -1210,6 +1227,7 @@ void TuyaMCU_OnChannelChanged(int channel, int iVal) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "OnChannelChanged: channel %d: unsupported data point type %d-%s\n", channel, mapping->dpType, TuyaMCU_GetDataTypeString(mapping->dpType));
 		break;
 	}
+	//mapping->prevValue = iVal;
 }
 
 void TuyaMCU_ParseQueryProductInformation(const byte* data, int len) {
@@ -1493,7 +1511,9 @@ void TuyaMCU_PublishDPToMQTT(const byte *data, int ofs) {
 	if (*s == 0)
 		return;
 
+#if ENABLE_MQTT
 	MQTT_PublishMain_StringString(sName, s, OBK_PUBLISH_FLAG_FORCE_REMOVE_GET);
+#endif
 }
 void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 	tuyaMCUMapping_t* mapping;
@@ -1586,19 +1606,61 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 
 					}
 				}
+				break; 
+				case DP_TYPE_RAW_VCPPfF:
+				{
+					if (sectorLen == 15) {
+						int iV, iC, iP, iPf, iF;
+						// voltage
+						iV = data[ofs + 0 + 4] << 8 | data[ofs + 1 + 4];
+						// current
+						iC = data[ofs + 3 + 4] << 8 | data[ofs + 4 + 4];
+						// power
+						iP = data[ofs + 6 + 4] << 8 | data[ofs + 7 + 4];
+						// pf
+						iPf = data[ofs + 11 + 4] << 8 | data[ofs + 12 + 4];
+						// freq
+						iF = data[ofs + 13 + 4] << 8 | data[ofs + 14 + 4];
+						if (mapping->channel < 0) {
+							CHANNEL_SetFirstChannelByType(ChType_Voltage_div10, iV);
+							CHANNEL_SetFirstChannelByType(ChType_Current_div1000, iC);
+							CHANNEL_SetFirstChannelByType(ChType_Power, iP);
+							CHANNEL_SetFirstChannelByType(ChType_PowerFactor_div1000, iPf);
+							CHANNEL_SetFirstChannelByType(ChType_Frequency_div1000, iF);
+						}
+						else {
+							CHANNEL_Set(mapping->channel, iV, 0);
+							CHANNEL_Set(mapping->channel + 1, iC, 0);
+							CHANNEL_Set(mapping->channel + 2, iP, 0);
+							CHANNEL_Set(mapping->channel + 3, iPf, 0);
+							CHANNEL_Set(mapping->channel + 4, iF, 0);
+						}
+					}
+					else {
+
+					}
+				}
 				break;
 				case DP_TYPE_RAW_TAC2121C_VCP:
 				{
 					if (sectorLen == 8 || sectorLen == 10) {
+						int iV, iC, iP;
 						// voltage
-						iVal = data[ofs + 0 + 4] << 8 | data[ofs + 1 + 4];
-						CHANNEL_SetFirstChannelByType(ChType_Voltage_div10, iVal);
+						iV = data[ofs + 0 + 4] << 8 | data[ofs + 1 + 4];
 						// current
-						iVal = data[ofs + 3 + 4] << 8 | data[ofs + 4 + 4];
-						CHANNEL_SetFirstChannelByType(ChType_Current_div1000, iVal);
+						iC = data[ofs + 3 + 4] << 8 | data[ofs + 4 + 4];
 						// power
-						iVal = data[ofs + 6 + 4] << 8 | data[ofs + 7 + 4];
-						CHANNEL_SetFirstChannelByType(ChType_Power, iVal);
+						iP = data[ofs + 6 + 4] << 8 | data[ofs + 7 + 4];
+						if (mapping->channel < 0) {
+							CHANNEL_SetFirstChannelByType(ChType_Voltage_div10, iV);
+							CHANNEL_SetFirstChannelByType(ChType_Current_div1000, iC);
+							CHANNEL_SetFirstChannelByType(ChType_Power, iP);
+						}
+						else {
+							CHANNEL_Set(mapping->channel, iV, 0);
+							CHANNEL_Set(mapping->channel+1, iC, 0);
+							CHANNEL_Set(mapping->channel+2, iP, 0);
+						}
 					}
 					else {
 
@@ -1760,7 +1822,7 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 	{
 	case TUYA_CMD_HEARTBEAT:
 		heartbeat_valid = true;
-		heartbeat_counter = 0;
+		TuyaMCU_SetHeartbeatCounter(0);
 		break;
 	case TUYA_CMD_MCU_CONF:
 		working_mode_valid = true;
@@ -1784,6 +1846,8 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		else if (dataCount == 2)
 		{
 			self_processing_mode = false;
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "IMPORTANT!!! mcu conf pins: %i %i",
+				(int)(data[6]), (int)(data[7]));
 		}
 		if (5 + dataCount + 2 != len) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: TUYA_CMD_MCU_CONF had wrong data lenght?");
@@ -1810,11 +1874,39 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 			wifi_state_valid = true;
 		}
 		break;
+	case TUYA_CMD_WIFI_SELECT:
+		{
+			// This was added for this user:
+			// https://www.elektroda.com/rtvforum/topic3937723.html
+			if (version == 0) {
+				// 0x05 packet for version 0 (not 0x03) of TuyaMCU
+				// This packet has no datetime stamp
+				TuyaMCU_V0_ParseRealTimeWithRecordStorage(data + 6, len - 6, false);
+			}
+			else {
+				// TUYA_CMD_WIFI_SELECT
+				// it should have 1 payload byte, AP mode or EZ mode, but does it make difference for us?
+				g_openAP = 1;
+			}
+			break;
+		}
+		break;
 	case TUYA_CMD_WIFI_RESET:
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: 0x04 replying");
 		// added for https://www.elektroda.com/rtvforum/viewtopic.php?p=21095905#21095905
 		TuyaMCU_SendCommandWithData(0x04, 0, 0);
 		break;
+	case 0x22:
+		{
+			TuyaMCU_ParseStateMessage(data + 6, len - 6);
+
+			byte data23[1] = { 1 };
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: 0x22 replying");
+			// For example, the module returns 55 aa 00 23 00 01 01 24
+			TuyaMCU_SendCommandWithData(0x23, data23, 1);
+		}
+		break;
+
 		
 	case TUYA_CMD_STATE:
 		TuyaMCU_ParseStateMessage(data + 6, len - 6);
@@ -1868,17 +1960,6 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		TuyaMCU_V0_SendDPCacheReply();
 	}
 	break;
-	case 0x05:
-		// This was added for this user:
-		// https://www.elektroda.com/rtvforum/topic3937723.html
-		if (version == 0) {
-			// 0x05 packet for version 0 (not 0x03) of TuyaMCU
-			// This packet has no datetime stamp
-			TuyaMCU_V0_ParseRealTimeWithRecordStorage(data + 6, len - 6, false);
-		}
-		else {
-		}
-		break;
 	case TUYA_CMD_WEATHERDATA:
 		TuyaMCU_ParseWeatherData(data + 6, len - 6);
 		break;
@@ -2047,7 +2128,7 @@ void TuyaMCU_RunStateMachine_V3() {
 		/* Generate heartbeat to keep communication alove */
 		TuyaMCU_SendCommandWithData(TUYA_CMD_HEARTBEAT, NULL, 0);
 		heartbeat_timer = 3;
-		heartbeat_counter++;
+		TuyaMCU_SetHeartbeatCounter(heartbeat_counter+1);
 		if (heartbeat_counter >= 4)
 		{
 			/* unanswerred heartbeats -> lost communication */
@@ -2298,7 +2379,7 @@ void TuyaMCU_Init()
 	}
 
 	UART_InitUART(g_baudRate, 0);
-	UART_InitReceiveRingBuffer(512);
+	UART_InitReceiveRingBuffer(1024);
 	// uartSendHex 55AA0008000007
 	//cmddetail:{"name":"tuyaMcu_testSendTime","args":"",
 	//cmddetail:"descr":"Sends a example date by TuyaMCU to clock/callendar MCU",
@@ -2345,9 +2426,8 @@ void TuyaMCU_Init()
 	//cmddetail:"fn":"TuyaMCU_SendMCUConf","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_sendMCUConf", TuyaMCU_SendMCUConf, NULL);
-
-	//cmddetail:{"name":"tuyaMcu_sendCmd","args":"TuyaMCU_SendUserCmd",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"tuyaMcu_sendCmd","args":"[CommandIndex] [HexPayloadNBytes]",
+	//cmddetail:"descr":"This will automatically calculate TuyaMCU checksum and length for given command ID and payload, then it will send a command. It's better to use it than uartSendHex",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_sendCmd", TuyaMCU_SendUserCmd, NULL);

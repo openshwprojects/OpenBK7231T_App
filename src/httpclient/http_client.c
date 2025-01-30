@@ -7,6 +7,7 @@
  */
 
 #include "../new_common.h"
+#include "../obk_config.h"
 #include "../cmnds/cmd_public.h"
 #include "include.h"
 #include "utils_timer.h"
@@ -14,6 +15,8 @@
 #include "http_client.h"
 #include "rtos_pub.h"
 #include "../logging/logging.h"
+
+#if ENABLE_SEND_POSTANDGET
 
 #include "iot_export_errno.h"
 
@@ -1300,13 +1303,17 @@ int HTTPClient_Async_SendPost(const char *url_in, int http_port, const char *con
 		// NOTE: remember to free it!
 		request->flags |= HTTPREQUEST_FLAG_FREE_HEADER;
 	}
-	client_data->post_buf = CMD_ExpandingStrdup(post_content);  //Sets the user data to be posted.
-	client_data->post_buf_len = strlen(client_data->post_buf);  //Sets the post data length.
-	// NOTE: remember to free it!
-	request->flags |= HTTPREQUEST_FLAG_FREE_POST_BUF;
-	client_data->post_content_type = strdup(content_type);  //Sets the content type.
-	// NOTE: remember to free it!
-	request->flags |= HTTPREQUEST_FLAG_FREE_POST_CONTENT_TYPE;
+
+	if (post_content) {
+		client_data->post_buf = CMD_ExpandingStrdup(post_content);  //Sets the user data to be posted.
+		client_data->post_buf_len = strlen(client_data->post_buf);  //Sets the post data length.
+		// NOTE: remember to free it!
+		request->flags |= HTTPREQUEST_FLAG_FREE_POST_BUF;
+		client_data->post_content_type = strdup(content_type);  //Sets the content type.
+		// NOTE: remember to free it!
+		request->flags |= HTTPREQUEST_FLAG_FREE_POST_CONTENT_TYPE;
+	}
+
 	request->data_callback = 0;
 	request->port = http_port;
 	request->url = url;
@@ -1317,3 +1324,6 @@ int HTTPClient_Async_SendPost(const char *url_in, int http_port, const char *con
 
 	return 0;
 }
+
+#endif // ENABLE_SEND_POSTANDGET
+

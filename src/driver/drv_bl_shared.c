@@ -1,4 +1,7 @@
 #include "drv_bl_shared.h"
+#include "../obk_config.h"
+
+#if ENABLE_BL_SHARED
 
 #include "../new_cfg.h"
 #include "../new_pins.h"
@@ -572,6 +575,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 					sensors[OBK_CONSUMPTION_LAST_HOUR].lastReading  += energyCounterMinutes[i];
 				}
 			}
+#if ENABLE_MQTT
             if ((energyCounterStatsJSONEnable == true) && (MQTT_IsReady() == true))
             {
                 root = cJSON_CreateObject();
@@ -632,6 +636,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
                 stat_updatesSent++;
                 os_free(msg);
             }
+#endif
 
             if (energyCounterMinutes != NULL)
             {
@@ -689,6 +694,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				break;
 			}
 
+#if ENABLE_MQTT
             if (MQTT_IsReady() == true)
             {
 				sensors[i].lastSentValue = sensors[i].lastReading;
@@ -710,10 +716,11 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 				} else { //all other sensors
 					float val = sensors[i].lastReading;
 					if (sensors[i].names.units == UNIT_WH) val = BL_ChangeEnergyUnitIfNeeded(val);
-					MQTT_PublishMain_StringFloat(sensors[i].names.name_mqtt, val, sensors[i].rounding_decimals, 0);
+					MQTT_PublishMain_StringFloat(sensors[i].names.name_mqtt, val, sensors[i].rounding_decimals, OBK_PUBLISH_FLAG_QOS_ZERO);
 				}
 				stat_updatesSent++;
 			}
+#endif
         } else {
             // no change frame
             sensors[i].noChangeFrame++;
@@ -826,3 +833,6 @@ energySensorNames_t* DRV_GetEnergySensorNames(energySensor_t type)
 {
 	return &sensors[type].names;
 }
+
+#endif
+

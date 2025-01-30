@@ -1,3 +1,5 @@
+#ifndef __SIM_IMPORT_H__
+#define __SIM_IMPORT_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,3 +24,5 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+#endif // __SIM_IMPORT_H__

@@ -30,6 +30,7 @@ bool CRecentList::load(const char *fname) {
 		cJSON *cPath = cJSON_GetObjectItemCaseSensitive(jObject, "path");
 		push_back(cPath->valuestring);
 	}
+	free(jsonData);
 	return true;
 }
 void CRecentList::save(const char *fname) {

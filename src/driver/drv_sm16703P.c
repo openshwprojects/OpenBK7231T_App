@@ -52,6 +52,45 @@ bool SM16703P_VerifyPixel(uint32_t pixel, byte r, byte g, byte b) {
 }
 
 
+void SM16703P_setPixel(int pixel, int r, int g, int b) {
+	if (!spiLED.ready)
+		return;
+	// Load data in correct format
+	int b0, b1, b2;
+	if (color_order == SM16703P_COLOR_ORDER_RGB) {
+		b0 = r;
+		b1 = g;
+		b2 = b;
+	}
+	else if (color_order == SM16703P_COLOR_ORDER_RBG) {
+		b0 = r;
+		b1 = b;
+		b2 = g;
+	}
+	else if (color_order == SM16703P_COLOR_ORDER_BRG) {
+		b0 = b;
+		b1 = r;
+		b2 = g;
+	}
+	else if (color_order == SM16703P_COLOR_ORDER_BGR) {
+		b0 = b;
+		b1 = g;
+		b2 = r;
+	}
+	else if (color_order == SM16703P_COLOR_ORDER_GRB) {
+		b0 = g;
+		b1 = r;
+		b2 = b;
+	}
+	else if (color_order == SM16703P_COLOR_ORDER_GBR) {
+		b0 = g;
+		b1 = b;
+		b2 = r;
+	}
+	translate_byte(b0, spiLED.buf + (spiLED.ofs + 0 + (pixel * 3 * 4)));
+	translate_byte(b1, spiLED.buf + (spiLED.ofs + 4 + (pixel * 3 * 4)));
+	translate_byte(b2, spiLED.buf + (spiLED.ofs + 8 + (pixel * 3 * 4)));
+}
 void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 
 	// Return if driver is not loaded
@@ -66,98 +105,22 @@ void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 	uint8_t *dst = spiLED.buf + spiLED.ofs;
 	for (uint32_t i = 0; i < pixel; i++) {
 		uint8_t r, g, b;
-		if (color_order == SM16703P_COLOR_ORDER_RGB) {
-			r = *data++;
-			g = *data++;
-			b = *data++;
-		}
-		if (color_order == SM16703P_COLOR_ORDER_RBG) {
-			r = *data++;
-			b = *data++;
-			g = *data++;
-		}
-		if (color_order == SM16703P_COLOR_ORDER_BRG) {
-			b = *data++;
-			r = *data++;
-			g = *data++;
-		}
-		if (color_order == SM16703P_COLOR_ORDER_BGR) {
-			b = *data++;
-			g = *data++;
-			r = *data++;
-		}
-		if (color_order == SM16703P_COLOR_ORDER_GRB) {
-			g = *data++;
-			r = *data++;
-			b = *data++;
-		}
-		if (color_order == SM16703P_COLOR_ORDER_GBR) {
-			g = *data++;
-			b = *data++;
-			r = *data++;
-		}
-
-		*dst++ = translate_2bit((r >> 6));
-		*dst++ = translate_2bit((r >> 4));
-		*dst++ = translate_2bit((r >> 2));
-		*dst++ = translate_2bit(r);
-		*dst++ = translate_2bit((g >> 6));
-		*dst++ = translate_2bit((g >> 4));
-		*dst++ = translate_2bit((g >> 2));
-		*dst++ = translate_2bit(g);
-		*dst++ = translate_2bit((b >> 6));
-		*dst++ = translate_2bit((b >> 4));
-		*dst++ = translate_2bit((b >> 2));
-		*dst++ = translate_2bit(b);
+		r = *data++;
+		g = *data++;
+		b = *data++;
+		SM16703P_setPixel((int)i, (int)r, (int)g, (int)b);
 	}
 	if (push) {
 		SPIDMA_StartTX(spiLED.msg);
 	}
 }
-void SM16703P_setPixel(int pixel, int r, int g, int b) {
-	if (!spiLED.ready)
-		return;
-	// Load data in correct format
-	int b0, b1, b2;
-	if (color_order == SM16703P_COLOR_ORDER_RGB) {
-		b0 = r;
-		b1 = g;
-		b2 = b;
-	}
-	if (color_order == SM16703P_COLOR_ORDER_RBG) {
-		b0 = r;
-		b1 = b;
-		b2 = g;
-	}
-	if (color_order == SM16703P_COLOR_ORDER_BRG) {
-		b0 = b;
-		b1 = r;
-		b2 = g;
-	}
-	if (color_order == SM16703P_COLOR_ORDER_BGR) {
-		b0 = b;
-		b1 = g;
-		b2 = r;
-	}
-	if (color_order == SM16703P_COLOR_ORDER_GRB) {
-		b0 = g;
-		b1 = r;
-		b2 = b;
-	}
-	if (color_order == SM16703P_COLOR_ORDER_GBR) {
-		b0 = g;
-		b1 = b;
-		b2 = r;
-	}
-	translate_byte(b0, spiLED.buf + (spiLED.ofs + 0 + (pixel * 3 * 4)));
-	translate_byte(b1, spiLED.buf + (spiLED.ofs + 4 + (pixel * 3 * 4)));
-	translate_byte(b2, spiLED.buf + (spiLED.ofs + 8 + (pixel * 3 * 4)));
-}
 extern float g_brightness0to100;//TODO
 void SM16703P_setPixelWithBrig(int pixel, int r, int g, int b) {
+#if ENABLE_LED_BASIC
 	r = (int)(r * g_brightness0to100*0.01f);
 	g = (int)(g * g_brightness0to100*0.01f);
 	b = (int)(b * g_brightness0to100*0.01f);
+#endif
 	SM16703P_setPixel(pixel,r, g, b);
 }
 #define SCALE8_PIXEL(x, scale) (uint8_t)(((uint32_t)x * (uint32_t)scale) / 256)

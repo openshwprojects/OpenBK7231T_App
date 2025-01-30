@@ -84,12 +84,23 @@ void DGR_SpoofNextDGRPacketSource(const char* ipStrs);
 void TuyaMCU_Sensor_RunEverySecond();
 void TuyaMCU_Sensor_Init();
 
+void DRV_Test_Charts_AddToHtmlPage(http_request_t *request);
+
+void DRV_Charts_AddToHtmlPage(http_request_t *request);
+void DRV_Charts_Init();
 
 void DRV_Toggler_ProcessChanges(http_request_t* request);
 void DRV_Toggler_AddToHtmlPage(http_request_t* request);
 void DRV_Toggler_AppendInformationToHTTPIndexPage(http_request_t* request);
+void DRV_Toggler_QuickTick();
 void DRV_InitPWMToggler();
 
+void DRV_Widget_AddToHtmlPage(http_request_t *request);
+void DRV_Widget_BeforeState(http_request_t* request);
+void DRV_Widget_Init();
+
+void DRV_OpenWeatherMap_Init();
+void OWM_AppendInformationToHTTPIndexPage(http_request_t *request);
 
 void DRV_HTTPButtons_ProcessChanges(http_request_t* request);
 void DRV_HTTPButtons_AddToHtmlPage(http_request_t* request);
@@ -166,6 +177,8 @@ void PixelAnim_SetAnim(int j);
 void Drawers_Init();
 void Drawers_QuickTick();
 
+void HGS02_Init(void);
+void HGS02_RunEverySecond(void);
 
 #define SM2135_DELAY         4
 

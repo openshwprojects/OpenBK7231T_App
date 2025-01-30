@@ -5,92 +5,7 @@
 #include "../cmnds/cmd_public.h"
 #include "../cmnds/cmd_local.h"
 #include "../logging/logging.h"
-
-#if PLATFORM_BK7231T | PLATFORM_BK7231N
-#include "../../beken378/func/user_driver/BkDriverUart.h"
-#endif
-
-#if PLATFORM_BL602
-#include <vfs.h>
-#include <bl_uart.h>
-#include <bl_irq.h>
-#include <event_device.h>
-#include <cli.h>
-#include <aos/kernel.h>
-#include <aos/yloop.h>
-
-#include <FreeRTOS.h>
-#include <task.h>
-#include <timers.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-
-#include <vfs.h>
-#include <aos/kernel.h>
-#include <aos/yloop.h>
-#include <event_device.h>
-#include <cli.h>
-
-#include <lwip/tcpip.h>
-#include <lwip/sockets.h>
-#include <lwip/netdb.h>
-#include <lwip/tcp.h>
-#include <lwip/err.h>
-#include <http_client.h>
-#include <netutils/netutils.h>
-
-#include <bl602_glb.h>
-#include <bl602_hbn.h>
-
-#include <bl_uart.h>
-#include <bl_chip.h>
-#include <bl_wifi.h>
-#include <hal_wifi.h>
-#include <bl_sec.h>
-#include <bl_cks.h>
-#include <bl_irq.h>
-#include <bl_dma.h>
-#include <bl_timer.h>
-#include <bl_gpio_cli.h>
-#include <bl_wdt_cli.h>
-#include <hal_uart.h>
-#include <hal_sys.h>
-#include <hal_gpio.h>
-#include <hal_boot2.h>
-#include <hal_board.h>
-#include <looprt.h>
-#include <loopset.h>
-#include <sntp.h>
-#include <bl_sys_time.h>
-#include <bl_sys.h>
-#include <bl_sys_ota.h>
-#include <bl_romfs.h>
-#include <fdt.h>
-#include <device/vfs_uart.h>
-#include <utils_log.h>
-#include <bl602_uart.h>
-
-#include <easyflash.h>
-#include <bl60x_fw_api.h>
-#include <wifi_mgmr_ext.h>
-#include <utils_log.h>
-#include <libfdt.h>
-#include <blog.h>
-// backlog logtype none; startDriver BL0942
-#endif
-#if PLATFORM_BK7231T | PLATFORM_BK7231N
-// from uart_bk.c
-extern void bk_send_byte(UINT8 uport, UINT8 data);
-int g_chosenUART = BK_UART_1;
-#elif WINDOWS
-
-#elif PLATFORM_BL602
-//int g_fd;
-uint8_t g_id = 1;
-int fd_console = -1;
-#else
-#endif
+#include "../hal/hal_uart.h"
 
 static byte *g_recvBuf = 0;
 static int g_recvBufSize = 0;
@@ -102,6 +17,8 @@ int g_uart_init_counter = 0;
 int g_uart_manualInitCounter = -1;
 
 void UART_InitReceiveRingBuffer(int size){
+    //XJIKKA 20241122 - Note that the actual usable buffer size must be g_recvBufSize-1, 
+    //otherwise there would be no difference between an empty and a full buffer.
 	if(g_recvBuf!=0)
         free(g_recvBuf);
 	g_recvBuf = (byte*)malloc(size);
@@ -114,7 +31,7 @@ void UART_InitReceiveRingBuffer(int size){
 int UART_GetDataSize() {
     return (g_recvBufIn >= g_recvBufOut
                 ? g_recvBufIn - g_recvBufOut
-                : g_recvBufIn + (g_recvBufSize - g_recvBufOut) + 1);
+                : g_recvBufIn + (g_recvBufSize - g_recvBufOut)); //XJIKKA 20241122 fixed buffer size calculation on ring bufferroverflow
 }
 
 byte UART_GetByte(int idx) {
@@ -131,76 +48,20 @@ void UART_AppendByteToReceiveRingBuffer(int rc) {
         g_recvBuf[g_recvBufIn++] = rc;
         g_recvBufIn %= g_recvBufSize;
     }
-}
-
-#if PLATFORM_BK7231T | PLATFORM_BK7231N
-void test_ty_read_uart_data_to_buffer(int port, void* param)
-{
-    int rc = 0;
-
-    while((rc = uart_read_byte(port)) != -1)
-		UART_AppendByteToReceiveRingBuffer(rc);
-}
-#endif
-
-#ifdef PLATFORM_BL602
-//void UART_RunQuickTick() {
-//}
-//void MY_UART1_IRQHandler(void)
-//{
-//	int length;
-//	byte buffer[16];
-//	//length = aos_read(g_fd, buffer, 1);
-//	//if (length > 0) {
-//	//	UART_AppendByteToReceiveRingBuffer(buffer[0]);
-//	//}
-//	int res = bl_uart_data_recv(g_id);
-//	if (res >= 0) {
-//		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "UART received: %i\n", res);
-//		UART_AppendByteToReceiveRingBuffer(res);
-//	}
-//}
-
-static void console_cb_read(int fd, void *param)
-{
-	char buffer[64];  /* adapt to usb cdc since usb fifo is 64 bytes */
-    int ret;
-    int i;
-
-    ret = aos_read(fd, buffer, sizeof(buffer));
-    if (ret > 0) {
-        if (ret < sizeof(buffer)) {
-            fd_console = fd;
-            buffer[ret] = 0;
-			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "BL602 received: %s\n", buffer);
-            for (i = 0; i < ret; i++) {
-				UART_AppendByteToReceiveRingBuffer(buffer[i]);
-            }
-		}
-		else {
-            printf("-------------BUG from aos_read for ret\r\n");
-        }
+    //XJIKKA 20241122 if the same pointer is reached (in and out), we must also advance 
+    //the outbuffer pointer, otherwise UART_GetDataSize will return g_recvBufSize.
+    //This way now we always have the last (g_recvBufSize - 1) bytes
+    if (g_recvBufIn == g_recvBufOut) {
+      g_recvBufOut++;
+      g_recvBufOut %= g_recvBufSize;
     }
 }
-#endif
 
-void UART_SendByte(byte b) {
-#if PLATFORM_BK7231T | PLATFORM_BK7231N
-    // BK_UART_1 is defined to 0
-    bk_send_byte(g_chosenUART, b);
-#elif WINDOWS
-    void SIM_AppendUARTByte(byte b);
-    // STUB - for testing
-    SIM_AppendUARTByte(b);
-#if 1
-    printf("%02X", b);
-#endif
-    //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"%02X", b);
-#elif PLATFORM_BL602
-    aos_write(fd_console, &b, 1);
-	//bl_uart_data_send(g_id, b);
-#endif
+void UART_SendByte(byte b) 
+{
+    HAL_UART_SendByte(b);
 }
+
 commandResult_t CMD_UART_Send_Hex(const void *context, const char *cmd, const char *args, int cmdFlags) {
     if (!(*args)) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "CMD_UART_Send_Hex: requires 1 argument (hex string, like FFAABB00CCDD\n");
@@ -274,60 +135,15 @@ commandResult_t CMD_UART_Send_ASCII(const void *context, const char *cmd, const 
     return CMD_RES_OK;
 }
 
-void UART_ResetForSimulator() {
+void UART_ResetForSimulator() 
+{
 	g_uart_init_counter = 0;
 }
 
-int UART_InitUART(int baud, int parity) {
+int UART_InitUART(int baud, int parity)
+{
     g_uart_init_counter++;
-#if PLATFORM_BK7231T | PLATFORM_BK7231N
-    bk_uart_config_t config;
-
-    config.baud_rate = baud;
-    config.data_width = 0x03;
-	config.parity = parity;    //0:no parity,1:odd,2:even
-	config.stop_bits = 0;   //0:1bit,1:2bit
-	config.flow_control = 0;   //FLOW_CTRL_DISABLED
-    config.flags = 0;
-
-
-    // BK_UART_1 is defined to 0
-    if (CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART)) {
-        g_chosenUART = BK_UART_2;
-	}
-	else {
-        g_chosenUART = BK_UART_1;
-    }
-    bk_uart_initialize(g_chosenUART, &config, NULL);
-	bk_uart_set_rx_callback(g_chosenUART, test_ty_read_uart_data_to_buffer, NULL);
-#elif PLATFORM_BL602
-    if (fd_console < 0) {
-		//uint8_t tx_pin = 16;
-		//uint8_t rx_pin = 7;
-		//bl_uart_init(g_id, tx_pin, rx_pin, 0, 0, baud);
-		//g_fd = aos_open(name, 0);
-		//bl_uart_int_rx_enable(1);
-		//bl_irq_register(UART1_IRQn, MY_UART1_IRQHandler);
-		//bl_irq_enable(UART1_IRQn);
-		//vfs_uart_init_simple_mode(0, 7, 16, baud, "/dev/ttyS0");
-
-        if (CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART)) {
-            fd_console = aos_open("/dev/ttyS1", 0);
-		}
-		else {
-            fd_console = aos_open("/dev/ttyS0", 0);
-        }
-        if (fd_console >= 0) {
-            aos_ioctl(fd_console, IOCTL_UART_IOC_BAUD_MODE, baud);
-			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Init CLI with event Driven\r\n");
-            aos_cli_init(0);
-			aos_poll_read_fd(fd_console, console_cb_read, (void*)0x12345678);
-		}
-		else {
-			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "failed CLI with event Driven\r\n");
-        }
-    }
-#endif
+    HAL_UART_Init(baud, parity);
     return g_uart_init_counter;
 }
 
@@ -373,9 +189,10 @@ commandResult_t CMD_UART_Init(const void *context, const char *cmd, const char *
 
     baud = Tokenizer_GetArgInteger(0);
 
+    UART_InitReceiveRingBuffer(512);
+
     UART_InitUART(baud, 0);
     g_uart_manualInitCounter = g_uart_init_counter;
-    UART_InitReceiveRingBuffer(512);
 
     return CMD_RES_OK;
 }

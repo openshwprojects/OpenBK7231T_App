@@ -21,6 +21,16 @@ int cmd_uartInitIndex = 0;
 #elif PLATFORM_LN882H
 #include <wifi.h>
 #include <power_mgmt/ln_pm.h>
+#elif PLATFORM_ESPIDF
+#include "esp_wifi.h"
+#include "esp_pm.h"
+#include "esp_sleep.h"
+#include "driver/rtc_io.h"
+#include "driver/gpio.h"
+#include "driver/ledc.h"
+#include "esp_check.h"
+#elif PLATFORM_RTL87X0C
+#include "wifi_conf.h"
 #endif
 
 #define HASH_SIZE 128
@@ -111,6 +121,62 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 		g_ln882h_pendingPowerSaveCommand = bOn;
 	}
 	else LN882H_ApplyPowerSave(bOn);
+#elif defined(PLATFORM_ESPIDF)
+	if(Tokenizer_GetArgsCount() > 1)
+	{
+		int tx = Tokenizer_GetArgInteger(1);
+		int8_t maxtx = 0;
+		esp_wifi_get_max_tx_power(&maxtx);
+		if(tx > maxtx / 4)
+		{
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "TX power maximum is: %ddBm, entered: %idBm", maxtx / 4, tx);
+		}
+		else
+		{
+			esp_wifi_set_max_tx_power(tx * 4);
+			ADDLOG_INFO(LOG_FEATURE_CMD, "Setting TX power to: %idBm", tx);
+		}
+	}
+	if(Tokenizer_GetArgsCount() > 3)
+	{
+		int minfreq = Tokenizer_GetArgInteger(2);
+		int maxfreq = Tokenizer_GetArgInteger(3);
+		esp_pm_config_t pm_config = {
+				.max_freq_mhz = maxfreq,
+				.min_freq_mhz = minfreq,
+		};
+		esp_pm_configure(&pm_config);
+		ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave freq scaling, min: %iMhz, max: %iMhz", minfreq, maxfreq);
+	}
+	else if(bOn >= 2)
+	{
+		ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave max_modem");
+		esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
+	}
+	else if(bOn == 1)
+	{
+		ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave min_modem");
+		esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
+	}
+	else
+	{
+		ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave disabled");
+		esp_wifi_set_ps(WIFI_PS_NONE);
+	}
+#elif PLATFORM_RTL87X0C
+	if(!wifi_is_up(RTW_STA_INTERFACE))
+	{
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "Wifi is not on or in AP mode, failed setting powersave!");
+		return CMD_RES_ERROR;
+	}
+	if(bOn)
+	{
+		wifi_enable_powersave();
+	}
+	else
+	{
+		wifi_disable_powersave();
+	}
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave is not implemented on this platform");
 #endif    
@@ -139,12 +205,17 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 	bk_wlan_ps_wakeup_with_timer(timeMS);
 	return CMD_RES_OK;
 #elif defined(PLATFORM_W600)
-
+#elif defined(PLATFORM_ESPIDF)
+	esp_sleep_enable_timer_wakeup(timeMS * 1000000);
+#if CONFIG_IDF_TARGET_ESP32
+	rtc_gpio_isolate(GPIO_NUM_12);
+#endif
+	esp_deep_sleep_start();
 #endif
 
 	return CMD_RES_OK;
 }
-
+#if ENABLE_HA_DISCOVERY
 static commandResult_t CMD_ScheduleHADiscovery(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int delay;
 
@@ -159,6 +230,7 @@ static commandResult_t CMD_ScheduleHADiscovery(const void* context, const char* 
 
 	return CMD_RES_OK;
 }
+#endif
 static commandResult_t CMD_SetFlag(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int flag, val;
 
@@ -238,7 +310,8 @@ static commandResult_t CMD_ClearAll(const void* context, const char* cmd, const 
 	CHANNEL_ClearAllChannels();
 	CMD_ClearAllHandlers(0, 0, 0, 0);
 	RepeatingEvents_Cmd_ClearRepeatingEvents(0, 0, 0, 0);
-#if defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_BEKEN) || defined(PLATFORM_LN882H)
+#if defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_BEKEN) || defined(PLATFORM_LN882H) \
+ || defined(PLATFORM_ESPIDF) || defined(PLATFORM_TR6260) || defined(PLATFORM_RTL87X0C)
 	CMD_resetSVM(0, 0, 0, 0);
 #endif
 
@@ -290,6 +363,7 @@ static commandResult_t CMD_StartupCommand(const void* context, const char* cmd, 
 	// so we know arguments count in Tokenizer. 'cmd' argument is
 	// only for warning display
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Cmd is %s",g_cfg.initCommandLine);
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	cmdToSet = Tokenizer_GetArg(0);
@@ -619,6 +693,33 @@ commandResult_t CMD_PWMFrequency(const void* context, const char* cmd, const cha
 	}
 	
 	g_pwmFrequency = Tokenizer_GetArgInteger(0);
+
+#ifdef PLATFORM_ESPIDF
+	esp_err_t err = ledc_set_freq(LEDC_LOW_SPEED_MODE, LEDC_TIMER_0, (uint32_t)g_pwmFrequency);
+	if(err == ESP_ERR_INVALID_ARG)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "ledc_set_freq: invalid arg");
+		return CMD_RES_BAD_ARGUMENT;
+	}
+	else if(err == ESP_FAIL)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "ledc_set_freq: Can not find a proper pre-divider number base on the given frequency and the current duty_resolution");
+		return CMD_RES_ERROR;
+	}
+#endif
+	return CMD_RES_OK;
+}
+commandResult_t CMD_IndexRefreshInterval(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1))
+	{
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	g_indexAutoRefreshInterval = Tokenizer_GetArgInteger(0);
 	return CMD_RES_OK;
 }
 commandResult_t CMD_DeepSleep_SetEdge(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -686,7 +787,7 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DeepSleep", CMD_DeepSleep, NULL);
 	//cmddetail:{"name":"PowerSave","args":"[Optional 1 or 0, by default 1 is assumed]",
-	//cmddetail:"descr":"Enables dynamic power saving mode on Beken N/T, BL602, W600 and LN882H. In the case of LN882H PowerSave will not work as a startup command, so use in autoexec. On LN882H PowerSave 1 = light sleep and Powersave >1 (eg PowerSave 2) = deeper sleep. On LN882H PowerSave 1 should be used if BL0937 metering is present. On all supported platforms PowerSave 0 can be used to disable power saving.",
+	//cmddetail:"descr":"Enables dynamic power saving mode on Beken N/T, BL602, W600, W800 and LN882H. In the case of LN882H PowerSave will not work as a startup command, so use in autoexec. On LN882H PowerSave 1 = light sleep and Powersave >1 (eg PowerSave 2) = deeper sleep. On LN882H PowerSave 1 should be used if BL0937 metering is present. On all supported platforms PowerSave 0 can be used to disable power saving.",
 	//cmddetail:"fn":"CMD_PowerSave","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PowerSave", CMD_PowerSave, NULL);
@@ -700,11 +801,13 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_HTTPOTA","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("ota_http", CMD_HTTPOTA, NULL);
+#if ENABLE_HA_DISCOVERY
 	//cmddetail:{"name":"scheduleHADiscovery","args":"[Seconds]",
 	//cmddetail:"descr":"This will schedule HA discovery, the discovery will happen with given number of seconds, but timer only counts when MQTT is connected. It will not work without MQTT online, so you must set MQTT credentials first.",
 	//cmddetail:"fn":"CMD_ScheduleHADiscovery","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("scheduleHADiscovery", CMD_ScheduleHADiscovery, NULL);
+#endif
 	//cmddetail:{"name":"flags","args":"[IntegerValue]",
 	//cmddetail:"descr":"Sets the device flags",
 	//cmddetail:"fn":"CMD_Flags","file":"cmnds/cmd_main.c","requires":"",
@@ -765,8 +868,15 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PWMFrequency", CMD_PWMFrequency, NULL);
+
+	//cmddetail:{"name":"IndexRefreshInterval","args":"[Interval]",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("IndexRefreshInterval", CMD_IndexRefreshInterval, NULL);
 	
-#if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602) || (defined PLATFORM_LN882H)
+	
+#if ENABLE_OBK_SCRIPTING
 	CMD_InitScripting();
 #endif
 	if (!bSafeMode) {
@@ -780,10 +890,13 @@ void CMD_Init_Early() {
 
 
 void CMD_Init_Delayed() {
+#if ENABLE_TCP_COMMANDLINE
 	if (CFG_HasFlag(OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER)) {
 		CMD_StartTCPCommandLine();
 	}
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602)
+#endif
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) \
+ || defined(PLATFORM_RTL87X0C)
 	UART_AddCommands();
 #endif
 }
@@ -824,7 +937,10 @@ void CMD_RegisterCommand(const char* name, commandHandler_t handler, void* conte
 	// check
 	newCmd = CMD_Find(name);
 	if (newCmd != 0) {
-		ADDLOG_ERROR(LOG_FEATURE_CMD, "command with name %s already exists!", name);
+		// it happens very often in Simulator due to the lack of the ability to remove commands
+		if (newCmd->handler != handler) {
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "command with name %s already exists!", name);
+		}
 		return;
 	}
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "Adding command %s", name);

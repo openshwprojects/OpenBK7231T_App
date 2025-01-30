@@ -27,6 +27,9 @@ public:
 	virtual const char *getClassName() const {
 		return "CLine";
 	}
+	Coord &getPos2() {
+		return pos2;
+	}
 };
 
 #endif // __LINE_H__

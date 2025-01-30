@@ -1,4 +1,8 @@
 
+#include "../obk_config.h"
+
+#if ENABLE_MQTT 
+
 #include "new_mqtt.h"
 #include "../new_common.h"
 #include "../new_pins.h"
@@ -11,7 +15,9 @@
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_tuyaMCU.h"
 #include "../ota/ota.h"
+#ifndef WINDOWS
 #include <lwip/dns.h>
+#endif
 
 #define BUILD_AND_VERSION_FOR_MQTT "Open" PLATFORM_MCU_NAME " " USER_SW_VER " " __DATE__ " " __TIME__ 
 
@@ -29,7 +35,6 @@
 // triggers a one-shot timer to cause read.
 extern void MQTT_TriggerRead();
 #endif
-
 
 // these won't exist except on Beken?
 #ifndef LOCK_TCPIP_CORE
@@ -221,7 +226,7 @@ int mqtt_reconnect = 0;
 // set for the device to broadcast self state on start
 int g_bPublishAllStatesNow = 0;
 int g_publishItemIndex = PUBLISHITEM_ALL_INDEX_FIRST;
-static bool g_firstFullBroadcast = true;  //Flag indicating that we need to do a full broadcast
+//static bool g_firstFullBroadcast = true;  //Flag indicating that we need to do a full broadcast
 
 int g_memoryErrorsThisSession = 0;
 int g_mqtt_bBaseTopicDirty = 0;
@@ -240,7 +245,8 @@ void MQTT_PublishWholeDeviceState_Internal(bool bAll)
 void MQTT_PublishWholeDeviceState()
 {
 	//Publish all status items once. Publish only dynamic items after that.
-	MQTT_PublishWholeDeviceState_Internal(g_firstFullBroadcast);
+	//MQTT_PublishWholeDeviceState_Internal(g_firstFullBroadcast);
+	MQTT_PublishWholeDeviceState_Internal(1);
 }
 
 void MQTT_PublishOnlyDeviceChannelsIfPossible()
@@ -261,7 +267,7 @@ static struct mqtt_connect_client_info_t mqtt_client_info =
   100,  /* keep alive */
   NULL, /* will_topic */
   NULL, /* will_msg */
-  0,    /* will_qos */
+  1,    /* will_qos */
   0     /* will_retain */
 #if LWIP_ALTCP && LWIP_ALTCP_TLS
   , NULL
@@ -558,7 +564,7 @@ int channelGet(obk_mqtt_request_t* request) {
 	}
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelGet part topic %s", p);
-
+#if ENABLE_LED_BASIC
 	if (stribegins(p, "led_enableAll")) {
 		LED_SendEnableAllState();
 		return 1;
@@ -579,11 +585,12 @@ int channelGet(obk_mqtt_request_t* request) {
 		sendColorChange();
 		return 1;
 	}
+#endif
 
 	// atoi won't parse any non-decimal chars, so it should skip over the rest of the topic.
 	channel = atoi(p);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelGet channel %i", channel);
+	//addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelGet channel %i", channel);
 
 	// if channel out of range, stop here.
 	if ((channel < 0) || (channel > 32)) {
@@ -620,7 +627,7 @@ int channelSet(obk_mqtt_request_t* request) {
 	//addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "channelSet channel %i", channel);
 
 	// if channel out of range, stop here.
-	if ((channel < 0) || (channel > 32)) {
+	if ((channel < 0) || (channel > CHANNEL_MAX)) {
 		return 0;
 	}
 
@@ -807,7 +814,11 @@ static void mqtt_pub_request_cb(void* arg, err_t result)
 static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const char* sTopic, const char* sChannel, const char* sVal, int flags, bool appendGet)
 {
 	err_t err;
-	u8_t qos = 2; /* 0 1 or 2, see MQTT specification */
+	u8_t qos = 1; /* 0 1 or 2, see MQTT specification */
+	if (flags & OBK_PUBLISH_FLAG_QOS_ZERO)
+	{
+		qos = 0;
+	}
 	u8_t retain = 0; /* No don't retain such crappy payload... */
 	size_t sVal_len;
 	char* pub_topic;
@@ -839,6 +850,10 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 		retain = 1;
 	}
 	if (flags & OBK_PUBLISH_FLAG_FORCE_REMOVE_GET)
+	{
+		appendGet = false;
+	}
+	if (CFG_HasFlag(OBK_FLAG_MQTT_NEVERAPPENDGET))
 	{
 		appendGet = false;
 	}
@@ -1196,16 +1211,34 @@ static int MQTT_do_connect(mqtt_client_t* client)
 	mqtt_client_info.will_topic = will_topic;
 	mqtt_client_info.will_msg = "offline";
 	mqtt_client_info.will_retain = true;
-	mqtt_client_info.will_qos = 2;
+	mqtt_client_info.will_qos = 1;
 
-	//hostEntry = gethostbyname(mqtt_host);
+#ifdef WINDOWS
+	hostEntry = gethostbyname(mqtt_host);
+	// host name/ip
+	if (NULL != hostEntry)
+	{
+		if (hostEntry->h_addr_list && hostEntry->h_addr_list[0]) {
+			int len = hostEntry->h_length;
+			if (len > 4) {
+				addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host resolves to addr len > 4\r\n");
+				len = 4;
+			}
+			memcpy(&mqtt_ip, hostEntry->h_addr_list[0], len);
+		}
+		else {
+			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host resolves no addresses?\r\n");
+			snprintf(mqtt_status_message, sizeof(mqtt_status_message), "mqtt_host resolves no addresses?");
+			return 0;
+		}
+#else
 	if (dns_in_progress_time <= 0 && !dns_resolved)
 	{
-	#ifdef PLATFORM_XR809
+#ifdef PLATFORM_XR809
 		res = dns_gethostbyname(mqtt_host, &mqtt_ip_resolved, dnsFound, NULL);
-	#else
+#else
 	    res = dns_gethostbyname_addrtype(mqtt_host, &mqtt_ip_resolved, dnsFound, NULL, LWIP_DNS_ADDRTYPE_IPV4);
-	#endif
+#endif
 		if (ERR_OK == res)
 		{
 			dns_in_progress_time = 0;
@@ -1228,9 +1261,7 @@ static int MQTT_do_connect(mqtt_client_t* client)
 		dns_resolved = false;
 		memcpy(&mqtt_ip, &mqtt_ip_resolved, sizeof(mqtt_ip_resolved));
 
-
-		// host name/ip
-		//ipaddr_aton(mqtt_host,&mqtt_ip);
+#endif
 
 		/* Initiate client and connect to server, if this fails immediately an error code is returned
 		  otherwise mqtt_connection_cb will be called with connection result after attempting
@@ -1372,7 +1403,7 @@ commandResult_t MQTT_PublishCommand(const void* context, const char* cmd, const 
 	OBK_Publish_Result ret;
 	int flags = 0;
 
-	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS);
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS | TOKENIZER_EXPAND_EARLY);
 
 	if (Tokenizer_GetArgsCount() < 2) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish command requires two arguments (topic and value)");
@@ -1502,7 +1533,7 @@ void MQTT_Test_Tick(void* param)
 	BENCHMARK_TEST_INFO* info = (BENCHMARK_TEST_INFO*)param;
 	int block = 1;
 	err_t err;
-	int qos = 2;
+	int qos = 1;
 	int retain = 0;
 
 	if (info != NULL)
@@ -1612,19 +1643,11 @@ static BENCHMARK_TEST_INFO* info = NULL;
 
 #if WINDOWS
 
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF || PLATFORM_TR6260 || PLATFORM_RTL87X0C
 static void mqtt_timer_thread(void* param)
 {
 	while (1)
 	{
-		vTaskDelay(MQTT_TMR_DURATION);
-		MQTT_Test_Tick(param);
-	}
-}
-#elif PLATFORM_W600 || PLATFORM_W800
-static void mqtt_timer_thread(void* param)
-{
-	while (1) {
 		vTaskDelay(MQTT_TMR_DURATION);
 		MQTT_Test_Tick(param);
 	}
@@ -1660,9 +1683,7 @@ commandResult_t MQTT_StartMQTTTestThread(const void* context, const char* cmd, c
 
 #if WINDOWS
 
-#elif PLATFORM_BL602
-	xTaskCreate(mqtt_timer_thread, "mqtt", 1024, (void*)info, 15, NULL);
-#elif PLATFORM_W600 || PLATFORM_W800
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF || PLATFORM_TR6260 || PLATFORM_RTL87X0C
 	xTaskCreate(mqtt_timer_thread, "mqtt", 1024, (void*)info, 15, NULL);
 #elif PLATFORM_XR809 || PLATFORM_LN882H
 	OS_TimerSetInvalid(&timer);
@@ -1850,23 +1871,29 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 
 	case PUBLISHITEM_SELF_DYNAMIC_LIGHTSTATE:
 	{
+#if ENABLE_LED_BASIC
 		if (LED_IsLEDRunning()) {
 			return LED_SendEnableAllState();
 		}
+#endif
 		return OBK_PUBLISH_WAS_NOT_REQUIRED;
 	}
 	case PUBLISHITEM_SELF_DYNAMIC_LIGHTMODE:
 	{
+#if ENABLE_LED_BASIC
 		if (LED_IsLEDRunning()) {
 			return LED_SendCurrentLightModeParam_TempOrColor();
 		}
+#endif
 		return OBK_PUBLISH_WAS_NOT_REQUIRED;
 	}
 	case PUBLISHITEM_SELF_DYNAMIC_DIMMER:
 	{
+#if ENABLE_LED_BASIC
 		if (LED_IsLEDRunning()) {
 			return LED_SendDimmerChange();
 		}
+#endif
 		return OBK_PUBLISH_WAS_NOT_REQUIRED;
 	}
 
@@ -1902,11 +1929,12 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 		sprintf(dataStr, "%d", LWIP_GetActiveSockets());
 		return MQTT_DoItemPublishString("sockets", dataStr);
 
-
+#ifndef NO_CHIP_TEMPERATURE
 	case PUBLISHITEM_SELF_TEMP:
 		sprintf(dataStr, "%.2f", getInternalTemperature());
 		return MQTT_DoItemPublishString("temp", dataStr);
-		
+#endif
+
 	case PUBLISHITEM_SELF_RSSI:
 		sprintf(dataStr, "%d", HAL_GetWifiStrength());
 		return MQTT_DoItemPublishString("rssi", dataStr);
@@ -1920,7 +1948,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 		return MQTT_DoItemPublishString("freeheap", dataStr);
 
 	case PUBLISHITEM_SELF_IP:
-		g_firstFullBroadcast = false; //We published the last status item, disable full broadcast
+		//g_firstFullBroadcast = false; //We published the last status item, disable full broadcast
 		return MQTT_DoItemPublishString("ip", HAL_GetMyIPString());
 
 	default:
@@ -2352,3 +2380,4 @@ bool MQTT_IsReady() {
 	return mqtt_client && res;
 }
 
+#endif // ENABLE_MQTT

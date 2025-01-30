@@ -6,7 +6,7 @@ byte UART_GetByte(int idx);
 void UART_ConsumeBytes(int idx);
 void UART_AppendByteToReceiveRingBuffer(int rc);
 void UART_SendByte(byte b);
-void UART_InitUART(int baud, int parity);
+int UART_InitUART(int baud, int parity);
 void UART_AddCommands();
 void UART_RunEverySecond();
 

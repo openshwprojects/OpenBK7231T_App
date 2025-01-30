@@ -3,7 +3,6 @@
 #include "selftest_local.h"
 
 void Test_ChargeLimitDriver() {
-	int i;
 	// reset whole device
 	SIM_ClearOBK(0);
 

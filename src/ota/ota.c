@@ -14,6 +14,7 @@
 #include "../logging/logging.h"
 #include "../httpclient/http_client.h"
 #include "../driver/drv_public.h"
+#include "../driver/drv_bl_shared.h"
 
 static unsigned char *sector = (void *)0;
 int sectorlen = 0;
@@ -111,6 +112,7 @@ static void store_sector(unsigned int addr, unsigned char *data){
     OTA_IncrementProgress(SECTOR_SIZE);
 }
 
+#if ENABLE_SEND_POSTANDGET
 
 httprequest_t httprequest;
 
@@ -148,10 +150,12 @@ int myhttpclientcallback(httprequest_t* request){
       CFG_IncrementOTACount();
       // make sure it's saved before reboot
 	  CFG_Save_IfThereArePendingChanges();
+#if ENABLE_BL_SHARED
       if (DRV_IsMeasuringPower())
       {
         BL09XX_SaveEmeteringStatistics();
       }
+#endif
       rtos_delay_milliseconds(1000);
       bk_reboot();
       break;
@@ -217,6 +221,12 @@ void otarequest(const char *urlin){
   OTA_ResetProgress();
   OTA_IncrementProgress(1);
  }
+#else
+
+void otarequest(const char *urlin) {
+	addLogAdv(LOG_INFO, LOG_FEATURE_OTA, "");
+}
+#endif
 
 #endif
 
