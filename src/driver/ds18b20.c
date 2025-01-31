@@ -559,7 +559,6 @@ int DS18B20_set_channel(DeviceAddress devaddr,int c)
 };
 
 int devstr2DeviceAddr(DeviceAddress *devaddr, char *dev){
-#include <inttypes.h>
 	char *p=dev;
 	DeviceAddress daddr;
 	int s;
