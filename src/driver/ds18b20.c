@@ -607,6 +607,8 @@ void DS18B20_driver_Init()
 	int Pin = PIN_FindPinIndexForRole(IOR_DS1820_IO, 99);
 	if(Pin != 99)
 	{
+		ds18_count=0;
+		reset_search();
 		ds18b20_init(Pin);
 		DS18B20_fill_devicelist();
 	}
