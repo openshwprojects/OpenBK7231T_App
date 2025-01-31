@@ -24,6 +24,10 @@
 #include "esp_sleep.h"
 #endif
 
+#if ENABLE_DRIVER_DS18B20
+#include "driver/ds18b20.h"
+#endif
+
 
 // According to your need to modify the constants.
 #define PIN_TMR_DURATION      QUICK_TMR_DURATION // Delay (in ms) between button scan iterations
@@ -1589,6 +1593,9 @@ bool CHANNEL_IsInUse(int ch) {
 			}
 		}
 	}
+#if ENABLE_DRIVER_DS18B20
+	return ds18b20_used_channel(ch);
+#endif
 	return false;
 }
 

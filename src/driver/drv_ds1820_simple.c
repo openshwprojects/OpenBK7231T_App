@@ -1,5 +1,6 @@
 #include "drv_ds1820_simple.h"
 #include "../hal/hal_generic.h"
+#include "OneWire_common.h"
 #if PLATFORM_ESPIDF
 #include "freertos/task.h"
 #define noInterrupts() portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;taskENTER_CRITICAL(&mux)
@@ -20,14 +21,16 @@ static int ds18_conversionPeriod = 0;
 
 #define DS1820_LOG(x, fmt, ...) addLogAdv(LOG_##x, LOG_FEATURE_SENSOR, "DS1820[%i] - " fmt, Pin, ##__VA_ARGS__)
 
+
+/*
 // usleep adopted from DHT driver
-void usleepds(int r)
+void OWusleep(int r)
 {
 	HAL_Delay_us(r);
 }
 
 // add some "special timing" for Beken - works w/o and with powerSave 1 for me
-void usleepshort(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
+void OWusleepshort(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 {
 #if PLATFORM_BEKEN
 	int newr = r / (3 * g_powersave + 1);		// devide by 4 if powerSave set to 1
@@ -39,11 +42,11 @@ void usleepshort(int r) //delay function do 10*r nops, because rtos_delay_millis
 	}
 
 #else
-	usleepds(r);
+	OWusleep(r);
 #endif
 }
 
-void usleepmed(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
+void OWusleepmed(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 {
 #if PLATFORM_BEKEN
 	int newr = 10 * r / (10 + 5 * g_powersave);		// devide by 1.5 powerSave set to 1
@@ -58,11 +61,11 @@ void usleepmed(int r) //delay function do 10*r nops, because rtos_delay_millisec
 	}
 
 #else
-	usleepds(r);
+	OWusleep(r);
 #endif
 }
 
-void usleeplong(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
+void OWusleeplong(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 {
 #if PLATFORM_BEKEN
 	int newr = 10 * r / (10 + 5 * g_powersave);		// devide by 1.5 powerSave set to 1
@@ -77,9 +80,10 @@ void usleeplong(int r) //delay function do 10*r nops, because rtos_delay_millise
 	}
 
 #else
-	usleepds(r);
+	OWusleep(r);
 #endif
 }
+*/
 
 /*
 
@@ -119,12 +123,12 @@ int OWReset(int Pin)
 	//usleep(OWtimeG);
 	HAL_PIN_Setup_Output(Pin);
 	HAL_PIN_SetOutputValue(Pin, 0); // Drives DQ low
-	usleeplong(OWtimeH);
+	OWusleeplong(OWtimeH);
 	HAL_PIN_SetOutputValue(Pin, 1); // Releases the bus
-	usleepmed(OWtimeI);
+	OWusleepmed(OWtimeI);
 	HAL_PIN_Setup_Input(Pin);
 	result = HAL_PIN_ReadDigitalInput(Pin) ^ 0x01; // Sample for presence pulse from slave
-	usleeplong(OWtimeJ); // Complete the reset sequence recovery
+	OWusleeplong(OWtimeJ); // Complete the reset sequence recovery
 	return result; // Return sample presence pulse result
 }
 
@@ -139,10 +143,10 @@ void OWWriteBit(int Pin, int bit)
 		HAL_PIN_Setup_Output(Pin);
 		noInterrupts();
 		HAL_PIN_SetOutputValue(Pin, 0); // Drives DQ low
-		usleepshort(OWtimeA);
+		OWusleepshort(OWtimeA);
 		HAL_PIN_SetOutputValue(Pin, 1); // Releases the bus
 		interrupts();	// hope for the best for the following timer and keep CRITICAL as short as possible
-		usleepmed(OWtimeB); // Complete the time slot and 10us recovery
+		OWusleepmed(OWtimeB); // Complete the time slot and 10us recovery
 	}
 	else
 	{
@@ -150,10 +154,10 @@ void OWWriteBit(int Pin, int bit)
 		HAL_PIN_Setup_Output(Pin);
 		noInterrupts();
 		HAL_PIN_SetOutputValue(Pin, 0); // Drives DQ low
-		usleepmed(OWtimeC);
+		OWusleepmed(OWtimeC);
 		HAL_PIN_SetOutputValue(Pin, 1); // Releases the bus
 		interrupts();	// hope for the best for the following timer and keep CRITICAL as short as possible
-		usleepshort(OWtimeD);
+		OWusleepshort(OWtimeD);
 	}
 }
 
@@ -167,13 +171,13 @@ int OWReadBit(int Pin)
 	noInterrupts();
 	HAL_PIN_Setup_Output(Pin);
 	HAL_PIN_SetOutputValue(Pin, 0); // Drives DQ low
-	usleepshort(OWtimeA);
+	OWusleepshort(OWtimeA);
 	HAL_PIN_SetOutputValue(Pin, 1); // Releases the bus
-	usleepshort(OWtimeE);
+	OWusleepshort(OWtimeE);
 	HAL_PIN_Setup_Input(Pin);
 	result = HAL_PIN_ReadDigitalInput(Pin); // Sample for presence pulse from slave
 	interrupts();	// hope for the best for the following timer and keep CRITICAL as short as possible
-	usleepmed(OWtimeF); // Complete the time slot and 10us recovery
+	OWusleepmed(OWtimeF); // Complete the time slot and 10us recovery
 	return result;
 }
 
@@ -409,27 +413,27 @@ void DS1820_OnEverySecond()
 				DS1820_LOG(ERROR, "Reset failed");
 #if DS1820_DEBUG
 				// if device is not found, maybe "usleep" is not working as expected
-				// lets do usleepds() with numbers 50.000 and 100.00
+				// lets do OWusleep with numbers 50.000 and 100.00
 				// if all is well, it should take 50ms and 100ms
 				// if not, we need to "calibrate" the loop
 				int tempsleep = 5000;
 				portTickType actTick = portTICK_RATE_MS * xTaskGetTickCount();
-				usleepds(tempsleep);
+				OWusleep(tempsleep);
 				int duration = (int)(portTICK_RATE_MS * xTaskGetTickCount() - actTick);
 
-				DS1820_LOG(DEBUG, "usleepds(%i) took %i ms ", tempsleep, duration);
+				DS1820_LOG(DEBUG, "OWusleep(%i) took %i ms ", tempsleep, duration);
 
 				tempsleep = 100000;
 				actTick = portTICK_RATE_MS * xTaskGetTickCount();
-				usleepds(tempsleep);
+				OWusleep(tempsleep);
 				duration = (int)(portTICK_RATE_MS * xTaskGetTickCount() - actTick);
 
-				DS1820_LOG(DEBUG, "usleepds(%i) took %i ms ", tempsleep, duration);
+				DS1820_LOG(DEBUG, "OWusleep(%i) took %i ms ", tempsleep, duration);
 
 				if(duration < 95 || duration > 105)
 				{
-					// calc a new factor for usleepds
-					DS1820_LOG(ERROR, "usleepds duration divergates - proposed factor to adjust usleepds %f ", (float)100 / duration);
+					// calc a new factor for OWusleep
+					DS1820_LOG(ERROR, "OWusleep duration divergates - proposed factor to adjust OWusleep %f ", (float)100 / duration);
 				}
 #endif
 			}

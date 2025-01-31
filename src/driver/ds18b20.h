@@ -24,9 +24,22 @@
 #define DEVICE_DISCONNECTED_RAW -7040
 #define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 #define pgm_read_byte(addr)   (*(const unsigned char *)(addr))
+#define DS18B20MAX	5
+#define DS18B20namel	20
+
 
 typedef uint8_t DeviceAddress[8];
 typedef uint8_t ScratchPad[9];
+typedef struct {
+  DeviceAddress array[DS18B20MAX];
+  uint8_t index;
+  char name[DS18B20MAX][DS18B20namel];
+  float lasttemp[DS18B20MAX];
+  unsigned short last_read[DS18B20MAX];
+  short channel[DS18B20MAX];
+} devicesArray;
+
+bool ds18b20_used_channel(int ch);
 
 // Dow-CRC using polynomial X^8 + X^5 + X^4 + X^0
 // Tiny 2x16 entry CRC table created by Arjen Lentz
@@ -37,6 +50,10 @@ static const uint8_t dscrc2x16_table[] = {
 	0x00, 0x9D, 0x23, 0xBE, 0x46, 0xDB, 0x65, 0xF8,
 	0x8C, 0x11, 0xAF, 0x32, 0xCA, 0x57, 0xE9, 0x74
 };
+
+void DS18B20_OnEverySecond();
+void DS18B20_AppendInformationToHTTPIndexPage(http_request_t* request);
+void DS18B20_driver_Init();
 
 /* *INDENT-OFF* */
 #ifdef __cplusplus
