@@ -352,7 +352,7 @@ void Tokenizer_TokenizeString(const char *s, int flags) {
 		g_argsFrom[g_numArgs] = g_buffer;
 		// some hack, but we fored to have only have one arg, so we can extend the string over array bondaries.
 		// probably better: introducing an union containing g_argsExpanded[][] and one sole string in the same memory area ...
-		CMD_ExpandConstantsWithinString(g_buffer,g_argsExpanded,sizeof(g_argsExpanded)-1);
+		CMD_ExpandConstantsWithinString(g_buffer, (char *)g_argsExpanded,sizeof(g_argsExpanded)-1);
 		g_numArgs = 1;
 		return;
 	}
