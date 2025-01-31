@@ -1175,6 +1175,7 @@ int ChannelType_GetDivider(int type) {
 	case ChType_Current_div1000:
 	case ChType_LeakageCurrent_div1000:
 	case ChType_ReadOnly_div1000:
+	case ChType_Frequency_div1000:
 		return 1000;
 	case ChType_Temperature_div2:
 		return 2;
@@ -1202,6 +1203,7 @@ const char *ChannelType_GetUnit(int type) {
 		return "W";
 	case ChType_Frequency_div10:
 	case ChType_Frequency_div100:
+	case ChType_Frequency_div1000:
 		return "Hz";
 	case ChType_LeakageCurrent_div1000:
 	case ChType_Current_div1000:
@@ -1252,6 +1254,7 @@ const char *ChannelType_GetTitle(int type) {
 		return "Power";
 	case ChType_Frequency_div10:
 	case ChType_Frequency_div100:
+	case ChType_Frequency_div1000:
 		return "Frequency";
 	case ChType_Current_div1000:
 	case ChType_Current_div100:
@@ -2135,6 +2138,7 @@ const char* g_channelTypeNames[] = {
 	"Orp",
 	"Tds",
 	"Motion_n",
+	"Frequency_div1000",
 	"error",
 	"error",
 };
