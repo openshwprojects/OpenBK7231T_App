@@ -1120,11 +1120,7 @@ void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
 
 		// NOTE: this will try to read autoexec.bat,
 		// so ALL commands expected in autoexec.bat should have been registered by now...
-
-#if PLATFORM_BL602
-		// temporary fix
-		CMD_ExecuteCommand(CFG_GetShortStartupCommand(), COMMAND_FLAG_SOURCE_SCRIPT);
-#elif ENABLE_OBK_SCRIPTING
+#if ENABLE_OBK_SCRIPTING
 		SVM_RunStartupCommandAsScript();
 #else
 		CMD_ExecuteCommand(CFG_GetShortStartupCommand(), COMMAND_FLAG_SOURCE_SCRIPT);
