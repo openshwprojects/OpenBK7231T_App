@@ -781,9 +781,6 @@ static int http_rest_get_pins(http_request_t* request) {
 
 static int http_rest_get_channelTypes(http_request_t* request) {
 	int i;
-	int maxToPrint;
-
-	maxToPrint = 32;
 
 	http_setup(request, httpMimeTypeJson);
 	poststr(request, "{\"typenames\":[");
@@ -797,7 +794,7 @@ static int http_rest_get_channelTypes(http_request_t* request) {
 	}
 	poststr(request, "],\"types\":[");
 
-	for (i = 0; i < maxToPrint; i++) {
+	for (i = 0; i < CHANNEL_MAX; i++) {
 		if (i) {
 			hprintf255(request, ",%d", g_cfg.pins.channelTypes[i]);
 		}
