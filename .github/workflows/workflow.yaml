@@ -106,7 +106,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [OpenBK7231T, OpenBK7231N, OpenXR809, OpenBL602, OpenW800, OpenW600, OpenLN882H, OpenTR6260, OpenRTL87X0C, OpenRTL8710B, OpenRTL8710A, OpenBK7238]
+        platform: [OpenBK7231T, OpenBK7231N, OpenBK7238, OpenXR809, OpenBL602, OpenW800, OpenW600, OpenLN882H, OpenTR6260, OpenRTL8710A, OpenRTL8710B, OpenRTL87X0C, OpenRTL8720D]
     steps:
       - name: Source checkout
         uses: actions/checkout@v4

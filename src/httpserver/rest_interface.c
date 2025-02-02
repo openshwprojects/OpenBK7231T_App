@@ -55,14 +55,18 @@ uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
 
 #elif PLATFORM_ESPIDF
 
-#elif PLATFORM_RTL87X0C
+#elif PLATFORM_REALTEK
 
 #include "flash_api.h"
 #include "device_lock.h"
-#include "ota_8710c.h"
 #include "sys_api.h"
 
 extern flash_t flash;
+
+#if PLATFORM_RTL87X0C
+
+#include "ota_8710c.h"
+
 extern uint32_t sys_update_ota_get_curr_fw_idx(void);
 extern uint32_t sys_update_ota_prepare_addr(void);
 extern void sys_disable_fast_boot(void);
@@ -71,25 +75,18 @@ static flash_t flash_ota;
 
 #elif PLATFORM_RTL8710B
 
-#include "flash_api.h"
-#include "device_lock.h"
-#include "sys_api.h"
 #include "rtl8710b_ota.h"
 
-extern flash_t flash;
 extern uint32_t current_fw_idx;
 
 #elif PLATFORM_RTL8710A
 
-#include "flash_api.h"
-#include "device_lock.h"
-#include "sys_api.h"
-
-extern flash_t flash;
 extern uint32_t current_fw_idx;
 
 #undef DEFAULT_FLASH_LEN
 #define DEFAULT_FLASH_LEN 0x400000
+
+#endif
 
 #else
 
@@ -1461,7 +1458,7 @@ static int ota_verify_download(void)
 static int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 {
 
-#if PLATFORM_XR809 || PLATFORM_TR6260
+#if PLATFORM_XR809 || PLATFORM_TR6260 || PLATFORM_RTL8720D
 	return 0;	//Operation not supported yet
 #endif
 

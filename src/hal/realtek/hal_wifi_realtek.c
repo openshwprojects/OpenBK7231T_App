@@ -12,6 +12,14 @@
 #include "tcpip.h"
 #include <dhcp/dhcps.h>
 
+#ifdef PLATFORM_RTL8720D
+#define IW_ENCODE_ALG_NONE RTW_ENCODE_ALG_NONE
+#define IW_ENCODE_ALG_WEP  RTW_ENCODE_ALG_WEP
+#define IW_ENCODE_ALG_CCMP RTW_ENCODE_ALG_CCMP
+#define IW_ENCODE_ALG_OWE  RTW_ENCODE_ALG_PMK
+#define RTW_SECURITY_WPA3_OWE  RTW_SECURITY_WPA3_AES_PSK
+#endif
+
 extern struct netif xnetif[NET_IF_NUM];
 
 typedef struct
@@ -28,15 +36,18 @@ static wifi_data_t wdata = { 0 };
 extern uint8_t wmac[6];
 extern bool g_powersave;
 static int g_bStaticIP = 0;
+static char g_IP[16] = "unknown";
+static char g_GW[16] = "unknown";
+static char g_MS[16] = "unknown";
 
 const char* HAL_GetMyIPString()
 {
-	return ipaddr_ntoa((const ip4_addr_t*)&xnetif[g_bOpenAccessPointMode].ip_addr.addr);
+	return g_IP;
 }
 
 const char* HAL_GetMyGatewayString()
 {
-	return ipaddr_ntoa((const ip4_addr_t*)&xnetif[g_bOpenAccessPointMode].gw.addr);
+	return g_GW;
 }
 
 const char* HAL_GetMyDNSString()
@@ -46,7 +57,7 @@ const char* HAL_GetMyDNSString()
 
 const char* HAL_GetMyMaskString()
 {
-	return ipaddr_ntoa((const ip4_addr_t*)&xnetif[g_bOpenAccessPointMode].netmask.addr);
+	return g_MS;
 }
 
 int WiFI_SetMacAddress(char* mac)
@@ -173,6 +184,12 @@ void wifi_dis_hdl(u8* buf, u32 buf_len, u32 flags, void* userdata)
 	if(g_wifiStatusCallback != NULL)
 	{
 		g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
+		memset(&g_IP, 0, 32);
+		memset(&g_GW, 0, 32);
+		memset(&g_MS, 0, 32);
+		strcpy(&g_IP, "unknown");
+		strcpy(&g_GW, "unknown");
+		strcpy(&g_MS, "unknown");
 	}
 }
 
@@ -189,6 +206,12 @@ void wifi_conned_hdl(u8* buf, u32 buf_len, u32 flags, void* userdata)
 	if(g_wifiStatusCallback != NULL)
 	{
 		g_wifiStatusCallback(WIFI_STA_CONNECTED);
+		memset(&g_IP, 0, 32);
+		memset(&g_GW, 0, 32);
+		memset(&g_MS, 0, 32);
+		strcpy(&g_IP, ipaddr_ntoa((const ip4_addr_t*)&xnetif[g_bOpenAccessPointMode].ip_addr.addr));
+		strcpy(&g_GW, ipaddr_ntoa((const ip4_addr_t*)&xnetif[g_bOpenAccessPointMode].gw.addr));
+		strcpy(&g_MS, ipaddr_ntoa((const ip4_addr_t*)&xnetif[g_bOpenAccessPointMode].netmask.addr));
 	}
 }
 
@@ -318,6 +341,9 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	IP4_ADDR(ip_2_ip4(&ipaddr), 192, 168, 4, 1);
 	IP4_ADDR(ip_2_ip4(&netmask), 255, 255, 255, 0);
 	IP4_ADDR(ip_2_ip4(&gw), 192, 168, 4, 1);
+	strcpy(&g_IP, "192.168.4.1");
+	strcpy(&g_GW, "192.168.4.1");
+	strcpy(&g_MS, "255.255.255.0");
 	netif_set_addr(pnetif, ip_2_ip4(&ipaddr), ip_2_ip4(&netmask), ip_2_ip4(&gw));
 	dhcps_init(pnetif);
 	return 0;

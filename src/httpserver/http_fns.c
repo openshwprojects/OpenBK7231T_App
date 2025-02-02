@@ -2127,8 +2127,10 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	}
 	if (1) {
 		//use -1 for channel as these don't correspond to channels
+#ifndef NO_CHIP_TEMPERATURE
 		dev_info = hass_init_sensor_device_info(HASS_TEMP, -1, -1, -1, 1);
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+#endif
 		dev_info = hass_init_sensor_device_info(HASS_RSSI, -1, -1, -1, 1);
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
@@ -3015,8 +3017,7 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 
 #elif PLATFORM_ESPIDF
 #elif PLATFORM_TR6260
-#elif PLATFORM_RTL87X0C
-#elif PLATFORM_RTL8710B || PLATFORM_RTL8710A
+#elif PLATFORM_REALTEK
 #elif PLATFORM_W600 || PLATFORM_W800
 	t_http_fwup(s);
 #elif PLATFORM_XR809

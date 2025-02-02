@@ -128,6 +128,7 @@ SRC_C  += $(OBK_DIR)/src/driver/drv_uart.c
 SRC_C  += $(OBK_DIR)/src/driver/drv_ucs1912.c
 SRC_C  += $(OBK_DIR)/src/driver/drv_wemo.c
 SRC_C  += $(OBK_DIR)/src/driver/drv_ds1820_simple.c
+SRC_C  += $(OBK_DIR)/src/driver/drv_uart_tcp.c
 #SRC_C += $(OBK_DIR)/src/httpclient/http_client.c
 #SRC_C += $(OBK_DIR)/src/httpclient/utils_net.c
 #SRC_C += $(OBK_DIR)/src/httpclient/utils_timer.c

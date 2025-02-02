@@ -130,6 +130,11 @@ typedef long BaseType_t;
 #define DEVICENAME_PREFIX_SHORT "rtl8710a"
 #define PLATFORM_MCU_NAME "RTL8710A"
 #define MANUFACTURER "Realtek"
+#elif PLATFORM_RTL8720D
+#define DEVICENAME_PREFIX_FULL "OpenRTL8720D"
+#define DEVICENAME_PREFIX_SHORT "rtl8720d"
+#define PLATFORM_MCU_NAME "RTL8720D"
+#define MANUFACTURER "Realtek"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -165,6 +170,8 @@ This platform is not supported, error!
 #define USER_SW_VER "RTL8710B_Test"
 #elif defined(PLATFORM_RTL8710A)
 #define USER_SW_VER "RTL8710A_Test"
+#elif defined(PLATFORM_RTL8720D)
+#define USER_SW_VER "RTL8720D_Test"
 #elif defined(PLATFORM_BK7238)
 #define USER_SW_VER "BK7238_Test"
 #else
@@ -572,6 +579,13 @@ extern int g_sleepfactor;
 #else
 #define rtos_delay_milliseconds(x) vTaskDelay(x / portTICK_PERIOD_MS)
 #define delay_ms(x) vTaskDelay(x / portTICK_PERIOD_MS)
+#endif
+
+#if PLATFORM_RTL8720D
+#undef vsnprintf
+#undef sprintf
+//#define vsnprintf(fmt, ...) _vsnprintf_r(_REENT, fmt, ##__VA_ARGS__)
+//#define sprintf(fmt, ...) _sprintf_r(_REENT, fmt, ##__VA_ARGS__)
 #endif
 
 #define kNoErr                      0       //! No error occurred.
