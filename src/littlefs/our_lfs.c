@@ -35,7 +35,7 @@
 #include "esp_partition.h"
 esp_partition_t* esplfs = NULL;
 
-#elif PLATFORM_RTL87X0C
+#elif PLATFORM_REALTEK
 
 #include "flash_api.h"
 #include "device_lock.h"
@@ -729,7 +729,7 @@ static int lfs_erase(const struct lfs_config* c, lfs_block_t block)
     return res;
 }
 
-#elif PLATFORM_RTL87X0C
+#elif PLATFORM_REALTEK
 
 extern flash_t flash;
 
