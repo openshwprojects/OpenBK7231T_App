@@ -1896,6 +1896,11 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: 0x04 replying");
 		// added for https://www.elektroda.com/rtvforum/viewtopic.php?p=21095905#21095905
 		TuyaMCU_SendCommandWithData(0x04, 0, 0);
+
+		/* On Version 0, this indicates system reset */
+		if (version == 0) {
+			g_openAP = 1;
+		}
 		break;
 	case 0x22:
 		{
