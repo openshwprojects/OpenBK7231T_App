@@ -212,7 +212,7 @@ static int wifi_state_timer = 0;
 static bool self_processing_mode = true;
 static bool state_updated = false;
 static int g_sendQueryStatePackets = 0;
-static int g_tuyaMCUBatteryAckDelay = 20;
+static int g_tuyaMCUBatteryAckDelay = 0;
 
 // wifistate to send when not online
 // See: https://imgur.com/a/mEfhfiA
