@@ -27,8 +27,11 @@
 #include "../../beken378/driver/gpio/gpio.h"
 #include "../../beken378/driver/pwm/pwm.h"
 #if PLATFORM_BK7231N
+#if PLATFORM_BEKEN_NEW
+#include "pwm_bk7231n.h"
+#else
 #include "../../beken378/driver/pwm/pwm_new.h"
-
+#endif
 
 
 #define REG_PWM_BASE_ADDR                   	(0x00802B00UL)
@@ -231,7 +234,7 @@ static commandResult_t CMD_IR2_SendIR2(const void* context, const char* cmd, con
 	ADDLOG_INFO(LOG_FEATURE_IR, "Queue size %i",(stop - times));
 
 
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
 	bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off, 0, 0);
 #else
 	bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off);
@@ -276,7 +279,7 @@ static commandResult_t CMD_IR2_SetupIR2(const void* context, const char* cmd, co
 		}
 #endif
 #ifndef WINDOWS
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
 		// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
 		bk_pwm_initialize((bk_pwm_t)pwmIndex, period, period/2, 0, 0);
 #else
