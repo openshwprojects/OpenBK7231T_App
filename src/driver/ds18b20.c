@@ -70,7 +70,7 @@ uint8_t DS_GPIO;	// the actual GPIO used (changes in case we have multiple GPIOs
 uint8_t init = 0;
 uint8_t bitResolution = 12;
 uint8_t devices = 0;
-
+uint8_t DS18B20GPIOS[DS18B20MAX_GPIOS];
 DeviceAddress ROM_NO;
 uint8_t LastDiscrepancy;
 uint8_t LastFamilyDiscrepancy;
