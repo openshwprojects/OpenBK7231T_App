@@ -29,8 +29,17 @@ int cmd_uartInitIndex = 0;
 #include "driver/gpio.h"
 #include "driver/ledc.h"
 #include "esp_check.h"
-#elif PLATFORM_RTL87X0C
+#elif PLATFORM_REALTEK 
+#if PLATFORM_RTL8710B
+#include "wlan_intf.h"
+extern WLAN_LOW_PW_MODE rtw_wlan_low_pw_mode;
+extern int rtw_wlan_low_pw_mode4_c1;
+extern int rtw_wlan_low_pw_mode4_c2;
+extern int rtw_reduce_pa_gain;
+extern void rtw_enable_wlan_low_pwr_mode(WLAN_LOW_PW_MODE mode);
+#endif
 #include "wifi_conf.h"
+int g_sleepfactor = 1;
 #endif
 
 #define HASH_SIZE 128
@@ -163,7 +172,7 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 		ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave disabled");
 		esp_wifi_set_ps(WIFI_PS_NONE);
 	}
-#elif PLATFORM_RTL87X0C
+#elif PLATFORM_REALTEK
 	if(!wifi_is_up(RTW_STA_INTERFACE))
 	{
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "Wifi is not on or in AP mode, failed setting powersave!");
@@ -171,10 +180,42 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	}
 	if(bOn)
 	{
+#if PLATFORM_RTL8710B
+		if(bOn >= 2)
+		{
+			rtw_wlan_low_pw_mode = PW_MODE_2 | PW_MODE_3 | PW_MODE_4 | PW_MODE_6;
+			rtw_wlan_low_pw_mode |= bOn >= 3 ? PW_MODE_1 : PW_MODE_5;
+			rtw_wlan_low_pw_mode4_c1 = 24;
+			rtw_wlan_low_pw_mode4_c2 = 16;
+			rtw_reduce_pa_gain = bOn == 2 ? 1 : 2; //0:not reduce, 1:reduce 2, 2:reduce 3
+			rtw_enable_wlan_low_pwr_mode(rtw_wlan_low_pw_mode);
+			g_sleepfactor = bOn >= 3 ? 2 : 1;
+		}
+		else if(g_powersave >= 2)
+		{
+			rtw_wlan_low_pw_mode = PW_MODE_NONE;
+			rtw_wlan_low_pw_mode4_c1 = 0;
+			rtw_wlan_low_pw_mode4_c2 = 0;
+			rtw_reduce_pa_gain = 0;
+			rtw_enable_wlan_low_pwr_mode(rtw_wlan_low_pw_mode);
+			g_sleepfactor = 1;
+		}
+#endif
 		wifi_enable_powersave();
 	}
 	else
 	{
+#if PLATFORM_RTL8710B
+		if(g_powersave >= 2)
+		{
+			rtw_wlan_low_pw_mode = PW_MODE_NONE;
+			rtw_wlan_low_pw_mode4_c1 = 0;
+			rtw_wlan_low_pw_mode4_c2 = 0;
+			rtw_reduce_pa_gain = 0;
+			rtw_enable_wlan_low_pwr_mode(rtw_wlan_low_pw_mode);
+		}
+		g_sleepfactor = 1;
+#endif
 		wifi_disable_powersave();
 	}
 #else
@@ -311,7 +352,7 @@ static commandResult_t CMD_ClearAll(const void* context, const char* cmd, const 
 	CMD_ClearAllHandlers(0, 0, 0, 0);
 	RepeatingEvents_Cmd_ClearRepeatingEvents(0, 0, 0, 0);
 #if defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_BEKEN) || defined(PLATFORM_LN882H) \
- || defined(PLATFORM_ESPIDF) || defined(PLATFORM_TR6260) || defined(PLATFORM_RTL87X0C)
+ || defined(PLATFORM_ESPIDF) || defined(PLATFORM_TR6260) || defined(PLATFORM_REALTEK)
 	CMD_resetSVM(0, 0, 0, 0);
 #endif
 
@@ -475,7 +516,7 @@ static commandResult_t CMD_SafeMode(const void* context, const char* cmd, const 
 void CMD_UARTConsole_Init() {
 #if PLATFORM_BEKEN
 	UART_InitUART(115200, 0);
-	cmd_uartInitIndex = g_uart_init_counter;
+	cmd_uartInitIndex = get_g_uart_init_counter;
 	UART_InitReceiveRingBuffer(512);
 #endif
 }
@@ -518,7 +559,7 @@ void CMD_UARTConsole_Run() {
 void CMD_RunUartCmndIfRequired() {
 #if PLATFORM_BEKEN
 	if (CFG_HasFlag(OBK_FLAG_CMD_ACCEPT_UART_COMMANDS)) {
-		if (cmd_uartInitIndex && cmd_uartInitIndex == g_uart_init_counter) {
+		if (cmd_uartInitIndex && cmd_uartInitIndex == get_g_uart_init_counter) {
 			CMD_UARTConsole_Run();
 		}
 	}
@@ -875,7 +916,6 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("IndexRefreshInterval", CMD_IndexRefreshInterval, NULL);
 	
-	
 #if ENABLE_OBK_SCRIPTING
 	CMD_InitScripting();
 #endif
@@ -896,7 +936,7 @@ void CMD_Init_Delayed() {
 	}
 #endif
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) \
- || defined(PLATFORM_RTL87X0C)
+ || defined(PLATFORM_REALTEK)
 	UART_AddCommands();
 #endif
 }

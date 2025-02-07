@@ -1,6 +1,8 @@
 OBK_DIR = ../../../../..
 
-CFLAGS +=  -DPLATFORM_RTL87X0C -DUSER_SW_VER='"$(APP_VERSION)"'
+CFLAGS +=  -DPLATFORM_RTL87X0C -DPLATFORM_REALTEK -DUSER_SW_VER='"$(APP_VERSION)"'
+
+INCLUDES += -I$(OBK_DIR)/libraries/easyflash/inc
 
 SRC_C  += ../../../../../platforms/RTL87X0C/main.c
 
@@ -25,14 +27,14 @@ SRC_C  += $(OBK_DIR)/src/devicegroups/deviceGroups_read.c
 SRC_C  += $(OBK_DIR)/src/devicegroups/deviceGroups_util.c
 SRC_C  += $(OBK_DIR)/src/devicegroups/deviceGroups_write.c
 SRC_C  += $(OBK_DIR)/src/driver/drv_main.c
-#SRC_C  += $(OBK_DIR)/src/hal/rtl87x0c/hal_adc_rtl87x0c.c
-SRC_C  += $(OBK_DIR)/src/hal/rtl87x0c/hal_flashConfig_rtl87x0c.c
-SRC_C  += $(OBK_DIR)/src/hal/rtl87x0c/hal_flashVars_rtl87x0c.c
-SRC_C  += $(OBK_DIR)/src/hal/rtl87x0c/hal_generic_rtl87x0c.c
-#SRC_C  += $(OBK_DIR)/src/hal/rtl87x0c/hal_main_rtl87x0c.c
-SRC_C  += $(OBK_DIR)/src/hal/rtl87x0c/hal_pins_rtl87x0c.c
-SRC_C  += $(OBK_DIR)/src/hal/rtl87x0c/hal_wifi_rtl87x0c.c
-SRC_C  += $(OBK_DIR)/src/hal/rtl87x0c/hal_uart_rtl87x0c.c
+#SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl87x0c/hal_adc_rtl87x0c.c
+SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl87x0c/hal_generic_rtl87x0c.c
+#SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl87x0c/hal_main_rtl87x0c.c
+SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl87x0c/hal_pins_rtl87x0c.c
+SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl87x0c/hal_uart_rtl87x0c.c
+SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_flashConfig_realtek.c
+SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_flashVars_realtek.c
+SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_wifi_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/generic/hal_adc_generic.c
 SRC_C  += $(OBK_DIR)/src/hal/generic/hal_flashConfig_generic.c
 SRC_C  += $(OBK_DIR)/src/hal/generic/hal_flashVars_generic.c
@@ -140,3 +142,13 @@ SRC_C  += $(OBK_DIR)/src/littlefs/our_lfs.c
 #SRC_C += $(OBK_DIR)/src/memory/memtest.c
 #SRC_C += $(OBK_DIR)/src/ota/ota.c
 #SRC_C += $(OBK_DIR)/src/sim/sim_uart.c
+
+SRC_C += $(OBK_DIR)/libraries/easyflash/ports/ef_port.c
+SRC_C += $(OBK_DIR)/libraries/easyflash/src/easyflash.c
+#SRC_C += $(OBK_DIR)/libraries/easyflash/src/ef_cmd.c
+SRC_C += $(OBK_DIR)/libraries/easyflash/src/ef_env.c
+SRC_C += $(OBK_DIR)/libraries/easyflash/src/ef_env_legacy.c
+SRC_C += $(OBK_DIR)/libraries/easyflash/src/ef_env_legacy_wl.c
+SRC_C += $(OBK_DIR)/libraries/easyflash/src/ef_iap.c
+SRC_C += $(OBK_DIR)/libraries/easyflash/src/ef_log.c
+SRC_C += $(OBK_DIR)/libraries/easyflash/src/ef_utils.c
