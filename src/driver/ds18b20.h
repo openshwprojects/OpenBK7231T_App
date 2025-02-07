@@ -28,9 +28,6 @@
 #define DS18B20namel	20
 #define DS18B20MAX_GPIOS 2
 
-
-
-uint8_t DS18B20GPIOS[DS18B20MAX_GPIOS];
 typedef uint8_t DeviceAddress[8];
 typedef uint8_t ScratchPad[9];
 typedef struct {
