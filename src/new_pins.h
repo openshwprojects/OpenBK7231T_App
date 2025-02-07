@@ -1231,7 +1231,6 @@ typedef struct ledRemap_s {
 
 #define MAGIC_LED_REMAP_SIZE 5
 
-
 //
 // Main config structure (less than 2KB)
 //
@@ -1356,9 +1355,18 @@ typedef struct mainConfig_s {
 	// offset 0x00000C84 (3204 decimal)
 	char webPassword[33];
 	// offset 0x00000CA5 (3237 decimal)
+#if PLATFORM_BEKEN
+	bool use_adv;
+	char psk[65];
+	char bssid[6];
+	int channel;
+	uint8_t security;
+	char unused[266];
+#else
 	char unused[347];
 #endif
-} mainConfig_t; 
+#endif
+} mainConfig_t;
 
 // one sector is 4096 so it we still have some expand possibility
 #define MAGIC_CONFIG_SIZE_V3		2016
