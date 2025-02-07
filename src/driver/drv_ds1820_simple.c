@@ -1,6 +1,11 @@
+#include "../obk_config.h"
+#if (ENABLE_DRIVER_DS1820)
+
 #include "drv_ds1820_simple.h"
 #include "../hal/hal_generic.h"
 #include "OneWire_common.h"
+
+/*
 #if PLATFORM_ESPIDF
 #include "freertos/task.h"
 #define noInterrupts() portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;taskENTER_CRITICAL(&mux)
@@ -10,6 +15,7 @@
 #define noInterrupts() taskENTER_CRITICAL()
 #define interrupts() taskEXIT_CRITICAL()
 #endif
+*/
 
 static uint8_t dsread = 0;
 static int Pin;
@@ -104,7 +110,7 @@ I 		Standard 	70
 J 		Standard 	410
 
 */
-
+/*
 #define OWtimeA	6
 #define OWtimeB	64
 #define OWtimeC	60
@@ -278,7 +284,7 @@ uint8_t Crc8CQuick(uint8_t* Buffer, uint8_t Size)
 	}
 	return(Crc);
 }
-
+*/
 int DS1820_getTemp()
 {
 	return t;
@@ -459,3 +465,4 @@ void DS1820_OnEverySecond()
 		}
 	}
 }
+#endif

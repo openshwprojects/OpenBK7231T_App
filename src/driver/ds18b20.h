@@ -24,10 +24,13 @@
 #define DEVICE_DISCONNECTED_RAW -7040
 #define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 #define pgm_read_byte(addr)   (*(const unsigned char *)(addr))
-#define DS18B20MAX	5
+#define DS18B20MAX	10
 #define DS18B20namel	20
+#define DS18B20MAX_GPIOS 2
 
 
+
+uint8_t DS18B20GPIOS[DS18B20MAX_GPIOS];
 typedef uint8_t DeviceAddress[8];
 typedef uint8_t ScratchPad[9];
 typedef struct {
@@ -37,6 +40,8 @@ typedef struct {
   float lasttemp[DS18B20MAX];
   unsigned short last_read[DS18B20MAX];
   short channel[DS18B20MAX];
+  short GPIO[DS18B20MAX];
+
 } devicesArray;
 
 bool ds18b20_used_channel(int ch);
@@ -53,6 +58,7 @@ static const uint8_t dscrc2x16_table[] = {
 
 void DS18B20_OnEverySecond();
 void DS18B20_AppendInformationToHTTPIndexPage(http_request_t* request);
+int http_fn_cfg_ds18b20(http_request_t* request);
 void DS18B20_driver_Init();
 
 /* *INDENT-OFF* */
@@ -90,7 +96,7 @@ extern "C" {
 	float ds18b20_get_temp(void);
 
 	void reset_search();
-	bool search(uint8_t *newAddr, bool search_mode);
+	bool search(uint8_t *newAddr, bool search_mode, int Pin);
 
 	/* *INDENT-OFF* */
 #ifdef __cplusplus
