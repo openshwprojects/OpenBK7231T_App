@@ -1451,8 +1451,34 @@ int PIN_IOR_NofChan(int test);
 extern const char* g_channelTypeNames[];
 
 #if ALLOW_SSID2
+/*
 int FV_GetStartupSSID_StoredValue(int adefault);
 void FV_UpdateStartupSSIDIfChanged_StoredValue(int assidindex);
+*/
+#define SSIDRetainChannel  7
+// we will use this channel to store all information for the retain SSID feature:
+// if retaining is set and 
+// which was the last used channel
+// the fixed starting SSID
+//
+// possible values stored in retain channel (including possible future extension for counters/tries in values > 1000):
+//
+// 15 0 42
+// __   __
+//  ^ ^  ^
+//  | |  |
+//  | |  |
+//  | |   ---- "magic number" 42
+//  | |
+//  |  ------- mode: 0/1	try both SSIDs, start with 0/1
+//  |                2/3	try both SSIDs, start with 0/1, save last connected (SSID=val%2 2=0 3=1)
+//  |                4/5	only use SSID set, (SSID=val%4 4=0 5=1)
+//  |
+//   --------- possible extension, e.g # of tries before switching to next SSID (if both are used)
+//
+//  SSID to use on startup is always mode-value%2 !
+void UpdateSSIDretainedIfChanged_StoredValue(int val);  // needs g_SSIDactual, so defined in user_main.c
+void HandleSSIDretainedFromGUI(int val);  // needs g_SSIDactual, so defined in user_main.c
 #endif
 
 #endif

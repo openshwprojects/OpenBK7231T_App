@@ -1367,15 +1367,29 @@ int http_fn_cfg_wifi(http_request_t* request) {
 <input type=\"submit\" value=\"Convert to Open Access WiFi\" onclick=\"return confirm('Are you sure you want to switch to open access WiFi?')\">\
 </form>");
 	poststr_h2(request, "Use this to connect to your WiFi");
-	add_label_text_field(request, "SSID", "ssid", CFG_GetWiFiSSID(), "<form action=\"/cfg_wifi_set\">");
-	add_label_password_field(request, "", "pass", CFG_GetWiFiPass(), "<br>Password<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears existing)</span>");
-	poststr_h2(request, "Alternate WiFi (used when first one is not responding)");
-	poststr(request, "Note: It is possible to retain used SSID using command setStartupSSIDChannel in early.bat");
-#ifndef PLATFORM_BEKEN
-	poststr_h2(request, "SSID2 only on Beken Platform (BK7231T, BK7231N)");
+	add_label_text_field(request, "SSID"
+#if ALLOW_SSID2
+	"1"
 #endif
+	, "ssid", CFG_GetWiFiSSID(), "<form action=\"/cfg_wifi_set\">");
+	add_label_password_field(request, "", "pass", CFG_GetWiFiPass(), "<br>Password"
+#if ALLOW_SSID2
+	"1"
+#endif
+	"<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears existing)</span>");
+#if PLATFORM_BEKEN
+	int fval = (HAL_FlashVars_GetChannelValue(SSIDRetainChannel)%1000)/100;
+	poststr_h4(request, "Alternate WiFi (used when first one is not responding)");
+//	poststr_h2(request, "SSID2 only on Beken Platform (BK7231T, BK7231N)");
 	add_label_text_field(request, "SSID2", "ssid2", CFG_GetWiFiSSID2(), "");
 	add_label_password_field(request, "", "pass2", CFG_GetWiFiPass2(), "<br>Password2<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass2');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears existing)</span>");
+	poststr(request, "<p>Select SSID used first:  <select class='hele' name='startSSID'><option value='0'>SSID1</option>");
+	hprintf255(request, "<option value='1' %s>SSID2</option>"
+			    "<option value='2' %s>Last used SSID</option>"
+			    "<option value='4' %s>Only SSID1 (no switch to SSID2)</option>"
+			    "<option value='5' %s>Only SSID2 (no switch to SSID1)</option>"
+			    "</select>",(fval==1) ? "selected":"",(fval==2 ||  fval==3) ? "selected":"",(fval==4) ? "selected":"",(fval==5) ? "selected":"");
+#endif
 #if ALLOW_WEB_PASSWORD
 	int web_password_enabled = strcmp(CFG_GetWebPassword(), "") == 0 ? 0 : 1;
 	poststr_h2(request, "Web Authentication");
@@ -1434,7 +1448,6 @@ int http_fn_cfg_name(http_request_t* request) {
 int http_fn_cfg_wifi_set(http_request_t* request) {
 	char tmpA[128];
 	int bChanged;
-
 	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HTTP_ProcessPacket: generating cfg_wifi_set \r\n");
 	bChanged = 0;
 
@@ -1460,6 +1473,13 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 	if (http_getArg(request->url, "pass2", tmpA, sizeof(tmpA))) {
 		bChanged |= CFG_SetWiFiPass2(tmpA);
 	}
+#if ALLOW_SSID2
+	if (http_getArg(request->url, "startSSID", tmpA, sizeof(tmpA))) {
+		int start_SSID = atoi(tmpA);
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, "start_SSID with value %i", start_SSID);
+		HandleSSIDretainedFromGUI(start_SSID); 		// handle in user_main.c - needs access to actual SSID used (g_SSIDactual) - defined "static"
+	}
+#endif	
 #if ALLOW_WEB_PASSWORD
 	if (http_getArg(request->url, "web_admin_password_enabled", tmpA, sizeof(tmpA))) {
 		int web_password_enabled = atoi(tmpA);
