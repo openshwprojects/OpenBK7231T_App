@@ -523,7 +523,7 @@ void insertArray(devicesArray *a, DeviceAddress devaddr) {
 			a->GPIO[i]=DS_GPIO; 	// just to be sure - maybe device is on other GPIO now?!?
 			bk_printf("device 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X was allready present - just (re-)setting GPIO to %i",
 		devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7],DS_GPIO);
-			return 1;
+			return;
 		}
 	}
 
