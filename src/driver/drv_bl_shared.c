@@ -243,7 +243,8 @@ void BL09XX_SaveEmeteringStatistics(int asensdatasetix)
   if ((asensdatasetix < 0) || (asensdatasetix > BL_SENSDATASETS_COUNT - 1)) return;  //to avoid bad index on data[BL_SENSDATASETS_COUNT]
   energysensdataset_t* sensdataset = BL_GetSensDataSetFromIx(asensdatasetix);
 
-  ENERGY_METERING_DATA data;
+  if (asensdatasetix == BL_SENSORS_IX_0) {
+    ENERGY_METERING_DATA data;
 
     memset(&data, 0, sizeof(ENERGY_METERING_DATA));
 
@@ -258,6 +259,7 @@ void BL09XX_SaveEmeteringStatistics(int asensdatasetix)
     data.save_counter = ConsumptionSaveCounter[asensdatasetix];
 
     HAL_SetEnergyMeterStatus(&data);
+  }
 }
 
 commandResult_t BL09XX_ResetEnergyCounterEx(int asensdatasetix, const void *context, const char *cmd, const char *args, int cmdFlags)
@@ -265,33 +267,34 @@ commandResult_t BL09XX_ResetEnergyCounterEx(int asensdatasetix, const void *cont
   if ((asensdatasetix < 0) || (asensdatasetix > BL_SENSDATASETS_COUNT - 1)) return CMD_RES_ERROR;  //to avoid bad index on data[BL_SENSDATASETS_COUNT]
   energysensdataset_t* sensdataset = BL_GetSensDataSetFromIx(asensdatasetix);
 
-  float value;
+  if (asensdatasetix == BL_SENSORS_IX_0) {
+    float value;
     int i;
 
-    if(args==0||*args==0) 
+    if(args==0||*args==0)
     {
       sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading = 0.0;
-        energyCounterStamp = xTaskGetTickCount();
-        if (energyCounterStatsEnable == true)
+      energyCounterStamp = xTaskGetTickCount();
+      if (energyCounterStatsEnable == true)
+      {
+        if (energyCounterMinutes != NULL)
         {
-            if (energyCounterMinutes != NULL)
-            {
-                for(i = 0; i < energyCounterSampleCount; i++)
-                {
-                    energyCounterMinutes[i] = 0.0;
-                }
-            }
-            energyCounterMinutesStamp = xTaskGetTickCount();
-            energyCounterMinutesIndex = 0;
+          for(i = 0; i < energyCounterSampleCount; i++)
+          {
+            energyCounterMinutes[i] = 0.0;
+          }
         }
-        for(i = OBK_CONSUMPTION__DAILY_FIRST; i <= OBK_CONSUMPTION__DAILY_LAST; i++)
-        {
-          sensdataset->sensors[i].lastReading = 0.0;
-        }
+        energyCounterMinutesStamp = xTaskGetTickCount();
+        energyCounterMinutesIndex = 0;
+      }
+      for(i = OBK_CONSUMPTION__DAILY_FIRST; i <= OBK_CONSUMPTION__DAILY_LAST; i++)
+      {
+        sensdataset->sensors[i].lastReading = 0.0;
+      }
     } else {
-        value = (float)atof(args);
-        sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading = value;
-        energyCounterStamp = xTaskGetTickCount();
+      value = (float)atof(args);
+      sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading = value;
+      energyCounterStamp = xTaskGetTickCount();
     }
     ConsumptionResetTime = (time_t)NTP_GetCurrentTime();
 #if WINDOWS
@@ -301,13 +304,12 @@ commandResult_t BL09XX_ResetEnergyCounterEx(int asensdatasetix, const void *cont
 #elif PLATFORM_BK7231N || PLATFORM_BK7231T
     if (ota_progress()==-1)
 #endif
-    { 
-      if (asensdatasetix == BL_SENSORS_IX_0) {
-        BL09XX_SaveEmeteringStatistics(asensdatasetix);
-        lastConsumptionSaveStamp = xTaskGetTickCount();
-      }
+    {
+      BL09XX_SaveEmeteringStatistics(asensdatasetix);
+      lastConsumptionSaveStamp = xTaskGetTickCount();
     }
-    return CMD_RES_OK;
+  }
+  return CMD_RES_OK;
 }
 
 commandResult_t BL09XX_ResetEnergyCounter(const void* context, const char* cmd, const char* args, int cmdFlags)
@@ -651,10 +653,8 @@ void BL_ProcessUpdateEx(int asensdatasetix, float voltage, float current, float 
         if (ota_progress()==-1)
 #endif
         {
-          if (asensdatasetix == BL_SENSORS_IX_0) {
-            BL09XX_SaveEmeteringStatistics(asensdatasetix);
-            lastConsumptionSaveStamp = xTaskGetTickCount();
-          }
+          BL09XX_SaveEmeteringStatistics(asensdatasetix);
+          lastConsumptionSaveStamp = xTaskGetTickCount();
         }
 
       }
@@ -796,20 +796,22 @@ void BL_ProcessUpdateEx(int asensdatasetix, float voltage, float current, float 
       {
         sensdataset->sensors[i].lastSentValue = sensdataset->sensors[i].lastReading;
         if (i == OBK_CONSUMPTION_CLEAR_DATE) {
-          sensdataset->sensors[i].lastReading = ConsumptionResetTime; //Only to make the 'nochangeframe' mechanism work here
-          ltm = gmtime(&ConsumptionResetTime);
-          /* 2019-09-07T15:50-04:00 */
-          if (NTP_GetTimesZoneOfsSeconds()>0)
-          {
-            snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i+%02i:%02i",
-              ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
-              NTP_GetTimesZoneOfsSeconds()/3600, (NTP_GetTimesZoneOfsSeconds()/60) % 60);
-          } else {
-            snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i-%02i:%02i",
-              ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
-              abs(NTP_GetTimesZoneOfsSeconds()/3600), (abs(NTP_GetTimesZoneOfsSeconds())/60) % 60);
+          if (asensdatasetix == BL_SENSORS_IX_0) {
+            sensdataset->sensors[i].lastReading = ConsumptionResetTime; //Only to make the 'nochangeframe' mechanism work here
+            ltm = gmtime(&ConsumptionResetTime);
+            /* 2019-09-07T15:50-04:00 */
+            if (NTP_GetTimesZoneOfsSeconds()>0)
+            {
+              snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i+%02i:%02i",
+                ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
+                NTP_GetTimesZoneOfsSeconds()/3600, (NTP_GetTimesZoneOfsSeconds()/60) % 60);
+            } else {
+              snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i-%02i:%02i",
+                ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
+                abs(NTP_GetTimesZoneOfsSeconds()/3600), (abs(NTP_GetTimesZoneOfsSeconds())/60) % 60);
+            }
+            MQTT_PublishMain_StringString(sensdataset->sensors[i].names.name_mqtt, datetime, 0);
           }
-          MQTT_PublishMain_StringString(sensdataset->sensors[i].names.name_mqtt, datetime, 0);
         } else { //all other sensors
           float val = (float)sensdataset->sensors[i].lastReading;
           if (sensdataset->sensors[i].names.units == UNIT_WH) val = BL_ChangeEnergyUnitIfNeeded(val);
@@ -825,19 +827,19 @@ void BL_ProcessUpdateEx(int asensdatasetix, float voltage, float current, float 
     }
   }
 
-  if (((sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading - lastSavedEnergyCounterValue) >= changeSavedThresholdEnergy) ||
-    ((xTaskGetTickCount() - lastConsumptionSaveStamp) >= (6 * 3600 * 1000 / portTICK_PERIOD_MS)))
-  {
+  if (asensdatasetix == BL_SENSORS_IX_0) {
+    if (((sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading - lastSavedEnergyCounterValue) >= changeSavedThresholdEnergy) ||
+      ((xTaskGetTickCount() - lastConsumptionSaveStamp) >= (6 * 3600 * 1000 / portTICK_PERIOD_MS)))
+    {
 #if WINDOWS
 #elif PLATFORM_BL602
 #elif PLATFORM_W600 || PLATFORM_W800
 #elif PLATFORM_XR809
 #elif PLATFORM_BK7231N || PLATFORM_BK7231T
-    if (ota_progress() == -1)
+      if (ota_progress() == -1)
 #endif
-    {
-      lastSavedEnergyCounterValue = (float)sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading;
-      if (asensdatasetix == BL_SENSORS_IX_0) {
+      {
+        lastSavedEnergyCounterValue = (float)sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading;
         BL09XX_SaveEmeteringStatistics(asensdatasetix);
         lastConsumptionSaveStamp = xTaskGetTickCount();
       }
@@ -863,40 +865,42 @@ void BL_Shared_InitEx(int asensdatasetix)
       sensdataset->sensors[i].noChangeFrame = 0;
       sensdataset->sensors[i].lastReading = 0;
     }
-    energyCounterStamp = xTaskGetTickCount(); 
+    if (asensdatasetix == BL_SENSORS_IX_0) {
+      energyCounterStamp = xTaskGetTickCount();
 
-    if (energyCounterStatsEnable == true)
-    {
+      if (energyCounterStatsEnable == true)
+      {
         if (energyCounterMinutes == NULL)
         {
-            energyCounterMinutes = (float*)os_malloc(energyCounterSampleCount*sizeof(float));
+          energyCounterMinutes = (float*)os_malloc(energyCounterSampleCount*sizeof(float));
         }
         if (energyCounterMinutes != NULL)
         {
-            for(i = 0; i < energyCounterSampleCount; i++)
-            {
-                energyCounterMinutes[i] = 0.0;
-            }   
+          for(i = 0; i < energyCounterSampleCount; i++)
+          {
+            energyCounterMinutes[i] = 0.0;
+          }
         }
         energyCounterMinutesStamp = xTaskGetTickCount();
         energyCounterMinutesIndex = 0;
+      }
+
+      addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Read ENERGYMETER status values. sizeof(ENERGY_METERING_DATA)=%d\n", sizeof(ENERGY_METERING_DATA));
+
+      HAL_GetEnergyMeterStatus(&data);
+      sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading = data.TotalConsumption;
+      sensdataset->sensors[OBK_CONSUMPTION_TODAY].lastReading = data.TodayConsumpion;
+      sensdataset->sensors[OBK_CONSUMPTION_YESTERDAY].lastReading = data.YesterdayConsumption;
+      actual_mday = data.actual_mday;
+      lastSavedEnergyCounterValue = data.TotalConsumption;
+      sensdataset->sensors[OBK_CONSUMPTION_2_DAYS_AGO].lastReading = data.ConsumptionHistory[0];
+      sensdataset->sensors[OBK_CONSUMPTION_3_DAYS_AGO].lastReading = data.ConsumptionHistory[1];
+      ConsumptionResetTime = data.ConsumptionResetTime;
+      ConsumptionSaveCounter[asensdatasetix] = data.save_counter;
+      lastConsumptionSaveStamp = xTaskGetTickCount();
+
+      //int HAL_SetEnergyMeterStatus(ENERGY_METERING_DATA *data);
     }
-
-    addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Read ENERGYMETER status values. sizeof(ENERGY_METERING_DATA)=%d\n", sizeof(ENERGY_METERING_DATA));
-
-    HAL_GetEnergyMeterStatus(&data);
-    sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading = data.TotalConsumption;
-    sensdataset->sensors[OBK_CONSUMPTION_TODAY].lastReading = data.TodayConsumpion;
-    sensdataset->sensors[OBK_CONSUMPTION_YESTERDAY].lastReading = data.YesterdayConsumption;
-    actual_mday = data.actual_mday;    
-    lastSavedEnergyCounterValue = data.TotalConsumption;
-    sensdataset->sensors[OBK_CONSUMPTION_2_DAYS_AGO].lastReading = data.ConsumptionHistory[0];
-    sensdataset->sensors[OBK_CONSUMPTION_3_DAYS_AGO].lastReading = data.ConsumptionHistory[1];
-    ConsumptionResetTime = data.ConsumptionResetTime;
-    ConsumptionSaveCounter[asensdatasetix] = data.save_counter;
-    lastConsumptionSaveStamp = xTaskGetTickCount();
-
-    //int HAL_SetEnergyMeterStatus(ENERGY_METERING_DATA *data);
 
 	//cmddetail:{"name":"EnergyCntReset","args":"[OptionalNewValue]",
 	//cmddetail:"descr":"Resets the total Energy Counter, the one that is usually kept after device reboots. After this commands, the counter will start again from 0 (or from the value you specified).",
