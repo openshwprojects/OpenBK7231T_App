@@ -238,13 +238,15 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t* request) {
   }
 }
 
-void BL09XX_SaveEmeteringStatistics(int asensdatasetix)
+void BL09XX_SaveEmeteringStatisticsEx(int asensdatasetix)
 {
+  //currently only 1 energy measurement is available
+  if (asensdatasetix != BL_SENSORS_IX_0) return;
+
   if ((asensdatasetix < 0) || (asensdatasetix > BL_SENSDATASETS_COUNT - 1)) return;  //to avoid bad index on data[BL_SENSDATASETS_COUNT]
   energysensdataset_t* sensdataset = BL_GetSensDataSetFromIx(asensdatasetix);
 
-  if (asensdatasetix == BL_SENSORS_IX_0) {
-    ENERGY_METERING_DATA data;
+  ENERGY_METERING_DATA data;
 
     memset(&data, 0, sizeof(ENERGY_METERING_DATA));
 
@@ -259,42 +261,50 @@ void BL09XX_SaveEmeteringStatistics(int asensdatasetix)
     data.save_counter = ConsumptionSaveCounter[asensdatasetix];
 
     HAL_SetEnergyMeterStatus(&data);
-  }
 }
+
+void BL09XX_SaveEmeteringStatistics() {
+  //currently only 1 energy measurement is available
+  BL09XX_SaveEmeteringStatisticsEx(BL_SENSORS_IX_0);
+}
+
 
 commandResult_t BL09XX_ResetEnergyCounterEx(int asensdatasetix, const void *context, const char *cmd, const char *args, int cmdFlags)
 {
+  //currently only 1 energy measurement is available
+  if (asensdatasetix != BL_SENSORS_IX_0) return CMD_RES_ERROR;
+
   if ((asensdatasetix < 0) || (asensdatasetix > BL_SENSDATASETS_COUNT - 1)) return CMD_RES_ERROR;  //to avoid bad index on data[BL_SENSDATASETS_COUNT]
   energysensdataset_t* sensdataset = BL_GetSensDataSetFromIx(asensdatasetix);
 
-  if (asensdatasetix == BL_SENSORS_IX_0) {
-    float value;
+  float value;
     int i;
 
-    if(args==0||*args==0)
+    if(args==0||*args==0) 
     {
+      lastSavedEnergyCounterValue = 0.0; //20250203 reset lastSavedEnergyCounterValue, otherwise the values will not be saved until restart BL
       sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading = 0.0;
-      energyCounterStamp = xTaskGetTickCount();
-      if (energyCounterStatsEnable == true)
-      {
-        if (energyCounterMinutes != NULL)
+        energyCounterStamp = xTaskGetTickCount();
+        if (energyCounterStatsEnable == true)
         {
-          for(i = 0; i < energyCounterSampleCount; i++)
-          {
-            energyCounterMinutes[i] = 0.0;
-          }
+            if (energyCounterMinutes != NULL)
+            {
+                for(i = 0; i < energyCounterSampleCount; i++)
+                {
+                    energyCounterMinutes[i] = 0.0;
+                }
+            }
+            energyCounterMinutesStamp = xTaskGetTickCount();
+            energyCounterMinutesIndex = 0;
         }
-        energyCounterMinutesStamp = xTaskGetTickCount();
-        energyCounterMinutesIndex = 0;
-      }
-      for(i = OBK_CONSUMPTION__DAILY_FIRST; i <= OBK_CONSUMPTION__DAILY_LAST; i++)
-      {
-        sensdataset->sensors[i].lastReading = 0.0;
-      }
+        for(i = OBK_CONSUMPTION__DAILY_FIRST; i <= OBK_CONSUMPTION__DAILY_LAST; i++)
+        {
+          sensdataset->sensors[i].lastReading = 0.0;
+        }
     } else {
-      value = (float)atof(args);
-      sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading = value;
-      energyCounterStamp = xTaskGetTickCount();
+        value = (float)atof(args);
+        sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading = value;
+        energyCounterStamp = xTaskGetTickCount();
     }
     ConsumptionResetTime = (time_t)NTP_GetCurrentTime();
 #if WINDOWS
@@ -304,12 +314,11 @@ commandResult_t BL09XX_ResetEnergyCounterEx(int asensdatasetix, const void *cont
 #elif PLATFORM_BK7231N || PLATFORM_BK7231T
     if (ota_progress()==-1)
 #endif
-    {
-      BL09XX_SaveEmeteringStatistics(asensdatasetix);
+    { 
+      BL09XX_SaveEmeteringStatisticsEx(asensdatasetix);
       lastConsumptionSaveStamp = xTaskGetTickCount();
     }
-  }
-  return CMD_RES_OK;
+    return CMD_RES_OK;
 }
 
 commandResult_t BL09XX_ResetEnergyCounter(const void* context, const char* cmd, const char* args, int cmdFlags)
@@ -653,7 +662,7 @@ void BL_ProcessUpdateEx(int asensdatasetix, float voltage, float current, float 
         if (ota_progress()==-1)
 #endif
         {
-          BL09XX_SaveEmeteringStatistics(asensdatasetix);
+          BL09XX_SaveEmeteringStatisticsEx(asensdatasetix);
           lastConsumptionSaveStamp = xTaskGetTickCount();
         }
 
@@ -840,7 +849,7 @@ void BL_ProcessUpdateEx(int asensdatasetix, float voltage, float current, float 
 #endif
       {
         lastSavedEnergyCounterValue = (float)sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading;
-        BL09XX_SaveEmeteringStatistics(asensdatasetix);
+        BL09XX_SaveEmeteringStatisticsEx(asensdatasetix);
         lastConsumptionSaveStamp = xTaskGetTickCount();
       }
     }
