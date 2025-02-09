@@ -43,6 +43,11 @@ void OTA_RequestDownloadFromHTTP(const char *s);
 #define DEVICENAME_PREFIX_SHORT "WT"
 #define PLATFORM_MCU_NAME "WIN32"
 #define MANUFACTURER "Microsoft"
+#elif PLATFORM_XR806
+#define DEVICENAME_PREFIX_FULL "OpenXR806"
+#define DEVICENAME_PREFIX_SHORT "oxr"
+#define PLATFORM_MCU_NAME "XR806"
+#define MANUFACTURER "Xradio Technology"
 #elif PLATFORM_XR809
 #define DEVICENAME_PREFIX_FULL "OpenXR809"
 #define DEVICENAME_PREFIX_SHORT "oxr"
@@ -308,7 +313,11 @@ typedef unsigned int UINT32;
 #define os_free free
 #define os_memset memset
 
+#if PLATFORM_XR806
+
+#else
 #define close lwip_close
+#endif
 
 // OS_MSleep?
 #define rtos_delay_milliseconds OS_ThreadSleep
@@ -331,6 +340,9 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint32_t stack_size, beken_thread_arg_t arg );
 OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
+#include <FreeRTOS.h>
+#include <semphr.h>
+#include <task.h>
 #include "common/framework/platform_init.h"
 
 #include "kernel/os/os.h"
