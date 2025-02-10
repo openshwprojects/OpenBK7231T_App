@@ -4,7 +4,7 @@
 #include "../hal_flashVars.h"
 #include "../../logging/logging.h"
 
-#include <easyflash.h>
+//#include <easyflash.h>
 
 
 void BL602_InitEasyFlashIfNeeded();
@@ -23,13 +23,13 @@ static bl602_bootCounts_t g_bootCounts;
 static int g_loaded = 0;
 
 static int BL602_ReadFlashVars(void *target, int dataLen){
-	int readLen;
+	int readLen = 0;
 
 	BL602_InitEasyFlashIfNeeded();
 
 	g_loaded = 1;
 	ADDLOG_DEBUG(LOG_FEATURE_CFG, "BL602_ReadFlashVars: will read %d bytes", dataLen);
-	readLen = ef_get_env_blob(EASYFLASH_MY_BOOTCOUNTS, target, dataLen , NULL);
+	//readLen = ef_get_env_blob(EASYFLASH_MY_BOOTCOUNTS, target, dataLen , NULL);
 	ADDLOG_DEBUG(LOG_FEATURE_CFG, "BL602_ReadFlashVars: really loaded %d bytes", readLen);
 
     return dataLen;
@@ -39,19 +39,20 @@ static int BL602_ReadFlashVars(void *target, int dataLen){
 
 static int BL602_SaveFlashVars(void *src, int dataLen){
 
-	EfErrCode  res;
+	//EfErrCode  res;
 
 	BL602_InitEasyFlashIfNeeded();
 
-	res = ef_set_env_blob(EASYFLASH_MY_BOOTCOUNTS, src, dataLen);
-	if(res == EF_ENV_INIT_FAILED) {
+	//res = ef_set_env_blob(EASYFLASH_MY_BOOTCOUNTS, src, dataLen);
+	//if(res == EF_ENV_INIT_FAILED) 
+	{
 		ADDLOG_DEBUG(LOG_FEATURE_CFG, "BL602_SaveFlashVars: EF_ENV_INIT_FAILED for %d bytes", dataLen);
 		return 0;
 	}
-	if(res == EF_ENV_ARG_ERR) {
-		ADDLOG_DEBUG(LOG_FEATURE_CFG, "BL602_SaveFlashVars: EF_ENV_ARG_ERR for %d bytes", dataLen);
-		return 0;
-	}
+	//if(res == EF_ENV_ARG_ERR) {
+	//	ADDLOG_DEBUG(LOG_FEATURE_CFG, "BL602_SaveFlashVars: EF_ENV_ARG_ERR for %d bytes", dataLen);
+	//	return 0;
+	//}
 	ADDLOG_DEBUG(LOG_FEATURE_CFG, "BL602_SaveFlashVars: saved %d bytes", dataLen);
     return dataLen;
 }

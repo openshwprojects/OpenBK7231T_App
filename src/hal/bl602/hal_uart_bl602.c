@@ -67,7 +67,7 @@
 #include <utils_log.h>
 #include <bl602_uart.h>
 
-#include <easyflash.h>
+//#include <easyflash.h>
 #include <bl60x_fw_api.h>
 #include <wifi_mgmr_ext.h>
 #include <utils_log.h>
