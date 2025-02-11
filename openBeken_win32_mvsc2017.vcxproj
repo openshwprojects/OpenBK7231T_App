@@ -157,7 +157,7 @@
     <ClCompile Include="src\driver\drv_ddp.c" />
     <ClCompile Include="src\driver\drv_debouncer.c" />
     <ClCompile Include="src\driver\drv_dht.c" />
-    <ClCompile Include="src\driver\drv_ds18b20.c" />
+    <ClCompile Include="src\driver\ds18b20.c" />
     <ClCompile Include="src\driver\OneWire_common.c" />
     <ClCompile Include="src\driver\drv_dht_internal.c" />
     <ClCompile Include="src\driver\drv_doorSensorWithDeepSleep.c" />
@@ -815,7 +815,7 @@
     <ClInclude Include="src\driver\drv_cht8305.h" />
     <ClInclude Include="src\driver\drv_cse7766.h" />
     <ClInclude Include="src\driver\drv_dht_internal.h" />
-    <ClInclude Include="src\driver\drv_ds18b20.h" />
+    <ClInclude Include="src\driver\ds18b20.h" />
     <ClInclude Include="src\driver\OneWire_common.h" />
     <ClInclude Include="src\driver\drv_ht16k33.h" />
     <ClInclude Include="src\driver\drv_max72xx_internal.h" />
