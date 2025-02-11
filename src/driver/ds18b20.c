@@ -545,7 +545,7 @@ int DS18B20_fill_devicelist(int Pin)
 	int ret=0;
 #if WINDOWS
 // 28 FF 77 62 40 17 4 31
-	devaddr[0]=0x28; devaddr[1]=0xFF; devaddr[2]=0xAA; devaddr[3]=0xBB;devaddr[4]=0xCC;devaddr[5]=0xDD;devaddr[6]=0xEE
+	devaddr[0]=0x28; devaddr[1]=0xFF; devaddr[2]=0xAA; devaddr[3]=0xBB;devaddr[4]=0xCC;devaddr[5]=0xDD;devaddr[6]=0xEE;
 	while (ds18_count < 1+(DS18B20MAX/4) ){
 		ret++;
 		devaddr[7]=ret;
@@ -787,13 +787,13 @@ void DS18B20_OnEverySecond()
 		// better if we don't use parasitic power, we can check if conversion is ready
 		if(dsread == 1 
 #if WINDOWS
-)
+){
 
 			bk_printf("Reading temperature from fake DS18B20 sensor(s)\r\n");
 			for (int i=0; i < ds18_count; i++) {
 				ds18b20devices.last_read[i] += 1 ;
 				errcount = 0;
-				t = 20.0 + 0.1*(g_secondsElapsed%20 -10);
+				float t = 20.0 + 0.1*(g_secondsElapsed%20 -10);
 					ds18b20devices.lasttemp[i] = t;
 					ds18b20devices.last_read[i] = 0;
 					if (ds18b20devices.channel[i]>=0) CHANNEL_Set(ds18b20devices.channel[i], t, CHANNEL_SET_FLAG_SILENT);
