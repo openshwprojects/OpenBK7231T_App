@@ -543,6 +543,18 @@ int DS18B20_fill_devicelist(int Pin)
 {
 	DeviceAddress devaddr;
 	int ret=0;
+#if WINDOWS
+// 28 FF 77 62 40 17 4 31
+	devaddr[0]=0x28; devaddr[1]=0xFF; devaddr[2]=0xAA; devaddr[3]=0xBB;devaddr[4]=0xCC;devaddr[5]=0xDD;devaddr[6]=0xEE
+	while (ds18_count < 1+(DS18B20MAX/4) ){
+		ret++;
+		devaddr[7]=ret;
+		bk_printf("found device 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X ",
+			devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7]);
+		insertArray(&ds18b20devices,devaddr);
+		ret++;
+	}
+#else
 	reset_search();
 	while (search(devaddr,1,Pin) && ds18_count < DS18B20MAX ){
 		ret++;
@@ -551,6 +563,7 @@ int DS18B20_fill_devicelist(int Pin)
 		insertArray(&ds18b20devices,devaddr);
 		ret++;
 	}
+#endif
 	return ret;
 };
 
@@ -772,7 +785,25 @@ void DS18B20_OnEverySecond()
 		// request temp if conversion was requested two seconds after request
 		// if (dsread == 1 && g_secondsElapsed % 5 == 2) {
 		// better if we don't use parasitic power, we can check if conversion is ready
-		if(dsread == 1 && isConversionComplete())
+		if(dsread == 1 
+#if WINDOWS
+)
+
+			bk_printf("Reading temperature from fake DS18B20 sensor(s)\r\n");
+			for (int i=0; i < ds18_count; i++) {
+				ds18b20devices.last_read[i] += 1 ;
+				errcount = 0;
+				t = 20.0 + 0.1*(g_secondsElapsed%20 -10);
+					ds18b20devices.lasttemp[i] = t;
+					ds18b20devices.last_read[i] = 0;
+					if (ds18b20devices.channel[i]>=0) CHANNEL_Set(ds18b20devices.channel[i], t, CHANNEL_SET_FLAG_SILENT);
+					lastconv = g_secondsElapsed;
+				}
+
+			}
+			dsread=0;
+#else
+		&& isConversionComplete())
 		{
 			float t = -127;
 			bk_printf("Reading temperature from DS18B20 sensor(s)\r\n");
@@ -805,7 +836,7 @@ void DS18B20_OnEverySecond()
 
 			}
 			dsread=0;
-
+#endif		
 		}
 		else{
 			for (int i=0; i < ds18_count; i++) {
