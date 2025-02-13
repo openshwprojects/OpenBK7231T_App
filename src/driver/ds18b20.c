@@ -797,7 +797,7 @@ void DS18B20_OnEverySecond()
 					ds18b20devices.lasttemp[i] = t;
 					ds18b20devices.last_read[i] = 0;
 					if (ds18b20devices.channel[i]>=0) CHANNEL_Set(ds18b20devices.channel[i], t, CHANNEL_SET_FLAG_SILENT);
-					lastconv = g_secondsElapsed
+					lastconv = g_secondsElapsed;
 			}
 			dsread=0;
 #else
