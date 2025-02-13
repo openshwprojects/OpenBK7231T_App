@@ -6,6 +6,10 @@
 #include "freertos/task.h"
 #define noInterrupts() portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;taskENTER_CRITICAL(&mux)
 #define interrupts() taskEXIT_CRITICAL(&mux)
+#elif WINDOWS
+	// no task.h
+#define noInterrupts() {}
+#define interrupts() {}
 #else
 #include <task.h>
 #define noInterrupts() taskENTER_CRITICAL()
