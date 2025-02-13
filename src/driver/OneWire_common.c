@@ -10,7 +10,7 @@
 	// no task.h
 #define noInterrupts() {}
 #define interrupts() {}
-void vTaskDelay(void X) {} 
+void vTaskDelay(void) {} 
 #else
 #include <task.h>
 #define noInterrupts() taskENTER_CRITICAL()
