@@ -150,7 +150,8 @@ exit:
 	if (reply != NULL)
 		os_free(reply);
 
-	lwip_close(fd);;
+	lwip_close(fd);
+
 #if DISABLE_SEPARATE_THREAD_FOR_EACH_TCP_CLIENT
 
 #else

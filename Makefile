@@ -35,7 +35,7 @@ else
 endif
 
 update-submodules: submodules
-	git add sdk/OpenBK7231T sdk/OpenBK7231N sdk/OpenXR809 sdk/OpenBL602 sdk/OpenW800 sdk/OpenW600 sdk/OpenLN882H sdk/esp-idf sdk/OpenTR6260
+	git add sdk/OpenBK7231T sdk/OpenBK7231N sdk/OpenXR809 sdk/OpenBL602 sdk/OpenW800 sdk/OpenW600 sdk/OpenLN882H sdk/esp-idf sdk/OpenTR6260 sdk/beken_freertos_sdk
 ifdef GITHUB_ACTIONS
 	git config user.name github-actions
 	git config user.email github-actions@github.com
@@ -76,7 +76,7 @@ sdk/OpenLN882H/project/OpenBeken/app:
 
 .PHONY: prebuild_OpenBK7231N prebuild_OpenBK7231T prebuild_OpenBL602 prebuild_OpenLN882H 
 .PHONY: prebuild_OpenW600 prebuild_OpenW800 prebuild_OpenXR809 prebuild_ESPIDF prebuild_OpenTR6260
-.PHONY: prebuild_OpenRTL87X0C
+.PHONY: prebuild_OpenRTL87X0C prebuild_OpenBK7238 prebuild_OpenBK7231N_ALT
 
 prebuild_OpenBK7231N:
 	git submodule update --init --recursive sdk/OpenBK7231N
@@ -176,6 +176,22 @@ prebuild_OpenRTL8710A:
 		echo "prebuild found for OpenRTL8710A"; \
 		sh platforms/RTL8710A/pre_build.sh; \
 	else echo "prebuild for OpenRTL8710A not found ... "; \
+	fi
+
+prebuild_OpenBK7238:
+	git submodule update --init --recursive sdk/beken_freertos_sdk
+	@if [ -e platforms/BK723x/pre_build_7238.sh ]; then \
+		echo "prebuild found for OpenBK7238"; \
+		sh platforms/BK723x/pre_build_7238.sh; \
+	else echo "prebuild for OpenBK7238 not found ... "; \
+	fi
+
+prebuild_OpenBK7231N_ALT:
+	git submodule update --init --recursive sdk/beken_freertos_sdk
+	@if [ -e platforms/BK723x/pre_build_7231n.sh ]; then \
+		echo "prebuild found for OpenBK7231N"; \
+		sh platforms/BK723x/pre_build_7231n.sh; \
+	else echo "prebuild for OpenBK7231N not found ... "; \
 	fi
 
 # Build main binaries
@@ -338,6 +354,22 @@ OpenRTL8710A: prebuild_OpenRTL8710A
 	cp sdk/OpenRTL8710A_B/project/obk_ameba1/GCC-RELEASE/application/Debug/bin/ram_all.bin output/$(APP_VERSION)/OpenRTL8710A_$(APP_VERSION).bin
 	cp sdk/OpenRTL8710A_B/project/obk_ameba1/GCC-RELEASE/application/Debug/bin/ota.bin output/$(APP_VERSION)/OpenRTL8710A_$(APP_VERSION)_ota.img
 
+.PHONY: OpenBK7238
+OpenBK7238: prebuild_OpenBK7238
+	cd sdk/beken_freertos_sdk && sh build.sh bk7238 $(APP_VERSION)
+	mkdir -p output/$(APP_VERSION)
+	cp sdk/beken_freertos_sdk/out/all_2M.1220.bin output/$(APP_VERSION)/OpenBK7238_QIO_${APP_VERSION}.bin
+	cp sdk/beken_freertos_sdk/out/app.rbl output/$(APP_VERSION)/OpenBK7238_${APP_VERSION}.rbl
+	cp sdk/beken_freertos_sdk/out/bk7238_bsp_uart_2M.1220.bin output/$(APP_VERSION)/OpenBK7238_UA_${APP_VERSION}.bin
+
+.PHONY: OpenBK7231N_ALT
+OpenBK7231N_ALT: prebuild_OpenBK7231N_ALT
+	cd sdk/beken_freertos_sdk && sh build.sh bk7231n $(APP_VERSION)
+	mkdir -p output/$(APP_VERSION)
+	cp sdk/beken_freertos_sdk/out/all_2M.1220.bin output/$(APP_VERSION)/OpenBK7231N_ALT_QIO_${APP_VERSION}.bin
+	cp sdk/beken_freertos_sdk/out/app.rbl output/$(APP_VERSION)/OpenBK7231N_ALT_${APP_VERSION}.rbl
+	cp sdk/beken_freertos_sdk/out/bk7231n_bsp_uart_2M.1220.bin output/$(APP_VERSION)/OpenBK7231N_ALT_UA_${APP_VERSION}.bin
+
 # clean .o files and output directory
 .PHONY: clean
 clean: 
@@ -351,6 +383,7 @@ clean:
 	$(MAKE) -C sdk/OpenRTL87X0C/project/OpenBeken/GCC-RELEASE clean
 	$(MAKE) -C sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE clean
 	$(MAKE) -C sdk/OpenRTL8710A_B/project/obk_ameba1/GCC-RELEASE clean
+	$(MAKE) -C sdk/beken_freertos_sdk clean
 	test -d ./sdk/OpenLN882H/build && cmake --build ./sdk/OpenLN882H/build --target clean
 	test -d ./platforms/ESP-IDF/build-32 && cmake --build ./platforms/ESP-IDF/build-32 --target clean
 	test -d ./platforms/ESP-IDF/build-c3 && cmake --build ./platforms/ESP-IDF/build-c3 --target clean
