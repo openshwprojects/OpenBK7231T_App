@@ -105,10 +105,10 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 #ifdef PLATFORM_BEKEN
 	extern int bk_wlan_power_save_set_level(BK_PS_LEVEL level);
 	if (bOn) {		
-		if (bOn > 1) {
+		if (bOn > 1) {	// only RF sleep
 			bk_wlan_power_save_set_level(/*PS_DEEP_SLEEP_BIT */  PS_RF_SLEEP_BIT);
 		}
-		else {	// to be able to switch from PowerSave from > 1 to 1 (without sleep) 
+		else {	// RF and MCU sleep
 			bk_wlan_power_save_set_level(/*PS_DEEP_SLEEP_BIT */  PS_RF_SLEEP_BIT | PS_MCU_SLEEP_BIT);
 		}
 	}
