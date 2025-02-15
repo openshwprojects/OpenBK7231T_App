@@ -58,7 +58,7 @@ extern uint32_t current_fw_idx;
 #include "temp_detect_pub.h"
 #endif
 
-#if defined(PLATFORM_BK7231T) || defined(PLATFORM_BK7231N)
+#if (defined(PLATFORM_BK7231T) || defined(PLATFORM_BK7231N)) && !defined(PLATFORM_BEKEN_NEW)
 int tuya_os_adapt_wifi_all_ap_scan(AP_IF_S** ap_ary, unsigned int* num);
 int tuya_os_adapt_wifi_release_ap(AP_IF_S* ap);
 #endif
@@ -1306,7 +1306,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
                        hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", (i+1), (int)ap_num, ap_info[i].ssid, ap_info[i].channel, ap_info[i].rssi);
                }
                vPortFree(ap_info);
-#elif PLATFORM_BK7231T
+#elif defined(PLATFORM_BK7231T) && !defined(PLATFORM_BEKEN_NEW)
 		int i;
 
 		AP_IF_S* ar;
@@ -1319,7 +1319,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 			hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", i, (int)num, ar[i].ssid, ar[i].channel, ar[i].rssi);
 		}
 		tuya_hal_wifi_release_ap(ar);
-#elif PLATFORM_BK7231N
+#elif defined(PLATFORM_BK7231N) && !defined(PLATFORM_BEKEN_NEW)
 		int i;
 
 		AP_IF_S* ar;
@@ -1353,6 +1353,8 @@ int http_fn_cfg_wifi(http_request_t* request) {
 		poststr(request, "TODO TR6260<br>");
 #elif defined(PLATFORM_REALTEK)
 		poststr(request, "TODO Realtek<br>");
+#elif PLATFORM_BEKEN_NEW
+		poststr(request, "TODO BEKEN_NEW<br>");
 #else
 #error "Unknown platform"
 		poststr(request, "Unknown platform<br>");

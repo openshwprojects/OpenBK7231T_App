@@ -16,7 +16,7 @@ This repository is named "OpenBK7231T_App", but now it's a multiplatform app, su
 - Windows, via [simulator](https://www.elektroda.com/rtvforum/topic4046056.html)
 - ESP32 (working good, guide will be released soon, [development topic](https://www.elektroda.com/rtvforum/topic4074860.html))
 - RTL8710C/RTL8720C (WBR2, WBR3, etc), see [guide](https://www.elektroda.com/rtvforum/topic4097185.html)
-- BK7238 (WIP)
+- BK7238 (see [tutorial for 1$ board](https://www.elektroda.com/rtvforum/topic4106397.html#21440428))
 - TR6260 (see [guide](https://www.elektroda.com/rtvforum/topic4093752.html))
 
 Please use automatically compiled binaries from the Releases tab. To build yourself for a given platform, just checkout first our version of SDK and then checkout this app repository into it, details later.

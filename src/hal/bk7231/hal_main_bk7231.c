@@ -22,7 +22,7 @@ extern int MQTT_process_received();
 // from new_pins.c
 extern void PIN_ticks(void *param);
 
-#if PLATFORM_BK7231T
+#if PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 
 // realloc fix - otherwise calling realloc crashes.
 // Just fall back to os_realloc.
