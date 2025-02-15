@@ -34,6 +34,7 @@ SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl87x0c/hal_pins_rtl87x0c.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/rtl87x0c/hal_uart_rtl87x0c.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_flashConfig_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_flashVars_realtek.c
+SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_pins_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_wifi_realtek.c
 SRC_C  += $(OBK_DIR)/src/hal/generic/hal_adc_generic.c
 SRC_C  += $(OBK_DIR)/src/hal/generic/hal_flashConfig_generic.c
