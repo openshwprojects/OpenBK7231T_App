@@ -12,6 +12,8 @@
 	You should have received a copy of the GNU General Public License
 	 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "../obk_config.h"
+#if (ENABLE_DRIVER_DS18B20)
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
@@ -25,6 +27,15 @@
 #include "../hal/hal_pins.h"
 
 #include "ds18b20.h"
+#include "OneWire_common.h"
+
+static int ds18_conversionPeriod = 15;	// time between refreshs of temperature
+static int ds18_count = 0;		// detected number of devices
+static int errcount = 0;
+static int lastconv; 			// secondsElapsed on last successfull reading
+static uint8_t dsread = 0;
+static int Pin;
+static devicesArray ds18b20devices;
 
 // OneWire commands
 #define GETTEMP			0x44  // Tells device to take a temperature reading and put it on the scratchpad
@@ -55,11 +66,11 @@
 #define TEMP_11_BIT 0x5F // 11 bit
 #define TEMP_12_BIT 0x7F // 12 bit
 
-uint8_t DS_GPIO;
+uint8_t DS_GPIO;	// the actual GPIO used (changes in case we have multiple GPIOs defined ...)
 uint8_t init = 0;
 uint8_t bitResolution = 12;
 uint8_t devices = 0;
-
+uint8_t DS18B20GPIOS[DS18B20MAX_GPIOS];
 DeviceAddress ROM_NO;
 uint8_t LastDiscrepancy;
 uint8_t LastFamilyDiscrepancy;
@@ -71,18 +82,18 @@ void ds18b20_write(char bit) {
 		HAL_PIN_Setup_Output(DS_GPIO);
 		noInterrupts();
 		HAL_PIN_SetOutputValue(DS_GPIO, 0);
-		usleep(6);
+		OWusleepshort(6); 	// was usleep(6);
 		HAL_PIN_Setup_Input(DS_GPIO);	// release bus
-		usleep(64);
+		OWusleepmed(64);		// was usleep(64);
 		interrupts();
 	}
 	else {
 		HAL_PIN_Setup_Output(DS_GPIO);
 		noInterrupts();
 		HAL_PIN_SetOutputValue(DS_GPIO, 0);
-		usleep(60);
+		OWusleepmed(60);		// was usleep(60);
 		HAL_PIN_Setup_Input(DS_GPIO);	// release bus
-		usleep(10);
+		OWusleepshort(10);		// was usleep(10);
 		interrupts();
 	}
 }
@@ -93,11 +104,11 @@ unsigned char ds18b20_read(void) {
 	HAL_PIN_Setup_Output(DS_GPIO);
 	noInterrupts();
 	HAL_PIN_SetOutputValue(DS_GPIO, 0);
-	usleep(6);
+	OWusleepshort(6);		// was usleep(6);
 	HAL_PIN_Setup_Input(DS_GPIO);
-	usleep(9);
+	OWusleepshort(9);		// was usleep(9);
 	value = HAL_PIN_ReadDigitalInput(DS_GPIO);
-	usleep(55);
+	OWusleepmed(55);		// was usleep(55);
 	interrupts();
 	return (value);
 }
@@ -110,7 +121,7 @@ void ds18b20_write_byte(char data) {
 		x &= 0x01;
 		ds18b20_write(x);
 	}
-	usleep(100);
+	OWusleepmed(100);		// was usleep(100);
 }
 // Reads one byte from bus
 unsigned char ds18b20_read_byte(void) {
@@ -119,24 +130,26 @@ unsigned char ds18b20_read_byte(void) {
 	for (i = 0; i < 8; i++)
 	{
 		if (ds18b20_read()) data |= 0x01 << i;
-		usleep(15);
+		OWusleepshort(15);		// was usleep(15);
 	}
 	return(data);
 }
 // Sends reset pulse
 unsigned char ds18b20_reset(void) {
-	unsigned char presence;
+/*	unsigned char presence;
 	HAL_PIN_Setup_Output(DS_GPIO);
 	noInterrupts();
 	HAL_PIN_SetOutputValue(DS_GPIO, 0);
-	usleep(480);
+	OWusleeplong(480);		// was usleep(480);
 	HAL_PIN_SetOutputValue(DS_GPIO, 1);
 	HAL_PIN_Setup_Input(DS_GPIO);
-	usleep(70);
+	OWusleepmed(70);		// was usleep(70);
 	presence = (HAL_PIN_ReadDigitalInput(DS_GPIO) == 0);
-	usleep(410);
+	OWusleeplong(410);		// was usleep(410);
 	interrupts();
 	return presence;
+*/
+	return (unsigned char)OWReset(DS_GPIO) ;
 }
 
 bool ds18b20_setResolution(const DeviceAddress tempSensorAddresses[], int numAddresses, uint8_t newResolution) {
@@ -148,7 +161,9 @@ bool ds18b20_setResolution(const DeviceAddress tempSensorAddresses[], int numAdd
 	// loop through each address
 	for (int i = 0; i < numAddresses; i++) {
 		// we can only update the sensor if it is connected
-		if (ds18b20_isConnected((DeviceAddress*)tempSensorAddresses[i], scratchPad)) {
+		// no need to check for GPIO of device here, ds18b20_readScratchPad() inside of ds18b20_isConnected() will do so and return flase, if not
+		// it will also make sure, DS_GPIO is set correctly for this sensor
+		if (ds18b20_isConnected((const DeviceAddress*)tempSensorAddresses[i], scratchPad)) {
 			switch (newResolution) {
 			case 12:
 				newValue = TEMP_12_BIT;
@@ -167,7 +182,7 @@ bool ds18b20_setResolution(const DeviceAddress tempSensorAddresses[], int numAdd
 			// if it needs to be updated we write the new value
 			if (scratchPad[CONFIGURATION] != newValue) {
 				scratchPad[CONFIGURATION] = newValue;
-				ds18b20_writeScratchPad((DeviceAddress*)tempSensorAddresses[i], scratchPad);
+				ds18b20_writeScratchPad((const DeviceAddress*)tempSensorAddresses[i], scratchPad);
 			}
 			// done
 			success = true;
@@ -176,8 +191,22 @@ bool ds18b20_setResolution(const DeviceAddress tempSensorAddresses[], int numAdd
 	return success;
 }
 
+
+bool ds18b20_getGPIO(DeviceAddress devaddr,int *GPIO)
+{
+	int i=0;
+	for (i=0; i < ds18_count; i++) {
+		if (! memcmp(devaddr,ds18b20devices.array[i],8)){	// found device
+			*GPIO=ds18b20devices.GPIO[i];
+			return true;
+		}
+	}
+	return false;
+};
+
 void ds18b20_writeScratchPad(const DeviceAddress *deviceAddress, const uint8_t *scratchPad) {
-	ds18b20_reset();
+	if ( ! ds18b20_getGPIO(deviceAddress, &DS_GPIO ) ) return; 
+	OWReset(DS_GPIO);
 	ds18b20_select(deviceAddress);
 	ds18b20_write_byte(WRITESCRATCH);
 	ds18b20_write_byte(scratchPad[HIGH_ALARM_TEMP]); // high alarm temp
@@ -187,11 +216,12 @@ void ds18b20_writeScratchPad(const DeviceAddress *deviceAddress, const uint8_t *
 }
 
 bool ds18b20_readScratchPad(const DeviceAddress *deviceAddress, uint8_t* scratchPad) {
+	if ( ! ds18b20_getGPIO(deviceAddress, &DS_GPIO ) ) return false;
 	// send the reset command and fail fast
-	int b = ds18b20_reset();
+	int b = OWReset(DS_GPIO);
 	if (b == 0) return false;
 	ds18b20_select(deviceAddress);
-	ds18b20_write_byte(READSCRATCH);
+	OWWriteByte(DS_GPIO, READSCRATCH);
 	// Read all registers in a simple loop
 	// byte 0: temperature LSB
 	// byte 1: temperature MSB
@@ -203,16 +233,17 @@ bool ds18b20_readScratchPad(const DeviceAddress *deviceAddress, uint8_t* scratch
 	// byte 7: DS18B20 & DS1822: store for crc
 	// byte 8: SCRATCHPAD_CRC
 	for (uint8_t i = 0; i < 9; i++) {
-		scratchPad[i] = ds18b20_read_byte();
+		scratchPad[i] = OWReadByte(DS_GPIO);
 	}
-	b = ds18b20_reset();
+	b =  OWReset(DS_GPIO);
 	return (b == 1);
 }
 
 void ds18b20_select(const DeviceAddress *address) {
+	if ( ! ds18b20_getGPIO(address, &DS_GPIO ) ) return;
 	uint8_t i;
-	ds18b20_write_byte(SELECTDEVICE);           // Choose ROM
-	for (i = 0; i < 8; i++) ds18b20_write_byte(((uint8_t *)address)[i]);
+	OWWriteByte(DS_GPIO, SELECTDEVICE);           // Choose ROM
+	for (i = 0; i < 8; i++) OWWriteByte(DS_GPIO, ((uint8_t *)address)[i]);
 }
 
 void ds18b20_requestTemperatures() {
@@ -242,6 +273,7 @@ uint16_t millisToWaitForConversion() {
 }
 
 bool ds18b20_isConnected(const DeviceAddress *deviceAddress, uint8_t *scratchPad) {
+	// no need to check for GPIO of device here, ds18b20_readScratchPad() will do so and return flase, if not
 	bool b = ds18b20_readScratchPad(deviceAddress, scratchPad);
 	return b && !ds18b20_isAllZeros(scratchPad) && (ds18b20_crc8(scratchPad, 8) == scratchPad[SCRATCHPAD_CRC]);
 }
@@ -283,12 +315,12 @@ float ds18b20_getTempC(const DeviceAddress *deviceAddress) {
 	if (ds18b20_isConnected(deviceAddress, scratchPad)) {
 		int16_t rawTemp = calculateTemperature(deviceAddress, scratchPad);
 		if (rawTemp <= DEVICE_DISCONNECTED_RAW)
-			return DEVICE_DISCONNECTED_F;
+			return DEVICE_DISCONNECTED_C;
 		// C = RAW/128
 		// F = (C*1.8)+32 = (RAW/128*1.8)+32 = (RAW*0.0140625)+32
 		return (float)rawTemp / 128.0f;
 	}
-	return DEVICE_DISCONNECTED_F;
+	return DEVICE_DISCONNECTED_C;
 }
 
 // reads scratchpad and returns fixed-point temperature, scaling factor 2^-7
@@ -351,7 +383,7 @@ void reset_search() {
 // Return TRUE  : device found, ROM number in ROM_NO buffer
 //        FALSE : device not found, end of search
 
-bool search(uint8_t *newAddr, bool search_mode) {
+bool search(uint8_t *newAddr, bool search_mode, int Pin) {
 	uint8_t id_bit_number;
 	uint8_t last_zero, rom_byte_number;
 	bool search_result;
@@ -369,7 +401,7 @@ bool search(uint8_t *newAddr, bool search_mode) {
 	// if the last call was not the last one
 	if (!LastDeviceFlag) {
 		// 1-Wire reset
-		if (!ds18b20_reset()) {
+		if (!OWReset(Pin)) {
 			// reset the search
 			LastDiscrepancy = 0;
 			LastDeviceFlag = false;
@@ -379,17 +411,17 @@ bool search(uint8_t *newAddr, bool search_mode) {
 
 		// issue the search command
 		if (search_mode == true) {
-			ds18b20_write_byte(0xF0);   // NORMAL SEARCH
+			OWWriteByte(Pin,0xF0);   // NORMAL SEARCH
 		}
 		else {
-			ds18b20_write_byte(0xEC);   // CONDITIONAL SEARCH
+			OWWriteByte(Pin,0xEC);   // CONDITIONAL SEARCH
 		}
 
 		// loop to do the search
 		do {
 			// read a bit and its complement
-			id_bit = ds18b20_read();
-			cmp_id_bit = ds18b20_read();
+			id_bit = OWReadBit(Pin);
+			cmp_id_bit = OWReadBit(Pin);
 
 			// check for no devices on 1-wire
 			if ((id_bit == 1) && (cmp_id_bit == 1)) {
@@ -429,7 +461,7 @@ bool search(uint8_t *newAddr, bool search_mode) {
 					ROM_NO[rom_byte_number] &= ~rom_byte_mask;
 
 				// serial number search direction write bit
-				ds18b20_write(search_direction);
+				OWWriteBit(Pin,search_direction);
 
 				// increment the byte counter id_bit_number
 				// and shift the mask rom_byte_mask
@@ -473,3 +505,348 @@ bool search(uint8_t *newAddr, bool search_mode) {
 	}
 	return search_result;
 }
+
+
+void insertArray(devicesArray *a, DeviceAddress devaddr) {
+	if (ds18_count >= DS18B20MAX){
+		bk_printf("insertArray ERROR:Arry is full, can't add device 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X ",
+			devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7]);
+//			(unsigned int)devaddr[0],(unsigned int)devaddr[1],(unsigned int)devaddr[2],(unsigned int)devaddr[3],(unsigned int)devaddr[4],(unsigned int)devaddr[5],(unsigned int)devaddr[6],(unsigned int)devaddr[7]);
+		return;
+	}
+	bk_printf("insertArray - ds18_count=%i  -- adding device 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X ",ds18_count,
+		devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7]);
+//		(unsigned int)devaddr[0],(unsigned int)devaddr[1],(unsigned int)devaddr[2],(unsigned int)devaddr[3],(unsigned int)devaddr[4],(unsigned int)devaddr[5],(unsigned int)devaddr[6],(unsigned int)devaddr[7]);
+
+	for (int i=0; i < ds18_count; i++) {
+		if (! memcmp(devaddr,ds18b20devices.array[i],8)){	// found device, no need to reenter
+			a->GPIO[i]=DS_GPIO; 	// just to be sure - maybe device is on other GPIO now?!?
+			bk_printf("device 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X was allready present - just (re-)setting GPIO to %i",
+		devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7],DS_GPIO);
+			return;
+		}
+	}
+
+	for (int i = 0; i < 8; i++) {
+		a->array[ds18_count][i] = devaddr[i];
+	}
+	sprintf(a->name[ds18_count],"Sensor %i",ds18_count);
+	a->lasttemp[ds18_count] = -127;
+	a->last_read[ds18_count] = 0;
+	a->channel[ds18_count] = -1;
+	a->GPIO[ds18_count]=DS_GPIO;
+	ds18_count++;
+}
+
+
+int DS18B20_fill_devicelist(int Pin)
+{
+	DeviceAddress devaddr;
+	int ret=0;
+#if WINDOWS
+// 28 FF 77 62 40 17 4 31
+	devaddr[0]=0x28; devaddr[1]=0xFF; devaddr[2]=0xAA; devaddr[3]=0xBB;devaddr[4]=0xCC;devaddr[5]=0xDD;devaddr[6]=0xEE;
+	while (ds18_count < 1+(DS18B20MAX/4) ){
+		ret++;
+		devaddr[7]=ret;
+		bk_printf("found device 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X ",
+			devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7]);
+		insertArray(&ds18b20devices,devaddr);
+		ret++;
+	}
+#else
+	reset_search();
+	while (search(devaddr,1,Pin) && ds18_count < DS18B20MAX ){
+		ret++;
+		bk_printf("found device 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X ",
+			devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7]);
+		insertArray(&ds18b20devices,devaddr);
+		ret++;
+	}
+#endif
+	return ret;
+};
+
+
+int DS18B20_set_devicename(DeviceAddress devaddr,char *name)
+{
+	int i=0;
+	for (i=0; i < ds18_count; i++) {
+		if (! memcmp(devaddr,ds18b20devices.array[i],8)){	// found device
+			if (strlen(name)<DS18B20namel) sprintf(ds18b20devices.name[i],name);
+			return 1;
+		}
+	}
+	bk_printf("didn't find device 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X - inserting",
+			devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7]);
+	insertArray(&ds18b20devices,devaddr);
+	// if devie was inserted (array not full) now the new device is the last one at position ds18_count-1
+	if (! memcmp(devaddr,ds18b20devices.array[ds18_count-1],8)){	// found device
+			if (strlen(name)<DS18B20namel) sprintf(ds18b20devices.name[i],name);
+			return 1;
+	}
+	return 0;
+};
+int DS18B20_set_channel(DeviceAddress devaddr,int c)
+{
+	int i=0;
+	for (i=0; i < ds18_count; i++) {
+		if (! memcmp(devaddr,ds18b20devices.array[i],8)){	// found device
+			ds18b20devices.channel[i]=c;
+			return 1;
+		}
+	}
+	bk_printf("didn't find device 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X - inserting",
+			devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7]);
+	insertArray(&ds18b20devices,devaddr);
+	// if devie was inserted (array not full) now the new device is the last one at position ds18_count-1
+	if (! memcmp(devaddr,ds18b20devices.array[ds18_count-1],8)){	// found device
+			ds18b20devices.channel[ds18_count-1]=c;
+			return 1;
+	}
+	return 0;
+};
+
+int devstr2DeviceAddr(DeviceAddress *devaddr, char *dev){
+	char *p=dev;
+	DeviceAddress daddr;
+	int s;
+	
+#if PLATFORM_W600 || PLATFORM_LN882H || PLATFORM_RTL87X0C		
+// this platforms won't allow sscanf of %hhx, so we need to use %x/%X and hence we need temporary unsigned ints ...
+	unsigned int t[8];
+	s = sscanf(dev,"0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X", &t[0],&t[1],&t[2],&t[3],&t[4],&t[5],&t[6],&t[7]);
+	for (int i=0; i<8; i++) daddr[i]=(uint8_t)t[i];
+#else
+	s = sscanf(dev,"0x%02hhx 0x%02hhx 0x%02hhx 0x%02hhx 0x%02hhx 0x%02hhx 0x%02hhx 0x%02hhx",
+		&daddr[0],&daddr[1],&daddr[2],&daddr[3],&daddr[4],&daddr[5],&daddr[6],&daddr[7]);
+#endif
+	if ( s!=8 ) {
+		bk_printf("devstr2DeviceAddr -  conversion failed (converted %i)",s);
+		return 0;
+	}
+	memcpy(*devaddr,daddr,8);
+	return 1;
+}
+
+commandResult_t CMD_DS18B20_setname(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+
+	if(Tokenizer_GetArgsCount()<=1) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	const char *dev = Tokenizer_GetArg(0);
+	const char *name = Tokenizer_GetArg(1);
+	DeviceAddress devaddr;
+	if (devstr2DeviceAddr(&devaddr,dev)){
+		DS18B20_set_devicename(devaddr,name);
+		if (Tokenizer_GetArgsCount() >= 2 && Tokenizer_IsArgInteger(2)){
+			DS18B20_set_channel(devaddr,Tokenizer_GetArgInteger(2));
+		}
+
+		return CMD_RES_OK;
+	}
+	else return CMD_RES_ERROR;
+}
+
+// startDriver DS18B20 [conversionPeriod (seconds) - default 15]
+void DS18B20_driver_Init()
+{
+		ds18_count=0;
+		reset_search();
+//bk_printf("DS18B20_driver_Init() ... \r\n");
+	int i,j=0;
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+//	bk_printf(" ... i=%i",i);
+		if ((g_cfg.pins.roles[i] == IOR_DS1820_IO) && ( j < DS18B20MAX_GPIOS)){
+//		bk_printf(" ... i=%i + j=%i ",i,j);
+			DS18B20GPIOS[j++]=i;
+			ds18b20_init(i);	// will set  DS_GPIO to i;
+//		bk_printf(" ...DS18B20_fill_devicelist(%i)\r\n",i);
+			DS18B20_fill_devicelist(i);
+
+		}
+	}
+	// fill unused "pins" with 99 as sign for unused
+	for (;j<DS18B20MAX_GPIOS;j++) DS18B20GPIOS[j]=99;
+		bk_printf("DS18B20_driver_Init() after GPIO-fill ... \r\n");
+	ds18_conversionPeriod = Tokenizer_GetArgIntegerDefault(1, 15);
+	lastconv = 0;
+
+	//cmddetail:{"name":"DS18B20_setname","args":"DS18B20-Addr name [channel]",
+	//cmddetail:"descr":"Sets a name to a DS18B20 sensor by sensors address",
+	//cmddetail:"fn":"NULL);","file":"driver/ds18b20.c","requires":"",
+	//cmddetail:"examples":"DS18B20_setname \"0x28 0x01 0x02 0x03 0x04 0x05 0x06 0x07\" \"kitchen\" 2"}
+	CMD_RegisterCommand("DS18B20_setname", CMD_DS18B20_setname, NULL);
+
+};
+
+void DS18B20_AppendInformationToHTTPIndexPage(http_request_t* request)
+
+{
+	hprintf255(request, "<h5>DS18B20 devices detected/configured: %i</h5><table><th width='25'>Name</th>"
+		"<th width='38'> &nbsp; Address </th><th width='10'> Temp </th><th width='10'> read </th>",ds18_count);
+	for (int i=0; i < ds18_count; i++) {
+		char tmp[50];
+		if (ds18b20devices.lasttemp[i] > -127){
+			sprintf(tmp,"%0.2f</td><td>%i s ago",(ds18b20devices.lasttemp[i]),ds18b20devices.last_read[i]);
+		}
+		else {
+			 sprintf(tmp, " -- </td><td> --");
+		}
+		hprintf255(request, "<tr><td>%s</td>"
+		"<td> &nbsp; %02X %02X %02X %02X %02X %02X %02X %02X</td>"
+		"<td>%s</td></tr>",ds18b20devices.name[i],
+		ds18b20devices.array[i][0],ds18b20devices.array[i][1],ds18b20devices.array[i][2],ds18b20devices.array[i][3],
+		ds18b20devices.array[i][4],ds18b20devices.array[i][5],ds18b20devices.array[i][6],ds18b20devices.array[i][7],
+		tmp);
+	}
+	hprintf255(request, "</table>");
+}
+
+#include "../httpserver/http_fns.h"
+
+int http_fn_cfg_ds18b20(http_request_t* request)
+{
+	char tmp[64], tmp2[64];
+	int g_changes = 0;
+
+	for (int i=0; i < ds18_count; i++) { 
+		sprintf(tmp2,"ds1820name%i",i);
+		if (http_getArg(request->url, tmp2, tmp, sizeof(tmp))) {
+			DS18B20_set_devicename(ds18b20devices.array[i],tmp);
+		}
+
+	}
+
+	http_setup(request, httpMimeTypeHTML);
+	http_html_start(request, "DS18B20");
+
+
+//	poststr_h2(request, "Here you can configure DS18B20 sensors detected or cinfigured");
+	hprintf255(request, "<h2>Here you can configure DS18B20 sensors detected or cinfigured</h2><h5>Configure DS18B20 devices detected</h5><form action='/cfg_ds18b20'><table><th width='25'>Name</th>"
+		"<th width='38'> &nbsp; Address </th><th width='10'> Temp </th><th width='10'> read </th>");
+	for (int i=0; i < ds18_count; i++) {
+		char tmp[50];
+		if (ds18b20devices.lasttemp[i] > -127){
+			sprintf(tmp,"%0.2f</td><td>%i s ago",(float)(ds18b20devices.lasttemp[i]),ds18b20devices.last_read[i]);
+		}
+		else {
+			 sprintf(tmp, " -- </td><td> --");
+		}
+		hprintf255(request, "<tr><td><input name='ds1820name%i' value='%s'></td>"
+		"<td> &nbsp; %02X %02X %02X %02X %02X %02X %02X %02X</td>"
+		"<td>%s</td></tr>",i,ds18b20devices.name[i],
+		ds18b20devices.array[i][0],ds18b20devices.array[i][1],ds18b20devices.array[i][2],ds18b20devices.array[i][3],
+		ds18b20devices.array[i][4],ds18b20devices.array[i][5],ds18b20devices.array[i][6],ds18b20devices.array[i][7],
+		tmp);
+	}
+	hprintf255(request, "</table>");
+		
+	for (int i=0; i < ds18_count; i++) { 
+		sprintf(tmp2,"ds1820name%i",i);
+		if (http_getArg(request->url, tmp2, tmp, sizeof(tmp))) {
+			DS18B20_set_devicename(ds18b20devices.array[i],tmp);
+		}
+
+	}
+
+	poststr(request, "<br><input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? ')\"></form> ");
+	poststr(request, htmlFooterReturnToCfgOrMainPage);
+	http_html_end(request);
+	poststr(request, NULL);
+	return 0;	
+	
+	
+	
+	
+	
+}
+
+bool ds18b20_used_channel(int ch) {
+	for (int i=0; i < ds18_count; i++) {
+		if (ds18b20devices.channel[i] == ch) {
+				return true;
+		}
+	}
+	return false;
+};
+
+void DS18B20_OnEverySecond()
+{
+	// for now just find the pin used
+	Pin = PIN_FindPinIndexForRole(IOR_DS1820_IO, 99);
+	uint8_t scratchpad[9], crc;
+	if(Pin != 99) 	// so there is at least one Pin defined
+	{
+//		if (ds18_count == 0) DS18B20_fill_devicelist();
+		// only if pin is set
+		// request temp if conversion was requested two seconds after request
+		// if (dsread == 1 && g_secondsElapsed % 5 == 2) {
+		// better if we don't use parasitic power, we can check if conversion is ready
+		if(dsread == 1 
+#if WINDOWS
+){
+
+			bk_printf("Reading temperature from fake DS18B20 sensor(s)\r\n");
+			for (int i=0; i < ds18_count; i++) {
+				ds18b20devices.last_read[i] += 1 ;
+				errcount = 0;
+				float t = 20.0 + 0.1*(g_secondsElapsed%20 -10);
+					ds18b20devices.lasttemp[i] = t;
+					ds18b20devices.last_read[i] = 0;
+					if (ds18b20devices.channel[i]>=0) CHANNEL_Set(ds18b20devices.channel[i], t, CHANNEL_SET_FLAG_SILENT);
+					lastconv = g_secondsElapsed;
+			}
+			dsread=0;
+#else
+		&& isConversionComplete())
+		{
+			float t = -127;
+			bk_printf("Reading temperature from DS18B20 sensor(s)\r\n");
+			for (int i=0; i < ds18_count; i++) {
+				ds18b20devices.last_read[i] += 1 ;
+				errcount = 0;
+				t = -127;
+				while ( t == -127 && errcount++ < 5){
+					t = ds18b20_getTempC((const DeviceAddress*)ds18b20devices.array[i]);
+					bk_printf("Device %i (0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X) reported %0.2f\r\n",i,
+						ds18b20devices.array[i][0],ds18b20devices.array[i][1],ds18b20devices.array[i][2],ds18b20devices.array[i][3],
+						ds18b20devices.array[i][4],ds18b20devices.array[i][5],ds18b20devices.array[i][6],ds18b20devices.array[i][7],t);
+				}
+				if (t != -127){
+					ds18b20devices.lasttemp[i] = t;
+					ds18b20devices.last_read[i] = 0;
+					if (ds18b20devices.channel[i]>=0) CHANNEL_Set(ds18b20devices.channel[i], t, CHANNEL_SET_FLAG_SILENT);
+					lastconv = g_secondsElapsed;
+				} else{
+					if (ds18b20devices.last_read[i] > 60) {
+						bk_printf("No temperature read for over 60 seconds for"
+							" device %i (0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X)! Setting to -127°C!\r\n",i,
+							ds18b20devices.array[i][0],ds18b20devices.array[i][1],ds18b20devices.array[i][2],
+							ds18b20devices.array[i][3],ds18b20devices.array[i][4],ds18b20devices.array[i][5],
+							ds18b20devices.array[i][6],ds18b20devices.array[i][7]);
+						ds18b20devices.lasttemp[i] = -127;
+						dsread=0;
+					}
+				}
+
+			}
+			dsread=0;
+#endif		
+		}
+		else{
+			for (int i=0; i < ds18_count; i++) {
+				ds18b20devices.last_read[i] += 1 ;
+			}
+			if(dsread == 0 && (g_secondsElapsed % ds18_conversionPeriod == 0 || lastconv == 0))
+			{
+				ds18b20_requestTemperatures();
+				dsread = 1;
+				errcount = 0;
+			}
+		}
+	}
+}
+#endif

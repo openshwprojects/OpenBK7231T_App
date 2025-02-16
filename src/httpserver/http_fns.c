@@ -1257,6 +1257,10 @@ int http_fn_cfg_ping(http_request_t* request) {
 	poststr(request, "<br><br>\
 <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure?')\">\
 </form>");
+
+       poststr(request, "<p>Upload firmware file for OTA<br>!!!Be aware, no filecheck is done!!!<p>\<input id='otafile' type='file'> <input type='button' class='bred' onclick='doota();' value='DO OTA - No file check - reboot after OTA'><script>function doota(){ var input = document.getElementById('otafile');if (input.files[0]){fetch('/api/ota', {method: 'POST',body: input.files[0]}).then((resp) => {if(resp.ok){console.log('ota successfull; rebooting');fetch('/index?restart=1');} else console.log('ota not successfull');})}else alert('no file selected')}</script>");
+
+
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
 	poststr(request, NULL);
@@ -2472,6 +2476,9 @@ int http_fn_cfg(http_request_t* request) {
 	postFormAction(request, "cfg_wifi", "Configure WiFi &amp; Web");
 #if ENABLE_HTTP_IP
 	postFormAction(request, "cfg_ip", "Configure IP");
+#endif
+#if ENABLE_DRIVER_DS18B20
+	postFormAction(request, "cfg_ds18b20", "Configure DS18B20 sensors");
 #endif
 	postFormAction(request, "cfg_mqtt", "Configure MQTT");
 #if ENABLE_HTTP_NAMES
