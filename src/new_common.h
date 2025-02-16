@@ -43,6 +43,11 @@ void OTA_RequestDownloadFromHTTP(const char *s);
 #define DEVICENAME_PREFIX_SHORT "WT"
 #define PLATFORM_MCU_NAME "WIN32"
 #define MANUFACTURER "Microsoft"
+#elif PLATFORM_XR806
+#define DEVICENAME_PREFIX_FULL "OpenXR806"
+#define DEVICENAME_PREFIX_SHORT "oxr"
+#define PLATFORM_MCU_NAME "XR806"
+#define MANUFACTURER "Xradio Technology"
 #elif PLATFORM_XR809
 #define DEVICENAME_PREFIX_FULL "OpenXR809"
 #define DEVICENAME_PREFIX_SHORT "oxr"
@@ -57,6 +62,11 @@ void OTA_RequestDownloadFromHTTP(const char *s);
 #define DEVICENAME_PREFIX_FULL "OpenBK7231T"
 #define DEVICENAME_PREFIX_SHORT "obk"
 #define PLATFORM_MCU_NAME "BK7231T"
+#define MANUFACTURER "Beken Corporation"
+#elif PLATFORM_BK7238
+#define DEVICENAME_PREFIX_FULL "OpenBK7238"
+#define DEVICENAME_PREFIX_SHORT "obk"
+#define PLATFORM_MCU_NAME "BK7238"
 #define MANUFACTURER "Beken Corporation"
 #elif PLATFORM_BL602
 #define DEVICENAME_PREFIX_FULL "OpenBL602"
@@ -153,6 +163,10 @@ This platform is not supported, error!
 #define USER_SW_VER "RTL87X0C_Test"
 #elif defined(PLATFORM_RTL8710B)
 #define USER_SW_VER "RTL8710B_Test"
+#elif defined(PLATFORM_RTL8710A)
+#define USER_SW_VER "RTL8710A_Test"
+#elif defined(PLATFORM_BK7238)
+#define USER_SW_VER "BK7238_Test"
 #else
 #define USER_SW_VER "unknown"
 #endif
@@ -308,7 +322,11 @@ typedef unsigned int UINT32;
 #define os_free free
 #define os_memset memset
 
+#if PLATFORM_XR806
+
+#else
 #define close lwip_close
+#endif
 
 // OS_MSleep?
 #define rtos_delay_milliseconds OS_ThreadSleep
@@ -331,6 +349,9 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint32_t stack_size, beken_thread_arg_t arg );
 OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
+#include <FreeRTOS.h>
+#include <semphr.h>
+#include <task.h>
 #include "common/framework/platform_init.h"
 
 #include "kernel/os/os.h"

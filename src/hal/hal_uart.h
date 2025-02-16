@@ -1,7 +1,7 @@
 #include "../new_common.h"
 #include "../driver/drv_uart.h"
 
-#if PLATFORM_BK7231T | PLATFORM_BK7231N
+#if PLATFORM_BEKEN
 #define UART_2_UARTS_CONCURRENT
 #endif
 

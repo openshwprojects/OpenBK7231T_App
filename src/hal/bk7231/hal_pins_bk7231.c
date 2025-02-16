@@ -17,47 +17,47 @@
 
 extern int g_pwmFrequency;
 
-int PIN_GetPWMIndexForPinIndex(int pin) {
-	if(pin == 6)
-		return 0;
-	if(pin == 7)
-		return 1;
-	if(pin == 8)
-		return 2;
-	if(pin == 9)
-		return 3;
-	if(pin == 24)
-		return 4;
-	if(pin == 26)
-		return 5;
-	return -1;
+int PIN_GetPWMIndexForPinIndex(int pin) 
+{
+	switch(pin)
+	{
+		case 6:		return 0;
+		case 7:		return 1;
+		case 8:		return 2;
+		case 9:		return 3;
+		case 24:	return 4;
+		case 26:	return 5;
+		default:	return -1;
+	}
 }
 
-const char *HAL_PIN_GetPinNameAlias(int index) {
+const char *HAL_PIN_GetPinNameAlias(int index) 
+{
 	// some of pins have special roles
-	if (index == 23)
-		return "ADC3";
-	if (index == 26)
-		return "PWM5";
-	if (index == 24)
-		return "PWM4";
-	if (index == 6)
-		return "PWM0";
-	if (index == 7)
-		return "PWM1";
-	if (index == 0)
-		return "TXD2";
-	if (index == 1)
-		return "RXD2";
-	if (index == 9)
-		return "PWM3";
-	if (index == 8)
-		return "PWM2";
-	if (index == 10)
-		return "RXD1";
-	if (index == 11)
-		return "TXD1";
-	return "N/A";
+	switch(index)
+	{
+#ifndef PLATFORM_BK7238
+		case 1:		return "RXD2";
+		case 10:	return "RXD1";
+		case 23:	return "ADC3";
+		case 24:	return "PWM4";
+		case 26:	return "PWM5";
+#else
+		case 1:		return "RXD2/ADC5";
+		case 10:	return "RXD1/ADC6";
+		case 26:	return "PWM5/ADC1";
+		case 24:	return "PWM4/ADC2";
+		case 20:	return "ADC3";
+		case 28:	return "ADC4";
+#endif
+		case 0:		return "TXD2";
+		case 11:	return "TXD1";
+		case 6:		return "PWM0";
+		case 7:		return "PWM1";
+		case 8:		return "PWM2";
+		case 9:		return "PWM3";
+		default:	return "N/A";
+	}
 }
 
 int HAL_PIN_CanThisPinBePWM(int index) {
@@ -115,7 +115,7 @@ void HAL_PIN_PWM_Start(int index) {
 		useFreq = PWM_FREQUENCY_SLOW;
 
 	uint32_t frequency = (26000000 / useFreq);
-#if PLATFORM_BK7231N
+#if defined(PLATFORM_BK7231N) && !defined(PLATFORM_BEKEN_NEW)
 	// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
 	bk_pwm_initialize(pwmIndex, frequency, 0, 0, 0);
 #else
@@ -140,7 +140,7 @@ void HAL_PIN_PWM_Update(int index, float value) {
 	//uint32_t value_upscaled = value * 10.0f; //Duty cycle 0...100 -> 0...1000
 	uint32_t period = (26000000 / g_pwmFrequency); //TODO: Move to global variable and set in init func so it does not have to be recalculated every time...
 	uint32_t duty = (value / 100.0 * period); //No need to use upscaled variable
-#if PLATFORM_BK7231N
+#if defined(PLATFORM_BK7231N) && !defined(PLATFORM_BEKEN_NEW)
 	bk_pwm_update_param(pwmIndex, period, duty,0,0);
 #else
 	bk_pwm_update_param(pwmIndex, period, duty);
