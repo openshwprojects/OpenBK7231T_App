@@ -1,8 +1,12 @@
 #include "drv_test_drivers.h"
 
+#include "../obk_config.h"
+
 #include <math.h>
 
 #include "../cmnds/cmd_public.h"
+
+#if ENABLE_DRIVER_TESTPOWER
 #include "drv_bl_shared.h"
 
 static float base_v = 120;
@@ -50,6 +54,7 @@ void Test_Power_RunEverySecond(void) {
 	}
 	BL_ProcessUpdate(final_v, final_c, final_p, NAN, NAN);
 }
+#endif
 
 //Test LED driver
 void Test_LED_Driver_Init(void) {}

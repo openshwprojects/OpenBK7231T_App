@@ -898,7 +898,7 @@ typedef enum channelType_e {
 	ChType_PowerFactor_div100,
 	//chandetail:{"name":"Pressure_div100",
 	//chandetail:"title":"TODO",
-	//chandetail:"descr":".",
+	//chandetail:"descr":"Pressure in hPa, but divided by 100",
 	//chandetail:"enum":"Pressure_div100",
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
@@ -912,7 +912,7 @@ typedef enum channelType_e {
 	ChType_Temperature_div100,
 	//chandetail:{"name":"LeakageCurrent_div1000",
 	//chandetail:"title":"TODO",
-	//chandetail:"descr":".",
+	//chandetail:"descr":"Leakage current in mA",
 	//chandetail:"enum":"ChType_LeakageCurrent_div1000",
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
@@ -980,6 +980,13 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Motion_n,
+	//chandetail:{"name":"Frequency_div1000",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI",
+	//chandetail:"enum":"ChType_Frequency_div1000",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Frequency_div1000,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
@@ -1016,6 +1023,14 @@ typedef enum channelType_e {
 #else
 #define PLATFORM_GPIO_MAX 0
 #endif
+#elif PLATFORM_TR6260
+#define PLATFORM_GPIO_MAX 25
+#elif PLATFORM_RTL87X0C
+#define PLATFORM_GPIO_MAX 24
+#elif PLATFORM_RTL8710B
+#define PLATFORM_GPIO_MAX 17
+#elif PLATFORM_RTL8710A
+#define PLATFORM_GPIO_MAX 20
 #else
 #define PLATFORM_GPIO_MAX 29
 #endif
@@ -1386,6 +1401,7 @@ void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex));
 void CHANNEL_ClearAllChannels();
 // CHANNEL_SET_FLAG_*
 void CHANNEL_Set(int ch, int iVal, int iFlags);
+void CHANNEL_SetSmart(int ch, float fVal, int iFlags);
 void CHANNEL_Set_FloatPWM(int ch, float fVal, int iFlags);
 void CHANNEL_Add(int ch, int iVal);
 void CHANNEL_AddClamped(int ch, int iVal, int min, int max, int bWrapInsteadOfClamp);
@@ -1433,5 +1449,10 @@ const char* PIN_RoleToString(int role);
 int PIN_IOR_NofChan(int test);
 
 extern const char* g_channelTypeNames[];
+
+#if ALLOW_SSID2
+int FV_GetStartupSSID_StoredValue(int adefault);
+void FV_UpdateStartupSSIDIfChanged_StoredValue(int assidindex);
+#endif
 
 #endif

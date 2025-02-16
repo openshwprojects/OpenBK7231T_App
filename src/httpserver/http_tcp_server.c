@@ -6,6 +6,7 @@
 #include "../logging/logging.h"
 #include "new_http.h"
 
+#if !NEW_TCP_SERVER
 #define HTTP_SERVER_PORT            80
 #define REPLY_BUFFER_SIZE			2048
 #define INCOMING_BUFFER_SIZE		1024
@@ -149,7 +150,8 @@ exit:
 	if (reply != NULL)
 		os_free(reply);
 
-	lwip_close(fd);;
+	lwip_close(fd);
+
 #if DISABLE_SEPARATE_THREAD_FOR_EACH_TCP_CLIENT
 
 #else
@@ -365,4 +367,4 @@ void HTTPServer_Start()
 
 
 #endif
-
+#endif

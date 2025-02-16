@@ -1,4 +1,9 @@
 #include "drv_bl0937.h"
+#include "../obk_config.h"
+
+
+#if ENABLE_DRIVER_BL0937
+
 //dummy
 #include <math.h>
 
@@ -22,14 +27,25 @@
 
 #define ELE_HW_TIME 1
 #define HW_TIMER_ID 0
+
 #elif PLATFORM_BL602
 
 #include "../../../../../../components/hal_drv/bl602_hal/hal_gpio.h"
 #include "../../../../../../components/hal_drv/bl602_hal/bl_gpio.h"
 
 #elif PLATFORM_LN882H
+
 #include "../../sdk/OpenLN882H/mcu/driver_ln882h/hal/hal_common.h"
 #include "../../sdk/OpenLN882H/mcu/driver_ln882h/hal/hal_gpio.h"
+
+#elif PLATFORM_REALTEK
+
+#include "gpio_irq_api.h"
+#include "../hal/realtek/hal_generic_realtek.h"
+extern rtlPinMapping_t g_pins[];
+rtlPinMapping_t* rtl_cf;
+rtlPinMapping_t* rtl_cf1;
+
 #else
 
 
@@ -63,22 +79,26 @@ static portTickType pulseStamp;
 
 #if PLATFORM_W600
 
-static void HlwCf1Interrupt(void* context) {
+static void HlwCf1Interrupt(void* context)
+{
 	tls_clr_gpio_irq_status(GPIO_HLW_CF1_pin);
 	g_vc_pulses++;
 }
-static void HlwCfInterrupt(void* context) {
+static void HlwCfInterrupt(void* context)
+{
 	tls_clr_gpio_irq_status(GPIO_HLW_CF_pin);
 	g_p_pulses++;
 }
 
 #elif PLATFORM_BL602
 
-static void HlwCf1Interrupt(void* arg) {
+static void HlwCf1Interrupt(void* arg)
+{
 	g_vc_pulses++;
 	bl_gpio_intmask(GPIO_HLW_CF1, 0);
 }
-static void HlwCfInterrupt(void* arg) {
+static void HlwCfInterrupt(void* arg)
+{
 	g_p_pulses++;
 	bl_gpio_intmask(GPIO_HLW_CF, 0);
 }
@@ -104,7 +124,7 @@ void GPIOA_IRQHandler()
 {
 	uint32_t base = GetBaseForPin(GPIO_HLW_CF1);
 	uint16_t gpio_pin = GetGPIOForPin(GPIO_HLW_CF1);
-	if (hal_gpio_pin_get_it_flag(base, gpio_pin) == HAL_SET)
+	if(hal_gpio_pin_get_it_flag(base, gpio_pin) == HAL_SET)
 	{
 		hal_gpio_pin_clr_it_flag(base, gpio_pin);
 		g_vc_pulses++;
@@ -112,7 +132,7 @@ void GPIOA_IRQHandler()
 
 	base = GetBaseForPin(GPIO_HLW_CF);
 	gpio_pin = GetGPIOForPin(GPIO_HLW_CF);
-	if (hal_gpio_pin_get_it_flag(base, gpio_pin) == HAL_SET)
+	if(hal_gpio_pin_get_it_flag(base, gpio_pin) == HAL_SET)
 	{
 		hal_gpio_pin_clr_it_flag(base, gpio_pin);
 		g_p_pulses++;
@@ -123,7 +143,7 @@ void GPIOB_IRQHandler()
 {
 	uint32_t base = GetBaseForPin(GPIO_HLW_CF1);
 	uint16_t gpio_pin = GetGPIOForPin(GPIO_HLW_CF1);
-	if (hal_gpio_pin_get_it_flag(base, gpio_pin) == HAL_SET)
+	if(hal_gpio_pin_get_it_flag(base, gpio_pin) == HAL_SET)
 	{
 		hal_gpio_pin_clr_it_flag(base, gpio_pin);
 		g_vc_pulses++;
@@ -131,69 +151,103 @@ void GPIOB_IRQHandler()
 
 	base = GetBaseForPin(GPIO_HLW_CF);
 	gpio_pin = GetGPIOForPin(GPIO_HLW_CF);
-	if (hal_gpio_pin_get_it_flag(base, gpio_pin) == HAL_SET)
+	if(hal_gpio_pin_get_it_flag(base, gpio_pin) == HAL_SET)
 	{
 		hal_gpio_pin_clr_it_flag(base, gpio_pin);
 		g_p_pulses++;
 	}
 }
 
-#else
+#elif PLATFORM_REALTEK
 
-void HlwCf1Interrupt(unsigned char pinNum) {  // Service Voltage and Current
+void cf_irq_handler(uint32_t id, gpio_irq_event event)
+{
+	g_p_pulses++;
+}
+
+void cf1_irq_handler(uint32_t id, gpio_irq_event event)
+{
 	g_vc_pulses++;
 }
-void HlwCfInterrupt(unsigned char pinNum) {  // Service Power
+
+#else
+
+void HlwCf1Interrupt(unsigned char pinNum)
+{
+	// Service Voltage and Current
+	g_vc_pulses++;
+}
+void HlwCfInterrupt(unsigned char pinNum)
+{
+	// Service Power
 	g_p_pulses++;
 }
 
 #endif
 
-commandResult_t BL0937_PowerMax(const void *context, const char *cmd, const char *args, int cmdFlags) {
-    float maxPower;
+commandResult_t BL0937_PowerMax(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	float maxPower;
 
-    if(args==0||*args==0) {
-        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"This command needs one argument");
-        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-    }
-    maxPower = atof(args);
-    if ((maxPower>200.0) && (maxPower<7200.0f))
-    {
-        BL0937_PMAX = maxPower;
-        // UPDATE: now they are automatically saved
-        CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_POWER_MAX, BL0937_PMAX);           
-        {
-            char dbg[128];
-            snprintf(dbg, sizeof(dbg),"PowerMax: set max to %f\n", BL0937_PMAX);
-            addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
-        }
-    }
-    return CMD_RES_OK;
+	if(args == 0 || *args == 0)
+	{
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "This command needs one argument");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	maxPower = atof(args);
+	if((maxPower > 200.0) && (maxPower < 7200.0f))
+	{
+		BL0937_PMAX = maxPower;
+		// UPDATE: now they are automatically saved
+		CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_POWER_MAX, BL0937_PMAX);
+		{
+			char dbg[128];
+			snprintf(dbg, sizeof(dbg), "PowerMax: set max to %f\n", BL0937_PMAX);
+			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, dbg);
+		}
+	}
+	return CMD_RES_OK;
 }
 
 void BL0937_Shutdown_Pins()
 {
 #if PLATFORM_W600
+
 	tls_gpio_irq_disable(GPIO_HLW_CF1_pin);
 	tls_gpio_irq_disable(GPIO_HLW_CF_pin);
+
 #elif PLATFORM_BL602
 	//Todo how?
 #elif PLATFORM_BEKEN
+
 	gpio_int_disable(GPIO_HLW_CF1);
 	gpio_int_disable(GPIO_HLW_CF);
+
+#elif PLATFORM_REALTEK
+
+	gpio_irq_free(rtl_cf1->irq);
+	gpio_irq_free(rtl_cf->irq);
+	os_free(rtl_cf1->irq);
+	os_free(rtl_cf->irq);
+	rtl_cf1->irq = NULL;
+	rtl_cf->irq = NULL;
+
 #endif
 }
 
-void BL0937_Init_Pins() {
+void BL0937_Init_Pins()
+{
 	int tmp;
 
 	// if not found, this will return the already set value
 	tmp = PIN_FindPinIndexForRole(IOR_BL0937_SEL_n, -1);
-	if (tmp != -1) {
+	if(tmp != -1)
+	{
 		g_invertSEL = true;
 		GPIO_HLW_SEL = tmp;
 	}
-	else {
+	else
+	{
 		g_invertSEL = false;
 		GPIO_HLW_SEL = PIN_FindPinIndexForRole(IOR_BL0937_SEL, GPIO_HLW_SEL);
 	}
@@ -201,10 +255,35 @@ void BL0937_Init_Pins() {
 	GPIO_HLW_CF1 = PIN_FindPinIndexForRole(IOR_BL0937_CF1, GPIO_HLW_CF1);
 
 #if PLATFORM_W600
+
 	GPIO_HLW_CF1_pin = HAL_GetGPIOPin(GPIO_HLW_CF1);
 	GPIO_HLW_CF_pin = HAL_GetGPIOPin(GPIO_HLW_CF);
 	//printf("GPIO_HLW_CF=%d GPIO_HLW_CF1=%d\n", GPIO_HLW_CF, GPIO_HLW_CF1);
 	//printf("GPIO_HLW_CF1_pin=%d GPIO_HLW_CF_pin=%d\n", GPIO_HLW_CF1_pin, GPIO_HLW_CF_pin);
+
+#elif PLATFORM_REALTEK
+
+	rtl_cf = g_pins + GPIO_HLW_CF;
+	rtl_cf1 = g_pins + GPIO_HLW_CF1;
+#if PLATFORM_RTL87X0C
+	if(rtl_cf->gpio != NULL)
+	{
+		hal_pinmux_unregister(rtl_cf->pin, PID_GPIO);
+		os_free(rtl_cf->gpio);
+		rtl_cf->gpio = NULL;
+	}
+	if(rtl_cf1->gpio != NULL)
+	{
+		hal_pinmux_unregister(rtl_cf1->pin, PID_GPIO);
+		os_free(rtl_cf1->gpio);
+		rtl_cf1->gpio = NULL;
+	}
+#endif
+	rtl_cf1->irq = os_malloc(sizeof(gpio_irq_t));
+	rtl_cf->irq = os_malloc(sizeof(gpio_irq_t));
+	memset(rtl_cf1->irq, 0, sizeof(gpio_irq_t));
+	memset(rtl_cf->irq, 0, sizeof(gpio_irq_t));
+
 #endif
 
 	BL0937_PMAX = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER_MAX, BL0937_PMAX);
@@ -215,37 +294,63 @@ void BL0937_Init_Pins() {
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF1);
 
 #if PLATFORM_W600
+
 	tls_gpio_isr_register(GPIO_HLW_CF1_pin, HlwCf1Interrupt, NULL);
 	tls_gpio_irq_enable(GPIO_HLW_CF1_pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
+
 #elif PLATFORM_BL602
-        tmp = hal_gpio_register_handler(HlwCf1Interrupt, GPIO_HLW_CF1, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_PULSE, (void*) NULL);
-	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Registering CF1 handler status: %i \n", tmp);
+
+	tmp = hal_gpio_register_handler(HlwCf1Interrupt, GPIO_HLW_CF1, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_PULSE, (void*)NULL);
+	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Registering CF1 handler status: %i \n", tmp);
 
 #elif PLATFORM_LN882H
+
 	hal_gpio_pin_it_cfg(GetBaseForPin(GPIO_HLW_CF1), GetGPIOForPin(GPIO_HLW_CF1), GPIO_INT_FALLING);
 	hal_gpio_pin_it_en(GetBaseForPin(GPIO_HLW_CF1), GetGPIOForPin(GPIO_HLW_CF1), HAL_ENABLE);
 	NVIC_SetPriority(GetIRQForPin(GPIO_HLW_CF1), 1);
 	NVIC_EnableIRQ(GetIRQForPin(GPIO_HLW_CF1));
+
 #elif PLATFORM_BEKEN
+
 	gpio_int_enable(GPIO_HLW_CF1, IRQ_TRIGGER_FALLING_EDGE, HlwCf1Interrupt);
+
+#elif PLATFORM_REALTEK
+
+	gpio_irq_init(rtl_cf1->irq, rtl_cf1->pin, cf1_irq_handler, NULL);
+	gpio_irq_set(rtl_cf1->irq, IRQ_FALL, 1);
+	gpio_irq_enable(rtl_cf1->irq);
+
 #endif
 
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF);
 
 #if PLATFORM_W600
+
 	tls_gpio_isr_register(GPIO_HLW_CF_pin, HlwCfInterrupt, NULL);
 	tls_gpio_irq_enable(GPIO_HLW_CF_pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
+
 #elif PLATFORM_BL602
-        tmp = hal_gpio_register_handler(HlwCfInterrupt, GPIO_HLW_CF, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_PULSE, (void*) NULL);
-	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Registering CF handler status: %i \n", tmp);
+
+	tmp = hal_gpio_register_handler(HlwCfInterrupt, GPIO_HLW_CF, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_PULSE, (void*)NULL);
+	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Registering CF handler status: %i \n", tmp);
 
 #elif PLATFORM_LN882H
+
 	hal_gpio_pin_it_cfg(GetBaseForPin(GPIO_HLW_CF), GetGPIOForPin(GPIO_HLW_CF), GPIO_INT_FALLING);
 	hal_gpio_pin_it_en(GetBaseForPin(GPIO_HLW_CF), GetGPIOForPin(GPIO_HLW_CF), HAL_ENABLE);
 	NVIC_SetPriority(GetIRQForPin(GPIO_HLW_CF), 1);
 	NVIC_EnableIRQ(GetIRQForPin(GPIO_HLW_CF));
+
 #elif PLATFORM_BEKEN
+
 	gpio_int_enable(GPIO_HLW_CF, IRQ_TRIGGER_FALLING_EDGE, HlwCfInterrupt);
+
+#elif PLATFORM_REALTEK
+
+	gpio_irq_init(rtl_cf->irq, rtl_cf->pin, cf_irq_handler, NULL);
+	gpio_irq_set(rtl_cf->irq, IRQ_FALL, 1);
+	gpio_irq_enable(rtl_cf->irq);
+
 #endif
 
 	g_vc_pulses = 0;
@@ -253,47 +358,54 @@ void BL0937_Init_Pins() {
 	pulseStamp = xTaskGetTickCount();
 }
 
-void BL0937_Init(void) {
-    BL_Shared_Init();
+void BL0937_Init(void)
+{
+	BL_Shared_Init();
 
-    PwrCal_Init(PWR_CAL_MULTIPLY, DEFAULT_VOLTAGE_CAL, DEFAULT_CURRENT_CAL,
-                DEFAULT_POWER_CAL);
+	PwrCal_Init(PWR_CAL_MULTIPLY, DEFAULT_VOLTAGE_CAL, DEFAULT_CURRENT_CAL,
+		DEFAULT_POWER_CAL);
 
-	//cmddetail:{"name":"PowerMax","args":"BL0937_PowerMax",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"PowerMax","args":"[MaxPowerInW]",
+	//cmddetail:"descr":"Sets the maximum power limit for BL measurement used to filter incorrect values",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("PowerMax",BL0937_PowerMax, NULL);
+	CMD_RegisterCommand("PowerMax", BL0937_PowerMax, NULL);
 
 	BL0937_Init_Pins();
 }
 
-void BL0937_RunEverySecond(void) {
-    float final_v;
+void BL0937_RunEverySecond(void)
+{
+	float final_v;
 	float final_c;
 	float final_p;
 	bool bNeedRestart;
 	portTickType ticksElapsed;
 
 	bNeedRestart = false;
-	if (g_invertSEL) {
-		if (GPIO_HLW_SEL != PIN_FindPinIndexForRole(IOR_BL0937_SEL_n, GPIO_HLW_SEL)) {
+	if(g_invertSEL)
+	{
+		if(GPIO_HLW_SEL != PIN_FindPinIndexForRole(IOR_BL0937_SEL_n, GPIO_HLW_SEL))
+		{
 			bNeedRestart = true;
 		}
 	}
-	else {
-		if (GPIO_HLW_SEL != PIN_FindPinIndexForRole(IOR_BL0937_SEL, GPIO_HLW_SEL)) {
+	else
+	{
+		if(GPIO_HLW_SEL != PIN_FindPinIndexForRole(IOR_BL0937_SEL, GPIO_HLW_SEL))
+		{
 			bNeedRestart = true;
 		}
 	}
-	if (GPIO_HLW_CF != PIN_FindPinIndexForRole(IOR_BL0937_CF, GPIO_HLW_CF)) {
+	if(GPIO_HLW_CF != PIN_FindPinIndexForRole(IOR_BL0937_CF, GPIO_HLW_CF))
+	{
 		bNeedRestart = true;
 	}
-	if (GPIO_HLW_CF1 != PIN_FindPinIndexForRole(IOR_BL0937_CF1, GPIO_HLW_CF1)) {
+	if(GPIO_HLW_CF1 != PIN_FindPinIndexForRole(IOR_BL0937_CF1, GPIO_HLW_CF1))
+	{
 		bNeedRestart = true;
 	}
 
-	ticksElapsed = (xTaskGetTickCount() - pulseStamp);
 
 #if PLATFORM_BEKEN
 	GLOBAL_INT_DECLARATION();
@@ -303,7 +415,8 @@ void BL0937_RunEverySecond(void) {
 #endif
 
 #if 1
-	if (bNeedRestart) {
+	if(bNeedRestart)
+	{
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "BL0937 pins have changed, will reset the interrupts");
 
 		BL0937_Shutdown_Pins();
@@ -318,68 +431,82 @@ void BL0937_RunEverySecond(void) {
 
 
 #endif
-	if(g_sel) {
-		if (g_invertSEL) {
+	if(g_sel)
+	{
+		if(g_invertSEL)
+		{
 			res_c = g_vc_pulses;
 		}
-		else {
+		else
+		{
 			res_v = g_vc_pulses;
 		}
 		g_sel = false;
-	} else {
-		if (g_invertSEL) {
+	}
+	else
+	{
+		if(g_invertSEL)
+		{
 			res_v = g_vc_pulses;
 		}
-		else {
+		else
+		{
 			res_c = g_vc_pulses;
 		}
 		g_sel = true;
 	}
-    HAL_PIN_SetOutputValue(GPIO_HLW_SEL, g_sel);
+	HAL_PIN_SetOutputValue(GPIO_HLW_SEL, g_sel);
 	g_vc_pulses = 0;
 
 	res_p = g_p_pulses;
 	g_p_pulses = 0;
 #if PLATFORM_BEKEN
-    GLOBAL_INT_RESTORE();
+	GLOBAL_INT_RESTORE();
 #else
 
 #endif
 
+	ticksElapsed = (xTaskGetTickCount() - pulseStamp);
 	pulseStamp = xTaskGetTickCount();
 	//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
 
-    PwrCal_Scale(res_v, res_c, res_p, &final_v, &final_c, &final_p);
+	PwrCal_Scale(res_v, res_c, res_p, &final_v, &final_c, &final_p);
 
-	final_v *= (float)ticksElapsed;
-	final_v /= (1000.0f / (float)portTICK_PERIOD_MS);
+	final_v *= (1000.0f / (float)portTICK_PERIOD_MS);
+	final_v /= (float)ticksElapsed;
 
-	final_c *= (float)ticksElapsed;
-	final_c /= (1000.0f / (float)portTICK_PERIOD_MS);
+	final_c *= (1000.0f / (float)portTICK_PERIOD_MS);
+	final_c /= (float)ticksElapsed;
 
-	final_p *= (float)ticksElapsed;
-	final_p /= (1000.0f / (float)portTICK_PERIOD_MS);
+	final_p *= (1000.0f / (float)portTICK_PERIOD_MS);
+	final_p /= (float)ticksElapsed;
 
-    /* patch to limit max power reading, filter random reading errors */
-    if (final_p > BL0937_PMAX)
-    {
-        /* MAX value breach, use last value */
-        {
-            char dbg[128];
-            snprintf(dbg, sizeof(dbg),"Power reading: %f exceeded MAX limit: %f, Last: %f\n", final_p, BL0937_PMAX, last_p);
-            addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, dbg);
-        }
-        final_p = last_p;
-    } else {
-        /* Valid value save for next time */
-        last_p = final_p;
-    }    
+	/* patch to limit max power reading, filter random reading errors */
+	if(final_p > BL0937_PMAX)
+	{
+		/* MAX value breach, use last value */
+		{
+			char dbg[128];
+			snprintf(dbg, sizeof(dbg), "Power reading: %f exceeded MAX limit: %f, Last: %f\n", final_p, BL0937_PMAX, last_p);
+			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, dbg);
+		}
+		final_p = last_p;
+	}
+	else
+	{
+		/* Valid value save for next time */
+		last_p = final_p;
+	}
 #if 0
 	{
 		char dbg[128];
-		snprintf(dbg, sizeof(dbg),"Voltage %f, current %f, power %f\n", final_v, final_c, final_p);
-		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,dbg);
+		snprintf(dbg, sizeof(dbg), "Voltage %f, current %f, power %f\n", final_v, final_c, final_p);
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, dbg);
 	}
 #endif
 	BL_ProcessUpdate(final_v, final_c, final_p, NAN, NAN);
 }
+
+// close ENABLE_DRIVER_BL0937
+#endif
+

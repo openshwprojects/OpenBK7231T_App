@@ -9,11 +9,13 @@ void SIM_ClearAndPrepareForMQTTTesting(const char *clientName, const char *group
 	Main_OnWiFiStatusChange(WIFI_STA_CONNECTED);
 	CFG_SetMQTTClientId(clientName);
 	CFG_SetMQTTGroupTopic(groupName);
+#if ENABLE_MQTT
 	MQTT_init();
 
 	for (int i = 0; i < 20; i++) {
 		MQTT_RunEverySecondUpdate();
 	}
+#endif
 }
 void Test_MQTT_Get_And_Reply() {
 	SIM_ClearOBK(0);
@@ -182,6 +184,14 @@ void Test_MQTT_Channels() {
 	// with space in the middle
 	CMD_ExecuteCommand("publish myTestDevice/test \"{\\\"msg\\\":\\\"Hello World With Spaces\\\"}\" 1", 0);
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/test", "{\"msg\":\"Hello World With Spaces\"}", false);
+	SIM_ClearMQTTHistory();
+
+
+	CMD_ExecuteCommand("setChannel 1 225", 0);
+	CMD_ExecuteCommand("setChannel 2 66", 0);
+	CMD_ExecuteCommand("publish DATA {\"ROOM\":\"KITCHEN\",\"TEMPERATURE\":$CH1,\"HUMIDITY\":$CH2}", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/DATA/get", 
+		"{\"ROOM\":\"KITCHEN\",\"TEMPERATURE\":225,\"HUMIDITY\":66}", false);
 	SIM_ClearMQTTHistory();
 }
 void Test_MQTT_LED_CW() {
@@ -725,9 +735,11 @@ void Test_MQTT(){
 	Test_MQTT_Misc();
 	Test_MQTT_Get_And_Reply();
 	Test_MQTT_Channels();
+#if ENABLE_LED_BASIC
 	Test_MQTT_LED_CW();
 	Test_MQTT_LED_RGB();
 	Test_MQTT_LED_RGBCW();
+#endif
 	Test_MQTT_Topic_With_Slash();
 	Test_MQTT_Topic_With_Slashes();
 	Test_MQTT_Average();

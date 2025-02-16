@@ -15,6 +15,8 @@
 	#include "../littlefs/our_lfs.h"
 #endif
 
+#if ENABLE_LED_BASIC
+
 static byte g_curColor = 0;
 // TODO: make this list consistent with
 // Tasmota colors standard:
@@ -152,4 +154,8 @@ void LED_NextColor() {
 
 	LED_SetColorByIndex(g_curColor);
 }
+
+
+#endif
+
 

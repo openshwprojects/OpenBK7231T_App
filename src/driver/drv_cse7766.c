@@ -1,6 +1,10 @@
 // NOTE: this is the same as HLW8032
 #include "drv_cse7766.h"
 
+#include "../obk_config.h"
+
+#if ENABLE_DRIVER_CSE7766
+
 #include <math.h>
 
 #include "../logging/logging.h"
@@ -217,3 +221,7 @@ void CSE7766_RunEverySecond(void) {
 
 	CSE7766_TryToGetNextCSE7766Packet();
 }
+
+// close ENABLE_DRIVER_CSE7766
+#endif
+

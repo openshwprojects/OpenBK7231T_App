@@ -3,6 +3,11 @@
 // Use this for reference:
 // https://github.com/RN8209C/RN8209C-SDK/blob/master/src/rn8209c_u.c
 // Search for rn8209c_read_current
+
+#include "../obk_config.h"
+
+#if ENABLE_DRIVER_RN8209
+
 #include "../logging/logging.h"
 #include "../new_pins.h"
 #include "drv_bl_shared.h"
@@ -164,3 +169,5 @@ Let's verify checksum (sum modulo 256 and negated):
 77  -> 01001101
 178 -> 10110010
 */
+
+#endif

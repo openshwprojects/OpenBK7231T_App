@@ -3,6 +3,9 @@
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
+
+#if ENABLE_DRIVER_PIXELANIM
+
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 #include "../mqtt/new_mqtt.h"
@@ -215,13 +218,13 @@ commandResult_t PA_Cmd_AnimSpeed(const void *context, const char *cmd, const cha
 }
 void PixelAnim_Init() {
 
-	//cmddetail:{"name":"Anim","args":"PA_Cmd_Anim",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"Anim","args":"[AnimationIndex]",
+	//cmddetail:"descr":"Starts given WS2812 animation by index.",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_pixelAnim.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Anim", PA_Cmd_Anim, NULL);
-	//cmddetail:{"name":"AnimSpeed","args":"PA_Cmd_AnimSpeed",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"AnimSpeed","args":"[Interval]",
+	//cmddetail:"descr":"Sets WS2812 animation speed",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_pixelAnim.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("AnimSpeed", PA_Cmd_AnimSpeed, NULL);
@@ -291,4 +294,8 @@ void PixelAnim_SetAnimQuickTick() {
 	}
 }
 
+
+
+//ENABLE_DRIVER_PIXELANIM
+#endif
 

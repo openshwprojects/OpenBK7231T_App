@@ -6,6 +6,7 @@
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "../logging/logging.h"
+#include "../hal/hal_pins.h"
 
 #define MAX_CMD_LEN 512
 #define MAX_ARGS 32
@@ -21,7 +22,7 @@ static int tok_flags = 0;
 #define g_bAllowExpand (!(tok_flags&TOKENIZER_DONT_EXPAND))
 
 int str_to_ip(const char *s, byte *ip) {
-#if PLATFORM_W600 || PLATFORM_LN882H
+#if PLATFORM_W600 || PLATFORM_LN882H || PLATFORM_REALTEK
 	//seems like sscanf in W600 does not support %hhu and uses it as %u, thus overwriting more memory, use temp array for it
 	// same for LN882h: %hhu isn't recognised, so we have to use %u for IP_STRING_FORMAT, which will lead to problems in sscanf, too
 	int tmp_ip[4];
@@ -208,6 +209,14 @@ int Tokenizer_GetArgIntegerRange(int i, int rangeMin, int rangeMax) {
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "Argument %i (val=%i) was out of range [%i,%i], clamped",i,ret,rangeMax,rangeMin);
 	}
 	return ret;
+}
+int Tokenizer_GetPin(int i, int def) {
+	int r;
+
+	if (g_numArgs <= i) {
+		return def;
+	}
+	return HAL_PIN_Find(g_args[i]);
 }
 int Tokenizer_GetArgIntegerDefault(int i, int def) {
 	int r;

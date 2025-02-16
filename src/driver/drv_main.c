@@ -72,6 +72,23 @@ static driver_t g_drivers[] = {
 	{ "HGS02",		HGS02_Init,			HGS02_RunEverySecond,			NULL, NULL, NULL, NULL, false },
 #endif
 
+
+
+
+#if ENABLE_DRIVER_OPENWEATHERMAP
+	//drvdetail:{"name":"OpenWeatherMap",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"OpenWeatherMap integration allows you to fetch current weather for your lat/long. You can later extract temperatura, humidity and pressure data and display it on main page.",
+	//drvdetail:"requires":""}
+	{ "OpenWeatherMap",		DRV_OpenWeatherMap_Init,			NULL, OWM_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_WIDGET
+	//drvdetail:{"name":"Widget",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Widget driver allows you to create custom HTML snippets that are displayed on main OBK page. Snippets are loaded from LittleFS file system and can use OBK REST API.",
+	//drvdetail:"requires":""}
+	{ "Widget",		DRV_Widget_Init,			NULL,			DRV_Widget_AddToHtmlPage, NULL, NULL, NULL, false },
+#endif
 #if WINDOWS
 	//drvdetail:{"name":"TestCharts",
 	//drvdetail:"title":"TODO",
@@ -93,19 +110,21 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "NTP",		NTP_Init,			NTP_OnEverySecond,			NTP_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
-#if ENABLE_HTTPBUTTONS
+#if ENABLE_DRIVER_HTTPBUTTONS
 	//drvdetail:{"name":"HTTPButtons",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This driver allows you to create custom, scriptable buttons on main WWW page. You can create those buttons in autoexec.bat and assign commands to them",
 	//drvdetail:"requires":""}
 	{ "HTTPButtons",	DRV_InitHTTPButtons, NULL, NULL, NULL, NULL, NULL, false },
 #endif
-#if ENABLE_TEST_DRIVERS
+#if ENABLE_DRIVER_TESTPOWER
 	//drvdetail:{"name":"TESTPOWER",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This is a fake POWER measuring socket driver, only for testing",
 	//drvdetail:"requires":""}
 	{ "TESTPOWER",	Test_Power_Init,	 Test_Power_RunEverySecond,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_TESTLED
 	//drvdetail:{"name":"TESTLED",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This is a fake I2C LED driver, only for testing",
@@ -117,12 +136,12 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Generic I2C, not used for LED drivers, but may be useful for displays or port expanders. Supports both hardware and software I2C.",
 	//drvdetail:"requires":""}
-	{ "I2C",		DRV_I2C_Init,		DRV_I2C_EverySecond,		NULL, NULL, NULL, NULL, false },
+	{ "I2C",		DRV_I2C_Init,		DRV_I2C_EverySecond,		NULL, NULL, DRV_I2C_Shutdown, NULL, false },
 #endif
-#if ENABLE_DRIVER_BL0942
+#if ENABLE_DRIVER_RN8209
 	//drvdetail:{"name":"RN8209",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"Bqqqqqqqqqq ",
+	//drvdetail:"descr":"WIP driver for power-metering chip RN8209 found in one of Zmai-90 versions.",
 	//drvdetail:"requires":""}
 	{ "RN8209", RN8209_Init, RN8029_RunEverySecond, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
@@ -136,7 +155,7 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_PWM_GROUP
 	//drvdetail:{"name":"PWMG",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":" ",
+	//drvdetail:"descr":"PWM Groups (synchronized PWMs) driver for OpenBeken.",
 	//drvdetail:"requires":""}
 	{ "PWMG",		PWMG_Init,	NULL,		NULL, NULL, NULL, NULL, false },
 #endif
@@ -185,7 +204,7 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_TEXTSCROLLER
 	//drvdetail:{"name":"TextScroller",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"BQQQK",
+	//drvdetail:"descr":"Wrapper utility that can do text scrolling animation on implemented displays (WIP)",
 	//drvdetail:"requires":""}
 	{ "TextScroller",	TS_Init,		NULL,			NULL, TS_RunQuickTick, NULL, NULL, false },
 #endif
@@ -203,7 +222,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "SM15155E",	SM15155E_Init,		NULL,						NULL, NULL, NULL, NULL, false },
 #endif
-#if PLATFORM_BEKEN
+#if ENABLE_DRIVER_IR
 	//drvdetail:{"name":"IR",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"IRLibrary wrapper, so you can receive remote signals and send them. See [forum discussion here](https://www.elektroda.com/rtvforum/topic3920360.html), also see [LED strip and IR YT video](https://www.youtube.com/watch?v=KU0tDwtjfjw)",
@@ -326,32 +345,42 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "CHT83XX",	CHT83XX_Init,		CHT83XX_OnEverySecond,		CHT83XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_ESPIDF)
+#if ENABLE_DRIVER_MCP9808
 	//drvdetail:{"name":"MCP9808",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"MCP9808 is a Temperature sensor with I2C interface and an external wakeup pin, see [docs](https://www.elektroda.pl/rtvforum/topic3988466.html).",
 	//drvdetail:"requires":""}
 	{ "MCP9808",	MCP9808_Init,		MCP9808_OnEverySecond,		MCP9808_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_KP18058
 	//drvdetail:{"name":"KP18058",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"KP18058 I2C LED driver. Supports also KP18068. Working, see reverse-engineering [topic](https://www.elektroda.pl/rtvforum/topic3991620.html)",
 	//drvdetail:"requires":""}
 	{ "KP18058",		KP18058_Init,		NULL,			NULL, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_ADCSMOOTHER
 	//drvdetail:{"name":"ADCSmoother",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"qq",
+	//drvdetail:"descr":"ADCSmoother is used for 3-way stairs switches synchronized via extra wire.",
 	//drvdetail:"requires":""}
 	{ "ADCSmoother", DRV_ADCSmoother_Init, NULL, NULL, DRV_ADCSmoother_RunFrame, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_SHT3X
 	//drvdetail:{"name":"SHT3X",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Humidity/temperature sensor. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html)",
 	//drvdetail:"requires":""}
 	{ "SHT3X",	    SHT3X_Init,		SHT3X_OnEverySecond,		SHT3X_AppendInformationToHTTPIndexPage, NULL, SHT3X_StopDriver, NULL, false },
+#endif
+#if ENABLE_DRIVER_SGP
 	//drvdetail:{"name":"SGP",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"SGP Air Quality sensor with I2C interface. See [this DIY sensor](https://www.elektroda.com/rtvforum/topic3967174.html) for setup information.",
 	//drvdetail:"requires":""}
 	{ "SGP",	    SGP_Init,		SGP_OnEverySecond,		SGP_AppendInformationToHTTPIndexPage, NULL, SGP_StopDriver, NULL, false },
+#endif
+#if ENABLE_DRIVER_SHIFTREGISTER
 	//drvdetail:{"name":"ShiftRegister",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Simple Shift Register driver that allows you to map channels to shift register output. See [related topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20533505#20533505)",
@@ -415,6 +444,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"A bridge relay driver, added for [TONGOU TO-Q-SY1-JWT Din Rail Switch](https://www.elektroda.com/rtvforum/topic3934580.html). See linked topic for info.",
 	//drvdetail:"requires":""}
 	{ "Bridge",     Bridge_driver_Init, NULL,                       NULL, Bridge_driver_QuickFrame, Bridge_driver_DeInit, Bridge_driver_OnChannelChanged, false }
+#endif
+#if ENABLE_DRIVER_UART_TCP
+	//drvdetail:{"name":"UART to TCP bridge",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"UART to TCP, mainly for WiFi Zigbee coordinators.",
+	//drvdetail:"requires":""}
+	{ "UartTCP",		UART_TCP_Init,		NULL,	NULL, NULL, UART_TCP_Deinit, NULL, false }
 #endif
 };
 

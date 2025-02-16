@@ -237,6 +237,18 @@ void Test_Commands_Channels() {
 		CMD_ExecuteCommand("setChannel 1 $rand", 0);
 		printf("Rand - channel 1 is %i\n", CHANNEL_Get(1));
 	}
+	// test for https://www.elektroda.pl/rtvforum/viewtopic.php?p=21382506#21382506
+	CMD_ExecuteCommand("setChannelType 10 ReadOnly", 0);
+	SELFTEST_ASSERT(g_cfg.pins.channelTypes[10] == ChType_ReadOnly);
+	CMD_ExecuteCommand("setChannelLabel 10 \"Set max temp\"", 0);
+	CMD_ExecuteCommand("SetChannel 10 250", 0);
+	SELFTEST_ASSERT_CHANNEL(10, 250);
+	CMD_ExecuteCommand("SetChannel 10 4444", 0);
+	SELFTEST_ASSERT_CHANNEL(10, 4444);
+	CMD_ExecuteCommand("SetChannel 10 -123", 0);
+	SELFTEST_ASSERT_CHANNEL(10, -123);
+
+
 
 	// cause error
 	//SELFTEST_ASSERT_CHANNEL(3, 666);

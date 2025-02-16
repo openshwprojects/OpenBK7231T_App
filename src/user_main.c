@@ -11,6 +11,7 @@
 
 //#include "driver/drv_ir.h"
 #include "driver/drv_public.h"
+#include "driver/drv_bl_shared.h"
 //#include "ir/ir_local.h"
 
 // Commands register, execution API and cmd tokenizer
@@ -171,7 +172,7 @@ static int get_tsen_adc(
 }
 #endif
 
-#ifdef PLATFORM_BK7231T
+#if PLATFORM_BK7231T || PLATFORM_BEKEN_NEW
 // this function waits for the extended app functions to finish starting.
 extern void extended_app_waiting_for_launch(void);
 void extended_app_waiting_for_launch2() {
@@ -212,7 +213,8 @@ int LWIP_GetActiveSockets() {
 }
 #endif
 
-#if defined(PLATFORM_BL602) || defined(PLATFORM_W800) || defined(PLATFORM_W600)|| defined(PLATFORM_LN882H) || defined(PLATFORM_ESPIDF)
+#if defined(PLATFORM_BL602) || defined(PLATFORM_W800) || defined(PLATFORM_W600) || defined(PLATFORM_LN882H) \
+	|| defined(PLATFORM_ESPIDF) || defined(PLATFORM_TR6260) || defined(PLATFORM_REALTEK)
 
 OSStatus rtos_create_thread(beken_thread_t* thread,
 	uint8_t priority, const char* name,
@@ -246,10 +248,20 @@ OSStatus rtos_create_thread(beken_thread_t* thread,
 }
 
 OSStatus rtos_delete_thread(beken_thread_t* thread) {
-	vTaskDelete(thread);
+	if(thread == NULL) vTaskDelete(thread);
+	else vTaskDelete(*thread);
 	return kNoErr;
 }
+
+OSStatus rtos_suspend_thread(beken_thread_t* thread)
+{
+	if(thread == NULL) vTaskSuspend(thread);
+	else vTaskSuspend(*thread);
+	return kNoErr;
+}
+
 #endif
+
 void MAIN_ScheduleUnsafeInit(int delSeconds) {
 	g_doUnsafeInitIn = delSeconds;
 }
@@ -289,7 +301,9 @@ void LN882H_ApplyPowerSave(int bOn);
 
 // SSID switcher by xjikka 20240525
 #if ALLOW_SSID2
-static int g_SSIDactual = 0;        // 0=SSID1 1=SSID2
+#define SSID_USE_SSID1  0
+#define SSID_USE_SSID2  1
+static int g_SSIDactual = SSID_USE_SSID1;       // -1 not initialized,  0=SSID1 1=SSID2
 static int g_SSIDSwitchAfterTry = 3;// switch to opposite SSID after
 static int g_SSIDSwitchCnt = 0;     // switch counter
 #endif
@@ -308,6 +322,13 @@ void CheckForSSID12_Switch() {
 #endif
 }
 
+//20241125 XJIKKA Init last stored SSID from RetailChannel if set
+//Note that it must be set in early.bat using CMD_setStartupSSIDChannel
+void Init_WiFiSSIDactual_FromChannelIfSet(void) {
+#if ALLOW_SSID2
+	g_SSIDactual = FV_GetStartupSSID_StoredValue(SSID_USE_SSID1);
+#endif
+}
 const char* CFG_GetWiFiSSIDX() {
 #if ALLOW_SSID2
 	if (g_SSIDactual) {
@@ -370,6 +391,9 @@ void Main_OnWiFiStatusChange(int code)
 		ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_AUTH_FAILED - %i\r\n", code);
 		break;
 	case WIFI_STA_CONNECTED:
+#if ALLOW_SSID2
+		if (!g_bHasWiFiConnected) FV_UpdateStartupSSIDIfChanged_StoredValue(g_SSIDactual);	//update ony on first connect
+#endif
 		g_bHasWiFiConnected = 1;
 #if ALLOW_SSID2
 		g_SSIDSwitchCnt = 0;
@@ -489,9 +513,12 @@ void Main_LogPowerSave() {
 
 /// @brief Schedule HomeAssistant discovery. The caller should check OBK_FLAG_AUTOMAIC_HASS_DISCOVERY if necessary.
 /// @param seconds 
+#if ENABLE_HA_DISCOVERY
 void Main_ScheduleHomeAssistantDiscovery(int seconds) {
 	g_doHomeAssistantDiscoveryIn = seconds;
 }
+#endif
+
 
 void Main_ConnectToWiFiNow() {
 	const char* wifi_ssid, * wifi_pass;
@@ -563,6 +590,8 @@ void Main_OnEverySecond()
 		g_wifi_temperature = HAL_ADC_Temp();
 #endif
 	}
+
+#if ENABLE_MQTT
 	// run_adc_test();
 	newMQTTState = MQTT_RunEverySecondUpdate();
 	if (newMQTTState != bMQTTconnected) {
@@ -574,6 +603,7 @@ void Main_OnEverySecond()
 			EventHandlers_FireEvent(CMD_EVENT_MQTT_STATE, 0);
 		}
 	}
+#endif
 	if (g_newWiFiStatus != g_prevWiFiStatus) {
 		g_prevWiFiStatus = g_newWiFiStatus;
 		// Argument type here is HALWifiStatus_t enumeration
@@ -590,11 +620,17 @@ void Main_OnEverySecond()
 	// save new value
 	g_noMQTTTime = i;
 
+
+#if ENABLE_MQTT
 	MQTT_Dedup_Tick();
+#endif
+#if ENABLE_LED_BASIC
 	LED_RunOnEverySecond();
+#endif
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF)
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) \
+ || defined (PLATFORM_RTL87X0C)
 	UART_RunEverySecond();
 #endif
 #endif
@@ -627,15 +663,18 @@ void Main_OnEverySecond()
 		const char* ip = HAL_GetMyIPString();
 		// this will return non-zero if there were any changes
 		if (strcpy_safe_checkForChanges(g_currentIPString, ip, sizeof(g_currentIPString))) {
+#if ENABLE_MQTT
 			if (MQTT_IsReady()) {
 				MQTT_DoItemPublish(PUBLISHITEM_SELF_IP);
 			}
+#endif
 			EventHandlers_FireEvent(CMD_EVENT_IPCHANGE, 0);
-
+#if ENABLE_HA_DISCOVERY
 			//Invoke Hass discovery if ipaddr changed
 			if (CFG_HasFlag(OBK_FLAG_AUTOMAIC_HASS_DISCOVERY)) {
 				Main_ScheduleHomeAssistantDiscovery(1);
 			}
+#endif
 		}
 	}
 
@@ -708,10 +747,16 @@ void Main_OnEverySecond()
 		//int mqtt_max, mqtt_cur, mqtt_mem;
 		//MQTT_GetStats(&mqtt_cur, &mqtt_max, &mqtt_mem);
 		//ADDLOGF_INFO("mqtt req %i/%i, free mem %i\n", mqtt_cur,mqtt_max,mqtt_mem);
+#if ENABLE_MQTT
 		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i %s\n",
-			safe, g_secondsElapsed, idleCount, xPortGetFreeHeapSize(), bMQTTconnected, MQTT_GetConnectEvents(),
-			g_bHasWiFiConnected, g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets(),
+			safe, g_secondsElapsed, idleCount, xPortGetFreeHeapSize(), bMQTTconnected,
+			MQTT_GetConnectEvents(),g_bHasWiFiConnected, g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets(),
 			g_powersave ? "POWERSAVE" : "");
+#else
+		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d,  bWifi %i, secondsWithNoPing %i, socks %i/%i %s\n",
+			safe, g_secondsElapsed, idleCount, xPortGetFreeHeapSize(),g_bHasWiFiConnected, g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets(),
+			g_powersave ? "POWERSAVE" : "");
+#endif
 		// reset so it's a per-second counter.
 		idleCount = 0;
 	}
@@ -747,6 +792,8 @@ void Main_OnEverySecond()
 		}
 	}
 
+
+#if ENABLE_HA_DISCOVERY
 	if (g_doHomeAssistantDiscoveryIn) {
 		if (MQTT_IsReady()) {
 			g_doHomeAssistantDiscoveryIn--;
@@ -762,6 +809,7 @@ void Main_OnEverySecond()
 			ADDLOGF_INFO("HA discovery is scheduled, but MQTT connection is not present yet\n");
 		}
 	}
+#endif
 	if (g_openAP)
 	{
 		if (g_bHasWiFiConnected)
@@ -794,8 +842,9 @@ void Main_OnEverySecond()
 				{
 					// mark as enabled
 					g_timeSinceLastPingReply = 0;
-					//Main_SetupPingWatchDog(pingTargetServer,pingInterval);
+#if ENABLE_PING_WATCHDOG
 					Main_SetupPingWatchDog(pingTargetServer);
+#endif
 				}
 				else {
 					// mark as disabled
@@ -833,7 +882,7 @@ void Main_OnEverySecond()
 		if (!g_reset) {
 			// ensure any config changes are saved before reboot.
 			CFG_Save_IfThereArePendingChanges();
-#ifdef ENABLE_DRIVER_BL0937
+#if ENABLE_BL_SHARED
 			if (DRV_IsMeasuringPower())
 			{
 				BL09XX_SaveEmeteringStatistics();
@@ -855,15 +904,7 @@ void Main_OnEverySecond()
 		}
 	}
 #endif
-#ifdef PLATFORM_BEKEN
-	bk_wdg_reload();
-#elif PLATFORM_BL602
-	bl_wdt_feed();
-#elif PLATFORM_W600 || PLATFORM_W800
-	tls_watchdog_clr();
-#elif PLATFORM_LN882H
-	hal_wdt_cnt_restart(WDT_BASE);
-#endif
+	HAL_Run_WDT();
 	// force it to sleep...  we MUST have some idle task processing
 	// else task memory doesn't get freed
 	rtos_delay_milliseconds(1);
@@ -917,8 +958,7 @@ void QuickTick(void* param)
 	}
 	g_last_time = g_time;
 
-
-#if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602) || (defined PLATFORM_LN882H) || (defined PLATFORM_ESPIDF)
+#if ENABLE_OBK_SCRIPTING
 	SVM_RunThreads(g_deltaTimeMS);
 #endif
 	RepeatingEvents_RunUpdate(g_deltaTimeMS * 0.001f);
@@ -931,11 +971,15 @@ void QuickTick(void* param)
 	CMD_RunUartCmndIfRequired();
 
 	// process recieved messages here..
+#if ENABLE_MQTT
 	MQTT_RunQuickTick();
+#endif
 
+#if ENABLE_LED_BASIC
 	if (CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == true) {
 		LED_RunQuickColorLerp(g_deltaTimeMS);
 	}
+#endif
 
 	// WiFi LED
 	// In Open Access point mode, fast blink
@@ -969,11 +1013,11 @@ void QuickTick(void* param)
 // this is the bit which runs the quick tick timer
 #if WINDOWS
 
-#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK)
 void quick_timer_thread(void* param)
 {
 	while (1) {
-		vTaskDelay(QUICK_TMR_DURATION);
+		vTaskDelay(QUICK_TMR_DURATION / portTICK_PERIOD_MS);
 		QuickTick(0);
 	}
 }
@@ -988,8 +1032,7 @@ void QuickTick_StartThread(void)
 {
 #if WINDOWS
 
-#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800
-
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK)
 	xTaskCreate(quick_timer_thread, "quick", 1024, NULL, 15, NULL);
 #elif PLATFORM_ESPIDF
 	const esp_timer_create_args_t g_quick_timer_args =
@@ -1058,7 +1101,9 @@ void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
 
 	// initialise MQTT - just sets up variables.
 	// all MQTT happens in timer thread?
+#if ENABLE_MQTT
 	MQTT_init();
+#endif
 
 	CMD_Init_Delayed();
 
@@ -1074,33 +1119,14 @@ void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
 
 		// NOTE: this will try to read autoexec.bat,
 		// so ALL commands expected in autoexec.bat should have been registered by now...
+#if ENABLE_OBK_SCRIPTING
+		SVM_RunStartupCommandAsScript();
+#else
 		CMD_ExecuteCommand(CFG_GetShortStartupCommand(), COMMAND_FLAG_SOURCE_SCRIPT);
+#endif
 		CMD_ExecuteCommand("startScript autoexec.bat", COMMAND_FLAG_SOURCE_SCRIPT);
 	}
-#ifdef PLATFORM_BEKEN
-	bk_wdg_initialize(10000);
-#elif PLATFORM_BL602
-	// max is 4 seconds or so...
-	// #define MAX_MS_WDT (65535/16)
-	bl_wdt_init(3000);
-#elif PLATFORM_W600 || PLATFORM_W800
-	tls_watchdog_init(5*1000*1000);
-#elif PLATFORM_LN882H
-	/* Watchdog initialization */
-	wdt_init_t_def wdt_init;
-	memset(&wdt_init,0,sizeof(wdt_init));
-	wdt_init.wdt_rmod = WDT_RMOD_1;         // When equal to 0, the counter is reset directly when it overflows; when equal to 1, an interrupt is generated first when the counter overflows, and if it overflows again, it resets.
-	wdt_init.wdt_rpl = WDT_RPL_32_PCLK;     // Set the reset delay time
-	wdt_init.top = WDT_TOP_VALUE_9;         //wdt cnt value = 0x1FFFF   Time = 4.095 s
-	hal_wdt_init(WDT_BASE, &wdt_init);
-    
-	/* Configure watchdog interrupt */
-	NVIC_SetPriority(WDT_IRQn,     4);
-	NVIC_EnableIRQ(WDT_IRQn);
-    
-	/* Enable watchdog */
-	hal_wdt_en(WDT_BASE,HAL_ENABLE);
-#endif
+	HAL_Configure_WDT();
 }
 void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	g_unsafeInitDone = true;
@@ -1139,8 +1165,10 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 #if ENABLE_TEST_COMMANDS
 	CMD_InitTestCommands();
 #endif
+#if ENABLE_LED_BASIC
 	NewLED_InitCommands();
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+#endif
+#if ENABLE_SEND_POSTANDGET
 	CMD_InitSendCommands();
 #endif
 	CMD_InitChannelCommands();
@@ -1161,98 +1189,70 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 
 	if (bAutoRunScripts) {
 		CMD_ExecuteCommand("exec early.bat", COMMAND_FLAG_SOURCE_SCRIPT);
+#ifndef OBK_DISABLE_ALL_DRIVERS
 		if (!CFG_HasFlag(OBK_FLAG_DRV_DISABLE_AUTOSTART)) {
 			// autostart drivers
 			if (PIN_FindPinIndexForRole(IOR_SM2135_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SM2135_DAT, -1) != -1)
 			{
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("SM2135");
-#endif
 			}
 			if (PIN_FindPinIndexForRole(IOR_SM2235_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SM2235_DAT, -1) != -1)
 			{
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("SM2235");
-#endif
 			}
 			if (PIN_FindPinIndexForRole(IOR_BP5758D_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_BP5758D_DAT, -1) != -1)
 			{
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("BP5758D");
-#endif
 			}
 			if (PIN_FindPinIndexForRole(IOR_BP1658CJ_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_BP1658CJ_DAT, -1) != -1) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("BP1658CJ");
-#endif
 			}
 			if (PIN_FindPinIndexForRole(IOR_KP18058_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_KP18058_DAT, -1) != -1) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("KP18058");
-#endif
 			}
 			if (PIN_FindPinIndexForRole(IOR_BL0937_CF, -1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_CF1, -1) != -1
 				&& (PIN_FindPinIndexForRole(IOR_BL0937_SEL, -1) != -1 || PIN_FindPinIndexForRole(IOR_BL0937_SEL_n, -1) != -1)) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("BL0937");
-#endif
 			}
 			if ((PIN_FindPinIndexForRole(IOR_BridgeForward, -1) != -1) && (PIN_FindPinIndexForRole(IOR_BridgeReverse, -1) != -1))
 			{
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("Bridge");
-#endif
 			}
 			if ((PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep, -1) != -1) ||
 				(PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep_NoPup, -1) != -1) ||
 				(PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep_pd, -1) != -1))
 			{
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("DoorSensor");
-#endif
 			}
 			if (PIN_FindPinIndexForRole(IOR_CHT83XX_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_CHT83XX_DAT, -1) != -1) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("CHT83XX");
-#endif
 			}
 			if (PIN_FindPinIndexForRole(IOR_SHT3X_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SHT3X_DAT, -1) != -1) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("SHT3X");
-#endif
 			}
 			if (PIN_FindPinIndexForRole(IOR_SGP_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SGP_DAT, -1) != -1) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("SGP");
-#endif
 			}
 			if (PIN_FindPinIndexForRole(IOR_BAT_ADC, -1) != -1) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("Battery");
-#endif
 			}
 			if (PIN_FindPinIndexForRole(IOR_TM1637_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_TM1637_DIO, -1) != -1) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("TM1637");
-#endif
 			}
 			if ((PIN_FindPinIndexForRole(IOR_GN6932_CLK, -1) != -1) &&
 				(PIN_FindPinIndexForRole(IOR_GN6932_DAT, -1) != -1) &&
 				(PIN_FindPinIndexForRole(IOR_GN6932_STB, -1) != -1))
 			{
-#ifndef OBK_DISABLE_ALL_DRIVERS
 				DRV_StartDriver("GN6932");
-#endif
 			}
 //			if ((PIN_FindPinIndexForRole(IOR_TM1638_CLK, -1) != -1) &&
 //				(PIN_FindPinIndexForRole(IOR_TM1638_DAT, -1) != -1) &&
 //				(PIN_FindPinIndexForRole(IOR_TM1638_STB, -1) != -1))
 //			{
-//#ifndef OBK_DISABLE_ALL_DRIVERS
 //				DRV_StartDriver("TM1638");
-//#endif
 //			}
 		}
+#endif
 	}
 
 	g_enable_pins = 1;
@@ -1260,7 +1260,9 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	PIN_SetupPins();
 	QuickTick_StartThread();
 
+#if ENABLE_LED_BASIC
 	NewLED_RestoreSavedStateIfNeeded();
+#endif
 }
 void Main_ForceUnsafeInit() {
 	if (g_unsafeInitDone) {
@@ -1281,7 +1283,7 @@ void Main_Init_Before_Delay()
 	// read or initialise the boot count flash area
 	HAL_FlashVars_IncreaseBootCount();
 
-#ifdef PLATFORM_BEKEN
+#if defined(PLATFORM_BEKEN) && !defined(PLATFORM_BEKEN_NEW)
 	// this just increments our idle counter variable.
 	// it registers a cllback from RTOS IDLE function.
 	// why is it called IRDA??  is this where they check for IR?
@@ -1343,9 +1345,11 @@ void Main_Init_After_Delay()
 	if (bSafeMode) {
 		ADDLOGF_INFO("###### safe mode activated - boot failures %d", g_bootFailures);
 	}
-
-	wifi_ssid = CFG_GetWiFiSSID();
-	wifi_pass = CFG_GetWiFiPass();
+#if ALLOW_SSID2
+	Init_WiFiSSIDactual_FromChannelIfSet();//Channel must be set in early.bat using CMD_setStartupSSIDChannel
+#endif
+	wifi_ssid = CFG_GetWiFiSSIDX();
+	wifi_pass = CFG_GetWiFiPassX();
 
 #if 0
 	// you can use this if you bricked your module by setting wrong access point data
@@ -1370,7 +1374,9 @@ void Main_Init_After_Delay()
 		}
 		else {
 			if (Main_HasFastConnect()) {
+#if ENABLE_MQTT
 				mqtt_loopsWithDisconnected = 9999;
+#endif
 				Main_ConnectToWiFiNow();
 			}
 			else {
@@ -1391,17 +1397,28 @@ void Main_Init_After_Delay()
 	// only initialise certain things if we are not in AP mode
 	if (!bSafeMode)
 	{
+#if ENABLE_HA_DISCOVERY
 		//Always invoke discovery on startup. This accounts for change in ipaddr before startup and firmware update.
 		if (CFG_HasFlag(OBK_FLAG_AUTOMAIC_HASS_DISCOVERY)) {
 			Main_ScheduleHomeAssistantDiscovery(1);
 		}
-
+#endif
 		Main_Init_AfterDelay_Unsafe(true);
 	}
 
 	ADDLOGF_INFO("Main_Init_After_Delay done");
 }
 
+// to be overriden
+// Translate name like RB5 for OBK pin index
+#ifdef _MSC_VER
+///#pragma comment(linker, "/alternatename:HAL_PIN_Find=Default_HAL_PIN_Find")
+#else
+int HAL_PIN_Find(const char *name) __attribute__((weak));
+int HAL_PIN_Find(const char *name) {
+	return atoi(name);
+}
+#endif
 
 
 void Main_Init()
@@ -1409,8 +1426,10 @@ void Main_Init()
 	g_unsafeInitDone = false;
 
 #ifdef WINDOWS
+#if ENABLE_LED_BASIC
 	// on windows, Main_Init may happen multiple time so we need to reset variables
 	LED_ResetGlobalVariablesToDefaults();
+#endif
 	// on windows, we don't want to remember commands from previous session
 	CMD_FreeAllCommands();
 #endif

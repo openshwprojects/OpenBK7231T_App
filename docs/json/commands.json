@@ -54,6 +54,15 @@
     "examples": ""
   },
   {
+    "name": "addI2CDevice_ADS1115",
+    "args": "",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "i2c/drv_i2c_ads1115.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "addI2CDevice_LCD_PCF8574",
     "args": "",
     "descr": "Adds a new I2C device - PCF8574",
@@ -181,8 +190,8 @@
   },
   {
     "name": "Anim",
-    "args": "PA_Cmd_Anim",
-    "descr": "",
+    "args": "[AnimationIndex]",
+    "descr": "Starts given WS2812 animation by index.",
     "fn": "NULL);",
     "file": "driver/drv_pixelAnim.c",
     "requires": "",
@@ -190,8 +199,8 @@
   },
   {
     "name": "AnimSpeed",
-    "args": "PA_Cmd_AnimSpeed",
-    "descr": "",
+    "args": "[Interval]",
+    "descr": "Sets WS2812 animation speed",
     "fn": "NULL);",
     "file": "driver/drv_pixelAnim.c",
     "requires": "",
@@ -235,12 +244,12 @@
   },
   {
     "name": "BMPI2C_Configure",
-    "args": "BMPI2C_Configure",
-    "descr": "",
-    "fn": "NULL);",
+    "args": "[Mode][TempSampling][PressureSampling][HumSampling][IIRFilter][StandbyTime]",
+    "descr": "Manual sensor configuration. Modes: 0 - normal, 1 - forced, 2 - sleep. Overampling range: -1 - skipped, 2^0 to 2^4. Default is X1. IIRFilter range: 0 - off, 2^1 to 2^4 for most, up to 2^7 for BME68X, StandbyTime: 1 for 0.5ms, 63 for 62.5ms, 125, 250, 500, 1000, 2000, 4000. Mode and StandbyTime are not needed on BME68X, All values will be rounded down to closest available (like sampling 10 will choose 8x)",
+    "fn": "BMPI2C_Configure",
     "file": "driver/drv_bmpi2c.c",
     "requires": "",
-    "examples": ""
+    "examples": "BMPI2C_Configure 0 8 2 4 16 125 <br />"
   },
   {
     "name": "BMPI2C_Cycle",
@@ -334,7 +343,7 @@
   },
   {
     "name": "chart_add",
-    "args": "",
+    "args": "[ntp_time][val1][val2]...[valN]",
     "descr": "Adds data to the chart with specified variables at a specific NTP time. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
     "fn": "NULL);",
     "file": "driver/drv_charts.c",
@@ -343,7 +352,7 @@
   },
   {
     "name": "chart_addNow",
-    "args": "",
+    "args": "[val1][val2]...[valN]",
     "descr": "Adds data to the chart using the current NTP time. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
     "fn": "NULL);",
     "file": "driver/drv_charts.c",
@@ -352,7 +361,7 @@
   },
   {
     "name": "chart_create",
-    "args": "",
+    "args": "[max_samples][num_vars][num_axes]",
     "descr": "Creates a chart with a specified number of samples, variables, and axes. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
     "fn": "NULL);",
     "file": "driver/drv_charts.c",
@@ -361,7 +370,7 @@
   },
   {
     "name": "chart_setAxis",
-    "args": "",
+    "args": "[axis_index][name][flags][label]",
     "descr": "Sets up an axis with a name, flags, and label. Currently flags can be 0 (left axis) or 1 (right axis). See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
     "fn": "NULL);",
     "file": "driver/drv_charts.c",
@@ -370,7 +379,7 @@
   },
   {
     "name": "chart_setVar",
-    "args": "",
+    "args": "[var_index][title][axis]",
     "descr": "Associates a variable with a specific axis. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
     "fn": "NULL);",
     "file": "driver/drv_charts.c",
@@ -847,7 +856,7 @@
   },
   {
     "name": "IndexRefreshInterval",
-    "args": "CMD_IndexRefreshInterval",
+    "args": "[Interval]",
     "descr": "",
     "fn": "NULL);",
     "file": "cmnds/cmd_main.c",
@@ -874,8 +883,8 @@
   },
   {
     "name": "json_test",
-    "args": "cmnd_json_test",
-    "descr": "",
+    "args": "",
+    "descr": "Developer-only command used to test CJSON library",
     "fn": "NULL);",
     "file": "cmnds/cmd_test.c",
     "requires": "",
@@ -973,7 +982,7 @@
   },
   {
     "name": "led_basecolor_rgbcw",
-    "args": "",
+    "args": "[HexValue]",
     "descr": "set PWN color using #RRGGBB[cw][ww]",
     "fn": "basecolor_rgbcw",
     "file": "cmnds/cmd_newLEDDriver.c",
@@ -1045,7 +1054,7 @@
   },
   {
     "name": "LED_Map",
-    "args": "CMD_LEDDriver_Map",
+    "args": "[Ch0][Ch1][Ch2][Ch3][Ch4]",
     "descr": "",
     "fn": "NULL);",
     "file": "driver/drv_sm15155e.c",
@@ -1360,8 +1369,8 @@
   },
   {
     "name": "MCP9808_Adr",
-    "args": "MCP9808_Adr",
-    "descr": "",
+    "args": "[HexAdr]",
+    "descr": "Sets the I2C address of MCP9808, like 0x30",
     "fn": "NULL);",
     "file": "driver/drv_mcp9808.c",
     "requires": "",
@@ -1369,17 +1378,17 @@
   },
   {
     "name": "MCP9808_AlertMin",
-    "args": "MCP9808_AlertMin",
-    "descr": "",
-    "fn": "NULL);",
+    "args": "[MinT] [OptionalBActiveHigh]",
+    "descr": "Setup MCP9809 temperature alert for min mode",
+    "fn": ");",
     "file": "driver/drv_mcp9808.c",
     "requires": "",
     "examples": ""
   },
   {
     "name": "MCP9808_AlertRange",
-    "args": "MCP9808_AlertRange",
-    "descr": "",
+    "args": "[MinT] [MaxT] [OptionalBActiveHigh]",
+    "descr": "Setup MCP9809 temperature alert for range mode",
     "fn": "NULL);",
     "file": "driver/drv_mcp9808.c",
     "requires": "",
@@ -1397,7 +1406,7 @@
   {
     "name": "MCP9808_Cycle",
     "args": "[DelayInSeconds]",
-    "descr": "",
+    "descr": "Sets MCP9808 measurement interval",
     "fn": "NULL);",
     "file": "driver/drv_mcp9808.c",
     "requires": "",
@@ -1521,6 +1530,33 @@
     "examples": ""
   },
   {
+    "name": "owm_channels",
+    "args": "[temperature][humidity][pressure]",
+    "descr": "Sets channels that will be used to store OWM response results",
+    "fn": "NULL);",
+    "file": "driver/drv_openWeatherMap.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "owm_request",
+    "args": "",
+    "descr": "Sends OWM request to the API. Do not use it too often, as API may have limits",
+    "fn": "NULL);",
+    "file": "driver/drv_openWeatherMap.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "owm_setup",
+    "args": "[lat][lng][api_key]",
+    "descr": "Setups OWM driver for your location and API key",
+    "fn": "NULL);",
+    "file": "driver/drv_openWeatherMap.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "Password1",
     "args": "[ValueString]",
     "descr": "Sets the Pass of target WiFi. Command keeps Tasmota syntax",
@@ -1576,8 +1612,8 @@
   },
   {
     "name": "PowerMax",
-    "args": "BL0937_PowerMax",
-    "descr": "",
+    "args": "[MaxPowerInW]",
+    "descr": "Sets the maximum power limit for BL measurement used to filter incorrect values",
     "fn": "NULL);",
     "file": "driver/drv_bl0937.c",
     "requires": "",
@@ -1737,6 +1773,15 @@
     "examples": ""
   },
   {
+    "name": "Result",
+    "args": "NULL",
+    "descr": "A stub for Tasmota",
+    "fn": "cmnd_stub",
+    "file": "cmnds/cmd_tasmota.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "return",
     "args": "",
     "descr": "Script-only command. Currently it just stops totally current script thread.",
@@ -1796,6 +1841,15 @@
     "descr": "Sends a HTTP POST request to target URL. Arguments can contain variable expansion.",
     "fn": "CMD_SendPOST",
     "file": "cmnds/cmd_send.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Sensor",
+    "args": "NULL",
+    "descr": "A stub for Tasmota",
+    "fn": "cmnd_stub",
+    "file": "cmnds/cmd_tasmota.c",
     "requires": "",
     "examples": ""
   },
@@ -1926,6 +1980,15 @@
     "examples": ""
   },
   {
+    "name": "SetFlash",
+    "args": "[FlashIndex][FlashValue]",
+    "descr": "Sets a a flashVars channel directly (if you are using remember state for given channel, it will overwrite, it uses same space for channels memory).",
+    "fn": "CMD_SetFlash",
+    "file": "cmnds/cmd_channels.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "SetPinChannel",
     "args": "[PinIndex][ChannelIndex][optionalChannel2Index]",
     "descr": "This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command.",
@@ -1940,6 +2003,24 @@
     "descr": "This allows you to set a pin role, for example a Relay role, or Button, etc. Usually it's easier to do this through WWW panel, so you don't have to use this command.",
     "fn": "CMD_SetPinRole",
     "file": "cmnds/cmd_channels.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "setStartupSSID",
+    "args": "[Value]",
+    "descr": "Sets startup SSID, 0 (SSID0) 1 (SSID1)",
+    "fn": "CMD_setStartupSSID",
+    "file": "new_pins.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "setStartupSSIDChannel",
+    "args": "[Value]",
+    "descr": "Sets retain channel number to store last used SSID, 0..MAX_RETAIN_CHANNELS-1, -1 to disable. Suggested channel number is 7 (MAXMAX_RETAIN_CHANNELS-5)",
+    "fn": "CMD_setStartupSSIDChannel",
+    "file": "new_pins.c",
     "requires": "",
     "examples": ""
   },
@@ -1963,8 +2044,8 @@
   },
   {
     "name": "SetupIR2",
-    "args": "CMD_IR2_SetupIR2",
-    "descr": "",
+    "args": "[myPeriodUs] [dutyOnFrac] [dutyOffFrac] [txPin]",
+    "descr": "Init IR2 pin and interrupt",
     "fn": "NULL);",
     "file": "driver/drv_ir2.c",
     "requires": "",
@@ -2152,8 +2233,8 @@
   },
   {
     "name": "SimSaveArgs",
-    "args": "CMD_SelfTest_SaveArgs",
-    "descr": "",
+    "args": "",
+    "descr": "Internal usage only. Command for OBK self-test in Simulator",
     "fn": "0);",
     "file": "selftest/selftest_cfg_via_http.c",
     "requires": "",
@@ -2342,8 +2423,17 @@
   {
     "name": "State",
     "args": "NULL",
-    "descr": "NULL",
-    "fn": "cmnd_State",
+    "descr": "A stub for Tasmota",
+    "fn": "cmnd_stub",
+    "file": "cmnds/cmd_tasmota.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Status",
+    "args": "NULL",
+    "descr": "A stub for Tasmota",
+    "fn": "cmnd_stub",
     "file": "cmnds/cmd_tasmota.c",
     "requires": "",
     "examples": ""
@@ -2822,6 +2912,24 @@
     "descr": "Wait forever for event. Can be used within script. For example, you can do: waitFor MQTTState 1 or waitFor NTPState 1. You can also do waitFor NoPingTime 600 to wait for 600 seconds without ping watchdog getting successful reply",
     "fn": "CMD_waitFor",
     "file": "cmnds/cmd_script.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "widget_clearAll",
+    "args": "",
+    "descr": "Removes all registered widgets",
+    "fn": "NULL);",
+    "file": "driver/drv_widget.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "widget_create",
+    "args": "[LocationIndex][bAllowCache][FileName]",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_widget.c",
     "requires": "",
     "examples": ""
   }

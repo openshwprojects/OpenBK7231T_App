@@ -8,6 +8,8 @@ extern const char httpMimeTypeText[];           // TEXT MIME type
 extern const char httpMimeTypeJson[];
 extern const char httpMimeTypeBinary[];
 extern const char httpMimeTypeXML[];
+extern const char httpMimeTypeCSS[];           // CSS MIME type
+extern const char httpMimeTypeJavascript[];   // JS MIME type
 
 extern const char htmlShortcutIcon[];
 extern const char htmlDoctype[];
@@ -66,6 +68,7 @@ void http_html_start(http_request_t* request, const char* pagename);
 void http_html_end(http_request_t* request);
 int poststr(http_request_t* request, const char* str);
 void poststr_escaped(http_request_t* request, char* str);
+void poststr_escapedForJSON(http_request_t* request, char* str);
 int postany(http_request_t* request, const char* str, int len);
 void misc_formatUpTimeString(int totalSeconds, char* o);
 // void HTTP_AddBuildFooter(http_request_t *request);
