@@ -441,8 +441,8 @@ void DS1820_OnEverySecond()
 					if(!discovered)
 					{
 						lastconv = -1; // reset lastconv to avoid immediate retry
-						DS1820_LOG(ERROR, "Family not discovered");
-						return;
+						DS1820_LOG(ERROR, "Family not discovered, but continuing anyway");
+						//return;
 					}
 				}
 

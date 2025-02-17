@@ -611,8 +611,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #define printf(...) addLog(__VA_ARGS__)
 
-#define time_t uint32_t
-
 void delay_ms(UINT32 ms_count);
 
 #endif
