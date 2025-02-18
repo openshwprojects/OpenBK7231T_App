@@ -14,7 +14,7 @@ typedef struct ENERGY_METERING_DATA {
 	float YesterdayConsumption;
 	long save_counter;
 	float ConsumptionHistory[2];
-#ifdef PLATFORM_BEKEN_NEW || PLATFORM_BK7231N
+#if PLATFORM_BEKEN_NEW || PLATFORM_BK7231N
 	unsigned int ConsumptionResetTime;
 #else
 	time_t ConsumptionResetTime;
