@@ -19,8 +19,6 @@
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_local.h"
 
-static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"></form>";
-
 #ifdef WINDOWS
 // nothing
 #elif PLATFORM_BL602
@@ -61,6 +59,8 @@ extern uint32_t current_fw_idx;
 int tuya_os_adapt_wifi_all_ap_scan(AP_IF_S** ap_ary, unsigned int* num);
 int tuya_os_adapt_wifi_release_ap(AP_IF_S* ap);
 #endif
+
+static const char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"></form>";
 
 
 const char* g_typesOffLowMidHigh[] = { "Off","Low","Mid","High" };
