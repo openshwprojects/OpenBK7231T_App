@@ -129,14 +129,14 @@ static void app_dslp_wake(void)
 	SOCPS_AONWakeClear(BIT_ALL_WAKE_STS);
 }
 
-
-
 extern void Main_Init();
 extern void Main_OnEverySecond();
+extern uint32_t ota_get_cur_index(void);
 
 TaskHandle_t g_sys_task_handle1;
 uint8_t wmac[6] = { 0 };
 rtw_mode_t wifi_mode = RTW_MODE_NONE;
+uint32_t current_fw_idx;
 
 static void obk_task(void* pvParameters)
 {
@@ -195,6 +195,7 @@ int main(void)
 	device_mutex_unlock(RT_DEV_LOCK_EFUSE);
 	memcpy(wmac, efuse + 0x11A, 6);
 	free(efuse);
+	current_fw_idx = ota_get_cur_index();
 
 	app_start_autoicg();
 	//app_shared_btmem(ENABLE);

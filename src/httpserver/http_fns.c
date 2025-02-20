@@ -44,7 +44,7 @@ static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"
 #include "hal_sys_ctrl.h"
 extern hal_reset_reason_t reset_reason;
 extern uint32_t current_fw_idx;
-#elif defined(PLATFORM_RTL8710B)
+#elif defined(PLATFORM_RTL8710B) || defined(PLATFORM_RTL8720D)
 extern uint32_t current_fw_idx;
 #elif defined(PLATFORM_ESPIDF)
 #include "esp_wifi.h"
@@ -908,7 +908,7 @@ typedef enum {
 	}
 	hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", reset_reason, s);
 	hprintf255(request, "<h5>Current fw: FW%i</h5>", current_fw_idx);
-#elif PLATFORM_RTL8710B
+#elif PLATFORM_RTL8710B || PLATFORM_RTL8720D
 	hprintf255(request, "<h5>Current fw: FW%i</h5>", current_fw_idx + 1);
 #endif
 #if ENABLE_MQTT
