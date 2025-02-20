@@ -86,6 +86,18 @@ extern uint32_t current_fw_idx;
 #undef DEFAULT_FLASH_LEN
 #define DEFAULT_FLASH_LEN 0x400000
 
+#elif PLATFORM_RTL8720D
+
+#include "rtl8721d_boot.h"
+#include "rtl8721d_ota.h"
+#include "diag.h"
+#include "wdt_api.h"
+
+extern uint32_t current_fw_idx;
+
+#undef DEFAULT_FLASH_LEN
+#define DEFAULT_FLASH_LEN 0x400000
+
 #endif
 
 #else
@@ -1458,7 +1470,7 @@ static int ota_verify_download(void)
 static int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 {
 
-#if PLATFORM_XR809 || PLATFORM_TR6260 || PLATFORM_RTL8720D
+#if PLATFORM_XR809 || PLATFORM_TR6260
 	return 0;	//Operation not supported yet
 #endif
 
@@ -1468,6 +1480,13 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	char* writebuf = request->bodystart;
 	int writelen = request->bodylen;
 	int fsize = 0;
+
+#if 1
+	struct timeval tv;
+	tv.tv_sec = 10;
+	tv.tv_usec = 0;
+	setsockopt(request->fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
+#endif
 
 	ADDLOG_DEBUG(LOG_FEATURE_OTA, "OTA post len %d", request->contentLength);
 
@@ -2587,6 +2606,255 @@ update_ota_exit:
 		ADDLOG_ERROR(LOG_FEATURE_OTA, "OTA failed");
 		return http_rest_error(request, ret, "error");
 	}
+
+#elif PLATFORM_RTL8720D
+
+	int ret = -1;
+	uint32_t ota_target_index = OTA_INDEX_2;
+	update_file_hdr* pOtaFileHdr;
+	update_file_img_hdr* pOtaFileImgHdr;
+	update_ota_target_hdr OtaTargetHdr;
+	uint32_t ImageCnt, TempLen;
+	update_dw_info DownloadInfo[MAX_IMG_NUM];
+
+	int size = 0;
+	int read_bytes;
+	int read_bytes_buf;
+	uint8_t* buf;
+	uint32_t OtaFg = 0;
+	uint32_t IncFg = 0;
+	int RemainBytes;
+	uint32_t SigCnt = 0;
+	uint32_t TempCnt = 0;
+	uint8_t* signature;
+
+	if(request->contentLength > 0)
+	{
+		towrite = request->contentLength;
+	}
+	else
+	{
+		ret = -1;
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "Content-length is 0");
+		goto update_ota_exit;
+	}
+
+	memset((uint8_t*)&OtaTargetHdr, 0, sizeof(update_ota_target_hdr));
+
+	DBG_INFO_MSG_OFF(MODULE_FLASH);
+
+	ADDLOG_INFO(LOG_FEATURE_OTA, "Current firmware index is %d", current_fw_idx + 1);
+	if(current_fw_idx == OTA_INDEX_1)
+	{
+		ota_target_index = OTA_INDEX_2;
+	}
+	else
+	{
+		ota_target_index = OTA_INDEX_1;
+	}
+
+	// get ota header
+	writebuf = request->received;
+	writelen = recv(request->fd, writebuf, 16, 0);
+	if(writelen != 16)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "failed to recv file header");
+		ret = -1;
+		goto update_ota_exit;
+	}
+
+	pOtaFileHdr = (update_file_hdr*)writebuf;
+	pOtaFileImgHdr = (update_file_img_hdr*)(writebuf + 8);
+
+	OtaTargetHdr.FileHdr.FwVer = pOtaFileHdr->FwVer;
+	OtaTargetHdr.FileHdr.HdrNum = pOtaFileHdr->HdrNum;
+
+	writelen = recv(request->fd, writebuf + 16, (pOtaFileHdr->HdrNum * pOtaFileImgHdr->ImgHdrLen) - 8, 0);
+	writelen = (pOtaFileHdr->HdrNum * pOtaFileImgHdr->ImgHdrLen) + 8;
+
+	// verify ota header
+	if(!get_ota_tartget_header((uint8_t*)writebuf, writelen, &OtaTargetHdr, ota_target_index))
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "Get OTA header failed");
+		goto update_ota_exit;
+	}
+
+	ADDLOG_INFO(LOG_FEATURE_OTA, "Erasing...");
+	for(int i = 0; i < OtaTargetHdr.ValidImgCnt; i++)
+	{
+		ADDLOG_INFO(LOG_FEATURE_OTA, "Target addr:0x%08x, img len: %i", OtaTargetHdr.FileImgHdr[i].FlashAddr, OtaTargetHdr.FileImgHdr[i].ImgLen);
+		u32 sector_cnt;
+		u32 i;
+
+		sector_cnt = ((OtaTargetHdr.FileImgHdr[i].ImgLen - 1) / 4096) + 1;
+		watchdog_stop();
+		device_mutex_lock(RT_DEV_LOCK_FLASH);
+		for(i = 0; i < sector_cnt; i++)
+		{
+			FLASH_EraseXIP(EraseSector, OtaTargetHdr.FileImgHdr[i].FlashAddr - SPI_FLASH_BASE + i * 4096);
+		}
+		device_mutex_unlock(RT_DEV_LOCK_FLASH);
+		watchdog_start();
+	}
+
+	memset((uint8_t*)DownloadInfo, 0, MAX_IMG_NUM * sizeof(update_dw_info));
+
+	ImageCnt = OtaTargetHdr.ValidImgCnt;
+	for(uint32_t i = 0; i < ImageCnt; i++)
+	{
+		/* get OTA image and Write New Image to flash, skip the signature,
+			not write signature first for power down protection*/
+		DownloadInfo[i].ImgId = OTA_IMAG;
+		DownloadInfo[i].FlashAddr = OtaTargetHdr.FileImgHdr[i].FlashAddr - SPI_FLASH_BASE + 8;
+		DownloadInfo[i].ImageLen = OtaTargetHdr.FileImgHdr[i].ImgLen - 8; /*skip the signature*/
+		DownloadInfo[i].ImgOffset = OtaTargetHdr.FileImgHdr[i].Offset;
+	}
+
+	/*initialize the reveiving counter*/
+	TempLen = (OtaTargetHdr.FileHdr.HdrNum * OtaTargetHdr.FileImgHdr[0].ImgHdrLen) + sizeof(update_file_hdr);
+
+	buf = (uint8_t*)request->received;
+	for(uint32_t i = 0; i < ImageCnt; i++)
+	{
+		/*the next image length*/
+		RemainBytes = DownloadInfo[i].ImageLen;
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Remain: %i", RemainBytes);
+		signature = &(OtaTargetHdr.Sign[i][0]);
+
+		/*download the new firmware from server*/
+		while(RemainBytes > 0)
+		{
+			if(IncFg == 1)
+			{
+				IncFg = 0;
+				read_bytes = read_bytes_buf;
+			}
+			else
+			{
+				memset(buf, 0, request->receivedLenmax);
+				read_bytes = recv(request->fd, buf, request->receivedLenmax, 0);
+				if(read_bytes == 0)
+				{
+					break; // Read end
+				}
+				if(read_bytes < 0)
+				{
+					//OtaImgSize = -1;
+					//printf("\n\r[%s] Read socket failed", __FUNCTION__);
+					//ret = -1;
+					//goto update_ota_exit;
+					break;
+				}
+				read_bytes_buf = read_bytes;
+				TempLen += read_bytes;
+				ADDLOG_DEBUG(LOG_FEATURE_OTA, "Written %i, remaining %i", TempLen, RemainBytes);
+			}
+
+			if(TempLen > DownloadInfo[i].ImgOffset)
+			{
+				if(!OtaFg)
+				{
+					/*reach the desired image, the first packet process*/
+					OtaFg = 1;
+					TempCnt = TempLen - DownloadInfo[i].ImgOffset;
+					if(TempCnt < 8)
+					{
+						SigCnt = TempCnt;
+					}
+					else
+					{
+						SigCnt = 8;
+					}
+
+					memcpy(signature, buf + read_bytes - TempCnt, SigCnt);
+
+					if((SigCnt < 8) || (TempCnt - 8 == 0))
+					{
+						continue;
+					}
+
+					buf = buf + (read_bytes - TempCnt + 8);
+					read_bytes = TempCnt - 8;
+				}
+				else
+				{
+					/*normal packet process*/
+					if(SigCnt < 8)
+					{
+						if(read_bytes < (int)(8 - SigCnt))
+						{
+							memcpy(signature + SigCnt, buf, read_bytes);
+							SigCnt += read_bytes;
+							continue;
+						}
+						else
+						{
+							memcpy(signature + SigCnt, buf, (8 - SigCnt));
+							buf = buf + (8 - SigCnt);
+							read_bytes -= (8 - SigCnt);
+							SigCnt = 8;
+							if(!read_bytes)
+							{
+								continue;
+							}
+						}
+					}
+				}
+
+				RemainBytes -= read_bytes;
+				if(RemainBytes < 0)
+				{
+					read_bytes = read_bytes - (-RemainBytes);
+				}
+
+				device_mutex_lock(RT_DEV_LOCK_FLASH);
+				if(ota_writestream_user(DownloadInfo[i].FlashAddr + size, read_bytes, buf) < 0)
+				{
+					ADDLOG_ERROR(LOG_FEATURE_OTA, "Writing failed");
+					device_mutex_unlock(RT_DEV_LOCK_FLASH);
+					ret = -1;
+					goto update_ota_exit;
+				}
+				device_mutex_unlock(RT_DEV_LOCK_FLASH);
+				size += read_bytes;
+			}
+		}
+
+		if((uint32_t)size != (OtaTargetHdr.FileImgHdr[i].ImgLen - 8))
+		{
+			ADDLOG_ERROR(LOG_FEATURE_OTA, "Received size != ota size");
+			ret = -1;
+			goto update_ota_exit;
+		}
+
+		/*update flag status*/
+		size = 0;
+		OtaFg = 0;
+		IncFg = 1;
+	}
+
+	if(verify_ota_checksum(&OtaTargetHdr))
+	{
+		if(!change_ota_signature(&OtaTargetHdr, ota_target_index))
+		{
+			ADDLOG_ERROR(LOG_FEATURE_OTA, "Change signature failed");
+			ret = -1;
+			goto update_ota_exit;
+		}
+		ret = 0;
+	}
+
+update_ota_exit:
+	if(ret != -1)
+	{
+		ADDLOG_INFO(LOG_FEATURE_OTA, "OTA is successful");
+	}
+	else
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "OTA failed");
+		return http_rest_error(request, ret, "error");
+	}
+
 #else
 
 	init_ota(startaddr);

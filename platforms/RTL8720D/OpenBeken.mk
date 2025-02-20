@@ -1,4 +1,4 @@
-MODULE_IFLAGS +=  -DPLATFORM_RTL8720D -DPLATFORM_REALTEK -DUSER_SW_VER='"$(APP_VERSION)"' -Wno-strict-prototypes
+MODULE_IFLAGS +=  -DPLATFORM_RTL8720D -DPLATFORM_REALTEK -DUSER_SW_VER='"$(APP_VERSION)"' -Wno-strict-prototypes -Wno-unused-parameter
 
 MODULE_IFLAGS += -I$(EFDIR)/easyflash/inc
 

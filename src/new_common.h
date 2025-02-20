@@ -567,6 +567,13 @@ extern int g_sleepfactor;
 #define os_memset memset
 #define os_strcpy strcpy
 
+#if PLATFORM_RTL8720D
+#undef vsnprintf
+#undef sprintf
+#undef atoi
+#undef printf
+#endif
+
 #define bk_printf printf
 
 #if PLATFORM_RTL8710B || PLATFORM_RTL8710A
@@ -579,13 +586,6 @@ extern int g_sleepfactor;
 #else
 #define rtos_delay_milliseconds(x) vTaskDelay(x / portTICK_PERIOD_MS)
 #define delay_ms(x) vTaskDelay(x / portTICK_PERIOD_MS)
-#endif
-
-#if PLATFORM_RTL8720D
-#undef vsnprintf
-#undef sprintf
-//#define vsnprintf(fmt, ...) _vsnprintf_r(_REENT, fmt, ##__VA_ARGS__)
-//#define sprintf(fmt, ...) _sprintf_r(_REENT, fmt, ##__VA_ARGS__)
 #endif
 
 #define kNoErr                      0       //! No error occurred.
