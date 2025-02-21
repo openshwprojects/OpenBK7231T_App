@@ -120,11 +120,11 @@ typedef struct HassDeviceInfo_s {
 	cJSON* ids;
 } HassDeviceInfo;
 
-void hass_print_unique_id(http_request_t* request, const char* fmt, ENTITY_TYPE type, int index);
+void hass_print_unique_id(http_request_t* request, const char* fmt, ENTITY_TYPE type, int index, int asensdatasetix);
 HassDeviceInfo* hass_init_relay_device_info(int index, ENTITY_TYPE type, bool bInverse);
-HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* payload_on, const char* payload_off);
+HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* payload_on, const char* payload_off, int asensdatasetix);
 HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type);
-HassDeviceInfo* hass_init_energy_sensor_device_info(int index);
+HassDeviceInfo* hass_init_energy_sensor_device_info(int index, int asensdatasetix);
 HassDeviceInfo* hass_init_light_singleColor_onChannels(int toggle, int dimmer, int brightness_scale);
 HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse);
 HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int decPlaces, int decOffset, int divider);
