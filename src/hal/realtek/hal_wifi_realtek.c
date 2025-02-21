@@ -184,9 +184,9 @@ void wifi_dis_hdl(u8* buf, u32 buf_len, u32 flags, void* userdata)
 	if(g_wifiStatusCallback != NULL)
 	{
 		g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
-		memset(&g_IP, 0, 32);
-		memset(&g_GW, 0, 32);
-		memset(&g_MS, 0, 32);
+		memset(&g_IP, 0, 16);
+		memset(&g_GW, 0, 16);
+		memset(&g_MS, 0, 16);
 		strcpy(&g_IP, "unknown");
 		strcpy(&g_GW, "unknown");
 		strcpy(&g_MS, "unknown");
@@ -206,9 +206,9 @@ void wifi_conned_hdl(u8* buf, u32 buf_len, u32 flags, void* userdata)
 	if(g_wifiStatusCallback != NULL)
 	{
 		g_wifiStatusCallback(WIFI_STA_CONNECTED);
-		memset(&g_IP, 0, 32);
-		memset(&g_GW, 0, 32);
-		memset(&g_MS, 0, 32);
+		memset(&g_IP, 0, 16);
+		memset(&g_GW, 0, 16);
+		memset(&g_MS, 0, 16);
 		strcpy(&g_IP, ipaddr_ntoa((const ip4_addr_t*)&xnetif[g_bOpenAccessPointMode].ip_addr.addr));
 		strcpy(&g_GW, ipaddr_ntoa((const ip4_addr_t*)&xnetif[g_bOpenAccessPointMode].gw.addr));
 		strcpy(&g_MS, ipaddr_ntoa((const ip4_addr_t*)&xnetif[g_bOpenAccessPointMode].netmask.addr));

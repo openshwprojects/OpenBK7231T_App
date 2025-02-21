@@ -1481,7 +1481,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	int writelen = request->bodylen;
 	int fsize = 0;
 
-#if 1
+#if 0
 	struct timeval tv;
 	tv.tv_sec = 10;
 	tv.tv_usec = 0;
