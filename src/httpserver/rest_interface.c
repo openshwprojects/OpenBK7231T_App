@@ -2683,17 +2683,8 @@ update_ota_exit:
 	for(int i = 0; i < OtaTargetHdr.ValidImgCnt; i++)
 	{
 		ADDLOG_INFO(LOG_FEATURE_OTA, "Target addr:0x%08x, img len: %i", OtaTargetHdr.FileImgHdr[i].FlashAddr, OtaTargetHdr.FileImgHdr[i].ImgLen);
-		u32 sector_cnt;
-		u32 i;
-
-		sector_cnt = ((OtaTargetHdr.FileImgHdr[i].ImgLen - 1) / 4096) + 1;
 		watchdog_stop();
-		device_mutex_lock(RT_DEV_LOCK_FLASH);
-		for(i = 0; i < sector_cnt; i++)
-		{
-			FLASH_EraseXIP(EraseSector, OtaTargetHdr.FileImgHdr[i].FlashAddr - SPI_FLASH_BASE + i * 4096);
-		}
-		device_mutex_unlock(RT_DEV_LOCK_FLASH);
+		erase_ota_target_flash(OtaTargetHdr.FileImgHdr[i].FlashAddr, OtaTargetHdr.FileImgHdr[i].ImgLen);
 		watchdog_start();
 	}
 
@@ -2713,7 +2704,6 @@ update_ota_exit:
 	/*initialize the reveiving counter*/
 	TempLen = (OtaTargetHdr.FileHdr.HdrNum * OtaTargetHdr.FileImgHdr[0].ImgHdrLen) + sizeof(update_file_hdr);
 
-	buf = (uint8_t*)request->received;
 	for(uint32_t i = 0; i < ImageCnt; i++)
 	{
 		/*the next image length*/
@@ -2724,6 +2714,7 @@ update_ota_exit:
 		/*download the new firmware from server*/
 		while(RemainBytes > 0)
 		{
+			buf = (uint8_t*)request->received;
 			if(IncFg == 1)
 			{
 				IncFg = 0;
