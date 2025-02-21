@@ -261,16 +261,17 @@ void Start_UART_TCP(void* arg)
 	vTaskDelete(NULL);
 }
 
-// startDriver UartTCP [baudrate] [buffer size] [tx action channel]
-// tx action channel is for led.
+// startDriver UartTCP [baudrate] [buffer size] [tx action channel] [hw flow control]
+// tx action channel is for led, -1 if not used.
 void UART_TCP_Init()
 {
 	g_baudRate = Tokenizer_GetArgIntegerDefault(1, g_baudRate);
 	uint32_t reqbufsize = Tokenizer_GetArgIntegerDefault(2, DEFAULT_BUF_SIZE);
 	buf_size = reqbufsize > 16384 ? 16384 : reqbufsize;
 	g_tx_channel = Tokenizer_GetArgIntegerDefault(3, -1);
+	int flowcontrol = Tokenizer_GetArgIntegerDefault(4, 0);
 
-	UART_InitUART(g_baudRate, 0);
+	UART_InitUART(g_baudRate, 0, flowcontrol > 0 ? true : false);
 	UART_InitReceiveRingBuffer(buf_size * 2);
 	g_utcpBuf = (byte*)malloc(buf_size);
 

@@ -8,9 +8,9 @@
 #ifdef UART_2_UARTS_CONCURRENT
 void HAL_UART_SendByteEx(int auartindex, byte b);
 
-int HAL_UART_InitEx(int auartindex, int baud, int parity);
+int HAL_UART_InitEx(int auartindex, int baud, int parity, bool hwflowc);
 #else
 void HAL_UART_SendByte(byte b);
 
-int HAL_UART_Init(int baud, int parity);
+int HAL_UART_Init(int baud, int parity, bool hwflowc);
 #endif

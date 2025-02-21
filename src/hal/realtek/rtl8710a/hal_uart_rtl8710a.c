@@ -6,6 +6,8 @@
 #include "serial_api.h"
 #define UART0_TX	PA_7
 #define UART0_RX	PA_6
+#define UART0_RTS	PA_3
+#define UART0_CTS	PA_5
 
 serial_t sobj;
 static bool isInitialized;
@@ -26,7 +28,7 @@ void HAL_UART_SendByte(byte b)
 	serial_putc(&sobj, b);
 }
 
-int HAL_UART_Init(int baud, int parity)
+int HAL_UART_Init(int baud, int parity, bool hwflowc)
 {
 	if(isInitialized)
 	{
@@ -43,6 +45,10 @@ int HAL_UART_Init(int baud, int parity)
 	serial_format(&sobj, 8, parity, 1);
 	serial_irq_handler(&sobj, uart_cb, (uint32_t)&sobj);
 	serial_irq_set(&sobj, RxIrq, 1);
+	if(hwflowc)
+	{
+		serial_set_flow_control(&sobj, FlowControlRTSCTS, UART0_RTS, UART0_CTS);
+	}
 	isInitialized = true;
 	return 1;
 }

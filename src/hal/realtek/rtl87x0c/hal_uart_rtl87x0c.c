@@ -34,7 +34,7 @@ void HAL_UART_SendByte(byte b)
 	hal_uart_putc(&sobj.uart_adp, b);
 }
 
-int HAL_UART_Init(int baud, int parity)
+int HAL_UART_Init(int baud, int parity, bool hwflowc)
 {
 	if(isInitialized)
 	{

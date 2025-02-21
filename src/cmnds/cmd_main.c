@@ -526,7 +526,7 @@ static commandResult_t CMD_SafeMode(const void* context, const char* cmd, const 
 
 void CMD_UARTConsole_Init() {
 #if PLATFORM_BEKEN
-	UART_InitUART(115200, 0);
+	UART_InitUART(115200, 0, false);
 	cmd_uartInitIndex = get_g_uart_init_counter;
 	UART_InitReceiveRingBuffer(512);
 #endif
