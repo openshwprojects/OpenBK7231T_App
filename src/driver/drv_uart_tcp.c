@@ -11,7 +11,14 @@
 #define DEFAULT_BUF_SIZE		512
 #define DEFAULT_UART_TCP_PORT	8888
 #define INVALID_SOCK			-1
-#define UTCP_DEBUG				1
+#ifndef UTCP_DEBUG
+#define UTCP_DEBUG				0
+#endif
+#if UTCP_DEBUG
+#define STACK_SIZE				8192
+#else
+#define STACK_SIZE				2048
+#endif
 
 static uint16_t buf_size = DEFAULT_BUF_SIZE;
 static int g_tx_channel = -1;
@@ -74,7 +81,7 @@ static void UTCP_TX_Thd(void* param)
 		if(ret <= 0)
 			goto exit;
 
-		rtos_delay_milliseconds(20);
+		//rtos_delay_milliseconds(20);
 	}
 
 exit:
@@ -193,7 +200,7 @@ void UART_TCP_TRX_Thread()
 			err = rtos_create_thread(&g_tx_thread, tskIDLE_PRIORITY + 1,
 				"UTCP_TX_Thd",
 				(beken_thread_function_t)UTCP_TX_Thd,
-				0x800,
+				STACK_SIZE,
 				(beken_thread_arg_t)&client_sock);
 			if(err != kNoErr)
 			{
@@ -201,12 +208,12 @@ void UART_TCP_TRX_Thread()
 			}
 			else tx_closed = false;
 
-			rtos_delay_milliseconds(10);
+			//rtos_delay_milliseconds(10);
 
 			err = rtos_create_thread(&g_rx_thread, tskIDLE_PRIORITY + 1,
 				"UTCP_RX_Thd",
 				(beken_thread_function_t)UTCP_RX_Thd,
-				0x800,
+				STACK_SIZE,
 				(beken_thread_arg_t)&client_sock);
 			if(err != kNoErr)
 			{
