@@ -18,7 +18,9 @@ void BL09XX_AppendInformationToHTTPIndexPageEx(int asensorsix, http_request_t* r
 void BL_ResetRecivedDataBool();
 
 #define BL_SENSORS_IX_0 0
+#if ENABLE_BL_TWIN
 #define BL_SENSORS_IX_1 1
+#endif
 
 int BL_IsMeteringDeviceIndexActive(int asensdatasetix);
 

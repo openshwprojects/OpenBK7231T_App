@@ -1831,6 +1831,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				discoveryQueued = true;
 			}
 		}
+#if ENABLE_BL_TWIN
 		//BL_SENSORS_IX_1 - mqtt hass discovery using hass_uniq_id_suffix (_b) from drv_bl_shared.c
 		if (BL_IsMeteringDeviceIndexActive(BL_SENSORS_IX_1)) {
 			for (i = OBK__FIRST; i <= OBK__LAST; i++)
@@ -1846,6 +1847,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				}
 			}
 		}
+#endif
 	}
 #endif
 

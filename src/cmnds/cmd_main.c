@@ -953,8 +953,10 @@ void CMD_Init_Delayed() {
  || defined(PLATFORM_REALTEK)
 	UART_AddCommands();
 #endif
+#if ENABLE_BL_TWIN
 #if ENABLE_DRIVER_BL0942
 	BL0942_AddCommands();
+#endif
 #endif
 }
 

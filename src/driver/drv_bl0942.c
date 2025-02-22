@@ -18,12 +18,14 @@
 #include "drv_uart.h"
 
 static unsigned short bl0942_baudRate = 4800;
+#if ENABLE_BL_TWIN
 //bl0942_opts - bit0 - UART1, bit1 - UART2
 // 0=default mode - UART on port according to OBK_FLAG_USE_SECONDARY_UART
 // 3=two BL0942 on UART1 and UART2
 static unsigned short bl0942_opts= 0;
 #define BL0942_OPTBIT0_UART1 1
 #define BL0942_OPTBIT1_UART2 2
+#endif
 
 #define BL0942_UART_RECEIVE_BUFFER_SIZE 256
 #define BL0942_UART_ADDR 0 // 0 - 3
@@ -34,8 +36,9 @@ static unsigned short bl0942_opts= 0;
 #define BL0942_UART_PACKET_LEN 23
 
 #define BL0942_DEVICE_INDEX_0 0
+#if ENABLE_BL_TWIN
 #define BL0942_DEVICE_INDEX_1 1
-
+#endif
 // Datasheet says 900 kHz is supported, but it produced ~50% check sum errors  
 #define BL0942_SPI_BAUD_RATE 800000 // 900000
 #define BL0942_SPI_CMD_READ 0x58
@@ -82,9 +85,11 @@ static void ScaleAndUpdate(int adeviceindex, bl0942_data_t *data) {
 
     float frequency = 2 * 500000.0f / data->freq;
 
+#if ENABLE_BL_TWIN
     if (adeviceindex == BL0942_DEVICE_INDEX_1) {
       BL_ProcessUpdateEx(BL_SENSORS_IX_1, voltage, current, power, frequency, 0);
     } else {
+#endif
       //BL0942_DEVICE_INDEX_0
       float energyWh = 0;
       if (PrevCfCnt != CF_CNT_INVALID) {
@@ -96,7 +101,9 @@ static void ScaleAndUpdate(int adeviceindex, bl0942_data_t *data) {
       }
       PrevCfCnt = data->cf_cnt;
       BL_ProcessUpdateEx(BL_SENSORS_IX_0, voltage, current, power, frequency, energyWh);
+#if ENABLE_BL_TWIN
     }
+#endif
     //addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Sensors ix %i v=%.f c=%.f p=%.f e=%.f",
     //    adeviceindex, voltage, current, power, frequency, energyWh);
 }
@@ -256,9 +263,12 @@ void BL0942_UART_InitEx(int auartindex) {
 bool uartinitialized = 0;
 
 void BL0942_UART_Init(void) {
+#if ENABLE_BL_TWIN
   if (!bl0942_opts) {
+#endif
     int fuartindex = UART_GetSelectedPortIndex();
     BL0942_UART_InitEx(fuartindex);
+#if ENABLE_BL_TWIN
   }
   else {
     if (bl0942_opts & BL0942_OPTBIT0_UART1) {
@@ -268,9 +278,11 @@ void BL0942_UART_Init(void) {
       BL0942_UART_InitEx(UART_PORT_INDEX_1);
     }
   }
+#endif
   uartinitialized = 1;
 }
 
+#if ENABLE_BL_TWIN
 void BL0942_UART_RunEverySecondEx(int adeviceindex, int auartindex) {
   BL0942_UART_TryToGetNextPacket(adeviceindex, auartindex);
 
@@ -293,6 +305,15 @@ void BL0942_UART_RunEverySecond(void) {
     }
   }
 }
+#else
+void BL0942_UART_RunEverySecond(void) {
+  int fuartindex = UART_GetSelectedPortIndex();
+  BL0942_UART_TryToGetNextPacket(BL0942_DEVICE_INDEX_0, fuartindex);
+  UART_InitUARTEx(fuartindex, bl0942_baudRate, 0);
+  UART_SendByteEx(fuartindex, BL0942_UART_CMD_READ(BL0942_UART_ADDR));
+  UART_SendByteEx(fuartindex, BL0942_UART_REG_PACKET);
+}
+#endif
 
 void BL0942_SPI_Init(void) {
 	BL0942_Init();
@@ -324,6 +345,7 @@ void BL0942_SPI_RunEverySecond(void) {
     ScaleAndUpdate(BL0942_DEVICE_INDEX_0, &data);
 }
 
+#if ENABLE_BL_TWIN
 static commandResult_t CMD_BL0942opts(const void* context, const char* cmd, const char* args, int cmdFlags) {
   Tokenizer_TokenizeString(args, 0);
 
@@ -361,6 +383,6 @@ void BL0942_AddCommands(void) {
   //cmddetail:"examples":""}
   CMD_RegisterCommand("BL0942opts", CMD_BL0942opts, NULL);
 }
-
+#endif
 // close ENABLE_DRIVER_BL0942 
 #endif
