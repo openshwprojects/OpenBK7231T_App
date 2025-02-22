@@ -237,6 +237,11 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 		{
 			sock[new_idx].fd = accept(listen_sock, (struct sockaddr*)&source_addr, &addr_len);
 
+			struct timeval tv;
+			tv.tv_sec = 10;
+			tv.tv_usec = 0;
+			setsockopt(sock[new_idx].fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
+
 			if(sock[new_idx].fd < 0)
 			{
 				switch(errno)
