@@ -45,3 +45,7 @@
 	path = sdk/beken_freertos_sdk
 	url = https://github.com/NonPIayerCharacter/beken_freertos_sdk.git
 	branch = master
+[submodule "src/berry"]
+	path = src/berry
+	url = https://github.com/niteria/berry/tree/berry-openbk
+	branch = berry-openbk
