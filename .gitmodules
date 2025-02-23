@@ -47,5 +47,5 @@
 	branch = master
 [submodule "src/berry"]
 	path = src/berry
-	url = https://github.com/niteria/berry/tree/berry-openbk
+	url = https://github.com/niteria/berry.git
 	branch = berry-openbk
