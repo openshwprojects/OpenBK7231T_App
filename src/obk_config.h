@@ -356,6 +356,7 @@
 #define OBK_OTA_EXTENSION 						".img"
 #define ENABLE_OBK_SCRIPTING					1
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
+#define ENABLE_DRIVER_SSDP						1
 
 #else
 

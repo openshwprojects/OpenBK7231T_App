@@ -251,9 +251,6 @@ void UART_TCP_TRX_Thread()
 error:
 	ADDLOG_ERROR(LOG_FEATURE_DRV, "UART TCP Error");
 
-	if(listen_sock != INVALID_SOCK) close(listen_sock);
-	if(client_sock != INVALID_SOCK) close(client_sock);
-
 	if(g_start_thread != NULL)
 	{
 		rtos_delete_thread(&g_start_thread);
@@ -272,6 +269,10 @@ error:
 void Start_UART_TCP(void* arg)
 {
 	UART_TCP_Deinit();
+	if(listen_sock != INVALID_SOCK) close(listen_sock);
+	if(client_sock != INVALID_SOCK) close(client_sock);
+	listen_sock = INVALID_SOCK;
+	client_sock = INVALID_SOCK;
 	while(!Main_HasWiFiConnected())
 	{
 		rtos_delay_milliseconds(50);
