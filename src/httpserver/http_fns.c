@@ -1292,11 +1292,6 @@ int http_fn_cfg_wifi(http_request_t* request) {
 #ifdef WINDOWS
 
 		poststr(request, "Not available on Windows<br>");
-#elif PLATFORM_XR809
-		poststr(request, "TODO XR809<br>");
-
-#elif PLATFORM_W600 || PLATFORM_W800
-		poststr(request, "TODO W800<br>");
 #elif PLATFORM_BL602
                wifi_mgmr_ap_item_t *ap_info;
                uint32_t i, ap_num;
@@ -1335,9 +1330,6 @@ int http_fn_cfg_wifi(http_request_t* request) {
 			hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", i + 1, (int)num, ar[i].ssid, ar[i].channel, ar[i].rssi);
 		}
 		tuya_os_adapt_wifi_release_ap(ar);
-#elif PLATFORM_LN882H
-// TODO:LN882H action
-        poststr(request, "TODO LN882H<br>");
 #elif PLATFORM_ESPIDF
 		// doesn't work in ap mode, only sta/apsta
 		uint16_t ap_count = 0, number = 30;
@@ -1358,7 +1350,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 #ifndef PLATFORM_RTL87X0C
 		extern void rltk_wlan_enable_scan_with_ssid_by_extended_security(bool);
 #endif
-		scan_hdl = xSemaphoreCreateBinary();
+
 		rtw_result_t scan_result_handler(rtw_scan_handler_result_t* result)
 		{
 			http_request_t* request = (http_request_t*)result->user_data;
@@ -1372,19 +1364,18 @@ int http_fn_cfg_wifi(http_request_t* request) {
 			record->SSID.val[record->SSID.len] = 0;
 			hprintf255(request, "SSID: %s, Channel: %i, Signal %i<br>", record->SSID.val, record->channel, record->signal_strength);
 		}
+
+		scan_hdl = xSemaphoreCreateBinary();
 		rltk_wlan_enable_scan_with_ssid_by_extended_security(1);
 		xSemaphoreTake(scan_hdl, 1);
 		if(wifi_scan_networks(scan_result_handler, request) != RTW_SUCCESS)
 		{
 			poststr(request, "Wifi scan failed!<br>");
 		}
-		xSemaphoreTake(scan_hdl, pdMS_TO_TICKS(5 * 1000));
+		xSemaphoreTake(scan_hdl, pdMS_TO_TICKS(10 * 1000));
 		vSemaphoreDelete(scan_hdl);
-#elif PLATFORM_BEKEN_NEW
-		poststr(request, "TODO BEKEN_NEW<br>");
 #else
-#error "Unknown platform"
-		poststr(request, "Unknown platform<br>");
+		hprintf255(request, "TODO %s<br>", PLATFORM_MCU_NAME);
 #endif
 	}
 	poststr(request, "<form action=\"/cfg_wifi\">\
