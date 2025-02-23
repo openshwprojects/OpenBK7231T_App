@@ -428,9 +428,9 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 	}
 	poststr(request, "<script>");
 	poststr(request, "function cha() {");
-	poststr(request, "var labels =document.getElementById('chartlabels').value.split(/\s*,\s*/).map(Number).map((x)=>new Date(x * 1000).toLocaleTimeString());"); // we transmitted only timestamps, let Javascript do the work to convert them ;-)
+	poststr(request, "var labels =document.getElementById('chartlabels').value.split(/\\s*,\\s*/).map(Number).map((x)=>new Date(x * 1000).toLocaleTimeString());"); // we transmitted only timestamps, let Javascript do the work to convert them ;-)
 	for (int i = 0; i < s->numVars; i++) {
-		hprintf255(request, "var data%i = document.getElementById('chartdata%i').value.split(/\s*,\s*/).map(Number);",i,i);	
+		hprintf255(request, "var data%i = document.getElementById('chartdata%i').value.split(/\\s*,\\s*/).map(Number);",i,i);
 	}
 	poststr(request, "if (! window.obkChartInstance) {");
 	poststr(request, "console.log('Initializing chart');");
