@@ -574,6 +574,15 @@ extern int g_sleepfactor;
 #undef printf
 #endif
 
+// for wifi
+#define BUFLEN_LEN				1
+#define MAC_LEN					6
+#define RSSI_LEN				4
+#define SECURITY_LEN			1
+#define SECURITY_LEN_EXTENDED	4
+#define WPS_ID_LEN				1
+#define CHANNEL_LEN				1
+
 #define bk_printf printf
 
 #if PLATFORM_RTL8710B || PLATFORM_RTL8710A

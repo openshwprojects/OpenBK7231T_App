@@ -38,12 +38,16 @@
 #include "temp_detect_pub.h"
 #elif defined(PLATFORM_LN882H)
 #elif defined(PLATFORM_TR6260)
-#elif defined(PLATFORM_RTL87X0C)
-#include "hal_sys_ctrl.h"
-extern hal_reset_reason_t reset_reason;
-extern uint32_t current_fw_idx;
-#elif defined(PLATFORM_RTL8710B) || defined(PLATFORM_RTL8720D)
-extern uint32_t current_fw_idx;
+#elif defined(PLATFORM_REALTEK)
+	#include "wifi_structures.h"
+	#include "wifi_constants.h"
+	#include "wifi_conf.h"
+	extern uint32_t current_fw_idx;
+	#ifdef PLATFORM_RTL87X0C
+	#include "hal_sys_ctrl.h"
+	extern hal_reset_reason_t reset_reason;
+	#endif
+	SemaphoreHandle_t scan_hdl;
 #elif defined(PLATFORM_ESPIDF)
 #include "esp_wifi.h"
 #include "esp_system.h"
@@ -1351,7 +1355,31 @@ int http_fn_cfg_wifi(http_request_t* request) {
 #elif PLATFORM_TR6260
 		poststr(request, "TODO TR6260<br>");
 #elif defined(PLATFORM_REALTEK)
-		poststr(request, "TODO Realtek<br>");
+#ifndef PLATFORM_RTL87X0C
+		extern void rltk_wlan_enable_scan_with_ssid_by_extended_security(bool);
+#endif
+		scan_hdl = xSemaphoreCreateBinary();
+		rtw_result_t scan_result_handler(rtw_scan_handler_result_t* result)
+		{
+			http_request_t* request = (http_request_t*)result->user_data;
+
+			if(result->scan_complete == RTW_TRUE)
+			{
+				xSemaphoreGive(scan_hdl);
+				return RTW_SUCCESS;
+			}
+			rtw_scan_result_t* record = &result->ap_details;
+			record->SSID.val[record->SSID.len] = 0;
+			hprintf255(request, "SSID: %s, Channel: %i, Signal %i<br>", record->SSID.val, record->channel, record->signal_strength);
+		}
+		rltk_wlan_enable_scan_with_ssid_by_extended_security(1);
+		xSemaphoreTake(scan_hdl, 1);
+		if(wifi_scan_networks(scan_result_handler, request) != RTW_SUCCESS)
+		{
+			poststr(request, "Wifi scan failed!<br>");
+		}
+		xSemaphoreTake(scan_hdl, pdMS_TO_TICKS(5 * 1000));
+		vSemaphoreDelete(scan_hdl);
 #elif PLATFORM_BEKEN_NEW
 		poststr(request, "TODO BEKEN_NEW<br>");
 #else

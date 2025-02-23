@@ -326,17 +326,18 @@ void UART_TCP_Deinit()
 		rtos_delete_thread(&g_trx_thread);
 		g_trx_thread = NULL;
 	}
-	if(!rx_closed && g_rx_thread != NULL)
+	if(g_rx_thread != NULL)
 	{
+		rx_closed = true;
 		rtos_delete_thread(&g_rx_thread);
 		g_rx_thread = NULL;
 	}
-	if(!tx_closed && g_tx_thread != NULL)
+	if(g_tx_thread != NULL)
 	{
+		tx_closed = true;
 		rtos_delete_thread(&g_tx_thread);
 		g_tx_thread = NULL;
 	}
-	rtos_delay_milliseconds(50);
 	if(g_utcpBuf) free(g_utcpBuf);
 }
 

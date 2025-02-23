@@ -2,7 +2,7 @@
 
 #include "../hal_wifi.h"
 #include "../../new_cfg.h"
-#include "../../new_cfg.h"
+#include "../../new_common.h"
 #include "../../logging/logging.h"
 #include <lwip/sockets.h>
 #include <lwip/netif.h>
@@ -11,16 +11,13 @@
 #include <lwip_netconf.h>
 #include "tcpip.h"
 #include <dhcp/dhcps.h>
-
-#ifdef PLATFORM_RTL8720D
-#define IW_ENCODE_ALG_NONE RTW_ENCODE_ALG_NONE
-#define IW_ENCODE_ALG_WEP  RTW_ENCODE_ALG_WEP
-#define IW_ENCODE_ALG_CCMP RTW_ENCODE_ALG_CCMP
-#define IW_ENCODE_ALG_OWE  RTW_ENCODE_ALG_PMK
-#define RTW_SECURITY_WPA3_OWE  RTW_SECURITY_WPA3_AES_PSK
-#endif
+#include <easyflash.h>
 
 extern struct netif xnetif[NET_IF_NUM];
+extern void InitEasyFlashIfNeeded();
+extern int wifi_change_mac_address_from_ram(int idx, uint8_t* mac);
+extern int wifi_scan_networks_with_ssid_by_extended_security(int (results_handler)(char* buf, int buflen, char* ssid, void* user_data),
+	void* user_data, int scan_buflen, char* ssid, int ssid_len);
 
 typedef struct
 {
@@ -63,11 +60,30 @@ const char* HAL_GetMyMaskString()
 int WiFI_SetMacAddress(char* mac)
 {
 	printf("WiFI_SetMacAddress\r\n");
+#ifdef PLATFORM_RTL8720D
+	InitEasyFlashIfNeeded();
+	wifi_change_mac_address_from_ram(0, (uint8_t*)mac);
+	return ef_set_env_blob("rtlmac", mac, sizeof(wmac));
+#endif
 	return 0; // error
 }
 
 void WiFI_GetMacAddress(char* mac)
 {
+#ifdef PLATFORM_RTL8720D
+	//if((wmac[0] == 255 && wmac[1] == 255 && wmac[2] == 255 && wmac[3] == 255 && wmac[4] == 255 && wmac[5] == 255)
+	//	|| (wmac[0] == 0 && wmac[1] == 0 && wmac[2] == 0 && wmac[3] == 0 && wmac[4] == 0 && wmac[5] == 0))
+	{
+		InitEasyFlashIfNeeded();
+		uint8_t fmac[6] = { 0 };
+		int readLen = ef_get_env_blob("rtlmac", &fmac, sizeof(fmac), NULL);
+		if(readLen)
+		{
+			wifi_change_mac_address_from_ram(0, fmac);
+			memcpy(wmac, fmac, sizeof(fmac));
+		}
+	}
+#endif
 	memcpy(mac, (char*)wmac, sizeof(wmac));
 }
 
@@ -105,14 +121,15 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 	g_wifiStatusCallback = cb;
 }
 
-static int _find_ap_from_scan_buf(char* buf, int buflen, char* target_ssid, void* user_data)
+int obk_find_ap_from_scan_buf(char* buf, int buflen, char* target_ssid, void* user_data)
 {
 	rtw_wifi_setting_t* pwifi = (rtw_wifi_setting_t*)user_data;
 	int plen = 0;
 
 	while(plen < buflen)
 	{
-		u8 len, ssid_len, security_mode;
+		u8 len, ssid_len;
+		int security_mode;
 		char* ssid;
 
 		// len offset = 0
@@ -122,33 +139,15 @@ static int _find_ap_from_scan_buf(char* buf, int buflen, char* target_ssid, void
 		{
 			break;
 		}
-		// ssid offset = 14
-		ssid_len = len - 14;
-		ssid = buf + plen + 14;
+		ssid_len = len - BUFLEN_LEN - MAC_LEN - RSSI_LEN - SECURITY_LEN_EXTENDED - WPS_ID_LEN - CHANNEL_LEN;
+		ssid = buf + plen + BUFLEN_LEN + MAC_LEN + RSSI_LEN + SECURITY_LEN_EXTENDED + WPS_ID_LEN + CHANNEL_LEN;
 		if((ssid_len == strlen(target_ssid))
 			&& (!memcmp(ssid, target_ssid, ssid_len)))
 		{
 			strncpy((char*)pwifi->ssid, target_ssid, 33);
-			// channel offset = 13
-			pwifi->channel = *(buf + plen + 13);
-			// security_mode offset = 11
-			security_mode = (u8) * (buf + plen + 11);
-			if(security_mode == IW_ENCODE_ALG_NONE)
-			{
-				pwifi->security_type = RTW_SECURITY_OPEN;
-			}
-			else if(security_mode == IW_ENCODE_ALG_WEP)
-			{
-				pwifi->security_type = RTW_SECURITY_WEP_PSK;
-			}
-			else if(security_mode == IW_ENCODE_ALG_CCMP)
-			{
-				pwifi->security_type = RTW_SECURITY_WPA2_AES_PSK;
-			}
-			else if(security_mode == IW_ENCODE_ALG_OWE)
-			{
-				pwifi->security_type = RTW_SECURITY_WPA3_OWE;
-			}
+			pwifi->channel = *(buf + plen + BUFLEN_LEN + MAC_LEN + RSSI_LEN + SECURITY_LEN_EXTENDED + WPS_ID_LEN);
+			security_mode = *(int*)(buf + plen + BUFLEN_LEN + MAC_LEN + RSSI_LEN);
+			pwifi->security_type = security_mode;
 			break;
 		}
 		plen += len;
@@ -159,11 +158,11 @@ static int _find_ap_from_scan_buf(char* buf, int buflen, char* target_ssid, void
 static int _get_ap_security_mode(char* ssid, rtw_security_t* security_mode, u8* channel)
 {
 	rtw_wifi_setting_t wifi;
-	u32 scan_buflen = 1000;
+	u32 scan_buflen = 1024;
 
 	memset(&wifi, 0, sizeof(wifi));
 
-	if(wifi_scan_networks_with_ssid(_find_ap_from_scan_buf, (void*)&wifi, scan_buflen, ssid, strlen(ssid)) != RTW_SUCCESS)
+	if(wifi_scan_networks_with_ssid_by_extended_security(obk_find_ap_from_scan_buf, (void*)&wifi, scan_buflen, ssid, strlen(ssid)) != RTW_SUCCESS)
 	{
 		printf("Wifi scan failed!\n");
 		return 0;
@@ -238,7 +237,7 @@ void ConnectToWiFiTask(void* args)
 		delay_ms(50);
 		if(security_retry_count >= 5)
 		{
-			printf("Can't get AP security mode and channel.\r\n");
+			ADDLOG_ERROR(LOG_FEATURE_GENERAL, "Can't get AP security mode and channel.");
 			goto exit;
 		}
 	}
@@ -250,7 +249,7 @@ void ConnectToWiFiTask(void* args)
 		strlen(wdata.pwd), NULL, NULL);
 	if(ret != RTW_SUCCESS)
 	{
-		printf("ERROR: Can't connect to AP\r\n");
+		ADDLOG_ERROR(LOG_FEATURE_GENERAL, "Can't connect to AP");
 		goto exit;
 	}
 	if(g_bStaticIP == 0) {
@@ -321,22 +320,24 @@ void HAL_DisconnectFromWifi()
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
 	g_bOpenAccessPointMode = 1;
+	rtw_mode_t mode = RTW_MODE_STA_AP;
 	struct ip_addr ipaddr;
 	struct ip_addr netmask;
 	struct ip_addr gw;
-	struct netif* pnetif = &xnetif[0];
+	struct netif* pnetif = &xnetif[mode == RTW_MODE_STA_AP ? 1 : 0];
 	dhcps_deinit();
 	wifi_off();
 	vTaskDelay(20);
-	if(wifi_on(RTW_MODE_AP) < 0)
+	if(wifi_on(mode) < 0)
 	{
-		printf("wifi_on failed!\r\n");
+		ADDLOG_ERROR(LOG_FEATURE_GENERAL, "Failed to enable wifi");
 		return 0;
 	}
 
 	if(wifi_start_ap((char*)ssid, RTW_SECURITY_OPEN, NULL, strlen(ssid), 0, 1) < 0)
 	{
-		printf("wifi_start_ap failed!\r\n");
+		ADDLOG_ERROR(LOG_FEATURE_GENERAL, "Failed to start AP");
+		return 0;
 	}
 	IP4_ADDR(ip_2_ip4(&ipaddr), 192, 168, 4, 1);
 	IP4_ADDR(ip_2_ip4(&netmask), 255, 255, 255, 0);
