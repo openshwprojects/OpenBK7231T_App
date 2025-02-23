@@ -81,6 +81,8 @@ sdk/OpenLN882H/project/OpenBeken/app:
 prebuild_OpenBK7231N:
 	git submodule update --init --recursive sdk/OpenBK7231N
 	git submodule update --init --recursive src/berry
+	# debug missing submodule
+	ls -ltR
 	@if [ -e platforms/BK7231N/pre_build.sh ]; then \
 		echo "prebuild found for OpenBK7231N"; \
 		sh platforms/BK7231N/pre_build.sh; \
