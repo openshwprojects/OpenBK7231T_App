@@ -45,6 +45,8 @@ static void UTCP_TX_Thd(void* param)
 		int delay = 0;
 		memset(g_utcpBuf, 0, buf_size);
 		int len = UART_GetDataSize();
+
+		if(client_fd == INVALID_SOCK) goto exit;
 		while(len < buf_size && delay < 10)
 		{
 			rtos_delay_milliseconds(1);
@@ -83,7 +85,7 @@ static void UTCP_TX_Thd(void* param)
 		if(ret <= 0)
 			goto exit;
 
-		//rtos_delay_milliseconds(20);
+		rtos_delay_milliseconds(5);
 	}
 
 exit:
@@ -101,6 +103,7 @@ static void UTCP_RX_Thd(void* param)
 	{
 		int ret = 0;
 
+		if(client_fd == INVALID_SOCK) goto exit;
 		ret = recv(client_fd, buffer, sizeof(buffer), 0);
 		if(ret > 0)
 		{
@@ -133,7 +136,7 @@ static void UTCP_RX_Thd(void* param)
 			goto exit;
 		}
 
-		//rtos_delay_milliseconds(10);
+		rtos_delay_milliseconds(5);
 	}
 
 exit:
@@ -202,7 +205,7 @@ void UART_TCP_TRX_Thread()
 			{
 				rtos_delete_thread(&g_tx_thread);
 			}
-			err = rtos_create_thread(&g_tx_thread, tskIDLE_PRIORITY + 1,
+			err = rtos_create_thread(&g_tx_thread, BEKEN_APPLICATION_PRIORITY - 1,
 				"UTCP_TX_Thd",
 				(beken_thread_function_t)UTCP_TX_Thd,
 				STACK_SIZE,
@@ -219,7 +222,7 @@ void UART_TCP_TRX_Thread()
 			{
 				rtos_delete_thread(&g_rx_thread);
 			}
-			err = rtos_create_thread(&g_rx_thread, tskIDLE_PRIORITY + 1,
+			err = rtos_create_thread(&g_rx_thread, BEKEN_APPLICATION_PRIORITY - 1,
 				"UTCP_RX_Thd",
 				(beken_thread_function_t)UTCP_RX_Thd,
 				STACK_SIZE,
@@ -246,6 +249,7 @@ void UART_TCP_TRX_Thread()
 				}
 			}
 		}
+		rtos_delay_milliseconds(10);
 	}
 
 error:
@@ -269,18 +273,10 @@ error:
 void Start_UART_TCP(void* arg)
 {
 	UART_TCP_Deinit();
-	if(listen_sock != INVALID_SOCK) close(listen_sock);
-	if(client_sock != INVALID_SOCK) close(client_sock);
-	listen_sock = INVALID_SOCK;
-	client_sock = INVALID_SOCK;
-	while(!Main_HasWiFiConnected())
-	{
-		rtos_delay_milliseconds(50);
-	}
 
 	g_utcpBuf = (byte*)os_malloc(buf_size);
 
-	OSStatus err = rtos_create_thread(&g_trx_thread, tskIDLE_PRIORITY + 1,
+	OSStatus err = rtos_create_thread(&g_trx_thread, BEKEN_APPLICATION_PRIORITY,
 		"UART_TCP_TRX",
 		(beken_thread_function_t)UART_TCP_TRX_Thread,
 		0x800,
@@ -340,6 +336,9 @@ void UART_TCP_Deinit()
 		g_tx_thread = NULL;
 	}
 	if(g_utcpBuf) free(g_utcpBuf);
+
+	if(listen_sock != INVALID_SOCK) close(listen_sock);
+	if(client_sock != INVALID_SOCK) close(client_sock);
 }
 
 #endif

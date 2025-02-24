@@ -140,6 +140,7 @@ uint32_t current_fw_idx;
 
 static void obk_task(void* pvParameters)
 {
+	vTaskDelay(50 / portTICK_PERIOD_MS);
 	Main_Init();
 	for(;;)
 	{
@@ -179,15 +180,7 @@ int main(void)
 		app_dslp_wake();
 	}
 
-#ifdef CONFIG_FTL_ENABLED
-	app_ftl_init();
-#endif
-
 	wlan_network();
-
-#if defined(CONFIG_EQC) && CONFIG_EQC
-	//EQC_test_entry();
-#endif
 
 	uint8_t* efuse = (uint8_t*)malloc(1024);
 	device_mutex_lock(RT_DEV_LOCK_EFUSE);
@@ -214,7 +207,7 @@ int main(void)
 		"OpenBeken",
 		8 * 256,
 		NULL,
-		tskIDLE_PRIORITY + 1,
+		tskIDLE_PRIORITY + 6,
 		NULL);
 
 	//DBG_8195A("M4U:%d \n", RTIM_GetCount(TIMM05));

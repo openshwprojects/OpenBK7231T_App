@@ -192,14 +192,6 @@ void wifi_dis_hdl(u8* buf, u32 buf_len, u32 flags, void* userdata)
 	}
 }
 
-void wifi_con_hdl(u8* buf, u32 buf_len, u32 flags, void* userdata)
-{
-	if(g_wifiStatusCallback != NULL)
-	{
-		g_wifiStatusCallback(WIFI_STA_CONNECTING);
-	}
-}
-
 void wifi_conned_hdl(u8* buf, u32 buf_len, u32 flags, void* userdata)
 {
 	if(g_wifiStatusCallback != NULL)
@@ -307,7 +299,7 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 		"WC",
 		2048 / sizeof(StackType_t),
 		NULL,
-		5,
+		9,
 		NULL);
 }
 

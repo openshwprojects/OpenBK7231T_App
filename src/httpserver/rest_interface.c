@@ -1481,13 +1481,6 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	int writelen = request->bodylen;
 	int fsize = 0;
 
-#if 0
-	struct timeval tv;
-	tv.tv_sec = 10;
-	tv.tv_usec = 0;
-	setsockopt(request->fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
-#endif
-
 	ADDLOG_DEBUG(LOG_FEATURE_OTA, "OTA post len %d", request->contentLength);
 
 #ifdef PLATFORM_W600
@@ -2623,10 +2616,11 @@ update_ota_exit:
 	uint8_t* buf;
 	uint32_t OtaFg = 0;
 	uint32_t IncFg = 0;
-	int RemainBytes;
+	int RemainBytes = 0;
 	uint32_t SigCnt = 0;
 	uint32_t TempCnt = 0;
 	uint8_t* signature;
+	uint32_t sector_cnt = 0;
 
 	if(request->contentLength > 0)
 	{
@@ -2683,9 +2677,15 @@ update_ota_exit:
 	for(int i = 0; i < OtaTargetHdr.ValidImgCnt; i++)
 	{
 		ADDLOG_INFO(LOG_FEATURE_OTA, "Target addr:0x%08x, img len: %i", OtaTargetHdr.FileImgHdr[i].FlashAddr, OtaTargetHdr.FileImgHdr[i].ImgLen);
-		watchdog_stop();
-		erase_ota_target_flash(OtaTargetHdr.FileImgHdr[i].FlashAddr, OtaTargetHdr.FileImgHdr[i].ImgLen);
-		watchdog_start();
+		if(OtaTargetHdr.FileImgHdr[i].ImgLen >= 0x1A8000)
+		{
+			ADDLOG_ERROR(LOG_FEATURE_OTA, "Img%i too big, skipping", i);
+			OtaTargetHdr.FileImgHdr[i].ImgLen = 0;
+			continue;
+		}
+		//watchdog_stop();
+		//erase_ota_target_flash(OtaTargetHdr.FileImgHdr[i].FlashAddr, OtaTargetHdr.FileImgHdr[i].ImgLen);
+		//watchdog_start();
 	}
 
 	memset((uint8_t*)DownloadInfo, 0, MAX_IMG_NUM * sizeof(update_dw_info));
@@ -2693,6 +2693,11 @@ update_ota_exit:
 	ImageCnt = OtaTargetHdr.ValidImgCnt;
 	for(uint32_t i = 0; i < ImageCnt; i++)
 	{
+		if(OtaTargetHdr.FileImgHdr[i].ImgLen == 0)
+		{
+			DownloadInfo[i].ImageLen = 0;
+			continue;
+		}
 		/* get OTA image and Write New Image to flash, skip the signature,
 			not write signature first for power down protection*/
 		DownloadInfo[i].ImgId = OTA_IMAG;
@@ -2706,10 +2711,14 @@ update_ota_exit:
 
 	for(uint32_t i = 0; i < ImageCnt; i++)
 	{
+		if(DownloadInfo[i].ImageLen == 0) continue;
 		/*the next image length*/
 		RemainBytes = DownloadInfo[i].ImageLen;
 		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Remain: %i", RemainBytes);
 		signature = &(OtaTargetHdr.Sign[i][0]);
+		device_mutex_lock(RT_DEV_LOCK_FLASH);
+		FLASH_EraseXIP(EraseSector, DownloadInfo[i].FlashAddr - SPI_FLASH_BASE);
+		device_mutex_unlock(RT_DEV_LOCK_FLASH);
 
 		/*download the new firmware from server*/
 		while(RemainBytes > 0)
@@ -2738,7 +2747,6 @@ update_ota_exit:
 				}
 				read_bytes_buf = read_bytes;
 				TempLen += read_bytes;
-				ADDLOG_DEBUG(LOG_FEATURE_OTA, "Written %i, remaining %i", TempLen, RemainBytes);
 			}
 
 			if(TempLen > DownloadInfo[i].ImgOffset)
@@ -2799,6 +2807,11 @@ update_ota_exit:
 				}
 
 				device_mutex_lock(RT_DEV_LOCK_FLASH);
+				if(DownloadInfo[i].FlashAddr + size >= DownloadInfo[i].FlashAddr + sector_cnt * 4096)
+				{
+					sector_cnt++;
+					FLASH_EraseXIP(EraseSector, DownloadInfo[i].FlashAddr - SPI_FLASH_BASE + sector_cnt * 4096);
+				}
 				if(ota_writestream_user(DownloadInfo[i].FlashAddr + size, read_bytes, buf) < 0)
 				{
 					ADDLOG_ERROR(LOG_FEATURE_OTA, "Writing failed");
@@ -2807,6 +2820,8 @@ update_ota_exit:
 					goto update_ota_exit;
 				}
 				device_mutex_unlock(RT_DEV_LOCK_FLASH);
+				ADDLOG_DEBUG(LOG_FEATURE_OTA, "Written %i bytes at 0x%08x", read_bytes, DownloadInfo[i].FlashAddr + size);
+				rtos_delay_milliseconds(5);
 				size += read_bytes;
 			}
 		}
@@ -2839,6 +2854,7 @@ update_ota_exit:
 	if(ret != -1)
 	{
 		ADDLOG_INFO(LOG_FEATURE_OTA, "OTA is successful");
+		total = RemainBytes;
 	}
 	else
 	{
