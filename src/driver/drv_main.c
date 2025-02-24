@@ -13,6 +13,7 @@
 #include "drv_tuyaMCU.h"
 #include "drv_uart.h"
 #include "drv_ds1820_simple.h"
+#include "ds18b20.h"
 
 
 typedef struct driver_s {
@@ -400,6 +401,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"Very simple driver for oneWire temperature sensor DS1820.",
 	//drvdetail:"requires":""}
 	{ "DS1820",     DS1820_driver_Init, DS1820_OnEverySecond,                       DS1820_AppendInformationToHTTPIndexPage, NULL, NULL, NULL,  false },
+#endif
+#if ENABLE_DRIVER_DS18B20
+	//drvdetail:{"name":"DS18B20",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Driver for oneWire temperature sensor DS18B20.",
+	//drvdetail:"requires":""}
+	{ "DS18B20",     DS18B20_driver_Init, DS18B20_OnEverySecond, DS18B20_AppendInformationToHTTPIndexPage, NULL, NULL, NULL,  false },
 #endif
 #if ENABLE_DRIVER_HT16K33
 	//drvdetail:{"name":"HT16K33",

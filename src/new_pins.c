@@ -24,6 +24,10 @@
 #include "esp_sleep.h"
 #endif
 
+#if ENABLE_DRIVER_DS18B20
+#include "driver/ds18b20.h"
+#endif
+
 #ifdef PLATFORM_BEKEN_NEW
 #include "manual_ps_pub.h"
 #endif
@@ -1614,6 +1618,9 @@ bool CHANNEL_IsInUse(int ch) {
 			}
 		}
 	}
+#if ENABLE_DRIVER_DS18B20
+	return ds18b20_used_channel(ch);
+#endif
 	return false;
 }
 

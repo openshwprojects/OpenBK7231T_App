@@ -88,6 +88,8 @@ set(PROJ_ALL_SRC
 #    app/src/driver/drv_uart.c
 #    app/src/driver/drv_ucs1912.c
     app/src/driver/drv_wemo.c
+    app/src/driver/ds18b20.c
+    app/src/driver/OneWire_common.c
     app/src/driver/drv_ds1820_simple.c
     app/src/driver/drv_charts.c
     app/src/hal/ln882h/hal_adc_ln882h.c
