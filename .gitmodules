@@ -8,8 +8,8 @@
 	branch = master
 [submodule "sdk/OpenBK7231N"]
 	path = sdk/OpenBK7231N
-	url = https://github.com/openshwprojects/OpenBK7231N.git
-	branch = master
+	url = https://github.com/divadiow/OpenBK7231N.git
+	branch = vesync
 [submodule "sdk/OpenBL602"]
 	path = sdk/OpenBL602
 	url = https://github.com/openshwprojects/OpenBL602.git
