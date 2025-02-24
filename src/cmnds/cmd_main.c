@@ -932,7 +932,7 @@ void CMD_Init_Early() {
 #if ENABLE_OBK_SCRIPTING
 	CMD_InitScripting();
 #endif
-#if ENABLE_BERRY
+#if ENABLE_OBK_BERRY
 	CMD_InitBerry();
 #endif
 	if (!bSafeMode) {
