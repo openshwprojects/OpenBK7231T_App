@@ -2677,6 +2677,7 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 	}
 
 	buffer = os_malloc(1024);
+	buffer[0] = 0;
 
 	http_setup(request, httpMimeTypeBinary);
 	while (len) {
