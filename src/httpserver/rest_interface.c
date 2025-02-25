@@ -2676,8 +2676,9 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 		return http_rest_error(request, -1, "requested flash read out of range");
 	}
 
-	buffer = os_malloc(1024);
-	buffer[0] = 0;
+	int bufferSize = 1024;
+	buffer = os_malloc(bufferSize);
+	memset(buffer, 0, bufferSize);
 
 	http_setup(request, httpMimeTypeBinary);
 	while (len) {
