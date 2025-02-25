@@ -53,8 +53,6 @@ uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
 
 #elif PLATFORM_LN882H
 
-#elif PLATFORM_LN882H
-
 #include "hal/hal_flash.h"
 #include "flash_partition_table.h"
 
@@ -2696,10 +2694,9 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 		res = 0;
 #elif PLATFORM_LN882H
 		// TODO:LN882H flash read?
-		res = 0;
+		res = hal_flash_read(startaddr, readlen, (uint8_t *)buffer);
 #elif PLATFORM_ESPIDF || PLATFORM_TR6260
-		// TODO:LN882H flash read?
-        res = hal_flash_read(startaddr, readlen, (uint8_t *)buffer);
+		res = 0;
 #elif PLATFORM_REALTEK
 		device_mutex_lock(RT_DEV_LOCK_FLASH);
 		flash_stream_read(&flash, startaddr, readlen, (uint8_t*)buffer);
