@@ -409,6 +409,8 @@ static commandResult_t CMD_Echo(const void* context, const char* cmd, const char
 
 	return CMD_RES_OK;
 }
+
+
 static commandResult_t CMD_StartupCommand(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	const char *cmdToSet;
 
@@ -929,9 +931,12 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("IndexRefreshInterval", CMD_IndexRefreshInterval, NULL);
-	
+
 #if ENABLE_OBK_SCRIPTING
 	CMD_InitScripting();
+#endif
+#if ENABLE_OBK_BERRY
+	CMD_InitBerry();
 #endif
 	if (!bSafeMode) {
 		if (CFG_HasFlag(OBK_FLAG_CMD_ACCEPT_UART_COMMANDS)) {

@@ -267,6 +267,8 @@ int CMD_InitSendCommands();
 void CMD_StartTCPCommandLine();
 // cmd_script.c
 int CMD_GetCountActiveScriptThreads();
+// cmd_berry.c
+void CMD_InitBerry();
 
 const char* CMD_GetResultString(commandResult_t r);
 
@@ -280,5 +282,6 @@ commandResult_t CMD_ClearAllHandlers(const void* context, const char* cmd, const
 commandResult_t RepeatingEvents_Cmd_ClearRepeatingEvents(const void* context, const char* cmd, const char* args, int cmdFlags);
 commandResult_t CMD_resetSVM(const void* context, const char* cmd, const char* args, int cmdFlags);
 int RepeatingEvents_GetActiveCount();
+
 
 #endif // __CMD_PUBLIC_H__
