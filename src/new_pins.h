@@ -1255,9 +1255,9 @@ typedef struct mainConfig_s {
 	// 0x4
 	int version;
 	// 0x08
-	unsigned long genericFlags;
+	uint32_t genericFlags;
 	// 0x0C
-	unsigned long genericFlags2;
+	uint32_t genericFlags2;
 	// 0x10
 	unsigned short changeCounter;
 	unsigned short otaCounter;

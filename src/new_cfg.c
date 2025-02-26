@@ -510,7 +510,7 @@ int CFG_DeviceGroups_GetSendFlags() {
 int CFG_DeviceGroups_GetRecvFlags() {
 	return g_cfg.dgr_recvFlags;
 }
-void CFG_SetFlags(unsigned long first4bytes, unsigned long second4bytes) {
+void CFG_SetFlags(uint32_t first4bytes, uint32_t second4bytes) {
 	if (g_cfg.genericFlags != first4bytes || g_cfg.genericFlags2 != second4bytes) {
 		g_cfg.genericFlags = first4bytes;
 		g_cfg.genericFlags2 = second4bytes;

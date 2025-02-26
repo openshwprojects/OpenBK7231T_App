@@ -307,8 +307,8 @@ static commandResult_t CMD_Flags(const void* context, const char* cmd, const cha
 	union {
 		long long newValue;
 		struct {
-			unsigned long ints[2];
-			unsigned long dummy[2]; // just to be safe
+			uint32_t ints[2];
+			uint32_t dummy[2]; // just to be safe
 		};
 	} u;
 	// TODO: check on other platforms, on Beken it's 8, 64 bit
