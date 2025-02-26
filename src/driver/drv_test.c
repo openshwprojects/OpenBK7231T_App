@@ -31,8 +31,9 @@ const char *g_testCommands[] = {
 	"TestStrcat",
 	"TestMemset",
 	"TestMemcpy",
-	"TestMemcmp"
-};
+	"TestMemcmp",
+	"TestChannelSetToExpression"
+}; 
 static int g_numTestCommands = sizeof(g_testCommands) / sizeof(g_testCommands[0]);
 
 static commandResult_t Test_Cmd_Start(const void * context, const char *cmd, const char *args, int cmdFlags) {

@@ -424,6 +424,13 @@ static commandResult_t CMD_TestMemcpy(const void* context, const char* cmd, cons
 static commandResult_t CMD_TestMemcmp(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	return (memcmp("abc", "abc", 3) == 0) ? CMD_RES_OK : CMD_RES_ERROR;
 }
+static commandResult_t CMD_TestChannelSetToExpression(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	CMD_ExecuteCommand("setChannel 50 2*5+3", 0);
+	if (CHANNEL_Get(50) == (2 * 5 + 3)) {
+		return CMD_RES_OK;
+	}
+	return CMD_RES_ERROR;
+}
 
 
 int CMD_InitTestCommands(){
@@ -519,6 +526,7 @@ int CMD_InitTestCommands(){
 	CMD_RegisterCommand("TestMemset", CMD_TestMemset, NULL);
 	CMD_RegisterCommand("TestMemcpy", CMD_TestMemcpy, NULL);
 	CMD_RegisterCommand("TestMemcmp", CMD_TestMemcmp, NULL);
+	CMD_RegisterCommand("TestChannelSetToExpression", CMD_TestChannelSetToExpression, NULL);
 	
     return 0;
 }
