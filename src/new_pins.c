@@ -672,15 +672,20 @@ void NEW_button_init(pinButton_s* handle, uint8_t(*pin_level)(void* self), uint8
 	handle->button_level = handle->hal_button_Level(handle);
 	handle->active_level = active_level;
 }
-void CHANNEL_SetFirstChannelByType(int requiredType, int newVal) {
+
+void CHANNEL_SetFirstChannelByTypeEx(int requiredType, int newVal, int ausemovingaverage) {
 	int i;
 
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		if (CHANNEL_GetType(i) == requiredType) {
-			CHANNEL_Set(i, newVal, 0);
+			CHANNEL_Set_Ex(i, newVal, 0, ausemovingaverage);
 			return;
 		}
 	}
+}
+
+void CHANNEL_SetFirstChannelByType(int requiredType, int newVal) {
+	CHANNEL_SetFirstChannelByTypeEx(requiredType, newVal, 0);
 }
 
 void CHANNEL_SetAll(int iVal, int iFlags) {
@@ -1381,7 +1386,8 @@ void CHANNEL_SetSmart(int ch, float fVal, int iFlags) {
 	int divided = fVal * divider;
 	CHANNEL_Set(ch, divided, iFlags);
 }
-void CHANNEL_Set(int ch, int iVal, int iFlags) {
+
+void CHANNEL_Set_Ex(int ch, int iVal, int iFlags, int ausemovingaverage) {
 	int prevValue;
 	int bForce;
 	int bSilent;
@@ -1433,6 +1439,10 @@ void CHANNEL_Set(int ch, int iVal, int iFlags) {
 
 	Channel_OnChanged(ch, prevValue, iFlags);
 }
+void CHANNEL_Set(int ch, int iVal, int iFlags) {
+	CHANNEL_Set_Ex(ch, iVal, iFlags, 0);
+}
+
 void CHANNEL_AddClamped(int ch, int iVal, int min, int max, int bWrapInsteadOfClamp) {
 #if 0
 	int prevValue;

@@ -372,6 +372,8 @@
 // if power metering chip is enabled, also enable backend for that
 #if ENABLE_DRIVER_BL0937 || ENABLE_DRIVER_BL0942 || ENABLE_DRIVER_BL0942SPI || ENABLE_DRIVER_CSE7766
 #define ENABLE_BL_SHARED	1
+//allow use two BL0942 on two ports  +600 bytes
+//#define ENABLE_BL_TWIN	1
 #endif
 
 // closing OBK_CONFIG_H

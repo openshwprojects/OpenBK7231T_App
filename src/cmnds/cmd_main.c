@@ -6,6 +6,9 @@
 #include "cmd_local.h"
 #include "../driver/drv_ir.h"
 #include "../driver/drv_uart.h"
+#if ENABLE_DRIVER_BL0942
+#include "../driver/drv_bl0942.h"
+#endif
 #include "../driver/drv_public.h"
 #include "../hal/hal_adc.h"
 #include "../hal/hal_flashVars.h"
@@ -949,6 +952,11 @@ void CMD_Init_Delayed() {
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) \
  || defined(PLATFORM_REALTEK)
 	UART_AddCommands();
+#endif
+#if ENABLE_BL_TWIN
+#if ENABLE_DRIVER_BL0942
+	BL0942_AddCommands();
+#endif
 #endif
 }
 
