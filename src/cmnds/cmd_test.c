@@ -366,6 +366,65 @@ static commandResult_t CMD_SimonTest(const void* context, const char* cmd, const
 
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_TestSprintfForHex(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	char dummy[32];
+	sprintf(dummy, "%X", 255);
+	return (strcmp(dummy, "FF") == 0) ? CMD_RES_OK : CMD_RES_ERROR;
+}
+
+static commandResult_t CMD_TestSprintfForFloat(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	char dummy[32];
+	sprintf(dummy, "%.2f", 3.14159);
+	return (strcmp(dummy, "3.14") == 0) ? CMD_RES_OK : CMD_RES_ERROR;
+}
+
+static commandResult_t CMD_TestStrcpy(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	char src[] = "hello";
+	char dest[10];
+	strcpy(dest, src);
+	return (strcmp(dest, "hello") == 0) ? CMD_RES_OK : CMD_RES_ERROR;
+}
+
+static commandResult_t CMD_TestStrncpy(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	char src[] = "world";
+	char dest[10];
+	strncpy(dest, src, 5);
+	dest[5] = '\0';
+	return (strcmp(dest, "world") == 0) ? CMD_RES_OK : CMD_RES_ERROR;
+}
+
+static commandResult_t CMD_TestStrcmp(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	return (strcmp("test", "test") == 0) ? CMD_RES_OK : CMD_RES_ERROR;
+}
+
+static commandResult_t CMD_TestStrlen(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	return (strlen("abcd") == 4) ? CMD_RES_OK : CMD_RES_ERROR;
+}
+
+static commandResult_t CMD_TestStrcat(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	char dest[20] = "Hello, ";
+	strcat(dest, "World!");
+	return (strcmp(dest, "Hello, World!") == 0) ? CMD_RES_OK : CMD_RES_ERROR;
+}
+
+static commandResult_t CMD_TestMemset(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	char buf[10];
+	memset(buf, 'A', sizeof(buf) - 1);
+	buf[9] = '\0';
+	return (strcmp(buf, "AAAAAAAAA") == 0) ? CMD_RES_OK : CMD_RES_ERROR;
+}
+
+static commandResult_t CMD_TestMemcpy(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	char src[] = "copy";
+	char dest[10];
+	memcpy(dest, src, 5);
+	return (strcmp(dest, "copy") == 0) ? CMD_RES_OK : CMD_RES_ERROR;
+}
+
+static commandResult_t CMD_TestMemcmp(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	return (memcmp("abc", "abc", 3) == 0) ? CMD_RES_OK : CMD_RES_ERROR;
+}
+
 
 int CMD_InitTestCommands(){
 	//cmddetail:{"name":"testMallocFree","args":"",
@@ -450,6 +509,16 @@ int CMD_InitTestCommands(){
 	CMD_RegisterCommand("simonirtest", CMD_SimonTest, NULL);
 
 	CMD_RegisterCommand("TestSprintfForInteger", CMD_TestSprintfForInteger, NULL);
+	CMD_RegisterCommand("TestSprintfForHex", CMD_TestSprintfForHex, NULL);
+	CMD_RegisterCommand("TestSprintfForFloat", CMD_TestSprintfForFloat, NULL);
+	CMD_RegisterCommand("TestStrcpy", CMD_TestStrcpy, NULL);
+	CMD_RegisterCommand("TestStrncpy", CMD_TestStrncpy, NULL);
+	CMD_RegisterCommand("TestStrcmp", CMD_TestStrcmp, NULL);
+	CMD_RegisterCommand("TestStrlen", CMD_TestStrlen, NULL);
+	CMD_RegisterCommand("TestStrcat", CMD_TestStrcat, NULL);
+	CMD_RegisterCommand("TestMemset", CMD_TestMemset, NULL);
+	CMD_RegisterCommand("TestMemcpy", CMD_TestMemcpy, NULL);
+	CMD_RegisterCommand("TestMemcmp", CMD_TestMemcmp, NULL);
 	
     return 0;
 }

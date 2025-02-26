@@ -21,7 +21,17 @@ const char *g_testCommands[] = {
 	"testRealloc",
 	"json_test",
 	"lfs_test1",
-	"TestSprintfForInteger"
+	"TestSprintfForInteger",
+	"TestSprintfForHex",
+	"TestSprintfForFloat",
+	"TestStrcpy",
+	"TestStrncpy",
+	"TestStrcmp",
+	"TestStrlen",
+	"TestStrcat",
+	"TestMemset",
+	"TestMemcpy",
+	"TestMemcmp"
 };
 static int g_numTestCommands = sizeof(g_testCommands) / sizeof(g_testCommands[0]);
 
