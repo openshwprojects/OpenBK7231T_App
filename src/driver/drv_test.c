@@ -45,6 +45,7 @@ static commandResult_t Test_Cmd_Start(const void * context, const char *cmd, con
 	if (args && *args) {
 		g_testInterval = atoi(args);
 	}
+	return CMD_RES_OK;
 }
 
 void Test_AppendInformationToHTTPIndexPage(http_request_t *request)
