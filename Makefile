@@ -56,8 +56,13 @@ sdk/OpenXR809/project/oxr_sharedApp/shared:
 	ln -s "$(shell pwd)/" "sdk/OpenXR809/project/oxr_sharedApp/shared"
 
 sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared:
+	#cannot symlink shared directly, because sdk is looking for stuff recursively and crashes
+	#so only linking source and copying required file
+	@echo mkdir shared
+	mkdir sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared
+	cp ./bouffalo.mk sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared
 	@echo Create symlink for $(APP_NAME) into sdk folder
-	ln -s "$(shell pwd)/" "sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared"
+	ln -s "$(shell pwd)/src/" "sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared/src"
 
 sdk/OpenW800/sharedAppContainer/sharedApp:
 	@echo Create symlink for $(APP_NAME) into sdk folder
