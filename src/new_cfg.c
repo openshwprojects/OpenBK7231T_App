@@ -510,7 +510,7 @@ int CFG_DeviceGroups_GetSendFlags() {
 int CFG_DeviceGroups_GetRecvFlags() {
 	return g_cfg.dgr_recvFlags;
 }
-void CFG_SetFlags(int first4bytes, int second4bytes) {
+void CFG_SetFlags(unsigned long first4bytes, unsigned long second4bytes) {
 	if (g_cfg.genericFlags != first4bytes || g_cfg.genericFlags2 != second4bytes) {
 		g_cfg.genericFlags = first4bytes;
 		g_cfg.genericFlags2 = second4bytes;
@@ -571,9 +571,10 @@ bool CFG_HasLoggerFlag(int flag) {
 int CFG_GetFlags() {
 	return g_cfg.genericFlags;
 }
-unsigned long CFG_GetFlags64() {
-	unsigned long* pAllGenericFlags = (unsigned long*)&g_cfg.genericFlags;
-	return *pAllGenericFlags;
+uint64_t CFG_GetFlags64() {
+	//unsigned long long* pAllGenericFlags = (unsigned long*)&g_cfg.genericFlags;
+	//*pAllGenericFlags;
+	return (uint64_t)g_cfg.genericFlags | (uint64_t)g_cfg.genericFlags2 << 32;
 }
 bool CFG_HasFlag(int flag) {
 	if (flag >= 32) {
