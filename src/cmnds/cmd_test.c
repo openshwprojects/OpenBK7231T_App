@@ -17,6 +17,13 @@ static commandResult_t CMD_TimeSize(const void* context, const char* cmd, const 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "sizeof(time_t) = %i, sizeof(int) = %i", sizeof(time_t), sizeof(int));
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_TestSprintfForInteger(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	char dummy[32];
+	sprintf(dummy, "%i", 123);
+	if(strcmp(dummy,"123")==0)
+		return CMD_RES_OK;
+	return CMD_RES_ERROR;
+}
 // Usage: addRepeatingEvent 1 -1 testMallocFree 100
 static commandResult_t testMallocFree(const void * context, const char *cmd, const char *args, int cmdFlags){
 	int repeats;
@@ -139,6 +146,17 @@ static commandResult_t testArgs(const void * context, const char *cmd, const cha
 		ADDLOG_INFO(LOG_FEATURE_CMD, "Arg %i is %s",i,Tokenizer_GetArg(i));
 	}
 
+
+	return CMD_RES_OK;
+}
+
+#define TEST_ATOI(x) if (atoi(#x) != x) return CMD_RES_ERROR;
+
+static commandResult_t testAtoi(const void * context, const char *cmd, const char *args, int cmdFlags) {
+
+	TEST_ATOI(123421);
+	TEST_ATOI(3223);
+	TEST_ATOI(-3223);
 
 	return CMD_RES_OK;
 }
@@ -380,6 +398,11 @@ int CMD_InitTestCommands(){
 	//cmddetail:"fn":"testArgs","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("testArgs", testArgs, NULL);
+	//cmddetail:{"name":"testAtoi","args":"",
+	//cmddetail:"descr":"Test atoi function",
+	//cmddetail:"fn":"testArgs","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("testAtoi", testAtoi, NULL);
 	//cmddetail:{"name":"testStrdup","args":"",
 	//cmddetail:"descr":"Test strdup function to see if it allocs news string correctly, also test freeing the string",
 	//cmddetail:"fn":"testStrdup","file":"cmnds/cmd_test.c","requires":"",
@@ -426,6 +449,7 @@ int CMD_InitTestCommands(){
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("simonirtest", CMD_SimonTest, NULL);
 
+	CMD_RegisterCommand("TestSprintfForInteger", CMD_TestSprintfForInteger, NULL);
 	
     return 0;
 }
