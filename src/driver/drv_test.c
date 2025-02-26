@@ -32,7 +32,9 @@ const char *g_testCommands[] = {
 	"TestMemset",
 	"TestMemcpy",
 	"TestMemcmp",
-	"TestChannelSetToExpression"
+	"TestChannelSetToExpression",
+	"TestParseIP",
+	"TestIPtoStr"
 }; 
 static int g_numTestCommands = sizeof(g_testCommands) / sizeof(g_testCommands[0]);
 

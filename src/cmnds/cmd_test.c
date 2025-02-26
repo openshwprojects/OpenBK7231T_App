@@ -431,6 +431,27 @@ static commandResult_t CMD_TestChannelSetToExpression(const void* context, const
 	}
 	return CMD_RES_ERROR;
 }
+static commandResult_t CMD_TestParseIP(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	byte ip[4];
+	str_to_ip("192.168.0.123", ip);
+	if (ip[0] != 192 || ip[1] != 168 || ip[2] != 0 || ip[3] != 123) {
+		return CMD_RES_ERROR;
+	}
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_TestIPtoStr(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	byte ip[4];
+	ip[0] = 192;
+	ip[1] = 168;
+	ip[2] = 0;
+	ip[3] = 123;
+	char buff[64];
+	convert_IP_to_string(buff, ip);
+	if (strcmp(buff,"192.168.0.123")) {
+		return CMD_RES_ERROR;
+	}
+	return CMD_RES_OK;
+}
 
 
 int CMD_InitTestCommands(){
@@ -527,6 +548,8 @@ int CMD_InitTestCommands(){
 	CMD_RegisterCommand("TestMemcpy", CMD_TestMemcpy, NULL);
 	CMD_RegisterCommand("TestMemcmp", CMD_TestMemcmp, NULL);
 	CMD_RegisterCommand("TestChannelSetToExpression", CMD_TestChannelSetToExpression, NULL);
+	CMD_RegisterCommand("TestParseIP", CMD_TestParseIP, NULL);
+	CMD_RegisterCommand("TestIPtoStr", CMD_TestIPtoStr, NULL);
 	
     return 0;
 }
