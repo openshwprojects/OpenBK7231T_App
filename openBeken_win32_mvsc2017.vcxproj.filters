@@ -346,6 +346,8 @@
     <ClCompile Include="src\driver\drv_widget.c" />
     <ClCompile Include="src\driver\drv_openWeatherMap.c" />
     <ClCompile Include="src\selftest\selftest_demo_conditionalRelay.c" />
+    <ClCompile Include="src\hal\win32\hal_uart_win32.c" />
+    <ClCompile Include="src\driver\drv_test.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\base64\base64.h" />

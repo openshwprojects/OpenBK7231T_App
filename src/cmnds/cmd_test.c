@@ -17,6 +17,13 @@ static commandResult_t CMD_TimeSize(const void* context, const char* cmd, const 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "sizeof(time_t) = %i, sizeof(int) = %i", sizeof(time_t), sizeof(int));
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_TestSprintfForInteger(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	char dummy[32];
+	sprintf(dummy, "%i", 123);
+	if(strcmp(dummy,"123")==0)
+		return CMD_RES_OK;
+	return CMD_RES_ERROR;
+}
 // Usage: addRepeatingEvent 1 -1 testMallocFree 100
 static commandResult_t testMallocFree(const void * context, const char *cmd, const char *args, int cmdFlags){
 	int repeats;
@@ -139,6 +146,17 @@ static commandResult_t testArgs(const void * context, const char *cmd, const cha
 		ADDLOG_INFO(LOG_FEATURE_CMD, "Arg %i is %s",i,Tokenizer_GetArg(i));
 	}
 
+
+	return CMD_RES_OK;
+}
+
+#define TEST_ATOI(x) if (atoi(#x) != x) return CMD_RES_ERROR;
+
+static commandResult_t testAtoi(const void * context, const char *cmd, const char *args, int cmdFlags) {
+
+	TEST_ATOI(123421);
+	TEST_ATOI(3223);
+	TEST_ATOI(-3223);
 
 	return CMD_RES_OK;
 }
@@ -348,6 +366,93 @@ static commandResult_t CMD_SimonTest(const void* context, const char* cmd, const
 
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_TestSprintfForHex(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	char dummy[32];
+	sprintf(dummy, "%X", 255);
+	return (strcmp(dummy, "FF") == 0) ? CMD_RES_OK : CMD_RES_ERROR;
+}
+
+static commandResult_t CMD_TestSprintfForFloat(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	char dummy[32];
+	sprintf(dummy, "%.2f", 3.14159);
+	return (strcmp(dummy, "3.14") == 0) ? CMD_RES_OK : CMD_RES_ERROR;
+}
+
+static commandResult_t CMD_TestStrcpy(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	char src[] = "hello";
+	char dest[10];
+	strcpy(dest, src);
+	return (strcmp(dest, "hello") == 0) ? CMD_RES_OK : CMD_RES_ERROR;
+}
+
+static commandResult_t CMD_TestStrncpy(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	char src[] = "world";
+	char dest[10];
+	strncpy(dest, src, 5);
+	dest[5] = '\0';
+	return (strcmp(dest, "world") == 0) ? CMD_RES_OK : CMD_RES_ERROR;
+}
+
+static commandResult_t CMD_TestStrcmp(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	return (strcmp("test", "test") == 0) ? CMD_RES_OK : CMD_RES_ERROR;
+}
+
+static commandResult_t CMD_TestStrlen(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	return (strlen("abcd") == 4) ? CMD_RES_OK : CMD_RES_ERROR;
+}
+
+static commandResult_t CMD_TestStrcat(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	char dest[20] = "Hello, ";
+	strcat(dest, "World!");
+	return (strcmp(dest, "Hello, World!") == 0) ? CMD_RES_OK : CMD_RES_ERROR;
+}
+
+static commandResult_t CMD_TestMemset(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	char buf[10];
+	memset(buf, 'A', sizeof(buf) - 1);
+	buf[9] = '\0';
+	return (strcmp(buf, "AAAAAAAAA") == 0) ? CMD_RES_OK : CMD_RES_ERROR;
+}
+
+static commandResult_t CMD_TestMemcpy(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	char src[] = "copy";
+	char dest[10];
+	memcpy(dest, src, 5);
+	return (strcmp(dest, "copy") == 0) ? CMD_RES_OK : CMD_RES_ERROR;
+}
+
+static commandResult_t CMD_TestMemcmp(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	return (memcmp("abc", "abc", 3) == 0) ? CMD_RES_OK : CMD_RES_ERROR;
+}
+static commandResult_t CMD_TestChannelSetToExpression(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	CMD_ExecuteCommand("setChannel 50 2*5+3", 0);
+	if (CHANNEL_Get(50) == (2 * 5 + 3)) {
+		return CMD_RES_OK;
+	}
+	return CMD_RES_ERROR;
+}
+static commandResult_t CMD_TestParseIP(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	byte ip[4];
+	str_to_ip("192.168.0.123", ip);
+	if (ip[0] != 192 || ip[1] != 168 || ip[2] != 0 || ip[3] != 123) {
+		return CMD_RES_ERROR;
+	}
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_TestIPtoStr(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	byte ip[4];
+	ip[0] = 192;
+	ip[1] = 168;
+	ip[2] = 0;
+	ip[3] = 123;
+	char buff[64];
+	convert_IP_to_string(buff, ip);
+	if (strcmp(buff,"192.168.0.123")) {
+		return CMD_RES_ERROR;
+	}
+	return CMD_RES_OK;
+}
+
 
 int CMD_InitTestCommands(){
 	//cmddetail:{"name":"testMallocFree","args":"",
@@ -380,6 +485,11 @@ int CMD_InitTestCommands(){
 	//cmddetail:"fn":"testArgs","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("testArgs", testArgs, NULL);
+	//cmddetail:{"name":"testAtoi","args":"",
+	//cmddetail:"descr":"Test atoi function",
+	//cmddetail:"fn":"testArgs","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("testAtoi", testAtoi, NULL);
 	//cmddetail:{"name":"testStrdup","args":"",
 	//cmddetail:"descr":"Test strdup function to see if it allocs news string correctly, also test freeing the string",
 	//cmddetail:"fn":"testStrdup","file":"cmnds/cmd_test.c","requires":"",
@@ -426,6 +536,20 @@ int CMD_InitTestCommands(){
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("simonirtest", CMD_SimonTest, NULL);
 
+	CMD_RegisterCommand("TestSprintfForInteger", CMD_TestSprintfForInteger, NULL);
+	CMD_RegisterCommand("TestSprintfForHex", CMD_TestSprintfForHex, NULL);
+	CMD_RegisterCommand("TestSprintfForFloat", CMD_TestSprintfForFloat, NULL);
+	CMD_RegisterCommand("TestStrcpy", CMD_TestStrcpy, NULL);
+	CMD_RegisterCommand("TestStrncpy", CMD_TestStrncpy, NULL);
+	CMD_RegisterCommand("TestStrcmp", CMD_TestStrcmp, NULL);
+	CMD_RegisterCommand("TestStrlen", CMD_TestStrlen, NULL);
+	CMD_RegisterCommand("TestStrcat", CMD_TestStrcat, NULL);
+	CMD_RegisterCommand("TestMemset", CMD_TestMemset, NULL);
+	CMD_RegisterCommand("TestMemcpy", CMD_TestMemcpy, NULL);
+	CMD_RegisterCommand("TestMemcmp", CMD_TestMemcmp, NULL);
+	CMD_RegisterCommand("TestChannelSetToExpression", CMD_TestChannelSetToExpression, NULL);
+	CMD_RegisterCommand("TestParseIP", CMD_TestParseIP, NULL);
+	CMD_RegisterCommand("TestIPtoStr", CMD_TestIPtoStr, NULL);
 	
     return 0;
 }
