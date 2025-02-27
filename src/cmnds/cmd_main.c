@@ -307,8 +307,8 @@ static commandResult_t CMD_Flags(const void* context, const char* cmd, const cha
 	union {
 		long long newValue;
 		struct {
-			int ints[2];
-			int dummy[2]; // just to be safe
+			uint32_t ints[2];
+			uint32_t dummy[2]; // just to be safe
 		};
 	} u;
 	// TODO: check on other platforms, on Beken it's 8, 64 bit
@@ -319,11 +319,12 @@ static commandResult_t CMD_Flags(const void* context, const char* cmd, const cha
 			//ADDLOG_INFO(LOG_FEATURE_CMD, "Argument/sscanf error!");
 			return CMD_RES_BAD_ARGUMENT;
 		}
-	}
-	else {
+		//ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Flags: 0-31: %X 32-63: %2 = %X", u.ints[0], u.ints[1]);
+		u.newValue = (uint64_t)strtoull(args, NULL, 10);
+		//ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Flags (new): 0-31: %X 32-63: %2 = %X", u.ints[0], u.ints[1]);
+	} else {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-
 	CFG_SetFlags(u.ints[0], u.ints[1]);
 	ADDLOG_INFO(LOG_FEATURE_CMD, "New flags set!");
 
