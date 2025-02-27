@@ -1394,6 +1394,8 @@ void CHANNEL_Set_Ex(int ch, int iVal, int iFlags, int ausemovingaverage) {
 	bForce = iFlags & CHANNEL_SET_FLAG_FORCE;
 	bSilent = iFlags & CHANNEL_SET_FLAG_SILENT;
 
+	iVal = 0;
+	
 #if ENABLE_LED_BASIC
 	// special channels
 	if (ch == SPECIAL_CHANNEL_LEDPOWER) {
