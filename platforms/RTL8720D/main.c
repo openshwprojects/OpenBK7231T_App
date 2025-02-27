@@ -4,21 +4,7 @@
 #include "rom_map.h"
 #include "device_lock.h"
 
-#if defined(CONFIG_FTL_ENABLED)
-#include "ftl_int.h"
-extern const u8 ftl_phy_page_num;
-extern const u32 ftl_phy_page_start_addr;
-
-void app_ftl_init(void)
-{
-	ftl_init(ftl_phy_page_start_addr, ftl_phy_page_num);
-}
-#endif
-
-#if defined(CONFIG_WIFI_NORMAL) && defined(CONFIG_NETWORK)
-extern VOID wlan_network(VOID);
-extern u32 GlobalDebugEnable;
-#endif
+extern void wlan_network(void);
 void app_captouch_init(void);
 void app_keyscan_init(u8 reset_status);
 

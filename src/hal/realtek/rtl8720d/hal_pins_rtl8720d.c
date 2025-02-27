@@ -76,10 +76,8 @@ int HAL_PIN_CanThisPinBePWM(int index)
 	if(index >= g_numPins)
 		return 0;
 	rtlPinMapping_t* pin = g_pins + index;
-	switch(pin->pin)
-	{
-		default: return 0;
-	}
+	if(pwmout_pin2chan(pin->pin) != NC) return 1;
+	return 0;
 }
 
 #endif // PLATFORM_RTL8720D
