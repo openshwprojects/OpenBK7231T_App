@@ -20,6 +20,7 @@ void LOGUART_SetBaud_FromFlash(void) {}
 
 static void obk_task(void* pvParameters)
 {
+	vTaskDelay(50 / portTICK_PERIOD_MS);
 	Main_Init();
 	for(;;)
 	{
@@ -46,7 +47,7 @@ int main(void)
 		"OpenBeken",
 		8 * 256,
 		NULL,
-		tskIDLE_PRIORITY + 1,
+		6,
 		NULL);
 
 	/* Enable Schedule, Start Kernel */

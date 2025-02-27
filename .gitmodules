@@ -45,3 +45,7 @@
 	path = sdk/beken_freertos_sdk
 	url = https://github.com/NonPIayerCharacter/beken_freertos_sdk.git
 	branch = master
+[submodule "sdk/OpenRTL8720D"]
+	path = sdk/OpenRTL8720D
+	url = https://github.com/NonPIayerCharacter/OpenRTL8720D.git
+	branch = master

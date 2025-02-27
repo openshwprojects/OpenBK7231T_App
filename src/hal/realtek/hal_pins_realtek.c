@@ -137,7 +137,7 @@ void HAL_PIN_PWM_Update(int index, float value)
 	rtlPinMapping_t* pin = g_pins + index;
 #ifdef PLATFORM_RTL87X0C
 	if(pin->pwm == NULL || !pin->pwm->is_init) return;
-#elif PLATFORM_RTL8710B
+#else
 	if(pin->pwm == NULL) return;
 #endif
 	pwmout_write(pin->pwm, value / 100);

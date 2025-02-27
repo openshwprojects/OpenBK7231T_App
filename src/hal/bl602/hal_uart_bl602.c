@@ -127,7 +127,7 @@ void HAL_UART_SendByte(byte b)
 	//bl_uart_data_send(g_id, b);
 }
 
-int HAL_UART_Init(int baud, int parity)
+int HAL_UART_Init(int baud, int parity, bool hwflowc)
 {
 	if(fd_console < 0)
 	{

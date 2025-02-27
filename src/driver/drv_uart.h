@@ -12,7 +12,7 @@ byte UART_GetByte(int idx);
 void UART_ConsumeBytes(int idx);
 void UART_AppendByteToReceiveRingBuffer(int rc);
 void UART_SendByte(byte b);
-int UART_InitUART(int baud, int parity);
+int UART_InitUART(int baud, int parity, bool hwflowc);
 void UART_AddCommands();
 void UART_RunEverySecond();
 
@@ -40,6 +40,6 @@ int UART_GetDataSizeEx(int auartindex);
 byte UART_GetByteEx(int auartindex, int idx);
 void UART_ConsumeBytesEx(int auartindex, int idx);
 void UART_SendByteEx(int auartindex, byte b);
-int UART_InitUARTEx(int auartindex, int baud, int parity);
+int UART_InitUARTEx(int auartindex, int baud, int parity, bool hwflowc);
 void UART_LogBufState(int auartindex);
 

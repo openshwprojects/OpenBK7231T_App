@@ -62,7 +62,7 @@ void HAL_UART_SendByte(byte b)
 	uart_write_bytes(uartnum, &b, 1);
 }
 
-int HAL_UART_Init(int baud, int parity)
+int HAL_UART_Init(int baud, int parity, bool hwflowc)
 {
 	if(CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART))
 	{

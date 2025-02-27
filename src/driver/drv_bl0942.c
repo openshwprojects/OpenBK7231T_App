@@ -333,7 +333,7 @@ void BL0942_UART_Init(void) {
 
   bl0942_baudRate = Tokenizer_GetArgIntegerDefault(1, 4800);
 
-  UART_InitUART(bl0942_baudRate, 0);
+  UART_InitUART(bl0942_baudRate, 0, false);
   UART_InitReceiveRingBuffer(BL0942_UART_RECEIVE_BUFFER_SIZE);
 
   UART_WriteReg(BL0942_REG_USR_WRPROT, BL0942_USR_WRPROT_DISABLE);
@@ -346,7 +346,7 @@ void BL0942_UART_InitEx(int auartindex) {
 
 	bl0942_baudRate = Tokenizer_GetArgIntegerDefault(1, 4800);
 
-	UART_InitUARTEx(auartindex, bl0942_baudRate, 0);
+	UART_InitUARTEx(auartindex, bl0942_baudRate, 0, false);
 	UART_InitReceiveRingBufferEx(auartindex, BL0942_UART_RECEIVE_BUFFER_SIZE);
 
     UART_WriteReg(auartindex, BL0942_REG_USR_WRPROT, BL0942_USR_WRPROT_DISABLE);
@@ -374,7 +374,7 @@ void BL0942_UART_Init(void) {
 void BL0942_UART_RunEverySecondEx(int adeviceindex, int auartindex) {
   BL0942_UART_TryToGetNextPacket(adeviceindex, auartindex);
 
-  UART_InitUARTEx(auartindex, bl0942_baudRate, 0);
+  UART_InitUARTEx(auartindex, bl0942_baudRate, 0, false);
   UART_SendByteEx(auartindex, BL0942_UART_CMD_READ(BL0942_UART_ADDR));
   UART_SendByteEx(auartindex, BL0942_UART_REG_PACKET);
 }
@@ -398,12 +398,12 @@ void BL0942_UART_RunEverySecond(void) {
 #if ENABLE_BL_TWIN
   int fuartindex = UART_GetSelectedPortIndex();
   BL0942_UART_TryToGetNextPacket(BL0942_DEVICE_INDEX_0, fuartindex);
-  UART_InitUARTEx(fuartindex, bl0942_baudRate, 0);
+  UART_InitUARTEx(fuartindex, bl0942_baudRate, 0, false);
   UART_SendByteEx(fuartindex, BL0942_UART_CMD_READ(BL0942_UART_ADDR));
   UART_SendByteEx(fuartindex, BL0942_UART_REG_PACKET);
 #else
   BL0942_UART_TryToGetNextPacket();
-  UART_InitUART(bl0942_baudRate, 0);
+  UART_InitUART(bl0942_baudRate, 0, false);
   UART_SendByte(BL0942_UART_CMD_READ(BL0942_UART_ADDR));
   UART_SendByte(BL0942_UART_REG_PACKET);
 #endif

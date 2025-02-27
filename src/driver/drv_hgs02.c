@@ -80,12 +80,12 @@ static int HGS02_TryToGetNextPacket(void) {
 void HGS02_Init(void) {
 	hgs02_baudRate = Tokenizer_GetArgIntegerDefault(1, 115200);
 
-	UART_InitUART(hgs02_baudRate, 0);
+	UART_InitUART(hgs02_baudRate, 0, false);
 	UART_InitReceiveRingBuffer(HGS02_RECEIVE_BUFFER_SIZE);
 }
 
 void HGS02_RunEverySecond(void) {
     HGS02_TryToGetNextPacket();
 
-    UART_InitUART(hgs02_baudRate, 0);
+    UART_InitUART(hgs02_baudRate, 0, false);
 }
