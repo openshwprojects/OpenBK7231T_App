@@ -560,6 +560,13 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_DS1820_IO,
+	//iodetail:{"name":"PWM_ScriptOnly",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"",
+	//iodetail:"enum":"PWM_ScriptOnly",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_PWM_ScriptOnly,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
@@ -1421,6 +1428,7 @@ bool CHANNEL_Check(int ch);
 void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex));
 void CHANNEL_ClearAllChannels();
 // CHANNEL_SET_FLAG_*
+void CHANNEL_Set_Ex(int ch, int iVal, int iFlags, int ausemovingaverage);
 void CHANNEL_Set(int ch, int iVal, int iFlags);
 void CHANNEL_SetSmart(int ch, float fVal, int iFlags);
 void CHANNEL_Set_FloatPWM(int ch, float fVal, int iFlags);
@@ -1435,6 +1443,7 @@ bool CHANNEL_IsPowerRelayChannel(int ch);
 // See: enum channelType_t
 void CHANNEL_SetType(int ch, int type);
 int CHANNEL_GetType(int ch);
+void CHANNEL_SetFirstChannelByTypeEx(int requiredType, int newVal, int ausemovingaverage);
 void CHANNEL_SetFirstChannelByType(int requiredType, int newVal);
 // CHANNEL_SET_FLAG_*
 void CHANNEL_SetAll(int iVal, int iFlags);
