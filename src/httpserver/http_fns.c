@@ -2823,7 +2823,7 @@ void uint64_to_str(uint64_t num, char* str) {
 	char temp[21];  // uint64_t 20 numbers + \0
 	int i = 0;
 	if (num == 0) {
-		str[i++] = '0';
+		temp[i++] = '0';
 	} else {
 		while (num > 0) {
 			temp[i++] = '0' + (num % 10);
