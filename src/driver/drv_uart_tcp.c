@@ -11,13 +11,21 @@
 #define DEFAULT_BUF_SIZE		512
 #define DEFAULT_UART_TCP_PORT	8888
 #define INVALID_SOCK			-1
-#define UTCP_DEBUG				1
-
+#ifndef UTCP_DEBUG
+#define UTCP_DEBUG				0
+#endif
+#if UTCP_DEBUG
+#define STACK_SIZE				8192
+#else
+#define STACK_SIZE				3584
+#endif
+extern int Main_HasWiFiConnected();
 static uint16_t buf_size = DEFAULT_BUF_SIZE;
-static int g_tx_channel = -1;
+static int g_conn_channel = -1;
 static int g_baudRate = 115200;
 static int listen_sock = INVALID_SOCK;
 static int client_sock = INVALID_SOCK;
+static xTaskHandle g_start_thread = NULL;
 static xTaskHandle g_trx_thread = NULL;
 static xTaskHandle g_rx_thread = NULL;
 static xTaskHandle g_tx_thread = NULL;
@@ -25,6 +33,7 @@ static bool rx_closed, tx_closed;
 static byte* g_utcpBuf = 0;
 
 void Start_UART_TCP(void* arg);
+void UART_TCP_Deinit();
 
 static void UTCP_TX_Thd(void* param)
 {
@@ -36,9 +45,11 @@ static void UTCP_TX_Thd(void* param)
 		int delay = 0;
 		memset(g_utcpBuf, 0, buf_size);
 		int len = UART_GetDataSize();
+
+		if(client_fd == INVALID_SOCK) goto exit;
 		while(len < buf_size && delay < 10)
 		{
-			rtos_delay_milliseconds(5);
+			rtos_delay_milliseconds(1);
 			len = UART_GetDataSize();
 			delay++;
 		}
@@ -74,13 +85,13 @@ static void UTCP_TX_Thd(void* param)
 		if(ret <= 0)
 			goto exit;
 
-		rtos_delay_milliseconds(20);
+		rtos_delay_milliseconds(5);
 	}
 
 exit:
 	ADDLOG_DEBUG(LOG_FEATURE_DRV, "UTCP_TX_Thd closed");
 	tx_closed = true;
-	rtos_delete_thread(NULL);
+	rtos_suspend_thread(NULL);
 }
 
 static void UTCP_RX_Thd(void* param)
@@ -92,6 +103,7 @@ static void UTCP_RX_Thd(void* param)
 	{
 		int ret = 0;
 
+		if(client_fd == INVALID_SOCK) goto exit;
 		ret = recv(client_fd, buffer, sizeof(buffer), 0);
 		if(ret > 0)
 		{
@@ -105,12 +117,10 @@ static void UTCP_RX_Thd(void* param)
 			}
 			ADDLOG_EXTRADEBUG(LOG_FEATURE_DRV, "%d bytes TCP RX->UART TX: %s", ret, data);
 #endif
-			if(g_tx_channel >= 0) CHANNEL_Set(g_tx_channel, 1, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 			for(int i = 0; i < ret; i++)
 			{
 				UART_SendByte(buffer[i]);
 			}
-			if(g_tx_channel >= 0) CHANNEL_Set(g_tx_channel, 0, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 		}
 		else if(tx_closed)
 		{
@@ -126,13 +136,13 @@ static void UTCP_RX_Thd(void* param)
 			goto exit;
 		}
 
-		rtos_delay_milliseconds(10);
+		rtos_delay_milliseconds(5);
 	}
 
 exit:
 	ADDLOG_DEBUG(LOG_FEATURE_DRV, "UTCP_RX_Thd closed");
 	rx_closed = true;
-	rtos_delete_thread(NULL);
+	rtos_suspend_thread(NULL);
 }
 
 void UART_TCP_TRX_Thread()
@@ -187,13 +197,18 @@ void UART_TCP_TRX_Thread()
 		client_sock = accept(listen_sock, (struct sockaddr*)&source_addr, &addr_len);
 		if(client_sock != INVALID_SOCK)
 		{
+			if(g_conn_channel >= 0) CHANNEL_Set(g_conn_channel, 1, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 			rx_closed = true;
 			tx_closed = true;
 
-			err = rtos_create_thread(&g_tx_thread, tskIDLE_PRIORITY + 1,
+			if(g_tx_thread != NULL)
+			{
+				rtos_delete_thread(&g_tx_thread);
+			}
+			err = rtos_create_thread(&g_tx_thread, BEKEN_APPLICATION_PRIORITY - 1,
 				"UTCP_TX_Thd",
 				(beken_thread_function_t)UTCP_TX_Thd,
-				0x800,
+				STACK_SIZE,
 				(beken_thread_arg_t)&client_sock);
 			if(err != kNoErr)
 			{
@@ -201,12 +216,16 @@ void UART_TCP_TRX_Thread()
 			}
 			else tx_closed = false;
 
-			rtos_delay_milliseconds(10);
+			//rtos_delay_milliseconds(10);
 
-			err = rtos_create_thread(&g_rx_thread, tskIDLE_PRIORITY + 1,
+			if(g_rx_thread != NULL)
+			{
+				rtos_delete_thread(&g_rx_thread);
+			}
+			err = rtos_create_thread(&g_rx_thread, BEKEN_APPLICATION_PRIORITY - 1,
 				"UTCP_RX_Thd",
 				(beken_thread_function_t)UTCP_RX_Thd,
-				0x800,
+				STACK_SIZE,
 				(beken_thread_arg_t)&client_sock);
 			if(err != kNoErr)
 			{
@@ -220,36 +239,44 @@ void UART_TCP_TRX_Thread()
 				{
 					close(client_sock);
 					ADDLOG_DEBUG(LOG_FEATURE_DRV, "UART TCP connection closed", err);
+					if(g_conn_channel >= 0) CHANNEL_Set(g_conn_channel, 0, CHANNEL_SET_FLAG_SKIP_MQTT | CHANNEL_SET_FLAG_SILENT);
 					break;
 				}
-				else rtos_delay_milliseconds(50);
+				else
+				{
+					if(!Main_HasWiFiConnected()) goto error;
+					rtos_delay_milliseconds(10);
+				}
 			}
 		}
+		rtos_delay_milliseconds(10);
 	}
 
 error:
 	ADDLOG_ERROR(LOG_FEATURE_DRV, "UART TCP Error");
 
-	if(listen_sock != INVALID_SOCK) close(listen_sock);
-	if(client_sock != INVALID_SOCK) close(client_sock);
-
-	xTaskCreate(
-		(TaskFunction_t)Start_UART_TCP,
+	if(g_start_thread != NULL)
+	{
+		rtos_delete_thread(&g_start_thread);
+	}
+	err = rtos_create_thread(&g_start_thread, BEKEN_APPLICATION_PRIORITY,
 		"UART TCP Restart",
-		2048 / sizeof(StackType_t),
-		NULL,
-		BEKEN_APPLICATION_PRIORITY,
-		NULL);
+		(beken_thread_function_t)Start_UART_TCP,
+		0x800,
+		(beken_thread_arg_t)0);
+	if(err != kNoErr)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_DRV, "create \"UART TCP Restart\" thread failed with %i!\r\n", err);
+	}
 }
 
 void Start_UART_TCP(void* arg)
 {
-	if(g_trx_thread != NULL)
-	{
-		rtos_delete_thread(&g_trx_thread);
-	}
+	UART_TCP_Deinit();
 
-	OSStatus err = rtos_create_thread(&g_trx_thread, tskIDLE_PRIORITY + 1,
+	g_utcpBuf = (byte*)os_malloc(buf_size);
+
+	OSStatus err = rtos_create_thread(&g_trx_thread, BEKEN_APPLICATION_PRIORITY,
 		"UART_TCP_TRX",
 		(beken_thread_function_t)UART_TCP_TRX_Thread,
 		0x800,
@@ -258,23 +285,27 @@ void Start_UART_TCP(void* arg)
 	{
 		ADDLOG_ERROR(LOG_FEATURE_DRV, "create \"UART_TCP_TRX\" thread failed with %i!\r\n", err);
 	}
-	vTaskDelete(NULL);
+	rtos_suspend_thread(NULL);
 }
 
-// startDriver UartTCP [baudrate] [buffer size] [tx action channel]
-// tx action channel is for led.
+// startDriver UartTCP [baudrate] [buffer size] [connection channel] [hw flow control]
+// connection is for led, -1 if not used.
 void UART_TCP_Init()
 {
 	g_baudRate = Tokenizer_GetArgIntegerDefault(1, g_baudRate);
 	uint32_t reqbufsize = Tokenizer_GetArgIntegerDefault(2, DEFAULT_BUF_SIZE);
 	buf_size = reqbufsize > 16384 ? 16384 : reqbufsize;
-	g_tx_channel = Tokenizer_GetArgIntegerDefault(3, -1);
+	g_conn_channel = Tokenizer_GetArgIntegerDefault(3, -1);
+	int flowcontrol = Tokenizer_GetArgIntegerDefault(4, 0);
 
-	UART_InitUART(g_baudRate, 0);
+	UART_InitUART(g_baudRate, 0, flowcontrol > 0 ? true : false);
 	UART_InitReceiveRingBuffer(buf_size * 2);
-	g_utcpBuf = (byte*)malloc(buf_size);
 
-	OSStatus err = rtos_create_thread(NULL, BEKEN_APPLICATION_PRIORITY,
+	if(g_start_thread != NULL)
+	{
+		rtos_delete_thread(&g_start_thread);
+	}
+	OSStatus err = rtos_create_thread(&g_start_thread, BEKEN_APPLICATION_PRIORITY,
 		"UART_TCP",
 		(beken_thread_function_t)Start_UART_TCP,
 		0x800,
@@ -292,18 +323,22 @@ void UART_TCP_Deinit()
 		rtos_delete_thread(&g_trx_thread);
 		g_trx_thread = NULL;
 	}
-	if(!rx_closed)
+	if(g_rx_thread != NULL)
 	{
+		rx_closed = true;
 		rtos_delete_thread(&g_rx_thread);
 		g_rx_thread = NULL;
 	}
-	if(!tx_closed)
+	if(g_tx_thread != NULL)
 	{
+		tx_closed = true;
 		rtos_delete_thread(&g_tx_thread);
 		g_tx_thread = NULL;
 	}
-	rtos_delay_milliseconds(200);
 	if(g_utcpBuf) free(g_utcpBuf);
+
+	if(listen_sock != INVALID_SOCK) close(listen_sock);
+	if(client_sock != INVALID_SOCK) close(client_sock);
 }
 
 #endif

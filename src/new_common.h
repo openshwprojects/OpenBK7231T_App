@@ -130,6 +130,11 @@ typedef long BaseType_t;
 #define DEVICENAME_PREFIX_SHORT "rtl8710a"
 #define PLATFORM_MCU_NAME "RTL8710A"
 #define MANUFACTURER "Realtek"
+#elif PLATFORM_RTL8720D
+#define DEVICENAME_PREFIX_FULL "OpenRTL8720D"
+#define DEVICENAME_PREFIX_SHORT "rtl8720d"
+#define PLATFORM_MCU_NAME "RTL8720D"
+#define MANUFACTURER "Realtek"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -165,6 +170,8 @@ This platform is not supported, error!
 #define USER_SW_VER "RTL8710B_Test"
 #elif defined(PLATFORM_RTL8710A)
 #define USER_SW_VER "RTL8710A_Test"
+#elif defined(PLATFORM_RTL8720D)
+#define USER_SW_VER "RTL8720D_Test"
 #elif defined(PLATFORM_BK7238)
 #define USER_SW_VER "BK7238_Test"
 #else
@@ -559,6 +566,22 @@ extern int g_sleepfactor;
 #define os_free vPortFree
 #define os_memset memset
 #define os_strcpy strcpy
+
+#if PLATFORM_RTL8720D
+#undef vsnprintf
+#undef sprintf
+#undef atoi
+#undef printf
+#endif
+
+// for wifi
+#define BUFLEN_LEN				1
+#define MAC_LEN					6
+#define RSSI_LEN				4
+#define SECURITY_LEN			1
+#define SECURITY_LEN_EXTENDED	4
+#define WPS_ID_LEN				1
+#define CHANNEL_LEN				1
 
 #define bk_printf printf
 

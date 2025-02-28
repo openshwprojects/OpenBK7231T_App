@@ -21,6 +21,7 @@ void print_wlan_help(void* arg) {}
 void hci_tp_close(void) {}
 void sys_task1(void* pvParameters)
 {
+	vTaskDelay(50 / portTICK_PERIOD_MS);
 	Main_Init();
 	for(;;)
 	{

@@ -96,7 +96,7 @@ static bool RN8029_ReadReg(byte reg, unsigned int *res) {
 #define DEFAULT_POWER_CAL 71572720
 // startDriver RN8209
 void RN8209_Init(void) {
-	UART_InitUART(4800, 1);
+	UART_InitUART(4800, 1, false);
 	UART_InitReceiveRingBuffer(256);
 
 	BL_Shared_Init();
