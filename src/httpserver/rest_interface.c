@@ -53,6 +53,9 @@ uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
 
 #elif PLATFORM_LN882H
 
+#include "hal/hal_flash.h"
+#include "flash_partition_table.h"
+
 #elif PLATFORM_ESPIDF
 
 #elif PLATFORM_RTL87X0C
@@ -2673,7 +2676,9 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 		return http_rest_error(request, -1, "requested flash read out of range");
 	}
 
-	buffer = os_malloc(1024);
+	int bufferSize = 1024;
+	buffer = os_malloc(bufferSize);
+	memset(buffer, 0, bufferSize);
 
 	http_setup(request, httpMimeTypeBinary);
 	while (len) {
@@ -2689,9 +2694,11 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 		res = bl_flash_read(startaddr, (uint8_t *)buffer, readlen);
 #elif PLATFORM_W600 || PLATFORM_W800
 		res = 0;
-#elif PLATFORM_LN882H || PLATFORM_ESPIDF || PLATFORM_TR6260
-// TODO:LN882H flash read?
-        res = 0;
+#elif PLATFORM_LN882H
+		// TODO:LN882H flash read?
+		res = hal_flash_read(startaddr, readlen, (uint8_t *)buffer);
+#elif PLATFORM_ESPIDF || PLATFORM_TR6260
+		res = 0;
 #elif PLATFORM_REALTEK
 		device_mutex_lock(RT_DEV_LOCK_FLASH);
 		flash_stream_read(&flash, startaddr, readlen, (uint8_t*)buffer);

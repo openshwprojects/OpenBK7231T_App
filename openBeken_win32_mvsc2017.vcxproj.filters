@@ -389,6 +389,7 @@
     <ClCompile Include="src\berry\src\be_var.c" />
     <ClCompile Include="src\berry\src\be_vector.c" />
     <ClCompile Include="src\berry\src\be_vm.c" />
+    <ClCompile Include="src\driver\drv_test.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\base64\base64.h" />
