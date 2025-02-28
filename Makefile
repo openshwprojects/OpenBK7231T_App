@@ -178,6 +178,14 @@ prebuild_OpenRTL8710A:
 	else echo "prebuild for OpenRTL8710A not found ... "; \
 	fi
 
+prebuild_OpenRTL8720D:
+	git submodule update --init --recursive sdk/OpenRTL8720D
+	@if [ -e platforms/RTL8720D/pre_build.sh ]; then \
+		echo "prebuild found for OpenRTL8720D"; \
+		sh platforms/RTL8720D/pre_build.sh; \
+	else echo "prebuild for OpenRTL8720D not found ... "; \
+	fi
+
 prebuild_OpenBK7238:
 	git submodule update --init --recursive sdk/beken_freertos_sdk
 	@if [ -e platforms/BK723x/pre_build_7238.sh ]; then \
@@ -353,6 +361,17 @@ OpenRTL8710A: prebuild_OpenRTL8710A
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenRTL8710A_B/project/obk_ameba1/GCC-RELEASE/application/Debug/bin/ram_all.bin output/$(APP_VERSION)/OpenRTL8710A_$(APP_VERSION).bin
 	cp sdk/OpenRTL8710A_B/project/obk_ameba1/GCC-RELEASE/application/Debug/bin/ota.bin output/$(APP_VERSION)/OpenRTL8710A_$(APP_VERSION)_ota.img
+	
+.PHONY: OpenRTL8720D
+OpenRTL8720D: prebuild_OpenRTL8720D
+	$(MAKE) -C sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_hp APP_VERSION=$(APP_VERSION)
+	$(MAKE) -C sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_lp APP_VERSION=$(APP_VERSION)
+	mkdir -p output/$(APP_VERSION)
+	touch output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION).bin
+	dd conv=notrunc bs=1 if=sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_lp/asdk/image/km0_boot_all.bin of=output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION).bin seek=0
+	dd conv=notrunc bs=1 if=sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_hp/asdk/image/km4_boot_all.bin of=output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION).bin seek=$(shell printf "%d" 0x4000)
+	dd conv=notrunc bs=1 if=sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_hp/asdk/image/km0_km4_image2.bin of=output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION).bin seek=$(shell printf "%d" 0x6000)
+	cp sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_lp/asdk/image/OTA_All.bin output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION)_ota.img
 
 .PHONY: OpenBK7238
 OpenBK7238: prebuild_OpenBK7238

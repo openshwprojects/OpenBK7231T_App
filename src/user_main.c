@@ -248,14 +248,14 @@ OSStatus rtos_create_thread(beken_thread_t* thread,
 }
 
 OSStatus rtos_delete_thread(beken_thread_t* thread) {
-	if(thread == NULL) vTaskDelete(thread);
+	if(thread == NULL) vTaskDelete(NULL);
 	else vTaskDelete(*thread);
 	return kNoErr;
 }
 
 OSStatus rtos_suspend_thread(beken_thread_t* thread)
 {
-	if(thread == NULL) vTaskSuspend(thread);
+	if(thread == NULL) vTaskSuspend(NULL);
 	else vTaskSuspend(*thread);
 	return kNoErr;
 }
