@@ -103,6 +103,10 @@ extern uint32_t current_fw_idx;
 
 #endif
 
+#elif PLATFORM_ECR6600
+
+#include "flash.h"
+
 #else
 
 extern UINT32 flash_read(char* user_buf, UINT32 count, UINT32 address);

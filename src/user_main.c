@@ -59,6 +59,8 @@ void bg_register_irda_check_func(FUNCPTR func);
 #include "hal/hal_gpio.h"
 #elif PLATFORM_ESPIDF
 #include "esp_timer.h"
+#elif PLATFORM_ECR6600
+#include "hal_adc.h"
 #endif
 
 int g_secondsElapsed = 0;

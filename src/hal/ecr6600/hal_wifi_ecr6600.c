@@ -58,8 +58,8 @@ void WiFI_GetMacAddress(char* mac)
 
 const char* HAL_GetMACStr(char* macstr)
 {
-	char mac[6];
-	WiFI_GetMacAddress(mac);
+	unsigned char mac[6];
+	WiFI_GetMacAddress((char*)mac);
 	sprintf(macstr, MACSTR, MAC2STR(mac));
 	return macstr;
 }

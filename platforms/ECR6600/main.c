@@ -45,7 +45,7 @@ void sys_task1(void* pvParameters)
 #undef os_malloc
 void* os_malloc(size_t size)
 {
-	return os_malloc_debug(size, (char*)0, 0);
+	return pvPortMalloc(size);
 }
 
 int main(void)

@@ -40,6 +40,10 @@ esp_partition_t* esplfs = NULL;
 #include "flash_api.h"
 #include "device_lock.h"
 
+#elif PLATFORM_ECR6600
+
+#include "flash.h"
+
 #endif
 
 

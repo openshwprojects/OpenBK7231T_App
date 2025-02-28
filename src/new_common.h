@@ -643,27 +643,19 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 typedef unsigned int UINT32;
 
 #define ASSERT
-#define free    os_free
-//#define malloc  os_malloc
-#define realloc  os_realloc
-#define calloc  os_calloc
-//#define strdup  os_strdup
-//#define strlen  os_strlen
-//#define memset  os_memset
-//#define memcpy  os_memcpy
-//#define strstr  os_strstr
-//#define strncpy  os_strncpy
-//#define strchr  os_strchr
-//#define strcmp  os_strcmp
-//#define memmove os_memmove
-//#define strcat  os_strcat
-#define os_strcpy strcpy
+#undef os_malloc
+#undef os_free
+#define os_malloc	pvPortMalloc
+#define os_free		vPortFree
+#define malloc		os_malloc
+#define free		os_free
+#define calloc		os_calloc
+#define realloc		os_realloc
+#define memmove		os_memmove
+#define os_strcpy	strcpy
 
 #define bk_printf printf
 
-#undef os_malloc
-
-extern void* os_malloc(size_t size);
 extern void sys_delay_ms(uint32_t ms);
 // OS_MSleep?
 #define rtos_delay_milliseconds sys_delay_ms
