@@ -358,6 +358,30 @@
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 #define ENABLE_DRIVER_SSDP						1
 
+#elif PLATFORM_ECR6600
+
+#define	ENABLE_HA_DISCOVERY						1
+#define ENABLE_MQTT								1
+#define ENABLE_LITTLEFS							1
+#define NEW_TCP_SERVER							1
+#define ENABLE_EXPAND_CONSTANT					1
+#define ENABLE_I2C								1
+#define ENABLE_DRIVER_AHT2X						1
+#define ENABLE_DRIVER_BMPI2C					1
+#define ENABLE_DRIVER_DS1820					1
+#define ENABLE_DRIVER_DHT						1
+#define ENABLE_DRIVER_LED 						1
+#define ENABLE_DRIVER_WEMO						1
+#define ENABLE_DRIVER_SSDP						1
+#define ENABLE_OBK_SCRIPTING					1
+#define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
+#define ENABLE_DRIVER_SSDP						1
+#define ENABLE_TASMOTA_JSON						1
+#define ENABLE_TASMOTADEVICEGROUPS				1
+#define ENABLE_NTP								1
+#define ENABLE_CALENDAR_EVENTS					1
+#define OBK_OTA_EXTENSION 						".img"
+
 #else
 
 //#error "Platform not defined"

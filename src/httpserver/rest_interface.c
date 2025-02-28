@@ -1473,7 +1473,7 @@ static int ota_verify_download(void)
 static int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 {
 
-#if PLATFORM_XR809 || PLATFORM_TR6260
+#if PLATFORM_XR809 || PLATFORM_TR6260 || PLATFORM_ECR6600
 	return 0;	//Operation not supported yet
 #endif
 
@@ -2967,10 +2967,13 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 #elif PLATFORM_W600 || PLATFORM_W800
 		res = 0;
 #elif PLATFORM_LN882H
-		// TODO:LN882H flash read?
 		res = hal_flash_read(startaddr, readlen, (uint8_t *)buffer);
-#elif PLATFORM_ESPIDF || PLATFORM_TR6260
+#elif PLATFORM_ESPIDF
 		res = 0;
+#elif PLATFORM_TR6260
+		res = hal_spiflash_read(startaddr, (uint8_t*)buffer, readlen);
+#elif PLATFORM_ECR6600
+		res = drv_spiflash_read(startaddr, (uint8_t*)buffer, readlen);
 #elif PLATFORM_REALTEK
 		device_mutex_lock(RT_DEV_LOCK_FLASH);
 		flash_stream_read(&flash, startaddr, readlen, (uint8_t*)buffer);
