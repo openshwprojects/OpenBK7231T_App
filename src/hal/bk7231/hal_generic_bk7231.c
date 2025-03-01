@@ -5,6 +5,7 @@
 // from wlan_ui.c
 void bk_reboot(void);
 extern bool g_powersave;
+extern uint64_t rtos_get_time_us();
 
 void HAL_RebootModule() 
 {
@@ -13,13 +14,27 @@ void HAL_RebootModule()
 
 void HAL_Delay_us(int delay)
 {
+#if PLATFORM_BK7231T
 	float adj = 1;
 	if(g_powersave) adj = 1.5;
-#if PLATFORM_BK7238
-	//  current n/t are for 120mhz, BK7238 freq is 160mhz
-	usleep((23 * delay * adj) / 10); // "1" is to fast and "2" to slow, 1.7 seems better than 1.5 (only from observing readings, no scope involved)
-#else
 	usleep((17 * delay * adj) / 10); // "1" is to fast and "2" to slow, 1.7 seems better than 1.5 (only from observing readings, no scope involved)
+#else
+	uint64_t m = (uint64_t)rtos_get_time_us();
+	if(delay)
+	{
+		uint64_t e = (m + delay);
+		if(m > e)
+		{ //overflow
+			while((uint64_t)rtos_get_time_us() > e)
+			{
+				__asm ("NOP");
+			}
+		}
+		while((uint64_t)rtos_get_time_us() < e)
+		{
+			__asm ("NOP");
+		}
+	}
 #endif
 }
 
