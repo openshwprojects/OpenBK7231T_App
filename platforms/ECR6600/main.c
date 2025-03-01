@@ -50,7 +50,7 @@ void* os_malloc(size_t size)
 
 int main(void)
 {
-	component_cli_init(E_UART_SELECT_BY_KCONFIG);
+	component_cli_init(E_UART_NUM_2);
 	printf("SDK version %s, Release version %s\n",
 			  sdk_version, RELEASE_VERSION);
 
@@ -78,8 +78,16 @@ int main(void)
 	amt_cal_info_obtain();
 	wifi_main();
 	psm_wifi_ble_init();
-	psm_boot_flag_dbg_op(true, 1);
-
+	//psm_wifi_ps_to_active();
+	//psm_sleep_mode_ena_op(true, 0);
+	//psm_set_psm_enable(0);
+	//psm_pwr_mgt_ctrl(0);
+	//psm_sleep_mode_ena_op(true, 0);
+	//PSM_SLEEP_CLEAR(MODEM_SLEEP);
+	//PSM_SLEEP_CLEAR(WFI_SLEEP);
+	//psm_set_device_status(PSM_DEVICE_WIFI_STA, PSM_DEVICE_STATUS_ACTIVE);
+	//psm_boot_flag_dbg_op(true, 1);
+	//AmtRfSetTxGain(1, (char*){"13"});
 	// efuse mac is not burnt on wg236p
 	//drv_efuse_read(0x18, (unsigned int*)wmac, 6);
 	xTaskCreate(
