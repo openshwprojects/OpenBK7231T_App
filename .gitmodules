@@ -45,11 +45,10 @@
 	path = sdk/beken_freertos_sdk
 	url = https://github.com/NonPIayerCharacter/beken_freertos_sdk.git
 	branch = master
-[submodule "src/berry"]
-	path = src/berry
-	url = https://github.com/niteria/berry.git
-	branch = berry-openbk
 [submodule "sdk/OpenRTL8720D"]
 	path = sdk/OpenRTL8720D
 	url = https://github.com/NonPIayerCharacter/OpenRTL8720D.git
+[submodule "libraries/berry"]
+	path = libraries/berry
+	url = https://github.com/berry-lang/berry.git
 	branch = master

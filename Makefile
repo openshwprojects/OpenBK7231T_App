@@ -35,7 +35,7 @@ else
 endif
 
 update-submodules: submodules
-	git add sdk/OpenBK7231T sdk/OpenBK7231N sdk/OpenXR809 sdk/OpenBL602 sdk/OpenW800 sdk/OpenW600 sdk/OpenLN882H sdk/esp-idf sdk/OpenTR6260 sdk/beken_freertos_sdk src/berry
+	git add sdk/OpenBK7231T sdk/OpenBK7231N sdk/OpenXR809 sdk/OpenBL602 sdk/OpenW800 sdk/OpenW600 sdk/OpenLN882H sdk/esp-idf sdk/OpenTR6260 sdk/beken_freertos_sdk libraries/berry
 ifdef GITHUB_ACTIONS
 	git config user.name github-actions
 	git config user.email github-actions@github.com
@@ -80,7 +80,7 @@ sdk/OpenLN882H/project/OpenBeken/app:
 
 prebuild_OpenBK7231N:
 	git submodule update --init --recursive sdk/OpenBK7231N
-	git submodule update --init --recursive src/berry
+	git submodule update --init --recursive libraries/berry
 	@if [ -e platforms/BK7231N/pre_build.sh ]; then \
 		echo "prebuild found for OpenBK7231N"; \
 		sh platforms/BK7231N/pre_build.sh; \
@@ -89,7 +89,7 @@ prebuild_OpenBK7231N:
 
 prebuild_OpenBK7231T:
 	git submodule update --init --recursive sdk/OpenBK7231T
-	git submodule update --init --recursive src/berry
+	git submodule update --init --recursive libraries/berry
 	@if [ -e platforms/BK7231T/pre_build.sh ]; then \
 		echo "prebuild found for OpenBK7231T"; \
 		sh platforms/BK7231T/pre_build.sh; \
@@ -98,7 +98,7 @@ prebuild_OpenBK7231T:
 
 prebuild_OpenBL602:
 	git submodule update --init --recursive sdk/OpenBL602
-	git submodule update --init --recursive src/berry
+	git submodule update --init --recursive libraries/berry
 	@if [ -e platforms/BL602/pre_build.sh ]; then \
 		echo "prebuild found for OpenBL602"; \
 		sh platforms/BL602/pre_build.sh; \
@@ -107,7 +107,7 @@ prebuild_OpenBL602:
 
 prebuild_OpenLN882H:
 	git submodule update --init --recursive sdk/OpenLN882H
-	git submodule update --init --recursive src/berry
+	git submodule update --init --recursive libraries/berry
 	@if [ -e platforms/LN882H/pre_build.sh ]; then \
 		echo "prebuild found for OpenLN882H"; \
 		sh platforms/LN882H/pre_build.sh; \
@@ -116,7 +116,7 @@ prebuild_OpenLN882H:
 
 prebuild_OpenW600:
 	git submodule update --init --recursive sdk/OpenW600
-	git submodule update --init --recursive src/berry
+	git submodule update --init --recursive libraries/berry
 	@if [ -e platforms/W600/pre_build.sh ]; then \
 		echo "prebuild found for OpenW600"; \
 		sh platforms/W600/pre_build.sh; \
@@ -125,7 +125,7 @@ prebuild_OpenW600:
 
 prebuild_OpenW800:
 	git submodule update --init --recursive sdk/OpenW800
-	git submodule update --init --recursive src/berry
+	git submodule update --init --recursive libraries/berry
 	@if [ -e platforms/W800/pre_build.sh ]; then \
 		echo "prebuild found for OpenW800"; \
 		sh platforms/W800/pre_build.sh; \
@@ -134,7 +134,7 @@ prebuild_OpenW800:
 
 prebuild_OpenXR809:
 	git submodule update --init --recursive sdk/OpenXR809
-	git submodule update --init --recursive src/berry
+	git submodule update --init --recursive libraries/berry
 	@if [ -e platforms/XR809/pre_build.sh ]; then \
 		echo "prebuild found for OpenXR809"; \
 		sh platforms/XR809/pre_build.sh; \
@@ -143,7 +143,7 @@ prebuild_OpenXR809:
 
 prebuild_ESPIDF:
 	#git submodule update --init --recursive sdk/esp-idf
-	git submodule update --init --recursive src/berry
+	git submodule update --init --recursive libraries/berry
 	@if [ -e platforms/ESP-IDF/pre_build.sh ]; then \
 		echo "prebuild found for ESP-IDF"; \
 		sh platforms/ESP-IDF/pre_build.sh; \
@@ -152,7 +152,7 @@ prebuild_ESPIDF:
 
 prebuild_OpenTR6260:
 	git submodule update --init --recursive sdk/OpenTR6260
-	git submodule update --init --recursive src/berry
+	git submodule update --init --recursive libraries/berry
 	@if [ -e platforms/TR6260/pre_build.sh ]; then \
 		echo "prebuild found for OpenTR6260"; \
 		sh platforms/TR6260/pre_build.sh; \
@@ -161,7 +161,7 @@ prebuild_OpenTR6260:
 
 prebuild_OpenRTL87X0C:
 	git submodule update --init --recursive sdk/OpenRTL87X0C
-	git submodule update --init --recursive src/berry
+	git submodule update --init --recursive libraries/berry
 	@if [ -e platforms/RTL87X0C/pre_build.sh ]; then \
 		echo "prebuild found for OpenRTL87X0C"; \
 		sh platforms/RTL87X0C/pre_build.sh; \
@@ -170,7 +170,7 @@ prebuild_OpenRTL87X0C:
 
 prebuild_OpenRTL8710B:
 	git submodule update --init --recursive sdk/OpenRTL8710A_B
-	git submodule update --init --recursive src/berry
+	git submodule update --init --recursive libraries/berry
 	@if [ -e platforms/RTL8710B/pre_build.sh ]; then \
 		echo "prebuild found for OpenRTL8710B"; \
 		sh platforms/RTL8710B/pre_build.sh; \
@@ -183,7 +183,7 @@ prebuild_OpenRTL8710B:
 
 prebuild_OpenRTL8710A:
 	git submodule update --init --recursive sdk/OpenRTL8710A_B
-	git submodule update --init --recursive src/berry
+	git submodule update --init --recursive libraries/berry
 	@if [ -e platforms/RTL8710A/pre_build.sh ]; then \
 		echo "prebuild found for OpenRTL8710A"; \
 		sh platforms/RTL8710A/pre_build.sh; \
@@ -200,7 +200,7 @@ prebuild_OpenRTL8720D:
 
 prebuild_OpenBK7238:
 	git submodule update --init --recursive sdk/beken_freertos_sdk
-	git submodule update --init --recursive src/berry
+	git submodule update --init --recursive libraries/berry
 	@if [ -e platforms/BK723x/pre_build_7238.sh ]; then \
 		echo "prebuild found for OpenBK7238"; \
 		sh platforms/BK723x/pre_build_7238.sh; \
@@ -209,7 +209,7 @@ prebuild_OpenBK7238:
 
 prebuild_OpenBK7231N_ALT:
 	git submodule update --init --recursive sdk/beken_freertos_sdk
-	git submodule update --init --recursive src/berry
+	git submodule update --init --recursive libraries/berry
 	@if [ -e platforms/BK723x/pre_build_7231n.sh ]; then \
 		echo "prebuild found for OpenBK7231N"; \
 		sh platforms/BK723x/pre_build_7231n.sh; \

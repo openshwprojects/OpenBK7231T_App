@@ -10,9 +10,9 @@
 #include "../hal/hal_adc.h"
 #include "../hal/hal_flashVars.h"
 
-#include "../berry/src/berry.h"
-#include "../berry/src/be_repl.h"
-#include "../berry/src/be_vm.h"
+#include "berry.h"
+#include "be_repl.h"
+#include "be_vm.h"
 
 
 static void be_ChannelSet(bvm *vm) {
