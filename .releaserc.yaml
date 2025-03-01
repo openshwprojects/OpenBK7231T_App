@@ -132,6 +132,8 @@ generateNotes:
         | RTL8710A | OTA Update | [OpenRTL8710A_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8710A_{{version}}_ota.img)         |  
         | RTL8710B | UART Flash | [OpenRTL8710B_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8710B_{{version}}.bin)               |
         | RTL8710B | OTA Update | [OpenRTL8710B_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8710B_{{version}}_ota.img)         |  
+        | RTL8720D | UART Flash | [OpenRTL8720D_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8720D_{{version}}.bin)               |
+        | RTL8720D | OTA Update | [OpenRTL8720D_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8720D_{{version}}_ota.img)         |  
         | ESP32  | UART Flash | [OpenESP32_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32_{{version}}.factory.bin) |
         | ESP32  | OTA Flash | [OpenESP32_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32_{{version}}.img) |
         | ESP32 S2  | UART Flash | [OpenESP32S2_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32S2_{{version}}.factory.bin) |
@@ -145,6 +147,7 @@ generateNotes:
         | ESP32 C6  | UART Flash | [OpenESP32C6_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C6_{{version}}.factory.bin) |
         | ESP32 C6  | OTA Flash | [OpenESP32C6_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C6_{{version}}.img) |
         | Win32    | - | [obkSimulator_{{version}}.zip]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/obkSimulator_{{version}}.zip) |
+
 
         CCtr Flash = Tuya cloud Cutter flash
         SPI Flash can be flashed through SPI, even if you broke BK bootloader

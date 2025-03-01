@@ -106,6 +106,11 @@
 #define EF_START_ADDR             0x2E3000
 #define ENV_AREA_SIZE             0x1C000
 
+#elif PLATFORM_RTL8720D
+
+#define EF_START_ADDR             0x1B0000
+#define ENV_AREA_SIZE             0x50000
+
 #endif
 /* print debug information of flash */
 #ifdef PKG_EASYFLASH_DEBUG

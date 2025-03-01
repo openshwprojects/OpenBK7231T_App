@@ -49,3 +49,7 @@
 	path = src/berry
 	url = https://github.com/niteria/berry.git
 	branch = berry-openbk
+[submodule "sdk/OpenRTL8720D"]
+	path = sdk/OpenRTL8720D
+	url = https://github.com/NonPIayerCharacter/OpenRTL8720D.git
+	branch = master

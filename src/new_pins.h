@@ -1038,6 +1038,8 @@ typedef enum channelType_e {
 #define PLATFORM_GPIO_MAX 17
 #elif PLATFORM_RTL8710A
 #define PLATFORM_GPIO_MAX 20
+#elif PLATFORM_RTL8720D
+#define PLATFORM_GPIO_MAX 64
 #else
 #define PLATFORM_GPIO_MAX 29
 #endif
@@ -1095,6 +1097,23 @@ typedef struct pinsState_s
 	// buttons, so button can toggle one relay on single click
 	// and other relay on double click
 	byte channels2[50];
+	// This single field above, is indexed by CHANNEL INDEX
+	// (not by pin index)
+	byte channelTypes[CHANNEL_MAX];
+} pinsState_t;
+
+#elif PLATFORM_RTL8720D
+
+typedef struct pinsState_s
+{
+	// All above values are indexed by physical pin index
+	// (so we assume we have maximum of 32 pins)
+	byte roles[64];
+	byte channels[64];
+	// extra channels array - this is needed for
+	// buttons, so button can toggle one relay on single click
+	// and other relay on double click
+	byte channels2[64];
 	// This single field above, is indexed by CHANNEL INDEX
 	// (not by pin index)
 	byte channelTypes[CHANNEL_MAX];
@@ -1255,9 +1274,9 @@ typedef struct mainConfig_s {
 	// 0x4
 	int version;
 	// 0x08
-	int genericFlags;
+	uint32_t genericFlags;
 	// 0x0C
-	int genericFlags2;
+	uint32_t genericFlags2;
 	// 0x10
 	unsigned short changeCounter;
 	unsigned short otaCounter;
@@ -1328,6 +1347,8 @@ typedef struct mainConfig_s {
 	byte unusedSectorAB[51];
 #elif PLATFORM_ESPIDF
 	byte unusedSectorAB[43];
+#elif PLATFORM_RTL8720D
+	byte unusedSectorAB;
 #else    
 	byte unusedSectorAB[99];
 #endif    
