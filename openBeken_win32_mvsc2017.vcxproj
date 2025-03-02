@@ -75,7 +75,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\libs_for_simulator\SDL2-2.24.2\include;.\src\win32\stubs\;.\libs_for_simulator\DevIL-Windows-SDK-1.8.0\include;.\libs_for_simulator\freeglut-MSVC-3.0.0-2.mp\include;.\libs_for_simulator\nativefiledialog\src\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\libs_for_simulator\SDL2-2.24.2\include;.\src\win32\stubs\;.\libs_for_simulator\DevIL-Windows-SDK-1.8.0\include;.\libs_for_simulator\freeglut-MSVC-3.0.0-2.mp\include;.\libs_for_simulator\nativefiledialog\src\include;.\include;.\libraries\berry\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WINDOWS;_CRT_NONSTDC_NO_WARNINGS;WINSOCK_DEPRECATED_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions);_USE_32BIT_TIME_T;WIN32_LEAN_AND_MEAN;WIN32;_CRT_NON_CONFORMING_SWPRINTFS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CONSOLE</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
