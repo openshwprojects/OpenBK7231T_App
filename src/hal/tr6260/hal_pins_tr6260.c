@@ -12,6 +12,7 @@ typedef struct trPinMapping_s
 {
 	const char* name;
 	DRV_GPIO_PIN_NAME pin;
+	int freq;
 } trPinMapping_t;
 
 trPinMapping_t g_pins[] = {
@@ -260,6 +261,7 @@ void HAL_PIN_PWM_Start(int index, int freq)
 	if(index >= g_numPins)
 		return;
 	int ch = PIN_GetPWMIndexForPinIndex(index);
+	g_pins[index].freq = freq;
 	if(ch < 0) return;
 	pwm_init(ch);
 }
@@ -274,7 +276,7 @@ void HAL_PIN_PWM_Update(int index, float value)
 		value = 0;
 	if(value > 100)
 		value = 100;
-	pwm_config(ch, freq, (uint32_t)(value * 10));
+	pwm_config(ch, g_pins[index].freq, (uint32_t)(value * 10));
 	pwm_start(ch);
 }
 
