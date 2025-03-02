@@ -52,7 +52,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\libs_for_simulator\SDL2-2.24.2\include;.\src\win32\stubs\;.\libs_for_simulator\DevIL-Windows-SDK-1.8.0\include;.\libs_for_simulator\freeglut-MSVC-3.0.0-2.mp\include;.\libs_for_simulator\nativefiledialog\src\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\libs_for_simulator\SDL2-2.24.2\include;.\src\win32\stubs\;.\libs_for_simulator\DevIL-Windows-SDK-1.8.0\include;.\libs_for_simulator\freeglut-MSVC-3.0.0-2.mp\include;.\libs_for_simulator\nativefiledialog\src\include;.\include;.\libraries\berry\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WINDOWS;_CRT_NONSTDC_NO_WARNINGS;WINSOCK_DEPRECATED_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions);_USE_32BIT_TIME_T;DEBUG</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -65,6 +65,12 @@
       <TargetMachine>MachineX86</TargetMachine>
       <AdditionalLibraryDirectories>.\libs_for_simulator\SDL2-2.24.2\lib\x86;.\libs_for_simulator\DevIL-Windows-SDK-1.8.0\lib\x86\Release;.\libs_for_simulator\freeglut-MSVC-3.0.0-2.mp\lib;.\libs_for_simulator\nativefiledialog\build\lib\Debug\x86</AdditionalLibraryDirectories>
     </Link>
+    <PreBuildEvent>
+      <Command>cd libraries\berry &amp; mkdir generate &amp; python tools/coc/coc -o generate src -c ..\..\include\berry_conf.h</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>prebuild berry</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -82,6 +88,12 @@
       <TargetMachine>MachineX86</TargetMachine>
       <AdditionalLibraryDirectories>.\libs_for_simulator\SDL2-2.24.2\lib\x86;.\libs_for_simulator\DevIL-Windows-SDK-1.8.0\lib\x86\Release;.\libs_for_simulator\freeglut-MSVC-3.0.0-2.mp\lib;.\libs_for_simulator\nativefiledialog\build\lib\Release\x86</AdditionalLibraryDirectories>
     </Link>
+    <PreBuildEvent>
+      <Command>cd libraries\berry &amp; mkdir generate &amp; python tools/coc/coc -o generate src -c ..\..\include\berry_conf.h</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>prebuild berry</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\platforms\bk7231t\bk7231t_os\beken378\driver\common\dd.c">
@@ -116,48 +128,49 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="libraries\berry\src\be_api.c" />
+    <ClCompile Include="libraries\berry\src\be_baselib.c" />
+    <ClCompile Include="libraries\berry\src\be_bytecode.c" />
+    <ClCompile Include="libraries\berry\src\be_byteslib.c" />
+    <ClCompile Include="libraries\berry\src\be_class.c" />
+    <ClCompile Include="libraries\berry\src\be_code.c" />
+    <ClCompile Include="libraries\berry\src\be_debug.c" />
+    <ClCompile Include="libraries\berry\src\be_debuglib.c" />
+    <ClCompile Include="libraries\berry\src\be_exec.c" />
+    <ClCompile Include="libraries\berry\src\be_filelib.c" />
+    <ClCompile Include="libraries\berry\src\be_func.c" />
+    <ClCompile Include="libraries\berry\src\be_gc.c" />
+    <ClCompile Include="libraries\berry\src\be_gclib.c" />
+    <ClCompile Include="libraries\berry\src\be_globallib.c" />
+    <ClCompile Include="libraries\berry\src\be_introspectlib.c" />
+    <ClCompile Include="libraries\berry\src\be_jsonlib.c" />
+    <ClCompile Include="libraries\berry\src\be_lexer.c" />
+    <ClCompile Include="libraries\berry\src\be_libs.c" />
+    <ClCompile Include="libraries\berry\src\be_list.c" />
+    <ClCompile Include="libraries\berry\src\be_listlib.c" />
+    <ClCompile Include="libraries\berry\src\be_map.c" />
+    <ClCompile Include="libraries\berry\src\be_maplib.c" />
+    <ClCompile Include="libraries\berry\src\be_mathlib.c" />
+    <ClCompile Include="libraries\berry\src\be_mem.c" />
+    <ClCompile Include="libraries\berry\src\be_module.c" />
+    <ClCompile Include="libraries\berry\src\be_object.c" />
+    <ClCompile Include="libraries\berry\src\be_oslib.c" />
+    <ClCompile Include="libraries\berry\src\be_parser.c" />
+    <ClCompile Include="libraries\berry\src\be_rangelib.c" />
+    <ClCompile Include="libraries\berry\src\be_repl.c" />
+    <ClCompile Include="libraries\berry\src\be_solidifylib.c" />
+    <ClCompile Include="libraries\berry\src\be_strictlib.c" />
+    <ClCompile Include="libraries\berry\src\be_string.c" />
+    <ClCompile Include="libraries\berry\src\be_strlib.c" />
+    <ClCompile Include="libraries\berry\src\be_syslib.c" />
+    <ClCompile Include="libraries\berry\src\be_timelib.c" />
+    <ClCompile Include="libraries\berry\src\be_undefinedlib.c" />
+    <ClCompile Include="libraries\berry\src\be_var.c" />
+    <ClCompile Include="libraries\berry\src\be_vector.c" />
+    <ClCompile Include="libraries\berry\src\be_vm.c" />
     <ClCompile Include="src\base64\base64.c" />
-    <ClCompile Include="src\berry\src\be_api.c" />
-    <ClCompile Include="src\berry\src\be_baselib.c" />
-    <ClCompile Include="src\berry\src\be_bytecode.c" />
-    <ClCompile Include="src\berry\src\be_byteslib.c" />
-    <ClCompile Include="src\berry\src\be_class.c" />
-    <ClCompile Include="src\berry\src\be_code.c" />
-    <ClCompile Include="src\berry\src\be_debug.c" />
-    <ClCompile Include="src\berry\src\be_debuglib.c" />
-    <ClCompile Include="src\berry\src\be_exec.c" />
-    <ClCompile Include="src\berry\src\be_func.c" />
-    <ClCompile Include="src\berry\src\be_gc.c" />
-    <ClCompile Include="src\berry\src\be_gclib.c" />
-    <ClCompile Include="src\berry\src\be_globallib.c" />
-    <ClCompile Include="src\berry\src\be_introspectlib.c" />
-    <ClCompile Include="src\berry\src\be_jsonlib.c" />
-    <ClCompile Include="src\berry\src\be_lexer.c" />
-    <ClCompile Include="src\berry\src\be_libs.c" />
-    <ClCompile Include="src\berry\src\be_list.c" />
-    <ClCompile Include="src\berry\src\be_listlib.c" />
-    <ClCompile Include="src\berry\src\be_map.c" />
-    <ClCompile Include="src\berry\src\be_maplib.c" />
-    <ClCompile Include="src\berry\src\be_mathlib.c" />
-    <ClCompile Include="src\berry\src\be_mem.c" />
-    <ClCompile Include="src\berry\src\be_modtab.c" />
-    <ClCompile Include="src\berry\src\be_module.c" />
-    <ClCompile Include="src\berry\src\be_object.c" />
-    <ClCompile Include="src\berry\src\be_oslib.c" />
-    <ClCompile Include="src\berry\src\be_parser.c" />
-    <ClCompile Include="src\berry\src\be_port.c" />
-    <ClCompile Include="src\berry\src\be_rangelib.c" />
-    <ClCompile Include="src\berry\src\be_repl.c" />
-    <ClCompile Include="src\berry\src\be_solidifylib.c" />
-    <ClCompile Include="src\berry\src\be_strictlib.c" />
-    <ClCompile Include="src\berry\src\be_string.c" />
-    <ClCompile Include="src\berry\src\be_strlib.c" />
-    <ClCompile Include="src\berry\src\be_syslib.c" />
-    <ClCompile Include="src\berry\src\be_timelib.c" />
-    <ClCompile Include="src\berry\src\be_undefinedlib.c" />
-    <ClCompile Include="src\berry\src\be_var.c" />
-    <ClCompile Include="src\berry\src\be_vector.c" />
-    <ClCompile Include="src\berry\src\be_vm.c" />
+    <ClCompile Include="src\berry\be_modtab.c" />
+    <ClCompile Include="src\berry\be_port.c" />
     <ClCompile Include="src\bitmessage\bitmessage_read.c" />
     <ClCompile Include="src\bitmessage\bitmessage_write.c" />
     <ClCompile Include="src\cJSON\cJSON.c" />
@@ -850,59 +863,60 @@
     <ClCompile Include="src\win_stubs.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\berry_conf.h" />
+    <ClInclude Include="libraries\berry\generate\be_const_bytes.h" />
+    <ClInclude Include="libraries\berry\generate\be_const_bytes_def.h" />
+    <ClInclude Include="libraries\berry\generate\be_const_strtab.h" />
+    <ClInclude Include="libraries\berry\generate\be_const_strtab_def.h" />
+    <ClInclude Include="libraries\berry\generate\be_fixed_be_class_bytes.h" />
+    <ClInclude Include="libraries\berry\generate\be_fixed_be_class_list.h" />
+    <ClInclude Include="libraries\berry\generate\be_fixed_be_class_map.h" />
+    <ClInclude Include="libraries\berry\generate\be_fixed_be_class_range.h" />
+    <ClInclude Include="libraries\berry\generate\be_fixed_debug.h" />
+    <ClInclude Include="libraries\berry\generate\be_fixed_gc.h" />
+    <ClInclude Include="libraries\berry\generate\be_fixed_global.h" />
+    <ClInclude Include="libraries\berry\generate\be_fixed_introspect.h" />
+    <ClInclude Include="libraries\berry\generate\be_fixed_json.h" />
+    <ClInclude Include="libraries\berry\generate\be_fixed_math.h" />
+    <ClInclude Include="libraries\berry\generate\be_fixed_m_builtin.h" />
+    <ClInclude Include="libraries\berry\generate\be_fixed_os.h" />
+    <ClInclude Include="libraries\berry\generate\be_fixed_os_path.h" />
+    <ClInclude Include="libraries\berry\generate\be_fixed_path.h" />
+    <ClInclude Include="libraries\berry\generate\be_fixed_solidify.h" />
+    <ClInclude Include="libraries\berry\generate\be_fixed_strict.h" />
+    <ClInclude Include="libraries\berry\generate\be_fixed_string.h" />
+    <ClInclude Include="libraries\berry\generate\be_fixed_sys.h" />
+    <ClInclude Include="libraries\berry\generate\be_fixed_time.h" />
+    <ClInclude Include="libraries\berry\generate\be_fixed_undefined.h" />
+    <ClInclude Include="libraries\berry\src\berry.h" />
+    <ClInclude Include="libraries\berry\src\be_baselib.h" />
+    <ClInclude Include="libraries\berry\src\be_bytecode.h" />
+    <ClInclude Include="libraries\berry\src\be_byteslib.h" />
+    <ClInclude Include="libraries\berry\src\be_class.h" />
+    <ClInclude Include="libraries\berry\src\be_code.h" />
+    <ClInclude Include="libraries\berry\src\be_constobj.h" />
+    <ClInclude Include="libraries\berry\src\be_debug.h" />
+    <ClInclude Include="libraries\berry\src\be_decoder.h" />
+    <ClInclude Include="libraries\berry\src\be_exec.h" />
+    <ClInclude Include="libraries\berry\src\be_func.h" />
+    <ClInclude Include="libraries\berry\src\be_gc.h" />
+    <ClInclude Include="libraries\berry\src\be_lexer.h" />
+    <ClInclude Include="libraries\berry\src\be_libs.h" />
+    <ClInclude Include="libraries\berry\src\be_list.h" />
+    <ClInclude Include="libraries\berry\src\be_map.h" />
+    <ClInclude Include="libraries\berry\src\be_mem.h" />
+    <ClInclude Include="libraries\berry\src\be_module.h" />
+    <ClInclude Include="libraries\berry\src\be_object.h" />
+    <ClInclude Include="libraries\berry\src\be_opcodes.h" />
+    <ClInclude Include="libraries\berry\src\be_parser.h" />
+    <ClInclude Include="libraries\berry\src\be_repl.h" />
+    <ClInclude Include="libraries\berry\src\be_string.h" />
+    <ClInclude Include="libraries\berry\src\be_strlib.h" />
+    <ClInclude Include="libraries\berry\src\be_sys.h" />
+    <ClInclude Include="libraries\berry\src\be_var.h" />
+    <ClInclude Include="libraries\berry\src\be_vector.h" />
+    <ClInclude Include="libraries\berry\src\be_vm.h" />
     <ClInclude Include="src\base64\base64.h" />
-    <ClInclude Include="src\berry\generate\be_const_bytes.h" />
-    <ClInclude Include="src\berry\generate\be_const_bytes_def.h" />
-    <ClInclude Include="src\berry\generate\be_const_strtab.h" />
-    <ClInclude Include="src\berry\generate\be_const_strtab_def.h" />
-    <ClInclude Include="src\berry\generate\be_fixed_be_class_bytes.h" />
-    <ClInclude Include="src\berry\generate\be_fixed_be_class_list.h" />
-    <ClInclude Include="src\berry\generate\be_fixed_be_class_map.h" />
-    <ClInclude Include="src\berry\generate\be_fixed_be_class_range.h" />
-    <ClInclude Include="src\berry\generate\be_fixed_debug.h" />
-    <ClInclude Include="src\berry\generate\be_fixed_gc.h" />
-    <ClInclude Include="src\berry\generate\be_fixed_global.h" />
-    <ClInclude Include="src\berry\generate\be_fixed_introspect.h" />
-    <ClInclude Include="src\berry\generate\be_fixed_json.h" />
-    <ClInclude Include="src\berry\generate\be_fixed_math.h" />
-    <ClInclude Include="src\berry\generate\be_fixed_m_builtin.h" />
-    <ClInclude Include="src\berry\generate\be_fixed_os.h" />
-    <ClInclude Include="src\berry\generate\be_fixed_os_path.h" />
-    <ClInclude Include="src\berry\generate\be_fixed_solidify.h" />
-    <ClInclude Include="src\berry\generate\be_fixed_strict.h" />
-    <ClInclude Include="src\berry\generate\be_fixed_string.h" />
-    <ClInclude Include="src\berry\generate\be_fixed_sys.h" />
-    <ClInclude Include="src\berry\generate\be_fixed_time.h" />
-    <ClInclude Include="src\berry\generate\be_fixed_undefined.h" />
-    <ClInclude Include="src\berry\src\berry.h" />
-    <ClInclude Include="src\berry\src\berry_conf.h" />
-    <ClInclude Include="src\berry\src\be_baselib.h" />
-    <ClInclude Include="src\berry\src\be_bytecode.h" />
-    <ClInclude Include="src\berry\src\be_byteslib.h" />
-    <ClInclude Include="src\berry\src\be_class.h" />
-    <ClInclude Include="src\berry\src\be_code.h" />
-    <ClInclude Include="src\berry\src\be_constobj.h" />
-    <ClInclude Include="src\berry\src\be_debug.h" />
-    <ClInclude Include="src\berry\src\be_decoder.h" />
-    <ClInclude Include="src\berry\src\be_exec.h" />
-    <ClInclude Include="src\berry\src\be_func.h" />
-    <ClInclude Include="src\berry\src\be_gc.h" />
-    <ClInclude Include="src\berry\src\be_lexer.h" />
-    <ClInclude Include="src\berry\src\be_libs.h" />
-    <ClInclude Include="src\berry\src\be_list.h" />
-    <ClInclude Include="src\berry\src\be_map.h" />
-    <ClInclude Include="src\berry\src\be_mem.h" />
-    <ClInclude Include="src\berry\src\be_module.h" />
-    <ClInclude Include="src\berry\src\be_object.h" />
-    <ClInclude Include="src\berry\src\be_opcodes.h" />
-    <ClInclude Include="src\berry\src\be_parser.h" />
-    <ClInclude Include="src\berry\src\be_repl.h" />
-    <ClInclude Include="src\berry\src\be_string.h" />
-    <ClInclude Include="src\berry\src\be_strlib.h" />
-    <ClInclude Include="src\berry\src\be_sys.h" />
-    <ClInclude Include="src\berry\src\be_var.h" />
-    <ClInclude Include="src\berry\src\be_vector.h" />
-    <ClInclude Include="src\berry\src\be_vm.h" />
     <ClInclude Include="src\driver\drv_bl0937.h" />
     <ClInclude Include="src\driver\drv_bl0942.h" />
     <ClInclude Include="src\driver\drv_cht8305.h" />
