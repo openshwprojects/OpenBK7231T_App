@@ -215,7 +215,7 @@ void HAL_PIN_PWM_Stop(int index) {
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "PWM_Stop: ch: %i, all: %i", chan, g_active_pwm);
 }
 
-void HAL_PIN_PWM_Start(int index) 
+void HAL_PIN_PWM_Start(int index, int freq) 
 {
 	if(index >= g_numPins)
 		return;

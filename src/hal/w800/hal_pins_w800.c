@@ -212,7 +212,7 @@ void HAL_PIN_PWM_Stop(int index) {
 	tls_pwm_stop(channel);
 }
 
-void HAL_PIN_PWM_Start(int index) {
+void HAL_PIN_PWM_Start(int index, int freq) {
 	int ret;
 	int channel;
 	if (IsPinIndexOk(index) == 0)
