@@ -27,6 +27,7 @@ APP_C += $(OBK_DIR)/base64/base64.c
 APP_C += $(OBK_DIR)/bitmessage/bitmessage_read.c
 APP_C += $(OBK_DIR)/bitmessage/bitmessage_write.c
 APP_C += $(OBK_DIR)/cJSON/cJSON.c
+APP_C += $(OBK_DIR)/cmnds/cmd_berry.c
 APP_C += $(OBK_DIR)/cmnds/cmd_channels.c
 APP_C += $(OBK_DIR)/cmnds/cmd_eventHandlers.c
 APP_C += $(OBK_DIR)/cmnds/cmd_if.c
@@ -154,4 +155,21 @@ APP_C += $(OBK_DIR)/driver/drv_ir2.c
 
 SRC_C += ./fixes/blank.c
 
+
 APP_CXX += $(OBK_DIR)/driver/drv_ir.cpp
+
+BERRY_SRCPATH = $(OBK_DIR)/../libraries/berry/src/
+
+# different frameworks put object files in different places,
+# berry needs to add a rule to autogenerate some files before the object files
+# are built, so it needs the translation function from a C source to an object
+# file
+define obj_from_c
+	$(patsubst %.c, $(OBJ_DIR)/%.app.o, $(1))
+endef
+
+include $(OBK_DIR)/../libraries/berry.mk
+
+APP_C += $(BERRY_SRC_C)
+APP_C += $(OBK_DIR)/berry/be_port.c
+APP_C += $(OBK_DIR)/berry/be_modtab.c
