@@ -1388,8 +1388,6 @@ int http_fn_cfg_wifi(http_request_t* request) {
 		{
 			hprintf255(request, "[%i/%u] SSID: %s, Channel: %i, Signal %i<br>", i + 1, number, ap_info[i].ssid, ap_info[i].primary, ap_info[i].rssi);
 		}
-#elif PLATFORM_TR6260
-		poststr(request, "TODO TR6260<br>");
 #elif defined(PLATFORM_REALTEK)
 #ifndef PLATFORM_RTL87X0C
 		extern void rltk_wlan_enable_scan_with_ssid_by_extended_security(bool);
