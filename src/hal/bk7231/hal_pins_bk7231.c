@@ -12,7 +12,8 @@
 #include "../../beken378/driver/i2c/i2c1.h"
 #include "../../beken378/driver/gpio/gpio.h"
 
-
+// must fit all pwm indexes
+static uint32_t g_periods[6];
 
 int PIN_GetPWMIndexForPinIndex(int pin) 
 {
@@ -95,7 +96,6 @@ void HAL_PIN_PWM_Stop(int index) {
 
 	bk_pwm_stop(pwmIndex);
 }
-static uint32_t g_periods[16];
 
 void HAL_PIN_PWM_Start(int index, int freq) {
 	int pwmIndex;
@@ -108,7 +108,7 @@ void HAL_PIN_PWM_Start(int index, int freq) {
 	}
 
 	uint32_t period = (26000000 / freq);
-	g_periods[index] = period;
+	g_periods[pwmIndex] = period;
 #if defined(PLATFORM_BK7231N) && !defined(PLATFORM_BEKEN_NEW)
 	// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
 	bk_pwm_initialize(pwmIndex, period, 0, 0, 0);
@@ -132,7 +132,7 @@ void HAL_PIN_PWM_Update(int index, float value) {
 		value = 100;
 
 	//uint32_t value_upscaled = value * 10.0f; //Duty cycle 0...100 -> 0...1000
-	uint32_t period = g_periods[index];
+	uint32_t period = g_periods[pwmIndex];
 	uint32_t duty = (value / 100.0 * period); //No need to use upscaled variable
 #if defined(PLATFORM_BK7231N) && !defined(PLATFORM_BEKEN_NEW)
 	bk_pwm_update_param(pwmIndex, period, duty,0,0);
