@@ -8,8 +8,6 @@
 #include "drv_pwm.h"
 #include "soc_pin_mux.h"
 
-extern int g_pwmFrequency;
-
 typedef struct trPinMapping_s
 {
 	const char* name;
@@ -257,7 +255,7 @@ void HAL_PIN_PWM_Stop(int index)
 	pwm_deinit(ch);
 }
 
-void HAL_PIN_PWM_Start(int index)
+void HAL_PIN_PWM_Start(int index, int freq)
 {
 	if(index >= g_numPins)
 		return;
@@ -276,7 +274,7 @@ void HAL_PIN_PWM_Update(int index, float value)
 		value = 0;
 	if(value > 100)
 		value = 100;
-	pwm_config(ch, g_pwmFrequency, (uint32_t)(value * 10));
+	pwm_config(ch, freq, (uint32_t)(value * 10));
 	pwm_start(ch);
 }
 

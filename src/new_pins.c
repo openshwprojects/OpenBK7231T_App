@@ -774,6 +774,8 @@ void CHANNEL_DoSpecialToggleAll() {
 		}
 	}
 }
+extern int g_pwmFrequency;
+
 void PIN_SetPinRoleForPinIndex(int index, int role) {
 	bool bDHTChange = false;
 	bool bSampleInitialState = false;
@@ -1043,7 +1045,17 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 
 			channelIndex = PIN_GetPinChannelForPinIndex(index);
 			channelValue = g_channelValuesFloats[channelIndex];
-			HAL_PIN_PWM_Start(index);
+
+			//100hz to 20000hz according to tuya code
+#define PWM_FREQUENCY_SLOW 600 //Slow frequency for LED Drivers requiring slower PWM Freq
+
+			int useFreq;
+			useFreq = g_pwmFrequency;
+			//Use slow pwm if user has set checkbox in webif
+			if (CFG_HasFlag(OBK_FLAG_SLOW_PWM))
+				useFreq = PWM_FREQUENCY_SLOW;
+
+			HAL_PIN_PWM_Start(index, useFreq);
 
 			if (role == IOR_PWM_n) {
 				// inversed PWM

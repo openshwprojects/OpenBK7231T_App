@@ -12,10 +12,7 @@
 #include "../../beken378/driver/i2c/i2c1.h"
 #include "../../beken378/driver/gpio/gpio.h"
 
-//100hz to 20000hz according to tuya code
-#define PWM_FREQUENCY_SLOW 600 //Slow frequency for LED Drivers requiring slower PWM Freq
 
-extern int g_pwmFrequency;
 
 int PIN_GetPWMIndexForPinIndex(int pin) 
 {
@@ -99,9 +96,8 @@ void HAL_PIN_PWM_Stop(int index) {
 	bk_pwm_stop(pwmIndex);
 }
 
-void HAL_PIN_PWM_Start(int index) {
+void HAL_PIN_PWM_Start(int index, int freq) {
 	int pwmIndex;
-	int useFreq;
 
 	pwmIndex = PIN_GetPWMIndexForPinIndex(index);
 
@@ -109,12 +105,8 @@ void HAL_PIN_PWM_Start(int index) {
 	if(pwmIndex == -1) {
 		return;
 	}
-	useFreq = g_pwmFrequency;
-	//Use slow pwm if user has set checkbox in webif
-	if(CFG_HasFlag(OBK_FLAG_SLOW_PWM))
-		useFreq = PWM_FREQUENCY_SLOW;
 
-	uint32_t frequency = (26000000 / useFreq);
+	uint32_t frequency = (26000000 / freq);
 #if defined(PLATFORM_BK7231N) && !defined(PLATFORM_BEKEN_NEW)
 	// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
 	bk_pwm_initialize(pwmIndex, frequency, 0, 0, 0);
