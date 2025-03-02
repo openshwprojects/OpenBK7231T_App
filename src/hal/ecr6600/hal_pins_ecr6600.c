@@ -44,9 +44,10 @@ ecrPinMapping_t g_pins[] = {
 	{ "P23 (PWM1)", GPIO_NUM_23 },
 	{ "P24 (PWM2)", GPIO_NUM_24 },
 	{ "P25 (PWM3)", GPIO_NUM_25 },
+	{ "VBAT", -1 },
 };
 
-static int g_numPins = sizeof(g_pins) / sizeof(g_pins[0]);
+static int g_numPins = (sizeof(g_pins) / sizeof(g_pins[0])) - 1;
 
 int PIN_GetPWMIndexForPinIndex(int pin)
 {
@@ -159,7 +160,7 @@ bool HAL_PIN_Set_As_GPIO(int pin)
 
 const char* HAL_PIN_GetPinNameAlias(int index)
 {
-	if(index >= g_numPins)
+	if(index >= g_numPins + 1)
 		return "error";
 	return g_pins[index].name;
 }

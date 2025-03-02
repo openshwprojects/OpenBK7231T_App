@@ -58,7 +58,6 @@
 #include "tuya_hal_storge.h"
 #include "BkDriverFlash.h"
 #include "temp_detect_pub.h"
-#elif defined(PLATFORM_ECR6600)
 #endif
 
 #if (defined(PLATFORM_BK7231T) || defined(PLATFORM_BK7231N)) && !defined(PLATFORM_BEKEN_NEW)
@@ -3057,6 +3056,12 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 #elif PLATFORM_TR6260
 #elif PLATFORM_REALTEK
 #elif PLATFORM_ECR6600
+	extern int http_client_download_file(const char* url, unsigned int len);
+	extern int ota_done(bool reset);
+	delay_ms(100);
+	int ret = http_client_download_file(s, strlen(s));
+	if(ret != -1) ota_done(1);
+	else ota_done(0);
 #elif PLATFORM_W600 || PLATFORM_W800
 	t_http_fwup(s);
 #elif PLATFORM_XR809

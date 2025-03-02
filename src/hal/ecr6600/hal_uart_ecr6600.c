@@ -8,7 +8,6 @@
 
 E_DRV_UART_NUM uart = E_UART_NUM_0;
 unsigned int uart_base;
-static bool isInitialized;
 
 static void uart_cb(void* data)
 {
@@ -28,10 +27,7 @@ void HAL_UART_SendByte(byte b)
 
 int HAL_UART_Init(int baud, int parity, bool hwflowc)
 {
-	if(isInitialized)
-	{
-		drv_uart_close(uart);
-	}
+	drv_uart_close(uart);
 	T_DRV_UART_CONFIG config = 
 	{
 		.uart_baud_rate = baud,
@@ -61,7 +57,6 @@ int HAL_UART_Init(int baud, int parity, bool hwflowc)
 	callback.uart_callback = uart_cb;
 	drv_uart_ioctrl(uart, DRV_UART_CTRL_REGISTER_RX_CALLBACK, &callback);
 	drv_uart_ioctrl(uart, DRV_UART_CTRL_GET_REG_BASE, (void*)(&uart_base));
-	isInitialized = true;
 	return 1;
 }
 

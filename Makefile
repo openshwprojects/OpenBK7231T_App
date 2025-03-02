@@ -405,28 +405,29 @@ OpenECR6600: prebuild_OpenECR6600
 	cd sdk/OpenECR6600 && make BOARD_DIR=$(ECRDIR)/Boards/ecr6600/standalone APP_NAME=OpenBeken TOPDIR=$(ECRDIR) GCC_PATH=$(ECRDIR)/tool/nds32le-elf-mculib-v3s/bin/ APP_VERSION=$(APP_VERSION) all
 	mkdir -p output/$(APP_VERSION)
 	cp $(ECRDIR)/build/OpenBeken/ECR6600F_standalone_OpenBeken_allinone.bin output/$(APP_VERSION)/OpenECR6600_$(APP_VERSION).bin
+	cp $(ECRDIR)/build/OpenBeken/ECR6600F_OpenBeken_Compress_ota_packeg.bin output/$(APP_VERSION)/OpenECR6600_$(APP_VERSION)_ota.img
 
 # clean .o files and output directory
 .PHONY: clean
 clean: 
-	#$(MAKE) -C sdk/OpenBK7231T/platforms/bk7231t/bk7231t_os APP_BIN_NAME=$(APP_NAME) USER_SW_VER=$(APP_VERSION) clean
-	#$(MAKE) -C sdk/OpenBK7231N/platforms/bk7231n/bk7231n_os APP_BIN_NAME=$(APP_NAME) USER_SW_VER=$(APP_VERSION) clean
-	#$(MAKE) -C sdk/OpenXR809/src clean
-	#$(MAKE) -C sdk/OpenXR809/project/oxr_sharedApp/gcc clean
-	#$(MAKE) -C sdk/OpenW800 clean
-	#$(MAKE) -C sdk/OpenW600 clean
-	#$(MAKE) -C sdk/OpenTR6260/scripts tr6260s1_clean
-	#$(MAKE) -C sdk/OpenRTL87X0C/project/OpenBeken/GCC-RELEASE clean
-	#$(MAKE) -C sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE clean
-	#$(MAKE) -C sdk/OpenRTL8710A_B/project/obk_ameba1/GCC-RELEASE clean
-	#$(MAKE) -C sdk/beken_freertos_sdk clean
-	#test -d ./sdk/OpenLN882H/build && cmake --build ./sdk/OpenLN882H/build --target clean
-	#test -d ./platforms/ESP-IDF/build-32 && cmake --build ./platforms/ESP-IDF/build-32 --target clean
-	#test -d ./platforms/ESP-IDF/build-c3 && cmake --build ./platforms/ESP-IDF/build-c3 --target clean
-	#test -d ./platforms/ESP-IDF/build-c2 && cmake --build ./platforms/ESP-IDF/build-c2 --target clean
-	#test -d ./platforms/ESP-IDF/build-c6 && cmake --build ./platforms/ESP-IDF/build-c6 --target clean
-	#test -d ./platforms/ESP-IDF/build-s2 && cmake --build ./platforms/ESP-IDF/build-s2 --target clean
-	#test -d ./platforms/ESP-IDF/build-s3 && cmake --build ./platforms/ESP-IDF/build-s3 --target clean
+	$(MAKE) -C sdk/OpenBK7231T/platforms/bk7231t/bk7231t_os APP_BIN_NAME=$(APP_NAME) USER_SW_VER=$(APP_VERSION) clean
+	$(MAKE) -C sdk/OpenBK7231N/platforms/bk7231n/bk7231n_os APP_BIN_NAME=$(APP_NAME) USER_SW_VER=$(APP_VERSION) clean
+	$(MAKE) -C sdk/OpenXR809/src clean
+	$(MAKE) -C sdk/OpenXR809/project/oxr_sharedApp/gcc clean
+	$(MAKE) -C sdk/OpenW800 clean
+	$(MAKE) -C sdk/OpenW600 clean
+	$(MAKE) -C sdk/OpenTR6260/scripts tr6260s1_clean
+	$(MAKE) -C sdk/OpenRTL87X0C/project/OpenBeken/GCC-RELEASE clean
+	$(MAKE) -C sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE clean
+	$(MAKE) -C sdk/OpenRTL8710A_B/project/obk_ameba1/GCC-RELEASE clean
+	$(MAKE) -C sdk/beken_freertos_sdk clean
+	test -d ./sdk/OpenLN882H/build && cmake --build ./sdk/OpenLN882H/build --target clean
+	test -d ./platforms/ESP-IDF/build-32 && cmake --build ./platforms/ESP-IDF/build-32 --target clean
+	test -d ./platforms/ESP-IDF/build-c3 && cmake --build ./platforms/ESP-IDF/build-c3 --target clean
+	test -d ./platforms/ESP-IDF/build-c2 && cmake --build ./platforms/ESP-IDF/build-c2 --target clean
+	test -d ./platforms/ESP-IDF/build-c6 && cmake --build ./platforms/ESP-IDF/build-c6 --target clean
+	test -d ./platforms/ESP-IDF/build-s2 && cmake --build ./platforms/ESP-IDF/build-s2 --target clean
+	test -d ./platforms/ESP-IDF/build-s3 && cmake --build ./platforms/ESP-IDF/build-s3 --target clean
 	cd sdk/OpenECR6600 && make BOARD_DIR=$(ECRDIR)/Boards/ecr6600/standalone APP_NAME=OpenBeken TOPDIR=$(ECRDIR) GCC_PATH=$(ECRDIR)/tool/nds32le-elf-mculib-v3s/bin/ clean
 
 # Add custom Makefile if required

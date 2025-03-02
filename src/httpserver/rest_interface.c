@@ -307,6 +307,8 @@ static int http_rest_post(http_request_t* request) {
 		return http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_REALTEK
 		return http_rest_post_flash(request, 0, -1);
+#elif PLATFORM_ECR6600
+		return http_rest_post_flash(request, -1, -1);
 #else
 		// TODO
 		ADDLOG_DEBUG(LOG_FEATURE_API, "No OTA");
@@ -1477,7 +1479,7 @@ static int ota_verify_download(void)
 static int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 {
 
-#if PLATFORM_XR809 || PLATFORM_TR6260 || PLATFORM_ECR6600
+#if PLATFORM_XR809 || PLATFORM_TR6260
 	return 0;	//Operation not supported yet
 #endif
 
@@ -2866,6 +2868,66 @@ update_ota_exit:
 	else
 	{
 		ADDLOG_ERROR(LOG_FEATURE_OTA, "OTA failed");
+		return http_rest_error(request, ret, "error");
+	}
+
+#elif PLATFORM_ECR6600
+
+	extern int ota_init(void);
+	extern int ota_write(unsigned char* data, unsigned int len);
+	extern int ota_done(bool reset);
+	int ret = 0;
+
+	if(request->contentLength > 0)
+	{
+		towrite = request->contentLength;
+	}
+	else
+	{
+		ret = -1;
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "Content-length is 0");
+		goto update_ota_exit;
+	}
+
+	if(ota_init() != 0)
+	{
+		ret = -1;
+		goto update_ota_exit;
+	}
+
+	do
+	{
+		if(ota_write((unsigned char*)writebuf, writelen) != 0)
+		{
+			ret = -1;
+			goto update_ota_exit;
+		}
+		delay_ms(10);
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Writelen %i at %i", writelen, total);
+		total += writelen;
+		startaddr += writelen;
+		towrite -= writelen;
+		if(towrite > 0)
+		{
+			writebuf = request->received;
+			writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
+			if(writelen < 0)
+			{
+				ADDLOG_DEBUG(LOG_FEATURE_OTA, "recv returned %d - end of data - remaining %d", writelen, towrite);
+				ret = -1;
+			}
+		}
+	} while((towrite > 0) && (writelen >= 0));
+
+update_ota_exit:
+	if(ret != -1)
+	{
+		ADDLOG_INFO(LOG_FEATURE_OTA, "OTA is successful");
+		ota_done(0);
+	}
+	else
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "OTA failed. Reboot to retry");
 		return http_rest_error(request, ret, "error");
 	}
 

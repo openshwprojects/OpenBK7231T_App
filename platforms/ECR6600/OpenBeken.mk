@@ -1,5 +1,3 @@
-OBK_DIR = $(TOPDIR)/../../src
-
 CFLAGS +=  -DPLATFORM_ECR6600 -DUSER_SW_VER='"$(APP_VERSION)"' -Wno-error -DTCP_MSL=3000
 #VPATH += $(TOPDIR)/../../src/base64
 #VPATH += $(TOPDIR)/../../src/bitmessage
@@ -20,6 +18,9 @@ VPATH += $(TOPDIR)/../../src
 VPATH += $(TOPDIR)/../../platforms/ECR6600
 
 INCPATHS += $(TOPDIR)/../../src
+INCPATHS += $(TOPDIR)/include/ota
+INCPATHS += $(TOPDIR)/include
+INCPATHS += $(TOPDIR)
 
 CSRCS  = main.c
 CSRCS  += base64/base64.c
@@ -43,6 +44,7 @@ CSRCS  += devicegroups/deviceGroups_read.c
 CSRCS  += devicegroups/deviceGroups_util.c
 CSRCS  += devicegroups/deviceGroups_write.c
 CSRCS  += driver/drv_main.c
+CSRCS  += hal/ecr6600/hal_adc_ecr6600.c
 CSRCS  += hal/ecr6600/hal_flashConfig_ecr6600.c
 CSRCS  += hal/ecr6600/hal_flashVars_ecr6600.c
 CSRCS  += hal/ecr6600/hal_generic_ecr6600.c
