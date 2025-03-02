@@ -49,6 +49,8 @@ ecrPinMapping_t g_pins[] = {
 
 static int g_numPins = (sizeof(g_pins) / sizeof(g_pins[0])) - 1;
 
+static uint32_t g_periods[6] = { 0 };
+
 int PIN_GetPWMIndexForPinIndex(int pin)
 {
 	switch(pin)
@@ -264,14 +266,22 @@ void HAL_PIN_PWM_Stop(int index)
 	if(ch < 0) return;
 	drv_pwm_stop(ch);
 	drv_pwm_close(ch);
+	g_periods[ch] = 0;
 }
 
-void HAL_PIN_PWM_Start(int index)
+void HAL_PIN_PWM_Start(int index, int freq)
 {
 	if(index >= g_numPins)
 		return;
 	int ch = PIN_GetPWMIndexForPinIndex(index);
 	if(ch < 0) return;
+	if(g_periods[ch] != 0)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_PINS, "PWM Channel %i is already configured, stopping it!", ch);
+		drv_pwm_stop(ch);
+		drv_pwm_close(ch);
+	}
+	g_periods[ch] = (uint32_t)freq;
 	ECR_SetPinAsPWM(index);
 	drv_pwm_open(ch);
 	drv_pwm_start(ch);
@@ -287,7 +297,7 @@ void HAL_PIN_PWM_Update(int index, float value)
 		value = 0;
 	if(value > 100)
 		value = 100;
-	drv_pwm_config(ch, g_pwmFrequency, (uint32_t)(value * 10));
+	drv_pwm_config(ch, g_periods[ch], (uint32_t)(value * 10));
 	drv_pwm_update(ch);
 }
 
