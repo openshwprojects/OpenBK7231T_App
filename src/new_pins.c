@@ -1059,7 +1059,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 
 			if (role == IOR_PWM_n) {
 				// inversed PWM
-				HAL_PIN_PWM_Update(index, 100 - channelValue);
+				HAL_PIN_PWM_Update(index, 100.0f - channelValue);
 			}
 			else {
 				HAL_PIN_PWM_Update(index, channelValue);
