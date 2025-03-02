@@ -763,6 +763,9 @@ commandResult_t CMD_PWMFrequency(const void* context, const char* cmd, const cha
 		return CMD_RES_ERROR;
 	}
 #endif
+	// reapply PWM settings
+	PIN_SetupPins();
+
 	return CMD_RES_OK;
 }
 commandResult_t CMD_IndexRefreshInterval(const void* context, const char* cmd, const char* args, int cmdFlags) {
