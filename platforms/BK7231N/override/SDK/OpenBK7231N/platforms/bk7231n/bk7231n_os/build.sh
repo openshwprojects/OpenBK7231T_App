@@ -67,7 +67,7 @@ cd tools/generate/
 cp ${APP_BIN_NAME}_${APP_VERSION}.bin ${APP_BIN_NAME}_${APP_VERSION}_zeroKeys.bin
 
 if [ "$BUILD_MODE" = "zerokeys" ]; then
-	echo "Using zero keys mode - for those non-Tuya devices"
+	echo "Using zero keys mode - for those non-Tuya devices1"
 	./${ENCRYPT} ${APP_BIN_NAME}_${APP_VERSION}.bin 00000000 00000000 00000000 00000000 10000
 	#python mpytools.py bk7231n_bootloader_zero_keys.bin ${APP_BIN_NAME}_${APP_VERSION}_enc.bin
 	python mpytools.py bk7231n_bootloader_enc.bin ${APP_BIN_NAME}_${APP_VERSION}_enc.bin
