@@ -38,4 +38,4 @@
 # and then in pre_build.sh you apply this patch with:
 #
 # patch -p 1 -d sdk/OpenBL602 < platforms/BL602/my_change.diff
-
+sed -i "s%^#define LWIP_ALTCP%//&%" sdk/OpenBL602/components/network/lwip/lwip-port/config/lwipopts.h 
