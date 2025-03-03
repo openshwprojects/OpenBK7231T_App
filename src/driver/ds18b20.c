@@ -703,6 +703,11 @@ int http_fn_cfg_ds18b20(http_request_t* request)
 		if (http_getArg(request->url, tmp2, tmp, sizeof(tmp))) {
 			DS18B20_set_devicename(ds18b20devices.array[i],tmp);
 		}
+		sprintf(tmp2,"ds1820chan%i",i);
+		if (http_getArg(request->url, tmp2, tmp, sizeof(tmp))) {
+			int c=atoi(tmp);
+			DS18B20_set_channel(ds18b20devices.array[i],c);
+		}
 
 	}
 
@@ -724,21 +729,6 @@ int http_fn_cfg_ds18b20(http_request_t* request)
 	}
 	hprintf255(request, "</table>");
 		
-	for (int i=0; i < ds18_count; i++) { 
-		sprintf(tmp2,"ds1820name%i",i);
-		if (http_getArg(request->url, tmp2, tmp, sizeof(tmp))) {
-			DS18B20_set_devicename(ds18b20devices.array[i],tmp);
-		}
-
-	}
-	for (int i=0; i < ds18_count; i++) { 
-		sprintf(tmp2,"ds1820chan%i",i);
-		if (http_getArg(request->url, tmp2, tmp, sizeof(tmp))) {
-			int c=atoi(tmp);
-			DS18B20_set_channel(ds18b20devices.array[i],c);
-		}
-
-	}
 
 	poststr(request, "<br><input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? ')\"></form> ");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);

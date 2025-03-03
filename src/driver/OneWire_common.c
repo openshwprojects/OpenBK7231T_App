@@ -337,7 +337,7 @@ commandResult_t CMD_OW_testus(const void *context, const char *cmd, const char *
 	int testvals[MAXUSTESTS];
 	int pin = Tokenizer_GetArgInteger(1);
 	int pause = Tokenizer_GetArgInteger(2);
-	if (tests > MAXUSTESTS) tests > MAXUSTESTS; 
+	if (tests > MAXUSTESTS) tests = MAXUSTESTS; 
 	for (int i=0; i<tests; i++){
 		testvals[i]=Tokenizer_GetArgInteger(3+i);
 	}
