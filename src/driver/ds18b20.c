@@ -719,18 +719,20 @@ int http_fn_cfg_ds18b20(http_request_t* request)
 	hprintf255(request, "<h2>Here you can configure DS18B20 sensors detected or cinfigured</h2><h5>Configure DS18B20 devices detected</h5><form action='/cfg_ds18b20'>");
 	hprintf255(request, "<table><tr><th width='38'>Sensor Adress</th><th width='25'> &nbsp; Name </th><th width='10'>Channel</th></tr>");
 	for (int i=0; i < ds18_count; i++) {
-		hprintf255(request, "<tr><td> %02X %02X %02X %02X %02X %02X %02X %02X</td>"
-		"<td>&nbsp; <input name='ds1820name%i' value='%s'></td>"
-		"<td>&nbsp; <input name='ds1820chan%i' value='%i'></td></tr>",
+		hprintf255(request, "<tr><td id='a%i'>0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X</td>"
+		"<td>&nbsp; <input name='ds1820name%i' id='ds1820name%i' value='%s'></td>"
+		"<td>&nbsp; <input name='ds1820chan%i' id='ds1820chan%i' value='%i'></td></tr>",i,
 		ds18b20devices.array[i][0],ds18b20devices.array[i][1],ds18b20devices.array[i][2],ds18b20devices.array[i][3],
 		ds18b20devices.array[i][4],ds18b20devices.array[i][5],ds18b20devices.array[i][6],ds18b20devices.array[i][7],
-		i,ds18b20devices.name[i],
-		i,ds18b20devices.channel[i]);
+		i,i,ds18b20devices.name[i],
+		i,i,ds18b20devices.channel[i]);
 	}
 	hprintf255(request, "</table>");
 		
 
 	poststr(request, "<br><input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? ')\"></form> ");
+	poststr(request, "<script> function gen(){v='backlog starDriver DS18B20 '; for (i=0; i<5; i++) { v+='; DS18B20_setsensor ' + '\"' + getElement('a'+i).innerHTML + '\" \"' + getElement('ds1820name'+i).value + '\" \"' + getElement('ds1820chan'+i).value + '\" '} return v; };</script>");
+	poststr(request,"<br><br><input type='button' value='generate backlog command for config' onclick='t=document.getElementById(\"text\"); t.value=gen(); t.hidden=false; '><textarea id="text" hidden '> </textarea><p>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
 	poststr(request, NULL);
