@@ -73,7 +73,7 @@ if [ "$BUILD_MODE" = "zerokeys" ]; then
 	python mpytools.py bk7231n_bootloader_enc.bin ${APP_BIN_NAME}_${APP_VERSION}_enc.bin
 else
 	echo "Using usual Tuya path"
-	./${ENCRYPT} ${APP_BIN_NAME}_${APP_VERSION}.bin 9a376248 4b781286 58e2c585 28457575 10000
+	./${ENCRYPT} ${APP_BIN_NAME}_${APP_VERSION}.bin 4862379a 8612784b 85c5e258 75754528 10000
 	python mpytools.py bk7231n_bootloader_enc.bin ${APP_BIN_NAME}_${APP_VERSION}_enc.bin
 fi
 
