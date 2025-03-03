@@ -40,11 +40,6 @@ void OWWriteBit(int Pin, int bit);
 int OWReadBit(int Pin);
 
 //-----------------------------------------------------------------------------
-// Poll if DS1820 temperature conversion is complete
-//-----------------------------------------------------------------------------
-int DS1820TConversionDone(int Pin);
-
-//-----------------------------------------------------------------------------
 // Write 1-Wire data byte
 //-----------------------------------------------------------------------------
 void OWWriteByte(int Pin, int data);
@@ -64,3 +59,15 @@ int OWTouchByte(int Pin, int data);
 // Dallas 1-Wire CRC Test App -
 //  x^8 + x^5 + x^4 + 1 0x8C (0x131)
 uint8_t Crc8CQuick(uint8_t* Buffer, uint8_t Size);
+
+
+
+// ############################################ DS1820 commons ############################################
+
+//-----------------------------------------------------------------------------
+// Poll if DS1820 temperature conversion is complete
+//-----------------------------------------------------------------------------
+int DS1820TConversionDone(int Pin);
+
+
+void register_testus();
