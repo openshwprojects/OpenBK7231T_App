@@ -3,17 +3,6 @@
 #include "../hal_adc.h"
 #include "adc.h"
 
-char isInitialized = 0;
-
-void HAL_ADC_Init(int pinNumber) 
-{
-	if(!isInitialized)
-	{
-		drv_adc_init();
-		isInitialized = 1;
-	}
-}
-
 int HAL_ADC_Read(int pinNumber)
 {
 	//DRV_ADC_INPUT_SIGNAL_A_SEL adc = 0xFF;

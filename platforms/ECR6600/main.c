@@ -75,21 +75,42 @@ int main(void)
 		time_check_temp();
 	}
 
-	amt_cal_info_obtain();
+	// disabling this allowed connecting to ap with -91 rssi
+	//amt_cal_info_obtain();
+
 	wifi_main();
+
+	// disabling this will crash when getting ip
 	psm_wifi_ble_init();
-	psm_wifi_ps_to_active();
-	psm_sleep_mode_ena_op(true, 0);
-	psm_set_psm_enable(0);
-	psm_pwr_mgt_ctrl(0);
-	psm_sleep_mode_ena_op(true, 0);
-	PSM_SLEEP_CLEAR(MODEM_SLEEP);
-	PSM_SLEEP_CLEAR(WFI_SLEEP);
-	psm_set_device_status(PSM_DEVICE_WIFI_STA, PSM_DEVICE_STATUS_ACTIVE);
+	//psm_wifi_ps_to_active();
+	//psm_sleep_mode_ena_op(true, 0);
+	//psm_set_psm_enable(0);
+	//psm_pwr_mgt_ctrl(0);
+	//psm_sleep_mode_ena_op(true, 0);
+	//PSM_SLEEP_CLEAR(MODEM_SLEEP);
+	//PSM_SLEEP_CLEAR(WFI_SLEEP);
+	//psm_set_device_status(PSM_DEVICE_WIFI_STA, PSM_DEVICE_STATUS_ACTIVE);
+	//psm_set_normal();
+	//psm_set_sleep_mode(0, 0);
 	//psm_boot_flag_dbg_op(true, 1);
-	//AmtRfSetTxGain(1, (char*){"13"});
-	// efuse mac is not burnt on wg236p
+	//AmtRfStart(1, "1");
+	//int txgf = AmtRfGetTxGainFlag();
+	//int txg = AmtRfGetTxGain();
+	//printf("\r\nAmtRfGetTxGainFlag:%i AmtRfGetTxGain: %i\r\n", txgf, txg);
+	// max txpower reported in console is 137 - 13.7dbm.
+	//AmtRfSetApcIndex(1, "137");
+	//uint8_t str[240];
+	//amt_get_env_blob("txPower", &str, 240, NULL);
+	//printf("txPower: %.*s\r\n", 240, str);
+	//for(int i = 0; i < 240; i += 2)
+	//{
+	//	str[i] = 0xFF;
+	//	str[i + 1] = 0x89;
+	//}
+	//amt_set_env_blob("txPower", str, 240);
+	// efuse mac is not burnt on wg236p (or probably on anything, since writing it is unsupported in console)
 	//drv_efuse_read(0x18, (unsigned int*)wmac, 6);
+
 	xTaskCreate(
 		sys_task1,
 		"OpenBeken",
