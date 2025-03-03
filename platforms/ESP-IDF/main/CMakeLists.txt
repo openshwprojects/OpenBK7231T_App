@@ -85,6 +85,8 @@ set(PROJ_ALL_SRC
 #	../../../src/driver/drv_ucs1912.c
 	../../../src/driver/drv_wemo.c
 	../../../src/driver/drv_ds1820_simple.c
+	../../../src/driver/OneWire_common.c
+	../../../src/driver/ds18b20.c
 	../../../src/hal/espidf/hal_adc_espidf.c
 	../../../src/hal/espidf/hal_flashConfig_espidf.c
 	../../../src/hal/espidf/hal_flashVars_espidf.c
