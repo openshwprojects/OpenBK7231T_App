@@ -539,7 +539,7 @@ const char* htmlPinRoleNames[] = {
 	"KP18058_CLK",
 	"KP18058_DAT",
 	"DS1820_IO",
-	"error",
+	"PWM_ScriptOnly",
 	"error",
 	"error",
 };
@@ -588,7 +588,7 @@ void setupAllWB2SPinsAsButtons() {
 // call with str == NULL to force send. - can be binary.
 // supply length
 int postany(http_request_t* request, const char* str, int len) {
-#if PLATFORM_BL602 || PLATFORM_BEKEN_NEW
+#if PLATFORM_BL602 || PLATFORM_BEKEN_NEW || PLATFORM_RTL8720D
 	send(request->fd, str, len, 0);
 	return 0;
 #else

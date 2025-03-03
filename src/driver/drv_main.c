@@ -132,6 +132,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "TESTLED",	Test_LED_Driver_Init, Test_LED_Driver_RunEverySecond, NULL, NULL, NULL, Test_LED_Driver_OnChannelChanged, false },
 #endif
+#if ENABLE_TEST_COMMANDS
+	//drvdetail:{"name":"Test",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Self test of the device",
+	//drvdetail:"requires":""}
+	{ "Test",	Test_Init, NULL, Test_AppendInformationToHTTPIndexPage, Test_RunQuickTick, NULL, NULL, false },
+#endif
 #if ENABLE_I2C
 	//drvdetail:{"name":"I2C",
 	//drvdetail:"title":"TODO",

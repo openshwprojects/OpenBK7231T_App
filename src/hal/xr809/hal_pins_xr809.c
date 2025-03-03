@@ -118,7 +118,7 @@ void HAL_PIN_Setup_Output(int index) {
 void HAL_PIN_PWM_Stop(int pinIndex) {
 }
 
-void HAL_PIN_PWM_Start(int index) {
+void HAL_PIN_PWM_Start(int index, int freq) {
 
 }
 void HAL_PIN_PWM_Update(int index, float value) {

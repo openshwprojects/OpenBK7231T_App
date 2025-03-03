@@ -6,7 +6,6 @@
 #include "../../new_pins.h"
 #include "hal_generic_realtek.h"
 
-extern int g_pwmFrequency;
 extern rtlPinMapping_t g_pins[];
 extern int g_numPins;
 
@@ -109,7 +108,7 @@ void HAL_PIN_PWM_Stop(int index)
 	pin->pwm = NULL;
 }
 
-void HAL_PIN_PWM_Start(int index)
+void HAL_PIN_PWM_Start(int index, int freq)
 {
 	if(index >= g_numPins || !HAL_PIN_CanThisPinBePWM(index))
 		return;
@@ -124,7 +123,7 @@ void HAL_PIN_PWM_Start(int index)
 	pin->pwm = os_malloc(sizeof(pwmout_t));
 	memset(pin->pwm, 0, sizeof(pwmout_t));
 	pwmout_init(pin->pwm, pin->pin);
-	pwmout_period_us(pin->pwm, g_pwmFrequency);
+	pwmout_period_us(pin->pwm, freq);
 #ifndef PLATFORM_RTL8710A
 	pwmout_start(pin->pwm);
 #endif
@@ -137,7 +136,7 @@ void HAL_PIN_PWM_Update(int index, float value)
 	rtlPinMapping_t* pin = g_pins + index;
 #ifdef PLATFORM_RTL87X0C
 	if(pin->pwm == NULL || !pin->pwm->is_init) return;
-#elif PLATFORM_RTL8710B
+#else
 	if(pin->pwm == NULL) return;
 #endif
 	pwmout_write(pin->pwm, value / 100);

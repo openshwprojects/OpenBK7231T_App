@@ -676,15 +676,20 @@ void NEW_button_init(pinButton_s* handle, uint8_t(*pin_level)(void* self), uint8
 	handle->button_level = handle->hal_button_Level(handle);
 	handle->active_level = active_level;
 }
-void CHANNEL_SetFirstChannelByType(int requiredType, int newVal) {
+
+void CHANNEL_SetFirstChannelByTypeEx(int requiredType, int newVal, int ausemovingaverage) {
 	int i;
 
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		if (CHANNEL_GetType(i) == requiredType) {
-			CHANNEL_Set(i, newVal, 0);
+			CHANNEL_Set_Ex(i, newVal, 0, ausemovingaverage);
 			return;
 		}
 	}
+}
+
+void CHANNEL_SetFirstChannelByType(int requiredType, int newVal) {
+	CHANNEL_SetFirstChannelByTypeEx(requiredType, newVal, 0);
 }
 
 void CHANNEL_SetAll(int iVal, int iFlags) {
@@ -721,6 +726,7 @@ void CHANNEL_SetAll(int iVal, int iFlags) {
 			CHANNEL_Set(g_cfg.pins.channels[i], iVal, iFlags);
 			break;
 		case IOR_PWM:
+		case IOR_PWM_ScriptOnly:
 		case IOR_PWM_n:
 			CHANNEL_Set(g_cfg.pins.channels[i], iVal, iFlags);
 			break;
@@ -772,6 +778,8 @@ void CHANNEL_DoSpecialToggleAll() {
 		}
 	}
 }
+extern int g_pwmFrequency;
+
 void PIN_SetPinRoleForPinIndex(int index, int role) {
 	bool bDHTChange = false;
 	bool bSampleInitialState = false;
@@ -836,6 +844,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			break;
 			// Disable PWM for previous pin role
 		case IOR_PWM_n:
+		case IOR_PWM_ScriptOnly:
 		case IOR_PWM:
 		{
 			HAL_PIN_PWM_Stop(index);
@@ -1032,6 +1041,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			HAL_ADC_Init(index);
 			break;
 		case IOR_PWM_n:
+		case IOR_PWM_ScriptOnly:
 		case IOR_PWM:
 		{
 			int channelIndex;
@@ -1039,11 +1049,21 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 
 			channelIndex = PIN_GetPinChannelForPinIndex(index);
 			channelValue = g_channelValuesFloats[channelIndex];
-			HAL_PIN_PWM_Start(index);
+
+			//100hz to 20000hz according to tuya code
+#define PWM_FREQUENCY_SLOW 600 //Slow frequency for LED Drivers requiring slower PWM Freq
+
+			int useFreq;
+			useFreq = g_pwmFrequency;
+			//Use slow pwm if user has set checkbox in webif
+			if (CFG_HasFlag(OBK_FLAG_SLOW_PWM))
+				useFreq = PWM_FREQUENCY_SLOW;
+
+			HAL_PIN_PWM_Start(index, useFreq);
 
 			if (role == IOR_PWM_n) {
 				// inversed PWM
-				HAL_PIN_PWM_Update(index, 100 - channelValue);
+				HAL_PIN_PWM_Update(index, 100.0f - channelValue);
 			}
 			else {
 				HAL_PIN_PWM_Update(index, channelValue);
@@ -1115,7 +1135,7 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 			else if (g_cfg.pins.roles[i] == IOR_Relay_n || g_cfg.pins.roles[i] == IOR_LED_n || g_cfg.pins.roles[i] == IOR_BAT_Relay_n) {
 				RAW_SetPinValue(i, !bOn);
 			}
-			else if (g_cfg.pins.roles[i] == IOR_PWM) {
+			else if (g_cfg.pins.roles[i] == IOR_PWM || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly) {
 				HAL_PIN_PWM_Update(i, iVal);
 			}
 			else if (g_cfg.pins.roles[i] == IOR_PWM_n) {
@@ -1366,7 +1386,7 @@ void CHANNEL_Set_FloatPWM(int ch, float fVal, int iFlags) {
 
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if (g_cfg.pins.channels[i] == ch) {
-			if (g_cfg.pins.roles[i] == IOR_PWM) {
+			if (g_cfg.pins.roles[i] == IOR_PWM || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly) {
 				HAL_PIN_PWM_Update(i, fVal);
 			}
 			else if (g_cfg.pins.roles[i] == IOR_PWM_n) {
@@ -1382,7 +1402,8 @@ void CHANNEL_SetSmart(int ch, float fVal, int iFlags) {
 	int divided = fVal * divider;
 	CHANNEL_Set(ch, divided, iFlags);
 }
-void CHANNEL_Set(int ch, int iVal, int iFlags) {
+
+void CHANNEL_Set_Ex(int ch, int iVal, int iFlags, int ausemovingaverage) {
 	int prevValue;
 	int bForce;
 	int bSilent;
@@ -1434,6 +1455,10 @@ void CHANNEL_Set(int ch, int iVal, int iFlags) {
 
 	Channel_OnChanged(ch, prevValue, iFlags);
 }
+void CHANNEL_Set(int ch, int iVal, int iFlags) {
+	CHANNEL_Set_Ex(ch, iVal, iFlags, 0);
+}
+
 void CHANNEL_AddClamped(int ch, int iVal, int min, int max, int bWrapInsteadOfClamp) {
 #if 0
 	int prevValue;
@@ -1511,7 +1536,7 @@ int CHANNEL_FindMaxValueForChannel(int ch) {
 		// is pin tied to this channel?
 		if (g_cfg.pins.channels[i] == ch) {
 			// is it PWM?
-			if (g_cfg.pins.roles[i] == IOR_PWM) {
+			if (g_cfg.pins.roles[i] == IOR_PWM || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly) {
 				return 100;
 			}
 			if (g_cfg.pins.roles[i] == IOR_PWM_n) {
@@ -1696,6 +1721,7 @@ int CHANNEL_GetRoleForOutputChannel(int ch) {
 			case IOR_LED_n:
 			case IOR_PWM_n:
 			case IOR_PWM:
+			case IOR_PWM_ScriptOnly:
 				return g_cfg.pins.roles[i];
 			case IOR_BridgeForward:
 			case IOR_BridgeReverse:
@@ -1958,7 +1984,7 @@ void PIN_ticks(void* param)
 		}
 
 #if 1
-		if (g_cfg.pins.roles[i] == IOR_PWM) {
+		if (g_cfg.pins.roles[i] == IOR_PWM || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly) {
 			HAL_PIN_PWM_Update(i, g_channelValuesFloats[g_cfg.pins.channels[i]]);
 		}
 		else if (g_cfg.pins.roles[i] == IOR_PWM_n) {
@@ -2345,6 +2371,11 @@ void PIN_get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount) {
 			BIT_SET(pwmBits, g_cfg.pins.channels[i]);
 			//(*pwmCount)++;
 			break;
+		case IOR_PWM_ScriptOnly:
+			// DO NOT COUNT SCRIPTONLY PWM HERE!
+			// As in title - it's only for scripts. 
+			// It should not generate lights!
+			break;
 		case IOR_DigitalInput:
 		case IOR_DigitalInput_n:
 		case IOR_DigitalInput_NoPup:
@@ -2384,6 +2415,12 @@ int h_isChannelPWM(int tg_ch) {
 		if (role == IOR_PWM || role == IOR_PWM_n) {
 			return true;
 		}
+		// DO NOT COUNT SCRIPTONLY PWM HERE!
+		// As in title - it's only for scripts. 
+		// It should not generate lights!
+		//if (role == IOR_PWM_ScriptOnly) {
+		//	return true;
+		//}
 	}
 	return false;
 }

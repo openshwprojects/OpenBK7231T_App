@@ -7,6 +7,7 @@
 #include "../cmnds/cmd_public.h"
 #include "../driver/drv_tuyaMCU.h"
 #include "../driver/drv_public.h"
+#include "../driver/drv_bl_shared.h"
 #include "../hal/hal_wifi.h"
 #include "../hal/hal_pins.h"
 #include "../hal/hal_flashConfig.h"
@@ -18,8 +19,6 @@
 #include <time.h>
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_local.h"
-
-static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"></form>";
 
 #ifdef WINDOWS
 // nothing
@@ -40,12 +39,16 @@ static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"
 #include "temp_detect_pub.h"
 #elif defined(PLATFORM_LN882H)
 #elif defined(PLATFORM_TR6260)
-#elif defined(PLATFORM_RTL87X0C)
-#include "hal_sys_ctrl.h"
-extern hal_reset_reason_t reset_reason;
-extern uint32_t current_fw_idx;
-#elif defined(PLATFORM_RTL8710B)
-extern uint32_t current_fw_idx;
+#elif defined(PLATFORM_REALTEK)
+	#include "wifi_structures.h"
+	#include "wifi_constants.h"
+	#include "wifi_conf.h"
+	extern uint32_t current_fw_idx;
+	#ifdef PLATFORM_RTL87X0C
+	#include "hal_sys_ctrl.h"
+	extern hal_reset_reason_t reset_reason;
+	#endif
+	SemaphoreHandle_t scan_hdl;
 #elif defined(PLATFORM_ESPIDF)
 #include "esp_wifi.h"
 #include "esp_system.h"
@@ -61,6 +64,8 @@ extern uint32_t current_fw_idx;
 int tuya_os_adapt_wifi_all_ap_scan(AP_IF_S** ap_ary, unsigned int* num);
 int tuya_os_adapt_wifi_release_ap(AP_IF_S* ap);
 #endif
+
+static const char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"></form>";
 
 
 const char* g_typesOffLowMidHigh[] = { "Off","Low","Mid","High" };
@@ -908,7 +913,7 @@ typedef enum {
 	}
 	hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", reset_reason, s);
 	hprintf255(request, "<h5>Current fw: FW%i</h5>", current_fw_idx);
-#elif PLATFORM_RTL8710B
+#elif PLATFORM_RTL8710B || PLATFORM_RTL8720D
 	hprintf255(request, "<h5>Current fw: FW%i</h5>", current_fw_idx + 1);
 #endif
 #if ENABLE_MQTT
@@ -1292,11 +1297,6 @@ int http_fn_cfg_wifi(http_request_t* request) {
 #ifdef WINDOWS
 
 		poststr(request, "Not available on Windows<br>");
-#elif PLATFORM_XR809
-		poststr(request, "TODO XR809<br>");
-
-#elif PLATFORM_W600 || PLATFORM_W800
-		poststr(request, "TODO W800<br>");
 #elif PLATFORM_BL602
                wifi_mgmr_ap_item_t *ap_info;
                uint32_t i, ap_num;
@@ -1335,9 +1335,6 @@ int http_fn_cfg_wifi(http_request_t* request) {
 			hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", i + 1, (int)num, ar[i].ssid, ar[i].channel, ar[i].rssi);
 		}
 		tuya_os_adapt_wifi_release_ap(ar);
-#elif PLATFORM_LN882H
-// TODO:LN882H action
-        poststr(request, "TODO LN882H<br>");
 #elif PLATFORM_ESPIDF
 		// doesn't work in ap mode, only sta/apsta
 		uint16_t ap_count = 0, number = 30;
@@ -1355,12 +1352,35 @@ int http_fn_cfg_wifi(http_request_t* request) {
 #elif PLATFORM_TR6260
 		poststr(request, "TODO TR6260<br>");
 #elif defined(PLATFORM_REALTEK)
-		poststr(request, "TODO Realtek<br>");
-#elif PLATFORM_BEKEN_NEW
-		poststr(request, "TODO BEKEN_NEW<br>");
+#ifndef PLATFORM_RTL87X0C
+		extern void rltk_wlan_enable_scan_with_ssid_by_extended_security(bool);
+#endif
+
+		rtw_result_t scan_result_handler(rtw_scan_handler_result_t* result)
+		{
+			http_request_t* request = (http_request_t*)result->user_data;
+
+			if(result->scan_complete == RTW_TRUE)
+			{
+				xSemaphoreGive(scan_hdl);
+				return RTW_SUCCESS;
+			}
+			rtw_scan_result_t* record = &result->ap_details;
+			record->SSID.val[record->SSID.len] = 0;
+			hprintf255(request, "SSID: %s, Channel: %i, Signal %i<br>", record->SSID.val, record->channel, record->signal_strength);
+		}
+
+		scan_hdl = xSemaphoreCreateBinary();
+		rltk_wlan_enable_scan_with_ssid_by_extended_security(1);
+		xSemaphoreTake(scan_hdl, 1);
+		if(wifi_scan_networks(scan_result_handler, request) != RTW_SUCCESS)
+		{
+			poststr(request, "Wifi scan failed!<br>");
+		}
+		xSemaphoreTake(scan_hdl, pdMS_TO_TICKS(10 * 1000));
+		vSemaphoreDelete(scan_hdl);
 #else
-#error "Unknown platform"
-		poststr(request, "Unknown platform<br>");
+		hprintf255(request, "TODO %s<br>", PLATFORM_MCU_NAME);
 #endif
 	}
 	poststr(request, "<form action=\"/cfg_wifi\">\
@@ -1827,13 +1847,30 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	if (measuringPower == true) {
 		for (i = OBK__FIRST; i <= OBK__LAST; i++)
 		{
-			dev_info = hass_init_energy_sensor_device_info(i);
+			dev_info = hass_init_energy_sensor_device_info(i, BL_SENSORS_IX_0);
 			if (dev_info) {
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 				discoveryQueued = true;
 			}
 		}
+#if ENABLE_BL_TWIN
+		//BL_SENSORS_IX_1 - mqtt hass discovery using hass_uniq_id_suffix (_b) from drv_bl_shared.c
+		if (BL_IsMeteringDeviceIndexActive(BL_SENSORS_IX_1)) {
+			for (i = OBK__FIRST; i <= OBK__LAST; i++)
+			{
+				//BL_SENSORS_IX_1 does not have energy yet, just base  OBK_VOLTAGE..OBK_POWER_FACTOR
+				if (i < OBK_VOLTAGE) continue;
+				if (i > OBK_POWER_FACTOR) continue;
+				dev_info = hass_init_energy_sensor_device_info(i, BL_SENSORS_IX_1);
+				if (dev_info) {
+					MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+					hass_free_device_info(dev_info);
+					discoveryQueued = true;
+				}
+			}
+		}
+#endif
 	}
 #endif
 
@@ -2131,8 +2168,10 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	}
 	if (1) {
 		//use -1 for channel as these don't correspond to channels
+#ifndef NO_CHIP_TEMPERATURE
 		dev_info = hass_init_sensor_device_info(HASS_TEMP, -1, -1, -1, 1);
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+#endif
 		dev_info = hass_init_sensor_device_info(HASS_RSSI, -1, -1, -1, 1);
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
@@ -2268,7 +2307,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 					switchAdded = 1;
 				}
 
-				hass_print_unique_id(request, "  - unique_id: \"%s\"\n", RELAY, i);
+				hass_print_unique_id(request, "  - unique_id: \"%s\"\n", RELAY, i, 0);
 				hprintf255(request, "    name: %i\n", i);
 				hprintf255(request, "    state_topic: \"%s/%i/get\"\n", clientId, i);
 				hprintf255(request, "    command_topic: \"%s/%i/set\"\n", clientId, i);
@@ -2288,7 +2327,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 					switchAdded = 1;
 				}
 
-				hass_print_unique_id(request, "  - unique_id: \"%s\"\n", BINARY_SENSOR, i);
+				hass_print_unique_id(request, "  - unique_id: \"%s\"\n", BINARY_SENSOR, i, 0);
 				hprintf255(request, "    name: %i\n", i);
 				hprintf255(request, "    state_topic: \"%s/%i/get\"\n", clientId, i);
 				hprintf_qos_payload(request, clientId);
@@ -2307,7 +2346,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 			switchAdded = 1;
 		}
 
-		hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_RGBCW, i);
+		hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_RGBCW, i, 0);
 		hprintf255(request, "    name: %i\n", i);
 		http_generate_rgb_cfg(request, clientId);
 		//hprintf255(request, "    #brightness_value_template: \"{{ value }}\"\n");
@@ -2327,7 +2366,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 				switchAdded = 1;
 			}
 
-			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_RGB, i);
+			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_RGB, i, 0);
 			hprintf255(request, "    name: Light\n");
 			http_generate_rgb_cfg(request, clientId);
 		}
@@ -2342,7 +2381,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 				switchAdded = 1;
 			}
 
-			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_PWM, i);
+			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_PWM, i, 0);
 			hprintf255(request, "    name: Light\n");
 			http_generate_singleColor_cfg(request, clientId);
 		}
@@ -2357,7 +2396,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 				switchAdded = 1;
 			}
 
-			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_PWMCW, i);
+			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_PWMCW, i, 0);
 			hprintf255(request, "    name: Light\n");
 			http_generate_cw_cfg(request, clientId);
 		}
@@ -2374,7 +2413,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 						lightAdded = 1;
 					}
 
-					hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_PWM, i);
+					hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_PWM, i, 0);
 					hprintf255(request, "    name: %i\n", i);
 					hprintf255(request, "    state_topic: \"%s/%i/get\"\n", clientId, i);
 					hprintf255(request, "    command_topic: \"%s/%i/set\"\n", clientId, i);
@@ -2786,6 +2825,26 @@ const char* g_obk_flagNames[] = {
 	"error",
 	"error",
 }; 
+
+void uint64_to_str(uint64_t num, char* str) {
+	char temp[21];  // uint64_t 20 numbers + \0
+	int i = 0;
+	if (num == 0) {
+		temp[i++] = '0';
+	} else {
+		while (num > 0) {
+			temp[i++] = '0' + (num % 10);
+			num /= 10;
+		}
+	}
+	temp[i] = '\0';
+	int j;
+	for (j = 0; j < i; j++) {
+		str[j] = temp[i - j - 1];
+	}
+	str[j] = '\0';
+}
+
 int http_fn_cfg_generic(http_request_t* request) {
 	int i;
 	char tmpA[64];
@@ -2823,9 +2882,12 @@ int http_fn_cfg_generic(http_request_t* request) {
 	CFG_Save_IfThereArePendingChanges();
 
 	// 32 bit type
-	hprintf255(request, "<h4>Flags (Current value=%i)</h4>", CFG_GetFlags());
+	//hprintf255(request, "<h4>Flags (Current value=%i)</h4>", CFG_GetFlags());
 	// 64 bit - TODO fixme
-	//hprintf255(request, "<h4>Flags (Current value=%lu)</h4>", CFG_GetFlags64());
+	//hprintf255(request, "<h4>Flags (Current value=%llu)</h4>", CFG_GetFlags64());
+	char buf[21];
+	uint64_to_str(CFG_GetFlags64(), buf);
+	hprintf255(request, "<h4>Flags (Current value=%s)</h4>", buf);
 	poststr(request, "<form action=\"/cfg_generic\">");
 
 	for (i = 0; i < OBK_TOTAL_FLAGS; i++) {
@@ -3022,8 +3084,7 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 
 #elif PLATFORM_ESPIDF
 #elif PLATFORM_TR6260
-#elif PLATFORM_RTL87X0C
-#elif PLATFORM_RTL8710B || PLATFORM_RTL8710A
+#elif PLATFORM_REALTEK
 #elif PLATFORM_W600 || PLATFORM_W800
 	t_http_fwup(s);
 #elif PLATFORM_XR809
