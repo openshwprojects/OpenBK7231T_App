@@ -1,1 +1,0 @@
-encrypt.exe bk7231.bin 00000000
