@@ -732,7 +732,7 @@ int http_fn_cfg_ds18b20(http_request_t* request)
 
 	poststr(request, "<br><input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? ')\"></form> ");
 	poststr(request, "<script> function gen(){v='backlog starDriver DS18B20 '; for (i=0; i<5; i++) { v+='; DS18B20_setsensor ' + '\"' + getElement('a'+i).innerHTML + '\" \"' + getElement('ds1820name'+i).value + '\" \"' + getElement('ds1820chan'+i).value + '\" '} return v; };</script>");
-	poststr(request,"<br><br><input type='button' value='generate backlog command for config' onclick='t=document.getElementById(\"text\"); t.value=gen(); t.hidden=false; '><textarea id="text" hidden '> </textarea><p>");
+	poststr(request,"<br><br><input type='button' value='generate backlog command for config' onclick='t=document.getElementById(\"text\"); t.value=gen(); t.hidden=false;'><textarea id='text' hidden '> </textarea><p>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
 	poststr(request, NULL);
