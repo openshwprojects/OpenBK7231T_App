@@ -40,6 +40,10 @@ esp_partition_t* esplfs = NULL;
 #include "flash_api.h"
 #include "device_lock.h"
 
+#elif PLATFORM_ECR6600
+
+#include "flash.h"
+
 #endif
 
 
@@ -775,6 +779,52 @@ static int lfs_erase(const struct lfs_config* c, lfs_block_t block)
     flash_erase_sector(&flash, startAddr);
     device_mutex_unlock(RT_DEV_LOCK_FLASH);
     return LFS_ERR_OK;
+}
+
+#elif PLATFORM_ECR6600
+
+static int lfs_read(const struct lfs_config* c, lfs_block_t block,
+    lfs_off_t off, void* buffer, lfs_size_t size)
+{
+    int res;
+
+    unsigned int startAddr = LFS_Start;
+    startAddr += block * LFS_BLOCK_SIZE;
+    startAddr += off;
+
+    res = drv_spiflash_read(startAddr, (unsigned char*)buffer, size);
+    return res;
+}
+
+// Program a region in a block. The block must have previously
+// been erased. Negative error codes are propogated to the user.
+// May return LFS_ERR_CORRUPT if the block should be considered bad.
+static int lfs_write(const struct lfs_config* c, lfs_block_t block,
+    lfs_off_t off, const void* buffer, lfs_size_t size)
+{
+    int res;
+
+    unsigned int startAddr = LFS_Start;
+    startAddr += block * LFS_BLOCK_SIZE;
+    startAddr += off;
+
+    res = drv_spiflash_write(startAddr, (unsigned char*)buffer, size);
+    return res;
+}
+
+// Erase a block. A block must be erased before being programmed.
+// The state of an erased block is undefined. Negative error codes
+// are propogated to the user.
+// May return LFS_ERR_CORRUPT if the block should be considered bad.
+static int lfs_erase(const struct lfs_config* c, lfs_block_t block)
+{
+    int res;
+
+    unsigned int startAddr = LFS_Start;
+    startAddr += block * LFS_BLOCK_SIZE;
+
+    res = drv_spiflash_erase(startAddr, LFS_BLOCK_SIZE);
+    return res;
 }
 
 #endif 

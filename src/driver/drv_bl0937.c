@@ -46,6 +46,10 @@ extern rtlPinMapping_t g_pins[];
 rtlPinMapping_t* rtl_cf;
 rtlPinMapping_t* rtl_cf1;
 
+#elif PLATFORM_ECR6600
+
+#include "gpio.h"
+
 #else
 
 
@@ -232,6 +236,11 @@ void BL0937_Shutdown_Pins()
 	rtl_cf1->irq = NULL;
 	rtl_cf->irq = NULL;
 
+#elif PLATFORM_ECR6600
+
+	drv_gpio_ioctrl(GPIO_HLW_CF1_pin, DRV_GPIO_CTRL_INTR_DISABLE, 0);
+	drv_gpio_ioctrl(GPIO_HLW_CF_pin, DRV_GPIO_CTRL_INTR_DISABLE, 0);
+
 #endif
 }
 
@@ -320,6 +329,12 @@ void BL0937_Init_Pins()
 	gpio_irq_set(rtl_cf1->irq, IRQ_FALL, 1);
 	gpio_irq_enable(rtl_cf1->irq);
 
+#elif PLATFORM_ECR6600
+
+	drv_gpio_ioctrl(GPIO_HLW_CF1_pin, DRV_GPIO_CTRL_INTR_MODE, DRV_GPIO_ARG_INTR_MODE_N_EDGE);
+	drv_gpio_ioctrl(GPIO_HLW_CF1_pin, DRV_GPIO_CTRL_REGISTER_ISR, (int)&HlwCf1Interrupt);
+	drv_gpio_ioctrl(GPIO_HLW_CF1_pin, DRV_GPIO_CTRL_INTR_ENABLE, 0);
+
 #endif
 
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF);
@@ -350,6 +365,12 @@ void BL0937_Init_Pins()
 	gpio_irq_init(rtl_cf->irq, rtl_cf->pin, cf_irq_handler, NULL);
 	gpio_irq_set(rtl_cf->irq, IRQ_FALL, 1);
 	gpio_irq_enable(rtl_cf->irq);
+
+#elif PLATFORM_ECR6600
+
+	drv_gpio_ioctrl(GPIO_HLW_CF_pin, DRV_GPIO_CTRL_INTR_MODE, DRV_GPIO_ARG_INTR_MODE_N_EDGE);
+	drv_gpio_ioctrl(GPIO_HLW_CF_pin, DRV_GPIO_CTRL_REGISTER_ISR, (int)&HlwCfInterrupt);
+	drv_gpio_ioctrl(GPIO_HLW_CF_pin, DRV_GPIO_CTRL_INTR_ENABLE, 0);
 
 #endif
 

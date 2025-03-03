@@ -54,7 +54,7 @@ void __attribute__((weak)) HAL_PIN_PWM_Stop(int index)
 	return;
 }
 
-void __attribute__((weak)) HAL_PIN_PWM_Start(int index)
+void __attribute__((weak)) HAL_PIN_PWM_Start(int index, int freq)
 {
 	return;
 }
