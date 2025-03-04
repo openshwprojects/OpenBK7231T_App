@@ -147,6 +147,12 @@ void CFG_SetDefaultConfig() {
 	strcpy_safe(g_cfg.mqtt_group, "xr809s", sizeof(g_cfg.mqtt_group));
 #elif PLATFORM_BL602
 	strcpy_safe(g_cfg.mqtt_group, "bl602s", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_ESPIDF
+	strcpy_safe(g_cfg.mqtt_group, "esp", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_TR6260
+	strcpy_safe(g_cfg.mqtt_group, "tr6260", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_RTL87X0C
+	strcpy_safe(g_cfg.mqtt_group, "rtl87x0c", sizeof(g_cfg.mqtt_group));
 #elif WINDOWS
 	strcpy_safe(g_cfg.mqtt_group, "bekens", sizeof(g_cfg.mqtt_group));
 #else
@@ -431,7 +437,9 @@ void CFG_SetMQTTClientId(const char *s) {
 	if(strcpy_safe_checkForChanges(g_cfg.mqtt_clientId, s,sizeof(g_cfg.mqtt_clientId))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
+#if ENABLE_MQTT
 		g_mqtt_bBaseTopicDirty++;
+#endif
 	}
 }
 void CFG_SetMQTTGroupTopic(const char *s) {
@@ -439,7 +447,9 @@ void CFG_SetMQTTGroupTopic(const char *s) {
 	if (strcpy_safe_checkForChanges(g_cfg.mqtt_group, s, sizeof(g_cfg.mqtt_group))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
+#if ENABLE_MQTT
 		g_mqtt_bBaseTopicDirty++;
+#endif
 	}
 }
 void CFG_SetMQTTUserName(const char *s) {
@@ -507,7 +517,7 @@ int CFG_DeviceGroups_GetSendFlags() {
 int CFG_DeviceGroups_GetRecvFlags() {
 	return g_cfg.dgr_recvFlags;
 }
-void CFG_SetFlags(int first4bytes, int second4bytes) {
+void CFG_SetFlags(uint32_t first4bytes, uint32_t second4bytes) {
 	if (g_cfg.genericFlags != first4bytes || g_cfg.genericFlags2 != second4bytes) {
 		g_cfg.genericFlags = first4bytes;
 		g_cfg.genericFlags2 = second4bytes;
@@ -534,12 +544,16 @@ void CFG_SetFlag(int flag, bool bValue) {
 		*cfgValue = nf;
 		g_cfg_pendingChanges++;
 		// this will start only if it wasnt running
+#if ENABLE_TCP_COMMANDLINE
 		if(bValue && flag == OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER) {
 			CMD_StartTCPCommandLine();
 		}
+#endif
+#if ENABLE_LED_BASIC
 		if (bValue && flag == OBK_FLAG_LED_REMEMBERLASTSTATE) {
 			LED_SaveStateToFlashVarsNow();
 		}
+#endif
 	}
 }
 void CFG_SetLoggerFlag(int flag, bool bValue) {
@@ -564,9 +578,10 @@ bool CFG_HasLoggerFlag(int flag) {
 int CFG_GetFlags() {
 	return g_cfg.genericFlags;
 }
-unsigned long CFG_GetFlags64() {
-	unsigned long* pAllGenericFlags = (unsigned long*)&g_cfg.genericFlags;
-	return *pAllGenericFlags;
+uint64_t CFG_GetFlags64() {
+	//unsigned long long* pAllGenericFlags = (unsigned long*)&g_cfg.genericFlags;
+	//*pAllGenericFlags;
+	return (uint64_t)g_cfg.genericFlags | (uint64_t)g_cfg.genericFlags2 << 32;
 }
 bool CFG_HasFlag(int flag) {
 	if (flag >= 32) {
@@ -771,7 +786,7 @@ void CFG_InitAndLoad() {
 		// mark as changed
 		g_cfg_pendingChanges ++;
 	} else {
-#if defined(PLATFORM_XR809) || defined(PLATFORM_BL602)
+#if defined(PLATFORM_XR809) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) || defined(PLATFORM_TR6260)
 		if (g_cfg.mac[0] == 0 && g_cfg.mac[1] == 0 && g_cfg.mac[2] == 0 && g_cfg.mac[3] == 0 && g_cfg.mac[4] == 0 && g_cfg.mac[5] == 0) {
 			WiFI_GetMacAddress((char*)g_cfg.mac);
 		}

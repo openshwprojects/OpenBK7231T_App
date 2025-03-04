@@ -245,9 +245,8 @@ typedef struct scriptInstance_s {
 	struct scriptInstance_s *next;
 } scriptInstance_t;
 
-#define MAX_SCRIPT_LINE 512
-
-char *g_scrBuffer = 0;
+int g_scrBufferSize = 0;
+char *g_scrBuffer = NULL;
 int svm_deltaMS;
 scriptFile_t *g_scriptFiles = 0;
 scriptInstance_t *g_scriptThreads = 0;
@@ -300,7 +299,12 @@ scriptFile_t *SVM_RegisterFile(const char *fname) {
 	memset(r,0,sizeof(scriptFile_t));
 	r->fname = strdup(fname);
 	// cast from byte* to char*
-	r->data = (char*)LFS_ReadFile(fname);
+	if (!strcmp(fname, "@startup")) {
+		r->data = strdup(CFG_GetShortStartupCommand());
+	}
+	else {
+		r->data = (char*)LFS_ReadFile(fname);
+	}
 	r->next = g_scriptFiles;
 	g_scriptFiles = r;
 	if(r->data == 0)
@@ -357,11 +361,15 @@ const char *SVM_FindLabel(const char *text, const char *label, const char *fname
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Label %s not found in %s - will go to the start of file",label,fname);
 	return text;
 }
-void SVM_RunThread(scriptInstance_t *t) {
-	int maxLoops = 10;
+void SVM_RunThread(scriptInstance_t *t, int maxLoops) {
 	int loop = 0;
 	const char *start, *end;
 	int len, p;
+	
+	if(g_scrBuffer == NULL) {
+		g_scrBufferSize = 256;
+		g_scrBuffer = malloc(g_scrBufferSize + 1);
+	}
 
 	while(1) {
 		loop++;
@@ -399,8 +407,12 @@ void SVM_RunThread(scriptInstance_t *t) {
 
 			// skip empty lines and skip labels
 			if(len > 0 && start[len-1] != ':') {
-				if(len >= MAX_SCRIPT_LINE) {
-					len = MAX_SCRIPT_LINE-1;
+				if(len >= g_scrBufferSize) {
+					g_scrBufferSize = len + 256;
+					g_scrBuffer = (char*)realloc(g_scrBuffer, g_scrBufferSize+1);
+				}
+				if (g_scrBuffer == NULL) {
+					return;
 				}
 				memcpy(g_scrBuffer,start,len);
 				g_scrBuffer[len] = 0;
@@ -425,9 +437,6 @@ void SVM_RunThreads(int deltaMS) {
 	c_run = 0;
 	svm_deltaMS = deltaMS;
 
-	if(g_scrBuffer == 0) {
-		g_scrBuffer = malloc(MAX_SCRIPT_LINE);
-	}
 
 	g_activeThread = g_scriptThreads;
 	while(g_activeThread) {
@@ -445,7 +454,7 @@ void SVM_RunThreads(int deltaMS) {
 				c_sleep++;
 			}
 			else {
-				SVM_RunThread(g_activeThread);
+				SVM_RunThread(g_activeThread, 20);
 				c_run++;
 			}
 		}
@@ -581,7 +590,7 @@ void SVM_GoToLocal(scriptInstance_t *th, const char *label) {
 
 	return;
 }
-void SVM_StartScript(const char *fname, const char *label, int uniqueID) {
+scriptInstance_t *SVM_StartScript(const char *fname, const char *label, int uniqueID) {
 	scriptFile_t *f;
 	scriptInstance_t *th;
 
@@ -589,18 +598,18 @@ void SVM_StartScript(const char *fname, const char *label, int uniqueID) {
 	if(f == 0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: failed to get file %s",fname);
 
-		return;
+		return NULL;
 	}
 	if(f->data == 0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: failed to get file %s dataa",fname);
 
-		return;
+		return NULL;
 	}
 	th = SVM_RegisterThread();
 	if(th == 0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: failed to alloc thread");
 
-		return;
+		return NULL;
 	}
 	th->uniqueID = uniqueID;
 	th->curFile = f;
@@ -612,7 +621,21 @@ void SVM_StartScript(const char *fname, const char *label, int uniqueID) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: started %s at label %s",fname,label);
 	}
 
-	return;
+	return th;
+}
+void SVM_RunStartupCommandAsScript() {
+	scriptInstance_t *th = SVM_StartScript("@startup", 0, 0);
+	if (th) {
+		//ADDLOG_INFO(LOG_FEATURE_CMD, "SVM_RunStartupCommandAsScript: started command run");
+		// Hacky as hell?
+		g_activeThread = th;
+		SVM_RunThread(g_activeThread, 200);
+		g_activeThread = 0;
+	}
+	else {
+		//ADDLOG_INFO(LOG_FEATURE_CMD, "SVM_RunStartupCommandAsScript: failed command run");
+	}
+
 }
 
 static commandResult_t CMD_GoTo(const void *context, const char *cmd, const char *args, int cmdFlags){

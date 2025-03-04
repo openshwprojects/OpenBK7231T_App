@@ -86,14 +86,11 @@ void HAL_PrintNetworkInfo()
 	unsigned char mac[6] = { 0, 1, 2, 3, 4, 5 };
 
 	struct netif* netif = tls_get_netif();
-	MEMCPY(mac, &netif->hwaddr[0], ETH_ALEN);
+	MEMCPY(mac, &netif->hwaddr, ETH_ALEN);
 	snprintf(macstr, sizeof(macstr), MACSTR, MAC2STR(mac));
 
 	tls_wifi_get_current_bss(&bss);
-
-	wm_printf("sta:rssi=%d,ssid=%s,bssid=" MACSTR ",channel=%d,cipher_type:",
-		bss.rssi, bss.ssid, macstr, bss.channel);
-	print_security_type(bss.encryptype);
+	bss.ssid[bss.ssid_len]=0;
 
 	struct tls_ethif* tmpethif = tls_netif_get_ethif();
 	char buffer[256];
@@ -105,8 +102,16 @@ void HAL_PrintNetworkInfo()
 	strcpy(netmask, inet_ntoa(tmpethif->netmask));
 	char dns[16] = {0};
 	strcpy(dns, inet_ntoa(tmpethif->dns1));
-	snprintf(buffer, 256, "ip=%s,gate=%s,mask=%s,dns=%s\r\n", ip, gw, netmask, dns);
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, buffer);
+	snprintf(buffer, 256, 	"Network info:\r\n"
+				"\tsta:rssi=%d, SSID=%s, BSSID=" MACSTR ", channel=%d, encr=%s\r\n"
+				"\tIP=%s, GW=%s, MASK=%s, MAC=%s, DNS=%s\r\n",
+				bss.rssi, bss.ssid, MAC2STR(bss.bssid), bss.channel, 
+				( bss.encryptype >=  IEEE80211_ENCRYT_NONE && bss.encryptype <= IEEE80211_ENCRYT_AUTO_WPA2) ? security_names[bss.encryptype] : "-",
+				 ip, gw, netmask, macstr, dns );
+	bk_printf(buffer);
+	// do we need this in web Log?
+	// disable for now
+//	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, buffer);
 }
 
 int HAL_GetWifiStrength()
@@ -171,7 +176,15 @@ static int connect_wifi_demo(char* ssid, char* pwd, obkStaticIP_t *ip)
 	int ret;
 	struct tls_param_ip* ip_param = NULL;
 	u8 wireless_protocol = 0;
-
+	
+#if LWIP_NETIF_HOSTNAME
+	extern const char *CFG_GetDeviceName();		// including "../../../../sharedAppContainer/sharedApp/src/new_cfg.h"	only for CFG_GetDeviceName() leads to errors
+	struct netif* netif = tls_get_netif();
+	char *tmpPtr = CFG_GetDeviceName();
+	if(tmpPtr != 0 && tmpPtr[0] != 0) {
+	   netif->hostname = tmpPtr;
+	} 
+#endif
 	tls_wifi_disconnect();
 	tls_wifi_softap_destroy();
 

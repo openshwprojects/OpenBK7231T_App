@@ -37,7 +37,7 @@ public:
 	virtual void onEnd() {
 
 	}
-	virtual int drawTextStats(int h) {
+	virtual float drawTextStats(float h) {
 		return h;
 	}
 };

@@ -25,7 +25,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | 17 | [LED] Automatically enable Light when changing brightness, color or temperature on WWW panel |
 | 18 | [LED] Smooth transitions for LED (EXPERIMENTAL) |
 | 19 | [MQTT] Always publish channels used by TuyaMCU |
-| 20 | [LED] Force RGB mode (3 PWMs for LEDs) and ignore futher PWMs if they are set |
+| 20 | [LED] Force RGB mode (3 PWMs for LEDs) and ignore further PWMs if they are set |
 | 21 | [MQTT] Retain power channels (Relay channels, etc) |
 | 22 | [IR] Do MQTT publish (Tasmota JSON format) for incoming IR data |
 | 23 | [LED] Automatically enable Light on any change of brightness, color or temperature |
@@ -40,7 +40,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | 32 | [LED] Use old linear brightness mode, ignore gamma ramp |
 | 33 | [MQTT] Apply channel type multiplier on (if any) on channel value before publishing it |
 | 34 | [MQTT] In HA discovery, add relays as lights |
-| 35 | [HASS] Deactivate avty_t flag for sensor when publishing to HASS (permit to keep value). You must restart HASS discovery for change to take effect. |
+| 35 | [HASS] Deactivate avty_t flag when publishing to HASS (permit to keep value). You must restart HASS discovery for change to take effect. |
 | 36 | [DRV] Deactivate Autostart of all drivers |
 | 37 | [WiFi] Quick connect to WiFi on reboot (TODO: check if it works for you and report on github) |
 | 38 | [Power] Set power and current to zero if all relays are open |
@@ -52,3 +52,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | 44 | [HTTP] Disable authentication in safe mode (not recommended) |
 | 45 | [MQTT Discovery] Don't merge toggles and dimmers into lights |
 | 46 | [TuyaMCU] Store raw data |
+| 47 | [TuyaMCU] Store ALL data |
+| 48 | [PWR] Invert AC dir |
+| 49 | [HTTP] Hide ON/OFF for relays (only red/green buttons) |
+| 50 | [MQTT] Never add get sufix |

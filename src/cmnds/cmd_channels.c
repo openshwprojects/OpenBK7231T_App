@@ -6,6 +6,7 @@
 #include "../driver/drv_public.h"
 #include <ctype.h>
 #include "cmd_local.h"
+#include "../hal/hal_flashVars.h"
 
 // bit mask telling which channels are hidden from HTTP
 // If given bit is set, then given channel is hidden
@@ -15,6 +16,14 @@ static int g_bHideTogglePrefix = 0;
 // same, for hiding from MQTT
 int g_doNotPublishChannels = 0;
 
+void CHANNEL_FreeLabels() {
+	for (int ch = 0; ch < CHANNEL_MAX; ch++) {
+		if (g_channelLabels[ch]) {
+			free(g_channelLabels[ch]);
+			g_channelLabels[ch] = 0;
+		}
+	}
+}
 void CHANNEL_SetLabel(int ch, const char *s, int bHideTogglePrefix) {
 	if (ch < 0)
 		return;
@@ -48,7 +57,9 @@ bool CHANNEL_HasNeverPublishFlag(int ch) {
 
 bool CHANNEL_HasLabel(int ch) {
 	if (ch >= 0 && ch < CHANNEL_MAX) {
-		return g_channelLabels[ch];
+		if (g_channelLabels[ch])
+			return true;
+		return false;
 	}
 	return false;
 }
@@ -130,6 +141,24 @@ static commandResult_t CMD_SetChannel(const void *context, const char *cmd, cons
 	val = Tokenizer_GetArgInteger(1);
 
 	CHANNEL_Set(ch,val, false);
+
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_SetFlash(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int ch, val;
+
+	Tokenizer_TokenizeString(args, 0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	ch = Tokenizer_GetArgInteger(0);
+	val = Tokenizer_GetArgInteger(1);
+
+	HAL_FlashVars_SaveChannel(ch, val);
 
 	return CMD_RES_OK;
 }
@@ -219,7 +248,7 @@ static commandResult_t CMD_ClampChannel(const void *context, const char *cmd, co
 	ch = Tokenizer_GetArgInteger(0);
 	min = Tokenizer_GetArgInteger(1);
 	max = Tokenizer_GetArgInteger(2);
-	bWrapInsteadOfClamp = 0;
+	bWrapInsteadOfClamp = Tokenizer_GetArgInteger(3);
 
 	CHANNEL_AddClamped(ch,0, min, max, bWrapInsteadOfClamp);
 
@@ -405,7 +434,7 @@ static commandResult_t CMD_SetChannelPrivate(const void *context, const char *cm
 	return CMD_RES_OK;
 }
 static commandResult_t CMD_GetReadings(const void *context, const char *cmd, const char *args, int cmdFlags){
-#ifndef OBK_DISABLE_ALL_DRIVERS
+#ifdef ENABLE_DRIVER_BL0937
 	char tmp[96];
 	float v, c, p;
     float e, elh;
@@ -479,6 +508,11 @@ static commandResult_t CMD_FullBootTime(const void *context, const char *cmd, co
 
 	return CMD_RES_OK;
 }
+
+// cmd_enums.c
+commandResult_t CMD_SetChannelEnum(const void *context, const char *cmd,
+	const char *args, int cmdFlags);
+
 static commandResult_t CMD_PinDeepSleep(const void *context, const char *cmd, const char *args, int cmdFlags){
 
 	Tokenizer_TokenizeString(args, 0); 
@@ -493,6 +527,11 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_SetChannel","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SetChannel", CMD_SetChannel, NULL);
+	//cmddetail:{"name":"SetFlash","args":"[FlashIndex][FlashValue]",
+	//cmddetail:"descr":"Sets a a flashVars channel directly (if you are using remember state for given channel, it will overwrite, it uses same space for channels memory).",
+	//cmddetail:"fn":"CMD_SetFlash","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("SetFlash", CMD_SetFlash, NULL);
 	//cmddetail:{"name":"SetChannelFloat","args":"[ChannelIndex][ChannelValue]",
 	//cmddetail:"descr":"Sets a raw channel to given float value. Currently only used for LED PWM channels.",
 	//cmddetail:"fn":"CMD_SetChannelFloat","file":"cmnds/cmd_channels.c","requires":"",
@@ -553,6 +592,13 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_FullBootTime","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("FullBootTime", CMD_FullBootTime, NULL);
+	//cmddetail:{"name":"SetChannelEnum","args":"[ChannelIndex][Value,Title][Value,Title]",
+	//cmddetail:"descr":"Creates a custom channel enumeration.",
+	//cmddetail:"fn":"SetChannelEnum","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"examples":""}
+#if WINDOWS
+	//CMD_RegisterCommand("SetChannelEnum", CMD_SetChannelEnum, NULL);
+#endif
 	//cmddetail:{"name":"SetChannelLabel","args":"[ChannelIndex][Str][bHideTogglePrefix]",
 	//cmddetail:"descr":"Sets a channel label for UI and default entity name for Home Assistant discovery. If you use 1 for bHideTogglePrefix, then the 'Toggle ' prefix from UI button will be omitted",
 	//cmddetail:"fn":"CMD_SetChannelLabel","file":"cmnds/cmd_channels.c","requires":"",

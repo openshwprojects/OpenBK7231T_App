@@ -48,6 +48,141 @@ void Test_Commands_Alias_Generic() {
 	SELFTEST_ASSERT_CHANNEL(4, (11+9));
 	SELFTEST_ASSERT_CHANNEL(5, 50);
 
+	CMD_ExecuteCommand("alias test5 backlog setChannel 4 11; addChannel 4 9; \
+		setChannel 5 50; addChannel 4 8; addChannel 4 7; addChannel 4 6", 0);
+	CMD_ExecuteCommand("test5", 0);
+	SELFTEST_ASSERT_CHANNEL(4, (11 + 9 + 8 + 7 + 6));
+	SELFTEST_ASSERT_CHANNEL(5, 50);
+
+	CMD_ExecuteCommand("alias test6 backlog setChannel 4 11; addChannel 4 9; \
+		setChannel 5 50; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100", 0);
+	CMD_ExecuteCommand("test6", 0);
+	SELFTEST_ASSERT_CHANNEL(4, (11 + 9 + 8 + 7 + 6 + 5 + 4 + 3 + 2 + 1 + 100));
+	SELFTEST_ASSERT_CHANNEL(5, 50);
+
+	CMD_ExecuteCommand("alias test7 backlog setChannel 4 11; setChannel 5 50;  \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100", 0);
+	CMD_ExecuteCommand("test7", 0);
+	SELFTEST_ASSERT_CHANNEL(4, 11 + 5*(9 + 8 + 7 + 6 + 5 + 4 + 3 + 2 + 1 + 100));
+	SELFTEST_ASSERT_CHANNEL(5, 50);
+
+
+	CMD_ExecuteCommand("alias test8 backlog setChannel 4 11; setChannel 5 50;  \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100;  \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100", 0);
+	CMD_ExecuteCommand("test8", 0);
+	SELFTEST_ASSERT_CHANNEL(4, 11 + 10 * (9 + 8 + 7 + 6 + 5 + 4 + 3 + 2 + 1 + 100));
+	SELFTEST_ASSERT_CHANNEL(5, 50);
+
+
+	CMD_ExecuteCommand("alias test9 backlog setChannel 4 11; setChannel 5 50;  \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100;  \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100;\
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100;  \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100; \
+		addChannel 4 9; addChannel 4 8; addChannel 4 7; addChannel 4 6; \
+		addChannel 4 5; addChannel 4 4; addChannel 4 3; \
+		addChannel 4 2; addChannel 4 1; addChannel 4 100;", 0);
+	CMD_ExecuteCommand("test9", 0);
+	SELFTEST_ASSERT_CHANNEL(4, 11 + 20 * (9 + 8 + 7 + 6 + 5 + 4 + 3 + 2 + 1 + 100));
+	SELFTEST_ASSERT_CHANNEL(5, 50);
 	// this check will fail obviously!
 	//SELFTEST_ASSERT_CHANNEL(5, 666);
 }

@@ -16,32 +16,43 @@
 
 #include <stdint.h>
 
-#define BMP280_CHIP_ID        0x58
-#define BME280_CHIP_ID        0x60
+#define BMP280_CHIP_ID          0x58
+#define BME280_CHIP_ID          0x60
+#define BME680_CHIP_ID          0x61
+                                
+#define BMP280_REG_DIG_T1       0x88
+#define BMP280_REG_DIG_T2       0x8A
+#define BMP280_REG_DIG_T3       0x8C
+                                
+#define BMP280_REG_DIG_P1       0x8E
+#define BMP280_REG_DIG_P2       0x90
+#define BMP280_REG_DIG_P3       0x92
+#define BMP280_REG_DIG_P4       0x94
+#define BMP280_REG_DIG_P5       0x96
+#define BMP280_REG_DIG_P6       0x98
+#define BMP280_REG_DIG_P7       0x9A
+#define BMP280_REG_DIG_P8       0x9C
+#define BMP280_REG_DIG_P9       0x9E
+                                
+#define BME280_REG_DIG_H1       0xA1
+#define BME280_REG_DIG_H2       0xE1
+#define BME280_REG_DIG_H3       0xE3
+#define BME280_REG_DIG_H4       0xE4
+#define BME280_REG_DIG_H5       0xE5
+#define BME280_REG_DIG_H6       0xE7
+                                
+#define BMP280_REG_CHIPID       0xD0
+#define BMP280_REG_RESET        0xE0
 
-#define BMP280_REG_DIG_T1     0x88
-#define BMP280_REG_DIG_T2     0x8A
-#define BMP280_REG_DIG_T3     0x8C
+#define BME280_REG_CONTROLHUMID 0xF2
+#define BMP280_REG_STATUS       0xF3
+#define BMP280_REG_CONTROL      0xF4
+#define BMP280_REG_CONFIG       0xF5
+#define BMP280_REG_PRESS_MSB    0xF7
 
-#define BMP280_REG_DIG_P1     0x8E
-#define BMP280_REG_DIG_P2     0x90
-#define BMP280_REG_DIG_P3     0x92
-#define BMP280_REG_DIG_P4     0x94
-#define BMP280_REG_DIG_P5     0x96
-#define BMP280_REG_DIG_P6     0x98
-#define BMP280_REG_DIG_P7     0x9A
-#define BMP280_REG_DIG_P8     0x9C
-#define BMP280_REG_DIG_P9     0x9E
+#define BMP280_SOFT_RESET       0xB6
 
-#define BMP280_REG_CHIPID     0xD0
-#define BMP280_REG_SOFTRESET  0xE0
-
-#define BMP280_REG_STATUS     0xF3
-#define BMP280_REG_CONTROL    0xF4
-#define BMP280_REG_CONFIG     0xF5
-#define BMP280_REG_PRESS_MSB  0xF7
-
-int32_t adc_T, adc_P, t_fine;
+int32_t adc_T, adc_P, adc_H, t_fine;
 
 // BMP280 sensor modes, register ctrl_meas mode[1:0]
 typedef enum
@@ -69,7 +80,10 @@ typedef enum
   FILTER_2   = 0x01,  // filter coefficient = 2
   FILTER_4   = 0x02,  // filter coefficient = 4
   FILTER_8   = 0x03,  // filter coefficient = 8
-  FILTER_16  = 0x04   // filter coefficient = 16
+  FILTER_16  = 0x04,  // filter coefficient = 16
+  FILTER_32  = 0x05,  // filter coefficient = 32, BME680
+  FILTER_64  = 0x06,  // filter coefficient = 64, BME680
+  FILTER_128 = 0x07,  // filter coefficient = 128, BME680
 } BMP280_filter;
 
 // standby (inactive) time in ms (used in normal mode), t_sb[2:0]
@@ -100,6 +114,13 @@ struct
   int16_t  dig_P7;
   int16_t  dig_P8;
   int16_t  dig_P9;
+
+  uint8_t  dig_H1;
+  int16_t  dig_H2;
+  uint8_t  dig_H3;
+  int16_t  dig_H4;
+  int16_t  dig_H5;
+  int8_t   dig_H6;
 } BMP280_calib;
 
 // writes 1 byte '_data' to register 'reg_addr'
@@ -168,22 +189,36 @@ void BMP280_Configure(BMP280_mode mode, BMP280_sampling T_sampling,
 uint8_t BMP280_begin(BMP280_mode mode,
                   BMP280_sampling T_sampling,
                   BMP280_sampling P_sampling,
+                  BMP280_sampling H_sampling,
                   BMP280_filter filter,
                   standby_time  standby)
 {
-	int id = BMP280_Read8(BMP280_REG_CHIPID);
-	if (id == BMP280_CHIP_ID) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BMP280 detected!");
-	} else if (id == BME280_CHIP_ID) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BME280 detected!");
-	}
-	else {
-		addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BMx280 wrong ID!");
-		return 0;
-	}
+    chip_id = BMP280_Read8(BMP280_REG_CHIPID);
+    switch(chip_id)
+    {
+    case BMP280_CHIP_ID:
+        addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BMP280 detected!");
+        chip_name = "BMP280";
+        break;
+    case BME280_CHIP_ID:
+        addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BME280 detected!");
+        chip_name = "BME280";
+        isHumidityAvail = true;
+        break;
+    case BME680_CHIP_ID:
+        addLogAdv(LOG_WARN, LOG_FEATURE_SENSOR, "BME680 detected! Unsupported.");
+        chip_name = "BME680";
+        break;
+    case 0xFF:
+        addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "No sensor detected!");
+        return 0;
+    default:
+        addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "BMxx80 wrong ID! Detected: %#02x", chip_id);
+        return 0;
+    }
 
   // reset the BMP280 with soft reset
-  BMP280_Write8(BMP280_REG_SOFTRESET, 0xB6);
+  BMP280_Write8(BMP280_REG_RESET, BMP280_SOFT_RESET);
   delay_ms(100);
 
   // if NVM data are being copied to image registers, wait 100 ms
@@ -203,6 +238,20 @@ uint8_t BMP280_begin(BMP280_mode mode,
   BMP280_calib.dig_P7 = BMP280_Read16(BMP280_REG_DIG_P7);
   BMP280_calib.dig_P8 = BMP280_Read16(BMP280_REG_DIG_P8);
   BMP280_calib.dig_P9 = BMP280_Read16(BMP280_REG_DIG_P9);
+
+  if(chip_id == BME280_CHIP_ID)
+  {
+      BMP280_calib.dig_H1 = BMP280_Read8(BME280_REG_DIG_H1);
+      BMP280_calib.dig_H2 = BMP280_Read16(BME280_REG_DIG_H2);
+      BMP280_calib.dig_H3 = BMP280_Read8(BME280_REG_DIG_H3);
+      BMP280_calib.dig_H4 = BMP280_Read8(BME280_REG_DIG_H4) << 4 | (BMP280_Read8(BME280_REG_DIG_H4 + 1) & 0x0F);
+      BMP280_calib.dig_H5 = BMP280_Read8(BME280_REG_DIG_H5 + 1) << 4 | (BMP280_Read8(BME280_REG_DIG_H5) >> 4);
+      BMP280_calib.dig_H6 = BMP280_Read8(BME280_REG_DIG_H6);
+      uint8_t humid_control_val = BMP280_Read8(BME280_REG_CONTROLHUMID);
+      humid_control_val &= ~0b00000111;
+      humid_control_val |= H_sampling & 0b111;
+      BMP280_Write8(BME280_REG_CONTROLHUMID, humid_control_val);
+  }
 
   BMP280_Configure(mode, T_sampling, P_sampling, filter, standby);
 
@@ -251,10 +300,18 @@ void BMP280_Update()
 
   ret.b[2] = BMP280_Read(1);
   ret.b[1] = BMP280_Read(1);
-  ret.b[0] = BMP280_Read(0);
-  BMP280_Stop();
+  if(chip_id == BME280_CHIP_ID) ret.b[0] = BMP280_Read(1);
+  else ret.b[0] = BMP280_Read(0);
 
   adc_T = (ret.dw >> 4) & 0xFFFFF;
+
+  if(chip_id == BME280_CHIP_ID)
+  {
+      uint8_t data1 = BMP280_Read(1);
+      uint8_t data2 = BMP280_Read(0);
+      adc_H = ((data1 & 0xFF) << 8) | (data2 & 0xFF);
+  }
+  BMP280_Stop();
 }
 
 // Reads temperature from BMP280 sensor.
@@ -322,4 +379,30 @@ uint8_t BMP280_readPressure(uint32_t *pres)
   return 1;
 }
 
+uint8_t BME280_readHumidity(uint32_t* hum)
+{
+    if(adc_H == 0x8000) return 0;
+
+    int32_t h1 = BMP280_calib.dig_H1;
+    int32_t h2 = BMP280_calib.dig_H2;
+    int32_t h3 = BMP280_calib.dig_H3;
+    int32_t h4 = BMP280_calib.dig_H4;
+    int32_t h5 = BMP280_calib.dig_H5;
+    int32_t h6 = BMP280_calib.dig_H6;
+
+    int32_t v_x1_u32r = t_fine - 76800;
+
+    v_x1_u32r = ((((adc_H << 14) - (h4 << 20) - (h5 * v_x1_u32r)) + 16384) >> 15) *
+        (((((((v_x1_u32r * h6) >> 10) * (((v_x1_u32r * h3) >> 11) + 32768)) >> 10) + 2097152) * h2 + 8192) >> 14);
+
+    v_x1_u32r = v_x1_u32r - (((((v_x1_u32r >> 15) * (v_x1_u32r >> 15)) >> 7) * h1) >> 4);
+
+    v_x1_u32r = v_x1_u32r < 0 ? 0 : v_x1_u32r;
+    v_x1_u32r = v_x1_u32r > 419430400 ? 419430400 : v_x1_u32r;
+    float h = v_x1_u32r >> 12;
+
+    *hum = (h / 1024.0f) * 10;
+
+    return 1;
+}
 // end of driver code.

@@ -400,6 +400,70 @@
     "driver": ""
   },
   {
+    "name": "Motion",
+    "title": "TODO",
+    "descr": "Motion",
+    "enum": "Motion",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "ReadOnly_div10",
+    "title": "TODO",
+    "descr": "This channel is read only.",
+    "enum": "ChType_ReadOnly_div10",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "ReadOnly_div100",
+    "title": "TODO",
+    "descr": "This channel is read only.",
+    "enum": "ChType_ReadOnly_div100",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "ReadOnly_div1000",
+    "title": "TODO",
+    "descr": "This channel is read only.",
+    "enum": "ChType_ReadOnly_div1000",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Ph",
+    "title": "TODO",
+    "descr": "Ph Water Quality",
+    "enum": "ChType_Ph",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Orp",
+    "title": "TODO",
+    "descr": "Orp Water Quality",
+    "enum": "ChType_Orp",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Tds",
+    "title": "TODO",
+    "descr": "TDS Water Quality",
+    "enum": "ChType_Tds",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Motion_n",
+    "title": "TODO",
+    "descr": "Motion_n",
+    "enum": "Motion_n",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
     "name": "Max",
     "title": "TODO",
     "descr": "This is the current total number of available channel types.",

@@ -447,7 +447,7 @@ void SHT3X_Init() {
 	//cmddetail:"fn":"SHT_cycle","file":"drv/drv_sht3x.c","requires":"",
 	//cmddetail:"examples":"SHT_Cycle 60"}
 	CMD_RegisterCommand("SHT_cycle", SHT_cycle, NULL);
-	//cmddetail:{"name":"SHT_Calibrate","args":"",
+	//cmddetail:{"name":"SHT_Calibrate","args":"[DeltaTemp][DeltaHumidity]",
 	//cmddetail:"descr":"Calibrate the SHT Sensor as Tolerance is +/-2 degrees C.",
 	//cmddetail:"fn":"SHT3X_Calibrate","file":"driver/drv_sht3x.c","requires":"",
 	//cmddetail:"examples":"SHT_Calibrate -4 10"}
@@ -472,7 +472,7 @@ void SHT3X_Init() {
 	//cmddetail:"fn":"SHT3X_Measure","file":"driver/drv_sht3x.c","requires":"",
 	//cmddetail:"examples":"SHT_Measure"}
 	CMD_RegisterCommand("SHT_Measure", SHT3X_Measure, NULL);
-	//cmddetail:{"name":"SHT_Heater","args":"",
+	//cmddetail:{"name":"SHT_Heater","args":"[1or0]",
 	//cmddetail:"descr":"Activate or Deactivate Heater (0 / 1)",
 	//cmddetail:"fn":"SHT3X_Heater","file":"driver/drv_sht3x.c","requires":"",
 	//cmddetail:"examples":"SHT_Heater 1"}
@@ -519,7 +519,7 @@ void SHT3X_OnEverySecond()
 
 void SHT3X_AppendInformationToHTTPIndexPage(http_request_t* request)
 {
-	hprintf255(request, "<h2>SHT3X Temperature=%.1f°c, Humidity=%.0f%</h2>", g_temp, g_humid);
+	hprintf255(request, "<h2>SHT3X Temperature=%.1fC, Humidity=%.0f%%</h2>", g_temp, g_humid);
 	if (channel_humid == channel_temp) {
 		hprintf255(request, "WARNING: You don't have configured target channels for temp and humid results, set the first and second channel index in Pins!");
 	}

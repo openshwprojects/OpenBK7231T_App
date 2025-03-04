@@ -112,15 +112,15 @@ const char* strcasestr(const char* str1, const char* str2)
 // where is buffer with [64] bytes?
 // 2022-11-02 update: It was also causing crash on OpenBL602. Original strdup was crashing while my strdup works.
 // Let's just rename test_strdup to strdup and let it be our main correct strdup
-#if !defined(PLATFORM_W600) && !defined(PLATFORM_W800)
+#if !defined(PLATFORM_W600) && !defined(PLATFORM_W800) && !defined(WINDOWS)
 // W600 and W800 already seem to have a strdup?
 char *strdup(const char *s)
 {
     char *res;
     size_t len;
 
-    if (s == NULL)
-        return NULL;
+    //if (s == NULL)
+    //    return NULL;
 
     len = strlen(s);
     res = malloc(len + 1);

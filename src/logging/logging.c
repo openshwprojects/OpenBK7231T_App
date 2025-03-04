@@ -8,6 +8,11 @@
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 
+#if PLATFORM_BEKEN_NEW
+#include "uart.h"
+#include "arm_arch.h"
+#endif
+
 extern uint8_t g_StartupDelayOver;
 
 int g_loglevel = LOG_INFO; // default to info
@@ -426,6 +431,10 @@ static int getData(char* buff, int buffsize, int* tail) {
 	if (!initialised)
 		return 0;
 	taken = xSemaphoreTake(logMemory.mutex, 100);
+	if (taken == 0)
+	{
+		return 0;
+	}
 
 	count = 0;
 	p = buff;

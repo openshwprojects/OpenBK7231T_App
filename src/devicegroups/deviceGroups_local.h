@@ -67,8 +67,8 @@
 
 
 
-u32 DGR_GetMaskForItem(byte item);
-int DGR_IsItemInMask(byte item, u32 mask);
+unsigned int DGR_GetMaskForItem(byte item);
+int DGR_IsItemInMask(byte item, unsigned int mask);
 
 
 

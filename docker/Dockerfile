@@ -2,6 +2,10 @@ FROM --platform=linux/amd64 ubuntu:20.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG USERNAME=devuser
+ARG UID=1000
+ARG TZ="Etc/UTC"
+
+RUN echo "$TZ" > /etc/timezone
 
 RUN dpkg --add-architecture i386 \
  && apt-get update \
@@ -13,7 +17,7 @@ RUN dpkg --add-architecture i386 \
 
 RUN pip3 install pycryptodomex configobj toml fdt
 
-RUN useradd -m -s /bin/bash ${USERNAME}
+RUN useradd -m -s /bin/bash -u "${UID}" ${USERNAME}
 
 COPY build_target_platforms.sh /build_target_platforms.sh
 RUN chmod 775 /build_target_platforms.sh

@@ -54,6 +54,15 @@
     "examples": ""
   },
   {
+    "name": "addI2CDevice_ADS1115",
+    "args": "",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "i2c/drv_i2c_ads1115.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "addI2CDevice_LCD_PCF8574",
     "args": "",
     "descr": "Adds a new I2C device - PCF8574",
@@ -126,6 +135,42 @@
     "examples": ""
   },
   {
+    "name": "AHT2X_Calibrate",
+    "args": "[DeltaTemp][DeltaHumidity]",
+    "descr": "Calibrate the AHT2X Sensor as Tolerance is +/-2 degrees C.",
+    "fn": "AHT2X_Calibrate",
+    "file": "driver/drv_aht2x.c",
+    "requires": "",
+    "examples": "AHT2X_Calibrate -4 10 <br /> meaning -4 on current temp reading and +10 on current humidity reading"
+  },
+  {
+    "name": "AHT2X_Cycle",
+    "args": "[IntervalSeconds]",
+    "descr": "This is the interval between measurements in seconds, by default 1. Max is 255.",
+    "fn": "AHT2X_cycle",
+    "file": "drv/drv_aht2X.c",
+    "requires": "",
+    "examples": "AHT2X_Cycle 60 <br /> measurement is taken every 60 seconds"
+  },
+  {
+    "name": "AHT2X_Measure",
+    "args": "",
+    "descr": "Retrieve OneShot measurement.",
+    "fn": "AHT2X_Measure",
+    "file": "drv/drv_aht2X.c",
+    "requires": "",
+    "examples": "AHT2X_Measure"
+  },
+  {
+    "name": "AHT2X_Reinit",
+    "args": "",
+    "descr": "Reinitialize sensor.",
+    "fn": "AHT2X_Reinit",
+    "file": "drv/drv_aht2X.c",
+    "requires": "",
+    "examples": "AHT2X_Reinit"
+  },
+  {
     "name": "alias",
     "args": "[Alias][Command with spaces]",
     "descr": "add an aliased command, so a command with spaces can be called with a short, nospaced alias",
@@ -140,6 +185,24 @@
     "descr": "Internal usage only. See docs for 'alias' command.",
     "fn": "runcmd",
     "file": "cmnds/cmd_test.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Anim",
+    "args": "[AnimationIndex]",
+    "descr": "Starts given WS2812 animation by index.",
+    "fn": "NULL);",
+    "file": "driver/drv_pixelAnim.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "AnimSpeed",
+    "args": "[Interval]",
+    "descr": "Sets WS2812 animation speed",
+    "fn": "NULL);",
+    "file": "driver/drv_pixelAnim.c",
     "requires": "",
     "examples": ""
   },
@@ -169,6 +232,33 @@
     "file": "drv/drv_battery.c",
     "requires": "",
     "examples": "Battery_Setup 1500 3000 2 2400 4096"
+  },
+  {
+    "name": "BMPI2C_Calibrate",
+    "args": "[DeltaTemp][DeltaPressure][DeltaHumidity]",
+    "descr": "Calibrate the BMPI2C Sensor.",
+    "fn": "BMPI2C_Calibrate",
+    "file": "driver/drv_bmpi2c.c",
+    "requires": "",
+    "examples": "BMPI2C_Calibrate -4 0 10 <br /> meaning -4 on current temp reading, 0 on current pressure reading and +10 on current humidity reading"
+  },
+  {
+    "name": "BMPI2C_Configure",
+    "args": "[Mode][TempSampling][PressureSampling][HumSampling][IIRFilter][StandbyTime]",
+    "descr": "Manual sensor configuration. Modes: 0 - normal, 1 - forced, 2 - sleep. Overampling range: -1 - skipped, 2^0 to 2^4. Default is X1. IIRFilter range: 0 - off, 2^1 to 2^4 for most, up to 2^7 for BME68X, StandbyTime: 1 for 0.5ms, 63 for 62.5ms, 125, 250, 500, 1000, 2000, 4000. Mode and StandbyTime are not needed on BME68X, All values will be rounded down to closest available (like sampling 10 will choose 8x)",
+    "fn": "BMPI2C_Configure",
+    "file": "driver/drv_bmpi2c.c",
+    "requires": "",
+    "examples": "BMPI2C_Configure 0 8 2 4 16 125 <br />"
+  },
+  {
+    "name": "BMPI2C_Cycle",
+    "args": "[IntervalSeconds]",
+    "descr": "This is the interval between measurements in seconds, by default 1. Max is 255.",
+    "fn": "BMPI2C_cycle",
+    "file": "drv/drv_bmpi2c.c",
+    "requires": "",
+    "examples": "BMPI2C_Cycle 60 <br /> measurement is taken every 60 seconds"
   },
   {
     "name": "BP1658CJ_Current",
@@ -252,6 +342,51 @@
     "examples": ""
   },
   {
+    "name": "chart_add",
+    "args": "[ntp_time][val1][val2]...[valN]",
+    "descr": "Adds data to the chart with specified variables at a specific NTP time. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "fn": "NULL);",
+    "file": "driver/drv_charts.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "chart_addNow",
+    "args": "[val1][val2]...[valN]",
+    "descr": "Adds data to the chart using the current NTP time. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "fn": "NULL);",
+    "file": "driver/drv_charts.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "chart_create",
+    "args": "[max_samples][num_vars][num_axes]",
+    "descr": "Creates a chart with a specified number of samples, variables, and axes. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "fn": "NULL);",
+    "file": "driver/drv_charts.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "chart_setAxis",
+    "args": "[axis_index][name][flags][label]",
+    "descr": "Sets up an axis with a name, flags, and label. Currently flags can be 0 (left axis) or 1 (right axis). See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "fn": "NULL);",
+    "file": "driver/drv_charts.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "chart_setVar",
+    "args": "[var_index][title][axis]",
+    "descr": "Associates a variable with a specific axis. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "fn": "NULL);",
+    "file": "driver/drv_charts.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "Choice",
     "args": "[IndexToExecute][Option0][Option1][Option2][OptionN][etc]",
     "descr": "This will choose a given argument by index and execute it as a command. Index to execute can be a variable like $CH1.",
@@ -270,13 +405,22 @@
     "examples": ""
   },
   {
+    "name": "CHT_Alert",
+    "args": "[TempDiff][HumDiff][Freq][FQ]",
+    "descr": "Enable alert pin. TempDif (temperature difference is any float higher than 0.05�C) = set detected difference in temperature required for device to wake. HumDiff (humidity difference is any float higher than 0.1%). Freq (time per measurement in s) = 1, 5, 10, 60, 120 (default if wrong = 1). FQ (fault queue number) = 1, 2, 4, 6 (default if wrong = 1)",
+    "fn": "CHT_Alert",
+    "file": "drv/drv_cht8305.c",
+    "requires": "",
+    "examples": "CHT_Alert 0.5 0 5 2 <br /> alert pin will trigger when temperature deviates by more than 0.5�C. Humidity will be ignored. Sensor measures every 5s with fault queue number 2."
+  },
+  {
     "name": "CHT_Calibrate",
     "args": "[DeltaTemp][DeltaHumidity]",
     "descr": "Calibrate the CHT Sensor as Tolerance is +/-2 degrees C.",
     "fn": "CHT_Calibrate",
     "file": "driver/drv_cht8305.c",
     "requires": "",
-    "examples": "SHT_Calibrate -4 10 <br /> meaning -4 on current temp reading and +10 on current humidity reading"
+    "examples": "CHT_Calibrate -4 10 <br /> meaning -4 on current temp reading and +10 on current humidity reading"
   },
   {
     "name": "CHT_Cycle",
@@ -505,8 +649,8 @@
   },
   {
     "name": "DSTime",
-    "args": "[timeSeconds]",
-    "descr": "DoorSensor driver configuration command. Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival",
+    "args": "[timeSeconds][optionalAutoWakeUpTimeSeconds]",
+    "descr": "DoorSensor driver configuration command. Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival. You can also use this to extend current awake time (at runtime) with syntax: 'DSTime +10', this will make device stay awake 10 seconds longer. You can also restart current value of awake counter by 'DSTime clear', this will make counter go from 0 again.",
     "fn": "DoorDeepSleep_SetTime",
     "file": "drv/drv_doorSensorWithDeepSleep.c",
     "requires": "",
@@ -711,6 +855,15 @@
     "examples": ""
   },
   {
+    "name": "IndexRefreshInterval",
+    "args": "[Interval]",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "IREnable",
     "args": "[Str][1or0]",
     "descr": "Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol",
@@ -730,8 +883,8 @@
   },
   {
     "name": "json_test",
-    "args": "cmnd_json_test",
-    "descr": "",
+    "args": "",
+    "descr": "Developer-only command used to test CJSON library",
     "fn": "NULL);",
     "file": "cmnds/cmd_test.c",
     "requires": "",
@@ -829,7 +982,7 @@
   },
   {
     "name": "led_basecolor_rgbcw",
-    "args": "",
+    "args": "[HexValue]",
     "descr": "set PWN color using #RRGGBB[cw][ww]",
     "fn": "basecolor_rgbcw",
     "file": "cmnds/cmd_newLEDDriver.c",
@@ -896,6 +1049,15 @@
     "descr": "Sets the speed of colour interpolation, where speed is defined as a number of RGB units per second, so 255 will lerp from 0 to 255 in one second",
     "fn": "lerpSpeed",
     "file": "cmnds/cmd_newLEDDriver.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "LED_Map",
+    "args": "[Ch0][Ch1][Ch2][Ch3][Ch4]",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_sm15155e.c",
     "requires": "",
     "examples": ""
   },
@@ -1063,7 +1225,7 @@
   },
   {
     "name": "linkTuyaMCUOutputToChannel",
-    "args": "[dpId][varType][channelID][bDPCache-Optional][mult-optional]",
+    "args": "[dpId][varType][channelID][bDPCache-Optional][mult-optional][bInverse]",
     "descr": "Used to map between TuyaMCU dpIDs and our internal channels. Last argument is optional and 0 by default. You can set it to 1 for battery powered devices, so a variable is set with DPCache, for example a sampling interval for humidity/temperature sensor. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap. Please see [Tuya Docs](https://developer.tuya.com/en/docs/iot/tuya-cloud-universal-serial-port-access-protocol?id=K9hhi0xxtn9cb) for info about TuyaMCU. You can also see our [TuyaMCU Analyzer Tool](https://www.elektroda.com/rtvforum/viewtopic.php?p=20528459#20528459)",
     "fn": "TuyaMCU_LinkTuyaMCUOutputToChannel",
     "file": "driver/drv_tuyaMCU.c",
@@ -1207,8 +1369,8 @@
   },
   {
     "name": "MCP9808_Adr",
-    "args": "MCP9808_Adr",
-    "descr": "",
+    "args": "[HexAdr]",
+    "descr": "Sets the I2C address of MCP9808, like 0x30",
     "fn": "NULL);",
     "file": "driver/drv_mcp9808.c",
     "requires": "",
@@ -1216,17 +1378,17 @@
   },
   {
     "name": "MCP9808_AlertMin",
-    "args": "MCP9808_AlertMin",
-    "descr": "",
-    "fn": "NULL);",
+    "args": "[MinT] [OptionalBActiveHigh]",
+    "descr": "Setup MCP9809 temperature alert for min mode",
+    "fn": ");",
     "file": "driver/drv_mcp9808.c",
     "requires": "",
     "examples": ""
   },
   {
     "name": "MCP9808_AlertRange",
-    "args": "MCP9808_AlertRange",
-    "descr": "",
+    "args": "[MinT] [MaxT] [OptionalBActiveHigh]",
+    "descr": "Setup MCP9809 temperature alert for range mode",
     "fn": "NULL);",
     "file": "driver/drv_mcp9808.c",
     "requires": "",
@@ -1244,7 +1406,7 @@
   {
     "name": "MCP9808_Cycle",
     "args": "[DelayInSeconds]",
-    "descr": "",
+    "descr": "Sets MCP9808 measurement interval",
     "fn": "NULL);",
     "file": "driver/drv_mcp9808.c",
     "requires": "",
@@ -1368,6 +1530,33 @@
     "examples": ""
   },
   {
+    "name": "owm_channels",
+    "args": "[temperature][humidity][pressure]",
+    "descr": "Sets channels that will be used to store OWM response results",
+    "fn": "NULL);",
+    "file": "driver/drv_openWeatherMap.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "owm_request",
+    "args": "",
+    "descr": "Sends OWM request to the API. Do not use it too often, as API may have limits",
+    "fn": "NULL);",
+    "file": "driver/drv_openWeatherMap.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "owm_setup",
+    "args": "[lat][lng][api_key]",
+    "descr": "Setups OWM driver for your location and API key",
+    "fn": "NULL);",
+    "file": "driver/drv_openWeatherMap.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "Password1",
     "args": "[ValueString]",
     "descr": "Sets the Pass of target WiFi. Command keeps Tasmota syntax",
@@ -1423,8 +1612,8 @@
   },
   {
     "name": "PowerMax",
-    "args": "BL0937_PowerMax",
-    "descr": "",
+    "args": "[MaxPowerInW]",
+    "descr": "Sets the maximum power limit for BL measurement used to filter incorrect values",
     "fn": "NULL);",
     "file": "driver/drv_bl0937.c",
     "requires": "",
@@ -1433,7 +1622,7 @@
   {
     "name": "PowerSave",
     "args": "[Optional 1 or 0, by default 1 is assumed]",
-    "descr": "Enables dynamic power saving mode on BK and W600. You can also disable power saving with PowerSave 0.",
+    "descr": "Enables dynamic power saving mode on Beken N/T, BL602, W600, W800 and LN882H. In the case of LN882H PowerSave will not work as a startup command, so use in autoexec. On LN882H PowerSave 1 = light sleep and Powersave >1 (eg PowerSave 2) = deeper sleep. On LN882H PowerSave 1 should be used if BL0937 metering is present. On all supported platforms PowerSave 0 can be used to disable power saving.",
     "fn": "CMD_PowerSave",
     "file": "cmnds/cmd_main.c",
     "requires": "",
@@ -1450,7 +1639,7 @@
   },
   {
     "name": "publish",
-    "args": "[Topic][Value]",
+    "args": "[Topic][Value][bOptionalSkipPrefixAndSuffix]",
     "descr": "Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'. You can use argument expansion here, so $CH11 will change to value of the channel 11",
     "fn": "MQTT_PublishCommand",
     "file": "mqtt/new_mqtt.c",
@@ -1494,8 +1683,17 @@
     "examples": ""
   },
   {
+    "name": "publishFile",
+    "args": "[Topic][Value][bOptionalSkipPrefixAndSuffix]",
+    "descr": "Publishes data read from LFS file by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.",
+    "fn": "MQTT_PublishFile",
+    "file": "mqtt/new_mqtt.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "publishFloat",
-    "args": "[Topic][Value]",
+    "args": "[Topic][Value][bOptionalSkipPrefixAndSuffix]",
     "descr": "Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an float, so you can also use math expressions like $CH10*0.0, etc.",
     "fn": "MQTT_PublishCommand",
     "file": "mqtt/new_mqtt.c",
@@ -1504,7 +1702,7 @@
   },
   {
     "name": "publishInt",
-    "args": "[Topic][Value]",
+    "args": "[Topic][Value][bOptionalSkipPrefixAndSuffix]",
     "descr": "Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an integer, so you can also use math expressions like $CH10*10, etc.",
     "fn": "MQTT_PublishCommand",
     "file": "mqtt/new_mqtt.c",
@@ -1512,9 +1710,18 @@
     "examples": ""
   },
   {
+    "name": "PWMFrequency",
+    "args": "[FrequencyInHz]",
+    "descr": "Sets the global PWM frequency.",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "PWMG_Raw",
-    "args": "CMD_PWMG_Raw",
-    "descr": "",
+    "args": "",
+    "descr": "PWM grouping (synchronous PWM)",
     "fn": "NULL);",
     "file": "driver/drv_pwm_groups.c",
     "requires": "",
@@ -1522,8 +1729,8 @@
   },
   {
     "name": "PWMG_Set",
-    "args": "CMD_PWMG_Set",
-    "descr": "",
+    "args": "Duty1Percent Duty2Percent DeadTimePercent Frequency PinA PinB",
+    "descr": "PWM grouping (synchronous PWM)",
     "fn": "NULL);",
     "file": "driver/drv_pwm_groups.c",
     "requires": "",
@@ -1532,7 +1739,7 @@
   {
     "name": "reboot",
     "args": "",
-    "descr": "Same as restart. Needed for bkWriter 1.60 which sends 'reboot' cmd before trying to get bus",
+    "descr": "Same as restart. Needed for bkWriter 1.60 which sends 'reboot' cmd before trying to get bus via UART. Thanks to this, if you enable command line on UART1, you don't need to manually reboot while flashing via UART.",
     "fn": "CMD_Restart",
     "file": "cmnds/cmd_main.c",
     "requires": "",
@@ -1562,6 +1769,15 @@
     "descr": "Reboots the module",
     "fn": "CMD_Restart",
     "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Result",
+    "args": "NULL",
+    "descr": "A stub for Tasmota",
+    "fn": "cmnd_stub",
+    "file": "cmnds/cmd_tasmota.c",
     "requires": "",
     "examples": ""
   },
@@ -1611,11 +1827,29 @@
     "examples": ""
   },
   {
+    "name": "SendIR2",
+    "args": "CMD_IR2_SendIR2",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_ir2.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "sendPOST",
     "args": "[TargetURL] [HTTP Port] [Content Type] [Post Content]",
     "descr": "Sends a HTTP POST request to target URL. Arguments can contain variable expansion.",
     "fn": "CMD_SendPOST",
     "file": "cmnds/cmd_send.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Sensor",
+    "args": "NULL",
+    "descr": "A stub for Tasmota",
+    "fn": "cmnd_stub",
+    "file": "cmnds/cmd_tasmota.c",
     "requires": "",
     "examples": ""
   },
@@ -1683,6 +1917,15 @@
     "examples": ""
   },
   {
+    "name": "SetChannelEnum",
+    "args": "[ChannelIndex][Value,Title][Value,Title]",
+    "descr": "Creates a custom channel enumeration.",
+    "fn": "SetChannelEnum",
+    "file": "cmnds/cmd_channels.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "SetChannelFloat",
     "args": "[ChannelIndex][ChannelValue]",
     "descr": "Sets a raw channel to given float value. Currently only used for LED PWM channels.",
@@ -1737,6 +1980,15 @@
     "examples": ""
   },
   {
+    "name": "SetFlash",
+    "args": "[FlashIndex][FlashValue]",
+    "descr": "Sets a a flashVars channel directly (if you are using remember state for given channel, it will overwrite, it uses same space for channels memory).",
+    "fn": "CMD_SetFlash",
+    "file": "cmnds/cmd_channels.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "SetPinChannel",
     "args": "[PinIndex][ChannelIndex][optionalChannel2Index]",
     "descr": "This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command.",
@@ -1751,6 +2003,24 @@
     "descr": "This allows you to set a pin role, for example a Relay role, or Button, etc. Usually it's easier to do this through WWW panel, so you don't have to use this command.",
     "fn": "CMD_SetPinRole",
     "file": "cmnds/cmd_channels.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "setStartupSSID",
+    "args": "[Value]",
+    "descr": "Sets startup SSID, 0 (SSID0) 1 (SSID1)",
+    "fn": "CMD_setStartupSSID",
+    "file": "new_pins.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "setStartupSSIDChannel",
+    "args": "[Value]",
+    "descr": "Sets retain channel number to store last used SSID, 0..MAX_RETAIN_CHANNELS-1, -1 to disable. Suggested channel number is 7 (MAXMAX_RETAIN_CHANNELS-5)",
+    "fn": "CMD_setStartupSSIDChannel",
+    "file": "new_pins.c",
     "requires": "",
     "examples": ""
   },
@@ -1773,9 +2043,18 @@
     "examples": ""
   },
   {
+    "name": "SetupIR2",
+    "args": "[myPeriodUs] [dutyOnFrac] [dutyOffFrac] [txPin]",
+    "descr": "Init IR2 pin and interrupt",
+    "fn": "NULL);",
+    "file": "driver/drv_ir2.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "SetupTestPower",
-    "args": "",
-    "descr": "NULL",
+    "args": "[fakeVoltage] [FakeCurrent] [FakePower] [bAllowRandom]",
+    "descr": "Starts the fake power metering driver",
     "fn": "TestPower_Setup",
     "file": "driver/drv_test_drivers.c",
     "requires": "",
@@ -1846,7 +2125,7 @@
   },
   {
     "name": "SHT_Calibrate",
-    "args": "",
+    "args": "[DeltaTemp][DeltaHumidity]",
     "descr": "Calibrate the SHT Sensor as Tolerance is +/-2 degrees C.",
     "fn": "SHT3X_Calibrate",
     "file": "driver/drv_sht3x.c",
@@ -1882,7 +2161,7 @@
   },
   {
     "name": "SHT_Heater",
-    "args": "",
+    "args": "[1or0]",
     "descr": "Activate or Deactivate Heater (0 / 1)",
     "fn": "SHT3X_Heater",
     "file": "driver/drv_sht3x.c",
@@ -1949,6 +2228,15 @@
     "descr": "Simons Special Test",
     "fn": "CMD_SimonTest",
     "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "SimSaveArgs",
+    "args": "",
+    "descr": "Internal usage only. Command for OBK self-test in Simulator",
+    "fn": "0);",
+    "file": "selftest/selftest_cfg_via_http.c",
     "requires": "",
     "examples": ""
   },
@@ -2135,8 +2423,17 @@
   {
     "name": "State",
     "args": "NULL",
-    "descr": "NULL",
-    "fn": "cmnd_State",
+    "descr": "A stub for Tasmota",
+    "fn": "cmnd_stub",
+    "file": "cmnds/cmd_tasmota.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Status",
+    "args": "NULL",
+    "descr": "A stub for Tasmota",
+    "fn": "cmnd_stub",
     "file": "cmnds/cmd_tasmota.c",
     "requires": "",
     "examples": ""
@@ -2242,8 +2539,8 @@
   },
   {
     "name": "TimeSize",
-    "args": "CMD_TimeSize",
-    "descr": "",
+    "args": "",
+    "descr": "Prints the size of time_t on current platform - sizeof(time_t), only for testing purposes",
     "fn": "NULL);",
     "file": "cmnds/cmd_main.c",
     "requires": "",
@@ -2305,8 +2602,8 @@
   },
   {
     "name": "TMGN_Read",
-    "args": "CMD_TMGN_Read",
-    "descr": "",
+    "args": "",
+    "descr": "Executes a single buttons read on TM/GN LED driver",
     "fn": "NULL);",
     "file": "driver/drv_tm1637.c",
     "requires": "",
@@ -2323,8 +2620,8 @@
   },
   {
     "name": "TMGN_SetupButtons",
-    "args": "CMD_TMGN_SetupButtons",
-    "descr": "",
+    "args": "[Interval]",
+    "descr": "Setups periodic buttons read on TM/GN LED driver",
     "fn": "NULL);",
     "file": "driver/drv_tm1637.c",
     "requires": "",
@@ -2332,7 +2629,7 @@
   },
   {
     "name": "TMGN_Test",
-    "args": "CMD_TM1637_Test",
+    "args": "",
     "descr": "",
     "fn": "NULL);",
     "file": "driver/drv_tm_gn_display_shared.c",
@@ -2413,8 +2710,8 @@
   },
   {
     "name": "tuyaMcu_sendCmd",
-    "args": "TuyaMCU_SendUserCmd",
-    "descr": "",
+    "args": "[CommandIndex] [HexPayloadNBytes]",
+    "descr": "This will automatically calculate TuyaMCU checksum and length for given command ID and payload, then it will send a command. It's better to use it than uartSendHex",
     "fn": "NULL);",
     "file": "driver/drv_tuyaMCU.c",
     "requires": "",
@@ -2615,6 +2912,24 @@
     "descr": "Wait forever for event. Can be used within script. For example, you can do: waitFor MQTTState 1 or waitFor NTPState 1. You can also do waitFor NoPingTime 600 to wait for 600 seconds without ping watchdog getting successful reply",
     "fn": "CMD_waitFor",
     "file": "cmnds/cmd_script.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "widget_clearAll",
+    "args": "",
+    "descr": "Removes all registered widgets",
+    "fn": "NULL);",
+    "file": "driver/drv_widget.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "widget_create",
+    "args": "[LocationIndex][bAllowCache][FileName]",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_widget.c",
     "requires": "",
     "examples": ""
   }

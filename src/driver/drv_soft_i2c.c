@@ -10,6 +10,7 @@
 #include "../httpserver/new_http.h"
 #include "../hal/hal_pins.h"
 
+#ifndef PLATFORM_ESPIDF
 void usleep(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 {
 #ifdef WIN32
@@ -19,6 +20,7 @@ void usleep(int r) //delay function do 10*r nops, because rtos_delay_millisecond
 		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
 #endif
 }
+#endif
 
 void Soft_I2C_SetLow(uint8_t pin) {
 	HAL_PIN_Setup_Output(pin);
@@ -41,7 +43,7 @@ bool Soft_I2C_WriteByte(softI2C_t *i2c, uint8_t value) {
 	uint8_t curr;
 	uint8_t ack;
 
-	for (curr = 0X80; curr != 0; curr >>= 1) {
+	for (curr = 0x80; curr != 0; curr >>= 1) {
 		if (curr & value) {
 			Soft_I2C_SetHigh(i2c->pin_data);
 		}

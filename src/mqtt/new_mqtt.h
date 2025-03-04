@@ -1,6 +1,10 @@
 #ifndef __NEW_MQTT_H__
 #define __NEW_MQTT_H__
 
+#include "../obk_config.h"
+
+#if ENABLE_MQTT
+
 #include "../new_common.h"
 
 #include "lwip/sockets.h"
@@ -23,20 +27,21 @@ void MQTT_BroadcastTasmotaTeleSTATE();
 void MQTT_BroadcastTasmotaTeleSENSOR();
 
 
-#define PUBLISHITEM_ALL_INDEX_FIRST   -16
+#define PUBLISHITEM_ALL_INDEX_FIRST   -17
 
 //These 3 values are pretty much static
-#define PUBLISHITEM_SELF_STATIC_RESERVED_2      -16
-#define PUBLISHITEM_SELF_STATIC_RESERVED_1      -15
-#define PUBLISHITEM_SELF_HOSTNAME               -14  //Device name
-#define PUBLISHITEM_SELF_BUILD                  -13  //Build
-#define PUBLISHITEM_SELF_MAC                    -12  //Device mac
+#define PUBLISHITEM_SELF_STATIC_RESERVED_2      -17
+#define PUBLISHITEM_SELF_STATIC_RESERVED_1      -16
+#define PUBLISHITEM_SELF_HOSTNAME               -15  //Device name
+#define PUBLISHITEM_SELF_BUILD                  -14  //Build
+#define PUBLISHITEM_SELF_MAC                    -13  //Device mac
 
-#define PUBLISHITEM_DYNAMIC_INDEX_FIRST         -11
+#define PUBLISHITEM_DYNAMIC_INDEX_FIRST         -12
 
-#define PUBLISHITEM_QUEUED_VALUES               -11  //Publish queued items
+#define PUBLISHITEM_QUEUED_VALUES               -12  //Publish queued items
 
 //These values are dynamic
+#define PUBLISHITEM_SELF_TEMP		            -11  // Internal temp
 #define PUBLISHITEM_SELF_SSID		            -10  // SSID
 #define PUBLISHITEM_SELF_DATETIME               -9  //Current unix datetime
 #define PUBLISHITEM_SELF_SOCKETS                -8  //Active sockets
@@ -63,6 +68,7 @@ enum OBK_Publish_Result_e {
 #define OBK_PUBLISH_FLAG_FORCE_REMOVE_GET		4
 // do not add anything to given topic
 #define OBK_PUBLISH_FLAG_RAW_TOPIC_NAME			8
+#define OBK_PUBLISH_FLAG_QOS_ZERO				16
 
 
 #include "new_mqtt_deduper.h"
@@ -76,7 +82,7 @@ typedef struct obk_mqtt_request_tag {
 } obk_mqtt_request_t;
 
 #define MQTT_PUBLISH_ITEM_TOPIC_LENGTH    64
-#define MQTT_PUBLISH_ITEM_CHANNEL_LENGTH  64
+#define MQTT_PUBLISH_ITEM_CHANNEL_LENGTH  128
 #define MQTT_PUBLISH_ITEM_VALUE_LENGTH    1023
 
 typedef enum PostPublishCommands_e {
@@ -169,6 +175,8 @@ typedef struct obk_mqtt_publishReplyPrinter_s {
 
 void MQTT_PublishPrinterContentsToStat(obk_mqtt_publishReplyPrinter_t *printer, const char *statName);
 void MQTT_PublishPrinterContentsToTele(obk_mqtt_publishReplyPrinter_t *printer, const char *statName);
+
+#endif // ENABLE_MQTT
 
 
 #endif // __NEW_MQTT_H__

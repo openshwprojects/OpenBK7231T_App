@@ -34,10 +34,13 @@ static commandResult_t power(const void *context, const char *cmd, const char *a
 		if (strlen(cmd) > 5) {
 			channel = atoi(cmd+5);
 
+#if ENABLE_LED_BASIC
 			if (LED_IsLEDRunning()) {
 				channel = SPECIAL_CHANNEL_LEDPOWER;
 			}
-			else {
+			else 
+#endif
+			{
 				if (bRelayIndexingStartsWithZero) {
 					channel--;
 					if (channel < 0)
@@ -45,10 +48,13 @@ static commandResult_t power(const void *context, const char *cmd, const char *a
 				}
 			}
 		} else {
+#if ENABLE_LED_BASIC
 			// if new LED driver active
 			if(LED_IsLEDRunning()) {
 				channel = SPECIAL_CHANNEL_LEDPOWER;
-			} else {
+			} else
+#endif
+			{
 				// find first active channel, because some people index with 0 and some with 1
 				for(i = 0; i < CHANNEL_MAX; i++) {
 					if (h_isChannelRelay(i) || CHANNEL_GetType(i) == ChType_Toggle) {
@@ -126,7 +132,7 @@ static commandResult_t cmnd_backlog(const void * context, const char *cmd, const
 		*c = 0;
 		count++;
 		localRes = CMD_ExecuteCommand(copy, cmdFlags);
-		if (localRes != CMD_RES_OK) {
+		if (localRes != CMD_RES_OK && localRes != CMD_RES_EMPTY_STRING) {
 			res = localRes;
 		}
 		subcmd = p;
@@ -363,7 +369,7 @@ static commandResult_t cmnd_MqttClient(const void * context, const char *cmd, co
 	CFG_SetMQTTClientId(Tokenizer_GetArg(0));
 	return CMD_RES_OK;
 }
-static commandResult_t cmnd_State(const void * context, const char *cmd, const char *args, int cmdFlags) {
+static commandResult_t cmnd_stub(const void * context, const char *cmd, const char *args, int cmdFlags) {
 
 	return CMD_RES_OK;
 }
@@ -429,10 +435,28 @@ int taslike_commands_init(){
 	//cmddetail:"fn":"cmnd_MqttClient","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MqttClient", cmnd_MqttClient, NULL);
+
+	// those are stubs, they are handled elsewhere so we can have Tasmota style replies
+
 	//cmddetail:{"name":"State","args":"NULL",
-	//cmddetail:"descr":"NULL",
-	//cmddetail:"fn":"cmnd_State","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"descr":"A stub for Tasmota",
+	//cmddetail:"fn":"cmnd_stub","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("State", cmnd_State, NULL);
+	CMD_RegisterCommand("State", cmnd_stub, NULL);
+	//cmddetail:{"name":"Sensor","args":"NULL",
+	//cmddetail:"descr":"A stub for Tasmota",
+	//cmddetail:"fn":"cmnd_stub","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("Sensor", cmnd_stub, NULL);
+	//cmddetail:{"name":"Status","args":"NULL",
+	//cmddetail:"descr":"A stub for Tasmota",
+	//cmddetail:"fn":"cmnd_stub","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("Status", cmnd_stub, NULL);
+	//cmddetail:{"name":"Result","args":"NULL",
+	//cmddetail:"descr":"A stub for Tasmota",
+	//cmddetail:"fn":"cmnd_stub","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("Result", cmnd_stub, NULL);
     return 0;
 }

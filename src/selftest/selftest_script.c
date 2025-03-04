@@ -41,9 +41,32 @@ const char *demo_nested_loop =
 "    if $CH30<3 then goto outer_loop\r\n"
 "setChannel 32 100\r\n";
 
-void Test_Scripting_Loop1() {
-	char buffer[64];
+const char *demo_startScript =
+"alias runAdder startScript myScr.txt adder\r\n"
+"alias runSubber startScript myScr.txt subber\r\n"
+"alias runZeroer startScript myScr.txt zeroer\r\n"
+"setChannel 16 143\r\n"
+"return\r\n"
+"adder:\r\n"
+"    addChannel 16 4\r\n"
+"    return\r\n"
+"subber:\r\n"
+"    addChannel 16 -4\r\n"
+"    return\r\n"
+"zeroer:\r\n"
+"    setChannel 16 0\r\n"
+"    return\r\n";
 
+
+const char *demo_waiting_for_smth =
+"setChannel 20 0\r\n"
+"setChannel 21 0\r\n"
+"again:\r\n"
+"    delay_s 0.1\r\n"
+"    if $CH20==0 then goto again\r\n"
+"    setChannel 21 789\r\n";
+
+void Test_Scripting_Loop1() {
 	// reset whole device
 	SIM_ClearOBK(0);
 	CMD_ExecuteCommand("lfs_format", 0);
@@ -65,8 +88,6 @@ void Test_Scripting_Loop1() {
 	//system("pause");
 }
 void Test_Scripting_Loop2() {
-	char buffer[64];
-
 	// reset whole device
 	SIM_ClearOBK(0);
 	CMD_ExecuteCommand("lfs_format", 0);
@@ -89,8 +110,6 @@ void Test_Scripting_Loop2() {
 	//system("pause");
 }
 void Test_Scripting_Loop3() {
-	char buffer[64];
-
 	// reset whole device
 	SIM_ClearOBK(0);
 	CMD_ExecuteCommand("lfs_format", 0);
@@ -144,11 +163,90 @@ void Test_Scripting_NestedLoop() {
 	SELFTEST_ASSERT_CHANNEL(31, 5); // Ensure inner loop executed 5 times
 	SELFTEST_ASSERT_CHANNEL(32, 100);
 }
+void Test_Scripting_StartScript() {
+	// reset whole device
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("lfs_format", 0);
+
+	// put file in LittleFS
+	Test_FakeHTTPClientPacket_POST("api/lfs/myScr.txt", demo_startScript);
+	// get this file 
+	Test_FakeHTTPClientPacket_GET("api/lfs/myScr.txt");
+	SELFTEST_ASSERT_HTML_REPLY(demo_startScript);
+
+	CMD_ExecuteCommand("startScript myScr.txt", 0);
+	Sim_RunFrames(50, false);
+	SELFTEST_ASSERT_CHANNEL(16, 143);
+	CMD_ExecuteCommand("runAdder", 0);
+	Sim_RunFrames(50, false);
+	SELFTEST_ASSERT_CHANNEL(16, 143 + 4);
+	CMD_ExecuteCommand("runAdder", 0);
+	Sim_RunFrames(50, false);
+	SELFTEST_ASSERT_CHANNEL(16, 143 + 4 + 4);
+	CMD_ExecuteCommand("runAdder", 0);
+	Sim_RunFrames(50, false);
+	SELFTEST_ASSERT_CHANNEL(16, 143 + 4 + 4 + 4);
+	CMD_ExecuteCommand("runSubber", 0);
+	Sim_RunFrames(50, false);
+	SELFTEST_ASSERT_CHANNEL(16, 143 + 4 + 4);
+	CMD_ExecuteCommand("runSubber", 0);
+	Sim_RunFrames(50, false);
+	SELFTEST_ASSERT_CHANNEL(16, 143 + 4);
+	CMD_ExecuteCommand("backlog runSubber; runSubber", 0); // twice
+	Sim_RunFrames(50, false);
+	SELFTEST_ASSERT_CHANNEL(16, 143 - 4); // twice
+	CMD_ExecuteCommand("runZeroer", 0);
+	Sim_RunFrames(50, false);
+	SELFTEST_ASSERT_CHANNEL(16, 0);
+	CMD_ExecuteCommand("runAdder", 0);
+	Sim_RunFrames(50, false);
+	SELFTEST_ASSERT_CHANNEL(16, 4);
+	CMD_ExecuteCommand("backlog runSubber; runAdder", 0); // both
+	Sim_RunFrames(50, false);
+	SELFTEST_ASSERT_CHANNEL(16, 4);
+}
+void Test_Scripting_WaitingForSmth() {
+	// reset whole device
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("lfs_format", 0);
+
+	// put file in LittleFS
+	Test_FakeHTTPClientPacket_POST("api/lfs/waiter.txt", demo_waiting_for_smth);
+	// get this file 
+	Test_FakeHTTPClientPacket_GET("api/lfs/waiter.txt");
+	SELFTEST_ASSERT_HTML_REPLY(demo_waiting_for_smth);
+
+	SELFTEST_ASSERT_INTEGER(CMD_GetCountActiveScriptThreads(), 0);
+	CMD_ExecuteCommand("startScript waiter.txt", 0);
+	SELFTEST_ASSERT_INTEGER(CMD_GetCountActiveScriptThreads(), 1);
+
+	CMD_ExecuteCommand("setChannel 20 123", 0);
+	CMD_ExecuteCommand("setChannel 21 321", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 123);
+	SELFTEST_ASSERT_CHANNEL(21, 321);
+	SELFTEST_ASSERT_INTEGER(CMD_GetCountActiveScriptThreads(), 1);
+	CMD_ExecuteCommand("startScript myScr.txt", 0);
+	for (int i = 0; i < 10; i++) {
+		SELFTEST_ASSERT_INTEGER(CMD_GetCountActiveScriptThreads(), 1);
+		Sim_RunFrames(50, false);
+		SELFTEST_ASSERT_INTEGER(CMD_GetCountActiveScriptThreads(), 1);
+		SELFTEST_ASSERT_CHANNEL(20, 0);
+		SELFTEST_ASSERT_CHANNEL(21, 0);
+	}
+	CMD_ExecuteCommand("setChannel 20 1", 0);
+	Sim_RunFrames(50, false);
+	// as soon as $CH20 is not 0, loop breaks and sets
+	SELFTEST_ASSERT_CHANNEL(21, 789);
+	SELFTEST_ASSERT_INTEGER(CMD_GetCountActiveScriptThreads(), 0);
+}
+
 void Test_Scripting() {
 	Test_Scripting_Loop1();
 	Test_Scripting_Loop2();
 	Test_Scripting_Loop3();
 	Test_Scripting_NestedLoop();
+	Test_Scripting_StartScript();
+	Test_Scripting_WaitingForSmth();
 }
 
 #endif

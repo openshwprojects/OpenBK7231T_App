@@ -2,6 +2,21 @@
 
 #include "selftest_local.h"
 
+void DDP_SimulatePacket(const char *s) {
+	// accept strings like 41030001000000000003FFFFFF and call DDP_Parse
+	size_t len = strlen(s);
+	if (len % 2 != 0) {
+		return;
+	}
+	size_t byteCount = len / 2;
+	byte buffer[512];
+	for (size_t i = 0; i < byteCount; i++) {
+		buffer[i] = hexbyte(s);
+		s += 2;
+	}
+	DDP_Parse(buffer, byteCount);
+}
+
 void Test_LEDDriver_CW() {
 	int i;
 	// reset whole device
@@ -69,14 +84,14 @@ void Test_LEDDriver_CW() {
 
 	for (i = 0; i <= 100; i++) {
 		char buffer[64];
-		sprintf(buffer, "Dimmer %i", i);
+		snprintf(buffer, sizeof(buffer), "Dimmer %i", i);
 		CMD_ExecuteCommand(buffer, 0);
 		//printf("Dimmer loop test: %i\n",i);
 		SELFTEST_ASSERT_EXPRESSION("$led_dimmer", i);
 	}
 	for (i = 154; i <= 500; i++) {
 		char buffer[64];
-		sprintf(buffer, "CT %i", i);
+		snprintf(buffer, sizeof(buffer), "CT %i", i);
 		CMD_ExecuteCommand(buffer, 0);
 		//printf("Dimmer loop test: %i\n",i);
 		SELFTEST_ASSERT_EXPRESSION("$led_temperature", i);
@@ -156,14 +171,14 @@ void Test_LEDDriver_CW_OtherChannels() {
 
 	for (i = 0; i <= 100; i++) {
 		char buffer[64];
-		sprintf(buffer, "Dimmer %i", i);
+		snprintf(buffer, sizeof(buffer), "Dimmer %i", i);
 		CMD_ExecuteCommand(buffer, 0);
 		//printf("Dimmer loop test: %i\n",i);
 		SELFTEST_ASSERT_EXPRESSION("$led_dimmer", i);
 	}
 	for (i = 154; i <= 500; i++) {
 		char buffer[64];
-		sprintf(buffer, "CT %i", i);
+		snprintf(buffer, sizeof(buffer), "CT %i", i);
 		CMD_ExecuteCommand(buffer, 0);
 		//printf("Dimmer loop test: %i\n",i);
 		SELFTEST_ASSERT_EXPRESSION("$led_temperature", i);
@@ -245,7 +260,7 @@ void Test_LEDDriver_CW_Alternate() {
 
 	for (i = 0; i <= 100; i++) {
 		char buffer[64];
-		sprintf(buffer, "Dimmer %i", i);
+		snprintf(buffer, sizeof(buffer), "Dimmer %i", i);
 		CMD_ExecuteCommand(buffer, 0);
 		//printf("Dimmer loop test: %i\n",i);
 		SELFTEST_ASSERT_EXPRESSION("$led_dimmer", i);
@@ -257,7 +272,7 @@ void Test_LEDDriver_CW_Alternate() {
 	CMD_ExecuteCommand("led_temperature 500", 0);
 	for (i = 0; i <= 100; i++) {
 		char buffer[64];
-		sprintf(buffer, "Dimmer %i", i);
+		snprintf(buffer,sizeof(buffer), "Dimmer %i", i);
 		CMD_ExecuteCommand(buffer, 0);
 		//printf("Dimmer loop test: %i\n",i);
 		SELFTEST_ASSERT_EXPRESSION("$led_dimmer", i);
@@ -268,7 +283,7 @@ void Test_LEDDriver_CW_Alternate() {
 
 	for (i = 154; i <= 500; i++) {
 		char buffer[64];
-		sprintf(buffer, "CT %i", i);
+		snprintf(buffer, sizeof(buffer), "CT %i", i);
 		CMD_ExecuteCommand(buffer, 0);
 		//printf("Dimmer loop test: %i\n",i);
 		SELFTEST_ASSERT_EXPRESSION("$led_temperature", i);
@@ -359,6 +374,43 @@ void Test_LEDDriver_RGBCW() {
 	SELFTEST_ASSERT_CHANNEL(4, 0);
 	SELFTEST_ASSERT_CHANNEL(5, 0);
 
+	// Set 100% Blue (Tasmota)
+	CMD_ExecuteCommand("Color 0,0,255", 0);
+
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 100);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+
+	// Set 100% Green (Tasmota)
+	CMD_ExecuteCommand("Color 0,255,0", 0);
+
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 100);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+
+	// Set 100% Blue (Tasmota)
+	CMD_ExecuteCommand("Color 0,0,255", 0);
+
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 100);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+
+	// Set 100% RedGreen (Tasmota)
+	CMD_ExecuteCommand("Color 255,255,0", 0);
+
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	SELFTEST_ASSERT_CHANNEL(2, 100);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+
+
 	// set 50%
 	CMD_ExecuteCommand("led_dimmer 50", 0);
 
@@ -370,9 +422,112 @@ void Test_LEDDriver_RGBCW() {
 	SELFTEST_ASSERT_CHANNEL(4, 0);
 	SELFTEST_ASSERT_CHANNEL(5, 0);
 
+	// test DGR
+	void DRV_DGR_processPower(int relayStates, byte relaysCount);
+
+	DRV_DGR_processPower(0, 1);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+	DRV_DGR_processPower(1, 1);
+	SELFTEST_ASSERT_CHANNEL(1, 21);
+	SELFTEST_ASSERT_CHANNEL(2, 21);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+	DRV_DGR_processPower(0, 1);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+	DRV_DGR_processPower(3, 2);
+	SELFTEST_ASSERT_CHANNEL(1, 21);
+	SELFTEST_ASSERT_CHANNEL(2, 21);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+	DRV_DGR_processPower(0, 2);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+
+
+	DRV_DGR_processPower(1, 1);
+	// set 100% brightness - FIXME
+	CMD_ExecuteCommand("led_dimmer 100", 0);
+	// Added for https://www.elektroda.com/rtvforum/viewtopic.php?p=21335096#21335096
+	DDP_SimulatePacket("41030001000000000003FFFFFF");
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	SELFTEST_ASSERT_CHANNEL(1 + 1, 100);
+	SELFTEST_ASSERT_CHANNEL(1 + 2, 100);
+	SELFTEST_ASSERT_CHANNEL(1 + 3, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 4, 0);
+
+	DDP_SimulatePacket("4103000100000000000300FFFF");
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 1, 100);
+	SELFTEST_ASSERT_CHANNEL(1 + 2, 100);
+	SELFTEST_ASSERT_CHANNEL(1 + 3, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 4, 0);
+
+	// RGB
+	DDP_SimulatePacket("410300010000000000030000FF");
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 1, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 2, 100);
+	SELFTEST_ASSERT_CHANNEL(1 + 3, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 4, 0);
+
+	// RGBW
+	DDP_SimulatePacket("410F00010000000000040000FF00");
+	printf("Channel R is %i, channel G is %i, channel B is %i, channel C is %i, channel W is %i\n",
+		CHANNEL_Get(1), CHANNEL_Get(2), CHANNEL_Get(3), CHANNEL_Get(4), CHANNEL_Get(5));
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 1, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 2, 100);
+	SELFTEST_ASSERT_CHANNEL(1 + 3, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 4, 0);
+	DDP_SimulatePacket("410F000100000000000400FFFF00");
+	printf("Channel R is %i, channel G is %i, channel B is %i, channel C is %i, channel W is %i\n",
+		CHANNEL_Get(1), CHANNEL_Get(2), CHANNEL_Get(3), CHANNEL_Get(4), CHANNEL_Get(5));
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 1, 100);
+	SELFTEST_ASSERT_CHANNEL(1 + 2, 100);
+	SELFTEST_ASSERT_CHANNEL(1 + 3, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 4, 0);
+	DDP_SimulatePacket("410F0001000000000004FF00FF00");
+	printf("Channel R is %i, channel G is %i, channel B is %i, channel C is %i, channel W is %i\n",
+		CHANNEL_Get(1), CHANNEL_Get(2), CHANNEL_Get(3), CHANNEL_Get(4), CHANNEL_Get(5));
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	SELFTEST_ASSERT_CHANNEL(1 + 1, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 2, 100);
+	SELFTEST_ASSERT_CHANNEL(1 + 3, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 4, 0);
+	// WHITE AS COOL + WARM ?
+	DDP_SimulatePacket("410F0001000000000004000000FF");
+	printf("Channel R is %i, channel G is %i, channel B is %i, channel C is %i, channel W is %i\n",
+		CHANNEL_Get(1), CHANNEL_Get(2), CHANNEL_Get(3), CHANNEL_Get(4), CHANNEL_Get(5));
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 1, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 2, 0);
+	SELFTEST_ASSERT_CHANNEL(1 + 3, 49);
+	SELFTEST_ASSERT_CHANNEL(1 + 4, 49);
 
 	//CMD_ExecuteCommand("{\"color\":{\"b\":255,\"c\":0,\"g\":255,\"r\":255},\"state\":\"1\"}", "");
 
+	// Set 100% Blue (Tasmota)
+	CMD_ExecuteCommand("Color 0,0,255", 0);
+
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 100);
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
 }
 void Test_LEDDriver_RGB(int firstChannel) {
 	// reset whole device
@@ -467,8 +622,46 @@ void Test_LEDDriver_RGB(int firstChannel) {
 	SELFTEST_ASSERT_CHANNEL(firstChannel+1, 0);
 	SELFTEST_ASSERT_CHANNEL(firstChannel+2, 79);
 
+	// set 100% brightness
+	CMD_ExecuteCommand("led_dimmer 100", 0);
+	// Added for https://www.elektroda.com/rtvforum/viewtopic.php?p=21335096#21335096
+	DDP_SimulatePacket("41030001000000000003FFFFFF");
+	SELFTEST_ASSERT_CHANNEL(firstChannel, 100);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 1, 100);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 2, 100);
+
+	// set 50% brightness - DDP shall reset it to 100
+	CMD_ExecuteCommand("led_dimmer 50", 0);
+	// Added for https://www.elektroda.com/rtvforum/viewtopic.php?p=21335096#21335096
+	DDP_SimulatePacket("41030001000000000003FFFFFF");
+	SELFTEST_ASSERT_CHANNEL(firstChannel, 100);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 1, 100);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 2, 100);
+
+	DDP_SimulatePacket("41030001000000000003FFFF00");
+	SELFTEST_ASSERT_CHANNEL(firstChannel, 100);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 1, 100);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 2, 0);
+
+	DDP_SimulatePacket("4103000100000000000300FF00");
+	SELFTEST_ASSERT_CHANNEL(firstChannel, 0);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 1, 100);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 2, 0);
+
+
+	// Set 100% Blue (Tasmota)
+	CMD_ExecuteCommand("Color 0,0,255", 0);
+
+	SELFTEST_ASSERT_CHANNEL(firstChannel, 0);
+	SELFTEST_ASSERT_CHANNEL(firstChannel+1, 0);
+	SELFTEST_ASSERT_CHANNEL(firstChannel+2, 100);
+	SELFTEST_ASSERT_CHANNEL(firstChannel+3, 0);
+	SELFTEST_ASSERT_CHANNEL(firstChannel+4, 0);
+
+
 	// make error
 	//SELFTEST_ASSERT_CHANNEL(firstChannel+2, 666);
+
 }
 void Test_LEDDriver() {
 

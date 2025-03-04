@@ -1,4 +1,13 @@
-// NOTE: qqq
+// NOTE: This is my shared driver for 7-segment display drivers.
+// Currently supported:
+// - TM1637
+// - TM1638
+// - GN6932
+// - HD2015/TM1650 - https://www.elektroda.com/rtvforum/find.php?q=HD2015
+// This shared driver exposes OBK commands API so you can create custom
+// OBK scripts to manipulate your display, show values, show temperature,
+// time, etc.... no hardcoding needed
+
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
@@ -11,11 +20,13 @@
 #include "drv_uart.h"
 #include "../httpserver/new_http.h"
 #include "../hal/hal_pins.h"
-
+#include "drv_tm_gn_display_shared.h"
 #include "drv_tm1637.h"
 
 #define GN6932_DELAY usleep(1);
 
+
+static byte g_displayType;
 static softI2C_t g_i2c;
 static byte g_brightness;
 static int g_buttonReadIntervalMS;
@@ -191,7 +202,15 @@ int g_previousButtons = 0;
 void TMGN_ReadButtons() {
 	int tmp;
 	int i;
-	TM_GN_ReadCommand(&g_i2c, TM1638_I2C_COM1_READ, (byte*)&tmp, 4);
+
+	if (g_displayType == TMGN_HD2015) {
+		Soft_I2C_Start(&g_i2c, 0x4F);
+		tmp = Soft_I2C_ReadByte(&g_i2c, 1);
+		Soft_I2C_Stop(&g_i2c);
+	}
+	else {
+		TM_GN_ReadCommand(&g_i2c, TM1638_I2C_COM1_READ, (byte*)&tmp, 4);
+	}
 	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_MAIN, "CMD_TMGN_Read: %i", tmp);
 	for (i = 0; i < 32; i++) {
 		if (!BIT_CHECK(g_previousButtons, i) && BIT_CHECK(tmp, i)) {
@@ -250,7 +269,24 @@ static void TM_GN_WriteCommand(softI2C_t *i2c, byte command, const byte *data, i
 	}
 	TM_GN_Stop(i2c);
 }
+static void HD2015_WriteCommandSingle(softI2C_t *i2c, byte command, byte data) {
+	Soft_I2C_Start(i2c, command);
+	Soft_I2C_WriteByte(i2c, data);
+	Soft_I2C_Stop(i2c);
+}
 static void TM1637_SendSegments(const byte *segments, byte length, byte pos) {
+	if (g_displayType == TMGN_HD2015) {
+		int i;
+		HD2015_WriteCommandSingle(&g_i2c, 0x48, 0x11);
+
+		usleep(100);
+
+		for (i = 0; i < length; i++) {
+			HD2015_WriteCommandSingle(&g_i2c, 0x68 + (i+pos) * 2, segments[i]);
+			usleep(100);
+		}
+		return;
+	}
 	// set COM1 (no data, just command)
 	TM_GN_WriteCommand(&g_i2c, TM1637_I2C_COM1, 0, 0);
 
@@ -260,6 +296,7 @@ static void TM1637_SendSegments(const byte *segments, byte length, byte pos) {
 	// set COM3 + brightness (no data, just command)
 	TM_GN_WriteCommand(&g_i2c, TM1637_I2C_COM3 + (g_brightness & 0x0f), 0, 0);
 }
+
 static int TM1637_MapCharacter(int ch) {
 	int ret;
 	if (ch >= '0' && ch <= '9') {
@@ -283,10 +320,12 @@ static void TM1637_PrintStringAt(const char *str, int pos, int maxLen) {
 	int i, len, idx;
 	int tgIndex;
 	len = strlen(str);
-	if (len > maxLen)
-		len = maxLen;
+	int stopIndex = pos + maxLen;
 	tgIndex = pos;
 	for (i = 0; i < len; i++) {
+		if (tgIndex >= stopIndex) {
+			break;
+		}
 		if (tgIndex >= g_totalDigits)
 			break;
 		if (str[i] == '.') {
@@ -306,7 +345,7 @@ static void TM1637_PrintStringAt(const char *str, int pos, int maxLen) {
 	}
 }
 
-static commandResult_t CMD_TM1637_Clear(const void *context, const char *cmd, const char *args, int flags) {
+static commandResult_t CMD_TMGN_Clear(const void *context, const char *cmd, const char *args, int flags) {
 	memset(tmgn_buffer, 0x00, g_totalDigits);
 
 	TM1637_SendSegments(tmgn_buffer, g_totalDigits, 0);
@@ -324,7 +363,7 @@ static commandResult_t CMD_TM1650_Test(const void *context, const char *cmd, con
 
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_TM1637_Test(const void *context, const char *cmd, const char *args, int flags) {
+static commandResult_t CMD_TMGN_Test(const void *context, const char *cmd, const char *args, int flags) {
 	byte segments[8];
 	int i;
 	for (i = 0; i < 8; i++) {
@@ -339,7 +378,7 @@ static commandResult_t CMD_TM1637_Test(const void *context, const char *cmd, con
 // TMGN_SetBit [DigitIndex] [BitIndex] [1or0]
 // TMGN_SetBit 1 0 0
 // TMGN_SetBit 1 0 1
-static commandResult_t CMD_TM1637_SetBit(const void *context, const char *cmd, const char *args, int flags) {
+static commandResult_t CMD_TMGN_SetBit(const void *context, const char *cmd, const char *args, int flags) {
 	int digitIndex;
 	int bitIndex;
 	int newValue;
@@ -359,7 +398,7 @@ static commandResult_t CMD_TM1637_SetBit(const void *context, const char *cmd, c
 
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_TM1637_Char(const void *context, const char *cmd, const char *args, int flags) {
+static commandResult_t CMD_TMGN_Char(const void *context, const char *cmd, const char *args, int flags) {
 	int index;
 	int code;
 
@@ -377,7 +416,7 @@ static commandResult_t CMD_TM1637_Char(const void *context, const char *cmd, con
 	return CMD_RES_OK;
 }
 // [StartOfs] [MaxLenOr0] [StringText] [optionalBClampWithZeroesForClock]
-static commandResult_t CMD_TM1637_Print(const void *context, const char *cmd, const char *args, int flags) {
+static commandResult_t CMD_TMGN_Print(const void *context, const char *cmd, const char *args, int flags) {
 	int ofs;
 	int maxLen;
 	const char *s;
@@ -398,8 +437,12 @@ static commandResult_t CMD_TM1637_Print(const void *context, const char *cmd, co
 	if (maxLen <= 0) {
 		maxLen = 999;
 	}
-	if (Tokenizer_GetArgInteger(3)) {
+	int clampMode = Tokenizer_GetArgInteger(3);
+	if (clampMode) {
 		sLen = strlen(s);
+		if (strchr(s, '.')) {
+			sLen--;
+		}
 		if (sLen < maxLen) {
 			iPadZeroes = maxLen - sLen;
 			TM1637_PrintStringAt("00000", ofs, iPadZeroes);
@@ -412,7 +455,7 @@ static commandResult_t CMD_TM1637_Print(const void *context, const char *cmd, co
 
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_TM1637_Map(const void *context, const char *cmd, const char *args, int flags) {
+static commandResult_t CMD_TMGN_Map(const void *context, const char *cmd, const char *args, int flags) {
 	int i;
 
 	Tokenizer_TokenizeString(args, 0);
@@ -423,7 +466,7 @@ static commandResult_t CMD_TM1637_Map(const void *context, const char *cmd, cons
 
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_TM1637_Brightness(const void *context, const char *cmd, const char *args, int flags) {
+static commandResult_t CMD_TMGN_Brightness(const void *context, const char *cmd, const char *args, int flags) {
 	int br;
 	int bOn = 1;
 
@@ -450,6 +493,7 @@ static commandResult_t CMD_TM1637_Brightness(const void *context, const char *cm
 // NOTE: TMGN_Brightness [Brightness0to8] [bOn]
 // The bOn is optional, default is 1
 
+// backlog startDriver HD2015; TMGN_Print 0 0 123456
 // backlog startDriver TM1637; TMGN_Test
 // backlog startDriver TM1637; TMGN_Print 0 0 123456
 // backlog TMGN_Brightness 5; TMGN_Test
@@ -554,21 +598,28 @@ void TMGN_RunQuickTick() {
 		}
 	}
 }
-void TM_GN_Display_SharedInit() {
+void TM_GN_Display_SharedInit(tmGnType_t type) {
 	int i;
-
+	
+	g_displayType = type;
 	g_doTM1638RowsToColumnsSwap = 0;
 
-	if (PIN_FindPinIndexForRole(IOR_TM1637_CLK, -1) != -1) {
+	if (type == TMGN_HD2015) {
+		// startDriver HD2015 [CLK] [DAT]
+		// startDriver HD2015 11 24
+		g_i2c.pin_clk = Tokenizer_GetArgIntegerDefault(1, 11); // A11
+		g_i2c.pin_data = Tokenizer_GetArgIntegerDefault(2, 24); // B8
+		g_i2c.pin_stb = -1; // B3
+		g_totalDigits = 4;
+		// HD2015 has no remap
+		for (i = 0; i < sizeof(g_remap); i++) {
+			g_remap[i] = i;
+		}
+	} else if (PIN_FindPinIndexForRole(IOR_TM1637_CLK, -1) != -1) {
 		g_i2c.pin_clk = PIN_FindPinIndexForRole(IOR_TM1637_CLK, 16);
 		g_i2c.pin_data = PIN_FindPinIndexForRole(IOR_TM1637_DIO, 14);
 		g_i2c.pin_stb = -1;
 		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using I2C mode (TM1637)");
-
-		HAL_PIN_Setup_Output(g_i2c.pin_clk);
-		HAL_PIN_Setup_Output(g_i2c.pin_data);
-		HAL_PIN_SetOutputValue(g_i2c.pin_clk, true);
-		HAL_PIN_SetOutputValue(g_i2c.pin_data, true);
 
 		g_totalDigits = 6;
 	}
@@ -578,7 +629,7 @@ void TM_GN_Display_SharedInit() {
 			g_i2c.pin_data = PIN_FindPinIndexForRole(IOR_TM1638_DAT, 15);
 			g_i2c.pin_stb = PIN_FindPinIndexForRole(IOR_TM1638_STB, 28);
 			addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "TM/GN driver: using SPI mode (TM1638)");
-			g_doTM1638RowsToColumnsSwap = 1;
+			g_doTM1638RowsToColumnsSwap = Tokenizer_GetArgIntegerDefault(1,1);
 			
 			for (i = 0; i < 8; i++) {
 				g_remap[i] = 7-i;
@@ -594,16 +645,20 @@ void TM_GN_Display_SharedInit() {
 				g_remap[i] = i;
 			}
 		}
-		HAL_PIN_Setup_Output(g_i2c.pin_clk);
-		HAL_PIN_Setup_Output(g_i2c.pin_stb);
-		HAL_PIN_Setup_Output(g_i2c.pin_data);
-		HAL_PIN_SetOutputValue(g_i2c.pin_clk, true);
-		HAL_PIN_SetOutputValue(g_i2c.pin_stb, true);
-		HAL_PIN_SetOutputValue(g_i2c.pin_data, true);
 
 		g_totalDigits = 16;
 	}
-	
+
+	HAL_PIN_Setup_Output(g_i2c.pin_clk);
+	HAL_PIN_Setup_Output(g_i2c.pin_data);
+	HAL_PIN_SetOutputValue(g_i2c.pin_clk, true);
+	HAL_PIN_SetOutputValue(g_i2c.pin_data, true);
+
+	if (g_i2c.pin_stb != -1) {
+		HAL_PIN_Setup_Output(g_i2c.pin_stb);
+		HAL_PIN_SetOutputValue(g_i2c.pin_stb, true);
+	}
+
 	usleep(100);
 
 	if (tmgn_buffer == 0) {
@@ -617,50 +672,51 @@ void TM_GN_Display_SharedInit() {
 	//cmddetail:"descr":"Set given bit of given digit to 1 or 0.",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("TMGN_SetBit", CMD_TM1637_SetBit, NULL);
+	CMD_RegisterCommand("TMGN_SetBit", CMD_TMGN_SetBit, NULL);
 	//cmddetail:{"name":"TMGN_Clear","args":"",
 	//cmddetail:"descr":"This clears the TM1637/GN932/etc display",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm_gn_display_shared.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("TMGN_Clear", CMD_TM1637_Clear, NULL);
+	CMD_RegisterCommand("TMGN_Clear", CMD_TMGN_Clear, NULL);
 	//cmddetail:{"name":"TMGN_Char","args":"[CharIndex] [CharCode]",
 	//cmddetail:"descr":"This allows you to set binary code for given char, valid chars range is 0 to 15, because this is 7-seg display",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("TMGN_Char", CMD_TM1637_Char, NULL);
+	CMD_RegisterCommand("TMGN_Char", CMD_TMGN_Char, NULL);
 	//cmddetail:{"name":"TMGN_Print","args":"[StartOfs] [MaxLenOr0] [StringText] [optionalBClampWithZeroesForClock]",
 	//cmddetail:"descr":"This allows you to print string on TM1637/GN932/etc display, it supports variables expansion",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm_gn_display_shared.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("TMGN_Print", CMD_TM1637_Print, NULL);
-	//cmddetail:{"name":"TMGN_Test","args":"CMD_TM1637_Test",
+	CMD_RegisterCommand("TMGN_Print", CMD_TMGN_Print, NULL);
+	//cmddetail:{"name":"TMGN_Test","args":"",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm_gn_display_shared.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("TMGN_Test", CMD_TM1637_Test, NULL);
+	CMD_RegisterCommand("TMGN_Test", CMD_TMGN_Test, NULL);
 	//cmddetail:{"name":"TMGN_Brightness","args":"[Brigthness0to7][bOn]",
 	//cmddetail:"descr":"This allows you to change brightness and state of  TM1637/GN932/etc display",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm_gn_display_shared.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("TMGN_Brightness", CMD_TM1637_Brightness, NULL);
+	CMD_RegisterCommand("TMGN_Brightness", CMD_TMGN_Brightness, NULL);
 	//cmddetail:{"name":"TMGN_Map","args":"[Map0][Map1, etc]",
 	//cmddetail:"descr":"This allows you to remap characters order for TM1637/GN932/etc. My TM1637 module from Aliexpress has a strange characters order.",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm_gn_display_shared.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("TMGN_Map", CMD_TM1637_Map, NULL);
+	CMD_RegisterCommand("TMGN_Map", CMD_TMGN_Map, NULL);
 	//cmddetail:{"name":"TM1650_Test","args":"CMD_TM1650_Test",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TM1650_Test", CMD_TM1650_Test, NULL);
-	//cmddetail:{"name":"TMGN_Read","args":"CMD_TMGN_Read",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"TMGN_Read","args":"",
+	//cmddetail:"descr":"Executes a single buttons read on TM/GN LED driver",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TMGN_Read", CMD_TMGN_Read, NULL);
-	//cmddetail:{"name":"TMGN_SetupButtons","args":"CMD_TMGN_SetupButtons",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"TMGN_SetupButtons","args":"[Interval]",
+	//cmddetail:"descr":"Setups periodic buttons read on TM/GN LED driver",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tm1637.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TMGN_SetupButtons", CMD_TMGN_SetupButtons, NULL);
+
 }

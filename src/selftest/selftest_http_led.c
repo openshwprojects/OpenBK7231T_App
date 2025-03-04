@@ -375,6 +375,13 @@ void Test_Http_LED_SingleChannel() {
 	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
 
 	CMD_ExecuteCommand("led_enableAll 0", 0);
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll", 0);
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll==1", 0);
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll==0", 1);
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll!=1", 1);
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll!=2", 1);
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll<1", 1);
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll<0", 0);
 	// StatusSTS contains POWER and Dimmer
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
@@ -391,6 +398,7 @@ void Test_Http_LED_SingleChannel() {
 
 
 	CMD_ExecuteCommand("led_dimmer 61", 0);
+	SELFTEST_ASSERT_EXPRESSION("$led_dimmer", 61);
 	// StatusSTS contains POWER and Dimmer
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 61);
@@ -398,6 +406,7 @@ void Test_Http_LED_SingleChannel() {
 
 
 	CMD_ExecuteCommand("led_enableAll 1", 0);
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll", 1);
 	// StatusSTS contains POWER and Dimmer
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 61);

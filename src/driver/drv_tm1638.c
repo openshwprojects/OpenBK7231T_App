@@ -14,5 +14,5 @@
 
 
 void TM1638_Init() {
-	TM_GN_Display_SharedInit();
+	TM_GN_Display_SharedInit(TMGN_AUTO);
 }

@@ -13,11 +13,15 @@
 #include "ln_psk_calc.h"
 #include "utils/sysparam_factory_setting.h"
 #include <lwip/sockets.h>
+#include <stdbool.h>	// for bool "g_STA_static_IP"
 
 
 #define PM_WIFI_DEFAULT_PS_MODE           (WIFI_NO_POWERSAVE)
 
 static void (*g_wifiStatusCallback)(int code)  = NULL;
+
+// if we are using a static IP, prevent using DHCP in lwips interface implementation in ethernetif.c
+bool g_STA_static_IP=0;
 
 void alert_log(const char *format, ...) {
      va_list args;
@@ -220,7 +224,25 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
 
     //2. net device(lwip)
     netdev_set_mac_addr(NETIF_IDX_STA, mac_addr);
+    sysparam_sta_hostname_update(CFG_GetDeviceName());
+    // static ip address
+    g_STA_static_IP = (ip->localIPAddr[0] != 0) ;
+       if (g_STA_static_IP){
+            tcpip_ip_info_t  ip_info;
+            convert_IP_to_string(g_IP, ip->localIPAddr);
+            LOG(LOG_LVL_INFO, "INSIDE wifi_init_sta - setting static IP (%s)\r\n",g_IP);
+            ip_info.ip.addr      = ipaddr_addr((const char *)g_IP);
+            convert_IP_to_string(g_IP, ip->netMask);
+            ip_info.netmask.addr = ipaddr_addr((const char *)g_IP);
+            convert_IP_to_string(g_IP, ip->gatewayIPAddr);
+            ip_info.gw.addr      = ipaddr_addr((const char *)g_IP);
+	
+            netdev_set_ip_info(NETIF_IDX_STA, &ip_info);
+            dns_setserver(0,&ip->dnsServerIpAddr);
+       } else  LOG(LOG_LVL_INFO, "INSIDE wifi_init_sta, no static IP - using DHCP\r\n");
+
     netdev_set_active(NETIF_IDX_STA);
+
 
     //3. wifi start
     wifi_manager_reg_event_callback(WIFI_MGR_EVENT_STA_SCAN_COMPLETE, &wifi_scan_complete_cb);

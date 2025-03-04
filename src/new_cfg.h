@@ -69,14 +69,14 @@ void CFG_DeviceGroups_SetRecvFlags(int newSendFlags);
 const char *CFG_DeviceGroups_GetName();
 int CFG_DeviceGroups_GetSendFlags();
 int CFG_DeviceGroups_GetRecvFlags();
-void CFG_SetFlags(int first4bytes, int second4bytes);
+void CFG_SetFlags(uint32_t first4bytes, uint32_t second4bytes);
 void CFG_SetFlag(int flag, bool bValue);
 bool CFG_HasFlag(int flag);
 void CFG_SetLoggerFlag(int flag, bool bValue);
 bool CFG_HasLoggerFlag(int flag);
 void CFG_SetMac(char *mac);
 int CFG_GetFlags();
-unsigned long CFG_GetFlags64();
+uint64_t CFG_GetFlags64();
 const char* CFG_GetNTPServer();
 void CFG_SetNTPServer(const char *s);
 // BL0937, BL0942, etc constants

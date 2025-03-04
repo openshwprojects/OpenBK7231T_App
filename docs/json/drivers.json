@@ -18,6 +18,48 @@
     "requires": ""
   },
   {
+    "name": "PixelAnim",
+    "title": "TODO",
+    "descr": "PixelAnim provides a simple set of WS2812B animations",
+    "requires": ""
+  },
+  {
+    "name": "Drawers",
+    "title": "TODO",
+    "descr": "WS2812B driver wrapper with REST API for [smart drawers project](https://www.elektroda.com/rtvforum/topic4054134.html)",
+    "requires": ""
+  },
+  {
+    "name": "HGS02",
+    "title": "TODO",
+    "descr": "[HGS02](https://www.elektroda.com/rtvforum/viewtopic.php?p=21177061#21177061)",
+    "requires": ""
+  },
+  {
+    "name": "OpenWeatherMap",
+    "title": "TODO",
+    "descr": "OpenWeatherMap integration allows you to fetch current weather for your lat/long. You can later extract temperatura, humidity and pressure data and display it on main page.",
+    "requires": ""
+  },
+  {
+    "name": "Widget",
+    "title": "TODO",
+    "descr": "Widget driver allows you to create custom HTML snippets that are displayed on main OBK page. Snippets are loaded from LittleFS file system and can use OBK REST API.",
+    "requires": ""
+  },
+  {
+    "name": "TestCharts",
+    "title": "TODO",
+    "descr": "Development only driver - a sample of chart generation with chart.js.",
+    "requires": ""
+  },
+  {
+    "name": "Charts",
+    "title": "TODO",
+    "descr": "Charts driver allows you to create a customizable chart directly on your device. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "requires": ""
+  },
+  {
     "name": "NTP",
     "title": "TODO",
     "descr": "NTP driver is required to get current time and date from web. Without it, there is no correct datetime. Put 'startDriver NTP' in short startup line or autoexec.bat to run it on start.",
@@ -48,9 +90,9 @@
     "requires": ""
   },
   {
-    "name": "qq",
+    "name": "RN8209",
     "title": "TODO",
-    "descr": "Bqqqqqqqqqq ",
+    "descr": "WIP driver for power-metering chip RN8209 found in one of Zmai-90 versions.",
     "requires": ""
   },
   {
@@ -62,13 +104,13 @@
   {
     "name": "PWMG",
     "title": "TODO",
-    "descr": " ",
+    "descr": "PWM Groups (synchronized PWMs) driver for OpenBeken.",
     "requires": ""
   },
   {
     "name": "BL0942SPI",
     "title": "TODO",
-    "descr": "BL0942 is a power-metering chip which uses SPI protocol for communication. It's usually connected to SPI1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [PZIOT-E01 teardown example](https://www.elektroda.com/rtvforum/topic3945667.html). ",
+    "descr": "BL0942 driver version for SPI protocol. It's usually connected to SPI1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [PZIOT-E01 teardown example](https://www.elektroda.com/rtvforum/topic3945667.html). ",
     "requires": ""
   },
   {
@@ -86,25 +128,25 @@
   {
     "name": "CSE7766",
     "title": "TODO",
-    "descr": "BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK",
+    "descr": "CSE7766 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK",
     "requires": ""
   },
   {
     "name": "MAX6675",
     "title": "TODO",
-    "descr": "BQQQK",
+    "descr": "Thermocouple driver for measuring high temperatures, see [presentation](https://www.elektroda.com/rtvforum/topic4055231.html)",
     "requires": ""
   },
   {
     "name": "PT6523",
     "title": "TODO",
-    "descr": "BQQQK",
+    "descr": "Car radio LCD driver, see [teardown and presentation](https://www.elektroda.com/rtvforum/topic3983111.html)",
     "requires": ""
   },
   {
     "name": "TextScroller",
     "title": "TODO",
-    "descr": "BQQQK",
+    "descr": "Wrapper utility that can do text scrolling animation on implemented displays (WIP)",
     "requires": ""
   },
   {
@@ -114,15 +156,27 @@
     "requires": ""
   },
   {
+    "name": "SM15155E",
+    "title": "TODO",
+    "descr": "SM15155E is a WS2812B-like single wire LED controller. It's also always using P16 (SPI out) on Beken. See [reverse-engineering topic](https://www.elektroda.com/rtvforum/topic4060227.html)",
+    "requires": ""
+  },
+  {
     "name": "IR",
     "title": "TODO",
     "descr": "IRLibrary wrapper, so you can receive remote signals and send them. See [forum discussion here](https://www.elektroda.com/rtvforum/topic3920360.html), also see [LED strip and IR YT video](https://www.youtube.com/watch?v=KU0tDwtjfjw)",
     "requires": ""
   },
   {
+    "name": "IR2",
+    "title": "IR2",
+    "descr": "TODO",
+    "requires": ""
+  },
+  {
     "name": "DDP",
     "title": "TODO",
-    "descr": "DDP is a LED control protocol that is using UDP. You can use xLights or any other app to control OBK LEDs that way.",
+    "descr": "DDP is a LED control protocol that is using UDP. You can use xLights or any other app to control OBK LEDs that way. See [DDP topic](https://www.elektroda.com/rtvforum/topic4040325.html)",
     "requires": ""
   },
   {
@@ -162,15 +216,15 @@
     "requires": ""
   },
   {
-    "name": "MAX72XX_Clock",
-    "title": "TODO",
-    "descr": "Simple hardcoded driver for MAX72XX clock. Requires manual start of MAX72XX driver with MAX72XX setup and NTP start.",
-    "requires": ""
-  },
-  {
     "name": "ADCButton",
     "title": "TODO",
     "descr": "This allows you to connect multiple buttons on single ADC pin. Each button must have a different resistor value, this works by probing the voltage on ADC from a resistor divider. You need to select AB_Map first. See forum post for [details](https://www.elektroda.com/rtvforum/viewtopic.php?p=20541973#20541973).",
+    "requires": ""
+  },
+  {
+    "name": "MAX72XX_Clock",
+    "title": "TODO",
+    "descr": "Simple hardcoded driver for MAX72XX clock. Requires manual start of MAX72XX driver with MAX72XX setup and NTP start.",
     "requires": ""
   },
   {
@@ -204,9 +258,21 @@
     "requires": ""
   },
   {
-    "name": "CHT8305",
+    "name": "MAX72XX",
     "title": "TODO",
-    "descr": "CHT8305 is a Temperature and Humidity sensor with I2C interface.",
+    "descr": "MAX72XX LED matrix display driver with font and simple script interface. See [protocol explanation](https://www.elektroda.pl/rtvforum/viewtopic.php?p=18040628#18040628)",
+    "requires": ""
+  },
+  {
+    "name": "BMPI2C",
+    "title": "TODO",
+    "descr": "Driver for BMP085, BMP180, BMP280, BME280, BME68X sensors with I2C interface.",
+    "requires": ""
+  },
+  {
+    "name": "CHT83XX",
+    "title": "TODO",
+    "descr": "CHT8305, CHT8310 and CHT8315 are a Temperature and Humidity sensors with I2C interface.",
     "requires": ""
   },
   {
@@ -222,39 +288,9 @@
     "requires": ""
   },
   {
-    "name": "MAX72XX",
-    "title": "TODO",
-    "descr": "MAX72XX LED matrix display driver with font and simple script interface. See [protocol explanation](https://www.elektroda.pl/rtvforum/viewtopic.php?p=18040628#18040628)",
-    "requires": ""
-  },
-  {
-    "name": "TM1637",
-    "title": "TODO",
-    "descr": "Driver for 7-segment LED display with DIO/CLK interface.",
-    "requires": ""
-  },
-  {
-    "name": "GN6932",
-    "title": "TODO",
-    "descr": "Driver for 7-segment LED display with DIO/CLK/STB interface. See [this topic](https://www.elektroda.com/rtvforum/topic3971252.html) for details.",
-    "requires": ""
-  },
-  {
-    "name": "TM1638",
-    "title": "TODO",
-    "descr": "Driver for 7-segment LED display with DIO/CLK/STB interface. TM1638 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20553628#20553628) for details.",
-    "requires": ""
-  },
-  {
     "name": "ADCSmoother",
     "title": "TODO",
-    "descr": "qq",
-    "requires": ""
-  },
-  {
-    "name": "HT16K33",
-    "title": "TODO",
-    "descr": "Driver for 16-segment LED display with I2C. See [protocol explanation](https://www.elektroda.pl/rtvforum/topic3984616.html)",
+    "descr": "ADCSmoother is used for 3-way stairs switches synchronized via extra wire.",
     "requires": ""
   },
   {
@@ -273,6 +309,48 @@
     "name": "ShiftRegister",
     "title": "TODO",
     "descr": "Simple Shift Register driver that allows you to map channels to shift register output. See [related topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20533505#20533505)",
+    "requires": ""
+  },
+  {
+    "name": "AHT2X",
+    "title": "TODO",
+    "descr": "AHT Humidity/temperature sensor. Supported sensors are: AHT10, AHT2X, AHT30. See [presentation guide](https://www.elektroda.com/rtvforum/topic4052685.html)",
+    "requires": ""
+  },
+  {
+    "name": "DS1820",
+    "title": "TODO",
+    "descr": "Very simple driver for oneWire temperature sensor DS1820.",
+    "requires": ""
+  },
+  {
+    "name": "HT16K33",
+    "title": "TODO",
+    "descr": "Driver for 16-segment LED display with I2C. See [protocol explanation](https://www.elektroda.pl/rtvforum/topic3984616.html)",
+    "requires": ""
+  },
+  {
+    "name": "TM1637",
+    "title": "TODO",
+    "descr": "Driver for 7-segment LED display with DIO/CLK interface. See [TM1637 information](https://www.elektroda.com/rtvforum/viewtopic.php?p=20468593#20468593)",
+    "requires": ""
+  },
+  {
+    "name": "GN6932",
+    "title": "TODO",
+    "descr": "Driver for 7-segment LED display with DIO/CLK/STB interface. See [this topic](https://www.elektroda.com/rtvforum/topic3971252.html) for details.",
+    "requires": ""
+  },
+  {
+    "name": "TM1638",
+    "title": "TODO",
+    "descr": "Driver for 7-segment LED display with DIO/CLK/STB interface. TM1638 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20553628#20553628) for details.",
+    "requires": ""
+  },
+  {
+    "name": "HD2015",
+    "title": "TODO",
+    "descr": "Driver for 7-segment LED display with I2C-like interface. Seems to be compatible with TM1650. HD2015 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/topic4052946.html) for details.",
     "requires": ""
   },
   {

@@ -144,7 +144,7 @@
     "enum": "OBK_FLAG_LED_FORCE_MODE_RGB",
     "title": "todo",
     "file": "new_pins.h",
-    "descr": "[LED] Force RGB mode (3 PWMs for LEDs) and ignore futher PWMs if they are set"
+    "descr": "[LED] Force RGB mode (3 PWMs for LEDs) and ignore further PWMs if they are set"
   },
   {
     "index": "21",
@@ -246,10 +246,10 @@
   },
   {
     "index": "35",
-    "enum": "OBK_FLAG_NOT_PUBLISH_AVAILABILITY_SENSOR",
+    "enum": "OBK_FLAG_NOT_PUBLISH_AVAILABILITY",
     "title": "todo",
     "file": "new_pins.h",
-    "descr": "[HASS] Deactivate avty_t flag for sensor when publishing to HASS (permit to keep value). You must restart HASS discovery for change to take effect."
+    "descr": "[HASS] Deactivate avty_t flag when publishing to HASS (permit to keep value). You must restart HASS discovery for change to take effect."
   },
   {
     "index": "36",
@@ -327,5 +327,33 @@
     "title": "todo",
     "file": "new_pins.h",
     "descr": "[TuyaMCU] Store raw data"
+  },
+  {
+    "index": "47",
+    "enum": "OBK_FLAG_TUYAMCU_STORE_ALL_DATA",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[TuyaMCU] Store ALL data"
+  },
+  {
+    "index": "48",
+    "enum": "OBK_FLAG_POWER_INVERT_AC",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[PWR] Invert AC dir"
+  },
+  {
+    "index": "49",
+    "enum": "OBK_FLAG_HTTP_NO_ONOFF_WORDS",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[HTTP] Hide ON/OFF for relays (only red/green buttons)"
+  },
+  {
+    "index": "50",
+    "enum": "OBK_FLAG_MQTT_NEVERAPPENDGET",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[MQTT] Never add get sufix"
   }
 ]
