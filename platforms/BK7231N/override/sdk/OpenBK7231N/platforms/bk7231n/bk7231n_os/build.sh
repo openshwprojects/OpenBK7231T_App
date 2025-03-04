@@ -68,12 +68,12 @@ cp ${APP_BIN_NAME}_${APP_VERSION}.bin ${APP_BIN_NAME}_${APP_VERSION}_zeroKeys.bi
 
 if [ "$BUILD_MODE" = "zerokeys" ]; then
 	echo "Using zero keys mode - for those non-Tuya devices"
-	./${ENCRYPT} ${APP_BIN_NAME}_${APP_VERSION}.bin 00000000 00000000 00000000 00000000 10000 -crc
+	./${ENCRYPT} -crc ${APP_BIN_NAME}_${APP_VERSION}.bin 00000000 00000000 00000000 00000000 10000
 	#python mpytools.py bk7231n_bootloader_zero_keys.bin ${APP_BIN_NAME}_${APP_VERSION}_enc.bin
 	python mpytools.py bk7231n_bootloader_crc.bin ${APP_BIN_NAME}_${APP_VERSION}_enc.bin
 else
 	echo "Using usual Tuya path"
-	./${ENCRYPT} ${APP_BIN_NAME}_${APP_VERSION}.bin 4862379a 8612784b 85c5e258 75754528 10000 -crc
+	./${ENCRYPT} -crc ${APP_BIN_NAME}_${APP_VERSION}.bin 4862379a 8612784b 85c5e258 75754528 10000
 	python mpytools.py bk7231n_bootloader_crc.bin ${APP_BIN_NAME}_${APP_VERSION}_enc.bin
 fi
 
@@ -128,7 +128,7 @@ cp ${APP_BIN_NAME}_QIO_${APP_VERSION}.bin ../../${APP_PATH}/$APP_BIN_NAME/output
 echo "Will do extra step - for zero keys/dogness"
 cp ${APP_BIN_NAME}_${APP_VERSION}_zeroKeys.bin ${APP_BIN_NAME}_${APP_VERSION}.bin
 echo "Will do zero keys encrypt"
-./${ENCRYPT} ${APP_BIN_NAME}_${APP_VERSION}.bin 00000000 00000000 00000000 00000000 10000 -crc
+./${ENCRYPT} -crc ${APP_BIN_NAME}_${APP_VERSION}.bin 00000000 00000000 00000000 00000000 10000
 echo "Will do zero mpytools.py"
 python mpytools.py bk7231n_bootloader_crc.bin ${APP_BIN_NAME}_${APP_VERSION}_enc.bin
 echo "Will do zero BEKEN_PACK"
