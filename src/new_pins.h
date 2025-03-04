@@ -1384,9 +1384,17 @@ typedef struct mainConfig_s {
 	// offset 0x00000C84 (3204 decimal)
 	char webPassword[33];
 	// offset 0x00000CA5 (3237 decimal)
-	char unused[347];
+	byte mqtt_use_tls;
+	// offset 0x00000CA6 (3238 decimal)
+	byte mqtt_verify_tls_cert;
+	// offset 0x00000CA7 (3239 decimal)
+	char mqtt_cert_file[20];
+	// offset 0x00000CBB (3259 decimal)
+	byte disable_web_server;
+	// offset 0x00000CBC (3260 decimal)
+	char unused[324];
 #endif
-} mainConfig_t; 
+} mainConfig_t;
 
 // one sector is 4096 so it we still have some expand possibility
 #define MAGIC_CONFIG_SIZE_V3		2016
