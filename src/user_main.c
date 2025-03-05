@@ -45,6 +45,8 @@
 #include <fake_clock_pub.h>
 #include <BkDriverWdg.h>
 #include "temp_detect_pub.h"
+#include "BkDriverWdg.h"
+
 void bg_register_irda_check_func(FUNCPTR func);
 #elif PLATFORM_BL602
 #include <bl_sys.h>
@@ -393,12 +395,23 @@ void Main_OnWiFiStatusChange(int code)
 	case WIFI_STA_CONNECTED:
 #if ALLOW_SSID2
 		if (!g_bHasWiFiConnected) FV_UpdateStartupSSIDIfChanged_StoredValue(g_SSIDactual);	//update ony on first connect
-#endif
-		g_bHasWiFiConnected = 1;
+#endif		
+
+		/* strange behavior on BK7231n. I don't know if it affects other platforms
+			connection completed only in the second callback WIFI_STA_CONNECTED */
+//#if PLATFORM_BK7231N
+		//if (g_newWiFiStatus == WIFI_STA_CONNECTED) {
+		// TODO: check it https://github.com/openshwprojects/OpenBK7231T_App/pull/960#issuecomment-2701681615
+			g_bHasWiFiConnected = 1;
+			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTED - %i\r\n", code);
+//		}
+//#else
+//			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTED - %i\r\n", code);
+//#endif
+
 #if ALLOW_SSID2
 		g_SSIDSwitchCnt = 0;
 #endif
-		ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTED - %i\r\n", code);
 
 		if (bSafeMode == 0) {
 			if (strlen(CFG_DeviceGroups_GetName()) > 0) {
@@ -1391,8 +1404,14 @@ void Main_Init_After_Delay()
 	// NOT WORKING, I done it other way, see ethernetif.c
 	//net_dhcp_hostname_set(g_shortDeviceName);
 
-	HTTPServer_Start();
-	ADDLOGF_DEBUG("Started http tcp server\r\n");
+#if MQTT_USE_TLS
+	if (!CFG_GetDisableWebServer() || bSafeMode) {
+#endif		
+		HTTPServer_Start();
+		ADDLOGF_DEBUG("Started http tcp server\r\n");
+#if MQTT_USE_TLS
+	} 
+#endif		
 
 	// only initialise certain things if we are not in AP mode
 	if (!bSafeMode)

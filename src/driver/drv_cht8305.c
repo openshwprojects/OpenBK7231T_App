@@ -282,9 +282,9 @@ void CHT83XX_Init()
 	//cmddetail:"examples":"CHT_Cycle 60 <br /> measurement is taken every 60 seconds"}
 	CMD_RegisterCommand("CHT_Cycle", CHT83XX_Cycle, NULL);
 	//cmddetail:{"name":"CHT_Alert","args":"[TempDiff][HumDiff][Freq][FQ]",
-	//cmddetail:"descr":"Enable alert pin. TempDif (temperature difference is any float higher than 0.05°C) = set detected difference in temperature required for device to wake. HumDiff (humidity difference is any float higher than 0.1%). Freq (time per measurement in s) = 1, 5, 10, 60, 120 (default if wrong = 1). FQ (fault queue number) = 1, 2, 4, 6 (default if wrong = 1)",
+	//cmddetail:"descr":"Enable alert pin. TempDif (temperature difference is any float higher than 0.05ï¿½C) = set detected difference in temperature required for device to wake. HumDiff (humidity difference is any float higher than 0.1%). Freq (time per measurement in s) = 1, 5, 10, 60, 120 (default if wrong = 1). FQ (fault queue number) = 1, 2, 4, 6 (default if wrong = 1)",
 	//cmddetail:"fn":"CHT_Alert","file":"drv/drv_cht8305.c","requires":"",
-	//cmddetail:"examples":"CHT_Alert 0.5 0 5 2 <br /> alert pin will trigger when temperature deviates by more than 0.5°C. Humidity will be ignored. Sensor measures every 5s with fault queue number 2."}
+	//cmddetail:"examples":"CHT_Alert 0.5 0 5 2 <br /> alert pin will trigger when temperature deviates by more than 0.5ï¿½C. Humidity will be ignored. Sensor measures every 5s with fault queue number 2."}
 	CMD_RegisterCommand("CHT_Alert", CHT83XX_Alert, NULL);
 }
 
