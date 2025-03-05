@@ -6,6 +6,9 @@
 #include "../driver/drv_public.h"
 #include <ctype.h>
 #include "cmd_local.h"
+#include "berry.h"
+#include "be_repl.h"
+#include "be_vm.h"
 
 /*
 startScript test1.bat
@@ -243,6 +246,8 @@ typedef struct scriptInstance_s {
 	char waitingForRelation;
 
 	struct scriptInstance_s *next;
+	bool isBerry;
+	int closureId;
 } scriptInstance_t;
 
 int g_scrBufferSize = 0;
@@ -251,6 +256,9 @@ int svm_deltaMS;
 scriptFile_t *g_scriptFiles = 0;
 scriptInstance_t *g_scriptThreads = 0;
 scriptInstance_t *g_activeThread = 0;
+bvm* g_vm = NULL;
+
+static bool berryRun(bvm* vm, const char* prog);
 
 scriptInstance_t *SVM_RegisterThread() {
 	scriptInstance_t *r;
@@ -369,6 +377,24 @@ void SVM_RunThread(scriptInstance_t *t, int maxLoops) {
 	if(g_scrBuffer == NULL) {
 		g_scrBufferSize = 256;
 		g_scrBuffer = malloc(g_scrBufferSize + 1);
+	}
+
+	if (t->isBerry && t->closureId > 0) {
+		bvm* vm = g_vm;
+		if (!be_getglobal(vm, "resume_closure")) {
+			// prelude not loaded??
+			be_return_nil(vm);
+		}
+		be_pushint(vm, t->closureId);
+		// call resume_closure(t->closureId)
+		be_call(vm, 1);
+		t->closureId = -1; // hacky, mark as done
+		t->isBerry = false;
+		t->curLine = 0; // NB. this stops the script from being run
+		t->curFile = 0;
+		t->uniqueID = 0;
+		t->currentDelayMS = 0;
+		return;
 	}
 
 	while(1) {
@@ -560,6 +586,12 @@ void SVM_StopAllScripts() {
 		t->currentDelayMS = 0;
 
 		t = t->next;
+	}
+
+	if (g_vm) {
+		// free waiting closures
+		// kind of hacky
+		berryRun(g_vm, "_suspended_closures = {}");
 	}
 }
 void SVM_StopScripts(int id, int bExcludeSelf) {
@@ -871,6 +903,140 @@ commandResult_t CMD_waitFor(const void *context, const char *cmd, const char *ar
 
 	return CMD_RES_OK;
 }
+
+// From Tasmota
+void be_dumpstack(bvm *vm) {
+	int32_t top = be_top(vm);
+	ADDLOG_INFO(LOG_FEATURE_BERRY, "top=%d", top);
+	be_tracestack(vm);
+	for (uint32_t i = 1; i <= top; i++) {
+		const char * tname = be_typename(vm, i);
+		const char * cname = be_classname(vm, i);
+		if (be_isstring(vm, i)) {
+			cname = be_tostring(vm, i);
+		}
+		ADDLOG_INFO(LOG_FEATURE_BERRY, "stack[%d] = type='%s' (%s)", i, (tname != NULL) ? tname : "", (cname != NULL) ? cname : "");
+	}
+}
+
+int be_ChannelSet(bvm *vm) {
+	int top = be_top(vm);
+
+	if (top == 2 && be_isint(vm, 1) && be_isint(vm, 2)) {
+		int ch = be_toint(vm, 1);
+		int v = be_toint(vm, 2);
+		CHANNEL_Set(ch, v, 0);
+	}
+	be_return_nil(vm); /* return calculation result */
+}
+
+int be_DelayMs(bvm *vm) {
+	int top = be_top(vm);
+	if (top == 2 && be_isint(vm, 1) && be_isfunction(vm, 2)) {
+		int delay_ms = be_toint(vm, 1);
+		// try to push suspend_closure function on the stack
+		if (!be_getglobal(vm, "suspend_closure")) {
+			// prelude not loaded??
+			be_return_nil(vm);
+		}
+		// push the second argument (closure) on the stack
+		be_pushvalue(vm, 2);
+		// call suspend_closure with the second arg
+		be_call(vm, 1);
+		// it should return an ID of the suspended closure, to be used to wake up later
+		if (be_isint(vm, -2)) {
+			int closure_id = be_toint(vm, -2);
+			scriptInstance_t *th;
+			th = SVM_RegisterThread();
+			if(th == 0) {
+				ADDLOG_INFO(LOG_FEATURE_CMD, "be_delayMs: failed to alloc thread");
+				be_return_nil(vm);
+			}
+			th->uniqueID = 5000+closure_id; // TODO: alloc IDs?
+			th->curFile = NULL;
+			th->curLine = ""; // NB. needs to be != NULL to get scheduled
+			th->currentDelayMS = delay_ms;
+			th->isBerry = true;
+			th->closureId = closure_id;
+
+		}
+		// remove the 2 values we pushed on the stack
+		be_pop(vm, 2);
+	}
+	be_return_nil(vm);
+}
+
+void be_error_pop_all(bvm *vm) {
+  be_pop(vm, be_top(vm));       // clear Berry stack
+}
+
+const char berryPrelude[] =
+	"_suspended_closures = {}\n"
+	"_suspended_closures_idx = 0\n"
+	"\n"
+	"def suspend_closure(closure)\n"
+	"  _suspended_closures_idx += 1\n"
+	"  _suspended_closures[_suspended_closures_idx] = closure\n"
+	"  return _suspended_closures_idx\n"
+	"end\n"
+	"\n"
+	"def resume_closure(idx)\n"
+	"  closure = _suspended_closures[idx]\n"
+	"  _suspended_closures.remove(idx)\n"
+	"  closure()\n"
+	"end\n";
+
+static bool berryRun(bvm* vm, const char* prog) {
+	bool success = true;
+	ADDLOG_INFO(LOG_FEATURE_BERRY, "[berry start]");
+	int ret_code1 = be_loadstring(vm, prog);
+	if (ret_code1 != 0) {
+		ADDLOG_INFO(LOG_FEATURE_BERRY, "be_loadstring fail, retcode %d: %s", ret_code1, prog);
+		be_dumpstack(vm);
+		be_error_pop_all(vm);
+		success = false;
+		goto err;
+	}
+
+	int ret_code2 = be_pcall(vm, 0);
+	if (ret_code2 != 0) {
+		ADDLOG_INFO(LOG_FEATURE_BERRY, "be_pcall fail, retcode %d", ret_code2);
+		be_dumpstack(vm);
+		be_error_pop_all(vm);
+		success = false;
+		goto err;
+	}
+
+
+	int top = be_top(vm);
+	if (be_top(vm) > 1) {
+		be_error_pop_all(vm);
+	} else {
+		be_pop(vm, 1);
+	}
+
+err:
+	ADDLOG_INFO(LOG_FEATURE_BERRY, "[berry end]");
+	return success;
+}
+
+
+static commandResult_t CMD_Berry(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+  if (!g_vm) {
+    // Lazy init for now, to avoid resource consumption and boot loops
+    ADDLOG_INFO(LOG_FEATURE_BERRY, "[berry init]");
+    g_vm = be_vm_new(); /* create a virtual machine instance */
+    be_regfunc(g_vm, "channelSet", be_ChannelSet);
+    be_regfunc(g_vm, "delayMs", be_DelayMs);
+    if (!berryRun(g_vm, berryPrelude)) {
+      return CMD_RES_ERROR;
+    }
+  }
+  return berryRun(g_vm, args) ? CMD_RES_OK : CMD_RES_ERROR;
+}
+
+
 void CMD_InitScripting(){
 	//cmddetail:{"name":"startScript","args":"[FileName][Label][UniqueID]",
 	//cmddetail:"descr":"Starts a script thread from given file, at given label - can be * for whole file, with given unique ID",
@@ -922,7 +1088,11 @@ void CMD_InitScripting(){
 	//cmddetail:"fn":"CMD_waitFor","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("waitFor", CMD_waitFor, NULL);
-
+	//cmddetail:{"name":"berry","args":"[Berry code]",
+	//cmddetail:"descr":"Execute Berry code",
+	//cmddetail:"fn":"CMD_Berry","file":"cmnds/cmd_script.c","requires":"",
+	//cmddetail:"examples":"berry 1+2"}
+	CMD_RegisterCommand("berry", CMD_Berry, NULL);
 }
 
 

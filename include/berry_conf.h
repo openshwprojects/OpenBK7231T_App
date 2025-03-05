@@ -15,7 +15,7 @@
  * Default: 0
  **/
 #ifndef BE_DEBUG
-#define BE_DEBUG 0
+#define BE_DEBUG 1
 #endif
 
 /* Macro: BE_LONGLONG_INT
@@ -213,9 +213,9 @@
 #define BE_USE_MATH_MODULE 0
 #define BE_USE_TIME_MODULE 0
 #define BE_USE_OS_MODULE 0
-#define BE_USE_GLOBAL_MODULE 0
+#define BE_USE_GLOBAL_MODULE 1
 #define BE_USE_SYS_MODULE 0
-#define BE_USE_DEBUG_MODULE 0
+#define BE_USE_DEBUG_MODULE 1
 #define BE_USE_GC_MODULE 0
 #define BE_USE_SOLIDIFY_MODULE 0
 #define BE_USE_INTROSPECT_MODULE 0
@@ -231,7 +231,8 @@
 #define BE_EXPLICIT_EXIT exit
 #define BE_EXPLICIT_MALLOC malloc
 #define BE_EXPLICIT_FREE free
-#define BE_EXPLICIT_REALLOC realloc
+// normal realloc appears broken on OpenBK7231T: #1563, #298
+#define BE_EXPLICIT_REALLOC os_realloc
 
 /* Macro: be_assert
  * Berry debug assertion. Only enabled when BE_DEBUG is active.

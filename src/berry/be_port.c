@@ -5,6 +5,8 @@
 ** See Copyright Notice in the LICENSE file or at
 ** https://github.com/Skiars/berry/blob/master/LICENSE
 ********************************************************************/
+#include "../logging/logging.h"
+
 #include "berry.h"
 #include "be_mem.h"
 #include "be_sys.h"
@@ -17,8 +19,7 @@
 
 BERRY_API void be_writebuffer(const char *buffer, size_t length)
 {
-  return;
-  // be_fwrite(stdout, buffer, length);
+	ADDLOG_INFO(LOG_FEATURE_BERRY, "%.*s", length, buffer);
 }
 
 BERRY_API char* be_readstring(char *buffer, size_t size)
