@@ -101,6 +101,30 @@ void Test_ChangeHandlers() {
 	SELFTEST_ASSERT_CHANNEL(8, 8);
 
 }
+void Test_ChangeHandlers2() {
+	// reset whole device
+	SIM_ClearOBK(0);
+	SIM_ClearAndPrepareForMQTTTesting("handlerTester", "bekens");
+
+	CMD_ExecuteCommand("setChannel 20 0", 0);
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	CMD_ExecuteCommand("addChangeHandler Channel20 != 0 addChannel 1 1", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 0);		SELFTEST_ASSERT_CHANNEL(1, 0);
+	// change handler will fire
+	CMD_ExecuteCommand("setChannel 20 3", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 3);		SELFTEST_ASSERT_CHANNEL(1, 1);
+	// change handler will not fire
+	CMD_ExecuteCommand("setChannel 20 4", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 4);		SELFTEST_ASSERT_CHANNEL(1, 1);
+	// change handler will not fire
+	CMD_ExecuteCommand("setChannel 20 0", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 0);		SELFTEST_ASSERT_CHANNEL(1, 1);
+	// change handler will fire
+	CMD_ExecuteCommand("setChannel 20 5", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 5);		SELFTEST_ASSERT_CHANNEL(1, 2);
+
+		
+}
 
 void Test_ChangeHandlers_EnsureThatChannelVariableIsExpandedAtHandlerRunTime() {
 	// reset whole device
