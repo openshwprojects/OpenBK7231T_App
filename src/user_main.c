@@ -397,17 +397,16 @@ void Main_OnWiFiStatusChange(int code)
 		if (!g_bHasWiFiConnected) FV_UpdateStartupSSIDIfChanged_StoredValue(g_SSIDactual);	//update ony on first connect
 #endif		
 
-		/* strange behavior on BK7231n. I don't know if it affects other platforms
+#if PLATFORM_BK7231N
+		/* strange behavior on KB7231n. I don't know if it affects other platforms
 			connection completed only in the second callback WIFI_STA_CONNECTED */
-//#if PLATFORM_BK7231N
-		//if (g_newWiFiStatus == WIFI_STA_CONNECTED) {
-		// TODO: check it https://github.com/openshwprojects/OpenBK7231T_App/pull/960#issuecomment-2701681615
+		if (g_newWiFiStatus == WIFI_STA_CONNECTED) {
+#endif
 			g_bHasWiFiConnected = 1;
 			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTED - %i\r\n", code);
-//		}
-//#else
-//			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTED - %i\r\n", code);
-//#endif
+#if PLATFORM_BK7231N
+	}
+#endif
 
 #if ALLOW_SSID2
 		g_SSIDSwitchCnt = 0;

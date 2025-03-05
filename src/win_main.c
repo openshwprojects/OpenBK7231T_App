@@ -413,8 +413,8 @@ int __cdecl main(int argc, char **argv)
 		printf("OFFSETOF(mainConfig_t, wifi_pass2) != 0x00000C40: %i\n", OFFSETOF(mainConfig_t, wifi_pass2));
 		system("pause");
 	}
-	if (OFFSETOF(mainConfig_t, unused) != 0x00000CA5) {
-		printf("OFFSETOF(mainConfig_t, unused) != 0x00000CA5: %i\n", OFFSETOF(mainConfig_t, unused));
+	if (OFFSETOF(mainConfig_t, unused) != 0x00000CBC) {
+		printf("OFFSETOF(mainConfig_t, unused) != 0x00000CBC: %i\n", OFFSETOF(mainConfig_t, unused));
 		system("pause");
 	}
 	// Test expansion
