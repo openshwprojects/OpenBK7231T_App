@@ -91,7 +91,7 @@ void LN882H_ApplyPowerSave(int bOn) {
 static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int bOn = 1;
 	Tokenizer_TokenizeString(args, 0);
-
+	const char *mode = Tokenizer_GetArg(0);
 	if (Tokenizer_GetArgsCount() > 0) {
 		bOn = Tokenizer_GetArgInteger(0);
 	}
@@ -102,15 +102,22 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 #endif
 	
 
+	// Check for RF-only powersave that will allow BL0937 to run
+	if (mode && !stricmp(mode, "RF")) {
+#ifdef PLATFORM_BEKEN
+		bk_wlan_power_save_set_level(/*PS_DEEP_SLEEP_BIT */  PS_RF_SLEEP_BIT);
+#else
+		// TODO - is this possible on other platforms?
+
+#endif
+
+		return;
+	}
 #ifdef PLATFORM_BEKEN
 	extern int bk_wlan_power_save_set_level(BK_PS_LEVEL level);
 	if (bOn) {		
-		if (bOn > 1) {	// only RF sleep
-			bk_wlan_power_save_set_level(/*PS_DEEP_SLEEP_BIT */  PS_RF_SLEEP_BIT);
-		}
-		else {	// RF and MCU sleep
-			bk_wlan_power_save_set_level(/*PS_DEEP_SLEEP_BIT */  PS_RF_SLEEP_BIT | PS_MCU_SLEEP_BIT);
-		}
+		// RF and MCU sleep
+		bk_wlan_power_save_set_level(/*PS_DEEP_SLEEP_BIT */  PS_RF_SLEEP_BIT | PS_MCU_SLEEP_BIT);
 	}
 	else {
 		bk_wlan_power_save_set_level(0);
