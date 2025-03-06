@@ -71,13 +71,13 @@ cp ${APP_BIN_NAME}_${APP_VERSION}.bin ${APP_BIN_NAME}_${APP_VERSION}_zeroKeys.bi
 
 if [ "$BUILD_MODE" = "zerokeys" ]; then
 	echo "Using zero keys mode - for those non-Tuya devices"
-	./${ENCRYPT_NEW} -enc ${APP_BIN_NAME}_${APP_VERSION}.bin 4862379A 8612784B 85C5E258 75754528 10000
+	./${ENCRYPT_NEW} ${APP_BIN_NAME}_${APP_VERSION}.bin 4862379A 8612784B 85C5E258 75754528 10000
 	#python mpytools.py bk7231n_bootloader_zero_keys.bin ${APP_BIN_NAME}_${APP_VERSION}_enc.bin
-	python mpytools.py bk7231n_bootloader_crc.bin ${APP_BIN_NAME}_${APP_VERSION}_enc.bin
+	python mpytools.py bk7231n_bootloader_enc.bin ${APP_BIN_NAME}_${APP_VERSION}_enc.bin
 else
 	echo "Using usual Tuya path"
-	./${ENCRYPT_NEW} -enc ${APP_BIN_NAME}_${APP_VERSION}.bin 4862379A 8612784B 85C5E258 75754528 10000
-	python mpytools.py bk7231n_bootloader_crc.bin ${APP_BIN_NAME}_${APP_VERSION}_enc.bin
+	./${ENCRYPT_NEW} ${APP_BIN_NAME}_${APP_VERSION}.bin 4862379A 8612784B 85C5E258 75754528 10000
+	python mpytools.py bk7231n_bootloader_enc.bin ${APP_BIN_NAME}_${APP_VERSION}_enc.bin
 fi
 
 
@@ -138,10 +138,10 @@ cp ${APP_BIN_NAME}_${APP_VERSION}_zeroKeys.bin ${APP_BIN_NAME}_${APP_VERSION}.bi
 # Apply keys
 echo "Will do zero keys encrypt"
 # This will generate ${APP_BIN_NAME}_${APP_VERSION}_enc.bin
-./${ENCRYPT_NEW} -enc ${APP_BIN_NAME}_${APP_VERSION}.bin 4862379A 8612784B 85C5E258 75754528 10000 -crc
+./${ENCRYPT_NEW} ${APP_BIN_NAME}_${APP_VERSION}.bin 4862379A 8612784B 85C5E258 75754528 10000
 echo "Will do zero mpytools.py to generate config.json"
 # python mpytools.py [BootloaderFile] [AppFile]
-python mpytools.py bk7231n_bootloader_crc.bin ${APP_BIN_NAME}_${APP_VERSION}_enc.bin
+python mpytools.py bk7231n_bootloader_enc.bin ${APP_BIN_NAME}_${APP_VERSION}_enc.bin
 echo "Will do zero BEKEN_PACK"
 ./${BEKEN_PACK} config.json
 echo "Will do zero qio"
@@ -166,11 +166,11 @@ cp ${APP_BIN_NAME}_${APP_VERSION}_zeroKeys.bin ${APP_BIN_NAME}_${APP_VERSION}.bi
 # Apply keys to the App
 echo "Will do UASCENT encrypt"
 # This will generate ${APP_BIN_NAME}_${APP_VERSION}_enc.bin
-./${ENCRYPT_NEW} -enc ${APP_BIN_NAME}_${APP_VERSION}.bin 4862379A 8612784B 85C5E258 75754528 10000 -crc
+./${ENCRYPT_NEW} ${APP_BIN_NAME}_${APP_VERSION}.bin 4862379A 8612784B 85C5E258 75754528 10000
 # Use mpytools.py to generate config.json for encrypted bootloader and encrypted app	
 echo "Will do UASCENT mpytools.py to generate config.json"
 # python mpytools.py [BootloaderFile] [AppFile]
-python mpytools.py bk7231n_bootloader_uascent_crc.bin ${APP_BIN_NAME}_${APP_VERSION}_enc.bin
+python mpytools.py bk7231n_bootloader_uascent_enc.bin ${APP_BIN_NAME}_${APP_VERSION}_enc.bin
 # Use Beken Pack on created config.json to combine bootloader and app together into all_1.00.bin
 echo "Will do UASCENT BEKEN_PACK"
 ./${BEKEN_PACK} config.json
