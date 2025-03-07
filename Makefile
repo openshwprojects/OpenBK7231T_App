@@ -205,6 +205,14 @@ prebuild_OpenBK7231N_ALT:
 	else echo "prebuild for OpenBK7231N not found ... "; \
 	fi
 
+prebuild_OpenECR6600:
+	git submodule update --init --recursive sdk/OpenECR6600
+	@if [ -e platforms/ECR6600/pre_build.sh ]; then \
+		echo "prebuild found for OpenECR6600"; \
+		sh platforms/ECR6600/pre_build.sh; \
+	else echo "prebuild for OpenECR6600 not found ... "; \
+	fi
+
 # Build main binaries
 OpenBK7231T: prebuild_OpenBK7231T
 	mkdir -p output
@@ -395,6 +403,16 @@ OpenBK7231N_ALT: prebuild_OpenBK7231N_ALT
 	cp sdk/beken_freertos_sdk/out/all_2M.1220.bin output/$(APP_VERSION)/OpenBK7231N_ALT_QIO_${APP_VERSION}.bin
 	cp sdk/beken_freertos_sdk/out/app.rbl output/$(APP_VERSION)/OpenBK7231N_ALT_${APP_VERSION}.rbl
 	cp sdk/beken_freertos_sdk/out/bk7231n_bsp_uart_2M.1220.bin output/$(APP_VERSION)/OpenBK7231N_ALT_UA_${APP_VERSION}.bin
+	
+.PHONY: OpenECR6600
+ECRDIR := $(PWD)/sdk/OpenECR6600
+OpenECR6600: prebuild_OpenECR6600
+	if [ ! -e sdk/OpenECR6600/tool/nds32le-elf-mculib-v3s ]; then cd sdk/OpenECR6600/tool && xz -d < nds32le-elf-mculib-v3s.txz | tar xvf - > /dev/null; fi
+	cd sdk/OpenECR6600 && make BOARD_DIR=$(ECRDIR)/Boards/ecr6600/standalone APP_NAME=OpenBeken TOPDIR=$(ECRDIR) GCC_PATH=$(ECRDIR)/tool/nds32le-elf-mculib-v3s/bin/ APP_VERSION=$(APP_VERSION) defconfig
+	cd sdk/OpenECR6600 && make BOARD_DIR=$(ECRDIR)/Boards/ecr6600/standalone APP_NAME=OpenBeken TOPDIR=$(ECRDIR) GCC_PATH=$(ECRDIR)/tool/nds32le-elf-mculib-v3s/bin/ APP_VERSION=$(APP_VERSION) REL_V=OpenECR6600_$(APP_VERSION) all
+	mkdir -p output/$(APP_VERSION)
+	cp $(ECRDIR)/build/OpenBeken/ECR6600F_standalone_OpenBeken_allinone.bin output/$(APP_VERSION)/OpenECR6600_$(APP_VERSION).bin
+	cp $(ECRDIR)/build/OpenBeken/ECR6600F_OpenBeken_Compress_ota_packeg.bin output/$(APP_VERSION)/OpenECR6600_$(APP_VERSION)_ota.img
 
 # clean .o files and output directory
 .PHONY: clean
@@ -417,6 +435,7 @@ clean:
 	test -d ./platforms/ESP-IDF/build-c6 && cmake --build ./platforms/ESP-IDF/build-c6 --target clean
 	test -d ./platforms/ESP-IDF/build-s2 && cmake --build ./platforms/ESP-IDF/build-s2 --target clean
 	test -d ./platforms/ESP-IDF/build-s3 && cmake --build ./platforms/ESP-IDF/build-s3 --target clean
+	cd sdk/OpenECR6600 && make BOARD_DIR=$(ECRDIR)/Boards/ecr6600/standalone APP_NAME=OpenBeken TOPDIR=$(ECRDIR) GCC_PATH=$(ECRDIR)/tool/nds32le-elf-mculib-v3s/bin/ clean
 
 # Add custom Makefile if required
 -include custom.mk
