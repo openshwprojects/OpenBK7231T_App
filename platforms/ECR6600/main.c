@@ -18,6 +18,7 @@ extern int version_get(void);
 extern void Main_Init();
 extern void Main_OnEverySecond();
 
+E_DRV_UART_NUM uart_num = E_UART_NUM_2;
 TaskHandle_t g_sys_task_handle1;
 extern uint8_t wmac[6];
 
@@ -67,21 +68,22 @@ int main(void)
 	}
 
 	ke_init();
+	//rf_pta_config();
 
-	if (version_get() == 1)
-	{
-		drv_adc_init();
-		get_volt_calibrate_data();
-		time_check_temp();
-	}
+	drv_adc_init();
+	get_volt_calibrate_data();
+	time_check_temp();
 
 	// disabling this allowed connecting to ap with -91 rssi
-	//amt_cal_info_obtain();
+	amt_cal_info_obtain();
 
 	wifi_main();
 
 	// disabling this will crash when getting ip
 	psm_wifi_ble_init();
+
+	psm_boot_flag_dbg_op(true, 1);
+
 	//psm_wifi_ps_to_active();
 	//psm_sleep_mode_ena_op(true, 0);
 	//psm_set_psm_enable(0);
