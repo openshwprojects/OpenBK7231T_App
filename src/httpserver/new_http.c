@@ -824,6 +824,12 @@ int HTTP_ProcessPacket(http_request_t* request) {
 #if ENABLE_HTTP_IP
 	if (http_checkUrlBase(urlStr, "cfg_ip")) return http_fn_cfg_ip(request);
 #endif
+#if ENABLE_DRIVER_DS18B20
+	// including "../driver/ds18b20.h" will complain about typedefs not used here 
+	// so lets declare it "extern"
+	extern int http_fn_cfg_ds18b20(http_request_t* request);
+	if (http_checkUrlBase(urlStr, "cfg_ds18b20")) return http_fn_cfg_ds18b20(request);
+#endif
 
 #if ENABLE_HTTP_WEBAPP
 	if (http_checkUrlBase(urlStr, "cfg_webapp")) return http_fn_cfg_webapp(request);
