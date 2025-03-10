@@ -100,6 +100,9 @@ static commandResult_t testRealloc(const void * context, const char *cmd, const 
 		ra1 = 1 + abs(rand() % 1000);
 
 		msg = malloc(ra1);
+		if (!msg) {
+			break;
+		}
 		int initialra1 = ra1;
 		for (int i = 0; i < initialra1; i++) {
 			msg[i] = i % 100;
@@ -107,7 +110,12 @@ static commandResult_t testRealloc(const void * context, const char *cmd, const 
 		
 		for(i = 0; i < 3; i++) {
 			ra1 += 1 + abs(rand()%10);
-			msg = realloc(msg,ra1);
+			char* msgr = realloc(msg,ra1);
+			if (!msgr) {
+				break;
+			}
+			msg = msgr;
+
 			for (int j = 0; j < initialra1; j++) {
 				if (msg[j] != (j % 100)) {
 					ADDLOG_INFO(LOG_FEATURE_CMD,
