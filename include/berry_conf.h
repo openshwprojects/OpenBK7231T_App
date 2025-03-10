@@ -232,7 +232,11 @@
 #define BE_EXPLICIT_MALLOC malloc
 #define BE_EXPLICIT_FREE free
 // normal realloc appears broken on OpenBK7231T: #1563, #298
+#ifdef PLATFORM_BK7231T
 #define BE_EXPLICIT_REALLOC os_realloc
+#else
+#define BE_EXPLICIT_REALLOC realloc
+#endif
 
 /* Macro: be_assert
  * Berry debug assertion. Only enabled when BE_DEBUG is active.
