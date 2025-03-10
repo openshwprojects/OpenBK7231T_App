@@ -31,6 +31,7 @@ static void (*g_wifiStatusCallback)(int code);
 static char g_IP[32] = "unknown";
 static int g_bOpenAccessPointMode = 0;
 char *get_security_type(int type);
+bool g_bStaticIP = false;
 
 IPStatusTypedef ipStatus;
 // This must return correct IP for both SOFT_AP and STATION modes,
@@ -220,8 +221,8 @@ void wl_status(void* ctxt)
 			g_wifiStatusCallback(WIFI_STA_AUTH_FAILED);
 		}
 		break;
-	case RW_EVT_STA_CONNECTED:        /* authentication success */
-	case RW_EVT_STA_GOT_IP:
+	case RW_EVT_STA_CONNECTED: if(!g_bStaticIP) break;
+	case RW_EVT_STA_GOT_IP:          /* authentication success */
 		if (g_wifiStatusCallback != 0) {
 			g_wifiStatusCallback(WIFI_STA_CONNECTED);
 		}
@@ -277,6 +278,7 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 		convert_IP_to_string(network_cfg.net_mask, ip->netMask);
 		convert_IP_to_string(network_cfg.gateway_ip_addr, ip->gatewayIPAddr);
 		convert_IP_to_string(network_cfg.dns_server_ip_addr, ip->dnsServerIpAddr);
+		g_bStaticIP = true;
 	}
 	network_cfg.wifi_retry_interval = 100;
 

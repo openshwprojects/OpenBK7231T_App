@@ -12,6 +12,8 @@
 #include "../driver/drv_public.h"
 #include "../hal/hal_adc.h"
 #include "../hal/hal_flashVars.h"
+#include "../httpserver/http_tcp_server.h"
+#include "../hal/hal_generic.h"
 
 int cmd_uartInitIndex = 0;
 
@@ -765,6 +767,9 @@ commandResult_t CMD_PWMFrequency(const void* context, const char* cmd, const cha
 		return CMD_RES_ERROR;
 	}
 #endif
+	// reapply PWM settings
+	PIN_SetupPins();
+
 	return CMD_RES_OK;
 }
 commandResult_t CMD_IndexRefreshInterval(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -802,6 +807,37 @@ commandResult_t CMD_DeepSleep_SetEdge(const void* context, const char* cmd, cons
 
 	return CMD_RES_OK;
 }
+
+#if MQTT_USE_TLS
+static commandResult_t CMD_WebServer(const void* context, const char* cmd, const char* args, int cmdFlags) {	
+	int arg_count;
+	Tokenizer_TokenizeString(args, 0);
+	arg_count = Tokenizer_GetArgsCount();
+	if (arg_count == 0)
+	{
+		ADDLOG_INFO(LOG_FEATURE_CMD, "WebServer:%d", !CFG_GetDisableWebServer());
+		return CMD_RES_OK;
+	} 
+	if (arg_count == 1) {
+		if (strcmp(Tokenizer_GetArg(0) , "0") == 0) {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "Stop WebServer");
+			CFG_SetDisableWebServer(true);
+			CFG_Save_IfThereArePendingChanges();
+			HTTPServer_Stop();
+			return CMD_RES_OK;
+		}
+		else if (strcmp(Tokenizer_GetArg(0), "1") == 0) {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "Enable WebServer and restart");
+			CFG_SetDisableWebServer(false);
+			CFG_Save_IfThereArePendingChanges();
+			HAL_RebootModule();
+			return CMD_RES_OK;
+		}
+	} 
+	ADDLOG_ERROR(LOG_FEATURE_CMD, "Invalid Argument");
+	return CMD_RES_BAD_ARGUMENT;
+}
+#endif
 
 void CMD_Init_Early() {
 	//cmddetail:{"name":"alias","args":"[Alias][Command with spaces]",
@@ -933,6 +969,14 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("IndexRefreshInterval", CMD_IndexRefreshInterval, NULL);
 
+#if MQTT_USE_TLS
+	//cmddetail:{"name":"WebServer","args":"[0 - Stop / 1 - Start]",
+	//cmddetail:"descr":"Setting state of WebServer",
+	//cmddetail:"fn":"CMD_WebServer","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("WebServer", CMD_WebServer, NULL);
+#endif
+	
 #if ENABLE_OBK_SCRIPTING
 	CMD_InitScripting();
 #endif

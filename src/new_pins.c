@@ -774,6 +774,8 @@ void CHANNEL_DoSpecialToggleAll() {
 		}
 	}
 }
+extern int g_pwmFrequency;
+
 void PIN_SetPinRoleForPinIndex(int index, int role) {
 	bool bDHTChange = false;
 	bool bSampleInitialState = false;
@@ -1043,11 +1045,21 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 
 			channelIndex = PIN_GetPinChannelForPinIndex(index);
 			channelValue = g_channelValuesFloats[channelIndex];
-			HAL_PIN_PWM_Start(index);
+
+			//100hz to 20000hz according to tuya code
+#define PWM_FREQUENCY_SLOW 600 //Slow frequency for LED Drivers requiring slower PWM Freq
+
+			int useFreq;
+			useFreq = g_pwmFrequency;
+			//Use slow pwm if user has set checkbox in webif
+			if (CFG_HasFlag(OBK_FLAG_SLOW_PWM))
+				useFreq = PWM_FREQUENCY_SLOW;
+
+			HAL_PIN_PWM_Start(index, useFreq);
 
 			if (role == IOR_PWM_n) {
 				// inversed PWM
-				HAL_PIN_PWM_Update(index, 100 - channelValue);
+				HAL_PIN_PWM_Update(index, 100.0f - channelValue);
 			}
 			else {
 				HAL_PIN_PWM_Update(index, channelValue);
@@ -1364,6 +1376,7 @@ void CHANNEL_ClearAllChannels() {
 
 void CHANNEL_Set_FloatPWM(int ch, float fVal, int iFlags) {
 	int i;
+	float prevValue = g_channelValuesFloats[ch];
 
 	g_channelValues[ch] = (int)fVal;
 	g_channelValuesFloats[ch] = fVal;
@@ -1378,6 +1391,9 @@ void CHANNEL_Set_FloatPWM(int ch, float fVal, int iFlags) {
 			}
 		}
 	}
+	// TODO: support float
+	EventHandlers_FireEvent(CMD_EVENT_CHANNEL_ONCHANGE, ch);
+	EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CHANNEL0 + ch, prevValue, fVal);
 }
 void CHANNEL_SetSmart(int ch, float fVal, int iFlags) {
 	if (ch < 0 || ch >= CHANNEL_MAX)
