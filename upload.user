@@ -1,0 +1,3 @@
+curl -X POST --data-binary @output/1.0.69/OpenBK7231T_1.0.69.rbl http://192.168.0.71/api/ota
+sleep 3
+curl -X POST 'http://192.168.0.71/api/reboot' 
