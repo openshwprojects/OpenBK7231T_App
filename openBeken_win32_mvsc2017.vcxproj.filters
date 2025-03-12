@@ -349,8 +349,10 @@
     <ClCompile Include="src\hal\win32\hal_uart_win32.c" />
     <ClCompile Include="src\cmnds\cmd_berry.c" />
     <ClCompile Include="src\driver\drv_test.c" />
+    <ClCompile Include="src\berry\be_bindings.c" />
     <ClCompile Include="src\berry\be_modtab.c" />
     <ClCompile Include="src\berry\be_port.c" />
+    <ClCompile Include="src\berry\be_run.c" />
     <ClCompile Include="libraries\berry\src\be_api.c" />
     <ClCompile Include="libraries\berry\src\be_baselib.c" />
     <ClCompile Include="libraries\berry\src\be_bytecode.c" />

@@ -9,6 +9,8 @@
 #include "berry.h"
 #include "be_repl.h"
 #include "be_vm.h"
+#include "../berry/be_run.h"
+#include "../berry/be_bindings.h"
 
 /*
 startScript test1.bat
@@ -246,8 +248,10 @@ typedef struct scriptInstance_s {
 	char waitingForRelation;
 
 	struct scriptInstance_s *next;
+#if ENABLE_OBK_BERRY
 	bool isBerry;
 	int closureId;
+#endif
 } scriptInstance_t;
 
 int g_scrBufferSize = 0;
@@ -256,9 +260,10 @@ int svm_deltaMS;
 scriptFile_t *g_scriptFiles = 0;
 scriptInstance_t *g_scriptThreads = 0;
 scriptInstance_t *g_activeThread = 0;
-bvm* g_vm = NULL;
 
-static bool berryRun(bvm* vm, const char* prog);
+#if ENABLE_OBK_BERRY
+bvm* g_vm = NULL;
+#endif
 
 scriptInstance_t *SVM_RegisterThread() {
 	scriptInstance_t *r;
@@ -379,15 +384,10 @@ void SVM_RunThread(scriptInstance_t *t, int maxLoops) {
 		g_scrBuffer = malloc(g_scrBufferSize + 1);
 	}
 
+
+#if ENABLE_OBK_BERRY
 	if (t->isBerry && t->closureId > 0) {
-		bvm* vm = g_vm;
-		if (!be_getglobal(vm, "resume_closure")) {
-			// prelude not loaded??
-			be_return_nil(vm);
-		}
-		be_pushint(vm, t->closureId);
-		// call resume_closure(t->closureId)
-		be_call(vm, 1);
+		berryResumeClosure(g_vm, t->closureId);
 		t->closureId = -1; // hacky, mark as done
 		t->isBerry = false;
 		t->curLine = 0; // NB. this stops the script from being run
@@ -396,6 +396,7 @@ void SVM_RunThread(scriptInstance_t *t, int maxLoops) {
 		t->currentDelayMS = 0;
 		return;
 	}
+#endif
 
 	while(1) {
 		loop++;
@@ -588,11 +589,11 @@ void SVM_StopAllScripts() {
 		t = t->next;
 	}
 
+#ifdef ENABLE_OBK_BERRY
 	if (g_vm) {
-		// free waiting closures
-		// kind of hacky
-		berryRun(g_vm, "_suspended_closures = {}");
+		berryFreeAllClosures(g_vm);
 	}
+#endif
 }
 void SVM_StopScripts(int id, int bExcludeSelf) {
 	scriptInstance_t *t;
@@ -904,32 +905,8 @@ commandResult_t CMD_waitFor(const void *context, const char *cmd, const char *ar
 	return CMD_RES_OK;
 }
 
-// From Tasmota
-void be_dumpstack(bvm *vm) {
-	int32_t top = be_top(vm);
-	ADDLOG_INFO(LOG_FEATURE_BERRY, "top=%d", top);
-	be_tracestack(vm);
-	for (uint32_t i = 1; i <= top; i++) {
-		const char * tname = be_typename(vm, i);
-		const char * cname = be_classname(vm, i);
-		if (be_isstring(vm, i)) {
-			cname = be_tostring(vm, i);
-		}
-		ADDLOG_INFO(LOG_FEATURE_BERRY, "stack[%d] = type='%s' (%s)", i, (tname != NULL) ? tname : "", (cname != NULL) ? cname : "");
-	}
-}
 
-int be_ChannelSet(bvm *vm) {
-	int top = be_top(vm);
-
-	if (top == 2 && be_isint(vm, 1) && be_isint(vm, 2)) {
-		int ch = be_toint(vm, 1);
-		int v = be_toint(vm, 2);
-		CHANNEL_Set(ch, v, 0);
-	}
-	be_return_nil(vm); /* return calculation result */
-}
-
+#if ENABLE_OBK_BERRY
 int be_DelayMs(bvm *vm) {
 	int top = be_top(vm);
 	if (top == 2 && be_isint(vm, 1) && be_isfunction(vm, 2)) {
@@ -966,61 +943,6 @@ int be_DelayMs(bvm *vm) {
 	be_return_nil(vm);
 }
 
-void be_error_pop_all(bvm *vm) {
-  be_pop(vm, be_top(vm));       // clear Berry stack
-}
-
-const char berryPrelude[] =
-	"_suspended_closures = {}\n"
-	"_suspended_closures_idx = 0\n"
-	"\n"
-	"def suspend_closure(closure)\n"
-	"  _suspended_closures_idx += 1\n"
-	"  _suspended_closures[_suspended_closures_idx] = closure\n"
-	"  return _suspended_closures_idx\n"
-	"end\n"
-	"\n"
-	"def resume_closure(idx)\n"
-	"  closure = _suspended_closures[idx]\n"
-	"  _suspended_closures.remove(idx)\n"
-	"  closure()\n"
-	"end\n";
-
-static bool berryRun(bvm* vm, const char* prog) {
-	bool success = true;
-	ADDLOG_INFO(LOG_FEATURE_BERRY, "[berry start]");
-	int ret_code1 = be_loadstring(vm, prog);
-	if (ret_code1 != 0) {
-		ADDLOG_INFO(LOG_FEATURE_BERRY, "be_loadstring fail, retcode %d: %s", ret_code1, prog);
-		be_dumpstack(vm);
-		be_error_pop_all(vm);
-		success = false;
-		goto err;
-	}
-
-	int ret_code2 = be_pcall(vm, 0);
-	if (ret_code2 != 0) {
-		ADDLOG_INFO(LOG_FEATURE_BERRY, "be_pcall fail, retcode %d", ret_code2);
-		be_dumpstack(vm);
-		be_error_pop_all(vm);
-		success = false;
-		goto err;
-	}
-
-
-	int top = be_top(vm);
-	if (be_top(vm) > 1) {
-		be_error_pop_all(vm);
-	} else {
-		be_pop(vm, 1);
-	}
-
-err:
-	ADDLOG_INFO(LOG_FEATURE_BERRY, "[berry end]");
-	return success;
-}
-
-
 static commandResult_t CMD_Berry(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
   if (!g_vm) {
@@ -1035,6 +957,7 @@ static commandResult_t CMD_Berry(const void* context, const char* cmd, const cha
   }
   return berryRun(g_vm, args) ? CMD_RES_OK : CMD_RES_ERROR;
 }
+#endif
 
 
 void CMD_InitScripting(){
@@ -1088,11 +1011,13 @@ void CMD_InitScripting(){
 	//cmddetail:"fn":"CMD_waitFor","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("waitFor", CMD_waitFor, NULL);
+#if ENABLE_OBK_BERRY
 	//cmddetail:{"name":"berry","args":"[Berry code]",
 	//cmddetail:"descr":"Execute Berry code",
 	//cmddetail:"fn":"CMD_Berry","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":"berry 1+2"}
 	CMD_RegisterCommand("berry", CMD_Berry, NULL);
+#endif
 }
 
 

@@ -171,5 +171,7 @@ endef
 include $(OBK_DIR)/../libraries/berry.mk
 
 APP_C += $(BERRY_SRC_C)
-APP_C += $(OBK_DIR)/berry/be_port.c
+APP_C += $(OBK_DIR)/berry/be_bindings.c
 APP_C += $(OBK_DIR)/berry/be_modtab.c
+APP_C += $(OBK_DIR)/berry/be_port.c
+APP_C += $(OBK_DIR)/berry/be_run.c
