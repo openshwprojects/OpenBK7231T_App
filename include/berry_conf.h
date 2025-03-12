@@ -134,7 +134,7 @@
  * will not be used.
  * Default: 0
  **/
-#define BE_USE_FILE_SYSTEM 0
+#define BE_USE_FILE_SYSTEM 1
 
 /* Macro: BE_USE_SCRIPT_COMPILER
  * Enable compiler when BE_USE_SCRIPT_COMPILER is not 0, otherwise
@@ -214,7 +214,7 @@
 #define BE_USE_TIME_MODULE 0
 #define BE_USE_OS_MODULE 0
 #define BE_USE_GLOBAL_MODULE 1
-#define BE_USE_SYS_MODULE 0
+#define BE_USE_SYS_MODULE 1
 #define BE_USE_DEBUG_MODULE 1
 #define BE_USE_GC_MODULE 0
 #define BE_USE_SOLIDIFY_MODULE 0
