@@ -6,11 +6,14 @@
 #include "../driver/drv_public.h"
 #include <ctype.h>
 #include "cmd_local.h"
+
+#if ENABLE_OBK_BERRY
 #include "berry.h"
 #include "be_repl.h"
 #include "be_vm.h"
 #include "../berry/be_run.h"
 #include "../berry/be_bindings.h"
+#endif
 
 /*
 startScript test1.bat
