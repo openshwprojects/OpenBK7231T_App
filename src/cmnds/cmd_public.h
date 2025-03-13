@@ -13,6 +13,32 @@ typedef enum commandResult_e {
 
 } commandResult_t;
 
+typedef struct scriptFile_s
+{
+	char* fname;
+	char* data;
+
+	struct scriptFile_s* next;
+} scriptFile_t;
+
+typedef struct scriptInstance_s
+{
+	scriptFile_t* curFile;
+	int uniqueID;
+	const char* curLine;
+	int currentDelayMS;
+
+	int waitingForArgument;
+	unsigned short waitingForEvent;
+	char waitingForRelation;
+
+	struct scriptInstance_s* next;
+#if ENABLE_OBK_BERRY
+	bool isBerry;
+	int closureId;
+#endif
+} scriptInstance_t;
+
 typedef commandResult_t(*commandHandler_t)(const void* context, const char* cmd, const char* args, int flags);
 
 // command was entered in console (web app etc)

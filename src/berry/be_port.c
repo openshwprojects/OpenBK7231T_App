@@ -5,8 +5,6 @@
 ** See Copyright Notice in the LICENSE file or at
 ** https://github.com/Skiars/berry/blob/master/LICENSE
 ********************************************************************/
-#include "../obk_config.h"
-#include "../logging/logging.h"
 
 #include "berry.h"
 #include "be_mem.h"
@@ -14,42 +12,46 @@
 #include <stdio.h>
 #include <string.h>
 
-#if ENABLE_LITTLEFS
+#include "../logging/logging.h"
 #include "../littlefs/our_lfs.h"
-#endif
 
 /* this file contains configuration for the file system. */
 
 /* standard input and output */
 
-BERRY_API void be_writebuffer(const char *buffer, size_t length)
+BERRY_API void be_writebuffer(const char* buffer, size_t length)
 {
 	ADDLOG_INFO(LOG_FEATURE_BERRY, "%.*s", length, buffer);
 }
 
-BERRY_API char* be_readstring(char *buffer, size_t size)
+BERRY_API char* be_readstring(char* buffer, size_t size)
 {
-  if ((size > 0) && (buffer != NULL)) {
-    *buffer = 0;
-  }
-  return buffer;
+	if((size > 0) && (buffer != NULL))
+	{
+		*buffer = 0;
+	}
+	return buffer;
 }
 
 #if ENABLE_LITTLEFS
 
+
 // Mapping of fopen modes to lfs_file_open flags
-static int mode_to_flags(const char *mode) {
+static int mode_to_flags(const char* mode)
+{
 	// accepted regex: ^(r|w|a)b?+?.*$
 	bool has_plus = false;
-	if (*mode) {
+	if(*mode)
+	{
 		// skip r, w, b
 		const char* extra = mode + 1;
 		// skip allowed b
-		if (*extra == 'b') extra++;
+		if(*extra == 'b') extra++;
 		has_plus = *extra == '+';
 	}
 
-	switch (mode[0]) {
+	switch(mode[0])
+	{
 		case 'r':
 			return has_plus ? LFS_O_RDWR : LFS_O_RDONLY;
 		case 'w':
@@ -64,20 +66,21 @@ static int mode_to_flags(const char *mode) {
 	return -1;
 }
 
-// NOTE: The error codes from lfs may be different than POSIX
-
-void* be_fopen(const char *filename, const char *modes)
+void* be_fopen(const char* filename, const char* modes)
 {
-	if (lfs_present()) {
+	if(!lfs_present()) init_lfs(1);
+	if(lfs_present())
+	{
 		int flags = mode_to_flags(modes);
-		if (flags == -1) {
+		if(flags == -1)
+		{
 			return NULL;
 		}
-
-		lfs_file_t *file = malloc(sizeof(lfs_file_t));
+		lfs_file_t* file = malloc(sizeof(lfs_file_t));
 		memset(file, 0, sizeof(lfs_file_t));
 		int err = lfs_file_open(&lfs, file, filename, flags);
-		if (err) {
+		if(err)
+		{
 			free(file);
 			return NULL;
 		}
@@ -86,50 +89,50 @@ void* be_fopen(const char *filename, const char *modes)
 	return NULL;
 }
 
-int be_fclose(void *hfile)
+int be_fclose(void* hfile)
 {
-	if (lfs_present()) {
-		int ret = lfs_file_close(&lfs, hfile);
+	if(hfile != NULL)
+	{
+		int ret = lfs_file_close(&lfs, (lfs_file_t*)hfile);
 		free(hfile);
 		return ret;
 	}
 	return -1;
 }
 
-size_t be_fwrite(void *hfile, const void *buffer, size_t length)
+size_t be_fwrite(void* hfile, const void* buffer, size_t length)
 {
-	if (lfs_present()) {
-		return lfs_file_write(&lfs, hfile, buffer, length);
-	}
+	if(hfile != NULL) return lfs_file_write(&lfs, hfile, buffer, length);
 	return 0;
 }
 
-size_t be_fread(void *hfile, void *buffer, size_t length)
+size_t be_fread(void* hfile, void* buffer, size_t length)
 {
-	if (lfs_present()) {
-		return lfs_file_read(&lfs, hfile, buffer, length);
-	}
+	if(hfile != NULL) return lfs_file_read(&lfs, hfile, buffer, length);
 	return 0;
 }
 
-char* be_fgets(void *hfile, void *buffer, int size)
+char* be_fgets(void* hfile, void* buffer, int size)
 {
-	if (lfs_present()) {
-		if (size < 1) return NULL;
+	if(hfile != NULL)
+	{
+		if(size < 1) return NULL;
 
-		char *dest = buffer;
+		char* dest = buffer;
 		int count = 0;
 
-		while (count < size - 1) {
-
-			if (lfs_file_read(&lfs, hfile, dest, 1) != 1) {
+		while(count < size - 1)
+		{
+			if(lfs_file_read(&lfs, hfile, dest, 1) != 1)
+			{
 				// EOF or error
-				if (count == 0) return NULL;
+				if(count == 0) return NULL;
 				break;
 			}
 
 			// Check for newline
-			if (*dest == '\n') {
+			if(*dest == '\n')
+			{
 				count++;
 				dest++;
 				break;
@@ -146,82 +149,73 @@ char* be_fgets(void *hfile, void *buffer, int size)
 	return NULL;
 }
 
-
-int be_fseek(void *hfile, long offset)
+int be_fseek(void* hfile, long offset)
 {
-	if (lfs_present()) {
-		return lfs_file_seek(&lfs, hfile, offset, SEEK_SET);
-	}
+	if(hfile != NULL) return lfs_file_seek(&lfs, hfile, offset, LFS_SEEK_SET);
 	return -1;
 }
 
-long int be_ftell(void *hfile)
+long int be_ftell(void* hfile)
 {
-	if (lfs_present()) {
-		return lfs_file_tell(&lfs, hfile);
-	}
+	if(hfile != NULL) return lfs_file_tell(&lfs, hfile);
 	return 0;
 }
 
-long int be_fflush(void *hfile)
+long int be_fflush(void* hfile)
 {
-	if (lfs_present()) {
-		return lfs_file_sync(&lfs, hfile);
-	}
+	if(hfile != NULL) return lfs_file_sync(&lfs, hfile);
 	return 0;
 }
 
-size_t be_fsize(void *hfile)
+size_t be_fsize(void* hfile)
 {
-	if (lfs_present()) {
-		return lfs_file_size(&lfs, hfile);
-	}
+	if(hfile != NULL) return lfs_file_size(&lfs, hfile);
 	return 0;
 }
 
 #else // !ENABLE_LITTLEFS
 
-void* be_fopen(const char *filename, const char *modes)
+void* be_fopen(const char* filename, const char* modes)
 {
 	return NULL;
 }
 
-int be_fclose(void *hfile)
+int be_fclose(void* hfile)
 {
 	return -1;
 }
 
-size_t be_fwrite(void *hfile, const void *buffer, size_t length)
+size_t be_fwrite(void* hfile, const void* buffer, size_t length)
 {
 	return 0;
 }
 
-size_t be_fread(void *hfile, void *buffer, size_t length)
+size_t be_fread(void* hfile, void* buffer, size_t length)
 {
 	return 0;
 }
 
-char* be_fgets(void *hfile, void *buffer, int size)
+char* be_fgets(void* hfile, void* buffer, int size)
 {
 	return NULL;
 }
 
-int be_fseek(void *hfile, long offset)
+int be_fseek(void* hfile, long offset)
 {
 	return -1;
 }
 
-long int be_ftell(void *hfile)
+long int be_ftell(void* hfile)
 {
 	return 0;
 }
 
-long int be_fflush(void *hfile)
+long int be_fflush(void* hfile)
 {
 	return 0;
 }
 
-size_t be_fsize(void *hfile)
+size_t be_fsize(void* hfile)
 {
 	return 0;
 }

@@ -25,7 +25,7 @@
  * type when the value is 2.
  * Default: 2
  */
-#define BE_INTGER_TYPE 2
+#define BE_INTGER_TYPE 1
 
 /* Macro: BE_USE_SINGLE_FLOAT
  * Select floating point precision.
@@ -34,7 +34,7 @@
  * numbers.
  * Default: 0
  **/
-#define BE_USE_SINGLE_FLOAT 0
+#define BE_USE_SINGLE_FLOAT 1
 
 /* Macro: BE_BYTES_MAX_SIZE
  * Maximum size in bytes of a `bytes()` object.
@@ -95,7 +95,7 @@
  * Set the maximum total stack size.
  * Default: 20000
  **/
-#define BE_STACK_TOTAL_MAX 20000
+#define BE_STACK_TOTAL_MAX 8192
 
 /* Macro: BE_STACK_FREE_MIN
  * Set the minimum free count of the stack. The stack idles will
@@ -155,7 +155,7 @@
  * otherwise disable the feature.
  * Default: 1
  **/
-#define BE_USE_BYTECODE_LOADER 0
+#define BE_USE_BYTECODE_LOADER 1
 
 /* Macro: BE_USE_SHARED_LIB
  * Enable shared library  when BE_USE_SHARED_LIB is not 0,
@@ -209,8 +209,8 @@
  * They will not compile related modules when they are false.
  **/
 #define BE_USE_STRING_MODULE 1
-#define BE_USE_JSON_MODULE 0
-#define BE_USE_MATH_MODULE 0
+#define BE_USE_JSON_MODULE 1
+#define BE_USE_MATH_MODULE 1
 #define BE_USE_TIME_MODULE 0
 #define BE_USE_OS_MODULE 0
 #define BE_USE_GLOBAL_MODULE 1
