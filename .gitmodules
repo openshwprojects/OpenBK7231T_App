@@ -1,7 +1,7 @@
 [submodule "sdk/OpenXR809"]
 	path = sdk/OpenXR809
-	url = https://github.com/openshwprojects/OpenXR809.git
-	branch = master
+	url = https://github.com/divadiow/OpenXR809.git
+	branch = xr809_dhcp
 [submodule "sdk/OpenBK7231T"]
 	path = sdk/OpenBK7231T
 	url = https://github.com/openshwprojects/OpenBK7231T.git
