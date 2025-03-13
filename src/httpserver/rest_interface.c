@@ -106,6 +106,14 @@ extern uint32_t current_fw_idx;
 #elif PLATFORM_ECR6600
 
 #include "flash.h"
+extern int ota_init(void);
+extern int ota_write(unsigned char* data, unsigned int len);
+extern int ota_done(bool reset);
+
+#elif PLATFORM_TR6260
+
+#include "otaHal.h"
+#include "drv_spiflash.h"
 
 #else
 
@@ -307,7 +315,7 @@ static int http_rest_post(http_request_t* request) {
 		return http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_REALTEK
 		return http_rest_post_flash(request, 0, -1);
-#elif PLATFORM_ECR6600
+#elif PLATFORM_ECR6600 || PLATFORM_TR6260
 		return http_rest_post_flash(request, -1, -1);
 #else
 		// TODO
@@ -1479,7 +1487,7 @@ static int ota_verify_download(void)
 static int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 {
 
-#if PLATFORM_XR809 || PLATFORM_TR6260
+#if PLATFORM_XR809
 	return 0;	//Operation not supported yet
 #endif
 
@@ -2871,11 +2879,17 @@ update_ota_exit:
 		return http_rest_error(request, ret, "error");
 	}
 
-#elif PLATFORM_ECR6600
+#elif PLATFORM_ECR6600 || PLATFORM_TR6260
 
-	extern int ota_init(void);
-	extern int ota_write(unsigned char* data, unsigned int len);
-	extern int ota_done(bool reset);
+#if PLATFORM_TR6260
+#define OTA_INIT otaHal_init
+#define OTA_WRITE otaHal_write
+#define OTA_DONE(x) otaHal_done()
+#else
+#define OTA_INIT ota_init
+#define OTA_WRITE ota_write
+#define OTA_DONE(x) ota_done(x)
+#endif
 	int ret = 0;
 
 	if(request->contentLength > 0)
@@ -2889,7 +2903,7 @@ update_ota_exit:
 		goto update_ota_exit;
 	}
 
-	if(ota_init() != 0)
+	if(OTA_INIT() != 0)
 	{
 		ret = -1;
 		goto update_ota_exit;
@@ -2897,7 +2911,7 @@ update_ota_exit:
 
 	do
 	{
-		if(ota_write((unsigned char*)writebuf, writelen) != 0)
+		if(OTA_WRITE((unsigned char*)writebuf, writelen) != 0)
 		{
 			ret = -1;
 			goto update_ota_exit;
@@ -2923,7 +2937,7 @@ update_ota_exit:
 	if(ret != -1)
 	{
 		ADDLOG_INFO(LOG_FEATURE_OTA, "OTA is successful");
-		ota_done(0);
+		OTA_DONE(0);
 	}
 	else
 	{

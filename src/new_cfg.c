@@ -786,7 +786,7 @@ void CFG_InitAndLoad() {
 		// mark as changed
 		g_cfg_pendingChanges ++;
 	} else {
-#if defined(PLATFORM_XR809) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) || defined(PLATFORM_TR6260)
+#if defined(PLATFORM_XR809) || defined(PLATFORM_BL602)
 		if (g_cfg.mac[0] == 0 && g_cfg.mac[1] == 0 && g_cfg.mac[2] == 0 && g_cfg.mac[3] == 0 && g_cfg.mac[4] == 0 && g_cfg.mac[5] == 0) {
 			WiFI_GetMacAddress((char*)g_cfg.mac);
 		}
