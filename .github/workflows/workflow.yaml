@@ -63,8 +63,10 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      with:
-        submodules: true
+
+    - name: Checkout berry submodule
+      run: |
+        git submodule update --init --recursive libraries/berry
 
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
