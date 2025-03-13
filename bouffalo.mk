@@ -1,7 +1,6 @@
 # Component Makefile
 #
 ## These include paths would be exported to project level
-$(info DUPA50)
 COMPONENT_ADD_INCLUDEDIRS += src/ src/httpserver/ src/cmnds/ src/logging/ src/hal/bl602/ src/mqtt/ src/cJSON src/base64 src/driver src/devicegroups src/bitmessage src/littlefs libraries/berry/src include/
 
 ## not be exported to project level

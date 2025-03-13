@@ -1,1 +1,0 @@
-(set -ex; rm -f output/1.0.69/OpenBK7231T_1.0.69.rbl; cd docker; ../../OpenBK7231T_App_old/docker/m.user && cd .. && [ -e output/1.0.69/OpenBK7231T_1.0.69.rbl ] && ./upload.user && ping 192.168.0.71)
