@@ -3,6 +3,7 @@
 ## Editor
 
 Any editor can be used for editing. However, the repository does have settings to ensure consistent formatting when using [Visual Code](https://code.visualstudio.com/). For other editors, please use `tab` instead of `spaces` with `tabSize` of `4` for indentation.
+`.clang-format` provides consistent formatting for other editors.
 
 ## Nodejs
 
