@@ -77,82 +77,64 @@ void *be_fopen(const char *filename, const char *modes) {
 }
 
 int be_fclose(void *hfile) {
-	if (hfile != NULL) {
-		int ret = lfs_file_close(&lfs, (lfs_file_t *)hfile);
-		free(hfile);
-		return ret;
-	}
-	return -1;
+	int ret = lfs_file_close(&lfs, (lfs_file_t *)hfile);
+	free(hfile);
+	return ret;
 }
 
 size_t be_fwrite(void *hfile, const void *buffer, size_t length) {
-	if (hfile != NULL)
-		return lfs_file_write(&lfs, hfile, buffer, length);
-	return 0;
+	return lfs_file_write(&lfs, hfile, buffer, length);
 }
 
 size_t be_fread(void *hfile, void *buffer, size_t length) {
-	if (hfile != NULL)
-		return lfs_file_read(&lfs, hfile, buffer, length);
-	return 0;
+	return lfs_file_read(&lfs, hfile, buffer, length);
 }
 
 char *be_fgets(void *hfile, void *buffer, int size) {
-	if (hfile != NULL) {
-		if (size < 1)
-			return NULL;
+	if (size < 1)
+		return NULL;
 
-		char *dest = buffer;
-		int count = 0;
+	char *dest = buffer;
+	int count = 0;
 
-		while (count < size - 1) {
-			if (lfs_file_read(&lfs, hfile, dest, 1) != 1) {
-				// EOF or error
-				if (count == 0)
-					return NULL;
-				break;
-			}
-
-			// Check for newline
-			if (*dest == '\n') {
-				count++;
-				dest++;
-				break;
-			}
-
-			count++;
-			dest++;
+	while (count < size - 1) {
+		if (lfs_file_read(&lfs, hfile, dest, 1) != 1) {
+			// EOF or error
+			if (count == 0)
+				return NULL;
+			break;
 		}
 
-		// Null-terminate the string
-		*dest = '\0';
-		return buffer;
+		// Check for newline
+		if (*dest == '\n') {
+			count++;
+			dest++;
+			break;
+		}
+
+		count++;
+		dest++;
 	}
-	return NULL;
+
+	// Null-terminate the string
+	*dest = '\0';
+	return buffer;
 }
 
 int be_fseek(void *hfile, long offset) {
-	if (hfile != NULL)
-		return lfs_file_seek(&lfs, hfile, offset, LFS_SEEK_SET);
-	return -1;
+	return lfs_file_seek(&lfs, hfile, offset, LFS_SEEK_SET);
 }
 
 long int be_ftell(void *hfile) {
-	if (hfile != NULL)
-		return lfs_file_tell(&lfs, hfile);
-	return 0;
+	return lfs_file_tell(&lfs, hfile);
 }
 
 long int be_fflush(void *hfile) {
-	if (hfile != NULL)
-		return lfs_file_sync(&lfs, hfile);
-	return 0;
+	return lfs_file_sync(&lfs, hfile);
 }
 
 size_t be_fsize(void *hfile) {
-	if (hfile != NULL)
-		return lfs_file_size(&lfs, hfile);
-	return 0;
+	return lfs_file_size(&lfs, hfile);
 }
 
 #else // !ENABLE_LITTLEFS
