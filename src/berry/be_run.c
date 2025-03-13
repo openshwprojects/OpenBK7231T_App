@@ -19,7 +19,7 @@ const char berryPrelude[] =
 	"end\n";
 
 void be_error_pop_all(bvm *vm) {
-  be_pop(vm, be_top(vm));       // clear Berry stack
+	be_pop(vm, be_top(vm)); // clear Berry stack
 }
 
 // From Tasmota
@@ -28,8 +28,8 @@ void be_dumpstack(bvm *vm) {
 	ADDLOG_INFO(LOG_FEATURE_BERRY, "top=%d", top);
 	be_tracestack(vm);
 	for (uint32_t i = 1; i <= top; i++) {
-		const char * tname = be_typename(vm, i);
-		const char * cname = be_classname(vm, i);
+		const char *tname = be_typename(vm, i);
+		const char *cname = be_classname(vm, i);
 		if (be_isstring(vm, i)) {
 			cname = be_tostring(vm, i);
 		}
@@ -37,7 +37,7 @@ void be_dumpstack(bvm *vm) {
 	}
 }
 
-bool berryRun(bvm* vm, const char* prog) {
+bool berryRun(bvm *vm, const char *prog) {
 	bool success = true;
 	ADDLOG_INFO(LOG_FEATURE_BERRY, "[berry start]");
 	int ret_code1 = be_loadstring(vm, prog);
@@ -69,19 +69,17 @@ err:
 	return success;
 }
 
-
-
-void berryResumeClosure(bvm* vm, int closureId) {
-		if (!be_getglobal(vm, "resume_closure")) {
-			return;
-		}
-		be_pushint(vm, closureId);
-		// call resume_closure(closureId)
-		be_call(vm, 1);
+void berryResumeClosure(bvm *vm, int closureId) {
+	if (!be_getglobal(vm, "resume_closure")) {
+		return;
+	}
+	be_pushint(vm, closureId);
+	// call resume_closure(closureId)
+	be_call(vm, 1);
 }
 
-void berryFreeAllClosures(bvm* vm) {
-		// free waiting closures
-		// kind of hacky
-		berryRun(vm, "_suspended_closures = {}");
+void berryFreeAllClosures(bvm *vm) {
+	// free waiting closures
+	// kind of hacky
+	berryRun(vm, "_suspended_closures = {}");
 }
