@@ -26,7 +26,7 @@ See our guides in Russian: [BK7231N/T34](https://www.v-elite.ru/t34), and [BL602
 
 If you want to get some generic information about BK7231 modules, available datasheets, pinout, peripherals, [consult our docs topic](https://www.elektroda.com/rtvforum/topic3951016.html).
 
-# [Supported Devices/Templates List](https://openbekeniot.github.io/webapp/devicesList.html) Now with 600+ entries! (Get 🏆[free SD Card](https://www.elektroda.com/rtvforum/topic3950844.html)🏆 for submitting new one!)
+# [Supported Devices/Templates List](https://openbekeniot.github.io/webapp/devicesList.html) Now with 700+ entries! (Get 🏆[free SD Card](https://www.elektroda.com/rtvforum/topic3950844.html)🏆 for submitting new one!)
 
 We have our own interactive devices database that is maintained by users.
 The database is also accessible from inside our firmware (but requires internet connection to fetch).
@@ -110,6 +110,6 @@ https://www.elektroda.com/rtvforum/topic3806769.html
 
 # Support project
 
-Love the project? Please consider supporting it with a donation: https://www.paypal.com/paypalme/openshwprojects
+❤️ Love the project? Please consider supporting it with a donation: https://www.paypal.com/paypalme/openshwprojects ❤️
 
 Special thanks to all open-source contributors whose work has served as a valuable reference and inspiration for the development of this project.
