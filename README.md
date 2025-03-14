@@ -110,6 +110,6 @@ https://www.elektroda.com/rtvforum/topic3806769.html
 
 # Support project
 
-If you want to support the project, please donate at: https://www.paypal.com/paypalme/openshwprojects
+Love the project? Please consider supporting it with a donation: https://www.paypal.com/paypalme/openshwprojects
 
 Special thanks to all open-source contributors whose work has served as a valuable reference and inspiration for the development of this project.
