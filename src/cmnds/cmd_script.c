@@ -7,6 +7,10 @@
 #include <ctype.h>
 #include "cmd_local.h"
 
+#if ENABLE_OBK_BERRY
+#include "berry.h"
+#endif
+
 /*
 startScript test1.bat
 
@@ -225,32 +229,16 @@ addEventHandler OnHold 20 backlog AddChannel 10 2 0 255; DGR_SendBrightness room
 
 */
 
-typedef struct scriptFile_s {
-	char *fname;
-	char *data;
-
-	struct scriptFile_s *next;
-} scriptFile_t;
-
-typedef struct scriptInstance_s {
-	scriptFile_t *curFile;
-	int uniqueID;
-	const char *curLine;
-	int currentDelayMS;
-
-	int waitingForArgument;
-	unsigned short waitingForEvent;
-	char waitingForRelation;
-
-	struct scriptInstance_s *next;
-} scriptInstance_t;
-
 int g_scrBufferSize = 0;
 char *g_scrBuffer = NULL;
 int svm_deltaMS;
 scriptFile_t *g_scriptFiles = 0;
 scriptInstance_t *g_scriptThreads = 0;
 scriptInstance_t *g_activeThread = 0;
+
+#if ENABLE_OBK_BERRY
+extern bvm* g_vm;
+#endif
 
 scriptInstance_t *SVM_RegisterThread() {
 	scriptInstance_t *r;
@@ -370,6 +358,20 @@ void SVM_RunThread(scriptInstance_t *t, int maxLoops) {
 		g_scrBufferSize = 256;
 		g_scrBuffer = malloc(g_scrBufferSize + 1);
 	}
+
+
+#if ENABLE_OBK_BERRY
+	if (t->isBerry && t->closureId > 0) {
+		berryResumeClosure(g_vm, t->closureId);
+		t->closureId = -1; // hacky, mark as done
+		t->isBerry = false;
+		t->curLine = 0; // NB. this stops the script from being run
+		t->curFile = 0;
+		t->uniqueID = 0;
+		t->currentDelayMS = 0;
+		return;
+	}
+#endif
 
 	while(1) {
 		loop++;
@@ -561,6 +563,12 @@ void SVM_StopAllScripts() {
 
 		t = t->next;
 	}
+
+#ifdef ENABLE_OBK_BERRY
+	if (g_vm) {
+		berryFreeAllClosures(g_vm);
+	}
+#endif
 }
 void SVM_StopScripts(int id, int bExcludeSelf) {
 	scriptInstance_t *t;
@@ -871,6 +879,7 @@ commandResult_t CMD_waitFor(const void *context, const char *cmd, const char *ar
 
 	return CMD_RES_OK;
 }
+
 void CMD_InitScripting(){
 	//cmddetail:{"name":"startScript","args":"[FileName][Label][UniqueID]",
 	//cmddetail:"descr":"Starts a script thread from given file, at given label - can be * for whole file, with given unique ID",
@@ -922,7 +931,4 @@ void CMD_InitScripting(){
 	//cmddetail:"fn":"CMD_waitFor","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("waitFor", CMD_waitFor, NULL);
-
 }
-
-
