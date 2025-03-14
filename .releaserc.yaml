@@ -134,6 +134,8 @@ generateNotes:
         | RTL8710B | OTA Update | [OpenRTL8710B_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8710B_{{version}}_ota.img)         |  
         | RTL8720D | UART Flash | [OpenRTL8720D_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8720D_{{version}}.bin)               |
         | RTL8720D | OTA Update | [OpenRTL8720D_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8720D_{{version}}_ota.img)         |  
+        | ECR6600  | UART Flash | [OpenECR6600_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenECR6600_{{version}}.bin)             |
+        | ECR6600  | OTA       | [OpenECR6600_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenECR6600_{{version}}_ota.img)             |
         | ESP32  | UART Flash | [OpenESP32_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32_{{version}}.factory.bin) |
         | ESP32  | OTA Flash | [OpenESP32_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32_{{version}}.img) |
         | ESP32 S2  | UART Flash | [OpenESP32S2_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32S2_{{version}}.factory.bin) |
@@ -209,6 +211,7 @@ publish:
       - path: "output/**/OpenTR6260*"
       - path: "output/**/OpenRTL87*"
       - path: "output/**/OpenESP*"
+      - path: "output/**/OpenECR*"
       - path: "output/**/obkSimulator*"
 
 success:
