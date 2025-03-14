@@ -132,7 +132,6 @@ static int BasicInit() {
 		be_regfunc(g_vm, "rtosDelayMs", be_rtosDelayMs);
 		be_regfunc(g_vm, "delayUs", be_delayUs);
 		be_regfunc(g_vm, "initI2c", be_initI2c);
-		be_regfunc(g_vm, "deinitI2c", be_deinitI2c);
 		be_regfunc(g_vm, "startI2c", be_startI2c);
 		be_regfunc(g_vm, "stopI2c", be_stopI2c);
 		be_regfunc(g_vm, "writeByteI2c", be_writeByteI2c);

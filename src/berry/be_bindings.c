@@ -1,4 +1,5 @@
 #include "be_bindings.h"
+#include "be_object.h"
 #include "../driver/drv_local.h"
 #include "../hal/hal_generic.h"
 #include "../new_cfg.h"
@@ -94,16 +95,8 @@ int be_initI2c(bvm *vm) {
 		i2c->pin_clk = be_toint(vm, 1);
 		i2c->pin_data = be_toint(vm, 2);
 		be_pushcomptr(vm, i2c);
+		be_newcomobj(vm, i2c, &be_commonobj_destroy_generic);
 		be_return(vm);
-	}
-	be_return_nil(vm);
-}
-
-int be_deinitI2c(bvm *vm) {
-	int top = be_top(vm);
-	if (top >= 1 && be_iscomptr(vm, 1)) {
-		softI2C_t *addr = be_tocomptr(vm, 2);
-		free(addr);
 	}
 	be_return_nil(vm);
 }
