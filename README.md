@@ -5,7 +5,7 @@ Although this repository is named "OpenBK7231T_App", it has evolved into a multi
 
 -   [BK7231T](https://www.elektroda.com/rtvforum/topic3951016.html) (eg [WB3S](https://developer.tuya.com/en/docs/iot/wb3s-module-datasheet?id=K9dx20n6hz5n4), [WB2S](https://developer.tuya.com/en/docs/iot/wb2s-module-datasheet?id=K9ghecl7kc479), WB2L
 -   [BK7231N](https://www.elektroda.com/rtvforum/topic3951016.html) (eg [CB2S](https://developer.tuya.com/en/docs/iot/cb2s-module-datasheet?id=Kafgfsa2aaypq), [CB2L](https://developer.tuya.com/en/docs/iot/cb2l-module-datasheet?id=Kai2eku1m3pyl), [WB2L_M1](https://www.elektroda.com/rtvforum/topic3903356.html))
--   [BK7231M](https://www.elektroda.com/rtvforum/topic4058227.html), this is a non-Tuya version of BK7231N with 00000000 keys. Sometimes labelled as Belon BL2028.
+-   [BK7231M](https://www.elektroda.com/rtvforum/topic4058227.html), this is a non-Tuya version of BK7231N with 00000000 keys. Sometimes labelled as Belon BL2028. Exampe [device1](https://www.elektroda.com/rtvforum/topic4056377.html)[device2](https://www.elektroda.com/rtvforum/topic4086986.html)
 -   T34 ([T34 is based on BK7231N](https://developer.tuya.com/en/docs/iot/t34-module-datasheet?id=Ka0l4h5zvg6j8)), see [flashing trick](https://www.elektroda.com/rtvforum/topic4036975.html)
 -   BL2028N ([BL2028N is a Belon version of BK7231N](https://www.elektroda.com/rtvforum/viewtopic.php?p=20262533#20262533))
 -   [XR809](https://www.elektroda.com/rtvforum/topic3806769.html) (eg [XR3](https://developer.tuya.com/en/docs/iot/xr3-datasheet?id=K98s9168qi49g)) (example [device](https://www.elektroda.com/rtvforum/topic4063735.html))
@@ -15,8 +15,11 @@ Although this repository is named "OpenBK7231T_App", it has evolved into a multi
 -   [W600](https://www.elektroda.com/rtvforum/viewtopic.php?p=20252619#20252619) (WinnerMicro chip), W601 ([WIS600, ESP-01W](https://www.elektroda.com/rtvforum/topic3950611.html), [TW-02](https://www.elektroda.com/rtvforum/viewtopic.php?p=20239610#20239610), [TW-03](https://www.elektroda.com/rtvforum/topic3929601.html), etc)
 -   [LN882H](https://www.elektroda.com/rtvforum/topic4027545.html) by Lightning Semi - [datasheet](https://www.elektroda.com/rtvforum/topic4027545.html), see [flashing how-to](https://www.elektroda.com/rtvforum/topic4028087.html), see [sample device teardown and flashing](https://www.elektroda.com/rtvforum/topic4032240.html), see [new flash tool](https://www.elektroda.com/rtvforum/topic4045532.html), see [dev board](https://www.elektroda.com/rtvforum/topic4050274.html)
 -   Windows, via [simulator](https://www.elektroda.com/rtvforum/topic4046056.html)
--   ESP32 (working well, guide to be released soon, [development topic](https://www.elektroda.com/rtvforum/topic4074860.html))
--   RTL8710C/RTL8720C (eg WBR2, WBR3) see [guide](https://www.elektroda.com/rtvforum/topic4097185.html)
+-   ESP32 (working well - guide to be released soon, [development topic](https://www.elektroda.com/rtvforum/topic4074860.html))
+-   RTL8710A (limited testing - work-in-progress) see [development thread](https://www.elektroda.com/rtvforum/viewtopic.php?p=21452754#21452754)
+-   RTL87x0C (AmebaZ2 family (eg [BW15, WBR2, WBR3[(https://www.elektroda.com/rtvforum/topic4104395.html)]) see [guide](https://www.elektroda.com/rtvforum/topic4097185.html)
+-   RTL8710B (AmebaZ family) (eg T102_V1.0, T112_V1.1, WR2, WR3E)
+-   RTL8720D (AmebaD family) (eg BW16, BW16E)
 -   BK7238 (eg XH-CB3S) (see [tutorial for 1$ board](https://www.elektroda.com/rtvforum/topic4106397.html#21440428))
 -   TR6260 (eg [HLK-M20](https://fccid.io/2AD56HLK-M20), XY-WE2S-A V1.1) (see [guide](https://www.elektroda.com/rtvforum/topic4093752.html))
 -   ECR6600 (eg [WG236](https://www.skylabmodule.com/product/wifi6-802-11axbluetooth-ble-5-1-combo-module-wg236), [DSM-036](https://www.dusuniot.com/product-specification/dsm-036-wi-fi6-and-ble-dual-cloud-module])) (see [guide](https://www.elektroda.com/rtvforum/topic4111822.html))
@@ -52,9 +55,9 @@ OpenBeken features:
 -   Online [builds for all platforms](https://github.com/openshwprojects/OpenBK7231T_App/releases) via Github, configurable [per-user build system](https://www.elektroda.com/rtvforum/topic4033833.html), also supports [Docker builds](https://github.com/openshwprojects/OpenBK7231T_App/tree/main/docker)
 -   MQTT compatibility with Home Assistant (with both Yaml generator and [HA Discovery](https://youtu.be/pkcspey25V4))
 -   Support for multiple relays, buttons, leds, inputs and PWMs, everything fully scriptable
--   [Driver system](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/drivers.md) for custom peripherals, including [TuyaMCU](https://www.elektroda.com/rtvforum/topic4038151.html) (see [Dimmer tutorial](https://www.elektroda.com/rtvforum/topic3898502.html)), I2C bus and [BL0942](https://www.elektroda.com/rtvforum/topic3887748.html), BL0937 power metering chips, Motor Driver Bridge.
+-   [Driver system](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs/drivers.md) for custom peripherals, including [TuyaMCU](https://www.elektroda.com/rtvforum/topic4038151.html) (see [Dimmer tutorial](https://www.elektroda.com/rtvforum/topic3898502.html)), I2C bus and [BL0942](https://www.elektroda.com/rtvforum/topic3887748.html), BL0937 power metering chips, Motor Driver Bridge
 -   Hardware and software I2C support. For example AHT30, CHT8305, BME680, TC74 temperature and humidity sensors, MCP23017 port expander, PCF8574T LCD 2x16.
--   Hardware and software SPI support. For example BL0942SPI, AHT30, CHT8305, BME680
+-   Hardware and software SPI support. For example BL0942SPI.
 -   NTP time from network (can be used with [TH06](https://www.elektroda.com/rtvforum/topic3942730.html) and other TuyaMCU devices), can run any script on selected weekday hour:minute:second
 -   Dedicated [TuyaMCU support](https://www.elektroda.com/rtvforum/topic4038151.html) with extra TuyaMCU analyzer tool for decoding new devices ([tutorial here](https://www.elektroda.com/rtvforum/topic3970199.html), code [repository here](https://github.com/openshwprojects/TuyaMCUAnalyzer))
 -   Support for [TuyaMCU Battery Powered devices protocol](https://www.elektroda.com/rtvforum/topic3914412.html) (TuyaMCU enables WiFi module only to report the state, eg. for door sensors, water sensors)
