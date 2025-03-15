@@ -385,6 +385,7 @@
 #define ENABLE_CALENDAR_EVENTS					1
 #define ENABLE_DRIVER_TUYAMCU					1
 #define ENABLE_DRIVER_BL0942					1
+#define ENABLE_DRIVER_BL0937					1
 
 #define OBK_OTA_EXTENSION 						".img"
 
