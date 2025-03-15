@@ -100,7 +100,7 @@ OpenBeken supports [online builds](https://www.elektroda.com/rtvforum/viewtopic.
 
 # Flashing
 
-For BK7231N, BK7231T, BK7231M, BK7238, BL2028N, T34 see [our GUI easy flash tool](https://github.com/openshwprojects/BK7231GUIFlashTool), also see [FLASHING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/FLASHING.md)
+For BK7231N, BK7231T, BK7231M, BK7238, BL2028N, T34 see our [GUI easy flash tool](https://github.com/openshwprojects/BK7231GUIFlashTool), also see [FLASHING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/FLASHING.md)
 
 Repository of flash tools for [all other supported platforms](https://github.com/openshwprojects/FlashTools/tree/main)
 
