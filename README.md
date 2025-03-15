@@ -9,7 +9,7 @@ Although this repository is named "OpenBK7231T_App", it has evolved into a multi
 -   T34 ([T34 is based on BK7231N](https://developer.tuya.com/en/docs/iot/t34-module-datasheet?id=Ka0l4h5zvg6j8)), see [flashing trick](https://www.elektroda.com/rtvforum/topic4036975.html)
 -   BL2028N ([BL2028N is a Belon version of BK7231N](https://www.elektroda.com/rtvforum/viewtopic.php?p=20262533#20262533))
 -   [XR809](https://www.elektroda.com/rtvforum/topic3806769.html) ([XR3](https://developer.tuya.com/en/docs/iot/xr3-datasheet?id=K98s9168qi49g), etc)
--   [BL602](https://www.elektroda.com/rtvforum/topic3889041.html) ([SM-028_V1.3 etc](https://www.elektroda.com/rtvforum/topic3945435.html)), see also [BL602 flash OBK via OTA tutorial](https://www.elektroda.com/rtvforum/topic4050297.html) (Magic Home devices only)
+-   [BL602](https://www.elektroda.com/rtvforum/topic3889041.html) (eg [SM-028_V1.3](https://www.elektroda.com/rtvforum/topic3945435.html), [BW2L](https://www.elektroda.com/rtvforum/topic4111244.html)), see also [BL602 flash OBK via OTA tutorial](https://www.elektroda.com/rtvforum/topic4050297.html) (Magic Home devices only)
 -   [LF686](https://www.leapfive.com/wp-content/uploads/2020/09/LF686-Datasheet.pdf) (flash it [as BL602](https://www.elektroda.com/rtvforum/topic4024917.html))
 -   W800 (W800-C400, WinnerMicro WiFi & Bluetooth), W801
 -   [W600](https://www.elektroda.com/rtvforum/viewtopic.php?p=20252619#20252619) (WinnerMicro chip), W601 ([WIS600, ESP-01W](https://www.elektroda.com/rtvforum/topic3950611.html), [TW-02](https://www.elektroda.com/rtvforum/viewtopic.php?p=20239610#20239610), [TW-03](https://www.elektroda.com/rtvforum/topic3929601.html), etc)
@@ -18,8 +18,8 @@ Although this repository is named "OpenBK7231T_App", it has evolved into a multi
 -   ESP32 (working well, guide to be released soon, [development topic](https://www.elektroda.com/rtvforum/topic4074860.html))
 -   RTL8710C/RTL8720C (eg WBR2, WBR3, WBR3), see [guide](https://www.elektroda.com/rtvforum/topic4097185.html)
 -   BK7238 (eg XH-CB3S) (see [tutorial for 1$ board](https://www.elektroda.com/rtvforum/topic4106397.html#21440428))
--   TR6260 (eg HLK-M20, XY-WE2S-A V1.1) (see [guide](https://www.elektroda.com/rtvforum/topic4093752.html))
--   ECR6600 (eg WG236, [DSM-036](https://www.dusuniot.com/product-specification/dsm-036-wi-fi6-and-ble-dual-cloud-module/])) (see [guide](https://www.elektroda.com/rtvforum/topic4093752.html))
+-   TR6260 (eg [HLK-M20](https://fccid.io/2AD56HLK-M20), XY-WE2S-A V1.1) (see [guide](https://www.elektroda.com/rtvforum/topic4093752.html))
+-   ECR6600 (eg [WG236](https://www.skylabmodule.com/product/wifi6-802-11axbluetooth-ble-5-1-combo-module-wg236), [DSM-036](https://www.dusuniot.com/product-specification/dsm-036-wi-fi6-and-ble-dual-cloud-module])) (see [guide](https://www.elektroda.com/rtvforum/topic4111822.html))
 
 Please use automatically compiled binaries from the Releases tab. To build OpenBeken yourself for any supported platform, fork our version of the submodule SDK first, and then check out this app repository alongside it. Details further down. Alternatively consider using the easier [override method.](https://www.elektroda.com/rtvforum/topic4082682.html)
 
