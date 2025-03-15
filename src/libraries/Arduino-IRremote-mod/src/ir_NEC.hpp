@@ -153,6 +153,19 @@ void IRsend::sendNEC2(uint16_t aAddress, uint8_t aCommand, int_fast8_t aNumberOf
 }
 
 /*
+ * Experimental nec48 protocol based by:
+ * aCommand contains command and E variable
+ */
+void IRsend::sendNEC48(uint16_t aAddress, uint16_t aCommand, int_fast8_t aNumberOfRepeats) {
+
+    uint32_t necRawArray[2];
+    necRawArray[0] = computeNECRawDataAndChecksum(aAddress, aCommand >> 8);
+    uint8_t eValue = aCommand & 0x00FF;
+    necRawArray[1] = (uint32_t) ((~eValue) << 8) | eValue;
+    sendPulseDistanceWidthFromArray(&NECProtocolConstants, (uint32_t *) &necRawArray, NEC_BITS + 16, aNumberOfRepeats);
+}
+
+/*
  * Repeat commands should be sent in a 110 ms raster.
  * There is NO delay after the last sent repeat!
  * @param aSendOnlySpecialNECRepeat if true, send only one repeat frame without leading and trailing space

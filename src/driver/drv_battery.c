@@ -38,6 +38,7 @@ static void Batt_Measure() {
 		//channel_rel = g_cfg.pins.channels[g_pin_rel];
 		//}
 	}
+	// maybe move init code to Batt_Init?
 	HAL_ADC_Init(g_pin_adc);
 	g_battlevel = HAL_ADC_Read(g_pin_adc);
 	if (g_battlevel < 1024) {
@@ -73,8 +74,10 @@ static void Batt_Measure() {
 	if (g_battlevel > 100)
 		g_battlevel = 100;
 
+#if ENABLE_MQTT
 	MQTT_PublishMain_StringInt("voltage", (int)g_battvoltage, 0);
 	MQTT_PublishMain_StringInt("battery", (int)g_battlevel, 0);
+#endif
 	g_lastbattlevel = (int)g_battlevel;
 	g_lastbattvoltage = (int)g_battvoltage;
 	ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : battery voltage : %f and percentage %f%%", g_battvoltage, g_battlevel);

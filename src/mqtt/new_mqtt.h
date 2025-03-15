@@ -1,6 +1,10 @@
 #ifndef __NEW_MQTT_H__
 #define __NEW_MQTT_H__
 
+#include "../obk_config.h"
+
+#if ENABLE_MQTT
+
 #include "../new_common.h"
 
 #include "lwip/sockets.h"
@@ -64,6 +68,7 @@ enum OBK_Publish_Result_e {
 #define OBK_PUBLISH_FLAG_FORCE_REMOVE_GET		4
 // do not add anything to given topic
 #define OBK_PUBLISH_FLAG_RAW_TOPIC_NAME			8
+#define OBK_PUBLISH_FLAG_QOS_ZERO				16
 
 
 #include "new_mqtt_deduper.h"
@@ -170,6 +175,8 @@ typedef struct obk_mqtt_publishReplyPrinter_s {
 
 void MQTT_PublishPrinterContentsToStat(obk_mqtt_publishReplyPrinter_t *printer, const char *statName);
 void MQTT_PublishPrinterContentsToTele(obk_mqtt_publishReplyPrinter_t *printer, const char *statName);
+
+#endif // ENABLE_MQTT
 
 
 #endif // __NEW_MQTT_H__

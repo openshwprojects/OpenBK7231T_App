@@ -59,6 +59,7 @@ set(PROJ_ALL_SRC
     app/src/driver/drv_mcp9808.c
 #    app/src/driver/drv_ntp_events.c
     app/src/driver/drv_ntp.c
+    app/src/driver/drv_openWeatherMap.c
     app/src/driver/drv_pt6523.c
     app/src/driver/drv_pwm_groups.c
     app/src/driver/drv_pwmToggler.c
@@ -96,6 +97,14 @@ set(PROJ_ALL_SRC
     app/src/hal/ln882h/hal_main_ln882h.c
     app/src/hal/ln882h/hal_pins_ln882h.c
     app/src/hal/ln882h/hal_wifi_ln882h.c
+    app/src/hal/generic/hal_adc_generic.c
+    app/src/hal/generic/hal_flashConfig_generic.c
+    app/src/hal/generic/hal_flashVars_generic.c
+    app/src/hal/generic/hal_generic.c
+    app/src/hal/generic/hal_main_generic.c
+    app/src/hal/generic/hal_pins_generic.c
+    app/src/hal/generic/hal_wifi_generic.c
+    app/src/hal/generic/hal_uart_generic.c
     app/src/httpserver/hass.c
     app/src/httpserver/http_basic_auth.c
     app/src/httpserver/http_fns.c

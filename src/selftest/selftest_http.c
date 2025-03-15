@@ -342,6 +342,7 @@ void Test_Http_SingleRelayOnChannel1() {
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 1);
 
+#if ENABLE_MQTT
 	// direct channel access - set to 0, is it 0?
 	SIM_SendFakeMQTTRawChannelSet(1, "0");
 	// In STATUS register, power is encoded as integer...
@@ -387,7 +388,7 @@ void Test_Http_SingleRelayOnChannel1() {
 	// In STATUS register, power is encoded as integer...
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 1);
-
+#endif
 }
 void Test_Http_TwoRelays() {
 

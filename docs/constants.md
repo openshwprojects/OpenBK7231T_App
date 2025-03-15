@@ -22,6 +22,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | $led_saturation |  Current LED saturation value |
 | $led_temperature |  Current LED temperature value |
 | $activeRepeatingEvents |  Current number of active repeating events |
+| $Flash* |  Provides flashvarse channel access, as above. |
 | $voltage |  Current value of voltage from energy metering chip. You can use those variables to make, for example, a change handler that fires when voltage is above 245, etc. |
 | $current |  Current value of current from energy metering chip |
 | $power |  Current value of power from energy metering chip |

@@ -5,6 +5,10 @@
 #ifndef _UTILS_HTTPC_H_
 #define _UTILS_HTTPC_H_
 
+#include "../obk_config.h"
+
+#if ENABLE_SEND_POSTANDGET
+
 #include "utils_net.h"
 
 #ifdef __cplusplus
@@ -164,6 +168,8 @@ void HTTPClient_SetCustomHeader(httpclient_t *client, const char *header);
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* ENABLE_SEND_POSTANDGET */
 
 #endif /* __HTTPCLIENT_H__ */
 

@@ -27,6 +27,13 @@ int NTP_PrintEventList();
 int NTP_GetEventTime(int id);
 int NTP_RemoveClockEvent(int id);
 int NTP_ClearEvents();
+#if ENABLE_NTP_DST
+int Time_IsDST();
+// usually we want to set/correct g_ntpTime inside setDST()	--> call setDST(1)
+// only after setting g_ntpTime freshly from an NTP packet	--> call setDST(0)
+// we must not alter g_ntpTime inside setDST in this case (the old offsets are no longer valid)
+uint32_t setDST(bool setNTP);
+#endif
 
 extern time_t g_ntpTime;
 extern struct SUN_DATA {  /* sunrise / sunset globals */

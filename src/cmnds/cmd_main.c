@@ -6,9 +6,14 @@
 #include "cmd_local.h"
 #include "../driver/drv_ir.h"
 #include "../driver/drv_uart.h"
+#if ENABLE_DRIVER_BL0942
+#include "../driver/drv_bl0942.h"
+#endif
 #include "../driver/drv_public.h"
 #include "../hal/hal_adc.h"
 #include "../hal/hal_flashVars.h"
+#include "../httpserver/http_tcp_server.h"
+#include "../hal/hal_generic.h"
 
 int cmd_uartInitIndex = 0;
 
@@ -21,6 +26,29 @@ int cmd_uartInitIndex = 0;
 #elif PLATFORM_LN882H
 #include <wifi.h>
 #include <power_mgmt/ln_pm.h>
+#elif PLATFORM_ESPIDF
+#include "esp_wifi.h"
+#include "esp_pm.h"
+#include "esp_sleep.h"
+#include "driver/rtc_io.h"
+#include "driver/gpio.h"
+#include "driver/ledc.h"
+#include "esp_check.h"
+#elif PLATFORM_REALTEK 
+#if PLATFORM_RTL8710B
+#include "wlan_intf.h"
+extern WLAN_LOW_PW_MODE rtw_wlan_low_pw_mode;
+extern int rtw_wlan_low_pw_mode4_c1;
+extern int rtw_wlan_low_pw_mode4_c2;
+extern int rtw_reduce_pa_gain;
+extern void rtw_enable_wlan_low_pwr_mode(WLAN_LOW_PW_MODE mode);
+#endif
+#include "wifi_conf.h"
+int g_sleepfactor = 1;
+#elif PLATFORM_BEKEN_NEW
+#include "co_math.h"
+#include "manual_ps_pub.h"
+#include "wlan_ui_pub.h"
 #endif
 
 #define HASH_SIZE 128
@@ -83,7 +111,7 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 #endif
 	
 
-#ifdef PLATFORM_BEKEN
+#if defined(PLATFORM_BEKEN)
 	extern int bk_wlan_power_save_set_level(BK_PS_LEVEL level);
 	if (bOn) {
 		bk_wlan_power_save_set_level(/*PS_DEEP_SLEEP_BIT */  PS_RF_SLEEP_BIT | PS_MCU_SLEEP_BIT);
@@ -111,6 +139,94 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 		g_ln882h_pendingPowerSaveCommand = bOn;
 	}
 	else LN882H_ApplyPowerSave(bOn);
+#elif defined(PLATFORM_ESPIDF)
+	if(Tokenizer_GetArgsCount() > 1)
+	{
+		int tx = Tokenizer_GetArgInteger(1);
+		int8_t maxtx = 0;
+		esp_wifi_get_max_tx_power(&maxtx);
+		if(tx > maxtx / 4)
+		{
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "TX power maximum is: %ddBm, entered: %idBm", maxtx / 4, tx);
+		}
+		else
+		{
+			esp_wifi_set_max_tx_power(tx * 4);
+			ADDLOG_INFO(LOG_FEATURE_CMD, "Setting TX power to: %idBm", tx);
+		}
+	}
+	if(Tokenizer_GetArgsCount() > 3)
+	{
+		int minfreq = Tokenizer_GetArgInteger(2);
+		int maxfreq = Tokenizer_GetArgInteger(3);
+		esp_pm_config_t pm_config = {
+				.max_freq_mhz = maxfreq,
+				.min_freq_mhz = minfreq,
+		};
+		esp_pm_configure(&pm_config);
+		ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave freq scaling, min: %iMhz, max: %iMhz", minfreq, maxfreq);
+	}
+	else if(bOn >= 2)
+	{
+		ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave max_modem");
+		esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
+	}
+	else if(bOn == 1)
+	{
+		ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave min_modem");
+		esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
+	}
+	else
+	{
+		ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave disabled");
+		esp_wifi_set_ps(WIFI_PS_NONE);
+	}
+#elif PLATFORM_REALTEK
+	if(!wifi_is_up(RTW_STA_INTERFACE))
+	{
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "Wifi is not on or in AP mode, failed setting powersave!");
+		return CMD_RES_ERROR;
+	}
+	if(bOn)
+	{
+#if PLATFORM_RTL8710B
+		if(bOn >= 2)
+		{
+			rtw_wlan_low_pw_mode = PW_MODE_2 | PW_MODE_3 | PW_MODE_4 | PW_MODE_6;
+			rtw_wlan_low_pw_mode |= bOn >= 3 ? PW_MODE_1 : PW_MODE_5;
+			rtw_wlan_low_pw_mode4_c1 = 24;
+			rtw_wlan_low_pw_mode4_c2 = 16;
+			rtw_reduce_pa_gain = bOn == 2 ? 1 : 2; //0:not reduce, 1:reduce 2, 2:reduce 3
+			rtw_enable_wlan_low_pwr_mode(rtw_wlan_low_pw_mode);
+			g_sleepfactor = bOn >= 3 ? 2 : 1;
+		}
+		else if(g_powersave >= 2)
+		{
+			rtw_wlan_low_pw_mode = PW_MODE_NONE;
+			rtw_wlan_low_pw_mode4_c1 = 0;
+			rtw_wlan_low_pw_mode4_c2 = 0;
+			rtw_reduce_pa_gain = 0;
+			rtw_enable_wlan_low_pwr_mode(rtw_wlan_low_pw_mode);
+			g_sleepfactor = 1;
+		}
+#endif
+		wifi_enable_powersave();
+	}
+	else
+	{
+#if PLATFORM_RTL8710B
+		if(g_powersave >= 2)
+		{
+			rtw_wlan_low_pw_mode = PW_MODE_NONE;
+			rtw_wlan_low_pw_mode4_c1 = 0;
+			rtw_wlan_low_pw_mode4_c2 = 0;
+			rtw_reduce_pa_gain = 0;
+			rtw_enable_wlan_low_pwr_mode(rtw_wlan_low_pw_mode);
+		}
+		g_sleepfactor = 1;
+#endif
+		wifi_disable_powersave();
+	}
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave is not implemented on this platform");
 #endif    
@@ -130,7 +246,7 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 	}
 
 	timeMS = Tokenizer_GetArgInteger(0);
-#ifdef PLATFORM_BEKEN
+#if defined(PLATFORM_BEKEN) && !defined(PLATFORM_BEKEN_NEW)
 	// It requires a define in SDK file:
 	// OpenBK7231T\platforms\bk7231t\bk7231t_os\beken378\func\include\manual_ps_pub.h
 	// define there:
@@ -138,13 +254,25 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 	extern void bk_wlan_ps_wakeup_with_timer(UINT32 sleep_time);
 	bk_wlan_ps_wakeup_with_timer(timeMS);
 	return CMD_RES_OK;
+#elif defined(PLATFORM_BEKEN_NEW)
+	PS_DEEP_CTRL_PARAM params;
+	params.sleep_mode = MANUAL_MODE_IDLE;
+	params.wake_up_way = PS_DEEP_WAKEUP_RTC;
+	params.sleep_time = timeMS;
+	bk_enter_deep_sleep_mode(&params);
+	return CMD_RES_OK;
 #elif defined(PLATFORM_W600)
-
+#elif defined(PLATFORM_ESPIDF)
+	esp_sleep_enable_timer_wakeup(timeMS * 1000000);
+#if CONFIG_IDF_TARGET_ESP32
+	rtc_gpio_isolate(GPIO_NUM_12);
+#endif
+	esp_deep_sleep_start();
 #endif
 
 	return CMD_RES_OK;
 }
-
+#if ENABLE_HA_DISCOVERY
 static commandResult_t CMD_ScheduleHADiscovery(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int delay;
 
@@ -159,6 +287,7 @@ static commandResult_t CMD_ScheduleHADiscovery(const void* context, const char* 
 
 	return CMD_RES_OK;
 }
+#endif
 static commandResult_t CMD_SetFlag(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int flag, val;
 
@@ -180,8 +309,8 @@ static commandResult_t CMD_Flags(const void* context, const char* cmd, const cha
 	union {
 		long long newValue;
 		struct {
-			int ints[2];
-			int dummy[2]; // just to be safe
+			uint32_t ints[2];
+			uint32_t dummy[2]; // just to be safe
 		};
 	} u;
 	// TODO: check on other platforms, on Beken it's 8, 64 bit
@@ -192,11 +321,12 @@ static commandResult_t CMD_Flags(const void* context, const char* cmd, const cha
 			//ADDLOG_INFO(LOG_FEATURE_CMD, "Argument/sscanf error!");
 			return CMD_RES_BAD_ARGUMENT;
 		}
-	}
-	else {
+		//ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Flags: 0-31: %X 32-63: %2 = %X", u.ints[0], u.ints[1]);
+		u.newValue = (uint64_t)strtoull(args, NULL, 10);
+		//ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Flags (new): 0-31: %X 32-63: %2 = %X", u.ints[0], u.ints[1]);
+	} else {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-
 	CFG_SetFlags(u.ints[0], u.ints[1]);
 	ADDLOG_INFO(LOG_FEATURE_CMD, "New flags set!");
 
@@ -238,7 +368,8 @@ static commandResult_t CMD_ClearAll(const void* context, const char* cmd, const 
 	CHANNEL_ClearAllChannels();
 	CMD_ClearAllHandlers(0, 0, 0, 0);
 	RepeatingEvents_Cmd_ClearRepeatingEvents(0, 0, 0, 0);
-#if defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_BEKEN) || defined(PLATFORM_LN882H)
+#if defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_BEKEN) || defined(PLATFORM_LN882H) \
+ || defined(PLATFORM_ESPIDF) || defined(PLATFORM_TR6260) || defined(PLATFORM_REALTEK)
 	CMD_resetSVM(0, 0, 0, 0);
 #endif
 
@@ -290,6 +421,7 @@ static commandResult_t CMD_StartupCommand(const void* context, const char* cmd, 
 	// so we know arguments count in Tokenizer. 'cmd' argument is
 	// only for warning display
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Cmd is %s",g_cfg.initCommandLine);
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	cmdToSet = Tokenizer_GetArg(0);
@@ -400,8 +532,8 @@ static commandResult_t CMD_SafeMode(const void* context, const char* cmd, const 
 
 void CMD_UARTConsole_Init() {
 #if PLATFORM_BEKEN
-	UART_InitUART(115200, 0);
-	cmd_uartInitIndex = g_uart_init_counter;
+	UART_InitUART(115200, 0, false);
+	cmd_uartInitIndex = get_g_uart_init_counter;
 	UART_InitReceiveRingBuffer(512);
 #endif
 }
@@ -444,7 +576,7 @@ void CMD_UARTConsole_Run() {
 void CMD_RunUartCmndIfRequired() {
 #if PLATFORM_BEKEN
 	if (CFG_HasFlag(OBK_FLAG_CMD_ACCEPT_UART_COMMANDS)) {
-		if (cmd_uartInitIndex && cmd_uartInitIndex == g_uart_init_counter) {
+		if (cmd_uartInitIndex && cmd_uartInitIndex == get_g_uart_init_counter) {
 			CMD_UARTConsole_Run();
 		}
 	}
@@ -619,6 +751,23 @@ commandResult_t CMD_PWMFrequency(const void* context, const char* cmd, const cha
 	}
 	
 	g_pwmFrequency = Tokenizer_GetArgInteger(0);
+
+#ifdef PLATFORM_ESPIDF
+	esp_err_t err = ledc_set_freq(LEDC_LOW_SPEED_MODE, LEDC_TIMER_0, (uint32_t)g_pwmFrequency);
+	if(err == ESP_ERR_INVALID_ARG)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "ledc_set_freq: invalid arg");
+		return CMD_RES_BAD_ARGUMENT;
+	}
+	else if(err == ESP_FAIL)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "ledc_set_freq: Can not find a proper pre-divider number base on the given frequency and the current duty_resolution");
+		return CMD_RES_ERROR;
+	}
+#endif
+	// reapply PWM settings
+	PIN_SetupPins();
+
 	return CMD_RES_OK;
 }
 commandResult_t CMD_IndexRefreshInterval(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -656,6 +805,37 @@ commandResult_t CMD_DeepSleep_SetEdge(const void* context, const char* cmd, cons
 
 	return CMD_RES_OK;
 }
+
+#if MQTT_USE_TLS
+static commandResult_t CMD_WebServer(const void* context, const char* cmd, const char* args, int cmdFlags) {	
+	int arg_count;
+	Tokenizer_TokenizeString(args, 0);
+	arg_count = Tokenizer_GetArgsCount();
+	if (arg_count == 0)
+	{
+		ADDLOG_INFO(LOG_FEATURE_CMD, "WebServer:%d", !CFG_GetDisableWebServer());
+		return CMD_RES_OK;
+	} 
+	if (arg_count == 1) {
+		if (strcmp(Tokenizer_GetArg(0) , "0") == 0) {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "Stop WebServer");
+			CFG_SetDisableWebServer(true);
+			CFG_Save_IfThereArePendingChanges();
+			HTTPServer_Stop();
+			return CMD_RES_OK;
+		}
+		else if (strcmp(Tokenizer_GetArg(0), "1") == 0) {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "Enable WebServer and restart");
+			CFG_SetDisableWebServer(false);
+			CFG_Save_IfThereArePendingChanges();
+			HAL_RebootModule();
+			return CMD_RES_OK;
+		}
+	} 
+	ADDLOG_ERROR(LOG_FEATURE_CMD, "Invalid Argument");
+	return CMD_RES_BAD_ARGUMENT;
+}
+#endif
 
 void CMD_Init_Early() {
 	//cmddetail:{"name":"alias","args":"[Alias][Command with spaces]",
@@ -713,11 +893,13 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_HTTPOTA","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("ota_http", CMD_HTTPOTA, NULL);
+#if ENABLE_HA_DISCOVERY
 	//cmddetail:{"name":"scheduleHADiscovery","args":"[Seconds]",
 	//cmddetail:"descr":"This will schedule HA discovery, the discovery will happen with given number of seconds, but timer only counts when MQTT is connected. It will not work without MQTT online, so you must set MQTT credentials first.",
 	//cmddetail:"fn":"CMD_ScheduleHADiscovery","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("scheduleHADiscovery", CMD_ScheduleHADiscovery, NULL);
+#endif
 	//cmddetail:{"name":"flags","args":"[IntegerValue]",
 	//cmddetail:"descr":"Sets the device flags",
 	//cmddetail:"fn":"CMD_Flags","file":"cmnds/cmd_main.c","requires":"",
@@ -779,14 +961,20 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PWMFrequency", CMD_PWMFrequency, NULL);
 
-	//cmddetail:{"name":"IndexRefreshInterval","args":"CMD_IndexRefreshInterval",
+	//cmddetail:{"name":"IndexRefreshInterval","args":"[Interval]",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("IndexRefreshInterval", CMD_IndexRefreshInterval, NULL);
+#if MQTT_USE_TLS
+	//cmddetail:{"name":"WebServer","args":"[0 - Stop / 1 - Start]",
+	//cmddetail:"descr":"Setting state of WebServer",
+	//cmddetail:"fn":"CMD_WebServer","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("WebServer", CMD_WebServer, NULL);
+#endif
 	
-	
-#if (defined WINDOWS) || (defined PLATFORM_BEKEN) || (defined PLATFORM_BL602) || (defined PLATFORM_LN882H)
+#if ENABLE_OBK_SCRIPTING
 	CMD_InitScripting();
 #endif
 	if (!bSafeMode) {
@@ -800,11 +988,19 @@ void CMD_Init_Early() {
 
 
 void CMD_Init_Delayed() {
+#if ENABLE_TCP_COMMANDLINE
 	if (CFG_HasFlag(OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER)) {
 		CMD_StartTCPCommandLine();
 	}
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602)
+#endif
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) \
+ || defined(PLATFORM_REALTEK)
 	UART_AddCommands();
+#endif
+#if ENABLE_BL_TWIN
+#if ENABLE_DRIVER_BL0942
+	BL0942_AddCommands();
+#endif
 #endif
 }
 

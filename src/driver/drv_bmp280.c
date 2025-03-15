@@ -10,6 +10,8 @@
 #include "../httpserver/new_http.h"
 #include "../hal/hal_pins.h"
 
+#ifdef ENABLE_DRIVER_BMP280
+
 static int32_t g_temperature;
 static uint32_t g_pressure, g_humidity;
 static char g_targetChannelTemperature = -1, g_targetChannelPressure = -1, g_targetChannelHumidity = -1;
@@ -35,6 +37,7 @@ void BMP280_Stop(void) {		//manufacturer ID
 	Soft_I2C_Stop(&g_softI2C);
 }
 
+// NOTE: code in this header will set isHumidityAvail
 #include "BMP280.h"
 
 // startDriver BMP280 8 14 1 2 3 236
@@ -42,8 +45,8 @@ void BMP280_Stop(void) {		//manufacturer ID
 // Adr8bit 236 for 0x76, 238 for 0x77
 void BMP280_Init() {
 
-	g_softI2C.pin_clk = Tokenizer_GetArgIntegerDefault(1, 8);
-	g_softI2C.pin_data = Tokenizer_GetArgIntegerDefault(2, 14);
+	g_softI2C.pin_clk = Tokenizer_GetPin(1, 8);
+	g_softI2C.pin_data = Tokenizer_GetPin(2, 14);
 	g_targetChannelTemperature = Tokenizer_GetArgIntegerDefault(3, -1);
 	g_targetChannelPressure = Tokenizer_GetArgIntegerDefault(4, -1);
 	g_targetChannelHumidity = Tokenizer_GetArgIntegerDefault(5, -1);
@@ -65,6 +68,7 @@ void BMP280_OnEverySecond() {
 	BMP280_readTemperature(&g_temperature);  // read temperature
 	BMP280_readPressure(&g_pressure);        // read pressure
 
+	// check variable set in BMP280.h so we know if there is humiditygit
 	if(isHumidityAvail)
 	{
 		BME280_readHumidity(&g_humidity);
@@ -97,3 +101,4 @@ void BMP280_AppendInformationToHTTPIndexPage(http_request_t* request)
 	hprintf255(request, "</h2>");
 }
 
+#endif

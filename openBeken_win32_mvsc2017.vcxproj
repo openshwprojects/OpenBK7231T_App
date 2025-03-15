@@ -177,6 +177,7 @@
     <ClCompile Include="src\driver\drv_mcp9808.c" />
     <ClCompile Include="src\driver\drv_ntp.c" />
     <ClCompile Include="src\driver\drv_ntp_events.c" />
+    <ClCompile Include="src\driver\drv_openWeatherMap.c" />
     <ClCompile Include="src\driver\drv_pixelAnim.c" />
     <ClCompile Include="src\driver\drv_pt6523.c" />
     <ClCompile Include="src\driver\drv_pwmToggler.c" />
@@ -194,6 +195,7 @@
     <ClCompile Include="src\driver\drv_spiLED.c" />
     <ClCompile Include="src\driver\drv_ssdp.c" />
     <ClCompile Include="src\driver\drv_tasmotaDeviceGroups.c" />
+    <ClCompile Include="src\driver\drv_test.c" />
     <ClCompile Include="src\driver\drv_test_charts.c" />
     <ClCompile Include="src\driver\drv_test_drivers.c" />
     <ClCompile Include="src\driver\drv_textScroller.c" />
@@ -205,6 +207,7 @@
     <ClCompile Include="src\driver\drv_wemo.c" />
     <ClCompile Include="src\driver\drv_uart.c" />
     <ClCompile Include="src\driver\drv_ucs1912.c" />
+    <ClCompile Include="src\driver\drv_widget.c" />
     <ClCompile Include="src\hal\bk7231\hal_adc_bk7231.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -292,6 +295,7 @@
     <ClCompile Include="src\hal\win32\hal_main_win32.c" />
     <ClCompile Include="src\hal\win32\hal_pins_win32.c" />
     <ClCompile Include="src\hal\win32\hal_wifi_win32.c" />
+    <ClCompile Include="src\hal\win32\hal_uart_win32.c" />
     <ClCompile Include="src\hal\xr809\hal_flashConfig_xr809.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -702,6 +706,7 @@
     <ClCompile Include="src\selftest\selftest_chargingDriver.c" />
     <ClCompile Include="src\selftest\selftest_clockEvents.c" />
     <ClCompile Include="src\selftest\selftest_cmd_startup.c" />
+    <ClCompile Include="src\selftest\selftest_demo_conditionalRelay.c" />
     <ClCompile Include="src\selftest\selftest_demo_signAndValue.c" />
     <ClCompile Include="src\selftest\selftest_doorSensor.c" />
     <ClCompile Include="src\selftest\selftest_flashSearch.c" />
@@ -742,6 +747,7 @@
     <ClCompile Include="src\selftest\selftest_mqtt.c" />
     <ClCompile Include="src\selftest\selftest_multiplePinsOnChannel.c" />
     <ClCompile Include="src\selftest\selftest_ntp.c" />
+    <ClCompile Include="src\selftest\selftest_ntp_DST.c" />
     <ClCompile Include="src\selftest\selftest_repeatingEvents.c" />
     <ClCompile Include="src\selftest\selftest_role_toggleAll.c" />
     <ClCompile Include="src\selftest\selftest_script.c" />

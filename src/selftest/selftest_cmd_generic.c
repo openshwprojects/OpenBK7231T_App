@@ -98,8 +98,56 @@ void Test_Events() {
 	SELFTEST_ASSERT(EVENT_ParseEventName(" ") == CMD_EVENT_NONE);
 }
 
+void Test_UART() {
+	int USED_BUFFER_SIZE = 123;
+	UART_InitReceiveRingBuffer(USED_BUFFER_SIZE);
+	byte next = 0;
+	for (int i = 0; i < 512; i++) {
+		SELFTEST_ASSERT(UART_GetDataSize() == 0);
+		UART_AppendByteToReceiveRingBuffer(next);
+		SELFTEST_ASSERT(UART_GetDataSize() == 1);
+		byte check = UART_GetByte(0);
+		SELFTEST_ASSERT(check == next);
+		UART_ConsumeBytes(1);
+		SELFTEST_ASSERT(UART_GetDataSize() == 0);
+		next++;
+	}
+	for (int i = 0; i < 66; i++) {
+		byte nn;
+		nn = next;
+		for (int j = 0; j < 10; j++) {
+			SELFTEST_ASSERT(UART_GetDataSize() == j);
+			UART_AppendByteToReceiveRingBuffer(nn);
+			SELFTEST_ASSERT(UART_GetDataSize() == j+1);
+			nn++;
+		}
+		nn = next;
+		for (int j = 0; j < 10; j++) {
+			byte check = UART_GetByte(0);
+			SELFTEST_ASSERT(check == nn);
+			UART_ConsumeBytes(1);
+			nn++;
+		}
+		SELFTEST_ASSERT(UART_GetDataSize() == 0);
+		next = nn;
+	}
+	for (int i = 0; i < USED_BUFFER_SIZE * 2; i++) {
+		UART_AppendByteToReceiveRingBuffer(next);
+
+		int reportedSize = (i+1);
+		// detect overflow
+		if (reportedSize > (USED_BUFFER_SIZE-1)) {
+			reportedSize = (USED_BUFFER_SIZE-1);
+		}
+		int realSize = UART_GetDataSize();
+		// is data size correctly reported?
+		SELFTEST_ASSERT(realSize == reportedSize);
+		next++;
+	}
+}
 
 void Test_Commands_Generic() {
+	Test_UART();
 	Test_Events();
 
 	// reset whole device
@@ -134,6 +182,17 @@ void Test_Commands_Generic() {
 	CMD_ExecuteCommand("SetChannel 10 2", 0);
 	CMD_ExecuteCommand("Choice $CH10+1 \"SetChannel 12 222\" \"SetChannel 12 333\" \"SetChannel 12 444\" \"SetChannel 12 555\" \"SetChannel 12 666\"", 0);
 	SELFTEST_ASSERT_CHANNEL(12, 555);
+
+
+
+	CMD_ExecuteCommand("Flags 123455", 0);
+	SELFTEST_ASSERT(CFG_GetFlags()== 123455);
+	SELFTEST_ASSERT(CFG_GetFlags64() == 123455);
+	CMD_ExecuteCommand("Flags 444", 0);
+	SELFTEST_ASSERT(CFG_GetFlags() == 444);
+	SELFTEST_ASSERT(CFG_GetFlags64() == 444);
+	//CMD_ExecuteCommand("Flags 8589934592", 0);
+	//SELFTEST_ASSERT(CFG_GetFlags64() == 8589934592);
 }
 
 

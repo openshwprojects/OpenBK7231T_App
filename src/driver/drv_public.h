@@ -69,10 +69,10 @@ void DRV_DGR_OnLedFinalColorsChange(byte rgbcw[5]);
 // OBK_POWER etc
 float DRV_GetReading(energySensor_t type);
 energySensorNames_t* DRV_GetEnergySensorNames(energySensor_t type);
+energySensorNames_t* DRV_GetEnergySensorNamesEx(int asensdatasetix, energySensor_t type);
 bool DRV_IsMeasuringPower();
 bool DRV_IsMeasuringBattery();
 bool DRV_IsSensor();
-void BL09XX_SaveEmeteringStatistics();
 
 // TuyaMCU exports for LED
 void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMode, float brightnessRange01, float temperatureRange01);

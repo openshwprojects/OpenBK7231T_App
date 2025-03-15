@@ -1,9 +1,9 @@
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
 #include "../../beken378/func/user_driver/armino/spi/spi.h"
 #else
 // spi_config_t and its member types are copied from BK7321N SPI implementation.
 #include "drv_spi.h"
-#if PLATFORM_BK7231T
+#if PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 #include "../../../../platforms/bk7231t/bk7231t_os/beken378/common/typedef.h"
 #include "../../../../platforms/bk7231t/bk7231t_os/beken378/driver/entry/arch.h"
 #include "../../../../platforms/bk7231t/bk7231t_os/beken378/driver/include/drv_model_pub.h"
@@ -17,9 +17,9 @@
 #include "../logging/logging.h"
 
 int SPI_DriverInit(void) {
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
     return bk_spi_driver_init();
-#elif PLATFORM_BK7231T
+#elif PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 	// Is called in dd.c
 	// spi_init();
 	return 0;
@@ -30,9 +30,9 @@ int SPI_DriverInit(void) {
 }
 
 int SPI_DriverDeinit(void) {
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
     return bk_spi_driver_deinit();
-#elif PLATFORM_BK7231T
+#elif PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 	// Is called in dd.c
 	// spi_exit();
 	return 0;
@@ -43,9 +43,9 @@ int SPI_DriverDeinit(void) {
 }
 
 int SPI_Init(const spi_config_t *config) {
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
 	return bk_spi_init(0, config);
-#elif PLATFORM_BK7231T
+#elif PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 	int err = 0;
 
 	uint32_t param = PWD_SPI_CLK_BIT;
@@ -100,9 +100,9 @@ int SPI_Init(const spi_config_t *config) {
 }
 
 int SPI_Deinit(void) {
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
 	return bk_spi_deinit(0);
-#elif PLATFORM_BK7231T
+#elif PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 	int err = 0;
 
 	uint8_t enable = 0;
@@ -121,7 +121,7 @@ int SPI_Deinit(void) {
 #endif
 }
 
-#if PLATFORM_BK7231T
+#if PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 static inline int Spi_wait_for_ready() {
 	uint8_t busy = 0;
 	int err = 0;
@@ -135,9 +135,9 @@ static inline int Spi_wait_for_ready() {
 #endif
 
 int SPI_WriteBytes(const void *data, uint32_t size) {
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
     return bk_spi_write_bytes(0, data, size);
-#elif PLATFORM_BK7231T
+#elif PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 	GLOBAL_INT_DECLARATION();
 	GLOBAL_INT_DISABLE();
 		
@@ -166,9 +166,9 @@ int SPI_WriteBytes(const void *data, uint32_t size) {
 }
 
 int SPI_ReadBytes(void *data, uint32_t size) {
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
 	return bk_spi_read_bytes(0, data, size);
-#elif PLATFORM_BK7231T
+#elif PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 	GLOBAL_INT_DECLARATION();
 	GLOBAL_INT_DISABLE();
 
@@ -198,9 +198,9 @@ int SPI_ReadBytes(void *data, uint32_t size) {
 
 int SPI_Transmit(const void *txData, uint32_t txSize, void *rxData,
         uint32_t rxSize) {
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
 	return bk_spi_transmit(0, txData, txSize, rxData, rxSize);
-#elif PLATFORM_BK7231T
+#elif PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 	int err = 0;
 
     if (txSize && txData)

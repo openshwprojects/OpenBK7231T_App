@@ -560,6 +560,13 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_DS1820_IO,
+	//iodetail:{"name":"PWM_ScriptOnly",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"",
+	//iodetail:"enum":"PWM_ScriptOnly",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_PWM_ScriptOnly,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
@@ -898,7 +905,7 @@ typedef enum channelType_e {
 	ChType_PowerFactor_div100,
 	//chandetail:{"name":"Pressure_div100",
 	//chandetail:"title":"TODO",
-	//chandetail:"descr":".",
+	//chandetail:"descr":"Pressure in hPa, but divided by 100",
 	//chandetail:"enum":"Pressure_div100",
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
@@ -912,7 +919,7 @@ typedef enum channelType_e {
 	ChType_Temperature_div100,
 	//chandetail:{"name":"LeakageCurrent_div1000",
 	//chandetail:"title":"TODO",
-	//chandetail:"descr":".",
+	//chandetail:"descr":"Leakage current in mA",
 	//chandetail:"enum":"ChType_LeakageCurrent_div1000",
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
@@ -980,6 +987,13 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Motion_n,
+	//chandetail:{"name":"Frequency_div1000",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI",
+	//chandetail:"enum":"ChType_Frequency_div1000",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Frequency_div1000,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
@@ -1000,6 +1014,34 @@ typedef enum channelType_e {
 #define PLATFORM_GPIO_MAX 44
 #elif PLATFORM_LN882H
 #define PLATFORM_GPIO_MAX 26
+#elif PLATFORM_ESPIDF
+#ifdef CONFIG_IDF_TARGET_ESP32C3
+#define PLATFORM_GPIO_MAX 22
+#elif CONFIG_IDF_TARGET_ESP32C2
+#define PLATFORM_GPIO_MAX 21
+#elif CONFIG_IDF_TARGET_ESP32S2
+#define PLATFORM_GPIO_MAX 47
+#elif CONFIG_IDF_TARGET_ESP32S3
+#define PLATFORM_GPIO_MAX 49
+#elif CONFIG_IDF_TARGET_ESP32C6
+#define PLATFORM_GPIO_MAX 31
+#elif CONFIG_IDF_TARGET_ESP32
+#define PLATFORM_GPIO_MAX 40
+#else
+#define PLATFORM_GPIO_MAX 0
+#endif
+#elif PLATFORM_TR6260
+#define PLATFORM_GPIO_MAX 25
+#elif PLATFORM_RTL87X0C
+#define PLATFORM_GPIO_MAX 24
+#elif PLATFORM_RTL8710B
+#define PLATFORM_GPIO_MAX 17
+#elif PLATFORM_RTL8710A
+#define PLATFORM_GPIO_MAX 20
+#elif PLATFORM_RTL8720D
+#define PLATFORM_GPIO_MAX 64
+#elif PLATFORM_ECR6600
+#define PLATFORM_GPIO_MAX 27
 #else
 #define PLATFORM_GPIO_MAX 29
 #endif
@@ -1040,6 +1082,40 @@ typedef struct pinsState_s {
 	// buttons, so button can toggle one relay on single click
 	// and other relay on double click
 	byte channels2[48];
+	// This single field above, is indexed by CHANNEL INDEX
+	// (not by pin index)
+	byte channelTypes[CHANNEL_MAX];
+} pinsState_t;
+
+#elif PLATFORM_ESPIDF
+
+typedef struct pinsState_s
+{
+	// All above values are indexed by physical pin index
+	// (so we assume we have maximum of 32 pins)
+	byte roles[50];
+	byte channels[50];
+	// extra channels array - this is needed for
+	// buttons, so button can toggle one relay on single click
+	// and other relay on double click
+	byte channels2[50];
+	// This single field above, is indexed by CHANNEL INDEX
+	// (not by pin index)
+	byte channelTypes[CHANNEL_MAX];
+} pinsState_t;
+
+#elif PLATFORM_RTL8720D
+
+typedef struct pinsState_s
+{
+	// All above values are indexed by physical pin index
+	// (so we assume we have maximum of 32 pins)
+	byte roles[64];
+	byte channels[64];
+	// extra channels array - this is needed for
+	// buttons, so button can toggle one relay on single click
+	// and other relay on double click
+	byte channels2[64];
 	// This single field above, is indexed by CHANNEL INDEX
 	// (not by pin index)
 	byte channelTypes[CHANNEL_MAX];
@@ -1200,9 +1276,9 @@ typedef struct mainConfig_s {
 	// 0x4
 	int version;
 	// 0x08
-	int genericFlags;
+	uint32_t genericFlags;
 	// 0x0C
-	int genericFlags2;
+	uint32_t genericFlags2;
 	// 0x10
 	unsigned short changeCounter;
 	unsigned short otaCounter;
@@ -1271,6 +1347,10 @@ typedef struct mainConfig_s {
 	int loggerFlags;
 #if PLATFORM_W800
 	byte unusedSectorAB[51];
+#elif PLATFORM_ESPIDF
+	byte unusedSectorAB[43];
+#elif PLATFORM_RTL8720D
+	byte unusedSectorAB;
 #else    
 	byte unusedSectorAB[99];
 #endif    
@@ -1306,9 +1386,17 @@ typedef struct mainConfig_s {
 	// offset 0x00000C84 (3204 decimal)
 	char webPassword[33];
 	// offset 0x00000CA5 (3237 decimal)
-	char unused[347];
+	byte mqtt_use_tls;
+	// offset 0x00000CA6 (3238 decimal)
+	byte mqtt_verify_tls_cert;
+	// offset 0x00000CA7 (3239 decimal)
+	char mqtt_cert_file[20];
+	// offset 0x00000CBB (3259 decimal)
+	byte disable_web_server;
+	// offset 0x00000CBC (3260 decimal)
+	char unused[324];
 #endif
-} mainConfig_t; 
+} mainConfig_t;
 
 // one sector is 4096 so it we still have some expand possibility
 #define MAGIC_CONFIG_SIZE_V3		2016
@@ -1350,7 +1438,9 @@ bool CHANNEL_Check(int ch);
 void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex));
 void CHANNEL_ClearAllChannels();
 // CHANNEL_SET_FLAG_*
+void CHANNEL_Set_Ex(int ch, int iVal, int iFlags, int ausemovingaverage);
 void CHANNEL_Set(int ch, int iVal, int iFlags);
+void CHANNEL_SetSmart(int ch, float fVal, int iFlags);
 void CHANNEL_Set_FloatPWM(int ch, float fVal, int iFlags);
 void CHANNEL_Add(int ch, int iVal);
 void CHANNEL_AddClamped(int ch, int iVal, int min, int max, int bWrapInsteadOfClamp);
@@ -1363,6 +1453,7 @@ bool CHANNEL_IsPowerRelayChannel(int ch);
 // See: enum channelType_t
 void CHANNEL_SetType(int ch, int type);
 int CHANNEL_GetType(int ch);
+void CHANNEL_SetFirstChannelByTypeEx(int requiredType, int newVal, int ausemovingaverage);
 void CHANNEL_SetFirstChannelByType(int requiredType, int newVal);
 // CHANNEL_SET_FLAG_*
 void CHANNEL_SetAll(int iVal, int iFlags);
@@ -1398,5 +1489,10 @@ const char* PIN_RoleToString(int role);
 int PIN_IOR_NofChan(int test);
 
 extern const char* g_channelTypeNames[];
+
+#if ALLOW_SSID2
+int FV_GetStartupSSID_StoredValue(int adefault);
+void FV_UpdateStartupSSIDIfChanged_StoredValue(int assidindex);
+#endif
 
 #endif

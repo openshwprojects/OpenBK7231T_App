@@ -33,17 +33,17 @@ static wmPin_t g_pins[] = {
     {"PA13",WM_IO_PA_13, -1},
     {"PA14",WM_IO_PA_14, -1},
     {"PA15",WM_IO_PA_15, -1},    
-	{"PB0",WM_IO_PB_00, 0},
-	{"PB1",WM_IO_PB_01, 1},
-	{"PB2",WM_IO_PB_02, 2},
+	{"PB0",WM_IO_PB_00, 0}, // 16
+	{"PB1",WM_IO_PB_01, 1}, // 17
+	{"PB2",WM_IO_PB_02, 2}, // 18
 	{"PB3",WM_IO_PB_03, 3},
 
-	{"PB4",WM_IO_PB_04, -1},
+	{"PB4",WM_IO_PB_04, -1}, // 20
 	{"PB5",WM_IO_PB_05, -1},
-	{"PB6",WM_IO_PB_06, -1},
+	{"PB6",WM_IO_PB_06, -1}, // 22
 	{"PB7",WM_IO_PB_07, -1},
-	{"PB8",WM_IO_PB_08, -1},
-	{"PB9",WM_IO_PB_09, -1},
+	{"PB8",WM_IO_PB_08, -1}, // 24
+	{"PB9",WM_IO_PB_09, -1}, // 25
 	{"PB10",WM_IO_PB_10, -1},
 	{"PB11",WM_IO_PB_11, -1},
     {"PB12",WM_IO_PB_12, -1},
@@ -93,6 +93,18 @@ static wmPin_t g_pins[] = {
 #endif
 
 static int g_numPins = sizeof(g_pins) / sizeof(g_pins[0]);
+
+int HAL_PIN_Find(const char *name) {
+	if (isdigit(name[0])) {
+		return atoi(name);
+	}
+	for (int i = 0; i < g_numPins; i++) {
+		if (!stricmp(g_pins[i].name, name)) {
+			return i;
+		}
+	}
+	return -1;
+}
 
 static int IsPinIndexOk(int index) {
 	if (index < 0)
@@ -200,7 +212,7 @@ void HAL_PIN_PWM_Stop(int index) {
 	tls_pwm_stop(channel);
 }
 
-void HAL_PIN_PWM_Start(int index) {
+void HAL_PIN_PWM_Start(int index, int freq) {
 	int ret;
 	int channel;
 	if (IsPinIndexOk(index) == 0)

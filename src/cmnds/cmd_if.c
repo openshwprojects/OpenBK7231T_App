@@ -7,6 +7,7 @@
 #include "../driver/drv_public.h"
 #include "../driver/drv_battery.h"
 #include "../driver/drv_ntp.h"
+#include "../hal/hal_flashVars.h"
 #include <ctype.h> // isspace
 
 /*
@@ -179,11 +180,16 @@ float getChannelValue(const char *s) {
 	int idx = atoi(s + 3);
 	return CHANNEL_Get(idx);
 }
+float getFlashValue(const char *s) {
+	int idx = atoi(s + 5);
+	return HAL_FlashVars_GetChannelValue(idx);
+}
 float getFlagValue(const char *s) {
 	int idx = atoi(s + 5);
 	return CFG_HasFlag(idx);
 }
 
+#if ENABLE_LED_BASIC
 float getLedDimmer(const char *s) {
 	return LED_GetDimmer();
 }
@@ -215,24 +221,28 @@ float getLedSaturation(const char *s) {
 float getLedTemperature(const char *s) {
 	return LED_GetTemperature();
 }
+#endif
 
 float getActiveRepeatingEvents(const char *s) {
 	return RepeatingEvents_GetActiveCount();
 }
+
+#ifdef ENABLE_DRIVER_BATTERY
+float getBatteryVoltage(const char* s)
+{
+	return Battery_lastreading(OBK_BATT_VOLTAGE);
+}
+float getBatteryLevel(const char* s)
+{
+	return Battery_lastreading(OBK_BATT_LEVEL);
+}
+#endif
 
 #ifdef ENABLE_DRIVER_BL0937
 
 float getVoltage(const char *s) {
 	return DRV_GetReading(OBK_VOLTAGE);
 }
-#ifdef ENABLE_DRIVER_BATTERY
-float getBatteryVoltage(const char *s) {
-	return Battery_lastreading(OBK_BATT_VOLTAGE);
-}
-float getBatteryLevel(const char *s) {
-	return Battery_lastreading(OBK_BATT_LEVEL);
-}
-#endif
 
 float getCurrent(const char *s) {
 	return DRV_GetReading(OBK_CURRENT);
@@ -249,12 +259,6 @@ float getYesterday(const char *s) {
 }
 float getToday(const char *s) {
 	return DRV_GetReading(OBK_CONSUMPTION_TODAY);
-}
-
-
-
-float getNTPOn(const char *s) {
-	return NTP_IsTimeSynced();
 }
 
 #endif
@@ -293,6 +297,21 @@ float getMonth(const char *s) {
 float getMDay(const char *s) {
 	return NTP_GetMDay();
 }
+
+#ifdef ENABLE_NTP
+
+float getNTPOn(const char* s)
+{
+	return NTP_IsTimeSynced();
+}
+
+#endif
+
+#if ENABLE_NTP_DST
+float isDST(const char *s){
+	return Time_IsDST();
+}
+#endif
 
 #if ENABLE_NTP_SUNRISE_SUNSET
 
@@ -352,6 +371,7 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Provides flag access, as above.",
 	//cnstdetail:"requires":""}
 	{"$FLAG*", &getFlagValue},
+#if ENABLE_LED_BASIC
 	//cnstdetail:{"name":"$led_dimmer",
 	//cnstdetail:"title":"$led_dimmer",
 	//cnstdetail:"descr":"Current value of LED dimmer, 0-100 range",
@@ -392,11 +412,17 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current LED temperature value",
 	//cnstdetail:"requires":""}
 	{"$led_temperature", &getLedTemperature},
+#endif
 	//cnstdetail:{"name":"$activeRepeatingEvents",
 	//cnstdetail:"title":"$activeRepeatingEvents",
 	//cnstdetail:"descr":"Current number of active repeating events",
 	//cnstdetail:"requires":""}
 	{"$activeRepeatingEvents", &getActiveRepeatingEvents},
+	//cnstdetail:{"name":"$Flash*",
+	//cnstdetail:"title":"$Flash*",
+	//cnstdetail:"descr":"Provides flashvarse channel access, as above.",
+	//cnstdetail:"requires":""}
+	{"$Flash*", &getFlashValue},
 #ifdef ENABLE_DRIVER_BL0937
 	//cnstdetail:{"name":"$voltage",
 	//cnstdetail:"title":"$voltage",
@@ -455,6 +481,7 @@ const constant_t g_constants[] = {
 	////cnstdetail:"descr":"Current Year from NTP",
 	////cnstdetail:"requires":""}
 	{ "$year", &getYear },
+#ifdef ENABLE_DRIVER_BL0937
 	////cnstdetail:{"name":"$yesterday",
 	////cnstdetail:"title":"$yesterday",
 	////cnstdetail:"descr":"",
@@ -465,6 +492,14 @@ const constant_t g_constants[] = {
 	////cnstdetail:"descr":"",
 	////cnstdetail:"requires":""}
 	{ "$today", &getToday },
+#endif
+#if ENABLE_NTP_DST
+	////cnstdetail:{"name":"$isDST",
+	////cnstdetail:"title":"$isDST",
+	////cnstdetail:"descr":"",
+	////cnstdetail:"requires":""}
+	{ "$isDST", &isDST },
+#endif
 #if ENABLE_NTP_SUNRISE_SUNSET
 	////cnstdetail:{"name":"$sunrise",
 	////cnstdetail:"title":"$sunrise",
@@ -522,11 +557,13 @@ const constant_t g_constants[] = {
 	//cnstdetail:"requires":""}
 	{ "$rebootReason", &getRebootReason },
 #endif
+#ifndef NO_CHIP_TEMPERATURE
 	//cnstdetail:{"name":"$intTemp",
 	//cnstdetail:"title":"$intTemp",
 	//cnstdetail:"descr":"Internal temperature (of WiFi module sensor)",
 	//cnstdetail:"requires":""}
 	{ "$intTemp", &getInternalTemperature },
+#endif
 };
 
 static int g_totalConstants = sizeof(g_constants) / sizeof(g_constants[0]);
@@ -678,41 +715,51 @@ const char *CMD_ExpandConstantString(const char *s, const char *stop, char *out,
 		SIM_GenerateRepeatingEventsDesc(out, outLen);
 		return ret;
 	}
+	ret = strCompareBound(s, "$simPowerState", stop, false);
+	if (ret) {
+		SIM_GeneratePowerStateDesc(out, outLen);
+		return ret;
+	}
 	return false;
 }
 #endif
 
-const char *CMD_ExpandConstantToString(const char *constant, char *out, char *stop) {
-int outLen;
-float value;
-int valueInt;
-const char *after;
-float delta;
+const char* CMD_ExpandConstantToString(const char* constant, char* out, char* stop)
+{
+	int outLen;
+	float value = 0;
+	int valueInt;
+	const char* after;
+	float delta;
 
-outLen = (stop - out) - 1;
+	outLen = (stop - out) - 1;
 
-after = CMD_ExpandConstant(constant, 0, &value);
+	after = CMD_ExpandConstant(constant, 0, &value);
 #if WINDOWS
-if (after == 0) {
-	after = CMD_ExpandConstantString(constant, 0, out, outLen);
+	if(after == 0)
+	{
+		after = CMD_ExpandConstantString(constant, 0, out, outLen);
+		return after;
+	}
+#endif
+	if(after == 0)
+		return 0;
+
+	valueInt = (int)value;
+	delta = valueInt - value;
+	if(delta < 0)
+		delta = -delta;
+	if(delta < 0.001f)
+	{
+		snprintf(out, outLen, "%i", valueInt);
+	}
+	else
+	{
+		snprintf(out, outLen, "%f", value);
+	}
 	return after;
 }
-#endif
-if (after == 0)
-return 0;
 
-valueInt = (int)value;
-delta = valueInt - value;
-if (delta < 0)
-	delta = -delta;
-if (delta < 0.001f) {
-	snprintf(out, outLen, "%i", valueInt);
-}
-else {
-	snprintf(out, outLen, "%f", value);
-}
-return after;
-}
 void CMD_ExpandConstantsWithinString(const char *in, char *out, int outLen) {
 	char *outStop;
 	const char *tmp;
