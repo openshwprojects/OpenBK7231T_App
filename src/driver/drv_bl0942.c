@@ -25,9 +25,9 @@ static unsigned short bl0942_baudRate = 4800;
 static unsigned short bl0942_opts= 0;
 #define BL0942_OPTBIT0_UART1 1
 #define BL0942_OPTBIT1_UART2 2
+#endif
 #define BL0942_DEVICE_INDEX_0 0
 #define BL0942_DEVICE_INDEX_1 1
-#endif
 
 #define BL0942_UART_RECEIVE_BUFFER_SIZE 256
 #define BL0942_UART_ADDR 0 // 0 - 3
@@ -317,7 +317,9 @@ static int SPI_WriteReg(uint8_t reg, uint32_t val) {
 
 static void BL0942_Init(void) {
   PrevCfCnt[BL0942_DEVICE_INDEX_0] = CF_CNT_INVALID;
+#if ENABLE_BL_TWIN
   PrevCfCnt[BL0942_DEVICE_INDEX_1] = CF_CNT_INVALID;
+#endif
 
     BL_Shared_Init();
 
