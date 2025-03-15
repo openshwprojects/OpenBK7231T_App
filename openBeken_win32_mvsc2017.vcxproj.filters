@@ -274,6 +274,7 @@
     <ClCompile Include="src\selftest\selftest_mqtt.c" />
     <ClCompile Include="src\selftest\selftest_multiplePinsOnChannel.c" />
     <ClCompile Include="src\selftest\selftest_ntp.c" />
+    <ClCompile Include="src\selftest\selftest_ntp_DST.c" />
     <ClCompile Include="src\selftest\selftest_repeatingEvents.c" />
     <ClCompile Include="src\selftest\selftest_role_toggleAll.c" />
     <ClCompile Include="src\selftest\selftest_script.c" />
@@ -342,6 +343,11 @@
     <ClCompile Include="src\driver\drv_test_charts.c" />
     <ClCompile Include="src\sim\Controller_Switch.cpp" />
     <ClCompile Include="src\sim\Controller_DHT11.cpp" />
+    <ClCompile Include="src\driver\drv_widget.c" />
+    <ClCompile Include="src\driver\drv_openWeatherMap.c" />
+    <ClCompile Include="src\selftest\selftest_demo_conditionalRelay.c" />
+    <ClCompile Include="src\hal\win32\hal_uart_win32.c" />
+    <ClCompile Include="src\driver\drv_test.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\base64\base64.h" />

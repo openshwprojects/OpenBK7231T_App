@@ -27,8 +27,11 @@
 #include "../../beken378/driver/gpio/gpio.h"
 #include "../../beken378/driver/pwm/pwm.h"
 #if PLATFORM_BK7231N
+#if PLATFORM_BEKEN_NEW
+#include "pwm_bk7231n.h"
+#else
 #include "../../beken378/driver/pwm/pwm_new.h"
-
+#endif
 
 
 #define REG_PWM_BASE_ADDR                   	(0x00802B00UL)
@@ -231,7 +234,7 @@ static commandResult_t CMD_IR2_SendIR2(const void* context, const char* cmd, con
 	ADDLOG_INFO(LOG_FEATURE_IR, "Queue size %i",(stop - times));
 
 
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
 	bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off, 0, 0);
 #else
 	bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off);
@@ -245,6 +248,7 @@ static commandResult_t CMD_IR2_SendIR2(const void* context, const char* cmd, con
 #endif
 	return CMD_RES_OK;
 }
+// SetupIR2 [myPeriodUs] [dutyOnFrac] [dutyOffFrac] [txPin]
 static commandResult_t CMD_IR2_SetupIR2(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, 0);
@@ -252,7 +256,6 @@ static commandResult_t CMD_IR2_SetupIR2(const void* context, const char* cmd, co
 	myPeriodUs = Tokenizer_GetArgIntegerDefault(0, 50);
 	float duty_on_frac = Tokenizer_GetArgFloatDefault(1, 0.5f);
 	float duty_off_frac = Tokenizer_GetArgFloatDefault(2, 0.0f);
-
 	txpin = Tokenizer_GetArgIntegerDefault(3, 26);
 
 #if DEBUG_WAVE_WITH_GPIO
@@ -276,7 +279,7 @@ static commandResult_t CMD_IR2_SetupIR2(const void* context, const char* cmd, co
 		}
 #endif
 #ifndef WINDOWS
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
 		// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
 		bk_pwm_initialize((bk_pwm_t)pwmIndex, period, period/2, 0, 0);
 #else
@@ -331,8 +334,8 @@ static commandResult_t CMD_IR2_SetupIR2(const void* context, const char* cmd, co
 
 
 void DRV_IR2_Init() {
-	//cmddetail:{"name":"SetupIR2","args":"CMD_IR2_SetupIR2",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"SetupIR2","args":"[myPeriodUs] [dutyOnFrac] [dutyOffFrac] [txPin]",
+	//cmddetail:"descr":"Init IR2 pin and interrupt",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_ir2.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetupIR2", CMD_IR2_SetupIR2, NULL);

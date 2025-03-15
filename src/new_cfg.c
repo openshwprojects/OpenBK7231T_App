@@ -147,6 +147,12 @@ void CFG_SetDefaultConfig() {
 	strcpy_safe(g_cfg.mqtt_group, "xr809s", sizeof(g_cfg.mqtt_group));
 #elif PLATFORM_BL602
 	strcpy_safe(g_cfg.mqtt_group, "bl602s", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_ESPIDF
+	strcpy_safe(g_cfg.mqtt_group, "esp", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_TR6260
+	strcpy_safe(g_cfg.mqtt_group, "tr6260", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_RTL87X0C
+	strcpy_safe(g_cfg.mqtt_group, "rtl87x0c", sizeof(g_cfg.mqtt_group));
 #elif WINDOWS
 	strcpy_safe(g_cfg.mqtt_group, "bekens", sizeof(g_cfg.mqtt_group));
 #else
@@ -171,6 +177,13 @@ void CFG_SetDefaultConfig() {
 #endif
 	
 	CFG_SetDefaultLEDCorrectionTable();
+
+#if MQTT_USE_TLS
+	CFG_SetMQTTUseTls(0);
+	CFG_SetMQTTVerifyTlsCert(0);
+	CFG_SetMQTTCertFile("");
+	CFG_SetDisableWebServer(0);
+#endif
 
 	g_cfg_pendingChanges++;
 }
@@ -424,7 +437,9 @@ void CFG_SetMQTTClientId(const char *s) {
 	if(strcpy_safe_checkForChanges(g_cfg.mqtt_clientId, s,sizeof(g_cfg.mqtt_clientId))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
+#if ENABLE_MQTT
 		g_mqtt_bBaseTopicDirty++;
+#endif
 	}
 }
 void CFG_SetMQTTGroupTopic(const char *s) {
@@ -432,7 +447,9 @@ void CFG_SetMQTTGroupTopic(const char *s) {
 	if (strcpy_safe_checkForChanges(g_cfg.mqtt_group, s, sizeof(g_cfg.mqtt_group))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
+#if ENABLE_MQTT
 		g_mqtt_bBaseTopicDirty++;
+#endif
 	}
 }
 void CFG_SetMQTTUserName(const char *s) {
@@ -500,7 +517,7 @@ int CFG_DeviceGroups_GetSendFlags() {
 int CFG_DeviceGroups_GetRecvFlags() {
 	return g_cfg.dgr_recvFlags;
 }
-void CFG_SetFlags(int first4bytes, int second4bytes) {
+void CFG_SetFlags(uint32_t first4bytes, uint32_t second4bytes) {
 	if (g_cfg.genericFlags != first4bytes || g_cfg.genericFlags2 != second4bytes) {
 		g_cfg.genericFlags = first4bytes;
 		g_cfg.genericFlags2 = second4bytes;
@@ -527,12 +544,16 @@ void CFG_SetFlag(int flag, bool bValue) {
 		*cfgValue = nf;
 		g_cfg_pendingChanges++;
 		// this will start only if it wasnt running
+#if ENABLE_TCP_COMMANDLINE
 		if(bValue && flag == OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER) {
 			CMD_StartTCPCommandLine();
 		}
+#endif
+#if ENABLE_LED_BASIC
 		if (bValue && flag == OBK_FLAG_LED_REMEMBERLASTSTATE) {
 			LED_SaveStateToFlashVarsNow();
 		}
+#endif
 	}
 }
 void CFG_SetLoggerFlag(int flag, bool bValue) {
@@ -557,9 +578,10 @@ bool CFG_HasLoggerFlag(int flag) {
 int CFG_GetFlags() {
 	return g_cfg.genericFlags;
 }
-unsigned long CFG_GetFlags64() {
-	unsigned long* pAllGenericFlags = (unsigned long*)&g_cfg.genericFlags;
-	return *pAllGenericFlags;
+uint64_t CFG_GetFlags64() {
+	//unsigned long long* pAllGenericFlags = (unsigned long*)&g_cfg.genericFlags;
+	//*pAllGenericFlags;
+	return (uint64_t)g_cfg.genericFlags | (uint64_t)g_cfg.genericFlags2 << 32;
 }
 bool CFG_HasFlag(int flag) {
 	if (flag >= 32) {
@@ -703,6 +725,52 @@ uint32_t CFG_GetLFS_Size() {
 		size = LFS_BLOCKS_DEFAULT_LEN;
 	}
 	return size;
+}
+#endif
+
+#if MQTT_USE_TLS
+byte CFG_GetMQTTUseTls() {
+	return g_cfg.mqtt_use_tls;
+}
+byte CFG_GetMQTTVerifyTlsCert() {
+	return g_cfg.mqtt_verify_tls_cert;
+}
+const char* CFG_GetMQTTCertFile() {
+	return g_cfg.mqtt_cert_file;
+}
+void CFG_SetMQTTUseTls(byte value) {
+	// is there a change?
+	if (g_cfg.mqtt_use_tls != value) {
+		g_cfg.mqtt_use_tls = value;
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_SetMQTTVerifyTlsCert(byte value) {
+	// is there a change?
+	if (g_cfg.mqtt_verify_tls_cert != value) {
+		g_cfg.mqtt_verify_tls_cert = value;
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_SetMQTTCertFile(const char* s) {
+	// this will return non-zero if there were any changes
+	if (strcpy_safe_checkForChanges(g_cfg.mqtt_cert_file, s, sizeof(g_cfg.mqtt_cert_file))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+byte CFG_GetDisableWebServer() {
+	return g_cfg.disable_web_server;
+}
+void CFG_SetDisableWebServer(byte value) {
+	// is there a change?
+	if (g_cfg.disable_web_server != value) {
+		g_cfg.disable_web_server = value;
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
 }
 #endif
 

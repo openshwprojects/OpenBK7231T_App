@@ -126,6 +126,8 @@ enum EventCode {
 	CMD_EVENT_CUSTOM_DOWN,
 	CMD_EVENT_CUSTOM_UP,
 
+	CMD_EVENT_MISSEDHEARTBEATS,
+
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
 };
@@ -167,7 +169,8 @@ int Tokenizer_GetArgsCount();
 bool Tokenizer_CheckArgsCountAndPrintWarning(const char* cmdStr, int reqCount);
 const char* Tokenizer_GetArg(int i);
 const char* Tokenizer_GetArgFrom(int i);
-int Tokenizer_GetArgInteger(int i);
+int Tokenizer_GetArgInteger(int i); 
+int Tokenizer_GetPin(int i, int def);
 int Tokenizer_GetArgIntegerDefault(int i, int def);
 float Tokenizer_GetArgFloatDefault(int i, float def);
 bool Tokenizer_IsArgInteger(int i);
@@ -178,6 +181,7 @@ void Tokenizer_TokenizeString(const char* s, int flags);
 void RepeatingEvents_Init();
 void RepeatingEvents_RunUpdate(float deltaTimeSeconds);
 void SIM_GenerateRepeatingEventsDesc(char *o, int outLen);
+void SIM_GeneratePowerStateDesc(char *o, int outLen);
 // cmd_eventHandlers.c
 void EventHandlers_Init();
 // This is useful to fire an event when a certain UART string command is received.
@@ -195,6 +199,7 @@ int EventHandlers_GetActiveCount();
 // cmd_tasmota.c
 int taslike_commands_init();
 // cmd_newLEDDriver.c
+#if ENABLE_LED_BASIC
 void NewLED_InitCommands();
 void NewLED_RestoreSavedStateIfNeeded();
 float LED_GetDimmer();
@@ -208,10 +213,12 @@ void LED_SetTemperature(int tmpInteger, bool bApply);
 float LED_GetTemperature0to1Range();
 void LED_SetTemperature0to1Range(float f);
 void LED_SetDimmer(int iVal);
+void LED_SetDimmerIfChanged(int iVal);
 void LED_SetDimmerForDisplayOnly(int iVal);
 commandResult_t LED_SetBaseColor(const void* context, const char* cmd, const char* args, int bAll);
 void LED_SetFinalCW(byte c, byte w);
 void LED_SetFinalRGB(byte r, byte g, byte b);
+void LED_SetFinalRGBW(byte r, byte g, byte b, byte w);
 void LED_SetFinalRGBCW(byte* rgbcw);
 void LED_GetFinalChannels100(byte* rgbcw);
 void LED_GetTasmotaHSV(int* hsv);
@@ -248,6 +255,8 @@ OBK_Publish_Result LED_SendCurrentLightModeParam_TempOrColor();
 void LED_ResetGlobalVariablesToDefaults();
 extern float led_temperature_min;
 extern float led_temperature_max;
+#endif
+
 // cmd_test.c
 int CMD_InitTestCommands();
 // cmd_channels.c
@@ -263,6 +272,7 @@ const char* CMD_GetResultString(commandResult_t r);
 
 void SVM_RunThreads(int deltaMS);
 void CMD_InitScripting();
+void SVM_RunStartupCommandAsScript();
 byte* LFS_ReadFile(const char* fname);
 int LFS_WriteFile(const char *fname, const byte *data, int len, bool bAppend);
 

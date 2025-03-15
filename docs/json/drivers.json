@@ -36,6 +36,18 @@
     "requires": ""
   },
   {
+    "name": "OpenWeatherMap",
+    "title": "TODO",
+    "descr": "OpenWeatherMap integration allows you to fetch current weather for your lat/long. You can later extract temperatura, humidity and pressure data and display it on main page.",
+    "requires": ""
+  },
+  {
+    "name": "Widget",
+    "title": "TODO",
+    "descr": "Widget driver allows you to create custom HTML snippets that are displayed on main OBK page. Snippets are loaded from LittleFS file system and can use OBK REST API.",
+    "requires": ""
+  },
+  {
     "name": "TestCharts",
     "title": "TODO",
     "descr": "Development only driver - a sample of chart generation with chart.js.",
@@ -80,7 +92,7 @@
   {
     "name": "RN8209",
     "title": "TODO",
-    "descr": "Bqqqqqqqqqq ",
+    "descr": "WIP driver for power-metering chip RN8209 found in one of Zmai-90 versions.",
     "requires": ""
   },
   {
@@ -92,7 +104,7 @@
   {
     "name": "PWMG",
     "title": "TODO",
-    "descr": " ",
+    "descr": "PWM Groups (synchronized PWMs) driver for OpenBeken.",
     "requires": ""
   },
   {
@@ -134,7 +146,7 @@
   {
     "name": "TextScroller",
     "title": "TODO",
-    "descr": "BQQQK",
+    "descr": "Wrapper utility that can do text scrolling animation on implemented displays (WIP)",
     "requires": ""
   },
   {
@@ -278,7 +290,7 @@
   {
     "name": "ADCSmoother",
     "title": "TODO",
-    "descr": "qq",
+    "descr": "ADCSmoother is used for 3-way stairs switches synchronized via extra wire.",
     "requires": ""
   },
   {
