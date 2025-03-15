@@ -17,7 +17,7 @@ Although this repository is named "OpenBK7231T_App", it has evolved into a multi
 -   Windows, via [simulator](https://www.elektroda.com/rtvforum/topic4046056.html)
 -   ESP32 (working well - guide to be released soon, [development topic](https://www.elektroda.com/rtvforum/topic4074860.html))
 -   RTL8710A (limited testing - work-in-progress) see [development thread](https://www.elektroda.com/rtvforum/viewtopic.php?p=21452754#21452754)
--   RTL87x0C (AmebaZ2 family (eg BW15, [WBR2, WBR3](https://www.elektroda.com/rtvforum/topic4104395.html) (see [guide](https://www.elektroda.com/rtvforum/topic4097185.html))
+-   RTL87x0C (AmebaZ2 family (eg BW15, [WBR2, WBR3](https://www.elektroda.com/rtvforum/topic4104395.html)) (see [guide](https://www.elektroda.com/rtvforum/topic4097185.html))
 -   RTL8710B (AmebaZ family) (eg T102_V1.0, T112_V1.1, WR2, WR3E)
 -   RTL8720D (AmebaD family) (eg BW16, BW16E)
 -   BK7238 (eg XH-CB3S) (see [tutorial for 1$ board](https://www.elektroda.com/rtvforum/topic4106397.html#21440428))
