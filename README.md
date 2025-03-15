@@ -16,9 +16,10 @@ Although this repository is named "OpenBK7231T_App", it has evolved into a multi
 -   [LN882H](https://www.elektroda.com/rtvforum/topic4027545.html) by Lightning Semi - [datasheet](https://www.elektroda.com/rtvforum/topic4027545.html), see [flashing how-to](https://www.elektroda.com/rtvforum/topic4028087.html), see [sample device teardown and flashing](https://www.elektroda.com/rtvforum/topic4032240.html), see [new flash tool](https://www.elektroda.com/rtvforum/topic4045532.html), see [dev board](https://www.elektroda.com/rtvforum/topic4050274.html)
 -   Windows, via [simulator](https://www.elektroda.com/rtvforum/topic4046056.html)
 -   ESP32 (working well, guide to be released soon, [development topic](https://www.elektroda.com/rtvforum/topic4074860.html))
--   RTL8710C/RTL8720C (WBR2, WBR3, etc), see [guide](https://www.elektroda.com/rtvforum/topic4097185.html)
--   BK7238 (see [tutorial for 1$ board](https://www.elektroda.com/rtvforum/topic4106397.html#21440428))
--   TR6260 (see [guide](https://www.elektroda.com/rtvforum/topic4093752.html))
+-   RTL8710C/RTL8720C (eg WBR2, WBR3, WBR3), see [guide](https://www.elektroda.com/rtvforum/topic4097185.html)
+-   BK7238 (eg XH-CB3S) (see [tutorial for 1$ board](https://www.elektroda.com/rtvforum/topic4106397.html#21440428))
+-   TR6260 (eg HLK-M20, XY-WE2S-A V1.1) (see [guide](https://www.elektroda.com/rtvforum/topic4093752.html))
+-   ECR6600 (eg WG236, (DSM-036[https://www.dusuniot.com/product-specification/dsm-036-wi-fi6-and-ble-dual-cloud-module/])) (see [guide](https://www.elektroda.com/rtvforum/topic4093752.html))
 
 Please use automatically compiled binaries from the Releases tab. To build OpenBeken yourself for any supported platform, fork our version of the submodule SDK first, and then check out this app repository alongside it. Details further down. Alternatively consider using the easier [override method.](https://www.elektroda.com/rtvforum/topic4082682.html)
 
