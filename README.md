@@ -5,10 +5,10 @@ Although this repository is named "OpenBK7231T_App", it has evolved into a multi
 
 -   [BK7231T](https://www.elektroda.com/rtvforum/topic3951016.html) (eg [WB3S](https://developer.tuya.com/en/docs/iot/wb3s-module-datasheet?id=K9dx20n6hz5n4), [WB2S](https://developer.tuya.com/en/docs/iot/wb2s-module-datasheet?id=K9ghecl7kc479), WB2L
 -   [BK7231N](https://www.elektroda.com/rtvforum/topic3951016.html) (eg [CB2S](https://developer.tuya.com/en/docs/iot/cb2s-module-datasheet?id=Kafgfsa2aaypq), [CB2L](https://developer.tuya.com/en/docs/iot/cb2l-module-datasheet?id=Kai2eku1m3pyl), [WB2L_M1](https://www.elektroda.com/rtvforum/topic3903356.html))
--   [BK7231M](https://www.elektroda.com/rtvforum/topic4058227.html), this is a non-Tuya version of BK7231N with 00000000 keys. Sometimes labelled as Belon BL2028. Exampe [device1](https://www.elektroda.com/rtvforum/topic4056377.html)[device2](https://www.elektroda.com/rtvforum/topic4086986.html)
+-   [BK7231M](https://www.elektroda.com/rtvforum/topic4058227.html), this is a non-Tuya version of BK7231N with 00000000 keys. Sometimes labelled as Belon BL2028. [Example1](https://www.elektroda.com/rtvforum/topic4056377.html) [Example2](https://www.elektroda.com/rtvforum/topic4086986.html)
 -   T34 ([T34 is based on BK7231N](https://developer.tuya.com/en/docs/iot/t34-module-datasheet?id=Ka0l4h5zvg6j8)), see [flashing trick](https://www.elektroda.com/rtvforum/topic4036975.html)
 -   BL2028N ([BL2028N is a Belon version of BK7231N](https://www.elektroda.com/rtvforum/viewtopic.php?p=20262533#20262533))
--   [XR809](https://www.elektroda.com/rtvforum/topic3806769.html) (eg [XR3](https://developer.tuya.com/en/docs/iot/xr3-datasheet?id=K98s9168qi49g)) (example [device](https://www.elektroda.com/rtvforum/topic4063735.html))
+-   [XR809](https://www.elektroda.com/rtvforum/topic3806769.html) (eg [XR3](https://developer.tuya.com/en/docs/iot/xr3-datasheet?id=K98s9168qi49g)) ([Example](https://www.elektroda.com/rtvforum/topic4063735.html))
 -   [BL602](https://www.elektroda.com/rtvforum/topic3889041.html) (eg [SM-028_V1.3](https://www.elektroda.com/rtvforum/topic3945435.html), [BW2L](https://www.elektroda.com/rtvforum/topic4111244.html)), see also [BL602 flash OBK via OTA tutorial](https://www.elektroda.com/rtvforum/topic4050297.html) (Magic Home devices only)
 -   [LF686](https://www.leapfive.com/wp-content/uploads/2020/09/LF686-Datasheet.pdf) (flash it [as BL602](https://www.elektroda.com/rtvforum/topic4024917.html))
 -   W800 (W800-C400, WinnerMicro WiFi & Bluetooth), W801
