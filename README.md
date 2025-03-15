@@ -87,14 +87,16 @@ OpenBeken supports [online builds](https://www.elektroda.com/rtvforum/viewtopic.
 # Developer guides
 
 -   online builds system [guide](https://www.elektroda.com/rtvforum/viewtopic.php?p=20946719#20946719)
--   how to [create custom obk driver](https://www.elektroda.com/rtvforum/topic4056286.html)
+-   how to [create custom OBK driver](https://www.elektroda.com/rtvforum/topic4056286.html)
 -   how to [analyze unknown protocol with Salae logic analyzer](https://www.elektroda.com/rtvforum/topic4035491.html)
--   obk [simulator short presentation](https://www.elektroda.com/rtvforum/topic4046056.html)
+-   OBK [simulator short presentation](https://www.elektroda.com/rtvforum/topic4046056.html)
 -   how to [make changes to SDK during (automated) build process](https://www.elektroda.com/rtvforum/topic4081556.html)
 
 # Flashing
 
-See [our GUI easy flash tool](https://github.com/openshwprojects/BK7231GUIFlashTool), also see [FLASHING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/FLASHING.md)
+For BK7231N, BK7231T, BK7231M, BL2028N, T34 see [our GUI easy flash tool](https://github.com/openshwprojects/BK7231GUIFlashTool), also see [FLASHING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/FLASHING.md)
+
+Repository of flash tools for [all other supported platforms](https://github.com/openshwprojects/FlashTools/tree/main)
 
 # [Docs - MQTT topics, Console Commands, Flags, Constants, Pin Roles, Channel Types, FAQ, autoexec.bat examples](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs)
 
