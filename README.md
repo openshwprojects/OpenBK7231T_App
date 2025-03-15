@@ -56,7 +56,7 @@ OpenBeken features:
 -   Hardware and software SPI, support for SPI BL0942, etc
 -   NTP time from network (can be used with [TH06](https://www.elektroda.com/rtvforum/topic3942730.html) and other TuyaMCU devices), can run any script on selected weekday hour:minute:second
 -   Dedicated [TuyaMCU support](https://www.elektroda.com/rtvforum/topic4038151.html) with extra TuyaMCU analyzer tool for decoding new devices ([tutorial here](https://www.elektroda.com/rtvforum/topic3970199.html), code [repository here](https://github.com/openshwprojects/TuyaMCUAnalyzer))
--   support for [TuyaMCU Battery Powered devices protocol](https://www.elektroda.com/rtvforum/topic3914412.html) (TuyaMCU enables WiFi module only to report the state, eg. for door sensors, water sensors)
+-   Support for [TuyaMCU Battery Powered devices protocol](https://www.elektroda.com/rtvforum/topic3914412.html) (TuyaMCU enables WiFi module only to report the state, eg. for door sensors, water sensors)
 -   [RGBCW LED lighting control](https://www.youtube.com/watch?v=YQdR7r6lXRY) compatible with Home Assistant (including PWM LEDs, and SM2135, BP5758, [SM15155](https://www.elektroda.com/rtvforum/topic4060227.html) etc )
 -   LittleFS integration for scripts and large files (you can [write scripts there](https://www.youtube.com/watch?v=kXi8S12tmC8), you can host a page there with [REST interface control](https://www.elektroda.com/rtvforum/topic3971355.html) of device)
 -   Command line system for starting and configuring drivers, for controlling channels, etc
@@ -68,12 +68,12 @@ OpenBeken features:
 -   Can be scripted to even [work with shutters](https://www.elektroda.com/rtvforum/topic3972935.html), see also [second shutters script](https://www.elektroda.com/rtvforum/viewtopic.php?p=20910126#20910126)
 -   Password-protected Web security [see tutorial](https://www.elektroda.com/rtvforum/topic4021160.html)
 -   Advanced deep sleep with GPIO/timer wakeup and [hybrid power save systems](https://youtu.be/eupL16eB7BA), fully scriptable, can be configured to last longer than Tuya
--   Supports automatic GPIO setup with [Tuya GPIO extraction](https://www.youtube.com/watch?v=WunlqIMAdgw), [cloudcutter templates](https://www.elektroda.com/rtvforum/topic3973669.html), can also import/export [OpenBeken templates](https://openbekeniot.github.io/webapp/devicesList.html), you can also use [GPIODoctor to find out quickly GPIO roles](https://www.elektroda.com/rtvforum/topic3976371.html)
+-   Supports automatic GPIO setup with [Tuya GPIO extraction](https://www.youtube.com/watch?v=WunlqIMAdgw), [cloudcutter templates](https://www.elektroda.com/rtvforum/topic3973669.html), can also import/export [OpenBeken templates](https://openbekeniot.github.io/webapp/devicesList.html), you can also use [GPIODoctor to find out GPIO roles quickly](https://www.elektroda.com/rtvforum/topic3976371.html)
 -   Advanced and custom drivers like [synchronized PWM groups with configurable dead time](https://www.elektroda.com/rtvforum/topic4025665.html)
 -   WS2812B support, see [scripting tutorial](https://www.elektroda.com/rtvforum/topic4036716.html)
 -   LFS and REST API allows you to create and host a custom HTML+CSS+JS page on device with a custom GUI/display of channels/TuyaMCU dpIDs, see [tutorial](https://www.elektroda.com/rtvforum/topic3971355.html) and see [sample page](https://www.elektroda.com/rtvforum/viewtopic.php?p=20932186#20932186) , and see [final version of custom TOMPD-63-WIFI page](https://www.elektroda.com/rtvforum/topic4040354.html)
 -   can control 'smart lab organiser drawers' with a custom Drawers driver, see [full presentation](https://www.elektroda.com/rtvforum/topic4054134.html)
--   DHT11 (and family) sensors support, BMP280 support, initial DS18B20 support
+-   Sensors: DHT11, DHT12, DHT21, DHT22, AHT10, AHT2X, AHT3X, SHT3X, CHT83XX, DS18B20, BMP280, BME280, BME680
 -   Can draw customizable charts directly on device, see [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html)
 -   Can run on Windows with device simulator/schematic drawer, see [tutorial](https://www.elektroda.com/rtvforum/topic4046056.html)
 -   and much more
