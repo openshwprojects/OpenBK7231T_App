@@ -19,7 +19,7 @@ Although this repository is named "OpenBK7231T_App", it has evolved into a multi
 -   RTL8710C/RTL8720C (eg WBR2, WBR3, WBR3), see [guide](https://www.elektroda.com/rtvforum/topic4097185.html)
 -   BK7238 (eg XH-CB3S) (see [tutorial for 1$ board](https://www.elektroda.com/rtvforum/topic4106397.html#21440428))
 -   TR6260 (eg HLK-M20, XY-WE2S-A V1.1) (see [guide](https://www.elektroda.com/rtvforum/topic4093752.html))
--   ECR6600 (eg WG236, (DSM-036[https://www.dusuniot.com/product-specification/dsm-036-wi-fi6-and-ble-dual-cloud-module/])) (see [guide](https://www.elektroda.com/rtvforum/topic4093752.html))
+-   ECR6600 (eg WG236, [DSM-036](https://www.dusuniot.com/product-specification/dsm-036-wi-fi6-and-ble-dual-cloud-module/])) (see [guide](https://www.elektroda.com/rtvforum/topic4093752.html))
 
 Please use automatically compiled binaries from the Releases tab. To build OpenBeken yourself for any supported platform, fork our version of the submodule SDK first, and then check out this app repository alongside it. Details further down. Alternatively consider using the easier [override method.](https://www.elektroda.com/rtvforum/topic4082682.html)
 
