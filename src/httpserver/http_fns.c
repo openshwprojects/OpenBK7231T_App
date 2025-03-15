@@ -1896,9 +1896,6 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		if (BL_IsMeteringDeviceIndexActive(BL_SENSORS_IX_1)) {
 			for (i = OBK__FIRST; i <= OBK__LAST; i++)
 			{
-				//BL_SENSORS_IX_1 does not have energy yet, just base  OBK_VOLTAGE..OBK_POWER_FACTOR
-				if (i < OBK_VOLTAGE) continue;
-				if (i > OBK_POWER_FACTOR) continue;
 				dev_info = hass_init_energy_sensor_device_info(i, BL_SENSORS_IX_1);
 				if (dev_info) {
 					MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
