@@ -81,6 +81,7 @@ OpenBeken features:
 -   Can draw customizable charts directly on device, see [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html)
 -   Can run on Windows with device simulator/schematic drawer, see [tutorial](https://www.elektroda.com/rtvforum/topic4046056.html)
 -   Per-platform code build [self-checks](https://www.elektroda.com/rtvforum/topic4109775.html)
+-   Full conversion for Tuya Matter devices [example1](https://www.elektroda.com/rtvforum/topic4074263.html), [example2](https://www.elektroda.com/rtvforum/topic4106753.html)
 -   and much more
 
 There is also a bit more outdated [WIKI](https://github.com/openshwprojects/OpenBK7231T_App/wiki/Wiki-Home)
