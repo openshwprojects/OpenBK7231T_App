@@ -17,7 +17,7 @@ Although this repository is named "OpenBK7231T_App", it has evolved into a multi
 -   Windows, via [simulator](https://www.elektroda.com/rtvforum/topic4046056.html)
 -   ESP32 (working well - guide to be released soon, [development topic](https://www.elektroda.com/rtvforum/topic4074860.html))
 -   RTL8710A (limited testing - work-in-progress) see [development thread](https://www.elektroda.com/rtvforum/viewtopic.php?p=21452754#21452754)
--   RTL87x0C (AmebaZ2 family (eg [BW15, WBR2, WBR3[(https://www.elektroda.com/rtvforum/topic4104395.html)]) see [guide](https://www.elektroda.com/rtvforum/topic4097185.html)
+-   RTL87x0C (AmebaZ2 family (eg BW15, [WBR2, WBR3](https://www.elektroda.com/rtvforum/topic4104395.html)]) see [guide](https://www.elektroda.com/rtvforum/topic4097185.html)
 -   RTL8710B (AmebaZ family) (eg T102_V1.0, T112_V1.1, WR2, WR3E)
 -   RTL8720D (AmebaD family) (eg BW16, BW16E)
 -   BK7238 (eg XH-CB3S) (see [tutorial for 1$ board](https://www.elektroda.com/rtvforum/topic4106397.html#21440428))
@@ -87,7 +87,7 @@ There is also a bit more outdated [WIKI](https://github.com/openshwprojects/Open
 
 # Building
 
-OpenBeken supports [online builds](https://www.elektroda.com/rtvforum/viewtopic.php?p=20946719#20946719) for all platforms (BK7231T, BK7231N, BK7238, XR809, BL602, W600, W800, ESP32, RTL8710A, RTL8710B, RTL87X0C, TR6260, ECR6600, LN882H), but if you want to compile it yourself, see [BUILDING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md)
+OpenBeken supports [online builds](https://www.elektroda.com/rtvforum/viewtopic.php?p=20946719#20946719) for all platforms (BK7231T, BK7231N, BK7238, XR809, BL602, W600, W800, ESP32, RTL8710A, RTL8710B, RTL87X0C, RTL8720D, TR6260, ECR6600, LN882H), but if you want to compile it yourself, see [BUILDING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/BUILDING.md)
 
 # Developer guides
 
