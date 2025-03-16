@@ -116,6 +116,7 @@ J 		Standard 	410
 #define SKIP_ROM 0xCC
 #define CONVERT_T 0x44
 #define READ_SCRATCHPAD 0xBE
+#define WRITE_SCRATCHPAD 0x4E
 
 int OWReset(int Pin)
 {
@@ -285,6 +286,43 @@ int DS1820_getTemp()
 	return t;
 }
 
+commandResult_t Cmd_SetResolution(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	int arg = Tokenizer_GetArgInteger(0);
+	if (arg > 12 || arg < 9)
+		return CMD_RES_BAD_ARGUMENT;
+
+	if (ds18_family != 0x28) {
+		DS1820_LOG(ERROR, "DS1820_SetResolution not supported by sensor");
+		return CMD_RES_UNKNOWN_COMMAND;
+	}
+
+	uint8_t cfg = arg;
+	cfg = cfg - 9;
+	cfg = cfg * 32;
+	cfg |= 0x1F;
+
+	if(OWReset(Pin) == 0)
+	{
+		DS1820_LOG(ERROR, "WriteScratchpad Reset failed");
+		return CMD_RES_ERROR;
+	}
+
+	OWWriteByte(Pin, SKIP_ROM);
+	OWWriteByte(Pin, WRITE_SCRATCHPAD); //Write Scratchpad command
+	OWWriteByte(Pin, 0x7F); //TH
+	OWWriteByte(Pin, 0x80); //TL
+	OWWriteByte(Pin, cfg);  //CFG
+
+	//temperature conversion was interrupted
+	dsread = 0;
+
+	return CMD_RES_OK;
+}
+
 // startDriver DS1820 [conversionPeriod (seconds) - default 15]
 void DS1820_driver_Init()
 {
@@ -292,6 +330,12 @@ void DS1820_driver_Init()
 	lastconv = 0;
 	dsread = 0;
 	ds18_family = 0;
+
+	//cmddetail:{"name":"DS1820_SetResolution","args":"[int]",
+	//cmddetail:"descr":"Sets resolution for connected DS1820 sensor (9/10/11/12 bits)",
+	//cmddetail:"fn":"Cmd_SetResolution","file":"drv/drv_ds1820_simple.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("DS1820_SetResolution", Cmd_SetResolution, NULL);
 };
 
 void DS1820_AppendInformationToHTTPIndexPage(http_request_t* request)
