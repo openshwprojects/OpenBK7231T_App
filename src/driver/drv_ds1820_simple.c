@@ -11,12 +11,14 @@
 #endif
 
 static uint8_t dsread = 0;
-static int Pin;
+static int Pin = -1;
 static int t = -127;
 static int errcount = 0;
 static int lastconv; // secondsElapsed on last successfull reading
 static uint8_t ds18_family = 0;
 static int ds18_conversionPeriod = 0;
+
+static int DS1820_DiscoverFamily();
 
 #define DS1820_LOG(x, fmt, ...) addLogAdv(LOG_##x, LOG_FEATURE_SENSOR, "DS1820[%i] - " fmt, Pin, ##__VA_ARGS__)
 
@@ -336,6 +338,11 @@ void DS1820_driver_Init()
 	//cmddetail:"fn":"Cmd_SetResolution","file":"drv/drv_ds1820_simple.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DS1820_SetResolution", Cmd_SetResolution, NULL);
+
+	//Find PIN and check device so DS1820_SetResolution could be used in autoexec.bat
+	Pin = PIN_FindPinIndexForRole(IOR_DS1820_IO, -1);
+	if (Pin >= 0)
+		DS1820_DiscoverFamily();
 };
 
 void DS1820_AppendInformationToHTTPIndexPage(http_request_t* request)
@@ -389,10 +396,10 @@ void DS1820_OnEverySecond()
 	int16_t raw;
 
 	// for now just find the pin used
-	Pin = PIN_FindPinIndexForRole(IOR_DS1820_IO, 99);
+	Pin = PIN_FindPinIndexForRole(IOR_DS1820_IO, -1);
 
 	// only if pin is set
-	if(Pin == 99)
+	if(Pin < 0)
 		return;
 	
 	//Temperature measurement is done in two repeatable steps. 
