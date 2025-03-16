@@ -426,6 +426,17 @@ void DS1820_OnEverySecond()
 	
 	if(g_secondsElapsed % ds18_conversionPeriod == 0 || lastconv == 0) //dsread == 0
 	{
+		if(ds18_family == 0)
+		{
+			int discovered = DS1820_DiscoverFamily();
+			if(!discovered)
+			{
+				lastconv = -1; // reset lastconv to avoid immediate retry
+				DS1820_LOG(ERROR, "Family not discovered");
+				return;
+			}
+		}
+
 		if(OWReset(Pin) == 0)
 		{
 			lastconv = -1; // reset lastconv to avoid immediate retry
@@ -456,17 +467,6 @@ void DS1820_OnEverySecond()
 			}
 #endif
 			return;
-		}
-
-		if(ds18_family == 0)
-		{
-			int discovered = DS1820_DiscoverFamily();
-			if(!discovered)
-			{
-				lastconv = -1; // reset lastconv to avoid immediate retry
-				DS1820_LOG(ERROR, "Family not discovered");
-				return;
-			}
 		}
 
 		DS1820_LOG(INFO, "Starting conversion");
