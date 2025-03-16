@@ -290,6 +290,8 @@ void DS1820_driver_Init()
 {
 	ds18_conversionPeriod = Tokenizer_GetArgIntegerDefault(1, 15);
 	lastconv = 0;
+	dsread = 0;
+	ds18_family = 0;
 };
 
 void DS1820_AppendInformationToHTTPIndexPage(http_request_t* request)
