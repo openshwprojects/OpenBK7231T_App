@@ -135,6 +135,11 @@ typedef long BaseType_t;
 #define DEVICENAME_PREFIX_SHORT "rtl8720d"
 #define PLATFORM_MCU_NAME "RTL8720D"
 #define MANUFACTURER "Realtek"
+#elif PLATFORM_ECR6600
+#define DEVICENAME_PREFIX_FULL "OpenECR6600"
+#define DEVICENAME_PREFIX_SHORT "ecr6600"
+#define PLATFORM_MCU_NAME "ECR6600"
+#define MANUFACTURER "ESWIN"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -174,6 +179,8 @@ This platform is not supported, error!
 #define USER_SW_VER "RTL8720D_Test"
 #elif defined(PLATFORM_BK7238)
 #define USER_SW_VER "BK7238_Test"
+#elif PLATFORM_ECR6600
+#define USER_SW_VER "ECR6600_Test"
 #else
 #define USER_SW_VER "unknown"
 #endif
@@ -617,6 +624,62 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define GLOBAL_INT_DISABLE()		;
 #define GLOBAL_INT_RESTORE()		;
 
+#elif PLATFORM_ECR6600
+
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "queue.h"
+#include "event_groups.h"
+
+#include "lwip/err.h"
+#include "lwip/sockets.h"
+#include "lwip/sys.h"
+#include "lwip/netdb.h"
+#include "lwip/dns.h"
+#include <stdbool.h>
+#include "os/oshal.h"
+
+typedef unsigned int UINT32;
+
+#define ASSERT
+#undef os_malloc
+#undef os_free
+#define os_malloc	pvPortMalloc
+#define os_free		vPortFree
+#define malloc		os_malloc
+#define free		os_free
+#define calloc		os_calloc
+#define realloc		os_realloc
+#define memmove		os_memmove
+#define os_strcpy	strcpy
+
+#define bk_printf printf
+
+extern void sys_delay_ms(uint32_t ms);
+// OS_MSleep?
+#define rtos_delay_milliseconds sys_delay_ms
+#define delay_ms sys_delay_ms
+
+#define kNoErr                      0       //! No error occurred.
+typedef void* beken_thread_arg_t;
+typedef void* beken_thread_t;
+typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
+typedef int OSStatus;
+
+#define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
+#define BEKEN_APPLICATION_PRIORITY         (7)
+
+OSStatus rtos_delete_thread(beken_thread_t* thread);
+OSStatus rtos_create_thread(beken_thread_t* thread,
+	uint8_t priority, const char* name,
+	beken_thread_function_t function,
+	uint32_t stack_size, beken_thread_arg_t arg);
+OSStatus rtos_suspend_thread(beken_thread_t* thread);
+
+#define GLOBAL_INT_DECLARATION()	;
+#define GLOBAL_INT_DISABLE()		;
+#define GLOBAL_INT_RESTORE()		;
 
 #else
 
@@ -674,6 +737,7 @@ typedef unsigned char byte;
 #else
 
 int wal_stricmp(const char *a, const char *b) ;
+#undef stricmp
 #define stricmp wal_stricmp
 char *strdup(const char *s);
 
@@ -689,7 +753,7 @@ int strcpy_safe_checkForChanges(char *tg, const char *src, int tgMaxLen);
 void urldecode2_safe(char *dst, const char *srcin, int maxDstLen);
 int strIsInteger(const char *s);
 
-#if !defined(PLATFORM_ESPIDF) && !defined(PLATFORM_TR6260)
+#if !defined(PLATFORM_ESPIDF) && !defined(PLATFORM_TR6260) && !defined(PLATFORM_ECR6600)
 const char* strcasestr(const char* str1, const char* str2);
 #endif
 
@@ -746,7 +810,7 @@ typedef enum
     EXCELLENT,
 } WIFI_RSSI_LEVEL;
 
-#if PLATFORM_LN882H || PLATFORM_REALTEK
+#if PLATFORM_LN882H || PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_TR6260
 #define IP_STRING_FORMAT	"%u.%u.%u.%u"
 #else
 #define IP_STRING_FORMAT	"%hhu.%hhu.%hhu.%hhu"

@@ -103,6 +103,18 @@ extern uint32_t current_fw_idx;
 
 #endif
 
+#elif PLATFORM_ECR6600
+
+#include "flash.h"
+extern int ota_init(void);
+extern int ota_write(unsigned char* data, unsigned int len);
+extern int ota_done(bool reset);
+
+#elif PLATFORM_TR6260
+
+#include "otaHal.h"
+#include "drv_spiflash.h"
+
 #else
 
 extern UINT32 flash_read(char* user_buf, UINT32 count, UINT32 address);
@@ -303,6 +315,8 @@ static int http_rest_post(http_request_t* request) {
 		return http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_REALTEK
 		return http_rest_post_flash(request, 0, -1);
+#elif PLATFORM_ECR6600 || PLATFORM_TR6260
+		return http_rest_post_flash(request, -1, -1);
 #else
 		// TODO
 		ADDLOG_DEBUG(LOG_FEATURE_API, "No OTA");
@@ -1473,7 +1487,7 @@ static int ota_verify_download(void)
 static int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 {
 
-#if PLATFORM_XR809 || PLATFORM_TR6260
+#if PLATFORM_XR809
 	return 0;	//Operation not supported yet
 #endif
 
@@ -2865,6 +2879,72 @@ update_ota_exit:
 		return http_rest_error(request, ret, "error");
 	}
 
+#elif PLATFORM_ECR6600 || PLATFORM_TR6260
+
+#if PLATFORM_TR6260
+#define OTA_INIT otaHal_init
+#define OTA_WRITE otaHal_write
+#define OTA_DONE(x) otaHal_done()
+#else
+#define OTA_INIT ota_init
+#define OTA_WRITE ota_write
+#define OTA_DONE(x) ota_done(x)
+#endif
+	int ret = 0;
+
+	if(request->contentLength > 0)
+	{
+		towrite = request->contentLength;
+	}
+	else
+	{
+		ret = -1;
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "Content-length is 0");
+		goto update_ota_exit;
+	}
+
+	if(OTA_INIT() != 0)
+	{
+		ret = -1;
+		goto update_ota_exit;
+	}
+
+	do
+	{
+		if(OTA_WRITE((unsigned char*)writebuf, writelen) != 0)
+		{
+			ret = -1;
+			goto update_ota_exit;
+		}
+		delay_ms(10);
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Writelen %i at %i", writelen, total);
+		total += writelen;
+		startaddr += writelen;
+		towrite -= writelen;
+		if(towrite > 0)
+		{
+			writebuf = request->received;
+			writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
+			if(writelen < 0)
+			{
+				ADDLOG_DEBUG(LOG_FEATURE_OTA, "recv returned %d - end of data - remaining %d", writelen, towrite);
+				ret = -1;
+			}
+		}
+	} while((towrite > 0) && (writelen >= 0));
+
+update_ota_exit:
+	if(ret != -1)
+	{
+		ADDLOG_INFO(LOG_FEATURE_OTA, "OTA is successful");
+		OTA_DONE(0);
+	}
+	else
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "OTA failed. Reboot to retry");
+		return http_rest_error(request, ret, "error");
+	}
+
 #else
 
 	init_ota(startaddr);
@@ -2967,10 +3047,13 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 #elif PLATFORM_W600 || PLATFORM_W800
 		res = 0;
 #elif PLATFORM_LN882H
-		// TODO:LN882H flash read?
 		res = hal_flash_read(startaddr, readlen, (uint8_t *)buffer);
-#elif PLATFORM_ESPIDF || PLATFORM_TR6260
+#elif PLATFORM_ESPIDF
 		res = 0;
+#elif PLATFORM_TR6260
+		res = hal_spiflash_read(startaddr, (uint8_t*)buffer, readlen);
+#elif PLATFORM_ECR6600
+		res = drv_spiflash_read(startaddr, (uint8_t*)buffer, readlen);
 #elif PLATFORM_REALTEK
 		device_mutex_lock(RT_DEV_LOCK_FLASH);
 		flash_stream_read(&flash, startaddr, readlen, (uint8_t*)buffer);

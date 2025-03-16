@@ -78,6 +78,8 @@ static commandResult_t testStrdup(const void * context, const char *cmd, const c
 
     return CMD_RES_OK;
 }
+
+
 // Usage: addRepeatingEvent 1 -1 testRealloc 100
 static commandResult_t testRealloc(const void * context, const char *cmd, const char *args, int cmdFlags){
 	int repeats;
@@ -86,6 +88,7 @@ static commandResult_t testRealloc(const void * context, const char *cmd, const 
 	int i;
 	int ra1;
 	static int totalCalls = 0;
+	static int reallocBroken = 0;
 
 	repeats = atoi(args);
 	if(repeats < 1)
@@ -97,16 +100,36 @@ static commandResult_t testRealloc(const void * context, const char *cmd, const 
 		ra1 = 1 + abs(rand() % 1000);
 
 		msg = malloc(ra1);
+		if (!msg) {
+			break;
+		}
+		int initialra1 = ra1;
+		for (int i = 0; i < initialra1; i++) {
+			msg[i] = i % 100;
+		}
 		
 		for(i = 0; i < 3; i++) {
 			ra1 += 1 + abs(rand()%10);
-			msg = realloc(msg,ra1);
+			char* msgr = realloc(msg,ra1);
+			if (!msgr) {
+				break;
+			}
+			msg = msgr;
+
+			for (int j = 0; j < initialra1; j++) {
+				if (msg[j] != (j % 100)) {
+					ADDLOG_INFO(LOG_FEATURE_CMD,
+							"Realloc difference: rep %d, i %d j %d initialra1 %d ra1 %d msg[j] %d (j % 100) %d",
+							rep, i, j, initialra1, ra1, (int) msg[j], j % 100);
+					reallocBroken = 1;
+				}
+			}
 		}
 
 		os_free(msg);
 	}
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, "Realloc has been tested! Total calls %i, reps now %i",totalCalls,repeats);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Realloc has been tested! Total calls %i, reps now %i, reallocBroken %i",totalCalls,repeats,reallocBroken);
 
     return CMD_RES_OK;
 }

@@ -1380,6 +1380,7 @@ void CHANNEL_ClearAllChannels() {
 
 void CHANNEL_Set_FloatPWM(int ch, float fVal, int iFlags) {
 	int i;
+	float prevValue = g_channelValuesFloats[ch];
 
 	g_channelValues[ch] = (int)fVal;
 	g_channelValuesFloats[ch] = fVal;
@@ -1394,6 +1395,9 @@ void CHANNEL_Set_FloatPWM(int ch, float fVal, int iFlags) {
 			}
 		}
 	}
+	// TODO: support float
+	EventHandlers_FireEvent(CMD_EVENT_CHANNEL_ONCHANGE, ch);
+	EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CHANNEL0 + ch, prevValue, fVal);
 }
 void CHANNEL_SetSmart(int ch, float fVal, int iFlags) {
 	if (ch < 0 || ch >= CHANNEL_MAX)

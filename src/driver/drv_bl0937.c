@@ -46,6 +46,10 @@ extern rtlPinMapping_t g_pins[];
 rtlPinMapping_t* rtl_cf;
 rtlPinMapping_t* rtl_cf1;
 
+#elif PLATFORM_ECR6600
+
+#include "gpio.h"
+
 #else
 
 
@@ -62,9 +66,11 @@ bool g_invertSEL = false;
 int GPIO_HLW_CF = 7;
 int GPIO_HLW_CF1 = 8;
 
+#if PLATFORM_W600
 //The above three actually are pin indices. For W600 the actual gpio_pins are different.
 unsigned int GPIO_HLW_CF_pin;
 unsigned int GPIO_HLW_CF1_pin;
+#endif
 
 bool g_sel = true;
 uint32_t res_v = 0;
@@ -232,6 +238,11 @@ void BL0937_Shutdown_Pins()
 	rtl_cf1->irq = NULL;
 	rtl_cf->irq = NULL;
 
+#elif PLATFORM_ECR6600
+
+	drv_gpio_ioctrl(GPIO_HLW_CF1, DRV_GPIO_CTRL_INTR_DISABLE, 0);
+	drv_gpio_ioctrl(GPIO_HLW_CF, DRV_GPIO_CTRL_INTR_DISABLE, 0);
+
 #endif
 }
 
@@ -320,6 +331,16 @@ void BL0937_Init_Pins()
 	gpio_irq_set(rtl_cf1->irq, IRQ_FALL, 1);
 	gpio_irq_enable(rtl_cf1->irq);
 
+#elif PLATFORM_ECR6600
+
+	T_GPIO_ISR_CALLBACK cf1isr;
+	cf1isr.gpio_callback = (&HlwCf1Interrupt);
+	cf1isr.gpio_data = 0;
+
+	drv_gpio_ioctrl(GPIO_HLW_CF1, DRV_GPIO_CTRL_INTR_MODE, DRV_GPIO_ARG_INTR_MODE_N_EDGE);
+	drv_gpio_ioctrl(GPIO_HLW_CF1, DRV_GPIO_CTRL_REGISTER_ISR, (int)&cf1isr);
+	drv_gpio_ioctrl(GPIO_HLW_CF1, DRV_GPIO_CTRL_INTR_ENABLE, 0);
+
 #endif
 
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF);
@@ -350,6 +371,16 @@ void BL0937_Init_Pins()
 	gpio_irq_init(rtl_cf->irq, rtl_cf->pin, cf_irq_handler, NULL);
 	gpio_irq_set(rtl_cf->irq, IRQ_FALL, 1);
 	gpio_irq_enable(rtl_cf->irq);
+
+#elif PLATFORM_ECR6600
+
+	T_GPIO_ISR_CALLBACK cfisr;
+	cfisr.gpio_callback = (&HlwCfInterrupt);
+	cfisr.gpio_data = 0;
+
+	drv_gpio_ioctrl(GPIO_HLW_CF, DRV_GPIO_CTRL_INTR_MODE, DRV_GPIO_ARG_INTR_MODE_N_EDGE);
+	drv_gpio_ioctrl(GPIO_HLW_CF, DRV_GPIO_CTRL_REGISTER_ISR, (int)&cfisr);
+	drv_gpio_ioctrl(GPIO_HLW_CF, DRV_GPIO_CTRL_INTR_ENABLE, 0);
 
 #endif
 

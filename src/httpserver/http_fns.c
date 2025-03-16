@@ -19,6 +19,9 @@
 #include <time.h>
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_local.h"
+#ifdef PLATFORM_BEKEN
+#include "start_type_pub.h"
+#endif
 
 #ifdef WINDOWS
 // nothing
@@ -1073,6 +1076,14 @@ int http_fn_cfg_mqtt_set(http_request_t* request) {
 	if (http_getArg(request->url, "port", tmpA, sizeof(tmpA))) {
 		CFG_SetMQTTPort(atoi(tmpA));
 	}
+
+#if MQTT_USE_TLS
+	CFG_SetMQTTUseTls(http_getArg(request->url, "mqtt_use_tls", tmpA, sizeof(tmpA)));
+	CFG_SetMQTTVerifyTlsCert(http_getArg(request->url, "mqtt_verify_tls_cert", tmpA, sizeof(tmpA)));
+	http_getArg(request->url, "mqtt_cert_file", tmpA, sizeof(tmpA));
+	CFG_SetMQTTCertFile(tmpA);
+#endif
+
 	if (http_getArg(request->url, "user", tmpA, sizeof(tmpA))) {
 		CFG_SetMQTTUserName(tmpA);
 	}
@@ -1109,6 +1120,21 @@ int http_fn_cfg_mqtt(http_request_t* request) {
 
 	add_label_text_field(request, "Host", "host", CFG_GetMQTTHost(), "<form action=\"/cfg_mqtt_set\">");
 	add_label_numeric_field(request, "Port", "port", CFG_GetMQTTPort(), "<br>");
+#if MQTT_USE_TLS
+	hprintf255(request, "<input type=\"checkbox\" id=\"mqtt_use_tls\" name=\"mqtt_use_tls\" value=\"1\"");
+	if (CFG_GetMQTTUseTls()) {
+		hprintf255(request, " checked>");
+	}
+	hprintf255(request, "<label for=\"mqtt_use_tls\">Use TLS</label><br>");
+
+	hprintf255(request, "<input type=\"checkbox\" id=\"mqtt_verify_tls_cert\" name=\"mqtt_verify_tls_cert\" value=\"1\"");
+	if (CFG_GetMQTTVerifyTlsCert()) {
+		hprintf255(request, " checked>");
+	}
+	hprintf255(request, "<label for=\"mqtt_use_tls\">Verify TLS Certificate</label><br>");
+
+	add_label_text_field(request, "Certificate File (CA Root or Public Certificate PEM format)", "mqtt_cert_file", CFG_GetMQTTCertFile(), "<br>");
+#endif
 	add_label_text_field(request, "Client Topic (Base Topic)", "client", CFG_GetMQTTClientId(), "<br><br>");
 	add_label_text_field(request, "Group Topic (Secondary Topic to only receive cmnds)", "group", CFG_GetMQTTGroupTopic(), "<br>");
 	add_label_text_field(request, "User", "user", CFG_GetMQTTUserName(), "<br>");
@@ -1178,6 +1204,15 @@ int http_fn_cfg_webapp(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Set Webapp");
 	add_label_text_field(request, "URL of the Webapp", "url", CFG_GetWebappRoot(), "<form action=\"/cfg_webapp_set\">");
+
+#if MQTT_USE_TLS
+	hprintf255(request, "<input type=\"checkbox\" id=\"enable_web_server\" name=\"enable_web_server\" value=\"1\"");
+	if (!CFG_GetDisableWebServer()) {
+		hprintf255(request, " checked>");
+	}
+	hprintf255(request, "<label for=\"enable_web_server\">Web Server Enabled</label><br>");
+#endif
+
 	poststr(request, SUBMIT_AND_END_FORM);
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
@@ -1198,6 +1233,14 @@ int http_fn_cfg_webapp_set(http_request_t* request) {
 	else {
 		poststr(request, "Webapp url not set because you didn't specify the argument.");
 	}
+
+#if MQTT_USE_TLS
+	CFG_SetDisableWebServer(!http_getArg(request->url, "enable_web_server", tmpA, sizeof(tmpA)));
+	if (CFG_GetDisableWebServer()) {
+		poststr(request, "<br>");
+		poststr(request, "Webapp will be disabled on next boot!");
+	}
+#endif
 
 	poststr(request, "<br>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
@@ -1345,8 +1388,6 @@ int http_fn_cfg_wifi(http_request_t* request) {
 		{
 			hprintf255(request, "[%i/%u] SSID: %s, Channel: %i, Signal %i<br>", i + 1, number, ap_info[i].ssid, ap_info[i].primary, ap_info[i].rssi);
 		}
-#elif PLATFORM_TR6260
-		poststr(request, "TODO TR6260<br>");
 #elif defined(PLATFORM_REALTEK)
 #ifndef PLATFORM_RTL87X0C
 		extern void rltk_wlan_enable_scan_with_ssid_by_extended_security(bool);
@@ -3081,6 +3122,13 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 #elif PLATFORM_ESPIDF
 #elif PLATFORM_TR6260
 #elif PLATFORM_REALTEK
+#elif PLATFORM_ECR6600
+	extern int http_client_download_file(const char* url, unsigned int len);
+	extern int ota_done(bool reset);
+	delay_ms(100);
+	int ret = http_client_download_file(s, strlen(s));
+	if(ret != -1) ota_done(1);
+	else ota_done(0);
 #elif PLATFORM_W600 || PLATFORM_W800
 	t_http_fwup(s);
 #elif PLATFORM_XR809

@@ -1,8 +1,11 @@
 # HACK - if COMPILE_PREX defined then we are being called running from original build_app.sh script in standard SDK
 # Required to not break old build_app.sh script lines 74-77
+MBEDTLS=output/mbedtls-2.28.5
 ifdef COMPILE_PREX
 all:
 	@echo Calling original build_app.sh script
+	mkdir -p output
+	if [ ! -d "$(MBEDTLS)" ]; then wget -q "https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v2.28.5.tar.gz"; tar -xf v2.28.5.tar.gz -C output; rm -f v2.28.5.tar.gz; mv $(MBEDTLS)/library/base64.c $(MBEDTLS)/library/base64_mbedtls.c; fi
 	cd $(PWD)/../../platforms/$(TARGET_PLATFORM)/toolchain/$(TUYA_APPS_BUILD_PATH) && sh $(TUYA_APPS_BUILD_CMD) $(APP_NAME) $(APP_VERSION) $(TARGET_PLATFORM) "$(USER_CMD)" $(BUILD_MODE)
 else
 
@@ -202,11 +205,23 @@ prebuild_OpenBK7231N_ALT:
 	else echo "prebuild for OpenBK7231N not found ... "; \
 	fi
 
+prebuild_OpenECR6600:
+	git submodule update --init --recursive sdk/OpenECR6600
+	@if [ -e platforms/ECR6600/pre_build.sh ]; then \
+		echo "prebuild found for OpenECR6600"; \
+		sh platforms/ECR6600/pre_build.sh; \
+	else echo "prebuild for OpenECR6600 not found ... "; \
+	fi
+
 # Build main binaries
 OpenBK7231T: prebuild_OpenBK7231T
+	mkdir -p output
+	if [ ! -d "$(MBEDTLS)" ]; then wget -q "https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v2.28.5.tar.gz"; tar -xf v2.28.5.tar.gz -C output; rm -f v2.28.5.tar.gz; mv $(MBEDTLS)/library/base64.c $(MBEDTLS)/library/base64_mbedtls.c; fi 
 	$(MAKE) APP_NAME=OpenBK7231T TARGET_PLATFORM=bk7231t SDK_PATH=sdk/OpenBK7231T APPS_BUILD_PATH=../bk7231t_os build-BK7231
 
 OpenBK7231N: prebuild_OpenBK7231N
+	mkdir -p output
+	if [ ! -d "$(MBEDTLS)" ]; then wget -q "https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v2.28.5.tar.gz"; tar -xf v2.28.5.tar.gz -C output; rm -f v2.28.5.tar.gz; mv $(MBEDTLS)/library/base64.c $(MBEDTLS)/library/base64_mbedtls.c; fi
 	$(MAKE) APP_NAME=OpenBK7231N TARGET_PLATFORM=bk7231n SDK_PATH=sdk/OpenBK7231N APPS_BUILD_PATH=../bk7231n_os build-BK7231
 
 sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q2:
@@ -388,6 +403,16 @@ OpenBK7231N_ALT: prebuild_OpenBK7231N_ALT
 	cp sdk/beken_freertos_sdk/out/all_2M.1220.bin output/$(APP_VERSION)/OpenBK7231N_ALT_QIO_${APP_VERSION}.bin
 	cp sdk/beken_freertos_sdk/out/app.rbl output/$(APP_VERSION)/OpenBK7231N_ALT_${APP_VERSION}.rbl
 	cp sdk/beken_freertos_sdk/out/bk7231n_bsp_uart_2M.1220.bin output/$(APP_VERSION)/OpenBK7231N_ALT_UA_${APP_VERSION}.bin
+	
+.PHONY: OpenECR6600
+ECRDIR := $(PWD)/sdk/OpenECR6600
+OpenECR6600: prebuild_OpenECR6600
+	if [ ! -e sdk/OpenECR6600/tool/nds32le-elf-mculib-v3s ]; then cd sdk/OpenECR6600/tool && xz -d < nds32le-elf-mculib-v3s.txz | tar xvf - > /dev/null; fi
+	cd sdk/OpenECR6600 && make BOARD_DIR=$(ECRDIR)/Boards/ecr6600/standalone APP_NAME=OpenBeken TOPDIR=$(ECRDIR) GCC_PATH=$(ECRDIR)/tool/nds32le-elf-mculib-v3s/bin/ APP_VERSION=$(APP_VERSION) defconfig
+	cd sdk/OpenECR6600 && make BOARD_DIR=$(ECRDIR)/Boards/ecr6600/standalone APP_NAME=OpenBeken TOPDIR=$(ECRDIR) GCC_PATH=$(ECRDIR)/tool/nds32le-elf-mculib-v3s/bin/ APP_VERSION=$(APP_VERSION) REL_V=OpenECR6600_$(APP_VERSION) all
+	mkdir -p output/$(APP_VERSION)
+	cp $(ECRDIR)/build/OpenBeken/ECR6600F_standalone_OpenBeken_allinone.bin output/$(APP_VERSION)/OpenECR6600_$(APP_VERSION).bin
+	cp $(ECRDIR)/build/OpenBeken/ECR6600F_OpenBeken_Compress_ota_packeg.bin output/$(APP_VERSION)/OpenECR6600_$(APP_VERSION)_ota.img
 
 # clean .o files and output directory
 .PHONY: clean
@@ -410,6 +435,7 @@ clean:
 	test -d ./platforms/ESP-IDF/build-c6 && cmake --build ./platforms/ESP-IDF/build-c6 --target clean
 	test -d ./platforms/ESP-IDF/build-s2 && cmake --build ./platforms/ESP-IDF/build-s2 --target clean
 	test -d ./platforms/ESP-IDF/build-s3 && cmake --build ./platforms/ESP-IDF/build-s3 --target clean
+	cd sdk/OpenECR6600 && make BOARD_DIR=$(ECRDIR)/Boards/ecr6600/standalone APP_NAME=OpenBeken TOPDIR=$(ECRDIR) GCC_PATH=$(ECRDIR)/tool/nds32le-elf-mculib-v3s/bin/ clean
 
 # Add custom Makefile if required
 -include custom.mk

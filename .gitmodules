@@ -49,3 +49,7 @@
 	path = sdk/OpenRTL8720D
 	url = https://github.com/NonPIayerCharacter/OpenRTL8720D.git
 	branch = master
+[submodule "sdk/OpenECR6600"]
+	path = sdk/OpenECR6600
+	url = https://github.com/NonPIayerCharacter/OpenECR6600.git
+	branch = master
