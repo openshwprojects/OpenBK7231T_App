@@ -112,6 +112,11 @@ J 		Standard 	410
 #define OWtimeI	70
 #define OWtimeJ	410
 
+#define READ_ROM 0x33
+#define SKIP_ROM 0xCC
+#define CONVERT_T 0x44
+#define READ_SCRATCHPAD 0xBE
+
 int OWReset(int Pin)
 {
 	int result;
@@ -302,7 +307,7 @@ int DS1820_DiscoverFamily()
 
 	// Read ROM
 	uint8_t ROM[8];
-	OWWriteByte(Pin, 0x33);
+	OWWriteByte(Pin, READ_ROM);
 	for(int i = 0; i < 8; i++)
 	{
 		ROM[i] = OWReadByte(Pin);
@@ -334,124 +339,141 @@ int DS1820_DiscoverFamily()
 
 void DS1820_OnEverySecond()
 {
+	uint8_t scratchpad[9], crc;
+	int16_t raw;
+
 	// for now just find the pin used
 	Pin = PIN_FindPinIndexForRole(IOR_DS1820_IO, 99);
-	uint8_t scratchpad[9], crc;
-	if(Pin != 99)
+
+	// only if pin is set
+	if(Pin == 99)
+		return;
+	
+	//Temperature measurement is done in two repeatable steps. 
+	// Step 1 - dsread = 0. Sensor requested to do temperature conversion.
+	//          That requires some time - 15-100-750ms, depending on sensor family/vendor.
+	//          However, time between steps is always one second.
+	// Step 2 - dsread = 1. Sensor finished conversion, requesting conversion result.
+
+	// request temp if conversion was requested two seconds after request
+	// if (dsread == 1 && g_secondsElapsed % 5 == 2) {
+	// better if we don't use parasitic power, we can check if conversion is ready
+	if(dsread == 1)
 	{
-		// only if pin is set
-		// request temp if conversion was requested two seconds after request
-		// if (dsread == 1 && g_secondsElapsed % 5 == 2) {
-		// better if we don't use parasitic power, we can check if conversion is ready		
-		if(dsread == 1 && DS1820TConversionDone(Pin) == 1)
+		if (!DS1820TConversionDone(Pin))
+			return;
+
+		if(OWReset(Pin) == 0)
 		{
-			if(OWReset(Pin) == 0)
-			{
-				DS1820_LOG(ERROR, "Read Reset failed");
-				return;
-			}
-			OWWriteByte(Pin, 0xCC);
-			OWWriteByte(Pin, 0xBE);
-
-			for(int i = 0; i < 9; i++)
-			{
-				scratchpad[i] = OWReadByte(Pin); //read Scratchpad Memory of DS
-			}
-			crc = Crc8CQuick(scratchpad, 8);
-			if(crc != scratchpad[8])
-			{
-				errcount++;
-				DS1820_LOG(ERROR, "Read CRC=%x != calculated:%x (errcount=%i)", scratchpad[8], crc, errcount);
-				DS1820_LOG(ERROR, "Scratchpad Data Read: %x %x %x %x %x %x %x %x %x",
-					scratchpad[0], scratchpad[1], scratchpad[2], scratchpad[3], scratchpad[4],
-					scratchpad[5], scratchpad[6], scratchpad[7], scratchpad[8]);
-
-				if(errcount > 5) dsread = 0; // retry afer 5 failures		
-			}
-			else
-			{
-				int16_t raw = (scratchpad[1] << 8) | scratchpad[0];
-
-				if(ds18_family == 0x10)
-				{
-					// DS18S20 or old DS1820
-					int16_t dT = 128 * (scratchpad[7] - scratchpad[6]);
-					dT /= scratchpad[7];
-					raw = 64 * (raw & 0xFFFE) - 32 + dT;
-					DS1820_LOG(DEBUG, "family=%x, raw=%i, count_remain=%i, count_per_c=%i, dT=%i", ds18_family, raw, scratchpad[6], scratchpad[7], dT);
-				}
-				else
-				{ // DS18B20
-					uint8_t cfg = scratchpad[4] & 0x60;
-					if(cfg == 0x00) raw = raw & ~7;      // 9 bit resolution, 93.75 ms
-					else if(cfg == 0x20) raw = raw & ~3; // 10 bit res, 187.5 ms
-					else if(cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
-					raw = raw << 3; // multiply by 8
-					DS1820_LOG(DEBUG, "family=%x, raw=%i, cfg=%x (%i bit resolution)", ds18_family, raw, cfg, 9 + (cfg) / 32);
-				}
-
-				// Raw is t * 128
-				t = (raw / 128) * 100; // Whole degrees
-				int frac = (raw % 128) * 100 / 128; // Fractional degrees
-				t += t > 0 ? frac : -frac;
-
-				dsread = 0;
-				lastconv = g_secondsElapsed;
-				CHANNEL_Set(g_cfg.pins.channels[Pin], t, CHANNEL_SET_FLAG_SILENT);
-				DS1820_LOG(INFO, "Temp=%i.%02i", (int)t / 100, (int)t % 100);
-			}
+			DS1820_LOG(ERROR, "Read Reset failed");
+			return;
 		}
-		else if(dsread == 0 && (g_secondsElapsed % ds18_conversionPeriod == 0 || lastconv == 0))
+
+		OWWriteByte(Pin, SKIP_ROM);
+		OWWriteByte(Pin, READ_SCRATCHPAD);
+
+		for(int i = 0; i < 9; i++)
 		{
-			if(OWReset(Pin) == 0)
+			scratchpad[i] = OWReadByte(Pin);
+		}
+
+		crc = Crc8CQuick(scratchpad, 8);
+		if(crc != scratchpad[8])
+		{
+			DS1820_LOG(ERROR, "Read CRC=%x != calculated:%x (errcount=%i)", scratchpad[8], crc, errcount);
+			DS1820_LOG(ERROR, "Scratchpad Data Read: %x %x %x %x %x %x %x %x %x",
+				scratchpad[0], scratchpad[1], scratchpad[2], scratchpad[3], scratchpad[4],
+				scratchpad[5], scratchpad[6], scratchpad[7], scratchpad[8]);
+
+			errcount++;
+			if(errcount > 5) dsread = 0; // retry afer 5 failures
+			
+			return;
+		}
+
+		raw = (scratchpad[1] << 8) | scratchpad[0];
+
+		if(ds18_family == 0x10)
+		{
+			// DS18S20 or old DS1820
+			int16_t dT = 128 * (scratchpad[7] - scratchpad[6]);
+			dT /= scratchpad[7];
+			raw = 64 * (raw & 0xFFFE) - 32 + dT;
+			DS1820_LOG(DEBUG, "family=%x, raw=%i, count_remain=%i, count_per_c=%i, dT=%i", ds18_family, raw, scratchpad[6], scratchpad[7], dT);
+		}
+		else
+		{ // DS18B20
+			uint8_t cfg = scratchpad[4] & 0x60;
+			if(cfg == 0x00) raw = raw & ~7;      // 9 bit resolution, 93.75 ms
+			else if(cfg == 0x20) raw = raw & ~3; // 10 bit res, 187.5 ms
+			else if(cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
+			raw = raw << 3; // multiply by 8
+			DS1820_LOG(DEBUG, "family=%x, raw=%i, cfg=%x (%i bit resolution)", ds18_family, raw, cfg, 9 + (cfg) / 32);
+		}
+
+		// Raw is t * 128
+		t = (raw / 128) * 100; // Whole degrees
+		int frac = (raw % 128) * 100 / 128; // Fractional degrees
+		t += t > 0 ? frac : -frac;
+
+		dsread = 0;
+		lastconv = g_secondsElapsed;
+		CHANNEL_Set(g_cfg.pins.channels[Pin], t, CHANNEL_SET_FLAG_SILENT);
+		DS1820_LOG(INFO, "Temp=%i.%02i", (int)t / 100, (int)t % 100);
+		
+		return;
+	}
+	
+	if(g_secondsElapsed % ds18_conversionPeriod == 0 || lastconv == 0) //dsread == 0
+	{
+		if(OWReset(Pin) == 0)
+		{
+			lastconv = -1; // reset lastconv to avoid immediate retry
+			DS1820_LOG(ERROR, "Reset failed");
+#if DS1820_DEBUG
+			// if device is not found, maybe "usleep" is not working as expected
+			// lets do usleepds() with numbers 50.000 and 100.00
+			// if all is well, it should take 50ms and 100ms
+			// if not, we need to "calibrate" the loop
+			int tempsleep = 5000;
+			portTickType actTick = portTICK_RATE_MS * xTaskGetTickCount();
+			usleepds(tempsleep);
+			int duration = (int)(portTICK_RATE_MS * xTaskGetTickCount() - actTick);
+
+			DS1820_LOG(DEBUG, "usleepds(%i) took %i ms ", tempsleep, duration);
+
+			tempsleep = 100000;
+			actTick = portTICK_RATE_MS * xTaskGetTickCount();
+			usleepds(tempsleep);
+			duration = (int)(portTICK_RATE_MS * xTaskGetTickCount() - actTick);
+
+			DS1820_LOG(DEBUG, "usleepds(%i) took %i ms ", tempsleep, duration);
+
+			if(duration < 95 || duration > 105)
+			{
+				// calc a new factor for usleepds
+				DS1820_LOG(ERROR, "usleepds duration divergates - proposed factor to adjust usleepds %f ", (float)100 / duration);
+			}
+#endif
+			return;
+		}
+
+		if(ds18_family == 0)
+		{
+			int discovered = DS1820_DiscoverFamily();
+			if(!discovered)
 			{
 				lastconv = -1; // reset lastconv to avoid immediate retry
-				DS1820_LOG(ERROR, "Reset failed");
-#if DS1820_DEBUG
-				// if device is not found, maybe "usleep" is not working as expected
-				// lets do usleepds() with numbers 50.000 and 100.00
-				// if all is well, it should take 50ms and 100ms
-				// if not, we need to "calibrate" the loop
-				int tempsleep = 5000;
-				portTickType actTick = portTICK_RATE_MS * xTaskGetTickCount();
-				usleepds(tempsleep);
-				int duration = (int)(portTICK_RATE_MS * xTaskGetTickCount() - actTick);
-
-				DS1820_LOG(DEBUG, "usleepds(%i) took %i ms ", tempsleep, duration);
-
-				tempsleep = 100000;
-				actTick = portTICK_RATE_MS * xTaskGetTickCount();
-				usleepds(tempsleep);
-				duration = (int)(portTICK_RATE_MS * xTaskGetTickCount() - actTick);
-
-				DS1820_LOG(DEBUG, "usleepds(%i) took %i ms ", tempsleep, duration);
-
-				if(duration < 95 || duration > 105)
-				{
-					// calc a new factor for usleepds
-					DS1820_LOG(ERROR, "usleepds duration divergates - proposed factor to adjust usleepds %f ", (float)100 / duration);
-				}
-#endif
-			}
-			else
-			{
-				if(ds18_family == 0)
-				{
-					int discovered = DS1820_DiscoverFamily();
-					if(!discovered)
-					{
-						lastconv = -1; // reset lastconv to avoid immediate retry
-						DS1820_LOG(ERROR, "Family not discovered");
-						return;
-					}
-				}
-
-				OWWriteByte(Pin, 0xCC);
-				OWWriteByte(Pin, 0x44);
-				DS1820_LOG(INFO, "Starting conversion");
-				dsread = 1;
-				errcount = 0;
+				DS1820_LOG(ERROR, "Family not discovered");
+				return;
 			}
 		}
+
+		DS1820_LOG(INFO, "Starting conversion");
+		OWWriteByte(Pin, SKIP_ROM);
+		OWWriteByte(Pin, CONVERT_T);
+
+		errcount = 0;
+		dsread = 1;
 	}
 }
