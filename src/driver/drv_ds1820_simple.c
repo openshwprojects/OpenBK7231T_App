@@ -21,13 +21,13 @@ static int ds18_conversionPeriod = 0;
 #define DS1820_LOG(x, fmt, ...) addLogAdv(LOG_##x, LOG_FEATURE_SENSOR, "DS1820[%i] - " fmt, Pin, ##__VA_ARGS__)
 
 // usleep adopted from DHT driver
-void usleepds(int r)
+static void usleepds(int r)
 {
 	HAL_Delay_us(r);
 }
 
 // add some "special timing" for Beken - works w/o and with powerSave 1 for me
-void usleepshort(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
+static void usleepshort(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 {
 #if PLATFORM_BEKEN
 	int newr = r / (3 * g_powersave + 1);		// devide by 4 if powerSave set to 1
@@ -43,7 +43,7 @@ void usleepshort(int r) //delay function do 10*r nops, because rtos_delay_millis
 #endif
 }
 
-void usleepmed(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
+static void usleepmed(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 {
 #if PLATFORM_BEKEN
 	int newr = 10 * r / (10 + 5 * g_powersave);		// devide by 1.5 powerSave set to 1
@@ -62,7 +62,7 @@ void usleepmed(int r) //delay function do 10*r nops, because rtos_delay_millisec
 #endif
 }
 
-void usleeplong(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
+static void usleeplong(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 {
 #if PLATFORM_BEKEN
 	int newr = 10 * r / (10 + 5 * g_powersave);		// devide by 1.5 powerSave set to 1
@@ -118,7 +118,7 @@ J 		Standard 	410
 #define READ_SCRATCHPAD 0xBE
 #define WRITE_SCRATCHPAD 0x4E
 
-int OWReset(int Pin)
+static int OWReset(int Pin)
 {
 	int result;
 
@@ -137,7 +137,7 @@ int OWReset(int Pin)
 //-----------------------------------------------------------------------------
 // Send a 1-Wire write bit. Provide 10us recovery time.
 //-----------------------------------------------------------------------------
-void OWWriteBit(int Pin, int bit)
+static void OWWriteBit(int Pin, int bit)
 {
 	if(bit)
 	{
@@ -166,7 +166,7 @@ void OWWriteBit(int Pin, int bit)
 //-----------------------------------------------------------------------------
 // Read a bit from the 1-Wire bus and return it. Provide 10us recovery time.
 //-----------------------------------------------------------------------------
-int OWReadBit(int Pin)
+static int OWReadBit(int Pin)
 {
 	int result;
 
@@ -186,7 +186,7 @@ int OWReadBit(int Pin)
 //-----------------------------------------------------------------------------
 // Poll if DS1820 temperature conversion is complete
 //-----------------------------------------------------------------------------
-int DS1820TConversionDone(int Pin)
+static int DS1820TConversionDone(int Pin)
 {
 	// Write '1' bit
 	OWWriteBit(Pin, 1);
@@ -198,7 +198,7 @@ int DS1820TConversionDone(int Pin)
 //-----------------------------------------------------------------------------
 // Write 1-Wire data byte
 //-----------------------------------------------------------------------------
-void OWWriteByte(int Pin, int data)
+static void OWWriteByte(int Pin, int data)
 {
 	int loop;
 
@@ -215,7 +215,7 @@ void OWWriteByte(int Pin, int data)
 //-----------------------------------------------------------------------------
 // Read 1-Wire data byte and return it
 //-----------------------------------------------------------------------------
-int OWReadByte(int Pin)
+static int OWReadByte(int Pin)
 {
 	int loop, result = 0;
 
@@ -234,7 +234,7 @@ int OWReadByte(int Pin)
 //-----------------------------------------------------------------------------
 // Write a 1-Wire data byte and return the sampled result.
 //-----------------------------------------------------------------------------
-int OWTouchByte(int Pin, int data)
+static int OWTouchByte(int Pin, int data)
 {
 	int loop, result = 0;
 
@@ -263,7 +263,7 @@ int OWTouchByte(int Pin, int data)
 // Dallas 1-Wire CRC Test App -
 //  x^8 + x^5 + x^4 + 1 0x8C (0x131)
 
-uint8_t Crc8CQuick(uint8_t* Buffer, uint8_t Size)
+static uint8_t Crc8CQuick(uint8_t* Buffer, uint8_t Size)
 {
 	// Nibble table for polynomial 0x8C
 	static const uint8_t CrcTable[] =
@@ -286,7 +286,7 @@ int DS1820_getTemp()
 	return t;
 }
 
-commandResult_t Cmd_SetResolution(const void* context, const char* cmd, const char* args, int cmdFlags) {
+static commandResult_t Cmd_SetResolution(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
@@ -343,7 +343,7 @@ void DS1820_AppendInformationToHTTPIndexPage(http_request_t* request)
 	hprintf255(request, "<h5>DS1820 Temperature: %.2f C (read %i secs ago)</h5>", (float)t / 100, g_secondsElapsed - lastconv);
 }
 
-int DS1820_DiscoverFamily()
+static int DS1820_DiscoverFamily()
 {
 	if(!OWReset(Pin))
 	{
