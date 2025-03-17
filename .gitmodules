@@ -53,3 +53,8 @@
 	path = sdk/OpenECR6600
 	url = https://github.com/NonPIayerCharacter/OpenECR6600.git
 	branch = master
+[submodule "libraries/berry"]
+	path = libraries/berry
+	url = https://github.com/berry-lang/berry.git
+  branch = master
+
