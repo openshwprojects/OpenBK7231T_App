@@ -662,11 +662,6 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     }
   }
 
-#ifdef ENABLE_BL_MOVINGAVG
-  power = XJ_MovingAverage_float((float)sensdataset->sensors[OBK_POWER].lastReading, power);
-  current = XJ_MovingAverage_float((float)sensdataset->sensors[OBK_CURRENT].lastReading, current);
-#endif
-
   sensdataset->sensors[OBK_VOLTAGE].lastReading = voltage;
   sensdataset->sensors[OBK_CURRENT].lastReading = current;
   sensdataset->sensors[OBK_POWER].lastReading = power;

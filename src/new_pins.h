@@ -1495,9 +1495,4 @@ int FV_GetStartupSSID_StoredValue(int adefault);
 void FV_UpdateStartupSSIDIfChanged_StoredValue(int assidindex);
 #endif
 
-#ifdef ENABLE_BL_MOVINGAVG
-float XJ_MovingAverage_float(float aprevvalue, float aactvalue);
-int XJ_MovingAverage_int(int aprevvalue, int aactvalue);
-#endif
-
 #endif
