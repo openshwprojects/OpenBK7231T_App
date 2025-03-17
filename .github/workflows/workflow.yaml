@@ -56,6 +56,7 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
   build2:
+    if: false
     name: Build Simulator
     needs: refs
     runs-on: windows-latest
@@ -106,7 +107,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [OpenBK7231N, OpenBK7238, OpenXR809, OpenBL602, OpenW800, OpenW600, OpenLN882H, OpenTR6260, OpenRTL8710A, OpenRTL8710B, OpenRTL87X0C, OpenRTL8720D, OpenECR6600]
+        #platform: [OpenBK7231N, OpenBK7238, OpenXR809, OpenBL602, OpenW800, OpenW600, OpenLN882H, OpenTR6260, OpenRTL8710A, OpenRTL8710B, OpenRTL87X0C, OpenRTL8720D, OpenECR6600]
+        platform: [OpenBK7231N]
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
@@ -147,6 +149,7 @@ jobs:
           if-no-files-found: warn
 
   build2004:
+    if: false
     name: Build
     needs: refs
     runs-on: ubuntu-20.04
@@ -184,6 +187,7 @@ jobs:
             output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.rbl
           if-no-files-found: warn
   build_idf:
+    if: false
     name: Build IDF
     needs: refs
     runs-on: ubuntu-22.04
@@ -233,7 +237,8 @@ jobs:
   merge:
     name: Merge Artifacts
     runs-on: ubuntu-22.04
-    needs: [refs, build, build2004, build2, build_idf]
+    #needs: [refs, build, build2004, build2, build_idf]
+    needs: [refs, build]
     #if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
     steps:
       - name: Merge Artifacts

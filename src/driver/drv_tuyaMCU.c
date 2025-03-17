@@ -439,6 +439,8 @@ int UART_TryToGetNextTuyaPacket(byte* out, int maxSize) {
 // append header, len, everything, checksum
 void TuyaMCU_SendCommandWithData(byte cmdType, byte* data, int payload_len) {
 	int i;
+	char dataStr[256];
+	char buffer2[4];
 	
 	byte check_sum = (0xFF + cmdType + (payload_len >> 8) + (payload_len & 0xFF));
 
@@ -456,6 +458,7 @@ void TuyaMCU_SendCommandWithData(byte cmdType, byte* data, int payload_len) {
 		p->data[3+payload_len] = check_sum;
 	}
 	else {
+		dataStr[0] = 0;
 		UART_SendByte(0x55);
 		UART_SendByte(0xAA);
 		UART_SendByte(0x00);         // version 00
@@ -466,9 +469,12 @@ void TuyaMCU_SendCommandWithData(byte cmdType, byte* data, int payload_len) {
 			byte b = data[i];
 			check_sum += b;
 			UART_SendByte(b);
+			snprintf(buffer2, sizeof(buffer2), "%02X ", data[i]);
+			strcat_safe(dataStr, buffer2, sizeof(dataStr));
 		}
 		UART_SendByte(check_sum);
 	}
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "Sent cmd 0x%X with data %s\n", cmdType, dataStr);
 }
 int TuyaMCU_AppendStateInternal(byte *buffer, int bufferMax, int currentLen, uint8_t id, int8_t type, void* value, int dataLen) {
 	if (currentLen + 4 + dataLen >= bufferMax) {
@@ -2051,7 +2057,7 @@ void TuyaMCU_RunWiFiUpdateAndPackets() {
 	{
 		if ((wifi_state == false) || (wifi_state_timer == 0))
 		{
-			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send SetWiFiState 4.\n");
+			addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "Will send SetWiFiState 4.\n");
 			Tuya_SetWifiState(4);
 			wifi_state = true;
 			wifi_state_timer++;
@@ -2060,7 +2066,7 @@ void TuyaMCU_RunWiFiUpdateAndPackets() {
 	else {
 		if ((wifi_state == true) || (wifi_state_timer == 0))
 		{
-			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send SetWiFiState %i.\n", (int)g_defaultTuyaMCUWiFiState);
+			addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "Will send SetWiFiState %i.\n", (int)g_defaultTuyaMCUWiFiState);
 
 			Tuya_SetWifiState(g_defaultTuyaMCUWiFiState);
 			wifi_state = false;
@@ -2121,7 +2127,7 @@ void TuyaMCU_RunStateMachine_V3() {
 	//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"UART ring buffer state: %i %i\n",g_recvBufIn,g_recvBufOut);
 
 	// extraDebug log level
-	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "TuyaMCU heartbeat_valid = %i, product_information_valid=%i,"
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "TuyaMCU heartbeat_valid = %i, product_information_valid=%i,"
 		" self_processing_mode = %i, wifi_state_valid = %i, wifi_state_timer=%i\n",
 		(int)heartbeat_valid, (int)product_information_valid, (int)self_processing_mode,
 		(int)wifi_state_valid, (int)wifi_state_timer);
@@ -2160,13 +2166,13 @@ void TuyaMCU_RunStateMachine_V3() {
 			/* Connection Active */
 			if (product_information_valid == false)
 			{
-				addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_QUERY_PRODUCT.\n");
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_QUERY_PRODUCT.\n");
 				/* Request production information */
 				TuyaMCU_SendCommandWithData(TUYA_CMD_QUERY_PRODUCT, NULL, 0);
 			}
 			else if (working_mode_valid == false)
 			{
-				addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_MCU_CONF.\n");
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_MCU_CONF.\n");
 				/* Request working mode */
 				TuyaMCU_SendCommandWithData(TUYA_CMD_MCU_CONF, NULL, 0);
 			}
@@ -2174,7 +2180,7 @@ void TuyaMCU_RunStateMachine_V3() {
 			{
 				/* Reset wifi state -> Aquirring network connection */
 				Tuya_SetWifiState(g_defaultTuyaMCUWiFiState);
-				addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_WIFI_STATE.\n");
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_WIFI_STATE.\n");
 				TuyaMCU_SendCommandWithData(TUYA_CMD_WIFI_STATE, NULL, 0);
 			}
 			else if (state_updated == false)
@@ -2186,7 +2192,7 @@ void TuyaMCU_RunStateMachine_V3() {
 				}
 				else {
 					/* Request first state of all DP - this should list all existing DP */
-					addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_QUERY_STATE (state_updated==false, try %i).\n",
+					addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "Will send TUYA_CMD_QUERY_STATE (state_updated==false, try %i).\n",
 						g_sendQueryStatePackets);
 					TuyaMCU_SendCommandWithData(TUYA_CMD_QUERY_STATE, NULL, 0);
 				}
