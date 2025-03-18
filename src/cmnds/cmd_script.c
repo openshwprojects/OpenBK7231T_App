@@ -238,6 +238,8 @@ scriptInstance_t *g_activeThread = 0;
 
 #if ENABLE_OBK_BERRY
 extern bvm* g_vm;
+// Function to properly cleanup Berry threads
+extern void berryThreadComplete(scriptInstance_t *thread);
 #endif
 
 scriptInstance_t *SVM_RegisterThread() {
@@ -363,12 +365,7 @@ void SVM_RunThread(scriptInstance_t *t, int maxLoops) {
 #if ENABLE_OBK_BERRY
 	if (t->isBerry && t->closureId > 0) {
 		berryResumeClosure(g_vm, t->closureId);
-		t->closureId = -1; // hacky, mark as done
-		t->isBerry = false;
-		t->curLine = 0; // NB. this stops the script from being run
-		t->curFile = 0;
-		t->uniqueID = 0;
-		t->currentDelayMS = 0;
+		berryThreadComplete(t);
 		return;
 	}
 #endif
@@ -560,16 +557,15 @@ void SVM_StopAllScripts() {
 		t->curFile = 0;
 		t->uniqueID = 0;
 		t->currentDelayMS = 0;
-
+#ifdef ENABLE_OBK_BERRY
+		if (t->isBerry) {
+			berryThreadComplete(t);
+		}
+#endif
 		t = t->next;
 	}
-
-#ifdef ENABLE_OBK_BERRY
-	if (g_vm) {
-		berryFreeAllClosures(g_vm);
-	}
-#endif
 }
+
 void SVM_StopScripts(int id, int bExcludeSelf) {
 	scriptInstance_t *t;
 
@@ -583,6 +579,11 @@ void SVM_StopScripts(int id, int bExcludeSelf) {
 				t->curFile = 0;
 				t->uniqueID = 0;
 				t->currentDelayMS = 0;
+#ifdef ENABLE_OBK_BERRY
+				if (t->isBerry) {
+					berryThreadComplete(t);
+				}
+#endif
 			} 
 		}
 		t = t->next;
@@ -835,6 +836,19 @@ commandResult_t CMD_resetSVM(const void *context, const char *cmd, const char *a
 
 	return CMD_RES_OK;
 }
+
+// Helper function to parse relation character for scripts and event handlers
+char parseRelationChar(const char *relationStr) {
+    if (*relationStr == '<') {
+        return '<';
+    } else if (*relationStr == '>') {
+        return '>';
+    } else if (*relationStr == '!') {
+        return '!';
+    } else {
+        return 0;
+    }
+}
 commandResult_t CMD_waitFor(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *s;
 	int reqArg, eventCode;
@@ -859,15 +873,7 @@ commandResult_t CMD_waitFor(const void *context, const char *cmd, const char *ar
 		return CMD_RES_BAD_ARGUMENT;
 	}
 	s = Tokenizer_GetArg(1);
-	if (*s == '<') {
-		relation = '<';
-	} else if (*s == '>') {
-		relation = '>';
-	} else if (*s == '!') {
-		relation = '!';
-	} else {
-		relation = 0;
-	}
+	relation = parseRelationChar(s);
 	if (relation) {
 		s = Tokenizer_GetArg(2);
 	}

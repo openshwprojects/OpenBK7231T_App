@@ -17,3 +17,4 @@ int be_stopI2c(bvm *vm);
 int be_writeByteI2c(bvm *vm);
 int be_readByteI2c(bvm *vm);
 int be_readBytesI2c(bvm *vm);
+int be_CancelThread(bvm *vm);

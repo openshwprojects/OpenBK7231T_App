@@ -153,6 +153,9 @@ void SIM_ClearOBK(const char *flashPath) {
 		UART_ResetForSimulator();
 		CMD_ExecuteCommand("clearAll", 0);
 		CMD_ExecuteCommand("led_expoMode", 0);
+#if ENABLE_OBK_BERRY
+		CMD_ExecuteCommand("stopBerry", 0);
+#endif
 		// LOG deinit after main init so commands will be re-added
 		LOG_DeInit();
 	}
@@ -194,6 +197,9 @@ void Win_DoUnitTests() {
 	Test_Commands_Startup();
 	Test_IF_Inside_Backlog();
 	Test_WaitFor();
+#if ENABLE_OBK_BERRY
+	Test_Berry();
+#endif
 	Test_TwoPWMsOneChannel();
 	Test_ClockEvents();
 #if ENABLE_HA_DISCOVERY

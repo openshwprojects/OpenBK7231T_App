@@ -1,9 +1,9 @@
 #include "be_bindings.h"
-#include "be_object.h"
 #include "../driver/drv_local.h"
 #include "../hal/hal_generic.h"
 #include "../new_cfg.h"
 #include "../new_pins.h"
+#include "be_object.h"
 
 int be_SetStartValue(bvm *vm) {
 	int top = be_top(vm);
@@ -160,4 +160,16 @@ int be_readBytesI2c(bvm *vm) {
 		be_return(vm);
 	}
 	be_return_nil(vm);
+}
+
+int be_CancelThread(bvm *vm) {
+	int top = be_top(vm);
+	if (top == 1 && be_isint(vm, 1)) {
+		int thread_id = be_toint(vm, 1);
+		SVM_StopScripts(thread_id, 0);
+		be_pushbool(vm, true);
+		be_return(vm);
+	}
+	be_pushbool(vm, false);
+	be_return(vm);
 }

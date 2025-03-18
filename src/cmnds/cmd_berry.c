@@ -30,17 +30,8 @@ int be_AddChangeHandler(bvm *vm) {
 		const char *relationStr = be_tostring(vm, 2);
 		int reqArg = be_toint(vm, 3);
 
-		// XXX: Copy paste
-		int relation = 0;
-		if (*relationStr == '<') {
-			relation = '<';
-		} else if (*relationStr == '>') {
-			relation = '>';
-		} else if (*relationStr == '!') {
-			relation = '!';
-		} else {
-			relation = 0;
-		}
+		int relation = parseRelationChar(relationStr);
+
 		int eventCode = EVENT_ParseEventName(eventName);
 		if (eventCode == CMD_EVENT_NONE) {
 			ADDLOG_INFO(LOG_FEATURE_EVENT, "be_AddChangeHandler: %s is not a valid event", eventName);
@@ -65,7 +56,8 @@ int be_AddChangeHandler(bvm *vm) {
 				ADDLOG_INFO(LOG_FEATURE_CMD, "be_AddChangeHandler: failed to alloc thread");
 				be_return_nil(vm);
 			}
-			th->uniqueID = 5000 + closure_id; // TODO: alloc IDs?
+			int thread_id = 5000 + closure_id; // TODO: alloc IDs?
+			th->uniqueID = thread_id;
 			th->curFile = NULL;
 			th->curLine = ""; // NB. needs to be != NULL to get scheduled
 			th->currentDelayMS = 0;
@@ -74,6 +66,13 @@ int be_AddChangeHandler(bvm *vm) {
 			th->waitingForRelation = relation;
 			th->isBerry = true;
 			th->closureId = closure_id;
+
+			// remove the 2 values we pushed on the stack
+			be_pop(vm, 2);
+
+			// Return the thread ID to Berry
+			be_pushint(vm, thread_id);
+			be_return(vm);
 		}
 		// remove the 2 values we pushed on the stack
 		be_pop(vm, 2);
@@ -103,12 +102,20 @@ int be_ScriptDelayMs(bvm *vm) {
 				ADDLOG_INFO(LOG_FEATURE_CMD, "be_delayMs: failed to alloc thread");
 				be_return_nil(vm);
 			}
-			th->uniqueID = 5000 + closure_id; // TODO: alloc IDs?
+			int thread_id = 5000 + closure_id; // TODO: alloc IDs?
+			th->uniqueID = thread_id;
 			th->curFile = NULL;
 			th->curLine = ""; // NB. needs to be != NULL to get scheduled
 			th->currentDelayMS = delay_ms;
 			th->isBerry = true;
 			th->closureId = closure_id;
+
+			// remove the 2 values we pushed on the stack
+			be_pop(vm, 2);
+
+			// Return the thread ID to Berry
+			be_pushint(vm, thread_id);
+			be_return(vm);
 		}
 		// remove the 2 values we pushed on the stack
 		be_pop(vm, 2);
@@ -137,6 +144,7 @@ static int BasicInit() {
 		be_regfunc(g_vm, "writeByteI2c", be_writeByteI2c);
 		be_regfunc(g_vm, "readByteI2c", be_readByteI2c);
 		be_regfunc(g_vm, "readBytesI2c", be_readBytesI2c);
+		be_regfunc(g_vm, "cancel", be_CancelThread);
 		if (!berryRun(g_vm, berryPrelude)) {
 			return 0;
 		}
@@ -151,12 +159,70 @@ static commandResult_t CMD_Berry(const void *context, const char *cmd, const cha
 	return CMD_RES_ERROR;
 }
 
+void berryThreadComplete(scriptInstance_t *thread) {
+	// Free the associated closure if it exists
+	if (thread->closureId > 0 && g_vm) {
+		// Get the _suspended_closures table from global scope
+		if (be_getglobal(g_vm, "_suspended_closures")) {
+			// Push the closure ID as the key
+			be_pushint(g_vm, thread->closureId);
+
+			// Push nil as the value
+			be_pushnil(g_vm);
+
+			// Set _suspended_closures[closureId] = nil
+			be_setindex(g_vm, -3);
+
+			// Pop the _suspended_closures table from the stack
+			be_pop(g_vm, 1);
+		}
+	}
+
+	// Reset all Berry-specific flags and data
+	thread->isBerry = false;
+	thread->closureId = -1;
+	thread->curLine = 0;
+	thread->curFile = 0;
+	thread->uniqueID = 0;
+	thread->currentDelayMS = 0;
+}
+
+// Useful for testing things that affect global state:
+//   * globals
+//   * module init()
+void stopBerrySVM() {
+	if (g_vm) {
+		// Find and stop any Berry script threads
+		scriptInstance_t *t = g_scriptThreads;
+		while (t) {
+			if (t->isBerry) {
+				berryThreadComplete(t);
+			}
+			t = t->next;
+		}
+	}
+}
+
+static commandResult_t CMD_StopBerry(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	if (g_vm) {
+		stopBerrySVM();
+		be_vm_delete(g_vm);
+		g_vm = NULL;
+	}
+	return CMD_RES_OK;
+}
+
 void CMD_InitBerry() {
 	// cmddetail:{"name":"berry","args":"[Berry code]",
 	// cmddetail:"descr":"Execute Berry code",
 	// cmddetail:"fn":"CMD_Berry","file":"cmnds/cmd_berry.c","requires":"",
 	// cmddetail:"examples":"berry 1+2"}
 	CMD_RegisterCommand("berry", CMD_Berry, NULL);
+	// cmddetail:{"name":"stopBerry","args":"[Berry code]",
+	// cmddetail:"descr":"Stop Berry VM",
+	// cmddetail:"fn":"CMD_StopBerry","file":"cmnds/cmd_berry.c","requires":"",
+	// cmddetail:"examples":"stopBerry"}
+	CMD_RegisterCommand("stopBerry", CMD_StopBerry, NULL);
 }
 
 #endif

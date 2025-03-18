@@ -39,6 +39,9 @@ typedef struct scriptInstance_s
 #endif
 } scriptInstance_t;
 
+scriptInstance_t *SVM_RegisterThread();
+extern scriptInstance_t *g_scriptThreads;
+
 typedef commandResult_t(*commandHandler_t)(const void* context, const char* cmd, const char* args, int flags);
 
 // command was entered in console (web app etc)
@@ -159,6 +162,9 @@ enum EventCode {
 };
 
 int EVENT_ParseEventName(const char *s);
+
+// Helper to parse relation characters (<, >, !) from string arguments
+char parseRelationChar(const char *relationStr);
 
 // the slider control in the UI emits values
 //in the range from 154-500 (defined
