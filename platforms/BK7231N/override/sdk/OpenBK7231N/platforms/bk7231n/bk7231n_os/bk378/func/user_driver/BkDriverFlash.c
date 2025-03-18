@@ -75,7 +75,7 @@ const bk_logic_partition_t bk7231_partitions[BK_PARTITION_MAX] =
     {
         .partition_owner           = BK_FLASH_EMBEDDED,
         .partition_description     = "NET info",
-        .partition_start_addr      = 0x1E9000,// for net related info
+        .partition_start_addr      = 0x1E8000,// for net related info
         .partition_length          = 0x1000,
         .partition_options         = PAR_OPT_READ_EN | PAR_OPT_WRITE_DIS,
     }
