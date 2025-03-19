@@ -731,7 +731,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
       }
     }
 
-    if ((energyCounterStatsEnable == true) && (asensdatasetix= BL_SENSORS_IX_0))
+    if ((energyCounterStatsEnable == true) && (asensdatasetix==BL_SENSORS_IX_0))
     {
       interval = energyCounterSampleInterval;
       interval *= (1000 / portTICK_PERIOD_MS);
