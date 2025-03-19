@@ -894,6 +894,14 @@ void BL_ProcessUpdate(float voltage, float current, float power,
           if (sensdataset->sensors[i].names.units == UNIT_WH) val = BL_ChangeEnergyUnitIfNeeded(val);
           MQTT_PublishMain_StringFloat(sensdataset->sensors[i].names.name_mqtt, val, sensdataset->sensors[i].rounding_decimals, OBK_PUBLISH_FLAG_QOS_ZERO);
         }
+        if ((asensdatasetix==BL_SENSORS_IX_0) && (i == OBK_VOLTAGE)) {
+          //20250319 XJIKKA to simplify and save space in flash frequency together with voltage
+          if (!isnan(lastReadingFrequency)) {
+            char schannel[4];
+            snprintf(schannel, sizeof(schannel), "%i", SPECIAL_CHANNEL_OBK_FREQUENCY);
+            MQTT_PublishMain_StringFloat(schannel, lastReadingFrequency, 2, OBK_PUBLISH_FLAG_QOS_ZERO);
+          }
+        }
         stat_updatesSent[asensdatasetix]++;
       }
 #endif

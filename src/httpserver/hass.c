@@ -292,6 +292,9 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 			isSensor = (type == BATTERY_VOLTAGE_SENSOR);
 			sprintf(g_hassBuffer, "Voltage");
 			break;
+		case FREQUENCY_SENSOR:
+			sprintf(g_hassBuffer, "Frequency");
+			break;
 		case ILLUMINANCE_SENSOR:
 			sprintf(g_hassBuffer, "Illuminance");
 			break;
