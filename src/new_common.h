@@ -212,6 +212,7 @@ This platform is not supported, error!
 
 #include <stdint.h>
 #include <netdb.h>  // For gethostbyname and struct hostent
+#include <limits.h>
 
 #else
 

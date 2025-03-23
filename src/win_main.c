@@ -536,5 +536,4 @@ int ota_total_bytes() {
 	return 0;
 }
 
-#endif
 
