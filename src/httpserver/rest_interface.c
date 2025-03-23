@@ -117,7 +117,7 @@ extern int ota_done(bool reset);
 
 #else
 
-extern UINT32 flash_read(char* user_buf, UINT32 count, UINT32 address);
+extern unsigned int flash_read(char* user_buf, unsigned int count, unsigned int address);
 
 #endif
 

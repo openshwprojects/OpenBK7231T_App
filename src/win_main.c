@@ -272,9 +272,35 @@ bool Float_EqualsEpsilon(float a, float b, float epsilon) {
 	float res = myFabs(a - b);
 	return res < epsilon;
 }
+#define VA_BUFFER_SIZE 4096
+#define VA_COUNT 4
+const char *va(const char *fmt, ...) {
+	va_list argList;
+	static int whi = 0;
+	static char buffer[VA_COUNT][VA_BUFFER_SIZE];
+
+	whi++;
+	whi %= VA_COUNT;
+	char *p = buffer[whi];
+
+	va_start(argList, fmt);
+	vsnprintf(p, VA_BUFFER_SIZE, fmt, argList);
+	va_end(argList);
+	return p;
+}
+
 
 #ifdef LINUX
 // fixes - temp
+#endif
+
+#if !ENABLE_SDL_WINDOW
+bool SIM_ReadDHT11(int pin, byte *data) {
+	return false;
+}
+void Sim_SendFakeBL0942Packet(float v, float c, float p) {
+
+}
 #endif
 
 int __cdecl main(int argc, char **argv)

@@ -64,23 +64,8 @@ float myFabs(float f);
 bool Float_Equals(float a, float b);
 bool Float_EqualsEpsilon(float a, float b, float epsilon);
 
-#define VA_BUFFER_SIZE 4096
-#define VA_COUNT 4
 
-inline const char *va(const char *fmt, ...) {
-	va_list argList;
-	static int whi = 0;
-	static char buffer[VA_COUNT][VA_BUFFER_SIZE];
-
-	whi++;
-	whi %= VA_COUNT;
-	char *p = buffer[whi];
-
-	va_start(argList, fmt);
-	vsnprintf(p, VA_BUFFER_SIZE, fmt, argList);
-	va_end(argList);
-	return p;
-}
+const char *va(const char *fmt, ...);
 
 void Test_Battery();
 void Test_Flash_Search();
