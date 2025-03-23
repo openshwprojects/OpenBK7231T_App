@@ -23,6 +23,11 @@
 #define GETSOCKETERRNO() (errno)
 #define ioctlsocket ioctl
 
+#elif WINDOWS
+
+#define ISVALIDSOCKET(s) ((s) != INVALID_SOCKET)
+#define GETSOCKETERRNO() (WSAGetLastError())
+
 #endif
 
 typedef struct altcp_pcb {

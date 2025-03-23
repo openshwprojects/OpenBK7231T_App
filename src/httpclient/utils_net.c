@@ -7,7 +7,6 @@
 #include "utils_net.h"
 #include "errno.h"
 #include "lwip/sockets.h"
-#include "lwip/netdb.h"
 #include "utils_timer.h"
 
 uintptr_t HAL_TCP_Establish(const char *host, uint16_t port)

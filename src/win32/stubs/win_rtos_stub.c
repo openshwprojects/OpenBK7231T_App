@@ -6,6 +6,8 @@
 
 #include <timeapi.h>
 
+#define GETSOCKETERRNO() (WSAGetLastError())
+
 #else
 
 #include <time.h>

@@ -164,7 +164,7 @@ void Test_GetJSONValue_Setup(const char *text);
 void Test_FakeHTTPClientPacket_GET(const char *tg);
 void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data);
 void Test_FakeHTTPClientPacket_POST_withJSONReply(const char *tg, const char *data);
-void Test_FakeHTTPClientPacket_JSON(const char *tg, ...);
+void Test_FakeHTTPClientPacket_JSON(const char *tg);
 const char *Test_GetLastHTMLReply();
 
 bool SIM_HasHTTPTemperature();
