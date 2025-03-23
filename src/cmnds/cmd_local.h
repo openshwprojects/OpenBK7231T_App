@@ -5,9 +5,7 @@
 
 typedef struct command_s {
 	const char *name;
-	const char *argsFormat;
 	commandHandler_t handler;
-	const char *userDesc;
 	const void *context;
 	struct command_s *next;
 } command_t;
@@ -16,13 +14,12 @@ command_t *CMD_Find(const char *name);
 // for autocompletion?
 void CMD_ListAllCommands(void *userData, void (*callback)(command_t *cmd, void *userData));
 int get_cmd(const char *s, char *dest, int maxlen, int stripnum);
-bool isWhiteSpace(char ch);
 
 
 float CMD_EvaluateExpression(const char *s, const char *stop);
 commandResult_t CMD_If(const void *context, const char *cmd, const char *args, int cmdFlags);
 void CMD_ExpandConstantsWithinString(const char *in, char *out, int outLen);
-const char *CMD_ExpandConstant(const char *s, const char *stop, float *out);
+void CMD_Script_ProcessWaitersForEvent(byte eventCode, int argument);
 
 #endif // __CMD_LOCAL_H__
 

@@ -80,7 +80,7 @@ void UCS1912_Init() {
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"UCS1912_Test","file":"driver/drv_ucs1912.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("UCS1912_Test", "", UCS1912_Test, NULL, NULL);
+    CMD_RegisterCommand("UCS1912_Test", UCS1912_Test, NULL);
 }
 
 

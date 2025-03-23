@@ -1,0 +1,150 @@
+[
+{
+"title": "[Configuration for EDM-01AA-EU dimmer with TuyaMCU](https://www.elektroda.com/rtvforum/topic3929151.html)",
+"file": "autoexecs/EDM-01AA-EU.bat"
+},
+{
+"title": "[Configuration for QIACHIP Universal WIFI Ceiling Fan Light Remote Control Kit - BK7231N - CB2S with TuyaMCU](https://www.elektroda.com/rtvforum/topic3895301.html)",
+"file": "autoexecs/QIACHIP-WiFi-Ceiling-Fan-Light.bat"
+},
+{
+"title": "[Configuration for BK7231T LCD calendar/thermometer/hygrometer TH06 WiFi for TuyaMCU](https://www.elektroda.com/rtvforum/viewtopic.php?p=20342890#20342890)",
+"file": "autoexecs/TH06-thermometer-hygrometer.bat"
+},
+{
+"title": "[Automatic relay turn off after given relay (aka inching)](https://www.elektroda.com/rtvforum/viewtopic.php?p=20797236#20797236)",
+"file": "autoexecs/turn_off_relay_after_time.bat"
+},
+{
+"title": "[Better turn off after time with timer on UI](https://www.elektroda.com/rtvforum/viewtopic.php?p=20797440#20797440)",
+"file": "autoexecs/turn_off_relay_after_time_advanced.bat"
+},
+{
+"title": "[Advanced turn off after time with timer on UI and timer setting on UI and kept in flash](https://www.elektroda.com/rtvforum/viewtopic.php?t=4032982&highlight=)",
+"file": "autoexecs/advanced_countdown_timer.bat"
+},
+{
+"title": "[Configuration for controlling LED strip with IR receiver by TV Remote](https://www.elektroda.com/rtvforum/topic3944210.html)",
+"file": "autoexecs/LED-strip-with-IR-receiver.bat"
+},
+{
+"title": "[Configuration for controlling Tuya 5 Speed Fan Controller by TEQOOZ - Home Assistant](https://www.elektroda.com/rtvforum/topic3908093.html)",
+"file": "autoexecs/TEQOOZ-SmartFanRegulatorWi-Fi.bat"
+},
+{
+"title": "[Configuration for controlling BlitzWolf BW-AF1 air fryer](https://www.elektroda.com/rtvforum/viewtopic.php?p=20448156#20448156)",
+"file": "autoexecs/BW-AF1-air-fryer.bat"
+},
+{
+"title": "[Configuration for Tuya ATORCH AT4P(WP/BW) Smartlife Energy monitor (BK7231N/C3BS/CH573F/BL0924)](https://www.elektroda.com/rtvforum/topic3941692.html)",
+"file": "autoexecs/ATORCH-AT4P-Smartlife-Energy-Monitor.bat"
+},
+{
+"title": "[Configuration for 4x socket + 1x USB power strip with a single button (double click, triple, etc)](https://www.elektroda.com/rtvforum/topic3941692.html)",
+"file": "autoexecs/single_button_for_five_relays.bat"
+},
+{
+"title": "[Script for LED acting like WiFi state LED during connecting to network but like Relay state LED when online](https://www.elektroda.com/rtvforum/viewtopic.php?p=20804036#20804036)",
+"file": "autoexecs/wifiled_and_relay_state.bat"
+},
+{
+"title": "Simple example showing how to do MQTT publish on button event (double click, etc). It also includes button hold event to adjust dimmer.",
+"file": "autoexecs/buttom_custom_events_mqtt_publishes.bat"
+},
+{
+"title": "Basic Ping Watchdog usage. Ping given IP with given interval and run script if there was no ping reply within given time.",
+"file": "autoexecs/ping_watchdog.bat"
+},
+{
+"title": "Alternate Ping Watchdog usage.",
+"file": "autoexecs/ping_watchdog2.bat"
+},
+{
+"title": "[Artificial delay for relay open (and no delay for close)](https://www.elektroda.com/rtvforum/viewtopic.php?p=20940593#20940593)",
+"file": "autoexecs/relay_open_delay.bat"
+},
+{
+"title": "HTTP-only control of Tasmota/OBK device from OBK.",
+"file": "autoexecs/http_calls.bat"
+},
+{
+"title": "NTP and 'waitFor' command example. You can use 'waitFor NTPState 1' in autoexec.bat to wait for NTP sync. After that, you can be sure that correct time is set. 'waitFor' will block execution until given event.",
+"file": "autoexecs/waiting_for_NTP_sync.bat"
+},
+{
+"title": "MQTT and 'waitFor' command example. You can use 'waitFor MQTTState 1' in autoexec.bat to wait for MQTT connection. After that, you can be sure that MATT is online. 'waitFor' will block execution until given event.",
+"file": "autoexecs/waiting_for_MQTT_connect.bat"
+},
+{
+"title": "WaitFor advanced syntax.",
+"file": "autoexecs/waitfor_syntax.bat"
+},
+{
+"title": "This script will use NTP and 'addClockEvent' to change light styles in the morning and in the evening. Here you can see how  'waitFor NTPState 1' and 'addClockEvent' and $hour script functions/variables are used.",
+"file": "autoexecs/automatic_day_and_night_lights.bat"
+},
+{
+"title": "Alternate 'addClockEvent' demo - just like previous one, but written by using AddEventHandler instead of waitFor",
+"file": "autoexecs/automatic_day_and_night_lights_v2.bat"
+},
+{
+"title": "A more complete demo with the addition of: An NTP server configured on the LAN, off/low/high modes for the lights, make use of sunset event and constant to determine when the light should start to be on.",
+"file": "autoexecs/automatic_day_and_night_lights_v3.bat"
+},
+{
+"title": "Simple UART log redirection to UART1 instead of UART2 on Beken with UART command line support",
+"file": "autoexecs/logging_for_uart1.bat"
+},
+{
+"title": "Simple single LED blink on device boot",
+"file": "autoexecs/blink_led_on_device_boot.bat"
+},
+{
+"title": "[Advanced config for TuyaMCU power meter and electric car charging limit driver](https://www.elektroda.com/rtvforum/topic3936455.html)",
+"file": "autoexecs/TAC2121C_tuyaMCU_and_car_chargerLimit.bat"
+},
+{
+"title": "Advanced I2C driver for multiple devices on single bus - TC74 example",
+"file": "autoexecs/soft_i2c_tc74.bat"
+},
+{
+"title": "Deep sleep usage with SHT30 sensor and data reporting via HTTP GET",
+"file": "autoexecs/deep_sleep_temp_sensor_http.bat"
+},
+{
+"title": "[Deep sleep usage for water sensor with PWM buzzer](https://www.elektroda.com/rtvforum/viewtopic.php?p=21096228#21096228)",
+"file": "autoexecs/deep_sleep_water_sensor_withBuzzer.bat"
+},
+{
+"title": "Manual flash save example for TuyaMCU - using special Channels 200, 201, etc",
+"file": "autoexecs/manual_tuyamcu_flash_save.bat"
+},
+{
+"title": "[Shift register setup, usage and control with channels](https://www.elektroda.com/rtvforum/viewtopic.php?p=20533505#20533505)",
+"file": "autoexecs/shiftRegister.bat"
+},
+{
+"title": "[Custom countdown/timer system with HTTP GUI for TuyaMCU relay](https://www.elektroda.com/rtvforum/topic4009196.html)",
+"file": "autoexecs/custom_timer_for_relay.bat"
+},
+{
+"title": "[Setup for EZB-WBZS1H16N-A V1.0 Tuya mini smart switch showing sunrise/sunset events](https://www.elektroda.com/rtvforum/topic3967141.html)",
+"file": "autoexecs/sunrise_sunset.bat"
+},
+{
+"title": "[Setup for PJ-MGW1103 T-Clamp TuyaMCU with a device state request demonstation](https://www.elektroda.com/rtvforum/viewtopic.php?p=20882983#20882983)",
+"file": "autoexecs/PJ-MGW1103_CT-Clamp_tuyaMCU_with_request.bat"
+},
+{
+"title": "[TOMPD-63-WIFI TuyaMCU power meter config with alternate HTML panel hosted in LittleFS](https://www.elektroda.com/rtvforum/topic4040354.html)",
+"file": "autoexecs/TOMPD-63-WIFI.bat"
+},
+{
+"title": "[PJ-MGW1103 CT-Clamp Energy Meter sample for combining two dpIDs (sign and value) into one channel](https://www.elektroda.com/rtvforum/viewtopic.php?p=21125206#21125206)",
+"file": "autoexecs/combine_sign_and_value.bat"
+},
+{
+"title": "[Scripting custom light animation/styles for TuyaMCU](https://www.elektroda.com/rtvforum/topic4014389.html)",
+"file": "autoexecs/tuyamcu_light_styles.bat"
+}
+]

@@ -33,46 +33,13 @@ our DHT sensors wrapper is in drv_dht.c
 #include "drv_local.h"
 #include "drv_dht_internal.h"
 #include <math.h>
+#include "../hal/hal_generic.h"
 
 #define TIMEOUT UINT32_MAX
 
 void usleep2(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 {
-#ifdef WIN32
-	// not possible on Windows port
-#elif PLATFORM_BL602 
-	for (volatile int i = 0; i < r; i++) {
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-	}
-#elif PLATFORM_W600
-	for (volatile int i = 0; i < r; i++) {
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-	}
-#else
-	for (volatile int i = 0; i < r; i++) {
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-	}
-#endif
+	HAL_Delay_us(r);
 }
 
 #define delay(x) usleep2(x*1000);
@@ -276,26 +243,23 @@ float DHT_computeHeatIndexInternal(dht_t *dht, float temperature, float percentH
  *  @param  force
  *          true if using force mode
  *	@return float value
- */
+ */	
 bool DHT_read(dht_t *dht, bool force) {
 	byte *data = dht->data;
 	// Check if sensor was read less than two seconds ago and return early
 	// to use last reading.
-	uint32_t currenttime = Time_getUpTimeSeconds();
+	uint32_t currenttime = g_secondsElapsed;
 	if (!force && ((currenttime - dht->_lastreadtime) < 3)) {
 		return dht->_lastresult; // return last correct measurement
 	}
 	dht->_lastreadtime = currenttime;
 
 #if WINDOWS
+	bool SIM_ReadDHT11(int pin, byte *data);
+
 	dht->_lastresult = true;
-	data[0] = data[1] = data[2] = data[3] = data[4] = 0;
-	// temp 19
-	data[2] = 19;
-	// humidity 67.8
-	data[0] = 67;
-	data[1] = 0;
-	return true;
+
+	return SIM_ReadDHT11(dht->_pin, data);
 #endif
 	// Reset 40 bits of received data to zero.
 	data[0] = data[1] = data[2] = data[3] = data[4] = 0;

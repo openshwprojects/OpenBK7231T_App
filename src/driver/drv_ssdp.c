@@ -25,6 +25,7 @@
 #include "lwip/inet.h"
 #include "../obk_config.h"
 #include "../httpserver/new_http.h"
+#include "drv_public.h"
 //#include "common_math.h"
 
 extern int DRV_SSDP_Active;
@@ -62,7 +63,7 @@ typedef struct OBK_DEVICE_tag{
     int timeout; // seconds
 } OBK_DEVICE;
 
-OBK_DEVICE obkDevices[MAX_OBK_DEVICES];
+static OBK_DEVICE obkDevices[MAX_OBK_DEVICES];
 
 static void obkDeviceTick(uint32_t ip){
     int i;
@@ -230,15 +231,30 @@ static const char message_template[] =
 /*"DATE: Sat, 22 Oct 2016 14:44:26 GMT\r\n"*/ \
 ;
 
+void DRV_WEMO_Send_Advert_To(int mode, struct sockaddr_in *addr);
+void DRV_HUE_Send_Advert_To(struct sockaddr_in *addr);
 
-static void DRV_SSDP_Send_Advert_To(struct sockaddr_in *addr) {
+void DRV_SSDP_SendReply(struct sockaddr_in *addr, const char *message) {
+
 	int nbytes;
+	if (g_ssdp_socket_receive <= 0) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "DRV_SSDP_SendReply: no socket");
+		return;
+	}
+	// set up destination address
+	//
+	nbytes = sendto(
+		g_ssdp_socket_receive,
+		(const char*)message,
+		strlen(message),
+		0,
+		(struct sockaddr*) addr,
+		sizeof(struct sockaddr)
+	);
+}
+static void DRV_SSDP_Send_Advert_To(struct sockaddr_in *addr) {
     const char *myip = HAL_GetMyIPString();
 
-	if (g_ssdp_socket_receive <= 0) {
-    	addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP,"DRV_SSDP_Send_Advert_To: no socket");
-		return ;
-	}
 
     if (!advert_message){
         advert_maxlen = strlen(message_template) +  100;
@@ -250,16 +266,7 @@ static void DRV_SSDP_Send_Advert_To(struct sockaddr_in *addr) {
         g_ssdp_uuid, 
         g_ssdp_uuid);
 
-    // set up destination address
-    //
-    nbytes = sendto(
-        g_ssdp_socket_receive,
-        (const char*) advert_message,
-        strlen(advert_message),
-        0,
-        (struct sockaddr*) addr,
-        sizeof(struct sockaddr)
-    );
+	DRV_SSDP_SendReply(addr,advert_message);
 
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"DRV_SSDP_Send_Advert_To: sent message");
 }
@@ -428,14 +435,14 @@ void DRV_SSDP_Init()
     );
 
 	DRV_SSDP_CreateSocket_Receive();
-    HTTP_RegisterCallback("/ssdp.xml", HTTP_GET, DRV_SSDP_Service_Http);
+    HTTP_RegisterCallback("/ssdp.xml", HTTP_GET, DRV_SSDP_Service_Http, 0);
 	//cmddetail:{"name":"obkDeviceList","args":"",
 	//cmddetail:"descr":"Generate the SSDP list of OpenBeken devices found on the network.",
 	//cmddetail:"fn":"Cmd_obkDeviceList","file":"driver/drv_ssdp.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("obkDeviceList", "", Cmd_obkDeviceList, NULL, NULL);
+    CMD_RegisterCommand("obkDeviceList", Cmd_obkDeviceList, NULL);
 
-    HTTP_RegisterCallback("/obkdevicelist", HTTP_GET, http_rest_get_devicelist);
+    HTTP_RegisterCallback("/obkdevicelist", HTTP_GET, http_rest_get_devicelist, 0);
 
     DRV_SSDP_Active = 1;
 }
@@ -513,7 +520,34 @@ void DRV_SSDP_RunQuickTick() {
     if (!strncmp(udp_msgbuf, "M-SEARCH", 8)){
         // reply with our advert to the sender
         addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_HTTP,"Is MSEARCH - responding");
-        DRV_SSDP_Send_Advert_To(&addr);
+#if ENABLE_DRIVER_WEMO
+		if (DRV_IsRunning("WEMO")) {
+			if (strcasestr(udp_msgbuf, "urn:belkin:device:**")) {
+				DRV_WEMO_Send_Advert_To(1, &addr);
+				return;
+			}
+			else if (strcasestr(udp_msgbuf, "upnp:rootdevice")
+				|| strcasestr(udp_msgbuf, "ssdpsearch:all")
+				|| strcasestr(udp_msgbuf, "ssdp:all")) {
+				DRV_WEMO_Send_Advert_To(2, &addr);
+				return;
+			}
+		}
+#endif
+#if ENABLE_DRIVER_HUE
+		if (DRV_IsRunning("HUE")) {
+			if (strcasestr(udp_msgbuf, ":device:basic:1")
+				|| strcasestr(udp_msgbuf, "upnp:rootdevice")
+				|| strcasestr(udp_msgbuf, "ssdpsearch:all")
+				|| strcasestr(udp_msgbuf, "ssdp:all")) {
+				addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "SSDP has received HUE PACKET");
+				addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, udp_msgbuf);
+				DRV_HUE_Send_Advert_To(&addr);
+				return;
+			}
+		}
+#endif
+		DRV_SSDP_Send_Advert_To(&addr);
     }
 
     // our NOTIFTY like:

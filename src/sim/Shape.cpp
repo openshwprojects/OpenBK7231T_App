@@ -9,7 +9,7 @@
 #include "Controller_Button.h"
 
 CShape::~CShape() {
-	for (int i = 0; i < shapes.size(); i++) {
+	for (unsigned int i = 0; i < shapes.size(); i++) {
 		delete shapes[i];
 	}
 	shapes.clear();
@@ -21,7 +21,7 @@ CShape::~CShape() {
 class CShape *CShape::findShapeByName_r(const char *name) {
 	if (this->hasName(name))
 		return this;
-	for (int i = 0; i < shapes.size(); i++) {
+	for (unsigned int i = 0; i < shapes.size(); i++) {
 		CShape *r = shapes[i]->findShapeByName_r(name);
 		if (r != 0)
 			return r;
@@ -44,7 +44,7 @@ void CShape::cloneShapeTo(CShape *o) {
 	o->bounds = this->bounds;
 	o->bFill = this->bFill;
 	o->rotationAccum = this->rotationAccum;
-	for (int i = 0; i < shapes.size(); i++) {
+	for (unsigned int i = 0; i < shapes.size(); i++) {
 		o->addShape(shapes[i]->cloneShape());
 	}
 	if (this->controller != 0) {
@@ -66,8 +66,8 @@ float CShape::drawInformation2D(float x, float h) {
 	h = drawPrivateInformation2D(x, h);
 	if (shapes.size()) {
 		h = drawText(NULL, x, h, "SubShapes: %i", shapes.size());
-		for (int i = 0; i < shapes.size(); i++) {
-			h = drawText(NULL, x + 20, h, "SubShape: %i/%i", i, shapes.size());
+		for (unsigned int i = 0; i < shapes.size(); i++) {
+			h = drawText(NULL, x + 20, h, "SubShape: %i/%i", i+1, shapes.size());
 			h = shapes[i]->drawInformation2D(x + 40, h);
 		}
 	}
@@ -75,7 +75,7 @@ float CShape::drawInformation2D(float x, float h) {
 }
 
 void CShape::translateEachChild(float oX, float oY) {
-	for (int i = 0; i < shapes.size(); i++) {
+	for (unsigned int i = 0; i < shapes.size(); i++) {
 		shapes[i]->translate(oX, oY);
 	}
 }
@@ -94,7 +94,7 @@ void CShape::rotateDegreesAround(float f, const Coord &p) {
 	if (controller != 0) {
 		controller->rotateDegreesAround(f, p_i);
 	}
-	for (int i = 0; i < shapes.size(); i++) {
+	for (unsigned int i = 0; i < shapes.size(); i++) {
 		shapes[i]->rotateDegreesAround(f, p_i);
 	}
 	recalcBoundsAll();
@@ -112,7 +112,7 @@ void CShape::recalcBoundsAll() {
 		bounds.addBounds(shapes[i]->getBounds(), shapes[i]->getPosition());
 	}
 }
-class CShape* CShape::addLine(int x, int y, int x2, int y2) {
+class CShape* CShape::addLine(float x, float y, float x2, float y2) {
 	CLine *n = new CLine(x, y, x2, y2);
 	addShape(n);
 	return n;
@@ -122,7 +122,7 @@ class CShape* CShape::addShape(CShape *p) {
 	shapes.push_back(p);
 	return p;
 }
-class CJunction* CShape::addJunction(int x, int y, const char *name, int gpio) {
+class CJunction* CShape::addJunction(float x, float y, const char *name, int gpio) {
 	CJunction *n = new CJunction(x, y, name, gpio);
 	addShape(n);
 	return n;
@@ -132,12 +132,12 @@ class CShape* CShape::addCircle(float x, float y, float r) {
 	addShape(n);
 	return n;
 }
-class CShape* CShape::addRect(int x, int y, int w, int h) {
+class CShape* CShape::addRect(float x, float y, float w, float h) {
 	CRect *n = new CRect(x, y, w, h);
 	addShape(n);
 	return n;
 }
-class CShape* CShape::addText(int x, int y, const char *s, bool bDeepText, bool bAllowNewLine) {
+class CShape* CShape::addText(float x, float y, const char *s, bool bDeepText, bool bAllowNewLine) {
 	CText *n = new CText(x, y, s);
 	n->setDeepText(bDeepText);
 	n->setAllowNewLine(bAllowNewLine);
@@ -156,7 +156,7 @@ Coord CShape::getAbsPosition() const {
 void CShape::translate(const Coord &ofs) {
 	pos += ofs;
 	// special handling for connected wires
-	for (int i = 0; i < shapes.size(); i++) {
+	for (unsigned int i = 0; i < shapes.size(); i++) {
 		CShape *o = shapes[i];
 		if (o->isJunction() == false)
 			continue;
@@ -185,7 +185,7 @@ void CShape::drawWithChildren(int depth) {
 	drawShape();
 	glPushMatrix();
 	glTranslatef(getX(), getY(), 0);
-	for (int i = 0; i < shapes.size(); i++) {
+	for (unsigned int i = 0; i < shapes.size(); i++) {
 		shapes[i]->drawWithChildren(depth + 1);
 	}
 	//recalcBoundsAll();

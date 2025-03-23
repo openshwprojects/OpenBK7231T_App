@@ -4,15 +4,16 @@
 #include "httpserver/new_http.h"
 #include "new_pins.h"
 #include "new_cfg.h"
+#include "mqtt/new_mqtt.h"
 #include "hal/hal_wifi.h"
 #include "hal/hal_flashConfig.h"
 #include "cmnds/cmd_public.h"
-#ifdef BK_LITTLEFS
+#if ENABLE_LITTLEFS
 #include "littlefs/our_lfs.h"
 #endif
 
 
-#define DEFAULT_BOOT_SUCCESS_TIME 30
+#define DEFAULT_BOOT_SUCCESS_TIME 5
 
 mainConfig_t g_cfg;
 int g_configInitialized = 0;
@@ -22,86 +23,39 @@ int g_cfg_pendingChanges = 0;
 #define CFG_IDENT_1 'F'
 #define CFG_IDENT_2 'G'
 
+#define MAIN_CFG_VERSION_V3 3
+// version 4 - bumped size by 1024,
+// added alternate ssid fields
+#if PLATFORM_W600
 #define MAIN_CFG_VERSION 3
+#else
+#define MAIN_CFG_VERSION 5
+#endif
 
-// version v1
-// Version v2 is now flexible and doesnt have to be duplicated
-// in order to support previous versions any more
-// Version v3 moves shortName to MQTT Client ID
-typedef struct mainConfig_v1_s {
-	byte ident0;
-	byte ident1;
-	byte ident2;
-	byte crc;
-	int version;
-	// unused
-	int genericFlags;
-	// unused
-	int genericFlags2;
-	unsigned short changeCounter;
-	unsigned short otaCounter;
-	// target wifi credentials
-	char wifi_ssid[64];
-	char wifi_pass[64];
-	// MQTT information for Home Assistant
-	char mqtt_host[256];
-	char mqtt_clientId[64]; // was mqtt_brokerName[]
-	char mqtt_userName[64];
-	char mqtt_pass[128];
-	int mqtt_port;
-	// addon JavaScript panel is hosted on external server
-	char webappRoot[64];
-	// TODO?
-	byte mac[6];
-	// TODO?
-	char shortDeviceName[32];
-	char longDeviceName[64];
-	pinsState_t pins;
-	byte unusedSectorA[256];
-	byte unusedSectorB[128];
-	byte unusedSectorC[128];
-	char initCommandLine[512];
-} mainConfig_v1_t;
-
-static byte CFG_CalcChecksum_V1(mainConfig_v1_t *inf) {
-	byte crc = 0;
-	crc ^= Tiny_CRC8((const char*)&inf->version,sizeof(inf->version));
-	crc ^= Tiny_CRC8((const char*)&inf->changeCounter,sizeof(inf->changeCounter));
-	crc ^= Tiny_CRC8((const char*)&inf->otaCounter,sizeof(inf->otaCounter));
-	crc ^= Tiny_CRC8((const char*)&inf->genericFlags,sizeof(inf->genericFlags));
-	crc ^= Tiny_CRC8((const char*)&inf->genericFlags2,sizeof(inf->genericFlags2));
-	crc ^= Tiny_CRC8((const char*)&inf->wifi_ssid,sizeof(inf->wifi_ssid));
-	crc ^= Tiny_CRC8((const char*)&inf->wifi_pass,sizeof(inf->wifi_pass));
-	crc ^= Tiny_CRC8((const char*)&inf->mqtt_host,sizeof(inf->mqtt_host));
-	crc ^= Tiny_CRC8((const char*)&inf->mqtt_clientId,sizeof(inf->mqtt_clientId));
-	crc ^= Tiny_CRC8((const char*)&inf->mqtt_userName,sizeof(inf->mqtt_userName));
-	crc ^= Tiny_CRC8((const char*)&inf->mqtt_pass,sizeof(inf->mqtt_pass));
-	crc ^= Tiny_CRC8((const char*)&inf->mqtt_port,sizeof(inf->mqtt_port));
-	crc ^= Tiny_CRC8((const char*)&inf->webappRoot,sizeof(inf->webappRoot));
-	crc ^= Tiny_CRC8((const char*)&inf->mac,sizeof(inf->mac));
-	crc ^= Tiny_CRC8((const char*)&inf->shortDeviceName,sizeof(inf->shortDeviceName));
-	crc ^= Tiny_CRC8((const char*)&inf->longDeviceName,sizeof(inf->longDeviceName));
-	crc ^= Tiny_CRC8((const char*)&inf->pins,sizeof(inf->pins));
-	crc ^= Tiny_CRC8((const char*)&inf->unusedSectorA,sizeof(inf->unusedSectorA));
-	crc ^= Tiny_CRC8((const char*)&inf->unusedSectorB,sizeof(inf->unusedSectorB));
-	crc ^= Tiny_CRC8((const char*)&inf->unusedSectorC,sizeof(inf->unusedSectorC));
-	crc ^= Tiny_CRC8((const char*)&inf->initCommandLine,sizeof(inf->initCommandLine));
-
-	return crc;
-}
 static byte CFG_CalcChecksum(mainConfig_t *inf) {
 	int header_size;
 	int remaining_size;
 	byte crc;
+	int configSize;
 
-	if(inf->version <= 1) {
-		return CFG_CalcChecksum_V1((mainConfig_v1_t *)inf);
-	}
 	header_size = ((byte*)&inf->version)-((byte*)inf);
-	remaining_size = sizeof(mainConfig_t) - header_size;
+
+	if (inf->version == MAIN_CFG_VERSION_V3) {
+		configSize = MAGIC_CONFIG_SIZE_V3;
+#if ALLOW_SSID2
+		// quick fix for converting
+		inf->wifi_pass2[0] = 0;
+		inf->wifi_ssid2[0] = 0;
+#endif
+	}
+	else
+	{
+		configSize = sizeof(mainConfig_t);
+	}
+	remaining_size = configSize - header_size;
 
 	ADDLOG_DEBUG(LOG_FEATURE_CFG, "CFG_CalcChecksum: header size %i, total size %i, rem size %i\n",
-		header_size, sizeof(mainConfig_t), remaining_size);
+		header_size, configSize, remaining_size);
 
 	// This is more flexible method and won't be affected by field offsets
 	crc = Tiny_CRC8((const char*)&inf->version,remaining_size);
@@ -140,6 +94,10 @@ void CFG_SetDefaultLEDCorrectionTable() {
 void CFG_MarkAsDirty() {
 	g_cfg_pendingChanges++;
 }
+void CFG_ClearIO() {
+	memset(&g_cfg.pins, 0, sizeof(g_cfg.pins));
+	g_cfg_pendingChanges++;
+}
 void CFG_SetDefaultConfig() {
 	// must be unsigned, else print below prints negatives as e.g. FFFFFFFe
 	unsigned char mac[6] = { 0 };
@@ -174,7 +132,32 @@ void CFG_SetDefaultConfig() {
 	snprintf(g_cfg.longDeviceName, sizeof(g_cfg.longDeviceName), DEVICENAME_PREFIX_FULL"_%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
 	snprintf(g_cfg.shortDeviceName, sizeof(g_cfg.shortDeviceName), DEVICENAME_PREFIX_SHORT"%02X%02X%02X%02X",mac[2],mac[3],mac[4],mac[5]);
 	strcpy_safe(g_cfg.mqtt_clientId, g_cfg.shortDeviceName, sizeof(g_cfg.mqtt_clientId));
+
+	// group topic will be unique for each platform, so it's easy
+	// to do group OTA without worrying about feeding wrong RBL for wrong platform
+#if PLATFORM_BK7231T
+	strcpy_safe(g_cfg.mqtt_group, "bekens_t", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_BK7231N
+	strcpy_safe(g_cfg.mqtt_group, "bekens_n", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_W600
+	strcpy_safe(g_cfg.mqtt_group, "w600s", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_W800
+	strcpy_safe(g_cfg.mqtt_group, "w800s", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_XR809
+	strcpy_safe(g_cfg.mqtt_group, "xr809s", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_BL602
+	strcpy_safe(g_cfg.mqtt_group, "bl602s", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_ESPIDF
+	strcpy_safe(g_cfg.mqtt_group, "esp", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_TR6260
+	strcpy_safe(g_cfg.mqtt_group, "tr6260", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_RTL87X0C
+	strcpy_safe(g_cfg.mqtt_group, "rtl87x0c", sizeof(g_cfg.mqtt_group));
+#elif WINDOWS
 	strcpy_safe(g_cfg.mqtt_group, "bekens", sizeof(g_cfg.mqtt_group));
+#else
+	strcpy_safe(g_cfg.mqtt_group, "obks", sizeof(g_cfg.mqtt_group));
+#endif
 
 	strcpy(g_cfg.ntpServer, DEFAULT_NTP_SERVER);
 
@@ -188,12 +171,38 @@ void CFG_SetDefaultConfig() {
 
 	// This is helpful for users
 	CFG_SetFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEONCONNECT,true);
-
+	// this is helpful for debuging wifi issues
+#if PLATFORM_BEKEN
+	//CFG_SetFlag(OBK_FLAG_CMD_ACCEPT_UART_COMMANDS, true);
+#endif
+	
 	CFG_SetDefaultLEDCorrectionTable();
+
+#if MQTT_USE_TLS
+	CFG_SetMQTTUseTls(0);
+	CFG_SetMQTTVerifyTlsCert(0);
+	CFG_SetMQTTCertFile("");
+	CFG_SetDisableWebServer(0);
+#endif
 
 	g_cfg_pendingChanges++;
 }
 
+void CFG_SetLEDRemap(int r, int g, int b, int c, int w) {
+	if (g_cfg.ledRemap.r != r || g_cfg.ledRemap.g != g || g_cfg.ledRemap.b != b || g_cfg.ledRemap.c != c || g_cfg.ledRemap.w != w) {
+		g_cfg.ledRemap.r = r;
+		g_cfg.ledRemap.g = g;
+		g_cfg.ledRemap.b = b;
+		g_cfg.ledRemap.c = c;
+		g_cfg.ledRemap.w = w;
+		CFG_MarkAsDirty();
+	}
+}
+void CFG_SetDefaultLEDRemap(int r, int g, int b, int c, int w) {
+	if (g_cfg.ledRemap.r == 0 && g_cfg.ledRemap.g == 0 && g_cfg.ledRemap.b == 0 && g_cfg.ledRemap.c == 0 && g_cfg.ledRemap.w == 0) {
+		CFG_SetLEDRemap(r, g, b, c, w);
+	}
+}
 const char *CFG_GetWebappRoot(){
 	return g_cfg.webappRoot;
 }
@@ -291,6 +300,7 @@ int CFG_GetMQTTPort() {
 	return g_cfg.mqtt_port;
 }
 void CFG_SetShortDeviceName(const char *s) {
+
 	// this will return non-zero if there were any changes
 	if(strcpy_safe_checkForChanges(g_cfg.shortDeviceName, s,sizeof(g_cfg.shortDeviceName))) {
 		// mark as dirty (value has changed)
@@ -332,14 +342,30 @@ const char *CFG_GetWiFiPass(){
 	wifi_pass[sizeof(g_cfg.wifi_pass)] = 0;
 	return wifi_pass;
 }
-void CFG_SetWiFiSSID(const char *s) {
+const char *CFG_GetWiFiSSID2() {
+#if ALLOW_SSID2
+	return g_cfg.wifi_ssid2;
+#else
+	return "";
+#endif
+}
+const char *CFG_GetWiFiPass2() {
+#if ALLOW_SSID2
+	return g_cfg.wifi_pass2;
+#else
+	return "";
+#endif
+}
+int CFG_SetWiFiSSID(const char *s) {
 	// this will return non-zero if there were any changes
 	if(strcpy_safe_checkForChanges(g_cfg.wifi_ssid, s,sizeof(g_cfg.wifi_ssid))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
+		return 1;
 	}
+	return 0;
 }
-void CFG_SetWiFiPass(const char *s) {
+int CFG_SetWiFiPass(const char *s) {
 	uint32_t len;
 
 	len = strlen(s) + 1;
@@ -349,7 +375,30 @@ void CFG_SetWiFiPass(const char *s) {
 		memcpy(g_cfg.wifi_pass, s, len);
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
+		return 1;
 	}
+	return 0;
+}
+int CFG_SetWiFiSSID2(const char *s) {
+#if ALLOW_SSID2
+	// this will return non-zero if there were any changes
+	if (strcpy_safe_checkForChanges(g_cfg.wifi_ssid2, s, sizeof(g_cfg.wifi_ssid2))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+		return 1;
+	}
+#endif
+	return 0;
+}
+int CFG_SetWiFiPass2(const char *s) {
+#if ALLOW_SSID2
+	if (strcpy_safe_checkForChanges(g_cfg.wifi_pass2, s, sizeof(g_cfg.wifi_pass2))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+		return 1;
+	}
+#endif
+	return 0;
 }
 const char *CFG_GetMQTTHost() {
 	return g_cfg.mqtt_host;
@@ -366,6 +415,16 @@ const char *CFG_GetMQTTUserName() {
 const char *CFG_GetMQTTPass() {
 	return g_cfg.mqtt_pass;
 }
+
+void CHANNEL_SetType(int ch, int type) {
+	if (g_cfg.pins.channelTypes[ch] != type) {
+		g_cfg.pins.channelTypes[ch] = type;
+		g_cfg_pendingChanges++;
+	}
+}
+int CHANNEL_GetType(int ch) {
+	return g_cfg.pins.channelTypes[ch];
+}
 void CFG_SetMQTTHost(const char *s) {
 	// this will return non-zero if there were any changes
 	if(strcpy_safe_checkForChanges(g_cfg.mqtt_host, s,sizeof(g_cfg.mqtt_host))) {
@@ -378,6 +437,9 @@ void CFG_SetMQTTClientId(const char *s) {
 	if(strcpy_safe_checkForChanges(g_cfg.mqtt_clientId, s,sizeof(g_cfg.mqtt_clientId))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
+#if ENABLE_MQTT
+		g_mqtt_bBaseTopicDirty++;
+#endif
 	}
 }
 void CFG_SetMQTTGroupTopic(const char *s) {
@@ -385,6 +447,9 @@ void CFG_SetMQTTGroupTopic(const char *s) {
 	if (strcpy_safe_checkForChanges(g_cfg.mqtt_group, s, sizeof(g_cfg.mqtt_group))) {
 		// mark as dirty (value has changed)
 		g_cfg_pendingChanges++;
+#if ENABLE_MQTT
+		g_mqtt_bBaseTopicDirty++;
+#endif
 	}
 }
 void CFG_SetMQTTUserName(const char *s) {
@@ -452,7 +517,7 @@ int CFG_DeviceGroups_GetSendFlags() {
 int CFG_DeviceGroups_GetRecvFlags() {
 	return g_cfg.dgr_recvFlags;
 }
-void CFG_SetFlags(int first4bytes, int second4bytes) {
+void CFG_SetFlags(uint32_t first4bytes, uint32_t second4bytes) {
 	if (g_cfg.genericFlags != first4bytes || g_cfg.genericFlags2 != second4bytes) {
 		g_cfg.genericFlags = first4bytes;
 		g_cfg.genericFlags2 = second4bytes;
@@ -479,13 +544,44 @@ void CFG_SetFlag(int flag, bool bValue) {
 		*cfgValue = nf;
 		g_cfg_pendingChanges++;
 		// this will start only if it wasnt running
+#if ENABLE_TCP_COMMANDLINE
 		if(bValue && flag == OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER) {
 			CMD_StartTCPCommandLine();
 		}
+#endif
+#if ENABLE_LED_BASIC
+		if (bValue && flag == OBK_FLAG_LED_REMEMBERLASTSTATE) {
+			LED_SaveStateToFlashVarsNow();
+		}
+#endif
 	}
+}
+void CFG_SetLoggerFlag(int flag, bool bValue) {
+	int *cfgValue;
+	cfgValue = &g_cfg.loggerFlags;
+
+	int nf = *cfgValue;
+	if (bValue) {
+		BIT_SET(nf, flag);
+	}
+	else {
+		BIT_CLEAR(nf, flag);
+	}
+	if (nf != *cfgValue) {
+		*cfgValue = nf;
+		g_cfg_pendingChanges++;
+	}
+}
+bool CFG_HasLoggerFlag(int flag) {
+	return BIT_CHECK(g_cfg.loggerFlags, flag);
 }
 int CFG_GetFlags() {
 	return g_cfg.genericFlags;
+}
+uint64_t CFG_GetFlags64() {
+	//unsigned long long* pAllGenericFlags = (unsigned long*)&g_cfg.genericFlags;
+	//*pAllGenericFlags;
+	return (uint64_t)g_cfg.genericFlags | (uint64_t)g_cfg.genericFlags2 << 32;
 }
 bool CFG_HasFlag(int flag) {
 	if (flag >= 32) {
@@ -597,8 +693,25 @@ void CFG_SetButtonRepeatPressTime(int value) {
 		g_cfg_pendingChanges++;
 	}
 }
+const char *CFG_GetWebPassword() {
+#if ALLOW_WEB_PASSWORD
+	return g_cfg.webPassword;
+#else
+	return "";
+#endif
+}
+void CFG_SetWebPassword(const char *s) {
+#if ALLOW_WEB_PASSWORD
+	// this will return non-zero if there were any changes
+	if(strcpy_safe_checkForChanges(g_cfg.webPassword, s,sizeof(g_cfg.webPassword))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+#endif
+}
 
-#ifdef BK_LITTLEFS
+
+#if ENABLE_LITTLEFS
 void CFG_SetLFS_Size(uint32_t value) {
 	if(g_cfg.LFS_Size != value) {
 		g_cfg.LFS_Size = value;
@@ -615,6 +728,52 @@ uint32_t CFG_GetLFS_Size() {
 }
 #endif
 
+#if MQTT_USE_TLS
+byte CFG_GetMQTTUseTls() {
+	return g_cfg.mqtt_use_tls;
+}
+byte CFG_GetMQTTVerifyTlsCert() {
+	return g_cfg.mqtt_verify_tls_cert;
+}
+const char* CFG_GetMQTTCertFile() {
+	return g_cfg.mqtt_cert_file;
+}
+void CFG_SetMQTTUseTls(byte value) {
+	// is there a change?
+	if (g_cfg.mqtt_use_tls != value) {
+		g_cfg.mqtt_use_tls = value;
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_SetMQTTVerifyTlsCert(byte value) {
+	// is there a change?
+	if (g_cfg.mqtt_verify_tls_cert != value) {
+		g_cfg.mqtt_verify_tls_cert = value;
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_SetMQTTCertFile(const char* s) {
+	// this will return non-zero if there were any changes
+	if (strcpy_safe_checkForChanges(g_cfg.mqtt_cert_file, s, sizeof(g_cfg.mqtt_cert_file))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+byte CFG_GetDisableWebServer() {
+	return g_cfg.disable_web_server;
+}
+void CFG_SetDisableWebServer(byte value) {
+	// is there a change?
+	if (g_cfg.disable_web_server != value) {
+		g_cfg.disable_web_server = value;
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+#endif
+
 void CFG_InitAndLoad() {
 	byte chkSum;
 
@@ -627,8 +786,11 @@ void CFG_InitAndLoad() {
 		// mark as changed
 		g_cfg_pendingChanges ++;
 	} else {
-#if PLATFORM_XR809
-		WiFI_SetMacAddress(g_cfg.mac);
+#if defined(PLATFORM_XR809) || defined(PLATFORM_BL602)
+		if (g_cfg.mac[0] == 0 && g_cfg.mac[1] == 0 && g_cfg.mac[2] == 0 && g_cfg.mac[3] == 0 && g_cfg.mac[4] == 0 && g_cfg.mac[5] == 0) {
+			WiFI_GetMacAddress((char*)g_cfg.mac);
+		}
+		WiFI_SetMacAddress((char*)g_cfg.mac);
 #endif
 		addLogAdv(LOG_WARN, LOG_FEATURE_CFG, "CFG_InitAndLoad: Correct config has been loaded with %i changes count.",g_cfg.changeCounter);
 	}
@@ -637,9 +799,15 @@ void CFG_InitAndLoad() {
 	if (g_cfg.version<3) {
 		addLogAdv(LOG_WARN, LOG_FEATURE_CFG, "CFG_InitAndLoad: Old config version found, updating to v3.");
 		strcpy_safe(g_cfg.mqtt_clientId, g_cfg.shortDeviceName, sizeof(g_cfg.mqtt_clientId));
-		g_cfg.version = 3;
 		g_cfg_pendingChanges++;
 	}
+#if ALLOW_WEB_PASSWORD
+	// add web admin password configuration
+	if (g_cfg.version<5) {
+		strcpy_safe(g_cfg.webPassword, "", sizeof(g_cfg.webPassword));
+	}
+#endif
+	g_cfg.version = MAIN_CFG_VERSION;
 
 	if(g_cfg.buttonHoldRepeat == 0) {
 		// default value is 5, which means 500ms

@@ -1,0 +1,126 @@
+[
+    {
+        "question": "What is channel?",
+        "answer": "Channel is like variable, but in case of most simple devices, you can think about channels like about relay slots. If you have two relays and two buttons, and you want to link relay with button, then you just set the same channel index for given relay and button. That way you can have many buttons and relays on the same device.<br>Futhermore, channels are used to index the PWM outputs for LEDs. The expected PWM order is RGBCW (Red,Green,Blue,Cool,Warm), so you should make sure your channels order is correct if you have mixed colors.<br>Our firmware supports both numbering of channels starting with 0 and with 1.<br>Channels are set on per-pin basis in the basic Module Pins Configuration panel.<br> Some special pins might support setting two channels, for example, a Button role can have two channels set, first channel is toggled on click, second on double click.<br>"
+    },
+    {
+        "question": "What is channel type?",
+        "answer": "Channel types are required usually only on TuyaMCU devices.<br> Channel type determines the way the channel value is displayed on GUI. Channels are like variables, so they might contain anything, including data mapped from TuyaMCU, so for example, to display temperature data you might need to set Temperature channel type for the channel you linked to temperature dpID of your device. The same goes for TuyaMCU fan speeds (OffLowMidHigh,etc), dimmers, toggles, etc"
+    },
+    {
+        "question": "I entered wrong SSID and my device is not accessible. How to recover?",
+        "answer": "Do five short power on/power off cycles (but not too short, because device might have capacitors and they need to discharge every time). Device will go back to AP mode (aka Safe Mode). Remember that in Safe Mode, pins are disabled, drivers are also not run, so don't worry if you see your device seemingly not responding to buttons, etc, etc."
+    },
+    {
+        "question": "My BL0937 power metering socket shows visible measurement spikes, what's wrong?",
+        "answer": "Enabled PowerSave may cause it. Remove PowerSave 1 command from startup and reboot"
+    },
+    {
+        "question": "How do I enable more logging? How to make more logs visible?",
+        "answer": "First type 'loglevel x' in console, where x is 0 to 7, default value is 3 (log all up to info), value 4 will also log debug logs, and value 5 will include 'extradebug'. Then, on online panel, also switch filter to 'All' (both steps must be done for logs to show up)"
+    },
+    {
+        "question": "How to change baud rate for TuyaMCU?",
+        "answer": "Just search for 'baud' in our commands list. The command is tuyaMcu_setBaudRate. Remember that it must be run after you do startDriver TuyaMCU. The baud setting is not kept after reboot, so put that command in autoexec.bat. Common bauds are 9600 and 115200"
+    },
+    {
+        "question": "Why my TuyaMCU ignores buttons and/or beeps?",
+        "answer": "Some TuyaMCU devices might require WiFi state packet to say it is fully connected and online, while OBK sends it only if it has MQTT and WiFi connections. Use tuyaMcu_defWiFiState to set default WiFi state to 4, so it always thinks it's fully online. See [this topic](https://www.elektroda.com/rtvforum/topic3963972.html)"
+    },
+    {
+        "question": "How to make device discoverable by Windows?",
+        "answer": "OpenBeken devices will show up in Windows Network if you run SSDP driver. This driver must be run at each startup. You could just do 'startDriver SSDP' in console but that will not run again after reboot, so either use Short Startup Command or autoexec.bat to run that command with each reboot"
+    },
+    {
+        "question": "How to remove autoexec.bat breaking the device in safe mode?",
+        "answer": "You can use lfs_format command to clear LittleFS even in SafeMode. This can be useful if you've written a script that immediately shuts down or crashes OBK and prevents you from accessing the page."
+    },
+    {
+        "question": "How to make device discoverable by Alexa?",
+        "answer": "Just like with SSDP, but in this case you MUST run both SSDP and Wemo drivers. So, use that command for startup: backlog startDriver SSDP; startDriver Wemo"
+    },
+    {
+        "question": "My device name ends with 00000, is it normal?",
+        "answer": "Device name is generated based on MAC, that would mean you have accidentally cleared your MAC, so see question below."
+    },
+    {
+        "question": "I somehow lost my MAC address and I am unable to change it in Options! My MAC ends with 000000, how to fix?",
+        "answer": "You have most likely overwrote the TLV header of RF partition of BK7231. You might have done something wrong while flashing or/and done unnecessary 'Erase all' for the chip. The RF partition is normaly NOT overwritten when a device is flashed correctly, because it starts far after the end of OBK binary. For BK7231, we have a way to restore it - open Web App, go to Flash tab, and press 'Restore RF Config'. Note that removing original RF partition (which was already done, if you have 00000) may slightly reduce your device WiFi range and performance"
+    },
+    {
+        "question": "How do I setup single button to control two relays (first on click, second on double click)?",
+        "answer": "If you set a pin role to 'Button', you will get a second textbox after saving pins. First checkbox is a channel to toggle on single click, and second textbox is a channel to toggle on double click."
+    },
+    {
+        "question": "My wall touch switch reacts slowly! It's laggy, how to make it react instantly?",
+        "answer": "It's like with Tasmota - go to our Options/General-Flags and set flag '6 - [BTN] Instant touch reaction instead of waiting for release (aka SetOption 13)'"
+    },
+    {
+        "question": "How to setup device with two relays and two buttons?",
+        "answer": "Determine which IO pins are used for relays and buttons, then for first relay and button set channel 1, and for second relay and button set channel 2"
+    },
+    {
+        "question": "How to setup RGB LED?",
+        "answer": "Determine whether this LED is using 'I2C' LED driver like SM2135, or is it using PWMs. If it's using PWMs, just check which 3 GPIO pins are used for colours, and set PWM roles for them, keep channels in RGB order - Red is 1, Green is 2, Blue is 3 (altough firmware will also support indexing started from 0)"
+    },
+    {
+        "question": "How to use bistable button? A button that toggles relay when it's changed?",
+        "answer": "Just use a 'ToggleChannelOnToggle' role. The target channel value will be inversed when you toggle the switch. You can also [see this detailed description](https://www.elektroda.com/rtvforum/topic3895572.html)"
+    },
+    {
+        "question": "How to just copy value from digital input to channel? Make relay follow the switch?",
+        "answer": "In this case you want to use dInput role. A digital input. You can also choose 'noPullUp' version or inversed version."
+    },
+    {
+        "question": "How to preserve battery life?",
+        "answer": "There are two types of battery devices - first type is using TuyaMCU, and the MCU controls power of WiFi module and enables it only to report state to the server, there is not much you can save in this case, maybe just add a 'PowerSave 1' command for dynamic power save in autoexec.bat. The second type is using WiFi module only and in this case you can either manually script DeepSleep [Time] command to sleep device for a given amount of time, or PinDeepSleep command to sleep device until next IO event, or you can also use a dedicated Pin role with driver, search for 'Door sensor' in IO docs."
+    },
+    {
+        "question": "My device does not publish channels, what's wrong?",
+        "answer": "First make sure that MQTT status on main page is connected. Then check your flags - maybe you need to enable 'publish MQTT values on connect' or 'publish every N seconds' or 'publish all TuyaMCU channels'? Not all values are published by default."
+    },
+    {
+        "question": "How to setup RGB LED which is using 'I2C' LED driver like SM2135?",
+        "answer": "In case of SM2135 and similar LED drivers, you need to figure out two pins - SDA and SCL lines of that driver. Set their roles for pins, then reboot. Then the LED driver will start, but you may also need to remap the order of colours with appropriate Map function, for example with SM2135_Map 0 2 1 3 4.<br>You can also [see this topic](https://www.elektroda.com/rtvforum/topic3906898.html)"
+    },
+    {
+        "question": "How to enter multiple startup commands? For example, to start both NTP and BL0942 drivers?",
+        "answer": "Use backlog - like in Tasmota. Open Config->Short startup command, and enter, for example: backlog startDriver BL0942; startDriver NTP; ntp_setServer 217.147.223.78.<br> Second option would to be open the Web Application, go to LittleFS tab, and just create autoexec.bat and enter commands there, each in new line."
+    },
+    {
+        "question": "How to do OTA in OpenBeken? How to update firmware?",
+        "answer": "There are two methods. <br>First is to use Web Application, in OTA tab, drag and drop proper platform OTA file (for BK it is RBL, for BL602 it's bin.xz.ota, etc, see Releases tab), and click start.<br>Second method is to use HTTP ota, just paste a HTTP server link to Config->OTA and submit. Remember that it will work only for HTTP right now, not HTTPS."
+    },
+    {
+        "question": "How to control device via MQTT?",
+        "answer": "There are many ways to do that. <br>The Tasmota-friendly method is to use cmnd/OBK_DEVICE/POWER publish with 1 or 0 payload. Of course, for second relay, you can use cmnd/OBK_DEVICE/POWER1 publish, you can also use 'ON' and 'OFF' payload, or 'TOGGLE' to toggle. <br> The direct channels way to control is to use OBK_DEVICE/5/set topic with payload 1 or 0 (or any custom integer), where 5 is a channel number, change it to whatever you like.<br>Remember that LEDs are not controlled directly by channels. For LEDs, you can use for example cmnd/OBK_DEVICE/Color to set base color, cmnd/OBK_DEVICE/Dimmer to set dimmer, etc. "
+    },
+    {
+        "question": "How to control device via HTTP?",
+        "answer": "Our HTTP interface is like in Tasmota. <br>You can do **http://192.168.0.210/cm?cmnd=POWER%20TOGGLE** to run a power toggle command on your device and it will return appropriate JSON status. The same goes for any other command, we have support for most of Tasmota commands, see our commands docs for more info."
+    },
+    {
+        "question": "I flashed OpenBeken, configured my SSID and pass in AP mode, but now it does not connect to my WiFi, what's wrong?",
+        "answer": "Multiple things may have gone wrong. <br>First of all, make sure you power your wifi module from reliable 3.3V power supply. This problem happens frequently on BL602 if you power module outside circuit from cheap 3.3V USB to UART converter.<br>Second issue might be just incorrect SSID/WiFi data - do 5 power off/on cycles to go to Safe Mode and correct the credentials.<br>Third issue happens on some BK modules. They might have RF partition broken. To fix that, use either our BK7231 flash tool, click button 'Restore RF partition', or in our Web Application, in Flash Tab, click 'Restore RF partition' button. This will also assign new MAC."
+    },
+    {
+        "question": "How to disable MQTT?",
+        "answer": "On MQTT configure page, just enter empty host name. Alternatively, use MqttHost \"\"  command"
+    },
+    {
+        "question": "How to configure ping watchdog to do a relay cycle when given IP does not respond for a given amount of time?",
+        "answer": "See the following [example here](https://www.elektroda.com/rtvforum/viewtopic.php?p=20368812#20368812)"
+    },
+    {
+        "question": "How to set relay state on device boot? (PowerOnState)?",
+        "answer": "There are two ways. <br> First way is to use Config -> Startup state and set it from GUI here. <br> Second way is to use short startup command from Options or create 'autoexec.bat' in LittleFS file system in web panel and execute commands from there.<br>For example, for RGBCW LED, to set 100% dimmer and red color on start, you can do startup command:<br> ```backlog led_dimmer 100; led_basecolor_rgb #FF0000; led_enableAll 1```<br>For simple relay, in this example on channel number 5, you can do:<br>```backlog SetChannel 5 1```<br>"
+    },
+    {
+        "question": "How to setup shutters via scripting?",
+        "answer": "It's possible to script shutters behaviour entirely in OBK. Please see [forum example here](https://www.elektroda.com/rtvforum/viewtopic.php?t=3972935)."
+    },
+    {
+        "question": "Why my device bootloops and/or firmware does not start?",
+        "answer": "Make sure you're powering it with good power supply. Powering desodlered WiFi module directly from 3.3V pin used to select voltage levels on USB to UART converter will not work. This happens especially often for BL602. This may also cause device to fail in STA mode but work in AP. In general, when powering WiFi module outside original board, use good power supply."
+    }
+]

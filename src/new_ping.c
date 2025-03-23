@@ -10,6 +10,10 @@
 // One ping for "ping watchdog", second ran from console by user, etc etc
 //
 
+#include "obk_config.h"
+
+#if ENABLE_PING_WATCHDOG
+
 #include "lwip/mem.h"
 #include "lwip/raw.h"
 #include "lwip/icmp.h"
@@ -27,13 +31,13 @@
 #include "lwip/inet.h"
 #include "logging/logging.h"
 #include "new_common.h"
+#include "new_cfg.h"
 #include <string.h>
 
 #ifndef PING_DEBUG
 #define PING_DEBUG     LWIP_DBG_ON
 #endif
 
-#define PING_DELAY 1000
 
 /** ping identifier - must fit on a u16_t */
 #ifndef PING_ID
@@ -58,7 +62,7 @@ static unsigned int ping_lost = 0;
 static unsigned int ping_received = 0;
 static int bReceivedLastOneSend = -1;
 static bool ping_handler_active = false;
-static bool ping_handler_silent = false;
+//static bool ping_handler_silent = false;
 
 //static int g_delayBetweenPings_MS = 1000 / portTICK_PERIOD_MS;
 
@@ -115,7 +119,16 @@ static void ping_send(struct raw_pcb *raw, const ip_addr_t *addr)
   }
   pbuf_free(p);
 }
+int PING_getPingIntervalMS() {
+	int ret;
 
+	ret = CFG_GetPingIntervalSeconds();
+
+	if (ret < 1) {
+		ret = 1;
+	}
+	return ret * 1000;
+}
 static void ping_timeout(void *arg)
 {
   struct raw_pcb *pcb = (struct raw_pcb*)arg;
@@ -127,7 +140,7 @@ static void ping_timeout(void *arg)
     ping_send(pcb, &ping_target);
   }
   // void 	sys_timeout (u32_t msecs, sys_timeout_handler handler, void *arg)
-  sys_timeout(PING_DELAY, ping_timeout, pcb);
+  sys_timeout(PING_getPingIntervalMS(), ping_timeout, pcb);
 }
 
 static u8_t ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_addr_t *addr)
@@ -190,9 +203,10 @@ void Main_SetupPingWatchDog(const char *target/*, int delayBetweenPings_Seconds*
         raw_recv(ping_pcb, ping_recv, NULL);
         raw_bind(ping_pcb, IP_ADDR_ANY);
 	    // void 	sys_timeout (u32_t msecs, sys_timeout_handler handler, void *arg)
-        sys_timeout(PING_DELAY, ping_timeout, ping_pcb);
+        sys_timeout(PING_getPingIntervalMS(), ping_timeout, ping_pcb);
 		ping_handler_active = true;
     }
 
 }
 
+#endif // ENABLE_PING_WATCHDOG

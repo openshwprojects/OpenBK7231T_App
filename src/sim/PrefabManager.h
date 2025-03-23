@@ -2,7 +2,6 @@
 #define __PREFABMANAGER_H__
 
 #include "sim_local.h"
-#include "PrefabManager.h"
 
 class PrefabManager {
 	class CSimulator *sim;
@@ -17,11 +16,14 @@ class PrefabManager {
 	class CShape *generateBulb();
 	class CShape *generateWB3S();
 	class CShape *generateButton();
+	class CShape *generateSwitch();
 	class CShape *generateTest();
 	class CShape *generateBL0942();
 	class CShape *generateGND();
 	class CShape *generateVDD();
 	class CShape *generatePot();
+	class CShape *generateWS2812B();
+	class CShape *generateDHT11();
 public:
 	PrefabManager(CSimulator *ps) {
 		sim = ps;

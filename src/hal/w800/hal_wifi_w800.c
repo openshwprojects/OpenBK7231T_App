@@ -37,6 +37,16 @@ const char* HAL_GetMyIPString()
 	return g_IP;
 }
 
+const char* HAL_GetMyGatewayString() {
+	return "192.168.0.1";
+}
+const char* HAL_GetMyDNSString() {
+	return "192.168.0.1";
+}
+const char* HAL_GetMyMaskString() {
+	return "255.255.255.0";
+}
+
 ////////////////////
 // NOTE: this gets the STA mac
 
@@ -76,26 +86,39 @@ void HAL_PrintNetworkInfo()
 	unsigned char mac[6] = { 0, 1, 2, 3, 4, 5 };
 
 	struct netif* netif = tls_get_netif();
-	MEMCPY(mac, &netif->hwaddr[0], ETH_ALEN);
+	MEMCPY(mac, &netif->hwaddr, ETH_ALEN);
 	snprintf(macstr, sizeof(macstr), MACSTR, MAC2STR(mac));
 
 	tls_wifi_get_current_bss(&bss);
-
-	wm_printf("sta:rssi=%d,ssid=%s,bssid=" MACSTR ",channel=%d,cipher_type:",
-		bss.rssi, bss.ssid, macstr, bss.channel);
-	print_security_type(bss.encryptype);
+	bss.ssid[bss.ssid_len]=0;
 
 	struct tls_ethif* tmpethif = tls_netif_get_ethif();
 	char buffer[256];
-	wm_vsnprintf(buffer, 256, "ip=%v,gate=%v,mask=%v,dns=%v\r\n", &tmpethif->ip_addr, &tmpethif->gw, &tmpethif->netmask, &tmpethif->dns1);
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, buffer);
+	char ip[16] = {0};
+	strcpy(ip, inet_ntoa(tmpethif->ip_addr));
+	char gw[16] = {0};
+	strcpy(gw, inet_ntoa(tmpethif->gw));
+	char netmask[16] = {0};
+	strcpy(netmask, inet_ntoa(tmpethif->netmask));
+	char dns[16] = {0};
+	strcpy(dns, inet_ntoa(tmpethif->dns1));
+	snprintf(buffer, 256, 	"Network info:\r\n"
+				"\tsta:rssi=%d, SSID=%s, BSSID=" MACSTR ", channel=%d, encr=%s\r\n"
+				"\tIP=%s, GW=%s, MASK=%s, MAC=%s, DNS=%s\r\n",
+				bss.rssi, bss.ssid, MAC2STR(bss.bssid), bss.channel, 
+				( bss.encryptype >=  IEEE80211_ENCRYT_NONE && bss.encryptype <= IEEE80211_ENCRYT_AUTO_WPA2) ? security_names[bss.encryptype] : "-",
+				 ip, gw, netmask, macstr, dns );
+	bk_printf(buffer);
+	// do we need this in web Log?
+	// disable for now
+//	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, buffer);
 }
 
 int HAL_GetWifiStrength()
 {
 	struct tls_curr_bss_t bss;
 	tls_wifi_get_current_bss(&bss);
-	return bss.rssi;
+	return (signed char)(0x100-bss.rssi); //this is adjusted according to example
 }
 
 static void apsta_net_status(u8 status)
@@ -148,15 +171,26 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 	g_wifiStatusCallback = cb;
 	tls_netif_add_status_event(apsta_net_status);
 }
-static int connect_wifi_demo(char* ssid, char* pwd)
+static int connect_wifi_demo(char* ssid, char* pwd, obkStaticIP_t *ip)
 {
 	int ret;
 	struct tls_param_ip* ip_param = NULL;
 	u8 wireless_protocol = 0;
-
+	
+#if LWIP_NETIF_HOSTNAME
+	extern const char *CFG_GetDeviceName();		// including "../../../../sharedAppContainer/sharedApp/src/new_cfg.h"	only for CFG_GetDeviceName() leads to errors
+	struct netif* netif = tls_get_netif();
+	char *tmpPtr = CFG_GetDeviceName();
+	if(tmpPtr != 0 && tmpPtr[0] != 0) {
+	   netif->hostname = tmpPtr;
+	} 
+#endif
 	tls_wifi_disconnect();
 	tls_wifi_softap_destroy();
+
+	#if defined(PLATFORM_W800)
 	tls_wifi_set_oneshot_flag(0);
+	#endif
 
 	tls_param_get(TLS_PARAM_ID_WPROTOCOL, (void*)&wireless_protocol, TRUE);
 	if (TLS_PARAM_IEEE80211_INFRA != wireless_protocol)
@@ -170,7 +204,17 @@ static int connect_wifi_demo(char* ssid, char* pwd)
 	if (ip_param)
 	{
 		tls_param_get(TLS_PARAM_ID_IP, ip_param, FALSE);
-		ip_param->dhcp_enable = TRUE;
+		if (ip->localIPAddr[0] == 0) {
+			ip_param->dhcp_enable = TRUE;
+		}
+		else {
+			ip_param->dhcp_enable = FALSE;
+			MEMCPY(ip_param->ip, ip->localIPAddr, 4);
+			MEMCPY(ip_param->netmask, ip->netMask, 4);
+			MEMCPY(ip_param->gateway, ip->gatewayIPAddr, 4);
+			MEMCPY(ip_param->dns1, ip->dnsServerIpAddr, 4);
+			MEMCPY(ip_param->dns2, ip->dnsServerIpAddr, 4);
+		}
 		tls_param_set(TLS_PARAM_ID_IP, ip_param, FALSE);
 		tls_mem_free(ip_param);
 	}
@@ -183,10 +227,10 @@ static int connect_wifi_demo(char* ssid, char* pwd)
 
 	return ret;
 }
-void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key)
+void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip)
 {
 	g_bOpenAccessPointMode = 0;
-	connect_wifi_demo(oob_ssid, connect_key);
+	connect_wifi_demo(oob_ssid, connect_key, ip);
 }
 
 void HAL_DisconnectFromWifi()
@@ -255,7 +299,9 @@ int demo_create_softap(u8* ssid, u8* key, int chan, int encrypt, int format)
 		tls_param_set(TLS_PARAM_ID_WPROTOCOL, (void*)&wireless_protocol, FALSE);
 	}
 
+	#if defined(PLATFORM_W800)
 	tls_wifi_set_oneshot_flag(0); /*disable oneshot*/
+	#endif
 
 	tls_param_get(TLS_PARAM_ID_BRDSSID, (void*)&ssid_set, (bool)0);
 	if (0 == ssid_set)

@@ -2,6 +2,7 @@
 
 #include "../hal_wifi.h"
 #include "../../new_common.h"
+#include "../../new_cfg.h"
 
 #include <string.h>
 #include <cli.h>
@@ -22,16 +23,36 @@ static char g_ipStr[32] = "unknown";
 static int g_bAccessPointMode = 1;
 static void (*g_wifiStatusCallback)(int code);
 
-void HAL_ConnectToWiFi(const char *ssid, const char *psk)
+void HAL_ConnectToWiFi(const char *ssid, const char *psk, obkStaticIP_t *ip)
 {
     wifi_interface_t wifi_interface;
-
+    if (ip->localIPAddr[0] == 0) {
+	wifi_mgmr_sta_ip_unset();
+    }
+    else {
+	wifi_mgmr_sta_ip_set(*(int*)ip->localIPAddr, *(int*)ip->netMask, *(int*)ip->gatewayIPAddr, *(int*)ip->dnsServerIpAddr, 0);
+    }
     wifi_interface = wifi_mgmr_sta_enable();
+
     wifi_mgmr_sta_connect(wifi_interface, ssid, psk, NULL, NULL, 0, 0);
 
 	g_bAccessPointMode = 0;
 }
 
+// BL_Err_Type EF_Ctrl_Write_MAC_Address_Opt(uint8_t slot,uint8_t mac[6],uint8_t program)
+// is called by 
+// int8_t mfg_efuse_write_macaddr_pre(uint8_t mac[6],uint8_t program)
+// is called by 
+// int8_t mfg_media_write_macaddr_pre_need_lock(uint8_t mac[6],uint8_t program)
+// is called by 
+// int8_t mfg_media_write_macaddr_pre_with_lock(uint8_t mac[6], uint8_t program);
+// from: OpenBL602\components\bl602\bl602_std\bl602_std\StdDriver\Inc\bl602_mfg_media.h
+int WiFI_SetMacAddress(char *mac) {
+	wifi_mgmr_sta_mac_set((uint8_t *)mac);
+	CFG_SetMac(mac);
+	return 1;
+
+}
 void HAL_DisconnectFromWifi()
 {
     
@@ -166,7 +187,9 @@ void HAL_PrintNetworkInfo() {
 
 }
 int HAL_GetWifiStrength() {
-    return -1;
+    int rssi = -1;
+    wifi_mgmr_rssi_get(&rssi);
+    return rssi;	
 }
 
 const char *HAL_GetMyIPString() {
@@ -184,6 +207,17 @@ const char *HAL_GetMyIPString() {
 
 	return g_ipStr;
 }
+
+const char* HAL_GetMyGatewayString() {
+	return "192.168.0.1";
+}
+const char* HAL_GetMyDNSString() {
+	return "192.168.0.1";
+}
+const char* HAL_GetMyMaskString() {
+	return "255.255.255.0";
+}
+
 void WiFI_GetMacAddress(char *mac) {
 	// FOR station mode
 	wifi_mgmr_sta_mac_get((uint8_t*)mac);

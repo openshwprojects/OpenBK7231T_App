@@ -1,0 +1,54 @@
+[
+	{
+		"title": "Repeating event demos",
+		"description": "Repeating events can be used to create a simple timer.",
+		"requirements": [
+			"channel 1 - output relay"
+		],
+		"file": "scripts/repeatingEventDemo.bat"
+	},
+	{
+		"title": "Loop demo",
+		"description": "Features a 'goto' script command (for use within script) and, obviously, a label.",
+		"requirements": [
+			"channel 1 - output relay"
+		],
+		"file": "scripts/loop_with_goto_and_delays.bat"
+	},
+	{
+		"title": "Loop & if demo",
+		"description": "This example shows how you can use a dummy channel as a variable to create a loop",
+		"requirements": [
+			"channel 1 - output relay",
+			"channel 11 - loop variable counter"
+		],
+		"file": "scripts/channel_as_loop_counter_and_if.bat"
+	},
+	{
+		"title": "Thread cancelation demo and exclude self demo",
+		"description": "This example shows how you can create a script thread with an unique ID and use this ID to cancel the thread later",
+		"requirements": [
+			"channel 1 - output relay",
+			"pin 8 - button",
+			"pin 9 - button"
+		],
+		"file": "scripts/thread_cancelation_and_exclude_self_demo.bat"
+	},
+	{
+		"title": "Using channel value as a variable demo",
+		"description": "",
+		"requirements": [
+			"channel 1 - output relay",
+			"channel 11 - you may use it as ADC, or just use setChannel 11 100 or setChannel 11 500 in console to change delay"
+		],
+		"file": "scripts/using_channel_as_variable.bat"
+	},
+	{
+		"title": "Sending UART from script - WXDM2 dimmer support",
+		"description": "",
+		"requirements": [
+			"a WXDM2 dimmer with custom UART protocol"
+		],
+		"file": "scripts/sending_uart_from_script.bat"
+	}
+]

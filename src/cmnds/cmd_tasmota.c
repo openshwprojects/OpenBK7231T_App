@@ -6,7 +6,7 @@
 #include "cmd_local.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
-#ifdef BK_LITTLEFS
+#if ENABLE_LITTLEFS
 	#include "../littlefs/our_lfs.h"
 #endif
 
@@ -34,10 +34,13 @@ static commandResult_t power(const void *context, const char *cmd, const char *a
 		if (strlen(cmd) > 5) {
 			channel = atoi(cmd+5);
 
+#if ENABLE_LED_BASIC
 			if (LED_IsLEDRunning()) {
 				channel = SPECIAL_CHANNEL_LEDPOWER;
 			}
-			else {
+			else 
+#endif
+			{
 				if (bRelayIndexingStartsWithZero) {
 					channel--;
 					if (channel < 0)
@@ -45,10 +48,13 @@ static commandResult_t power(const void *context, const char *cmd, const char *a
 				}
 			}
 		} else {
+#if ENABLE_LED_BASIC
 			// if new LED driver active
 			if(LED_IsLEDRunning()) {
 				channel = SPECIAL_CHANNEL_LEDPOWER;
-			} else {
+			} else
+#endif
+			{
 				// find first active channel, because some people index with 0 and some with 1
 				for(i = 0; i < CHANNEL_MAX; i++) {
 					if (h_isChannelRelay(i) || CHANNEL_GetType(i) == ChType_Toggle) {
@@ -98,69 +104,6 @@ static commandResult_t powerAll(const void *context, const char *cmd, const char
 }
 
 
-static commandResult_t powerStateOnly(const void *context, const char *cmd, const char *args, int cmdFlags){
-	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
-		int iVal = 0;
-
-        ADDLOG_INFO(LOG_FEATURE_CMD, "tasCmnd powerStateOnly (%s) received with args %s",cmd,args);
-
-		iVal = parsePowerArgument(args);
-
-		CHANNEL_SetStateOnly(iVal);
-		return CMD_RES_OK;
-	//}
-	//return 0;
-}
-
-static commandResult_t color(const void *context, const char *cmd, const char *args, int cmdFlags){
-   // if (!wal_strnicmp(cmd, "COLOR", 5)){
-        if (args[0] != '#'){
-            ADDLOG_ERROR(LOG_FEATURE_CMD, "tasCmnd COLOR expected a # prefixed color, you sent %s",args);
-            return 0;
-        } else {
-            const char *c = args;
-            int val = 0;
-            int channel = 0;
-            ADDLOG_DEBUG(LOG_FEATURE_CMD, "tasCmnd COLOR got %s", args);
-            c++;
-            while (*c){
-                char tmp[3];
-                int r;
-                int val100;
-                tmp[0] = *(c++);
-                if (!*c) break;
-                tmp[1] = *(c++);
-                tmp[2] = '\0';
-                r = sscanf(tmp, "%x", &val);
-                if (!r) {
-                    ADDLOG_ERROR(LOG_FEATURE_CMD, "COLOR no sscanf hex result from %s", tmp);
-                    break;
-                }
-                // if this channel is not PWM, find a PWM channel;
-                while ((channel < 32) && (IOR_PWM != CHANNEL_GetRoleForOutputChannel(channel) && IOR_PWM_n != CHANNEL_GetRoleForOutputChannel(channel))) {
-                    channel ++;
-                }
-
-                if (channel >= 32) {
-                    ADDLOG_ERROR(LOG_FEATURE_CMD, "COLOR channel >= 32");
-                    break;
-                }
-
-                val100 = (val * 100)/255;
-            //    ADDLOG_DEBUG(LOG_FEATURE_CMD, "COLOR found chan %d -> val255 %d -> val100 %d (from %s)", channel, val, val100, tmp);
-                CHANNEL_Set(channel, val100, 0);
-                // move to next channel.
-                channel ++;
-            }
-            if (!(*c)){
-              //  ADDLOG_DEBUG(LOG_FEATURE_CMD, "COLOR arg ended");
-            }
-        }
-        return CMD_RES_OK;
-  //  }
-   // return 0;
-}
-
 
 static commandResult_t cmnd_backlog(const void * context, const char *cmd, const char *args, int cmdFlags){
 	const char *subcmd;
@@ -168,9 +111,8 @@ static commandResult_t cmnd_backlog(const void * context, const char *cmd, const
 	int count = 0;
     char copy[128];
     char *c;
-	if (stricmp(cmd, "backlog")){
-		return -1;
-	}
+	int localRes;
+	int res = CMD_RES_OK;
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "backlog [%s]", args);
 
 	subcmd = args;
@@ -189,19 +131,22 @@ static commandResult_t cmnd_backlog(const void * context, const char *cmd, const
 		}
 		*c = 0;
 		count++;
-		CMD_ExecuteCommand(copy, cmdFlags);
+		localRes = CMD_ExecuteCommand(copy, cmdFlags);
+		if (localRes != CMD_RES_OK && localRes != CMD_RES_EMPTY_STRING) {
+			res = localRes;
+		}
 		subcmd = p;
 	}
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "backlog executed %d", count);
 
-	return CMD_RES_OK;
+	return res;
 }
 
 // Our wrapper for LFS.
 // Returns a buffer created with malloc.
 // You must free it later.
 byte *LFS_ReadFile(const char *fname) {
-#ifdef BK_LITTLEFS
+#if ENABLE_LITTLEFS
 	if (lfs_present()){
 		lfs_file_t file;
 		int lfsres;
@@ -269,14 +214,56 @@ byte *LFS_ReadFile(const char *fname) {
 			ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: failed to file %s", fname);
 		}
 	} else {
+#if WINDOWS
+		// sstop sim spam
+#else
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "LFS_ReadFile: lfs is absent");
+#endif
 	}
 #endif
 	return 0;
 }
+int LFS_WriteFile(const char *fname, const byte *data, int len, bool bAppend) {
+#if ENABLE_LITTLEFS
+	init_lfs(1);
+	if (lfs_present()) {
+		lfs_file_t file;
+		int lfsres;
+
+		memset(&file, 0, sizeof(lfs_file_t));
+		if (bAppend) {
+			lfsres = lfs_file_open(&lfs, &file, fname, LFS_O_APPEND | LFS_O_WRONLY);
+		}
+		else {
+			lfs_remove(&lfs, fname);
+			lfsres = lfs_file_open(&lfs, &file, fname, LFS_O_CREAT | LFS_O_WRONLY);
+		}
+
+		if (lfsres >= 0) {
+			ADDLOG_DEBUG(LOG_FEATURE_CMD, "LFS_ReadFile: openned file %s", fname);
+
+			lfsres = lfs_file_write(&lfs, &file, data, len);
+			lfs_file_close(&lfs, &file);
+			ADDLOG_DEBUG(LOG_FEATURE_CMD, "LFS_ReadFile: closed file %s", fname);
+			return lfsres;
+		}
+		else {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: failed to file %s", fname);
+		}
+	}
+	else {
+#if WINDOWS
+		// sstop sim spam
+#else
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "LFS_WriteFile: lfs is absent");
+#endif
+	}
+#endif
+	return 1;
+}
 
 static commandResult_t cmnd_lfsexec(const void * context, const char *cmd, const char *args, int cmdFlags){
-#ifdef BK_LITTLEFS
+#if ENABLE_LITTLEFS
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "exec %s", args);
 	if (lfs_present()){
 		lfs_file_t *file = os_malloc(sizeof(lfs_file_t));
@@ -305,7 +292,9 @@ static commandResult_t cmnd_lfsexec(const void * context, const char *cmd, const
 
 					if (lfsres >= 0){
 						if (*line && (*line != '#')){
-							CMD_ExecuteCommand(line, cmdFlags);
+							if (!(line[0] == '/' && line[1] == '/')) {
+								CMD_ExecuteCommand(line, cmdFlags);
+							}
 						}
 					}
 				} while (lfsres > 0);
@@ -325,155 +314,85 @@ static commandResult_t cmnd_lfsexec(const void * context, const char *cmd, const
 	return CMD_RES_OK;
 }
 
-
-// Usage for continous test: addRepeatingEvent 1 -1 lfs_test1 ir.bat
-static commandResult_t cmnd_lfs_test1(const void * context, const char *cmd, const char *args, int cmdFlags){
-#ifdef BK_LITTLEFS
-	if (lfs_present()){
-		lfs_file_t file;
-		int lfsres;
-		char a;
-		int cnt;
-
-		cnt = 0;
-
-		memset(&file, 0, sizeof(lfs_file_t));
-		lfsres = lfs_file_open(&lfs, &file, args, LFS_O_RDONLY);
-
-		ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: sizeof(lfs_file_t) %i", sizeof(lfs_file_t));
-		if (lfsres >= 0) {
-			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: openned file %s", args);
-			do {
-				lfsres = lfs_file_read(&lfs, &file, &a, 1);
-				cnt++;
-			} while (lfsres > 0) ;
-			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: Stopped at char %i\n",cnt);
-
-			lfs_file_close(&lfs, &file);
-			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: closed file %s", args);
-		} else {
-			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: failed to file %s", args);
-		}
-	} else {
-		ADDLOG_ERROR(LOG_FEATURE_CMD, "cmnd_lfs_test1: lfs is absent");
-	}
-#endif
-	return CMD_RES_OK;
-}
-// Usage for continous test: addRepeatingEvent 1 -1 lfs_test2 ir.bat
-static commandResult_t cmnd_lfs_test2(const void * context, const char *cmd, const char *args, int cmdFlags){
-#ifdef BK_LITTLEFS
-	if (lfs_present()){
-		lfs_file_t *file;
-		int lfsres;
-		char a;
-		int cnt;
-
-		cnt = 0;
-
-		file = malloc(sizeof(lfs_file_t));
-		if(file == 0) {
-				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: failed to malloc for %s", args);
-		} else {
-			memset(file, 0, sizeof(lfs_file_t));
-			lfsres = lfs_file_open(&lfs, file, args, LFS_O_RDONLY);
-
-			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: sizeof(lfs_file_t) %i", sizeof(lfs_file_t));
-			if (lfsres >= 0) {
-				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: openned file %s", args);
-				do {
-					lfsres = lfs_file_read(&lfs, file, &a, 1);
-					cnt++;
-				} while (lfsres > 0) ;
-				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: Stopped at char %i\n",cnt);
-
-				lfs_file_close(&lfs, file);
-				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: closed file %s", args);
-			} else {
-				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: failed to file %s", args);
-			}
-			free(file);
-		}
-	} else {
-		ADDLOG_ERROR(LOG_FEATURE_CMD, "cmnd_lfs_test2: lfs is absent");
-	}
-#endif
-	return CMD_RES_OK;
-}
-// Usage for continous test: addRepeatingEvent 1 -1 lfs_test3 ir.bat
-static commandResult_t cmnd_lfs_test3(const void * context, const char *cmd, const char *args, int cmdFlags){
-	byte *res;
-
-	res = LFS_ReadFile(args);
-
-	if(res) {
-		free(res);
-	}
-	return CMD_RES_OK;
-}
 static commandResult_t cmnd_SSID1(const void * context, const char *cmd, const char *args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
-	if (Tokenizer_GetArgsCount()==0) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "This command requires 1 argument");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	else {
-		CFG_SetWiFiSSID(Tokenizer_GetArg(0));
-	}
+	CFG_SetWiFiSSID(Tokenizer_GetArg(0));
 	return CMD_RES_OK;
 }
 static commandResult_t cmnd_Password1(const void * context, const char *cmd, const char *args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
-
-	if (Tokenizer_GetArgsCount() == 0) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "This command requires 1 argument");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	else {
-		CFG_SetWiFiPass(Tokenizer_GetArg(0));
-	}
+	CFG_SetWiFiPass(Tokenizer_GetArg(0));
 	return CMD_RES_OK;
 }
 static commandResult_t cmnd_MqttHost(const void * context, const char *cmd, const char *args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
-
-	if (Tokenizer_GetArgsCount() == 0) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "This command requires 1 argument");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	else {
-		CFG_SetMQTTHost(Tokenizer_GetArg(0));
-	}
+	CFG_SetMQTTHost(Tokenizer_GetArg(0));
 	return CMD_RES_OK;
 }
 static commandResult_t cmnd_MqttUser(const void * context, const char *cmd, const char *args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
-
-	if (Tokenizer_GetArgsCount() == 0) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "This command requires 1 argument");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	else {
-		CFG_SetMQTTUserName(Tokenizer_GetArg(0));
-	}
+	CFG_SetMQTTUserName(Tokenizer_GetArg(0));
 	return CMD_RES_OK;
 }
 static commandResult_t cmnd_MqttClient(const void * context, const char *cmd, const char *args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	CFG_SetMQTTClientId(Tokenizer_GetArg(0));
+	return CMD_RES_OK;
+}
+static commandResult_t cmnd_MqttGroup(const void * context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	CFG_SetMQTTGroupTopic(Tokenizer_GetArg(0));
+	return CMD_RES_OK;
+}
+static commandResult_t cmnd_stub(const void * context, const char *cmd, const char *args, int cmdFlags) {
 
-	if (Tokenizer_GetArgsCount() == 0) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "This command requires 1 argument");
-	}
-	else {
-		CFG_SetMQTTClientId(Tokenizer_GetArg(0));
-	}
 	return CMD_RES_OK;
 }
 static commandResult_t cmnd_MqttPassword(const void * context, const char *cmd, const char *args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
-
-	if (Tokenizer_GetArgsCount() == 0) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "This command requires 1 argument");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	else {
-		CFG_SetMQTTPass(Tokenizer_GetArg(0));
-	}
+	CFG_SetMQTTPass(Tokenizer_GetArg(0));
 	return CMD_RES_OK;
 }
 int taslike_commands_init(){
@@ -481,76 +400,79 @@ int taslike_commands_init(){
 	//cmddetail:"descr":"Tasmota-style POWER command. Should work for both LEDs and relay-based devices. You can write POWER0, POWER1, etc to access specific relays.",
 	//cmddetail:"fn":"power","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("power", "", power, NULL, NULL);
-	//cmddetail:{"name":"powerStateOnly","args":"",
-	//cmddetail:"descr":"ensures that device is on or off without changing pwm values",
-	//cmddetail:"fn":"powerStateOnly","file":"cmnds/cmd_tasmota.c","requires":"",
-	//cmddetail:"examples":""}
-    CMD_RegisterCommand("powerStateOnly", "", powerStateOnly, NULL, NULL);
+    CMD_RegisterCommand("power", power, NULL);
 	//cmddetail:{"name":"powerAll","args":"",
 	//cmddetail:"descr":"set all outputs",
 	//cmddetail:"fn":"powerAll","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("powerAll", "", powerAll, NULL, NULL);
-	//cmddetail:{"name":"color","args":"[HexString]",
-	//cmddetail:"descr":"set PWN color using #RRGGBB[cw][ww]. Do not use it. Use led_basecolor_rgb",
-	//cmddetail:"fn":"color","file":"cmnds/cmd_tasmota.c","requires":"",
-	//cmddetail:"examples":""}
-    CMD_RegisterCommand("color", "", color, NULL, NULL);
+    CMD_RegisterCommand("powerAll", powerAll, NULL);
 	//cmddetail:{"name":"backlog","args":"[string of commands separated with ;]",
 	//cmddetail:"descr":"run a sequence of ; separated commands",
 	//cmddetail:"fn":"cmnd_backlog","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("backlog", "", cmnd_backlog, NULL, NULL);
+	CMD_RegisterCommand("backlog", cmnd_backlog, NULL);
 	//cmddetail:{"name":"exec","args":"[Filename]",
 	//cmddetail:"descr":"exec <file> - run autoexec.bat or other file from LFS if present",
 	//cmddetail:"fn":"cmnd_lfsexec","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("exec", "", cmnd_lfsexec, NULL, NULL);
-	//cmddetail:{"name":"lfs_test1","args":"[FileName]",
-	//cmddetail:"descr":"Tests the LFS file reading feature.",
-	//cmddetail:"fn":"cmnd_lfs_test1","file":"cmnds/cmd_tasmota.c","requires":"",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lfs_test1", NULL, cmnd_lfs_test1, NULL, NULL);
-	//cmddetail:{"name":"lfs_test2","args":"[FileName]",
-	//cmddetail:"descr":"Tests the LFS file reading feature.",
-	//cmddetail:"fn":"cmnd_lfs_test2","file":"cmnds/cmd_tasmota.c","requires":"",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lfs_test2", NULL, cmnd_lfs_test2, NULL, NULL);
-	//cmddetail:{"name":"lfs_test3","args":"[FileName]",
-	//cmddetail:"descr":"Tests the LFS file reading feature.",
-	//cmddetail:"fn":"cmnd_lfs_test3","file":"cmnds/cmd_tasmota.c","requires":"",
-	//cmddetail:"examples":""}
-	CMD_RegisterCommand("lfs_test3", NULL, cmnd_lfs_test3, NULL, NULL);
+	CMD_RegisterCommand("exec", cmnd_lfsexec, NULL);
 	//cmddetail:{"name":"SSID1","args":"[ValueString]",
 	//cmddetail:"descr":"Sets the SSID of target WiFi. Command keeps Tasmota syntax.",
 	//cmddetail:"fn":"cmnd_SSID1","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("SSID1", NULL, cmnd_SSID1, NULL, NULL);
+	CMD_RegisterCommand("SSID1", cmnd_SSID1, NULL);
 	//cmddetail:{"name":"Password1","args":"[ValueString]",
 	//cmddetail:"descr":"Sets the Pass of target WiFi. Command keeps Tasmota syntax",
 	//cmddetail:"fn":"cmnd_Password1","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("Password1", NULL, cmnd_Password1, NULL, NULL);
+	CMD_RegisterCommand("Password1", cmnd_Password1, NULL);
 	//cmddetail:{"name":"MqttHost","args":"[ValueString]",
 	//cmddetail:"descr":"Sets the MQTT host. Command keeps Tasmota syntax",
 	//cmddetail:"fn":"cmnd_MqttHost","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("MqttHost", NULL, cmnd_MqttHost, NULL, NULL);
+	CMD_RegisterCommand("MqttHost", cmnd_MqttHost, NULL);
 	//cmddetail:{"name":"MqttUser","args":"[ValueString]",
 	//cmddetail:"descr":"Sets the MQTT user. Command keeps Tasmota syntax",
 	//cmddetail:"fn":"cmnd_MqttUser","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("MqttUser", NULL, cmnd_MqttUser, NULL, NULL);
+	CMD_RegisterCommand("MqttUser", cmnd_MqttUser, NULL);
 	//cmddetail:{"name":"MqttPassword","args":"[ValueString]",
 	//cmddetail:"descr":"Sets the MQTT pass. Command keeps Tasmota syntax",
 	//cmddetail:"fn":"cmnd_MqttPassword","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("MqttPassword", NULL, cmnd_MqttPassword, NULL, NULL);
+	CMD_RegisterCommand("MqttPassword", cmnd_MqttPassword, NULL);
 	//cmddetail:{"name":"MqttClient","args":"[ValueString]",
 	//cmddetail:"descr":"Sets the MQTT client. Command keeps Tasmota syntax",
 	//cmddetail:"fn":"cmnd_MqttClient","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("MqttClient", NULL, cmnd_MqttClient, NULL, NULL);
+	CMD_RegisterCommand("MqttClient", cmnd_MqttClient, NULL);
+	//cmddetail:{"name":"MqttGroup","args":"[ValueString]",
+	//cmddetail:"descr":"Sets the MQTT Group topic. Command keeps Tasmota syntax",
+	//cmddetail:"fn":"cmnd_MqttGroup","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("MqttGroup", cmnd_MqttGroup, NULL);
+
+	// those are stubs, they are handled elsewhere so we can have Tasmota style replies
+
+	//cmddetail:{"name":"State","args":"NULL",
+	//cmddetail:"descr":"A stub for Tasmota",
+	//cmddetail:"fn":"cmnd_stub","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("State", cmnd_stub, NULL);
+	//cmddetail:{"name":"Sensor","args":"NULL",
+	//cmddetail:"descr":"A stub for Tasmota",
+	//cmddetail:"fn":"cmnd_stub","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("Sensor", cmnd_stub, NULL);
+	//cmddetail:{"name":"Status","args":"NULL",
+	//cmddetail:"descr":"A stub for Tasmota",
+	//cmddetail:"fn":"cmnd_stub","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("Status", cmnd_stub, NULL);
+	//cmddetail:{"name":"Result","args":"NULL",
+	//cmddetail:"descr":"A stub for Tasmota",
+	//cmddetail:"fn":"cmnd_stub","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("Result", cmnd_stub, NULL);
     return 0;
 }

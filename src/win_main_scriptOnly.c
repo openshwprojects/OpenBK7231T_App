@@ -77,7 +77,7 @@ int __cdecl main(void)
 	ConsumptionResetTime = time(0);
           
 	
-	ltm = localtime(&ConsumptionResetTime);
+	ltm = gmtime(&ConsumptionResetTime);
 
 	addLogAdv(1,1,"Scheme str is too small (%u >= %u)", max_scheme_len, some_uint_32);
 	addLogAdv(1,1,"Simon test %f!",1.0f/3.0f);
@@ -89,9 +89,9 @@ int __cdecl main(void)
 	  addLogAdv(1,1, "%sTime %i, idle %i/s, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i\n",
 		  "[TEST]", 123, 555,95000,1, 6, 
             1, -1, 3, 64);
-    printf("Consumption Reset Time: %04d/%02d/%02d %02d:%02d:%02d",
+    printf("Consumption Reset Time: %04d-%02d-%02d %02d:%02d:%02d",
                        ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
-    addLogAdv(1,1, "Consumption Reset Time: %04d/%02d/%02d %02d:%02d:%02d",
+    addLogAdv(1,1, "Consumption Reset Time: %04d-%02d-%02d %02d:%02d:%02d",
                        ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
 
             addLogAdv(1,1, "Today: %1.1f Wh DailyStats: [", 3.145f);

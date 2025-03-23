@@ -9,216 +9,317 @@
 #include "drv_uart.h"
 #include "../httpserver/new_http.h"
 #include "../hal/hal_pins.h"
+#include "drv_cht83xx.h"
 
-#include "drv_cht8305.h"
-
-// Some platforms have less pins than BK7231T.
-// For example, BL602 doesn't have pin number 26.
-// The pin code would crash BL602 while trying to access pin 26.
-// This is why the default settings here a per-platform.
-#if PLATFORM_BEKEN
-static int g_pin_clk = 9;
-static int g_pin_data = 14;
-#else
-static int g_pin_clk = 0;
-static int g_pin_data = 1;
-#endif
-
-#define CHT8305_I2C_ADDR (0x40 << 1)
-
+static byte g_cht_secondsUntilNextMeasurement = 1, g_cht_secondsBetweenMeasurements = 1;
 static byte channel_temp = 0, channel_humid = 0;
 static float g_temp = 0.0, g_humid = 0.0;
+static float g_calTemp = 0, g_calHum = 0;
+static uint16_t sensor_id = 0;
+static char* g_cht_sensor = "CHT8305";
 
-static void CHT8305_SetLow(uint8_t pin) {
-	HAL_PIN_Setup_Output(pin);
-	HAL_PIN_SetOutputValue(pin, 0);
-	}
-
-static void CHT8305_SetHigh(uint8_t pin) {
-	HAL_PIN_Setup_Input_Pullup(pin);
-	}
-
-static bool CHT8305_PreInit(void) {
-	HAL_PIN_SetOutputValue(g_pin_data, 0);
-	HAL_PIN_SetOutputValue(g_pin_clk, 0);
-	CHT8305_SetHigh(g_pin_data);
-	CHT8305_SetHigh(g_pin_clk);
-	return (!((HAL_PIN_ReadDigitalInput(g_pin_data) == 0 || HAL_PIN_ReadDigitalInput(g_pin_clk) == 0)));
-	}
-
-static bool CHT8305_WriteByte(uint8_t value) {
-	uint8_t curr;
-	uint8_t ack;
-
-	for (curr = 0x80; curr != 0; curr >>= 1)
-		{
-		if (curr & value)
-			{
-			CHT8305_SetHigh(g_pin_data);
-			}
-		else
-			{
-			CHT8305_SetLow(g_pin_data);
-			}
-		CHT8305_SetHigh(g_pin_clk);
-		usleep(CHT8305_DELAY);
-		CHT8305_SetLow(g_pin_clk);
-		}
-	// get Ack or Nak
-	CHT8305_SetHigh(g_pin_data);
-	CHT8305_SetHigh(g_pin_clk);
-	usleep(CHT8305_DELAY / 2);
-	ack = HAL_PIN_ReadDigitalInput(g_pin_data);
-	CHT8305_SetLow(g_pin_clk);
-	usleep(CHT8305_DELAY / 2);
-	CHT8305_SetLow(g_pin_data);
-	return (0 == ack);
-	}
-
-static bool CHT8305_Start(uint8_t addr) {
-	CHT8305_SetLow(g_pin_data);
-	usleep(CHT8305_DELAY);
-	CHT8305_SetLow(g_pin_clk);
-	return CHT8305_WriteByte(addr);
-	}
-
-static void CHT8305_Stop(void) {
-	CHT8305_SetLow(g_pin_data);
-	usleep(CHT8305_DELAY);
-	CHT8305_SetHigh(g_pin_clk);
-	usleep(CHT8305_DELAY);
-	CHT8305_SetHigh(g_pin_data);
-	usleep(CHT8305_DELAY);
-	}
-
-static uint8_t CHT8305_ReadByte(bool nack)
-	{
-	uint8_t val = 0;
-
-	CHT8305_SetHigh(g_pin_data);
-	for (int i = 0; i < 8; i++)
-		{
-		usleep(CHT8305_DELAY);
-		CHT8305_SetHigh(g_pin_clk);
-		val <<= 1;
-		if (HAL_PIN_ReadDigitalInput(g_pin_data))
-			{
-			val |= 1;
-			}
-		CHT8305_SetLow(g_pin_clk);
-		}
-	if (nack)
-		{
-		CHT8305_SetHigh(g_pin_data);
-		}
-	else
-		{
-		CHT8305_SetLow(g_pin_data);
-		}
-	CHT8305_SetHigh(g_pin_clk);
-	usleep(CHT8305_DELAY);
-	CHT8305_SetLow(g_pin_clk);
-	usleep(CHT8305_DELAY);
-	CHT8305_SetLow(g_pin_data);
-
-	return val;
-	}
-
-
-static void CHT8305_ReadBytes(uint8_t* buf, int numOfBytes)
-	{
-
-	for (int i = 0; i < numOfBytes - 1; i++)
-		{
-
-		buf[i] = CHT8305_ReadByte(false);
-
-		}
-
-	buf[numOfBytes - 1] = CHT8305_ReadByte(true); //Give NACK on last byte read
-	}
-
-
-
-static commandResult_t CHT8305_GETENV(const void* context, const char* cmd, const char* args, int flags){
-	const char* c = args;
-
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "CHT8305_GETENV");
-
-	return CMD_RES_OK;
-	}
-
-static void CHT8305_ReadEnv(float* temp, float* hum)
-	{
+static void CHT83XX_ReadEnv(float* temp, float* hum)
+{
 	uint8_t buff[4];
-	unsigned int th, tl, hh, hl;
 
-	CHT8305_Start(CHT8305_I2C_ADDR);
-	CHT8305_WriteByte(0x00);
-	CHT8305_Stop();
+	if(IS_CHT831X)
+	{
+		//Oneshot measurement
+		Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR);
+		Soft_I2C_WriteByte(&g_softI2C, CHT831X_REG_ONESHOT);
+		Soft_I2C_WriteByte(&g_softI2C, 0x00);
+		Soft_I2C_WriteByte(&g_softI2C, 0x00);
+		Soft_I2C_Stop(&g_softI2C);
+	}
+
+	Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR);
+	Soft_I2C_WriteByte(&g_softI2C, CHT831X_REG_TEMP);
+	Soft_I2C_Stop(&g_softI2C);
 
 	rtos_delay_milliseconds(20);	//give the sensor time to do the conversion
 
-	CHT8305_Start(CHT8305_I2C_ADDR | 1);
-	CHT8305_ReadBytes(buff, 4);
-	CHT8305_Stop();
+	Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR | 1);
+	Soft_I2C_ReadBytes(&g_softI2C, buff, 4);
+	Soft_I2C_Stop(&g_softI2C);
 
-	th = buff[0];
-	tl = buff[1];
-	hh = buff[2];
-	hl = buff[3];
+	//In case we have the new sensor 8310, overwrite humidity data reading it from 0x01, as it cannot be directrly read from 0x00, there is parity
+	if(IS_CHT831X)
+	{
+		Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR);
+		Soft_I2C_WriteByte(&g_softI2C, CHT831X_REG_HUM);
+		Soft_I2C_Stop(&g_softI2C);
 
-	(*temp) = (th << 8 | tl) * 165.0 / 65535.0 - 40.0;
-
-	(*hum) = (hh << 8 | hl) * 100.0 / 65535.0;
-
+		Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR | 1);
+		Soft_I2C_ReadBytes(&g_softI2C, buff + 2, 2);
+		Soft_I2C_Stop(&g_softI2C);
+		int16_t temp_val = (buff[0] << 8 | buff[1]);
+		// >> 3 = 13bit resolution
+		(*temp) = (float)(temp_val >> 3) * 0.03125 + g_calTemp;
+		(*hum) = ((((buff[2] << 8 | buff[3]) & 0x7fff) / 32768.0) * 100.0) + g_calHum;
+		return;
 	}
 
-// startDriver CHT8305
-void CHT8305_Init() {
+	(*temp) = ((buff[0] << 8 | buff[1]) * 165.0 / 65535.0 - 40.0) + g_calTemp;
+	(*hum) = ((buff[2] << 8 | buff[3]) * 100.0 / 65535.0) + g_calHum;
+}
 
+void CHT831X_ConfigureAlert(float temp_diff, float hum_diff, CHT_alert_freq freq, CHT_alert_fq fq)
+{
+	uint8_t mode = SRC_TEMP_AND_HUM;
+	if(temp_diff > 0.05) mode ^= 0b10;
+	if(hum_diff > 0.1) mode ^= 0b01;
+	// technically we can support this mode
+	if(mode == SRC_TEMP_AND_HUM)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "CHT_Alert: wrong mode, too low TempDiff && HumDiff");
+		return;
+	}
+	if(mode != SRC_HUM_ONLY)
+	{
+		int16_t hight = (int)((g_temp - g_calTemp + temp_diff) / 0.03125) << 3;
+		int16_t lowt = (int)((g_temp - g_calTemp - temp_diff) / 0.03125) << 3;
+		WriteReg(CHT831X_REG_TEMP_HL, hight);
+		WriteReg(CHT831X_REG_TEMP_LL, lowt);
+	}
+	if(mode != SRC_TEMP_ONLY)
+	{
+		int16_t humh = (int)round((g_humid - g_calHum + hum_diff) * 327.67);
+		int16_t huml = (int)round((g_humid - g_calHum - hum_diff) * 327.67);
+
+		WriteReg(CHT831X_REG_HUM_HL, humh);
+		WriteReg(CHT831X_REG_HUM_LL, huml);
+	}
+
+	uint8_t conf = 0x80 | (POL_AL << 5) | (mode << 3) | (fq << 1) | 1;
+	Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR);
+	Soft_I2C_WriteByte(&g_softI2C, CHT831X_REG_CFG);
+	Soft_I2C_WriteByte(&g_softI2C, 0x08);
+	Soft_I2C_WriteByte(&g_softI2C, conf);
+	Soft_I2C_Stop(&g_softI2C);
+
+	Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR);
+	Soft_I2C_WriteByte(&g_softI2C, CHT831X_REG_C_RATE);
+	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)freq);
+	Soft_I2C_Stop(&g_softI2C);
+}
+
+commandResult_t CHT83XX_Calibrate(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2))
+	{
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	g_calTemp = Tokenizer_GetArgFloat(0);
+	g_calHum = Tokenizer_GetArgFloat(1);
+
+	ADDLOG_INFO(LOG_FEATURE_SENSOR, "Calibrate CHT: Calibration done temp %f and humidity %f ", g_calTemp, g_calHum);
+
+	return CMD_RES_OK;
+}
+
+commandResult_t CHT83XX_Cycle(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+
+	if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1))
+	{
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	g_cht_secondsBetweenMeasurements = Tokenizer_GetArgInteger(0);
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Measurement will run every %i seconds", g_cht_secondsBetweenMeasurements);
+
+	return CMD_RES_OK;
+}
+
+commandResult_t CHT83XX_Alert(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+
+	if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3))
+	{
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	if(!IS_CHT831X)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "ALERT is not supported on CHT8305");
+		return CMD_RES_ERROR;
+	}
+	float difft = Tokenizer_GetArgFloat(0);
+	float diffh = Tokenizer_GetArgFloat(1);
+	int tfreq = Tokenizer_GetArgInteger(2);
+	int tfq = Tokenizer_GetArgInteger(3);
+	CHT_alert_freq freq;
+	CHT_alert_fq fq;
+	switch(tfreq)
+	{
+	case 120:
+		freq = FREQ_120S;
+		break;
+	case 60:
+		freq = FREQ_60S;
+		break;
+	case 10:
+		freq = FREQ_10S;
+		break;
+	case 5:
+		freq = FREQ_5S;
+		break;
+	default:
+		ADDLOG_WARN(LOG_FEATURE_CMD, "CHT83XX_Alert: Wrong freq, using def (1s)");
+	case 1:
+		freq = FREQ_1S;
+		break;
+	}
+
+	switch(tfq)
+	{
+	case 6:
+		fq = FQ_6;
+		break;
+	case 4:
+		fq = FQ_4;
+		break;
+	case 2:
+		fq = FQ_2;
+		break;
+	default:
+		ADDLOG_WARN(LOG_FEATURE_CMD, "CHT83XX_Alert: Wrong fault queue, using def (1)");
+	case 1:
+		fq = FQ_1;
+		break;
+	}
+
+	CHT831X_ConfigureAlert(difft, diffh, freq, fq);
+
+	return CMD_RES_OK;
+}
+
+// startDriver CHT83XX
+void CHT83XX_Init()
+{
 	uint8_t buff[4];
 
-	CHT8305_PreInit();
+	g_softI2C.pin_clk = 9;
+	g_softI2C.pin_data = 14;
+	g_softI2C.pin_clk = PIN_FindPinIndexForRole(IOR_CHT83XX_CLK, g_softI2C.pin_clk);
+	g_softI2C.pin_data = PIN_FindPinIndexForRole(IOR_CHT83XX_DAT, g_softI2C.pin_data);
 
-	g_pin_clk = PIN_FindPinIndexForRole(IOR_CHT8305_CLK, g_pin_clk);
-	g_pin_data = PIN_FindPinIndexForRole(IOR_CHT8305_DAT, g_pin_data);
+	Soft_I2C_PreInit(&g_softI2C);
 
-	CHT8305_Start(CHT8305_I2C_ADDR);
-	CHT8305_WriteByte(0xfe);			//manufacturer ID
-	CHT8305_Stop();
-	CHT8305_Start(CHT8305_I2C_ADDR | 1);
-	CHT8305_ReadBytes(buff, 2);
-	CHT8305_Stop();
+	Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR);
+	Soft_I2C_WriteByte(&g_softI2C, CHT831X_REG_ID); //manufacturer ID 2 bytes
+	Soft_I2C_Stop(&g_softI2C);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "DRV_CHT8304_init: ID: %02X %02X\n", buff[0], buff[1]);
+	Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR | 1);
+	Soft_I2C_ReadBytes(&g_softI2C, buff, 2);
+	Soft_I2C_Stop(&g_softI2C);
 
+	//Read Sensor version separately on the last 2 bytes of the buffer
+	Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR);
+	Soft_I2C_WriteByte(&g_softI2C, CHT831X_REG_ID + 1);
+	Soft_I2C_Stop(&g_softI2C);
 
+	Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR | 1);
+	Soft_I2C_ReadBytes(&g_softI2C, buff + 2, 2);
+	Soft_I2C_Stop(&g_softI2C);
 
+	//Identify chip ID and keep if for later use
+	sensor_id = (buff[2] << 8 | buff[3]);
+
+	ADDLOG_INFO(LOG_FEATURE_SENSOR, "DRV_CHT83XX_Init: ID: %02X %02X %04X", buff[0], buff[1], sensor_id);
+
+	if(IS_CHT831X)
+	{
+		Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR);
+		Soft_I2C_WriteByte(&g_softI2C, CHT831X_REG_STATUS);
+		Soft_I2C_Stop(&g_softI2C);
+
+		Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR | 1);
+		uint8_t status = Soft_I2C_ReadByte(&g_softI2C, 1);
+		Soft_I2C_Stop(&g_softI2C);
+		if(status != 0)
+		{
+			ADDLOG_INFO(LOG_FEATURE_SENSOR, "CHT83XX wake: th:%i,tl:%i,hh:%i,hl:%i", (status & (1 << 6)) > 0,
+				(status & (1 << 5)) > 0, (status & (1 << 4)) > 0, (status & (1 << 3)) > 0);
+		}
+		//it should be 8310 id is 0x8215, we enable low power mode, so only 50nA are drawn from sensor,
+		//but need to write something to one shot register to trigger new measurement
+		Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR);
+		Soft_I2C_WriteByte(&g_softI2C, CHT831X_REG_CFG);	//config register
+		Soft_I2C_WriteByte(&g_softI2C, 0x48);	//enable shutdown default is 0x08
+		//setting bit 6 enables low power mode,
+		//to get new measurement need to write to one shot register
+		Soft_I2C_WriteByte(&g_softI2C, 0x80);	//as default 0x80
+		Soft_I2C_Stop(&g_softI2C);
 	}
 
-void CHT8305_OnChannelChanged(int ch, int value) {
+	switch(sensor_id)
+	{
+	case 0x8215:
+		g_cht_sensor = "CHT8310";
+		break;
+	case 0x8315:
+		g_cht_sensor = "CHT8315";
+		break;
+	default:
+		g_cht_sensor = "CHT8305";
+		break;
 	}
 
-void CHT8305_OnEverySecond() {
+	//cmddetail:{"name":"CHT_Calibrate","args":"[DeltaTemp][DeltaHumidity]",
+	//cmddetail:"descr":"Calibrate the CHT Sensor as Tolerance is +/-2 degrees C.",
+	//cmddetail:"fn":"CHT_Calibrate","file":"driver/drv_cht8305.c","requires":"",
+	//cmddetail:"examples":"CHT_Calibrate -4 10 <br /> meaning -4 on current temp reading and +10 on current humidity reading"}
+	CMD_RegisterCommand("CHT_Calibrate", CHT83XX_Calibrate, NULL);
+	//cmddetail:{"name":"CHT_Cycle","args":"[IntervalSeconds]",
+	//cmddetail:"descr":"This is the interval between measurements in seconds, by default 1. Max is 255.",
+	//cmddetail:"fn":"CHT_cycle","file":"drv/drv_cht8305.c","requires":"",
+	//cmddetail:"examples":"CHT_Cycle 60 <br /> measurement is taken every 60 seconds"}
+	CMD_RegisterCommand("CHT_Cycle", CHT83XX_Cycle, NULL);
+	//cmddetail:{"name":"CHT_Alert","args":"[TempDiff][HumDiff][Freq][FQ]",
+	//cmddetail:"descr":"Enable alert pin. TempDif (temperature difference is any float higher than 0.05�C) = set detected difference in temperature required for device to wake. HumDiff (humidity difference is any float higher than 0.1%). Freq (time per measurement in s) = 1, 5, 10, 60, 120 (default if wrong = 1). FQ (fault queue number) = 1, 2, 4, 6 (default if wrong = 1)",
+	//cmddetail:"fn":"CHT_Alert","file":"drv/drv_cht8305.c","requires":"",
+	//cmddetail:"examples":"CHT_Alert 0.5 0 5 2 <br /> alert pin will trigger when temperature deviates by more than 0.5�C. Humidity will be ignored. Sensor measures every 5s with fault queue number 2."}
+	CMD_RegisterCommand("CHT_Alert", CHT83XX_Alert, NULL);
+}
 
-	CHT8305_ReadEnv(&g_temp, &g_humid);
+void CHT83XX_Measure()
+{
+	CHT83XX_ReadEnv(&g_temp, &g_humid);
 
-	channel_temp = g_cfg.pins.channels[g_pin_data];
-	channel_humid = g_cfg.pins.channels2[g_pin_data];
+	channel_temp = g_cfg.pins.channels[g_softI2C.pin_data];
+	channel_humid = g_cfg.pins.channels2[g_softI2C.pin_data];
 	// don't want to loose accuracy, so multiply by 10
 	// We have a channel types to handle that
 	CHANNEL_Set(channel_temp, (int)(g_temp * 10), 0);
 	CHANNEL_Set(channel_humid, (int)(g_humid), 0);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_SENSOR, "DRV_CHT8304_readEnv: Temperature:%fC Humidity:%f%%\n", g_temp, g_humid);
+	ADDLOG_INFO(LOG_FEATURE_SENSOR, "DRV_CHT83XX_ReadEnv: Temperature:%fC Humidity:%f%%", g_temp, g_humid);
 }
 
-void CHT8305_AppendInformationToHTTPIndexPage(http_request_t* request)
+void CHT83XX_OnEverySecond()
 {
-	hprintf255(request, "<h2>CHT8305 Temperature=%f, Humidity=%f</h2>", g_temp, g_humid);
-	if (channel_humid == channel_temp) {
-		hprintf255(request, "WARNING: You don't have configured target channels for temp and humid results, set the first and second channel index in Pins!");
+	if(g_cht_secondsUntilNextMeasurement <= 0)
+	{
+		CHT83XX_Measure();
+		g_cht_secondsUntilNextMeasurement = g_cht_secondsBetweenMeasurements;
+	}
+	if(g_cht_secondsUntilNextMeasurement > 0)
+	{
+		g_cht_secondsUntilNextMeasurement--;
 	}
 }
 
+void CHT83XX_AppendInformationToHTTPIndexPage(http_request_t* request)
+{
+	hprintf255(request, "<h2>%s Temperature=%f, Humidity=%f</h2>", g_cht_sensor, g_temp, g_humid);
+	if(channel_humid == channel_temp)
+	{
+		hprintf255(request, "WARNING: You don't have configured target channels for temp and humid results, set the first and second channel index in Pins!");
+	}
+}

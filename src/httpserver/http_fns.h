@@ -6,6 +6,7 @@ void doHomeAssistantDiscovery(const char *topic, http_request_t *request);
 
 int http_fn_about(http_request_t* request);
 int http_fn_cfg_mqtt(http_request_t* request);
+int http_fn_cfg_ip(http_request_t* request);
 int http_fn_cfg_mqtt_set(http_request_t* request);
 int http_fn_cfg_webapp(http_request_t* request);
 int http_fn_cfg_webapp_set(http_request_t* request);
@@ -16,8 +17,6 @@ int http_fn_cfg_wifi(http_request_t* request);
 int http_fn_cfg_mac(http_request_t* request);
 int http_fn_flash_read_tool(http_request_t* request);
 int http_fn_cmd_tool(http_request_t* request);
-int http_fn_uart_tool(http_request_t* request);
-int http_fn_cfg_quick(http_request_t* request);
 int http_fn_ha_cfg(http_request_t* request);
 int http_fn_ha_discovery(http_request_t* request);
 int http_fn_cfg(http_request_t* request);

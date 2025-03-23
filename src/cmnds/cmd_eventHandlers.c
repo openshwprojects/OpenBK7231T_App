@@ -58,12 +58,19 @@ addEventHandler OnHold 11 addChannel 1 -10
 // addChangeHandler Channel0 < 50 echo value is low
 // addChangeHandler Current > 100 setChannel 0 0
 // addChangeHandler Power > 40 setChannel 1 0
-//
+// addChangeHandler noPingTime > 600 reboot
+// addChangeHandler noMQTTTime > 600 reboot
 //
 // LCD demo:
 // backlog startDriver I2C; addI2CDevice_LCD_PCF8574 I2C1 0x23 0 0 0
 // addChangeHandler Channel1 != 0 backlog lcd_clearAndGoto I2C1 0x23 1 1; lcd_print I2C1 0x23 Enabled
 // addChangeHandler Channel1 == 0 backlog lcd_clearAndGoto I2C1 0x23 1 1; lcd_print I2C1 0x23 Disabled
+
+
+// when channel 1 becomes 0, send OFF
+addChangeHandler Channel1 == 0 SendGet http://192.168.0.112/cm?cmnd=Power0%20OFF
+// when channel 1 becomes 1, send ON
+addChangeHandler Channel1 == 1 SendGet http://192.168.0.112/cm?cmnd=Power0%20ON
 
 
 alias doRelayClick backlog setChannel 1 1; addRepeatingEvent 2 1 setChannel 1 0; ClearNoPingTime
@@ -72,7 +79,7 @@ addChangeHandler NoPingTime > 40 doRelayClick
 
 // This will automatically turn off relay after about 2 seconds
 // NOTE: addRepeatingEvent [RepeatTime] [RepeatCount]
-// addChangeHandler Channel0 != 0 addRepeatingEvent 2 1 setChannel 0 0
+addChangeHandler Channel0 != 0 addRepeatingEvent 2 1 setChannel 0 0
 
 AddEventHandler OnClick 0 addChannel 1 -10 0 100 AddEventHandler OnClick 1 addChannel 1 10 0 100
 
@@ -122,12 +129,14 @@ static int EVENT_ParseRelation(const char *s) {
 	return EVENT_DEFAULT;
 }
 
-static int EVENT_ParseEventName(const char *s) {
+int EVENT_ParseEventName(const char *s) {
 	if(!wal_strnicmp(s,"channel",7)) {
 		return CMD_EVENT_CHANGE_CHANNEL0 + atoi(s+7);
 	}
 	if (!stricmp(s, "noPingTime"))
 		return CMD_EVENT_CHANGE_NOPINGTIME;
+	if (!stricmp(s, "NoMQTTTime"))
+		return CMD_EVENT_CHANGE_NOMQTTTIME;
 	if(!stricmp(s,"voltage"))
 		return CMD_EVENT_CHANGE_VOLTAGE;
 	if(!stricmp(s,"current"))
@@ -154,15 +163,21 @@ static int EVENT_ParseEventName(const char *s) {
 		return CMD_EVENT_PIN_ON3CLICK;
 	if (!stricmp(s, "On4Click"))
 		return CMD_EVENT_PIN_ON4CLICK;
+	if (!stricmp(s, "On5Click"))
+		return CMD_EVENT_PIN_ON5CLICK;
 	if(!stricmp(s,"OnChannelChange"))
 		return CMD_EVENT_CHANNEL_ONCHANGE;
 	if(!stricmp(s,"OnUART"))
 		return CMD_EVENT_ON_UART;
 	if(!stricmp(s,"MQTTState"))
 		return CMD_EVENT_MQTT_STATE;
+	if (!stricmp(s, "NTPState"))
+		return CMD_EVENT_NTP_STATE;
 	if (!stricmp(s, "LEDState"))
 		return CMD_EVENT_LED_STATE;
-    if(!stricmp(s,"energycounter"))
+	if (!stricmp(s, "LEDMode"))
+		return CMD_EVENT_LED_MODE;
+    if(!stricmp(s,"energycounter") || !stricmp(s, "energy"))
         return CMD_EVENT_CHANGE_CONSUMPTION_TOTAL;
     if(!stricmp(s,"energycounter_last_hour"))
         return CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR;
@@ -185,6 +200,19 @@ static int EVENT_ParseEventName(const char *s) {
 	// WiFi state has single argument: HALWifiStatus_t
 	if (!stricmp(s, "WiFiState"))
 		return CMD_EVENT_WIFI_STATE;
+	if (!stricmp(s, "TuyaMCUParsed"))
+		return CMD_EVENT_TUYAMCU_PARSED;
+	if (!stricmp(s, "OnADCButton"))
+		return CMD_EVENT_ADC_BUTTON;
+	if (!stricmp(s, "OnCustomDown"))
+		return CMD_EVENT_CUSTOM_DOWN;
+	if (!stricmp(s, "OnCustomUP"))
+		return CMD_EVENT_CUSTOM_UP;
+	if (!stricmp(s, "MissedHeartbeats"))
+		return CMD_EVENT_MISSEDHEARTBEATS;
+	if (isdigit((unsigned char)*s)) {
+		return atoi(s);
+	}
 	return CMD_EVENT_NONE;
 }
 static bool EVENT_EvaluateCondition(int code, int argument, int next) {
@@ -247,8 +275,9 @@ typedef struct eventHandler_s {
 	// catches event with a certain argument.
 	// For example, you can do "addEventHandler OnClick 5"
 	// and it will only fire for pin 5
-	short requiredArgument;
-	short requiredArgument2;
+	int requiredArgument;
+	int requiredArgument2;
+	int requiredArgument3;
 	// command to execute when it happens
 	char *command;
 	// for UART event handlers?
@@ -274,9 +303,13 @@ void EventHandlers_ProcessVariableChange_Integer(byte eventCode, int oldValue, i
 		}
 		ev = ev->next;
 	}
+
+#if ENABLE_OBK_SCRIPTING
+	CMD_Script_ProcessWaitersForEvent(eventCode, newValue);
+#endif
 }
 
-void EventHandlers_AddEventHandler_Integer(byte eventCode, int type, int requiredArgument, int requiredArgument2, const char *commandToRun)
+void EventHandlers_AddEventHandler_Integer(byte eventCode, int type, int requiredArgument, int requiredArgument2, int requiredArgument3, const char *commandToRun)
 {
 	eventHandler_t *ev = malloc(sizeof(eventHandler_t));
 	memset(ev,0,sizeof(eventHandler_t));
@@ -290,6 +323,7 @@ void EventHandlers_AddEventHandler_Integer(byte eventCode, int type, int require
 	ev->eventCode = eventCode;
 	ev->requiredArgument = requiredArgument;
 	ev->requiredArgument2 = requiredArgument2;
+	ev->requiredArgument3 = requiredArgument3;
 }
 
 void EventHandlers_AddEventHandler_String(byte eventCode, int type, const char *requiredArgument, const char *commandToRun)
@@ -307,6 +341,21 @@ void EventHandlers_AddEventHandler_String(byte eventCode, int type, const char *
 	ev->requiredArgument = 0;
 	ev->requiredArgument2 = 0;
 }
+void EventHandlers_FireEvent3(byte eventCode, int argument, int argument2, int argument3) {
+	struct eventHandler_s *ev;
+
+	ev = g_eventHandlers;
+
+	while (ev) {
+		if (eventCode == ev->eventCode) {
+			if (argument == ev->requiredArgument && argument2 == ev->requiredArgument2 && argument3 == ev->requiredArgument3) {
+				ADDLOG_INFO(LOG_FEATURE_EVENT, "EventHandlers_FireEvent3: executing command %s", ev->command);
+				CMD_ExecuteCommand(ev->command, COMMAND_FLAG_SOURCE_SCRIPT);
+			}
+		}
+		ev = ev->next;
+	}
+}
 void EventHandlers_FireEvent2(byte eventCode, int argument, int argument2) {
 	struct eventHandler_s *ev;
 
@@ -322,6 +371,8 @@ void EventHandlers_FireEvent2(byte eventCode, int argument, int argument2) {
 		ev = ev->next;
 	}
 }
+
+
 void EventHandlers_FireEvent(byte eventCode, int argument) {
 	struct eventHandler_s *ev;
 
@@ -336,6 +387,10 @@ void EventHandlers_FireEvent(byte eventCode, int argument) {
 		}
 		ev = ev->next;
 	}
+
+#if ENABLE_OBK_SCRIPTING
+	CMD_Script_ProcessWaitersForEvent(eventCode, argument);
+#endif
 }
 void EventHandlers_FireEvent_String(byte eventCode, const char *argument) {
 	struct eventHandler_s *ev;
@@ -361,29 +416,30 @@ static commandResult_t CMD_AddEventHandler(const void *context, const char *cmd,
 	const char *eventName;
 	int reqArg;
 	int arg2;
+	int arg3;
 	const char *cmdToCall;
 	int eventCode;
 	const char *reqArgStr;
-	int bTwoArgsMode;
+	char argsCnt;
 
-	if(args==0||*args==0) {
-		ADDLOG_ERROR(LOG_FEATURE_EVENT, "CMD_AddEventHandler: command requires argument");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
 	Tokenizer_TokenizeString(args,0);
-	if(Tokenizer_GetArgsCount() < 3) {
-		ADDLOG_ERROR(LOG_FEATURE_EVENT, "CMD_AddEventHandler: command requires 3 arguments");
+	
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	if(cmd[strlen("addEventHandler2")-1]=='2') {
-		bTwoArgsMode = 1;
-		ADDLOG_DEBUG(LOG_FEATURE_EVENT, "CMD_AddEventHandler: will expect two args.");
-	} else {
-		bTwoArgsMode = 0;
-		ADDLOG_DEBUG(LOG_FEATURE_EVENT, "CMD_AddEventHandler: will expect 1 arg.");
-	}
 
+	argsCnt = cmd[strlen("addEventHandler2") - 1];
+	if (argsCnt == '2' || argsCnt == '3') {
+		argsCnt = argsCnt - '0';
+	}
+	else {
+		argsCnt = 1;
+	}
 	arg2 = 0;
+	arg3 = 0;
 
 	eventName = Tokenizer_GetArg(0);
 	if(false==Tokenizer_IsArgInteger(1)) {
@@ -392,21 +448,21 @@ static commandResult_t CMD_AddEventHandler(const void *context, const char *cmd,
 	} else {
 		reqArgStr = 0;
 		reqArg = Tokenizer_GetArgInteger(1);
-		if(bTwoArgsMode) {
+		if(argsCnt>1) {
 			arg2 = Tokenizer_GetArgInteger(2);
 			ADDLOG_DEBUG(LOG_FEATURE_EVENT, "CMD_AddEventHandler: arg2 = %i.",arg2);
+			if (argsCnt > 2) {
+				arg3 = Tokenizer_GetArgInteger(3);
+				ADDLOG_DEBUG(LOG_FEATURE_EVENT, "CMD_AddEventHandler: arg3= %i.", arg3);
+			}
 		}
 		ADDLOG_DEBUG(LOG_FEATURE_EVENT, "CMD_AddEventHandler: arg1 = %i.",reqArg);
 	}
-	if(bTwoArgsMode) {
-		cmdToCall = Tokenizer_GetArgFrom(3);
-	} else {
-		cmdToCall = Tokenizer_GetArgFrom(2);
-	}
+	cmdToCall = Tokenizer_GetArgFrom(1+ argsCnt);
 
 	eventCode = EVENT_ParseEventName(eventName);
 	if(eventCode == CMD_EVENT_NONE) {
-		ADDLOG_ERROR(LOG_FEATURE_EVENT, "CMD_AddEventHandler: %s is not a valid event",eventName);
+		ADDLOG_ERROR(LOG_FEATURE_EVENT, "%s is not a valid event",eventName);
 		return CMD_RES_BAD_ARGUMENT;
 	}
 
@@ -414,7 +470,7 @@ static commandResult_t CMD_AddEventHandler(const void *context, const char *cmd,
 	if(reqArgStr) {
 		EventHandlers_AddEventHandler_String(eventCode,EVENT_DEFAULT,reqArgStr,cmdToCall);
 	} else {
-		EventHandlers_AddEventHandler_Integer(eventCode,EVENT_DEFAULT,reqArg,arg2,cmdToCall);
+		EventHandlers_AddEventHandler_Integer(eventCode,EVENT_DEFAULT,reqArg,arg2, arg3,cmdToCall);
 	}
 
 	return CMD_RES_OK;
@@ -436,7 +492,7 @@ commandResult_t CMD_ClearAllHandlers(const void *context, const char *cmd, const
 		c++;
 	}
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Fried %i handlers\n", c);
+	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Fried %i handlers", c);
 	g_eventHandlers = 0;
 
 	return CMD_RES_OK;
@@ -449,13 +505,11 @@ static commandResult_t CMD_AddChangeHandler(const void *context, const char *cmd
 	int relationCode;
 	int eventCode;
 
-	if(args==0||*args==0) {
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddChangeHandler: command requires argument");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
 	Tokenizer_TokenizeString(args,0);
-	if(Tokenizer_GetArgsCount() < 4) {
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddChangeHandler: command requires 4 arguments");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 4)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
@@ -478,7 +532,7 @@ static commandResult_t CMD_AddChangeHandler(const void *context, const char *cmd
 
 
 	ADDLOG_INFO(LOG_FEATURE_EVENT, "CMD_AddChangeHandler: added %s with cmd %s",eventName,cmdToCall);
-	EventHandlers_AddEventHandler_Integer(eventCode,relationCode,reqArg,0,cmdToCall);
+	EventHandlers_AddEventHandler_Integer(eventCode,relationCode,reqArg,0,0,cmdToCall);
 
 	return CMD_RES_OK;
 }
@@ -499,28 +553,41 @@ static commandResult_t CMD_ListEventHandlers(const void *context, const char *cm
 
 	return CMD_RES_OK;
 }
+int EventHandlers_GetActiveCount() {
+	struct eventHandler_s *ev;
+	int c;
+
+	ev = g_eventHandlers;
+	c = 0;
+
+	while (ev) {
+		ev = ev->next;
+		c++;
+	}
+	return c;
+}
 void EventHandlers_Init() {
 
 	//cmddetail:{"name":"AddEventHandler","args":"[EventName][EventArgument][CommandToRun]",
 	//cmddetail:"descr":"This can be used to trigger an action on a button click, long press, etc",
 	//cmddetail:"fn":"CMD_AddEventHandler","file":"cmnds/cmd_eventHandlers.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("AddEventHandler", "", CMD_AddEventHandler, NULL, NULL);
+    CMD_RegisterCommand("AddEventHandler", CMD_AddEventHandler, NULL);
 	//cmddetail:{"name":"AddChangeHandler","args":"[Variable][Relation][Constant][Command]",
 	//cmddetail:"descr":"This can listen to change in channel value (for example channel 0 becoming 100), or for a voltage/current/power change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be 'Power', or 'Current' or 'Voltage'",
 	//cmddetail:"fn":"CMD_AddChangeHandler","file":"cmnds/cmd_eventHandlers.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("AddChangeHandler", "", CMD_AddChangeHandler, NULL, NULL);
+    CMD_RegisterCommand("AddChangeHandler", CMD_AddChangeHandler, NULL);
 	//cmddetail:{"name":"listEventHandlers","args":"",
 	//cmddetail:"descr":"Prints full list of added event handlers",
 	//cmddetail:"fn":"CMD_ListEventHandlers","file":"cmnds/cmd_eventHandlers.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("listEventHandlers", "", CMD_ListEventHandlers, NULL, NULL);
+    CMD_RegisterCommand("listEventHandlers", CMD_ListEventHandlers, NULL);
 	//cmddetail:{"name":"clearAllHandlers","args":"",
 	//cmddetail:"descr":"This clears all added event handlers",
 	//cmddetail:"fn":"CMD_ClearAllHandlers","file":"cmnds/cmd_eventHandlers.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("clearAllHandlers", "", CMD_ClearAllHandlers, NULL, NULL);
+    CMD_RegisterCommand("clearAllHandlers", CMD_ClearAllHandlers, NULL);
 
 }
 

@@ -1,0 +1,13 @@
+{
+   "channels": "Channel types are often not required and don't have to be configured, but in some cases they are required for better device control from OpenBeken web panel. Channel types describes the kind of value stored in channel, for example, if you have a Tuya Fan Controller with 3 speeds control, you can set the channel type to LowMidHigh and it will display the correct UI radiobutton on OpenBeken panel.<br>Some channels have '_div10' or '_div100' suffixes. This is for TuyaMCU. This is needed because TuyaMCU sends values as integers, so it sends, for example, 215 for 21.5C temperature, and we store it internally as 215 and only convert to float for display.",
+   "commands": "There are multiple console commands that allow you to automate your devices. Commands can be entered manually in command line, can be send by HTTP (just like in Tasmota), can be send by MQTT and also can be scripted.",
+   "pins": "You can set pin roles in 'Configure Module' section or use one of predefined templates in Web App. For each pin, you also set corresponding channel value. This is needed for modules with multiple relays. If you have 3 relays and 3 buttons, you need to use channel values like 1, 2, and 3. Just enter '1' in the text field, etc.",
+   "constants": "Every console command that takes an integer argument supports certain constant expansion. ",
+   "flags": "Flags are global and allows you to alter behaviour of the device.",
+   "drivers": "Drivers allows you to control certain peripherals or enable certain features that are off by default.",
+   "faq": "Here is a detailed list of questions you may ask. Some information from docs is repeated here.",
+   "commandExamples":"Here you can find some examples of console commands usage",
+   "mqttTopics":"MQTT topic names and content for incoming and outgoing OBK MQTT publishes",
+   "autoexecExamples":"Here you can find examples of autoexec.bat configs. The autoexec.bat file can be created in Web Application, under LittleFS tab, and is run every time device reboots (unless device enters safe mode/AP mode). The autoexec.bat file allows you to create more advanced configs, setup TuyaMCU mappings, etc",
+   "scriptExamples":"Scripts can be put in autoexec.bat and then they will start automatically on reboot, you can also put script in other LittleFS file and use startScript [fileName] [Label] command to run them. From the firmware point of view, scripts and autoexecs are basically the same thing. There is, however, a little bit more advanced system of execution for scripts which can be written in a form of scripts threads that run over time, can have delays within then, conditional checks and jumps."
+}

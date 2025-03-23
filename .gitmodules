@@ -22,3 +22,34 @@
 	path = sdk/OpenW600
 	url = https://github.com/openshwprojects/OpenW600.git
 	branch = master
+[submodule "sdk/OpenLN882H"]
+	path = sdk/OpenLN882H
+	url = https://github.com/openshwprojects/OpenLN882H.git
+[submodule "sdk/esp-idf"]
+	path = sdk/esp-idf
+	url = https://github.com/espressif/esp-idf.git
+	branch = release/v5.3
+[submodule "sdk/OpenTR6260"]
+	path = sdk/OpenTR6260
+	url = https://github.com/NonPIayerCharacter/OpenTR6260.git
+	branch = master
+[submodule "sdk/OpenRTL87X0C"]
+	path = sdk/OpenRTL87X0C
+	url = https://github.com/NonPIayerCharacter/OpenRTL87X0C.git
+	branch = main
+[submodule "sdk/OpenRTL8710A_B"]
+	path = sdk/OpenRTL8710A_B
+	url = https://github.com/NonPIayerCharacter/OpenRTL8710A_B.git
+	branch = master
+[submodule "sdk/beken_freertos_sdk"]
+	path = sdk/beken_freertos_sdk
+	url = https://github.com/NonPIayerCharacter/beken_freertos_sdk.git
+	branch = master
+[submodule "sdk/OpenRTL8720D"]
+	path = sdk/OpenRTL8720D
+	url = https://github.com/NonPIayerCharacter/OpenRTL8720D.git
+	branch = master
+[submodule "sdk/OpenECR6600"]
+	path = sdk/OpenECR6600
+	url = https://github.com/NonPIayerCharacter/OpenECR6600.git
+	branch = master

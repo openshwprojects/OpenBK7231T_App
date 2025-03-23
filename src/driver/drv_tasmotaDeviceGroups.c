@@ -10,6 +10,7 @@
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
+#include "../httpserver/new_http.h"
 
 static const char* dgr_group = "239.255.250.250";
 static int dgr_port = 4447;
@@ -17,6 +18,11 @@ static int dgr_retry_time_left = 5;
 static int g_inCmdProcessing = 0;
 static int g_dgr_socket_receive = -1;
 static int g_dgr_socket_send = -1;
+// statistics
+static int g_dgr_stat_sent = 0;
+static int g_dgr_stat_received = 0;
+struct sockaddr_in g_mySockAddr;
+
 static uint16_t g_dgr_send_seq = 0;
 
 const char *HAL_GetMyIPString();
@@ -108,6 +114,7 @@ void DGR_FlushSendQueue() {
 	p = dgr_pending;
 	while(p) {
 		if(p->length != 0) {
+			g_dgr_stat_sent++;
 			nbytes = sendto(
 				g_dgr_socket_send,
 			   (const char*) p->buffer,
@@ -134,38 +141,6 @@ void DGR_FlushSendQueue() {
 	xSemaphoreGive(g_mutex);
 
 }
-
-// DGR send can be called from MQTT LED driver, but doing a DGR send
-// directly from there may cause crashes.
-// This is a temporary solution to avoid this problem.
-//bool g_dgr_ledDimmerPendingSend = false;
-//int g_dgr_ledDimmerPendingSend_value;
-//bool g_dgr_ledPowerPendingSend = false;
-//int g_dgr_ledPowerPendingSend_value;
-
-//
-//int DRV_DGR_CreateSocket_Send() {
-//
-//    struct sockaddr_in addr;
-//    int flag = 1;
-//	int fd;
-//
-//    // create what looks like an ordinary UDP socket
-//    //
-//    fd = socket(AF_INET, SOCK_DGRAM, 0);
-//    if (fd < 0) {
-//        return 1;
-//    }
-//
-//    memset(&addr, 0, sizeof(addr));
-//    addr.sin_family = AF_INET;
-//    addr.sin_addr.s_addr = inet_addr(dgr_group);
-//    addr.sin_port = htons(dgr_port);
-//
-//
-//	return 0;
-//}
-
 byte Val255ToVal100(byte v){ 
 	float fr;
 	// convert to our 0-100 range
@@ -181,73 +156,29 @@ byte Val100ToVal255(byte v){
 }
 void DRV_DGR_CreateSocket_Send() {
     // create what looks like an ordinary UDP socket
-    //
     g_dgr_socket_send = socket(AF_INET, SOCK_DGRAM, 0);
     if (g_dgr_socket_send < 0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_CreateSocket_Send: failed to do socket\n");
         return;
     }
 	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_CreateSocket_Send: socket created\n");
-
-
-
 }
 void DRV_DGR_Send_Generic(byte *message, int len) {
-    //struct sockaddr_in addr;
-	//int nbytes;
-
 	// if this send is as a result of use RXing something, 
 	// don't send it....
 	if (g_inCmdProcessing){
 		return;
 	}
 
-
 	g_dgr_send_seq++;
 
-#if 1
 	// This is here only because sending UDP from MQTT callback crashes BK for me
 	// So instead, we are making a queue which is sent in quick tick
 	DGR_AddToSendQueue(message, len);
-#else
-
-    // set up destination address
-    //
-    memset(&addr, 0, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = inet_addr(dgr_group);
-    addr.sin_port = htons(dgr_port);
-
-    nbytes = sendto(
-            g_dgr_socket_send,
-           (const char*) message,
-            len,
-            0,
-            (struct sockaddr*) &addr,
-            sizeof(addr)
-        );
-
-	rtos_delay_milliseconds(1);
-
-	// send twice with same seq.
-    nbytes = sendto(
-            g_dgr_socket_send,
-           (const char*) message,
-            len,
-            0,
-            (struct sockaddr*) &addr,
-            sizeof(addr)
-        );
-
-	DRV_DGR_Dump(message, len);
-
-	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"DRV_DGR_Send_Generic: sent message with seq %i\n",g_dgr_send_seq);
-#endif
-
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DGR adds to queue %i",len);
 }
 
 void DRV_DGR_Dump(byte *message, int len){
-#ifdef DGRLOADMOREDEBUG	
 	char tmp[100];
 	char *p = tmp;
 	for (int i = 0; i < len && i < 49; i++){
@@ -256,7 +187,6 @@ void DRV_DGR_Dump(byte *message, int len){
 	}
 	*p = 0;
 	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_Send_Generic: %s",tmp);
-#endif	
 }
 
 void DRV_DGR_Send_Power(const char *groupName, int channelValues, int numChannels){
@@ -320,7 +250,6 @@ void DRV_DGR_CreateSocket_Receive() {
 	int iResult = 1;
 
     // create what looks like an ordinary UDP socket
-    //
     g_dgr_socket_receive = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (g_dgr_socket_receive < 0) {
 		g_dgr_socket_receive = -1;
@@ -330,7 +259,6 @@ void DRV_DGR_CreateSocket_Receive() {
 
 	if(broadcast)
 	{
-
 		iResult = setsockopt(g_dgr_socket_receive, SOL_SOCKET, SO_BROADCAST, (char *)&flag, sizeof(flag));
 		if (iResult != 0)
 		{
@@ -342,7 +270,6 @@ void DRV_DGR_CreateSocket_Receive() {
 	}
 	else{
 		// allow multiple sockets to use the same PORT number
-		//
 		if (
 			setsockopt(
 				g_dgr_socket_receive, SOL_SOCKET, SO_REUSEADDR, (char*) &flag, sizeof(flag)
@@ -355,15 +282,13 @@ void DRV_DGR_CreateSocket_Receive() {
 		}
 	}
 
-        // set up destination address
-    //
+    // set up destination address
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = htonl(INADDR_ANY); // differs from sender
     addr.sin_port = htons(dgr_port);
 
     // bind to receive address
-    //
     if (bind(g_dgr_socket_receive, (struct sockaddr*) &addr, sizeof(addr)) < 0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_CreateSocket_Receive: failed to do bind\n");
 		close(g_dgr_socket_receive);
@@ -381,19 +306,13 @@ void DRV_DGR_CreateSocket_Receive() {
 	}
 	else
 	{
-
-	  // use setsockopt() to request that the kernel join a multicast group
-		//
+	    // use setsockopt() to request that the kernel join a multicast group
 		mreq.imr_multiaddr.s_addr = inet_addr(dgr_group);
 		//mreq.imr_interface.s_addr = htonl(INADDR_ANY);
-	mreq.imr_interface.s_addr = htonl(INADDR_ANY);//inet_addr(MY_CAPTURE_IP);
+		mreq.imr_interface.s_addr = htonl(INADDR_ANY);//inet_addr(MY_CAPTURE_IP);
     	///mreq.imr_interface.s_addr = inet_addr("192.168.0.122");
-	iResult = setsockopt(
-				g_dgr_socket_receive, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*) &mreq, sizeof(mreq)
-			);
-		if (
-			iResult < 0
-		){
+		iResult = setsockopt(g_dgr_socket_receive, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*) &mreq, sizeof(mreq));
+		if (iResult < 0) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_CreateSocket_Receive: failed to do setsockopt IP_ADD_MEMBERSHIP %i\n",iResult);
 			close(g_dgr_socket_receive);
 			g_dgr_socket_receive = -1;
@@ -406,17 +325,26 @@ void DRV_DGR_CreateSocket_Receive() {
 	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_CreateSocket_Receive: Socket created, waiting for packets\n");
 }
 
+#if ENABLE_LED_BASIC
 void DRV_DGR_processRGBCW(byte *rgbcw) {
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR, "DRV_DGR_setFinalRGBCW: %i,%i,%i,%i,%i\n", (int)rgbcw[0], (int)rgbcw[1], (int)rgbcw[2], (int)rgbcw[3], (int)rgbcw[4]);
+
 	LED_SetFinalRGBCW(rgbcw);
 }
+#endif
 void DRV_DGR_processPower(int relayStates, byte relaysCount) {
 	int startIndex;
 	int i;
 	int ch;
 
-	if(PIN_CountPinsWithRoleOrRole(IOR_PWM,IOR_PWM_n) > 0) {
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR, "DRV_DGR_processPower: cnt %i, val %i\n", (int)relaysCount, relayStates);
+
+#if ENABLE_LED_BASIC
+	if(PIN_CountPinsWithRoleOrRole(IOR_PWM,IOR_PWM_n) > 0 || LED_IsLedDriverChipRunning()) {
 		LED_SetEnableAll(BIT_CHECK(relayStates,0));
-	} else {
+	} else 
+#endif
+	{
 		// does indexing starts with zero?
 		if(CHANNEL_HasChannelPinWithRoleOrRole(0, IOR_Relay, IOR_Relay_n)) {
 			startIndex = 0;
@@ -439,32 +367,25 @@ void DRV_DGR_processPower(int relayStates, byte relaysCount) {
 		}
 	}
 }
+#if ENABLE_LED_BASIC
 void DRV_DGR_processBrightnessPowerOn(byte brightness) {
-	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_processBrightnessPowerOn: %i\n",(int)brightness);
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"DRV_DGR_processBrightnessPowerOn: %i\n",(int)brightness);
 
 	LED_SetDimmer(Val255ToVal100(brightness));
-
-	//numPWMs = PIN_CountPinsWithRole(IOR_PWM,IOR_PWM_n);
-	//idx_pin = PIN_FindPinIndexForRole(IOR_PWM,IOR_PWM_n,0);
-	//idx_channel = PIN_GetPinChannelForPinIndex(idx_pin);
-
-	//CHANNEL_Set(idx_channel,brightness,0);
-	
 }
 void DRV_DGR_processLightFixedColor(byte fixedColor) {
-	addLogAdv(LOG_INFO, LOG_FEATURE_DGR, "DRV_DGR_processLightFixedColor: %i\n", (int)fixedColor);
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR, "DRV_DGR_processLightFixedColor: %i\n", (int)fixedColor);
 
 	LED_SetColorByIndex(fixedColor);
-
 }
 void DRV_DGR_processLightBrightness(byte brightness) {
-	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_processLightBrightness: %i\n",(int)brightness);
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"DRV_DGR_processLightBrightness: %i\n",(int)brightness);
 
 	LED_SetDimmer(Val255ToVal100(brightness));
-	
 }
+#endif
 typedef struct dgrMmember_s {
-    struct sockaddr_in addr;
+	int ip;
 	uint16_t lastSeq;
 } dgrMember_t;
 
@@ -474,9 +395,12 @@ static int g_curDGRMembers = 0;
 static struct sockaddr_in addr;
 
 dgrMember_t *findMember() {
-	int i;
+	int i, ip;
+
+	ip = addr.sin_addr.s_addr;;
+
 	for(i = 0; i < g_curDGRMembers; i++) {
-		if(!memcmp(&g_dgrMembers[i].addr, &addr,sizeof(addr))) {
+		if(g_dgrMembers[i].ip == ip) {
 			return &g_dgrMembers[i];
 		}
 	}
@@ -484,7 +408,7 @@ dgrMember_t *findMember() {
 	if(i>=MAX_DGR_MEMBERS)
 		return 0;
 	g_curDGRMembers ++;
-	memcpy(&g_dgrMembers[i].addr,&addr,sizeof(addr));
+	g_dgrMembers[i].ip = ip;
 	g_dgrMembers[i].lastSeq = 0;
 	return &g_dgrMembers[i];
 }
@@ -494,26 +418,38 @@ int DGR_CheckSequence(uint16_t seq) {
 	
 	m = findMember();
 	
-	if(m == 0)
+	if (m == 0) {
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DGR_CheckSequence: no member found");
 		return 1;
+	}
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "DGR_CheckSequence: argument %i, last %i",(int)seq, (int)m->lastSeq);
 	
 	// make it work past wrap at
 	if((seq > m->lastSeq) || (seq+10 > m->lastSeq+10)) {
 		if(seq != (m->lastSeq+1)){
-			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Seq for %s skip %i->%i\n",inet_ntoa(m->addr.sin_addr), m->lastSeq, seq);
+			//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Seq for %s skip %i->%i\n",inet_ntoa(m->ip), m->lastSeq, seq);
 		}
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "Seq ok");
 		m->lastSeq = seq;
 		return 0;
 	}
 	if(seq + 16 < m->lastSeq) {
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "Seq Hard reset");
 		// hard reset
 		m->lastSeq = seq;
 		return 0;
 	}
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "Seq failed");
 	return 1;
 }
 
 void DRV_DGR_RunEverySecond() {
+	const char *myip;
+
+	// TODO: do it only on IP change?
+	myip = HAL_GetMyIPString();
+	g_mySockAddr.sin_addr.s_addr = inet_addr(myip);
+
 	if(g_dgr_socket_receive<=0 || g_dgr_socket_send <= 0) {
 		dgr_retry_time_left--;
 		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"no sockets, will retry creation soon, in %i secs\n",dgr_retry_time_left);
@@ -543,94 +479,66 @@ void DGR_ProcessIncomingPacket(char *msgbuf, int nbytes) {
 	strcpy(def.gr.groupName, CFG_DeviceGroups_GetName());
 	def.gr.devGroupShare_In = CFG_DeviceGroups_GetRecvFlags();
 	def.gr.devGroupShare_Out = CFG_DeviceGroups_GetSendFlags();
+#if ENABLE_LED_BASIC
 	def.cbs.processBrightnessPowerOn = DRV_DGR_processBrightnessPowerOn;
 	def.cbs.processLightBrightness = DRV_DGR_processLightBrightness;
 	def.cbs.processLightFixedColor = DRV_DGR_processLightFixedColor;
-	def.cbs.processPower = DRV_DGR_processPower;
 	def.cbs.processRGBCW = DRV_DGR_processRGBCW;
+#endif
+	def.cbs.processPower = DRV_DGR_processPower;
 	def.cbs.checkSequence = DGR_CheckSequence;
 
 	// don't send things that result from something we rxed...
 	g_inCmdProcessing = 1;
+#ifdef DGRLOADMOREDEBUG	
 	DRV_DGR_Dump((byte*)msgbuf, nbytes);
-
+#endif
 	DGR_Parse((byte*)msgbuf, nbytes, &def, (struct sockaddr *)&addr);
 	g_inCmdProcessing = 0;
 
 }
+
 void DRV_DGR_RunQuickTick() {
     char msgbuf[64];
-	struct sockaddr_in me;
-	const char *myip;
 	socklen_t addrlen;
 	int nbytes;
+	int i;
 
 	if(g_dgr_socket_receive<=0 || g_dgr_socket_send <= 0) {
 		return ;
 	}
     // send pending
 	DGR_FlushSendQueue();
-	//if (g_dgr_ledDimmerPendingSend) {
-	//	g_dgr_ledDimmerPendingSend = false;
-	//	DRV_DGR_Send_Brightness(CFG_DeviceGroups_GetName(), Val100ToVal255(g_dgr_ledDimmerPendingSend_value));
-	//}
-	//if (g_dgr_ledPowerPendingSend) {
-	//	g_dgr_ledPowerPendingSend = false;
-	//	DRV_DGR_Send_Power(CFG_DeviceGroups_GetName(), g_dgr_ledPowerPendingSend_value, 1);
-	//}
-
+	
 	// NOTE: 'addr' is global, and used in callbacks to determine the member.
-        addrlen = sizeof(addr);
-        nbytes = recvfrom(
-            g_dgr_socket_receive,
-            msgbuf,
-            sizeof(msgbuf),
-            0,
-            (struct sockaddr *) &addr,
-            &addrlen
-        );
-        if (nbytes <= 0) {
-			//addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"nothing\n");
-            return ;
-        }
-
-		myip = HAL_GetMyIPString();
-		me.sin_addr.s_addr = inet_addr(myip);
-
-		if (me.sin_addr.s_addr == addr.sin_addr.s_addr){
-			addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Ignoring message from self");
+	for (i = 0; i < 10; i++) {
+		addrlen = sizeof(addr);
+		nbytes = recvfrom(
+			g_dgr_socket_receive,
+			msgbuf,
+			sizeof(msgbuf),
+			0,
+			(struct sockaddr *) &addr,
+			&addrlen
+		);
+		if (nbytes <= 0) {
 			return;
 		}
 
-		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR,"Received %i bytes from %s\n",nbytes,inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
+		if (g_mySockAddr.sin_addr.s_addr == addr.sin_addr.s_addr) {
+			continue;
+		}
+
+		g_dgr_stat_received++;
+
+		// IMPORTANT: do not call inet_ntoa if log level is not extradebug...
+		if (g_loglevel >= LOG_EXTRADEBUG) {
+			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_DGR, "Received %i bytes from %s\n", nbytes, inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
+		}
 
 		DGR_ProcessIncomingPacket(msgbuf, nbytes);
+	}
 }
-//static void DRV_DGR_Thread(beken_thread_arg_t arg) {
-//
-//    (void)( arg );
-//
-//	DRV_DGR_CreateSocket_Receive();
-//	while(1) {
-//		DRV_DGR_RunQuickTick();
-//	}
-//
-//	return ;
-//}
-//xTaskHandle g_dgr_thread = NULL;
-
-//void DRV_DGR_StartThread()
-//{
-//     OSStatus err = kNoErr;
-//
-//
-//    err = rtos_create_thread( &g_dgr_thread, BEKEN_APPLICATION_PRIORITY,
-//									"DGR_server",
-//									(beken_thread_function_t)DRV_DGR_Thread,
-//									0x100,
-//									(beken_thread_arg_t)0 );
-//
-//}
 void DRV_DGR_Shutdown()
 {
 	if(g_dgr_socket_receive>=0) {
@@ -649,8 +557,14 @@ void DRV_DGR_Shutdown()
 #endif
 		g_dgr_socket_send = -1;
 	}
+	dgr_retry_time_left = 5;
+	g_inCmdProcessing = 0;
+	g_dgr_send_seq = 0;
 }
 
+void DRV_DGR_AppendInformationToHTTPIndexPage(http_request_t* request) {
+	hprintf255(request, "<h4>DGR received: %i, send: %i</h4>", g_dgr_stat_received, g_dgr_stat_sent);
+}
 // DGR_SendPower testSocket 1 1
 // DGR_SendPower stringGroupName integerChannelValues integerChannelsCount
 commandResult_t CMD_DGR_SendPower(const void *context, const char *cmd, const char *args, int flags) {
@@ -659,9 +573,10 @@ commandResult_t CMD_DGR_SendPower(const void *context, const char *cmd, const ch
 	int channelsCount;
 
 	Tokenizer_TokenizeString(args,0);
-
-	if(Tokenizer_GetArgsCount() < 3) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Command requires 3 arguments - groupname, channelvalues, valuescount\n");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	groupName = Tokenizer_GetArg(0);
@@ -687,12 +602,7 @@ void DRV_DGR_OnLedDimmerChange(int iVal) {
 
 		return;
 	}
-#if 0
-	g_dgr_ledDimmerPendingSend = true;
-	g_dgr_ledDimmerPendingSend_value = iVal;
-#else
 	DRV_DGR_Send_Brightness(CFG_DeviceGroups_GetName(), Val100ToVal255(iVal));
-#endif
 }
 
 void DRV_DGR_OnLedFinalColorsChange(byte rgbcw[5]) {
@@ -709,12 +619,7 @@ void DRV_DGR_OnLedFinalColorsChange(byte rgbcw[5]) {
 
 		return;
 	}
-#if 0
-	//g_dgr_ledDimmerPendingSend = true;
-	//g_dgr_ledDimmerPendingSend_value = iVal;
-#else
 	DRV_DGR_Send_RGBCW(CFG_DeviceGroups_GetName(), rgbcw);
-#endif
 }
 
 
@@ -733,12 +638,7 @@ void DRV_DGR_OnLedEnableAllChange(int iVal) {
 		return;
 	}
 
-#if 0
-	g_dgr_ledPowerPendingSend = true;
-	g_dgr_ledPowerPendingSend_value = iVal;
-#else
 	DRV_DGR_Send_Power(CFG_DeviceGroups_GetName(), iVal, 1);
-#endif
 }
 void DRV_DGR_OnChannelChanged(int ch, int value) {
 	int channelValues;
@@ -778,7 +678,8 @@ void DRV_DGR_OnChannelChanged(int ch, int value) {
 	for(i = 0; i < CHANNEL_MAX-1; i++) {
 		int chIndex = i + firstChannelOffset;
 		if(CHANNEL_HasChannelPinWithRole(chIndex,IOR_Relay) || CHANNEL_HasChannelPinWithRole(chIndex,IOR_Relay_n)
-			|| CHANNEL_HasChannelPinWithRole(chIndex,IOR_LED) || CHANNEL_HasChannelPinWithRole(chIndex,IOR_LED_n)) {
+			|| CHANNEL_HasChannelPinWithRole(chIndex,IOR_LED) || CHANNEL_HasChannelPinWithRole(chIndex,IOR_LED_n)
+			|| CHANNEL_HasChannelPinWithRole(chIndex, IOR_Button) || CHANNEL_HasChannelPinWithRole(chIndex, IOR_Button_n)) {
 			channelsCount = i + 1;
 			if(CHANNEL_Get(chIndex)) {
 				BIT_SET(channelValues ,i);
@@ -788,9 +689,6 @@ void DRV_DGR_OnChannelChanged(int ch, int value) {
 	if(channelsCount>0){
 		DRV_DGR_Send_Power(groupName,channelValues,channelsCount);
 	}
-
-
-	
 }
 // DGR_SendBrightness roomLEDstrips 128
 // DGR_SendBrightness stringGroupName integerBrightness
@@ -799,9 +697,10 @@ commandResult_t CMD_DGR_SendBrightness(const void *context, const char *cmd, con
 	int brightness;
 
 	Tokenizer_TokenizeString(args,0);
-
-	if(Tokenizer_GetArgsCount() < 2) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Command requires 2 arguments - groupname, brightess\n");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	groupName = Tokenizer_GetArg(0);
@@ -814,22 +713,48 @@ commandResult_t CMD_DGR_SendBrightness(const void *context, const char *cmd, con
 }
 // DGR_SendRGBCW roomLEDstrips 255 0 0
 // DGR_SendRGBCW stringGroupName r g b
+// Alternate usage:
+// DGR_SendRGBCW roomLEDstrips FF00BB
 commandResult_t CMD_DGR_SendRGBCW(const void *context, const char *cmd, const char *args, int flags) {
 	const char *groupName;
 	byte rgbcw[5];
+	const char *c;
+	int i;
+	char tmp[3];
+	int val = 0;
 
 	Tokenizer_TokenizeString(args,0);
-
-	if(Tokenizer_GetArgsCount() < 4) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"Command requires at least 4 arguments - groupname, r, g, b\n");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	groupName = Tokenizer_GetArg(0);
-	rgbcw[0] = Tokenizer_GetArgInteger(1);
-	rgbcw[1] = Tokenizer_GetArgInteger(2);
-	rgbcw[2] = Tokenizer_GetArgInteger(3);
-	rgbcw[3] = Tokenizer_GetArgInteger(4);
-	rgbcw[4] = Tokenizer_GetArgInteger(5);
+	if (Tokenizer_GetArgsCount() == 2) {
+		c = Tokenizer_GetArg(1);
+		if (*c == '#')
+			c++;
+		i = 0;
+		while (*c && i < 5) {
+			int r;
+			tmp[0] = *(c++);
+			if (!*c)
+				break;
+			tmp[1] = *(c++);
+			tmp[2] = '\0';
+			r = sscanf(tmp, "%x", &val);
+			rgbcw[i] = val;
+			i++;
+		}
+	}
+	else {
+		rgbcw[0] = Tokenizer_GetArgInteger(1);
+		rgbcw[1] = Tokenizer_GetArgInteger(2);
+		rgbcw[2] = Tokenizer_GetArgInteger(3);
+		rgbcw[3] = Tokenizer_GetArgInteger(4);
+		rgbcw[4] = Tokenizer_GetArgInteger(5);
+	}
 
 	DRV_DGR_Send_RGBCW(groupName,rgbcw);
 	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DGR_SendRGBCW: sent message to group %s\n",groupName);
@@ -842,9 +767,10 @@ commandResult_t CMD_DGR_SendFixedColor(const void *context, const char *cmd, con
 	int colorIndex;
 
 	Tokenizer_TokenizeString(args, 0);
-
-	if (Tokenizer_GetArgsCount() < 2) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_DGR, "Command requires at least 2 arguments - groupname, colorIndex\n");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	groupName = Tokenizer_GetArg(0);
@@ -858,33 +784,31 @@ commandResult_t CMD_DGR_SendFixedColor(const void *context, const char *cmd, con
 void DRV_DGR_Init()
 {
 	memset(&g_dgrMembers[0],0,sizeof(g_dgrMembers));
-#if 0
-	DRV_DGR_StartThread();
-#else
+	g_curDGRMembers = 0;
+
 	DRV_DGR_CreateSocket_Receive();
 	DRV_DGR_CreateSocket_Send();
 
-#endif
 	//cmddetail:{"name":"DGR_SendPower","args":"[GroupName][ChannelValues][ChannelsCount]",
 	//cmddetail:"descr":"Sends a POWER message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit.",
 	//cmddetail:"fn":"CMD_DGR_SendPower","file":"driver/drv_tasmotaDeviceGroups.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("DGR_SendPower", "", CMD_DGR_SendPower, NULL, NULL);
+    CMD_RegisterCommand("DGR_SendPower", CMD_DGR_SendPower, NULL);
 	//cmddetail:{"name":"DGR_SendBrightness","args":"[GroupName][Brightness]",
 	//cmddetail:"descr":"Sends a Brightness message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit.",
 	//cmddetail:"fn":"CMD_DGR_SendBrightness","file":"driver/drv_tasmotaDeviceGroups.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("DGR_SendBrightness", "", CMD_DGR_SendBrightness, NULL, NULL);
+    CMD_RegisterCommand("DGR_SendBrightness", CMD_DGR_SendBrightness, NULL);
 	//cmddetail:{"name":"DGR_SendRGBCW","args":"[GroupName][HexRGBCW]",
-	//cmddetail:"descr":"Sends a RGBCW message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit.",
+	//cmddetail:"descr":"Sends a RGBCW message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit. You can use this command in two ways, first is like DGR_SendRGBCW GroupName 255 255 0, etc, second is DGR_SendRGBCW GroupName FF00FF00 etc etc.",
 	//cmddetail:"fn":"CMD_DGR_SendRGBCW","file":"driver/drv_tasmotaDeviceGroups.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("DGR_SendRGBCW", "", CMD_DGR_SendRGBCW, NULL, NULL);
+    CMD_RegisterCommand("DGR_SendRGBCW", CMD_DGR_SendRGBCW, NULL);
 	//cmddetail:{"name":"DGR_SendFixedColor","args":"[GroupName][TasColorIndex]",
 	//cmddetail:"descr":"Sends a FixedColor message to given Tasmota Device Group with no reliability. Requires no prior setup and can control any group, but won't retransmit.",
 	//cmddetail:"fn":"CMD_DGR_SendFixedColor","file":"driver/drv_tasmotaDeviceGroups.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("DGR_SendFixedColor", "", CMD_DGR_SendFixedColor, NULL, NULL);
+	CMD_RegisterCommand("DGR_SendFixedColor", CMD_DGR_SendFixedColor, NULL);
 }
 
 

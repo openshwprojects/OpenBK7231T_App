@@ -43,8 +43,8 @@ const char *http_post_template1 = "POST /%s HTTP/1.1\r\n"
 "%s";
 
 //jsmn_parser parser;
-cJSON *g_json;
-cJSON *g_sec_power;
+static cJSON *g_json;
+static cJSON *g_sec_power;
 
 const char *Helper_GetPastHTTPHeader(const char *s) {
 	while (*s) {
@@ -56,8 +56,8 @@ const char *Helper_GetPastHTTPHeader(const char *s) {
 	return 0;
 }
 
-static char outbuf[8192];
-static char buffer[8192];
+static char outbuf[65536];
+static char buffer[65536];
 static const char *replyAt;
 //static jsmntok_t tokens[256]; /* We expect no more than qq JSON tokens */
 
@@ -107,6 +107,31 @@ void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data) {
 	sprintf(buffer, http_post_template1, tg, dataLen, data);
 	Test_FakeHTTPClientPacket_Generic();
 }
+void Test_FakeHTTPClientPacket_POST_withJSONReply(const char *tg, const char *data) {
+	Test_FakeHTTPClientPacket_POST(tg, data);
+	Test_GetJSONValue_Setup(replyAt);
+}
+void Test_GetJSONValue_Setup(const char *text) {
+	if (g_json) {
+		cJSON_Delete(g_json);
+	}
+	printf("Received JSON: %s\n", text);
+	g_json = cJSON_Parse(text);
+	g_sec_power = cJSON_GetObjectItemCaseSensitive(g_json, "POWER");
+}
+void Test_FakeHTTPClientPacket_JSON_VA(const char *tg, ...) {
+	char bufferTemp[32768];
+	va_list argList;
+
+	va_start(argList, tg);
+	vsnprintf(bufferTemp, sizeof(bufferTemp), tg, argList);
+	va_end(argList);
+	Test_FakeHTTPClientPacket_GET(bufferTemp);
+
+	//jsmn_init(&parser);
+	//r = jsmn_parse(&parser, replyAt, strlen(replyAt), tokens, 256);
+	Test_GetJSONValue_Setup(replyAt);
+}
 void Test_FakeHTTPClientPacket_JSON(const char *tg) {
 	/*char bufferTemp[8192];
 	va_list argList;
@@ -115,18 +140,11 @@ void Test_FakeHTTPClientPacket_JSON(const char *tg) {
 	vsnprintf(bufferTemp, sizeof(bufferTemp), tg, argList);
 	va_end(argList);
 */
-	int r;
 	Test_FakeHTTPClientPacket_GET(tg);
 
 	//jsmn_init(&parser);
 	//r = jsmn_parse(&parser, replyAt, strlen(replyAt), tokens, 256);
-
-	if (g_json) {
-		cJSON_Delete(g_json);
-	}
-	printf("Received JSON: %s\n", replyAt);
-	g_json = cJSON_Parse(replyAt);
-	g_sec_power = cJSON_GetObjectItemCaseSensitive(g_json, "POWER");
+	Test_GetJSONValue_Setup(replyAt);
 }
 cJSON *Test_GetJSONValue_Generic_Nested2(const char *par1, const char *par2, const char *keyword) {
 	cJSON *tmp;
@@ -167,6 +185,26 @@ int Test_GetJSONValue_Integer_Nested2(const char *par1, const char *par2, const 
 	printf("Test_GetJSONValue_Integer_Nested2 will return %i for %s\n", tmp->valueint, keyword);
 	return tmp->valueint;
 }
+//const char *Test_GetJSONValue_String_Nested(const char *par1, const char *keyword) {
+//	cJSON *tmp;
+//	tmp = Test_GetJSONValue_Generic_Nested(par1, keyword);
+//	if (tmp == 0) {
+//		return 0;
+//	}
+//	const char *ret = tmp->valuestring;
+//	printf("Test_GetJSONValue_String_Nested will return %s for %s\n", ret, keyword);
+//	return ret;
+//}
+const char *Test_GetJSONValue_String_Nested2(const char *par1, const char *par2, const char *keyword) {
+	cJSON *tmp;
+	tmp = Test_GetJSONValue_Generic_Nested2(par1, par2, keyword);
+	if (tmp == 0) {
+		return 0;
+	}
+	const char *ret = tmp->valuestring;
+	printf("Test_GetJSONValue_String_Nested2 will return %s for %s\n", ret, keyword);
+	return ret;
+}
 float Test_GetJSONValue_Float_Nested2(const char *par1, const char *par2, const char *keyword) {
 	cJSON *tmp;
 	tmp = Test_GetJSONValue_Generic_Nested2(par1, par2, keyword);
@@ -186,10 +224,41 @@ int Test_GetJSONValue_Integer(const char *keyword, const char *obj) {
 	printf("Test_GetJSONValue_Integer will return %i for %s\n", tmp->valueint, keyword);
 	return tmp->valueint;
 }
+int Test_GetJSONValue_IntFromArray(int index, const char *key) {
+	cJSON *tmp;
+	cJSON *parent;
+
+	parent = cJSON_GetArrayItem(g_json, index);
+
+	if (parent == 0)
+		return 0;
+	tmp = cJSON_GetObjectItemCaseSensitive(parent, key);
+	if (tmp == 0)
+		return 0;
+	return tmp->valueint;
+}
+const char *Test_GetJSONValue_StrFromArray(int index, const char *key) {
+	cJSON *tmp;
+	cJSON *parent;
+
+	parent = cJSON_GetArrayItem(g_json, index);
+
+	if (parent == 0)
+		return "";
+	tmp = cJSON_GetObjectItemCaseSensitive(parent, key);
+	if (tmp == 0)
+		return "";
+	return tmp->valuestring;
+}
+
 const char *Test_GetJSONValue_String(const char *keyword, const char *obj) {
 	cJSON *tmp;
 	tmp = Test_GetJSONValue_Generic(keyword, obj);
 	if (tmp == 0) {
+		return "";
+	}
+	if (tmp->valuestring == 0) {
+		printf("Test_GetJSONValue_String will return empty str for %s because it has NULL string!\n", keyword);
 		return "";
 	}
 	printf("Test_GetJSONValue_String will return %s for %s\n", tmp->valuestring, keyword);
@@ -200,7 +269,7 @@ const char *Test_GetLastHTMLReply() {
 }
 void Test_Http_SingleRelayOnChannel1() {
 
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(9, 1);
 
@@ -210,7 +279,17 @@ void Test_Http_SingleRelayOnChannel1() {
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=POWER");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "OFF");
 
+	// echo to get value
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=echo%20$CH1");
+	SELFTEST_ASSERT_STRING(replyAt, "0");
+
 	CMD_ExecuteCommand("setChannel 1 1",0);
+	// echo to get value
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=echo%20$CH1");
+	SELFTEST_ASSERT_STRING(replyAt, "1");
+
+	
+
 	// The empty power packet should not affect relay
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=POWER");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "POWER", "ON");
@@ -263,6 +342,7 @@ void Test_Http_SingleRelayOnChannel1() {
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 1);
 
+#if ENABLE_MQTT
 	// direct channel access - set to 0, is it 0?
 	SIM_SendFakeMQTTRawChannelSet(1, "0");
 	// In STATUS register, power is encoded as integer...
@@ -308,11 +388,11 @@ void Test_Http_SingleRelayOnChannel1() {
 	// In STATUS register, power is encoded as integer...
 	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("Status", "Power", 1);
-
+#endif
 }
 void Test_Http_TwoRelays() {
 
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(9, 1);
 
@@ -383,7 +463,7 @@ void Test_Http_TwoRelays() {
 }
 void Test_Http_FourRelays() {
 
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
 	PIN_SetPinChannelForPinIndex(9, 1);
 
@@ -607,274 +687,222 @@ StatusSTS sample from Tasmota RGBCW (5 PWMs set):
 	  }
    }
 */
-void Test_Http_LED_SingleChannel() {
 
-	SIM_ClearOBK();
-	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
-	PIN_SetPinChannelForPinIndex(24, 1);
+#define MAX_SEARCH_PARMS 32
+typedef struct  {
+	const char *name;
+	const char *value;
+} SearchParm;
+typedef struct {
+	const char *tag;
+	SearchParm parms[MAX_SEARCH_PARMS];
+} SearchCriteria;
 
-	CMD_ExecuteCommand("led_enableAll 1", 0);
-	CMD_ExecuteCommand("led_dimmer 100", 0);
-	
-	// StatusSTS contains POWER and Dimmer
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
+int startsWith(const char *str, const char *prefix) {
+	return strncmp(str, prefix, strlen(prefix)) == 0;
+}
 
-	CMD_ExecuteCommand("led_enableAll 0", 0);
-	// StatusSTS contains POWER and Dimmer
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "OFF");
+int isWhitespace(char c) {
+	return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+}
+const char* searchElement(const char *html, const SearchCriteria *criteria) {
+	const char *ptr = html;
 
-	CMD_ExecuteCommand("led_dimmer 61", 0);
-	// StatusSTS contains POWER and Dimmer
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 61);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "OFF");
+	while ((ptr = strstr(ptr, "<")) != NULL) {
+		const char *elem = ptr;
+		// find closing '>'
+		const char *closing = strchr(ptr, '>');
+		// skip '<'
+		ptr++;
+		if (isWhitespace(*ptr)) {
+			continue;
+		}
+		if (startsWith(ptr, criteria->tag)) {
+			bool bOk = true;
+			for (int i = 0; bOk && (i < MAX_SEARCH_PARMS); i++) {
+				const char *key = criteria->parms[i].name;
+				const char *val = criteria->parms[i].value;
+				if (key == 0)
+					continue;
+				char fullStr[64];
+				sprintf(fullStr, "%s=\"", key);
+				char *realVal = strstr(ptr, fullStr);
+				if (realVal == 0 || realVal > closing) {
+					bOk = false;
+					break;
+				}
+				int skip = strlen(fullStr);
+				realVal += skip;
+				if (strncmp(realVal, val,strlen(val))) {
+					bOk = false;
+					break;
+				}
+				if (realVal[strlen(val)] != '"') {
+					bOk = false;
+					break;
+				}
+			}
+			if (bOk) {
+				return elem;
+			}
+		}
+		ptr++;
+	}
 
+	return NULL; // Element not found
+}
 
-	CMD_ExecuteCommand("led_enableAll 1", 0);
-	// StatusSTS contains POWER and Dimmer
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 61);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
+bool SIM_HasHTTPTemperature() {
+	SearchCriteria s;
+	memset(&s, 0, sizeof(s));
+	s.tag = "input";
+	s.parms[0].name = "type";
+	s.parms[0].value = "range";
+	s.parms[1].name = "onchange";
+	s.parms[1].value = "submitTemperature(this);";
 
+	const char *has = searchElement(replyAt, &s);
+	if (has)
+		return true;
+	return false;
+}
+bool SIM_HasHTTPRGB() {
+	SearchCriteria s;
+	memset(&s, 0, sizeof(s));
+	s.tag = "input";
+	s.parms[0].name = "type";
+	s.parms[0].value = "color";
+	s.parms[1].name = "oninput";
+	s.parms[1].value = "this.form.submit()";
+	s.parms[2].name = "name";
+	s.parms[2].value = "rgb";
 
+	const char *has = searchElement(replyAt, &s);
+	if (has)
+		return true;
+	return false;
+}
+bool SIM_HasHTTP_LED_Toggler(bool bIsNowOn) {
+	SearchCriteria s;
+	memset(&s, 0, sizeof(s));
+	s.tag = "input";
+	s.parms[0].name = "class";
+	if (bIsNowOn) {
+		s.parms[0].value = "bgrn";
+	}
+	else {
+		s.parms[0].value = "bred";
+	}
+	s.parms[1].name = "type";
+	s.parms[1].value = "submit";
+	s.parms[2].name = "value";
+	s.parms[2].value = "Toggle Light";
+
+	const char *has = searchElement(replyAt, &s);
+	if (has)
+		return true;
+	return false;
+}
+bool SIM_HasHTTP_Active_RGB() {
+	const char *has = strstr(replyAt, "LED RGB Color [ACTIVE]");
+	if (has)
+		return true;
+	return false;
+}
+
+bool SIM_HasHTTPDimmer() {
+	SearchCriteria s;
+	memset(&s, 0, sizeof(s));
+	s.tag = "input";
+	s.parms[0].name = "type";
+	s.parms[0].value = "range";
+	s.parms[1].name = "min";
+	s.parms[1].value = "0";
+	s.parms[2].name = "max";
+	s.parms[2].value = "100";
+	s.parms[3].name = "name";
+	s.parms[3].value = "dim";
+
+	const char *has = searchElement(replyAt, &s);
+	if (has)
+		return true;
+	return false;
+}
+void Test_Http_WiFi() {
+	Test_FakeHTTPClientPacket_GET("cfg_wifi_set?ssid=Hello&pass=1234&ssid2=&pass2=&web_admin_password=");
+	SELFTEST_ASSERT_STRING(CFG_GetWiFiSSID(), "Hello");
+	SELFTEST_ASSERT_STRING(CFG_GetWiFiPass(), "1234");
+
+	Test_FakeHTTPClientPacket_GET("cfg_wifi_set?ssid=Hello%20World&pass=1234&ssid2=&pass2=&web_admin_password=");
+	SELFTEST_ASSERT_STRING(CFG_GetWiFiSSID(), "Hello World");
+	SELFTEST_ASSERT_STRING(CFG_GetWiFiPass(), "1234");
+
+	Test_FakeHTTPClientPacket_GET("cfg_wifi_set?ssid=Hello%20World%20!%40%23%24%25%5E&pass=1234&ssid2=&pass2=&web_admin_password=");
+	SELFTEST_ASSERT_STRING(CFG_GetWiFiSSID(), "Hello World !@#$%^");
+	SELFTEST_ASSERT_STRING(CFG_GetWiFiPass(), "1234");
+
+	Test_FakeHTTPClientPacket_GET("cfg_wifi_set?ssid=Hello%20%22World%22&pass=1234&ssid2=&pass2=&web_admin_password=");
+	SELFTEST_ASSERT_STRING(CFG_GetWiFiSSID(), "Hello \"World\"");
+	SELFTEST_ASSERT_STRING(CFG_GetWiFiPass(), "1234");
+
+	Test_FakeHTTPClientPacket_GET("cfg_wifi_set?ssid=Hello%20%27World%27&pass=1234&ssid2=&pass2=&web_admin_password=");
+	SELFTEST_ASSERT_STRING(CFG_GetWiFiSSID(), "Hello 'World'");
+	SELFTEST_ASSERT_STRING(CFG_GetWiFiPass(), "1234");
+	//Test_FakeHTTPClientPacket_GET("/cfg_wifi_set?ssid=WiFi+with+space&pass=123&ssid2=&pass2=&web_admin_password=");
 
 }
-void Test_Http_LED_CW() {
+void Test_Http_Commands() {
+	Test_FakeHTTPClientPacket_GET("cm?cmnd=setChannel%201%20123");
+	SELFTEST_ASSERT_CHANNEL(1, 123);
+	// echo to get value
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=echo%20$CH1");
+	SELFTEST_ASSERT_STRING(replyAt, "123");
 
-	SIM_ClearOBK();
-	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
-	PIN_SetPinChannelForPinIndex(24, 1);
+	// same as above but 234 and space at the end
+	Test_FakeHTTPClientPacket_GET("cm?cmnd=setChannel%201%20234%20");
+	SELFTEST_ASSERT_CHANNEL(1, 234);
+	// echo to get value
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=echo%20$CH1");
+	SELFTEST_ASSERT_STRING(replyAt, "234");
+	// test backlog with space at the end... "backlog setChannel 1 345; "
+	Test_FakeHTTPClientPacket_GET("cm?cmnd=backlog%20setChannel%201%20345;%20");
+	SELFTEST_ASSERT_CHANNEL(1, 345);
+	// echo to get value
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=echo%20$CH1");
+	SELFTEST_ASSERT_STRING(replyAt, "345");
+	// test backlog with more spaces... "backlog setChannel 1 567 ; "
+	Test_FakeHTTPClientPacket_GET("cm?cmnd=backlog%20setChannel%201%20567%20;%20");
+	SELFTEST_ASSERT_CHANNEL(1, 567);
+	// echo to get value
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=echo%20$CH1");
+	SELFTEST_ASSERT_STRING(replyAt, "567");
+	// test backlog with more spaces...  etc... "backlog setChannel 1 345 ; setChannel 1 111"
+	Test_FakeHTTPClientPacket_GET("cm?cmnd=backlog%20setChannel%201%20567%20;%20setChannel%201%20111");
+	SELFTEST_ASSERT_CHANNEL(1, 111);
 
-	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
-	PIN_SetPinChannelForPinIndex(26, 2);
-
-	CMD_ExecuteCommand("led_enableAll 1", 0);
-	CMD_ExecuteCommand("led_dimmer 100", 0);
-	CMD_ExecuteCommand("led_temperature 153", 0);
-
-	SELFTEST_ASSERT_CHANNEL(1, 100);
-	SELFTEST_ASSERT_CHANNEL(2, 0);
-
-	// StatusSTS contains POWER and Dimmer
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "CT", 153);
-
-	CMD_ExecuteCommand("led_enableAll 0", 0);
-	// StatusSTS contains POWER and Dimmer
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "OFF");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "CT", 153);
-
-	CMD_ExecuteCommand("led_dimmer 61", 0);
-	// StatusSTS contains POWER and Dimmer
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 61);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "OFF");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "CT", 153);
-
-
-	CMD_ExecuteCommand("led_enableAll 1", 0);
-	// StatusSTS contains POWER and Dimmer
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 61);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "CT", 153);
-
-	CMD_ExecuteCommand("led_temperature 500", 0);
-	// StatusSTS contains POWER and Dimmer
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 61);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "CT", 500);
-
-
-	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_dimmer", "100");
-	// StatusSTS contains POWER and Dimmer
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "CT", 500);
-}
-void Test_Http_LED_RGB() {
-
-	SIM_ClearOBK();
-	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
-	PIN_SetPinChannelForPinIndex(24, 1);
-
-	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
-	PIN_SetPinChannelForPinIndex(26, 2);
-
-	PIN_SetPinRoleForPinIndex(9, IOR_PWM);
-	PIN_SetPinChannelForPinIndex(9, 3);
-
-	CMD_ExecuteCommand("led_enableAll 1", 0);
-	CMD_ExecuteCommand("led_dimmer 100", 0);
-	CMD_ExecuteCommand("led_basecolor_rgb FF0000", 0);
-
-	SELFTEST_ASSERT_CHANNEL(1, 100);
-	SELFTEST_ASSERT_CHANNEL(2, 0);
-	SELFTEST_ASSERT_CHANNEL(3, 0);
-
-	// StatusSTS contains POWER and Dimmer
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "255,0,0");
-
-
-	CMD_ExecuteCommand("led_basecolor_rgb FFFF00", 0);
-
-	SELFTEST_ASSERT_CHANNEL(1, 100);
-	SELFTEST_ASSERT_CHANNEL(2, 100);
-	SELFTEST_ASSERT_CHANNEL(3, 0);
-
-	// StatusSTS contains POWER and Dimmer
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "255,255,0");
-
-	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
-	CMD_ExecuteCommand("led_dimmer 50", 0);
-
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 50);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
-	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "55,55,0");
-
-
-	CMD_ExecuteCommand("led_basecolor_rgb 0000FF", 0);
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 50);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
-	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "0,0,55");
-	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
-	CMD_ExecuteCommand("led_dimmer 100", 0);
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
-	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "0,0,255");
-
-	SIM_SendFakeMQTTAndRunSimFrame_CMND("POWER", "OFF");
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "OFF");
-	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "0,0,0");
-
-	SIM_SendFakeMQTTAndRunSimFrame_CMND("POWER", "1");
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
-	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "0,0,255");
-
-
-	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_dimmer", "50");
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 50);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
-	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "0,0,55");
-
-	// dimmer back to 100
-	SIM_SendFakeMQTTAndRunSimFrame_CMND("led_dimmer", "100");
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
-	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "0,0,255");
-
-	// check Tasmota HSBColor
-	/*
-	NOTE:
-	HTTP Request: http://192.168.0.153/cm?cmnd=HSBColor%200,100,100
-	Return value: {"POWER":"ON","Dimmer":100,"Color":"FF00000000","HSBColor":"0,100,100","White":0,"CT":479,"Channel":[100,0,0,0,0]}
-	
-	*/
-	SIM_SendFakeMQTTAndRunSimFrame_CMND("HSBColor", "0,100,100");
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
-	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "255,0,0");
-	// check Tasmota HSBColor
-	/*
-	NOTE:
-	HTTP Request: http://192.168.0.153/cm?cmnd=HSBColor%2090,100,100
-	Return value: {"POWER":"ON","Dimmer":100,"Color":"7FFF000000","HSBColor":"90,100,100","White":0,"CT":479,"Channel":[50,100,0,0,0]}
-
-	*/
-	SIM_SendFakeMQTTAndRunSimFrame_CMND("HSBColor", "90,100,100");
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
-	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "127,255,0");
-	// check Tasmota HSBColor
-	/*
-	NOTE:
-	HTTP Request: http://192.168.0.153/cm?cmnd=HSBColor%20180,100,100
-	Return value: {"POWER":"ON","Dimmer":100,"Color":"00FFFF0000","HSBColor":"180,100,100","White":0,"CT":479,"Channel":[0,100,100,0,0]}
-	*/
-	SIM_SendFakeMQTTAndRunSimFrame_CMND("HSBColor", "180,100,100");
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
-	// Tasmota colors are scalled by Dimmer in this case. Confirmed.
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "0,255,255");
-
-	/*
-	CMD_ExecuteCommand("led_enableAll 0", 0);
-	// StatusSTS contains POWER and Dimmer
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "OFF");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Color", "255,0,0");
-
-	CMD_ExecuteCommand("led_dimmer 61", 0);
-	// StatusSTS contains POWER and Dimmer
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 61);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "OFF");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "CT", 153);
-
-
-	CMD_ExecuteCommand("led_enableAll 1", 0);
-	// StatusSTS contains POWER and Dimmer
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 61);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "CT", 153);
-
-	CMD_ExecuteCommand("led_temperature 500", 0);
-	// StatusSTS contains POWER and Dimmer
-	Test_FakeHTTPClientPacket_JSON("cm?cmnd=STATUS");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 61);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "ON");
-	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "CT", 500);
-	*/
-
+	// old endpoint introduced by btsimonh
+	Test_FakeHTTPClientPacket_POST_withJSONReply("api/cmnd",
+		"setChannel 1 123");
+	SELFTEST_ASSERT_CHANNEL(1, 123);
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0,"success", 200);
+	// echo to get value
+	Test_FakeHTTPClientPacket_JSON("cm?cmnd=echo%20$CH1");
+	SELFTEST_ASSERT_STRING(replyAt, "123");
+	Test_FakeHTTPClientPacket_POST_withJSONReply("api/cmnd",
+		"backlog setChannel 1 345; ");
+	SELFTEST_ASSERT_CHANNEL(1, 345);
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0, "success", 200);
+	Test_FakeHTTPClientPacket_POST_withJSONReply("api/cmnd",
+		"backlog setChannel 1 567 ; ");
+	SELFTEST_ASSERT_CHANNEL(1, 567);
+	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0, "success", 200);
 }
 void Test_Http() {
 	Test_Http_SingleRelayOnChannel1();
 	Test_Http_TwoRelays();
 	Test_Http_FourRelays();
-
-
-	Test_Http_LED_SingleChannel();
-	Test_Http_LED_CW();
-	Test_Http_LED_RGB();
+	Test_Http_WiFi();
+	Test_Http_Commands();
 }
 
 

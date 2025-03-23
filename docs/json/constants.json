@@ -1,0 +1,248 @@
+[
+  {
+    "name": "MQTTOn",
+    "title": "MQTTOn",
+    "descr": "Legacy variable, without $ prefix. Returns 1 if MQTT is connected, otherwise 0.",
+    "requires": ""
+  },
+  {
+    "name": "$MQTTOn",
+    "title": "$MQTTOn",
+    "descr": "Returns 1 if MQTT is connected, otherwise 0.",
+    "requires": ""
+  },
+  {
+    "name": "$CH***",
+    "title": "$CH***",
+    "descr": "Provides channel access, so you can do math expressions on channel values. $CH1 is channel 1, $CH20 is channel 20, $CH140 is channel 140, etc",
+    "requires": ""
+  },
+  {
+    "name": "$CH**",
+    "title": "$CH**",
+    "descr": "Provides channel access, as above.",
+    "requires": ""
+  },
+  {
+    "name": "$CH*",
+    "title": "$CH*",
+    "descr": "Provides channel access, as above.",
+    "requires": ""
+  },
+  {
+    "name": "$FLAG**",
+    "title": "$FLAG**",
+    "descr": "Provides flag access, as above.",
+    "requires": ""
+  },
+  {
+    "name": "$FLAG*",
+    "title": "$FLAG*",
+    "descr": "Provides flag access, as above.",
+    "requires": ""
+  },
+  {
+    "name": "$led_dimmer",
+    "title": "$led_dimmer",
+    "descr": "Current value of LED dimmer, 0-100 range",
+    "requires": ""
+  },
+  {
+    "name": "$led_enableAll",
+    "title": "$led_enableAll",
+    "descr": "Returns 1 if LED is enabled, otherwise 0.",
+    "requires": ""
+  },
+  {
+    "name": "$led_hue",
+    "title": "$led_hue",
+    "descr": "Current LED Hue value",
+    "requires": ""
+  },
+  {
+    "name": "$led_red",
+    "title": "$led_red",
+    "descr": "Current LED red value",
+    "requires": ""
+  },
+  {
+    "name": "$led_green",
+    "title": "$led_green",
+    "descr": "Current LED green value",
+    "requires": ""
+  },
+  {
+    "name": "$led_blue",
+    "title": "$led_blue",
+    "descr": "Current LED blue value",
+    "requires": ""
+  },
+  {
+    "name": "$led_saturation",
+    "title": "$led_saturation",
+    "descr": "Current LED saturation value",
+    "requires": ""
+  },
+  {
+    "name": "$led_temperature",
+    "title": "$led_temperature",
+    "descr": "Current LED temperature value",
+    "requires": ""
+  },
+  {
+    "name": "$activeRepeatingEvents",
+    "title": "$activeRepeatingEvents",
+    "descr": "Current number of active repeating events",
+    "requires": ""
+  },
+  {
+    "name": "$Flash*",
+    "title": "$Flash*",
+    "descr": "Provides flashvarse channel access, as above.",
+    "requires": ""
+  },
+  {
+    "name": "$voltage",
+    "title": "$voltage",
+    "descr": "Current value of voltage from energy metering chip. You can use those variables to make, for example, a change handler that fires when voltage is above 245, etc.",
+    "requires": ""
+  },
+  {
+    "name": "$current",
+    "title": "$current",
+    "descr": "Current value of current from energy metering chip",
+    "requires": ""
+  },
+  {
+    "name": "$power",
+    "title": "$power",
+    "descr": "Current value of power from energy metering chip",
+    "requires": ""
+  },
+  {
+    "name": "$energy",
+    "title": "$energy",
+    "descr": "Current value of energy counter from energy metering chip",
+    "requires": ""
+  },
+  {
+    "name": "$day",
+    "title": "$day",
+    "descr": "Current weekday from NTP",
+    "requires": ""
+  },
+  {
+    "name": "$hour",
+    "title": "$hour",
+    "descr": "Current hour from NTP",
+    "requires": ""
+  },
+  {
+    "name": "$minute",
+    "title": "$minute",
+    "descr": "Current minute from NTP",
+    "requires": ""
+  },
+  {
+    "name": "$second",
+    "title": "$second",
+    "descr": "Current second from NTP",
+    "requires": ""
+  },
+  {
+    "name": "$mday",
+    "title": "$mday",
+    "descr": "TODO",
+    "requires": ""
+  },
+  {
+    "name": "$month",
+    "title": "$month",
+    "descr": "TODO",
+    "requires": ""
+  },
+  {
+    "name": "$year",
+    "title": "$year",
+    "descr": "TODO",
+    "requires": ""
+  },
+  {
+    "name": "$yesterday",
+    "title": "$yesterday",
+    "descr": "TODO",
+    "requires": ""
+  },
+  {
+    "name": "$today",
+    "title": "$today",
+    "descr": "TODO",
+    "requires": ""
+  },
+  {
+    "name": "$sunrise",
+    "title": "$sunrise",
+    "descr": "TODO",
+    "requires": ""
+  },
+  {
+    "name": "$sunset",
+    "title": "$sunset",
+    "descr": "TODO",
+    "requires": ""
+  },
+  {
+    "name": "$NTPOn",
+    "title": "$NTPOn",
+    "descr": "Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",
+    "requires": ""
+  },
+  {
+    "name": "$batteryVoltage",
+    "title": "$batteryVoltage",
+    "descr": "Battery driver voltage",
+    "requires": ""
+  },
+  {
+    "name": "$batteryLevel",
+    "title": "$batteryLevel",
+    "descr": "Battery driver level",
+    "requires": ""
+  },
+  {
+    "name": "$uptime",
+    "title": "$uptime",
+    "descr": "Time since reboot in seconds",
+    "requires": ""
+  },
+  {
+    "name": "$failedBoots",
+    "title": "$failedBoots",
+    "descr": "Get number of failed boots (too quick reboots). Remember that you can change the uptime required to mark boot as 'okay' in general/flags menu",
+    "requires": ""
+  },
+  {
+    "name": "$rand01",
+    "title": "$rand01",
+    "descr": "Random float between [0,1]",
+    "requires": ""
+  },
+  {
+    "name": "$rand",
+    "title": "$rand",
+    "descr": "Random unsigned value",
+    "requires": ""
+  },
+  {
+    "name": "$rebootReason",
+    "title": "$rebootReason",
+    "descr": "Reboot reason",
+    "requires": ""
+  },
+  {
+    "name": "$intTemp",
+    "title": "$intTemp",
+    "descr": "Internal temperature (of WiFi module sensor)",
+    "requires": ""
+  }
+]

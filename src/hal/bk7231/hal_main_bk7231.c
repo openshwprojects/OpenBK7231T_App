@@ -22,7 +22,7 @@ extern int MQTT_process_received();
 // from new_pins.c
 extern void PIN_ticks(void *param);
 
-#if PLATFORM_BK7231T
+#if PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 
 // realloc fix - otherwise calling realloc crashes.
 // Just fall back to os_realloc.
@@ -98,7 +98,9 @@ void OBK_TriggerButtonPoll(){
 void process_oneshot_timer(void *a, void*b){
   // if mqtt process incomming data requested
   if (g_timer_triggers & ONESHOT_MQTT_PROCESS){
+#if ENABLE_MQTT
     MQTT_process_received();
+#endif
     g_timer_triggers &= ~ONESHOT_MQTT_PROCESS;
   }
 

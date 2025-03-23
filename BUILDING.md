@@ -14,6 +14,7 @@ You would need `nodejs` if you plan on making JavaScript/styling changes. This i
 Gulp tasks should automatically appear in Explore pane in Visual Code. They can also be invoked from console by running `gulp`.
 
 # Building
+A Docker-ized build environment can be used to perform these builds. Instructions for doing so are [available here](./docker/README.md).
 
 ## Building for BK7231T
 
@@ -90,3 +91,10 @@ Get it from here (you'd need to register):
 https://occ.t-head.cn/community/download
 
 The IDE/compiler bundle I used was: cds-windows-mingw-elf_tools-V5.2.11-20220512-2012.zip
+
+  
+# Building for Windows
+  
+It is also possible to build OpenBeken for Windows. Entire OBK builds correctly, along with script support and full MQTT support, but there is a minor issue in Winsock code which breaks Tasmota Control compatibility. To build for Windows, open openBeken_win32_mvsc2017 in Microsoft Visual Studio Community 2017 and select configuration Debug Windows or Debug Windows Scriptonly and press build.
+This should make development and testing easier.
+LittleFS works in Windows build, it operates on 2MB memory saved in file, so you can even test scripting, etc

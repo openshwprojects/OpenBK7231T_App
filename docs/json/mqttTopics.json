@@ -1,0 +1,131 @@
+{
+	"publishes": [
+		{
+			"topic": "OBK_DEV_NAME/INDEX/get",
+			"example": "1",
+			"description": "send when a given channel is changed. INDEX is a number representing channel index. Most of channels are not published by default. See flags to change it. If you want given channel to be published, you can also change its channel type in the Web App, just select one that fits your needs or just a generic 'Custom' type. You can have any variable in channel, even a custom, fully scriptable counter."
+		},
+		{
+		"topic": "OBK_DEV_NAME/connected",
+		"example": "online",
+		"description": "Sent on connect."
+		},
+		{
+		"topic": "OBK_DEV_NAME/sockets",
+		"example": "5",
+		"description": "Send on connect and every N seconds (default: 60, if enabled)"
+		},
+		{
+		"topic": "OBK_DEV_NAME/rssi",
+		"example": "-70",
+		"description": "Send on connect and every N seconds (default: 60, if enabled)"
+		},
+		{
+		"topic": "OBK_DEV_NAME/uptime",
+		"example": "653",
+		"description": "Send on connect and every N seconds (default: 60, if enabled)"
+		},
+		{
+		"topic": "OBK_DEV_NAME/freeheap",
+		"example": "95168",
+		"description": "Send on connect and every N seconds (default: 60, if enabled)"
+		},
+		{
+		"topic": "OBK_DEV_NAME/ip",
+		"example": "192.168.0.123",
+		"description": "Send on connect and every N seconds (default: 60, if enabled)"
+		},
+		{
+		"topic": "OBK_DEV_NAME/datetime",
+		"example": "",
+		"description": "Send on connect and every N seconds (default: 60, if enabled)"
+		},
+		{
+		"topic": "OBK_DEV_NAME/mac",
+		"example": "84:e3:42:65:d1:87 ",
+		"description": "Send on connect and every N seconds (default: 60, if enabled)"
+		},
+		{
+		"topic": "OBK_DEV_NAME/build",
+		"example": "Build on Nov 12 2022 12:39:44 version 1.0.0",
+		"description": "Send on connect and every N seconds (default: 60, if enabled)"
+		},
+		{
+		"topic": "OBK_DEV_NAME/host",
+		"example": "obk_t_fourRelays",
+		"description": "Send on connect and every N seconds (default: 60, if enabled)"
+		},
+		{
+		"topic": "OBK_DEV_NAME/voltage/get",
+		"example": "221",
+		"description": "Voltage from BL0942/BL0937 etc, just like current and power"
+		},
+		{
+		"topic": "OBK_DEV_NAME/led_enableAll/get",
+		"example": "1",
+		"description": "Send when LED On/Off changes or when periodic broadcast is enabled"
+		},
+		{
+		"topic": "OBK_DEV_NAME/led_basecolor_rgb/get",
+		"example": "FFAABB",
+		"description": "Send when LED color changes or when periodic broadcast is enabled."
+		},
+		{
+		"topic": "OBK_DEV_NAME/led_dimmer/get",
+		"example": "100",
+		"description": "Send when LED dimmer changes or when periodic broadcast is enabled"
+		},
+		{
+		"topic": "OBK_DEV_NAME/YOUR_TOPIC/get",
+		"example": "YOUR_VALUE",
+		"description": "You can publish anything with 'publish [YOUR_TOPIC] [YOUR_VALUE]' command"
+		},
+		{
+		"topic": "tele/OBK_DEV_NAME/STATE",
+		"example": "Tasmota JSON",
+		"description": "OBK can publish Tasmota STATE style message if you enable TELE/etc publishes in options. This is used for compatibility with ioBroker, etc"
+		},
+		{
+		"topic": "stat/OBK_DEV_NAME/RESULT",
+		"example": "Tasmota JSON",
+		"description": "See above. You can also see related self test code for details"
+		},
+		{
+		"topic": "tele/OBK_DEV_NAME/SENSOR",
+		"example": "{ \"Time\": \"1970-01-01T00:00:00\", \"ENERGY\": { \"Power\": 0, \"ApparentPower\": 0, \"ReactivePower\": 0, \"Factor\": 0, \"Voltage\": 249.932449, \"Current\": 0,\"ConsumptionTotal\": 255.346664,\"ConsumptionLastHour\": 0 }}",
+		"description": "See above. Published by power metering devices, BL0937, BL0942, etc). Make sure NTP is running to get time."
+		},
+		{
+		"topic": "[similar tasmota messages]",
+		"example": "Tasmota JSON",
+		"description": "See above. See related self test code for details"
+		},
+		{
+		"topic": "OBK_DEV_NAME/RESULT",
+		"example": "{ \"IrReceived\": { \"Protocol\": \"Samsung\", \"Bits\": 32, \"Data\": \"0xEE110707\" } }",
+		"description": "Sent if Tasmota syntax IR publish is enabled in flags. NOTE: we may fix it and add tele prefix soon?"
+		}
+	],
+	"listens": [
+		{
+			"topic": "OBK_DEV_NAME/INDEX/set",
+			"example": "1",
+			"description": "Sets the channel of INDEX to given value. This can set relays and also provide DIRECT PWM access. If channel is mapped to TuyaMCU, TuyaMCU will also be updated"
+		},
+		  {
+			"topic": "cmnd/OBK_DEV_NAME/COMMAND_TEXT",
+			"example": "COMMAND_ARGUMENTS",
+			"description": "You can execute any command supported by OpenBeken, just like in Tasmota"
+		  },
+		  {
+			"topic": "OBK_DEV_NAME/INDEX/get",
+			"example": "no payload",
+			"description": "You can send an empty 'get' publish to OBK device to request update on the state of given channel. OBK will reply back with the same topic but with payload representing given channel value."
+		  },
+		  {
+			"topic": "OBK_DEV_NAME/VARIABLE/get",
+			"example": "no payload",
+			"description": "You can send an empty publish with VARIABLE=\"led_dimmer\"/\"led_enableAll\", etc etc, to query publish of given variable manually. OBK device will reply with publishing given variable."
+		  }
+	]
+}

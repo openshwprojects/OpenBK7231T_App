@@ -29,6 +29,8 @@ int HAL_PIN_ReadDigitalInput(int index) {
     bl_gpio_input_get(index, &iVal);
 	return iVal;
 }
+void HAL_PIN_Setup_Input_Pulldown(int index) {
+}
 void HAL_PIN_Setup_Input_Pullup(int index) {
 	// int bl_gpio_enable_input(uint8_t pin, uint8_t pullup, uint8_t pulldown);
 	bl_gpio_enable_input(index, 1, 0);
@@ -53,7 +55,7 @@ void HAL_PIN_PWM_Stop(int index) {
 	bl_pwm_stop(pwm);
 }
 
-void HAL_PIN_PWM_Start(int index) {
+void HAL_PIN_PWM_Start(int index, int freq) {
 	int pwm;
 
 	pwm = BL_FindPWMForPin(index);
