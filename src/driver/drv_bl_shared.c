@@ -867,10 +867,10 @@ void BL_ProcessUpdate(float voltage, float current, float power,
         break;
       }
 
+      sensdataset->sensors[i].lastSentValue = sensdataset->sensors[i].lastReading;
 #if ENABLE_MQTT
       if (MQTT_IsReady() == true)
       {
-        sensdataset->sensors[i].lastSentValue = sensdataset->sensors[i].lastReading;
         if (i == OBK_CONSUMPTION_CLEAR_DATE) {
           {
             sensdataset->sensors[i].lastReading = ConsumptionResetTime; //Only to make the 'nochangeframe' mechanism work here
