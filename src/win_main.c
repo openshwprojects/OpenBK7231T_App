@@ -37,8 +37,8 @@
 #include "cmnds/cmd_public.h"
 #include "httpserver/new_http.h"
 #include "quicktick.h"
-#include "hal\hal_flashVars.h"
-#include "selftest\selftest_local.h"
+#include "hal/hal_flashVars.h"
+#include "selftest/selftest_local.h"
 #include "new_pins.h"
 
 

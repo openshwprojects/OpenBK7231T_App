@@ -22,6 +22,7 @@
 #define ISVALIDSOCKET(s) ((s) >= 0)
 #define GETSOCKETERRNO() (errno)
 #define ioctlsocket ioctl
+#define WSAEWOULDBLOCK EWOULDBLOCK
 
 #elif WINDOWS
 
@@ -1414,7 +1415,7 @@ void WIN_RunMQTTClient(mqtt_client_t *cl) {
 			mqtt_parse_incoming(cl, &buf);
 		}
 		else {
-			err = WSAGetLastError();
+			err = GETSOCKETERRNO();
 			if (err == WSAEWOULDBLOCK) {
 
 			}
