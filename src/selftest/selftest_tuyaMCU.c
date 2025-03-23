@@ -530,7 +530,36 @@ void Test_TuyaMCU_Basic() {
 
 
 
-
+	SIM_ClearUART();
+	// now try delta - value 5
+	CMD_ExecuteCommand("setChannel 15 0", 0);
+	// This will map TuyaMCU dpID 2 of type Value to channel 15 with no inverse
+	// 10 is multiplier
+	// 5 is delta
+	// [dpId][varType][channelID][bDPCache-Optional][mult-optional][bInverse][delta]
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 2 val 15 0 10 0 5", 0);
+	SELFTEST_ASSERT_CHANNEL(15, 0);
+	// This packet sets dpID 2 of type Value to 100
+	CMD_ExecuteCommand("uartFakeHex 55AA0307000802020004000000647D", 0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(1000, false);
+	// Now, channel 15 should be set to....
+	SELFTEST_ASSERT_CHANNEL(15, (100+5) * 10);
+	SIM_ClearUART();
+	// now try delta - value -5
+	CMD_ExecuteCommand("setChannel 15 0", 0);
+	// This will map TuyaMCU dpID 2 of type Value to channel 15 with no inverse
+	// 10 is multiplier
+	// 5 is delta
+	// [dpId][varType][channelID][bDPCache-Optional][mult-optional][bInverse][delta]
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 2 val 15 0 10 0 -5", 0);
+	SELFTEST_ASSERT_CHANNEL(15, 0);
+	// This packet sets dpID 2 of type Value to 100
+	CMD_ExecuteCommand("uartFakeHex 55AA0307000802020004000000647D", 0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(1000, false);
+	// Now, channel 15 should be set to....
+	SELFTEST_ASSERT_CHANNEL(15, (100 + -5) * 10);
 	SIM_ClearUART();
 
 
