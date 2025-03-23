@@ -330,15 +330,7 @@ int __cdecl main(int argc, char **argv)
         return 1;
     }
 #else
-	int Csocket;
-	
-	Csocket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
-	if (Csocket < 0) {
-		printf("socket creation failed with error: %d\n", Csocket);
-		closesocket(Csocket);
-		return 1;
-	}
 
 #endif
 	printf("sizeof(short) = %d\n", (int)sizeof(short));
