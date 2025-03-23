@@ -323,12 +323,14 @@ int __cdecl main(int argc, char **argv)
 		printf("Brightness %f with color %f gives %f\n", in, 255.0f, res);
 	}
 #endif
+#ifndef LINUX
     // Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
     if (iResult != 0) {
         printf("WSAStartup failed with error: %d\n", iResult);
         return 1;
     }
+#endif
 	printf("sizeof(short) = %d\n", (int)sizeof(short));
 	printf("sizeof(int) = %d\n", (int)sizeof(int));
 	printf("sizeof(long) = %d\n", (int)sizeof(long));
@@ -443,7 +445,9 @@ int __cdecl main(int argc, char **argv)
 	// Test expansion
 	//CMD_UART_Send_Hex(0,0,"FFAA$CH1$BB",0);
 
+#ifndef LINUX
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_ALWAYS_DF);
+#endif
 
 	if (g_selfTestsMode) {
 		g_bDoingUnitTestsNow = 1;
