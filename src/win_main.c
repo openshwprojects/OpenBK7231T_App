@@ -312,7 +312,6 @@ int __cdecl main(int argc, char **argv)
 		}
 	}
 
-    WSADATA wsaData;
     int iResult;
 
 #if 0

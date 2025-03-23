@@ -5,7 +5,7 @@ BUILD_DIR ?= build
 
 SRC_DIRS ?= src/
 
-EXCLUDED_FILES ?= src/httpserver/http_tcp_server.c src/httpserver/rest_interface.c src/ota/ota.c src/user_main.c src/cmnds/cmd_tcp.c src/httpclient/utils_net.c src/memory/memtest.c src/new_ping.c src/win_main_scriptOnly.c
+EXCLUDED_FILES ?= src/httpserver/http_tcp_server.c src/httpserver/rest_interface.c src/ota/ota.c src/user_main.c src/cmnds/cmd_tcp.c src/httpclient/utils_net.c src/memory/memtest.c src/new_ping.c src/win_main_scriptOnly.c src/driver/drv_ir2.c src/driver/drv_ir.cpp  src/driver/drv_spiLED.c
 
 SRCS := $(filter-out $(EXCLUDED_FILES), $(wildcard $(shell find $(SRC_DIRS) -not \( -path "src/hal/bl602" -prune \) -not \( -path "src/hal/xr809" -prune \) -not \( -path "src/hal/w800" -prune \) -not \( -path "src/hal/bk7231" -prune \) -name *.c | sort -k 1nr | cut -f2-)))
 

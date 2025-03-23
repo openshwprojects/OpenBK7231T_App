@@ -1383,7 +1383,7 @@ void WIN_RunMQTTClient(mqtt_client_t *cl) {
 		time.tv_usec = 0;
 		if (select(0, NULL, &fd, NULL, &time) == 1) {
 			int error = 0;
-			uint len = sizeof(error);
+			unsigned int len = sizeof(error);
 			getsockopt(cl->conn->sock, SOL_SOCKET, SO_ERROR, (char*)&error, &len);
 			if (error == 0) {
 				printf("MQTT: Connected!\n");
