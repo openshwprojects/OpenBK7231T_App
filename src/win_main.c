@@ -301,6 +301,9 @@ bool SIM_ReadDHT11(int pin, byte *data) {
 void Sim_SendFakeBL0942Packet(float v, float c, float p) {
 
 }
+void SIM_GeneratePowerStateDesc(char *o, int outLen) {
+	*o = 0;
+}
 #endif
 
 int __cdecl main(int argc, char **argv)
