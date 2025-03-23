@@ -8,7 +8,7 @@
 #include <time.h>
 #include <stdarg.h>
 
-#if WINDOWS
+#if WINDOWS && !LINUX
 #include <crtdbg.h>
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
