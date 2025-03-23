@@ -5,7 +5,7 @@ BUILD_DIR ?= build
 
 SRC_DIRS ?= src/
 
-EXCLUDED_FILES ?= src/httpserver/http_fns.c src/httpserver/http_tcp_server.c src/httpserver/rest_interface.c src/ota/ota.c src/user_main.c src/driver/drv_uart.c src/cmnds/cmd_tcp.c src/httpclient/utils_net.c src/memory/memtest.c src/new_ping.c src/win_main_scriptOnly.c
+EXCLUDED_FILES ?= src/httpserver/http_tcp_server.c src/httpserver/rest_interface.c src/ota/ota.c src/user_main.c src/cmnds/cmd_tcp.c src/httpclient/utils_net.c src/memory/memtest.c src/new_ping.c src/win_main_scriptOnly.c
 
 SRCS := $(filter-out $(EXCLUDED_FILES), $(wildcard $(shell find $(SRC_DIRS) -not \( -path "src/hal/bl602" -prune \) -not \( -path "src/hal/xr809" -prune \) -not \( -path "src/hal/w800" -prune \) -not \( -path "src/hal/bk7231" -prune \) -not \( -path "src/selftest/*" -prune \) -name *.c | sort -k 1nr | cut -f2-)))
 
@@ -17,7 +17,7 @@ INC_DIRS := $(shell find $(SRC_DIRS) -type d)
 INC_DIRS := $(filter-out src/hal/bl602 src/hal/xr809 src/hal/w800 src/hal/bk7231 src/memory, $(wildcard $(INC_DIRS)))
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-LDLIBS := -lpthread -lm
+LDLIBS := -lpthread -lm -lnsl
 
 CPPFLAGS ?= $(INC_FLAGS) -MMD -MP -std=gnu99 -DWINDOWS -DLINUX
 
