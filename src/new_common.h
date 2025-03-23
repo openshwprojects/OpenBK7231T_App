@@ -121,6 +121,7 @@ This platform is not supported, error!
 #ifndef LINUX
 
 #include <stdint.h>
+#include <netdb.h>  // For gethostbyname and struct hostent
 
 #else
 
