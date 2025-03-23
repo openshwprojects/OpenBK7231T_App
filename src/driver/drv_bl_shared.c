@@ -104,12 +104,6 @@ energysensdataset_t datasetlist[BL_SENSDATASETS_COUNT] = {
 #endif
 };
 
-#if ENABLE_BL_TWIN
-energysensdataset_t* BL_GetSensDataSetFromIx(int asensdatasetix) {
-    return (asensdatasetix == BL_SENSORS_IX_1) ? &datasetlist[BL_SENSORS_IX_1] : &datasetlist[BL_SENSORS_IX_0];
-}
-#endif
-
 float lastReadingFrequency = NAN;
 
 //static double energyCounter = 0.0;
@@ -138,14 +132,13 @@ void BL_ResetRecivedDataBool() {
 #if ENABLE_BL_TWIN
 void BL09XX_AppendInformationToHTTPIndexPageEx(int asensdatasetix, http_request_t *request)
 {
-  if ((asensdatasetix < 0) || (asensdatasetix > BL_SENSDATASETS_COUNT - 1)) return;  //to avoid bad index on data[BL_SENSDATASETS_COUNT]
-    energysensdataset_t* sensdataset = BL_GetSensDataSetFromIx(asensdatasetix);
+  if ((asensdatasetix < 0) || (asensdatasetix >= BL_SENSDATASETS_COUNT)) return;  //to avoid bad index on data[BL_SENSDATASETS_COUNT]
 #else
 void BL09XX_AppendInformationToHTTPIndexPage(http_request_t * request)
 {
   int asensdatasetix = BL_SENSORS_IX_0;
-  energysensdataset_t* sensdataset = &datasetlist[asensdatasetix];
 #endif
+  energysensdataset_t* sensdataset = &datasetlist[asensdatasetix];
     
     int i;
     const char *mode;
@@ -298,20 +291,15 @@ void BL09XX_SaveEmeteringStatistics()
     HAL_SetEnergyMeterStatus(&data);
 }
 
-commandResult_t BL09XX_ResetEnergyCounterEx(int asensdatasetix, const void *context, const char *cmd, const char* args, float avalue)
+commandResult_t BL09XX_ResetEnergyCounterEx(int asensdatasetix, float* pvalue)
 {
-  if ((asensdatasetix < 0) || (asensdatasetix > BL_SENSDATASETS_COUNT - 1)) return CMD_RES_ERROR;  //to avoid bad index on data[BL_SENSDATASETS_COUNT]
-#if ENABLE_BL_TWIN
-  energysensdataset_t* sensdataset = BL_GetSensDataSetFromIx(asensdatasetix);
-#else
+  if ((asensdatasetix < 0) || (asensdatasetix >= BL_SENSDATASETS_COUNT)) return CMD_RES_ERROR;  //to avoid bad index on data[BL_SENSDATASETS_COUNT]
   energysensdataset_t* sensdataset = &datasetlist[asensdatasetix];
-#endif
 
     int i;
 
-    if (args==0||*args==0)
-    {
-      addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "ResetEnergyCounter %i all", asensdatasetix);
+    if (!pvalue) {
+    //addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "ResEC %i", asensdatasetix);
       lastSavedEnergyCounterValue[asensdatasetix] = 0.0; //20250203 reset lastSavedEnergyCounterValue, otherwise the values will not be saved until restart BL
       sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading = 0.0;
       energyCounterStamp[asensdatasetix] = xTaskGetTickCount();
@@ -332,11 +320,8 @@ commandResult_t BL09XX_ResetEnergyCounterEx(int asensdatasetix, const void *cont
           sensdataset->sensors[i].lastReading = 0.0;
         }
     } else {
-      addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "ResetEnergyCounter %i total=%f", asensdatasetix,avalue);
-#if !ENABLE_BL_TWIN
-      avalue = (float)atof(args);
-#endif
-      sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading = avalue;
+      //addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "ResEC %i t=%f", asensdatasetix,avalue);
+      sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading = *pvalue;
       energyCounterStamp[asensdatasetix] = xTaskGetTickCount();
     }
     ConsumptionResetTime = (time_t)NTP_GetCurrentTime();
@@ -358,19 +343,18 @@ commandResult_t BL09XX_ResetEnergyCounter(const void* context, const char* cmd, 
 {
   Tokenizer_TokenizeString(args, 0);
   int acnt = Tokenizer_GetArgsCount();
-  int fsix=0;
   if (acnt == 0) {    
 #if ENABLE_BL_TWIN
-    BL09XX_ResetEnergyCounterEx(BL_SENSORS_IX_1, context, cmd, args, -1);
+    BL09XX_ResetEnergyCounterEx(BL_SENSORS_IX_1, NULL);
 #endif
-    return BL09XX_ResetEnergyCounterEx(BL_SENSORS_IX_0, context, cmd, args, -1);
+    return BL09XX_ResetEnergyCounterEx(BL_SENSORS_IX_0, NULL);
   } else {
     float fvalue = Tokenizer_GetArgFloat(0);
-    fsix = BL_SENSORS_IX_0;
+    int fsix = BL_SENSORS_IX_0;
 #if ENABLE_BL_TWIN
     if (acnt>=2) fsix = Tokenizer_GetArgInteger(1);
 #endif
-    return BL09XX_ResetEnergyCounterEx(fsix, context, cmd, args, fvalue);
+    return BL09XX_ResetEnergyCounterEx(fsix, &fvalue);
   }
 }
 
@@ -483,12 +467,12 @@ commandResult_t BL09XX_VCPPublishIntervals(const void *context, const char *cmd,
 #if ENABLE_BL_TWIN
 commandResult_t BL09XX_VCPPrecisionEx(int asensdatasetix, const void *context, const char *cmd, const char *args, int cmdFlags)
 {
-  if ((asensdatasetix < 0) || (asensdatasetix > BL_SENSDATASETS_COUNT - 1)) return CMD_RES_ERROR;  //to avoid bad index on data[BL_SENSDATASETS_COUNT]
-  energysensdataset_t* sensdataset = BL_GetSensDataSetFromIx(asensdatasetix);
+  if ((asensdatasetix < 0) || (asensdatasetix >= BL_SENSDATASETS_COUNT)) return CMD_RES_ERROR;  //to avoid bad index on data[BL_SENSDATASETS_COUNT]
 #else
 commandResult_t BL09XX_VCPPrecision(const void* context, const char* cmd, const char* args, int cmdFlags) {
-  energysensdataset_t* sensdataset = &datasetlist[BL_SENSORS_IX_0];
+  int asensdatasetix = BL_SENSORS_IX_0;
 #endif
+  energysensdataset_t* sensdataset = &datasetlist[asensdatasetix];
 
   int i;
 	Tokenizer_TokenizeString(args, 0);
@@ -528,15 +512,17 @@ commandResult_t BL09XX_VCPPrecision(const void* context, const char* cmd, const 
   return BL09XX_VCPPrecisionEx(BL_SENSORS_IX_0, context, cmd, args, cmdFlags);
 }
 #endif
+
+#if ENABLE_BL_TWIN
+commandResult_t BL09XX_VCPPublishThresholdEx(int asensdatasetix, const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+  if ((asensdatasetix < 0) || (asensdatasetix >= BL_SENSDATASETS_COUNT)) return CMD_RES_ERROR;  //to avoid bad index on data[BL_SENSDATASETS_COUNT]
+#else
 commandResult_t BL09XX_VCPPublishThreshold(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
-#if ENABLE_BL_TWIN
   int asensdatasetix = BL_SENSORS_IX_0;
-  //if ((asensdatasetix < 0) || (asensdatasetix > BL_SENSDATASETS_COUNT - 1)) return;  //to avoid bad index on data[BL_SENSDATASETS_COUNT]
-  energysensdataset_t* sensdataset = BL_GetSensDataSetFromIx(asensdatasetix);
-#else
-  energysensdataset_t* sensdataset = &datasetlist[BL_SENSORS_IX_0];
 #endif
+  energysensdataset_t* sensdataset = &datasetlist[asensdatasetix];
 
   Tokenizer_TokenizeString(args, 0);
   // following check must be done after 'Tokenizer_TokenizeString',
@@ -560,6 +546,14 @@ commandResult_t BL09XX_VCPPublishThreshold(const void* context, const char* cmd,
   }
   return CMD_RES_OK;
 }
+
+#if ENABLE_BL_TWIN
+commandResult_t BL09XX_VCPPublishThreshold(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+  BL09XX_VCPPublishThresholdEx(BL_SENSORS_IX_1, context, cmd, args, cmdFlags);
+  return BL09XX_VCPPublishThresholdEx(BL_SENSORS_IX_0, context, cmd, args, cmdFlags);
+}
+#endif
 
 commandResult_t BL09XX_SetupConsumptionThreshold(const void *context, const char *cmd, const char *args, int cmdFlags)
 {
@@ -622,15 +616,13 @@ float BL_ChangeEnergyUnitIfNeeded(float Wh) {
 #if ENABLE_BL_TWIN
 void BL_ProcessUpdateEx(int asensdatasetix, float voltage, float current, float power,
   float frequency, float energyWh) {
-
-  if ((asensdatasetix < 0) || (asensdatasetix > BL_SENSDATASETS_COUNT - 1)) return;  //to avoid bad index on data[BL_SENSDATASETS_COUNT]
-  energysensdataset_t* sensdataset = BL_GetSensDataSetFromIx(asensdatasetix);
+  if ((asensdatasetix < 0) || (asensdatasetix >= BL_SENSDATASETS_COUNT)) return;  //to avoid bad index on data[BL_SENSDATASETS_COUNT]
 #else
 void BL_ProcessUpdate(float voltage, float current, float power,
   float frequency, float energyWh) {
   int asensdatasetix = BL_SENSORS_IX_0;
-  energysensdataset_t* sensdataset = &datasetlist[asensdatasetix];
 #endif
+  energysensdataset_t* sensdataset = &datasetlist[asensdatasetix];
 
   int i;
   int xPassedTicks;
@@ -692,7 +684,14 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
     sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading += (double)energy;
     energyCounterStamp[asensdatasetix] = xTaskGetTickCount();
+    #if ENABLE_BL_TWIN
+    if (asensdatasetix == BL_SENSORS_IX_0) {
+      //update only IX0, IX1 will be saved later in BL09XX_SaveEmeteringStatistics()
+      HAL_FlashVars_SaveTotalConsumption((float)sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading);
+    }
+    #else
     HAL_FlashVars_SaveTotalConsumption((float)sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading);
+    #endif
     sensdataset->sensors[OBK_CONSUMPTION_TODAY].lastReading += energy;
 
     if (NTP_IsTimeSynced()) {
@@ -972,7 +971,7 @@ void BL_Shared_Init(void) {
         energyCounterMinutesIndex = 0;
       }
 
-      addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Read ENERGYMETER status values. sizeof(ENERGY_METERING_DATA)=%d\n", sizeof(ENERGY_METERING_DATA));
+      addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Read ENERGYMETER values sz=%d\n", sizeof(ENERGY_METERING_DATA));
 
       HAL_GetEnergyMeterStatus(&data);
       sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading = data.TotalConsumption;
@@ -1054,12 +1053,8 @@ energySensorNames_t* DRV_GetEnergySensorNames(energySensor_t type)
 /// @param type energySensor_t
 energySensorNames_t* DRV_GetEnergySensorNamesEx(int asensdatasetix, energySensor_t type)
 {
-#if ENABLE_BL_TWIN
-  energysensdataset_t* sensdataset = BL_GetSensDataSetFromIx(asensdatasetix);
-  return &sensdataset->sensors[type].names;
-#else
-  return &datasetlist[BL_SENSORS_IX_0].sensors[type].names;  
-#endif
+  if ((asensdatasetix < 0) || (asensdatasetix >= BL_SENSDATASETS_COUNT)) asensdatasetix= BL_SENSORS_IX_0;//here default 0 - hass.c not checking result
+  return &datasetlist[asensdatasetix].sensors[type].names;
 }
 
 #endif
