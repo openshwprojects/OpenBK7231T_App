@@ -55,6 +55,21 @@ int g_simulatedTimeNow = 0;
 extern int g_httpPort;
 #define DEFAULT_FRAME_TIME 5
 
+#if LINUX
+
+#include <stdint.h>
+#include <time.h>
+
+uint32_t timeGetTime() {
+	struct timespec ts;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	return (uint32_t)((ts.tv_sec * 1000) + (ts.tv_nsec / 1000000));
+}
+
+void vTaskDelay(int x) {
+
+}
+#endif
 
 void strcat_safe_test(){
 	char tmpA[16];

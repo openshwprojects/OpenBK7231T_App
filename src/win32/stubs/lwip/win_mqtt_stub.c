@@ -15,21 +15,7 @@
 #define LWIP_ASSERT_CORE_LOCKED();
 #define LWIP_ASSERT(a,b);
 
-#ifdef LINUX
 
-#define SOCKET int
-#define closesocket close
-#define ISVALIDSOCKET(s) ((s) >= 0)
-#define GETSOCKETERRNO() (errno)
-#define ioctlsocket ioctl
-#define WSAEWOULDBLOCK EWOULDBLOCK
-
-#elif WINDOWS
-
-#define ISVALIDSOCKET(s) ((s) != INVALID_SOCKET)
-#define GETSOCKETERRNO() (WSAGetLastError())
-
-#endif
 
 typedef struct altcp_pcb {
 	SOCKET sock;
