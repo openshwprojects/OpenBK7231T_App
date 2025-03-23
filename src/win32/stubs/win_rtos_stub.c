@@ -34,12 +34,17 @@ int xSemaphoreCreateMutex() {
 int xSemaphoreGive(int semaphore) {
 	return 0;
 }
+extern int g_selfTestsMode;
 int rtos_delay_milliseconds(int sec) {
-	//Sleep(sec);
+	if (g_selfTestsMode)
+		return;
+	Sleep(sec);
 	return 0;
 }
 int delay_ms(int sec) {
-	//Sleep(sec);
+	if (g_selfTestsMode)
+		return;
+	Sleep(sec);
 	return 0;
 }
 
