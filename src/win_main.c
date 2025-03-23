@@ -20,7 +20,6 @@
 
 #else
 
-#define closesocket close
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -260,6 +259,24 @@ int g_bDoingUnitTestsNow = 0;
 int SelfTest_GetNumErrors();
 extern int g_selfTestsMode;
 
+float myFabs(float f) {
+	if (f < 0)
+		return -f;
+	return f;
+}
+bool Float_Equals(float a, float b) {
+	float res = myFabs(a - b);
+	return res < 0.001f;
+}
+bool Float_EqualsEpsilon(float a, float b, float epsilon) {
+	float res = myFabs(a - b);
+	return res < epsilon;
+}
+
+#ifdef LINUX
+// fixes - temp
+#endif
+
 int __cdecl main(int argc, char **argv)
 {
 	bool bWantsUnitTests = 1;
@@ -290,14 +307,18 @@ int __cdecl main(int argc, char **argv)
 					i++;
 
 					if (i < argc && sscanf(argv[i], "%d", &value) == 1) {
+#if ENABLE_SDL_WINDOW
 						SIM_SetWindowW(value);
+#endif
 					}
 				}
 				else if (wal_strnicmp(argv[i] + 1, "h", 1) == 0) {
 					i++;
 
 					if (i < argc && sscanf(argv[i], "%d", &value) == 1) {
+#if ENABLE_SDL_WINDOW
 						SIM_SetWindowH(value);
+#endif
 					}
 				}
 				else if (wal_strnicmp(argv[i] + 1, "runUnitTests", 12) == 0) {
@@ -464,7 +485,10 @@ int __cdecl main(int argc, char **argv)
 	}
 
 
+#if ENABLE_SDL_WINDOW
 	SIM_CreateWindow(argc, argv);
+#endif
+
 #if 1
 	CMD_ExecuteCommand("MQTTHost 192.168.0.113", 0);
 	CMD_ExecuteCommand("MqttPassword ma1oovoo0pooTie7koa8Eiwae9vohth1vool8ekaej8Voohi7beif5uMuph9Diex", 0);

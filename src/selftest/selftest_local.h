@@ -60,19 +60,9 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 #define SELFTEST_ASSERT_HAS_UART_EMPTY() SELFTEST_ASSERT(SIM_UART_GetDataSize()==0);
 
 //#define FLOAT_EQUALS (a,b) (fabs(a-b)<0.001f)
-inline float myFabs(float f) {
-	if (f < 0)
-		return -f;
-	return f;
-}
-inline bool Float_Equals(float a, float b) {
-	float res = myFabs(a - b);
-	return res < 0.001f;
-}
-inline bool Float_EqualsEpsilon(float a, float b, float epsilon) {
-	float res = myFabs(a - b);
-	return res < epsilon;
-}
+float myFabs(float f);
+bool Float_Equals(float a, float b);
+bool Float_EqualsEpsilon(float a, float b, float epsilon);
 
 #define VA_BUFFER_SIZE 4096
 #define VA_COUNT 4

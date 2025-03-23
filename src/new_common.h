@@ -217,6 +217,7 @@ This platform is not supported, error!
 #include <netdb.h>  // For gethostbyname and struct hostent
 #include <limits.h>
 #include <stdint.h>
+#define closesocket close
 
 #endif
 
