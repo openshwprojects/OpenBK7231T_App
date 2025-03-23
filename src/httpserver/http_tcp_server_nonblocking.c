@@ -11,7 +11,7 @@
 #include <timeapi.h>
 #endif
 
- SOCKET ListenSocket = INVALID_SOCKET;
+SOCKET ListenSocket = INVALID_SOCKET;
 
 int g_httpPort = 80;
 
@@ -204,23 +204,6 @@ void HTTPServer_RunQuickTick() {
 			//WSACleanup();
 			//return 1;
 		//}
-}
-
-#else
-
-#include "../new_common.h"
-#include "lwip/sockets.h"
-#include "lwip/ip_addr.h"
-#include "lwip/inet.h"
-#include "../logging/logging.h"
-#include "new_http.h"
-#include <time.h>
-
-int HTTPServer_Start() {
-	return -1;
-}
-
-void HTTPServer_RunQuickTick() {
 }
 
 #endif
