@@ -1,0 +1,359 @@
+[
+  {
+    "index": "0",
+    "enum": "OBK_FLAG_MQTT_BROADCASTLEDPARAMSTOGETHER",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[MQTT] Broadcast led params together (send dimmer and color when dimmer or color changes, topic name: YourDevName/led_basecolor_rgb/get, YourDevName/led_dimmer/get)"
+  },
+  {
+    "index": "1",
+    "enum": "OBK_FLAG_MQTT_BROADCASTLEDFINALCOLOR",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[MQTT] Broadcast led final color (topic name: YourDevName/led_finalcolor_rgb/get)"
+  },
+  {
+    "index": "2",
+    "enum": "OBK_FLAG_MQTT_BROADCASTSELFSTATEPERMINUTE",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[MQTT] Broadcast self state every N (def: 60) seconds (delay configurable by 'mqtt_broadcastInterval' and 'mqtt_broadcastItemsPerSec' commands)"
+  },
+  {
+    "index": "3",
+    "enum": "OBK_FLAG_LED_RAWCHANNELSMODE",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[LED][Debug] Show raw PWM controller on WWW index instead of new LED RGB/CW/etc picker"
+  },
+  {
+    "index": "4",
+    "enum": "OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[LED] Force show RGBCW controller (for example, for SM2135 LEDs, or for DGR sender)"
+  },
+  {
+    "index": "5",
+    "enum": "OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[CMD] Enable TCP console command server (for Putty, etc)"
+  },
+  {
+    "index": "6",
+    "enum": "OBK_FLAG_BTN_INSTANTTOUCH",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[BTN] Instant touch reaction instead of waiting for release (aka SetOption 13)"
+  },
+  {
+    "index": "7",
+    "enum": "OBK_FLAG_MQTT_ALWAYSSETRETAIN",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[MQTT] [Debug] Always set Retain flag to all published values"
+  },
+  {
+    "index": "8",
+    "enum": "OBK_FLAG_LED_ALTERNATE_CW_MODE",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[LED] Alternate CW light mode (first PWM for warm/cold slider, second for brightness)"
+  },
+  {
+    "index": "9",
+    "enum": "OBK_FLAG_SM2135_SEPARATE_MODES",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[SM2135] Use separate RGB/CW modes instead of writing all 5 values as RGB"
+  },
+  {
+    "index": "10",
+    "enum": "OBK_FLAG_MQTT_BROADCASTSELFSTATEONCONNECT",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[MQTT] Broadcast self state on MQTT connect"
+  },
+  {
+    "index": "11",
+    "enum": "OBK_FLAG_SLOW_PWM",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[PWM] BK7231 use 600hz instead of 1khz default"
+  },
+  {
+    "index": "12",
+    "enum": "OBK_FLAG_LED_REMEMBERLASTSTATE",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[LED] Remember LED driver state (RGBCW, enable, brightness, temperature) after reboot"
+  },
+  {
+    "index": "13",
+    "enum": "OBK_FLAG_HTTP_PINMONITOR",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[HTTP] Show actual PIN logic level for unconfigured pins"
+  },
+  {
+    "index": "14",
+    "enum": "OBK_FLAG_IR_PUBLISH_RECEIVED",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[IR] Do MQTT publish (RAW STRING) for incoming IR data"
+  },
+  {
+    "index": "15",
+    "enum": "OBK_FLAG_IR_ALLOW_UNKNOWN",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[IR] Allow 'unknown' protocol"
+  },
+  {
+    "index": "16",
+    "enum": "OBK_FLAG_LED_BROADCAST_FULL_RGBCW",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[MQTT] Broadcast led final color RGBCW (topic name: YourDevName/led_finalcolor_rgbcw/get)"
+  },
+  {
+    "index": "17",
+    "enum": "OBK_FLAG_LED_AUTOENABLE_ON_WWW_ACTION",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[LED] Automatically enable Light when changing brightness, color or temperature on WWW panel"
+  },
+  {
+    "index": "18",
+    "enum": "OBK_FLAG_LED_SMOOTH_TRANSITIONS",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[LED] Smooth transitions for LED (EXPERIMENTAL)"
+  },
+  {
+    "index": "19",
+    "enum": "OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[MQTT] Always publish channels used by TuyaMCU"
+  },
+  {
+    "index": "20",
+    "enum": "OBK_FLAG_LED_FORCE_MODE_RGB",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[LED] Force RGB mode (3 PWMs for LEDs) and ignore further PWMs if they are set"
+  },
+  {
+    "index": "21",
+    "enum": "OBK_FLAG_MQTT_RETAIN_POWER_CHANNELS",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[MQTT] Retain power channels (Relay channels, etc)"
+  },
+  {
+    "index": "22",
+    "enum": "OBK_FLAG_IR_PUBLISH_RECEIVED_IN_JSON",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[IR] Do MQTT publish (Tasmota JSON format) for incoming IR data"
+  },
+  {
+    "index": "23",
+    "enum": "OBK_FLAG_LED_AUTOENABLE_ON_ANY_ACTION",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[LED] Automatically enable Light on any change of brightness, color or temperature"
+  },
+  {
+    "index": "24",
+    "enum": "OBK_FLAG_LED_EMULATE_COOL_WITH_RGB",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[LED] Emulate Cool White with RGB in device with four PWMS - Red is 0, Green 1, Blue 2, and Warm is 4"
+  },
+  {
+    "index": "25",
+    "enum": "OBK_FLAG_POWER_ALLOW_NEGATIVE",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[POWER] Allow negative current/power for power measurement (all chips, BL0937, BL0942, etc)"
+  },
+  {
+    "index": "26",
+    "enum": "OBK_FLAG_USE_SECONDARY_UART",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[UART] Use alternate UART for BL0942, CSE, TuyaMCU, etc"
+  },
+  {
+    "index": "27",
+    "enum": "OBK_FLAG_AUTOMAIC_HASS_DISCOVERY",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[HASS] Invoke HomeAssistant discovery on change to ip address, configuration"
+  },
+  {
+    "index": "28",
+    "enum": "OBK_FLAG_LED_SETTING_WHITE_RGB_ENABLES_CW",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[LED] Setting RGB white (FFFFFF) enables temperature mode"
+  },
+  {
+    "index": "29",
+    "enum": "OBK_FLAG_USE_SHORT_DEVICE_NAME_AS_HOSTNAME",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[NETIF] Use short device name as a hostname instead of a long name"
+  },
+  {
+    "index": "30",
+    "enum": "OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[MQTT] Enable Tasmota TELE etc publishes (for ioBroker etc)"
+  },
+  {
+    "index": "31",
+    "enum": "OBK_FLAG_CMD_ACCEPT_UART_COMMANDS",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[UART] Enable UART command line"
+  },
+  {
+    "index": "32",
+    "enum": "OBK_FLAG_LED_USE_OLD_LINEAR_MODE",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[LED] Use old linear brightness mode, ignore gamma ramp"
+  },
+  {
+    "index": "33",
+    "enum": "OBK_FLAG_PUBLISH_MULTIPLIED_VALUES",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[MQTT] Apply channel type multiplier on (if any) on channel value before publishing it"
+  },
+  {
+    "index": "34",
+    "enum": "OBK_FLAG_MQTT_HASS_ADD_RELAYS_AS_LIGHTS",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[MQTT] In HA discovery, add relays as lights"
+  },
+  {
+    "index": "35",
+    "enum": "OBK_FLAG_NOT_PUBLISH_AVAILABILITY",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[HASS] Deactivate avty_t flag when publishing to HASS (permit to keep value). You must restart HASS discovery for change to take effect."
+  },
+  {
+    "index": "36",
+    "enum": "OBK_FLAG_DRV_DISABLE_AUTOSTART",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[DRV] Deactivate Autostart of all drivers"
+  },
+  {
+    "index": "37",
+    "enum": "OBK_FLAG_WIFI_FAST_CONNECT",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[WiFi] Quick connect to WiFi on reboot (TODO: check if it works for you and report on github)"
+  },
+  {
+    "index": "38",
+    "enum": "OBK_FLAG_POWER_FORCE_ZERO_IF_RELAYS_OPEN",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[Power] Set power and current to zero if all relays are open"
+  },
+  {
+    "index": "39",
+    "enum": "OBK_FLAG_MQTT_PUBLISH_ALL_CHANNELS",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[MQTT] [Debug] Publish all channels (don't enable it, it will be publish all 64 possible channels on connect)"
+  },
+  {
+    "index": "40",
+    "enum": "OBK_FLAG_MQTT_ENERGY_IN_KWH",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[MQTT] Use kWh unit for energy consumption (total, last hour, today) instead of Wh"
+  },
+  {
+    "index": "41",
+    "enum": "OBK_FLAG_BUTTON_DISABLE_ALL",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[BTN] Ignore all button events (aka child lock)"
+  },
+  {
+    "index": "42",
+    "enum": "OBK_FLAG_DOORSENSOR_INVERT_STATE",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[DoorSensor] Invert state"
+  },
+  {
+    "index": "43",
+    "enum": "OBK_FLAG_TUYAMCU_USE_QUEUE",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[TuyaMCU] Use queue"
+  },
+  {
+    "index": "44",
+    "enum": "OBK_FLAG_HTTP_DISABLE_AUTH_IN_SAFE_MODE",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[HTTP] Disable authentication in safe mode (not recommended)"
+  },
+  {
+    "index": "45",
+    "enum": "OBK_FLAG_DISCOVERY_DONT_MERGE_LIGHTS",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[MQTT Discovery] Don't merge toggles and dimmers into lights"
+  },
+  {
+    "index": "46",
+    "enum": "OBK_FLAG_TUYAMCU_STORE_RAW_DATA",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[TuyaMCU] Store raw data"
+  },
+  {
+    "index": "47",
+    "enum": "OBK_FLAG_TUYAMCU_STORE_ALL_DATA",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[TuyaMCU] Store ALL data"
+  },
+  {
+    "index": "48",
+    "enum": "OBK_FLAG_POWER_INVERT_AC",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[PWR] Invert AC dir"
+  },
+  {
+    "index": "49",
+    "enum": "OBK_FLAG_HTTP_NO_ONOFF_WORDS",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[HTTP] Hide ON/OFF for relays (only red/green buttons)"
+  },
+  {
+    "index": "50",
+    "enum": "OBK_FLAG_MQTT_NEVERAPPENDGET",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[MQTT] Never add get sufix"
+  }
+]

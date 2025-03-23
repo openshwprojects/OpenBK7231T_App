@@ -11,7 +11,8 @@
 */
 
 #ifndef PLATFORM_XR809
-
+#ifdef PLATFORM_BEKEN_NEW
+#endif
 #include "include.h"
 #include "mem_pub.h"
 #include "drv_model_pub.h"
@@ -550,28 +551,38 @@ void HAL_FlashVars_ReadLED(byte* mode, short* brightness, short* temperature, by
 	rgb[2] = flash_vars.rgb[2];
 #endif
 }
+#define SAVE_CHANGE_IF_REQUIRED_AND_COUNT(target, source, counter) \
+	if((target) != (source)) { \
+		(target) = (source); \
+		counter++; \
+	}
+
 void HAL_FlashVars_SaveLED(byte mode, short brightness, short temperature, byte r, byte g, byte b, byte bEnableAll) {
 #ifndef DISABLE_FLASH_VARS_VARS
 	FLASH_VARS_STRUCTURE data;
+	int iChangesCount = 0;
 
 
 	flash_vars_init();
-	flash_vars.savedValues[MAX_RETAIN_CHANNELS - 1] = brightness;
-	flash_vars.savedValues[MAX_RETAIN_CHANNELS - 2] = temperature;
-	flash_vars.savedValues[MAX_RETAIN_CHANNELS - 3] = mode;
-	flash_vars.savedValues[MAX_RETAIN_CHANNELS - 4] = bEnableAll;
-	flash_vars.rgb[0] = r;
-	flash_vars.rgb[1] = g;
-	flash_vars.rgb[2] = b;
-	ADDLOG_INFO(LOG_FEATURE_CFG, "####### Flash Save LED #######");
-	flash_vars_write();
+	SAVE_CHANGE_IF_REQUIRED_AND_COUNT(flash_vars.savedValues[MAX_RETAIN_CHANNELS - 1], brightness, iChangesCount);
+	SAVE_CHANGE_IF_REQUIRED_AND_COUNT(flash_vars.savedValues[MAX_RETAIN_CHANNELS - 2], temperature, iChangesCount);
+	SAVE_CHANGE_IF_REQUIRED_AND_COUNT(flash_vars.savedValues[MAX_RETAIN_CHANNELS - 3], mode, iChangesCount);
+	SAVE_CHANGE_IF_REQUIRED_AND_COUNT(flash_vars.savedValues[MAX_RETAIN_CHANNELS - 4], bEnableAll, iChangesCount);
+	SAVE_CHANGE_IF_REQUIRED_AND_COUNT(flash_vars.rgb[0], r, iChangesCount);
+	SAVE_CHANGE_IF_REQUIRED_AND_COUNT(flash_vars.rgb[1], g, iChangesCount);
+	SAVE_CHANGE_IF_REQUIRED_AND_COUNT(flash_vars.rgb[2], b, iChangesCount);
 
-	flash_vars_read(&data);
-	ADDLOG_DEBUG(LOG_FEATURE_CFG, "re-read - offset %d, boot count %d, boot success %d, bootfailures %d",
-		flash_vars_offset,
-		data.boot_count,
-		data.boot_success_count,
-		data.boot_count - data.boot_success_count);
+	if (iChangesCount > 0) {
+		ADDLOG_INFO(LOG_FEATURE_CFG, "####### Flash Save LED #######");
+		flash_vars_write();
+
+		flash_vars_read(&data);
+		ADDLOG_DEBUG(LOG_FEATURE_CFG, "re-read - offset %d, boot count %d, boot success %d, bootfailures %d",
+			flash_vars_offset,
+			data.boot_count,
+			data.boot_success_count,
+			data.boot_count - data.boot_success_count);
+	}
 #endif
 }
 
@@ -672,6 +683,18 @@ void HAL_FlashVars_SaveTotalConsumption(float total_consumption)
 #ifndef DISABLE_FLASH_VARS_VARS
 	flash_vars.emetering.TotalConsumption = total_consumption;
 #endif
+}
+void HAL_FlashVars_SaveEnergyExport(float f)
+{
+	// use two last retain channels as float,
+	// I don't think it will cause a clash, power metering devices dont use that many channels anyway
+	memcpy(&flash_vars.savedValues[MAX_RETAIN_CHANNELS - 2], &f, sizeof(float));
+}
+float HAL_FlashVars_GetEnergyExport()
+{
+	float f;
+	memcpy(&f, &flash_vars.savedValues[MAX_RETAIN_CHANNELS - 2], sizeof(float));
+	return f;
 }
 
 #endif

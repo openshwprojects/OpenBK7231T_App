@@ -1,7 +1,7 @@
 #include "../hal_wifi.h"
 
 #define LOG_FEATURE LOG_FEATURE_MAIN
-
+#include "../../new_common.h"
 #include "wlan_ui_pub.h"
 #include "ethernet_intf.h"
 #include "../../new_common.h"
@@ -10,17 +10,33 @@
 #include "../../beken378/app/config/param_config.h"
 #include "lwip/netdb.h"
 
+#ifdef PLATFORM_BEKEN_NEW
+
+#define SOFT_AP						BK_SOFT_AP
+#define STATION						BK_STATION
+#define SECURITY_TYPE_NONE			BK_SECURITY_TYPE_NONE
+#define SECURITY_TYPE_WEP			BK_SECURITY_TYPE_WEP
+#define SECURITY_TYPE_WPA_TKIP		BK_SECURITY_TYPE_WPA_TKIP
+#define SECURITY_TYPE_WPA2_AES		BK_SECURITY_TYPE_WPA2_AES
+#define SECURITY_TYPE_WPA2_MIXED	BK_SECURITY_TYPE_WPA2_MIXED
+#define SECURITY_TYPE_AUTO			BK_SECURITY_TYPE_AUTO
+
+#define SOFT_AP BK_SOFT_AP
+
+#endif
+
 static void (*g_wifiStatusCallback)(int code);
 
 // lenght of "192.168.103.103" is 15 but we also need a NULL terminating character
 static char g_IP[32] = "unknown";
 static int g_bOpenAccessPointMode = 0;
 char *get_security_type(int type);
+bool g_bStaticIP = false;
 
+IPStatusTypedef ipStatus;
 // This must return correct IP for both SOFT_AP and STATION modes,
 // because, for example, javascript control panel requires it
 const char* HAL_GetMyIPString() {
-	IPStatusTypedef ipStatus;
 
 	os_memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
 	if (g_bOpenAccessPointMode) {
@@ -30,7 +46,19 @@ const char* HAL_GetMyIPString() {
 		bk_wlan_get_ip_status(&ipStatus, STATION);
 	}
 
-	strcpy(g_IP, ipStatus.ip);
+	strncpy(g_IP, ipStatus.ip, 16);
+	return g_IP;
+}
+const char* HAL_GetMyGatewayString() {
+	strncpy(g_IP, ipStatus.gate, 16);
+	return g_IP;
+}
+const char* HAL_GetMyDNSString() {
+	strncpy(g_IP, ipStatus.dns, 16);
+	return g_IP;
+}
+const char* HAL_GetMyMaskString() {
+	strncpy(g_IP, ipStatus.mask, 16);
 	return g_IP;
 }
 
@@ -166,12 +194,14 @@ void wl_status(void* ctxt)
 {
 
 	rw_evt_type stat = *((rw_evt_type*)ctxt);
-	ADDLOGF_INFO("wl_status %d\r\n", stat);
+	//ADDLOGF_INFO("wl_status %d\r\n", stat);
 
 	switch (stat) {
 	case RW_EVT_STA_IDLE:
+#ifndef PLATFORM_BEKEN_NEW
 	case RW_EVT_STA_SCANNING:
 	case RW_EVT_STA_SCAN_OVER:
+#endif
 	case RW_EVT_STA_CONNECTING:
 		if (g_wifiStatusCallback != 0) {
 			g_wifiStatusCallback(WIFI_STA_CONNECTING);
@@ -191,8 +221,8 @@ void wl_status(void* ctxt)
 			g_wifiStatusCallback(WIFI_STA_AUTH_FAILED);
 		}
 		break;
-	case RW_EVT_STA_CONNECTED:        /* authentication success */
-	case RW_EVT_STA_GOT_IP:
+	case RW_EVT_STA_CONNECTED: if(!g_bStaticIP) break;
+	case RW_EVT_STA_GOT_IP:          /* authentication success */
 		if (g_wifiStatusCallback != 0) {
 			g_wifiStatusCallback(WIFI_STA_CONNECTED);
 		}
@@ -227,8 +257,7 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 
 	bk_wlan_status_register_cb(wl_status);
 }
-
-void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key)
+void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip)
 {
 	g_bOpenAccessPointMode = 0;
 
@@ -240,12 +269,22 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key)
 	os_strcpy((char*)network_cfg.wifi_key, connect_key);
 
 	network_cfg.wifi_mode = STATION;
-	network_cfg.dhcp_mode = DHCP_CLIENT;
+	if (ip->localIPAddr[0] == 0) {
+		network_cfg.dhcp_mode = DHCP_CLIENT;
+	}
+	else {
+		network_cfg.dhcp_mode = DHCP_DISABLE;
+		convert_IP_to_string(network_cfg.local_ip_addr, ip->localIPAddr);
+		convert_IP_to_string(network_cfg.net_mask, ip->netMask);
+		convert_IP_to_string(network_cfg.gateway_ip_addr, ip->gatewayIPAddr);
+		convert_IP_to_string(network_cfg.dns_server_ip_addr, ip->dnsServerIpAddr);
+		g_bStaticIP = true;
+	}
 	network_cfg.wifi_retry_interval = 100;
 
-	ADDLOGF_INFO("ssid:%s key:%s\r\n", network_cfg.wifi_ssid, network_cfg.wifi_key);
+	//ADDLOGF_INFO("ssid:%s key:%s\r\n", network_cfg.wifi_ssid, network_cfg.wifi_key);
 
-	bk_wlan_start(&network_cfg);
+	bk_wlan_start_sta(&network_cfg);
 }
 
 void HAL_DisconnectFromWifi()

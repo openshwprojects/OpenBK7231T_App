@@ -4,10 +4,13 @@
 #include "Wire.h"
 #include "Text.h"
 #include "Controller_Button.h"
+#include "Controller_Switch.h"
 #include "Controller_Bulb.h"
 #include "Controller_SimulatorLink.h"
 #include "Controller_BL0942.h"
 #include "Controller_Pot.h"
+#include "Controller_WS2812.h"
+#include "Controller_DHT11.h"
 #include "Junction.h"
 
 class CShape *PrefabManager::generateVDD() {
@@ -55,17 +58,36 @@ class CShape *PrefabManager::generateButton() {
 	o->translateEachChild(0, 10);
 	return o;
 }
+class CShape *PrefabManager::generateSwitch() {
+	CShape *o = new CShape();
+	o->setName("Switch");
+	CJunction *a = o->addJunction(-40, -10, "pad_a");
+	CJunction *b = o->addJunction(40, -10, "pad_b");
+	a->setName("pad_a");
+	b->setName("pad_b");
+	o->addLine(40, -10, 20, -10);
+	o->addLine(-40, -10, -20, -10);
+
+	CShape *mover = o->addLine(20, -10, -20, 10);
+
+	mover->setName("switch_mover");
+	CControllerSwitch *btn = new CControllerSwitch(a, b);
+	btn->setMover(mover);
+	o->setController(btn);
+	o->translateEachChild(0, 10);
+	return o;
+}
 class CShape *PrefabManager::generateBL0942() {
 
 	CShape *o = new CShape();
 	o->setName("BL0942");
-	int w = 40;
-	int h = 40;
-	o->addText(-w-5, -h-5, "BL0942");
-	o->addText(-w + 5, -h + 15, "U:");
-	o->addText(-w + 5, -h + 35, "I:");
-	o->addText(-w + 5, -h + 55, "P:");
-	o->addText(-w + 5, -h + 75, "F:");
+	float w = 40.0f;
+	float h = 40.0f;
+	o->addText(-w - 5.0f, -h - 5.0f, "BL0942");
+	o->addText(-w + 5.0f, -h + 15.0f, "U:");
+	o->addText(-w + 5.0f, -h + 35.0f, "I:");
+	o->addText(-w + 5.0f, -h + 55.0f, "P:");
+	o->addText(-w + 5.0f, -h + 75.0f, "F:");
 	CText *tx_voltage = o->addText(-w + 25, -h + 15, "230V", true, false)->asText();
 	tx_voltage->setName("text_voltage");
 	CText *tx_current = o->addText(-w + 25, -h + 35, "0.24A", true, false)->asText();
@@ -96,6 +118,37 @@ class CShape *PrefabManager::generateBL0942() {
 	o->setController(cntr);
 	return o;
 }
+class CShape *PrefabManager::generateDHT11() {
+
+	CShape *o = new CShape();
+	o->setName("DHT11");
+	int w = 40;
+	int h = 40;
+	o->addText(-w - 5, -h - 5, "DHT11");
+	o->addText(-w + 5, -h + 15, "T:");
+	o->addText(-w + 5, -h + 35, "H:");
+	CText *tx_temperatura = o->addText(-w + 25, -h + 15, "19.9C", true, false)->asText();
+	tx_temperatura->setName("tex_temperature");
+	CText *tx_humidity = o->addText(-w + 25, -h + 35, "85%", true, false)->asText();
+	tx_humidity->setName("text_humidity");
+	o->addRect(-w, -h, w * 2, 80);
+	CJunction *dat = o->addJunction(w + 20, 0, "DAT");
+	o->addLine(w + 20, 0, w, 0);
+	dat->setName("DAT");
+	dat->addText(-5, -5, "DAT");
+
+	CJunction *vdd = o->addJunction(w + 20, 20, "VDD");
+	o->addLine(w + 20, 20, w, 20);
+	vdd->setName("VDD");
+	vdd->addText(-5, -5, "VDD");
+	CJunction *gnd = o->addJunction(w + 20, -20, "GND");
+	o->addLine(w + 20, -20, w, -20);
+	gnd->setName("GND");
+	gnd->addText(-5, -5, "GND");
+	CControllerDHT11 *cntr = new CControllerDHT11(dat, tx_temperatura, tx_humidity);
+	o->setController(cntr);
+	return o;
+}
 class CShape *PrefabManager::generateTest() {
 
 	CShape *o = new CShape();
@@ -111,7 +164,8 @@ class CShape *PrefabManager::generateWB3S() {
 	o->setName("WB3S");
 	CControllerSimulatorLink *link = new CControllerSimulatorLink();
 	o->setController(link);
-	o->addText(-40, -25, "WB3S");
+	o->addText(-40, -45, "WB3S");
+	o->addText(-40, -25, "$simPowerState");
 	o->addRect(-50, -20, 100, 180);
 	struct PinDef_s {
 		const char *name;
@@ -125,17 +179,17 @@ class CShape *PrefabManager::generateWB3S() {
 		{ "RXD2", 1 },
 		{ "TXD2", 0 },
 		{ "PWM1", 7 },
-		{ "GND", -1 }
+		{ "GND", GPIO_GND }
 	};
 	PinDef_s wb3sPinsLeft[] = {
-		{ "CEN", -1 },
+		{ "CEN", GPIO_CEN },
 		{ "ADC3", 23 },
-		{ "EN", -1 },
+		{ "EN", GPIO_EN },
 		{ "P14", 14 },
 		{ "PWM5", 26 },
 		{ "PWM4", 24 },
 		{ "PWM0", 6 },
-		{ "VCC", -1 }
+		{ "VCC", GPIO_VDD }
 	};
 	for (int i = 0; i < 8; i++) {
 		int y = i * 20;
@@ -161,13 +215,13 @@ class CShape *PrefabManager::generateLED_CW() {
 	CShape *filler = o->addCircle(0, 0, bulb_radius);
 	CShape *body = o->addCircle(0, 0, bulb_radius);
 	filler->setFill(true);
-	CJunction *gnd = o->addJunction(-bulb_radius, 0);
+	CJunction *gnd = o->addJunction(-bulb_radius, 0.0f);
 	gnd->setName("GND");
 	gnd->addText(-5, -5, "");
-	CJunction *cool = o->addJunction(bulb_radius, 20);
+	CJunction *cool = o->addJunction(bulb_radius, 20.0f);
 	cool->setName("C");
 	cool->addText(-5, -5, "C");
-	CJunction *warm = o->addJunction(bulb_radius, -20);
+	CJunction *warm = o->addJunction(bulb_radius, -20.0f);
 	warm->setName("W");
 	warm->addText(-5, -5, "W");
 
@@ -319,7 +373,7 @@ class CShape *PrefabManager::generatePot() {
 	CShape *handle = o->addRect(-10, -60, 20, 40);
 	handle->setName("pot_handle_mover");
 	int leds = 8;
-	int ofs = 10;
+	float ofs = 10.0f;
 	float start = ofs - w;
 	float len = 2 * w - ofs * 2;
 	float ledlen = len / (leds + 1);
@@ -353,7 +407,7 @@ class CShape *PrefabManager::generateStrip_RGBCW() {
 	int w = 200;
 	o->addRect(-w, -20, w * 2, 40);
 	int leds = 8;
-	int ofs = 10;
+	float ofs = 10.0f;
 	float start = ofs - w;
 	float len = 2 * w - ofs * 2;
 	float ledlen = len / (leds + 1);
@@ -389,6 +443,28 @@ class CShape *PrefabManager::generateStrip_RGBCW() {
 		sprintf(str, "LED_%i", i);
 		shape_filler->setName(str);
 	}
+	return o;
+}
+class CShape *PrefabManager::generateWS2812B() {
+
+	float bulb_radius = 20.0f;
+
+	CShape *o = new CShape();
+	o->addText(-40, -25, "WS2812");
+	o->setName("WS2812");
+	CShape *filler = o->addRect(-bulb_radius,-bulb_radius, bulb_radius*2, bulb_radius*2);
+	CShape *body = o->addRect(-bulb_radius, -bulb_radius, bulb_radius * 2, bulb_radius * 2);
+	filler->setFill(true);
+	CJunction *a = o->addJunction(-bulb_radius, 0);
+	a->setName("A");
+	a->addText(-5, -5, "");
+	CJunction *b = o->addJunction(bulb_radius, 0);
+	b->setName("B");
+	b->addText(-25, -5, "");
+	CControllerWS2812 *bulb = new CControllerWS2812(a, b);
+	o->setController(bulb);
+	filler->setName("internal_bulb_filler");
+	bulb->setShape(filler);
 	return o;
 }
 class CShape *PrefabManager::generateStrip_RGB() {
@@ -460,11 +536,14 @@ void PrefabManager::createDefaultPrefabs() {
 	addPrefab(generateBulb());
 	addPrefab(generateWB3S());
 	addPrefab(generateButton());
+	addPrefab(generateSwitch());
 	addPrefab(generateTest());
 	addPrefab(generateGND());
 	addPrefab(generateVDD());
 	addPrefab(generateBL0942());
 	addPrefab(generatePot());
+	addPrefab(generateWS2812B());
+	addPrefab(generateDHT11());
 }
 
 

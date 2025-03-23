@@ -1,7 +1,13 @@
-#include "../new_common.h"
+#include "drv_test_drivers.h"
+
+#include "../obk_config.h"
+
+#include <math.h>
+
 #include "../cmnds/cmd_public.h"
-#include "../logging/logging.h"
-#include "drv_local.h"
+
+#if ENABLE_DRIVER_TESTPOWER
+#include "drv_bl_shared.h"
 
 static float base_v = 120;
 static float base_c = 1;
@@ -12,30 +18,32 @@ commandResult_t TestPower_Setup(const void* context, const char* cmd, const char
 	
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-	if (Tokenizer_GetArgsCount() < 3) {
-		ADDLOG_INFO(LOG_FEATURE_ENERGYMETER, "TestPower_Setup: command require at least 4 args");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	base_v = Tokenizer_GetArgFloat(0);
 	base_c = Tokenizer_GetArgFloat(1);
 	base_p = Tokenizer_GetArgFloat(2);
 	bAllowRandom = Tokenizer_GetArgInteger(3);
-
+	// SetupTestPower 230 0.23 60 
 
 	return CMD_RES_OK;
 }
 //Test Power driver
-void Test_Power_Init() {
-	BL_Shared_Init();
+void Test_Power_Init(void) {
+    BL_Shared_Init();
 
-	//cmddetail:{"name":"SetupTestPower","args":"",
-	//cmddetail:"descr":"NULL",
+	//cmddetail:{"name":"SetupTestPower","args":"[fakeVoltage] [FakeCurrent] [FakePower] [bAllowRandom]",
+	//cmddetail:"descr":"Starts the fake power metering driver",
 	//cmddetail:"fn":"TestPower_Setup","file":"driver/drv_test_drivers.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("SetupTestPower", "", TestPower_Setup, NULL, NULL);
+	CMD_RegisterCommand("SetupTestPower", TestPower_Setup, NULL);
 }
-void Test_Power_RunFrame() {
-	float final_v = base_v;
+void Test_Power_RunEverySecond(void) {
+    float final_v = base_v;
 	float final_c = base_c;
 	float final_p = base_p;
 
@@ -44,13 +52,12 @@ void Test_Power_RunFrame() {
 		final_v += (rand() % 100) * 0.1f;
 		final_p += (rand() % 100) * 0.1f;
 	}
-	BL_ProcessUpdate(final_v, final_c, final_p);
+	BL_ProcessUpdate(final_v, final_c, final_p, NAN, NAN);
 }
+#endif
 
 //Test LED driver
-void Test_LED_Driver_Init() {
-}
-void Test_LED_Driver_RunFrame() {
-}
+void Test_LED_Driver_Init(void) {}
+void Test_LED_Driver_RunEverySecond(void) {}
 void Test_LED_Driver_OnChannelChanged(int ch, int value) {
 }

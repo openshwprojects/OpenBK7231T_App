@@ -12,7 +12,7 @@
 
  SOCKET ListenSocket = INVALID_SOCKET;
 
-#define DEFAULT_PORT "80"
+int g_httpPort = 80;
 
 int HTTPServer_Start() {
 
@@ -31,7 +31,10 @@ int HTTPServer_Start() {
 		closesocket(ListenSocket);
 	}
     // Resolve the server address and port
-    iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
+	char service[6];
+	snprintf(service, sizeof(service), "%u", g_httpPort);
+
+	iResult = getaddrinfo(NULL, service, &hints, &result);
     if ( iResult != 0 ) {
         printf("getaddrinfo failed with error: %d\n", iResult);
         WSACleanup();
@@ -77,6 +80,8 @@ int HTTPServer_Start() {
     }
 }
 #define DEFAULT_BUFLEN 10000
+int g_prevHTTPResult;
+
 void HTTPServer_RunQuickTick() {
 	int iResult;
 	int err;
@@ -85,14 +90,16 @@ void HTTPServer_RunQuickTick() {
     int recvbuflen = DEFAULT_BUFLEN;
     SOCKET ClientSocket = INVALID_SOCKET;
 	int len, iSendResult;
-	int argp;
 
 	// Accept a client socket
 	ClientSocket = accept(ListenSocket, NULL, NULL);
 	if (ClientSocket == INVALID_SOCKET) {
 		iResult = WSAGetLastError();
 		if(iResult != WSAEWOULDBLOCK) {
-			printf("accept failed with error: %d\n", iResult);
+			if (iResult != g_prevHTTPResult) {
+				printf("accept failed with error: %d\n", iResult);
+				g_prevHTTPResult = iResult;
+			}
 		}
 		return;
 	}
@@ -108,7 +115,7 @@ void HTTPServer_RunQuickTick() {
 		// Receive until the peer shuts down the connection
 		do {
 
-			iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
+			iResult = recv(ClientSocket, recvbuf, recvbuflen-1, 0);
 			if (iResult > 0) {
 				http_request_t request;
 				memset(&request, 0, sizeof(request));
@@ -132,7 +139,7 @@ void HTTPServer_RunQuickTick() {
 				outbuf[0] = '\0';
 				request.reply = outbuf;
 				request.replylen = 0;
-
+				request.responseCode = HTTP_RESPONSE_OK;
 				request.replymaxlen = DEFAULT_BUFLEN;
 
 				//printf("HTTP Server for Windows: Bytes received: %d \n", iResult);
@@ -172,22 +179,22 @@ void HTTPServer_RunQuickTick() {
 		//Sleep(50);
 		// shutdown the connection since we're done
 		iResult = shutdown(ClientSocket, SD_SEND);
-		long firstAttempt = timeGetTime();
-		while (1) {
-			iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
-			if (iResult == 0)
-				break;
-			err = WSAGetLastError();
-			if (err != WSAEWOULDBLOCK) {
-				break;
-			}
-			long delta = timeGetTime() - firstAttempt;
-			if (delta > 2) {
-				printf("HTTP server would freeze to long!\n");
-				break; // too long freeze!
+		//long firstAttempt = timeGetTime();
+		//while (1) {
+		//	iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
+		//	if (iResult == 0)
+		//		break;
+		//	err = WSAGetLastError();
+		//	if (err != WSAEWOULDBLOCK) {
+		//		break;
+		//	}
+		//	long delta = timeGetTime() - firstAttempt;
+		//	if (delta > 2) {
+		//		printf("HTTP server would freeze to long!\n");
+		//		break; // too long freeze!
 
-			}
-		}
+		//	}
+		//}
 		//Sleep(50);
 		//iResult = closesocket(ClientSocket);
 		//if (iResult == SOCKET_ERROR) {

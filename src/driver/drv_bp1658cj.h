@@ -1,9 +1,9 @@
 
 // Thx to the work of https://github.com/arendst (Tasmota) for making the initial version of the driver
-// This implemantation is heavily based on the BP5758D implemantation by openshwprojects
+// This implementation is heavily based on the BP5758D implementation by openshwprojects
 
 // Sadly I couldn't find any datasheet of this ic, so I sniffed the i2c protocol with a logic analyser
-// I've been testing the implemantation for a week now and it seems to be working without any issues.
+// I've been testing the implementation for a week now and it seems to be working without any issues.
 
 #define BP1658CJ_ADDR_OUT     0xB0
 #define BP1658CJ_ADDR_SLEEP   0x80  // When this command + the subadress and 00 for every channel is send, the device goes to sleep. --> was send by original firmware

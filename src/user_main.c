@@ -1,7 +1,7 @@
 /*
 
  */
-//
+ //
 
 #include "hal/hal_wifi.h"
 #include "hal/hal_generic.h"
@@ -11,12 +11,13 @@
 
 //#include "driver/drv_ir.h"
 #include "driver/drv_public.h"
+#include "driver/drv_bl_shared.h"
 //#include "ir/ir_local.h"
 
 // Commands register, execution API and cmd tokenizer
 #include "cmnds/cmd_public.h"
 
-// overall config variables for app - like BK_LITTLEFS
+// overall config variables for app - like ENABLE_LITTLEFS
 #include "obk_config.h"
 
 #include "httpserver/new_http.h"
@@ -30,23 +31,43 @@
 #include "mqtt/new_mqtt.h"
 #include "ota/ota.h"
 
-#ifdef BK_LITTLEFS
+#if ENABLE_LITTLEFS
 #include "littlefs/our_lfs.h"
 #endif
 
 
 #include "driver/drv_ntp.h"
 #include "driver/drv_ssdp.h"
+#include "driver/drv_uart.h"
 
-#ifdef PLATFORM_BEKEN
+#if PLATFORM_BEKEN
 #include <mcu_ps.h>
 #include <fake_clock_pub.h>
+#include <BkDriverWdg.h>
+#include "temp_detect_pub.h"
+#include "BkDriverWdg.h"
+
 void bg_register_irda_check_func(FUNCPTR func);
+#elif PLATFORM_BL602
+#include <bl_sys.h>
+#include <bl_adc.h>     //  For BL602 ADC HAL
+#include <bl602_adc.h>  //  For BL602 ADC Standard Driver
+#include <bl602_glb.h>  //  For BL602 Global Register Standard Driver
+#include <bl_wdt.h>
+#elif PLATFORM_W600 || PLATFORM_W800
+#include "wm_watchdog.h"
+#elif PLATFORM_LN882H
+#include "hal/hal_wdt.h"
+#include "hal/hal_gpio.h"
+#elif PLATFORM_ESPIDF
+#include "esp_timer.h"
+#elif PLATFORM_ECR6600
+#include "hal_adc.h"
 #endif
 
-static int g_secondsElapsed = 0;
+int g_secondsElapsed = 0;
 // open access point after this number of seconds
-static int g_openAP = 0;
+int g_openAP = 0;
 // connect to wifi after this number of seconds
 static int g_connectToWiFi = 0;
 // reset after this number of seconds
@@ -65,6 +86,7 @@ int bSafeMode = 0;
 // not really <time>, but rather a loop count, but it doesn't really matter much
 // start disabled.
 int g_timeSinceLastPingReply = -1;
+int g_prevTimeSinceLastPingReply = -1;
 // was it ran?
 static int g_bPingWatchDogStarted = 0;
 // current IP string, this is compared with IP returned from HAL
@@ -72,6 +94,7 @@ static int g_bPingWatchDogStarted = 0;
 static char g_currentIPString[32] = { 0 };
 static HALWifiStatus_t g_newWiFiStatus = WIFI_UNDEFINED;
 static HALWifiStatus_t g_prevWiFiStatus = WIFI_UNDEFINED;
+static int g_noMQTTTime = 0;
 
 uint8_t g_StartupDelayOver = 0;
 
@@ -89,74 +112,160 @@ size_t xPortGetFreeHeapSize() {
 }
 #endif
 
-#ifdef PLATFORM_BK7231T
-	// this function waits for the extended app functions to finish starting.
-	extern void extended_app_waiting_for_launch(void);
-	void extended_app_waiting_for_launch2(){
-		extended_app_waiting_for_launch();
+#if PLATFORM_BL602
+/// Read the Internal Temperature Sensor as Float. Returns 0 if successful.
+/// Based on bl_tsen_adc_get in https://github.com/lupyuen/bl_iot_sdk/blob/master/components/hal_drv/bl602_hal/bl_adc.c#L224-L282
+static int get_tsen_adc(
+	float *temp,      //  Pointer to float to store the temperature
+	uint8_t log_flag  //  0 to disable logging, 1 to enable logging
+) {
+	static uint16_t tsen_offset = 0xFFFF;
+	float val = 0.0;
+
+	//  If the offset has not been fetched...
+	if (0xFFFF == tsen_offset) {
+		//  Define the ADC configuration
+		tsen_offset = 0;
+		ADC_CFG_Type adcCfg = {
+		  .v18Sel = ADC_V18_SEL_1P82V,                /*!< ADC 1.8V select */
+		  .v11Sel = ADC_V11_SEL_1P1V,                 /*!< ADC 1.1V select */
+		  .clkDiv = ADC_CLK_DIV_32,                   /*!< Clock divider */
+		  .gain1 = ADC_PGA_GAIN_1,                    /*!< PGA gain 1 */
+		  .gain2 = ADC_PGA_GAIN_1,                    /*!< PGA gain 2 */
+		  .chopMode = ADC_CHOP_MOD_AZ_PGA_ON,         /*!< ADC chop mode select */
+		  .biasSel = ADC_BIAS_SEL_MAIN_BANDGAP,       /*!< ADC current form main bandgap or aon bandgap */
+		  .vcm = ADC_PGA_VCM_1V,                      /*!< ADC VCM value */
+		  .vref = ADC_VREF_2V,                        /*!< ADC voltage reference */
+		  .inputMode = ADC_INPUT_SINGLE_END,          /*!< ADC input signal type */
+		  .resWidth = ADC_DATA_WIDTH_16_WITH_256_AVERAGE,  /*!< ADC resolution and oversample rate */
+		  .offsetCalibEn = 0,                         /*!< Offset calibration enable */
+		  .offsetCalibVal = 0,                        /*!< Offset calibration value */
+		};
+		ADC_FIFO_Cfg_Type adcFifoCfg = {
+		  .fifoThreshold = ADC_FIFO_THRESHOLD_1,
+		  .dmaEn = DISABLE,
+		};
+
+		//  Enable and reset the ADC
+		GLB_Set_ADC_CLK(ENABLE, GLB_ADC_CLK_96M, 7);
+		ADC_Disable();
+		ADC_Enable();
+		ADC_Reset();
+
+		//  Configure the ADC and Internal Temperature Sensor
+		ADC_Init(&adcCfg);
+		ADC_Channel_Config(ADC_CHAN_TSEN_P, ADC_CHAN_GND, 0);
+		ADC_Tsen_Init(ADC_TSEN_MOD_INTERNAL_DIODE);
+		ADC_FIFO_Cfg(&adcFifoCfg);
+
+		//  Fetch the offset
+		BL_Err_Type rc = ADC_Trim_TSEN(&tsen_offset);
+
+		//  Must wait 100 milliseconds or returned temperature will be negative
+		rtos_delay_milliseconds(100);
 	}
-#else
-	void extended_app_waiting_for_launch2(void){
-		// do nothing?
-
-		// define FIXED_DELAY if delay wanted on non-beken platforms.
-	#ifdef PLATFORM_BK7231N
-		// wait 100ms at the start.
-		// TCP is being setup in a different thread, and there does not seem to be a way to find out if it's complete yet?
-		// so just wait a bit, and then start.
-		int startDelay = 750;
-		bk_printf("\r\ndelaying start\r\n");
-		for (int i = 0; i < startDelay/10; i++){
-			rtos_delay_milliseconds(10);
-			bk_printf("#Startup delayed %dms#\r\n", i*10);
-		}
-		bk_printf("\r\nstarting....\r\n");
-
-		// through testing, 'Initializing TCP/IP stack' appears at ~500ms
-		// so we should wait at least 750?
-	#endif
-
+	//  Read the temperature based on the offset
+	val = TSEN_Get_Temp(tsen_offset);
+	if (log_flag) {
+		printf("offset = %d\r\n", tsen_offset);
+		printf("temperature = %f Celsius\r\n", val);
 	}
+	//  Return the temperature
+	*temp = val;
+	return 0;
+}
 #endif
 
-#if defined(PLATFORM_BL602) || defined(PLATFORM_W800) || defined(PLATFORM_W600)
+#if PLATFORM_BK7231T || PLATFORM_BEKEN_NEW
+// this function waits for the extended app functions to finish starting.
+extern void extended_app_waiting_for_launch(void);
+void extended_app_waiting_for_launch2() {
+	extended_app_waiting_for_launch();
+}
+#else
+void extended_app_waiting_for_launch2(void) {
+	// do nothing?
+
+	// define FIXED_DELAY if delay wanted on non-beken platforms.
+#ifdef PLATFORM_BK7231N
+	// wait 100ms at the start.
+	// TCP is being setup in a different thread, and there does not seem to be a way to find out if it's complete yet?
+	// so just wait a bit, and then start.
+	int startDelay = 750;
+	bk_printf("\r\ndelaying start\r\n");
+	for (int i = 0; i < startDelay / 10; i++) {
+		rtos_delay_milliseconds(10);
+		bk_printf("#Startup delayed %dms#\r\n", i * 10);
+	}
+	bk_printf("\r\nstarting....\r\n");
+
+	// through testing, 'Initializing TCP/IP stack' appears at ~500ms
+	// so we should wait at least 750?
+#endif
+
+}
+#endif
 
 
+#if defined(PLATFORM_LN882H) || defined(PLATFORM_ESPIDF)
 
-OSStatus rtos_create_thread( beken_thread_t* thread,
-							uint8_t priority, const char* name,
-							beken_thread_function_t function,
-							uint32_t stack_size, beken_thread_arg_t arg ) {
-    OSStatus err = kNoErr;
+int LWIP_GetMaxSockets() {
+	return 0;
+}
+int LWIP_GetActiveSockets() {
+	return 0;
+}
+#endif
+
+#if defined(PLATFORM_BL602) || defined(PLATFORM_W800) || defined(PLATFORM_W600) || defined(PLATFORM_LN882H) \
+	|| defined(PLATFORM_ESPIDF) || defined(PLATFORM_TR6260) || defined(PLATFORM_REALTEK) || defined(PLATFORM_ECR6600)
+
+OSStatus rtos_create_thread(beken_thread_t* thread,
+	uint8_t priority, const char* name,
+	beken_thread_function_t function,
+	uint32_t stack_size, beken_thread_arg_t arg) {
+	OSStatus err = kNoErr;
 
 
-    err = xTaskCreate(function, name, stack_size/sizeof(StackType_t), arg, priority, thread);
-/*
- BaseType_t xTaskCreate(
-							  TaskFunction_t pvTaskCode,
-							  const char * const pcName,
-							  configSTACK_DEPTH_TYPE usStackDepth,
-							  void *pvParameters,
-							  UBaseType_t uxPriority,
-							  TaskHandle_t *pvCreatedTask
-						  );
-*/
-	if(err == pdPASS){
+	err = xTaskCreate(function, name, stack_size / sizeof(StackType_t), arg, priority, thread);
+	/*
+	 BaseType_t xTaskCreate(
+								  TaskFunction_t pvTaskCode,
+								  const char * const pcName,
+								  configSTACK_DEPTH_TYPE usStackDepth,
+								  void *pvParameters,
+								  UBaseType_t uxPriority,
+								  TaskHandle_t *pvCreatedTask
+							  );
+	*/
+	if (err == pdPASS) {
 		//printf("Thread create %s - pdPASS\n",name);
 		return 0;
-	} else if(err == errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY ) {
-		printf("Thread create %s - errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY\n",name);
-	} else {
-		printf("Thread create %s - err %i\n",name,err);
+	}
+	else if (err == errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY) {
+		printf("Thread create %s - errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY\n", name);
+	}
+	else {
+		printf("Thread create %s - err %i\n", name, err);
 	}
 	return 1;
 }
 
-OSStatus rtos_delete_thread( beken_thread_t* thread ) {
-	vTaskDelete(thread);
+OSStatus rtos_delete_thread(beken_thread_t* thread) {
+	if(thread == NULL) vTaskDelete(NULL);
+	else vTaskDelete(*thread);
 	return kNoErr;
 }
+
+OSStatus rtos_suspend_thread(beken_thread_t* thread)
+{
+	if(thread == NULL) vTaskSuspend(NULL);
+	else vTaskSuspend(*thread);
+	return kNoErr;
+}
+
 #endif
+
 void MAIN_ScheduleUnsafeInit(int delSeconds) {
 	g_doUnsafeInitIn = delSeconds;
 }
@@ -164,26 +273,22 @@ void RESET_ScheduleModuleReset(int delSeconds) {
 	g_reset = delSeconds;
 }
 
-int Time_getUpTimeSeconds() {
-	return g_secondsElapsed;
-}
-
 
 static char scheduledDriverName[4][16];
-static int scheduledDelay[4] = {-1, -1, -1, -1};
-static void ScheduleDriverStart(const char *name, int delay) {
+static int scheduledDelay[4] = { -1, -1, -1, -1 };
+void ScheduleDriverStart(const char* name, int delay) {
 	int i;
 
-	for (i = 0; i < 4; i++){
+	for (i = 0; i < 4; i++) {
 		// if already scheduled, just change delay.
-		if (!strcmp(scheduledDriverName[i], name)){
+		if (!strcmp(scheduledDriverName[i], name)) {
 			scheduledDelay[i] = delay;
 			return;
 		}
 	}
-	for (i = 0; i < 4; i++){
+	for (i = 0; i < 4; i++) {
 		// first empty slot
-		if (scheduledDelay[i] == -1){
+		if (scheduledDelay[i] == -1) {
 			scheduledDelay[i] = delay;
 			strncpy(scheduledDriverName[i], name, 16);
 			return;
@@ -191,79 +296,175 @@ static void ScheduleDriverStart(const char *name, int delay) {
 	}
 }
 
+#if defined(PLATFORM_LN882H)
+// LN882H hack, maybe place somewhere else?
+// this will be applied after WiFi connect
+extern int g_ln882h_pendingPowerSaveCommand;
+void LN882H_ApplyPowerSave(int bOn);
+#endif
+
+// SSID switcher by xjikka 20240525
+#if ALLOW_SSID2
+#define SSID_USE_SSID1  0
+#define SSID_USE_SSID2  1
+static int g_SSIDactual = SSID_USE_SSID1;       // -1 not initialized,  0=SSID1 1=SSID2
+static int g_SSIDSwitchAfterTry = 3;// switch to opposite SSID after
+static int g_SSIDSwitchCnt = 0;     // switch counter
+#endif
+
+void CheckForSSID12_Switch() {
+#if ALLOW_SSID2
+	// nothing to do if SSID2 is unset 
+	if (CFG_GetWiFiSSID2()[0] == 0) return;
+	if (g_SSIDSwitchCnt++ < g_SSIDSwitchAfterTry) {
+		ADDLOGF_INFO("WiFi SSID: waiting for SSID switch %d/%d (using SSID%d)\r\n", g_SSIDSwitchCnt, g_SSIDSwitchAfterTry, g_SSIDactual+1);
+		return;
+	}
+	g_SSIDSwitchCnt = 0;
+	g_SSIDactual ^= 1;	// toggle SSID 
+	ADDLOGF_INFO("WiFi SSID: switching to SSID%i\r\n", g_SSIDactual + 1);
+#endif
+}
+
+//20241125 XJIKKA Init last stored SSID from RetailChannel if set
+//Note that it must be set in early.bat using CMD_setStartupSSIDChannel
+void Init_WiFiSSIDactual_FromChannelIfSet(void) {
+#if ALLOW_SSID2
+	g_SSIDactual = FV_GetStartupSSID_StoredValue(SSID_USE_SSID1);
+#endif
+}
+const char* CFG_GetWiFiSSIDX() {
+#if ALLOW_SSID2
+	if (g_SSIDactual) {
+		return CFG_GetWiFiSSID2();
+	}
+	else {
+		return CFG_GetWiFiSSID();
+	}
+#else
+	return CFG_GetWiFiSSID();
+#endif
+}
+
+const char* CFG_GetWiFiPassX() {
+#if ALLOW_SSID2
+	if (g_SSIDactual) {
+		return CFG_GetWiFiPass2();
+	}
+	else {
+		return CFG_GetWiFiPass();
+	}
+#else
+	return CFG_GetWiFiPass();
+#endif
+}
+
 void Main_OnWiFiStatusChange(int code)
 {
 	// careful what you do in here.
 	// e.g. creata socket?  probably not....
-    switch(code)
-    {
-        case WIFI_STA_CONNECTING:
-			g_bHasWiFiConnected = 0;
-            g_connectToWiFi = 120;
-			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTING - %i\r\n", code);
-            break;
-        case WIFI_STA_DISCONNECTED:
-            // try to connect again in few seconds
-            if (g_bHasWiFiConnected != 0)
-            {
-                HAL_DisconnectFromWifi();
-            }
-            g_connectToWiFi = 15;
-			g_bHasWiFiConnected = 0;
-            g_timeSinceLastPingReply = -1;
-			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_DISCONNECTED - %i\r\n", code);
-            break;
-        case WIFI_STA_AUTH_FAILED:
-            // try to connect again in few seconds
-            g_connectToWiFi = 60;
-			g_bHasWiFiConnected = 0;
-			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_AUTH_FAILED - %i\r\n", code);
-            break;
-        case WIFI_STA_CONNECTED:
+	switch (code)
+	{
+	case WIFI_STA_CONNECTING:
+		g_bHasWiFiConnected = 0;
+		g_connectToWiFi = 120;
+		ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTING - %i\r\n", code);
+		break;
+	case WIFI_STA_DISCONNECTED:
+		// try to connect again in few seconds
+		if (g_bHasWiFiConnected != 0)
+		{
+			HAL_DisconnectFromWifi();
+		}
+		g_connectToWiFi = 15;
+		g_bHasWiFiConnected = 0;
+		g_timeSinceLastPingReply = -1;
+		ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_DISCONNECTED - %i\r\n", code);
+		break;
+	case WIFI_STA_AUTH_FAILED:
+		// try to connect again in few seconds
+		// for me first auth will often fail, so retry more aggressively during startup
+		// the maximum of 6 tries during first 30 seconds should be acceptable
+		if (g_secondsElapsed < 30) {
+			g_connectToWiFi = 5;
+		}
+		else {
+			g_connectToWiFi = 60;
+		}
+		g_bHasWiFiConnected = 0;
+		ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_AUTH_FAILED - %i\r\n", code);
+		break;
+	case WIFI_STA_CONNECTED:
+#if ALLOW_SSID2
+		if (!g_bHasWiFiConnected) FV_UpdateStartupSSIDIfChanged_StoredValue(g_SSIDactual);	//update ony on first connect
+#endif		
+
+		/* strange behavior on BK7231n. I don't know if it affects other platforms
+			connection completed only in the second callback WIFI_STA_CONNECTED */
+//#if PLATFORM_BK7231N
+		//if (g_newWiFiStatus == WIFI_STA_CONNECTED) {
+		// TODO: check it https://github.com/openshwprojects/OpenBK7231T_App/pull/960#issuecomment-2701681615
 			g_bHasWiFiConnected = 1;
 			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTED - %i\r\n", code);
+//		}
+//#else
+//			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTED - %i\r\n", code);
+//#endif
 
-			if(bSafeMode == 0){
-				if(strlen(CFG_DeviceGroups_GetName())>0){
-					ScheduleDriverStart("DGR",5);
-				}
-				// if SSDP should be active, 
-				// restart it now.
-				if (DRV_SSDP_Active){
-					ScheduleDriverStart("SSDP",5);
-					//DRV_SSDP_Restart(); // this kills things
-				}
+#if ALLOW_SSID2
+		g_SSIDSwitchCnt = 0;
+#endif
+
+		if (bSafeMode == 0) {
+			if (strlen(CFG_DeviceGroups_GetName()) > 0) {
+				ScheduleDriverStart("DGR", 5);
 			}
-
-            break;
-        /* for softap mode */
-        case WIFI_AP_CONNECTED:
-			g_bHasWiFiConnected = 1;
-			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_AP_CONNECTED - %i\r\n", code);
-            break;
-        case WIFI_AP_FAILED:
-			g_bHasWiFiConnected = 0;
-			ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_AP_FAILED - %i\r\n",code);
-            break;
-        default:
-            break;
-    }
+			// if SSDP should be active, 
+			// restart it now.
+			if (DRV_SSDP_Active) {
+				ScheduleDriverStart("SSDP", 5);
+				//DRV_SSDP_Restart(); // this kills things
+			}
+		}
+#if defined(PLATFORM_LN882H)
+		// LN882H hack, maybe place somewhere else?
+		// this will be applied only if WiFi is connected
+		if (g_ln882h_pendingPowerSaveCommand != -1) {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_PowerSave: applying delayed setting. PowerSave will set to %i", g_ln882h_pendingPowerSaveCommand);
+			LN882H_ApplyPowerSave(g_ln882h_pendingPowerSaveCommand);
+			g_ln882h_pendingPowerSaveCommand = -1;
+		}
+#endif
+		break;
+		/* for softap mode */
+	case WIFI_AP_CONNECTED:
+		g_bHasWiFiConnected = 1;
+		ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_AP_CONNECTED - %i\r\n", code);
+		break;
+	case WIFI_AP_FAILED:
+		g_bHasWiFiConnected = 0;
+		ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_AP_FAILED - %i\r\n", code);
+		break;
+	default:
+		break;
+	}
 	g_newWiFiStatus = code;
 }
 
 
-void CFG_Save_SetupTimer() 
+void CFG_Save_SetupTimer()
 {
 	g_saveCfgAfter = 3;
 }
 
-void Main_OnPingCheckerReply(int ms) 
+void Main_OnPingCheckerReply(int ms)
 {
 	g_timeSinceLastPingReply = 0;
 }
 
 int g_doHomeAssistantDiscoveryIn = 0;
 int g_bBootMarkedOK = 0;
+int g_rebootReason = 0;
 static int bMQTTconnected = 0;
 
 int Main_HasMQTTConnected()
@@ -273,16 +474,16 @@ int Main_HasMQTTConnected()
 
 int Main_HasWiFiConnected()
 {
-    return g_bHasWiFiConnected;
+	return g_bHasWiFiConnected;
 }
 
 #ifdef OBK_MCU_SLEEP_METRICS_ENABLE
 extern OBK_MCU_SLEEP_METRICS OBK_Mcu_metrics;
-void Main_LogPowerSave(){
-	if (!OBK_Mcu_metrics.nexttask){
+void Main_LogPowerSave() {
+	if (!OBK_Mcu_metrics.nexttask) {
 		OBK_Mcu_metrics.nexttask = "unkn";
 	}
-	if (!OBK_Mcu_metrics.task){
+	if (!OBK_Mcu_metrics.task) {
 		OBK_Mcu_metrics.task = "unkn2";
 	}
 	ADDLOGF_DEBUG("PS: %ums/%ums longests:%ums/%ums req:%ums/%ums %s %s",
@@ -310,56 +511,145 @@ void Main_LogPowerSave(){
 	OBK_Mcu_metrics.longest_sleep_1s = 0;
 	OBK_Mcu_metrics.longest_sleep_req_1s = 0;
 
-/*	
-	extern int bk_wlan_power_save_set_level(BK_PS_LEVEL level);
+	/*
+		extern int bk_wlan_power_save_set_level(BK_PS_LEVEL level);
 
-	if (g_sleep == 1){		
-		OBK_Mcu_metrics.longest_sleep = 0;
-		g_sleep = 2;
-		bk_wlan_power_save_set_level(
-			// PS_DEEP_SLEEP_BIT | 
-			PS_RF_SLEEP_BIT | 
-			PS_MCU_SLEEP_BIT);
-	}
-*/	
+		if (g_sleep == 1){
+			OBK_Mcu_metrics.longest_sleep = 0;
+			g_sleep = 2;
+			bk_wlan_power_save_set_level(
+				// PS_DEEP_SLEEP_BIT |
+				PS_RF_SLEEP_BIT |
+				PS_MCU_SLEEP_BIT);
+		}
+	*/
 }
 #endif
 
 /// @brief Schedule HomeAssistant discovery. The caller should check OBK_FLAG_AUTOMAIC_HASS_DISCOVERY if necessary.
 /// @param seconds 
+#if ENABLE_HA_DISCOVERY
 void Main_ScheduleHomeAssistantDiscovery(int seconds) {
 	g_doHomeAssistantDiscoveryIn = seconds;
 }
+#endif
 
+
+void Main_ConnectToWiFiNow() {
+	const char* wifi_ssid, * wifi_pass;
+
+	g_bOpenAccessPointMode = 0;
+	CheckForSSID12_Switch();
+	wifi_ssid = CFG_GetWiFiSSIDX();
+	wifi_pass = CFG_GetWiFiPassX();
+	// register function to get callbacks about wifi changes .. 
+	// ... but do it, before calling HAL_ConnectToWiFi(), 
+	// otherwise callbacks are not possible (e.g. WIFI_STA_CONNECTING can never be called )!!
+	HAL_WiFi_SetupStatusCallback(Main_OnWiFiStatusChange);
+	ADDLOGF_INFO("Registered for wifi changes\r\n");
+	ADDLOGF_INFO("Connecting to SSID [%s]\r\n", wifi_ssid);
+	HAL_ConnectToWiFi(wifi_ssid, wifi_pass, &g_cfg.staticIP);
+	// don't set g_connectToWiFi = 0; here!
+	// this would overwrite any changes, e.g. from Main_OnWiFiStatusChange !
+	// so don't do this here, but e.g. set in Main_OnWiFiStatusChange if connected!!!
+}
+bool Main_HasFastConnect() {
+	if (g_bootFailures > 2)
+		return false;
+	if (CFG_HasFlag(OBK_FLAG_WIFI_FAST_CONNECT)) {
+		return true;
+	}
+	if ((PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep, -1) != -1) ||
+		(PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep_NoPup, -1) != -1))
+	{
+		return true;
+	}
+	return false;
+}
+#if PLATFORM_LN882H || PLATFORM_ESPIDF
+// Quick hack to display LN-only temperature,
+// we may improve it in the future
+extern float g_wifi_temperature;
+#else
+float g_wifi_temperature = 0;
+#endif
+
+static byte g_secondsSpentInLowMemoryWarning = 0;
 void Main_OnEverySecond()
 {
 	int newMQTTState;
-	const char *safe;
+	const char* safe;
 	int i;
 
 #ifdef WINDOWS
 	g_bHasWiFiConnected = 1;
 #endif
 
+	// display temperature - thanks to giedriuslt
+// only in Normal mode, and if boot is not failing
+	if (!bSafeMode && g_bootFailures <= 1)
+	{
+#if PLATFORM_BEKEN
+		UINT32 temperature;
+		temp_single_get_current_temperature(&temperature);
+#if PLATFORM_BK7231T
+		g_wifi_temperature = 2.21f * (temperature / 25.0f) - 65.91f;
+#else
+		g_wifi_temperature = (-0.457f * temperature) + 188.474f;
+#endif
+#elif PLATFORM_BL602
+		get_tsen_adc(&g_wifi_temperature, 0);
+#elif PLATFORM_LN882H
+		// this is set externally, I am just leaving comment here
+#elif PLATFORM_W800 || PLATFORM_W600
+		g_wifi_temperature = HAL_ADC_Temp();
+#elif PLATFORM_ECR6600
+		g_wifi_temperature = hal_adc_tempsensor();
+#endif
+	}
+
+#if ENABLE_MQTT
 	// run_adc_test();
 	newMQTTState = MQTT_RunEverySecondUpdate();
-	if(newMQTTState != bMQTTconnected) {
+	if (newMQTTState != bMQTTconnected) {
 		bMQTTconnected = newMQTTState;
-		if(newMQTTState) {
-			EventHandlers_FireEvent(CMD_EVENT_MQTT_STATE,1);
-		} else {
-			EventHandlers_FireEvent(CMD_EVENT_MQTT_STATE,0);
+		if (newMQTTState) {
+			EventHandlers_FireEvent(CMD_EVENT_MQTT_STATE, 1);
+		}
+		else {
+			EventHandlers_FireEvent(CMD_EVENT_MQTT_STATE, 0);
 		}
 	}
+#endif
 	if (g_newWiFiStatus != g_prevWiFiStatus) {
-		g_newWiFiStatus = g_prevWiFiStatus;
+		g_prevWiFiStatus = g_newWiFiStatus;
 		// Argument type here is HALWifiStatus_t enumeration
 		EventHandlers_FireEvent(CMD_EVENT_WIFI_STATE, g_newWiFiStatus);
 	}
+	// Update time with no MQTT
+	if (bMQTTconnected) {
+		i = 0;
+	} else {
+		i = g_noMQTTTime + 1;
+	}
+	// 'i' is a new value
+	EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_NOMQTTTIME, g_noMQTTTime, i);
+	// save new value
+	g_noMQTTTime = i;
+
+
+#if ENABLE_MQTT
 	MQTT_Dedup_Tick();
-	RepeatingEvents_OnEverySecond();
+#endif
+#if ENABLE_LED_BASIC
+	LED_RunOnEverySecond();
+#endif
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();
+#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) \
+ || defined (PLATFORM_RTL87X0C)
+	UART_RunEverySecond();
+#endif
 #endif
 
 #if WINDOWS
@@ -367,70 +657,90 @@ void Main_OnEverySecond()
 #elif PLATFORM_W600 || PLATFORM_W800
 #elif PLATFORM_XR809
 #elif PLATFORM_BK7231N || PLATFORM_BK7231T
-    if (ota_progress()==-1)
+	if (ota_progress() == -1)
 #endif
-    {
+	{
 		CFG_Save_IfThereArePendingChanges();
-    }
+	}
 
+	// On Beken, do reboot if we ran into heap size problem
+#if PLATFORM_BEKEN
+	if (xPortGetFreeHeapSize() < 25 * 1000) {
+		g_secondsSpentInLowMemoryWarning++;
+		ADDLOGF_ERROR("Low heap warning!\n");
+		if (g_secondsSpentInLowMemoryWarning > 5) {
+			HAL_RebootModule();
+		}
+	}
+	else {
+		g_secondsSpentInLowMemoryWarning = 0;
+	}
+#endif
 	if (bSafeMode == 0) {
-		const char *ip = HAL_GetMyIPString();
+		const char* ip = HAL_GetMyIPString();
 		// this will return non-zero if there were any changes
 		if (strcpy_safe_checkForChanges(g_currentIPString, ip, sizeof(g_currentIPString))) {
+#if ENABLE_MQTT
 			if (MQTT_IsReady()) {
 				MQTT_DoItemPublish(PUBLISHITEM_SELF_IP);
 			}
+#endif
 			EventHandlers_FireEvent(CMD_EVENT_IPCHANGE, 0);
-
+#if ENABLE_HA_DISCOVERY
 			//Invoke Hass discovery if ipaddr changed
 			if (CFG_HasFlag(OBK_FLAG_AUTOMAIC_HASS_DISCOVERY)) {
 				Main_ScheduleHomeAssistantDiscovery(1);
 			}
+#endif
 		}
 	}
 
 	// some users say that despite our simple reconnect mechanism
 	// there are some rare cases when devices stuck outside network
 	// That is why we can also reconnect them by basing on ping
-	if(g_timeSinceLastPingReply != -1 && g_secondsElapsed > 60)
-    {
-		EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_NOPINGTIME, g_timeSinceLastPingReply, g_timeSinceLastPingReply+1);
+	if (g_timeSinceLastPingReply != -1 && g_secondsElapsed > 60)
+	{
+		// cast event so users can script anything easily, run custom commands
+		// Usage: addChangeHandler noPingTime > 600 reboot
 		g_timeSinceLastPingReply++;
-		if(g_timeSinceLastPingReply >= CFG_GetPingDisconnectedSecondsToRestart()) 
-        {
-            if (g_bHasWiFiConnected != 0)
-            {
-    			ADDLOGF_INFO("[Ping watchdog] No ping replies within %i seconds. Will try to reconnect.\n",g_timeSinceLastPingReply);
-                HAL_DisconnectFromWifi();
-		    	g_bHasWiFiConnected = 0;
-			    g_connectToWiFi = 10;
-                g_timeSinceLastPingReply = -1;
-            }
+		EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_NOPINGTIME, g_prevTimeSinceLastPingReply, g_timeSinceLastPingReply);
+		g_prevTimeSinceLastPingReply = g_timeSinceLastPingReply;
+		// this is an old mechanism that just tries to reconnect (but without reboot)
+		if (CFG_GetPingDisconnectedSecondsToRestart() > 0 && g_timeSinceLastPingReply >= CFG_GetPingDisconnectedSecondsToRestart())
+		{
+			if (g_bHasWiFiConnected != 0)
+			{
+				ADDLOGF_INFO("[Ping watchdog] No ping replies within %i seconds. Will try to reconnect.\n", g_timeSinceLastPingReply);
+				HAL_DisconnectFromWifi();
+				g_bHasWiFiConnected = 0;
+				g_connectToWiFi = 10;
+				g_timeSinceLastPingReply = -1;
+			}
 		}
 	}
 
-	if(bSafeMode == 0) 
-    {
+	if (bSafeMode == 0)
+	{
 
-		for(i = 0; i < PLATFORM_GPIO_MAX; i++) 
-        {
-			if(g_cfg.pins.roles[i] == IOR_ADC) 
-            {
+		for (i = 0; i < PLATFORM_GPIO_MAX; i++)
+		{
+			if (g_cfg.pins.roles[i] == IOR_ADC)
+			{
 				int value;
 
 				value = HAL_ADC_Read(i);
 
-			//	ADDLOGF_INFO("ADC %i=%i\r\n", i,value);
-				CHANNEL_Set(g_cfg.pins.channels[i],value, CHANNEL_SET_FLAG_SILENT);
+				//	ADDLOGF_INFO("ADC %i=%i\r\n", i,value);
+				CHANNEL_Set(g_cfg.pins.channels[i], value, CHANNEL_SET_FLAG_SILENT);
 			}
 		}
 	}
 
 	// allow for up to 4 scheduled driver starts.
-	for (i = 0; i < 4; i++){
-		if (scheduledDelay[i] > 0){
+	for (i = 0; i < 4; i++) {
+		if (scheduledDelay[i] > 0) {
 			scheduledDelay[i]--;
-			if(scheduledDelay[i] <= 0)
+			if (scheduledDelay[i] <= 0)
 			{
 				scheduledDelay[i] = -1;
 #ifndef OBK_DISABLE_ALL_DRIVERS
@@ -442,32 +752,42 @@ void Main_OnEverySecond()
 		}
 	}
 
-	g_secondsElapsed ++;
-	if(bSafeMode) {
+	g_secondsElapsed++;
+	if (bSafeMode) {
 		safe = "[SAFE] ";
-	} else {
+	}
+	else {
 		safe = "";
 	}
 
 	{
 		//int mqtt_max, mqtt_cur, mqtt_mem;
 		//MQTT_GetStats(&mqtt_cur, &mqtt_max, &mqtt_mem);
-	    //ADDLOGF_INFO("mqtt req %i/%i, free mem %i\n", mqtt_cur,mqtt_max,mqtt_mem);
-		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i\n",
-			safe, g_secondsElapsed, idleCount, xPortGetFreeHeapSize(),bMQTTconnected, MQTT_GetConnectEvents(), 
-            g_bHasWiFiConnected, g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets());
+		//ADDLOGF_INFO("mqtt req %i/%i, free mem %i\n", mqtt_cur,mqtt_max,mqtt_mem);
+#if ENABLE_MQTT
+		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i %s\n",
+			safe, g_secondsElapsed, idleCount, xPortGetFreeHeapSize(), bMQTTconnected,
+			MQTT_GetConnectEvents(),g_bHasWiFiConnected, g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets(),
+			g_powersave ? "POWERSAVE" : "");
+#else
+		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d,  bWifi %i, secondsWithNoPing %i, socks %i/%i %s\n",
+			safe, g_secondsElapsed, idleCount, xPortGetFreeHeapSize(),g_bHasWiFiConnected, g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets(),
+			g_powersave ? "POWERSAVE" : "");
+#endif
 		// reset so it's a per-second counter.
 		idleCount = 0;
 	}
 
 #ifdef OBK_MCU_SLEEP_METRICS_ENABLE
-	Main_LogPowerSave();
+	if (g_powersave && CFG_HasLoggerFlag(LOGGER_FLAG_POWER_SAVE)) {
+		Main_LogPowerSave();
+	}
 #endif
 
 
 	// print network info
 	if (!(g_secondsElapsed % 10))
-    {
+	{
 		HAL_PrintNetworkInfo();
 
 	}
@@ -477,18 +797,20 @@ void Main_OnEverySecond()
 #endif
 
 	// when we hit 30s, mark as boot complete.
-	if(g_bBootMarkedOK==false) 
-    {
+	if (g_bBootMarkedOK == false)
+	{
 		int bootCompleteSeconds = CFG_GetBootOkSeconds();
 		if (g_secondsElapsed > bootCompleteSeconds)
-        {
-			ADDLOGF_INFO("Boot complete time reached (%i seconds)\n",bootCompleteSeconds);
+		{
+			ADDLOGF_INFO("Boot complete time reached (%i seconds)\n", bootCompleteSeconds);
 			HAL_FlashVars_SaveBootComplete();
-			g_bootFailures = HAL_FlashVars_GetBootFailures();
+			//g_bootFailures = HAL_FlashVars_GetBootFailures();
 			g_bBootMarkedOK = true;
 		}
 	}
 
+
+#if ENABLE_HA_DISCOVERY
 	if (g_doHomeAssistantDiscoveryIn) {
 		if (MQTT_IsReady()) {
 			g_doHomeAssistantDiscoveryIn--;
@@ -504,40 +826,42 @@ void Main_OnEverySecond()
 			ADDLOGF_INFO("HA discovery is scheduled, but MQTT connection is not present yet\n");
 		}
 	}
+#endif
 	if (g_openAP)
-    {
+	{
+		if (g_bHasWiFiConnected)
+		{
+			HAL_DisconnectFromWifi();
+			g_bHasWiFiConnected = 0;
+		}
 		g_openAP--;
 		if (0 == g_openAP)
-        {
+		{
 			HAL_SetupWiFiOpenAccessPoint(CFG_GetDeviceName());
 			g_bOpenAccessPointMode = 1;
 		}
 	}
 
 	//ADDLOGF_INFO("g_startPingWatchDogAfter %i, g_bPingWatchDogStarted %i ", g_startPingWatchDogAfter, g_bPingWatchDogStarted);
-	if(g_bHasWiFiConnected) {
+	if (g_bHasWiFiConnected) {
 		if (g_startPingWatchDogAfter) {
 			//ADDLOGF_INFO("g_startPingWatchDogAfter %i", g_startPingWatchDogAfter);
 			g_startPingWatchDogAfter--;
 			if (0 == g_startPingWatchDogAfter)
 			{
-				const char *pingTargetServer;
-				//int pingInterval;
-				int restartAfterNoPingsSeconds;
+				const char* pingTargetServer;
 
 				g_bPingWatchDogStarted = 1;
 
 				pingTargetServer = CFG_GetPingHost();
-				//pingInterval = CFG_GetPingIntervalSeconds();
-				restartAfterNoPingsSeconds = CFG_GetPingDisconnectedSecondsToRestart();
 
-				if ((pingTargetServer != NULL) && (strlen(pingTargetServer) > 0) &&
-					/*(pingInterval > 0) && */ (restartAfterNoPingsSeconds > 0))
+				if ((pingTargetServer != NULL) && (strlen(pingTargetServer) > 0))
 				{
 					// mark as enabled
 					g_timeSinceLastPingReply = 0;
-					//Main_SetupPingWatchDog(pingTargetServer,pingInterval);
+#if ENABLE_PING_WATCHDOG
 					Main_SetupPingWatchDog(pingTargetServer);
+#endif
 				}
 				else {
 					// mark as disabled
@@ -545,28 +869,21 @@ void Main_OnEverySecond()
 				}
 			}
 		}
-	}
-	if(g_connectToWiFi)
-    {
-		g_connectToWiFi --;
-		if(0 == g_connectToWiFi && g_bHasWiFiConnected == 0) 
-        {
-			const char *wifi_ssid, *wifi_pass;
 
-			g_bOpenAccessPointMode = 0;
-			wifi_ssid = CFG_GetWiFiSSID();
-			wifi_pass = CFG_GetWiFiPass();
-			HAL_ConnectToWiFi(wifi_ssid,wifi_pass);
-			// register function to get callbacks about wifi changes.
-			HAL_WiFi_SetupStatusCallback(Main_OnWiFiStatusChange);
-			ADDLOGF_DEBUG("Registered for wifi changes\r\n");
+	}
+	if (g_connectToWiFi)
+	{
+		g_connectToWiFi--;
+		if (0 == g_connectToWiFi && g_bHasWiFiConnected == 0)
+		{
+			Main_ConnectToWiFiNow();
 		}
 	}
 
 	// config save moved here because of stack size problems
-	if (g_saveCfgAfter){
+	if (g_saveCfgAfter) {
 		g_saveCfgAfter--;
-		if (!g_saveCfgAfter){
+		if (!g_saveCfgAfter) {
 			CFG_Save_IfThereArePendingChanges();
 		}
 	}
@@ -577,33 +894,34 @@ void Main_OnEverySecond()
 			Main_ForceUnsafeInit();
 		}
 	}
-	if (g_reset){
+	if (g_reset) {
 		g_reset--;
-		if (!g_reset){
+		if (!g_reset) {
 			// ensure any config changes are saved before reboot.
 			CFG_Save_IfThereArePendingChanges();
-#ifndef OBK_DISABLE_ALL_DRIVERS
-            if (DRV_IsMeasuringPower()) 
-            {
-                BL09XX_SaveEmeteringStatistics();
-            }
+#if ENABLE_BL_SHARED
+			if (DRV_IsMeasuringPower())
+			{
+				BL09XX_SaveEmeteringStatistics();
+			}
 #endif            
 			ADDLOGF_INFO("Going to call HAL_RebootModule\r\n");
 			HAL_RebootModule();
-		} else {
+		}
+		else {
 
-			ADDLOGF_INFO("Module reboot in %i...\r\n",g_reset);
+			ADDLOGF_INFO("Module reboot in %i...\r\n", g_reset);
 		}
 	}
 
-#if defined(PLATFORM_BEKEN) || defined(PLATFORM_BL602) || defined(PLATFORM_W600) || defined(WINDOWS)
-	if (g_dhtsCount>0) {
+#if ENABLE_DRIVER_DHT
+	if (g_dhtsCount > 0) {
 		if (bSafeMode == 0) {
 			DHT_OnEverySecond();
 		}
 	}
 #endif
-
+	HAL_Run_WDT();
 	// force it to sleep...  we MUST have some idle task processing
 	// else task memory doesn't get freed
 	rtos_delay_milliseconds(1);
@@ -623,15 +941,17 @@ static int g_wifiLedToggleTime = 0;
 static int g_wifi_ledState = 0;
 static uint32_t g_time = 0;
 static uint32_t g_last_time = 0;
-int g_bWantDeepSleep;
+int g_bWantPinDeepSleep;
+int g_pinDeepSleepWakeUp = 0;
+unsigned int g_deltaTimeMS;
 
 /////////////////////////////////////////////////////
 // this is what we do in a qucik tick
-void QuickTick(void *param)
+void QuickTick(void* param)
 {
-	if (g_bWantDeepSleep) {
-		PINS_BeginDeepSleep();
-		g_bWantDeepSleep = 0;
+	if (g_bWantPinDeepSleep) {
+		g_bWantPinDeepSleep = 0;
+		PINS_BeginDeepSleepWithPinWakeUp(g_pinDeepSleepWakeUp);
 		return;
 	}
 
@@ -643,50 +963,59 @@ void QuickTick(void *param)
 
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	g_time = rtos_get_time();
+#elif defined (PLATFORM_ESPIDF)
+	g_time = esp_timer_get_time() / 1000;
 #else
 	g_time += QUICK_TMR_DURATION;
 #endif
-	uint32_t t_diff = g_time - g_last_time;
+	g_deltaTimeMS = g_time - g_last_time;
 	// cope with wrap
-	if (t_diff > 0x4000){
-		t_diff = ((g_time + 0x4000) - (g_last_time + 0x4000));
+	if (g_deltaTimeMS > 0x4000) {
+		g_deltaTimeMS = ((g_time + 0x4000) - (g_last_time + 0x4000));
 	}
 	g_last_time = g_time;
 
-
-#if (defined WINDOWS) || (defined PLATFORM_BEKEN)
-	SVM_RunThreads(t_diff);
+#if ENABLE_OBK_SCRIPTING
+	SVM_RunThreads(g_deltaTimeMS);
 #endif
+	RepeatingEvents_RunUpdate(g_deltaTimeMS * 0.001f);
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_RunQuickTick();
 #endif
 #ifdef WINDOWS
-	NewTuyaMCUSimulator_RunQuickTick(t_diff);
+	NewTuyaMCUSimulator_RunQuickTick(g_deltaTimeMS);
 #endif
+	CMD_RunUartCmndIfRequired();
 
 	// process recieved messages here..
+#if ENABLE_MQTT
 	MQTT_RunQuickTick();
-	
-	if(CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == true) {
-		LED_RunQuickColorLerp(t_diff);
+#endif
+
+#if ENABLE_LED_BASIC
+	if (CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS) == true) {
+		LED_RunQuickColorLerp(g_deltaTimeMS);
 	}
+#endif
 
 	// WiFi LED
 	// In Open Access point mode, fast blink
-	if(Main_IsOpenAccessPointMode()) {
-		g_wifiLedToggleTime += t_diff;
-		if(g_wifiLedToggleTime > WIFI_LED_FAST_BLINK_DURATION) {
+	if (Main_IsOpenAccessPointMode()) {
+		g_wifiLedToggleTime += g_deltaTimeMS;
+		if (g_wifiLedToggleTime > WIFI_LED_FAST_BLINK_DURATION) {
 			g_wifi_ledState = !g_wifi_ledState;
 			g_wifiLedToggleTime = 0;
 			PIN_set_wifi_led(g_wifi_ledState);
 		}
-	} else if(Main_IsConnectedToWiFi()) {
+	}
+	else if (Main_IsConnectedToWiFi()) {
 		// In WiFi client success mode, just stay enabled
 		PIN_set_wifi_led(1);
-	} else {
+	}
+	else {
 		// in connecting mode, slow blink
-		g_wifiLedToggleTime += t_diff;
-		if(g_wifiLedToggleTime > WIFI_LED_SLOW_BLINK_DURATION) {
+		g_wifiLedToggleTime += g_deltaTimeMS;
+		if (g_wifiLedToggleTime > WIFI_LED_SLOW_BLINK_DURATION) {
 			g_wifi_ledState = !g_wifi_ledState;
 			g_wifiLedToggleTime = 0;
 			PIN_set_wifi_led(g_wifi_ledState);
@@ -701,23 +1030,17 @@ void QuickTick(void *param)
 // this is the bit which runs the quick tick timer
 #if WINDOWS
 
-#elif PLATFORM_BL602
-void quick_timer_thread(void *param)
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600
+void quick_timer_thread(void* param)
 {
-    while(1) {
-        vTaskDelay(QUICK_TMR_DURATION);
+	while (1) {
+		vTaskDelay(QUICK_TMR_DURATION / portTICK_PERIOD_MS);
 		QuickTick(0);
-    }
+	}
 }
-#elif PLATFORM_W600 || PLATFORM_W800
-void quick_timer_thread(void *param)
-{
-    while(1) {
-        vTaskDelay(QUICK_TMR_DURATION);
-		QuickTick(0);
-    }
-}
-#elif PLATFORM_XR809
+#elif PLATFORM_ESPIDF
+esp_timer_handle_t g_quick_timer;
+#elif PLATFORM_XR809 || PLATFORM_LN882H
 OS_Timer_t g_quick_timer;
 #else
 beken_timer_t g_quick_timer;
@@ -726,17 +1049,22 @@ void QuickTick_StartThread(void)
 {
 #if WINDOWS
 
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600
+	xTaskCreate(quick_timer_thread, "quick", 1024, NULL, 15, NULL);
+#elif PLATFORM_ESPIDF
+	const esp_timer_create_args_t g_quick_timer_args =
+	{
+			.callback = &QuickTick,
+			.name = "quick"
+	};
 
-    xTaskCreate(quick_timer_thread, "quick", 1024, NULL, 15, NULL);
-#elif PLATFORM_W600 || PLATFORM_W800
-
-    xTaskCreate(quick_timer_thread, "quick", 1024, NULL, 15, NULL);
-#elif PLATFORM_XR809
+	esp_timer_create(&g_quick_timer_args, &g_quick_timer);
+	esp_timer_start_periodic(g_quick_timer, QUICK_TMR_DURATION * 1000);
+#elif PLATFORM_XR809 || PLATFORM_LN882H
 
 	OS_TimerSetInvalid(&g_quick_timer);
 	if (OS_TimerCreate(&g_quick_timer, OS_TIMER_PERIODIC, QuickTick, NULL,
-	                   QUICK_TMR_DURATION) != OS_OK) {
+		QUICK_TMR_DURATION) != OS_OK) {
 		printf("Quick timer create failed\n");
 		return;
 	}
@@ -745,14 +1073,14 @@ void QuickTick_StartThread(void)
 #else
 	OSStatus result;
 
-    result = rtos_init_timer(&g_quick_timer,
-                            QUICK_TMR_DURATION,
-                            QuickTick,
-                            (void *)0);
-    ASSERT(kNoErr == result);
+	result = rtos_init_timer(&g_quick_timer,
+		QUICK_TMR_DURATION,
+		QuickTick,
+		(void*)0);
+	ASSERT(kNoErr == result);
 
-    result = rtos_start_timer(&g_quick_timer);
-    ASSERT(kNoErr == result);
+	result = rtos_start_timer(&g_quick_timer);
+	ASSERT(kNoErr == result);
 #endif
 }
 ///////////////////////////////////////////////////////
@@ -760,34 +1088,27 @@ void QuickTick_StartThread(void)
 
 void app_on_generic_dbl_click(int btnIndex)
 {
-	if(g_secondsElapsed < 5) 
-    {
+	if (g_secondsElapsed < 5)
+	{
 		CFG_SetOpenAccessPoint();
 	}
 }
 
 
-int Main_IsOpenAccessPointMode() 
+int Main_IsOpenAccessPointMode()
 {
 	return g_bOpenAccessPointMode;
 }
 
-int Main_IsConnectedToWiFi() 
+int Main_IsConnectedToWiFi()
 {
 	return g_bHasWiFiConnected;
 }
 
-int Main_GetLastRebootBootFailures() 
-{
-	return g_bootFailures;
-}
-
-#define RESTARTS_REQUIRED_FOR_SAFE_MODE 4
-
 
 // called from idle thread each loop.
 // - just so we know it is running.
-void isidle(){
+void isidle() {
 	idleCount++;
 }
 
@@ -797,7 +1118,9 @@ void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
 
 	// initialise MQTT - just sets up variables.
 	// all MQTT happens in timer thread?
+#if ENABLE_MQTT
 	MQTT_init();
+#endif
 
 	CMD_Init_Delayed();
 
@@ -813,15 +1136,25 @@ void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
 
 		// NOTE: this will try to read autoexec.bat,
 		// so ALL commands expected in autoexec.bat should have been registered by now...
+#if ENABLE_OBK_SCRIPTING
+		SVM_RunStartupCommandAsScript();
+#else
 		CMD_ExecuteCommand(CFG_GetShortStartupCommand(), COMMAND_FLAG_SOURCE_SCRIPT);
-		CMD_ExecuteCommand("exec autoexec.bat", COMMAND_FLAG_SOURCE_SCRIPT);
+#endif
+		CMD_ExecuteCommand("startScript autoexec.bat", COMMAND_FLAG_SOURCE_SCRIPT);
 	}
+	HAL_Configure_WDT();
 }
 void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	g_unsafeInitDone = true;
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_Generic_Init();
 #endif
+#ifdef PLATFORM_BEKEN
+	int bk_misc_get_start_type();
+	g_rebootReason = bk_misc_get_start_type();
+#endif
+
 	RepeatingEvents_Init();
 
 	// set initial values for channels.
@@ -830,16 +1163,12 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	PIN_AddCommands();
 	ADDLOGF_DEBUG("Initialised pins\r\n");
 
-#ifdef BK_LITTLEFS
+#if ENABLE_LITTLEFS
 	// initialise the filesystem, only if present.
 	// don't create if it does not mount
 	// do this for ST mode only, as it may be something in FS which is killing us,
 	// and we may add a command to empty fs just be writing first sector?
 	init_lfs(0);
-#endif
-
-#ifdef BK_LITTLEFS
-	LFSAddCmds(); // setlfssize
 #endif
 
 	PIN_SetGenericDoubleClickCallback(app_on_generic_dbl_click);
@@ -850,9 +1179,13 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 
 	// add some commands...
 	taslike_commands_init();
-	fortest_commands_init();
+#if ENABLE_TEST_COMMANDS
+	CMD_InitTestCommands();
+#endif
+#if ENABLE_LED_BASIC
 	NewLED_InitCommands();
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
+#endif
+#if ENABLE_SEND_POSTANDGET
 	CMD_InitSendCommands();
 #endif
 	CMD_InitChannelCommands();
@@ -862,6 +1195,9 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	// so ALL commands expected in autoexec.bat should have been registered by now...
 	// but DON't run autoexec if we have had 2+ boot failures
 	CMD_Init_Early();
+#if WINDOWS
+	CMD_InitSimulatorOnlyCommands();
+#endif
 
 	/* Automatic disable of PIN MONITOR after reboot */
 	if (CFG_HasFlag(OBK_FLAG_HTTP_PINMONITOR)) {
@@ -870,30 +1206,70 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 
 	if (bAutoRunScripts) {
 		CMD_ExecuteCommand("exec early.bat", COMMAND_FLAG_SOURCE_SCRIPT);
-
-		// autostart drivers
-		if (PIN_FindPinIndexForRole(IOR_SM2135_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SM2135_DAT, -1) != -1)
-		{
 #ifndef OBK_DISABLE_ALL_DRIVERS
-			DRV_StartDriver("SM2135");
-#endif
+		if (!CFG_HasFlag(OBK_FLAG_DRV_DISABLE_AUTOSTART)) {
+			// autostart drivers
+			if (PIN_FindPinIndexForRole(IOR_SM2135_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SM2135_DAT, -1) != -1)
+			{
+				DRV_StartDriver("SM2135");
+			}
+			if (PIN_FindPinIndexForRole(IOR_SM2235_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SM2235_DAT, -1) != -1)
+			{
+				DRV_StartDriver("SM2235");
+			}
+			if (PIN_FindPinIndexForRole(IOR_BP5758D_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_BP5758D_DAT, -1) != -1)
+			{
+				DRV_StartDriver("BP5758D");
+			}
+			if (PIN_FindPinIndexForRole(IOR_BP1658CJ_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_BP1658CJ_DAT, -1) != -1) {
+				DRV_StartDriver("BP1658CJ");
+			}
+			if (PIN_FindPinIndexForRole(IOR_KP18058_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_KP18058_DAT, -1) != -1) {
+				DRV_StartDriver("KP18058");
+			}
+			if (PIN_FindPinIndexForRole(IOR_BL0937_CF, -1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_CF1, -1) != -1
+				&& (PIN_FindPinIndexForRole(IOR_BL0937_SEL, -1) != -1 || PIN_FindPinIndexForRole(IOR_BL0937_SEL_n, -1) != -1)) {
+				DRV_StartDriver("BL0937");
+			}
+			if ((PIN_FindPinIndexForRole(IOR_BridgeForward, -1) != -1) && (PIN_FindPinIndexForRole(IOR_BridgeReverse, -1) != -1))
+			{
+				DRV_StartDriver("Bridge");
+			}
+			if ((PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep, -1) != -1) ||
+				(PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep_NoPup, -1) != -1) ||
+				(PIN_FindPinIndexForRole(IOR_DoorSensorWithDeepSleep_pd, -1) != -1))
+			{
+				DRV_StartDriver("DoorSensor");
+			}
+			if (PIN_FindPinIndexForRole(IOR_CHT83XX_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_CHT83XX_DAT, -1) != -1) {
+				DRV_StartDriver("CHT83XX");
+			}
+			if (PIN_FindPinIndexForRole(IOR_SHT3X_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SHT3X_DAT, -1) != -1) {
+				DRV_StartDriver("SHT3X");
+			}
+			if (PIN_FindPinIndexForRole(IOR_SGP_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_SGP_DAT, -1) != -1) {
+				DRV_StartDriver("SGP");
+			}
+			if (PIN_FindPinIndexForRole(IOR_BAT_ADC, -1) != -1) {
+				DRV_StartDriver("Battery");
+			}
+			if (PIN_FindPinIndexForRole(IOR_TM1637_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_TM1637_DIO, -1) != -1) {
+				DRV_StartDriver("TM1637");
+			}
+			if ((PIN_FindPinIndexForRole(IOR_GN6932_CLK, -1) != -1) &&
+				(PIN_FindPinIndexForRole(IOR_GN6932_DAT, -1) != -1) &&
+				(PIN_FindPinIndexForRole(IOR_GN6932_STB, -1) != -1))
+			{
+				DRV_StartDriver("GN6932");
+			}
+//			if ((PIN_FindPinIndexForRole(IOR_TM1638_CLK, -1) != -1) &&
+//				(PIN_FindPinIndexForRole(IOR_TM1638_DAT, -1) != -1) &&
+//				(PIN_FindPinIndexForRole(IOR_TM1638_STB, -1) != -1))
+//			{
+//				DRV_StartDriver("TM1638");
+//			}
 		}
-		if (PIN_FindPinIndexForRole(IOR_BP5758D_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_BP5758D_DAT, -1) != -1)
-		{
-#ifndef OBK_DISABLE_ALL_DRIVERS
-			DRV_StartDriver("BP5758D");
 #endif
-		}
-		if (PIN_FindPinIndexForRole(IOR_BP1658CJ_CLK, -1) != -1 && PIN_FindPinIndexForRole(IOR_BP1658CJ_DAT, -1) != -1) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
-			DRV_StartDriver("BP1658CJ");
-#endif
-		}
-		if (PIN_FindPinIndexForRole(IOR_BL0937_CF, -1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_CF1, -1) != -1 && PIN_FindPinIndexForRole(IOR_BL0937_SEL, -1) != -1) {
-#ifndef OBK_DISABLE_ALL_DRIVERS
-			DRV_StartDriver("BL0937");
-#endif
-		}
 	}
 
 	g_enable_pins = 1;
@@ -901,7 +1277,9 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	PIN_SetupPins();
 	QuickTick_StartThread();
 
+#if ENABLE_LED_BASIC
 	NewLED_RestoreSavedStateIfNeeded();
+#endif
 }
 void Main_ForceUnsafeInit() {
 	if (g_unsafeInitDone) {
@@ -922,7 +1300,7 @@ void Main_Init_Before_Delay()
 	// read or initialise the boot count flash area
 	HAL_FlashVars_IncreaseBootCount();
 
-#ifdef PLATFORM_BEKEN
+#if defined(PLATFORM_BEKEN) && !defined(PLATFORM_BEKEN_NEW)
 	// this just increments our idle counter variable.
 	// it registers a cllback from RTOS IDLE function.
 	// why is it called IRDA??  is this where they check for IR?
@@ -931,15 +1309,19 @@ void Main_Init_Before_Delay()
 
 	g_bootFailures = HAL_FlashVars_GetBootFailures();
 	if (g_bootFailures > RESTARTS_REQUIRED_FOR_SAFE_MODE)
-    {
+	{
 		bSafeMode = 1;
 		ADDLOGF_INFO("###### safe mode activated - boot failures %d", g_bootFailures);
 	}
 	CFG_InitAndLoad();
 
+#if ENABLE_LITTLEFS
+	LFSAddCmds();
+#endif
+
 	// only initialise certain things if we are not in AP mode
 	if (!bSafeMode)
-    {
+	{
 		Main_Init_BeforeDelay_Unsafe(true);
 	}
 
@@ -973,16 +1355,18 @@ void Main_Init_Delay()
 // i.e. things that use TCP/IP like NTP, SSDP, DGR
 void Main_Init_After_Delay()
 {
-	const char *wifi_ssid, *wifi_pass;
+	const char* wifi_ssid, * wifi_pass;
 	ADDLOGF_INFO("Main_Init_After_Delay");
 
 	// we can log this after delay.
-	if (bSafeMode){
+	if (bSafeMode) {
 		ADDLOGF_INFO("###### safe mode activated - boot failures %d", g_bootFailures);
 	}
-
-	wifi_ssid = CFG_GetWiFiSSID();
-	wifi_pass = CFG_GetWiFiPass();
+#if ALLOW_SSID2
+	Init_WiFiSSIDactual_FromChannelIfSet();//Channel must be set in early.bat using CMD_setStartupSSIDChannel
+#endif
+	wifi_ssid = CFG_GetWiFiSSIDX();
+	wifi_pass = CFG_GetWiFiPassX();
 
 #if 0
 	// you can use this if you bricked your module by setting wrong access point data
@@ -990,47 +1374,74 @@ void Main_Init_After_Delay()
 	wifi_pass = "Fqqqqqqqqqqqqqqqqqqqqqqqqqqq"
 #endif
 #ifdef SPECIAL_UNBRICK_ALWAYS_OPEN_AP
-	// you can use this if you bricked your module by setting wrong access point data
-	bForceOpenAP = 1;
+		// you can use this if you bricked your module by setting wrong access point data
+		bForceOpenAP = 1;
 #endif
 
-	if((*wifi_ssid == 0))
-    {
+	if ((*wifi_ssid == 0))
+	{
 		// start AP mode in 5 seconds
 		g_openAP = 5;
 		//HAL_SetupWiFiOpenAccessPoint();
-	} else {
-        if (bSafeMode)
-        {
-            g_openAP = 5;
-        } else {
-    		g_connectToWiFi = 5;
-        }
+	}
+	else {
+		if (bSafeMode)
+		{
+			g_openAP = 5;
+		}
+		else {
+			if (Main_HasFastConnect()) {
+#if ENABLE_MQTT
+				mqtt_loopsWithDisconnected = 9999;
+#endif
+				Main_ConnectToWiFiNow();
+			}
+			else {
+				g_connectToWiFi = 5;
+			}
+		}
 	}
 
-	ADDLOGF_INFO("Using SSID [%s]\r\n",wifi_ssid);
-	ADDLOGF_INFO("Using Pass [%s]\r\n",wifi_pass);
+	ADDLOGF_INFO("Using SSID [%s]\r\n", wifi_ssid);
+	ADDLOGF_INFO("Using Pass [%s]\r\n", wifi_pass);
 
 	// NOT WORKING, I done it other way, see ethernetif.c
 	//net_dhcp_hostname_set(g_shortDeviceName);
 
-	HTTPServer_Start();
-	ADDLOGF_DEBUG("Started http tcp server\r\n");
+#if MQTT_USE_TLS
+	if (!CFG_GetDisableWebServer() || bSafeMode) {
+#endif		
+		HTTPServer_Start();
+		ADDLOGF_DEBUG("Started http tcp server\r\n");
+#if MQTT_USE_TLS
+	} 
+#endif		
 
 	// only initialise certain things if we are not in AP mode
 	if (!bSafeMode)
 	{
+#if ENABLE_HA_DISCOVERY
 		//Always invoke discovery on startup. This accounts for change in ipaddr before startup and firmware update.
 		if (CFG_HasFlag(OBK_FLAG_AUTOMAIC_HASS_DISCOVERY)) {
 			Main_ScheduleHomeAssistantDiscovery(1);
 		}
-
+#endif
 		Main_Init_AfterDelay_Unsafe(true);
 	}
 
 	ADDLOGF_INFO("Main_Init_After_Delay done");
 }
 
+// to be overriden
+// Translate name like RB5 for OBK pin index
+#ifdef _MSC_VER
+///#pragma comment(linker, "/alternatename:HAL_PIN_Find=Default_HAL_PIN_Find")
+#else
+int HAL_PIN_Find(const char *name) __attribute__((weak));
+int HAL_PIN_Find(const char *name) {
+	return atoi(name);
+}
+#endif
 
 
 void Main_Init()
@@ -1038,8 +1449,10 @@ void Main_Init()
 	g_unsafeInitDone = false;
 
 #ifdef WINDOWS
+#if ENABLE_LED_BASIC
 	// on windows, Main_Init may happen multiple time so we need to reset variables
 	LED_ResetGlobalVariablesToDefaults();
+#endif
 	// on windows, we don't want to remember commands from previous session
 	CMD_FreeAllCommands();
 #endif

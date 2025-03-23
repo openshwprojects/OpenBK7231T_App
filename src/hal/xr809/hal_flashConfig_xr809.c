@@ -74,6 +74,10 @@ static void sysinfo_gen_mac_random(uint8_t mac_addr[6])
 	mac_addr[0] &= 0xFC;
 }
 void HAL_Configuration_GenerateMACForThisModule(unsigned char *out) {
+#if PLATFORM_XR806
+	// todo
+	
+#else
 	int i;
 	if (efpg_read(EFPG_FIELD_MAC, out) == 0) {
 		return;
@@ -85,6 +89,7 @@ void HAL_Configuration_GenerateMACForThisModule(unsigned char *out) {
 			return;
 	}
 	sysinfo_gen_mac_random(out);
+#endif
 }
 
 

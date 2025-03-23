@@ -72,6 +72,9 @@ int HAL_PIN_ReadDigitalInput(int index) {
 		return 0;
 	return 1;
 }
+void HAL_PIN_Setup_Input_Pulldown(int index) {
+
+}
 void HAL_PIN_Setup_Input_Pullup(int index) {
 	int xr_port; // eg GPIO_PORT_A
 	int xr_pin; // eg. GPIO_PIN_20
@@ -115,7 +118,7 @@ void HAL_PIN_Setup_Output(int index) {
 void HAL_PIN_PWM_Stop(int pinIndex) {
 }
 
-void HAL_PIN_PWM_Start(int index) {
+void HAL_PIN_PWM_Start(int index, int freq) {
 
 }
 void HAL_PIN_PWM_Update(int index, float value) {

@@ -1,20 +1,23 @@
 #ifndef _NEW_HTTP_H
 #define _NEW_HTTP_H
 
-
+extern int g_indexAutoRefreshInterval;
 extern const char httpHeader[];  // HTTP header
 extern const char httpMimeTypeHTML[];              // HTML MIME type
 extern const char httpMimeTypeText[];           // TEXT MIME type
 extern const char httpMimeTypeJson[];
 extern const char httpMimeTypeBinary[];
+extern const char httpMimeTypeXML[];
+extern const char httpMimeTypeCSS[];           // CSS MIME type
+extern const char httpMimeTypeJavascript[];   // JS MIME type
 
 extern const char htmlShortcutIcon[];
 extern const char htmlDoctype[];
 extern const char htmlHeadMeta[];
 
-extern const char htmlFooterReturnToMenu[];
+extern const char htmlFooterReturnToMainPage[];
 extern const char htmlFooterRefreshLink[];
-extern const char htmlFooterReturnToCfgLink[];
+extern const char htmlFooterReturnToCfgOrMainPage[];
 
 extern const char* htmlPinRoleNames[];
 
@@ -53,6 +56,9 @@ typedef struct http_request_tag {
 	int replylen;
 	int replymaxlen;
 	int fd;
+
+	// user variables used to build JSON data
+	int userCounter;
 } http_request_t;
 
 
@@ -62,10 +68,12 @@ void http_html_start(http_request_t* request, const char* pagename);
 void http_html_end(http_request_t* request);
 int poststr(http_request_t* request, const char* str);
 void poststr_escaped(http_request_t* request, char* str);
+void poststr_escapedForJSON(http_request_t* request, char* str);
 int postany(http_request_t* request, const char* str, int len);
 void misc_formatUpTimeString(int totalSeconds, char* o);
 // void HTTP_AddBuildFooter(http_request_t *request);
 // void HTTP_AddHeader(http_request_t *request);
+int http_getRawArg(const char* base, const char* name, char* o, int maxSize);
 int http_getArg(const char* base, const char* name, char* o, int maxSize);
 int http_getArgInteger(const char* base, const char* name);
 
@@ -84,7 +92,9 @@ typedef enum {
 typedef int (*http_callback_fn)(http_request_t* request);
 // url MUST start with '/'
 // urls must be unique (i.e. you can't have /about and /aboutme or /about/me)
-int HTTP_RegisterCallback(const char* url, int method, http_callback_fn callback);
+int HTTP_RegisterCallback(const char* url, int method, http_callback_fn callback, int auth_required);
+
+int my_strnicmp(const char* a, const char* b, int len);
 
 #endif
 

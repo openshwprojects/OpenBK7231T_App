@@ -14,7 +14,11 @@ typedef struct ENERGY_METERING_DATA {
 	float YesterdayConsumption;
 	long save_counter;
 	float ConsumptionHistory[2];
+#ifdef PLATFORM_BEKEN_NEW
+	unsigned int ConsumptionResetTime;
+#else
 	time_t ConsumptionResetTime;
+#endif
 	unsigned char reseved[3];
 	char actual_mday;
 } ENERGY_METERING_DATA;
@@ -34,6 +38,7 @@ typedef struct flash_vars_structure
 	// size   64
 } FLASH_VARS_STRUCTURE;
 
+#define MAGIC_FLASHVARS_SIZE 64
 
 // call at startup
 void HAL_FlashVars_IncreaseBootCount();
@@ -49,6 +54,8 @@ int HAL_FlashVars_GetChannelValue(int ch);
 int HAL_GetEnergyMeterStatus(ENERGY_METERING_DATA* data);
 int HAL_SetEnergyMeterStatus(ENERGY_METERING_DATA* data);
 void HAL_FlashVars_SaveTotalConsumption(float total_consumption);
+void HAL_FlashVars_SaveEnergyExport(float f);
+float HAL_FlashVars_GetEnergyExport();
 
 #endif /* __HALK_FLASH_VARS_H__ */
 

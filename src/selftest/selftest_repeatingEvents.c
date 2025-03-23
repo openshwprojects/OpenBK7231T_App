@@ -1,10 +1,10 @@
 #ifdef WINDOWS
 
-#include "selftest_local.h".
+#include "selftest_local.h"
 
 void Test_RepeatingEvents() {
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 	SELFTEST_ASSERT_CHANNEL(10, 0);
 	// NOTE: addRepeatingEvent [RepeatTime] [RepeatCount]
 	// This should fire once due to RepeatCount 1

@@ -7,6 +7,7 @@
 #include "Simulation.h"
 #include "PrefabManager.h"
 #include "Text.h"
+#include "Controller_Base.h"
 #include "../cJSON/cJSON.h"
 
 class CProject *CSaveLoad::loadProjectFile(const char *fname) {
@@ -18,10 +19,26 @@ class CProject *CSaveLoad::loadProjectFile(const char *fname) {
 		return 0;
 	}
 	cJSON *n_jProj = cJSON_Parse(jsonData);
-	cJSON *n_jProjCreated = cJSON_GetObjectItemCaseSensitive(n_jProj, "created");
-	cJSON *n_jProjModified = cJSON_GetObjectItemCaseSensitive(n_jProj, "lastModified");
-	p->setCreated(n_jProjCreated->valuestring);
-	p->setLastModified(n_jProjModified->valuestring);
+	if (0==n_jProj) {
+		printf("Warning: failed to parse JSON data %s\n", fname);
+	}
+	else {
+		cJSON *n_jProjCreated = cJSON_GetObjectItemCaseSensitive(n_jProj, "created");
+		cJSON *n_jProjModified = cJSON_GetObjectItemCaseSensitive(n_jProj, "lastModified");
+		if (n_jProjCreated) {
+			p->setCreated(n_jProjCreated->valuestring);
+		}
+		else {
+			printf("Warning: missing 'created' node in %s\n", fname);
+		}
+		if (n_jProjModified) {
+			p->setLastModified(n_jProjModified->valuestring);
+		}
+		else {
+			printf("Warning: missing 'lastModified' node in %s\n", fname);
+		}
+	}
+	free(jsonData);
 	return p;
 }
 void CSaveLoad::saveProjectToFile(class CProject *projToSave, const char *fname) {
@@ -77,6 +94,10 @@ class CSimulation *CSaveLoad::loadSimulationFromFile(const char *fname) {
 			if (jText != 0 && as_text != 0) {
 				as_text->setText(jText->valuestring);
 			}
+			class CControllerBase *cb = o->getController();
+			if (cb) {
+				cb->loadFrom(jObject);
+			}
 		}
 	}
 	cJSON_ArrayForEach(jWire, n_jWires)
@@ -89,6 +110,7 @@ class CSimulation *CSaveLoad::loadSimulationFromFile(const char *fname) {
 	}
 	s->matchAllJunctions();
 	s->recalcBounds();
+	free(jsonData);
 	return s;
 }
 void CSaveLoad::saveSimulationToFile(class CSimulation *simToSave, const char *fname) {
@@ -112,6 +134,10 @@ void CSaveLoad::saveSimulationToFile(class CSimulation *simToSave, const char *f
 		cJSON_AddNumberToObject(j_obj, "y", pos.getY());
 		if (as_text) {
 			cJSON_AddStringToObject(j_obj, "text", as_text->getText());
+		}
+		class CControllerBase *cb = obj->getController();
+		if (cb) {
+			cb->saveTo(j_obj);
 		}
 	}
 	cJSON *main_wires = cJSON_AddObjectToObject(main_sim, "wires");

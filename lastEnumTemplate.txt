@@ -1,0 +1,7 @@
+{ 17822728f value == '1' }
+	Ok
+{ 2.121830e-304lif value == '0' }
+	Bad
+{-9.255963e+61lse }
+	Unknown
+{-9.255963e+61ndif }

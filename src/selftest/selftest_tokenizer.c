@@ -1,10 +1,10 @@
 #ifdef WINDOWS
 
-#include "selftest_local.h".
+#include "selftest_local.h"
 
 void Test_Tokenizer() {
 	// reset whole device
-	SIM_ClearOBK();
+	SIM_ClearOBK(0);
 
 	Tokenizer_TokenizeString("Hello", 0);
 	SELFTEST_ASSERT_ARGUMENTS_COUNT(1);
@@ -15,7 +15,6 @@ void Test_Tokenizer() {
 	SELFTEST_ASSERT_ARGUMENT(0, "Hello");
 	SELFTEST_ASSERT_ARGUMENT(1, "you");
 	SELFTEST_ASSERT_ARGUMENT(2, "too!");
-
 	Tokenizer_TokenizeString("1 2 3 4 5", 0);
 	SELFTEST_ASSERT_ARGUMENTS_COUNT(5);
 	SELFTEST_ASSERT_ARGUMENT(0, "1");
@@ -108,8 +107,34 @@ void Test_Tokenizer() {
 	SELFTEST_ASSERT_ARGUMENT_INTEGER(4, 77);// $CH3
 
 
-	//system("pause");
-}
+	Tokenizer_TokenizeString("SendPOST http://localhost:3000/ 3000 \"application/json\" \"{ \\\"a\\\":123, \\\"b\\\":77 }\" 0",
+		TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS);
 
+	SELFTEST_ASSERT_ARGUMENTS_COUNT(6);
+	SELFTEST_ASSERT_ARGUMENT(0, "SendPOST");
+	SELFTEST_ASSERT_ARGUMENT(1, "http://localhost:3000/");
+	SELFTEST_ASSERT_ARGUMENT_INTEGER(2, 3000);
+	SELFTEST_ASSERT_ARGUMENT(3, "application/json");
+	SELFTEST_ASSERT_ARGUMENT(4, "{ \"a\":123, \"b\":77 }");
+	SELFTEST_ASSERT_ARGUMENT_INTEGER(5, 0);
+	
+
+	CMD_ExecuteCommand("setChannel 1 12", 0);
+	CMD_ExecuteCommand("setChannel 3 55", 0);
+	CMD_ExecuteCommand("setChannel 5 77", 0);
+
+	Tokenizer_TokenizeString("Turn on $CH1:$CH3 level=$CH5 $CH6",
+		TOKENIZER_ALTERNATE_EXPAND_AT_START | TOKENIZER_FORCE_SINGLE_ARGUMENT_MODE);
+
+	SELFTEST_ASSERT_ARGUMENT(0, "Turn on 12:55 level=77 0");
+
+	Tokenizer_TokenizeString("TurnOn $CH1:$CH3 level=$CH5 $CH6", TOKENIZER_ALTERNATE_EXPAND_AT_START);
+
+	SELFTEST_ASSERT_ARGUMENT(0, "TurnOn");
+	SELFTEST_ASSERT_ARGUMENT(1, "12:55");
+	SELFTEST_ASSERT_ARGUMENT(2, "level=77");
+	SELFTEST_ASSERT_ARGUMENT(3, "0");
+	SELFTEST_ASSERT_STRING(Tokenizer_GetArgFrom(2), "level=$CH5 $CH6")
+}
 
 #endif

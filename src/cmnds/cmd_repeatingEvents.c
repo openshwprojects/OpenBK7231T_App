@@ -16,9 +16,9 @@ typedef struct repeatingEvent_s {
 	char *command;
 	//char *condition;
 	// how often event repeats
-	int intervalSeconds;
+	float intervalSeconds;
 	// current value until next repeat (decremented every second)
-	int currentInterval;
+	float currentInterval;
 	// number of times to repeat.
 	// If set to -1, then it's infinite repeater
 	// If set to EVENT_CANCELED_TIMES, then event structure is ready to be reused
@@ -41,12 +41,12 @@ void RepeatingEvents_CancelRepeatingEvents(int userID)
 		if(ev->userID == userID) {
 			// mark as finished
 			ev->times = EVENT_CANCELED_TIMES;
-			addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"Event with id %i and cmd %s has been canceled\n",ev->userID,ev->command);
+			addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"Event with id %i and cmd %s has been canceled",ev->userID,ev->command);
 		}
 	}
 
 }
-void RepeatingEvents_AddRepeatingEvent(const char *command, int secondsInterval, int times, int userID)
+void RepeatingEvents_AddRepeatingEvent(const char *command, float secondsInterval, int times, int userID)
 {
 	repeatingEvent_t *ev;
 	char *cmd_copy;
@@ -67,12 +67,12 @@ void RepeatingEvents_AddRepeatingEvent(const char *command, int secondsInterval,
 	// create new
 	ev = malloc(sizeof(repeatingEvent_t));
 	if(ev == 0) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_CMD,"RepeatingEvents_OnEverySecond: failed to malloc new event\n");
+		addLogAdv(LOG_ERROR, LOG_FEATURE_CMD,"RepeatingEvents_OnEverySecond: failed to malloc new event");
 		return;
 	}
 	cmd_copy = strdup(command);
 	if(cmd_copy == 0) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_CMD,"RepeatingEvents_OnEverySecond: failed to malloc command text copy\n");
+		addLogAdv(LOG_ERROR, LOG_FEATURE_CMD,"RepeatingEvents_OnEverySecond: failed to malloc command text copy");
 		free(ev);
 		return;
 	}
@@ -108,7 +108,22 @@ void SIM_GenerateRepeatingEventsDesc(char *o, int outLen) {
 		cur = cur->next;
 	}
 }
-void RepeatingEvents_OnEverySecond() {
+int RepeatingEvents_GetActiveCount() {
+	repeatingEvent_t *cur;
+	int c_active;
+	
+	c_active = 0;
+	cur = g_repeatingEvents;
+	while (cur) {
+		// -1 means 'forever'
+		if (cur->times > 0 || cur->times == -1) {
+			c_active++;
+		}
+		cur = cur->next;
+	}
+	return c_active;
+}
+void RepeatingEvents_RunUpdate(float deltaTimeSeconds) {
 	repeatingEvent_t *cur;
 	int c_checked = 0;
 	int c_ran = 0;
@@ -118,13 +133,13 @@ void RepeatingEvents_OnEverySecond() {
 		c_checked++;
 		// debug only check
 		if(cur == cur->next) {
-			addLogAdv(LOG_ERROR, LOG_FEATURE_CMD,"RepeatingEvents_OnEverySecond: single linked list was broken?\n");
+			addLogAdv(LOG_ERROR, LOG_FEATURE_CMD,"RepeatingEvents_OnEverySecond: single linked list was broken?");
 			cur->next = 0;
 			return;
 		}
 		// -1 means 'forever'
 		if(cur->times > 0 || cur->times == -1) {
-			cur->currentInterval--;
+			cur->currentInterval-= deltaTimeSeconds;
 			if(cur->currentInterval<=0){
 				c_ran++;
 				// -1 means 'forever'
@@ -146,21 +161,22 @@ void RepeatingEvents_OnEverySecond() {
 }
 // addRepeatingEventID 1234 5 -1 DGR_SendPower "testgr" 1 1 
 // cancelRepeatingEvent 1234
+#define MIN_REPEATING_INTERVAL 0.001f
 commandResult_t RepeatingEvents_Cmd_AddRepeatingEvent(const void *context, const char *cmd, const char *args, int cmdFlags) {
-	int interval;
+	float interval;
 	int times;
 	const char *cmdToRepeat;
 	int userID;
 
-	// linkTuyaMCUOutputToChannel dpID channelID [varType]
-	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"addRepeatingEvent: will tokenize %s\n",args);
 	Tokenizer_TokenizeString(args,0);
 
-	if(Tokenizer_GetArgsCount() < 2) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"addRepeatingEvent: requires 2 arguments\n");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	interval = Tokenizer_GetArgInteger(0);
+	interval = Tokenizer_GetArgFloat(0);
 	times = Tokenizer_GetArgInteger(1);
 	if(!stricmp(cmd,"addRepeatingEventID")) {
 		userID = Tokenizer_GetArgInteger(2);
@@ -169,8 +185,12 @@ commandResult_t RepeatingEvents_Cmd_AddRepeatingEvent(const void *context, const
 		userID = 255;
 		cmdToRepeat = Tokenizer_GetArgFrom(2);
 	}
+	if (interval <= MIN_REPEATING_INTERVAL) {
+		interval = MIN_REPEATING_INTERVAL;
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Interval was too small!");
+	}
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"addRepeatingEvent: interval %i, repeats %i, command [%s]\n",interval,times,cmdToRepeat);
+	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"addRepeatingEvent: interval %f, repeats %i, command [%s]",interval,times,cmdToRepeat);
 
 	RepeatingEvents_AddRepeatingEvent(cmdToRepeat,interval, times, userID);
 
@@ -189,24 +209,24 @@ commandResult_t RepeatingEvents_Cmd_ClearRepeatingEvents(const void *context, co
 		free(rem);
 		c++;
 	}
-	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Fried %i rep. events\n", c);
+	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Fried %i rep. events", c);
 	g_repeatingEvents = 0;
 	return CMD_RES_OK;
 }
 commandResult_t RepeatingEvents_Cmd_CancelRepeatingEvent(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int userID;
 
-	// linkTuyaMCUOutputToChannel dpID channelID [varType]
-	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"cancelRepeatingEvent: will tokenize %s\n",args);
 	Tokenizer_TokenizeString(args,0);
 
-	if(Tokenizer_GetArgsCount() < 1) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"cancelRepeatingEvent: requires 1 argument\n");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	userID = Tokenizer_GetArgInteger(0);
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"cancelRepeatingEvent: will cancel events with id %i\n",userID);
+	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"cancelRepeatingEvent: will cancel events with id %i",userID);
 
 	RepeatingEvents_CancelRepeatingEvents(userID);
 
@@ -235,28 +255,28 @@ void RepeatingEvents_Init() {
 	//cmddetail:"descr":"Starts a timer/interval command. Use 'backlog' to fit multiple commands in a single string.",
 	//cmddetail:"fn":"RepeatingEvents_Cmd_AddRepeatingEvent","file":"cmnds/cmd_repeatingEvents.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("addRepeatingEvent","",RepeatingEvents_Cmd_AddRepeatingEvent, NULL, NULL);
+	CMD_RegisterCommand("addRepeatingEvent",RepeatingEvents_Cmd_AddRepeatingEvent, NULL);
 	//cmddetail:{"name":"addRepeatingEventID","args":"[IntervalSeconds][RepeatsOr-1][UserID][CommandToRun]",
 	//cmddetail:"descr":"as addRepeatingEvent, but with a given ID. You can later cancel it with cancelRepeatingEvent.",
 	//cmddetail:"fn":"RepeatingEvents_Cmd_AddRepeatingEvent","file":"cmnds/cmd_repeatingEvents.c","requires":"",
 	//cmddetail:"examples":"addRepeatingEventID 2 -1 123 Power0 Toggle"}
-	CMD_RegisterCommand("addRepeatingEventID","",RepeatingEvents_Cmd_AddRepeatingEvent, NULL, NULL); 
+	CMD_RegisterCommand("addRepeatingEventID",RepeatingEvents_Cmd_AddRepeatingEvent, NULL); 
 	//cmddetail:{"name":"cancelRepeatingEvent","args":"[UserIDInteger]",
 	//cmddetail:"descr":"Stops a given repeating event with a specified ID",
 	//cmddetail:"fn":"RepeatingEvents_Cmd_CancelRepeatingEvent","file":"cmnds/cmd_repeatingEvents.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("cancelRepeatingEvent","",RepeatingEvents_Cmd_CancelRepeatingEvent, NULL, NULL);
+	CMD_RegisterCommand("cancelRepeatingEvent",RepeatingEvents_Cmd_CancelRepeatingEvent, NULL);
 
 	//cmddetail:{"name":"clearRepeatingEvents","args":"",
 	//cmddetail:"descr":"Clears all repeating events.",
 	//cmddetail:"fn":"RepeatingEvents_Cmd_ClearRepeatingEvents","file":"cmnds/cmd_repeatingEvents.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("clearRepeatingEvents", "", RepeatingEvents_Cmd_ClearRepeatingEvents, NULL, NULL);
+	CMD_RegisterCommand("clearRepeatingEvents", RepeatingEvents_Cmd_ClearRepeatingEvents, NULL);
 	//cmddetail:{"name":"listRepeatingEvents","args":"",
 	//cmddetail:"descr":"lists all repeating events",
 	//cmddetail:"fn":"RepeatingEvents_Cmd_ListRepeatingEvents","file":"cmnds/cmd_repeatingEvents.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("listRepeatingEvents", "", RepeatingEvents_Cmd_ListRepeatingEvents, NULL, NULL);
+	CMD_RegisterCommand("listRepeatingEvents", RepeatingEvents_Cmd_ListRepeatingEvents, NULL);
 
 
 }

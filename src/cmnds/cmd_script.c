@@ -238,12 +238,15 @@ typedef struct scriptInstance_s {
 	const char *curLine;
 	int currentDelayMS;
 
+	int waitingForArgument;
+	unsigned short waitingForEvent;
+	char waitingForRelation;
+
 	struct scriptInstance_s *next;
 } scriptInstance_t;
 
-#define MAX_SCRIPT_LINE 512
-
-char *g_scrBuffer = 0;
+int g_scrBufferSize = 0;
+char *g_scrBuffer = NULL;
 int svm_deltaMS;
 scriptFile_t *g_scriptFiles = 0;
 scriptInstance_t *g_scriptThreads = 0;
@@ -276,7 +279,7 @@ scriptInstance_t *SVM_RegisterThread() {
 scriptFile_t *SVM_RegisterFile(const char *fname) {
 	scriptFile_t *r;
 
-	if (!stricmp(fname, "this")) {
+	if (!stricmp(fname, "this") || fname[0] == '*') {
 		if (g_activeThread != 0)
 			return g_activeThread->curFile;
 		return 0;
@@ -296,7 +299,12 @@ scriptFile_t *SVM_RegisterFile(const char *fname) {
 	memset(r,0,sizeof(scriptFile_t));
 	r->fname = strdup(fname);
 	// cast from byte* to char*
-	r->data = (char*)LFS_ReadFile(fname);
+	if (!strcmp(fname, "@startup")) {
+		r->data = strdup(CFG_GetShortStartupCommand());
+	}
+	else {
+		r->data = (char*)LFS_ReadFile(fname);
+	}
 	r->next = g_scriptFiles;
 	g_scriptFiles = r;
 	if(r->data == 0)
@@ -353,14 +361,22 @@ const char *SVM_FindLabel(const char *text, const char *label, const char *fname
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Label %s not found in %s - will go to the start of file",label,fname);
 	return text;
 }
-void SVM_RunThread(scriptInstance_t *t) {
-	int maxLoops = 10;
+void SVM_RunThread(scriptInstance_t *t, int maxLoops) {
 	int loop = 0;
 	const char *start, *end;
 	int len, p;
+	
+	if(g_scrBuffer == NULL) {
+		g_scrBufferSize = 256;
+		g_scrBuffer = malloc(g_scrBufferSize + 1);
+	}
 
 	while(1) {
 		loop++;
+		// check if "waitFor" was executed last frame
+		if (t->waitingForEvent) {
+			return;
+		}
 		if(t->curLine == 0) {
 			t->curLine = 0;
 			t->curFile = 0;
@@ -391,8 +407,12 @@ void SVM_RunThread(scriptInstance_t *t) {
 
 			// skip empty lines and skip labels
 			if(len > 0 && start[len-1] != ':') {
-				if(len >= MAX_SCRIPT_LINE) {
-					len = MAX_SCRIPT_LINE-1;
+				if(len >= g_scrBufferSize) {
+					g_scrBufferSize = len + 256;
+					g_scrBuffer = (char*)realloc(g_scrBuffer, g_scrBufferSize+1);
+				}
+				if (g_scrBuffer == NULL) {
+					return;
 				}
 				memcpy(g_scrBuffer,start,len);
 				g_scrBuffer[len] = 0;
@@ -417,27 +437,79 @@ void SVM_RunThreads(int deltaMS) {
 	c_run = 0;
 	svm_deltaMS = deltaMS;
 
-	if(g_scrBuffer == 0) {
-		g_scrBuffer = malloc(MAX_SCRIPT_LINE);
-	}
 
 	g_activeThread = g_scriptThreads;
 	while(g_activeThread) {
-		if(g_activeThread->currentDelayMS > 0) {
-			g_activeThread->currentDelayMS -= deltaMS;
-			// the following block is needed to handle with long freezes on simulator
-			if (g_activeThread->currentDelayMS < 0) {
-				g_activeThread->currentDelayMS = 0;
-			}
+		if (g_activeThread->waitingForEvent) {
+			// do nothing
 			c_sleep++;
-		} else {
-			SVM_RunThread(g_activeThread);
-			c_run++;
+		}
+		else {
+			if (g_activeThread->currentDelayMS > 0) {
+				g_activeThread->currentDelayMS -= deltaMS;
+				// the following block is needed to handle with long freezes on simulator
+				if (g_activeThread->currentDelayMS < 0) {
+					g_activeThread->currentDelayMS = 0;
+				}
+				c_sleep++;
+			}
+			else {
+				SVM_RunThread(g_activeThread, 20);
+				c_run++;
+			}
 		}
 		g_activeThread = g_activeThread->next;
 	}
 
 	//ADDLOG_INFO(LOG_FEATURE_CMD, "SCR sleep %i, ran %i",c_sleep,c_run);
+}
+void CMD_Script_ProcessWaitersForEvent(byte eventCode, int argument) {
+	scriptInstance_t *t;
+
+	t = g_scriptThreads;
+
+	while (t) {
+		if (t->waitingForEvent == eventCode) {
+			switch (t->waitingForRelation) {
+				case 0: {
+					if (t->waitingForArgument == argument) {
+						// unlock!
+						t->waitingForArgument = 0;
+						t->waitingForEvent = 0;
+					}
+				}
+				break;
+				case '<': {
+					// waitFor noPingTime < 5
+					if (argument < t->waitingForArgument) {
+						// unlock!
+						t->waitingForArgument = 0;
+						t->waitingForEvent = 0;
+					}
+				}
+				break;
+				case '>': {
+					// waitFor noPingTime > 5
+					if (argument > t->waitingForArgument) {
+						// unlock!
+						t->waitingForArgument = 0;
+						t->waitingForEvent = 0;
+					}
+				}
+				break;
+				case '!': {
+					// waitFor noPingTime ! 5
+					if (argument != t->waitingForArgument) {
+						// unlock!
+						t->waitingForArgument = 0;
+						t->waitingForEvent = 0;
+					}
+				}
+				 break;
+			}
+		}
+		t = t->next;
+	}
 }
 void SVM_GoTo(scriptInstance_t *th, const char *fname, const char *label) {
 	scriptFile_t *f;
@@ -518,7 +590,7 @@ void SVM_GoToLocal(scriptInstance_t *th, const char *label) {
 
 	return;
 }
-void SVM_StartScript(const char *fname, const char *label, int uniqueID) {
+scriptInstance_t *SVM_StartScript(const char *fname, const char *label, int uniqueID) {
 	scriptFile_t *f;
 	scriptInstance_t *th;
 
@@ -526,18 +598,18 @@ void SVM_StartScript(const char *fname, const char *label, int uniqueID) {
 	if(f == 0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: failed to get file %s",fname);
 
-		return;
+		return NULL;
 	}
 	if(f->data == 0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: failed to get file %s dataa",fname);
 
-		return;
+		return NULL;
 	}
 	th = SVM_RegisterThread();
 	if(th == 0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: failed to alloc thread");
 
-		return;
+		return NULL;
 	}
 	th->uniqueID = uniqueID;
 	th->curFile = f;
@@ -549,20 +621,32 @@ void SVM_StartScript(const char *fname, const char *label, int uniqueID) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: started %s at label %s",fname,label);
 	}
 
-	return;
+	return th;
+}
+void SVM_RunStartupCommandAsScript() {
+	scriptInstance_t *th = SVM_StartScript("@startup", 0, 0);
+	if (th) {
+		//ADDLOG_INFO(LOG_FEATURE_CMD, "SVM_RunStartupCommandAsScript: started command run");
+		// Hacky as hell?
+		g_activeThread = th;
+		SVM_RunThread(g_activeThread, 200);
+		g_activeThread = 0;
+	}
+	else {
+		//ADDLOG_INFO(LOG_FEATURE_CMD, "SVM_RunStartupCommandAsScript: failed command run");
+	}
+
 }
 
 static commandResult_t CMD_GoTo(const void *context, const char *cmd, const char *args, int cmdFlags){
 	const char *fname;
 	const char *label;
 
-	if(args==0||*args==0) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_GoTo: command requires argument");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
 	Tokenizer_TokenizeString(args,0);
-	if(Tokenizer_GetArgsCount() < 1) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_GoTo: command requires 1 argument");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	if(g_activeThread == 0) {
@@ -592,13 +676,11 @@ static commandResult_t CMD_StartScript(const void *context, const char *cmd, con
 	const char *label;
 	int uniqueID;
 
-	if(args==0||*args==0) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: command requires argument");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
 	Tokenizer_TokenizeString(args,0);
-	if(Tokenizer_GetArgsCount() < 1) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: command requires 1 argument");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
@@ -616,13 +698,11 @@ static commandResult_t CMD_Delay_s(const void *context, const char *cmd, const c
 	float del;
 	int delMS;
 
-	if(args==0||*args==0) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_s: command requires argument");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
 	Tokenizer_TokenizeString(args,0);
-	if(Tokenizer_GetArgsCount() < 1) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_s: command requires 1 argument");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	if(g_activeThread == 0) {
@@ -641,13 +721,11 @@ static commandResult_t CMD_Delay_s(const void *context, const char *cmd, const c
 static commandResult_t CMD_Delay_ms(const void *context, const char *cmd, const char *args, int cmdFlags){
 	int del;
 
-	if(args==0||*args==0) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_ms: command requires argument");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
 	Tokenizer_TokenizeString(args,0);
-	if(Tokenizer_GetArgsCount() < 1) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_ms: command requires 1 argument");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	if(g_activeThread == 0) {
@@ -682,8 +760,10 @@ static commandResult_t CMD_StopScript(const void *context, const char *cmd, cons
 	int idToStop, excludeSelf;
 
 	Tokenizer_TokenizeString(args,0);
-	if(Tokenizer_GetArgsCount() < 1) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StopScript: command requires 1 argument (unique ID)");
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
@@ -747,52 +827,101 @@ commandResult_t CMD_resetSVM(const void *context, const char *cmd, const char *a
 
 	return CMD_RES_OK;
 }
+commandResult_t CMD_waitFor(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	const char *s;
+	int reqArg, eventCode;
+	char relation;
+
+	if (g_activeThread == 0) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_waitFor: this can be only used from a script");
+		return CMD_RES_ERROR;
+	}
+
+	Tokenizer_TokenizeString(args, 0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	s = Tokenizer_GetArg(0);
+	eventCode = EVENT_ParseEventName(s);
+	if (eventCode == CMD_EVENT_NONE) {
+		ADDLOG_ERROR(LOG_FEATURE_EVENT, "%s is not a valid event", s);
+		return CMD_RES_BAD_ARGUMENT;
+	}
+	s = Tokenizer_GetArg(1);
+	if (*s == '<') {
+		relation = '<';
+	} else if (*s == '>') {
+		relation = '>';
+	} else if (*s == '!') {
+		relation = '!';
+	} else {
+		relation = 0;
+	}
+	if (relation) {
+		s = Tokenizer_GetArg(2);
+	}
+	reqArg = atoi(s);
+	
+	g_activeThread->waitingForEvent = eventCode;
+	g_activeThread->waitingForArgument = reqArg;
+	g_activeThread->waitingForRelation = relation;
+
+	return CMD_RES_OK;
+}
 void CMD_InitScripting(){
 	//cmddetail:{"name":"startScript","args":"[FileName][Label][UniqueID]",
 	//cmddetail:"descr":"Starts a script thread from given file, at given label - can be * for whole file, with given unique ID",
 	//cmddetail:"fn":"CMD_StartScript","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("startScript", "", CMD_StartScript, NULL, NULL);
+    CMD_RegisterCommand("startScript", CMD_StartScript, NULL);
 	//cmddetail:{"name":"stopScript","args":"[UniqueID]",
 	//cmddetail:"descr":"Force-stop given script thread by ID",
 	//cmddetail:"fn":"CMD_StopScript","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("stopScript", "", CMD_StopScript, NULL, NULL);
+    CMD_RegisterCommand("stopScript", CMD_StopScript, NULL);
 	//cmddetail:{"name":"stopAllScripts","args":"",
 	//cmddetail:"descr":"Stops all running scripts",
 	//cmddetail:"fn":"CMD_StopAllScripts","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("stopAllScripts", "", CMD_StopAllScripts, NULL, NULL);
+    CMD_RegisterCommand("stopAllScripts", CMD_StopAllScripts, NULL);
 	//cmddetail:{"name":"listScripts","args":"",
 	//cmddetail:"descr":"Lists all running scripts.",
 	//cmddetail:"fn":"CMD_ListScripts","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("listScripts", "", CMD_ListScripts, NULL, NULL);
+    CMD_RegisterCommand("listScripts", CMD_ListScripts, NULL);
 	//cmddetail:{"name":"goto","args":"[LabelStr]",
 	//cmddetail:"descr":"Script-only command. IF single argument is given, then goes to given label from within current script file. If two arguments are given, then jumps to any other script file by label - first argument is file, second label",
 	//cmddetail:"fn":"CMD_GoTo","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("goto", "", CMD_GoTo, NULL, NULL);
+    CMD_RegisterCommand("goto", CMD_GoTo, NULL);
 	//cmddetail:{"name":"delay_s","args":"[ValueSeconds]",
-	//cmddetail:"descr":"Script-only command. Pauses current script thread for given amount of seconds.",
+	//cmddetail:"descr":"Script-only command. Pauses current script thread for given amount of seconds. Argument can be a floating point, so 0.1 etc will work",
 	//cmddetail:"fn":"CMD_Delay_s","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("delay_s", "", CMD_Delay_s, NULL, NULL);
+    CMD_RegisterCommand("delay_s", CMD_Delay_s, NULL);
 	//cmddetail:{"name":"delay_ms","args":"[ValueMS]",
 	//cmddetail:"descr":"Script-only command. Pauses current script thread for given amount of ms.",
 	//cmddetail:"fn":"CMD_Delay_ms","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("delay_ms", "", CMD_Delay_ms, NULL, NULL);
+    CMD_RegisterCommand("delay_ms", CMD_Delay_ms, NULL);
 	//cmddetail:{"name":"return","args":"",
 	//cmddetail:"descr":"Script-only command. Currently it just stops totally current script thread.",
 	//cmddetail:"fn":"CMD_Return","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("return", "", CMD_Return, NULL, NULL);
+    CMD_RegisterCommand("return", CMD_Return, NULL);
 	//cmddetail:{"name":"resetSVM","args":"",
 	//cmddetail:"descr":"Resets all SVM and clears all scripts.",
 	//cmddetail:"fn":"CMD_resetSVM","file":"cmnds/cmd_script.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("resetSVM", "", CMD_resetSVM, NULL, NULL);
+    CMD_RegisterCommand("resetSVM", CMD_resetSVM, NULL);
+	//cmddetail:{"name":"waitFor","args":"[EventName] [Argument]",
+	//cmddetail:"descr":"Wait forever for event. Can be used within script. For example, you can do: waitFor MQTTState 1 or waitFor NTPState 1. You can also do waitFor NoPingTime 600 to wait for 600 seconds without ping watchdog getting successful reply",
+	//cmddetail:"fn":"CMD_waitFor","file":"cmnds/cmd_script.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("waitFor", CMD_waitFor, NULL);
 
 }
 

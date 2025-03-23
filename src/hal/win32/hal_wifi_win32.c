@@ -16,9 +16,14 @@ static void (*g_wifiStatusCallback)(int code);
 
 static char g_ipStr[32];
 
-void HAL_ConnectToWiFi(const char *ssid, const char *psk)
+void HAL_ConnectToWiFi(const char *ssid, const char *psk, obkStaticIP_t *ip)
 {
-	g_wifiStatusCallback(WIFI_STA_CONNECTED);
+	if (g_wifiStatusCallback) {
+		g_wifiStatusCallback(WIFI_STA_CONNECTED);
+	}
+	else {
+		printf("Win32 simulator - not calling g_wifiStatusCallback because it's null\n");
+	}
 }
 
 void HAL_DisconnectFromWifi()
@@ -46,7 +51,12 @@ int WiFI_SetMacAddress(char *mac) {
 
 }
 void WiFI_GetMacAddress(char *mac) {
-
+	mac[0] = 0xBA;
+	mac[1] = 0xDA;
+	mac[2] = 0x31;
+	mac[3] = 0x45;
+	mac[4] = 0xCA;
+	mac[5] = 0xFF;
 }
 
 void HAL_PrintNetworkInfo() {
@@ -60,6 +70,16 @@ const char *HAL_GetMyIPString() {
 	strcpy(g_ipStr,"127.0.0.1");
 	return g_ipStr;
 }
+const char* HAL_GetMyGatewayString() {
+	return "192.168.0.1";
+}
+const char* HAL_GetMyDNSString() {
+	return "192.168.0.1";
+}
+const char* HAL_GetMyMaskString() {
+	return "255.255.255.0";
+}
+
 const char *HAL_GetMACStr(char *macstr) {
 	unsigned char mac[32]= { 0 };
 //	WiFI_GetMacAddress((char *)mac);

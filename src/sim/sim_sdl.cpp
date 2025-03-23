@@ -19,13 +19,14 @@
 #include "Tool_Delete.h"
 #include "CursorManager.h"
 #include "Controller_Button.h"
+#include "Controller_SimulatorLink.h"
 
 #pragma comment (lib, "SDL2.lib")
 #pragma comment (lib, "Opengl32.lib")
 #pragma comment (lib, "freeglut.lib")
 
-int WinWidth = 1680;
-int WinHeight = 940;
+int WinWidth = 800;
+int WinHeight = 600;
 #undef main
 
 CStyle g_style_shapes(CColor(165, 75, 75), 3.0f);
@@ -33,12 +34,20 @@ CStyle g_style_wires(CColor(75, 165, 75), 3.0f);
 CStyle g_style_text(CColor(131, 131, 131), 3.0f);
 CStyle g_style_text_red(CColor(255, 131, 131), 3.0f);
 
-int drawTextInternal(float x, float y, const char *buffer) {
+extern "C" {
+	void SIM_SetWindowW(int val) {
+		WinWidth = val;
+	}
+	void SIM_SetWindowH(int val) {
+		WinHeight = val;
+	}
+}
+float drawTextInternal(float x, float y, const char *buffer) {
 	glRasterPos2f(x, y);
 	const char *p = buffer;
 	while (*p) {
 		if (*p == '\n') {
-			y += 15;
+			y += 15.0f;
 			glRasterPos2f(x, y);
 		}
 		else {
@@ -46,11 +55,11 @@ int drawTextInternal(float x, float y, const char *buffer) {
 		}
 		p++;
 	}
-	y += 15;
+	y += 15.0f;
 	return y;
 }
 
-int drawText(class CStyle *style, int x, int y, const char* fmt, ...) {
+float drawText(class CStyle *style, float x, float y, const char* fmt, ...) {
 	va_list argList;
 	char buffer2[4096];
 	char buffer[4096];
@@ -78,17 +87,6 @@ float roundToGrid(float f) {
 }
 Coord roundToGrid(Coord c) {
 	return Coord(roundToGrid(c.getX()), roundToGrid(c.getY()));
-}
-
-Coord GetMousePos() {
-	Coord r;
-	int mx, my;
-	//SDL_GetGlobalMouseState(&mx, &my);
-	SDL_GetMouseState(&mx, &my);
-	// BUGFIX FOR MENUBAR OFFSET
-	my += WINDOWS_MOUSE_MENUBAR_OFFSET;
-	r.set(mx, my);
-	return r;
 }
 
 
@@ -160,8 +158,10 @@ char *FS_ReadTextFile(const char *fname) {
 	int len = ftell(f);
 	fseek(f, 0, SEEK_SET);
 	char *r = (char*)malloc(len + 1);
-	fread(r, 1, len, f);
-	r[len] = 0;
+	if (r) {
+		fread(r, 1, len, f);
+		r[len] = 0;
+	}
 	fclose(f);
 	return r;
 }
@@ -173,15 +173,33 @@ bool FS_WriteTextFile(const char *data, const char *fname) {
 	fclose(f);
 	return false;
 }
-CSimulator *sim;
+CSimulator *g_sim;
+
+extern "C" void SIM_GeneratePowerStateDesc(char *o, int outLen) {
+	class CSimulation *sim = g_sim->getSim();
+	if (sim == 0) {
+		strcpy(o, "No simulation");
+		return;
+	}
+	CControllerSimulatorLink *w = sim->findFirstControllerOfType<CControllerSimulatorLink>();
+	// TODO
+	if (w->isPowered()) {
+		strcpy(o, "Power on");
+	}
+	else {
+		strcpy(o, "Power off");
+	}
+}
+
 extern "C" int SIM_CreateWindow(int argc, char **argv)
 {
 	glutInit(&argc, argv);
-	sim = new CSimulator();
-	sim->createWindow();
+	g_sim = new CSimulator();
+	g_sim->createWindow();
+	g_sim->loadRecentProject();
 	return 0;
 }
 extern "C" void SIM_RunWindow() {
-	sim->drawWindow();
+	g_sim->drawWindow();
 }
 #endif

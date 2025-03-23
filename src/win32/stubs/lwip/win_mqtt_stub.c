@@ -378,8 +378,6 @@ mqtt_init_requests(struct mqtt_request_t *r_objs, size_t r_objs_len)
 /** Connect to server */
 err_t mqtt_client_connect(mqtt_client_t *client, const ip_addr_t *ip_addr, u16_t port, mqtt_connection_cb_t cb, void *arg,
                    const struct mqtt_connect_client_info_t *client_info) {
-
-	err_t err;
 	size_t len;
 	u16_t client_id_length;
 	/* Length is the sum of 2+"MQTT", protocol level, flags and keep alive */
@@ -488,6 +486,11 @@ err_t mqtt_client_connect(mqtt_client_t *client, const ip_addr_t *ip_addr, u16_t
 	{
 		printf("ioctlsocket failed with error: %d\n", GETSOCKETERRNO());
 		return 1;
+	}
+	int aliveToggle = 1;
+	int res = setsockopt(s, SOL_SOCKET, SO_KEEPALIVE, (char*)&aliveToggle, sizeof(aliveToggle));
+	if (res != 0) {
+		printf("Sock opt error\n");
 	}
 
 	//Connect to remote server
@@ -939,6 +942,15 @@ void SIM_OnMQTTPublish(const char *topic, const char *value, int len, int qos, b
 /** Publish data to topic */
 err_t mqtt_publish(mqtt_client_t *client, const char *topic, const void *payload, u16_t payload_length, u8_t qos, u8_t retain,
 				   mqtt_request_cb_t cb, void *arg) {
+#if 1
+	{
+		FILE *f = fopen("lastMQTTPublishSentByOBK.txt", "wb");
+		if (f) {
+			fwrite(payload, 1, payload_length, f);
+			fclose(f);
+		}
+	}
+#endif
 	if (MQTT_IsFakingOnlineMQTT()) {
 		// on Windows simulator, forward MQTT publish for unit testing
 		SIM_OnMQTTPublish(topic, payload, payload_length, qos, retain);
@@ -1148,6 +1160,8 @@ mqtt_message_received(mqtt_client_t *client, u8_t fixed_hdr_len, u16_t length, u
 			}
 
 			topic = var_hdr_payload + 2;
+			printf("WIN MQTT: Topic %s\n", topic);
+
 			after_topic = 2 + topic_len;
 			/* Check buffer length, add one byte even for QoS 0 so that zero termination will fit */
 			if ((after_topic + (qos ? 2U : 1U)) > var_hdr_payload_bufsize) {
@@ -1352,6 +1366,7 @@ void WIN_RunMQTTClient(mqtt_client_t *cl) {
 	struct pbuf buf;
 	byte data[8192];
 	int len = 0;
+	int err;
 
 	if (cl->conn == 0) {
 		return;
@@ -1380,17 +1395,29 @@ void WIN_RunMQTTClient(mqtt_client_t *cl) {
 			}
 		}
 		else {
-			printf("MQTT: Connection in progress\n");
+			//printf("MQTT: Connection in progress\n");
 		}
 	}
 	else {
 		//Receive a reply from the server
-		if ((len = recv(cl->conn->sock, data, sizeof(data), 0)) > 0)
+		len = recv(cl->conn->sock, data, sizeof(data), 0);
+		if (len > 0)
 		{
 			buf.payload = data;
 			buf.len = len;
 			buf.tot_len = len;
 			mqtt_parse_incoming(cl, &buf);
+		}
+		else {
+			err = WSAGetLastError();
+			if (err == WSAEWOULDBLOCK) {
+
+			}
+			else {
+				printf("MQTT socket error %i - will disconnect\n", err);
+				mqtt_disconnect(cl);
+				return;
+			}
 		}
 		mqtt_output_send(&cl->output, cl->conn);
 	}

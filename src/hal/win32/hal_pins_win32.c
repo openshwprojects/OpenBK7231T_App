@@ -38,6 +38,9 @@ static int adcToGpio[] = {
 };
 static int c_adcToGpio = sizeof(adcToGpio)/sizeof(adcToGpio[0]);
 
+int HAL_PIN_Find(const char *name) {
+	return atoi(name); 
+}
 
 static int gpioToAdc(int gpio) {
 	int i;
@@ -80,6 +83,9 @@ bool SIM_IsPinADC(int index) {
 		return true;
 	return false;
 }
+void SIM_SetIntegerValueADCPin(int index, int v) {
+	g_simulatedADCValues[index] = v;
+}
 void SIM_SetVoltageOnADCPin(int index, float v) {
 	if (g_pinModes[index] != SIM_PIN_ADC)
 		return;
@@ -90,7 +96,7 @@ void SIM_SetVoltageOnADCPin(int index, float v) {
 		v = 0;
 	float f = v / 3.3f;
 	int iVal = f * 1024;
-	g_simulatedADCValues[index] = iVal;
+	SIM_SetIntegerValueADCPin(index, iVal);
 }
 int SIM_GetPWMValue(int index) {
 	return g_simulatedPWMs[index];
@@ -191,6 +197,8 @@ int HAL_PIN_ReadDigitalInput(int index) {
 void HAL_PIN_Setup_Input_Pullup(int index) {
 	g_pinModes[index] = SIM_PIN_INPUT_PULLUP;
 }
+void HAL_PIN_Setup_Input_Pulldown(int index) {
+}
 void HAL_PIN_Setup_Input(int index) {
 	g_pinModes[index] = SIM_PIN_INPUT;
 }
@@ -203,7 +211,7 @@ void HAL_PIN_Setup_Output(int index) {
 void HAL_PIN_PWM_Stop(int pinIndex) {
 }
 
-void HAL_PIN_PWM_Start(int index) {
+void HAL_PIN_PWM_Start(int index, int freq) {
 	g_pinModes[index] = SIM_PIN_PWM;
 }
 void HAL_PIN_PWM_Update(int index, float value) {

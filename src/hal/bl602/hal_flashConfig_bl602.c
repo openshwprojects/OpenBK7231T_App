@@ -14,10 +14,6 @@ void BL602_InitEasyFlashIfNeeded(){
 	}
 }
 
-int WiFI_SetMacAddress(char *mac) {
-	return 0;
-
-}
 #define EASYFLASH_MY_OBK_CONF     "mY0bcFg"
 
 int HAL_Configuration_ReadConfigMemory(void *target, int dataLen){

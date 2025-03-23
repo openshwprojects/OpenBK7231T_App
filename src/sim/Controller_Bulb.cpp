@@ -5,13 +5,13 @@
 
 
 void CControllerBulb::setShapesActive(bool b) {
-	for (int i = 0; i < shapes.size(); i++) {
+	for (unsigned i = 0; i < shapes.size(); i++) {
 		shapes[i]->setActive(b);
 	}
 }
 
 void CControllerBulb::setShapesFillColor(const CColor &c) {
-	for (int i = 0; i < shapes.size(); i++) {
+	for (unsigned int i = 0; i < shapes.size(); i++) {
 		shapes[i]->setFillColor(c);
 	}
 }
@@ -101,7 +101,7 @@ void CControllerBulb::onDrawn() {
 }
 class CControllerBase *CControllerBulb::cloneController(class CShape *origOwner, class CShape *newOwner) {
 	CControllerBulb *r = new CControllerBulb();
-	for (int i = 0; i < shapes.size(); i++) {
+	for (unsigned int i = 0; i < shapes.size(); i++) {
 		CShape *s = shapes[i];
 		const char *searchName = s->getName();
 		class CShape *newShape = newOwner->findShapeByName_r(searchName);

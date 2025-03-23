@@ -13,7 +13,7 @@ typedef enum commandResult_e {
 
 } commandResult_t;
 
-typedef commandResult_t (*commandHandler_t)(const void* context, const char* cmd, const char* args, int flags);
+typedef commandResult_t(*commandHandler_t)(const void* context, const char* cmd, const char* args, int flags);
 
 // command was entered in console (web app etc)
 #define COMMAND_FLAG_SOURCE_CONSOLE		1
@@ -25,20 +25,27 @@ typedef commandResult_t (*commandHandler_t)(const void* context, const char* cmd
 #define COMMAND_FLAG_SOURCE_HTTP		8
 // command was sent by TCP CMD
 #define COMMAND_FLAG_SOURCE_TCP			16
-// command was sent by TCP CMD
+// command was sent by IR
 #define COMMAND_FLAG_SOURCE_IR			32
+// command was sent by OBK Tele requester
+#define COMMAND_FLAG_SOURCE_TELESENDER	64
 
+extern bool g_powersave;
 
 //
 void CMD_Init_Early();
 void CMD_Init_Delayed();
 void CMD_FreeAllCommands();
-void CMD_RegisterCommand(const char* name, const char* args, commandHandler_t handler, const char* userDesc, void* context);
+void CMD_RunUartCmndIfRequired();
+void CMD_RegisterCommand(const char* name, commandHandler_t handler, void* context);
 commandResult_t CMD_ExecuteCommand(const char* s, int cmdFlags);
 commandResult_t CMD_ExecuteCommandArgs(const char* cmd, const char* args, int cmdFlags);
 // like a strdup, but will expand constants.
 // Please remember to free the returned string
-char *CMD_ExpandingStrdup(const char *in);
+char* CMD_ExpandingStrdup(const char* in);
+commandResult_t CMD_CreateAliasHelper(const char *alias, const char *ocmd);
+const char *CMD_ExpandConstant(const char *s, const char *stop, float *out);
+byte CMD_ParseOrExpandHexByte(const char **p);
 
 enum EventCode {
 	CMD_EVENT_NONE,
@@ -101,13 +108,31 @@ enum EventCode {
 
 	CMD_EVENT_PIN_ON3CLICK,
 	CMD_EVENT_PIN_ON4CLICK,
+	CMD_EVENT_PIN_ON5CLICK,
 
 	CMD_EVENT_CHANGE_NOPINGTIME,
+
+	CMD_EVENT_TUYAMCU_PARSED, // Argument: TuyaMCU packet type
+
+	CMD_EVENT_LED_MODE, // Argument: new light mode as integer
+
+	CMD_EVENT_CHANGE_NOMQTTTIME,
+
+	CMD_EVENT_ADC_BUTTON,
+
+	CMD_EVENT_NTP_STATE,
+
+	// custom buttons
+	CMD_EVENT_CUSTOM_DOWN,
+	CMD_EVENT_CUSTOM_UP,
+
+	CMD_EVENT_MISSEDHEARTBEATS,
 
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
 };
 
+int EVENT_ParseEventName(const char *s);
 
 // the slider control in the UI emits values
 //in the range from 154-500 (defined
@@ -115,8 +140,8 @@ enum EventCode {
 
 #define HASS_TEMPERATURE_MIN 154
 #define HASS_TEMPERATURE_MAX 500
-#define KELVIN_TEMPERATURE_MIN 2000
-#define KELVIN_TEMPERATURE_MAX 6500
+#define HASS_TEMPERATURE_CENTER ((HASS_TEMPERATURE_MAX+HASS_TEMPERATURE_MIN)/2)
+#define HASS_TO_KELVIN(x) (1000000 / (x))
 
 // In general, LED can be in two modes:
 // - Temperature (Cool and Warm LEDs are on)
@@ -127,26 +152,36 @@ enum LightMode {
 	Light_Temperature,
 	Light_RGB,
 	Light_All,
+	Light_Anim,
 };
 
 #define TOKENIZER_ALLOW_QUOTES					1
 #define TOKENIZER_DONT_EXPAND					2
 // expand constants within whole command and not per-argumenet
 #define TOKENIZER_ALTERNATE_EXPAND_AT_START		4
+// force single argument mode
+#define TOKENIZER_FORCE_SINGLE_ARGUMENT_MODE	8
+#define TOKENIZER_ALLOW_ESCAPING_QUOTATIONS		16
+#define TOKENIZER_EXPAND_EARLY					32
 
 // cmd_tokenizer.c
 int Tokenizer_GetArgsCount();
+bool Tokenizer_CheckArgsCountAndPrintWarning(const char* cmdStr, int reqCount);
 const char* Tokenizer_GetArg(int i);
 const char* Tokenizer_GetArgFrom(int i);
-int Tokenizer_GetArgInteger(int i);
+int Tokenizer_GetArgInteger(int i); 
+int Tokenizer_GetPin(int i, int def);
+int Tokenizer_GetArgIntegerDefault(int i, int def);
+float Tokenizer_GetArgFloatDefault(int i, float def);
 bool Tokenizer_IsArgInteger(int i);
 float Tokenizer_GetArgFloat(int i);
 int Tokenizer_GetArgIntegerRange(int i, int rangeMax, int rangeMin);
 void Tokenizer_TokenizeString(const char* s, int flags);
 // cmd_repeatingEvents.c
 void RepeatingEvents_Init();
-void RepeatingEvents_OnEverySecond();
+void RepeatingEvents_RunUpdate(float deltaTimeSeconds);
 void SIM_GenerateRepeatingEventsDesc(char *o, int outLen);
+void SIM_GeneratePowerStateDesc(char *o, int outLen);
 // cmd_eventHandlers.c
 void EventHandlers_Init();
 // This is useful to fire an event when a certain UART string command is received.
@@ -156,55 +191,74 @@ void EventHandlers_FireEvent_String(byte eventCode, const char* argument);
 // Then eventCode is a BUTTON_PRESS and argument is a button index.
 void EventHandlers_FireEvent(byte eventCode, int argument);
 void EventHandlers_FireEvent2(byte eventCode, int argument, int argument2);
+void EventHandlers_FireEvent3(byte eventCode, int argument, int argument2, int argument3);
 // This is more advanced event handler. It will only fire handlers when a variable state changes from one to another.
 // For example, you can watch for Voltage from BL0942 to change below 230, and it will fire event only when it becomes below 230.
 void EventHandlers_ProcessVariableChange_Integer(byte eventCode, int oldValue, int newValue);
+int EventHandlers_GetActiveCount();
 // cmd_tasmota.c
 int taslike_commands_init();
 // cmd_newLEDDriver.c
+#if ENABLE_LED_BASIC
 void NewLED_InitCommands();
 void NewLED_RestoreSavedStateIfNeeded();
 float LED_GetDimmer();
 void LED_AddDimmer(int iVal, int addMode, int minValue);
-void LED_AddTemperature(int iVal, bool wrapAroundInsteadOfClamp);
+void LED_AddTemperature(int iVal, int wrapAroundInsteadOfClamp);
 void LED_NextDimmerHold();
 void LED_NextTemperatureHold();
-int LED_IsRunningDriver();
+void LED_NextTemperature();
 float LED_GetTemperature();
 void LED_SetTemperature(int tmpInteger, bool bApply);
 float LED_GetTemperature0to1Range();
 void LED_SetTemperature0to1Range(float f);
 void LED_SetDimmer(int iVal);
+void LED_SetDimmerIfChanged(int iVal);
+void LED_SetDimmerForDisplayOnly(int iVal);
 commandResult_t LED_SetBaseColor(const void* context, const char* cmd, const char* args, int bAll);
 void LED_SetFinalCW(byte c, byte w);
 void LED_SetFinalRGB(byte r, byte g, byte b);
-float LED_BrightnessMapping(float raw, float brig);
+void LED_SetFinalRGBW(byte r, byte g, byte b, byte w);
 void LED_SetFinalRGBCW(byte* rgbcw);
 void LED_GetFinalChannels100(byte* rgbcw);
-void LED_GetFinalHSV(int* hsv);
+void LED_GetTasmotaHSV(int* hsv);
 void LED_GetFinalRGBCW(byte* rgbcw);
 // color indices are as in Tasmota
 void LED_SetColorByIndex(int index);
 void LED_NextColor();
+void LED_NextColorTemperature();
 void LED_ToggleEnabled();
 bool LED_IsLedDriverChipRunning();
 bool LED_IsLEDRunning();
 void LED_SetEnableAll(int bEnable);
 int LED_GetEnableAll();
+void LED_SaveStateToFlashVarsNow();
 void LED_GetBaseColorString(char* s);
+void LED_SetBaseColorByIndex(int i, float f, bool bApply);
 int LED_GetMode();
 float LED_GetHue();
 float LED_GetSaturation();
 float LED_GetGreen255();
 float LED_GetRed255();
 float LED_GetBlue255();
+extern float led_baseColors[5];
+extern byte g_lightEnableAll;
+extern byte g_lightMode;
 void LED_RunQuickColorLerp(int deltaMS);
+void LED_RunOnEverySecond();
+OBK_Publish_Result sendFinalColor();
+OBK_Publish_Result sendColorChange();
 OBK_Publish_Result LED_SendEnableAllState();
 OBK_Publish_Result LED_SendDimmerChange();
-OBK_Publish_Result LED_SendCurrentLightMode();
+OBK_Publish_Result sendTemperatureChange();
+OBK_Publish_Result LED_SendCurrentLightModeParam_TempOrColor();
 void LED_ResetGlobalVariablesToDefaults();
+extern float led_temperature_min;
+extern float led_temperature_max;
+#endif
+
 // cmd_test.c
-int fortest_commands_init();
+int CMD_InitTestCommands();
 // cmd_channels.c
 void CMD_InitChannelCommands();
 // cmd_send.c
@@ -214,12 +268,17 @@ void CMD_StartTCPCommandLine();
 // cmd_script.c
 int CMD_GetCountActiveScriptThreads();
 
+const char* CMD_GetResultString(commandResult_t r);
+
 void SVM_RunThreads(int deltaMS);
 void CMD_InitScripting();
+void SVM_RunStartupCommandAsScript();
 byte* LFS_ReadFile(const char* fname);
+int LFS_WriteFile(const char *fname, const byte *data, int len, bool bAppend);
 
-commandResult_t CMD_ClearAllHandlers(const void *context, const char *cmd, const char *args, int cmdFlags);
-commandResult_t RepeatingEvents_Cmd_ClearRepeatingEvents(const void *context, const char *cmd, const char *args, int cmdFlags);
-commandResult_t CMD_resetSVM(const void *context, const char *cmd, const char *args, int cmdFlags);
+commandResult_t CMD_ClearAllHandlers(const void* context, const char* cmd, const char* args, int cmdFlags);
+commandResult_t RepeatingEvents_Cmd_ClearRepeatingEvents(const void* context, const char* cmd, const char* args, int cmdFlags);
+commandResult_t CMD_resetSVM(const void* context, const char* cmd, const char* args, int cmdFlags);
+int RepeatingEvents_GetActiveCount();
 
 #endif // __CMD_PUBLIC_H__

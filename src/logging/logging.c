@@ -8,9 +8,14 @@
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 
+#if PLATFORM_BEKEN_NEW
+#include "uart.h"
+#include "arm_arch.h"
+#endif
+
 extern uint8_t g_StartupDelayOver;
 
-int loglevel = LOG_INFO; // default to info
+int g_loglevel = LOG_INFO; // default to info
 unsigned int logfeatures = (
 	(1 << 0) |
 	(1 << 1) |
@@ -75,12 +80,13 @@ char* logfeaturenames[] = {
 	"HASS:", // = 19
 	"IR:", // = 20
 	"SENSOR:", // = 21
-	"ERROR",// = 22,
+    "DRV:", // = 22,
 	"ERROR",// = 23,
 	"ERROR",// = 24,
 	"ERROR",// = 25,
 	"ERROR",// = 26,
 	"ERROR",// = 27,
+    "ERROR",// = 28,
 };
 
 #define LOGGING_BUFFER_SIZE		1024
@@ -98,7 +104,6 @@ void LOG_SetRawSocketCallback(int newFD)
 {
 	g_extraSocketToSendLOG = newFD;
 }
-
 
 static int http_getlog(http_request_t* request);
 static int http_getlograw(http_request_t* request);
@@ -128,16 +133,53 @@ static struct tag_logMemory {
 static int initialised = 0;
 static int tcpLogStarted = 0;
 
+commandResult_t log_command(const void* context, const char* cmd, const char* args, int cmdFlags);
+
 #if PLATFORM_BEKEN
 // to get uart.h
 #include "command_line.h"
 
-#define UART_PORT UART2_PORT 
-#define UART_DEV_NAME UART2_DEV_NAME
-#define UART_PORT_INDEX 1 
+int UART_PORT = UART2_PORT;
+int UART_PORT_INDEX = 1;
+
+
+commandResult_t log_port(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int idx;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	idx = Tokenizer_GetArgInteger(0);
+	switch (idx) {
+	case 1:
+		UART_PORT = UART1_PORT;
+		UART_PORT_INDEX = 0;
+		break;
+	case 2:
+		UART_PORT = UART2_PORT;
+		UART_PORT_INDEX = 1;
+		break;
+	}
+
+	return CMD_RES_OK;
+}
 #endif
 
-commandResult_t log_command(const void* context, const char* cmd, const char* args, int cmdFlags);
+// Here is how you can get log print on UART1:
+/*
+// Enable "[UART] Enable UART command line"
+// this also can be done in flags, enable command line on UART1 at 115200 baud
+SetFlag 31 1
+// UART1 is RXD1/TXD1 which is used for programming and for TuyaMCU/BL0942,
+// but now we will set that UART1 is used for log
+logPort 1 
+*/
 
 static void initLog(void)
 {
@@ -146,29 +188,36 @@ static void initLog(void)
 	logMemory.mutex = xSemaphoreCreateMutex();
 	initialised = 1;
 	startSerialLog();
-	HTTP_RegisterCallback("/logs", HTTP_GET, http_getlog);
-	HTTP_RegisterCallback("/lograw", HTTP_GET, http_getlograw);
+	HTTP_RegisterCallback("/logs", HTTP_GET, http_getlog, 1);
+	HTTP_RegisterCallback("/lograw", HTTP_GET, http_getlograw, 1);
 
 	//cmddetail:{"name":"loglevel","args":"[Value]",
 	//cmddetail:"descr":"Correct values are 0 to 7. Default is 3. Higher value includes more logs. Log levels are: ERROR = 1, WARN = 2, INFO = 3, DEBUG = 4, EXTRADEBUG = 5. WARNING: you also must separately select logging level filter on web panel in order for more logs to show up there",
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("loglevel", "", log_command, NULL, NULL);
+	CMD_RegisterCommand("loglevel", log_command, NULL);
 	//cmddetail:{"name":"logfeature","args":"[Index][1or0]",
 	//cmddetail:"descr":"set log feature filter, as an index and a 1 or 0",
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("logfeature", NULL, log_command, NULL, NULL);
+	CMD_RegisterCommand("logfeature", log_command, NULL);
 	//cmddetail:{"name":"logtype","args":"[TypeStr]",
 	//cmddetail:"descr":"logtype direct|thread|none - type of serial logging - thread (in a thread; default), direct (logged directly to serial), none (no UART logging)",
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("logtype", "", log_command, NULL, NULL);
+	CMD_RegisterCommand("logtype", log_command, NULL);
 	//cmddetail:{"name":"logdelay","args":"[Value]",
 	//cmddetail:"descr":"Value is a number of ms. This will add an artificial delay in each log call. Useful for debugging. This way you can see step by step what happens.",
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("logdelay", "", log_command, NULL, NULL);
+	CMD_RegisterCommand("logdelay", log_command, NULL);
+#if PLATFORM_BEKEN
+	//cmddetail:{"name":"logport","args":"[Index]",
+	//cmddetail:"descr":"Allows you to change log output port. On Beken, the UART1 is used for flashing and for TuyaMCU/BL0942, while UART2 is for log. Sometimes it might be easier for you to have log on UART1, so now you can just use this command like backlog uartInit 115200; logport 1 to enable logging on UART1..",
+	//cmddetail:"fn":"log_port","file":"logging/logging.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("logport", log_port, NULL);
+#endif
 
 	bk_printf("Commands registered!\r\n");
 	bk_printf("initLog() done!\r\n");
@@ -245,7 +294,7 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 	if (!((1 << feature) & logfeatures)) {
 		return;
 	}
-	if (level > loglevel) {
+	if (level > g_loglevel) {
 		return;
 	}
 
@@ -357,14 +406,18 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 #ifdef PLATFORM_BEKEN
 	trigger_log_send();
 #endif	
-	if (log_delay) {
+	if (log_delay != 0) 
+    {
 		int timems = log_delay;
 		// is log_delay set -ve, then calculate delay
 		// required for the number of characters to TX
 		// plus 2ms to be sure.
-		if (log_delay < 0) {
+		if (log_delay < 0) 
+        {
 			int cps = (115200 / 8);
-			timems = ((1000 * len) / cps) + 2;
+			timems = (((1000 / portTICK_RATE_MS) * len) / cps) + 2;
+            if (timems < 2)
+                timems = 2;
 		}
 		rtos_delay_milliseconds(timems);
 	}
@@ -378,6 +431,10 @@ static int getData(char* buff, int buffsize, int* tail) {
 	if (!initialised)
 		return 0;
 	taken = xSemaphoreTake(logMemory.mutex, 100);
+	if (taken == 0)
+	{
+		return 0;
+	}
 
 	count = 0;
 	p = buff;
@@ -676,7 +733,7 @@ static int http_getlog(http_request_t* request) {
 	char* post = "</pre>";
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Log");
-	poststr(request, htmlFooterReturnToMenu);
+	poststr(request, htmlFooterReturnToMainPage);
 
 	poststr(request, "<pre>");
 
@@ -700,7 +757,7 @@ commandResult_t log_command(const void* context, const char* cmd, const char* ar
 			res = sscanf(args, "%d", &level);
 			if (res == 1) {
 				if ((level >= 0) && (level <= 9)) {
-					loglevel = level;
+					g_loglevel = level;
 					result = CMD_RES_OK;
 					ADDLOG_DEBUG(LOG_FEATURE_CMD, "loglevel set %d", level);
 				}
@@ -710,7 +767,7 @@ commandResult_t log_command(const void* context, const char* cmd, const char* ar
 				}
 			}
 			else {
-				ADDLOG_ERROR(LOG_FEATURE_CMD, "loglevel '%s' invalid? current is %i", args, loglevel);
+				ADDLOG_ERROR(LOG_FEATURE_CMD, "loglevel '%s' invalid? current is %i", args, g_loglevel);
 				result = CMD_RES_BAD_ARGUMENT;
 			}
 			break;

@@ -107,6 +107,7 @@ a {
   border-radius: 0.3em;
   padding: 2px;
   margin: 6px 2px;
+  background: linear-gradient(to right, rgb(255, 160, 0), rgb(166, 209, 255));
 }
 .hf {
   display: none;
@@ -136,4 +137,33 @@ div#main {
 }
 table {
   table-layout: fixed;
+  width: 100%;
+}
+
+.disp-none {
+  display: none;
+}
+.disp-inline {
+  display: inline-block;
+}
+.safe {
+  color: red;
+}
+
+form.indent {
+  padding-left: 16px;
+}
+
+li {
+  margin: 5px 0; /* Increase vertical spacing */
+}
+
+/* Toggle channel status */
+.on,
+.off {
+  text-align: center;
+  font-size: 54px;
+}
+.on {
+  font-weight: bold;
 }

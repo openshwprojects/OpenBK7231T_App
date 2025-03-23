@@ -12,128 +12,58 @@
 
 #include "drv_sm2135.h"
 
-// Some platforms have less pins than BK7231T.
-// For example, BL602 doesn't have pin number 26.
-// The pin code would crash BL602 while trying to access pin 26.
-// This is why the default settings here a per-platform.
-#if PLATFORM_BEKEN
-static int g_pin_clk = 26;
-static int g_pin_data = 24;
-#else
-static int g_pin_clk = 0;
-static int g_pin_data = 1;
-#endif
-
+static softI2C_t g_softI2C;
 static int g_current_setting_cw = SM2135_20MA;
 static int g_current_setting_rgb = SM2135_20MA;
-// Mapping between RGBCW to current SM2135 channels
-static byte g_channelOrder[5] = { 2, 1, 0, 4, 3 };
-
-static void SM2135_SetLow(uint8_t pin) {
-	HAL_PIN_Setup_Output(pin);
-	HAL_PIN_SetOutputValue(pin, 0);
-}
-
-static void SM2135_SetHigh(uint8_t pin) {
-	HAL_PIN_Setup_Input_Pullup(pin);
-}
-
-static bool SM2135_PreInit(void) {
-	HAL_PIN_SetOutputValue(g_pin_data, 0);
-	HAL_PIN_SetOutputValue(g_pin_clk, 0);
-	SM2135_SetHigh(g_pin_data);
-	SM2135_SetHigh(g_pin_clk);
-	return (!((HAL_PIN_ReadDigitalInput(g_pin_data) == 0 || HAL_PIN_ReadDigitalInput(g_pin_clk) == 0)));
-}
-
-static bool SM2135_WriteByte(uint8_t value) {
-	uint8_t curr;
-	uint8_t ack;
-
-	for (curr = 0X80; curr != 0; curr >>= 1) {
-		if (curr & value) {
-			SM2135_SetHigh(g_pin_data);
-		} else {
-			SM2135_SetLow(g_pin_data);
-		}
-		SM2135_SetHigh(g_pin_clk);
-		usleep(SM2135_DELAY);
-		SM2135_SetLow(g_pin_clk);
-	}
-	// get Ack or Nak
-	SM2135_SetHigh(g_pin_data);
-	SM2135_SetHigh(g_pin_clk);
-	usleep(SM2135_DELAY / 2);
-	ack = HAL_PIN_ReadDigitalInput(g_pin_data);
-	SM2135_SetLow(g_pin_clk);
-	usleep(SM2135_DELAY / 2);
-	SM2135_SetLow(g_pin_data);
-	return (0 == ack);
-}
-
-static bool SM2135_Start(uint8_t addr) {
-	SM2135_SetLow(g_pin_data);
-	usleep(SM2135_DELAY);
-	SM2135_SetLow(g_pin_clk);
-	return SM2135_WriteByte(addr);
-}
-
-static void SM2135_Stop(void) {
-	SM2135_SetLow(g_pin_data);
-	usleep(SM2135_DELAY);
-	SM2135_SetHigh(g_pin_clk);
-	usleep(SM2135_DELAY);
-	SM2135_SetHigh(g_pin_data);
-	usleep(SM2135_DELAY);
-}
 
 void SM2135_Write(float *rgbcw) {
 	int i;
 	int bRGB;
+	int combinedCurrent = (g_current_setting_cw << 4) | g_current_setting_rgb;
 
 	if(CFG_HasFlag(OBK_FLAG_SM2135_SEPARATE_MODES)) {
 		bRGB = 0;
 		for(i = 0; i < 3; i++){
-			if(rgbcw[g_channelOrder[i]]!=0) {
+			if(rgbcw[g_cfg.ledRemap.ar[i]]!=0) {
 				bRGB = 1;
 				break;
 			}
 		}
 		if(bRGB) {
-			SM2135_Start(SM2135_ADDR_MC);
-			SM2135_WriteByte(g_current_setting_rgb);
-			SM2135_WriteByte(SM2135_RGB);
-			SM2135_WriteByte(rgbcw[g_channelOrder[0]]);
-			SM2135_WriteByte(rgbcw[g_channelOrder[1]]);
-			SM2135_WriteByte(rgbcw[g_channelOrder[2]]); 
-			SM2135_Stop();
+			Soft_I2C_Start(&g_softI2C, SM2135_ADDR_MC);
+			Soft_I2C_WriteByte(&g_softI2C, combinedCurrent);
+			Soft_I2C_WriteByte(&g_softI2C, SM2135_RGB);
+			Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.r]);
+			Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.g]);
+			Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.b]);
+			Soft_I2C_Stop(&g_softI2C);
 		} else {
-			SM2135_Start(SM2135_ADDR_MC);
-			SM2135_WriteByte(g_current_setting_cw);
-			SM2135_WriteByte(SM2135_CW);
-			SM2135_Stop();
+			Soft_I2C_Start(&g_softI2C, SM2135_ADDR_MC);
+			Soft_I2C_WriteByte(&g_softI2C, combinedCurrent);
+			Soft_I2C_WriteByte(&g_softI2C, SM2135_CW);
+			Soft_I2C_Stop(&g_softI2C);
 			usleep(SM2135_DELAY);
 
-			SM2135_Start(SM2135_ADDR_C);
-			SM2135_WriteByte(rgbcw[g_channelOrder[3]]);
-			SM2135_WriteByte(rgbcw[g_channelOrder[4]]); 
-			SM2135_Stop();
+			Soft_I2C_Start(&g_softI2C, SM2135_ADDR_C);
+			Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.c]);
+			Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.w]);
+			Soft_I2C_Stop(&g_softI2C);
 
 		}
 	} else {
-		SM2135_Start(SM2135_ADDR_MC);
-		SM2135_WriteByte(g_current_setting_rgb);
-		SM2135_WriteByte(SM2135_RGB);
-		SM2135_WriteByte(rgbcw[g_channelOrder[0]]);
-		SM2135_WriteByte(rgbcw[g_channelOrder[1]]);
-		SM2135_WriteByte(rgbcw[g_channelOrder[2]]); 
-		SM2135_WriteByte(rgbcw[g_channelOrder[3]]); 
-		SM2135_WriteByte(rgbcw[g_channelOrder[4]]); 
-		SM2135_Stop();
+		Soft_I2C_Start(&g_softI2C, SM2135_ADDR_MC);
+		Soft_I2C_WriteByte(&g_softI2C, combinedCurrent);
+		Soft_I2C_WriteByte(&g_softI2C, SM2135_RGB);
+		Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.r]);
+		Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.g]);
+		Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.b]);
+		Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.c]);
+		Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.w]);
+		Soft_I2C_Stop(&g_softI2C);
 	}
 }
 
-static commandResult_t SM2135_RGBCW(const void *context, const char *cmd, const char *args, int flags){
+commandResult_t CMD_LEDDriver_WriteRGBCW(const void *context, const char *cmd, const char *args, int flags){
 	const char *c = args;
 	float col[5] = { 0, 0, 0, 0, 0 };
 	int ci;
@@ -154,11 +84,11 @@ static commandResult_t SM2135_RGBCW(const void *context, const char *cmd, const 
 		tmp[2] = '\0';
 		r = sscanf(tmp, "%x", &val);
 		if (!r) {
-			ADDLOG_ERROR(LOG_FEATURE_CMD, "SM2135_RGBCW no sscanf hex result from %s", tmp);
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "No sscanf hex result from %s", tmp);
 			break;
 		}
 
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2135_RGBCW found chan %d -> val255 %d (from %s)", ci, val, tmp);
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "Found chan %d -> val255 %d (from %s)", ci, val, tmp);
 
 		col[ci] = val;
 
@@ -168,7 +98,9 @@ static commandResult_t SM2135_RGBCW(const void *context, const char *cmd, const 
 			break;
 	}
 
-	SM2135_Write(col);
+#if ENABLE_LED_BASIC
+	LED_I2CDriver_WriteRGBCW(col);
+#endif
 
 	return CMD_RES_OK;
 }
@@ -178,24 +110,26 @@ static commandResult_t SM2135_RGBCW(const void *context, const char *cmd, const 
 // This is the order used on my polish Spectrum WOJ14415 bulb:
 // SM2135_Map 2 1 0 4 3 
 
-static commandResult_t SM2135_Map(const void *context, const char *cmd, const char *args, int flags){
-	
+commandResult_t CMD_LEDDriver_Map(const void *context, const char *cmd, const char *args, int flags){
+	int r, g, b, c, w;
 	Tokenizer_TokenizeString(args,0);
 
 	if(Tokenizer_GetArgsCount()==0) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2135_Map current order is %i %i %i    %i %i! ",
-			(int)g_channelOrder[0],(int)g_channelOrder[1],(int)g_channelOrder[2],(int)g_channelOrder[3],(int)g_channelOrder[4]);
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Current map is %i %i %i %i %i",
+			(int)g_cfg.ledRemap.r,(int)g_cfg.ledRemap.g,(int)g_cfg.ledRemap.b,(int)g_cfg.ledRemap.c,(int)g_cfg.ledRemap.w);
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
-	g_channelOrder[0] = Tokenizer_GetArgIntegerRange(0, 0, 4);
-	g_channelOrder[1] = Tokenizer_GetArgIntegerRange(1, 0, 4);
-	g_channelOrder[2] = Tokenizer_GetArgIntegerRange(2, 0, 4);
-	g_channelOrder[3] = Tokenizer_GetArgIntegerRange(3, 0, 4);
-	g_channelOrder[4] = Tokenizer_GetArgIntegerRange(4, 0, 4);
+	r = Tokenizer_GetArgIntegerRange(0, 0, 4);
+	g = Tokenizer_GetArgIntegerRange(1, 0, 4);
+	b = Tokenizer_GetArgIntegerRange(2, 0, 4);
+	c = Tokenizer_GetArgIntegerRange(3, 0, 4);
+	w = Tokenizer_GetArgIntegerRange(4, 0, 4);
 
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2135_Map new order is %i %i %i    %i %i! ",
-		(int)g_channelOrder[0],(int)g_channelOrder[1],(int)g_channelOrder[2],(int)g_channelOrder[3],(int)g_channelOrder[4]);
+	CFG_SetLEDRemap(r, g, b, c, w);
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "New map is %i %i %i %i %i",
+		(int)g_cfg.ledRemap.r,(int)g_cfg.ledRemap.g,(int)g_cfg.ledRemap.b,(int)g_cfg.ledRemap.c,(int)g_cfg.ledRemap.w);
 
 	return CMD_RES_OK;
 }
@@ -209,9 +143,10 @@ static commandResult_t SM2135_Current(const void *context, const char *cmd, cons
 	int valRGB;
 	int valCW;
 	Tokenizer_TokenizeString(args,0);
-
-	if(Tokenizer_GetArgsCount()<=1) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2135_Current: requires 2 arguments [RGB,CW]. Current value is: %i %i!\n",g_current_setting_rgb,g_current_setting_cw);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	valRGB = Tokenizer_GetArgInteger(0);
@@ -222,54 +157,35 @@ static commandResult_t SM2135_Current(const void *context, const char *cmd, cons
 }
 
 // startDriver SM2135
-// SM2135_RGBCW FF00000000
+// CMD_LEDDriver_WriteRGBCW FF00000000
 void SM2135_Init() {
 
-    SM2135_PreInit();
+	// default setting (applied only if none was applied earlier)
+	CFG_SetDefaultLEDRemap(2, 1, 0, 4, 3);
 
-	g_pin_clk = PIN_FindPinIndexForRole(IOR_SM2135_CLK,g_pin_clk);
-	g_pin_data = PIN_FindPinIndexForRole(IOR_SM2135_DAT,g_pin_data);
+	g_softI2C.pin_clk = PIN_FindPinIndexForRole(IOR_SM2135_CLK,g_softI2C.pin_clk);
+	g_softI2C.pin_data = PIN_FindPinIndexForRole(IOR_SM2135_DAT,g_softI2C.pin_data);
+
+	Soft_I2C_PreInit(&g_softI2C);
 
 	//cmddetail:{"name":"SM2135_RGBCW","args":"[HexColor]",
 	//cmddetail:"descr":"Don't use it. It's for direct access of SM2135 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
 	//cmddetail:"fn":"SM2135_RGBCW","file":"driver/drv_sm2135.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("SM2135_RGBCW", "", SM2135_RGBCW, NULL, NULL);
+    CMD_RegisterCommand("SM2135_RGBCW", CMD_LEDDriver_WriteRGBCW, NULL);
 	//cmddetail:{"name":"SM2135_Map","args":"[Ch0][Ch1][Ch2][Ch3][Ch4]",
 	//cmddetail:"descr":"Maps the RGBCW values to given indices of SM2135 channels. This is because SM2135 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: SM2135_Map 0 1 2 3 4",
 	//cmddetail:"fn":"SM2135_Map","file":"driver/drv_sm2135.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("SM2135_Map", "", SM2135_Map, NULL, NULL);
-	//cmddetail:{"name":"SM2135_Current","args":"[Value]",
-	//cmddetail:"descr":"Sets the maximum current for LED driver.",
+    CMD_RegisterCommand("SM2135_Map", CMD_LEDDriver_Map, NULL);
+	//cmddetail:{"name":"SM2135_Current","args":"[RGBLimit][CWLimit]",
+	//cmddetail:"descr":"Sets the maximum current for LED driver. Please note that arguments are using SM2135 codes, see [full list of codes here](https://www.elektroda.com/rtvforum/viewtopic.php?p=20493415#20493415)",
 	//cmddetail:"fn":"SM2135_Current","file":"driver/drv_sm2135.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("SM2135_Current", "", SM2135_Current, NULL, NULL);
-}
+    CMD_RegisterCommand("SM2135_Current", SM2135_Current, NULL);
 
-void SM2135_RunFrame() {
-
-}
-
-
-void SM2135_OnChannelChanged(int ch, int value) {
-#if 0
-	byte col[5];
-	int channel;
-	int c;
-
-	for(channel = 0; channel < CHANNEL_MAX; channel++){
-		if(IOR_PWM == CHANNEL_GetRoleForOutputChannel(channel)){
-			col[c] = CHANNEL_Get(channel);
-			c++;
-		}
-	}
-	for( ; c < 5; c++){
-		col[c] = 0;
-	}
-
-	SM2135_Write(col);
-#endif
+	// alias for LED_Map. In future we may want to migrate totally to shared LED_Map command.... 
+	CMD_CreateAliasHelper("LED_Map", "SM2135_Map");
 }
 
 
