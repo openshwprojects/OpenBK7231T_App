@@ -329,10 +329,6 @@ int __cdecl main(int argc, char **argv)
         printf("WSAStartup failed with error: %d\n", iResult);
         return 1;
     }
-#else
-
-
-#endif
 	printf("sizeof(short) = %d\n", (int)sizeof(short));
 	printf("sizeof(int) = %d\n", (int)sizeof(int));
 	printf("sizeof(long) = %d\n", (int)sizeof(long));
@@ -528,3 +524,7 @@ int ota_total_bytes() {
 }
 
 
+
+
+
+#endif
