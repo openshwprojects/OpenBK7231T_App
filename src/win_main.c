@@ -336,6 +336,7 @@ int __cdecl main(int argc, char **argv)
 			fclose(f);
 		}
 	}
+	printf("Argc: %i\n", argc);
 	if (argc > 1) {
 		int value;
 
@@ -376,6 +377,7 @@ int __cdecl main(int argc, char **argv)
 			}
 		}
 	}
+	printf("g_selfTestsMode %i\n", g_selfTestsMode);
 
     int iResult;
 

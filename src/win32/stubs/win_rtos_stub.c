@@ -35,11 +35,11 @@ int xSemaphoreGive(int semaphore) {
 	return 0;
 }
 int rtos_delay_milliseconds(int sec) {
-	Sleep(sec);
+	//Sleep(sec);
 	return 0;
 }
 int delay_ms(int sec) {
-	Sleep(sec);
+	//Sleep(sec);
 	return 0;
 }
 

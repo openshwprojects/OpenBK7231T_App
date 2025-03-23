@@ -98,7 +98,7 @@ void HTTPServer_RunQuickTick() {
 		iResult = WSAGetLastError();
 		if(iResult != WSAEWOULDBLOCK) {
 			if (iResult != g_prevHTTPResult) {
-				printf("accept failed with error: %d\n", iResult);
+				printf("HTTPServer_RunQuickTick: accept failed with error: %d\n", iResult);
 				g_prevHTTPResult = iResult;
 			}
 		}
