@@ -401,6 +401,17 @@ static commandResult_t cmnd_MqttClient(const void * context, const char *cmd, co
 	CFG_SetMQTTClientId(Tokenizer_GetArg(0));
 	return CMD_RES_OK;
 }
+static commandResult_t cmnd_MqttGroup(const void * context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	CFG_SetMQTTGroupTopic(Tokenizer_GetArg(0));
+	return CMD_RES_OK;
+}
 static commandResult_t cmnd_stub(const void * context, const char *cmd, const char *args, int cmdFlags) {
 
 	return CMD_RES_OK;
@@ -467,6 +478,11 @@ int taslike_commands_init(){
 	//cmddetail:"fn":"cmnd_MqttClient","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MqttClient", cmnd_MqttClient, NULL);
+	//cmddetail:{"name":"MqttGroup","args":"[ValueString]",
+	//cmddetail:"descr":"Sets the MQTT Group topic. Command keeps Tasmota syntax",
+	//cmddetail:"fn":"cmnd_MqttGroup","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("MqttGroup", cmnd_MqttGroup, NULL);
 
 	// those are stubs, they are handled elsewhere so we can have Tasmota style replies
 
