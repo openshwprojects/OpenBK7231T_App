@@ -90,8 +90,8 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id, int ase
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "battery", index);
 		break;
 	case BATTERY_CHANNEL_SENSOR:
-		//battery_ch, because there may be a collision on channel 0 with BATTERY_SENSOR - hardcoded channel 0
-		//previously there was default "sensor" - the probability of a collision is much higher
+		//20250326 XJIKKA previously there was default "sensor" - the probability of a collision was high
+		//I used battery_ch (because battery could also collide on channel 0 with BATTERY_SENSOR, where channel 0 is hardcoded)
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "battery_ch", index);
 		break;
 	case VOLTAGE_SENSOR:
