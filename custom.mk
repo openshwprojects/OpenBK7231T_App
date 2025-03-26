@@ -9,18 +9,33 @@ EXCLUDED_FILES ?= src/httpserver/http_tcp_server.c src/ota/ota.c src/cmnds/cmd_t
 
 SRCS := $(filter-out $(EXCLUDED_FILES), $(wildcard $(shell find $(SRC_DIRS) -not \( -path "src/hal/bl602" -prune \) -not \( -path "src/hal/xr809" -prune \) -not \( -path "src/hal/w800" -prune \) -not \( -path "src/hal/bk7231" -prune \) -name *.c | sort -k 1nr | cut -f2-)))
 
+INC_DIRS := include $(shell find $(SRC_DIRS) -type d)
+INC_DIRS := $(filter-out src/hal/bl602 src/hal/xr809 src/hal/w800 src/hal/bk7231 src/memory, $(wildcard $(INC_DIRS)))
+
+INCLUDES := $(addprefix -I,$(INC_DIRS))
+
+default: $(BUILD_DIR)/$(TARGET_EXEC)
+
+BERRY_SRCPATH = libraries/berry/src/
+# different frameworks put object files in different places,
+# berry needs to add a rule to autogenerate some files before the object files
+# are built, so it needs the translation function from a C source to an object
+# file
+define obj_from_c
+	$(patsubst %.c, %.o, $(1))
+endef
+
+include libraries/berry.mk
+
+SRCS += $(BERRY_SRC_C)
 
 #OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
 DEPS := $(OBJS:.o=.d)
 
-INC_DIRS := $(shell find $(SRC_DIRS) -type d)
-INC_DIRS := $(filter-out src/hal/bl602 src/hal/xr809 src/hal/w800 src/hal/bk7231 src/memory, $(wildcard $(INC_DIRS)))
-INC_FLAGS := $(addprefix -I,$(INC_DIRS))
-
 LDLIBS := -lpthread -lm -lnsl
 
-CPPFLAGS ?= $(INC_FLAGS) -MMD -MP -std=gnu99 -DWINDOWS -DLINUX
+CPPFLAGS ?= $(INCLUDES) -MMD -MP -std=gnu99 -DWINDOWS -DLINUX
 
 CFLAGS ?= -std=gnu99 -W -Wall -Wextra -g
 
