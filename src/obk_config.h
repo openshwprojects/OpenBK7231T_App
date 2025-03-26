@@ -71,6 +71,14 @@
 
 #elif WINDOWS
 
+#if LINUX
+
+#else
+
+#define ENABLE_SDL_WINDOW	1
+
+#endif
+
 
 #define	ENABLE_HA_DISCOVERY		1
 #define ENABLE_SEND_POSTANDGET		1

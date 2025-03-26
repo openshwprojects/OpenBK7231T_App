@@ -12,11 +12,11 @@
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
-#include "lwip/netdb.h"
 #include "../cJSON/cJSON.h"
 
 #ifndef WINDOWS
 #include <lwip/dns.h>
+#include "lwip/netdb.h"
 #endif
 
 #ifdef WINDOWS

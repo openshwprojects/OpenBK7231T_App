@@ -10,7 +10,10 @@
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
+#ifndef WINDOWS
 #include "lwip/netdb.h"
+#endif
+
 #if PLATFORM_XR809
 #include "my_lwip2_mqtt_replacement.h"
 #else

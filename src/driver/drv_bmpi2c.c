@@ -2,6 +2,7 @@
 #include "../new_pins.h"
 #include "../logging/logging.h"
 #include "drv_local.h"
+#include <limits.h>
 
 static byte g_secondsBetweenMeasurements = 1, g_secondsUntilNextMeasurement = 1;
 static int32_t g_temperature, g_calTemp = 0, g_calHum = 0, g_calPres = 0;
