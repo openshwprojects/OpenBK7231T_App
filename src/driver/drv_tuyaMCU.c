@@ -2217,7 +2217,7 @@ void TuyaMCU_RunStateMachine_BatteryPowered() {
 		break;
 	case TM0_STATE_AWAITING_WIFI:
 		if (g_tuyaNextRequestDelay <= 0) {
-			if (Main_IsConnectedToWiFi()) {
+			if (Main_IsConnectedToWiFi() || Main_HasFastConnect()) {
 				// send wifi state 0x03 
 				Tuya_SetWifiState_V0(0x03);
 				// retry
