@@ -533,7 +533,7 @@ static commandResult_t CMD_SafeMode(const void* context, const char* cmd, const 
 void CMD_UARTConsole_Init() {
 #if PLATFORM_BEKEN
 	UART_InitUART(115200, 0, false);
-	cmd_uartInitIndex = get_g_uart_init_counter;
+	cmd_uartInitIndex = get_g_uart_init_counter();
 	UART_InitReceiveRingBuffer(512);
 #endif
 }
@@ -576,7 +576,7 @@ void CMD_UARTConsole_Run() {
 void CMD_RunUartCmndIfRequired() {
 #if PLATFORM_BEKEN
 	if (CFG_HasFlag(OBK_FLAG_CMD_ACCEPT_UART_COMMANDS)) {
-		if (cmd_uartInitIndex && cmd_uartInitIndex == get_g_uart_init_counter) {
+		if (cmd_uartInitIndex && cmd_uartInitIndex == get_g_uart_init_counter()) {
 			CMD_UARTConsole_Run();
 		}
 	}

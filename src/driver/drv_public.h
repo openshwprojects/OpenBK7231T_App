@@ -32,7 +32,13 @@ typedef enum energySensor_e {
 	OBK__NUM_SENSORS,
 } energySensor_t;
 
-typedef struct energySensorNames_s {	
+#if ENABLE_BL_TWIN
+extern const int OBK_CONSUMPTION_STORED_LAST[2];
+#else
+extern const int OBK_CONSUMPTION_STORED_LAST[1];
+#endif
+
+typedef struct energySensorNames_s {
 	const char* const hass_dev_class;
 	const char* const units;
 	const char* const name_friendly;
