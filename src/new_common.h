@@ -8,7 +8,7 @@
 #include <time.h>
 #include <stdarg.h>
 
-#if WINDOWS
+#if WINDOWS && !LINUX
 #include <crtdbg.h>
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
@@ -206,8 +206,41 @@ This platform is not supported, error!
 #if WINDOWS
 
 #include <time.h>
-#include <stdint.h>
 #include <math.h>
+
+#ifndef LINUX
+
+#include <stdint.h>
+
+#else
+
+#include <netdb.h>  // For gethostbyname and struct hostent
+#include <limits.h>
+#include <stdint.h>
+#define closesocket close
+
+#endif
+
+#ifdef LINUX
+
+#define SOCKET int
+#define closesocket close
+#define ISVALIDSOCKET(s) ((s) >= 0)
+#define GETSOCKETERRNO() (errno)
+#define ioctlsocket ioctl
+#define WSAEWOULDBLOCK EWOULDBLOCK
+#define SOCKET_ERROR	-1
+#define INVALID_SOCKET	-1
+#define WSAGetLastError() (errno)
+// TODO
+#define SD_SEND	 0 
+
+#elif WINDOWS
+
+#define ISVALIDSOCKET(s) ((s) != INVALID_SOCKET)
+#define GETSOCKETERRNO() (WSAGetLastError())
+
+#endif
 
 #define portTICK_RATE_MS 1000
 #define bk_printf printf
@@ -717,11 +750,26 @@ typedef unsigned char byte;
 
 #define WIN32_LEAN_AND_MEAN
 
+#ifndef LINUX
+
 #include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+#else
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <errno.h>
+
+#endif
 
 #else
 
@@ -733,6 +781,11 @@ typedef unsigned char byte;
 // stricmp fix
 #if WINDOWS
 
+#if LINUX
+
+#define stricmp strcasecmp
+
+#endif
 
 #else
 
@@ -785,9 +838,11 @@ int PingWatchDog_GetTotalReceived();
 int LWIP_GetMaxSockets();
 int LWIP_GetActiveSockets();
 
+#ifndef LINUX
 #ifndef PLATFORM_ESPIDF
 //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 void usleep(int r);
+#endif
 #endif
 
 #define RESTARTS_REQUIRED_FOR_SAFE_MODE 4
