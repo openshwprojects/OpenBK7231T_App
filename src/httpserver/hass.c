@@ -89,6 +89,11 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id, int ase
 	case BATTERY_SENSOR:
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "battery", index);
 		break;
+	case BATTERY_CHANNEL_SENSOR:
+		//20250326 XJIKKA previously there was default "sensor" - the probability of a collision was high
+		//I used battery_ch (because battery could also collide on channel 0 with BATTERY_SENSOR, where channel 0 is hardcoded)
+		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "battery_ch", index);
+		break;
 	case VOLTAGE_SENSOR:
 	case BATTERY_VOLTAGE_SENSOR:
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "voltage", index);
@@ -168,6 +173,7 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char* uniq_id, HassDe
 	case ENERGY_SENSOR:
 	case TIMESTAMP_SENSOR:
 	case BATTERY_SENSOR:
+	case BATTERY_CHANNEL_SENSOR:
 	case BATTERY_VOLTAGE_SENSOR:
 	case TEMPERATURE_SENSOR:
 	case HUMIDITY_SENSOR:
@@ -284,6 +290,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 			sprintf(g_hassBuffer, "Tvoc");
 			break;
 		case BATTERY_SENSOR:
+		case BATTERY_CHANNEL_SENSOR:
 			isSensor = true;
 			sprintf(g_hassBuffer, "Battery");
 			break;
