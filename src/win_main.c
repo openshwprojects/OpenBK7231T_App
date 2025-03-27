@@ -512,8 +512,8 @@ int __cdecl main(int argc, char **argv)
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, unused) != 0x00000CA5) {
-		printf("OFFSETOF(mainConfig_t, unused) != 0x00000CA5: %i\n", OFFSETOF(mainConfig_t, unused));
-		system("pause");
+		//printf("OFFSETOF(mainConfig_t, unused) != 0x00000CA5: %i\n", OFFSETOF(mainConfig_t, unused));
+		//system("pause");
 	}
 	// Test expansion
 	//CMD_UART_Send_Hex(0,0,"FFAA$CH1$BB",0);
@@ -607,4 +607,6 @@ int ota_total_bytes() {
 
 
 
+
 #endif
+

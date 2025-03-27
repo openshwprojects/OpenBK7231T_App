@@ -29,13 +29,16 @@ include libraries/berry.mk
 
 SRCS += $(BERRY_SRC_C)
 
+
 #OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
 DEPS := $(OBJS:.o=.d)
 
+
 LDLIBS := -lpthread -lm -lnsl
 
 CPPFLAGS ?= $(INCLUDES) -MMD -MP -std=gnu99 -DWINDOWS -DLINUX
+
 
 CFLAGS ?= -std=gnu99 -W -Wall -Wextra -g
 
@@ -56,4 +59,6 @@ clean:
 
 -include $(DEPS)
 
+
 MKDIR_P ?= mkdir -p
+

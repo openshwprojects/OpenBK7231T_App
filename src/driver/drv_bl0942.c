@@ -25,9 +25,9 @@ static unsigned short bl0942_baudRate = 4800;
 static unsigned short bl0942_opts= 0;
 #define BL0942_OPTBIT0_UART1 1
 #define BL0942_OPTBIT1_UART2 2
+#endif
 #define BL0942_DEVICE_INDEX_0 0
 #define BL0942_DEVICE_INDEX_1 1
-#endif
 
 #define BL0942_UART_RECEIVE_BUFFER_SIZE 256
 #define BL0942_UART_ADDR 0 // 0 - 3
@@ -70,7 +70,11 @@ typedef struct {
     uint32_t freq;
 } bl0942_data_t;
 
-static uint32_t PrevCfCnt = CF_CNT_INVALID;
+#if ENABLE_BL_TWIN
+static uint32_t PrevCfCnt[2] = {CF_CNT_INVALID, CF_CNT_INVALID};
+#else
+static uint32_t PrevCfCnt[1] = {CF_CNT_INVALID};
+#endif
 
 static int32_t Int24ToInt32(int32_t val) {
     return (val & (1 << 23) ? val | (0xFF << 24) : val);
@@ -80,6 +84,7 @@ static int32_t Int24ToInt32(int32_t val) {
 static void ScaleAndUpdate(int adeviceindex, bl0942_data_t *data) {
 #else
 static void ScaleAndUpdate(bl0942_data_t * data) {
+  int adeviceindex = BL0942_DEVICE_INDEX_0;
 #endif
   float voltage, current, power;
     PwrCal_Scale(data->v_rms, data->i_rms, data->watt, &voltage, &current,
@@ -87,26 +92,20 @@ static void ScaleAndUpdate(bl0942_data_t * data) {
 
     float frequency = 2 * 500000.0f / data->freq;
 
-#if ENABLE_BL_TWIN
-    if (adeviceindex == BL0942_DEVICE_INDEX_1) {
-      BL_ProcessUpdateEx(BL_SENSORS_IX_1, voltage, current, power, frequency, 0);
-    } else {
-#endif
-      //BL0942_DEVICE_INDEX_0
-      float energyWh = 0;
-      if (PrevCfCnt != CF_CNT_INVALID) {
-        int diff = (data->cf_cnt < PrevCfCnt
-          ? data->cf_cnt + (0xFFFFFF - PrevCfCnt) + 1
-          : data->cf_cnt - PrevCfCnt);
-        energyWh =
-          fabsf(PwrCal_ScalePowerOnly(diff)) * 1638.4f * 256.0f / 3600.0f;
-      }
-      PrevCfCnt = data->cf_cnt;
-#if ENABLE_BL_TWIN
-      BL_ProcessUpdateEx(BL_SENSORS_IX_0, voltage, current, power, frequency, energyWh);
+    float energyWh = 0;
+    if (PrevCfCnt[adeviceindex] != CF_CNT_INVALID) {
+      int diff = (data->cf_cnt < PrevCfCnt[adeviceindex]
+        ? data->cf_cnt + (0xFFFFFF - PrevCfCnt[adeviceindex]) + 1
+        : data->cf_cnt - PrevCfCnt[adeviceindex]);
+      energyWh =
+        fabsf(PwrCal_ScalePowerOnly(diff)) * 1638.4f * 256.0f / 3600.0f;
     }
+    PrevCfCnt[adeviceindex] = data->cf_cnt;
+#if ENABLE_BL_TWIN
+    //I assume that adeviceindex BL0942_DEVICE_INDEX_0/1 is equal to BL_SENSORS_IX_0/1 [to save flash memory]
+    BL_ProcessUpdateEx(adeviceindex, voltage, current, power, frequency, energyWh);
 #else
-      BL_ProcessUpdate(voltage, current, power, frequency, energyWh);
+    BL_ProcessUpdate(voltage, current, power, frequency, energyWh);
 #endif
     //addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Sensors ix %i v=%.f c=%.f p=%.f e=%.f",
     //    adeviceindex, voltage, current, power, frequency, energyWh);
@@ -317,7 +316,10 @@ static int SPI_WriteReg(uint8_t reg, uint32_t val) {
 }
 
 static void BL0942_Init(void) {
-    PrevCfCnt = CF_CNT_INVALID;
+  PrevCfCnt[BL0942_DEVICE_INDEX_0] = CF_CNT_INVALID;
+#if ENABLE_BL_TWIN
+  PrevCfCnt[BL0942_DEVICE_INDEX_1] = CF_CNT_INVALID;
+#endif
 
     BL_Shared_Init();
 

@@ -15,7 +15,6 @@ void BL09XX_SaveEmeteringStatistics();
 #if ENABLE_BL_TWIN
 #define BL_SENSORS_IX_1 1
 
-void BL_Shared_InitEx(int asensdatasetix);
 void BL_ProcessUpdateEx(int asensdatasetix, float voltage, float current, float power,
   float frequency, float energyWh);
 void BL09XX_AppendInformationToHTTPIndexPageEx(int asensdatasetix, http_request_t* request);

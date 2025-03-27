@@ -172,6 +172,7 @@ typedef struct tuyaMCUMapping_s {
 	int rawDataLen;
 	// not really useful as long as we have integer channels
 	float mult;
+	float delta;
 	// TODO
 	//int mode;
 	// list
@@ -327,7 +328,7 @@ tuyaMCUMapping_t* TuyaMCU_FindDefForChannel(int channel) {
 	return 0;
 }
 
-tuyaMCUMapping_t* TuyaMCU_MapIDToChannel(int dpId, int dpType, int channel, int bDPCache, float mul, int inv) {
+tuyaMCUMapping_t* TuyaMCU_MapIDToChannel(int dpId, int dpType, int channel, int bDPCache, float mul, int inv, float delta) {
 	tuyaMCUMapping_t* cur;
 
 	cur = TuyaMCU_FindDefForID(dpId);
@@ -344,6 +345,7 @@ tuyaMCUMapping_t* TuyaMCU_MapIDToChannel(int dpId, int dpType, int channel, int 
 	cur->dpType = dpType;
 	cur->bDPCache = bDPCache;
 	cur->mult = mul;
+	cur->delta = delta;
 	cur->inv = inv;
 	cur->prevValue = 0;
 	cur->channel = channel;
@@ -859,10 +861,10 @@ commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void* context, const ch
 	int channelID;
 	byte argsCount;
 	byte bDPCache;
-	float mult;
+	float mult, delta;
 	byte inv;
 
-	// linkTuyaMCUOutputToChannel dpId varType channelID
+	// linkTuyaMCUOutputToChannel [dpId] [varType] [channelID] [bDPCache] [mult] [inv] [delta]
 	// linkTuyaMCUOutputToChannel 1 val 1
 	Tokenizer_TokenizeString(args, 0);
 
@@ -885,8 +887,9 @@ commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void* context, const ch
 	bDPCache = Tokenizer_GetArgInteger(3);
 	mult = Tokenizer_GetArgFloatDefault(4, 1.0f);
 	inv = Tokenizer_GetArgInteger(5);
+	delta = Tokenizer_GetArgFloatDefault(6, 0.0f);
 
-	TuyaMCU_MapIDToChannel(dpId, dpType, channelID, bDPCache, mult, inv);
+	TuyaMCU_MapIDToChannel(dpId, dpType, channelID, bDPCache, mult, inv, delta);
 
 	return CMD_RES_OK;
 }
@@ -1146,7 +1149,7 @@ void TuyaMCU_ApplyMapping(tuyaMCUMapping_t* mapping, int dpID, int value) {
 
 	mapping->prevValue = mappedValue;
 
-	CHANNEL_Set(mapping->channel, mappedValue * mapping->mult, 0);
+	CHANNEL_Set(mapping->channel, ((mappedValue + mapping->delta) * mapping->mult), 0);
 }
 
 bool TuyaMCU_IsChannelUsedByTuyaMCU(int channel) {
@@ -1542,7 +1545,7 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 		if (CFG_HasFlag(OBK_FLAG_TUYAMCU_STORE_RAW_DATA)) {
 			if (CFG_HasFlag(OBK_FLAG_TUYAMCU_STORE_ALL_DATA)) {
 				if (mapping == 0) {
-					mapping = TuyaMCU_MapIDToChannel(dpId, dataType, -1, 0, 1.0f, 0);
+					mapping = TuyaMCU_MapIDToChannel(dpId, dataType, -1, 0, 1.0f, 0, 0);
 				}
 			}
 			if (mapping) {
@@ -2391,8 +2394,8 @@ void TuyaMCU_Init()
 	//cmddetail:"fn":"TuyaMCU_Send_SetTime_Current","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_sendCurTime", TuyaMCU_Send_SetTime_Current, NULL);
-	//cmddetail:{"name":"linkTuyaMCUOutputToChannel","args":"[dpId][varType][channelID][bDPCache-Optional][mult-optional][bInverse]",
-	//cmddetail:"descr":"Used to map between TuyaMCU dpIDs and our internal channels. Last argument is optional and 0 by default. You can set it to 1 for battery powered devices, so a variable is set with DPCache, for example a sampling interval for humidity/temperature sensor. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap. Please see [Tuya Docs](https://developer.tuya.com/en/docs/iot/tuya-cloud-universal-serial-port-access-protocol?id=K9hhi0xxtn9cb) for info about TuyaMCU. You can also see our [TuyaMCU Analyzer Tool](https://www.elektroda.com/rtvforum/viewtopic.php?p=20528459#20528459)",
+	//cmddetail:{"name":"linkTuyaMCUOutputToChannel","args":"[dpId][varType][channelID][bDPCache-Optional][mult-optional][bInverse-Optional][delta-Optional]",
+	//cmddetail:"descr":"Used to map between TuyaMCU dpIDs and our internal channels. Mult, inverse and delta are for calibration, they are optional. bDPCache is also optional, you can set it to 1 for battery powered devices, so a variable is set with DPCache, for example a sampling interval for humidity/temperature sensor. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap. Please see [Tuya Docs](https://developer.tuya.com/en/docs/iot/tuya-cloud-universal-serial-port-access-protocol?id=K9hhi0xxtn9cb) for info about TuyaMCU. You can also see our [TuyaMCU Analyzer Tool](https://www.elektroda.com/rtvforum/viewtopic.php?p=20528459#20528459)",
 	//cmddetail:"fn":"TuyaMCU_LinkTuyaMCUOutputToChannel","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("linkTuyaMCUOutputToChannel", TuyaMCU_LinkTuyaMCUOutputToChannel, NULL);

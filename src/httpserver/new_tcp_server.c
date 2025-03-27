@@ -237,7 +237,7 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 		{
 			sock[new_idx].fd = accept(listen_sock, (struct sockaddr*)&source_addr, &addr_len);
 
-#if LWIP_SO_RCVTIMEO && !PLATFORM_ECR6600
+#if LWIP_SO_RCVTIMEO && !PLATFORM_ECR6600 && !PLATFORM_TR6260
 			struct timeval tv;
 			tv.tv_sec = 30;
 			tv.tv_usec = 0;

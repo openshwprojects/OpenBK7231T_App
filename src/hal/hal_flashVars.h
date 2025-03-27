@@ -13,7 +13,12 @@ typedef struct ENERGY_METERING_DATA {
 	float TodayConsumpion;
 	float YesterdayConsumption;
 	long save_counter;
+#if ENABLE_BL_TWIN
+	float TotalConsumption_b;
+	float TodayConsumpion_b;
+#else
 	float ConsumptionHistory[2];
+#endif
 #ifdef PLATFORM_BEKEN_NEW
 	unsigned int ConsumptionResetTime;
 #else

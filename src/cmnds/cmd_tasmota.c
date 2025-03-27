@@ -6,6 +6,7 @@
 #include "cmd_local.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
+#include "../cJSON/cJSON.h"
 #if ENABLE_LITTLEFS
 	#include "../littlefs/our_lfs.h"
 #endif
@@ -18,6 +19,37 @@ int parsePowerArgument(const char *s) {
 	if(!stricmp(s,"OFF"))
 		return 0;
 	return atoi(s);
+}
+
+
+static commandResult_t cmnd_JsonCommand(const void *context, const char *cmd, const char *args, int cmdFlags) {
+    cJSON *root = cJSON_Parse(args);
+    if(!root) {
+        ADDLOG_ERROR(LOG_FEATURE_CMD, "Invalid JSON input: %s", args);
+        return CMD_RES_BAD_ARGUMENT;
+    }
+
+    cJSON *element = root->child;
+    while(element) {
+        if (cJSON_IsString(element)) {
+            char buffer[256];
+            snprintf(buffer, sizeof(buffer), "%s %s", element->string, element->valuestring);
+            CMD_ExecuteCommand(buffer, cmdFlags);
+        }
+        else if (cJSON_IsNumber(element)) {
+            char buffer[256];
+            if (element->valuedouble == (int)element->valuedouble) {
+                snprintf(buffer, sizeof(buffer), "%s %d", element->string, (int)element->valuedouble);
+            } else {
+                snprintf(buffer, sizeof(buffer), "%s %.2f", element->string, element->valuedouble);
+            }
+            CMD_ExecuteCommand(buffer, cmdFlags);
+        }
+        element = element->next;
+    }
+
+    cJSON_Delete(root);
+    return CMD_RES_OK;
 }
 
 static commandResult_t power(const void *context, const char *cmd, const char *args, int cmdFlags){
@@ -369,6 +401,17 @@ static commandResult_t cmnd_MqttClient(const void * context, const char *cmd, co
 	CFG_SetMQTTClientId(Tokenizer_GetArg(0));
 	return CMD_RES_OK;
 }
+static commandResult_t cmnd_MqttGroup(const void * context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	CFG_SetMQTTGroupTopic(Tokenizer_GetArg(0));
+	return CMD_RES_OK;
+}
 static commandResult_t cmnd_stub(const void * context, const char *cmd, const char *args, int cmdFlags) {
 
 	return CMD_RES_OK;
@@ -435,6 +478,11 @@ int taslike_commands_init(){
 	//cmddetail:"fn":"cmnd_MqttClient","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MqttClient", cmnd_MqttClient, NULL);
+	//cmddetail:{"name":"MqttGroup","args":"[ValueString]",
+	//cmddetail:"descr":"Sets the MQTT Group topic. Command keeps Tasmota syntax",
+	//cmddetail:"fn":"cmnd_MqttGroup","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("MqttGroup", cmnd_MqttGroup, NULL);
 
 	// those are stubs, they are handled elsewhere so we can have Tasmota style replies
 
@@ -458,5 +506,10 @@ int taslike_commands_init(){
 	//cmddetail:"fn":"cmnd_stub","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Result", cmnd_stub, NULL);
+	//cmddetail:{"name":"Json","args":"json array of commands",
+	//cmddetail:"descr":"A stub for Tasmota",
+	//cmddetail:"fn":"cmnd_JsonCommand","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("Json", cmnd_JsonCommand, NULL);
     return 0;
 }
