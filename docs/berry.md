@@ -22,7 +22,7 @@ While OpenBeken's built-in scripting is great for simple automation tasks, Berry
 
 ## How to Enable Berry
 
-Berry is currently enabled by default on some platforms (like WINDOWS and PLATFORM_BEKEN), but not on all platforms. 
+Berry is currently enabled by default on some platforms (like WINDOWS), but not on all platforms. 
 
 To enable Berry on other platforms:
 

@@ -557,7 +557,7 @@ void SVM_StopAllScripts() {
 		t->curFile = 0;
 		t->uniqueID = 0;
 		t->currentDelayMS = 0;
-#ifdef ENABLE_OBK_BERRY
+#if ENABLE_OBK_BERRY
 		if (t->isBerry) {
 			berryThreadComplete(t);
 		}
@@ -579,7 +579,7 @@ void SVM_StopScripts(int id, int bExcludeSelf) {
 				t->curFile = 0;
 				t->uniqueID = 0;
 				t->currentDelayMS = 0;
-#ifdef ENABLE_OBK_BERRY
+#if ENABLE_OBK_BERRY
 				if (t->isBerry) {
 					berryThreadComplete(t);
 				}
