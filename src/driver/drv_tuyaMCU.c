@@ -2008,15 +2008,19 @@ commandResult_t TuyaMCU_SendUserCmd(const void* context, const char* cmd, const 
 	Tokenizer_TokenizeString(args, 0);
 
 	int command = Tokenizer_GetArgInteger(0);
-	const char *s = Tokenizer_GetArg(1);
+	//XJIKKA 20250327 tuyaMcu_sendCmd without second param bug
+	if (Tokenizer_GetArgsCount() >= 2) {
+		const char* s = Tokenizer_GetArg(1);
+		if (s) {
+			while (*s) {
+				byte b;
+				b = CMD_ParseOrExpandHexByte(&s);
 
-	while (*s) {
-		byte b;
-		b = CMD_ParseOrExpandHexByte(&s);
-
-		if (sizeof(packet) > c + 1) {
-			packet[c] = b;
-			c++;
+				if (sizeof(packet) > c + 1) {
+					packet[c] = b;
+					c++;
+				}
+			}
 		}
 	}
 	TuyaMCU_SendCommandWithData(command,packet, c);
