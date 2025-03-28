@@ -1,7 +1,7 @@
 #if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
 #include "../../beken378/func/user_driver/armino/spi/spi.h"
 #else
-// spi_config_t and its member types are copied from BK7321N SPI implementation.
+// spi_config_t and its member types are copied from BK7231N SPI implementation.
 #include "drv_spi.h"
 #if PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 #include "../../../../platforms/bk7231t/bk7231t_os/beken378/common/typedef.h"

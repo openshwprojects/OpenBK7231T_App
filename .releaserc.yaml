@@ -73,22 +73,28 @@ generateNotes:
         
         ### WARNING! If installing versions tagged -alpha, please be aware these are development builds and may not be stable! Please do not flash all your devices at once! Make sure you can recover them via UART in case of unexpected issue.
 
-        OpenBK7231T/OpenBeken is a Tasmota/Esphome replacement for new Tuya modules featuring MQTT and Home Assistant compatibility. This repository is named <code>OpenBK7231T_App</code>, but now it's a multiplatform app, supporting build for multiple separate chips:
-
-        - BK7231T (WB3S, WB2S, WB2L etc)
-        - BK7231N (CB2S, CB2L, WB2L_M1 etc)
-        - BK7238 (NiceMCU)
+        OpenBK7231T/OpenBeken is a Tasmota/ESPHome alternative for modern IoT wifi devices, offering MQTT and Home Assistant compatibility. Although this repository is named <code>OpenBK7231T_App</code>, it has evolved into a multiplatform application, supporting builds for multiple chipsets from various vendors, including ESWIN, Transa Semi, Lightning Semi, Espressif, Beken, WinnerMicro, Xradiotech/Allwinner, Realtek, and Bouffalo Lab.
+        
+        - BK7231T (eg WB3S, WB2S, WB2L)
+        - BK7231N (eg CB2S, CB2L, WB2L_M1)
+        - BK7238 (eg NiceMCU, XH-CB3S)
         - T34 (based on BK7231N)
         - BL2028N (based on BK7231N)
-        - XR809 (XR3 etc)
-        - BL602 (DT-BL200, SM-028_V1.3 etc)
+        - XR809 (eg XR2, XR3)
+        - BL602 (eg DT-BL200, SM-028_V1.3)
         - LF686 (based on BL602)
         - W800 (W800-C400, WinnerMicro WiFi & Bluetooth), W801
-        - W600 (TW-01, TW-02, TW-03 etc), W601 (WIS600, ESP-01W etc)
-        - LN882H (LN-02, WL2S, WL2H etc)
+        - W600 (eg TW-01, TW-02, TW-03), W601 (WIS600, ESP-01W)
+        - LN882H (eg LN-02, WL2S, WL2H)
         - ESP32
-        - TR6260
-        - RTL87X0C (WBR2, WBR3 etc)
+        - TR6260 (eg HLK-M20, XY-WE2S-A V1.1)
+        - RTL87X0C (eg WBR2, WBR3)
+        - ESP32
+        - RTL8711AM/RTL8195A
+        - RTL8710C/RTL8720C (AmebaZ2 family) (eg BW15, W701, W701H, WBR2, WBR3)
+        - RTL8710B (AmebaZ family) (eg T102_V1.0, W302/T102_V1.0, T112_V1.1, WR2, WR3E, BW14)
+        - RTL8720D/CS (AmebaD family) (eg BW16, BW16E, W701D, W701DH, WBRG1, WBR3N, WBR3S)
+        - ECR6600 (eg AXYU, AXY2S, WG236, DSM-036, CDI-WX56600A-00, BL-M6600XT1, HF-LPT6200)
 
       footerPartial: |
         {{#if noteGroups}}
@@ -154,7 +160,7 @@ generateNotes:
         CCtr Flash = Tuya cloud Cutter flash
         SPI Flash can be flashed through SPI, even if you broke BK bootloader
         BK7231M is basically a BK7231N but with 000000 encryption keys. BK7231EasyGUIFlasher will show the encryption keys and warn you if you are trying to flash BK7231N with 000000 keys.
-        BK7231M binary will work also for some BL2808Ns, they are also often just a BK7231N with 000000 etc keys.
+        BK7231M binary will work also for some BL2028Ns, they are also often just a BK7231N with 000000 etc keys.
 
         Flashing instructions are available on the project's [README.md]({{host}}/{{owner}}/{{repository}}#readme)
     preset: conventionalcommits
