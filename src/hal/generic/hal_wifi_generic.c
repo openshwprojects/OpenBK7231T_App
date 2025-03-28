@@ -1,5 +1,6 @@
 #include "../hal_wifi.h"
 #include "../../new_common.h"
+#include "../../logging/logging.h"
 
 const char* __attribute__((weak)) HAL_GetMyIPString()
 {
@@ -53,6 +54,17 @@ void __attribute__((weak)) HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 }
 
 void __attribute__((weak)) HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
+{
+
+}
+
+void __attribute__((weak)) HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
+{
+	ADDLOG_ERROR(LOG_FEATURE_GENERAL, "Enhanced fast connect is not implemented on "PLATFORM_MCU_NAME".");
+	HAL_ConnectToWiFi(oob_ssid, connect_key, ip);
+}
+
+void __attribute__((weak)) HAL_DisableEnhancedFastConnect()
 {
 
 }

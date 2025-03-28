@@ -9,9 +9,12 @@
 
 #if PLATFORM_BEKEN
 #include "mem_pub.h"
-#elif PLATFORM_BL602 || PLATFORM_LN882H || PLATFORM_ESPIDF || PLATFORM_RTL8710B || PLATFORM_RTL8720D
+#elif PLATFORM_BL602 || PLATFORM_LN882H || PLATFORM_ESPIDF
 #define os_free free
 #define os_malloc malloc
+#elif PLATFORM_REALTEK
+#define os_malloc pvPortMalloc
+#define os_free vPortFree
 #endif
 
 // Users can override lfs_util.h with their own configuration by defining
