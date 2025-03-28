@@ -1416,6 +1416,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 			rtw_scan_result_t* record = &result->ap_details;
 			record->SSID.val[record->SSID.len] = 0;
 			hprintf255(request, "SSID: %s, Channel: %i, Signal %i<br>", record->SSID.val, record->channel, record->signal_strength);
+			return 0;
 		}
 
 		scan_hdl = xSemaphoreCreateBinary();
@@ -1527,6 +1528,7 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 			bChanged |= CFG_SetWiFiPass(tmpA);
 		}
 		poststr(request, "WiFi mode set: connect to WLAN.");
+		if(bChanged) HAL_DisableEnhancedFastConnect();
 	}
 	if (http_getArg(request->url, "ssid2", tmpA, sizeof(tmpA))) {
 		bChanged |= CFG_SetWiFiSSID2(tmpA);
@@ -2220,7 +2222,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			}
 		}
 	}
-	if (1) {
+	if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEPERMINUTE) || CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEONCONNECT)) {
 		//use -1 for channel as these don't correspond to channels
 #ifndef NO_CHIP_TEMPERATURE
 		dev_info = hass_init_sensor_device_info(HASS_TEMP, -1, -1, -1, 1);
@@ -2872,6 +2874,7 @@ const char* g_obk_flagNames[] = {
 	"[PWR] Invert AC dir",
 	"[HTTP] Hide ON/OFF for relays (only red/green buttons)",
 	"[MQTT] Never add get sufix",
+	"[WiFi] (RTL/BK) Enhanced fast connect by saving AP data to flash (preferable with Flag 37 & static ip). Reboot 3 times to connect normally once",
 	"error",
 	"error",
 	"error",

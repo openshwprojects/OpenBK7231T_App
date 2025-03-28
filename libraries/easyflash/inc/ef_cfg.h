@@ -109,7 +109,7 @@
 #elif PLATFORM_RTL8720D
 
 #define EF_START_ADDR             0x1B0000
-#define ENV_AREA_SIZE             0x50000
+#define ENV_AREA_SIZE             0x40000
 
 #endif
 /* print debug information of flash */
