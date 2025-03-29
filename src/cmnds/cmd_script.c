@@ -599,10 +599,29 @@ void SVM_GoToLocal(scriptInstance_t *th, const char *label) {
 
 	return;
 }
+int hasExtension(const char *fname, const char *ext) {
+	size_t len_fname = strlen(fname);
+	size_t len_ext = strlen(ext);
+	return (len_fname >= len_ext && strcmp(fname + len_fname - len_ext, ext) == 0);
+}
 scriptInstance_t *SVM_StartScript(const char *fname, const char *label, int uniqueID) {
 	scriptFile_t *f;
 	scriptInstance_t *th;
 
+#if 1
+	// allow "startScript test.be" as a shorthand for "berry import test"
+#if ENABLE_OBK_BERRY
+	if (hasExtension(fname, ".be")) {
+		char tmp[64];
+		sprintf(tmp, "berry import %s",fname);
+		tmp[strlen(tmp) - 3] = 0;
+		// strip .be
+		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: will run %s", tmp);
+		CMD_ExecuteCommand(tmp,0);
+		return NULL;
+	}
+#endif
+#endif
 	f = SVM_RegisterFile(fname);
 	if(f == 0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: failed to get file %s",fname);
