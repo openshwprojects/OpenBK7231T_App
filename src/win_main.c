@@ -559,7 +559,9 @@ int __cdecl main(int argc, char **argv)
 		while (1) {
 			Sleep(DEFAULT_FRAME_TIME);
 			Sim_RunFrame(DEFAULT_FRAME_TIME);
-			//SIM_RunWindow();
+#if ENABLE_SDL_WINDOW
+			SIM_RunWindow();
+#endif
 		}
 	}
 	else {
@@ -570,7 +572,9 @@ int __cdecl main(int argc, char **argv)
 			if (g_delta <= 0)
 				continue;
 			Sim_RunFrame(g_delta);
-			//SIM_RunWindow();
+#if ENABLE_SDL_WINDOW
+			SIM_RunWindow();
+#endif
 			prev_time = cur_time;
 		}
 	}
