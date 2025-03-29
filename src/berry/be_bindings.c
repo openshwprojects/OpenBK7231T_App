@@ -16,6 +16,18 @@ int be_SetStartValue(bvm *vm) {
 	be_return_nil(vm);
 }
 
+int be_runCmd(bvm *vm) {
+	int top = be_top(vm);
+	int ret;
+	if (top == 1) {
+		const char *cmd = be_tostring(vm, 1);
+		ret = CMD_ExecuteCommand(cmd, 0);
+	}
+	else {
+		ret = 0;
+	}
+	be_return_nil(vm);
+}
 int be_ChannelSet(bvm *vm) {
 	int top = be_top(vm);
 

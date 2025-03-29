@@ -358,7 +358,24 @@ void Test_Berry_PassArgFromCommandWithModule() {
 	SELFTEST_ASSERT_CHANNEL(5, 6);
 }
 
+void Test_Berry_CommandRunner() {
+	int i;
 
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	// Make sure channels start at 0
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+
+	// Run Berry code that sets channels
+	CMD_ExecuteCommand("berry runCmd(\"setChannel 1 123\")", 0);
+
+	// Verify the channels were set correctly
+	SELFTEST_ASSERT_CHANNEL(1, 123);
+
+}
 
 void Test_Berry() {
     Test_Berry_ChannelSet();
@@ -371,6 +388,7 @@ void Test_Berry() {
 	Test_Berry_PassArgFromCommand();
 	Test_Berry_PassArgFromCommandWithoutModule();
 	Test_Berry_PassArgFromCommandWithModule();
+	Test_Berry_CommandRunner();
 }
 
 #endif

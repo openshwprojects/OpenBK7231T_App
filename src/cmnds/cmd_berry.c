@@ -136,6 +136,7 @@ static int BasicInit() {
 		be_regfunc(g_vm, "setChannelType", be_SetChannelType);
 		be_regfunc(g_vm, "setChannelLabel", be_SetChannelLabel);
 		be_regfunc(g_vm, "addChangeHandler", be_AddChangeHandler);
+		be_regfunc(g_vm, "runCmd", be_runCmd);
 
 		be_regfunc(g_vm, "rtosDelayMs", be_rtosDelayMs);
 		be_regfunc(g_vm, "delayUs", be_delayUs);

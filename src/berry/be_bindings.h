@@ -8,6 +8,7 @@ int be_ChannelGet(bvm *vm);
 int be_ChannelAdd(bvm *vm);
 int be_SetChannelType(bvm *vm);
 int be_SetChannelLabel(bvm *vm);
+int be_runCmd(bvm *vm);
 
 int be_rtosDelayMs(bvm *vm);
 int be_delayUs(bvm *vm);
