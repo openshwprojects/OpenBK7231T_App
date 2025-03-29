@@ -33,7 +33,7 @@ int be_ChannelAdd(bvm *vm) {
 	if (top == 2 && be_isint(vm, 1) && be_isint(vm, 2)) {
 		int ch = be_toint(vm, 1);
 		int v = be_toint(vm, 2);
-		CHANNEL_Add(ch, v, 0);
+		CHANNEL_Add(ch, v);
 	}
 	be_return_nil(vm); /* return calculation result */
 }
