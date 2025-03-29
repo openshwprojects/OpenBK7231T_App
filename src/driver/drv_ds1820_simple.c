@@ -25,67 +25,6 @@ static int DS1820_DiscoverFamily();
 
 #define DS1820_LOG(x, fmt, ...) addLogAdv(LOG_##x, LOG_FEATURE_SENSOR, "DS1820[%i] - " fmt, Pin, ##__VA_ARGS__)
 
-// usleep adopted from DHT driver
-static void usleepds(int r)
-{
-	HAL_Delay_us(r);
-}
-
-// add some "special timing" for Beken - works w/o and with powerSave 1 for me
-static void usleepshort(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
-{
-#if PLATFORM_BEKEN
-	int newr = r / (3 * g_powersave + 1);		// devide by 4 if powerSave set to 1
-	for(volatile int i = 0; i < newr; i++)
-	{
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		//__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop");
-	}
-
-#else
-	usleepds(r);
-#endif
-}
-
-static void usleepmed(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
-{
-#if PLATFORM_BEKEN
-	int newr = 10 * r / (10 + 5 * g_powersave);		// devide by 1.5 powerSave set to 1
-	for(volatile int i = 0; i < newr; i++)
-	{
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	// 5
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-	}
-
-#else
-	usleepds(r);
-#endif
-}
-
-static void usleeplong(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
-{
-#if PLATFORM_BEKEN
-	int newr = 10 * r / (10 + 5 * g_powersave);		// devide by 1.5 powerSave set to 1
-	for(volatile int i = 0; i < newr; i++)
-	{
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		//		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	// 5
-		__asm__("nop\nnop\nnop\nnop\nnop");	// 5
-	}
-
-#else
-	usleepds(r);
-#endif
-}
-
 /*
 
 timing numbers and general code idea from
@@ -127,15 +66,20 @@ static int OWReset(int Pin)
 {
 	int result;
 
-	//usleep(OWtimeG);
+	vTaskSuspendAll();
+
+	//HAL_Delay_us(OWtimeG);
 	HAL_PIN_Setup_Output(Pin);
 	HAL_PIN_SetOutputValue(Pin, 0); // Drives DQ low
-	usleeplong(OWtimeH);
+	HAL_Delay_us(OWtimeH);
 	HAL_PIN_SetOutputValue(Pin, 1); // Releases the bus
-	usleepmed(OWtimeI);
-	HAL_PIN_Setup_Input(Pin);
+	HAL_Delay_us(OWtimeI);
+	HAL_PIN_Setup_Input_Pullup(Pin);
 	result = HAL_PIN_ReadDigitalInput(Pin) ^ 0x01; // Sample for presence pulse from slave
-	usleeplong(OWtimeJ); // Complete the reset sequence recovery
+
+	xTaskResumeAll();
+
+	HAL_Delay_us(OWtimeJ); // Complete the reset sequence recovery
 	return result; // Return sample presence pulse result
 }
 
@@ -150,10 +94,10 @@ static void OWWriteBit(int Pin, int bit)
 		HAL_PIN_Setup_Output(Pin);
 		noInterrupts();
 		HAL_PIN_SetOutputValue(Pin, 0); // Drives DQ low
-		usleepshort(OWtimeA);
+		HAL_Delay_us(OWtimeA);
 		HAL_PIN_SetOutputValue(Pin, 1); // Releases the bus
 		interrupts();	// hope for the best for the following timer and keep CRITICAL as short as possible
-		usleepmed(OWtimeB); // Complete the time slot and 10us recovery
+		HAL_Delay_us(OWtimeB); // Complete the time slot and 10us recovery
 	}
 	else
 	{
@@ -161,10 +105,10 @@ static void OWWriteBit(int Pin, int bit)
 		HAL_PIN_Setup_Output(Pin);
 		noInterrupts();
 		HAL_PIN_SetOutputValue(Pin, 0); // Drives DQ low
-		usleepmed(OWtimeC);
+		HAL_Delay_us(OWtimeC);
 		HAL_PIN_SetOutputValue(Pin, 1); // Releases the bus
 		interrupts();	// hope for the best for the following timer and keep CRITICAL as short as possible
-		usleepshort(OWtimeD);
+		HAL_Delay_us(OWtimeD);
 	}
 }
 
@@ -178,13 +122,13 @@ static int OWReadBit(int Pin)
 	noInterrupts();
 	HAL_PIN_Setup_Output(Pin);
 	HAL_PIN_SetOutputValue(Pin, 0); // Drives DQ low
-	usleepshort(OWtimeA);
+	HAL_Delay_us(OWtimeA);
 	HAL_PIN_SetOutputValue(Pin, 1); // Releases the bus
-	usleepshort(OWtimeE);
-	HAL_PIN_Setup_Input(Pin);
+	HAL_Delay_us(OWtimeE);
+	HAL_PIN_Setup_Input_Pullup(Pin);
 	result = HAL_PIN_ReadDigitalInput(Pin); // Sample for presence pulse from slave
 	interrupts();	// hope for the best for the following timer and keep CRITICAL as short as possible
-	usleepmed(OWtimeF); // Complete the time slot and 10us recovery
+	HAL_Delay_us(OWtimeF); // Complete the time slot and 10us recovery
 	return result;
 }
 
