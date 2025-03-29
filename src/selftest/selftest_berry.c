@@ -368,13 +368,19 @@ void Test_Berry_CommandRunner() {
 	CMD_ExecuteCommand("setChannel 1 0", 0);
 
 	SELFTEST_ASSERT_CHANNEL(1, 0);
-
-	// Run Berry code that sets channels
 	CMD_ExecuteCommand("berry runCmd(\"setChannel 1 123\")", 0);
-
-	// Verify the channels were set correctly
+	SELFTEST_ASSERT_CHANNEL(1, 123);
+	CMD_ExecuteCommand("berry runCmd(\"addChannel 1 7\")", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 130);
+	CMD_ExecuteCommand("berry runCmd(\"addChannel 1 -7\")", 0);
 	SELFTEST_ASSERT_CHANNEL(1, 123);
 
+	CMD_ExecuteCommand("berry runCmd(\"MQTTHost 192.168.0.213\")", 0);
+	SELFTEST_ASSERT_STRING("192.168.0.213", CFG_GetMQTTHost());
+	CMD_ExecuteCommand("berry runCmd(\"MQTTHost 192.168.0.123\")", 0);
+	SELFTEST_ASSERT_STRING("192.168.0.123", CFG_GetMQTTHost());
+	CMD_ExecuteCommand("berry runCmd(\"MQTTHost 192.168.1.5\")", 0);
+	SELFTEST_ASSERT_STRING("192.168.1.5", CFG_GetMQTTHost());
 }
 
 void Test_Berry() {
