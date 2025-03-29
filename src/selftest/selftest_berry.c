@@ -318,16 +318,13 @@ void Test_Berry_PassArgFromCommand() {
 	SELFTEST_ASSERT_CHANNEL(5, 0);
 
 	// Simulate a device restart by running the autoexec.txt script
-	CMD_ExecuteCommand("berry def mySample(x) channelSet(5, x) end", 0);
+	CMD_ExecuteCommand("berry def mySample(x) channelAdd(5, x) end", 0);
 	CMD_ExecuteCommand("berry mySample(15)", 0);
-
-	// Run scheduler to let any scripts complete
-	for (int i = 0; i < 5; i++) {
-		SVM_RunThreads(10);
-	}
-
-	// Verify that the Berry module was loaded and initialized (it should have set channel 5 to 15)
 	SELFTEST_ASSERT_CHANNEL(5, 15);
+	CMD_ExecuteCommand("berry mySample(15)", 0);
+	SELFTEST_ASSERT_CHANNEL(5, 30);
+	CMD_ExecuteCommand("berry mySample(2)", 0);
+	SELFTEST_ASSERT_CHANNEL(5, 32);
 }
 
 
