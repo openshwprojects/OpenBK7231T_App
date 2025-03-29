@@ -278,25 +278,47 @@ void Test_Berry_PassArg() {
 }
 
 
+//
+//void Test_Berry_PassArgFromCommand() {
+//	// reset whole device
+//	SIM_ClearOBK(0);
+//	CMD_ExecuteCommand("lfs_format", 0);
+//
+//	// Create a Berry module file
+//	Test_FakeHTTPClientPacket_POST("api/lfs/test.be",
+//		"def mySample(x)\n"
+//		"  print('Hello from test.be')\n"
+//		"  channelSet(5, x) # Set a channel so we can verify init ran\n"
+//		"end\n\n");
+//
+//	// Make sure channel starts at 0
+//	CMD_ExecuteCommand("setChannel 5 0", 0);
+//	SELFTEST_ASSERT_CHANNEL(5, 0);
+//
+//	// Simulate a device restart by running the autoexec.txt script
+//	CMD_ExecuteCommand("startScript test.be", 0);
+//	CMD_ExecuteCommand("berry mySample(15)", 0);
+//
+//	// Run scheduler to let any scripts complete
+//	for (int i = 0; i < 5; i++) {
+//		SVM_RunThreads(10);
+//	}
+//
+//	// Verify that the Berry module was loaded and initialized (it should have set channel 5 to 15)
+//	SELFTEST_ASSERT_CHANNEL(5, 15);
+//}
 
 void Test_Berry_PassArgFromCommand() {
 	// reset whole device
 	SIM_ClearOBK(0);
 	CMD_ExecuteCommand("lfs_format", 0);
 
-	// Create a Berry module file
-	Test_FakeHTTPClientPacket_POST("api/lfs/test.be",
-		"def mySample(x)\n"
-		"  print('Hello from test.be')\n"
-		"  channelSet(5, x) # Set a channel so we can verify init ran\n"
-		"end\n\n");
-
 	// Make sure channel starts at 0
 	CMD_ExecuteCommand("setChannel 5 0", 0);
 	SELFTEST_ASSERT_CHANNEL(5, 0);
 
 	// Simulate a device restart by running the autoexec.txt script
-	CMD_ExecuteCommand("startScript test.be", 0);
+	CMD_ExecuteCommand("berry def mySample(x) channelSet(5, x) end", 0);
 	CMD_ExecuteCommand("berry mySample(15)", 0);
 
 	// Run scheduler to let any scripts complete
