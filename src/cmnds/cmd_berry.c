@@ -204,12 +204,15 @@ void stopBerrySVM() {
 	}
 }
 
-static commandResult_t CMD_StopBerry(const void *context, const char *cmd, const char *args, int cmdFlags) {
+void CMD_StopBerry() {
 	if (g_vm) {
 		stopBerrySVM();
 		be_vm_delete(g_vm);
 		g_vm = NULL;
 	}
+}
+static commandResult_t CMD_StopBerryCommand(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	CMD_StopBerry();
 	return CMD_RES_OK;
 }
 
@@ -223,7 +226,7 @@ void CMD_InitBerry() {
 	// cmddetail:"descr":"Stop Berry VM",
 	// cmddetail:"fn":"CMD_StopBerry","file":"cmnds/cmd_berry.c","requires":"",
 	// cmddetail:"examples":"stopBerry"}
-	CMD_RegisterCommand("stopBerry", CMD_StopBerry, NULL);
+	CMD_RegisterCommand("stopBerry", CMD_StopBerryCommand, NULL);
 }
 
 #endif

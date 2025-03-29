@@ -849,9 +849,13 @@ static commandResult_t CMD_StopAllScripts(const void *context, const char *cmd, 
 
 	return CMD_RES_OK;
 }
+void CMD_StopBerry();
+
 commandResult_t CMD_resetSVM(const void *context, const char *cmd, const char *args, int cmdFlags){
 
-
+#if ENABLE_OBK_BERRY
+	CMD_StopBerry();
+#endif
 	// stop scripts
 	SVM_StopAllScripts();
 	// clear files
