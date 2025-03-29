@@ -278,6 +278,29 @@ void Test_Berry_PassArg() {
 }
 
 
+
+void Test_Berry_PassArgFromCommand() {
+	// reset whole device
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("lfs_format", 0);
+
+	// Make sure channel starts at 0
+	CMD_ExecuteCommand("setChannel 5 0", 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+
+	// Simulate a device restart by running the autoexec.txt script
+	CMD_ExecuteCommand("berry def mySample(x) channelAdd(5, x) end", 0);
+	CMD_ExecuteCommand("berry mySample(15)", 0);
+	SELFTEST_ASSERT_CHANNEL(5, 15);
+	CMD_ExecuteCommand("berry mySample(15)", 0);
+	SELFTEST_ASSERT_CHANNEL(5, 30);
+	CMD_ExecuteCommand("berry mySample(2)", 0);
+	SELFTEST_ASSERT_CHANNEL(5, 32);
+	CMD_ExecuteCommand("berry mySample(-5)", 0);
+	SELFTEST_ASSERT_CHANNEL(5, 27);
+}
+
+
 //
 //void Test_Berry_PassArgFromCommand() {
 //	// reset whole device
@@ -307,27 +330,6 @@ void Test_Berry_PassArg() {
 //	// Verify that the Berry module was loaded and initialized (it should have set channel 5 to 15)
 //	SELFTEST_ASSERT_CHANNEL(5, 15);
 //}
-
-void Test_Berry_PassArgFromCommand() {
-	// reset whole device
-	SIM_ClearOBK(0);
-	CMD_ExecuteCommand("lfs_format", 0);
-
-	// Make sure channel starts at 0
-	CMD_ExecuteCommand("setChannel 5 0", 0);
-	SELFTEST_ASSERT_CHANNEL(5, 0);
-
-	// Simulate a device restart by running the autoexec.txt script
-	CMD_ExecuteCommand("berry def mySample(x) channelAdd(5, x) end", 0);
-	CMD_ExecuteCommand("berry mySample(15)", 0);
-	SELFTEST_ASSERT_CHANNEL(5, 15);
-	CMD_ExecuteCommand("berry mySample(15)", 0);
-	SELFTEST_ASSERT_CHANNEL(5, 30);
-	CMD_ExecuteCommand("berry mySample(2)", 0);
-	SELFTEST_ASSERT_CHANNEL(5, 32);
-}
-
-
 
 void Test_Berry() {
     Test_Berry_ChannelSet();
