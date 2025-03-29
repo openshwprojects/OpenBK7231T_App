@@ -133,6 +133,7 @@
 #define ENABLE_DRIVER_SGP				1
 #define ENABLE_DRIVER_SHIFTREGISTER		1
 #define ENABLE_OBK_SCRIPTING			1
+#define ENABLE_OBK_BERRY				1
 
 #elif PLATFORM_BL602
 
@@ -226,6 +227,7 @@
 #if PLATFORM_BEKEN_NEW
 #define NEW_TCP_SERVER				1
 #endif
+// #define ENABLE_OBK_BERRY			1
 
 // ENABLE_I2C_ is a syntax for
 // our I2C system defines for drv_i2c_main.c
