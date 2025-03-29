@@ -356,6 +356,8 @@ void Test_Berry_PassArgFromCommandWithModule() {
 	SELFTEST_ASSERT_CHANNEL(5, 4);
 	CMD_ExecuteCommand("berry import test; test.mySample(2)", 0);
 	SELFTEST_ASSERT_CHANNEL(5, 6);
+	CMD_ExecuteCommand("berry test.mySample(2)", 0);
+	SELFTEST_ASSERT_CHANNEL(5, 8);
 }
 
 void Test_Berry_CommandRunner() {
