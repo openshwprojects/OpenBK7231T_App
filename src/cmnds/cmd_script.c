@@ -612,6 +612,10 @@ scriptInstance_t *SVM_StartScript(const char *fname, const char *label, int uniq
 	// allow "startScript test.be" as a shorthand for "berry import test"
 #if ENABLE_OBK_BERRY
 	if (hasExtension(fname, ".be")) {
+		// berry does not like slash?
+		if (*fname == '/' || *fname == '\\') {
+			fname++;
+		}
 		char tmp[64];
 		sprintf(tmp, "berry import %s",fname);
 		tmp[strlen(tmp) - 3] = 0;
