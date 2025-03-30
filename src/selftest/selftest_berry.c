@@ -148,7 +148,7 @@ void Test_Berry_Fibonacci() {
 	Test_FakeHTTPClientPacket_POST("api/lfs/tester.be",
 		"tester = module('tester')\n"
 		"\n"
-		"autoexec.fib = def(n)\n"
+		"tester.fib = def(n)\n"
 		"def fib(n)\n"
 		"	if n <= 1 return n end\n"
 		"	return fib(n - 1) + fib(n - 2)\n"
