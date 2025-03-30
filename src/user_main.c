@@ -370,18 +370,26 @@ void Main_OnWiFiStatusChange(int code)
 	case WIFI_STA_CONNECTING:
 		g_bHasWiFiConnected = 0;
 		g_connectToWiFi = 120;
-		ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTING - %i\r\n", code);
+		ADDLOGF_INFO("%s - WIFI_STA_CONNECTING - %i\r\n", __func__, code);
 		break;
 	case WIFI_STA_DISCONNECTED:
 		// try to connect again in few seconds
-		if (g_bHasWiFiConnected != 0)
+		// if we are already disconnected, why must we call disconnect again?
+		//if (g_bHasWiFiConnected != 0)
+		//{
+		//	HAL_DisconnectFromWifi();
+		//}
+		if(g_secondsElapsed < 30)
 		{
-			HAL_DisconnectFromWifi();
+			g_connectToWiFi = 5;
 		}
-		g_connectToWiFi = 15;
+		else
+		{
+			g_connectToWiFi = 15;
+		}
 		g_bHasWiFiConnected = 0;
 		g_timeSinceLastPingReply = -1;
-		ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_DISCONNECTED - %i\r\n", code);
+		ADDLOGF_INFO("%s - WIFI_STA_DISCONNECTED - %i\r\n", __func__, code);
 		break;
 	case WIFI_STA_AUTH_FAILED:
 		// try to connect again in few seconds
@@ -394,7 +402,7 @@ void Main_OnWiFiStatusChange(int code)
 			g_connectToWiFi = 60;
 		}
 		g_bHasWiFiConnected = 0;
-		ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_AUTH_FAILED - %i\r\n", code);
+		ADDLOGF_INFO("%s - WIFI_STA_AUTH_FAILED - %i\r\n", __func__, code);
 		break;
 	case WIFI_STA_CONNECTED:
 #if ALLOW_SSID2
@@ -402,7 +410,7 @@ void Main_OnWiFiStatusChange(int code)
 #endif		
 
 		g_bHasWiFiConnected = 1;
-		ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTED - %i\r\n", code);
+		ADDLOGF_INFO("%s - WIFI_STA_CONNECTED - %i\r\n", __func__, code);
 
 #if ALLOW_SSID2
 		g_SSIDSwitchCnt = 0;
@@ -432,11 +440,11 @@ void Main_OnWiFiStatusChange(int code)
 		/* for softap mode */
 	case WIFI_AP_CONNECTED:
 		g_bHasWiFiConnected = 1;
-		ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_AP_CONNECTED - %i\r\n", code);
+		ADDLOGF_INFO("%s - WIFI_AP_CONNECTED - %i\r\n", __func__, code);
 		break;
 	case WIFI_AP_FAILED:
 		g_bHasWiFiConnected = 0;
-		ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_AP_FAILED - %i\r\n", code);
+		ADDLOGF_INFO("%s - WIFI_AP_FAILED - %i\r\n", __func__, code);
 		break;
 	default:
 		break;
@@ -1304,7 +1312,7 @@ void Main_ForceUnsafeInit() {
 // power on.
 void Main_Init_Before_Delay()
 {
-	ADDLOGF_INFO("Main_Init_Before_Delay");
+	ADDLOGF_INFO("%s", __func__);
 	// read or initialise the boot count flash area
 	HAL_FlashVars_IncreaseBootCount();
 
@@ -1333,8 +1341,8 @@ void Main_Init_Before_Delay()
 		Main_Init_BeforeDelay_Unsafe(true);
 	}
 
-	ADDLOGF_INFO("Main_Init_Before_Delay done");
-	bk_printf("\r\nMain_Init_Before_Delay done\r\n");
+	ADDLOGF_INFO("%s done", __func__);
+	bk_printf("\r\%s done\r\n", __func__);
 }
 
 // a fixed delay of 750ms to wait for calibration routines in core thread,
@@ -1345,13 +1353,13 @@ void Main_Init_Before_Delay()
 // (e.g. are we delayed by it reading temperature?)
 void Main_Init_Delay()
 {
-	ADDLOGF_INFO("Main_Init_Delay");
-	bk_printf("\r\nMain_Init_Delay\r\n");
+	ADDLOGF_INFO("%s", __func__);
+	bk_printf("\r\%s\r\n", __func__);
 
 	extended_app_waiting_for_launch2();
 
-	ADDLOGF_INFO("Main_Init_Delay done");
-	bk_printf("\r\nMain_Init_Delay done\r\n");
+	ADDLOGF_INFO("%s done", __func__);
+	bk_printf("\r\%s done\r\n", __func__);
 
 	// use this variable wherever to determine if we have TCP/IP features.
 	// e.g. in logging to determine if we can start TCP thread
@@ -1364,7 +1372,7 @@ void Main_Init_Delay()
 void Main_Init_After_Delay()
 {
 	const char* wifi_ssid, * wifi_pass;
-	ADDLOGF_INFO("Main_Init_After_Delay");
+	ADDLOGF_INFO("%s", __func__);
 
 	// we can log this after delay.
 	if (bSafeMode) {
@@ -1439,7 +1447,7 @@ void Main_Init_After_Delay()
 		Main_Init_AfterDelay_Unsafe(true);
 	}
 
-	ADDLOGF_INFO("Main_Init_After_Delay done");
+	ADDLOGF_INFO("%s done", __func__);
 }
 
 // to be overriden

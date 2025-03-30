@@ -112,6 +112,9 @@ char *get_security_type(int type) {
 	case SECURITY_TYPE_WPA2_AES:
 		return "CCMP";
 		break;
+#ifdef PLATFORM_BEKEN_NEW
+	case BK_SECURITY_TYPE_WPA_MIXED:
+#endif
 	case SECURITY_TYPE_WPA2_MIXED:
 		return "MIXED";
 		break;
@@ -178,16 +181,19 @@ void HAL_PrintNetworkInfo()
 			);
 
 		// bk_wlan_get_link_status doesn't work in handler when static ip is configured
-		if(g_needFastConnectSave && CFG_HasFlag(OBK_FLAG_WIFI_ENHANCED_FAST_CONNECT))
+		if(g_needFastConnectSave && CFG_HasFlag(OBK_FLAG_WIFI_ENHANCED_FAST_CONNECT) && cipher != SECURITY_TYPE_AUTO)
 		{
 			// if we have SAE, mixed WPA3 (BK uses SAE not PSK in that case), WEP, Open, OWE or auto, then disable connection via psk
 #if PLATFORM_BEKEN_NEW
 			if(cipher <= SECURITY_TYPE_WEP || cipher >= BK_SECURITY_TYPE_WPA3_SAE)
 #else
-			if(cipher <= SECURITY_TYPE_WEP || cipher == SECURITY_TYPE_AUTO)
+			if(cipher <= SECURITY_TYPE_WEP)
 #endif
 			{
-				ADDLOG_ERROR(LOG_FEATURE_GENERAL, "Fast connect is not supported with current AP encryption.");
+				// if we ignore that, and use psk - bk will fail to connect.
+				// If we use password instead of psk, then first attempt to connect will almost always fail.
+				// And even if it succeeds, first connect is not faster.
+				ADDLOG_WARN(LOG_FEATURE_GENERAL, "Fast connect is not supported with current AP encryption.");
 				if(g_cfg.fcdata.channel != 0)
 				{
 					g_cfg.fcdata.channel = 0;
@@ -363,11 +369,11 @@ void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkSta
 	{
 		ADDLOG_INFO(LOG_FEATURE_GENERAL, "We have fast connection data, connecting...");
 		network_InitTypeDef_adv_st network_cfg;
-		os_memset(&network_cfg, 0, sizeof(network_InitTypeDef_adv_st));
-		os_strcpy(network_cfg.ap_info.ssid, oob_ssid);
+		memset(&network_cfg, 0, sizeof(network_InitTypeDef_adv_st));
+		strcpy(network_cfg.ap_info.ssid, oob_ssid);
 		memcpy(network_cfg.key, g_cfg.fcdata.psk, 64);
 		network_cfg.key_len = 64;
-		strncpy(network_cfg.ap_info.bssid, g_cfg.fcdata.bssid, sizeof(g_cfg.fcdata.bssid));
+		memcpy(network_cfg.ap_info.bssid, g_cfg.fcdata.bssid, sizeof(g_cfg.fcdata.bssid));
 
 		if(ip->localIPAddr[0] == 0)
 		{
@@ -388,7 +394,6 @@ void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkSta
 		network_cfg.wifi_retry_interval = 100;
 
 		bk_wlan_start_sta_adv(&network_cfg);
-
 	}
 	else
 	{
