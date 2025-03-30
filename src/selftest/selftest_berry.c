@@ -150,7 +150,7 @@ void Test_Berry_Fibonacci() {
 		"\n"
 		"tester.fib = def(n)\n"
 		"	if n <= 1 return n end\n"
-		"	return fib(n - 1) + fib(n - 2)\n"
+		"	return tester.fib(n - 1) + tester.fib(n - 2)\n"
 		"end\n"
 		"\n"
 		"# Berry modules must return the module object\n"
