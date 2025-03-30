@@ -429,6 +429,7 @@ void Test_Berry_AddChangeHandler() {
 		"end)",0);
 	SELFTEST_ASSERT_CHANNEL(1, 0);
 	CMD_ExecuteCommand("setChannel 3 1", 0);
+	SVM_RunThreads(1);
 	SELFTEST_ASSERT_CHANNEL(1, 1);
 
 }
