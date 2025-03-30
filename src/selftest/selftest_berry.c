@@ -413,6 +413,25 @@ void Test_Berry_PassArgFromCommandWithModule() {
 	SELFTEST_ASSERT_CHANNEL(5, 8);
 }
 
+// 
+void Test_Berry_AddChangeHandler() {
+	int i;
+
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	// Make sure channels start at 0
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	CMD_ExecuteCommand("berry addChangeHandler(\"Channel3\", \"=\", 1, def()\n"
+		"setChannel(1, 1) \n"
+		"end)",0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	CMD_ExecuteCommand("setChannel 3 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+
+}
 void Test_Berry_CommandRunner() {
 	int i;
 
@@ -492,6 +511,7 @@ void Test_Berry() {
 
 	Test_Berry_MQTTHandler();
 	Test_Berry_Fibonacci();
+	Test_Berry_AddChangeHandler();
 }
 
 #endif
