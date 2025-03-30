@@ -383,6 +383,9 @@ void Test_Berry_CommandRunner() {
 	SELFTEST_ASSERT_STRING("192.168.0.123", CFG_GetMQTTHost());
 	CMD_ExecuteCommand("berry runCmd(\"MQTTHost 192.168.1.5\")", 0);
 	SELFTEST_ASSERT_STRING("192.168.1.5", CFG_GetMQTTHost());
+	// berry can concat strings
+	CMD_ExecuteCommand("berry runCmd(\"MQTTHost \" + \"1.2.3.4\")", 0);
+	SELFTEST_ASSERT_STRING("1.2.3.4", CFG_GetMQTTHost());
 }
 
 void Test_Berry_MQTTHandler() {
