@@ -71,6 +71,26 @@ void Test_Berry_CancelThread() {
     // Verify the channels WERE set this time
     SELFTEST_ASSERT_CHANNEL(1, 99);
     SELFTEST_ASSERT_CHANNEL(2, 88);
+
+	// One more test
+	CMD_ExecuteCommand("berry scriptDelayMs(50, def() channelAdd(1, 1); channelSet(2, 2); end)", 0);
+	// Run scheduler to let the thread complete
+	for (i = 0; i < 20; i++) {
+		SVM_RunThreads(10);
+	}
+	// Verify the channels were added
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	SELFTEST_ASSERT_CHANNEL(2, 90);
+	// twice
+	CMD_ExecuteCommand("berry scriptDelayMs(50, def() channelAdd(1, 1); channelSet(2, 2); end)", 0);
+	CMD_ExecuteCommand("berry scriptDelayMs(50, def() channelAdd(1, 1); channelSet(2, 2); end)", 0);
+	// Run scheduler to let the thread complete
+	for (i = 0; i < 20; i++) {
+		SVM_RunThreads(10);
+	}
+	SELFTEST_ASSERT_CHANNEL(1, 102);
+	SELFTEST_ASSERT_CHANNEL(2, 94);
+
 }
 
 void Test_Berry_Import() {
