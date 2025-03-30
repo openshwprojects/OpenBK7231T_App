@@ -118,15 +118,12 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	// use old behaviour if only one argument is supplied
 	if(Tokenizer_GetArgsCount() > 1)
 	{
-		// arg0 is rf sleep, arg1 is mcu sleep
-		int mcusleep = Tokenizer_GetArgInteger(1);
+		// arg0 is mcu sleep, arg1 is rf sleep
+		int rfsleep = Tokenizer_GetArgInteger(1);
 		BK_PS_LEVEL level = 0;
-		level |= bOn > 0 ? PS_RF_SLEEP_BIT : 0;
-		level |= mcusleep > 0 ? PS_MCU_SLEEP_BIT : 0;
+		level |= bOn > 0 ? PS_MCU_SLEEP_BIT : 0;
+		level |= rfsleep > 0 ? PS_RF_SLEEP_BIT : 0;
 		bk_wlan_power_save_set_level(level);
-		// ensure to not break delay_us if only rf sleep is enabled
-		if(mcusleep) bOn = 1;
-		else bOn = 0;
 	}
 	else if (bOn) {
 		bk_wlan_power_save_set_level(/*PS_DEEP_SLEEP_BIT */  PS_RF_SLEEP_BIT | PS_MCU_SLEEP_BIT);
