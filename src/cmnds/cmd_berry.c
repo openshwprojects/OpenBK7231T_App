@@ -128,10 +128,10 @@ static int BasicInit() {
 		// Lazy init for now, to avoid resource consumption and boot loops
 		ADDLOG_INFO(LOG_FEATURE_BERRY, "[berry init]");
 		g_vm = be_vm_new(); /* create a virtual machine instance */
-		be_regfunc(g_vm, "channelSet", be_ChannelSet);
+		be_regfunc(g_vm, "setChannel", be_ChannelSet);
 		be_regfunc(g_vm, "scriptDelayMs", be_ScriptDelayMs);
-		be_regfunc(g_vm, "channelGet", be_ChannelGet);
-		be_regfunc(g_vm, "channelAdd", be_ChannelAdd);
+		be_regfunc(g_vm, "getChannel", be_ChannelGet);
+		be_regfunc(g_vm, "addChannel", be_ChannelAdd);
 		be_regfunc(g_vm, "setStartValue", be_SetStartValue);
 		be_regfunc(g_vm, "setChannelType", be_SetChannelType);
 		be_regfunc(g_vm, "setChannelLabel", be_SetChannelLabel);

@@ -16,15 +16,15 @@ void Test_Berry_ChannelSet() {
     SELFTEST_ASSERT_CHANNEL(2, 0);
 
     // Run Berry code that sets channels
-    CMD_ExecuteCommand("berry channelSet(1, 42)", 0);
-    CMD_ExecuteCommand("berry channelSet(2, 123)", 0);
+    CMD_ExecuteCommand("berry setChannel(1, 42)", 0);
+    CMD_ExecuteCommand("berry setChannel(2, 123)", 0);
     
     // Verify the channels were set correctly
     SELFTEST_ASSERT_CHANNEL(1, 42);
     SELFTEST_ASSERT_CHANNEL(2, 123);
     
     // Test setting multiple channels in one script
-    CMD_ExecuteCommand("berry channelSet(1, 99); channelSet(2, 88)", 0);
+    CMD_ExecuteCommand("berry setChannel(1, 99); setChannel(2, 88)", 0);
     
     // Verify the updated values
     SELFTEST_ASSERT_CHANNEL(1, 99);
@@ -46,7 +46,7 @@ void Test_Berry_CancelThread() {
 
     // Run Berry code that creates a delayed thread that would set channels
     // and stores the thread ID in a global variable
-    CMD_ExecuteCommand("berry thread_id = scriptDelayMs(100, def() channelSet(1, 42); channelSet(2, 123); end); print(thread_id)", 0);
+    CMD_ExecuteCommand("berry thread_id = scriptDelayMs(100, def() setChannel(1, 42); setChannel(2, 123); end); print(thread_id)", 0);
     
     // Now cancel the thread using the thread_id
     CMD_ExecuteCommand("berry cancel(thread_id)", 0);
@@ -61,7 +61,7 @@ void Test_Berry_CancelThread() {
     SELFTEST_ASSERT_CHANNEL(2, 0);
     
     // Now let's test the positive case - create a thread and let it complete
-    CMD_ExecuteCommand("berry scriptDelayMs(50, def() channelSet(1, 99); channelSet(2, 88); end)", 0);
+    CMD_ExecuteCommand("berry scriptDelayMs(50, def() setChannel(1, 99); setChannel(2, 88); end)", 0);
     
     // Run scheduler to let the thread complete
     for (i = 0; i < 20; i++) {
@@ -73,7 +73,7 @@ void Test_Berry_CancelThread() {
     SELFTEST_ASSERT_CHANNEL(2, 88);
 
 	// One more test
-	CMD_ExecuteCommand("berry scriptDelayMs(50, def() channelAdd(1, 1); channelAdd(2, 2); end)", 0);
+	CMD_ExecuteCommand("berry scriptDelayMs(50, def() addChannel(1, 1); addChannel(2, 2); end)", 0);
 	// Run scheduler to let the thread complete
 	for (i = 0; i < 20; i++) {
 		SVM_RunThreads(10);
@@ -82,8 +82,8 @@ void Test_Berry_CancelThread() {
 	SELFTEST_ASSERT_CHANNEL(1, 100);
 	SELFTEST_ASSERT_CHANNEL(2, 90);
 	// twice
-	CMD_ExecuteCommand("berry scriptDelayMs(50, def() channelAdd(1, 1); channelAdd(2, 2); end)", 0);
-	CMD_ExecuteCommand("berry scriptDelayMs(50, def() channelAdd(1, 1); channelAdd(2, 2); end)", 0);
+	CMD_ExecuteCommand("berry scriptDelayMs(50, def() addChannel(1, 1); addChannel(2, 2); end)", 0);
+	CMD_ExecuteCommand("berry scriptDelayMs(50, def() addChannel(1, 1); addChannel(2, 2); end)", 0);
 	// Run scheduler to let the thread complete
 	for (i = 0; i < 20; i++) {
 		SVM_RunThreads(10);
@@ -106,8 +106,8 @@ void Test_Berry_Import() {
         "\n"
         "# Add functions to the module\n"
         "autoexec.set_test_channels = def()\n"
-        "  channelSet(1, 42)\n"
-        "  channelSet(2, 84)\n"
+        "  setChannel(1, 42)\n"
+        "  setChannel(2, 84)\n"
         "end\n"
         "\n"
         "# This value can be accessed as autoexec.TEST_VALUE\n"
@@ -131,7 +131,7 @@ void Test_Berry_Import() {
     SELFTEST_ASSERT_CHANNEL(2, 84);
     
     // Test accessing a module constant
-    CMD_ExecuteCommand("berry import autoexec; channelSet(3, autoexec.TEST_VALUE)", 0);
+    CMD_ExecuteCommand("berry import autoexec; setChannel(3, autoexec.TEST_VALUE)", 0);
     
     // Verify the constant from the module was correctly accessed
     SELFTEST_ASSERT_CHANNEL(3, 123);
@@ -161,11 +161,11 @@ void Test_Berry_Fibonacci() {
 	SELFTEST_ASSERT_CHANNEL(1, 0);
 
 	// Import the autoexec module and call the Fibonacci function
-	CMD_ExecuteCommand("berry import tester; channelSet(1,tester.fib(10))", 0);
+	CMD_ExecuteCommand("berry import tester; setChannel(1,tester.fib(10))", 0);
 	// Verify the result of Fibonacci sequence 
 	SELFTEST_ASSERT_CHANNEL(1, 55);
 	// Import the autoexec module and call the Fibonacci function
-	CMD_ExecuteCommand("berry import tester; channelSet(1,tester.fib(11))", 0);
+	CMD_ExecuteCommand("berry import tester; setChannel(1,tester.fib(11))", 0);
 	// Verify the result of Fibonacci sequence 
 	SELFTEST_ASSERT_CHANNEL(1, 89);
 }
@@ -187,7 +187,7 @@ void Test_Berry_ThreadCleanup() {
     SELFTEST_ASSERT_CHANNEL(3, 0);
 
     // First run a Berry script that completes quickly
-    CMD_ExecuteCommand("berry scriptDelayMs(10, def() channelSet(1, 42); end)", 0);
+    CMD_ExecuteCommand("berry scriptDelayMs(10, def() setChannel(1, 42); end)", 0);
     
     // Run the scheduler to let the Berry script complete
     for (i = 0; i < 5; i++) {
@@ -225,7 +225,7 @@ void Test_Berry_ThreadCleanup() {
     SELFTEST_ASSERT_CHANNEL(3, 456);
     
     // Run one more Berry script to confirm both types still work
-    CMD_ExecuteCommand("berry channelSet(1, 789)", 0);
+    CMD_ExecuteCommand("berry setChannel(1, 789)", 0);
     SELFTEST_ASSERT_CHANNEL(1, 789);
 }
 void Test_Berry_AutoloadModule() {
@@ -239,7 +239,7 @@ void Test_Berry_AutoloadModule() {
         "\n"
         "autoexec.init = def (self)\n"
         "  print('Hello from autoexec.be')\n"
-        "  channelSet(5, 42) # Set a channel so we can verify init ran\n"
+        "  setChannel(5, 42) # Set a channel so we can verify init ran\n"
         "  return self\n"
         "end\n"
         "\n"
@@ -265,7 +265,7 @@ void Test_Berry_AutoloadModule() {
     SELFTEST_ASSERT_CHANNEL(5, 42);
     
     // Test that we can now use the module functions directly
-    CMD_ExecuteCommand("berry import autoexec; autoexec.init(); channelSet(6, 99)", 0);
+    CMD_ExecuteCommand("berry import autoexec; autoexec.init(); setChannel(6, 99)", 0);
     SELFTEST_ASSERT_CHANNEL(6, 99);
 }
 
@@ -278,7 +278,7 @@ void Test_Berry_StartScriptShortcut() {
 	Test_FakeHTTPClientPacket_POST("api/lfs/test.be",
 		"def mySample()\n"
 		"  print('Hello from test.be')\n"
-		"  channelSet(5, 2025) # Set a channel so we can verify init ran\n"
+		"  setChannel(5, 2025) # Set a channel so we can verify init ran\n"
 		"end\n"
 		"\n"
 		"mySample()\n");
@@ -309,7 +309,7 @@ void Test_Berry_PassArg() {
 	Test_FakeHTTPClientPacket_POST("api/lfs/test.be",
 		"def mySample(x)\n"
 		"  print('Hello from test.be')\n"
-		"  channelSet(5, x) # Set a channel so we can verify init ran\n"
+		"  setChannel(5, x) # Set a channel so we can verify init ran\n"
 		"end\n"
 		"\n"
 		"mySample(15)\n");
@@ -342,7 +342,7 @@ void Test_Berry_PassArgFromCommand() {
 	SELFTEST_ASSERT_CHANNEL(5, 0);
 
 	// Simulate a device restart by running the autoexec.txt script
-	CMD_ExecuteCommand("berry def mySample(x) channelAdd(5, x) end", 0);
+	CMD_ExecuteCommand("berry def mySample(x) addChannel(5, x) end", 0);
 	CMD_ExecuteCommand("berry mySample(15)", 0);
 	SELFTEST_ASSERT_CHANNEL(5, 15);
 	CMD_ExecuteCommand("berry mySample(15)", 0);
@@ -365,7 +365,7 @@ void Test_Berry_PassArgFromCommandWithoutModule() {
 	Test_FakeHTTPClientPacket_POST("api/lfs/test.be",
 		"def mySample(x)\n"
 		"  print('Hello from test.be')\n"
-		"  channelAdd(5, x) # Set a channel so we can verify init ran\n"
+		"  addChannel(5, x) # Set a channel so we can verify init ran\n"
 		"end\n\n");
 
 	// Make sure channel starts at 0
@@ -393,7 +393,7 @@ void Test_Berry_PassArgFromCommandWithModule() {
 		"\n"
 		"# Add functions to the module\n"
 		"test.mySample = def(x)\n"
-		"  channelAdd(5, x) # Set a channel so we can verify init ran\n"
+		"  addChannel(5, x) # Set a channel so we can verify init ran\n"
 		"end\n"
 		"\n"
 		"return test\n");

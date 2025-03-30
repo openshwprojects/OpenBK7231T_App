@@ -62,8 +62,8 @@ berry import mymodule
 
 ## Key Functions
 
-- `channelSet(channel, value)` - Set a channel value
-- `channelGet(channel)` - Get a channel value
+- `setChannel(channel, value)` - Set a channel value
+- `getChannel(channel)` - Get a channel value
 - `scriptDelayMs(ms, function)` - Run a function after a delay, returns a thread ID
 - `addChangeHandler(event, relation, value, function)` - Run a function when an event occurs, returns a thread ID
 - `cancel(threadId)` - Cancel a delayed function or event handler by its thread ID
@@ -74,8 +74,8 @@ berry import mymodule
 
 ```berry
 def toggle_relay()
-  current = channelGet(1)
-  channelSet(1, 1 - current)
+  current = getChannel(1)
+  setChannel(1, 1 - current)
   scriptDelayMs(1000, toggle_relay)
 end
 
@@ -88,7 +88,7 @@ toggle_relay()
 # Store the handler ID so we can cancel it later if needed
 handler_id = addChangeHandler("Channel3", "=", 1, def()
   print("Button pressed!")
-  channelSet(1, 1)  # Turn on relay
+  setChannel(1, 1)  # Turn on relay
 end)
 
 # Later, to cancel the handler:
@@ -101,8 +101,8 @@ end)
 # Create a repeating timer that toggles a relay every second
 def setup_toggle()
   def toggle_relay()
-    current = channelGet(1)
-    channelSet(1, 1 - current)
+    current = getChannel(1)
+    setChannel(1, 1 - current)
     return scriptDelayMs(1000, toggle_relay)  # Return the new timer ID
   end
   
@@ -140,8 +140,8 @@ mymodule.init = def(self)
 end
 
 mymodule.toggle_channel = def(self, channel)
-  current = channelGet(channel)
-  channelSet(channel, 1 - current)
+  current = getChannel(channel)
+  setChannel(channel, 1 - current)
 end
 
 return mymodule
