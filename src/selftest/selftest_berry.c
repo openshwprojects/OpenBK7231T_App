@@ -73,7 +73,7 @@ void Test_Berry_CancelThread() {
     SELFTEST_ASSERT_CHANNEL(2, 88);
 
 	// One more test
-	CMD_ExecuteCommand("berry scriptDelayMs(50, def() channelAdd(1, 1); channelSet(2, 2); end)", 0);
+	CMD_ExecuteCommand("berry scriptDelayMs(50, def() channelAdd(1, 1); channelAdd(2, 2); end)", 0);
 	// Run scheduler to let the thread complete
 	for (i = 0; i < 20; i++) {
 		SVM_RunThreads(10);
@@ -82,8 +82,8 @@ void Test_Berry_CancelThread() {
 	SELFTEST_ASSERT_CHANNEL(1, 100);
 	SELFTEST_ASSERT_CHANNEL(2, 90);
 	// twice
-	CMD_ExecuteCommand("berry scriptDelayMs(50, def() channelAdd(1, 1); channelSet(2, 2); end)", 0);
-	CMD_ExecuteCommand("berry scriptDelayMs(50, def() channelAdd(1, 1); channelSet(2, 2); end)", 0);
+	CMD_ExecuteCommand("berry scriptDelayMs(50, def() channelAdd(1, 1); channelAdd(2, 2); end)", 0);
+	CMD_ExecuteCommand("berry scriptDelayMs(50, def() channelAdd(1, 1); channelAdd(2, 2); end)", 0);
 	// Run scheduler to let the thread complete
 	for (i = 0; i < 20; i++) {
 		SVM_RunThreads(10);
@@ -135,6 +135,37 @@ void Test_Berry_Import() {
     
     // Verify the constant from the module was correctly accessed
     SELFTEST_ASSERT_CHANNEL(3, 123);
+}
+void Test_Berry_Fibonacci() {
+	int i, n = 5;
+	long long result = 1;
+
+	// Reset the whole device (for demo)
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("lfs_format", 0);
+
+	// Create an autoexec.be file with the Fibonacci sequence generator using if and recursion
+	Test_FakeHTTPClientPacket_POST("api/lfs/tester.be",
+		"tester = module('tester')\n"
+		"\n"
+		"autoexec.fib = def(n)\n"
+		"def fib(n)\n"
+		"	if n <= 1 return n end\n"
+		"	return fib(n - 1) + fib(n - 2)\n"
+		"end\n"
+		"\n"
+		"# Berry modules must return the module object\n"
+		"return tester\n");
+
+	// Make sure no channels are set before testing
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+
+	// Import the autoexec module and call the Fibonacci function
+	CMD_ExecuteCommand("berry import tester; setChannel(1,tester.fib(10))", 0);
+
+	// Verify the result of Fibonacci sequence 
+	SELFTEST_ASSERT_CHANNEL(1, 55);
 }
 
 void Test_Berry_ThreadCleanup() {
@@ -458,6 +489,7 @@ void Test_Berry() {
 	Test_Berry_CommandRunner();
 
 	Test_Berry_MQTTHandler();
+	Test_Berry_Fibonacci();
 }
 
 #endif
