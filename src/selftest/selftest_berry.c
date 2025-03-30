@@ -162,9 +162,12 @@ void Test_Berry_Fibonacci() {
 
 	// Import the autoexec module and call the Fibonacci function
 	CMD_ExecuteCommand("berry import tester; channelSet(1,tester.fib(10))", 0);
-
 	// Verify the result of Fibonacci sequence 
 	SELFTEST_ASSERT_CHANNEL(1, 55);
+	// Import the autoexec module and call the Fibonacci function
+	CMD_ExecuteCommand("berry import tester; channelSet(1,tester.fib(11))", 0);
+	// Verify the result of Fibonacci sequence 
+	SELFTEST_ASSERT_CHANNEL(1, 89);
 }
 
 void Test_Berry_ThreadCleanup() {
