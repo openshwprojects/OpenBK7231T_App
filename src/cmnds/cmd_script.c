@@ -364,7 +364,8 @@ void SVM_RunThread(scriptInstance_t *t, int maxLoops) {
 
 #if ENABLE_OBK_BERRY
 	if (t->isBerry && t->closureId > 0) {
-		berryResumeClosure(g_vm, t->closureId);
+		berryRunClosure(g_vm, t->closureId);
+		berryRemoveClosure(g_vm, t->closureId);
 		berryThreadComplete(t);
 		return;
 	}
