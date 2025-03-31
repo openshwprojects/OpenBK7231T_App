@@ -80,17 +80,18 @@ int be_AddChangeHandler(bvm *vm) {
 	be_return_nil(vm);
 }
 
-int be_ScriptDelayMs(bvm *vm) {
+
+int be_setTimeoutInternal(bvm *vm, int repeats) {
 	int top = be_top(vm);
-	if (top == 2 && be_isint(vm, 1) && be_isfunction(vm, 2)) {
-		int delay_ms = be_toint(vm, 1);
+	if (top == 2 && be_isint(vm, 2) && be_isfunction(vm, 1)) {
+		int delay_ms = be_toint(vm, 2);
 		// try to push suspend_closure function on the stack
 		if (!be_getglobal(vm, "suspend_closure")) {
 			// prelude not loaded??
 			be_return_nil(vm);
 		}
 		// push the second argument (closure) on the stack
-		be_pushvalue(vm, 2);
+		be_pushvalue(vm, 1);
 		// call suspend_closure with the second arg
 		be_call(vm, 1);
 		// it should return an ID of the suspended closure, to be used to wake up later
@@ -107,8 +108,10 @@ int be_ScriptDelayMs(bvm *vm) {
 			th->curFile = NULL;
 			th->curLine = ""; // NB. needs to be != NULL to get scheduled
 			th->currentDelayMS = delay_ms;
+			th->totalDelayMS = delay_ms;
 			th->isBerry = true;
 			th->closureId = closure_id;
+			th->delayRepeats = repeats;
 
 			// remove the 2 values we pushed on the stack
 			be_pop(vm, 2);
@@ -122,6 +125,13 @@ int be_ScriptDelayMs(bvm *vm) {
 	}
 	be_return_nil(vm);
 }
+int be_setTimeout(bvm *vm) {
+	be_setTimeoutInternal(vm, 0);
+}
+
+int be_setInterval(bvm *vm) {
+	be_setTimeoutInternal(vm, -1);
+}
 
 static int BasicInit() {
 	if (!g_vm) {
@@ -129,7 +139,8 @@ static int BasicInit() {
 		ADDLOG_INFO(LOG_FEATURE_BERRY, "[berry init]");
 		g_vm = be_vm_new(); /* create a virtual machine instance */
 		be_regfunc(g_vm, "setChannel", be_ChannelSet);
-		be_regfunc(g_vm, "scriptDelayMs", be_ScriptDelayMs);
+		be_regfunc(g_vm, "setTimeout", be_setTimeout);
+		be_regfunc(g_vm, "setInterval", be_setInterval);
 		be_regfunc(g_vm, "getChannel", be_ChannelGet);
 		be_regfunc(g_vm, "addChannel", be_ChannelAdd);
 		be_regfunc(g_vm, "setStartValue", be_SetStartValue);

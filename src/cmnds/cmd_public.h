@@ -21,16 +21,18 @@ typedef struct scriptFile_s
 	struct scriptFile_s* next;
 } scriptFile_t;
 
+
 typedef struct scriptInstance_s
 {
 	scriptFile_t* curFile;
 	int uniqueID;
 	const char* curLine;
+	int totalDelayMS;
 	int currentDelayMS;
-
 	int waitingForArgument;
 	unsigned short waitingForEvent;
 	char waitingForRelation;
+	int delayRepeats;
 
 	struct scriptInstance_s* next;
 #if ENABLE_OBK_BERRY

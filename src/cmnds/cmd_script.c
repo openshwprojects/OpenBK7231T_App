@@ -448,8 +448,27 @@ void SVM_RunThreads(int deltaMS) {
 			if (g_activeThread->currentDelayMS > 0) {
 				g_activeThread->currentDelayMS -= deltaMS;
 				// the following block is needed to handle with long freezes on simulator
-				if (g_activeThread->currentDelayMS < 0) {
-					g_activeThread->currentDelayMS = 0;
+				if (g_activeThread->currentDelayMS <= 0) {
+#if ENABLE_OBK_BERRY
+					if (g_activeThread->delayRepeats == -1) {
+						if (g_activeThread->isBerry && g_activeThread->closureId > 0) {
+							berryRunClosure(g_vm, g_activeThread->closureId);
+						}
+						g_activeThread->currentDelayMS = g_activeThread->totalDelayMS;
+					}
+					else if (g_activeThread->delayRepeats > 0) {
+						g_activeThread->delayRepeats--;
+						if (g_activeThread->isBerry && g_activeThread->closureId > 0) {
+							berryRunClosure(g_vm, g_activeThread->closureId);
+						}
+						g_activeThread->currentDelayMS = g_activeThread->totalDelayMS;
+					}
+					else
+#endif
+					{
+						g_activeThread->currentDelayMS = 0;
+						SVM_RunThread(g_activeThread, 20);
+					}
 				}
 				c_sleep++;
 			}

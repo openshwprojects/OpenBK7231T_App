@@ -46,7 +46,7 @@ void Test_Berry_CancelThread() {
 
     // Run Berry code that creates a delayed thread that would set channels
     // and stores the thread ID in a global variable
-    CMD_ExecuteCommand("berry thread_id = scriptDelayMs(100, def() setChannel(1, 42); setChannel(2, 123); end); print(thread_id)", 0);
+    CMD_ExecuteCommand("berry thread_id = setTimeout(def() setChannel(1, 42); setChannel(2, 123); end, 100); print(thread_id)", 0);
     
     // Now cancel the thread using the thread_id
     CMD_ExecuteCommand("berry cancel(thread_id)", 0);
@@ -61,7 +61,7 @@ void Test_Berry_CancelThread() {
     SELFTEST_ASSERT_CHANNEL(2, 0);
     
     // Now let's test the positive case - create a thread and let it complete
-    CMD_ExecuteCommand("berry scriptDelayMs(50, def() setChannel(1, 99); setChannel(2, 88); end)", 0);
+    CMD_ExecuteCommand("berry setTimeout(def() setChannel(1, 99); setChannel(2, 88); end, 50)", 0);
     
     // Run scheduler to let the thread complete
     for (i = 0; i < 20; i++) {
@@ -73,7 +73,7 @@ void Test_Berry_CancelThread() {
     SELFTEST_ASSERT_CHANNEL(2, 88);
 
 	// One more test
-	CMD_ExecuteCommand("berry scriptDelayMs(50, def() addChannel(1, 1); addChannel(2, 2); end)", 0);
+	CMD_ExecuteCommand("berry setTimeout(def() addChannel(1, 1); addChannel(2, 2); end, 50)", 0);
 	// Run scheduler to let the thread complete
 	for (i = 0; i < 20; i++) {
 		SVM_RunThreads(10);
@@ -82,8 +82,8 @@ void Test_Berry_CancelThread() {
 	SELFTEST_ASSERT_CHANNEL(1, 100);
 	SELFTEST_ASSERT_CHANNEL(2, 90);
 	// twice
-	CMD_ExecuteCommand("berry scriptDelayMs(50, def() addChannel(1, 1); addChannel(2, 2); end)", 0);
-	CMD_ExecuteCommand("berry scriptDelayMs(50, def() addChannel(1, 1); addChannel(2, 2); end)", 0);
+	CMD_ExecuteCommand("berry setTimeout(def() addChannel(1, 1); addChannel(2, 2); end, 50)", 0);
+	CMD_ExecuteCommand("berry setTimeout(def() addChannel(1, 1); addChannel(2, 2); end, 50)", 0);
 	// Run scheduler to let the thread complete
 	for (i = 0; i < 20; i++) {
 		SVM_RunThreads(10);
@@ -93,6 +93,63 @@ void Test_Berry_CancelThread() {
 
 }
 
+
+void Test_Berry_SetInterval() {
+	int i;
+
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	// Make sure channels start at 0
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	CMD_ExecuteCommand("berry thread_id = setInterval(def() addChannel(1, 1); end, 100);", 0);
+	// time 100ms, run for 101 ms, so be sure that it fired
+	SVM_RunThreads(101);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	SVM_RunThreads(101);
+	SELFTEST_ASSERT_CHANNEL(1, 2);
+	SVM_RunThreads(101);
+	SELFTEST_ASSERT_CHANNEL(1, 3);
+	SVM_RunThreads(101);
+	SELFTEST_ASSERT_CHANNEL(1, 4);
+	SVM_RunThreads(101);
+	SELFTEST_ASSERT_CHANNEL(1, 5);
+	SVM_RunThreads(101);
+	SELFTEST_ASSERT_CHANNEL(1, 6);
+	SVM_RunThreads(102);
+	SELFTEST_ASSERT_CHANNEL(1, 7);
+
+
+}
+void Test_Berry_SetTimeout() {
+	int i;
+
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	// Make sure channels start at 0
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	CMD_ExecuteCommand("berry thread_id = setTimeout(def() addChannel(1, 1); end, 100);", 0);
+	// time 100ms, run for 101 ms, so be sure that it fired
+	SVM_RunThreads(101);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	SVM_RunThreads(101);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	SVM_RunThreads(101);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	SVM_RunThreads(101);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	SVM_RunThreads(101);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	SVM_RunThreads(101);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	SVM_RunThreads(102);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+
+
+}
 void Test_Berry_Import() {
     int i;
 
@@ -187,7 +244,7 @@ void Test_Berry_ThreadCleanup() {
     SELFTEST_ASSERT_CHANNEL(3, 0);
 
     // First run a Berry script that completes quickly
-    CMD_ExecuteCommand("berry scriptDelayMs(10, def() setChannel(1, 42); end)", 0);
+    CMD_ExecuteCommand("berry setTimeout(def() setChannel(1, 42); end, 10)", 0);
     
     // Run the scheduler to let the Berry script complete
     for (i = 0; i < 5; i++) {
@@ -510,6 +567,8 @@ void Test_Berry_MQTTHandler() {
 void Test_Berry() {
     Test_Berry_ChannelSet();
     Test_Berry_CancelThread();
+	Test_Berry_SetInterval();
+	Test_Berry_SetTimeout();
     Test_Berry_Import();
     Test_Berry_ThreadCleanup();
     Test_Berry_AutoloadModule();
