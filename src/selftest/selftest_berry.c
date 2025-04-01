@@ -53,7 +53,7 @@ void Test_Berry_CancelThread() {
     
     // Run scheduler long enough for the original delay to have completed if it wasn't cancelled
     for (i = 0; i < 20; i++) {
-        SVM_RunThreads(10);
+        Berry_RunThreads(10);
     }
     
     // Verify the channels were NOT set (they should still be 0)
@@ -65,7 +65,7 @@ void Test_Berry_CancelThread() {
     
     // Run scheduler to let the thread complete
     for (i = 0; i < 20; i++) {
-        SVM_RunThreads(10);
+        Berry_RunThreads(10);
     }
     
     // Verify the channels WERE set this time
@@ -76,7 +76,7 @@ void Test_Berry_CancelThread() {
 	CMD_ExecuteCommand("berry setTimeout(def() addChannel(1, 1); addChannel(2, 2); end, 50)", 0);
 	// Run scheduler to let the thread complete
 	for (i = 0; i < 20; i++) {
-		SVM_RunThreads(10);
+		Berry_RunThreads(10);
 	}
 	// Verify the channels were added
 	SELFTEST_ASSERT_CHANNEL(1, 100);
@@ -86,7 +86,7 @@ void Test_Berry_CancelThread() {
 	CMD_ExecuteCommand("berry setTimeout(def() addChannel(1, 1); addChannel(2, 2); end, 50)", 0);
 	// Run scheduler to let the thread complete
 	for (i = 0; i < 20; i++) {
-		SVM_RunThreads(10);
+		Berry_RunThreads(10);
 	}
 	SELFTEST_ASSERT_CHANNEL(1, 102);
 	SELFTEST_ASSERT_CHANNEL(2, 94);
@@ -105,19 +105,19 @@ void Test_Berry_SetInterval() {
 	SELFTEST_ASSERT_CHANNEL(1, 0);
 	CMD_ExecuteCommand("berry thread_id = setInterval(def() addChannel(1, 1); end, 100);", 0);
 	// time 100ms, run for 101 ms, so be sure that it fired
-	SVM_RunThreads(101);
+	Berry_RunThreads(101);
 	SELFTEST_ASSERT_CHANNEL(1, 1);
-	SVM_RunThreads(101);
+	Berry_RunThreads(101);
 	SELFTEST_ASSERT_CHANNEL(1, 2);
-	SVM_RunThreads(101);
+	Berry_RunThreads(101);
 	SELFTEST_ASSERT_CHANNEL(1, 3);
-	SVM_RunThreads(101);
+	Berry_RunThreads(101);
 	SELFTEST_ASSERT_CHANNEL(1, 4);
-	SVM_RunThreads(101);
+	Berry_RunThreads(101);
 	SELFTEST_ASSERT_CHANNEL(1, 5);
-	SVM_RunThreads(101);
+	Berry_RunThreads(101);
 	SELFTEST_ASSERT_CHANNEL(1, 6);
-	SVM_RunThreads(102);
+	Berry_RunThreads(102);
 	SELFTEST_ASSERT_CHANNEL(1, 7);
 
 
@@ -133,19 +133,19 @@ void Test_Berry_SetTimeout() {
 	SELFTEST_ASSERT_CHANNEL(1, 0);
 	CMD_ExecuteCommand("berry thread_id = setTimeout(def() addChannel(1, 1); end, 100);", 0);
 	// time 100ms, run for 101 ms, so be sure that it fired
-	SVM_RunThreads(101);
+	Berry_RunThreads(101);
 	SELFTEST_ASSERT_CHANNEL(1, 1);
-	SVM_RunThreads(101);
+	Berry_RunThreads(101);
 	SELFTEST_ASSERT_CHANNEL(1, 1);
-	SVM_RunThreads(101);
+	Berry_RunThreads(101);
 	SELFTEST_ASSERT_CHANNEL(1, 1);
-	SVM_RunThreads(101);
+	Berry_RunThreads(101);
 	SELFTEST_ASSERT_CHANNEL(1, 1);
-	SVM_RunThreads(101);
+	Berry_RunThreads(101);
 	SELFTEST_ASSERT_CHANNEL(1, 1);
-	SVM_RunThreads(101);
+	Berry_RunThreads(101);
 	SELFTEST_ASSERT_CHANNEL(1, 1);
-	SVM_RunThreads(102);
+	Berry_RunThreads(102);
 	SELFTEST_ASSERT_CHANNEL(1, 1);
 
 
@@ -248,7 +248,7 @@ void Test_Berry_ThreadCleanup() {
     
     // Run the scheduler to let the Berry script complete
     for (i = 0; i < 5; i++) {
-        SVM_RunThreads(10);
+        Berry_RunThreads(10);
     }
     
     // Verify the Berry script did run
@@ -265,6 +265,7 @@ void Test_Berry_ThreadCleanup() {
     CMD_ExecuteCommand("startScript testSVMScript.txt", 0);
     
     // Let the script start running
+		Berry_RunThreads(20);
 		SVM_RunThreads(20);
     
     // Channel 2 should be set already (before the delay)
@@ -275,7 +276,8 @@ void Test_Berry_ThreadCleanup() {
     
     // Now let the script complete
     for (i = 0; i < 10; i++) {
-        SVM_RunThreads(10);
+        Berry_RunThreads(10);
+		SVM_RunThreads(10);
     }
     
     // Now channel 3 should be set
@@ -315,7 +317,8 @@ void Test_Berry_AutoloadModule() {
     
     // Run scheduler to let any scripts complete
     for (int i = 0; i < 5; i++) {
-        SVM_RunThreads(10);
+        Berry_RunThreads(10);
+		SVM_RunThreads(10);
     }
     
     // Verify that the Berry module was loaded and initialized (it should have set channel 5 to 42)
@@ -349,7 +352,7 @@ void Test_Berry_StartScriptShortcut() {
 
 	// Run scheduler to let any scripts complete
 	for (int i = 0; i < 5; i++) {
-		SVM_RunThreads(10);
+		Berry_RunThreads(10);
 	}
 
 	// Verify that the Berry module was loaded and initialized (it should have set channel 5 to 2025)
@@ -380,7 +383,7 @@ void Test_Berry_PassArg() {
 
 	// Run scheduler to let any scripts complete
 	for (int i = 0; i < 5; i++) {
-		SVM_RunThreads(10);
+		Berry_RunThreads(10);
 	}
 
 	// Verify that the Berry module was loaded and initialized (it should have set channel 5 to 15)
@@ -487,7 +490,7 @@ void Test_Berry_AddChangeHandler() {
 	SELFTEST_ASSERT_CHANNEL(1, 0);
 	// addChangeHandler will fire
 	CMD_ExecuteCommand("setChannel 3 1", 0);
-	SVM_RunThreads(1);
+	Berry_RunThreads(1);
 	SELFTEST_ASSERT_CHANNEL(1, 1);
 	CMD_ExecuteCommand("setChannel 1 0", 0);
 	SELFTEST_ASSERT_CHANNEL(1, 0);
@@ -495,7 +498,7 @@ void Test_Berry_AddChangeHandler() {
 	SELFTEST_ASSERT_CHANNEL(1, 0);
 	// addChangeHandler will fire
 	CMD_ExecuteCommand("setChannel 3 1", 0);
-	//SVM_RunThreads(1);
+	//Berry_RunThreads(1);
 	//SELFTEST_ASSERT_CHANNEL(1, 1);
 	//CMD_ExecuteCommand("setChannel 1 0", 0);
 	//SELFTEST_ASSERT_CHANNEL(1, 0);

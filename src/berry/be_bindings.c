@@ -188,7 +188,7 @@ int be_CancelThread(bvm *vm) {
 	int top = be_top(vm);
 	if (top == 1 && be_isint(vm, 1)) {
 		int thread_id = be_toint(vm, 1);
-		SVM_StopScripts(thread_id, 0);
+		Berry_StopScripts(thread_id, 0);
 		be_pushbool(vm, true);
 		be_return(vm);
 	}

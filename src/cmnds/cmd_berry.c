@@ -22,6 +22,91 @@
 
 bvm *g_vm = NULL;
 
+typedef struct berryInstance_s
+{
+	int uniqueID;
+	int totalDelayMS;
+	int currentDelayMS;
+	int waitingForArgument;
+	unsigned short waitingForEvent;
+	char waitingForRelation;
+	int delayRepeats;
+	int closureId;
+
+	struct berryInstance_s* next;
+} berryInstance_t;
+
+berryInstance_t *g_berryThreads = 0;
+
+berryInstance_t *Berry_RegisterThread() {
+	berryInstance_t *r;
+
+	r = g_berryThreads;
+
+	while (r) {
+		if (r->uniqueID == 0) {
+			break;
+		}
+		r = r->next;
+	}
+	if (r == 0) {
+		r = malloc(sizeof(berryInstance_t));
+		memset(r, 0, sizeof(berryInstance_t));
+		r->next = g_berryThreads;
+		g_berryThreads = r;
+	}
+	r->uniqueID = 0;
+	r->currentDelayMS = 0;
+	return r;
+}
+
+void CMD_Berry_ProcessWaitersForEvent(byte eventCode, int argument) {
+	berryInstance_t *t;
+
+
+	t = g_berryThreads;
+
+	while (t) {
+		if (t->waitingForEvent == eventCode) {
+			bool bMatch = false;
+			switch (t->waitingForRelation) {
+			case 0: {
+				if (t->waitingForArgument == argument) {
+					bMatch = true;
+				}
+			}
+					break;
+			case '<': {
+				// waitFor noPingTime < 5
+				if (argument < t->waitingForArgument) {
+					bMatch = true;
+				}
+			}
+					  break;
+			case '>': {
+				// waitFor noPingTime > 5
+				if (argument > t->waitingForArgument) {
+					bMatch = true;
+				}
+			}
+					  break;
+			case '!': {
+				// waitFor noPingTime ! 5
+				if (argument != t->waitingForArgument) {
+					bMatch = true;
+				}
+			}
+					  break;
+			}
+			if (bMatch) {
+				// unlock!
+				t->waitingForArgument = 0;
+				t->waitingForEvent = 0;
+			}
+		}
+		t = t->next;
+	}
+}
 int be_AddChangeHandler(bvm *vm) {
 	int top = be_top(vm);
 
@@ -50,21 +135,18 @@ int be_AddChangeHandler(bvm *vm) {
 		// it should return an ID of the suspended closure, to be used to wake up later
 		if (be_isint(vm, -2)) {
 			int closure_id = be_toint(vm, -2);
-			scriptInstance_t *th;
-			th = SVM_RegisterThread();
+			berryInstance_t *th;
+			th = Berry_RegisterThread();
 			if (th == 0) {
 				ADDLOG_INFO(LOG_FEATURE_CMD, "be_AddChangeHandler: failed to alloc thread");
 				be_return_nil(vm);
 			}
 			int thread_id = 5000 + closure_id; // TODO: alloc IDs?
 			th->uniqueID = thread_id;
-			th->curFile = NULL;
-			th->curLine = ""; // NB. needs to be != NULL to get scheduled
 			th->currentDelayMS = 0;
 			th->waitingForEvent = eventCode;
 			th->waitingForArgument = reqArg;
 			th->waitingForRelation = relation;
-			th->isBerry = true;
 			th->closureId = closure_id;
 
 			// remove the 2 values we pushed on the stack
@@ -97,19 +179,16 @@ int be_setTimeoutInternal(bvm *vm, int repeats) {
 		// it should return an ID of the suspended closure, to be used to wake up later
 		if (be_isint(vm, -2)) {
 			int closure_id = be_toint(vm, -2);
-			scriptInstance_t *th;
-			th = SVM_RegisterThread();
+			berryInstance_t *th;
+			th = Berry_RegisterThread();
 			if (th == 0) {
 				ADDLOG_INFO(LOG_FEATURE_CMD, "be_delayMs: failed to alloc thread");
 				be_return_nil(vm);
 			}
 			int thread_id = 5000 + closure_id; // TODO: alloc IDs?
 			th->uniqueID = thread_id;
-			th->curFile = NULL;
-			th->curLine = ""; // NB. needs to be != NULL to get scheduled
 			th->currentDelayMS = delay_ms;
 			th->totalDelayMS = delay_ms;
-			th->isBerry = true;
 			th->closureId = closure_id;
 			th->delayRepeats = repeats;
 
@@ -172,7 +251,7 @@ static commandResult_t CMD_Berry(const void *context, const char *cmd, const cha
 	return CMD_RES_ERROR;
 }
 
-void berryThreadComplete(scriptInstance_t *thread) {
+void berryThreadComplete(berryInstance_t *thread) {
 	// Free the associated closure if it exists
 	if (thread->closureId > 0 && g_vm) {
 		// Get the _suspended_closures table from global scope
@@ -192,10 +271,7 @@ void berryThreadComplete(scriptInstance_t *thread) {
 	}
 
 	// Reset all Berry-specific flags and data
-	thread->isBerry = false;
 	thread->closureId = -1;
-	thread->curLine = 0;
-	thread->curFile = 0;
 	thread->uniqueID = 0;
 	thread->currentDelayMS = 0;
 }
@@ -206,11 +282,9 @@ void berryThreadComplete(scriptInstance_t *thread) {
 void stopBerrySVM() {
 	if (g_vm) {
 		// Find and stop any Berry script threads
-		scriptInstance_t *t = g_scriptThreads;
+		berryInstance_t *t = g_berryThreads;
 		while (t) {
-			if (t->isBerry) {
-				berryThreadComplete(t);
-			}
+			berryThreadComplete(t);
 			t = t->next;
 		}
 	}
@@ -228,6 +302,83 @@ static commandResult_t CMD_StopBerryCommand(const void *context, const char *cmd
 	return CMD_RES_OK;
 }
 
+void Berry_StopAllScripts() {
+	berryInstance_t *t;
+
+	t = g_berryThreads;
+	while (t) {
+		t->uniqueID = 0;
+		t->currentDelayMS = 0;
+		berryThreadComplete(t);
+		t = t->next;
+	}
+}
+void Berry_RunThread(berryInstance_t *t) {
+	berryRunClosure(g_vm, t->closureId);
+	berryRemoveClosure(g_vm, t->closureId);
+	berryThreadComplete(t);
+}
+void Berry_StopScripts(int id) {
+	berryInstance_t *t;
+
+	t = g_berryThreads;
+	while (t) {
+		if (t->uniqueID == id) {
+			t->uniqueID = 0;
+			t->currentDelayMS = 0;
+			berryThreadComplete(t);
+		}
+		t = t->next;
+	}
+}
+
+void Berry_RunThreads(int deltaMS) {
+	int c_sleep, c_run;
+
+	c_sleep = 0;
+	c_run = 0;
+
+
+	berryInstance_t *g_activeThread = g_berryThreads;
+	while (g_activeThread) {
+		if (g_activeThread->uniqueID > 0) {
+			if (g_activeThread->waitingForEvent) {
+				// do nothing
+				c_sleep++;
+			}
+			else {
+				if (g_activeThread->currentDelayMS > 0) {
+					g_activeThread->currentDelayMS -= deltaMS;
+					// the following block is needed to handle with long freezes on simulator
+					if (g_activeThread->currentDelayMS <= 0) {
+						if (g_activeThread->delayRepeats == -1) {
+							berryRunClosure(g_vm, g_activeThread->closureId);
+							g_activeThread->currentDelayMS = g_activeThread->totalDelayMS;
+						}
+						else if (g_activeThread->delayRepeats > 0) {
+							g_activeThread->delayRepeats--;
+							berryRunClosure(g_vm, g_activeThread->closureId);
+							g_activeThread->currentDelayMS = g_activeThread->totalDelayMS;
+						}
+						else {
+							// finish totally
+							berryRunClosure(g_vm, g_activeThread->closureId);
+							berryRemoveClosure(g_vm, g_activeThread->closureId);
+							g_activeThread->closureId = 0;
+							g_activeThread->uniqueID = 0;//free
+						}
+					}
+					c_sleep++;
+				}
+				else {
+					Berry_RunThread(g_activeThread);
+				}
+			}
+		}
+		g_activeThread = g_activeThread->next;
+	}
+
+}
 void CMD_InitBerry() {
 	// cmddetail:{"name":"berry","args":"[Berry code]",
 	// cmddetail:"descr":"Execute Berry code",
