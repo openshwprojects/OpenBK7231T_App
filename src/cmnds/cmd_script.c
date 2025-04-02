@@ -449,8 +449,9 @@ void SVM_RunThreads(int deltaMS) {
 void CMD_Script_ProcessWaitersForEvent(byte eventCode, int argument) {
 	scriptInstance_t *t;
 
+#if ENABLE_OBK_SCRIPTING
 	CMD_Berry_ProcessWaitersForEvent(eventCode, argument);
-
+#endif
 	t = g_scriptThreads;
 
 	while (t) {
