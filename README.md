@@ -79,6 +79,7 @@ OpenBeken features:
 -   can control 'smart lab organiser drawers' with a custom drawers driver, see [full presentation](https://www.elektroda.com/rtvforum/topic4054134.html)
 -   Sensors: DHT11, DHT12, DHT21, DHT22, AHT10, AHT2X, AHT3X, SHT3X, CHT83XX, DS18B20, BMP280, BME280, BME680
 -   Can draw customizable charts directly on device, see [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html)
+-   Berry scripting option (not enabled by default)
 -   Can run on Windows with device simulator/schematic drawer, see [tutorial](https://www.elektroda.com/rtvforum/topic4046056.html)
 -   Per-platform code build [self-checks](https://www.elektroda.com/rtvforum/topic4109775.html)
 -   Full conversion for Tuya Matter devices [example1](https://www.elektroda.com/rtvforum/topic4074263.html), [example2](https://www.elektroda.com/rtvforum/topic4106753.html)
