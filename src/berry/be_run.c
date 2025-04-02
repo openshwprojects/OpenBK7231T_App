@@ -89,6 +89,15 @@ void berryRunClosureInt(bvm *vm, int closureId, int x) {
 	// call run_closure(closureId)
 	be_call(vm, 2);
 }
+void berryRunClosureStr(bvm *vm, int closureId, const char * x) {
+	if (!be_getglobal(vm, "run_closure")) {
+		return;
+	}
+	be_pushint(vm, closureId);
+	be_pushstring(vm, x);
+	// call run_closure(closureId)
+	be_call(vm, 2);
+}
 void berryRemoveClosure(bvm *vm, int closureId) {
 	if (!be_getglobal(vm, "remove_closure")) {
 		return;

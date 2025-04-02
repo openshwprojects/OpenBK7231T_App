@@ -72,14 +72,28 @@ void CMD_Berry_ProcessWaitersForEvent(byte eventCode, int argument) {
 		t = t->next;
 	}
 }
-void CMD_Berry_RunEventHandlers(byte eventCode, int argument) {
+void CMD_Berry_RunEventHandlers_Int(byte eventCode, int argument) {
 	berryInstance_t *t;
 
 	t = g_berryThreads;
 
 	while (t) {
-		if (t->wait.waitingForEvent == eventCode) {
+		if (t->wait.waitingForEvent == eventCode
+			&& t->wait.waitingForRelation == 'a') {
 			berryRunClosureInt(g_vm, t->closureId, argument);
+		}
+		t = t->next;
+	}
+}
+void CMD_Berry_RunEventHandlers_Str(byte eventCode, const char *argument) {
+	berryInstance_t *t;
+
+	t = g_berryThreads;
+
+	while (t) {
+		if (t->wait.waitingForEvent == eventCode
+			&& t->wait.waitingForRelation == 'a') {
+			berryRunClosureStr(g_vm, t->closureId, argument);
 		}
 		t = t->next;
 	}
@@ -124,6 +138,58 @@ int be_AddChangeHandler(bvm *vm) {
 			th->wait.waitingForEvent = eventCode;
 			th->wait.waitingForArgument = reqArg;
 			th->wait.waitingForRelation = relation;
+			th->closureId = closure_id;
+
+			// remove the 2 values we pushed on the stack
+			be_pop(vm, 2);
+
+			// Return the thread ID to Berry
+			be_pushint(vm, thread_id);
+			be_return(vm);
+		}
+		// remove the 2 values we pushed on the stack
+		be_pop(vm, 2);
+	}
+	be_return_nil(vm);
+}
+
+int be_AddEventHandler(bvm *vm) {
+	int top = be_top(vm);
+
+	if (top == 2 && be_isstring(vm, 1) && be_isfunction(vm, 2)) {
+		const char *eventName = be_tostring(vm, 1);
+		int eventCode = EVENT_ParseEventName(eventName);
+
+		if (eventCode == CMD_EVENT_NONE) {
+			ADDLOG_INFO(LOG_FEATURE_EVENT, "be_AddEventHandler: %s is not a valid event", eventName);
+			be_return_nil(vm);
+		}
+
+		// try to push suspend_closure function on the stack
+		if (!be_getglobal(vm, "suspend_closure")) {
+			// prelude not loaded??
+			be_return_nil(vm);
+		}
+		// push the 2th argument (closure) on the stack
+		be_pushvalue(vm, 2);
+		// call suspend_closure with the second arg
+		be_call(vm, 1);
+		// it should return an ID of the suspended closure, to be used to wake up later
+		if (be_isint(vm, -2)) {
+			int closure_id = be_toint(vm, -2);
+			berryInstance_t *th;
+			th = Berry_RegisterThread();
+			if (th == 0) {
+				ADDLOG_INFO(LOG_FEATURE_CMD, "be_AddChangeHandler: failed to alloc thread");
+				be_return_nil(vm);
+			}
+			int thread_id = 5000 + closure_id; // TODO: alloc IDs?
+			th->uniqueID = thread_id;
+			th->currentDelayMS = 0;
+			th->wait.waitingForEvent = eventCode;
+			th->wait.waitingForArgument = 0;
+			// Special mode - ANY - move to define
+			th->wait.waitingForRelation = 'a';
 			th->closureId = closure_id;
 
 			// remove the 2 values we pushed on the stack
@@ -203,6 +269,7 @@ static int BasicInit() {
 		be_regfunc(g_vm, "setChannelType", be_SetChannelType);
 		be_regfunc(g_vm, "setChannelLabel", be_SetChannelLabel);
 		be_regfunc(g_vm, "addChangeHandler", be_AddChangeHandler);
+		be_regfunc(g_vm, "addEventHandler", be_AddEventHandler);
 		be_regfunc(g_vm, "runCmd", be_runCmd);
 
 		be_regfunc(g_vm, "rtosDelayMs", be_rtosDelayMs);

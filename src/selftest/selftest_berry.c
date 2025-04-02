@@ -518,10 +518,17 @@ void Test_Berry_AddChangeHandler() {
 
 
 	SELFTEST_ASSERT_CHANNEL(1, 0);
-	CMD_ExecuteCommand("berry addChangeHandler(\"Channel3\", \"=\", 1, def(x)\n"
+	CMD_ExecuteCommand("berry addEventHandler(\"Channel3\", def(x)\n"
 		"setChannel(1, x) \n"
 		"end)", 0);
-	CMD_Berry_RunEventHandlers(CMD_EVENT_CHANGE_CHANNEL0+3, 431);
+	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_CHANGE_CHANNEL0+3, 431);
+	CMD_ExecuteCommand("berry addEventHandler(\"Channel4\", def(x)\n"
+		"runCmd(\"MQTTHost \"+x) \n"
+		"end)", 0);
+	CMD_Berry_RunEventHandlers_Str(CMD_EVENT_CHANGE_CHANNEL0 + 4, "192.168.0.123");
+	SELFTEST_ASSERT_STRING("192.168.0.123", CFG_GetMQTTHost());
+	CMD_Berry_RunEventHandlers_Str(CMD_EVENT_CHANGE_CHANNEL0 + 4, "555.168.0.123");
+	SELFTEST_ASSERT_STRING("555.168.0.123", CFG_GetMQTTHost());
 	SELFTEST_ASSERT_CHANNEL(1, 431);
 }
 void Test_Berry_CommandRunner() {
