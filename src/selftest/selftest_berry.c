@@ -515,6 +515,14 @@ void Test_Berry_AddChangeHandler() {
 	SELFTEST_ASSERT_CHANNEL(1, 1);
 	CMD_ExecuteCommand("setChannel 1 0", 0);
 	SELFTEST_ASSERT_CHANNEL(1, 0);
+
+
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	CMD_ExecuteCommand("berry addChangeHandler(\"Channel3\", \"=\", 1, def(x)\n"
+		"setChannel(1, x) \n"
+		"end)", 0);
+	CMD_Berry_RunEventHandlers(CMD_EVENT_CHANGE_CHANNEL0+3, 431);
+	SELFTEST_ASSERT_CHANNEL(1, 431);
 }
 void Test_Berry_CommandRunner() {
 	int i;

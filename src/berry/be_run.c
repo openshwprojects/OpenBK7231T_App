@@ -12,9 +12,9 @@ const char berryPrelude[] =
 	"  return _suspended_closures_idx\n"
 	"end\n"
 	"\n"
-	"def run_closure(idx)\n"
+	"def run_closure(idx,x)\n"
 	"  closure = _suspended_closures[idx]\n"
-	"  closure()\n"
+	"  closure(x)\n"
 	"end\n"
 	"\n"
 	"def remove_closure(idx)\n"
@@ -79,6 +79,15 @@ void berryRunClosure(bvm *vm, int closureId) {
 	be_pushint(vm, closureId);
 	// call run_closure(closureId)
 	be_call(vm, 1);
+}
+void berryRunClosureInt(bvm *vm, int closureId, int x) {
+	if (!be_getglobal(vm, "run_closure")) {
+		return;
+	}
+	be_pushint(vm, closureId);
+	be_pushint(vm, x);
+	// call run_closure(closureId)
+	be_call(vm, 2);
 }
 void berryRemoveClosure(bvm *vm, int closureId) {
 	if (!be_getglobal(vm, "remove_closure")) {

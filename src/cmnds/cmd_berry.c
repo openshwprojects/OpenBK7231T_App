@@ -72,6 +72,18 @@ void CMD_Berry_ProcessWaitersForEvent(byte eventCode, int argument) {
 		t = t->next;
 	}
 }
+void CMD_Berry_RunEventHandlers(byte eventCode, int argument) {
+	berryInstance_t *t;
+
+	t = g_berryThreads;
+
+	while (t) {
+		if (t->wait.waitingForEvent == eventCode) {
+			berryRunClosureInt(g_vm, t->closureId, argument);
+		}
+		t = t->next;
+	}
+}
 int be_AddChangeHandler(bvm *vm) {
 	int top = be_top(vm);
 
