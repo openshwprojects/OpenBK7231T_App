@@ -494,14 +494,27 @@ void Test_Berry_AddChangeHandler() {
 	SELFTEST_ASSERT_CHANNEL(1, 1);
 	CMD_ExecuteCommand("setChannel 1 0", 0);
 	SELFTEST_ASSERT_CHANNEL(1, 0);
-
+	// if it was already 1, and we set 1, it will not fire
+	CMD_ExecuteCommand("setChannel 3 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	// back to 0 - will not fire
+	CMD_ExecuteCommand("setChannel 3 0", 0);
 	SELFTEST_ASSERT_CHANNEL(1, 0);
 	// addChangeHandler will fire
 	CMD_ExecuteCommand("setChannel 3 1", 0);
-	//Berry_RunThreads(1);
-	//SELFTEST_ASSERT_CHANNEL(1, 1);
-	//CMD_ExecuteCommand("setChannel 1 0", 0);
-	//SELFTEST_ASSERT_CHANNEL(1, 0);
+	Berry_RunThreads(1);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	// back to 0 - will not fire
+	CMD_ExecuteCommand("setChannel 3 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	// addChangeHandler will fire
+	CMD_ExecuteCommand("setChannel 3 1", 0);
+	Berry_RunThreads(1);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
 }
 void Test_Berry_CommandRunner() {
 	int i;

@@ -22,16 +22,21 @@
 
 bvm *g_vm = NULL;
 
+typedef struct eventWait_s {
+	int waitingForArgument;
+	unsigned short waitingForEvent;
+	char waitingForRelation;
+} eventWait_t;
+
 typedef struct berryInstance_s
 {
 	int uniqueID;
 	int totalDelayMS;
 	int currentDelayMS;
-	int waitingForArgument;
-	unsigned short waitingForEvent;
-	char waitingForRelation;
 	int delayRepeats;
 	int closureId;
+	eventWait_t wait;
+	bool bFire;
 
 	struct berryInstance_s* next;
 } berryInstance_t;
@@ -67,32 +72,32 @@ void CMD_Berry_ProcessWaitersForEvent(byte eventCode, int argument) {
 	t = g_berryThreads;
 
 	while (t) {
-		if (t->waitingForEvent == eventCode) {
+		if (t->wait.waitingForEvent == eventCode) {
 			bool bMatch = false;
-			switch (t->waitingForRelation) {
+			switch (t->wait.waitingForRelation) {
 			case 0: {
-				if (t->waitingForArgument == argument) {
+				if (t->wait.waitingForArgument == argument) {
 					bMatch = true;
 				}
 			}
 					break;
 			case '<': {
 				// waitFor noPingTime < 5
-				if (argument < t->waitingForArgument) {
+				if (argument < t->wait.waitingForArgument) {
 					bMatch = true;
 				}
 			}
 					  break;
 			case '>': {
 				// waitFor noPingTime > 5
-				if (argument > t->waitingForArgument) {
+				if (argument > t->wait.waitingForArgument) {
 					bMatch = true;
 				}
 			}
 					  break;
 			case '!': {
 				// waitFor noPingTime ! 5
-				if (argument != t->waitingForArgument) {
+				if (argument != t->wait.waitingForArgument) {
 					bMatch = true;
 				}
 			}
@@ -100,8 +105,9 @@ void CMD_Berry_ProcessWaitersForEvent(byte eventCode, int argument) {
 			}
 			if (bMatch) {
 				// unlock!
-				t->waitingForArgument = 0;
-				t->waitingForEvent = 0;
+				//t->wait.waitingForArgument = 0;
+				//t->wait.waitingForEvent = 0;
+				t->bFire = true;
 			}
 		}
 		t = t->next;
@@ -144,9 +150,9 @@ int be_AddChangeHandler(bvm *vm) {
 			int thread_id = 5000 + closure_id; // TODO: alloc IDs?
 			th->uniqueID = thread_id;
 			th->currentDelayMS = 0;
-			th->waitingForEvent = eventCode;
-			th->waitingForArgument = reqArg;
-			th->waitingForRelation = relation;
+			th->wait.waitingForEvent = eventCode;
+			th->wait.waitingForArgument = reqArg;
+			th->wait.waitingForRelation = relation;
 			th->closureId = closure_id;
 
 			// remove the 2 values we pushed on the stack
@@ -342,9 +348,12 @@ void Berry_RunThreads(int deltaMS) {
 	berryInstance_t *g_activeThread = g_berryThreads;
 	while (g_activeThread) {
 		if (g_activeThread->uniqueID > 0) {
-			if (g_activeThread->waitingForEvent) {
+			if (g_activeThread->wait.waitingForEvent) {
+				if (g_activeThread->bFire) {
+					berryRunClosure(g_vm, g_activeThread->closureId);
+					g_activeThread->bFire = false;
+				}
 				// do nothing
-				c_sleep++;
 			}
 			else {
 				if (g_activeThread->currentDelayMS > 0) {
@@ -368,7 +377,6 @@ void Berry_RunThreads(int deltaMS) {
 							g_activeThread->uniqueID = 0;//free
 						}
 					}
-					c_sleep++;
 				}
 				else {
 					Berry_RunThread(g_activeThread);
