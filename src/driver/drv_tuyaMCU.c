@@ -1209,7 +1209,7 @@ void TuyaMCU_OnChannelChanged(int channel, int iVal) {
 	}
 
 	if (iVal != mappediVal) {
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "OnChannelChanged: mapped value %d (OpenBK7321T_App range) to %d (TuyaMCU range)\n", iVal, mappediVal);
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "OnChannelChanged: mapped value %d (OpenBK7231T_App range) to %d (TuyaMCU range)\n", iVal, mappediVal);
 	}
 	// send value to TuyaMCU
 	switch (mapping->dpType)
