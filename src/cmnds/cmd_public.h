@@ -21,6 +21,11 @@ typedef struct scriptFile_s
 	struct scriptFile_s* next;
 } scriptFile_t;
 
+typedef struct eventWait_s {
+	int waitingForArgument;
+	unsigned short waitingForEvent;
+	char waitingForRelation;
+} eventWait_t;
 
 typedef struct scriptInstance_s
 {
@@ -29,9 +34,7 @@ typedef struct scriptInstance_s
 	const char* curLine;
 	int totalDelayMS;
 	int currentDelayMS;
-	int waitingForArgument;
-	unsigned short waitingForEvent;
-	char waitingForRelation;
+	eventWait_t wait;
 	int delayRepeats;
 
 	struct scriptInstance_s* next;

@@ -356,7 +356,7 @@ void SVM_RunThread(scriptInstance_t *t, int maxLoops) {
 	while(1) {
 		loop++;
 		// check if "waitFor" was executed last frame
-		if (t->waitingForEvent) {
+		if (t->wait.waitingForEvent) {
 			return;
 		}
 		if(t->curLine == 0) {
@@ -422,7 +422,7 @@ void SVM_RunThreads(int deltaMS) {
 
 	g_activeThread = g_scriptThreads;
 	while(g_activeThread) {
-		if (g_activeThread->waitingForEvent) {
+		if (g_activeThread->wait.waitingForEvent) {
 			// do nothing
 			c_sleep++;
 		}
@@ -446,6 +446,43 @@ void SVM_RunThreads(int deltaMS) {
 
 	//ADDLOG_INFO(LOG_FEATURE_CMD, "SCR sleep %i, ran %i",c_sleep,c_run);
 }
+bool CheckEventCondition(eventWait_t *w, byte eventCode, int argument) {
+	if (w->waitingForEvent != eventCode) {
+		return false;
+	}
+
+	bool bMatch = false;
+	switch (w->waitingForRelation) {
+	case 0: {
+		if (w->waitingForArgument == argument) {
+			bMatch = true;
+		}
+	}
+			break;
+	case '<': {
+		// waitFor noPingTime < 5
+		if (argument < w->waitingForArgument) {
+			bMatch = true;
+		}
+	}
+			  break;
+	case '>': {
+		// waitFor noPingTime > 5
+		if (argument > w->waitingForArgument) {
+			bMatch = true;
+		}
+	}
+			  break;
+	case '!': {
+		// waitFor noPingTime ! 5
+		if (argument != w->waitingForArgument) {
+			bMatch = true;
+		}
+	}
+			  break;
+	}
+	return bMatch;
+}
 void CMD_Script_ProcessWaitersForEvent(byte eventCode, int argument) {
 	scriptInstance_t *t;
 
@@ -455,42 +492,10 @@ void CMD_Script_ProcessWaitersForEvent(byte eventCode, int argument) {
 	t = g_scriptThreads;
 
 	while (t) {
-		if (t->waitingForEvent == eventCode) {
-			bool bMatch = false;
-			switch (t->waitingForRelation) {
-				case 0: {
-					if (t->waitingForArgument == argument) {
-						bMatch = true;
-					}
-				}
-				break;
-				case '<': {
-					// waitFor noPingTime < 5
-					if (argument < t->waitingForArgument) {
-						bMatch = true;
-					}
-				}
-				break;
-				case '>': {
-					// waitFor noPingTime > 5
-					if (argument > t->waitingForArgument) {
-						bMatch = true;
-					}
-				}
-				break;
-				case '!': {
-					// waitFor noPingTime ! 5
-					if (argument != t->waitingForArgument) {
-						bMatch = true;
-					}
-				}
-				 break;
-			}
-			if(bMatch) {
-				// unlock!
-				t->waitingForArgument = 0;
-				t->waitingForEvent = 0;
-			}
+		if(CheckEventCondition(&t->wait,eventCode,argument)) {
+			// unlock!
+			t->wait.waitingForArgument = 0;
+			t->wait.waitingForEvent = 0;
 		}
 		t = t->next;
 	}
@@ -881,9 +886,9 @@ commandResult_t CMD_waitFor(const void *context, const char *cmd, const char *ar
 	}
 	reqArg = atoi(s);
 	
-	g_activeThread->waitingForEvent = eventCode;
-	g_activeThread->waitingForArgument = reqArg;
-	g_activeThread->waitingForRelation = relation;
+	g_activeThread->wait.waitingForEvent = eventCode;
+	g_activeThread->wait.waitingForArgument = reqArg;
+	g_activeThread->wait.waitingForRelation = relation;
 
 	return CMD_RES_OK;
 }

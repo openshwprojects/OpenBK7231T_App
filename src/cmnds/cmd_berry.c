@@ -22,12 +22,6 @@
 
 bvm *g_vm = NULL;
 
-typedef struct eventWait_s {
-	int waitingForArgument;
-	unsigned short waitingForEvent;
-	char waitingForRelation;
-} eventWait_t;
-
 typedef struct berryInstance_s
 {
 	int uniqueID;
@@ -72,43 +66,8 @@ void CMD_Berry_ProcessWaitersForEvent(byte eventCode, int argument) {
 	t = g_berryThreads;
 
 	while (t) {
-		if (t->wait.waitingForEvent == eventCode) {
-			bool bMatch = false;
-			switch (t->wait.waitingForRelation) {
-			case 0: {
-				if (t->wait.waitingForArgument == argument) {
-					bMatch = true;
-				}
-			}
-					break;
-			case '<': {
-				// waitFor noPingTime < 5
-				if (argument < t->wait.waitingForArgument) {
-					bMatch = true;
-				}
-			}
-					  break;
-			case '>': {
-				// waitFor noPingTime > 5
-				if (argument > t->wait.waitingForArgument) {
-					bMatch = true;
-				}
-			}
-					  break;
-			case '!': {
-				// waitFor noPingTime ! 5
-				if (argument != t->wait.waitingForArgument) {
-					bMatch = true;
-				}
-			}
-					  break;
-			}
-			if (bMatch) {
-				// unlock!
-				//t->wait.waitingForArgument = 0;
-				//t->wait.waitingForEvent = 0;
-				t->bFire = true;
-			}
+		if (CheckEventCondition(&t->wait, eventCode, argument)) {
+			t->bFire = true;
 		}
 		t = t->next;
 	}
