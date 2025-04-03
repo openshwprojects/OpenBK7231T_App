@@ -677,9 +677,17 @@ void Test_Berry_TuyaMCU_Bytes() {
 
 	// per-dpID handler
 	CMD_ExecuteCommand("setChannel 1 0", 0);
+	// writer test
 	CMD_ExecuteCommand("berry addEventHandler(\"OnDP\", 2, def(value)\n"
 		"print(value) \n"
 		"  f = open('test.txt', 'w') \n"
+		"  f.write(value)\n"
+		"  f.close()\n"
+		"end)", 0);
+	// appender test
+	CMD_ExecuteCommand("berry addEventHandler(\"OnDP\", 2, def(value)\n"
+		"print(value) \n"
+		"  f = open('test2.txt', 'a') \n"
 		"  f.write(value)\n"
 		"  f.close()\n"
 		"end)", 0);
@@ -688,7 +696,11 @@ void Test_Berry_TuyaMCU_Bytes() {
 		byte bytes[] = { 'A', 'B', 'C' };
 		CMD_Berry_RunEventHandlers_IntBytes(CMD_EVENT_ON_DP, 2, bytes, sizeof(bytes));
 
+		// writer test
 		Test_FakeHTTPClientPacket_GET("api/lfs/test.txt");
+		SELFTEST_ASSERT_HTML_REPLY("ABC");
+		// appender test
+		Test_FakeHTTPClientPacket_GET("api/lfs/test2.txt");
 		SELFTEST_ASSERT_HTML_REPLY("ABC");
 	}
 
@@ -697,10 +709,30 @@ void Test_Berry_TuyaMCU_Bytes() {
 		byte bytes[] = { 'a', 'd', 'd', ' ', 'a', '!' };
 		CMD_Berry_RunEventHandlers_IntBytes(CMD_EVENT_ON_DP, 2, bytes, sizeof(bytes));
 
+		byte other[] = { 'x' };
+		// dpID 22 has no handler, will be ignored
+		CMD_Berry_RunEventHandlers_IntBytes(CMD_EVENT_ON_DP, 22, other, sizeof(other));
+
+
+		// writer test
 		Test_FakeHTTPClientPacket_GET("api/lfs/test.txt");
 		SELFTEST_ASSERT_HTML_REPLY("add a!");
+		// appender test
+		Test_FakeHTTPClientPacket_GET("api/lfs/test2.txt");
+		SELFTEST_ASSERT_HTML_REPLY("ABCadd a!");
 	}
 
+	{
+		byte bytes[] = { 'q', 'Q', 'q', 'Q', 'q', 'Q' };
+		CMD_Berry_RunEventHandlers_IntBytes(CMD_EVENT_ON_DP, 2, bytes, sizeof(bytes));
+
+		// writer test
+		Test_FakeHTTPClientPacket_GET("api/lfs/test.txt");
+		SELFTEST_ASSERT_HTML_REPLY("qQqQqQ");
+		// appender test
+		Test_FakeHTTPClientPacket_GET("api/lfs/test2.txt");
+		SELFTEST_ASSERT_HTML_REPLY("ABCadd a!qQqQqQ");
+	}
 }
 void Test_Berry_MQTTHandler() {
 	/*
