@@ -39,6 +39,8 @@ SRCS += ../shared/src/driver/drv_main
 SRCS += ../shared/src/driver/drv_ntp
 SRCS += ../shared/src/driver/drv_tuyaMCU
 SRCS += ../shared/src/driver/drv_uart
+SRCS += ../shared/src/driver/drv_battery
+SRCS += ../shared/src/driver/drv_ssdp
 
 SRCS += ../shared/src/i2c/drv_i2c_main
 SRCS += ../shared/src/i2c/drv_i2c_mcp23017
