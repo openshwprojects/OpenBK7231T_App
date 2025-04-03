@@ -80,7 +80,11 @@ void CMD_Berry_RunEventHandlers_Int(byte eventCode, int argument, int argument2)
 	while (t) {
 		if (t->wait.waitingForEvent == eventCode
 			&& t->wait.waitingForRelation == 'a') {
-			berryRunClosureInt(g_vm, t->closureId, argument);
+			berryRunClosureInt(g_vm, t->closureId, argument, argument2);
+		} else if (t->wait.waitingForEvent == eventCode
+			&& t->wait.waitingForRelation == 'm'
+			&& t->wait.waitingForArgument == argument) {
+			berryRunClosureInt(g_vm, t->closureId, argument2, 0);
 		}
 		t = t->next;
 	}
@@ -161,6 +165,10 @@ int be_AddEventHandler(bvm *vm) {
 	if (top == 2 && be_isstring(vm, 1) && be_isfunction(vm, 2)) {
 		const char *eventName = be_tostring(vm, 1);
 		be_addClosure(vm, eventName, 'a', 0, 2);
+	} else if (top == 3 && be_isstring(vm, 1) && be_isint(vm, 2) && be_isfunction(vm, 3)) {
+		const char *eventName = be_tostring(vm, 1);
+		int arg = be_toint(vm, 2);
+		be_addClosure(vm, eventName, 'm', arg, 3);
 	}
 	be_return_nil(vm);
 }

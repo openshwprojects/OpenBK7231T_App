@@ -618,13 +618,41 @@ void Test_Berry_TuyaMCU() {
 
 	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
 
+	// per-dpID handler
+	CMD_ExecuteCommand("setChannel 1 0", 0);
 	CMD_ExecuteCommand("berry addEventHandler(\"OnDP\", 2, def(value)\n"
-		"runCmd(\"MQTTHost \"+payload) \n"
+		"setChannel(1, value) \n"
 		"end)", 0);
 
+	SELFTEST_ASSERT_CHANNEL(1, 0);
 	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_ON_DP, 2, 123);
+	SELFTEST_ASSERT_CHANNEL(1, 123);
+	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_ON_DP, 2, 564);
+	SELFTEST_ASSERT_CHANNEL(1, 564);
+	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_ON_DP, 1, 333);
+	SELFTEST_ASSERT_CHANNEL(1, 564);
+	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_ON_DP, 20, 555);
+	SELFTEST_ASSERT_CHANNEL(1, 564);
+	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_ON_DP, 22, 555);
+	SELFTEST_ASSERT_CHANNEL(1, 564);
+	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_ON_DP, 2, 123);
+	SELFTEST_ASSERT_CHANNEL(1, 123);
 
-	SELFTEST_ASSERT_STRING("123", CFG_GetMQTTHost());
+	// global handler
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	CMD_ExecuteCommand("berry addEventHandler(\"OnDP\", def(id, value)\n"
+		"setChannel(5, id*10000+value) \n"
+		"end)", 0);
+	CMD_ExecuteCommand("setChannel 5 0", 0);
+	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_ON_DP, 2, 123);
+	SELFTEST_ASSERT_CHANNEL(5, 2 * 10000 + 123);
+	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_ON_DP, 15, 123);
+	SELFTEST_ASSERT_CHANNEL(5, 15 * 10000 + 123);
+	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_ON_DP, 15, 555);
+	SELFTEST_ASSERT_CHANNEL(5, 15 * 10000 + 555);
+	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_ON_DP, 1, 555);
+	SELFTEST_ASSERT_CHANNEL(5, 1 * 10000 + 555);
+
 
 
 	// This packet sets dpID 2 of type Value to 100
@@ -693,7 +721,7 @@ void Test_Berry() {
 	Test_Berry_Fibonacci();
 	Test_Berry_AddChangeHandler();
 	Test_Berry_FileSystem();
-	//Test_Berry_TuyaMCU();
+	Test_Berry_TuyaMCU();
 }
 
 #endif
