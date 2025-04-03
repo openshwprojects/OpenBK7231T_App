@@ -565,7 +565,7 @@ void Test_Berry_AddChangeHandler() {
 		"setChannel(1, x) \n"
 		"end)", 0);
 
-	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_CHANGE_CHANNEL0+3, 431, 0); // 0 is unused
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_CHANGE_CHANNEL0+3, 431, 0); // 0 is unused
 	SELFTEST_ASSERT_CHANNEL(1, 431);
 
 
@@ -577,8 +577,6 @@ void Test_Berry_AddChangeHandler() {
 	SELFTEST_ASSERT_STRING("192.168.0.123", CFG_GetMQTTHost());
 	CMD_Berry_RunEventHandlers_Str(CMD_EVENT_ON_MQTT, "xyz", "555.168.0.123");
 	SELFTEST_ASSERT_STRING("555.168.0.123", CFG_GetMQTTHost());
-
-
 
 }
 void Test_Berry_CommandRunner() {
@@ -625,17 +623,17 @@ void Test_Berry_TuyaMCU() {
 		"end)", 0);
 
 	SELFTEST_ASSERT_CHANNEL(1, 0);
-	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_ON_DP, 2, 123);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 2, 123);
 	SELFTEST_ASSERT_CHANNEL(1, 123);
-	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_ON_DP, 2, 564);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 2, 564);
 	SELFTEST_ASSERT_CHANNEL(1, 564);
-	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_ON_DP, 1, 333);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 1, 333);
 	SELFTEST_ASSERT_CHANNEL(1, 564);
-	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_ON_DP, 20, 555);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 20, 555);
 	SELFTEST_ASSERT_CHANNEL(1, 564);
-	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_ON_DP, 22, 555);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 22, 555);
 	SELFTEST_ASSERT_CHANNEL(1, 564);
-	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_ON_DP, 2, 123);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 2, 123);
 	SELFTEST_ASSERT_CHANNEL(1, 123);
 
 	// global handler
@@ -644,13 +642,13 @@ void Test_Berry_TuyaMCU() {
 		"setChannel(5, id*10000+value) \n"
 		"end)", 0);
 	CMD_ExecuteCommand("setChannel 5 0", 0);
-	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_ON_DP, 2, 123);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 2, 123);
 	SELFTEST_ASSERT_CHANNEL(5, 2 * 10000 + 123);
-	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_ON_DP, 15, 123);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 15, 123);
 	SELFTEST_ASSERT_CHANNEL(5, 15 * 10000 + 123);
-	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_ON_DP, 15, 555);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 15, 555);
 	SELFTEST_ASSERT_CHANNEL(5, 15 * 10000 + 555);
-	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_ON_DP, 1, 555);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 1, 555);
 	SELFTEST_ASSERT_CHANNEL(5, 1 * 10000 + 555);
 
 
@@ -663,9 +661,47 @@ void Test_Berry_TuyaMCU() {
 	//CMD_Berry_RunEventHandlers_Str(CMD_EVENT_ON_MQTT, "xyz", "555.168.0.123");
 	//SELFTEST_ASSERT_STRING("555.168.0.123", CFG_GetMQTTHost());
 
+
 }
 
 
+void Test_Berry_TuyaMCU_Bytes() {
+	int i;
+
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	SIM_UART_InitReceiveRingBuffer(2048);
+
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+
+	// per-dpID handler
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	CMD_ExecuteCommand("berry addEventHandler(\"OnDP\", 2, def(value)\n"
+		"print(value) \n"
+		"  f = open('test.txt', 'w') \n"
+		"  f.write(value)\n"
+		"  f.close()\n"
+		"end)", 0);
+
+	{
+		byte bytes[] = { 'A', 'B', 'C' };
+		CMD_Berry_RunEventHandlers_IntBytes(CMD_EVENT_ON_DP, 2, bytes, sizeof(bytes));
+
+		Test_FakeHTTPClientPacket_GET("api/lfs/test.txt");
+		SELFTEST_ASSERT_HTML_REPLY("ABC");
+	}
+
+
+	{
+		byte bytes[] = { 'a', 'd', 'd', ' ', 'a', '!' };
+		CMD_Berry_RunEventHandlers_IntBytes(CMD_EVENT_ON_DP, 2, bytes, sizeof(bytes));
+
+		Test_FakeHTTPClientPacket_GET("api/lfs/test.txt");
+		SELFTEST_ASSERT_HTML_REPLY("add a!");
+	}
+
+}
 void Test_Berry_MQTTHandler() {
 	/*
 	// reset whole device
@@ -722,6 +758,7 @@ void Test_Berry() {
 	Test_Berry_AddChangeHandler();
 	Test_Berry_FileSystem();
 	Test_Berry_TuyaMCU();
+	Test_Berry_TuyaMCU_Bytes();
 }
 
 #endif

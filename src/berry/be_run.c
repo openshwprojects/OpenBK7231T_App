@@ -89,7 +89,17 @@ void berryRunClosureBytes(bvm *vm, int closureId, byte *data, int len) {
 	// call run_closure(closureId)
 	be_call(vm, 2);
 }
-void berryRunClosureInt(bvm *vm, int closureId, int x, int y) {
+void berryRunClosureIntBytes(bvm *vm, int closureId, int x, const byte *data, int len) {
+	if (!be_getglobal(vm, "run_closure")) {
+		return;
+	}
+	be_pushint(vm, closureId);
+	be_pushint(vm, x);
+	be_pushbytes(vm, data, len);
+	// call run_closure(closureId)
+	be_call(vm, 3);
+}
+void berryRunClosureIntInt(bvm *vm, int closureId, int x, int y) {
 	if (!be_getglobal(vm, "run_closure")) {
 		return;
 	}

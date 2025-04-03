@@ -72,7 +72,7 @@ void CMD_Berry_ProcessWaitersForEvent(byte eventCode, int argument) {
 		t = t->next;
 	}
 }
-void CMD_Berry_RunEventHandlers_Int(byte eventCode, int argument, int argument2) {
+void CMD_Berry_RunEventHandlers_IntInt(byte eventCode, int argument, int argument2) {
 	berryInstance_t *t;
 
 	t = g_berryThreads;
@@ -80,11 +80,29 @@ void CMD_Berry_RunEventHandlers_Int(byte eventCode, int argument, int argument2)
 	while (t) {
 		if (t->wait.waitingForEvent == eventCode
 			&& t->wait.waitingForRelation == 'a') {
-			berryRunClosureInt(g_vm, t->closureId, argument, argument2);
+			berryRunClosureIntInt(g_vm, t->closureId, argument, argument2);
 		} else if (t->wait.waitingForEvent == eventCode
 			&& t->wait.waitingForRelation == 'm'
 			&& t->wait.waitingForArgument == argument) {
-			berryRunClosureInt(g_vm, t->closureId, argument2, 0);
+			berryRunClosureIntInt(g_vm, t->closureId, argument2, 0);
+		}
+		t = t->next;
+	}
+}
+void CMD_Berry_RunEventHandlers_IntBytes(byte eventCode, int argument, const byte *data, int size) {
+	berryInstance_t *t;
+
+	t = g_berryThreads;
+
+	while (t) {
+		if (t->wait.waitingForEvent == eventCode
+			&& t->wait.waitingForRelation == 'a') {
+			berryRunClosureIntBytes(g_vm, t->closureId, argument, data, size);
+		}
+		else if (t->wait.waitingForEvent == eventCode
+			&& t->wait.waitingForRelation == 'm'
+			&& t->wait.waitingForArgument == argument) {
+			berryRunClosureBytes(g_vm, t->closureId, data, size);
 		}
 		t = t->next;
 	}
@@ -286,6 +304,9 @@ void berryThreadComplete(berryInstance_t *thread) {
 	thread->closureId = -1;
 	thread->uniqueID = 0;
 	thread->currentDelayMS = 0;
+	thread->wait.waitingForArgument = 0;
+	thread->wait.waitingForEvent = 0;
+	thread->wait.waitingForRelation = 0;
 }
 
 // Useful for testing things that affect global state:
