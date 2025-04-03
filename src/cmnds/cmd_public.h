@@ -162,6 +162,10 @@ enum EventCode {
 
 	CMD_EVENT_MISSEDHEARTBEATS,
 
+	CMD_EVENT_ON_MQTT,
+
+	CMD_EVENT_ON_DP,
+
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
 };

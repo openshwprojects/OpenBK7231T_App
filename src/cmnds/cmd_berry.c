@@ -85,7 +85,7 @@ void CMD_Berry_RunEventHandlers_Int(byte eventCode, int argument) {
 		t = t->next;
 	}
 }
-void CMD_Berry_RunEventHandlers_Str(byte eventCode, const char *argument) {
+void CMD_Berry_RunEventHandlers_Str(byte eventCode, const char *argument, const char *argument2) {
 	berryInstance_t *t;
 
 	t = g_berryThreads;
@@ -93,7 +93,7 @@ void CMD_Berry_RunEventHandlers_Str(byte eventCode, const char *argument) {
 	while (t) {
 		if (t->wait.waitingForEvent == eventCode
 			&& t->wait.waitingForRelation == 'a') {
-			berryRunClosureStr(g_vm, t->closureId, argument);
+			berryRunClosureStr(g_vm, t->closureId, argument, argument2);
 		}
 		t = t->next;
 	}

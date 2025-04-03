@@ -473,6 +473,32 @@ void Test_Berry_PassArgFromCommandWithModule() {
 	SELFTEST_ASSERT_CHANNEL(5, 8);
 }
 
+void Test_Berry_FileSystem() {
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	CMD_ExecuteCommand("lfs_format", 0);
+
+	// Create a Berry module file
+	Test_FakeHTTPClientPacket_POST("api/lfs/test.be",
+		"test = module('test')\n"
+		"\n"
+		"# Add functions to the module\n"
+		"test.mySample = def()\n"
+		"  f = open('test.txt', 'w') \n"
+		"  f.write('foo bar')\n"
+		"  f.close()\n"
+		"end\n"
+		"\n"
+		"return test\n");
+
+	// Simulate a device restart by running the autoexec.txt script
+	CMD_ExecuteCommand("berry import test; test.mySample()", 0);
+
+	Test_FakeHTTPClientPacket_GET("api/lfs/test.txt");
+	SELFTEST_ASSERT_HTML_REPLY("foo bar");
+}
+
 // 
 void Test_Berry_AddChangeHandler() {
 	int i;
@@ -522,14 +548,20 @@ void Test_Berry_AddChangeHandler() {
 		"setChannel(1, x) \n"
 		"end)", 0);
 	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_CHANGE_CHANNEL0+3, 431);
-	CMD_ExecuteCommand("berry addEventHandler(\"Channel4\", def(x)\n"
-		"runCmd(\"MQTTHost \"+x) \n"
-		"end)", 0);
-	CMD_Berry_RunEventHandlers_Str(CMD_EVENT_CHANGE_CHANNEL0 + 4, "192.168.0.123");
-	SELFTEST_ASSERT_STRING("192.168.0.123", CFG_GetMQTTHost());
-	CMD_Berry_RunEventHandlers_Str(CMD_EVENT_CHANGE_CHANNEL0 + 4, "555.168.0.123");
-	SELFTEST_ASSERT_STRING("555.168.0.123", CFG_GetMQTTHost());
 	SELFTEST_ASSERT_CHANNEL(1, 431);
+
+
+	
+	CMD_ExecuteCommand("berry addEventHandler(\"OnMQTT\", def(topic, payload)\n"
+		"runCmd(\"MQTTHost \"+payload) \n"
+		"end)", 0);
+	CMD_Berry_RunEventHandlers_Str(CMD_EVENT_ON_MQTT, "xyz", "192.168.0.123");
+	SELFTEST_ASSERT_STRING("192.168.0.123", CFG_GetMQTTHost());
+	CMD_Berry_RunEventHandlers_Str(CMD_EVENT_ON_MQTT, "xyz", "555.168.0.123");
+	SELFTEST_ASSERT_STRING("555.168.0.123", CFG_GetMQTTHost());
+
+
+
 }
 void Test_Berry_CommandRunner() {
 	int i;
@@ -613,6 +645,7 @@ void Test_Berry() {
 	Test_Berry_MQTTHandler();
 	Test_Berry_Fibonacci();
 	Test_Berry_AddChangeHandler();
+	Test_Berry_FileSystem();
 }
 
 #endif
