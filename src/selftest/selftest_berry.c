@@ -497,6 +497,23 @@ void Test_Berry_FileSystem() {
 
 	Test_FakeHTTPClientPacket_GET("api/lfs/test.txt");
 	SELFTEST_ASSERT_HTML_REPLY("foo bar");
+
+
+	// Create a Berry module file
+	Test_FakeHTTPClientPacket_POST("api/lfs/test2.be",
+		"test2 = module('test2')\n"
+		"\n"
+		"# Add functions to the module\n"
+		"test2.mySample = def()\n"
+		"  f = open('test.txt', 'a') \n"
+		"  f.write(' hey')\n"
+		"  f.close()\n"
+		"end\n"
+		"\n"
+		"return test2\n");
+	CMD_ExecuteCommand("berry import test2; test2.mySample()", 0);
+	Test_FakeHTTPClientPacket_GET("api/lfs/test.txt");
+	SELFTEST_ASSERT_HTML_REPLY("foo bar hey");
 }
 
 // 
