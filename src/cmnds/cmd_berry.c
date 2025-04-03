@@ -72,7 +72,7 @@ void CMD_Berry_ProcessWaitersForEvent(byte eventCode, int argument) {
 		t = t->next;
 	}
 }
-void CMD_Berry_RunEventHandlers_Int(byte eventCode, int argument) {
+void CMD_Berry_RunEventHandlers_Int(byte eventCode, int argument, int argument2) {
 	berryInstance_t *t;
 
 	t = g_berryThreads;

@@ -564,7 +564,8 @@ void Test_Berry_AddChangeHandler() {
 	CMD_ExecuteCommand("berry addEventHandler(\"Channel3\", def(x)\n"
 		"setChannel(1, x) \n"
 		"end)", 0);
-	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_CHANGE_CHANNEL0+3, 431);
+
+	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_CHANGE_CHANNEL0+3, 431, 0); // 0 is unused
 	SELFTEST_ASSERT_CHANNEL(1, 431);
 
 
@@ -607,6 +608,35 @@ void Test_Berry_CommandRunner() {
 	CMD_ExecuteCommand("berry runCmd(\"MQTTHost \" + \"1.2.3.4\")", 0);
 	SELFTEST_ASSERT_STRING("1.2.3.4", CFG_GetMQTTHost());
 }
+void Test_Berry_TuyaMCU() {
+	int i;
+
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	SIM_UART_InitReceiveRingBuffer(2048);
+
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+
+	CMD_ExecuteCommand("berry addEventHandler(\"OnDP\", 2, def(value)\n"
+		"runCmd(\"MQTTHost \"+payload) \n"
+		"end)", 0);
+
+	CMD_Berry_RunEventHandlers_Int(CMD_EVENT_ON_DP, 2, 123);
+
+	SELFTEST_ASSERT_STRING("123", CFG_GetMQTTHost());
+
+
+	// This packet sets dpID 2 of type Value to 100
+	//CMD_ExecuteCommand("uartFakeHex 55AA0307000802020004000000647D", 0);
+	//Sim_RunFrames(100, false);
+
+	//SELFTEST_ASSERT_STRING("10", CFG_GetMQTTHost());
+	//CMD_Berry_RunEventHandlers_Str(CMD_EVENT_ON_MQTT, "xyz", "555.168.0.123");
+	//SELFTEST_ASSERT_STRING("555.168.0.123", CFG_GetMQTTHost());
+
+}
+
 
 void Test_Berry_MQTTHandler() {
 	/*
@@ -663,6 +693,7 @@ void Test_Berry() {
 	Test_Berry_Fibonacci();
 	Test_Berry_AddChangeHandler();
 	Test_Berry_FileSystem();
+	//Test_Berry_TuyaMCU();
 }
 
 #endif
