@@ -2,8 +2,11 @@
 
 #include "../hal_generic.h"
 #include "sys_api.h"
+#include "wdt_api.h"
 
-#ifdef PLATFORM_RTL8710B
+extern void ota_platform_reset(void);
+
+#if PLATFORM_RTL8710B || PLATFORM_RTL8720D
 extern int g_sleepfactor;
 #define haldelay delay * g_sleepfactor
 #else

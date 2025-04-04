@@ -2,6 +2,7 @@
 #include "main.h"
 #include "wifi_constants.h"
 #include "rom_map.h"
+#include "flash_api.h"
 #include "device_lock.h"
 
 extern void wlan_network(void);
@@ -118,11 +119,14 @@ static void app_dslp_wake(void)
 extern void Main_Init();
 extern void Main_OnEverySecond();
 extern uint32_t ota_get_cur_index(void);
+extern flash_t flash;
 
 TaskHandle_t g_sys_task_handle1;
 uint8_t wmac[6] = { 0 };
 rtw_mode_t wifi_mode = RTW_MODE_NONE;
 uint32_t current_fw_idx;
+uint8_t flash_size_8720 = 32;
+extern int g_sleepfactor;
 
 static void obk_task(void* pvParameters)
 {
@@ -130,7 +134,7 @@ static void obk_task(void* pvParameters)
 	Main_Init();
 	for(;;)
 	{
-		vTaskDelay(1000 / portTICK_PERIOD_MS);
+		vTaskDelay(1000 / portTICK_PERIOD_MS / g_sleepfactor);
 		Main_OnEverySecond();
 	}
 	vTaskDelete(NULL);
@@ -158,8 +162,8 @@ int main(void)
 	ipc_table_init();
 
 	/* Register Log Uart Callback function */
-	InterruptRegister((IRQ_FUN)shell_uart_irq_rom, UART_LOG_IRQ, (u32)NULL, 5);
-	InterruptEn(UART_LOG_IRQ, 5);
+	//InterruptRegister((IRQ_FUN)shell_uart_irq_rom, UART_LOG_IRQ, (u32)NULL, 5);
+	//InterruptEn(UART_LOG_IRQ, 5);
 
 	if(TRUE == SOCPS_DsleepWakeStatusGet())
 	{
@@ -176,6 +180,18 @@ int main(void)
 	free(efuse);
 	current_fw_idx = ota_get_cur_index();
 
+	uint8_t flash_size;
+	do
+	{
+		// HACK: determine flash size by reading 0x96969999 (boot signature).
+		uint32_t fboot;
+		device_mutex_lock(RT_DEV_LOCK_FLASH);
+		flash_read_word(&flash, flash_size_8720 << 20, &fboot);
+		device_mutex_unlock(RT_DEV_LOCK_FLASH);
+		if(fboot == 0x96969999) flash_size = flash_size_8720;
+	} while((flash_size_8720 /= 2) >= 2);
+
+	flash_size_8720 = flash_size;
 	app_start_autoicg();
 	//app_shared_btmem(ENABLE);
 
