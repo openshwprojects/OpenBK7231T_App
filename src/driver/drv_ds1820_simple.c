@@ -66,18 +66,17 @@ static int OWReset(int Pin)
 {
 	int result;
 
-	vTaskSuspendAll();
+	noInterrupts();
 
 	//HAL_Delay_us(OWtimeG);
 	HAL_PIN_Setup_Output(Pin);
 	HAL_PIN_SetOutputValue(Pin, 0); // Drives DQ low
 	HAL_Delay_us(OWtimeH);
-	HAL_PIN_SetOutputValue(Pin, 1); // Releases the bus
+	HAL_PIN_Setup_Input_Pullup(Pin);  // Releases the bus
 	HAL_Delay_us(OWtimeI);
-	HAL_PIN_Setup_Input_Pullup(Pin);
 	result = HAL_PIN_ReadDigitalInput(Pin) ^ 0x01; // Sample for presence pulse from slave
 
-	xTaskResumeAll();
+	interrupts();
 
 	HAL_Delay_us(OWtimeJ); // Complete the reset sequence recovery
 	return result; // Return sample presence pulse result
@@ -121,11 +120,11 @@ static int OWReadBit(int Pin)
 
 	noInterrupts();
 	HAL_PIN_Setup_Output(Pin);
-	HAL_PIN_SetOutputValue(Pin, 0); // Drives DQ low
-	HAL_Delay_us(OWtimeA);
-	HAL_PIN_SetOutputValue(Pin, 1); // Releases the bus
-	HAL_Delay_us(OWtimeE);
-	HAL_PIN_Setup_Input_Pullup(Pin);
+	HAL_PIN_SetOutputValue(Pin, 0);  // Drives DQ low
+	HAL_Delay_us(1);                 // give sensor time to react on start pulse
+	HAL_PIN_Setup_Input_Pullup(Pin); // Release the bus
+	HAL_Delay_us(OWtimeE);           // give time for bus rise, if not pulled
+
 	result = HAL_PIN_ReadDigitalInput(Pin); // Sample for presence pulse from slave
 	interrupts();	// hope for the best for the following timer and keep CRITICAL as short as possible
 	HAL_Delay_us(OWtimeF); // Complete the time slot and 10us recovery
