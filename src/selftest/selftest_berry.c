@@ -654,14 +654,35 @@ void Test_Berry_TuyaMCU() {
 
 
 	// This packet sets dpID 2 of type Value to 100
-	//CMD_ExecuteCommand("uartFakeHex 55AA0307000802020004000000647D", 0);
-	//Sim_RunFrames(100, false);
+	CMD_ExecuteCommand("uartFakeHex 55AA0307000802020004000000647D", 0);
+	Sim_RunFrames(100, false);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	SELFTEST_ASSERT_CHANNEL(5, 2 * 10000 + 100);
 
-	//SELFTEST_ASSERT_STRING("10", CFG_GetMQTTHost());
-	//CMD_Berry_RunEventHandlers_Str(CMD_EVENT_ON_MQTT, "xyz", "555.168.0.123");
-	//SELFTEST_ASSERT_STRING("555.168.0.123", CFG_GetMQTTHost());
+	// This packet sets dpID 2 of type Value to 90
+	CMD_ExecuteCommand("uartFakeHex 55AA03070008020200040000005A73", 0);
+	Sim_RunFrames(100, false);
+	SELFTEST_ASSERT_CHANNEL(1, 90);
+	SELFTEST_ASSERT_CHANNEL(5, 2 * 10000 + 90);
+	// This packet sets dpID 2 of type Value to 110
+	CMD_ExecuteCommand("uartFakeHex 55AA03070008020200040000006E87", 0);
+	Sim_RunFrames(100, false);
+	SELFTEST_ASSERT_CHANNEL(1, 110);
+	SELFTEST_ASSERT_CHANNEL(5, 2 * 10000 + 110);
 
 
+	// This packet sets dpID 104 of type RAW
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 104 Raw", 0);
+	CMD_ExecuteCommand("berry addEventHandler(\"OnDP\", 104, def(value)\n"
+		"  f = open('test3.txt', 'w') \n"
+		"  f.write(value)\n"
+		"  f.close()\n"
+		"end)", 0);
+	CMD_ExecuteCommand("uartFakeHex 55AA030700101200000C0101003F030100FA040100AA25", 0);
+	Sim_RunFrames(100, false);
+	byte expected[] = { 0x01, 0x01, 0x00, 0x3F, 0x03, 0x01, 0x00, 0xFA, 0x04, 0x01, 0x00, 0xAA };
+	Test_FakeHTTPClientPacket_GET("api/lfs/test3.txt");
+	SELFTEST_ASSERT_HTML_REPLY(expected);
 }
 
 
