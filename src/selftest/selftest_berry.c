@@ -733,6 +733,64 @@ void Test_Berry_TuyaMCU_Bytes() {
 		Test_FakeHTTPClientPacket_GET("api/lfs/test2.txt");
 		SELFTEST_ASSERT_HTML_REPLY("ABCadd a!qQqQqQ");
 	}
+
+	// appender test
+	CMD_ExecuteCommand("berry addEventHandler(\"OnDP\", 3, def(value)\n"
+		"  print(value) \n"
+		"  f = value[2]\n"
+		"  setChannel(5,f)\n"
+		"  f = value[3]\n"
+		"  setChannel(6,f)\n"
+		"  f = (value[2] << 8) + value[3]\n"
+		"  setChannel(7,f)\n"
+		"end)", 0);
+
+	{
+		byte bytes[] = { 0x02, 0x04, 0x08, 0x0A };
+		CMD_Berry_RunEventHandlers_IntBytes(CMD_EVENT_ON_DP, 3, bytes, sizeof(bytes));
+
+		SELFTEST_ASSERT_CHANNEL(5, 0x08);
+		SELFTEST_ASSERT_CHANNEL(6, 0x0A);
+		SELFTEST_ASSERT_CHANNEL(7, (0x08 << 8) + 0x0A);
+	}
+	CMD_ExecuteCommand("berry addEventHandler(\"OnDP\", 4, def(value)\n"
+		"  print(value) \n"
+		"  g = value[1]\n"
+		"  setChannel(10, g)\n"
+		"  h = value[3]\n"
+		"  setChannel(11, h)\n"
+		"  i = (value[1] * value[3])\n"
+		"  setChannel(12, i)\n"
+		"end)", 0);
+
+	{
+		byte bytes[] = { 0x03, 0x05, 0x07, 0x09 };
+		CMD_Berry_RunEventHandlers_IntBytes(CMD_EVENT_ON_DP, 4, bytes, sizeof(bytes));
+
+		SELFTEST_ASSERT_CHANNEL(10, 0x05);
+		SELFTEST_ASSERT_CHANNEL(11, 0x09);
+		SELFTEST_ASSERT_CHANNEL(12, 0x05 * 0x09);
+	}
+	CMD_ExecuteCommand("berry addEventHandler(\"OnDP\", 5, def(value)\n"
+		"  print(value) \n"
+		"  x = value[0]\n"
+		"  g = value[1]\n"
+		"  h = value[3]\n"
+		"  i = (value[1] * value[3])\n"
+		"  f = open('test3.txt', 'w') \n"
+		"  f.write(str(x))\n"
+		"  f.write(' ')\n"
+		"  f.write(str(i))\n"
+		"  f.close()\n"
+		"end)", 0);
+
+	{
+		byte bytes[] = { 0x03, 0x05, 0x07, 0x09 };
+		CMD_Berry_RunEventHandlers_IntBytes(CMD_EVENT_ON_DP, 5, bytes, sizeof(bytes));
+
+		Test_FakeHTTPClientPacket_GET("api/lfs/test3.txt");
+		SELFTEST_ASSERT_HTML_REPLY("3 45");
+	}
 }
 void Test_Berry_MQTTHandler() {
 	/*
