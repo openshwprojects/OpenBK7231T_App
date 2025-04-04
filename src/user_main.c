@@ -978,6 +978,9 @@ void QuickTick(void* param)
 #if ENABLE_OBK_SCRIPTING
 	SVM_RunThreads(g_deltaTimeMS);
 #endif
+#if ENABLE_OBK_BERRY
+	Berry_RunThreads(g_deltaTimeMS);
+#endif
 	RepeatingEvents_RunUpdate(g_deltaTimeMS * 0.001f);
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_RunQuickTick();

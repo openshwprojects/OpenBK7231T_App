@@ -21,16 +21,21 @@ typedef struct scriptFile_s
 	struct scriptFile_s* next;
 } scriptFile_t;
 
+typedef struct eventWait_s {
+	int waitingForArgument;
+	unsigned short waitingForEvent;
+	char waitingForRelation;
+} eventWait_t;
+
 typedef struct scriptInstance_s
 {
 	scriptFile_t* curFile;
 	int uniqueID;
 	const char* curLine;
+	int totalDelayMS;
 	int currentDelayMS;
-
-	int waitingForArgument;
-	unsigned short waitingForEvent;
-	char waitingForRelation;
+	eventWait_t wait;
+	int delayRepeats;
 
 	struct scriptInstance_s* next;
 #if ENABLE_OBK_BERRY
@@ -156,6 +161,10 @@ enum EventCode {
 	CMD_EVENT_CUSTOM_UP,
 
 	CMD_EVENT_MISSEDHEARTBEATS,
+
+	CMD_EVENT_ON_MQTT,
+
+	CMD_EVENT_ON_DP,
 
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
@@ -301,6 +310,8 @@ void CMD_StartTCPCommandLine();
 int CMD_GetCountActiveScriptThreads();
 // cmd_berry.c
 void CMD_InitBerry();
+void CMD_Berry_RunEventHandlers_IntInt(byte eventCode, int argument, int argument2);
+void CMD_Berry_RunEventHandlers_IntBytes(byte eventCode, int argument, const byte *data, int size);
 
 const char* CMD_GetResultString(commandResult_t r);
 

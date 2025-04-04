@@ -46,14 +46,14 @@ void Test_Berry_CancelThread() {
 
     // Run Berry code that creates a delayed thread that would set channels
     // and stores the thread ID in a global variable
-    CMD_ExecuteCommand("berry thread_id = scriptDelayMs(100, def() setChannel(1, 42); setChannel(2, 123); end); print(thread_id)", 0);
+    CMD_ExecuteCommand("berry thread_id = setTimeout(def() setChannel(1, 42); setChannel(2, 123); end, 100); print(thread_id)", 0);
     
     // Now cancel the thread using the thread_id
     CMD_ExecuteCommand("berry cancel(thread_id)", 0);
     
     // Run scheduler long enough for the original delay to have completed if it wasn't cancelled
     for (i = 0; i < 20; i++) {
-        SVM_RunThreads(10);
+        Berry_RunThreads(10);
     }
     
     // Verify the channels were NOT set (they should still be 0)
@@ -61,11 +61,11 @@ void Test_Berry_CancelThread() {
     SELFTEST_ASSERT_CHANNEL(2, 0);
     
     // Now let's test the positive case - create a thread and let it complete
-    CMD_ExecuteCommand("berry scriptDelayMs(50, def() setChannel(1, 99); setChannel(2, 88); end)", 0);
+    CMD_ExecuteCommand("berry setTimeout(def() setChannel(1, 99); setChannel(2, 88); end, 50)", 0);
     
     // Run scheduler to let the thread complete
     for (i = 0; i < 20; i++) {
-        SVM_RunThreads(10);
+        Berry_RunThreads(10);
     }
     
     // Verify the channels WERE set this time
@@ -73,26 +73,83 @@ void Test_Berry_CancelThread() {
     SELFTEST_ASSERT_CHANNEL(2, 88);
 
 	// One more test
-	CMD_ExecuteCommand("berry scriptDelayMs(50, def() addChannel(1, 1); addChannel(2, 2); end)", 0);
+	CMD_ExecuteCommand("berry setTimeout(def() addChannel(1, 1); addChannel(2, 2); end, 50)", 0);
 	// Run scheduler to let the thread complete
 	for (i = 0; i < 20; i++) {
-		SVM_RunThreads(10);
+		Berry_RunThreads(10);
 	}
 	// Verify the channels were added
 	SELFTEST_ASSERT_CHANNEL(1, 100);
 	SELFTEST_ASSERT_CHANNEL(2, 90);
 	// twice
-	CMD_ExecuteCommand("berry scriptDelayMs(50, def() addChannel(1, 1); addChannel(2, 2); end)", 0);
-	CMD_ExecuteCommand("berry scriptDelayMs(50, def() addChannel(1, 1); addChannel(2, 2); end)", 0);
+	CMD_ExecuteCommand("berry setTimeout(def() addChannel(1, 1); addChannel(2, 2); end, 50)", 0);
+	CMD_ExecuteCommand("berry setTimeout(def() addChannel(1, 1); addChannel(2, 2); end, 50)", 0);
 	// Run scheduler to let the thread complete
 	for (i = 0; i < 20; i++) {
-		SVM_RunThreads(10);
+		Berry_RunThreads(10);
 	}
 	SELFTEST_ASSERT_CHANNEL(1, 102);
 	SELFTEST_ASSERT_CHANNEL(2, 94);
 
 }
 
+
+void Test_Berry_SetInterval() {
+	int i;
+
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	// Make sure channels start at 0
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	CMD_ExecuteCommand("berry thread_id = setInterval(def() addChannel(1, 1); end, 100);", 0);
+	// time 100ms, run for 101 ms, so be sure that it fired
+	Berry_RunThreads(101);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	Berry_RunThreads(101);
+	SELFTEST_ASSERT_CHANNEL(1, 2);
+	Berry_RunThreads(101);
+	SELFTEST_ASSERT_CHANNEL(1, 3);
+	Berry_RunThreads(101);
+	SELFTEST_ASSERT_CHANNEL(1, 4);
+	Berry_RunThreads(101);
+	SELFTEST_ASSERT_CHANNEL(1, 5);
+	Berry_RunThreads(101);
+	SELFTEST_ASSERT_CHANNEL(1, 6);
+	Berry_RunThreads(102);
+	SELFTEST_ASSERT_CHANNEL(1, 7);
+
+
+}
+void Test_Berry_SetTimeout() {
+	int i;
+
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	// Make sure channels start at 0
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	CMD_ExecuteCommand("berry thread_id = setTimeout(def() addChannel(1, 1); end, 100);", 0);
+	// time 100ms, run for 101 ms, so be sure that it fired
+	Berry_RunThreads(101);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	Berry_RunThreads(101);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	Berry_RunThreads(101);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	Berry_RunThreads(101);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	Berry_RunThreads(101);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	Berry_RunThreads(101);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	Berry_RunThreads(102);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+
+
+}
 void Test_Berry_Import() {
     int i;
 
@@ -187,11 +244,11 @@ void Test_Berry_ThreadCleanup() {
     SELFTEST_ASSERT_CHANNEL(3, 0);
 
     // First run a Berry script that completes quickly
-    CMD_ExecuteCommand("berry scriptDelayMs(10, def() setChannel(1, 42); end)", 0);
+    CMD_ExecuteCommand("berry setTimeout(def() setChannel(1, 42); end, 10)", 0);
     
     // Run the scheduler to let the Berry script complete
     for (i = 0; i < 5; i++) {
-        SVM_RunThreads(10);
+        Berry_RunThreads(10);
     }
     
     // Verify the Berry script did run
@@ -208,6 +265,7 @@ void Test_Berry_ThreadCleanup() {
     CMD_ExecuteCommand("startScript testSVMScript.txt", 0);
     
     // Let the script start running
+		Berry_RunThreads(20);
 		SVM_RunThreads(20);
     
     // Channel 2 should be set already (before the delay)
@@ -218,7 +276,8 @@ void Test_Berry_ThreadCleanup() {
     
     // Now let the script complete
     for (i = 0; i < 10; i++) {
-        SVM_RunThreads(10);
+        Berry_RunThreads(10);
+		SVM_RunThreads(10);
     }
     
     // Now channel 3 should be set
@@ -258,7 +317,8 @@ void Test_Berry_AutoloadModule() {
     
     // Run scheduler to let any scripts complete
     for (int i = 0; i < 5; i++) {
-        SVM_RunThreads(10);
+        Berry_RunThreads(10);
+		SVM_RunThreads(10);
     }
     
     // Verify that the Berry module was loaded and initialized (it should have set channel 5 to 42)
@@ -292,7 +352,7 @@ void Test_Berry_StartScriptShortcut() {
 
 	// Run scheduler to let any scripts complete
 	for (int i = 0; i < 5; i++) {
-		SVM_RunThreads(10);
+		Berry_RunThreads(10);
 	}
 
 	// Verify that the Berry module was loaded and initialized (it should have set channel 5 to 2025)
@@ -323,7 +383,7 @@ void Test_Berry_PassArg() {
 
 	// Run scheduler to let any scripts complete
 	for (int i = 0; i < 5; i++) {
-		SVM_RunThreads(10);
+		Berry_RunThreads(10);
 	}
 
 	// Verify that the Berry module was loaded and initialized (it should have set channel 5 to 15)
@@ -413,6 +473,112 @@ void Test_Berry_PassArgFromCommandWithModule() {
 	SELFTEST_ASSERT_CHANNEL(5, 8);
 }
 
+void Test_Berry_FileSystem() {
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	CMD_ExecuteCommand("lfs_format", 0);
+
+	// Create a Berry module file
+	Test_FakeHTTPClientPacket_POST("api/lfs/test.be",
+		"test = module('test')\n"
+		"\n"
+		"# Add functions to the module\n"
+		"test.mySample = def()\n"
+		"  f = open('test.txt', 'w') \n"
+		"  f.write('foo bar')\n"
+		"  f.close()\n"
+		"end\n"
+		"\n"
+		"return test\n");
+
+	// Simulate a device restart by running the autoexec.txt script
+	CMD_ExecuteCommand("berry import test; test.mySample()", 0);
+
+	Test_FakeHTTPClientPacket_GET("api/lfs/test.txt");
+	SELFTEST_ASSERT_HTML_REPLY("foo bar");
+
+
+	// Create a Berry module file
+	Test_FakeHTTPClientPacket_POST("api/lfs/test2.be",
+		"test2 = module('test2')\n"
+		"\n"
+		"# Add functions to the module\n"
+		"test2.mySample = def()\n"
+		"  f = open('test.txt', 'a') \n"
+		"  f.write(' hey')\n"
+		"  f.close()\n"
+		"end\n"
+		"\n"
+		"return test2\n");
+	CMD_ExecuteCommand("berry import test2; test2.mySample()", 0);
+	Test_FakeHTTPClientPacket_GET("api/lfs/test.txt");
+	SELFTEST_ASSERT_HTML_REPLY("foo bar hey");
+}
+
+// 
+void Test_Berry_AddChangeHandler() {
+	int i;
+
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	// Make sure channels start at 0
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	CMD_ExecuteCommand("berry addChangeHandler(\"Channel3\", \"=\", 1, def()\n"
+		"setChannel(1, 1) \n"
+		"end)",0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	// addChangeHandler will fire
+	CMD_ExecuteCommand("setChannel 3 1", 0);
+	Berry_RunThreads(1);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	// if it was already 1, and we set 1, it will not fire
+	CMD_ExecuteCommand("setChannel 3 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	// back to 0 - will not fire
+	CMD_ExecuteCommand("setChannel 3 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	// addChangeHandler will fire
+	CMD_ExecuteCommand("setChannel 3 1", 0);
+	Berry_RunThreads(1);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	// back to 0 - will not fire
+	CMD_ExecuteCommand("setChannel 3 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	// addChangeHandler will fire
+	CMD_ExecuteCommand("setChannel 3 1", 0);
+	Berry_RunThreads(1);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+
+
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	CMD_ExecuteCommand("berry addEventHandler(\"Channel3\", def(x)\n"
+		"setChannel(1, x) \n"
+		"end)", 0);
+
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_CHANGE_CHANNEL0+3, 431, 0); // 0 is unused
+	SELFTEST_ASSERT_CHANNEL(1, 431);
+
+
+	
+	CMD_ExecuteCommand("berry addEventHandler(\"OnMQTT\", def(topic, payload)\n"
+		"runCmd(\"MQTTHost \"+payload) \n"
+		"end)", 0);
+	CMD_Berry_RunEventHandlers_Str(CMD_EVENT_ON_MQTT, "xyz", "192.168.0.123");
+	SELFTEST_ASSERT_STRING("192.168.0.123", CFG_GetMQTTHost());
+	CMD_Berry_RunEventHandlers_Str(CMD_EVENT_ON_MQTT, "xyz", "555.168.0.123");
+	SELFTEST_ASSERT_STRING("555.168.0.123", CFG_GetMQTTHost());
+
+}
 void Test_Berry_CommandRunner() {
 	int i;
 
@@ -440,7 +606,224 @@ void Test_Berry_CommandRunner() {
 	CMD_ExecuteCommand("berry runCmd(\"MQTTHost \" + \"1.2.3.4\")", 0);
 	SELFTEST_ASSERT_STRING("1.2.3.4", CFG_GetMQTTHost());
 }
+void Test_Berry_TuyaMCU() {
+	int i;
 
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	SIM_UART_InitReceiveRingBuffer(2048);
+
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+
+	// per-dpID handler
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	CMD_ExecuteCommand("berry addEventHandler(\"OnDP\", 2, def(value)\n"
+		"setChannel(1, value) \n"
+		"end)", 0);
+
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 2, 123);
+	SELFTEST_ASSERT_CHANNEL(1, 123);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 2, 564);
+	SELFTEST_ASSERT_CHANNEL(1, 564);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 1, 333);
+	SELFTEST_ASSERT_CHANNEL(1, 564);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 20, 555);
+	SELFTEST_ASSERT_CHANNEL(1, 564);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 22, 555);
+	SELFTEST_ASSERT_CHANNEL(1, 564);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 2, 123);
+	SELFTEST_ASSERT_CHANNEL(1, 123);
+
+	// global handler
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	CMD_ExecuteCommand("berry addEventHandler(\"OnDP\", def(id, value)\n"
+		"setChannel(5, id*10000+value) \n"
+		"end)", 0);
+	CMD_ExecuteCommand("setChannel 5 0", 0);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 2, 123);
+	SELFTEST_ASSERT_CHANNEL(5, 2 * 10000 + 123);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 15, 123);
+	SELFTEST_ASSERT_CHANNEL(5, 15 * 10000 + 123);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 15, 555);
+	SELFTEST_ASSERT_CHANNEL(5, 15 * 10000 + 555);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 1, 555);
+	SELFTEST_ASSERT_CHANNEL(5, 1 * 10000 + 555);
+
+
+
+	// This packet sets dpID 2 of type Value to 100
+	CMD_ExecuteCommand("uartFakeHex 55AA0307000802020004000000647D", 0);
+	Sim_RunFrames(100, false);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	SELFTEST_ASSERT_CHANNEL(5, 2 * 10000 + 100);
+
+	// This packet sets dpID 2 of type Value to 90
+	CMD_ExecuteCommand("uartFakeHex 55AA03070008020200040000005A73", 0);
+	Sim_RunFrames(100, false);
+	SELFTEST_ASSERT_CHANNEL(1, 90);
+	SELFTEST_ASSERT_CHANNEL(5, 2 * 10000 + 90);
+	// This packet sets dpID 2 of type Value to 110
+	CMD_ExecuteCommand("uartFakeHex 55AA03070008020200040000006E87", 0);
+	Sim_RunFrames(100, false);
+	SELFTEST_ASSERT_CHANNEL(1, 110);
+	SELFTEST_ASSERT_CHANNEL(5, 2 * 10000 + 110);
+
+}
+
+
+void Test_Berry_TuyaMCU_Bytes2() {
+	int i;
+
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	SIM_UART_InitReceiveRingBuffer(2048);
+
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+
+
+	// This packet sets dpID 104 of type RAW
+	CMD_ExecuteCommand("berry addEventHandler(\"OnDP\", 18, def(value)\n"
+		"  f = open('test3.txt', 'w') \n"
+		"  f.write(value)\n"
+		"  f.close()\n"
+		"end)", 0);
+	CMD_ExecuteCommand("uartFakeHex 55AA030700101200000C0101003F030100FA040100AA25", 0);
+	Sim_RunFrames(100, false);
+	byte expected[] = { 0x01, 0x01, 0x00, 0x3F, 0x03, 0x01, 0x00, 0xFA, 0x04, 0x01, 0x00, 0xAA };
+	Test_FakeHTTPClientPacket_GET("api/lfs/test3.txt");
+	SELFTEST_ASSERT_HTML_REPLY(expected);
+}
+
+void Test_Berry_TuyaMCU_Bytes() {
+	int i;
+
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	SIM_UART_InitReceiveRingBuffer(2048);
+
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+
+	// per-dpID handler
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	// writer test
+	CMD_ExecuteCommand("berry addEventHandler(\"OnDP\", 2, def(value)\n"
+		"print(value) \n"
+		"  f = open('test.txt', 'w') \n"
+		"  f.write(value)\n"
+		"  f.close()\n"
+		"end)", 0);
+	// appender test
+	CMD_ExecuteCommand("berry addEventHandler(\"OnDP\", 2, def(value)\n"
+		"print(value) \n"
+		"  f = open('test2.txt', 'a') \n"
+		"  f.write(value)\n"
+		"  f.close()\n"
+		"end)", 0);
+
+	{
+		byte bytes[] = { 'A', 'B', 'C' };
+		CMD_Berry_RunEventHandlers_IntBytes(CMD_EVENT_ON_DP, 2, bytes, sizeof(bytes));
+
+		// writer test
+		Test_FakeHTTPClientPacket_GET("api/lfs/test.txt");
+		SELFTEST_ASSERT_HTML_REPLY("ABC");
+		// appender test
+		Test_FakeHTTPClientPacket_GET("api/lfs/test2.txt");
+		SELFTEST_ASSERT_HTML_REPLY("ABC");
+	}
+
+
+	{
+		byte bytes[] = { 'a', 'd', 'd', ' ', 'a', '!' };
+		CMD_Berry_RunEventHandlers_IntBytes(CMD_EVENT_ON_DP, 2, bytes, sizeof(bytes));
+
+		byte other[] = { 'x' };
+		// dpID 22 has no handler, will be ignored
+		CMD_Berry_RunEventHandlers_IntBytes(CMD_EVENT_ON_DP, 22, other, sizeof(other));
+
+
+		// writer test
+		Test_FakeHTTPClientPacket_GET("api/lfs/test.txt");
+		SELFTEST_ASSERT_HTML_REPLY("add a!");
+		// appender test
+		Test_FakeHTTPClientPacket_GET("api/lfs/test2.txt");
+		SELFTEST_ASSERT_HTML_REPLY("ABCadd a!");
+	}
+
+	{
+		byte bytes[] = { 'q', 'Q', 'q', 'Q', 'q', 'Q' };
+		CMD_Berry_RunEventHandlers_IntBytes(CMD_EVENT_ON_DP, 2, bytes, sizeof(bytes));
+
+		// writer test
+		Test_FakeHTTPClientPacket_GET("api/lfs/test.txt");
+		SELFTEST_ASSERT_HTML_REPLY("qQqQqQ");
+		// appender test
+		Test_FakeHTTPClientPacket_GET("api/lfs/test2.txt");
+		SELFTEST_ASSERT_HTML_REPLY("ABCadd a!qQqQqQ");
+	}
+
+	// appender test
+	CMD_ExecuteCommand("berry addEventHandler(\"OnDP\", 3, def(value)\n"
+		"  print(value) \n"
+		"  f = value[2]\n"
+		"  setChannel(5,f)\n"
+		"  f = value[3]\n"
+		"  setChannel(6,f)\n"
+		"  f = (value[2] << 8) + value[3]\n"
+		"  setChannel(7,f)\n"
+		"end)", 0);
+
+	{
+		byte bytes[] = { 0x02, 0x04, 0x08, 0x0A };
+		CMD_Berry_RunEventHandlers_IntBytes(CMD_EVENT_ON_DP, 3, bytes, sizeof(bytes));
+
+		SELFTEST_ASSERT_CHANNEL(5, 0x08);
+		SELFTEST_ASSERT_CHANNEL(6, 0x0A);
+		SELFTEST_ASSERT_CHANNEL(7, (0x08 << 8) + 0x0A);
+	}
+	CMD_ExecuteCommand("berry addEventHandler(\"OnDP\", 4, def(value)\n"
+		"  print(value) \n"
+		"  g = value[1]\n"
+		"  setChannel(10, g)\n"
+		"  h = value[3]\n"
+		"  setChannel(11, h)\n"
+		"  i = (value[1] * value[3])\n"
+		"  setChannel(12, i)\n"
+		"end)", 0);
+
+	{
+		byte bytes[] = { 0x03, 0x05, 0x07, 0x09 };
+		CMD_Berry_RunEventHandlers_IntBytes(CMD_EVENT_ON_DP, 4, bytes, sizeof(bytes));
+
+		SELFTEST_ASSERT_CHANNEL(10, 0x05);
+		SELFTEST_ASSERT_CHANNEL(11, 0x09);
+		SELFTEST_ASSERT_CHANNEL(12, 0x05 * 0x09);
+	}
+	CMD_ExecuteCommand("berry addEventHandler(\"OnDP\", 5, def(value)\n"
+		"  print(value) \n"
+		"  x = value[0]\n"
+		"  g = value[1]\n"
+		"  h = value[3]\n"
+		"  i = (value[1] * value[3])\n"
+		"  f = open('test3.txt', 'w') \n"
+		"  f.write(str(x))\n"
+		"  f.write(' ')\n"
+		"  f.write(str(i))\n"
+		"  f.close()\n"
+		"end)", 0);
+
+	{
+		byte bytes[] = { 0x03, 0x05, 0x07, 0x09 };
+		CMD_Berry_RunEventHandlers_IntBytes(CMD_EVENT_ON_DP, 5, bytes, sizeof(bytes));
+
+		Test_FakeHTTPClientPacket_GET("api/lfs/test3.txt");
+		SELFTEST_ASSERT_HTML_REPLY("3 45");
+	}
+}
 void Test_Berry_MQTTHandler() {
 	/*
 	// reset whole device
@@ -480,6 +863,8 @@ void Test_Berry_MQTTHandler() {
 void Test_Berry() {
     Test_Berry_ChannelSet();
     Test_Berry_CancelThread();
+	Test_Berry_SetInterval();
+	Test_Berry_SetTimeout();
     Test_Berry_Import();
     Test_Berry_ThreadCleanup();
     Test_Berry_AutoloadModule();
@@ -492,6 +877,11 @@ void Test_Berry() {
 
 	Test_Berry_MQTTHandler();
 	Test_Berry_Fibonacci();
+	Test_Berry_AddChangeHandler();
+	Test_Berry_FileSystem();
+	Test_Berry_TuyaMCU();
+	Test_Berry_TuyaMCU_Bytes();
+	Test_Berry_TuyaMCU_Bytes2();
 }
 
 #endif
