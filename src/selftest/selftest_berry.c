@@ -670,10 +670,22 @@ void Test_Berry_TuyaMCU() {
 	SELFTEST_ASSERT_CHANNEL(1, 110);
 	SELFTEST_ASSERT_CHANNEL(5, 2 * 10000 + 110);
 
+}
+
+
+void Test_Berry_TuyaMCU_Bytes2() {
+	int i;
+
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	SIM_UART_InitReceiveRingBuffer(2048);
+
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+
 
 	// This packet sets dpID 104 of type RAW
-	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 104 Raw", 0);
-	CMD_ExecuteCommand("berry addEventHandler(\"OnDP\", 104, def(value)\n"
+	CMD_ExecuteCommand("berry addEventHandler(\"OnDP\", 18, def(value)\n"
 		"  f = open('test3.txt', 'w') \n"
 		"  f.write(value)\n"
 		"  f.close()\n"
@@ -684,7 +696,6 @@ void Test_Berry_TuyaMCU() {
 	Test_FakeHTTPClientPacket_GET("api/lfs/test3.txt");
 	SELFTEST_ASSERT_HTML_REPLY(expected);
 }
-
 
 void Test_Berry_TuyaMCU_Bytes() {
 	int i;
@@ -870,6 +881,7 @@ void Test_Berry() {
 	Test_Berry_FileSystem();
 	Test_Berry_TuyaMCU();
 	Test_Berry_TuyaMCU_Bytes();
+	Test_Berry_TuyaMCU_Bytes2();
 }
 
 #endif
