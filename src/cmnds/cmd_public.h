@@ -310,6 +310,8 @@ void CMD_StartTCPCommandLine();
 int CMD_GetCountActiveScriptThreads();
 // cmd_berry.c
 void CMD_InitBerry();
+void CMD_Berry_RunEventHandlers_IntInt(byte eventCode, int argument, int argument2);
+void CMD_Berry_RunEventHandlers_IntBytes(byte eventCode, int argument, const byte *data, int size);
 
 const char* CMD_GetResultString(commandResult_t r);
 
