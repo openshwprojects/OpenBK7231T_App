@@ -209,15 +209,7 @@ void PINS_BeginDeepSleepWithPinWakeUp(unsigned int wakeUpTime) {
 		}
 	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Index map: %i, edge: %i", g_gpio_index_map[0], g_gpio_edge_map[0]);
-#ifdef PLATFORM_BEKEN
-	// NOTE: this function:
-	// void bk_enter_deep_sleep(UINT32 gpio_index_map,UINT32 gpio_edge_map)
-	// On BK7231T, will overwrite HAL pin settings, and depending on edge map,
-	// will set a internal pullup or internall pulldown
-#ifdef PLATFORM_BK7231T
-	extern void deep_sleep_wakeup_with_gpio(UINT32 gpio_index_map, UINT32 gpio_edge_map);
-	deep_sleep_wakeup_with_gpio(g_gpio_index_map[0], g_gpio_edge_map[0]);
-#elif PLATFORM_BEKEN_NEW
+#ifdef PLATFORM_BEKEN_NEW
 	PS_DEEP_CTRL_PARAM params;
 	params.gpio_index_map = g_gpio_index_map[0];
 	params.gpio_edge_map = g_gpio_edge_map[0];
@@ -226,13 +218,20 @@ void PINS_BeginDeepSleepWithPinWakeUp(unsigned int wakeUpTime) {
 	{
 		params.wake_up_way = PS_DEEP_WAKEUP_GPIO | PS_DEEP_WAKEUP_RTC;
 		params.sleep_time = wakeUpTime;
-		bk_enter_deep_sleep_mode(&params);
 	}
 	else
 	{
 		params.wake_up_way = PS_DEEP_WAKEUP_GPIO;
-		bk_enter_deep_sleep_mode(&params);
 	}
+	bk_enter_deep_sleep_mode(&params);
+#elif PLATFORM_BEKEN
+	// NOTE: this function:
+	// void bk_enter_deep_sleep(UINT32 gpio_index_map,UINT32 gpio_edge_map)
+	// On BK7231T, will overwrite HAL pin settings, and depending on edge map,
+	// will set a internal pullup or internall pulldown
+#ifdef PLATFORM_BK7231T
+	extern void deep_sleep_wakeup_with_gpio(UINT32 gpio_index_map, UINT32 gpio_edge_map);
+	deep_sleep_wakeup_with_gpio(g_gpio_index_map[0], g_gpio_edge_map[0]);
 #else
 	extern void bk_enter_deep_sleep(UINT32 g_gpio_index_map, UINT32 g_gpio_edge_map);
 	extern void deep_sleep_wakeup(const UINT32* g_gpio_index_map,
