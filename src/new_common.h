@@ -629,7 +629,7 @@ extern int g_sleepfactor;
 #define atoi __wrap_atoi
 #endif
 
-#if PLATFORM_RTL8710B
+#if PLATFORM_RTL8710B || PLATFORM_RTL8720D
 #define rtos_delay_milliseconds(x) vTaskDelay(x / portTICK_PERIOD_MS / g_sleepfactor)
 #define delay_ms(x) vTaskDelay(x / portTICK_PERIOD_MS / g_sleepfactor)
 #else
