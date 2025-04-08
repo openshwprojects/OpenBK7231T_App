@@ -543,7 +543,7 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 			} while (0);
 
 			http_setup(request, mimetype);
-#if 1
+#if ENABLE_OBK_BERRY
 			Berry_SaveRequest(request);
 #define PARSE_BUFFER_SIZE 2048
 			char parse_buffer[PARSE_BUFFER_SIZE];
