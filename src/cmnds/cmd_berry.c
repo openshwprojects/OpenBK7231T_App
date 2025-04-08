@@ -207,6 +207,20 @@ int be_poststr(bvm *vm) {
 	}
 	be_return_nil(vm);
 }
+http_request_t *g_currentRequest;
+int be_echo(bvm *vm) {
+	int top = be_top(vm);
+
+	if (top == 1) {
+		const char *s = be_tostring(vm, 1);
+
+		poststr(g_currentRequest, s);
+	}
+	be_return_nil(vm);
+}
+void Berry_SaveRequest(http_request_t *r) {
+	g_currentRequest = r;
+}
 
 int be_AddChangeHandler(bvm *vm) {
 	int top = be_top(vm);
@@ -307,6 +321,7 @@ static int BasicInit() {
 		be_regfunc(g_vm, "addEventHandler", be_AddEventHandler);
 		be_regfunc(g_vm, "runCmd", be_runCmd);
 		be_regfunc(g_vm, "poststr", be_poststr);
+		be_regfunc(g_vm, "echo", be_echo);
 		
 		be_regfunc(g_vm, "rtosDelayMs", be_rtosDelayMs);
 		be_regfunc(g_vm, "delayUs", be_delayUs);
@@ -329,6 +344,11 @@ static commandResult_t CMD_Berry(const void *context, const char *cmd, const cha
 		return berryRun(g_vm, args) ? CMD_RES_OK : CMD_RES_ERROR;
 	}
 	return CMD_RES_ERROR;
+}
+void eval_berry_snippet(const char *s) {
+	if (BasicInit()) {
+		berryRun(g_vm, s);
+	}
 }
 
 void berryThreadComplete(berryInstance_t *thread) {

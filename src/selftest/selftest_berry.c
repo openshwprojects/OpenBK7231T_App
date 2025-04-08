@@ -902,7 +902,77 @@ void Test_Berry_MQTTHandler2() {
 	CMD_Berry_RunEventHandlers_Str(CMD_EVENT_ON_MQTT, "myTopic123", "444.222");
 	SELFTEST_ASSERT_STRING("444.222.extra", CFG_GetMQTTHost());
 }
+
+void Test_Berry_HTTP2() {
+	// reset whole device
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("lfs_format", 0);
+
+	{
+		const char *test1 =
+			"<!DOCTYPE html>\n"
+			"<html>\n"
+			"<body>\n"
+			"<h1>Hello <?b echo(2+2)?></h1>"
+			"</body>\n"
+			"</html>";
+		Test_FakeHTTPClientPacket_POST("api/lfs/index.html", test1);
+		const char *test1_res =
+			"<!DOCTYPE html>\n"
+			"<html>\n"
+			"<body>\n"
+			"<h1>Hello 4</h1>"
+			"</body>\n"
+			"</html>";
+		Test_FakeHTTPClientPacket_GET("api/lfs/index.html");
+		SELFTEST_ASSERT_HTML_REPLY(test1_res);
+	}
+	{
+		const char *test0 =
+			"<!DOCTYPE html>\n"
+			"<html>\n"
+			"<body>\n"
+			"<h1>Hello World</h1>"
+			"</body>\n"
+			"</html>";
+		Test_FakeHTTPClientPacket_POST("api/lfs/index0.html", test0);
+		const char *test0_res =
+			"<!DOCTYPE html>\n"
+			"<html>\n"
+			"<body>\n"
+			"<h1>Hello World</h1>"
+			"</body>\n"
+			"</html>";
+		Test_FakeHTTPClientPacket_GET("api/lfs/index0.html");
+		SELFTEST_ASSERT_HTML_REPLY(test0_res);
+	}
+	{
+		const char *test2 =
+			"<!DOCTYPE html>\n"
+			"<html>\n"
+			"<body>\n"
+			"<ul>\n"
+			"<?b for i: 0 .. 2\n"
+			"	echo(\"<li>\"+str(i)+\"</li>\")\n"
+			"end ?>\n"
+			"</ul>"
+			"</body>\n"
+			"</html>";
+		Test_FakeHTTPClientPacket_POST("api/lfs/index2.html", test2);
+		const char *test2_res =
+			"<!DOCTYPE html>\n"
+			"<html>\n"
+			"<body>\n"
+			"<ul>\n<li>0</li><li>1</li><li>2</li>\n</ul>"
+			"</body>\n"
+			"</html>";
+		Test_FakeHTTPClientPacket_GET("api/lfs/index2.html");
+		SELFTEST_ASSERT_HTML_REPLY(test2_res);
+	}
+}
+
 void Test_Berry() {
+	Test_Berry_HTTP2();
 	Test_Berry_HTTP();
 	Test_Berry_VarLifeSpan();
     Test_Berry_ChannelSet();

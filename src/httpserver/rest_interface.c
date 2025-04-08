@@ -417,6 +417,16 @@ int EndsWith(const char* str, const char* suffix)
 		return 0;
 	return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
 }
+char *memmem(const char *haystack, int haystack_len, const char *needle, int needle_len) {
+	if (needle_len == 0 || haystack_len < needle_len)
+		return NULL;
+
+	for (int i = 0; i <= haystack_len - needle_len; i++) {
+		if (memcmp(haystack + i, needle, needle_len) == 0)
+			return (char *)(haystack + i);
+	}
+	return NULL;
+}
 
 static int http_rest_get_lfs_file(http_request_t* request) {
 	char* fpath;
@@ -533,6 +543,56 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 			} while (0);
 
 			http_setup(request, mimetype);
+#if 1
+			Berry_SaveRequest(request);
+#define PARSE_BUFFER_SIZE 2048
+			char parse_buffer[PARSE_BUFFER_SIZE];
+			int parse_len = 0;
+
+			while (true) {
+				int len = lfs_file_read(&lfs, file, buff, sizeof(buff));
+				if (len > 0) {
+					memcpy(parse_buffer + parse_len, buff, len);
+					parse_len += len;
+					parse_buffer[parse_len] = 0;//only so I can debug
+				}
+				else {
+					postany(request, parse_buffer, parse_len);
+					break;
+				}
+				int checkLen = parse_len - 3;
+				if (checkLen > 3) {
+					char *btag = memmem(parse_buffer, checkLen, "<?b", 3);
+					if (btag == 0) {
+						int sendLen = checkLen - 3;
+						postany(request, parse_buffer, sendLen);
+						int remLen = parse_len - sendLen;
+						memmove(parse_buffer, parse_buffer+ sendLen, remLen);
+						parse_len -= sendLen;
+						continue;
+					}
+					int btag_offset = btag - parse_buffer;
+					char *etag = memmem(btag + 3, parse_len - (btag_offset + 3), "?>", 2);
+					if (!etag) {
+						// incomplete block, move remainder to start of buffer
+						continue;
+					}
+					postany(request, parse_buffer, btag_offset);
+					int etag_offset = etag - parse_buffer;
+					int script_len = etag_offset - (btag_offset + 3);
+					char script[512];
+					memcpy(script, parse_buffer + btag_offset + 3, script_len);
+					script[script_len] = 0;
+
+					eval_berry_snippet(script);
+					int stopAt = etag_offset + 2;
+					int rem = parse_len - stopAt;
+					memmove(parse_buffer, parse_buffer + stopAt, rem);
+					parse_len -= stopAt;
+					parse_buffer[parse_len] = 0;//only so I can debug
+				}
+			}
+#else
 			do {
 				len = lfs_file_read(&lfs, file, buff, 1024);
 				total += len;
@@ -541,6 +601,7 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 					postany(request, buff, len);
 				}
 			} while (len > 0);
+#endif
 			lfs_file_close(&lfs, file);
 			ADDLOG_DEBUG(LOG_FEATURE_API, "%d total bytes read", total);
 		}
