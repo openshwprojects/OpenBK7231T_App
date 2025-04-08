@@ -11,6 +11,11 @@ void Test_Berry_VarLifeSpan() {
 	CMD_ExecuteCommand("berry setChannel(2, x)", 0);
 
 	SELFTEST_ASSERT_CHANNEL(2, 5);
+	CMD_ExecuteCommand("berry x += 5;", 0);
+	CMD_ExecuteCommand("berry setChannel(2, x)", 0);
+	SELFTEST_ASSERT_CHANNEL(2, 10);
+	CMD_ExecuteCommand("berry x += getChannel(2)", 0);
+	SELFTEST_ASSERT_CHANNEL(2, 20);
 	
 }
 void Test_Berry_ChannelSet() {
