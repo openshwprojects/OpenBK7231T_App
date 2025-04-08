@@ -29,6 +29,12 @@ void Test_Berry_ChannelSet() {
     // Verify the updated values
     SELFTEST_ASSERT_CHANNEL(1, 99);
     SELFTEST_ASSERT_CHANNEL(2, 88);
+
+	CMD_ExecuteCommand("berry def give() return 7 end; setChannel(1, give() * 3)", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 21);
+
+	CMD_ExecuteCommand("berry i = 5; def test() i = 10 end; test(); setChannel(1, i)", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 10); // or 5 depending on scoping rules
 }
 
 void Test_Berry_CancelThread() {
@@ -829,6 +835,7 @@ void Test_Berry_HTTP() {
 	SIM_ClearOBK(0);
 	CMD_ExecuteCommand("lfs_format", 0);
 
+	// inject html to state page
 	CMD_ExecuteCommand("berry addEventHandler(\"OnHTTP\", \"state\", def(request)\n"
 		"	poststr(request,\"MySpecialTestString23432411\") \n"
 		"end)", 0);
@@ -838,6 +845,16 @@ void Test_Berry_HTTP() {
 
 	Test_FakeHTTPClientPacket_GET("index?state=1");
 	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("MySpecialTestString23432411");
+
+	// custom page
+	CMD_ExecuteCommand("berry addEventHandler(\"OnHTTP\", \"mypage123\", def(request)\n"
+		"	poststr(request,\"Anything\") \n"
+		"end)", 0);
+	Test_FakeHTTPClientPacket_GET("mypage123");
+	SELFTEST_ASSERT_HTML_REPLY("Anything");
+
+
+
 }
 void Test_Berry_MQTTHandler() {
 	/*

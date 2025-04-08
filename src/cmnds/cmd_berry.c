@@ -89,22 +89,26 @@ void CMD_Berry_RunEventHandlers_IntInt(byte eventCode, int argument, int argumen
 		t = t->next;
 	}
 }
-void CMD_Berry_RunEventHandlers_StrInt(byte eventCode, const char *argument, int argument2) {
+int CMD_Berry_RunEventHandlers_StrInt(byte eventCode, const char *argument, int argument2) {
 	berryInstance_t *t;
 
 	t = g_berryThreads;
 
+	int calls = 0;
 	while (t) {
 		if (t->wait.waitingForEvent == eventCode
 			&& t->wait.waitingForRelation == 'a') {
 			berryRunClosureStr(g_vm, t->closureId, argument, argument2);
+			calls++;
 		} else if (t->wait.waitingForEvent == eventCode
 			&& t->wait.waitingForRelation == 'm'
 			&& !stricmp(t->wait.waitingForArgumentStr,argument)) {
 			berryRunClosureIntInt(g_vm, t->closureId, argument2, 0);
+			calls++;
 		}
 		t = t->next;
 	}
+	return calls;
 }
 void CMD_Berry_RunEventHandlers_IntBytes(byte eventCode, int argument, const byte *data, int size) {
 	berryInstance_t *t;
