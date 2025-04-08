@@ -824,6 +824,21 @@ void Test_Berry_TuyaMCU_Bytes() {
 		SELFTEST_ASSERT_HTML_REPLY("3 45");
 	}
 }
+void Test_Berry_HTTP() {
+	// reset whole device
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("lfs_format", 0);
+
+	CMD_ExecuteCommand("berry addEventHandler(\"OnHTTP\", \"state\", def(request)\n"
+		"	poststr(request,\"MySpecialTestString23432411\") \n"
+		"end)", 0);
+
+	Test_FakeHTTPClientPacket_GET("index?state=1");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("MySpecialTestString23432411");
+
+	Test_FakeHTTPClientPacket_GET("index?state=1");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("MySpecialTestString23432411");
+}
 void Test_Berry_MQTTHandler() {
 	/*
 	// reset whole device
@@ -861,6 +876,7 @@ void Test_Berry_MQTTHandler() {
 	*/
 }
 void Test_Berry() {
+	Test_Berry_HTTP();
     Test_Berry_ChannelSet();
     Test_Berry_CancelThread();
 	Test_Berry_SetInterval();

@@ -89,6 +89,23 @@ void CMD_Berry_RunEventHandlers_IntInt(byte eventCode, int argument, int argumen
 		t = t->next;
 	}
 }
+void CMD_Berry_RunEventHandlers_StrInt(byte eventCode, const char *argument, int argument2) {
+	berryInstance_t *t;
+
+	t = g_berryThreads;
+
+	while (t) {
+		if (t->wait.waitingForEvent == eventCode
+			&& t->wait.waitingForRelation == 'a') {
+			berryRunClosureStr(g_vm, t->closureId, argument, argument2);
+		} else if (t->wait.waitingForEvent == eventCode
+			&& t->wait.waitingForRelation == 'm'
+			&& !stricmp(t->wait.waitingForArgumentStr,argument)) {
+			berryRunClosureIntInt(g_vm, t->closureId, argument2, 0);
+		}
+		t = t->next;
+	}
+}
 void CMD_Berry_RunEventHandlers_IntBytes(byte eventCode, int argument, const byte *data, int size) {
 	berryInstance_t *t;
 
@@ -120,7 +137,7 @@ void CMD_Berry_RunEventHandlers_Str(byte eventCode, const char *argument, const 
 		t = t->next;
 	}
 }
-int be_addClosure(bvm *vm, const char *eventName, int relation, int reqArg, int argumentIndex) {
+int be_addClosure(bvm *vm, const char *eventName, int relation, int reqArg, const char *reqArgStr, int argumentIndex) {
 	int eventCode = EVENT_ParseEventName(eventName);
 	if (eventCode == CMD_EVENT_NONE) {
 		ADDLOG_INFO(LOG_FEATURE_EVENT, "be_AddChangeHandler: %s is not a valid event", eventName);
@@ -150,6 +167,13 @@ int be_addClosure(bvm *vm, const char *eventName, int relation, int reqArg, int 
 		th->currentDelayMS = 0;
 		th->wait.waitingForEvent = eventCode;
 		th->wait.waitingForArgument = reqArg;
+		if (reqArgStr) {
+			// TODO: safe
+			strcpy(th->wait.waitingForArgumentStr, reqArgStr);
+		}
+		else {
+			th->wait.waitingForArgumentStr[0] = 0;
+		}
 		th->wait.waitingForRelation = relation;
 		th->closureId = closure_id;
 
@@ -163,6 +187,18 @@ int be_addClosure(bvm *vm, const char *eventName, int relation, int reqArg, int 
 	// remove the 2 values we pushed on the stack
 	be_pop(vm, 2);
 }
+int be_poststr(bvm *vm) {
+	int top = be_top(vm);
+
+	if (top == 2 && be_isstring(vm, 2) && be_isint(vm, 1)) {
+		const char *s = be_tostring(vm, 2);
+		int request = be_toint(vm, 1);
+
+		poststr((http_request_t*)request, s);
+	}
+	be_return_nil(vm);
+}
+
 int be_AddChangeHandler(bvm *vm) {
 	int top = be_top(vm);
 
@@ -172,7 +208,7 @@ int be_AddChangeHandler(bvm *vm) {
 		int reqArg = be_toint(vm, 3);
 
 		int relation = parseRelationChar(relationStr);
-		be_addClosure(vm, eventName, relation, reqArg, 4);
+		be_addClosure(vm, eventName, relation, reqArg, 0, 4);
 	}
 	be_return_nil(vm);
 }
@@ -182,11 +218,15 @@ int be_AddEventHandler(bvm *vm) {
 
 	if (top == 2 && be_isstring(vm, 1) && be_isfunction(vm, 2)) {
 		const char *eventName = be_tostring(vm, 1);
-		be_addClosure(vm, eventName, 'a', 0, 2);
+		be_addClosure(vm, eventName, 'a', 0, 0, 2);
 	} else if (top == 3 && be_isstring(vm, 1) && be_isint(vm, 2) && be_isfunction(vm, 3)) {
 		const char *eventName = be_tostring(vm, 1);
 		int arg = be_toint(vm, 2);
-		be_addClosure(vm, eventName, 'm', arg, 3);
+		be_addClosure(vm, eventName, 'm', arg, 0, 3);
+	} else if (top == 3 && be_isstring(vm, 1) && be_isstring(vm, 2) && be_isfunction(vm, 3)) {
+		const char *eventName = be_tostring(vm, 1);
+		const char *argStr = be_tostring(vm, 2);
+		be_addClosure(vm, eventName, 'm', 0, argStr, 3);
 	}
 	be_return_nil(vm);
 }
@@ -257,7 +297,8 @@ static int BasicInit() {
 		be_regfunc(g_vm, "addChangeHandler", be_AddChangeHandler);
 		be_regfunc(g_vm, "addEventHandler", be_AddEventHandler);
 		be_regfunc(g_vm, "runCmd", be_runCmd);
-
+		be_regfunc(g_vm, "poststr", be_poststr);
+		
 		be_regfunc(g_vm, "rtosDelayMs", be_rtosDelayMs);
 		be_regfunc(g_vm, "delayUs", be_delayUs);
 		be_regfunc(g_vm, "initI2c", be_initI2c);

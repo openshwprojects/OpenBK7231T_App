@@ -212,6 +212,8 @@ int EVENT_ParseEventName(const char *s) {
 		return CMD_EVENT_ON_MQTT;
 	if (!stricmp(s, "OnDP"))
 		return CMD_EVENT_ON_DP;
+	if (!stricmp(s, "OnHTTP"))
+		return CMD_EVENT_ON_HTTP;
 	if (!stricmp(s, "MissedHeartbeats"))
 		return CMD_EVENT_MISSEDHEARTBEATS;
 	if (isdigit((unsigned char)*s)) {

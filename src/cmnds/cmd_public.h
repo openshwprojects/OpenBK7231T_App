@@ -25,6 +25,7 @@ typedef struct eventWait_s {
 	int waitingForArgument;
 	unsigned short waitingForEvent;
 	char waitingForRelation;
+	char waitingForArgumentStr[16];
 } eventWait_t;
 
 typedef struct scriptInstance_s
@@ -165,6 +166,8 @@ enum EventCode {
 	CMD_EVENT_ON_MQTT,
 
 	CMD_EVENT_ON_DP,
+
+	CMD_EVENT_ON_HTTP,
 
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
