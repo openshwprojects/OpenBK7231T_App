@@ -23,6 +23,12 @@ void Test_Berry_VarLifeSpan() {
 	CMD_ExecuteCommand("berry x += 1\n x += 1", 0);
 	CMD_ExecuteCommand("berry setChannel(2, x)", 0);
 	SELFTEST_ASSERT_CHANNEL(2, 24);
+	CMD_ExecuteCommand("berry x += 1\n x += 1\nsetChannel(2, x)", 0);
+	SELFTEST_ASSERT_CHANNEL(2, 26);
+	CMD_ExecuteCommand("berry x += 1\n x += 1\nif 1 x += 2; end\nsetChannel(2, x)", 0);
+	SELFTEST_ASSERT_CHANNEL(2, 30);
+	CMD_ExecuteCommand("berry x += 1\n x += 1\nif 0 x += 2; else x += 3 end\nsetChannel(2, 1000+x)", 0);
+	SELFTEST_ASSERT_CHANNEL(2, 1035);
 	
 }
 void Test_Berry_ChannelSet() {
