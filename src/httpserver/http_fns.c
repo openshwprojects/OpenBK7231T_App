@@ -347,7 +347,10 @@ int http_fn_index(http_request_t* request) {
 #endif
 		poststr(request, "<div id=\"state\">"); // replaceable content follows
 	}
+
+#if ENABLE_OBK_BERRY
 	CMD_Berry_RunEventHandlers_StrInt(CMD_EVENT_ON_HTTP, "state", (int)request);
+#endif
 
 	if (!CFG_HasFlag(OBK_FLAG_HTTP_NO_ONOFF_WORDS)){
 		poststr(request, "<table>");	//Table default to 100% width in stylesheet
