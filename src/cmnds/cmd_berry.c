@@ -138,6 +138,11 @@ void CMD_Berry_RunEventHandlers_Str(byte eventCode, const char *argument, const 
 			&& t->wait.waitingForRelation == 'a') {
 			berryRunClosureStr(g_vm, t->closureId, argument, argument2);
 		}
+		else if (t->wait.waitingForEvent == eventCode
+			&& t->wait.waitingForRelation == 'm'
+			&& !stricmp(t->wait.waitingForArgumentStr,argument)) {
+			berryRunClosureStr(g_vm, t->closureId, argument2, "");
+		}
 		t = t->next;
 	}
 }

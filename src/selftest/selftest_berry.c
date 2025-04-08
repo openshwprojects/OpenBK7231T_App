@@ -2,6 +2,17 @@
 
 #include "selftest_local.h"
 
+
+void Test_Berry_VarLifeSpan() {
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	CMD_ExecuteCommand("berry x = 5;", 0);
+	CMD_ExecuteCommand("berry setChannel(2, x)", 0);
+
+	SELFTEST_ASSERT_CHANNEL(2, 5);
+	
+}
 void Test_Berry_ChannelSet() {
     int i;
 
@@ -575,15 +586,6 @@ void Test_Berry_AddChangeHandler() {
 	SELFTEST_ASSERT_CHANNEL(1, 431);
 
 
-	
-	CMD_ExecuteCommand("berry addEventHandler(\"OnMQTT\", def(topic, payload)\n"
-		"runCmd(\"MQTTHost \"+payload) \n"
-		"end)", 0);
-	CMD_Berry_RunEventHandlers_Str(CMD_EVENT_ON_MQTT, "xyz", "192.168.0.123");
-	SELFTEST_ASSERT_STRING("192.168.0.123", CFG_GetMQTTHost());
-	CMD_Berry_RunEventHandlers_Str(CMD_EVENT_ON_MQTT, "xyz", "555.168.0.123");
-	SELFTEST_ASSERT_STRING("555.168.0.123", CFG_GetMQTTHost());
-
 }
 void Test_Berry_CommandRunner() {
 	int i;
@@ -857,43 +859,34 @@ void Test_Berry_HTTP() {
 
 }
 void Test_Berry_MQTTHandler() {
-	/*
 	// reset whole device
 	SIM_ClearOBK(0);
 	CMD_ExecuteCommand("lfs_format", 0);
 
-	// Create a Berry module file
-	Test_FakeHTTPClientPacket_POST("api/lfs/test.be",
-		"test = module('test')\n"
-		"\n"
-		"# Add functions to the module\n"
-		"test.myDataHandler = def(topic, payload)\n"
-		"  printf(\"Got data \" + topic + \" and \" + payload)\n"
-		"end\n"
-		"test.init = def (self)\n"
-		"  addBerryHandler(\"onMQTT\",\"test\",\"myDataHandler\")\n"
-		"  return self\n"
-		"end\n"
-		"\n"
-		"return test\n");
+	CMD_ExecuteCommand("berry addEventHandler(\"OnMQTT\", def(topic, payload)\n"
+		"runCmd(\"MQTTHost \"+payload) \n"
+		"end)", 0);
+	CMD_Berry_RunEventHandlers_Str(CMD_EVENT_ON_MQTT, "xyz", "192.168.0.123");
+	SELFTEST_ASSERT_STRING("192.168.0.123", CFG_GetMQTTHost());
+	CMD_Berry_RunEventHandlers_Str(CMD_EVENT_ON_MQTT, "xyz", "555.168.0.123");
+	SELFTEST_ASSERT_STRING("555.168.0.123", CFG_GetMQTTHost());
 
-	// Make sure channel starts at 0
-	CMD_ExecuteCommand("setChannel 5 0", 0);
-	SELFTEST_ASSERT_CHANNEL(5, 0);
 
-	// Simulate a device restart by running the autoexec.txt script
-	CMD_ExecuteCommand("berry import test; test.mySample(2)", 0);
-	SELFTEST_ASSERT_CHANNEL(5, 2);
-	CMD_ExecuteCommand("berry import test; test.mySample(2)", 0);
-	SELFTEST_ASSERT_CHANNEL(5, 4);
-	CMD_ExecuteCommand("berry import test; test.mySample(2)", 0);
-	SELFTEST_ASSERT_CHANNEL(5, 6);
-	CMD_ExecuteCommand("berry test.mySample(2)", 0);
-	SELFTEST_ASSERT_CHANNEL(5, 8);
-	*/
+}
+void Test_Berry_MQTTHandler2() {
+	// reset whole device
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("lfs_format", 0);
+
+	CMD_ExecuteCommand("berry addEventHandler(\"OnMQTT\", \"myTopic123\", def(payload)\n"
+		"runCmd(\"MQTTHost \"+payload+\".extra\") \n"
+		"end)", 0);
+	CMD_Berry_RunEventHandlers_Str(CMD_EVENT_ON_MQTT, "myTopic123", "444.222");
+	SELFTEST_ASSERT_STRING("444.222.extra", CFG_GetMQTTHost());
 }
 void Test_Berry() {
 	Test_Berry_HTTP();
+	Test_Berry_VarLifeSpan();
     Test_Berry_ChannelSet();
     Test_Berry_CancelThread();
 	Test_Berry_SetInterval();
@@ -909,6 +902,7 @@ void Test_Berry() {
 	Test_Berry_CommandRunner();
 
 	Test_Berry_MQTTHandler();
+	Test_Berry_MQTTHandler2();
 	Test_Berry_Fibonacci();
 	Test_Berry_AddChangeHandler();
 	Test_Berry_FileSystem();
