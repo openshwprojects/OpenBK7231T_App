@@ -417,7 +417,7 @@ int EndsWith(const char* str, const char* suffix)
 		return 0;
 	return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
 }
-char *memmem(const char *haystack, int haystack_len, const char *needle, int needle_len) {
+char *my_memmem(const char *haystack, int haystack_len, const char *needle, int needle_len) {
 	if (needle_len == 0 || haystack_len < needle_len)
 		return NULL;
 
@@ -562,7 +562,7 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 				}
 				int checkLen = parse_len - 3;
 				if (checkLen > 3) {
-					char *btag = memmem(parse_buffer, checkLen, "<?b", 3);
+					char *btag = my_memmem(parse_buffer, checkLen, "<?b", 3);
 					if (btag == 0) {
 						int sendLen = checkLen - 3;
 						postany(request, parse_buffer, sendLen);
@@ -572,7 +572,7 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 						continue;
 					}
 					int btag_offset = btag - parse_buffer;
-					char *etag = memmem(btag + 3, parse_len - (btag_offset + 3), "?>", 2);
+					char *etag = my_memmem(btag + 3, parse_len - (btag_offset + 3), "?>", 2);
 					if (!etag) {
 						// incomplete block, move remainder to start of buffer
 						continue;
