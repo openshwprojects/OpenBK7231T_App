@@ -1011,6 +1011,70 @@ void Test_Berry_HTTP2() {
 		Test_FakeHTTPClientPacket_GET("api/lfs/index3.html");
 		SELFTEST_ASSERT_HTML_REPLY(test3_res);
 	}
+	{
+		const char *test4 =
+			"<!DOCTYPE html>\n"
+			"<html>\n"
+			"<body>\n"
+			"<ul>\n"
+			"<?b for i: 0 .. 1\n"
+			"	?><li>Outer <?b echo(str(i))?><ul>"
+			"<?b for j: 0 .. 1\n"
+			"	?><li>Inner <?b echo(str(j))?></li>"
+			"<?b end ?>\n"
+			"</ul></li>"
+			"<?b end ?>\n"
+			"</ul>\n"
+			"</body>\n"
+			"</html>";
+		Test_FakeHTTPClientPacket_POST("api/lfs/index4.html", test4);
+		const char *test4_res =
+			"<!DOCTYPE html>\n"
+			"<html>\n"
+			"<body>\n"
+			"<ul>\n"
+			"<li>Outer 0<ul><li>Inner 0</li><li>Inner 1</li>\n</ul></li>"
+			"<li>Outer 1<ul><li>Inner 0</li><li>Inner 1</li>\n</ul></li>\n"
+			"</ul>\n"
+			"</body>\n"
+			"</html>";
+		Test_FakeHTTPClientPacket_GET("api/lfs/index4.html");
+		SELFTEST_ASSERT_HTML_REPLY(test4_res);
+	} {
+		const char *test5 =
+			"<!DOCTYPE html>\n"
+			"<html>\n"
+			"<body>\n"
+			"<ul>\n"
+			"<?b for i: 0 .. 1\n"
+			"	?><li>Outer <?b echo(str(i))?><ul>"
+			"<?b for j: 0 .. 4\n"
+			"	?><li>Inner <?b echo(str(j))?></li>"
+			"<?b end ?>\n"
+			"</ul></li>"
+			"<?b end ?>\n"
+			"</ul>\n"
+			"</body>\n"
+			"</html>";
+		Test_FakeHTTPClientPacket_POST("api/lfs/index5.html", test5);
+		const char *test5_res =
+			"<!DOCTYPE html>\n"
+			"<html>\n"
+			"<body>\n"
+			"<ul>\n"
+			"<li>Outer 0<ul>"
+			"<li>Inner 0</li><li>Inner 1</li><li>Inner 2</li><li>Inner 3</li><li>Inner 4</li>\n"
+			"</ul></li>"
+			"<li>Outer 1<ul>"
+			"<li>Inner 0</li><li>Inner 1</li><li>Inner 2</li><li>Inner 3</li><li>Inner 4</li>\n"
+			"</ul></li>\n"
+			"</ul>\n"
+			"</body>\n"
+			"</html>";
+		Test_FakeHTTPClientPacket_GET("api/lfs/index5.html");
+		SELFTEST_ASSERT_HTML_REPLY(test5_res);
+	}
+
 }
 
 void Test_Berry() {
