@@ -910,6 +910,25 @@ void Test_Berry_HTTP2() {
 
 	{
 		const char *test1 =
+			"<!DOCTYPE html>"
+			"<html>"
+			"<body>"
+			"<h1>Hello <?b echo(2+2)?></h1>"
+			"</body>"
+			"</html>";
+		Test_FakeHTTPClientPacket_POST("api/lfs/index.html", test1);
+		const char *test1_res =
+			"<!DOCTYPE html>"
+			"<html>"
+			"<body>"
+			"<h1>Hello 4</h1>"
+			"</body>"
+			"</html>";
+		Test_FakeHTTPClientPacket_GET("api/lfs/index.html");
+		SELFTEST_ASSERT_HTML_REPLY(test1_res);
+	}
+	{
+		const char *test1 =
 			"<!DOCTYPE html>\n"
 			"<html>\n"
 			"<body>\n"
@@ -968,6 +987,29 @@ void Test_Berry_HTTP2() {
 			"</html>";
 		Test_FakeHTTPClientPacket_GET("api/lfs/index2.html");
 		SELFTEST_ASSERT_HTML_REPLY(test2_res);
+	}
+	{
+		const char *test3 =
+			"<!DOCTYPE html>\n"
+			"<html>\n"
+			"<body>\n"
+			"<ul>\n"
+			"<?b for i: 0 .. 2\n"
+			"	?><li><?b echo(str(i))?></li>"
+			"<?b end ?>\n"
+			"</ul>"
+			"</body>\n"
+			"</html>";
+		Test_FakeHTTPClientPacket_POST("api/lfs/index3.html", test3);
+		const char *test3_res =
+			"<!DOCTYPE html>\n"
+			"<html>\n"
+			"<body>\n"
+			"<ul>\n<li>0</li><li>1</li><li>2</li>\n</ul>"
+			"</body>\n"
+			"</html>";
+		Test_FakeHTTPClientPacket_GET("api/lfs/index3.html");
+		SELFTEST_ASSERT_HTML_REPLY(test3_res);
 	}
 }
 

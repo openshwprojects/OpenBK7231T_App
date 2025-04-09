@@ -427,7 +427,57 @@ char *my_memmem(const char *haystack, int haystack_len, const char *needle, int 
 	}
 	return NULL;
 }
+typedef struct berryBuilder_s {
 
+	char berry_buffer[4096];
+	int berry_len;
+} berryBuilder_t;
+
+void BB_Start(berryBuilder_t *b)
+{
+	b->berry_buffer[0] = 0;
+	b->berry_len = 0;
+}
+void BB_AddCode(berryBuilder_t *b, const char *start, const char *end) {
+	int len;
+	if (end) {
+		len = end - start;
+	}
+	else {
+		len = strlen(start);
+	}
+	memcpy(&b->berry_buffer[b->berry_len], start, len);
+	b->berry_len += len;
+}
+void BB_AddText(berryBuilder_t *b, const char *fname, const char *start, const char *end) {
+	BB_AddCode(b, " echo(\"",0);
+#if 0
+	BB_AddCode(b, start, end);
+#else
+	const char *p = start;
+	const char *limit = end ? end : (start + strlen(start));
+	while (p < limit) {
+		char c = *p++;
+		switch (c) {
+		case '\\': BB_AddCode(b, "\\\\", 0); break;
+		case '\"': BB_AddCode(b, "\\\"", 0); break;
+		case '\n': BB_AddCode(b, "\\n", 0); break;
+		case '\r': BB_AddCode(b, "\\r", 0); break;
+		case '\t': BB_AddCode(b, "\\t", 0); break;
+		default:
+			BB_AddCode(b, &c, &c + 1);
+			break;
+		}
+	}
+
+#endif
+	BB_AddCode(b, "\")", 0);
+}
+void BB_Run(berryBuilder_t *b)
+{
+	b->berry_buffer[b->berry_len] = 0;
+	eval_berry_snippet(b->berry_buffer);
+}
 static int http_rest_get_lfs_file(http_request_t* request) {
 	char* fpath;
 	char* buff;
@@ -545,7 +595,32 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 			http_setup(request, mimetype);
 #if ENABLE_OBK_BERRY
 			Berry_SaveRequest(request);
+
 #define PARSE_BUFFER_SIZE 2048
+
+			berryBuilder_t bb;
+			BB_Start(&bb);
+			byte *data = LFS_ReadFile(fpath);
+			char *p = data;
+			while (*p) {
+				char *btag = strstr(p, "<?b");
+				if (!btag) {
+					break;
+				}
+				BB_AddText(&bb, fpath, p, btag);
+				char *etag = strstr(btag, "?>");
+
+				BB_AddCode(&bb, btag+3,etag);
+
+				p = etag + 2;
+			}
+			const char *s = p;
+			while (*p)
+				p++;
+			BB_AddText(&bb, fpath, s, p);
+			BB_Run(&bb);
+#elif ENABLE_OBK_BERRY
+			Berry_SaveRequest(request);
 			char parse_buffer[PARSE_BUFFER_SIZE];
 			int parse_len = 0;
 
