@@ -596,9 +596,6 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 			http_setup(request, mimetype);
 #if ENABLE_OBK_BERRY
 			Berry_SaveRequest(request);
-
-#define PARSE_BUFFER_SIZE 2048
-
 			berryBuilder_t bb;
 			BB_Start(&bb);
 			byte *data = LFS_ReadFile(fpath);
@@ -619,8 +616,12 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 			while (*p)
 				p++;
 			BB_AddText(&bb, fpath, s, p);
+			free(data);
 			BB_Run(&bb);
 #elif ENABLE_OBK_BERRY
+
+#define PARSE_BUFFER_SIZE 2048
+
 			Berry_SaveRequest(request);
 			char parse_buffer[PARSE_BUFFER_SIZE];
 			int parse_len = 0;
