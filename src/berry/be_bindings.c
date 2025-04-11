@@ -31,10 +31,16 @@ int be_runCmd(bvm *vm) {
 int be_ChannelSet(bvm *vm) {
 	int top = be_top(vm);
 
-	if (top == 2 && be_isint(vm, 1) && be_isint(vm, 2)) {
-		int ch = be_toint(vm, 1);
-		int v = be_toint(vm, 2);
-		CHANNEL_Set(ch, v, 0);
+	if (top == 2) {
+		if (be_isint(vm, 1) && be_isint(vm, 2)) {
+			int ch = be_toint(vm, 1);
+			int v = be_toint(vm, 2);
+			CHANNEL_Set(ch, v, 0);
+		} else if (be_isint(vm, 1) && be_isreal(vm, 2)) {
+			int ch = be_toint(vm, 1);
+			int v = be_toreal(vm, 2);
+			CHANNEL_Set(ch, v, 0);
+		}
 	}
 	be_return_nil(vm); /* return calculation result */
 }
@@ -188,7 +194,7 @@ int be_CancelThread(bvm *vm) {
 	int top = be_top(vm);
 	if (top == 1 && be_isint(vm, 1)) {
 		int thread_id = be_toint(vm, 1);
-		SVM_StopScripts(thread_id, 0);
+		Berry_StopScripts(thread_id, 0);
 		be_pushbool(vm, true);
 		be_return(vm);
 	}

@@ -1519,6 +1519,59 @@ void TuyaMCU_PublishDPToMQTT(const byte *data, int ofs) {
 	MQTT_PublishMain_StringString(sName, s, OBK_PUBLISH_FLAG_FORCE_REMOVE_GET);
 #endif
 }
+void TuyaMCU_PublishDPToBerry(const byte *data, int ofs) {
+	int sectorLen;
+	int dpId;
+	int dataType;
+	int strLen;
+	char *s;
+	const byte *payload;
+	int index;
+
+	sectorLen = data[ofs + 2] << 8 | data[ofs + 3];
+	dpId = data[ofs];
+	dataType = data[ofs + 1];
+
+	// really it's just +1 for NULL character but let's keep more space
+	strLen = sectorLen * 2 + 16;
+	if (g_tuyaMCUpayloadBufferSize < strLen) {
+		g_tuyaMCUpayloadBuffer = realloc(g_tuyaMCUpayloadBuffer, strLen);
+		g_tuyaMCUpayloadBufferSize = strLen;
+	}
+	s = (char*)g_tuyaMCUpayloadBuffer;
+
+	payload = data + (ofs + 4);
+	switch (dataType)
+	{
+	case DP_TYPE_BOOL:
+	case DP_TYPE_VALUE:
+	case DP_TYPE_ENUM:
+		if (sectorLen == 4) {
+			index = payload[0] << 24 | payload[1] << 16 | payload[2] << 8 | payload[3];
+		}
+		else if (sectorLen == 1) {
+			index = (int)payload[0];
+		}
+		else if (sectorLen == 2) {
+			index = payload[1] << 8 | payload[0];
+		}
+		else {
+			index = 0;
+		}
+		CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, dpId, index);
+		break;
+	case DP_TYPE_STRING:
+		memcpy(s, payload, sectorLen);
+		s[sectorLen] = 0;
+		//CMD_Berry_RunEventHandlers_IntStr(CMD_EVENT_ON_DP, dpId, s);
+		break;
+	case DP_TYPE_RAW:
+	case DP_TYPE_BITMAP:
+		CMD_Berry_RunEventHandlers_IntBytes(CMD_EVENT_ON_DP, dpId, payload, sectorLen);
+		break;
+
+	}
+}
 void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 	tuyaMCUMapping_t* mapping;
 	int ofs;
@@ -1543,6 +1596,9 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 			TuyaMCU_PublishDPToMQTT(data, ofs);
 		}
 
+#if ENABLE_OBK_BERRY
+		TuyaMCU_PublishDPToBerry(data, ofs);
+#endif
 		if (CFG_HasFlag(OBK_FLAG_TUYAMCU_STORE_RAW_DATA)) {
 			if (CFG_HasFlag(OBK_FLAG_TUYAMCU_STORE_ALL_DATA)) {
 				if (mapping == 0) {

@@ -166,6 +166,9 @@ void SIM_ClearOBK(const char *flashPath) {
 	Main_Init();
 }
 void Win_DoUnitTests() {
+#if ENABLE_OBK_BERRY
+	Test_Berry();
+#endif
 	Test_TuyaMCU_Boolean();
 	Test_TuyaMCU_DP22();
 
@@ -197,9 +200,6 @@ void Win_DoUnitTests() {
 	Test_Commands_Startup();
 	Test_IF_Inside_Backlog();
 	Test_WaitFor();
-#if ENABLE_OBK_BERRY
-	Test_Berry();
-#endif
 	Test_TwoPWMsOneChannel();
 	Test_ClockEvents();
 #if ENABLE_HA_DISCOVERY
