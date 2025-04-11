@@ -1059,7 +1059,9 @@ void Test_Berry_HTTP2() {
 			"</html>";
 		Test_FakeHTTPClientPacket_GET("api/run/index4.html");
 		SELFTEST_ASSERT_HTML_REPLY(test4_res);
-	} {
+	}
+	CMD_ExecuteCommand("lfs_format", 0);
+	{
 		const char *test5 =
 			"<!DOCTYPE html>\n"
 			"<html>\n"
