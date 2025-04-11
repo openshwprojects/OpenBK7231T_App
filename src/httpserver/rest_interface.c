@@ -523,6 +523,7 @@ static int http_rest_run_lfs_file(http_request_t* request) {
 		poststr(request, NULL);
 		return 0;
 	}
+#if ENABLE_OBK_BERRY
 	const char* base = request->url + strlen("api/lfs/");
 	const char* q = strchr(base, '?');
 	size_t len = q ? (size_t)(q - base) : strlen(base);
@@ -530,7 +531,9 @@ static int http_rest_run_lfs_file(http_request_t* request) {
 	memcpy(fpath, base, len);
 	fpath[len] = '\0';
 	int ran = http_runBerryFile(request, fpath);
-	if (ran==0) {
+	if (ran==0) 
+#endif
+	{
 		request->responseCode = HTTP_RESPONSE_NOT_FOUND;
 		http_setup(request, httpMimeTypeText);
 		poststr(request, NULL);
