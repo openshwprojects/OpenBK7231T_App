@@ -210,6 +210,8 @@ int EVENT_ParseEventName(const char *s) {
 		return CMD_EVENT_CUSTOM_UP;
 	if (!stricmp(s, "OnMQTT"))
 		return CMD_EVENT_ON_MQTT;
+	if (!stricmp(s, "OnCMD"))
+		return CMD_EVENT_ON_CMD;
 	if (!stricmp(s, "OnDP"))
 		return CMD_EVENT_ON_DP;
 	if (!stricmp(s, "OnHTTP"))

@@ -169,6 +169,8 @@ enum EventCode {
 
 	CMD_EVENT_ON_HTTP,
 
+	CMD_EVENT_ON_CMD,
+
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
 };

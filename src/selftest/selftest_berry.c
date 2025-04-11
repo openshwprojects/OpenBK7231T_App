@@ -1097,6 +1097,22 @@ void Test_Berry_HTTP2() {
 	}
 
 }
+void Test_Berry_CmdHandler() {
+	// reset whole device
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("lfs_format", 0);
+
+	CMD_ExecuteCommand("berry addEventHandler(\"OnCmd\", \"MyCmd\", def(arg)\n"
+		"runCmd(\"MQTTHost \"+arg) \n"
+		"end)", 0);
+	CMD_Berry_RunEventHandlers_Str(CMD_EVENT_ON_CMD, "MyCmd", "192.168.0.123");
+	SELFTEST_ASSERT_STRING("192.168.0.123", CFG_GetMQTTHost());
+
+	CMD_ExecuteCommand("MyCmd 555.168.0.123",0);
+	SELFTEST_ASSERT_STRING("555.168.0.123", CFG_GetMQTTHost());
+
+
+}
 
 void Test_Berry() {
 	Test_Berry_HTTP2();
@@ -1118,6 +1134,7 @@ void Test_Berry() {
 
 	Test_Berry_MQTTHandler();
 	Test_Berry_MQTTHandler2();
+	Test_Berry_CmdHandler();
 	Test_Berry_Fibonacci();
 	Test_Berry_AddChangeHandler();
 	Test_Berry_FileSystem();
