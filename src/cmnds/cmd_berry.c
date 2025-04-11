@@ -299,6 +299,19 @@ int be_setTimeoutInternal(bvm *vm, int repeats) {
 int be_setTimeout(bvm *vm) {
 	be_setTimeoutInternal(vm, 0);
 }
+int be_get(bvm *vm) {
+	char tmpA[64];
+	int top = be_top(vm);
+	if (top == 1 && be_isstring(vm, 1)) {
+		const char *name = be_tostring(vm, 1);
+		if (http_getArg(g_currentRequest->url, name, tmpA, sizeof(tmpA))) {
+			be_pushstring(vm, tmpA);
+			be_return(vm);
+			return;
+		}
+	}
+	be_return_nil(vm);
+}
 
 int be_setInterval(bvm *vm) {
 	be_setTimeoutInternal(vm, -1);
@@ -311,6 +324,7 @@ static int BasicInit() {
 		g_vm = be_vm_new(); /* create a virtual machine instance */
 		be_regfunc(g_vm, "setChannel", be_ChannelSet);
 		be_regfunc(g_vm, "setTimeout", be_setTimeout);
+		be_regfunc(g_vm, "get", be_get);
 		be_regfunc(g_vm, "setInterval", be_setInterval);
 		be_regfunc(g_vm, "getChannel", be_ChannelGet);
 		be_regfunc(g_vm, "addChannel", be_ChannelAdd);

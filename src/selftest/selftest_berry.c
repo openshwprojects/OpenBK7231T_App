@@ -929,6 +929,25 @@ void Test_Berry_HTTP2() {
 	}
 	{
 		const char *test1 =
+			"<!DOCTYPE html>"
+			"<html>"
+			"<body>"
+			"<h1>Hello <?b echo(get(\"arg\"))?></h1>"
+			"</body>"
+			"</html>";
+		Test_FakeHTTPClientPacket_POST("api/lfs/indexb.html", test1);
+		const char *test1_res =
+			"<!DOCTYPE html>"
+			"<html>"
+			"<body>"
+			"<h1>Hello hey</h1>"
+			"</body>"
+			"</html>";
+		Test_FakeHTTPClientPacket_GET("api/run/indexb.html?arg=hey");
+		SELFTEST_ASSERT_HTML_REPLY(test1_res);
+	}
+	{
+		const char *test1 =
 			"<!DOCTYPE html>\n"
 			"<html>\n"
 			"<body>\n"

@@ -487,7 +487,7 @@ int http_runBerryFile(http_request_t *request, const char *fname) {
 	Berry_SaveRequest(request);
 	berryBuilder_t bb;
 	BB_Start(&bb);
-	byte *data = LFS_ReadFile(fname);
+	char *data = (char*)LFS_ReadFile(fname);
 	if (data == 0)
 		return 0;
 	http_setup(request, httpMimeTypeHTML);
@@ -522,8 +522,12 @@ static int http_rest_run_lfs_file(http_request_t* request) {
 		poststr(request, NULL);
 		return 0;
 	}
-	fpath = os_malloc(strlen(request->url) - strlen("api/lfs/") + 1);
-	strcpy(fpath, request->url + strlen("api/lfs/"));
+	const char* base = request->url + strlen("api/lfs/");
+	const char* q = strchr(base, '?');
+	size_t len = q ? (size_t)(q - base) : strlen(base);
+	fpath = os_malloc(len + 1);
+	memcpy(fpath, base, len);
+	fpath[len] = '\0';
 	int ran = http_runBerryFile(request, fpath);
 	if (ran==0) {
 		request->responseCode = HTTP_RESPONSE_NOT_FOUND;
