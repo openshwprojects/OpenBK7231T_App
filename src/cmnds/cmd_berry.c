@@ -308,10 +308,19 @@ int be_get(bvm *vm) {
 	int top = be_top(vm);
 	if (top == 1 && be_isstring(vm, 1)) {
 		const char *name = be_tostring(vm, 1);
-		if (http_getArg(g_currentRequest->url, name, tmpA, sizeof(tmpA))) {
-			be_pushstring(vm, tmpA);
+		if (name[0] == '$') {
+			float ret;
+			CMD_ExpandConstant(name, 0, &ret);
+			be_pushreal(vm, ret);
 			be_return(vm);
 			return;
+		}
+		else {
+			if (http_getArg(g_currentRequest->url, name, tmpA, sizeof(tmpA))) {
+				be_pushstring(vm, tmpA);
+				be_return(vm);
+				return;
+			}
 		}
 	}
 	be_return_nil(vm);

@@ -1113,6 +1113,31 @@ void Test_Berry_CmdHandler() {
 
 
 }
+void Test_Berry_NTP() {
+	// reset whole device
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("lfs_format", 0);
+
+	NTP_SetSimulatedTime(1654853254);
+
+	SELFTEST_ASSERT_EXPRESSION("$minute", 27);
+	SELFTEST_ASSERT_EXPRESSION("$hour", 9);
+	SELFTEST_ASSERT_EXPRESSION("$second", 34);
+	SELFTEST_ASSERT_EXPRESSION("$day", 5);
+
+	CMD_ExecuteCommand("berry setChannel(5,get(\"$minute\"))", 0);
+	SELFTEST_ASSERT_CHANNEL(5, 27);
+
+	CMD_ExecuteCommand("berry setChannel(5,get(\"$hour\"))", 0);
+	SELFTEST_ASSERT_CHANNEL(5, 9);
+
+	CMD_ExecuteCommand("berry setChannel(5,get(\"$second\"))", 0);
+	SELFTEST_ASSERT_CHANNEL(5, 34);
+
+	CMD_ExecuteCommand("berry setChannel(5,get(\"$day\"))", 0);
+	SELFTEST_ASSERT_CHANNEL(5, 5);
+}
+
 
 void Test_Berry() {
 	Test_Berry_HTTP2();
@@ -1141,6 +1166,7 @@ void Test_Berry() {
 	Test_Berry_TuyaMCU();
 	Test_Berry_TuyaMCU_Bytes();
 	Test_Berry_TuyaMCU_Bytes2();
+	Test_Berry_NTP();
 }
 
 #endif

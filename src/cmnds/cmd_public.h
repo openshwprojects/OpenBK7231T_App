@@ -39,10 +39,6 @@ typedef struct scriptInstance_s
 	int delayRepeats;
 
 	struct scriptInstance_s* next;
-#if ENABLE_OBK_BERRY
-	bool isBerry;
-	int closureId;
-#endif
 } scriptInstance_t;
 
 scriptInstance_t *SVM_RegisterThread();
