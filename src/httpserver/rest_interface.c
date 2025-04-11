@@ -478,6 +478,7 @@ void BB_AddText(berryBuilder_t *b, const char *fname, const char *start, const c
 	BB_AddCode(b, "\")", 0);
 }
 void eval_berry_snippet(const char *s);
+void Berry_SaveRequest(http_request_t *r);
 void BB_Run(berryBuilder_t *b)
 {
 	b->berry_buffer[b->berry_len] = 0;

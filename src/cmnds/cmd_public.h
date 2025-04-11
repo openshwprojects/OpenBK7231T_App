@@ -315,7 +315,6 @@ int CMD_GetCountActiveScriptThreads();
 void CMD_InitBerry();
 void CMD_Berry_RunEventHandlers_IntInt(byte eventCode, int argument, int argument2);
 void CMD_Berry_RunEventHandlers_IntBytes(byte eventCode, int argument, const byte *data, int size);
-void Berry_SaveRequest(http_request_t *r);
 
 const char* CMD_GetResultString(commandResult_t r);
 
