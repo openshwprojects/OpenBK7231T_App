@@ -530,7 +530,7 @@ void Test_Berry_FileSystem() {
 	// Simulate a device restart by running the autoexec.txt script
 	CMD_ExecuteCommand("berry import test; test.mySample()", 0);
 
-	Test_FakeHTTPClientPacket_GET("api/lfs/test.txt");
+	Test_FakeHTTPClientPacket_GET("api/run/test.txt");
 	SELFTEST_ASSERT_HTML_REPLY("foo bar");
 
 
@@ -547,7 +547,7 @@ void Test_Berry_FileSystem() {
 		"\n"
 		"return test2\n");
 	CMD_ExecuteCommand("berry import test2; test2.mySample()", 0);
-	Test_FakeHTTPClientPacket_GET("api/lfs/test.txt");
+	Test_FakeHTTPClientPacket_GET("api/run/test.txt");
 	SELFTEST_ASSERT_HTML_REPLY("foo bar hey");
 }
 
@@ -719,7 +719,7 @@ void Test_Berry_TuyaMCU_Bytes2() {
 	CMD_ExecuteCommand("uartFakeHex 55AA030700101200000C0101003F030100FA040100AA25", 0);
 	Sim_RunFrames(100, false);
 	byte expected[] = { 0x01, 0x01, 0x00, 0x3F, 0x03, 0x01, 0x00, 0xFA, 0x04, 0x01, 0x00, 0xAA };
-	Test_FakeHTTPClientPacket_GET("api/lfs/test3.txt");
+	Test_FakeHTTPClientPacket_GET("api/run/test3.txt");
 	SELFTEST_ASSERT_HTML_REPLY(expected);
 }
 
@@ -755,10 +755,10 @@ void Test_Berry_TuyaMCU_Bytes() {
 		CMD_Berry_RunEventHandlers_IntBytes(CMD_EVENT_ON_DP, 2, bytes, sizeof(bytes));
 
 		// writer test
-		Test_FakeHTTPClientPacket_GET("api/lfs/test.txt");
+		Test_FakeHTTPClientPacket_GET("api/run/test.txt");
 		SELFTEST_ASSERT_HTML_REPLY("ABC");
 		// appender test
-		Test_FakeHTTPClientPacket_GET("api/lfs/test2.txt");
+		Test_FakeHTTPClientPacket_GET("api/run/test2.txt");
 		SELFTEST_ASSERT_HTML_REPLY("ABC");
 	}
 
@@ -773,10 +773,10 @@ void Test_Berry_TuyaMCU_Bytes() {
 
 
 		// writer test
-		Test_FakeHTTPClientPacket_GET("api/lfs/test.txt");
+		Test_FakeHTTPClientPacket_GET("api/run/test.txt");
 		SELFTEST_ASSERT_HTML_REPLY("add a!");
 		// appender test
-		Test_FakeHTTPClientPacket_GET("api/lfs/test2.txt");
+		Test_FakeHTTPClientPacket_GET("api/run/test2.txt");
 		SELFTEST_ASSERT_HTML_REPLY("ABCadd a!");
 	}
 
@@ -785,10 +785,10 @@ void Test_Berry_TuyaMCU_Bytes() {
 		CMD_Berry_RunEventHandlers_IntBytes(CMD_EVENT_ON_DP, 2, bytes, sizeof(bytes));
 
 		// writer test
-		Test_FakeHTTPClientPacket_GET("api/lfs/test.txt");
+		Test_FakeHTTPClientPacket_GET("api/run/test.txt");
 		SELFTEST_ASSERT_HTML_REPLY("qQqQqQ");
 		// appender test
-		Test_FakeHTTPClientPacket_GET("api/lfs/test2.txt");
+		Test_FakeHTTPClientPacket_GET("api/run/test2.txt");
 		SELFTEST_ASSERT_HTML_REPLY("ABCadd a!qQqQqQ");
 	}
 
@@ -846,7 +846,7 @@ void Test_Berry_TuyaMCU_Bytes() {
 		byte bytes[] = { 0x03, 0x05, 0x07, 0x09 };
 		CMD_Berry_RunEventHandlers_IntBytes(CMD_EVENT_ON_DP, 5, bytes, sizeof(bytes));
 
-		Test_FakeHTTPClientPacket_GET("api/lfs/test3.txt");
+		Test_FakeHTTPClientPacket_GET("api/run/test3.txt");
 		SELFTEST_ASSERT_HTML_REPLY("3 45");
 	}
 }
@@ -924,7 +924,7 @@ void Test_Berry_HTTP2() {
 			"<h1>Hello 4</h1>"
 			"</body>"
 			"</html>";
-		Test_FakeHTTPClientPacket_GET("api/lfs/index.html");
+		Test_FakeHTTPClientPacket_GET("api/run/index.html");
 		SELFTEST_ASSERT_HTML_REPLY(test1_res);
 	}
 	{
@@ -943,7 +943,7 @@ void Test_Berry_HTTP2() {
 			"<h1>Hello 4</h1>"
 			"</body>\n"
 			"</html>";
-		Test_FakeHTTPClientPacket_GET("api/lfs/index.html");
+		Test_FakeHTTPClientPacket_GET("api/run/index.html");
 		SELFTEST_ASSERT_HTML_REPLY(test1_res);
 	}
 	{
@@ -962,7 +962,7 @@ void Test_Berry_HTTP2() {
 			"<h1>Hello World</h1>"
 			"</body>\n"
 			"</html>";
-		Test_FakeHTTPClientPacket_GET("api/lfs/index0.html");
+		Test_FakeHTTPClientPacket_GET("api/run/index0.html");
 		SELFTEST_ASSERT_HTML_REPLY(test0_res);
 	}
 	{
@@ -985,7 +985,7 @@ void Test_Berry_HTTP2() {
 			"<ul>\n<li>0</li><li>1</li><li>2</li>\n</ul>"
 			"</body>\n"
 			"</html>";
-		Test_FakeHTTPClientPacket_GET("api/lfs/index2.html");
+		Test_FakeHTTPClientPacket_GET("api/run/index2.html");
 		SELFTEST_ASSERT_HTML_REPLY(test2_res);
 	}
 	{
@@ -1008,7 +1008,7 @@ void Test_Berry_HTTP2() {
 			"<ul>\n<li>0</li><li>1</li><li>2</li>\n</ul>"
 			"</body>\n"
 			"</html>";
-		Test_FakeHTTPClientPacket_GET("api/lfs/index3.html");
+		Test_FakeHTTPClientPacket_GET("api/run/index3.html");
 		SELFTEST_ASSERT_HTML_REPLY(test3_res);
 	}
 	{
@@ -1038,7 +1038,7 @@ void Test_Berry_HTTP2() {
 			"</ul>\n"
 			"</body>\n"
 			"</html>";
-		Test_FakeHTTPClientPacket_GET("api/lfs/index4.html");
+		Test_FakeHTTPClientPacket_GET("api/run/index4.html");
 		SELFTEST_ASSERT_HTML_REPLY(test4_res);
 	} {
 		const char *test5 =
@@ -1071,7 +1071,7 @@ void Test_Berry_HTTP2() {
 			"</ul>\n"
 			"</body>\n"
 			"</html>";
-		Test_FakeHTTPClientPacket_GET("api/lfs/index5.html");
+		Test_FakeHTTPClientPacket_GET("api/run/index5.html");
 		SELFTEST_ASSERT_HTML_REPLY(test5_res);
 	}
 

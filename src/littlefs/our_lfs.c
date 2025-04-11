@@ -282,6 +282,18 @@ static commandResult_t CMD_LFS_Append_Internal(lcdPrintType_t type, bool bLine, 
 
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_LFS_MakeDirectory(const void *context, const char *cmd, const char *args, int cmdFlags) {
+
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() < 1) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	lfs_mkdir(&lfs, Tokenizer_GetArg(0));
+
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_LFS_Write(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	return CMD_LFS_Append_Internal(LCD_PRINT_DEFAULT, false, false, args);
 }
@@ -376,6 +388,7 @@ void LFSAddCmds(){
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_writeLine", CMD_LFS_WriteLine, NULL);
 
+	CMD_RegisterCommand("lfs_mkdir", CMD_LFS_MakeDirectory, NULL);
 }
 
 
