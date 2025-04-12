@@ -50,7 +50,7 @@ static uint32_t getTicksCount() {
 //https://github.com/libretiny-eu/libretiny
 void HAL_Delay_us(int delay) {
 #if PLATFORM_BK7238
-	usleep(delay);
+	usleep((17*delay)/10);
 #else
 	// 2us with gpio_output() while switch GPIO pins.
 	// This is platform-specific, so put it here.
