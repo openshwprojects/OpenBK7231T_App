@@ -29,6 +29,8 @@ void Test_Berry_VarLifeSpan() {
 	SELFTEST_ASSERT_CHANNEL(2, 30);
 	CMD_ExecuteCommand("berry x += 1\n x += 1\nif 0 x += 2; else x += 3 end\nsetChannel(2, 1000+x)", 0);
 	SELFTEST_ASSERT_CHANNEL(2, 1035);
+	CMD_ExecuteCommand("berry if 5==5 x += 2; else x += 3 end\nsetChannel(2, 1000+x)", 0);
+	SELFTEST_ASSERT_CHANNEL(2, 1037);
 	
 }
 void Test_Berry_ChannelSet() {
@@ -64,6 +66,10 @@ void Test_Berry_ChannelSet() {
 
 	CMD_ExecuteCommand("berry i = 5; def test() i = 10 end; test(); setChannel(1, i)", 0);
 	SELFTEST_ASSERT_CHANNEL(1, 10); // or 5 depending on scoping rules
+
+
+	CMD_ExecuteCommand("berry setChannel(5, int(\"213\")); ", 0);
+	SELFTEST_ASSERT_CHANNEL(5, 213);
 }
 
 void Test_Berry_CancelThread() {
@@ -154,7 +160,11 @@ void Test_Berry_SetInterval() {
 	SELFTEST_ASSERT_CHANNEL(1, 6);
 	Berry_RunThreads(102);
 	SELFTEST_ASSERT_CHANNEL(1, 7);
-
+	CMD_ExecuteCommand("berry cancel(thread_id);", 0);
+	for (int i = 0; i < 10; i++) {
+		Berry_RunThreads(102);
+		SELFTEST_ASSERT_CHANNEL(1, 7);
+	}
 
 }
 void Test_Berry_SetTimeout() {
@@ -227,6 +237,53 @@ void Test_Berry_Import() {
     
     // Verify the constant from the module was correctly accessed
     SELFTEST_ASSERT_CHANNEL(3, 123);
+}
+void Test_Berry_Import_Autorun() {
+	int i;
+
+	// reset whole device
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("lfs_format", 0);
+
+	// Create an autoexec.be file with a proper module pattern
+	Test_FakeHTTPClientPacket_POST("api/lfs/autoexec.be",
+		"autoexec = module('autoexec')\n"
+		"\n"
+		"# Add functions to the module\n"
+		"autoexec.init = def()\n"
+		"  setChannel(1, 42)\n"
+		"  setChannel(2, 84)\n"
+		"end\n"
+		"\n"
+		"autoexec.init()\n"
+		"\n"
+		"# Berry modules must return the module object\n"
+		"return autoexec\n");
+
+	// Make sure channels start at 0
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	CMD_ExecuteCommand("setChannel 2 0", 0);
+
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+
+	// Import autoexec module and call the function
+	CMD_ExecuteCommand("berry import autoexec", 0);
+
+	// Verify the channels were set correctly by the imported module
+	SELFTEST_ASSERT_CHANNEL(1, 42);
+	SELFTEST_ASSERT_CHANNEL(2, 84);
+
+	CMD_ExecuteCommand("setChannel 1 0", 0);
+	CMD_ExecuteCommand("setChannel 2 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+
+	// Import autoexec module and call the function
+	CMD_ExecuteCommand("berry import autoexec", 0);
+	// this will not reset them
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
 }
 void Test_Berry_Fibonacci() {
 	int i, n = 5;
@@ -394,6 +451,25 @@ void Test_Berry_StartScriptShortcut() {
 	SELFTEST_ASSERT_CHANNEL(5, 2025);
 }
 
+void Test_Berry_StartScriptShortcut2() {
+
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("lfs_format", 0);
+
+	// Make sure channel starts at 0
+	CMD_ExecuteCommand("setChannel 5 0", 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+
+	// Create a Berry module file
+	Test_FakeHTTPClientPacket_POST("api/lfs/test.be",
+		"addChannel(5,1);\n");
+	CMD_ExecuteCommand("startScript test.be", 0);
+	SELFTEST_ASSERT_CHANNEL(5, 1);
+	// wont work
+	//CMD_ExecuteCommand("startScript test.be", 0);
+	//SELFTEST_ASSERT_CHANNEL(5, 2);
+
+}
 
 void Test_Berry_PassArg() {
 	// reset whole device
@@ -932,7 +1008,7 @@ void Test_Berry_HTTP2() {
 			"<!DOCTYPE html>"
 			"<html>"
 			"<body>"
-			"<h1>Hello <?b echo(get(\"arg\"))?></h1>"
+			"<h1>Hello <?b echo(getVar(\"arg\"))?></h1>"
 			"</body>"
 			"</html>";
 		Test_FakeHTTPClientPacket_POST("api/lfs/indexb.html", test1);
@@ -1097,6 +1173,43 @@ void Test_Berry_HTTP2() {
 	}
 
 }
+void Test_Berry_Button() {
+	// reset whole device
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("lfs_format", 0);
+
+	CMD_ExecuteCommand("berry addEventHandler(\"OnClick\", 5, def(arg)\n"
+		"runCmd(\"addChannel 5 1\") \n"
+		"end)", 0);
+	CMD_ExecuteCommand("berry addEventHandler(\"OnClick\", 6, def(arg)\n"
+		"runCmd(\"addChannel 6 1\") \n"
+		"end)", 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+	SELFTEST_ASSERT_CHANNEL(6, 0);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_PIN_ONCLICK, 5, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 1);
+	SELFTEST_ASSERT_CHANNEL(6, 0);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_PIN_ONCLICK, 5, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 2);
+	SELFTEST_ASSERT_CHANNEL(6, 0);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_PIN_ONCLICK, 6, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 2);
+	SELFTEST_ASSERT_CHANNEL(6, 1);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_PIN_ONCLICK, 7, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 2);
+	SELFTEST_ASSERT_CHANNEL(6, 1);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_PIN_ONCLICK, 6, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 2);
+	SELFTEST_ASSERT_CHANNEL(6, 2);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_PIN_ONCLICK, 6, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 2);
+	SELFTEST_ASSERT_CHANNEL(6, 3);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_PIN_ONCLICK, 6, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 2);
+	SELFTEST_ASSERT_CHANNEL(6, 4);
+
+
+}
 void Test_Berry_CmdHandler() {
 	// reset whole device
 	SIM_ClearOBK(0);
@@ -1125,21 +1238,23 @@ void Test_Berry_NTP() {
 	SELFTEST_ASSERT_EXPRESSION("$second", 34);
 	SELFTEST_ASSERT_EXPRESSION("$day", 5);
 
-	CMD_ExecuteCommand("berry setChannel(5,get(\"$minute\"))", 0);
+	CMD_ExecuteCommand("berry setChannel(5,getVar(\"$minute\"))", 0);
 	SELFTEST_ASSERT_CHANNEL(5, 27);
 
-	CMD_ExecuteCommand("berry setChannel(5,get(\"$hour\"))", 0);
+	CMD_ExecuteCommand("berry setChannel(5,getVar(\"$hour\"))", 0);
 	SELFTEST_ASSERT_CHANNEL(5, 9);
 
-	CMD_ExecuteCommand("berry setChannel(5,get(\"$second\"))", 0);
+	CMD_ExecuteCommand("berry setChannel(5,getVar(\"$second\"))", 0);
 	SELFTEST_ASSERT_CHANNEL(5, 34);
 
-	CMD_ExecuteCommand("berry setChannel(5,get(\"$day\"))", 0);
+	CMD_ExecuteCommand("berry setChannel(5,getVar(\"$day\"))", 0);
 	SELFTEST_ASSERT_CHANNEL(5, 5);
 }
 
 
 void Test_Berry() {
+	Test_Berry_Button();
+	Test_Berry_Import_Autorun();
 	Test_Berry_HTTP2();
 	Test_Berry_HTTP();
 	Test_Berry_VarLifeSpan();
@@ -1151,6 +1266,7 @@ void Test_Berry() {
     Test_Berry_ThreadCleanup();
     Test_Berry_AutoloadModule();
 	Test_Berry_StartScriptShortcut();
+	Test_Berry_StartScriptShortcut2();
 	Test_Berry_PassArg();
 	Test_Berry_PassArgFromCommand();
 	Test_Berry_PassArgFromCommandWithoutModule();

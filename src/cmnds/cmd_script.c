@@ -453,33 +453,33 @@ bool CheckEventCondition(eventWait_t *w, byte eventCode, int argument) {
 
 	bool bMatch = false;
 	switch (w->waitingForRelation) {
-	case 0: {
-		if (w->waitingForArgument == argument) {
-			bMatch = true;
-		}
-	}
+			case 0: {
+				if (w->waitingForArgument == argument) {
+					bMatch = true;
+				}
+			}
 			break;
-	case '<': {
-		// waitFor noPingTime < 5
-		if (argument < w->waitingForArgument) {
-			bMatch = true;
-		}
-	}
-			  break;
-	case '>': {
-		// waitFor noPingTime > 5
-		if (argument > w->waitingForArgument) {
-			bMatch = true;
-		}
-	}
-			  break;
-	case '!': {
-		// waitFor noPingTime ! 5
-		if (argument != w->waitingForArgument) {
-			bMatch = true;
-		}
-	}
-			  break;
+			case '<': {
+				// waitFor noPingTime < 5
+				if (argument < w->waitingForArgument) {
+					bMatch = true;
+				}
+			}
+			break;
+			case '>': {
+				// waitFor noPingTime > 5
+				if (argument > w->waitingForArgument) {
+					bMatch = true;
+				}
+			}
+			break;
+			case '!': {
+				// waitFor noPingTime ! 5
+				if (argument != w->waitingForArgument) {
+					bMatch = true;
+				}
+			}
+			break;
 	}
 	return bMatch;
 }

@@ -71,6 +71,8 @@ void CMD_Berry_ProcessWaitersForEvent(byte eventCode, int argument) {
 		}
 		t = t->next;
 	}
+	// TODO: better
+	CMD_Berry_RunEventHandlers_IntInt(eventCode, argument, 0);
 }
 void CMD_Berry_RunEventHandlers_IntInt(byte eventCode, int argument, int argument2) {
 	berryInstance_t *t;
@@ -337,7 +339,7 @@ static int BasicInit() {
 		g_vm = be_vm_new(); /* create a virtual machine instance */
 		be_regfunc(g_vm, "setChannel", be_ChannelSet);
 		be_regfunc(g_vm, "setTimeout", be_setTimeout);
-		be_regfunc(g_vm, "get", be_get);
+		be_regfunc(g_vm, "getVar", be_get);
 		be_regfunc(g_vm, "setInterval", be_setInterval);
 		be_regfunc(g_vm, "getChannel", be_ChannelGet);
 		be_regfunc(g_vm, "addChannel", be_ChannelAdd);
