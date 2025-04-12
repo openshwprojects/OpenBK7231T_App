@@ -52,7 +52,7 @@ void HAL_Delay_us(int delay) {
 	uint64_t m = (uint64_t)fclk_get_tick();
 	if(delay)
 	{
-		uint64_t e = (m + (delay*TICK_PER_SECOND/1000/1000));
+		uint64_t e = (m + delay);
 		if(m > e)
 		{ //overflow
 			while((uint64_t)fclk_get_tick() > e){}
