@@ -26,8 +26,10 @@ static uint32_t getTicksCount() {
 	REG_WRITE(TIMER0_2_READ_CTL, (CAL_TIMER_ID << 2) | 1);
 	while (REG_READ(TIMER0_2_READ_CTL) & 1) {
 		timeout++;
-		if (timeout > (120 * 1000))
-		return 0;
+		if (timeout > (120 * 1000)){
+			bk_printf("ERROR - timeout in getTicksCount()\r\n");
+			return 0;
+		}
 	}
 	return REG_READ(TIMER0_2_READ_VALUE);
 }
