@@ -48,38 +48,49 @@ static uint32_t getTicksCount() {
 
 //https://github.com/libretiny-eu/libretiny
 void HAL_Delay_us(int delay) {
+#if PLATFORM_BK7238
+	uint64_t m = (uint64_t)rtos_get_time_us();
+	if(delay)
+	{
+		uint64_t e = (m + delay);
+		if(m > e)
+		{ //overflow
+			while((uint64_t)rtos_get_time_us() > e)
+			{
+				__asm ("NOP");
+			}
+		}
+		while((uint64_t)rtos_get_time_us() < e)
+		{
+			__asm ("NOP");
+		}
+	}
+#else
 	// 2us with gpio_output() while switch GPIO pins.
 	// This is platform-specific, so put it here.
 	// us-range delays are for bitbang in most cases.
 	uint32_t startTick = getTicksCount();
 	if (delay > 1 && startTick >0){
 		/* startTick2 accounts for the case where the timer counter overflows */
-/*
-		uint32_t startTick = getTicksCount();
+
+		uint32_t failed_getTicks = 0;
 		uint32_t startTick2 = startTick - TICKS_PER_OVERFLOW;
 
 		uint32_t delayTicks = TICKS_PER_US * delay;
 		while (1) {
 			uint32_t t = getTicksCount();
+			if (t == 0) failed_getTicks ++;	
+			if (failed_getTicks > 1) {
+				bk_printf("ERROR in HAL_Delay_us() - too many timeouts for getTicksCount()\r\n");
+				break;
+			}	
 			if ((t - startTick >= delayTicks) && // normal case
 			    (t - startTick2 >= delayTicks))  // counter overflow case
 				break;
 		}
-*/
-		uint32_t failed_getTicks = 0;
-		uint32_t lastTick = startTick;
-		int32_t delayTicks = TICKS_PER_US * delay;
-		while (delayTicks > 0 && failed_getTicks < 1) {
-			uint32_t t = getTicksCount();
-			if (t == 0) failed_getTicks ++;	
-			if (t>lastTick) {delayTicks -= (t-lastTick);}
-			else {	// overflow happened!!. We simply ignore the ticks from last read to overflow and only reduce by the ticks since 0 (=t)
-				delayTicks -= t;
-			}
-			lastTick = t;
-		}
 
 	}
+#endif
 }
 
 void HAL_Configure_WDT()
