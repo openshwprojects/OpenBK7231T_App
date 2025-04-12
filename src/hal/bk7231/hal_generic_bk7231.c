@@ -23,12 +23,13 @@ void HAL_RebootModule()
 
 static uint32_t getTicksCount() {
 	uint32_t timeout = 0;
+	if (CAL_TIMER_ID >2) bk_printf("ERROR - in getTicksCount() CAL_TIMER_ID = %i\r\n",CAL_TIMER_ID);
 	REG_WRITE(TIMER0_2_READ_CTL, (CAL_TIMER_ID << 2) | 1);
 	while (REG_READ(TIMER0_2_READ_CTL) & 1) {
 		timeout++;
 		if (timeout > (120 * 1000)){
 			bk_printf("ERROR - timeout in getTicksCount()\r\n");
-			return 0;
+			return BK_TIMER_FAILURE;
 		}
 	}
 	return REG_READ(TIMER0_2_READ_VALUE);
@@ -48,7 +49,7 @@ static uint32_t getTicksCount() {
 
 //https://github.com/libretiny-eu/libretiny
 void HAL_Delay_us(int delay) {
-#if PLATFORM_BK7238
+#if 0
 	uint64_t m = (uint64_t)fclk_get_tick();
 	if(delay)
 	{
@@ -64,7 +65,7 @@ void HAL_Delay_us(int delay) {
 	// This is platform-specific, so put it here.
 	// us-range delays are for bitbang in most cases.
 	uint32_t startTick = getTicksCount();
-	if (delay > 1 && startTick >0){
+	if (delay > 1 && startTick <> BK_TIMER_FAILURE ){
 		/* startTick2 accounts for the case where the timer counter overflows */
 
 		uint32_t failed_getTicks = 0;
@@ -73,7 +74,7 @@ void HAL_Delay_us(int delay) {
 		uint32_t delayTicks = TICKS_PER_US * delay;
 		while (1) {
 			uint32_t t = getTicksCount();
-			if (t == 0) failed_getTicks ++;	
+			if (t == BK_TIMER_FAILURE) failed_getTicks ++;	
 			if (failed_getTicks > 1) {
 				bk_printf("ERROR in HAL_Delay_us() - too many timeouts for getTicksCount()\r\n");
 				break;
