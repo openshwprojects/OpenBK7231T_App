@@ -65,7 +65,7 @@ void HAL_Delay_us(int delay) {
 	// This is platform-specific, so put it here.
 	// us-range delays are for bitbang in most cases.
 	uint32_t startTick = getTicksCount();
-	if (delay > 1 && startTick <> BK_TIMER_FAILURE ){
+	if (delay > 1 && startTick != BK_TIMER_FAILURE ){
 		/* startTick2 accounts for the case where the timer counter overflows */
 
 		uint32_t failed_getTicks = 0;
