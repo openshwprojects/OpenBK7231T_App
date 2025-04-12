@@ -72,7 +72,7 @@ void CControllerBL0942::onDrawn() {
 	if (txt_current->isBeingEdited() == false) {
 		realCurrent = txt_current->getFloat();
 	}
-	Sim_SendFakeBL0942Packet(realVoltage, realPower, realCurrent);
+	Sim_SendFakeBL0942Packet(realVoltage, realCurrent, realPower);
 }
 class CControllerBase *CControllerBL0942::cloneController(class CShape *origOwner, class CShape *newOwner) {
 	CControllerBL0942 *r = new CControllerBL0942();
