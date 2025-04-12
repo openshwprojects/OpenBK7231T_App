@@ -54,6 +54,7 @@ https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccesspro
 #define TUYA_V0_CMD_OBTAINDPCACHE           0x10
 #define TUYA_V0_CMD_QUERYSIGNALSTRENGTH		0x0B
 
+#define TUYA_NETWORK_STATUS_SMART_CONNECT_SETUP 0x00
 #define TUYA_NETWORK_STATUS_AP_MODE             0x01
 #define TUYA_NETWORK_STATUS_NOT_CONNECTED       0x02
 #define TUYA_NETWORK_STATUS_CONNECTED_TO_ROUTER 0x03
@@ -1753,10 +1754,15 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 	}
 
 }
+
+int TuyaMCU_WiFiInReset() {
+	return g_resetWiFiEvents >= 3;
+}
+
 void TuyaMCU_ResetWiFi() {
 	g_resetWiFiEvents++;
 
-	if (g_resetWiFiEvents >= 3) {
+	if (TuyaMCU_WiFiInReset()) {
 		g_openAP = 1;
 	}
 }
@@ -2260,6 +2266,15 @@ void TuyaMCU_RunStateMachine_V3() {
 	}
 }
 void TuyaMCU_RunStateMachine_BatteryPowered() {
+	if (TuyaMCU_WiFiInReset()) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "User requested Reset - Operating Open AP\n");
+		/* Set current state to Setup */
+		Tuya_SetWifiState_V0(TUYA_NETWORK_STATUS_SMART_CONNECT_SETUP);
+
+		/* Don't interact further with MCU when in reset */
+		return;
+	}
+
 	g_tuyaNextRequestDelay--;
 	switch (g_tuyaBatteryPoweredState) {
 	case TM0_STATE_AWAITING_INFO:
@@ -2272,8 +2287,7 @@ void TuyaMCU_RunStateMachine_BatteryPowered() {
 	case TM0_STATE_AWAITING_WIFI:
 		if (g_tuyaNextRequestDelay <= 0) {
 			if (Main_IsConnectedToWiFi()) {
-				// send wifi state 0x03 
-				Tuya_SetWifiState_V0(0x03);
+				Tuya_SetWifiState_V0(TUYA_NETWORK_STATUS_CONNECTED_TO_ROUTER);
 				// retry
 				g_tuyaNextRequestDelay = 3;
 			}
@@ -2293,8 +2307,7 @@ void TuyaMCU_RunStateMachine_BatteryPowered() {
 				)
 #endif
 			{
-				// send wifi state 0x04 
-				Tuya_SetWifiState_V0(0x04);
+				Tuya_SetWifiState_V0(TUYA_NETWORK_STATUS_CONNECTED_TO_CLOUD);
 				// retry
 				g_tuyaNextRequestDelay = 3;
 			}
