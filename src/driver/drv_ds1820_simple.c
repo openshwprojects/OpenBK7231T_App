@@ -246,7 +246,7 @@ commandResult_t CMD_OW_testus(const void *context, const char *cmd, const char *
    int pin = Tokenizer_GetArgInteger(0);
    int pause = Tokenizer_GetArgInteger(1);
    if (tests > MAXUSTESTS){
-      tests > MAXUSTESTS;
+      tests = MAXUSTESTS;
       DS1820_LOG(INFO, "testus -  Warning, will only do the first %i tests!\r\n",tests);
    } 
    for (int i=0; i<tests; i++){

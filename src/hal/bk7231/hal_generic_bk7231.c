@@ -55,15 +55,9 @@ void HAL_Delay_us(int delay) {
 		uint64_t e = (m + delay);
 		if(m > e)
 		{ //overflow
-			while((uint64_t)rtos_get_time_us() > e)
-			{
-				__asm ("NOP");
-			}
+			while((uint64_t)rtos_get_time_us() > e){}
 		}
-		while((uint64_t)rtos_get_time_us() < e)
-		{
-			__asm ("NOP");
-		}
+		while((uint64_t)rtos_get_time_us() < e){}
 	}
 #else
 	// 2us with gpio_output() while switch GPIO pins.
