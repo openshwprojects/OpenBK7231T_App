@@ -49,15 +49,15 @@ static uint32_t getTicksCount() {
 //https://github.com/libretiny-eu/libretiny
 void HAL_Delay_us(int delay) {
 #if PLATFORM_BK7238
-	uint64_t m = (uint64_t)rtos_get_time_us();
+	uint64_t m = (uint64_t)fclk_get_tick();
 	if(delay)
 	{
-		uint64_t e = (m + delay);
+		uint64_t e = (m + BK_MS_TO_TICKS(1000*delay)));
 		if(m > e)
 		{ //overflow
-			while((uint64_t)rtos_get_time_us() > e){}
+			while((uint64_t)fclk_get_tick() > e){}
 		}
-		while((uint64_t)rtos_get_time_us() < e){}
+		while((uint64_t)fclk_get_tick() < e){}
 	}
 #else
 	// 2us with gpio_output() while switch GPIO pins.
