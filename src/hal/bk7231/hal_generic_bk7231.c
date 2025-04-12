@@ -49,21 +49,32 @@ void HAL_Delay_us(int delay) {
 	// 2us with gpio_output() while switch GPIO pins.
 	// This is platform-specific, so put it here.
 	// us-range delays are for bitbang in most cases.
-	if (delay > 1)
-	  delay -= 2;
-	else
-	  delay = 0;
+	if (delay > 1){
+		/* startTick2 accounts for the case where the timer counter overflows */
+/*
+		uint32_t startTick = getTicksCount();
+		uint32_t startTick2 = startTick - TICKS_PER_OVERFLOW;
 
-	/* startTick2 accounts for the case where the timer counter overflows */
-	uint32_t startTick = getTicksCount();
-	uint32_t startTick2 = startTick - TICKS_PER_OVERFLOW;
+		uint32_t delayTicks = TICKS_PER_US * delay;
+		while (1) {
+			uint32_t t = getTicksCount();
+			if ((t - startTick >= delayTicks) && // normal case
+			    (t - startTick2 >= delayTicks))  // counter overflow case
+				break;
+		}
+*/
+		uint32_t startTick = getTicksCount();
+		uint32_t lastTick = startTick;
+		int32_t delayTicks = TICKS_PER_US * delay;
+		while (delayTicks > 0) {
+			uint32_t t = getTicksCount();
+			if (t>lastTick) {delayTicks -= (t-lastTick)}
+			else {	// overflow happened!!. We simply ignore the ticks from last read to overflow and only reduce by the ticks since 0 (=t)
+				delayTicks -= t;
+			}
+			lastTick = t;
+		}
 
-	uint32_t delayTicks = TICKS_PER_US * delay;
-	while (1) {
-		uint32_t t = getTicksCount();
-		if ((t - startTick >= delayTicks) && // normal case
-		    (t - startTick2 >= delayTicks))  // counter overflow case
-			break;
 	}
 }
 
