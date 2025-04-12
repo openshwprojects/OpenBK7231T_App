@@ -1117,6 +1117,17 @@ commandResult_t CMD_ExecuteCommandArgs(const char* cmd, const char* args, int cm
 		get_cmd(cmd, nonums, 32, 1);
 		newCmd = CMD_Find(nonums);
 		if (!newCmd) {
+#if ENABLE_OBK_BERRY
+			static int g_guard = 0;
+			if (g_guard == 0) {
+				g_guard = 1;
+				int c_run = CMD_Berry_RunEventHandlers_Str(CMD_EVENT_ON_CMD, cmd, args);
+				g_guard = 0;
+				if (c_run > 0) {
+					return CMD_RES_OK;
+				}
+			}
+#endif
 			// if still not found, then error
 			ADDLOG_ERROR(LOG_FEATURE_CMD, "cmd %s NOT found (args %s)", cmd, args);
 			return CMD_RES_UNKNOWN_COMMAND;

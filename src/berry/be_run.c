@@ -12,10 +12,13 @@ const char berryPrelude[] =
 	"  return _suspended_closures_idx\n"
 	"end\n"
 	"\n"
-	"def resume_closure(idx)\n"
+	"def run_closure(idx,x,y)\n"
 	"  closure = _suspended_closures[idx]\n"
+	"  closure(x,y)\n"
+	"end\n"
+	"\n"
+	"def remove_closure(idx)\n"
 	"  _suspended_closures.remove(idx)\n"
-	"  closure()\n"
 	"end\n";
 
 void be_error_pop_all(bvm *vm) {
@@ -69,12 +72,64 @@ err:
 	return success;
 }
 
-void berryResumeClosure(bvm *vm, int closureId) {
-	if (!be_getglobal(vm, "resume_closure")) {
+void berryRunClosure(bvm *vm, int closureId) {
+	if (!be_getglobal(vm, "run_closure")) {
 		return;
 	}
 	be_pushint(vm, closureId);
-	// call resume_closure(closureId)
+	// call run_closure(closureId)
+	be_call(vm, 1);
+}
+void berryRunClosureBytes(bvm *vm, int closureId, byte *data, int len) {
+	if (!be_getglobal(vm, "run_closure")) {
+		return;
+	}
+	be_pushint(vm, closureId);
+	be_pushbytes(vm, data, len);
+	// call run_closure(closureId)
+	be_call(vm, 2);
+}
+void berryRunClosureIntBytes(bvm *vm, int closureId, int x, const byte *data, int len) {
+	if (!be_getglobal(vm, "run_closure")) {
+		return;
+	}
+	be_pushint(vm, closureId);
+	be_pushint(vm, x);
+	be_pushbytes(vm, data, len);
+	// call run_closure(closureId)
+	be_call(vm, 3);
+}
+void berryRunClosureIntInt(bvm *vm, int closureId, int x, int y) {
+	if (!be_getglobal(vm, "run_closure")) {
+		return;
+	}
+	be_pushint(vm, closureId);
+	be_pushint(vm, x);
+	be_pushint(vm, y);
+	// call run_closure(closureId)
+	be_call(vm, 3);
+}
+void berryRunClosureStr(bvm *vm, int closureId, const char * x, const char * y) {
+	if (!be_getglobal(vm, "run_closure")) {
+		return;
+	}
+	// call run_closure(closureId)
+	be_pushint(vm, closureId);
+	be_pushstring(vm, x);
+	if (y) {
+		be_pushstring(vm, y);
+		be_call(vm, 3);
+	}
+	else {
+		be_call(vm, 2);
+	}
+}
+void berryRemoveClosure(bvm *vm, int closureId) {
+	if (!be_getglobal(vm, "remove_closure")) {
+		return;
+	}
+	be_pushint(vm, closureId);
+	// call remove_closure(closureId)
 	be_call(vm, 1);
 }
 
