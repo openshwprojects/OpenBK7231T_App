@@ -234,6 +234,50 @@ int DS1820_getTemp()
 	return t;
 }
 
+// will allow testus <pin> <us between tests> <us val 1> <us val 2> .... 
+commandResult_t CMD_OW_testus(const void *context, const char *cmd, const char *args, int cmdFlags) {
+   Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+   int tests= Tokenizer_GetArgsCount()-2;   // first two are pin and pause-value
+   if(Tokenizer_GetArgsCount()<=3) {
+      return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+   }
+#define MAXUSTESTS 10
+   int testvals[MAXUSTESTS];
+   int pin = Tokenizer_GetArgInteger(0);
+   int pause = Tokenizer_GetArgInteger(1);
+   if (tests > MAXUSTESTS){
+      tests > MAXUSTESTS;
+      DS1820_LOG(INFO, "testus -  Warning, will only do the first %i tests!\r\n",tests);
+   } 
+   for (int i=0; i<tests; i++){
+      testvals[i]=Tokenizer_GetArgInteger(2+i);
+   }
+   DS1820_LOG(DEBUG, "testus - pin=%i pause=%i tests=%i ...",pin,pause,tests);
+   for (int i=0; i<tests; i++){
+      DS1820_LOG(DEBUG, "test %i value=%i ...",i,testvals[i]);
+   }
+   DS1820_LOG(DEBUG, "\r\n starting tests ...");
+
+   HAL_PIN_SetOutputValue(pin, 1);
+   HAL_PIN_Setup_Output(pin);
+   HAL_PIN_SetOutputValue(pin, 1);
+   // at least on BK7238 HAL_PIN_Setup_Output(pin) will set pin LOW first, even if HAL_PIN_SetOutputValue(pin, 1); was called before
+   // so to have a clear defined tes, do a long delay before the actual tests (we could also ignore the first change, but if it's different on other platforms...)
+   vTaskDelay(200);
+   for (int i=0; i<tests; i++){
+      noInterrupts();
+      HAL_PIN_SetOutputValue(pin, 0);
+      HAL_Delay_us(testvals[i]);
+      HAL_PIN_SetOutputValue(pin, 1);
+      interrupts();
+      HAL_Delay_us(pause);
+   }
+   DS1820_LOG(DEBUG, "... tests done\r\n");
+   return CMD_RES_OK;
+}
+
+
+
 static commandResult_t Cmd_SetResolution(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
@@ -284,6 +328,13 @@ void DS1820_driver_Init()
 	//cmddetail:"fn":"Cmd_SetResolution","file":"drv/drv_ds1820_simple.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DS1820_SetResolution", Cmd_SetResolution, NULL);
+	
+	//cmddetail:{"name":"testus","args":"pin <pause in us> <testval 1 in us> [<testval n in us>...]",
+	//cmddetail:"descr":"tests usleep on given pin ",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_ds1820_simple.c","requires":"",
+	//cmddetail:"examples":"testus 11 5 2 4 6 10 20 50 100 200 500"}
+	CMD_RegisterCommand("testus", CMD_OW_testus, NULL);
+
 
 	//Find PIN and check device so DS1820_SetResolution could be used in autoexec.bat
 	Pin = PIN_FindPinIndexForRole(IOR_DS1820_IO, -1);
