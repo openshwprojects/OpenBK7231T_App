@@ -463,6 +463,13 @@ void Berry_StopScripts(int id) {
 		t = t->next;
 	}
 }
+int Berry_GetStackSize() {
+	if (g_vm) {
+		int size = g_vm->stacktop - g_vm->stack;    /* with debug enabled, stack increase may be negative */
+		return size;
+	}
+	return 0;
+}
 
 void Berry_RunThreads(int deltaMS) {
 	int c_sleep, c_run;
