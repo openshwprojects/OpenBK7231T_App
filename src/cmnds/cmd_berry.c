@@ -86,7 +86,7 @@ void CMD_Berry_RunEventHandlers_IntInt(byte eventCode, int argument, int argumen
 		} else if (t->wait.waitingForEvent == eventCode
 			&& t->wait.waitingForRelation == 'm'
 			&& t->wait.waitingForArgument == argument) {
-			berryRunClosureIntInt(g_vm, t->closureId, argument2, 0);
+			berryRunClosureInt(g_vm, t->closureId, argument2);
 		}
 		t = t->next;
 	}
@@ -463,9 +463,16 @@ void Berry_StopScripts(int id) {
 		t = t->next;
 	}
 }
-int Berry_GetStackSize() {
+int Berry_GetStackSizeTotal() {
 	if (g_vm) {
 		int size = g_vm->stacktop - g_vm->stack;    /* with debug enabled, stack increase may be negative */
+		return size;
+	}
+	return 0;
+}
+int Berry_GetStackSizeCurrent() {
+	if (g_vm) {
+		int size = g_vm->top - g_vm->stack;
 		return size;
 	}
 	return 0;

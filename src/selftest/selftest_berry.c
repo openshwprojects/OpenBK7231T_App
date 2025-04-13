@@ -46,11 +46,11 @@ void Test_Berry_ChannelSet() {
     SELFTEST_ASSERT_CHANNEL(1, 0);
     SELFTEST_ASSERT_CHANNEL(2, 0);
 
-	int startStackSize = Berry_GetStackSize();
+	int startStackSize = Berry_GetStackSizeTotal();
     // Run Berry code that sets channels
     CMD_ExecuteCommand("berry setChannel(1, 42)", 0);
     CMD_ExecuteCommand("berry setChannel(2, 123)", 0);
-	SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
     
     // Verify the channels were set correctly
     SELFTEST_ASSERT_CHANNEL(1, 42);
@@ -58,7 +58,7 @@ void Test_Berry_ChannelSet() {
     
     // Test setting multiple channels in one script
     CMD_ExecuteCommand("berry setChannel(1, 99); setChannel(2, 88)", 0);
-	SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
     
     // Verify the updated values
     SELFTEST_ASSERT_CHANNEL(1, 99);
@@ -66,16 +66,16 @@ void Test_Berry_ChannelSet() {
 
 	CMD_ExecuteCommand("berry def give() return 7 end; setChannel(1, give() * 3)", 0);
 	SELFTEST_ASSERT_CHANNEL(1, 21);
-	SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
 
 	CMD_ExecuteCommand("berry i = 5; def test() i = 10 end; test(); setChannel(1, i)", 0);
 	SELFTEST_ASSERT_CHANNEL(1, 10); // or 5 depending on scoping rules
-	SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
 
 
 	CMD_ExecuteCommand("berry setChannel(5, int(\"213\")); ", 0);
 	SELFTEST_ASSERT_CHANNEL(5, 213);
-	SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
 }
 
 void Test_Berry_CancelThread() {
@@ -84,7 +84,7 @@ void Test_Berry_CancelThread() {
     // reset whole device
     SIM_ClearOBK(0);
 
-	int startStackSize = Berry_GetStackSize();
+	int startStackSize = Berry_GetStackSizeTotal();
     // Make sure channels start at 0
     CMD_ExecuteCommand("setChannel 1 0", 0);
     CMD_ExecuteCommand("setChannel 2 0", 0);
@@ -95,7 +95,7 @@ void Test_Berry_CancelThread() {
     // Run Berry code that creates a delayed thread that would set channels
     // and stores the thread ID in a global variable
     CMD_ExecuteCommand("berry thread_id = setTimeout(def() setChannel(1, 42); setChannel(2, 123); end, 100); print(thread_id)", 0);
-	SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
     
     // Now cancel the thread using the thread_id
     CMD_ExecuteCommand("berry cancel(thread_id)", 0);
@@ -111,7 +111,7 @@ void Test_Berry_CancelThread() {
     
     // Now let's test the positive case - create a thread and let it complete
     CMD_ExecuteCommand("berry setTimeout(def() setChannel(1, 99); setChannel(2, 88); end, 50)", 0);
-	SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
     
     // Run scheduler to let the thread complete
     for (i = 0; i < 20; i++) {
@@ -140,7 +140,7 @@ void Test_Berry_CancelThread() {
 	}
 	SELFTEST_ASSERT_CHANNEL(1, 102);
 	SELFTEST_ASSERT_CHANNEL(2, 94);
-	SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
 
 }
 
@@ -394,7 +394,7 @@ void Test_Berry_AutoloadModule() {
     SIM_ClearOBK(0);
 	CMD_ExecuteCommand("lfs_format", 0);
 
-	int startStackSize = Berry_GetStackSize();
+	int startStackSize = Berry_GetStackSizeTotal();
     // Create a Berry module file
     Test_FakeHTTPClientPacket_POST("api/lfs/autoexec.be",
         "autoexec = module('autoexec')\n"
@@ -417,7 +417,7 @@ void Test_Berry_AutoloadModule() {
     
     // Simulate a device restart by running the autoexec.txt script
     CMD_ExecuteCommand("startScript autoexec.txt", 0);
-	SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
     
     // Run scheduler to let any scripts complete
     for (int i = 0; i < 5; i++) {
@@ -431,7 +431,7 @@ void Test_Berry_AutoloadModule() {
     // Test that we can now use the module functions directly
     CMD_ExecuteCommand("berry import autoexec; autoexec.init(); setChannel(6, 99)", 0);
     SELFTEST_ASSERT_CHANNEL(6, 99);
-	SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
 }
 
 void Test_Berry_StartScriptShortcut() {
@@ -489,7 +489,7 @@ void Test_Berry_PassArg() {
 	SIM_ClearOBK(0);
 	CMD_ExecuteCommand("lfs_format", 0);
 
-	int startStackSize = Berry_GetStackSize();
+	int startStackSize = Berry_GetStackSizeTotal();
 	// Create a Berry module file
 	Test_FakeHTTPClientPacket_POST("api/lfs/test.be",
 		"def mySample(x)\n"
@@ -513,7 +513,7 @@ void Test_Berry_PassArg() {
 
 	// Verify that the Berry module was loaded and initialized (it should have set channel 5 to 15)
 	SELFTEST_ASSERT_CHANNEL(5, 15);
-	SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
 }
 
 
@@ -523,7 +523,7 @@ void Test_Berry_PassArgFromCommand() {
 	SIM_ClearOBK(0);
 	CMD_ExecuteCommand("lfs_format", 0);
 
-	int startStackSize = Berry_GetStackSize();
+	int startStackSize = Berry_GetStackSizeTotal();
 	// Make sure channel starts at 0
 	CMD_ExecuteCommand("setChannel 5 0", 0);
 	SELFTEST_ASSERT_CHANNEL(5, 0);
@@ -538,7 +538,7 @@ void Test_Berry_PassArgFromCommand() {
 	SELFTEST_ASSERT_CHANNEL(5, 32);
 	CMD_ExecuteCommand("berry mySample(-5)", 0);
 	SELFTEST_ASSERT_CHANNEL(5, 27);
-	SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
 }
 
 
@@ -575,7 +575,7 @@ void Test_Berry_PassArgFromCommandWithModule() {
 	SIM_ClearOBK(0);
 	CMD_ExecuteCommand("lfs_format", 0);
 
-	int startStackSize = Berry_GetStackSize();
+	int startStackSize = Berry_GetStackSizeTotal();
 
 	// Create a Berry module file
 	Test_FakeHTTPClientPacket_POST("api/lfs/test.be",
@@ -601,7 +601,7 @@ void Test_Berry_PassArgFromCommandWithModule() {
 	SELFTEST_ASSERT_CHANNEL(5, 6);
 	CMD_ExecuteCommand("berry test.mySample(2)", 0);
 	SELFTEST_ASSERT_CHANNEL(5, 8);
-	SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
 }
 
 void Test_Berry_FileSystem() {
@@ -610,7 +610,7 @@ void Test_Berry_FileSystem() {
 
 	CMD_ExecuteCommand("lfs_format", 0);
 
-	int startStackSize = Berry_GetStackSize();
+	int startStackSize = Berry_GetStackSizeTotal();
 
 	// Create a Berry module file
 	Test_FakeHTTPClientPacket_POST("api/lfs/test.be",
@@ -647,7 +647,7 @@ void Test_Berry_FileSystem() {
 	CMD_ExecuteCommand("berry import test2; test2.mySample()", 0);
 	Test_FakeHTTPClientPacket_GET("api/run/test.txt");
 	SELFTEST_ASSERT_HTML_REPLY("foo bar hey");
-	SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
 }
 
 // 
@@ -657,7 +657,7 @@ void Test_Berry_AddChangeHandler() {
 	// reset whole device
 	SIM_ClearOBK(0);
 
-	int startStackSize = Berry_GetStackSize();
+	int startStackSize = Berry_GetStackSizeTotal();
 	// Make sure channels start at 0
 	CMD_ExecuteCommand("setChannel 1 0", 0);
 
@@ -722,7 +722,7 @@ void Test_Berry_AddChangeHandler() {
 	SELFTEST_ASSERT_CHANNEL(2, 1);
 	CMD_ExecuteCommand("setChannel 5 7", 0);
 	Berry_RunThreads(1);
-	SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
 	// TODO - it's triggered now, not as I expected....
 	/*
 	SELFTEST_ASSERT_CHANNEL(2, 1);
@@ -747,7 +747,7 @@ void Test_Berry_AddChangeHandler() {
 	Berry_RunThreads(1);
 	SELFTEST_ASSERT_CHANNEL(2, 2);
 	*/
-	SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
 }
 void Test_Berry_CommandRunner() {
 	int i;
@@ -783,7 +783,7 @@ void Test_Berry_TuyaMCU() {
 	SIM_ClearOBK(0);
 
 	SIM_UART_InitReceiveRingBuffer(2048);
-	int startStackSize = Berry_GetStackSize();
+	int startStackSize = Berry_GetStackSizeTotal();
 	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
 
 	// per-dpID handler
@@ -792,11 +792,11 @@ void Test_Berry_TuyaMCU() {
 		"setChannel(1, value) \n"
 		"end)", 0);
 
-	SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
 	SELFTEST_ASSERT_CHANNEL(1, 0);
 	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 2, 123);
 	SELFTEST_ASSERT_CHANNEL(1, 123);
-	SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
 	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 2, 564);
 	SELFTEST_ASSERT_CHANNEL(1, 564);
 	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 1, 333);
@@ -807,7 +807,18 @@ void Test_Berry_TuyaMCU() {
 	SELFTEST_ASSERT_CHANNEL(1, 564);
 	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 2, 123);
 	SELFTEST_ASSERT_CHANNEL(1, 123);
-	SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
+	for (int i = 0; i < 15; i++) {
+		int currentStackStart = Berry_GetStackSizeCurrent();
+		int x = i * 15;
+		printf("Loop start %i - Berry stack size: %i\n", i, Berry_GetStackSizeTotal());
+		CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 2, x);
+		SELFTEST_ASSERT_CHANNEL(1, x);
+		printf("Loop end %i - Berry stack size: %i\n", i, Berry_GetStackSizeTotal());
+		SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
+		int currentStackEnd = Berry_GetStackSizeCurrent();
+		SELFTEST_ASSERT(currentStackStart== currentStackEnd);
+	}
 
 	// global handler
 	CMD_ExecuteCommand("setChannel 1 0", 0);
@@ -817,7 +828,7 @@ void Test_Berry_TuyaMCU() {
 	CMD_ExecuteCommand("setChannel 5 0", 0);
 	Sim_RunFrames(100, false);
 	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 2, 123);
-	SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
 	SELFTEST_ASSERT_CHANNEL(5, 2 * 10000 + 123);
 	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 15, 123);
 	SELFTEST_ASSERT_CHANNEL(5, 15 * 10000 + 123);
@@ -825,7 +836,7 @@ void Test_Berry_TuyaMCU() {
 	SELFTEST_ASSERT_CHANNEL(5, 15 * 10000 + 555);
 	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_ON_DP, 1, 555);
 	SELFTEST_ASSERT_CHANNEL(5, 1 * 10000 + 555);
-	SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
 
 
 	// This packet sets dpID 2 of type Value to 100
@@ -833,17 +844,16 @@ void Test_Berry_TuyaMCU() {
 	Sim_RunFrames(100, false);
 	SELFTEST_ASSERT_CHANNEL(1, 100);
 	SELFTEST_ASSERT_CHANNEL(5, 2 * 10000 + 100);
-	SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
 
 	for (int tr = 0; tr < 20; tr++) {
-		printf("Berry stack size: %i\n",Berry_GetStackSize());
+		printf("Berry stack size: %i\n",Berry_GetStackSizeTotal());
 		// This packet sets dpID 2 of type Value to 90
 		CMD_ExecuteCommand("uartFakeHex 55AA03070008020200040000005A73", 0);
 		Sim_RunFrames(100, false);
 		SELFTEST_ASSERT_CHANNEL(1, 90);
 		SELFTEST_ASSERT_CHANNEL(5, 2 * 10000 + 90);
-		// TODO: ASSERT! - why?
-		//SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+		SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
 
 		// This packet sets dpID 2 of type Value to 110
 		CMD_ExecuteCommand("uartFakeHex 55AA03070008020200040000006E87", 0);
@@ -851,11 +861,11 @@ void Test_Berry_TuyaMCU() {
 		SELFTEST_ASSERT_CHANNEL(1, 110);
 		SELFTEST_ASSERT_CHANNEL(5, 2 * 10000 + 110);
 
-		// TODO: ASSERT! - why?
-		//SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+		SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
 	}
-	int delta = Berry_GetStackSize() - startStackSize;
+	int delta = Berry_GetStackSizeTotal() - startStackSize;
 	printf("Stack grew %i\n", delta);
+	SELFTEST_ASSERT(delta == 0);
  }
 
 
@@ -1015,7 +1025,7 @@ void Test_Berry_HTTP() {
 	SIM_ClearOBK(0);
 	CMD_ExecuteCommand("lfs_format", 0);
 
-	int startStackSize = Berry_GetStackSize();
+	int startStackSize = Berry_GetStackSizeTotal();
 	// inject html to state page
 	CMD_ExecuteCommand("berry addEventHandler(\"OnHTTP\", \"state\", def(request)\n"
 		"	poststr(request,\"MySpecialTestString23432411\") \n"
@@ -1033,7 +1043,7 @@ void Test_Berry_HTTP() {
 		"end)", 0);
 	Test_FakeHTTPClientPacket_GET("mypage123");
 	SELFTEST_ASSERT_HTML_REPLY("Anything");
-	SELFTEST_ASSERT(Berry_GetStackSize() == startStackSize);
+	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
 
 
 

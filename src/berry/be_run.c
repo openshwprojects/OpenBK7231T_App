@@ -73,14 +73,20 @@ err:
 }
 
 void berryRunClosure(bvm *vm, int closureId) {
+	//int s1 = Berry_GetStackSizeCurrent();
 	if (!be_getglobal(vm, "run_closure")) {
 		return;
 	}
 	be_pushint(vm, closureId);
 	// call run_closure(closureId)
 	be_call(vm, 1);
+	//int s2 = Berry_GetStackSizeCurrent();
+	be_pop(vm, 2);
+	//int s3 = Berry_GetStackSizeCurrent();
+	//printf("%i %i %i\n", s1, s2, s3);
 }
 void berryRunClosureBytes(bvm *vm, int closureId, byte *data, int len) {
+	//int s1 = Berry_GetStackSizeCurrent();
 	if (!be_getglobal(vm, "run_closure")) {
 		return;
 	}
@@ -88,8 +94,13 @@ void berryRunClosureBytes(bvm *vm, int closureId, byte *data, int len) {
 	be_pushbytes(vm, data, len);
 	// call run_closure(closureId)
 	be_call(vm, 2);
+	//int s2 = Berry_GetStackSizeCurrent();
+	be_pop(vm, 3);
+	//int s3 = Berry_GetStackSizeCurrent();
+	//printf("%i %i %i\n", s1, s2, s3);
 }
 void berryRunClosureIntBytes(bvm *vm, int closureId, int x, const byte *data, int len) {
+	//int s1 = Berry_GetStackSizeCurrent();
 	if (!be_getglobal(vm, "run_closure")) {
 		return;
 	}
@@ -98,8 +109,13 @@ void berryRunClosureIntBytes(bvm *vm, int closureId, int x, const byte *data, in
 	be_pushbytes(vm, data, len);
 	// call run_closure(closureId)
 	be_call(vm, 3);
+	//int s2 = Berry_GetStackSizeCurrent();
+	be_pop(vm, 4);
+	//int s3 = Berry_GetStackSizeCurrent();
+	//printf("%i %i %i\n", s1, s2, s3);
 }
 void berryRunClosureIntInt(bvm *vm, int closureId, int x, int y) {
+	//int s1 = Berry_GetStackSizeCurrent();
 	if (!be_getglobal(vm, "run_closure")) {
 		return;
 	}
@@ -108,29 +124,59 @@ void berryRunClosureIntInt(bvm *vm, int closureId, int x, int y) {
 	be_pushint(vm, y);
 	// call run_closure(closureId)
 	be_call(vm, 3);
+	//int s2 = Berry_GetStackSizeCurrent();
+	be_pop(vm, 4);
+	//int s3 = Berry_GetStackSizeCurrent();
+	//printf("%i %i %i\n", s1, s2, s3);
+}
+void berryRunClosureInt(bvm *vm, int closureId, int x) {
+	int s1 = Berry_GetStackSizeCurrent();
+	if (!be_getglobal(vm, "run_closure")) {
+		return;
+	}
+	be_pushint(vm, closureId);
+	be_pushint(vm, x);
+	be_call(vm, 2);
+	//int s2 = Berry_GetStackSizeCurrent();
+	be_pop(vm, 3);
+	//int s3 = Berry_GetStackSizeCurrent();
+	//printf("%i %i %i\n", s1, s2, s3);
 }
 void berryRunClosureStr(bvm *vm, int closureId, const char * x, const char * y) {
+	//int s1 = Berry_GetStackSizeCurrent();
 	if (!be_getglobal(vm, "run_closure")) {
 		return;
 	}
 	// call run_closure(closureId)
 	be_pushint(vm, closureId);
 	be_pushstring(vm, x);
+	//int s2;
 	if (y) {
 		be_pushstring(vm, y);
 		be_call(vm, 3);
+		//s2 = Berry_GetStackSizeCurrent();
+		be_pop(vm, 4);
 	}
 	else {
 		be_call(vm, 2);
+		//s2 = Berry_GetStackSizeCurrent();
+		be_pop(vm, 3);
 	}
+	//int s3 = Berry_GetStackSizeCurrent();
+	//printf("%i %i %i\n", s1, s2, s3);
 }
 void berryRemoveClosure(bvm *vm, int closureId) {
+	//int s1 = Berry_GetStackSizeCurrent();
 	if (!be_getglobal(vm, "remove_closure")) {
 		return;
 	}
 	be_pushint(vm, closureId);
 	// call remove_closure(closureId)
 	be_call(vm, 1);
+	//int s2 = Berry_GetStackSizeCurrent();
+	be_pop(vm, 2);
+	//int s3 = Berry_GetStackSizeCurrent();
+	//printf("%i %i %i\n", s1, s2, s3);
 }
 
 void berryFreeAllClosures(bvm *vm) {
