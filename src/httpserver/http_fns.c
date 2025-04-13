@@ -345,10 +345,18 @@ int http_fn_index(http_request_t* request) {
 			DRV_Widget_BeforeState(request);
 		}
 #endif
+#if ENABLE_OBK_BERRY
+		void Berry_SaveRequest(http_request_t *r);
+		Berry_SaveRequest(request);
+		CMD_Berry_RunEventHandlers_StrInt(CMD_EVENT_ON_HTTP, "prestate", (int)request);
+#endif
+
 		poststr(request, "<div id=\"state\">"); // replaceable content follows
 	}
 
 #if ENABLE_OBK_BERRY
+	void Berry_SaveRequest(http_request_t *r);
+	Berry_SaveRequest(request);
 	CMD_Berry_RunEventHandlers_StrInt(CMD_EVENT_ON_HTTP, "state", (int)request);
 #endif
 
