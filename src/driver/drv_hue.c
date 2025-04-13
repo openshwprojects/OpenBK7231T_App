@@ -103,7 +103,9 @@ void DRV_HUE_Send_Advert_To(struct sockaddr_in *addr) {
 }
 
 
-void HUE_AppendInformationToHTTPIndexPage(http_request_t* request) {
+void HUE_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState) {
+	if(bPreState)
+		return;
 	hprintf255(request, "<h4>HUE: searches %i, setup %i, events %i, mService %i, event %i </h4>",
 		stat_searchesReceived, stat_setupXMLVisits, stat_eventsReceived, stat_metaServiceXMLVisits, stat_eventServiceXMLVisits);
 
