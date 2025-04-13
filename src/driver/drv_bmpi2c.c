@@ -191,8 +191,10 @@ void BMPI2C_OnEverySecond()
 	}
 }
 
-void BMPI2C_AppendInformationToHTTPIndexPage(http_request_t* request)
+void BMPI2C_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
+	if (bPreState)
+		return;
 	hprintf255(request, "<h2>%s Temperature=%.2f C, Pressure=%.2f hPa", g_chipName, g_temperature * 0.01f, g_pressure * 0.01f);
 	if(isHumidityAvail)
 	{

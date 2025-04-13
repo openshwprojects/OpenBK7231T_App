@@ -80,6 +80,7 @@
 #endif
 
 
+#define	ENABLE_DRIVER_PIR		1
 #define	ENABLE_HA_DISCOVERY		1
 #define ENABLE_SEND_POSTANDGET		1
 #define ENABLE_MQTT 1
