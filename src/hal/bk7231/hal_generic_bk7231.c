@@ -68,27 +68,56 @@ void HAL_Delay_us(int delay) {
 		}
 	}
 #else
-	// 2us with gpio_output() while switch GPIO pins.
-	// This is platform-specific, so put it here.
-	// us-range delays are for bitbang in most cases.
 	uint32_t startTick = getTicksCount();
-	if (delay > 1 && startTick != BK_TIMER_FAILURE ){
-		/* startTick2 accounts for the case where the timer counter overflows */
+	if (delay > 1 && startTick != BK_TIMER_FAILURE ){		// be sure, timer works
+		uint32_t endTicks = startTicks + TICKS_PER_US * delay;	// end tick value after delay
+		// 
+		// there are three possible cases: 
+		//	1. a delay with overflow 
+		//	2. a delay surely without overflow
+		//	3. a delay with a possible overflow
+		// 
+		// Case 1. with overflow:
+		//	quite "easy":
+		//		wait for overflow, then wait until counter > calculated end value (after overflow)
+		if (endTicks >= TICKS_PER_OVERFLOW){
+			while (getTicksCount() > startTick) {};	// until overflow happens, the actual count is > than start
+			endTicks -= TICKS_PER_OVERFLOW;		// calculate endTicks (subtracting maximum value
+			while (getTicksCount() < endTicks) {};	// wait, until end counter is reached
+			
+		} 
+		else {
+		// 
+		//	For the other two cases we need to define a "safe distance" away from overflow
+		//		if the end value is lower, we define it as "safe" - there can be no overflow when testing 
+		//	 
+		
+			uint32_t safeTick = TICKS_PER_OVERFLOW - (TICKS_PER_US * 10);	// an end value "10 us away" from overflow should be safe 
 
-		uint32_t failed_getTicks = 0;
-		uint32_t startTick2 = startTick - TICKS_PER_OVERFLOW;
+		// Case 2. surely no overflow:
+		//	very easy:
+		//		since end value is a "safe distance" away from overflow we can simply wait, until end value is reached 
+		
+			if (endTicks < safeTick){			// so end value is "safe" distance away from overflow
+				while (getTicksCount() < endTicks) {};	// just wait, until end counter is reached
+			}
+			else {
+			
+		// Case 3. the tricky one: end value is "near" to overflow - so we can't simply wait, until end value is reached, 
+		//	because we might miss the check, were counter is > endTicks and the next test is after an overflow and (since the value returend is way below our end point) we missed the end condition.
+		//	So we need two checks: is the value still below endTicks AND was there no overflow (we test, if the value is still > startTick)
+		// 
+		// 	to make the "expensive" tests as low as possible, devide the test:
+		//		first test "simple" inside the safe boundaries
+		//		then do the test for end value and check, if overflow happened   
 
-		uint32_t delayTicks = TICKS_PER_US * delay;
-		while (1) {
-			uint32_t t = getTicksCount();
-			if (t == BK_TIMER_FAILURE) failed_getTicks ++;	
-			if (failed_getTicks > 1) {
-				bk_printf("ERROR in HAL_Delay_us() - too many timeouts for getTicksCount()\r\n");
-				break;
-			}	
-			if ((t - startTick >= delayTicks) && // normal case
-			    (t - startTick2 >= delayTicks))  // counter overflow case
-				break;
+				while (getTicksCount() < safeTicks) {};	// "simple" wait, until safeTicks is reached
+				uint32_t t = getTicksCount();
+				while ( t < endTicks && t > startTick){	// when "near" overflow, check if endTicks is reached or overflow happened (then t < startTick)
+					t = getTicksCount();
+				};
+
+			}
 		}
 
 	}
