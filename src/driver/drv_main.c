@@ -50,6 +50,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "Freeze",		Freeze_Init,			Freeze_OnEverySecond,			NULL, Freeze_RunFrame, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_PIR
+	//drvdetail:{"name":"PIR",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"PIR",
+	//drvdetail:"requires":""}
+	{ "PIR",		PIR_Init,			PIR_OnEverySecond,			PIR_AppendInformationToHTTPIndexPage, NULL, NULL, PIR_OnChannelChanged, false },
+#endif
 #if ENABLE_DRIVER_PIXELANIM
 	//drvdetail:{"name":"PixelAnim",
 	//drvdetail:"title":"TODO",

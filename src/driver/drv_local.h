@@ -138,6 +138,12 @@ void Shift_Init();
 void Shift_OnEverySecond();
 void Shift_OnChannelChanged(int ch, int value);
 
+void PIR_Init();
+void PIR_OnEverySecond();
+void PIR_OnChannelChanged(int ch, int value);
+void PIR_AppendInformationToHTTPIndexPage(http_request_t *request);
+
+
 void TMGN_RunQuickTick();
 
 void DRV_MAX72XX_Init();
