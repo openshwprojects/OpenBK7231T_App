@@ -105,13 +105,14 @@ int min=1000, max=0, sum=0;
 void BEKEN_test_Tickscount() {
 	tests++;
 	noInterrupts();
+	uint32_t endTick;
 	uint32_t startTick = getTicksCount();
 	if (startTick != BK_TIMER_FAILURE ){
-		uint32_t endTick = getTicksCount();
+		endTick = getTicksCount();
 	}
 	interrupts();
 	if (startTick != BK_TIMER_FAILURE ){
-		int diff= (endTick > startTick)? endTick-startTick : (TICKS_PER_OVERFLOW - -startTick + endTick);
+		int diff= (endTick > startTick)? endTick-startTick : (TICKS_PER_OVERFLOW - startTick + endTick);
 		tests++;
 		sum += diff;
 		if (diff > 0 && diff < min) min=diff;
