@@ -70,7 +70,7 @@ void HAL_Delay_us(int delay) {
 #else
 	uint32_t startTick = getTicksCount();
 	if (delay > 1 && startTick != BK_TIMER_FAILURE ){		// be sure, timer works
-		uint32_t endTicks = startTicks + TICKS_PER_US * delay;	// end tick value after delay
+		uint32_t endTicks = startTick + TICKS_PER_US * delay;	// end tick value after delay
 		// 
 		// there are three possible cases: 
 		//	1. a delay with overflow 
@@ -111,7 +111,7 @@ void HAL_Delay_us(int delay) {
 		//		first test "simple" inside the safe boundaries
 		//		then do the test for end value and check, if overflow happened   
 
-				while (getTicksCount() < safeTicks) {};	// "simple" wait, until safeTicks is reached
+				while (getTicksCount() < safeTick) {};	// "simple" wait, until safeTick is reached
 				uint32_t t = getTicksCount();
 				while ( t < endTicks && t > startTick){	// when "near" overflow, check if endTicks is reached or overflow happened (then t < startTick)
 					t = getTicksCount();
