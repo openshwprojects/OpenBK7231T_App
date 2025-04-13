@@ -32,7 +32,7 @@ void PIR_AppendInformationToHTTPIndexPage(http_request_t *request, bool bPreStat
 		}
 
 		hprintf255(request, "<h3>PIR Sensor Settings</h3>");
-		hprintf255(request, "<form action=\"/\" method=\"get\">");
+		hprintf255(request, "<form action=\"index\" method=\"get\">");
 		hprintf255(request, "On Time (seconds): <input type=\"text\" name=\"pirTime\" value=\"%i\"/>", g_onTime);
 		hprintf255(request, "<input type=\"submit\" value=\"Save\"/>");
 		hprintf255(request, "</form>");
