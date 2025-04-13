@@ -340,15 +340,13 @@ int http_fn_index(http_request_t* request) {
 		poststr(request, "</div>"); // end div#change
 
 
-#if defined(ENABLE_DRIVER_WIDGET)
-		if (DRV_IsRunning("Widget")) {
-			DRV_Widget_BeforeState(request);
-		}
-#endif
 #if ENABLE_OBK_BERRY
 		void Berry_SaveRequest(http_request_t *r);
 		Berry_SaveRequest(request);
 		CMD_Berry_RunEventHandlers_StrInt(CMD_EVENT_ON_HTTP, "prestate", (int)request);
+#endif
+#ifndef OBK_DISABLE_ALL_DRIVERS
+		DRV_AppendInformationToHTTPIndexPage(request, true);
 #endif
 
 		poststr(request, "<div id=\"state\">"); // replaceable content follows
@@ -770,7 +768,7 @@ int http_fn_index(http_request_t* request) {
 
 	poststr(request, "</table>");
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	DRV_AppendInformationToHTTPIndexPage(request);
+	DRV_AppendInformationToHTTPIndexPage(request, false);
 #endif
 
 	if (1) {

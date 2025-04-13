@@ -23,17 +23,20 @@ void PIR_OnChannelChanged(int ch, int value) {
 
 }
 
-void PIR_AppendInformationToHTTPIndexPage(http_request_t *request) {
-	char tmpA[32];
-	if (http_getArg(request->url, "pirTime", tmpA, sizeof(tmpA))) {
-		g_onTime = atoi(tmpA);
-	}
+void PIR_AppendInformationToHTTPIndexPage(http_request_t *request, bool bPreState) {
+	if (bPreState)
+	{
+		char tmpA[32];
+		if (http_getArg(request->url, "pirTime", tmpA, sizeof(tmpA))) {
+			g_onTime = atoi(tmpA);
+		}
 
-	hprintf255(request, "<h3>PIR Sensor Settings</h3>");
-	hprintf255(request, "<form action=\"/\" method=\"get\">");
-	hprintf255(request, "On Time (seconds): <input type=\"text\" name=\"pirTime\" value=\"%i\"/>", g_onTime);
-	hprintf255(request, "<input type=\"submit\" value=\"Save\"/>");
-	hprintf255(request, "</form>");
+		hprintf255(request, "<h3>PIR Sensor Settings</h3>");
+		hprintf255(request, "<form action=\"/\" method=\"get\">");
+		hprintf255(request, "On Time (seconds): <input type=\"text\" name=\"pirTime\" value=\"%i\"/>", g_onTime);
+		hprintf255(request, "<input type=\"submit\" value=\"Save\"/>");
+		hprintf255(request, "</form>");
+	}
 }
 
 

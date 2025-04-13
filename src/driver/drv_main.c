@@ -19,7 +19,7 @@ typedef struct driver_s {
 	const char* name;
 	void(*initFunc)();
 	void(*onEverySecond)();
-	void(*appendInformationToHTTPIndexPage)(http_request_t* request);
+	void(*appendInformationToHTTPIndexPage)(http_request_t* request, bool bPreState);
 	void(*runQuickTick)();
 	void(*stopFunc)();
 	void(*onChannelChanged)(int ch, int val);
@@ -662,7 +662,7 @@ void DRV_Generic_Init() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("stopDriver", DRV_Stop, NULL);
 }
-void DRV_AppendInformationToHTTPIndexPage(http_request_t* request) {
+void DRV_AppendInformationToHTTPIndexPage(http_request_t* request, bool bPreState) {
 	int i, j;
 	int c_active = 0;
 
@@ -673,31 +673,33 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t* request) {
 		if (g_drivers[i].bLoaded) {
 			c_active++;
 			if (g_drivers[i].appendInformationToHTTPIndexPage) {
-				g_drivers[i].appendInformationToHTTPIndexPage(request);
+				g_drivers[i].appendInformationToHTTPIndexPage(request, bPreState);
 			}
 		}
 	}
 	DRV_Mutex_Free();
 
-	hprintf255(request, "<h5>%i drivers active", c_active);
-	if (c_active > 0) {
-		j = 0;// printed 0 names so far
-		// generate active drivers list in (  )
-		hprintf255(request, " (");
-		for (i = 0; i < g_numDrivers; i++) {
-			if (g_drivers[i].bLoaded) {
-				// if at least one name printed, add separator
-				if (j != 0) {
-					hprintf255(request, ",");
+	if (bPreState == false) {
+		hprintf255(request, "<h5>%i drivers active", c_active);
+		if (c_active > 0) {
+			j = 0;// printed 0 names so far
+			// generate active drivers list in (  )
+			hprintf255(request, " (");
+			for (i = 0; i < g_numDrivers; i++) {
+				if (g_drivers[i].bLoaded) {
+					// if at least one name printed, add separator
+					if (j != 0) {
+						hprintf255(request, ",");
+					}
+					hprintf255(request, g_drivers[i].name);
+					// one more name printed
+					j++;
 				}
-				hprintf255(request, g_drivers[i].name);
-				// one more name printed
-				j++;
 			}
+			hprintf255(request, ")");
 		}
-		hprintf255(request, ")");
+		hprintf255(request, ", total %i</h5>", g_numDrivers);
 	}
-	hprintf255(request, ", total %i</h5>", g_numDrivers);
 }
 
 bool DRV_IsMeasuringPower() {

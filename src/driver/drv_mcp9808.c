@@ -288,8 +288,10 @@ void MCP9808_OnEverySecond() {
 	}
 }
 
-void MCP9808_AppendInformationToHTTPIndexPage(http_request_t* request)
+void MCP9808_AppendInformationToHTTPIndexPage(http_request_t* request, bool bPreState)
 {
+	if (bPreState)
+		return;
 	hprintf255(request, "<h2>MCP9808 Temperature=%f</h2>", g_temp);
 }
 

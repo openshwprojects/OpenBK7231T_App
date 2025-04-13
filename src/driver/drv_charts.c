@@ -509,8 +509,10 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 	poststr(request, "<style onload='cha();'></style>");
 
 }
-void DRV_Charts_AddToHtmlPage_Test(http_request_t *request) {
-
+void DRV_Charts_AddToHtmlPage_Test(http_request_t *request, bool bPreState) {
+	if (bPreState) {
+		return;
+	}
 	// chart_create [NumSamples] [NumVariables] [NumAxes]
 	// chart_create 16 3 2
 	chart_t *s = Chart_Create(16, 3, 2);
@@ -557,11 +559,9 @@ void DRV_Charts_AddToHtmlPage_Test(http_request_t *request) {
 	Chart_Free(&s);
 }
 // startDriver Charts
-void DRV_Charts_AddToHtmlPage(http_request_t *request) {
-	if (0) {
-		DRV_Charts_AddToHtmlPage_Test(request);
+void DRV_Charts_AddToHtmlPage(http_request_t *request, bool bPreState) {
+	if (bPreState)
 		return;
-	}
 	if (g_chart) {
 		Chart_Display(request, g_chart);
 	}

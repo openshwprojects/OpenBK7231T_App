@@ -68,12 +68,14 @@ void DRV_Widget_DisplayList(http_request_t* request, WidgetLocation loc) {
 		w = w->next;
 	}
 }
-void DRV_Widget_BeforeState(http_request_t* request) {
-	DRV_Widget_DisplayList(request, WIDGET_STATIC);
-}
 
-void DRV_Widget_AddToHtmlPage(http_request_t *request) {
-	DRV_Widget_DisplayList(request, WIDGET_STATE);
+void DRV_Widget_AddToHtmlPage(http_request_t *request, bool bPreState) {
+	if (bPreState) {
+		DRV_Widget_DisplayList(request, WIDGET_STATIC);
+	}
+	else {
+		DRV_Widget_DisplayList(request, WIDGET_STATE);
+	}
 }
 void Widget_Add(widget_t **first, widget_t *n) {
 	if (*first == 0) {
