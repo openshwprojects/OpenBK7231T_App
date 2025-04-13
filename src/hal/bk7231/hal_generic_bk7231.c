@@ -95,6 +95,33 @@ void HAL_Delay_us(int delay) {
 #endif
 }
 
+
+
+#include <task.h>
+#define noInterrupts() taskENTER_CRITICAL()
+#define interrupts() taskEXIT_CRITICAL()
+int tests=0;
+int min=1000, max=0, sum=0;
+void BEKEN_test_Tickscount() {
+	tests++;
+	noInterrupts();
+	uint32_t startTick = getTicksCount();
+	if (startTick != BK_TIMER_FAILURE ){
+		uint32_t endTick = getTicksCount();
+	}
+	interrupts();
+	if (startTick != BK_TIMER_FAILURE ){
+		int diff= (endTick > startTick)? endTick-startTick : (TICKS_PER_OVERFLOW - -startTick + endTick);
+		tests++;
+		sum += diff;
+		if (diff > 0 && diff < min) min=diff;
+		if (diff > max) max=diff;
+		bk_printf("Info HAL_test_Tickscount(): startTick=%u - endTick=%u -- Ticks:%i (min=%i # max=%i # average=%f)\r\n",startTick,endTick,diff,min,max,(float)sum/tests);
+	}
+	else bk_printf("ERROR - BK_TIMER_FAILURE - timeout in HAL_test_Tickscount()\r\n");
+}
+
+
 void HAL_Configure_WDT()
 {
 	bk_wdg_initialize(10000);
