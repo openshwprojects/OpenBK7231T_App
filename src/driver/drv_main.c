@@ -19,7 +19,7 @@ typedef struct driver_s {
 	const char* name;
 	void(*initFunc)();
 	void(*onEverySecond)();
-	void(*appendInformationToHTTPIndexPage)(http_request_t* request, bool bPreState);
+	void(*appendInformationToHTTPIndexPage)(http_request_t* request, int bPreState);
 	void(*runQuickTick)();
 	void(*stopFunc)();
 	void(*onChannelChanged)(int ch, int val);
@@ -662,7 +662,7 @@ void DRV_Generic_Init() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("stopDriver", DRV_Stop, NULL);
 }
-void DRV_AppendInformationToHTTPIndexPage(http_request_t* request, bool bPreState) {
+void DRV_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState) {
 	int i, j;
 	int c_active = 0;
 

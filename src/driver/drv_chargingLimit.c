@@ -91,7 +91,7 @@ void ChargingLimit_OnEverySecond() {
 	}
 }
 
-void ChargingLimit_AppendInformationToHTTPIndexPage(http_request_t* request, bool bPreState)
+void ChargingLimit_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
 	if (bPreState)
 		return;

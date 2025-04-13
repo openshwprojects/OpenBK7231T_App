@@ -69,7 +69,7 @@ void DRV_Widget_DisplayList(http_request_t* request, WidgetLocation loc) {
 	}
 }
 
-void DRV_Widget_AddToHtmlPage(http_request_t *request, bool bPreState) {
+void DRV_Widget_AddToHtmlPage(http_request_t *request, int bPreState) {
 	if (bPreState) {
 		DRV_Widget_DisplayList(request, WIDGET_STATIC);
 	}

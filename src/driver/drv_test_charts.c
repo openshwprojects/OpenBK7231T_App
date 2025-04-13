@@ -9,7 +9,7 @@
 #include "../httpserver/new_http.h"
 
 // startDriver TestCharts
-void DRV_Test_Charts_AddToHtmlPage(http_request_t *request, bool bPreState) {
+void DRV_Test_Charts_AddToHtmlPage(http_request_t *request, int bPreState) {
 	if (bPreState) {
 		return;
 	}

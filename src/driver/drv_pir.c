@@ -23,7 +23,7 @@ void PIR_OnChannelChanged(int ch, int value) {
 
 }
 
-void PIR_AppendInformationToHTTPIndexPage(http_request_t *request, bool bPreState) {
+void PIR_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState) {
 	if (bPreState)
 	{
 		char tmpA[32];

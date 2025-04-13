@@ -747,7 +747,7 @@ void NTP_OnEverySecond()
     }
 }
 
-void NTP_AppendInformationToHTTPIndexPage(http_request_t* request, bool bPreState)
+void NTP_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
 	if (bPreState)
 		return;

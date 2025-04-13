@@ -180,7 +180,7 @@ void Batt_OnEverySecond() {
 void Batt_StopDriver() {
 
 }
-void Batt_AppendInformationToHTTPIndexPage(http_request_t* request, bool bPreState)
+void Batt_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
 	if (bPreState) {
 		return;

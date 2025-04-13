@@ -315,7 +315,7 @@ void CHT83XX_OnEverySecond()
 	}
 }
 
-void CHT83XX_AppendInformationToHTTPIndexPage(http_request_t* request, bool bPreState)
+void CHT83XX_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
 	if (bPreState)
 		return;

@@ -234,7 +234,7 @@ static commandResult_t CMD_OWM_Setup(const void *context, const char *cmd, const
 
 	return CMD_RES_OK;
 }
-void OWM_AppendInformationToHTTPIndexPage(http_request_t *request, bool bPreState) {
+void OWM_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState) {
 	if (bPreState) {
 		return;
 	}

@@ -509,7 +509,7 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 	poststr(request, "<style onload='cha();'></style>");
 
 }
-void DRV_Charts_AddToHtmlPage_Test(http_request_t *request, bool bPreState) {
+void DRV_Charts_AddToHtmlPage_Test(http_request_t *request, int bPreState) {
 	if (bPreState) {
 		return;
 	}
@@ -559,7 +559,7 @@ void DRV_Charts_AddToHtmlPage_Test(http_request_t *request, bool bPreState) {
 	Chart_Free(&s);
 }
 // startDriver Charts
-void DRV_Charts_AddToHtmlPage(http_request_t *request, bool bPreState) {
+void DRV_Charts_AddToHtmlPage(http_request_t *request, int bPreState) {
 	if (bPreState)
 		return;
 	if (g_chart) {

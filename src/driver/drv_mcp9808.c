@@ -288,7 +288,7 @@ void MCP9808_OnEverySecond() {
 	}
 }
 
-void MCP9808_AppendInformationToHTTPIndexPage(http_request_t* request, bool bPreState)
+void MCP9808_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
 	if (bPreState)
 		return;
