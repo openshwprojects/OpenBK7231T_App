@@ -104,9 +104,9 @@ int tests=0;
 int min=1000, max=0, sum=0;
 void BEKEN_test_Tickscount() {
 	tests++;
+	uint32_t startTick, endTick;
 	noInterrupts();
-	uint32_t endTick;
-	uint32_t startTick = getTicksCount();
+	startTick = getTicksCount();
 	if (startTick != BK_TIMER_FAILURE ){
 		endTick = getTicksCount();
 	}
