@@ -47,6 +47,7 @@
 #define ENABLE_DRIVER_DS1820		1
 #define OBK_OTA_EXTENSION 		".img"
 #define ENABLE_OBK_SCRIPTING			1
+#define ENABLE_OBK_BERRY				1
 
 #elif PLATFORM_W800
 
@@ -67,6 +68,7 @@
 #define OBK_OTA_EXTENSION 		".img"
 #define ENABLE_I2C					1
 #define ENABLE_OBK_SCRIPTING			1
+#define ENABLE_OBK_BERRY				1
 
 
 #elif WINDOWS
@@ -164,6 +166,7 @@
 #define ENABLE_OBK_SCRIPTING			1
 #define OBK_OTA_EXTENSION 		".bin.xz.ota"
 //#define ENABLE_I2C					1
+#define ENABLE_OBK_BERRY				1
 
 
 #elif PLATFORM_BEKEN
@@ -228,7 +231,7 @@
 #if PLATFORM_BEKEN_NEW
 #define NEW_TCP_SERVER				1
 #endif
-// #define ENABLE_OBK_BERRY			1
+#define ENABLE_OBK_BERRY				1
 
 // ENABLE_I2C_ is a syntax for
 // our I2C system defines for drv_i2c_main.c
@@ -261,6 +264,7 @@
 #define ENABLE_DRIVER_SSDP			1
 #define OBK_OTA_EXTENSION 		".bin"
 #define OBK_OTA_NAME_EXTENSION 		"_OTA"
+#define ENABLE_OBK_BERRY				1
 
 #elif PLATFORM_ESPIDF
 
@@ -291,6 +295,7 @@
 #define ENABLE_DRIVER_CHT83XX		1
 #define ENABLE_OBK_SCRIPTING			1
 #define OBK_OTA_EXTENSION 		".img"
+#define ENABLE_OBK_BERRY				1
 
 #elif PLATFORM_TR6260
 
@@ -341,6 +346,7 @@
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY			1
 #define OBK_OTA_EXTENSION 			".img"
 #define ENABLE_OBK_SCRIPTING		1
+#define ENABLE_OBK_BERRY				1
 
 #elif PLATFORM_RTL8710B || PLATFORM_RTL8710A || PLATFORM_RTL8720D
 
@@ -371,6 +377,7 @@
 #define ENABLE_OBK_SCRIPTING					1
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 #define ENABLE_DRIVER_SSDP						1
+#define ENABLE_OBK_BERRY				1
 
 #elif PLATFORM_ECR6600
 
@@ -397,6 +404,7 @@
 #define ENABLE_DRIVER_TUYAMCU					1
 #define ENABLE_DRIVER_BL0942					1
 #define ENABLE_DRIVER_BL0937					1
+#define ENABLE_OBK_BERRY				1
 
 #define OBK_OTA_EXTENSION 						".img"
 
