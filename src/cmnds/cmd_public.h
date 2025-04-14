@@ -313,6 +313,8 @@ int CMD_GetCountActiveScriptThreads();
 void CMD_InitBerry();
 void CMD_Berry_RunEventHandlers_IntInt(byte eventCode, int argument, int argument2);
 void CMD_Berry_RunEventHandlers_IntBytes(byte eventCode, int argument, const byte *data, int size);
+int CMD_Berry_RunEventHandlers_StrInt(byte eventCode, const char *argument, int argument2);
+int CMD_Berry_RunEventHandlers_Str(byte eventCode, const char *argument, const char *argument2);
 
 const char* CMD_GetResultString(commandResult_t r);
 
