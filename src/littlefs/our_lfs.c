@@ -39,6 +39,7 @@ esp_partition_t* esplfs = NULL;
 
 #include "flash_api.h"
 #include "device_lock.h"
+extern uint8_t flash_size_8720;
 
 #elif PLATFORM_ECR6600
 
@@ -122,10 +123,11 @@ static commandResult_t CMD_LFS_Size(const void *context, const char *cmd, const 
         ADDLOG_INFO(LOG_FEATURE_CMD, "unchanged LFS size 0x%X configured 0x%X", LFS_Size, CFG_GetLFS_Size());
         return CMD_RES_OK;
     }
-#ifdef PLATFORM_ESPIDF
-    ADDLOG_ERROR(LOG_FEATURE_CMD, "ESP doesn't support changing LFS size");
-    return CMD_RES_ERROR;
-#endif // PLATFORM_ESPIDF
+
+#if PLATFORM_ESPIDF || PLATFORM_RTL8720D
+	ADDLOG_ERROR(LOG_FEATURE_CMD, PLATFORM_MCU_NAME" doesn't support changing LFS size");
+	return CMD_RES_ERROR;
+#endif
 
 
     const char *p = args;
@@ -221,6 +223,40 @@ static commandResult_t CMD_LFS_Format(const void *context, const char *cmd, cons
 
     LFS_Start = newstart;
     LFS_Size = newsize;
+
+#if PLATFORM_RTL8720D
+
+	switch(flash_size_8720)
+	{
+		case 2:
+			LFS_Start = newstart = 0x1F0000;
+			LFS_Size = newsize = 0x10000;
+			break;
+		default:
+			LFS_Start = newstart = LFS_BLOCKS_START;
+			LFS_Size = newsize = (flash_size_8720 << 20) - LFS_BLOCKS_START;
+			break;
+	}
+
+#elif PLATFORM_ESPIDF
+
+	if(esplfs == NULL)
+	{
+		esplfs = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_SPIFFS, NULL);
+		if(esplfs != NULL)
+		{
+			ADDLOGF_INFO("Partition %s found, size: %i", esplfs->label, esplfs->size);
+		}
+		else
+		{
+			return CMD_RES_ERROR;
+		}
+	}
+	LFS_Start = newstart = 0;
+	LFS_Size = newsize = esplfs->size;
+
+#endif
+
     cfg.block_count = (newsize/LFS_BLOCK_SIZE);
 
     int err  = lfs_format(&lfs, &cfg);
@@ -420,42 +456,61 @@ void init_lfs(int create){
             return;
         }
 
-	#if PLATFORM_BL602
-	// ensure we have media partition at correct place, because it can change depending on bldevcube version
-	// this supports 1.4.8
-	    
-	int ret;
-    	bl_mtd_info_t info;
-	bl_mtd_handle_t handle;
+#if PLATFORM_BL602
 
-    	ret = bl_mtd_open(BL_MTD_PARTITION_NAME_ROMFS, &handle, BL_MTD_OPEN_FLAG_BUSADDR);
-    	if (ret < 0) {
-		ADDLOGF_ERROR("LFS media partition not found %d", ret);
-		return;
-	}
-    	memset(&info, 0, sizeof(info));
-        bl_mtd_info(handle, &info);
-	if (info.offset != LFS_BLOCKS_START ){
-		ADDLOGF_ERROR("LFS media partition position 0x%X while expected is 0x%X", info.offset, LFS_BLOCKS_START);
-		return;
-	}
-	#endif
+		// ensure we have media partition at correct place, because it can change depending on bldevcube version
+		// this supports 1.4.8
+			
+		int ret;
+		bl_mtd_info_t info;
+		bl_mtd_handle_t handle;
 
-#if PLATFORM_ESPIDF
-        if(esplfs == NULL)
-        {
-            esplfs = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_SPIFFS, NULL);
-            if(esplfs != NULL)
-            {
-                ADDLOGF_INFO("Partition %s found, size: %i", esplfs->label, esplfs->size);
-            }
-            else
-            {
-                return;
-            }
-        }
-        newstart = 0;
-        newsize = esplfs->size;
+		ret = bl_mtd_open(BL_MTD_PARTITION_NAME_ROMFS, &handle, BL_MTD_OPEN_FLAG_BUSADDR);
+		if (ret < 0) {
+			ADDLOGF_ERROR("LFS media partition not found %d", ret);
+			return;
+		}
+		memset(&info, 0, sizeof(info));
+		bl_mtd_info(handle, &info);
+		if (info.offset != LFS_BLOCKS_START ){
+			ADDLOGF_ERROR("LFS media partition position 0x%X while expected is 0x%X", info.offset, LFS_BLOCKS_START);
+			return;
+		}
+
+#elif PLATFORM_ESPIDF
+
+		if(esplfs == NULL)
+		{
+			esplfs = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_SPIFFS, NULL);
+			if(esplfs != NULL)
+			{
+				ADDLOGF_INFO("Partition %s found, size: %i", esplfs->label, esplfs->size);
+			}
+			else
+			{
+				return;
+			}
+		}
+		newstart = 0;
+		newsize = esplfs->size;
+		CFG_SetLFS_Size(newsize);
+
+#elif PLATFORM_RTL8720D
+
+		switch(flash_size_8720)
+		{
+			case 2:
+				newstart = 0x1F0000;
+				newsize = 0x10000;
+				break;
+			default:
+				newstart = LFS_BLOCKS_START;
+				newsize = (flash_size_8720 << 20) - LFS_BLOCKS_START;
+				break;
+		}
+		ADDLOGF_INFO("8720D Detected Flash Size: %i MB, adjusting LFS, start: 0x%X, size: 0x%X", flash_size_8720, newstart, newsize);
+		CFG_SetLFS_Size(newsize);
+
 #endif
 
         LFS_Start = newstart;

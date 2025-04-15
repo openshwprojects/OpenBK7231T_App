@@ -97,9 +97,10 @@ extern uint32_t current_fw_idx;
 #include "wdt_api.h"
 
 extern uint32_t current_fw_idx;
+extern uint8_t flash_size_8720;
 
 #undef DEFAULT_FLASH_LEN
-#define DEFAULT_FLASH_LEN 0x400000
+#define DEFAULT_FLASH_LEN (flash_size_8720 << 20)
 
 #endif
 
@@ -2778,6 +2779,13 @@ update_ota_exit:
 		goto update_ota_exit;
 	}
 
+	if(flash_size_8720 == 2)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "Only 2MB flash detected - OTA is not supported");
+		ret = -1;
+		goto update_ota_exit;
+	}
+
 	memset((uint8_t*)&OtaTargetHdr, 0, sizeof(update_ota_target_hdr));
 
 	DBG_INFO_MSG_OFF(MODULE_FLASH);
@@ -2818,7 +2826,7 @@ update_ota_exit:
 		goto update_ota_exit;
 	}
 
-	ADDLOG_INFO(LOG_FEATURE_OTA, "Erasing...");
+	//ADDLOG_INFO(LOG_FEATURE_OTA, "Erasing...");
 	for(int i = 0; i < OtaTargetHdr.ValidImgCnt; i++)
 	{
 		ADDLOG_INFO(LOG_FEATURE_OTA, "Target addr:0x%08x, img len: %i", OtaTargetHdr.FileImgHdr[i].FlashAddr, OtaTargetHdr.FileImgHdr[i].ImgLen);
