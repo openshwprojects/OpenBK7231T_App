@@ -128,6 +128,9 @@ jobs:
           pip3 install configobj
           pip3 install toml
           pip3 install fdt
+      - name: Copy config header
+        if: matrix.variant != 'default'
+        run: cp src/configs/obk_config_${{ matrix.variant }}.h src/obk_config.h
       - run: ls -la
       - name: Run make
         run: make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT=${{ matrix.variant }} ${{ matrix.platform }}
