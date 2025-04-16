@@ -1176,10 +1176,10 @@ typedef struct pinsState_s {
 #define OBK_FLAG_LED_USE_OLD_LINEAR_MODE			32
 #define OBK_FLAG_PUBLISH_MULTIPLIED_VALUES			33
 #define OBK_FLAG_MQTT_HASS_ADD_RELAYS_AS_LIGHTS		34
-#define OBK_FLAG_NOT_PUBLISH_AVAILABILITY			 35
-#define OBK_FLAG_DRV_DISABLE_AUTOSTART              36
-#define OBK_FLAG_WIFI_FAST_CONNECT		            37
-#define OBK_FLAG_POWER_FORCE_ZERO_IF_RELAYS_OPEN    38
+#define OBK_FLAG_NOT_PUBLISH_AVAILABILITY			35
+#define OBK_FLAG_DRV_DISABLE_AUTOSTART				36
+#define OBK_FLAG_WIFI_FAST_CONNECT					37
+#define OBK_FLAG_POWER_FORCE_ZERO_IF_RELAYS_OPEN	38
 #define OBK_FLAG_MQTT_PUBLISH_ALL_CHANNELS			39
 #define OBK_FLAG_MQTT_ENERGY_IN_KWH					40
 #define OBK_FLAG_BUTTON_DISABLE_ALL					41
@@ -1192,8 +1192,9 @@ typedef struct pinsState_s {
 #define OBK_FLAG_POWER_INVERT_AC					48
 #define OBK_FLAG_HTTP_NO_ONOFF_WORDS				49
 #define OBK_FLAG_MQTT_NEVERAPPENDGET				50
+#define OBK_FLAG_WIFI_ENHANCED_FAST_CONNECT			51
 
-#define OBK_TOTAL_FLAGS 51
+#define OBK_TOTAL_FLAGS 52
 
 #define LOGGER_FLAG_MQTT_DEDUPER					1
 #define LOGGER_FLAG_POWER_SAVE						2
@@ -1395,7 +1396,13 @@ typedef struct mainConfig_s {
 	// offset 0x00000CBB (3259 decimal)
 	byte disable_web_server;
 	// offset 0x00000CBC (3260 decimal)
+#if PLATFORM_BEKEN
+	obkFastConnectData_t fcdata;
+	// offset 0x00000D0C (3340 decimal)
+	char unused[244];
+#else
 	char unused[324];
+#endif
 #endif
 } mainConfig_t;
 

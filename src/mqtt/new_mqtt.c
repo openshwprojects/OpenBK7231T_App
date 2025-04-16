@@ -1761,7 +1761,7 @@ static void mqtt_timer_thread(void* param)
 {
 	while (1)
 	{
-		vTaskDelay(MQTT_TMR_DURATION);
+		rtos_delay_milliseconds(MQTT_TMR_DURATION);
 		MQTT_Test_Tick(param);
 	}
 }
