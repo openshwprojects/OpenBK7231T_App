@@ -110,8 +110,52 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [OpenBK7231T, OpenBK7231N, OpenBK7238, OpenXR809, OpenBL602, OpenW800, OpenW600, OpenLN882H, OpenTR6260, OpenRTL8710A, OpenRTL8710B, OpenRTL87X0C, OpenRTL8720D, OpenECR6600]
-        variant: [default,berry,tuyaMCU,powerMetering]
+      include:
+        # default for all platforms
+        - platform: OpenBK7231T
+          variant: default
+        - platform: OpenBK7231N
+          variant: default
+        - platform: OpenBK7238
+          variant: berry
+        - platform: OpenXR809
+          variant: default
+        - platform: OpenBL602
+          variant: default
+        - platform: OpenW800
+          variant: default
+        - platform: OpenW600
+          variant: default
+        - platform: OpenLN882H
+          variant: default
+        - platform: OpenTR6260
+          variant: default
+        - platform: OpenRTL8710A
+          variant: default
+        - platform: OpenRTL8710B
+          variant: default
+        - platform: OpenRTL87X0C
+          variant: default
+        - platform: OpenRTL8720D
+          variant: default
+        - platform: OpenECR6600
+          variant: default
+
+        # extras for BK7231T
+        - platform: OpenBK7231T
+          variant: berry
+        - platform: OpenBK7231T
+          variant: tuyaMCU
+        - platform: OpenBK7231T
+          variant: powerMetering
+
+        # extras for BK7231N
+        - platform: OpenBK7231N
+          variant: berry
+        - platform: OpenBK7231N
+          variant: tuyaMCU
+        - platform: OpenBK7231N
+          variant: powerMetering
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
