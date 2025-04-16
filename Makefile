@@ -1,7 +1,7 @@
 # HACK - if COMPILE_PREX defined then we are being called running from original build_app.sh script in standard SDK
 # Required to not break old build_app.sh script lines 74-77
 MBEDTLS=output/mbedtls-2.28.5
-CFLAGS += -DVARIANT=\"$(VARIANT)\"
+CCFLAGS += -DVARIANT=$(VARIANT)
 
 ifdef COMPILE_PREX
 all:
