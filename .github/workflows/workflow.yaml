@@ -112,7 +112,7 @@ jobs:
       matrix:
         platform: [OpenBK7231T, OpenBK7231N, OpenBK7238, OpenXR809, OpenBL602, OpenW800, OpenW600, OpenLN882H, OpenTR6260, OpenRTL8710A, OpenRTL8710B, OpenRTL87X0C, OpenRTL8720D, OpenECR6600]
         variant: [default,berry]
-	steps:
+    steps:
       - name: Source checkout
         uses: actions/checkout@v4
       - uses: actions/setup-python@v5
