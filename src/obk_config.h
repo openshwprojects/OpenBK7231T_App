@@ -168,9 +168,6 @@
 
 #elif PLATFORM_BEKEN
 
-#if VARIANT == "berry"
-#define ENABLE_OBK_BERRY		1
-#endif
 #define	ENABLE_HA_DISCOVERY		1
 #define ENABLE_SEND_POSTANDGET		1
 #define ENABLE_MQTT 1
@@ -237,6 +234,50 @@
 //#define ENABLE_I2C_ADS1115		1
 //#define ENABLE_I2C_MCP23017		1
 //#define ENABLE_I2C_LCD_PCF8574	1
+
+#if defined(VARIANT) && VARIANT == berry
+#define ENABLE_OBK_BERRY		1
+
+#elif defined(VARIANT) && VARIANT == tuyamcu
+//
+// ==== TuyaMCU mode ====
+//
+// Allow Berry - it can be used to parse DataPoints
+#define ENABLE_OBK_BERRY		1
+// Disable power metering chips - they are never used with TuyaMCU
+#undef ENABLE_DRIVER_BL0937
+#undef ENABLE_DRIVER_BL0942
+#undef ENABLE_DRIVER_BL0942SPI
+#undef ENABLE_DRIVER_CSE7766
+// Disable I2C-like LED drivers
+#undef ENABLE_DRIVER_LED
+#undef ENABLE_DRIVER_KP18058
+// Disable ADC smoother
+#undef ENABLE_DRIVER_ADCSMOOTHER
+// Disable brridge on pins
+#undef ENABLE_DRIVER_BRIDGE
+// disable WS2812
+#undef ENABLE_DRIVER_SM16703P
+#undef ENABLE_DRIVER_PIXELANIM
+#undef ENABLE_DRIVER_SM15155E
+
+#elif defined(VARIANT) && VARIANT == energy
+//
+// ==== Energy meter plug with BL0942 or BL0937 etc ====
+//
+// Allow graphs
+#define ENABLE_DRIVER_CHARTS		1
+// Disable I2C-like LED drivers
+#undef ENABLE_DRIVER_LED
+#undef ENABLE_DRIVER_KP18058
+// disable TuyaMCU 
+#undef ENABLE_DRIVER_TUYAMCU
+// disable WS2812
+#undef ENABLE_DRIVER_SM16703P
+#undef ENABLE_DRIVER_PIXELANIM
+#undef ENABLE_DRIVER_SM15155E
+
+#endif
 
 #elif PLATFORM_LN882H
 
