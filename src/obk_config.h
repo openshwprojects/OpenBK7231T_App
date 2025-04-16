@@ -168,7 +168,9 @@
 
 #elif PLATFORM_BEKEN
 
-#define ENABLE_OBK_BERRY				1
+#if VARIANT == "berry"
+#define ENABLE_OBK_BERRY		1
+#endif
 #define	ENABLE_HA_DISCOVERY		1
 #define ENABLE_SEND_POSTANDGET		1
 #define ENABLE_MQTT 1
