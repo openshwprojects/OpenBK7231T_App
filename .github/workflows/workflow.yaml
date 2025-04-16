@@ -130,7 +130,7 @@ jobs:
           pip3 install fdt
       - run: ls -la
       - name: Run make
-        run: make APP_VERSION=${{ needs.refs.outputs.version }} APP_NAME=${{ matrix.platform }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} VARIANT=${{ matrix.variant }} ${{ matrix.platform }}
+        run: make APP_VERSION=${{ needs.refs.outputs.version }}${{ '_' && matrix.variant != 'default' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' } APP_NAME=${{ matrix.platform }}} VARIANT=${{ matrix.variant }} ${{ matrix.platform }}
       - name: Save build assets
         uses: actions/upload-artifact@v4
         with:
