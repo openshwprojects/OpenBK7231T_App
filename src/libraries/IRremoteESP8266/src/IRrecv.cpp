@@ -3,6 +3,11 @@
 // Copyright 2015 Sebastien Warin
 // Copyright 2017, 2019 David Conran
 
+
+#include "../../../obk_config.h"
+
+#if ENABLE_DRIVER_IRREMOTEESP
+
 #define USE_IRAM_ATTR 
 
 #include "IRrecv.h"
@@ -2300,4 +2305,9 @@ volatile irparams_t *IRrecv::_getParamsPtr(void) {
 }
 #endif  // UNIT_TEST
 // End of IRrecv class -------------------
+
+
+
+#endif
+
 

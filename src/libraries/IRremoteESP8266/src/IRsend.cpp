@@ -4,6 +4,8 @@
 
 #include "../../../obk_config.h"
 
+#if ENABLE_DRIVER_IRREMOTEESP
+
 #include "IRsend.h"
 #ifndef UNIT_TEST
 #include "String.h"
@@ -1445,3 +1447,6 @@ bool IRsend::send(const decode_type_t type, const uint8_t *state,
   }
   return true;
 }
+
+
+#endif
