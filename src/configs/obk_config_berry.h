@@ -227,13 +227,7 @@
 #if PLATFORM_BEKEN_NEW
 #define NEW_TCP_SERVER				1
 #endif
-// #define ENABLE_OBK_BERRY			1
-
-// ENABLE_I2C_ is a syntax for
-// our I2C system defines for drv_i2c_main.c
-//#define ENABLE_I2C_ADS1115		1
-//#define ENABLE_I2C_MCP23017		1
-//#define ENABLE_I2C_LCD_PCF8574	1
+#define ENABLE_OBK_BERRY			1
 
 #elif PLATFORM_LN882H
 
