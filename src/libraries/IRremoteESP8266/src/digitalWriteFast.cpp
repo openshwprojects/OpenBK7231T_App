@@ -1,3 +1,12 @@
+
+
+
+
+#include "../../../obk_config.h"
+
+#if ENABLE_DRIVER_IRREMOTEESP
+
+
 extern "C" {
 #include <gpio_pub.h>
 }
@@ -33,3 +42,5 @@ void pinModeFast(unsigned char P, unsigned char V) {
 		bk_gpio_config_output((GPIO_INDEX)P);
 	}
 }
+
+#endif
