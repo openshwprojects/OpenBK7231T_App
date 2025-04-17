@@ -2,6 +2,8 @@
 // Copyright 2015 Mark Szabo
 // Copyright 2017,2019 David Conran
 
+#include "../../../obk_config.h"
+
 #include "IRsend.h"
 #ifndef UNIT_TEST
 #include "String.h"
