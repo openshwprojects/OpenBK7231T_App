@@ -1,4 +1,4 @@
-#ifdef PLATFORM_XR809
+#if PLATFORM_XR809 || PLATFORM_XR872
 
 #include "../hal_wifi.h"
 #include "../../new_cfg.h"
@@ -14,7 +14,7 @@
 #include "common/framework/platform_init.h"
 #include "common/framework/sysinfo.h"
 #include "common/framework/net_ctrl.h"
-#include "serial.h"
+//#include "serial.h"
 #include "kernel/os/os.h"
 
 #include "lwip/sockets.h"
@@ -82,11 +82,13 @@ static void wlan_msg_recv(uint32_t event, uint32_t data, void *arg)
 				g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
 			}
 		break;
+#if !PLATFORM_XR872
 	case NET_CTRL_MSG_CONNECTION_LOSS:
 			if(g_wifiStatusCallback!=0) {
 				g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
 			}
 		break;
+#endif
 	case NET_CTRL_MSG_NETWORK_UP:
 
 		break;

@@ -106,7 +106,7 @@ int DRV_SSDP_Active = 0;
 
 void Main_ForceUnsafeInit();
 
-#if PLATFORM_XR809
+#if PLATFORM_XR809 || PLATFORM_XR872
 size_t xPortGetFreeHeapSize() {
 	return 0;
 }
@@ -208,7 +208,7 @@ void extended_app_waiting_for_launch2(void) {
 #endif
 
 
-#if defined(PLATFORM_LN882H) || defined(PLATFORM_ESPIDF)
+#if defined(PLATFORM_LN882H) || defined(PLATFORM_ESPIDF) || defined(PLATFORM_XR872)
 
 int LWIP_GetMaxSockets() {
 	return 0;
@@ -666,7 +666,7 @@ void Main_OnEverySecond()
 #if WINDOWS
 #elif PLATFORM_BL602
 #elif PLATFORM_W600 || PLATFORM_W800
-#elif PLATFORM_XR809
+#elif PLATFORM_XR809 || PLATFORM_XR872
 #elif PLATFORM_BK7231N || PLATFORM_BK7231T
 	if (ota_progress() == -1)
 #endif
@@ -1054,7 +1054,7 @@ void quick_timer_thread(void* param)
 }
 #elif PLATFORM_ESPIDF
 esp_timer_handle_t g_quick_timer;
-#elif PLATFORM_XR809 || PLATFORM_LN882H
+#elif PLATFORM_XR809 || PLATFORM_LN882H || PLATFORM_XR872
 OS_Timer_t g_quick_timer;
 #else
 beken_timer_t g_quick_timer;
@@ -1074,7 +1074,7 @@ void QuickTick_StartThread(void)
 
 	esp_timer_create(&g_quick_timer_args, &g_quick_timer);
 	esp_timer_start_periodic(g_quick_timer, QUICK_TMR_DURATION * 1000);
-#elif PLATFORM_XR809 || PLATFORM_LN882H
+#elif PLATFORM_XR809 || PLATFORM_LN882H || PLATFORM_XR872
 
 	OS_TimerSetInvalid(&g_quick_timer);
 	if (OS_TimerCreate(&g_quick_timer, OS_TIMER_PERIODIC, QuickTick, NULL,

@@ -3150,6 +3150,8 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 	t_http_fwup(s);
 #elif PLATFORM_XR809
 	XR809_RequestOTAHTTP(s);
+#elif PLATFORM_XR872
+
 #else
 	otarequest(s);
 #endif

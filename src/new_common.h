@@ -53,6 +53,11 @@ void OTA_RequestDownloadFromHTTP(const char *s);
 #define DEVICENAME_PREFIX_SHORT "oxr"
 #define PLATFORM_MCU_NAME "XR809"
 #define MANUFACTURER "Xradio Technology"
+#elif PLATFORM_XR872
+#define DEVICENAME_PREFIX_FULL "OpenXR872"
+#define DEVICENAME_PREFIX_SHORT "oxr"
+#define PLATFORM_MCU_NAME "XR872"
+#define MANUFACTURER "Xradio Technology"
 #elif PLATFORM_BK7231N
 #define DEVICENAME_PREFIX_FULL "OpenBK7231N"
 #define DEVICENAME_PREFIX_SHORT "obk"
@@ -350,7 +355,7 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 typedef unsigned int u32;
 		
 
-#elif PLATFORM_XR809
+#elif PLATFORM_XR809 || PLATFORM_XR872
 
 
 
