@@ -1620,6 +1620,10 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	return 0;	//Operation not supported yet
 #endif
 
+#if PLATFORM_XR872
+	return 0;	//Operation not supported yet
+#endif
+
 
 	int total = 0;
 	int towrite = request->bodylen;
@@ -3178,6 +3182,8 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 		//uint32_t flash_read(uint32_t flash, uint32_t addr,void *buf, uint32_t size)
 #define FLASH_INDEX_XR809 0
 		res = flash_read(FLASH_INDEX_XR809, startaddr, buffer, readlen);
+#elif PLATFORM_XR872
+		res = 0;
 #elif PLATFORM_BL602
 		res = bl_flash_read(startaddr, (uint8_t *)buffer, readlen);
 #elif PLATFORM_W600 || PLATFORM_W800
