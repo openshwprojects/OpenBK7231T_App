@@ -148,6 +148,8 @@ jobs:
             variant: tuyaMCU
           - platform: OpenBK7231T
             variant: powerMetering
+          - platform: OpenBK7231T
+            variant: irRemoteESP
 
           # extras for BK7231N
           - platform: OpenBK7231N
@@ -156,6 +158,8 @@ jobs:
             variant: tuyaMCU
           - platform: OpenBK7231N
             variant: powerMetering
+          - platform: OpenBK7231N
+            variant: irRemoteESP
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
