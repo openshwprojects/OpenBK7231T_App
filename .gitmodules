@@ -61,4 +61,4 @@
 [submodule "sdk/OpenXR872"]
 	path = sdk/OpenXR872
 	url = https://github.com/openshwprojects/OpenXR872
-	branch = master
+	branch = main
