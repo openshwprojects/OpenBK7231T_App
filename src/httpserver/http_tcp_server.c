@@ -40,20 +40,7 @@ static void tcp_client_thread(beken_thread_arg_t arg);
 
 xTaskHandle g_http_thread = NULL;
 
-void HTTPServer_Start()
-{
-	OSStatus err = kNoErr;
 
-	err = rtos_create_thread(&g_http_thread, BEKEN_APPLICATION_PRIORITY,
-		"TCP_server",
-		(beken_thread_function_t)tcp_server_thread,
-		0x800,
-		(beken_thread_arg_t)0);
-	if (err != kNoErr)
-	{
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, "create \"TCP_server\" thread failed with %i!\r\n", err);
-	}
-}
 
 void HTTPServer_Stop()
 {
@@ -361,21 +348,30 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 
 }
 
+#endif
+
 void HTTPServer_Start()
 {
-	OSStatus err = kNoErr;
+	OSStatus err = kGeneralErr;
+	uint32_t stackSize = 0x800;
 
-	err = rtos_create_thread(&g_http_thread, BEKEN_APPLICATION_PRIORITY,
-		"TCP_server",
-		(beken_thread_function_t)tcp_server_thread,
-		0x800,
-		(beken_thread_arg_t)0);
-	if (err != kNoErr)
+	while (stackSize >= 0x100)
 	{
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, "create \"TCP_server\" thread failed with %i!\r\n", err);
+		err = rtos_create_thread(&g_http_thread, BEKEN_APPLICATION_PRIORITY,
+			"TCP_server",
+			(beken_thread_function_t)tcp_server_thread,
+			stackSize,
+			(beken_thread_arg_t)0);
+
+		if (err == kNoErr)
+		{
+			ADDLOG_ERROR(LOG_FEATURE_HTTP, "Created HTTP SV thread with (stack=%u)\r\n", stackSize);
+			break;
+		}
+
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "create \"TCP_server\" thread failed with %i (stack=%u)\r\n", err, stackSize);
+		stackSize >>= 1;
 	}
 }
 
-
-#endif
 #endif
