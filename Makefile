@@ -266,8 +266,8 @@ OpenBK7231N: prebuild_OpenBK7231N
 sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q2:
 	cd sdk/OpenXR809/tools && wget -q "https://launchpad.net/gcc-arm-embedded/4.9/4.9-2015-q2-update/+download/gcc-arm-none-eabi-4_9-2015q2-20150609-linux.tar.bz2" && tar -xf *.tar.bz2 && rm -f *.tar.bz2
 
-sdk/OpenXR806/tools/gcc-arm-none-eabi-4_9-2015q2:
-	cd sdk/OpenXR806/tools && wget -q "https://launchpad.net/gcc-arm-embedded/4.9/4.9-2015-q2-update/+download/gcc-arm-none-eabi-4_9-2015q2-20150609-linux.tar.bz2" && tar -xf *.tar.bz2 && rm -f *.tar.bz2
+sdk/OpenXR806/tools/gcc-arm-none-eabi-8-2019-q3-update:
+	cd sdk/OpenXR806/tools && wget -q "https://developer.arm.com/-/media/Files/downloads/gnu-rm/8-2019q3/RC1.1/gcc-arm-none-eabi-8-2019-q3-update-linux.tar.bz2" && tar -xf *.tar.bz2 && rm -f *.tar.bz2
 
 sdk/OpenXR872/tools/gcc-arm-none-eabi-4_9-2015q2:
 	cd sdk/OpenXR872/tools && wget -q "https://launchpad.net/gcc-arm-embedded/4.9/4.9-2015-q2-update/+download/gcc-arm-none-eabi-4_9-2015q2-20150609-linux.tar.bz2" && tar -xf *.tar.bz2 && rm -f *.tar.bz2
