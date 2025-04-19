@@ -46,6 +46,14 @@ void HAL_DisconnectFromWifi()
 {
 
 }
+void HAL_DisableEnhancedFastConnect()
+{
+
+}
+void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
+{
+	HAL_ConnectToWiFi(oob_ssid, connect_key, ip);
+}
 
 int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
 	char ap_psk[8] = { 0 };
