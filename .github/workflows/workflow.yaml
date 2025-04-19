@@ -120,6 +120,8 @@ jobs:
             variant: berry
           - platform: OpenXR809
             variant: default
+          - platform: OpenXR872
+            variant: default
           - platform: OpenBL602
             variant: default
           - platform: OpenW800

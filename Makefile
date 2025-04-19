@@ -38,7 +38,7 @@ else
 endif
 
 update-submodules: submodules
-	git add sdk/OpenBK7231T sdk/OpenBK7231N sdk/OpenXR809 sdk/OpenBL602 sdk/OpenW800 sdk/OpenW600 sdk/OpenLN882H sdk/esp-idf sdk/OpenTR6260 sdk/beken_freertos_sdk libraries/berry
+	git add sdk/OpenBK7231T sdk/OpenBK7231N sdk/OpenXR809 sdk/OpenXR872 sdk/OpenBL602 sdk/OpenW800 sdk/OpenW600 sdk/OpenLN882H sdk/esp-idf sdk/OpenTR6260 sdk/beken_freertos_sdk libraries/berry
 ifdef GITHUB_ACTIONS
 	git config user.name github-actions
 	git config user.email github-actions@github.com
@@ -58,6 +58,10 @@ sdk/OpenXR809/project/oxr_sharedApp/shared:
 	@echo Create symlink for $(APP_NAME) into sdk folder
 	ln -s "$(shell pwd)/" "sdk/OpenXR809/project/oxr_sharedApp/shared"
 
+sdk/OpenXR872/project/demo/hello_demo/shared:
+	@echo Create symlink for $(APP_NAME) into sdk folder
+	ln -s "$(shell pwd)/" "sdk/OpenXR872/project/demo/hello_demo/shared"
+	
 sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared:
 	@echo Create symlink for $(APP_NAME) into sdk folder
 	ln -s "$(shell pwd)/" "sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared"
@@ -78,7 +82,7 @@ sdk/OpenLN882H/project/OpenBeken/app:
 	ln -s "$(shell pwd)/" "sdk/OpenLN882H/project/OpenBeken/app"
 
 .PHONY: prebuild_OpenBK7231N prebuild_OpenBK7231T prebuild_OpenBL602 prebuild_OpenLN882H 
-.PHONY: prebuild_OpenW600 prebuild_OpenW800 prebuild_OpenXR809 prebuild_ESPIDF prebuild_OpenTR6260
+.PHONY: prebuild_OpenW600 prebuild_OpenW800 prebuild_OpenXR809 prebuild_OpenXR872 prebuild_ESPIDF prebuild_OpenTR6260
 .PHONY: prebuild_OpenRTL87X0C prebuild_OpenBK7238 prebuild_OpenBK7231N_ALT
 
 prebuild_OpenBK7231N:
@@ -144,6 +148,14 @@ prebuild_OpenXR809:
 	else echo "prebuild for OpenXR809 not found ... "; \
 	fi
 
+prebuild_OpenXR872:
+	git submodule update --init --recursive sdk/OpenXR872
+	@if [ -e platforms/XR872/pre_build.sh ]; then \
+		echo "prebuild found for OpenXR872"; \
+		sh platforms/XR872/pre_build.sh; \
+	else echo "prebuild for OpenXR872 not found ... "; \
+	fi
+	
 prebuild_ESPIDF:
 	#git submodule update --init --recursive sdk/esp-idf
 	git submodule update --init --recursive libraries/berry
@@ -241,6 +253,25 @@ OpenBK7231N: prebuild_OpenBK7231N
 sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q2:
 	cd sdk/OpenXR809/tools && wget -q "https://launchpad.net/gcc-arm-embedded/4.9/4.9-2015-q2-update/+download/gcc-arm-none-eabi-4_9-2015q2-20150609-linux.tar.bz2" && tar -xf *.tar.bz2 && rm -f *.tar.bz2
 
+sdk/OpenXR872/tools/gcc-arm-none-eabi-4_9-2015q2:
+	cd sdk/OpenXR872/tools && wget -q "https://launchpad.net/gcc-arm-embedded/4.9/4.9-2015-q2-update/+download/gcc-arm-none-eabi-4_9-2015q2-20150609-linux.tar.bz2" && tar -xf *.tar.bz2 && rm -f *.tar.bz2
+
+.PHONY: OpenXR872 build-XR872
+# Retry OpenXR809 a few times to account for calibration file issues
+RETRY = 3
+OpenXR872: prebuild_OpenXR872
+	@for i in `seq 1 ${RETRY}`; do ($(MAKE) -k build-XR872; echo Prebuild attempt $$i/${RETRY}); done
+	@echo Running build final time to check output
+	$(MAKE) build-XR872;
+
+build-XR872: sdk/OpenXR872/project/demo/hello_demo/shared sdk/OpenXR872/tools/gcc-arm-none-eabi-4_9-2015q2
+	$(MAKE) -C sdk/OpenXR872/src CC_DIR=$(PWD)/sdk/OpenXR872/tools/gcc-arm-none-eabi-4_9-2015q2/bin
+	$(MAKE) -C sdk/OpenXR872/src install CC_DIR=$(PWD)/sdk/OpenXR872/tools/gcc-arm-none-eabi-4_9-2015q2/bin
+	$(MAKE) -C sdk/OpenXR872/project/demo/hello_demo/gcc CC_DIR=$(PWD)/sdk/OpenXR872/tools/gcc-arm-none-eabi-4_9-2015q2/bin
+	$(MAKE) -C sdk/OpenXR872/project/demo/hello_demo/gcc image CC_DIR=$(PWD)/sdk/OpenXR872/tools/gcc-arm-none-eabi-4_9-2015q2/bin
+	mkdir -p output/$(APP_VERSION)
+	cp sdk/OpenXR872/project/demo/hello_demo/image/xr872/xr_system.img output/$(APP_VERSION)/OpenXR872_$(APP_VERSION).img
+	
 	
 .PHONY: OpenXR809 build-XR809
 # Retry OpenXR809 a few times to account for calibration file issues
@@ -435,6 +466,8 @@ clean:
 	$(MAKE) -C sdk/OpenBK7231N/platforms/bk7231n/bk7231n_os APP_BIN_NAME=$(APP_NAME) USER_SW_VER=$(APP_VERSION) clean
 	$(MAKE) -C sdk/OpenXR809/src clean
 	$(MAKE) -C sdk/OpenXR809/project/oxr_sharedApp/gcc clean
+	$(MAKE) -C sdk/OpenXR872/src clean
+	$(MAKE) -C sdk/OpenXR872/project/demo/hello_demo/gcc clean
 	$(MAKE) -C sdk/OpenW800 clean
 	$(MAKE) -C sdk/OpenW600 clean
 	$(MAKE) -C sdk/OpenTR6260/scripts tr6260s1_clean
