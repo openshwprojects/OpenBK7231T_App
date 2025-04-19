@@ -297,11 +297,11 @@ OpenXR806: prebuild_OpenXR806
 	@echo Running build final time to check output
 	$(MAKE) build-XR806;
 
-build-XR806: sdk/OpenXR806/project/demo/sharedApp/shared sdk/OpenXR806/tools/gcc-arm-none-eabi-4_9-2015q2
-	$(MAKE) -C sdk/OpenXR806/src CC_DIR=$(PWD)/sdk/OpenXR806/tools/gcc-arm-none-eabi-4_9-2015q2/bin
-	$(MAKE) -C sdk/OpenXR806/src install CC_DIR=$(PWD)/sdk/OpenXR806/tools/gcc-arm-none-eabi-4_9-2015q2/bin
-	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc CC_DIR=$(PWD)/sdk/OpenXR806/tools/gcc-arm-none-eabi-4_9-2015q2/bin
-	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc image CC_DIR=$(PWD)/sdk/OpenXR806/tools/gcc-arm-none-eabi-4_9-2015q2/bin
+build-XR806: sdk/OpenXR806/project/demo/sharedApp/shared sdk/OpenXR806/tools/gcc-arm-none-eabi-8-2019-q3-update
+	$(MAKE) -C sdk/OpenXR806/src CC_DIR=$(PWD)/sdk/OpenXR806/tools/gcc-arm-none-eabi-8-2019-q3-update/bin
+	$(MAKE) -C sdk/OpenXR806/src install CC_DIR=$(PWD)/sdk/OpenXR806/tools/gcc-arm-none-eabi-8-2019-q3-update/bin
+	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc CC_DIR=$(PWD)/sdk/OpenXR806/tools/gcc-arm-none-eabi-8-2019-q3-update/bin
+	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc image CC_DIR=$(PWD)/sdk/OpenXR806/tools/gcc-arm-none-eabi-8-2019-q3-update/bin
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenXR806/project/demo/sharedApp/image/xr806/xr_system.img output/$(APP_VERSION)/OpenXR806_$(APP_VERSION).img
 	
