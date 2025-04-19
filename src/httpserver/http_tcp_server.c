@@ -352,7 +352,7 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 
 void HTTPServer_Start()
 {
-	OSStatus err = kGeneralErr;
+	OSStatus err = kNoErr;
 	uint32_t stackSize = 0x800;
 
 	while (stackSize >= 0x100)
