@@ -58,6 +58,10 @@ sdk/OpenXR809/project/oxr_sharedApp/shared:
 	@echo Create symlink for $(APP_NAME) into sdk folder
 	ln -s "$(shell pwd)/" "sdk/OpenXR809/project/oxr_sharedApp/shared"
 
+sdk/OpenXR806/project/demo/sharedApp/shared:
+	@echo Create symlink for $(APP_NAME) into sdk folder
+	ln -s "$(shell pwd)/" "sdk/OpenXR806/project/demo/sharedApp/shared"
+	
 sdk/OpenXR872/project/demo/hello_demo/shared:
 	@echo Create symlink for $(APP_NAME) into sdk folder
 	ln -s "$(shell pwd)/" "sdk/OpenXR872/project/demo/hello_demo/shared"
@@ -82,7 +86,7 @@ sdk/OpenLN882H/project/OpenBeken/app:
 	ln -s "$(shell pwd)/" "sdk/OpenLN882H/project/OpenBeken/app"
 
 .PHONY: prebuild_OpenBK7231N prebuild_OpenBK7231T prebuild_OpenBL602 prebuild_OpenLN882H 
-.PHONY: prebuild_OpenW600 prebuild_OpenW800 prebuild_OpenXR809 prebuild_OpenXR872 prebuild_ESPIDF prebuild_OpenTR6260
+.PHONY: prebuild_OpenW600 prebuild_OpenW800 prebuild_OpenXR809 prebuild_OpenXR806 prebuild_OpenXR872 prebuild_ESPIDF prebuild_OpenTR6260
 .PHONY: prebuild_OpenRTL87X0C prebuild_OpenBK7238 prebuild_OpenBK7231N_ALT
 
 prebuild_OpenBK7231N:
@@ -148,6 +152,15 @@ prebuild_OpenXR809:
 	else echo "prebuild for OpenXR809 not found ... "; \
 	fi
 
+prebuild_OpenXR806:
+	git submodule update --init --recursive sdk/OpenXR806
+	git submodule update --init --recursive libraries/berry
+	@if [ -e platforms/XR806/pre_build.sh ]; then \
+		echo "prebuild found for OpenXR806"; \
+		sh platforms/XR806/pre_build.sh; \
+	else echo "prebuild for OpenXR806 not found ... "; \
+	fi
+	
 prebuild_OpenXR872:
 	git submodule update --init --recursive sdk/OpenXR872
 	@if [ -e platforms/XR872/pre_build.sh ]; then \
@@ -253,6 +266,9 @@ OpenBK7231N: prebuild_OpenBK7231N
 sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q2:
 	cd sdk/OpenXR809/tools && wget -q "https://launchpad.net/gcc-arm-embedded/4.9/4.9-2015-q2-update/+download/gcc-arm-none-eabi-4_9-2015q2-20150609-linux.tar.bz2" && tar -xf *.tar.bz2 && rm -f *.tar.bz2
 
+sdk/OpenXR806/tools/gcc-arm-none-eabi-4_9-2015q2:
+	cd sdk/OpenXR806/tools && wget -q "https://launchpad.net/gcc-arm-embedded/4.9/4.9-2015-q2-update/+download/gcc-arm-none-eabi-4_9-2015q2-20150609-linux.tar.bz2" && tar -xf *.tar.bz2 && rm -f *.tar.bz2
+
 sdk/OpenXR872/tools/gcc-arm-none-eabi-4_9-2015q2:
 	cd sdk/OpenXR872/tools && wget -q "https://launchpad.net/gcc-arm-embedded/4.9/4.9-2015-q2-update/+download/gcc-arm-none-eabi-4_9-2015q2-20150609-linux.tar.bz2" && tar -xf *.tar.bz2 && rm -f *.tar.bz2
 
@@ -272,6 +288,22 @@ build-XR872: sdk/OpenXR872/project/demo/hello_demo/shared sdk/OpenXR872/tools/gc
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenXR872/project/demo/hello_demo/image/xr872/xr_system.img output/$(APP_VERSION)/OpenXR872_$(APP_VERSION).img
 	
+	
+.PHONY: OpenXR806 build-XR806
+# Retry OpenXR806 a few times to account for calibration file issues
+RETRY = 3
+OpenXR806: prebuild_OpenXR806
+	@for i in `seq 1 ${RETRY}`; do ($(MAKE) -k build-XR806; echo Prebuild attempt $$i/${RETRY}); done
+	@echo Running build final time to check output
+	$(MAKE) build-XR806;
+
+build-XR806: sdk/OpenXR806/project/demo/sharedApp/shared sdk/OpenXR806/tools/gcc-arm-none-eabi-4_9-2015q2
+	$(MAKE) -C sdk/OpenXR806/src CC_DIR=$(PWD)/sdk/OpenXR806/tools/gcc-arm-none-eabi-4_9-2015q2/bin
+	$(MAKE) -C sdk/OpenXR806/src install CC_DIR=$(PWD)/sdk/OpenXR806/tools/gcc-arm-none-eabi-4_9-2015q2/bin
+	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc CC_DIR=$(PWD)/sdk/OpenXR806/tools/gcc-arm-none-eabi-4_9-2015q2/bin
+	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc image CC_DIR=$(PWD)/sdk/OpenXR806/tools/gcc-arm-none-eabi-4_9-2015q2/bin
+	mkdir -p output/$(APP_VERSION)
+	cp sdk/OpenXR806/project/demo/sharedApp/image/xr806/xr_system.img output/$(APP_VERSION)/OpenXR806_$(APP_VERSION).img
 	
 .PHONY: OpenXR809 build-XR809
 # Retry OpenXR809 a few times to account for calibration file issues
@@ -466,6 +498,8 @@ clean:
 	$(MAKE) -C sdk/OpenBK7231N/platforms/bk7231n/bk7231n_os APP_BIN_NAME=$(APP_NAME) USER_SW_VER=$(APP_VERSION) clean
 	$(MAKE) -C sdk/OpenXR809/src clean
 	$(MAKE) -C sdk/OpenXR809/project/oxr_sharedApp/gcc clean
+	$(MAKE) -C sdk/OpenXR806/src clean
+	$(MAKE) -C sdk/OpenXR806/project/oxr_sharedApp/gcc clean
 	$(MAKE) -C sdk/OpenXR872/src clean
 	$(MAKE) -C sdk/OpenXR872/project/demo/hello_demo/gcc clean
 	$(MAKE) -C sdk/OpenW800 clean
