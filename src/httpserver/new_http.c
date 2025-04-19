@@ -813,8 +813,13 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	}
 
 	if (http_basic_auth_run(request) == HTTP_BASIC_AUTH_FAIL) {
+#if PLATFORM_XR809
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "XR auth disabled\n");
+
+#else
 		ADDLOG_ERROR(LOG_FEATURE_HTTP, "HTTP packet with auth fail\n");
 		return 0;
+#endif
 	}
 
 	if (http_checkUrlBase(urlStr, "")) return http_fn_empty_url(request);
