@@ -289,6 +289,7 @@ build-XR872: sdk/OpenXR872/project/demo/hello_demo/shared sdk/OpenXR872/tools/gc
 	cp sdk/OpenXR872/project/demo/hello_demo/image/xr872/xr_system.img output/$(APP_VERSION)/OpenXR872_$(APP_VERSION).img
 	
 	
+	
 .PHONY: OpenXR806 build-XR806
 # Retry OpenXR806 a few times to account for calibration file issues
 RETRY = 3
