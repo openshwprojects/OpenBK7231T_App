@@ -186,12 +186,12 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 #endif
 				os_strcpy(client_ip_str, inet_ntoa(client_addr.sin_addr));
 #if DISABLE_SEPARATE_THREAD_FOR_EACH_TCP_CLIENT
-				ADDLOG_DEBUG(LOG_FEATURE_HTTP, "HTTP [single thread] Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd);
+				ADDLOG_ERROR(LOG_FEATURE_HTTP, "HTTP [single thread] Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd);
 				// Use main server thread (blocking all other clients)
 				// right now, I am getting OS_ThreadCreate everytime on XR809 platform
 				tcp_client_thread((beken_thread_arg_t)client_fd);
 #else
-				ADDLOG_DEBUG(LOG_FEATURE_HTTP, "HTTP [multi thread] Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd);
+				ADDLOG_ERROR(LOG_FEATURE_HTTP, "HTTP [multi thread] Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd);
 				// delay each accept by 20ms
 				// this allows previous to finish if
 				// in a loop of sends from the browser, e.g. OTA
