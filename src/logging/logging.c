@@ -526,13 +526,13 @@ void startLogServer() {
 	OSStatus err = kNoErr;
 
 	err = rtos_create_thread(NULL, BEKEN_APPLICATION_PRIORITY,
-		"TCP_server",
+		"Log_server",
 		(beken_thread_function_t)log_server_thread,
 		0x800,
 		(beken_thread_arg_t)0);
 	if (err != kNoErr)
 	{
-		bk_printf("create \"TCP_server\" thread failed!\r\n");
+		bk_printf("startLogServer: create \"TCP_server\" thread failed!\r\n");
 	}
 #endif
 }

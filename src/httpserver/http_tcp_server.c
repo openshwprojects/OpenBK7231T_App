@@ -358,7 +358,7 @@ void HTTPServer_Start()
 	while (stackSize >= 0x100)
 	{
 		err = rtos_create_thread(&g_http_thread, BEKEN_APPLICATION_PRIORITY,
-			"TCP_server",
+			"HTTP_server",
 			(beken_thread_function_t)tcp_server_thread,
 			stackSize,
 			(beken_thread_arg_t)0);
