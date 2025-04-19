@@ -16,13 +16,7 @@
 // it was 0x800 - 2048 - until 23 10 2022
 // The larger stack size for handling HTTP request is needed, for example, for commands
 // See: https://github.com/openshwprojects/OpenBK7231T_App/issues/314
-#if PLATFORM_BEKEN
 #define HTTP_CLIENT_STACK_SIZE 8192
-#elif PLATFORM_W600
-#define HTTP_CLIENT_STACK_SIZE 8192
-#else
-#define HTTP_CLIENT_STACK_SIZE 8192
-#endif
 
 #if PLATFORM_XR809 || PLATFORM_XR872
 
@@ -35,8 +29,6 @@ static void tcp_client_thread(beken_thread_arg_t arg);
 
 
 xTaskHandle g_http_thread = NULL;
-
-
 
 void HTTPServer_Stop()
 {
@@ -261,7 +253,7 @@ void HTTPServer_Start()
 
 		if (err == kNoErr)
 		{
-			ADDLOGF_INFO(LOG_FEATURE_HTTP, "Created HTTP SV thread with (stack=%u)\r\n", stackSize);
+			ADDLOG_ERROR(LOG_FEATURE_HTTP, "Created HTTP SV thread with (stack=%u)\r\n", stackSize);
 			break;
 		}
 
