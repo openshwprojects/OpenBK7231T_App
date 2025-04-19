@@ -197,12 +197,13 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 #endif
 #endif
 				os_strcpy(client_ip_str, inet_ntoa(client_addr.sin_addr));
-				//  ADDLOG_DEBUG(LOG_FEATURE_HTTP,  "TCP Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd );
 #if DISABLE_SEPARATE_THREAD_FOR_EACH_TCP_CLIENT
+				ADDLOG_DEBUG(LOG_FEATURE_HTTP, "HTTP [single thread] Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd);
 				// Use main server thread (blocking all other clients)
 				// right now, I am getting OS_ThreadCreate everytime on XR809 platform
 				tcp_client_thread((beken_thread_arg_t)client_fd);
 #else
+				ADDLOG_DEBUG(LOG_FEATURE_HTTP, "HTTP [multi thread] Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd);
 				// delay each accept by 20ms
 				// this allows previous to finish if
 				// in a loop of sends from the browser, e.g. OTA
@@ -330,7 +331,7 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 			if (client_fd >= 0)
 			{
 				os_strcpy(client_ip_str, inet_ntoa(client_addr.sin_addr));
-				//  ADDLOG_DEBUG(LOG_FEATURE_HTTP,  "TCP Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd );
+				ADDLOG_DEBUG(LOG_FEATURE_HTTP,  "HTTP [NEW_TCP_SERVER] Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd );
 
 				tcp_client_thread(client_fd, reply, buf);
 
@@ -365,7 +366,7 @@ void HTTPServer_Start()
 
 		if (err == kNoErr)
 		{
-			ADDLOG_ERROR(LOG_FEATURE_HTTP, "Created HTTP SV thread with (stack=%u)\r\n", stackSize);
+			ADDLOGF_INFO(LOG_FEATURE_HTTP, "Created HTTP SV thread with (stack=%u)\r\n", stackSize);
 			break;
 		}
 
