@@ -595,7 +595,7 @@ int postany(http_request_t* request, const char* str, int len) {
 	int currentlen;
 	int addlen = len;
 
-	ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: got %i", len);
+	//ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: got %i", len);
 
 	if (NULL == str) {
 		// fd will be NULL for unit tests where HTTP packet is faked locally
@@ -603,7 +603,7 @@ int postany(http_request_t* request, const char* str, int len) {
 			return request->replylen;
 		}
 		if (request->replylen > 0) {
-			ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: send %i", request->replylen);
+			//ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: send %i", request->replylen);
 			send(request->fd, request->reply, request->replylen, 0);
 		}
 		request->reply[0] = 0;
@@ -613,7 +613,7 @@ int postany(http_request_t* request, const char* str, int len) {
 
 	currentlen = request->replylen;
 	if (currentlen + addlen >= request->replymaxlen) {
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: send %i", request->replylen);
+		//ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: send %i", request->replylen);
 		send(request->fd, request->reply, request->replylen, 0);
 		request->reply[0] = 0;
 		request->replylen = 0;
@@ -621,11 +621,11 @@ int postany(http_request_t* request, const char* str, int len) {
 	}
 	while (addlen >= request->replymaxlen) {
 		if (request->replylen > 0) {
-			ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: send %i", request->replylen);
+			//ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: send %i", request->replylen);
 			send(request->fd, request->reply, request->replylen, 0);
 			request->replylen = 0;
 		}
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: send %i", (request->replymaxlen - 1));
+		//ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: send %i", (request->replymaxlen - 1));
 		send(request->fd, str, (request->replymaxlen - 1), 0);
 		addlen -= (request->replymaxlen - 1);
 		str += (request->replymaxlen - 1);
