@@ -13,7 +13,7 @@
 #include "drv_tuyaMCU.h"
 #include "drv_uart.h"
 #include "drv_ds1820_simple.h"
-
+#include "drv_hlw8112.h"
 
 typedef struct driver_s {
 	const char* name;
