@@ -29,13 +29,6 @@ typedef struct driver_s {
 
 void TuyaMCU_RunEverySecond();
 
-#if ENABLE_HLW811X
-	//drvdetail:{"name":"HLW811X",
-	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"Sriver HLW811X",
-	//drvdetail:"requires":""}
-	{ "HLW811X",		HLW811X_Init,			HLW811X_OnEverySecond,			HLW811X_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
-
 
 // startDriver BL0937
 static driver_t g_drivers[] = {
@@ -152,6 +145,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"Self test of the device",
 	//drvdetail:"requires":""}
 	{ "Test",	Test_Init, NULL, Test_AppendInformationToHTTPIndexPage, Test_RunQuickTick, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_HLW8112SPI
+	//drvdetail:{"name":"HLW8112SPI",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"HLW8112 driver version for SPI protocol. ",
+	//drvdetail:"requires":""}
+	{ "HLW8112SPI",	HLW8112_SPI_Init,	HLW8112_SPI_RunEverySecond,		HLW8112_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_I2C
 	//drvdetail:{"name":"I2C",
