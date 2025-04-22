@@ -117,7 +117,7 @@ jobs:
           - platform: OpenBK7231N
             variant: default
           - platform: OpenBK7238
-            variant: berry
+            variant: default
           - platform: OpenXR809
             variant: default
           - platform: OpenXR806
