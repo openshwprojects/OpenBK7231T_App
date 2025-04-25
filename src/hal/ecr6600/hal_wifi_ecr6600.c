@@ -90,6 +90,28 @@ int HAL_GetWifiStrength()
 	return ap_info.rssi;
 }
 
+
+char* HAL_GetWiFiBSSID(char* bssid){
+	if (wifi_get_sta_status()==STA_STATUS_CONNECTED){
+		wifi_info_t ap_info;
+		memset((void*)&ap_info, 0, sizeof(wifi_info_t));
+		wifi_get_wifi_info(&ap_info);
+		sprintf(bssid, MACSTR, MAC2STR(ap_info.bssid));
+		return ap_info.bssid;
+	}
+	bssid[0]='\0';
+	return bssid; 
+};
+uint8_t HAL_GetWiFiChannel(uint8_t *chan){
+	if (wifi_get_sta_status()==STA_STATUS_CONNECTED){
+		*chan = wifi_rf_get_channel();
+		return *chan;
+	}
+	return 0;
+};
+
+
+
 static sys_err_t handle_wifi_event(void* ctx, system_event_t* event)
 {
 	switch(event->event_id)

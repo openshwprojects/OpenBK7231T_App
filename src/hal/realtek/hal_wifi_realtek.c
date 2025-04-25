@@ -122,6 +122,15 @@ int HAL_GetWifiStrength()
 	return rssi;
 }
 
+char* HAL_GetWiFiBSSID(char* bssid){
+	wext_get_bssid(WLAN0_NAME, bssid);
+	return bssid; 
+};
+uint8_t HAL_GetWiFiChannel(uint8_t *chan){
+	wext_get_rssi(WLAN0_NAME, chan);
+	return *chan;
+};
+
 void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 {
 	g_wifiStatusCallback = cb;
