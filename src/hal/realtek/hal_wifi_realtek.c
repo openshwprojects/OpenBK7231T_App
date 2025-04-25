@@ -126,11 +126,11 @@ char* HAL_GetWiFiBSSID(char* bssid){
 	u8 mac_1[6];
 	wext_get_bssid((const char *)WLAN0_NAME, mac_1);
 	printf("\n\r\tBSSID => %02x:%02x:%02x:%02x:%02x:%02x\n\r", mac_1[0], mac_1[1], mac_1[2], mac_1[3], mac_1[4], mac_1[5]);
-	wext_get_bssid(WLAN0_NAME, bssid);
+	memcpy(bssid, (char*)mac_1, sizeof(bssid));
 	return bssid; 
 };
 uint8_t HAL_GetWiFiChannel(uint8_t *chan){
-	wext_get_rssi(WLAN0_NAME, chan);
+	wext_get_channel((const char *)WLAN0_NAME, chan);
 	return *chan;
 };
 
