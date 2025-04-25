@@ -97,7 +97,7 @@ char* HAL_GetWiFiBSSID(char* bssid){
 		memset((void*)&ap_info, 0, sizeof(wifi_info_t));
 		wifi_get_wifi_info(&ap_info);
 		sprintf(bssid, MACSTR, MAC2STR(ap_info.bssid));
-		return ap_info.bssid;
+		return bssid;
 	}
 	bssid[0]='\0';
 	return bssid; 
