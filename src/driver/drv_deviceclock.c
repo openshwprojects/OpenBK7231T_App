@@ -56,7 +56,9 @@ commandResult_t SetTimeZoneOfs(const void *context, const char *cmd, const char 
 	else {
 		g_UTCoffset = Tokenizer_GetArgInteger(0) * 60 * 60;
 	}
-
+#if WINDOWS
+	NTP_SetTimesZoneOfsSeconds(g_UTCoffset);
+#endif
 #if ENABLE_CLOCK_DST
 // in rare cases time can be decreased so time of next DST is wrong
 // e.g. by mistake we set offset to two hours in EU and we have just passed start of summertime - next DST switch will be end of summertime
