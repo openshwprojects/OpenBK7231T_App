@@ -325,6 +325,9 @@ uint32_t setDST(bool setCLOCK)
    if (useDST && Clock_IsTimeSynced()){
 	int year=CLOCK_GetYear();
 	time_t tempt=(time_t)Clock_GetCurrentTime();
+	struct tm *ltm;
+	ltm = gmtime(&tempt);
+	ADDLOG_INFO(LOG_FEATURE_RAW, "setDST %.24s local time -- ",ctime(&tempt));
 	int8_t old_DST=0;
 	char tmp[40];	// to hold date string of timestamp
 	Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year);
@@ -377,10 +380,9 @@ uint32_t setDST(bool setCLOCK)
 //	g_ntpTime += (g_DST-old_DST)*60*setCLOCK;
 	tempt = (time_t)next_DST_switch_epoch;
 
-	struct tm *ltm;
 	ltm = gmtime(&tempt);
 	ADDLOG_INFO(LOG_FEATURE_RAW, "In %s time - next DST switch at %lu (" LTSTR ")\r\n",
-	(g_DST)?"summer":"standard", next_DST_switch_epoch, LTM2TIME(ltm));
+	(g_DST>-128 && g_DST != 0)?"summer":"standard", next_DST_switch_epoch, LTM2TIME(ltm));
 	return g_DST;
   }
   else return 0;	// DST not (yet) set or can't be calculated (if ntp not synced)
