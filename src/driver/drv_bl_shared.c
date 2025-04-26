@@ -12,7 +12,7 @@
 #include "../ota/ota.h"
 #include "drv_local.h"
 #include "drv_ntp.h"
-#include "../driver/drv_deviceclock.h"
+#include "drv_deviceclock.h"
 #include "drv_public.h"
 #include "drv_uart.h"
 #include "../cmnds/cmd_public.h" //for enum EventCode
@@ -767,6 +767,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
             cJSON_AddNumberToObject(root, "consumption_today", BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_TODAY)));
             cJSON_AddNumberToObject(root, "consumption_yesterday", BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_YESTERDAY)));
             ltm = gmtime(&ConsumptionResetTime);
+/*
             if (Clock_GetTimesZoneOfsSeconds()>0)
             {
               snprintf(datetime,sizeof(datetime), "%04i-%02i-%02iT%02i:%02i+%02i:%02i",
@@ -777,6 +778,15 @@ void BL_ProcessUpdate(float voltage, float current, float power,
                 ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
                 abs(Clock_GetTimesZoneOfsSeconds()/3600), (abs(Clock_GetTimesZoneOfsSeconds())/60) % 60);
             }
+*/
+            // optimized output: since we can be sure, a negative offset is minumum 1 hour, 
+            // the sign for the hour will be "-" for "negative" timezones 
+            //    this wouldn't work if a negative offset less than one hour would be possible
+            snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i%+03i:%02i",
+                ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
+                Clock_GetTimesZoneOfsSeconds()/3600, (abs(Clock_GetTimesZoneOfsSeconds())/60) % 60);
+            
+
             cJSON_AddStringToObject(root, "consumption_clear_date", datetime);
           }
 
@@ -887,7 +897,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
             ltm = gmtime(&ConsumptionResetTime);
             /* 2019-09-07T15:50-04:00 */
 /*
-if (Clock_GetTimesZoneOfsSeconds()>0)
+            if (Clock_GetTimesZoneOfsSeconds()>0)
             {
               snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i+%02i:%02i",
                 ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,

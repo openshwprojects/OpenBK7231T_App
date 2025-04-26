@@ -491,18 +491,6 @@ const constant_t g_constants[] = {
 	////cnstdetail:"descr":"Current Year from NTP",
 	////cnstdetail:"requires":""}
 	{ "$year", &getYear },
-#ifdef ENABLE_DRIVER_BL0937
-	////cnstdetail:{"name":"$yesterday",
-	////cnstdetail:"title":"$yesterday",
-	////cnstdetail:"descr":"",
-	////cnstdetail:"requires":""}
-	{ "$yesterday", &getYesterday },
-	////cnstdetail:{"name":"$today",
-	////cnstdetail:"title":"$today",
-	////cnstdetail:"descr":"",
-	////cnstdetail:"requires":""}
-	{ "$today", &getToday },
-#endif
 #if ENABLE_CLOCK_DST
 	////cnstdetail:{"name":"$isDST",
 	////cnstdetail:"title":"$isDST",
