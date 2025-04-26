@@ -326,9 +326,11 @@ uint32_t setDST(bool setCLOCK)
 	int year=CLOCK_GetYear();
 	time_t tempt;
 	struct tm *ltm;
+/*
 	tempt=(time_t)Clock_GetCurrentTime();
 	ltm = gmtime(&tempt);
 	ADDLOG_INFO(LOG_FEATURE_RAW, "setDST %.24s  -- ",ctime(&tempt));
+*/
 	tempt=(time_t)Clock_GetCurrentTimeWithoutOffset();
 	int8_t old_DST=0;
 	char tmp[40];	// to hold date string of timestamp
@@ -351,7 +353,7 @@ uint32_t setDST(bool setCLOCK)
 //			ADDLOG_INFO(LOG_FEATURE_RAW, "In DST of %i. Info: DST ends at %lu (%.24s local time)\r\n",year,End_DST_epoch,ctime(&tempt));
 		} else {
 			// we are in winter time, after summer time --> next DST starts in next year
-			Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year+1);
+			Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year+1)-g_UTCoffset;
 			next_DST_switch_epoch=Start_DST_epoch;
 			g_DST=0;
 //			tempt = (time_t)Start_DST_epoch;
@@ -372,7 +374,7 @@ uint32_t setDST(bool setCLOCK)
 //			ADDLOG_INFO(LOG_FEATURE_RAW, "Regular time of %i. Info: DST starts at %lu (%.24s local time)\r\n",year,Start_DST_epoch,ctime(&tempt));
 		} else {
 			// we in summer time at the end of the year --> DST will end next year
-			End_DST_epoch = RuleToTime(dayEnd,monthEnd,nthWeekEnd,hourEnd,year+1);
+			End_DST_epoch = RuleToTime(dayEnd,monthEnd,nthWeekEnd,hourEnd,year+1)-g_UTCoffset-g_DST_offset*60;
 			next_DST_switch_epoch=End_DST_epoch;
 			g_DST=g_DST_offset;
 //			tempt = (time_t)End_DST_epoch;
