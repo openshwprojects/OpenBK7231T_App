@@ -1,7 +1,8 @@
 // NTP client
 // Based on my previous work here:
 // https://www.elektroda.pl/rtvforum/topic3712112.html
-
+#include "../obk_config.h"
+#if ENABLE_NTP
 #include <time.h>
 
 #include "../new_common.h"
@@ -380,3 +381,4 @@ bool NTP_IsTimeSynced()
     return g_synced;
 }
 
+#endif // #if ENABLE_NTP
