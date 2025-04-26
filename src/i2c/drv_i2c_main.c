@@ -192,6 +192,7 @@ i2cDevice_t *DRV_I2C_FindDeviceExt(int busType,int address, int devType) {
 // set SoftSDA and SoftSCL pins
 // startDriver I2C
 // scanI2C Soft
+// backlog startDriver I2C; scanI2C Soft
 commandResult_t DRV_I2C_Scan(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	const char *i2cModuleStr;
 	i2cBusType_t busType;

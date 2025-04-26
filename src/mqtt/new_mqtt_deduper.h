@@ -1,5 +1,11 @@
 
 
+#include "../obk_config.h"
+
+
+
+#if ENABLE_MQTT
+
 // i didn't choose the "automatic, per string name" approach because it would be slower
 // I think we only need to dedup the built-in MQTT publishes, which can be listed here and defined as constants
 typedef enum MQTT_Dedup_Slot_e {
@@ -19,3 +25,6 @@ typedef enum MQTT_Dedup_Slot_e {
 OBK_Publish_Result MQTT_PublishMain_StringString_DeDuped(int slotCode, int expireTime, const char* sChannel, const char* valueStr, int flags);
 OBK_Publish_Result MQTT_PublishMain_StringInt_DeDuped(int slotCode, int expireTime, const char* sChannel, int val, int flags);
 void MQTT_Dedup_Tick();
+
+#endif
+

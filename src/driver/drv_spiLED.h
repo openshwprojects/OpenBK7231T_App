@@ -1,9 +1,9 @@
 
 
 typedef struct spiLED_s {
-	UINT8 *buf;
+	byte *buf;
 	struct spi_message *msg;
-	BOOLEAN ready;
+	byte ready;
 	// Number of empty bytes to send before pixel data on each frame
 	// Likely not needed as the data line should be LOW (reset) between frames anyway
 	uint32_t ofs;

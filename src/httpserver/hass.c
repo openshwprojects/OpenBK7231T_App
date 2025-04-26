@@ -6,6 +6,8 @@
 #include "../driver/drv_public.h"
 #include "../new_pins.h"
 
+#if ENABLE_HA_DISCOVERY
+
 /*
 Abbreviated node names - https://www.home-assistant.io/docs/mqtt/discovery/
 Light - https://www.home-assistant.io/integrations/light.mqtt/
@@ -30,7 +32,8 @@ const char *g_template_lowMidHigh = "{% if value == '0' %}\n"
 /// @param type Entity type
 /// @param index Entity index (Ignored for RGB)
 /// @param uniq_id Array to populate (should be of size HASS_UNIQUE_ID_SIZE)
-void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
+/// @param asensdatasetix dataset index for ENERGY_METER_SENSOR, otherwise 0
+void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id, int asensdatasetix) {
 	//https://developers.home-assistant.io/docs/entity_registry_index/#unique-id-requirements
 	//mentions that mac can be used for unique_id and deviceName contains that.
 	const char* longDeviceName = CFG_GetDeviceName();
@@ -52,7 +55,7 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 
 	case ENERGY_METER_SENSOR:
 #ifdef ENABLE_DRIVER_BL0937
-		sprintf(uniq_id, "%s_sensor_%s", longDeviceName, DRV_GetEnergySensorNames(index)->hass_uniq_id_suffix);
+		sprintf(uniq_id, "%s_sensor_%s", longDeviceName, DRV_GetEnergySensorNamesEx(asensdatasetix,index)->hass_uniq_id_suffix);
 #endif
 		break;
 	case POWER_SENSOR:
@@ -85,6 +88,11 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 		break;
 	case BATTERY_SENSOR:
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "battery", index);
+		break;
+	case BATTERY_CHANNEL_SENSOR:
+		//20250326 XJIKKA previously there was default "sensor" - the probability of a collision was high
+		//I used battery_ch (because battery could also collide on channel 0 with BATTERY_SENSOR, where channel 0 is hardcoded)
+		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "battery_ch", index);
 		break;
 	case VOLTAGE_SENSOR:
 	case BATTERY_VOLTAGE_SENSOR:
@@ -131,9 +139,10 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id) {
 /// @param fmt
 /// @param type Entity type
 /// @param index Entity index
-void hass_print_unique_id(http_request_t* request, const char* fmt, ENTITY_TYPE type, int index) {
+/// @param asensdatasetix dataset index for ENERGY_METER_SENSOR, otherwise 0
+void hass_print_unique_id(http_request_t* request, const char* fmt, ENTITY_TYPE type, int index, int asensdatasetix) {
 	char uniq_id[HASS_UNIQUE_ID_SIZE];
-	hass_populate_unique_id(type, index, uniq_id);
+	hass_populate_unique_id(type, index, uniq_id, asensdatasetix);
 	hprintf255(request, fmt, uniq_id);
 }
 
@@ -164,6 +173,7 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char* uniq_id, HassDe
 	case ENERGY_SENSOR:
 	case TIMESTAMP_SENSOR:
 	case BATTERY_SENSOR:
+	case BATTERY_CHANNEL_SENSOR:
 	case BATTERY_VOLTAGE_SENSOR:
 	case TEMPERATURE_SENSOR:
 	case HUMIDITY_SENSOR:
@@ -205,12 +215,13 @@ cJSON* hass_build_device_node(cJSON* ids) {
 /// For energy sensors, index corresponds to energySensor_t. For regular sensor, index can be be the channel.
 /// @param payload_on The payload that represents enabled state. This is not added for POWER_SENSOR.
 /// @param payload_off The payload that represents disabled state. This is not added for POWER_SENSOR.
+/// @param asensdatasetix dataset index for ENERGY_METER_SENSOR, otherwise 0
 /// @return 
-HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* payload_on, const char* payload_off) {
+HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* payload_on, const char* payload_off, int asensdatasetix) {
 	HassDeviceInfo* info = os_malloc(sizeof(HassDeviceInfo));
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "hass_init_device_info=%p", info);
 
-	hass_populate_unique_id(type, index, info->unique_id);
+	hass_populate_unique_id(type, index, info->unique_id, asensdatasetix);
 	hass_populate_device_config_channel(type, info->unique_id, info);
 
 	info->ids = cJSON_CreateArray();
@@ -245,7 +256,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 			isSensor = true;
 	#ifdef ENABLE_DRIVER_BL0937
 			if (index <= OBK__LAST)
-				sprintf(g_hassBuffer, "%s", DRV_GetEnergySensorNames(index)->name_friendly);
+				sprintf(g_hassBuffer, "%s", DRV_GetEnergySensorNamesEx(asensdatasetix, index)->name_friendly);
 			else
 				sprintf(g_hassBuffer, "Unknown Energy Meter Sensor");
 	#endif
@@ -279,6 +290,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 			sprintf(g_hassBuffer, "Tvoc");
 			break;
 		case BATTERY_SENSOR:
+		case BATTERY_CHANNEL_SENSOR:
 			isSensor = true;
 			sprintf(g_hassBuffer, "Battery");
 			break;
@@ -286,6 +298,9 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 		case VOLTAGE_SENSOR:
 			isSensor = (type == BATTERY_VOLTAGE_SENSOR);
 			sprintf(g_hassBuffer, "Voltage");
+			break;
+		case FREQUENCY_SENSOR:
+			sprintf(g_hassBuffer, "Frequency");
 			break;
 		case ILLUMINANCE_SENSOR:
 			sprintf(g_hassBuffer, "Illuminance");
@@ -353,10 +368,10 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 HassDeviceInfo* hass_init_relay_device_info(int index, ENTITY_TYPE type, bool bToggleInv) {
 	HassDeviceInfo* info;
 	if (bToggleInv) {
-		info = hass_init_device_info(type, index, "0", "1");
+		info = hass_init_device_info(type, index, "0", "1", 0);
 	}
 	else {
-		info = hass_init_device_info(type, index, "1", "0");
+		info = hass_init_device_info(type, index, "1", "0", 0);
 	}
 
 	sprintf(g_hassBuffer, "~/%i/get", index);
@@ -367,6 +382,7 @@ HassDeviceInfo* hass_init_relay_device_info(int index, ENTITY_TYPE type, bool bT
 	return info;
 }
 
+#if ENABLE_LED_BASIC
 /// @brief Initializes HomeAssistant light device discovery storage.
 /// @param type 
 /// @return 
@@ -377,7 +393,7 @@ HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type) {
 
 	//We can just use 1 to generate unique_id and name for single PWM.
 	//The payload_on/payload_off have to match the state_topic/command_topic values.
-	info = hass_init_device_info(type, 1, "1", "0");
+	info = hass_init_device_info(type, 1, "1", "0", 0);
 
 	switch (type) {
 	case LIGHT_RGBCW:
@@ -433,6 +449,7 @@ HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type) {
 
 	return info;
 }
+#endif
 
 /// @brief Initializes HomeAssistant binary sensor device discovery storage.
 /// @param index
@@ -447,7 +464,7 @@ HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse) {
 		payload_off = "1";
 		payload_on = "0";
 	}
-	HassDeviceInfo* info = hass_init_device_info(BINARY_SENSOR, index, payload_on, payload_off);
+	HassDeviceInfo* info = hass_init_device_info(BINARY_SENSOR, index, payload_on, payload_off, 0);
 
 	sprintf(g_hassBuffer, "~/%i/get", index);
 	cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);   //state_topic
@@ -460,23 +477,28 @@ HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse) {
 /// @brief Initializes HomeAssistant power sensor device discovery storage.
 /// @param index Index corresponding to energySensor_t.
 /// @return 
-HassDeviceInfo* hass_init_energy_sensor_device_info(int index) {
+HassDeviceInfo* hass_init_energy_sensor_device_info(int index, int asensdatasetix) {
 	HassDeviceInfo* info = 0;
 
 	//https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes
 	//device_class automatically assigns unit,icon
 	if (index > OBK__LAST) return info;
 	if (index >= OBK_CONSUMPTION__DAILY_FIRST && !DRV_IsRunning("NTP")) return info; //include daily stats only when time is valid
+#ifdef ENABLE_BL_TWIN
+	//in twin mode, for ix1 is possible to skip OBK_VOLTAGE, dont skip for now
+	//if ((asensdatasetix>0) && (index==OBK_VOLTAGE)) return info;
+	//in twin mode, for ix0 is last OBK_CONSUMPTION_YESTERDAY, for ix1 ,OBK_CONSUMPTION_TODAY
+	if ((index > OBK_CONSUMPTION_STORED_LAST[asensdatasetix]) && (index <= OBK_CONSUMPTION__DAILY_LAST)) return info;
+#endif
+	info = hass_init_device_info(ENERGY_METER_SENSOR, index, NULL, NULL, asensdatasetix);
 
-	info = hass_init_device_info(ENERGY_METER_SENSOR, index, NULL, NULL);
-
-	cJSON_AddStringToObject(info->root, "dev_cla", DRV_GetEnergySensorNames(index)->hass_dev_class);   //device_class=voltage,current,power, energy, timestamp
+	cJSON_AddStringToObject(info->root, "dev_cla", DRV_GetEnergySensorNamesEx(asensdatasetix,index)->hass_dev_class);   //device_class=voltage,current,power, energy, timestamp
 	//20241024 XJIKKA unit_of_meas is set bellow (was set twice)
 	//cJSON_AddStringToObject(info->root, "unit_of_meas", DRV_GetEnergySensorNames(index)->units);   //unit_of_measurement. Sets as empty string if not present. HA doesn't seem to mind
-	sprintf(g_hassBuffer, "~/%s/get", DRV_GetEnergySensorNames(index)->name_mqtt);
+	sprintf(g_hassBuffer, "~/%s/get", DRV_GetEnergySensorNamesEx(asensdatasetix, index)->name_mqtt);
 	cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 
-	if (!strcmp(DRV_GetEnergySensorNames(index)->hass_dev_class, "energy")) {
+	if (!strcmp(DRV_GetEnergySensorNamesEx(asensdatasetix, index)->hass_dev_class, "energy")) {
 		//state_class can be measurement, total or total_increasing. Energy values should be total_increasing.
 		cJSON_AddStringToObject(info->root, "stat_cla", "total_increasing");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", CFG_HasFlag(OBK_FLAG_MQTT_ENERGY_IN_KWH) ? "kWh" : "Wh");
@@ -484,14 +506,14 @@ HassDeviceInfo* hass_init_energy_sensor_device_info(int index) {
 		//20241024 XJIKKA skip measurement for timestamp - HASS log:
 		//HASS:	energy_clear_date (<class 'homeassistant.components.mqtt.sensor.MqttSensor'>) is using state class 'measurement' 
 		//		which is impossible considering device class ('timestamp') it is using; expected None; 
-		if (strcmp(DRV_GetEnergySensorNames(index)->hass_dev_class,"timestamp")) {
+		if (strcmp(DRV_GetEnergySensorNamesEx(asensdatasetix, index)->hass_dev_class,"timestamp")) {
 			cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
 		}
 		//20241024 XJIKKA if unit is not set (drv_bl_shared.c @ "power_factor"), mqtt value unit_of_meas was empty - HASS log:
 		//HASS:	sensor...power_factor is using native unit of measurement '' which is not a valid unit 
 		//		for the device class ('power_factor') it is using; expected one of ['no unit of measurement', '%']; 
 		//solution is to skip empty 
-		if (strlen(DRV_GetEnergySensorNames(index)->units)>0) {
+		if (strlen(DRV_GetEnergySensorNamesEx(asensdatasetix, index)->units)>0) {
 			cJSON_AddStringToObject(info->root, "unit_of_meas", DRV_GetEnergySensorNames(index)->units);
 		}
 	}
@@ -533,7 +555,7 @@ HassDeviceInfo* hass_init_light_singleColor_onChannels(int toggle, int dimmer, i
 	const char* clientId;
 	
 	clientId = CFG_GetMQTTClientId();
-	dev_info = hass_init_device_info(LIGHT_PWM, toggle, "1", "0");
+	dev_info = hass_init_device_info(LIGHT_PWM, toggle, "1", "0", 0);
 
 	sprintf(g_hassBuffer, "~/%i/get", toggle);
 	cJSON_AddStringToObject(dev_info->root, "stat_t", g_hassBuffer);  //state_topic
@@ -555,7 +577,7 @@ HassDeviceInfo* hass_init_light_singleColor_onChannels(int toggle, int dimmer, i
 /// @return 
 HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int decPlaces, int decOffset, int divider) {
 	//Assuming that there is only one DHT setup per device which keeps uniqueid/names simpler
-	HassDeviceInfo* info = hass_init_device_info(type, channel, NULL, NULL);	//using channel as index to generate uniqueId
+	HassDeviceInfo* info = hass_init_device_info(type, channel, NULL, NULL, 0);	//using channel as index to generate uniqueId
 
 	//https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes
 	switch (type) {
@@ -607,6 +629,12 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 		cJSON_AddStringToObject(info->root, "dev_cla", "battery");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "%");
 		cJSON_AddStringToObject(info->root, "stat_t", "~/battery/get");
+		break;
+	case BATTERY_CHANNEL_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "battery");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "%");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		break;
 	case BATTERY_VOLTAGE_SENSOR:
 		cJSON_AddStringToObject(info->root, "dev_cla", "voltage");
@@ -752,3 +780,5 @@ void hass_free_device_info(HassDeviceInfo* info) {
 
 	os_free(info);
 }
+
+#endif // ENABLE_HA_DISCOVERY

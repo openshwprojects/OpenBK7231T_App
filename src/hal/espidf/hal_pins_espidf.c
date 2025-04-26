@@ -451,7 +451,7 @@ void HAL_PIN_PWM_Stop(int index)
 	}
 }
 
-void HAL_PIN_PWM_Start(int index)
+void HAL_PIN_PWM_Start(int index, int freq)
 {
 	if(index >= g_numPins)
 		return;

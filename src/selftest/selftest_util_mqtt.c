@@ -4,8 +4,10 @@
 #include "../cJSON/cJSON.h"
 
 void SIM_SendFakeMQTT(const char *text, const char *arguments) {
+#if ENABLE_MQTT
 	MQTT_Post_Received_Str(text, arguments);
 	Sim_RunFrames(1, false);
+#endif
 }
 void SIM_SendFakeMQTTAndRunSimFrame_CMND_Generic(const char *myName , const char *command, const char *arguments) {
 

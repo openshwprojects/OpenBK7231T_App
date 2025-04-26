@@ -1,8 +1,10 @@
 VPATH  += $(OBK_PATH)
+VPATH  += $(OBK_PATH)/../platforms/TR6260
 DEFINE += -DUSER_SW_VER='"$(APP_VERSION)"'
 DEFINE += -DPLATFORM_TR6260
 DEFINE += -DTCP_MSL=1000
 
+CSRCS  += main.c
 CSRCS  += base64/base64.c
 CSRCS  += bitmessage/bitmessage_read.c
 CSRCS  += bitmessage/bitmessage_write.c

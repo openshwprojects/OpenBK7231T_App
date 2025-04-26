@@ -3,9 +3,6 @@
  */
 #ifndef _UTILS_NET_H_
 #define _UTILS_NET_H_
-#ifndef PLATFORM_BL602
-#include "flash_pub.h"
-#endif
 
 /**
  * @brief The structure of network connection(TCP or SSL).

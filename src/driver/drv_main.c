@@ -19,7 +19,7 @@ typedef struct driver_s {
 	const char* name;
 	void(*initFunc)();
 	void(*onEverySecond)();
-	void(*appendInformationToHTTPIndexPage)(http_request_t* request);
+	void(*appendInformationToHTTPIndexPage)(http_request_t* request, int bPreState);
 	void(*runQuickTick)();
 	void(*stopFunc)();
 	void(*onChannelChanged)(int ch, int val);
@@ -49,6 +49,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"Freeze is a test driver for watchdog. Enabling this will freeze device main loop.",
 	//drvdetail:"requires":""}
 	{ "Freeze",		Freeze_Init,			Freeze_OnEverySecond,			NULL, Freeze_RunFrame, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_PIR
+	//drvdetail:{"name":"PIR",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"PIR",
+	//drvdetail:"requires":""}
+	{ "PIR",		PIR_Init,			PIR_OnEverySecond,			PIR_AppendInformationToHTTPIndexPage, NULL, NULL, PIR_OnChannelChanged, false },
 #endif
 #if ENABLE_DRIVER_PIXELANIM
 	//drvdetail:{"name":"PixelAnim",
@@ -110,24 +117,33 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "NTP",		NTP_Init,			NTP_OnEverySecond,			NTP_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
-#if ENABLE_HTTPBUTTONS
+#if ENABLE_DRIVER_HTTPBUTTONS
 	//drvdetail:{"name":"HTTPButtons",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This driver allows you to create custom, scriptable buttons on main WWW page. You can create those buttons in autoexec.bat and assign commands to them",
 	//drvdetail:"requires":""}
 	{ "HTTPButtons",	DRV_InitHTTPButtons, NULL, NULL, NULL, NULL, NULL, false },
 #endif
-#if ENABLE_TEST_DRIVERS
+#if ENABLE_DRIVER_TESTPOWER
 	//drvdetail:{"name":"TESTPOWER",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This is a fake POWER measuring socket driver, only for testing",
 	//drvdetail:"requires":""}
 	{ "TESTPOWER",	Test_Power_Init,	 Test_Power_RunEverySecond,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_TESTLED
 	//drvdetail:{"name":"TESTLED",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This is a fake I2C LED driver, only for testing",
 	//drvdetail:"requires":""}
 	{ "TESTLED",	Test_LED_Driver_Init, Test_LED_Driver_RunEverySecond, NULL, NULL, NULL, Test_LED_Driver_OnChannelChanged, false },
+#endif
+#if ENABLE_TEST_COMMANDS
+	//drvdetail:{"name":"Test",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Self test of the device",
+	//drvdetail:"requires":""}
+	{ "Test",	Test_Init, NULL, Test_AppendInformationToHTTPIndexPage, Test_RunQuickTick, NULL, NULL, false },
 #endif
 #if ENABLE_I2C
 	//drvdetail:{"name":"I2C",
@@ -136,7 +152,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "I2C",		DRV_I2C_Init,		DRV_I2C_EverySecond,		NULL, NULL, DRV_I2C_Shutdown, NULL, false },
 #endif
-#if ENABLE_DRIVER_BL0942
+#if ENABLE_DRIVER_RN8209
 	//drvdetail:{"name":"RN8209",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"WIP driver for power-metering chip RN8209 found in one of Zmai-90 versions.",
@@ -220,7 +236,11 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "SM15155E",	SM15155E_Init,		NULL,						NULL, NULL, NULL, NULL, false },
 #endif
-#if PLATFORM_BEKEN
+		
+#if ENABLE_DRIVER_IRREMOTEESP
+	{ "IR",			DRV_IR_Init,		 NULL,						NULL, DRV_IR_RunFrame, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_IR
 	//drvdetail:{"name":"IR",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"IRLibrary wrapper, so you can receive remote signals and send them. See [forum discussion here](https://www.elektroda.com/rtvforum/topic3920360.html), also see [LED strip and IR YT video](https://www.youtube.com/watch?v=KU0tDwtjfjw)",
@@ -343,32 +363,42 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "CHT83XX",	CHT83XX_Init,		CHT83XX_OnEverySecond,		CHT83XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_ESPIDF)
+#if ENABLE_DRIVER_MCP9808
 	//drvdetail:{"name":"MCP9808",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"MCP9808 is a Temperature sensor with I2C interface and an external wakeup pin, see [docs](https://www.elektroda.pl/rtvforum/topic3988466.html).",
 	//drvdetail:"requires":""}
 	{ "MCP9808",	MCP9808_Init,		MCP9808_OnEverySecond,		MCP9808_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_KP18058
 	//drvdetail:{"name":"KP18058",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"KP18058 I2C LED driver. Supports also KP18068. Working, see reverse-engineering [topic](https://www.elektroda.pl/rtvforum/topic3991620.html)",
 	//drvdetail:"requires":""}
 	{ "KP18058",		KP18058_Init,		NULL,			NULL, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_ADCSMOOTHER
 	//drvdetail:{"name":"ADCSmoother",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"ADCSmoother is used for 3-way stairs switches synchronized via extra wire.",
 	//drvdetail:"requires":""}
 	{ "ADCSmoother", DRV_ADCSmoother_Init, NULL, NULL, DRV_ADCSmoother_RunFrame, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_SHT3X
 	//drvdetail:{"name":"SHT3X",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Humidity/temperature sensor. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html)",
 	//drvdetail:"requires":""}
 	{ "SHT3X",	    SHT3X_Init,		SHT3X_OnEverySecond,		SHT3X_AppendInformationToHTTPIndexPage, NULL, SHT3X_StopDriver, NULL, false },
+#endif
+#if ENABLE_DRIVER_SGP
 	//drvdetail:{"name":"SGP",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"SGP Air Quality sensor with I2C interface. See [this DIY sensor](https://www.elektroda.com/rtvforum/topic3967174.html) for setup information.",
 	//drvdetail:"requires":""}
 	{ "SGP",	    SGP_Init,		SGP_OnEverySecond,		SGP_AppendInformationToHTTPIndexPage, NULL, SGP_StopDriver, NULL, false },
+#endif
+#if ENABLE_DRIVER_SHIFTREGISTER
 	//drvdetail:{"name":"ShiftRegister",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Simple Shift Register driver that allows you to map channels to shift register output. See [related topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20533505#20533505)",
@@ -432,6 +462,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"A bridge relay driver, added for [TONGOU TO-Q-SY1-JWT Din Rail Switch](https://www.elektroda.com/rtvforum/topic3934580.html). See linked topic for info.",
 	//drvdetail:"requires":""}
 	{ "Bridge",     Bridge_driver_Init, NULL,                       NULL, Bridge_driver_QuickFrame, Bridge_driver_DeInit, Bridge_driver_OnChannelChanged, false }
+#endif
+#if ENABLE_DRIVER_UART_TCP
+	//drvdetail:{"name":"UART to TCP bridge",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"UART to TCP, mainly for WiFi Zigbee coordinators.",
+	//drvdetail:"requires":""}
+	{ "UartTCP",		UART_TCP_Init,		NULL,	NULL, NULL, UART_TCP_Deinit, NULL, false }
 #endif
 };
 
@@ -629,7 +666,7 @@ void DRV_Generic_Init() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("stopDriver", DRV_Stop, NULL);
 }
-void DRV_AppendInformationToHTTPIndexPage(http_request_t* request) {
+void DRV_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState) {
 	int i, j;
 	int c_active = 0;
 
@@ -640,31 +677,33 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t* request) {
 		if (g_drivers[i].bLoaded) {
 			c_active++;
 			if (g_drivers[i].appendInformationToHTTPIndexPage) {
-				g_drivers[i].appendInformationToHTTPIndexPage(request);
+				g_drivers[i].appendInformationToHTTPIndexPage(request, bPreState);
 			}
 		}
 	}
 	DRV_Mutex_Free();
 
-	hprintf255(request, "<h5>%i drivers active", c_active);
-	if (c_active > 0) {
-		j = 0;// printed 0 names so far
-		// generate active drivers list in (  )
-		hprintf255(request, " (");
-		for (i = 0; i < g_numDrivers; i++) {
-			if (g_drivers[i].bLoaded) {
-				// if at least one name printed, add separator
-				if (j != 0) {
-					hprintf255(request, ",");
+	if (bPreState == false) {
+		hprintf255(request, "<h5>%i drivers active", c_active);
+		if (c_active > 0) {
+			j = 0;// printed 0 names so far
+			// generate active drivers list in (  )
+			hprintf255(request, " (");
+			for (i = 0; i < g_numDrivers; i++) {
+				if (g_drivers[i].bLoaded) {
+					// if at least one name printed, add separator
+					if (j != 0) {
+						hprintf255(request, ",");
+					}
+					hprintf255(request, g_drivers[i].name);
+					// one more name printed
+					j++;
 				}
-				hprintf255(request, g_drivers[i].name);
-				// one more name printed
-				j++;
 			}
+			hprintf255(request, ")");
 		}
-		hprintf255(request, ")");
+		hprintf255(request, ", total %i</h5>", g_numDrivers);
 	}
-	hprintf255(request, ", total %i</h5>", g_numDrivers);
 }
 
 bool DRV_IsMeasuringPower() {

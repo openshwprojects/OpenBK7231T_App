@@ -8,12 +8,11 @@
 #include "drv_pwm.h"
 #include "soc_pin_mux.h"
 
-extern int g_pwmFrequency;
-
 typedef struct trPinMapping_s
 {
 	const char* name;
 	DRV_GPIO_PIN_NAME pin;
+	int freq;
 } trPinMapping_t;
 
 trPinMapping_t g_pins[] = {
@@ -113,7 +112,7 @@ void HAL_PIN_Set_As_GPIO(DRV_GPIO_PIN_NAME pin)
 #endif
 			break;
 		case DRV_GPIO_13: /*don't use in gpio mode*/
-			//PIN_FUNC_SET(IO_MUX0_GPIO13, FUNC_GPIO13_GPIO13);
+			PIN_FUNC_SET(IO_MUX0_GPIO13, FUNC_GPIO13_GPIO13);
 			break;
 		case DRV_GPIO_14:
 			PIN_FUNC_SET(IO_MUX0_GPIO14, FUNC_GPIO14_GPIO14);
@@ -257,11 +256,12 @@ void HAL_PIN_PWM_Stop(int index)
 	pwm_deinit(ch);
 }
 
-void HAL_PIN_PWM_Start(int index)
+void HAL_PIN_PWM_Start(int index, int freq)
 {
 	if(index >= g_numPins)
 		return;
 	int ch = PIN_GetPWMIndexForPinIndex(index);
+	g_pins[index].freq = freq;
 	if(ch < 0) return;
 	pwm_init(ch);
 }
@@ -276,7 +276,7 @@ void HAL_PIN_PWM_Update(int index, float value)
 		value = 0;
 	if(value > 100)
 		value = 100;
-	pwm_config(ch, g_pwmFrequency, (uint32_t)(value * 10));
+	pwm_config(ch, g_pins[index].freq, (uint32_t)(value * 10));
 	pwm_start(ch);
 }
 

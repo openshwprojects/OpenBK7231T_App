@@ -1,5 +1,9 @@
 
 #include "new_http.h"
+#include "../obk_config.h"
+
+#if ENABLE_HA_DISCOVERY
+
 #include "../cJSON/cJSON.h"
 #include "../new_pins.h"
 #include "../mqtt/new_mqtt.h"
@@ -37,7 +41,7 @@ typedef enum {
 	/// @brief Humidity sensor
 	HUMIDITY_SENSOR,
 
-	/// @brief Battery level sensor in perc
+	/// @brief Battery level sensor in perc, under battery topic
 	BATTERY_SENSOR,
 	/// @brief Battery votage sensor in mV
 	BATTERY_VOLTAGE_SENSOR,
@@ -89,6 +93,8 @@ typedef enum {
 	WATER_QUALITY_ORP,
 	// TDS
 	WATER_QUALITY_TDS,
+	/// @brief Battery level sensor in perc, under channel topic
+	BATTERY_CHANNEL_SENSOR,
 
 } ENTITY_TYPE;
 
@@ -114,11 +120,11 @@ typedef struct HassDeviceInfo_s {
 	cJSON* ids;
 } HassDeviceInfo;
 
-void hass_print_unique_id(http_request_t* request, const char* fmt, ENTITY_TYPE type, int index);
+void hass_print_unique_id(http_request_t* request, const char* fmt, ENTITY_TYPE type, int index, int asensdatasetix);
 HassDeviceInfo* hass_init_relay_device_info(int index, ENTITY_TYPE type, bool bInverse);
-HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* payload_on, const char* payload_off);
+HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* payload_on, const char* payload_off, int asensdatasetix);
 HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type);
-HassDeviceInfo* hass_init_energy_sensor_device_info(int index);
+HassDeviceInfo* hass_init_energy_sensor_device_info(int index, int asensdatasetix);
 HassDeviceInfo* hass_init_light_singleColor_onChannels(int toggle, int dimmer, int brightness_scale);
 HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse);
 HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int decPlaces, int decOffset, int divider);
@@ -126,3 +132,4 @@ const char* hass_build_discovery_json(HassDeviceInfo* info);
 void hass_free_device_info(HassDeviceInfo* info); 
 char *hass_generate_multiplyAndRound_template(int decimalPlacesForRounding, int decimalPointOffset, int divider);
 
+#endif // ENABLE_HA_DISCOVERY

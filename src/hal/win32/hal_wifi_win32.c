@@ -26,6 +26,16 @@ void HAL_ConnectToWiFi(const char *ssid, const char *psk, obkStaticIP_t *ip)
 	}
 }
 
+void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
+{
+	HAL_ConnectToWiFi(oob_ssid, connect_key, ip);
+}
+
+void HAL_DisableEnhancedFastConnect()
+{
+
+}
+
 void HAL_DisconnectFromWifi()
 {
 

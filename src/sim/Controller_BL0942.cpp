@@ -11,33 +11,18 @@ static float BL0942_PREF = 598;
 static float BL0942_UREF = 15188;
 static float BL0942_IREF = 251210;
 
-void CControllerBL0942::onDrawn() {
-	int currentPending = UART_GetDataSize();
-	if (currentPending > 0) {
-		return;
-	}
-	
-	// Now you must do it by hand in simulation (or put in autoexec.bat)
-	//CMD_ExecuteCommand("startDriver BL0942", 0);
 
-	if (txt_voltage->isBeingEdited() == false) {
-		realVoltage = txt_voltage->getFloat();
-	}
-	if (txt_power->isBeingEdited() == false) {
-		realPower = txt_power->getFloat();
-	}
-	if (txt_current->isBeingEdited() == false) {
-		realCurrent = txt_current->getFloat();
-	}
+extern "C" void Sim_SendFakeBL0942Packet(float v, float c, float p) {
+
 	int i;
 	byte data[BL0942_PACKET_LEN];
 	memset(data, 0, sizeof(data));
 	data[0] = 0x55;
 	byte checksum = BL0942_READ_COMMAND;
 
-	int bl_current = (int)(BL0942_IREF * realCurrent);
-	int bl_power = (int)(BL0942_PREF * realPower);
-	int bl_voltage = (int)(BL0942_UREF * realVoltage);
+	int bl_current = (int)(BL0942_IREF * c);
+	int bl_power = (int)(BL0942_PREF * p);
+	int bl_voltage = (int)(BL0942_UREF * v);
 
 	data[1] = (byte)(bl_current);
 	data[2] = (byte)(bl_current >> 8);
@@ -62,12 +47,32 @@ void CControllerBL0942::onDrawn() {
 			printf("%02X ", data[i]);
 		}
 		printf("\n");
-		printf("Voltage = %.2f, Current = %.3f, Power = %.2f\n", realVoltage, realCurrent, realPower);
+		printf("Voltage = %.2f, Current = %.3f, Power = %.2f\n", v, c, p);
 	}
 
 	for (i = 0; i < BL0942_PACKET_LEN; i++) {
 		UART_AppendByteToReceiveRingBuffer(data[i]);
 	}
+}
+void CControllerBL0942::onDrawn() {
+	int currentPending = UART_GetDataSize();
+	if (currentPending > 0) {
+		return;
+	}
+	
+	// Now you must do it by hand in simulation (or put in autoexec.bat)
+	//CMD_ExecuteCommand("startDriver BL0942", 0);
+
+	if (txt_voltage->isBeingEdited() == false) {
+		realVoltage = txt_voltage->getFloat();
+	}
+	if (txt_power->isBeingEdited() == false) {
+		realPower = txt_power->getFloat();
+	}
+	if (txt_current->isBeingEdited() == false) {
+		realCurrent = txt_current->getFloat();
+	}
+	Sim_SendFakeBL0942Packet(realVoltage, realCurrent, realPower);
 }
 class CControllerBase *CControllerBL0942::cloneController(class CShape *origOwner, class CShape *newOwner) {
 	CControllerBL0942 *r = new CControllerBL0942();

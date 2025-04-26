@@ -17,7 +17,7 @@ void HTTPServer_Start();
 
 #define HTTP_SERVER_PORT			80
 #define REPLY_BUFFER_SIZE			2048
-#define INCOMING_BUFFER_SIZE		1024
+#define INCOMING_BUFFER_SIZE		2048
 #define INVALID_SOCK				-1
 #define HTTP_CLIENT_STACK_SIZE		8192
 
@@ -74,8 +74,8 @@ static void tcp_client_thread(tcp_thread_t* arg)
 		{
 			break;
 		}
-		// grow by 1024
-		request.receivedLenmax += 1024;
+		// grow by INCOMING_BUFFER_SIZE
+		request.receivedLenmax += INCOMING_BUFFER_SIZE;
 		GLOBAL_INT_DISABLE();
 		request.received = (char*)realloc(request.received, request.receivedLenmax + 2);
 		GLOBAL_INT_RESTORE();
@@ -236,6 +236,13 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 		if(new_idx < max_socks)
 		{
 			sock[new_idx].fd = accept(listen_sock, (struct sockaddr*)&source_addr, &addr_len);
+
+#if LWIP_SO_RCVTIMEO && !PLATFORM_ECR6600 && !PLATFORM_TR6260
+			struct timeval tv;
+			tv.tv_sec = 30;
+			tv.tv_usec = 0;
+			setsockopt(sock[new_idx].fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
+#endif
 
 			if(sock[new_idx].fd < 0)
 			{
