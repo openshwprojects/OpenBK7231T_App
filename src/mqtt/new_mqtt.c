@@ -22,6 +22,36 @@
 
 #define BUILD_AND_VERSION_FOR_MQTT "Open" PLATFORM_MCU_NAME " " USER_SW_VER " " __DATE__ " " __TIME__ 
 
+#if MQTT_USE_TLS
+#include "lwip/altcp_tls.h"
+#include "lwip/apps/mqtt_priv.h"
+#include "apps/altcp_tls/altcp_tls_mbedtls_structs.h"
+#include "mbedtls/ssl.h"
+struct altcp_tls_config {
+	mbedtls_ssl_config conf;
+	mbedtls_x509_crt* cert;
+	mbedtls_pk_context* pkey;
+	u8_t cert_count;
+	u8_t cert_max;
+	u8_t pkey_count;
+	u8_t pkey_max;
+	mbedtls_x509_crt* ca;
+#if defined(MBEDTLS_SSL_CACHE_C) && ALTCP_MBEDTLS_USE_SESSION_CACHE
+	struct mbedtls_ssl_cache_context cache;
+#endif
+#if defined(MBEDTLS_SSL_SESSION_TICKETS) && ALTCP_MBEDTLS_USE_SESSION_TICKETS
+	mbedtls_ssl_ticket_context ticket_ctx;
+#endif
+};
+#if ALTCP_MBEDTLS_DEBUG
+	#include "mbedtls/ssl_internal.h"
+	#include "mbedtls/debug.h"
+	static int mbedtls_verify_cb(void* data, mbedtls_x509_crt* crt, int depth, uint32_t* flags);
+	static void mbedtls_debug_cb(void* ctx, int level, const char* file, int line, const char* str);
+	void mbedtls_dump_conf(mbedtls_ssl_config* conf, mbedtls_ssl_context* ssl);
+#endif
+#endif
+
 #ifndef LWIP_MQTT_EXAMPLE_IPADDR_INIT
 #if LWIP_IPV4
 #define LWIP_MQTT_EXAMPLE_IPADDR_INIT = IPADDR4_INIT(PP_HTONL(IPADDR_LOOPBACK))
@@ -816,6 +846,10 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 {
 	err_t err;
 	u8_t qos = 1; /* 0 1 or 2, see MQTT specification */
+	if (flags & OBK_PUBLISH_FLAG_QOS_ZERO)
+	{
+		qos = 0;
+	}
 	u8_t retain = 0; /* No don't retain such crappy payload... */
 	size_t sVal_len;
 	char* pub_topic;
@@ -1084,6 +1118,15 @@ static void mqtt_connection_cb(mqtt_client_t* client, void* arg, mqtt_connection
 	{
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_connection_cb: Successfully connected\n");
 
+#if LWIP_ALTCP_TLS_MBEDTLS
+		if (CFG_GetMQTTUseTls() && client && client->conn && client->conn->state) {
+			altcp_mbedtls_state_t* state = client->conn->state;
+			mbedtls_ssl_context* ssl = &state->ssl_context;
+			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT TLS VERSION: %s\n", mbedtls_ssl_get_version(ssl));
+			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "MQTT TLS CIPHER : %s\n", mbedtls_ssl_get_ciphersuite(ssl));
+		}
+#endif
+
 		//LOCK_TCPIP_CORE();
 		mqtt_set_inpub_callback(mqtt_client,
 			mqtt_incoming_publish_cb,
@@ -1150,6 +1193,8 @@ void dnsFound(const char *name, ip_addr_t *ipaddr, void *arg)
 	{
 		memcpy(&mqtt_ip_resolved, ipaddr, sizeof(mqtt_ip_resolved));
 		dns_resolved = true;
+		/* Try to reconnect immediately after resolving the host */
+		mqtt_loopsWithDisconnected = LOOPS_WITH_DISCONNECTED + 1;
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host %s resolution SUCCESS\r\n", name);
 	}
 	else
@@ -1167,6 +1212,7 @@ static int MQTT_do_connect(mqtt_client_t* client)
 	int res;
 	struct hostent* hostEntry;
 	char will_topic[CGF_MQTT_CLIENT_ID_SIZE + 16];
+	bool mqtt_use_tls, mqtt_verify_tls_cert;
 
 	mqtt_host = CFG_GetMQTTHost();
 
@@ -1180,14 +1226,22 @@ static int MQTT_do_connect(mqtt_client_t* client)
 	mqtt_pass = CFG_GetMQTTPass();
 	mqtt_clientID = CFG_GetMQTTClientId();
 	mqtt_port = CFG_GetMQTTPort();
+#if MQTT_USE_TLS
+	mqtt_use_tls = CFG_GetMQTTUseTls();
+	mqtt_verify_tls_cert = CFG_GetMQTTVerifyTlsCert();
+#endif
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_userName %s\r\nmqtt_pass %s\r\nmqtt_clientID %s\r\nmqtt_host %s:%d\r\n",
-		mqtt_userName,
-		mqtt_pass,
-		mqtt_clientID,
-		mqtt_host,
-		mqtt_port
-	);
+	if (dns_in_progress_time <= 0 && !dns_resolved) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_userName %s\r\nmqtt_pass %s\r\nmqtt_clientID %s\r\nmqtt_host %s:%d\r\n",
+			mqtt_userName,
+			/* do not log sensitive data */
+			//mqtt_pass,
+			"********",
+			mqtt_clientID,
+			mqtt_host,
+			mqtt_port
+		);
+	}
 
 	// set pointer, there are no buffers to strcpy
 	// empty field for us means "no password", etc,
@@ -1215,6 +1269,7 @@ static int MQTT_do_connect(mqtt_client_t* client)
 	// host name/ip
 	if (NULL != hostEntry)
 	{
+#ifndef LINUX
 		if (hostEntry->h_addr_list && hostEntry->h_addr_list[0]) {
 			int len = hostEntry->h_length;
 			if (len > 4) {
@@ -1223,7 +1278,9 @@ static int MQTT_do_connect(mqtt_client_t* client)
 			}
 			memcpy(&mqtt_ip, hostEntry->h_addr_list[0], len);
 		}
-		else {
+		else 
+#endif
+		{
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host resolves no addresses?\r\n");
 			snprintf(mqtt_status_message, sizeof(mqtt_status_message), "mqtt_host resolves no addresses?");
 			return 0;
@@ -1253,12 +1310,69 @@ static int MQTT_do_connect(mqtt_client_t* client)
 		}
 	}
 
+		// host name/ip
+		//ipaddr_aton(mqtt_host,&mqtt_ip);
 	if (dns_in_progress_time <= 0 && dns_resolved)
 	{
 		dns_resolved = false;
 		memcpy(&mqtt_ip, &mqtt_ip_resolved, sizeof(mqtt_ip_resolved));
 
+		/* Includes for MQTT over TLS */
+#if MQTT_USE_TLS
+		/* Free old configuration */
+		if (mqtt_client_info.tls_config) {
+			altcp_tls_free_config(mqtt_client_info.tls_config);
+			altcp_tls_free_entropy();
+			mqtt_client_info.tls_config = NULL;
+		}
+		if (mqtt_use_tls) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Secure TLS connection enabled");
+			size_t ca_len = 0;
+			u8_t* ca = NULL;
+			if (mqtt_verify_tls_cert) {
+				if (strlen(CFG_GetMQTTCertFile()) > 0) {
+					addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Load certificate %s", CFG_GetMQTTCertFile());
+					ca = LFS_ReadFile(CFG_GetMQTTCertFile());
+					if (ca) {
+						ca_len = strlen((char*)ca)+1;
+					}
+				}
+			}
+			else {
+				addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Verify certificate disabled");
+			}
+			mqtt_client_info.tls_config = altcp_tls_create_config_client(ca, ca_len);
+			if (ca) {
+				free(ca);
+				ca = NULL;
+			}
+			if (mqtt_client_info.tls_config) {				
+#if ALTCP_MBEDTLS_DEBUG
+				mbedtls_ssl_conf_verify(&mqtt_client_info.tls_config->conf, mbedtls_verify_cb, NULL);
+#if MBEDTLS_DEBUG_C
+				mbedtls_ssl_conf_dbg(&mqtt_client_info.tls_config->conf, mbedtls_debug_cb, NULL);
+				mbedtls_debug_set_threshold(1);
 #endif
+				if (mqtt_client_info.tls_config->ca){
+					mbedtls_dump_conf(&mqtt_client_info.tls_config->conf, NULL);
+				}
+#endif				
+
+				if (mqtt_verify_tls_cert) {
+					mbedtls_ssl_conf_authmode(&mqtt_client_info.tls_config->conf, MBEDTLS_SSL_VERIFY_REQUIRED);
+				}
+				else {
+					mbedtls_ssl_conf_authmode(&mqtt_client_info.tls_config->conf, MBEDTLS_SSL_VERIFY_OPTIONAL);
+				}
+			}
+			else {
+				addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Secure TLS config fail. Try connect anyway.");
+			}
+		}
+#endif /* MQTT_USE_TLS */
+
+
+#endif /* ELSE WINDOWS*/
 
 		/* Initiate client and connect to server, if this fails immediately an error code is returned
 		  otherwise mqtt_connection_cb will be called with connection result after attempting
@@ -1291,6 +1405,8 @@ static int MQTT_do_connect(mqtt_client_t* client)
 		{
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "mqtt_host %s is being resolved by gethostbyname\r\n", mqtt_host);
 			dns_in_progress_time--;
+			/* Discount connection event if host is being resolved */
+			mqtt_connect_events--;
 		}
 		else
 		{
@@ -1640,12 +1756,13 @@ static BENCHMARK_TEST_INFO* info = NULL;
 
 #if WINDOWS
 
-#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF || PLATFORM_TR6260 || PLATFORM_RTL87X0C
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF || PLATFORM_TR6260 \
+	|| PLATFORM_REALTEK || PLATFORM_ECR6600
 static void mqtt_timer_thread(void* param)
 {
 	while (1)
 	{
-		vTaskDelay(MQTT_TMR_DURATION);
+		rtos_delay_milliseconds(MQTT_TMR_DURATION);
 		MQTT_Test_Tick(param);
 	}
 }
@@ -1680,7 +1797,8 @@ commandResult_t MQTT_StartMQTTTestThread(const void* context, const char* cmd, c
 
 #if WINDOWS
 
-#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF || PLATFORM_TR6260 || PLATFORM_RTL87X0C
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF || PLATFORM_TR6260 \
+	|| PLATFORM_REALTEK || PLATFORM_ECR6600
 	xTaskCreate(mqtt_timer_thread, "mqtt", 1024, (void*)info, 15, NULL);
 #elif PLATFORM_XR809 || PLATFORM_LN882H
 	OS_TimerSetInvalid(&timer);
@@ -2381,3 +2499,206 @@ bool MQTT_IsReady() {
 }
 
 #endif // ENABLE_MQTT
+#if MQTT_USE_TLS
+#ifdef MBEDTLS_ENTROPY_HARDWARE_ALT
+#include "fake_clock_pub.h"
+#include "mbedtls/error.h"
+int mbedtls_hardware_poll(void* data, unsigned char* output, size_t len, size_t* olen) {
+	int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+	((void)data);
+	*olen = 0;
+
+	if (len < sizeof(unsigned char)) {
+		return 0;
+	}
+
+	if (output) {
+		srand(fclk_get_second());
+		for (size_t n = 0; n < len; n++) {
+			output[n] = rand() % 255;
+		}
+		*olen = len;
+		ret = 0;
+	}
+	return ret;
+}
+int mbedtls_hardclock_poll(void* data, unsigned char* output, size_t len, size_t* olen) {
+	return mbedtls_hardware_poll(data, output, len, olen);
+}
+#endif  //MBEDTLS_ENTROPY_HARDWARE_ALT
+
+#ifdef MBEDTLS_PLATFORM_GMTIME_R_ALT
+static bool log_gmtime_alt = true;
+struct tm* cvt_date(char const* date, char const* time, struct tm* t);
+struct tm* cvt_date(char const* date, char const* time, struct tm* t)
+{
+	char s_month[5];
+	int year;
+	static const char month_names[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
+	sscanf(date, "%s %d %d", s_month, &t->tm_mday, &year);
+	sscanf(time, "%2d %*c %2d %*c %2d", &t->tm_hour, &t->tm_min, &t->tm_sec);
+	// Find where is s_month in month_names. Deduce month value.
+	t->tm_mon = (strstr(month_names, s_month) - month_names) / 3;
+	t->tm_year = year - 1900;
+	return t;
+}
+struct tm* mbedtls_platform_gmtime_r(const mbedtls_time_t* tt, struct tm* tm_buf) {
+	// If NTP time not synced return compile time
+	struct tm* ltm;
+	if (!NTP_IsTimeSynced()) {	
+		ltm = cvt_date(__DATE__, __TIME__, tm_buf);
+		if (log_gmtime_alt) {
+			addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "MBEDTLS: NTP not synchronized. Using compile time: %04d/%02d/%02d %02d:%02d:%02d",
+				ltm->tm_year + 1900, ltm->tm_mon + 1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+			log_gmtime_alt = false; 
+		}			
+		return ltm;
+	}
+	return gmtime_r((time_t*)&g_ntpTime, tm_buf);
+}
+#endif  //MBEDTLS_PLATFORM_GMTIME_R_ALT
+
+
+#if ALTCP_MBEDTLS_DEBUG
+static int mbedtls_verify_cb(void* data, mbedtls_x509_crt* crt, int depth, uint32_t* flags)
+{
+	((void)data);
+	char buf[1024];
+
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "Verify requested for (Depth% d) : \n", depth);
+	mbedtls_x509_crt_info(buf, sizeof(buf) - 1, "", crt);
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "\n%s", buf);
+
+	if ((*flags) == 0) {
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "  This certificate has no flags\n");
+	}
+	else {
+		mbedtls_x509_crt_verify_info(buf, sizeof(buf), "  ! ", *flags);
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "%s\n", buf);
+	}
+	return 0;
+}
+
+static void mbedtls_debug_cb(void* ctx, int level, const char* file, int line, const char* str)
+{
+	const char* p, * basename;
+	(void)ctx;
+
+	if (level == 2)
+		return;
+
+	/* Extract basename from file */
+	for (p = basename = file; *p != '\0'; p++) {
+		if (*p == '/' || *p == '\\') {
+			basename = p + 1;
+		}
+	}
+
+	addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "%s:%04d: |%d| %s", basename, line, level, str);
+}
+
+void mbedtls_dump_conf(mbedtls_ssl_config* conf, mbedtls_ssl_context* ssl) {
+	if (ssl && ssl->handshake) {
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE CIPHER SUITE: %s", ssl->handshake->ciphersuite_info->name);
+		switch (ssl->handshake->ciphersuite_info->key_exchange)
+		{
+			case MBEDTLS_KEY_EXCHANGE_NONE: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE KEY EXCHANGE: MBEDTLS_KEY_EXCHANGE_NONE");
+				break;
+			case MBEDTLS_KEY_EXCHANGE_RSA: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE KEY EXCHANGE: MBEDTLS_KEY_EXCHANGE_RSA");
+				break;
+			case MBEDTLS_KEY_EXCHANGE_DHE_RSA: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE KEY EXCHANGE: MBEDTLS_KEY_EXCHANGE_DHE_RSA");
+				break;
+			case MBEDTLS_KEY_EXCHANGE_ECDHE_RSA: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE KEY EXCHANGE: MBEDTLS_KEY_EXCHANGE_ECDHE_RSA");
+				break;
+			case MBEDTLS_KEY_EXCHANGE_ECDHE_ECDSA: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE KEY EXCHANGE: MBEDTLS_KEY_EXCHANGE_ECDHE_ECDSA");
+				break;
+			case MBEDTLS_KEY_EXCHANGE_PSK: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE KEY EXCHANGE: MBEDTLS_KEY_EXCHANGE_PSK");
+				break;
+			case MBEDTLS_KEY_EXCHANGE_DHE_PSK: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE KEY EXCHANGE: MBEDTLS_KEY_EXCHANGE_DHE_PSK");
+				break;
+			case MBEDTLS_KEY_EXCHANGE_RSA_PSK: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE KEY EXCHANGE: MBEDTLS_KEY_EXCHANGE_RSA_PSK");
+				break;
+			case MBEDTLS_KEY_EXCHANGE_ECDHE_PSK: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE KEY EXCHANGE: MBEDTLS_KEY_EXCHANGE_ECDHE_PSK");
+				break;
+			case MBEDTLS_KEY_EXCHANGE_ECDH_RSA: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE KEY EXCHANGE: MBEDTLS_KEY_EXCHANGE_ECDH_RSA");
+				break;
+			case MBEDTLS_KEY_EXCHANGE_ECDH_ECDSA: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE KEY EXCHANGE: MBEDTLS_KEY_EXCHANGE_ECDH_ECDSA");
+				break;
+			case MBEDTLS_KEY_EXCHANGE_ECJPAKE: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "HANDSHAKE KEY EXCHANGE: MBEDTLS_KEY_EXCHANGE_ECJPAKE");
+				break;
+		}
+	}
+	
+	if (conf) {
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "AVAILABLE CIPHERS:");
+		int len = sizeof(conf->ciphersuite_list) / (sizeof(conf->ciphersuite_list[0]));
+		for (int s = 0; s < len; s++) {
+			addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     %s",
+				mbedtls_ssl_get_ciphersuite_name(*conf->ciphersuite_list[s]));
+		}
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "AVAILABLE CURVES:");
+		len = sizeof(conf->curve_list) / (sizeof(mbedtls_ecp_group_id));
+		const mbedtls_ecp_group_id* c = conf->curve_list;
+		for (; *c; c++) {
+			switch (*c)
+			{
+			case MBEDTLS_ECP_DP_NONE: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_NONE");
+				break;
+			case MBEDTLS_ECP_DP_SECP192R1: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_SECP192R1");
+				break;
+			case MBEDTLS_ECP_DP_SECP224R1: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_SECP224R1");
+				break;
+			case MBEDTLS_ECP_DP_SECP256R1: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_SECP256R1");
+				break;
+			case MBEDTLS_ECP_DP_SECP384R1: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_SECP384R1");
+				break;
+			case MBEDTLS_ECP_DP_SECP521R1: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_SECP521R1");
+				break;
+			case MBEDTLS_ECP_DP_BP256R1: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_BP256R1");
+				break;
+			case MBEDTLS_ECP_DP_BP384R1: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_BP384R1");
+				break;
+			case MBEDTLS_ECP_DP_BP512R1: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_BP512R1");
+				break;
+			case MBEDTLS_ECP_DP_CURVE25519: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_CURVE25519");
+				break;
+			case MBEDTLS_ECP_DP_SECP192K1: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_SECP192K1");
+				break;
+			case MBEDTLS_ECP_DP_SECP224K1: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_SECP224K1");
+				break;
+			case MBEDTLS_ECP_DP_SECP256K1: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_SECP256K1");
+				break;
+			case MBEDTLS_ECP_DP_CURVE448: 
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_MQTT, "     MBEDTLS_ECP_DP_CURVE448");
+				break;
+			}
+		}
+	}
+}
+#endif  //ALTCP_MBEDTLS_DEBUG
+#endif  //MQTT_USE_TLS

@@ -7,6 +7,7 @@
 #include "../cmnds/cmd_public.h"
 #include "../driver/drv_tuyaMCU.h"
 #include "../driver/drv_public.h"
+#include "../driver/drv_bl_shared.h"
 #include "../hal/hal_wifi.h"
 #include "../hal/hal_pins.h"
 #include "../hal/hal_flashConfig.h"
@@ -19,8 +20,9 @@
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_deviceclock.h"		// to set clock via Javascript in pmntp
 #include "../driver/drv_local.h"
-
-static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"></form>";
+#ifdef PLATFORM_BEKEN
+#include "start_type_pub.h"
+#endif
 
 #ifdef WINDOWS
 // nothing
@@ -41,14 +43,20 @@ static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"
 #include "temp_detect_pub.h"
 #elif defined(PLATFORM_LN882H)
 #elif defined(PLATFORM_TR6260)
-#elif defined(PLATFORM_RTL87X0C)
-#include "hal_sys_ctrl.h"
-extern hal_reset_reason_t reset_reason;
-extern uint32_t current_fw_idx;
+#elif defined(PLATFORM_REALTEK)
+	#include "wifi_structures.h"
+	#include "wifi_constants.h"
+	#include "wifi_conf.h"
+	extern uint32_t current_fw_idx;
+	#ifdef PLATFORM_RTL87X0C
+	#include "hal_sys_ctrl.h"
+	extern hal_reset_reason_t reset_reason;
+	#endif
+	SemaphoreHandle_t scan_hdl;
 #elif defined(PLATFORM_ESPIDF)
 #include "esp_wifi.h"
 #include "esp_system.h"
-#else
+#elif defined(PLATFORM_BK7231T)
 // REALLY? A typo in Tuya SDK? Storge?
 // tuya-iotos-embeded-sdk-wifi-ble-bk7231t/platforms/bk7231t/tuya_os_adapter/include/driver/tuya_hal_storge.h
 #include "tuya_hal_storge.h"
@@ -56,10 +64,12 @@ extern uint32_t current_fw_idx;
 #include "temp_detect_pub.h"
 #endif
 
-#if defined(PLATFORM_BK7231T) || defined(PLATFORM_BK7231N)
+#if (defined(PLATFORM_BK7231T) || defined(PLATFORM_BK7231N)) && !defined(PLATFORM_BEKEN_NEW)
 int tuya_os_adapt_wifi_all_ap_scan(AP_IF_S** ap_ary, unsigned int* num);
 int tuya_os_adapt_wifi_release_ap(AP_IF_S* ap);
 #endif
+
+static const char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"></form>";
 
 
 const char* g_typesOffLowMidHigh[] = { "Off","Low","Mid","High" };
@@ -225,6 +235,7 @@ int http_fn_index(http_request_t* request) {
 
 	// use ?state URL parameter to only request current state
 	if (!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
+		// full update - include header
 		http_html_start(request, NULL);
 
 		poststr(request, "<div id=\"changed\">");
@@ -331,13 +342,23 @@ int http_fn_index(http_request_t* request) {
 		poststr(request, "</div>"); // end div#change
 
 
-#if defined(ENABLE_DRIVER_WIDGET)
-		if (DRV_IsRunning("Widget")) {
-			DRV_Widget_BeforeState(request);
-		}
+#if ENABLE_OBK_BERRY
+		void Berry_SaveRequest(http_request_t *r);
+		Berry_SaveRequest(request);
+		CMD_Berry_RunEventHandlers_StrInt(CMD_EVENT_ON_HTTP, "prestate", (int)request);
 #endif
+#ifndef OBK_DISABLE_ALL_DRIVERS
+		DRV_AppendInformationToHTTPIndexPage(request, true);
+#endif
+
 		poststr(request, "<div id=\"state\">"); // replaceable content follows
 	}
+
+#if ENABLE_OBK_BERRY
+	void Berry_SaveRequest(http_request_t *r);
+	Berry_SaveRequest(request);
+	CMD_Berry_RunEventHandlers_StrInt(CMD_EVENT_ON_HTTP, "state", (int)request);
+#endif
 
 	if (!CFG_HasFlag(OBK_FLAG_HTTP_NO_ONOFF_WORDS)){
 		poststr(request, "<table>");	//Table default to 100% width in stylesheet
@@ -749,7 +770,7 @@ int http_fn_index(http_request_t* request) {
 
 	poststr(request, "</table>");
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	DRV_AppendInformationToHTTPIndexPage(request);
+	DRV_AppendInformationToHTTPIndexPage(request, false);
 #endif
 
 	if (1) {
@@ -908,6 +929,8 @@ typedef enum {
 	}
 	hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", reset_reason, s);
 	hprintf255(request, "<h5>Current fw: FW%i</h5>", current_fw_idx);
+#elif PLATFORM_RTL8710B || PLATFORM_RTL8720D
+	hprintf255(request, "<h5>Current fw: FW%i</h5>", current_fw_idx + 1);
 #endif
 #if ENABLE_MQTT
 	if (CFG_GetMQTTHost()[0] == 0) {
@@ -1066,6 +1089,14 @@ int http_fn_cfg_mqtt_set(http_request_t* request) {
 	if (http_getArg(request->url, "port", tmpA, sizeof(tmpA))) {
 		CFG_SetMQTTPort(atoi(tmpA));
 	}
+
+#if MQTT_USE_TLS
+	CFG_SetMQTTUseTls(http_getArg(request->url, "mqtt_use_tls", tmpA, sizeof(tmpA)));
+	CFG_SetMQTTVerifyTlsCert(http_getArg(request->url, "mqtt_verify_tls_cert", tmpA, sizeof(tmpA)));
+	http_getArg(request->url, "mqtt_cert_file", tmpA, sizeof(tmpA));
+	CFG_SetMQTTCertFile(tmpA);
+#endif
+
 	if (http_getArg(request->url, "user", tmpA, sizeof(tmpA))) {
 		CFG_SetMQTTUserName(tmpA);
 	}
@@ -1102,6 +1133,21 @@ int http_fn_cfg_mqtt(http_request_t* request) {
 
 	add_label_text_field(request, "Host", "host", CFG_GetMQTTHost(), "<form action=\"/cfg_mqtt_set\">");
 	add_label_numeric_field(request, "Port", "port", CFG_GetMQTTPort(), "<br>");
+#if MQTT_USE_TLS
+	hprintf255(request, "<input type=\"checkbox\" id=\"mqtt_use_tls\" name=\"mqtt_use_tls\" value=\"1\"");
+	if (CFG_GetMQTTUseTls()) {
+		hprintf255(request, " checked>");
+	}
+	hprintf255(request, "<label for=\"mqtt_use_tls\">Use TLS</label><br>");
+
+	hprintf255(request, "<input type=\"checkbox\" id=\"mqtt_verify_tls_cert\" name=\"mqtt_verify_tls_cert\" value=\"1\"");
+	if (CFG_GetMQTTVerifyTlsCert()) {
+		hprintf255(request, " checked>");
+	}
+	hprintf255(request, "<label for=\"mqtt_use_tls\">Verify TLS Certificate</label><br>");
+
+	add_label_text_field(request, "Certificate File (CA Root or Public Certificate PEM format)", "mqtt_cert_file", CFG_GetMQTTCertFile(), "<br>");
+#endif
 	add_label_text_field(request, "Client Topic (Base Topic)", "client", CFG_GetMQTTClientId(), "<br><br>");
 	add_label_text_field(request, "Group Topic (Secondary Topic to only receive cmnds)", "group", CFG_GetMQTTGroupTopic(), "<br>");
 	add_label_text_field(request, "User", "user", CFG_GetMQTTUserName(), "<br>");
@@ -1171,6 +1217,15 @@ int http_fn_cfg_webapp(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Set Webapp");
 	add_label_text_field(request, "URL of the Webapp", "url", CFG_GetWebappRoot(), "<form action=\"/cfg_webapp_set\">");
+
+#if MQTT_USE_TLS
+	hprintf255(request, "<input type=\"checkbox\" id=\"enable_web_server\" name=\"enable_web_server\" value=\"1\"");
+	if (!CFG_GetDisableWebServer()) {
+		hprintf255(request, " checked>");
+	}
+	hprintf255(request, "<label for=\"enable_web_server\">Web Server Enabled</label><br>");
+#endif
+
 	poststr(request, SUBMIT_AND_END_FORM);
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
@@ -1191,6 +1246,14 @@ int http_fn_cfg_webapp_set(http_request_t* request) {
 	else {
 		poststr(request, "Webapp url not set because you didn't specify the argument.");
 	}
+
+#if MQTT_USE_TLS
+	CFG_SetDisableWebServer(!http_getArg(request->url, "enable_web_server", tmpA, sizeof(tmpA)));
+	if (CFG_GetDisableWebServer()) {
+		poststr(request, "<br>");
+		poststr(request, "Webapp will be disabled on next boot!");
+	}
+#endif
 
 	poststr(request, "<br>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
@@ -1286,11 +1349,6 @@ int http_fn_cfg_wifi(http_request_t* request) {
 #ifdef WINDOWS
 
 		poststr(request, "Not available on Windows<br>");
-#elif PLATFORM_XR809
-		poststr(request, "TODO XR809<br>");
-
-#elif PLATFORM_W600 || PLATFORM_W800
-		poststr(request, "TODO W800<br>");
 #elif PLATFORM_BL602
                wifi_mgmr_ap_item_t *ap_info;
                uint32_t i, ap_num;
@@ -1303,7 +1361,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
                        hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", (i+1), (int)ap_num, ap_info[i].ssid, ap_info[i].channel, ap_info[i].rssi);
                }
                vPortFree(ap_info);
-#elif PLATFORM_BK7231T
+#elif defined(PLATFORM_BK7231T) && !defined(PLATFORM_BEKEN_NEW)
 		int i;
 
 		AP_IF_S* ar;
@@ -1316,7 +1374,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 			hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", i, (int)num, ar[i].ssid, ar[i].channel, ar[i].rssi);
 		}
 		tuya_hal_wifi_release_ap(ar);
-#elif PLATFORM_BK7231N
+#elif defined(PLATFORM_BK7231N) && !defined(PLATFORM_BEKEN_NEW)
 		int i;
 
 		AP_IF_S* ar;
@@ -1329,9 +1387,6 @@ int http_fn_cfg_wifi(http_request_t* request) {
 			hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", i + 1, (int)num, ar[i].ssid, ar[i].channel, ar[i].rssi);
 		}
 		tuya_os_adapt_wifi_release_ap(ar);
-#elif PLATFORM_LN882H
-// TODO:LN882H action
-        poststr(request, "TODO LN882H<br>");
 #elif PLATFORM_ESPIDF
 		// doesn't work in ap mode, only sta/apsta
 		uint16_t ap_count = 0, number = 30;
@@ -1346,13 +1401,37 @@ int http_fn_cfg_wifi(http_request_t* request) {
 		{
 			hprintf255(request, "[%i/%u] SSID: %s, Channel: %i, Signal %i<br>", i + 1, number, ap_info[i].ssid, ap_info[i].primary, ap_info[i].rssi);
 		}
-#elif PLATFORM_TR6260
-		poststr(request, "TODO TR6260<br>");
-#elif defined(PLATFORM_RTL87X0C)
-		poststr(request, "TODO RTL87X0C<br>");
+#elif defined(PLATFORM_REALTEK)
+#ifndef PLATFORM_RTL87X0C
+		extern void rltk_wlan_enable_scan_with_ssid_by_extended_security(bool);
+#endif
+
+		rtw_result_t scan_result_handler(rtw_scan_handler_result_t* result)
+		{
+			http_request_t* request = (http_request_t*)result->user_data;
+
+			if(result->scan_complete == RTW_TRUE)
+			{
+				xSemaphoreGive(scan_hdl);
+				return RTW_SUCCESS;
+			}
+			rtw_scan_result_t* record = &result->ap_details;
+			record->SSID.val[record->SSID.len] = 0;
+			hprintf255(request, "SSID: %s, Channel: %i, Signal %i<br>", record->SSID.val, record->channel, record->signal_strength);
+			return 0;
+		}
+
+		scan_hdl = xSemaphoreCreateBinary();
+		rltk_wlan_enable_scan_with_ssid_by_extended_security(1);
+		xSemaphoreTake(scan_hdl, 1);
+		if(wifi_scan_networks(scan_result_handler, request) != RTW_SUCCESS)
+		{
+			poststr(request, "Wifi scan failed!<br>");
+		}
+		xSemaphoreTake(scan_hdl, pdMS_TO_TICKS(10 * 1000));
+		vSemaphoreDelete(scan_hdl);
 #else
-#error "Unknown platform"
-		poststr(request, "Unknown platform<br>");
+		hprintf255(request, "TODO %s<br>", PLATFORM_MCU_NAME);
 #endif
 	}
 	poststr(request, "<form action=\"/cfg_wifi\">\
@@ -1451,6 +1530,7 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 			bChanged |= CFG_SetWiFiPass(tmpA);
 		}
 		poststr(request, "WiFi mode set: connect to WLAN.");
+		if(bChanged) HAL_DisableEnhancedFastConnect();
 	}
 	if (http_getArg(request->url, "ssid2", tmpA, sizeof(tmpA))) {
 		bChanged |= CFG_SetWiFiSSID2(tmpA);
@@ -1630,7 +1710,7 @@ int http_fn_cmd_tool(http_request_t* request) {
 
 #if ENABLE_HTTP_STARTUP
 int http_fn_startup_command(http_request_t* request) {
-	char tmpA[512];
+	char tmpA[8];
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Set startup command");
 	poststr_h4(request, "Set/Change/Clear startup command line");
@@ -1640,15 +1720,27 @@ int http_fn_startup_command(http_request_t* request) {
 		"Use backlog cmd1; cmd2; cmd3; etc to enter multiple commands</p>");
 
 	if (http_getArg(request->url, "startup_cmd", tmpA, sizeof(tmpA))) {
-		http_getArg(request->url, "data", tmpA, sizeof(tmpA));
-		//  hprintf255(request,"<h3>Set command to  %s!</h3>",tmpA);
-		// tmpA can be longer than 128 bytes and this would crash
-		hprintf255(request, "<h3>Command changed!</h3>");
-		CFG_SetShortStartupCommand(tmpA);
+		// direct config access to remove buffer on stack
+		int realSize = http_getArg(request->url, "data", g_cfg.initCommandLine, sizeof(g_cfg.initCommandLine));
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+		if (realSize >= sizeof(g_cfg.initCommandLine)) {
+			hprintf255(request, "<h3 style='color:red'>Command trimmed from %i to %i!</h3>",realSize, sizeof(g_cfg.initCommandLine));
+		} else {
+			hprintf255(request, "<h3>Command changed!</h3>");
+		}
 		CFG_Save_IfThereArePendingChanges();
 	}
 
+#if ENABLE_OBK_SCRIPTING
+	poststr(request, "<form action=\"/startup_command\">");
+	poststr(request, "<label for='data'>Startup command</label><br>");
+	poststr(request, "<textarea id='data' name='data' rows='15' cols='40'>");
+	poststr(request, CFG_GetShortStartupCommand());
+	poststr(request, "</textarea><br>");
+#else
 	add_label_text_field(request, "Startup command", "data", CFG_GetShortStartupCommand(), "<form action=\"/startup_command\">");
+#endif
 	poststr(request, "<input type='hidden' name='startup_cmd' value='1'>");
 	poststr(request, SUBMIT_AND_END_FORM);
 
@@ -1807,13 +1899,36 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	if (measuringPower == true) {
 		for (i = OBK__FIRST; i <= OBK__LAST; i++)
 		{
-			dev_info = hass_init_energy_sensor_device_info(i);
+			dev_info = hass_init_energy_sensor_device_info(i, BL_SENSORS_IX_0);
 			if (dev_info) {
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 				discoveryQueued = true;
 			}
+			if (i == OBK_VOLTAGE) {
+				//20250319 XJIKKA to simplify and save space in flash frequency together with voltage
+				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, SPECIAL_CHANNEL_OBK_FREQUENCY, -1, -1, -1);
+				if (dev_info) {
+					MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+					hass_free_device_info(dev_info);
+					discoveryQueued = true;
+				}
+			}
 		}
+#if ENABLE_BL_TWIN
+		//BL_SENSORS_IX_1 - mqtt hass discovery using hass_uniq_id_suffix (_b) from drv_bl_shared.c
+		if (BL_IsMeteringDeviceIndexActive(BL_SENSORS_IX_1)) {
+			for (i = OBK__FIRST; i <= OBK__LAST; i++)
+			{
+				dev_info = hass_init_energy_sensor_device_info(i, BL_SENSORS_IX_1);
+				if (dev_info) {
+					MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+					hass_free_device_info(dev_info);
+					discoveryQueued = true;
+				}
+			}
+		}
+#endif
 	}
 #endif
 
@@ -2024,6 +2139,11 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, i, 3, 2, 1);
 			}
 			break;
+			case ChType_Frequency_div1000:
+			{
+				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, i, 4, 3, 1);
+			}
+			break;
 			case ChType_Frequency_div10:
 			{
 				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, i, 3, 1, 1);
@@ -2104,10 +2224,12 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			}
 		}
 	}
-	if (1) {
+	if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEPERMINUTE) || CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEONCONNECT)) {
 		//use -1 for channel as these don't correspond to channels
+#ifndef NO_CHIP_TEMPERATURE
 		dev_info = hass_init_sensor_device_info(HASS_TEMP, -1, -1, -1, 1);
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+#endif
 		dev_info = hass_init_sensor_device_info(HASS_RSSI, -1, -1, -1, 1);
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
@@ -2243,7 +2365,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 					switchAdded = 1;
 				}
 
-				hass_print_unique_id(request, "  - unique_id: \"%s\"\n", RELAY, i);
+				hass_print_unique_id(request, "  - unique_id: \"%s\"\n", RELAY, i, 0);
 				hprintf255(request, "    name: %i\n", i);
 				hprintf255(request, "    state_topic: \"%s/%i/get\"\n", clientId, i);
 				hprintf255(request, "    command_topic: \"%s/%i/set\"\n", clientId, i);
@@ -2263,7 +2385,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 					switchAdded = 1;
 				}
 
-				hass_print_unique_id(request, "  - unique_id: \"%s\"\n", BINARY_SENSOR, i);
+				hass_print_unique_id(request, "  - unique_id: \"%s\"\n", BINARY_SENSOR, i, 0);
 				hprintf255(request, "    name: %i\n", i);
 				hprintf255(request, "    state_topic: \"%s/%i/get\"\n", clientId, i);
 				hprintf_qos_payload(request, clientId);
@@ -2282,7 +2404,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 			switchAdded = 1;
 		}
 
-		hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_RGBCW, i);
+		hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_RGBCW, i, 0);
 		hprintf255(request, "    name: %i\n", i);
 		http_generate_rgb_cfg(request, clientId);
 		//hprintf255(request, "    #brightness_value_template: \"{{ value }}\"\n");
@@ -2302,7 +2424,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 				switchAdded = 1;
 			}
 
-			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_RGB, i);
+			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_RGB, i, 0);
 			hprintf255(request, "    name: Light\n");
 			http_generate_rgb_cfg(request, clientId);
 		}
@@ -2317,7 +2439,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 				switchAdded = 1;
 			}
 
-			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_PWM, i);
+			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_PWM, i, 0);
 			hprintf255(request, "    name: Light\n");
 			http_generate_singleColor_cfg(request, clientId);
 		}
@@ -2332,7 +2454,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 				switchAdded = 1;
 			}
 
-			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_PWMCW, i);
+			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_PWMCW, i, 0);
 			hprintf255(request, "    name: Light\n");
 			http_generate_cw_cfg(request, clientId);
 		}
@@ -2349,7 +2471,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 						lightAdded = 1;
 					}
 
-					hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_PWM, i);
+					hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_PWM, i, 0);
 					hprintf255(request, "    name: %i\n", i);
 					hprintf255(request, "    state_topic: \"%s/%i/get\"\n", clientId, i);
 					hprintf255(request, "    command_topic: \"%s/%i/set\"\n", clientId, i);
@@ -2754,10 +2876,31 @@ const char* g_obk_flagNames[] = {
 	"[PWR] Invert AC dir",
 	"[HTTP] Hide ON/OFF for relays (only red/green buttons)",
 	"[MQTT] Never add get sufix",
+	"[WiFi] (RTL/BK) Enhanced fast connect by saving AP data to flash (preferable with Flag 37 & static ip). Quick reset 3 times to connect normally",
 	"error",
 	"error",
 	"error",
 }; 
+
+void uint64_to_str(uint64_t num, char* str) {
+	char temp[21];  // uint64_t 20 numbers + \0
+	int i = 0;
+	if (num == 0) {
+		temp[i++] = '0';
+	} else {
+		while (num > 0) {
+			temp[i++] = '0' + (num % 10);
+			num /= 10;
+		}
+	}
+	temp[i] = '\0';
+	int j;
+	for (j = 0; j < i; j++) {
+		str[j] = temp[i - j - 1];
+	}
+	str[j] = '\0';
+}
+
 int http_fn_cfg_generic(http_request_t* request) {
 	int i;
 	char tmpA[64];
@@ -2795,9 +2938,12 @@ int http_fn_cfg_generic(http_request_t* request) {
 	CFG_Save_IfThereArePendingChanges();
 
 	// 32 bit type
-	hprintf255(request, "<h4>Flags (Current value=%i)</h4>", CFG_GetFlags());
+	//hprintf255(request, "<h4>Flags (Current value=%i)</h4>", CFG_GetFlags());
 	// 64 bit - TODO fixme
-	//hprintf255(request, "<h4>Flags (Current value=%lu)</h4>", CFG_GetFlags64());
+	//hprintf255(request, "<h4>Flags (Current value=%llu)</h4>", CFG_GetFlags64());
+	char buf[21];
+	uint64_to_str(CFG_GetFlags64(), buf);
+	hprintf255(request, "<h4>Flags (Current value=%s)</h4>", buf);
 	poststr(request, "<form action=\"/cfg_generic\">");
 
 	for (i = 0; i < OBK_TOTAL_FLAGS; i++) {
@@ -2994,11 +3140,20 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 
 #elif PLATFORM_ESPIDF
 #elif PLATFORM_TR6260
-#elif PLATFORM_RTL87X0C
+#elif PLATFORM_REALTEK
+#elif PLATFORM_ECR6600
+	extern int http_client_download_file(const char* url, unsigned int len);
+	extern int ota_done(bool reset);
+	delay_ms(100);
+	int ret = http_client_download_file(s, strlen(s));
+	if(ret != -1) ota_done(1);
+	else ota_done(0);
 #elif PLATFORM_W600 || PLATFORM_W800
 	t_http_fwup(s);
 #elif PLATFORM_XR809
 	XR809_RequestOTAHTTP(s);
+#elif PLATFORM_XR872
+
 #else
 	otarequest(s);
 #endif
@@ -3055,6 +3210,11 @@ int http_fn_ota(http_request_t* request) {
 
 int http_fn_other(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
+#if ENABLE_OBK_BERRY
+	if (CMD_Berry_RunEventHandlers_StrInt(CMD_EVENT_ON_HTTP, request->url, (int)request)) {
+		return 0;
+	}
+#endif
 	http_html_start(request, "Not found");
 	poststr(request, "Not found.<br/>");
 	poststr(request, htmlFooterReturnToMainPage);

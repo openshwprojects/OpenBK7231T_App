@@ -47,6 +47,8 @@
 #include <fake_clock_pub.h>
 #include <BkDriverWdg.h>
 #include "temp_detect_pub.h"
+#include "BkDriverWdg.h"
+
 void bg_register_irda_check_func(FUNCPTR func);
 #elif PLATFORM_BL602
 #include <bl_sys.h>
@@ -61,6 +63,8 @@ void bg_register_irda_check_func(FUNCPTR func);
 #include "hal/hal_gpio.h"
 #elif PLATFORM_ESPIDF
 #include "esp_timer.h"
+#elif PLATFORM_ECR6600
+#include "hal_adc.h"
 #endif
 
 int g_secondsElapsed = 0;
@@ -104,7 +108,7 @@ int DRV_SSDP_Active = 0;
 
 void Main_ForceUnsafeInit();
 
-#if PLATFORM_XR809
+#if PLATFORM_XR809 || PLATFORM_XR872
 size_t xPortGetFreeHeapSize() {
 	return 0;
 }
@@ -174,24 +178,22 @@ static int get_tsen_adc(
 }
 #endif
 
-#ifdef PLATFORM_BK7231T
+#if PLATFORM_BEKEN
 // this function waits for the extended app functions to finish starting.
 extern void extended_app_waiting_for_launch(void);
-void extended_app_waiting_for_launch2() {
+void extended_app_waiting_for_launch2()
+{
 	extended_app_waiting_for_launch();
-}
-#else
-void extended_app_waiting_for_launch2(void) {
-	// do nothing?
 
 	// define FIXED_DELAY if delay wanted on non-beken platforms.
-#ifdef PLATFORM_BK7231N
+#if PLATFORM_BK7231N || PLATFORM_BEKEN_NEW
 	// wait 100ms at the start.
 	// TCP is being setup in a different thread, and there does not seem to be a way to find out if it's complete yet?
 	// so just wait a bit, and then start.
-	int startDelay = 750;
+	int startDelay = 100;
 	bk_printf("\r\ndelaying start\r\n");
-	for (int i = 0; i < startDelay / 10; i++) {
+	for(int i = 0; i < startDelay / 10; i++)
+	{
 		rtos_delay_milliseconds(10);
 		bk_printf("#Startup delayed %dms#\r\n", i * 10);
 	}
@@ -200,12 +202,15 @@ void extended_app_waiting_for_launch2(void) {
 	// through testing, 'Initializing TCP/IP stack' appears at ~500ms
 	// so we should wait at least 750?
 #endif
-
+}
+#else
+void extended_app_waiting_for_launch2(void) {
+	// do nothing?
 }
 #endif
 
 
-#if defined(PLATFORM_LN882H) || defined(PLATFORM_ESPIDF)
+#if defined(PLATFORM_LN882H) || defined(PLATFORM_ESPIDF) || defined(PLATFORM_XR872)
 
 int LWIP_GetMaxSockets() {
 	return 0;
@@ -215,7 +220,8 @@ int LWIP_GetActiveSockets() {
 }
 #endif
 
-#if defined(PLATFORM_BL602) || defined(PLATFORM_W800) || defined(PLATFORM_W600) || defined(PLATFORM_LN882H) || defined(PLATFORM_ESPIDF) || defined(PLATFORM_TR6260) || defined(PLATFORM_RTL87X0C)
+#if defined(PLATFORM_BL602) || defined(PLATFORM_W800) || defined(PLATFORM_W600) || defined(PLATFORM_LN882H) \
+	|| defined(PLATFORM_ESPIDF) || defined(PLATFORM_TR6260) || defined(PLATFORM_REALTEK) || defined(PLATFORM_ECR6600)
 
 OSStatus rtos_create_thread(beken_thread_t* thread,
 	uint8_t priority, const char* name,
@@ -249,14 +255,14 @@ OSStatus rtos_create_thread(beken_thread_t* thread,
 }
 
 OSStatus rtos_delete_thread(beken_thread_t* thread) {
-	if(thread == NULL) vTaskDelete(thread);
+	if(thread == NULL) vTaskDelete(NULL);
 	else vTaskDelete(*thread);
 	return kNoErr;
 }
 
 OSStatus rtos_suspend_thread(beken_thread_t* thread)
 {
-	if(thread == NULL) vTaskSuspend(thread);
+	if(thread == NULL) vTaskSuspend(NULL);
 	else vTaskSuspend(*thread);
 	return kNoErr;
 }
@@ -320,6 +326,7 @@ void CheckForSSID12_Switch() {
 	g_SSIDSwitchCnt = 0;
 	g_SSIDactual ^= 1;	// toggle SSID 
 	ADDLOGF_INFO("WiFi SSID: switching to SSID%i\r\n", g_SSIDactual + 1);
+	if(CFG_HasFlag(OBK_FLAG_WIFI_ENHANCED_FAST_CONNECT)) HAL_DisableEnhancedFastConnect();
 #endif
 }
 
@@ -365,18 +372,26 @@ void Main_OnWiFiStatusChange(int code)
 	case WIFI_STA_CONNECTING:
 		g_bHasWiFiConnected = 0;
 		g_connectToWiFi = 120;
-		ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTING - %i\r\n", code);
+		ADDLOGF_INFO("%s - WIFI_STA_CONNECTING - %i\r\n", __func__, code);
 		break;
 	case WIFI_STA_DISCONNECTED:
 		// try to connect again in few seconds
-		if (g_bHasWiFiConnected != 0)
+		// if we are already disconnected, why must we call disconnect again?
+		//if (g_bHasWiFiConnected != 0)
+		//{
+		//	HAL_DisconnectFromWifi();
+		//}
+		if(g_secondsElapsed < 30)
 		{
-			HAL_DisconnectFromWifi();
+			g_connectToWiFi = 5;
 		}
-		g_connectToWiFi = 15;
+		else
+		{
+			g_connectToWiFi = 15;
+		}
 		g_bHasWiFiConnected = 0;
 		g_timeSinceLastPingReply = -1;
-		ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_DISCONNECTED - %i\r\n", code);
+		ADDLOGF_INFO("%s - WIFI_STA_DISCONNECTED - %i\r\n", __func__, code);
 		break;
 	case WIFI_STA_AUTH_FAILED:
 		// try to connect again in few seconds
@@ -389,17 +404,19 @@ void Main_OnWiFiStatusChange(int code)
 			g_connectToWiFi = 60;
 		}
 		g_bHasWiFiConnected = 0;
-		ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_AUTH_FAILED - %i\r\n", code);
+		ADDLOGF_INFO("%s - WIFI_STA_AUTH_FAILED - %i\r\n", __func__, code);
 		break;
 	case WIFI_STA_CONNECTED:
 #if ALLOW_SSID2
 		if (!g_bHasWiFiConnected) FV_UpdateStartupSSIDIfChanged_StoredValue(g_SSIDactual);	//update ony on first connect
-#endif
+#endif		
+
 		g_bHasWiFiConnected = 1;
+		ADDLOGF_INFO("%s - WIFI_STA_CONNECTED - %i\r\n", __func__, code);
+
 #if ALLOW_SSID2
 		g_SSIDSwitchCnt = 0;
 #endif
-		ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_STA_CONNECTED - %i\r\n", code);
 
 		if (bSafeMode == 0) {
 			if (strlen(CFG_DeviceGroups_GetName()) > 0) {
@@ -425,11 +442,11 @@ void Main_OnWiFiStatusChange(int code)
 		/* for softap mode */
 	case WIFI_AP_CONNECTED:
 		g_bHasWiFiConnected = 1;
-		ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_AP_CONNECTED - %i\r\n", code);
+		ADDLOGF_INFO("%s - WIFI_AP_CONNECTED - %i\r\n", __func__, code);
 		break;
 	case WIFI_AP_FAILED:
 		g_bHasWiFiConnected = 0;
-		ADDLOGF_INFO("Main_OnWiFiStatusChange - WIFI_AP_FAILED - %i\r\n", code);
+		ADDLOGF_INFO("%s - WIFI_AP_FAILED - %i\r\n", __func__, code);
 		break;
 	default:
 		break;
@@ -534,14 +551,24 @@ void Main_ConnectToWiFiNow() {
 	HAL_WiFi_SetupStatusCallback(Main_OnWiFiStatusChange);
 	ADDLOGF_INFO("Registered for wifi changes\r\n");
 	ADDLOGF_INFO("Connecting to SSID [%s]\r\n", wifi_ssid);
-	HAL_ConnectToWiFi(wifi_ssid, wifi_pass, &g_cfg.staticIP);
+	if(CFG_HasFlag(OBK_FLAG_WIFI_ENHANCED_FAST_CONNECT))
+	{
+		HAL_FastConnectToWiFi(wifi_ssid, wifi_pass, &g_cfg.staticIP);
+	}
+	else
+	{
+		HAL_ConnectToWiFi(wifi_ssid, wifi_pass, &g_cfg.staticIP);
+	}
 	// don't set g_connectToWiFi = 0; here!
 	// this would overwrite any changes, e.g. from Main_OnWiFiStatusChange !
 	// so don't do this here, but e.g. set in Main_OnWiFiStatusChange if connected!!!
 }
 bool Main_HasFastConnect() {
-	if (g_bootFailures > 2)
+	if(g_bootFailures > 2)
+	{
+		HAL_DisableEnhancedFastConnect();
 		return false;
+	}
 	if (CFG_HasFlag(OBK_FLAG_WIFI_FAST_CONNECT)) {
 		return true;
 	}
@@ -589,6 +616,8 @@ void Main_OnEverySecond()
 		// this is set externally, I am just leaving comment here
 #elif PLATFORM_W800 || PLATFORM_W600
 		g_wifi_temperature = HAL_ADC_Temp();
+#elif PLATFORM_ECR6600
+		g_wifi_temperature = hal_adc_tempsensor();
 #endif
 	}
 
@@ -639,7 +668,7 @@ void Main_OnEverySecond()
 #if WINDOWS
 #elif PLATFORM_BL602
 #elif PLATFORM_W600 || PLATFORM_W800
-#elif PLATFORM_XR809
+#elif PLATFORM_XR809 || PLATFORM_XR872
 #elif PLATFORM_BK7231N || PLATFORM_BK7231T
 	if (ota_progress() == -1)
 #endif
@@ -959,9 +988,11 @@ void QuickTick(void* param)
 	}
 	g_last_time = g_time;
 
-
 #if ENABLE_OBK_SCRIPTING
 	SVM_RunThreads(g_deltaTimeMS);
+#endif
+#if ENABLE_OBK_BERRY
+	Berry_RunThreads(g_deltaTimeMS);
 #endif
 	RepeatingEvents_RunUpdate(g_deltaTimeMS * 0.001f);
 #ifndef OBK_DISABLE_ALL_DRIVERS
@@ -1015,17 +1046,17 @@ void QuickTick(void* param)
 // this is the bit which runs the quick tick timer
 #if WINDOWS
 
-#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_RTL87X0C)
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600
 void quick_timer_thread(void* param)
 {
 	while (1) {
-		vTaskDelay(QUICK_TMR_DURATION / portTICK_PERIOD_MS);
+		rtos_delay_milliseconds(QUICK_TMR_DURATION);
 		QuickTick(0);
 	}
 }
 #elif PLATFORM_ESPIDF
 esp_timer_handle_t g_quick_timer;
-#elif PLATFORM_XR809 || PLATFORM_LN882H
+#elif PLATFORM_XR809 || PLATFORM_LN882H || PLATFORM_XR872
 OS_Timer_t g_quick_timer;
 #else
 beken_timer_t g_quick_timer;
@@ -1034,8 +1065,7 @@ void QuickTick_StartThread(void)
 {
 #if WINDOWS
 
-#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_RTL87X0C)
-
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600
 	xTaskCreate(quick_timer_thread, "quick", 1024, NULL, 15, NULL);
 #elif PLATFORM_ESPIDF
 	const esp_timer_create_args_t g_quick_timer_args =
@@ -1046,7 +1076,7 @@ void QuickTick_StartThread(void)
 
 	esp_timer_create(&g_quick_timer_args, &g_quick_timer);
 	esp_timer_start_periodic(g_quick_timer, QUICK_TMR_DURATION * 1000);
-#elif PLATFORM_XR809 || PLATFORM_LN882H
+#elif PLATFORM_XR809 || PLATFORM_LN882H || PLATFORM_XR872
 
 	OS_TimerSetInvalid(&g_quick_timer);
 	if (OS_TimerCreate(&g_quick_timer, OS_TIMER_PERIODIC, QuickTick, NULL,
@@ -1122,10 +1152,16 @@ void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
 
 		// NOTE: this will try to read autoexec.bat,
 		// so ALL commands expected in autoexec.bat should have been registered by now...
+#if ENABLE_OBK_SCRIPTING
+		SVM_RunStartupCommandAsScript();
+#else
 		CMD_ExecuteCommand(CFG_GetShortStartupCommand(), COMMAND_FLAG_SOURCE_SCRIPT);
+#endif
 		CMD_ExecuteCommand("startScript autoexec.bat", COMMAND_FLAG_SOURCE_SCRIPT);
+#if ENABLE_OBK_BERRY
+		CMD_ExecuteCommand("berry import autoexec", COMMAND_FLAG_SOURCE_SCRIPT);
+#endif
 	}
-	HAL_Configure_WDT();
 }
 void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	g_unsafeInitDone = true;
@@ -1281,11 +1317,11 @@ void Main_ForceUnsafeInit() {
 // power on.
 void Main_Init_Before_Delay()
 {
-	ADDLOGF_INFO("Main_Init_Before_Delay");
+	ADDLOGF_INFO("%s", __func__);
 	// read or initialise the boot count flash area
 	HAL_FlashVars_IncreaseBootCount();
 
-#ifdef PLATFORM_BEKEN
+#if defined(PLATFORM_BEKEN) && !defined(PLATFORM_BEKEN_NEW)
 	// this just increments our idle counter variable.
 	// it registers a cllback from RTOS IDLE function.
 	// why is it called IRDA??  is this where they check for IR?
@@ -1310,8 +1346,8 @@ void Main_Init_Before_Delay()
 		Main_Init_BeforeDelay_Unsafe(true);
 	}
 
-	ADDLOGF_INFO("Main_Init_Before_Delay done");
-	bk_printf("\r\nMain_Init_Before_Delay done\r\n");
+	ADDLOGF_INFO("%s done", __func__);
+	bk_printf("\r\%s done\r\n", __func__);
 }
 
 // a fixed delay of 750ms to wait for calibration routines in core thread,
@@ -1322,13 +1358,13 @@ void Main_Init_Before_Delay()
 // (e.g. are we delayed by it reading temperature?)
 void Main_Init_Delay()
 {
-	ADDLOGF_INFO("Main_Init_Delay");
-	bk_printf("\r\nMain_Init_Delay\r\n");
+	ADDLOGF_INFO("%s", __func__);
+	bk_printf("\r\%s\r\n", __func__);
 
 	extended_app_waiting_for_launch2();
 
-	ADDLOGF_INFO("Main_Init_Delay done");
-	bk_printf("\r\nMain_Init_Delay done\r\n");
+	ADDLOGF_INFO("%s done", __func__);
+	bk_printf("\r\%s done\r\n", __func__);
 
 	// use this variable wherever to determine if we have TCP/IP features.
 	// e.g. in logging to determine if we can start TCP thread
@@ -1341,7 +1377,7 @@ void Main_Init_Delay()
 void Main_Init_After_Delay()
 {
 	const char* wifi_ssid, * wifi_pass;
-	ADDLOGF_INFO("Main_Init_After_Delay");
+	ADDLOGF_INFO("%s", __func__);
 
 	// we can log this after delay.
 	if (bSafeMode) {
@@ -1362,6 +1398,8 @@ void Main_Init_After_Delay()
 		// you can use this if you bricked your module by setting wrong access point data
 		bForceOpenAP = 1;
 #endif
+
+	HAL_Configure_WDT();
 
 	if ((*wifi_ssid == 0))
 	{
@@ -1393,8 +1431,14 @@ void Main_Init_After_Delay()
 	// NOT WORKING, I done it other way, see ethernetif.c
 	//net_dhcp_hostname_set(g_shortDeviceName);
 
-	HTTPServer_Start();
-	ADDLOGF_DEBUG("Started http tcp server\r\n");
+#if MQTT_USE_TLS
+	if (!CFG_GetDisableWebServer() || bSafeMode) {
+#endif		
+		HTTPServer_Start();
+		ADDLOGF_DEBUG("Started http tcp server\r\n");
+#if MQTT_USE_TLS
+	} 
+#endif		
 
 	// only initialise certain things if we are not in AP mode
 	if (!bSafeMode)
@@ -1408,9 +1452,19 @@ void Main_Init_After_Delay()
 		Main_Init_AfterDelay_Unsafe(true);
 	}
 
-	ADDLOGF_INFO("Main_Init_After_Delay done");
+	ADDLOGF_INFO("%s done", __func__);
 }
 
+// to be overriden
+// Translate name like RB5 for OBK pin index
+#ifdef _MSC_VER
+///#pragma comment(linker, "/alternatename:HAL_PIN_Find=Default_HAL_PIN_Find")
+#else
+int HAL_PIN_Find(const char *name) __attribute__((weak));
+int HAL_PIN_Find(const char *name) {
+	return atoi(name);
+}
+#endif
 
 
 void Main_Init()

@@ -87,6 +87,8 @@ void Test_Events() {
 	SELFTEST_ASSERT(EVENT_ParseEventName("OnADCButton") == CMD_EVENT_ADC_BUTTON);
 	SELFTEST_ASSERT(EVENT_ParseEventName("OnCustomDown") == CMD_EVENT_CUSTOM_DOWN);
 	SELFTEST_ASSERT(EVENT_ParseEventName("OnCustomUP") == CMD_EVENT_CUSTOM_UP);
+	SELFTEST_ASSERT(EVENT_ParseEventName("OnMQTT") == CMD_EVENT_ON_MQTT);
+	SELFTEST_ASSERT(EVENT_ParseEventName("OnDP") == CMD_EVENT_ON_DP);
 
 	// test for numeric strings
 	SELFTEST_ASSERT(EVENT_ParseEventName("123") == 123);

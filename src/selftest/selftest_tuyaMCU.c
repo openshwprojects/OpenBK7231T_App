@@ -396,7 +396,7 @@ void Test_TuyaMCU_Basic() {
 	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
 	SIM_ClearMQTTHistory();
 
-	// This packet sets dpID 104 of type RAW
+	// This packet sets dpID 104 of type Val
 	// dpID 104
 	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 104 MQTT", 0);
 	CMD_ExecuteCommand("uartFakeHex 55AA03070008680200040000000180",0);
@@ -530,7 +530,36 @@ void Test_TuyaMCU_Basic() {
 
 
 
-
+	SIM_ClearUART();
+	// now try delta - value 5
+	CMD_ExecuteCommand("setChannel 15 0", 0);
+	// This will map TuyaMCU dpID 2 of type Value to channel 15 with no inverse
+	// 10 is multiplier
+	// 5 is delta
+	// [dpId][varType][channelID][bDPCache-Optional][mult-optional][bInverse][delta]
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 2 val 15 0 10 0 5", 0);
+	SELFTEST_ASSERT_CHANNEL(15, 0);
+	// This packet sets dpID 2 of type Value to 100
+	CMD_ExecuteCommand("uartFakeHex 55AA0307000802020004000000647D", 0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(1000, false);
+	// Now, channel 15 should be set to....
+	SELFTEST_ASSERT_CHANNEL(15, (100+5) * 10);
+	SIM_ClearUART();
+	// now try delta - value -5
+	CMD_ExecuteCommand("setChannel 15 0", 0);
+	// This will map TuyaMCU dpID 2 of type Value to channel 15 with no inverse
+	// 10 is multiplier
+	// 5 is delta
+	// [dpId][varType][channelID][bDPCache-Optional][mult-optional][bInverse][delta]
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 2 val 15 0 10 0 -5", 0);
+	SELFTEST_ASSERT_CHANNEL(15, 0);
+	// This packet sets dpID 2 of type Value to 100
+	CMD_ExecuteCommand("uartFakeHex 55AA0307000802020004000000647D", 0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(1000, false);
+	// Now, channel 15 should be set to....
+	SELFTEST_ASSERT_CHANNEL(15, (100 + -5) * 10);
 	SIM_ClearUART();
 
 
@@ -625,6 +654,16 @@ void Test_TuyaMCU_Basic() {
 	SELFTEST_ASSERT_CHANNEL(7, 302);// current
 	SELFTEST_ASSERT_CHANNEL(9, 67); // power
 
+
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 115 RAW_VCPPfF", 0);
+	CMD_ExecuteCommand("uartFakeHex 55 AA 03 07 00 13 73 00 00 0F 09 0F 00 00 BF 00 00 78 00 00 25 01 10 C3 32 18 ", 0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(100, false);
+
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 113 RAW_VCPPfF", 0);
+	CMD_ExecuteCommand("uartFakeHex 55 AA 03 07 00 13 71 00 00 0F 09 29 00 01 B7 00 03 FC 00 00 00 03 E8 C3 32 65", 0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(100, false);
 
 	SIM_ClearUART();
 }

@@ -94,6 +94,18 @@ static wmPin_t g_pins[] = {
 
 static int g_numPins = sizeof(g_pins) / sizeof(g_pins[0]);
 
+int HAL_PIN_Find(const char *name) {
+	if (isdigit(name[0])) {
+		return atoi(name);
+	}
+	for (int i = 0; i < g_numPins; i++) {
+		if (!stricmp(g_pins[i].name, name)) {
+			return i;
+		}
+	}
+	return -1;
+}
+
 static int IsPinIndexOk(int index) {
 	if (index < 0)
 		return 0;
@@ -200,7 +212,7 @@ void HAL_PIN_PWM_Stop(int index) {
 	tls_pwm_stop(channel);
 }
 
-void HAL_PIN_PWM_Start(int index) {
+void HAL_PIN_PWM_Start(int index, int freq) {
 	int ret;
 	int channel;
 	if (IsPinIndexOk(index) == 0)

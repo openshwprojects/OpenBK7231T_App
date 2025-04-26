@@ -212,7 +212,7 @@ void CSE7766_Init(void) {
     PwrCal_Init(PWR_CAL_MULTIPLY, DEFAULT_VOLTAGE_CAL, DEFAULT_CURRENT_CAL,
                 DEFAULT_POWER_CAL);
 
-	UART_InitUART(CSE7766_BAUD_RATE, 0);
+	UART_InitUART(CSE7766_BAUD_RATE, 0, false);
 	UART_InitReceiveRingBuffer(512);
 }
 

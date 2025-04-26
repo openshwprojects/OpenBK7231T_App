@@ -9,6 +9,8 @@
 #include "hal/hal_adv_timer.h"
 #include "hal/hal_clock.h"
 
+#define IS_QSPI_PIN(index) (index > 12 && index < 19)
+
 static int g_active_pwm = 0b0;
 
 typedef struct lnPinMapping_s {
@@ -51,6 +53,19 @@ lnPinMapping_t g_pins[] = {
 
 static int g_numPins = sizeof(g_pins) / sizeof(g_pins[0]);
 
+int HAL_PIN_Find(const char *name) {
+	if (isdigit(name[0])) {
+		return atoi(name);
+	}
+	for (int i = 0; i < g_numPins; i++) {
+		if (!stricmp(g_pins[i].name, name)) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+
 int PIN_GetPWMIndexForPinIndex(int pin) {
 	return -1;
 }
@@ -64,7 +79,8 @@ const char *HAL_PIN_GetPinNameAlias(int index) {
 int HAL_PIN_CanThisPinBePWM(int index) 
 {
 	// qspi pins
-	if(index > 12 && index < 19) return 0;
+	if(IS_QSPI_PIN(index)) 
+		return 0;
 	else return 1;
 }
 
@@ -122,6 +138,8 @@ void HAL_PIN_Setup_Input(int index) {
 void HAL_PIN_Setup_Output(int index) {
 	if (index >= g_numPins)
 		return;
+	if(IS_QSPI_PIN(index)) 
+		return; // this would crash for me
 	lnPinMapping_t *pin = g_pins + index;
 	My_LN882_Basic_GPIO_Setup(pin, GPIO_OUTPUT);
 	///hal_gpio_pin_pull_set(pin->base, pin->pin, GPIO_PULL_NONE);
@@ -197,7 +215,7 @@ void HAL_PIN_PWM_Stop(int index) {
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "PWM_Stop: ch: %i, all: %i", chan, g_active_pwm);
 }
 
-void HAL_PIN_PWM_Start(int index) 
+void HAL_PIN_PWM_Start(int index, int freq) 
 {
 	if(index >= g_numPins)
 		return;

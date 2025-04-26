@@ -10,7 +10,10 @@
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
+#ifndef WINDOWS
 #include "lwip/netdb.h"
+#endif
+
 #if PLATFORM_XR809
 #include "my_lwip2_mqtt_replacement.h"
 #else
@@ -68,6 +71,7 @@ enum OBK_Publish_Result_e {
 #define OBK_PUBLISH_FLAG_FORCE_REMOVE_GET		4
 // do not add anything to given topic
 #define OBK_PUBLISH_FLAG_RAW_TOPIC_NAME			8
+#define OBK_PUBLISH_FLAG_QOS_ZERO				16
 
 
 #include "new_mqtt_deduper.h"

@@ -7,59 +7,165 @@
 #include "../logging/logging.h"
 #include "../hal/hal_uart.h"
 
-static byte *g_recvBuf = 0;
-static int g_recvBufSize = 0;
-static int g_recvBufIn = 0;
-static int g_recvBufOut = 0;
-// used to detect uart reinit
-int g_uart_init_counter = 0;
-// used to detect uart manual mode
-int g_uart_manualInitCounter = -1;
+//#define UART_ALWAYSFIRSTBYTES 
+#define UART_DEFAULT_BUFIZE 512
+#ifdef UART_2_UARTS_CONCURRENT
+#define UART_BUF_CNT 2
+#else
+#define UART_BUF_CNT 1
+#endif
+//index of buffer
+// if we have 2 buffers, port UART_PORT_INDEX_0 uses buf 0 and UART_PORT_INDEX_1 uses buf 1
+// if we have 1 buffer, both ports using buf 0  (as before)
+#define UART_BUF_INDEX_0 0  
+#ifdef UART_2_UARTS_CONCURRENT
+#define UART_BUF_INDEX_1 1
+#endif
 
-void UART_InitReceiveRingBuffer(int size){
-    //XJIKKA 20241122 - Note that the actual usable buffer size must be g_recvBufSize-1, 
+int UART_GetSelectedPortIndex() {
+  return (CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART)) ? UART_PORT_INDEX_1 : UART_PORT_INDEX_0;
+}
+
+int UART_GetBufIndexFromPort(int aport) {
+#if UART_BUF_CNT==2
+  return (aport == UART_PORT_INDEX_1) ? UART_BUF_INDEX_1 : UART_BUF_INDEX_0;
+#else
+  return UART_BUF_INDEX_0;
+#endif
+}
+
+typedef struct {
+  byte* g_recvBuf;
+  int g_recvBufSize;
+  int g_recvBufIn;
+  int g_recvBufOut;
+// used to detect uart reinit
+  int g_uart_init_counter;
+// used to detect uart manual mode
+  int g_uart_manualInitCounter;
+} uartbuf_t;
+
+static uartbuf_t uartbuf[UART_BUF_CNT] = { {0,0,0,0,0,-1}
+  #if UART_BUF_CNT == 2
+    , { 0,0,0,0,0,-1 } 
+  #endif
+  };
+
+uartbuf_t * UART_GetBufFromPort(int aport) {
+  return &uartbuf[UART_GetBufIndexFromPort(aport)];
+}
+
+int get_g_uart_init_counter() {
+  uartbuf_t* fuartbuf = UART_GetBufFromPort(UART_GetSelectedPortIndex());
+  return fuartbuf->g_uart_init_counter;
+}
+
+void UART_InitReceiveRingBufferEx(int auartindex, int size){
+  uartbuf_t* fuartbuf=UART_GetBufFromPort(auartindex);
+  //XJIKKA 20241122 - Note that the actual usable buffer size must be g_recvBufSize-1, 
     //otherwise there would be no difference between an empty and a full buffer.
-	if(g_recvBuf!=0)
-        free(g_recvBuf);
-	g_recvBuf = (byte*)malloc(size);
-	memset(g_recvBuf,0,size);
-    g_recvBufSize = size;
-    g_recvBufIn = 0;
-    g_recvBufOut = 0;
+	  if(fuartbuf->g_recvBuf!=0)
+        free(fuartbuf->g_recvBuf);
+	  fuartbuf->g_recvBuf = (byte*)malloc(size);
+	  memset(fuartbuf->g_recvBuf,0,size);
+    fuartbuf->g_recvBufSize = size;
+    fuartbuf->g_recvBufIn = 0;
+    fuartbuf->g_recvBufOut = 0;
+}
+
+void UART_InitReceiveRingBuffer(int size) {
+  int fuartindex = UART_GetSelectedPortIndex();
+  UART_InitReceiveRingBufferEx(fuartindex, size);
+}
+
+int UART_GetReceiveRingBufferSizeEx(int auartindex) {
+  uartbuf_t* fuartbuf = UART_GetBufFromPort(auartindex);
+  return fuartbuf->g_recvBufSize;
+}
+
+int UART_GetReceiveRingBufferSize() {
+  int fuartindex = UART_GetSelectedPortIndex();
+  return UART_GetReceiveRingBufferSizeEx(fuartindex);
+}
+
+int UART_GetDataSizeEx(int auartindex) {
+  uartbuf_t* fuartbuf = UART_GetBufFromPort(auartindex);
+  return (fuartbuf->g_recvBufIn >= fuartbuf->g_recvBufOut
+                ? fuartbuf->g_recvBufIn - fuartbuf->g_recvBufOut
+                : fuartbuf->g_recvBufIn + (fuartbuf->g_recvBufSize - fuartbuf->g_recvBufOut)); //XJIKKA 20241122 fixed buffer size calculation on ring bufferroverflow
 }
 
 int UART_GetDataSize() {
-    return (g_recvBufIn >= g_recvBufOut
-                ? g_recvBufIn - g_recvBufOut
-                : g_recvBufIn + (g_recvBufSize - g_recvBufOut)); //XJIKKA 20241122 fixed buffer size calculation on ring bufferroverflow
+  int fuartindex = UART_GetSelectedPortIndex();
+  return UART_GetDataSizeEx(fuartindex);
+}
+
+byte UART_GetByteEx(int auartindex, int idx) {
+  uartbuf_t* fuartbuf = UART_GetBufFromPort(auartindex);
+  return fuartbuf->g_recvBuf[(fuartbuf->g_recvBufOut + idx) % fuartbuf->g_recvBufSize];
 }
 
 byte UART_GetByte(int idx) {
-    return g_recvBuf[(g_recvBufOut + idx) % g_recvBufSize];
+  int fuartindex = UART_GetSelectedPortIndex();
+  return UART_GetByteEx(fuartindex, idx);
+}
+
+void UART_ConsumeBytesEx(int auartindex, int idx) {
+  uartbuf_t* fuartbuf = UART_GetBufFromPort(auartindex);
+  fuartbuf->g_recvBufOut += idx;
+  fuartbuf->g_recvBufOut %= fuartbuf->g_recvBufSize;
 }
 
 void UART_ConsumeBytes(int idx) {
-    g_recvBufOut += idx;
-	g_recvBufOut %= g_recvBufSize;
+  int fuartindex = UART_GetSelectedPortIndex();
+  UART_ConsumeBytesEx(fuartindex, idx);
 }
 
-void UART_AppendByteToReceiveRingBuffer(int rc) {
-    if (UART_GetDataSize() < (g_recvBufSize - 1)) {
-        g_recvBuf[g_recvBufIn++] = rc;
-        g_recvBufIn %= g_recvBufSize;
+void UART_AppendByteToReceiveRingBufferEx(int auartindex, int rc) {
+  uartbuf_t* fuartbuf = UART_GetBufFromPort(auartindex);
+  if (fuartbuf->g_recvBufSize <= 0) {
+      //if someone (uartFakeHex) send data without init, and if flag 26 changes(UART)
+      addLogAdv(LOG_ERROR, LOG_FEATURE_DRV, "UART %i not initialized\n",auartindex);
+      //return;
+      UART_InitReceiveRingBufferEx(auartindex,UART_DEFAULT_BUFIZE);
     }
+#ifdef UART_ALWAYSFIRSTBYTES
+    //20250119 old style, if g_recvBufSize-1 is reached, received byte was ignored
+    if (UART_GetDataSizeEx(auartindex) < (fuartbuf->g_recvBufSize - 1)) {
+#else
+    //20250119 new style, we have always last g_recvBufSize-1 bytes
+    //if g_recvBufSize-1 is reached, first byte is overwritten
+#endif
+        fuartbuf->g_recvBuf[fuartbuf->g_recvBufIn++] = rc;
+        fuartbuf->g_recvBufIn %= fuartbuf->g_recvBufSize;
+#ifdef UART_ALWAYSFIRSTBYTES
+    }
+#endif
     //XJIKKA 20241122 if the same pointer is reached (in and out), we must also advance 
     //the outbuffer pointer, otherwise UART_GetDataSize will return g_recvBufSize.
     //This way now we always have the last (g_recvBufSize - 1) bytes
-    if (g_recvBufIn == g_recvBufOut) {
-      g_recvBufOut++;
-      g_recvBufOut %= g_recvBufSize;
+    if (fuartbuf->g_recvBufIn == fuartbuf->g_recvBufOut) {
+      fuartbuf->g_recvBufOut++;
+      fuartbuf->g_recvBufOut %= fuartbuf->g_recvBufSize;
     }
 }
 
-void UART_SendByte(byte b) 
-{
-    HAL_UART_SendByte(b);
+void UART_AppendByteToReceiveRingBuffer(int rc) {
+  int fuartindex = UART_GetSelectedPortIndex();
+  UART_AppendByteToReceiveRingBufferEx(fuartindex, rc);
+}
+
+void UART_SendByteEx(int auartindex, byte b) {
+#ifdef UART_2_UARTS_CONCURRENT
+  HAL_UART_SendByteEx(auartindex, b);
+#else
+  HAL_UART_SendByte(b);
+#endif
+}
+
+void UART_SendByte(byte b) {
+  int fuartindex = UART_GetSelectedPortIndex();
+  UART_SendByteEx(fuartindex, b);
 }
 
 commandResult_t CMD_UART_Send_Hex(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -116,7 +222,7 @@ commandResult_t CMD_UART_FakeHex(const void *context, const char *cmd, const cha
 
         args += 2;
     }
-    return 1;
+    return CMD_RES_OK;
 }
 
 // uartSendASCII test123
@@ -135,45 +241,65 @@ commandResult_t CMD_UART_Send_ASCII(const void *context, const char *cmd, const 
     return CMD_RES_OK;
 }
 
-void UART_ResetForSimulator() 
-{
-	g_uart_init_counter = 0;
+void UART_ResetForSimulator() {
+  for (int i = 0; i < UART_BUF_CNT; i++) {
+    uartbuf[i].g_uart_init_counter = 0;
+  }
 }
 
-int UART_InitUART(int baud, int parity)
+int UART_InitUARTEx(int auartindex, int baud, int parity, bool hwflowc)
 {
-    g_uart_init_counter++;
-    HAL_UART_Init(baud, parity);
-    return g_uart_init_counter;
+  uartbuf_t* fuartbuf = UART_GetBufFromPort(auartindex);
+  fuartbuf->g_uart_init_counter++;
+#ifdef UART_2_UARTS_CONCURRENT
+    HAL_UART_InitEx(auartindex, baud, parity, hwflowc);
+#else
+    HAL_UART_Init(baud, parity, hwflowc);
+#endif
+  return fuartbuf->g_uart_init_counter;
 }
 
-void UART_DebugTool_Run() {
+int UART_InitUART(int baud, int parity, bool hwflowc) {
+  int fuartindex = UART_GetSelectedPortIndex();
+  return UART_InitUARTEx(fuartindex, baud, parity, hwflowc);
+}
+
+void UART_LogBufState(int auartindex) {
+  uartbuf_t* fuartbuf = UART_GetBufFromPort(auartindex);
+  ADDLOG_WARN(LOG_INFO,
+    "Uart ix %d inbuf %i inptr %i outptr %i \n",
+    auartindex, UART_GetDataSizeEx(auartindex), fuartbuf->g_recvBufIn, fuartbuf->g_recvBufOut
+  );
+}
+void UART_DebugTool_Run(int auartindex) {
     byte b;
     char tmp[128];
     char *p = tmp;
     int i;
 
     for (i = 0; i < sizeof(tmp) - 4; i++) {
-		if (UART_GetDataSize()==0) {
+		if (UART_GetDataSizeEx(auartindex)==0) {
             break;
         }
-        b = UART_GetByte(0);
+        b = UART_GetByteEx(auartindex,0);
         if (i) {
             *p = ' ';
             p++;
         }
         sprintf(p, "%02X", b);
         p += 2;
-        UART_ConsumeBytes(1);
+        UART_ConsumeBytesEx(auartindex,1);
     }
     *p = 0;
-    addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "UART received: %s\n", tmp);
+    addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "UART %i received: %s\n", auartindex, tmp);
 }
 
 void UART_RunEverySecond() {
-    if (g_uart_manualInitCounter == g_uart_init_counter) {
-        UART_DebugTool_Run();
+  for (int i = 0; i < UART_BUF_CNT; i++) {
+    if (uartbuf[i].g_uart_manualInitCounter == uartbuf[i].g_uart_init_counter) {
+      UART_DebugTool_Run(i);
     }
+  }
 }
 
 commandResult_t CMD_UART_Init(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -187,12 +313,15 @@ commandResult_t CMD_UART_Init(const void *context, const char *cmd, const char *
         return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
 
+    int fuartindex = UART_GetSelectedPortIndex();
+
     baud = Tokenizer_GetArgInteger(0);
 
-    UART_InitReceiveRingBuffer(512);
+    UART_InitReceiveRingBufferEx(fuartindex, UART_DEFAULT_BUFIZE);
 
-    UART_InitUART(baud, 0);
-    g_uart_manualInitCounter = g_uart_init_counter;
+    UART_InitUARTEx(fuartindex, baud, 0, false);
+    uartbuf_t* fuartbuf = UART_GetBufFromPort(fuartindex);
+    fuartbuf->g_uart_manualInitCounter = fuartbuf->g_uart_init_counter;
 
     return CMD_RES_OK;
 }

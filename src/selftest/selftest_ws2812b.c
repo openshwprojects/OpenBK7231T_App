@@ -31,7 +31,9 @@ void Test_WS2812B() {
 	// fake 3 pixels data
 	{ // RGB
 		CMD_ExecuteCommand("SM16703P_Init 3 RGB", 0);
-		uint8_t dat[9] = { 255, 0, 0, 0, 255, 0, 0, 0, 255 };
+		uint8_t dat[9] = { 255, 0, 0,
+			0, 255, 0,
+			0, 0, 255 };
 		SM16703P_setMultiplePixel(3, dat, false);
 		SELFTEST_ASSERT_PIXEL(0, 255, 0, 0);
 		SELFTEST_ASSERT_PIXEL(1, 0, 255, 0);
@@ -39,7 +41,9 @@ void Test_WS2812B() {
 	}
 	{ // BGR
 		CMD_ExecuteCommand("SM16703P_Init 3 BGR", 0);
-		uint8_t dat[9] = { 255, 0, 0, 0, 255, 0, 0, 0, 255 };
+		uint8_t dat[9] = { 255, 0, 0,
+			0, 255, 0,
+			0, 0, 255 };
 		SM16703P_setMultiplePixel(3, dat, false);
 		SELFTEST_ASSERT_PIXEL(0, 0, 0, 255);
 		SELFTEST_ASSERT_PIXEL(1, 0, 255, 0);
@@ -47,7 +51,9 @@ void Test_WS2812B() {
 	}
 	{ // BGR
 		CMD_ExecuteCommand("SM16703P_Init 3 BGR", 0);
-		uint8_t dat[9] = { 255, 0, 0, 0, 255, 0, 0, 0, 255 };
+		uint8_t dat[9] = { 255, 0, 0,
+			0, 255, 0, 
+			0, 0, 255 };
 		SM16703P_setMultiplePixel(3, dat, false);
 		SELFTEST_ASSERT_PIXEL(0, 0, 0, 255);
 		SELFTEST_ASSERT_PIXEL(1, 0, 255, 0);
@@ -55,7 +61,9 @@ void Test_WS2812B() {
 	} 
 	{ // GRB
 		CMD_ExecuteCommand("SM16703P_Init 3 GRB", 0);
-		uint8_t dat[9] = { 255, 0, 0, 0, 255, 0, 0, 0, 255 };
+		uint8_t dat[9] = { 255, 0, 0,
+			0, 255, 0, 
+			0, 0, 255 };
 		SM16703P_setMultiplePixel(3, dat, false);
 		SELFTEST_ASSERT_PIXEL(0, 0, 255, 0);
 		SELFTEST_ASSERT_PIXEL(1, 255, 0, 0);
@@ -67,9 +75,9 @@ void Test_WS2812B() {
 			0, 255, 0, 
 			0, 0, 255 };
 		SM16703P_setMultiplePixel(3, dat, false);
-		SELFTEST_ASSERT_PIXEL(0, 0, 0, 255);
-		SELFTEST_ASSERT_PIXEL(1, 255, 0, 0);
-		SELFTEST_ASSERT_PIXEL(2, 0, 255, 0);
+		SELFTEST_ASSERT_PIXEL(0, 0, 255, 0);
+		SELFTEST_ASSERT_PIXEL(1, 0, 0, 255); 
+		SELFTEST_ASSERT_PIXEL(2, 255, 0, 0); 
 	}
 
 	CMD_ExecuteCommand("SM16703P_Init 3 RGB", 0);

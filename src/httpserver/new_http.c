@@ -156,7 +156,7 @@ void poststr_escaped(http_request_t* request, char* str) {
 	bool foundChar = false;
 	int len = strlen(str);
 
-	//Do a quick check if escaping is necessary
+	// Do a quick check if escaping is necessary
 	for (i = 0; (foundChar == false) && (i < len); i++) {
 		switch (str[i]) {
 		case '<':
@@ -200,6 +200,53 @@ void poststr_escaped(http_request_t* request, char* str) {
 	}
 }
 
+void poststr_escapedForJSON(http_request_t* request, char* str) {
+	if (str == NULL) {
+		postany(request, NULL, 0);
+		return;
+	}
+
+	int i;
+	bool foundChar = false;
+	int len = strlen(str);
+
+	// Do a quick check if escaping is necessary
+	for (i = 0; (foundChar == false) && (i < len); i++) {
+		switch (str[i]) {
+		case '\n':
+			foundChar = true;
+			break;
+		case '\r':
+			foundChar = true;
+			break;
+		case '\"':
+			foundChar = true;
+			break;
+		}
+	}
+
+	if (foundChar) {
+		for (i = 0; i < len; i++) {
+			switch (str[i]) {
+			case '\n':
+				postany(request, "\\n", 2);
+				break;
+			case '\r':
+				postany(request, "\\r", 2);
+				break;
+			case '\"':
+				postany(request, "\\\"", 2);
+				break;
+			default:
+				postany(request, str + i, 1);
+				break;
+			}
+		}
+	}
+	else {
+		postany(request, str, strlen(str));
+	}
+}
 bool http_startsWith(const char* base, const char* substr) {
 	while (*substr != 0) {
 		if (*base != *substr)
@@ -492,7 +539,7 @@ const char* htmlPinRoleNames[] = {
 	"KP18058_CLK",
 	"KP18058_DAT",
 	"DS1820_IO",
-	"error",
+	"PWM_ScriptOnly",
 	"error",
 	"error",
 };
@@ -541,12 +588,14 @@ void setupAllWB2SPinsAsButtons() {
 // call with str == NULL to force send. - can be binary.
 // supply length
 int postany(http_request_t* request, const char* str, int len) {
-#if PLATFORM_BL602
+#if PLATFORM_BL602 || PLATFORM_BEKEN_NEW || PLATFORM_RTL8720D
 	send(request->fd, str, len, 0);
 	return 0;
 #else
 	int currentlen;
 	int addlen = len;
+
+	//ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: got %i", len);
 
 	if (NULL == str) {
 		// fd will be NULL for unit tests where HTTP packet is faked locally
@@ -554,6 +603,7 @@ int postany(http_request_t* request, const char* str, int len) {
 			return request->replylen;
 		}
 		if (request->replylen > 0) {
+			//ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: send %i", request->replylen);
 			send(request->fd, request->reply, request->replylen, 0);
 		}
 		request->reply[0] = 0;
@@ -563,6 +613,7 @@ int postany(http_request_t* request, const char* str, int len) {
 
 	currentlen = request->replylen;
 	if (currentlen + addlen >= request->replymaxlen) {
+		//ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: send %i", request->replylen);
 		send(request->fd, request->reply, request->replylen, 0);
 		request->reply[0] = 0;
 		request->replylen = 0;
@@ -570,9 +621,11 @@ int postany(http_request_t* request, const char* str, int len) {
 	}
 	while (addlen >= request->replymaxlen) {
 		if (request->replylen > 0) {
+			//ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: send %i", request->replylen);
 			send(request->fd, request->reply, request->replylen, 0);
 			request->replylen = 0;
 		}
+		//ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: send %i", (request->replymaxlen - 1));
 		send(request->fd, str, (request->replymaxlen - 1), 0);
 		addlen -= (request->replymaxlen - 1);
 		str += (request->replymaxlen - 1);
@@ -666,6 +719,11 @@ int HTTP_ProcessPacket(http_request_t* request) {
 			return 0;
 		}
 	}
+	else {
+		// if p is 0, then strchr below would crash
+		ADDLOGF_ERROR("invalid request\n");
+		return 0;
+	}
 
 	request->url = urlStr;
 
@@ -755,6 +813,7 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	}
 
 	if (http_basic_auth_run(request) == HTTP_BASIC_AUTH_FAIL) {
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "HTTP packet with auth fail\n");
 		return 0;
 	}
 

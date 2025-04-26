@@ -178,6 +178,13 @@ void CFG_SetDefaultConfig() {
 	
 	CFG_SetDefaultLEDCorrectionTable();
 
+#if MQTT_USE_TLS
+	CFG_SetMQTTUseTls(0);
+	CFG_SetMQTTVerifyTlsCert(0);
+	CFG_SetMQTTCertFile("");
+	CFG_SetDisableWebServer(0);
+#endif
+
 	g_cfg_pendingChanges++;
 }
 
@@ -510,7 +517,7 @@ int CFG_DeviceGroups_GetSendFlags() {
 int CFG_DeviceGroups_GetRecvFlags() {
 	return g_cfg.dgr_recvFlags;
 }
-void CFG_SetFlags(int first4bytes, int second4bytes) {
+void CFG_SetFlags(uint32_t first4bytes, uint32_t second4bytes) {
 	if (g_cfg.genericFlags != first4bytes || g_cfg.genericFlags2 != second4bytes) {
 		g_cfg.genericFlags = first4bytes;
 		g_cfg.genericFlags2 = second4bytes;
@@ -571,9 +578,10 @@ bool CFG_HasLoggerFlag(int flag) {
 int CFG_GetFlags() {
 	return g_cfg.genericFlags;
 }
-unsigned long CFG_GetFlags64() {
-	unsigned long* pAllGenericFlags = (unsigned long*)&g_cfg.genericFlags;
-	return *pAllGenericFlags;
+uint64_t CFG_GetFlags64() {
+	//unsigned long long* pAllGenericFlags = (unsigned long*)&g_cfg.genericFlags;
+	//*pAllGenericFlags;
+	return (uint64_t)g_cfg.genericFlags | (uint64_t)g_cfg.genericFlags2 << 32;
 }
 bool CFG_HasFlag(int flag) {
 	if (flag >= 32) {
@@ -720,6 +728,52 @@ uint32_t CFG_GetLFS_Size() {
 }
 #endif
 
+#if MQTT_USE_TLS
+byte CFG_GetMQTTUseTls() {
+	return g_cfg.mqtt_use_tls;
+}
+byte CFG_GetMQTTVerifyTlsCert() {
+	return g_cfg.mqtt_verify_tls_cert;
+}
+const char* CFG_GetMQTTCertFile() {
+	return g_cfg.mqtt_cert_file;
+}
+void CFG_SetMQTTUseTls(byte value) {
+	// is there a change?
+	if (g_cfg.mqtt_use_tls != value) {
+		g_cfg.mqtt_use_tls = value;
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_SetMQTTVerifyTlsCert(byte value) {
+	// is there a change?
+	if (g_cfg.mqtt_verify_tls_cert != value) {
+		g_cfg.mqtt_verify_tls_cert = value;
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+void CFG_SetMQTTCertFile(const char* s) {
+	// this will return non-zero if there were any changes
+	if (strcpy_safe_checkForChanges(g_cfg.mqtt_cert_file, s, sizeof(g_cfg.mqtt_cert_file))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+byte CFG_GetDisableWebServer() {
+	return g_cfg.disable_web_server;
+}
+void CFG_SetDisableWebServer(byte value) {
+	// is there a change?
+	if (g_cfg.disable_web_server != value) {
+		g_cfg.disable_web_server = value;
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+	}
+}
+#endif
+
 void CFG_InitAndLoad() {
 	byte chkSum;
 
@@ -732,7 +786,7 @@ void CFG_InitAndLoad() {
 		// mark as changed
 		g_cfg_pendingChanges ++;
 	} else {
-#if defined(PLATFORM_XR809) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) || defined(PLATFORM_TR6260)
+#if defined(PLATFORM_XR809) || defined(PLATFORM_BL602)
 		if (g_cfg.mac[0] == 0 && g_cfg.mac[1] == 0 && g_cfg.mac[2] == 0 && g_cfg.mac[3] == 0 && g_cfg.mac[4] == 0 && g_cfg.mac[5] == 0) {
 			WiFI_GetMacAddress((char*)g_cfg.mac);
 		}

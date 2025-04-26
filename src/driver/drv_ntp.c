@@ -397,8 +397,10 @@ void NTP_OnEverySecond()
     }
 }
 
-void NTP_AppendInformationToHTTPIndexPage(http_request_t* request)
+void NTP_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
+	if (bPreState)
+		return;
     struct tm *ltm;
 
     ltm = gmtime(&g_ntpTime);

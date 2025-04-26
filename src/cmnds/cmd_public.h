@@ -13,6 +13,37 @@ typedef enum commandResult_e {
 
 } commandResult_t;
 
+typedef struct scriptFile_s
+{
+	char* fname;
+	char* data;
+
+	struct scriptFile_s* next;
+} scriptFile_t;
+
+typedef struct eventWait_s {
+	int waitingForArgument;
+	unsigned short waitingForEvent;
+	char waitingForRelation;
+	char waitingForArgumentStr[16];
+} eventWait_t;
+
+typedef struct scriptInstance_s
+{
+	scriptFile_t* curFile;
+	int uniqueID;
+	const char* curLine;
+	int totalDelayMS;
+	int currentDelayMS;
+	eventWait_t wait;
+	int delayRepeats;
+
+	struct scriptInstance_s* next;
+} scriptInstance_t;
+
+scriptInstance_t *SVM_RegisterThread();
+extern scriptInstance_t *g_scriptThreads;
+
 typedef commandResult_t(*commandHandler_t)(const void* context, const char* cmd, const char* args, int flags);
 
 // command was entered in console (web app etc)
@@ -128,11 +159,22 @@ enum EventCode {
 
 	CMD_EVENT_MISSEDHEARTBEATS,
 
+	CMD_EVENT_ON_MQTT,
+
+	CMD_EVENT_ON_DP,
+
+	CMD_EVENT_ON_HTTP,
+
+	CMD_EVENT_ON_CMD,
+
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
 };
 
 int EVENT_ParseEventName(const char *s);
+
+// Helper to parse relation characters (<, >, !) from string arguments
+char parseRelationChar(const char *relationStr);
 
 // the slider control in the UI emits values
 //in the range from 154-500 (defined
@@ -169,7 +211,8 @@ int Tokenizer_GetArgsCount();
 bool Tokenizer_CheckArgsCountAndPrintWarning(const char* cmdStr, int reqCount);
 const char* Tokenizer_GetArg(int i);
 const char* Tokenizer_GetArgFrom(int i);
-int Tokenizer_GetArgInteger(int i);
+int Tokenizer_GetArgInteger(int i); 
+int Tokenizer_GetPin(int i, int def);
 int Tokenizer_GetArgIntegerDefault(int i, int def);
 float Tokenizer_GetArgFloatDefault(int i, float def);
 bool Tokenizer_IsArgInteger(int i);
@@ -266,11 +309,18 @@ int CMD_InitSendCommands();
 void CMD_StartTCPCommandLine();
 // cmd_script.c
 int CMD_GetCountActiveScriptThreads();
+// cmd_berry.c
+void CMD_InitBerry();
+void CMD_Berry_RunEventHandlers_IntInt(byte eventCode, int argument, int argument2);
+void CMD_Berry_RunEventHandlers_IntBytes(byte eventCode, int argument, const byte *data, int size);
+int CMD_Berry_RunEventHandlers_StrInt(byte eventCode, const char *argument, int argument2);
+int CMD_Berry_RunEventHandlers_Str(byte eventCode, const char *argument, const char *argument2);
 
 const char* CMD_GetResultString(commandResult_t r);
 
 void SVM_RunThreads(int deltaMS);
 void CMD_InitScripting();
+void SVM_RunStartupCommandAsScript();
 byte* LFS_ReadFile(const char* fname);
 int LFS_WriteFile(const char *fname, const byte *data, int len, bool bAppend);
 
@@ -278,5 +328,6 @@ commandResult_t CMD_ClearAllHandlers(const void* context, const char* cmd, const
 commandResult_t RepeatingEvents_Cmd_ClearRepeatingEvents(const void* context, const char* cmd, const char* args, int cmdFlags);
 commandResult_t CMD_resetSVM(const void* context, const char* cmd, const char* args, int cmdFlags);
 int RepeatingEvents_GetActiveCount();
+
 
 #endif // __CMD_PUBLIC_H__

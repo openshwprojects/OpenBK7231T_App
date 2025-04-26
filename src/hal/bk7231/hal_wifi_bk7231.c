@@ -9,6 +9,27 @@
 #include "../../logging/logging.h"
 #include "../../beken378/app/config/param_config.h"
 #include "lwip/netdb.h"
+#include "../../new_pins.h"
+#include "../src/new_cfg.h"
+
+#ifdef PLATFORM_BEKEN_NEW
+
+#define SOFT_AP						BK_SOFT_AP
+#define STATION						BK_STATION
+#define SECURITY_TYPE_NONE			BK_SECURITY_TYPE_NONE
+#define SECURITY_TYPE_WEP			BK_SECURITY_TYPE_WEP
+#define SECURITY_TYPE_WPA_TKIP		BK_SECURITY_TYPE_WPA_TKIP
+#define SECURITY_TYPE_WPA_AES		BK_SECURITY_TYPE_WPA_AES
+#define SECURITY_TYPE_WPA2_TKIP		BK_SECURITY_TYPE_WPA2_TKIP
+#define SECURITY_TYPE_WPA2_AES		BK_SECURITY_TYPE_WPA2_AES
+#define SECURITY_TYPE_WPA2_MIXED	BK_SECURITY_TYPE_WPA2_MIXED
+#define SECURITY_TYPE_AUTO			BK_SECURITY_TYPE_AUTO
+
+#endif
+
+//extern int pbkdf2_sha1(const char* passphrase, const u8* ssid, size_t ssid_len,
+//	int iterations, u8* buf, size_t buflen);
+extern u8* wpas_get_sta_psk(void);
 
 static void (*g_wifiStatusCallback)(int code);
 
@@ -16,6 +37,7 @@ static void (*g_wifiStatusCallback)(int code);
 static char g_IP[32] = "unknown";
 static int g_bOpenAccessPointMode = 0;
 char *get_security_type(int type);
+bool g_bStaticIP = false, g_needFastConnectSave = false;
 
 IPStatusTypedef ipStatus;
 // This must return correct IP for both SOFT_AP and STATION modes,
@@ -83,17 +105,33 @@ char *get_security_type(int type) {
 		return "WEP";
 		break;
 	case SECURITY_TYPE_WPA_TKIP:
+	case SECURITY_TYPE_WPA2_TKIP:
 		return "TKIP";
 		break;
+	case SECURITY_TYPE_WPA_AES:
 	case SECURITY_TYPE_WPA2_AES:
 		return "CCMP";
 		break;
+#ifdef PLATFORM_BEKEN_NEW
+	case BK_SECURITY_TYPE_WPA_MIXED:
+#endif
 	case SECURITY_TYPE_WPA2_MIXED:
 		return "MIXED";
 		break;
 	case SECURITY_TYPE_AUTO:
 		return "AUTO";
 		break;
+#ifdef PLATFORM_BEKEN_NEW
+	case BK_SECURITY_TYPE_WPA3_SAE:
+		return "SAE";
+		break;
+	case BK_SECURITY_TYPE_WPA3_WPA2_MIXED:
+		return "MIXED3";
+		break;
+	case BK_SECURITY_TYPE_OWE:
+		return "OWE";
+		break;
+#endif
 	default:
 		return "Error";
 		break;
@@ -116,17 +154,14 @@ void HAL_PrintNetworkInfo()
 	LinkStatusTypeDef linkStatus;
 	network_InitTypeDef_ap_st ap_info;
 	char ssid[33] = { 0 };
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,
 #if CFG_IEEE80211N
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, 
-		"sta: %d, softap: %d, b/g/n\r\n", 
-		sta_ip_is_start(), 
-		uap_ip_is_start());
+		"sta: %d, softap: %d, b/g/n\r\n",
 #else
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, 	
-		"sta: %d, softap: %d, b/g\r\n", 
+		"sta: %d, softap: %d, b/g\r\n",
+#endif
 		sta_ip_is_start(), 
 		uap_ip_is_start());
-#endif
 
 	if (sta_ip_is_start())
 	{
@@ -134,14 +169,64 @@ void HAL_PrintNetworkInfo()
 		bk_wlan_get_link_status(&linkStatus);
 		memcpy(ssid, linkStatus.ssid, 32);
 
+		int cipher = bk_sta_cipher_type();
+
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, 
 			"sta:rssi=%d,ssid=%s,bssid=" MACSTR ",channel=%d,cipher_type:%s",
 			linkStatus.wifi_strength, 
 			ssid, 
 			MAC2STR(linkStatus.bssid), 
 			linkStatus.channel,
-			get_security_type(bk_sta_cipher_type())
+			get_security_type(cipher)
 			);
+
+		// bk_wlan_get_link_status doesn't work in handler when static ip is configured
+		if(g_needFastConnectSave && CFG_HasFlag(OBK_FLAG_WIFI_ENHANCED_FAST_CONNECT) && cipher != SECURITY_TYPE_AUTO)
+		{
+			// if we have SAE, mixed WPA3 (BK uses SAE not PSK in that case), WEP, Open, OWE or auto, then disable connection via psk
+#if PLATFORM_BEKEN_NEW
+			if(cipher <= SECURITY_TYPE_WEP || cipher >= BK_SECURITY_TYPE_WPA3_SAE)
+#else
+			if(cipher <= SECURITY_TYPE_WEP)
+#endif
+			{
+				// if we ignore that, and use psk - bk will fail to connect.
+				// If we use password instead of psk, then first attempt to connect will almost always fail.
+				// And even if it succeeds, first connect is not faster.
+				ADDLOG_WARN(LOG_FEATURE_GENERAL, "Fast connect is not supported with current AP encryption.");
+				if(g_cfg.fcdata.channel != 0)
+				{
+					g_cfg.fcdata.channel = 0;
+					g_cfg_pendingChanges++;
+				}
+			}
+			else
+			{
+				char psks[65];
+				//const char* wifi_ssid, * wifi_pass;
+				//wifi_ssid = CFG_GetWiFiSSID();
+				//wifi_pass = CFG_GetWiFiPass();
+				//unsigned char psk[32];
+				//pbkdf2_sha1(wifi_pass, (u8*)wifi_ssid, os_strlen(wifi_ssid), 4096, psk, 32);
+				uint8_t* psk = wpas_get_sta_psk();
+
+				for(int i = 0; i < 32 && sprintf(psks + i * 2, "%02x", psk[i]) == 2; i++);
+
+				if(memcmp((char*)psks, g_cfg.fcdata.psk, 64) != 0 ||
+					memcmp(g_cfg.fcdata.bssid, linkStatus.bssid, 6) != 0 ||
+					linkStatus.channel != g_cfg.fcdata.channel ||
+					linkStatus.security != g_cfg.fcdata.security_type)
+				{
+					ADDLOG_INFO(LOG_FEATURE_GENERAL, "Saved fast connect data differ to current one, saving...");
+					memcpy(g_cfg.fcdata.bssid, linkStatus.bssid, 6);
+					g_cfg.fcdata.channel = linkStatus.channel;
+					g_cfg.fcdata.security_type = linkStatus.security;
+					memcpy(g_cfg.fcdata.psk, psks, sizeof(g_cfg.fcdata.psk));
+					g_cfg_pendingChanges++;
+				}
+			}
+			g_needFastConnectSave = false;
+		}
 	}
 
 	if (uap_ip_is_start())
@@ -182,8 +267,10 @@ void wl_status(void* ctxt)
 
 	switch (stat) {
 	case RW_EVT_STA_IDLE:
+#ifndef PLATFORM_BEKEN_NEW
 	case RW_EVT_STA_SCANNING:
 	case RW_EVT_STA_SCAN_OVER:
+#endif
 	case RW_EVT_STA_CONNECTING:
 		if (g_wifiStatusCallback != 0) {
 			g_wifiStatusCallback(WIFI_STA_CONNECTING);
@@ -203,11 +290,12 @@ void wl_status(void* ctxt)
 			g_wifiStatusCallback(WIFI_STA_AUTH_FAILED);
 		}
 		break;
-	case RW_EVT_STA_CONNECTED:        /* authentication success */
-	case RW_EVT_STA_GOT_IP:
+	case RW_EVT_STA_CONNECTED: if(!g_bStaticIP) break;
+	case RW_EVT_STA_GOT_IP:          /* authentication success */
 		if (g_wifiStatusCallback != 0) {
 			g_wifiStatusCallback(WIFI_STA_CONNECTED);
 		}
+		g_needFastConnectSave = true;
 		break;
 
 		/* for softap mode */
@@ -239,6 +327,7 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 
 	bk_wlan_status_register_cb(wl_status);
 }
+
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip)
 {
 	g_bOpenAccessPointMode = 0;
@@ -253,6 +342,7 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 	network_cfg.wifi_mode = STATION;
 	if (ip->localIPAddr[0] == 0) {
 		network_cfg.dhcp_mode = DHCP_CLIENT;
+		g_bStaticIP = false;
 	}
 	else {
 		network_cfg.dhcp_mode = DHCP_DISABLE;
@@ -260,12 +350,65 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 		convert_IP_to_string(network_cfg.net_mask, ip->netMask);
 		convert_IP_to_string(network_cfg.gateway_ip_addr, ip->gatewayIPAddr);
 		convert_IP_to_string(network_cfg.dns_server_ip_addr, ip->dnsServerIpAddr);
+		g_bStaticIP = true;
 	}
 	network_cfg.wifi_retry_interval = 100;
 
-	ADDLOGF_INFO("ssid:%s key:%s\r\n", network_cfg.wifi_ssid, network_cfg.wifi_key);
+	//ADDLOGF_INFO("ssid:%s key:%s\r\n", network_cfg.wifi_ssid, network_cfg.wifi_key);
 
 	bk_wlan_start_sta(&network_cfg);
+}
+
+void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
+{
+	if(strnlen(g_cfg.fcdata.psk, 64) == 64 &&
+		g_cfg.fcdata.channel != 0 &&
+		g_cfg.fcdata.security_type != 0 &&
+		!(g_cfg.fcdata.bssid[0] == 0 && g_cfg.fcdata.bssid[1] == 0 && g_cfg.fcdata.bssid[2] == 0 &&
+		g_cfg.fcdata.bssid[3] == 0 && g_cfg.fcdata.bssid[4] == 0 && g_cfg.fcdata.bssid[5] == 0))
+	{
+		ADDLOG_INFO(LOG_FEATURE_GENERAL, "We have fast connection data, connecting...");
+		network_InitTypeDef_adv_st network_cfg;
+		memset(&network_cfg, 0, sizeof(network_InitTypeDef_adv_st));
+		strcpy(network_cfg.ap_info.ssid, oob_ssid);
+		memcpy(network_cfg.key, g_cfg.fcdata.psk, 64);
+		network_cfg.key_len = 64;
+		memcpy(network_cfg.ap_info.bssid, g_cfg.fcdata.bssid, sizeof(g_cfg.fcdata.bssid));
+
+		if(ip->localIPAddr[0] == 0)
+		{
+			network_cfg.dhcp_mode = DHCP_CLIENT;
+			g_bStaticIP = false;
+		}
+		else
+		{
+			network_cfg.dhcp_mode = DHCP_DISABLE;
+			convert_IP_to_string(network_cfg.local_ip_addr, ip->localIPAddr);
+			convert_IP_to_string(network_cfg.net_mask, ip->netMask);
+			convert_IP_to_string(network_cfg.gateway_ip_addr, ip->gatewayIPAddr);
+			convert_IP_to_string(network_cfg.dns_server_ip_addr, ip->dnsServerIpAddr);
+			g_bStaticIP = true;
+		}
+		network_cfg.ap_info.channel = g_cfg.fcdata.channel;
+		network_cfg.ap_info.security = g_cfg.fcdata.security_type;
+		network_cfg.wifi_retry_interval = 100;
+
+		bk_wlan_start_sta_adv(&network_cfg);
+	}
+	else
+	{
+		ADDLOG_INFO(LOG_FEATURE_GENERAL, "Fast connect data is empty, connecting normally");
+		HAL_ConnectToWiFi(oob_ssid, connect_key, ip);
+	}
+}
+
+void HAL_DisableEnhancedFastConnect()
+{
+	if(g_cfg.fcdata.channel != 0)
+	{
+		g_cfg.fcdata.channel = 0;
+		g_cfg_pendingChanges++;
+	}
 }
 
 void HAL_DisconnectFromWifi()
@@ -283,7 +426,6 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	general_param_t general;
 	ap_param_t ap_info;
 	network_InitTypeDef_st wNetConfig;
-	int len;
 	unsigned char* mac;
 
 	os_memset(&general, 0, sizeof(general_param_t));
@@ -291,9 +433,9 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	os_memset(&wNetConfig, 0x0, sizeof(network_InitTypeDef_st));
 
 	general.role = 1,
-		general.dhcp_enable = 1,
+	general.dhcp_enable = 1,
 
-		os_strcpy((char*)wNetConfig.local_ip_addr, APP_DRONE_DEF_NET_IP);
+	os_strcpy((char*)wNetConfig.local_ip_addr, APP_DRONE_DEF_NET_IP);
 	os_strcpy((char*)wNetConfig.net_mask, APP_DRONE_DEF_NET_MASK);
 	os_strcpy((char*)wNetConfig.dns_server_ip_addr, APP_DRONE_DEF_NET_GW);
 
@@ -314,7 +456,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 
 	bk_wlan_ap_set_default_channel(ap_info.chann);
 
-	len = os_strlen((char*)ap_info.ssid.array);
+	//int len = os_strlen((char*)ap_info.ssid.array);
 
 	os_strncpy((char*)wNetConfig.wifi_ssid, (char*)ap_info.ssid.array, sizeof(wNetConfig.wifi_ssid));
 	os_strncpy((char*)wNetConfig.wifi_key, (char*)ap_info.key, sizeof(wNetConfig.wifi_key));

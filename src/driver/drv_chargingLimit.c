@@ -91,8 +91,10 @@ void ChargingLimit_OnEverySecond() {
 	}
 }
 
-void ChargingLimit_AppendInformationToHTTPIndexPage(http_request_t* request)
+void ChargingLimit_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
+	if (bPreState)
+		return;
 	const char *rStr;
 	int type;
 

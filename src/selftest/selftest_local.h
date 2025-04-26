@@ -48,6 +48,7 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 #define SELFTEST_ASSERT_STRING(current,expected) SELFTEST_ASSERT((strcmp(expected,current) == 0));
 #define SELFTEST_ASSERT_INTEGER(current,expected) SELFTEST_ASSERT((expected==current));
 #define SELFTEST_ASSERT_HTML_REPLY(expected) SELFTEST_ASSERT((strcmp(Test_GetLastHTMLReply(),expected) == 0));
+#define SELFTEST_ASSERT_HTML_REPLY_CONTAINS(expected) SELFTEST_ASSERT((strstr(Test_GetLastHTMLReply(),expected)));
 #define SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR(topic, value, bRetain) SELFTEST_ASSERT(SIM_CheckMQTTHistoryForString(topic,value,bRetain));
 #define SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT(topic, value, bRetain) SELFTEST_ASSERT(SIM_CheckMQTTHistoryForFloat(topic,value,bRetain));
 #define SELFTEST_ASSERT_FLAG(flag, value) SELFTEST_ASSERT(CFG_HasFlag(flag)==value);
@@ -60,37 +61,12 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 #define SELFTEST_ASSERT_HAS_UART_EMPTY() SELFTEST_ASSERT(SIM_UART_GetDataSize()==0);
 
 //#define FLOAT_EQUALS (a,b) (fabs(a-b)<0.001f)
-inline float myFabs(float f) {
-	if (f < 0)
-		return -f;
-	return f;
-}
-inline bool Float_Equals(float a, float b) {
-	float res = myFabs(a - b);
-	return res < 0.001f;
-}
-inline bool Float_EqualsEpsilon(float a, float b, float epsilon) {
-	float res = myFabs(a - b);
-	return res < epsilon;
-}
+float myFabs(float f);
+bool Float_Equals(float a, float b);
+bool Float_EqualsEpsilon(float a, float b, float epsilon);
 
-#define VA_BUFFER_SIZE 4096
-#define VA_COUNT 4
 
-inline const char *va(const char *fmt, ...) {
-	va_list argList;
-	static int whi = 0;
-	static char buffer[VA_COUNT][VA_BUFFER_SIZE];
-
-	whi++;
-	whi %= VA_COUNT;
-	char *p = buffer[whi];
-
-	va_start(argList, fmt);
-	vsnprintf(p, VA_BUFFER_SIZE, fmt, argList);
-	va_end(argList);
-	return p;
-}
+const char *va(const char *fmt, ...);
 
 void Test_Battery();
 void Test_Flash_Search();
@@ -138,6 +114,7 @@ void Test_Demo_SimpleShuttersScript();
 void Test_Commands_Generic();
 void Test_ChangeHandlers_MQTT();
 void Test_ChangeHandlers();
+void Test_ChangeHandlers2();
 void Test_ChangeHandlers_EnsureThatChannelVariableIsExpandedAtHandlerRunTime();
 void Test_Commands_Calendar();
 void Test_CFG_Via_HTTP();
@@ -163,7 +140,7 @@ void Test_GetJSONValue_Setup(const char *text);
 void Test_FakeHTTPClientPacket_GET(const char *tg);
 void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data);
 void Test_FakeHTTPClientPacket_POST_withJSONReply(const char *tg, const char *data);
-void Test_FakeHTTPClientPacket_JSON(const char *tg, ...);
+void Test_FakeHTTPClientPacket_JSON(const char *tg);
 const char *Test_GetLastHTMLReply();
 
 bool SIM_HasHTTPTemperature();

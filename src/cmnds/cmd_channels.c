@@ -573,7 +573,7 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("GetReadings", CMD_GetReadings, NULL);
 	//cmddetail:{"name":"ShortName","args":"[Name]",
-	//cmddetail:"descr":"Sets the short name of the device.",
+	//cmddetail:"descr":"Sets the short name of the device. This is used as topic for MQTT, for example, for cmnd/obk123121/power etc MQTT calls",
 	//cmddetail:"fn":"CMD_ShortName","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ShortName", CMD_ShortName, NULL);

@@ -2,6 +2,7 @@
 
 #include "../hal_wifi.h"
 #include "../../new_common.h"
+#include "../../logging/logging.h"
 #include <lwip/sockets.h>
 #include <stdbool.h>
 #include "system_event.h"
@@ -11,7 +12,7 @@
 static void (*g_wifiStatusCallback)(int code) = NULL;
 extern system_event_cb_t s_event_handler_cb;
 
-bool g_STA_static_IP = 0;
+bool g_bStaticIP = 0;
 
 static struct ip_info if_ip;
 static int g_bOpenAccessPointMode = 0;
@@ -38,8 +39,9 @@ const char* HAL_GetMyMaskString()
 
 int WiFI_SetMacAddress(char* mac)
 {
-	printf("WiFI_SetMacAddress");
-	return 0; // error
+	char macstr[18] = { 0 };
+	sprintf(macstr, MAC_STR, MAC_VALUE((uint8_t*)mac));
+	return !amt_mac_write(&macstr);
 }
 
 void WiFI_GetMacAddress(char* mac)
@@ -49,7 +51,6 @@ void WiFI_GetMacAddress(char* mac)
 
 const char* HAL_GetMACStr(char* macstr)
 {
-	printf("HAL_GetMACStr");
 	unsigned char mac[6];
 	get_netif_mac(STATION_IF, mac);
 	sprintf(macstr, MACSTR, MAC2STR(mac));
@@ -60,13 +61,14 @@ void HAL_PrintNetworkInfo()
 {
 	uint8_t mac[6];
 	WiFI_GetMacAddress(mac);
-	bk_printf("+--------------- net device info ------------+\r\n");
-	bk_printf("|netif type    : %-16s            |\r\n", g_bOpenAccessPointMode == 0 ? "STA" : "AP");
-	bk_printf("|netif ip      = %-16s            |\r\n", HAL_GetMyIPString());
-	bk_printf("|netif mask    = %-16s            |\r\n", HAL_GetMyMaskString());
-	bk_printf("|netif gateway = %-16s            |\r\n", HAL_GetMyGatewayString());
-	bk_printf("|netif mac     : [%02X:%02X:%02X:%02X:%02X:%02X] %-7s |\r\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], "");
-	bk_printf("+--------------------------------------------+\r\n");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------- net device info ------------+\r\n");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_bOpenAccessPointMode == 0 ? "STA" : "AP");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif rssi    = %-16i            |\r\n", HAL_GetWifiStrength());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |\r\n", HAL_GetMyIPString());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |\r\n", HAL_GetMyMaskString());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif gateway = %-16s            |\r\n", HAL_GetMyGatewayString());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mac     : ["MAC_STR"] %-7s |\r\n", MAC_VALUE(mac), "");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------------------------------------+\r\n");
 }
 
 int HAL_GetWifiStrength()
@@ -91,6 +93,7 @@ static sys_err_t handle_wifi_event(void* ctx, system_event_t* event)
 				g_wifiStatusCallback(WIFI_STA_CONNECTING);
 			}
 		}
+		case SYSTEM_EVENT_STA_CONNECTED: if(!g_bStaticIP) break;
 		case SYSTEM_EVENT_STA_GOT_IP:
 		{
 			if(g_wifiStatusCallback != NULL)
@@ -109,7 +112,7 @@ static sys_err_t handle_wifi_event(void* ctx, system_event_t* event)
 			}
 			//HAL_DisconnectFromWifi();
 			//hal_lmac_reset_all();
-			HAL_RebootModule();
+			//HAL_RebootModule();
 			break;
 		}
 		case SYSTEM_EVENT_STA_ASSOC_REJECT:
@@ -137,7 +140,6 @@ static sys_err_t handle_wifi_event(void* ctx, system_event_t* event)
 
 void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 {
-	printf("HAL_WiFi_SetupStatusCallback");
 	g_wifiStatusCallback = cb;
 	sys_event_loop_set_cb(handle_wifi_event, NULL);
 }
@@ -146,7 +148,11 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 {
 	g_bOpenAccessPointMode = 0;
 	unsigned int sta_ip = 0, count = 0;
-	printf("HAL_ConnectToWiFi");
+	while(!wifi_is_ready_full())
+	{
+		sys_delay_ms(10);
+		system_printf("wifi not ready!\n");
+	}
 	wifi_set_opmode(WIFI_MODE_STA);
 	wifi_remove_config_all(STATION_IF);
 	wifi_remove_config_all(SOFTAP_IF);
@@ -154,6 +160,20 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 	wifi_config_ssid(STATION_IF, (unsigned char*)oob_ssid);
 	wifi_set_password(STATION_IF, connect_key);
 	wifi_config_commit(STATION_IF);
+	if(ip->localIPAddr[0] == 0)
+	{
+		g_bStaticIP = 0;
+	}
+	else
+	{
+		g_bStaticIP = 1;
+
+		IP4_ADDR(&if_ip.ip, ip->localIPAddr[0], ip->localIPAddr[1], ip->localIPAddr[2], ip->localIPAddr[3]);
+		IP4_ADDR(&if_ip.gw, ip->gatewayIPAddr[0], ip->gatewayIPAddr[1], ip->gatewayIPAddr[2], ip->gatewayIPAddr[3]);
+		IP4_ADDR(&if_ip.netmask, ip->netMask[0], ip->netMask[1], ip->netMask[2], ip->netMask[3]);
+		IP4_ADDR(&if_ip.dns1, ip->dnsServerIpAddr[0], ip->dnsServerIpAddr[1], ip->dnsServerIpAddr[2], ip->dnsServerIpAddr[3]);
+		set_sta_ipconfig(&if_ip);
+	}
 	wifi_set_status(STATION_IF, STA_STATUS_START);
 	struct netif* nif = NULL;
 	nif = get_netif_by_index(STATION_IF);
@@ -162,7 +182,6 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 
 void HAL_DisconnectFromWifi()
 {
-	printf("HAL_DisconnectFromWifi");
 	wifi_disconnect();
 }
 

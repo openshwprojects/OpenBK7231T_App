@@ -191,7 +191,9 @@ void DRV_WEMO_Send_Advert_To(int mode, struct sockaddr_in *addr) {
 	DRV_SSDP_SendReply(addr, buffer_out);
 }
 
-void WEMO_AppendInformationToHTTPIndexPage(http_request_t* request) {
+void WEMO_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState) {
+	if(bPreState)
+		return;
 	hprintf255(request, "<h4>WEMO: searches %i, setup %i, events %i, mService %i, event %i </h4>",
 		stat_searchesReceived, stat_setupXMLVisits, stat_eventsReceived, stat_metaServiceXMLVisits, stat_eventServiceXMLVisits);
 

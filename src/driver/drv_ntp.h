@@ -12,7 +12,7 @@ void NTP_OnEverySecond();
 // returns number of seconds passed after 1900
 unsigned int NTP_GetCurrentTime();
 unsigned int NTP_GetCurrentTimeWithoutOffset();
-void NTP_AppendInformationToHTTPIndexPage(http_request_t* request);
+void NTP_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
 bool NTP_IsTimeSynced();
 int NTP_GetTimesZoneOfsSeconds();
 void NTP_SetTimesZoneOfsSeconds(int o);
