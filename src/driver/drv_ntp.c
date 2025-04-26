@@ -62,6 +62,7 @@ static bool g_synced;
 //#define CFG_DEFAULT_TIMEOFFSETSECONDS (-8 * 60 * 60)
 static int g_timeOffsetSeconds = 0;
 // current time - this may be 32 or 64 bit, depending on platform
+// don't use as global variable, use functions to access and manipulate "clock" in "drv_deviceclock.c"
 time_t g_ntpTime;
 
 int NTP_GetTimesZoneOfsSeconds()
@@ -71,9 +72,13 @@ int NTP_GetTimesZoneOfsSeconds()
 
 // set offset seconds directly
 void NTP_SetTimesZoneOfsSeconds(int o) {
+/*
 	g_ntpTime -= g_timeOffsetSeconds;	// sub old offset
 	g_timeOffsetSeconds = o;		// set new offset
 	g_ntpTime += g_timeOffsetSeconds;	// add offset again
+*/	
+	g_timeOffsetSeconds = o;		// set new offset
+	CLOCK_setDeviceTimeOffset(g_timeOffsetSeconds);
 }
 
 commandResult_t NTP_SetTimeZoneOfs(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -102,8 +107,12 @@ commandResult_t NTP_SetTimeZoneOfs(const void *context, const char *cmd, const c
 	else {
 		g_timeOffsetSeconds = Tokenizer_GetArgInteger(0) * 60 * 60;
 	}
+/*
 	g_ntpTime -= oldOfs;
 	g_ntpTime += g_timeOffsetSeconds;
+*/
+	CLOCK_setDeviceTimeOffset(g_timeOffsetSeconds);
+
 #if ENABLE_CLOCK_DST
 // in rare cases time can be decreased so time of next DST is wrong
 // e.g. by mistake we set offset to two hours in EU and we have just passed start of summertime - next DST switch will be end of summertime
@@ -189,16 +198,12 @@ void NTP_Stop() {
     g_synced = false;
 }
 
+// just for compatibility 
 unsigned int NTP_GetCurrentTime() {
-    return g_ntpTime;
+    return Clock_GetCurrentTime();
 }
 unsigned int NTP_GetCurrentTimeWithoutOffset() {
-#if ENABLE_CLOCK_DST
-	return g_ntpTime - g_timeOffsetSeconds - getDST_offset();
-#else
-	return g_ntpTime - g_timeOffsetSeconds;
-#endif	
-
+	return Clock_GetCurrentTimeWithoutOffset();
 }
 
 
@@ -317,12 +322,16 @@ void NTP_CheckForReceive() {
     secsSince1900 = highWord << 16 | lowWord;
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Seconds since Jan 1 1900 = %u",secsSince1900);
 
+/*
     g_ntpTime = secsSince1900 - NTP_OFFSET;
     g_ntpTime += g_timeOffsetSeconds;
+*/
+   CLOCK_setDeviceTime((uint32_t) (secsSince1900 - NTP_OFFSET) );
 #if ENABLE_CLOCK_DST
-    g_ntpTime += setDST(0)*60;	// just to be sure: recalculate DST before setting, in case we somehow "moved back in time" we start with freshly set g_ntpTime, so don't change it inside setDST()!
+    setDST(0);	// just to be sure: recalculate DST
 #endif
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u",(unsigned int)g_ntpTime);
+    g_ntpTime=(time_t)Clock_GetCurrentTime();
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u",g_ntpTime);
     ltm = gmtime(&g_ntpTime);
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP, LTSTR, LTM2TIME(ltm));
 
@@ -358,7 +367,6 @@ void NTP_SendRequest_BlockingMode() {
 
 void NTP_OnEverySecond()
 {
-    g_ntpTime++;
 
     if(Main_IsConnectedToWiFi()==0)
     {
@@ -402,6 +410,7 @@ void NTP_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState
 	if (bPreState)
 		return;
     struct tm *ltm;
+    g_ntpTime=(time_t)Clock_GetCurrentTime();
 
     ltm = gmtime(&g_ntpTime);
 

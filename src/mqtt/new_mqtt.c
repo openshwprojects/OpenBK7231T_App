@@ -2554,7 +2554,9 @@ struct tm* mbedtls_platform_gmtime_r(const mbedtls_time_t* tt, struct tm* tm_buf
 		}			
 		return ltm;
 	}
-	return gmtime_r((time_t*)&g_ntpTime, tm_buf);
+	time_t ntpTime;
+	ntpTime=(time_t)Clock_GetCurrentTime();
+	return gmtime_r((time_t*)&ntpTime, tm_buf);
 }
 #endif  //MBEDTLS_PLATFORM_GMTIME_R_ALT
 

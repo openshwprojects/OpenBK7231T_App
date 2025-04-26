@@ -16,10 +16,18 @@
 #include "drv_ntp.h"
 
 // "eoch" on startup of device; If we add g_secondsElapsed we get the actual time  
-#if ENABLE_LOCAL_CLOCK
+#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 uint32_t g_epochOnStartup = 0;
 // UTC offset
 int g_UTCoffset = 0;
+void CLOCK_setDeviceTime(uint32_t time){
+	g_epochOnStartup = time - g_secondsElapsed;
+}
+
+void CLOCK_setDeviceTimeOffset(int offs){
+	g_UTCoffset = offs;
+}
+
 #endif
 
 
@@ -266,7 +274,7 @@ uint32_t setDST(bool setCLOCK)
 {
    if (useDST && Clock_IsTimeSynced()){
 	int year=CLOCK_GetYear();
-	time_t tempt;
+	time_t tempt=(time_t)Clock_GetCurrentTime();
 	int8_t old_DST=0;
 	char tmp[40];	// to hold date string of timestamp
 	Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year);
@@ -274,13 +282,13 @@ uint32_t setDST(bool setCLOCK)
 	old_DST = g_DST%128;	// 0 if "unset" because -128%128 = 0 
 
 	if ( Start_DST_epoch < End_DST_epoch ) {	// Northern --> begin before end
-		if (g_ntpTime < Start_DST_epoch) {
+		if (tempt < Start_DST_epoch) {
 			// we are in winter time before start of summer time
 			next_DST_switch_epoch=Start_DST_epoch;
 			g_DST=0;
 //			tempt = (time_t)Start_DST_epoch;
 //			ADDLOG_INFO(LOG_FEATURE_RAW, "Before first DST switch in %i. Info: DST starts at %lu (%.24s local time)\r\n",year,Start_DST_epoch,ctime(&tempt));
-		} else if (g_ntpTime < End_DST_epoch ){
+		} else if (tempt < End_DST_epoch ){
 			// we in summer time
 			next_DST_switch_epoch=End_DST_epoch;
 			g_DST=g_DST_offset;
@@ -295,13 +303,13 @@ uint32_t setDST(bool setCLOCK)
 //			ADDLOG_INFO(LOG_FEATURE_RAW, "After DST in %i. Info: Next DST start in next year at %lu (%.24s local time)\r\n",year,Start_DST_epoch,ctime(&tempt));
 		}
 	} else {	// so end of DST before begin of DST --> southern
-			if (g_ntpTime < End_DST_epoch) {
+			if (tempt < End_DST_epoch) {
 			// we in summer time at beginning of the yeay
 			next_DST_switch_epoch=End_DST_epoch;
 			g_DST=g_DST_offset;
 //			tempt = (time_t)End_DST_epoch;
 //			ADDLOG_INFO(LOG_FEATURE_RAW, "In first DST period of %i. Info: DST ends at %lu (%.24s local time)\r\n",year,End_DST_epoch,ctime(&tempt));
-		} else if (g_ntpTime < Start_DST_epoch ){
+		} else if (tempt < Start_DST_epoch ){
 			// we are in winter time 
 			next_DST_switch_epoch=Start_DST_epoch;
 			g_DST=0;
@@ -316,7 +324,7 @@ uint32_t setDST(bool setCLOCK)
 //			ADDLOG_INFO(LOG_FEATURE_RAW, "In second DST of %i. Info: DST ends next year at %lu (%.24s local time)\r\n",year,End_DST_epoch,ctime(&tempt));
 		}
 	}
-	g_ntpTime += (g_DST-old_DST)*60*setCLOCK;
+//	g_ntpTime += (g_DST-old_DST)*60*setCLOCK;
 	tempt = (time_t)next_DST_switch_epoch;
 
 	struct tm *ltm;
@@ -331,7 +339,7 @@ uint32_t setDST(bool setCLOCK)
 
 int IsDST()
 {
-	if (( g_DST == -128) || (g_ntpTime > next_DST_switch_epoch)) return setDST(1)!=0;	// only in case we don't know DST status, calculate it - and while at it: set ntpTime correctly...
+	if (( g_DST == -128) || (Clock_GetCurrentTime() > next_DST_switch_epoch)) return setDST(1)!=0;	// only in case we don't know DST status, calculate it - and while at it: set ntpTime correctly...
 	return g_DST!=0;									// otherwise we can safely return the prevously calculated value
 }
 
@@ -410,8 +418,8 @@ void CLOCK_OnEverySecond()
 #if ENABLE_CALENDAR_EVENTS
 	CLOCK_RunEvents(Clock_GetCurrentTime(), Clock_IsTimeSynced());
 #endif
-#if ENABLE_CLOCK_DST && ENABLE_NTP
-    if (useDST && (g_ntpTime >= next_DST_switch_epoch)){
+#if ENABLE_CLOCK_DST
+    if (useDST && (Clock_GetCurrentTime() >= next_DST_switch_epoch)){
     	int8_t old_DST=g_DST;
 	setDST(1);
     	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Passed DST switch time - recalculated DST offset. Was:%i - now:%i",old_DST,g_DST);
@@ -426,18 +434,23 @@ void CLOCK_OnEverySecond()
 
 
 uint32_t Clock_GetCurrentTime(){ 			// replacement for NTP_GetCurrentTime() to return time regardless of NTP present/running
-#if ENABLE_NTP
-	if (NTP_IsTimeSynced() == true) {
-		return (uint32_t)NTP_GetCurrentTime();
-	}
+// if we use "LOCAL_CLOCK", NTP will set this clock if enabled, so no further check needed
+#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
+	if (g_epochOnStartup > 10) {
+		return g_epochOnStartup + g_secondsElapsed + g_UTCoffset
+#if ENABLE_CLOCK_DST
+		+  useDST ? g_DST : 0
+#endif 
+		 ;
+	}	// no "else" needed, will return 0 anyway if we don't return here
 #endif
 	return 0;					// we will report 1970-01-01 if no time present - avoids "hack" e.g. in json status ...
 };
 
 uint32_t Clock_GetCurrentTimeWithoutOffset(){ 	// ... same forNTP_GetCurrentTimeWithoutOffset()...
-#if ENABLE_NTP
-	if (NTP_IsTimeSynced() == true) {
-		return (uint32_t)NTP_GetCurrentTimeWithoutOffset();
+#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
+	if (g_epochOnStartup > 10) {
+		return g_epochOnStartup + g_secondsElapsed;
 	}
 #endif
 	return  0;
@@ -446,7 +459,11 @@ uint32_t Clock_GetCurrentTimeWithoutOffset(){ 	// ... same forNTP_GetCurrentTime
 
 
 bool Clock_IsTimeSynced(){ 				// ... and for NTP_IsTimeSynced()
-#if ENABLE_NTP
+#if ENABLE_LOCAL_CLOCK
+	if (g_epochOnStartup > 10) {
+		return true;
+	}
+#elif ENABLE_NTP
 	if (NTP_IsTimeSynced() == true) {
 		return true;
 	}
@@ -457,10 +474,10 @@ bool Clock_IsTimeSynced(){ 				// ... and for NTP_IsTimeSynced()
 
 int Clock_GetTimesZoneOfsSeconds()			// ... and for NTP_GetTimesZoneOfsSeconds()
 {
-#if ENABLE_NTP
-	if (NTP_IsTimeSynced() == true) {
-		return NTP_GetTimesZoneOfsSeconds();
-	}
+#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
+	if (g_epochOnStartup > 10) {
+		return g_UTCoffset;
+	}	// no "else" needed, will return 0 anyway if we don't return here
 #endif
 	return 0;
 }
