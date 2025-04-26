@@ -81,56 +81,6 @@ void NTP_SetTimesZoneOfsSeconds(int o) {
 	CLOCK_setDeviceTimeOffset(g_timeOffsetSeconds);
 }
 
-commandResult_t NTP_SetTimeZoneOfs(const void *context, const char *cmd, const char *args, int cmdFlags) {
-	int a, b;
-	const char *arg;
-	int oldOfs;
-
-    Tokenizer_TokenizeString(args,0);
-	// following check must be done after 'Tokenizer_TokenizeString',
-	// so we know arguments count in Tokenizer. 'cmd' argument is
-	// only for warning display
-	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
-	arg = Tokenizer_GetArg(0);
-	oldOfs = g_timeOffsetSeconds;
-	if (strchr(arg, ':')) {
-		int useSign = 1;
-		if (*arg == '-') {
-			arg++;
-			useSign = -1;
-		}
-		sscanf(arg, "%i:%i", &a, &b);
-		g_timeOffsetSeconds = useSign * (a * 60 * 60 + b * 60);
-	}
-	else {
-		g_timeOffsetSeconds = Tokenizer_GetArgInteger(0) * 60 * 60;
-	}
-/*
-	g_ntpTime -= oldOfs;
-	g_ntpTime += g_timeOffsetSeconds;
-*/
-	CLOCK_setDeviceTimeOffset(g_timeOffsetSeconds);
-
-#if ENABLE_CLOCK_DST
-// in rare cases time can be decreased so time of next DST is wrong
-// e.g. by mistake we set offset to two hours in EU and we have just passed start of summertime - next DST switch will be end of summertime
-// if we now adjust the clock to the correct offset of one hour, we are slightliy before start of summertime
-// so just to be sure, recalculate DST in any case
-    	setDST(1);	// setDST will take care of all details
-#endif
-	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP offset set to %i seconds"
-#if ENABLE_CLOCK_DST
-	" (DST offset %i seconds)"
-#endif	
-	,g_timeOffsetSeconds
-#if ENABLE_CLOCK_DST
-	,getDST_offset()
-#endif	
-	);
-	return CMD_RES_OK;
-}
 
 //Set custom NTP server
 commandResult_t NTP_SetServer(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -151,7 +101,7 @@ commandResult_t NTP_SetServer(const void *context, const char *cmd, const char *
 
 //Display settings used by the NTP driver
 commandResult_t NTP_Info(const void *context, const char *cmd, const char *args, int cmdFlags) {
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "Server=%s, Time offset=%d", CFG_GetNTPServer(), g_timeOffsetSeconds);
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "Server=%s, Time offset=%d", CFG_GetNTPServer(), Clock_GetTimesZoneOfsSeconds());
     return CMD_RES_OK;
 }
 
@@ -180,7 +130,7 @@ void NTP_Init() {
 	//cmddetail:"descr":"Sets the time zone offset in hours. Also supports HH:MM syntax if you want to specify value in minutes. For negative values, use -HH:MM syntax, for example -5:30 will shift time by 5 hours and 30 minutes negative.",
 	//cmddetail:"fn":"NTP_SetTimeZoneOfs","file":"driver/drv_ntp.c","requires":"",
 	//cmddetail:"examples":""}
-    CMD_RegisterCommand("ntp_timeZoneOfs",NTP_SetTimeZoneOfs, NULL);
+    CMD_RegisterCommand("ntp_timeZoneOfs",SetTimeZoneOfs, NULL);
 	//cmddetail:{"name":"ntp_setServer","args":"[ServerIP]",
 	//cmddetail:"descr":"Sets the NTP server",
 	//cmddetail:"fn":"NTP_SetServer","file":"driver/drv_ntp.c","requires":"",

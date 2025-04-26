@@ -2,6 +2,8 @@
 #define __DRV_DEVICECLOCK_H__
 
 #include "../httpserver/new_http.h"
+#include "../cmnds/cmd_public.h"
+
 
 int CLOCK_GetWeekDay();
 int CLOCK_GetHour();
@@ -21,6 +23,10 @@ int CLOCK_RemoveEvent(int id);
 int CLOCK_ClearEvents();
 void CLOCK_Init();
 void CLOCK_OnEverySecond();
+#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
+commandResult_t SetTimeZoneOfs(const void *context, const char *cmd, const char *args, int cmdFlags);
+#endif
+
 #if ENABLE_CLOCK_SUNRISE_SUNSET
 extern struct SUN_DATA {  /* sunrise / sunset globals */
 	int latitude;  /* latitude * 1000000 */
@@ -39,7 +45,7 @@ int Time_IsDST();
 // only after setting g_ntpTime freshly from an NTP packet	--> call setDST(0)
 // we must not alter g_ntpTime inside setDST in this case (the old offsets are no longer valid)
 uint32_t setDST(bool setCLOCK);
-int8_t getDST_offset();
+int getDST_offset();
 
 #endif
 

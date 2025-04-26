@@ -31,6 +31,51 @@ void CLOCK_setDeviceTimeOffset(int offs){
 	g_UTCoffset = offs;
 }
 
+commandResult_t SetTimeZoneOfs(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	int a, b;
+	const char *arg;
+	int oldOfs = g_UTCoffset;
+
+    Tokenizer_TokenizeString(args,0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	arg = Tokenizer_GetArg(0);
+	if (strchr(arg, ':')) {
+		int useSign = 1;
+		if (*arg == '-') {
+			arg++;
+			useSign = -1;
+		}
+		sscanf(arg, "%i:%i", &a, &b);
+		g_UTCoffset = useSign * (a * 60 * 60 + b * 60);
+	}
+	else {
+		g_UTCoffset = Tokenizer_GetArgInteger(0) * 60 * 60;
+	}
+
+#if ENABLE_CLOCK_DST
+// in rare cases time can be decreased so time of next DST is wrong
+// e.g. by mistake we set offset to two hours in EU and we have just passed start of summertime - next DST switch will be end of summertime
+// if we now adjust the clock to the correct offset of one hour, we are slightliy before start of summertime
+// so just to be sure, recalculate DST in any case
+    	setDST(1);	// setDST will take care of all details
+#endif
+	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Time offset set to %i seconds"
+#if ENABLE_CLOCK_DST
+	" (DST offset %i seconds)"
+#endif	
+	,g_UTCoffset
+#if ENABLE_CLOCK_DST
+	,getDST_offset()
+#endif	
+	);
+	return CMD_RES_OK;
+}
+
 #endif
 
 
@@ -264,7 +309,7 @@ uint32_t RuleToTime(uint8_t dow, uint8_t mo, uint8_t week,  uint8_t hr, int yr) 
   return t;
 }
 
-int8_t getDST_offset()
+int getDST_offset()
 {
 	return (g_DST%128)*60;	// return 0 if "unset" because -128%128 = 0 
 };
@@ -411,6 +456,13 @@ void CLOCK_Init() {
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("clock_calcDST",CLOCK_CalcDST, NULL);
 #endif
+#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
+	//cmddetail:{"name":"clock_setTZ","args":"[Value]",
+	//cmddetail:"descr":"Sets the time zone offset in hours. Also supports HH:MM syntax if you want to specify value in minutes. For negative values, use -HH:MM syntax, for example -5:30 will shift time by 5 hours and 30 minutes negative.",
+	//cmddetail:"fn":"NTP_SetTimeZoneOfs","file":"driver/drv_deviceclock.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("clock_setTZ",SetTimeZoneOfs, NULL);
+#endif
 
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "CLOCK driver initialized.");
 }
@@ -433,29 +485,14 @@ void CLOCK_OnEverySecond()
 }
 
 
-
-
-
 uint32_t Clock_GetCurrentTime(){ 			// replacement for NTP_GetCurrentTime() to return time regardless of NTP present/running
 // if we use "LOCAL_CLOCK", NTP will set this clock if enabled, so no further check needed
 uint32_t temp=0;
-/*
-#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
-	if (g_epochOnStartup > 10) {
-		return g_epochOnStartup + g_secondsElapsed + g_UTCoffset
-#if ENABLE_CLOCK_DST
-		+  useDST ? g_DST : 0
-#endif 
-		 ;
-	}	// no "else" needed, will return 0 anyway if we don't return here
-#endif
-	return 0;					// we will report 1970-01-01 if no time present - avoids "hack" e.g. in json status ...
-*/
 #if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 	if (g_epochOnStartup > 10) {
 		temp = g_epochOnStartup + g_secondsElapsed + g_UTCoffset;
 #if ENABLE_CLOCK_DST
-		temp +=  useDST ? g_DST : 0;
+		temp +=  getDST_offset();
 #endif 
 	}	// no "else" needed, will return 0 anyway if we don't return here
 #endif
