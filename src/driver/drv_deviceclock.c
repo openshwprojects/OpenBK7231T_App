@@ -324,14 +324,14 @@ uint32_t setDST(bool setCLOCK)
 {
    if (useDST && Clock_IsTimeSynced()){
 	int year=CLOCK_GetYear();
-	time_t tempt=(time_t)Clock_GetCurrentTime();
+	time_t tempt=(time_t)Clock_GetCurrentTimeWithoutOffset();
 	struct tm *ltm;
 	ltm = gmtime(&tempt);
 	ADDLOG_INFO(LOG_FEATURE_RAW, "setDST %.24s local time -- ",ctime(&tempt));
 	int8_t old_DST=0;
 	char tmp[40];	// to hold date string of timestamp
-	Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year);
-	End_DST_epoch = RuleToTime(dayEnd,monthEnd,nthWeekEnd,hourEnd,year);
+	Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year)-g_UTCoffset;
+	End_DST_epoch = RuleToTime(dayEnd,monthEnd,nthWeekEnd,hourEnd,year)-g_UTCoffset-g_DST_offset*60;
 	old_DST = g_DST%128;	// 0 if "unset" because -128%128 = 0 
 
 	if ( Start_DST_epoch < End_DST_epoch ) {	// Northern --> begin before end
