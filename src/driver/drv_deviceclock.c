@@ -327,7 +327,7 @@ uint32_t setDST(bool setCLOCK)
 	time_t tempt=(time_t)Clock_GetCurrentTimeWithoutOffset();
 	struct tm *ltm;
 	ltm = gmtime(&tempt);
-	ADDLOG_INFO(LOG_FEATURE_RAW, "setDST %.24s local time -- ",ctime(&tempt));
+	ADDLOG_INFO(LOG_FEATURE_RAW, "setDST %.24s UTC -- ",ctime(&tempt));
 	int8_t old_DST=0;
 	char tmp[40];	// to hold date string of timestamp
 	Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year)-g_UTCoffset;
@@ -378,8 +378,8 @@ uint32_t setDST(bool setCLOCK)
 		}
 	}
 //	g_ntpTime += (g_DST-old_DST)*60*setCLOCK;
-	tempt = (time_t)next_DST_switch_epoch;
-
+	tempt = (time_t)next_DST_switch_epoch + g_UTCoffset;	// DST calculation is in UTC, so add offset for local time
+	if (g_DST>-128 && g_DST != 0) tempt+=g_DST_offset*60;
 	ltm = gmtime(&tempt);
 	ADDLOG_INFO(LOG_FEATURE_RAW, "In %s time - next DST switch at %lu (" LTSTR ")\r\n",
 	(g_DST>-128 && g_DST != 0)?"summer":"standard", next_DST_switch_epoch, LTM2TIME(ltm));
@@ -391,7 +391,7 @@ uint32_t setDST(bool setCLOCK)
 
 int IsDST()
 {
-	if (( g_DST == -128) || (Clock_GetCurrentTime() > next_DST_switch_epoch)) return setDST(1)!=0;	// only in case we don't know DST status, calculate it - and while at it: set ntpTime correctly...
+	if (( g_DST == -128) || (Clock_GetCurrentTimeWithoutOffset() > next_DST_switch_epoch)) return setDST(1)!=0;	// only in case we don't know DST status, calculate it - and while at it: set ntpTime correctly...
 	return g_DST!=0;									// otherwise we can safely return the prevously calculated value
 }
 
@@ -478,7 +478,7 @@ void CLOCK_OnEverySecond()
 	CLOCK_RunEvents(Clock_GetCurrentTime(), Clock_IsTimeSynced());
 #endif
 #if ENABLE_CLOCK_DST
-    if (useDST && (Clock_GetCurrentTime() >= next_DST_switch_epoch)){
+    if (useDST && (Clock_GetCurrentTimeWithoutOffset() >= next_DST_switch_epoch)){
     	int8_t old_DST=g_DST;
 	setDST(1);
     	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Passed DST switch time - recalculated DST offset. Was:%i - now:%i",old_DST,g_DST);
