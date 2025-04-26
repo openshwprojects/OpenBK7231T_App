@@ -335,7 +335,7 @@ void NTP_CheckForReceive() {
     setDST(0);	// just to be sure: recalculate DST
 #endif
     g_ntpTime=(time_t)Clock_GetCurrentTime();
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u",g_ntpTime);
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u",(uint32_t)g_ntpTime);
     ltm = gmtime(&g_ntpTime);
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP, LTSTR, LTM2TIME(ltm));
 

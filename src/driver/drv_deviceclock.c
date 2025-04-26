@@ -21,10 +21,13 @@ uint32_t g_epochOnStartup = 0;
 // UTC offset
 int g_UTCoffset = 0;
 void CLOCK_setDeviceTime(uint32_t time){
-	g_epochOnStartup = time - g_secondsElapsed;
+//	ADDLOG_INFO(LOG_FEATURE_RAW, "CLOCK_setDeviceTime - time = %lu - g_secondsElapsed =%lu \r\n",time,g_secondsElapsed);
+	g_epochOnStartup = (uint32_t)time - g_secondsElapsed;
+//	ADDLOG_INFO(LOG_FEATURE_RAW, "CLOCK_setDeviceTime - time = %lu - g_secondsElapsed =%lu - g_epochOnStartup=%lu \r\n",time,g_secondsElapsed,g_epochOnStartup);
 }
 
 void CLOCK_setDeviceTimeOffset(int offs){
+//	ADDLOG_INFO(LOG_FEATURE_RAW, "CLOCK_setDeviceTimeOffset - offs = %i\r\n",offs);
 	g_UTCoffset = offs;
 }
 
@@ -435,6 +438,8 @@ void CLOCK_OnEverySecond()
 
 uint32_t Clock_GetCurrentTime(){ 			// replacement for NTP_GetCurrentTime() to return time regardless of NTP present/running
 // if we use "LOCAL_CLOCK", NTP will set this clock if enabled, so no further check needed
+uint32_t temp=0;
+/*
 #if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 	if (g_epochOnStartup > 10) {
 		return g_epochOnStartup + g_secondsElapsed + g_UTCoffset
@@ -445,6 +450,18 @@ uint32_t Clock_GetCurrentTime(){ 			// replacement for NTP_GetCurrentTime() to r
 	}	// no "else" needed, will return 0 anyway if we don't return here
 #endif
 	return 0;					// we will report 1970-01-01 if no time present - avoids "hack" e.g. in json status ...
+*/
+#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
+	if (g_epochOnStartup > 10) {
+		temp = g_epochOnStartup + g_secondsElapsed + g_UTCoffset;
+#if ENABLE_CLOCK_DST
+		temp +=  useDST ? g_DST : 0;
+#endif 
+	}	// no "else" needed, will return 0 anyway if we don't return here
+#endif
+//    	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Clock_GetCurrentTime - returning :%lu (g_epochOnStartup=%lu g_secondsElapsed=%lu g_UTCoffset=%i DST=%i)",temp,g_epochOnStartup, g_secondsElapsed, g_UTCoffset,useDST ? g_DST : 0);
+	return temp;					// we will report 1970-01-01 if no time present - avoids "hack" e.g. in json status ...
+
 };
 
 uint32_t Clock_GetCurrentTimeWithoutOffset(){ 	// ... same forNTP_GetCurrentTimeWithoutOffset()...
