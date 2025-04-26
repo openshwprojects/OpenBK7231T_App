@@ -25,7 +25,7 @@ https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccesspro
 #include "drv_uart.h"
 #include "drv_public.h"
 #include <time.h>
-#include "drv_ntp.h"
+#include "drv_deviceclock.h"
 #include "../rgb2hsv.h"
 
 
