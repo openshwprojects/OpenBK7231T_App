@@ -315,7 +315,7 @@ OpenXR809: prebuild_OpenXR809
 	$(MAKE) build-XR809;
 
 build-XR809: sdk/OpenXR809/project/oxr_sharedApp/shared sdk/OpenXR809/tools/gcc-arm-none-eabi-8-2019-q3-update
-	$(MAKE) -C sdk/OpenXR809/src CC_DIR=$(PWD)/sdk/OpenXR809/tools/gcc-arm-none-eabi-8-2019-q3-update
+	$(MAKE) -C sdk/OpenXR809/src CC_DIR=$(PWD)/sdk/OpenXR809/tools/gcc-arm-none-eabi-8-2019-q3-update/bin
 	$(MAKE) -C sdk/OpenXR809/src install CC_DIR=$(PWD)/sdk/OpenXR809/gcc-arm-none-eabi-8-2019-q3-update/bin
 	$(MAKE) -C sdk/OpenXR809/project/oxr_sharedApp/gcc CC_DIR=$(PWD)/sdk/OpenXR809/tools/gcc-arm-none-eabi-8-2019-q3-update/bin
 	$(MAKE) -C sdk/OpenXR809/project/oxr_sharedApp/gcc image CC_DIR=$(PWD)/sdk/OpenXR809/tools/gcc-arm-none-eabi-8-2019-q3-update/bin
