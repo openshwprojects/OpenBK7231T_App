@@ -61,7 +61,7 @@
 [submodule "sdk/OpenXR872"]
 	path = sdk/OpenXR872
 	url = https://github.com/divadiow/OpenXR872.git
-	branch = ota
+	branch = test
 
 [submodule "sdk/OpenXR806"]
 	path = sdk/OpenXR806
