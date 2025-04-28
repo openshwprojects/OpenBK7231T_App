@@ -65,5 +65,5 @@
 
 [submodule "sdk/OpenXR806"]
 	path = sdk/OpenXR806
-	url = https://github.com/openshwprojects/OpenXR806
-	branch = master
+	url = https://github.com/divadiow/xr806_sdk
+	branch = xr806_config_save
