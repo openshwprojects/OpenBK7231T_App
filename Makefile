@@ -269,8 +269,8 @@ sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q2:
 sdk/OpenXR806/tools/gcc-arm-none-eabi-8-2019-q3-update:
 	cd sdk/OpenXR806/tools && wget -q "https://developer.arm.com/-/media/Files/downloads/gnu-rm/8-2019q3/RC1.1/gcc-arm-none-eabi-8-2019-q3-update-linux.tar.bz2" && tar -xf *.tar.bz2 && rm -f *.tar.bz2
 
-sdk/OpenXR872/tools/gcc-arm-none-eabi-8-2019-q3-update:
-	cd sdk/OpenXR872/tools && wget -q "https://developer.arm.com/-/media/Files/downloads/gnu-rm/8-2019q3/RC1.1/gcc-arm-none-eabi-8-2019-q3-update-linux.tar.bz2" && tar -xf *.tar.bz2 && rm -f *.tar.bz2
+sdk/OpenXR872/tools/gcc-arm-none-eabi-9-2019-q4-major:
+	cd sdk/OpenXR872/tools && wget -q "https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2" && tar -xf *.tar.bz2 && rm -f *.tar.bz2
 
 .PHONY: OpenXR872 build-XR872
 # Retry OpenXR809 a few times to account for calibration file issues
@@ -280,11 +280,11 @@ OpenXR872: prebuild_OpenXR872
 	@echo Running build final time to check output
 	$(MAKE) build-XR872;
 
-build-XR872: sdk/OpenXR872/project/demo/hello_demo/shared sdk/OpenXR872/tools/gcc-arm-none-eabi-8-2019-q3-update
-	$(MAKE) -C sdk/OpenXR872/src CC_DIR=$(PWD)/sdk/OpenXR872/tools/gcc-arm-none-eabi-8-2019-q3-update/bin
-	$(MAKE) -C sdk/OpenXR872/src install CC_DIR=$(PWD)/sdk/OpenXR872/tools/gcc-arm-none-eabi-8-2019-q3-update/bin
-	$(MAKE) -C sdk/OpenXR872/project/demo/hello_demo/gcc CC_DIR=$(PWD)/sdk/OpenXR872/tools/gcc-arm-none-eabi-8-2019-q3-update/bin
-	$(MAKE) -C sdk/OpenXR872/project/demo/hello_demo/gcc image CC_DIR=$(PWD)/sdk/OpenXR872/tools/gcc-arm-none-eabi-8-2019-q3-update/bin
+build-XR872: sdk/OpenXR872/project/demo/hello_demo/shared sdk/OpenXR872/tools/gcc-arm-none-eabi-9-2019-q4-major
+	$(MAKE) -C sdk/OpenXR872/src CC_DIR=$(PWD)/sdk/OpenXR872/tools/gcc-arm-none-eabi-9-2019-q4-major/bin
+	$(MAKE) -C sdk/OpenXR872/src install CC_DIR=$(PWD)/sdk/OpenXR872/tools/gcc-arm-none-eabi-9-2019-q4-major/bin
+	$(MAKE) -C sdk/OpenXR872/project/demo/hello_demo/gcc CC_DIR=$(PWD)/sdk/OpenXR872/tools/gcc-arm-none-eabi-9-2019-q4-major/bin
+	$(MAKE) -C sdk/OpenXR872/project/demo/hello_demo/gcc image CC_DIR=$(PWD)/sdk/OpenXR872/tools/gcc-arm-none-eabi-9-2019-q4-major/bin
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenXR872/project/demo/hello_demo/image/xr872/xr_system.img output/$(APP_VERSION)/OpenXR872_$(APP_VERSION).img
 	
