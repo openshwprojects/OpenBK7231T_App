@@ -186,6 +186,15 @@ jobs:
       - run: ls -la
       - name: Run make
         run: make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT=${{ matrix.variant }} ${{ matrix.platform }}
+      - name: Upload build map file
+        if: matrix.platform == 'OpenXR872'
+        uses: actions/upload-artifact@v4
+        with:
+         name: build-map-${{ matrix.platform }}-${{ needs.refs.outputs.version }}
+         path: |
+          sdk/OpenXR872/project/demo/hello_demo/gcc/hello_demo.map
+         if-no-files-found: warn
+
       - name: Save build assets
         uses: actions/upload-artifact@v4
         with:
