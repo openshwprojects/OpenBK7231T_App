@@ -456,8 +456,11 @@ uint32_t Clock_GetCurrentTimeWithoutOffset(){ 	// ... same forNTP_GetCurrentTime
 };
 
 
-char (*__kaboom)[sizeof( bool )] = 1;
-
+char (*__kaboom1)[sizeof( bool )] = 1;
+void kaboom1_print( void )
+{
+    printf( "%d", __kaboom1 );
+}
 bool Clock_IsTimeSynced(){ 				// ... and for NTP_IsTimeSynced()
 #if ENABLE_LOCAL_CLOCK
 	if (g_epochOnStartup > 10) {
@@ -471,7 +474,10 @@ bool Clock_IsTimeSynced(){ 				// ... and for NTP_IsTimeSynced()
 	return  false;
 }
 char (*__kabooom)[sizeof( Clock_IsTimeSynced() )] = 1;
-
+void kabooom_print( void )
+{
+    printf( "%d", __kabooom );
+}
 
 int Clock_GetTimesZoneOfsSeconds()			// ... and for NTP_GetTimesZoneOfsSeconds()
 {
