@@ -456,6 +456,7 @@ uint32_t Clock_GetCurrentTimeWithoutOffset(){ 	// ... same forNTP_GetCurrentTime
 };
 
 
+char (*__kaboom)[sizeof( bool )] = 1;
 
 bool Clock_IsTimeSynced(){ 				// ... and for NTP_IsTimeSynced()
 #if ENABLE_LOCAL_CLOCK
