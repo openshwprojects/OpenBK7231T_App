@@ -213,7 +213,7 @@ int CLOCK_GetYear(void) {
 }
 
 int CLOCK_GetWeekDay(void) {
-    return (getCurrentComponents().wday + 7) % 7;
+    return getCurrentComponents().wday;
 }
 
 

@@ -2,17 +2,6 @@
 #define __DRV_PUBLIC_H__
 
 #include "../httpserver/new_http.h"
-#include "../new_common.h"		// else we have conflicting types for "bool", since drv_local.h includes ../cmnds/cmd_public.h, which includes new_common.h defining bool
-/*
-In file included from ../shared/src/httpserver/json_interface.c:24:0:
-../shared/src/httpserver/../driver/drv_local.h:78:6: error: conflicting types for 'DRV_IsRunning'
- bool DRV_IsRunning(const char* name);
-      ^
-In file included from ../shared/src/httpserver/json_interface.c:9:0:
-../shared/src/httpserver/../driver/drv_public.h:61:6: note: previous declaration of 'DRV_IsRunning' was here
- bool DRV_IsRunning(const char* name);
-      ^
-*/
 
 typedef enum energySensor_e {
 	OBK__FIRST = 0,

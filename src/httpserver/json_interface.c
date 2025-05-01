@@ -17,12 +17,12 @@
 #include "hass.h"
 #include "../cJSON/cJSON.h"
 //#include <time.h>
-#include "../libraries/obktime/obktime.h"	// for time functions
-
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_deviceclock.h"
 #include "../driver/drv_local.h"
 #include "../driver/drv_bl_shared.h"
+
+#include "../libraries/obktime/obktime.h"	// for time functions
 
 #if ENABLE_TASMOTA_JSON
 
