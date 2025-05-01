@@ -251,7 +251,7 @@ This platform is not supported, error!
 #define bk_printf printf
 
 // generic
-typedef int bool;
+//typedef int bool;
 #define true 1
 #define false 0
 
