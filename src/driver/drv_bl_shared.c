@@ -17,7 +17,9 @@
 #include "drv_uart.h"
 #include "../cmnds/cmd_public.h" //for enum EventCode
 #include <math.h>
-#include <time.h>
+//#include <time.h>
+#include "../libraries/obktime/obktime.h"	// for time functions
+
 
 #if ENABLE_BL_TWIN
 #define BL_SENSDATASETS_COUNT 2
@@ -204,9 +206,11 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t * request, int bPreS
     {
       poststr(request, "<h5>Energy Clear Date: ");
       if (ConsumptionResetTime) {
-        ltm = gmtime(&ConsumptionResetTime);
+/*        ltm = gmtime(&ConsumptionResetTime);
         hprintf255(request, "%04d-%02d-%02d %02d:%02d:%02d",
           ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+*/
+        hprintf255(request, "%s",TS2STR(ConsumptionResetTime,TIME_FORMAT_LONG));
       } else {
         poststr(request, "(not set)");
       }
@@ -706,21 +710,25 @@ void BL_ProcessUpdate(float voltage, float current, float power,
 
     if (Clock_IsTimeSynced()) {
       deviceTime = (time_t)Clock_GetCurrentTime();
-      ltm = gmtime(&deviceTime);
+//      ltm = gmtime(&deviceTime);
+      uint8_t mday=CLOCK_GetMDay();
       if (ConsumptionResetTime == 0)
         ConsumptionResetTime = (time_t)deviceTime;
 
       if (actual_mday[asensdatasetix] == -1)
       {
-        actual_mday[asensdatasetix] = ltm->tm_mday;
+//        actual_mday[asensdatasetix] = ltm->tm_mday;
+        actual_mday[asensdatasetix] = mday;
       }
-      if (actual_mday[asensdatasetix] != ltm->tm_mday)
+//      if (actual_mday[asensdatasetix] != ltm->tm_mday)
+      if (actual_mday[asensdatasetix] != mday)
       {
         for (i = OBK_CONSUMPTION__DAILY_LAST; i >= OBK_CONSUMPTION__DAILY_FIRST; i--) {
           sensdataset->sensors[i].lastReading = sensdataset->sensors[i - 1].lastReading;
         }
         sensdataset->sensors[OBK_CONSUMPTION_TODAY].lastReading = 0.0;
-        actual_mday[asensdatasetix] = ltm->tm_mday;
+//        actual_mday[asensdatasetix] = ltm->tm_mday;
+        actual_mday[asensdatasetix] = mday;
 
         //MQTT_PublishMain_StringFloat(sensdataset->sensors[OBK_CONSUMPTION_YESTERDAY].names.name_mqtt, BL_ChangeEnergyUnitIfNeeded(sensors[OBK_CONSUMPTION_YESTERDAY].lastReading ),
         //							sensdataset->sensors[OBK_CONSUMPTION_YESTERDAY].rounding_decimals, 0);
@@ -766,7 +774,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
           {
             cJSON_AddNumberToObject(root, "consumption_today", BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_TODAY)));
             cJSON_AddNumberToObject(root, "consumption_yesterday", BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_YESTERDAY)));
-            ltm = gmtime(&ConsumptionResetTime);
+//            ltm = gmtime(&ConsumptionResetTime);
 /*
             if (Clock_GetTimesZoneOfsSeconds()>0)
             {
@@ -782,10 +790,13 @@ void BL_ProcessUpdate(float voltage, float current, float power,
             // optimized output: since we can be sure, a negative offset is minumum 1 hour, 
             // the sign for the hour will be "-" for "negative" timezones 
             //    this wouldn't work if a negative offset less than one hour would be possible
+/*
             snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i%+03i:%02i",
                 ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
                 Clock_GetTimesZoneOfsSeconds()/3600, (abs(Clock_GetTimesZoneOfsSeconds())/60) % 60);
-            
+*/            
+            snprintf(datetime, sizeof(datetime), "%.16s%+03i:%02i",TS2STR(ConsumptionResetTime, TIME_FORMAT_ISO_8601),
+                Clock_GetTimesZoneOfsSeconds()/3600, (abs(Clock_GetTimesZoneOfsSeconds())/60) % 60);
 
             cJSON_AddStringToObject(root, "consumption_clear_date", datetime);
           }
@@ -894,7 +905,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
         if (i == OBK_CONSUMPTION_CLEAR_DATE) {
           {
             sensdataset->sensors[i].lastReading = ConsumptionResetTime; //Only to make the 'nochangeframe' mechanism work here
-            ltm = gmtime(&ConsumptionResetTime);
+//            ltm = gmtime(&ConsumptionResetTime);
             /* 2019-09-07T15:50-04:00 */
 /*
             if (Clock_GetTimesZoneOfsSeconds()>0)
@@ -911,8 +922,12 @@ void BL_ProcessUpdate(float voltage, float current, float power,
             // optimized output: since we can be sure, a negative offset is minumum 1 hour, 
             // the sign for the hour will be "-" for "negative" timezones 
             //    this wouldn't work if a negative offset less than one hour would be possible
+/*
             snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i%+03i:%02i",
                 ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
+                Clock_GetTimesZoneOfsSeconds()/3600, (abs(Clock_GetTimesZoneOfsSeconds())/60) % 60);
+*/
+            snprintf(datetime, sizeof(datetime), "%.16s%+03i:%02i",TS2STR(ConsumptionResetTime, TIME_FORMAT_ISO_8601),
                 Clock_GetTimesZoneOfsSeconds()/3600, (abs(Clock_GetTimesZoneOfsSeconds())/60) % 60);
             
             MQTT_PublishMain_StringString(sensdataset->sensors[i].names.name_mqtt, datetime, 0);

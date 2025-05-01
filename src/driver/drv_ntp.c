@@ -3,7 +3,7 @@
 // https://www.elektroda.pl/rtvforum/topic3712112.html
 #include "../obk_config.h"
 #if ENABLE_NTP
-#include <time.h>
+//#include <time.h>
 
 #include "../new_common.h"
 #include "../new_cfg.h"
@@ -13,6 +13,7 @@
 #include "../logging/logging.h"
 #include "../ota/ota.h"
 #include "drv_deviceclock.h"	// for CLOCK_Init()
+#include "../libraries/obktime/obktime.h"	// for time functions
 #include "drv_ntp.h"
 
 #define LOG_FEATURE LOG_FEATURE_NTP
@@ -65,6 +66,7 @@ static int g_timeOffsetSeconds = 0;
 // current time - this may be 32 or 64 bit, depending on platform
 // don't use as global variable, use functions to access and manipulate "clock" in "drv_deviceclock.c"
 time_t g_ntpTime;
+static unsigned int g_ntp_syncinterval=60;
 
 int NTP_GetTimesZoneOfsSeconds()
 {
@@ -142,8 +144,10 @@ void NTP_Init() {
 	//cmddetail:"fn":"NTP_Info","file":"driver/drv_ntp.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ntp_info", NTP_Info, NULL);
+    
+    g_ntp_syncinterval = Tokenizer_GetArgIntegerDefault(1, 60);
 
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP driver initialized with server=%s, offset=%d", CFG_GetNTPServer(), g_timeOffsetSeconds);
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP driver initialized with server=%s, offset=%d, syncing every %i seconds", CFG_GetNTPServer(), g_timeOffsetSeconds, g_ntp_syncinterval);
     g_synced = false;
 }
 
@@ -173,7 +177,7 @@ void NTP_Shutdown() {
     }
     g_ntp_socket = 0;
     // can attempt in next 10 seconds
-    g_ntp_delay = 60;
+    g_ntp_delay = g_ntp_syncinterval-1;
 }
 void NTP_SendRequest(bool bBlocking) {
     byte *ptr;
@@ -282,13 +286,10 @@ void NTP_CheckForReceive() {
     g_ntpTime += g_timeOffsetSeconds;
 */
    CLOCK_setDeviceTime((uint32_t) (secsSince1900 - NTP_OFFSET) );
-#if ENABLE_CLOCK_DST
-    setDST(0);	// just to be sure: recalculate DST
-#endif
-    g_ntpTime=(time_t)Clock_GetCurrentTime();
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u",(uint32_t)g_ntpTime);
-    ltm = gmtime(&g_ntpTime);
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, LTSTR, LTM2TIME(ltm));
+//    g_ntpTime=(time_t)Clock_GetCurrentTime();
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u - local Time %s",(uint32_t) (secsSince1900 - NTP_OFFSET),TS2STR(Clock_GetCurrentTime(),TIME_FORMAT_LONG));
+//    ltm = gmtime(&g_ntpTime);
+//    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, LTSTR, LTM2TIME(ltm));
 
 	if (g_synced == false) {
 		EventHandlers_FireEvent(CMD_EVENT_NTP_STATE, 1);
@@ -364,14 +365,15 @@ void NTP_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState
 {
 	if (bPreState)
 		return;
+/*
     struct tm *ltm;
     g_ntpTime=(time_t)Clock_GetCurrentTime();
 
     ltm = gmtime(&g_ntpTime);
-
+*/
     if (g_synced == true)
-        hprintf255(request, "<h5>NTP (%s): " LTSTR " </h5>",
-			CFG_GetNTPServer(),LTM2TIME(ltm));
+        hprintf255(request, "<h5>NTP (%s): local Time  %s </h5>",
+			CFG_GetNTPServer(),TS2STR(Clock_GetCurrentTime(),TIME_FORMAT_LONG));
     else 
         hprintf255(request, "<h5>NTP: Syncing with %s....</h5>",CFG_GetNTPServer());
 }

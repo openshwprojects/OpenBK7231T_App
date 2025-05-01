@@ -98,6 +98,7 @@ CSRC  += driver/drv_mcp9808.c
 CSRC  += driver/drv_ntp.c
 CSRC  += driver/drv_timed_events.c
 CSRC  += driver/drv_deviceclock.c
+CSRC  += libraries/obktime/obktime.c
 CSRC  += driver/drv_pt6523.c
 CSRC  += driver/drv_pwm_groups.c
 CSRC  += driver/drv_pwmToggler.c

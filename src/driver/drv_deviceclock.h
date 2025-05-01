@@ -41,12 +41,10 @@ int Clock_GetTimesZoneOfsSeconds();			// ... and for NTP_GetTimesZoneOfsSeconds(
 
 #if ENABLE_CLOCK_DST
 int Time_IsDST();
-// usually we want to set/correct g_ntpTime inside setDST()	--> call setDST(1)
-// only after setting g_ntpTime freshly from an NTP packet	--> call setDST(0)
-// we must not alter g_ntpTime inside setDST in this case (the old offsets are no longer valid)
-uint32_t setDST(bool setCLOCK);
+uint32_t setDST();
 int getDST_offset();
-
+uint32_t RuleToTime(uint8_t dayOfWeek, uint8_t month, uint8_t weekNum, uint8_t hour, uint16_t year);
+void getDSTtransition(uint32_t * DST);
 #endif
 
 

@@ -13,6 +13,7 @@
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
 #include "../cJSON/cJSON.h"
+#include "../libraries/obktime/obktime.h"	// for time functions
 
 #ifndef WINDOWS
 #include <lwip/dns.h>
@@ -253,12 +254,17 @@ void OWM_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState
 		hprintf255(request, "<h5>Weather: %s (%s)</h5>", g_weather.main_weather, g_weather.description);
 		hprintf255(request, "<h5>Temperature: %.2f C, Pressure: %d hPa, Humidity: %d%%</h5>", g_weather.temp, g_weather.pressure, g_weather.humidity);
 
+/*
 		struct tm *tm = gmtime(&g_weather.sunrise);
 		strftime(buff, sizeof(buff), "%H:%M:%S", tm);
 		hprintf255(request, "<h5>Timezone: %d, Sunrise: %s, ", g_weather.timezone, buff);
 		tm = gmtime(&g_weather.sunset);
 		strftime(buff, sizeof(buff), "%H:%M:%S", tm);
 		hprintf255(request, "Sunset: %s</h5>", buff);
+*/
+		hprintf255(request, "<h5>Timezone: %d, Sunrise: %s, ", g_weather.timezone, TS2STR(g_weather.sunrise,TIME_FORMAT_TIMEonly));
+		hprintf255(request, "Sunset: %s</h5>", TS2STR(g_weather.sunset,TIME_FORMAT_TIMEonly));
+
 	}
 }
 /*

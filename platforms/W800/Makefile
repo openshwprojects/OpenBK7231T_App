@@ -108,6 +108,7 @@ CSRCS += $(_SHARED_APP)/driver/drv_dht_internal.c
 CSRCS += $(_SHARED_APP)/driver/drv_openWeatherMap.c
 CSRCS += $(_SHARED_APP)/driver/drv_ntp.c
 CSRCS += $(_SHARED_APP)/driver/drv_deviceclock.c
+CSRCS += $(_SHARED_APP)/libraries/obktime/obktime.c
 CSRCS += $(_SHARED_APP)/driver/drv_timed_events.c
 CSRCS += $(_SHARED_APP)/user_main.c
 CSRCS += main.c

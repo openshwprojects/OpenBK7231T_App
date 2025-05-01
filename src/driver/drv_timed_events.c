@@ -1,5 +1,7 @@
 //
-#include <time.h>
+//#include <time.h>
+#include "../libraries/obktime/obktime.h"	// for time functions
+
 #include <math.h>
 
 #include "../new_common.h"
@@ -168,6 +170,8 @@ void CLOCK_CalculateSunset(byte *outHour, byte *outMinute) {
 
 void CLOCK_RunEventsForSecond(time_t runTime) {
 	clockEvent_t *e;
+	
+/*
 	struct tm *ltm;
 
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
@@ -176,23 +180,35 @@ void CLOCK_RunEventsForSecond(time_t runTime) {
 	if (ltm == 0) {
 		return;
 	}
-
+*/
+	TimeComponents tc=calculateComponents(runTime);
 	e = clock_events;
 
 	while (e) {
 		if (e->command) {
 			// base check
-			if (e->hour == ltm->tm_hour && e->second == ltm->tm_sec && e->minute == ltm->tm_min) {
+//			if (e->hour == ltm->tm_hour && e->second == ltm->tm_sec && e->minute == ltm->tm_min) {
+			if (e->hour == tc.hour && e->second == tc.second && e->minute == tc.minute) {
 				// weekday check
-				if (BIT_CHECK(e->weekDayFlags, ltm->tm_wday)) {
+//				if (BIT_CHECK(e->weekDayFlags, ltm->tm_wday)) {
+				if (BIT_CHECK(e->weekDayFlags, tc.wday)) {
 #if ENABLE_CLOCK_SUNRISE_SUNSET
 					if (e->sunflags & (SUNRISE_FLAG || SUNSET_FLAG)) {
+/*
 						if (e->lastDay != ltm->tm_wday) {
-							e->lastDay = ltm->tm_wday;  /* stop any further sun events today */
+							e->lastDay = ltm->tm_wday;  // stop any further sun events today 
 							dusk2Dawn(&sun_data, e->sunflags, &e->hour, &e->minute,
-								calc_day_offset(ltm->tm_wday + 1, e->weekDayFlags));  /* setup for tomorrow */
+								calc_day_offset(ltm->tm_wday + 1, e->weekDayFlags));  // setup for tomorrow
 							CMD_ExecuteCommand(e->command, 0);
 							}
+*/
+						if (e->lastDay != tc.wday) {
+							e->lastDay = tc.wday;  /* stop any further sun events today */
+							dusk2Dawn(&sun_data, e->sunflags, &e->hour, &e->minute,
+								calc_day_offset(tc.wday + 1, e->weekDayFlags));  /* setup for tomorrow */
+							CMD_ExecuteCommand(e->command, 0);
+							}
+
 						else {
 							e->lastDay = -1;  /* mark with anything but a valid day of week */
 							}
@@ -312,7 +328,8 @@ commandResult_t CMD_CLOCK_AddEvent(const void *context, const char *cmd, const c
 #if ENABLE_CLOCK_SUNRISE_SUNSET
 	uint8_t hour_b, minute_b;
 	int sunflags = 0;
-	struct tm *ltm = gmtime(&clock_eventsTime);
+//	struct tm *ltm = gmtime(&clock_eventsTime);
+	TimeComponents tc=calculateComponents(clock_eventsTime);
 #endif
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALTERNATE_EXPAND_AT_START);
@@ -352,7 +369,8 @@ commandResult_t CMD_CLOCK_AddEvent(const void *context, const char *cmd, const c
 	s = Tokenizer_GetArgFrom(3);
 #if ENABLE_CLOCK_SUNRISE_SUNSET
 	if (sunflags) {
-		dusk2Dawn(&sun_data, sunflags, &hour_b, &minute_b, calc_day_offset(ltm->tm_wday, flags));
+//		dusk2Dawn(&sun_data, sunflags, &hour_b, &minute_b, calc_day_offset(ltm->tm_wday, flags));
+		dusk2Dawn(&sun_data, sunflags, &hour_b, &minute_b, calc_day_offset(tc.wday, flags));
 		hour = hour_b;
 		minute = minute_b;
 	}

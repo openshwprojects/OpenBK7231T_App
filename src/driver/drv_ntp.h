@@ -2,10 +2,10 @@
 #define __DRV_NTP_H__
 
 #include "../httpserver/new_http.h"
-
+/*
 #define LTSTR "Local Time: %04d-%02d-%02d %02d:%02d:%02d"
 #define LTM2TIME(T) (T)->tm_year+1900, (T)->tm_mon+1, (T)->tm_mday, (T)->tm_hour, (T)->tm_min, (T)->tm_sec
-
+*/
 void NTP_Init();
 void NTP_Stop();
 void NTP_OnEverySecond();

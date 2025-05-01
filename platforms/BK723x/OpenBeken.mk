@@ -109,6 +109,7 @@ APP_C += $(OBK_DIR)/driver/drv_mcp9808.c
 APP_C += $(OBK_DIR)/driver/drv_ntp.c
 APP_C += $(OBK_DIR)/driver/drv_timed_events.c
 APP_C += $(OBK_DIR)/driver/drv_deviceclock.c
+APP_C += $(OBK_DIR)/libraries/obktime/obktime.c
 APP_C += $(OBK_DIR)/driver/drv_pt6523.c
 APP_C += $(OBK_DIR)/driver/drv_pwm_groups.c
 APP_C += $(OBK_DIR)/driver/drv_pwmToggler.c

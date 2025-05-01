@@ -101,6 +101,7 @@ SRC_C  += $(OBK_DIR)/src/driver/drv_mcp9808.c
 SRC_C  += $(OBK_DIR)/src/driver/drv_ntp.c
 SRC_C  += $(OBK_DIR)/src/driver/drv_timed_events.c
 SRC_C  += $(OBK_DIR)/src/driver/drv_deviceclock.c
+SRC_C  += $(OBK_DIR)/src/libraries/obktime/obktime.c
 SRC_C  += $(OBK_DIR)/src/driver/drv_pt6523.c
 SRC_C  += $(OBK_DIR)/src/driver/drv_pwm_groups.c
 SRC_C  += $(OBK_DIR)/src/driver/drv_pwmToggler.c
