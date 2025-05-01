@@ -4,6 +4,7 @@
 #include "../httpserver/new_http.h"
 #include "../cmnds/cmd_public.h"
 #include "../new_common.h"
+#include <stdbool.h>
 
 
 int CLOCK_GetWeekDay();
@@ -34,13 +35,10 @@ extern struct SUN_DATA {  /* sunrise / sunset globals */
 	int longitude;  /* longitude * 1000000 */
 	} sun_data;
 #endif
-
 uint32_t Clock_GetCurrentTime(); 			// might replace for NTP_GetCurrentTime() to return time regardless of NTP present/running
 uint32_t Clock_GetCurrentTimeWithoutOffset(); 		// ... same for NTP_GetCurrentTimeWithoutOffset()...
 bool Clock_IsTimeSynced(); 				// ... and for NTP_IsTimeSynced()
 
-char (*__kaboom)[sizeof( Clock_IsTimeSynced() )] = 1;
-void kaboom_print( void );
 int Clock_GetTimesZoneOfsSeconds();			// ... and for NTP_GetTimesZoneOfsSeconds()
 
 #if ENABLE_CLOCK_DST

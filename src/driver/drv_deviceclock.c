@@ -15,6 +15,8 @@
 // using "g_epochOnStartup" and "g_UTCoffset" if NTP not present (or not synced)
 
 #include "drv_ntp.h"
+#include <stdbool.h>
+
 
 // "eoch" on startup of device; If we add g_secondsElapsed we get the actual time  
 #if ENABLE_LOCAL_CLOCK || ENABLE_NTP
@@ -455,18 +457,6 @@ uint32_t Clock_GetCurrentTimeWithoutOffset(){ 	// ... same forNTP_GetCurrentTime
 	return  0;
 };
 
-
-void kaboom_print( void )
-{
-    printf( "%d", __kaboom );
-}
-
-
-char (*__kaboom1)[sizeof( bool )] = 1;
-void kaboom1_print( void )
-{
-    printf( "%d", __kaboom1 );
-}
 bool Clock_IsTimeSynced(){ 				// ... and for NTP_IsTimeSynced()
 #if ENABLE_LOCAL_CLOCK
 	if (g_epochOnStartup > 10) {
@@ -478,11 +468,6 @@ bool Clock_IsTimeSynced(){ 				// ... and for NTP_IsTimeSynced()
 	}
 #endif
 	return  false;
-}
-char (*__kabooom)[sizeof( Clock_IsTimeSynced() )] = 1;
-void kabooom_print( void )
-{
-    printf( "%d", __kabooom );
 }
 
 int Clock_GetTimesZoneOfsSeconds()			// ... and for NTP_GetTimesZoneOfsSeconds()
