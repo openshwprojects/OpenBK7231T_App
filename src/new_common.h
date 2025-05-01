@@ -251,9 +251,12 @@ This platform is not supported, error!
 #define bk_printf printf
 
 // generic
-//typedef int bool;
+#include <stdbool.h>
+/*
+typedef int bool;
 #define true 1
 #define false 0
+*/
 
 typedef int BaseType_t;
 typedef unsigned char u8;
