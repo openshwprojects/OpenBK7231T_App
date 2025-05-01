@@ -357,12 +357,12 @@ typedef unsigned int u32;
 
 #elif PLATFORM_XR809 || PLATFORM_XR872
 
-
-
+#include <stdbool.h>
+/*
 typedef int bool;
 #define true 1
 #define false 0
-
+*/
 typedef unsigned char u8;
 typedef unsigned char uint8_t;
 typedef unsigned int uint32_t;
