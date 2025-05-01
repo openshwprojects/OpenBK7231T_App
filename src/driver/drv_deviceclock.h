@@ -3,6 +3,7 @@
 
 #include "../httpserver/new_http.h"
 #include "../cmnds/cmd_public.h"
+#include "../new_common.h"
 
 
 int CLOCK_GetWeekDay();
