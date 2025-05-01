@@ -456,6 +456,12 @@ uint32_t Clock_GetCurrentTimeWithoutOffset(){ 	// ... same forNTP_GetCurrentTime
 };
 
 
+void kaboom_print( void )
+{
+    printf( "%d", __kaboom );
+}
+
+
 char (*__kaboom1)[sizeof( bool )] = 1;
 void kaboom1_print( void )
 {
