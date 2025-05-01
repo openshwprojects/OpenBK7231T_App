@@ -470,6 +470,7 @@ bool Clock_IsTimeSynced(){ 				// ... and for NTP_IsTimeSynced()
 #endif
 	return  false;
 }
+char (*__kabooom)[sizeof( Clock_IsTimeSynced() )] = 1;
 
 
 int Clock_GetTimesZoneOfsSeconds()			// ... and for NTP_GetTimesZoneOfsSeconds()

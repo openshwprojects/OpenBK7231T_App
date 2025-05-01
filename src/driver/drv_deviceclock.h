@@ -38,6 +38,7 @@ extern struct SUN_DATA {  /* sunrise / sunset globals */
 uint32_t Clock_GetCurrentTime(); 			// might replace for NTP_GetCurrentTime() to return time regardless of NTP present/running
 uint32_t Clock_GetCurrentTimeWithoutOffset(); 		// ... same for NTP_GetCurrentTimeWithoutOffset()...
 bool Clock_IsTimeSynced(); 				// ... and for NTP_IsTimeSynced()
+char (*__kaboom)[sizeof( Clock_IsTimeSynced() )] = 1;
 int Clock_GetTimesZoneOfsSeconds();			// ... and for NTP_GetTimesZoneOfsSeconds()
 
 #if ENABLE_CLOCK_DST
