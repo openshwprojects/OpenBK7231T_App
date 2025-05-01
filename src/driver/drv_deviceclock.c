@@ -213,8 +213,7 @@ int CLOCK_GetYear(void) {
 }
 
 int CLOCK_GetWeekDay(void) {
-    // Convert from our internal Sunday=1 to standard C Sunday=0
-    return (getCurrentComponents().wday + 6) % 7;
+    return (getCurrentComponents().wday + 7) % 7;
 }
 
 
