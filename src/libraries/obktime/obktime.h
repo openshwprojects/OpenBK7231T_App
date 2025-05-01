@@ -4,6 +4,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+// WINDOWS will complain about bool else, don't ask me why
+#ifndef bool
+// generic
+typedef int bool;
+#define true 1
+#define false 0
+#endif
 // Time components structure
 typedef struct {
     uint8_t second;  // 0-59

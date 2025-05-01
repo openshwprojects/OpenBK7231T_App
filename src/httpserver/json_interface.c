@@ -503,7 +503,7 @@ static int http_tasmota_json_status_TIM(void* request, jsonCb_t printer) {
 #endif
 	int TZ=Clock_GetCurrentTime() - Clock_GetCurrentTimeWithoutOffset(); 
 	char tmp[8];
-	sprintf(tmp,"%+03i:%02i",TZ/3600,abs((TZ%3600)/60));
+	sprintf(tmp,"%+03i:%02i",(int8_t)TZ/3600,(uint8_t)abs((TZ%3600)/60));
 	JSON_PrintKeyValue_String(request, printer, "Timezone", tmp, true);
 	JSON_PrintKeyValue_String(request, printer, "Sunrise", "07:50", true);
 	JSON_PrintKeyValue_String(request, printer, "Sunset", "17:17", false);
