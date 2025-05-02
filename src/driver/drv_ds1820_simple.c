@@ -26,7 +26,7 @@ static int DS1820_DiscoverFamily();
 #if (DS1820full)
 static int ds18_count = 0;		// detected number of devices
 
-uint8_t DS_GPIO;	// the actual GPIO used (changes in case we have multiple GPIOs defined ...)
+uint8_t DS18B20_GPIO;	// the actual GPIO used (changes in case we have multiple GPIOs defined ...)
 
 DeviceAddress ROM_NO;
 
@@ -391,20 +391,20 @@ bool ds18b20_getGPIO(DeviceAddress devaddr,uint8_t *GPIO)
 };
 
 bool ds18b20_readScratchPad(const DeviceAddress *deviceAddress, uint8_t* scratchPad) {
-//	if ( ! ds18b20_getGPIO(deviceAddress, &DS_GPIO ) ) return false;
-	if ( ! ds18b20_getGPIO(deviceAddress, &DS_GPIO ) ) {
-		DS1820_LOG(DEBUG, "No GPIO found for device - DS_GPIO=%i", DS_GPIO);
+//	if ( ! ds18b20_getGPIO(deviceAddress, &DS18B20_GPIO ) ) return false;
+	if ( ! ds18b20_getGPIO(deviceAddress, &DS18B20_GPIO ) ) {
+		DS1820_LOG(DEBUG, "No GPIO found for device - DS18B20_GPIO=%i", DS18B20_GPIO);
 		return false;
 	}
 	// send the reset command and fail fast
-	DS1820_LOG(DEBUG, "GPIO found for device - DS_GPIO=%i", DS_GPIO);
-	int b = OWReset(DS_GPIO);
+	DS1820_LOG(DEBUG, "GPIO found for device - DS18B20_GPIO=%i", DS18B20_GPIO);
+	int b = OWReset(DS18B20_GPIO);
 	if (b == 0) {
-		DS1820_LOG(DEBUG, "Resetting GPIO %i failed", DS_GPIO);
+		DS1820_LOG(DEBUG, "Resetting GPIO %i failed", DS18B20_GPIO);
 		return false;
 	}
 	ds18b20_select(deviceAddress);
-	OWWriteByte(DS_GPIO, READ_SCRATCHPAD);
+	OWWriteByte(DS18B20_GPIO, READ_SCRATCHPAD);
 	// Read all registers in a simple loop
 	// byte 0: temperature LSB
 	// byte 1: temperature MSB
@@ -416,21 +416,21 @@ bool ds18b20_readScratchPad(const DeviceAddress *deviceAddress, uint8_t* scratch
 	// byte 7: DS18B20 & DS1822: store for crc
 	// byte 8: SCRATCHPAD_CRC
 	for (uint8_t i = 0; i < 9; i++) {
-		scratchPad[i] = OWReadByte(DS_GPIO);
+		scratchPad[i] = OWReadByte(DS18B20_GPIO);
 	}
-	b =  OWReset(DS_GPIO);
+	b =  OWReset(DS18B20_GPIO);
 	if (b == 0) {
-		DS1820_LOG(DEBUG, "Resetting GPIO %i failed", DS_GPIO);
+		DS1820_LOG(DEBUG, "Resetting GPIO %i failed", DS18B20_GPIO);
 		return false;
 	}
 	return (b == 1);
 }
 
 void ds18b20_select(const DeviceAddress *address) {
-	if ( ! ds18b20_getGPIO(address, &DS_GPIO ) ) return;
+	if ( ! ds18b20_getGPIO(address, &DS18B20_GPIO ) ) return;
 	uint8_t i;
-	OWWriteByte(DS_GPIO, SELECTDEVICE);           // Choose ROM
-	for (i = 0; i < 8; i++) OWWriteByte(DS_GPIO, ((uint8_t *)address)[i]);
+	OWWriteByte(DS18B20_GPIO, SELECTDEVICE);           // Choose ROM
+	for (i = 0; i < 8; i++) OWWriteByte(DS18B20_GPIO, ((uint8_t *)address)[i]);
 }
 
 bool ds18b20_isAllZeros(const uint8_t * const scratchPad) {
@@ -467,7 +467,7 @@ float ds18b20_getTempC(const DeviceAddress *deviceAddress) {
 
 
 bool isConversionComplete() {
-	return DS1820TConversionDone(DS_GPIO);
+	return DS1820TConversionDone(DS18B20_GPIO);
 }
 
 
@@ -617,14 +617,14 @@ bool search(uint8_t *newAddr, bool search_mode, int Pin) {
 
 
 void ds18b20_init(int GPIO) {
-	DS_GPIO = GPIO;
-	//gpio_pad_select_gpio(DS_GPIO);
+	DS18B20_GPIO = GPIO;
+	//gpio_pad_select_gpio(DS18B20_GPIO);
 }
 
 void ds18b20_requestTemperatures() {
-	OWReset(DS_GPIO);
-	OWWriteByte(DS_GPIO,SKIP_ROM);
-	OWWriteByte(DS_GPIO,CONVERT_T);
+	OWReset(DS18B20_GPIO);
+	OWWriteByte(DS18B20_GPIO,SKIP_ROM);
+	OWWriteByte(DS18B20_GPIO,CONVERT_T);
 	//unsigned long start = esp_timer_get_time() / 1000ULL;
 	//while (!isConversionComplete() && ((esp_timer_get_time() / 1000ULL) - start < millisToWaitForConversion())) vPortYield();
 }
@@ -645,9 +645,9 @@ void insertArray(DS1820devices *a, DeviceAddress devaddr) {
 
 	for (int i=0; i < ds18_count; i++) {
 		if (! memcmp(devaddr,ds18b20devices.array[i],8)){	// found device, no need to reenter
-			a->GPIO[i]=DS_GPIO; 	// just to be sure - maybe device is on other GPIO now?!?
+			a->GPIO[i]=DS18B20_GPIO; 	// just to be sure - maybe device is on other GPIO now?!?
 			bk_printf("device 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X was allready present - just (re-)setting GPIO to %i",
-		devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7],DS_GPIO);
+		devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7],DS18B20_GPIO);
 			return;
 		}
 	}
@@ -659,7 +659,7 @@ void insertArray(DS1820devices *a, DeviceAddress devaddr) {
 	a->lasttemp[ds18_count] = -127;
 	a->last_read[ds18_count] = 0;
 	a->channel[ds18_count] = -1;
-	a->GPIO[ds18_count]=DS_GPIO;
+	a->GPIO[ds18_count]=DS18B20_GPIO;
 	ds18_count++;
 }
 
@@ -791,7 +791,7 @@ void scan_sensors(){
 		if ((g_cfg.pins.roles[i] == IOR_DS1820_IO) && ( j < DS18B20MAX_GPIOS)){
 //		bk_printf(" ... i=%i + j=%i ",i,j);
 			DS18B20GPIOS[j++]=i;
-			ds18b20_init(i);	// will set  DS_GPIO to i;
+			ds18b20_init(i);	// will set  DS18B20_GPIO to i;
 //		bk_printf(" ...DS18B20_fill_devicelist(%i)\r\n",i);
 			DS18B20_fill_devicelist(i);
 
