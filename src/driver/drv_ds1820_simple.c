@@ -24,6 +24,20 @@ static int ds18_conversionPeriod = 0;
 static int DS1820_DiscoverFamily();
 
 #if (DS1820full)
+typedef uint8_t DeviceAddress[8];		// we need to distinguish sensors by their address
+typedef uint8_t ScratchPad[9];
+
+typedef struct {
+  DeviceAddress array[DS18B20MAX];
+  uint8_t index;
+  char name[DS18B20MAX][DS18B20namel];
+  float lasttemp[DS18B20MAX];
+  unsigned short last_read[DS18B20MAX];
+  short channel[DS18B20MAX];
+  short GPIO[DS18B20MAX];
+
+} DS1820devices;
+
 static int ds18_count = 0;		// detected number of devices
 
 uint8_t DS18B20_GPIO;	// the actual GPIO used (changes in case we have multiple GPIOs defined ...)
