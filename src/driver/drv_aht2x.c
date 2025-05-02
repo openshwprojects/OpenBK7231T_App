@@ -230,8 +230,10 @@ void AHT2X_OnEverySecond()
 	}
 }
 
-void AHT2X_AppendInformationToHTTPIndexPage(http_request_t* request)
+void AHT2X_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
+	if (bPreState)
+		return;
 	hprintf255(request, "<h2>AHT2X Temperature=%.1fC, Humidity=%.0f%%</h2>", g_temp, g_humid);
 	if(!isWorking)
 	{

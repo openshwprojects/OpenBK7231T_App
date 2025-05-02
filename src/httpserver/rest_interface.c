@@ -21,24 +21,8 @@ uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
 #define FLASH_INDEX_XR809 0
 
 #elif PLATFORM_BL602
-#include <stdio.h>
-#include <string.h>
-
-#include <FreeRTOS.h>
-#include <task.h>
-#include <lwip/mem.h>
-#include <lwip/memp.h>
-#include <lwip/dhcp.h>
-#include <lwip/tcpip.h>
-#include <lwip/ip_addr.h>
-#include <lwip/sockets.h>
-#include <lwip/netdb.h>
-
-#include <cli.h>
 #include <hal_boot2.h>
-#include <hal_sys.h>
 #include <utils_sha256.h>
-#include <bl_sys_ota.h>
 #include <bl_mtd.h>
 #include <bl_flash.h>
 #elif PLATFORM_W600
@@ -97,9 +81,10 @@ extern uint32_t current_fw_idx;
 #include "wdt_api.h"
 
 extern uint32_t current_fw_idx;
+extern uint8_t flash_size_8720;
 
 #undef DEFAULT_FLASH_LEN
-#define DEFAULT_FLASH_LEN 0x400000
+#define DEFAULT_FLASH_LEN (flash_size_8720 << 20)
 
 #endif
 
@@ -152,6 +137,7 @@ static int http_rest_get_logconfig(http_request_t* request);
 #if ENABLE_LITTLEFS
 static int http_rest_get_lfs_delete(http_request_t* request);
 static int http_rest_get_lfs_file(http_request_t* request);
+static int http_rest_run_lfs_file(http_request_t* request);
 static int http_rest_post_lfs_file(http_request_t* request);
 #endif
 
@@ -244,6 +230,9 @@ static int http_rest_get(http_request_t* request) {
 #if ENABLE_LITTLEFS
 	if (!strncmp(request->url, "api/lfs/", 8)) {
 		return http_rest_get_lfs_file(request);
+	}
+	if (!strncmp(request->url, "api/run/", 8)) {
+		return http_rest_run_lfs_file(request);
 	}
 	if (!strncmp(request->url, "api/del/", 8)) {
 		return http_rest_get_lfs_delete(request);
@@ -417,7 +406,127 @@ int EndsWith(const char* str, const char* suffix)
 		return 0;
 	return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
 }
+char *my_memmem(const char *haystack, int haystack_len, const char *needle, int needle_len) {
+	if (needle_len == 0 || haystack_len < needle_len)
+		return NULL;
 
+	for (int i = 0; i <= haystack_len - needle_len; i++) {
+		if (memcmp(haystack + i, needle, needle_len) == 0)
+			return (char *)(haystack + i);
+	}
+	return NULL;
+}
+typedef struct berryBuilder_s {
+
+	char berry_buffer[4096];
+	int berry_len;
+} berryBuilder_t;
+
+void BB_Start(berryBuilder_t *b)
+{
+	b->berry_buffer[0] = 0;
+	b->berry_len = 0;
+}
+void BB_AddCode(berryBuilder_t *b, const char *start, const char *end) {
+	int len;
+	if (end) {
+		len = end - start;
+	}
+	else {
+		len = strlen(start);
+	}
+	memcpy(&b->berry_buffer[b->berry_len], start, len);
+	b->berry_len += len;
+}
+void BB_AddText(berryBuilder_t *b, const char *fname, const char *start, const char *end) {
+	BB_AddCode(b, " echo(\"",0);
+#if 0
+	BB_AddCode(b, start, end);
+#else
+	const char *p = start;
+	const char *limit = end ? end : (start + strlen(start));
+	while (p < limit) {
+		char c = *p++;
+		switch (c) {
+		case '\\': BB_AddCode(b, "\\\\", 0); break;
+		case '\"': BB_AddCode(b, "\\\"", 0); break;
+		case '\n': BB_AddCode(b, "\\n", 0); break;
+		case '\r': BB_AddCode(b, "\\r", 0); break;
+		case '\t': BB_AddCode(b, "\\t", 0); break;
+		default:
+			BB_AddCode(b, &c, &c + 1);
+			break;
+		}
+	}
+
+#endif
+	BB_AddCode(b, "\")", 0);
+}
+void eval_berry_snippet(const char *s);
+void Berry_SaveRequest(http_request_t *r);
+void BB_Run(berryBuilder_t *b)
+{
+	b->berry_buffer[b->berry_len] = 0;
+	eval_berry_snippet(b->berry_buffer);
+}
+int http_runBerryFile(http_request_t *request, const char *fname) {
+	Berry_SaveRequest(request);
+	berryBuilder_t bb;
+	BB_Start(&bb);
+	char *data = (char*)LFS_ReadFile(fname);
+	if (data == 0)
+		return 0;
+	http_setup(request, httpMimeTypeHTML);
+	char *p = data;
+	while (*p) {
+		char *btag = strstr(p, "<?b");
+		if (!btag) {
+			break;
+		}
+		BB_AddText(&bb, fname, p, btag);
+		char *etag = strstr(btag, "?>");
+
+		BB_AddCode(&bb, btag + 3, etag);
+
+		p = etag + 2;
+	}
+	const char *s = p;
+	while (*p)
+		p++;
+	BB_AddText(&bb, fname, s, p);
+	free(data);
+	BB_Run(&bb);
+	return 1;
+}
+static int http_rest_run_lfs_file(http_request_t* request) {
+	char* fpath;
+	// don't start LFS just because we're trying to read a file -
+	// it won't exist anyway
+	if (!lfs_present()) {
+		request->responseCode = HTTP_RESPONSE_NOT_FOUND;
+		http_setup(request, httpMimeTypeText);
+		poststr(request, NULL);
+		return 0;
+	}
+#if ENABLE_OBK_BERRY
+	const char* base = request->url + strlen("api/lfs/");
+	const char* q = strchr(base, '?');
+	size_t len = q ? (size_t)(q - base) : strlen(base);
+	fpath = os_malloc(len + 1);
+	memcpy(fpath, base, len);
+	fpath[len] = '\0';
+	int ran = http_runBerryFile(request, fpath);
+	if (ran==0) 
+#endif
+	{
+		request->responseCode = HTTP_RESPONSE_NOT_FOUND;
+		http_setup(request, httpMimeTypeText);
+		poststr(request, NULL);
+		return 0;
+	}
+	free(fpath);
+	return 0;
+}
 static int http_rest_get_lfs_file(http_request_t* request) {
 	char* fpath;
 	char* buff;
@@ -533,6 +642,9 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 			} while (0);
 
 			http_setup(request, mimetype);
+//#if ENABLE_OBK_BERRY
+//			http_runBerryFile(request, fpath);
+//#else
 			do {
 				len = lfs_file_read(&lfs, file, buff, 1024);
 				total += len;
@@ -540,7 +652,8 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 					//ADDLOG_DEBUG(LOG_FEATURE_API, "%d bytes read", len);
 					postany(request, buff, len);
 				}
-			} while (len > 0);
+		} while (len > 0);
+//#endif
 			lfs_file_close(&lfs, file);
 			ADDLOG_DEBUG(LOG_FEATURE_API, "%d total bytes read", total);
 		}
@@ -1488,6 +1601,10 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 {
 
 #if PLATFORM_XR809
+	return 0;	//Operation not supported yet
+#endif
+
+#if PLATFORM_XR872
 	return 0;	//Operation not supported yet
 #endif
 
@@ -2650,6 +2767,13 @@ update_ota_exit:
 		goto update_ota_exit;
 	}
 
+	if(flash_size_8720 == 2)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "Only 2MB flash detected - OTA is not supported");
+		ret = -1;
+		goto update_ota_exit;
+	}
+
 	memset((uint8_t*)&OtaTargetHdr, 0, sizeof(update_ota_target_hdr));
 
 	DBG_INFO_MSG_OFF(MODULE_FLASH);
@@ -2690,7 +2814,7 @@ update_ota_exit:
 		goto update_ota_exit;
 	}
 
-	ADDLOG_INFO(LOG_FEATURE_OTA, "Erasing...");
+	//ADDLOG_INFO(LOG_FEATURE_OTA, "Erasing...");
 	for(int i = 0; i < OtaTargetHdr.ValidImgCnt; i++)
 	{
 		ADDLOG_INFO(LOG_FEATURE_OTA, "Target addr:0x%08x, img len: %i", OtaTargetHdr.FileImgHdr[i].FlashAddr, OtaTargetHdr.FileImgHdr[i].ImgLen);
@@ -3042,6 +3166,8 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 		//uint32_t flash_read(uint32_t flash, uint32_t addr,void *buf, uint32_t size)
 #define FLASH_INDEX_XR809 0
 		res = flash_read(FLASH_INDEX_XR809, startaddr, buffer, readlen);
+#elif PLATFORM_XR872
+		res = 0;
 #elif PLATFORM_BL602
 		res = bl_flash_read(startaddr, (uint8_t *)buffer, readlen);
 #elif PLATFORM_W600 || PLATFORM_W800

@@ -396,7 +396,7 @@ void Test_TuyaMCU_Basic() {
 	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
 	SIM_ClearMQTTHistory();
 
-	// This packet sets dpID 104 of type RAW
+	// This packet sets dpID 104 of type Val
 	// dpID 104
 	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 104 MQTT", 0);
 	CMD_ExecuteCommand("uartFakeHex 55AA03070008680200040000000180",0);

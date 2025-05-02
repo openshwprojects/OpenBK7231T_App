@@ -180,8 +180,11 @@ void Batt_OnEverySecond() {
 void Batt_StopDriver() {
 
 }
-void Batt_AppendInformationToHTTPIndexPage(http_request_t* request)
+void Batt_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
+	if (bPreState) {
+		return;
+	}
 	hprintf255(request, "<h2>Battery level=%.2f%%, voltage=%.2fmV</h2>", g_battlevel, g_battvoltage);
 }
 

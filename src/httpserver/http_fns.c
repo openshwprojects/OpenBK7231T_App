@@ -233,6 +233,7 @@ int http_fn_index(http_request_t* request) {
 
 	// use ?state URL parameter to only request current state
 	if (!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
+		// full update - include header
 		http_html_start(request, NULL);
 
 		poststr(request, "<div id=\"changed\">");
@@ -339,13 +340,23 @@ int http_fn_index(http_request_t* request) {
 		poststr(request, "</div>"); // end div#change
 
 
-#if defined(ENABLE_DRIVER_WIDGET)
-		if (DRV_IsRunning("Widget")) {
-			DRV_Widget_BeforeState(request);
-		}
+#if ENABLE_OBK_BERRY
+		void Berry_SaveRequest(http_request_t *r);
+		Berry_SaveRequest(request);
+		CMD_Berry_RunEventHandlers_StrInt(CMD_EVENT_ON_HTTP, "prestate", (int)request);
 #endif
+#ifndef OBK_DISABLE_ALL_DRIVERS
+		DRV_AppendInformationToHTTPIndexPage(request, true);
+#endif
+
 		poststr(request, "<div id=\"state\">"); // replaceable content follows
 	}
+
+#if ENABLE_OBK_BERRY
+	void Berry_SaveRequest(http_request_t *r);
+	Berry_SaveRequest(request);
+	CMD_Berry_RunEventHandlers_StrInt(CMD_EVENT_ON_HTTP, "state", (int)request);
+#endif
 
 	if (!CFG_HasFlag(OBK_FLAG_HTTP_NO_ONOFF_WORDS)){
 		poststr(request, "<table>");	//Table default to 100% width in stylesheet
@@ -757,7 +768,7 @@ int http_fn_index(http_request_t* request) {
 
 	poststr(request, "</table>");
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	DRV_AppendInformationToHTTPIndexPage(request);
+	DRV_AppendInformationToHTTPIndexPage(request, false);
 #endif
 
 	if (1) {
@@ -1405,6 +1416,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 			rtw_scan_result_t* record = &result->ap_details;
 			record->SSID.val[record->SSID.len] = 0;
 			hprintf255(request, "SSID: %s, Channel: %i, Signal %i<br>", record->SSID.val, record->channel, record->signal_strength);
+			return 0;
 		}
 
 		scan_hdl = xSemaphoreCreateBinary();
@@ -1516,6 +1528,7 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 			bChanged |= CFG_SetWiFiPass(tmpA);
 		}
 		poststr(request, "WiFi mode set: connect to WLAN.");
+		if(bChanged) HAL_DisableEnhancedFastConnect();
 	}
 	if (http_getArg(request->url, "ssid2", tmpA, sizeof(tmpA))) {
 		bChanged |= CFG_SetWiFiSSID2(tmpA);
@@ -2209,7 +2222,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			}
 		}
 	}
-	if (1) {
+	if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEPERMINUTE) || CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEONCONNECT)) {
 		//use -1 for channel as these don't correspond to channels
 #ifndef NO_CHIP_TEMPERATURE
 		dev_info = hass_init_sensor_device_info(HASS_TEMP, -1, -1, -1, 1);
@@ -2861,6 +2874,7 @@ const char* g_obk_flagNames[] = {
 	"[PWR] Invert AC dir",
 	"[HTTP] Hide ON/OFF for relays (only red/green buttons)",
 	"[MQTT] Never add get sufix",
+	"[WiFi] (RTL/BK) Enhanced fast connect by saving AP data to flash (preferable with Flag 37 & static ip). Quick reset 3 times to connect normally",
 	"error",
 	"error",
 	"error",
@@ -3136,6 +3150,8 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 	t_http_fwup(s);
 #elif PLATFORM_XR809
 	XR809_RequestOTAHTTP(s);
+#elif PLATFORM_XR872
+
 #else
 	otarequest(s);
 #endif
@@ -3192,6 +3208,11 @@ int http_fn_ota(http_request_t* request) {
 
 int http_fn_other(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
+#if ENABLE_OBK_BERRY
+	if (CMD_Berry_RunEventHandlers_StrInt(CMD_EVENT_ON_HTTP, request->url, (int)request)) {
+		return 0;
+	}
+#endif
 	http_html_start(request, "Not found");
 	poststr(request, "Not found.<br/>");
 	poststr(request, htmlFooterReturnToMainPage);

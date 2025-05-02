@@ -355,7 +355,9 @@ void DRV_Toggler_QuickTick() {
 		}
 	}
 }
-void DRV_Toggler_AppendInformationToHTTPIndexPage(http_request_t* request) {
+void DRV_Toggler_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState) {
+	if (bPreState)
+		return;
 	int i;
 	hprintf255(request, "<h4>Toggler: ");
 	int cnt = 0;

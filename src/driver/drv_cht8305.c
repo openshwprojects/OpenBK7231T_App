@@ -315,8 +315,10 @@ void CHT83XX_OnEverySecond()
 	}
 }
 
-void CHT83XX_AppendInformationToHTTPIndexPage(http_request_t* request)
+void CHT83XX_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
+	if (bPreState)
+		return;
 	hprintf255(request, "<h2>%s Temperature=%f, Humidity=%f</h2>", g_cht_sensor, g_temp, g_humid);
 	if(channel_humid == channel_temp)
 	{

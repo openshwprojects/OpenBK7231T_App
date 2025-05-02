@@ -42,6 +42,8 @@ extern int rtw_wlan_low_pw_mode4_c1;
 extern int rtw_wlan_low_pw_mode4_c2;
 extern int rtw_reduce_pa_gain;
 extern void rtw_enable_wlan_low_pwr_mode(WLAN_LOW_PW_MODE mode);
+#elif PLATFORM_RTL8720D
+extern void SystemSetCpuClk(unsigned char CpuClk);
 #endif
 #include "wifi_conf.h"
 int g_sleepfactor = 1;
@@ -129,7 +131,10 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 #if defined(PLATFORM_BEKEN)
 	extern int bk_wlan_power_save_set_level(BK_PS_LEVEL level);
 	if (bOn) {
-		bk_wlan_power_save_set_level(/*PS_DEEP_SLEEP_BIT */  PS_RF_SLEEP_BIT | PS_MCU_SLEEP_BIT);
+		BK_PS_LEVEL level = PS_RF_SLEEP_BIT;
+		if(PIN_FindPinIndexForRole(IOR_BL0937_CF, -1) == -1) level |= PS_MCU_SLEEP_BIT;
+		else bOn = 0;
+		bk_wlan_power_save_set_level(level);
 	}
 	else {
 		bk_wlan_power_save_set_level(0);
@@ -143,10 +148,10 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	}
 #elif defined(PLATFORM_BL602)
 	if (bOn) {
-		wifi_mgmr_sta_powersaving(2);
+		wifi_mgmr_sta_ps_enter(2);
 	}
 	else {
-		wifi_mgmr_sta_powersaving(0);
+		wifi_mgmr_sta_ps_exit();
 	}
 #elif defined(PLATFORM_LN882H)
 	// this will be applied after WiFi connect
@@ -155,6 +160,21 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	}
 	else LN882H_ApplyPowerSave(bOn);
 #elif defined(PLATFORM_ESPIDF)
+	switch(bOn)
+	{
+		case 1:
+			ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave min_modem");
+			esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
+			break;
+		case 2:
+			ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave max_modem");
+			esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
+			break;
+		default:
+			ADDLOG_INFO(LOG_FEATURE_CMD, "Wifi powersave disabled");
+			esp_wifi_set_ps(WIFI_PS_NONE);
+			break;
+	}
 	if(Tokenizer_GetArgsCount() > 1)
 	{
 		int tx = Tokenizer_GetArgInteger(1);
@@ -181,25 +201,11 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 		esp_pm_configure(&pm_config);
 		ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave freq scaling, min: %iMhz, max: %iMhz", minfreq, maxfreq);
 	}
-	else if(bOn >= 2)
-	{
-		ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave max_modem");
-		esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
-	}
-	else if(bOn == 1)
-	{
-		ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave min_modem");
-		esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
-	}
-	else
-	{
-		ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave disabled");
-		esp_wifi_set_ps(WIFI_PS_NONE);
-	}
 #elif PLATFORM_REALTEK
 	if(!wifi_is_up(RTW_STA_INTERFACE))
 	{
-		ADDLOG_ERROR(LOG_FEATURE_CMD, "Wifi is not on or in AP mode, failed setting powersave!");
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "Wifi is not on or in AP only mode, failed setting powersave!");
+		g_powersave = (bOn);
 		return CMD_RES_ERROR;
 	}
 	if(bOn)
@@ -224,6 +230,17 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 			rtw_enable_wlan_low_pwr_mode(rtw_wlan_low_pw_mode);
 			g_sleepfactor = 1;
 		}
+#elif PLATFORM_RTL8720D
+		if(bOn >= 2)
+		{
+			g_sleepfactor = 2;
+			SystemSetCpuClk(1);
+		}
+		else if(g_powersave >= 2)
+		{
+			g_sleepfactor = 1;
+			SystemSetCpuClk(0);
+		}
 #endif
 		wifi_enable_powersave();
 	}
@@ -239,12 +256,15 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 			rtw_enable_wlan_low_pwr_mode(rtw_wlan_low_pw_mode);
 		}
 		g_sleepfactor = 1;
+#elif PLATFORM_RTL8720D
+		SystemSetCpuClk(0);
+		g_sleepfactor = 1;
 #endif
 		wifi_disable_powersave();
 	}
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave is not implemented on this platform");
-#endif    
+#endif
 	g_powersave = (bOn);
 	return CMD_RES_OK;
 }
@@ -1140,6 +1160,17 @@ commandResult_t CMD_ExecuteCommandArgs(const char* cmd, const char* args, int cm
 		get_cmd(cmd, nonums, 32, 1);
 		newCmd = CMD_Find(nonums);
 		if (!newCmd) {
+#if ENABLE_OBK_BERRY
+			static int g_guard = 0;
+			if (g_guard == 0) {
+				g_guard = 1;
+				int c_run = CMD_Berry_RunEventHandlers_Str(CMD_EVENT_ON_CMD, cmd, args);
+				g_guard = 0;
+				if (c_run > 0) {
+					return CMD_RES_OK;
+				}
+			}
+#endif
 			// if still not found, then error
 			ADDLOG_ERROR(LOG_FEATURE_CMD, "cmd %s NOT found (args %s)", cmd, args);
 			return CMD_RES_UNKNOWN_COMMAND;

@@ -53,6 +53,11 @@ void OTA_RequestDownloadFromHTTP(const char *s);
 #define DEVICENAME_PREFIX_SHORT "oxr"
 #define PLATFORM_MCU_NAME "XR809"
 #define MANUFACTURER "Xradio Technology"
+#elif PLATFORM_XR872
+#define DEVICENAME_PREFIX_FULL "OpenXR872"
+#define DEVICENAME_PREFIX_SHORT "oxr"
+#define PLATFORM_MCU_NAME "XR872"
+#define MANUFACTURER "Xradio Technology"
 #elif PLATFORM_BK7231N
 #define DEVICENAME_PREFIX_FULL "OpenBK7231N"
 #define DEVICENAME_PREFIX_SHORT "obk"
@@ -350,7 +355,7 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 typedef unsigned int u32;
 		
 
-#elif PLATFORM_XR809
+#elif PLATFORM_XR809 || PLATFORM_XR872
 
 
 
@@ -629,7 +634,7 @@ extern int g_sleepfactor;
 #define atoi __wrap_atoi
 #endif
 
-#if PLATFORM_RTL8710B
+#if PLATFORM_RTL8710B || PLATFORM_RTL8720D
 #define rtos_delay_milliseconds(x) vTaskDelay(x / portTICK_PERIOD_MS / g_sleepfactor)
 #define delay_ms(x) vTaskDelay(x / portTICK_PERIOD_MS / g_sleepfactor)
 #else
@@ -806,7 +811,8 @@ int strcpy_safe_checkForChanges(char *tg, const char *src, int tgMaxLen);
 void urldecode2_safe(char *dst, const char *srcin, int maxDstLen);
 int strIsInteger(const char *s);
 
-#if !defined(PLATFORM_ESPIDF) && !defined(PLATFORM_TR6260) && !defined(PLATFORM_ECR6600)
+#if !defined(PLATFORM_ESPIDF) && !defined(PLATFORM_TR6260) && !defined(PLATFORM_ECR6600) && !defined(PLATFORM_BL602)
+
 const char* strcasestr(const char* str1, const char* str2);
 #endif
 

@@ -135,8 +135,10 @@ void BL09XX_AppendInformationToHTTPIndexPageEx(int asensdatasetix, http_request_
 {
   if ((asensdatasetix < 0) || (asensdatasetix >= BL_SENSDATASETS_COUNT)) return;  //to avoid bad index on data[BL_SENSDATASETS_COUNT]
 #else
-void BL09XX_AppendInformationToHTTPIndexPage(http_request_t * request)
+void BL09XX_AppendInformationToHTTPIndexPage(http_request_t * request, int bPreState)
 {
+	if (bPreState)
+		return;
   int asensdatasetix = BL_SENSORS_IX_0;
 #endif
   energysensdataset_t* sensdataset = &datasetlist[asensdatasetix];
@@ -253,7 +255,9 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t * request)
 }
 
 #if ENABLE_BL_TWIN
-void BL09XX_AppendInformationToHTTPIndexPage(http_request_t* request) {
+void BL09XX_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState) {
+	if (bPreState)
+		return;
   if (sensors_reciveddata[BL_SENSORS_IX_0]) {
     BL09XX_AppendInformationToHTTPIndexPageEx(BL_SENSORS_IX_0, request);
   }

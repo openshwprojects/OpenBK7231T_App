@@ -20,6 +20,8 @@ float CMD_EvaluateExpression(const char *s, const char *stop);
 commandResult_t CMD_If(const void *context, const char *cmd, const char *args, int cmdFlags);
 void CMD_ExpandConstantsWithinString(const char *in, char *out, int outLen);
 void CMD_Script_ProcessWaitersForEvent(byte eventCode, int argument);
+bool CheckEventCondition(eventWait_t *w, byte eventCode, int argument);
+
 
 #endif // __CMD_LOCAL_H__
 

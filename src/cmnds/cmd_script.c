@@ -7,10 +7,6 @@
 #include <ctype.h>
 #include "cmd_local.h"
 
-#if ENABLE_OBK_BERRY
-#include "berry.h"
-#endif
-
 /*
 startScript test1.bat
 
@@ -236,11 +232,6 @@ scriptFile_t *g_scriptFiles = 0;
 scriptInstance_t *g_scriptThreads = 0;
 scriptInstance_t *g_activeThread = 0;
 
-#if ENABLE_OBK_BERRY
-extern bvm* g_vm;
-// Function to properly cleanup Berry threads
-extern void berryThreadComplete(scriptInstance_t *thread);
-#endif
 
 scriptInstance_t *SVM_RegisterThread() {
 	scriptInstance_t *r;
@@ -362,18 +353,10 @@ void SVM_RunThread(scriptInstance_t *t, int maxLoops) {
 	}
 
 
-#if ENABLE_OBK_BERRY
-	if (t->isBerry && t->closureId > 0) {
-		berryResumeClosure(g_vm, t->closureId);
-		berryThreadComplete(t);
-		return;
-	}
-#endif
-
 	while(1) {
 		loop++;
 		// check if "waitFor" was executed last frame
-		if (t->waitingForEvent) {
+		if (t->wait.waitingForEvent) {
 			return;
 		}
 		if(t->curLine == 0) {
@@ -439,7 +422,7 @@ void SVM_RunThreads(int deltaMS) {
 
 	g_activeThread = g_scriptThreads;
 	while(g_activeThread) {
-		if (g_activeThread->waitingForEvent) {
+		if (g_activeThread->wait.waitingForEvent) {
 			// do nothing
 			c_sleep++;
 		}
@@ -447,8 +430,9 @@ void SVM_RunThreads(int deltaMS) {
 			if (g_activeThread->currentDelayMS > 0) {
 				g_activeThread->currentDelayMS -= deltaMS;
 				// the following block is needed to handle with long freezes on simulator
-				if (g_activeThread->currentDelayMS < 0) {
+				if (g_activeThread->currentDelayMS <= 0) {
 					g_activeThread->currentDelayMS = 0;
+					SVM_RunThread(g_activeThread, 20);
 				}
 				c_sleep++;
 			}
@@ -462,50 +446,56 @@ void SVM_RunThreads(int deltaMS) {
 
 	//ADDLOG_INFO(LOG_FEATURE_CMD, "SCR sleep %i, ran %i",c_sleep,c_run);
 }
+bool CheckEventCondition(eventWait_t *w, byte eventCode, int argument) {
+	if (w->waitingForEvent != eventCode) {
+		return false;
+	}
+
+	bool bMatch = false;
+	switch (w->waitingForRelation) {
+			case 0: {
+				if (w->waitingForArgument == argument) {
+					bMatch = true;
+				}
+			}
+			break;
+			case '<': {
+				// waitFor noPingTime < 5
+				if (argument < w->waitingForArgument) {
+					bMatch = true;
+				}
+			}
+			break;
+			case '>': {
+				// waitFor noPingTime > 5
+				if (argument > w->waitingForArgument) {
+					bMatch = true;
+				}
+			}
+			break;
+			case '!': {
+				// waitFor noPingTime ! 5
+				if (argument != w->waitingForArgument) {
+					bMatch = true;
+				}
+			}
+			break;
+	}
+	return bMatch;
+}
 void CMD_Script_ProcessWaitersForEvent(byte eventCode, int argument) {
 	scriptInstance_t *t;
 
+#if ENABLE_OBK_BERRY
+	CMD_Berry_ProcessWaitersForEvent(eventCode, argument);
+#endif
 	t = g_scriptThreads;
 
 	while (t) {
-		if (t->waitingForEvent == eventCode) {
-			switch (t->waitingForRelation) {
-				case 0: {
-					if (t->waitingForArgument == argument) {
-						// unlock!
-						t->waitingForArgument = 0;
-						t->waitingForEvent = 0;
-					}
-				}
-				break;
-				case '<': {
-					// waitFor noPingTime < 5
-					if (argument < t->waitingForArgument) {
-						// unlock!
-						t->waitingForArgument = 0;
-						t->waitingForEvent = 0;
-					}
-				}
-				break;
-				case '>': {
-					// waitFor noPingTime > 5
-					if (argument > t->waitingForArgument) {
-						// unlock!
-						t->waitingForArgument = 0;
-						t->waitingForEvent = 0;
-					}
-				}
-				break;
-				case '!': {
-					// waitFor noPingTime ! 5
-					if (argument != t->waitingForArgument) {
-						// unlock!
-						t->waitingForArgument = 0;
-						t->waitingForEvent = 0;
-					}
-				}
-				 break;
-			}
+		if(CheckEventCondition(&t->wait,eventCode,argument)) {
+			// unlock!
+			t->wait.waitingForArgument = 0;
+			t->wait.waitingForEvent = 0;
 		}
 		t = t->next;
 	}
@@ -557,11 +547,6 @@ void SVM_StopAllScripts() {
 		t->curFile = 0;
 		t->uniqueID = 0;
 		t->currentDelayMS = 0;
-#if ENABLE_OBK_BERRY
-		if (t->isBerry) {
-			berryThreadComplete(t);
-		}
-#endif
 		t = t->next;
 	}
 }
@@ -579,11 +564,6 @@ void SVM_StopScripts(int id, int bExcludeSelf) {
 				t->curFile = 0;
 				t->uniqueID = 0;
 				t->currentDelayMS = 0;
-#if ENABLE_OBK_BERRY
-				if (t->isBerry) {
-					berryThreadComplete(t);
-				}
-#endif
 			} 
 		}
 		t = t->next;
@@ -906,9 +886,9 @@ commandResult_t CMD_waitFor(const void *context, const char *cmd, const char *ar
 	}
 	reqArg = atoi(s);
 	
-	g_activeThread->waitingForEvent = eventCode;
-	g_activeThread->waitingForArgument = reqArg;
-	g_activeThread->waitingForRelation = relation;
+	g_activeThread->wait.waitingForEvent = eventCode;
+	g_activeThread->wait.waitingForArgument = reqArg;
+	g_activeThread->wait.waitingForRelation = relation;
 
 	return CMD_RES_OK;
 }

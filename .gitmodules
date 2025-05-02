@@ -58,3 +58,12 @@
 	url = https://github.com/berry-lang/berry.git
   branch = master
 
+[submodule "sdk/OpenXR872"]
+	path = sdk/OpenXR872
+	url = https://github.com/openshwprojects/OpenXR872
+	branch = main
+
+[submodule "sdk/OpenXR806"]
+	path = sdk/OpenXR806
+	url = https://github.com/openshwprojects/OpenXR806
+	branch = master
