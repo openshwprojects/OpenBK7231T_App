@@ -24,7 +24,6 @@ static int ds18_conversionPeriod = 0;
 static int DS1820_DiscoverFamily();
 
 #if (DS1820full)
-typedef uint8_t DeviceAddress[8];		// we need to distinguish sensors by their address
 typedef uint8_t ScratchPad[9];
 
 typedef struct {
