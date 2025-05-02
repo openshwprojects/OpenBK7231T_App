@@ -3,10 +3,7 @@
 #include "../hal_wifi.h"
 #include "../../new_common.h"
 #include "../../new_cfg.h"
-
 #include <string.h>
-#include <cli.h>
-
 #include <FreeRTOS.h>
 #include <task.h>
 #include <portable.h>
@@ -34,7 +31,9 @@ void HAL_ConnectToWiFi(const char *ssid, const char *psk, obkStaticIP_t *ip)
     }
     wifi_interface = wifi_mgmr_sta_enable();
 
-    wifi_mgmr_sta_connect(wifi_interface, ssid, psk, NULL, NULL, 0, 0);
+    // sending WIFI_CONNECT_PMF_CAPABLE is crucial here, without it, wpa3 or wpa2/3 mixed mode does not work and
+	// connection is unstable, mqtt disconnects every few minutes
+    wifi_mgmr_sta_connect_mid(wifi_interface, ssid, psk, NULL, NULL, 0, 0, ip->localIPAddr[0] == 0 ?1:0, WIFI_CONNECT_PMF_CAPABLE);
 
 	g_bAccessPointMode = 0;
 }
