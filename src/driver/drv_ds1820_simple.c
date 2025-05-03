@@ -69,6 +69,8 @@ typedef uint8_t ScratchPad[9];
 
 
 #if (DS1820full)
+typedef uint8_t DeviceAddress[8];		// we need to distinguish sensors by their address
+
 typedef struct {
   DeviceAddress array[DS18B20MAX];
   uint8_t index;
@@ -635,11 +637,12 @@ bool ds18b20_getGPIO(const uint8_t* devaddr,uint8_t *GPIO)
 	return false;
 };
 
-void ds18b20_select(const uint8_t *address) {
-	if ( ! ds18b20_getGPIO(address, &DS18B20_GPIO ) ) return;
+bool ds18b20_select(const uint8_t *address) {
+	if ( ! ds18b20_getGPIO(address, &DS18B20_GPIO ) ) return false;
 	uint8_t i;
 	OWWriteByte(DS18B20_GPIO, SELECT_DEVICE);           // Choose ROM
 	for (i = 0; i < 8; i++) OWWriteByte(DS18B20_GPIO, ((uint8_t *)address)[i]);
+	return true;
 }
 
 bool ds18b20_isAllZeros(const uint8_t * const scratchPad) {
@@ -654,7 +657,7 @@ bool ds18b20_isAllZeros(const uint8_t * const scratchPad) {
 bool ds18b20_isConnected(const uint8_t *deviceAddress, uint8_t *scratchPad) {
 	// no need to check for GPIO of device here, ds18b20_readSratchPad() will do so and return false, if not
 	bool b = ds18b20_readSratchPad((const uint8_t *)deviceAddress, scratchPad);
-	DS1820_LOG(DEBUG, "READ_SCRATCHPADPad returned %i - Crc8CQuick=%i / scratchPad[SCRATCHPAD_CRC]=%i",b,Crc8CQuick(scratchPad, 8),scratchPad[SCRATCHPAD_CRC]);
+	DS1820_LOG(DEBUG, "ds18b20_readSratchPad returned %i - Crc8CQuick=%i / scratchPad[SCRATCHPAD_CRC]=%i",b,Crc8CQuick(scratchPad, 8),scratchPad[SCRATCHPAD_CRC]);
 	return b && !ds18b20_isAllZeros(scratchPad) && (Crc8CQuick(scratchPad, 8) == scratchPad[SCRATCHPAD_CRC]);
 }
 

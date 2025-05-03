@@ -25,8 +25,6 @@ void DS1820_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreSt
 #define DS18B20namel	20			// length of description
 #define DS18B20MAX_GPIOS 2			// max GPIOs with sensors
 
-typedef uint8_t DeviceAddress[8];		// we need to distinguish sensors by their address
-
 bool ds18b20_used_channel(int ch);
 int http_fn_cfg_ds18b20(http_request_t* request);
 /* *INDENT-OFF* */
