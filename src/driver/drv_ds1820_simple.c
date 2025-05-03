@@ -436,7 +436,7 @@ static commandResult_t Cmd_SetResolution(const void* context, const char* cmd, c
 #if (DS1820full)
 	if (Tokenizer_GetArgsCount() > 1){
 		const char *dev = Tokenizer_GetArg(1);
-		DeviceAddress devaddr;
+		DeviceAddress devaddr={0};
 		if (! devstr2DeviceAddr(devaddr,(const char*)dev)){
 			DS1820_LOG(ERROR, "DS1820_SetResolution: device not found");
 			return CMD_RES_BAD_ARGUMENT;
@@ -858,7 +858,7 @@ void insertArray(DS1820devices *a, DeviceAddress devaddr) {
 // search DS18B20 devices on one GPIO pin
 int DS18B20_fill_devicelist(int Pin)
 {
-	DeviceAddress devaddr;
+	DeviceAddress devaddr={0};
 	int ret=0;
 #if WINDOWS
 	// For Windows add some "fake" sensors with increasing addresses
@@ -927,7 +927,7 @@ int DS18B20_set_channel(DeviceAddress devaddr,int c)
 // convert a string with sensor address to "DeviceAddress"
 int devstr2DeviceAddr(uint8_t *devaddr, const char *dev){
 	char *p=dev;
-	DeviceAddress daddr;
+	DeviceAddress daddr={0};
 	int s;
 #if PLATFORM_W600 || PLATFORM_LN882H || PLATFORM_RTL87X0C		
 // this platforms won't allow sscanf of %hhx, so we need to use %x/%X and hence we need temporary unsigned ints ...
@@ -959,7 +959,7 @@ commandResult_t CMD_DS18B20_setsensor(const void *context, const char *cmd, cons
 
 	const char *dev = Tokenizer_GetArg(0);
 	const char *name = Tokenizer_GetArg(1);
-	DeviceAddress devaddr;
+	DeviceAddress devaddr={0};
 	if (devstr2DeviceAddr(devaddr,(const char*)dev)){
 		DS18B20_set_devicename(devaddr,name);
 		if (Tokenizer_GetArgsCount() >= 2 && Tokenizer_IsArgInteger(2)){
