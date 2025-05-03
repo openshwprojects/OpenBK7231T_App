@@ -43,7 +43,7 @@ extern "C" {
 	bool ds18b20_isConnected(const uint8_t *deviceAddress, uint8_t *scratchPad);
 //	void ds18b20_writeScratchPad(const DeviceAddress *deviceAddress, const uint8_t *scratchPad);
 	bool ds18b20_readScratchPad(const uint8_t *deviceAddress, uint8_t *scratchPad);
-	void ds18b20_select(const uint8_t *address);
+	bool ds18b20_select(const uint8_t *address);
 //	uint8_t ds18b20_crc8(const uint8_t *addr, uint8_t len);
 	bool ds18b20_isAllZeros(const uint8_t * const scratchPad);
 	bool isConversionComplete();
