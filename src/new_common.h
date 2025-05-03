@@ -187,6 +187,7 @@ This platform is not supported, error!
 #elif PLATFORM_ECR6600
 #define USER_SW_VER "ECR6600_Test"
 #else
+#warning "USER_SW_VER undefined"
 #define USER_SW_VER "unknown"
 #endif
 #endif
@@ -374,7 +375,7 @@ typedef unsigned int UINT32;
 #define os_free free
 #define os_memset memset
 
-#if PLATFORM_XR806
+#if PLATFORM_XR806 || PLATFORM_XR872
 
 #else
 #define close lwip_close
@@ -418,17 +419,30 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #include <semphr.h>
 #include "lwip/sys.h"
 
-#define portTICK_RATE_MS                      ( ( portTickType ) 1000 / configTICK_RATE_HZ )
+#define GLOBAL_INT_DECLARATION()	;
+#define GLOBAL_INT_DISABLE()		;
+#define GLOBAL_INT_RESTORE()		;
+
+#ifndef portTICK_RATE_MS
+#define portTICK_RATE_MS ( ( portTickType ) 1000 / configTICK_RATE_HZ )
+#endif
 
 #define bk_printf printf
 #define os_strcpy strcpy
+#define os_memset memset
+#if PLATFORM_W800
+#define os_malloc pvPortMalloc
+#define os_free vPortFree
+#else
 #define os_malloc malloc
 #define os_free free
-#define os_memset memset
+#endif
 
+#ifndef portTICK_PERIOD_MS
 #define portTICK_PERIOD_MS	portTICK_RATE_MS
+#endif
 
-#define rtos_delay_milliseconds sys_msleep
+#define rtos_delay_milliseconds(x) vTaskDelay(x / portTICK_PERIOD_MS)
 #define delay_ms sys_msleep
 
 #define SemaphoreHandle_t xSemaphoreHandle

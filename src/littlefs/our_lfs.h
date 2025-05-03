@@ -106,6 +106,14 @@
 #define LFS_BLOCKS_START_MIN 0x1D5000
 #define LFS_BLOCKS_END 0x1D5000 + 0x22000
 
+#elif PLATFORM_W800
+
+// tuya config offset
+#define LFS_BLOCKS_START 0x1C0000
+#define LFS_BLOCKS_START_MIN 0x1C0000
+#define LFS_BLOCKS_END 0x1DB000
+#define LFS_BLOCKS_MAX_LEN (0x1DB000 - 0x1C0000)
+
 #else
 // TODO
 // start 0x1000 after OTA addr

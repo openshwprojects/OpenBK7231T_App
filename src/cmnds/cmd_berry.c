@@ -354,12 +354,6 @@ static int BasicInit() {
 		
 		be_regfunc(g_vm, "rtosDelayMs", be_rtosDelayMs);
 		be_regfunc(g_vm, "delayUs", be_delayUs);
-		be_regfunc(g_vm, "initI2c", be_initI2c);
-		be_regfunc(g_vm, "startI2c", be_startI2c);
-		be_regfunc(g_vm, "stopI2c", be_stopI2c);
-		be_regfunc(g_vm, "writeByteI2c", be_writeByteI2c);
-		be_regfunc(g_vm, "readByteI2c", be_readByteI2c);
-		be_regfunc(g_vm, "readBytesI2c", be_readBytesI2c);
 		be_regfunc(g_vm, "cancel", be_CancelThread);
 		if (!berryRun(g_vm, berryPrelude)) {
 			return 0;

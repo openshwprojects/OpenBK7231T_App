@@ -128,6 +128,8 @@ uint32_t current_fw_idx;
 uint8_t flash_size_8720 = 32;
 extern int g_sleepfactor;
 
+__attribute__((weak)) void _fini(void) {}
+
 static void obk_task(void* pvParameters)
 {
 	vTaskDelay(50 / portTICK_PERIOD_MS);

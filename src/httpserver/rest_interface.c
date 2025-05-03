@@ -25,13 +25,10 @@ uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
 #include <utils_sha256.h>
 #include <bl_mtd.h>
 #include <bl_flash.h>
-#elif PLATFORM_W600
 
-#include "wm_socket_fwup.h"
-#include "wm_fwup.h"
+#elif defined(PLATFORM_W800) || defined(PLATFORM_W600)
 
-#elif PLATFORM_W800
-
+#include "wm_internal_flash.h"
 #include "wm_socket_fwup.h"
 #include "wm_fwup.h"
 
@@ -1746,7 +1743,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 
 	if(writelen < 0)
 	{
-		ADDLOG_DEBUG(LOG_FEATURE_OTA, "ABORTED: %d bytes to write", writelen);
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "ABORTED: %d bytes to write", writelen);
 		return http_rest_error(request, -20, "writelen < 0");
 	}
 
@@ -1759,6 +1756,12 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 #define MAX_BUFF_SIZE			 2048
 	char* Buffer = (char*)os_malloc(MAX_BUFF_SIZE + FWUP_MSG_SIZE);
 
+	if(!Buffer)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "ABORTED: failed to allocate buffer");
+		return http_rest_error(request, -20, "");
+	}
+
 	if(request->contentLength >= 0)
 	{
 		towrite = request->contentLength;
@@ -1766,7 +1769,6 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 
 	int recvLen = 0;
 	int totalLen = 0;
-	uint8_t counter = 0;
 	printf("\ntowrite %d writelen=%d\n", towrite, writelen);
 
 	do
@@ -1858,11 +1860,13 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 				nRetCode = -17;
 			}
 		}
-		if (counter++ % 5 == 0) bk_printf("Downloaded %d / %d\n", recvLen, totalLen);
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Downloaded %d / %d", recvLen, totalLen);
 		rtos_delay_milliseconds(10);	// give some time for flashing - will else increase used memory fast 
 	} while((nRetCode == 0) && (towrite > 0) && (writelen >= 0));
 	bk_printf("Download completed (%d / %d)\n", recvLen, totalLen);
-	tls_mem_free(Buffer);
+	if(Buffer) os_free(Buffer);
+	if(p) pbuf_free(p);
+
 
 	if(nRetCode != 0)
 	{
@@ -3171,7 +3175,7 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 #elif PLATFORM_BL602
 		res = bl_flash_read(startaddr, (uint8_t *)buffer, readlen);
 #elif PLATFORM_W600 || PLATFORM_W800
-		res = 0;
+		res = tls_fls_read(startaddr, (uint8_t*)buffer, readlen);
 #elif PLATFORM_LN882H
 		res = hal_flash_read(startaddr, readlen, (uint8_t *)buffer);
 #elif PLATFORM_ESPIDF
