@@ -13,6 +13,48 @@
 #define interrupts() taskEXIT_CRITICAL()
 #endif
 
+
+#define DEVSTR		"0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X "
+#define DEV2STR(T)	T[0],T[1],T[2],T[3],T[4],T[5],T[6],T[7]
+#define SPSTR		DEVSTR " 0x%02X "
+#define SP2STR(T)	DEV2STR(T),T[8]
+
+
+
+// some OneWire commands
+#define SEARCH_ROM		0xF0	// to identify the ROM codes of all slave devices on the bus
+#define ALARM_SEARCH		0xEC	// all devices with an alarm condition (as SEARCH_ROM except only slaves with a set alarm flag will respond)
+#define READ_ROM		0x33	// Only single device! Read 64-bit ROM code without using the Search ROM procedure
+#define SKIP_ROM		0xCC	// Ignore ROM adress / address all devices
+#define CONVERT_T		0x44	// take temperature reading and copy it to scratchpad
+#define READ_SCRATCHPAD		0xBE	// Read scratchpad
+#define WRITE_SCRATCHPAD	0x4E	// Write scratchpad
+#define SELECT_DEVICE		0x55	// (Match ROM) address a single devices on the bus
+/*
+//unused for now
+#define COPY_SCRATCHPAD	0x48		// Copy scratchpad to EEPROM
+#define RECALL_E2		0xB8	// Recall from EEPROM to scratchpad
+#define READ_POWER_SUPPLY	0xB4	// Determine if device needs parasite power
+*/
+
+// Scratchpad locations
+#define TEMP_LSB        0
+#define TEMP_MSB        1
+#define HIGH_ALARM_TEMP 2
+#define LOW_ALARM_TEMP  3
+#define CONFIGURATION   4
+#define INTERNAL_BYTE   5
+#define COUNT_REMAIN    6
+#define COUNT_PER_C     7
+#define SCRATCHPAD_CRC  8
+// Device resolution
+#define TEMP_9_BIT  0x1F //  9 bit
+#define TEMP_10_BIT 0x3F // 10 bit
+#define TEMP_11_BIT 0x5F // 11 bit
+#define TEMP_12_BIT 0x7F // 12 bit
+
+
+
 static uint8_t dsread = 0;
 static int Pin = -1;
 static int t = -127;
@@ -23,9 +65,10 @@ static int ds18_conversionPeriod = 0;
 
 static int DS1820_DiscoverFamily();
 
-#if (DS1820full)
 typedef uint8_t ScratchPad[9];
 
+
+#if (DS1820full)
 typedef struct {
   DeviceAddress array[DS18B20MAX];
   uint8_t index;
@@ -52,32 +95,23 @@ uint8_t LastDiscrepancy;
 uint8_t LastFamilyDiscrepancy;
 bool LastDeviceFlag;
 
-// some OneWire commands
-#define GETTEMP			0x44  // Tells device to take a temperature reading and put it on the scratchpad
-#define SKIPROM			0xCC  // Command to address all devices on the bus
-#define SELECTDEVICE	0x55  // Command to address all devices on the bus
-#define COPYSCRATCH     0x48  // Copy scratchpad to EEPROM
-#define READSCRATCH     0xBE  // Read from scratchpad
-#define WRITESCRATCH    0x4E  // Write to scratchpad
-#define RECALLSCRATCH   0xB8  // Recall from EEPROM to scratchpad
-#define READPOWERSUPPLY 0xB4  // Determine if device needs parasite power
-#define ALARMSEARCH     0xEC  // Query bus for devices with an alarm condition
-
-// Scratchpad locations
-#define TEMP_LSB        0
-#define TEMP_MSB        1
-#define HIGH_ALARM_TEMP 2
-#define LOW_ALARM_TEMP  3
-#define CONFIGURATION   4
-#define INTERNAL_BYTE   5
-#define COUNT_REMAIN    6
-#define COUNT_PER_C     7
-#define SCRATCHPAD_CRC  8
 
 
 #endif
 
 #define DS1820_LOG(x, fmt, ...) addLogAdv(LOG_##x, LOG_FEATURE_SENSOR, "DS1820[%i] - " fmt, Pin, ##__VA_ARGS__)
+
+
+// prototypes
+#if (DS1820full)
+int devstr2DeviceAddr(uint8_t *devaddr, const char *dev);
+bool ds18b20_getGPIO(const uint8_t* devaddr,uint8_t *GPIO);
+bool ds18b20_readSratchPad(const uint8_t* deviceAddress, uint8_t* scratchPad);
+#else
+bool ds18b20_readSratchPad(uint8_t DS18B20_GPIO, uint8_t* scratchPad);
+#endif
+
+
 
 /*
 
@@ -110,11 +144,6 @@ J 		Standard 	410
 #define OWtimeI	70
 #define OWtimeJ	410
 
-#define READ_ROM 0x33
-#define SKIP_ROM 0xCC
-#define CONVERT_T 0x44
-#define READ_SCRATCHPAD 0xBE
-#define WRITE_SCRATCHPAD 0x4E
 
 static int OWReset(int Pin)
 {
@@ -333,90 +362,170 @@ commandResult_t CMD_OW_testus(const void *context, const char *cmd, const char *
 }
 #endif
 
+#if (DS1820full)
+bool ds18b20_writeScratchPad(const uint8_t *deviceAddress, const uint8_t *scratchPad) {
+	if ( ! ds18b20_getGPIO(deviceAddress, &DS18B20_GPIO ) ) {
+		DS1820_LOG(DEBUG, "No GPIO found for device - DS18B20_GPIO=%i", DS18B20_GPIO);
+		return false;
+	}
+	DS1820_LOG(DEBUG, "GPIO found for device - DS18B20_GPIO=%i", DS18B20_GPIO);
+#else
+bool ds18b20_writeScratchPad(uint8_t DS18B20_GPIO, const uint8_t* scratchPad) {
+#endif
+	// send the reset command and fail fast
+	int b = OWReset(DS18B20_GPIO);
+	if (b == 0) {
+		DS1820_LOG(DEBUG, "Resetting GPIO %i failed", DS18B20_GPIO);
+		return false;
+	}
+#if (DS1820full)
+	ds18b20_select(deviceAddress);
+#else
+	OWWriteByte(DS18B20_GPIO, SKIP_ROM);
+#endif
+	OWWriteByte(DS18B20_GPIO,WRITE_SCRATCHPAD);
+	OWWriteByte(DS18B20_GPIO,scratchPad[HIGH_ALARM_TEMP]); // high alarm temp
+	OWWriteByte(DS18B20_GPIO,scratchPad[LOW_ALARM_TEMP]); // low alarm temp
+	OWWriteByte(DS18B20_GPIO,scratchPad[CONFIGURATION]);
+	DS1820_LOG(DEBUG, "Wrote scratchpad " SPSTR , SP2STR(scratchPad));
+	b = OWReset(DS18B20_GPIO);
+	if (b == 0) {
+		DS1820_LOG(DEBUG, "Resetting GPIO %i failed", DS18B20_GPIO);
+		return false;
+	}
+	return true;
+}
+
+
 
 static commandResult_t Cmd_SetResolution(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	Tokenizer_TokenizeString(args, 0);
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	int arg = Tokenizer_GetArgInteger(0);
 	if (arg > 12 || arg < 9)
 		return CMD_RES_BAD_ARGUMENT;
+	uint8_t newValue = 0;
+	switch (arg) {
+		case 12:
+			newValue = TEMP_12_BIT;
+			break;
+		case 11:
+			newValue = TEMP_11_BIT;
+			break;
+		case 10:
+			newValue = TEMP_10_BIT;
+			break;
+		case 9:
+		default:
+			newValue = TEMP_9_BIT;
+			break;
+		}
+		DS1820_LOG(DEBUG, "DS1820_SetResolution: newValue=0x%02X ", newValue);	
 
+#if ! (DS1820full)
 	if (ds18_family != 0x28) {
 		DS1820_LOG(ERROR, "DS1820_SetResolution not supported by sensor");
 		return CMD_RES_UNKNOWN_COMMAND;
 	}
+#endif
+	ScratchPad scratchPad;
+#if (DS1820full)
+	if (Tokenizer_GetArgsCount() > 1){
+		const char *dev = Tokenizer_GetArg(1);
+		DeviceAddress devaddr;
+		if (! devstr2DeviceAddr(devaddr,(const char*)dev)){
+			DS1820_LOG(ERROR, "DS1820_SetResolution: device not found");
+			return CMD_RES_BAD_ARGUMENT;
+		}
+		if (ds18b20_isConnected((uint8_t*)devaddr, scratchPad)){
+#else
+	if (ds18b20_readSratchPad(Pin, scratchPad)) {
+#endif
+			// if it needs to be updated we write the new value
+			DS1820_LOG(DEBUG, "Read scratchpad " SPSTR , SP2STR(scratchPad));
+			if (scratchPad[CONFIGURATION] != newValue) {
+				scratchPad[CONFIGURATION] = newValue;
+				DS1820_LOG(DEBUG, "Going to write scratchpad " SPSTR , SP2STR(scratchPad));
 
-	uint8_t cfg = arg;
-	cfg = cfg - 9;
-	cfg = cfg * 32;
-	cfg |= 0x1F;
-
-	if(OWReset(Pin) == 0)
-	{
-		DS1820_LOG(ERROR, "WriteScratchpad Reset failed");
-		return CMD_RES_ERROR;
+#if (DS1820full)
+				if (! ds18b20_writeScratchPad((uint8_t*)devaddr, scratchPad)){
+//					DS1820_LOG(ERROR, "DS1820_SetResolution: failed to write scratchpad for sensor " DEVSTR ,DEV2STR((uint8_t*)devaddr));
+					DS1820_LOG(ERROR, "DS1820_SetResolution: failed to write scratchpad for sensor " DEVSTR ,DEV2STR(devaddr));
+				}
+#else
+				if (! ds18b20_writeScratchPad(Pin, scratchPad)) {
+					DS1820_LOG(ERROR, "DS1820_SetResolution: failed to write scratchpad!");
+				}
+#endif
+			}
+		}
+		else {
+					DS1820_LOG(ERROR, "DS1820_SetResolution: failed to read scratchpad!");	
+		}
+#if (DS1820full)
+	 }
+	 else {
+		for (int i=0; i < ds18_count; i++) {
+//			DS1820_LOG(DEBUG, "DS1820_SetResolution: setting sensor " DEVSTR ,DEV2STR((uint8_t*)ds18b20devices.array[i]));
+			DS1820_LOG(DEBUG, "DS1820_SetResolution: setting sensor " DEVSTR ,DEV2STR(ds18b20devices.array[i]));
+			if (ds18b20_isConnected((uint8_t*)ds18b20devices.array[i], scratchPad)) {
+				if (scratchPad[CONFIGURATION] != newValue) {
+					scratchPad[CONFIGURATION] = newValue;
+					if (! ds18b20_writeScratchPad((uint8_t*)ds18b20devices.array[i], scratchPad)){
+//						DS1820_LOG(ERROR, "DS1820_SetResolution: failed to write scratchpad for sensor " DEVSTR ,DEV2STR((uint8_t*)ds18b20devices.array[i]));
+						DS1820_LOG(ERROR, "DS1820_SetResolution: failed to write scratchpad for sensor " DEVSTR ,DEV2STR(ds18b20devices.array[i]));
+					}
+				}
+			}
+			else {
+//				DS1820_LOG(ERROR, "DS1820_SetResolution: couldn't connect to sensor " DEVSTR ,DEV2STR((uint8_t*)ds18b20devices.array[i]));
+				DS1820_LOG(ERROR, "DS1820_SetResolution: couldn't connect to sensor " DEVSTR ,DEV2STR(ds18b20devices.array[i]));
+			}
+		}
 	}
-
-	OWWriteByte(Pin, SKIP_ROM);
-	OWWriteByte(Pin, WRITE_SCRATCHPAD); //Write Scratchpad command
-	OWWriteByte(Pin, 0x7F); //TH
-	OWWriteByte(Pin, 0x80); //TL
-	OWWriteByte(Pin, cfg);  //CFG
-
+#endif
 	//temperature conversion was interrupted
 	dsread = 0;
 
 	return CMD_RES_OK;
 }
 
-
-#if (DS1820full)
-
-bool ds18b20_used_channel(int ch) {
-	for (int i=0; i < ds18_count; i++) {
-		if (ds18b20devices.channel[i] == ch) {
-				return true;
-		}
-	}
-	return false;
-};
-
-// reads scratchpad and returns fixed-point temperature, scaling factor 2^-7
-int16_t calculateTemperature(const DeviceAddress *deviceAddress, uint8_t* scratchPad) {
-	int16_t fpTemperature = (((int16_t)scratchPad[TEMP_MSB]) << 11) | (((int16_t)scratchPad[TEMP_LSB]) << 3);
-	return fpTemperature;
+void ds18b20_requestTemperatures(int GPIO) {
+	OWReset(GPIO);
+	OWWriteByte(GPIO,SKIP_ROM);
+	OWWriteByte(GPIO,CONVERT_T);
 }
 
 
-bool ds18b20_getGPIO(DeviceAddress devaddr,uint8_t *GPIO)
-{
-	int i=0;
-	for (i=0; i < ds18_count; i++) {
-		if (! memcmp(devaddr,ds18b20devices.array[i],8)){	// found device
-			DS1820_LOG(DEBUG, "Found device at index %i - GPIO=%i", i,ds18b20devices.GPIO[i]);
-			*GPIO=ds18b20devices.GPIO[i];
-			return true;
-		}
-	}
-	return false;
-};
 
-bool ds18b20_readScratchPad(const DeviceAddress *deviceAddress, uint8_t* scratchPad) {
-//	if ( ! ds18b20_getGPIO(deviceAddress, &DS18B20_GPIO ) ) return false;
+
+// use same code to read scatchpad and test CRC in one
+// parameter beside scratchPad to fill is
+//	 only GPIO pin for single DS1820
+//	 sensor address for multiple devices
+#if (DS1820full)
+bool ds18b20_readSratchPad(const uint8_t *deviceAddress, uint8_t* scratchPad) {
 	if ( ! ds18b20_getGPIO(deviceAddress, &DS18B20_GPIO ) ) {
 		DS1820_LOG(DEBUG, "No GPIO found for device - DS18B20_GPIO=%i", DS18B20_GPIO);
 		return false;
 	}
-	// send the reset command and fail fast
 	DS1820_LOG(DEBUG, "GPIO found for device - DS18B20_GPIO=%i", DS18B20_GPIO);
+#else
+bool ds18b20_readSratchPad(uint8_t DS18B20_GPIO, uint8_t* scratchPad) {
+#endif
+	// send the reset command and fail fast
 	int b = OWReset(DS18B20_GPIO);
 	if (b == 0) {
 		DS1820_LOG(DEBUG, "Resetting GPIO %i failed", DS18B20_GPIO);
 		return false;
 	}
+#if (DS1820full)
 	ds18b20_select(deviceAddress);
+#else
+	OWWriteByte(DS18B20_GPIO, SKIP_ROM);
+#endif
 	OWWriteByte(DS18B20_GPIO, READ_SCRATCHPAD);
 	// Read all registers in a simple loop
 	// byte 0: temperature LSB
@@ -431,6 +540,17 @@ bool ds18b20_readScratchPad(const DeviceAddress *deviceAddress, uint8_t* scratch
 	for (uint8_t i = 0; i < 9; i++) {
 		scratchPad[i] = OWReadByte(DS18B20_GPIO);
 	}
+	uint8_t crc = Crc8CQuick(scratchPad, 8);
+	if(crc != scratchPad[8])
+	{
+		DS1820_LOG(ERROR, "Read CRC=%x != calculated:%x (errcount=%i)", scratchPad[8], crc, errcount);
+		DS1820_LOG(ERROR, "Scratchpad Data Read: %x %x %x %x %x %x %x %x %x",
+			scratchPad[0], scratchPad[1], scratchPad[2], scratchPad[3], scratchPad[4],
+			scratchPad[5], scratchPad[6], scratchPad[7], scratchPad[8]);
+
+		return false;
+	}
+
 	b =  OWReset(DS18B20_GPIO);
 	if (b == 0) {
 		DS1820_LOG(DEBUG, "Resetting GPIO %i failed", DS18B20_GPIO);
@@ -439,10 +559,86 @@ bool ds18b20_readScratchPad(const DeviceAddress *deviceAddress, uint8_t* scratch
 	return (b == 1);
 }
 
-void ds18b20_select(const DeviceAddress *address) {
+
+
+
+
+float ds18b20_Scratchpat2TempC(const ScratchPad scratchPad, uint8_t family) {
+	int16_t raw = (int16_t)scratchPad[TEMP_MSB] << 8 | (int16_t)scratchPad[TEMP_LSB];
+	if(family == 0x10)
+	{
+		// DS18S20 or old DS1820
+		int16_t dT = 128 * (scratchPad[7] - scratchPad[6]);
+		dT /= scratchPad[7];
+		raw = 64 * (raw & 0xFFFE) - 32 + dT;
+		DS1820_LOG(DEBUG, "family=%x, raw=%i, count_remain=%i, count_per_c=%i, dT=%i", family, raw, scratchPad[6], scratchPad[7], dT);
+	}
+	else
+	{ // DS18B20
+	
+		// Bits 6 and 5 of CFG byte will contain R1 R0 representing the resolution:
+		// 00	 9 bits
+		// 01 	10 bits
+		// 10	11 bits
+		// 11	12 bits
+		//
+		// might be read as "how many from the last three bits are valid? 0 for 9bits, all 3 for 12 bits
+		// we want the unused bits to be 0, so we need to mask out ~ R1R0 bits ( 0 for 12bit ... 3 for 9 bit)
+		// so here's what we do:
+		// get bits 6 and five ( & 0x60) and push them 5 bits right --> so we have 0 0 0 0 0 0 R1 R0 --> decimal 0 (for 9 bits) to 3 (for 12 bts)
+		// we whant to mask the bits, so substract from 3 --> decimal 3 (=3-0 for 9 bits) to 0 (=3-3 for 12 bits)
+		// to mask out / delete x bits we use 		& ((1 << x ) -1)
+		//  
+		uint8_t maskbits = 3 - ((scratchPad[4] & 0x60) >> 5) ;	// maskbits will be number of bit to zero out
+		raw = raw & ~ ( (1 << maskbits) -1) ;
+//		DS1820_LOG(DEBUG, "maskbits=%x, raw=%i", maskbits, raw);
+		raw = raw << 3; // multiply by 8
+		DS1820_LOG(DEBUG, "ds18b20_Scratchpat2TempC: family=%x, raw=%i (%i bit resolution)", family, raw, 12 - maskbits );
+	}
+
+	// Raw is t * 128
+	t = (raw / 128) * 100; // Whole degrees
+	int frac = (raw % 128) * 100 / 128; // Fractional degrees
+	t += t > 0 ? frac : -frac;
+
+	if (t <= DEVICE_DISCONNECTED_C)
+		return DEVICE_DISCONNECTED_C;
+	// C = RAW/128
+	return (float)raw / 128.0f;
+}
+
+
+
+
+
+#if (DS1820full)
+
+bool ds18b20_used_channel(int ch) {
+	for (int i=0; i < ds18_count; i++) {
+		if (ds18b20devices.channel[i] == ch) {
+				return true;
+		}
+	}
+	return false;
+};
+
+bool ds18b20_getGPIO(const uint8_t* devaddr,uint8_t *GPIO)
+{
+	int i=0;
+	for (i=0; i < ds18_count; i++) {
+		if (! memcmp(devaddr,ds18b20devices.array[i],8)){	// found device
+			DS1820_LOG(DEBUG, "Found device at index %i - GPIO=%i", i,ds18b20devices.GPIO[i]);
+			*GPIO=ds18b20devices.GPIO[i];
+			return true;
+		}
+	}
+	return false;
+};
+
+void ds18b20_select(const uint8_t *address) {
 	if ( ! ds18b20_getGPIO(address, &DS18B20_GPIO ) ) return;
 	uint8_t i;
-	OWWriteByte(DS18B20_GPIO, SELECTDEVICE);           // Choose ROM
+	OWWriteByte(DS18B20_GPIO, SELECT_DEVICE);           // Choose ROM
 	for (i = 0; i < 8; i++) OWWriteByte(DS18B20_GPIO, ((uint8_t *)address)[i]);
 }
 
@@ -455,25 +651,18 @@ bool ds18b20_isAllZeros(const uint8_t * const scratchPad) {
 	return true;
 }
 
-bool ds18b20_isConnected(const DeviceAddress *deviceAddress, uint8_t *scratchPad) {
-	// no need to check for GPIO of device here, ds18b20_readScratchPad() will do so and return flase, if not
-	bool b = ds18b20_readScratchPad(deviceAddress, scratchPad);
-	DS1820_LOG(DEBUG, "readScratchPad returned %i - Crc8CQuick=%i / scratchPad[SCRATCHPAD_CRC]=%i",b,Crc8CQuick(scratchPad, 8),scratchPad[SCRATCHPAD_CRC]);
+bool ds18b20_isConnected(const uint8_t *deviceAddress, uint8_t *scratchPad) {
+	// no need to check for GPIO of device here, ds18b20_readSratchPad() will do so and return false, if not
+	bool b = ds18b20_readSratchPad((const uint8_t *)deviceAddress, scratchPad);
+	DS1820_LOG(DEBUG, "READ_SCRATCHPADPad returned %i - Crc8CQuick=%i / scratchPad[SCRATCHPAD_CRC]=%i",b,Crc8CQuick(scratchPad, 8),scratchPad[SCRATCHPAD_CRC]);
 	return b && !ds18b20_isAllZeros(scratchPad) && (Crc8CQuick(scratchPad, 8) == scratchPad[SCRATCHPAD_CRC]);
 }
 
 
-
-float ds18b20_getTempC(const DeviceAddress *deviceAddress) {
+float ds18b20_getTempC(const uint8_t *dev) {
 	ScratchPad scratchPad;
-	if (ds18b20_isConnected(deviceAddress, scratchPad)) {
-		DS1820_LOG(DEBUG, "reading Device Temperature");
-		int16_t rawTemp = calculateTemperature(deviceAddress, scratchPad);
-		if (rawTemp <= DEVICE_DISCONNECTED_RAW)
-			return DEVICE_DISCONNECTED_C;
-		// C = RAW/128
-		// F = (C*1.8)+32 = (RAW/128*1.8)+32 = (RAW*0.0140625)+32
-		return (float)rawTemp / 128.0f;
+	if (ds18b20_isConnected((const DeviceAddress *)dev, scratchPad)) {
+		return ds18b20_Scratchpat2TempC(scratchPad, (uint8_t)dev[0]);	// deviceAddress[0] equals to "family" (0x28 for DS18B20)
 	} else DS1820_LOG(DEBUG, "Device not connected");
 	return DEVICE_DISCONNECTED_C;
 }
@@ -533,10 +722,10 @@ bool search(uint8_t *newAddr, bool search_mode, int Pin) {
 
 		// issue the search command
 		if (search_mode == true) {
-			OWWriteByte(Pin,0xF0);   // NORMAL SEARCH
+			OWWriteByte(Pin,SEARCH_ROM);   // search all devices
 		}
 		else {
-			OWWriteByte(Pin,0xEC);   // CONDITIONAL SEARCH
+			OWWriteByte(Pin,ALARM_SEARCH);   // search for devices with alarm only
 		}
 
 		// loop to do the search
@@ -629,19 +818,6 @@ bool search(uint8_t *newAddr, bool search_mode, int Pin) {
 }
 
 
-void ds18b20_init(int GPIO) {
-	DS18B20_GPIO = GPIO;
-	//gpio_pad_select_gpio(DS18B20_GPIO);
-}
-
-void ds18b20_requestTemperatures() {
-	OWReset(DS18B20_GPIO);
-	OWWriteByte(DS18B20_GPIO,SKIP_ROM);
-	OWWriteByte(DS18B20_GPIO,CONVERT_T);
-	//unsigned long start = esp_timer_get_time() / 1000ULL;
-	//while (!isConversionComplete() && ((esp_timer_get_time() / 1000ULL) - start < millisToWaitForConversion())) vPortYield();
-}
-
 
 
 // add a new device into DS1820devices
@@ -686,17 +862,14 @@ int DS18B20_fill_devicelist(int Pin)
 	// 28 FF AA BB CC DD EE 01, 28 FF AA BB CC DD EE 02, ...
 	devaddr[0]=0x28; devaddr[1]=0xFF; devaddr[2]=0xAA; devaddr[3]=0xBB;devaddr[4]=0xCC;devaddr[5]=0xDD;devaddr[6]=0xEE;
 	while (ds18_count < 1+(DS18B20MAX/4) ){
-		ret++;
-		devaddr[7]=ret;
+		devaddr[7]=++ret;
 		bk_printf("found device 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X ",
 			devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7]);
 		insertArray(&ds18b20devices,devaddr);
-		ret++;
 	}
 #else
 	reset_search();
 	while (search(devaddr,1,Pin) && ds18_count < DS18B20MAX ){
-		ret++;
 		bk_printf("found device 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X ",
 			devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7]);
 		insertArray(&ds18b20devices,devaddr);
@@ -707,7 +880,7 @@ int DS18B20_fill_devicelist(int Pin)
 };
 
 // a sensor should have a human readable name to distinguish sensors
-int DS18B20_set_devicename(DeviceAddress devaddr,char *name)
+int DS18B20_set_devicename(DeviceAddress devaddr,const char *name)
 {
 	int i=0;
 	for (i=0; i < ds18_count; i++) {
@@ -749,11 +922,10 @@ int DS18B20_set_channel(DeviceAddress devaddr,int c)
 };
 
 // convert a string with sensor address to "DeviceAddress"
-int devstr2DeviceAddr(DeviceAddress *devaddr, char *dev){
+int devstr2DeviceAddr(uint8_t *devaddr, const char *dev){
 	char *p=dev;
 	DeviceAddress daddr;
 	int s;
-	
 #if PLATFORM_W600 || PLATFORM_LN882H || PLATFORM_RTL87X0C		
 // this platforms won't allow sscanf of %hhx, so we need to use %x/%X and hence we need temporary unsigned ints ...
 // test and add new platforms if needed
@@ -764,8 +936,11 @@ int devstr2DeviceAddr(DeviceAddress *devaddr, char *dev){
 	s = sscanf(dev,"0x%02hhx 0x%02hhx 0x%02hhx 0x%02hhx 0x%02hhx 0x%02hhx 0x%02hhx 0x%02hhx",
 		&daddr[0],&daddr[1],&daddr[2],&daddr[3],&daddr[4],&daddr[5],&daddr[6],&daddr[7]);
 #endif
+//	DS1820_LOG(DEBUG, "devstr2DeviceAddr: After sscanf - DevAddr=" DEVSTR, DEV2STR(daddr));
+
 	if ( s!=8 ) {
 		bk_printf("devstr2DeviceAddr -  conversion failed (converted %i)",s);
+		DS1820_LOG(ERROR, "devstr2DeviceAddr: conversion failed (converted %i)",s);
 		return 0;
 	}
 	memcpy(*devaddr,daddr,8);
@@ -782,7 +957,7 @@ commandResult_t CMD_DS18B20_setsensor(const void *context, const char *cmd, cons
 	const char *dev = Tokenizer_GetArg(0);
 	const char *name = Tokenizer_GetArg(1);
 	DeviceAddress devaddr;
-	if (devstr2DeviceAddr(&devaddr,dev)){
+	if (devstr2DeviceAddr(devaddr,(const char*)dev)){
 		DS18B20_set_devicename(devaddr,name);
 		if (Tokenizer_GetArgsCount() >= 2 && Tokenizer_IsArgInteger(2)){
 			DS18B20_set_channel(devaddr,Tokenizer_GetArgInteger(2));
@@ -797,17 +972,12 @@ commandResult_t CMD_DS18B20_setsensor(const void *context, const char *cmd, cons
 void scan_sensors(){
 	ds18_count=0;
 	reset_search();
-//bk_printf("DS18B20_driver_Init() ... \r\n");
 	int i,j=0;
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
-//	bk_printf(" ... i=%i",i);
 		if ((g_cfg.pins.roles[i] == IOR_DS1820_IO) && ( j < DS18B20MAX_GPIOS)){
-//		bk_printf(" ... i=%i + j=%i ",i,j);
 			DS18B20GPIOS[j++]=i;
-			ds18b20_init(i);	// will set  DS18B20_GPIO to i;
-//		bk_printf(" ...DS18B20_fill_devicelist(%i)\r\n",i);
+			DS18B20_GPIO = i ;	// set DS18B20_GPIO to i
 			DS18B20_fill_devicelist(i);
-
 		}
 	}
 	// fill unused "pins" with 99 as sign for unused
@@ -857,7 +1027,7 @@ void DS1820_driver_Init()
 	//cmddetail:{"name":"DS18B20_scansensors","args":"-",
 	//cmddetail:"descr":"(Re-)Scan all GPIOs defined for DS1820 for sensors",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_ds1802_simple.c","requires":"",
-	//cmddetail:"examples":"DS18B20_setsensor \"0x28 0x01 0x02 0x03 0x04 0x05 0x06 0x07\" \"kitchen\" 2"}
+	//cmddetail:"examples":"DS18B20_scansensors"}
 	CMD_RegisterCommand("DS18B20_scansensors", CMD_DS18B20_scansensors, NULL);
 
 	// no need to discover the "family" we know the address, the first byte is the family
@@ -925,7 +1095,7 @@ int http_fn_cfg_ds18b20(http_request_t* request)
 
 
 //	poststr_h2(request, "Here you can configure DS18B20 sensors detected or configured");
-	hprintf255(request, "<h2>Here you can configure DS18B20 sensors detected or cinfigured</h2><h5>Configure DS18B20 devices detected</h5><form action='/cfg_ds18b20'>");
+	hprintf255(request, "<h2>Here you can configure DS18B20 sensors</h2><h5>Configure DS18B20 devices detected</h5><form action='/cfg_ds18b20'>");
 	hprintf255(request, "<table><tr><th width='38'>Sensor Adress</th><th width='25'> &nbsp; Name </th><th width='10'>Channel</th></tr>");
 	for (int i=0; i < ds18_count; i++) {
 		hprintf255(request, "<tr><td id='a%i'>0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X</td>"
@@ -1003,62 +1173,21 @@ static int DS1820_DiscoverFamily()
 	}
 }
 
+
 void singleDS1820temp(){
 	uint8_t scratchpad[9], crc;
 	int16_t raw;
 	if (!DS1820TConversionDone(Pin))
 			return;
 
-	if(OWReset(Pin) == 0)
-	{
-		DS1820_LOG(ERROR, "Read Reset failed");
-		return;
-	}
-	OWWriteByte(Pin, SKIP_ROM);
-	OWWriteByte(Pin, READ_SCRATCHPAD);
-	for(int i = 0; i < 9; i++)
-	{
-		scratchpad[i] = OWReadByte(Pin);
-	}
-	crc = Crc8CQuick(scratchpad, 8);
-	if(crc != scratchpad[8])
-	{
-		DS1820_LOG(ERROR, "Read CRC=%x != calculated:%x (errcount=%i)", scratchpad[8], crc, errcount);
-		DS1820_LOG(ERROR, "Scratchpad Data Read: %x %x %x %x %x %x %x %x %x",
-			scratchpad[0], scratchpad[1], scratchpad[2], scratchpad[3], scratchpad[4],
-			scratchpad[5], scratchpad[6], scratchpad[7], scratchpad[8]);
-
+	if (! ds18b20_readSratchPad(Pin, scratchpad)){
 		errcount++;
 		if(errcount > 5) dsread = 0; // retry afer 5 failures
 			
 		return;
 	}
 
-	raw = (scratchpad[1] << 8) | scratchpad[0];
-
-	if(ds18_family == 0x10)
-	{
-		// DS18S20 or old DS1820
-		int16_t dT = 128 * (scratchpad[7] - scratchpad[6]);
-		dT /= scratchpad[7];
-		raw = 64 * (raw & 0xFFFE) - 32 + dT;
-		DS1820_LOG(DEBUG, "family=%x, raw=%i, count_remain=%i, count_per_c=%i, dT=%i", ds18_family, raw, scratchpad[6], scratchpad[7], dT);
-	}
-	else
-	{ // DS18B20
-		uint8_t cfg = scratchpad[4] & 0x60;
-		if(cfg == 0x00) raw = raw & ~7;      // 9 bit resolution, 93.75 ms
-		else if(cfg == 0x20) raw = raw & ~3; // 10 bit res, 187.5 ms
-		else if(cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
-		raw = raw << 3; // multiply by 8
-		DS1820_LOG(DEBUG, "family=%x, raw=%i, cfg=%x (%i bit resolution)", ds18_family, raw, cfg, 9 + (cfg) / 32);
-	}
-
-	// Raw is t * 128
-	t = (raw / 128) * 100; // Whole degrees
-	int frac = (raw % 128) * 100 / 128; // Fractional degrees
-	t += t > 0 ? frac : -frac;
-
+	float temp = ds18b20_Scratchpat2TempC(scratchpad, ds18_family);	
 	dsread = 0;
 	lastconv = g_secondsElapsed;
 	CHANNEL_Set(g_cfg.pins.channels[Pin], t, CHANNEL_SET_FLAG_SILENT);
@@ -1118,7 +1247,7 @@ void DS1820_OnEverySecond()
 				errcount = 0;
 				t = -127;
 				while ( t == -127 && errcount++ < 5){
-					t = ds18b20_getTempC((const DeviceAddress*)ds18b20devices.array[i]);
+					t = ds18b20_getTempC((const uint8_t*)ds18b20devices.array[i]);
 					bk_printf("Device %i (0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X) reported %0.2f\r\n",i,
 						ds18b20devices.array[i][0],ds18b20devices.array[i][1],ds18b20devices.array[i][2],ds18b20devices.array[i][3],
 						ds18b20devices.array[i][4],ds18b20devices.array[i][5],ds18b20devices.array[i][6],ds18b20devices.array[i][7],t);
@@ -1155,7 +1284,7 @@ void DS1820_OnEverySecond()
 			}
 			if(dsread == 0 && (g_secondsElapsed % ds18_conversionPeriod == 0 || lastconv == 0))
 			{
-				ds18b20_requestTemperatures();
+				ds18b20_requestTemperatures(DS18B20_GPIO);
 				dsread = 1;
 				errcount = 0;
 			}
