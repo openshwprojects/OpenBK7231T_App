@@ -418,6 +418,7 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #include <portable.h>
 #include <semphr.h>
 #include "lwip/sys.h"
+#include <stdbool.h>
 
 #define GLOBAL_INT_DECLARATION()	;
 #define GLOBAL_INT_DISABLE()		;

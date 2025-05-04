@@ -271,7 +271,7 @@ OpenBK7231N: prebuild_OpenBK7231N
 	$(MAKE) APP_NAME=OpenBK7231N TARGET_PLATFORM=bk7231n SDK_PATH=sdk/OpenBK7231N APPS_BUILD_PATH=../bk7231n_os OBK_VARIANT=$(OBK_VARIANT) build-BK7231
 
 sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q1:
-	git submodule update --init --recursive sdk/OpenBK7231T
+	git submodule update --init --depth=1 sdk/OpenBK7231T
 
 sdk/OpenXR806/tools/gcc-arm-none-eabi-8-2019-q3-update:
 	cd sdk/OpenXR806/tools && wget -q "https://developer.arm.com/-/media/Files/downloads/gnu-rm/8-2019q3/RC1.1/gcc-arm-none-eabi-8-2019-q3-update-linux.tar.bz2" && tar -xf *.tar.bz2 && rm -f *.tar.bz2
@@ -330,9 +330,8 @@ sdk/OpenW800/tools/w800/csky/bin:
 	# cd sdk/OpenW800/tools/w800/csky && wget -q "https://occ-oss-prod.oss-cn-hangzhou.aliyuncs.com/resource/1356021/1619529419771/csky-elf-noneabiv2-tools-x86_64-newlib-20210423.tar.gz" && tar -xf *.tar.gz && rm -f *.tar.gz
 	if [ ! -e sdk/OpenW800/tools/w800/csky/got_csky-elf-noneabiv2-tools-x86_64-newlib-20250328 ]; then cd sdk/OpenW800/tools/w800/csky && tar -xf *.tar.gz && touch got_csky-elf-noneabiv2-tools-x86_64-newlib-20250328; fi
 
-sdk/OpenW600/tools/gcc-arm-none-eabi-4_9-2014q4/bin:
-	mkdir -p sdk/OpenW600/tools
-	cd sdk/OpenW600/tools && tar -xf ../support/*.tar.bz2
+sdk/OpenW600/tools/gcc-arm-none-eabi-4_9-2015q1/bin:
+	git submodule update --init --depth=1 sdk/OpenBK7231T
 
 .PHONY: OpenW800
 OpenW800: prebuild_OpenW800 sdk/OpenW800/tools/w800/csky/bin sdk/OpenW800/sharedAppContainer/sharedApp
@@ -345,8 +344,8 @@ OpenW800: prebuild_OpenW800 sdk/OpenW800/tools/w800/csky/bin sdk/OpenW800/shared
 	cp sdk/OpenW800/bin/w800/w800_ota.img output/$(APP_VERSION)/OpenW800_$(APP_VERSION)_ota.img
 
 .PHONY: OpenW600
-OpenW600: prebuild_OpenW600 sdk/OpenW600/tools/gcc-arm-none-eabi-4_9-2014q4/bin sdk/OpenW600/sharedAppContainer/sharedApp
-	$(MAKE) -C sdk/OpenW600 TOOL_CHAIN_PATH="$(shell realpath sdk/OpenW600/tools/gcc-arm-none-eabi-4_9-2014q4/bin)/" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
+OpenW600: prebuild_OpenW600 sdk/OpenW600/tools/gcc-arm-none-eabi-4_9-2015q1/bin sdk/OpenW600/sharedAppContainer/sharedApp
+	$(MAKE) -C sdk/OpenW600 TOOL_CHAIN_PATH="$(shell realpath sdk/OpenBK7231T/platforms/bk7231t/toolchain/gcc-arm-none-eabi-4_9-2015q1/bin)/" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenW600/bin/w600/w600.fls output/$(APP_VERSION)/OpenW600_$(APP_VERSION).fls
 	cp sdk/OpenW600/bin/w600/w600_gz.img output/$(APP_VERSION)/OpenW600_$(APP_VERSION)_gz.img

@@ -80,7 +80,8 @@ void UserMain(void)
 }
 
 #else
-
+__attribute__((weak))
+void _fini(void) {}
 // static void print_rtc()
 // {
 // 	struct tm tblock;

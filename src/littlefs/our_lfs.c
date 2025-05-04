@@ -901,7 +901,7 @@ static int lfs_erase(const struct lfs_config* c, lfs_block_t block)
     return res;
 }
 
-#elif PLATFORM_W800
+#elif PLATFORM_W800 || PLATFORM_W600
 
 static int lfs_read(const struct lfs_config* c, lfs_block_t block,
     lfs_off_t off, void* buffer, lfs_size_t size)

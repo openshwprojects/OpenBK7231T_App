@@ -40,7 +40,7 @@
 
 #if PLATFORM_BEKEN
 #include "mem_pub.h"
-#elif PLATFORM_BL602 || PLATFORM_LN882H || PLATFORM_ESPIDF
+#elif PLATFORM_BL602 || PLATFORM_LN882H || PLATFORM_ESPIDF || PLATFORM_W600
 #define os_free free
 #define os_malloc malloc
 #elif PLATFORM_REALTEK || PLATFORM_W800
