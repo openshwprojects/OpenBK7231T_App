@@ -1028,13 +1028,6 @@ void CMD_Init_Delayed() {
 	BL0942_AddCommands();
 #endif
 #endif
-#if PLATFORM_BEKEN && ENABLE_BEKEN_TEST_TICKSCOUNT
-	//cmddetail:{"name":"testtickscount","args":"# of tests",
-	//cmddetail:"descr":"tests x times, ticks counter between consecutive calls of HAL_genericks getTicksCount() command ",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_beken_testtickscount.c","requires":"",
-	//cmddetail:"examples":"testtickscount 100 "}
-	CMD_RegisterCommand("testtickscount", Cmd_testtickscount, NULL);			
-#endif
 
 }
 
