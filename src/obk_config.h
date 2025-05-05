@@ -266,6 +266,10 @@
 #define OBK_OTA_EXTENSION 		".bin"
 #define OBK_OTA_NAME_EXTENSION 		"_OTA"
 
+// add sunset_sunrise_scheduler
+#define ENABLE_NTP_SUNRISE_SUNSET	1
+#define ENABLE_CALENDAR_EVENTS	1
+
 #elif PLATFORM_ESPIDF
 
 
