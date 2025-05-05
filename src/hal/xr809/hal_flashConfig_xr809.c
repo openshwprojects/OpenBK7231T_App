@@ -9,7 +9,7 @@
 #include "efpg/efpg.h"
 
 
-#define OUR_CUSTOM_SYSINFO_ADR PRJCONF_SYSINFO_ADDR
+#define OUR_CUSTOM_SYSINFO_ADR (0x1FC000)
 #define OUR_CUSTOM_SYSINFO_SIZE 4096
 
 static fdcm_handle_t *g_fdcm_hdl = 0;
