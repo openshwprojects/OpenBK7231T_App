@@ -66,7 +66,6 @@
 #define ENABLE_DRIVER_AHT2X		1
 #define ENABLE_TASMOTA_JSON		1
 #define ENABLE_DRIVER_DS1820		1
-#define DS1820full			1
 #define ENABLE_DRIVER_DHT		1
 #define ENABLE_NTP				 1
 #define ENABLE_DRIVER_BMP280 1
