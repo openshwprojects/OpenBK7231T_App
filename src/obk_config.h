@@ -431,7 +431,7 @@
 
 // testing DS1820 full driver
 #if (ENABLE_DRIVER_DS1820)
-#define DS1820full			1
+//#define DS1820full			1
 #endif
 
 
