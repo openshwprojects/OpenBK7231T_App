@@ -90,6 +90,8 @@ set(PROJ_ALL_SRC
     app/src/driver/drv_wemo.c
     app/src/driver/drv_ds1820_simple.c
     app/src/driver/drv_charts.c
+    app/src/driver/drv_deviceclock.c
+    app/src/driver/drv_timed_events.c
     app/src/hal/ln882h/hal_adc_ln882h.c
     app/src/hal/ln882h/hal_flashConfig_ln882h.c
     app/src/hal/ln882h/hal_flashVars_ln882h.c

@@ -18,6 +18,7 @@
 #include "../cJSON/cJSON.h"
 #include <time.h>
 #include "../driver/drv_ntp.h"
+#include "../driver/drv_deviceclock.h"
 #include "../driver/drv_local.h"
 #include "../driver/drv_bl_shared.h"
 
@@ -352,7 +353,7 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 	}
 	printer(request, "{");
 
-	time_t localTime = (time_t)NTP_GetCurrentTime();
+	time_t localTime = (time_t)Clock_GetCurrentTime();
 	format_date(buff, sizeof(buff), gmtime(&localTime));
 	JSON_PrintKeyValue_String(request, printer, "Time", buff, false);
 
@@ -389,14 +390,9 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 //XR809 does not support drivers but its build script compiles many drivers including ntp.
 
 #else
-#ifndef ENABLE_NTP
-unsigned int NTP_GetCurrentTime() {
-	return 0;
-}
-unsigned int NTP_GetCurrentTimeWithoutOffset() {
-	return 0;
-}
-#endif
+// replaced "NTP_GetCurrentTime()" and "NTP_GetCurrentTimeWithoutOffset()" 
+// with "Clock_GetCurrentTime()" and "Clock_GetCurrentTimeWithoutOffset" 
+// (which will return 0 if no clock is synched), so no more need for a workaround here...
 #endif
 
 // Topic:  tele/tasmota_48E7F3/STATE
@@ -437,7 +433,7 @@ void format_time(int total_seconds, char* output, int outLen) {
 
 static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bAppendHeader) {
 	char buff[20];
-	time_t localTime = (time_t)NTP_GetCurrentTime();
+	time_t localTime = (time_t)Clock_GetCurrentTime();
 
 	if (bAppendHeader) {
 		printer(request, "\"StatusSTS\":");
@@ -478,8 +474,8 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 static int http_tasmota_json_status_TIM(void* request, jsonCb_t printer) {
 	char buff[20];
 
-	time_t localTime = (time_t)NTP_GetCurrentTime();
-	time_t localUTC = (time_t)NTP_GetCurrentTimeWithoutOffset();
+	time_t localTime = (time_t)Clock_GetCurrentTime();
+	time_t localUTC = (time_t)Clock_GetCurrentTimeWithoutOffset();
 	printer(request, "\"StatusTIM\":{");
 	format_date(buff, sizeof(buff), gmtime(&localUTC));
 	JSON_PrintKeyValue_String(request, printer, "UTC", buff, true);
@@ -699,8 +695,8 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	JSON_PrintKeyValue_Int(request, printer, "Uptime", g_secondsElapsed, true);
 	struct tm* ltm;
 	time_t ntpTime = 0; // if no NTP_time set, we will not change this value, but just stick to 0 and hence "fake" start of epoch 1970-01-01T00:00:00
-	if (NTP_GetCurrentTimeWithoutOffset() > g_secondsElapsed) {	// would be negative else, leading to unwanted results when converted to (unsigned) time_t 
-		ntpTime = (time_t)NTP_GetCurrentTimeWithoutOffset() - (time_t)g_secondsElapsed;
+	if (Clock_GetCurrentTimeWithoutOffset() > g_secondsElapsed) {	// would be negative else, leading to unwanted results when converted to (unsigned) time_t 
+		ntpTime = (time_t)Clock_GetCurrentTimeWithoutOffset() - (time_t)g_secondsElapsed;
 	}
 	ltm = gmtime(&ntpTime);
 	if (ltm != 0) {
