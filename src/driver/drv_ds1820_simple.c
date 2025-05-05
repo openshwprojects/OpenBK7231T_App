@@ -14,7 +14,7 @@
 #endif
 
 
-#define DEVSTR		"0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X "
+#define DEVSTR		"0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X"
 #define DEV2STR(T)	T[0],T[1],T[2],T[3],T[4],T[5],T[6],T[7]
 #define SPSTR		DEVSTR " 0x%02X "
 #define SP2STR(T)	DEV2STR(T),T[8]
@@ -101,7 +101,12 @@ bool LastDeviceFlag;
 
 #endif
 
+
+#if (DS1820full)
+#define DS1820_LOG(x, fmt, ...) addLogAdv(LOG_##x, LOG_FEATURE_SENSOR, "DS1820[%i] - " fmt, DS18B20_GPIO, ##__VA_ARGS__)
+#else
 #define DS1820_LOG(x, fmt, ...) addLogAdv(LOG_##x, LOG_FEATURE_SENSOR, "DS1820[%i] - " fmt, Pin, ##__VA_ARGS__)
+#endif
 
 
 // prototypes
@@ -826,20 +831,20 @@ bool search(uint8_t *newAddr, bool search_mode, int Pin) {
 // add a new device into DS1820devices
 void insertArray(DS1820devices *a, DeviceAddress devaddr) {
 	if (ds18_count >= DS18B20MAX){
-		bk_printf("insertArray ERROR:Arry is full, can't add device 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X ",
-			devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7]);
+		bk_printf("insertArray ERROR:Arry is full, can't add device " DEVSTR " ",
+			DEV2STR(devaddr));
 //			(unsigned int)devaddr[0],(unsigned int)devaddr[1],(unsigned int)devaddr[2],(unsigned int)devaddr[3],(unsigned int)devaddr[4],(unsigned int)devaddr[5],(unsigned int)devaddr[6],(unsigned int)devaddr[7]);
 		return;
 	}
-	bk_printf("insertArray - ds18_count=%i  -- adding device 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X ",ds18_count,
-		devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7]);
+	bk_printf("insertArray - ds18_count=%i  -- adding device " DEVSTR " ",ds18_count,
+		DEV2STR(devaddr));
 //		(unsigned int)devaddr[0],(unsigned int)devaddr[1],(unsigned int)devaddr[2],(unsigned int)devaddr[3],(unsigned int)devaddr[4],(unsigned int)devaddr[5],(unsigned int)devaddr[6],(unsigned int)devaddr[7]);
 
 	for (int i=0; i < ds18_count; i++) {
 		if (! memcmp(devaddr,ds18b20devices.array[i],8)){	// found device, no need to reenter
 			a->GPIO[i]=DS18B20_GPIO; 	// just to be sure - maybe device is on other GPIO now?!?
-			bk_printf("device 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X was allready present - just (re-)setting GPIO to %i",
-		devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7],DS18B20_GPIO);
+			bk_printf("device " DEVSTR " was allready present - just (re-)setting GPIO to %i",
+		DEV2STR(devaddr),DS18B20_GPIO);
 			return;
 		}
 	}
@@ -866,8 +871,8 @@ int DS18B20_fill_devicelist(int Pin)
 	devaddr[0]=0x28; devaddr[1]=0xFF; devaddr[2]=0xAA; devaddr[3]=0xBB;devaddr[4]=0xCC;devaddr[5]=0xDD;devaddr[6]=0xEE;
 	while (ds18_count < 1+(DS18B20MAX/4) ){
 		devaddr[7]=++ret;
-		bk_printf("found device 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X ",
-			devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7]);
+		bk_printf("found device " DEVSTR " ",
+			DEV2STR(devaddr));
 		insertArray(&ds18b20devices,devaddr);
 	}
 #else
@@ -892,8 +897,8 @@ int DS18B20_set_devicename(DeviceAddress devaddr,const char *name)
 			return 1;
 		}
 	}
-	bk_printf("didn't find device 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X - inserting",
-			devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7]);
+	bk_printf("didn't find device " DEVSTR " - inserting",
+			DEV2STR(devaddr));
 	insertArray(&ds18b20devices,devaddr);
 	// if device was inserted (array not full) now the new device is the last one at position ds18_count-1
 	if (! memcmp(devaddr,ds18b20devices.array[ds18_count-1],8)){	// found device
@@ -913,8 +918,8 @@ int DS18B20_set_channel(DeviceAddress devaddr,int c)
 			return 1;
 		}
 	}
-	bk_printf("didn't find device 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X - inserting",
-			devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7]);
+	bk_printf("didn't find device " DEVSTR " - inserting",
+			DEV2STR(devaddr));
 	insertArray(&ds18b20devices,devaddr);
 	// if device was inserted (array not full) now the new device is the last one at position ds18_count-1
 	if (! memcmp(devaddr,ds18b20devices.array[ds18_count-1],8)){	// found device
@@ -929,11 +934,11 @@ int devstr2DeviceAddr(uint8_t *devaddr, const char *dev){
 	char *p=dev;
 	DeviceAddress daddr={0};
 	int s;
-#if PLATFORM_W600 || PLATFORM_LN882H || PLATFORM_RTL87X0C		
+#if PLATFORM_W600 || PLATFORM_LN882H || PLATFORM_RTL87X0C	
 // this platforms won't allow sscanf of %hhx, so we need to use %x/%X and hence we need temporary unsigned ints ...
 // test and add new platforms if needed
 	unsigned int t[8];
-	s = sscanf(dev,"0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X", &t[0],&t[1],&t[2],&t[3],&t[4],&t[5],&t[6],&t[7]);
+	s = sscanf(dev,DEVSTR, &t[0],&t[1],&t[2],&t[3],&t[4],&t[5],&t[6],&t[7]);
 	for (int i=0; i<8; i++) daddr[i]=(uint8_t)t[i];
 #else
 	s = sscanf(dev,"0x%02hhx 0x%02hhx 0x%02hhx 0x%02hhx 0x%02hhx 0x%02hhx 0x%02hhx 0x%02hhx",
@@ -946,7 +951,7 @@ int devstr2DeviceAddr(uint8_t *devaddr, const char *dev){
 		DS1820_LOG(ERROR, "devstr2DeviceAddr: conversion failed (converted %i)",s);
 		return 0;
 	}
-	memcpy(*devaddr,daddr,8);
+	memcpy(devaddr,daddr,8);
 	return 1;
 }
 
@@ -1065,8 +1070,7 @@ void DS1820_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreSt
 			hprintf255(request, "<tr><td>%s</td>"
 			"<td> &nbsp; %02X %02X %02X %02X %02X %02X %02X %02X</td>"
 			"<td>%s</td></tr>",ds18b20devices.name[i],
-			ds18b20devices.array[i][0],ds18b20devices.array[i][1],ds18b20devices.array[i][2],ds18b20devices.array[i][3],
-			ds18b20devices.array[i][4],ds18b20devices.array[i][5],ds18b20devices.array[i][6],ds18b20devices.array[i][7],
+			DEV2STR(ds18b20devices.array[i]),
 			tmp);
 		}
 		hprintf255(request, "</table>");
@@ -1243,33 +1247,36 @@ void DS1820_OnEverySecond()
 		&& isConversionComplete())
 		{
 			float t = -127;
+			const char * pinalias; 
+			char gpioname[10];
 			bk_printf("Reading temperature from %i DS18B20 sensor(s)\r\n",ds18_count);
 			DS1820_LOG(INFO, "Reading temperature from %i DS18B20 sensor(s)\r\n",ds18_count);
 			for (int i=0; i < ds18_count; i++) {
+				pinalias = HAL_PIN_GetPinNameAlias(ds18b20devices.GPIO[i]);
+				if (! pinalias ) {
+					sprintf(gpioname,"GPIO %u",ds18b20devices.GPIO[i]);
+					pinalias = gpioname;
+				}
 				ds18b20devices.last_read[i] += 1 ;
 				errcount = 0;
 				t = -127;
 				while ( t == -127 && errcount++ < 5){
 					t = ds18b20_getTempC((const uint8_t*)ds18b20devices.array[i]);
-					bk_printf("Device %i (0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X) reported %0.2f\r\n",i,
-						ds18b20devices.array[i][0],ds18b20devices.array[i][1],ds18b20devices.array[i][2],ds18b20devices.array[i][3],
-						ds18b20devices.array[i][4],ds18b20devices.array[i][5],ds18b20devices.array[i][6],ds18b20devices.array[i][7],t);
+					bk_printf("Device %i (" DEVSTR ") reported %0.2f\r\n",i,
+						DEV2STR(ds18b20devices.array[i]),t);
 				}
 				if (t != -127){
 					ds18b20devices.lasttemp[i] = t;
 					ds18b20devices.last_read[i] = 0;
 					if (ds18b20devices.channel[i]>=0) CHANNEL_Set(ds18b20devices.channel[i], t, CHANNEL_SET_FLAG_SILENT);
 					lastconv = g_secondsElapsed;
-					DS1820_LOG(INFO, "Device %i (0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X) reported %0.2f\r\n",i,
-						ds18b20devices.array[i][0],ds18b20devices.array[i][1],ds18b20devices.array[i][2],ds18b20devices.array[i][3],
-						ds18b20devices.array[i][4],ds18b20devices.array[i][5],ds18b20devices.array[i][6],ds18b20devices.array[i][7],t);
+					DS1820_LOG(INFO, "Device %i on %s (" DEVSTR ") reported %0.2f\r\n",i,pinalias,
+						DEV2STR(ds18b20devices.array[i]),t);
 				} else{
 					if (ds18b20devices.last_read[i] > 60) {
 						bk_printf("No temperature read for over 60 seconds for"
-							" device %i (0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X)! Setting to -127°C!\r\n",i,
-							ds18b20devices.array[i][0],ds18b20devices.array[i][1],ds18b20devices.array[i][2],
-							ds18b20devices.array[i][3],ds18b20devices.array[i][4],ds18b20devices.array[i][5],
-							ds18b20devices.array[i][6],ds18b20devices.array[i][7]);
+							" device %i (" DEVSTR ")! Setting to -127°C!\r\n",i,
+							DEV2STR(ds18b20devices.array[i]));
 						ds18b20devices.lasttemp[i] = -127;
 						dsread=0;
 					}
