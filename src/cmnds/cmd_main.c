@@ -55,21 +55,6 @@ int g_sleepfactor = 1;
 
 #define HASH_SIZE 128
 
-#if PLATFORM_BEKEN && ENABLE_BEKEN_TEST_TICKSCOUNT
-#include "../hal/hal_generic.h"
-
-static commandResult_t Cmd_testtickscount(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	Tokenizer_TokenizeString(args, 0);
-	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
-	int arg = Tokenizer_GetArgInteger(0);
-	for (int i=0; i<arg; i++) BEKEN_test_Tickscount();
-	return CMD_RES_OK;
-}
-#endif
-
-
 static int generateHashValue(const char* fname) {
 	int		i;
 	int		hash;

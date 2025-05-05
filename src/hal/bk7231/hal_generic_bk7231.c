@@ -47,7 +47,8 @@ static uint32_t getTicksCount() {
 // 26 ticks per us * 15 000 000 us per overflow
 #define TICKS_PER_OVERFLOW (TICKS_PER_US * US_PER_OVERFLOW)
 
-//https://github.com/libretiny-eu/libretiny
+// https://github.com/libretiny-eu/libretiny
+// not working on BK7238
 void HAL_Delay_us(int delay) {
 #if PLATFORM_BK7238
 	if (delay < 100){
@@ -122,33 +123,6 @@ void HAL_Delay_us(int delay) {
 
 	}
 #endif
-}
-
-
-
-#include <task.h>
-#define noInterrupts() taskENTER_CRITICAL()
-#define interrupts() taskEXIT_CRITICAL()
-int tests=0;
-int min=1000, max=0, sum=0;
-void BEKEN_test_Tickscount() {
-	tests++;
-	uint32_t startTick, endTick;
-	noInterrupts();
-	startTick = getTicksCount();
-	if (startTick != BK_TIMER_FAILURE ){
-		endTick = getTicksCount();
-	}
-	interrupts();
-	if (startTick != BK_TIMER_FAILURE ){
-		int diff= (endTick > startTick)? endTick-startTick : (TICKS_PER_OVERFLOW - startTick + endTick);
-		tests++;
-		sum += diff;
-		if (diff > 0 && diff < min) min=diff;
-		if (diff > max) max=diff;
-		bk_printf("Info HAL_test_Tickscount(): startTick=%u - endTick=%u -- Ticks:%i (min=%i # max=%i # average=%f)\r\n",startTick,endTick,diff,min,max,(float)sum/tests);
-	}
-	else bk_printf("ERROR - BK_TIMER_FAILURE - timeout in HAL_test_Tickscount()\r\n");
 }
 
 
