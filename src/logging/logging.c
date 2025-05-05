@@ -89,7 +89,7 @@ char* logfeaturenames[] = {
     "ERROR",// = 28,
 };
 
-#define LOGGING_BUFFER_SIZE		1024
+#define LOGGING_BUFFER_SIZE		8192
 
 volatile int direct_serial_log = DEFAULT_DIRECT_SERIAL_LOG;
 
@@ -115,7 +115,7 @@ static void log_serial_thread(beken_thread_arg_t arg);
 static void startSerialLog();
 static void startLogServer();
 
-#define LOGSIZE 4096
+#define LOGSIZE 16384
 #define LOGPORT 9000
 
 int logTcpPort = LOGPORT;
