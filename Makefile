@@ -294,15 +294,8 @@ OpenXR806: prebuild_OpenXR806 sdk/OpenXR806/project/demo/sharedApp/shared sdk/Op
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenXR806/project/demo/sharedApp/image/xr806/xr_system.img output/$(APP_VERSION)/OpenXR806_$(APP_VERSION).img
 	
-.PHONY: OpenXR809 build-XR809
-# Retry OpenXR809 a few times to account for calibration file issues
-RETRY = 3
-OpenXR809: prebuild_OpenXR809
-	@for i in `seq 1 ${RETRY}`; do ($(MAKE) -k build-XR809; echo Prebuild attempt $$i/${RETRY}); done
-	@echo Running build final time to check output
-	$(MAKE) build-XR809;
-
-build-XR809: sdk/OpenXR809/project/oxr_sharedApp/shared sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q1
+.PHONY: OpenXR809
+OpenXR809: prebuild_OpenXR809 sdk/OpenXR809/project/oxr_sharedApp/shared sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q1
 	$(MAKE) -C sdk/OpenXR809/src CC_DIR=$(PWD)/sdk/OpenBK7231T/platforms/bk7231t/toolchain/gcc-arm-none-eabi-4_9-2015q1/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
 	$(MAKE) -C sdk/OpenXR809/src install CC_DIR=$(PWD)/sdk/OpenBK7231T/platforms/bk7231t/toolchain/gcc-arm-none-eabi-4_9-2015q1/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
 	$(MAKE) -C sdk/OpenXR809/project/oxr_sharedApp/gcc CC_DIR=$(PWD)/sdk/OpenBK7231T/platforms/bk7231t/toolchain/gcc-arm-none-eabi-4_9-2015q1/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)

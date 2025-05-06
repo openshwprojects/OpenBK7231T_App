@@ -21,46 +21,6 @@ endif
 
 _SHARED_APP = $(TOP_DIR)/sharedAppContainer/sharedApp/src
 
-CSRCS += $(_SHARED_APP)/bitmessage/bitmessage_read.c
-CSRCS += $(_SHARED_APP)/bitmessage/bitmessage_write.c
-CSRCS += $(_SHARED_APP)/cmnds/cmd_berry.c
-CSRCS += $(_SHARED_APP)/cmnds/cmd_channels.c
-CSRCS += $(_SHARED_APP)/cmnds/cmd_eventHandlers.c
-CSRCS += $(_SHARED_APP)/cmnds/cmd_main.c
-CSRCS += $(_SHARED_APP)/cmnds/cmd_newLEDDriver.c
-CSRCS += $(_SHARED_APP)/cmnds/cmd_newLEDDriver_colors.c
-CSRCS += $(_SHARED_APP)/cmnds/cmd_repeatingEvents.c
-CSRCS += $(_SHARED_APP)/cmnds/cmd_tasmota.c
-CSRCS += $(_SHARED_APP)/cmnds/cmd_test.c
-CSRCS += $(_SHARED_APP)/cmnds/cmd_tcp.c
-CSRCS += $(_SHARED_APP)/cmnds/cmd_tokenizer.c
-CSRCS += $(_SHARED_APP)/cmnds/cmd_if.c
-CSRCS += $(_SHARED_APP)/cmnds/cmd_script.c
-CSRCS += $(_SHARED_APP)/cJSON/cJSON.c
-CSRCS += $(_SHARED_APP)/base64/base64.c
-CSRCS += $(_SHARED_APP)/devicegroups/deviceGroups_read.c
-CSRCS += $(_SHARED_APP)/devicegroups/deviceGroups_write.c
-CSRCS += $(_SHARED_APP)/devicegroups/deviceGroups_util.c
-CSRCS += $(_SHARED_APP)/driver/drv_aht2x.c
-CSRCS += $(_SHARED_APP)/driver/drv_sht3x.c
-CSRCS += $(_SHARED_APP)/driver/drv_bl0937.c
-CSRCS += $(_SHARED_APP)/driver/drv_bl_shared.c
-CSRCS += $(_SHARED_APP)/driver/drv_ssdp.c
-CSRCS += $(_SHARED_APP)/driver/drv_openWeatherMap.c
-CSRCS += $(_SHARED_APP)/driver/drv_pwrCal.c
-CSRCS += $(_SHARED_APP)/driver/drv_bmp280.c
-CSRCS += $(_SHARED_APP)/driver/drv_bmpi2c.c
-CSRCS += $(_SHARED_APP)/driver/drv_soft_i2c.c
-CSRCS += $(_SHARED_APP)/driver/drv_dht.c
-CSRCS += $(_SHARED_APP)/driver/drv_dht_internal.c
-CSRCS += $(_SHARED_APP)/driver/drv_httpButtons.c
-CSRCS += $(_SHARED_APP)/driver/drv_main.c
-CSRCS += $(_SHARED_APP)/driver/drv_ntp.c
-CSRCS += $(_SHARED_APP)/driver/drv_ds1820_simple.c
-CSRCS += $(_SHARED_APP)/driver/drv_tasmotaDeviceGroups.c
-CSRCS += $(_SHARED_APP)/driver/drv_test_drivers.c
-CSRCS += $(_SHARED_APP)/driver/drv_bridge_driver.c
-CSRCS += $(_SHARED_APP)/driver/drv_charts.c
 CSRCS += $(_SHARED_APP)/hal/w800/hal_adc_w800.c
 CSRCS += $(_SHARED_APP)/hal/w800/hal_flashConfig_w800.c
 CSRCS += $(_SHARED_APP)/hal/w800/hal_flashVars_w800.c
@@ -68,55 +28,15 @@ CSRCS += $(_SHARED_APP)/hal/w800/hal_generic_w800.c
 CSRCS += $(_SHARED_APP)/hal/w800/hal_main_w800.c
 CSRCS += $(_SHARED_APP)/hal/w800/hal_pins_w800.c
 CSRCS += $(_SHARED_APP)/hal/w800/hal_wifi_w800.c
-CSRCS += $(_SHARED_APP)/hal/generic/hal_adc_generic.c
-CSRCS += $(_SHARED_APP)/hal/generic/hal_flashConfig_generic.c
-CSRCS += $(_SHARED_APP)/hal/generic/hal_flashVars_generic.c
-CSRCS += $(_SHARED_APP)/hal/generic/hal_generic.c
-CSRCS += $(_SHARED_APP)/hal/generic/hal_main_generic.c
-CSRCS += $(_SHARED_APP)/hal/generic/hal_pins_generic.c
-CSRCS += $(_SHARED_APP)/hal/generic/hal_wifi_generic.c
-CSRCS += $(_SHARED_APP)/hal/generic/hal_uart_generic.c
-CSRCS += $(_SHARED_APP)/httpserver/hass.c
-CSRCS += $(_SHARED_APP)/httpserver/http_fns.c
-CSRCS += $(_SHARED_APP)/httpserver/http_tcp_server.c
-CSRCS += $(_SHARED_APP)/httpserver/http_basic_auth.c
-CSRCS += $(_SHARED_APP)/httpserver/new_http.c
-CSRCS += $(_SHARED_APP)/httpserver/rest_interface.c
-CSRCS += $(_SHARED_APP)/httpserver/json_interface.c
-CSRCS += $(_SHARED_APP)/logging/logging.c
-CSRCS += $(_SHARED_APP)/jsmn/jsmn.c
-CSRCS += $(_SHARED_APP)/mqtt/new_mqtt.c
-CSRCS += $(_SHARED_APP)/mqtt/new_mqtt_deduper.c
-CSRCS += $(_SHARED_APP)/new_cfg.c
-CSRCS += $(_SHARED_APP)/new_common.c
-CSRCS += $(_SHARED_APP)/new_ping.c
-CSRCS += $(_SHARED_APP)/new_pins.c
-CSRCS += $(_SHARED_APP)/ota/ota.c
-CSRCS += $(_SHARED_APP)/rgb2hsv.c
-CSRCS += $(_SHARED_APP)/tiny_crc8.c
-CSRCS += $(_SHARED_APP)/user_main.c
 CSRCS += main.c
-
-CSRCS  += $(_SHARED_APP)/littlefs/lfs_util.c
-CSRCS  += $(_SHARED_APP)/littlefs/lfs.c
-CSRCS  += $(_SHARED_APP)/littlefs/our_lfs.c
-
-CSRCS += $(TOP_DIR)/src/network/lwip2.0.3/apps/mqtt/mqtt.c
-
 
 OBK_SRCS = $(_SHARED_APP)/
 include $(_SHARED_APP)/../platforms/obk_main.mk
-# for some reason gcc links generic hal functions, e.g. wifi won't work
-#CSRCS += $(OBKM_SRC)
+CSRCS += $(OBKM_SRC)
 EXTRA_CCFLAGS += $(OBK_CFLAGS)
 
+CSRCS += $(TOP_DIR)/src/network/lwip2.0.3/apps/mqtt/mqtt.c
 
-INCLUDES += -I$(_SHARED_APP)/../include
-BERRY_MODULEPATH = $(_SHARED_APP)/berry/modules
-BERRY_SRCPATH = $(_SHARED_APP)/../libraries/berry/src
-include $(_SHARED_APP)/../libraries/berry.mk
-
-CSRCS += $(BERRY_SRC_C)
 
 #############################################################
 # Configuration i.e. compile options etc.
@@ -145,4 +65,5 @@ INCLUDES := $(INCLUDES) -I $(PDIR)include
 
 PDIR := ../$(PDIR)
 sinclude $(PDIR)Makefile
+
 
