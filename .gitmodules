@@ -60,8 +60,8 @@
 
 [submodule "sdk/OpenXR872"]
 	path = sdk/OpenXR872
-	url = https://github.com/openshwprojects/OpenXR872
-	branch = main
+	url = https://github.com/divadiow/OpenXR872
+	branch = xr872_dhcp
 
 [submodule "sdk/OpenXR806"]
 	path = sdk/OpenXR806
