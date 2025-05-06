@@ -1,4 +1,4 @@
-#ifdef PLATFORM_XR809
+#if PLATFORM_XR809 || PLATFORM_XR872
 
 #include "../hal_flashConfig.h"
 #include "../hal_flashVars.h"

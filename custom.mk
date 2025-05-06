@@ -16,14 +16,8 @@ INCLUDES := $(addprefix -I,$(INC_DIRS))
 
 default: $(BUILD_DIR)/$(TARGET_EXEC)
 
-BERRY_SRCPATH = libraries/berry/src/
-# different frameworks put object files in different places,
-# berry needs to add a rule to autogenerate some files before the object files
-# are built, so it needs the translation function from a C source to an object
-# file
-define obj_from_c
-	$(patsubst %.c, %.o, $(1))
-endef
+BERRY_MODULEPATH = src/berry/modules
+BERRY_SRCPATH = libraries/berry/src
 
 include libraries/berry.mk
 

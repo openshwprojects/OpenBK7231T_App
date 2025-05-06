@@ -66,7 +66,7 @@
       <AdditionalLibraryDirectories>.\libs_for_simulator\SDL2-2.24.2\lib\x86;.\libs_for_simulator\DevIL-Windows-SDK-1.8.0\lib\x86\Release;.\libs_for_simulator\freeglut-MSVC-3.0.0-2.mp\lib;.\libs_for_simulator\nativefiledialog\build\lib\Debug\x86</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>cd libraries\berry &amp; mkdir generate &amp; python tools/coc/coc -o generate src -c ..\..\include\berry_conf.h</Command>
+      <Command>cd libraries\berry &amp; mkdir generate &amp; python tools/coc/coc -o generate src ..\..\src\berry\modules -c ..\..\include\berry_conf.h</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>prebuild berry</Message>
@@ -89,7 +89,7 @@
       <AdditionalLibraryDirectories>.\libs_for_simulator\SDL2-2.24.2\lib\x86;.\libs_for_simulator\DevIL-Windows-SDK-1.8.0\lib\x86\Release;.\libs_for_simulator\freeglut-MSVC-3.0.0-2.mp\lib;.\libs_for_simulator\nativefiledialog\build\lib\Release\x86</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>cd libraries\berry &amp; mkdir generate &amp; python tools/coc/coc -o generate src -c ..\..\include\berry_conf.h</Command>
+      <Command>cd libraries\berry &amp; mkdir generate &amp; python tools/coc/coc -o generate src ..\..\src\berry\modules -c ..\..\include\berry_conf.h</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>prebuild berry</Message>
@@ -173,6 +173,7 @@
     <ClCompile Include="src\berry\be_modtab.c" />
     <ClCompile Include="src\berry\be_port.c" />
     <ClCompile Include="src\berry\be_run.c" />
+    <ClCompile Include="src\berry\modules\be_i2c.c" />
     <ClCompile Include="src\bitmessage\bitmessage_read.c" />
     <ClCompile Include="src\bitmessage\bitmessage_write.c" />
     <ClCompile Include="src\cJSON\cJSON.c" />

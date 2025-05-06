@@ -76,10 +76,12 @@ BERRY_LOCAL const bntvmodule_t *const be_module_table[] = {
 
 /* user-defined classes declare start */
 /* be_extern_native_class(my_class); */
+be_extern_native_class(Wire);
 /* user-defined classes declare end */
 
 BERRY_LOCAL bclass_array be_class_table = {
 	/* first list are direct classes */
 	/* &be_native_class(my_class), */
+	&be_native_class(Wire),
 	NULL, /* do not remove */
 };

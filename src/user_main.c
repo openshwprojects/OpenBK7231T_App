@@ -2,6 +2,9 @@
 
  */
  //
+#ifdef OBK_VARIANT
+#pragma message "Variant is: " OBK_VARIANT
+#endif
 
 #include "hal/hal_wifi.h"
 #include "hal/hal_generic.h"
@@ -624,7 +627,7 @@ void Main_OnEverySecond()
 	}
 
 	// On Beken, do reboot if we ran into heap size problem
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_W800
 	if (xPortGetFreeHeapSize() < 25 * 1000) {
 		g_secondsSpentInLowMemoryWarning++;
 		ADDLOGF_ERROR("Low heap warning!\n");

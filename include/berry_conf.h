@@ -15,7 +15,7 @@
  * Default: 0
  **/
 #ifndef BE_DEBUG
-#define BE_DEBUG 1
+#define BE_DEBUG 0
 #endif
 
 /* Macro: BE_LONGLONG_INT
@@ -57,7 +57,11 @@
  * 1: keep the source file name
  * Default: 1
  **/
+#ifndef BE_DEBUG
+#define BE_DEBUG_SOURCE_FILE 0
+#else
 #define BE_DEBUG_SOURCE_FILE 1
+#endif
 
 /* Macro: BE_DEBUG_RUNTIME_INFO
  * Set runtime error debugging information.
@@ -74,7 +78,11 @@
  * 1: enable variable debugging tracking information at runtime.
  * Default: 1
  **/
+#ifndef BE_DEBUG
+#define BE_DEBUG_VAR_INFO 0
+#else
 #define BE_DEBUG_VAR_INFO 1
+#endif
 
 /* Macro: BE_USE_PERF_COUNTERS
  * Use the obshook function to report low-level actions.
@@ -208,18 +216,22 @@
  * point you can use the import statement to import the module.
  * They will not compile related modules when they are false.
  **/
-#define BE_USE_STRING_MODULE 1
-#define BE_USE_JSON_MODULE 1
-#define BE_USE_MATH_MODULE 1
-#define BE_USE_TIME_MODULE 0
-#define BE_USE_OS_MODULE 0
-#define BE_USE_GLOBAL_MODULE 1
-#define BE_USE_SYS_MODULE 1
-#define BE_USE_DEBUG_MODULE 1
-#define BE_USE_GC_MODULE 0
-#define BE_USE_SOLIDIFY_MODULE 0
-#define BE_USE_INTROSPECT_MODULE 0
-#define BE_USE_STRICT_MODULE 0
+#define BE_USE_STRING_MODULE		1
+#define BE_USE_JSON_MODULE			1
+#define BE_USE_MATH_MODULE			1
+#define BE_USE_TIME_MODULE			0
+#define BE_USE_OS_MODULE			0
+#define BE_USE_GLOBAL_MODULE		1
+#define BE_USE_SYS_MODULE			1
+#ifndef BE_DEBUG
+#define BE_USE_DEBUG_MODULE			0
+#else
+#define BE_USE_DEBUG_MODULE			1
+#endif
+#define BE_USE_GC_MODULE			1
+#define BE_USE_SOLIDIFY_MODULE		0
+#define BE_USE_INTROSPECT_MODULE	0
+#define BE_USE_STRICT_MODULE		0
 
 /* Macro: BE_EXPLICIT_XXX
  * If these macros are defined, the corresponding function will
@@ -232,7 +244,7 @@
 #define BE_EXPLICIT_MALLOC malloc
 #define BE_EXPLICIT_FREE free
 // normal realloc appears broken on OpenBK7231T: #1563, #298
-#ifdef PLATFORM_BK7231T
+#if PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 #define BE_EXPLICIT_REALLOC os_realloc
 #else
 #define BE_EXPLICIT_REALLOC realloc

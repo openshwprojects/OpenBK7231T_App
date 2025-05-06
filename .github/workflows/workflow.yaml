@@ -164,6 +164,9 @@ jobs:
             variant: powerMetering
           - platform: OpenBK7231N
             variant: irRemoteESP
+          
+          - platform: OpenBK7238
+            variant: berry
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
@@ -175,7 +178,7 @@ jobs:
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get update
-          sudo apt-get -y install libc6-i386 make cmake gcc-arm-none-eabi
+          sudo apt-get -y install libc6-i386 make cmake
           pip3 install pycryptodomex
           pip3 install configobj
           pip3 install toml
@@ -185,7 +188,7 @@ jobs:
         run: cp src/configs/obk_config_${{ matrix.variant }}.h src/obk_config.h
       - run: ls -la
       - name: Run make
-        run: make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT=${{ matrix.variant }} ${{ matrix.platform }}
+        run: make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} OBK_VARIANT=${{ matrix.variant }} ${{ matrix.platform }}
       - name: Save build assets
         uses: actions/upload-artifact@v4
         with:

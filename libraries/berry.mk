@@ -43,25 +43,14 @@ BERRY_SRC_C += $(BERRY_SRCPATH)/be_var.c
 BERRY_SRC_C += $(BERRY_SRCPATH)/be_vector.c
 BERRY_SRC_C += $(BERRY_SRCPATH)/be_vm.c
 
-COC         = $(BERRY_SRCPATH)/../tools/coc/coc
-BERRY_GENERATE = $(BERRY_SRCPATH)/../generate
-BERRY_CONFIG = $(BERRY_SRCPATH)/../../../include/berry_conf.h
 
-ifneq ($(V), 1)
-    Q=@
-    MSG=@echo
+ifeq ($(TARGET_PLATFORM),bk7231n)
+else ifeq ($(TARGET_PLATFORM),bk7231t)
 else
-    MSG=@true
+BERRY_SRC_C += $(BERRY_MODULEPATH)/../be_bindings.c
+BERRY_SRC_C += $(BERRY_MODULEPATH)/../be_modtab.c
+BERRY_SRC_C += $(BERRY_MODULEPATH)/../be_port.c
+BERRY_SRC_C += $(BERRY_MODULEPATH)/../be_run.c
+
+BERRY_SRC_C += $(BERRY_MODULEPATH)/be_i2c.c
 endif
-
-
-BERRY_OBJS = $(call obj_from_c,$(BERRY_SRC_C))
-
-$(BERRY_OBJS): berry_const_tab
-
-berry_const_tab: $(BERRY_GENERATE) $(BERRY_SRC_C) $(BERRY_CONFIG)
-	$(MSG) [Prebuild] generate resources
-	$(Q) $(COC)  -o $(BERRY_GENERATE) $(BERRY_SRCPATH) -c $(BERRY_CONFIG)
-
-$(BERRY_GENERATE):
-	$(Q) mkdir $(BERRY_GENERATE)
