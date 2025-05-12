@@ -1,4 +1,4 @@
-# meant to be included, depends on BERRY_SRCPATH and obj_from_c function
+# meant to be included, depends on BERRY_SRCPATH and BERRY_MODULEPATH
 
 INCLUDES += -I$(BERRY_SRCPATH)
 

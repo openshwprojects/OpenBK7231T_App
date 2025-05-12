@@ -7,9 +7,7 @@ include $(OBK_DIR)/libraries/berry.mk
 
 SRC_C += $(BERRY_SRC_C)
 
-ifdef OBK_VARIANT
-CPPDEFINES += -DOBK_VARIANT='"${OBK_VARIANT}"'
-endif
+CPPDEFINES += -DOBK_VARIANT=$(OBK_VARIANT)
 
 ifeq ($(TARGET_PLATFORM),bk7231n)
 

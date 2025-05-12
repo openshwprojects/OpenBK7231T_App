@@ -39,6 +39,17 @@ uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
 
 #elif PLATFORM_ESPIDF
 
+#include "esp_system.h"
+#include "esp_ota_ops.h"
+#include "esp_app_format.h"
+#include "esp_flash_partitions.h"
+#include "esp_partition.h"
+#include "nvs.h"
+#include "nvs_flash.h"
+#include "esp_wifi.h"
+#include "esp_pm.h"
+#include "esp_flash_spi_init.h"
+
 #elif PLATFORM_REALTEK
 
 #include "flash_api.h"
@@ -1582,29 +1593,12 @@ static int ota_verify_download(void)
 }
 #endif
 
-#if PLATFORM_ESPIDF
-#include "esp_system.h"
-#include "esp_ota_ops.h"
-#include "esp_app_format.h"
-#include "esp_flash_partitions.h"
-#include "esp_partition.h"
-#include "nvs.h"
-#include "nvs_flash.h"
-#include "esp_wifi.h"
-#include "esp_pm.h"
-#endif
-
 static int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 {
 
-#if PLATFORM_XR809
+#if PLATFORM_XR809 || PLATFORM_XR872
 	return 0;	//Operation not supported yet
 #endif
-
-#if PLATFORM_XR872
-	return 0;	//Operation not supported yet
-#endif
-
 
 	int total = 0;
 	int towrite = request->bodylen;
@@ -3166,7 +3160,9 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 		if (readlen > 1024) {
 			readlen = 1024;
 		}
-#if PLATFORM_XR809
+#if PLATFORM_BEKEN
+		res = flash_read((char*)buffer, readlen, startaddr);
+#elif PLATFORM_XR809
 		//uint32_t flash_read(uint32_t flash, uint32_t addr,void *buf, uint32_t size)
 #define FLASH_INDEX_XR809 0
 		res = flash_read(FLASH_INDEX_XR809, startaddr, buffer, readlen);
@@ -3179,7 +3175,7 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 #elif PLATFORM_LN882H
 		res = hal_flash_read(startaddr, readlen, (uint8_t *)buffer);
 #elif PLATFORM_ESPIDF
-		res = 0;
+		res = esp_flash_read(NULL, (void*)buffer, startaddr, readlen);
 #elif PLATFORM_TR6260
 		res = hal_spiflash_read(startaddr, (uint8_t*)buffer, readlen);
 #elif PLATFORM_ECR6600
@@ -3189,7 +3185,7 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 		flash_stream_read(&flash, startaddr, readlen, (uint8_t*)buffer);
 		device_mutex_unlock(RT_DEV_LOCK_FLASH);
 #else
-		res = flash_read((char*)buffer, readlen, startaddr);
+		res = 0;
 #endif
 		startaddr += readlen;
 		len -= readlen;

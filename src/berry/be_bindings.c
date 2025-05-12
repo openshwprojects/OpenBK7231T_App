@@ -4,6 +4,7 @@
 #include "../new_cfg.h"
 #include "../new_pins.h"
 #include "be_object.h"
+#include "be_run.h"
 
 int be_SetStartValue(bvm *vm) {
 	int top = be_top(vm);
@@ -119,7 +120,7 @@ int be_CancelThread(bvm *vm) {
 	int top = be_top(vm);
 	if (top == 1 && be_isint(vm, 1)) {
 		int thread_id = be_toint(vm, 1);
-		Berry_StopScripts(thread_id, 0);
+		Berry_StopScripts(thread_id);
 		be_pushbool(vm, true);
 		be_return(vm);
 	}

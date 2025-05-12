@@ -339,7 +339,7 @@ typedef int (*beken_thread_function_t)(void *p);
 
 #define kNoErr                      0       //! No error occurred.
 typedef void *beken_thread_arg_t;
-typedef void *beken_thread_t;
+typedef xTaskHandle beken_thread_t;
 typedef void (*beken_thread_function_t)( beken_thread_arg_t arg );
 typedef int OSStatus;
 
@@ -354,15 +354,14 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint32_t stack_size, beken_thread_arg_t arg );
 OSStatus rtos_suspend_thread(beken_thread_t* thread);
 typedef unsigned int u32;
-		
+
+#define OBK_OTA_EXTENSION ".bin.xz.ota"
 
 #elif PLATFORM_XR809 || PLATFORM_XR872
 
-
-
-typedef int bool;
-#define true 1
-#define false 0
+#include <stdbool.h>
+#include "FreeRTOS.h"
+#include "task.h"
 
 typedef unsigned char u8;
 typedef unsigned char uint8_t;
@@ -452,7 +451,7 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #define kNoErr                      0       //! No error occurred.
 typedef void *beken_thread_arg_t;
-typedef void *beken_thread_t;
+typedef xTaskHandle *beken_thread_t;
 typedef void (*beken_thread_function_t)( beken_thread_arg_t arg );
 typedef int OSStatus;
 
@@ -467,11 +466,14 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint32_t stack_size, beken_thread_arg_t arg );
 OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
+#define OBK_OTA_EXTENSION ".img"
 
 #elif PLATFORM_LN882H
 
 // TODO:LN882H Platform setup here.
 #include <stdbool.h>
+#include <FreeRTOS.h>
+#include <task.h>
 
 #define ASSERT
 #define os_strcpy strcpy
@@ -484,7 +486,7 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define kNoErr                      0       //! No error occurred.
 #define rtos_delay_milliseconds OS_MsDelay
 typedef void *beken_thread_arg_t;
-typedef void *beken_thread_t;
+typedef xTaskHandle beken_thread_t;
 typedef void (*beken_thread_function_t)( beken_thread_arg_t arg );
 typedef int OSStatus;
 
@@ -498,6 +500,9 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 							beken_thread_function_t function,
 							uint32_t stack_size, beken_thread_arg_t arg );
 OSStatus rtos_suspend_thread(beken_thread_t* thread);
+
+#define OBK_OTA_EXTENSION		".bin"
+#define OBK_OTA_NAME_EXTENSION	"_OTA"
 
 #elif PLATFORM_ESPIDF
 
@@ -520,7 +525,7 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define kNoErr                      0       //! No error occurred.
 #define rtos_delay_milliseconds sys_delay_ms
 typedef void* beken_thread_arg_t;
-typedef void* beken_thread_t;
+typedef TaskHandle_t beken_thread_t;
 typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
 typedef int OSStatus;
 
@@ -540,6 +545,8 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define xTaskHandle TaskHandle_t
 #define delay_ms sys_delay_ms
 #define UINT32 uint32_t
+
+#define OBK_OTA_EXTENSION ".img"
 
 #elif PLATFORM_TR6260
 
@@ -582,7 +589,7 @@ typedef unsigned int UINT32;
 
 #define kNoErr                      0       //! No error occurred.
 typedef void* beken_thread_arg_t;
-typedef void* beken_thread_t;
+typedef xTaskHandle beken_thread_t;
 typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
 typedef int OSStatus;
 
@@ -599,6 +606,8 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define GLOBAL_INT_DECLARATION()	;
 #define GLOBAL_INT_DISABLE()		;
 #define GLOBAL_INT_RESTORE()		;
+
+#define OBK_OTA_EXTENSION ".img"
 
 #elif PLATFORM_REALTEK
 
@@ -659,7 +668,7 @@ extern int g_sleepfactor;
 
 #define kNoErr                      0       //! No error occurred.
 typedef void* beken_thread_arg_t;
-typedef void* beken_thread_t;
+typedef xTaskHandle beken_thread_t;
 typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
 typedef int OSStatus;
 
@@ -676,6 +685,8 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define GLOBAL_INT_DECLARATION()	;
 #define GLOBAL_INT_DISABLE()		;
 #define GLOBAL_INT_RESTORE()		;
+
+#define OBK_OTA_EXTENSION ".img"
 
 #elif PLATFORM_ECR6600
 
@@ -716,7 +727,7 @@ extern void sys_delay_ms(uint32_t ms);
 
 #define kNoErr                      0       //! No error occurred.
 typedef void* beken_thread_arg_t;
-typedef void* beken_thread_t;
+typedef xTaskHandle beken_thread_t;
 typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
 typedef int OSStatus;
 
@@ -733,6 +744,8 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define GLOBAL_INT_DECLARATION()	;
 #define GLOBAL_INT_DISABLE()		;
 #define GLOBAL_INT_RESTORE()		;
+
+#define OBK_OTA_EXTENSION ".img"
 
 #else
 
@@ -752,17 +765,11 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 void delay_ms(UINT32 ms_count);
 
+#define OBK_OTA_EXTENSION ".rbl"
+
 #endif
 
 typedef unsigned char byte;
-
-
-#if PLATFORM_XR809
-#define LWIP_COMPAT_SOCKETS 1
-#define LWIP_POSIX_SOCKETS_IO_NAMES 1
-#endif
-
-
 
 #if WINDOWS
 
