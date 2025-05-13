@@ -731,7 +731,7 @@ static int http_rest_post_lfs_file(http_request_t* request) {
 	if (!lfs_present()) {
 		request->responseCode = 400;
 		http_setup(request, httpMimeTypeText);
-		poststr(request, "LittleFS is not abailable");
+		poststr(request, "LittleFS is not available");
 		poststr(request, NULL);
 		return 0;
 	}
