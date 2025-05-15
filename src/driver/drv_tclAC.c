@@ -418,7 +418,7 @@ static commandResult_t CMD_FANMode(const void* context, const char* cmd, const c
 }
 void TCL_Init(void) {
 
-	UART_InitUART(TCL_baudRate, 0, false);
+	UART_InitUART(TCL_baudRate, 1, false);
 	UART_InitReceiveRingBuffer(TCL_UART_RECEIVE_BUFFER_SIZE);
 
 	CMD_RegisterCommand("ACMode", CMD_ACMode, NULL);
