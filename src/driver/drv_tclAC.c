@@ -11,6 +11,8 @@
 #define TCL_UART_PACKET_LEN 1
 #define TCL_UART_PACKET_HEAD 0xff
 
+#include "drv_tclAC.h"
+
 static int TCL_UART_TryToGetNextPacket() {
   int cs;
   int i;
@@ -65,32 +67,6 @@ static int TCL_UART_TryToGetNextPacket() {
   return TCL_UART_PACKET_LEN;
 }
 
-void control_horizontal_swing(const std::string &swing_mode) {
-	// Implement the vertical swing control logic
-	ADDLOG_WARN(LOG_FEATURE_ENERGYMETER, "Horizontal swing set to: %s", swing_mode.c_str());
-
-	get_cmd_resp_t get_cmd_resp;
-	memcpy(get_cmd_resp.raw, m_get_cmd_resp.raw, sizeof(get_cmd_resp.raw));
-
-	get_cmd_resp.data.hswing_mv = 0;
-	get_cmd_resp.data.hswing_fix = 0;
-
-	if (swing_mode == "Move full") get_cmd_resp.data.hswing_mv = 0x01;
-	else if (swing_mode == "Move left") get_cmd_resp.data.hswing_mv = 0x02;
-	else if (swing_mode == "Move mid") get_cmd_resp.data.hswing_mv = 0x03;
-	else if (swing_mode == "Move right") get_cmd_resp.data.hswing_mv = 0x04;
-	else if (swing_mode == "Fix left") get_cmd_resp.data.hswing_fix = 0x01;
-	else if (swing_mode == "Fix mid left") get_cmd_resp.data.hswing_fix = 0x02;
-	else if (swing_mode == "Fix mid") get_cmd_resp.data.hswing_fix = 0x03;
-	else if (swing_mode == "Fix mid right") get_cmd_resp.data.hswing_fix = 0x04;
-	else if (swing_mode == "Fix right") get_cmd_resp.data.hswing_fix = 0x05;
-
-	if (get_cmd_resp.data.vswing_mv) get_cmd_resp.data.hswing = 0x01;
-	else  get_cmd_resp.data.hswing = 0;
-
-	build_set_cmd(&get_cmd_resp);
-	ready_to_send_set_cmd_flag = true;
-}
 
 void TCL_UART_Init(void) {
 
