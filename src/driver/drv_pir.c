@@ -50,12 +50,12 @@ void PIR_Init() {
 	ch_lightAdc = CHANNEL_FindIndexForPinType(IOR_ADC);
 	ch_motion = CHANNEL_FindIndexForType(ChType_Motion);
 	if (ch_motion == -1) {
-		ch_motion = CHANNEL_FindIndexForPinType(IOR_DigitalInput);
+		ch_motion = CHANNEL_FindIndexForPinType2(IOR_DigitalInput, IOR_DigitalInput_n);
 		if (ch_motion == -1) {
-			ch_motion = CHANNEL_FindIndexForPinType(IOR_DigitalInput_n);
+			ch_motion = CHANNEL_FindIndexForPinType(IOR_DigitalInput_NoPup, IOR_DigitalInput_NoPup_n);
 		}
 	}
-	ch_sens = CHANNEL_FindIndexForPinType(IOR_PWM_ScriptOnly);
+	ch_sens = CHANNEL_FindIndexForPinType2(IOR_PWM_ScriptOnly, IOR_PWM_ScriptOnly_n);
 }
 
 void PIR_OnEverySecond() {
