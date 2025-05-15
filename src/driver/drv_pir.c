@@ -35,6 +35,7 @@ static int ch_lightAdc; // light level
 static int ch_motion; // pir 1 or 0
 static int ch_sens; // pir sens
 static int g_timeLeft = 0;
+static int g_isDark = 0;
 
 #define VAR_TIME SPECIAL_CHANNEL_FLASHVARS_LAST
 #define VAR_SENS (SPECIAL_CHANNEL_FLASHVARS_LAST-1)
@@ -64,7 +65,8 @@ void PIR_OnEverySecond() {
 	if (g_mode == 1) {
 		// "Value seems to go down if MORE light is here and UP is LESS light is here"
 		int lightLevel = CHANNEL_Get(ch_lightAdc);
-		if (lightLevel > g_lightLevelMargin) {
+		g_isDark = lightLevel > g_lightLevelMargin;
+		if (g_isDark) {
 			// auto mode
 			int motion = CHANNEL_Get(ch_motion);
 			if (motion) {
@@ -127,7 +129,7 @@ void PIR_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState
 	}
 	else {
 		if (g_mode == 1) {
-			hprintf255(request, "PIR current state: Automatic, motion: %i, timeLeft: %i<br>", CHANNEL_Get(ch_motion), g_timeLeft);
+			hprintf255(request, "PIR current state: Automatic, motion: %i, isDark %i, timeLeft: %i<br>", CHANNEL_Get(ch_motion), g_isDark, g_timeLeft);
 		}
 		else {
 			hprintf255(request, "PIR current state: Manual<br>");
