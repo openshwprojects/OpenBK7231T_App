@@ -1,3 +1,4 @@
+// https://github.com/lNikazzzl/tcl_ac_esphome/tree/master
 
 union get_cmd_resp_t {
 	struct {

@@ -1,3 +1,4 @@
+// https://github.com/lNikazzzl/tcl_ac_esphome/tree/master
 
 #include "../obk_config.h"
 
@@ -11,6 +12,7 @@
 #define TCL_UART_PACKET_LEN 1
 #define TCL_UART_PACKET_HEAD 0xff
 #define TCL_UART_RECEIVE_BUFFER_SIZE 256
+#define TCL_baudRate	9600
 
 #include "drv_tclAC.h"
 
@@ -45,22 +47,17 @@ static int TCL_UART_TryToGetNextPacket() {
   if(cs < TCL_UART_PACKET_LEN) {
     return 0;
   }
-  if (UART_GetByte(0) != 0x55)
-    return 0;
-  checksum = TCL_UART_CMD_READ(TCL_UART_ADDR);
+  //if (UART_GetByte(0) != 0x55)
+  //  return 0;
 
-  for(i = 0; i < TCL_UART_PACKET_LEN-1; i++) {
-    checksum += UART_GetByte(i);
-  }
-  checksum ^= 0xFF;
 
-  if (checksum != UART_GetByte(TCL_UART_PACKET_LEN - 1)) {
-    ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
-      "Skipping packet with bad checksum %02X wanted %02X\n",
-      UART_GetByte(TCL_UART_PACKET_LEN - 1), checksum);
-    UART_ConsumeBytes(TCL_UART_PACKET_LEN);
-    return 1;
-  }
+  //if (checksum != UART_GetByte(TCL_UART_PACKET_LEN - 1)) {
+  //  ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
+  //    "Skipping packet with bad checksum %02X wanted %02X\n",
+  //    UART_GetByte(TCL_UART_PACKET_LEN - 1), checksum);
+  //  UART_ConsumeBytes(TCL_UART_PACKET_LEN);
+  //  return 1;
+  //}
 
 
 
