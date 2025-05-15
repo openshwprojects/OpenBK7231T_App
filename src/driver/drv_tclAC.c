@@ -310,6 +310,7 @@ void TCL_UART_TryToGetNextPacket() {
 	#define max_line_length 100
 	static uint8_t buffer[max_line_length];
 
+	ADDLOG_WARN(LOG_FEATURE_ENERGYMETER, "Initial size: %i", UART_GetDataSize());
 	while (UART_GetDataSize()) {
 		int r = UART_GetByte(0);
 		UART_ConsumeBytes(1);
