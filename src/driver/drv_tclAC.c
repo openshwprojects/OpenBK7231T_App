@@ -72,9 +72,95 @@ void TCL_UART_Init(void) {
   UART_InitReceiveRingBuffer(TCL_UART_RECEIVE_BUFFER_SIZE);
 
 }
+
+
+uint8_t set_cmd_base[35] = { 0xBB, 0x00, 0x01, 0x03, 0x1D, 0x00, 0x00, 0x64, 0x03, 0xF3, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 bool ready_to_send_set_cmd_flag = false;
 set_cmd_t m_set_cmd = { 0 };
 
+
+void build_set_cmd(get_cmd_resp_t * get_cmd_resp) {
+	memcpy(m_set_cmd.raw, set_cmd_base, sizeof(m_set_cmd.raw));
+
+	m_set_cmd.data.power = get_cmd_resp->data.power;
+	m_set_cmd.data.off_timer_en = 0;
+	m_set_cmd.data.on_timer_en = 0;
+	m_set_cmd.data.beep = 1;
+	m_set_cmd.data.disp = 1;
+	m_set_cmd.data.eco = 0;
+
+	switch (get_cmd_resp->data.mode) {
+	case 0x01:
+		m_set_cmd.data.mode = 0x03;
+		break;
+	case 0x03:
+		m_set_cmd.data.mode = 0x02;
+		break;
+	case 0x02:
+		m_set_cmd.data.mode = 0x07;
+		break;
+	case 0x04:
+		m_set_cmd.data.mode = 0x01;
+		break;
+	case 0x05:
+		m_set_cmd.data.mode = 0x08;
+		break;
+	}
+
+	m_set_cmd.data.turbo = get_cmd_resp->data.turbo;
+	m_set_cmd.data.mute = get_cmd_resp->data.mute;
+	m_set_cmd.data.temp = 15 - get_cmd_resp->data.temp;
+
+	switch (get_cmd_resp->data.fan) {
+	case 0x00:
+		m_set_cmd.data.fan = 0x00;
+		break;
+	case 0x01:
+		m_set_cmd.data.fan = 0x02;
+		break;
+	case 0x04:
+		m_set_cmd.data.fan = 0x06;
+		break;
+	case 0x02:
+		m_set_cmd.data.fan = 0x03;
+		break;
+	case 0x05:
+		m_set_cmd.data.fan = 0x07;
+		break;
+	case 0x03:
+		m_set_cmd.data.fan = 0x05;
+		break;
+	}
+
+	//m_set_cmd.data.vswing = get_cmd_resp->data.vswing ? 0x07 : 0x00;
+	//m_set_cmd.data.hswing = get_cmd_resp->data.hswing;
+
+	if (get_cmd_resp->data.vswing_mv) {
+		m_set_cmd.data.vswing = 0x07;
+		m_set_cmd.data.vswing_fix = 0;
+		m_set_cmd.data.vswing_mv = get_cmd_resp->data.vswing_mv;
+	}
+	else if (get_cmd_resp->data.vswing_fix) {
+		m_set_cmd.data.vswing = 0;
+		m_set_cmd.data.vswing_fix = get_cmd_resp->data.vswing_fix;
+		m_set_cmd.data.vswing_mv = 0;
+	}
+
+	if (get_cmd_resp->data.hswing_mv) {
+		m_set_cmd.data.hswing = 0x01;
+		m_set_cmd.data.hswing_fix = 0;
+		m_set_cmd.data.hswing_mv = get_cmd_resp->data.hswing_mv;
+	}
+	else if (get_cmd_resp->data.hswing_fix) {
+		m_set_cmd.data.hswing = 0;
+		m_set_cmd.data.hswing_fix = get_cmd_resp->data.hswing_fix;
+		m_set_cmd.data.hswing_mv = 0;
+	}
+
+	m_set_cmd.data.half_degree = 0;
+
+	for (int i = 0; i < sizeof(m_set_cmd.raw) - 1; i++) m_set_cmd.raw[sizeof(m_set_cmd.raw) - 1] ^= m_set_cmd.raw[i];
+}
 void write_array(byte *b, int s) {
 	for (int i = 0; i < s; i++) {
 		UART_SendByte(b[i]);

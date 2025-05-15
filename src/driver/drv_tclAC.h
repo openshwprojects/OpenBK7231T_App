@@ -1,6 +1,6 @@
 // https://github.com/lNikazzzl/tcl_ac_esphome/tree/master
 
-union get_cmd_resp_t {
+typedef union get_cmd_resp_s {
 	struct {
 		uint8_t header;
 		uint8_t byte_1;
@@ -94,7 +94,7 @@ union get_cmd_resp_t {
 		uint8_t xor_sum;
 	} data;
 	uint8_t raw[61];
-};
+} get_cmd_resp_t;
 
 typedef union set_cmd_u {
 	struct {
