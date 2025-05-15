@@ -66,22 +66,28 @@ static int TCL_UART_TryToGetNextPacket() {
 }
 
 
-void TCL_UART_Init(void) {
-
-  UART_InitUART(TCL_baudRate, 0, false);
-  UART_InitReceiveRingBuffer(TCL_UART_RECEIVE_BUFFER_SIZE);
-
-}
 
 
 uint8_t set_cmd_base[35] = { 0xBB, 0x00, 0x01, 0x03, 0x1D, 0x00, 0x00, 0x64, 0x03, 0xF3, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 bool ready_to_send_set_cmd_flag = false;
 set_cmd_t m_set_cmd = { 0 };
+get_cmd_resp_t m_get_cmd_resp = { 0 };
 
-
+typedef enum {
+	CLIMATE_MODE_OFF,
+	CLIMATE_MODE_COOL,
+	CLIMATE_MODE_DRY,
+	CLIMATE_MODE_FAN_ONLY,
+	CLIMATE_MODE_HEAT,
+	CLIMATE_MODE_HEAT_COOL,
+	CLIMATE_MODE_AUTO,
+} climateMode_e;
 void build_set_cmd(get_cmd_resp_t * get_cmd_resp) {
 	memcpy(m_set_cmd.raw, set_cmd_base, sizeof(m_set_cmd.raw));
 
+
+	ADDLOG_WARN(LOG_FEATURE_ENERGYMETER, "build_set_cmd: sizeof(get_cmd_resp_t) = %i, sizeof(m_set_cmd.data) = %i, sizeof(m_set_cmd.raw) = %i", 
+		sizeof(get_cmd_resp_t), sizeof(m_set_cmd.data), sizeof(m_set_cmd.raw));
 	m_set_cmd.data.power = get_cmd_resp->data.power;
 	m_set_cmd.data.off_timer_en = 0;
 	m_set_cmd.data.on_timer_en = 0;
@@ -161,6 +167,44 @@ void build_set_cmd(get_cmd_resp_t * get_cmd_resp) {
 
 	for (int i = 0; i < sizeof(m_set_cmd.raw) - 1; i++) m_set_cmd.raw[sizeof(m_set_cmd.raw) - 1] ^= m_set_cmd.raw[i];
 }
+void OBK_SetClimate(climateMode_e climate_mode)
+{
+	get_cmd_resp_t get_cmd_resp = { 0 };
+	memcpy(get_cmd_resp.raw, m_get_cmd_resp.raw, sizeof(get_cmd_resp.raw));
+
+	ADDLOG_WARN(LOG_FEATURE_ENERGYMETER, "User set mode %i", climate_mode);
+
+	if (climate_mode == CLIMATE_MODE_OFF) {
+		get_cmd_resp.data.power = 0x00;
+	}
+	else {
+		get_cmd_resp.data.power = 0x01;
+		switch (climate_mode) {
+		case CLIMATE_MODE_COOL:
+			get_cmd_resp.data.mode = 0x01;
+			break;
+		case CLIMATE_MODE_DRY:
+			get_cmd_resp.data.mode = 0x03;
+			break;
+		case CLIMATE_MODE_FAN_ONLY:
+			get_cmd_resp.data.mode = 0x02;
+			break;
+		case CLIMATE_MODE_HEAT:
+		case CLIMATE_MODE_HEAT_COOL:
+			get_cmd_resp.data.mode = 0x04;
+			break;
+		case CLIMATE_MODE_AUTO:
+			get_cmd_resp.data.mode = 0x05;
+			break;
+		case CLIMATE_MODE_OFF:
+			get_cmd_resp.data.power = 0x00;
+			break;
+		}
+	}
+
+	build_set_cmd(&get_cmd_resp);
+	ready_to_send_set_cmd_flag = true;
+}
 void write_array(byte *b, int s) {
 	for (int i = 0; i < s; i++) {
 		UART_SendByte(b[i]);
@@ -180,3 +224,21 @@ void TCL_UART_RunEverySecond(void) {
 	}
 	TCL_UART_TryToGetNextPacket();
 }
+
+static commandResult_t CMD_ACMode(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int mode;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	mode = Tokenizer_GetArgInteger(0);
+	OBK_SetClimate(mode);
+	return CMD_RES_OK;
+}
+void TCL_Init(void) {
+
+	UART_InitUART(TCL_baudRate, 0, false);
+	UART_InitReceiveRingBuffer(TCL_UART_RECEIVE_BUFFER_SIZE);
+
+	CMD_RegisterCommand("ACMode", CMD_ACMode, NULL);
+}
+
