@@ -48,6 +48,12 @@ void PIR_Init() {
 	g_lightLevelMargin = HAL_FlashVars_GetChannelValue(VAR_LIGHTLEVEL);
 	ch_lightAdc = CHANNEL_FindIndexForPinType(IOR_ADC);
 	ch_motion = CHANNEL_FindIndexForType(ChType_Motion);
+	if (ch_motion == -1) {
+		ch_motion = CHANNEL_FindIndexForPinType(IOR_DigitalInput);
+		if (ch_motion == -1) {
+			ch_motion = CHANNEL_FindIndexForPinType(IOR_DigitalInput_n);
+		}
+	}
 	ch_sens = CHANNEL_FindIndexForPinType(IOR_PWM_ScriptOnly);
 }
 

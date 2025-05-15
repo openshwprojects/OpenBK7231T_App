@@ -1347,8 +1347,54 @@ void Test_Berry_NTP() {
 	SELFTEST_ASSERT_CHANNEL(5, 5);
 }
 
+void Test_PIR() {
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("lfs_format", 0);
+
+	PIN_SetPinRoleForPinIndex(6, IOR_DigitalInput);
+	PIN_SetPinChannelForPinIndex(6, 11);
+
+	PIN_SetPinRoleForPinIndex(8, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(8, 4);
+
+	PIN_SetPinRoleForPinIndex(9, IOR_PWM_n);
+	PIN_SetPinChannelForPinIndex(9, 5);
+
+	PIN_SetPinRoleForPinIndex(23, IOR_ADC);
+	PIN_SetPinChannelForPinIndex(23, 12);
+
+	PIN_SetPinRoleForPinIndex(26, IOR_PWM_ScriptOnly);
+	PIN_SetPinChannelForPinIndex(26, 10);
+
+	CMD_ExecuteCommand("startDriver PIR", 0);
+
+	Test_FakeHTTPClientPacket_GET("index?pirMode=1");
+	// margin light value - 1000
+	Test_FakeHTTPClientPacket_GET("index?light=2000");
+	// simulate light value - 3000
+	SIM_SetIntegerValueADCPin(23, 3000);
+	// no light
+	SELFTEST_ASSERT(LED_GetEnableAll() == 0);
+	for (int i = 0; i < 3; i++) {
+		// Motion channel off
+		SIM_SetSimulatedPinValue(6, false);
+		Sim_RunSeconds(1, false);
+		// no light
+		SELFTEST_ASSERT(LED_GetEnableAll() == 0);
+	}
+	// Motion channel goes to 1
+	SIM_SetSimulatedPinValue(6, true);
+	// tick
+	Sim_RunSeconds(1, false);
+	Sim_RunSeconds(1, false);
+	// light is on off
+	SELFTEST_ASSERT(LED_GetEnableAll() == 1);
+
+}
 
 void Test_Berry() {
+	Test_PIR();
+
 	Test_Berry_Button();
 	Test_Berry_Import_Autorun();
 	Test_Berry_HTTP2();
