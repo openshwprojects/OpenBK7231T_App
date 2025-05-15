@@ -10,6 +10,7 @@
 
 #define TCL_UART_PACKET_LEN 1
 #define TCL_UART_PACKET_HEAD 0xff
+#define TCL_UART_RECEIVE_BUFFER_SIZE 256
 
 #include "drv_tclAC.h"
 
@@ -78,6 +79,4 @@ void TCL_UART_Init(void) {
 void TCL_UART_RunEverySecond(void) {
   TCL_UART_TryToGetNextPacket();
   UART_InitUART(TCL_baudRate, 0, false);
-  UART_SendByte(TCL_UART_CMD_READ(TCL_UART_ADDR));
-  UART_SendByte(TCL_UART_REG_PACKET);
 }
