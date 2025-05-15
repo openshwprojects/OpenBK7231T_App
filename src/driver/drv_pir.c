@@ -71,12 +71,12 @@ void PIR_OnEverySecond() {
 				g_timeLeft = g_onTime;
 				LED_SetEnableAll(true);
 			}
-			if (g_timeLeft > 0) {
-				g_timeLeft--;
-				if (g_timeLeft <= 0) {
-					// turn off
-					LED_SetEnableAll(false);
-				}
+		}
+		if (g_timeLeft > 0) {
+			g_timeLeft--;
+			if (g_timeLeft <= 0) {
+				// turn off
+				LED_SetEnableAll(false);
 			}
 		}
 	}

@@ -1371,7 +1371,7 @@ void Test_PIR() {
 	Test_FakeHTTPClientPacket_GET("index?pirMode=1");
 	// time on
 	Test_FakeHTTPClientPacket_GET("index?pirTime=5");
-	// margin light value - 1000
+	// margin light value - 2000
 	Test_FakeHTTPClientPacket_GET("index?light=2000");
 	// simulate light value - 3000
 	SIM_SetIntegerValueADCPin(23, 3000);
@@ -1387,8 +1387,7 @@ void Test_PIR() {
 	// Motion channel goes to 1
 	SIM_SetSimulatedPinValue(6, true);
 	// tick
-	Sim_RunSeconds(1, false);
-	Sim_RunSeconds(1, false);
+	Sim_RunSeconds(2, false);
 	// light is on 
 	SELFTEST_ASSERT(LED_GetEnableAll() == 1);
 	// there is still motion, so no timer
@@ -1404,6 +1403,34 @@ void Test_PIR() {
 	// I set timer to 5 seconds, so 7?
 	Sim_RunSeconds(7, false);
 	SELFTEST_ASSERT(LED_GetEnableAll() == 0);
+	// now nothing happens for long time
+	for (int i = 0; i < 10; i++) {
+		// Motion channel off
+		SIM_SetSimulatedPinValue(6, false);
+		Sim_RunSeconds(1, false);
+		// no light
+		SELFTEST_ASSERT(LED_GetEnableAll() == 0);
+	}
+	// Motion channel goes to 1
+	SIM_SetSimulatedPinValue(6, true);
+	// tick
+	Sim_RunSeconds(2, false);
+	// light is on 
+	SELFTEST_ASSERT(LED_GetEnableAll() == 1);
+	// but now it's day and it's bright
+	SIM_SetIntegerValueADCPin(23, 500);
+	// times goes down
+	// I set timer to 5 seconds, so 7?
+	Sim_RunSeconds(7, false);
+	SELFTEST_ASSERT(LED_GetEnableAll() == 0);
+	// so now, motion can be present, but light is still off
+	for (int i = 0; i < 10; i++) {
+		// Motion can be present 
+		SIM_SetSimulatedPinValue(6, true);
+		Sim_RunSeconds(1, false);
+		// no light
+		SELFTEST_ASSERT(LED_GetEnableAll() == 0);
+	}
 }
 
 void Test_Berry() {
