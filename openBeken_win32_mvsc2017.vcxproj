@@ -253,6 +253,7 @@
     <ClCompile Include="src\driver\drv_spiLED.c" />
     <ClCompile Include="src\driver\drv_ssdp.c" />
     <ClCompile Include="src\driver\drv_tasmotaDeviceGroups.c" />
+    <ClCompile Include="src\driver\drv_tclAC.c" />
     <ClCompile Include="src\driver\drv_test.c" />
     <ClCompile Include="src\driver\drv_test_charts.c" />
     <ClCompile Include="src\driver\drv_test_drivers.c" />
