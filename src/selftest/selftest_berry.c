@@ -1369,6 +1369,8 @@ void Test_PIR() {
 	CMD_ExecuteCommand("startDriver PIR", 0);
 
 	Test_FakeHTTPClientPacket_GET("index?pirMode=1");
+	// time on
+	Test_FakeHTTPClientPacket_GET("index?pirTime=5");
 	// margin light value - 1000
 	Test_FakeHTTPClientPacket_GET("index?light=2000");
 	// simulate light value - 3000
@@ -1387,9 +1389,21 @@ void Test_PIR() {
 	// tick
 	Sim_RunSeconds(1, false);
 	Sim_RunSeconds(1, false);
-	// light is on off
+	// light is on 
 	SELFTEST_ASSERT(LED_GetEnableAll() == 1);
-
+	// there is still motion, so no timer
+	for (int i = 0; i < 3; i++) {
+		// Motion channel on
+		SIM_SetSimulatedPinValue(6, true);
+		Sim_RunSeconds(1, false);
+		// light is on 
+		SELFTEST_ASSERT(LED_GetEnableAll() == 1);
+	}
+	// now motion goes away
+	SIM_SetSimulatedPinValue(6, false);
+	// I set timer to 5 seconds, so 7?
+	Sim_RunSeconds(7, false);
+	SELFTEST_ASSERT(LED_GetEnableAll() == 0);
 }
 
 void Test_Berry() {
