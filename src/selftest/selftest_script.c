@@ -239,7 +239,16 @@ void Test_Scripting_WaitingForSmth() {
 	SELFTEST_ASSERT_CHANNEL(21, 789);
 	SELFTEST_ASSERT_INTEGER(CMD_GetCountActiveScriptThreads(), 0);
 }
+void Test_Driver_TCL_AC() {
+	// reset whole device
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("lfs_format", 0);
+	SIM_ClearUART();
 
+	CMD_ExecuteCommand("startDriver TCL", 0);
+	CMD_ExecuteCommand("ACMode 1", 0);
+	TCL_UART_RunEverySecond();
+}
 void Test_Scripting() {
 	Test_Scripting_Loop1();
 	Test_Scripting_Loop2();
@@ -247,6 +256,7 @@ void Test_Scripting() {
 	Test_Scripting_NestedLoop();
 	Test_Scripting_StartScript();
 	Test_Scripting_WaitingForSmth();
+	Test_Driver_TCL_AC();
 }
 
 #endif
