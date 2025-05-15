@@ -684,6 +684,24 @@ void CHANNEL_SetFirstChannelByTypeEx(int requiredType, int newVal, int ausemovin
 	}
 }
 
+int CHANNEL_FindIndexForPinType(int requiredType) {
+	int i;
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (g_cfg.pins.roles[i] == requiredType) {
+			return g_cfg.pins.channels[i];
+		}
+	}
+	return -1;
+}
+int CHANNEL_FindIndexForType(int requiredType) {
+	int i;
+	for (i = 0; i < CHANNEL_MAX; i++) {
+		if (CHANNEL_GetType(i) == requiredType) {
+			return i;
+		}
+	}
+	return -1;
+}
 void CHANNEL_SetFirstChannelByType(int requiredType, int newVal) {
 	CHANNEL_SetFirstChannelByTypeEx(requiredType, newVal, 0);
 }

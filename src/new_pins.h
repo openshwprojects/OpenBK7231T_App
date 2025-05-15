@@ -1471,6 +1471,8 @@ int CHANNEL_HasChannelPinWithRoleOrRole(int ch, int iorType, int iorType2);
 bool CHANNEL_IsInUse(int ch);
 void Channel_SaveInFlashIfNeeded(int ch);
 int CHANNEL_FindMaxValueForChannel(int ch);
+int CHANNEL_FindIndexForType(int requiredType); 
+int CHANNEL_FindIndexForPinType(int requiredType); 
 // cmd_channels.c
 bool CHANNEL_HasLabel(int ch);
 const char* CHANNEL_GetLabel(int ch);
