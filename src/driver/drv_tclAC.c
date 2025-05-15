@@ -72,8 +72,25 @@ void TCL_UART_Init(void) {
   UART_InitReceiveRingBuffer(TCL_UART_RECEIVE_BUFFER_SIZE);
 
 }
+bool ready_to_send_set_cmd_flag = false;
+set_cmd_t m_set_cmd = { 0 };
 
+void write_array(byte *b, int s) {
+	for (int i = 0; i < s; i++) {
+		UART_SendByte(b[i]);
+	}
+}
 void TCL_UART_RunEverySecond(void) {
-  TCL_UART_TryToGetNextPacket();
-  UART_InitUART(TCL_baudRate, 0, false);
+	uint8_t req_cmd[] = { 0xBB, 0x00, 0x01, 0x04, 0x02, 0x01, 0x00, 0xBD };
+
+
+	if (ready_to_send_set_cmd_flag) {
+		ADDLOG_WARN(LOG_FEATURE_ENERGYMETER, "Sending data");
+		ready_to_send_set_cmd_flag = false;
+		write_array(m_set_cmd.raw, sizeof(m_set_cmd.raw));
+	}
+	else {
+		write_array(req_cmd, sizeof(req_cmd));
+	}
+	TCL_UART_TryToGetNextPacket();
 }

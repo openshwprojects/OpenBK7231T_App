@@ -96,7 +96,7 @@ union get_cmd_resp_t {
 	uint8_t raw[61];
 };
 
-union set_cmd_t {
+typedef union set_cmd_u {
 	struct {
 		uint8_t header;
 		uint8_t byte_1;
@@ -170,4 +170,4 @@ union set_cmd_t {
 		uint8_t xor_sum;
 	} data;
 	uint8_t raw[35];
-};
+} set_cmd_t;
