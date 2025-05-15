@@ -16,54 +16,54 @@
 
 #include "drv_tclAC.h"
 
-static int TCL_UART_TryToGetNextPacket() {
-  int cs;
-  int i;
-  int c_garbage_consumed = 0;
-  byte checksum;
-
-  cs = UART_GetDataSize();
-
-  if(cs < TCL_UART_PACKET_LEN) {
-    return 0;
-  }
-  // skip garbage data (should not happen)
-  while(cs > 0) {
-    //if (UART_GetByte(0) != TCL_UART_PACKET_HEAD)
-	  if(1)
-	{
-      UART_ConsumeBytes(1);
-      c_garbage_consumed++;
-      cs--;
-    } else {
-      break;
-    }
-  }
-  if(c_garbage_consumed > 0){
-    ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
-      "Consumed %i unwanted non-header byte in TCL buffer\n",
-      c_garbage_consumed);
-  }
-  if(cs < TCL_UART_PACKET_LEN) {
-    return 0;
-  }
-  //if (UART_GetByte(0) != 0x55)
-  //  return 0;
-
-
-  //if (checksum != UART_GetByte(TCL_UART_PACKET_LEN - 1)) {
-  //  ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
-  //    "Skipping packet with bad checksum %02X wanted %02X\n",
-  //    UART_GetByte(TCL_UART_PACKET_LEN - 1), checksum);
-  //  UART_ConsumeBytes(TCL_UART_PACKET_LEN);
-  //  return 1;
-  //}
-
-
-
-  UART_ConsumeBytes(TCL_UART_PACKET_LEN);
-  return TCL_UART_PACKET_LEN;
-}
+//static int TCL_UART_TryToGetNextPacket() {
+//  int cs;
+//  int i;
+//  int c_garbage_consumed = 0;
+//  byte checksum;
+//
+//  cs = UART_GetDataSize();
+//
+//  if(cs < TCL_UART_PACKET_LEN) {
+//    return 0;
+//  }
+//  // skip garbage data (should not happen)
+//  while(cs > 0) {
+//    //if (UART_GetByte(0) != TCL_UART_PACKET_HEAD)
+//	  if(1)
+//	{
+//      UART_ConsumeBytes(1);
+//      c_garbage_consumed++;
+//      cs--;
+//    } else {
+//      break;
+//    }
+//  }
+//  if(c_garbage_consumed > 0){
+//    ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
+//      "Consumed %i unwanted non-header byte in TCL buffer\n",
+//      c_garbage_consumed);
+//  }
+//  if(cs < TCL_UART_PACKET_LEN) {
+//    return 0;
+//  }
+//  //if (UART_GetByte(0) != 0x55)
+//  //  return 0;
+//
+//
+//  //if (checksum != UART_GetByte(TCL_UART_PACKET_LEN - 1)) {
+//  //  ADDLOG_WARN(LOG_FEATURE_ENERGYMETER,
+//  //    "Skipping packet with bad checksum %02X wanted %02X\n",
+//  //    UART_GetByte(TCL_UART_PACKET_LEN - 1), checksum);
+//  //  UART_ConsumeBytes(TCL_UART_PACKET_LEN);
+//  //  return 1;
+//  //}
+//
+//
+//
+//  UART_ConsumeBytes(TCL_UART_PACKET_LEN);
+//  return TCL_UART_PACKET_LEN;
+//}
 
 
 
@@ -167,6 +167,46 @@ void build_set_cmd(get_cmd_resp_t * get_cmd_resp) {
 
 	for (int i = 0; i < sizeof(m_set_cmd.raw) - 1; i++) m_set_cmd.raw[sizeof(m_set_cmd.raw) - 1] ^= m_set_cmd.raw[i];
 }
+typedef enum {
+	FAN_OFF,
+	FAN_1, // 1
+	FAN_2, // 2
+	FAN_3, // 3
+	FAN_4, // 4
+	FAN_5, // 5
+
+	FAN_MUTE, // 6
+	FAN_TURBO,
+	FAN_AUTOMATIC,
+
+} fanMode_e;
+
+void OBK_SetFanMode(fanMode_e fan_mode) {
+
+	get_cmd_resp_t get_cmd_resp = { 0 };
+	memcpy(get_cmd_resp.raw, m_get_cmd_resp.raw, sizeof(get_cmd_resp.raw));
+
+	get_cmd_resp.data.turbo = 0x00;
+	get_cmd_resp.data.mute = 0x00;
+	if (fan_mode == FAN_TURBO) {
+		get_cmd_resp.data.fan = 0x03;
+		get_cmd_resp.data.turbo = 0x01;
+	}
+	else if (fan_mode == FAN_MUTE) {
+		get_cmd_resp.data.fan = 0x01;
+		get_cmd_resp.data.mute = 0x01;
+	}
+	else if (fan_mode == FAN_AUTOMATIC) get_cmd_resp.data.fan = 0x00;
+	else if (fan_mode == FAN_1) get_cmd_resp.data.fan = 0x01;
+	else if (fan_mode == FAN_2) get_cmd_resp.data.fan = 0x04;
+	else if (fan_mode == FAN_3) get_cmd_resp.data.fan = 0x02;
+	else if (fan_mode == FAN_4) get_cmd_resp.data.fan = 0x05;
+	else if (fan_mode == FAN_5) get_cmd_resp.data.fan = 0x03;
+
+	build_set_cmd(&get_cmd_resp);
+	ready_to_send_set_cmd_flag = true;
+
+}
 void OBK_SetClimate(climateMode_e climate_mode)
 {
 	get_cmd_resp_t get_cmd_resp = { 0 };
@@ -210,6 +250,138 @@ void write_array(byte *b, int s) {
 		UART_SendByte(b[i]);
 	}
 }
+
+int read_data_line(int readch, uint8_t *buffer, int len)
+{
+	static int pos = 0;
+	static bool wait_len = false;
+	static int skipch = 0;
+
+	//ESP_LOGI("custom", "%02X", readch);
+
+	if (readch >= 0) {
+		if (readch == 0xBB && skipch == 0 && !wait_len) {
+			pos = 0;
+			skipch = 3; // wait char with len
+			wait_len = true;
+			if (pos < len - 1) buffer[pos++] = readch;
+		}
+		else if (skipch == 0 && wait_len) {
+			if (pos < len - 1) buffer[pos++] = readch;
+			skipch = readch + 1; // +1 control sum
+			wait_len = false;
+		}
+		else if (skipch > 0) {
+			if (pos < len - 1) buffer[pos++] = readch;
+			if (--skipch == 0 && !wait_len) return pos;
+		}
+	}
+	// No end of line has been found, so return -1.
+	return -1;
+}
+
+bool is_valid_xor(uint8_t *buffer, int len)
+{
+	uint8_t xor_byte = 0;
+	for (int i = 0; i < len - 1; i++) xor_byte ^= buffer[i];
+	if (xor_byte == buffer[len - 1]) return true;
+	else {
+		ADDLOG_WARN(LOG_FEATURE_ENERGYMETER, "No valid xor crc %02X (calculated %02X)", buffer[len], xor_byte);
+		return false;
+	}
+
+}
+
+void print_hex_str(uint8_t *buffer, int len)
+{
+	char str[250] = { 0 };
+	char *pstr = str;
+	if (len * 2 > sizeof(str)) ADDLOG_WARN(LOG_FEATURE_ENERGYMETER, "too long byte data");
+
+	for (int i = 0; i < len; i++) {
+		pstr += sprintf(pstr, "%02X ", buffer[i]);
+	}
+
+	ADDLOG_WARN(LOG_FEATURE_ENERGYMETER, "%s", str);
+}
+bool is_changed;
+void TCL_UART_TryToGetNextPacket() {
+
+	#define max_line_length 100
+	static uint8_t buffer[max_line_length];
+
+	while (UART_GetDataSize()) {
+		int r = UART_GetByte(0);
+		UART_ConsumeBytes(1);
+		int len = read_data_line(r, buffer, max_line_length);
+		//printf("Len %i, buffer[3] = %i \n", len, buffer[3]);
+		if (len == sizeof(m_get_cmd_resp) && buffer[3] == 0x04) {
+			memcpy(m_get_cmd_resp.raw, buffer, len);
+			print_hex_str(buffer, len);
+			if (is_valid_xor(buffer, len)) {
+				float curr_temp = (((buffer[17] << 8) | buffer[18]) / 374 - 32) / 1.8;
+				is_changed = false;
+
+				ADDLOG_WARN(LOG_FEATURE_ENERGYMETER, "Ok we got reply with mode %i, fan %i, turbo %i, mute %i",
+					(int)m_get_cmd_resp.data.power, (int)m_get_cmd_resp.data.fan,
+					(int)m_get_cmd_resp.data.turbo, (int)m_get_cmd_resp.data.mute);
+				/*if (m_get_cmd_resp.data.power == 0x00) set_mode(CLIMATE_MODE_OFF);
+				else if (m_get_cmd_resp.data.mode == 0x01) set_mode(CLIMATE_MODE_COOL);
+				else if (m_get_cmd_resp.data.mode == 0x03) set_mode(CLIMATE_MODE_DRY);
+				else if (m_get_cmd_resp.data.mode == 0x02) set_mode(CLIMATE_MODE_FAN_ONLY);
+				else if (m_get_cmd_resp.data.mode == 0x04) set_mode(CLIMATE_MODE_HEAT);
+				else if (m_get_cmd_resp.data.mode == 0x05) set_mode(CLIMATE_MODE_AUTO);
+
+
+				if (m_get_cmd_resp.data.turbo) set_custom_fan_mode(("Turbo"));
+				else if (m_get_cmd_resp.data.mute) set_custom_fan_mode(("Mute"));
+				else if (m_get_cmd_resp.data.fan == 0x00) set_custom_fan_mode(("Automatic"));
+				else if (m_get_cmd_resp.data.fan == 0x01) set_custom_fan_mode(("1"));
+				else if (m_get_cmd_resp.data.fan == 0x04) set_custom_fan_mode(("2"));
+				else if (m_get_cmd_resp.data.fan == 0x02) set_custom_fan_mode(("3"));
+				else if (m_get_cmd_resp.data.fan == 0x05) set_custom_fan_mode(("4"));
+				else if (m_get_cmd_resp.data.fan == 0x03) set_custom_fan_mode(("5"));
+
+
+				if (m_get_cmd_resp.data.hswing && m_get_cmd_resp.data.vswing) set_swing_mode(CLIMATE_SWING_BOTH);
+				else if (!m_get_cmd_resp.data.hswing && !m_get_cmd_resp.data.vswing) set_swing_mode(CLIMATE_SWING_OFF);
+				else if (m_get_cmd_resp.data.vswing) set_swing_mode(CLIMATE_SWING_VERTICAL);
+				else if (m_get_cmd_resp.data.hswing) set_swing_mode(CLIMATE_SWING_HORIZONTAL);
+
+				if (m_get_cmd_resp.data.vswing_mv == 0x01) set_vswing_pos("Move full");
+				else if (m_get_cmd_resp.data.vswing_mv == 0x02) set_vswing_pos("Move upper");
+				else if (m_get_cmd_resp.data.vswing_mv == 0x03) set_vswing_pos("Move lower");
+				else if (m_get_cmd_resp.data.vswing_fix == 0x01) set_vswing_pos("Fix top");
+				else if (m_get_cmd_resp.data.vswing_fix == 0x02) set_vswing_pos("Fix upper");
+				else if (m_get_cmd_resp.data.vswing_fix == 0x03) set_vswing_pos("Fix mid");
+				else if (m_get_cmd_resp.data.vswing_fix == 0x04) set_vswing_pos("Fix lower");
+				else if (m_get_cmd_resp.data.vswing_fix == 0x05) set_vswing_pos("Fix bottom");
+				else set_vswing_pos("Last position");
+
+				if (m_get_cmd_resp.data.hswing_mv == 0x01) set_hswing_pos("Move full");
+				else if (m_get_cmd_resp.data.hswing_mv == 0x02) set_hswing_pos("Move left");
+				else if (m_get_cmd_resp.data.hswing_mv == 0x03) set_hswing_pos("Move mid");
+				else if (m_get_cmd_resp.data.hswing_mv == 0x04) set_hswing_pos("Move right");
+				else if (m_get_cmd_resp.data.hswing_fix == 0x01) set_hswing_pos("Fix left");
+				else if (m_get_cmd_resp.data.hswing_fix == 0x02) set_hswing_pos("Fix mid left");
+				else if (m_get_cmd_resp.data.hswing_fix == 0x03) set_hswing_pos("Fix mid");
+				else if (m_get_cmd_resp.data.hswing_fix == 0x04) set_hswing_pos("Fix mid right");
+				else if (m_get_cmd_resp.data.hswing_fix == 0x05) set_hswing_pos("Fix right");
+				else set_hswing_pos("Last position");*/
+
+				ADDLOG_WARN(LOG_FEATURE_ENERGYMETER, "fan %02X", m_get_cmd_resp.data.fan);
+				ADDLOG_WARN(LOG_FEATURE_ENERGYMETER, "mode %02X", m_get_cmd_resp.data.mode);
+				//set_target_temperature(float(m_get_cmd_resp.data.temp + 16));
+				//set_current_temperature(curr_temp);
+				if (is_changed)
+				{
+					//publish_state();
+				}
+			}
+			//publish_state(buffer);
+		}
+	}
+}
 void TCL_UART_RunEverySecond(void) {
 	uint8_t req_cmd[] = { 0xBB, 0x00, 0x01, 0x04, 0x02, 0x01, 0x00, 0xBD };
 
@@ -234,11 +406,21 @@ static commandResult_t CMD_ACMode(const void* context, const char* cmd, const ch
 	OBK_SetClimate(mode);
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_FANMode(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int mode;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	mode = Tokenizer_GetArgInteger(0);
+	OBK_SetFanMode(mode);
+	return CMD_RES_OK;
+}
 void TCL_Init(void) {
 
 	UART_InitUART(TCL_baudRate, 0, false);
 	UART_InitReceiveRingBuffer(TCL_UART_RECEIVE_BUFFER_SIZE);
 
 	CMD_RegisterCommand("ACMode", CMD_ACMode, NULL);
+	CMD_RegisterCommand("FANMode", CMD_FANMode, NULL);
 }
 
