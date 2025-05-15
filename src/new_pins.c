@@ -1664,6 +1664,10 @@ bool CHANNEL_IsInUse(int ch) {
 			}
 		}
 	}
+#if ENABLE_DRIVER_DS1820 && (DS1820full)
+#include "driver/drv_ds1820_simple.h"
+	return ds18b20_used_channel(ch);
+#endif
 	return false;
 }
 
