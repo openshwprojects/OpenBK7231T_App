@@ -35,6 +35,7 @@ static int ch_lightAdc; // light level
 static int ch_motion; // pir 1 or 0
 static int ch_sens; // pir sens
 static int g_timeLeft = 0;
+static int g_isDark = 0;
 
 #define VAR_TIME SPECIAL_CHANNEL_FLASHVARS_LAST
 #define VAR_SENS (SPECIAL_CHANNEL_FLASHVARS_LAST-1)
@@ -48,7 +49,13 @@ void PIR_Init() {
 	g_lightLevelMargin = HAL_FlashVars_GetChannelValue(VAR_LIGHTLEVEL);
 	ch_lightAdc = CHANNEL_FindIndexForPinType(IOR_ADC);
 	ch_motion = CHANNEL_FindIndexForType(ChType_Motion);
-	ch_sens = CHANNEL_FindIndexForPinType(IOR_PWM_ScriptOnly);
+	if (ch_motion == -1) {
+		ch_motion = CHANNEL_FindIndexForPinType2(IOR_DigitalInput, IOR_DigitalInput_n);
+		if (ch_motion == -1) {
+			ch_motion = CHANNEL_FindIndexForPinType2(IOR_DigitalInput_NoPup, IOR_DigitalInput_NoPup_n);
+		}
+	}
+	ch_sens = CHANNEL_FindIndexForPinType2(IOR_PWM_ScriptOnly, IOR_PWM_ScriptOnly_n);
 }
 
 void PIR_OnEverySecond() {
@@ -58,19 +65,20 @@ void PIR_OnEverySecond() {
 	if (g_mode == 1) {
 		// "Value seems to go down if MORE light is here and UP is LESS light is here"
 		int lightLevel = CHANNEL_Get(ch_lightAdc);
-		if (lightLevel > g_lightLevelMargin) {
+		g_isDark = lightLevel > g_lightLevelMargin;
+		if (g_isDark) {
 			// auto mode
 			int motion = CHANNEL_Get(ch_motion);
 			if (motion) {
 				g_timeLeft = g_onTime;
 				LED_SetEnableAll(true);
 			}
-			if (g_timeLeft > 0) {
-				g_timeLeft--;
-				if (g_timeLeft <= 0) {
-					// turn off
-					LED_SetEnableAll(false);
-				}
+		}
+		if (g_timeLeft > 0) {
+			g_timeLeft--;
+			if (g_timeLeft <= 0) {
+				// turn off
+				LED_SetEnableAll(false);
 			}
 		}
 	}
@@ -121,7 +129,7 @@ void PIR_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState
 	}
 	else {
 		if (g_mode == 1) {
-			hprintf255(request, "PIR current state: Automatic, motion: %i, timeLeft: %i<br>", CHANNEL_Get(ch_motion), g_timeLeft);
+			hprintf255(request, "PIR current state: Automatic, motion: %i, isDark %i, timeLeft: %i<br>", CHANNEL_Get(ch_motion), g_isDark, g_timeLeft);
 		}
 		else {
 			hprintf255(request, "PIR current state: Manual<br>");
