@@ -14,6 +14,7 @@ typedef struct wmPin_s {
 //NOTE: pwm_channel is defined based on demo/wm_pwm_demo.cs. Both W600 nd W800 support 5 PWM channels.
 
 #if PLATFORM_W800
+#include "wm_gpio_afsel.h"
 
 static wmPin_t g_pins[] = {
     {"PA0",WM_IO_PA_00, -1},
