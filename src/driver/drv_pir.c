@@ -52,7 +52,7 @@ void PIR_Init() {
 	if (ch_motion == -1) {
 		ch_motion = CHANNEL_FindIndexForPinType2(IOR_DigitalInput, IOR_DigitalInput_n);
 		if (ch_motion == -1) {
-			ch_motion = CHANNEL_FindIndexForPinType(IOR_DigitalInput_NoPup, IOR_DigitalInput_NoPup_n);
+			ch_motion = CHANNEL_FindIndexForPinType2(IOR_DigitalInput_NoPup, IOR_DigitalInput_NoPup_n);
 		}
 	}
 	ch_sens = CHANNEL_FindIndexForPinType2(IOR_PWM_ScriptOnly, IOR_PWM_ScriptOnly_n);
