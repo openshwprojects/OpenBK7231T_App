@@ -342,6 +342,7 @@ void control_vertical_swing(VerticalSwingMode swing_mode) {
 	case VS_FixMid:     get_cmd_resp.data.vswing_fix = 0x03; break;
 	case VS_FixLower:   get_cmd_resp.data.vswing_fix = 0x04; break;
 	case VS_FixBottom:  get_cmd_resp.data.vswing_fix = 0x05; break;
+	case VS_NONE: default:  break;
 	}
 
 	get_cmd_resp.data.vswing = (get_cmd_resp.data.vswing_mv != 0) ? 0x01 : 0;
