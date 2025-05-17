@@ -62,6 +62,7 @@ CSRC  += rgb2hsv.c
 CSRC  += tiny_crc8.c
 CSRC  += user_main.c
 #CSRC += cmnds/cmd_send.c
+CSRC += driver/drv_tclAC.c
 CSRC  += driver/drv_adcButton.c
 CSRC  += driver/drv_adcSmoother.c
 CSRC  += driver/drv_aht2x.c

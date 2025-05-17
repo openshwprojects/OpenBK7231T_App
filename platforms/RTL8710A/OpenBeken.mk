@@ -65,6 +65,7 @@ SRC_C  += $(OBK_DIR)/src/rgb2hsv.c
 SRC_C  += $(OBK_DIR)/src/tiny_crc8.c
 SRC_C  += $(OBK_DIR)/src/user_main.c
 #SRC_C += $(OBK_DIR)/src/cmnds/cmd_send.c
+SRC_C  += $(OBK_DIR)/src/driver/drv_tclAC.c
 SRC_C  += $(OBK_DIR)/src/driver/drv_adcButton.c
 SRC_C  += $(OBK_DIR)/src/driver/drv_adcSmoother.c
 SRC_C  += $(OBK_DIR)/src/driver/drv_aht2x.c
