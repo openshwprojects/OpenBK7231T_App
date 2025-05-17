@@ -168,6 +168,7 @@ void SIM_ClearOBK(const char *flashPath) {
 void Win_DoUnitTests() {
 	Test_Driver_TCL_AC();
 
+	Test_PIR();
 #if ENABLE_OBK_BERRY
 	Test_Berry();
 #endif

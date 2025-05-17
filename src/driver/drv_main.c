@@ -82,7 +82,7 @@ static driver_t g_drivers[] = {
 
 
 #if ENABLE_DRIVER_TCL
-	{ "TCL",		TCL_Init,			TCL_UART_RunEverySecond,			NULL, NULL, NULL, NULL, false },
+	{ "TCL",		TCL_Init,			TCL_UART_RunEverySecond,		TCL_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
 
 #if ENABLE_DRIVER_OPENWEATHERMAP

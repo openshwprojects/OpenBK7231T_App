@@ -7,6 +7,7 @@
 #include "../new_cfg.h"
 #include "../new_pins.h"
 #include "../cmnds/cmd_public.h"
+#include "../httpserver/new_http.h"
 #include "drv_uart.h"
 
 #define TCL_UART_PACKET_LEN 1
@@ -181,6 +182,17 @@ typedef enum {
 
 } fanMode_e;
 
+void OBK_SetTargetTemperature(float temp) {
+	// User requested target temperature change
+
+	get_cmd_resp_t get_cmd_resp = { 0 };
+	memcpy(get_cmd_resp.raw, m_get_cmd_resp.raw, sizeof(get_cmd_resp.raw));
+
+	get_cmd_resp.data.temp = (uint8_t)(temp) - 16;
+
+	build_set_cmd(&get_cmd_resp);
+	ready_to_send_set_cmd_flag = true;
+}
 void OBK_SetFanMode(fanMode_e fan_mode) {
 
 	get_cmd_resp_t get_cmd_resp = { 0 };
@@ -420,14 +432,14 @@ void TCL_UART_TryToGetNextPacket() {
 				else if (m_get_cmd_resp.data.mode == 0x05) set_mode(CLIMATE_MODE_AUTO);
 
 
-				if (m_get_cmd_resp.data.turbo) set_custom_fan_mode(("Turbo"));
-				else if (m_get_cmd_resp.data.mute) set_custom_fan_mode(("Mute"));
-				else if (m_get_cmd_resp.data.fan == 0x00) set_custom_fan_mode(("Automatic"));
-				else if (m_get_cmd_resp.data.fan == 0x01) set_custom_fan_mode(("1"));
-				else if (m_get_cmd_resp.data.fan == 0x04) set_custom_fan_mode(("2"));
-				else if (m_get_cmd_resp.data.fan == 0x02) set_custom_fan_mode(("3"));
-				else if (m_get_cmd_resp.data.fan == 0x05) set_custom_fan_mode(("4"));
-				else if (m_get_cmd_resp.data.fan == 0x03) set_custom_fan_mode(("5"));
+				if (m_get_cmd_resp.data.turbo) set_custom_fan_mode((FAN_TURBO));
+				else if (m_get_cmd_resp.data.mute) set_custom_fan_mode((FAN_MUTE));
+				else if (m_get_cmd_resp.data.fan == 0x00) set_custom_fan_mode((FAN_AUTOMATIC));
+				else if (m_get_cmd_resp.data.fan == 0x01) set_custom_fan_mode((FAN_1));
+				else if (m_get_cmd_resp.data.fan == 0x04) set_custom_fan_mode((FAN_2));
+				else if (m_get_cmd_resp.data.fan == 0x02) set_custom_fan_mode((FAN_3));
+				else if (m_get_cmd_resp.data.fan == 0x05) set_custom_fan_mode((FAN_4));
+				else if (m_get_cmd_resp.data.fan == 0x03) set_custom_fan_mode((FAN_5));
 
 
 				if (m_get_cmd_resp.data.hswing && m_get_cmd_resp.data.vswing) set_swing_mode(CLIMATE_SWING_BOTH);
@@ -472,7 +484,6 @@ void TCL_UART_TryToGetNextPacket() {
 void TCL_UART_RunEverySecond(void) {
 	uint8_t req_cmd[] = { 0xBB, 0x00, 0x01, 0x04, 0x02, 0x01, 0x00, 0xBD };
 
-
 	if (ready_to_send_set_cmd_flag) {
 		ADDLOG_WARN(LOG_FEATURE_ENERGYMETER, "Sending data");
 		ready_to_send_set_cmd_flag = false;
@@ -502,6 +513,11 @@ static commandResult_t CMD_FANMode(const void* context, const char* cmd, const c
 	OBK_SetFanMode(mode);
 	return CMD_RES_OK;
 }
+
+void TCL_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState) {
+
+
+}
 static commandResult_t CMD_SwingH(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int mode;
 
@@ -509,6 +525,15 @@ static commandResult_t CMD_SwingH(const void* context, const char* cmd, const ch
 
 	mode = Tokenizer_GetArgInteger(0);
 	control_horizontal_swing(mode);
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_TargetTemperature(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	float target;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	target = Tokenizer_GetArgFloat(0);
+	OBK_SetTargetTemperature(target);
 	return CMD_RES_OK;
 }
 static commandResult_t CMD_SwingV(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -529,4 +554,5 @@ void TCL_Init(void) {
 	CMD_RegisterCommand("FANMode", CMD_FANMode, NULL);
 	CMD_RegisterCommand("SwingH", CMD_SwingH, NULL);
 	CMD_RegisterCommand("SwingV", CMD_SwingV, NULL);
+	CMD_RegisterCommand("TargetTemperature", CMD_TargetTemperature, NULL);
 }

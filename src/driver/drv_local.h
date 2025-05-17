@@ -190,6 +190,7 @@ void UART_TCP_Deinit(void);
 
 void TCL_Init(void);
 void TCL_UART_RunEverySecond(void);
+void TCL_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 
 #define SM2135_DELAY         4
 
