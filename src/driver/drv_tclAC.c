@@ -516,7 +516,14 @@ static commandResult_t CMD_FANMode(const void* context, const char* cmd, const c
 }
 
 void TCL_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState) {
+	if (bPreState) {
 
+	}
+	else {
+
+		hprintf255(request, "<h3>Current temperature: %f</h3>", current_temperature);
+		hprintf255(request, "<h3>Target temperature: %f</h3>", target_temperature);
+	}
 
 }
 static commandResult_t CMD_SwingH(const void* context, const char* cmd, const char* args, int cmdFlags) {
