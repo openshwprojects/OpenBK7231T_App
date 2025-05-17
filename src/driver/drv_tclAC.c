@@ -291,6 +291,78 @@ bool is_valid_xor(uint8_t *buffer, int len)
 	}
 
 }
+typedef enum {
+	VS_NONE,
+	VS_MoveFull,
+	VS_MoveUpper,
+	VS_MoveLower,
+	VS_FixTop,
+	VS_FixUpper,
+	VS_FixMid,
+	VS_FixLower,
+	VS_FixBottom
+} VerticalSwingMode;
+typedef enum {
+	HS_NONE,
+	HS_MOVE_FULL,
+	HS_MOVE_LEFT,
+	HS_MOVE_MID,
+	HS_MOVE_RIGHT,
+	HS_FIX_LEFT,
+	HS_FIX_MID_LEFT,
+	HS_FIX_MID,
+	HS_FIX_MID_RIGHT,
+	HS_FIX_RIGHT
+} HorizontalSwing;
+void control_vertical_swing(VerticalSwingMode swing_mode) {
+	get_cmd_resp_t get_cmd_resp = { 0 };
+	memcpy(get_cmd_resp.raw, m_get_cmd_resp.raw, sizeof(get_cmd_resp.raw));
+
+	get_cmd_resp.data.vswing_mv = 0;
+	get_cmd_resp.data.vswing_fix = 0;
+
+	switch (swing_mode) {
+	case VS_MoveFull:   get_cmd_resp.data.vswing_mv = 0x01; break;
+	case VS_MoveUpper:  get_cmd_resp.data.vswing_mv = 0x02; break;
+	case VS_MoveLower:  get_cmd_resp.data.vswing_mv = 0x03; break;
+	case VS_FixTop:     get_cmd_resp.data.vswing_fix = 0x01; break;
+	case VS_FixUpper:   get_cmd_resp.data.vswing_fix = 0x02; break;
+	case VS_FixMid:     get_cmd_resp.data.vswing_fix = 0x03; break;
+	case VS_FixLower:   get_cmd_resp.data.vswing_fix = 0x04; break;
+	case VS_FixBottom:  get_cmd_resp.data.vswing_fix = 0x05; break;
+	}
+
+	get_cmd_resp.data.vswing = (get_cmd_resp.data.vswing_mv != 0) ? 0x01 : 0;
+
+	build_set_cmd(&get_cmd_resp);
+	ready_to_send_set_cmd_flag = true;
+}
+void control_horizontal_swing(HorizontalSwing swing_mode) {
+	get_cmd_resp_t get_cmd_resp = { 0 };
+	memcpy(get_cmd_resp.raw, m_get_cmd_resp.raw, sizeof(get_cmd_resp.raw));
+
+	get_cmd_resp.data.hswing_mv = 0;
+	get_cmd_resp.data.hswing_fix = 0;
+
+	switch (swing_mode) {
+	case HS_MOVE_FULL:      get_cmd_resp.data.hswing_mv = 0x01; break;
+	case HS_MOVE_LEFT:      get_cmd_resp.data.hswing_mv = 0x02; break;
+	case HS_MOVE_MID:       get_cmd_resp.data.hswing_mv = 0x03; break;
+	case HS_MOVE_RIGHT:     get_cmd_resp.data.hswing_mv = 0x04; break;
+	case HS_FIX_LEFT:       get_cmd_resp.data.hswing_fix = 0x01; break;
+	case HS_FIX_MID_LEFT:   get_cmd_resp.data.hswing_fix = 0x02; break;
+	case HS_FIX_MID:        get_cmd_resp.data.hswing_fix = 0x03; break;
+	case HS_FIX_MID_RIGHT:  get_cmd_resp.data.hswing_fix = 0x04; break;
+	case HS_FIX_RIGHT:      get_cmd_resp.data.hswing_fix = 0x05; break;
+	case HS_NONE: default:  break;
+	}
+
+	if (get_cmd_resp.data.vswing_mv) get_cmd_resp.data.hswing = 0x01;
+	else get_cmd_resp.data.hswing = 0;
+
+	build_set_cmd(&get_cmd_resp);
+	ready_to_send_set_cmd_flag = true;
+}
 
 void print_hex_str(uint8_t *buffer, int len)
 {
@@ -305,6 +377,20 @@ void print_hex_str(uint8_t *buffer, int len)
 	ADDLOG_WARN(LOG_FEATURE_ENERGYMETER, "%s", str);
 }
 bool is_changed;
+float target_temperature;
+float current_temperature;
+void set_target_temperature(float newTemp) {
+	if (target_temperature == newTemp)
+		return;
+	is_changed = true;
+	target_temperature = newTemp;
+}
+
+void set_current_temperature(float newTemp) {
+	if (current_temperature == newTemp) return;
+	is_changed = true;
+	current_temperature = newTemp;
+}
 void TCL_UART_TryToGetNextPacket() {
 
 	#define max_line_length 100
@@ -372,8 +458,8 @@ void TCL_UART_TryToGetNextPacket() {
 
 				ADDLOG_WARN(LOG_FEATURE_ENERGYMETER, "fan %02X", m_get_cmd_resp.data.fan);
 				ADDLOG_WARN(LOG_FEATURE_ENERGYMETER, "mode %02X", m_get_cmd_resp.data.mode);
-				//set_target_temperature(float(m_get_cmd_resp.data.temp + 16));
-				//set_current_temperature(curr_temp);
+				set_target_temperature((float)(m_get_cmd_resp.data.temp + 16));
+				set_current_temperature(curr_temp);
 				if (is_changed)
 				{
 					//publish_state();
@@ -416,6 +502,24 @@ static commandResult_t CMD_FANMode(const void* context, const char* cmd, const c
 	OBK_SetFanMode(mode);
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_SwingH(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int mode;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	mode = Tokenizer_GetArgInteger(0);
+	control_horizontal_swing(mode);
+	return CMD_RES_OK;
+}
+static commandResult_t CMD_SwingV(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int mode;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	mode = Tokenizer_GetArgInteger(0);
+	control_vertical_swing(mode);
+	return CMD_RES_OK;
+}
 void TCL_Init(void) {
 
 	UART_InitUART(TCL_baudRate, 2, false);
@@ -423,5 +527,6 @@ void TCL_Init(void) {
 
 	CMD_RegisterCommand("ACMode", CMD_ACMode, NULL);
 	CMD_RegisterCommand("FANMode", CMD_FANMode, NULL);
+	CMD_RegisterCommand("SwingH", CMD_SwingH, NULL);
+	CMD_RegisterCommand("SwingV", CMD_SwingV, NULL);
 }
-
