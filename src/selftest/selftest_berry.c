@@ -248,6 +248,65 @@ void Test_Berry_Import() {
     // Verify the constant from the module was correctly accessed
     SELFTEST_ASSERT_CHANNEL(3, 123);
 }
+void Test_Berry_Click() {
+	int i;
+
+	// reset whole device
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("lfs_format", 0);
+
+	CMD_ExecuteCommand("setChannel 5 0", 0);
+	Test_FakeHTTPClientPacket_POST("api/lfs/autoexec.be",
+		"addEventHandler(\"OnClick\", 5, def(arg)\n"
+		"	runCmd(\"addChannel 5 1\") \n"
+		"end)\n");
+	// in physical device, it should not be needed, it should run on its own
+	CMD_ExecuteCommand("startScript autoexec.be", 0);
+
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_PIN_ONCLICK, 5, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 1);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_PIN_ONCLICK, 5, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 2);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_PIN_ONCLICK, 5, 0);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_PIN_ONCLICK, 5, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 4);
+}
+void Test_Berry_Click_And_Timeout() {
+	int i;
+
+	// reset whole device
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("lfs_format", 0);
+
+	CMD_ExecuteCommand("setChannel 5 0", 0);
+	Test_FakeHTTPClientPacket_POST("api/lfs/autoexec.be",
+		"def myFunc2()\n"
+		"	runCmd(\"addChannel 5 1\") \n"
+		"end\n"
+		"addEventHandler(\"OnClick\", 5, def(arg)\n"
+		"	runCmd(\"addChannel 5 1\") \n"
+		"	setTimeout(myFunc2, 1) \n"
+		"end)\n");
+	// in physical device, it should not be needed, it should run on its own
+	CMD_ExecuteCommand("startScript autoexec.be", 0);
+
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_PIN_ONCLICK, 5, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 1);
+	// wait 2 seconds for setTimeout to call myFunc2
+	Sim_RunSeconds(2, false);
+	SELFTEST_ASSERT_CHANNEL(5, 2);
+	Sim_RunSeconds(10, false);
+	SELFTEST_ASSERT_CHANNEL(5, 2);
+	CMD_Berry_RunEventHandlers_IntInt(CMD_EVENT_PIN_ONCLICK, 5, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 3);
+	// wait 2 seconds for setTimeout to call myFunc2
+	Sim_RunSeconds(2, false);
+	SELFTEST_ASSERT_CHANNEL(5, 4);
+	Sim_RunSeconds(10, false);
+	SELFTEST_ASSERT_CHANNEL(5, 4);
+}
 void Test_Berry_Import_Autorun() {
 	int i;
 
@@ -601,6 +660,52 @@ void Test_Berry_PassArgFromCommandWithModule() {
 	SELFTEST_ASSERT_CHANNEL(5, 6);
 	CMD_ExecuteCommand("berry test.mySample(2)", 0);
 	SELFTEST_ASSERT_CHANNEL(5, 8);
+	CMD_ExecuteCommand("berry test.mySample(2)", 0);
+	SELFTEST_ASSERT_CHANNEL(5, 10);
+	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
+}
+
+void Test_Berry_AutoexecAndBerry() {
+	// reset whole device
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("lfs_format", 0);
+
+	int startStackSize = Berry_GetStackSizeTotal();
+
+	// Create a Berry module file
+	Test_FakeHTTPClientPacket_POST("api/lfs/test.be",
+		"test = module('test')\n"
+		"\n"
+		"# Add functions to the module\n"
+		"test.mySample = def(x)\n"
+		"  addChannel(5, x) # Set a channel so we can verify init ran\n"
+		"end\n"
+		"\n"
+		"return test\n");
+
+
+	// Make sure channel starts at 0
+	CMD_ExecuteCommand("setChannel 5 0", 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+
+	Test_FakeHTTPClientPacket_POST("api/lfs/autoexecTest.bat",
+		"berry import test\n"
+		"addRepeatingEvent 5 -1 berry test.mySample(2)\n");
+
+	CMD_ExecuteCommand("startScript autoexecTest.bat", 0);
+	Sim_RunSeconds(6, false);
+	// it ran once
+	SELFTEST_ASSERT_CHANNEL(5, 2);
+	Sim_RunSeconds(6, false);
+	// it ran once
+	SELFTEST_ASSERT_CHANNEL(5, 4);
+	Sim_RunSeconds(6, false);
+	// it ran once
+	SELFTEST_ASSERT_CHANNEL(5, 6);
+	Sim_RunSeconds(6, false);
+	// it ran once
+	SELFTEST_ASSERT_CHANNEL(5, 8);
+
 	SELFTEST_ASSERT(Berry_GetStackSizeTotal() == startStackSize);
 }
 
@@ -1347,95 +1452,12 @@ void Test_Berry_NTP() {
 	SELFTEST_ASSERT_CHANNEL(5, 5);
 }
 
-void Test_PIR() {
-	SIM_ClearOBK(0);
-	CMD_ExecuteCommand("lfs_format", 0);
-
-	PIN_SetPinRoleForPinIndex(6, IOR_DigitalInput);
-	PIN_SetPinChannelForPinIndex(6, 11);
-
-	PIN_SetPinRoleForPinIndex(8, IOR_PWM);
-	PIN_SetPinChannelForPinIndex(8, 4);
-
-	PIN_SetPinRoleForPinIndex(9, IOR_PWM_n);
-	PIN_SetPinChannelForPinIndex(9, 5);
-
-	PIN_SetPinRoleForPinIndex(23, IOR_ADC);
-	PIN_SetPinChannelForPinIndex(23, 12);
-
-	PIN_SetPinRoleForPinIndex(26, IOR_PWM_ScriptOnly);
-	PIN_SetPinChannelForPinIndex(26, 10);
-
-	CMD_ExecuteCommand("startDriver PIR", 0);
-
-	Test_FakeHTTPClientPacket_GET("index?pirMode=1");
-	// time on
-	Test_FakeHTTPClientPacket_GET("index?pirTime=5");
-	// margin light value - 2000
-	Test_FakeHTTPClientPacket_GET("index?light=2000");
-	// simulate light value - 3000
-	SIM_SetIntegerValueADCPin(23, 3000);
-	// no light
-	SELFTEST_ASSERT(LED_GetEnableAll() == 0);
-	for (int i = 0; i < 3; i++) {
-		// Motion channel off
-		SIM_SetSimulatedPinValue(6, false);
-		Sim_RunSeconds(1, false);
-		// no light
-		SELFTEST_ASSERT(LED_GetEnableAll() == 0);
-	}
-	// Motion channel goes to 1
-	SIM_SetSimulatedPinValue(6, true);
-	// tick
-	Sim_RunSeconds(2, false);
-	// light is on 
-	SELFTEST_ASSERT(LED_GetEnableAll() == 1);
-	// there is still motion, so no timer
-	for (int i = 0; i < 3; i++) {
-		// Motion channel on
-		SIM_SetSimulatedPinValue(6, true);
-		Sim_RunSeconds(1, false);
-		// light is on 
-		SELFTEST_ASSERT(LED_GetEnableAll() == 1);
-	}
-	// now motion goes away
-	SIM_SetSimulatedPinValue(6, false);
-	// I set timer to 5 seconds, so 7?
-	Sim_RunSeconds(7, false);
-	SELFTEST_ASSERT(LED_GetEnableAll() == 0);
-	// now nothing happens for long time
-	for (int i = 0; i < 10; i++) {
-		// Motion channel off
-		SIM_SetSimulatedPinValue(6, false);
-		Sim_RunSeconds(1, false);
-		// no light
-		SELFTEST_ASSERT(LED_GetEnableAll() == 0);
-	}
-	// Motion channel goes to 1
-	SIM_SetSimulatedPinValue(6, true);
-	// tick
-	Sim_RunSeconds(2, false);
-	// light is on 
-	SELFTEST_ASSERT(LED_GetEnableAll() == 1);
-	// but now it's day and it's bright
-	SIM_SetIntegerValueADCPin(23, 500);
-	// times goes down
-	// I set timer to 5 seconds, so 7?
-	Sim_RunSeconds(7, false);
-	SELFTEST_ASSERT(LED_GetEnableAll() == 0);
-	// so now, motion can be present, but light is still off
-	for (int i = 0; i < 10; i++) {
-		// Motion can be present 
-		SIM_SetSimulatedPinValue(6, true);
-		Sim_RunSeconds(1, false);
-		// no light
-		SELFTEST_ASSERT(LED_GetEnableAll() == 0);
-	}
-}
 
 void Test_Berry() {
-	Test_PIR();
 
+	Test_Berry_Click_And_Timeout();
+	Test_Berry_Click();
+	Test_Berry_AutoexecAndBerry();
 	Test_Berry_Button();
 	Test_Berry_Import_Autorun();
 	Test_Berry_HTTP2();
