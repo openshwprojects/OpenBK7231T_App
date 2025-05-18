@@ -168,6 +168,7 @@ int HAL_FlashVars_GetBootCount() {
 		return flash_vars.boot_count;
 	}
 #endif
+	return 0;
 }
 
 int HAL_FlashVars_GetChannelValue(int ch) {
