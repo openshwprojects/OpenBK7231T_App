@@ -239,7 +239,6 @@ void Test_Scripting_WaitingForSmth() {
 	SELFTEST_ASSERT_CHANNEL(21, 789);
 	SELFTEST_ASSERT_INTEGER(CMD_GetCountActiveScriptThreads(), 0);
 }
-
 void Test_Scripting() {
 	Test_Scripting_Loop1();
 	Test_Scripting_Loop2();

@@ -96,6 +96,7 @@
 #endif
 
 
+#define	ENABLE_DRIVER_TCL		1
 #define	ENABLE_DRIVER_PIR		1
 #define	ENABLE_HA_DISCOVERY		1
 #define ENABLE_SEND_POSTANDGET		1
@@ -186,6 +187,7 @@
 
 #elif PLATFORM_BEKEN
 
+//#define	ENABLE_DRIVER_PIR		1
 #define	ENABLE_HA_DISCOVERY		1
 #define ENABLE_SEND_POSTANDGET		1
 #define ENABLE_MQTT 1
@@ -401,6 +403,7 @@
 #ifndef PLATFORM_RTL8710B
 #define ENABLE_OBK_BERRY						1
 #endif
+//#define ENABLE_DRIVER_TCL						1
 
 #elif PLATFORM_ECR6600
 

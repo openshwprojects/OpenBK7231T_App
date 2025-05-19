@@ -9,7 +9,11 @@
 #include "efpg/efpg.h"
 
 
+#if PLATFORM_XR806
+#define OUR_CUSTOM_SYSINFO_ADR 0x1FC000
+#else
 #define OUR_CUSTOM_SYSINFO_ADR PRJCONF_SYSINFO_ADDR
+#endif
 #define OUR_CUSTOM_SYSINFO_SIZE 4096
 
 static fdcm_handle_t *g_fdcm_hdl = 0;
