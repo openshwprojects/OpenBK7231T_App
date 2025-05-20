@@ -68,7 +68,7 @@ set(PROJ_ALL_SRC
     app/src/driver/drv_sgp.c
     app/src/driver/drv_shiftRegister.c
     app/src/driver/drv_sht3x.c
-#    app/src/driver/drv_sm16703P.c
+    app/src/driver/drv_sm16703P.c
     app/src/driver/drv_sm2135.c
     app/src/driver/drv_sm2235.c
     app/src/driver/drv_soft_i2c.c
