@@ -19,6 +19,8 @@
 #include <lwip/dns.h>
 #endif
 
+#include "../domoticz/domoticz.h"
+
 #define BUILD_AND_VERSION_FOR_MQTT "Open" PLATFORM_MCU_NAME " " USER_SW_VER " " __DATE__ " " __TIME__ 
 
 #if MQTT_USE_TLS
@@ -699,6 +701,41 @@ int channelSet(obk_mqtt_request_t* request) {
 // will do echo, toggle power and do ecoh
 //
 
+/**
+ * @brief This callback is for domoticz/out topics, used to receive commands from domoticz
+ * @param request The MQTT request
+ * @return 1 if the callback was processed, 0 to allow later callbacks to process this topic.
+ *
+ * This function will parse the json string received as payload and set the corresponding channel to the parsed value
+ * 
+ * @note For now it can process only switch type of devices
+ */
+int domoticzCmnd(obk_mqtt_request_t* request) {
+	char* p = request->topic;
+	int channel;
+	const char *domoticzTopic = "domoticz/out/";  // the base topic
+	char* dtype;
+    int nvalue;
+
+	// get the <idx> number from the MQTT topic (i.e. domoticz/out/<idx>)  
+	int idx = atoi(p + strlen(domoticzTopic));
+
+	// check if the begining of the topic matches domoticz/out (start with this check first ?)
+	if (stribegins(request->topic, domoticzTopic)) {
+		// for debuging purposes
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "domoticzCmnd topic %s, received %s, idx = %d", request->topic, request->received, idx);
+		// get the corresponding channel from domoticz idx
+		channel = Dz_GetChannelFromIndex(idx);	
+		// parse the json string to get the nvalue to write to the channel
+		// for now dtype is useless (dtype is always Light/Switch, can be used for different type of devices)
+		parse_json(request->received, dtype, &nvalue);
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "domoticzCmnd channel %i value %i", channel, nvalue);
+		CHANNEL_Set(channel, nvalue, 0);
+		return 1;
+	}
+	return 0;
+	
+}
 
 void MQTT_PublishPrinterContentsToStat(obk_mqtt_publishReplyPrinter_t *printer, const char *statName) {
 	const char *toUse;
@@ -1887,7 +1924,38 @@ void MQTT_InitCallbacks() {
 		// note: this may REPLACE an existing entry with the same ID.  ID 7 !!!
 		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 7, tasCmnd);
 	}
+
+	/* This section enables MQTT subscriptions for all Domoticz channels concerned
+	 * and registers the callback function domoticzCmnd()
+	 * note : Module will then need to be restarted in order for subscriptions to take effect
+	 */
+	int ch;
+	int maxChannels = Dz_GetNumberOfChannels();	// get the number of channels in use
+
+	// TODO : put all that in one function in in.c
+	int i = 0;
+	int channelsUsed[maxChannels];
+	int j = 0;
+
+	// get the corresponding numbers of the channels in use (i.e. not 0)
+	for (i=0; i<PLATFORM_GPIO_MAX; i++){
+        ch = PIN_GetPinChannelForPinIndex(i);
+        if (ch > 0){
+			channelsUsed[j] = ch;
+            j++;
+        }
+    }
+	
+	// loop over channels in use, subscribe to domoticz/out/<channel idx> topics
+	for (j=0; j<maxChannels; j++){
+		ch = channelsUsed[j];
+		snprintf(cbtopicbase, sizeof(cbtopicbase), "domoticz/out");
+		snprintf(cbtopicsub, sizeof(cbtopicsub), "domoticz/out/%d", CFG_GetDomoticzIndex(ch));
+		// note: using ID 8 and the domoticzCmnd() callback function 
+		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 8, domoticzCmnd);
+	}
 }
+
  // initialise things MQTT
  // called from user_main
 void MQTT_init()

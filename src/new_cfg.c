@@ -12,6 +12,8 @@
 #include "littlefs/our_lfs.h"
 #endif
 
+#include "domoticz/domoticz.h"
+
 
 #define DEFAULT_BOOT_SUCCESS_TIME 5
 
@@ -828,3 +830,26 @@ void CFG_InitAndLoad() {
 	g_configInitialized = 1;
 	CFG_Save_IfThereArePendingChanges();
 }
+
+#if ENABLE_DOMOTICZ
+int CFG_GetDomoticzIndex(int ch){
+	if (ch < CHANNEL_MAX){
+		return g_cfg.domoticz_idx[ch]; //get corresponding domoticz index
+	}
+	return 0;	// channel out of bounds or no DZ index set
+}
+
+int CFG_GetDomoticzUpdateTimer(){
+	return g_cfg.domoticz_update_timer;
+}
+
+void CFG_SetDomoticzIdx(int ch, int i){
+	g_cfg.domoticz_idx[ch] = i; // TODO : check if idx not already used
+	g_cfg_pendingChanges++;
+}
+
+void CFG_SetDomoticzUpdateTimer(int i){
+	g_cfg.domoticz_update_timer = i;
+	g_cfg_pendingChanges++;
+}
+#endif

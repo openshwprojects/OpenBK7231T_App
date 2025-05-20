@@ -23,6 +23,8 @@
 #include "start_type_pub.h"
 #endif
 
+#include "../domoticz/domoticz.h"
+
 #ifdef WINDOWS
 // nothing
 #elif PLATFORM_BL602
@@ -2585,6 +2587,9 @@ int http_fn_cfg(http_request_t* request) {
 #if ENABLE_HTTP_WEBAPP
 	postFormAction(request, "cfg_webapp", "Configure WebApp");
 #endif
+#if ENABLE_DOMOTICZ
+	postFormAction(request, "cfg_domoticz", "Configure Domoticz");
+#endif
 #if ENABLE_HA_DISCOVERY
 	postFormAction(request, "ha_cfg", "Home Assistant Configuration");
 #endif
@@ -2971,6 +2976,84 @@ int http_fn_cfg_generic(http_request_t* request) {
 	return 0;
 }
 #endif
+
+#if ENABLE_DOMOTICZ
+int http_fn_cfg_domoticz(http_request_t* request) {
+	int i;
+	int ni;
+	char tmpA[64];
+	char tmpB[64];
+	int channelIndex = 0;
+	int newValue = 0;
+
+	int maxChannels = Dz_GetNumberOfChannels();
+	// for displaying the corresponding channel number
+	int channelsUsed[maxChannels];
+	int j = 0;
+	int ch;
+
+	// get the channels in use
+	for (i=0; i<PLATFORM_GPIO_MAX; i++){
+        ch = PIN_GetPinChannelForPinIndex(i);
+        if (ch > 0){
+			channelsUsed[j] = ch;
+            j++;
+        }
+    }
+
+	http_setup(request, httpMimeTypeHTML);
+	http_html_start(request, "domoticz config");
+
+	for (i=1;i<=maxChannels; i++){
+
+		sprintf(tmpB, "DzCh%i", i);
+		// if request Domoticz Channel<channel idx>
+		if (http_getArg(request->url, tmpB, tmpA, sizeof(tmpA))) {
+			channelIndex = atoi(tmpA);	// get channel index from request
+			sprintf(tmpB, "DzIdx%i", channelIndex);
+			// if requestDomoticz Index<idx>
+			if (http_getArg(request->url, tmpB, tmpA, sizeof(tmpA))) {
+				newValue = atoi(tmpA);
+				if (newValue != CFG_GetDomoticzIndex(channelIndex)) {
+					CFG_SetDomoticzIdx(channelIndex, newValue);
+					hprintf255(request, "<h5>Setting domoticz channel %i index value to %i<h5>", channelIndex, newValue); 
+					// maybe not necessary in the UI
+				}
+				CFG_Save_IfThereArePendingChanges();
+			}
+		}
+	}
+
+
+	// update_Domoticz(g_cfg.domoticz_idx, g_cfg.domoticz_update_timer);	
+
+	poststr(request, "<form action=\"/cfg_domoticz\">");
+	poststr_h2(request, "Use this to configure DOMOTICZ");
+
+	
+	// loop over all bound channels
+	for (i=1; i<=maxChannels; i++){
+			poststr(request, "<form action='/cfg_domoticz' class='indent'>");
+			hprintf255(request, "<input type=\"hidden\" id=\"DzChannel\" name=\"DzCh%i\" value=\"%i\"/>", i, channelsUsed[i - 1]);
+
+			sprintf(tmpA, "domoticz idx %i (for channel %i)", i, channelsUsed[i - 1]);
+			sprintf(tmpB, "DzIdx%i", channelsUsed[i - 1]);
+			add_label_numeric_field(request, tmpA, tmpB, CFG_GetDomoticzIndex(channelsUsed[i - 1]), "<br>");
+	}
+	
+	poststr_h2(request, "You will need to reboot your device for changes to take effect.");
+
+	poststr(request, "<input type=\"submit\" value=\"Save\"/></form><br/>");
+	poststr(request, "</form>");
+	// END MY MQTT CONFIG
+
+	poststr(request, htmlFooterReturnToCfgOrMainPage);
+	http_html_end(request);
+	poststr(request, NULL);
+	return 0;
+}
+#endif
+
 #if ENABLE_HTTP_STARTUP
 int http_fn_cfg_startup(http_request_t* request) {
 	int channelIndex;
