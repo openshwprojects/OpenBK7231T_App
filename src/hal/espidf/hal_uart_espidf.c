@@ -90,14 +90,15 @@ int HAL_UART_Init(int baud, int parity, bool hwflowc)
 	};
 	uart_driver_install(uartnum, 512, 0, 20, &uart_queue, 0);
 	uart_param_config(uartnum, &uart_config);
-	if(uartnum == UART_NUM_0)
-	{
-		uart_set_pin(uartnum, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-	}
-	else
-	{
-		uart_set_pin(uartnum, TX1_PIN, RX1_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-	}
+	//if(uartnum == UART_NUM_0)
+	//{
+	//	uart_set_pin(uartnum, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+	//}
+	//else
+	//{
+	//	uart_set_pin(uartnum, TX1_PIN, RX1_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+	//}
+	uart_set_pin(uartnum, 25, 26, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 	if(data == NULL)
 	{
 		data = (uint8_t*)malloc(512);
