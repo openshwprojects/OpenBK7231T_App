@@ -1,6 +1,6 @@
 
 // based on xnrg_19_cse7761.ino from arendst/Tasmota
-
+// Unfinished port, not working, delayed until uart tests are done
 #include "../obk_config.h"
 
 #if ENABLE_DRIVER_CSE7761
