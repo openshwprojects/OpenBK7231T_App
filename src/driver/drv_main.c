@@ -194,6 +194,9 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "BL0937",		BL0937_Init,		BL0937_RunEverySecond,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_CSE7761
+	{ "CSE7761",	CSE7761_Init,		CSE7761_RunEverySecond,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+#endif
 #if ENABLE_DRIVER_CSE7766
 	//drvdetail:{"name":"CSE7766",
 	//drvdetail:"title":"TODO",

@@ -188,6 +188,9 @@ void HGS02_RunEverySecond(void);
 void UART_TCP_Init(void);
 void UART_TCP_Deinit(void);
 
+void CSE7761_Init(void);
+void CSE7761_RunEverySecond(void);
+
 #define SM2135_DELAY         4
 
 // Software I2C 
