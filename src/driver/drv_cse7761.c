@@ -39,6 +39,7 @@ void Cse7761Write(uint32_t reg, uint32_t data) {
 		len++;
 	}
 
+	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "CSE7761 send %i\n", len);
 	for (int i = 0; i < len; i++) {
 		UART_SendByte(buffer[i]);
 	}
