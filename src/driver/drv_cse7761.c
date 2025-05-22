@@ -122,12 +122,17 @@ void CSE7761_Init(void) {
    // PwrCal_Init(PWR_CAL_MULTIPLY, DEFAULT_VOLTAGE_CAL, DEFAULT_CURRENT_CAL,
    //             DEFAULT_POWER_CAL);
 
-	UART_InitUART(CSE7761_BAUD_RATE, 0, false);
+	// 8 data bits, even parity, 1 stop bit
+	UART_InitUART(CSE7761_BAUD_RATE, 1, false);
 	UART_InitReceiveRingBuffer(512);
 }
 
 void CSE7761_RunEverySecond(void) {
     //addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"UART buffer size %i\n", UART_GetDataSize());
+
+	int syscon = Cse7761Read(0x00, 2);      // Default 0x0A04
+   addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"CSE7761 syscon %i\n", syscon);
+
 
 	CSE7761_TryToGetNextCSE7761Packet();
 }
