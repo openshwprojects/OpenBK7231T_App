@@ -54,6 +54,14 @@ bool Cse7761ReadOnce(uint32_t log_level, uint32_t reg, uint32_t size, uint32_t* 
 	uint32_t rcvd = 0;
 	//uint32_t timeout = millis() + 6;
 
+	rtos_delay_milliseconds(6);
+	for (int i = 0; i < UART_GetDataSize(); i++) {
+		if (i < sizeof(buffer)) {
+			buffer[i] = UART_GetByte(i);
+			rcvd++;
+		}
+	}
+	UART_ConsumeBytes(UART_GetDataSize());
 	//while (!TimeReached(timeout) && (rcvd <= size)) {
 	//	//  while (!TimeReached(timeout)) {
 	//	int value = Cse7761Serial->read();
@@ -62,6 +70,7 @@ bool Cse7761ReadOnce(uint32_t log_level, uint32_t reg, uint32_t size, uint32_t* 
 	//	}
 	//}
 
+	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "CSE7761 rec %i\n", rcvd);
 	if (!rcvd) {
 		//AddLog(LOG_LEVEL_DEBUG_MORE, PSTR("C61: Rx none"));
 		return false;
@@ -116,6 +125,7 @@ int CSE7761_TryToGetNextCSE7761Packet() {
 	return 0;
 }
 
+// startDriver CSE7761
 void CSE7761_Init(void) {
     BL_Shared_Init();
 
