@@ -15,6 +15,7 @@
 #include "../cJSON/cJSON.h"
 
 #ifndef WINDOWS
+#include <lwip/err.h>
 #include <lwip/dns.h>
 #include "lwip/netdb.h"
 #endif
