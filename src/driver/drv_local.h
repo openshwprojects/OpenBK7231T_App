@@ -8,21 +8,21 @@ void DRV_DGR_RunQuickTick();
 void DRV_DGR_RunEverySecond();
 void DRV_DGR_Shutdown();
 void DRV_DGR_OnChannelChanged(int ch, int value);
-void DRV_DGR_AppendInformationToHTTPIndexPage(http_request_t* request);
+void DRV_DGR_AppendInformationToHTTPIndexPage(http_request_t *request);
 
 void DRV_DDP_Init();
 void DRV_DDP_RunFrame();
 void DRV_DDP_Shutdown();
-void DRV_DDP_AppendInformationToHTTPIndexPage(http_request_t* request);
+void DRV_DDP_AppendInformationToHTTPIndexPage(http_request_t *request);
 
 void BMP280_Init();
 void BMP280_OnEverySecond();
-void BMP280_AppendInformationToHTTPIndexPage(http_request_t* request);
+void BMP280_AppendInformationToHTTPIndexPage(http_request_t *request);
 
 void DoorDeepSleep_Init();
 void DoorDeepSleep_OnEverySecond();
 void DoorDeepSleep_StopDriver();
-void DoorDeepSleep_AppendInformationToHTTPIndexPage(http_request_t* request);
+void DoorDeepSleep_AppendInformationToHTTPIndexPage(http_request_t *request);
 void DoorDeepSleep_OnChannelChanged(int ch, int value);
 
 void DRV_MAX72XX_Clock_OnEverySecond();
@@ -75,11 +75,11 @@ void DRV_IR2_Init();
 void DRV_ADCSmoother_Init();
 void DRV_ADCSmoother_RunFrame();
 
-bool DRV_IsRunning(const char* name);
+bool DRV_IsRunning(const char *name);
 
 // this is exposed here only for debug tool with automatic testing
-void DGR_ProcessIncomingPacket(char* msgbuf, int nbytes);
-void DGR_SpoofNextDGRPacketSource(const char* ipStrs);
+void DGR_ProcessIncomingPacket(char *msgbuf, int nbytes);
+void DGR_SpoofNextDGRPacketSource(const char *ipStrs);
 
 void TuyaMCU_Sensor_RunEverySecond();
 void TuyaMCU_Sensor_Init();
@@ -89,9 +89,9 @@ void DRV_Test_Charts_AddToHtmlPage(http_request_t *request, int bPreState);
 void DRV_Charts_AddToHtmlPage(http_request_t *request, int bPreState);
 void DRV_Charts_Init();
 
-void DRV_Toggler_ProcessChanges(http_request_t* request);
-void DRV_Toggler_AddToHtmlPage(http_request_t* request);
-void DRV_Toggler_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
+void DRV_Toggler_ProcessChanges(http_request_t *request);
+void DRV_Toggler_AddToHtmlPage(http_request_t *request);
+void DRV_Toggler_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 void DRV_Toggler_QuickTick();
 void DRV_InitPWMToggler();
 
@@ -101,36 +101,36 @@ void DRV_Widget_Init();
 void DRV_OpenWeatherMap_Init();
 void OWM_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 
-void DRV_HTTPButtons_ProcessChanges(http_request_t* request);
-void DRV_HTTPButtons_AddToHtmlPage(http_request_t* request);
+void DRV_HTTPButtons_ProcessChanges(http_request_t *request);
+void DRV_HTTPButtons_AddToHtmlPage(http_request_t *request);
 void DRV_InitHTTPButtons();
 
 void CHT83XX_Init();
 void CHT83XX_OnEverySecond();
-void CHT83XX_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
+void CHT83XX_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 
 void SHT3X_Init();
-void SHT3X_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
+void SHT3X_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 void SHT3X_OnEverySecond();
 void SHT3X_StopDriver();
 
 void AHT2X_Init();
-void AHT2X_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
+void AHT2X_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 void AHT2X_OnEverySecond();
 void AHT2X_StopDriver();
 
 void BMPI2C_Init();
-void BMPI2C_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
+void BMPI2C_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 void BMPI2C_OnEverySecond();
 
 void SGP_Init();
-void SGP_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
+void SGP_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 void SGP_OnEverySecond();
 void SGP_StopDriver();
 
 void Batt_Init();
 void Batt_OnEverySecond();
-void Batt_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
+void Batt_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 void Batt_StopDriver();
 
 void Shift_Init();
@@ -142,7 +142,6 @@ void PIR_OnEverySecond();
 void PIR_OnChannelChanged(int ch, int value);
 void PIR_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 
-
 void TMGN_RunQuickTick();
 
 void DRV_MAX72XX_Init();
@@ -150,14 +149,14 @@ void DRV_MAX72XX_Init();
 void apply_smart_light();
 
 void WEMO_Init();
-void WEMO_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
+void WEMO_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 
 void HUE_Init();
-void HUE_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
+void HUE_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 
 void MCP9808_Init();
 void MCP9808_OnEverySecond();
-void MCP9808_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
+void MCP9808_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 
 void ChargingLimit_Init();
 void ChargingLimit_OnEverySecond();
@@ -188,37 +187,41 @@ void HGS02_RunEverySecond(void);
 void UART_TCP_Init(void);
 void UART_TCP_Deinit(void);
 
+void CSE7761_Init(void);
+void CSE7761_RunEverySecond(void);
+
 void TCL_Init(void);
 void TCL_UART_RunEverySecond(void);
 void TCL_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 
-#define SM2135_DELAY         4
+#define SM2135_DELAY 4
 
-// Software I2C 
-typedef struct softI2C_s {
+// Software I2C
+typedef struct softI2C_s
+{
 	short pin_clk;
 	short pin_data;
 	// I really have to place it here for a GN6932 driver, which is an SPI version of TM1637
 	short pin_stb;
 	// I must somehow be able to tell which proto we have?
-	//short protocolType;
+	// short protocolType;
 	byte address8bit;
 } softI2C_t;
 
 void Soft_I2C_SetLow(uint8_t pin);
 void Soft_I2C_SetHigh(uint8_t pin);
-bool Soft_I2C_PreInit(softI2C_t* i2c);
-bool Soft_I2C_WriteByte(softI2C_t* i2c, uint8_t value);
-bool Soft_I2C_Start(softI2C_t* i2c, uint8_t addr);
+bool Soft_I2C_PreInit(softI2C_t *i2c);
+bool Soft_I2C_WriteByte(softI2C_t *i2c, uint8_t value);
+bool Soft_I2C_Start(softI2C_t *i2c, uint8_t addr);
 void Soft_I2C_Start_Internal(softI2C_t *i2c);
-void Soft_I2C_Stop(softI2C_t* i2c);
-uint8_t Soft_I2C_ReadByte(softI2C_t* i2c, bool nack);
-void Soft_I2C_ReadBytes(softI2C_t* i2c, uint8_t* buf, int numOfBytes);
+void Soft_I2C_Stop(softI2C_t *i2c);
+uint8_t Soft_I2C_ReadByte(softI2C_t *i2c, bool nack);
+void Soft_I2C_ReadBytes(softI2C_t *i2c, uint8_t *buf, int numOfBytes);
 
 // Shared LED driver
-commandResult_t CMD_LEDDriver_Map(const void* context, const char* cmd, const char* args, int flags);
-commandResult_t CMD_LEDDriver_WriteRGBCW(const void* context, const char* cmd, const char* args, int flags);
-void LED_I2CDriver_WriteRGBCW(float* finalRGBCW);
+commandResult_t CMD_LEDDriver_Map(const void *context, const char *cmd, const char *args, int flags);
+commandResult_t CMD_LEDDriver_WriteRGBCW(const void *context, const char *cmd, const char *args, int flags);
+void LED_I2CDriver_WriteRGBCW(float *finalRGBCW);
 
 /* Bridge driver *********************************************/
 void Bridge_driver_Init();
@@ -226,4 +229,3 @@ void Bridge_driver_DeInit();
 void Bridge_driver_QuickFrame();
 void Bridge_driver_OnChannelChanged(int ch, int value);
 /*************************************************************/
-

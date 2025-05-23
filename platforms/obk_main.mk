@@ -88,6 +88,7 @@ OBKM_SRC  += $(OBK_SRCS)driver/drv_bridge_driver.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_chargingLimit.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_charts.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_cht8305.c
+OBKM_SRC  += $(OBK_SRCS)driver/drv_cse7761.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_cse7766.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_ddp.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_debouncer.c

@@ -73,6 +73,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_chargingLimit.c
 	${OBK_SRCS}driver/drv_charts.c
 	${OBK_SRCS}driver/drv_cht8305.c
+	${OBK_SRCS}driver/drv_cse7761.c
 	${OBK_SRCS}driver/drv_cse7766.c
 	${OBK_SRCS}driver/drv_ddp.c
 	${OBK_SRCS}driver/drv_debouncer.c
