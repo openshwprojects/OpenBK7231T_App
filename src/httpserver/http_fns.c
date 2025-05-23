@@ -2986,18 +2986,17 @@ int http_fn_cfg_domoticz(http_request_t* request) {
 	int channelIndex = 0;
 	int newValue = 0;
 
-	int maxChannels = Dz_GetNumberOfChannels();
 	// for displaying the corresponding channel number
-	int channelsUsed[maxChannels];
-	int j = 0;
+	int channelsUsed[PLATFORM_GPIO_MAX];
+	int maxChannels = 0;
 	int ch;
-
+	
 	// get the channels in use
 	for (i=0; i<PLATFORM_GPIO_MAX; i++){
-        ch = PIN_GetPinChannelForPinIndex(i);
+		ch = PIN_GetPinChannelForPinIndex(i);
         if (ch > 0){
-			channelsUsed[j] = ch;
-            j++;
+			channelsUsed[maxChannels] = ch;
+			maxChannels++;
         }
     }
 

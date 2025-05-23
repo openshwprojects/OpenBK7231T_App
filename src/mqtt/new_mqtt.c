@@ -1929,31 +1929,21 @@ void MQTT_InitCallbacks() {
 	 * and registers the callback function domoticzCmnd()
 	 * note : Module will then need to be restarted in order for subscriptions to take effect
 	 */
-	int ch;
-	int maxChannels = Dz_GetNumberOfChannels();	// get the number of channels in use
 
 	// TODO : put all that in one function in in.c
 	int i = 0;
-	int channelsUsed[maxChannels];
-	int j = 0;
-
-	// get the corresponding numbers of the channels in use (i.e. not 0)
+	// loop over channels in use, subscribe to domoticz/out/<channel idx> topics
 	for (i=0; i<PLATFORM_GPIO_MAX; i++){
-        ch = PIN_GetPinChannelForPinIndex(i);
+        int ch = PIN_GetPinChannelForPinIndex(i);
         if (ch > 0){
-			channelsUsed[j] = ch;
-            j++;
+			snprintf(cbtopicbase, sizeof(cbtopicbase), "domoticz/out");
+			snprintf(cbtopicsub, sizeof(cbtopicsub), "domoticz/out/%d", CFG_GetDomoticzIndex(ch));
+			// note: using ID 8 and the domoticzCmnd() callback function 
+			MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 8, domoticzCmnd);
         }
     }
-	
-	// loop over channels in use, subscribe to domoticz/out/<channel idx> topics
-	for (j=0; j<maxChannels; j++){
-		ch = channelsUsed[j];
-		snprintf(cbtopicbase, sizeof(cbtopicbase), "domoticz/out");
-		snprintf(cbtopicsub, sizeof(cbtopicsub), "domoticz/out/%d", CFG_GetDomoticzIndex(ch));
-		// note: using ID 8 and the domoticzCmnd() callback function 
-		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 8, domoticzCmnd);
-	}
+
+
 }
 
  // initialise things MQTT
