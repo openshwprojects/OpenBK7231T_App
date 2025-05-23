@@ -7,6 +7,7 @@
 #include "../driver/drv_public.h"
 #include "../driver/drv_battery.h"
 #include "../driver/drv_ntp.h"
+#include "../driver/drv_deviceclock.h"
 #include "../hal/hal_flashVars.h"
 #include <ctype.h> // isspace
 
@@ -277,49 +278,48 @@ float getUpTime(const char *s) {
 	return g_secondsElapsed;
 }
 float getWeekDay(const char *s) {
-	return NTP_GetWeekDay();
+	return CLOCK_GetWeekDay();
 }
 float getMinute(const char *s) {
-	return NTP_GetMinute();
+	return CLOCK_GetMinute();
 }
 float getHour(const char *s) {
-	return NTP_GetHour();
+	return CLOCK_GetHour();
 }
 float getSecond(const char *s) {
-	return NTP_GetSecond();
+	return CLOCK_GetSecond();
 }
 float getYear(const char *s) {
-	return NTP_GetYear();
+	return CLOCK_GetYear();
 }
 float getMonth(const char *s) {
-	return NTP_GetMonth();
+	return CLOCK_GetMonth();
 }
 float getMDay(const char *s) {
-	return NTP_GetMDay();
+	return CLOCK_GetMDay();
 }
 
 #ifdef ENABLE_NTP
 
-float getNTPOn(const char* s)
-{
+float getNTPOn(const char *s) {
 	return NTP_IsTimeSynced();
 }
-
 #endif
+#if ENABLE_CLOCK_DST
 
-#if ENABLE_NTP_DST
 float isDST(const char *s){
 	return Time_IsDST();
 }
 #endif
 
-#if ENABLE_NTP_SUNRISE_SUNSET
+#if ENABLE_CLOCK_SUNRISE_SUNSET
+
 
 float getSunrise(const char *s) {
-	return NTP_GetSunrise();
+	return CLOCK_GetSunrise();
 }
 float getSunset(const char *s) {
-	return NTP_GetSunset();
+	return CLOCK_GetSunset();
 }
 
 #endif
@@ -444,12 +444,22 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current value of energy counter from energy metering chip",
 	//cnstdetail:"requires":""}
 	{"$energy", &getEnergy},
+	////cnstdetail:{"name":"$yesterday",
+	////cnstdetail:"title":"$yesterday",
+	////cnstdetail:"descr":"Yesterdays energy consuption",
+	////cnstdetail:"requires":""}
+	{ "$yesterday", &getYesterday },
+	////cnstdetail:{"name":"$today",
+	////cnstdetail:"title":"$today",
+	////cnstdetail:"descr":"Todays energy consuption",
+	////cnstdetail:"requires":""}
+	{ "$today", &getToday },
+#endif	//ENABLE_DRIVER_BL0937
+#ifdef ENABLE_NTP
 	//cnstdetail:{"name":"$day",
 	//cnstdetail:"title":"$day",
 	//cnstdetail:"descr":"Current weekday from NTP",
 	//cnstdetail:"requires":""}
-#endif	//ENABLE_DRIVER_BL0937
-#ifdef ENABLE_NTP
 	{"$day", &getWeekDay},
 	//cnstdetail:{"name":"$hour",
 	//cnstdetail:"title":"$hour",
@@ -481,26 +491,14 @@ const constant_t g_constants[] = {
 	////cnstdetail:"descr":"Current Year from NTP",
 	////cnstdetail:"requires":""}
 	{ "$year", &getYear },
-#ifdef ENABLE_DRIVER_BL0937
-	////cnstdetail:{"name":"$yesterday",
-	////cnstdetail:"title":"$yesterday",
-	////cnstdetail:"descr":"",
-	////cnstdetail:"requires":""}
-	{ "$yesterday", &getYesterday },
-	////cnstdetail:{"name":"$today",
-	////cnstdetail:"title":"$today",
-	////cnstdetail:"descr":"",
-	////cnstdetail:"requires":""}
-	{ "$today", &getToday },
-#endif
-#if ENABLE_NTP_DST
+#if ENABLE_CLOCK_DST
 	////cnstdetail:{"name":"$isDST",
 	////cnstdetail:"title":"$isDST",
 	////cnstdetail:"descr":"",
 	////cnstdetail:"requires":""}
 	{ "$isDST", &isDST },
 #endif
-#if ENABLE_NTP_SUNRISE_SUNSET
+#if ENABLE_CLOCK_SUNRISE_SUNSET
 	////cnstdetail:{"name":"$sunrise",
 	////cnstdetail:"title":"$sunrise",
 	////cnstdetail:"descr":"Next sunrise as a TimerSeconds from midnight",
