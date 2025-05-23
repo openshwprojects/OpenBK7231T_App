@@ -3024,14 +3024,29 @@ int http_fn_cfg_domoticz(http_request_t* request) {
 		}
 	}
 
+	if (http_getArg(request->url, "DomoticzVoltage", tmpA, sizeof(tmpA))) {
+		newValue = atoi(tmpA);
+		if (newValue != CFG_GetDomoticzVoltageIndex()) {
+			CFG_SetDomoticzVoltageIndex(newValue);
+			hprintf255(request, "<h5>Setting domoticz voltage index value to %i<h5>", newValue); 
+		}
+		CFG_Save_IfThereArePendingChanges();
+	}
 
-	// update_Domoticz(g_cfg.domoticz_idx, g_cfg.domoticz_update_timer);	
+	if (http_getArg(request->url, "DomoticzPower", tmpA, sizeof(tmpA))) {
+		newValue = atoi(tmpA);
+		if (newValue != CFG_GetDomoticzPowerIndex()) {
+			CFG_SetDomoticzPowerIndex(newValue);
+			hprintf255(request, "<h5>Setting domoticz power index value to %i<h5>", newValue); 
+		}
+		CFG_Save_IfThereArePendingChanges();
+	}
 
 	poststr(request, "<form action=\"/cfg_domoticz\">");
 	poststr_h2(request, "Use this to configure DOMOTICZ");
 
 	
-	// loop over all bound channels
+	// loop over all bound channels for switches
 	for (i=1; i<=maxChannels; i++){
 			poststr(request, "<form action='/cfg_domoticz' class='indent'>");
 			hprintf255(request, "<input type=\"hidden\" id=\"DzChannel\" name=\"DzCh%i\" value=\"%i\"/>", i, channelsUsed[i - 1]);
@@ -3041,7 +3056,17 @@ int http_fn_cfg_domoticz(http_request_t* request) {
 			add_label_numeric_field(request, tmpA, tmpB, CFG_GetDomoticzIndex(channelsUsed[i - 1]), "<br>");
 	}
 	
-	poststr_h2(request, "You will need to reboot your device for changes to take effect.");
+	poststr_h4(request, "Assuming you have an energy driver running (like BL0937, for instance), you can use this to configure power and voltage communication with Domoticz. Data is updated every 10 seconds.");
+
+	// Usual sensors, like voltage and power
+	poststr(request, "<form action='/cfg_domoticz' class='indent'>");
+	add_label_numeric_field(request, "domoticz idx (voltage (V))", "DomoticzVoltage", CFG_GetDomoticzVoltageIndex(), "<br>");
+
+	poststr(request, "<form action='/cfg_domoticz' class='indent'>");
+	add_label_numeric_field(request, "domoticz idx (power (W))", "DomoticzPower", CFG_GetDomoticzPowerIndex(), "<br>");
+
+	// new mqtt subscriptions are only applied on reboot, for now...
+	poststr_h4(request, "You might need to reboot your device for changes to take effect (new MQTT subscriptions will take effect on reboot).");
 
 	poststr(request, "<input type=\"submit\" value=\"Save\"/></form><br/>");
 	poststr(request, "</form>");

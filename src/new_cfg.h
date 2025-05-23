@@ -92,9 +92,11 @@ void CFG_SetButtonRepeatPressTime(int value);
 const char *CFG_GetWebPassword();
 void CFG_SetWebPassword(const char *s);
 int CFG_GetDomoticzIndex(int ch);	// domoticz implementation
-int CFG_GetDomoticzUpdateTimer();
+int CFG_GetDomoticzVoltageIndex();
+int CFG_GetDomoticzPowerIndex();
 void CFG_SetDomoticzIdx(int ch, int i);
-void CFG_SetDomoticzUpdateTimer(int i);
+void CFG_SetDomoticzVoltageIndex(int i);
+void CFG_SetDomoticzPowerIndex(int i);
 #if ENABLE_LITTLEFS
 void CFG_SetLFS_Size(uint32_t value);
 uint32_t CFG_GetLFS_Size();

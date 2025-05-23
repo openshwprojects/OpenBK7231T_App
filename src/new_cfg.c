@@ -839,8 +839,12 @@ int CFG_GetDomoticzIndex(int ch){
 	return 0;	// channel out of bounds or no DZ index set
 }
 
-int CFG_GetDomoticzUpdateTimer(){
-	return g_cfg.domoticz_update_timer;
+int CFG_GetDomoticzVoltageIndex(){
+	return g_cfg.domoticz_voltage_idx;
+}
+
+int CFG_GetDomoticzPowerIndex(){
+	return g_cfg.domoticz_power_idx;
 }
 
 void CFG_SetDomoticzIdx(int ch, int i){
@@ -848,8 +852,13 @@ void CFG_SetDomoticzIdx(int ch, int i){
 	g_cfg_pendingChanges++;
 }
 
-void CFG_SetDomoticzUpdateTimer(int i){
-	g_cfg.domoticz_update_timer = i;
+void CFG_SetDomoticzVoltageIndex(int i){
+	g_cfg.domoticz_voltage_idx = i;
+	g_cfg_pendingChanges++;
+}
+
+void CFG_SetDomoticzPowerIndex(int i){
+	g_cfg.domoticz_power_idx = i;
 	g_cfg_pendingChanges++;
 }
 #endif
