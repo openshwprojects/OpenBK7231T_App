@@ -22,6 +22,10 @@
 #define ENABLE_HTTP_PING		1
 #define ENABLE_LED_BASIC		1
 
+// Domoticz
+#define ENABLE_DOMOTICZ         1	
+#define MAX_DOMOTICZ_CHANNELS   64
+
 #if PLATFORM_XR809
 
 #define ENABLE_MQTT 1

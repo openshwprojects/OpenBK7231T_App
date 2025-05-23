@@ -865,6 +865,10 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	if (http_checkUrlBase(urlStr, "cfg_dgr")) return http_fn_cfg_dgr(request);
 #endif
 
+#if ENABLE_DOMOTICZ
+	if (http_checkUrlBase(urlStr, "cfg_domoticz")) return http_fn_cfg_domoticz(request);
+#endif
+
 #if ENABLE_HA_DISCOVERY
 	if (http_checkUrlBase(urlStr, "ha_cfg")) return http_fn_ha_cfg(request);
 	if (http_checkUrlBase(urlStr, "ha_discovery")) return http_fn_ha_discovery(request);
