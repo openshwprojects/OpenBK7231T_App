@@ -73,6 +73,7 @@ uint8_t set_cmd_base[35] = { 0xBB, 0x00, 0x01, 0x03, 0x1D, 0x00, 0x00, 0x64, 0x0
 bool ready_to_send_set_cmd_flag = false;
 set_cmd_t m_set_cmd = { 0 };
 get_cmd_resp_t m_get_cmd_resp = { 0 };
+int g_buzzer = 1;
 
 typedef enum {
 	CLIMATE_MODE_OFF,
@@ -92,7 +93,7 @@ void build_set_cmd(get_cmd_resp_t * get_cmd_resp) {
 	m_set_cmd.data.power = get_cmd_resp->data.power;
 	m_set_cmd.data.off_timer_en = 0;
 	m_set_cmd.data.on_timer_en = 0;
-	m_set_cmd.data.beep = 1;
+	m_set_cmd.data.beep = g_buzzer;
 	m_set_cmd.data.disp = 1;
 	m_set_cmd.data.eco = 0;
 
@@ -218,6 +219,16 @@ void OBK_SetFanMode(fanMode_e fan_mode) {
 	build_set_cmd(&get_cmd_resp);
 	ready_to_send_set_cmd_flag = true;
 
+}
+void OBK_SetBuzzer(int buzzer) {
+
+	get_cmd_resp_t get_cmd_resp = { 0 };
+	memcpy(get_cmd_resp.raw, m_get_cmd_resp.raw, sizeof(get_cmd_resp.raw));
+
+	g_buzzer = buzzer;
+
+	build_set_cmd(&get_cmd_resp);
+	ready_to_send_set_cmd_flag = true;
 }
 void OBK_SetClimate(climateMode_e climate_mode)
 {
@@ -553,6 +564,15 @@ static commandResult_t CMD_SwingV(const void* context, const char* cmd, const ch
 	control_vertical_swing(mode);
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_Buzzer(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int buzzer;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	buzzer = Tokenizer_GetArgInteger(0);
+	OBK_SetBuzzer(buzzer);
+	return CMD_RES_OK;
+}
 void TCL_Init(void) {
 
 	UART_InitUART(TCL_baudRate, 2, false);
@@ -563,4 +583,5 @@ void TCL_Init(void) {
 	CMD_RegisterCommand("SwingH", CMD_SwingH, NULL);
 	CMD_RegisterCommand("SwingV", CMD_SwingV, NULL);
 	CMD_RegisterCommand("TargetTemperature", CMD_TargetTemperature, NULL);
+	CMD_RegisterCommand("Buzzer", CMD_Buzzer, NULL);
 }
