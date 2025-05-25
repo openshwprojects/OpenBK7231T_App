@@ -41,6 +41,14 @@ CPPFLAGS ?= $(INCLUDES) -MMD -MP -std=gnu99 -DWINDOWS -DLINUX
 
 
 CFLAGS ?= -std=gnu99 -W -Wall -Wextra -g
+LDFLAGS ?=
+
+# Append ASAN flags if ASAN=1
+ifeq ($(ASAN),1)
+    CPPFLAGS += -g -fsanitize=address -fno-omit-frame-pointer
+    CFLAGS += -g -fsanitize=address -fno-omit-frame-pointer
+    LDFLAGS += -g -static-libasan -fsanitize=address
+endif
 
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 	@echo "Linking: $@"
