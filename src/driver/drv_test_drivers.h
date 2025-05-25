@@ -14,3 +14,7 @@ void Test_LED_Driver_RunEverySecond(void);
 void Test_LED_Driver_OnChannelChanged(int ch, int value);
 
 
+void Test_UART_Init();
+void Test_UART_RunEverySecond();
+void Test_UART_AppendInformationToHTTPIndexPage(http_request_t *request);
+

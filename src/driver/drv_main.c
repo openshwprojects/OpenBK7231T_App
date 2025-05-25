@@ -141,6 +141,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "TESTLED",	Test_LED_Driver_Init, Test_LED_Driver_RunEverySecond, NULL, NULL, NULL, Test_LED_Driver_OnChannelChanged, false },
 #endif
+#if ENABLE_DRIVER_TESTUART
+	//drvdetail:{"name":"TESTUART",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"g",
+	//drvdetail:"requires":""}
+	{ "TESTUART",	Test_UART_Init, Test_UART_RunEverySecond, Test_UART_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+#endif
 #if ENABLE_TEST_COMMANDS
 	//drvdetail:{"name":"Test",
 	//drvdetail:"title":"TODO",
