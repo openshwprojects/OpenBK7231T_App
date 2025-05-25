@@ -1800,6 +1800,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	hooks.free_fn = os_free;
 	cJSON_InitHooks(&hooks);
 
+	DRV_OnHassDiscovery(topic);
 
 #if ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY
 	// try to pair toggles with dimmers. This is needed only for TuyaMCU, 

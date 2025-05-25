@@ -49,6 +49,9 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id, int ase
 		sprintf(uniq_id, "%s_%s", longDeviceName, "light");
 		break;
 
+	case HASS_HVAC:
+		sprintf(uniq_id, "%s_thermostat", longDeviceName);
+		break;
 	case RELAY:
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "relay", index);
 		break;
@@ -165,6 +168,9 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char* uniq_id, HassDe
 	case BINARY_SENSOR:
 		sprintf(info->channel, "binary_sensor/%s/config", uniq_id);
 		break;
+	case HASS_HVAC:
+		sprintf(info->channel, "climate/%s/config", uniq_id);
+		break;
 	case SMOKE_SENSOR:
 	case CO2_SENSOR:
 	case TVOC_SENSOR:
@@ -208,6 +214,51 @@ cJSON* hass_build_device_node(cJSON* ids) {
 	return dev;
 }
 
+HassDeviceInfo* hass_createHVAC() {
+	HassDeviceInfo* info = hass_init_device_info(HASS_HVAC, 0, NULL, NULL, 0);
+
+	// Set the name for the HVAC device
+	cJSON_AddStringToObject(info->root, "name", "Smart Thermostat");
+
+	// Set temperature unit
+	cJSON_AddStringToObject(info->root, "temperature_unit", "C");
+
+	// Set temperature topics
+	cJSON_AddStringToObject(info->root, "current_temperature_topic", "~/CurrentTemperature/get");
+	cJSON_AddStringToObject(info->root, "temperature_command_topic", "~/TargetTemperature");
+	cJSON_AddStringToObject(info->root, "temperature_state_topic", "~/TargetTemperature/get");
+
+	// Set temperature range and step
+	cJSON_AddNumberToObject(info->root, "min_temp", 15);
+	cJSON_AddNumberToObject(info->root, "max_temp", 30);
+	cJSON_AddNumberToObject(info->root, "temp_step", 0.5);
+
+	// Set mode topics
+	cJSON_AddStringToObject(info->root, "mode_state_topic", "~/ACMode/get");
+	cJSON_AddStringToObject(info->root, "mode_command_topic", "~/ACMode");
+
+	// Add supported modes
+	cJSON* modes = cJSON_CreateArray();
+	cJSON_AddItemToArray(modes, cJSON_CreateString("off"));
+	cJSON_AddItemToArray(modes, cJSON_CreateString("heat"));
+	cJSON_AddItemToArray(modes, cJSON_CreateString("cool"));
+	cJSON_AddItemToObject(info->root, "modes", modes);
+
+	// Set availability topic
+	cJSON_AddStringToObject(info->root, "availability_topic", "~/status");
+	cJSON_AddStringToObject(info->root, "payload_available", "online");
+	cJSON_AddStringToObject(info->root, "payload_not_available", "offline");
+
+	// Update device configuration channel for HVAC
+	sprintf(info->channel, "climate/%s/config", info->unique_id);
+
+	// Update device info
+	cJSON* dev = info->device;
+	cJSON_ReplaceItemInObject(dev, "manufacturer", cJSON_CreateString("Custom"));
+	cJSON_ReplaceItemInObject(dev, "model", cJSON_CreateString("C-Thermo"));
+
+	return info;
+}
 /// @brief Initializes HomeAssistant device discovery storage with common values.
 /// @param type 
 /// @param index This is used to generate generate unique_id and name. 

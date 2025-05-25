@@ -504,19 +504,6 @@ void TCL_UART_TryToGetNextPacket() {
 		}
 	}
 }
-void TCL_UART_RunEverySecond(void) {
-	uint8_t req_cmd[] = { 0xBB, 0x00, 0x01, 0x04, 0x02, 0x01, 0x00, 0xBD };
-
-	if (ready_to_send_set_cmd_flag) {
-		ADDLOG_WARN(LOG_FEATURE_ENERGYMETER, "Sending data");
-		ready_to_send_set_cmd_flag = false;
-		write_array(m_set_cmd.raw, sizeof(m_set_cmd.raw));
-	}
-	else {
-		write_array(req_cmd, sizeof(req_cmd));
-	}
-	TCL_UART_TryToGetNextPacket();
-}
 
 static commandResult_t CMD_ACMode(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int mode;
@@ -606,3 +593,34 @@ void TCL_Init(void) {
 	CMD_RegisterCommand("Buzzer", CMD_Buzzer, NULL);
 	CMD_RegisterCommand("Display", CMD_Display, NULL);
 }
+
+void TCL_UART_RunEverySecond(void) {
+	uint8_t req_cmd[] = { 0xBB, 0x00, 0x01, 0x04, 0x02, 0x01, 0x00, 0xBD };
+
+	MQTT_PublishMain_StringString("CurrentTemperature", "23", 0);
+	MQTT_PublishMain_StringString("TargetTemperature", "25", 0);
+	MQTT_PublishMain_StringString("ACMode", "cool", 0);
+
+	if (ready_to_send_set_cmd_flag) {
+		ADDLOG_WARN(LOG_FEATURE_ENERGYMETER, "Sending data");
+		ready_to_send_set_cmd_flag = false;
+		write_array(m_set_cmd.raw, sizeof(m_set_cmd.raw));
+	}
+	else {
+		write_array(req_cmd, sizeof(req_cmd));
+	}
+	TCL_UART_TryToGetNextPacket();
+}
+#include "../httpserver/hass.h"
+
+void TCL_DoDiscovery(const char *topic) {
+	HassDeviceInfo* dev_info = NULL;
+
+
+
+	dev_info = hass_createHVAC();
+	MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+	hass_free_device_info(dev_info);
+
+}
+
