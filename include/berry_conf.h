@@ -232,7 +232,7 @@
 #define BE_EXPLICIT_MALLOC malloc
 #define BE_EXPLICIT_FREE free
 // normal realloc appears broken on OpenBK7231T: #1563, #298
-#ifdef PLATFORM_BK7231T
+#if defined(PLATFORM_BK7231T) || defined(PLATFORM_BK7231N)
 #define BE_EXPLICIT_REALLOC os_realloc
 #else
 #define BE_EXPLICIT_REALLOC realloc
