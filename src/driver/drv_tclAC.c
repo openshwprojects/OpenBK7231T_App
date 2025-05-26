@@ -7,6 +7,7 @@
 #include "../new_cfg.h"
 #include "../new_pins.h"
 #include "../cmnds/cmd_public.h"
+#include "../mqtt/new_mqtt.h"
 #include "../httpserver/new_http.h"
 #include "drv_uart.h"
 
@@ -597,8 +598,8 @@ void TCL_Init(void) {
 void TCL_UART_RunEverySecond(void) {
 	uint8_t req_cmd[] = { 0xBB, 0x00, 0x01, 0x04, 0x02, 0x01, 0x00, 0xBD };
 
-	MQTT_PublishMain_StringString("CurrentTemperature", "23", 0);
-	MQTT_PublishMain_StringString("TargetTemperature", "25", 0);
+	MQTT_PublishMain_StringInt("CurrentTemperature", (int)current_temperature, 0);
+	MQTT_PublishMain_StringInt("TargetTemperature", (int)target_temperature, 0);
 	MQTT_PublishMain_StringString("ACMode", "cool", 0);
 	MQTT_PublishMain_StringInt("Buzzer", g_buzzer, 0);
 	MQTT_PublishMain_StringInt("Display", g_disp, 0);
