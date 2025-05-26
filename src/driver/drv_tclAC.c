@@ -600,6 +600,8 @@ void TCL_UART_RunEverySecond(void) {
 	MQTT_PublishMain_StringString("CurrentTemperature", "23", 0);
 	MQTT_PublishMain_StringString("TargetTemperature", "25", 0);
 	MQTT_PublishMain_StringString("ACMode", "cool", 0);
+	MQTT_PublishMain_StringInt("Buzzer", g_buzzer, 0);
+	MQTT_PublishMain_StringInt("Display", g_disp, 0);
 
 	if (ready_to_send_set_cmd_flag) {
 		ADDLOG_WARN(LOG_FEATURE_ENERGYMETER, "Sending data");
@@ -612,15 +614,21 @@ void TCL_UART_RunEverySecond(void) {
 	TCL_UART_TryToGetNextPacket();
 }
 #include "../httpserver/hass.h"
-
+// backlog startDriver TCL; scheduleHADiscovery
 void TCL_DoDiscovery(const char *topic) {
 	HassDeviceInfo* dev_info = NULL;
 
-
-
-	dev_info = hass_createHVAC();
+	dev_info = hass_createHVAC(15,30,0.5f);
 	MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 	hass_free_device_info(dev_info);
 
+
+	dev_info = hass_createToggle("Buzzer","~/Buzzer/get","Buzzer");
+	MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+	hass_free_device_info(dev_info);
+
+	dev_info = hass_createToggle("Display", "~/Display/get", "Display");
+	MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+	hass_free_device_info(dev_info);
 }
 

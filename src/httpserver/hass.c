@@ -214,7 +214,7 @@ cJSON* hass_build_device_node(cJSON* ids) {
 	return dev;
 }
 
-HassDeviceInfo* hass_createHVAC() {
+HassDeviceInfo* hass_createHVAC(float min, float max, float step) {
 	HassDeviceInfo* info = hass_init_device_info(HASS_HVAC, 0, NULL, NULL, 0);
 
 	// Set the name for the HVAC device
@@ -225,17 +225,19 @@ HassDeviceInfo* hass_createHVAC() {
 
 	// Set temperature topics
 	cJSON_AddStringToObject(info->root, "current_temperature_topic", "~/CurrentTemperature/get");
-	cJSON_AddStringToObject(info->root, "temperature_command_topic", "~/TargetTemperature");
+	sprintf(g_hassBuffer, "cmnd/%s/TargetTemperature", CFG_GetMQTTClientId());
+	cJSON_AddStringToObject(info->root, "temperature_command_topic", g_hassBuffer);
 	cJSON_AddStringToObject(info->root, "temperature_state_topic", "~/TargetTemperature/get");
 
 	// Set temperature range and step
-	cJSON_AddNumberToObject(info->root, "min_temp", 15);
-	cJSON_AddNumberToObject(info->root, "max_temp", 30);
-	cJSON_AddNumberToObject(info->root, "temp_step", 0.5);
+	cJSON_AddNumberToObject(info->root, "min_temp", min);
+	cJSON_AddNumberToObject(info->root, "max_temp", max);
+	cJSON_AddNumberToObject(info->root, "temp_step", step);
 
 	// Set mode topics
 	cJSON_AddStringToObject(info->root, "mode_state_topic", "~/ACMode/get");
-	cJSON_AddStringToObject(info->root, "mode_command_topic", "~/ACMode");
+	sprintf(g_hassBuffer, "cmnd/%s/ACMode", CFG_GetMQTTClientId());
+	cJSON_AddStringToObject(info->root, "mode_command_topic", g_hassBuffer);
 
 	// Add supported modes
 	cJSON* modes = cJSON_CreateArray();
@@ -413,6 +415,31 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 	return info;
 }
 
+
+HassDeviceInfo* hass_createToggle(const char *label, const char *stateTopic, const char *command) {
+	HassDeviceInfo* info = hass_init_device_info(RELAY, 0, "1", "0", 0);
+	if (info == NULL) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HASS, "Failed to initialize HassDeviceInfo for toggle");
+		return NULL;
+	}
+
+	cJSON_ReplaceItemInObject(info->root, "name", cJSON_CreateString(label));
+
+	char uniq_id[HASS_UNIQUE_ID_SIZE];
+	snprintf(uniq_id, HASS_UNIQUE_ID_SIZE, "%s_%s", info->unique_id, label);
+	STR_ReplaceWhiteSpacesWithUnderscore(uniq_id);
+	cJSON_ReplaceItemInObject(info->root, "uniq_id", cJSON_CreateString(uniq_id));
+
+	// update the discovery channel with the new unique_id
+	sprintf(info->channel, "switch/%s/config", uniq_id);
+	STR_ReplaceWhiteSpacesWithUnderscore(info->channel);
+
+	cJSON_AddStringToObject(info->root, "stat_t", stateTopic);
+	sprintf(g_hassBuffer, "cmnd/%s/%s", CFG_GetMQTTClientId(), command);
+	cJSON_AddStringToObject(info->root, "cmd_t", g_hassBuffer);
+
+	return info;
+}
 /// @brief Initializes HomeAssistant relay device discovery storage.
 /// @param index
 /// @return 
