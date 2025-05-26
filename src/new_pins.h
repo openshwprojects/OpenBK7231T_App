@@ -1403,7 +1403,7 @@ typedef struct mainConfig_s {
 	// offset 0x00000CBB (3259 decimal)
 	byte disable_web_server;
 	// offset 0x00000CBC (3260 decimal)
-	uint16_t domoticz_idx[MAX_DOMOTICZ_CHANNELS];
+	int domoticz_idx[MAX_DOMOTICZ_CHANNELS];
 	int domoticz_voltage_idx;
 	int domoticz_power_idx;
 #if PLATFORM_BEKEN

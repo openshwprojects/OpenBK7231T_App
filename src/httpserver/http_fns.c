@@ -2990,13 +2990,25 @@ int http_fn_cfg_domoticz(http_request_t* request) {
 	int channelsUsed[PLATFORM_GPIO_MAX];
 	int maxChannels = 0;
 	int ch;
-	
+	int channelAlreadyFound;
+
 	// get the channels in use
 	for (i=0; i<PLATFORM_GPIO_MAX; i++){
 		ch = PIN_GetPinChannelForPinIndex(i);
+		channelAlreadyFound = 0;
         if (ch > 0){
-			channelsUsed[maxChannels] = ch;
-			maxChannels++;
+			// check if channel already found : avoid displaying the same channel twice
+			for (int j = 0; j < maxChannels; j++) {
+				if (channelsUsed[j] == ch) {
+					channelAlreadyFound = 1;
+				}
+			}
+			// if channel not already found
+			if (!channelAlreadyFound) {
+				channelsUsed[maxChannels] = ch;
+				maxChannels++;
+			}
+
         }
     }
 

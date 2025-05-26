@@ -24,7 +24,7 @@
 
 // Domoticz
 #define ENABLE_DOMOTICZ         1	
-#define MAX_DOMOTICZ_CHANNELS   64
+#define MAX_DOMOTICZ_CHANNELS   8
 
 #if PLATFORM_XR809
 
