@@ -33,7 +33,7 @@ const char *g_template_lowMidHigh = "{% if value == '0' %}\n"
 /// @param index Entity index (Ignored for RGB)
 /// @param uniq_id Array to populate (should be of size HASS_UNIQUE_ID_SIZE)
 /// @param asensdatasetix dataset index for ENERGY_METER_SENSOR, otherwise 0
-void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id, int asensdatasetix) {
+void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id, int asensdatasetix, const char *title) {
 	//https://developers.home-assistant.io/docs/entity_registry_index/#unique-id-requirements
 	//mentions that mac can be used for unique_id and deviceName contains that.
 	const char* longDeviceName = CFG_GetDeviceName();
@@ -48,7 +48,10 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id, int ase
 	case LIGHT_RGBCW:
 		sprintf(uniq_id, "%s_%s", longDeviceName, "light");
 		break;
-
+		
+	case HASS_FAN:
+		sprintf(uniq_id, "%s_fan", longDeviceName);
+		break;
 	case HASS_HVAC:
 		sprintf(uniq_id, "%s_thermostat", longDeviceName);
 		break;
@@ -132,6 +135,10 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id, int ase
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "sensor", index);
 		break;
 	}
+	if (title) {
+		strcat(uniq_id, "_");
+		strcat(uniq_id, title);
+	}
 	// There can be no spaces in this name!
 	// See: https://www.elektroda.com/rtvforum/topic4000620.html
 	STR_ReplaceWhiteSpacesWithUnderscore(uniq_id);
@@ -145,7 +152,7 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id, int ase
 /// @param asensdatasetix dataset index for ENERGY_METER_SENSOR, otherwise 0
 void hass_print_unique_id(http_request_t* request, const char* fmt, ENTITY_TYPE type, int index, int asensdatasetix) {
 	char uniq_id[HASS_UNIQUE_ID_SIZE];
-	hass_populate_unique_id(type, index, uniq_id, asensdatasetix);
+	hass_populate_unique_id(type, index, uniq_id, asensdatasetix, NULL);
 	hprintf255(request, fmt, uniq_id);
 }
 
@@ -170,6 +177,9 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char* uniq_id, HassDe
 		break;
 	case HASS_HVAC:
 		sprintf(info->channel, "climate/%s/config", uniq_id);
+		break;
+	case HASS_FAN:
+		sprintf(info->channel, "fan/%s/config", uniq_id);
 		break;
 	case SMOKE_SENSOR:
 	case CO2_SENSOR:
@@ -214,8 +224,69 @@ cJSON* hass_build_device_node(cJSON* ids) {
 	return dev;
 }
 
-HassDeviceInfo* hass_createHVAC(float min, float max, float step) {
-	HassDeviceInfo* info = hass_init_device_info(HASS_HVAC, 0, NULL, NULL, 0);
+// TODO, broken
+//HassDeviceInfo* hass_createFanWithModes(const char *label, const char *stateTopic, const char *command, const char **options, int numOptions) {
+//	HassDeviceInfo* info = hass_init_device_info(HASS_FAN, 0, NULL, NULL, 0);
+//	if (info == NULL) {
+//		addLogAdv(LOG_ERROR, LOG_FEATURE_HASS, "Failed to initialize HassDeviceInfo for fan");
+//		return NULL;
+//	}
+//
+//	cJSON_ReplaceItemInObject(info->root, "name", cJSON_CreateString(label));
+//
+//	char uniq_id[HASS_UNIQUE_ID_SIZE];
+//	snprintf(uniq_id, HASS_UNIQUE_ID_SIZE, "%s_%s", info->unique_id, label);
+//	STR_ReplaceWhiteSpacesWithUnderscore(uniq_id);
+//	cJSON_ReplaceItemInObject(info->root, "uniq_id", cJSON_CreateString(uniq_id));
+//
+//	sprintf(info->channel, "fan/%s/config", uniq_id);
+//	STR_ReplaceWhiteSpacesWithUnderscore(info->channel);
+//
+//	cJSON_AddStringToObject(info->root, "pr_mode_stat_t", stateTopic);
+//	sprintf(g_hassBuffer, "cmnd/%s/%s", CFG_GetMQTTClientId(), command);
+//	cJSON_AddStringToObject(info->root, "pr_mode_cmd_t", g_hassBuffer);
+//	cJSON_AddStringToObject(info->root, "dev_cla", "fan");
+//	cJSON_AddItemToObject(info->root, "osc", cJSON_CreateBool(false));
+//	cJSON_AddItemToObject(info->root, "percentage", cJSON_CreateBool(false));
+//	cJSON_AddItemToObject(info->root, "pr_modes", cJSON_CreateStringArray(options, numOptions));
+//
+//	return info;
+//}
+HassDeviceInfo* hass_createSelectEntity(const char* state_topic, const char* command_topic, int numoptions,
+	const char* options[], const char* title) {
+	// Initialize device info for a single select entity
+	HassDeviceInfo* info = hass_init_device_info(HASS_SELECT, 0, NULL, NULL, 0, title);
+
+	// Set entity properties
+	cJSON_AddStringToObject(info->root, "name", title);
+	cJSON_AddStringToObject(info->root, "unique_id", title); // Using title as unique_id for simplicity; adjust if needed
+	cJSON_AddStringToObject(info->root, "state_topic", state_topic);
+	cJSON_AddStringToObject(info->root, "command_topic", command_topic);
+
+	// Create options array from provided options
+	cJSON* select_options = cJSON_CreateArray();
+	for (int i = 0; i < numoptions; i++) {
+		cJSON_AddItemToArray(select_options, cJSON_CreateString(options[i]));
+	}
+	cJSON_AddItemToObject(info->root, "options", select_options);
+
+	// Set availability
+	cJSON_AddStringToObject(info->root, "availability_topic", "~/status");
+	cJSON_AddStringToObject(info->root, "payload_available", "online");
+	cJSON_AddStringToObject(info->root, "payload_not_available", "offline");
+
+	// Set configuration channel for select entity
+	sprintf(info->channel, "select/%s/config", info->unique_id);
+
+	// Update device info
+	cJSON* dev = info->device;
+	cJSON_ReplaceItemInObject(dev, "manufacturer", cJSON_CreateString("Custom"));
+	cJSON_ReplaceItemInObject(dev, "model", cJSON_CreateString("C-Swing-Control"));
+
+	return info;
+}
+HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **fanOptions, int numFanOptions) {
+	HassDeviceInfo* info = hass_init_device_info(HASS_HVAC, 0, NULL, NULL, 0, 0);
 
 	// Set the name for the HVAC device
 	cJSON_AddStringToObject(info->root, "name", "Smart Thermostat");
@@ -246,6 +317,22 @@ HassDeviceInfo* hass_createHVAC(float min, float max, float step) {
 	cJSON_AddItemToArray(modes, cJSON_CreateString("cool"));
 	cJSON_AddItemToObject(info->root, "modes", modes);
 
+	if (fanOptions && numFanOptions) {
+		// Add fan mode topics
+		cJSON_AddStringToObject(info->root, "fan_mode_state_topic", "~/FanMode/get");
+		sprintf(g_hassBuffer, "cmnd/%s/FanMode", CFG_GetMQTTClientId());
+		cJSON_AddStringToObject(info->root, "fan_mode_command_topic", g_hassBuffer);
+
+		// Add supported fan modes
+		cJSON* fan_modes = cJSON_CreateArray();
+		for (int i = 0; i < numFanOptions; i++) {
+			const char *mode = fanOptions[i];
+			cJSON_AddItemToArray(fan_modes, cJSON_CreateString(mode));
+		}
+		cJSON_AddItemToArray(fan_modes, cJSON_CreateString("high"));
+		cJSON_AddItemToObject(info->root, "fan_modes", fan_modes);
+	}
+
 	// Set availability topic
 	cJSON_AddStringToObject(info->root, "availability_topic", "~/status");
 	cJSON_AddStringToObject(info->root, "payload_available", "online");
@@ -270,11 +357,11 @@ HassDeviceInfo* hass_createHVAC(float min, float max, float step) {
 /// @param payload_off The payload that represents disabled state. This is not added for POWER_SENSOR.
 /// @param asensdatasetix dataset index for ENERGY_METER_SENSOR, otherwise 0
 /// @return 
-HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* payload_on, const char* payload_off, int asensdatasetix) {
+HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* payload_on, const char* payload_off, int asensdatasetix, const char *title) {
 	HassDeviceInfo* info = os_malloc(sizeof(HassDeviceInfo));
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "hass_init_device_info=%p", info);
 
-	hass_populate_unique_id(type, index, info->unique_id, asensdatasetix);
+	hass_populate_unique_id(type, index, info->unique_id, asensdatasetix, title);
 	hass_populate_device_config_channel(type, info->unique_id, info);
 
 	info->ids = cJSON_CreateArray();
@@ -388,6 +475,10 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 			break;
 		}
 	}
+	if (title) {
+		strcat(g_hassBuffer, "_");
+		strcat(g_hassBuffer, title);
+	}
 	cJSON_AddStringToObject(info->root, "name", g_hassBuffer);
 	cJSON_AddStringToObject(info->root, "~", CFG_GetMQTTClientId());      //base topic
 	// remove availability information for sensor to keep last value visible on Home Assistant
@@ -417,7 +508,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 
 
 HassDeviceInfo* hass_createToggle(const char *label, const char *stateTopic, const char *command) {
-	HassDeviceInfo* info = hass_init_device_info(RELAY, 0, "1", "0", 0);
+	HassDeviceInfo* info = hass_init_device_info(RELAY, 0, "1", "0", 0, label);
 	if (info == NULL) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_HASS, "Failed to initialize HassDeviceInfo for toggle");
 		return NULL;
@@ -446,10 +537,10 @@ HassDeviceInfo* hass_createToggle(const char *label, const char *stateTopic, con
 HassDeviceInfo* hass_init_relay_device_info(int index, ENTITY_TYPE type, bool bToggleInv) {
 	HassDeviceInfo* info;
 	if (bToggleInv) {
-		info = hass_init_device_info(type, index, "0", "1", 0);
+		info = hass_init_device_info(type, index, "0", "1", 0, NULL);
 	}
 	else {
-		info = hass_init_device_info(type, index, "1", "0", 0);
+		info = hass_init_device_info(type, index, "1", "0", 0, NULL);
 	}
 
 	sprintf(g_hassBuffer, "~/%i/get", index);
@@ -471,7 +562,7 @@ HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type) {
 
 	//We can just use 1 to generate unique_id and name for single PWM.
 	//The payload_on/payload_off have to match the state_topic/command_topic values.
-	info = hass_init_device_info(type, 1, "1", "0", 0);
+	info = hass_init_device_info(type, 1, "1", "0", 0, NULL);
 
 	switch (type) {
 	case LIGHT_RGBCW:
@@ -542,7 +633,7 @@ HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse) {
 		payload_off = "1";
 		payload_on = "0";
 	}
-	HassDeviceInfo* info = hass_init_device_info(BINARY_SENSOR, index, payload_on, payload_off, 0);
+	HassDeviceInfo* info = hass_init_device_info(BINARY_SENSOR, index, payload_on, payload_off, 0, NULL);
 
 	sprintf(g_hassBuffer, "~/%i/get", index);
 	cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);   //state_topic
@@ -568,7 +659,7 @@ HassDeviceInfo* hass_init_energy_sensor_device_info(int index, int asensdataseti
 	//in twin mode, for ix0 is last OBK_CONSUMPTION_YESTERDAY, for ix1 ,OBK_CONSUMPTION_TODAY
 	if ((index > OBK_CONSUMPTION_STORED_LAST[asensdatasetix]) && (index <= OBK_CONSUMPTION__DAILY_LAST)) return info;
 #endif
-	info = hass_init_device_info(ENERGY_METER_SENSOR, index, NULL, NULL, asensdatasetix);
+	info = hass_init_device_info(ENERGY_METER_SENSOR, index, NULL, NULL, asensdatasetix, NULL);
 
 	cJSON_AddStringToObject(info->root, "dev_cla", DRV_GetEnergySensorNamesEx(asensdatasetix,index)->hass_dev_class);   //device_class=voltage,current,power, energy, timestamp
 	//20241024 XJIKKA unit_of_meas is set bellow (was set twice)
@@ -633,7 +724,7 @@ HassDeviceInfo* hass_init_light_singleColor_onChannels(int toggle, int dimmer, i
 	const char* clientId;
 	
 	clientId = CFG_GetMQTTClientId();
-	dev_info = hass_init_device_info(LIGHT_PWM, toggle, "1", "0", 0);
+	dev_info = hass_init_device_info(LIGHT_PWM, toggle, "1", "0", 0, NULL);
 
 	sprintf(g_hassBuffer, "~/%i/get", toggle);
 	cJSON_AddStringToObject(dev_info->root, "stat_t", g_hassBuffer);  //state_topic
@@ -655,7 +746,7 @@ HassDeviceInfo* hass_init_light_singleColor_onChannels(int toggle, int dimmer, i
 /// @return 
 HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int decPlaces, int decOffset, int divider) {
 	//Assuming that there is only one DHT setup per device which keeps uniqueid/names simpler
-	HassDeviceInfo* info = hass_init_device_info(type, channel, NULL, NULL, 0);	//using channel as index to generate uniqueId
+	HassDeviceInfo* info = hass_init_device_info(type, channel, NULL, NULL, 0, NULL);	//using channel as index to generate uniqueId
 
 	//https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes
 	switch (type) {

@@ -96,6 +96,8 @@ typedef enum {
 	/// @brief Battery level sensor in perc, under channel topic
 	BATTERY_CHANNEL_SENSOR,
 	HASS_HVAC,
+	HASS_FAN,
+	HASS_SELECT
 } ENTITY_TYPE;
 
 //unique_id is defined in hass_populate_unique_id and is based on CFG_GetDeviceName() whose size is CGF_DEVICE_NAME_SIZE.
@@ -122,13 +124,16 @@ typedef struct HassDeviceInfo_s {
 
 void hass_print_unique_id(http_request_t* request, const char* fmt, ENTITY_TYPE type, int index, int asensdatasetix);
 HassDeviceInfo* hass_init_relay_device_info(int index, ENTITY_TYPE type, bool bInverse);
-HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* payload_on, const char* payload_off, int asensdatasetix);
+HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* payload_on, const char* payload_off, int asensdatasetix, const char *title);
 HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type);
 HassDeviceInfo* hass_init_energy_sensor_device_info(int index, int asensdatasetix);
 HassDeviceInfo* hass_init_light_singleColor_onChannels(int toggle, int dimmer, int brightness_scale);
 HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse);
 HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int decPlaces, int decOffset, int divider);
-HassDeviceInfo* hass_createHVAC(float min, float max, float step);
+HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **fanOptions, int numFanOptions); 
+HassDeviceInfo* hass_createFanWithModes(const char *label, const char *stateTopic,
+	const char *command, const char **options, int numOptions);
+
 HassDeviceInfo* hass_createToggle(const char *label, const char *stateTopic, const char *commandTopic);
 const char* hass_build_discovery_json(HassDeviceInfo* info);
 void hass_free_device_info(HassDeviceInfo* info); 
