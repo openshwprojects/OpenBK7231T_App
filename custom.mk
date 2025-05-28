@@ -22,7 +22,7 @@ BERRY_SRCPATH = libraries/berry/src/
 # are built, so it needs the translation function from a C source to an object
 # file
 define obj_from_c
-	$(patsubst %.c, %.o, $(1))
+	$(patsubst %.c, build/%.c.o, $(1))
 endef
 
 include libraries/berry.mk
