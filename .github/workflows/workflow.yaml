@@ -103,6 +103,26 @@ jobs:
         name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_sim
         path: output/${{ needs.refs.outputs.version }}/obkSimulator_${{ needs.refs.outputs.version }}.zip
 
+  build_asan:
+    name: Build Simulator with Address Sanitizer
+    needs: refs
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Checkout berry submodule
+      run: |
+        git submodule update --init --recursive libraries/berry
+
+    - name: Build project
+      run: ASAN=1 make -f custom.mk
+    - name: Run unit tests
+      run: |
+        export LSAN_OPTIONS=suppressions=platforms/linux/asan.suppressions
+        ./build/win_main -runUnitTests 2
+
   build:
     name: Build
     needs: refs
