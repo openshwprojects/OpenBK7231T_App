@@ -286,6 +286,37 @@ void write_array(byte *b, int s) {
 	}
 }
 
+static const struct {
+	const char *name;
+	climateMode_e mode;
+} climateModeMap[] = {
+	{"off", CLIMATE_MODE_OFF},
+	{"cool", CLIMATE_MODE_COOL},
+	{"dry", CLIMATE_MODE_DRY},
+	{"fan", CLIMATE_MODE_FAN_ONLY},
+	{"heat", CLIMATE_MODE_HEAT},
+	{"heatcool", CLIMATE_MODE_HEAT_COOL},
+	{"auto", CLIMATE_MODE_AUTO}
+};
+
+climateMode_e parseClimate(const char *s) {
+	for (int i = 0; i < sizeof(climateModeMap) / sizeof(climateModeMap[0]); ++i) {
+		if (!stricmp(s, climateModeMap[i].name)) {
+			return climateModeMap[i].mode;
+		}
+	}
+	return (climateMode_e)atoi(s);
+}
+
+const char *climateModeToStr(climateMode_e mode) {
+	for (int i = 0; i < sizeof(climateModeMap) / sizeof(climateModeMap[0]); ++i) {
+		if (climateModeMap[i].mode == mode) {
+			return climateModeMap[i].name;
+		}
+	}
+	return NULL;
+}
+
 int read_data_line(int readch, uint8_t *buffer, int len)
 {
 	static int pos = 0;
@@ -421,9 +452,16 @@ void set_target_temperature(float newTemp) {
 	is_changed = true;
 	target_temperature = newTemp;
 }
-
+climateMode_e g_mode = CLIMATE_MODE_OFF;
+void set_mode(climateMode_e mode) {
+	if (g_mode == mode)
+		return;
+	is_changed = true;
+	g_mode = mode;
+}
 void set_current_temperature(float newTemp) {
-	if (current_temperature == newTemp) return;
+	if (current_temperature == newTemp)
+		return;
 	is_changed = true;
 	current_temperature = newTemp;
 }
@@ -448,7 +486,8 @@ void TCL_UART_TryToGetNextPacket() {
 				ADDLOG_WARN(LOG_FEATURE_ENERGYMETER, "Ok we got reply with mode %i, fan %i, turbo %i, mute %i",
 					(int)m_get_cmd_resp.data.power, (int)m_get_cmd_resp.data.fan,
 					(int)m_get_cmd_resp.data.turbo, (int)m_get_cmd_resp.data.mute);
-				/*if (m_get_cmd_resp.data.power == 0x00) set_mode(CLIMATE_MODE_OFF);
+
+				if (m_get_cmd_resp.data.power == 0x00) set_mode(CLIMATE_MODE_OFF);
 				else if (m_get_cmd_resp.data.mode == 0x01) set_mode(CLIMATE_MODE_COOL);
 				else if (m_get_cmd_resp.data.mode == 0x03) set_mode(CLIMATE_MODE_DRY);
 				else if (m_get_cmd_resp.data.mode == 0x02) set_mode(CLIMATE_MODE_FAN_ONLY);
@@ -456,7 +495,7 @@ void TCL_UART_TryToGetNextPacket() {
 				else if (m_get_cmd_resp.data.mode == 0x05) set_mode(CLIMATE_MODE_AUTO);
 
 
-				if (m_get_cmd_resp.data.turbo) set_custom_fan_mode((FAN_TURBO));
+				/*if (m_get_cmd_resp.data.turbo) set_custom_fan_mode((FAN_TURBO));
 				else if (m_get_cmd_resp.data.mute) set_custom_fan_mode((FAN_MUTE));
 				else if (m_get_cmd_resp.data.fan == 0x00) set_custom_fan_mode((FAN_AUTOMATIC));
 				else if (m_get_cmd_resp.data.fan == 0x01) set_custom_fan_mode((FAN_1));
@@ -511,7 +550,7 @@ static commandResult_t CMD_ACMode(const void* context, const char* cmd, const ch
 
 	Tokenizer_TokenizeString(args, 0);
 
-	mode = Tokenizer_GetArgInteger(0);
+	mode = parseClimate(Tokenizer_GetArg(0));
 	OBK_SetClimate(mode);
 	return CMD_RES_OK;
 }
@@ -530,7 +569,7 @@ void TCL_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState
 
 	}
 	else {
-
+		hprintf255(request, "<h3>Mode: %s</h3>", climateModeToStr(g_mode));
 		hprintf255(request, "<h3>Current temperature: %f</h3>", current_temperature);
 		hprintf255(request, "<h3>Target temperature: %f</h3>", target_temperature);
 	}
@@ -600,7 +639,7 @@ void TCL_UART_RunEverySecond(void) {
 
 	MQTT_PublishMain_StringInt("CurrentTemperature", (int)current_temperature, 0);
 	MQTT_PublishMain_StringInt("TargetTemperature", (int)target_temperature, 0);
-	MQTT_PublishMain_StringString("ACMode", "cool", 0);
+	MQTT_PublishMain_StringString("ACMode", climateModeToStr(g_mode), 0);
 	MQTT_PublishMain_StringInt("Buzzer", g_buzzer, 0);
 	MQTT_PublishMain_StringInt("Display", g_disp, 0);
 
