@@ -395,6 +395,7 @@
     <ClCompile Include="libraries\berry\src\be_vector.c" />
     <ClCompile Include="libraries\berry\src\be_vm.c" />
     <ClCompile Include="src\driver\drv_pir.c" />
+    <ClCompile Include="src\driver\drv_cse7761.c" />
     <ClCompile Include="src\driver\drv_tclAC.c" />
     <ClCompile Include="src\selftest\selftest_pir.c" />
     <ClCompile Include="src\selftest\selftest_tclAC.c" />
