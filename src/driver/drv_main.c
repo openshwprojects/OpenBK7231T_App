@@ -82,6 +82,9 @@ static driver_t g_drivers[] = {
 
 
 
+#if ENABLE_DRIVER_TCL
+	{ "TCL",		TCL_Init,			TCL_UART_RunEverySecond,		TCL_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+#endif
 
 #if ENABLE_DRIVER_OPENWEATHERMAP
 	//drvdetail:{"name":"OpenWeatherMap",
@@ -199,6 +202,9 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"BL0937 is a power-metering chip which uses custom protocol to report data. It requires setting 3 pins in pin config: CF, CF1 and SEL",
 	//drvdetail:"requires":""}
 	{ "BL0937",		BL0937_Init,		BL0937_RunEverySecond,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_CSE7761
+	{ "CSE7761",	CSE7761_Init,		CSE7761_RunEverySecond,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_CSE7766
 	//drvdetail:{"name":"CSE7766",

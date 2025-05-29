@@ -1120,7 +1120,7 @@ void TuyaMCU_ApplyMapping(tuyaMCUMapping_t* mapping, int dpID, int value) {
 		addLogAdv(LOG_DEBUG, LOG_FEATURE_TUYAMCU, "ApplyMapping: id %i (val %i) not mapped\n", dpID, value);
 		return;
 	}
-	if (mapping->channel == -1) {
+	if (mapping->channel < 0) {
 		return;
 	}
 

@@ -59,7 +59,7 @@ struct energysensor {
 	// It even fails to publish with -1 error (can't alloc next packet)
 	// So we publish when value changes from certain threshold or when a certain time passes.
 	float changeSendThreshold;
-	double lastReading; //double only needed for energycounter i.e. OBK_CONSUMPTION_TOTAL to avoid rounding errors as value becomes high
+	double lastReading; //double only needed for energycounter i.e. OBK_CONSUMPTION_TOTAL to avoid rounding issues as value becomes high
 	double lastSentValue; // what are the last values we sent over the MQTT?
 	int noChangeFrame; // how much update frames has passed without sending MQTT update of read values?
 };
