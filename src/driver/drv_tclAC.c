@@ -213,7 +213,12 @@ const char* horizontal_swing_options[] = {
 	"fix_mid_right",
 	"fix_right"
 };
-
+const char *getSwingVLabel(VerticalSwingMode m) {
+	return vertical_swing_options[m];
+}
+const char *getSwingHLabel(HorizontalSwing m) {
+	return horizontal_swing_options[m];
+}
 VerticalSwingMode parse_vertical_swing(const char *s) {
 	for (int i = 0; i < sizeof(vertical_swing_options) / sizeof(vertical_swing_options[0]); ++i) {
 		if (stricmp(s, vertical_swing_options[i]) == 0)
@@ -482,6 +487,20 @@ void set_mode(climateMode_e mode) {
 	is_changed = true;
 	g_mode = mode;
 }
+VerticalSwingMode g_swingV;
+HorizontalSwing g_swingH;
+void set_swingV(VerticalSwingMode mode) {
+	if (g_swingV == mode)
+		return;
+	is_changed = true;
+	g_swingV = mode;
+}
+void set_swingH(HorizontalSwing mode) {
+	if (g_swingH == mode)
+		return;
+	is_changed = true;
+	g_swingH = mode;
+}
 void set_custom_fan_mode(fanMode_e mode) {
 	if (g_fanMode == mode)
 		return;
@@ -536,28 +555,32 @@ void TCL_UART_TryToGetNextPacket() {
 				/* if (m_get_cmd_resp.data.hswing && m_get_cmd_resp.data.vswing) set_swing_mode(CLIMATE_SWING_BOTH);
 				else if (!m_get_cmd_resp.data.hswing && !m_get_cmd_resp.data.vswing) set_swing_mode(CLIMATE_SWING_OFF);
 				else if (m_get_cmd_resp.data.vswing) set_swing_mode(CLIMATE_SWING_VERTICAL);
-				else if (m_get_cmd_resp.data.hswing) set_swing_mode(CLIMATE_SWING_HORIZONTAL);
+				else if (m_get_cmd_resp.data.hswing) set_swing_mode(CLIMATE_SWING_HORIZONTAL);*/
 
-				if (m_get_cmd_resp.data.vswing_mv == 0x01) set_vswing_pos(VS_MoveFull);
-				else if (m_get_cmd_resp.data.vswing_mv == 0x02) set_vswing_pos(VS_MoveUpper);
-				else if (m_get_cmd_resp.data.vswing_mv == 0x03) set_vswing_pos(VS_MoveLower);
-				else if (m_get_cmd_resp.data.vswing_fix == 0x01) set_vswing_pos(VS_FixTop);
-				else if (m_get_cmd_resp.data.vswing_fix == 0x02) set_vswing_pos(VS_FixUpper);
-				else if (m_get_cmd_resp.data.vswing_fix == 0x03) set_vswing_pos(VS_FixMid);
-				else if (m_get_cmd_resp.data.vswing_fix == 0x04) set_vswing_pos(VS_FixLower);
-				else if (m_get_cmd_resp.data.vswing_fix == 0x05) set_vswing_pos(VS_FixBottom);
-				else set_vswing_pos("Last position");
+				if (m_get_cmd_resp.data.vswing_mv == 0x01) set_swingV(VS_MoveFull);
+				else if (m_get_cmd_resp.data.vswing_mv == 0x02) set_swingV(VS_MoveUpper);
+				else if (m_get_cmd_resp.data.vswing_mv == 0x03) set_swingV(VS_MoveLower);
+				else if (m_get_cmd_resp.data.vswing_fix == 0x01) set_swingV(VS_FixTop);
+				else if (m_get_cmd_resp.data.vswing_fix == 0x02) set_swingV(VS_FixUpper);
+				else if (m_get_cmd_resp.data.vswing_fix == 0x03) set_swingV(VS_FixMid);
+				else if (m_get_cmd_resp.data.vswing_fix == 0x04) set_swingV(VS_FixLower);
+				else if (m_get_cmd_resp.data.vswing_fix == 0x05) set_swingV(VS_FixBottom);
+				else {
+					//set_swingV("Last position");
+				}
 
-				if (m_get_cmd_resp.data.hswing_mv == 0x01) set_hswing_pos(HS_MOVE_FULL);
-				else if (m_get_cmd_resp.data.hswing_mv == 0x02) set_hswing_pos(HS_MOVE_LEFT);
-				else if (m_get_cmd_resp.data.hswing_mv == 0x03) set_hswing_pos(HS_MOVE_MID);
-				else if (m_get_cmd_resp.data.hswing_mv == 0x04) set_hswing_pos(HS_MOVE_RIGHT);
-				else if (m_get_cmd_resp.data.hswing_fix == 0x01) set_hswing_pos(HS_FIX_LEFT);
-				else if (m_get_cmd_resp.data.hswing_fix == 0x02) set_hswing_pos(HS_FIX_MID_LEFT);
-				else if (m_get_cmd_resp.data.hswing_fix == 0x03) set_hswing_pos(HS_FIX_MID);
-				else if (m_get_cmd_resp.data.hswing_fix == 0x04) set_hswing_pos(HS_FIX_MID_RIGHT);
-				else if (m_get_cmd_resp.data.hswing_fix == 0x05) set_hswing_pos(HS_FIX_RIGHT);
-				else set_hswing_pos("Last position");*/
+				if (m_get_cmd_resp.data.hswing_mv == 0x01) set_swingH(HS_MOVE_FULL);
+				else if (m_get_cmd_resp.data.hswing_mv == 0x02) set_swingH(HS_MOVE_LEFT);
+				else if (m_get_cmd_resp.data.hswing_mv == 0x03) set_swingH(HS_MOVE_MID);
+				else if (m_get_cmd_resp.data.hswing_mv == 0x04) set_swingH(HS_MOVE_RIGHT);
+				else if (m_get_cmd_resp.data.hswing_fix == 0x01) set_swingH(HS_FIX_LEFT);
+				else if (m_get_cmd_resp.data.hswing_fix == 0x02) set_swingH(HS_FIX_MID_LEFT);
+				else if (m_get_cmd_resp.data.hswing_fix == 0x03) set_swingH(HS_FIX_MID);
+				else if (m_get_cmd_resp.data.hswing_fix == 0x04) set_swingH(HS_FIX_MID_RIGHT);
+				else if (m_get_cmd_resp.data.hswing_fix == 0x05) set_swingH(HS_FIX_RIGHT);
+				else {
+					//set_swingH("Last position");
+				}
 
 				ADDLOG_WARN(LOG_FEATURE_ENERGYMETER, "fan %02X", m_get_cmd_resp.data.fan);
 				ADDLOG_WARN(LOG_FEATURE_ENERGYMETER, "mode %02X", m_get_cmd_resp.data.mode);
@@ -597,6 +620,8 @@ void TCL_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState
 
 	}
 	else {
+		hprintf255(request, "<h3>SwingH: %s</h3>", climateModeToStr(g_mode));
+		hprintf255(request, "<h3>SwingV: %s</h3>", climateModeToStr(g_mode));
 		hprintf255(request, "<h3>Mode: %s</h3>", climateModeToStr(g_mode));
 		hprintf255(request, "<h3>Current temperature: %f</h3>", current_temperature);
 		hprintf255(request, "<h3>Target temperature: %f</h3>", target_temperature);
@@ -671,6 +696,8 @@ void TCL_UART_RunEverySecond(void) {
 	MQTT_PublishMain_StringString("FANMode", fanModeToStr(g_fanMode), 0);
 	MQTT_PublishMain_StringInt("Buzzer", g_buzzer, 0);
 	MQTT_PublishMain_StringInt("Display", g_disp, 0);
+	MQTT_PublishMain_StringString("SwingH", getSwingHLabel(g_swingH), 0);
+	MQTT_PublishMain_StringString("SwingV", getSwingVLabel(g_swingV), 0);
 
 	if (ready_to_send_set_cmd_flag) {
 		ADDLOG_WARN(LOG_FEATURE_ENERGYMETER, "Sending data");
