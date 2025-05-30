@@ -78,6 +78,7 @@ const char* g_typesLowMidHighHighest[] = { "Low","Mid","High","Highest" };
 const char* g_typesOffOnRemember[] = { "Off", "On", "Remember" };
 const char* g_typeLowMidHigh[] = { "Low","Mid","High" };
 const char* g_typesLowestLowMidHighHighest[] = { "Lowest", "Low", "Mid", "High", "Highest" };;
+const char* g_typeOpenStopClose[] = { "Open","Stop","Close" };
 
 #define ADD_OPTION(t,a) if(type == t) { *numTypes = sizeof(a)/sizeof(a[0]); return a; }
 
@@ -89,6 +90,7 @@ const char **Channel_GetOptionsForChannelType(int type, int *numTypes) {
 	ADD_OPTION(ChType_LowMidHighHighest, g_typesLowMidHighHighest);
 	ADD_OPTION(ChType_OffOnRemember, g_typesOffOnRemember);
 	ADD_OPTION(ChType_LowMidHigh, g_typeLowMidHigh);
+	ADD_OPTION(ChType_OpenStopClose, g_typeOpenStopClose);
 	
 	*numTypes = 0;
 	return 0;
@@ -494,6 +496,9 @@ int http_fn_index(http_request_t* request) {
 			const char *what;
 			if (channelType == ChType_OffOnRemember) {
 				what = "memory";
+			}
+			else if (channelType == ChType_OpenStopClose) {
+				what = "mode";
 			}
 			else {
 				what = "speed";
@@ -2025,7 +2030,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			{
 				dev_info = hass_init_sensor_device_info(READONLYLOWMIDHIGH_SENSOR, i, -1, -1, 1);
 			}
-			break; 
+			break;
 			case ChType_BatteryLevelPercent:
 			{
 				dev_info = hass_init_sensor_device_info(BATTERY_CHANNEL_SENSOR, i, -1, -1, 1);
@@ -2171,6 +2176,30 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			case ChType_Tds:
 			{
 				dev_info = hass_init_sensor_device_info(WATER_QUALITY_TDS, i, -1, 2, 1);
+			}
+			break;
+			default:
+			{
+				int numOptions;
+				const char **options = Channel_GetOptionsForChannelType(type, &numOptions);
+				if (options && numOptions) {
+					// backlog setChannelType 2 LowMidHigh; scheduleHADiscovery 1
+					// backlog setChannelType 3 OpenStopClose; scheduleHADiscovery 1
+					char stateTopic[32];
+					char cmdTopic[32];
+					char title[64];
+					// TODO: lengths
+					strcpy(title, CHANNEL_GetLabel(i));
+					sprintf(stateTopic, "~/%i/get", i);
+					sprintf(cmdTopic, "~/%i/set", i);
+					dev_info = hass_createSelectEntityIndexed(
+						stateTopic,
+						cmdTopic,
+						numOptions,
+						options,
+						title
+					);
+				}
 			}
 			break;
 		}

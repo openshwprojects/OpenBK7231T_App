@@ -285,6 +285,62 @@ HassDeviceInfo* hass_createSelectEntity(const char* state_topic, const char* com
 
 	return info;
 }
+// Helper function to generate a dictionary string for value_template mapping integers to strings
+static void generate_value_template(int numoptions, const char* options[], char* buffer, size_t bufsize) {
+	size_t len = 0;
+	len += snprintf(buffer + len, bufsize - len, "{{ {");
+	for (int i = 0; i < numoptions && len < bufsize; i++) {
+		len += snprintf(buffer + len, bufsize - len, "'%d': '%s'%s", i, options[i], i < numoptions - 1 ? ", " : "");
+	}
+	snprintf(buffer + len, bufsize - len, "} [value] }}");
+}
+
+// Helper function to generate a dictionary string for command_template mapping strings to integers
+static void generate_command_template(int numoptions, const char* options[], char* buffer, size_t bufsize) {
+	size_t len = 0;
+	len += snprintf(buffer + len, bufsize - len, "{{ {");
+	for (int i = 0; i < numoptions && len < bufsize; i++) {
+		len += snprintf(buffer + len, bufsize - len, "'%s': '%d'%s", options[i], i, i < numoptions - 1 ? ", " : "");
+	}
+	snprintf(buffer + len, bufsize - len, "} [value] }}");
+}
+
+HassDeviceInfo* hass_createSelectEntityIndexed(const char* state_topic, const char* command_topic, int numoptions,
+	const char* options[], const char* title) {
+	HassDeviceInfo* info = hass_init_device_info(HASS_SELECT, 0, NULL, NULL, 0, title);
+
+	cJSON_AddStringToObject(info->root, "name", title);
+	cJSON_AddStringToObject(info->root, "unique_id", title);
+	cJSON_AddStringToObject(info->root, "state_topic", state_topic);
+	cJSON_AddStringToObject(info->root, "command_topic", command_topic);
+
+	cJSON* select_options = cJSON_CreateArray();
+	for (int i = 0; i < numoptions; i++) {
+		cJSON_AddItemToArray(select_options, cJSON_CreateString(options[i]));
+	}
+	cJSON_AddItemToObject(info->root, "options", select_options);
+
+	char value_template[512];
+	generate_value_template(numoptions, options, value_template, sizeof(value_template));
+	cJSON_AddStringToObject(info->root, "value_template", value_template);
+
+	char command_template[512];
+	generate_command_template(numoptions, options, command_template, sizeof(command_template));
+	cJSON_AddStringToObject(info->root, "command_template", command_template);
+
+	cJSON_AddStringToObject(info->root, "availability_topic", "~/status");
+	cJSON_AddStringToObject(info->root, "payload_available", "online");
+	cJSON_AddStringToObject(info->root, "payload_not_available", "offline");
+
+	sprintf(info->channel, "select/%s/config", info->unique_id);
+
+	cJSON* dev = info->device;
+	cJSON_ReplaceItemInObject(dev, "manufacturer", cJSON_CreateString("Custom"));
+	cJSON_ReplaceItemInObject(dev, "model", cJSON_CreateString("C-Swing-Control"));
+
+	return info;
+}
+
 HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **fanOptions, int numFanOptions) {
 	HassDeviceInfo* info = hass_init_device_info(HASS_HVAC, 0, NULL, NULL, 0, 0);
 
