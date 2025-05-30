@@ -133,6 +133,8 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **fanOptions, int numFanOptions); 
 HassDeviceInfo* hass_createFanWithModes(const char *label, const char *stateTopic,
 	const char *command, const char **options, int numOptions);
+HassDeviceInfo* hass_createSelectEntity(const char* state_topic, const char* command_topic, int numoptions,
+	const char* options[], const char* title);
 
 HassDeviceInfo* hass_createToggle(const char *label, const char *stateTopic, const char *commandTopic);
 const char* hass_build_discovery_json(HassDeviceInfo* info);
