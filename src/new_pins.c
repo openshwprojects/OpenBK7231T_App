@@ -2220,6 +2220,9 @@ const char* g_channelTypeNames[] = {
 	"Tds",
 	"Motion_n",
 	"Frequency_div1000",
+	"OpenStopClose",
+	"error",
+	"error",
 	"error",
 	"error",
 };
