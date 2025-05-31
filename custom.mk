@@ -22,7 +22,7 @@ BERRY_SRCPATH = libraries/berry/src/
 # are built, so it needs the translation function from a C source to an object
 # file
 define obj_from_c
-	$(patsubst %.c, %.o, $(1))
+	$(patsubst %.c, build/%.c.o, $(1))
 endef
 
 include libraries/berry.mk
@@ -41,6 +41,14 @@ CPPFLAGS ?= $(INCLUDES) -MMD -MP -std=gnu99 -DWINDOWS -DLINUX
 
 
 CFLAGS ?= -std=gnu99 -W -Wall -Wextra -g
+LDFLAGS ?=
+
+# Append ASAN flags if ASAN=1
+ifeq ($(ASAN),1)
+    CPPFLAGS += -g -fsanitize=address -fno-omit-frame-pointer
+    CFLAGS += -g -fsanitize=address -fno-omit-frame-pointer
+    LDFLAGS += -g -static-libasan -fsanitize=address
+endif
 
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 	@echo "Linking: $@"
