@@ -128,6 +128,9 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id, int ase
 	case HASS_IP:
 		sprintf(uniq_id, "%s_ip", longDeviceName);
 		break;
+	case HASS_PERCENT:
+		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "number", index);
+		break;
 	default:
 		// TODO: USE type here as well?
 		// If type is not set, and we use "sensor" naming, we can easily make collision
@@ -180,6 +183,9 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char* uniq_id, HassDe
 		break;
 	case HASS_FAN:
 		sprintf(info->channel, "fan/%s/config", uniq_id);
+		break;
+	case HASS_PERCENT:
+		sprintf(info->channel, "number/%s/config", uniq_id);
 		break;
 	case SMOKE_SENSOR:
 	case CO2_SENSOR:
@@ -805,6 +811,29 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 
 	//https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes
 	switch (type) {
+	case HASS_PERCENT:
+		// backlog setChannelType 5 Percent; scheduleHADiscovery
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "%");
+		cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
+
+		// State topic for reading the percentage value
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+
+		// Command topic for writing the percentage value
+		sprintf(g_hassBuffer, "~/%d/set", channel);
+		cJSON_AddStringToObject(info->root, "cmd_t", g_hassBuffer);
+
+		// Value template to ensure the value is between 0 and 100
+		//cJSON_AddStringToObject(info->root, "val_tpl", "{{ value | float | round(0) | max(0) | min(100) }}");
+
+
+		// Add number-specific properties for the slider
+		cJSON_AddStringToObject(info->root, "mode", "slider"); // Use slider mode in HA
+		cJSON_AddNumberToObject(info->root, "min", 0);        // Minimum value
+		cJSON_AddNumberToObject(info->root, "max", 100);      // Maximum value
+		cJSON_AddNumberToObject(info->root, "step", 1);       // Step value for slider
+		break;
 	case TEMPERATURE_SENSOR:
 		cJSON_AddStringToObject(info->root, "dev_cla", "temperature");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "°C");
@@ -971,7 +1000,7 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 	}
 
 
-	if (decPlaces != -1 && decOffset != -1 && divider != -1) {
+	if (decPlaces != -1 && decOffset != -1 && divider != -1 && type != HASS_PERCENT) {
 		//https://www.home-assistant.io/integrations/sensor.mqtt/ refers to value_template (val_tpl)
 		cJSON_AddStringToObject(info->root, "val_tpl", hass_generate_multiplyAndRound_template(decPlaces, decOffset, divider));
 	}

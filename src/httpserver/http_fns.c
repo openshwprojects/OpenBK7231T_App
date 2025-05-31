@@ -579,7 +579,9 @@ int http_fn_index(http_request_t* request) {
 		else if (h_isChannelRelay(i) || channelType == ChType_Toggle || channelType == ChType_Toggle_Inv) {
 			// HANDLED ABOVE in previous loop
 		}
-		else if ((bRawPWMs && h_isChannelPWM(i)) || (channelType == ChType_Dimmer) || (channelType == ChType_Dimmer256) || (channelType == ChType_Dimmer1000)) {
+		else if ((bRawPWMs && h_isChannelPWM(i)) ||
+			(channelType == ChType_Dimmer) || (channelType == ChType_Dimmer256) || (channelType == ChType_Dimmer1000)
+			|| channelType == ChType_Percent) {
 			int maxValue;
 			// PWM and dimmer both use a slider control
 			inputName = h_isChannelPWM(i) ? "pwm" : "dim";
@@ -2141,6 +2143,11 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			case ChType_Frequency_div100:
 			{
 				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, i, 3, 2, 1);
+			}
+			break;
+			case ChType_Percent:
+			{
+				dev_info = hass_init_sensor_device_info(HASS_PERCENT, i, 3, 2, 1);
 			}
 			break;
 			case ChType_Frequency_div1000:
