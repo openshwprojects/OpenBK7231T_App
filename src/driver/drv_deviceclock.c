@@ -154,14 +154,31 @@ commandResult_t CLOCK_SetLatlong(const void *context, const char *cmd, const cha
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
     newValue = Tokenizer_GetArg(0);
-    sun_data.latitude = (int) (atof(newValue) * SUN_DATA_COORD_MULT);
+    CLOCK_setLatitude(atof(newValue));
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "CLOCK latitude set to %s", newValue);
 
     newValue = Tokenizer_GetArg(1);
-		sun_data.longitude = (int) (atof(newValue) * SUN_DATA_COORD_MULT);
+    CLOCK_setLongitude(atof(newValue));
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "CLOCK longitude set to %s", newValue);
     return CMD_RES_OK;
 }
+
+void CLOCK_setLatitude(float lat){
+    sun_data.latitude = (int) (lat * SUN_DATA_COORD_MULT);
+};
+
+void CLOCK_setLongitude(float longi){
+	sun_data.longitude = (int) (longi * SUN_DATA_COORD_MULT);
+};
+
+
+float CLOCK_GetLatitude(){
+    return (float)sun_data.latitude/SUN_DATA_COORD_MULT;
+};
+
+float CLOCK_GetLongitude(){
+	return (float)sun_data.longitude/SUN_DATA_COORD_MULT ;
+};
 
 int CLOCK_GetSunrise()
 {
@@ -169,6 +186,7 @@ int CLOCK_GetSunrise()
 	int sunriseInSecondsFromMidnight;
 
 	CLOCK_CalculateSunrise(&hour, &minute);
+	addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "CLOCK sunrise is at %02i:%02i", hour, minute);
 	sunriseInSecondsFromMidnight = ((int)hour * 3600) + ((int)minute * 60);
 	return sunriseInSecondsFromMidnight;
 }
@@ -179,6 +197,7 @@ int CLOCK_GetSunset()
 	int sunsetInSecondsFromMidnight;
 
 	CLOCK_CalculateSunset(&hour, &minute);
+	addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "CLOCK sunset is at %02i:%02i", hour, minute);
 	sunsetInSecondsFromMidnight =  ((int)hour * 3600) + ((int)minute * 60);
 	return sunsetInSecondsFromMidnight;
 }
@@ -294,7 +313,7 @@ uint32_t setDST() {
 		dst_config.DSTactive = dst_config.isDST1;
     	}
     	else {
-    		next_DST_switch_epoch = RuleToTime(dst_config.day1, dst_config.month1, dst_config.week1, dst_config.hour1, year+1) - g_UTCoffset - (dst_config.isDST1) * dst_config.DSToffset;
+    		next_DST_switch_epoch = RuleToTime(dst_config.day1, dst_config.month1, dst_config.week1, dst_config.hour1, year+1) - g_UTCoffset - (dst_config.isDST2) * dst_config.DSToffset;
 		dst_config.DSTactive = dst_config.isDST2;
     	}
     }
@@ -402,6 +421,9 @@ void CLOCK_Init() {
 	//cmddetail:"fn":"CLOCK_CalcDST","file":"driver/drv_ntp.c","requires":"",
 	//cmddetail:"examples":"CLOCK_setDST 0 3 1 2 60 0 10 1 3 0	-- 1st rule: last_week March sunday 2_o_clock 60_minutes_DST_after_this_time -- 2nd_rule: last_week October sunday 3_o_clock 0_minutes_DST_after_this_time "}
     CMD_RegisterCommand("clock_setDST",CLOCK_SetDST, NULL);
+    
+    dst_config.DSTinitialized = 0;
+    
 #endif
 #if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 	//cmddetail:{"name":"clock_setTZ","args":"[Value]",
@@ -422,7 +444,7 @@ void CLOCK_OnEverySecond()
 #endif
 #if ENABLE_CLOCK_DST
     if (useDST && (Clock_GetCurrentTimeWithoutOffset() >= next_DST_switch_epoch)){
-    	int8_t old_DST=getDST_offset();
+    	int old_DST=getDST_offset();
 	setDST();
     	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Passed DST switch time - recalculated DST offset. Was:%i - now:%i",old_DST,getDST_offset());
     }
@@ -458,11 +480,12 @@ uint32_t Clock_GetCurrentTimeWithoutOffset(){ 	// ... same forNTP_GetCurrentTime
 };
 
 bool Clock_IsTimeSynced(){ 				// ... and for NTP_IsTimeSynced()
-#if ENABLE_LOCAL_CLOCK
+#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 	if (g_epochOnStartup > 10) {
 		return true;
 	}
-#elif ENABLE_NTP
+#endif
+#if ENABLE_NTP
 	if (NTP_IsTimeSynced() == true) {
 		return true;
 	}
@@ -474,9 +497,20 @@ int Clock_GetTimesZoneOfsSeconds()			// ... and for NTP_GetTimesZoneOfsSeconds()
 {
 #if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 	if (g_epochOnStartup > 10) {
-		return g_UTCoffset;
+		return g_UTCoffset 
+#if ENABLE_CLOCK_DST
+		+ getDST_offset()
+#endif 
+		;
 	}	// no "else" needed, will return 0 anyway if we don't return here
 #endif
 	return 0;
+}
+void CLOCK_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState)
+{
+	if (bPreState)
+		return;
+	uint32_t tempt=Clock_GetCurrentTime();
+	if (Clock_IsTimeSynced()) hprintf255(request, "<h5>Local clock %s (%i)</h5>",TS2STR(tempt,TIME_FORMAT_LONG) ,tempt);
 }
 
