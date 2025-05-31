@@ -151,7 +151,7 @@ void SPILED_Shutdown() {
 	spiLED.ready = 0;
 	if (spiLED.buf) {
 		free(spiLED.buf);
-		spiLED.buf
+		spiLED.buf = 0;
 	}
 }
 
