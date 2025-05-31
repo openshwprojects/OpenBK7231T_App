@@ -214,6 +214,8 @@ int http_fn_index(http_request_t* request) {
 	bForceShowRGBCW = CFG_HasFlag(OBK_FLAG_LED_FORCESHOWRGBCWCONTROLLER);
 	bForceShowRGB = CFG_HasFlag(OBK_FLAG_LED_FORCE_MODE_RGB);
 
+	malloc(1234);
+	
 	// user override is always stronger, so if no override set
 	if (bForceShowRGB == false && bForceShowRGBCW == false) {
 #ifndef OBK_DISABLE_ALL_DRIVERS
@@ -1785,7 +1787,6 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		}
 	}
 
-	malloc(1234);
 	
 	if (topic == 0 || *topic == 0) {
 		topic = "homeassistant";
