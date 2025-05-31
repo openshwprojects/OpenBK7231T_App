@@ -104,7 +104,7 @@ jobs:
         path: output/${{ needs.refs.outputs.version }}/obkSimulator_${{ needs.refs.outputs.version }}.zip
 
   build_asan:
-    name: Build Simulator with Address Sanitizer
+    name: Build Linux Simulator and Run Tests With Address Sanitizer
     needs: refs
     runs-on: ubuntu-22.04
 
