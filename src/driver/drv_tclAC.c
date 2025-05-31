@@ -147,6 +147,8 @@ static const struct {
 	{"turbo", FAN_TURBO},
 	{"auto", FAN_AUTOMATIC},
 };
+//const char *fanOptions[] = { "auto", "low", "medium", "high" };
+const char *fanOptions[] = { "off", "1", "2", "3", "4", "5", "mute", "turbo", "auto" };
 
 fanMode_e parseFanMode(const char *s) {
 	for (int i = 0; i < sizeof(fanModeMap) / sizeof(fanModeMap[0]); ++i) {
@@ -165,7 +167,6 @@ const char *fanModeToStr(fanMode_e mode) {
 	}
 	return NULL;
 }
-const char *fanOptions[] = { "auto", "low", "medium", "high" };
 typedef enum {
 	VS_NONE,
 	VS_MoveFull,
@@ -715,7 +716,7 @@ void TCL_DoDiscovery(const char *topic) {
 	HassDeviceInfo* dev_info = NULL;
 
 
-	dev_info = hass_createHVAC(15,30,0.5f, fanOptions, 4);
+	dev_info = hass_createHVAC(15,30,0.5f, fanOptions, sizeof(fanOptions)/sizeof(fanOptions[0]));
 	MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 	hass_free_device_info(dev_info);
 
