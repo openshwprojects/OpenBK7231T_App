@@ -1,4 +1,3 @@
 leak:CMD_CreateAliasHelper
-leak:SPILED_InitDMA
 leak:Test_HassDiscovery
 leak:TuyaMCU_RunFrame
