@@ -799,7 +799,7 @@ void dump(decode_results *results) {
 		raw_str += uint64ToString(raw_array[i], 10);
 		if (i != raw_len)
 		{
-			raw_str += ", "
+			raw_str += ", ";
 		}
 	}
 	raw_str += "]";
@@ -807,7 +807,7 @@ void dump(decode_results *results) {
 	delete[] raw_array;
 
 	ADDLOG_DEBUG(LOG_FEATURE_IR, raw_str.c_str());
-	
+
 	#ifdef ENABLE_IRAC
 	if (hasACState(results->decode_type))
 	{
