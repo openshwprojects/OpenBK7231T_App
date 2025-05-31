@@ -118,6 +118,7 @@ APP_C += $(OBK_DIR)/driver/drv_rn8209.c
 APP_C += $(OBK_DIR)/driver/drv_sgp.c
 APP_C += $(OBK_DIR)/driver/drv_shiftRegister.c
 APP_C += $(OBK_DIR)/driver/drv_sht3x.c
+APP_C += $(OBK_DIR)/driver/drv_pir.c
 #APP_C += $(OBK_DIR)/driver/drv_sm15155e.c
 #APP_C += $(OBK_DIR)/driver/drv_sm16703P.c
 APP_C += $(OBK_DIR)/driver/drv_sm2135.c

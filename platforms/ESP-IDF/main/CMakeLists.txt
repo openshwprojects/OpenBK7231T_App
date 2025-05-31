@@ -36,6 +36,7 @@ set(PROJ_ALL_SRC
 	../../../src/driver/drv_charts.c
 	../../../src/driver/drv_cht8305.c
 	../../../src/driver/drv_cse7766.c
+	../../../src/driver/drv_cse7761.c
 	../../../src/driver/drv_ddp.c
 	../../../src/driver/drv_debouncer.c
 	../../../src/driver/drv_dht_internal.c

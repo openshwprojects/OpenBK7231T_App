@@ -345,7 +345,7 @@ int http_fn_index(http_request_t* request) {
 #if ENABLE_OBK_BERRY
 		void Berry_SaveRequest(http_request_t *r);
 		Berry_SaveRequest(request);
-		CMD_Berry_RunEventHandlers_StrInt(CMD_EVENT_ON_HTTP, "prestate", (int)request);
+		CMD_Berry_RunEventHandlers_StrPtr(CMD_EVENT_ON_HTTP, "prestate", request);
 #endif
 #ifndef OBK_DISABLE_ALL_DRIVERS
 		DRV_AppendInformationToHTTPIndexPage(request, true);
@@ -357,7 +357,7 @@ int http_fn_index(http_request_t* request) {
 #if ENABLE_OBK_BERRY
 	void Berry_SaveRequest(http_request_t *r);
 	Berry_SaveRequest(request);
-	CMD_Berry_RunEventHandlers_StrInt(CMD_EVENT_ON_HTTP, "state", (int)request);
+	CMD_Berry_RunEventHandlers_StrPtr(CMD_EVENT_ON_HTTP, "state", request);
 #endif
 
 	if (!CFG_HasFlag(OBK_FLAG_HTTP_NO_ONOFF_WORDS)){
@@ -2229,6 +2229,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 #ifndef NO_CHIP_TEMPERATURE
 		dev_info = hass_init_sensor_device_info(HASS_TEMP, -1, -1, -1, 1);
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
 #endif
 		dev_info = hass_init_sensor_device_info(HASS_RSSI, -1, -1, -1, 1);
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
@@ -3211,7 +3212,7 @@ int http_fn_ota(http_request_t* request) {
 int http_fn_other(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 #if ENABLE_OBK_BERRY
-	if (CMD_Berry_RunEventHandlers_StrInt(CMD_EVENT_ON_HTTP, request->url, (int)request)) {
+	if (CMD_Berry_RunEventHandlers_StrPtr(CMD_EVENT_ON_HTTP, request->url, request)) {
 		return 0;
 	}
 #endif
