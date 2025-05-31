@@ -76,13 +76,6 @@ spiLED_t spiLED;
 
 
 
-void SPILED_Shutdown() {
-	if (spiLED.buf) {
-		free(spiLED.buf);
-		spiLED.buf = 0;
-	}
-}
-
 void SPILED_InitDMA(int numBytes) {
 	int i;
 
@@ -156,6 +149,10 @@ void SPILED_SetRawBytes(int start_offset, byte *bytes, int numBytes, int push) {
 }
 void SPILED_Shutdown() {
 	spiLED.ready = 0;
+	if (spiLED.buf) {
+		free(spiLED.buf);
+		spiLED.buf
+	}
 }
 
 void SPILED_Init() {
