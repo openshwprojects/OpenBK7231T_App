@@ -1784,6 +1784,8 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			excludedCount++;
 		}
 	}
+
+	malloc(1234);
 	
 	if (topic == 0 || *topic == 0) {
 		topic = "homeassistant";
