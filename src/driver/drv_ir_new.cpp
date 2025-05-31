@@ -789,6 +789,25 @@ void dump(decode_results *results) {
 	// Call this after IRrecv::decode()
 	ADDLOG_INFO(LOG_FEATURE_IR, resultToHumanReadableBasic(results).c_str());
 
+	uint16_t raw_len = getCorrectedRawLength(results);
+	uint16_t* raw_array = resultToRawArray(results);
+	String raw_str;
+	raw_str.reserve(raw_len + 8);
+	raw_str += "RAW[";
+	for (int i = 0; i < raw_len; i++)
+	{
+		raw_str += uint64ToString(raw_array[i], 10);
+		if (i != raw_len)
+		{
+			raw_str += ", "
+		}
+	}
+	raw_str += "]";
+
+	delete[] raw_array;
+
+	ADDLOG_DEBUG(LOG_FEATURE_IR, raw_str.c_str());
+	
 	#ifdef ENABLE_IRAC
 	if (hasACState(results->decode_type))
 	{
@@ -829,7 +848,7 @@ extern "C" void DRV_IR_RunFrame() {
 			}
 			#endif
 
-			//dump(&results);
+			dump(&results);
 			// 'UNKNOWN' protocol is by default disabled in flags
 			// This is because I am getting a lot of 'UNKNOWN' spam with no IR signals in room
 			if (((results.decode_type != decode_type_t::UNKNOWN) ||
