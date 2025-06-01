@@ -1059,7 +1059,7 @@ void CMD_FreeAllCommands() {
 	}
 
 }
-void CMD_RegisterCommand(const char* name, commandHandler_t handler, void* context) {
+command_t *CMD_RegisterCommand(const char* name, commandHandler_t handler, void* context) {
 	int hash;
 	command_t* newCmd;
 
@@ -1070,7 +1070,7 @@ void CMD_RegisterCommand(const char* name, commandHandler_t handler, void* conte
 		if (newCmd->handler != handler) {
 			ADDLOG_ERROR(LOG_FEATURE_CMD, "command with name %s already exists!", name);
 		}
-		return;
+		return 0;
 	}
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "Adding command %s", name);
 
@@ -1081,6 +1081,7 @@ void CMD_RegisterCommand(const char* name, commandHandler_t handler, void* conte
 	newCmd->next = g_commands[hash];
 	newCmd->context = context;
 	g_commands[hash] = newCmd;
+	return newCmd;
 }
 
 command_t* CMD_Find(const char* name) {
