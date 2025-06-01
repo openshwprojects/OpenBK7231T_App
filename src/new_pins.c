@@ -17,6 +17,8 @@
 #include "hal/hal_pins.h"
 #include "hal/hal_adc.h"
 
+#include "domoticz/domoticz.h"
+
 #ifdef PLATFORM_BEKEN
 #include <gpio_pub.h>
 #include "driver/drv_ir.h"
@@ -1178,6 +1180,11 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 		}
 	}
 #endif
+
+#if ENABLE_DOMOTICZ
+	send_domoticz_message(ch, (int) CHANNEL_GetFinalValue(ch), "hey", 78, abs((int) HAL_GetWifiStrength()));
+#endif
+
 	// Simple event - it just says that there was a change
 	EventHandlers_FireEvent(CMD_EVENT_CHANNEL_ONCHANGE, ch);
 	// more advanced events - change FROM value TO value
