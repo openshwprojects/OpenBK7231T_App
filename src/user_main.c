@@ -1425,7 +1425,7 @@ void Main_Init()
 #endif
 
 	byte *p = (byte*)malloc(123);
-	p[123] = 0;
+	free(p);
 	free(p);
 
 	// do things we want to happen immediately on boot
