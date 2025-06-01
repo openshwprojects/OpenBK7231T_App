@@ -25,7 +25,7 @@ https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccesspro
 #include "drv_uart.h"
 #include "drv_public.h"
 #include <time.h>
-#include "drv_ntp.h"
+#include "drv_deviceclock.h"
 #include "../rgb2hsv.h"
 
 
@@ -771,9 +771,11 @@ void TuyaMCU_Send_SetTime(struct tm* pTime, bool bSensorMode) {
 }
 struct tm* TuyaMCU_Get_NTP_Time() {
 	struct tm* ptm;
+	time_t ntpTime;
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "MCU time to set: %i\n", g_ntpTime);
-	ptm = gmtime(&g_ntpTime);
+	ntpTime=(time_t)Clock_GetCurrentTime();
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "MCU time to set: %i\n", ntpTime);
+	ptm = gmtime(&ntpTime);
 	if (ptm != 0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ptime ->gmtime => tm_hour: %i\n", ptm->tm_hour);
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ptime ->gmtime => tm_min: %i\n", ptm->tm_min);

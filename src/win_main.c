@@ -231,8 +231,8 @@ void Win_DoUnitTests() {
 #endif
 	Test_Tasmota();
 	Test_NTP();
-	Test_NTP_DST();
-	Test_NTP_SunsetSunrise();
+	Test_CLOCK_DST();
+	Test_CLOCK_SunsetSunrise();
 	Test_HTTP_Client();
 	Test_ExpandConstant();
 	Test_ChangeHandlers_MQTT();

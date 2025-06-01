@@ -251,6 +251,8 @@ This platform is not supported, error!
 #define bk_printf printf
 
 // generic
+#include <stdbool.h>
+
 typedef int bool;
 #define true 1
 #define false 0
@@ -357,12 +359,12 @@ typedef unsigned int u32;
 
 #elif PLATFORM_XR809 || PLATFORM_XR872
 
-
-
+#include <stdbool.h>
+/*
 typedef int bool;
 #define true 1
 #define false 0
-
+*/
 typedef unsigned char u8;
 typedef unsigned char uint8_t;
 typedef unsigned int uint32_t;
@@ -417,6 +419,8 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #include <portable.h>
 #include <semphr.h>
 #include "lwip/sys.h"
+#include <stdbool.h>
+
 
 #define portTICK_RATE_MS                      ( ( portTickType ) 1000 / configTICK_RATE_HZ )
 

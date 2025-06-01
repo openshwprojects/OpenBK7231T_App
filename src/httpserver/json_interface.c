@@ -16,10 +16,13 @@
 #include "../mqtt/new_mqtt.h"
 #include "hass.h"
 #include "../cJSON/cJSON.h"
-#include <time.h>
+//#include <time.h>
 #include "../driver/drv_ntp.h"
+#include "../driver/drv_deviceclock.h"
 #include "../driver/drv_local.h"
 #include "../driver/drv_bl_shared.h"
+
+#include "../libraries/obktime/obktime.h"	// for time functions
 
 #if ENABLE_TASMOTA_JSON
 
@@ -339,10 +342,12 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 /*
 {"StatusSNS":{"Time":"2023-04-10T10:19:55"}}
 */
-static void format_date(char *buffer, int buflength, struct tm *ltm)
+/*static void format_date(char *buffer, int buflength, struct tm *ltm)
 {
 	snprintf(buffer, buflength, "%04d-%02d-%02dT%02d:%02d:%02d",ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
 }
+*/
+// use obktimes ISO_8601 for this, e.g. TS2STR(Clock_GetCurrentTime(),TIME_FORMAT_ISO_8601)
 
 static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bAppendHeader) {
 	char buff[20];
@@ -352,9 +357,11 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 	}
 	printer(request, "{");
 
-	time_t localTime = (time_t)NTP_GetCurrentTime();
+/*	time_t localTime = (time_t)Clock_GetCurrentTime();
 	format_date(buff, sizeof(buff), gmtime(&localTime));
 	JSON_PrintKeyValue_String(request, printer, "Time", buff, false);
+*/
+	JSON_PrintKeyValue_String(request, printer, "Time", TS2STR(Clock_GetCurrentTime(),TIME_FORMAT_ISO_8601), false);
 
 #ifndef OBK_DISABLE_ALL_DRIVERS
 #ifdef ENABLE_DRIVER_BL0937
@@ -389,14 +396,9 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 //XR809 does not support drivers but its build script compiles many drivers including ntp.
 
 #else
-#ifndef ENABLE_NTP
-unsigned int NTP_GetCurrentTime() {
-	return 0;
-}
-unsigned int NTP_GetCurrentTimeWithoutOffset() {
-	return 0;
-}
-#endif
+// replaced "NTP_GetCurrentTime()" and "NTP_GetCurrentTimeWithoutOffset()" 
+// with "Clock_GetCurrentTime()" and "Clock_GetCurrentTimeWithoutOffset" 
+// (which will return 0 if no clock is synched), so no more need for a workaround here...
 #endif
 
 // Topic:  tele/tasmota_48E7F3/STATE
@@ -437,14 +439,16 @@ void format_time(int total_seconds, char* output, int outLen) {
 
 static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bAppendHeader) {
 	char buff[20];
-	time_t localTime = (time_t)NTP_GetCurrentTime();
+	time_t localTime = (time_t)Clock_GetCurrentTime();
 
 	if (bAppendHeader) {
 		printer(request, "\"StatusSTS\":");
 	}
 	printer(request, "{");
-	format_date(buff, sizeof(buff), gmtime(&localTime));
-	JSON_PrintKeyValue_String(request, printer, "Time", buff, true);
+//	format_date(buff, sizeof(buff), gmtime(&localTime));
+//	JSON_PrintKeyValue_String(request, printer, "Time", buff, true);
+	JSON_PrintKeyValue_String(request, printer, "Time", TS2STR(Clock_GetCurrentTime(),TIME_FORMAT_ISO_8601), true);
+	
 	format_time(g_secondsElapsed, buff, sizeof(buff));
 	JSON_PrintKeyValue_String(request, printer, "Uptime", buff, true);
 	//JSON_PrintKeyValue_String(request, printer, "Uptime", "30T02:59:30", true);
@@ -478,16 +482,29 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 static int http_tasmota_json_status_TIM(void* request, jsonCb_t printer) {
 	char buff[20];
 
-	time_t localTime = (time_t)NTP_GetCurrentTime();
-	time_t localUTC = (time_t)NTP_GetCurrentTimeWithoutOffset();
+//	time_t localTime = (time_t)Clock_GetCurrentTime();
+//	time_t localUTC = (time_t)Clock_GetCurrentTimeWithoutOffset();
 	printer(request, "\"StatusTIM\":{");
-	format_date(buff, sizeof(buff), gmtime(&localUTC));
-	JSON_PrintKeyValue_String(request, printer, "UTC", buff, true);
-	format_date(buff, sizeof(buff), gmtime(&localTime));
-	JSON_PrintKeyValue_String(request, printer, "Local", buff, true);
+//	format_date(buff, sizeof(buff), gmtime(&localUTC));
+//	JSON_PrintKeyValue_String(request, printer, "UTC", buff, true);
+	JSON_PrintKeyValue_String(request, printer, "UTC", TS2STR(Clock_GetCurrentTimeWithoutOffset(),TIME_FORMAT_ISO_8601), true);
+//	format_date(buff, sizeof(buff), gmtime(&localTime));
+//	JSON_PrintKeyValue_String(request, printer, "Local", buff, true);
+	JSON_PrintKeyValue_String(request, printer, "Local", TS2STR(Clock_GetCurrentTime(),TIME_FORMAT_ISO_8601), true);
+#if ENABLE_CLOCK_DST
+	uint32_t DST[2]={0,0};
+	// only get DST settings, if DST is set
+	if (getDST_offset() > 0) getDSTtransition(DST);
+	JSON_PrintKeyValue_String(request, printer, "StartDST", TS2STR(DST[0],TIME_FORMAT_ISO_8601) , true);
+	JSON_PrintKeyValue_String(request, printer, "EndDST", TS2STR(DST[1],TIME_FORMAT_ISO_8601), true);
+#else
 	JSON_PrintKeyValue_String(request, printer, "StartDST", "2022-03-27T02:00:00", true);
 	JSON_PrintKeyValue_String(request, printer, "EndDST", "2022-10-30T03:00:00", true);
-	JSON_PrintKeyValue_String(request, printer, "Timezone", "+01:00", true);
+#endif
+	int TZ=Clock_GetCurrentTime() - Clock_GetCurrentTimeWithoutOffset(); 
+	char tmp[8];
+	sprintf(tmp,"%+03i:%02i",(int8_t)TZ/3600,(uint8_t)abs((TZ%3600)/60));
+	JSON_PrintKeyValue_String(request, printer, "Timezone", tmp, true);
 	JSON_PrintKeyValue_String(request, printer, "Sunrise", "07:50", true);
 	JSON_PrintKeyValue_String(request, printer, "Sunset", "17:17", false);
 	printer(request, "}");
@@ -699,15 +716,18 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	JSON_PrintKeyValue_Int(request, printer, "Uptime", g_secondsElapsed, true);
 	struct tm* ltm;
 	time_t ntpTime = 0; // if no NTP_time set, we will not change this value, but just stick to 0 and hence "fake" start of epoch 1970-01-01T00:00:00
-	if (NTP_GetCurrentTimeWithoutOffset() > g_secondsElapsed) {	// would be negative else, leading to unwanted results when converted to (unsigned) time_t 
-		ntpTime = (time_t)NTP_GetCurrentTimeWithoutOffset() - (time_t)g_secondsElapsed;
+	if (Clock_GetCurrentTimeWithoutOffset() > g_secondsElapsed) {	// would be negative else, leading to unwanted results when converted to (unsigned) time_t 
+		ntpTime = (time_t)Clock_GetCurrentTimeWithoutOffset() - (time_t)g_secondsElapsed;
 	}
+/*
 	ltm = gmtime(&ntpTime);
 	if (ltm != 0) {
 		printer(request, "\"StartupUTC\":\"%04d-%02d-%02dT%02d:%02d:%02d\",", ltm->tm_year + 1900, ltm->tm_mon + 1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
 	}
 	else {
 	}
+*/
+	printer(request, "\"StartupUTC\":\"%s\",", TS2STR(Clock_GetCurrentTime(),TIME_FORMAT_ISO_8601));
 	JSON_PrintKeyValue_Int(request, printer, "Sleep", 50, true);
 	JSON_PrintKeyValue_Int(request, printer, "CfgHolder", 4617, true);
 	JSON_PrintKeyValue_Int(request, printer, "BootCount", 22, true);
