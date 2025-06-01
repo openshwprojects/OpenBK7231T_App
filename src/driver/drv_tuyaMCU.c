@@ -2431,19 +2431,71 @@ bool TuyaMCU_IsLEDRunning() {
 		return false;
 	return true;
 }
-
-void TuyaMCU_Init()
-{
-	// this is only for simulator, where multiple sessions can happen...
+void TuyaMCU_Shutdown() {
 	tuyaMCUMapping_t *tmp, *nxt;
+	tuyaMCUPacket_t *packet, *next_packet;
+
+	// free the tuyaMCUMapping_t linked list
 	tmp = g_tuyaMappings;
 	while (tmp) {
 		nxt = tmp->next;
+		// free rawData if allocated
+		if (tmp->rawData) {
+			free(tmp->rawData);
+			tmp->rawData = NULL;
+			tmp->rawBufferSize = 0;
+			tmp->rawDataLen = 0;
+		}
 		free(tmp);
 		tmp = nxt;
 	}
-	g_tuyaMappings = 0;
+	g_tuyaMappings = NULL;
 
+	// free the tuyaMCUpayloadBuffer
+	if (g_tuyaMCUpayloadBuffer) {
+		free(g_tuyaMCUpayloadBuffer);
+		g_tuyaMCUpayloadBuffer = NULL;
+		g_tuyaMCUpayloadBufferSize = 0;
+	}
+
+	// free the tm_emptyPackets queue
+	packet = tm_emptyPackets;
+	while (packet) {
+		next_packet = packet->next;
+		if (packet->data) {
+			free(packet->data);
+			packet->data = NULL;
+			packet->allocated = 0;
+			packet->size = 0;
+		}
+		free(packet);
+		packet = next_packet;
+	}
+	tm_emptyPackets = NULL;
+
+	// free the tm_sendPackets queue
+	packet = tm_sendPackets;
+	while (packet) {
+		next_packet = packet->next;
+		if (packet->data) {
+			free(packet->data);
+			packet->data = NULL;
+			packet->allocated = 0;
+			packet->size = 0;
+		}
+		free(packet);
+		packet = next_packet;
+	}
+	tm_sendPackets = NULL;
+
+	// free the mutex
+	if (g_mutex) {
+		//vSemaphoreDelete(g_mutex);
+		g_mutex = NULL;
+	}
+}
+void TuyaMCU_Init()
+{
 	g_resetWiFiEvents = 0;
 	g_tuyaNextRequestDelay = 1;
 	g_tuyaBatteryPoweredState = 0;
