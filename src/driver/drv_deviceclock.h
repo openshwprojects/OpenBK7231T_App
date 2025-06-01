@@ -34,6 +34,12 @@ extern struct SUN_DATA {  /* sunrise / sunset globals */
 	int latitude;  /* latitude * 1000000 */
 	int longitude;  /* longitude * 1000000 */
 	} sun_data;
+int CLOCK_GetSunrise();
+int CLOCK_GetSunset();
+float CLOCK_GetLatitude();
+float CLOCK_GetLongitude();
+void CLOCK_setLatitude(float lat);
+void CLOCK_setLongitude(float longi);
 #endif
 uint32_t Clock_GetCurrentTime(); 			// might replace for NTP_GetCurrentTime() to return time regardless of NTP present/running
 uint32_t Clock_GetCurrentTimeWithoutOffset(); 		// ... same for NTP_GetCurrentTimeWithoutOffset()...
@@ -48,6 +54,7 @@ int getDST_offset();
 uint32_t RuleToTime(uint8_t dayOfWeek, uint8_t month, uint8_t weekNum, uint8_t hour, uint16_t year);
 void getDSTtransition(uint32_t * DST);
 #endif
+void CLOCK_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 
 
 #endif /* __DRV_DEVICECLOCK_H__ */
