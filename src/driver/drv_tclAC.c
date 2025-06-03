@@ -344,7 +344,7 @@ static const struct {
 	{"off", CLIMATE_MODE_OFF},
 	{"cool", CLIMATE_MODE_COOL},
 	{"dry", CLIMATE_MODE_DRY},
-	{"fan", CLIMATE_MODE_FAN_ONLY},
+	{"fan_only", CLIMATE_MODE_FAN_ONLY},
 	{"heat", CLIMATE_MODE_HEAT},
 	{"heatcool", CLIMATE_MODE_HEAT_COOL},
 	{"auto", CLIMATE_MODE_AUTO}
