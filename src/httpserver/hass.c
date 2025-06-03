@@ -377,6 +377,7 @@ HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **f
 	cJSON_AddItemToArray(modes, cJSON_CreateString("off"));
 	cJSON_AddItemToArray(modes, cJSON_CreateString("heat"));
 	cJSON_AddItemToArray(modes, cJSON_CreateString("cool"));
+	cJSON_AddItemToArray(modes, cJSON_CreateString("fan"));
 	cJSON_AddItemToObject(info->root, "modes", modes);
 
 	if (fanOptions && numFanOptions) {
