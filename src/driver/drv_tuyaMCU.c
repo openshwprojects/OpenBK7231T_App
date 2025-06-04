@@ -1694,7 +1694,7 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 
 					}
 				}
-				break:
+				break;
 				case DP_TYPE_RAW_VCPPfF:
 				{
 					if (sectorLen == 15) {
