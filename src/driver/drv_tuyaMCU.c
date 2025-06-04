@@ -86,6 +86,7 @@ static byte g_resetWiFiEvents = 0;
 #define			DP_TYPE_RAW_TAC2121C_LASTMONTH	203
 #define			DP_TYPE_PUBLISH_TO_MQTT			204
 #define			DP_TYPE_RAW_VCPPfF				205
+#define			DP_TYPE_RAW_V2C3P3				206
 
 const char* TuyaMCU_GetDataTypeString(int dpId) {
 	if (DP_TYPE_RAW == dpId)
@@ -829,6 +830,9 @@ int TuyaMCU_ParseDPType(const char *dpTypeString) {
 	else if (!stricmp(dpTypeString, "RAW_TAC2121C_VCP")) {
 		// linkTuyaMCUOutputToChannel 6 RAW_TAC2121C_VCP
 		dpType = DP_TYPE_RAW_TAC2121C_VCP;
+	}
+	else if (!stricmp(dpTypeString, "RAW_V2C3P3")) {
+		dpType = DP_TYPE_RAW_V2C3P3;
 	}
 	else if (!stricmp(dpTypeString, "RAW_VCPPfF")) {
 		dpType = DP_TYPE_RAW_VCPPfF;
@@ -1666,7 +1670,31 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 
 					}
 				}
-				break; 
+				break;
+				case DP_TYPE_RAW_V2C3P3:
+				{
+					// see: https://www.elektroda.com/rtvforum/viewtopic.php?p=21569350#21569350
+					if (sectorLen == 8) {
+						int iV, iC, iP;
+						iV = data[ofs + 4] << 8 | data[ofs + 5];
+						iC = (data[ofs + 6] << 16) | (data[ofs + 7] << 8) | data[ofs + 8];
+						iP = (data[ofs + 9] << 16) | (data[ofs + 10] << 8) | data[ofs + 11];
+						if (mapping->channel < 0) {
+							CHANNEL_SetFirstChannelByType(ChType_Voltage_div10, iV);
+							CHANNEL_SetFirstChannelByType(ChType_Current_div1000, iC);
+							CHANNEL_SetFirstChannelByType(ChType_Power, iP);
+						}
+						else {
+							CHANNEL_Set(mapping->channel, iV, 0);
+							CHANNEL_Set(mapping->channel + 1, iC, 0);
+							CHANNEL_Set(mapping->channel + 2, iP, 0);
+						}
+					}
+					else {
+
+					}
+				}
+				break:
 				case DP_TYPE_RAW_VCPPfF:
 				{
 					if (sectorLen == 15) {
