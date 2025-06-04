@@ -716,7 +716,10 @@ void TCL_DoDiscovery(const char *topic) {
 	HassDeviceInfo* dev_info = NULL;
 
 
-	dev_info = hass_createHVAC(15,30,0.5f, fanOptions, sizeof(fanOptions)/sizeof(fanOptions[0]));
+	dev_info = hass_createHVAC(15,30,0.5f, fanOptions, sizeof(fanOptions)/sizeof(fanOptions[0]),
+		vertical_swing_options,sizeof(vertical_swing_options) / sizeof(vertical_swing_options[0]),
+		horizontal_swing_options, sizeof(horizontal_swing_options) / sizeof(horizontal_swing_options[0])
+		);
 	MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 	hass_free_device_info(dev_info);
 
@@ -733,31 +736,31 @@ void TCL_DoDiscovery(const char *topic) {
 	hass_free_device_info(dev_info);
 
 
-		char command_topic[64];
+		//char command_topic[64];
 
-		// Vertical Swing Entity
-		sprintf(command_topic, "cmnd/%s/SwingV", CFG_GetMQTTClientId());
-		dev_info = hass_createSelectEntity(
-			"~/SwingV/get",               // state_topic
-			command_topic,                          // command_topic
-			9,                                      // numoptions (VerticalSwingMode has 9 values)
-			vertical_swing_options,                 // fanOptions array
-			"Vertical Swing Mode"                   // title
-		);
-		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-		hass_free_device_info(dev_info);
+		//// Vertical Swing Entity
+		//sprintf(command_topic, "cmnd/%s/SwingV", CFG_GetMQTTClientId());
+		//dev_info = hass_createSelectEntity(
+		//	"~/SwingV/get",               // state_topic
+		//	command_topic,                          // command_topic
+		//	9,                                      // numoptions (VerticalSwingMode has 9 values)
+		//	vertical_swing_options,                 // fanOptions array
+		//	"Vertical Swing Mode"                   // title
+		//);
+		//MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		//hass_free_device_info(dev_info);
 
-		// Horizontal Swing Entity
-		sprintf(command_topic, "cmnd/%s/SwingH", CFG_GetMQTTClientId());
-		dev_info = hass_createSelectEntity(
-			"~/SwingH/get",            // state_topic
-			command_topic,                          // command_topic
-			10,                                     // numoptions (HorizontalSwing has 10 values)
-			horizontal_swing_options,               // fanOptions array
-			"Horizontal Swing Mode"                 // title
-		);
-		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-		hass_free_device_info(dev_info);
+		//// Horizontal Swing Entity
+		//sprintf(command_topic, "cmnd/%s/SwingH", CFG_GetMQTTClientId());
+		//dev_info = hass_createSelectEntity(
+		//	"~/SwingH/get",            // state_topic
+		//	command_topic,                          // command_topic
+		//	10,                                     // numoptions (HorizontalSwing has 10 values)
+		//	horizontal_swing_options,               // fanOptions array
+		//	"Horizontal Swing Mode"                 // title
+		//);
+	//	MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		//hass_free_device_info(dev_info);
 
 }
 
