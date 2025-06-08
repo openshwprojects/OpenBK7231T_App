@@ -1424,6 +1424,10 @@ void Main_Init()
 	CMD_FreeAllCommands();
 #endif
 
+	byte *p = (byte*)malloc(123);
+	free(p);
+	free(p);
+
 	// do things we want to happen immediately on boot
 	Main_Init_Before_Delay();
 	// delay until TCP/IP stack is ready
