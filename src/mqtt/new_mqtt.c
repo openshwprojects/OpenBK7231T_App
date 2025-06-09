@@ -13,6 +13,7 @@
 #include "../hal/hal_wifi.h"
 #include "../driver/drv_public.h"
 #include "../driver/drv_ntp.h"
+#include "../driver/drv_deviceclock.h"
 #include "../driver/drv_tuyaMCU.h"
 #include "../ota/ota.h"
 #ifndef WINDOWS
@@ -2026,19 +2027,22 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 
 
 	case PUBLISHITEM_SELF_DATETIME:
-		//Drivers are only built on BK7231 chips
+// Clock_GetCurrentTime() is allways present
+/*		//Drivers are only built on BK7231 chips
 #ifndef OBK_DISABLE_ALL_DRIVERS
+
 		if (DRV_IsRunning("NTP")) {
-			sprintf(dataStr, "%d", NTP_GetCurrentTime());
+*/
+			sprintf(dataStr, "%ld", Clock_GetCurrentTime());
 			return MQTT_DoItemPublishString("datetime", dataStr);
-		}
+/*		}
 		else {
 			return OBK_PUBLISH_WAS_NOT_REQUIRED;
 		}
 #else
 		return OBK_PUBLISH_WAS_NOT_REQUIRED;
 #endif
-
+*/
 	case PUBLISHITEM_SELF_SOCKETS:
 		sprintf(dataStr, "%d", LWIP_GetActiveSockets());
 		return MQTT_DoItemPublishString("sockets", dataStr);
@@ -2550,7 +2554,9 @@ struct tm* mbedtls_platform_gmtime_r(const mbedtls_time_t* tt, struct tm* tm_buf
 		}			
 		return ltm;
 	}
-	return gmtime_r((time_t*)&g_ntpTime, tm_buf);
+	time_t ntpTime;
+	ntpTime=(time_t)Clock_GetCurrentTime();
+	return gmtime_r((time_t*)&ntpTime, tm_buf);
 }
 #endif  //MBEDTLS_PLATFORM_GMTIME_R_ALT
 
