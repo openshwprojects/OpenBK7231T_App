@@ -46,7 +46,7 @@ int HAL_ADC_Read(int pinNumber)
 float HAL_ADC_Temp(void)
 {
 	wm_adc_config(0);
-	adc_get_offset();
+//	adc_get_offset();
 	// adc_temp returns
 	// chip temperature, unit: 1/1000 degree
 	// we want a float here

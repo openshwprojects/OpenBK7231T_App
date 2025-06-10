@@ -8,9 +8,15 @@
 
 #if !NEW_TCP_SERVER
 
-#define HTTP_SERVER_PORT            80
-#define REPLY_BUFFER_SIZE			2048
-#define INCOMING_BUFFER_SIZE		1024
+#define HTTP_SERVER_PORT		80
+#define REPLY_BUFFER_SIZE		2048
+//#define INCOMING_BUFFER_SIZE		1024
+//#define MAX_INCOMING_BUFFER_SIZE	4096
+
+// START change values just for testing
+#define INCOMING_BUFFER_SIZE		512
+#define MAX_INCOMING_BUFFER_SIZE	2048
+// END change values just for testing
 
 
 // it was 0x800 - 2048 - until 23 10 2022
@@ -84,6 +90,7 @@ static void tcp_client_thread(beken_thread_arg_t arg)
 #else
 	request.receivedLen = 0;
 	while (1) {
+		buf=request.received;		// even if we resized the buffer, make sure "buf" points to the actual one, buf could else be the old pointer ...
 		int remaining = request.receivedLenmax - request.receivedLen;
 		int received = recv(fd, request.received + request.receivedLen, remaining, 0);
 		if (received <= 0) {
@@ -93,13 +100,29 @@ static void tcp_client_thread(beken_thread_arg_t arg)
 		if (received < remaining) {
 			break;
 		}
+		//      (our buffer already has maximum size) 		  ||	(growing buffer would exeed the maximum size)
+		if( (request.receivedLenmax >= MAX_INCOMING_BUFFER_SIZE) || (request.receivedLenmax + 1024 > MAX_INCOMING_BUFFER_SIZE)){
+			ADDLOG_DEBUG(LOG_FEATURE_HTTP, "Won't grow buffer any more, reached limit (request.receivedLenmax=%d; after resize would be=%d but MAX_INCOMING_BUFFER_SIZE=%d ).\n",
+				request.receivedLenmax, request.receivedLenmax + 1024, MAX_INCOMING_BUFFER_SIZE );
+			break;
+		}
+
 		// grow by 1024
+		// on start of the while, we made sure, "buf" points to the actual "request.received" buffer, we might need that, if realloc fails
+		int oldsize = request.receivedLenmax;
 		request.receivedLenmax += 1024;
+		ADDLOG_DEBUG(LOG_FEATURE_HTTP, "Growing buffer from %d to %d bytes ... \n", oldsize, request.receivedLenmax);
 		request.received = (char*)realloc(request.received, request.receivedLenmax+2);
 		if (request.received == NULL) {
-			// no memory
-			return;
+			// no memory - make sure, we clean up the memory allocated
+			request.received = buf;		// restore the saved pointer, so request.received points to the data before trying realloc
+			goto exit;
+/*
+			// as an alternative, we could also be more tolerant and "proceed" with the data copied up to now
+			break;				// ... process the data in HTTP server
+*/
 		}
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_HTTP, " ... sucessfully grown buffer!\n");
 	}
 	request.received[request.receivedLen] = 0;
 #endif

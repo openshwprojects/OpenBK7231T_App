@@ -12,19 +12,28 @@
 #ifndef MAX_SOCKETS_TCP
 #define MAX_SOCKETS_TCP MEMP_NUM_TCP_PCB
 #endif
+#define MAX_SOCKETS_TCP 4
 
 void HTTPServer_Start();
 
-#define HTTP_SERVER_PORT			80
-#define REPLY_BUFFER_SIZE			2048
-#define INCOMING_BUFFER_SIZE		2048
-#define INVALID_SOCK				-1
+#define HTTP_SERVER_PORT		80
+#define REPLY_BUFFER_SIZE		2048
+//#define INCOMING_BUFFER_SIZE		2048
+//#define MAX_INCOMING_BUFFER_SIZE	4096
+#define INVALID_SOCK			-1
 #define HTTP_CLIENT_STACK_SIZE		8192
+
+// START change values just for testing
+#define INCOMING_BUFFER_SIZE		512
+#define MAX_INCOMING_BUFFER_SIZE	2048
+// END change values just for testing
+
+
 
 typedef struct
 {
 	int fd;
-	TaskHandle_t thread;
+	xTaskHandle thread;
 	bool isCompleted;
 } tcp_thread_t;
 
@@ -63,6 +72,8 @@ static void tcp_client_thread(tcp_thread_t* arg)
 	request.receivedLen = 0;
 	while(1)
 	{
+		buf=request.received;		// even if we resized the buffer, make sure "buf" points to the actual one, buf could else be the old pointer ...
+
 		int remaining = request.receivedLenmax - request.receivedLen;
 		int received = recv(fd, request.received + request.receivedLen, remaining, 0);
 		if(received <= 0)
@@ -74,17 +85,42 @@ static void tcp_client_thread(tcp_thread_t* arg)
 		{
 			break;
 		}
-		// grow by INCOMING_BUFFER_SIZE
+		//     (our buffer already has maximum size) 		  ||	(growing buffer would exeed the maximum size)  
+		if( (request.receivedLenmax >= MAX_INCOMING_BUFFER_SIZE) || (request.receivedLenmax + INCOMING_BUFFER_SIZE > MAX_INCOMING_BUFFER_SIZE))
+		{
+			// just some debug output for testing
+			ADDLOG_DEBUG(LOG_FEATURE_HTTP, "NEW_TCP_server: Won't grow buffer any more, reached limit (request.receivedLenmax=%d; after resize would be=%d but MAX_INCOMING_BUFFER_SIZE=%d ).\n", 
+				request.receivedLenmax, request.receivedLenmax + INCOMING_BUFFER_SIZE, MAX_INCOMING_BUFFER_SIZE);  
+			break;
+		}
+		// grow by INCOMING_BUFFER_SIZE - we made sure, this is inside our limits ( <= MAX_INCOMING_BUFFER_SIZE) before 
+
+		int oldsize = request.receivedLenmax;
 		request.receivedLenmax += INCOMING_BUFFER_SIZE;
+		ADDLOG_DEBUG(LOG_FEATURE_HTTP, "NEW_TCP_server: Growing buffer from %d to %d bytes ... \n", oldsize, request.receivedLenmax);
 		GLOBAL_INT_DISABLE();
 		request.received = (char*)realloc(request.received, request.receivedLenmax + 2);
 		GLOBAL_INT_RESTORE();
 		if(request.received == NULL)
 		{
 			// no memory
+			request.received = buf;		// restore the saved pointer, so request.received points to the data before trying realloc
 			goto exit;
+/*
+			// as an alternative, we could also be more tolerant and "proceed" with the data copied up to now 
+			break;				// ... process the data in HTTP server 
+*/
 		}
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_HTTP, " ... sucessfully grown buffer!\n");
 	}
+
+	// moved up: if request.receivedLen is really < 0, setting "request.received[request.receivedLen] = 0;" will be illegal  
+	if(request.receivedLen <= 0)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "TCP Client is disconnected, fd: %d", fd);
+		goto exit;
+	}
+
 	request.received[request.receivedLen] = 0;
 
 	request.reply = reply;
@@ -92,12 +128,6 @@ static void tcp_client_thread(tcp_thread_t* arg)
 	reply[0] = '\0';
 
 	request.replymaxlen = replyBufferSize - 1;
-
-	if(request.receivedLen <= 0)
-	{
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, "TCP Client is disconnected, fd: %d", fd);
-		goto exit;
-	}
 
 	//addLog( "TCP received string %s\n",buf );
 	// returns length to be sent if any
@@ -108,7 +138,6 @@ static void tcp_client_thread(tcp_thread_t* arg)
 		ADDLOG_DEBUG(LOG_FEATURE_HTTP, "TCP sending reply len %i\n", lenret);
 		send(fd, reply, lenret, 0);
 	}
-
 exit:
 	GLOBAL_INT_DISABLE();
 	if(buf != NULL)
@@ -261,11 +290,17 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 				//ADDLOG_EXTRADEBUG(LOG_FEATURE_HTTP, "[sock=%d]: Connection accepted from IP:%s", sock[new_idx].fd, get_clientaddr(&source_addr));
 
 				rtos_delay_milliseconds(20);
+
+				int stacksize = HTTP_CLIENT_STACK_SIZE;
+				// reduce stacksize if memory is low - try at least 1024 - e.g. W800 might crash else 
+				while (  (xPortGetFreeHeapSize() < 2 * HTTP_CLIENT_STACK_SIZE) && (xPortGetFreeHeapSize() < 3 * stacksize) && stacksize > 2048) stacksize/=2;
+				if (stacksize < HTTP_CLIENT_STACK_SIZE) ADDLOG_DEBUG(LOG_FEATURE_HTTP, "New TCP Client thread with reduced stackzise %d (FreeHeap=%d)\n",stacksize,xPortGetFreeHeapSize());
+
 				if(kNoErr != rtos_create_thread(&sock[new_idx].thread,
 					BEKEN_APPLICATION_PRIORITY,
 					"HTTP Client",
 					(beken_thread_function_t)tcp_client_thread,
-					HTTP_CLIENT_STACK_SIZE,
+					stacksize,
 					(beken_thread_arg_t)&sock[new_idx]))
 				{
 					ADDLOG_ERROR(LOG_FEATURE_HTTP, "[sock=%d]: TCP Client thread creation failed!", sock[new_idx].fd);
@@ -275,7 +310,7 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 				}
 			}
 		}
-		vTaskDelay(pdMS_TO_TICKS(10));
+		rtos_delay_milliseconds(10);
 	}
 
 error:

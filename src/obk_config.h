@@ -72,6 +72,7 @@
 #define OBK_OTA_EXTENSION 		".img"
 #define ENABLE_I2C					1
 #define ENABLE_OBK_SCRIPTING			1
+//#define NEW_TCP_SERVER				1
 
 
 #elif WINDOWS
