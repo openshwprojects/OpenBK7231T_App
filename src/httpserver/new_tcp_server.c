@@ -24,7 +24,7 @@ void HTTPServer_Start();
 typedef struct
 {
 	int fd;
-	TaskHandle_t thread;
+	xTaskHandle thread;
 	bool isCompleted;
 } tcp_thread_t;
 
@@ -54,7 +54,7 @@ static void tcp_client_thread(tcp_thread_t* arg)
 		goto exit;
 	}
 	http_request_t request;
-	os_memset(&request, 0, sizeof(request));
+	memset(&request, 0, sizeof(request));
 
 	request.fd = fd;
 	request.received = buf;
@@ -275,7 +275,7 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 				}
 			}
 		}
-		vTaskDelay(pdMS_TO_TICKS(10));
+		rtos_delay_milliseconds(10);
 	}
 
 error:

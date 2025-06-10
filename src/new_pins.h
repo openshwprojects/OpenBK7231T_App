@@ -1503,7 +1503,7 @@ const char *ChannelType_GetUnit(int type);
 int ChannelType_GetDivider(int type);
 int ChannelType_GetDecimalPlaces(int type);
 
-//int PIN_GetPWMIndexForPinIndex(int pin);
+int PIN_GetPWMIndexForPinIndex(int pin);
 
 int PIN_ParsePinRoleName(const char* name);
 const char* PIN_RoleToString(int role);

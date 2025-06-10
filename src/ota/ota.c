@@ -4,7 +4,7 @@
 
 //W600 uses OTA functions from its SDK.
 
-#else
+#elif PLATFORM_BEKEN
 
 #include "../new_common.h"
 #include "../new_cfg.h"

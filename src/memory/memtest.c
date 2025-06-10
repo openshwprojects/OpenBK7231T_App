@@ -6,9 +6,6 @@
 //
 
 
-#include "include.h"
-#include "arm_arch.h"
-#include "sys_rtos.h"
 #include "../new_common.h"
 
 #include "../memory/memtest.h"
@@ -16,6 +13,10 @@
 
 
 #ifdef PLATFORM_BK7231T
+
+#include "include.h"
+#include "arm_arch.h"
+#include "sys_rtos.h"
 
     ////////////////////////////////////////////////////////////
     // variables to mimic those used in mem_arch.c/heap_4.c

@@ -4,6 +4,7 @@
 #ifndef _UTILS_NET_H_
 #define _UTILS_NET_H_
 
+#if PLATFORM_BEKEN || WINDOWS
 /**
  * @brief The structure of network connection(TCP or SSL).
  *   The user has to allocate memory for this structure.
@@ -49,5 +50,6 @@ int32_t HAL_TCP_Write(uintptr_t fd, const char *buf, uint32_t len, uint32_t time
 int32_t HAL_TCP_Read(uintptr_t fd, char *buf, uint32_t len, uint32_t timeout_ms);
 int32_t HAL_TCP_Destroy(uintptr_t fd);
 
+#endif
 
 #endif /* IOTX_COMMON_NET_H */

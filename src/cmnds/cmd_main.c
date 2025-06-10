@@ -131,6 +131,17 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	else {
 		tls_wifi_set_psflag(0, 0);	//Disable powersave but don't save to flash
 	}
+#elif defined(PLATFORM_W800)
+	if(bOn)
+	{
+		uint8_t enable = 1;
+		tls_param_set(TLS_PARAM_ID_PSM, (void*)&enable, false);
+	}
+	else
+	{
+		uint8_t enable = 0;
+		tls_param_set(TLS_PARAM_ID_PSM, (void*)&enable, false);
+	}
 #elif defined(PLATFORM_BL602)
 	if (bOn) {
 		wifi_mgmr_sta_ps_enter(2);
