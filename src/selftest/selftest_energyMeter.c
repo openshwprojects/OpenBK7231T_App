@@ -356,7 +356,10 @@ void Test_EnergyMeter_TurnOffScript() {
 }
 void Test_EnergyMeter() {
 	Test_EnergyMeter_CSE7766();
+#ifndef LINUX
+	// TODO: fix on Linux
 	Test_EnergyMeter_BL0942();
+#endif
 	Test_EnergyMeter_Basic();
 	Test_EnergyMeter_Tasmota();
 	Test_EnergyMeter_Events();

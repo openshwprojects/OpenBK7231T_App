@@ -91,7 +91,8 @@ void CMD_Berry_RunEventHandlers_IntInt(byte eventCode, int argument, int argumen
 		t = t->next;
 	}
 }
-int CMD_Berry_RunEventHandlers_StrInt(byte eventCode, const char *argument, int argument2) {
+
+int CMD_Berry_RunEventHandlers_StrPtr(byte eventCode, const char *argument, void* argument2) {
 	berryInstance_t *t;
 
 	t = g_berryThreads;
@@ -105,13 +106,14 @@ int CMD_Berry_RunEventHandlers_StrInt(byte eventCode, const char *argument, int 
 		} else if (t->wait.waitingForEvent == eventCode
 			&& t->wait.waitingForRelation == 'm'
 			&& !stricmp(t->wait.waitingForArgumentStr,argument)) {
-			berryRunClosureIntInt(g_vm, t->closureId, argument2, 0);
+			berryRunClosurePtr(g_vm, t->closureId, argument2);
 			calls++;
 		}
 		t = t->next;
 	}
 	return calls;
 }
+
 void CMD_Berry_RunEventHandlers_IntBytes(byte eventCode, int argument, const byte *data, int size) {
 	berryInstance_t *t;
 
@@ -206,11 +208,11 @@ int be_addClosure(bvm *vm, const char *eventName, int relation, int reqArg, cons
 int be_poststr(bvm *vm) {
 	int top = be_top(vm);
 
-	if (top == 2 && be_isstring(vm, 2) && be_isint(vm, 1)) {
+	if (top == 2 && be_isstring(vm, 2) && be_iscomptr(vm, 1)) {
 		const char *s = be_tostring(vm, 2);
-		int request = be_toint(vm, 1);
+		http_request_t* request = be_tocomptr(vm, 1);
 
-		poststr((http_request_t*)request, s);
+		poststr(request, s);
 	}
 	be_return_nil(vm);
 }
