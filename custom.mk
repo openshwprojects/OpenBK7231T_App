@@ -7,7 +7,7 @@ SRC_DIRS ?= src/
 
 EXCLUDED_FILES ?= src/httpserver/http_tcp_server.c src/ota/ota.c src/cmnds/cmd_tcp.c src/memory/memtest.c src/new_ping.c src/win_main_scriptOnly.c src/driver/drv_ir2.c src/driver/drv_ir.cpp 
 
-SRCS := $(filter-out $(EXCLUDED_FILES), $(wildcard $(shell find $(SRC_DIRS) -not \( -path "src/hal/bl602" -prune \) -not \( -path "src/hal/xr809" -prune \) -not \( -path "src/hal/w800" -prune \) -not \( -path "src/hal/bk7231" -prune \) -name *.c | sort -k 1nr | cut -f2-)))
+SRCS := $(filter-out $(EXCLUDED_FILES), $(wildcard $(shell find $(SRC_DIRS) -not \( -path "src/hal/bl602" -prune \) -not \( -path "src/hal/xr809" -prune \) -not \( -path "src/hal/w800" -prune \) -not \( -path "src/hal/bk7231" -prune \) -not \( -path "src/berry" -prune \) -name *.c | sort -k 1nr | cut -f2-)))
 
 INC_DIRS := include $(shell find $(SRC_DIRS) -type d)
 INC_DIRS := $(filter-out src/hal/bl602 src/hal/xr809 src/hal/w800 src/hal/bk7231 src/memory, $(wildcard $(INC_DIRS)))
