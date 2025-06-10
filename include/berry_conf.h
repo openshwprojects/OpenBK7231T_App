@@ -232,10 +232,18 @@
 #define BE_EXPLICIT_MALLOC malloc
 #define BE_EXPLICIT_FREE free
 // normal realloc appears broken on OpenBK7231T: #1563, #298
-#if PLATFORM_BEKEN || PLATFORM_W800
+#if PLATFORM_BEKEN
 #define BE_EXPLICIT_REALLOC os_realloc
 #else
 #define BE_EXPLICIT_REALLOC realloc
+#endif
+#if PLATFORM_W800
+#undef BE_EXPLICIT_MALLOC
+#undef BE_EXPLICIT_REALLOC
+#undef BE_EXPLICIT_FREE
+#define BE_EXPLICIT_MALLOC pvPortMalloc
+#define BE_EXPLICIT_REALLOC pvPortRealloc
+#define BE_EXPLICIT_FREE vPortFree
 #endif
 
 /* Macro: be_assert

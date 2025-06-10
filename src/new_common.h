@@ -433,6 +433,7 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #if PLATFORM_W800
 #define os_malloc pvPortMalloc
 #define os_free vPortFree
+#define realloc pvPortRealloc
 #else
 #define os_malloc malloc
 #define os_free free
