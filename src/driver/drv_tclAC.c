@@ -647,11 +647,11 @@ void HTTP_CreateRadio(http_request_t *request, const char **options, int numOpti
 		active = tmpA;
 	}
 	hprintf255(request, "<form method='get'>");
-	hprintf255(request, "%s", command);
+	hprintf255(request, "%s ", command);
 	for (int i = 0; i < numOptions; i++) {
 		const char *checked = (strcmp(options[i], active) == 0) ? " checked" : "";
 		hprintf255(request,
-			"<label><input type='radio' name='%s' value='%s'%s onchange='this.form.submit()'>%s</label><br>",
+			"<label><input type='radio' name='%s' value='%s'%s onchange='this.form.submit()'>%s</label> ",
 			command, options[i], checked, options[i]);
 	}
 
