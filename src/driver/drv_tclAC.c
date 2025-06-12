@@ -616,13 +616,67 @@ static commandResult_t CMD_FANMode(const void* context, const char* cmd, const c
 	return CMD_RES_OK;
 }
 
+void HTTP_CreateSelect(http_request_t *request, const char **options, int numOptions, const char *active, const char *command) {
+	// on select, send option string to /cm?cmnd=Command [Option]
+	char tmpA[64];
+	if (http_getArg(request->url, command, tmpA, sizeof(tmpA))) {
+		CMD_ExecuteCommandArgs(command, tmpA, 0);
+		// hack for display?
+		active = tmpA;
+	}
+	hprintf255(request,
+		"<form method='get'>"
+		"<select name='%s' onchange='this.form.submit()'>", command);
+
+	for (int i = 0; i < numOptions; i++) {
+		const char *selected = (strcmp(options[i], active) == 0) ? " selected" : "";
+		hprintf255(request, "<option value=\"%s\"%s>%s</option>", options[i], selected, options[i]);
+	}
+
+	hprintf255(request, "</select></form>");
+}
+void HTTP_CreateDIV(http_request_t *request, const char *label) {
+
+	hprintf255(request, "<div>%s</div>", label);
+}
+void HTTP_CreateRadio(http_request_t *request, const char **options, int numOptions, const char *active, const char *command) {
+	char tmpA[64];
+	if (http_getArg(request->url, command, tmpA, sizeof(tmpA))) {
+		CMD_ExecuteCommandArgs(command, tmpA, 0);
+		// hack for display?
+		active = tmpA;
+	}
+	hprintf255(request, "<form method='get'>");
+	hprintf255(request, "%s", command);
+	for (int i = 0; i < numOptions; i++) {
+		const char *checked = (strcmp(options[i], active) == 0) ? " checked" : "";
+		hprintf255(request,
+			"<label><input type='radio' name='%s' value='%s'%s onchange='this.form.submit()'>%s</label><br>",
+			command, options[i], checked, options[i]);
+	}
+
+	hprintf255(request, "</form>");
+}
+
 void TCL_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState) {
 	if (bPreState) {
-
+		hprintf255(request, "<div style=\"display: grid; grid-auto-flow: column;\">");
+		HTTP_CreateDIV(request, "ACMode");
+		HTTP_CreateDIV(request, "SwingV");
+		HTTP_CreateDIV(request, "SwingH");
+		hprintf255(request, "</div>");
+		hprintf255(request, "<div style=\"display: grid; grid-auto-flow: column;\">");
+		HTTP_CreateSelect(request, fanOptions, sizeof(fanOptions) / sizeof(fanOptions[0]), climateModeToStr(g_mode), "ACMode");
+		HTTP_CreateSelect(request, vertical_swing_options, sizeof(vertical_swing_options) / sizeof(vertical_swing_options[0]), getSwingVLabel(g_swingV), "SwingV");
+		HTTP_CreateSelect(request, horizontal_swing_options, sizeof(horizontal_swing_options) / sizeof(horizontal_swing_options[0]), getSwingHLabel(g_swingH),"SwingH");
+		hprintf255(request, "</div>");
 	}
 	else {
-		hprintf255(request, "<h3>SwingH: %s</h3>", climateModeToStr(g_mode));
-		hprintf255(request, "<h3>SwingV: %s</h3>", climateModeToStr(g_mode));
+		HTTP_CreateRadio(request, fanOptions, sizeof(fanOptions) / sizeof(fanOptions[0]), climateModeToStr(g_mode), "ACMode");
+		HTTP_CreateRadio(request, vertical_swing_options, sizeof(vertical_swing_options) / sizeof(vertical_swing_options[0]), getSwingVLabel(g_swingV), "SwingV");
+		HTTP_CreateRadio(request, horizontal_swing_options, sizeof(horizontal_swing_options) / sizeof(horizontal_swing_options[0]), getSwingHLabel(g_swingH), "SwingH");
+		hprintf255(request, "<h3>SwingH: %s</h3>", getSwingHLabel(g_swingH));
+		hprintf255(request, "<h3>SwingV: %s</h3>", getSwingVLabel(g_swingV));
 		hprintf255(request, "<h3>Mode: %s</h3>", climateModeToStr(g_mode));
 		hprintf255(request, "<h3>Current temperature: %f</h3>", current_temperature);
 		hprintf255(request, "<h3>Target temperature: %f</h3>", target_temperature);
