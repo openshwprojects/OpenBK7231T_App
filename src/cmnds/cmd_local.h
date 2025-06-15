@@ -3,11 +3,15 @@
 
 #include "cmd_public.h"
 
+#define CMD_FLAG_FREE_NAME		1
+#define CMD_FLAG_FREE_CONTEXT	2
+
 typedef struct command_s {
 	const char *name;
 	commandHandler_t handler;
 	const void *context;
 	struct command_s *next;
+	int commandFlags;
 } command_t;
 
 command_t *CMD_Find(const char *name);

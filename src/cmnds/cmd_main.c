@@ -640,7 +640,11 @@ commandResult_t CMD_CreateAliasHelper(const char *alias, const char *ocmd) {
 	//cmddetail:"descr":"Internal usage only. See docs for 'alias' command.",
 	//cmddetail:"fn":"runcmd","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand(aliasMem, runcmd, cmdMem);
+	command_t *cmd = CMD_RegisterCommand(aliasMem, runcmd, cmdMem);
+	if (cmd) {
+		cmd->commandFlags |= CMD_FLAG_FREE_NAME;
+		cmd->commandFlags |= CMD_FLAG_FREE_CONTEXT;
+	}
 	return CMD_RES_OK;
 }
 // run an aliased command
@@ -1052,6 +1056,12 @@ void CMD_FreeAllCommands() {
 		cmd = g_commands[i];
 		while (cmd) {
 			next = cmd->next;
+			if (cmd->commandFlags & CMD_FLAG_FREE_NAME) {
+				free((char*)cmd->name);
+			}
+			if (cmd->commandFlags & CMD_FLAG_FREE_CONTEXT) {
+				free((char*)cmd->context);
+			}
 			free(cmd);
 			cmd = next;
 		}
@@ -1059,7 +1069,7 @@ void CMD_FreeAllCommands() {
 	}
 
 }
-void CMD_RegisterCommand(const char* name, commandHandler_t handler, void* context) {
+command_t *CMD_RegisterCommand(const char* name, commandHandler_t handler, void* context) {
 	int hash;
 	command_t* newCmd;
 
@@ -1070,17 +1080,19 @@ void CMD_RegisterCommand(const char* name, commandHandler_t handler, void* conte
 		if (newCmd->handler != handler) {
 			ADDLOG_ERROR(LOG_FEATURE_CMD, "command with name %s already exists!", name);
 		}
-		return;
+		return 0;
 	}
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "Adding command %s", name);
 
 	hash = generateHashValue(name);
 	newCmd = (command_t*)malloc(sizeof(command_t));
+	newCmd->commandFlags = 0;
 	newCmd->handler = handler;
 	newCmd->name = name;
 	newCmd->next = g_commands[hash];
 	newCmd->context = context;
 	g_commands[hash] = newCmd;
+	return newCmd;
 }
 
 command_t* CMD_Find(const char* name) {
