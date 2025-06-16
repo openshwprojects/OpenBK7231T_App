@@ -1,4 +1,4 @@
-#ifdef PLATFORM_XR809
+#ifdef PLATFORM_XR872
 
 #include "../hal_adc.h"
 
@@ -12,5 +12,5 @@ int HAL_ADC_Read(int pinNumber) {
 }
 
 
-#endif // PLATFORM_XR809
+#endif // PLATFORM_XR872
 

@@ -1,4 +1,4 @@
-#if PLATFORM_XR809 || PLATFORM_XR872
+#if PLATFORM_XR872
 
 #include "../../new_common.h"
 #include "../../logging/logging.h"
@@ -12,7 +12,7 @@ static int g_xr_ota_requested = 0;
 
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
-void XR809_RequestOTAHTTP(const char *httpPath) {
+void XR872_RequestOTAHTTP(const char *httpPath) {
 	strcpy(g_otaRequest,httpPath);
 	g_xr_ota_requested = 1;
 }
@@ -47,4 +47,4 @@ void user_main(void)
 	}
 
 }
-#endif // PLATFORM_XR809
+#endif // PLATFORM_XR872

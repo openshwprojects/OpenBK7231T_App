@@ -1,4 +1,4 @@
-#if PLATFORM_XR809 || PLATFORM_XR872
+#if PLATFORM_XR872
 
 #include "../hal_flashConfig.h"
 #include "../../logging/logging.h"
@@ -18,18 +18,18 @@
 
 static fdcm_handle_t *g_fdcm_hdl = 0;
 
-static int XR809_InitSysInfo() {
+static int XR872_InitSysInfo() {
 	uint32_t image_size = image_get_size();
 	if (image_size == 0) {
-		ADDLOG_DEBUG(LOG_FEATURE_CFG, "XR809_InitSysInfo: get image size failed\n");
+		ADDLOG_DEBUG(LOG_FEATURE_CFG, "XR872_InitSysInfo: get image size failed\n");
 		return -1;
 	}
 	if (image_size > OUR_CUSTOM_SYSINFO_ADR) {
-		ADDLOG_DEBUG(LOG_FEATURE_CFG, "XR809_InitSysInfo: image is too big: %#x, please make it smaller than %#x\n",
+		ADDLOG_DEBUG(LOG_FEATURE_CFG, "XR872_InitSysInfo: image is too big: %#x, please make it smaller than %#x\n",
 		            image_size, OUR_CUSTOM_SYSINFO_ADR);
 		return -1;
 	}
-	ADDLOG_DEBUG(LOG_FEATURE_CFG, "XR809_InitSysInfo: image size %i, our adr %i\n",image_size,OUR_CUSTOM_SYSINFO_ADR);
+	ADDLOG_DEBUG(LOG_FEATURE_CFG, "XR872_InitSysInfo: image size %i, our adr %i\n",image_size,OUR_CUSTOM_SYSINFO_ADR);
 	g_fdcm_hdl = fdcm_open(PRJCONF_SYSINFO_FLASH, OUR_CUSTOM_SYSINFO_ADR, OUR_CUSTOM_SYSINFO_SIZE);
 	if (g_fdcm_hdl == NULL) {
 		ADDLOG_DEBUG(LOG_FEATURE_CFG, "fdcm open failed, hdl %p\n", g_fdcm_hdl);
@@ -41,7 +41,7 @@ static int XR809_InitSysInfo() {
 int HAL_Configuration_ReadConfigMemory(void *target, int dataLen){
 
 	if(g_fdcm_hdl == 0) {
-		XR809_InitSysInfo();
+		XR872_InitSysInfo();
 	}
 
 	if (fdcm_read(g_fdcm_hdl, target, dataLen) != dataLen) {
@@ -100,7 +100,7 @@ void HAL_Configuration_GenerateMACForThisModule(unsigned char *out) {
 
 int HAL_Configuration_SaveConfigMemory(void *src, int dataLen){
 	if(g_fdcm_hdl == 0) {
-		XR809_InitSysInfo();
+		XR872_InitSysInfo();
 	}
 
 	if (fdcm_write(g_fdcm_hdl, src, dataLen) != dataLen) {
@@ -115,6 +115,6 @@ int HAL_Configuration_SaveConfigMemory(void *src, int dataLen){
 
 
 
-#endif // PLATFORM_XR809
+#endif // PLATFORM_XR872
 
 

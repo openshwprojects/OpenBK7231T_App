@@ -1,4 +1,4 @@
-#if PLATFORM_XR809 || PLATFORM_XR872
+#if PLATFORM_XR872
 
 #include "../hal_wifi.h"
 #include "../../new_cfg.h"
@@ -173,4 +173,4 @@ const char *HAL_GetMACStr(char *macstr) {
 	return macstr;
 }
 
-#endif // PLATFORM_XR809
+#endif // PLATFORM_XR872

@@ -1,4 +1,4 @@
-#ifdef PLATFORM_XR809
+#ifdef PLATFORM_XR872
 
 #include "../hal_flashConfig.h"
 #include "../hal_flashVars.h"
@@ -49,6 +49,6 @@ void HAL_FlashVars_SaveTotalConsumption(float total_consumption)
 {
 }
 
-#endif // PLATFORM_XR809
+#endif // PLATFORM_XR872
 
 
