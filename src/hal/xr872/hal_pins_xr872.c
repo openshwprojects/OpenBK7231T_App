@@ -38,6 +38,7 @@ static xr872pin_t g_xrPins[] = {
     { "PA20", GPIO_PORT_A, GPIO_PIN_20 },
     { "PA21", GPIO_PORT_A, GPIO_PIN_21 },
     { "PA22", GPIO_PORT_A, GPIO_PIN_22 },
+    { "PA23", GPIO_PORT_A, GPIO_PIN_23 },
 
     // Port B
     { "PB00", GPIO_PORT_B, GPIO_PIN_0 },
@@ -48,24 +49,9 @@ static xr872pin_t g_xrPins[] = {
     { "PB05", GPIO_PORT_B, GPIO_PIN_5 },
     { "PB06", GPIO_PORT_B, GPIO_PIN_6 },
     { "PB07", GPIO_PORT_B, GPIO_PIN_7 },
-    { "PB08", GPIO_PORT_B, GPIO_PIN_8 },
-    { "PB09", GPIO_PORT_B, GPIO_PIN_9 },
-    { "PB10", GPIO_PORT_B, GPIO_PIN_10 },
-    { "PB11", GPIO_PORT_B, GPIO_PIN_11 },
-    { "PB12", GPIO_PORT_B, GPIO_PIN_12 },
-    { "PB13", GPIO_PORT_B, GPIO_PIN_13 },
-    { "PB14", GPIO_PORT_B, GPIO_PIN_14 },
-    { "PB15", GPIO_PORT_B, GPIO_PIN_15 },
-
-    // Port C
-    { "PC00", GPIO_PORT_C, GPIO_PIN_0 },
-    { "PC01", GPIO_PORT_C, GPIO_PIN_1 },
-    { "PC02", GPIO_PORT_C, GPIO_PIN_2 },
-    { "PC03", GPIO_PORT_C, GPIO_PIN_3 },
-    { "PC04", GPIO_PORT_C, GPIO_PIN_4 },
-    { "PC05", GPIO_PORT_C, GPIO_PIN_5 },
-    { "PC06", GPIO_PORT_C, GPIO_PIN_6 },
-    { "PC07", GPIO_PORT_C, GPIO_PIN_7 },
+    { "PB16", GPIO_PORT_B, GPIO_PIN_16 },
+    { "PB17", GPIO_PORT_B, GPIO_PIN_17 },
+    { "PB18", GPIO_PORT_B, GPIO_PIN_18 },
 };
 int g_numXRPins = sizeof(g_xrPins) / sizeof(g_xrPins[0]);
 
