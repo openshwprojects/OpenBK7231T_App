@@ -45,13 +45,13 @@ SRCS += ../shared/src/i2c/drv_i2c_mcp23017
 SRCS += ../shared/src/i2c/drv_i2c_tc74
 SRCS += ../shared/src/i2c/drv_i2c_lcd_pcf8574t
 
-SRCS += ../shared/src/hal/xr809/hal_adc_xr809
-SRCS += ../shared/src/hal/xr809/hal_wifi_xr809
-SRCS += ../shared/src/hal/xr809/hal_generic_xr809
-SRCS += ../shared/src/hal/xr809/hal_main_xr809
-SRCS += ../shared/src/hal/xr809/hal_pins_xr809
-SRCS += ../shared/src/hal/xr809/hal_flashConfig_xr809
-SRCS += ../shared/src/hal/xr809/hal_flashVars_xr809
+SRCS += ../shared/src/hal/xr872/hal_adc_xr872
+SRCS += ../shared/src/hal/xr872/hal_wifi_xr872
+SRCS += ../shared/src/hal/xr872/hal_generic_xr872
+SRCS += ../shared/src/hal/xr872/hal_main_xr872
+SRCS += ../shared/src/hal/xr872/hal_pins_xr872
+SRCS += ../shared/src/hal/xr872/hal_flashConfig_xr872
+SRCS += ../shared/src/hal/xr872/hal_flashVars_xr872
 
 SRCS += ../shared/src/hal/generic/hal_adc_generic
 SRCS += ../shared/src/hal/generic/hal_flashConfig_generic
