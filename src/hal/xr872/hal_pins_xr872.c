@@ -4,13 +4,13 @@
 #include "../../logging/logging.h"
 #include "driver/chip/hal_gpio.h"
 
-typedef struct xr809pin_s {
+typedef struct xr872pin_s {
 	const char *name;
 	int port;
 	int pin;
-} xr809pin_t;
+} xr872pin_t;
 
-static xr809pin_t g_xrPins[] = {
+static xr872pin_t g_xrPins[] = {
 	// Original known pins
 	{ "PA19", GPIO_PORT_A, GPIO_PIN_19 },
 	{ "PB03", GPIO_PORT_B, GPIO_PIN_3 },
@@ -67,7 +67,7 @@ static xr809pin_t g_xrPins[] = {
 
 int g_numXRPins = sizeof(g_xrPins) / sizeof(g_xrPins[0]);
 
-static void PIN_XR809_GetPortPinForIndex(int index, int *xr_port, int *xr_pin) {
+static void PIN_XR872_GetPortPinForIndex(int index, int *xr_port, int *xr_pin) {
 	if(index < 0 || index >= g_numXRPins) {
 		*xr_port = 0;
 		*xr_pin = 0;
@@ -92,14 +92,14 @@ int HAL_PIN_CanThisPinBePWM(int index) {
 void HAL_PIN_SetOutputValue(int index, int iVal) {
 	int xr_port;
 	int xr_pin;
-	PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
+	PIN_XR872_GetPortPinForIndex(index, &xr_port, &xr_pin);
 	HAL_GPIO_WritePin(xr_port, xr_pin, iVal);
 }
 
 int HAL_PIN_ReadDigitalInput(int index) {
 	int xr_port;
 	int xr_pin;
-	PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
+	PIN_XR872_GetPortPinForIndex(index, &xr_port, &xr_pin);
 	return (HAL_GPIO_ReadPin(xr_port, xr_pin) == GPIO_PIN_LOW) ? 0 : 1;
 }
 
@@ -112,7 +112,7 @@ void HAL_PIN_Setup_Input_Pullup(int index) {
 	int xr_pin;
 	GPIO_InitParam param;
 
-	PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
+	PIN_XR872_GetPortPinForIndex(index, &xr_port, &xr_pin);
 
 	param.driving = GPIO_DRIVING_LEVEL_1;
 	param.mode = GPIOx_Pn_F0_INPUT;
@@ -125,7 +125,7 @@ void HAL_PIN_Setup_Input(int index) {
 	int xr_pin;
 	GPIO_InitParam param;
 
-	PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
+	PIN_XR872_GetPortPinForIndex(index, &xr_port, &xr_pin);
 
 	param.driving = GPIO_DRIVING_LEVEL_1;
 	param.mode = GPIOx_Pn_F0_INPUT;
@@ -138,7 +138,7 @@ void HAL_PIN_Setup_Output(int index) {
 	int xr_pin;
 	GPIO_InitParam param;
 
-	PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
+	PIN_XR872_GetPortPinForIndex(index, &xr_port, &xr_pin);
 
 	param.driving = GPIO_DRIVING_LEVEL_1;
 	param.mode = GPIOx_Pn_F1_OUTPUT;
@@ -162,7 +162,7 @@ void HAL_PIN_PWM_Update(int index, float value) {
 unsigned int HAL_GetGPIOPin(int index) {
 	int xr_port;
 	int xr_pin;
-	PIN_XR809_GetPortPinForIndex(index, &xr_port, &xr_pin);
+	PIN_XR872_GetPortPinForIndex(index, &xr_port, &xr_pin);
 	return xr_pin;
 }
 
