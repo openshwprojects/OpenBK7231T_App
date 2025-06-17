@@ -678,12 +678,40 @@ void TCL_Init(void) {
 	UART_InitUART(TCL_baudRate, 2, false);
 	UART_InitReceiveRingBuffer(TCL_UART_RECEIVE_BUFFER_SIZE);
 
+	//cmddetail:{"name":"ACMode","args":"CMD_ACMode",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tclAC.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("ACMode", CMD_ACMode, NULL);
+	//cmddetail:{"name":"FANMode","args":"CMD_FANMode",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tclAC.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("FANMode", CMD_FANMode, NULL);
+	//cmddetail:{"name":"SwingH","args":"CMD_SwingH",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tclAC.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SwingH", CMD_SwingH, NULL);
+	//cmddetail:{"name":"SwingV","args":"CMD_SwingV",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tclAC.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SwingV", CMD_SwingV, NULL);
+	//cmddetail:{"name":"TargetTemperature","args":"CMD_TargetTemperature",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tclAC.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TargetTemperature", CMD_TargetTemperature, NULL);
+	//cmddetail:{"name":"Buzzer","args":"CMD_Buzzer",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tclAC.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Buzzer", CMD_Buzzer, NULL);
+	//cmddetail:{"name":"Display","args":"CMD_Display",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tclAC.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Display", CMD_Display, NULL);
 }
 
