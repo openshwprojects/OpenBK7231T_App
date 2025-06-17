@@ -14,19 +14,19 @@ typedef struct xr809pin_s {
 // https://developer.tuya.com/en/docs/iot/xr3-datasheet?id=K98s9168qi49g
 
 static xr809pin_t g_xrPins[] = {
-	{ "PA19", GPIO_PORT_A, GPIO_PIN_19 },
-	{ "PB03", GPIO_PORT_B, GPIO_PIN_3 },
+	{ "PA06", GPIO_PORT_A, GPIO_PIN_6 },
+	{ "PA07", GPIO_PORT_A, GPIO_PIN_7 },
+	{ "PA08", GPIO_PORT_A, GPIO_PIN_8 },
 	{ "PA12", GPIO_PORT_A, GPIO_PIN_12 },
 	{ "PA14", GPIO_PORT_A, GPIO_PIN_14 },
 	{ "PA15", GPIO_PORT_A, GPIO_PIN_15 },
-	{ "PA06", GPIO_PORT_A, GPIO_PIN_6 },
-	{ "PA07", GPIO_PORT_A, GPIO_PIN_7 },
 	{ "PA16", GPIO_PORT_A, GPIO_PIN_16 },
+	{ "PA19", GPIO_PORT_A, GPIO_PIN_19 },
 	{ "PA20", GPIO_PORT_A, GPIO_PIN_20 },
 	{ "PA21", GPIO_PORT_A, GPIO_PIN_21 },
 	{ "PA22", GPIO_PORT_A, GPIO_PIN_22 },
 	{ "PB02", GPIO_PORT_B, GPIO_PIN_2 },
-	{ "PA08", GPIO_PORT_A, GPIO_PIN_8 },
+	{ "PB03", GPIO_PORT_B, GPIO_PIN_3 },
 };
 int g_numXRPins = sizeof(g_xrPins) / sizeof(g_xrPins[0]);
 
