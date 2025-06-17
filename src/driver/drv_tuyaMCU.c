@@ -175,6 +175,8 @@ typedef struct tuyaMCUMapping_s {
 	// not really useful as long as we have integer channels
 	float mult;
 	float delta;
+	float delta2;
+	float delta3;
 	// TODO
 	//int mode;
 	// list
@@ -330,7 +332,7 @@ tuyaMCUMapping_t* TuyaMCU_FindDefForChannel(int channel) {
 	return 0;
 }
 
-tuyaMCUMapping_t* TuyaMCU_MapIDToChannel(int dpId, int dpType, int channel, int bDPCache, float mul, int inv, float delta) {
+tuyaMCUMapping_t* TuyaMCU_MapIDToChannel(int dpId, int dpType, int channel, int bDPCache, float mul, int inv, float delta, float delta2, float delta3) {
 	tuyaMCUMapping_t* cur;
 
 	cur = TuyaMCU_FindDefForID(dpId);
@@ -348,6 +350,8 @@ tuyaMCUMapping_t* TuyaMCU_MapIDToChannel(int dpId, int dpType, int channel, int 
 	cur->bDPCache = bDPCache;
 	cur->mult = mul;
 	cur->delta = delta;
+	cur->delta2 = delta2;
+	cur->delta3 = delta3;
 	cur->inv = inv;
 	cur->prevValue = 0;
 	cur->channel = channel;
@@ -866,7 +870,7 @@ commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void* context, const ch
 	int channelID;
 	byte argsCount;
 	byte bDPCache;
-	float mult, delta;
+	float mult, delta, delta2, delta3;
 	byte inv;
 
 	// linkTuyaMCUOutputToChannel [dpId] [varType] [channelID] [bDPCache] [mult] [inv] [delta]
@@ -893,8 +897,10 @@ commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void* context, const ch
 	mult = Tokenizer_GetArgFloatDefault(4, 1.0f);
 	inv = Tokenizer_GetArgInteger(5);
 	delta = Tokenizer_GetArgFloatDefault(6, 0.0f);
+	delta2 = Tokenizer_GetArgFloatDefault(7, 0.0f);
+	delta3 = Tokenizer_GetArgFloatDefault(8, 0.0f);
 
-	TuyaMCU_MapIDToChannel(dpId, dpType, channelID, bDPCache, mult, inv, delta);
+	TuyaMCU_MapIDToChannel(dpId, dpType, channelID, bDPCache, mult, inv, delta, delta2, delta3);
 
 	return CMD_RES_OK;
 }
@@ -1606,7 +1612,7 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 		if (CFG_HasFlag(OBK_FLAG_TUYAMCU_STORE_RAW_DATA)) {
 			if (CFG_HasFlag(OBK_FLAG_TUYAMCU_STORE_ALL_DATA)) {
 				if (mapping == 0) {
-					mapping = TuyaMCU_MapIDToChannel(dpId, dataType, -1, 0, 1.0f, 0, 0);
+					mapping = TuyaMCU_MapIDToChannel(dpId, dataType, -1, 0, 1.0f, 0, 0, 0, 0);
 				}
 			}
 			if (mapping) {
@@ -1679,6 +1685,10 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 						iV = data[ofs + 4] << 8 | data[ofs + 5];
 						iC = (data[ofs + 6] << 16) | (data[ofs + 7] << 8) | data[ofs + 8];
 						iP = (data[ofs + 9] << 16) | (data[ofs + 10] << 8) | data[ofs + 11];
+						// calibration
+						iV += mapping->delta;
+						iC += mapping->delta2;
+						iP += mapping->delta3;
 						if (mapping->channel < 0) {
 							CHANNEL_SetFirstChannelByType(ChType_Voltage_div10, iV);
 							CHANNEL_SetFirstChannelByType(ChType_Current_div1000, iC);
@@ -1709,6 +1719,10 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 						iPf = data[ofs + 11 + 4] << 8 | data[ofs + 12 + 4];
 						// freq
 						iF = data[ofs + 13 + 4] << 8 | data[ofs + 14 + 4];
+						// calibration
+						iV += mapping->delta;
+						iC += mapping->delta2;
+						iP += mapping->delta3;
 						if (mapping->channel < 0) {
 							CHANNEL_SetFirstChannelByType(ChType_Voltage_div10, iV);
 							CHANNEL_SetFirstChannelByType(ChType_Current_div1000, iC);
@@ -1739,6 +1753,10 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 						iC = data[ofs + 3 + 4] << 8 | data[ofs + 4 + 4];
 						// power
 						iP = data[ofs + 6 + 4] << 8 | data[ofs + 7 + 4];
+						// calibration
+						iV += mapping->delta;
+						iC += mapping->delta2;
+						iP += mapping->delta3;
 						if (mapping->channel < 0) {
 							CHANNEL_SetFirstChannelByType(ChType_Voltage_div10, iV);
 							CHANNEL_SetFirstChannelByType(ChType_Current_div1000, iC);
@@ -2547,7 +2565,7 @@ void TuyaMCU_Init()
 	//cmddetail:"fn":"TuyaMCU_Send_SetTime_Current","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_sendCurTime", TuyaMCU_Send_SetTime_Current, NULL);
-	//cmddetail:{"name":"linkTuyaMCUOutputToChannel","args":"[dpId][varType][channelID][bDPCache-Optional][mult-optional][bInverse-Optional][delta-Optional]",
+	//cmddetail:{"name":"linkTuyaMCUOutputToChannel","args":"[dpId][varType][channelID][bDPCache-Optional][mult-optional][bInverse-Optional][delta-Optional][delta2][delta3]",
 	//cmddetail:"descr":"Used to map between TuyaMCU dpIDs and our internal channels. Mult, inverse and delta are for calibration, they are optional. bDPCache is also optional, you can set it to 1 for battery powered devices, so a variable is set with DPCache, for example a sampling interval for humidity/temperature sensor. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap. Please see [Tuya Docs](https://developer.tuya.com/en/docs/iot/tuya-cloud-universal-serial-port-access-protocol?id=K9hhi0xxtn9cb) for info about TuyaMCU. You can also see our [TuyaMCU Analyzer Tool](https://www.elektroda.com/rtvforum/viewtopic.php?p=20528459#20528459)",
 	//cmddetail:"fn":"TuyaMCU_LinkTuyaMCUOutputToChannel","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
