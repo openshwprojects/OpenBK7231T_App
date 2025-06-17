@@ -190,6 +190,7 @@ void Win_DoUnitTests() {
 #if ENABLE_BL_SHARED
 	Test_EnergyMeter();
 #endif
+	Test_TuyaMCU_Calib();
 	// this is slowest
 	Test_TuyaMCU_Basic();
 	Test_TuyaMCU_Mult();
