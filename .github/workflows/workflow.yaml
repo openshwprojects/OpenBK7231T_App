@@ -194,6 +194,8 @@ jobs:
             variant: powerMetering
           - platform: OpenBK7231T
             variant: irRemoteESP
+          - platform: OpenBK7231T
+            variant: sensors
 
           # extras for BK7231N
           - platform: OpenBK7231N
@@ -204,6 +206,8 @@ jobs:
             variant: powerMetering
           - platform: OpenBK7231N
             variant: irRemoteESP
+          - platform: OpenBK7231N
+            variant: sensors
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
