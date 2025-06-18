@@ -612,26 +612,26 @@ int hasExtension(const char *fname, const char *ext) {
 	size_t len_ext = strlen(ext);
 	return (len_fname >= len_ext && strcmp(fname + len_fname - len_ext, ext) == 0);
 }
-scriptInstance_t *SVM_StartBacklog(const char *command) {
+void SVM_StartBacklog(const char *command) {
 	scriptFile_t *f;
 	scriptInstance_t *th;
 
 	f = SVM_RegisterFileForText(command);
 	if (f == 0) {
-		return NULL;
+		return ;
 	}
 	if (f->data == 0) {
-		return NULL;
+		return ;
 	}
 	th = SVM_RegisterThread();
 	if (th == 0) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "SVM_StartBacklog: failed to alloc thread");
-		return NULL;
+		return ;
 	}
 	th->uniqueID = 0;
 	th->curFile = f;
 	th->curLine = f->data;
-	return th;
+	//return th;
 }
 scriptInstance_t *SVM_StartScript(const char *fname, const char *label, int uniqueID) {
 	scriptFile_t *f;
