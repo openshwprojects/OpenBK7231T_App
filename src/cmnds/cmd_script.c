@@ -618,9 +618,11 @@ void SVM_StartBacklog(const char *command) {
 
 	f = SVM_RegisterFileForText(command);
 	if (f == 0) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "SVM_StartBacklog: failed to alloc file");
 		return ;
 	}
 	if (f->data == 0) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "SVM_StartBacklog: failed to alloc file");
 		return ;
 	}
 	th = SVM_RegisterThread();
