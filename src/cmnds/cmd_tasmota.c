@@ -136,30 +136,30 @@ static commandResult_t powerAll(const void *context, const char *cmd, const char
 }
 
 
+static commandResult_t cmnd_backlog_old(const void * context, const char *cmd, const char *args, int cmdFlags) {
 
-static commandResult_t cmnd_backlog(const void * context, const char *cmd, const char *args, int cmdFlags){
 	const char *subcmd;
 	const char *p;
 	int count = 0;
-    char copy[128];
-    char *c;
+	char copy[128];
+	char *c;
 	int localRes;
 	int res = CMD_RES_OK;
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "backlog [%s]", args);
 
 	subcmd = args;
 	p = args;
-	while (*subcmd){
-        c = copy;
-		while (*p){
-			if (*p == ';'){
+	while (*subcmd) {
+		c = copy;
+		while (*p) {
+			if (*p == ';') {
 				p++;
 				break;
 			}
-            *(c) = *(p++);
-            if (c - copy < (sizeof(copy)-1)){
-                c++;
-            }
+			*(c) = *(p++);
+			if (c - copy < (sizeof(copy) - 1)) {
+				c++;
+			}
 		}
 		*c = 0;
 		count++;
@@ -170,7 +170,18 @@ static commandResult_t cmnd_backlog(const void * context, const char *cmd, const
 		subcmd = p;
 	}
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "backlog executed %d", count);
-
+}
+static commandResult_t cmnd_backlog(const void * context, const char *cmd, const char *args, int cmdFlags){
+	commandResult_t res;
+	if (strcasestr(args, "delay_ms")) {
+		// backlog with delay?
+		SVM_StartBacklog(args);
+		res = CMD_RES_OK;
+	}
+	else {
+		// old backlog - in place
+		res = cmnd_backlog_old(context, cmd, args, cmdFlags);
+	}
 	return res;
 }
 
