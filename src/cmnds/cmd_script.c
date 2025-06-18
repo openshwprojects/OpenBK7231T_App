@@ -310,7 +310,7 @@ scriptFile_t *SVM_RegisterFileForText(const char *txt) {
 	char *p = r->data;
 	while (*p) {
 		if (p == ';') {
-			p = '\n';
+			*p = '\n';
 		}
 		p++;
 	}

@@ -170,6 +170,7 @@ static commandResult_t cmnd_backlog_old(const void * context, const char *cmd, c
 		subcmd = p;
 	}
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "backlog executed %d", count);
+	return res;
 }
 static commandResult_t cmnd_backlog(const void * context, const char *cmd, const char *args, int cmdFlags){
 	commandResult_t res;
