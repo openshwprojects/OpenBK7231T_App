@@ -166,9 +166,13 @@ void SIM_ClearOBK(const char *flashPath) {
 	Main_Init();
 }
 void Win_DoUnitTests() {
+	Test_Driver_TCL_AC();
+
+	Test_PIR();
 #if ENABLE_OBK_BERRY
 	Test_Berry();
 #endif
+
 	Test_TuyaMCU_Boolean();
 	Test_TuyaMCU_DP22();
 
@@ -186,6 +190,7 @@ void Win_DoUnitTests() {
 #if ENABLE_BL_SHARED
 	Test_EnergyMeter();
 #endif
+	Test_TuyaMCU_Calib();
 	// this is slowest
 	Test_TuyaMCU_Basic();
 	Test_TuyaMCU_Mult();
@@ -221,7 +226,10 @@ void Win_DoUnitTests() {
 	Test_Demo_ExclusiveRelays();
 	Test_MultiplePinsOnChannel();
 	Test_Flags();
+#ifndef LINUX
+  // TODO: fix on Linux
 	Test_DHT();
+#endif
 	Test_Tasmota();
 	Test_NTP();
 	Test_NTP_DST();

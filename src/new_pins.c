@@ -684,6 +684,34 @@ void CHANNEL_SetFirstChannelByTypeEx(int requiredType, int newVal, int ausemovin
 	}
 }
 
+int CHANNEL_FindIndexForPinType(int requiredType) {
+	int i;
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (g_cfg.pins.roles[i] == requiredType) {
+			return g_cfg.pins.channels[i];
+		}
+	}
+	return -1;
+}
+
+int CHANNEL_FindIndexForPinType2(int requiredType, int requiredType2) {
+	int i;
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (g_cfg.pins.roles[i] == requiredType || g_cfg.pins.roles[i] == requiredType2) {
+			return g_cfg.pins.channels[i];
+		}
+	}
+	return -1;
+}
+int CHANNEL_FindIndexForType(int requiredType) {
+	int i;
+	for (i = 0; i < CHANNEL_MAX; i++) {
+		if (CHANNEL_GetType(i) == requiredType) {
+			return i;
+		}
+	}
+	return -1;
+}
 void CHANNEL_SetFirstChannelByType(int requiredType, int newVal) {
 	CHANNEL_SetFirstChannelByTypeEx(requiredType, newVal, 0);
 }
@@ -724,6 +752,7 @@ void CHANNEL_SetAll(int iVal, int iFlags) {
 		case IOR_PWM:
 		case IOR_PWM_ScriptOnly:
 		case IOR_PWM_n:
+		case IOR_PWM_ScriptOnly_n:
 			CHANNEL_Set(g_cfg.pins.channels[i], iVal, iFlags);
 			break;
 		case IOR_BridgeForward:
@@ -841,6 +870,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			// Disable PWM for previous pin role
 		case IOR_PWM_n:
 		case IOR_PWM_ScriptOnly:
+		case IOR_PWM_ScriptOnly_n:
 		case IOR_PWM:
 		{
 			HAL_PIN_PWM_Stop(index);
@@ -1038,6 +1068,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			break;
 		case IOR_PWM_n:
 		case IOR_PWM_ScriptOnly:
+		case IOR_PWM_ScriptOnly_n:
 		case IOR_PWM:
 		{
 			int channelIndex;
@@ -1057,7 +1088,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 
 			HAL_PIN_PWM_Start(index, useFreq);
 
-			if (role == IOR_PWM_n) {
+			if (role == IOR_PWM_n
+				|| role == IOR_PWM_ScriptOnly_n) {
 				// inversed PWM
 				HAL_PIN_PWM_Update(index, 100.0f - channelValue);
 			}
@@ -1134,7 +1166,7 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 			else if (g_cfg.pins.roles[i] == IOR_PWM || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly) {
 				HAL_PIN_PWM_Update(i, iVal);
 			}
-			else if (g_cfg.pins.roles[i] == IOR_PWM_n) {
+			else if (g_cfg.pins.roles[i] == IOR_PWM_n || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly_n) {
 				HAL_PIN_PWM_Update(i, 100 - iVal);
 			}
 		}
@@ -1386,7 +1418,7 @@ void CHANNEL_Set_FloatPWM(int ch, float fVal, int iFlags) {
 			if (g_cfg.pins.roles[i] == IOR_PWM || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly) {
 				HAL_PIN_PWM_Update(i, fVal);
 			}
-			else if (g_cfg.pins.roles[i] == IOR_PWM_n) {
+			else if (g_cfg.pins.roles[i] == IOR_PWM_n || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly_n) {
 				HAL_PIN_PWM_Update(i, 100.0f - fVal);
 			}
 		}
@@ -1545,7 +1577,7 @@ int CHANNEL_FindMaxValueForChannel(int ch) {
 			if (g_cfg.pins.roles[i] == IOR_PWM || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly) {
 				return 100;
 			}
-			if (g_cfg.pins.roles[i] == IOR_PWM_n) {
+			if (g_cfg.pins.roles[i] == IOR_PWM_n || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly_n) {
 				return 100;
 			}
 		}
@@ -1725,6 +1757,7 @@ int CHANNEL_GetRoleForOutputChannel(int ch) {
 			case IOR_PWM_n:
 			case IOR_PWM:
 			case IOR_PWM_ScriptOnly:
+			case IOR_PWM_ScriptOnly_n:
 				return g_cfg.pins.roles[i];
 			case IOR_BridgeForward:
 			case IOR_BridgeReverse:
@@ -1990,7 +2023,7 @@ void PIN_ticks(void* param)
 		if (g_cfg.pins.roles[i] == IOR_PWM || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly) {
 			HAL_PIN_PWM_Update(i, g_channelValuesFloats[g_cfg.pins.channels[i]]);
 		}
-		else if (g_cfg.pins.roles[i] == IOR_PWM_n) {
+		else if (g_cfg.pins.roles[i] == IOR_PWM_n || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly_n) {
 			// invert PWM value
 			HAL_PIN_PWM_Update(i, 100 - g_channelValuesFloats[g_cfg.pins.channels[i]]);
 		}
@@ -2187,6 +2220,9 @@ const char* g_channelTypeNames[] = {
 	"Tds",
 	"Motion_n",
 	"Frequency_div1000",
+	"OpenStopClose",
+	"Percent",
+	"error",
 	"error",
 	"error",
 };
@@ -2375,6 +2411,7 @@ void PIN_get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount) {
 			//(*pwmCount)++;
 			break;
 		case IOR_PWM_ScriptOnly:
+		case IOR_PWM_ScriptOnly_n:
 			// DO NOT COUNT SCRIPTONLY PWM HERE!
 			// As in title - it's only for scripts. 
 			// It should not generate lights!

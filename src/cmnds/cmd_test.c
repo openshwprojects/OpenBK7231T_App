@@ -559,19 +559,75 @@ int CMD_InitTestCommands(){
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("simonirtest", CMD_SimonTest, NULL);
 
+	//cmddetail:{"name":"TestSprintfForInteger","args":"CMD_TestSprintfForInteger",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TestSprintfForInteger", CMD_TestSprintfForInteger, NULL);
+	//cmddetail:{"name":"TestSprintfForHex","args":"CMD_TestSprintfForHex",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TestSprintfForHex", CMD_TestSprintfForHex, NULL);
+	//cmddetail:{"name":"TestSprintfForFloat","args":"CMD_TestSprintfForFloat",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TestSprintfForFloat", CMD_TestSprintfForFloat, NULL);
+	//cmddetail:{"name":"TestStrcpy","args":"CMD_TestStrcpy",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TestStrcpy", CMD_TestStrcpy, NULL);
+	//cmddetail:{"name":"TestStrncpy","args":"CMD_TestStrncpy",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TestStrncpy", CMD_TestStrncpy, NULL);
+	//cmddetail:{"name":"TestStrcmp","args":"CMD_TestStrcmp",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TestStrcmp", CMD_TestStrcmp, NULL);
+	//cmddetail:{"name":"TestStrlen","args":"CMD_TestStrlen",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TestStrlen", CMD_TestStrlen, NULL);
+	//cmddetail:{"name":"TestStrcat","args":"CMD_TestStrcat",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TestStrcat", CMD_TestStrcat, NULL);
+	//cmddetail:{"name":"TestMemset","args":"CMD_TestMemset",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TestMemset", CMD_TestMemset, NULL);
+	//cmddetail:{"name":"TestMemcpy","args":"CMD_TestMemcpy",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TestMemcpy", CMD_TestMemcpy, NULL);
+	//cmddetail:{"name":"TestMemcmp","args":"CMD_TestMemcmp",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TestMemcmp", CMD_TestMemcmp, NULL);
+	//cmddetail:{"name":"TestChannelSetToExpression","args":"CMD_TestChannelSetToExpression",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TestChannelSetToExpression", CMD_TestChannelSetToExpression, NULL);
+	//cmddetail:{"name":"TestParseIP","args":"CMD_TestParseIP",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TestParseIP", CMD_TestParseIP, NULL);
+	//cmddetail:{"name":"TestIPtoStr","args":"CMD_TestIPtoStr",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TestIPtoStr", CMD_TestIPtoStr, NULL);
 	
     return 0;

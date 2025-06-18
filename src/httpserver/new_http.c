@@ -540,6 +540,9 @@ const char* htmlPinRoleNames[] = {
 	"KP18058_DAT",
 	"DS1820_IO",
 	"PWM_ScriptOnly",
+	"PWM_ScriptOnly_n",
+	"error",
+	"error",
 	"error",
 	"error",
 };
