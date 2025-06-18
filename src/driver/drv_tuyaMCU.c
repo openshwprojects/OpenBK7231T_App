@@ -217,6 +217,7 @@ static int wifi_state_timer = 0;
 static bool self_processing_mode = true;
 static bool state_updated = false;
 static int g_sendQueryStatePackets = 0;
+static int g_tuyaMCUBatteryAckDelay = 0;
 
 // wifistate to send when not online
 // See: https://imgur.com/a/mEfhfiA
@@ -2155,6 +2156,35 @@ commandResult_t TuyaMCU_FakePacket(const void* context, const char* cmd, const c
 	TuyaMCU_ProcessIncoming(packet, c);
 	return CMD_RES_OK;
 }
+
+commandResult_t Cmd_TuyaMCU_SetBatteryAckDelay(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int delay;
+
+	Tokenizer_TokenizeString(args, 0);
+	Tokenizer_CheckArgsCountAndPrintWarning(args, 1);
+
+	delay = Tokenizer_GetArgInteger(0);
+
+	if (!Tokenizer_IsArgInteger(0)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "SetBatteryAckDelay: requires 1 argument [delay in seconds]\n");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	if (delay < 0) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "SetBatteryAckDelay: delay must be positive\n");
+		return CMD_RES_BAD_ARGUMENT;
+	}
+
+	if (delay > 60) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "SetBatteryAckDelay: delay too long, max 60 seconds\n");
+		return CMD_RES_BAD_ARGUMENT;
+	}
+
+	g_tuyaMCUBatteryAckDelay = delay;
+
+	return CMD_RES_OK;
+}
+
 void TuyaMCU_RunWiFiUpdateAndPackets() {
 	//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"WifiCheck %d ", wifi_state_timer);
 	/* Monitor WIFI and MQTT connection and apply Wifi state
@@ -2361,6 +2391,11 @@ void TuyaMCU_RunStateMachine_BatteryPowered() {
 		break;
 	case TM0_STATE_AWAITING_STATES:
 		if (g_tuyaNextRequestDelay <= 0) {
+			if (g_tuyaMCUBatteryAckDelay > 0) {
+				g_tuyaMCUBatteryAckDelay--;
+				break;
+			}
+
 			byte dat = 0x00;
 			if (g_tuyaMCUConfirmationsToSend_0x08 > 0) {
 				g_tuyaMCUConfirmationsToSend_0x08--;
@@ -2637,6 +2672,12 @@ void TuyaMCU_Init()
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_setupLED", Cmd_TuyaMCU_SetupLED, NULL);
+
+	//cmddetail:{"name":"Cmd_TuyaMCU_SetBatteryAckDelay","args":"[ackDelay]",
+	//cmddetail:"descr":"Defines the delay before the ACK is sent to TuyaMCU sending the device to sleep. Default value is 0 seconds.",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("tuyaMcu_setBatteryAckDelay", Cmd_TuyaMCU_SetBatteryAckDelay, NULL);
 }
 
 
