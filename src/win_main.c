@@ -53,7 +53,7 @@ int win_frameNum = 0;
 // this time counter is simulated, I need this for unit tests to work
 int g_simulatedTimeNow = 0;
 extern int g_httpPort;
-#define DEFAULT_FRAME_TIME 5
+#define DEFAULT_FRAME_TIME 10
 
 #if LINUX
 
@@ -579,6 +579,8 @@ int __cdecl main(int argc, char **argv)
 			g_delta = cur_time - prev_time;
 			if (g_delta <= 0)
 				continue;
+			// give CPU some time to rest
+			Sleep(DEFAULT_FRAME_TIME);
 			Sim_RunFrame(g_delta);
 #if ENABLE_SDL_WINDOW
 			SIM_RunWindow();
