@@ -175,7 +175,7 @@ static commandResult_t cmnd_backlog_old(const void * context, const char *cmd, c
 static commandResult_t cmnd_backlog(const void * context, const char *cmd, const char *args, int cmdFlags){
 	commandResult_t res;
 #if ENABLE_OBK_SCRIPTING
-	if (strcasestr(args, "delay_ms") || strcasestr(args, "delay_s")) {
+	if (strcasestr(args, "delay_ms") || strcasestr(args, "delay_s") || strcasestr(args, "waitFor")) {
 		// backlog with delay?
 		SVM_StartBacklog(args);
 		res = CMD_RES_OK;

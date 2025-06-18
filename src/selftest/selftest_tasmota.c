@@ -636,7 +636,7 @@ void Test_Backlog() {
 	SELFTEST_ASSERT_CHANNEL(1, 33);
 }
 void Test_Tasmota_Backlog() {
-	CMD_ExecuteCommand("backlog setChannel 1 123; delay_ms 500; setChannel 1 234; delay_ms 500; setChannel 1 345; delay_ms 500; setChannel 1 456",0);
+	CMD_ExecuteCommand("backlog setChannel 1 123; delay_ms 500; setChannel 1 234; delay_ms 500; setChannel 1 345; delay_ms 500; setChannel 1 456; delay_s 0.5; setChannel 1 567",0);
 	Sim_RunMiliseconds(50,false); // so first set is done
 	SELFTEST_ASSERT_CHANNEL(1, 123);
 	Sim_RunMiliseconds(500, false); 
@@ -645,6 +645,8 @@ void Test_Tasmota_Backlog() {
 	SELFTEST_ASSERT_CHANNEL(1, 345);
 	Sim_RunMiliseconds(500, false);
 	SELFTEST_ASSERT_CHANNEL(1, 456);
+	Sim_RunMiliseconds(500, false);
+	SELFTEST_ASSERT_CHANNEL(1, 567);
 }
 void Test_Tasmota() {
 	Test_Tasmota_MQTT_Switch();
