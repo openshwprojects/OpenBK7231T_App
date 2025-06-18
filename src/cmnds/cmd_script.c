@@ -309,7 +309,7 @@ scriptFile_t *SVM_RegisterFileForText(const char *txt) {
 	// convert backlog to script
 	char *p = r->data;
 	while (*p) {
-		if (p == ';') {
+		if (*p == ';') {
 			*p = '\n';
 		}
 		p++;
