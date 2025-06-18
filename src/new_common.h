@@ -418,6 +418,11 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #include <semphr.h>
 #include "lwip/sys.h"
 
+#define GLOBAL_INT_DECLARATION()	;
+#define GLOBAL_INT_DISABLE()		;
+#define GLOBAL_INT_RESTORE()		;
+
+
 #define portTICK_RATE_MS                      ( ( portTickType ) 1000 / configTICK_RATE_HZ )
 
 #define bk_printf printf
