@@ -129,7 +129,7 @@ commandResult_t NTP_SetTimeZoneOfs(const void *context, const char *cmd, const c
 #endif
 	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"NTP offset set"
 #if ENABLE_NTP_DST
-	" - DST offset set to %i hours",g_DST
+	" - DST offset set to %i minutes",g_DST
 #endif	
 	);
 	return CMD_RES_OK;
@@ -329,7 +329,7 @@ uint32_t setDST(bool setNTP)
 //			ADDLOG_INFO(LOG_FEATURE_RAW, "In second DST of %i. Info: DST ends next year at %lu (%.24s local time)\r\n",year,End_DST_epoch,ctime(&tempt));
 		}
 	}
-	g_ntpTime += (g_DST-old_DST)*3600*setNTP;
+	g_ntpTime += (g_DST-old_DST)*60*setNTP;
 	tempt = (time_t)next_DST_switch_epoch;
 
 	struct tm *ltm;
@@ -344,8 +344,8 @@ uint32_t setDST(bool setNTP)
 
 int IsDST()
 {
-	if (( g_DST == -128) || (g_ntpTime > next_DST_switch_epoch)) return (setDST(1));	// only in case we don't know DST status, calculate it - and while at it: set ntpTime correctly...
-	return (g_DST);										// otherwise we can safely return the prevously calkulated value
+	if (( g_DST == -128) || (g_ntpTime > next_DST_switch_epoch)) return setDST(1)!=0;	// only in case we don't know DST status, calculate it - and while at it: set ntpTime correctly...
+	return g_DST!=0;									// otherwise we can safely return the prevously calculated value
 }
 
 commandResult_t CLOCK_CalcDST(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -369,7 +369,7 @@ commandResult_t CLOCK_CalcDST(const void *context, const char *cmd, const char *
 	monthStart = Tokenizer_GetArgInteger(5);
 	dayStart = Tokenizer_GetArgInteger(6);
 	hourStart = Tokenizer_GetArgInteger(7);
-	g_DST_offset=Tokenizer_GetArgIntegerDefault(8, 1);
+	g_DST_offset=Tokenizer_GetArgIntegerDefault(8, 60);
 	ADDLOG_INFO(LOG_FEATURE_RAW, "read values: %u,%u,%u,%u,%u,%u,%u,%u,(%u)\r\n",  nthWeekEnd, monthEnd, dayEnd, hourEnd, nthWeekStart, monthStart, dayStart, hourStart,g_DST_offset);
 
 /*	Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year);
@@ -483,7 +483,7 @@ void NTP_SetSimulatedTime(unsigned int timeNow) {
 	g_ntpTime = timeNow;
 	g_ntpTime += g_timeOffsetSeconds;
 #if ENABLE_NTP_DST
-    	g_ntpTime += setDST(0)*3600;	
+    	g_ntpTime += setDST(0)*60;	
 #endif
 	g_synced = true;
 	b_ntp_simulatedTime = true;
@@ -521,7 +521,7 @@ void NTP_Init() {
 	NTP_Init_Events();
 #endif
 #if ENABLE_NTP_DST
-	//cmddetail:{"name":"CLOCK_CalcDST","args":"[nthWeekEnd monthEnd dayEnd hourEnd nthWeekStart monthStart dayStart hourStart [g_DSToffset hours - default is 1 if unset]",
+	//cmddetail:{"name":"CLOCK_CalcDST","args":"[nthWeekEnd monthEnd dayEnd hourEnd nthWeekStart monthStart dayStart hourStart [g_DSToffset minutes - default is 60 minutes if unset]",
 	//cmddetail:"descr":"Checks, if actual time is during DST or not.",
 	//cmddetail:"fn":"CLOCK_CalcDST","file":"driver/drv_ntp.c","requires":"",
 	//cmddetail:"examples":""}
@@ -537,7 +537,7 @@ unsigned int NTP_GetCurrentTime() {
 }
 unsigned int NTP_GetCurrentTimeWithoutOffset() {
 #if ENABLE_NTP_DST
-	return g_ntpTime - g_timeOffsetSeconds - g_DST%128;	// if g_DST is unset, it's -128 --> -128%128 = 0 as needed
+	return g_ntpTime - g_timeOffsetSeconds - (g_DST%128)*60;	// if g_DST is unset, it's -128 --> -128%128 = 0 as needed
 #else
 	return g_ntpTime - g_timeOffsetSeconds;
 #endif	
@@ -663,7 +663,7 @@ void NTP_CheckForReceive() {
     g_ntpTime = secsSince1900 - NTP_OFFSET;
     g_ntpTime += g_timeOffsetSeconds;
 #if ENABLE_NTP_DST
-    	g_ntpTime += setDST(0)*3600;	// just to be sure: recalculate DST before setting, in case we somehow "moved back in time" we start with freshly set g_ntpTime, so don't change it inside setDST()!
+    	g_ntpTime += setDST(0)*60;	// just to be sure: recalculate DST before setting, in case we somehow "moved back in time" we start with freshly set g_ntpTime, so don't change it inside setDST()!
 #endif
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u",(unsigned int)g_ntpTime);
     ltm = gmtime(&g_ntpTime);
