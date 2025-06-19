@@ -229,21 +229,24 @@
  **/
 #define BE_EXPLICIT_ABORT abort
 #define BE_EXPLICIT_EXIT exit
-#define BE_EXPLICIT_MALLOC malloc
-#define BE_EXPLICIT_FREE free
-// normal realloc appears broken on OpenBK7231T: #1563, #298
-#if PLATFORM_BEKEN
-#define BE_EXPLICIT_REALLOC os_realloc
-#else
-#define BE_EXPLICIT_REALLOC realloc
-#endif
-#if PLATFORM_W800
-#undef BE_EXPLICIT_MALLOC
-#undef BE_EXPLICIT_REALLOC
-#undef BE_EXPLICIT_FREE
+ // BK7231/RTL wraps malloc, free etc. to freertos ports. Some platforms don't do it.
+#if PLATFORM_W800 || PLATFORM_W600
 #define BE_EXPLICIT_MALLOC pvPortMalloc
 #define BE_EXPLICIT_REALLOC pvPortRealloc
 #define BE_EXPLICIT_FREE vPortFree
+#elif PLATFORM_TR6260 || PLATFORM_ECR6600
+#define BE_EXPLICIT_MALLOC os_malloc
+#define BE_EXPLICIT_FREE os_free
+#define BE_EXPLICIT_REALLOC os_realloc
+#else
+#define BE_EXPLICIT_MALLOC malloc
+#define BE_EXPLICIT_FREE free
+#define BE_EXPLICIT_REALLOC realloc
+#endif
+// normal realloc appears broken on OpenBK7231T: #1563, #298
+#if PLATFORM_BEKEN
+#undef BE_EXPLICIT_REALLOC
+#define BE_EXPLICIT_REALLOC os_realloc
 #endif
 
 /* Macro: be_assert

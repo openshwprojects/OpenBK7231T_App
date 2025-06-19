@@ -4,6 +4,10 @@ CFLAGS +=  -DPLATFORM_RTL8710B -DPLATFORM_REALTEK
 
 INCLUDES += -I$(OBK_DIR)/libraries/easyflash/inc
 
+#gcc wrap
+SRC_C += ../../../component/soc/realtek/8195a/misc/platform/gcc_wrap.c
+SRC_C += ../../../component/common/api/platform/gcc_wrap_time.c
+
 SRC_C  += $(OBK_DIR)/platforms/RTL8710B/main.c
 SRC_C  += $(OBK_DIR)/platforms/RTL8710B/stdlib.c
 

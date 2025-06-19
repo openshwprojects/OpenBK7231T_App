@@ -430,14 +430,9 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define bk_printf printf
 #define os_strcpy strcpy
 #define os_memset memset
-#if PLATFORM_W800
 #define os_malloc pvPortMalloc
 #define os_free vPortFree
 #define realloc pvPortRealloc
-#else
-#define os_malloc malloc
-#define os_free free
-#endif
 
 #ifndef portTICK_PERIOD_MS
 #define portTICK_PERIOD_MS	portTICK_RATE_MS
