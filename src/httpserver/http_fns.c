@@ -41,6 +41,7 @@
 #include "BkDriverFlash.h"
 #include "temp_detect_pub.h"
 #elif defined(PLATFORM_LN882H)
+#include "reboot_trace.h"
 #elif defined(PLATFORM_TR6260)
 #elif defined(PLATFORM_REALTEK)
 	#include "wifi_structures.h"
