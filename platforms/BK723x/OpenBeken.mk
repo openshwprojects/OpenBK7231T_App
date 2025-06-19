@@ -19,6 +19,8 @@ else ifeq ($(CFG_SOC_NAME), 5)
 CCFLAGS += -DPLATFORM_BK7231N
 else ifeq ($(CFG_SOC_NAME), 7)
 CCFLAGS += -DPLATFORM_BK7238
+else ifeq ($(CFG_SOC_NAME), 8)
+CCFLAGS += -DPLATFORM_BK7252N
 endif
 
 SRC_C += ./fixes/blank.c

@@ -311,6 +311,14 @@ prebuild_OpenBK7252: berry actions_gcc
 	else echo "prebuild for OpenBK7252 not found ... "; \
 	fi
 
+prebuild_OpenBK7252N: berry actions_gcc
+	git submodule update --init --recursive --depth=1 sdk/beken_freertos_sdk
+	@if [ -e platforms/BK723x/pre_build_7252n.sh ]; then \
+		echo "prebuild found for OpenBK7252N"; \
+		sh platforms/BK723x/pre_build_7252n.sh; \
+	else echo "prebuild for OpenBK7252N not found ... "; \
+	fi
+
 prebuild_OpenECR6600: berry
 	git submodule update --init --recursive --depth=1 sdk/OpenECR6600
 	@if [ -e platforms/ECR6600/pre_build.sh ]; then \
@@ -528,6 +536,17 @@ OpenBK7252: prebuild_OpenBK7252
 	cp sdk/beken_freertos_sdk/out/bk7251_UA.bin output/$(APP_VERSION)/OpenBK7252_UA_${APP_VERSION}.bin
 	cp sdk/beken_freertos_sdk/out/bk7251_Tuya_QIO.bin output/$(APP_VERSION)/OpenBK7252_Tuya_QIO_${APP_VERSION}.bin
 	cp sdk/beken_freertos_sdk/out/bk7251_Tuya_UA.bin output/$(APP_VERSION)/OpenBK7252_Tuya_UA_${APP_VERSION}.bin
+
+.PHONY: OpenBK7252N
+OpenBK7252N: prebuild_OpenBK7252N
+	cd sdk/beken_freertos_sdk && sh build.sh bk7252n $(APP_VERSION)
+	mkdir -p output/$(APP_VERSION)
+	cp sdk/beken_freertos_sdk/out/bk7252n.bin output/$(APP_VERSION)/OpenBK7252N_${APP_VERSION}.bin
+	cp sdk/beken_freertos_sdk/out/bk7252n_QIO.bin output/$(APP_VERSION)/OpenBK7252N_QIO_${APP_VERSION}.bin
+	cp sdk/beken_freertos_sdk/out/app.rbl output/$(APP_VERSION)/OpenBK7252N_${APP_VERSION}.rbl
+	cp sdk/beken_freertos_sdk/out/bk7252n_UA.bin output/$(APP_VERSION)/OpenBK7252N_UA_${APP_VERSION}.bin
+	#cp sdk/beken_freertos_sdk/out/bk7252n_Tuya_QIO.bin output/$(APP_VERSION)/OpenBK7252N_Tuya_QIO_${APP_VERSION}.bin
+	#cp sdk/beken_freertos_sdk/out/bk7252n_Tuya_UA.bin output/$(APP_VERSION)/OpenBK7252N_Tuya_UA_${APP_VERSION}.bin
 
 .PHONY: OpenBK7231N_ALT
 OpenBK7231N_ALT: prebuild_OpenBK7231N_ALT

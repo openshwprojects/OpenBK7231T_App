@@ -160,8 +160,6 @@ jobs:
             variant: default
           - platform: OpenBK7231N
             variant: default
-          - platform: OpenBK7238
-            variant: default
           - platform: OpenXR809
             variant: default
           - platform: OpenXR806
@@ -212,9 +210,6 @@ jobs:
             variant: irRemoteESP
           - platform: OpenBK7231N
             variant: sensors
-          
-          - platform: OpenBK7238
-            variant: berry
 
           - platform: OpenBL602
             variant: berry
@@ -321,14 +316,30 @@ jobs:
             output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.factory.bin
           if-no-files-found: warn
 
-  build_alt:
-    name: Build alt
+  build_beken:
+    name: Build beken alt
     needs: refs
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
-        platform: [OpenBK7231N_ALT, OpenBK7231T_ALT, OpenBK7252, OpenBK7231U, OpenBK7238]
+        include:
+          # default for all platforms
+          - platform: OpenBK7231N_ALT
+            variant: default
+          - platform: OpenBK7231T_ALT
+            variant: default
+          - platform: OpenBK7231U
+            variant: default
+          - platform: OpenBK7238
+            variant: default
+          - platform: OpenBK7252
+            variant: default
+          - platform: OpenBK7252N
+            variant: default
+          
+          - platform: OpenBK7238
+            variant: berry
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
@@ -340,32 +351,32 @@ jobs:
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get update
-          sudo apt-get -y install libc6-i386 make cmake
+          sudo apt-get -y install libc6-i386 make
           pip3 install pycryptodomex
           pip3 install configobj
           pip3 install toml
           pip3 install fdt
       - run: ls -la
       - name: Run make
-        run: make APP_VERSION=${{ needs.refs.outputs.version }} APP_NAME=${{ matrix.platform }} ${{ matrix.platform }}
+        run: make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }}
       - name: Save build assets
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_${{ matrix.platform }}
+          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_${{ matrix.platform }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}
           path: |
-            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_UA_${{ needs.refs.outputs.version }}.bin
-            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_UG_${{ needs.refs.outputs.version }}.bin
-            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_QIO_${{ needs.refs.outputs.version }}.bin
-            output/${{ needs.refs.outputs.version }}/OpenBK7231M_ALT_QIO_${{ needs.refs.outputs.version }}.bin
-            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.rbl
-            output/${{ needs.refs.outputs.version }}/OpenBK7252_Tuya_QIO_${{ needs.refs.outputs.version }}.bin
-            output/${{ needs.refs.outputs.version }}/OpenBK7252_Tuya_UA_${{ needs.refs.outputs.version }}.bin
+            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_UA_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.bin
+            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_UG_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.bin
+            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_QIO_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.bin
+            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/OpenBK7231M_ALT_QIO_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.bin
+            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.rbl
+            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_Tuya_QIO_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.bin
+            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_Tuya_UA_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.bin
           if-no-files-found: warn
 
   merge:
     name: Merge Artifacts
     runs-on: ubuntu-22.04
-    needs: [refs, build, build2, build_idf, build_alt]
+    needs: [refs, build, build2, build_idf, build_beken]
     #if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
     steps:
       - name: Merge Artifacts
