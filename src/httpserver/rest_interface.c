@@ -1317,7 +1317,8 @@ typedef struct ota_header {
 			uint8_t ver_software[16];
 
 			uint8_t sha256[32];
-} s;
+			uint32_t unpacked_len;//full len
+		} s;
 		uint8_t _pad[512];
 	} u;
 } ota_header_t;
@@ -1896,7 +1897,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	recv_buffer = pvPortMalloc(OTA_PROGRAM_SIZE);
 
 	unsigned int buffer_offset, flash_offset, ota_addr;
-	uint32_t bin_size, part_size;
+	uint32_t bin_size, part_size, running_size;
 	uint8_t activeID;
 	HALPartition_Entry_Config ptEntry;
 
@@ -1916,6 +1917,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	ota_addr = ptEntry.Address[!ptEntry.activeIndex];
 	bin_size = ptEntry.maxLen[!ptEntry.activeIndex];
 	part_size = ptEntry.maxLen[!ptEntry.activeIndex];
+	running_size = ptEntry.maxLen[ptEntry.activeIndex];
 	(void)part_size;
 	/*XXX if you use bin_size is product env, you may want to set bin_size to the actual
 	 * OTA BIN size, and also you need to splilt XIP_SFlash_Erase_With_Lock into
@@ -2017,6 +2019,11 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 			if(flash_offset + useLen >= part_size)
 			{
 				return http_rest_error(request, -20, "Too large bin");
+			}
+			if(ota_header->u.s.unpacked_len != 0xFFFFFFFF && running_size < ota_header->u.s.unpacked_len)
+			{
+				ADDLOG_ERROR(LOG_FEATURE_OTA, "Unpacked OTA image size (%u) is bigger than running partition size (%u)", ota_header->u.s.unpacked_len, running_size);
+				return http_rest_error(request, -20, "");
 			}
 			//ADDLOG_DEBUG(LOG_FEATURE_OTA, "%d bytes to write", writelen);
 			//add_otadata((unsigned char*)writebuf, writelen);

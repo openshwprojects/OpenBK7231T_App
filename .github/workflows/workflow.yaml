@@ -137,6 +137,8 @@ jobs:
     - name: Checkout berry submodule
       run: |
         git submodule update --init --recursive libraries/berry
+        mkdir -p libraries/berry/generate
+        ./libraries/berry/tools/coc/coc -o libraries/berry/generate libraries/berry/src src/berry/modules -c include/berry_conf.h
 
     - name: Build project
       run: UBSAN=1 make -f custom.mk

@@ -25,6 +25,8 @@ else ifeq ($(VARIANT),powerMetering)
 OBK_VARIANT = 3
 else ifeq ($(VARIANT),irRemoteESP)
 OBK_VARIANT = 4
+else ifeq ($(VARIANT),sensors)
+OBK_VARIANT = 5
 else ifeq ($(VARIANT),2M)
 OBK_VARIANT = 1
 ESP_FSIZE = 2MB
