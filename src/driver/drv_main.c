@@ -222,6 +222,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "MAX6675",	MAX6675_Init,		MAX6675_RunEverySecond,			NULL, NULL, NULL, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_MAX31855
+	//drvdetail:{"name":"MAX31855",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"T",
+	//drvdetail:"requires":""}
+	{ "MAX31855",	MAX31855_Init,		MAX31855_RunEverySecond,			NULL, NULL, NULL, NULL, false },
+#endif
 #if ENABLE_DRIVER_PT6523
 	//drvdetail:{"name":"PT6523",
 	//drvdetail:"title":"TODO",
@@ -251,7 +258,12 @@ static driver_t g_drivers[] = {
 	{ "SM15155E",	SM15155E_Init,		NULL,						NULL, NULL, NULL, NULL, NULL, false },
 #endif
 		
+
 #if ENABLE_DRIVER_IRREMOTEESP
+	//drvdetail:{"name":"IR",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"IRLibrary wrapper, so you can receive remote signals and send them. See [forum discussion here](https://www.elektroda.com/rtvforum/topic3920360.html), also see [LED strip and IR YT video](https://www.youtube.com/watch?v=KU0tDwtjfjw)",
+	//drvdetail:"requires":""}
 	{ "IR",			DRV_IR_Init,		 NULL,						NULL, DRV_IR_RunFrame, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_IR

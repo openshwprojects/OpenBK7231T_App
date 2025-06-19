@@ -319,6 +319,7 @@ int CMD_Berry_RunEventHandlers_Str(byte eventCode, const char *argument, const c
 
 const char* CMD_GetResultString(commandResult_t r);
 
+void SVM_StartBacklog(const char *command);
 void SVM_RunThreads(int deltaMS);
 void CMD_InitScripting();
 void SVM_RunStartupCommandAsScript();

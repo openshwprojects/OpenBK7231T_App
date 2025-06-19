@@ -125,6 +125,26 @@ jobs:
         export LSAN_OPTIONS=suppressions=platforms/linux/asan.suppressions
         ./build/win_main -runUnitTests 2
 
+  build_ubsan:
+    name: Build Linux Simulator and Run Tests With Undefined Behavior Sanitizer
+    needs: refs
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Checkout berry submodule
+      run: |
+        git submodule update --init --recursive libraries/berry
+
+    - name: Build project
+      run: UBSAN=1 make -f custom.mk
+    - name: Run unit tests
+      run: |
+        export UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1:suppressions=platforms/linux/ubsan.suppressions
+        ./build/win_main -runUnitTests 2
+
   build:
     name: Build
     needs: refs
@@ -176,6 +196,8 @@ jobs:
             variant: powerMetering
           - platform: OpenBK7231T
             variant: irRemoteESP
+          - platform: OpenBK7231T
+            variant: sensors
 
           # extras for BK7231N
           - platform: OpenBK7231N
@@ -186,6 +208,8 @@ jobs:
             variant: powerMetering
           - platform: OpenBK7231N
             variant: irRemoteESP
+          - platform: OpenBK7231N
+            variant: sensors
           
           - platform: OpenBK7238
             variant: berry

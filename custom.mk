@@ -44,6 +44,13 @@ ifeq ($(ASAN),1)
     LDFLAGS += -g -static-libasan -fsanitize=address
 endif
 
+# Append UBSAN flags if UBSAN=1
+ifeq ($(UBSAN),1)
+    CPPFLAGS += -g -fsanitize=undefined -fno-omit-frame-pointer
+    CFLAGS += -g -fsanitize=undefined -fno-omit-frame-pointer
+    LDFLAGS += -g -static-libasan -fsanitize=undefined
+endif
+
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 	@echo "Linking: $@"
 	$(CC) $(OBJS) -o $@ $(LDFLAGS) $(LDLIBS)
