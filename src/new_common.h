@@ -187,6 +187,7 @@ This platform is not supported, error!
 #elif PLATFORM_ECR6600
 #define USER_SW_VER "ECR6600_Test"
 #else
+#warning "USER_SW_VER undefined"
 #define USER_SW_VER "unknown"
 #endif
 #endif
@@ -338,7 +339,7 @@ typedef int (*beken_thread_function_t)(void *p);
 
 #define kNoErr                      0       //! No error occurred.
 typedef void *beken_thread_arg_t;
-typedef void *beken_thread_t;
+typedef xTaskHandle beken_thread_t;
 typedef void (*beken_thread_function_t)( beken_thread_arg_t arg );
 typedef int OSStatus;
 
@@ -353,15 +354,14 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint32_t stack_size, beken_thread_arg_t arg );
 OSStatus rtos_suspend_thread(beken_thread_t* thread);
 typedef unsigned int u32;
-		
+
+#define OBK_OTA_EXTENSION ".bin.xz.ota"
 
 #elif PLATFORM_XR809 || PLATFORM_XR872
 
-
-
-typedef int bool;
-#define true 1
-#define false 0
+#include <stdbool.h>
+#include "FreeRTOS.h"
+#include "task.h"
 
 typedef unsigned char u8;
 typedef unsigned char uint8_t;
@@ -374,7 +374,7 @@ typedef unsigned int UINT32;
 #define os_free free
 #define os_memset memset
 
-#if PLATFORM_XR806
+#if PLATFORM_XR806 || PLATFORM_XR872
 
 #else
 #define close lwip_close
@@ -417,18 +417,28 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #include <portable.h>
 #include <semphr.h>
 #include "lwip/sys.h"
+#include <stdbool.h>
 
-#define portTICK_RATE_MS                      ( ( portTickType ) 1000 / configTICK_RATE_HZ )
+#define GLOBAL_INT_DECLARATION()	;
+#define GLOBAL_INT_DISABLE()		;
+#define GLOBAL_INT_RESTORE()		;
+
+#ifndef portTICK_RATE_MS
+#define portTICK_RATE_MS ( ( portTickType ) 1000 / configTICK_RATE_HZ )
+#endif
 
 #define bk_printf printf
 #define os_strcpy strcpy
-#define os_malloc malloc
-#define os_free free
 #define os_memset memset
+#define os_malloc pvPortMalloc
+#define os_free vPortFree
+#define realloc pvPortRealloc
 
+#ifndef portTICK_PERIOD_MS
 #define portTICK_PERIOD_MS	portTICK_RATE_MS
+#endif
 
-#define rtos_delay_milliseconds sys_msleep
+#define rtos_delay_milliseconds(x) vTaskDelay(x / portTICK_PERIOD_MS)
 #define delay_ms sys_msleep
 
 #define SemaphoreHandle_t xSemaphoreHandle
@@ -437,7 +447,7 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #define kNoErr                      0       //! No error occurred.
 typedef void *beken_thread_arg_t;
-typedef void *beken_thread_t;
+typedef xTaskHandle *beken_thread_t;
 typedef void (*beken_thread_function_t)( beken_thread_arg_t arg );
 typedef int OSStatus;
 
@@ -452,11 +462,14 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint32_t stack_size, beken_thread_arg_t arg );
 OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
+#define OBK_OTA_EXTENSION ".img"
 
 #elif PLATFORM_LN882H
 
 // TODO:LN882H Platform setup here.
 #include <stdbool.h>
+#include <FreeRTOS.h>
+#include <task.h>
 
 #define ASSERT
 #define os_strcpy strcpy
@@ -469,7 +482,7 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define kNoErr                      0       //! No error occurred.
 #define rtos_delay_milliseconds OS_MsDelay
 typedef void *beken_thread_arg_t;
-typedef void *beken_thread_t;
+typedef xTaskHandle beken_thread_t;
 typedef void (*beken_thread_function_t)( beken_thread_arg_t arg );
 typedef int OSStatus;
 
@@ -483,6 +496,9 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 							beken_thread_function_t function,
 							uint32_t stack_size, beken_thread_arg_t arg );
 OSStatus rtos_suspend_thread(beken_thread_t* thread);
+
+#define OBK_OTA_EXTENSION		".bin"
+#define OBK_OTA_NAME_EXTENSION	"_OTA"
 
 #elif PLATFORM_ESPIDF
 
@@ -505,7 +521,7 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define kNoErr                      0       //! No error occurred.
 #define rtos_delay_milliseconds sys_delay_ms
 typedef void* beken_thread_arg_t;
-typedef void* beken_thread_t;
+typedef TaskHandle_t beken_thread_t;
 typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
 typedef int OSStatus;
 
@@ -525,6 +541,8 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define xTaskHandle TaskHandle_t
 #define delay_ms sys_delay_ms
 #define UINT32 uint32_t
+
+#define OBK_OTA_EXTENSION ".img"
 
 #elif PLATFORM_TR6260
 
@@ -567,7 +585,7 @@ typedef unsigned int UINT32;
 
 #define kNoErr                      0       //! No error occurred.
 typedef void* beken_thread_arg_t;
-typedef void* beken_thread_t;
+typedef xTaskHandle beken_thread_t;
 typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
 typedef int OSStatus;
 
@@ -584,6 +602,8 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define GLOBAL_INT_DECLARATION()	;
 #define GLOBAL_INT_DISABLE()		;
 #define GLOBAL_INT_RESTORE()		;
+
+#define OBK_OTA_EXTENSION ".img"
 
 #elif PLATFORM_REALTEK
 
@@ -644,7 +664,7 @@ extern int g_sleepfactor;
 
 #define kNoErr                      0       //! No error occurred.
 typedef void* beken_thread_arg_t;
-typedef void* beken_thread_t;
+typedef xTaskHandle beken_thread_t;
 typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
 typedef int OSStatus;
 
@@ -661,6 +681,8 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define GLOBAL_INT_DECLARATION()	;
 #define GLOBAL_INT_DISABLE()		;
 #define GLOBAL_INT_RESTORE()		;
+
+#define OBK_OTA_EXTENSION ".img"
 
 #elif PLATFORM_ECR6600
 
@@ -701,7 +723,7 @@ extern void sys_delay_ms(uint32_t ms);
 
 #define kNoErr                      0       //! No error occurred.
 typedef void* beken_thread_arg_t;
-typedef void* beken_thread_t;
+typedef xTaskHandle beken_thread_t;
 typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
 typedef int OSStatus;
 
@@ -718,6 +740,8 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define GLOBAL_INT_DECLARATION()	;
 #define GLOBAL_INT_DISABLE()		;
 #define GLOBAL_INT_RESTORE()		;
+
+#define OBK_OTA_EXTENSION ".img"
 
 #else
 
@@ -737,17 +761,11 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 void delay_ms(UINT32 ms_count);
 
+#define OBK_OTA_EXTENSION ".rbl"
+
 #endif
 
 typedef unsigned char byte;
-
-
-#if PLATFORM_XR809
-#define LWIP_COMPAT_SOCKETS 1
-#define LWIP_POSIX_SOCKETS_IO_NAMES 1
-#endif
-
-
 
 #if WINDOWS
 

@@ -78,6 +78,7 @@ const char* g_typesLowMidHighHighest[] = { "Low","Mid","High","Highest" };
 const char* g_typesOffOnRemember[] = { "Off", "On", "Remember" };
 const char* g_typeLowMidHigh[] = { "Low","Mid","High" };
 const char* g_typesLowestLowMidHighHighest[] = { "Lowest", "Low", "Mid", "High", "Highest" };;
+const char* g_typeOpenStopClose[] = { "Open","Stop","Close" };
 
 #define ADD_OPTION(t,a) if(type == t) { *numTypes = sizeof(a)/sizeof(a[0]); return a; }
 
@@ -89,6 +90,7 @@ const char **Channel_GetOptionsForChannelType(int type, int *numTypes) {
 	ADD_OPTION(ChType_LowMidHighHighest, g_typesLowMidHighHighest);
 	ADD_OPTION(ChType_OffOnRemember, g_typesOffOnRemember);
 	ADD_OPTION(ChType_LowMidHigh, g_typeLowMidHigh);
+	ADD_OPTION(ChType_OpenStopClose, g_typeOpenStopClose);
 	
 	*numTypes = 0;
 	return 0;
@@ -343,7 +345,7 @@ int http_fn_index(http_request_t* request) {
 #if ENABLE_OBK_BERRY
 		void Berry_SaveRequest(http_request_t *r);
 		Berry_SaveRequest(request);
-		CMD_Berry_RunEventHandlers_StrInt(CMD_EVENT_ON_HTTP, "prestate", (int)request);
+		CMD_Berry_RunEventHandlers_StrPtr(CMD_EVENT_ON_HTTP, "prestate", request);
 #endif
 #ifndef OBK_DISABLE_ALL_DRIVERS
 		DRV_AppendInformationToHTTPIndexPage(request, true);
@@ -355,7 +357,7 @@ int http_fn_index(http_request_t* request) {
 #if ENABLE_OBK_BERRY
 	void Berry_SaveRequest(http_request_t *r);
 	Berry_SaveRequest(request);
-	CMD_Berry_RunEventHandlers_StrInt(CMD_EVENT_ON_HTTP, "state", (int)request);
+	CMD_Berry_RunEventHandlers_StrPtr(CMD_EVENT_ON_HTTP, "state", request);
 #endif
 
 	if (!CFG_HasFlag(OBK_FLAG_HTTP_NO_ONOFF_WORDS)){
@@ -495,6 +497,9 @@ int http_fn_index(http_request_t* request) {
 			if (channelType == ChType_OffOnRemember) {
 				what = "memory";
 			}
+			else if (channelType == ChType_OpenStopClose) {
+				what = "mode";
+			}
 			else {
 				what = "speed";
 			}
@@ -574,7 +579,9 @@ int http_fn_index(http_request_t* request) {
 		else if (h_isChannelRelay(i) || channelType == ChType_Toggle || channelType == ChType_Toggle_Inv) {
 			// HANDLED ABOVE in previous loop
 		}
-		else if ((bRawPWMs && h_isChannelPWM(i)) || (channelType == ChType_Dimmer) || (channelType == ChType_Dimmer256) || (channelType == ChType_Dimmer1000)) {
+		else if ((bRawPWMs && h_isChannelPWM(i)) ||
+			(channelType == ChType_Dimmer) || (channelType == ChType_Dimmer256) || (channelType == ChType_Dimmer1000)
+			|| channelType == ChType_Percent) {
 			int maxValue;
 			// PWM and dimmer both use a slider control
 			inputName = h_isChannelPWM(i) ? "pwm" : "dim";
@@ -1766,7 +1773,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	// warning - this is 32 bit
 	int flagsChannelPublished;
 	int ch;
-	int dimmer, toggle, brightness_scale;
+	int dimmer, toggle, brightness_scale = 0;
 
 	// no channels published yet
 	flagsChannelPublished = 0;
@@ -1800,6 +1807,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	hooks.free_fn = os_free;
 	cJSON_InitHooks(&hooks);
 
+	DRV_OnHassDiscovery(topic);
 
 #if ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY
 	// try to pair toggles with dimmers. This is needed only for TuyaMCU, 
@@ -2024,7 +2032,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			{
 				dev_info = hass_init_sensor_device_info(READONLYLOWMIDHIGH_SENSOR, i, -1, -1, 1);
 			}
-			break; 
+			break;
 			case ChType_BatteryLevelPercent:
 			{
 				dev_info = hass_init_sensor_device_info(BATTERY_CHANNEL_SENSOR, i, -1, -1, 1);
@@ -2137,6 +2145,11 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, i, 3, 2, 1);
 			}
 			break;
+			case ChType_Percent:
+			{
+				dev_info = hass_init_sensor_device_info(HASS_PERCENT, i, 3, 2, 1);
+			}
+			break;
 			case ChType_Frequency_div1000:
 			{
 				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, i, 4, 3, 1);
@@ -2170,6 +2183,30 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			case ChType_Tds:
 			{
 				dev_info = hass_init_sensor_device_info(WATER_QUALITY_TDS, i, -1, 2, 1);
+			}
+			break;
+			default:
+			{
+				int numOptions;
+				const char **options = Channel_GetOptionsForChannelType(type, &numOptions);
+				if (options && numOptions) {
+					// backlog setChannelType 2 LowMidHigh; scheduleHADiscovery 1
+					// backlog setChannelType 3 OpenStopClose; scheduleHADiscovery 1
+					char stateTopic[32];
+					char cmdTopic[32];
+					char title[64];
+					// TODO: lengths
+					strcpy(title, CHANNEL_GetLabel(i));
+					sprintf(stateTopic, "~/%i/get", i);
+					sprintf(cmdTopic, "~/%i/set", i);
+					dev_info = hass_createSelectEntityIndexed(
+						stateTopic,
+						cmdTopic,
+						numOptions,
+						options,
+						title
+					);
+				}
 			}
 			break;
 		}
@@ -2227,6 +2264,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 #ifndef NO_CHIP_TEMPERATURE
 		dev_info = hass_init_sensor_device_info(HASS_TEMP, -1, -1, -1, 1);
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
 #endif
 		dev_info = hass_init_sensor_device_info(HASS_RSSI, -1, -1, -1, 1);
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
@@ -3212,7 +3250,7 @@ int http_fn_ota(http_request_t* request) {
 int http_fn_other(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 #if ENABLE_OBK_BERRY
-	if (CMD_Berry_RunEventHandlers_StrInt(CMD_EVENT_ON_HTTP, request->url, (int)request)) {
+	if (CMD_Berry_RunEventHandlers_StrPtr(CMD_EVENT_ON_HTTP, request->url, request)) {
 		return 0;
 	}
 #endif

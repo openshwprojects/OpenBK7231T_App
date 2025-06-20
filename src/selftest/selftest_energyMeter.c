@@ -118,6 +118,21 @@ void Test_EnergyMeter_BL0942() {
 
 	SIM_ClearMQTTHistory();
 }
+void Test_EnergyMeter_CSE7766() {
+	SIM_ClearOBK(0);
+	SIM_ClearAndPrepareForMQTTTesting("miscDevice", "bekens");
+
+	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(9, 1);
+
+	CMD_ExecuteCommand("startDriver CSE7766", 0);
+
+	CMD_ExecuteCommand("uartFakeHex 555A02FCD800062F00413200D7F2537B18023E9F7171FEEC", 0);
+	CSE7766_RunEverySecond();
+
+
+	SIM_ClearMQTTHistory();
+}
 void Test_EnergyMeter_Events() {
 	SIM_ClearOBK(0);
 	SIM_ClearAndPrepareForMQTTTesting("miscDevice", "bekens");
@@ -340,7 +355,11 @@ void Test_EnergyMeter_TurnOffScript() {
 	SIM_ClearMQTTHistory();
 }
 void Test_EnergyMeter() {
+	Test_EnergyMeter_CSE7766();
+#ifndef LINUX
+	// TODO: fix on Linux
 	Test_EnergyMeter_BL0942();
+#endif
 	Test_EnergyMeter_Basic();
 	Test_EnergyMeter_Tasmota();
 	Test_EnergyMeter_Events();

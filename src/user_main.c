@@ -2,7 +2,6 @@
 
  */
  //
-
 #include "hal/hal_wifi.h"
 #include "hal/hal_generic.h"
 #include "hal/hal_flashVars.h"
@@ -624,7 +623,7 @@ void Main_OnEverySecond()
 	}
 
 	// On Beken, do reboot if we ran into heap size problem
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_W800
 	if (xPortGetFreeHeapSize() < 25 * 1000) {
 		g_secondsSpentInLowMemoryWarning++;
 		ADDLOGF_ERROR("Low heap warning!\n");
@@ -939,6 +938,7 @@ void QuickTick(void* param)
 	SVM_RunThreads(g_deltaTimeMS);
 #endif
 #if ENABLE_OBK_BERRY
+	extern void Berry_RunThreads(int deltaMS);
 	Berry_RunThreads(g_deltaTimeMS);
 #endif
 	RepeatingEvents_RunUpdate(g_deltaTimeMS * 0.001f);

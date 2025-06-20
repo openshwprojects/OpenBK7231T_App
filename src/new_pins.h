@@ -567,6 +567,13 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_PWM_ScriptOnly,
+	//iodetail:{"name":"PWM_ScriptOnly_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"",
+	//iodetail:"enum":"PWM_ScriptOnly_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_PWM_ScriptOnly_n,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
@@ -994,6 +1001,9 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Frequency_div1000,
+
+	ChType_OpenStopClose,
+	ChType_Percent,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
@@ -1471,6 +1481,9 @@ int CHANNEL_HasChannelPinWithRoleOrRole(int ch, int iorType, int iorType2);
 bool CHANNEL_IsInUse(int ch);
 void Channel_SaveInFlashIfNeeded(int ch);
 int CHANNEL_FindMaxValueForChannel(int ch);
+int CHANNEL_FindIndexForType(int requiredType); 
+int CHANNEL_FindIndexForPinType(int requiredType);
+int CHANNEL_FindIndexForPinType2(int requiredType, int requiredType2);
 // cmd_channels.c
 bool CHANNEL_HasLabel(int ch);
 const char* CHANNEL_GetLabel(int ch);
@@ -1490,7 +1503,7 @@ const char *ChannelType_GetUnit(int type);
 int ChannelType_GetDivider(int type);
 int ChannelType_GetDecimalPlaces(int type);
 
-//int PIN_GetPWMIndexForPinIndex(int pin);
+int PIN_GetPWMIndexForPinIndex(int pin);
 
 int PIN_ParsePinRoleName(const char* name);
 const char* PIN_RoleToString(int role);

@@ -91,7 +91,8 @@ void CMD_Berry_RunEventHandlers_IntInt(byte eventCode, int argument, int argumen
 		t = t->next;
 	}
 }
-int CMD_Berry_RunEventHandlers_StrInt(byte eventCode, const char *argument, int argument2) {
+
+int CMD_Berry_RunEventHandlers_StrPtr(byte eventCode, const char *argument, void* argument2) {
 	berryInstance_t *t;
 
 	t = g_berryThreads;
@@ -105,13 +106,14 @@ int CMD_Berry_RunEventHandlers_StrInt(byte eventCode, const char *argument, int 
 		} else if (t->wait.waitingForEvent == eventCode
 			&& t->wait.waitingForRelation == 'm'
 			&& !stricmp(t->wait.waitingForArgumentStr,argument)) {
-			berryRunClosureIntInt(g_vm, t->closureId, argument2, 0);
+			berryRunClosurePtr(g_vm, t->closureId, argument2);
 			calls++;
 		}
 		t = t->next;
 	}
 	return calls;
 }
+
 void CMD_Berry_RunEventHandlers_IntBytes(byte eventCode, int argument, const byte *data, int size) {
 	berryInstance_t *t;
 
@@ -201,15 +203,16 @@ int be_addClosure(bvm *vm, const char *eventName, int relation, int reqArg, cons
 	}
 	// remove the 2 values we pushed on the stack
 	be_pop(vm, 2);
+	be_return_nil(vm);
 }
 int be_poststr(bvm *vm) {
 	int top = be_top(vm);
 
-	if (top == 2 && be_isstring(vm, 2) && be_isint(vm, 1)) {
+	if (top == 2 && be_isstring(vm, 2) && be_iscomptr(vm, 1)) {
 		const char *s = be_tostring(vm, 2);
-		int request = be_toint(vm, 1);
+		http_request_t* request = be_tocomptr(vm, 1);
 
-		poststr((http_request_t*)request, s);
+		poststr(request, s);
 	}
 	be_return_nil(vm);
 }
@@ -304,6 +307,7 @@ int be_setTimeoutInternal(bvm *vm, int repeats) {
 }
 int be_setTimeout(bvm *vm) {
 	be_setTimeoutInternal(vm, 0);
+	return 1;
 }
 int be_get(bvm *vm) {
 	char tmpA[64];
@@ -315,13 +319,11 @@ int be_get(bvm *vm) {
 			CMD_ExpandConstant(name, 0, &ret);
 			be_pushreal(vm, ret);
 			be_return(vm);
-			return;
 		}
 		else {
 			if (http_getArg(g_currentRequest->url, name, tmpA, sizeof(tmpA))) {
 				be_pushstring(vm, tmpA);
 				be_return(vm);
-				return;
 			}
 		}
 	}
@@ -330,6 +332,7 @@ int be_get(bvm *vm) {
 
 int be_setInterval(bvm *vm) {
 	be_setTimeoutInternal(vm, -1);
+	return 1;
 }
 
 static int BasicInit() {
@@ -354,12 +357,6 @@ static int BasicInit() {
 		
 		be_regfunc(g_vm, "rtosDelayMs", be_rtosDelayMs);
 		be_regfunc(g_vm, "delayUs", be_delayUs);
-		be_regfunc(g_vm, "initI2c", be_initI2c);
-		be_regfunc(g_vm, "startI2c", be_startI2c);
-		be_regfunc(g_vm, "stopI2c", be_stopI2c);
-		be_regfunc(g_vm, "writeByteI2c", be_writeByteI2c);
-		be_regfunc(g_vm, "readByteI2c", be_readByteI2c);
-		be_regfunc(g_vm, "readBytesI2c", be_readBytesI2c);
 		be_regfunc(g_vm, "cancel", be_CancelThread);
 		if (!berryRun(g_vm, berryPrelude)) {
 			return 0;
