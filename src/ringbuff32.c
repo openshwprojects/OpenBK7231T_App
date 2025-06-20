@@ -1,10 +1,7 @@
 #include "ringbuff32.h"
 #include <stdlib.h>
 #include <string.h>
-#ifndef bool
 #include <stdbool.h>
-#endif
-
 
 // very simple circular buffer / ring buffer implementation
 // - elements can be stored, but not removed
@@ -55,7 +52,7 @@ int RB_saveVal(RB32_t *rb, RBTYPE val){
 
 void iterateRBtoBuff(RB32_t *rb, void(*callback)(RBTYPE val, void *buff, char* concatstr), void *buff, char* concatstr){
 	if (!rb) {
-		return 0;
+		return;
 	}
 	int c=rb->next;			// usually (RB is "fully used") we start at "next": this is the oldest value, which will be overwritten with the next value
 	int values = rb->maxval; 	// we will have all values defined ..
