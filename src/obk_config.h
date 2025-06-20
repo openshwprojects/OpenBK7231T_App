@@ -160,6 +160,7 @@
 #elif PLATFORM_BL602
 
 
+#define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 #define	ENABLE_HA_DISCOVERY		1
 // I have enabled drivers on BL602
 #define ENABLE_MQTT 1
