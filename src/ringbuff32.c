@@ -1,7 +1,6 @@
 #include "ringbuff32.h"
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
 // very simple circular buffer / ring buffer implementation
 // - elements can be stored, but not removed
