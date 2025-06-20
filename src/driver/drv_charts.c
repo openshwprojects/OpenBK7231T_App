@@ -8,7 +8,6 @@
 #include "../hal/hal_pins.h"
 #include "../httpserver/new_http.h"
 #include "drv_ntp.h"
-
 /*
 // Sample 1
 // single variable chart
@@ -159,6 +158,30 @@ addRepeatingEvent 10 -1 chart_addNow $CH1*0.1
 */
 /*
 // Sample 8
+// DHT11 setup
+IndexRefreshInterval 100000
+startDriver charts
+startDriver NTP
+waitFor NTPState 1
+chart_create 48 2 2
+// set variables along with their axes
+chart_setVar 0 "Temperature" "axtemp"
+chart_setVar 1 "Humidity" "axhum"
+// setup axes
+// axis_index, name, flags, label
+chart_setAxis 0 "axtemp" 0 "Temperature (C)"
+// flags 1 means this axis is on the right
+chart_setAxis 1 "axhum" 1 "Humidity (%)"
+
+// every 60 seconds, -1 means infinite repeats
+// assumes that $CH1 is temperature div10 and $CH2 is humidity
+addRepeatingEvent 60 -1 chart_addNow $CH1*0.1 $CH2
+
+
+
+*/
+/*
+// Sample 9
 // Random numbers
 
 IndexRefreshInterval 100000
@@ -172,8 +195,7 @@ chart_setAxis 0 "ax" 0 "Number"
 
 
 again:
-setChannel 5 $rand
-clampChannel 5 0 10 1
+setChannel 5 $rand*0.001
 chart_addNow $CH5
 delay_s 1
 goto again
@@ -207,7 +229,8 @@ typedef struct chart_s {
 
 chart_t *g_chart = 0;
 
-void Chart_Free(chart_t *s) {
+void Chart_Free(chart_t **ptr) {
+	chart_t *s = *ptr;
 	if (!s) {
 		return; 
 	}
@@ -237,34 +260,50 @@ void Chart_Free(chart_t *s) {
 		free(s->times);
 	}
 	free(s);
+	*ptr = 0;
+}
+byte *ZeroMalloc(unsigned int size) {
+	byte *r = (byte*)malloc(size);
+	if (r == 0)
+		return 0;
+	memset(r, 0, size);
+	return r;
 }
 chart_t *Chart_Create(int maxSamples, int numVars, int numAxes) {
-	chart_t *s = (chart_t *)malloc(sizeof(chart_t));
+	chart_t *s = (chart_t *)ZeroMalloc(sizeof(chart_t));
 	if (!s) {
 		return NULL;
 	}
-	s->vars = (var_t *)malloc(sizeof(var_t) * numVars);
+	s->vars = (var_t *)ZeroMalloc(sizeof(var_t) * numVars);
 	if (!s->vars) {
 		free(s);
 		return NULL; 
 	}
-	s->axes = (axis_t *)malloc(sizeof(axis_t) * numAxes);
+	s->axes = (axis_t *)ZeroMalloc(sizeof(axis_t) * numAxes);
 	if (!s->axes) {
 		free(s->vars);
 		free(s);
 		return NULL;
 	}
-	s->times = (time_t *)malloc(sizeof(time_t) * maxSamples);
+	s->times = (time_t *)ZeroMalloc(sizeof(time_t) * maxSamples);
 	if (!s->times) {
 		free(s->axes);
 		free(s->vars);
 		free(s);
 		return NULL; 
 	}
+
 	for (int i = 0; i < numVars; i++) {
-		s->vars[i].samples = (float*)malloc(sizeof(float) * maxSamples);
+		s->vars[i].samples = (float*)ZeroMalloc(sizeof(float) * maxSamples);
 		if (s->vars[i].samples == 0) {
-			// TODO
+			for (int j = 0; j < i; j++) {
+				free(s->vars[j].samples);
+			}
+			free(s->times);
+			free(s->axes);
+			free(s->vars);
+			free(s);
+			return NULL;
 		}
 	}
 	s->numAxes = numAxes;
@@ -275,20 +314,26 @@ chart_t *Chart_Create(int maxSamples, int numVars, int numAxes) {
 	return s;
 }
 void Chart_SetAxis(chart_t *s, int idx, const char *name, int flags, const char *label) {
-
+	if (!s || idx >= s->numAxes) {
+		return;
+	}
 	s->axes[idx].name = strdup(name);
 	s->axes[idx].label = strdup(label);
 	s->axes[idx].flags = flags;
 }
 void Chart_SetVar(chart_t *s, int idx, const char *title, const char *axis) {
-
+	if (!s || idx >= s->numVars) {
+		return;
+	}
 	s->vars[idx].title = strdup(title);
 	s->vars[idx].axis = strdup(axis);
 }
 void Chart_SetSample(chart_t *s, int idx, float value) {
-	if (!s) {
+	if (!s || idx >= s->numVars) {
+	bk_printf("DEBUG CHARTS: ERROR - Chart_SetSample ixd=%i /  s->numVars=%i / value=%f\n",idx, s->numVars,value); 
 		return;
 	}
+	bk_printf("DEBUG CHARTS: OK - Chart_SetSample ixd=%i /  s->numVars=%i  / value=%f\n",idx, s->numVars,value); 
 	s->vars[idx].samples[s->nextSample] = value;
 }
 void Chart_AddTime(chart_t *s, time_t time) {
@@ -328,7 +373,7 @@ void Chart_DisplayLabel(float *val, time_t *time, void *userData) {
 		poststr(request, ",");
 	}
 	request->userCounter++;
-	snprintf(buffer, sizeof(buffer), "new Date(%ld * 1000).toLocaleTimeString()", (long)(*time));
+	snprintf(buffer, sizeof(buffer), "%ld", (long)(*time));					// don't transmit too much data, use only the timestamps here and handle conversion later  ....
 	poststr(request, buffer);
 }
 void Chart_DisplayData(float *val, time_t *time, void *userData) {
@@ -344,26 +389,58 @@ void Chart_DisplayData(float *val, time_t *time, void *userData) {
 void Chart_Display(http_request_t *request, chart_t *s) {
 	char buffer[64];
 
-	poststr(request, "<canvas id=\"myChart\" width=\"400\" height=\"200\"></canvas>");
+	if (s == 0) {
+		poststr(request, "<h4>Chart is NULL</h4>");
+		return;
+	}
+	for (int i = 0; i < s->numAxes; i++) {
+		if (s->axes[i].label == 0) {
+			poststr(request, "<h4>No axes set</h4>");
+			return;
+		}
+	}
+	for (int i = 0; i < s->numVars; i++) {
+		if (s->vars[i].title == 0) {
+			poststr(request, "<h4>No vars set</h4>");
+			return;
+		}
+	}
+
+/*
+	// on every "state" request, JS code will be loaded and canvas is redrawn
+	// this leads to a flickering graph
+	// so put this right below the "state" div
+	// with a "#ifdef 
+	// drawback : We need to take care, if driver is loaded and canvas will be displayed only on a reload of the page
+	// or we might try and hide/unhide it ...
+	poststr(request, "<canvas id=\"obkChart\" width=\"400\" height=\"200\"></canvas>");
 	poststr(request, "<script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>");
-
-	poststr(request, "<script>");
-	poststr(request, "function cha() {");
-	poststr(request, "console.log('Initializing chart');");
-	poststr(request, "if (window.myChartInstance) {");
-	poststr(request, "    window.myChartInstance.destroy();");
-	poststr(request, "}");
-	poststr(request, "var ctx = document.getElementById('myChart').getContext('2d');");
-
-	poststr(request, "var labels = [");
+*/
+	poststr(request, "<input type='hidden' id='chartlabels' value='");
 	request->userCounter = 0;
 	Chart_Iterate(s, 0, Chart_DisplayLabel, request);
-	poststr(request, "];");
-
-	poststr(request, "window.myChartInstance = new Chart(ctx, {");
+	poststr(request, "'>");
+	for (int i = 0; i < s->numVars; i++) {
+		hprintf255(request, "<input type='hidden' id='chartdata%i' value='",i);
+		request->userCounter = 0;
+		Chart_Iterate(s, i,  Chart_DisplayData, request);
+		poststr(request, "'>");
+	}
+	poststr(request, "<script>");
+	poststr(request, "function cha() {");
+	poststr(request, "var labels =document.getElementById('chartlabels').value.split(/\s*,\s*/).map(Number).map((x)=>new Date(x * 1000).toLocaleTimeString());"); // we transmitted only timestamps, let Javascript do the work to convert them ;-)
+	for (int i = 0; i < s->numVars; i++) {
+		hprintf255(request, "var data%i = document.getElementById('chartdata%i').value.split(/\s*,\s*/).map(Number);",i,i);	
+	}
+	poststr(request, "if (! window.obkChartInstance) {");
+	poststr(request, "console.log('Initializing chart');");
+	poststr(request, "var ctx = document.getElementById('obkChart');");
+	poststr(request, "if (ctx.style.display=='none') ctx.style.display='block';");
+	poststr(request, "ctx =ctx.getContext('2d');");
+	poststr(request, "window.obkChartInstance = new Chart(ctx, {");
 	poststr(request, "    type: 'line',");
 	poststr(request, "    data: {");
-	poststr(request, "        labels: labels,");  
+	poststr(request, "        labels: labels,");
 	poststr(request, "        datasets: [");
 	for (int i = 0; i < s->numVars; i++) {
 		if (i) {
@@ -371,10 +448,7 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 		}
 		poststr(request, "{");
 		hprintf255(request, "            label: '%s',", s->vars[i].title);
-		poststr(request, "            data: [");
-		request->userCounter = 0;
-		Chart_Iterate(s, i,  Chart_DisplayData, request);
-		poststr(request, "],");
+		hprintf255(request, "            data: data%i,",i);
 		if (i == 2) {
 			poststr(request, "                borderColor: 'rgba(155, 33, 55, 1)',");
 		}
@@ -391,6 +465,7 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 	poststr(request, "]");
 	poststr(request, "    },");
 	poststr(request, "    options: {");
+	poststr(request, "        animation: false,");		// for me it's annoying, if on every refresh the graph is "animated"
 	poststr(request, "        scales: {");
 	poststr(request, "            x: {");
 	poststr(request, "                type: 'category',");  
@@ -419,14 +494,25 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 	}
 	poststr(request, "        }");
 	poststr(request, "    }");
-	poststr(request, "});");
-	poststr(request, "}");
+	poststr(request, "});\n");
+	poststr(request, "Chart.defaults.color = '#099'; ");  // Issue #1375, add a default color to improve readability (applies to: dataset names, axis ticks, color for axes title, (use color: '#099')
+	poststr(request, "}\n");
+	poststr(request, "else {\n");
+	poststr(request, "console.log('Updating chart');\n");
+	poststr(request, "	window.obkChartInstance.data.labels=labels;\n");
+	for (int i = 0; i < s->numVars; i++) {
+		hprintf255(request, "	window.obkChartInstance.data.datasets[%i].data=data%i;\n",i,i);	
+	}
+	poststr(request, "	window.obkChartInstance.update();\n");
+	poststr(request, "}\n}");
 	poststr(request, "</script>");
 	poststr(request, "<style onload='cha();'></style>");
 
 }
-void DRV_Charts_AddToHtmlPage_Test(http_request_t *request) {
-
+void DRV_Charts_AddToHtmlPage_Test(http_request_t *request, int bPreState) {
+	if (bPreState) {
+		return;
+	}
 	// chart_create [NumSamples] [NumVariables] [NumAxes]
 	// chart_create 16 3 2
 	chart_t *s = Chart_Create(16, 3, 2);
@@ -470,14 +556,12 @@ void DRV_Charts_AddToHtmlPage_Test(http_request_t *request) {
 	Chart_SetSample(s, 2, 91);
 	Chart_AddTime(s, 1725656094);
 	Chart_Display(request, s);
-	Chart_Free(s);
+	Chart_Free(&s);
 }
 // startDriver Charts
-void DRV_Charts_AddToHtmlPage(http_request_t *request) {
-	if (0) {
-		DRV_Charts_AddToHtmlPage_Test(request);
+void DRV_Charts_AddToHtmlPage(http_request_t *request, int bPreState) {
+	if (bPreState)
 		return;
-	}
 	if (g_chart) {
 		Chart_Display(request, g_chart);
 	}
@@ -493,7 +577,7 @@ static commandResult_t CMD_Chart_Create(const void *context, const char *cmd, co
 	int numVars = Tokenizer_GetArgInteger(1);
 	int numAxes = Tokenizer_GetArgInteger(2);
 
-	Chart_Free(g_chart);
+	Chart_Free(&g_chart);
 	g_chart = Chart_Create(numSamples, numVars, numAxes);
 
 	return CMD_RES_OK;
@@ -505,6 +589,11 @@ static commandResult_t CMD_Chart_SetVar(const void *context, const char *cmd, co
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	int varIndex = Tokenizer_GetArgInteger(0);
+	if (varIndex >= g_chart->numVars){
+//		ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set var %i, only %i vars defined (starting with 0)!", varIndex, g_chart->numVars);
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set var %i, only var %s%i defined!", varIndex, g_chart->numVars>1? "0-":"",g_chart->numVars-1);
+		return CMD_RES_BAD_ARGUMENT;
+	}
 	const char *displayName = Tokenizer_GetArg(1);
 	const char *axis = Tokenizer_GetArg(2);
 
@@ -519,6 +608,11 @@ static commandResult_t CMD_Chart_SetAxis(const void *context, const char *cmd, c
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	int axisIndex = Tokenizer_GetArgInteger(0);
+	if (axisIndex >= g_chart->numAxes){
+//		ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set axis %i, only %i axes defined (starting with 0)!", axisIndex, g_chart->numAxes);
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set axis %i, only axis %s%i defined!", axisIndex, g_chart->numAxes>1? "0-":"", g_chart->numAxes-1);
+		return CMD_RES_BAD_ARGUMENT;
+	}
 	const char *name = Tokenizer_GetArg(1);
 	int cflags = Tokenizer_GetArgInteger(2);
 	const char *label = Tokenizer_GetArg(3);
@@ -535,10 +629,16 @@ static commandResult_t CMD_Chart_AddNow(const void *context, const char *cmd, co
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	for (int i = 0; i < cnt; i++) {
+		if (i >= g_chart->numVars){
+//			ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set value for var %i, only %i vars defined (starting with 0)!", i, g_chart->numVars);
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set sample value for var %i, only var %s%i defined!", i, g_chart->numVars>1? "0-":"",g_chart->numVars-1);
+		return CMD_RES_BAD_ARGUMENT;
+		}
+
 		float f = Tokenizer_GetArgFloat(i);
 		Chart_SetSample(g_chart, i, f);
 	}
-	Chart_AddTime(g_chart, NTP_GetCurrentTime());
+	Chart_AddTime(g_chart, NTP_GetCurrentTimeWithoutOffset());  // Fix issue #1376 .....was NTP_GetCurrentTime() ... now "WithoutOffset" since NTP drivers timestamp are already offsetted
 
 	return CMD_RES_OK;
 }
@@ -552,6 +652,12 @@ static commandResult_t CMD_Chart_Add(const void *context, const char *cmd, const
 	int time = Tokenizer_GetArgInteger(0);
 	for (int i = 1; i < cnt; i++) {
 		float f = Tokenizer_GetArgFloat(i);
+		if (i > g_chart->numVars){
+//			ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set value %f for var %i, only %i vars defined (starting with 0)!",f, i-1, g_chart->numVars);
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "Can't set value %f for var %i, only var %s%i defined!",f, i-1,  g_chart->numVars>1? "0-":"",g_chart->numVars-1);
+			bk_printf("CHARTS: Can't set value %f for var %i, only var %s%i defined!\n",f, i-1,  g_chart->numVars>1? "0-":"",g_chart->numVars-1);
+		return CMD_RES_BAD_ARGUMENT;
+		}
 		Chart_SetSample(g_chart, i - 1, f);
 	}
 	Chart_AddTime(g_chart, time);
@@ -563,10 +669,31 @@ void DRV_Charts_Init() {
 
 
 
+	//cmddetail:{"name":"chart_setAxis","args":"[axis_index][name][flags][label]",
+	//cmddetail:"descr":"Sets up an axis with a name, flags, and label. Currently flags can be 0 (left axis) or 1 (right axis). See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_charts.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("chart_setAxis", CMD_Chart_SetAxis, NULL);
+	//cmddetail:{"name":"chart_setVar","args":"[var_index][title][axis]",
+	//cmddetail:"descr":"Associates a variable with a specific axis. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_charts.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("chart_setVar", CMD_Chart_SetVar, NULL);
+	//cmddetail:{"name":"chart_create","args":"[max_samples][num_vars][num_axes]",
+	//cmddetail:"descr":"Creates a chart with a specified number of samples, variables, and axes. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_charts.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("chart_create", CMD_Chart_Create, NULL);
+	//cmddetail:{"name":"chart_addNow","args":"[val1][val2]...[valN]",
+	//cmddetail:"descr":"Adds data to the chart using the current NTP time. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_charts.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("chart_addNow", CMD_Chart_AddNow, NULL);
+	//cmddetail:{"name":"chart_add","args":"[ntp_time][val1][val2]...[valN]",
+	//cmddetail:"descr":"Adds data to the chart with specified variables at a specific NTP time. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+	//cmddetail:"fn":"NULL);","file":"driver/drv_charts.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("chart_add", CMD_Chart_Add, NULL);
+
 }
 

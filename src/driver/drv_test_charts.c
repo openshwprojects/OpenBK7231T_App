@@ -9,7 +9,11 @@
 #include "../httpserver/new_http.h"
 
 // startDriver TestCharts
-void DRV_Test_Charts_AddToHtmlPage(http_request_t *request) {
+void DRV_Test_Charts_AddToHtmlPage(http_request_t *request, int bPreState) {
+	if (bPreState) {
+		return;
+	}
+
 	time_t timeStamps[16];
 	float temperature[16];
 	float humidity[16];
@@ -20,16 +24,16 @@ void DRV_Test_Charts_AddToHtmlPage(http_request_t *request) {
 		temperature[i] = 20.0 + (i % 5);
 		humidity[i] = 80.0 + (i % 3);
 	}
-	poststr(request, "<canvas id=\"myChart\" width=\"400\" height=\"200\"></canvas>");
+	poststr(request, "<canvas id=\"obkChart\" width=\"400\" height=\"200\"></canvas>");
 	poststr(request, "<script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>");
 
 	poststr(request, "<script>");
 	poststr(request, "function cha() {");
 	poststr(request, "console.log('Initializing chart');");
-	poststr(request, "if (window.myChartInstance) {");
-	poststr(request, "    window.myChartInstance.destroy();");
+	poststr(request, "if (window.obkChartInstance) {");
+	poststr(request, "    window.obkChartInstance.destroy();");
 	poststr(request, "}");
-	poststr(request, "var ctx = document.getElementById('myChart').getContext('2d');");
+	poststr(request, "var ctx = document.getElementById('obkChart').getContext('2d');");
 
 	poststr(request, "var labels = [");
 	for (size_t i = 0; i < 16; i++) {
@@ -41,7 +45,7 @@ void DRV_Test_Charts_AddToHtmlPage(http_request_t *request) {
 	}
 	poststr(request, "];");
 
-	poststr(request, "window.myChartInstance = new Chart(ctx, {");
+	poststr(request, "window.obkChartInstance = new Chart(ctx, {");
 	poststr(request, "    type: 'line',");
 	poststr(request, "    data: {");
 	poststr(request, "        labels: labels,");

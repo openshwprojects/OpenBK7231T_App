@@ -9,11 +9,13 @@ void SIM_ClearAndPrepareForMQTTTesting(const char *clientName, const char *group
 	Main_OnWiFiStatusChange(WIFI_STA_CONNECTED);
 	CFG_SetMQTTClientId(clientName);
 	CFG_SetMQTTGroupTopic(groupName);
+#if ENABLE_MQTT
 	MQTT_init();
 
 	for (int i = 0; i < 20; i++) {
 		MQTT_RunEverySecondUpdate();
 	}
+#endif
 }
 void Test_MQTT_Get_And_Reply() {
 	SIM_ClearOBK(0);
@@ -135,6 +137,61 @@ void Test_MQTT_Channels() {
 	CMD_ExecuteCommand("setChannel 20 123", 0);
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("myTestDevice/myAliasedVal/get", 12.3f, false);
 	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+
+	// This should trigger MQTT publish
+	// Third arg - [Topic][Value][bOptionalSkipPrefixAndSuffix]
+	CMD_ExecuteCommand("publishInt test 123", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/test/get", "123", false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("myTestDevice/test/get", 123, false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+	// Third arg - [Topic][Value][bOptionalSkipPrefixAndSuffix]
+	CMD_ExecuteCommand("publishInt myTestDevice/test 123 1", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/test", "123", false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("myTestDevice/test", 123, false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+	// Third arg - [Topic][Value][bOptionalSkipPrefixAndSuffix]
+	CMD_ExecuteCommand("setChannel 0 123", 0);
+	CMD_ExecuteCommand("setChannel 1 456", 0);
+
+	Tokenizer_TokenizeString("$CH0", TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS);
+	SELFTEST_ASSERT(strcmp(Tokenizer_GetArg(0), "123") == 0);
+	Tokenizer_TokenizeString("\"$CH0\"", TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS | TOKENIZER_EXPAND_EARLY);
+	SELFTEST_ASSERT(strcmp(Tokenizer_GetArg(0), "123") == 0);
+	Tokenizer_TokenizeString("\"\\\"$CH0\\\"\"", TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS | TOKENIZER_EXPAND_EARLY);
+	SELFTEST_ASSERT(strcmp(Tokenizer_GetArg(0), "\"123\"") == 0);
+	
+	CMD_ExecuteCommand("publish myTestDevice/test \"{\\\"temperature\\\":$CH0,\\\"humidity\\\":$CH1}\" 1", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/test", "{\"temperature\":123,\"humidity\":456}", false);
+	SIM_ClearMQTTHistory();
+
+	Tokenizer_TokenizeString("publish myTestDevice/test {\"temperature\":$CH0,\"humidity\":$CH1} 1", TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS | TOKENIZER_EXPAND_EARLY);
+	SELFTEST_ASSERT(strcmp(Tokenizer_GetArg(2), "{\"temperature\":123,\"humidity\":456}") == 0);
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("publish myTestDevice/test \"{\\\"temperature\\\":$CH0,\\\"humidity\\\":$CH1}\" 1", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/test", "{\"temperature\":123,\"humidity\":456}", false);
+	SIM_ClearMQTTHistory();
+
+	// with space in the middle
+	CMD_ExecuteCommand("publish myTestDevice/test \"{\\\"temperature\\\":$CH0, \\\"humidity\\\":$CH1}\" 1", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/test", "{\"temperature\":123, \"humidity\":456}", false);
+	SIM_ClearMQTTHistory();
+
+	// with space in the middle
+	CMD_ExecuteCommand("publish myTestDevice/test \"{\\\"msg\\\":\\\"Hello World With Spaces\\\"}\" 1", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/test", "{\"msg\":\"Hello World With Spaces\"}", false);
+	SIM_ClearMQTTHistory();
+
+
+	CMD_ExecuteCommand("setChannel 1 225", 0);
+	CMD_ExecuteCommand("setChannel 2 66", 0);
+	CMD_ExecuteCommand("publish DATA {\"ROOM\":\"KITCHEN\",\"TEMPERATURE\":$CH1,\"HUMIDITY\":$CH2}", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/DATA/get", 
+		"{\"ROOM\":\"KITCHEN\",\"TEMPERATURE\":225,\"HUMIDITY\":66}", false);
 	SIM_ClearMQTTHistory();
 }
 void Test_MQTT_LED_CW() {
@@ -551,6 +608,43 @@ void Test_MQTT_Topic_With_Slashes() {
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/kitchen/mySwitch1/1/get", "0", false);
 	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
 	SIM_ClearMQTTHistory();
+
+	// try channel 10
+	PIN_SetPinChannelForPinIndex(24, 10);
+
+	SIM_SendFakeMQTTRawChannelSet(10, "1");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/kitchen/mySwitch1/10/get", "1", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	// try channel 39
+	PIN_SetPinChannelForPinIndex(24, 39);
+
+	SIM_SendFakeMQTTRawChannelSet(39, "1");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("obk/kitchen/mySwitch1/39/get", "1", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	int last = CHANNEL_MAX - 1;
+	char tmp[512];
+	sprintf(tmp, "obk/kitchen/mySwitch1/%i/get", last);
+	// try channel last
+	PIN_SetPinChannelForPinIndex(24, last);
+
+	SIM_SendFakeMQTTRawChannelSet(last, "1");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR(tmp, "1", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SIM_SendFakeMQTTRawChannelSet(last, "0");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR(tmp, "0", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
+
+	SIM_SendFakeMQTTRawChannelSet(last, "123");
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR(tmp, "123", false);
+	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
+	SIM_ClearMQTTHistory();
 }
 
 void Test_MQTT_Topic_With_Slash() {
@@ -641,9 +735,11 @@ void Test_MQTT(){
 	Test_MQTT_Misc();
 	Test_MQTT_Get_And_Reply();
 	Test_MQTT_Channels();
+#if ENABLE_LED_BASIC
 	Test_MQTT_LED_CW();
 	Test_MQTT_LED_RGB();
 	Test_MQTT_LED_RGBCW();
+#endif
 	Test_MQTT_Topic_With_Slash();
 	Test_MQTT_Topic_With_Slashes();
 	Test_MQTT_Average();

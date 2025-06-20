@@ -6,6 +6,8 @@
 #include "../logging/logging.h"
 #include "new_http.h"
 
+#if !NEW_TCP_SERVER
+
 #define HTTP_SERVER_PORT            80
 #define REPLY_BUFFER_SIZE			2048
 #define INCOMING_BUFFER_SIZE		1024
@@ -14,20 +16,9 @@
 // it was 0x800 - 2048 - until 23 10 2022
 // The larger stack size for handling HTTP request is needed, for example, for commands
 // See: https://github.com/openshwprojects/OpenBK7231T_App/issues/314
-#if PLATFORM_BEKEN
 #define HTTP_CLIENT_STACK_SIZE 8192
-#elif PLATFORM_W600
-#define HTTP_CLIENT_STACK_SIZE 8192
-#else
-#define HTTP_CLIENT_STACK_SIZE 8192
-#endif
 
-#define CREATE_THREAD_PER_EACH_HTTP_CLIENT
-
-#ifdef CREATE_THREAD_PER_EACH_HTTP_CLIENT
-
-
-#if PLATFORM_XR809
+#if PLATFORM_XR809 || PLATFORM_XR872
 
 #define DISABLE_SEPARATE_THREAD_FOR_EACH_TCP_CLIENT 1
 
@@ -39,21 +30,17 @@ static void tcp_client_thread(beken_thread_arg_t arg);
 
 xTaskHandle g_http_thread = NULL;
 
-void HTTPServer_Start()
+void HTTPServer_Stop()
 {
 	OSStatus err = kNoErr;
 
-	err = rtos_create_thread(&g_http_thread, BEKEN_APPLICATION_PRIORITY,
-		"TCP_server",
-		(beken_thread_function_t)tcp_server_thread,
-		0x800,
-		(beken_thread_arg_t)0);
+	err = rtos_delete_thread(&g_http_thread);
+
 	if (err != kNoErr)
 	{
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, "create \"TCP_server\" thread failed with %i!\r\n", err);
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "stop \"TCP_server\" thread failed with %i!\r\n", err);
 	}
 }
-
 
 int sendfn(int fd, char* data, int len) {
 	if (fd) {
@@ -131,10 +118,10 @@ static void tcp_client_thread(beken_thread_arg_t arg)
 
 	//addLog( "TCP received string %s\n",buf );
 	// returns length to be sent if any
-	 // ADDLOG_DEBUG(LOG_FEATURE_HTTP,  "TCP will process packet of len %i\n", request.receivedLen );
+	//ADDLOG_ERROR(LOG_FEATURE_HTTP,  "TCP will process packet of len %i\n", request.receivedLen );
 	int lenret = HTTP_ProcessPacket(&request);
 	if (lenret > 0) {
-		ADDLOG_DEBUG(LOG_FEATURE_HTTP, "TCP sending reply len %i\n", lenret);
+		//ADDLOG_ERROR(LOG_FEATURE_HTTP, "TCP sending reply len %i\n", lenret);
 		send(fd, reply, lenret, 0);
 	}
 
@@ -149,7 +136,8 @@ exit:
 	if (reply != NULL)
 		os_free(reply);
 
-	lwip_close(fd);;
+	lwip_close(fd);
+
 #if DISABLE_SEPARATE_THREAD_FOR_EACH_TCP_CLIENT
 
 #else
@@ -197,12 +185,13 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 #endif
 #endif
 				os_strcpy(client_ip_str, inet_ntoa(client_addr.sin_addr));
-				//  ADDLOG_DEBUG(LOG_FEATURE_HTTP,  "TCP Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd );
 #if DISABLE_SEPARATE_THREAD_FOR_EACH_TCP_CLIENT
+				//ADDLOG_ERROR(LOG_FEATURE_HTTP, "HTTP [single thread] Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd);
 				// Use main server thread (blocking all other clients)
 				// right now, I am getting OS_ThreadCreate everytime on XR809 platform
 				tcp_client_thread((beken_thread_arg_t)client_fd);
 #else
+				//ADDLOG_ERROR(LOG_FEATURE_HTTP, "HTTP [multi thread] Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd);
 				// delay each accept by 20ms
 				// this allows previous to finish if
 				// in a loop of sends from the browser, e.g. OTA
@@ -247,122 +236,30 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 
 }
 
-#else
 
-
-xTaskHandle g_http_thread = NULL;
-
-int sendfn(int fd, char* data, int len) {
-	if (fd) {
-		return send(fd, data, len, 0);
-	}
-	return -1;
-}
-
-static void tcp_client_thread(int fd, char* buf, char* reply)
-{
-	//OSStatus err = kNoErr;
-
-	http_request_t request;
-	os_memset(&request, 0, sizeof(request));
-
-	request.fd = fd;
-	request.received = buf;
-	request.receivedLenmax = INCOMING_BUFFER_SIZE - 1;
-	request.responseCode = HTTP_RESPONSE_OK;
-	request.receivedLen = recv(fd, request.received, request.receivedLenmax, 0);
-	request.received[request.receivedLen] = 0;
-
-	request.reply = reply;
-	request.replylen = 0;
-	reply[0] = '\0';
-
-	request.replymaxlen = REPLY_BUFFER_SIZE - 1;
-
-	if (request.receivedLen <= 0)
-	{
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, "TCP Client is disconnected, fd: %d", fd);
-		return;
-	}
-	int lenret = HTTP_ProcessPacket(&request);
-	if (lenret > 0) {
-		send(fd, reply, lenret, 0);
-	}
-	rtos_delay_milliseconds(10);
-
-}
-
-/* TCP server listener thread */
-static void tcp_server_thread(beken_thread_arg_t arg)
-{
-	(void)(arg);
-	OSStatus err = kNoErr;
-	struct sockaddr_in server_addr, client_addr;
-	socklen_t sockaddr_t_size = sizeof(client_addr);
-	char client_ip_str[16];
-	int tcp_listen_fd = -1, client_fd = -1;
-	fd_set readfds;
-	char* buf = NULL;
-	char* reply = NULL;
-
-	tcp_listen_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_addr.s_addr = INADDR_ANY;/* Accept conenction request on all network interface */
-	server_addr.sin_port = htons(HTTP_SERVER_PORT);/* Server listen on port: 20000 */
-	err = bind(tcp_listen_fd, (struct sockaddr*)&server_addr, sizeof(server_addr));
-
-	err = listen(tcp_listen_fd, 0);
-
-	reply = (char*)os_malloc(REPLY_BUFFER_SIZE);
-	buf = (char*)os_malloc(INCOMING_BUFFER_SIZE);
-
-	while (1)
-	{
-		FD_ZERO(&readfds);
-		FD_SET(tcp_listen_fd, &readfds);
-
-		select(tcp_listen_fd + 1, &readfds, NULL, NULL, NULL);
-
-		if (FD_ISSET(tcp_listen_fd, &readfds))
-		{
-			client_fd = accept(tcp_listen_fd, (struct sockaddr*)&client_addr, &sockaddr_t_size);
-			if (client_fd >= 0)
-			{
-				os_strcpy(client_ip_str, inet_ntoa(client_addr.sin_addr));
-				//  ADDLOG_DEBUG(LOG_FEATURE_HTTP,  "TCP Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd );
-
-				tcp_client_thread(client_fd, reply, buf);
-
-				lwip_close(client_fd);
-			}
-		}
-	}
-
-	if (err != kNoErr)
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Server listerner thread exit with err: %d", err);
-
-	lwip_close(tcp_listen_fd);
-
-	rtos_delete_thread(NULL);
-
-}
 
 void HTTPServer_Start()
 {
 	OSStatus err = kNoErr;
+	uint32_t stackSize = 0x800;
 
-	err = rtos_create_thread(&g_http_thread, BEKEN_APPLICATION_PRIORITY,
-		"TCP_server",
-		(beken_thread_function_t)tcp_server_thread,
-		0x800,
-		(beken_thread_arg_t)0);
-	if (err != kNoErr)
+	while (stackSize >= 0x100)
 	{
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, "create \"TCP_server\" thread failed with %i!\r\n", err);
+		err = rtos_create_thread(&g_http_thread, BEKEN_APPLICATION_PRIORITY,
+			"HTTP_server",
+			(beken_thread_function_t)tcp_server_thread,
+			stackSize,
+			(beken_thread_arg_t)0);
+
+		if (err == kNoErr)
+		{
+			ADDLOG_ERROR(LOG_FEATURE_HTTP, "Created HTTP SV thread with (stack=%u)\r\n", stackSize);
+			break;
+		}
+
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "create \"TCP_server\" thread failed with %i (stack=%u)\r\n", err, stackSize);
+		stackSize >>= 1;
 	}
 }
 
-
 #endif
-

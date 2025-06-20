@@ -1,4 +1,4 @@
-#ifdef PLATFORM_XR809
+#if PLATFORM_XR809 || PLATFORM_XR872
 
 #include "../hal_flashConfig.h"
 #include "../../logging/logging.h"
@@ -9,7 +9,11 @@
 #include "efpg/efpg.h"
 
 
+#if PLATFORM_XR806
+#define OUR_CUSTOM_SYSINFO_ADR 0x1FC000
+#else
 #define OUR_CUSTOM_SYSINFO_ADR PRJCONF_SYSINFO_ADDR
+#endif
 #define OUR_CUSTOM_SYSINFO_SIZE 4096
 
 static fdcm_handle_t *g_fdcm_hdl = 0;
@@ -74,6 +78,10 @@ static void sysinfo_gen_mac_random(uint8_t mac_addr[6])
 	mac_addr[0] &= 0xFC;
 }
 void HAL_Configuration_GenerateMACForThisModule(unsigned char *out) {
+#if PLATFORM_XR806
+	// todo
+	
+#else
 	int i;
 	if (efpg_read(EFPG_FIELD_MAC, out) == 0) {
 		return;
@@ -85,6 +93,7 @@ void HAL_Configuration_GenerateMACForThisModule(unsigned char *out) {
 			return;
 	}
 	sysinfo_gen_mac_random(out);
+#endif
 }
 
 

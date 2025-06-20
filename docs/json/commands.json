@@ -9,6 +9,15 @@
     "examples": ""
   },
   {
+    "name": "ACMode",
+    "args": "CMD_ACMode",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_tclAC.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "ADCSmoother",
     "args": "[Pindex] [TotalSamples] [SampleIntervalMS] [TargetChannelADCValue] [MarginValue] [TargetChannel0or1]",
     "descr": "Starts the ADC smoother with given configuration",
@@ -50,6 +59,15 @@
     "descr": "This can be used to trigger an action on a button click, long press, etc",
     "fn": "CMD_AddEventHandler",
     "file": "cmnds/cmd_eventHandlers.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "addI2CDevice_ADS1115",
+    "args": "",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "i2c/drv_i2c_ads1115.c",
     "requires": "",
     "examples": ""
   },
@@ -181,8 +199,8 @@
   },
   {
     "name": "Anim",
-    "args": "PA_Cmd_Anim",
-    "descr": "",
+    "args": "[AnimationIndex]",
+    "descr": "Starts given WS2812 animation by index.",
     "fn": "NULL);",
     "file": "driver/drv_pixelAnim.c",
     "requires": "",
@@ -190,8 +208,8 @@
   },
   {
     "name": "AnimSpeed",
-    "args": "PA_Cmd_AnimSpeed",
-    "descr": "",
+    "args": "[Interval]",
+    "descr": "Sets WS2812 animation speed",
     "fn": "NULL);",
     "file": "driver/drv_pixelAnim.c",
     "requires": "",
@@ -225,6 +243,24 @@
     "examples": "Battery_Setup 1500 3000 2 2400 4096"
   },
   {
+    "name": "berry",
+    "args": "CMD_Berry",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_berry.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "BL0942opts",
+    "args": "opts",
+    "descr": "BL0942opts 0= default mode (as set in config Flag 26), 3= two BL0942 on both UARTs (bit0 BL0942 on UART1, bit1 BL0942 on UART2)",
+    "fn": "NULL);",
+    "file": "driver/drv_pwrCal.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "BMPI2C_Calibrate",
     "args": "[DeltaTemp][DeltaPressure][DeltaHumidity]",
     "descr": "Calibrate the BMPI2C Sensor.",
@@ -235,12 +271,12 @@
   },
   {
     "name": "BMPI2C_Configure",
-    "args": "BMPI2C_Configure",
-    "descr": "",
-    "fn": "NULL);",
+    "args": "[Mode][TempSampling][PressureSampling][HumSampling][IIRFilter][StandbyTime]",
+    "descr": "Manual sensor configuration. Modes: 0 - normal, 1 - forced, 2 - sleep. Overampling range: -1 - skipped, 2^0 to 2^4. Default is X1. IIRFilter range: 0 - off, 2^1 to 2^4 for most, up to 2^7 for BME68X, StandbyTime: 1 for 0.5ms, 63 for 62.5ms, 125, 250, 500, 1000, 2000, 4000. Mode and StandbyTime are not needed on BME68X, All values will be rounded down to closest available (like sampling 10 will choose 8x)",
+    "fn": "BMPI2C_Configure",
     "file": "driver/drv_bmpi2c.c",
     "requires": "",
-    "examples": ""
+    "examples": "BMPI2C_Configure 0 8 2 4 16 125 <br />"
   },
   {
     "name": "BMPI2C_Cycle",
@@ -315,6 +351,15 @@
     "examples": ""
   },
   {
+    "name": "Buzzer",
+    "args": "CMD_Buzzer",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_tclAC.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "cancelRepeatingEvent",
     "args": "[UserIDInteger]",
     "descr": "Stops a given repeating event with a specified ID",
@@ -329,6 +374,51 @@
     "descr": "An alternate command to access channels. It returns all used channels in JSON format. The syntax is ChINDEX value, there is no space between Ch and channel index. It can be sent without value to poll channel values.",
     "fn": "CMD_Ch",
     "file": "cmnds/cmd_channels.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "chart_add",
+    "args": "[ntp_time][val1][val2]...[valN]",
+    "descr": "Adds data to the chart with specified variables at a specific NTP time. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "fn": "NULL);",
+    "file": "driver/drv_charts.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "chart_addNow",
+    "args": "[val1][val2]...[valN]",
+    "descr": "Adds data to the chart using the current NTP time. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "fn": "NULL);",
+    "file": "driver/drv_charts.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "chart_create",
+    "args": "[max_samples][num_vars][num_axes]",
+    "descr": "Creates a chart with a specified number of samples, variables, and axes. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "fn": "NULL);",
+    "file": "driver/drv_charts.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "chart_setAxis",
+    "args": "[axis_index][name][flags][label]",
+    "descr": "Sets up an axis with a name, flags, and label. Currently flags can be 0 (left axis) or 1 (right axis). See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "fn": "NULL);",
+    "file": "driver/drv_charts.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "chart_setVar",
+    "args": "[var_index][title][axis]",
+    "descr": "Associates a variable with a specific axis. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
+    "fn": "NULL);",
+    "file": "driver/drv_charts.c",
     "requires": "",
     "examples": ""
   },
@@ -349,6 +439,15 @@
     "file": "driver/drv_chargingLimit.c",
     "requires": "",
     "examples": ""
+  },
+  {
+    "name": "CHT_Alert",
+    "args": "[TempDiff][HumDiff][Freq][FQ]",
+    "descr": "Enable alert pin. TempDif (temperature difference is any float higher than 0.05�C) = set detected difference in temperature required for device to wake. HumDiff (humidity difference is any float higher than 0.1%). Freq (time per measurement in s) = 1, 5, 10, 60, 120 (default if wrong = 1). FQ (fault queue number) = 1, 2, 4, 6 (default if wrong = 1)",
+    "fn": "CHT_Alert",
+    "file": "drv/drv_cht8305.c",
+    "requires": "",
+    "examples": "CHT_Alert 0.5 0 5 2 <br /> alert pin will trigger when temperature deviates by more than 0.5�C. Humidity will be ignored. Sensor measures every 5s with fault queue number 2."
   },
   {
     "name": "CHT_Calibrate",
@@ -441,6 +540,24 @@
     "examples": ""
   },
   {
+    "name": "CLOCK_CalcDST",
+    "args": "[nthWeekEnd monthEnd dayEnd hourEnd nthWeekStart monthStart dayStart hourStart [g_DSToffset hours - default is 1 if unset]",
+    "descr": "Checks, if actual time is during DST or not.",
+    "fn": "CLOCK_CalcDST",
+    "file": "driver/drv_ntp.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "clock_calcDST",
+    "args": "CLOCK_CalcDST",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_ntp.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "Color",
     "args": "[HexValue]",
     "descr": "Puts the LED driver in RGB mode and sets given color.",
@@ -470,7 +587,7 @@
   {
     "name": "CT",
     "args": "[TempValue]",
-    "descr": "Same as led_temperature",
+    "descr": "Sets the LED temperature. Same as led_temperature but with Tasmota syntax.",
     "fn": "temperature",
     "file": "cmnds/cmd_newLEDDriver.c",
     "requires": "",
@@ -560,7 +677,7 @@
   {
     "name": "Dimmer",
     "args": "[Value]",
-    "descr": "Alias for led_dimmer",
+    "descr": "Alias for led_dimmer, added for Tasmota.",
     "fn": "dimmer",
     "file": "cmnds/cmd_newLEDDriver.c",
     "requires": "",
@@ -572,6 +689,24 @@
     "descr": "This sets the delta value for SmartDimmer/SmartButtonForLEDs hold event. This determines the amount of change of dimmer per hold event.",
     "fn": "dimmerDelta",
     "file": "cmnds/cmd_newLEDDriver.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Display",
+    "args": "CMD_Display",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_tclAC.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "DS1820_SetResolution",
+    "args": "[int]",
+    "descr": "Sets resolution for connected DS1820 sensor (9/10/11/12 bits)",
+    "fn": "Cmd_SetResolution",
+    "file": "drv/drv_ds1820_simple.c",
     "requires": "",
     "examples": ""
   },
@@ -604,8 +739,8 @@
   },
   {
     "name": "EnergyCntReset",
-    "args": "[OptionalNewValue]",
-    "descr": "Resets the total Energy Counter, the one that is usually kept after device reboots. After this commands, the counter will start again from 0 (or from the value you specified).",
+    "args": "[OptionalNewValue][sensorix]",
+    "descr": "Resets the total Energy Counter, the one that is usually kept after device reboots. After this commands, the counter will start again from 0 (or from the value you specified). sensorix is used in ENABLE_BL_TWIN",
     "fn": "BL09XX_ResetEnergyCounter",
     "file": "driver/drv_bl_shared.c",
     "requires": "",
@@ -635,6 +770,15 @@
     "descr": "This simulates packet being sent from TuyaMCU to our OBK device.",
     "fn": "TuyaMCU_FakePacket",
     "file": "driver/drv_tuyaMCU.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "FANMode",
+    "args": "CMD_FANMode",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_tclAC.c",
     "requires": "",
     "examples": ""
   },
@@ -792,9 +936,36 @@
     "examples": ""
   },
   {
+    "name": "IndexRefreshInterval",
+    "args": "[Interval]",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "IRAC",
+    "args": "[TODO]",
+    "descr": "Sends IR commands for HVAC control (TODO)",
+    "fn": "IR_AC_Cmd",
+    "file": "driver/drv_ir.cpp",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "IREnable",
     "args": "[Str][1or0]",
     "descr": "Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol",
+    "fn": "IR_Enable",
+    "file": "driver/drv_ir.cpp",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "IRParam",
+    "args": "[MinSize] [Noise Threshold]",
+    "descr": "Set minimal size of the message and noise threshold",
     "fn": "IR_Enable",
     "file": "driver/drv_ir.cpp",
     "requires": "",
@@ -810,9 +981,18 @@
     "examples": ""
   },
   {
+    "name": "Json",
+    "args": "json array of commands",
+    "descr": "A stub for Tasmota",
+    "fn": "cmnd_JsonCommand",
+    "file": "cmnds/cmd_tasmota.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "json_test",
-    "args": "cmnd_json_test",
-    "descr": "",
+    "args": "",
+    "descr": "Developer-only command used to test CJSON library",
     "fn": "NULL);",
     "file": "cmnds/cmd_test.c",
     "requires": "",
@@ -910,7 +1090,7 @@
   },
   {
     "name": "led_basecolor_rgbcw",
-    "args": "",
+    "args": "[HexValue]",
     "descr": "set PWN color using #RRGGBB[cw][ww]",
     "fn": "basecolor_rgbcw",
     "file": "cmnds/cmd_newLEDDriver.c",
@@ -982,7 +1162,7 @@
   },
   {
     "name": "LED_Map",
-    "args": "CMD_LEDDriver_Map",
+    "args": "[Ch0][Ch1][Ch2][Ch3][Ch4]",
     "descr": "",
     "fn": "NULL);",
     "file": "driver/drv_sm15155e.c",
@@ -1071,6 +1251,15 @@
     "examples": ""
   },
   {
+    "name": "lfs_mkdir",
+    "args": "CMD_LFS_MakeDirectory",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "littlefs/our_lfs.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "lfs_mount",
     "args": "",
     "descr": "Mount LFS",
@@ -1153,8 +1342,8 @@
   },
   {
     "name": "linkTuyaMCUOutputToChannel",
-    "args": "[dpId][varType][channelID][bDPCache-Optional][mult-optional][bInverse]",
-    "descr": "Used to map between TuyaMCU dpIDs and our internal channels. Last argument is optional and 0 by default. You can set it to 1 for battery powered devices, so a variable is set with DPCache, for example a sampling interval for humidity/temperature sensor. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap. Please see [Tuya Docs](https://developer.tuya.com/en/docs/iot/tuya-cloud-universal-serial-port-access-protocol?id=K9hhi0xxtn9cb) for info about TuyaMCU. You can also see our [TuyaMCU Analyzer Tool](https://www.elektroda.com/rtvforum/viewtopic.php?p=20528459#20528459)",
+    "args": "[dpId][varType][channelID][bDPCache-Optional][mult-optional][bInverse-Optional][delta-Optional][delta2][delta3]",
+    "descr": "Used to map between TuyaMCU dpIDs and our internal channels. Mult, inverse and delta are for calibration, they are optional. bDPCache is also optional, you can set it to 1 for battery powered devices, so a variable is set with DPCache, for example a sampling interval for humidity/temperature sensor. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap. Please see [Tuya Docs](https://developer.tuya.com/en/docs/iot/tuya-cloud-universal-serial-port-access-protocol?id=K9hhi0xxtn9cb) for info about TuyaMCU. You can also see our [TuyaMCU Analyzer Tool](https://www.elektroda.com/rtvforum/viewtopic.php?p=20528459#20528459)",
     "fn": "TuyaMCU_LinkTuyaMCUOutputToChannel",
     "file": "driver/drv_tuyaMCU.c",
     "requires": "",
@@ -1297,8 +1486,8 @@
   },
   {
     "name": "MCP9808_Adr",
-    "args": "MCP9808_Adr",
-    "descr": "",
+    "args": "[HexAdr]",
+    "descr": "Sets the I2C address of MCP9808, like 0x30",
     "fn": "NULL);",
     "file": "driver/drv_mcp9808.c",
     "requires": "",
@@ -1306,17 +1495,17 @@
   },
   {
     "name": "MCP9808_AlertMin",
-    "args": "MCP9808_AlertMin",
-    "descr": "",
-    "fn": "NULL);",
+    "args": "[MinT] [OptionalBActiveHigh]",
+    "descr": "Setup MCP9809 temperature alert for min mode",
+    "fn": ");",
     "file": "driver/drv_mcp9808.c",
     "requires": "",
     "examples": ""
   },
   {
     "name": "MCP9808_AlertRange",
-    "args": "MCP9808_AlertRange",
-    "descr": "",
+    "args": "[MinT] [MaxT] [OptionalBActiveHigh]",
+    "descr": "Setup MCP9809 temperature alert for range mode",
     "fn": "NULL);",
     "file": "driver/drv_mcp9808.c",
     "requires": "",
@@ -1334,7 +1523,7 @@
   {
     "name": "MCP9808_Cycle",
     "args": "[DelayInSeconds]",
-    "descr": "",
+    "descr": "Sets MCP9808 measurement interval",
     "fn": "NULL);",
     "file": "driver/drv_mcp9808.c",
     "requires": "",
@@ -1345,6 +1534,15 @@
     "args": "[ValueString]",
     "descr": "Sets the MQTT client. Command keeps Tasmota syntax",
     "fn": "cmnd_MqttClient",
+    "file": "cmnds/cmd_tasmota.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "MqttGroup",
+    "args": "[ValueString]",
+    "descr": "Sets the MQTT Group topic. Command keeps Tasmota syntax",
+    "fn": "cmnd_MqttGroup",
     "file": "cmnds/cmd_tasmota.c",
     "requires": "",
     "examples": ""
@@ -1458,6 +1656,33 @@
     "examples": ""
   },
   {
+    "name": "owm_channels",
+    "args": "[temperature][humidity][pressure]",
+    "descr": "Sets channels that will be used to store OWM response results",
+    "fn": "NULL);",
+    "file": "driver/drv_openWeatherMap.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "owm_request",
+    "args": "",
+    "descr": "Sends OWM request to the API. Do not use it too often, as API may have limits",
+    "fn": "NULL);",
+    "file": "driver/drv_openWeatherMap.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "owm_setup",
+    "args": "[lat][lng][api_key]",
+    "descr": "Setups OWM driver for your location and API key",
+    "fn": "NULL);",
+    "file": "driver/drv_openWeatherMap.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "Password1",
     "args": "[ValueString]",
     "descr": "Sets the Pass of target WiFi. Command keeps Tasmota syntax",
@@ -1513,8 +1738,8 @@
   },
   {
     "name": "PowerMax",
-    "args": "BL0937_PowerMax",
-    "descr": "",
+    "args": "[MaxPowerInW]",
+    "descr": "Sets the maximum power limit for BL measurement used to filter incorrect values",
     "fn": "NULL);",
     "file": "driver/drv_bl0937.c",
     "requires": "",
@@ -1523,7 +1748,7 @@
   {
     "name": "PowerSave",
     "args": "[Optional 1 or 0, by default 1 is assumed]",
-    "descr": "Enables dynamic power saving mode on BK and W600. You can also disable power saving with PowerSave 0.",
+    "descr": "Enables dynamic power saving mode on Beken N/T, BL602, W600, W800 and LN882H. In the case of LN882H PowerSave will not work as a startup command, so use in autoexec. On LN882H PowerSave 1 = light sleep and Powersave >1 (eg PowerSave 2) = deeper sleep. On LN882H PowerSave 1 should be used if BL0937 metering is present. On all supported platforms PowerSave 0 can be used to disable power saving.",
     "fn": "CMD_PowerSave",
     "file": "cmnds/cmd_main.c",
     "requires": "",
@@ -1674,6 +1899,15 @@
     "examples": ""
   },
   {
+    "name": "Result",
+    "args": "NULL",
+    "descr": "A stub for Tasmota",
+    "fn": "cmnd_stub",
+    "file": "cmnds/cmd_tasmota.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "return",
     "args": "",
     "descr": "Script-only command. Currently it just stops totally current script thread.",
@@ -1719,11 +1953,29 @@
     "examples": ""
   },
   {
+    "name": "SendIR2",
+    "args": "CMD_IR2_SendIR2",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_ir2.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "sendPOST",
     "args": "[TargetURL] [HTTP Port] [Content Type] [Post Content]",
     "descr": "Sends a HTTP POST request to target URL. Arguments can contain variable expansion.",
     "fn": "CMD_SendPOST",
     "file": "cmnds/cmd_send.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Sensor",
+    "args": "NULL",
+    "descr": "A stub for Tasmota",
+    "fn": "cmnd_stub",
+    "file": "cmnds/cmd_tasmota.c",
     "requires": "",
     "examples": ""
   },
@@ -1854,6 +2106,24 @@
     "examples": ""
   },
   {
+    "name": "SetFlash",
+    "args": "[FlashIndex][FlashValue]",
+    "descr": "Sets a a flashVars channel directly (if you are using remember state for given channel, it will overwrite, it uses same space for channels memory).",
+    "fn": "CMD_SetFlash",
+    "file": "cmnds/cmd_channels.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "setMovingAvg",
+    "args": "MovingAvg",
+    "descr": "Moving average value for power and current. <=1 disable, >=2 count of avg values. The setting is temporary and need to be set at startup.",
+    "fn": "NULL);",
+    "file": "new_pins.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "SetPinChannel",
     "args": "[PinIndex][ChannelIndex][optionalChannel2Index]",
     "descr": "This allows you to set a channel linked to pin from console. Usually it's easier to do this through WWW panel, so you don't have to use this command.",
@@ -1872,6 +2142,24 @@
     "examples": ""
   },
   {
+    "name": "setStartupSSID",
+    "args": "[Value]",
+    "descr": "Sets startup SSID, 0 (SSID0) 1 (SSID1)",
+    "fn": "CMD_setStartupSSID",
+    "file": "new_pins.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "setStartupSSIDChannel",
+    "args": "[Value]",
+    "descr": "Sets retain channel number to store last used SSID, 0..MAX_RETAIN_CHANNELS-1, -1 to disable. Suggested channel number is 7 (MAXMAX_RETAIN_CHANNELS-5)",
+    "fn": "CMD_setStartupSSIDChannel",
+    "file": "new_pins.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "SetStartValue",
     "args": "[Channel][Value]",
     "descr": "Sets the startup value for a channel. Used for start values for relays. Use 1 for High, 0 for low and -1 for 'remember last state'",
@@ -1886,6 +2174,15 @@
     "descr": "Setup Energy Statistic Parameters: [enable 0 or 1] [sample_time[10..90]] [sample_count[10..180]] [JsonEnable 0 or 1]. JSONEnable is optional.",
     "fn": "BL09XX_SetupEnergyStatistic",
     "file": "driver/drv_bl_shared.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "SetupIR2",
+    "args": "[myPeriodUs] [dutyOnFrac] [dutyOffFrac] [txPin]",
+    "descr": "Init IR2 pin and interrupt",
+    "fn": "NULL);",
+    "file": "driver/drv_ir2.c",
     "requires": "",
     "examples": ""
   },
@@ -1937,7 +2234,7 @@
   {
     "name": "ShortName",
     "args": "[Name]",
-    "descr": "Sets the short name of the device.",
+    "descr": "Sets the short name of the device. This is used as topic for MQTT, for example, for cmnd/obk123121/power etc MQTT calls",
     "fn": "CMD_ShortName",
     "file": "cmnds/cmd_channels.c",
     "requires": "",
@@ -2066,6 +2363,15 @@
     "descr": "Simons Special Test",
     "fn": "CMD_SimonTest",
     "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "SimSaveArgs",
+    "args": "",
+    "descr": "Internal usage only. Command for OBK self-test in Simulator",
+    "fn": "0);",
+    "file": "selftest/selftest_cfg_via_http.c",
     "requires": "",
     "examples": ""
   },
@@ -2241,6 +2547,15 @@
     "examples": ""
   },
   {
+    "name": "StartTest",
+    "args": "Test_Cmd_Start",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_test.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "StartupCommand",
     "args": "[Command in quotation marks][bRunAfter]",
     "descr": "Sets the new startup command (short startup command, the one stored in config) to given string. Second argument is optional, if set to 1, command will be also executed after setting",
@@ -2252,8 +2567,17 @@
   {
     "name": "State",
     "args": "NULL",
-    "descr": "NULL",
-    "fn": "cmnd_State",
+    "descr": "A stub for Tasmota",
+    "fn": "cmnd_stub",
+    "file": "cmnds/cmd_tasmota.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "Status",
+    "args": "NULL",
+    "descr": "A stub for Tasmota",
+    "fn": "cmnd_stub",
     "file": "cmnds/cmd_tasmota.c",
     "requires": "",
     "examples": ""
@@ -2264,6 +2588,15 @@
     "descr": "Stops all running scripts",
     "fn": "CMD_StopAllScripts",
     "file": "cmnds/cmd_script.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "stopBerry",
+    "args": "CMD_StopBerryCommand",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_berry.c",
     "requires": "",
     "examples": ""
   },
@@ -2286,6 +2619,33 @@
     "examples": ""
   },
   {
+    "name": "SwingH",
+    "args": "CMD_SwingH",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_tclAC.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "SwingV",
+    "args": "CMD_SwingV",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_tclAC.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "TargetTemperature",
+    "args": "CMD_TargetTemperature",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_tclAC.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "TasTeleInterval",
     "args": "[SensorInterval][StateInterval]",
     "descr": "This allows you to configure Tasmota TELE publish intervals, only if you have TELE flag enabled. First argument is interval for sensor publish (energy metering, etc), second is interval for State tele publish.",
@@ -2304,10 +2664,37 @@
     "examples": ""
   },
   {
+    "name": "testAtoi",
+    "args": "",
+    "descr": "Test atoi function",
+    "fn": "testArgs",
+    "file": "cmnds/cmd_test.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "TestChannelSetToExpression",
+    "args": "CMD_TestChannelSetToExpression",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_test.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "testFloats",
     "args": "",
     "descr": "Do some more test printfs with floating point numbers",
     "fn": "testFloats",
+    "file": "cmnds/cmd_test.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "TestIPtoStr",
+    "args": "CMD_TestIPtoStr",
+    "descr": "",
+    "fn": "NULL);",
     "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
@@ -2340,6 +2727,42 @@
     "examples": ""
   },
   {
+    "name": "TestMemcmp",
+    "args": "CMD_TestMemcmp",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_test.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "TestMemcpy",
+    "args": "CMD_TestMemcpy",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_test.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "TestMemset",
+    "args": "CMD_TestMemset",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_test.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "TestParseIP",
+    "args": "CMD_TestParseIP",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_test.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "testRealloc",
     "args": "",
     "descr": "Test realloc and free functions to see if the device crashes",
@@ -2349,10 +2772,82 @@
     "examples": ""
   },
   {
+    "name": "TestSprintfForFloat",
+    "args": "CMD_TestSprintfForFloat",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_test.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "TestSprintfForHex",
+    "args": "CMD_TestSprintfForHex",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_test.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "TestSprintfForInteger",
+    "args": "CMD_TestSprintfForInteger",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_test.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "TestStrcat",
+    "args": "CMD_TestStrcat",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_test.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "TestStrcmp",
+    "args": "CMD_TestStrcmp",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_test.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "TestStrcpy",
+    "args": "CMD_TestStrcpy",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_test.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "testStrdup",
     "args": "",
     "descr": "Test strdup function to see if it allocs news string correctly, also test freeing the string",
     "fn": "testStrdup",
+    "file": "cmnds/cmd_test.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "TestStrlen",
+    "args": "CMD_TestStrlen",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "cmnds/cmd_test.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "TestStrncpy",
+    "args": "CMD_TestStrncpy",
+    "descr": "",
+    "fn": "NULL);",
     "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
@@ -2530,8 +3025,8 @@
   },
   {
     "name": "tuyaMcu_sendCmd",
-    "args": "TuyaMCU_SendUserCmd",
-    "descr": "",
+    "args": "[CommandIndex] [HexPayloadNBytes]",
+    "descr": "This will automatically calculate TuyaMCU checksum and length for given command ID and payload, then it will send a command. It's better to use it than uartSendHex",
     "fn": "NULL);",
     "file": "driver/drv_tuyaMCU.c",
     "requires": "",
@@ -2732,6 +3227,33 @@
     "descr": "Wait forever for event. Can be used within script. For example, you can do: waitFor MQTTState 1 or waitFor NTPState 1. You can also do waitFor NoPingTime 600 to wait for 600 seconds without ping watchdog getting successful reply",
     "fn": "CMD_waitFor",
     "file": "cmnds/cmd_script.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "WebServer",
+    "args": "[0 - Stop / 1 - Start]",
+    "descr": "Setting state of WebServer",
+    "fn": "CMD_WebServer",
+    "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "widget_clearAll",
+    "args": "",
+    "descr": "Removes all registered widgets",
+    "fn": "NULL);",
+    "file": "driver/drv_widget.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "widget_create",
+    "args": "[LocationIndex][bAllowCache][FileName]",
+    "descr": "",
+    "fn": "NULL);",
+    "file": "driver/drv_widget.c",
     "requires": "",
     "examples": ""
   }

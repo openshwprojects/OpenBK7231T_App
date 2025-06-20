@@ -3,10 +3,7 @@
 #include "../hal_wifi.h"
 #include "../../new_common.h"
 #include "../../new_cfg.h"
-
 #include <string.h>
-#include <cli.h>
-
 #include <FreeRTOS.h>
 #include <task.h>
 #include <portable.h>
@@ -22,6 +19,7 @@
 static char g_ipStr[32] = "unknown";
 static int g_bAccessPointMode = 1;
 static void (*g_wifiStatusCallback)(int code);
+extern bool g_powersave;
 
 void HAL_ConnectToWiFi(const char *ssid, const char *psk, obkStaticIP_t *ip)
 {
@@ -32,9 +30,12 @@ void HAL_ConnectToWiFi(const char *ssid, const char *psk, obkStaticIP_t *ip)
     else {
 	wifi_mgmr_sta_ip_set(*(int*)ip->localIPAddr, *(int*)ip->netMask, *(int*)ip->gatewayIPAddr, *(int*)ip->dnsServerIpAddr, 0);
     }
+    if(g_powersave) wifi_mgmr_sta_ps_exit();
     wifi_interface = wifi_mgmr_sta_enable();
 
-    wifi_mgmr_sta_connect(wifi_interface, ssid, psk, NULL, NULL, 0, 0);
+    // sending WIFI_CONNECT_PMF_CAPABLE is crucial here, without it, wpa3 or wpa2/3 mixed mode does not work and
+	// connection is unstable, mqtt disconnects every few minutes
+    wifi_mgmr_sta_connect_mid(wifi_interface, ssid, psk, NULL, NULL, 0, 0, ip->localIPAddr[0] == 0 ?1:0, WIFI_CONNECT_PMF_CAPABLE);
 
 	g_bAccessPointMode = 0;
 }
@@ -131,6 +132,7 @@ static void event_cb_wifi_event(input_event_t *event, void *private_data)
 			if(g_wifiStatusCallback!=0) {
 				g_wifiStatusCallback(WIFI_STA_CONNECTED);
 			}
+			if(g_powersave) wifi_mgmr_sta_ps_enter(2);
         }
         break;
         case CODE_WIFI_ON_PROV_SSID:

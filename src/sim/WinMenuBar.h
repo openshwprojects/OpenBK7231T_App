@@ -11,7 +11,9 @@ class CWinMenuBar {
 	HMENU hFile;
 	HMENU hEdit;
 	HMENU hHelp;
+	HMENU hLittleFS;
 	TArray<CString> recents;
+	std::vector<std::string> samples;
 	TArray<CString> prefabNames;
 
 	void createWindowsMenu(HWND windowRef);

@@ -15,6 +15,8 @@
 #define LWIP_ASSERT_CORE_LOCKED();
 #define LWIP_ASSERT(a,b);
 
+
+
 typedef struct altcp_pcb {
 	SOCKET sock;
 } altcp_pcb;
@@ -368,8 +370,6 @@ mqtt_init_requests(struct mqtt_request_t *r_objs, size_t r_objs_len)
 /** Connect to server */
 err_t mqtt_client_connect(mqtt_client_t *client, const ip_addr_t *ip_addr, u16_t port, mqtt_connection_cb_t cb, void *arg,
                    const struct mqtt_connect_client_info_t *client_info) {
-
-	err_t err;
 	size_t len;
 	u16_t client_id_length;
 	/* Length is the sum of 2+"MQTT", protocol level, flags and keep alive */
@@ -460,9 +460,9 @@ err_t mqtt_client_connect(mqtt_client_t *client, const ip_addr_t *ip_addr, u16_t
 
 
 	//Create a socket
-	if ((s = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
+	if (!ISVALIDSOCKET(s = socket(AF_INET, SOCK_STREAM, 0)))
 	{
-		printf("Could not create socket : %d", WSAGetLastError());
+		printf("Could not create socket : %d", GETSOCKETERRNO());
 	}
 
 	printf("Socket created.\n");
@@ -476,7 +476,7 @@ err_t mqtt_client_connect(mqtt_client_t *client, const ip_addr_t *ip_addr, u16_t
 	unsigned long nonBlocking = 1;
 	if (ioctlsocket(s, FIONBIO, &nonBlocking) != 0)
 	{
-		printf("ioctlsocket failed with error: %d\n", WSAGetLastError());
+		printf("ioctlsocket failed with error: %d\n", GETSOCKETERRNO());
 		return 1;
 	}
 	int aliveToggle = 1;
@@ -1375,7 +1375,7 @@ void WIN_RunMQTTClient(mqtt_client_t *cl) {
 		time.tv_usec = 0;
 		if (select(0, NULL, &fd, NULL, &time) == 1) {
 			int error = 0;
-			int len = sizeof(error);
+			unsigned int len = sizeof(error);
 			getsockopt(cl->conn->sock, SOL_SOCKET, SO_ERROR, (char*)&error, &len);
 			if (error == 0) {
 				printf("MQTT: Connected!\n");
@@ -1401,7 +1401,7 @@ void WIN_RunMQTTClient(mqtt_client_t *cl) {
 			mqtt_parse_incoming(cl, &buf);
 		}
 		else {
-			err = WSAGetLastError();
+			err = GETSOCKETERRNO();
 			if (err == WSAEWOULDBLOCK) {
 
 			}

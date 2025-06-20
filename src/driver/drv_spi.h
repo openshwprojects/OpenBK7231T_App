@@ -2,8 +2,8 @@
 
 #include <stdint.h>
 
-// spi_config_t and its member types are copied from BK7321N SPI implementation.
-// Don't modify. If modified a mapping routine is required for BK7321N.
+// spi_config_t and its member types are copied from BK7231N SPI implementation.
+// Don't modify. If modified a mapping routine is required for BK7231N.
 
 typedef enum {
 	SPI_ROLE_SLAVE = 0, /**< SPI as slave */

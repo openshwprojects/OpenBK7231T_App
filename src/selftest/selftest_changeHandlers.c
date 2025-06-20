@@ -101,6 +101,27 @@ void Test_ChangeHandlers() {
 	SELFTEST_ASSERT_CHANNEL(8, 8);
 
 }
+void Test_ChangeHandlers2() {
+	// reset whole device
+	SIM_ClearOBK(0);
+	SIM_ClearAndPrepareForMQTTTesting("handlerTester", "bekens");
+
+	CMD_ExecuteCommand("setChannelFloat 20 0", 0);	CMD_ExecuteCommand("setChannel 1 0", 0);
+	CMD_ExecuteCommand("addChangeHandler Channel20 != 0 addChannel 1 1", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 0);		SELFTEST_ASSERT_CHANNEL(1, 0);
+	// change handler will fire-> added 1 to channel 1, now 1
+	CMD_ExecuteCommand("setChannelFloat 20 3", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 3);		SELFTEST_ASSERT_CHANNEL(1, 1);
+	// change handler will not fire
+	CMD_ExecuteCommand("setChannelFloat 20 4", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 4);		SELFTEST_ASSERT_CHANNEL(1, 1);
+	// change handler will not fire
+	CMD_ExecuteCommand("setChannelFloat 20 0", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 0);		SELFTEST_ASSERT_CHANNEL(1, 1);
+	// change handler will fire -> added 1 to channel 1, now 2
+	CMD_ExecuteCommand("setChannelFloat 20 5", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 5);		SELFTEST_ASSERT_CHANNEL(1, 2);	
+}
 
 void Test_ChangeHandlers_EnsureThatChannelVariableIsExpandedAtHandlerRunTime() {
 	// reset whole device
@@ -111,6 +132,7 @@ void Test_ChangeHandlers_EnsureThatChannelVariableIsExpandedAtHandlerRunTime() {
 	CMD_ExecuteCommand("setChannel 15 2+2", 0);
 	CMD_ExecuteCommand("setChannel 1 0", 0);
 	CMD_ExecuteCommand("addChangeHandler Channel1 == 0 addChannel 14 $CH15", 0);
+	SELFTEST_ASSERT(EventHandlers_GetActiveCount() == 1);
 	SELFTEST_ASSERT_CHANNEL(1, 0);
 	SELFTEST_ASSERT_CHANNEL(14, 0);
 	SELFTEST_ASSERT_CHANNEL(15, 2+2);
@@ -160,7 +182,9 @@ void Test_ChangeHandlers_EnsureThatChannelVariableIsExpandedAtHandlerRunTime() {
 
 	CMD_ExecuteCommand("setChannel 20 999", 0);
 	CMD_ExecuteCommand("addChangeHandler Channel20 == 0 setChannel 21 1", 0);
+	SELFTEST_ASSERT(EventHandlers_GetActiveCount() == 2);
 	CMD_ExecuteCommand("addChangeHandler Channel20 != 0 setChannel 21 0", 0);
+	SELFTEST_ASSERT(EventHandlers_GetActiveCount() == 3);
 	CMD_ExecuteCommand("setChannel 20 0", 0);
 	SELFTEST_ASSERT_CHANNEL(20, 0);
 	SELFTEST_ASSERT_CHANNEL(21, 1);
@@ -170,12 +194,31 @@ void Test_ChangeHandlers_EnsureThatChannelVariableIsExpandedAtHandlerRunTime() {
 	CMD_ExecuteCommand("setChannel 20 0", 0);
 	SELFTEST_ASSERT_CHANNEL(20, 0);
 	SELFTEST_ASSERT_CHANNEL(21, 1)
-		CMD_ExecuteCommand("setChannel 20 1", 0);
+	CMD_ExecuteCommand("setChannel 20 1", 0);
 	SELFTEST_ASSERT_CHANNEL(20, 1);
 	SELFTEST_ASSERT_CHANNEL(21, 0);
 
 	SIM_ClearMQTTHistory();
+	CMD_ExecuteCommand("clearAllHandlers", 0);
+	SELFTEST_ASSERT(EventHandlers_GetActiveCount() == 0);
+	CMD_ExecuteCommand("addChangeHandler Channel20 == 0 setChannel 21 1", 0);
+	SELFTEST_ASSERT(EventHandlers_GetActiveCount() == 1);
+	CMD_ExecuteCommand("addChangeHandler Channel20 != 0 setChannel 21 0", 0);
+	SELFTEST_ASSERT(EventHandlers_GetActiveCount() == 2);
+	CMD_ExecuteCommand("setChannel 20 0", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 0);
+	SELFTEST_ASSERT_CHANNEL(21, 1);
+	CMD_ExecuteCommand("setChannel 20 1", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 1);
+	SELFTEST_ASSERT_CHANNEL(21, 0);
+	CMD_ExecuteCommand("setChannel 20 0", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 0);
+	SELFTEST_ASSERT_CHANNEL(21, 1)
+	CMD_ExecuteCommand("setChannel 20 1", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 1);
+	SELFTEST_ASSERT_CHANNEL(21, 0);
 
+	
 }
 
 

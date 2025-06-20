@@ -10,6 +10,7 @@
 #include "../httpserver/new_http.h"
 #include "../hal/hal_pins.h"
 
+#if !defined(PLATFORM_ESPIDF) && !defined(PLATFORM_XR806) && !defined(PLATFORM_XR872)
 void usleep(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 {
 #ifdef WIN32
@@ -19,6 +20,7 @@ void usleep(int r) //delay function do 10*r nops, because rtos_delay_millisecond
 		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
 #endif
 }
+#endif
 
 void Soft_I2C_SetLow(uint8_t pin) {
 	HAL_PIN_Setup_Output(pin);

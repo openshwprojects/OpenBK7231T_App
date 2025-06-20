@@ -1,14 +1,17 @@
 #ifdef WINDOWS
 
+
 #include "../new_common.h"
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
 #include "../logging/logging.h"
 #include "new_http.h"
+#ifndef LINUX
 #include <timeapi.h>
+#endif
 
- SOCKET ListenSocket = INVALID_SOCKET;
+SOCKET ListenSocket = INVALID_SOCKET;
 
 int g_httpPort = 80;
 
@@ -19,7 +22,7 @@ int HTTPServer_Start() {
     struct addrinfo *result = NULL;
     struct addrinfo hints;
 
-    ZeroMemory(&hints, sizeof(hints));
+    memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
@@ -35,7 +38,7 @@ int HTTPServer_Start() {
 	iResult = getaddrinfo(NULL, service, &hints, &result);
     if ( iResult != 0 ) {
         printf("getaddrinfo failed with error: %d\n", iResult);
-        WSACleanup();
+        //WSACleanup();
         return 1;
     }
 
@@ -44,7 +47,7 @@ int HTTPServer_Start() {
     if (ListenSocket == INVALID_SOCKET) {
         printf("socket failed with error: %ld\n", WSAGetLastError());
         freeaddrinfo(result);
-        WSACleanup();
+        //WSACleanup();
         return 1;
     }
 
@@ -54,7 +57,7 @@ int HTTPServer_Start() {
         printf("bind failed with error: %d\n", WSAGetLastError());
         freeaddrinfo(result);
         closesocket(ListenSocket);
-        WSACleanup();
+        //WSACleanup();
         return 1;
     }
 
@@ -64,7 +67,7 @@ int HTTPServer_Start() {
 	if (iResult == SOCKET_ERROR) {
 		printf("listen failed with error: %d\n", WSAGetLastError());
 		closesocket(ListenSocket);
-		WSACleanup();
+		//WSACleanup();
 		return 1;
 	}
 
@@ -78,6 +81,8 @@ int HTTPServer_Start() {
     }
 }
 #define DEFAULT_BUFLEN 10000
+int g_prevHTTPResult;
+
 void HTTPServer_RunQuickTick() {
 	int iResult;
 	int err;
@@ -86,14 +91,16 @@ void HTTPServer_RunQuickTick() {
     int recvbuflen = DEFAULT_BUFLEN;
     SOCKET ClientSocket = INVALID_SOCKET;
 	int len, iSendResult;
-	int argp;
 
 	// Accept a client socket
 	ClientSocket = accept(ListenSocket, NULL, NULL);
 	if (ClientSocket == INVALID_SOCKET) {
 		iResult = WSAGetLastError();
 		if(iResult != WSAEWOULDBLOCK) {
-			printf("accept failed with error: %d\n", iResult);
+			if (iResult != g_prevHTTPResult) {
+				printf("HTTPServer_RunQuickTick: accept failed with error: %d\n", iResult);
+				g_prevHTTPResult = iResult;
+			}
 		}
 		return;
 	}
@@ -109,7 +116,7 @@ void HTTPServer_RunQuickTick() {
 		// Receive until the peer shuts down the connection
 		do {
 
-			iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
+			iResult = recv(ClientSocket, recvbuf, recvbuflen-1, 0);
 			if (iResult > 0) {
 				http_request_t request;
 				memset(&request, 0, sizeof(request));
@@ -200,4 +207,5 @@ void HTTPServer_RunQuickTick() {
 }
 
 #endif
+
 

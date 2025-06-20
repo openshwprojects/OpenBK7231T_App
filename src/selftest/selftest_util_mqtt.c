@@ -4,13 +4,15 @@
 #include "../cJSON/cJSON.h"
 
 void SIM_SendFakeMQTT(const char *text, const char *arguments) {
+#if ENABLE_MQTT
 	MQTT_Post_Received_Str(text, arguments);
 	Sim_RunFrames(1, false);
+#endif
 }
 void SIM_SendFakeMQTTAndRunSimFrame_CMND_Generic(const char *myName , const char *command, const char *arguments) {
 
 	char buffer[4096];
-	sprintf(buffer, "cmnd/%s/%s", myName, command);
+	snprintf(buffer,sizeof(buffer), "cmnd/%s/%s", myName, command);
 
 	SIM_SendFakeMQTT(buffer, arguments);
 
@@ -25,7 +27,7 @@ void SIM_SendFakeMQTTAndRunSimFrame_CMND(const char *command, const char *argume
 }
 void SIM_SendFakeMQTTRawChannelSet_Generic(const char *myName, int channelIndex, const char *arguments) {
 	char buffer[4096];
-	sprintf(buffer, "%s/%i/set", myName, channelIndex);
+	snprintf(buffer, sizeof(buffer), "%s/%i/set", myName, channelIndex);
 	SIM_SendFakeMQTT(buffer, arguments);
 }
 void SIM_SendFakeMQTTRawChannelSet(int channelIndex, const char *arguments) {
@@ -37,7 +39,7 @@ void SIM_SendFakeMQTTRawChannelSet_ViaGroupTopic(int channelIndex, const char *a
 	SIM_SendFakeMQTTRawChannelSet_Generic(myName, channelIndex, arguments);
 }
 
-#define MAX_MQTT_HISTORY 64
+#define MAX_MQTT_HISTORY 256
 typedef struct mqttHistoryEntry_s {
 	char topic[256];
 	char value[4096];
@@ -77,7 +79,58 @@ bool ST_IsIntegerString(const char *s) {
 	}
 	return true;
 }
-bool SIM_HasMQTTHistoryStringWithJSONPayload(const char *topic, bool bPrefixMode, const char *object1, const char *object2, const char *key, const char *value) {
+bool CheckForKeyVal(cJSON *tmp, const char *key, const char *value) {
+	tmp = cJSON_GetObjectItemCaseSensitive(tmp, key);
+	if (tmp) {
+		if (tmp->valuestring) {
+			const char *ret = tmp->valuestring;
+			if (!strcmp(ret, value)) {
+				return true;
+			}
+		}
+		else {
+			if (ST_IsIntegerString(value)) {
+				if (atoi(value) == tmp->valueint) {
+					return true;
+				}
+			}
+			else {
+				printf("TODO: float compare selftest");
+			}
+		}
+	}
+	return false;
+}
+void SIM_DumpMQTTHistory() {
+	int cur = history_tail;
+	int index = 0;
+
+	printf("MQTT history dump (total entries: %d):\n",
+		(history_head >= history_tail) ? (history_head - history_tail)
+		: (MAX_MQTT_HISTORY - history_tail + history_head));
+	printf("-------------------------------------------------------------\n");
+	while (cur != history_head) {
+		mqttHistoryEntry_t *entry = &mqtt_history[cur];
+		printf("Entry %d:\n", index++);
+		printf("  Topic:   %s\n", entry->topic);
+		printf("  Payload: %s\n", entry->value);
+		printf("  QoS:     %d\n", entry->qos);
+		printf("  Retain:  %s\n", entry->bRetain ? "True" : "False");
+		printf("-------------------------------------------------------------\n");
+
+		cur++;
+		cur %= MAX_MQTT_HISTORY;
+	}
+	if (index == 0) {
+		printf("No MQTT history available.\n");
+	}
+}
+bool SIM_HasMQTTHistoryStringWithJSONPayload(const char *topic, bool bPrefixMode, 
+	const char *object1, const char *object2, 
+	const char *key, const char *value,
+	const char *key2, const char *value2,
+	const char *key3, const char *value3,
+	const char *key4, const char *value4) {
 	mqttHistoryEntry_t *ne;
 	int cur = history_tail;
 	while (cur != history_head) {
@@ -106,27 +159,28 @@ bool SIM_HasMQTTHistoryStringWithJSONPayload(const char *topic, bool bPrefixMode
 						tmp = cJSON_GetObjectItemCaseSensitive(tmp, object2);
 					}
 					if (tmp) {
-						tmp = cJSON_GetObjectItemCaseSensitive(tmp, key);
-						if (tmp) {
-							if (tmp->valuestring) {
-								const char *ret = tmp->valuestring;
-								if (!strcmp(ret, value)) {
-									return true;
-								}
-							}
-							else {
-								if (ST_IsIntegerString(value)) {
-									if (atoi(value) == tmp->valueint) {
-										return true;
-									}
-								}
-								else {
-									printf("TODO: float compare selftest");
-								}
+						bool bOk = true;
+						if (CheckForKeyVal(tmp, key, value) == false) {
+							bOk = false;
+						}
+						if (key2) {
+							if (CheckForKeyVal(tmp, key2, value2) == false) {
+								bOk = false;
 							}
 						}
+						if (key3) {
+							if (CheckForKeyVal(tmp, key3, value3) == false) {
+								bOk = false;
+							}
+						}
+						if (key4) {
+							if (CheckForKeyVal(tmp, key4, value4) == false) {
+								bOk = false;
+							}
+						}
+						if (bOk)
+							return true;
 					}
-
 				}
 				cJSON_Delete(json);
 			}

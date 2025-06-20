@@ -2,6 +2,9 @@
 
 #include "selftest_local.h"
 
+#if ENABLE_BL_SHARED
+
+
 void Test_EnergyMeter_Basic() {
 	SIM_ClearOBK(0);
 	SIM_ClearAndPrepareForMQTTTesting("miscDevice", "bekens");
@@ -51,6 +54,82 @@ void Test_EnergyMeter_Basic() {
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/voltage/get", 221.0f, false);
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/current/get", 0.46f, false);
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/power/get", 70.0f, false);
+
+	SIM_ClearMQTTHistory();
+}
+
+// this takes values like 230V, etc
+// and creates a fake BL0942 packet that is added to UART,
+// it uses "default" calibration values
+void Sim_SendFakeBL0942Packet(float v, float c, float p);
+
+void Test_EnergyMeter_BL0942() {
+	SIM_ClearOBK(0);
+	SIM_ClearAndPrepareForMQTTTesting("miscDevice", "bekens");
+
+	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(9, 1);
+
+	CMD_ExecuteCommand("startDriver BL0942", 0);
+
+	// set initial values reported by BL0942 via spoofed UART packets
+	Sim_SendFakeBL0942Packet(230, 0.26, 60);
+	Sim_RunSeconds(1, false);
+	// simulate using doing calibration
+	CMD_ExecuteCommand("PowerSet 60", 0);
+	CMD_ExecuteCommand("VoltageSet 230", 0);
+	CMD_ExecuteCommand("CurrentSet 0.26", 0);
+	Sim_SendFakeBL0942Packet(230, 0.26, 60);
+	Sim_RunSeconds(1, false);
+	// verify calibration worked
+	SELFTEST_ASSERT_EXPRESSION("$voltage", 230);
+	SELFTEST_ASSERT_EXPRESSION("$current", 0.26f);
+	SELFTEST_ASSERT_EXPRESSION("$power", 60);
+	// test different current
+	Sim_SendFakeBL0942Packet(230, 0.13, 30);
+	Sim_RunSeconds(1, false);
+	SELFTEST_ASSERT_EXPRESSION("$voltage", 230);
+	SELFTEST_ASSERT_EXPRESSION("$current", 0.13f);
+	SELFTEST_ASSERT_EXPRESSION("$power", 30);
+	// simulate user calibrating 30W from BL0942 to be 60W IRL
+	CMD_ExecuteCommand("PowerSet 60", 0);
+	Sim_SendFakeBL0942Packet(230, 0.13, 30);
+	Sim_RunSeconds(1, false);
+	SELFTEST_ASSERT_EXPRESSION("$power", 60);
+	Sim_RunSeconds(1, false);
+	// now. if 30W from BL0942 is 60W IRL,
+	// then 60W frm BL0942 should give us 120W
+	Sim_SendFakeBL0942Packet(230, 0.13, 60);
+	Sim_RunSeconds(1, false);
+	SELFTEST_ASSERT_EXPRESSION("$power", 120);
+	// as above, but non-integer
+	Sim_SendFakeBL0942Packet(230, 0.13, 30);
+	Sim_RunSeconds(1, false);
+	CMD_ExecuteCommand("PowerSet 60.5", 0);
+	Sim_SendFakeBL0942Packet(230, 0.13, 30);
+	Sim_RunSeconds(1, false);
+	SELFTEST_ASSERT_EXPRESSION("$power", 60.5);
+	Sim_RunSeconds(1, false);
+	// now. if 30W from BL0942 is 60.5W IRL,
+	// then 60W frm BL0942 should give us 121W
+	Sim_SendFakeBL0942Packet(230, 0.13, 60);
+	Sim_RunSeconds(1, false);
+	SELFTEST_ASSERT_EXPRESSION("$power", 121);
+
+	SIM_ClearMQTTHistory();
+}
+void Test_EnergyMeter_CSE7766() {
+	SIM_ClearOBK(0);
+	SIM_ClearAndPrepareForMQTTTesting("miscDevice", "bekens");
+
+	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(9, 1);
+
+	CMD_ExecuteCommand("startDriver CSE7766", 0);
+
+	CMD_ExecuteCommand("uartFakeHex 555A02FCD800062F00413200D7F2537B18023E9F7171FEEC", 0);
+	CSE7766_RunEverySecond();
+
 
 	SIM_ClearMQTTHistory();
 }
@@ -211,6 +290,7 @@ void Test_EnergyMeter_TurnOffScript() {
 	CMD_ExecuteCommand("SetupTestPower 230 0.01 0.5 0", 0);
 	int prevChannel10 = CHANNEL_Get(10);
 	for (int i = 0; i < 10; i++) {
+		Test_Power_RunEverySecond();
 		Sim_RunSeconds(1.5f, false);
 		int now10 = CHANNEL_Get(10);
 		SELFTEST_ASSERT(now10 > prevChannel10);
@@ -220,6 +300,7 @@ void Test_EnergyMeter_TurnOffScript() {
 	// now reset will kick in
 	CMD_ExecuteCommand("SetupTestPower 230 0.01 1.5 0", 0);
 	for (int i = 0; i < 10; i++) {
+		Test_Power_RunEverySecond();
 		Sim_RunSeconds(1.5f, false);
 		int now10 = CHANNEL_Get(10);
 		SELFTEST_ASSERT(now10 == 0);
@@ -231,6 +312,7 @@ void Test_EnergyMeter_TurnOffScript() {
 	Sim_RunSeconds(1.5f, false);
 	prevChannel10 = CHANNEL_Get(10);
 	for (int i = 0; i < 10; i++) {
+		Test_Power_RunEverySecond();
 		Sim_RunSeconds(1.5f, false);
 		int now10 = CHANNEL_Get(10);
 		SELFTEST_ASSERT(now10 > prevChannel10);
@@ -240,6 +322,7 @@ void Test_EnergyMeter_TurnOffScript() {
 	// now reset will kick in
 	CMD_ExecuteCommand("SetupTestPower 230 0.01 1.5 0", 0);
 	for (int i = 0; i < 10; i++) {
+		Test_Power_RunEverySecond();
 		Sim_RunSeconds(1.5f, false);
 		int now10 = CHANNEL_Get(10);
 		SELFTEST_ASSERT(now10 == 0);
@@ -249,6 +332,7 @@ void Test_EnergyMeter_TurnOffScript() {
 	CMD_ExecuteCommand("SetupTestPower 230 0.01 0.5 0", 0);
 	prevChannel10 = CHANNEL_Get(10);
 	for (int i = 0; i < 12; i++) {
+		Test_Power_RunEverySecond();
 		Sim_RunSeconds(1.5f, false);
 		int now10 = CHANNEL_Get(10);
 		SELFTEST_ASSERT(now10 > prevChannel10);
@@ -258,6 +342,7 @@ void Test_EnergyMeter_TurnOffScript() {
 	// this loop should trigger turn off
 	prevChannel10 = CHANNEL_Get(10);
 	for (int i = 0; i < 3; i++) {
+		Test_Power_RunEverySecond();
 		Sim_RunSeconds(1.5f, false);
 		int now10 = CHANNEL_Get(10);
 		SELFTEST_ASSERT(now10 > prevChannel10);
@@ -270,10 +355,16 @@ void Test_EnergyMeter_TurnOffScript() {
 	SIM_ClearMQTTHistory();
 }
 void Test_EnergyMeter() {
+	Test_EnergyMeter_CSE7766();
+#ifndef LINUX
+	// TODO: fix on Linux
+	Test_EnergyMeter_BL0942();
+#endif
 	Test_EnergyMeter_Basic();
 	Test_EnergyMeter_Tasmota();
 	Test_EnergyMeter_Events();
 	Test_EnergyMeter_TurnOffScript();
 }
 
+#endif
 #endif

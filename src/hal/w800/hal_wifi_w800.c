@@ -57,8 +57,9 @@ int WiFI_SetMacAddress(char* mac)
 
 void WiFI_GetMacAddress(char* mac)
 {
-	struct netif* netif = tls_get_netif();
-	MEMCPY(mac, &netif->hwaddr[0], ETH_ALEN);
+	//struct netif* netif = tls_get_netif();
+	//MEMCPY(mac, &netif->hwaddr[0], ETH_ALEN);
+	tls_get_mac_addr(mac);
 }
 const char* HAL_GetMACStr(char* macstr)
 {
@@ -176,7 +177,15 @@ static int connect_wifi_demo(char* ssid, char* pwd, obkStaticIP_t *ip)
 	int ret;
 	struct tls_param_ip* ip_param = NULL;
 	u8 wireless_protocol = 0;
-
+	
+#if LWIP_NETIF_HOSTNAME
+	extern const char *CFG_GetDeviceName();		// including "../../../../sharedAppContainer/sharedApp/src/new_cfg.h"	only for CFG_GetDeviceName() leads to errors
+	struct netif* netif = tls_get_netif();
+	char *tmpPtr = CFG_GetDeviceName();
+	if(tmpPtr != 0 && tmpPtr[0] != 0) {
+	   netif->hostname = tmpPtr;
+	} 
+#endif
 	tls_wifi_disconnect();
 	tls_wifi_softap_destroy();
 

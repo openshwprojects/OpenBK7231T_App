@@ -370,7 +370,7 @@
   {
     "name": "Pressure_div100",
     "title": "TODO",
-    "descr": ".",
+    "descr": "Pressure in hPa, but divided by 100",
     "enum": "Pressure_div100",
     "file": "new_pins.h",
     "driver": ""
@@ -386,7 +386,7 @@
   {
     "name": "LeakageCurrent_div1000",
     "title": "TODO",
-    "descr": ".",
+    "descr": "Leakage current in mA",
     "enum": "ChType_LeakageCurrent_div1000",
     "file": "new_pins.h",
     "driver": ""
@@ -428,6 +428,62 @@
     "title": "TODO",
     "descr": "This channel is read only.",
     "enum": "ChType_ReadOnly_div1000",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Ph",
+    "title": "TODO",
+    "descr": "Ph Water Quality",
+    "enum": "ChType_Ph",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Orp",
+    "title": "TODO",
+    "descr": "Orp Water Quality",
+    "enum": "ChType_Orp",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Tds",
+    "title": "TODO",
+    "descr": "TDS Water Quality",
+    "enum": "ChType_Tds",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Motion_n",
+    "title": "TODO",
+    "descr": "Motion_n",
+    "enum": "Motion_n",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Frequency_div1000",
+    "title": "TODO",
+    "descr": "For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI",
+    "enum": "ChType_Frequency_div1000",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "OpenStopClose",
+    "title": "OpenStopClose",
+    "descr": "TODO",
+    "enum": "ChType_OpenStopClose",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Percent",
+    "title": "Percent",
+    "descr": "TODO",
+    "enum": "ChType_Percent",
     "file": "new_pins.h",
     "driver": ""
   },

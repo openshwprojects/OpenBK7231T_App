@@ -325,11 +325,13 @@ void DRV_DGR_CreateSocket_Receive() {
 	addLogAdv(LOG_INFO, LOG_FEATURE_DGR,"DRV_DGR_CreateSocket_Receive: Socket created, waiting for packets\n");
 }
 
+#if ENABLE_LED_BASIC
 void DRV_DGR_processRGBCW(byte *rgbcw) {
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR, "DRV_DGR_setFinalRGBCW: %i,%i,%i,%i,%i\n", (int)rgbcw[0], (int)rgbcw[1], (int)rgbcw[2], (int)rgbcw[3], (int)rgbcw[4]);
 
 	LED_SetFinalRGBCW(rgbcw);
 }
+#endif
 void DRV_DGR_processPower(int relayStates, byte relaysCount) {
 	int startIndex;
 	int i;
@@ -337,9 +339,12 @@ void DRV_DGR_processPower(int relayStates, byte relaysCount) {
 
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR, "DRV_DGR_processPower: cnt %i, val %i\n", (int)relaysCount, relayStates);
 
+#if ENABLE_LED_BASIC
 	if(PIN_CountPinsWithRoleOrRole(IOR_PWM,IOR_PWM_n) > 0 || LED_IsLedDriverChipRunning()) {
 		LED_SetEnableAll(BIT_CHECK(relayStates,0));
-	} else {
+	} else 
+#endif
+	{
 		// does indexing starts with zero?
 		if(CHANNEL_HasChannelPinWithRoleOrRole(0, IOR_Relay, IOR_Relay_n)) {
 			startIndex = 0;
@@ -362,6 +367,7 @@ void DRV_DGR_processPower(int relayStates, byte relaysCount) {
 		}
 	}
 }
+#if ENABLE_LED_BASIC
 void DRV_DGR_processBrightnessPowerOn(byte brightness) {
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_DGR,"DRV_DGR_processBrightnessPowerOn: %i\n",(int)brightness);
 
@@ -377,6 +383,7 @@ void DRV_DGR_processLightBrightness(byte brightness) {
 
 	LED_SetDimmer(Val255ToVal100(brightness));
 }
+#endif
 typedef struct dgrMmember_s {
 	int ip;
 	uint16_t lastSeq;
@@ -472,11 +479,13 @@ void DGR_ProcessIncomingPacket(char *msgbuf, int nbytes) {
 	strcpy(def.gr.groupName, CFG_DeviceGroups_GetName());
 	def.gr.devGroupShare_In = CFG_DeviceGroups_GetRecvFlags();
 	def.gr.devGroupShare_Out = CFG_DeviceGroups_GetSendFlags();
+#if ENABLE_LED_BASIC
 	def.cbs.processBrightnessPowerOn = DRV_DGR_processBrightnessPowerOn;
 	def.cbs.processLightBrightness = DRV_DGR_processLightBrightness;
 	def.cbs.processLightFixedColor = DRV_DGR_processLightFixedColor;
-	def.cbs.processPower = DRV_DGR_processPower;
 	def.cbs.processRGBCW = DRV_DGR_processRGBCW;
+#endif
+	def.cbs.processPower = DRV_DGR_processPower;
 	def.cbs.checkSequence = DGR_CheckSequence;
 
 	// don't send things that result from something we rxed...

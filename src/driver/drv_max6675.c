@@ -9,10 +9,10 @@
 #include "drv_local.h"
 #include "../hal/hal_pins.h"
 
-int port_cs = 24;
-int sclk = 26;
-int miso = 6;
-int targetChannel = -1;
+static int port_cs = 24;
+static int sclk = 26;
+static int miso = 6;
+static int targetChannel = -1;
 
 byte MAX6675_ReadByte(void) {
 	int i;
@@ -52,7 +52,7 @@ float MAX6675_ReadTemperature() {
 
 	v >>= 3;
 
-	return v * 0.25;
+	return v * 0.25F;
 }
 void MAX6675_RunEverySecond() {
 	float f = MAX6675_ReadTemperature();

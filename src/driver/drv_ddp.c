@@ -12,6 +12,10 @@
 #include "lwip/inet.h"
 #include "../httpserver/new_http.h"
 
+#if ENABLE_DRIVER_SM16703P
+#include "drv_spiLED.h"
+#endif
+
 static const char* group = "239.255.250.250";
 static int port = 4048;
 static int g_ddp_socket_receive = -1;
@@ -118,18 +122,30 @@ void DRV_DDP_CreateSocket_Receive() {
 void DDP_Parse(byte *data, int len) {
 	if(len > 12) {
 		byte r, g, b;
+
 		r = data[10];
 		g = data[11];
 		b = data[12];
 
-		LED_SetFinalRGB(r,g,b);
-
 #if ENABLE_DRIVER_SM16703P
-		// Note that this is limited by DDP msgbuf size
-		uint32_t pixel = (len - 10) / 3;
-		// This immediately activates the pixels, maybe we should read the PUSH flag
-		SM16703P_setMultiplePixel(pixel, &data[10], true);
+		if (spiLED.ready) {
+			// Note that this is limited by DDP msgbuf size
+			uint32_t pixel = (len - 10) / 3;
+			// This immediately activates the pixels, maybe we should read the PUSH flag
+			SM16703P_setMultiplePixel(pixel, &data[10], true);
+		} else
 #endif
+		{
+#if ENABLE_LED_BASIC
+			LED_SetDimmerIfChanged(100);
+			if (data[9] == 4) {
+				LED_SetFinalRGBW(r, g, b, data[13]);
+			}
+			else {
+				LED_SetFinalRGB(r, g, b);
+			}
+#endif
+		}
 	}
 }
 void DRV_DDP_RunFrame() {
