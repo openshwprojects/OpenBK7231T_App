@@ -1773,7 +1773,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	// warning - this is 32 bit
 	int flagsChannelPublished;
 	int ch;
-	int dimmer, toggle, brightness_scale;
+	int dimmer, toggle, brightness_scale = 0;
 
 	// no channels published yet
 	flagsChannelPublished = 0;

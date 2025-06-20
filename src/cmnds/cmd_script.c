@@ -515,6 +515,7 @@ void CMD_Script_ProcessWaitersForEvent(byte eventCode, int argument) {
 	scriptInstance_t *t;
 
 #if ENABLE_OBK_BERRY
+	extern void CMD_Berry_ProcessWaitersForEvent(byte eventCode, int argument);
 	CMD_Berry_ProcessWaitersForEvent(eventCode, argument);
 #endif
 	t = g_scriptThreads;

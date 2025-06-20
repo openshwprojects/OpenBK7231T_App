@@ -1,6 +1,9 @@
 /*
  * Copyright (C) 2015-2017 Alibaba Group Holding Limited
  */
+
+#if PLATFORM_BEKEN || WINDOWS
+
 #include "include.h"
 //#include "lite-log.h"
 #include "utils_timer.h"
@@ -98,3 +101,4 @@ uint64_t utils_time_left(uint64_t t_end, uint64_t t_now)
     return  (1!=(hal_machw_time_past(t_end*1000)));
 }
 
+#endif

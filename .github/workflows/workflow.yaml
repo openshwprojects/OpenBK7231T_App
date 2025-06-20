@@ -115,6 +115,8 @@ jobs:
     - name: Checkout berry submodule
       run: |
         git submodule update --init --recursive libraries/berry
+        mkdir -p libraries/berry/generate
+        ./libraries/berry/tools/coc/coc -o libraries/berry/generate libraries/berry/src src/berry/modules -c include/berry_conf.h
 
     - name: Build project
       run: ASAN=1 make -f custom.mk
@@ -135,6 +137,8 @@ jobs:
     - name: Checkout berry submodule
       run: |
         git submodule update --init --recursive libraries/berry
+        mkdir -p libraries/berry/generate
+        ./libraries/berry/tools/coc/coc -o libraries/berry/generate libraries/berry/src src/berry/modules -c include/berry_conf.h
 
     - name: Build project
       run: UBSAN=1 make -f custom.mk
@@ -208,6 +212,12 @@ jobs:
             variant: irRemoteESP
           - platform: OpenBK7231N
             variant: sensors
+          
+          - platform: OpenBK7238
+            variant: berry
+
+          - platform: OpenBL602
+            variant: berry
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
@@ -219,17 +229,14 @@ jobs:
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get update
-          sudo apt-get -y install libc6-i386 make cmake gcc-arm-none-eabi
+          sudo apt-get -y install libc6-i386 make cmake
           pip3 install pycryptodomex
           pip3 install configobj
           pip3 install toml
           pip3 install fdt
-      - name: Copy config header
-        if: matrix.variant != 'default'
-        run: cp src/configs/obk_config_${{ matrix.variant }}.h src/obk_config.h
       - run: ls -la
       - name: Run make
-        run: make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT=${{ matrix.variant }} ${{ matrix.platform }}
+        run: make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }}
       - name: Save build assets
         uses: actions/upload-artifact@v4
         with:
@@ -253,11 +260,28 @@ jobs:
   build_idf:
     name: Build IDF
     needs: refs
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
-        platform: [OpenESP32, OpenESP32C3, OpenESP32C2, OpenESP32C6, OpenESP32S3, OpenESP32S2]
+        include:
+          - platform: OpenESP32C2
+            variant: 2M
+          - platform: OpenESP32C3
+            variant: 2M
+
+          - platform: OpenESP32
+            variant: 4M
+          - platform: OpenESP32C2
+            variant: 4M
+          - platform: OpenESP32C3
+            variant: 4M
+          - platform: OpenESP32C6
+            variant: 4M
+          - platform: OpenESP32S3
+            variant: 4M
+          - platform: OpenESP32S2
+            variant: 4M
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
@@ -266,7 +290,7 @@ jobs:
         with:
           repository: espressif/esp-idf
           path: sdk/esp-idf
-          ref: v5.3.2
+          ref: v5.3.3
           submodules: recursive
       - uses: actions/setup-python@v5
         with:
@@ -287,14 +311,14 @@ jobs:
           . ./export.sh
           . ./add_path.sh
           cd ../..
-          make APP_VERSION=${{ needs.refs.outputs.version }} APP_NAME=${{ matrix.platform }} ${{ matrix.platform }}
+          make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }}
       - name: Save build assets
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_${{ matrix.platform }}
+          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_${{ matrix.platform }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}
           path: |
-            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.img
-            output/${{ needs.refs.outputs.version }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}.factory.bin
+            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.img
+            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.factory.bin
           if-no-files-found: warn
 
   merge:

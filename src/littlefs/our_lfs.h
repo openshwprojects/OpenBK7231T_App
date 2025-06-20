@@ -45,12 +45,13 @@
 #define LFS_BLOCKS_START_MIN 0x12B000
 // end of OTA flash
 #define LFS_BLOCKS_END 0x1D0000
+
 #elif PLATFORM_BL602
-// start media partition in bldevcube 1.4.8 partition config
-#define LFS_BLOCKS_START 0x192000
-#define LFS_BLOCKS_START_MIN 0x192000
-// end media partition
-#define LFS_BLOCKS_END 0x1E9000
+
+#define LFS_BLOCKS_START 0x0
+#define LFS_BLOCKS_START_MIN 0x0
+#define LFS_BLOCKS_END 0x80000000
+#define LFS_BLOCKS_MAX_LEN 0x80000000
 
 #elif PLATFORM_LN882H
 // start0x1000 after OTA addr (OTA, start_addr: 0x00133000, size_KB: 0x000AA000)
@@ -105,6 +106,21 @@
 #define LFS_BLOCKS_START 0x1D5000
 #define LFS_BLOCKS_START_MIN 0x1D5000
 #define LFS_BLOCKS_END 0x1D5000 + 0x22000
+
+#elif PLATFORM_W600
+
+#define LFS_BLOCKS_START 0xE8000
+#define LFS_BLOCKS_START_MIN 0xE8000
+#define LFS_BLOCKS_END 0xF0000
+#define LFS_BLOCKS_MAX_LEN (0xF0000 - 0xE8000)
+
+#elif PLATFORM_W800
+
+// tuya config offset
+#define LFS_BLOCKS_START 0x1C0000
+#define LFS_BLOCKS_START_MIN 0x1C0000
+#define LFS_BLOCKS_END 0x1DB000
+#define LFS_BLOCKS_MAX_LEN (0x1DB000 - 0x1C0000)
 
 #else
 // TODO
