@@ -1,6 +1,9 @@
 #include "ringbuff32.h"
 #include <stdlib.h>
 #include <string.h>
+#ifndef bool
+#include <stdbool.h>
+#endif
 
 
 // very simple circular buffer / ring buffer implementation
