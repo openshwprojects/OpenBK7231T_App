@@ -73,6 +73,21 @@ void OTA_RequestDownloadFromHTTP(const char *s);
 #define DEVICENAME_PREFIX_SHORT "obk"
 #define PLATFORM_MCU_NAME "BK7238"
 #define MANUFACTURER "Beken Corporation"
+#elif PLATFORM_BK7231U
+#define DEVICENAME_PREFIX_FULL "OpenBK7231U"
+#define DEVICENAME_PREFIX_SHORT "obk"
+#define PLATFORM_MCU_NAME "BK7231U"
+#define MANUFACTURER "Beken Corporation"
+#elif PLATFORM_BK7252
+#define DEVICENAME_PREFIX_FULL "OpenBK7252"
+#define DEVICENAME_PREFIX_SHORT "obk"
+#define PLATFORM_MCU_NAME "BK7252"
+#define MANUFACTURER "Beken Corporation"
+#elif PLATFORM_BK7252N
+#define DEVICENAME_PREFIX_FULL "OpenBK7252N"
+#define DEVICENAME_PREFIX_SHORT "obk"
+#define PLATFORM_MCU_NAME "BK7252N"
+#define MANUFACTURER "Beken Corporation"
 #elif PLATFORM_BL602
 #define DEVICENAME_PREFIX_FULL "OpenBL602"
 #define DEVICENAME_PREFIX_SHORT "obl"
@@ -184,6 +199,12 @@ This platform is not supported, error!
 #define USER_SW_VER "RTL8720D_Test"
 #elif defined(PLATFORM_BK7238)
 #define USER_SW_VER "BK7238_Test"
+#elif defined(PLATFORM_BK7231U)
+#define USER_SW_VER "BK7231U_Test"
+#elif defined(PLATFORM_BK7252)
+#define USER_SW_VER "BK7252_Test"
+#elif defined(PLATFORM_BK7252N)
+#define USER_SW_VER "BK7252N_Test"
 #elif PLATFORM_ECR6600
 #define USER_SW_VER "ECR6600_Test"
 #else

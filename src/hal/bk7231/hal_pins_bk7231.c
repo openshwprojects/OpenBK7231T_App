@@ -34,19 +34,19 @@ const char *HAL_PIN_GetPinNameAlias(int index)
 	// some of pins have special roles
 	switch(index)
 	{
-#ifndef PLATFORM_BK7238
-		case 1:		return "RXD2";
-		case 10:	return "RXD1";
-		case 23:	return "ADC3";
-		case 24:	return "PWM4";
-		case 26:	return "PWM5";
-#else
+#if PLATFORM_BK7238
 		case 1:		return "RXD2/ADC5";
 		case 10:	return "RXD1/ADC6";
 		case 26:	return "PWM5/ADC1";
 		case 24:	return "PWM4/ADC2";
 		case 20:	return "ADC3";
 		case 28:	return "ADC4";
+#else
+		case 1:		return "RXD2";
+		case 10:	return "RXD1";
+		case 23:	return "ADC3";
+		case 24:	return "PWM4";
+		case 26:	return "PWM5";
 #endif
 		case 0:		return "TXD2";
 		case 11:	return "TXD1";

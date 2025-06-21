@@ -42,11 +42,8 @@ static void tcp_client_thread(tcp_thread_t* arg)
 	char* reply = NULL;
 	int replyBufferSize = REPLY_BUFFER_SIZE;
 
-	GLOBAL_INT_DECLARATION();
-	GLOBAL_INT_DISABLE();
 	reply = (char*)os_malloc(replyBufferSize);
 	buf = (char*)os_malloc(INCOMING_BUFFER_SIZE);
-	GLOBAL_INT_RESTORE();
 
 	if(buf == 0 || reply == 0)
 	{
@@ -76,9 +73,7 @@ static void tcp_client_thread(tcp_thread_t* arg)
 		}
 		// grow by INCOMING_BUFFER_SIZE
 		request.receivedLenmax += INCOMING_BUFFER_SIZE;
-		GLOBAL_INT_DISABLE();
 		request.received = (char*)realloc(request.received, request.receivedLenmax + 2);
-		GLOBAL_INT_RESTORE();
 		if(request.received == NULL)
 		{
 			// no memory
@@ -110,12 +105,10 @@ static void tcp_client_thread(tcp_thread_t* arg)
 	}
 
 exit:
-	GLOBAL_INT_DISABLE();
 	if(buf != NULL)
 		os_free(buf);
 	if(reply != NULL)
 		os_free(reply);
-	GLOBAL_INT_RESTORE();
 
 	lwip_close(fd);
 	arg->isCompleted = true;
@@ -298,6 +291,7 @@ error:
 			sock[i].fd = INVALID_SOCK;
 		}
 	}
+	rtos_delay_milliseconds(2000);
 	xTaskCreate(
 		(TaskFunction_t)restart_tcp_server,
 		"TCP Restart",
