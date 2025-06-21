@@ -884,6 +884,28 @@ int DS18B20_fill_devicelist(int Pin)
 	return ret;
 };
 
+// a sensor must have a GPIO assigned
+int DS18B20_set_deviceGPIO(DeviceAddress devaddr,const int pin)
+{
+	int i=0;
+	for (i=0; i < ds18_count; i++) {
+		if (! memcmp(devaddr,ds18b20devices.array[i],8)){	// found device
+			ds18b20devices.GPIO[i]=pin;
+			return 1;
+		}
+	}
+	bk_printf("didn't find device " DEVSTR " - inserting",
+			DEV2STR(devaddr));
+	insertArray(&ds18b20devices,devaddr);
+	// if device was inserted (array not full) now the new device is the last one at position ds18_count-1
+	if (! memcmp(devaddr,ds18b20devices.array[ds18_count-1],8)){	// found device
+			ds18b20devices.GPIO[i]=pin;
+			return 1;
+	}
+	return 0;
+};
+
+
 // a sensor should have a human readable name to distinguish sensors
 int DS18B20_set_devicename(DeviceAddress devaddr,const char *name)
 {
@@ -960,12 +982,18 @@ commandResult_t CMD_DS18B20_setsensor(const void *context, const char *cmd, cons
 	}
 
 	const char *dev = Tokenizer_GetArg(0);
-	const char *name = Tokenizer_GetArg(1);
+	int gpio = Tokenizer_IsArgInteger(1) ? Tokenizer_GetArgInteger(1) : HAL_PIN_Find(Tokenizer_GetArg(1));
+	if (gpio < 0) {
+		DS1820_LOG(ERROR, "DS18B20_setsensor: failed to find GPIO for '%s' (as int: %i)",Tokenizer_GetArg(1),gpio);
+		return CMD_RES_ERROR;
+	}
+	const char *name = Tokenizer_GetArg(2);
 	DeviceAddress devaddr={0};
 	if (devstr2DeviceAddr(devaddr,(const char*)dev)){
+		DS18B20_set_deviceGPIO(devaddr,gpio);
 		DS18B20_set_devicename(devaddr,name);
-		if (Tokenizer_GetArgsCount() >= 2 && Tokenizer_IsArgInteger(2)){
-			DS18B20_set_channel(devaddr,Tokenizer_GetArgInteger(2));
+		if (Tokenizer_GetArgsCount() >= 3 && Tokenizer_IsArgInteger(3)){
+			DS18B20_set_channel(devaddr,Tokenizer_GetArgInteger(3));
 		}
 
 		return CMD_RES_OK;
@@ -1099,13 +1127,15 @@ int http_fn_cfg_ds18b20(http_request_t* request)
 
 
 //	poststr_h2(request, "Here you can configure DS18B20 sensors detected or configured");
-	hprintf255(request, "<h2>Here you can configure DS18B20 sensors</h2><h5>Configure DS18B20 devices detected</h5><form action='/cfg_ds18b20'>");
-	hprintf255(request, "<table><tr><th width='38'>Sensor Adress</th><th width='25'> &nbsp; Name </th><th width='10'>Channel</th></tr>");
+	hprintf255(request, "<h2>Configure DS18B20 sensors</h2><form action='/cfg_ds18b20'>");
+	hprintf255(request, "<table><tr><th width='38'>Sensor Adress</th><th width='4'>Pin</th><th width='25'> &nbsp; Name </th><th width='5'>Channel</th></tr>");
 	for (int i=0; i < ds18_count; i++) {
 		hprintf255(request, "<tr><td id='a%i'>"DEVSTR"</td>"
+		"<td id='pin%i'> %i</th>"
 		"<td>&nbsp; <input name='ds1820name%i' id='ds1820name%i' value='%s'></td>"
 		"<td>&nbsp; <input name='ds1820chan%i' id='ds1820chan%i' value='%i'></td></tr>",i,
 		DEV2STR(ds18b20devices.array[i]),
+		i,ds18b20devices.GPIO[i],
 		i,i,ds18b20devices.name[i],
 		i,i,ds18b20devices.channel[i]);
 	}
@@ -1114,7 +1144,7 @@ int http_fn_cfg_ds18b20(http_request_t* request)
 
 	poststr(request, "<br><input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? ')\"></form> ");
 	hprintf255(request, "<script> function gen(){v='backlog startDriver DS1820 '; for (i=0; i<%i; i++) { ",ds18_count);
-	poststr(request, "v+='; DS18B20_setsensor ' + '\"' + getElement('a'+i).innerHTML + '\" \"' + getElement('ds1820name'+i).value + '\" \"' + getElement('ds1820chan'+i).value + '\" '} return v; };</script>");
+	poststr(request, "v+='; DS18B20_setsensor ' + '\"' + getElement('a'+i).innerHTML + '\" '  + getElement('pin'+i).innerHTML + ' \"' + getElement('ds1820name'+i).value + '\" ' + getElement('ds1820chan'+i).value} return v; };</script>");
 	poststr(request,"<br><br><input type='button' value='generate backlog command for config' onclick='t=document.getElementById(\"text\"); t.value=gen(); t.hidden=false;'><textarea id='text' hidden '> </textarea><p>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
@@ -1229,13 +1259,13 @@ void DS1820_OnEverySecond()
 			for (int i=0; i < ds18_count; i++) {
 				ds18b20devices.last_read[i] += 1 ;
 				errcount = 0;
-				float t = 20.0 + 0.1*(g_secondsElapsed%20 -10);
-					ds18b20devices.lasttemp[i] = t;
+				float t_float = 20.0 + 0.1*(g_secondsElapsed%20 -10);
+					ds18b20devices.lasttemp[i] = t_float;
 					ds18b20devices.last_read[i] = 0;
-					if (ds18b20devices.channel[i]>=0) CHANNEL_Set(ds18b20devices.channel[i], t, CHANNEL_SET_FLAG_SILENT);
+					if (ds18b20devices.channel[i]>=0) CHANNEL_Set(ds18b20devices.channel[i], (int)(t_float*10), CHANNEL_SET_FLAG_SILENT);
 					lastconv = g_secondsElapsed;
 #else	// to #if WINDOWS
-			float t = -127;
+			float t_float = -127;
 			const char * pinalias; 
 			char gpioname[10];
 			DS1820_LOG(INFO, "Reading temperature from %i DS18B20 sensor(s)\r\n",ds18_count);
@@ -1247,14 +1277,14 @@ void DS1820_OnEverySecond()
 				}
 				ds18b20devices.last_read[i] += 1 ;
 				errcount = 0;
-				t = -127;
-				while ( t == -127 && errcount++ < 5){
-					t = ds18b20_getTempC((const uint8_t*)ds18b20devices.array[i]);
+				t_float = -127;
+				while ( t_float == -127 && errcount++ < 5){
+					t_float = ds18b20_getTempC((const uint8_t*)ds18b20devices.array[i]);
 					DS1820_LOG(DEBUG, "Device %i (" DEVSTR ") reported %0.2f\r\n",i,
-						DEV2STR(ds18b20devices.array[i]),t);
+						DEV2STR(ds18b20devices.array[i]),t_float);
 				}
-				if (t != -127){
-					ds18b20devices.lasttemp[i] = t;
+				if (t_float != -127){
+					ds18b20devices.lasttemp[i] = t_float;
 					ds18b20devices.last_read[i] = 0;
 					if (ds18b20devices.channel[i]>=0) CHANNEL_Set(ds18b20devices.channel[i], t, CHANNEL_SET_FLAG_SILENT);
 					lastconv = g_secondsElapsed;
