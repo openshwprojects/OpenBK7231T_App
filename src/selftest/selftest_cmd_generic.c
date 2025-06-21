@@ -164,6 +164,18 @@ void Test_Commands_Generic() {
 	CMD_ExecuteCommand("MqttPassword Secret1", 0);
 	SELFTEST_ASSERT_STRING(CFG_GetMQTTPass(), "Secret1");
 
+	CMD_ExecuteCommand("MqttPassword \"\"", 0);
+	SELFTEST_ASSERT_STRING(CFG_GetMQTTPass(), "");
+
+	CMD_ExecuteCommand("MqttPassword \"Xyz\"", 0);
+	SELFTEST_ASSERT_STRING(CFG_GetMQTTPass(), "Xyz");
+
+	CMD_ExecuteCommand("MqttUser Tester2", 0);
+	SELFTEST_ASSERT_STRING(CFG_GetMQTTUserName(), "Tester2");
+
+	CMD_ExecuteCommand("MqttUser \"\"", 0);
+	SELFTEST_ASSERT_STRING(CFG_GetMQTTUserName(), "");
+
 	CMD_ExecuteCommand("SSID1 TPLink123", 0);
 	SELFTEST_ASSERT_STRING(CFG_GetWiFiSSID(), "TPLink123");
 
