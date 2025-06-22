@@ -18,13 +18,22 @@ Although this repository is named "OpenBK7231T_App", it has evolved into a multi
 -   Windows, via [simulator](https://www.elektroda.com/rtvforum/topic4046056.html)
 -   ESP32 (working well - guide to be released soon, [development topic](https://www.elektroda.com/rtvforum/topic4074860.html))
 -   RTL8711AM/RTL8195A (limited testing - work-in-progress) see [development thread](https://www.elektroda.com/rtvforum/viewtopic.php?p=21452754#21452754)
--   RTL8710C/RTL8720 (AmebaZ2 family) (eg BW15, W701, W701H, [WBR2, WBR3](https://www.elektroda.com/rtvforum/topic4104395.html)) (see [guide](https://www.elektroda.com/rtvforum/topic4097185.html))
+-   RTL8710C/RTL8720C (AmebaZ2 family) (eg BW15, W701, W701H, [WBR2, WBR3](https://www.elektroda.com/rtvforum/topic4104395.html)) (see [guide](https://www.elektroda.com/rtvforum/topic4097185.html))
 -   RTL8710B (AmebaZ family) (eg [T102_V1.0](https://fccid.io/2ASKS-T102), [W302/T102_V1.0](https://fcc.report/FCC-ID/2AU7O-T102V11), [T112_V1.1](https://fccid.io/2AU7O-T102V11), [WR2](https://developer.tuya.com/en/docs/iot/wifiwr2module?id=K9605tko0juc3), [WR3E](https://developer.tuya.com/en/docs/iot/wr3e-module-datasheet?id=K9elwlqbfosbc), BW14)
 -   RTL8720D/CS (AmebaD family) (eg [BW16](https://fcc.report/FCC-ID/2AHMR-BW16), BW16E, W701D, W701DH, [WBRG1](https://developer.tuya.com/en/docs/iot/wbrg1-module-datasheet?id=Ka015vo8tfztz), [WBR3N](https://developer.tuya.com/en/docs/iot/wbr3n-datasheet?id=K9qskxwpcqyaq), [WBR3S](https://developer.tuya.com/en/docs/iot/wbr3s-module-datasheet?id=K9qrt2je8wqxo))
 -   TR6260 (eg [HLK-M20](https://fccid.io/2AD56HLK-M20), XY-WE2S-A V1.1) (see [guide](https://www.elektroda.com/rtvforum/topic4093752.html))
 -   ECR6600 (eg [AXYU](https://developer.tuya.com/en/docs/iot/AXYU?id=Kb0rwbv5b7aiy), [AXY2S](https://developer.tuya.com/en/docs/iot/AXY2S?id=Kb1aztk507fxf), [WG236](https://www.skylabmodule.com/product/wifi6-802-11axbluetooth-ble-5-1-combo-module-wg236), [DSM-036](https://www.dusuniot.com/product-specification/dsm-036-wi-fi6-and-ble-dual-cloud-module]), CDI-WX56600A-00, [BL-M6600XT1](https://jkrorwxhkqmllp5m-static.micyjz.com/BL-M6600XT1_datasheet_V1.0.1.0_230817-aidllBpoKqpljSRnkmnkjlnjp.pdf?dp=GvUApKfKKUAU), [HF-LPT6200](http://www.hi-flying.com/hf-lpt6200) (see [guide](https://www.elektroda.com/rtvforum/topic4111822.html))
 
 Please use automatically compiled binaries from the Releases tab. To build OpenBeken yourself for any supported platform, fork our version of the submodule SDK first, and then check out this app repository alongside it. Details further down. Alternatively consider using the easier [override method.](https://www.elektroda.com/rtvforum/topic4082682.html)
+
+# Development in Progress
+
+-   XR872/XF16 (eg [A9 camera](https://www.elektroda.com/rtvforum/topic4074636.html))
+-   XR806 (eg [TRV](https://www.elektroda.com/rtvforum/topic4118139.html),[Dev Board](https://www.elektroda.com/rtvforum/topic4109971.html))
+-   BK7252U (eg [Tuya doorbell](https://www.elektroda.com/rtvforum/topic4073760.html),eg [A9 camera PCB](https://www.elektroda.com/rtvforum/topic4123266.html))
+-   BK7252N (eg [A9 camera](https://www.elektroda.com/rtvforum/topic4118499.html))
+-   BK7231S
+-   BK7231U (C-Chip C-8133U[dev board](https://www.elektroda.com/rtvforum/topic4071547.html),Development [thread](https://www.elektroda.com/rtvforum/viewtopic.php?p=21507214#21507214))
 
 See our guides in Russian: [BK7231N/T34](https://www.v-elite.ru/t34), and [BL602 RGB](https://www.v-elite.ru/bl602rgb), and [Youtube guide for BK7231/T34](https://www.youtube.com/watch?v=BnmSWZchK-E)
 
