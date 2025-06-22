@@ -96,6 +96,7 @@ int hourArg2seconds(int argnum){
 	const char *arg;
 	int a, b, ret;
 	arg = Tokenizer_GetArg(argnum);
+bk_printf("Read argument %s\r\n",arg);
 	if (strchr(arg, ':')) {
 		int useSign = 1;
 		if (*arg == '-') {
@@ -104,9 +105,11 @@ int hourArg2seconds(int argnum){
 		}
 		sscanf(arg, "%i:%i", &a, &b);
 		ret = useSign *  (a * 60 * 60 + b * 60);
+bk_printf("In string part, a=%i b=%i ret=%i\r\n",a,b,ret);
 	}
 	else {
 		ret = Tokenizer_GetArgInteger(argnum) * 60 * 60;
+bk_printf("In integer part, a=%i b=%i ret=%i\r\n",a,b,ret);
 	}
 	return ret;
 }
