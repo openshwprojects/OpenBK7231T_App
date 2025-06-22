@@ -165,7 +165,17 @@ void flash_test_pages(softSPI_t* spi, int baseAddr, int length, byte pattern) {
 	for (i = 0; i < length; i++)
 		writeBuf[i] = pattern;
 
-	spi_flash_erase(spi);
+	if (0) {
+		spi_flash_erase(spi);
+	}
+	else {
+		int startAddr = baseAddr & ~(0xFFF); // align down to 4KB
+		int endAddr = (baseAddr + length - 1) & ~(0xFFF); // align down last used address
+
+		for (int addr = startAddr; addr <= endAddr; addr += 4096) {
+			spi_flash_erase_sector(spi, addr);
+		}
+	}
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Erased flash.");
 
 	spi_flash_read(spi, baseAddr, readBuf, length);
