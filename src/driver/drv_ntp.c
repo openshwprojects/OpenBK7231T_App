@@ -92,6 +92,24 @@ int NTP_GetTimesZoneOfsSeconds()
 {
     return g_timeOffsetSeconds;
 }
+int hourArg2seconds(int argnum){
+	const char *arg;
+	int ret;
+	arg = Tokenizer_GetArg(argnum);
+	if (strchr(arg, ':')) {
+		int useSign = 1;
+		if (*arg == '-') {
+			arg++;
+			useSign = -1;
+		}
+		sscanf(arg, "%i:%i", &a, &b);
+		ret = useSign *  (a * 60 * 60 + b * 60);
+	}
+	else {
+		ret = Tokenizer_GetArgInteger(argnum) * 60 * 60;
+	}
+	return ret;
+}
 commandResult_t NTP_SetTimeZoneOfs(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int a, b;
 	const char *arg;
@@ -104,20 +122,8 @@ commandResult_t NTP_SetTimeZoneOfs(const void *context, const char *cmd, const c
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	arg = Tokenizer_GetArg(0);
 	oldOfs = g_timeOffsetSeconds;
-	if (strchr(arg, ':')) {
-		int useSign = 1;
-		if (*arg == '-') {
-			arg++;
-			useSign = -1;
-		}
-		sscanf(arg, "%i:%i", &a, &b);
-		g_timeOffsetSeconds = useSign * (a * 60 * 60 + b * 60);
-	}
-	else {
-		g_timeOffsetSeconds = Tokenizer_GetArgInteger(0) * 60 * 60;
-	}
+	g_timeOffsetSeconds = hourArg2seconds(0);
 	g_ntpTime -= oldOfs;
 	g_ntpTime += g_timeOffsetSeconds;
 #if ENABLE_NTP_DST
@@ -369,7 +375,7 @@ commandResult_t CLOCK_CalcDST(const void *context, const char *cmd, const char *
 	monthStart = Tokenizer_GetArgInteger(5);
 	dayStart = Tokenizer_GetArgInteger(6);
 	hourStart = Tokenizer_GetArgInteger(7);
-	g_DST_offset=Tokenizer_GetArgIntegerDefault(8, 60);
+	g_DST_offset = Tokenizer_GetArgsCount() < 9 ? 60 : hourArg2seconds(8)/60;
 	ADDLOG_INFO(LOG_FEATURE_RAW, "read values: %u,%u,%u,%u,%u,%u,%u,%u,(%u)\r\n",  nthWeekEnd, monthEnd, dayEnd, hourEnd, nthWeekStart, monthStart, dayStart, hourStart,g_DST_offset);
 
 /*	Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year);
@@ -521,10 +527,10 @@ void NTP_Init() {
 	NTP_Init_Events();
 #endif
 #if ENABLE_NTP_DST
-	//cmddetail:{"name":"CLOCK_CalcDST","args":"[nthWeekEnd monthEnd dayEnd hourEnd nthWeekStart monthStart dayStart hourStart [g_DSToffset minutes - default is 60 minutes if unset]",
+	//cmddetail:{"name":"CLOCK_CalcDST","args":"[nthWeekEnd monthEnd dayEnd hourEnd nthWeekStart monthStart dayStart hourStart [g_DSToffset hour or hour:minutes - default 1 hour]",
 	//cmddetail:"descr":"Checks, if actual time is during DST or not.",
 	//cmddetail:"fn":"CLOCK_CalcDST","file":"driver/drv_ntp.c","requires":"",
-	//cmddetail:"examples":""}
+	//cmddetail:"examples":"clock_calcDST 0 10 1 3 0 3 1 2 (Europe)/ clock_calcDST 1 4 1 2 1 10 1 2 0:30 (Lord Howe Island)"}
     CMD_RegisterCommand("clock_calcDST",CLOCK_CalcDST, NULL);
 #endif
 
