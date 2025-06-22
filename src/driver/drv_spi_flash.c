@@ -70,6 +70,20 @@ void spi_flash_read(softSPI_t* spi, int adr, byte* out, int cnt) {
 	OBK_ENABLE_INTERRUPTS;
 }
 
+#define READ_STATUS_REG_CMD 0x05
+#define STATUS_BUSY_MASK 0x01
+
+static void flash_wait_while_busy(softSPI_t* spi) {
+	byte status;
+	do {
+		SPI_Begin(spi);
+		SPI_Send(spi, READ_STATUS_REG_CMD);
+		status = SPI_Read(spi);
+		SPI_End(spi);
+		usleep(1000);
+	} while (status & STATUS_BUSY_MASK);
+}
+
 void flash_erase(softSPI_t* spi) {
 	OBK_DISABLE_INTERRUPTS;
 
@@ -85,6 +99,8 @@ void flash_erase(softSPI_t* spi) {
 	SPI_Begin(spi);
 	SPI_Send(spi, ERASE_FLASH_CMD);
 	SPI_End(spi);
+
+	flash_wait_while_busy(spi);
 
 	OBK_ENABLE_INTERRUPTS;
 }
@@ -113,6 +129,30 @@ void spi_flash_write(softSPI_t* spi, int adr, const byte* data, int cnt) {
 		SPI_Send(spi, data[i]);
 	}
 	SPI_End(spi);
+
+	OBK_ENABLE_INTERRUPTS;
+}
+#define ERASE_SECTOR_CMD 0x20 // 4KB erase
+
+void flash_erase_sector(softSPI_t* spi, int addr) {
+	OBK_DISABLE_INTERRUPTS;
+
+	SPI_Setup(spi);
+	usleep(500);
+
+	SPI_Begin(spi);
+	SPI_Send(spi, WRITEENABLE_FLASH_CMD);
+	SPI_End(spi);
+	usleep(500);
+
+	SPI_Begin(spi);
+	SPI_Send(spi, ERASE_SECTOR_CMD);
+	SPI_Send(spi, (addr >> 16) & 0xFF);
+	SPI_Send(spi, (addr >> 8) & 0xFF);
+	SPI_Send(spi, addr & 0xFF);
+	SPI_End(spi);
+
+	flash_wait_while_busy(spi);
 
 	OBK_ENABLE_INTERRUPTS;
 }
@@ -324,6 +364,7 @@ void DRV_InitFlashMemoryTestFunctions() {
 	CMD_RegisterCommand("SPITestFlash_Erase", CMD_SPITestFlash_Erase, NULL);
 
 	// backlog startDriver TESTSPIFLASH; SPITestFlash_ReadID
+	// backlog startDriver TESTSPIFLASH; SPITestFlash_Test
 
 	//cmddetail:{"name":"SPITestFlash_ReadData","args":"CMD_SPITestFlash_ReadData",
 	//cmddetail:"descr":"",
