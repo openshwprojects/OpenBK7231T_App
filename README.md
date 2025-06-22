@@ -29,11 +29,10 @@ Please use automatically compiled binaries from the Releases tab. To build OpenB
 # Development in Progress
 
 -   XR872/XF16 (eg [A9 camera](https://www.elektroda.com/rtvforum/topic4074636.html))
--   XR806 (eg [TRV](https://www.elektroda.com/rtvforum/topic4118139.html),[Dev Board](https://www.elektroda.com/rtvforum/topic4109971.html))
--   BK7252U (eg [Tuya doorbell](https://www.elektroda.com/rtvforum/topic4073760.html),eg [A9 camera PCB](https://www.elektroda.com/rtvforum/topic4123266.html))
+-   XR806 (eg [TRV](https://www.elektroda.com/rtvforum/topic4118139.html), Allwinner [Dev Board](https://www.elektroda.com/rtvforum/topic4109971.html))
+-   BK7252U (eg [Tuya doorbell](https://www.elektroda.com/rtvforum/topic4073760.html), eg [A9 camera PCB](https://www.elektroda.com/rtvforum/topic4123266.html))
 -   BK7252N (eg [A9 camera](https://www.elektroda.com/rtvforum/topic4118499.html))
--   BK7231S
--   BK7231U (C-Chip C-8133U[dev board](https://www.elektroda.com/rtvforum/topic4071547.html),Development [thread](https://www.elektroda.com/rtvforum/viewtopic.php?p=21507214#21507214))
+-   BK7231S/BK7231U (eg C-Chip C-8133U [LED driver boards](https://www.elektroda.com/rtvforum/topic4071547.html), (Hi-Link HLK-B30 [Dev Board](https://fccid.io/2AD56HLK-B30/User-Manual/User-Manual-4894335.pdf),Development [thread](https://www.elektroda.com/rtvforum/viewtopic.php?p=21507214#21507214)))
 
 See our guides in Russian: [BK7231N/T34](https://www.v-elite.ru/t34), and [BL602 RGB](https://www.v-elite.ru/bl602rgb), and [Youtube guide for BK7231/T34](https://www.youtube.com/watch?v=BnmSWZchK-E)
 
