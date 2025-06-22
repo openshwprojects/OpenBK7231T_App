@@ -17,14 +17,14 @@ void HTTPServer_Start();
 
 #define HTTP_SERVER_PORT			80
 #define REPLY_BUFFER_SIZE			2048
-#define INCOMING_BUFFER_SIZE		1024
+#define INCOMING_BUFFER_SIZE		2048
 #define INVALID_SOCK				-1
 #define HTTP_CLIENT_STACK_SIZE		8192
 
 typedef struct
 {
 	int fd;
-	TaskHandle_t thread;
+	xTaskHandle thread;
 	bool isCompleted;
 } tcp_thread_t;
 
@@ -54,7 +54,7 @@ static void tcp_client_thread(tcp_thread_t* arg)
 		goto exit;
 	}
 	http_request_t request;
-	os_memset(&request, 0, sizeof(request));
+	memset(&request, 0, sizeof(request));
 
 	request.fd = fd;
 	request.received = buf;
@@ -74,8 +74,8 @@ static void tcp_client_thread(tcp_thread_t* arg)
 		{
 			break;
 		}
-		// grow by 1024
-		request.receivedLenmax += 1024;
+		// grow by INCOMING_BUFFER_SIZE
+		request.receivedLenmax += INCOMING_BUFFER_SIZE;
 		GLOBAL_INT_DISABLE();
 		request.received = (char*)realloc(request.received, request.receivedLenmax + 2);
 		GLOBAL_INT_RESTORE();
@@ -213,18 +213,21 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 		socklen_t addr_len = sizeof(source_addr);
 
 		int new_idx = 0;
+		for(int i = 0; i < max_socks; ++i)
+		{
+			if(sock[i].isCompleted)
+			{
+				if(sock[i].thread != NULL)
+				{
+					rtos_delete_thread(&sock[i].thread);
+					sock[i].thread = NULL;
+				}
+				sock[i].isCompleted = false;
+				sock[i].fd = INVALID_SOCK;
+			}
+		}
 		for(new_idx = 0; new_idx < max_socks; ++new_idx)
 		{
-			if(sock[new_idx].isCompleted)
-			{
-				if(sock[new_idx].thread != NULL)
-				{
-					rtos_delete_thread(&sock[new_idx].thread);
-					sock[new_idx].thread = NULL;
-				}
-				sock[new_idx].isCompleted = false;
-				sock[new_idx].fd = INVALID_SOCK;
-			}
 			if(sock[new_idx].fd == INVALID_SOCK)
 			{
 				break;
@@ -233,6 +236,13 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 		if(new_idx < max_socks)
 		{
 			sock[new_idx].fd = accept(listen_sock, (struct sockaddr*)&source_addr, &addr_len);
+
+#if LWIP_SO_RCVTIMEO && !PLATFORM_ECR6600 && !PLATFORM_TR6260
+			struct timeval tv;
+			tv.tv_sec = 30;
+			tv.tv_usec = 0;
+			setsockopt(sock[new_idx].fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
+#endif
 
 			if(sock[new_idx].fd < 0)
 			{
@@ -265,7 +275,7 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 				}
 			}
 		}
-		vTaskDelay(pdMS_TO_TICKS(10));
+		rtos_delay_milliseconds(10);
 	}
 
 error:

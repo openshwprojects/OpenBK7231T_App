@@ -5,267 +5,169 @@
 #include "../cmnds/cmd_public.h"
 #include "../cmnds/cmd_local.h"
 #include "../logging/logging.h"
+#include "../hal/hal_uart.h"
 
-#if PLATFORM_BK7231T | PLATFORM_BK7231N
-#include "../../beken378/func/user_driver/BkDriverUart.h"
-#endif
-
-#if PLATFORM_BL602
-#include <vfs.h>
-#include <bl_uart.h>
-#include <bl_irq.h>
-#include <event_device.h>
-#include <cli.h>
-#include <aos/kernel.h>
-#include <aos/yloop.h>
-
-#include <FreeRTOS.h>
-#include <task.h>
-#include <timers.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-
-#include <vfs.h>
-#include <aos/kernel.h>
-#include <aos/yloop.h>
-#include <event_device.h>
-#include <cli.h>
-
-#include <lwip/tcpip.h>
-#include <lwip/sockets.h>
-#include <lwip/netdb.h>
-#include <lwip/tcp.h>
-#include <lwip/err.h>
-#include <http_client.h>
-#include <netutils/netutils.h>
-
-#include <bl602_glb.h>
-#include <bl602_hbn.h>
-
-#include <bl_uart.h>
-#include <bl_chip.h>
-#include <bl_wifi.h>
-#include <hal_wifi.h>
-#include <bl_sec.h>
-#include <bl_cks.h>
-#include <bl_irq.h>
-#include <bl_dma.h>
-#include <bl_timer.h>
-#include <bl_gpio_cli.h>
-#include <bl_wdt_cli.h>
-#include <hal_uart.h>
-#include <hal_sys.h>
-#include <hal_gpio.h>
-#include <hal_boot2.h>
-#include <hal_board.h>
-#include <looprt.h>
-#include <loopset.h>
-#include <sntp.h>
-#include <bl_sys_time.h>
-#include <bl_sys.h>
-#include <bl_sys_ota.h>
-#include <bl_romfs.h>
-#include <fdt.h>
-#include <device/vfs_uart.h>
-#include <utils_log.h>
-#include <bl602_uart.h>
-
-#include <easyflash.h>
-#include <bl60x_fw_api.h>
-#include <wifi_mgmr_ext.h>
-#include <utils_log.h>
-#include <libfdt.h>
-#include <blog.h>
-// backlog logtype none; startDriver BL0942
-#endif
-#if PLATFORM_BK7231T | PLATFORM_BK7231N
-// from uart_bk.c
-extern void bk_send_byte(UINT8 uport, UINT8 data);
-int g_chosenUART = BK_UART_1;
-#elif WINDOWS
-
-#elif PLATFORM_BL602
-//int g_fd;
-uint8_t g_id = 1;
-int fd_console = -1;
-#elif PLATFORM_ESPIDF
-#include "driver/uart.h"
-#include "driver/gpio.h"
-#ifdef CONFIG_IDF_TARGET_ESP32C6
-#define RX1_PIN GPIO_NUM_7
-#define TX1_PIN GPIO_NUM_5
-#elif CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C2
-#define RX1_PIN GPIO_NUM_6
-#define TX1_PIN GPIO_NUM_7
+//#define UART_ALWAYSFIRSTBYTES 
+#define UART_DEFAULT_BUFIZE 512
+#ifdef UART_2_UARTS_CONCURRENT
+#define UART_BUF_CNT 2
 #else
-#define RX1_PIN UART_PIN_NO_CHANGE
-#define TX1_PIN UART_PIN_NO_CHANGE
+#define UART_BUF_CNT 1
 #endif
-uart_port_t uartnum = UART_NUM_0;
-static QueueHandle_t uart_queue;
-uint8_t* data = NULL;
-#else
+//index of buffer
+// if we have 2 buffers, port UART_PORT_INDEX_0 uses buf 0 and UART_PORT_INDEX_1 uses buf 1
+// if we have 1 buffer, both ports using buf 0  (as before)
+#define UART_BUF_INDEX_0 0  
+#ifdef UART_2_UARTS_CONCURRENT
+#define UART_BUF_INDEX_1 1
 #endif
 
-static byte *g_recvBuf = 0;
-static int g_recvBufSize = 0;
-static int g_recvBufIn = 0;
-static int g_recvBufOut = 0;
+int UART_GetSelectedPortIndex() {
+  return (CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART)) ? UART_PORT_INDEX_1 : UART_PORT_INDEX_0;
+}
+
+int UART_GetBufIndexFromPort(int aport) {
+#if UART_BUF_CNT==2
+  return (aport == UART_PORT_INDEX_1) ? UART_BUF_INDEX_1 : UART_BUF_INDEX_0;
+#else
+  return UART_BUF_INDEX_0;
+#endif
+}
+
+typedef struct {
+  byte* g_recvBuf;
+  int g_recvBufSize;
+  int g_recvBufIn;
+  int g_recvBufOut;
 // used to detect uart reinit
-int g_uart_init_counter = 0;
+  int g_uart_init_counter;
 // used to detect uart manual mode
-int g_uart_manualInitCounter = -1;
+  int g_uart_manualInitCounter;
+} uartbuf_t;
 
-void UART_InitReceiveRingBuffer(int size){
-    //XJIKKA 20241122 - Note that the actual usable buffer size must be g_recvBufSize-1, 
+static uartbuf_t uartbuf[UART_BUF_CNT] = { {0,0,0,0,0,-1}
+  #if UART_BUF_CNT == 2
+    , { 0,0,0,0,0,-1 } 
+  #endif
+  };
+
+uartbuf_t * UART_GetBufFromPort(int aport) {
+  return &uartbuf[UART_GetBufIndexFromPort(aport)];
+}
+
+int get_g_uart_init_counter() {
+  uartbuf_t* fuartbuf = UART_GetBufFromPort(UART_GetSelectedPortIndex());
+  return fuartbuf->g_uart_init_counter;
+}
+
+void UART_InitReceiveRingBufferEx(int auartindex, int size){
+  uartbuf_t* fuartbuf=UART_GetBufFromPort(auartindex);
+  //XJIKKA 20241122 - Note that the actual usable buffer size must be g_recvBufSize-1, 
     //otherwise there would be no difference between an empty and a full buffer.
-	if(g_recvBuf!=0)
-        free(g_recvBuf);
-	g_recvBuf = (byte*)malloc(size);
-	memset(g_recvBuf,0,size);
-    g_recvBufSize = size;
-    g_recvBufIn = 0;
-    g_recvBufOut = 0;
+	  if(fuartbuf->g_recvBuf!=0)
+        free(fuartbuf->g_recvBuf);
+	  fuartbuf->g_recvBuf = (byte*)malloc(size);
+	  memset(fuartbuf->g_recvBuf,0,size);
+    fuartbuf->g_recvBufSize = size;
+    fuartbuf->g_recvBufIn = 0;
+    fuartbuf->g_recvBufOut = 0;
+}
+
+void UART_InitReceiveRingBuffer(int size) {
+  int fuartindex = UART_GetSelectedPortIndex();
+  UART_InitReceiveRingBufferEx(fuartindex, size);
+}
+
+int UART_GetReceiveRingBufferSizeEx(int auartindex) {
+  uartbuf_t* fuartbuf = UART_GetBufFromPort(auartindex);
+  return fuartbuf->g_recvBufSize;
+}
+
+int UART_GetReceiveRingBufferSize() {
+  int fuartindex = UART_GetSelectedPortIndex();
+  return UART_GetReceiveRingBufferSizeEx(fuartindex);
+}
+
+int UART_GetDataSizeEx(int auartindex) {
+  uartbuf_t* fuartbuf = UART_GetBufFromPort(auartindex);
+  return (fuartbuf->g_recvBufIn >= fuartbuf->g_recvBufOut
+                ? fuartbuf->g_recvBufIn - fuartbuf->g_recvBufOut
+                : fuartbuf->g_recvBufIn + (fuartbuf->g_recvBufSize - fuartbuf->g_recvBufOut)); //XJIKKA 20241122 fixed buffer size calculation on ring bufferroverflow
 }
 
 int UART_GetDataSize() {
-    return (g_recvBufIn >= g_recvBufOut
-                ? g_recvBufIn - g_recvBufOut
-                : g_recvBufIn + (g_recvBufSize - g_recvBufOut)); //XJIKKA 20241122 fixed buffer size calculation on ring bufferroverflow
+  int fuartindex = UART_GetSelectedPortIndex();
+  return UART_GetDataSizeEx(fuartindex);
+}
+
+byte UART_GetByteEx(int auartindex, int idx) {
+  uartbuf_t* fuartbuf = UART_GetBufFromPort(auartindex);
+  return fuartbuf->g_recvBuf[(fuartbuf->g_recvBufOut + idx) % fuartbuf->g_recvBufSize];
 }
 
 byte UART_GetByte(int idx) {
-    return g_recvBuf[(g_recvBufOut + idx) % g_recvBufSize];
+  int fuartindex = UART_GetSelectedPortIndex();
+  return UART_GetByteEx(fuartindex, idx);
+}
+
+void UART_ConsumeBytesEx(int auartindex, int idx) {
+  uartbuf_t* fuartbuf = UART_GetBufFromPort(auartindex);
+  fuartbuf->g_recvBufOut += idx;
+  fuartbuf->g_recvBufOut %= fuartbuf->g_recvBufSize;
 }
 
 void UART_ConsumeBytes(int idx) {
-    g_recvBufOut += idx;
-	g_recvBufOut %= g_recvBufSize;
+  int fuartindex = UART_GetSelectedPortIndex();
+  UART_ConsumeBytesEx(fuartindex, idx);
 }
 
-void UART_AppendByteToReceiveRingBuffer(int rc) {
-    if (UART_GetDataSize() < (g_recvBufSize - 1)) {
-        g_recvBuf[g_recvBufIn++] = rc;
-        g_recvBufIn %= g_recvBufSize;
+void UART_AppendByteToReceiveRingBufferEx(int auartindex, int rc) {
+  uartbuf_t* fuartbuf = UART_GetBufFromPort(auartindex);
+  if (fuartbuf->g_recvBufSize <= 0) {
+      //if someone (uartFakeHex) send data without init, and if flag 26 changes(UART)
+      addLogAdv(LOG_ERROR, LOG_FEATURE_DRV, "UART %i not initialized\n",auartindex);
+      //return;
+      UART_InitReceiveRingBufferEx(auartindex,UART_DEFAULT_BUFIZE);
     }
+#ifdef UART_ALWAYSFIRSTBYTES
+    //20250119 old style, if g_recvBufSize-1 is reached, received byte was ignored
+    if (UART_GetDataSizeEx(auartindex) < (fuartbuf->g_recvBufSize - 1)) {
+#else
+    //20250119 new style, we have always last g_recvBufSize-1 bytes
+    //if g_recvBufSize-1 is reached, first byte is overwritten
+#endif
+        fuartbuf->g_recvBuf[fuartbuf->g_recvBufIn++] = rc;
+        fuartbuf->g_recvBufIn %= fuartbuf->g_recvBufSize;
+#ifdef UART_ALWAYSFIRSTBYTES
+    }
+#endif
     //XJIKKA 20241122 if the same pointer is reached (in and out), we must also advance 
     //the outbuffer pointer, otherwise UART_GetDataSize will return g_recvBufSize.
     //This way now we always have the last (g_recvBufSize - 1) bytes
-    if (g_recvBufIn == g_recvBufOut) {
-      g_recvBufOut++;
-      g_recvBufOut %= g_recvBufSize;
+    if (fuartbuf->g_recvBufIn == fuartbuf->g_recvBufOut) {
+      fuartbuf->g_recvBufOut++;
+      fuartbuf->g_recvBufOut %= fuartbuf->g_recvBufSize;
     }
 }
 
-#if PLATFORM_BK7231T | PLATFORM_BK7231N
-void test_ty_read_uart_data_to_buffer(int port, void* param)
-{
-    int rc = 0;
-
-    while((rc = uart_read_byte(port)) != -1)
-		UART_AppendByteToReceiveRingBuffer(rc);
-}
-#endif
-
-#ifdef PLATFORM_BL602
-//void UART_RunQuickTick() {
-//}
-//void MY_UART1_IRQHandler(void)
-//{
-//	int length;
-//	byte buffer[16];
-//	//length = aos_read(g_fd, buffer, 1);
-//	//if (length > 0) {
-//	//	UART_AppendByteToReceiveRingBuffer(buffer[0]);
-//	//}
-//	int res = bl_uart_data_recv(g_id);
-//	if (res >= 0) {
-//		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "UART received: %i\n", res);
-//		UART_AppendByteToReceiveRingBuffer(res);
-//	}
-//}
-
-static void console_cb_read(int fd, void *param)
-{
-	char buffer[64];  /* adapt to usb cdc since usb fifo is 64 bytes */
-    int ret;
-    int i;
-
-    ret = aos_read(fd, buffer, sizeof(buffer));
-    if (ret > 0) {
-        if (ret < sizeof(buffer)) {
-            fd_console = fd;
-            buffer[ret] = 0;
-			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "BL602 received: %s\n", buffer);
-            for (i = 0; i < ret; i++) {
-				UART_AppendByteToReceiveRingBuffer(buffer[i]);
-            }
-		}
-		else {
-            printf("-------------BUG from aos_read for ret\r\n");
-        }
-    }
-}
-#endif
-
-#ifdef PLATFORM_ESPIDF
-
-static void uart_event_task(void* pvParameters)
-{
-    uart_event_t event;
-    for(;;)
-    {
-        if(xQueueReceive(uart_queue, (void*)&event, (TickType_t)portMAX_DELAY))
-        {
-            bzero(data, 256);
-            switch(event.type)
-            {
-            case UART_DATA:
-                uart_read_bytes(uartnum, data, event.size, portMAX_DELAY);
-                for(int i = 0; i < event.size; i++)
-                {
-                    UART_AppendByteToReceiveRingBuffer(data[i]);
-                    vTaskDelay(3);
-                }
-                break;
-            case UART_BUFFER_FULL:
-            case UART_FIFO_OVF:
-                addLogAdv(LOG_WARN, LOG_FEATURE_CMD, "%s", event.type == UART_BUFFER_FULL ? "UART_BUFFER_FULL" : "UART_FIFO_OVF");
-                uart_flush_input(uartnum);
-                xQueueReset(uart_queue);
-                break;
-            default:
-                break;
-            }
-        }
-    }
-    free(data);
-    data = NULL;
-    vTaskDelete(NULL);
+void UART_AppendByteToReceiveRingBuffer(int rc) {
+  int fuartindex = UART_GetSelectedPortIndex();
+  UART_AppendByteToReceiveRingBufferEx(fuartindex, rc);
 }
 
+void UART_SendByteEx(int auartindex, byte b) {
+#ifdef UART_2_UARTS_CONCURRENT
+  HAL_UART_SendByteEx(auartindex, b);
+#else
+  HAL_UART_SendByte(b);
 #endif
+}
 
 void UART_SendByte(byte b) {
-#if PLATFORM_BK7231T | PLATFORM_BK7231N
-    // BK_UART_1 is defined to 0
-    bk_send_byte(g_chosenUART, b);
-#elif WINDOWS
-    void SIM_AppendUARTByte(byte b);
-    // STUB - for testing
-    SIM_AppendUARTByte(b);
-#if 1
-    printf("%02X", b);
-#endif
-    //addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"%02X", b);
-#elif PLATFORM_BL602
-    aos_write(fd_console, &b, 1);
-	//bl_uart_data_send(g_id, b);
-#elif PLATFORM_ESPIDF
-    uart_write_bytes(uartnum, &b, 1);
-#endif
+  int fuartindex = UART_GetSelectedPortIndex();
+  UART_SendByteEx(fuartindex, b);
 }
+
 commandResult_t CMD_UART_Send_Hex(const void *context, const char *cmd, const char *args, int cmdFlags) {
     if (!(*args)) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "CMD_UART_Send_Hex: requires 1 argument (hex string, like FFAABB00CCDD\n");
@@ -320,7 +222,7 @@ commandResult_t CMD_UART_FakeHex(const void *context, const char *cmd, const cha
 
         args += 2;
     }
-    return 1;
+    return CMD_RES_OK;
 }
 
 // uartSendASCII test123
@@ -340,136 +242,64 @@ commandResult_t CMD_UART_Send_ASCII(const void *context, const char *cmd, const 
 }
 
 void UART_ResetForSimulator() {
-	g_uart_init_counter = 0;
+  for (int i = 0; i < UART_BUF_CNT; i++) {
+    uartbuf[i].g_uart_init_counter = 0;
+  }
 }
 
-int UART_InitUART(int baud, int parity)
+int UART_InitUARTEx(int auartindex, int baud, int parity, bool hwflowc)
 {
-    g_uart_init_counter++;
-#if PLATFORM_BK7231T | PLATFORM_BK7231N
-    bk_uart_config_t config;
-
-    config.baud_rate = baud;
-    config.data_width = 0x03;
-    config.parity = parity;    //0:no parity,1:odd,2:even
-    config.stop_bits = 0;   //0:1bit,1:2bit
-    config.flow_control = 0;   //FLOW_CTRL_DISABLED
-    config.flags = 0;
-
-
-    // BK_UART_1 is defined to 0
-    if(CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART))
-    {
-        g_chosenUART = BK_UART_2;
-    }
-    else
-    {
-        g_chosenUART = BK_UART_1;
-    }
-    bk_uart_initialize(g_chosenUART, &config, NULL);
-    bk_uart_set_rx_callback(g_chosenUART, test_ty_read_uart_data_to_buffer, NULL);
-#elif PLATFORM_BL602
-    if(fd_console < 0)
-    {
-        //uint8_t tx_pin = 16;
-        //uint8_t rx_pin = 7;
-        //bl_uart_init(g_id, tx_pin, rx_pin, 0, 0, baud);
-        //g_fd = aos_open(name, 0);
-        //bl_uart_int_rx_enable(1);
-        //bl_irq_register(UART1_IRQn, MY_UART1_IRQHandler);
-        //bl_irq_enable(UART1_IRQn);
-        //vfs_uart_init_simple_mode(0, 7, 16, baud, "/dev/ttyS0");
-
-        if(CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART))
-        {
-            fd_console = aos_open("/dev/ttyS1", 0);
-        }
-        else
-        {
-            fd_console = aos_open("/dev/ttyS0", 0);
-        }
-        if(fd_console >= 0)
-        {
-            aos_ioctl(fd_console, IOCTL_UART_IOC_BAUD_MODE, baud);
-            addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Init CLI with event Driven\r\n");
-            aos_cli_init(0);
-            aos_poll_read_fd(fd_console, console_cb_read, (void*)0x12345678);
-        }
-        else
-        {
-            addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "failed CLI with event Driven\r\n");
-        }
-    }
-#elif PLATFORM_ESPIDF
-    if(CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART))
-    {
-        uartnum = UART_NUM_1;
-        esp_log_level_set("*", ESP_LOG_INFO);
-    }
-    else
-    {
-        uartnum = UART_NUM_0;
-        esp_log_level_set("*", ESP_LOG_NONE);
-    }
-    if(uart_is_driver_installed(uartnum))
-    {
-        uart_driver_delete(uartnum);
-    }
-    uart_config_t uart_config =
-    {
-        .baud_rate = baud,
-        .data_bits = UART_DATA_8_BITS,
-        .parity = parity > 0 ? parity + 1 : parity,
-        .stop_bits = UART_STOP_BITS_1,
-        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-        .source_clk = UART_SCLK_DEFAULT,
-    };
-    uart_driver_install(uartnum, 256, 0, 20, &uart_queue, 0);
-    uart_param_config(uartnum, &uart_config);
-    if(uartnum == UART_NUM_0)
-    {
-        uart_set_pin(uartnum, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-    }
-    else
-    {
-        uart_set_pin(uartnum, TX1_PIN, RX1_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-    }
-    if(data == NULL)
-    {
-        data = (uint8_t*)malloc(256);
-        xTaskCreate(uart_event_task, "uart_event_task", 1024, NULL, 16, NULL);
-    }
+  uartbuf_t* fuartbuf = UART_GetBufFromPort(auartindex);
+  fuartbuf->g_uart_init_counter++;
+#ifdef UART_2_UARTS_CONCURRENT
+    HAL_UART_InitEx(auartindex, baud, parity, hwflowc);
+#else
+    HAL_UART_Init(baud, parity, hwflowc);
 #endif
-    return g_uart_init_counter;
+  return fuartbuf->g_uart_init_counter;
 }
 
-void UART_DebugTool_Run() {
+int UART_InitUART(int baud, int parity, bool hwflowc) {
+  int fuartindex = UART_GetSelectedPortIndex();
+  return UART_InitUARTEx(fuartindex, baud, parity, hwflowc);
+}
+
+void UART_LogBufState(int auartindex) {
+  uartbuf_t* fuartbuf = UART_GetBufFromPort(auartindex);
+  ADDLOG_WARN(LOG_INFO,
+    "Uart ix %d inbuf %i inptr %i outptr %i \n",
+    auartindex, UART_GetDataSizeEx(auartindex), fuartbuf->g_recvBufIn, fuartbuf->g_recvBufOut
+  );
+}
+void UART_DebugTool_Run(int auartindex) {
     byte b;
     char tmp[128];
     char *p = tmp;
     int i;
 
     for (i = 0; i < sizeof(tmp) - 4; i++) {
-		if (UART_GetDataSize()==0) {
+		if (UART_GetDataSizeEx(auartindex)==0) {
             break;
         }
-        b = UART_GetByte(0);
+        b = UART_GetByteEx(auartindex,0);
         if (i) {
             *p = ' ';
             p++;
         }
         sprintf(p, "%02X", b);
         p += 2;
-        UART_ConsumeBytes(1);
+        UART_ConsumeBytesEx(auartindex,1);
     }
     *p = 0;
-    addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "UART received: %s\n", tmp);
+    addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "UART %i received: %s\n", auartindex, tmp);
 }
 
 void UART_RunEverySecond() {
-    if (g_uart_manualInitCounter == g_uart_init_counter) {
-        UART_DebugTool_Run();
+  for (int i = 0; i < UART_BUF_CNT; i++) {
+    if (uartbuf[i].g_uart_manualInitCounter == uartbuf[i].g_uart_init_counter) {
+      UART_DebugTool_Run(i);
     }
+  }
 }
 
 commandResult_t CMD_UART_Init(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -483,12 +313,15 @@ commandResult_t CMD_UART_Init(const void *context, const char *cmd, const char *
         return CMD_RES_NOT_ENOUGH_ARGUMENTS;
     }
 
+    int fuartindex = UART_GetSelectedPortIndex();
+
     baud = Tokenizer_GetArgInteger(0);
 
-    UART_InitReceiveRingBuffer(512);
+    UART_InitReceiveRingBufferEx(fuartindex, UART_DEFAULT_BUFIZE);
 
-    UART_InitUART(baud, 0);
-    g_uart_manualInitCounter = g_uart_init_counter;
+    UART_InitUARTEx(fuartindex, baud, 0, false);
+    uartbuf_t* fuartbuf = UART_GetBufFromPort(fuartindex);
+    fuartbuf->g_uart_manualInitCounter = fuartbuf->g_uart_init_counter;
 
     return CMD_RES_OK;
 }

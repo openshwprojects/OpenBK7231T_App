@@ -7,6 +7,8 @@ bool SM16703P_VerifyPixel(uint32_t pixel, byte r, byte g, byte b);
 
 #define SELFTEST_ASSERT_PIXEL(index, r, g, b) SELFTEST_ASSERT(SM16703P_VerifyPixel(index, r, g, b));
 
+void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push);
+
 void Test_WS2812B() {
 	// reset whole device
 	SIM_ClearOBK(0);
@@ -17,6 +19,73 @@ void Test_WS2812B() {
 	SELFTEST_ASSERT_PIXEL(0, 255, 0, 128);
 	SELFTEST_ASSERT_PIXEL(1, 255, 0, 128);
 	SELFTEST_ASSERT_PIXEL(2, 255, 0, 128);
+
+	// test color order
+	CMD_ExecuteCommand("SM16703P_Init 3 BGR", 0);
+	CMD_ExecuteCommand("SM16703P_SetPixel all 255 0 0", 0);
+	SELFTEST_ASSERT_PIXEL(0, 0, 0, 255);
+	SELFTEST_ASSERT_PIXEL(1, 0, 0, 255);
+	SELFTEST_ASSERT_PIXEL(2, 0, 0, 255);
+
+
+	// fake 3 pixels data
+	{ // RGB
+		CMD_ExecuteCommand("SM16703P_Init 3 RGB", 0);
+		uint8_t dat[9] = { 255, 0, 0,
+			0, 255, 0,
+			0, 0, 255 };
+		SM16703P_setMultiplePixel(3, dat, false);
+		SELFTEST_ASSERT_PIXEL(0, 255, 0, 0);
+		SELFTEST_ASSERT_PIXEL(1, 0, 255, 0);
+		SELFTEST_ASSERT_PIXEL(2, 0, 0, 255);
+	}
+	{ // BGR
+		CMD_ExecuteCommand("SM16703P_Init 3 BGR", 0);
+		uint8_t dat[9] = { 255, 0, 0,
+			0, 255, 0,
+			0, 0, 255 };
+		SM16703P_setMultiplePixel(3, dat, false);
+		SELFTEST_ASSERT_PIXEL(0, 0, 0, 255);
+		SELFTEST_ASSERT_PIXEL(1, 0, 255, 0);
+		SELFTEST_ASSERT_PIXEL(2, 255, 0, 0);
+	}
+	{ // BGR
+		CMD_ExecuteCommand("SM16703P_Init 3 BGR", 0);
+		uint8_t dat[9] = { 255, 0, 0,
+			0, 255, 0, 
+			0, 0, 255 };
+		SM16703P_setMultiplePixel(3, dat, false);
+		SELFTEST_ASSERT_PIXEL(0, 0, 0, 255);
+		SELFTEST_ASSERT_PIXEL(1, 0, 255, 0);
+		SELFTEST_ASSERT_PIXEL(2, 255, 0, 0);
+	} 
+	{ // GRB
+		CMD_ExecuteCommand("SM16703P_Init 3 GRB", 0);
+		uint8_t dat[9] = { 255, 0, 0,
+			0, 255, 0, 
+			0, 0, 255 };
+		SM16703P_setMultiplePixel(3, dat, false);
+		SELFTEST_ASSERT_PIXEL(0, 0, 255, 0);
+		SELFTEST_ASSERT_PIXEL(1, 255, 0, 0);
+		SELFTEST_ASSERT_PIXEL(2, 0, 0, 255);
+	}
+	{ // BRG
+		CMD_ExecuteCommand("SM16703P_Init 3 BRG", 0);
+		uint8_t dat[9] = { 255, 0, 0, 
+			0, 255, 0, 
+			0, 0, 255 };
+		SM16703P_setMultiplePixel(3, dat, false);
+		SELFTEST_ASSERT_PIXEL(0, 0, 255, 0);
+		SELFTEST_ASSERT_PIXEL(1, 0, 0, 255); 
+		SELFTEST_ASSERT_PIXEL(2, 255, 0, 0); 
+	}
+
+	CMD_ExecuteCommand("SM16703P_Init 3 RGB", 0);
+	CMD_ExecuteCommand("SM16703P_SetPixel all 255 0 128", 0);
+	SELFTEST_ASSERT_PIXEL(0, 255, 0, 128);
+	SELFTEST_ASSERT_PIXEL(1, 255, 0, 128);
+	SELFTEST_ASSERT_PIXEL(2, 255, 0, 128);
+
 	CMD_ExecuteCommand("SM16703P_SetPixel 1 22 33 44", 0);
 	SELFTEST_ASSERT_PIXEL(0, 255, 0, 128);
 	SELFTEST_ASSERT_PIXEL(1, 22, 33, 44);
@@ -67,7 +136,7 @@ void Test_WS2812B() {
 		SELFTEST_ASSERT_PIXEL(2, 0xFF, 0, 0xFF);
 	}
 
-	CMD_ExecuteCommand("SM16703P_Init 6", 0);
+	CMD_ExecuteCommand("SM16703P_Init 6 RGB", 0);
 	CMD_ExecuteCommand("SM16703P_SetPixel 0 255 0 0", 0);
 	CMD_ExecuteCommand("SM16703P_SetPixel 1 0 255 0", 0);
 	CMD_ExecuteCommand("SM16703P_SetPixel 2 0 0 255", 0);
@@ -81,6 +150,9 @@ void Test_WS2812B() {
 	SELFTEST_ASSERT_PIXEL(4, 0, 255, 0);
 	SELFTEST_ASSERT_PIXEL(5, 0, 0, 255);
 
+
+
+#if ENABLE_LED_BASIC
 	CMD_ExecuteCommand("startDriver PixelAnim", 0);
 	CMD_ExecuteCommand("led_enableAll 1", 0);
 	CMD_ExecuteCommand("led_dimmer 100", 0);
@@ -117,6 +189,7 @@ void Test_WS2812B() {
 	for (int i = 0; i < 6; i++) {
 		SELFTEST_ASSERT_PIXEL(i, 0, 0, 0);
 	}
+#endif
 }
 
 

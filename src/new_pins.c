@@ -24,6 +24,9 @@
 #include "esp_sleep.h"
 #endif
 
+#ifdef PLATFORM_BEKEN_NEW
+#include "manual_ps_pub.h"
+#endif
 
 // According to your need to modify the constants.
 #define PIN_TMR_DURATION      QUICK_TMR_DURATION // Delay (in ms) between button scan iterations
@@ -214,6 +217,22 @@ void PINS_BeginDeepSleepWithPinWakeUp(unsigned int wakeUpTime) {
 #ifdef PLATFORM_BK7231T
 	extern void deep_sleep_wakeup_with_gpio(UINT32 gpio_index_map, UINT32 gpio_edge_map);
 	deep_sleep_wakeup_with_gpio(g_gpio_index_map[0], g_gpio_edge_map[0]);
+#elif PLATFORM_BEKEN_NEW
+	PS_DEEP_CTRL_PARAM params;
+	params.gpio_index_map = g_gpio_index_map[0];
+	params.gpio_edge_map = g_gpio_edge_map[0];
+	params.sleep_mode = MANUAL_MODE_IDLE;
+	if(wakeUpTime)
+	{
+		params.wake_up_way = PS_DEEP_WAKEUP_GPIO | PS_DEEP_WAKEUP_RTC;
+		params.sleep_time = wakeUpTime;
+		bk_enter_deep_sleep_mode(&params);
+	}
+	else
+	{
+		params.wake_up_way = PS_DEEP_WAKEUP_GPIO;
+		bk_enter_deep_sleep_mode(&params);
+	}
 #else
 	extern void bk_enter_deep_sleep(UINT32 g_gpio_index_map, UINT32 g_gpio_edge_map);
 	extern void deep_sleep_wakeup(const UINT32* g_gpio_index_map,
@@ -417,11 +436,13 @@ void Button_OnInitialPressDown(int index)
 			CHANNEL_DoSpecialToggleAll();
 			return;
 		}
+#if ENABLE_LED_BASIC
 		if (g_cfg.pins.roles[index] == IOR_Button_NextColor || g_cfg.pins.roles[index] == IOR_Button_NextColor_n)
 		{
 			LED_NextColor();
 			return;
 		}
+#endif
 		if (g_cfg.pins.roles[index] == IOR_Button_NextDimmer || g_cfg.pins.roles[index] == IOR_Button_NextDimmer_n)
 		{
 
@@ -437,11 +458,14 @@ void Button_OnInitialPressDown(int index)
 
 			return;
 		}
+#if ENABLE_LED_BASIC
 		// is it a device with RGB/CW/single color/etc LED driver?
 		if (LED_IsLEDRunning()) {
 			LED_ToggleEnabled();
 		}
-		else {
+		else 
+#endif
+		{
 			// Relays
 			CHANNEL_Toggle(g_cfg.pins.channels[index]);
 		}
@@ -464,11 +488,13 @@ void Button_OnShortClick(int index)
 			CHANNEL_DoSpecialToggleAll();
 			return;
 		}
+#if ENABLE_LED_BASIC
 		if (g_cfg.pins.roles[index] == IOR_Button_NextColor || g_cfg.pins.roles[index] == IOR_Button_NextColor_n)
 		{
 			LED_NextColor();
 			return;
 		}
+#endif
 		if (g_cfg.pins.roles[index] == IOR_Button_NextDimmer || g_cfg.pins.roles[index] == IOR_Button_NextDimmer_n)
 		{
 			return;
@@ -481,11 +507,14 @@ void Button_OnShortClick(int index)
 		{
 			return;
 		}
+#if ENABLE_LED_BASIC
 		// is it a device with RGB/CW/single color/etc LED driver?
 		if (LED_IsLEDRunning()) {
 			LED_ToggleEnabled();
 		}
-		else {
+		else 
+#endif
+		{
 			// Relays
 			CHANNEL_Toggle(g_cfg.pins.channels[index]);
 		}
@@ -511,11 +540,13 @@ void Button_OnDoubleClick(int index)
 		// double click toggles SECOND CHANNEL linked to this button
 		CHANNEL_Toggle(g_cfg.pins.channels2[index]);
 	}
+#if ENABLE_LED_BASIC
 	if (g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs_n) {
 		LED_NextColor();
 		// make it easier for users, enable LED by default
 		LED_SetEnableAll(true);
 	}
+#endif
 	if (g_doubleClickCallback != 0) {
 		g_doubleClickCallback(index);
 	}
@@ -529,11 +560,13 @@ void Button_OnTripleClick(int index)
 	}
 	// fire event - button on pin <index> was 3clicked
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ON3CLICK, index);
+#if ENABLE_LED_BASIC
 	if (g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs_n) {
 		LED_NextTemperature();
 		// make it easier for users, enable LED by default
 		LED_SetEnableAll(true);
 	}
+#endif
 }
 void Button_OnQuadrupleClick(int index)
 {
@@ -564,6 +597,7 @@ void Button_OnLongPressHold(int index) {
 	// fire event - button on pin <index> was held
 	EventHandlers_FireEvent(CMD_EVENT_PIN_ONHOLD, index);
 
+#if ENABLE_LED_BASIC
 	if (g_cfg.pins.roles[index] == IOR_Button_NextDimmer || g_cfg.pins.roles[index] == IOR_Button_NextDimmer_n) {
 		LED_NextDimmerHold();
 	}
@@ -575,6 +609,7 @@ void Button_OnLongPressHold(int index) {
 		// make it easier for users, enable LED by default
 		LED_SetEnableAll(true);
 	}
+#endif
 }
 void Button_OnLongPressHoldStart(int index) {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "%i Button_OnLongPressHoldStart\r\n", index);
@@ -637,15 +672,48 @@ void NEW_button_init(pinButton_s* handle, uint8_t(*pin_level)(void* self), uint8
 	handle->button_level = handle->hal_button_Level(handle);
 	handle->active_level = active_level;
 }
-void CHANNEL_SetFirstChannelByType(int requiredType, int newVal) {
+
+void CHANNEL_SetFirstChannelByTypeEx(int requiredType, int newVal, int ausemovingaverage) {
 	int i;
 
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		if (CHANNEL_GetType(i) == requiredType) {
-			CHANNEL_Set(i, newVal, 0);
+			CHANNEL_Set_Ex(i, newVal, 0, ausemovingaverage);
 			return;
 		}
 	}
+}
+
+int CHANNEL_FindIndexForPinType(int requiredType) {
+	int i;
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (g_cfg.pins.roles[i] == requiredType) {
+			return g_cfg.pins.channels[i];
+		}
+	}
+	return -1;
+}
+
+int CHANNEL_FindIndexForPinType2(int requiredType, int requiredType2) {
+	int i;
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (g_cfg.pins.roles[i] == requiredType || g_cfg.pins.roles[i] == requiredType2) {
+			return g_cfg.pins.channels[i];
+		}
+	}
+	return -1;
+}
+int CHANNEL_FindIndexForType(int requiredType) {
+	int i;
+	for (i = 0; i < CHANNEL_MAX; i++) {
+		if (CHANNEL_GetType(i) == requiredType) {
+			return i;
+		}
+	}
+	return -1;
+}
+void CHANNEL_SetFirstChannelByType(int requiredType, int newVal) {
+	CHANNEL_SetFirstChannelByTypeEx(requiredType, newVal, 0);
 }
 
 void CHANNEL_SetAll(int iVal, int iFlags) {
@@ -682,7 +750,9 @@ void CHANNEL_SetAll(int iVal, int iFlags) {
 			CHANNEL_Set(g_cfg.pins.channels[i], iVal, iFlags);
 			break;
 		case IOR_PWM:
+		case IOR_PWM_ScriptOnly:
 		case IOR_PWM_n:
+		case IOR_PWM_ScriptOnly_n:
 			CHANNEL_Set(g_cfg.pins.channels[i], iVal, iFlags);
 			break;
 		case IOR_BridgeForward:
@@ -733,6 +803,8 @@ void CHANNEL_DoSpecialToggleAll() {
 		}
 	}
 }
+extern int g_pwmFrequency;
+
 void PIN_SetPinRoleForPinIndex(int index, int role) {
 	bool bDHTChange = false;
 	bool bSampleInitialState = false;
@@ -797,6 +869,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			break;
 			// Disable PWM for previous pin role
 		case IOR_PWM_n:
+		case IOR_PWM_ScriptOnly:
+		case IOR_PWM_ScriptOnly_n:
 		case IOR_PWM:
 		{
 			HAL_PIN_PWM_Stop(index);
@@ -993,6 +1067,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			HAL_ADC_Init(index);
 			break;
 		case IOR_PWM_n:
+		case IOR_PWM_ScriptOnly:
+		case IOR_PWM_ScriptOnly_n:
 		case IOR_PWM:
 		{
 			int channelIndex;
@@ -1000,11 +1076,22 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 
 			channelIndex = PIN_GetPinChannelForPinIndex(index);
 			channelValue = g_channelValuesFloats[channelIndex];
-			HAL_PIN_PWM_Start(index);
 
-			if (role == IOR_PWM_n) {
+			//100hz to 20000hz according to tuya code
+#define PWM_FREQUENCY_SLOW 600 //Slow frequency for LED Drivers requiring slower PWM Freq
+
+			int useFreq;
+			useFreq = g_pwmFrequency;
+			//Use slow pwm if user has set checkbox in webif
+			if (CFG_HasFlag(OBK_FLAG_SLOW_PWM))
+				useFreq = PWM_FREQUENCY_SLOW;
+
+			HAL_PIN_PWM_Start(index, useFreq);
+
+			if (role == IOR_PWM_n
+				|| role == IOR_PWM_ScriptOnly_n) {
 				// inversed PWM
-				HAL_PIN_PWM_Update(index, 100 - channelValue);
+				HAL_PIN_PWM_Update(index, 100.0f - channelValue);
 			}
 			else {
 				HAL_PIN_PWM_Update(index, channelValue);
@@ -1076,19 +1163,21 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 			else if (g_cfg.pins.roles[i] == IOR_Relay_n || g_cfg.pins.roles[i] == IOR_LED_n || g_cfg.pins.roles[i] == IOR_BAT_Relay_n) {
 				RAW_SetPinValue(i, !bOn);
 			}
-			else if (g_cfg.pins.roles[i] == IOR_PWM) {
+			else if (g_cfg.pins.roles[i] == IOR_PWM || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly) {
 				HAL_PIN_PWM_Update(i, iVal);
 			}
-			else if (g_cfg.pins.roles[i] == IOR_PWM_n) {
+			else if (g_cfg.pins.roles[i] == IOR_PWM_n || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly_n) {
 				HAL_PIN_PWM_Update(i, 100 - iVal);
 			}
 		}
 	}
+#if ENABLE_MQTT
 	if ((iFlags & CHANNEL_SET_FLAG_SKIP_MQTT) == 0) {
 		if (CHANNEL_ShouldBePublished(ch)) {
 			MQTT_ChannelPublish(ch, 0);
 		}
 	}
+#endif
 	// Simple event - it just says that there was a change
 	EventHandlers_FireEvent(CMD_EVENT_CHANNEL_ONCHANGE, ch);
 	// more advanced events - change FROM value TO value
@@ -1153,6 +1242,7 @@ int ChannelType_GetDivider(int type) {
 	case ChType_Current_div1000:
 	case ChType_LeakageCurrent_div1000:
 	case ChType_ReadOnly_div1000:
+	case ChType_Frequency_div1000:
 		return 1000;
 	case ChType_Temperature_div2:
 		return 2;
@@ -1180,6 +1270,7 @@ const char *ChannelType_GetUnit(int type) {
 		return "W";
 	case ChType_Frequency_div10:
 	case ChType_Frequency_div100:
+	case ChType_Frequency_div1000:
 		return "Hz";
 	case ChType_LeakageCurrent_div1000:
 	case ChType_Current_div1000:
@@ -1230,6 +1321,7 @@ const char *ChannelType_GetTitle(int type) {
 		return "Power";
 	case ChType_Frequency_div10:
 	case ChType_Frequency_div100:
+	case ChType_Frequency_div1000:
 		return "Frequency";
 	case ChType_Current_div1000:
 	case ChType_Current_div100:
@@ -1282,6 +1374,7 @@ float CHANNEL_GetFloat(int ch) {
 	return g_channelValuesFloats[ch];
 }
 int CHANNEL_Get(int ch) {
+#if ENABLE_LED_BASIC
 	// special channels
 	if (ch == SPECIAL_CHANNEL_LEDPOWER) {
 		return LED_GetEnableAll();
@@ -1292,6 +1385,7 @@ int CHANNEL_Get(int ch) {
 	if (ch == SPECIAL_CHANNEL_TEMPERATURE) {
 		return LED_GetTemperature();
 	}
+#endif
 	if (ch >= SPECIAL_CHANNEL_BASECOLOR_FIRST && ch <= SPECIAL_CHANNEL_BASECOLOR_LAST) {
 		return 0; // TODO
 	}
@@ -1314,20 +1408,24 @@ void CHANNEL_ClearAllChannels() {
 
 void CHANNEL_Set_FloatPWM(int ch, float fVal, int iFlags) {
 	int i;
+	float prevValue = g_channelValuesFloats[ch];
 
 	g_channelValues[ch] = (int)fVal;
 	g_channelValuesFloats[ch] = fVal;
 
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if (g_cfg.pins.channels[i] == ch) {
-			if (g_cfg.pins.roles[i] == IOR_PWM) {
+			if (g_cfg.pins.roles[i] == IOR_PWM || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly) {
 				HAL_PIN_PWM_Update(i, fVal);
 			}
-			else if (g_cfg.pins.roles[i] == IOR_PWM_n) {
+			else if (g_cfg.pins.roles[i] == IOR_PWM_n || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly_n) {
 				HAL_PIN_PWM_Update(i, 100.0f - fVal);
 			}
 		}
 	}
+	// TODO: support float
+	EventHandlers_FireEvent(CMD_EVENT_CHANNEL_ONCHANGE, ch);
+	EventHandlers_ProcessVariableChange_Integer(CMD_EVENT_CHANGE_CHANNEL0 + ch, prevValue, fVal);
 }
 void CHANNEL_SetSmart(int ch, float fVal, int iFlags) {
 	if (ch < 0 || ch >= CHANNEL_MAX)
@@ -1336,13 +1434,15 @@ void CHANNEL_SetSmart(int ch, float fVal, int iFlags) {
 	int divided = fVal * divider;
 	CHANNEL_Set(ch, divided, iFlags);
 }
-void CHANNEL_Set(int ch, int iVal, int iFlags) {
+
+void CHANNEL_Set_Ex(int ch, int iVal, int iFlags, int ausemovingaverage) {
 	int prevValue;
 	int bForce;
 	int bSilent;
 	bForce = iFlags & CHANNEL_SET_FLAG_FORCE;
 	bSilent = iFlags & CHANNEL_SET_FLAG_SILENT;
 
+#if ENABLE_LED_BASIC
 	// special channels
 	if (ch == SPECIAL_CHANNEL_LEDPOWER) {
 		LED_SetEnableAll(iVal);
@@ -1360,6 +1460,7 @@ void CHANNEL_Set(int ch, int iVal, int iFlags) {
 		LED_SetBaseColorByIndex(ch - SPECIAL_CHANNEL_BASECOLOR_FIRST, iVal, 1);
 		return;
 	}
+#endif
 	if (ch >= SPECIAL_CHANNEL_FLASHVARS_FIRST && ch <= SPECIAL_CHANNEL_FLASHVARS_LAST) {
 		HAL_FlashVars_SaveChannel(ch - SPECIAL_CHANNEL_FLASHVARS_FIRST, iVal);
 		return;
@@ -1382,10 +1483,20 @@ void CHANNEL_Set(int ch, int iVal, int iFlags) {
 	if (bSilent == 0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_Set channel %i has changed to %i (flags %i)\n\r", ch, iVal, iFlags);
 	}
+	#ifdef ENABLE_BL_MOVINGAVG
+	//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_Set debug channel %i has changed to %i (flags %i)\n\r", ch, iVal, iFlags);
+	if (ausemovingaverage) {
+		iVal=XJ_MovingAverage_int(prevValue, iVal);
+	}
+	#endif
 	g_channelValues[ch] = iVal;
 
 	Channel_OnChanged(ch, prevValue, iFlags);
 }
+void CHANNEL_Set(int ch, int iVal, int iFlags) {
+	CHANNEL_Set_Ex(ch, iVal, iFlags, 0);
+}
+
 void CHANNEL_AddClamped(int ch, int iVal, int min, int max, int bWrapInsteadOfClamp) {
 #if 0
 	int prevValue;
@@ -1463,10 +1574,10 @@ int CHANNEL_FindMaxValueForChannel(int ch) {
 		// is pin tied to this channel?
 		if (g_cfg.pins.channels[i] == ch) {
 			// is it PWM?
-			if (g_cfg.pins.roles[i] == IOR_PWM) {
+			if (g_cfg.pins.roles[i] == IOR_PWM || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly) {
 				return 100;
 			}
-			if (g_cfg.pins.roles[i] == IOR_PWM_n) {
+			if (g_cfg.pins.roles[i] == IOR_PWM_n || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly_n) {
 				return 100;
 			}
 		}
@@ -1484,11 +1595,13 @@ int CHANNEL_FindMaxValueForChannel(int ch) {
 void CHANNEL_Toggle(int ch) {
 	int prev;
 
+#if ENABLE_LED_BASIC
 	// special channels
 	if (ch == SPECIAL_CHANNEL_LEDPOWER) {
 		LED_SetEnableAll(!LED_GetEnableAll());
 		return;
 	}
+#endif
 	if (ch < 0 || ch >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Toggle: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
 		return;
@@ -1534,9 +1647,11 @@ int CHANNEL_HasChannelPinWithRole(int ch, int iorType) {
 	return 0;
 }
 bool CHANNEL_Check(int ch) {
+#if ENABLE_LED_BASIC
 	if (ch == SPECIAL_CHANNEL_LEDPOWER) {
 		return LED_GetEnableAll();
 	}
+#endif
 	if (ch < 0 || ch >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Check: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
 		return 0;
@@ -1641,6 +1756,8 @@ int CHANNEL_GetRoleForOutputChannel(int ch) {
 			case IOR_LED_n:
 			case IOR_PWM_n:
 			case IOR_PWM:
+			case IOR_PWM_ScriptOnly:
+			case IOR_PWM_ScriptOnly_n:
 				return g_cfg.pins.roles[i];
 			case IOR_BridgeForward:
 			case IOR_BridgeReverse:
@@ -1903,10 +2020,10 @@ void PIN_ticks(void* param)
 		}
 
 #if 1
-		if (g_cfg.pins.roles[i] == IOR_PWM) {
+		if (g_cfg.pins.roles[i] == IOR_PWM || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly) {
 			HAL_PIN_PWM_Update(i, g_channelValuesFloats[g_cfg.pins.channels[i]]);
 		}
-		else if (g_cfg.pins.roles[i] == IOR_PWM_n) {
+		else if (g_cfg.pins.roles[i] == IOR_PWM_n || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly_n) {
 			// invert PWM value
 			HAL_PIN_PWM_Update(i, 100 - g_channelValuesFloats[g_cfg.pins.channels[i]]);
 		}
@@ -2102,6 +2219,10 @@ const char* g_channelTypeNames[] = {
 	"Orp",
 	"Tds",
 	"Motion_n",
+	"Frequency_div1000",
+	"OpenStopClose",
+	"Percent",
+	"error",
 	"error",
 	"error",
 };
@@ -2289,6 +2410,12 @@ void PIN_get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount) {
 			BIT_SET(pwmBits, g_cfg.pins.channels[i]);
 			//(*pwmCount)++;
 			break;
+		case IOR_PWM_ScriptOnly:
+		case IOR_PWM_ScriptOnly_n:
+			// DO NOT COUNT SCRIPTONLY PWM HERE!
+			// As in title - it's only for scripts. 
+			// It should not generate lights!
+			break;
 		case IOR_DigitalInput:
 		case IOR_DigitalInput_n:
 		case IOR_DigitalInput_NoPup:
@@ -2328,6 +2455,12 @@ int h_isChannelPWM(int tg_ch) {
 		if (role == IOR_PWM || role == IOR_PWM_n) {
 			return true;
 		}
+		// DO NOT COUNT SCRIPTONLY PWM HERE!
+		// As in title - it's only for scripts. 
+		// It should not generate lights!
+		//if (role == IOR_PWM_ScriptOnly) {
+		//	return true;
+		//}
 	}
 	return false;
 }
@@ -2387,6 +2520,47 @@ static commandResult_t showgpi(const void* context, const char* cmd, const char*
 	return CMD_RES_OK;
 }
 
+#ifdef ENABLE_BL_MOVINGAVG
+static int movingavg_cnt = 0;
+static commandResult_t CMD_setMovingAvg(const void* context, const char* cmd,
+	const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	int fval = Tokenizer_GetArgInteger(0);
+	if (fval < 0) {
+		ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER, "%s",
+			CMD_GetResultString(CMD_RES_BAD_ARGUMENT));
+		return CMD_RES_BAD_ARGUMENT;
+	}
+	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "MovingAvg=%i", fval);	
+	movingavg_cnt = fval;
+	return CMD_RES_OK;
+}
+
+float XJ_MovingAverage_float(float aprevvalue, float aactvalue) {
+	//if aprevvalue not set, return actual 
+	if (aprevvalue <= 0) return aactvalue;
+	if (movingavg_cnt <= 1) return aactvalue;
+	//if aprevvalue set, calculate simple average value
+	float res = (((movingavg_cnt - 1) * aprevvalue + aactvalue) / movingavg_cnt);
+	//addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER, "MovAvg p: %.2f a: %.2f r: %.2f", aprevvalue, aactvalue, res);
+	return res;
+}
+
+int XJ_MovingAverage_int(int aprevvalue, int aactvalue) {
+	//if aprevvalue not set, return actual 
+	if (aprevvalue <= 0) return aactvalue;
+	if (movingavg_cnt <= 1) return aactvalue;
+	//if aprevvalue set, calculate simple average value
+	int res = (((movingavg_cnt - 1) * aprevvalue + aactvalue) / movingavg_cnt);
+	//addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER, "MovAvg p: %i a: %i r: %i", aprevvalue, aactvalue, res);
+	return res;
+}
+#endif
+
 void PIN_AddCommands(void)
 {
 	//cmddetail:{"name":"showgpi","args":"NULL",
@@ -2414,6 +2588,13 @@ void PIN_AddCommands(void)
 	//cmddetail:"fn":"CMD_setButtonHoldRepeat","file":"new_pins.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("setButtonHoldRepeat", CMD_setButtonHoldRepeat, NULL);
+#ifdef ENABLE_BL_MOVINGAVG
+	//cmddetail:{"name":"setMovingAvg","args":"MovingAvg",
+	//cmddetail:"descr":"Moving average value for power and current. <=1 disable, >=2 count of avg values. The setting is temporary and need to be set at startup.",
+	//cmddetail:"fn":"NULL);","file":"new_pins.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("setMovingAvg", CMD_setMovingAvg, NULL);
+#endif
 #if ALLOW_SSID2
 	//cmddetail:{"name":"setStartupSSIDChannel","args":"[Value]",
 	//cmddetail:"descr":"Sets retain channel number to store last used SSID, 0..MAX_RETAIN_CHANNELS-1, -1 to disable. Suggested channel number is 7 (MAXMAX_RETAIN_CHANNELS-5)",

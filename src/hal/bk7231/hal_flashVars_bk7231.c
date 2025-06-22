@@ -11,7 +11,8 @@
 */
 
 #ifndef PLATFORM_XR809
-
+#ifdef PLATFORM_BEKEN_NEW
+#endif
 #include "include.h"
 #include "mem_pub.h"
 #include "drv_model_pub.h"

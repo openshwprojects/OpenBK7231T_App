@@ -10,15 +10,21 @@ static int FLASH_VARS_STRUCTURE_SIZE = sizeof(FLASH_VARS_STRUCTURE);
 //W600 - 0xF0000 is based on sdk\OpenW600\demo\wm_flash_demo.c
 //2528 was picked based on current sizeof(mainConfig_t) which is 2016 with 512 buffer bytes.
 
-#if defined(PLATFORM_W800) 
-#define FLASH_VARS_STRUCTURE_ADDR (0x1F0303 + 2528)
-#else
+#if defined(PLATFORM_W600) 
 #define FLASH_VARS_STRUCTURE_ADDR (0xF0000 + 2528)
+#else
+#include "easyflash.h"
 #endif
 
+#define SAVE_CHANGE_IF_REQUIRED_AND_COUNT(target, source, counter) \
+	if((target) != (source)) { \
+		(target) = (source); \
+		counter++; \
+	}
 
 void initFlashIfNeeded();
 
+#if PLATFORM_W600
 
 /// @brief This prints the current boot count as a way to visually verify the flash write operation.
 void print_flash_boot_count() {
@@ -46,6 +52,43 @@ void HAL_FlashVars_IncreaseBootCount() {
 	ADDLOG_INFO(LOG_FEATURE_CFG, "####### Boot Count %d #######", flash_vars.boot_count);
 	write_flash_boot_content();
 }
+
+#else
+
+#define KV_KEY_FLASH_VARS "OBK_FV"
+
+/// @brief This prints the current boot count as a way to visually verify the flash write operation.
+void print_flash_boot_count()
+{
+	FLASH_VARS_STRUCTURE data;
+	ef_get_env_blob(KV_KEY_FLASH_VARS, &data, FLASH_VARS_STRUCTURE_SIZE, NULL);
+
+	ADDLOG_DEBUG(LOG_FEATURE_CFG, "boot count %d, boot success %d, bootfailures %d",
+		data.boot_count,
+		data.boot_success_count,
+		data.boot_count - data.boot_success_count
+	);
+}
+
+void write_flash_boot_content()
+{
+	ef_set_env_blob(KV_KEY_FLASH_VARS, &flash_vars, FLASH_VARS_STRUCTURE_SIZE);
+	print_flash_boot_count();
+}
+
+/// @brief Update the boot count in flash. This is called called at startup. This is what initializes flash_vars.
+void HAL_FlashVars_IncreaseBootCount()
+{
+	initFlashIfNeeded();
+	ef_get_env_blob(KV_KEY_FLASH_VARS, &flash_vars, FLASH_VARS_STRUCTURE_SIZE, NULL);
+
+	flash_vars.boot_count++;
+	ADDLOG_INFO(LOG_FEATURE_CFG, "####### Boot Count %d #######", flash_vars.boot_count);
+	write_flash_boot_content();
+}
+
+#endif
+
 void HAL_FlashVars_SaveChannel(int index, int value) {
 	if (index < 0 || index >= MAX_RETAIN_CHANNELS) {
 		ADDLOG_INFO(LOG_FEATURE_CFG, "####### Flash Save Can't Save Channel %d as %d (not enough space in array) #######", index, value);
@@ -81,18 +124,16 @@ int HAL_FlashVars_GetChannelValue(int ch) {
 
 	return flash_vars.savedValues[ch];
 }
-#define SAVE_CHANGE_IF_REQUIRED_AND_COUNT(target, source, counter) \
-	if((target) != (source)) { \
-		(target) = (source); \
-		counter++; \
-	}
 
 
 void HAL_FlashVars_SaveLED(byte mode, short brightness, short temperature, byte r, byte g, byte b, byte bEnableAll) {
 #ifndef DISABLE_FLASH_VARS_VARS
 	int iChangesCount = 0;
-
+#if PLATFORM_W600
 	tls_fls_read(FLASH_VARS_STRUCTURE_ADDR, &flash_vars, FLASH_VARS_STRUCTURE_SIZE);
+#else
+	ef_get_env_blob(KV_KEY_FLASH_VARS, &flash_vars, FLASH_VARS_STRUCTURE_SIZE, NULL);
+#endif
 
 	SAVE_CHANGE_IF_REQUIRED_AND_COUNT(flash_vars.savedValues[MAX_RETAIN_CHANNELS - 1], brightness, iChangesCount);
 	SAVE_CHANGE_IF_REQUIRED_AND_COUNT(flash_vars.savedValues[MAX_RETAIN_CHANNELS - 2], temperature, iChangesCount);
@@ -104,7 +145,11 @@ void HAL_FlashVars_SaveLED(byte mode, short brightness, short temperature, byte 
 
 	if (iChangesCount > 0) {
 		ADDLOG_INFO(LOG_FEATURE_CFG, "####### Flash Save LED #######");
+#if PLATFORM_W600
 		tls_fls_write(FLASH_VARS_STRUCTURE_ADDR, &flash_vars, FLASH_VARS_STRUCTURE_SIZE);
+#else
+		ef_set_env_blob(KV_KEY_FLASH_VARS, &flash_vars, FLASH_VARS_STRUCTURE_SIZE);
+#endif
 	}
 #endif
 }

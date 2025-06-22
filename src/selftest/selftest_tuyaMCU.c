@@ -270,50 +270,49 @@ void Test_TuyaMCU_Basic() {
 	//
 	// check sending from OBK to MCU
 	//
-	// OBK sends: 
-	// 55 AA	00	06		00 05	1001000100	1C
+	// OBK sends:   55 AA	00	06		00 05	1001000100	1C
 	//HEADER	VER = 00	SetDP		LEN	dpId = 16 Bool V = 0	CHK
 	CMD_ExecuteCommand("tuyaMcu_sendState 16 1 0", 0);
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	06		00 05	1001000100	1C");
 	// nothing is sent by OBK at that point
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 
-	// OBK sends: 
-	// 55 AA	00	06		00 05	0101000101	0E
+	// OBK sends:  55 AA	00	06		00 05	0101000101	0E
 	// HEADER	VER = 00	Unk		LEN	dpId = 1 Bool V = 1	CHK
 	CMD_ExecuteCommand("tuyaMcu_sendState 1 1 1", 0);
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	06		00 05	0101000101	0E");
 	// nothing is sent by OBK at that point
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 
-	// OBK sends: 
-	// 55 AA	00	06		00 05	0101000100	0D
+	// OBK sends:  55 AA	00	06		00 05	0101000100	0D
 	// HEADER	VER = 00	Unk		LEN	dpId = 1 Bool V = 0	CHK
 	CMD_ExecuteCommand("tuyaMcu_sendState 1 1 0", 0);
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	06		00 05	0101000100	0D");
 	// nothing is sent by OBK at that point
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 	
-
-	// OBK sends: 
-	// 55 AA	00	06		00 05	6C01000101	79
+	// OBK sends:  55 AA	00	06		00 05	6C01000101	79
 	// HEADER	VER = 00	Unk		LEN	dpId = 108 Bool V = 1	CHK
-	CMD_ExecuteCommand("tuyaMcu_sendState 108 1 1", 0);
+	CMD_ExecuteCommand("tuyaMcu_sendState 108 bool 1", 0);
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	06		00 05	6C01000101	79");
 	// nothing is sent by OBK at that point
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 
-
-
-	// OBK sends: 
-	// 55 AA	00	06		00 05	6D04000110	8C
+	// OBK sends:   55 AA	00	06		00 05	6D04000110	8C
 	// HEADER	VER = 00	Unk		LEN	dpId = 109 Enum V = 16	CHK
 	CMD_ExecuteCommand("tuyaMcu_sendState 109 4 16", 0);
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	06		00 05	6D04000110	8C");
 	// nothing is sent by OBK at that point
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 
-	
+	// OBK sends:  55 AA	00	06		00 05	6D04000110	8C
+	// HEADER	VER = 00	Unk		LEN	dpId = 109 Enum V = 16	CHK
+	CMD_ExecuteCommand("tuyaMcu_sendState 109 enum 16", 0);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	06		00 05	6D04000110	8C");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+
+
 		
 
 		
@@ -397,7 +396,7 @@ void Test_TuyaMCU_Basic() {
 	// if assert has passed, we can clear SIM MQTT history, it's no longer needed
 	SIM_ClearMQTTHistory();
 
-	// This packet sets dpID 104 of type RAW
+	// This packet sets dpID 104 of type Val
 	// dpID 104
 	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 104 MQTT", 0);
 	CMD_ExecuteCommand("uartFakeHex 55AA03070008680200040000000180",0);
@@ -531,7 +530,36 @@ void Test_TuyaMCU_Basic() {
 
 
 
-
+	SIM_ClearUART();
+	// now try delta - value 5
+	CMD_ExecuteCommand("setChannel 15 0", 0);
+	// This will map TuyaMCU dpID 2 of type Value to channel 15 with no inverse
+	// 10 is multiplier
+	// 5 is delta
+	// [dpId][varType][channelID][bDPCache-Optional][mult-optional][bInverse][delta]
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 2 val 15 0 10 0 5", 0);
+	SELFTEST_ASSERT_CHANNEL(15, 0);
+	// This packet sets dpID 2 of type Value to 100
+	CMD_ExecuteCommand("uartFakeHex 55AA0307000802020004000000647D", 0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(1000, false);
+	// Now, channel 15 should be set to....
+	SELFTEST_ASSERT_CHANNEL(15, (100+5) * 10);
+	SIM_ClearUART();
+	// now try delta - value -5
+	CMD_ExecuteCommand("setChannel 15 0", 0);
+	// This will map TuyaMCU dpID 2 of type Value to channel 15 with no inverse
+	// 10 is multiplier
+	// 5 is delta
+	// [dpId][varType][channelID][bDPCache-Optional][mult-optional][bInverse][delta]
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 2 val 15 0 10 0 -5", 0);
+	SELFTEST_ASSERT_CHANNEL(15, 0);
+	// This packet sets dpID 2 of type Value to 100
+	CMD_ExecuteCommand("uartFakeHex 55AA0307000802020004000000647D", 0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(1000, false);
+	// Now, channel 15 should be set to....
+	SELFTEST_ASSERT_CHANNEL(15, (100 + -5) * 10);
 	SIM_ClearUART();
 
 
@@ -627,7 +655,69 @@ void Test_TuyaMCU_Basic() {
 	SELFTEST_ASSERT_CHANNEL(9, 67); // power
 
 
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 115 RAW_VCPPfF", 0);
+	CMD_ExecuteCommand("uartFakeHex 55 AA 03 07 00 13 73 00 00 0F 09 0F 00 00 BF 00 00 78 00 00 25 01 10 C3 32 18 ", 0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(100, false);
+
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 113 RAW_VCPPfF", 0);
+	CMD_ExecuteCommand("uartFakeHex 55 AA 03 07 00 13 71 00 00 0F 09 29 00 01 B7 00 03 FC 00 00 00 03 E8 C3 32 65", 0);
+	// above command will just put into buffer - need at least a frame to parse it
+	Sim_RunFrames(100, false);
+
 	SIM_ClearUART();
+}
+void Test_TuyaMCU_Calib() {
+	{
+		// reset whole device
+		SIM_ClearOBK(0);
+
+		SIM_UART_InitReceiveRingBuffer(2048);
+
+		CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+
+		g_cfg.pins.channelTypes[3] = ChType_Voltage_div10;
+		g_cfg.pins.channelTypes[7] = ChType_Current_div1000;
+		g_cfg.pins.channelTypes[9] = ChType_Power;
+
+		CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 113 RAW_VCPPfF", 0);
+		CMD_ExecuteCommand("uartFakeHex 55 AA 03 07 00 13 71 00 00 0F 09 29 00 01 B7 00 03 FC 00 00 00 03 E8 C3 32 65", 0);
+		// above command will just put into buffer - need at least a frame to parse it
+		Sim_RunFrames(100, false);
+
+		SELFTEST_ASSERT_CHANNEL(3, 2345);
+		SELFTEST_ASSERT_CHANNEL(7, 439);
+		SELFTEST_ASSERT_CHANNEL(9, 1020);
+
+
+		SIM_ClearUART();
+	}
+	{
+		// reset whole device
+		SIM_ClearOBK(0);
+
+		SIM_UART_InitReceiveRingBuffer(2048);
+
+		CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+
+		g_cfg.pins.channelTypes[3] = ChType_Voltage_div10;
+		g_cfg.pins.channelTypes[7] = ChType_Current_div1000;
+		g_cfg.pins.channelTypes[9] = ChType_Power;
+
+
+		CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 113 RAW_VCPPfF -1 0 1 0 22 33 44", 0);
+		CMD_ExecuteCommand("uartFakeHex 55 AA 03 07 00 13 71 00 00 0F 09 29 00 01 B7 00 03 FC 00 00 00 03 E8 C3 32 65", 0);
+		// above command will just put into buffer - need at least a frame to parse it
+		Sim_RunFrames(100, false);
+
+		SELFTEST_ASSERT_CHANNEL(3, 2345+22);
+		SELFTEST_ASSERT_CHANNEL(7, 439+33);
+		SELFTEST_ASSERT_CHANNEL(9, 1020+44);
+
+
+		SIM_ClearUART();
+	}
+
 }
 
 #endif

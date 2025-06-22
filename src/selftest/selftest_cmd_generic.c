@@ -87,6 +87,8 @@ void Test_Events() {
 	SELFTEST_ASSERT(EVENT_ParseEventName("OnADCButton") == CMD_EVENT_ADC_BUTTON);
 	SELFTEST_ASSERT(EVENT_ParseEventName("OnCustomDown") == CMD_EVENT_CUSTOM_DOWN);
 	SELFTEST_ASSERT(EVENT_ParseEventName("OnCustomUP") == CMD_EVENT_CUSTOM_UP);
+	SELFTEST_ASSERT(EVENT_ParseEventName("OnMQTT") == CMD_EVENT_ON_MQTT);
+	SELFTEST_ASSERT(EVENT_ParseEventName("OnDP") == CMD_EVENT_ON_DP);
 
 	// test for numeric strings
 	SELFTEST_ASSERT(EVENT_ParseEventName("123") == 123);
@@ -162,6 +164,18 @@ void Test_Commands_Generic() {
 	CMD_ExecuteCommand("MqttPassword Secret1", 0);
 	SELFTEST_ASSERT_STRING(CFG_GetMQTTPass(), "Secret1");
 
+	CMD_ExecuteCommand("MqttPassword \"\"", 0);
+	SELFTEST_ASSERT_STRING(CFG_GetMQTTPass(), "");
+
+	CMD_ExecuteCommand("MqttPassword \"Xyz\"", 0);
+	SELFTEST_ASSERT_STRING(CFG_GetMQTTPass(), "Xyz");
+
+	CMD_ExecuteCommand("MqttUser Tester2", 0);
+	SELFTEST_ASSERT_STRING(CFG_GetMQTTUserName(), "Tester2");
+
+	CMD_ExecuteCommand("MqttUser \"\"", 0);
+	SELFTEST_ASSERT_STRING(CFG_GetMQTTUserName(), "");
+
 	CMD_ExecuteCommand("SSID1 TPLink123", 0);
 	SELFTEST_ASSERT_STRING(CFG_GetWiFiSSID(), "TPLink123");
 
@@ -193,6 +207,41 @@ void Test_Commands_Generic() {
 	SELFTEST_ASSERT(CFG_GetFlags64() == 444);
 	//CMD_ExecuteCommand("Flags 8589934592", 0);
 	//SELFTEST_ASSERT(CFG_GetFlags64() == 8589934592);
+
+
+	// https://github.com/openshwprojects/OpenBK7231T_App/issues/1646
+	CMD_ExecuteCommand("addEventHandler2 IR_NEC 0xEF00 0x0 setChannel 12 1", 0);
+	CMD_ExecuteCommand("addEventHandler2 IR_NEC 0xEF00 0x1 setChannel 12 2", 0);
+	CMD_ExecuteCommand("addEventHandler2 IR_NEC 0xEF00 0x10 setChannel 12 3", 0);
+	CMD_ExecuteCommand("addEventHandler2 IR_NEC 0xEF00 0x4 setChannel 12 4", 0);
+	CMD_ExecuteCommand("addEventHandler2 IR_NEC 0xEF00 0x5 setChannel 12 5", 0);
+	CMD_ExecuteCommand("addEventHandler2 IR_NEC 0xEF00 0x6 setChannel 12 6", 0);
+
+	EventHandlers_FireEvent2(CMD_EVENT_IR_NEC, 0xEF00, 0x0);
+	SELFTEST_ASSERT_CHANNEL(12, 1);
+	EventHandlers_FireEvent2(CMD_EVENT_IR_NEC, 0xEF00, 0x1);
+	SELFTEST_ASSERT_CHANNEL(12, 2);
+	EventHandlers_FireEvent2(CMD_EVENT_IR_NEC, 0xEF00, 0x10);
+	SELFTEST_ASSERT_CHANNEL(12, 3);
+	EventHandlers_FireEvent2(CMD_EVENT_IR_NEC, 0xEF00, 0x4);
+	SELFTEST_ASSERT_CHANNEL(12, 4);
+	EventHandlers_FireEvent2(CMD_EVENT_IR_NEC, 0xEF00, 0x5);
+	SELFTEST_ASSERT_CHANNEL(12, 5);
+	EventHandlers_FireEvent2(CMD_EVENT_IR_NEC, 0xEF00, 0x6);
+	SELFTEST_ASSERT_CHANNEL(12, 6);
+
+	EventHandlers_FireEvent3(CMD_EVENT_IR_NEC, 0xEF00, 0x0, 0);
+	SELFTEST_ASSERT_CHANNEL(12, 1);
+	EventHandlers_FireEvent3(CMD_EVENT_IR_NEC, 0xEF00, 0x1, 0);
+	SELFTEST_ASSERT_CHANNEL(12, 2);
+	EventHandlers_FireEvent3(CMD_EVENT_IR_NEC, 0xEF00, 0x10, 0);
+	SELFTEST_ASSERT_CHANNEL(12, 3);
+	EventHandlers_FireEvent3(CMD_EVENT_IR_NEC, 0xEF00, 0x4, 0);
+	SELFTEST_ASSERT_CHANNEL(12, 4);
+	EventHandlers_FireEvent3(CMD_EVENT_IR_NEC, 0xEF00, 0x5, 0);
+	SELFTEST_ASSERT_CHANNEL(12, 5);
+	EventHandlers_FireEvent3(CMD_EVENT_IR_NEC, 0xEF00, 0x6, 0);
+	SELFTEST_ASSERT_CHANNEL(12, 6);
 }
 
 

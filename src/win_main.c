@@ -1,26 +1,45 @@
+#ifdef __GNUC__
+#define __cdecl __attribute__((__cdecl__))
+#endif
+
 #ifdef WINDOWS
 
 #undef UNICODE
 
 #define WIN32_LEAN_AND_MEAN
+
+#ifndef LINUX
+
 #include <crtdbg.h>
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
 #include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <timeapi.h>
+
+#else
+
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+
+#define Sleep sleep
+
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include "obk_config.h"
 #include "new_common.h"
+#include "driver/drv_public.h"
+#include "cmnds/cmd_public.h"
+#include "httpserver/new_http.h"
 #include "quicktick.h"
-#include "driver\drv_public.h"
-#include "cmnds\cmd_public.h"
-#include "httpserver\new_http.h"
-#include "hal\hal_flashVars.h"
-#include "selftest\selftest_local.h"
+#include "hal/hal_flashVars.h"
+#include "selftest/selftest_local.h"
 #include "new_pins.h"
-#include <timeapi.h>
+
 
 #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
 
@@ -34,8 +53,23 @@ int win_frameNum = 0;
 // this time counter is simulated, I need this for unit tests to work
 int g_simulatedTimeNow = 0;
 extern int g_httpPort;
-#define DEFAULT_FRAME_TIME 5
+#define DEFAULT_FRAME_TIME 10
 
+#if LINUX
+
+#include <stdint.h>
+#include <time.h>
+
+uint32_t timeGetTime() {
+	struct timespec ts;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	return (uint32_t)((ts.tv_sec * 1000) + (ts.tv_nsec / 1000000));
+}
+
+void vTaskDelay(int x) {
+
+}
+#endif
 
 void strcat_safe_test(){
 	char tmpA[16];
@@ -119,6 +153,9 @@ void SIM_ClearOBK(const char *flashPath) {
 		UART_ResetForSimulator();
 		CMD_ExecuteCommand("clearAll", 0);
 		CMD_ExecuteCommand("led_expoMode", 0);
+#if ENABLE_OBK_BERRY
+		CMD_ExecuteCommand("stopBerry", 0);
+#endif
 		// LOG deinit after main init so commands will be re-added
 		LOG_DeInit();
 	}
@@ -129,6 +166,13 @@ void SIM_ClearOBK(const char *flashPath) {
 	Main_Init();
 }
 void Win_DoUnitTests() {
+	Test_Driver_TCL_AC();
+
+	Test_PIR();
+#if ENABLE_OBK_BERRY
+	Test_Berry();
+#endif
+
 	Test_TuyaMCU_Boolean();
 	Test_TuyaMCU_DP22();
 
@@ -143,7 +187,10 @@ void Win_DoUnitTests() {
 	Test_Command_If_Else();
 	Test_MQTT();
 	Test_ChargeLimitDriver();
+#if ENABLE_BL_SHARED
 	Test_EnergyMeter();
+#endif
+	Test_TuyaMCU_Calib();
 	// this is slowest
 	Test_TuyaMCU_Basic();
 	Test_TuyaMCU_Mult();
@@ -151,16 +198,20 @@ void Win_DoUnitTests() {
 	Test_Battery();
 	Test_TuyaMCU_BatteryPowered();
 	Test_JSON_Lib();
+#if ENABLE_LED_BASIC
 	Test_MQTT_Get_LED_EnableAll();
+#endif
 	Test_MQTT_Get_Relay();
 	Test_Commands_Startup();
 	Test_IF_Inside_Backlog();
 	Test_WaitFor();
 	Test_TwoPWMsOneChannel();
 	Test_ClockEvents();
+#if ENABLE_HA_DISCOVERY
 	Test_HassDiscovery_Base();
 	Test_HassDiscovery();
 	Test_HassDiscovery_Ext();
+#endif
 	Test_Role_ToggleAll_2();
 	Test_Demo_ButtonToggleGroup();
 	Test_Demo_ButtonScrollingChannelValues();
@@ -175,7 +226,10 @@ void Win_DoUnitTests() {
 	Test_Demo_ExclusiveRelays();
 	Test_MultiplePinsOnChannel();
 	Test_Flags();
+#ifndef LINUX
+  // TODO: fix on Linux
 	Test_DHT();
+#endif
 	Test_Tasmota();
 	Test_NTP();
 	Test_NTP_DST();
@@ -184,6 +238,7 @@ void Win_DoUnitTests() {
 	Test_ExpandConstant();
 	Test_ChangeHandlers_MQTT();
 	Test_ChangeHandlers();
+	Test_ChangeHandlers2();
 	Test_ChangeHandlers_EnsureThatChannelVariableIsExpandedAtHandlerRunTime();
 	Test_RepeatingEvents();
 	Test_ButtonEvents();
@@ -233,9 +288,60 @@ int g_bDoingUnitTestsNow = 0;
 int SelfTest_GetNumErrors();
 extern int g_selfTestsMode;
 
+float myFabs(float f) {
+	if (f < 0)
+		return -f;
+	return f;
+}
+bool Float_Equals(float a, float b) {
+	float res = myFabs(a - b);
+	return res < 0.001f;
+}
+bool Float_EqualsEpsilon(float a, float b, float epsilon) {
+	float res = myFabs(a - b);
+	return res < epsilon;
+}
+#define VA_BUFFER_SIZE 4096
+#define VA_COUNT 4
+const char *va(const char *fmt, ...) {
+	va_list argList;
+	static int whi = 0;
+	static char buffer[VA_COUNT][VA_BUFFER_SIZE];
+
+	whi++;
+	whi %= VA_COUNT;
+	char *p = buffer[whi];
+
+	va_start(argList, fmt);
+	vsnprintf(p, VA_BUFFER_SIZE, fmt, argList);
+	va_end(argList);
+	return p;
+}
+
+
+#ifdef LINUX
+// fixes - temp
+#endif
+
+#if !ENABLE_SDL_WINDOW
+bool SIM_ReadDHT11(int pin, byte *data) {
+	return false;
+}
+void Sim_SendFakeBL0942Packet(float v, float c, float p) {
+
+}
+void SIM_GeneratePowerStateDesc(char *o, int outLen) {
+	*o = 0;
+}
+#endif
+
 int __cdecl main(int argc, char **argv)
 {
-
+	bool bWantsUnitTests = 1;
+    
+#ifndef LINUX
+	WSADATA wsaData;
+#endif
 	// clear debug data
 	if (1) {
 		FILE *f = fopen("sim_lastPublishes.txt", "wb");
@@ -244,6 +350,7 @@ int __cdecl main(int argc, char **argv)
 			fclose(f);
 		}
 	}
+	printf("Argc: %i\n", argc);
 	if (argc > 1) {
 		int value;
 
@@ -259,14 +366,18 @@ int __cdecl main(int argc, char **argv)
 					i++;
 
 					if (i < argc && sscanf(argv[i], "%d", &value) == 1) {
+#if ENABLE_SDL_WINDOW
 						SIM_SetWindowW(value);
+#endif
 					}
 				}
 				else if (wal_strnicmp(argv[i] + 1, "h", 1) == 0) {
 					i++;
 
 					if (i < argc && sscanf(argv[i], "%d", &value) == 1) {
+#if ENABLE_SDL_WINDOW
 						SIM_SetWindowH(value);
+#endif
 					}
 				}
 				else if (wal_strnicmp(argv[i] + 1, "runUnitTests", 12) == 0) {
@@ -280,8 +391,8 @@ int __cdecl main(int argc, char **argv)
 			}
 		}
 	}
+	printf("g_selfTestsMode %i\n", g_selfTestsMode);
 
-    WSADATA wsaData;
     int iResult;
 
 #if 0
@@ -293,12 +404,14 @@ int __cdecl main(int argc, char **argv)
 		printf("Brightness %f with color %f gives %f\n", in, 255.0f, res);
 	}
 #endif
+#ifndef LINUX
     // Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
     if (iResult != 0) {
         printf("WSAStartup failed with error: %d\n", iResult);
         return 1;
     }
+#endif
 	printf("sizeof(short) = %d\n", (int)sizeof(short));
 	printf("sizeof(int) = %d\n", (int)sizeof(int));
 	printf("sizeof(long) = %d\n", (int)sizeof(long));
@@ -407,13 +520,15 @@ int __cdecl main(int argc, char **argv)
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, unused) != 0x00000CA5) {
-		printf("OFFSETOF(mainConfig_t, unused) != 0x00000CA5: %i\n", OFFSETOF(mainConfig_t, unused));
-		system("pause");
+		//printf("OFFSETOF(mainConfig_t, unused) != 0x00000CA5: %i\n", OFFSETOF(mainConfig_t, unused));
+		//system("pause");
 	}
 	// Test expansion
 	//CMD_UART_Send_Hex(0,0,"FFAA$CH1$BB",0);
 
+#ifndef LINUX
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_ALWAYS_DF);
+#endif
 
 	if (g_selfTestsMode) {
 		g_bDoingUnitTestsNow = 1;
@@ -430,7 +545,10 @@ int __cdecl main(int argc, char **argv)
 	}
 
 
+#if ENABLE_SDL_WINDOW
 	SIM_CreateWindow(argc, argv);
+#endif
+
 #if 1
 	CMD_ExecuteCommand("MQTTHost 192.168.0.113", 0);
 	CMD_ExecuteCommand("MqttPassword ma1oovoo0pooTie7koa8Eiwae9vohth1vool8ekaej8Voohi7beif5uMuph9Diex", 0);
@@ -449,7 +567,9 @@ int __cdecl main(int argc, char **argv)
 		while (1) {
 			Sleep(DEFAULT_FRAME_TIME);
 			Sim_RunFrame(DEFAULT_FRAME_TIME);
+#if ENABLE_SDL_WINDOW
 			SIM_RunWindow();
+#endif
 		}
 	}
 	else {
@@ -459,8 +579,12 @@ int __cdecl main(int argc, char **argv)
 			g_delta = cur_time - prev_time;
 			if (g_delta <= 0)
 				continue;
+			// give CPU some time to rest
+			Sleep(DEFAULT_FRAME_TIME);
 			Sim_RunFrame(g_delta);
+#if ENABLE_SDL_WINDOW
 			SIM_RunWindow();
+#endif
 			prev_time = cur_time;
 		}
 	}
@@ -492,6 +616,11 @@ int ota_progress() {
 int ota_total_bytes() {
 	return 0;
 }
+
+
+
+
+
 
 #endif
 

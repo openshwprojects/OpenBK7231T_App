@@ -486,7 +486,7 @@ void NTP_Init_Events() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("addClockEvent",CMD_NTP_AddClockEvent, NULL);
 	//cmddetail:{"name":"removeClockEvent","args":"[ID]",
-	//cmddetail:"descr":"Removes clock event wtih given ID",
+	//cmddetail:"descr":"Removes clock event with given ID",
 	//cmddetail:"fn":"CMD_NTP_RemoveClockEvent","file":"driver/drv_ntp_events.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("removeClockEvent", CMD_NTP_RemoveClockEvent, NULL);

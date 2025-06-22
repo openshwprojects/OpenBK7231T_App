@@ -180,6 +180,12 @@
     "requires": ""
   },
   {
+    "name": "$isDST",
+    "title": "$isDST",
+    "descr": "TODO",
+    "requires": ""
+  },
+  {
     "name": "$sunrise",
     "title": "$sunrise",
     "descr": "TODO",

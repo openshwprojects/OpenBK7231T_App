@@ -189,6 +189,7 @@ float getFlagValue(const char *s) {
 	return CFG_HasFlag(idx);
 }
 
+#if ENABLE_LED_BASIC
 float getLedDimmer(const char *s) {
 	return LED_GetDimmer();
 }
@@ -220,24 +221,28 @@ float getLedSaturation(const char *s) {
 float getLedTemperature(const char *s) {
 	return LED_GetTemperature();
 }
+#endif
 
 float getActiveRepeatingEvents(const char *s) {
 	return RepeatingEvents_GetActiveCount();
 }
+
+#ifdef ENABLE_DRIVER_BATTERY
+float getBatteryVoltage(const char* s)
+{
+	return Battery_lastreading(OBK_BATT_VOLTAGE);
+}
+float getBatteryLevel(const char* s)
+{
+	return Battery_lastreading(OBK_BATT_LEVEL);
+}
+#endif
 
 #ifdef ENABLE_DRIVER_BL0937
 
 float getVoltage(const char *s) {
 	return DRV_GetReading(OBK_VOLTAGE);
 }
-#ifdef ENABLE_DRIVER_BATTERY
-float getBatteryVoltage(const char *s) {
-	return Battery_lastreading(OBK_BATT_VOLTAGE);
-}
-float getBatteryLevel(const char *s) {
-	return Battery_lastreading(OBK_BATT_LEVEL);
-}
-#endif
 
 float getCurrent(const char *s) {
 	return DRV_GetReading(OBK_CURRENT);
@@ -254,12 +259,6 @@ float getYesterday(const char *s) {
 }
 float getToday(const char *s) {
 	return DRV_GetReading(OBK_CONSUMPTION_TODAY);
-}
-
-
-
-float getNTPOn(const char *s) {
-	return NTP_IsTimeSynced();
 }
 
 #endif
@@ -298,11 +297,22 @@ float getMonth(const char *s) {
 float getMDay(const char *s) {
 	return NTP_GetMDay();
 }
+
+#ifdef ENABLE_NTP
+
+float getNTPOn(const char* s)
+{
+	return NTP_IsTimeSynced();
+}
+
+#endif
+
 #if ENABLE_NTP_DST
 float isDST(const char *s){
 	return Time_IsDST();
 }
 #endif
+
 #if ENABLE_NTP_SUNRISE_SUNSET
 
 float getSunrise(const char *s) {
@@ -361,6 +371,7 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Provides flag access, as above.",
 	//cnstdetail:"requires":""}
 	{"$FLAG*", &getFlagValue},
+#if ENABLE_LED_BASIC
 	//cnstdetail:{"name":"$led_dimmer",
 	//cnstdetail:"title":"$led_dimmer",
 	//cnstdetail:"descr":"Current value of LED dimmer, 0-100 range",
@@ -401,6 +412,7 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current LED temperature value",
 	//cnstdetail:"requires":""}
 	{"$led_temperature", &getLedTemperature},
+#endif
 	//cnstdetail:{"name":"$activeRepeatingEvents",
 	//cnstdetail:"title":"$activeRepeatingEvents",
 	//cnstdetail:"descr":"Current number of active repeating events",
@@ -469,6 +481,7 @@ const constant_t g_constants[] = {
 	////cnstdetail:"descr":"Current Year from NTP",
 	////cnstdetail:"requires":""}
 	{ "$year", &getYear },
+#ifdef ENABLE_DRIVER_BL0937
 	////cnstdetail:{"name":"$yesterday",
 	////cnstdetail:"title":"$yesterday",
 	////cnstdetail:"descr":"",
@@ -479,6 +492,7 @@ const constant_t g_constants[] = {
 	////cnstdetail:"descr":"",
 	////cnstdetail:"requires":""}
 	{ "$today", &getToday },
+#endif
 #if ENABLE_NTP_DST
 	////cnstdetail:{"name":"$isDST",
 	////cnstdetail:"title":"$isDST",
@@ -543,11 +557,13 @@ const constant_t g_constants[] = {
 	//cnstdetail:"requires":""}
 	{ "$rebootReason", &getRebootReason },
 #endif
+#ifndef NO_CHIP_TEMPERATURE
 	//cnstdetail:{"name":"$intTemp",
 	//cnstdetail:"title":"$intTemp",
 	//cnstdetail:"descr":"Internal temperature (of WiFi module sensor)",
 	//cnstdetail:"requires":""}
 	{ "$intTemp", &getInternalTemperature },
+#endif
 };
 
 static int g_totalConstants = sizeof(g_constants) / sizeof(g_constants[0]);

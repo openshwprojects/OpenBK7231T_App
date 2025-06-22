@@ -19,11 +19,11 @@
 
 struct spi_message
 {
-	UINT8*send_buf;
-	UINT32 send_len;
+	byte*send_buf;
+	unsigned int send_len;
 
-	UINT8*recv_buf;
-	UINT32 recv_len;
+	byte*recv_buf;
+	unsigned int recv_len;
 };
 
 typedef int beken_semaphore_t;

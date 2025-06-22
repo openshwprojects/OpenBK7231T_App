@@ -12,10 +12,6 @@
 #include "../httpserver/new_http.h"
 #include "../hal/hal_pins.h"
 
-//int OWReset(int Pin);
-//void OWWriteByte(int Pin, int data);
-//int OWReadByte(int Pin);
-// int OWConversionDone(int Pin);
 int DS1820_getTemp();
 void DS1820_driver_Init();
 void DS1820_OnEverySecond();

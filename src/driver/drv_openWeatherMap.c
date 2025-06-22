@@ -15,7 +15,9 @@
 #include "../cJSON/cJSON.h"
 
 #ifndef WINDOWS
+#include <lwip/err.h>
 #include <lwip/dns.h>
+#include "lwip/netdb.h"
 #endif
 
 #ifdef WINDOWS
@@ -160,11 +162,11 @@ static void sendQueryThreadInternal() {
 
 	if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0) {
 		closesocket(s);
-		return 1;
+		return;
 	}
 	if (send(s, g_request, strlen(g_request), 0) < 0) {
 		closesocket(s);
-		return 1;
+		return;
 	}
 	char buffer[1024];
 	int recv_size = recv(s, buffer, sizeof(buffer) - 1, 0);
@@ -233,8 +235,10 @@ static commandResult_t CMD_OWM_Setup(const void *context, const char *cmd, const
 
 	return CMD_RES_OK;
 }
-void OWM_AppendInformationToHTTPIndexPage(http_request_t *request) {
-
+void OWM_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState) {
+	if (bPreState) {
+		return;
+	}
 	hprintf255(request, "<h4>OpenWeatherMap Integration</h4>");
 	if (1) {
 		hprintf255(request, "<h6>Raw Reply (only in DEBUG)</h6>");
@@ -253,7 +257,7 @@ void OWM_AppendInformationToHTTPIndexPage(http_request_t *request) {
 		struct tm *tm = gmtime(&g_weather.sunrise);
 		strftime(buff, sizeof(buff), "%H:%M:%S", tm);
 		hprintf255(request, "<h5>Timezone: %d, Sunrise: %s, ", g_weather.timezone, buff);
-		tm = gmtime(&g_weather.sunrise);
+		tm = gmtime(&g_weather.sunset);
 		strftime(buff, sizeof(buff), "%H:%M:%S", tm);
 		hprintf255(request, "Sunset: %s</h5>", buff);
 	}

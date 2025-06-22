@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include "cmd_local.h"
 
+#if ENABLE_TCP_COMMANDLINE
 
 #define CMD_CLIENT_SLEEP_TIME_MS 50
 #define CMD_CLIENT_DISCONNECT_AFTER_IDLE_MS (60 * 1000)
@@ -138,3 +139,4 @@ void CMD_StartTCPCommandLine()
 }
 
 
+#endif // ENABLE_TCP_COMMANDLINE
