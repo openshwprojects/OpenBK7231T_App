@@ -1023,7 +1023,6 @@ void CMD_Init_Early() {
 			CMD_UARTConsole_Init();
 		}
 	}
-	DRV_InitFlashMemoryTestFunctions();
 }
 
 
