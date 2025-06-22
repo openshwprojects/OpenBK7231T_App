@@ -20,16 +20,16 @@
 
 #define SPI_USLEEP(x)
 
-#ifdef PLATFORM_BEKEN
-#define OBK_DISABLE_INTERRUPTS \
-	GLOBAL_INT_DECLARATION(); \
-	GLOBAL_INT_DISABLE();
-#define OBK_ENABLE_INTERRUPTS \
-	GLOBAL_INT_RESTORE();
-#else
+//#ifdef PLATFORM_BEKEN
+//#define OBK_DISABLE_INTERRUPTS \
+//	GLOBAL_INT_DECLARATION(); \
+//	GLOBAL_INT_DISABLE();
+//#define OBK_ENABLE_INTERRUPTS \
+//	GLOBAL_INT_RESTORE();
+//#else
 #define OBK_ENABLE_INTERRUPTS 
 #define OBK_DISABLE_INTERRUPTS
-#endif
+//#endif
 
 void spi_flash_read_id(softSPI_t* spi, byte* jedec_id) {
 	OBK_DISABLE_INTERRUPTS;
