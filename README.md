@@ -16,7 +16,7 @@ Although this repository is named "OpenBK7231T_App", it has evolved into a multi
 -   [W600](https://www.elektroda.com/rtvforum/viewtopic.php?p=20252619#20252619) (WinnerMicro chip), W601 ([WIS600, ESP-01W](https://www.elektroda.com/rtvforum/topic3950611.html), [TW-02](https://www.elektroda.com/rtvforum/viewtopic.php?p=20239610#20239610), [TW-03](https://www.elektroda.com/rtvforum/topic3929601.html), etc)
 -   [LN882H](https://www.elektroda.com/rtvforum/topic4027545.html) by Lightning Semi - [datasheet](https://www.elektroda.com/rtvforum/topic4027545.html), see [flashing how-to](https://www.elektroda.com/rtvforum/topic4028087.html), see [sample device teardown and flashing](https://www.elektroda.com/rtvforum/topic4032240.html), see [new flash tool](https://www.elektroda.com/rtvforum/topic4045532.html), see [dev board](https://www.elektroda.com/rtvforum/topic4050274.html)
 -   Windows, via [simulator](https://www.elektroda.com/rtvforum/topic4046056.html)
--   ESP32 (working well - guide to be released soon, [development topic](https://www.elektroda.com/rtvforum/topic4074860.html))
+-   ESP32 (original), ESP32-S2, ESP32-S3, ESP32-C2, ESP32-C3, ESP32-C6 (working well - guide to be released soon, [development topic](https://www.elektroda.com/rtvforum/topic4074860.html))
 -   RTL8711AM/RTL8195A (limited testing - work-in-progress) see [development thread](https://www.elektroda.com/rtvforum/viewtopic.php?p=21452754#21452754)
 -   RTL8710C/RTL8720C (AmebaZ2 family) (eg BW15, W701, W701H, [WBR2, WBR3](https://www.elektroda.com/rtvforum/topic4104395.html)) (see [guide](https://www.elektroda.com/rtvforum/topic4097185.html))
 -   RTL8710B (AmebaZ family) (eg [T102_V1.0](https://fccid.io/2ASKS-T102), [W302/T102_V1.0](https://fcc.report/FCC-ID/2AU7O-T102V11), [T112_V1.1](https://fccid.io/2AU7O-T102V11), [WR2](https://developer.tuya.com/en/docs/iot/wifiwr2module?id=K9605tko0juc3), [WR3E](https://developer.tuya.com/en/docs/iot/wr3e-module-datasheet?id=K9elwlqbfosbc), BW14)
@@ -26,17 +26,17 @@ Although this repository is named "OpenBK7231T_App", it has evolved into a multi
 
 Please use automatically compiled binaries from the Releases tab. To build OpenBeken yourself for any supported platform, fork our version of the submodule SDK first, and then check out this app repository alongside it. Details further down. Alternatively consider using the easier [override method.](https://www.elektroda.com/rtvforum/topic4082682.html)
 
+See our guides in Russian: [BK7231N/T34](https://www.v-elite.ru/t34), and [BL602 RGB](https://www.v-elite.ru/bl602rgb), and [Youtube guide for BK7231/T34](https://www.youtube.com/watch?v=BnmSWZchK-E)
+
+For general information about the BK7231 family, available datasheets, pinout, peripherals, [consult our docs topic](https://www.elektroda.com/rtvforum/topic3951016.html).
+
 # Development in Progress
 
 -   XR872/XF16 (eg [A9 camera](https://www.elektroda.com/rtvforum/topic4074636.html))
 -   XR806 (eg [TRV](https://www.elektroda.com/rtvforum/topic4118139.html), Allwinner [Dev Board](https://www.elektroda.com/rtvforum/topic4109971.html))
 -   BK7252U (eg [Tuya doorbell](https://www.elektroda.com/rtvforum/topic4073760.html), eg [A9 camera PCB](https://www.elektroda.com/rtvforum/topic4123266.html))
 -   BK7252N (eg [A9 camera](https://www.elektroda.com/rtvforum/topic4118499.html))
--   BK7231S/BK7231U (eg C-Chip C-8133U [LED driver boards](https://www.elektroda.com/rtvforum/topic4071547.html), (Hi-Link HLK-B30 [Dev Board](https://fccid.io/2AD56HLK-B30/User-Manual/User-Manual-4894335.pdf),Development [thread](https://www.elektroda.com/rtvforum/viewtopic.php?p=21507214#21507214)))
-
-See our guides in Russian: [BK7231N/T34](https://www.v-elite.ru/t34), and [BL602 RGB](https://www.v-elite.ru/bl602rgb), and [Youtube guide for BK7231/T34](https://www.youtube.com/watch?v=BnmSWZchK-E)
-
-For general information about the BK7231 family, available datasheets, pinout, peripherals, [consult our docs topic](https://www.elektroda.com/rtvforum/topic3951016.html).
+-   BK7231S/BK7231U (eg C-Chip C-8133U [LED driver boards](https://www.elektroda.com/rtvforum/topic4071547.html), Hi-Link HLK-B30 [Dev Board](https://fccid.io/2AD56HLK-B30/User-Manual/User-Manual-4894335.pdf), Development [thread](https://www.elektroda.com/rtvforum/viewtopic.php?p=21507214#21507214))
 
 # [Supported Devices/Templates List](https://openbekeniot.github.io/webapp/devicesList.html) Now with 700+ entries! (Get 🏆[free SD Card](https://www.elektroda.com/rtvforum/topic3950844.html)🏆 for submitting new one!)
 
