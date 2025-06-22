@@ -96,7 +96,7 @@ int hourArg2seconds(int argnum){
 	const char *arg;
 	int a, b, ret;
 	arg = Tokenizer_GetArg(argnum);
-bk_printf("Read argument %s\r\n",arg);
+//bk_printf("Read argument %s\r\n",arg);
 	if (strchr(arg, ':')) {
 		int useSign = 1;
 		if (*arg == '-') {
@@ -105,11 +105,11 @@ bk_printf("Read argument %s\r\n",arg);
 		}
 		sscanf(arg, "%i:%i", &a, &b);
 		ret = useSign *  (a * 60 * 60 + b * 60);
-bk_printf("In string part, a=%i b=%i ret=%i\r\n",a,b,ret);
+//bk_printf("In string part, a=%i b=%i ret=%i\r\n",a,b,ret);
 	}
 	else {
 		ret = Tokenizer_GetArgInteger(argnum) * 60 * 60;
-bk_printf("In integer part, a=%i b=%i ret=%i\r\n",a,b,ret);
+//bk_printf("In integer part, a=%i b=%i ret=%i\r\n",a,b,ret);
 	}
 	return ret;
 }
@@ -377,7 +377,12 @@ commandResult_t CLOCK_CalcDST(const void *context, const char *cmd, const char *
 	monthStart = Tokenizer_GetArgInteger(5);
 	dayStart = Tokenizer_GetArgInteger(6);
 	hourStart = Tokenizer_GetArgInteger(7);
-	g_DST_offset = Tokenizer_GetArgsCount() < 9 ? 60 : hourArg2seconds(8)/60;
+	int off = Tokenizer_GetArgsCount() < 9 ? 60 : hourArg2seconds(8)/60;
+	if (off != off%121) {
+		ADDLOG_ERROR(LOG_FEATURE_RAW, "CLOCK_CalcDST: DST offset must be <= 2 hours, but is %i minutes. Setting to default of 1 hour",off);
+		off=60;
+	}
+	g_DST_offset = off;
 	ADDLOG_INFO(LOG_FEATURE_RAW, "read values: %u,%u,%u,%u,%u,%u,%u,%u,(%u)\r\n",  nthWeekEnd, monthEnd, dayEnd, hourEnd, nthWeekStart, monthStart, dayStart, hourStart,g_DST_offset);
 
 /*	Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year);
