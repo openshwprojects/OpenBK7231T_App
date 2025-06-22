@@ -32,7 +32,7 @@ For general information about the BK7231 family, available datasheets, pinout, p
 
 # In Progress
 
-To varying degrees, support for the following are in progress.
+To varying degrees, support for the following is in development.
 
 -   XR872/XF16 (eg [A9 camera](https://www.elektroda.com/rtvforum/topic4074636.html))
 -   XR806 (eg [TRV](https://www.elektroda.com/rtvforum/topic4118139.html), Allwinner [Dev Board](https://www.elektroda.com/rtvforum/topic4109971.html))
