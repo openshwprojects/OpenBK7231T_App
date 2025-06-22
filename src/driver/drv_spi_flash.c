@@ -28,9 +28,131 @@
 #define OBK_ENABLE_INTERRUPTS 
 #define OBK_DISABLE_INTERRUPTS
 #endif
+
+void flash_read_id(softSPI_t* spi, byte* jedec_id) {
+	OBK_DISABLE_INTERRUPTS;
+
+	SPI_Setup(spi);
+	usleep(500);
+	usleep(500);
+	usleep(500);
+
+	SPI_Begin(spi);
+	SPI_Send(spi, 0x9F);
+	jedec_id[0] = SPI_Read(spi);
+	jedec_id[1] = SPI_Read(spi);
+	jedec_id[2] = SPI_Read(spi);
+	SPI_End(spi);
+
+	OBK_ENABLE_INTERRUPTS;
+}
+
+void spi_flash_read(softSPI_t* spi, int adr, byte* out, int cnt) {
+	int i;
+
+	OBK_DISABLE_INTERRUPTS;
+
+	SPI_Setup(spi);
+	usleep(500);
+	usleep(500);
+	usleep(500);
+
+	SPI_Begin(spi);
+	SPI_Send(spi, READ_FLASH_CMD);
+	SPI_Send(spi, (adr >> 16) & 0xFF);
+	SPI_Send(spi, (adr >> 8) & 0xFF);
+	SPI_Send(spi, adr & 0xFF);
+	for (i = 0; i < cnt; i++) {
+		out[i] = SPI_Read(spi);
+	}
+	SPI_End(spi);
+
+	OBK_ENABLE_INTERRUPTS;
+}
+
+void flash_erase(softSPI_t* spi) {
+	OBK_DISABLE_INTERRUPTS;
+
+	SPI_Setup(spi);
+	usleep(500);
+	usleep(500);
+
+	SPI_Begin(spi);
+	SPI_Send(spi, WRITEENABLE_FLASH_CMD);
+	SPI_End(spi);
+	usleep(500);
+
+	SPI_Begin(spi);
+	SPI_Send(spi, ERASE_FLASH_CMD);
+	SPI_End(spi);
+
+	OBK_ENABLE_INTERRUPTS;
+}
+
+void spi_flash_write(softSPI_t* spi, int adr, const byte* data, int cnt) {
+	int i;
+
+	OBK_DISABLE_INTERRUPTS;
+
+	SPI_Setup(spi);
+	usleep(500);
+	usleep(500);
+	usleep(500);
+
+	SPI_Begin(spi);
+	SPI_Send(spi, WRITEENABLE_FLASH_CMD);
+	SPI_End(spi);
+	usleep(500);
+
+	SPI_Begin(spi);
+	SPI_Send(spi, WRITE_FLASH_CMD);
+	SPI_Send(spi, (adr >> 16) & 0xFF);
+	SPI_Send(spi, (adr >> 8) & 0xFF);
+	SPI_Send(spi, adr & 0xFF);
+	for (i = 0; i < cnt; i++) {
+		SPI_Send(spi, data[i]);
+	}
+	SPI_End(spi);
+
+	OBK_ENABLE_INTERRUPTS;
+}
+
+void flash_test_pages(softSPI_t* spi, int baseAddr, int length, byte pattern) {
+	int i, err = 0;
+	byte *writeBuf = malloc(length);
+	byte *readBuf = malloc(length);
+
+	for (i = 0; i < length; i++)
+		writeBuf[i] = pattern;
+
+	flash_erase(spi);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Erased flash.");
+
+	spi_flash_read(spi, baseAddr, readBuf, length);
+	for (i = 0; i < length; i++) {
+		if (readBuf[i] != 0xFF)
+			err++;
+	}
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Flash erased test: errors = %d/%d", err, length);
+
+	err = 0;
+	spi_flash_write(spi, baseAddr, writeBuf, length);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Wrote pattern %02X to flash.", pattern);
+
+	spi_flash_read(spi, baseAddr, readBuf, length);
+	for (i = 0; i < length; i++) {
+		if (readBuf[i] != pattern)
+			err++;
+	}
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Flash write-read test: errors = %d/%d", err, length);
+
+	free(writeBuf);
+	free(readBuf);
+}
+
 void spi_test() {
 	softSPI_t spi;
-
 
 	spi.miso = MISO_PIN;
 	spi.mosi = MOSI_PIN;
@@ -38,25 +160,11 @@ void spi_test() {
 	spi.sck = SCK_PIN;
 	byte jedec_id[3];
 
-	OBK_DISABLE_INTERRUPTS;
-
-	SPI_Setup(&spi);
-	usleep(500);
-	usleep(500);
-	usleep(500);
-
-	SPI_Begin(&spi); // enable SPI communication with the flash
-	SPI_Send(&spi, 0x9F); // send the JEDEC ID command
-	jedec_id[0] = SPI_Read(&spi); // read manufacturer ID
-	jedec_id[1] = SPI_Read(&spi); // read memory type
-	jedec_id[2] = SPI_Read(&spi); // read capacity
-	SPI_End(&spi); // disable SPI communication with the flash
-
-	OBK_ENABLE_INTERRUPTS;
+	flash_read_id(&spi, jedec_id);
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "ID %02X %02X %02X", jedec_id[0], jedec_id[1], jedec_id[2]);
-
 }
+
 void spi_test_read(int adr, int cnt) {
 	byte *data;
 	int i;
@@ -67,23 +175,9 @@ void spi_test_read(int adr, int cnt) {
 	spi.ss = SS_PIN;
 	spi.sck = SCK_PIN;
 
-	OBK_DISABLE_INTERRUPTS;
-
 	data = malloc(cnt);
-	SPI_Setup(&spi);
-	usleep(500);
-	usleep(500);
-	usleep(500);
 
-	SPI_Begin(&spi); // enable SPI communication with the flash
-	SPI_Send(&spi, READ_FLASH_CMD); // send the Read Flash command
-	SPI_Send(&spi, (adr >> 16) & 0xFF); // send the address MSB
-	SPI_Send(&spi, (adr >> 8) & 0xFF); // send the address middle byte
-	SPI_Send(&spi, adr & 0xFF); // send the address LSB
-	for (i = 0; i < cnt; i++) {
-		data[i] = SPI_Read(&spi);
-	}
-	SPI_End(&spi); // disable SPI communication with the flash
+	spi_flash_read(&spi, adr, data, cnt);
 
 	int chunkLen = 8;
 	int j;
@@ -97,10 +191,9 @@ void spi_test_read(int adr, int cnt) {
 		}
 		ADDLOG_INFO(LOG_FEATURE_CMD, "Ofs %i - %s", i, tmp);
 	}
-	OBK_ENABLE_INTERRUPTS;
 	free(data);
-
 }
+
 void spi_test_erase() {
 	softSPI_t spi;
 
@@ -109,26 +202,10 @@ void spi_test_erase() {
 	spi.ss = SS_PIN;
 	spi.sck = SCK_PIN;
 
-	OBK_DISABLE_INTERRUPTS;
-
-	SPI_Setup(&spi);
-	usleep(500);
-	usleep(500);
-
-	SPI_Begin(&spi); // enable SPI communication with the flash
-	SPI_Send(&spi, WRITEENABLE_FLASH_CMD);
-	SPI_End(&spi); // disable SPI communication with the flash
-	usleep(500);
-
-	SPI_Begin(&spi); // enable SPI communication with the flash
-	SPI_Send(&spi, ERASE_FLASH_CMD);
-	SPI_End(&spi); // disable SPI communication with the flash
-
-	// THIS WILL TAKE TIME! YOU will have to wait (and check status register to see if it's ready)
-
+	flash_erase(&spi);
 }
+
 void spi_test_write(int adr, const byte *data, int cnt) {
-	int i;
 	softSPI_t spi;
 
 	spi.miso = MISO_PIN;
@@ -136,30 +213,9 @@ void spi_test_write(int adr, const byte *data, int cnt) {
 	spi.ss = SS_PIN;
 	spi.sck = SCK_PIN;
 
-	OBK_DISABLE_INTERRUPTS;
-
-	SPI_Setup(&spi);
-	usleep(500);
-	usleep(500);
-	usleep(500);
-
-	SPI_Begin(&spi); // enable SPI communication with the flash
-	SPI_Send(&spi, WRITEENABLE_FLASH_CMD);
-	SPI_End(&spi); // disable SPI communication with the flash
-	usleep(500);
-	SPI_Begin(&spi); // enable SPI communication with the flash
-	SPI_Send(&spi, WRITE_FLASH_CMD); // send the Read Flash command
-	SPI_Send(&spi, (adr >> 16) & 0xFF); // send the address MSB
-	SPI_Send(&spi, (adr >> 8) & 0xFF); // send the address middle byte
-	SPI_Send(&spi, adr & 0xFF); // send the address LSB
-	for (i = 0; i < cnt; i++) {
-		SPI_Send(&spi, data[i]);
-	}
-	SPI_End(&spi); // disable SPI communication with the flash
-
-	OBK_ENABLE_INTERRUPTS;
+	spi_flash_write(&spi, adr, data, cnt);
 }
-// SPITestFlash_ReadData 0 16
+
 static commandResult_t CMD_SPITestFlash_ReadData(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int addr = 0;
 	int len = 16;
@@ -179,7 +235,7 @@ static commandResult_t CMD_SPITestFlash_ReadData(const void* context, const char
 
 	return CMD_RES_OK;
 }
-// SPITestFlash_Erase
+
 static commandResult_t CMD_SPITestFlash_Erase(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SPITestFlash_Erase");
 
@@ -187,7 +243,7 @@ static commandResult_t CMD_SPITestFlash_Erase(const void* context, const char* c
 
 	return CMD_RES_OK;
 }
-// SPITestFlash_WriteStr 0 
+
 static commandResult_t CMD_SPITestFlash_WriteStr(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int addr = 0;
 	const char *str = "This is a test";
@@ -208,7 +264,6 @@ static commandResult_t CMD_SPITestFlash_WriteStr(const void* context, const char
 	return CMD_RES_OK;
 }
 
-// SPITestFlash_ReadID
 static commandResult_t CMD_SPITestFlash_ReadID(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SPITestFlash_ReadID");
 
@@ -217,6 +272,35 @@ static commandResult_t CMD_SPITestFlash_ReadID(const void* context, const char* 
 	return CMD_RES_OK;
 }
 
+static commandResult_t CMD_SPITestFlash_TestPages(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int addr = 0;
+	int len = 64;
+	int pattern = 0xA5;
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SPITestFlash_TestPages");
+
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_GetArgsCount() > 0) {
+		addr = Tokenizer_GetArgInteger(0);
+		if (Tokenizer_GetArgsCount() > 1) {
+			len = Tokenizer_GetArgInteger(1);
+			if (Tokenizer_GetArgsCount() > 2) {
+				pattern = Tokenizer_GetArgInteger(2);
+			}
+		}
+	}
+
+	softSPI_t spi;
+	spi.miso = MISO_PIN;
+	spi.mosi = MOSI_PIN;
+	spi.ss = SS_PIN;
+	spi.sck = SCK_PIN;
+
+	flash_test_pages(&spi, addr, len, (byte)pattern);
+
+	return CMD_RES_OK;
+}
 
 
 void DRV_InitFlashMemoryTestFunctions() {
@@ -239,11 +323,14 @@ void DRV_InitFlashMemoryTestFunctions() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SPITestFlash_Erase", CMD_SPITestFlash_Erase, NULL);
 
+	// backlog startDriver TESTSPIFLASH; SPITestFlash_ReadID
+
 	//cmddetail:{"name":"SPITestFlash_ReadData","args":"CMD_SPITestFlash_ReadData",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SPITestFlash_ReadData", CMD_SPITestFlash_ReadData, NULL);
 
+	CMD_RegisterCommand("SPITestFlash_Test", CMD_SPITestFlash_TestPages, NULL);
 }
 
