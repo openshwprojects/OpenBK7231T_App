@@ -84,7 +84,7 @@ static void flash_wait_while_busy(softSPI_t* spi) {
 	} while (status & STATUS_BUSY_MASK);
 }
 
-void flash_erase(softSPI_t* spi) {
+void spi_flash_erase(softSPI_t* spi) {
 	OBK_DISABLE_INTERRUPTS;
 
 	SPI_Setup(spi);
@@ -134,7 +134,7 @@ void spi_flash_write(softSPI_t* spi, int adr, const byte* data, int cnt) {
 }
 #define ERASE_SECTOR_CMD 0x20 // 4KB erase
 
-void flash_erase_sector(softSPI_t* spi, int addr) {
+void spi_flash_erase_sector(softSPI_t* spi, int addr) {
 	OBK_DISABLE_INTERRUPTS;
 
 	SPI_Setup(spi);
@@ -165,7 +165,7 @@ void flash_test_pages(softSPI_t* spi, int baseAddr, int length, byte pattern) {
 	for (i = 0; i < length; i++)
 		writeBuf[i] = pattern;
 
-	flash_erase(spi);
+	spi_flash_erase(spi);
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Erased flash.");
 
 	spi_flash_read(spi, baseAddr, readBuf, length);
@@ -242,7 +242,7 @@ void spi_test_erase() {
 	spi.ss = SS_PIN;
 	spi.sck = SCK_PIN;
 
-	flash_erase(&spi);
+	spi_flash_erase(&spi);
 }
 
 void spi_test_write(int adr, const byte *data, int cnt) {
