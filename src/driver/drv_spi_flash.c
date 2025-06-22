@@ -109,29 +109,41 @@ void spi_flash_erase(softSPI_t* spi) {
 }
 
 void spi_flash_write(softSPI_t* spi, int adr, const byte* data, int cnt) {
-	int i;
+	int remaining = cnt;
+	int offset = 0;
 
 	OBK_DISABLE_INTERRUPTS;
 
-	SPI_Setup(spi);
-	SPI_USLEEP(500);
-	SPI_USLEEP(500);
-	SPI_USLEEP(500);
+	while (remaining > 0) {
+		int page_offset = adr % 256;
+		int write_len = 256 - page_offset;
+		if (write_len > remaining)
+			write_len = remaining;
 
-	SPI_Begin(spi);
-	SPI_Send(spi, WRITEENABLE_FLASH_CMD);
-	SPI_End(spi);
-	SPI_USLEEP(500);
+		SPI_Setup(spi);
+		SPI_USLEEP(500);
 
-	SPI_Begin(spi);
-	SPI_Send(spi, WRITE_FLASH_CMD);
-	SPI_Send(spi, (adr >> 16) & 0xFF);
-	SPI_Send(spi, (adr >> 8) & 0xFF);
-	SPI_Send(spi, adr & 0xFF);
-	for (i = 0; i < cnt; i++) {
-		SPI_Send(spi, data[i]);
+		SPI_Begin(spi);
+		SPI_Send(spi, WRITEENABLE_FLASH_CMD);
+		SPI_End(spi);
+		SPI_USLEEP(500);
+
+		SPI_Begin(spi);
+		SPI_Send(spi, WRITE_FLASH_CMD);
+		SPI_Send(spi, (adr >> 16) & 0xFF);
+		SPI_Send(spi, (adr >> 8) & 0xFF);
+		SPI_Send(spi, adr & 0xFF);
+		for (int i = 0; i < write_len; i++) {
+			SPI_Send(spi, data[offset + i]);
+		}
+		SPI_End(spi);
+
+		flash_wait_while_busy(spi);
+
+		adr += write_len;
+		offset += write_len;
+		remaining -= write_len;
 	}
-	SPI_End(spi);
 
 	OBK_ENABLE_INTERRUPTS;
 }
