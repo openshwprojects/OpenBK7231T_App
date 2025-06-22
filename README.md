@@ -30,7 +30,9 @@ See our guides in Russian: [BK7231N/T34](https://www.v-elite.ru/t34), and [BL602
 
 For general information about the BK7231 family, available datasheets, pinout, peripherals, [consult our docs topic](https://www.elektroda.com/rtvforum/topic3951016.html).
 
-# Development in Progress
+# In Progress
+
+To varying degrees support for the following are in progress
 
 -   XR872/XF16 (eg [A9 camera](https://www.elektroda.com/rtvforum/topic4074636.html))
 -   XR806 (eg [TRV](https://www.elektroda.com/rtvforum/topic4118139.html), Allwinner [Dev Board](https://www.elektroda.com/rtvforum/topic4109971.html))
