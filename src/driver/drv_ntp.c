@@ -94,7 +94,7 @@ int NTP_GetTimesZoneOfsSeconds()
 }
 int hourArg2seconds(int argnum){
 	const char *arg;
-	int ret;
+	int a, b, ret;
 	arg = Tokenizer_GetArg(argnum);
 	if (strchr(arg, ':')) {
 		int useSign = 1;
@@ -111,7 +111,6 @@ int hourArg2seconds(int argnum){
 	return ret;
 }
 commandResult_t NTP_SetTimeZoneOfs(const void *context, const char *cmd, const char *args, int cmdFlags) {
-	int a, b;
 	const char *arg;
 	int oldOfs;
 
