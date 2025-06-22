@@ -18,6 +18,8 @@
 #define ERASE_FLASH_CMD 0xC7
 #define WRITE_FLASH_CMD 0x02
 
+#define SPI_USLEEP(x)
+
 #ifdef PLATFORM_BEKEN
 #define OBK_DISABLE_INTERRUPTS \
 	GLOBAL_INT_DECLARATION(); \
@@ -29,13 +31,13 @@
 #define OBK_DISABLE_INTERRUPTS
 #endif
 
-void flash_read_id(softSPI_t* spi, byte* jedec_id) {
+void spi_flash_read_id(softSPI_t* spi, byte* jedec_id) {
 	OBK_DISABLE_INTERRUPTS;
 
 	SPI_Setup(spi);
-	usleep(500);
-	usleep(500);
-	usleep(500);
+	SPI_USLEEP(500);
+	SPI_USLEEP(500);
+	SPI_USLEEP(500);
 
 	SPI_Begin(spi);
 	SPI_Send(spi, 0x9F);
@@ -53,9 +55,9 @@ void spi_flash_read(softSPI_t* spi, int adr, byte* out, int cnt) {
 	OBK_DISABLE_INTERRUPTS;
 
 	SPI_Setup(spi);
-	usleep(500);
-	usleep(500);
-	usleep(500);
+	SPI_USLEEP(500);
+	SPI_USLEEP(500);
+	SPI_USLEEP(500);
 
 	SPI_Begin(spi);
 	SPI_Send(spi, READ_FLASH_CMD);
@@ -80,7 +82,8 @@ static void flash_wait_while_busy(softSPI_t* spi) {
 		SPI_Send(spi, READ_STATUS_REG_CMD);
 		status = SPI_Read(spi);
 		SPI_End(spi);
-		usleep(1000);
+		//SPI_USLEEP(1000);
+		rtos_delay_milliseconds(5);
 	} while (status & STATUS_BUSY_MASK);
 }
 
@@ -88,13 +91,13 @@ void spi_flash_erase(softSPI_t* spi) {
 	OBK_DISABLE_INTERRUPTS;
 
 	SPI_Setup(spi);
-	usleep(500);
-	usleep(500);
+	SPI_USLEEP(500);
+	SPI_USLEEP(500);
 
 	SPI_Begin(spi);
 	SPI_Send(spi, WRITEENABLE_FLASH_CMD);
 	SPI_End(spi);
-	usleep(500);
+	SPI_USLEEP(500);
 
 	SPI_Begin(spi);
 	SPI_Send(spi, ERASE_FLASH_CMD);
@@ -111,14 +114,14 @@ void spi_flash_write(softSPI_t* spi, int adr, const byte* data, int cnt) {
 	OBK_DISABLE_INTERRUPTS;
 
 	SPI_Setup(spi);
-	usleep(500);
-	usleep(500);
-	usleep(500);
+	SPI_USLEEP(500);
+	SPI_USLEEP(500);
+	SPI_USLEEP(500);
 
 	SPI_Begin(spi);
 	SPI_Send(spi, WRITEENABLE_FLASH_CMD);
 	SPI_End(spi);
-	usleep(500);
+	SPI_USLEEP(500);
 
 	SPI_Begin(spi);
 	SPI_Send(spi, WRITE_FLASH_CMD);
@@ -138,12 +141,12 @@ void spi_flash_erase_sector(softSPI_t* spi, int addr) {
 	OBK_DISABLE_INTERRUPTS;
 
 	SPI_Setup(spi);
-	usleep(500);
+	SPI_USLEEP(500);
 
 	SPI_Begin(spi);
 	SPI_Send(spi, WRITEENABLE_FLASH_CMD);
 	SPI_End(spi);
-	usleep(500);
+	SPI_USLEEP(500);
 
 	SPI_Begin(spi);
 	SPI_Send(spi, ERASE_SECTOR_CMD);
@@ -210,7 +213,7 @@ void spi_test() {
 	spi.sck = SCK_PIN;
 	byte jedec_id[3];
 
-	flash_read_id(&spi, jedec_id);
+	spi_flash_read_id(&spi, jedec_id);
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "ID %02X %02X %02X", jedec_id[0], jedec_id[1], jedec_id[2]);
 }
