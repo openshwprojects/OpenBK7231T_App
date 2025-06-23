@@ -75,30 +75,28 @@ void FastSPI_Setup(softSPI_t *spi) {
 	}
 }
 
-
-
-
-void FastSPI_Begin(softSPI_t *spi) {
-	FAST_SET_LOW(spi->ss_reg); // enable SPI communication with the flash
-}
-void FastSPI_End(softSPI_t *spi) {
-	FAST_SET_HIGH(spi->ss_reg); // disable SPI communication with the flash
-}
+#define FastSPI_Begin(spi) FAST_SET_LOW(spi->ss_reg);
+#define FastSPI_End(spi) FAST_SET_HIGH(spi->ss_reg);
 
 void FastSPI_Send(softSPI_t *spi, byte dataToSend) {
 	for (int i = 0; i < 8; i++) {
-		HAL_PIN_SetOutputValue(spi->mosi, (dataToSend >> (7 - i)) & 0x01);
-		HAL_PIN_SetOutputValue(spi->sck, 1);
-		HAL_PIN_SetOutputValue(spi->sck, 0);
+		if ((dataToSend >> (7 - i)) & 0x01) {
+			FAST_SET_HIGH(spi->mosi_reg);
+		}
+		else {
+			FAST_SET_LOW(spi->mosi_reg);
+		}
+		FAST_SET_HIGH(spi->sck_reg);
+		FAST_SET_LOW(spi->sck_reg);
 	}
 }
 
 byte FastSPI_Read(softSPI_t *spi) {
 	byte receivedData = 0;
 	for (int i = 0; i < 8; i++) {
-		HAL_PIN_SetOutputValue(spi->sck, 1);
+		FAST_SET_HIGH(spi->sck_reg);
 		receivedData |= (HAL_PIN_ReadDigitalInput(spi->miso) << (7 - i));
-		HAL_PIN_SetOutputValue(spi->sck, 0);
+		FAST_SET_LOW(spi->sck_reg);
 	}
 	return receivedData;
 }
