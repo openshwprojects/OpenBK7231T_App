@@ -24,7 +24,7 @@
 #define OBK_ENABLE_INTERRUPTS 
 #define OBK_DISABLE_INTERRUPTS
 
-#if PLATFORM_BEKEN
+#if PLATFORM_BK7231T || PLATFORM_BK7231N
 
 #include "include.h"
 #include "arm_arch.h"
@@ -89,26 +89,40 @@ void FastSPI_Setup(softSPI_t *spi) {
 #define FastSPI_Begin(spi) FAST_SET_LOW(spi->ss_reg);
 #define FastSPI_End(spi) FAST_SET_HIGH(spi->ss_reg);
 
+#define SEND_BIT(spi, bit) \
+	if (dataToSend & (1 << bit)) { \
+		FAST_SET_HIGH(spi->mosi_reg); \
+	} else { \
+		FAST_SET_LOW(spi->mosi_reg); \
+	} \
+	FAST_SET_HIGH(spi->sck_reg); \
+	FAST_SET_LOW(spi->sck_reg);
+
 void FastSPI_Send(softSPI_t *spi, byte dataToSend) {
-	for (int i = 0; i < 8; i++) {
-		if ((dataToSend >> (7 - i)) & 0x01) {
-			FAST_SET_HIGH(spi->mosi_reg);
-		}
-		else {
-			FAST_SET_LOW(spi->mosi_reg);
-		}
-		FAST_SET_HIGH(spi->sck_reg);
-		FAST_SET_LOW(spi->sck_reg);
-	}
+	SEND_BIT(spi, 7)
+	SEND_BIT(spi, 6)
+	SEND_BIT(spi, 5)
+	SEND_BIT(spi, 4)
+	SEND_BIT(spi, 3)
+	SEND_BIT(spi, 2)
+	SEND_BIT(spi, 1)
+	SEND_BIT(spi, 0)
 }
+#define READ_BIT(spi, bit) \
+	FAST_SET_HIGH(spi->sck_reg); \
+	receivedData |= (FAST_READ_PIN(spi->miso_reg) << bit); \
+	FAST_SET_LOW(spi->sck_reg);
 
 byte FastSPI_Read(softSPI_t *spi) {
 	byte receivedData = 0;
-	for (int i = 0; i < 8; i++) {
-		FAST_SET_HIGH(spi->sck_reg);
-		receivedData |= (FAST_READ_PIN(spi->miso_reg) << (7 - i));
-		FAST_SET_LOW(spi->sck_reg);
-	}
+	READ_BIT(spi, 7)
+	READ_BIT(spi, 6)
+	READ_BIT(spi, 5)
+	READ_BIT(spi, 4)
+	READ_BIT(spi, 3)
+	READ_BIT(spi, 2)
+	READ_BIT(spi, 1)
+	READ_BIT(spi, 0)
 	return receivedData;
 }
 
