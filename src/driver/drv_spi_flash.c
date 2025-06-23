@@ -106,7 +106,7 @@ byte FastSPI_Read(softSPI_t *spi) {
 	byte receivedData = 0;
 	for (int i = 0; i < 8; i++) {
 		FAST_SET_HIGH(spi->sck_reg);
-		receivedData |= (HAL_PIN_ReadDigitalInput(spi->miso) << (7 - i));
+		receivedData |= (FAST_READ_PIN(spi->miso_reg) << (7 - i));
 		FAST_SET_LOW(spi->sck_reg);
 	}
 	return receivedData;
