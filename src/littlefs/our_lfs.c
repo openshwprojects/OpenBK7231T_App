@@ -610,8 +610,8 @@ void LFS_SPI_Flash_EraseSector(int addr);
 static int lfs_read(const struct lfs_config *c, lfs_block_t block,
 	lfs_off_t off, void *buffer, lfs_size_t size) {
 	int res;
-	unsigned int startAddr = LFS_Start;
-	startAddr += block * LFS_BLOCK_SIZE;
+	unsigned int startAddr = 0;
+	startAddr = block * LFS_BLOCK_SIZE;
 	startAddr += off;
 
 	LFS_SPI_Flash_Read(startAddr, size, buffer);
