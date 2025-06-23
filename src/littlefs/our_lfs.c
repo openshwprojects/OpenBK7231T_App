@@ -600,6 +600,10 @@ void release_lfs(){
 
 #if ENABLE_LFS_SPI
 
+
+void spi_test_write2(int adr, const byte *data, int cnt);
+void spi_test_read(int adr, int cnt, byte *data);
+
 // Read a region in a block. Negative error codes are propogated
 // to the user.
 static int lfs_read(const struct lfs_config *c, lfs_block_t block,
@@ -609,6 +613,7 @@ static int lfs_read(const struct lfs_config *c, lfs_block_t block,
 	startAddr += block * LFS_BLOCK_SIZE;
 	startAddr += off;
 
+	spi_test_read(startAddr, size, buffer);
 
 
 	return 0;
@@ -623,6 +628,8 @@ static int lfs_write(const struct lfs_config *c, lfs_block_t block,
 
 	startAddr += block * LFS_BLOCK_SIZE;
 	startAddr += off;
+
+	spi_test_write2(startAddr, buffer, size);
 
 	return 0;
 }
