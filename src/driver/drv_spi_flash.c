@@ -39,8 +39,8 @@
 #define reg_val_HIGH 0x02
 #define reg_val_LOW 0x00
 
-#define FAST_SET_HIGH REG_WRITE(gpio_cfg_addr, reg_val_HIGH);
-#define FAST_SET_LOW REG_WRITE(gpio_cfg_addr, reg_val_LOW);
+#define FAST_SET_HIGH(gpio_cfg_addr) REG_WRITE(gpio_cfg_addr, reg_val_HIGH);
+#define FAST_SET_LOW(gpio_cfg_addr) REG_WRITE(gpio_cfg_addr, reg_val_LOW);
 
 void FastSPI_Setup(softSPI_t *spi) {
 	HAL_PIN_Setup_Output(spi->sck);
