@@ -214,8 +214,7 @@ static commandResult_t CMD_LFS_Format(const void *context, const char *cmd, cons
 
     newsize = (newsize/LFS_BLOCK_SIZE)*LFS_BLOCK_SIZE;
 #if ENABLE_LFS_SPI
-
-
+	uint32_t newstart = 0;
 #else
 	if ((newsize < LFS_BLOCKS_MIN_LEN) || (newsize > LFS_BLOCKS_MAX_LEN)) {
 		ADDLOGF_ERROR("LFSSize OUT OF BOUNDS 0x%X (range 0x%X-0x%X) - defaulting to 0x%X",
