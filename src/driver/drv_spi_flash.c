@@ -41,6 +41,7 @@
 
 #define FAST_SET_HIGH(gpio_cfg_addr) REG_WRITE(gpio_cfg_addr, reg_val_HIGH);
 #define FAST_SET_LOW(gpio_cfg_addr) REG_WRITE(gpio_cfg_addr, reg_val_LOW);
+#define FAST_READ_PIN(gpio_cfg_addr) ((REG_READ(gpio_cfg_addr) & GCFG_INPUT_BIT))
 
 void FastSPI_Setup(softSPI_t *spi) {
 	HAL_PIN_Setup_Output(spi->sck);
@@ -48,6 +49,8 @@ void FastSPI_Setup(softSPI_t *spi) {
 	HAL_PIN_Setup_Output(spi->mosi);
 	HAL_PIN_Setup_Output(spi->ss);
 	HAL_PIN_SetOutputValue(spi->ss, 1); // set SS_PIN to inactive
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Fast SPI Path\n");
 
 	{
 		int id = spi->sck;
@@ -72,6 +75,14 @@ void FastSPI_Setup(softSPI_t *spi) {
 			id += 16;
 #endif // (CFG_SOC_NAME != SOC_BK7231)
 		spi->ss_reg = (unsigned int *)(REG_GPIO_CFG_BASE_ADDR + id * 4);
+	}
+	{
+		int id = spi->miso;
+#if (CFG_SOC_NAME != SOC_BK7231)
+		if (id >= GPIO32)
+			id += 16;
+#endif // (CFG_SOC_NAME != SOC_BK7231)
+		spi->miso_reg = (unsigned int *)(REG_GPIO_CFG_BASE_ADDR + id * 4);
 	}
 }
 

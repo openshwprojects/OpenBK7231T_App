@@ -14,6 +14,7 @@ typedef struct softSPI_s {
 
 	unsigned int *sck_reg;
 	unsigned int *mosi_reg;
+	unsigned int *miso_reg;
 	unsigned int *ss_reg;
 } softSPI_t;
 
