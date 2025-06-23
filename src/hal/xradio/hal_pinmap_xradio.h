@@ -19,6 +19,7 @@ typedef struct
 	PWM_CH_ID pwm;
 	uint8_t pinmux_pwm;
 	int max_duty;
+	int wakeup;
 } xrpin_t;
 
 extern xrpin_t g_pins[];

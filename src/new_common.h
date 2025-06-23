@@ -405,6 +405,12 @@ typedef unsigned int u32;
 #define HAL_UART_Init OBK_HAL_UART_Init
 #define HAL_ADC_Init OBK_HAL_ADC_Init
 
+#if PLATFORM_XR806
+#define DS_MS_TO_S 1000
+#else
+#define DS_MS_TO_S 1111
+#endif
+
 #if PLATFORM_XR806 || PLATFORM_XR872
 
 #else

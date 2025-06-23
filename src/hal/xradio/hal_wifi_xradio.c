@@ -27,7 +27,6 @@
 
 static void (*g_wifiStatusCallback)(int code);
 
-static wlan_sta_ap_t apinfo = { 0 };
 bool g_bOpenAccessPointMode = false;
 
 void HAL_ConnectToWiFi(const char *ssid, const char *psk, obkStaticIP_t *ip)
