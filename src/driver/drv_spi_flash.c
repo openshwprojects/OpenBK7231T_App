@@ -74,6 +74,8 @@ void spi_flash_read(softSPI_t* spi, int adr, byte* out, int cnt) {
 
 #define READ_STATUS_REG_CMD 0x05
 #define STATUS_BUSY_MASK 0x01
+#define STATUS_WEL_MASK 0x02
+
 
 static void flash_wait_while_busy(softSPI_t* spi) {
 	byte status;
@@ -85,6 +87,17 @@ static void flash_wait_while_busy(softSPI_t* spi) {
 		//SPI_USLEEP(1000);
 		rtos_delay_milliseconds(5);
 	} while (status & STATUS_BUSY_MASK);
+}
+static void flash_wait_for_wel(softSPI_t* spi) {
+	byte status;
+	do {
+		SPI_Begin(spi);
+		SPI_Send(spi, READ_STATUS_REG_CMD);
+		status = SPI_Read(spi);
+		SPI_End(spi);
+		//SPI_USLEEP(1000);
+		rtos_delay_milliseconds(5);
+	} while (status & STATUS_WEL_MASK);
 }
 
 void spi_flash_erase(softSPI_t* spi) {
