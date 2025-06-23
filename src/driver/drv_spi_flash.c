@@ -114,11 +114,13 @@ void spi_flash_erase(softSPI_t* spi) {
 	OBK_ENABLE_INTERRUPTS;
 }
 
-void spi_flash_write(softSPI_t* spi, int adr, const byte* data, int cnt) {
+void spi_flash_write2(softSPI_t* spi, int adr, const byte* data, int cnt) {
 	int remaining = cnt;
 	int offset = 0;
 
 	OBK_DISABLE_INTERRUPTS;
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "spi_flash_write2 %i at %i\n", cnt, adr);
 
 	while (remaining > 0) {
 		int page_offset = adr % 256;
@@ -134,7 +136,7 @@ void spi_flash_write(softSPI_t* spi, int adr, const byte* data, int cnt) {
 		SPI_End(spi);
 		SPI_USLEEP(500);
 
-		ADDLOG_INFO(LOG_FEATURE_CMD, "Write %i at %i\n", write_len, adr);
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Write fragmnent %i at %i\n", write_len, adr);
 		SPI_Begin(spi);
 		SPI_Send(spi, WRITE_FLASH_CMD);
 		SPI_Send(spi, (adr >> 16) & 0xFF);
@@ -208,7 +210,7 @@ void flash_test_pages(softSPI_t* spi, int baseAddr, int length, byte pattern) {
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Flash erased test: errors = %d/%d", err, length);
 
 	err = 0;
-	spi_flash_write(spi, baseAddr, writeBuf, length);
+	spi_flash_write2(spi, baseAddr, writeBuf, length);
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Wrote pattern %02X to flash.", pattern);
 
 	spi_flash_read(spi, baseAddr, readBuf, length);
@@ -277,7 +279,7 @@ void spi_test_erase() {
 	spi_flash_erase(&spi);
 }
 
-void spi_test_write(int adr, const byte *data, int cnt) {
+void spi_test_write2(int adr, const byte *data, int cnt) {
 	softSPI_t spi;
 
 	spi.miso = MISO_PIN;
@@ -285,7 +287,7 @@ void spi_test_write(int adr, const byte *data, int cnt) {
 	spi.ss = SS_PIN;
 	spi.sck = SCK_PIN;
 
-	spi_flash_write(&spi, adr, data, cnt);
+	spi_flash_write2(&spi, adr, data, cnt);
 }
 
 static commandResult_t CMD_SPITestFlash_ReadData(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -331,7 +333,7 @@ static commandResult_t CMD_SPITestFlash_WriteStr(const void* context, const char
 		}
 	}
 
-	spi_test_write(addr, (const byte*)str, strlen(str));
+	spi_test_write2(addr, (const byte*)str, strlen(str));
 
 	return CMD_RES_OK;
 }
@@ -397,6 +399,7 @@ void DRV_InitFlashMemoryTestFunctions() {
 
 	// backlog startDriver TESTSPIFLASH; SPITestFlash_ReadID
 	// backlog startDriver TESTSPIFLASH; SPITestFlash_Test
+	// backlog startDriver TESTSPIFLASH; SPITestFlash_WriteStr 254 BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
 
 	//cmddetail:{"name":"SPITestFlash_ReadData","args":"CMD_SPITestFlash_ReadData",
 	//cmddetail:"descr":"",
