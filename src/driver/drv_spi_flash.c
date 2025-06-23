@@ -311,17 +311,22 @@ void flash_test_pages(softSPI_t* spi, int baseAddr, int length, byte pattern) {
 	free(readBuf);
 }
 
+softSPI_t g_lfs_spi;
+int g_lfs_spi_ready = 0;
+void LFS_SPI_Init() {
+	g_lfs_spi.miso = MISO_PIN;
+	g_lfs_spi.mosi = MOSI_PIN;
+	g_lfs_spi.ss = SS_PIN;
+	g_lfs_spi.sck = SCK_PIN;
+
+	SPI_Setup(&g_lfs_spi);
+	g_lfs_spi_ready = 1;
+}
 void LFS_SPI_Flash_EraseSector(int addr) {
-	softSPI_t spi;
-
-	spi.miso = MISO_PIN;
-	spi.mosi = MOSI_PIN;
-	spi.ss = SS_PIN;
-	spi.sck = SCK_PIN;
-
-	SPI_Setup(&spi);
-
-	spi_flash_erase_sector(&spi, addr);
+	if (g_lfs_spi_ready == 0) {
+		LFS_SPI_Init();
+	}
+	spi_flash_erase_sector(&g_lfs_spi, addr);
 }
 void spi_test() {
 	softSPI_t spi;
@@ -339,16 +344,16 @@ void spi_test() {
 	ADDLOG_INFO(LOG_FEATURE_CMD, "ID %02X %02X %02X", jedec_id[0], jedec_id[1], jedec_id[2]);
 }
 void LFS_SPI_Flash_Read(int adr, int cnt, byte *data) {
-	softSPI_t spi;
-
-	spi.miso = MISO_PIN;
-	spi.mosi = MOSI_PIN;
-	spi.ss = SS_PIN;
-	spi.sck = SCK_PIN;
-
-	SPI_Setup(&spi);
-
-	spi_flash_read(&spi, adr, data, cnt);
+	if (g_lfs_spi_ready == 0) {
+		LFS_SPI_Init();
+	}
+	spi_flash_read(&g_lfs_spi, adr, data, cnt);
+}
+void LFS_SPI_Flash_Write(int adr, const byte *data, int cnt) {
+	if (g_lfs_spi_ready == 0) {
+		LFS_SPI_Init();
+	}
+	spi_flash_write2(&g_lfs_spi, adr, data, cnt);
 }
 void spi_test_read_and_print(int adr, int cnt) {
 	byte *data;
@@ -386,18 +391,6 @@ void spi_test_erase() {
 	spi_flash_erase(&spi);
 }
 
-void LFS_SPI_Flash_Write(int adr, const byte *data, int cnt) {
-	softSPI_t spi;
-
-	spi.miso = MISO_PIN;
-	spi.mosi = MOSI_PIN;
-	spi.ss = SS_PIN;
-	spi.sck = SCK_PIN;
-
-	SPI_Setup(&spi);
-
-	spi_flash_write2(&spi, adr, data, cnt);
-}
 
 static commandResult_t CMD_SPITestFlash_ReadData(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int addr = 0;
