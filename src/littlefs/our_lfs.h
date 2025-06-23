@@ -16,7 +16,13 @@
 
 // we need that even if LFS is disabled
 
-#if WINDOWS
+#if ENABLE_LFS_SPI
+
+#define LFS_BLOCKS_START 0x0
+#define LFS_BLOCKS_START_MIN 0x0
+#define LFS_BLOCKS_END 0x1B3000
+
+#elif WINDOWS
 
 // start 0x1000 after OTA addr
 #define LFS_BLOCKS_START 0x133000
