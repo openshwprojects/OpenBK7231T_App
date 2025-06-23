@@ -381,6 +381,8 @@ void spi_test_erase() {
 	spi.ss = SS_PIN;
 	spi.sck = SCK_PIN;
 
+	SPI_Setup(&spi);
+
 	spi_flash_erase(&spi);
 }
 
@@ -391,6 +393,8 @@ void LFS_SPI_Flash_Write(int adr, const byte *data, int cnt) {
 	spi.mosi = MOSI_PIN;
 	spi.ss = SS_PIN;
 	spi.sck = SCK_PIN;
+
+	SPI_Setup(&spi);
 
 	spi_flash_write2(&spi, adr, data, cnt);
 }
@@ -506,6 +510,7 @@ void DRV_InitFlashMemoryTestFunctions() {
 
 	// backlog startDriver TESTSPIFLASH; SPITestFlash_ReadID
 	// backlog startDriver TESTSPIFLASH; SPITestFlash_Test 0 1024
+	// backlog startDriver TESTSPIFLASH; SPITestFlash_Test 0 16000
 	// backlog startDriver TESTSPIFLASH; SPITestFlash_WriteStr 254 BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
 
 	//cmddetail:{"name":"SPITestFlash_ReadData","args":"CMD_SPITestFlash_ReadData",
