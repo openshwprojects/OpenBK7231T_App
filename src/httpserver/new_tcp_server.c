@@ -19,7 +19,7 @@ void HTTPServer_Start();
 #define REPLY_BUFFER_SIZE			2048
 #define INCOMING_BUFFER_SIZE		2048
 #define INVALID_SOCK				-1
-#define HTTP_CLIENT_STACK_SIZE		8192
+#define HTTP_CLIENT_STACK_SIZE		4096
 
 typedef struct
 {

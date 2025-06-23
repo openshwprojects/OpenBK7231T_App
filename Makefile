@@ -346,28 +346,30 @@ sdk/OpenXR806/tools/xpack-arm-none-eabi-gcc-8.3.1-1.4:
 
 .PHONY: OpenXR872
 OpenXR872: prebuild_OpenXR872 sdk/OpenXR872/project/demo/hello_demo/shared sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q1
-	$(MAKE) -C sdk/OpenXR872/src CC_DIR=$(PWD)/sdk/OpenBK7231T/platforms/bk7231t/toolchain/gcc-arm-none-eabi-4_9-2015q1/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc)
-	$(MAKE) -C sdk/OpenXR872/src install CC_DIR=$(PWD)/sdk/OpenBK7231T/platforms/bk7231t/toolchain/gcc-arm-none-eabi-4_9-2015q1/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc)
-	$(MAKE) -C sdk/OpenXR872/project/demo/hello_demo/gcc CC_DIR=$(PWD)/sdk/OpenBK7231T/platforms/bk7231t/toolchain/gcc-arm-none-eabi-4_9-2015q1/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc)
-	$(MAKE) -C sdk/OpenXR872/project/demo/hello_demo/gcc image CC_DIR=$(PWD)/sdk/OpenBK7231T/platforms/bk7231t/toolchain/gcc-arm-none-eabi-4_9-2015q1/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc)
+	$(MAKE) -C sdk/OpenXR872/src CC_DIR=$(PWD)/sdk/OpenBK7231T/platforms/bk7231t/toolchain/gcc-arm-none-eabi-4_9-2015q1/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
+	$(MAKE) -C sdk/OpenXR872/src install CC_DIR=$(PWD)/sdk/OpenBK7231T/platforms/bk7231t/toolchain/gcc-arm-none-eabi-4_9-2015q1/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
+	$(MAKE) -C sdk/OpenXR872/project/demo/hello_demo/gcc CC_DIR=$(PWD)/sdk/OpenBK7231T/platforms/bk7231t/toolchain/gcc-arm-none-eabi-4_9-2015q1/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
+	$(MAKE) -C sdk/OpenXR872/project/demo/hello_demo/gcc image CC_DIR=$(PWD)/sdk/OpenBK7231T/platforms/bk7231t/toolchain/gcc-arm-none-eabi-4_9-2015q1/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenXR872/project/demo/hello_demo/image/xr872/xr_system.img output/$(APP_VERSION)/OpenXR872_$(APP_VERSION).img
 
 .PHONY: OpenXR806
 OpenXR806: prebuild_OpenXR806 sdk/OpenXR806/project/demo/sharedApp/shared sdk/OpenXR806/tools/xpack-arm-none-eabi-gcc-8.3.1-1.4
-	$(MAKE) -C sdk/OpenXR806/src CC_DIR=$(PWD)/sdk/OpenXR806/tools/xpack-arm-none-eabi-gcc-8.3.1-1.4/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc)
-	$(MAKE) -C sdk/OpenXR806/src install CC_DIR=$(PWD)/sdk/OpenXR806/tools/xpack-arm-none-eabi-gcc-8.3.1-1.4/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc)
-	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc CC_DIR=$(PWD)/sdk/OpenXR806/tools/xpack-arm-none-eabi-gcc-8.3.1-1.4/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc)
-	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc image CC_DIR=$(PWD)/sdk/OpenXR806/tools/xpack-arm-none-eabi-gcc-8.3.1-1.4/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc)
+	$(MAKE) -C sdk/OpenXR806/src CC_DIR=$(PWD)/sdk/OpenXR806/tools/xpack-arm-none-eabi-gcc-8.3.1-1.4/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
+	$(MAKE) -C sdk/OpenXR806/src install CC_DIR=$(PWD)/sdk/OpenXR806/tools/xpack-arm-none-eabi-gcc-8.3.1-1.4/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
+	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc CC_DIR=$(PWD)/sdk/OpenXR806/tools/xpack-arm-none-eabi-gcc-8.3.1-1.4/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
+	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc image CC_DIR=$(PWD)/sdk/OpenXR806/tools/xpack-arm-none-eabi-gcc-8.3.1-1.4/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
+	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc image_xz CC_DIR=$(PWD)/sdk/OpenXR806/tools/xpack-arm-none-eabi-gcc-8.3.1-1.4/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) --no-print-directory
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenXR806/project/demo/sharedApp/image/xr806/xr_system.img output/$(APP_VERSION)/OpenXR806_$(APP_VERSION).img
+	cp sdk/OpenXR806/project/demo/sharedApp/image/xr806/xr_system_img_xz.img output/$(APP_VERSION)/OpenXR806_$(APP_VERSION)_ota.img
 	
 .PHONY: OpenXR809
 OpenXR809: prebuild_OpenXR809 sdk/OpenXR809/project/oxr_sharedApp/shared sdk/OpenXR809/tools/gcc-arm-none-eabi-4_9-2015q1
-	$(MAKE) -C sdk/OpenXR809/src CC_DIR=$(PWD)/sdk/OpenBK7231T/platforms/bk7231t/toolchain/gcc-arm-none-eabi-4_9-2015q1/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
-	$(MAKE) -C sdk/OpenXR809/src install CC_DIR=$(PWD)/sdk/OpenBK7231T/platforms/bk7231t/toolchain/gcc-arm-none-eabi-4_9-2015q1/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
-	$(MAKE) -C sdk/OpenXR809/project/oxr_sharedApp/gcc CC_DIR=$(PWD)/sdk/OpenBK7231T/platforms/bk7231t/toolchain/gcc-arm-none-eabi-4_9-2015q1/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
-	$(MAKE) -C sdk/OpenXR809/project/oxr_sharedApp/gcc image CC_DIR=$(PWD)/sdk/OpenBK7231T/platforms/bk7231t/toolchain/gcc-arm-none-eabi-4_9-2015q1/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
+	$(MAKE) -C sdk/OpenXR809/src CC_DIR=$(PWD)/sdk/OpenBK7231T/platforms/bk7231t/toolchain/gcc-arm-none-eabi-4_9-2015q1/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) --no-print-directory  -j $(shell nproc)
+	$(MAKE) -C sdk/OpenXR809/src install CC_DIR=$(PWD)/sdk/OpenBK7231T/platforms/bk7231t/toolchain/gcc-arm-none-eabi-4_9-2015q1/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) --no-print-directory #-j $(shell nproc)
+	$(MAKE) -C sdk/OpenXR809/project/oxr_sharedApp/gcc CC_DIR=$(PWD)/sdk/OpenBK7231T/platforms/bk7231t/toolchain/gcc-arm-none-eabi-4_9-2015q1/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) --no-print-directory #-j $(shell nproc)
+	$(MAKE) -C sdk/OpenXR809/project/oxr_sharedApp/gcc image CC_DIR=$(PWD)/sdk/OpenBK7231T/platforms/bk7231t/toolchain/gcc-arm-none-eabi-4_9-2015q1/bin APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) --no-print-directory
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenXR809/project/oxr_sharedApp/image/xr809/xr_system.img output/$(APP_VERSION)/OpenXR809_$(APP_VERSION).img
 
@@ -585,7 +587,7 @@ clean:
 	$(MAKE) -C sdk/OpenXR809/src clean
 	$(MAKE) -C sdk/OpenXR809/project/oxr_sharedApp/gcc clean
 	$(MAKE) -C sdk/OpenXR806/src clean
-	$(MAKE) -C sdk/OpenXR806/project/oxr_sharedApp/gcc clean
+	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc clean
 	$(MAKE) -C sdk/OpenXR872/src clean
 	$(MAKE) -C sdk/OpenXR872/project/demo/hello_demo/gcc clean
 	$(MAKE) -C sdk/OpenW800 clean

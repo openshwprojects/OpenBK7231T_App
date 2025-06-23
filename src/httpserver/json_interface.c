@@ -385,10 +385,6 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 	return 0;
 }
 
-#ifdef PLATFORM_XR809
-//XR809 does not support drivers but its build script compiles many drivers including ntp.
-
-#else
 #ifndef ENABLE_NTP
 unsigned int NTP_GetCurrentTime() {
 	return 0;
@@ -396,7 +392,6 @@ unsigned int NTP_GetCurrentTime() {
 unsigned int NTP_GetCurrentTimeWithoutOffset() {
 	return 0;
 }
-#endif
 #endif
 
 // Topic:  tele/tasmota_48E7F3/STATE

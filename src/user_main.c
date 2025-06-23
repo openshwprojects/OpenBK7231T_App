@@ -103,9 +103,10 @@ int DRV_SSDP_Active = 0;
 
 void Main_ForceUnsafeInit();
 
-#if PLATFORM_XR809 || PLATFORM_XR872
-size_t xPortGetFreeHeapSize() {
-	return 0;
+#if PLATFORM_XR806 || PLATFORM_XR872
+size_t xPortGetFreeHeapSize()
+{
+	return sram_free_heap_size();
 }
 #endif
 
@@ -159,7 +160,7 @@ void extended_app_waiting_for_launch2(void) {
 #endif
 
 
-#if defined(PLATFORM_LN882H) || defined(PLATFORM_ESPIDF) || defined(PLATFORM_XR872)
+#if defined(PLATFORM_LN882H) || defined(PLATFORM_ESPIDF) || defined(PLATFORM_XR872) || defined(PLATFORM_XR806) 
 
 int LWIP_GetMaxSockets() {
 	return 0;
@@ -169,8 +170,9 @@ int LWIP_GetActiveSockets() {
 }
 #endif
 
-#if defined(PLATFORM_BL602) || defined(PLATFORM_W800) || defined(PLATFORM_W600) || defined(PLATFORM_LN882H) \
-	|| defined(PLATFORM_ESPIDF) || defined(PLATFORM_TR6260) || defined(PLATFORM_REALTEK) || defined(PLATFORM_ECR6600)
+#if PLATFORM_BL602 || PLATFORM_W800 || PLATFORM_W600 || PLATFORM_LN882H \
+	|| PLATFORM_ESPIDF || PLATFORM_TR6260 || PLATFORM_REALTEK || PLATFORM_ECR6600 \
+	|| PLATFORM_XRADIO
 
 OSStatus rtos_create_thread(beken_thread_t* thread,
 	uint8_t priority, const char* name,
@@ -617,11 +619,7 @@ void Main_OnEverySecond()
 #endif
 #endif
 
-#if WINDOWS
-#elif PLATFORM_BL602
-#elif PLATFORM_W600 || PLATFORM_W800
-#elif PLATFORM_XR809 || PLATFORM_XR872
-#elif PLATFORM_BK7231N || PLATFORM_BK7231T
+#if PLATFORM_BK7231N || PLATFORM_BK7231T
 	if (ota_progress() == -1)
 #endif
 	{
@@ -1009,7 +1007,7 @@ void quick_timer_thread(void* param)
 }
 #elif PLATFORM_ESPIDF
 esp_timer_handle_t g_quick_timer;
-#elif PLATFORM_XR809 || PLATFORM_LN882H || PLATFORM_XR872
+#elif PLATFORM_XRADIO || PLATFORM_LN882H
 OS_Timer_t g_quick_timer;
 #else
 beken_timer_t g_quick_timer;
@@ -1029,7 +1027,7 @@ void QuickTick_StartThread(void)
 
 	esp_timer_create(&g_quick_timer_args, &g_quick_timer);
 	esp_timer_start_periodic(g_quick_timer, QUICK_TMR_DURATION * 1000);
-#elif PLATFORM_XR809 || PLATFORM_LN882H || PLATFORM_XR872
+#elif PLATFORM_XRADIO || PLATFORM_LN882H
 
 	OS_TimerSetInvalid(&g_quick_timer);
 	if (OS_TimerCreate(&g_quick_timer, OS_TIMER_PERIODIC, QuickTick, NULL,

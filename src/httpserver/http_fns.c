@@ -33,8 +33,9 @@
 #include <wifi_mgmr_ext.h> //For BL602 WiFi AP Scan
 #elif PLATFORM_W600 || PLATFORM_W800
 
-#elif PLATFORM_XR809
+#elif PLATFORM_XRADIO
 #include <image/flash.h>
+#include "ota/ota.h"
 #elif defined(PLATFORM_BK7231N)
 // tuya-iotos-embeded-sdk-wifi-ble-bk7231n/sdk/include/tuya_hal_storage.h
 #include "tuya_hal_storage.h"
@@ -1012,7 +1013,7 @@ typedef enum {
 #if WINDOWS
 #elif PLATFORM_BL602
 #elif PLATFORM_W600 || PLATFORM_W800
-#elif PLATFORM_XR809
+#elif PLATFORM_XRADIO
 #elif PLATFORM_BK7231N || PLATFORM_BK7231T
 	if (ota_progress() >= 0)
 	{
@@ -3186,10 +3187,8 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 	else ota_done(0);
 #elif PLATFORM_W600 || PLATFORM_W800
 	t_http_fwup(s);
-#elif PLATFORM_XR809
-	XR809_RequestOTAHTTP(s);
-#elif PLATFORM_XR872
-
+#elif PLATFORM_XRADIO
+	ota_get_image(OTA_PROTOCOL_HTTP, s);
 #else
 	otarequest(s);
 #endif

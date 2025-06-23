@@ -871,13 +871,12 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_PWM_ScriptOnly:
 		case IOR_PWM_ScriptOnly_n:
 		case IOR_PWM:
-		{
 			HAL_PIN_PWM_Stop(index);
-		}
-		break;
+			break;
 		case IOR_BAT_ADC:
+		case IOR_ADC_Button:
 		case IOR_ADC:
-			// TODO: disable?
+			HAL_ADC_Deinit(index);
 			break;
 		case IOR_BridgeForward:
 		case IOR_BridgeReverse:
@@ -1063,7 +1062,11 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_ADC_Button:
 		case IOR_ADC:
 			// init ADC for given pin
+#if PLATFORM_XRADIO
+			OBK_HAL_ADC_Init(index);
+#else
 			HAL_ADC_Init(index);
+#endif
 			break;
 		case IOR_PWM_n:
 		case IOR_PWM_ScriptOnly:

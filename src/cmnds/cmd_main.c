@@ -51,6 +51,8 @@ int g_sleepfactor = 1;
 #include "co_math.h"
 #include "manual_ps_pub.h"
 #include "wlan_ui_pub.h"
+#elif PLATFORM_XRADIO
+#include "common/framework/net_ctrl.h"
 #endif
 
 #define HASH_SIZE 128
@@ -257,6 +259,15 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 		g_sleepfactor = 1;
 #endif
 		wifi_disable_powersave();
+	}
+#elif PLATFORM_XRADIO
+	if(g_powersave)
+	{
+		wlan_set_ps_mode(g_wlan_netif, 1);
+	}
+	else
+	{
+		wlan_set_ps_mode(g_wlan_netif, 0);
 	}
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave is not implemented on this platform");
@@ -1035,7 +1046,7 @@ void CMD_Init_Delayed() {
 	}
 #endif
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) \
- || defined(PLATFORM_REALTEK)
+ || defined(PLATFORM_REALTEK) || defined(PLATFORM_ECR6600) || defined(PLATFORM_XRADIO)
 	UART_AddCommands();
 #endif
 #if ENABLE_BL_TWIN

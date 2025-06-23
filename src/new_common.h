@@ -173,6 +173,10 @@ This platform is not supported, error!
 #define USER_SW_VER "Win_Test"
 #elif PLATFORM_XR809
 #define USER_SW_VER "XR809_Test"
+#elif PLATFORM_XR872
+#define USER_SW_VER "XR872_Test"
+#elif PLATFORM_XR806
+#define USER_SW_VER "XR806_Test"
 #elif defined(PLATFORM_BK7231N)
 #define USER_SW_VER "BK7231N_Test"
 #elif defined(PLATFORM_BK7231T)
@@ -378,27 +382,38 @@ typedef unsigned int u32;
 
 #define OBK_OTA_EXTENSION ".bin.xz.ota"
 
-#elif PLATFORM_XR809 || PLATFORM_XR872
+#elif PLATFORM_XRADIO
 
 #include <stdbool.h>
+#include <stdint.h>
 #include "FreeRTOS.h"
 #include "task.h"
 
-typedef unsigned char u8;
-typedef unsigned char uint8_t;
-typedef unsigned int uint32_t;
-typedef unsigned int UINT32;
+#define OBK_OTA_EXTENSION ".img"
+//typedef unsigned char u8;
+//typedef unsigned char uint8_t;
+//typedef unsigned int uint32_t;
+//typedef unsigned int UINT32;
 
 #define ASSERT
+#define bk_printf printf
 #define os_strcpy strcpy
 #define os_malloc malloc
 #define os_free free
 #define os_memset memset
 
+#define HAL_UART_Init OBK_HAL_UART_Init
+#define HAL_ADC_Init OBK_HAL_ADC_Init
+
 #if PLATFORM_XR806 || PLATFORM_XR872
 
 #else
 #define close lwip_close
+#endif
+
+#ifdef __CONFIG_LWIP_V1
+#define sockaddr_storage sockaddr
+#define ss_family sa_family
 #endif
 
 // OS_MSleep?
