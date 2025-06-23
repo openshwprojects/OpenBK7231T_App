@@ -24,13 +24,97 @@
 #define OBK_ENABLE_INTERRUPTS 
 #define OBK_DISABLE_INTERRUPTS
 
-void spi_flash_read_id(softSPI_t* spi, byte* jedec_id) {
-	OBK_DISABLE_INTERRUPTS;
+#if PLATFORM_BEKEN
 
+#include "include.h"
+#include "arm_arch.h"
+#include "gpio_pub.h"
+#include "gpio.h"
+#include "drv_model_pub.h"
+#include "sys_ctrl_pub.h"
+#include "uart_pub.h"
+#include "intc_pub.h"
+#include "icu_pub.h"
+
+#define reg_val_HIGH 0x02
+#define reg_val_LOW 0x00
+
+#define FAST_SET_HIGH REG_WRITE(gpio_cfg_addr, reg_val_HIGH);
+#define FAST_SET_LOW REG_WRITE(gpio_cfg_addr, reg_val_LOW);
+
+void FastSPI_Setup(softSPI_t *spi) {
+	HAL_PIN_Setup_Output(spi->sck);
+	HAL_PIN_Setup_Input(spi->miso);
+	HAL_PIN_Setup_Output(spi->mosi);
+	HAL_PIN_Setup_Output(spi->ss);
+	HAL_PIN_SetOutputValue(spi->ss, 1); // set SS_PIN to inactive
+
+	{
+		int id = spi->sck;
+#if (CFG_SOC_NAME != SOC_BK7231)
+		if (id >= GPIO32)
+			id += 16;
+#endif // (CFG_SOC_NAME != SOC_BK7231)
+		spi->sck_reg = (unsigned int *)(REG_GPIO_CFG_BASE_ADDR + id * 4);
+	}
+	{
+		int id = spi->mosi;
+#if (CFG_SOC_NAME != SOC_BK7231)
+		if (id >= GPIO32)
+			id += 16;
+#endif // (CFG_SOC_NAME != SOC_BK7231)
+		spi->mosi_reg = (unsigned int *)(REG_GPIO_CFG_BASE_ADDR + id * 4);
+	}
+	{
+		int id = spi->ss;
+#if (CFG_SOC_NAME != SOC_BK7231)
+		if (id >= GPIO32)
+			id += 16;
+#endif // (CFG_SOC_NAME != SOC_BK7231)
+		spi->ss_reg = (unsigned int *)(REG_GPIO_CFG_BASE_ADDR + id * 4);
+	}
+}
+
+
+
+
+void FastSPI_Begin(softSPI_t *spi) {
+	FAST_SET_LOW(spi->ss_reg); // enable SPI communication with the flash
+}
+void FastSPI_End(softSPI_t *spi) {
+	FAST_SET_HIGH(spi->ss_reg); // disable SPI communication with the flash
+}
+
+void FastSPI_Send(softSPI_t *spi, byte dataToSend) {
+	for (int i = 0; i < 8; i++) {
+		HAL_PIN_SetOutputValue(spi->mosi, (dataToSend >> (7 - i)) & 0x01);
+		HAL_PIN_SetOutputValue(spi->sck, 1);
+		HAL_PIN_SetOutputValue(spi->sck, 0);
+	}
+}
+
+byte FastSPI_Read(softSPI_t *spi) {
+	byte receivedData = 0;
+	for (int i = 0; i < 8; i++) {
+		HAL_PIN_SetOutputValue(spi->sck, 1);
+		receivedData |= (HAL_PIN_ReadDigitalInput(spi->miso) << (7 - i));
+		HAL_PIN_SetOutputValue(spi->sck, 0);
+	}
+	return receivedData;
+}
+
+#define SPI_Setup FastSPI_Setup
+#define SPI_Send FastSPI_Send
+#define SPI_Read FastSPI_Read
+#define SPI_End FastSPI_End
+
+#else
+
+
+#endif
+
+void spi_flash_read_id(softSPI_t* spi, byte* jedec_id) {
 	SPI_Setup(spi);
-	SPI_USLEEP(500);
-	SPI_USLEEP(500);
-	SPI_USLEEP(500);
 
 	SPI_Begin(spi);
 	SPI_Send(spi, 0x9F);
@@ -39,7 +123,6 @@ void spi_flash_read_id(softSPI_t* spi, byte* jedec_id) {
 	jedec_id[2] = SPI_Read(spi);
 	SPI_End(spi);
 
-	OBK_ENABLE_INTERRUPTS;
 }
 
 void spi_flash_read(softSPI_t* spi, int adr, byte* out, int cnt) {
@@ -411,7 +494,7 @@ void DRV_InitFlashMemoryTestFunctions() {
 	CMD_RegisterCommand("SPITestFlash_Erase", CMD_SPITestFlash_Erase, NULL);
 
 	// backlog startDriver TESTSPIFLASH; SPITestFlash_ReadID
-	// backlog startDriver TESTSPIFLASH; SPITestFlash_Test
+	// backlog startDriver TESTSPIFLASH; SPITestFlash_Test 0 1024
 	// backlog startDriver TESTSPIFLASH; SPITestFlash_WriteStr 254 BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
 
 	//cmddetail:{"name":"SPITestFlash_ReadData","args":"CMD_SPITestFlash_ReadData",
