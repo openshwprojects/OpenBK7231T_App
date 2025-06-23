@@ -225,7 +225,7 @@ void flash_test_pages(softSPI_t* spi, int baseAddr, int length, byte pattern) {
 	free(readBuf);
 }
 
-void test_spi_flash_erase_sector(int addr) {
+void LFS_SPI_Flash_EraseSector(int addr) {
 	softSPI_t spi;
 
 	spi.miso = MISO_PIN;
@@ -248,7 +248,7 @@ void spi_test() {
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "ID %02X %02X %02X", jedec_id[0], jedec_id[1], jedec_id[2]);
 }
-void spi_test_read(int adr, int cnt, byte *data) {
+void LFS_SPI_Flash_Read(int adr, int cnt, byte *data) {
 	softSPI_t spi;
 
 	spi.miso = MISO_PIN;
@@ -264,7 +264,7 @@ void spi_test_read_and_print(int adr, int cnt) {
 
 	data = malloc(cnt);
 
-	spi_test_read(adr, cnt, data);
+	LFS_SPI_Flash_Read(adr, cnt, data);
 
 	int chunkLen = 8;
 	int j;
@@ -292,7 +292,7 @@ void spi_test_erase() {
 	spi_flash_erase(&spi);
 }
 
-void spi_test_write2(int adr, const byte *data, int cnt) {
+void LFS_SPI_Flash_Write(int adr, const byte *data, int cnt) {
 	softSPI_t spi;
 
 	spi.miso = MISO_PIN;
@@ -346,7 +346,7 @@ static commandResult_t CMD_SPITestFlash_WriteStr(const void* context, const char
 		}
 	}
 
-	spi_test_write2(addr, (const byte*)str, strlen(str));
+	LFS_SPI_Flash_Write(addr, (const byte*)str, strlen(str));
 
 	return CMD_RES_OK;
 }
