@@ -134,6 +134,7 @@ void spi_flash_write(softSPI_t* spi, int adr, const byte* data, int cnt) {
 		SPI_End(spi);
 		SPI_USLEEP(500);
 
+		ADDLOG_INFO(LOG_FEATURE_CMD, "Write %i at %i\n", write_len, adr);
 		SPI_Begin(spi);
 		SPI_Send(spi, WRITE_FLASH_CMD);
 		SPI_Send(spi, (adr >> 16) & 0xFF);
@@ -297,7 +298,7 @@ static commandResult_t CMD_SPITestFlash_ReadData(const void* context, const char
 
 	if (Tokenizer_GetArgsCount() > 0) {
 		addr = Tokenizer_GetArgInteger(0);
-		if (Tokenizer_GetArgsCount() > 0) {
+		if (Tokenizer_GetArgsCount() > 1) {
 			len = Tokenizer_GetArgInteger(1);
 		}
 	}
@@ -325,7 +326,7 @@ static commandResult_t CMD_SPITestFlash_WriteStr(const void* context, const char
 
 	if (Tokenizer_GetArgsCount() > 0) {
 		addr = Tokenizer_GetArgInteger(0);
-		if (Tokenizer_GetArgsCount() > 0) {
+		if (Tokenizer_GetArgsCount() > 1) {
 			str = Tokenizer_GetArg(1);
 		}
 	}
@@ -404,5 +405,13 @@ void DRV_InitFlashMemoryTestFunctions() {
 	CMD_RegisterCommand("SPITestFlash_ReadData", CMD_SPITestFlash_ReadData, NULL);
 
 	CMD_RegisterCommand("SPITestFlash_Test", CMD_SPITestFlash_TestPages, NULL);
+
+	/*
+	SPITestFlash_Erase
+	SPITestFlash_ReadData 0 512
+	SPITestFlash_WriteStr 256 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+	SPITestFlash_WriteStr 254 BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+	
+	*/
 }
 
