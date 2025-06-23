@@ -616,8 +616,7 @@ static int lfs_read(const struct lfs_config *c, lfs_block_t block,
 
 	LFS_SPI_Flash_Read(startAddr, size, buffer);
 
-
-	return size;
+	return LFS_ERR_OK;
 }
 
 // Program a region in a block. The block must have previously
@@ -632,7 +631,7 @@ static int lfs_write(const struct lfs_config *c, lfs_block_t block,
 
 	LFS_SPI_Flash_Write(startAddr, buffer, size);
 
-	return size;
+	return LFS_ERR_OK;
 }
 
 // Erase a block. A block must be erased before being programmed.
