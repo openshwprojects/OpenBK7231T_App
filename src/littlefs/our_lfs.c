@@ -603,6 +603,8 @@ void release_lfs(){
 void LFS_SPI_Flash_Write(int adr, const byte *data, int cnt);
 void LFS_SPI_Flash_Read(int adr, int cnt, byte *data);
 
+void LFS_SPI_Flash_EraseSector(int addr);
+
 // Read a region in a block. Negative error codes are propogated
 // to the user.
 static int lfs_read(const struct lfs_config *c, lfs_block_t block,
@@ -615,7 +617,7 @@ static int lfs_read(const struct lfs_config *c, lfs_block_t block,
 	LFS_SPI_Flash_Read(startAddr, size, buffer);
 
 
-	return 0;
+	return size;
 }
 
 // Program a region in a block. The block must have previously
@@ -625,12 +627,12 @@ static int lfs_write(const struct lfs_config *c, lfs_block_t block,
 	lfs_off_t off, const void *buffer, lfs_size_t size) {
 	unsigned int startAddr;
 
-	startAddr += block * LFS_BLOCK_SIZE;
+	startAddr = block * LFS_BLOCK_SIZE;
 	startAddr += off;
 
 	LFS_SPI_Flash_Write(startAddr, buffer, size);
 
-	return 0;
+	return size;
 }
 
 // Erase a block. A block must be erased before being programmed.
@@ -640,7 +642,9 @@ static int lfs_write(const struct lfs_config *c, lfs_block_t block,
 static int lfs_erase(const struct lfs_config *c, lfs_block_t block) {
 	unsigned int startAddr;
 
-	startAddr += block * LFS_BLOCK_SIZE;
+	startAddr = block * LFS_BLOCK_SIZE;
+
+	LFS_SPI_Flash_EraseSector(startAddr);
 
 	return 0;
 }
