@@ -172,6 +172,7 @@ void spi_flash_read(softSPI_t* spi, int adr, byte* out, int cnt) {
 
 static void flash_wait_for(softSPI_t* spi, byte mask) {
 	byte status;
+	int debug_loops = 0;
 	while(1) {
 		SPI_Begin(spi);
 		SPI_Send(spi, READ_STATUS_REG_CMD);
@@ -181,7 +182,11 @@ static void flash_wait_for(softSPI_t* spi, byte mask) {
 			break;
 		}
 		rtos_delay_milliseconds(5);
+		debug_loops++;
 	}
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "flash_wait_for: done %i loops\n", debug_loops);
+	
 }
 
 static void flash_wait_while_busy(softSPI_t* spi) {
