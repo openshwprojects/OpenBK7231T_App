@@ -18,9 +18,6 @@
 #define ERASE_FLASH_CMD 0xC7
 #define WRITE_FLASH_CMD 0x02
 
-#define SPI_USLEEP(x)
-
-
 #define OBK_ENABLE_INTERRUPTS 
 #define OBK_DISABLE_INTERRUPTS
 
@@ -154,9 +151,6 @@ void spi_flash_read(softSPI_t* spi, int adr, byte* out, int cnt) {
 	OBK_DISABLE_INTERRUPTS;
 
 	SPI_Setup(spi);
-	SPI_USLEEP(500);
-	SPI_USLEEP(500);
-	SPI_USLEEP(500);
 
 	SPI_Begin(spi);
 	SPI_Send(spi, READ_FLASH_CMD);
@@ -176,40 +170,35 @@ void spi_flash_read(softSPI_t* spi, int adr, byte* out, int cnt) {
 #define STATUS_WEL_MASK 0x02
 
 
-static void flash_wait_while_busy(softSPI_t* spi) {
+static void flash_wait_for(softSPI_t* spi, byte mask) {
 	byte status;
-	do {
+	while(1) {
 		SPI_Begin(spi);
 		SPI_Send(spi, READ_STATUS_REG_CMD);
 		status = SPI_Read(spi);
 		SPI_End(spi);
-		//SPI_USLEEP(1000);
+		if (!(status & mask)) {
+			break;
+		}
 		rtos_delay_milliseconds(5);
-	} while (status & STATUS_BUSY_MASK);
+	}
+}
+
+static void flash_wait_while_busy(softSPI_t* spi) {
+	flash_wait_for(spi, STATUS_BUSY_MASK);
 }
 static void flash_wait_for_wel(softSPI_t* spi) {
-	byte status;
-	do {
-		SPI_Begin(spi);
-		SPI_Send(spi, READ_STATUS_REG_CMD);
-		status = SPI_Read(spi);
-		SPI_End(spi);
-		//SPI_USLEEP(1000);
-		rtos_delay_milliseconds(5);
-	} while (status & STATUS_WEL_MASK);
+	flash_wait_for(spi, STATUS_WEL_MASK);
 }
 
 void spi_flash_erase(softSPI_t* spi) {
 	OBK_DISABLE_INTERRUPTS;
 
 	SPI_Setup(spi);
-	SPI_USLEEP(500);
-	SPI_USLEEP(500);
 
 	SPI_Begin(spi);
 	SPI_Send(spi, WRITEENABLE_FLASH_CMD);
 	SPI_End(spi);
-	SPI_USLEEP(500);
 
 	SPI_Begin(spi);
 	SPI_Send(spi, ERASE_FLASH_CMD);
@@ -235,14 +224,12 @@ void spi_flash_write2(softSPI_t* spi, int adr, const byte* data, int cnt) {
 			write_len = remaining;
 
 		SPI_Setup(spi);
-		SPI_USLEEP(500);
 
 		SPI_Begin(spi);
 		SPI_Send(spi, WRITEENABLE_FLASH_CMD);
 		SPI_End(spi);
-		SPI_USLEEP(500);
 
-		ADDLOG_INFO(LOG_FEATURE_CMD, "Write fragmnent %i at %i\n", write_len, adr);
+		//ADDLOG_INFO(LOG_FEATURE_CMD, "Write fragmnent %i at %i\n", write_len, adr);
 		SPI_Begin(spi);
 		SPI_Send(spi, WRITE_FLASH_CMD);
 		SPI_Send(spi, (adr >> 16) & 0xFF);
@@ -268,12 +255,10 @@ void spi_flash_erase_sector(softSPI_t* spi, int addr) {
 	OBK_DISABLE_INTERRUPTS;
 
 	SPI_Setup(spi);
-	SPI_USLEEP(500);
 
 	SPI_Begin(spi);
 	SPI_Send(spi, WRITEENABLE_FLASH_CMD);
 	SPI_End(spi);
-	SPI_USLEEP(500);
 
 	SPI_Begin(spi);
 	SPI_Send(spi, ERASE_SECTOR_CMD);
