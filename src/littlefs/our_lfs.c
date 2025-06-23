@@ -458,6 +458,10 @@ void init_lfs(int create){
     if (!lfs_initialised){
         uint32_t newsize = CFG_GetLFS_Size();
 
+#if ENABLE_LFS_SPI
+		uint32_t newstart = 0;
+		// do nothing for now?
+#else
         // double check again that we're within bounds - don't want
         // boot overwrite or anything nasty....
         newsize = (newsize/LFS_BLOCK_SIZE)*LFS_BLOCK_SIZE;
@@ -481,6 +485,7 @@ void init_lfs(int create){
             ADDLOGF_ERROR("LFS OUT OF BOUNDS end 0x%X too big", newstart + newsize);
             return;
         }
+#endif
 
 #if PLATFORM_BL602
 
