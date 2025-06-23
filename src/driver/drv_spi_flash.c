@@ -126,16 +126,14 @@ byte FastSPI_Read(softSPI_t *spi) {
 #define SPI_Setup FastSPI_Setup
 #define SPI_Send FastSPI_Send
 #define SPI_Read FastSPI_Read
+#define SPI_Begin FastSPI_Begin
 #define SPI_End FastSPI_End
-
 #else
 
 
 #endif
 
 void spi_flash_read_id(softSPI_t* spi, byte* jedec_id) {
-	SPI_Setup(spi);
-
 	SPI_Begin(spi);
 	SPI_Send(spi, 0x9F);
 	jedec_id[0] = SPI_Read(spi);
@@ -149,8 +147,6 @@ void spi_flash_read(softSPI_t* spi, int adr, byte* out, int cnt) {
 	int i;
 
 	OBK_DISABLE_INTERRUPTS;
-
-	SPI_Setup(spi);
 
 	SPI_Begin(spi);
 	SPI_Send(spi, READ_FLASH_CMD);
@@ -199,8 +195,6 @@ static void flash_wait_for_wel(softSPI_t* spi) {
 void spi_flash_erase(softSPI_t* spi) {
 	OBK_DISABLE_INTERRUPTS;
 
-	SPI_Setup(spi);
-
 	SPI_Begin(spi);
 	SPI_Send(spi, WRITEENABLE_FLASH_CMD);
 	SPI_End(spi);
@@ -227,8 +221,6 @@ void spi_flash_write2(softSPI_t* spi, int adr, const byte* data, int cnt) {
 		int write_len = 256 - page_offset;
 		if (write_len > remaining)
 			write_len = remaining;
-
-		SPI_Setup(spi);
 
 		SPI_Begin(spi);
 		SPI_Send(spi, WRITEENABLE_FLASH_CMD);
@@ -258,8 +250,6 @@ void spi_flash_write2(softSPI_t* spi, int adr, const byte* data, int cnt) {
 
 void spi_flash_erase_sector(softSPI_t* spi, int addr) {
 	OBK_DISABLE_INTERRUPTS;
-
-	SPI_Setup(spi);
 
 	SPI_Begin(spi);
 	SPI_Send(spi, WRITEENABLE_FLASH_CMD);
@@ -329,6 +319,8 @@ void LFS_SPI_Flash_EraseSector(int addr) {
 	spi.ss = SS_PIN;
 	spi.sck = SCK_PIN;
 
+	SPI_Setup(&spi);
+
 	spi_flash_erase_sector(&spi, addr);
 }
 void spi_test() {
@@ -339,6 +331,8 @@ void spi_test() {
 	spi.ss = SS_PIN;
 	spi.sck = SCK_PIN;
 	byte jedec_id[3];
+
+	SPI_Setup(&spi);
 
 	spi_flash_read_id(&spi, jedec_id);
 
@@ -351,6 +345,8 @@ void LFS_SPI_Flash_Read(int adr, int cnt, byte *data) {
 	spi.mosi = MOSI_PIN;
 	spi.ss = SS_PIN;
 	spi.sck = SCK_PIN;
+
+	SPI_Setup(&spi);
 
 	spi_flash_read(&spi, adr, data, cnt);
 }
@@ -479,6 +475,8 @@ static commandResult_t CMD_SPITestFlash_TestPages(const void* context, const cha
 	spi.mosi = MOSI_PIN;
 	spi.ss = SS_PIN;
 	spi.sck = SCK_PIN;
+
+	SPI_Setup(&spi);
 
 	flash_test_pages(&spi, addr, len, (byte)pattern);
 
