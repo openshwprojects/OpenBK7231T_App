@@ -445,6 +445,9 @@
 #define ENABLE_DRIVER_BL0942					1
 #define ENABLE_DRIVER_BL0937					1
 #define ENABLE_OBK_BERRY						1
+#define ENABLE_DRIVER_BUTTON					1	
+#define ENABLE_DRIVER_RELAY					1	
+#define ENABLE_DRIVER_WEBREQUEST				1
 
 #else
 
