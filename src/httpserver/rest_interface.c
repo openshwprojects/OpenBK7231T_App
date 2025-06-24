@@ -21,33 +21,14 @@ uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
 #define FLASH_INDEX_XR809 0
 
 #elif PLATFORM_BL602
-#include <stdio.h>
-#include <string.h>
-
-#include <FreeRTOS.h>
-#include <task.h>
-#include <lwip/mem.h>
-#include <lwip/memp.h>
-#include <lwip/dhcp.h>
-#include <lwip/tcpip.h>
-#include <lwip/ip_addr.h>
-#include <lwip/sockets.h>
-#include <lwip/netdb.h>
-
-#include <cli.h>
 #include <hal_boot2.h>
-#include <hal_sys.h>
 #include <utils_sha256.h>
-#include <bl_sys_ota.h>
 #include <bl_mtd.h>
 #include <bl_flash.h>
-#elif PLATFORM_W600
 
-#include "wm_socket_fwup.h"
-#include "wm_fwup.h"
+#elif defined(PLATFORM_W800) || defined(PLATFORM_W600)
 
-#elif PLATFORM_W800
-
+#include "wm_internal_flash.h"
 #include "wm_socket_fwup.h"
 #include "wm_fwup.h"
 
@@ -57,6 +38,17 @@ uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
 #include "flash_partition_table.h"
 
 #elif PLATFORM_ESPIDF
+
+#include "esp_system.h"
+#include "esp_ota_ops.h"
+#include "esp_app_format.h"
+#include "esp_flash_partitions.h"
+#include "esp_partition.h"
+#include "nvs.h"
+#include "nvs_flash.h"
+#include "esp_wifi.h"
+#include "esp_pm.h"
+#include "esp_flash_spi_init.h"
 
 #elif PLATFORM_REALTEK
 
@@ -739,7 +731,7 @@ static int http_rest_post_lfs_file(http_request_t* request) {
 	if (!lfs_present()) {
 		request->responseCode = 400;
 		http_setup(request, httpMimeTypeText);
-		poststr(request, "LittleFS is not abailable");
+		poststr(request, "LittleFS is not available");
 		poststr(request, NULL);
 		return 0;
 	}
@@ -1325,7 +1317,8 @@ typedef struct ota_header {
 			uint8_t ver_software[16];
 
 			uint8_t sha256[32];
-} s;
+			uint32_t unpacked_len;//full len
+		} s;
 		uint8_t _pad[512];
 	} u;
 } ota_header_t;
@@ -1601,29 +1594,12 @@ static int ota_verify_download(void)
 }
 #endif
 
-#if PLATFORM_ESPIDF
-#include "esp_system.h"
-#include "esp_ota_ops.h"
-#include "esp_app_format.h"
-#include "esp_flash_partitions.h"
-#include "esp_partition.h"
-#include "nvs.h"
-#include "nvs_flash.h"
-#include "esp_wifi.h"
-#include "esp_pm.h"
-#endif
-
 static int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 {
 
-#if PLATFORM_XR809
+#if PLATFORM_XR809 || PLATFORM_XR872
 	return 0;	//Operation not supported yet
 #endif
-
-#if PLATFORM_XR872
-	return 0;	//Operation not supported yet
-#endif
-
 
 	int total = 0;
 	int towrite = request->bodylen;
@@ -1762,7 +1738,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 
 	if(writelen < 0)
 	{
-		ADDLOG_DEBUG(LOG_FEATURE_OTA, "ABORTED: %d bytes to write", writelen);
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "ABORTED: %d bytes to write", writelen);
 		return http_rest_error(request, -20, "writelen < 0");
 	}
 
@@ -1775,6 +1751,12 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 #define MAX_BUFF_SIZE			 2048
 	char* Buffer = (char*)os_malloc(MAX_BUFF_SIZE + FWUP_MSG_SIZE);
 
+	if(!Buffer)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "ABORTED: failed to allocate buffer");
+		return http_rest_error(request, -20, "");
+	}
+
 	if(request->contentLength >= 0)
 	{
 		towrite = request->contentLength;
@@ -1782,7 +1764,6 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 
 	int recvLen = 0;
 	int totalLen = 0;
-	uint8_t counter = 0;
 	printf("\ntowrite %d writelen=%d\n", towrite, writelen);
 
 	do
@@ -1874,11 +1855,13 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 				nRetCode = -17;
 			}
 		}
-		if (counter++ % 5 == 0) bk_printf("Downloaded %d / %d\n", recvLen, totalLen);
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Downloaded %d / %d", recvLen, totalLen);
 		rtos_delay_milliseconds(10);	// give some time for flashing - will else increase used memory fast 
 	} while((nRetCode == 0) && (towrite > 0) && (writelen >= 0));
 	bk_printf("Download completed (%d / %d)\n", recvLen, totalLen);
-	tls_mem_free(Buffer);
+	if(Buffer) os_free(Buffer);
+	if(p) pbuf_free(p);
+
 
 	if(nRetCode != 0)
 	{
@@ -1914,7 +1897,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	recv_buffer = pvPortMalloc(OTA_PROGRAM_SIZE);
 
 	unsigned int buffer_offset, flash_offset, ota_addr;
-	uint32_t bin_size, part_size;
+	uint32_t bin_size, part_size, running_size;
 	uint8_t activeID;
 	HALPartition_Entry_Config ptEntry;
 
@@ -1934,6 +1917,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	ota_addr = ptEntry.Address[!ptEntry.activeIndex];
 	bin_size = ptEntry.maxLen[!ptEntry.activeIndex];
 	part_size = ptEntry.maxLen[!ptEntry.activeIndex];
+	running_size = ptEntry.maxLen[ptEntry.activeIndex];
 	(void)part_size;
 	/*XXX if you use bin_size is product env, you may want to set bin_size to the actual
 	 * OTA BIN size, and also you need to splilt XIP_SFlash_Erase_With_Lock into
@@ -2035,6 +2019,11 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 			if(flash_offset + useLen >= part_size)
 			{
 				return http_rest_error(request, -20, "Too large bin");
+			}
+			if(ota_header->u.s.unpacked_len != 0xFFFFFFFF && running_size < ota_header->u.s.unpacked_len)
+			{
+				ADDLOG_ERROR(LOG_FEATURE_OTA, "Unpacked OTA image size (%u) is bigger than running partition size (%u)", ota_header->u.s.unpacked_len, running_size);
+				return http_rest_error(request, -20, "");
 			}
 			//ADDLOG_DEBUG(LOG_FEATURE_OTA, "%d bytes to write", writelen);
 			//add_otadata((unsigned char*)writebuf, writelen);
@@ -3178,7 +3167,9 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 		if (readlen > 1024) {
 			readlen = 1024;
 		}
-#if PLATFORM_XR809
+#if PLATFORM_BEKEN
+		res = flash_read((char*)buffer, readlen, startaddr);
+#elif PLATFORM_XR809
 		//uint32_t flash_read(uint32_t flash, uint32_t addr,void *buf, uint32_t size)
 #define FLASH_INDEX_XR809 0
 		res = flash_read(FLASH_INDEX_XR809, startaddr, buffer, readlen);
@@ -3187,11 +3178,11 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 #elif PLATFORM_BL602
 		res = bl_flash_read(startaddr, (uint8_t *)buffer, readlen);
 #elif PLATFORM_W600 || PLATFORM_W800
-		res = 0;
+		res = tls_fls_read(startaddr, (uint8_t*)buffer, readlen);
 #elif PLATFORM_LN882H
 		res = hal_flash_read(startaddr, readlen, (uint8_t *)buffer);
 #elif PLATFORM_ESPIDF
-		res = 0;
+		res = esp_flash_read(NULL, (void*)buffer, startaddr, readlen);
 #elif PLATFORM_TR6260
 		res = hal_spiflash_read(startaddr, (uint8_t*)buffer, readlen);
 #elif PLATFORM_ECR6600
@@ -3201,7 +3192,7 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 		flash_stream_read(&flash, startaddr, readlen, (uint8_t*)buffer);
 		device_mutex_unlock(RT_DEV_LOCK_FLASH);
 #else
-		res = flash_read((char*)buffer, readlen, startaddr);
+		res = 0;
 #endif
 		startaddr += readlen;
 		len -= readlen;

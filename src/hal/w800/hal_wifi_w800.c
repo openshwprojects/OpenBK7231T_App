@@ -57,8 +57,9 @@ int WiFI_SetMacAddress(char* mac)
 
 void WiFI_GetMacAddress(char* mac)
 {
-	struct netif* netif = tls_get_netif();
-	MEMCPY(mac, &netif->hwaddr[0], ETH_ALEN);
+	//struct netif* netif = tls_get_netif();
+	//MEMCPY(mac, &netif->hwaddr[0], ETH_ALEN);
+	tls_get_mac_addr(mac);
 }
 const char* HAL_GetMACStr(char* macstr)
 {

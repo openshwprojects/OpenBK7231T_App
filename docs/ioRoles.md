@@ -84,4 +84,6 @@ Do not add anything here, as it will overwritten with next rebuild.
 | KP18058_CLK | QQQ |
 | KP18058_DAT | QQQ |
 | DS1820 | vers simple OneWire Temp sensor DS1820 |
+| PWM_ScriptOnly |  |
+| PWM_ScriptOnly_n |  |
 | Total_Options | Current total number of available IOR roles |

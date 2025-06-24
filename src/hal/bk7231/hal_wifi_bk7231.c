@@ -24,7 +24,7 @@
 #define SECURITY_TYPE_WPA2_AES		BK_SECURITY_TYPE_WPA2_AES
 #define SECURITY_TYPE_WPA2_MIXED	BK_SECURITY_TYPE_WPA2_MIXED
 #define SECURITY_TYPE_AUTO			BK_SECURITY_TYPE_AUTO
-
+#define RW_EVT_STA_CONNECT_FAILED	RW_EVT_STA_AUTH_FAILED
 #endif
 
 //extern int pbkdf2_sha1(const char* passphrase, const u8* ssid, size_t ssid_len,
@@ -314,7 +314,14 @@ void wl_status(void* ctxt)
 	case RW_EVT_STA_PASSWORD_WRONG:
 	case RW_EVT_STA_NO_AP_FOUND:
 	case RW_EVT_STA_ASSOC_FULL:
+#ifdef PLATFORM_BEKEN_NEW
+	case RW_EVT_STA_DEAUTH:
+	case RW_EVT_STA_DISASSOC:
+	case RW_EVT_STA_ASSOC_FAILED:
+	case RW_EVT_STA_ACTIVE_DISCONNECTED:
+#else
 	case RW_EVT_STA_DISCONNECTED:    /* disconnect with server */
+#endif
 		if (g_wifiStatusCallback != 0) {
 			g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
 		}

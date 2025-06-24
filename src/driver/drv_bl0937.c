@@ -30,8 +30,8 @@
 
 #elif PLATFORM_BL602
 
-#include "../../../../../../components/hal_drv/bl602_hal/hal_gpio.h"
-#include "../../../../../../components/hal_drv/bl602_hal/bl_gpio.h"
+#include "hal_gpio.h"
+#include "bl_gpio.h"
 
 #elif PLATFORM_LN882H
 
@@ -412,6 +412,7 @@ void BL0937_RunEverySecond(void)
 	float final_p;
 	bool bNeedRestart;
 	portTickType ticksElapsed;
+	portTickType xPassedTicks;
 
 	bNeedRestart = false;
 	if(g_invertSEL)
@@ -496,9 +497,9 @@ void BL0937_RunEverySecond(void)
 #else
 
 #endif
-
-	ticksElapsed = (xTaskGetTickCount() - pulseStamp);
-	pulseStamp = xTaskGetTickCount();
+	xPassedTicks = xTaskGetTickCount();
+	ticksElapsed = (xPassedTicks - pulseStamp);
+	pulseStamp = xPassedTicks;
 	//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
 
 	PwrCal_Scale(res_v, res_c, res_p, &final_v, &final_c, &final_p);

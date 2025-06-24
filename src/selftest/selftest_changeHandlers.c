@@ -132,6 +132,7 @@ void Test_ChangeHandlers_EnsureThatChannelVariableIsExpandedAtHandlerRunTime() {
 	CMD_ExecuteCommand("setChannel 15 2+2", 0);
 	CMD_ExecuteCommand("setChannel 1 0", 0);
 	CMD_ExecuteCommand("addChangeHandler Channel1 == 0 addChannel 14 $CH15", 0);
+	SELFTEST_ASSERT(EventHandlers_GetActiveCount() == 1);
 	SELFTEST_ASSERT_CHANNEL(1, 0);
 	SELFTEST_ASSERT_CHANNEL(14, 0);
 	SELFTEST_ASSERT_CHANNEL(15, 2+2);
@@ -181,7 +182,9 @@ void Test_ChangeHandlers_EnsureThatChannelVariableIsExpandedAtHandlerRunTime() {
 
 	CMD_ExecuteCommand("setChannel 20 999", 0);
 	CMD_ExecuteCommand("addChangeHandler Channel20 == 0 setChannel 21 1", 0);
+	SELFTEST_ASSERT(EventHandlers_GetActiveCount() == 2);
 	CMD_ExecuteCommand("addChangeHandler Channel20 != 0 setChannel 21 0", 0);
+	SELFTEST_ASSERT(EventHandlers_GetActiveCount() == 3);
 	CMD_ExecuteCommand("setChannel 20 0", 0);
 	SELFTEST_ASSERT_CHANNEL(20, 0);
 	SELFTEST_ASSERT_CHANNEL(21, 1);
@@ -191,12 +194,31 @@ void Test_ChangeHandlers_EnsureThatChannelVariableIsExpandedAtHandlerRunTime() {
 	CMD_ExecuteCommand("setChannel 20 0", 0);
 	SELFTEST_ASSERT_CHANNEL(20, 0);
 	SELFTEST_ASSERT_CHANNEL(21, 1)
-		CMD_ExecuteCommand("setChannel 20 1", 0);
+	CMD_ExecuteCommand("setChannel 20 1", 0);
 	SELFTEST_ASSERT_CHANNEL(20, 1);
 	SELFTEST_ASSERT_CHANNEL(21, 0);
 
 	SIM_ClearMQTTHistory();
+	CMD_ExecuteCommand("clearAllHandlers", 0);
+	SELFTEST_ASSERT(EventHandlers_GetActiveCount() == 0);
+	CMD_ExecuteCommand("addChangeHandler Channel20 == 0 setChannel 21 1", 0);
+	SELFTEST_ASSERT(EventHandlers_GetActiveCount() == 1);
+	CMD_ExecuteCommand("addChangeHandler Channel20 != 0 setChannel 21 0", 0);
+	SELFTEST_ASSERT(EventHandlers_GetActiveCount() == 2);
+	CMD_ExecuteCommand("setChannel 20 0", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 0);
+	SELFTEST_ASSERT_CHANNEL(21, 1);
+	CMD_ExecuteCommand("setChannel 20 1", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 1);
+	SELFTEST_ASSERT_CHANNEL(21, 0);
+	CMD_ExecuteCommand("setChannel 20 0", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 0);
+	SELFTEST_ASSERT_CHANNEL(21, 1)
+	CMD_ExecuteCommand("setChannel 20 1", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 1);
+	SELFTEST_ASSERT_CHANNEL(21, 0);
 
+	
 }
 
 

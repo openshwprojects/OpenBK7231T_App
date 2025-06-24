@@ -209,15 +209,7 @@ void PINS_BeginDeepSleepWithPinWakeUp(unsigned int wakeUpTime) {
 		}
 	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Index map: %i, edge: %i", g_gpio_index_map[0], g_gpio_edge_map[0]);
-#ifdef PLATFORM_BEKEN
-	// NOTE: this function:
-	// void bk_enter_deep_sleep(UINT32 gpio_index_map,UINT32 gpio_edge_map)
-	// On BK7231T, will overwrite HAL pin settings, and depending on edge map,
-	// will set a internal pullup or internall pulldown
-#ifdef PLATFORM_BK7231T
-	extern void deep_sleep_wakeup_with_gpio(UINT32 gpio_index_map, UINT32 gpio_edge_map);
-	deep_sleep_wakeup_with_gpio(g_gpio_index_map[0], g_gpio_edge_map[0]);
-#elif PLATFORM_BEKEN_NEW
+#ifdef PLATFORM_BEKEN_NEW
 	PS_DEEP_CTRL_PARAM params;
 	params.gpio_index_map = g_gpio_index_map[0];
 	params.gpio_edge_map = g_gpio_edge_map[0];
@@ -226,13 +218,20 @@ void PINS_BeginDeepSleepWithPinWakeUp(unsigned int wakeUpTime) {
 	{
 		params.wake_up_way = PS_DEEP_WAKEUP_GPIO | PS_DEEP_WAKEUP_RTC;
 		params.sleep_time = wakeUpTime;
-		bk_enter_deep_sleep_mode(&params);
 	}
 	else
 	{
 		params.wake_up_way = PS_DEEP_WAKEUP_GPIO;
-		bk_enter_deep_sleep_mode(&params);
 	}
+	bk_enter_deep_sleep_mode(&params);
+#elif PLATFORM_BEKEN
+	// NOTE: this function:
+	// void bk_enter_deep_sleep(UINT32 gpio_index_map,UINT32 gpio_edge_map)
+	// On BK7231T, will overwrite HAL pin settings, and depending on edge map,
+	// will set a internal pullup or internall pulldown
+#ifdef PLATFORM_BK7231T
+	extern void deep_sleep_wakeup_with_gpio(UINT32 gpio_index_map, UINT32 gpio_edge_map);
+	deep_sleep_wakeup_with_gpio(g_gpio_index_map[0], g_gpio_edge_map[0]);
 #else
 	extern void bk_enter_deep_sleep(UINT32 g_gpio_index_map, UINT32 g_gpio_edge_map);
 	extern void deep_sleep_wakeup(const UINT32* g_gpio_index_map,
@@ -684,6 +683,34 @@ void CHANNEL_SetFirstChannelByTypeEx(int requiredType, int newVal, int ausemovin
 	}
 }
 
+int CHANNEL_FindIndexForPinType(int requiredType) {
+	int i;
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (g_cfg.pins.roles[i] == requiredType) {
+			return g_cfg.pins.channels[i];
+		}
+	}
+	return -1;
+}
+
+int CHANNEL_FindIndexForPinType2(int requiredType, int requiredType2) {
+	int i;
+	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (g_cfg.pins.roles[i] == requiredType || g_cfg.pins.roles[i] == requiredType2) {
+			return g_cfg.pins.channels[i];
+		}
+	}
+	return -1;
+}
+int CHANNEL_FindIndexForType(int requiredType) {
+	int i;
+	for (i = 0; i < CHANNEL_MAX; i++) {
+		if (CHANNEL_GetType(i) == requiredType) {
+			return i;
+		}
+	}
+	return -1;
+}
 void CHANNEL_SetFirstChannelByType(int requiredType, int newVal) {
 	CHANNEL_SetFirstChannelByTypeEx(requiredType, newVal, 0);
 }
@@ -724,6 +751,7 @@ void CHANNEL_SetAll(int iVal, int iFlags) {
 		case IOR_PWM:
 		case IOR_PWM_ScriptOnly:
 		case IOR_PWM_n:
+		case IOR_PWM_ScriptOnly_n:
 			CHANNEL_Set(g_cfg.pins.channels[i], iVal, iFlags);
 			break;
 		case IOR_BridgeForward:
@@ -841,6 +869,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			// Disable PWM for previous pin role
 		case IOR_PWM_n:
 		case IOR_PWM_ScriptOnly:
+		case IOR_PWM_ScriptOnly_n:
 		case IOR_PWM:
 		{
 			HAL_PIN_PWM_Stop(index);
@@ -1038,6 +1067,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			break;
 		case IOR_PWM_n:
 		case IOR_PWM_ScriptOnly:
+		case IOR_PWM_ScriptOnly_n:
 		case IOR_PWM:
 		{
 			int channelIndex;
@@ -1057,7 +1087,8 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 
 			HAL_PIN_PWM_Start(index, useFreq);
 
-			if (role == IOR_PWM_n) {
+			if (role == IOR_PWM_n
+				|| role == IOR_PWM_ScriptOnly_n) {
 				// inversed PWM
 				HAL_PIN_PWM_Update(index, 100.0f - channelValue);
 			}
@@ -1134,7 +1165,7 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 			else if (g_cfg.pins.roles[i] == IOR_PWM || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly) {
 				HAL_PIN_PWM_Update(i, iVal);
 			}
-			else if (g_cfg.pins.roles[i] == IOR_PWM_n) {
+			else if (g_cfg.pins.roles[i] == IOR_PWM_n || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly_n) {
 				HAL_PIN_PWM_Update(i, 100 - iVal);
 			}
 		}
@@ -1386,7 +1417,7 @@ void CHANNEL_Set_FloatPWM(int ch, float fVal, int iFlags) {
 			if (g_cfg.pins.roles[i] == IOR_PWM || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly) {
 				HAL_PIN_PWM_Update(i, fVal);
 			}
-			else if (g_cfg.pins.roles[i] == IOR_PWM_n) {
+			else if (g_cfg.pins.roles[i] == IOR_PWM_n || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly_n) {
 				HAL_PIN_PWM_Update(i, 100.0f - fVal);
 			}
 		}
@@ -1545,7 +1576,7 @@ int CHANNEL_FindMaxValueForChannel(int ch) {
 			if (g_cfg.pins.roles[i] == IOR_PWM || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly) {
 				return 100;
 			}
-			if (g_cfg.pins.roles[i] == IOR_PWM_n) {
+			if (g_cfg.pins.roles[i] == IOR_PWM_n || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly_n) {
 				return 100;
 			}
 		}
@@ -1725,6 +1756,7 @@ int CHANNEL_GetRoleForOutputChannel(int ch) {
 			case IOR_PWM_n:
 			case IOR_PWM:
 			case IOR_PWM_ScriptOnly:
+			case IOR_PWM_ScriptOnly_n:
 				return g_cfg.pins.roles[i];
 			case IOR_BridgeForward:
 			case IOR_BridgeReverse:
@@ -1990,7 +2022,7 @@ void PIN_ticks(void* param)
 		if (g_cfg.pins.roles[i] == IOR_PWM || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly) {
 			HAL_PIN_PWM_Update(i, g_channelValuesFloats[g_cfg.pins.channels[i]]);
 		}
-		else if (g_cfg.pins.roles[i] == IOR_PWM_n) {
+		else if (g_cfg.pins.roles[i] == IOR_PWM_n || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly_n) {
 			// invert PWM value
 			HAL_PIN_PWM_Update(i, 100 - g_channelValuesFloats[g_cfg.pins.channels[i]]);
 		}
@@ -2187,6 +2219,9 @@ const char* g_channelTypeNames[] = {
 	"Tds",
 	"Motion_n",
 	"Frequency_div1000",
+	"OpenStopClose",
+	"Percent",
+	"error",
 	"error",
 	"error",
 };
@@ -2375,6 +2410,7 @@ void PIN_get_Relay_PWM_Count(int* relayCount, int* pwmCount, int* dInputCount) {
 			//(*pwmCount)++;
 			break;
 		case IOR_PWM_ScriptOnly:
+		case IOR_PWM_ScriptOnly_n:
 			// DO NOT COUNT SCRIPTONLY PWM HERE!
 			// As in title - it's only for scripts. 
 			// It should not generate lights!

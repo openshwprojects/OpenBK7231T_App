@@ -1,4 +1,4 @@
-#if PLATFORM_BK7231N || WINDOWS
+#if (PLATFORM_BK7231N || WINDOWS) && !PLATFORM_BEKEN_NEW
 
 
 #include "../new_cfg.h"
@@ -76,9 +76,12 @@ spiLED_t spiLED;
 
 
 
-
 void SPILED_InitDMA(int numBytes) {
 	int i;
+
+	if (spiLED.ready) {
+		SPILED_Shutdown();
+	}
 
 	spiLED.padding = 64;
 
@@ -147,6 +150,14 @@ void SPILED_SetRawBytes(int start_offset, byte *bytes, int numBytes, int push) {
 }
 void SPILED_Shutdown() {
 	spiLED.ready = 0;
+	if (spiLED.buf) {
+		free(spiLED.buf);
+		spiLED.buf = 0;
+	}
+	if (spiLED.msg) {
+		free(spiLED.msg);
+		spiLED.msg = 0;
+	}
 }
 
 void SPILED_Init() {

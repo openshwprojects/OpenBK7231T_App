@@ -1,4 +1,4 @@
-#ifdef PLATFORM_XR809 || PLATFORM_XR872
+#if PLATFORM_XR809 || PLATFORM_XR872
 
 #include "../../new_common.h"
 #include "../../logging/logging.h"

@@ -62,13 +62,14 @@ typedef commandResult_t(*commandHandler_t)(const void* context, const char* cmd,
 #define COMMAND_FLAG_SOURCE_TELESENDER	64
 
 extern bool g_powersave;
+typedef struct command_s command_t;
 
 //
 void CMD_Init_Early();
 void CMD_Init_Delayed();
 void CMD_FreeAllCommands();
 void CMD_RunUartCmndIfRequired();
-void CMD_RegisterCommand(const char* name, commandHandler_t handler, void* context);
+command_t*CMD_RegisterCommand(const char* name, commandHandler_t handler, void* context);
 commandResult_t CMD_ExecuteCommand(const char* s, int cmdFlags);
 commandResult_t CMD_ExecuteCommandArgs(const char* cmd, const char* args, int cmdFlags);
 // like a strdup, but will expand constants.
@@ -313,11 +314,12 @@ int CMD_GetCountActiveScriptThreads();
 void CMD_InitBerry();
 void CMD_Berry_RunEventHandlers_IntInt(byte eventCode, int argument, int argument2);
 void CMD_Berry_RunEventHandlers_IntBytes(byte eventCode, int argument, const byte *data, int size);
-int CMD_Berry_RunEventHandlers_StrInt(byte eventCode, const char *argument, int argument2);
+int CMD_Berry_RunEventHandlers_StrPtr(byte eventCode, const char *argument, void* argument2);
 int CMD_Berry_RunEventHandlers_Str(byte eventCode, const char *argument, const char *argument2);
 
 const char* CMD_GetResultString(commandResult_t r);
 
+void SVM_StartBacklog(const char *command);
 void SVM_RunThreads(int deltaMS);
 void CMD_InitScripting();
 void SVM_RunStartupCommandAsScript();

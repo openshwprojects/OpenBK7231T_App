@@ -76,7 +76,8 @@ void Test_TwoPWMsOneChannel();
 void Test_ClockEvents();
 void Test_Commands_Channels();
 void Test_LEDDriver();
-void Test_TuyaMCU_Basic();
+void Test_TuyaMCU_Basic(); 
+void Test_TuyaMCU_Calib();
 void Test_TuyaMCU_Boolean();
 void Test_TuyaMCU_DP22();
 void Test_TuyaMCU_Mult();
@@ -135,6 +136,8 @@ void Test_Expressions_RunTests_Braces();
 void Test_ButtonEvents();
 void Test_Http();
 void Test_Demo_ConditionalRelay();
+void Test_PIR();
+void Test_Driver_TCL_AC();
 
 void Test_GetJSONValue_Setup(const char *text);
 void Test_FakeHTTPClientPacket_GET(const char *tg);

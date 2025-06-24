@@ -55,7 +55,7 @@ void __attribute__((weak)) HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 
 void __attribute__((weak)) HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
 {
-
+	ADDLOG_ERROR(LOG_FEATURE_GENERAL, "Generic %s called", __func__);
 }
 
 void __attribute__((weak)) HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
@@ -76,5 +76,6 @@ void __attribute__((weak)) HAL_DisconnectFromWifi()
 
 int __attribute__((weak)) HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
+	ADDLOG_ERROR(LOG_FEATURE_GENERAL, "Generic %s called", __func__);
 	return 0;
 }
