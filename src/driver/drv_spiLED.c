@@ -1,4 +1,4 @@
-#if PLATFORM_BK7231N || WINDOWS
+#if (PLATFORM_BK7231N || WINDOWS) && !PLATFORM_BEKEN_NEW
 
 
 #include "../new_cfg.h"
