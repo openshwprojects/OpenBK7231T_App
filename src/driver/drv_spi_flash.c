@@ -163,7 +163,8 @@ static void flash_wait_for(softSPI_t* spi, byte mask) {
 		rtos_delay_milliseconds(loops);
 	}
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, "flash_wait_for: done %i loops\n", loops);
+
+	//ADDLOG_INFO(LOG_FEATURE_CMD, "flash_wait_for: done %i loops\n", loops);
 
 }
 
@@ -214,7 +215,7 @@ void spi_flash_write2(softSPI_t* spi, int adr, const byte* data, int cnt) {
 
 	OBK_DISABLE_INTERRUPTS;
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, "spi_flash_write2 %i at %i\n", cnt, adr);
+	//ADDLOG_INFO(LOG_FEATURE_CMD, "spi_flash_write2 %i at %i\n", cnt, adr);
 
 	while (remaining > 0) {
 		int page_offset = adr % 256;
