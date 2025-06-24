@@ -188,12 +188,14 @@ static void flash_wait_for(softSPI_t* spi, byte mask) {
 static void flash_wait_while_busy(softSPI_t* spi) {
 	flash_wait_for(spi, STATUS_BUSY_MASK);
 }
-static void flash_wait_for_wel(softSPI_t* spi) {
-	flash_wait_for(spi, STATUS_WEL_MASK);
-}
+//static void flash_wait_for_wel(softSPI_t* spi) {
+//	flash_wait_for(spi, STATUS_WEL_MASK);
+//}
 
 void spi_flash_erase(softSPI_t* spi) {
 	OBK_DISABLE_INTERRUPTS;
+
+	flash_wait_while_busy(spi);
 
 	SPI_Begin(spi);
 	SPI_Send(spi, WRITEENABLE_FLASH_CMD);
@@ -202,8 +204,6 @@ void spi_flash_erase(softSPI_t* spi) {
 	SPI_Begin(spi);
 	SPI_Send(spi, ERASE_FLASH_CMD);
 	SPI_End(spi);
-
-	flash_wait_while_busy(spi);
 
 	OBK_ENABLE_INTERRUPTS;
 }
@@ -222,6 +222,8 @@ void spi_flash_write2(softSPI_t* spi, int adr, const byte* data, int cnt) {
 		if (write_len > remaining)
 			write_len = remaining;
 
+		flash_wait_while_busy(spi);
+
 		SPI_Begin(spi);
 		SPI_Send(spi, WRITEENABLE_FLASH_CMD);
 		SPI_End(spi);
@@ -237,8 +239,6 @@ void spi_flash_write2(softSPI_t* spi, int adr, const byte* data, int cnt) {
 		}
 		SPI_End(spi);
 
-		flash_wait_while_busy(spi);
-
 		adr += write_len;
 		offset += write_len;
 		remaining -= write_len;
@@ -251,6 +251,8 @@ void spi_flash_write2(softSPI_t* spi, int adr, const byte* data, int cnt) {
 void spi_flash_erase_sector(softSPI_t* spi, int addr) {
 	OBK_DISABLE_INTERRUPTS;
 
+	flash_wait_while_busy(spi);
+
 	SPI_Begin(spi);
 	SPI_Send(spi, WRITEENABLE_FLASH_CMD);
 	SPI_End(spi);
@@ -261,8 +263,6 @@ void spi_flash_erase_sector(softSPI_t* spi, int addr) {
 	SPI_Send(spi, (addr >> 8) & 0xFF);
 	SPI_Send(spi, addr & 0xFF);
 	SPI_End(spi);
-
-	flash_wait_while_busy(spi);
 
 	OBK_ENABLE_INTERRUPTS;
 }
