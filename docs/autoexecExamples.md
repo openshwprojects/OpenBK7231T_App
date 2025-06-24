@@ -3,7 +3,7 @@
 
 [Configuration for EDM-01AA-EU dimmer with TuyaMCU](https://www.elektroda.com/rtvforum/topic3929151.html)
 <br>
-```
+```c++
 // EDM-01AA-EU dimmer config
 // Start TuyaMCu driver
 startDriver TuyaMCU
@@ -27,7 +27,7 @@ linkTuyaMCUOutputToChannel 2 val 2
 
 [Configuration for QIACHIP Universal WIFI Ceiling Fan Light Remote Control Kit - BK7231N - CB2S with TuyaMCU](https://www.elektroda.com/rtvforum/topic3895301.html)
 <br>
-```
+```c++
 // start MCU driver
 startDriver TuyaMCU
 // let's say that channel 1 is dpid1 - fan on/off
@@ -60,7 +60,7 @@ linkTuyaMCUOutputToChannel 7 2 6
 
 [Configuration for BK7231T LCD calendar/thermometer/hygrometer TH06 WiFi for TuyaMCU](https://www.elektroda.com/rtvforum/viewtopic.php?p=20342890#20342890)
 <br>
-```
+```c++
 
 startDriver TuyaMCU
 startDriver NTP
@@ -75,7 +75,7 @@ linkTuyaMCUOutputToChannel 2 val 2
 
 [Automatic relay turn off after given relay (aka inching)](https://www.elektroda.com/rtvforum/viewtopic.php?p=20797236#20797236)
 <br>
-```
+```c++
 
 // This aliased command will turn off relay on CH1 after 10 seconds
 // addRepeatingEvent	[IntervalSeconds][RepeatsOr-1][CommandToRun]
@@ -88,7 +88,7 @@ addChangeHandler Channel1 == 1 turn_off_after_time
 
 [Better turn off after time with timer on UI](https://www.elektroda.com/rtvforum/viewtopic.php?p=20797440#20797440)
 <br>
-```
+```c++
 
 // display seconds timer
 setChannelType 2 TimerSeconds
@@ -122,7 +122,7 @@ goto again
 
 [Advanced turn off after time with timer on UI and timer setting on UI and kept in flash](https://www.elektroda.com/rtvforum/viewtopic.php?t=4032982&highlight=)
 <br>
-```
+```c++
 
 // advanced delay script
 // See: https://www.elektroda.com/rtvforum/topic4032982.html
@@ -170,7 +170,7 @@ goto again
 
 [Configuration for controlling LED strip with IR receiver by TV Remote](https://www.elektroda.com/rtvforum/topic3944210.html)
 <br>
-```
+```c++
 // You must set IRRecv role for one of the pins
 // IR driver will start itself automatically after reboot
 
@@ -195,7 +195,7 @@ addEventHandler2 IR_Samsung 0x707 0x60 led_enableAll 1
 
 [Configuration for controlling Tuya 5 Speed Fan Controller by TEQOOZ - Home Assistant](https://www.elektroda.com/rtvforum/topic3908093.html)
 <br>
-```
+```c++
 
 // start MCU driver
 startDriver TuyaMCU
@@ -235,7 +235,7 @@ linkTuyaMCUOutputToChannel 23 2 23
 
 [Configuration for controlling BlitzWolf BW-AF1 air fryer](https://www.elektroda.com/rtvforum/viewtopic.php?p=20448156#20448156)
 <br>
-```
+```c++
 
 startDriver TuyaMCU
 
@@ -293,7 +293,7 @@ setButtonColor 1 "orange"
 
 [Configuration for Tuya ATORCH AT4P(WP/BW) Smartlife Energy monitor (BK7231N/C3BS/CH573F/BL0924)](https://www.elektroda.com/rtvforum/topic3941692.html)
 <br>
-```
+```c++
 
 startDriver TuyaMCU
 startDriver NTP
@@ -331,7 +331,7 @@ linkTuyaMCUOutputToChannel 123 1 9
 
 [Configuration for 4x socket + 1x USB power strip with a single button (double click, triple, etc)](https://www.elektroda.com/rtvforum/topic3941692.html)
 <br>
-```
+```c++
 // channels 1 to 5 are used
 setChannelType 1 toggle
 setChannelType 2 toggle
@@ -349,7 +349,7 @@ addEventHandler On5Click 26 ToggleChannel 5
 
 [Script for LED acting like WiFi state LED during connecting to network but like Relay state LED when online](https://www.elektroda.com/rtvforum/viewtopic.php?p=20804036#20804036)
 <br>
-```
+```c++
 
 alias mode_wifi setPinRole 10 WifiLED_n
 alias mode_relay setPinRole 10 LED_n
@@ -364,7 +364,7 @@ addChangeHandler WiFiState != 4 mode_wifi
 
 Simple example showing how to do MQTT publish on button event (double click, etc). It also includes button hold event to adjust dimmer.
 <br>
-```
+```c++
 // A simple script per user request.
 // Device has single button on P26
 // Device also has a relay or a light
@@ -390,7 +390,7 @@ addEventHandler OnHold 26 led_addDimmer 10 1
 
 Basic Ping Watchdog usage. Ping given IP with given interval and run script if there was no ping reply within given time.
 <br>
-```
+```c++
 
 // this is autoexec.bat, it runs at startup, you should restart after making changes
 // target to ping
@@ -406,7 +406,7 @@ addChangeHandler noPingTime > 600 reboot
 
 Alternate Ping Watchdog usage.
 <br>
-```
+```c++
 
 // Example autoexec.bat usage
 // wait for ping watchdog alert when target host does not reply for 100 seconds:
@@ -437,7 +437,7 @@ reboot
 
 [Artificial delay for relay open (and no delay for close)](https://www.elektroda.com/rtvforum/viewtopic.php?p=20940593#20940593)
 <br>
-```
+```c++
 
 // Following sample shows how to turn on relay without delay, but turn it off with a delay
 
@@ -456,7 +456,7 @@ addChangeHandler Channel2 == 0 disable_with_delay
 
 HTTP-only control of Tasmota/OBK device from OBK.
 <br>
-```
+```c++
 // HTTP calls example
 // This example shows how can one OBK device control another OBK or Tasmota device via HTTP
 // No MQTT is needed
@@ -472,7 +472,7 @@ addChangeHandler Channel1 == 1 SendGet http://192.168.0.112/cm?cmnd=Power0%20ON
 
 NTP and 'waitFor' command example. You can use 'waitFor NTPState 1' in autoexec.bat to wait for NTP sync. After that, you can be sure that correct time is set. 'waitFor' will block execution until given event.
 <br>
-```
+```c++
 // do anything on startup
 startDriver NTP
 startDriver SSDP
@@ -499,7 +499,7 @@ if $hour>=23 then Dimmer 90
 
 MQTT and 'waitFor' command example. You can use 'waitFor MQTTState 1' in autoexec.bat to wait for MQTT connection. After that, you can be sure that MATT is online. 'waitFor' will block execution until given event.
 <br>
-```
+```c++
 // do anything on startup
 startDriver NTP
 startDriver SSDP
@@ -522,7 +522,7 @@ publish myVariable 2022
 
 WaitFor advanced syntax.
 <br>
-```
+```c++
 
 // Waitfor syntax samples
 // WaitFor can support following operators:
@@ -552,7 +552,7 @@ waitFor NoPingTime ! 100
 
 This script will use NTP and 'addClockEvent' to change light styles in the morning and in the evening. Here you can see how  'waitFor NTPState 1' and 'addClockEvent' and $hour script functions/variables are used.
 <br>
-```
+```c++
 // setup NTP driver
 startDriver ntp
 // set your time zone
@@ -578,7 +578,7 @@ if $hour>=21||$hour<06  then night_lights
 
 Alternate 'addClockEvent' demo - just like previous one, but written by using AddEventHandler instead of waitFor
 <br>
-```
+```c++
 startDriver ntp
 ntp_timeZoneOfs 10:00
 
@@ -597,7 +597,7 @@ AddEventHandler NTPState 1 set_now_colour
 
 A more complete demo with the addition of: An NTP server configured on the LAN, off/low/high modes for the lights, make use of sunset event and constant to determine when the light should start to be on.
 <br>
-```
+```c++
 PowerSave 1
 startDriver ntp
 ntp_setServer 192.168.1.12
@@ -642,7 +642,7 @@ if $hour>=23||$CH11<$CH10 then off_lights
 
 Simple UART log redirection to UART1 instead of UART2 on Beken with UART command line support
 <br>
-```
+```c++
 // Here is how you can get log print on UART1, instead of default UART2 on Beken
 
 // Enable "[UART] Enable UART command line"
@@ -657,7 +657,7 @@ logPort 1
 
 Simple single LED blink on device boot
 <br>
-```
+```c++
 // this script just manually turns on and later off LED on device boot
 // It assumes that you have a LED on channel 4
 
@@ -671,7 +671,7 @@ addRepeatingEvent 2 1 setChannel 4 0
 
 [Advanced config for TuyaMCU power meter and electric car charging limit driver](https://www.elektroda.com/rtvforum/topic3936455.html)
 <br>
-```
+```c++
 // Config for TAC2121C-like TuyaMCU power meter device
 // Also a charging limit driver is setup for charging electric cars
 // See: https://www.elektroda.com/rtvforum/topic3996220.html
@@ -771,7 +771,7 @@ setButtonColor 2 "#56b08f"
 
 Advanced I2C driver for multiple devices on single bus - TC74 example
 <br>
-```
+```c++
 // TC74A5 (check address in datasheet! is on SoftSDA and SoftSCL with 10k pull up resistors)
 startDriver I2C
 setChannelType 6 temperature
@@ -784,7 +784,7 @@ addI2CDevice_TC74 Soft 0x4D 6
 
 Deep sleep usage with SHT30 sensor and data reporting via HTTP GET
 <br>
-```
+```c++
 // source: https://www.elektroda.com/rtvforum/viewtopic.php?p=20693161#20693161
 // NOTE: SHT3X is configured to store temp in channel2 and humidity in channel 3
 
@@ -816,7 +816,7 @@ DeepSleep 120
 
 [Deep sleep usage for water sensor with PWM buzzer](https://www.elektroda.com/rtvforum/viewtopic.php?p=21096228#21096228)
 <br>
-```
+```c++
 
 // Water Sensor with deep sleep and buzzer (PWM)
 // See related topic: https://www.elektroda.com/rtvforum/viewtopic.php?p=21096228#21096228
@@ -887,7 +887,7 @@ PinDeepSleep 86400
 
 Manual flash save example for TuyaMCU - using special Channels 200, 201, etc
 <br>
-```
+```c++
 // Read full explanation here: https://www.elektroda.com/rtvforum/topic4003825.html
 // NOTE: you can also use the feature of TuyaMCU itself (not OBK) to save relay state, but it's not always present
 // Anyway, refer to article above.
@@ -943,7 +943,7 @@ addEventHandler OnChannelChange 4 setChannel 204 $CH4
 
 [Shift register setup, usage and control with channels](https://www.elektroda.com/rtvforum/viewtopic.php?p=20533505#20533505)
 <br>
-```
+```c++
 // Start shiftRegister driver and map pins, also map channels to outputs
 // startDriver ShiftRegister [DataPin] [LatchPin] [ClkPin] [FirstChannel] [Order] [TotalRegisters] [Invert]
 startDriver ShiftRegister 24 6 7 10 1 1 0
@@ -967,7 +967,7 @@ setChannelType 17 Toggle
 
 [Custom countdown/timer system with HTTP GUI for TuyaMCU relay](https://www.elektroda.com/rtvforum/topic4009196.html)
 <br>
-```
+```c++
 // See tutorial: https://www.elektroda.com/rtvforum/topic4009196.html
 
 // start TuyaMCU driver
@@ -1056,7 +1056,7 @@ goto again
 
 [Setup for EZB-WBZS1H16N-A V1.0 Tuya mini smart switch showing sunrise/sunset events](https://www.elektroda.com/rtvforum/topic3967141.html)
 <br>
-```
+```c++
 NOTE: Set Time offset, latitude, longitude accordingly
 
 // autoexec for mini smart switch
@@ -1082,7 +1082,7 @@ addClockEvent sunset 0x7f 13 POWER ON
 
 [Setup for PJ-MGW1103 T-Clamp TuyaMCU with a device state request demonstation](https://www.elektroda.com/rtvforum/viewtopic.php?p=20882983#20882983)
 <br>
-```
+```c++
 
 // config for PJ-MGW1103 CT-Clamp Energy Meter by Tuya, BL0942, CB2S Components
 // Source: https://www.elektroda.com/rtvforum/viewtopic.php?p=20882983#20882983
@@ -1110,7 +1110,7 @@ addRepeatingEvent 5 -1 tuyaMcu_sendQueryState
 
 [TOMPD-63-WIFI TuyaMCU power meter config with alternate HTML panel hosted in LittleFS](https://www.elektroda.com/rtvforum/topic4040354.html)
 <br>
-```
+```c++
 
 // This script provides extra REST page for hosting in LittleFS
 // Please see: https://www.elektroda.com/rtvforum/topic4040354.html
@@ -1230,7 +1230,7 @@ tuyaMcu_sendQueryState
 
 [PJ-MGW1103 CT-Clamp Energy Meter sample for combining two dpIDs (sign and value) into one channel](https://www.elektroda.com/rtvforum/viewtopic.php?p=21125206#21125206)
 <br>
-```
+```c++
 // For TuyaMCU
 // One dpID is sign, second is value
 // Taken from: https://www.elektroda.com/rtvforum/viewtopic.php?p=21125206#21125206
@@ -1263,7 +1263,7 @@ addEventHandler OnChannelChange 4 myset
 
 [Scripting custom light animation/styles for TuyaMCU](https://www.elektroda.com/rtvforum/topic4014389.html)
 <br>
-```
+```c++
 // See: https://www.elektroda.com/rtvforum/topic4014389.html
 
 startDriver httpButtons
