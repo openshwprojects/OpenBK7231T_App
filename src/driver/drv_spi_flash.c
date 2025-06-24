@@ -143,8 +143,37 @@ void spi_flash_read_id(softSPI_t* spi, byte* jedec_id) {
 
 }
 
+
+
+#define READ_STATUS_REG_CMD 0x05
+#define STATUS_BUSY_MASK 0x01
+#define STATUS_WEL_MASK 0x02
+static void flash_wait_for(softSPI_t* spi, byte mask) {
+	byte status;
+	int loops = 0;
+	while (1) {
+		SPI_Begin(spi);
+		SPI_Send(spi, READ_STATUS_REG_CMD);
+		status = SPI_Read(spi);
+		SPI_End(spi);
+		if (!(status & mask)) {
+			break;
+		}
+		loops++;
+		rtos_delay_milliseconds(loops);
+	}
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "flash_wait_for: done %i loops\n", loops);
+
+}
+
+static void flash_wait_while_busy(softSPI_t* spi) {
+	flash_wait_for(spi, STATUS_BUSY_MASK);
+}
 void spi_flash_read(softSPI_t* spi, int adr, byte* out, int cnt) {
 	int i;
+
+	flash_wait_while_busy(spi);
 
 	OBK_DISABLE_INTERRUPTS;
 
@@ -161,33 +190,6 @@ void spi_flash_read(softSPI_t* spi, int adr, byte* out, int cnt) {
 	OBK_ENABLE_INTERRUPTS;
 }
 
-#define READ_STATUS_REG_CMD 0x05
-#define STATUS_BUSY_MASK 0x01
-#define STATUS_WEL_MASK 0x02
-
-
-static void flash_wait_for(softSPI_t* spi, byte mask) {
-	byte status;
-	int loops = 0;
-	while(1) {
-		SPI_Begin(spi);
-		SPI_Send(spi, READ_STATUS_REG_CMD);
-		status = SPI_Read(spi);
-		SPI_End(spi);
-		if (!(status & mask)) {
-			break;
-		}
-		loops++;
-		rtos_delay_milliseconds(loops);
-	}
-
-	ADDLOG_INFO(LOG_FEATURE_CMD, "flash_wait_for: done %i loops\n", loops);
-	
-}
-
-static void flash_wait_while_busy(softSPI_t* spi) {
-	flash_wait_for(spi, STATUS_BUSY_MASK);
-}
 //static void flash_wait_for_wel(softSPI_t* spi) {
 //	flash_wait_for(spi, STATUS_WEL_MASK);
 //}
