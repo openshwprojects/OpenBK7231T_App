@@ -15,6 +15,12 @@
 #include <lwip/sockets.h>
 #include <stdbool.h>	// for bool "g_STA_static_IP"
 
+// to 
+char searchssid[35];	// global var to "know" SSID inside wifi_scan_complete_cb()
+char t_bssid[7];	// global var to set "best" BSSID inside wifi_scan_complete_cb()
+
+
+
 
 #define PM_WIFI_DEFAULT_PS_MODE           (WIFI_NO_POWERSAVE)
 
@@ -147,6 +153,9 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 
 static void wifi_scan_complete_cb(void * arg)
 {
+    // to find minimal RSSI
+    int actrssi=5000;	// make sure we start with impossible high value, so the first entry is less
+
     LN_UNUSED(arg);
 
     ln_list_t *list;
@@ -158,11 +167,24 @@ static void wifi_scan_complete_cb(void * arg)
     // 1.get ap info list.
     wifi_manager_get_ap_list(&list, &node_count);
 
+    for (int i=0; i<6; i++) t_bssid[i]=255;	// set all entries to "FF" in case no BSSID found
     // 2.print all ap info in the list.
     LN_LIST_FOR_EACH_ENTRY(pnode, ap_info_node_t, list,list)
     {
         uint8_t * mac = (uint8_t*)pnode->info.bssid;
         ap_info_t *ap_info = &pnode->info;
+	// try to find "best" BSSID for the SSID "searchssid" - set inside void wifi_init_sta()
+	if (! strcmp(searchssid,ap_info->ssid)){
+		LOG(LOG_LVL_INFO, "TEST AP: for SSID=%s found BSSID %02X:%02X:%02X:%02X:%02X:%02X with RSSI=%i  ... ", searchssid, mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], ap_info->rssi);
+		if (ap_info->rssi < actrssi) {
+			for (int i=0; i<6; i++) t_bssid[i]=mac[i];
+			LOG(LOG_LVL_INFO, "better than prior lowest RSSI=%i\r\n",actrssi);
+			actrssi=ap_info->rssi;
+		} 
+		else {
+			LOG(LOG_LVL_INFO, "lowest RSSI=%i is still\r\n",actrssi);
+		}
+	}
 
         LOG(LOG_LVL_INFO, "\tCH=%2d,RSSI= %3d,", ap_info->channel, ap_info->rssi);
         LOG(LOG_LVL_INFO, "BSSID:[%02X:%02X:%02X:%02X:%02X:%02X],SSID:\"%s\"\r\n", \
@@ -245,6 +267,7 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
 
 
     //3. wifi start
+    strcpy(searchssid,oob_ssid); 	// so callback function can find "best BSSID"
     wifi_manager_reg_event_callback(WIFI_MGR_EVENT_STA_SCAN_COMPLETE, &wifi_scan_complete_cb);
 
     if(WIFI_ERR_NONE != wifi_sta_start(mac_addr, ps_mode)){
@@ -265,7 +288,15 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
 
     wifi_manager_reg_event_callback(WIFI_MGR_EVENT_STA_CONNECTED, &wifi_connected_cb);
     wifi_manager_reg_event_callback(WIFI_MGR_EVENT_STA_CONNECT_FAILED, &wifi_connect_failed_cb);
-
+    
+    int check=0;
+    for (int i=0; i<6; i++) check+=t_bssid[i];
+    if (check < 6*255) {
+	   LOG(LOG_LVL_INFO, "TEST AP: for SSID=%s best BSSID found %02X:%02X:%02X:%02X:%02X:%02X\r\r", oob_ssid, t_bssid[0], t_bssid[1], t_bssid[2], t_bssid[3], t_bssid[4], t_bssid[5]);
+	    // if it works, we could use 
+	    //  for (int i=0; i<6; i++) connect.bssid[i]=tbssid[i];
+	    // to connect to this BSSID
+    }
     wifi_sta_connect(&connect, &scan_cfg);
 }
 
