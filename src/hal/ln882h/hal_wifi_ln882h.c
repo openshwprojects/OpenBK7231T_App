@@ -154,7 +154,7 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 static void wifi_scan_complete_cb(void * arg)
 {
     // to find minimal RSSI
-    int actrssi=5000;	// make sure we start with impossible high value, so the first entry is less
+    int actrssi=5000;	// make sure we start with impossible low value, so the first entry is surely higher
 
     LN_UNUSED(arg);
 
@@ -176,13 +176,13 @@ static void wifi_scan_complete_cb(void * arg)
 	// try to find "best" BSSID for the SSID "searchssid" - set inside void wifi_init_sta()
 	if (! strcmp(searchssid,ap_info->ssid)){
 		LOG(LOG_LVL_INFO, "TEST AP: for SSID=%s found BSSID %02X:%02X:%02X:%02X:%02X:%02X with RSSI=%i  ... ", searchssid, mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], ap_info->rssi);
-		if (ap_info->rssi < actrssi) {
+		if (ap_info->rssi > actrssi) {
 			for (int i=0; i<6; i++) t_bssid[i]=mac[i];
-			LOG(LOG_LVL_INFO, "better than prior lowest RSSI=%i\r\n",actrssi);
+			LOG(LOG_LVL_INFO, "better than prior best RSSI=%i\r\n",actrssi);
 			actrssi=ap_info->rssi;
 		} 
 		else {
-			LOG(LOG_LVL_INFO, "lowest RSSI=%i is still\r\n",actrssi);
+			LOG(LOG_LVL_INFO, "best RSSI=%i is still\r\n",actrssi);
 		}
 	}
 
