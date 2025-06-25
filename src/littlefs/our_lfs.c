@@ -119,8 +119,13 @@ struct lfs_config cfg = {
     .prog_size = 1,
     .block_size = LFS_BLOCK_SIZE,
     .block_count = (LFS_BLOCKS_DEFAULT_LEN/LFS_BLOCK_SIZE),
-    .cache_size = 16,
-    .lookahead_size = 16,
+#if ENABLE_LFS_SPI
+	.cache_size = 128,
+	.lookahead_size = 128,
+#else
+	.cache_size = 16,
+	.lookahead_size = 16,
+#endif
     .block_cycles = 500,
 };
 
