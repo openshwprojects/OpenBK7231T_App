@@ -1418,6 +1418,7 @@ int HAL_PIN_Find(const char *name) {
 void Main_Init()
 {
 	g_unsafeInitDone = false;
+	bk_printf("%s, version %s\r\n", DEVICENAME_PREFIX_FULL, USER_SW_VER);
 
 #ifdef WINDOWS
 #if ENABLE_LED_BASIC

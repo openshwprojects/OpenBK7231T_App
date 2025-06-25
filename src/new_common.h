@@ -389,7 +389,9 @@ typedef unsigned int u32;
 #include "FreeRTOS.h"
 #include "task.h"
 
+#if !PLATFORM_XR809
 #define OBK_OTA_EXTENSION ".img"
+#endif
 //typedef unsigned char u8;
 //typedef unsigned char uint8_t;
 //typedef unsigned int uint32_t;
@@ -411,15 +413,14 @@ typedef unsigned int u32;
 #define DS_MS_TO_S 1111
 #endif
 
-#if PLATFORM_XR806 || PLATFORM_XR872
-
-#else
+#if PLATFORM_XR809
 #define close lwip_close
 #endif
 
 #ifdef __CONFIG_LWIP_V1
 #define sockaddr_storage sockaddr
 #define ss_family sa_family
+#define ip4_addr ip_addr
 #endif
 
 // OS_MSleep?
@@ -428,7 +429,7 @@ typedef unsigned int u32;
 
 #define kNoErr                      0       //! No error occurred.
 typedef void *beken_thread_arg_t;
-typedef void *beken_thread_t;
+typedef xTaskHandle* beken_thread_t;
 typedef void (*beken_thread_function_t)( beken_thread_arg_t arg );
 typedef int OSStatus;
 
@@ -931,7 +932,7 @@ typedef enum
     EXCELLENT,
 } WIFI_RSSI_LEVEL;
 
-#if PLATFORM_LN882H || PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_TR6260
+#if PLATFORM_LN882H || PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_TR6260 || PLATFORM_XRADIO
 #define IP_STRING_FORMAT	"%u.%u.%u.%u"
 #else
 #define IP_STRING_FORMAT	"%hhu.%hhu.%hhu.%hhu"

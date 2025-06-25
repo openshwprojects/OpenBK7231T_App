@@ -29,7 +29,7 @@ int HAL_PIN_ReadDigitalInput(int index)
 	return 1;
 }
 
-static void ConfigurePin(GPIO_Port port, GPIO_Pin pin, GPIO_WorkMode mode, GPIO_PullType pull)
+void HAL_XR_ConfigurePin(GPIO_Port port, GPIO_Pin pin, GPIO_WorkMode mode, GPIO_PullType pull)
 {
 	GPIO_InitParam param;
 	param.driving = GPIO_DRIVING_LEVEL_1;
@@ -42,28 +42,28 @@ void HAL_PIN_Setup_Input_Pulldown(int index)
 {
 	if(index >= g_numPins)
 		return;
-	ConfigurePin(g_pins[index].port, g_pins[index].pin, GPIOx_Pn_F0_INPUT, GPIO_PULL_DOWN);
+	HAL_XR_ConfigurePin(g_pins[index].port, g_pins[index].pin, GPIOx_Pn_F0_INPUT, GPIO_PULL_DOWN);
 }
 
 void HAL_PIN_Setup_Input_Pullup(int index)
 {
 	if(index >= g_numPins)
 		return;
-	ConfigurePin(g_pins[index].port, g_pins[index].pin, GPIOx_Pn_F0_INPUT, GPIO_PULL_UP);
+	HAL_XR_ConfigurePin(g_pins[index].port, g_pins[index].pin, GPIOx_Pn_F0_INPUT, GPIO_PULL_UP);
 }
 
 void HAL_PIN_Setup_Input(int index)
 {
 	if(index >= g_numPins)
 		return;
-	ConfigurePin(g_pins[index].port, g_pins[index].pin, GPIOx_Pn_F0_INPUT, GPIO_PULL_NONE);
+	HAL_XR_ConfigurePin(g_pins[index].port, g_pins[index].pin, GPIOx_Pn_F0_INPUT, GPIO_PULL_NONE);
 }
 
 void HAL_PIN_Setup_Output(int index)
 {
 	if(index >= g_numPins)
 		return;
-	ConfigurePin(g_pins[index].port, g_pins[index].pin, GPIOx_Pn_F1_OUTPUT, GPIO_PULL_NONE);
+	HAL_XR_ConfigurePin(g_pins[index].port, g_pins[index].pin, GPIOx_Pn_F1_OUTPUT, GPIO_PULL_NONE);
 }
 
 int HAL_PIN_CanThisPinBePWM(int index)
@@ -81,7 +81,7 @@ void HAL_PIN_PWM_Stop(int index)
 	HAL_PWM_EnableCh(g_pins[index].pwm, PWM_CYCLE_MODE, 0);
 	HAL_PWM_ChDeinit(g_pins[index].pwm);
 
-	ConfigurePin(g_pins[index].port, g_pins[index].pin, GPIOx_Pn_F7_DISABLE, GPIO_PULL_NONE);
+	HAL_XR_ConfigurePin(g_pins[index].port, g_pins[index].pin, GPIOx_Pn_F7_DISABLE, GPIO_PULL_NONE);
 }
 
 void HAL_PIN_PWM_Start(int index, int freq)
@@ -106,7 +106,7 @@ void HAL_PIN_PWM_Start(int index, int freq)
 	status = HAL_PWM_EnableCh(g_pins[index].pwm, PWM_CYCLE_MODE, 1);
 	if(status != HAL_OK) printf("HAL_PWM_EnableCh error\r\n");
 
-	ConfigurePin(g_pins[index].port, g_pins[index].pin, g_pins[index].pinmux_pwm, GPIO_PULL_NONE);
+	HAL_XR_ConfigurePin(g_pins[index].port, g_pins[index].pin, g_pins[index].pinmux_pwm, GPIO_PULL_NONE);
 }
 
 void HAL_PIN_PWM_Update(int index, float value)

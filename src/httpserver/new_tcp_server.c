@@ -19,7 +19,7 @@ void HTTPServer_Start();
 #define REPLY_BUFFER_SIZE			2048
 #define INCOMING_BUFFER_SIZE		2048
 #define INVALID_SOCK				-1
-#define HTTP_CLIENT_STACK_SIZE		4096
+#define HTTP_CLIENT_STACK_SIZE		8192
 
 typedef struct
 {
@@ -29,6 +29,7 @@ typedef struct
 } tcp_thread_t;
 
 static xTaskHandle g_http_thread = NULL;
+static const size_t max_socks = MAX_SOCKETS_TCP - 1;
 static int listen_sock = INVALID_SOCK;
 static tcp_thread_t sock[MAX_SOCKETS_TCP - 1] =
 {
@@ -137,6 +138,32 @@ static inline char* get_clientaddr(struct sockaddr_storage* source_addr)
 	return address_str;
 }
 
+void HTTPServer_Stop(void* arg)
+{
+	if(g_http_thread != NULL)
+	{
+		rtos_delete_thread(&g_http_thread);
+	}
+	if(listen_sock != INVALID_SOCK)
+	{
+		close(listen_sock);
+	}
+
+	for(int i = 0; i < max_socks; ++i)
+	{
+		if(sock[i].thread != NULL)
+		{
+			rtos_delete_thread(&sock[i].thread);
+			sock[i].thread = NULL;
+		}
+		if(sock[i].fd != INVALID_SOCK)
+		{
+			close(sock[i].fd);
+			sock[i].fd = INVALID_SOCK;
+		}
+	}
+}
+
 void restart_tcp_server(void* arg)
 {
 	HTTPServer_Start();
@@ -147,7 +174,6 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 {
 	OSStatus err = kNoErr;
 	int reuse = 1;
-	const size_t max_socks = MAX_SOCKETS_TCP - 1;
 
 	struct sockaddr_in server_addr =
 	{

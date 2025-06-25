@@ -103,6 +103,7 @@ void CFG_SetDefaultConfig() {
 	unsigned char mac[6] = { 0 };
 
 #if PLATFORM_XRADIO
+	extern void HAL_Configuration_GenerateMACForThisModule(unsigned char* out);
 	HAL_Configuration_GenerateMACForThisModule(mac);
 #else
 	WiFI_GetMacAddress((char *)mac);

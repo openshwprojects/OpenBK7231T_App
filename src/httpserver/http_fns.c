@@ -3185,7 +3185,6 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 	uint32_t* verify_value;
 	ota_verify_t      verify_type;
 	ota_verify_data_t verify_data;
-	ota_get_image(OTA_PROTOCOL_HTTP, s);
 
 	if(ota_get_image(OTA_PROTOCOL_HTTP, s) != OTA_STATUS_OK)
 	{

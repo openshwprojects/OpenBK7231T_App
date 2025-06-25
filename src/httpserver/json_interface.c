@@ -385,15 +385,6 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 	return 0;
 }
 
-#ifndef ENABLE_NTP
-unsigned int NTP_GetCurrentTime() {
-	return 0;
-}
-unsigned int NTP_GetCurrentTimeWithoutOffset() {
-	return 0;
-}
-#endif
-
 // Topic:  tele/tasmota_48E7F3/STATE
 // Sample:
 /*

@@ -24,6 +24,7 @@
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
 #include "lwip/netdb.h"
+#include "lwip/dns.h"
 
 static void (*g_wifiStatusCallback)(int code);
 
@@ -40,8 +41,22 @@ void HAL_ConnectToWiFi(const char *ssid, const char *psk, obkStaticIP_t *ip)
 	/* start scan and connect to ap automatically */
 	wlan_sta_enable();
 
-	//OS_Sleep(60);
-	printf("ok set wifii\n\r");
+	netif_set_hostname(g_wlan_netif, CFG_GetDeviceName());
+	if(ip->localIPAddr[0] != 0)
+	{
+#if !__CONFIG_LWIP_V1
+		ip_addr_t ipaddr;
+		ip_addr_t netmask;
+		ip_addr_t gw;
+		ip_addr_t dnsserver;
+		IP4_ADDR(ip_2_ip4(&ipaddr), ip->localIPAddr[0], ip->localIPAddr[1], ip->localIPAddr[2], ip->localIPAddr[3]);
+		IP4_ADDR(ip_2_ip4(&netmask), ip->netMask[0], ip->netMask[1], ip->netMask[2], ip->netMask[3]);
+		IP4_ADDR(ip_2_ip4(&gw), ip->gatewayIPAddr[0], ip->gatewayIPAddr[1], ip->gatewayIPAddr[2], ip->gatewayIPAddr[3]);
+		IP4_ADDR(ip_2_ip4(&dnsserver), ip->dnsServerIpAddr[0], ip->dnsServerIpAddr[1], ip->dnsServerIpAddr[2], ip->dnsServerIpAddr[3]);
+		netif_set_addr(g_wlan_netif, ip_2_ip4(&ipaddr), ip_2_ip4(&netmask), ip_2_ip4(&gw));
+		dns_setserver(0, &dnsserver);
+#endif
+	}
 }
 
 void HAL_DisconnectFromWifi()
@@ -168,7 +183,11 @@ const char* HAL_GetMyGatewayString()
 
 const char* HAL_GetMyDNSString()
 {
+#if !__CONFIG_LWIP_V1
+	return ipaddr_ntoa(dns_getserver(0));
+#else
 	return "unknown";
+#endif
 }
 
 const char* HAL_GetMyMaskString() 

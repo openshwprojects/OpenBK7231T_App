@@ -4,7 +4,12 @@
 #include "../hal_uart.h"
 #include "../../logging/logging.h"
 #include "hal_pinmap_xradio.h"
+#if PLATFORM_XR806 || PLATFORM_XR809
+#include "serial.h"
+#endif
 
+extern void serial_stop(void);
+extern int serial_deinit(UART_ID uart_id);
 static UART_ID uart = UART1_ID;
 bool isInit = false;
 
@@ -37,10 +42,21 @@ int OBK_HAL_UART_Init(int baud, int parity, bool hwflowc)
 
 	if(CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART))
 	{
-		// UART0 is log/console only (XR3), assuming it won't ever be used.
 #if PLATFORM_XR809
 		// No UART2 on XR809
-		uart = UART1_ID;
+		serial_stop();
+		serial_deinit(UART0_ID);
+		uart = UART0_ID;
+#elif PLATFORM_XR806
+		// WXU uses UART0, and we have console enabled on it.
+		serial_stop();
+		serial_deinit(UART0_ID);
+
+		// reenable console on UART2 (default log port on WXU)
+		serial_init(UART2_ID, 115200, UART_DATA_BITS_8, UART_PARITY_NONE, UART_STOP_BITS_1, 1);
+		serial_start();
+
+		uart = UART0_ID;
 #else
 		uart = UART2_ID;
 #endif
