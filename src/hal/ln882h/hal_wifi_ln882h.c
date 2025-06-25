@@ -290,7 +290,7 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
     wifi_manager_reg_event_callback(WIFI_MGR_EVENT_STA_CONNECT_FAILED, &wifi_connect_failed_cb);
     
     int check=0;
-    for (int i=0; i<6; i++) check+=t_bssid[i];
+    for (int i=0; i<6; i++) check+=(uint8_t)t_bssid[i];
     if (check < 6*255) {
 	   LOG(LOG_LVL_INFO, "TEST AP: for SSID=%s best BSSID found %02X:%02X:%02X:%02X:%02X:%02X\r\r", oob_ssid, t_bssid[0], t_bssid[1], t_bssid[2], t_bssid[3], t_bssid[4], t_bssid[5]);
 	    // if it works, we could use 
