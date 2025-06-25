@@ -154,7 +154,7 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 static void wifi_scan_complete_cb(void * arg)
 {
     // to find minimal RSSI
-    int actrssi=5000;	// make sure we start with impossible low value, so the first entry is surely higher
+    int actrssi=-5000;	// make sure we start with impossible low value, so the first entry is surely higher
 
     LN_UNUSED(arg);
 
