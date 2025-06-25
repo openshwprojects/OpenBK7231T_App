@@ -13,14 +13,24 @@
 #define MOSI_PIN 6  // MOSI pin - D7
 #define SS_PIN 7    // chip select pin for the SPI flash - D8
 
+#define READ_ID_FLASH_CMD 0x9F
 #define READ_FLASH_CMD 0x03 // Read Flash command opcode
 #define WRITEENABLE_FLASH_CMD 0x06
-#define ERASE_FLASH_CMD 0xC7
+#define ERASE_WHOLE_FLASH_CMD 0xC7
 #define WRITE_FLASH_CMD 0x02
+#define ERASE_SECTOR_CMD 0x20 // 4KB erase
+#define READ_STATUS_REG_CMD 0x05
+#define STATUS_BUSY_MASK 0x01
+#define STATUS_WEL_MASK 0x02
 
 #define OBK_ENABLE_INTERRUPTS 
 #define OBK_DISABLE_INTERRUPTS
 
+// LFS api is very simple.
+// To post file, use POST:
+// http://192.168.0.166/api/lfs/
+// To get file, use GET:
+// http://192.168.0.166/api/lfs/
 #if (PLATFORM_BK7231T || PLATFORM_BK7231N) && !PLATFORM_BEKEN_NEW
 
 #include "include.h"
@@ -135,19 +145,15 @@ byte FastSPI_Read(softSPI_t *spi) {
 
 void spi_flash_read_id(softSPI_t* spi, byte* jedec_id) {
 	SPI_Begin(spi);
-	SPI_Send(spi, 0x9F);
+	SPI_Send(spi, READ_ID_FLASH_CMD);
 	jedec_id[0] = SPI_Read(spi);
 	jedec_id[1] = SPI_Read(spi);
 	jedec_id[2] = SPI_Read(spi);
 	SPI_End(spi);
-
 }
 
 
 
-#define READ_STATUS_REG_CMD 0x05
-#define STATUS_BUSY_MASK 0x01
-#define STATUS_WEL_MASK 0x02
 static void flash_wait_for(softSPI_t* spi, byte mask) {
 	byte status;
 	int loops = 0;
@@ -162,7 +168,6 @@ static void flash_wait_for(softSPI_t* spi, byte mask) {
 		loops++;
 		rtos_delay_milliseconds(loops);
 	}
-
 
 	//ADDLOG_INFO(LOG_FEATURE_CMD, "flash_wait_for: done %i loops\n", loops);
 
@@ -201,7 +206,7 @@ void spi_flash_erase(softSPI_t* spi) {
 	SPI_End(spi);
 
 	SPI_Begin(spi);
-	SPI_Send(spi, ERASE_FLASH_CMD);
+	SPI_Send(spi, ERASE_WHOLE_FLASH_CMD);
 	SPI_End(spi);
 
 	flash_wait_while_busy(spi);
@@ -248,7 +253,6 @@ void spi_flash_write2(softSPI_t* spi, int adr, const byte* data, int cnt) {
 
 	OBK_ENABLE_INTERRUPTS;
 }
-#define ERASE_SECTOR_CMD 0x20 // 4KB erase
 
 void spi_flash_erase_sector(softSPI_t* spi, int addr) {
 	OBK_DISABLE_INTERRUPTS;
