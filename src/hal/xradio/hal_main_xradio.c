@@ -4,6 +4,22 @@
 #include "driver/chip/hal_gpio.h"
 #include "driver/chip/hal_prcm.h"
 
+#if PLATFORM_XR806
+
+#include "debug/heap_trace.h"
+#include "sys/sys_heap.h"
+
+size_t sram_free_heap_size(void)
+{
+	uint8_t* start, * end, * current;
+	heap_info_t sram_info;
+	heap_get_space(&start, &end, &current);
+	sram_heap_trace_info_get(&sram_info);
+	return (end - start - sram_info.sum - sram_info.entry_cnt * 16);
+}
+
+#endif
+
 extern void Main_Init();
 extern void Main_OnEverySecond();
 static void obk_task(void* pvParameters)
@@ -20,6 +36,7 @@ static void obk_task(void* pvParameters)
 
 void user_main(void)
 {
+	printf("%s\r\n", __func__);
 #if !PLATFORM_XR809
 	HAL_PRCM_SetWakeupDebClk0(0);
 #endif

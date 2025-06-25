@@ -3084,7 +3084,6 @@ ota_status_t ota_update_rest_get(uint8_t* buf, uint32_t buf_size, uint32_t* recv
 	rtos_delay_milliseconds(10);
 	ADDLOG_DEBUG(LOG_FEATURE_OTA, "Writelen %i at %i", writelen, total);
 	total += writelen;
-	startaddr += writelen;
 	towrite -= writelen;
 
 	if(towrite > 0)
@@ -3097,12 +3096,12 @@ ota_status_t ota_update_rest_get(uint8_t* buf, uint32_t buf_size, uint32_t* recv
 			return OTA_STATUS_ERROR;
 		}
 	}
-
-	if((towrite > 0) && (writelen >= 0))
+	else
 	{
 		*eof_flag = 0;
 		return OTA_STATUS_OK;
 	}
+
 	*eof_flag = 1;
 	return OTA_STATUS_OK;
 }

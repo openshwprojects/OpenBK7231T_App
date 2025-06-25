@@ -1010,11 +1010,7 @@ typedef enum {
 
 #endif
 
-#if WINDOWS
-#elif PLATFORM_BL602
-#elif PLATFORM_W600 || PLATFORM_W800
-#elif PLATFORM_XRADIO
-#elif PLATFORM_BK7231N || PLATFORM_BK7231T
+#if PLATFORM_BK7231N || PLATFORM_BK7231T
 	if (ota_progress() >= 0)
 	{
 		hprintf255(request, "<h5>OTA In Progress. Downloaded: %i B Flashed: %06lXh</h5>", OTA_GetTotalBytes(), ota_progress());
@@ -3166,8 +3162,6 @@ int http_fn_cfg_dgr(http_request_t* request) {
 }
 #endif
 
-void XR809_RequestOTAHTTP(const char* s);
-
 void OTA_RequestDownloadFromHTTP(const char* s) {
 #if WINDOWS
 
@@ -3188,7 +3182,35 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 #elif PLATFORM_W600 || PLATFORM_W800
 	t_http_fwup(s);
 #elif PLATFORM_XRADIO
+	uint32_t* verify_value;
+	ota_verify_t      verify_type;
+	ota_verify_data_t verify_data;
 	ota_get_image(OTA_PROTOCOL_HTTP, s);
+
+	if(ota_get_image(OTA_PROTOCOL_HTTP, s) != OTA_STATUS_OK)
+	{
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "OTA http get image failed");
+		return;
+	}
+
+	if(ota_get_verify_data(&verify_data) != OTA_STATUS_OK)
+	{
+		verify_type = OTA_VERIFY_NONE;
+		verify_value = NULL;
+	}
+	else
+	{
+		verify_type = verify_data.ov_type;
+		verify_value = (uint32_t*)(verify_data.ov_data);
+	}
+
+	if(ota_verify_image(verify_type, verify_value) != OTA_STATUS_OK)
+	{
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "OTA http verify image failed");
+		return;
+	}
+
+	ota_reboot();
 #else
 	otarequest(s);
 #endif

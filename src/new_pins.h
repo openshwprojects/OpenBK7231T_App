@@ -1056,7 +1056,7 @@ typedef enum channelType_e {
 #define PLATFORM_GPIO_MAX 64
 #elif PLATFORM_ECR6600
 #define PLATFORM_GPIO_MAX 27
-#elif PLATFORM_BK7252
+#elif PLATFORM_BK7252 || PLATFORM_BK7252N
 #define PLATFORM_GPIO_MAX 40
 #else
 #define PLATFORM_GPIO_MAX 29
@@ -1088,7 +1088,9 @@ typedef enum channelType_e {
 #define SPECIAL_CHANNEL_FLASHVARS_LAST	264
 
 
-#if PLATFORM_W800
+#if PLATFORM_W800 || PLATFORM_BK7252 || PLATFORM_BK7252N || PLATFORM_XR872
+
+#define MAX_PIN_ROLES 48
 
 typedef struct pinsState_s {
 	// All above values are indexed by physical pin index
@@ -1105,6 +1107,8 @@ typedef struct pinsState_s {
 } pinsState_t;
 
 #elif PLATFORM_ESPIDF
+
+#define MAX_PIN_ROLES 50
 
 typedef struct pinsState_s
 {
@@ -1123,6 +1127,8 @@ typedef struct pinsState_s
 
 #elif PLATFORM_RTL8720D
 
+#define MAX_PIN_ROLES 64
+
 typedef struct pinsState_s
 {
 	// All above values are indexed by physical pin index
@@ -1140,6 +1146,8 @@ typedef struct pinsState_s
 
 #else
 
+#define MAX_PIN_ROLES 32
+
 typedef struct pinsState_s {
 	// All above values are indexed by physical pin index
 	// (so we assume we have maximum of 32 pins)
@@ -1154,6 +1162,10 @@ typedef struct pinsState_s {
 	byte channelTypes[CHANNEL_MAX];
 } pinsState_t;
 
+#endif
+
+#if MAX_PIN_ROLES < PLATFORM_GPIO_MAX
+#error "MAX_PIN_ROLES < PLATFORM_GPIO_MAX, undefined behaviour"
 #endif
 
 // bit indexes (not values), so 0 1 2 3 4
@@ -1363,7 +1375,7 @@ typedef struct mainConfig_s {
 	// offset 0x000004BC
 	unsigned long LFS_Size; // szie of LFS volume.  it's aligned against the end of OTA
 	int loggerFlags;
-#if PLATFORM_W800
+#if PLATFORM_W800 || PLATFORM_BK7252 || PLATFORM_BK7252N || PLATFORM_XR872
 	byte unusedSectorAB[51];
 #elif PLATFORM_ESPIDF
 	byte unusedSectorAB[43];
