@@ -292,10 +292,14 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
     int check=0;
     for (int i=0; i<6; i++) check+=(uint8_t)t_bssid[i];
     if (check < 6*255) {
-	   LOG(LOG_LVL_INFO, "TEST AP: for SSID=%s best BSSID found %02X:%02X:%02X:%02X:%02X:%02X\r\r", oob_ssid, t_bssid[0], t_bssid[1], t_bssid[2], t_bssid[3], t_bssid[4], t_bssid[5]);
+	   LOG(LOG_LVL_INFO, "TEST AP: for SSID=%s best BSSID found %02X:%02X:%02X:%02X:%02X:%02X\r\n", oob_ssid, t_bssid[0], t_bssid[1], t_bssid[2], t_bssid[3], t_bssid[4], t_bssid[5]);
 	    // if it works, we could use 
-	    //  for (int i=0; i<6; i++) connect.bssid[i]=tbssid[i];
+	    //  for (int i=0; i<6; i++) connect.bssid[i]=t_bssid[i];
 	    // to connect to this BSSID
+    }
+    else {
+	   LOG(LOG_LVL_INFO, "TEST AP: check=%i -- BSSID t_bssid = %02X:%02X:%02X:%02X:%02X:%02X\r\n",check, oob_ssid, t_bssid[0], t_bssid[1], t_bssid[2], t_bssid[3], t_bssid[4], t_bssid[5]);
+	    
     }
     wifi_sta_connect(&connect, &scan_cfg);
 }
