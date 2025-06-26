@@ -417,7 +417,7 @@
 #ifndef PLATFORM_RTL8710B
 #define ENABLE_OBK_BERRY						1
 #endif
-//#define ENABLE_DRIVER_TCL						1
+#define ENABLE_DRIVER_TCL						1
 
 #elif PLATFORM_ECR6600
 
