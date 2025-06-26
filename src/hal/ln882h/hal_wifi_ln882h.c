@@ -233,7 +233,7 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
         LOG(LOG_LVL_ERROR, "[%s]sta mac get failed!!!\r\n", __func__);
         return;
     }
-
+    for (int i=0; i<6; i++) t_bssid[i]=255;	// set all entries to "FF" in case no BSSID found
     if (mac_addr[0] == STA_MAC_ADDR0 &&
         mac_addr[1] == STA_MAC_ADDR1 &&
         mac_addr[2] == STA_MAC_ADDR2 &&
@@ -272,6 +272,14 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
 
     if(WIFI_ERR_NONE != wifi_sta_start(mac_addr, ps_mode)){
         LOG(LOG_LVL_ERROR, "[%s]wifi sta start failed!!!\r\n", __func__);
+    }
+
+    for (int i=0; i<5;i++){
+	    int check=0;
+    	    for (int i=0; i<6; i++) check+=(uint8_t)t_bssid[i];
+             if (check < 6*255) break;
+	     OS_MsDelay(100);
+	    LOG(LOG_LVL_INFO, "TEST AP: wifi_init_sta - waiting for BSSID - i=%i\r\n",i);
     }
     int check=0;
     for (int i=0; i<6; i++) check+=(uint8_t)t_bssid[i];
