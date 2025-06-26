@@ -115,6 +115,7 @@ static commandResult_t testRealloc(const void * context, const char *cmd, const 
 			ra1 += 1 + abs(rand()%10);
 			char* msgr = realloc(msg,ra1);
 			if (!msgr) {
+				totalReallocReturnsZero++;
 				break;
 			}
 			msg = msgr;
@@ -133,7 +134,7 @@ static commandResult_t testRealloc(const void * context, const char *cmd, const 
 	}
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Realloc has been tested! Total calls %i, reps now %i, totalMallocReturnsZero %i, totalReallocReturnsZero %i, totalBytesMismatch %i",
-		totalCalls,repeats, totalMallocReturnsZero, totalReturnsZero, totalBytesMismatch);
+		totalCalls,repeats, totalMallocReturnsZero, totalReallocReturnsZero, totalBytesMismatch);
 
     return CMD_RES_OK;
 }
