@@ -88,7 +88,9 @@ static commandResult_t testRealloc(const void * context, const char *cmd, const 
 	int i;
 	int ra1;
 	static int totalCalls = 0;
-	static int reallocBroken = 0;
+	static int totalBytesMismatch = 0;
+	static int totalReallocReturnsZero = 0;
+	static int totalMallocReturnsZero = 0;
 
 	repeats = atoi(args);
 	if(repeats < 1)
@@ -101,6 +103,7 @@ static commandResult_t testRealloc(const void * context, const char *cmd, const 
 
 		msg = malloc(ra1);
 		if (!msg) {
+			totalMallocReturnsZero++;
 			break;
 		}
 		int initialra1 = ra1;
@@ -121,7 +124,7 @@ static commandResult_t testRealloc(const void * context, const char *cmd, const 
 					ADDLOG_INFO(LOG_FEATURE_CMD,
 							"Realloc difference: rep %d, i %d j %d initialra1 %d ra1 %d msg[j] %d (j % 100) %d",
 							rep, i, j, initialra1, ra1, (int) msg[j], j % 100);
-					reallocBroken = 1;
+					totalBytesMismatch += 1;
 				}
 			}
 		}
@@ -129,7 +132,8 @@ static commandResult_t testRealloc(const void * context, const char *cmd, const 
 		os_free(msg);
 	}
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, "Realloc has been tested! Total calls %i, reps now %i, reallocBroken %i",totalCalls,repeats,reallocBroken);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Realloc has been tested! Total calls %i, reps now %i, totalMallocReturnsZero %i, totalReallocReturnsZero %i, totalBytesMismatch %i",
+		totalCalls,repeats, totalMallocReturnsZero, totalReturnsZero, totalBytesMismatch);
 
     return CMD_RES_OK;
 }
