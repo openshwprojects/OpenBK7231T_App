@@ -62,7 +62,7 @@ int vsprintf3(char *buffer, const char *fmt, va_list val) {
 
 #endif
 
-#if WINDOWS
+#if WINDOWS || PLATFORM_W800
 const char* strcasestr(const char* str1, const char* str2)
 {
 	const char* p1 = str1;

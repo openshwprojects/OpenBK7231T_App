@@ -4,6 +4,9 @@
 #include "wm_include.h"
 #include "wm_internal_flash.h"
 
+#if defined(PLATFORM_W800) 
+#include "easyflash.h"
+#endif
 
 static int bFlashReady = 0;
 
@@ -13,6 +16,9 @@ void initFlashIfNeeded() {
 
 	tls_fls_init();									//initialize flash driver
 
+#if defined(PLATFORM_W800) 
+	easyflash_init();
+#endif
 	bFlashReady = 1;
 
 }

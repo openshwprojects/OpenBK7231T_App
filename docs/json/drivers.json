@@ -18,6 +18,12 @@
     "requires": ""
   },
   {
+    "name": "PIR",
+    "title": "TODO",
+    "descr": "PIR",
+    "requires": ""
+  },
+  {
     "name": "PixelAnim",
     "title": "TODO",
     "descr": "PixelAnim provides a simple set of WS2812B animations",
@@ -33,6 +39,12 @@
     "name": "HGS02",
     "title": "TODO",
     "descr": "[HGS02](https://www.elektroda.com/rtvforum/viewtopic.php?p=21177061#21177061)",
+    "requires": ""
+  },
+  {
+    "name": "TCL",
+    "title": "TCL",
+    "descr": "TODO",
     "requires": ""
   },
   {
@@ -84,6 +96,18 @@
     "requires": ""
   },
   {
+    "name": "TESTUART",
+    "title": "TODO",
+    "descr": "g",
+    "requires": ""
+  },
+  {
+    "name": "Test",
+    "title": "TODO",
+    "descr": "Self test of the device",
+    "requires": ""
+  },
+  {
     "name": "I2C",
     "title": "TODO",
     "descr": "Generic I2C, not used for LED drivers, but may be useful for displays or port expanders. Supports both hardware and software I2C.",
@@ -123,6 +147,12 @@
     "name": "BL0937",
     "title": "TODO",
     "descr": "BL0937 is a power-metering chip which uses custom protocol to report data. It requires setting 3 pins in pin config: CF, CF1 and SEL",
+    "requires": ""
+  },
+  {
+    "name": "CSE7761",
+    "title": "CSE7761",
+    "descr": "TODO",
     "requires": ""
   },
   {
@@ -363,6 +393,12 @@
     "name": "Bridge",
     "title": "TODO",
     "descr": "A bridge relay driver, added for [TONGOU TO-Q-SY1-JWT Din Rail Switch](https://www.elektroda.com/rtvforum/topic3934580.html). See linked topic for info.",
+    "requires": ""
+  },
+  {
+    "name": "UART to TCP bridge",
+    "title": "TODO",
+    "descr": "UART to TCP, mainly for WiFi Zigbee coordinators.",
     "requires": ""
   }
 ]

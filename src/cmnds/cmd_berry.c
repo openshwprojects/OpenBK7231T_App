@@ -203,6 +203,7 @@ int be_addClosure(bvm *vm, const char *eventName, int relation, int reqArg, cons
 	}
 	// remove the 2 values we pushed on the stack
 	be_pop(vm, 2);
+	be_return_nil(vm);
 }
 int be_poststr(bvm *vm) {
 	int top = be_top(vm);
@@ -306,6 +307,7 @@ int be_setTimeoutInternal(bvm *vm, int repeats) {
 }
 int be_setTimeout(bvm *vm) {
 	be_setTimeoutInternal(vm, 0);
+	return 1;
 }
 int be_get(bvm *vm) {
 	char tmpA[64];
@@ -317,13 +319,11 @@ int be_get(bvm *vm) {
 			CMD_ExpandConstant(name, 0, &ret);
 			be_pushreal(vm, ret);
 			be_return(vm);
-			return;
 		}
 		else {
 			if (http_getArg(g_currentRequest->url, name, tmpA, sizeof(tmpA))) {
 				be_pushstring(vm, tmpA);
 				be_return(vm);
-				return;
 			}
 		}
 	}
@@ -332,6 +332,7 @@ int be_get(bvm *vm) {
 
 int be_setInterval(bvm *vm) {
 	be_setTimeoutInternal(vm, -1);
+	return 1;
 }
 
 static int BasicInit() {
@@ -356,12 +357,6 @@ static int BasicInit() {
 		
 		be_regfunc(g_vm, "rtosDelayMs", be_rtosDelayMs);
 		be_regfunc(g_vm, "delayUs", be_delayUs);
-		be_regfunc(g_vm, "initI2c", be_initI2c);
-		be_regfunc(g_vm, "startI2c", be_startI2c);
-		be_regfunc(g_vm, "stopI2c", be_stopI2c);
-		be_regfunc(g_vm, "writeByteI2c", be_writeByteI2c);
-		be_regfunc(g_vm, "readByteI2c", be_readByteI2c);
-		be_regfunc(g_vm, "readBytesI2c", be_readBytesI2c);
 		be_regfunc(g_vm, "cancel", be_CancelThread);
 		if (!berryRun(g_vm, berryPrelude)) {
 			return 0;

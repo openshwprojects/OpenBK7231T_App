@@ -9,14 +9,15 @@
 #include "../new_common.h"
 #include "../obk_config.h"
 #include "../cmnds/cmd_public.h"
+#include "../logging/logging.h"
+
+#if ENABLE_SEND_POSTANDGET
+
 #include "include.h"
 #include "utils_timer.h"
 //#include "lite-log.h"
 #include "http_client.h"
 #include "rtos_pub.h"
-#include "../logging/logging.h"
-
-#if ENABLE_SEND_POSTANDGET
 
 #include "iot_export_errno.h"
 

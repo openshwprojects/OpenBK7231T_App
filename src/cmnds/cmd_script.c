@@ -256,7 +256,6 @@ scriptInstance_t *SVM_RegisterThread() {
 	r->currentDelayMS = 0;
 	return r;
 }
-
 scriptFile_t *SVM_RegisterFile(const char *fname) {
 	scriptFile_t *r;
 
@@ -289,6 +288,35 @@ scriptFile_t *SVM_RegisterFile(const char *fname) {
 	r->next = g_scriptFiles;
 	g_scriptFiles = r;
 	if(r->data == 0)
+		return 0;
+	return r;
+}
+scriptFile_t *SVM_RegisterFileForText(const char *txt) {
+	scriptFile_t *r;
+
+	r = g_scriptFiles;
+
+	while (r) {
+		if (!strcmp(txt, r->fname)) {
+			return r;
+		}
+		r = r->next;
+	}
+	r = malloc(sizeof(scriptFile_t));
+	memset(r, 0, sizeof(scriptFile_t));
+	r->fname = strdup(txt);
+	r->data = strdup(txt);
+	// convert backlog to script
+	char *p = r->data;
+	while (*p) {
+		if (*p == ';') {
+			*p = '\n';
+		}
+		p++;
+	}
+	r->next = g_scriptFiles;
+	g_scriptFiles = r;
+	if (r->data == 0)
 		return 0;
 	return r;
 }
@@ -487,6 +515,7 @@ void CMD_Script_ProcessWaitersForEvent(byte eventCode, int argument) {
 	scriptInstance_t *t;
 
 #if ENABLE_OBK_BERRY
+	extern void CMD_Berry_ProcessWaitersForEvent(byte eventCode, int argument);
 	CMD_Berry_ProcessWaitersForEvent(eventCode, argument);
 #endif
 	t = g_scriptThreads;
@@ -583,6 +612,29 @@ int hasExtension(const char *fname, const char *ext) {
 	size_t len_fname = strlen(fname);
 	size_t len_ext = strlen(ext);
 	return (len_fname >= len_ext && strcmp(fname + len_fname - len_ext, ext) == 0);
+}
+void SVM_StartBacklog(const char *command) {
+	scriptFile_t *f;
+	scriptInstance_t *th;
+
+	f = SVM_RegisterFileForText(command);
+	if (f == 0) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "SVM_StartBacklog: failed to alloc file");
+		return ;
+	}
+	if (f->data == 0) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "SVM_StartBacklog: failed to alloc file");
+		return ;
+	}
+	th = SVM_RegisterThread();
+	if (th == 0) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "SVM_StartBacklog: failed to alloc thread");
+		return ;
+	}
+	th->uniqueID = 0;
+	th->curFile = f;
+	th->curLine = f->data;
+	//return th;
 }
 scriptInstance_t *SVM_StartScript(const char *fname, const char *label, int uniqueID) {
 	scriptFile_t *f;

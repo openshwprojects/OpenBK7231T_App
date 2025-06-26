@@ -2,7 +2,6 @@
 
  */
  //
-
 #include "hal/hal_wifi.h"
 #include "hal/hal_generic.h"
 #include "hal/hal_flashVars.h"
@@ -130,7 +129,10 @@ static int get_tsen_adc(
 extern void extended_app_waiting_for_launch(void);
 void extended_app_waiting_for_launch2()
 {
+	// 3.0.76 'broke' it. It is now called in init_app_thread, which will later call user_main
+#ifndef PLATFORM_BEKEN_NEW
 	extended_app_waiting_for_launch();
+#endif
 
 	// define FIXED_DELAY if delay wanted on non-beken platforms.
 #if PLATFORM_BK7231N || PLATFORM_BEKEN_NEW
@@ -554,6 +556,9 @@ void Main_OnEverySecond()
 		temp_single_get_current_temperature(&temperature);
 #if PLATFORM_BK7231T
 		g_wifi_temperature = 2.21f * (temperature / 25.0f) - 65.91f;
+#if PLATFORM_BEKEN_NEW
+		g_wifi_temperature = temperature * 0.04f;
+#endif
 #else
 		g_wifi_temperature = (-0.457f * temperature) + 188.474f;
 #endif
@@ -624,7 +629,7 @@ void Main_OnEverySecond()
 	}
 
 	// On Beken, do reboot if we ran into heap size problem
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_W800
 	if (xPortGetFreeHeapSize() < 25 * 1000) {
 		g_secondsSpentInLowMemoryWarning++;
 		ADDLOGF_ERROR("Low heap warning!\n");
@@ -939,6 +944,7 @@ void QuickTick(void* param)
 	SVM_RunThreads(g_deltaTimeMS);
 #endif
 #if ENABLE_OBK_BERRY
+	extern void Berry_RunThreads(int deltaMS);
 	Berry_RunThreads(g_deltaTimeMS);
 #endif
 	RepeatingEvents_RunUpdate(g_deltaTimeMS * 0.001f);
@@ -1265,7 +1271,7 @@ void Main_Init_Before_Delay()
 	// read or initialise the boot count flash area
 	HAL_FlashVars_IncreaseBootCount();
 
-#if defined(PLATFORM_BEKEN) && !defined(PLATFORM_BEKEN_NEW)
+#if defined(PLATFORM_BEKEN)
 	// this just increments our idle counter variable.
 	// it registers a cllback from RTOS IDLE function.
 	// why is it called IRDA??  is this where they check for IR?

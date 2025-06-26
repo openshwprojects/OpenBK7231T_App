@@ -33,10 +33,21 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 #include "queue.h"
+
+#if PLATFORM_REALTEK
+
 #include "flash_api.h"
 #include "device_lock.h"
 
 flash_t flash;
+
+#elif defined(PLATFORM_W800) || defined(PLATFORM_W600)
+
+#include "wm_internal_flash.h"
+#include "wm_flash.h"
+#define QueueHandle_t xQueueHandle
+
+#endif
 
 /* default ENV set for user */
 static const ef_env default_env_set[] =
@@ -62,6 +73,9 @@ EfErrCode ef_port_init(ef_env const** default_env, size_t* default_env_size)
 	*default_env_size = sizeof(default_env_set) / sizeof(default_env_set[0]);
 
 	ef_mutex = xSemaphoreCreateMutex();
+#if defined(PLATFORM_W800) || defined(PLATFORM_W600)
+	tls_fls_init();
+#endif
 
 	return result;
 }
@@ -78,12 +92,17 @@ EfErrCode ef_port_init(ef_env const** default_env, size_t* default_env_size)
  */
 EfErrCode ef_port_read(uint32_t addr, uint32_t* buf, size_t size)
 {
+#if PLATFORM_REALTEK
 	device_mutex_lock(RT_DEV_LOCK_FLASH);
 	int res = flash_stream_read(&flash, addr, size, buf);
 	device_mutex_unlock(RT_DEV_LOCK_FLASH);
-
 	if(res) return EF_NO_ERR;
 	else return EF_READ_ERR;
+#elif defined(PLATFORM_W800) || defined(PLATFORM_W600)
+	int res = tls_fls_read(addr, (uint8_t*)buf, size);
+	if(res != TLS_FLS_STATUS_OK) return EF_READ_ERR;
+	else return EF_NO_ERR;
+#endif
 }
 
 /**
@@ -103,10 +122,16 @@ EfErrCode ef_port_erase(uint32_t addr, size_t size)
 	/* make sure the start address is a multiple of FLASH_ERASE_MIN_SIZE */
 	EF_ASSERT(addr % EF_ERASE_MIN_SIZE == 0);
 
+#if PLATFORM_REALTEK
 	device_mutex_lock(RT_DEV_LOCK_FLASH);
 	flash_erase_sector(&flash, addr);
 	device_mutex_unlock(RT_DEV_LOCK_FLASH);
 
+#elif defined(PLATFORM_W800) || defined(PLATFORM_W600)
+	int res = tls_fls_erase(addr / EF_ERASE_MIN_SIZE);
+	if(res != TLS_FLS_STATUS_OK) return EF_ERASE_ERR;
+	else return EF_NO_ERR;
+#endif
 	return result;
 }
 /**
@@ -122,12 +147,19 @@ EfErrCode ef_port_erase(uint32_t addr, size_t size)
  */
 EfErrCode ef_port_write(uint32_t addr, const uint32_t* buf, size_t size)
 {
+#if PLATFORM_REALTEK
 	device_mutex_lock(RT_DEV_LOCK_FLASH);
 	int res = flash_stream_write(&flash, addr, size, buf);
 	device_mutex_unlock(RT_DEV_LOCK_FLASH);
 
 	if(res) return EF_NO_ERR;
 	else return EF_WRITE_ERR;
+
+#elif defined(PLATFORM_W800) || defined(PLATFORM_W600)
+	int res = tls_fls_write(addr, (uint8_t*)buf, size);
+	if(res != TLS_FLS_STATUS_OK) return EF_WRITE_ERR;
+	else return EF_NO_ERR;
+#endif
 }
 
 /**

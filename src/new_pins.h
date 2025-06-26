@@ -1052,6 +1052,8 @@ typedef enum channelType_e {
 #define PLATFORM_GPIO_MAX 64
 #elif PLATFORM_ECR6600
 #define PLATFORM_GPIO_MAX 27
+#elif PLATFORM_BK7252
+#define PLATFORM_GPIO_MAX 40
 #else
 #define PLATFORM_GPIO_MAX 29
 #endif
@@ -1503,7 +1505,7 @@ const char *ChannelType_GetUnit(int type);
 int ChannelType_GetDivider(int type);
 int ChannelType_GetDecimalPlaces(int type);
 
-//int PIN_GetPWMIndexForPinIndex(int pin);
+int PIN_GetPWMIndexForPinIndex(int pin);
 
 int PIN_ParsePinRoleName(const char* name);
 const char* PIN_RoleToString(int role);
