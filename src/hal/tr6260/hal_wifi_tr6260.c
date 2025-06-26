@@ -79,6 +79,27 @@ int HAL_GetWifiStrength()
 	return ap_info.rssi;
 }
 
+char* HAL_GetWiFiBSSID(char* bssid){
+	wifi_info_t ap_info;
+	memset((void*)&ap_info, 0, sizeof(wifi_info_t));
+	if (wifi_get_wifi_info(&ap_info) == SYS_OK){	
+		sprintf(bssid, MACSTR, MAC2STR(ap_info.bssid));
+		return bssid;
+	}
+	bssid[0]='\0';
+	return bssid; 
+};
+uint8_t HAL_GetWiFiChannel(uint8_t *chan){
+	wifi_info_t ap_info;
+	memset((void*)&ap_info, 0, sizeof(wifi_info_t));
+	if (wifi_get_wifi_info(&ap_info) == SYS_OK){
+		*chan = ap_info.channel;
+		return *chan;
+	}
+	return 0;
+};
+
+
 static sys_err_t handle_wifi_event(void* ctx, system_event_t* event)
 {
 	int vif;
