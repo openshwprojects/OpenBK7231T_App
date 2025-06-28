@@ -77,6 +77,7 @@
 #define ENABLE_DRIVER_AHT2X						1
 #define ENABLE_TASMOTA_JSON						1
 #define ENABLE_DRIVER_DS1820					1
+#define ENABLE_DRIVER_DS1820_FULL					1
 #define ENABLE_DRIVER_DHT						1
 #define ENABLE_NTP								1
 #define ENABLE_DRIVER_BMPI2C					1
@@ -466,6 +467,11 @@
 //#define ENABLE_BL_TWIN	1
 //allow moving average energy calculation +180 bytes
 //#define ENABLE_BL_MOVINGAVG	1
+#endif
+
+//   !!! TESTING ONLY !!!
+#if (ENABLE_DRIVER_DS1820)
+#define ENABLE_DRIVER_DS1820_FULL	1
 #endif
 
 // closing OBK_CONFIG_H
