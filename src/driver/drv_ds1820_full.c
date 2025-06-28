@@ -773,9 +773,9 @@ int http_fn_cfg_ds18b20(http_request_t* request)
 	hprintf255(request, "</table>");
 		
 
-	poststr(request, "<br><input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? ')\"></form> ");
-	hprintf255(request, "<script> function gen(){M=getElement('CB').checked?0:1;v= M ? 'backlog ':'';v=+'startDriver DS1820_FULL '; for (i=0; i<%i; i++) { ",ds18_count);
-	poststr(request, "v+= M? ';':'\n';v+='DS1820_FULL_setsensor ' + '\"' + getElement('a'+i).innerHTML + '\" '  + getElement('pin'+i).innerHTML + ' \"' + getElement('ds1820name'+i).value + '\" ' + getElement('ds1820chan'+i).value} return v; };</script>");
+	poststr(request, "<br><input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? ')\"></form><script>function gen(){M=getElement('CB').checked?0:1;v=M?'backlog ':'';v+='startDriver DS1820_FULL ';");
+	hprintf255(request, "for (i=0;i<%i;i++){",ds18_count);
+	poststr(request, "v+=M?';':'\\n';v+='DS1820_FULL_setsensor '+'\"'+getElement('a'+i).innerHTML+'\" '+getElement('pin'+i).innerHTML+' \"'+getElement('ds1820name'+i).value+'\" '+getElement('ds1820chan'+i).value}return v;};</script>");
 	poststr(request,"<br>Use multiline command <input type='checkbox' id='CB'><br><input type='button' value='generate command for config' onclick='t=document.getElementById(\"text\"); t.value=gen(); t.hidden=false;'><textarea id='text' hidden '> </textarea><p>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
