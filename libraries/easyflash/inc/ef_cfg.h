@@ -117,6 +117,21 @@
 // extend to 0x21000 if moving obk config to ef
 #define ENV_AREA_SIZE             0x15000
 
+#elif PLATFORM_XR809
+
+#define EF_START_ADDR             0x1E0000
+#define ENV_AREA_SIZE             0x10000
+
+#elif PLATFORM_XR806
+
+#define EF_START_ADDR             0x1F0000
+#define ENV_AREA_SIZE             0x10000
+
+#elif PLATFORM_XR872
+
+#define EF_START_ADDR             0xEF000
+#define ENV_AREA_SIZE             0x8000
+
 #endif
 /* print debug information of flash */
 #ifdef PKG_EASYFLASH_DEBUG

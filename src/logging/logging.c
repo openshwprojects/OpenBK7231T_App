@@ -341,15 +341,6 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 #if WINDOWS
 	printf(tmp);
 #endif
-#if PLATFORM_XR809 || PLATFORM_XR872
-	printf(tmp);
-#endif
-#if PLATFORM_W600 || PLATFORM_W800
-	//printf(tmp);
-#endif
-//#if PLATFORM_BL602
-	//printf(tmp);
-//#endif
 	// This is used by HTTP console
 	if (g_log_alsoPrintToHTTP) {
 		// guard here is used for the rare case when poststr attempts to do an addLogAdv as well

@@ -1,9 +1,9 @@
-#if PLATFORM_XR809 || PLATFORM_XR872
+#if PLATFORM_XRADIO
 
 #include "../hal_wifi.h"
 #include "../../new_cfg.h"
 #include "../../new_pins.h"
-
+#include "../../logging/logging.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -11,6 +11,9 @@
 #include <time.h>
 #include <stdarg.h>
 
+#include "net/wlan/wlan.h"
+#include "net/wlan/wlan_defs.h"
+#include "net/wlan/wlan_ext_req.h"
 #include "common/framework/platform_init.h"
 #include "common/framework/sysinfo.h"
 #include "common/framework/net_ctrl.h"
@@ -21,11 +24,11 @@
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
 #include "lwip/netdb.h"
+#include "lwip/dns.h"
 
 static void (*g_wifiStatusCallback)(int code);
 
-// lenght of "192.168.103.103" is 15 but we also need a NULL terminating character
-static char g_ipStr[32] = "unknown";
+bool g_bOpenAccessPointMode = false;
 
 void HAL_ConnectToWiFi(const char *ssid, const char *psk, obkStaticIP_t *ip)
 {
@@ -38,26 +41,32 @@ void HAL_ConnectToWiFi(const char *ssid, const char *psk, obkStaticIP_t *ip)
 	/* start scan and connect to ap automatically */
 	wlan_sta_enable();
 
-	//OS_Sleep(60);
-	printf("ok set wifii\n\r");
+	netif_set_hostname(g_wlan_netif, CFG_GetDeviceName());
+	if(ip->localIPAddr[0] != 0)
+	{
+#if !__CONFIG_LWIP_V1
+		ip_addr_t ipaddr;
+		ip_addr_t netmask;
+		ip_addr_t gw;
+		ip_addr_t dnsserver;
+		IP4_ADDR(ip_2_ip4(&ipaddr), ip->localIPAddr[0], ip->localIPAddr[1], ip->localIPAddr[2], ip->localIPAddr[3]);
+		IP4_ADDR(ip_2_ip4(&netmask), ip->netMask[0], ip->netMask[1], ip->netMask[2], ip->netMask[3]);
+		IP4_ADDR(ip_2_ip4(&gw), ip->gatewayIPAddr[0], ip->gatewayIPAddr[1], ip->gatewayIPAddr[2], ip->gatewayIPAddr[3]);
+		IP4_ADDR(ip_2_ip4(&dnsserver), ip->dnsServerIpAddr[0], ip->dnsServerIpAddr[1], ip->dnsServerIpAddr[2], ip->dnsServerIpAddr[3]);
+		netif_set_addr(g_wlan_netif, ip_2_ip4(&ipaddr), ip_2_ip4(&netmask), ip_2_ip4(&gw));
+		dns_setserver(0, &dnsserver);
+#endif
+	}
 }
 
 void HAL_DisconnectFromWifi()
 {
-
-}
-void HAL_DisableEnhancedFastConnect()
-{
-
-}
-void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
-{
-	HAL_ConnectToWiFi(oob_ssid, connect_key, ip);
+	wlan_sta_disconnect();
 }
 
 int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
 	char ap_psk[8] = { 0 };
-
+	g_bOpenAccessPointMode = true;
 	net_switch_mode(WLAN_MODE_HOSTAP);
 	wlan_ap_disable();
 	wlan_ap_set((uint8_t *)ssid, strlen(ssid), (uint8_t *)ap_psk);
@@ -65,6 +74,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
 
 	return 0;
 }
+
 static void wlan_msg_recv(uint32_t event, uint32_t data, void *arg)
 {
 	uint16_t type = EVENT_SUBTYPE(event);
@@ -84,24 +94,18 @@ static void wlan_msg_recv(uint32_t event, uint32_t data, void *arg)
 	case NET_CTRL_MSG_WLAN_SCAN_SUCCESS:
 	case NET_CTRL_MSG_WLAN_SCAN_FAILED:
 		break;
+
+#if !PLATFORM_XR872
+	case NET_CTRL_MSG_CONNECTION_LOSS:
+#endif
 	case NET_CTRL_MSG_WLAN_4WAY_HANDSHAKE_FAILED:
 	case NET_CTRL_MSG_WLAN_CONNECT_FAILED:
 			if(g_wifiStatusCallback!=0) {
 				g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
 			}
 		break;
-#if !PLATFORM_XR872
-	case NET_CTRL_MSG_CONNECTION_LOSS:
-			if(g_wifiStatusCallback!=0) {
-				g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
-			}
-		break;
-#endif
 	case NET_CTRL_MSG_NETWORK_UP:
-
-		break;
 	case NET_CTRL_MSG_NETWORK_DOWN:
-
 		break;
 #if (!defined(__CONFIG_LWIP_V1) && LWIP_IPV6)
 	case NET_CTRL_MSG_NETWORK_IPV6_STATE:
@@ -144,32 +148,58 @@ void WiFI_GetMacAddress(char *mac) {
 	memcpy(mac,g_cfg.mac,6);
 }
 
-void HAL_PrintNetworkInfo() {
-
-}
-int HAL_GetWifiStrength() {
-    return -1;
-}
-
-const char *HAL_GetMyIPString() {
-	strcpy(g_ipStr,inet_ntoa(g_wlan_netif->ip_addr));
-
-	return g_ipStr;
-}
-const char* HAL_GetMyGatewayString() {
-	return "192.168.0.1";
-}
-const char* HAL_GetMyDNSString() {
-	return "192.168.0.1";
-}
-const char* HAL_GetMyMaskString() {
-	return "255.255.255.0";
+void HAL_PrintNetworkInfo() 
+{
+	uint8_t mac[6];
+	WiFI_GetMacAddress((char*)mac);
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------- net device info ------------+\r\n");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_bOpenAccessPointMode == 0 ? "STA" : "AP");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif rssi    = %-16i            |\r\n", HAL_GetWifiStrength());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |\r\n", HAL_GetMyIPString());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |\r\n", HAL_GetMyMaskString());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif gateway = %-16s            |\r\n", HAL_GetMyGatewayString());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mac     : ["MACSTR"] %-6s  |\r\n", MAC2STR(mac), "");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------------------------------------+\r\n");
 }
 
-const char *HAL_GetMACStr(char *macstr) {
+int HAL_GetWifiStrength() 
+{
+	//wlan_sta_ap_info(&apinfo);
+	//return apinfo.level;
+	wlan_ext_signal_t signal;
+	wlan_ext_request(g_wlan_netif, WLAN_EXT_CMD_GET_SIGNAL, (int)(&signal));
+	return signal.rssi / 2 + signal.noise;
+}
+
+const char *HAL_GetMyIPString() 
+{
+	return ipaddr_ntoa(&g_wlan_netif->ip_addr);
+}
+
+const char* HAL_GetMyGatewayString() 
+{
+	return ipaddr_ntoa(&g_wlan_netif->gw);
+}
+
+const char* HAL_GetMyDNSString()
+{
+#if !__CONFIG_LWIP_V1
+	return ipaddr_ntoa(dns_getserver(0));
+#else
+	return "unknown";
+#endif
+}
+
+const char* HAL_GetMyMaskString() 
+{
+	return ipaddr_ntoa(&g_wlan_netif->netmask);
+}
+
+const char *HAL_GetMACStr(char *macstr)
+{
 	unsigned char mac[32];
 	WiFI_GetMacAddress((char *)mac);
-	sprintf(macstr,"%02X%02X%02X%02X%02X%02X",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
+	sprintf(macstr, MACSTR, MAC2STR(mac));
 	return macstr;
 }
 

@@ -102,7 +102,8 @@ void CFG_SetDefaultConfig() {
 	// must be unsigned, else print below prints negatives as e.g. FFFFFFFe
 	unsigned char mac[6] = { 0 };
 
-#if PLATFORM_XR809
+#if PLATFORM_XRADIO
+	extern void HAL_Configuration_GenerateMACForThisModule(unsigned char* out);
 	HAL_Configuration_GenerateMACForThisModule(mac);
 #else
 	WiFI_GetMacAddress((char *)mac);
@@ -145,14 +146,26 @@ void CFG_SetDefaultConfig() {
 	strcpy_safe(g_cfg.mqtt_group, "w800s", sizeof(g_cfg.mqtt_group));
 #elif PLATFORM_XR809
 	strcpy_safe(g_cfg.mqtt_group, "xr809s", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_XR872
+	strcpy_safe(g_cfg.mqtt_group, "xr872s", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_XR806
+	strcpy_safe(g_cfg.mqtt_group, "xr806s", sizeof(g_cfg.mqtt_group));
 #elif PLATFORM_BL602
 	strcpy_safe(g_cfg.mqtt_group, "bl602s", sizeof(g_cfg.mqtt_group));
 #elif PLATFORM_ESPIDF
 	strcpy_safe(g_cfg.mqtt_group, "esp", sizeof(g_cfg.mqtt_group));
 #elif PLATFORM_TR6260
 	strcpy_safe(g_cfg.mqtt_group, "tr6260", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_ECR6600
+	strcpy_safe(g_cfg.mqtt_group, "ecr6600", sizeof(g_cfg.mqtt_group));
 #elif PLATFORM_RTL87X0C
 	strcpy_safe(g_cfg.mqtt_group, "rtl87x0c", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_RTL8710A
+	strcpy_safe(g_cfg.mqtt_group, "rtl8711am", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_RTL8710B
+	strcpy_safe(g_cfg.mqtt_group, "rtl8710b", sizeof(g_cfg.mqtt_group));
+#elif PLATFORM_RTL8720D
+	strcpy_safe(g_cfg.mqtt_group, "rtl8720d", sizeof(g_cfg.mqtt_group));
 #elif WINDOWS
 	strcpy_safe(g_cfg.mqtt_group, "bekens", sizeof(g_cfg.mqtt_group));
 #else
@@ -786,7 +799,7 @@ void CFG_InitAndLoad() {
 		// mark as changed
 		g_cfg_pendingChanges ++;
 	} else {
-#if defined(PLATFORM_XR809) || defined(PLATFORM_BL602)
+#if defined(PLATFORM_XRADIO) || defined(PLATFORM_BL602)
 		if (g_cfg.mac[0] == 0 && g_cfg.mac[1] == 0 && g_cfg.mac[2] == 0 && g_cfg.mac[3] == 0 && g_cfg.mac[4] == 0 && g_cfg.mac[5] == 0) {
 			WiFI_GetMacAddress((char*)g_cfg.mac);
 		}

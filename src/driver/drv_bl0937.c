@@ -50,6 +50,13 @@ rtlPinMapping_t* rtl_cf1;
 
 #include "gpio.h"
 
+#elif PLATFORM_XRADIO
+
+#include "../hal/xradio/hal_pinmap_xradio.h"
+extern void HAL_XR_ConfigurePin(GPIO_Port port, GPIO_Pin pin, GPIO_WorkMode mode, GPIO_PullType pull);
+xrpin_t* xr_cf;
+xrpin_t* xr_cf1;
+
 #else
 
 
@@ -176,6 +183,17 @@ void cf1_irq_handler(uint32_t id, gpio_irq_event event)
 	g_vc_pulses++;
 }
 
+#elif PLATFORM_XRADIO
+
+static void HlwCf1Interrupt(void* arg)
+{
+	g_vc_pulses++;
+}
+static void HlwCfInterrupt(void* arg)
+{
+	g_p_pulses++;
+}
+
 #else
 
 void HlwCf1Interrupt(unsigned char pinNum)
@@ -243,6 +261,13 @@ void BL0937_Shutdown_Pins()
 	drv_gpio_ioctrl(GPIO_HLW_CF1, DRV_GPIO_CTRL_INTR_DISABLE, 0);
 	drv_gpio_ioctrl(GPIO_HLW_CF, DRV_GPIO_CTRL_INTR_DISABLE, 0);
 
+#elif PLATFORM_XRADIO
+
+	HAL_GPIO_DeInit(xr_cf->port, xr_cf->pin);
+	HAL_GPIO_DisableIRQ(xr_cf->port, xr_cf->pin);
+	HAL_GPIO_DeInit(xr_cf1->port, xr_cf1->pin);
+	HAL_GPIO_DisableIRQ(xr_cf1->port, xr_cf1->pin);
+
 #endif
 }
 
@@ -295,6 +320,11 @@ void BL0937_Init_Pins()
 	memset(rtl_cf1->irq, 0, sizeof(gpio_irq_t));
 	memset(rtl_cf->irq, 0, sizeof(gpio_irq_t));
 
+#elif PLATFORM_XRADIO
+
+	xr_cf = g_pins + GPIO_HLW_CF;
+	xr_cf1 = g_pins + GPIO_HLW_CF1;
+
 #endif
 
 	BL0937_PMAX = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER_MAX, BL0937_PMAX);
@@ -341,6 +371,15 @@ void BL0937_Init_Pins()
 	drv_gpio_ioctrl(GPIO_HLW_CF1, DRV_GPIO_CTRL_REGISTER_ISR, (int)&cf1isr);
 	drv_gpio_ioctrl(GPIO_HLW_CF1, DRV_GPIO_CTRL_INTR_ENABLE, 0);
 
+#elif PLATFORM_XRADIO
+
+	HAL_XR_ConfigurePin(xr_cf1->port, xr_cf1->pin, GPIOx_Pn_F6_EINT, GPIO_PULL_UP);
+	GPIO_IrqParam cf1param;
+	cf1param.event = GPIO_IRQ_EVT_FALLING_EDGE;
+	cf1param.callback = HlwCf1Interrupt;
+	cf1param.arg = (void*)0;
+	HAL_GPIO_EnableIRQ(xr_cf1->port, xr_cf1->pin, &cf1param);
+
 #endif
 
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF);
@@ -381,6 +420,15 @@ void BL0937_Init_Pins()
 	drv_gpio_ioctrl(GPIO_HLW_CF, DRV_GPIO_CTRL_INTR_MODE, DRV_GPIO_ARG_INTR_MODE_N_EDGE);
 	drv_gpio_ioctrl(GPIO_HLW_CF, DRV_GPIO_CTRL_REGISTER_ISR, (int)&cfisr);
 	drv_gpio_ioctrl(GPIO_HLW_CF, DRV_GPIO_CTRL_INTR_ENABLE, 0);
+
+#elif PLATFORM_XRADIO
+
+	HAL_XR_ConfigurePin(xr_cf->port, xr_cf->pin, GPIOx_Pn_F6_EINT, GPIO_PULL_UP);
+	GPIO_IrqParam cfparam;
+	cfparam.event = GPIO_IRQ_EVT_FALLING_EDGE;
+	cfparam.callback = HlwCfInterrupt;
+	cfparam.arg = (void*)0;
+	HAL_GPIO_EnableIRQ(xr_cf->port, xr_cf->pin, &cfparam);
 
 #endif
 

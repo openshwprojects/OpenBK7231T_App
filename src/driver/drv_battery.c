@@ -38,8 +38,8 @@ static void Batt_Measure() {
 		//channel_rel = g_cfg.pins.channels[g_pin_rel];
 		//}
 	}
-	// maybe move init code to Batt_Init?
-	HAL_ADC_Init(g_pin_adc);
+	// should be already initialized in pins
+	//HAL_ADC_Init(g_pin_adc);
 	g_battlevel = HAL_ADC_Read(g_pin_adc);
 	if (g_battlevel < 1024) {
 		ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : ADC Value low device not on battery");

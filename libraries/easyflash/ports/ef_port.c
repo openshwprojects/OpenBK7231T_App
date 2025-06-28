@@ -47,6 +47,12 @@ flash_t flash;
 #include "wm_flash.h"
 #define QueueHandle_t xQueueHandle
 
+#elif PLATFORM_XRADIO
+
+#include "driver/chip/hal_flash.h"
+#include <image/flash.h>
+#define QueueHandle_t xQueueHandle
+
 #endif
 
 /* default ENV set for user */
@@ -102,6 +108,11 @@ EfErrCode ef_port_read(uint32_t addr, uint32_t* buf, size_t size)
 	int res = tls_fls_read(addr, (uint8_t*)buf, size);
 	if(res != TLS_FLS_STATUS_OK) return EF_READ_ERR;
 	else return EF_NO_ERR;
+#elif PLATFORM_XRADIO
+	int res = flash_rw(0, addr, (void*)buf, size, 0);
+	if(res == 0) res = EF_READ_ERR;
+	else res = EF_NO_ERR;
+	return res;
 #endif
 }
 
@@ -131,6 +142,11 @@ EfErrCode ef_port_erase(uint32_t addr, size_t size)
 	int res = tls_fls_erase(addr / EF_ERASE_MIN_SIZE);
 	if(res != TLS_FLS_STATUS_OK) return EF_ERASE_ERR;
 	else return EF_NO_ERR;
+#elif PLATFORM_XRADIO
+	int res = flash_erase(0, addr, EF_ERASE_MIN_SIZE);
+	if(res != 0) res = EF_ERASE_ERR;
+	else res = EF_NO_ERR;
+	return res;
 #endif
 	return result;
 }
@@ -159,6 +175,11 @@ EfErrCode ef_port_write(uint32_t addr, const uint32_t* buf, size_t size)
 	int res = tls_fls_write(addr, (uint8_t*)buf, size);
 	if(res != TLS_FLS_STATUS_OK) return EF_WRITE_ERR;
 	else return EF_NO_ERR;
+#elif PLATFORM_XRADIO
+	int res = flash_rw(0, addr, (void*)buf, size, 1);
+	if(res == 0) res = EF_WRITE_ERR;
+	else res = EF_NO_ERR;
+	return res;
 #endif
 }
 

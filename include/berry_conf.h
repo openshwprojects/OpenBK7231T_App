@@ -227,8 +227,13 @@
  * are not required.
  * The default is to use the functions in the standard library.
  **/
+#if PLATFORM_XRADIO
+#define BE_EXPLICIT_ABORT(x)
+#define BE_EXPLICIT_EXIT(x)
+#else
 #define BE_EXPLICIT_ABORT abort
 #define BE_EXPLICIT_EXIT exit
+#endif
  // BK7231/RTL wraps malloc, free etc. to freertos ports. Some platforms don't do it.
 #if PLATFORM_W800 || PLATFORM_W600
 #define BE_EXPLICIT_MALLOC pvPortMalloc

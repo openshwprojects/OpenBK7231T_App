@@ -22,6 +22,17 @@
 #include "driver/drv_ir.h"
 #elif PLATFORM_ESPIDF
 #include "esp_sleep.h"
+#elif PLATFORM_XRADIO
+#undef HAL_ADC_Init
+#include "hal/xradio/hal_pinmap_xradio.h"
+#include "driver/chip/hal_gpio.h"
+#include "driver/chip/hal_wakeup.h"
+#include "pm/pm.h"
+#if PLATFORM_XR809
+#define DEEP_SLEEP PM_MODE_POWEROFF
+#else
+#define DEEP_SLEEP PM_MODE_HIBERNATION
+#endif
 #endif
 
 #ifdef PLATFORM_BEKEN_NEW
@@ -144,6 +155,27 @@ static byte g_lastValidState[PLATFORM_GPIO_MAX];
 uint32_t g_gpio_index_map[2] = { 0, 0 };
 uint32_t g_gpio_edge_map[2] = { 0, 0 }; // note: 0->rising, 1->falling
 
+#if PLATFORM_XRADIO
+void SetWUPIO(int index, int pull, int edge)
+{
+	if(g_pins[index].wakeup != -1)
+	{
+		GPIO_InitParam param;
+
+		param.mode = GPIOx_Pn_F6_EINT;
+		param.driving = GPIO_DRIVING_LEVEL_1;
+		param.pull = pull;
+		HAL_GPIO_Init(GPIO_PORT_A, g_pins[index].pin, &param);
+#if !PLATFORM_XR809
+		HAL_PRCM_SetWakeupDebClk0(0);
+		HAL_PRCM_SetWakeupIOxDebSrc(g_pins[index].wakeup, 0);
+		HAL_PRCM_SetWakeupIOxDebounce(g_pins[index].wakeup, 1);
+#endif
+		HAL_Wakeup_SetIO(g_pins[index].wakeup, !edge, pull);
+		//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Waking up from PA%i, pull: %i, edge: %i", g_pins[index].pin, pull, !edge);
+	}
+}
+#endif
 
 void setGPIActive(int index, int active, int falling) {
 	if (active) {
@@ -205,7 +237,22 @@ void PINS_BeginDeepSleepWithPinWakeUp(unsigned int wakeUpTime) {
 			else {
 				falling = g_defaultWakeEdge[i];
 			}
+#if PLATFORM_XRADIO
+			int pull = 1;
+			if(g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_NoPup
+				|| g_cfg.pins.roles[i] == IOR_DigitalInput_NoPup
+				|| g_cfg.pins.roles[i] == IOR_DigitalInput_NoPup_n)
+			{
+				pull = 0;
+			}
+			else if(g_cfg.pins.roles[i] == IOR_DoorSensorWithDeepSleep_pd)
+			{
+				pull = 2;
+			}
+			SetWUPIO(i, pull, falling);
+#else
 			setGPIActive(i, 1, falling);
+#endif
 		}
 	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Index map: %i, edge: %i", g_gpio_index_map[0], g_gpio_edge_map[0]);
@@ -245,6 +292,12 @@ void PINS_BeginDeepSleepWithPinWakeUp(unsigned int wakeUpTime) {
 		bk_enter_deep_sleep(g_gpio_index_map[0], g_gpio_edge_map[0]);
 	}
 #endif
+#elif PLATFORM_XRADIO
+	if(wakeUpTime)
+	{
+		HAL_Wakeup_SetTimer_mS(wakeUpTime * DS_MS_TO_S);
+	}
+	pm_enter_mode(DEEP_SLEEP);
 #elif PLATFORM_ESPIDF
 //	if(wakeUpTime)
 //	{
@@ -871,13 +924,12 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_PWM_ScriptOnly:
 		case IOR_PWM_ScriptOnly_n:
 		case IOR_PWM:
-		{
 			HAL_PIN_PWM_Stop(index);
-		}
-		break;
+			break;
 		case IOR_BAT_ADC:
+		case IOR_ADC_Button:
 		case IOR_ADC:
-			// TODO: disable?
+			HAL_ADC_Deinit(index);
 			break;
 		case IOR_BridgeForward:
 		case IOR_BridgeReverse:
@@ -1063,7 +1115,11 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_ADC_Button:
 		case IOR_ADC:
 			// init ADC for given pin
+#if PLATFORM_XRADIO
+			OBK_HAL_ADC_Init(index);
+#else
 			HAL_ADC_Init(index);
+#endif
 			break;
 		case IOR_PWM_n:
 		case IOR_PWM_ScriptOnly:

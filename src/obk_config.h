@@ -32,19 +32,36 @@
 #define ENABLE_HTTP_PING		1
 #define ENABLE_LED_BASIC		1
 
+#if PLATFORM_XRADIO
+
+#define ENABLE_MQTT								1
+#define NO_CHIP_TEMPERATURE						1
+#define	ENABLE_HA_DISCOVERY						1
+#define ENABLE_EXPAND_CONSTANT					1
+#define ENABLE_OBK_SCRIPTING					1
+#define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
+#define ENABLE_LITTLEFS							1
+#define NEW_TCP_SERVER							1
+#define ENABLE_TASMOTA_JSON						1
+#define ENABLE_DRIVER_SSDP						1
+#define ENABLE_DRIVER_DS1820					1
+#define ENABLE_NTP								1
+#define ENABLE_DRIVER_WEMO						1
+#define ENABLE_DRIVER_HUE						1
+
 #if PLATFORM_XR809
+#define ENABLE_DRIVER_BATTERY					1
+#define ENABLE_OBK_BERRY						1
+#endif
 
-#define ENABLE_MQTT								1
-#define NO_CHIP_TEMPERATURE						1
-#define OBK_DISABLE_ALL_DRIVERS					1
-#define	ENABLE_HA_DISCOVERY						1
-
-#elif PLATFORM_XR872
-
-#define ENABLE_MQTT								1
-#define NO_CHIP_TEMPERATURE						1
-#define OBK_DISABLE_ALL_DRIVERS					1
-#define	ENABLE_HA_DISCOVERY						1
+#if PLATFORM_XR806
+#define ENABLE_DRIVER_TUYAMCU					1
+#define ENABLE_DRIVER_DS1820					1
+#define ENABLE_DRIVER_DHT						1
+#define ENABLE_DRIVER_AHT2X						1
+#define ENABLE_DRIVER_SSDP						1
+#define ENABLE_OBK_BERRY						1
+#endif
 
 #elif PLATFORM_W600
 
