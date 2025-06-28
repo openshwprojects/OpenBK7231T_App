@@ -680,21 +680,21 @@ void DS1820_full_driver_Init()
 	ds18_family = 0;
 	scan_sensors();
 
-	//cmddetail:{"name":"DS1820_SetResolution","args":"[int]",
+	//cmddetail:{"name":"DS1820_FULL_SetResolution","args":"[int]",
 	//cmddetail:"descr":"Sets resolution for connected DS1820 sensor (9/10/11/12 bits)",
 	//cmddetail:"fn":"Cmd_SetResolution","file":"drv/drv_ds1820_simple.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DS1820_FULL_SetResolution", Cmd_DS18B20_SetResolution, NULL);
-	//cmddetail:{"name":"DS18B20_setsensor","args":"DS18B20-Addr name [channel]",
+	//cmddetail:{"name":"DS1820_FULL_setsensor","args":"DS18B20-Addr name [channel]",
 	//cmddetail:"descr":"Sets a name [and optional channel] to a DS18B20 sensor by sensors address",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_ds1802_simple.c","requires":"",
-	//cmddetail:"examples":"DS18B20_setsensor \"0x28 0x01 0x02 0x03 0x04 0x05 0x06 0x07\" \"kitchen\" 2"}
-	CMD_RegisterCommand("DS18B20_FULL_setsensor", CMD_DS18B20_setsensor, NULL);
-	//cmddetail:{"name":"DS18B20_scansensors","args":"-",
+	//cmddetail:"examples":"DS1820_FULL_setsensor \"0x28 0x01 0x02 0x03 0x04 0x05 0x06 0x07\" \"kitchen\" 2"}
+	CMD_RegisterCommand("DS1820_FULL_setsensor", CMD_DS18B20_setsensor, NULL);
+	//cmddetail:{"name":"DS18B20_FULL_scansensors","args":"-",
 	//cmddetail:"descr":"(Re-)Scan all GPIOs defined for DS1820 for sensors",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_ds1802_simple.c","requires":"",
-	//cmddetail:"examples":"DS18B20_scansensors"}
-	CMD_RegisterCommand("DS18B20_FULL_scansensors", CMD_DS18B20_scansensors, NULL);
+	//cmddetail:"examples":"DS1820_FULL_scansensors"}
+	CMD_RegisterCommand("DS1820_FULL_scansensors", CMD_DS18B20_scansensors, NULL);
 
 	// no need to discover the "family" we know the address, the first byte is the family
 };
@@ -775,7 +775,7 @@ int http_fn_cfg_ds18b20(http_request_t* request)
 
 	poststr(request, "<br><input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? ')\"></form> ");
 	hprintf255(request, "<script> function gen(){v='backlog startDriver DS1820 '; for (i=0; i<%i; i++) { ",ds18_count);
-	poststr(request, "v+='; DS18B20_setsensor ' + '\"' + getElement('a'+i).innerHTML + '\" '  + getElement('pin'+i).innerHTML + ' \"' + getElement('ds1820name'+i).value + '\" ' + getElement('ds1820chan'+i).value} return v; };</script>");
+	poststr(request, "v+='; DS1820_FULL_setsensor ' + '\"' + getElement('a'+i).innerHTML + '\" '  + getElement('pin'+i).innerHTML + ' \"' + getElement('ds1820name'+i).value + '\" ' + getElement('ds1820chan'+i).value} return v; };</script>");
 	poststr(request,"<br><br><input type='button' value='generate backlog command for config' onclick='t=document.getElementById(\"text\"); t.value=gen(); t.hidden=false;'><textarea id='text' hidden '> </textarea><p>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
