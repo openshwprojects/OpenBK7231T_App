@@ -10,7 +10,8 @@
 #include "../httpserver/new_http.h"
 #include "../hal/hal_pins.h"
 
-#define MY_SPI_DELAY usleep(500);
+//#define MY_SPI_DELAY usleep(500);
+#define MY_SPI_DELAY
 
 void SPI_Send(softSPI_t *spi, byte dataToSend) {
 	for (int i = 0; i < 8; i++) {
