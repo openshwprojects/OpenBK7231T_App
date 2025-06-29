@@ -4,7 +4,7 @@
 #ifndef _UTILS_NET_H_
 #define _UTILS_NET_H_
 
-#if PLATFORM_BEKEN || WINDOWS
+#if PLATFORM_BEKEN || WINDOWS || PLATFORM_ECR6600
 /**
  * @brief The structure of network connection(TCP or SSL).
  *   The user has to allocate memory for this structure.
