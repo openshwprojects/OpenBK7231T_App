@@ -422,6 +422,7 @@
 #elif PLATFORM_ECR6600
 
 #define	ENABLE_HA_DISCOVERY						1
+#define ENABLE_SEND_POSTANDGET	                                        1	
 #define ENABLE_MQTT								1
 #define ENABLE_LITTLEFS							1
 #define NEW_TCP_SERVER							1
