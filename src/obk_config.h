@@ -444,6 +444,8 @@
 #define ENABLE_DRIVER_TUYAMCU					1
 #define ENABLE_DRIVER_BL0942					1
 #define ENABLE_DRIVER_BL0937					1
+#define ENABLE_SEND_POSTANDGET                                  1
+#define ENABLE_DRIVER_HTTPBUTTONS                               1
 #define ENABLE_OBK_BERRY						1
 
 #else
