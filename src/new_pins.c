@@ -1677,6 +1677,10 @@ bool CHANNEL_IsInUse(int ch) {
 			}
 		}
 	}
+#if (ENABLE_DRIVER_AHT2X)
+#include "driver/drv_aht2x.h"
+	return aht2x_used_channel(ch);
+#endif
 	return false;
 }
 
@@ -2080,40 +2084,30 @@ void PIN_ticks(void* param)
 #endif
 			}
 			else if (g_cfg.pins.roles[i] == IOR_ToggleChannelOnToggle) {
+				// we must detect a toggle, but with debouncing
 				value = PIN_ReadDigitalInputValue_WithInversionIncluded(i);
-			
-				if (value) {
-					if (g_times[i] > debounceMS) {
-						if (g_lastValidState[i] != value) {
-							g_lastValidState[i] = value;
-			
-							if (!CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
-								CHANNEL_Toggle(g_cfg.pins.channels[i]);
-								EventHandlers_FireEvent(CMD_EVENT_PIN_ONTOGGLE, i);
-							} else {
-								addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
-							}
+				// debouncing
+				if (g_times[i] <= 0) {
+					if (g_lastValidState[i] != value) {
+						// became up
+						g_lastValidState[i] = value;
+
+
+						if (CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
+							addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
 						}
-					} else {
-						g_times[i] += t_diff;
-					}
-					g_times2[i] = 0;
-				} else {
-					if (g_times2[i] > debounceMS) {
-						if (g_lastValidState[i] != value) {
-							g_lastValidState[i] = value;
-			
-							if (!CFG_HasFlag(OBK_FLAG_BUTTON_DISABLE_ALL)) {
-								CHANNEL_Toggle(g_cfg.pins.channels[i]);
-								EventHandlers_FireEvent(CMD_EVENT_PIN_ONTOGGLE, i);
-							} else {
-								addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Child lock!");
-							}
+						else {
+							CHANNEL_Toggle(g_cfg.pins.channels[i]);
+							// fire event - IOR_ToggleChannelOnToggle has been toggle
+							// Argument is a pin number (NOT channel)
+							EventHandlers_FireEvent(CMD_EVENT_PIN_ONTOGGLE, i);
 						}
-					} else {
-						g_times2[i] += t_diff;
+						// lock for given time
+						g_times[i] = debounceMS;
 					}
-					g_times[i] = 0;
+				}
+				else {
+					g_times[i] -= t_diff;
 				}
 			}
 	}
