@@ -5,7 +5,7 @@
 
 #define AHT2X_I2C_ADDR (0x38 << 1)
 #define MAX_AHT2X_SENSORS 4	// Max number of sensors
-#define MAX_RETRIES = 20	// Maimum number of retries
+#define MAX_RETRIES  20		// Maimum number of retries
 
 typedef struct {
     softI2C_t softI2C;
