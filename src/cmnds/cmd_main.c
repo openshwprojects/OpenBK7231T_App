@@ -51,6 +51,17 @@ int g_sleepfactor = 1;
 #include "co_math.h"
 #include "manual_ps_pub.h"
 #include "wlan_ui_pub.h"
+#elif PLATFORM_XRADIO
+#include "common/framework/net_ctrl.h"
+#include "driver/chip/hal_wakeup.h"
+#include "net/wlan/wlan_defs.h"
+#include "net/wlan/wlan_ext_req.h"
+#include "pm/pm.h"
+#if PLATFORM_XR809
+#define DEEP_SLEEP PM_MODE_POWEROFF
+#else
+#define DEEP_SLEEP PM_MODE_HIBERNATION
+#endif
 #endif
 
 #define HASH_SIZE 128
@@ -258,6 +269,27 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 #endif
 		wifi_disable_powersave();
 	}
+#elif PLATFORM_XRADIO
+	if(g_powersave)
+	{
+		wlan_set_ps_mode(g_wlan_netif, 1);
+		wlan_ext_ps_cfg_t ps_cfg;
+		memset(&ps_cfg, 0, sizeof(wlan_ext_ps_cfg_t));
+		ps_cfg.ps_mode = 1;
+		ps_cfg.ps_idle_period = 40;
+		ps_cfg.ps_change_period = 10;
+		wlan_ext_request(g_wlan_netif, WLAN_EXT_CMD_SET_PS_CFG, (uint32_t)&ps_cfg);
+		if(Tokenizer_GetArgsCount() > 1)
+		{
+			int dtim = Tokenizer_GetArgInteger(1);
+			wlan_ext_request(g_wlan_netif, WLAN_EXT_CMD_SET_PM_DTIM, dtim);
+			wlan_ext_request(g_wlan_netif, WLAN_EXT_CMD_SET_LISTEN_INTERVAL, 0);
+		}
+	}
+	else
+	{
+		wlan_set_ps_mode(g_wlan_netif, 0);
+	}
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave is not implemented on this platform");
 #endif
@@ -299,6 +331,9 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 	rtc_gpio_isolate(GPIO_NUM_12);
 #endif
 	esp_deep_sleep_start();
+#elif PLATFORM_XRADIO
+	HAL_Wakeup_SetTimer_mS(timeMS * DS_MS_TO_S);
+	pm_enter_mode(DEEP_SLEEP);
 #endif
 
 	return CMD_RES_OK;
@@ -1034,7 +1069,7 @@ void CMD_Init_Delayed() {
 	}
 #endif
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) \
- || defined(PLATFORM_REALTEK)
+ || defined(PLATFORM_REALTEK) || defined(PLATFORM_ECR6600) || defined(PLATFORM_XRADIO)
 	UART_AddCommands();
 #endif
 #if ENABLE_BL_TWIN
