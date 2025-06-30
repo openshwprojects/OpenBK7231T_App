@@ -654,8 +654,14 @@ int http_fn_index(http_request_t* request) {
 		}
 	}
 
+	bool bForceShowSingleDimmer = 0;
+#if	ENABLE_DRIVER_GOSUNDSW2
+	if (DRV_IsRunning("GosundSW2")) {
+		bForceShowSingleDimmer = 1;
+	}
+#endif
 #if ENABLE_LED_BASIC
-	if (bRawPWMs == 0 || bForceShowRGBCW || bForceShowRGB) {
+	if (bRawPWMs == 0 || bForceShowRGBCW || bForceShowRGB || bForceShowSingleDimmer) {
 		int c_pwms;
 		int lm;
 		int c_realPwms = 0;
@@ -668,7 +674,10 @@ int http_fn_index(http_request_t* request) {
 		// into high power 3-outputs single colors LED controller
 		PIN_get_Relay_PWM_Count(0, &c_pwms, 0);
 		c_realPwms = c_pwms;
-		if (bForceShowRGBCW) {
+		if (bForceShowSingleDimmer) {
+			c_pwms = 1;
+		} 
+		else if (bForceShowRGBCW) {
 			c_pwms = 5;
 		}
 		else if (bForceShowRGB) {
