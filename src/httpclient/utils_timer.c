@@ -2,13 +2,13 @@
  * Copyright (C) 2015-2017 Alibaba Group Holding Limited
  */
 
-#if PLATFORM_BEKEN || WINDOWS
 
-#include "include.h"
-//#include "lite-log.h"
+#include "../new_common.h"
+
+#if ENABLE_SEND_POSTANDGET
+ //#include "lite-log.h"
 #include "utils_timer.h"
 #include "hal_machw.h"
-
 
 void iotx_time_start(iotx_time_t *timer)
 {
