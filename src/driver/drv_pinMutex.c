@@ -34,17 +34,33 @@ typedef struct pinMutex_s {
 pinMutex_t pms[MAX_PINMUTEX];
 
 void DRV_PinMutex_RunFrame() {
-
+	
 	for (int i = 0; i < MAX_PINMUTEX; i++) {
-		int desired = Channel_Get(pms[i].channel);
+		int desired = CHANNEL_Get(pms[i].channel);
+
+		//++g_deltaTimeMS;
 
 	}
 
 }
 
+commandResult_t CMD_setMutex(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	//buttonIndex = Tokenizer_GetArgInteger(0);
+	//bOn = Tokenizer_GetArgInteger(1);
+
+
+
+	return CMD_RES_OK;
+}
 void DRV_PinMutex_Init() {
 
 
+	CMD_RegisterCommand("setMutex", CMD_setMutex, NULL);
 }
 
 #endif
