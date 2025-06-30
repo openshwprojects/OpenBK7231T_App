@@ -4,7 +4,7 @@
 
 #include "../new_common.h"
 #include "../logging/logging.h"
-#if PLATFORM_BEKEN || WINDOWS
+#if ENABLE_SEND_POSTANDGET
 #include "utils_net.h"
 #include "utils_timer.h"
 #include "errno.h"
