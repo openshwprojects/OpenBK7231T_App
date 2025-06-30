@@ -195,6 +195,9 @@ void Test_PinMutex() {
 	// set
 	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 1);
 	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	Sim_RunMiliseconds(25, false);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 1);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
 	
 
 }
