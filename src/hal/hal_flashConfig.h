@@ -10,6 +10,3 @@ int bekken_hal_flash_read(const unsigned int addr, void *dst, const unsigned int
 
 int HAL_Configuration_ReadConfigMemory(void *target, int dataLen);
 int HAL_Configuration_SaveConfigMemory(void *src, int dataLen);
-void HAL_Configuration_GenerateMACForThisModule(unsigned char *out);
-
-
