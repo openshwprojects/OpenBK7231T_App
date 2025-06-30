@@ -13,7 +13,6 @@
 
 #if ENABLE_SEND_POSTANDGET
 
-#include "include.h"
 #include "utils_timer.h"
 //#include "lite-log.h"
 #include "http_client.h"
