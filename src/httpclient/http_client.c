@@ -16,8 +16,6 @@
 #include "utils_timer.h"
 //#include "lite-log.h"
 #include "http_client.h"
-#include "rtos_pub.h"
-
 #include "iot_export_errno.h"
 
 #define log_err(a, ...)
