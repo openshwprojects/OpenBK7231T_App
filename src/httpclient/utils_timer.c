@@ -8,7 +8,12 @@
 #if ENABLE_SEND_POSTANDGET
  //#include "lite-log.h"
 #include "utils_timer.h"
+
+#if PLATFORM_ECR6600
+// TODO
+#else
 #include "hal_machw.h"
+#endif
 
 void iotx_time_start(iotx_time_t *timer)
 {
