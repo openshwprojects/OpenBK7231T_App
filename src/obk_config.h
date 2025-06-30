@@ -116,6 +116,7 @@
 #endif
 
 
+#define	ENABLE_DRIVER_PINMUTEX	1
 #define	ENABLE_DRIVER_TCL		1
 #define	ENABLE_DRIVER_PIR		1
 #define	ENABLE_HA_DISCOVERY		1
