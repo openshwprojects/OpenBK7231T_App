@@ -148,9 +148,60 @@ void Test_UART() {
 	}
 }
 
+void Test_PinMutex() {
+	// reset whole device
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("startDriver PinMutex", 0);
+	// setMutex <index> <channel> <delayMs> <pinDown> <pinUp> 
+	CMD_ExecuteCommand("setMutex 0 0 100 10 11", 0);
+
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	Sim_RunMiliseconds(100, false);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	CMD_ExecuteCommand("setChannel 0 1", 0);
+	// from 0 0 to 1 0 set is quick
+	Sim_RunMiliseconds(25, false);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 1);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	CMD_ExecuteCommand("setChannel 0 2", 0);
+	Sim_RunMiliseconds(25, false);
+	// dead time
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	Sim_RunMiliseconds(25, false);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	Sim_RunMiliseconds(25, false);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	Sim_RunMiliseconds(50, false);
+	// set
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 1);
+	CMD_ExecuteCommand("setChannel 0 1", 0);
+	Sim_RunMiliseconds(25, false);
+	// dead time
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	Sim_RunMiliseconds(25, false);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	Sim_RunMiliseconds(25, false);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	Sim_RunMiliseconds(50, false);
+	// set
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 1);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	
+
+}
 void Test_Commands_Generic() {
 	Test_UART();
 	Test_Events();
+	Test_PinMutex();
 
 	// reset whole device
 	SIM_ClearOBK(0);
