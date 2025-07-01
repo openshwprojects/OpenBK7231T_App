@@ -9,7 +9,22 @@
  //#include "lite-log.h"
 #include "utils_timer.h"
 
-#if PLATFORM_ECR6600
+#if PLATFORM_BL602
+
+void lwip_close_force(int x) {
+	lwip_close(x);
+}
+int hal_machw_time() {
+	return 0;
+}
+int hal_machw_time_past(int tt) {
+	int t = hal_machw_time();
+	if (t < tt)
+		return 0;
+	return 1;
+}
+
+#elif PLATFORM_ECR6600
 
 void lwip_close_force(int x) {
 	lwip_close(x);
