@@ -394,6 +394,8 @@ typedef unsigned int u32;
 #define os_malloc malloc
 #define os_free free
 
+#define lwip_close_force(x) lwip_close(x)
+
 #define HAL_UART_Init OBK_HAL_UART_Init
 #define HAL_ADC_Init OBK_HAL_ADC_Init
 
