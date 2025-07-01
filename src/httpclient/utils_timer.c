@@ -11,8 +11,11 @@
 
 #if PLATFORM_ECR6600
 
+void lwip_close_force(int x) {
+	lwip_close(x);
+}
 int hal_machw_time() {
-	return HAL_GetTimeMs() * 1000;
+	return os_time_get() * 1000;
 }
 int hal_machw_time_past(int tt) {
 	int t = hal_machw_time();
