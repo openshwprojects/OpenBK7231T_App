@@ -72,7 +72,7 @@ static void tcp_client_thread(beken_thread_arg_t arg)
 		goto exit;
 	}
 	http_request_t request;
-	os_memset(&request, 0, sizeof(request));
+	memset(&request, 0, sizeof(request));
 
 	request.fd = fd;
 	request.received = buf;

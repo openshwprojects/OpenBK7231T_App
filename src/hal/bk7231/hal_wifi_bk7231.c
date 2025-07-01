@@ -44,7 +44,7 @@ IPStatusTypedef ipStatus;
 // because, for example, javascript control panel requires it
 const char* HAL_GetMyIPString() {
 
-	os_memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
+	memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
 	if (g_bOpenAccessPointMode) {
 		bk_wlan_get_ip_status(&ipStatus, SOFT_AP);
 	}
@@ -142,7 +142,7 @@ void HAL_PrintNetworkInfo()
 {
 	IPStatusTypedef ipStatus;
 
-	os_memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
+	memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
 	bk_wlan_get_ip_status(&ipStatus, STATION);
 
 	char* fmt = "dhcp=%d ip=%s gate=%s mask=%s mac=" MACSTR "\r\n";
@@ -165,7 +165,7 @@ void HAL_PrintNetworkInfo()
 
 	if (sta_ip_is_start())
 	{
-		os_memset(&linkStatus, 0x0, sizeof(LinkStatusTypeDef));
+		memset(&linkStatus, 0x0, sizeof(LinkStatusTypeDef));
 		bk_wlan_get_link_status(&linkStatus);
 		memcpy(ssid, linkStatus.ssid, 32);
 
@@ -231,7 +231,7 @@ void HAL_PrintNetworkInfo()
 
 	if (uap_ip_is_start())
 	{
-		os_memset(&ap_info, 0x0, sizeof(network_InitTypeDef_ap_st));
+		memset(&ap_info, 0x0, sizeof(network_InitTypeDef_ap_st));
 		bk_wlan_ap_para_info_get(&ap_info);
 		memcpy(ssid, ap_info.wifi_ssid, 32);
 		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "softap:ssid=%s,channel=%d,dhcp=%d,cipher_type:%s",
@@ -252,7 +252,7 @@ void HAL_PrintNetworkInfo()
 int HAL_GetWifiStrength()
 {
 	LinkStatusTypeDef linkStatus;
-	os_memset(&linkStatus, 0x0, sizeof(LinkStatusTypeDef));
+	memset(&linkStatus, 0x0, sizeof(LinkStatusTypeDef));
 	bk_wlan_get_link_status(&linkStatus);
 	return linkStatus.wifi_strength;
 }
@@ -341,7 +341,7 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 
 	network_InitTypeDef_st network_cfg;
 
-	os_memset(&network_cfg, 0x0, sizeof(network_InitTypeDef_st));
+	memset(&network_cfg, 0x0, sizeof(network_InitTypeDef_st));
 
 	strcpy((char*)network_cfg.wifi_ssid, oob_ssid);
 	strcpy((char*)network_cfg.wifi_key, connect_key);
@@ -435,9 +435,9 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	network_InitTypeDef_st wNetConfig;
 	unsigned char* mac;
 
-	os_memset(&general, 0, sizeof(general_param_t));
-	os_memset(&ap_info, 0, sizeof(ap_param_t));
-	os_memset(&wNetConfig, 0x0, sizeof(network_InitTypeDef_st));
+	memset(&general, 0, sizeof(general_param_t));
+	memset(&ap_info, 0, sizeof(ap_param_t));
+	memset(&wNetConfig, 0x0, sizeof(network_InitTypeDef_st));
 
 	general.role = 1,
 	general.dhcp_enable = 1,
@@ -458,7 +458,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	memcpy(ap_info.ssid.array, ssid, strlen(ssid));
 
 	ap_info.key_len = 0;
-	os_memset(&ap_info.key, 0, 65);
+	memset(&ap_info.key, 0, 65);
 
 
 	bk_wlan_ap_set_default_channel(ap_info.chann);
@@ -489,7 +489,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	//{
 	//	IPStatusTypedef ipStatus;
 
-	//	os_memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
+	//	memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
 	//	bk_wlan_get_ip_status(&ipStatus, STATION);
 	//	ipStatus.dhcp = 1;
 	//  strcpy((char *)ipStatus.ip, APP_DRONE_DEF_NET_IP);

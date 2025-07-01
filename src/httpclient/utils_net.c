@@ -22,7 +22,7 @@ uintptr_t HAL_TCP_Establish(const char *host, uint16_t port)
     int rc = 0;
     char service[6];
 
-    os_memset(&hints, 0, sizeof(hints));
+    memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET; //only IPv4
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;

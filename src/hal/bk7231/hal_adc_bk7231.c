@@ -102,7 +102,7 @@ static void temp_single_detect_handler(void)
 }
 static void temp_single_get_desc_init(int ch)
 {
-    os_memset(&tmp_single_buff[0], 0, sizeof(UINT16)*ADC_TEMP_BUFFER_SIZE);
+    memset(&tmp_single_buff[0], 0, sizeof(UINT16)*ADC_TEMP_BUFFER_SIZE);
 
     saradc_config_param_init(&tmp_single_desc);
     tmp_single_desc.channel = ch;

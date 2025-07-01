@@ -106,7 +106,7 @@ int httpclient_parse_url(const char *url, char *scheme, uint32_t max_scheme_len,
         ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "Scheme str is too small (%u >= %u)", max_scheme_len, (uint32_t)(host_ptr - scheme_ptr + 1));
         return ERROR_HTTP_PARSE;
     }
-    os_memcpy(scheme, scheme_ptr, host_ptr - scheme_ptr);
+    memcpy(scheme, scheme_ptr, host_ptr - scheme_ptr);
     scheme[host_ptr - scheme_ptr] = '\0';
 
     host_ptr += 3;
@@ -128,7 +128,7 @@ int httpclient_parse_url(const char *url, char *scheme, uint32_t max_scheme_len,
         ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "Host str is too long (host_len(%d) >= max_len(%d))", host_len + 1, maxhost_len);
         return ERROR_HTTP_PARSE;
     }
-    os_memcpy(host, host_ptr, host_len);
+    memcpy(host, host_ptr, host_len);
     host[host_len] = '\0';
 
     fragment_ptr = strchr(host_ptr, '#');
@@ -143,7 +143,7 @@ int httpclient_parse_url(const char *url, char *scheme, uint32_t max_scheme_len,
         ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "Path str is too small (%d >= %d)", max_path_len, path_len + 1);
         return ERROR_HTTP_PARSE;
     }
-    os_memcpy(path, path_ptr, path_len);
+    memcpy(path, path_ptr, path_len);
     path[path_len] = '\0';
 
     return SUCCESS_RETURN;
@@ -182,7 +182,7 @@ int httpclient_parse_host(const char *url, char *host, int *port, uint32_t maxho
         ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "Host str is too small (%d >= %d)", maxhost_len, host_len + 1);
         return ERROR_HTTP_PARSE;
     }
-    os_memcpy(host, host_ptr, host_len);
+    memcpy(host, host_ptr, host_len);
     host[host_len] = '\0';
 
     // parse port from host, and truncate host if found.
@@ -222,7 +222,7 @@ int httpclient_get_info(httpclient_t *client, char *send_buf, int *send_idx, cha
             cp_len = HTTPCLIENT_SEND_BUF_SIZE - idx;
         }
 
-        os_memcpy(send_buf + idx, buf, cp_len);
+        memcpy(send_buf + idx, buf, cp_len);
         idx += cp_len;
         len -= cp_len;
 
@@ -334,8 +334,8 @@ int httpclient_send_header(httpclient_t *client, const char *url, int method, ht
     //}
 
     /* Send request */
-    os_memset(send_buf, 0, HTTPCLIENT_SEND_BUF_SIZE);
-    os_memset(buf, 0, HTTPCLIENT_SEND_BUF_SIZE);
+    memset(send_buf, 0, HTTPCLIENT_SEND_BUF_SIZE);
+    memset(buf, 0, HTTPCLIENT_SEND_BUF_SIZE);
     len = 0; /* Reset send buffer */
 
     snprintf(buf, HTTPCLIENT_SEND_BUF_SIZE, "%s %s HTTP/1.1\r\nHost: %s\r\n", meth, path, host); /* Write request */
@@ -511,12 +511,12 @@ int httpclient_retrieve_content_old(httpclient_t *client, char *data, int len, u
         while (true) {
             int ret, max_len;
             if (count + len < client_data->response_buf_len - 1) {
-                os_memcpy(client_data->response_buf + count, data, len);
+                memcpy(client_data->response_buf + count, data, len);
                 count += len;
                 client_data->response_buf[count] = '\0';
                 client_data->response_buf_filled = count;
             } else {
-                os_memcpy(client_data->response_buf + count, data, client_data->response_buf_len - 1 - count);
+                memcpy(client_data->response_buf + count, data, client_data->response_buf_len - 1 - count);
                 client_data->response_buf[client_data->response_buf_len - 1] = '\0';
                 client_data->response_buf_filled = client_data->response_buf_len - 1;
                 return HTTP_RETRIEVE_MORE_DATA;
@@ -625,7 +625,7 @@ int httpclient_retrieve_content_old(httpclient_t *client, char *data, int len, u
             if (count + templen < client_data->response_buf_len - 1) {
                 count += templen;
                 log_debug("Copy data %d bytes to output %d\r\n", templen);
-                os_memcpy(client_data->response_buf+count, data, templen);
+                memcpy(client_data->response_buf+count, data, templen);
                 client_data->response_buf_filled = count;
                 client_data->response_buf[count] = '\0';
                 client_data->retrieve_len -= templen;

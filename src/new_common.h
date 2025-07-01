@@ -313,8 +313,6 @@ void doNothing();
 // os
 #define os_free free
 #define os_malloc malloc
-#define os_memset memset
-#define os_memcpy memcpy
 
 // RTOS
 typedef long portTickType;
@@ -348,8 +346,6 @@ typedef int (*beken_thread_function_t)(void *p);
 #define ASSERT
 #define os_free free
 #define os_malloc malloc
-#define os_memset memset
-#define os_memcpy memcpy
 
 #define bk_printf printf
 
@@ -365,7 +361,7 @@ typedef int OSStatus;
 #define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
 #define BEKEN_APPLICATION_PRIORITY         (7)
 
-// wrappers for XR809 threads to work like bekken
+// wrappers for XR809 threads to work like beken
 OSStatus rtos_delete_thread( beken_thread_t* thread );
 OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint8_t priority, const char* name,
@@ -395,10 +391,8 @@ typedef unsigned int u32;
 
 #define ASSERT
 #define bk_printf printf
-#define os_strcpy strcpy
 #define os_malloc malloc
 #define os_free free
-#define os_memset memset
 
 #define HAL_UART_Init OBK_HAL_UART_Init
 #define HAL_ADC_Init OBK_HAL_ADC_Init
@@ -432,7 +426,7 @@ typedef int OSStatus;
 #define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
 #define BEKEN_APPLICATION_PRIORITY         (7)
 
-// wrappers for XR809 threads to work like bekken
+// wrappers for XR809 threads to work like beken
 OSStatus rtos_delete_thread( beken_thread_t* thread );
 OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint8_t priority, const char* name,
@@ -467,7 +461,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #endif
 
 #define bk_printf printf
-#define os_memset memset
 #define os_malloc pvPortMalloc
 #define os_free vPortFree
 #define realloc pvPortRealloc
@@ -490,7 +483,7 @@ typedef int OSStatus;
 #define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
 #define BEKEN_APPLICATION_PRIORITY         (7)
 
-// wrappers for XR809 threads to work like bekken
+// wrappers for XR809 threads to work like beken
 OSStatus rtos_delete_thread( beken_thread_t* thread );
 OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint8_t priority, const char* name,
@@ -509,8 +502,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define ASSERT
 #define os_free free
 #define os_malloc malloc
-#define os_memset memset
-#define os_memcpy memcpy
 
 
 #define lwip_close_force(x) lwip_close(x)
@@ -526,7 +517,7 @@ typedef int OSStatus;
 #define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
 #define BEKEN_APPLICATION_PRIORITY         (7)
 
-// wrappers for XR809??? threads to work like bekken
+// wrappers for XR809??? threads to work like beken
 OSStatus rtos_delete_thread( beken_thread_t* thread );
 OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint8_t priority, const char* name,
@@ -548,8 +539,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define ASSERT
 #define os_free free
 #define os_malloc malloc
-#define os_memset memset
-#define os_memcpy memcpy
 
 //#define bk_printf printf
 
@@ -567,7 +556,7 @@ typedef int OSStatus;
 #define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
 #define BEKEN_APPLICATION_PRIORITY         (7)
 
-// wrappers for XR809??? threads to work like bekken
+// wrappers for XR809??? threads to work like beken
 OSStatus rtos_delete_thread(beken_thread_t* thread);
 OSStatus rtos_create_thread(beken_thread_t* thread,
 	uint8_t priority, const char* name,
@@ -603,8 +592,6 @@ typedef unsigned int UINT32;
 #define free    os_free
 #define malloc  os_malloc
 #define realloc  os_realloc
-#define memset  os_memset
-#define memcpy  os_memcpy
 #define strncpy  os_strncpy
 //#define strcat  os_strcat
 
@@ -662,7 +649,6 @@ extern int g_sleepfactor;
 
 #define os_malloc pvPortMalloc
 #define os_free vPortFree
-#define os_memset memset
 
 #if PLATFORM_RTL8720D
 #undef vsnprintf
