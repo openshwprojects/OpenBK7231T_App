@@ -10,7 +10,7 @@
  //#include "lite-log.h"
 #include "utils_timer.h"
 
-#if PLATFORM_BL602 || PLATFORM_LN882H
+#if PLATFORM_BL602 || PLATFORM_LN882H || PLATFORM_ESPIDF
 
 void lwip_close_force(int x) {
 	lwip_close(x);
