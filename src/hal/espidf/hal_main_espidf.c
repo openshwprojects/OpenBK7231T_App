@@ -41,7 +41,7 @@ void app_main(void)
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
     esp_netif_init();
     esp_event_loop_create_default();
-#if CONFIG_IDF_TARGET_ESP32 && !PLATFORM_ESP8266
+#if !CONFIG_IDF_TARGET_ESP32 && !PLATFORM_ESP8266
     temperature_sensor_config_t temp_sensor_config = TEMPERATURE_SENSOR_CONFIG_DEFAULT(-10, 80);
     temperature_sensor_install(&temp_sensor_config, &temp_handle);
     xTaskCreate(temp_func, "IntTemp", TEMP_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL);
