@@ -89,7 +89,7 @@ int httpclient_parse_url(const char *url, char *scheme, uint32_t max_scheme_len,
                          int *port, char *path, uint32_t max_path_len)
 {
     char *scheme_ptr = (char *) url;
-    char *host_ptr = (char *) os_strstr(url, "://");
+    char *host_ptr = (char *) strstr(url, "://");
     uint32_t host_len = 0;
     uint32_t path_len;
     //char *port_ptr;
@@ -113,7 +113,7 @@ int httpclient_parse_url(const char *url, char *scheme, uint32_t max_scheme_len,
 
     *port = 0;
 
-    path_ptr = os_strchr(host_ptr, '/');
+    path_ptr = strchr(host_ptr, '/');
     if (NULL == path_ptr) {
         ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "invalid path");
         return -1;
@@ -131,7 +131,7 @@ int httpclient_parse_url(const char *url, char *scheme, uint32_t max_scheme_len,
     os_memcpy(host, host_ptr, host_len);
     host[host_len] = '\0';
 
-    fragment_ptr = os_strchr(host_ptr, '#');
+    fragment_ptr = strchr(host_ptr, '#');
     if (fragment_ptr != NULL) {
         path_len = fragment_ptr - path_ptr;
     } else {
@@ -151,7 +151,7 @@ int httpclient_parse_url(const char *url, char *scheme, uint32_t max_scheme_len,
 
 int httpclient_parse_host(const char *url, char *host, int *port, uint32_t maxhost_len)
 {
-    const char *host_ptr = (const char *) os_strstr(url, "://");
+    const char *host_ptr = (const char *) strstr(url, "://");
     uint32_t host_len = 0;
     char *path_ptr;
     char *port_ptr;
@@ -174,7 +174,7 @@ int httpclient_parse_host(const char *url, char *host, int *port, uint32_t maxho
     }
     host_ptr += 3;
 
-    path_ptr = os_strchr(host_ptr, '/');
+    path_ptr = strchr(host_ptr, '/');
     host_len = path_ptr - host_ptr;
 
     if (maxhost_len < host_len + 1) {
@@ -186,7 +186,7 @@ int httpclient_parse_host(const char *url, char *host, int *port, uint32_t maxho
     host[host_len] = '\0';
 
     // parse port from host, and truncate host if found.
-    port_ptr = os_strchr(host, ':');
+    port_ptr = strchr(host, ':');
     if (port_ptr){
 		int p;
 		int num;
@@ -708,7 +708,7 @@ int httpclient_response_parse(httpclient_t *client, char *data, int len, uint32_
 
     client_data->response_content_len = -1;
 
-    crlf_ptr = os_strstr(data, "\r\n");
+    crlf_ptr = strstr(data, "\r\n");
     if (crlf_ptr == NULL) {
         ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "\r\n not found");
         return ERROR_HTTP_UNRESOLVED_DNS;
@@ -745,7 +745,7 @@ int httpclient_response_parse(httpclient_t *client, char *data, int len, uint32_
         key[31] = '\0';
         value[31] = '\0';
 
-        crlf_ptr = os_strstr(data, "\r\n");
+        crlf_ptr = strstr(data, "\r\n");
         if (crlf_ptr == NULL) {
             if (len < HTTPCLIENT_CHUNK_SIZE - 1) {
                 int new_trf_len, ret;

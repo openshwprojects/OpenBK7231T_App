@@ -315,8 +315,6 @@ void doNothing();
 #define os_malloc malloc
 #define os_memset memset
 #define os_memcpy memcpy
-#define os_strstr strstr
-#define os_strchr strchr
 
 // RTOS
 typedef long portTickType;
@@ -352,8 +350,6 @@ typedef int (*beken_thread_function_t)(void *p);
 #define os_malloc malloc
 #define os_memset memset
 #define os_memcpy memcpy
-#define os_strstr strstr
-#define os_strchr strchr
 
 #define bk_printf printf
 
@@ -515,8 +511,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define os_malloc malloc
 #define os_memset memset
 #define os_memcpy memcpy
-#define os_strstr strstr
-#define os_strchr strchr
 
 
 #define lwip_close_force(x) lwip_close(x)
@@ -556,8 +550,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define os_malloc malloc
 #define os_memset memset
 #define os_memcpy memcpy
-#define os_strstr strstr
-#define os_strchr strchr
 
 //#define bk_printf printf
 
@@ -613,9 +605,7 @@ typedef unsigned int UINT32;
 #define realloc  os_realloc
 #define memset  os_memset
 #define memcpy  os_memcpy
-#define strstr  os_strstr
 #define strncpy  os_strncpy
-#define strchr  os_strchr
 //#define strcat  os_strcat
 
 #define close lwip_close
