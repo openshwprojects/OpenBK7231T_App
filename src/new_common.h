@@ -239,19 +239,11 @@ This platform is not supported, error!
 #include <time.h>
 #include <math.h>
 
-#ifndef LINUX
-
-
-#else
+#ifdef LINUX
 
 #include <netdb.h>  // For gethostbyname and struct hostent
 #include <limits.h>
 #define closesocket close
-
-#endif
-
-#ifdef LINUX
-
 #define SOCKET int
 #define closesocket close
 #define ISVALIDSOCKET(s) ((s) >= 0)
@@ -264,7 +256,7 @@ This platform is not supported, error!
 // TODO
 #define SD_SEND	 0 
 
-#elif WINDOWS
+#else
 
 #define ISVALIDSOCKET(s) ((s) != INVALID_SOCKET)
 #define GETSOCKETERRNO() (WSAGetLastError())
