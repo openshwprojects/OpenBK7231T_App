@@ -382,7 +382,7 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 OSStatus rtos_suspend_thread(beken_thread_t* thread);
 typedef unsigned int u32;
 
-#define lorce(x) lwip_close(x)
+#define lwip_close_force(x) lwip_close(x)
 
 #define OBK_OTA_EXTENSION ".bin.xz.ota"
 
