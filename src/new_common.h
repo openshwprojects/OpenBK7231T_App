@@ -595,12 +595,12 @@ typedef unsigned int UINT32;
 #define malloc  os_malloc
 #define realloc  os_realloc
 #define strncpy  os_strncpy
-//#define strcat  os_strcat
 
 #define close lwip_close
 #define bk_printf system_printf
 #define printf system_printf
 
+#define lwip_close_force(x) lwip_close(x)
 // OS_MSleep?
 #define rtos_delay_milliseconds sys_delay_ms
 #define delay_ms sys_delay_ms
