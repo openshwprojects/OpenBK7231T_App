@@ -135,7 +135,7 @@ int httpclient_parse_url(const char *url, char *scheme, uint32_t max_scheme_len,
     if (fragment_ptr != NULL) {
         path_len = fragment_ptr - path_ptr;
     } else {
-        path_len = os_strlen(path_ptr);
+        path_len = strlen(path_ptr);
     }
 
     if (max_path_len < path_len + 1) {
@@ -212,7 +212,7 @@ int httpclient_get_info(httpclient_t *client, char *send_buf, int *send_idx, cha
     int idx = *send_idx;
 
     if (len == 0) {
-        len = os_strlen(buf);
+        len = strlen(buf);
     }
 
     do {
@@ -252,7 +252,7 @@ void HTTPClient_SetCustomHeader(httpclient_t *client, const char *header)
 
 int httpclient_basic_auth(httpclient_t *client, char *user, char *password)
 {
-    if ((os_strlen(user) + os_strlen(password)) >= HTTPCLIENT_AUTHB_SIZE) {
+    if ((strlen(user) + strlen(password)) >= HTTPCLIENT_AUTHB_SIZE) {
         return ERROR_HTTP;
     }
     client->auth_user = user;
@@ -269,8 +269,8 @@ int httpclient_send_auth(httpclient_t *client, char *send_buf, int *send_idx)
     snprintf(base64buff, sizeof(base64buff), "%s:%s", client->auth_user, client->auth_password);
     ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "bAuth: %s", base64buff) ;
     httpclient_base64enc(b_auth, base64buff);
-    b_auth[os_strlen(b_auth) + 1] = '\0';
-    b_auth[os_strlen(b_auth)] = '\n';
+    b_auth[strlen(b_auth) + 1] = '\0';
+    b_auth[strlen(b_auth)] = '\n';
     ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "b_auth:%s", b_auth) ;
     httpclient_get_info(client, send_buf, send_idx, b_auth, 0);
     return SUCCESS_RETURN;
@@ -339,7 +339,7 @@ int httpclient_send_header(httpclient_t *client, const char *url, int method, ht
     len = 0; /* Reset send buffer */
 
     snprintf(buf, HTTPCLIENT_SEND_BUF_SIZE, "%s %s HTTP/1.1\r\nHost: %s\r\n", meth, path, host); /* Write request */
-    ret = httpclient_get_info(client, send_buf, &len, buf, os_strlen(buf));
+    ret = httpclient_get_info(client, send_buf, &len, buf, strlen(buf));
     if (ret) {
         ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "Could not write request");
         //return ERROR_HTTP_CONN;
@@ -354,16 +354,16 @@ int httpclient_send_header(httpclient_t *client, const char *url, int method, ht
 
     /* Add user header information */
     if (client->header) {
-        httpclient_get_info(client, send_buf, &len, (char *) client->header, os_strlen(client->header));
+        httpclient_get_info(client, send_buf, &len, (char *) client->header, strlen(client->header));
     }
 
     if (client_data->post_buf != NULL) {
         snprintf(buf, HTTPCLIENT_SEND_BUF_SIZE, "Content-Length: %u\r\n", (unsigned int)client_data->post_buf_len);
-        httpclient_get_info(client, send_buf, &len, buf, os_strlen(buf));
+        httpclient_get_info(client, send_buf, &len, buf, strlen(buf));
 
         if (client_data->post_content_type != NULL) {
             snprintf(buf, HTTPCLIENT_SEND_BUF_SIZE, "Content-Type: %s\r\n", client_data->post_content_type);
-            httpclient_get_info(client, send_buf, &len, buf, os_strlen(buf));
+            httpclient_get_info(client, send_buf, &len, buf, strlen(buf));
         }
     }
 

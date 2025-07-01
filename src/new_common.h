@@ -309,7 +309,6 @@ void doNothing();
 // os
 #define os_free free
 #define os_malloc malloc
-#define os_strlen strlen
 #define os_memset memset
 #define os_memcpy memcpy
 #define os_strstr strstr
@@ -349,7 +348,6 @@ typedef int (*beken_thread_function_t)(void *p);
 #define ASSERT
 #define os_free free
 #define os_malloc malloc
-#define os_strlen strlen
 #define os_memset memset
 #define os_memcpy memcpy
 #define os_strstr strstr
@@ -496,7 +494,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define ASSERT
 #define os_free free
 #define os_malloc malloc
-#define os_strlen strlen
 #define os_memset memset
 #define os_memcpy memcpy
 #define os_strstr strstr
@@ -540,7 +537,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define ASSERT
 #define os_free free
 #define os_malloc malloc
-#define os_strlen strlen
 #define os_memset memset
 #define os_memcpy memcpy
 #define os_strstr strstr
@@ -600,7 +596,6 @@ typedef unsigned int UINT32;
 #define free    os_free
 #define malloc  os_malloc
 #define realloc  os_realloc
-#define strlen  os_strlen
 #define memset  os_memset
 #define memcpy  os_memcpy
 #define strstr  os_strstr

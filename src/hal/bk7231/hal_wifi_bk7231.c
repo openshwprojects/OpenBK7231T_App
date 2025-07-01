@@ -207,7 +207,7 @@ void HAL_PrintNetworkInfo()
 				//wifi_ssid = CFG_GetWiFiSSID();
 				//wifi_pass = CFG_GetWiFiPass();
 				//unsigned char psk[32];
-				//pbkdf2_sha1(wifi_pass, (u8*)wifi_ssid, os_strlen(wifi_ssid), 4096, psk, 32);
+				//pbkdf2_sha1(wifi_pass, (u8*)wifi_ssid, strlen(wifi_ssid), 4096, psk, 32);
 				uint8_t* psk = wpas_get_sta_psk();
 
 				for(int i = 0; i < 32 && sprintf(psks + i * 2, "%02x", psk[i]) == 2; i++);
@@ -454,8 +454,8 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	wifi_get_mac_address((char*)mac, CONFIG_ROLE_AP);
 	ap_info.chann = APP_DRONE_DEF_CHANNEL;
 	ap_info.cipher_suite = 0;
-	//memcpy(ap_info.ssid.array, APP_DRONE_DEF_SSID, os_strlen(APP_DRONE_DEF_SSID));
-	memcpy(ap_info.ssid.array, ssid, os_strlen(ssid));
+	//memcpy(ap_info.ssid.array, APP_DRONE_DEF_SSID, strlen(APP_DRONE_DEF_SSID));
+	memcpy(ap_info.ssid.array, ssid, strlen(ssid));
 
 	ap_info.key_len = 0;
 	os_memset(&ap_info.key, 0, 65);
@@ -463,7 +463,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 
 	bk_wlan_ap_set_default_channel(ap_info.chann);
 
-	//int len = os_strlen((char*)ap_info.ssid.array);
+	//int len = strlen((char*)ap_info.ssid.array);
 
 	os_strncpy((char*)wNetConfig.wifi_ssid, (char*)ap_info.ssid.array, sizeof(wNetConfig.wifi_ssid));
 	os_strncpy((char*)wNetConfig.wifi_key, (char*)ap_info.key, sizeof(wNetConfig.wifi_key));

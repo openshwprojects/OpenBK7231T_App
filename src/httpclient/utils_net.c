@@ -357,7 +357,7 @@ int iotx_net_init(utils_network_pt pNetwork, const char *host, uint16_t port, co
     if (NULL == ca_crt) {
         pNetwork->ca_crt_len = 0;
     } else {
-        pNetwork->ca_crt_len = os_strlen(ca_crt);
+        pNetwork->ca_crt_len = strlen(ca_crt);
     }
 
     pNetwork->handle = 0;
