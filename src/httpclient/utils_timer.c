@@ -12,18 +12,12 @@
 
 #if PLATFORM_BL602 || PLATFORM_LN882H || PLATFORM_ESPIDF
 
-void lwip_close_force(int x) {
-	lwip_close(x);
-}
 int hal_machw_time() {
 	return g_timeMs;
 }
 
 #elif PLATFORM_ECR6600
 
-void lwip_close_force(int x) {
-	lwip_close(x);
-}
 int hal_machw_time() {
 	return os_time_get() * 1000;
 }

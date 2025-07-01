@@ -382,7 +382,7 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 OSStatus rtos_suspend_thread(beken_thread_t* thread);
 typedef unsigned int u32;
 
-void lwip_close_force(int x);
+#define lorce(x) lwip_close(x)
 
 #define OBK_OTA_EXTENSION ".bin.xz.ota"
 
@@ -512,6 +512,7 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define os_memmove memmove
 
 
+#define lwip_close_force(x) lwip_close(x)
 #define bk_printf printf
 
 #define kNoErr                      0       //! No error occurred.
@@ -566,7 +567,7 @@ typedef TaskHandle_t beken_thread_t;
 typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
 typedef int OSStatus;
 
-void lwip_close_force(int x);
+#define lwip_close_force(x) lwip_close(x)
 
 #define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
 #define BEKEN_APPLICATION_PRIORITY         (7)
