@@ -15,7 +15,7 @@
 #elif PLATFORM_ECR6600
 int hal_machw_time() {
 	return os_time_get() * 1000;
-
+}
 #else
 int hal_machw_time() {
 	return g_timeMs;
