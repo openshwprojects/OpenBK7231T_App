@@ -10,7 +10,16 @@
 #include "utils_timer.h"
 
 #if PLATFORM_ECR6600
-// TODO
+
+int hal_machw_time() {
+	return HAL_GetTimeMs() * 1000;
+}
+int hal_machw_time_past(int tt) {
+	int t = hal_machw_time();
+	if (t < tt)
+		return 0;
+	return 1;
+}
 #else
 #include "hal_machw.h"
 #endif
