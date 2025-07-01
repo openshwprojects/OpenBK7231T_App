@@ -4,6 +4,7 @@
 
 
 #include "../new_common.h"
+#include "../quicktick.h"
 
 #if ENABLE_SEND_POSTANDGET
  //#include "lite-log.h"
@@ -15,7 +16,7 @@ void lwip_close_force(int x) {
 	lwip_close(x);
 }
 int hal_machw_time() {
-	return 0;
+	return g_timeMs;
 }
 int hal_machw_time_past(int tt) {
 	int t = hal_machw_time();
