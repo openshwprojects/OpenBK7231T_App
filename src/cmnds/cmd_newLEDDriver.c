@@ -248,6 +248,11 @@ void LED_ApplyEmulatedCool(int firstChannelIndex, float chVal) {
 }
 
 void LED_I2CDriver_WriteRGBCW(float* finalRGBCW) {
+#ifdef ENABLE_DRIVER_GOSUNDSW2
+	if (DRV_IsRunning("GosundSW2")) {
+		DRV_GosundSW2_Write(finalRGBCW)
+	}
+#endif
 #ifdef ENABLE_DRIVER_LED
 	if (CFG_HasFlag(OBK_FLAG_LED_EMULATE_COOL_WITH_RGB)) {
 		if (g_lightMode == Light_Temperature) {

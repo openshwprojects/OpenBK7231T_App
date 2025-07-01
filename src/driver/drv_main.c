@@ -84,6 +84,14 @@ static driver_t g_drivers[] = {
 
 
 
+#if ENABLE_DRIVER_GOSUNDSW2
+	//drvdetail:{"name":"GosundSW",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"GosundSW2.",
+	//drvdetail:"requires":""}
+	{ "GosundSW2",		DRV_GosundSW2_Init,			NULL, NULL, DRV_GosundSW2_RunFrame, NULL, NULL, false },
+#endif
+
 #if ENABLE_DRIVER_TCL
 	{ "TCL",		TCL_Init,			TCL_UART_RunEverySecond,		TCL_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, TCL_DoDiscovery, false },
 #endif
