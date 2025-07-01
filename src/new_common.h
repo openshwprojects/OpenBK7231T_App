@@ -649,6 +649,7 @@ extern int g_sleepfactor;
 #undef ASSERT
 #define ASSERT
 
+#define lwip_close_force(x) lwip_close(x)
 #define os_malloc pvPortMalloc
 #define os_free vPortFree
 
