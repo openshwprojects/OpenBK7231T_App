@@ -566,6 +566,8 @@ typedef TaskHandle_t beken_thread_t;
 typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
 typedef int OSStatus;
 
+void lwip_close_force(int x);
+
 #define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
 #define BEKEN_APPLICATION_PRIORITY         (7)
 
