@@ -765,6 +765,7 @@ extern void sys_delay_ms(uint32_t ms);
 #define rtos_delay_milliseconds sys_delay_ms
 #define delay_ms sys_delay_ms
 
+#define lwip_close_force(x) lwip_close(x)
 #define kNoErr                      0       //! No error occurred.
 typedef void* beken_thread_arg_t;
 typedef xTaskHandle beken_thread_t;
