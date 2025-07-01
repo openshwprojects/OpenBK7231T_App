@@ -495,16 +495,22 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #elif PLATFORM_LN882H
 
-// TODO:LN882H Platform setup here.
 #include <stdbool.h>
 #include <FreeRTOS.h>
 #include <task.h>
 
 #define ASSERT
-#define os_strcpy strcpy
-#define os_malloc malloc
 #define os_free free
+#define os_malloc malloc
+#define os_strlen strlen
 #define os_memset memset
+#define os_memcpy memcpy
+#define os_strstr strstr
+#define os_strcpy strcpy
+#define os_strchr strchr
+#define os_strcmp strcmp
+#define os_memmove memmove
+
 
 #define bk_printf printf
 
