@@ -2406,10 +2406,10 @@ void MQTT_QueuePublishWithCommand(const char* topic, const char* channel, const 
 		}
 	}
 
-	//os_strcpy does copy ending null character.
-	os_strcpy(newItem->topic, topic);
-	os_strcpy(newItem->channel, channel);
-	os_strcpy(newItem->value, value);
+	//strcpy does copy ending null character.
+	strcpy(newItem->topic, topic);
+	strcpy(newItem->channel, channel);
+	strcpy(newItem->value, value);
 	newItem->command = command;
 	newItem->flags = flags;
 

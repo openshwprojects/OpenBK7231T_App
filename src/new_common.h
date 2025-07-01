@@ -313,7 +313,6 @@ void doNothing();
 #define os_memset memset
 #define os_memcpy memcpy
 #define os_strstr strstr
-#define os_strcpy strcpy
 #define os_strchr strchr
 #define os_strcmp strcmp
 #define os_memmove memmove
@@ -354,7 +353,6 @@ typedef int (*beken_thread_function_t)(void *p);
 #define os_memset memset
 #define os_memcpy memcpy
 #define os_strstr strstr
-#define os_strcpy strcpy
 #define os_strchr strchr
 #define os_strcmp strcmp
 #define os_memmove memmove
@@ -398,7 +396,6 @@ typedef unsigned int uint32_t;
 typedef unsigned int UINT32;
 
 #define ASSERT
-#define os_strcpy strcpy
 #define os_malloc malloc
 #define os_free free
 #define os_memset memset
@@ -457,7 +454,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #endif
 
 #define bk_printf printf
-#define os_strcpy strcpy
 #define os_memset memset
 #define os_malloc pvPortMalloc
 #define os_free vPortFree
@@ -471,8 +467,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define delay_ms sys_msleep
 
 #define SemaphoreHandle_t xSemaphoreHandle
-
-#define os_strcpy strcpy
 
 #define kNoErr                      0       //! No error occurred.
 typedef void *beken_thread_arg_t;
@@ -506,7 +500,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define os_memset memset
 #define os_memcpy memcpy
 #define os_strstr strstr
-#define os_strcpy strcpy
 #define os_strchr strchr
 #define os_strcmp strcmp
 #define os_memmove memmove
@@ -551,7 +544,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define os_memset memset
 #define os_memcpy memcpy
 #define os_strstr strstr
-#define os_strcpy strcpy
 #define os_strchr strchr
 #define os_strcmp strcmp
 #define os_memmove memmove
@@ -617,7 +609,6 @@ typedef unsigned int UINT32;
 #define strcmp  os_strcmp
 #define memmove os_memmove
 //#define strcat  os_strcat
-#define os_strcpy strcpy
 
 #define close lwip_close
 #define bk_printf system_printf
@@ -674,7 +665,6 @@ extern int g_sleepfactor;
 #define os_malloc pvPortMalloc
 #define os_free vPortFree
 #define os_memset memset
-#define os_strcpy strcpy
 
 #if PLATFORM_RTL8720D
 #undef vsnprintf
@@ -756,7 +746,6 @@ typedef unsigned int UINT32;
 #define calloc		os_calloc
 #define realloc		os_realloc
 #define memmove		os_memmove
-#define os_strcpy	strcpy
 
 #define bk_printf printf
 

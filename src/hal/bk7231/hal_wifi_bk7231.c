@@ -343,8 +343,8 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 
 	os_memset(&network_cfg, 0x0, sizeof(network_InitTypeDef_st));
 
-	os_strcpy((char*)network_cfg.wifi_ssid, oob_ssid);
-	os_strcpy((char*)network_cfg.wifi_key, connect_key);
+	strcpy((char*)network_cfg.wifi_ssid, oob_ssid);
+	strcpy((char*)network_cfg.wifi_key, connect_key);
 
 	network_cfg.wifi_mode = STATION;
 	if (ip->localIPAddr[0] == 0) {
@@ -442,9 +442,9 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	general.role = 1,
 	general.dhcp_enable = 1,
 
-	os_strcpy((char*)wNetConfig.local_ip_addr, APP_DRONE_DEF_NET_IP);
-	os_strcpy((char*)wNetConfig.net_mask, APP_DRONE_DEF_NET_MASK);
-	os_strcpy((char*)wNetConfig.dns_server_ip_addr, APP_DRONE_DEF_NET_GW);
+	strcpy((char*)wNetConfig.local_ip_addr, APP_DRONE_DEF_NET_IP);
+	strcpy((char*)wNetConfig.net_mask, APP_DRONE_DEF_NET_MASK);
+	strcpy((char*)wNetConfig.dns_server_ip_addr, APP_DRONE_DEF_NET_GW);
 
 
 	ADDLOGF_INFO("no flash configuration, use default\r\n");
@@ -492,10 +492,10 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	//	os_memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
 	//	bk_wlan_get_ip_status(&ipStatus, STATION);
 	//	ipStatus.dhcp = 1;
-	//  os_strcpy((char *)ipStatus.ip, APP_DRONE_DEF_NET_IP);
-	//  os_strcpy((char *)ipStatus.mask, APP_DRONE_DEF_NET_MASK);
-	//  os_strcpy((char *)ipStatus.gate, APP_DRONE_DEF_NET_GW);
-	//  os_strcpy((char *)ipStatus.dns, APP_DRONE_DEF_NET_IP);
+	//  strcpy((char *)ipStatus.ip, APP_DRONE_DEF_NET_IP);
+	//  strcpy((char *)ipStatus.mask, APP_DRONE_DEF_NET_MASK);
+	//  strcpy((char *)ipStatus.gate, APP_DRONE_DEF_NET_GW);
+	//  strcpy((char *)ipStatus.dns, APP_DRONE_DEF_NET_IP);
 	//	bk_wlan_set_ip_status(&ipStatus, STATION);
 
 	//}
