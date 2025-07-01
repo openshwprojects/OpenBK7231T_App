@@ -1765,7 +1765,7 @@ static void mqtt_timer_thread(void* param)
 		MQTT_Test_Tick(param);
 	}
 }
-#elif PLATFORM_XR809 || PLATFORM_LN882H || PLATFORM_XR872
+#elif PLATFORM_XRADIO || PLATFORM_LN882H
 static OS_Timer_t timer;
 #else
 static beken_timer_t g_mqtt_timer;
@@ -1799,7 +1799,7 @@ commandResult_t MQTT_StartMQTTTestThread(const void* context, const char* cmd, c
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF || PLATFORM_TR6260 \
 	|| PLATFORM_REALTEK || PLATFORM_ECR6600
 	xTaskCreate(mqtt_timer_thread, "mqtt", 1024, (void*)info, 15, NULL);
-#elif PLATFORM_XR809 || PLATFORM_LN882H || PLATFORM_XR872
+#elif PLATFORM_XRADIO || PLATFORM_LN882H
 	OS_TimerSetInvalid(&timer);
 	if (OS_TimerCreate(&timer, OS_TIMER_PERIODIC, MQTT_Test_Tick, (void*)info, MQTT_TMR_DURATION) != OS_OK)
 	{
@@ -2183,11 +2183,7 @@ int MQTT_RunEverySecondUpdate()
 	if (mqtt_client == 0 || res == 0)
 	{
 		//addLogAdv(LOG_INFO,LOG_FEATURE_MAIN, "Timer discovers disconnected mqtt %i\n",mqtt_loopsWithDisconnected);
-#if WINDOWS
-#elif PLATFORM_BL602
-#elif PLATFORM_W600 || PLATFORM_W800
-#elif PLATFORM_XR809
-#elif PLATFORM_BK7231N || PLATFORM_BK7231T
+#if PLATFORM_BK7231N || PLATFORM_BK7231T
 		if (ota_progress() == -1)
 #endif
 		{
@@ -2245,11 +2241,7 @@ int MQTT_RunEverySecondUpdate()
 			g_wantTasmotaTeleSend = 0;
 		}
 		g_timeSinceLastMQTTPublish++;
-#if WINDOWS
-#elif PLATFORM_BL602
-#elif PLATFORM_W600 || PLATFORM_W800
-#elif PLATFORM_XR809
-#elif PLATFORM_BK7231N || PLATFORM_BK7231T
+#if PLATFORM_BK7231N || PLATFORM_BK7231T
 		if (ota_progress() != -1)
 		{
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "OTA started MQTT will be closed\n");
