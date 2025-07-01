@@ -348,10 +348,16 @@ typedef int (*beken_thread_function_t)(void *p);
 #include <stdint.h>
 
 #define ASSERT
-#define os_strcpy strcpy
-#define os_malloc malloc
 #define os_free free
+#define os_malloc malloc
+#define os_strlen strlen
 #define os_memset memset
+#define os_memcpy memcpy
+#define os_strstr strstr
+#define os_strcpy strcpy
+#define os_strchr strchr
+#define os_strcmp strcmp
+#define os_memmove memmove
 
 #define bk_printf printf
 
@@ -375,6 +381,8 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint32_t stack_size, beken_thread_arg_t arg );
 OSStatus rtos_suspend_thread(beken_thread_t* thread);
 typedef unsigned int u32;
+
+void lwip_close_force(int x);
 
 #define OBK_OTA_EXTENSION ".bin.xz.ota"
 
