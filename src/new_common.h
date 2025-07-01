@@ -173,6 +173,10 @@ This platform is not supported, error!
 #define USER_SW_VER "Win_Test"
 #elif PLATFORM_XR809
 #define USER_SW_VER "XR809_Test"
+#elif PLATFORM_XR872
+#define USER_SW_VER "XR872_Test"
+#elif PLATFORM_XR806
+#define USER_SW_VER "XR806_Test"
 #elif defined(PLATFORM_BK7231N)
 #define USER_SW_VER "BK7231N_Test"
 #elif defined(PLATFORM_BK7231T)
@@ -382,26 +386,45 @@ typedef unsigned int u32;
 
 #define OBK_OTA_EXTENSION ".bin.xz.ota"
 
-#elif PLATFORM_XR809 || PLATFORM_XR872
+#elif PLATFORM_XRADIO
 
 #include <stdbool.h>
+#include <stdint.h>
 #include "FreeRTOS.h"
 #include "task.h"
 
-typedef unsigned char u8;
-typedef unsigned char uint8_t;
-typedef unsigned int uint32_t;
-typedef unsigned int UINT32;
+#if !PLATFORM_XR809
+#define OBK_OTA_EXTENSION ".img"
+#endif
+//typedef unsigned char u8;
+//typedef unsigned char uint8_t;
+//typedef unsigned int uint32_t;
+//typedef unsigned int UINT32;
 
 #define ASSERT
+#define bk_printf printf
+#define os_strcpy strcpy
 #define os_malloc malloc
 #define os_free free
 #define os_memset memset
 
-#if PLATFORM_XR806 || PLATFORM_XR872
+#define HAL_UART_Init OBK_HAL_UART_Init
+#define HAL_ADC_Init OBK_HAL_ADC_Init
 
+#if PLATFORM_XR806
+#define DS_MS_TO_S 1000
 #else
+#define DS_MS_TO_S 1111
+#endif
+
+#if PLATFORM_XR809
 #define close lwip_close
+#endif
+
+#ifdef __CONFIG_LWIP_V1
+#define sockaddr_storage sockaddr
+#define ss_family sa_family
+#define ip4_addr ip_addr
 #endif
 
 // OS_MSleep?
@@ -410,7 +433,7 @@ typedef unsigned int UINT32;
 
 #define kNoErr                      0       //! No error occurred.
 typedef void *beken_thread_arg_t;
-typedef void *beken_thread_t;
+typedef xTaskHandle* beken_thread_t;
 typedef void (*beken_thread_function_t)( beken_thread_arg_t arg );
 typedef int OSStatus;
 
@@ -918,7 +941,7 @@ typedef enum
     EXCELLENT,
 } WIFI_RSSI_LEVEL;
 
-#if PLATFORM_LN882H || PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_TR6260
+#if PLATFORM_LN882H || PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_TR6260 || PLATFORM_XRADIO
 #define IP_STRING_FORMAT	"%u.%u.%u.%u"
 #else
 #define IP_STRING_FORMAT	"%hhu.%hhu.%hhu.%hhu"

@@ -64,6 +64,7 @@ void DRV_OnChannelChanged(int channel, int iVal);
 #if PLATFORM_BK7231N
 void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push);
 #endif
+void DRV_GosundSW2_Write(float* rgbcw);
 void SM2135_Write(float* rgbcw);
 void BP5758D_Write(float* rgbcw);
 void BP1658CJ_Write(float* rgbcw);
