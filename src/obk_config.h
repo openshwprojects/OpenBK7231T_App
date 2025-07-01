@@ -488,7 +488,7 @@
 
 //   !!! TESTING ONLY !!!
 #if (ENABLE_DRIVER_DS1820)
-#define ENABLE_DRIVER_DS1820_FULL	0
+#define ENABLE_DRIVER_DS1820_FULL	1
 #endif
 
 // closing OBK_CONFIG_H
