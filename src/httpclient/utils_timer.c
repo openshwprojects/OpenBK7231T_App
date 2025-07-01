@@ -10,19 +10,16 @@
  //#include "lite-log.h"
 #include "utils_timer.h"
 
-#if PLATFORM_BL602 || PLATFORM_LN882H || PLATFORM_ESPIDF || PLATFORM_XRADIO
+#if PLATFORM_BEKEN
+#include "hal_machw.h"
+#elif PLATFORM_ECR6600
+int hal_machw_time() {
+	return os_time_get() * 1000;
 
+#else
 int hal_machw_time() {
 	return g_timeMs;
 }
-
-#elif PLATFORM_ECR6600
-
-int hal_machw_time() {
-	return os_time_get() * 1000;
-}
-#else
-#include "hal_machw.h"
 #endif
 
 void iotx_time_start(iotx_time_t *timer)
