@@ -335,6 +335,8 @@
 #elif PLATFORM_ESPIDF
 
 
+
+#define ENABLE_SEND_POSTANDGET		1
 #define	ENABLE_HA_DISCOVERY						1
 #define ENABLE_MQTT								1
 #define ENABLE_I2C								1
