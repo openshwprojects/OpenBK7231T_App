@@ -317,7 +317,6 @@ void doNothing();
 #define os_memcpy memcpy
 #define os_strstr strstr
 #define os_strchr strchr
-#define os_strcmp strcmp
 
 // RTOS
 typedef long portTickType;
@@ -355,7 +354,6 @@ typedef int (*beken_thread_function_t)(void *p);
 #define os_memcpy memcpy
 #define os_strstr strstr
 #define os_strchr strchr
-#define os_strcmp strcmp
 
 #define bk_printf printf
 
@@ -519,7 +517,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define os_memcpy memcpy
 #define os_strstr strstr
 #define os_strchr strchr
-#define os_strcmp strcmp
 
 
 #define lwip_close_force(x) lwip_close(x)
@@ -561,7 +558,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define os_memcpy memcpy
 #define os_strstr strstr
 #define os_strchr strchr
-#define os_strcmp strcmp
 
 //#define bk_printf printf
 
@@ -620,7 +616,6 @@ typedef unsigned int UINT32;
 #define strstr  os_strstr
 #define strncpy  os_strncpy
 #define strchr  os_strchr
-#define strcmp  os_strcmp
 //#define strcat  os_strcat
 
 #define close lwip_close

@@ -326,9 +326,9 @@ int httpclient_send_header(httpclient_t *client, const char *url, int method, ht
 
     //if (client->remote_port == 0)
     //{
-    if (os_strcmp(scheme, "http") == 0) {
+    if (strcmp(scheme, "http") == 0) {
         //client->remote_port = HTTP_PORT;
-    } else if (os_strcmp(scheme, "https") == 0) {
+    } else if (strcmp(scheme, "https") == 0) {
         //client->remote_port = HTTPS_PORT;
     }
     //}
@@ -777,11 +777,11 @@ int httpclient_response_parse(httpclient_t *client, char *data, int len, uint32_
         n = sscanf(data, "%31[^:]: %31[^\r\n]", key, value);
         if (n == 2) {
             ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "Read header : %s: %s\r\n", key, value);
-            if (!os_strcmp(key, "Content-Length")) {
+            if (!strcmp(key, "Content-Length")) {
                 sscanf(value, "%d", (int *)&(client_data->response_content_len));
                 client_data->retrieve_len = client_data->response_content_len;
-            } else if (!os_strcmp(key, "Transfer-Encoding")) {
-                if (!os_strcmp(value, "Chunked") || !os_strcmp(value, "chunked")) {
+            } else if (!strcmp(key, "Transfer-Encoding")) {
+                if (!strcmp(value, "Chunked") || !strcmp(value, "chunked")) {
                     client_data->is_chunked = true;
                     client_data->response_content_len = 0;
                     client_data->retrieve_len = 0;
