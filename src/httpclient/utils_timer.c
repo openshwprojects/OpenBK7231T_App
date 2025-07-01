@@ -10,7 +10,7 @@
  //#include "lite-log.h"
 #include "utils_timer.h"
 
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || WINDOWS
 #include "hal_machw.h"
 #elif PLATFORM_ECR6600
 int hal_machw_time() {
