@@ -597,7 +597,7 @@ int httpclient_retrieve_content_old(httpclient_t *client, char *data, int len, u
                 return ERROR_HTTP_UNRESOLVED_DNS;
             }
 
-            os_memmove(data, &data[crlf_pos + 2], len - (crlf_pos + 2)); /* Not need to move NULL-terminating char any more */
+            memmove(data, &data[crlf_pos + 2], len - (crlf_pos + 2)); /* Not need to move NULL-terminating char any more */
             len -= (crlf_pos + 2);
 
             if (readLen == 0) {
@@ -640,7 +640,7 @@ int httpclient_retrieve_content_old(httpclient_t *client, char *data, int len, u
 
             if (len > readLen) {
                 log_debug("memmove %d %d %d\r\n", readLen, len, client_data->retrieve_len);
-                os_memmove(b_data, &b_data[readLen], len - readLen); /* chunk case, read between two chunks */
+                memmove(b_data, &b_data[readLen], len - readLen); /* chunk case, read between two chunks */
                 len -= readLen;
                 readLen = 0;
                 client_data->retrieve_len = 0;
@@ -681,7 +681,7 @@ int httpclient_retrieve_content_old(httpclient_t *client, char *data, int len, u
                 log_err("Format error, %s", data); /* after memmove, the beginning of next chunk */
                 return ERROR_HTTP_UNRESOLVED_DNS;
             }
-            os_memmove(data, &data[2], len - 2); /* remove the \r\n */
+            memmove(data, &data[2], len - 2); /* remove the \r\n */
             len -= 2;
         } else {
             log_debug("no more (content-length)\r\n");
@@ -731,7 +731,7 @@ int httpclient_response_parse(httpclient_t *client, char *data, int len, uint32_
 
     ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "Reading headers%s\r\n", data);
 
-    os_memmove(data, &data[crlf_pos + 2], len - (crlf_pos + 2) + 1); /* Be sure to move NULL-terminating char as well */
+    memmove(data, &data[crlf_pos + 2], len - (crlf_pos + 2) + 1); /* Be sure to move NULL-terminating char as well */
     len -= (crlf_pos + 2);
 
     client_data->is_chunked = false;
@@ -767,7 +767,7 @@ int httpclient_response_parse(httpclient_t *client, char *data, int len, uint32_
         crlf_pos = crlf_ptr - data;
         if (crlf_pos == 0) {
             /* End of headers */
-            os_memmove(data, &data[2], len - 2 + 1); /* Be sure to move NULL-terminating char as well */
+            memmove(data, &data[2], len - 2 + 1); /* Be sure to move NULL-terminating char as well */
             len -= 2;
             break;
         }
@@ -787,12 +787,12 @@ int httpclient_response_parse(httpclient_t *client, char *data, int len, uint32_
                     client_data->retrieve_len = 0;
                 }
             }
-            os_memmove(data, &data[crlf_pos + 2], len - (crlf_pos + 2) + 1); /* Be sure to move NULL-terminating char as well */
+            memmove(data, &data[crlf_pos + 2], len - (crlf_pos + 2) + 1); /* Be sure to move NULL-terminating char as well */
             len -= (crlf_pos + 2);
 
         } else if ((n == 1) && (key[0])) {
             ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "Read header : %s: <no value>\r\n", key);
-            os_memmove(data, &data[crlf_pos + 2], len - (crlf_pos + 2) + 1); /* Be sure to move NULL-terminating char as well */
+            memmove(data, &data[crlf_pos + 2], len - (crlf_pos + 2) + 1); /* Be sure to move NULL-terminating char as well */
             len -= (crlf_pos + 2);
 
         } else {
