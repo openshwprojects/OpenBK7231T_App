@@ -544,10 +544,16 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #include "esp_idf_version.h"
 
 #define ASSERT
-#define os_strcpy strcpy
-#define os_malloc malloc
 #define os_free free
+#define os_malloc malloc
+#define os_strlen strlen
 #define os_memset memset
+#define os_memcpy memcpy
+#define os_strstr strstr
+#define os_strcpy strcpy
+#define os_strchr strchr
+#define os_strcmp strcmp
+#define os_memmove memmove
 
 //#define bk_printf printf
 
