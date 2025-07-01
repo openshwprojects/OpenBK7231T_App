@@ -18,12 +18,6 @@ void lwip_close_force(int x) {
 int hal_machw_time() {
 	return g_timeMs;
 }
-int hal_machw_time_past(int tt) {
-	int t = hal_machw_time();
-	if (t < tt)
-		return 0;
-	return 1;
-}
 
 #elif PLATFORM_ECR6600
 
@@ -32,12 +26,6 @@ void lwip_close_force(int x) {
 }
 int hal_machw_time() {
 	return os_time_get() * 1000;
-}
-int hal_machw_time_past(int tt) {
-	int t = hal_machw_time();
-	if (t < tt)
-		return 0;
-	return 1;
 }
 #else
 #include "hal_machw.h"
@@ -129,9 +117,9 @@ uint32_t utils_time_get_ms(void)
 
 uint64_t utils_time_left(uint64_t t_end, uint64_t t_now)
 {
-    //uint64_t t_left;
-
-    return  (1!=(hal_machw_time_past(t_end*1000)));
+	int t = hal_machw_time();
+	return (t < (int)(t_end * 1000)) ? 1 : 0;
 }
+
 
 #endif
