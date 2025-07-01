@@ -34,6 +34,7 @@
 
 #if PLATFORM_XRADIO
 
+#define ENABLE_SEND_POSTANDGET		1
 #define ENABLE_MQTT								1
 #define NO_CHIP_TEMPERATURE						1
 #define	ENABLE_HA_DISCOVERY						1

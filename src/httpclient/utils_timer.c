@@ -10,7 +10,7 @@
  //#include "lite-log.h"
 #include "utils_timer.h"
 
-#if PLATFORM_BL602 || PLATFORM_LN882H || PLATFORM_ESPIDF
+#if PLATFORM_BL602 || PLATFORM_LN882H || PLATFORM_ESPIDF || PLATFORM_XRADIO
 
 int hal_machw_time() {
 	return g_timeMs;
