@@ -7,6 +7,7 @@
 #include <string.h>
 #include <time.h>
 #include <stdarg.h>
+// it is not in my Windows compiler, but I added it manually
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -286,8 +287,6 @@ typedef unsigned short u16_t;
 //typedef char int8_t;
 //typedef int int32_t;
 
-// it is not in my Windows compiler, but I added it manually
-#include <stdint.h>
 //
 //#ifndef UINT32_MAX
 //#define UINT32_MAX  (0xffffffff)
@@ -332,8 +331,6 @@ typedef int (*beken_thread_function_t)(void *p);
 #include <task.h>
 #include <portable.h>
 #include <semphr.h>
-#include <stdbool.h>
-#include <stdint.h>
 
 #define ASSERT
 #define os_free free
@@ -368,8 +365,6 @@ typedef unsigned int u32;
 
 #elif PLATFORM_XRADIO
 
-#include <stdbool.h>
-#include <stdint.h>
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -444,7 +439,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #include <portable.h>
 #include <semphr.h>
 #include "lwip/sys.h"
-#include <stdbool.h>
 
 #define GLOBAL_INT_DECLARATION()	;
 #define GLOBAL_INT_DISABLE()		;
@@ -489,7 +483,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #elif PLATFORM_LN882H
 
-#include <stdbool.h>
 #include <FreeRTOS.h>
 #include <task.h>
 
@@ -524,7 +517,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #elif PLATFORM_ESPIDF
 
-#include <stdbool.h>
 #include <arch/sys_arch.h>
 #include "esp_timer.h"
 #include "esp_log.h"
@@ -621,7 +613,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #elif PLATFORM_REALTEK
 
-#include <stdbool.h>
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
@@ -710,7 +701,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #include "lwip/sys.h"
 #include "lwip/netdb.h"
 #include "lwip/dns.h"
-#include <stdbool.h>
 #include "os/oshal.h"
 
 typedef unsigned int UINT32;
