@@ -251,6 +251,67 @@ espPinMapping_t g_pins[] = {
 	{ "IO39", GPIO_NUM_39, false },
 };
 
+#elif CONFIG_IDF_TARGET_ESP32C5
+
+espPinMapping_t g_pins[] = {
+	{ "IO0", GPIO_NUM_0, false },
+	{ "IO1", GPIO_NUM_1, false },
+	{ "IO2", GPIO_NUM_2, false },
+	{ "IO3", GPIO_NUM_3, false },
+	{ "IO4", GPIO_NUM_4, false },
+	{ "IO5", GPIO_NUM_5, false },
+	{ "IO6", GPIO_NUM_6, false },
+	{ "IO7", GPIO_NUM_7, false },
+	{ "IO8", GPIO_NUM_8, false },
+	{ "IO9", GPIO_NUM_9, false },
+	{ "IO10", GPIO_NUM_10, false },
+	{ "IO11", GPIO_NUM_11, false },
+	{ "IO12", GPIO_NUM_12, false },
+	{ "IO13", GPIO_NUM_13, false },
+	{ "IO14", GPIO_NUM_14, false },
+	{ "IO15", GPIO_NUM_15, false },
+	{ "IO16", GPIO_NUM_16, false },
+	{ "IO17", GPIO_NUM_17, false },
+	{ "IO18", GPIO_NUM_18, false },
+	{ "IO19", GPIO_NUM_19, false },
+	{ "IO20", GPIO_NUM_20, false },
+	{ "IO21", GPIO_NUM_21, false },
+	{ "IO22", GPIO_NUM_22, false },
+	{ "IO23", GPIO_NUM_23, false },
+	{ "IO24", GPIO_NUM_24, false },
+	{ "IO25", GPIO_NUM_25, false },
+	{ "IO26", GPIO_NUM_26, false },
+	{ "IO27", GPIO_NUM_27, false },
+	{ "IO28", GPIO_NUM_28, false },
+};
+
+#elif CONFIG_IDF_TARGET_ESP32C61
+
+espPinMapping_t g_pins[] = {
+	{ "IO0", GPIO_NUM_0, false },
+	{ "IO1", GPIO_NUM_1, false },
+	{ "IO2", GPIO_NUM_2, false },
+	{ "IO3", GPIO_NUM_3, false },
+	{ "IO4", GPIO_NUM_4, false },
+	{ "IO5", GPIO_NUM_5, false },
+	{ "IO6", GPIO_NUM_6, false },
+	{ "IO7", GPIO_NUM_7, false },
+	{ "IO8", GPIO_NUM_8, false },
+	{ "IO9", GPIO_NUM_9, false },
+	{ "IO10", GPIO_NUM_10, false },
+	{ "IO11", GPIO_NUM_11, false },
+	{ "IO12", GPIO_NUM_12, false },
+	{ "IO13", GPIO_NUM_13, false },
+	{ "IO14", GPIO_NUM_14, false },
+	{ "IO15", GPIO_NUM_15, false },
+	{ "IO16", GPIO_NUM_16, false },
+	{ "IO17", GPIO_NUM_17, false },
+	{ "IO18", GPIO_NUM_18, false },
+	{ "IO19", GPIO_NUM_19, false },
+	{ "IO20", GPIO_NUM_20, false },
+	{ "IO21", GPIO_NUM_21, false },
+};
+
 #else
 
 espPinMapping_t g_pins[] = { };

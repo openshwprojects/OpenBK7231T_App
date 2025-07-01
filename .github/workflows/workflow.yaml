@@ -277,6 +277,10 @@ jobs:
             variant: 4M
           - platform: OpenESP32S2
             variant: 4M
+          - platform: OpenESP32C5
+            variant: 4M
+          - platform: OpenESP32C61
+            variant: 4M
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
@@ -285,7 +289,7 @@ jobs:
         with:
           repository: espressif/esp-idf
           path: sdk/esp-idf
-          ref: v5.3.3
+          ref: v5.5-beta1
           submodules: recursive
       - uses: actions/setup-python@v5
         with:

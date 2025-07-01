@@ -447,6 +447,22 @@ OpenESP32C2: prebuild_ESPIDF
 	esptool.py -c esp32c2 merge_bin -o output/$(APP_VERSION)/OpenESP32C2_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x0 ./platforms/ESP-IDF/build-c2/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-c2/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-c2/OpenBeken.bin
 	cp ./platforms/ESP-IDF/build-c2/OpenBeken.bin output/$(APP_VERSION)/OpenESP32C2_$(APP_VERSION).img
 
+.PHONY: OpenESP32C5
+OpenESP32C5: prebuild_ESPIDF
+	IDF_TARGET="esp32c5" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake platforms/ESP-IDF -B platforms/ESP-IDF/build-c5 
+	IDF_TARGET="esp32c5" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake --build ./platforms/ESP-IDF/build-c5 -j $(shell nproc)
+	mkdir -p output/$(APP_VERSION)
+	esptool.py -c esp32c5 merge_bin -o output/$(APP_VERSION)/OpenESP32C5_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x0 ./platforms/ESP-IDF/build-c5/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-c5/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-c5/OpenBeken.bin
+	cp ./platforms/ESP-IDF/build-c5/OpenBeken.bin output/$(APP_VERSION)/OpenESP32C5_$(APP_VERSION).img
+
+.PHONY: OpenESP32C61
+OpenESP32C61: prebuild_ESPIDF
+	IDF_TARGET="esp32c61" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake platforms/ESP-IDF -B platforms/ESP-IDF/build-c61 
+	IDF_TARGET="esp32c61" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake --build ./platforms/ESP-IDF/build-c61 -j $(shell nproc)
+	mkdir -p output/$(APP_VERSION)
+	esptool.py -c esp32c61 merge_bin -o output/$(APP_VERSION)/OpenESP32C61_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x0 ./platforms/ESP-IDF/build-c61/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-c61/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-c61/OpenBeken.bin
+	cp ./platforms/ESP-IDF/build-c61/OpenBeken.bin output/$(APP_VERSION)/OpenESP32C61_$(APP_VERSION).img
+
 .PHONY: OpenESP32C6
 OpenESP32C6: prebuild_ESPIDF
 	IDF_TARGET="esp32c6" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake platforms/ESP-IDF -B platforms/ESP-IDF/build-c6 

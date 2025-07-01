@@ -49,7 +49,7 @@ uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
 #include "nvs_flash.h"
 #include "esp_wifi.h"
 #include "esp_pm.h"
-#include "esp_flash_spi_init.h"
+#include "esp_flash.h"
 
 #elif PLATFORM_REALTEK
 

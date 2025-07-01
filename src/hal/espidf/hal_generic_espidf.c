@@ -6,6 +6,7 @@
 #include "nvs_flash.h"
 #include "nvs.h"
 #include "freertos/FreeRTOS.h"
+#include "hal/wdt_hal.h"
 
 static int bFlashReady = 0;
 
@@ -22,7 +23,6 @@ void InitFlashIfNeeded()
 	}
 
 	bFlashReady = 1;
-
 }
 
 void HAL_RebootModule()
@@ -33,6 +33,14 @@ void HAL_RebootModule()
 void HAL_Delay_us(int delay)
 {
 	usleep(delay);
+}
+
+void HAL_Run_WDT()
+{
+	wdt_hal_context_t rtc_wdt_ctx = RWDT_HAL_CONTEXT_DEFAULT();
+	wdt_hal_write_protect_disable(&rtc_wdt_ctx);
+	wdt_hal_feed(&rtc_wdt_ctx);
+	wdt_hal_write_protect_enable(&rtc_wdt_ctx);
 }
 
 #endif // PLATFORM_ESPIDF

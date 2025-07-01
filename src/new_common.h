@@ -126,6 +126,10 @@ typedef long BaseType_t;
 #define PLATFORM_MCU_NAME "ESP32S2"
 #elif CONFIG_IDF_TARGET_ESP32S3
 #define PLATFORM_MCU_NAME "ESP32S3"
+#elif CONFIG_IDF_TARGET_ESP32C5
+#define PLATFORM_MCU_NAME "ESP32C5"
+#elif CONFIG_IDF_TARGET_ESP32C61
+#define PLATFORM_MCU_NAME "ESP32C61"
 #else
 #define PLATFORM_MCU_NAME MANUFACTURER
 #endif
@@ -557,9 +561,9 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define os_free free
 #define os_memset memset
 
-//#define bk_printf printf
+#define bk_printf printf
 
-#define bk_printf(...) ESP_LOGI("OpenBeken", __VA_ARGS__);
+//#define bk_printf(...) ESP_LOGI("OpenBeken", __VA_ARGS__);
 
 #define kNoErr                      0       //! No error occurred.
 #define rtos_delay_milliseconds sys_delay_ms
