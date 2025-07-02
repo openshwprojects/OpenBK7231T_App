@@ -5,11 +5,7 @@
 #include "../../new_cfg.h"
 #include "../../new_pins.h"
 #include "hal_pinmap_espidf.h"
-
-#if PLATFORM_ESPIDF || PLATFORM_ESP8266
 #include "driver/ledc.h"
-#define LEDC_MAX_CH 6
-#endif
 
 #ifdef CONFIG_IDF_TARGET_ESP32C3
 
@@ -335,7 +331,11 @@ espPinMapping_t g_pins[] = { };
 #endif
 
 #if PLATFORM_ESP8266
-#define gpio_reset_pin(x) ESP_ConfigurePin(x, GPIO_MODE_INPUT, false, false, GPIO_INTR_DISABLE)
+#include "driver/pwm.h"
+#define gpio_reset_pin(x) //ESP_ConfigurePin(x, GPIO_MODE_INPUT, false, false, GPIO_INTR_DISABLE)
+#define LEDC_MAX_CH 8
+#else
+#define LEDC_MAX_CH 6
 #endif
 
 int g_numPins = sizeof(g_pins) / sizeof(g_pins[0]);
@@ -441,9 +441,10 @@ void HAL_PIN_Setup_Output(int index)
 	gpio_set_level(pin->pin, 0);
 }
 
-#if PLATFORM_ESPIDF //|| PLATFORM_ESP8266 // esp8266 causes LoadProhibited
+#if PLATFORM_ESPIDF || PLATFORM_ESP8266
 
 static ledc_channel_config_t ledc_channel[LEDC_MAX_CH];
+static float obk_ch_value[LEDC_MAX_CH];
 static bool g_ledc_init = false;
 
 void InitLEDC()
@@ -517,6 +518,10 @@ int HAL_PIN_CanThisPinBePWM(int index)
 	if(index >= g_numPins)
 		return 0;
 	espPinMapping_t* pin = g_pins + index;
+#if PLATFORM_ESP8266
+	// it can be used, but will result in bootloop on reset
+	if(pin->pin == GPIO_NUM_0) return 0;
+#endif
 	if(pin->pin != GPIO_NUM_NC) return 1;
 	else return 0;
 }
@@ -547,6 +552,12 @@ void HAL_PIN_PWM_Start(int index, int freq)
 	{
 		ledc_channel[freecha].gpio_num = pin->pin;
 		ledc_channel_config(&ledc_channel[freecha]);
+#if PLATFORM_ESP8266
+		// will bootloop without delay
+		delay_ms(100);
+		pwm_deinit();
+		ledc_fade_func_install(0);
+#endif
 		ADDLOG_INFO(LOG_FEATURE_PINS, "init ledc ch %i pin %i\n", freecha, pin->pin);
 	}
 	else
@@ -564,10 +575,13 @@ void HAL_PIN_PWM_Update(int index, float value)
 	if(ch >= 0)
 	{
 #if PLATFORM_ESPIDF
-		uint32_t curduty = ledc_get_duty(LEDC_LOW_SPEED_MODE, ch);
 		uint32_t propduty = value * 81.91;
-		if(propduty != curduty)
-		{
+#else
+		uint32_t propduty = value * 81.96;
+#endif
+		if(value != obk_ch_value[ch]) 
+		{ 
+			obk_ch_value[ch] = value;
 			ledc_set_duty(LEDC_LOW_SPEED_MODE, ch, propduty);
 			ledc_update_duty(LEDC_LOW_SPEED_MODE, ch);
 			if(value == 100.0f)
@@ -579,11 +593,6 @@ void HAL_PIN_PWM_Update(int index, float value)
 				ledc_stop(LEDC_LOW_SPEED_MODE, ch, 0);
 			}
 		}
-#else
-		uint32_t propduty = value * 81.91;
-		ledc_set_duty(LEDC_LOW_SPEED_MODE, ch, propduty);
-		ledc_update_duty(LEDC_LOW_SPEED_MODE, ch);
-#endif
 	}
 }
 

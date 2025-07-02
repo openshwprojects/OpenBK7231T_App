@@ -47,6 +47,15 @@ void app_main(void)
     xTaskCreate(temp_func, "IntTemp", TEMP_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL);
 #endif
 
+#if PLATFORM_ESP8266
+    uint8_t mac[6];
+    if(esp_base_mac_addr_get((unsigned char*)&mac) != ESP_OK)
+    {
+        esp_read_mac(mac, ESP_MAC_WIFI_STA);
+        esp_base_mac_addr_set((unsigned char*)&mac);
+    }
+#endif
+
     Main_Init();
 
     while(1)

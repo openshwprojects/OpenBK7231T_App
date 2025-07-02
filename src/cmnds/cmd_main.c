@@ -1069,8 +1069,8 @@ void CMD_Init_Delayed() {
 		CMD_StartTCPCommandLine();
 	}
 #endif
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) \
- || defined(PLATFORM_REALTEK) || defined(PLATFORM_ECR6600) || defined(PLATFORM_XRADIO)
+#if PLATFORM_BEKEN || WINDOWS || PLATFORM_BL602 || PLATFORM_ESPIDF || PLATFORM_ESP8266 \
+	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_XRADIO
 	UART_AddCommands();
 #endif
 #if ENABLE_BL_TWIN

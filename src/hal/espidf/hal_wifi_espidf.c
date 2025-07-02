@@ -40,9 +40,6 @@ static tcpip_adapter_if_t ap_netif = TCPIP_ADAPTER_IF_AP;
 static void (*g_wifiStatusCallback)(int code);
 static int g_bOpenAccessPointMode = 0;
 static esp_netif_ip_info_t g_ip_info;
-//static char g_ip[16];
-//static char g_gw[16];
-//static char g_ms[16];
 esp_event_handler_instance_t instance_any_id, instance_got_ip;
 bool handlers_registered = false;
 
@@ -50,16 +47,12 @@ bool handlers_registered = false;
 // because, for example, javascript control panel requires it
 const char* HAL_GetMyIPString()
 {
-	return ipaddr_ntoa(&g_ip_info.ip);
-	//sprintf(g_ip, IPSTR, IP2STR(&g_ip_info.ip));
-	//return g_ip;
+	return ipaddr_ntoa((ip4_addr_t*)&g_ip_info.ip);
 }
 
 const char* HAL_GetMyGatewayString()
 {
-	return ipaddr_ntoa(&g_ip_info.gw);
-	//sprintf(g_gw, IPSTR, IP2STR(&g_ip_info.gw));
-	//return g_gw;
+	return ipaddr_ntoa((ip4_addr_t*)&g_ip_info.gw);
 }
 
 const char* HAL_GetMyDNSString()
@@ -74,11 +67,8 @@ const char* HAL_GetMyDNSString()
 
 const char* HAL_GetMyMaskString()
 {
-	return ipaddr_ntoa(&g_ip_info.netmask);
-	//sprintf(g_ms, IPSTR, IP2STR(&g_ip_info.netmask));
-	//return g_ms;
+	return ipaddr_ntoa((ip4_addr_t*)&g_ip_info.netmask);
 }
-
 
 int WiFI_SetMacAddress(char* mac)
 {
@@ -93,13 +83,6 @@ void WiFI_GetMacAddress(char* mac)
 const char* HAL_GetMACStr(char* macstr)
 {
 	uint8_t mac[6];
-#if PLATFORM_ESP8266
-	if(esp_base_mac_addr_get(&mac) == ESP_ERR_INVALID_MAC)
-	{
-		esp_read_mac(mac, ESP_MAC_BASE);
-		esp_base_mac_addr_set(&mac);
-	}
-#endif
 	esp_read_mac(mac, ESP_MAC_BASE);
 	sprintf(macstr, MACSTR, MAC2STR(mac));
 	return macstr;
@@ -108,13 +91,14 @@ const char* HAL_GetMACStr(char* macstr)
 void HAL_PrintNetworkInfo()
 {
 	uint8_t mac[6];
-	esp_read_mac(mac, ESP_MAC_BASE);
+	WiFI_GetMacAddress((char*)&mac);
 	bk_printf("+--------------- net device info ------------+\r\n");
 	bk_printf("|netif type    : %-16s            |\r\n", g_bOpenAccessPointMode == 0 ? "STA" : "AP");
+	bk_printf("|netif rssi    = %-16i            |\r\n", HAL_GetWifiStrength());
 	bk_printf("|netif ip      = %-16s            |\r\n", HAL_GetMyIPString());
 	bk_printf("|netif mask    = %-16s            |\r\n", HAL_GetMyMaskString());
 	bk_printf("|netif gateway = %-16s            |\r\n", HAL_GetMyGatewayString());
-	bk_printf("|netif mac     : [%02X:%02X:%02X:%02X:%02X:%02X] %-7s |\r\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], "");
+	bk_printf("|netif mac     : ["MACSTR"] %-6s  |\r\n", MAC2STR(mac), "");
 	bk_printf("+--------------------------------------------+\r\n");
 }
 
@@ -173,30 +157,28 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 #if PLATFORM_ESPIDF
 	if(sta_netif != NULL)
 #else
-	if(0)
+	if(1)
 #endif
 	{
 		esp_wifi_stop();
 		esp_netif_destroy(sta_netif);
 		esp_wifi_deinit();
-		delay_ms(10);
+		delay_ms(50);
 	}
-	else
+
+	if(!handlers_registered)
 	{
-		if(!handlers_registered)
-		{
-			esp_event_handler_instance_register(WIFI_EVENT,
-				ESP_EVENT_ANY_ID,
-				&event_handler,
-				NULL,
-				&instance_any_id);
-			esp_event_handler_instance_register(IP_EVENT,
-				IP_EVENT_STA_GOT_IP,
-				&event_handler,
-				NULL,
-				&instance_got_ip);
-			handlers_registered = true;
-		}
+		esp_event_handler_instance_register(WIFI_EVENT,
+			ESP_EVENT_ANY_ID,
+			&event_handler,
+			NULL,
+			&instance_any_id);
+		esp_event_handler_instance_register(IP_EVENT,
+			IP_EVENT_STA_GOT_IP,
+			&event_handler,
+			NULL,
+			&instance_got_ip);
+		handlers_registered = true;
 	}
 
 	sta_netif = esp_netif_create_default_wifi_sta();
@@ -209,14 +191,13 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 	{
 		ADDLOG_ERROR(LOG_FEATURE_MAIN, "WiFi saved ssid/pass != current, resetting");
 		memset(&wifi_config.sta, 0, sizeof(wifi_sta_config_t));
-		wifi_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
+		//wifi_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
 		strncpy((char*)wifi_config.sta.ssid, (char*)oob_ssid, 32);
 		strncpy((char*)wifi_config.sta.password, (char*)connect_key, 64);
 	}
 
-
-	esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
 	esp_wifi_set_mode(WIFI_MODE_STA);
+	esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
 
 	esp_wifi_start();
 

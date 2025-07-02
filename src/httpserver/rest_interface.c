@@ -55,7 +55,7 @@ uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
 #include "esp_image_format.h"
 #include "spi_flash.h"
 #define esp_flash_read(a,b,c,d) spi_flash_read(c,b,d)
-#define OTA_WITH_SEQUENTIAL_WRITES (fsize > 0xE0000 ? 0xE0000 : fsize)
+#define OTA_WITH_SEQUENTIAL_WRITES OTA_SIZE_UNKNOWN
 #define esp_ota_abort esp_ota_end
 #endif
 
@@ -1611,7 +1611,6 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	int towrite = request->bodylen;
 	char* writebuf = request->bodystart;
 	int writelen = request->bodylen;
-	int fsize = 0;
 
 	ADDLOG_DEBUG(LOG_FEATURE_OTA, "OTA post len %d", request->contentLength);
 
@@ -2159,7 +2158,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	update_partition = esp_ota_get_next_update_partition(NULL);
 	if(request->contentLength >= 0)
 	{
-		fsize = towrite = request->contentLength;
+		towrite = request->contentLength;
 	}
 
 	esp_wifi_set_ps(WIFI_PS_NONE);

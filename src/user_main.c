@@ -614,7 +614,7 @@ void Main_OnEverySecond()
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) \
- || defined (PLATFORM_RTL87X0C)
+ || defined (PLATFORM_RTL87X0C) || PLATFORM_ESP8266
 	UART_RunEverySecond();
 #endif
 #endif
@@ -926,7 +926,7 @@ void QuickTick(void* param)
 
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	g_time = rtos_get_time();
-#elif defined(PLATFORM_ESPIDF) || defined(PLATFORM_ESP8266)
+#elif defined(PLATFORM_ESPIDF) //|| defined(PLATFORM_ESP8266)
 	g_time = esp_timer_get_time() / 1000;
 #else
 	g_time += QUICK_TMR_DURATION;
@@ -991,13 +991,18 @@ void QuickTick(void* param)
 
 }
 
-
+#if PLATFORM_ESP8266 || PLATFORM_ESPIDF
+#define QT_STACK_SIZE 2048
+#else
+#define QT_STACK_SIZE 1024
+#endif
 
 ////////////////////////////////////////////////////////
 // this is the bit which runs the quick tick timer
 #if WINDOWS
 
-#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600 \
+	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF
 void quick_timer_thread(void* param)
 {
 	while (1) {
@@ -1005,8 +1010,6 @@ void quick_timer_thread(void* param)
 		QuickTick(0);
 	}
 }
-#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
-esp_timer_handle_t g_quick_timer;
 #elif PLATFORM_XRADIO || PLATFORM_LN882H
 OS_Timer_t g_quick_timer;
 #else
@@ -1016,17 +1019,9 @@ void QuickTick_StartThread(void)
 {
 #if WINDOWS
 
-#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600
-	xTaskCreate(quick_timer_thread, "quick", 1024, NULL, 15, NULL);
-#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
-	const esp_timer_create_args_t g_quick_timer_args =
-	{
-			.callback = &QuickTick,
-			.name = "quick"
-	};
-
-	esp_timer_create(&g_quick_timer_args, &g_quick_timer);
-	esp_timer_start_periodic(g_quick_timer, QUICK_TMR_DURATION * 1000);
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600 \
+	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF
+	xTaskCreate(quick_timer_thread, "quick", QT_STACK_SIZE, NULL, 15, NULL);
 #elif PLATFORM_XRADIO || PLATFORM_LN882H
 
 	OS_TimerSetInvalid(&g_quick_timer);
