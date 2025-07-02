@@ -4,7 +4,7 @@
 
 #include "../new_common.h"
 #include "../logging/logging.h"
-#if PLATFORM_BEKEN || WINDOWS
+#if ENABLE_SEND_POSTANDGET
 #include "utils_net.h"
 #include "utils_timer.h"
 #include "errno.h"
@@ -22,7 +22,7 @@ uintptr_t HAL_TCP_Establish(const char *host, uint16_t port)
     int rc = 0;
     char service[6];
 
-    os_memset(&hints, 0, sizeof(hints));
+    memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET; //only IPv4
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
@@ -357,7 +357,7 @@ int iotx_net_init(utils_network_pt pNetwork, const char *host, uint16_t port, co
     if (NULL == ca_crt) {
         pNetwork->ca_crt_len = 0;
     } else {
-        pNetwork->ca_crt_len = os_strlen(ca_crt);
+        pNetwork->ca_crt_len = strlen(ca_crt);
     }
 
     pNetwork->handle = 0;
