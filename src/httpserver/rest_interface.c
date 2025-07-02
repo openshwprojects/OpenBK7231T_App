@@ -585,7 +585,7 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 		lfs_dir_t* dir;
 		ADDLOG_DEBUG(LOG_FEATURE_API, "%s is a folder", fpath);
 		dir = os_malloc(sizeof(lfs_dir_t));
-		os_memset(dir, 0, sizeof(*dir));
+		memset(dir, 0, sizeof(*dir));
 		// if the thing is a folder.
 		lfsres = lfs_dir_open(&lfs, dir, fpath);
 

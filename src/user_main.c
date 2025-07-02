@@ -902,11 +902,12 @@ void Main_OnEverySecond()
 
 static int g_wifiLedToggleTime = 0;
 static int g_wifi_ledState = 0;
-static uint32_t g_time = 0;
+unsigned int g_timeMs = 0;
 static uint32_t g_last_time = 0;
 int g_bWantPinDeepSleep;
 int g_pinDeepSleepWakeUp = 0;
 unsigned int g_deltaTimeMS;
+
 
 /////////////////////////////////////////////////////
 // this is what we do in a qucik tick
@@ -925,18 +926,18 @@ void QuickTick(void* param)
 #endif
 
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
-	g_time = rtos_get_time();
+	g_timeMs = rtos_get_time();
 #elif defined(PLATFORM_ESPIDF) //|| defined(PLATFORM_ESP8266)
-	g_time = esp_timer_get_time() / 1000;
+	g_timeMs = esp_timer_get_time() / 1000;
 #else
-	g_time += QUICK_TMR_DURATION;
+	g_timeMs += QUICK_TMR_DURATION;
 #endif
-	g_deltaTimeMS = g_time - g_last_time;
+	g_deltaTimeMS = g_timeMs - g_last_time;
 	// cope with wrap
 	if (g_deltaTimeMS > 0x4000) {
-		g_deltaTimeMS = ((g_time + 0x4000) - (g_last_time + 0x4000));
+		g_deltaTimeMS = ((g_timeMs + 0x4000) - (g_last_time + 0x4000));
 	}
-	g_last_time = g_time;
+	g_last_time = g_timeMs;
 
 #if ENABLE_OBK_SCRIPTING
 	SVM_RunThreads(g_deltaTimeMS);
