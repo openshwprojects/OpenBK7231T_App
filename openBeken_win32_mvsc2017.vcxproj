@@ -238,6 +238,7 @@
     <ClCompile Include="src\driver\drv_ntp.c" />
     <ClCompile Include="src\driver\drv_ntp_events.c" />
     <ClCompile Include="src\driver\drv_openWeatherMap.c" />
+    <ClCompile Include="src\driver\drv_pinMutex.c" />
     <ClCompile Include="src\driver\drv_pir.c" />
     <ClCompile Include="src\driver\drv_pixelAnim.c" />
     <ClCompile Include="src\driver\drv_pt6523.c" />

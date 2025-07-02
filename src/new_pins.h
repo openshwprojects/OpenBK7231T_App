@@ -1004,6 +1004,8 @@ typedef enum channelType_e {
 
 	ChType_OpenStopClose,
 	ChType_Percent,
+	ChType_StopUpDown,
+		
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
