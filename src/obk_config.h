@@ -116,7 +116,6 @@
 
 #endif
 
-
 #define	ENABLE_DRIVER_TCL		1
 #define	ENABLE_DRIVER_PIR		1
 #define	ENABLE_HA_DISCOVERY		1
@@ -176,7 +175,6 @@
 #define ENABLE_OBK_BERRY				1
 
 #elif PLATFORM_BL602
-
 
 //#define ENABLE_SEND_POSTANDGET		1
 #define	ENABLE_HA_DISCOVERY		1
@@ -326,7 +324,6 @@
 
 #elif PLATFORM_LN882H
 
-
 //#define ENABLE_SEND_POSTANDGET		1
 #define	ENABLE_HA_DISCOVERY						1
 #define ENABLE_MQTT								1
@@ -352,9 +349,7 @@
 
 #elif PLATFORM_ESPIDF
 
-
-
-#define ENABLE_SEND_POSTANDGET		1
+#define ENABLE_SEND_POSTANDGET					1
 #define	ENABLE_HA_DISCOVERY						1
 #define ENABLE_MQTT								1
 #define ENABLE_I2C								1
@@ -389,7 +384,6 @@
 
 #elif PLATFORM_TR6260
 
-
 //#define ENABLE_SEND_POSTANDGET		1
 #define	ENABLE_HA_DISCOVERY						1
 #define ENABLE_MQTT								1
@@ -410,7 +404,7 @@
 
 #elif PLATFORM_REALTEK
 
-#define ENABLE_SEND_POSTANDGET		1
+#define ENABLE_SEND_POSTANDGET					1
 #define	ENABLE_HA_DISCOVERY						1
 #define ENABLE_MQTT								1
 #define NO_CHIP_TEMPERATURE						1
@@ -472,6 +466,7 @@
 
 #elif PLATFORM_ESP8266
 
+#define ENABLE_SEND_POSTANDGET					1
 #define NO_CHIP_TEMPERATURE						1
 #define	ENABLE_HA_DISCOVERY						1
 #define ENABLE_MQTT								1

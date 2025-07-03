@@ -504,11 +504,11 @@ OpenESP8266: prebuild_ESP8266
 	APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake --build ./platforms/ESP8266/build -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
 	python3 -m esptool -c esp8266 merge_bin -o output/$(APP_VERSION)/OpenESP8266_2MB_$(APP_VERSION).factory.bin --flash_mode dio --flash_size 2MB 0x0 ./platforms/ESP8266/build/bootloader/bootloader.bin 0x8000 ./platforms/ESP8266/build/partition_table/partition-table.bin 0x10000 ./platforms/ESP8266/build/OpenBeken.bin
+	cp ./platforms/ESP8266/build/OpenBeken.bin output/$(APP_VERSION)/OpenESP8266_$(APP_VERSION).img
 	-rm platforms/ESP-IDF/partitions.csv
 	cp platforms/ESP8266/partitions-1mb.csv platforms/ESP8266/partitions.csv
-	cd platforms/ESP8266/ && idf.py partition_table
+	cd platforms/ESP8266/ && idf.py partition_table && idf.py bootloader
 	python3 -m esptool -c esp8266 merge_bin -o output/$(APP_VERSION)/OpenESP8266_1MB_$(APP_VERSION).factory.bin --flash_mode dio --flash_size 2MB 0x0 ./platforms/ESP8266/build/bootloader/bootloader.bin 0x8000 ./platforms/ESP8266/build/partition_table/partition-table.bin 0x10000 ./platforms/ESP8266/build/OpenBeken.bin
-	cp ./platforms/ESP8266/build/OpenBeken.bin output/$(APP_VERSION)/OpenESP8266_$(APP_VERSION).img
 	
 .PHONY: OpenTR6260
 OpenTR6260: prebuild_OpenTR6260
@@ -619,36 +619,40 @@ OpenECR6600: prebuild_OpenECR6600
 	mkdir -p output/$(APP_VERSION)
 	cp $(ECRDIR)/build/OpenBeken/ECR6600F_standalone_OpenBeken_allinone.bin output/$(APP_VERSION)/OpenECR6600_$(APP_VERSION).bin
 	cp $(ECRDIR)/build/OpenBeken/ECR6600F_OpenBeken_Compress_ota_packeg.bin output/$(APP_VERSION)/OpenECR6600_$(APP_VERSION)_ota.img
+	
+# Add custom Makefile if required
+-include custom.mk
 
 # clean .o files and output directory
 .PHONY: clean
 clean: 
-	$(MAKE) -C sdk/OpenBK7231T/platforms/bk7231t/bk7231t_os APP_BIN_NAME=$(APP_NAME) USER_SW_VER=$(APP_VERSION) clean
-	$(MAKE) -C sdk/OpenBK7231N/platforms/bk7231n/bk7231n_os APP_BIN_NAME=$(APP_NAME) USER_SW_VER=$(APP_VERSION) clean
-	$(MAKE) -C sdk/OpenXR809/src clean
-	$(MAKE) -C sdk/OpenXR809/project/oxr_sharedApp/gcc clean
-	$(MAKE) -C sdk/OpenXR806/src clean
-	$(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc clean
-	$(MAKE) -C sdk/OpenXR872/src clean
-	$(MAKE) -C sdk/OpenXR872/project/demo/hello_demo/gcc clean
-	$(MAKE) -C sdk/OpenW800 clean
-	$(MAKE) -C sdk/OpenW600 clean
-	$(MAKE) -C sdk/OpenTR6260/scripts tr6260s1_clean
-	$(MAKE) -C sdk/OpenRTL87X0C/project/OpenBeken/GCC-RELEASE clean
-	$(MAKE) -C sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE clean
-	$(MAKE) -C sdk/OpenRTL8710A_B/project/obk_ameba1/GCC-RELEASE clean
-	$(MAKE) -C sdk/beken_freertos_sdk clean
-	test -d ./sdk/OpenLN882H/build && cmake --build ./sdk/OpenLN882H/build --target clean
-	test -d ./platforms/ESP-IDF/build-32 && cmake --build ./platforms/ESP-IDF/build-32 --target clean
-	test -d ./platforms/ESP-IDF/build-c3 && cmake --build ./platforms/ESP-IDF/build-c3 --target clean
-	test -d ./platforms/ESP-IDF/build-c2 && cmake --build ./platforms/ESP-IDF/build-c2 --target clean
-	test -d ./platforms/ESP-IDF/build-c6 && cmake --build ./platforms/ESP-IDF/build-c6 --target clean
-	test -d ./platforms/ESP-IDF/build-s2 && cmake --build ./platforms/ESP-IDF/build-s2 --target clean
-	test -d ./platforms/ESP-IDF/build-s3 && cmake --build ./platforms/ESP-IDF/build-s3 --target clean
-	cd sdk/OpenECR6600 && make BOARD_DIR=$(ECRDIR)/Boards/ecr6600/standalone APP_NAME=OpenBeken TOPDIR=$(ECRDIR) GCC_PATH=$(ECRDIR)/tool/nds32le-elf-mculib-v3s/bin/ clean
-
-# Add custom Makefile if required
--include custom.mk
+	-test -d ./sdk/OpenBK7231T && $(MAKE) -C sdk/OpenBK7231T/platforms/bk7231t/bk7231t_os APP_BIN_NAME=$(APP_NAME) USER_SW_VER=$(APP_VERSION) clean
+	-test -d ./sdk/OpenBK7231N && $(MAKE) -C sdk/OpenBK7231N/platforms/bk7231n/bk7231n_os APP_BIN_NAME=$(APP_NAME) USER_SW_VER=$(APP_VERSION) clean
+	-test -d ./sdk/OpenXR809 && $(MAKE) -C sdk/OpenXR809/src clean
+	-test -d ./sdk/OpenXR809 && $(MAKE) -C sdk/OpenXR809/project/oxr_sharedApp/gcc clean
+	-test -d ./sdk/OpenXR806 && $(MAKE) -C sdk/OpenXR806/src clean
+	-test -d ./sdk/OpenXR806 && $(MAKE) -C sdk/OpenXR806/project/demo/sharedApp/gcc clean
+	-test -d ./sdk/OpenXR872 && $(MAKE) -C sdk/OpenXR872/src clean
+	-test -d ./sdk/OpenXR872 && $(MAKE) -C sdk/OpenXR872/project/demo/hello_demo/gcc clean
+	-test -d ./sdk/OpenW800 && $(MAKE) -C sdk/OpenW800 clean
+	-test -d ./sdk/OpenW600 && $(MAKE) -C sdk/OpenW600 clean
+	-test -d ./sdk/OpenTR6260 && $(MAKE) -C sdk/OpenTR6260/scripts tr6260s1_clean
+	-test -d ./sdk/OpenRTL87X0C && $(MAKE) -C sdk/OpenRTL87X0C/project/OpenBeken/GCC-RELEASE clean
+	-test -d ./sdk/OpenRTL8710A_B && $(MAKE) -C sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE clean
+	-test -d ./sdk/OpenRTL8710A_B && $(MAKE) -C sdk/OpenRTL8710A_B/project/obk_ameba1/GCC-RELEASE clean
+	-test -d ./sdk/beken_freertos_sdk && $(MAKE) -C sdk/beken_freertos_sdk clean
+	-test -d ./sdk/OpenLN882H/build && cmake --build ./sdk/OpenLN882H/build --target clean
+	-test -d ./platforms/ESP-IDF/build-32 && cmake --build ./platforms/ESP-IDF/build-32 --target clean
+	-test -d ./platforms/ESP-IDF/build-c3 && cmake --build ./platforms/ESP-IDF/build-c3 --target clean
+	-test -d ./platforms/ESP-IDF/build-c2 && cmake --build ./platforms/ESP-IDF/build-c2 --target clean
+	-test -d ./platforms/ESP-IDF/build-c6 && cmake --build ./platforms/ESP-IDF/build-c6 --target clean
+	-test -d ./platforms/ESP-IDF/build-s2 && cmake --build ./platforms/ESP-IDF/build-s2 --target clean
+	-test -d ./platforms/ESP-IDF/build-s3 && cmake --build ./platforms/ESP-IDF/build-s3 --target clean
+	-test -d ./platforms/ESP-IDF/build-c5 && cmake --build ./platforms/ESP-IDF/build-c5 --target clean
+	-test -d ./platforms/ESP-IDF/build-c61 && cmake --build ./platforms/ESP-IDF/build-c61 --target clean
+	-test -d ./platforms/ESP8266/build && cmake --build ./platforms/ESP8266/build --target clean
+	-test -d ./sdk/OpenECR6600 && cd sdk/OpenECR6600 && make BOARD_DIR=$(ECRDIR)/Boards/ecr6600/standalone APP_NAME=OpenBeken TOPDIR=$(ECRDIR) GCC_PATH=$(ECRDIR)/tool/nds32le-elf-mculib-v3s/bin/ clean
+	-$(RM) -r $(BUILD_DIR)
 
 # Example upload command - import the following snippet into Node-RED and update the IPs in the variables below
 # This will stage the rbl binary on the Node-RED server and trigger a OTA request to for the BK chip to pull it automatically

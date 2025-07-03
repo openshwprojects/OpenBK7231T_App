@@ -15,7 +15,7 @@ set(PROJ_ALL_SRC
 	${OBK_SRCS}hal/espidf/hal_uart_espidf.c
 	${OBKM_SRC}
 	${BERRY_SRC_C}
-	mqtt.c
+	../../../libraries/mqtt_patched.c
 )
 idf_component_register(SRCS ${PROJ_ALL_SRC}
 			PRIV_REQUIRES lwip nvs_flash app_update)
