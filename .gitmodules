@@ -28,7 +28,7 @@
 [submodule "sdk/esp-idf"]
 	path = sdk/esp-idf
 	url = https://github.com/espressif/esp-idf.git
-	branch = release/v5.3
+	branch = release/v5.5
 [submodule "sdk/OpenTR6260"]
 	path = sdk/OpenTR6260
 	url = https://github.com/NonPIayerCharacter/OpenTR6260.git
@@ -56,14 +56,16 @@
 [submodule "libraries/berry"]
 	path = libraries/berry
 	url = https://github.com/berry-lang/berry.git
-  branch = master
-
+	branch = master
 [submodule "sdk/OpenXR872"]
 	path = sdk/OpenXR872
 	url = https://github.com/openshwprojects/OpenXR872
 	branch = main
-
 [submodule "sdk/OpenXR806"]
 	path = sdk/OpenXR806
 	url = https://github.com/openshwprojects/OpenXR806
 	branch = master
+[submodule "sdk/ESP8266_RTOS_SDK"]
+	path = sdk/ESP8266_RTOS_SDK
+	url = https://github.com/espressif/ESP8266_RTOS_SDK
+	branch = release/v3.4

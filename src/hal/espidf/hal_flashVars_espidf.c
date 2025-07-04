@@ -1,4 +1,4 @@
-#ifdef PLATFORM_ESPIDF
+#if PLATFORM_ESPIDF|| PLATFORM_ESP8266
 
 #include "../../new_cfg.h"
 #include "../../logging/logging.h"

@@ -1,0 +1,170 @@
+commit 185db7d2b13a2a8c18c8ed5abce9a80de259fa7b
+Author: NonPIayerCharacter <18557343+NonPIayerCharacter@users.noreply.github.com>
+Date:   Tue Jul 1 22:45:37 2025 +0000
+
+    for OBK
+
+diff --git a/components/pthread/CMakeLists.txt b/components/pthread/CMakeLists.txt
+index 653799ad5a61ea87fbba15a3fea325a0dca46fa2..df5a961a6514aaa894cfde381406e077baeff635 100644
+--- a/components/pthread/CMakeLists.txt
++++ b/components/pthread/CMakeLists.txt
+@@ -4,7 +4,7 @@ idf_component_register(SRCS "pthread.c"
+                     INCLUDE_DIRS include)
+ 
+ set(extra_link_flags "-u pthread_include_pthread_impl")
+-list(APPEND extra_link_flags "-u pthread_include_pthread_cond_impl")
++list(APPEND extra_link_flags "-u pthread_include_pthread_cond_var_impl")
+ list(APPEND extra_link_flags "-u pthread_include_pthread_local_storage_impl")
+ 
+ if(CONFIG_FREERTOS_ENABLE_STATIC_TASK_CLEAN_UP)
+diff --git a/components/pthread/component.mk b/components/pthread/component.mk
+index c5793fded60c4e43f583121fc2a0b414eb7ef8f7..0e1cd8a32c26a54c18b319d06827883b24f4586d 100644
+--- a/components/pthread/component.mk
++++ b/components/pthread/component.mk
+@@ -16,6 +16,6 @@ ifeq ($(GCC_NOT_5_2_0), 1)
+ # Forces the linker to include pthread implementation from this component,
+ # instead of the weak implementations provided by libgcc.
+ COMPONENT_ADD_LDFLAGS += -u pthread_include_pthread_impl
+-COMPONENT_ADD_LDFLAGS += -u pthread_include_pthread_cond_impl
++COMPONENT_ADD_LDFLAGS += -u pthread_include_pthread_cond_var_impl
+ COMPONENT_ADD_LDFLAGS += -u pthread_include_pthread_local_storage_impl
+ endif  # GCC_NOT_5_2_0
+diff --git a/export.sh b/export.sh
+index 38a0b828e5d40e943719dffbe49e6769aeafad35..32b3291d17460a6284a213890bc7aaa81347cd86 100755
+--- a/export.sh
++++ b/export.sh
+@@ -45,11 +45,11 @@ function idf_export_main() {
+     # Call idf_tools.py to export tool paths
+     export IDF_TOOLS_EXPORT_CMD=${IDF_PATH}/export.sh
+     export IDF_TOOLS_INSTALL_CMD=${IDF_PATH}/install.sh
+-    idf_exports=$(${IDF_PATH}/tools/idf_tools.py export) || return 1
++    idf_exports=$(python2 ${IDF_PATH}/tools/idf_tools.py export) || return 1
+     eval "${idf_exports}"
+ 
+     echo "Checking if Python packages are up to date..."
+-    python ${IDF_PATH}/tools/check_python_dependencies.py || return 1
++    python2 ${IDF_PATH}/tools/check_python_dependencies.py || return 1
+ 
+ 
+     # Allow calling some IDF python tools without specifying the full path
+diff --git a/install.sh b/install.sh
+index d026e3c931672e00ec45277ee896b85762879385..acbce000124b4c54ec0aaab9aad5c2b61b931051 100755
+--- a/install.sh
++++ b/install.sh
+@@ -6,10 +6,10 @@ set -u
+ export IDF_PATH=$(cd $(dirname $0); pwd)
+ 
+ echo "Installing ESP-IDF tools"
+-${IDF_PATH}/tools/idf_tools.py install
++python2 ${IDF_PATH}/tools/idf_tools.py install
+ 
+ echo "Installing Python environment and packages"
+-${IDF_PATH}/tools/idf_tools.py install-python-env
++python2 ${IDF_PATH}/tools/idf_tools.py install-python-env
+ 
+ basedir="$(dirname $0)"
+ echo "All done! You can now run:"
+diff --git a/requirements.txt b/requirements.txt
+index 6a97933042f3c05b189c45769fe4ecd9ff3c2345..e04e05c1e0bbb0df917dbf08f50b31b6e77bb925 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -10,4 +10,4 @@ pyserial>=3.0
+ future>=0.15.2
+ cryptography>=2.1.4,<35
+ pyparsing>=2.0.3,<2.4.0
+-pyelftools>=0.22
++pyelftools>=0.22,<0.28
+diff --git a/tools/cmake/build.cmake b/tools/cmake/build.cmake
+index 566ff8e984635b7b6d4accc254fa4e7045a758a5..2713df4f55eaaf2b3a57ddc72ab83aa1de1378df 100644
+--- a/tools/cmake/build.cmake
++++ b/tools/cmake/build.cmake
+@@ -451,6 +451,10 @@ endmacro()
+ # files used for linking, targets which should execute before creating the specified executable,
+ # generating additional binary files, generating files related to flashing, etc.)
+ function(idf_build_executable elf)
++    # Set additional link flags for the executable
++    idf_build_get_property(link_options LINK_OPTIONS)
++    set_property(TARGET ${elf} APPEND PROPERTY LINK_OPTIONS "${link_options}")
++
+     # Propagate link dependencies from component library targets to the executable
+     idf_build_get_property(link_depends __LINK_DEPENDS)
+     set_property(TARGET ${elf} APPEND PROPERTY LINK_DEPENDS "${link_depends}")
+diff --git a/tools/cmake/component.cmake b/tools/cmake/component.cmake
+index cbd6406d73e74d71c10d604f3f939cf0d0f8091f..dd4466face0004637319e0d3235a929de7e75dc4 100644
+--- a/tools/cmake/component.cmake
++++ b/tools/cmake/component.cmake
+@@ -93,6 +93,7 @@ macro(__component_set_properties)
+     __component_set_property(${component_target} EMBED_FILES "${__EMBED_FILES}")
+     __component_set_property(${component_target} EMBED_TXTFILES "${__EMBED_TXTFILES}")
+     __component_set_property(${component_target} REQUIRED_IDF_TARGETS "${__REQUIRED_IDF_TARGETS}")
++    __component_set_property(${component_target} WHOLE_ARCHIVE ${__WHOLE_ARCHIVE})
+ endmacro()
+ 
+ #
+@@ -386,8 +387,9 @@ endfunction()
+ # @param[in, optional] REQUIRED_IDF_TARGETS (multivalue) the list of IDF build targets that the component only supports
+ # @param[in, optional] EMBED_FILES (multivalue) list of binary files to embed with the component
+ # @param[in, optional] EMBED_TXTFILES (multivalue) list of text files to embed with the component
++# @param[in, optional] WHOLE_ARCHIVE (option) link the component as --whole-archive
+ function(idf_component_register)
+-    set(options)
++    set(options WHOLE_ARCHIVE)
+     set(single_value)
+     set(multi_value SRCS SRC_DIRS EXCLUDE_SRCS
+                     INCLUDE_DIRS PRIV_INCLUDE_DIRS LDFRAGMENTS REQUIRES
+diff --git a/tools/cmake/project.cmake b/tools/cmake/project.cmake
+index e64080e69ea7ed866886193a402ae5d0da0dd79b..f40ff335f29628016d41dc50e8a351f5bccbb5a5 100644
+--- a/tools/cmake/project.cmake
++++ b/tools/cmake/project.cmake
+@@ -358,6 +358,7 @@ macro(project project_name)
+         __component_get_target(main_target idf::main)
+         __component_get_property(reqs ${main_target} REQUIRES)
+         __component_get_property(priv_reqs ${main_target} PRIV_REQUIRES)
++        __component_set_property(${main_target} WHOLE_ARCHIVE true)
+         idf_build_get_property(common_reqs __COMPONENT_REQUIRES_COMMON)
+         if(reqs STREQUAL common_reqs AND NOT priv_reqs) #if user has not set any requirements
+             list(REMOVE_ITEM build_components idf::main)
+@@ -396,7 +397,19 @@ macro(project project_name)
+     if(test_components)
+         list(REMOVE_ITEM build_components ${test_components})
+     endif()
+-    target_link_libraries(${project_elf} ${build_components})
++
++    foreach(build_component ${build_components})
++        __component_get_target(build_component_target ${build_component})
++        __component_get_property(whole_archive ${build_component_target} WHOLE_ARCHIVE)
++        if(whole_archive)
++            message(STATUS "Component ${build_component} will be linked with -Wl,--whole-archive")
++            target_link_libraries(${project_elf} "-Wl,--whole-archive" ${build_component} "-Wl,--no-whole-archive")
++        else()
++            target_link_libraries(${project_elf} ${build_component})
++            message(STATUS "Component ${build_component} will not be linked with -Wl,--whole-archive")
++            #target_link_libraries(${project_elf} "-Wl,--whole-archive" ${build_component} "-Wl,--no-whole-archive")
++        endif()
++    endforeach()
+ 
+     set(mapfile "${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}.map")
+     target_link_libraries(${project_elf} "-Wl,--cref -Wl,--Map=${mapfile} -Wl,--start-group")
+diff --git a/tools/cmake/scripts/component_get_requirements.cmake b/tools/cmake/scripts/component_get_requirements.cmake
+index 24637008bde86ead61a709c0a40c0be0274a7c46..15df499212d785d5763833fa77a69ddd3766df56 100644
+--- a/tools/cmake/scripts/component_get_requirements.cmake
++++ b/tools/cmake/scripts/component_get_requirements.cmake
+@@ -22,7 +22,7 @@ macro(require_idf_targets)
+ endmacro()
+ 
+ macro(idf_component_register)
+-    set(options)
++    set(options WHOLE_ARCHIVE)
+     set(single_value)
+     set(multi_value SRCS SRC_DIRS EXCLUDE_SRCS
+                     INCLUDE_DIRS PRIV_INCLUDE_DIRS LDFRAGMENTS REQUIRES
+diff --git a/tools/idf.py b/tools/idf.py
+index 7d6a3f49f64fcf41268adea041d19f6a48857c12..269b828ed98581464b0e08beb4464ab9089bd956 100755
+--- a/tools/idf.py
++++ b/tools/idf.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python2
+ #
+ # 'idf.py' is a top-level config/build command line tool for ESP-IDF
+ #

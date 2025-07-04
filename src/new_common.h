@@ -129,6 +129,10 @@ typedef long BaseType_t;
 #define PLATFORM_MCU_NAME "ESP32S2"
 #elif CONFIG_IDF_TARGET_ESP32S3
 #define PLATFORM_MCU_NAME "ESP32S3"
+#elif CONFIG_IDF_TARGET_ESP32C5
+#define PLATFORM_MCU_NAME "ESP32C5"
+#elif CONFIG_IDF_TARGET_ESP32C61
+#define PLATFORM_MCU_NAME "ESP32C61"
 #else
 #define PLATFORM_MCU_NAME MANUFACTURER
 #endif
@@ -163,6 +167,11 @@ typedef long BaseType_t;
 #define DEVICENAME_PREFIX_SHORT "ecr6600"
 #define PLATFORM_MCU_NAME "ECR6600"
 #define MANUFACTURER "ESWIN"
+#elif PLATFORM_ESP8266
+#define DEVICENAME_PREFIX_FULL "OpenESP8266"
+#define DEVICENAME_PREFIX_SHORT "esp8266"
+#define PLATFORM_MCU_NAME "ESP8266"
+#define MANUFACTURER "Espressif"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -214,6 +223,8 @@ This platform is not supported, error!
 #define USER_SW_VER "BK7252N_Test"
 #elif PLATFORM_ECR6600
 #define USER_SW_VER "ECR6600_Test"
+#elif PLATFORM_ESP8266
+#define USER_SW_VER "ESP8266_Test"
 #else
 #warning "USER_SW_VER undefined"
 #define USER_SW_VER "unknown"
@@ -515,7 +526,7 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define OBK_OTA_EXTENSION		".bin"
 #define OBK_OTA_NAME_EXTENSION	"_OTA"
 
-#elif PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 
 #include <arch/sys_arch.h>
 #include "esp_timer.h"
@@ -526,9 +537,9 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define os_free free
 #define os_malloc malloc
 
-//#define bk_printf printf
+#define bk_printf printf
 
-#define bk_printf(...) ESP_LOGI("OpenBeken", __VA_ARGS__);
+//#define bk_printf(...) ESP_LOGI("OpenBeken", __VA_ARGS__);
 
 #define kNoErr                      0       //! No error occurred.
 #define rtos_delay_milliseconds sys_delay_ms
@@ -557,6 +568,10 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define UINT32 uint32_t
 
 #define OBK_OTA_EXTENSION ".img"
+
+#if PLATFORM_ESP8266
+#define xPortGetFreeHeapSize() esp_get_free_heap_size()
+#endif
 
 #elif PLATFORM_TR6260
 
@@ -831,7 +846,8 @@ int strcpy_safe_checkForChanges(char *tg, const char *src, int tgMaxLen);
 void urldecode2_safe(char *dst, const char *srcin, int maxDstLen);
 int strIsInteger(const char *s);
 
-#if !defined(PLATFORM_ESPIDF) && !defined(PLATFORM_TR6260) && !defined(PLATFORM_ECR6600) && !defined(PLATFORM_BL602)
+#if !defined(PLATFORM_ESPIDF) && !defined(PLATFORM_TR6260) && !defined(PLATFORM_ECR6600) && !defined(PLATFORM_BL602) && \
+	!defined(PLATFORM_ESP8266)
 
 const char* strcasestr(const char* str1, const char* str2);
 #endif
@@ -865,7 +881,7 @@ int LWIP_GetMaxSockets();
 int LWIP_GetActiveSockets();
 
 #ifndef LINUX
-#ifndef PLATFORM_ESPIDF
+#if !PLATFORM_ESPIDF && !PLATFORM_ESP8266
 //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 void usleep(int r);
 #endif
