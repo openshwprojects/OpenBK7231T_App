@@ -351,7 +351,6 @@ jobs:
         run: |
           apt-get update && apt-get -y install cmake
           pip2 install virtualenv
-          pip2 install esptool
           patch -p1 -d sdk/ESP8266_RTOS_SDK < platforms/ESP8266/sdk.patch
           python2 -m pip install --user -r sdk/ESP8266_RTOS_SDK/requirements.txt
           python3 -m pip install esptool
@@ -433,7 +432,7 @@ jobs:
   merge:
     name: Merge Artifacts
     runs-on: ubuntu-22.04
-    needs: [refs, build, build2, build_idf, build_beken]
+    needs: [refs, build, build2, build_idf, build_beken, build_8266]
     #if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
     steps:
       - name: Merge Artifacts
