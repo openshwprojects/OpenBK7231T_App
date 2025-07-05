@@ -124,8 +124,13 @@ struct lfs_config cfg = {
     .prog_size = 1,
     .block_size = LFS_BLOCK_SIZE,
     .block_count = (LFS_BLOCKS_DEFAULT_LEN/LFS_BLOCK_SIZE),
-    .cache_size = 16,
-    .lookahead_size = 16,
+#if ENABLE_LFS_SPI
+	.cache_size = 128,
+	.lookahead_size = 128,
+#else
+	.cache_size = 16,
+	.lookahead_size = 16,
+#endif
     .block_cycles = 500,
 };
 
@@ -147,11 +152,16 @@ static commandResult_t CMD_LFS_Size(const void *context, const char *cmd, const 
 
     const char *p = args;
 
-    uint32_t newsize = strtol(args, (char **)&p, 0);
-    uint32_t newstart = (LFS_BLOCKS_END - newsize);
+#if ENABLE_LFS_SPI
+	uint32_t newsize = strtol(args, (char **)&p, 0);
+	uint32_t newstart = 0;
 
-    newsize = (newsize/LFS_BLOCK_SIZE)*LFS_BLOCK_SIZE;
+	newsize = (newsize / LFS_BLOCK_SIZE)*LFS_BLOCK_SIZE;
+#else
+	uint32_t newsize = strtol(args, (char **)&p, 0);
+	uint32_t newstart = (LFS_BLOCKS_END - newsize);
 
+	newsize = (newsize / LFS_BLOCK_SIZE)*LFS_BLOCK_SIZE;
     if ((newsize < LFS_BLOCKS_MIN_LEN) || (newsize > LFS_BLOCKS_MAX_LEN)) {
         ADDLOG_ERROR(LOG_FEATURE_CMD, "LFSSize OUT OF BOUNDS 0x%X (range 0x%X-0x%X)", 
             newsize,
@@ -172,7 +182,7 @@ static commandResult_t CMD_LFS_Size(const void *context, const char *cmd, const 
         ADDLOG_ERROR(LOG_FEATURE_CMD, "LFSSize OUT OF BOUNDS end 0x%X", newstart + newsize);
         return CMD_RES_ERROR;
     }
-
+#endif
 
     CFG_SetLFS_Size(newsize);
     ADDLOG_INFO(LOG_FEATURE_CMD, "LFS size 0x%X new configured 0x%X", LFS_Size, CFG_GetLFS_Size());
@@ -213,28 +223,32 @@ static commandResult_t CMD_LFS_Format(const void *context, const char *cmd, cons
     uint32_t newsize = CFG_GetLFS_Size();
 
     newsize = (newsize/LFS_BLOCK_SIZE)*LFS_BLOCK_SIZE;
-    if ((newsize < LFS_BLOCKS_MIN_LEN) || (newsize > LFS_BLOCKS_MAX_LEN)) {
-        ADDLOGF_ERROR("LFSSize OUT OF BOUNDS 0x%X (range 0x%X-0x%X) - defaulting to 0x%X", 
-            newsize,
-            LFS_BLOCKS_MIN_LEN,
-            LFS_BLOCKS_MAX_LEN,
-            LFS_BLOCKS_DEFAULT_LEN
-            );
-        newsize = LFS_BLOCKS_DEFAULT_LEN;
-    }
-    uint32_t newstart = (LFS_BLOCKS_END - newsize);
+#if ENABLE_LFS_SPI
+	uint32_t newstart = 0;
+#else
+	if ((newsize < LFS_BLOCKS_MIN_LEN) || (newsize > LFS_BLOCKS_MAX_LEN)) {
+		ADDLOGF_ERROR("LFSSize OUT OF BOUNDS 0x%X (range 0x%X-0x%X) - defaulting to 0x%X",
+			newsize,
+			LFS_BLOCKS_MIN_LEN,
+			LFS_BLOCKS_MAX_LEN,
+			LFS_BLOCKS_DEFAULT_LEN
+		);
+		newsize = LFS_BLOCKS_DEFAULT_LEN;
+	}
+	uint32_t newstart = (LFS_BLOCKS_END - newsize);
 
-    // double check again that we're within bounds - don't want
-    // boot overwrite or anything nasty....
-    if (newstart < LFS_BLOCKS_START_MIN){
-        ADDLOG_ERROR(LOG_FEATURE_CMD, "LFS OUT OF BOUNDS start 0x%X too small", newstart);
-        return CMD_RES_ERROR;
-    }
-    if ((newstart + newsize > LFS_BLOCKS_END) ||
-        (newstart + newsize < LFS_BLOCKS_START_MIN)){
-        ADDLOG_ERROR(LOG_FEATURE_CMD, "LFS OUT OF BOUNDS end 0x%X too big", newstart + newsize);
-        return CMD_RES_ERROR;
-    }
+	// double check again that we're within bounds - don't want
+	// boot overwrite or anything nasty....
+	if (newstart < LFS_BLOCKS_START_MIN) {
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "LFS OUT OF BOUNDS start 0x%X too small", newstart);
+		return CMD_RES_ERROR;
+	}
+	if ((newstart + newsize > LFS_BLOCKS_END) ||
+		(newstart + newsize < LFS_BLOCKS_START_MIN)) {
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "LFS OUT OF BOUNDS end 0x%X too big", newstart + newsize);
+		return CMD_RES_ERROR;
+	}
+#endif
 
     LFS_Start = newstart;
     LFS_Size = newsize;
@@ -454,6 +468,10 @@ void init_lfs(int create){
     if (!lfs_initialised){
         uint32_t newsize = CFG_GetLFS_Size();
 
+#if ENABLE_LFS_SPI
+		uint32_t newstart = 0;
+		// do nothing for now?
+#else
         // double check again that we're within bounds - don't want
         // boot overwrite or anything nasty....
         newsize = (newsize/LFS_BLOCK_SIZE)*LFS_BLOCK_SIZE;
@@ -477,6 +495,7 @@ void init_lfs(int create){
             ADDLOGF_ERROR("LFS OUT OF BOUNDS end 0x%X too big", newstart + newsize);
             return;
         }
+#endif
 
 #if PLATFORM_BL602
 
@@ -593,8 +612,58 @@ void release_lfs(){
 	}
 }
 
+#if ENABLE_LFS_SPI
 
-#if PLATFORM_BEKEN || WINDOWS
+
+void LFS_SPI_Flash_Write(int adr, const byte *data, int cnt);
+void LFS_SPI_Flash_Read(int adr, int cnt, byte *data);
+
+void LFS_SPI_Flash_EraseSector(int addr);
+
+// Read a region in a block. Negative error codes are propogated
+// to the user.
+static int lfs_read(const struct lfs_config *c, lfs_block_t block,
+	lfs_off_t off, void *buffer, lfs_size_t size) {
+	int res;
+	unsigned int startAddr = 0;
+	startAddr = block * LFS_BLOCK_SIZE;
+	startAddr += off;
+
+	LFS_SPI_Flash_Read(startAddr, size, buffer);
+
+	return LFS_ERR_OK;
+}
+
+// Program a region in a block. The block must have previously
+// been erased. Negative error codes are propogated to the user.
+// May return LFS_ERR_CORRUPT if the block should be considered bad.
+static int lfs_write(const struct lfs_config *c, lfs_block_t block,
+	lfs_off_t off, const void *buffer, lfs_size_t size) {
+	unsigned int startAddr;
+
+	startAddr = block * LFS_BLOCK_SIZE;
+	startAddr += off;
+
+	LFS_SPI_Flash_Write(startAddr, buffer, size);
+
+	return LFS_ERR_OK;
+}
+
+// Erase a block. A block must be erased before being programmed.
+// The state of an erased block is undefined. Negative error codes
+// are propogated to the user.
+// May return LFS_ERR_CORRUPT if the block should be considered bad.
+static int lfs_erase(const struct lfs_config *c, lfs_block_t block) {
+	unsigned int startAddr;
+
+	startAddr = block * LFS_BLOCK_SIZE;
+
+	LFS_SPI_Flash_EraseSector(startAddr);
+
+	return 0;
+}
+
+#elif PLATFORM_BEKEN || WINDOWS
 // Read a region in a block. Negative error codes are propogated
 // to the user.
 static int lfs_read(const struct lfs_config *c, lfs_block_t block,

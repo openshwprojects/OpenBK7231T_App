@@ -11,6 +11,11 @@ typedef struct softSPI_s {
 	byte miso;
 	byte mosi;
 	byte ss;
+
+	unsigned int *sck_reg;
+	unsigned int *mosi_reg;
+	unsigned int *miso_reg;
+	unsigned int *ss_reg;
 } softSPI_t;
 
 void SPI_Send(softSPI_t *spi, byte dataToSend);
