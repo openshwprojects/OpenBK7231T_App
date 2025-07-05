@@ -74,6 +74,49 @@ static float Scale(float raw, float cal) {
     return (cal_type == PWR_CAL_MULTIPLY ? raw * cal : raw / cal);
 }
 
+
+static commandResult_t CalibrateCmd(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+	int argc = Tokenizer_GetArgsCount();
+
+	if (argc == 0) {
+		// Print current calibration floats
+		ADDLOG_INFO(LOG_FEATURE_ENERGYMETER, "Calibrate values: Voltage=%.6f Current=%.6f Power=%.6f",
+			voltage_cal, current_cal, power_cal);
+		return CMD_RES_OK;
+	}
+
+	if (argc != 3) {
+		ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER, "%s requires exactly 3 float arguments or none",
+			cmd);
+		return CMD_RES_BAD_ARGUMENT;
+	}
+
+	float v = Tokenizer_GetArgFloat(0);
+	float c = Tokenizer_GetArgFloat(1);
+	float p = Tokenizer_GetArgFloat(2);
+
+#define VERY_SMALL_VAL 0.001f
+	if (fabsf(v) < VERY_SMALL_VAL || fabsf(c) < VERY_SMALL_VAL || fabsf(p) < VERY_SMALL_VAL) {
+		ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER, "%s: calibration values must be non-zero", cmd);
+		return CMD_RES_BAD_ARGUMENT;
+	}
+
+	// Save new calibration values to config and update variables
+	voltage_cal = v;
+	current_cal = c;
+	power_cal = p;
+
+	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, voltage_cal);
+	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, current_cal);
+	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, power_cal);
+
+	ADDLOG_INFO(LOG_FEATURE_ENERGYMETER, "%s: Calibration updated to Voltage=%.6f Current=%.6f Power=%.6f",
+		cmd, voltage_cal, current_cal, power_cal);
+
+	return CMD_RES_OK;
+}
+
 void PwrCal_Init(pwr_cal_type_t type, float default_voltage_cal,
                  float default_current_cal, float default_power_cal) {
     cal_type = type;
@@ -100,6 +143,9 @@ void PwrCal_Init(pwr_cal_type_t type, float default_voltage_cal,
 	//cmddetail:"fn":"NULL);","file":"driver/drv_pwrCal.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("PowerSet", CalibratePower, NULL);
+
+
+	CMD_RegisterCommand("Calibrate", CalibrateCmd, NULL); 
 }
 
 void PwrCal_Scale(int raw_voltage, float raw_current, int raw_power,
