@@ -31,8 +31,7 @@
 // http://192.168.0.166/api/lfs/
 // To get file, use GET:
 // http://192.168.0.166/api/lfs/
-#if 0
-//(PLATFORM_BK7231T || PLATFORM_BK7231N) && !PLATFORM_BEKEN_NEW
+#if (PLATFORM_BK7231T || PLATFORM_BK7231N) && !PLATFORM_BEKEN_NEW
 
 #include "include.h"
 #include "arm_arch.h"
