@@ -53,7 +53,7 @@
 	extern hal_reset_reason_t reset_reason;
 	#endif
 	SemaphoreHandle_t scan_hdl;
-#elif defined(PLATFORM_ESPIDF)
+#elif defined(PLATFORM_ESPIDF) || PLATFORM_ESP8266
 #include "esp_wifi.h"
 #include "esp_system.h"
 #elif defined(PLATFORM_BK7231T)
@@ -1398,7 +1398,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 			hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", i + 1, (int)num, ar[i].ssid, ar[i].channel, ar[i].rssi);
 		}
 		tuya_os_adapt_wifi_release_ap(ar);
-#elif PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 		// doesn't work in ap mode, only sta/apsta
 		uint16_t ap_count = 0, number = 30;
 		wifi_ap_record_t ap_info[number];
@@ -3178,7 +3178,7 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 
 #elif PLATFORM_LN882H
 
-#elif PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 #elif PLATFORM_TR6260
 #elif PLATFORM_REALTEK
 #elif PLATFORM_ECR6600

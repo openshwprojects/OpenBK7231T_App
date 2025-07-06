@@ -57,6 +57,12 @@ extern void HAL_XR_ConfigurePin(GPIO_Port port, GPIO_Pin pin, GPIO_WorkMode mode
 xrpin_t* xr_cf;
 xrpin_t* xr_cf1;
 
+#elif PLATFORM_ESP8266 || PLATFORM_ESPIDF
+
+#include "../hal/espidf/hal_pinmap_espidf.h"
+espPinMapping_t* esp_cf;
+espPinMapping_t* esp_cf1;
+
 #else
 
 
@@ -183,7 +189,7 @@ void cf1_irq_handler(uint32_t id, gpio_irq_event event)
 	g_vc_pulses++;
 }
 
-#elif PLATFORM_XRADIO
+#elif PLATFORM_XRADIO || PLATFORM_ESPIDF || PLATFORM_ESP8266
 
 static void HlwCf1Interrupt(void* arg)
 {
@@ -268,6 +274,12 @@ void BL0937_Shutdown_Pins()
 	HAL_GPIO_DeInit(xr_cf1->port, xr_cf1->pin);
 	HAL_GPIO_DisableIRQ(xr_cf1->port, xr_cf1->pin);
 
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
+
+	gpio_isr_handler_remove(esp_cf->pin);
+	gpio_isr_handler_remove(esp_cf1->pin);
+	gpio_uninstall_isr_service();
+
 #endif
 }
 
@@ -325,6 +337,12 @@ void BL0937_Init_Pins()
 	xr_cf = g_pins + GPIO_HLW_CF;
 	xr_cf1 = g_pins + GPIO_HLW_CF1;
 
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
+
+	esp_cf = g_pins + GPIO_HLW_CF;
+	esp_cf1 = g_pins + GPIO_HLW_CF1;
+	gpio_install_isr_service(0);
+
 #endif
 
 	BL0937_PMAX = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER_MAX, BL0937_PMAX);
@@ -380,6 +398,11 @@ void BL0937_Init_Pins()
 	cf1param.arg = (void*)0;
 	HAL_GPIO_EnableIRQ(xr_cf1->port, xr_cf1->pin, &cf1param);
 
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
+
+	ESP_ConfigurePin(esp_cf1->pin, GPIO_MODE_INPUT, true, false, GPIO_INTR_NEGEDGE);
+	gpio_isr_handler_add((1ULL << (uint32_t)esp_cf1->pin), HlwCf1Interrupt, NULL);
+
 #endif
 
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF);
@@ -429,6 +452,11 @@ void BL0937_Init_Pins()
 	cfparam.callback = HlwCfInterrupt;
 	cfparam.arg = (void*)0;
 	HAL_GPIO_EnableIRQ(xr_cf->port, xr_cf->pin, &cfparam);
+
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
+
+	ESP_ConfigurePin(esp_cf->pin, GPIO_MODE_INPUT, true, false, GPIO_INTR_NEGEDGE);
+	gpio_isr_handler_add((1ULL << (uint32_t)esp_cf->pin), HlwCfInterrupt, NULL);
 
 #endif
 

@@ -61,11 +61,6 @@ $(BUILD_DIR)/%.c.o: %.c
 	@echo "Compiling: $< -> $@"
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-.PHONY: clean
-
-clean:
-	$(RM) -r $(BUILD_DIR)
-
 -include $(DEPS)
 
 

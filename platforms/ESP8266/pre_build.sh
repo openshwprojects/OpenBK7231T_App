@@ -1,7 +1,8 @@
-# This script will be called just before starting build process for ESP-IDF
+# This script will be called just before starting build process for ESP8266
 # It allows you to make changes to the SDK, for example..
 # For example, you can use changed files in the SDK for the automated build during the checks for a PR without changing the SDK itself:
 # So your PR needs a modified define in the SDK, for example ? This script can make this change directly before the build.
+#
 #
 #
 # As an example you will find a script below which will copy all content of the "override"
@@ -26,6 +27,7 @@
 #done
 ## restore IFS to whatever it was before ...
 #IFS=$OFS
+#
 # you can also use all other commands to change files, like
 # sed -i "s/#define FOO bar/#define FOO baz/" sdk/esp-idf/components/esp_driver_ledc/src/ledc.c
 # or, let's assume you made a local change to your SDK

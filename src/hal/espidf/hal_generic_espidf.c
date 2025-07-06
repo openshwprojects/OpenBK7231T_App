@@ -1,4 +1,4 @@
-#ifdef PLATFORM_ESPIDF
+#if PLATFORM_ESPIDF || PLATFORM_ESP8266
 
 #include <unistd.h>
 #include "../hal_generic.h"
@@ -6,6 +6,9 @@
 #include "nvs_flash.h"
 #include "nvs.h"
 #include "freertos/FreeRTOS.h"
+#if PLATFORM_ESPIDF
+#include "hal/wdt_hal.h"
+#endif
 
 static int bFlashReady = 0;
 
@@ -22,7 +25,6 @@ void InitFlashIfNeeded()
 	}
 
 	bFlashReady = 1;
-
 }
 
 void HAL_RebootModule()
@@ -33,6 +35,16 @@ void HAL_RebootModule()
 void HAL_Delay_us(int delay)
 {
 	usleep(delay);
+}
+
+void HAL_Run_WDT()
+{
+#if PLATFORM_ESPIDF
+	wdt_hal_context_t rtc_wdt_ctx = RWDT_HAL_CONTEXT_DEFAULT();
+	wdt_hal_write_protect_disable(&rtc_wdt_ctx);
+	wdt_hal_feed(&rtc_wdt_ctx);
+	wdt_hal_write_protect_enable(&rtc_wdt_ctx);
+#endif
 }
 
 #endif // PLATFORM_ESPIDF

@@ -5,7 +5,7 @@
 #include "esp_adc/adc_oneshot.h"
 #include "esp_adc/adc_cali.h"
 #include "esp_adc/adc_cali_scheme.h"
-#include "hal_generic_espidf.h"
+#include "hal_pinmap_espidf.h"
 
 extern espPinMapping_t g_pins[];
 extern int g_numPins;
