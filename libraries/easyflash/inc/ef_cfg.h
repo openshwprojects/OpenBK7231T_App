@@ -111,6 +111,11 @@
 #define EF_START_ADDR             0x1B0000
 #define ENV_AREA_SIZE             0x40000
 
+#elif PLATFORM_RTL8721DA
+
+#define EF_START_ADDR             0x3E0000
+#define ENV_AREA_SIZE             0x8000
+
 #elif PLATFORM_W800
 
 #define EF_START_ADDR             0x1DB000

@@ -1058,7 +1058,7 @@ typedef enum channelType_e {
 #define PLATFORM_GPIO_MAX 17
 #elif PLATFORM_RTL8710A
 #define PLATFORM_GPIO_MAX 20
-#elif PLATFORM_RTL8720D
+#elif PLATFORM_RTL8720D || PLATFORM_RTL8721DA
 #define PLATFORM_GPIO_MAX 64
 #elif PLATFORM_ECR6600
 #define PLATFORM_GPIO_MAX 27
@@ -1131,7 +1131,7 @@ typedef struct pinsState_s
 	byte channelTypes[CHANNEL_MAX];
 } pinsState_t;
 
-#elif PLATFORM_RTL8720D
+#elif PLATFORM_RTL8720D || PLATFORM_RTL8721DA
 
 #define MAX_PIN_ROLES 64
 
@@ -1385,7 +1385,7 @@ typedef struct mainConfig_s {
 	byte unusedSectorAB[51];
 #elif PLATFORM_ESPIDF
 	byte unusedSectorAB[43];
-#elif PLATFORM_RTL8720D
+#elif PLATFORM_RTL8720D || PLATFORM_RTL8721DA
 	byte unusedSectorAB;
 #else    
 	byte unusedSectorAB[99];

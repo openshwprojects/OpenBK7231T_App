@@ -338,6 +338,15 @@ prebuild_OpenECR6600: berry
 	else echo "prebuild for OpenECR6600 not found ... "; \
 	fi
 
+prebuild_OpenRTL8721DA: berry
+	#git submodule update --init --recursive --depth=1 sdk/ameba-rtos
+	if [ ! -e sdk/ameba-rtos/amebadplus_gcc_project/menuconfig/.config ]; then cd sdk/ameba-rtos/amebadplus_gcc_project && ./menuconfig.py -f ../../../platforms/RTL8721DA/default.conf; fi
+	@if [ -e platforms/RTL8721DA/pre_build.sh ]; then \
+		echo "prebuild found for OpenRTL8721DA"; \
+		sh platforms/RTL8721DA/pre_build.sh; \
+	else echo "prebuild for OpenRTL8721DA not found ... "; \
+	fi
+
 # Build main binaries
 OpenBK7231T: prebuild_OpenBK7231T
 	mkdir -p output
@@ -550,6 +559,15 @@ OpenRTL8720D: prebuild_OpenRTL8720D
 	dd conv=notrunc bs=1 if=sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_hp/asdk/image/km4_boot_all.bin of=output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION).bin seek=$(shell printf "%d" 0x4000)
 	dd conv=notrunc bs=1 if=sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_hp/asdk/image/km0_km4_image2.bin of=output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION).bin seek=$(shell printf "%d" 0x6000)
 	cp sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_lp/asdk/image/OTA_All.bin output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION)_ota.img
+
+.PHONY: OpenRTL8721DA
+OpenRTL8721DA: prebuild_OpenRTL8721DA
+	cd sdk/ameba-rtos/amebadplus_gcc_project && APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) ./build.py -a ../../../platforms/RTL8721DA
+	mkdir -p output/$(APP_VERSION)
+	touch output/$(APP_VERSION)/OpenRTL8721DA_$(APP_VERSION).bin
+	dd conv=notrunc bs=1 if=sdk/ameba-rtos/amebadplus_gcc_project/km4_boot_all.bin of=output/$(APP_VERSION)/OpenRTL8721DA_$(APP_VERSION).bin seek=0
+	dd conv=notrunc bs=1 if=sdk/ameba-rtos/amebadplus_gcc_project/km0_km4_app.bin of=output/$(APP_VERSION)/OpenRTL8721DA_$(APP_VERSION).bin seek=$(shell printf "%d" 0x14000)
+	cp sdk/ameba-rtos/amebadplus_gcc_project/ota_all.bin output/$(APP_VERSION)/OpenRTL8721DA_$(APP_VERSION)_ota.img
 
 .PHONY: OpenBK7238
 OpenBK7238: prebuild_OpenBK7238

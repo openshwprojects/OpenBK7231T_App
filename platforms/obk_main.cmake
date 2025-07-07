@@ -4,7 +4,6 @@ set(OBKM_SRC
 	${OBK_SRCS}base64/base64.c
 	${OBK_SRCS}bitmessage/bitmessage_read.c
 	${OBK_SRCS}bitmessage/bitmessage_write.c
-	${OBK_SRCS}cJSON/cJSON.c
 	${OBK_SRCS}cmnds/cmd_berry.c
 	${OBK_SRCS}cmnds/cmd_channels.c
 	${OBK_SRCS}cmnds/cmd_eventHandlers.c
@@ -53,7 +52,6 @@ set(OBKM_SRC
 	${OBK_SRCS}httpclient/utils_net.c
 	${OBK_SRCS}httpclient/utils_timer.c
 	${OBK_SRCS}littlefs/lfs_util.c
-	${OBK_SRCS}littlefs/lfs.c
 	${OBK_SRCS}littlefs/our_lfs.c
 	${OBK_SRCS}ota/ota.c
 
@@ -120,6 +118,8 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_spidma.c
 	${OBK_SRCS}driver/drv_ssdp.c
 	${OBK_SRCS}driver/drv_tasmotaDeviceGroups.c
+	${OBK_SRCS}driver/drv_tclAC.c
+	${OBK_SRCS}driver/drv_test.c
 	${OBK_SRCS}driver/drv_test_drivers.c
 	${OBK_SRCS}driver/drv_textScroller.c
 	${OBK_SRCS}driver/drv_tm1637.c
@@ -141,6 +141,14 @@ set(OBKM_SRC
 #	${OBK_SRCS}driver/drv_bmp280.c
 #	${OBK_SRCS}driver/drv_sm15155e.c
 #	${OBK_SRCS}driver/drv_sm16703P.c
-#	${OBK_SRCS}driver/drv_test.c
 #	${OBK_SRCS}driver/drv_test_charts.c
 )
+
+
+if(NOT DEFINED SDK_CJSON)
+	set(OBKM_SRC ${OBKM_SRC} ${OBK_SRCS}cJSON/cJSON.c)
+endif()
+
+if(NOT DEFINED SDK_LFS)
+	set(OBKM_SRC ${OBKM_SRC} ${OBK_SRCS}littlefs/lfs.c)
+endif()

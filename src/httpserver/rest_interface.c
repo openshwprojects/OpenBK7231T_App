@@ -103,6 +103,12 @@ extern uint8_t flash_size_8720;
 #undef DEFAULT_FLASH_LEN
 #define DEFAULT_FLASH_LEN (flash_size_8720 << 20)
 
+#elif PLATFORM_RTL8721DA
+
+#include "ameba_ota.h"
+extern uint32_t current_fw_idx;
+extern uint32_t IMG_ADDR[OTA_IMGID_MAX][2];
+
 #endif
 
 #elif PLATFORM_ECR6600
@@ -3190,6 +3196,10 @@ update_ota_exit:
 		ADDLOG_ERROR(LOG_FEATURE_OTA, "OTA failed.");
 		return http_rest_error(request, ret, "error");
 	}
+#elif PLATFORM_RTL8721DA
+
+	return http_rest_error(request, -20, "error");
+
 #else
 
 	init_ota(startaddr);
