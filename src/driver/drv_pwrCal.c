@@ -74,27 +74,37 @@ static float Scale(float raw, float cal) {
     return (cal_type == PWR_CAL_MULTIPLY ? raw * cal : raw / cal);
 }
 
+static float ParseArgWithHexSupport(int index) {
+	const char *arg = Tokenizer_GetArg(index);
+	if (arg && arg[0] == '0' && (arg[1] == 'x' || arg[1] == 'X')) {
+		unsigned int hexVal = 0;
+		sscanf(arg, "%x", &hexVal);
+		return *(float *)&hexVal;
+	}
+	return Tokenizer_GetArgFloat(index);
+}
 
 static commandResult_t CalibrateCmd(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
 	int argc = Tokenizer_GetArgsCount();
 
 	if (argc == 0) {
-		// Print current calibration floats
-		ADDLOG_INFO(LOG_FEATURE_ENERGYMETER, "Calibrate values: Voltage=%.6f Current=%.6f Power=%.6f",
-			voltage_cal, current_cal, power_cal);
+		ADDLOG_INFO(LOG_FEATURE_ENERGYMETER,
+			"Calibrate values: Voltage=%.6f (0x%08X) Current=%.6f (0x%08X) Power=%.6f (0x%08X)",
+			voltage_cal, *(uint32_t *)&voltage_cal,
+			current_cal, *(uint32_t *)&current_cal,
+			power_cal, *(uint32_t *)&power_cal);
 		return CMD_RES_OK;
 	}
 
 	if (argc != 3) {
-		ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER, "%s requires exactly 3 float arguments or none",
-			cmd);
+		ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER, "%s requires exactly 3 float or 0xHEX arguments", cmd);
 		return CMD_RES_BAD_ARGUMENT;
 	}
 
-	float v = Tokenizer_GetArgFloat(0);
-	float c = Tokenizer_GetArgFloat(1);
-	float p = Tokenizer_GetArgFloat(2);
+	float v = ParseArgWithHexSupport(0);
+	float c = ParseArgWithHexSupport(1);
+	float p = ParseArgWithHexSupport(2);
 
 #define VERY_SMALL_VAL 0.001f
 	if (fabsf(v) < VERY_SMALL_VAL || fabsf(c) < VERY_SMALL_VAL || fabsf(p) < VERY_SMALL_VAL) {
@@ -102,7 +112,6 @@ static commandResult_t CalibrateCmd(const void *context, const char *cmd, const 
 		return CMD_RES_BAD_ARGUMENT;
 	}
 
-	// Save new calibration values to config and update variables
 	voltage_cal = v;
 	current_cal = c;
 	power_cal = p;
@@ -111,8 +120,12 @@ static commandResult_t CalibrateCmd(const void *context, const char *cmd, const 
 	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, current_cal);
 	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, power_cal);
 
-	ADDLOG_INFO(LOG_FEATURE_ENERGYMETER, "%s: Calibration updated to Voltage=%.6f Current=%.6f Power=%.6f",
-		cmd, voltage_cal, current_cal, power_cal);
+	ADDLOG_INFO(LOG_FEATURE_ENERGYMETER,
+		"%s: Calibration updated to Voltage=%.6f (0x%08X) Current=%.6f (0x%08X) Power=%.6f (0x%08X)",
+		cmd,
+		voltage_cal, *(uint32_t *)&voltage_cal,
+		current_cal, *(uint32_t *)&current_cal,
+		power_cal, *(uint32_t *)&power_cal);
 
 	return CMD_RES_OK;
 }
