@@ -597,29 +597,60 @@ int DS18B20_set_channel(DeviceAddress devaddr,int c)
 	return 0;
 };
 
-// convert a string with sensor address to "DeviceAddress"
-int devstr2DeviceAddr(uint8_t *devaddr, const char *dev){
-	DeviceAddress daddr={0};
-	int s;
-#if PLATFORM_W600 || PLATFORM_LN882H || PLATFORM_RTL87X0C	
-// this platforms won't allow sscanf of %hhx, so we need to use %x/%X and hence we need temporary unsigned ints ...
-// test and add new platforms if needed
-	unsigned int t[8];
-	s = sscanf(dev,DEVSTR, &t[0],&t[1],&t[2],&t[3],&t[4],&t[5],&t[6],&t[7]);
-	for (int i=0; i<8; i++) daddr[i]=(uint8_t)t[i];
-#else
-	s = sscanf(dev,"0x%02hhx 0x%02hhx 0x%02hhx 0x%02hhx 0x%02hhx 0x%02hhx 0x%02hhx 0x%02hhx",
-		&daddr[0],&daddr[1],&daddr[2],&daddr[3],&daddr[4],&daddr[5],&daddr[6],&daddr[7]);
-#endif
-//	DS1820_LOG(DEBUG, "devstr2DeviceAddr: After sscanf - DevAddr=" DEVSTR, DEV2STR(daddr));
 
-	if ( s!=8 ) {
-		bk_printf("devstr2DeviceAddr -  conversion failed (converted %i)",s);
-		DS1820_LOG(ERROR, "devstr2DeviceAddr: conversion failed (converted %i)",s);
-		return 0;
-	}
-	memcpy(devaddr,daddr,8);
-	return 1;
+// Helper to check for a valid hex character
+int is_valid_hex_char(char c) {
+    return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+}
+
+// convert a string with sensor address to "DeviceAddress"
+// valid input is 
+// "0x28 0x01 0x02 0x03 0x04 0x05 0x06 0x07" or
+// "2801020304050607"
+// additional whitespace is ignored, also any input after 8 bytes (warning is printed)
+int devstr2DeviceAddr(uint8_t *devaddr, const char *dev){
+    // Clear the address array
+    memset(devaddr, 0, 8);
+    int count = 0; // Count of valid hex values read
+    char hex_pair[3] = {0}; // Buffer to hold two hex digits
+
+    for (int i = 0; dev[i] != '\0'; i++) {
+        // Skip whitespace
+        if (isspace(dev[i])) {
+            continue;
+        }
+        if (count >= 8) {	// we already found 8 address byte, but input is not empty !
+		DS1820_LOG(WARN, "devstr2DeviceAddr: WARNING additional input after 8th address byte ('%s') is ignored. Using only %.*s",&dev[i],i,dev);
+		return count;
+        }
+        // Check for "0x" or "0X"
+        if (dev[i] == '0' && (dev[i + 1] == 'x' || dev[i + 1] == 'X')) {
+            i++; // Skip both '0' and 'x'
+            // Read the next two hex digits
+            if (is_valid_hex_char(dev[i + 1]) && is_valid_hex_char(dev[i + 2])) {
+                hex_pair[0] = dev[i + 1];
+                hex_pair[1] = dev[i + 2];
+                devaddr[count++] = (uint8_t)strtol(hex_pair, NULL, 16); // Convert to uint8_t
+                i += 2; // advance the two hex digits
+            } else {
+                return -1; // Error: Invalid hex sequence
+            }
+        } else if (is_valid_hex_char(dev[i])) {
+            // If a valid hex character is found, read the next character
+            if (is_valid_hex_char(dev[i + 1])) {
+                hex_pair[0] = dev[i];
+                hex_pair[1] = dev[i + 1];
+                devaddr[count++] = (uint8_t)strtol(hex_pair, NULL, 16); // Convert to uint8_t
+                i++; // Move to the next hex character
+            } else {
+                return -1; // Error: Incomplete hex pair
+            }
+        } else {
+            return -1; // Error: Invalid character found
+        } 
+    }
+    // Return the number of valid hex values read
+    return count; // Success
 }
 
 commandResult_t CMD_DS18B20_setsensor(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -775,7 +806,7 @@ int http_fn_cfg_ds18b20(http_request_t* request)
 
 	poststr(request, "<br><input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? ')\"></form><script>function gen(){M=getElement('CB').checked?0:1;v=M?'backlog ':'';v+='startDriver DS1820_FULL ';");
 	hprintf255(request, "for (i=0;i<%i;i++){",ds18_count);
-	poststr(request, "v+=M?';':'\\n';v+='DS1820_FULL_setsensor '+'\"'+getElement('a'+i).innerHTML+'\" '+getElement('pin'+i).innerHTML+' \"'+getElement('ds1820name'+i).value+'\" '+getElement('ds1820chan'+i).value}return v;};</script>");
+	poststr(request, "v+=M?';':'\\n';v+='DS1820_FULL_setsensor '+'\"'+getElement('a'+i).innerHTML.replaceAll(/[ ]*0[xX]/g,'')+'\" '+getElement('pin'+i).innerHTML+' \"'+getElement('ds1820name'+i).value+'\" '+getElement('ds1820chan'+i).value}return v;};</script>");
 	poststr(request,"<br>Use multiline command <input type='checkbox' id='CB'><br><input type='button' value='generate command for config' onclick='t=document.getElementById(\"text\"); t.value=gen(); t.hidden=false;'><textarea id='text' hidden '> </textarea><p>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
