@@ -32,7 +32,10 @@ int OWReset(int Pin)
 {
 	int result;
 
+// ESP32 will crash if interrupts are disabled for > 480us
+#ifndef CONFIG_IDF_TARGET_ESP32
 	noInterrupts();
+#endif
 
 	//HAL_Delay_us(OWtimeG);
 	HAL_PIN_Setup_Output(Pin);
@@ -42,7 +45,9 @@ int OWReset(int Pin)
 	HAL_Delay_us(OWtimeI);
 	result = HAL_PIN_ReadDigitalInput(Pin) ^ 0x01; // Sample for presence pulse from slave
 
+#ifndef CONFIG_IDF_TARGET_ESP32
 	interrupts();
+#endif
 
 	HAL_Delay_us(OWtimeJ); // Complete the reset sequence recovery
 	return result; // Return sample presence pulse result
