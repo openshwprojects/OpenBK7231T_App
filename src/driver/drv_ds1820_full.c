@@ -616,7 +616,7 @@ int devstr2DeviceAddr(uint8_t *devaddr, const char *dev){
 
     for (int i = 0; dev[i] != '\0'; i++) {
         // Skip whitespace
-        if (isspace(dev[i])) {
+        if (isspace((unsigned char)dev[i])) {
             continue;
         }
         if (count >= 8) {	// we already found 8 address byte, but input is not empty !
