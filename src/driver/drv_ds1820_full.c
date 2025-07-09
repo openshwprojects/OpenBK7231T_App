@@ -840,7 +840,7 @@ void DS1820_full_OnEverySecond()
 			for (int i=0; i < ds18_count; i++) {
 				ds18b20devices.last_read[i] += 1 ;
 				errcount = 0;
-				float t_float = 20.0 + 0.1*(g_secondsElapsed%20 -10);
+				float t_float = 20.0 + i/10.0 + (g_secondsElapsed%100)/100;
 					ds18b20devices.lasttemp[i] = t_float;
 					ds18b20devices.last_read[i] = 0;
 					if (ds18b20devices.channel[i]>=0) CHANNEL_Set(ds18b20devices.channel[i], (int)(t_float*100), CHANNEL_SET_FLAG_SILENT);
