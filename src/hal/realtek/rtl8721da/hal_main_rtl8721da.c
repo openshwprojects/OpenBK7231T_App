@@ -1,4 +1,4 @@
-#ifdef PLATFORM_RTL8721DA
+#if PLATFORM_RTL8721DA || PLATFORM_RTL8720E
 
 #include "../../../new_common.h"
 #include "wifi_api_types.h"

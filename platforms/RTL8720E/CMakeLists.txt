@@ -2,7 +2,7 @@ ameba_internal_library(OpenBeken)
 
 add_compile_definitions(PLATFORM_REALTEK=1)
 add_compile_definitions(PLATFORM_REALTEK_NEW=1)
-add_compile_definitions(PLATFORM_RTL8721DA=1)
+add_compile_definitions(PLATFORM_RTL8720E=1)
 add_compile_definitions(TCP_MSL=1000)
 #broken in current release
 #add_compile_definitions(LWIP_NETIF_HOSTNAME=1)
@@ -56,7 +56,7 @@ target_sources(
 	${OBK_SRCS}hal/realtek/hal_pins_realtek.c
 	${OBK_SRCS}hal/realtek/hal_wifi_realtek_new.c
 	${OBK_SRCS}hal/realtek/rtl8721da/hal_main_rtl8721da.c
-	${OBK_SRCS}hal/realtek/rtl8721da/hal_pins_rtl8721da.c
+	${OBK_SRCS}hal/realtek/rtl8720e/hal_pins_rtl8720e.c
 	${OBK_SRCS}hal/realtek/rtl8721da/hal_uart_rtl8721da.c
 
 	${OBKM_SRC}

@@ -11,7 +11,6 @@
 #include <lwip_netconf.h>
 #include <dhcp/dhcps.h>
 #include "wifi_api.h"
-//#include "basic_types.h"
 
 extern struct netif xnetif[NET_IF_NUM];
 extern void InitEasyFlashIfNeeded();
@@ -34,22 +33,17 @@ static void (*g_wifiStatusCallback)(int code) = NULL;
 static int g_bOpenAccessPointMode = 0;
 static wifi_data_t wdata = { 0 };
 static int g_bStaticIP = 0;
-static char g_IP[16] = "unknown";
-static char g_GW[16] = "unknown";
-static char g_MS[16] = "unknown";
 obkFastConnectData_t fcdata = { 0 };
 struct static_ip_config user_static_ip = { 0 };
 
 const char* HAL_GetMyIPString()
 {
-	if(g_bOpenAccessPointMode) return &g_IP;
-	return ipaddr_ntoa(&xnetif[0].ip_addr);
+	return ipaddr_ntoa(&xnetif[g_bOpenAccessPointMode].ip_addr);
 }
 
 const char* HAL_GetMyGatewayString()
 {
-	if(g_bOpenAccessPointMode) return &g_GW;
-	return ipaddr_ntoa(&xnetif[0].gw);
+	return ipaddr_ntoa(&xnetif[g_bOpenAccessPointMode].gw);
 }
 
 const char* HAL_GetMyDNSString()
@@ -59,14 +53,12 @@ const char* HAL_GetMyDNSString()
 
 const char* HAL_GetMyMaskString()
 {
-	if(g_bOpenAccessPointMode) return &g_MS;
-	return ipaddr_ntoa(&xnetif[0].netmask);
+	return ipaddr_ntoa(&xnetif[g_bOpenAccessPointMode].netmask);
 }
 
 int WiFI_SetMacAddress(char* mac)
 {
-	printf("WiFI_SetMacAddress\r\n");
-	return 0; // error
+	return 0;
 }
 
 void WiFI_GetMacAddress(char* mac)
@@ -99,7 +91,7 @@ int HAL_GetWifiStrength()
 {
 	union rtw_phy_stats phy_stats;
 	wifi_get_phy_stats(STA_WLAN_INDEX, NULL, &phy_stats);
-	return (signed char)(0xFF - phy_stats.sta.rssi + 1);
+	return -((uint8_t)(0xFF - phy_stats.sta.rssi + 1));
 }
 
 void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
@@ -117,8 +109,9 @@ void obk_wifi_hdl_new(u8* buf, s32 buf_len, s32 flags, void* userdata)
 
 	if(join_status == RTW_JOINSTATUS_SUCCESS)
 	{
+#if LWIP_NETIF_HOSTNAME
 		netif_set_hostname(&xnetif[0], CFG_GetDeviceName());
-
+#endif
 		if(!g_bStaticIP) LwIP_DHCP(0, DHCP_START);
 		if(g_wifiStatusCallback != NULL)
 		{
@@ -132,13 +125,6 @@ void obk_wifi_hdl_new(u8* buf, s32 buf_len, s32 flags, void* userdata)
 	{
 		switch(fail_info->fail_reason)
 		{
-			case -RTK_ERR_WIFI_CONN_SCAN_FAIL:
-			case -RTK_ERR_WIFI_CONN_ASSOC_FAIL:
-			case -RTK_ERR_WIFI_CONN_4WAY_HANDSHAKE_FAIL:
-				if(g_wifiStatusCallback != NULL)
-				{
-					g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
-				}
 			case -RTK_ERR_WIFI_CONN_INVALID_KEY:
 			case -RTK_ERR_WIFI_CONN_AUTH_PASSWORD_WRONG:
 			case -RTK_ERR_WIFI_CONN_4WAY_PASSWORD_WRONG:
@@ -148,6 +134,9 @@ void obk_wifi_hdl_new(u8* buf, s32 buf_len, s32 flags, void* userdata)
 					g_wifiStatusCallback(WIFI_STA_AUTH_FAILED);
 				}
 				break;
+			case -RTK_ERR_WIFI_CONN_SCAN_FAIL:
+			case -RTK_ERR_WIFI_CONN_ASSOC_FAIL:
+			case -RTK_ERR_WIFI_CONN_4WAY_HANDSHAKE_FAIL:
 			default:
 				if(g_wifiStatusCallback != NULL)
 				{
@@ -171,7 +160,6 @@ void ConnectToWiFiTask(void* args)
 {
 	struct rtw_network_info connect_param = { 0 };
 
-	/*Connect parameter set*/
 	memcpy(connect_param.ssid.val, wdata.ssid, strlen(wdata.ssid));
 	connect_param.ssid.len = strlen(wdata.ssid);
 	connect_param.password = (unsigned char*)wdata.pwd;
@@ -188,9 +176,9 @@ void ConnectToWiFiTask(void* args)
 
 void ConfigureSTA(obkStaticIP_t* ip)
 {
-	//struct ip_addr ipaddr;
-	//struct ip_addr netmask;
-	//struct ip_addr gw;
+	struct ip_addr ipaddr;
+	struct ip_addr netmask;
+	struct ip_addr gw;
 	struct ip_addr dnsserver;
 
 	wifi_set_autoreconnect(0);
@@ -203,11 +191,11 @@ void ConfigureSTA(obkStaticIP_t* ip)
 	{
 		g_bStaticIP = 1;
 
-		uint32_t addr = CONCAT_TO_UINT32(ip->localIPAddr[0], ip->localIPAddr[1], ip->localIPAddr[2], ip->localIPAddr[3]);
-		uint32_t netmask = CONCAT_TO_UINT32(ip->netMask[0], ip->netMask[1], ip->netMask[2], ip->netMask[3]);
-		uint32_t gw = CONCAT_TO_UINT32(ip->gatewayIPAddr[0], ip->gatewayIPAddr[1], ip->gatewayIPAddr[2], ip->gatewayIPAddr[3]);
+		IP4_ADDR(ip_2_ip4(&ipaddr), ip->localIPAddr[0], ip->localIPAddr[1], ip->localIPAddr[2], ip->localIPAddr[3]);
+		IP4_ADDR(ip_2_ip4(&netmask), ip->netMask[0], ip->netMask[1], ip->netMask[2], ip->netMask[3]);
+		IP4_ADDR(ip_2_ip4(&gw), ip->gatewayIPAddr[0], ip->gatewayIPAddr[1], ip->gatewayIPAddr[2], ip->gatewayIPAddr[3]);
 		IP4_ADDR(ip_2_ip4(&dnsserver), ip->dnsServerIpAddr[0], ip->dnsServerIpAddr[1], ip->dnsServerIpAddr[2], ip->dnsServerIpAddr[3]);
-		LwIP_SetIP(SOFTAP_WLAN_INDEX, addr, netmask, gw);
+		netif_set_addr(&xnetif[STA_WLAN_INDEX], ip_2_ip4(&ipaddr), ip_2_ip4(&netmask), ip_2_ip4(&gw));
 		dns_setserver(0, &dnsserver);
 	}
 }
@@ -238,21 +226,12 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
 	g_bOpenAccessPointMode = 1;
 	rtw_mode_t mode = RTW_MODE_STA_AP;
-	uint32_t addr = CONCAT_TO_UINT32(192, 168, 4, 1);
-	uint32_t netmask = CONCAT_TO_UINT32(255, 255, 255, 0);
-	uint32_t gw = CONCAT_TO_UINT32(192, 168, 4, 1);
-	//struct ip_addr ipaddr;
-	//struct ip_addr netmask;
-	//struct ip_addr gw;
+	struct ip_addr ipaddr;
+	struct ip_addr netmask;
+	struct ip_addr gw;
 	struct netif* pnetif = &xnetif[SOFTAP_WLAN_INDEX];
 	dhcps_deinit();
 	wifi_stop_ap();
-	vTaskDelay(20);
-	if(wifi_on(mode) < 0)
-	{
-		ADDLOG_ERROR(LOG_FEATURE_GENERAL, "Failed to enable wifi");
-		return 0;
-	}
 	struct rtw_softap_info connect_param = { 0 };
 	memcpy(connect_param.ssid.val, ssid, strlen(ssid));
 	connect_param.ssid.len = strlen(ssid);
@@ -264,20 +243,10 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 		ADDLOG_ERROR(LOG_FEATURE_GENERAL, "Failed to start AP");
 		return 0;
 	}
-	//IP4_ADDR(ip_2_ip4(&ipaddr), 192, 168, 4, 1);
-	//IP4_ADDR(ip_2_ip4(&netmask), 255, 255, 255, 0);
-	//IP4_ADDR(ip_2_ip4(&gw), 192, 168, 4, 1);
-	//ip_2_ip4(&ipaddr)->addr= CONCAT_TO_UINT32(1, 4, 192, 168);
-	//ip_2_ip4(&netmask)->addr= CONCAT_TO_UINT32(0, 255, 255, 255);
-	//ip_2_ip4(&gw)->addr= CONCAT_TO_UINT32(1, 4, 192, 168);
-	strcpy((char*)&g_IP, "192.168.4.1");
-	strcpy((char*)&g_GW, "192.168.4.1");
-	strcpy((char*)&g_MS, "255.255.255.0");
-	//netif_set_addr(pnetif, ip_2_ip4(&ipaddr), ip_2_ip4(&netmask), ip_2_ip4(&gw));
-	//netifapi_netif_set_addr(pnetif, ip_2_ip4(&ipaddr), ip_2_ip4(&netmask), ip_2_ip4(&gw));
-	LwIP_SetIP(SOFTAP_WLAN_INDEX, addr, netmask, gw);
-
-	//netifapi_netif_set_addr(pnetif, ip_2_ip4(&ipaddr), ip_2_ip4(&netmask), ip_2_ip4(&gw));
+	IP4_ADDR(ip_2_ip4(&ipaddr), 192, 168, 4, 1);
+	IP4_ADDR(ip_2_ip4(&netmask), 255, 255, 255, 0);
+	IP4_ADDR(ip_2_ip4(&gw), 192, 168, 4, 1);
+	netifapi_netif_set_addr(pnetif, ip_2_ip4(&ipaddr), ip_2_ip4(&netmask), ip_2_ip4(&gw));
 
 	dhcps_init(pnetif);
 	return 0;
@@ -293,4 +262,4 @@ void HAL_DisableEnhancedFastConnect()
 	rt_kv_delete("wlan_data");
 }
 
-#endif // PLATFORM_REALTEK
+#endif // PLATFORM_REALTEK_NEW

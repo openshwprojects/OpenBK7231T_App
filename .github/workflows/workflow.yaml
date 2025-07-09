@@ -439,6 +439,8 @@ jobs:
         include:
           - platform: OpenRTL8721DA
             variant: default
+          - platform: OpenRTL8720E
+            variant: default
     steps:
       - name: Source checkout
         uses: actions/checkout@v4

@@ -3200,6 +3200,10 @@ update_ota_exit:
 
 	return http_rest_error(request, -20, "error");
 
+#elif PLATFORM_RTL8720E
+
+return http_rest_error(request, -20, "error");
+
 #else
 
 	init_ota(startaddr);

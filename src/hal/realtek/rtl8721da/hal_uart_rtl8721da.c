@@ -1,10 +1,11 @@
-#ifdef PLATFORM_RTL8721DA
+#if PLATFORM_RTL8721DA || PLATFORM_RTL8720E
 
 #include "../../../new_pins.h"
 #include "../../../new_cfg.h"
 #include "../../hal_uart.h"
 #include "serial_api.h"
 #include "os_wrapper.h"
+#if PLATFORM_RTL8721DA
 // default example pins
 #define UART0_TX	PA_26
 #define UART0_RX	PA_27
@@ -13,6 +14,15 @@
 // UART0 on WR11-U and WR11-2S
 #define UART1_TX	PB_20
 #define UART1_RX	PB_21
+#elif PLATFORM_RTL8720E
+// default example pins
+#define UART0_TX	PA_28
+#define UART0_RX	PA_29
+#define UART0_RTS	PA_30
+#define UART0_CTS	PA_31
+#define UART1_TX UART0_TX
+#define UART1_RX UART0_RX
+#endif
 
 serial_t sobj;
 static bool isInitialized;

@@ -658,7 +658,13 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #else
 #include "wifi_api_event.h"
 #include "wifi_api_types.h"
+#include "wifi_api_ext.h"
+#include "kv.h"
+#if PLATFORM_RTL8721DA
 #include "autoconf_8721da.h"
+#elif PLATFORM_RTL8720E
+#include "autoconf_8720e.h"
+#endif
 #define wifi_is_up wifi_is_running
 #define RTW_STA_INTERFACE STA_WLAN_INDEX
 #define RTW_AP_INTERFACE SOFTAP_WLAN_INDEX

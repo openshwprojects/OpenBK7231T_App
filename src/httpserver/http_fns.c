@@ -3177,15 +3177,8 @@ int http_fn_cfg_dgr(http_request_t* request) {
 #endif
 
 void OTA_RequestDownloadFromHTTP(const char* s) {
-#if WINDOWS
-
-#elif PLATFORM_BL602
-
-#elif PLATFORM_LN882H
-
-#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
-#elif PLATFORM_TR6260
-#elif PLATFORM_REALTEK
+#if PLATFORM_BEKEN
+	otarequest(s);
 #elif PLATFORM_ECR6600
 	extern int http_client_download_file(const char* url, unsigned int len);
 	extern int ota_done(bool reset);
@@ -3232,7 +3225,7 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 	char url[256] = { 0 };
 	char resource[256] = { 0 };
 	uint16_t port;
-	parser_url(s, &url, &port, &res, 256);
+	parser_url(s, &url, &port, &resource, 256);
 	int ret = ota_update_init(ctx, &url, port, &resource, OTA_HTTP);
 	if(ret != 0)
 	{
@@ -3242,7 +3235,8 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 	ret = ota_update_start(ctx);
 	if(!ret)
 	{
-		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "OTA finished");
+		addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "OTA finished");
+		sys_clear_ota_signature();
 		delay_ms(50);
 		sys_reset();
 	}
@@ -3250,8 +3244,6 @@ exit:
 	ota_update_deinit(ctx);
 	addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "OTA failed");
 	if(ctx) free(ctx);
-#else
-	otarequest(s);
 #endif
 }
 int http_fn_ota_exec(http_request_t* request) {
