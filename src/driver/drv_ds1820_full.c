@@ -515,7 +515,7 @@ int DS18B20_fill_devicelist(int Pin)
 	// For Windows add some "fake" sensors with increasing addresses
 	// 28 FF AA BB CC DD EE 01, 28 FF AA BB CC DD EE 02, ...
 	devaddr[0]=0x28; devaddr[1]=0xFF; devaddr[2]=0xAA; devaddr[3]=0xBB;devaddr[4]=0xCC;devaddr[5]=0xDD;devaddr[6]=0xEE;
-	while (ds18_count < 1+(DS18B20MAX/4) ){
+	while (ds18_count < 1+(DS18B20MAX/2) ){
 		devaddr[7]=++ret;
 		bk_printf("found device " DEVSTR " ",
 			DEV2STR(devaddr));
