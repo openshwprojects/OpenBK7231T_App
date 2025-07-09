@@ -831,6 +831,16 @@ int HTTP_ProcessPacket(http_request_t* request) {
 		return 0;
 	}
 
+#if ENABLE_HTTP_OVERRIDE
+	bool HTTP_checkLFSOverride(http_request_t* request, const char *ext);
+	if (HTTP_checkLFSOverride(request,".html")) {
+		return 1;
+	}
+	if (HTTP_checkLFSOverride(request, "")) {
+		return 1;
+	}
+#endif
+
 	if (http_checkUrlBase(urlStr, "")) return http_fn_empty_url(request);
 
 	if (http_checkUrlBase(urlStr, "testmsg")) return http_fn_testmsg(request);

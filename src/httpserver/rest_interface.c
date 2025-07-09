@@ -639,8 +639,8 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 	else {
 		ADDLOG_DEBUG(LOG_FEATURE_API, "LFS open [%s] gives %d", fpath, lfsres);
 		if (lfsres >= 0) {
-			const char* mimetype = httpMimeTypeBinary;
 			char* ext = fpath;
+			const char *mimetype = httpMimeTypeBinary;
 
 			if (isGzip) {
 				// find original extension (e.g., .js from .js.gz)
@@ -715,6 +715,33 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 	if (fpath) os_free(fpath);
 	if (file) os_free(file);
 	if (buff) os_free(buff);
+	return 0;
+}
+bool HTTP_checkLFSOverride(http_request_t* request, const char *ext) {
+	char tmp[64];
+	//sprintf_s(tmp, sizeof(tmp), "override/%s", request->url);
+	sprintf_s(tmp, sizeof(tmp), "%s%s", request->url, ext);
+	char *fix = strchr(tmp, '?');
+	if (fix) {
+		*fix = 0;
+	}
+	lfs_file_t* file;
+	file = os_malloc(sizeof(lfs_file_t));
+	memset(file,0, sizeof(lfs_file_t));
+	int lfsres = lfs_file_open(&lfs, file, tmp, LFS_O_RDONLY);
+	if (lfsres == 0) {
+		lfs_file_close(&lfs, file);
+		free(file);
+		sprintf_s(tmp, sizeof(tmp), "api/lfs/%s%s", request->url, ext);
+		char *oldURL = request->url;
+		request->url = tmp;
+		http_rest_get_lfs_file(request);
+		request->url = oldURL;
+		// "api/lfs/", 8)) {
+		// "api/run/", 8)) {
+		return 1;
+	}
+	free(file);
 	return 0;
 }
 static int http_rest_get_lfs_delete(http_request_t* request) {
