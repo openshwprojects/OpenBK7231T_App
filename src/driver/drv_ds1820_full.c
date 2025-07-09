@@ -845,6 +845,7 @@ void DS1820_full_OnEverySecond()
 					ds18b20devices.last_read[i] = 0;
 					if (ds18b20devices.channel[i]>=0) CHANNEL_Set(ds18b20devices.channel[i], (int)(t_float*100), CHANNEL_SET_FLAG_SILENT);
 					lastconv = g_secondsElapsed;
+			}
 #else	// to #if WINDOWS
 			float t_float = -127;
 			const char * pinalias; 
