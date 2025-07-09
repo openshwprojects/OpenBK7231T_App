@@ -546,6 +546,7 @@ static int http_rest_run_lfs_file(http_request_t* request) {
 	free(fpath);
 	return 0;
 }
+
 static int http_rest_get_lfs_file(http_request_t* request) {
 	char* fpath;
 	char* buff;
@@ -554,6 +555,7 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 	int total = 0;
 	lfs_file_t* file;
 	char *args;
+	bool isGzip;
 
 	// don't start LFS just because we're trying to read a file -
 	// it won't exist anyway
@@ -577,6 +579,8 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 	if (args) {
 		*args = 0;
 	}
+
+	isGzip = EndsWith(fpath, "gz");
 
 	ADDLOG_DEBUG(LOG_FEATURE_API, "LFS read of %s", fpath);
 	lfsres = lfs_file_open(&lfs, file, fpath, LFS_O_RDONLY);
@@ -636,34 +640,58 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 		ADDLOG_DEBUG(LOG_FEATURE_API, "LFS open [%s] gives %d", fpath, lfsres);
 		if (lfsres >= 0) {
 			const char* mimetype = httpMimeTypeBinary;
-			do {
-				if (EndsWith(fpath, ".ico")) {
-					mimetype = "image/x-icon";
-					break;
+			char* ext = fpath;
+
+			if (isGzip) {
+				// find original extension (e.g., .js from .js.gz)
+				char* dot = strrchr(fpath, '.');
+				if (dot) {
+					*dot = '\0'; // temporarily strip .gz
+					if (EndsWith(fpath, ".js")) {
+						mimetype = httpMimeTypeJavascript;
+					}
+					else if (EndsWith(fpath, ".html")) {
+						mimetype = httpMimeTypeHTML;
+					}
+					else if (EndsWith(fpath, ".css")) {
+						mimetype = httpMimeTypeCSS;
+					}
+					else if (EndsWith(fpath, ".json")) {
+						mimetype = httpMimeTypeJson;
+					}
+					else if (EndsWith(fpath, ".ico")) {
+						mimetype = "image/x-icon";
+					}
+					*dot = '.'; // restore .gz
 				}
+			}
+			else {
 				if (EndsWith(fpath, ".js") || EndsWith(fpath, ".vue")) {
 					mimetype = httpMimeTypeJavascript;
-					break;
 				}
-				if (EndsWith(fpath, ".json")) {
+				else if (EndsWith(fpath, ".json")) {
 					mimetype = httpMimeTypeJson;
-					break;
 				}
-				if (EndsWith(fpath, ".html")) {
+				else if (EndsWith(fpath, ".html")) {
 					mimetype = httpMimeTypeHTML;
-					break;
 				}
-				if (EndsWith(fpath, ".css")) {
+				else if (EndsWith(fpath, ".css")) {
 					mimetype = httpMimeTypeCSS;
-					break;
 				}
-				break;
-			} while (0);
+				else if (EndsWith(fpath, ".ico")) {
+					mimetype = "image/x-icon";
+				}
+			}
 
-			http_setup(request, mimetype);
-//#if ENABLE_OBK_BERRY
-//			http_runBerryFile(request, fpath);
-//#else
+			if (isGzip) {
+				http_setup_gz(request, mimetype);
+			}
+			else {
+				http_setup(request, mimetype);
+			}
+			//#if ENABLE_OBK_BERRY
+			//			http_runBerryFile(request, fpath);
+			//#else
 			do {
 				len = lfs_file_read(&lfs, file, buff, 1024);
 				total += len;
@@ -671,8 +699,8 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 					//ADDLOG_DEBUG(LOG_FEATURE_API, "%d bytes read", len);
 					postany(request, buff, len);
 				}
-		} while (len > 0);
-//#endif
+			} while (len > 0);
+			//#endif
 			lfs_file_close(&lfs, file);
 			ADDLOG_DEBUG(LOG_FEATURE_API, "%d total bytes read", total);
 		}
@@ -689,7 +717,6 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 	if (buff) os_free(buff);
 	return 0;
 }
-
 static int http_rest_get_lfs_delete(http_request_t* request) {
 	char* fpath;
 	int lfsres;

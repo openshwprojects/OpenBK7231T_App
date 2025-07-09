@@ -295,6 +295,17 @@ void http_setup(http_request_t* request, const char* type) {
 	poststr(request, "\r\n"); // end headers with double CRLF
 	poststr(request, "\r\n");
 }
+void http_setup_gz(http_request_t* request, const char* type) {
+	hprintf255(request, httpHeader, request->responseCode, type);
+	poststr(request, "\r\n"); // next header
+	poststr(request, httpCorsHeaders);
+	poststr(request, "\r\n");
+	poststr(request, "Content-Encoding: gzip");
+	poststr(request, "\r\n");
+	poststr(request, "Connection: close");
+	poststr(request, "\r\n"); // end headers with double CRLF
+	poststr(request, "\r\n");
+}
 
 void http_html_start(http_request_t* request, const char* pagename) {
 	poststr(request, htmlDoctype);
