@@ -178,6 +178,9 @@ char* HAL_GetWiFiBSSID(char* bssid) {
 		sprintf(bssid, MACSTR, MAC2STR(ap->bssid));
 		free(ap);
 	}
+	else {
+		strcpy(bssid, "wlan info failed");//must be less than 32 chars
+	}
 	return bssid;
 };
 uint8_t HAL_GetWiFiChannel(uint8_t *chan) {
