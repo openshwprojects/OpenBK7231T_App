@@ -507,7 +507,7 @@ void CLOCK_Init_Events() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("addClockEvent",CMD_CLOCK_AddEvent, NULL);
 	//cmddetail:{"name":"removeClockEvent","args":"[ID]",
-	//cmddetail:"descr":"Removes clock event wtih given ID",
+	//cmddetail:"descr":"Removes clock event with given ID",
 	//cmddetail:"fn":"CMD_CLOCK_RemoveEvent","file":"driver/drv_timed_events.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("removeClockEvent", CMD_CLOCK_RemoveEvent, NULL);
