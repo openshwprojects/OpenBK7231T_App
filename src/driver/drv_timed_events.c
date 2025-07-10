@@ -515,7 +515,7 @@ void CLOCK_Init_Events() {
 	//cmddetail:"descr":"Print the complete set clock events list",
 	//cmddetail:"fn":"CMD_CLOCK_ListEvents","file":"driver/drv_timed_events.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("listClockEvents", CCMD_CLOCK_ListEvents, NULL);
+	CMD_RegisterCommand("listClockEvents", CMD_CLOCK_ListEvents, NULL);
 	//cmddetail:{"name":"clearClockEvents","args":"",
 	//cmddetail:"descr":"Removes all set clock events",
 	//cmddetail:"fn":"CMD_CLOCK_ClearEvents","file":"driver/drv_timed_events.c","requires":"",
