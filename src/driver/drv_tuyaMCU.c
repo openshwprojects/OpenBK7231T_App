@@ -449,7 +449,7 @@ void TuyaMCU_SendCommandWithData(byte cmdType, byte* data, int payload_len) {
 	
 	byte check_sum = (0xFF + cmdType + (payload_len >> 8) + (payload_len & 0xFF));
 
-	UART_InitUART(g_baudRate, 0, false);
+	//UART_InitUART(g_baudRate, 0, false);
 	if (CFG_HasFlag(OBK_FLAG_TUYAMCU_USE_QUEUE)) {
 		tuyaMCUPacket_t *p = TUYAMCU_AddToQueue(payload_len + 4);
 		p->data[0] = cmdType;
@@ -1589,6 +1589,8 @@ void TuyaMCU_PublishDPToBerry(const byte *data, int ofs) {
 
 	}
 }
+#define CALIB_IF_NONZERO(x,d) if(x) { x += d; }
+
 void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 	tuyaMCUMapping_t* mapping;
 	int ofs;
@@ -1693,9 +1695,9 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 						iC = (data[ofs + 6] << 16) | (data[ofs + 7] << 8) | data[ofs + 8];
 						iP = (data[ofs + 9] << 16) | (data[ofs + 10] << 8) | data[ofs + 11];
 						// calibration
-						iV += mapping->delta;
-						iC += mapping->delta2;
-						iP += mapping->delta3;
+						CALIB_IF_NONZERO(iV, mapping->delta);
+						CALIB_IF_NONZERO(iC, mapping->delta2);
+						CALIB_IF_NONZERO(iP, mapping->delta3);
 						if (mapping->channel < 0) {
 							CHANNEL_SetFirstChannelByType(ChType_Voltage_div10, iV);
 							CHANNEL_SetFirstChannelByType(ChType_Current_div1000, iC);
@@ -1727,9 +1729,9 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 						// freq
 						iF = data[ofs + 13 + 4] << 8 | data[ofs + 14 + 4];
 						// calibration
-						iV += mapping->delta;
-						iC += mapping->delta2;
-						iP += mapping->delta3;
+						CALIB_IF_NONZERO(iV, mapping->delta);
+						CALIB_IF_NONZERO(iC, mapping->delta2);
+						CALIB_IF_NONZERO(iP, mapping->delta3);
 						if (mapping->channel < 0) {
 							CHANNEL_SetFirstChannelByType(ChType_Voltage_div10, iV);
 							CHANNEL_SetFirstChannelByType(ChType_Current_div1000, iC);
@@ -1761,9 +1763,9 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 						// power
 						iP = data[ofs + 6 + 4] << 8 | data[ofs + 7 + 4];
 						// calibration
-						iV += mapping->delta;
-						iC += mapping->delta2;
-						iP += mapping->delta3;
+						CALIB_IF_NONZERO(iV, mapping->delta);
+						CALIB_IF_NONZERO(iC, mapping->delta2);
+						CALIB_IF_NONZERO(iP, mapping->delta3);
 						if (mapping->channel < 0) {
 							CHANNEL_SetFirstChannelByType(ChType_Voltage_div10, iV);
 							CHANNEL_SetFirstChannelByType(ChType_Current_div1000, iC);

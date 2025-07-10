@@ -32,19 +32,37 @@
 #define ENABLE_HTTP_PING		1
 #define ENABLE_LED_BASIC		1
 
+#if PLATFORM_XRADIO
+
+//#define ENABLE_SEND_POSTANDGET		1
+#define ENABLE_MQTT								1
+#define NO_CHIP_TEMPERATURE						1
+#define	ENABLE_HA_DISCOVERY						1
+#define ENABLE_EXPAND_CONSTANT					1
+#define ENABLE_OBK_SCRIPTING					1
+#define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
+#define ENABLE_LITTLEFS							1
+#define NEW_TCP_SERVER							1
+#define ENABLE_TASMOTA_JSON						1
+#define ENABLE_DRIVER_SSDP						1
+#define ENABLE_DRIVER_DS1820					1
+#define ENABLE_NTP								1
+#define ENABLE_DRIVER_WEMO						1
+#define ENABLE_DRIVER_HUE						1
+
 #if PLATFORM_XR809
+#define ENABLE_DRIVER_BATTERY					1
+#define ENABLE_OBK_BERRY						1
+#endif
 
-#define ENABLE_MQTT								1
-#define NO_CHIP_TEMPERATURE						1
-#define OBK_DISABLE_ALL_DRIVERS					1
-#define	ENABLE_HA_DISCOVERY						1
-
-#elif PLATFORM_XR872
-
-#define ENABLE_MQTT								1
-#define NO_CHIP_TEMPERATURE						1
-#define OBK_DISABLE_ALL_DRIVERS					1
-#define	ENABLE_HA_DISCOVERY						1
+#if PLATFORM_XR806
+#define ENABLE_DRIVER_TUYAMCU					1
+#define ENABLE_DRIVER_DS1820					1
+#define ENABLE_DRIVER_DHT						1
+#define ENABLE_DRIVER_AHT2X						1
+#define ENABLE_DRIVER_SSDP						1
+#define ENABLE_OBK_BERRY						1
+#endif
 
 #elif PLATFORM_W600
 
@@ -98,7 +116,7 @@
 
 #endif
 
-
+#define ENABLE_HTTP_OVERRIDE	1
 #define	ENABLE_DRIVER_TCL		1
 #define	ENABLE_DRIVER_PIR		1
 #define	ENABLE_HA_DISCOVERY		1
@@ -159,7 +177,7 @@
 
 #elif PLATFORM_BL602
 
-
+//#define ENABLE_SEND_POSTANDGET		1
 #define	ENABLE_HA_DISCOVERY		1
 // I have enabled drivers on BL602
 #define ENABLE_MQTT 1
@@ -307,7 +325,7 @@
 
 #elif PLATFORM_LN882H
 
-
+//#define ENABLE_SEND_POSTANDGET		1
 #define	ENABLE_HA_DISCOVERY						1
 #define ENABLE_MQTT								1
 #define ENABLE_TASMOTADEVICEGROUPS				1
@@ -332,7 +350,7 @@
 
 #elif PLATFORM_ESPIDF
 
-
+#define ENABLE_SEND_POSTANDGET					1
 #define	ENABLE_HA_DISCOVERY						1
 #define ENABLE_MQTT								1
 #define ENABLE_I2C								1
@@ -367,7 +385,7 @@
 
 #elif PLATFORM_TR6260
 
-
+//#define ENABLE_SEND_POSTANDGET		1
 #define	ENABLE_HA_DISCOVERY						1
 #define ENABLE_MQTT								1
 #define NO_CHIP_TEMPERATURE						1
@@ -387,6 +405,7 @@
 
 #elif PLATFORM_REALTEK
 
+#define ENABLE_SEND_POSTANDGET					1
 #define	ENABLE_HA_DISCOVERY						1
 #define ENABLE_MQTT								1
 #define NO_CHIP_TEMPERATURE						1
@@ -417,11 +436,12 @@
 #ifndef PLATFORM_RTL8710B
 #define ENABLE_OBK_BERRY						1
 #endif
-//#define ENABLE_DRIVER_TCL						1
+#define ENABLE_DRIVER_TCL						1
 
 #elif PLATFORM_ECR6600
 
 #define	ENABLE_HA_DISCOVERY						1
+//#define ENABLE_SEND_POSTANDGET					1
 #define ENABLE_MQTT								1
 #define ENABLE_LITTLEFS							1
 #define NEW_TCP_SERVER							1
@@ -436,7 +456,6 @@
 #define ENABLE_DRIVER_SSDP						1
 #define ENABLE_OBK_SCRIPTING					1
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
-#define ENABLE_DRIVER_SSDP						1
 #define ENABLE_TASMOTA_JSON						1
 #define ENABLE_TASMOTADEVICEGROUPS				1
 #define ENABLE_NTP								1
@@ -445,6 +464,33 @@
 #define ENABLE_DRIVER_BL0942					1
 #define ENABLE_DRIVER_BL0937					1
 #define ENABLE_OBK_BERRY						1
+
+#elif PLATFORM_ESP8266
+
+#define ENABLE_SEND_POSTANDGET					1
+#define NO_CHIP_TEMPERATURE						1
+#define	ENABLE_HA_DISCOVERY						1
+#define ENABLE_MQTT								1
+#define ENABLE_LITTLEFS							1
+#define NEW_TCP_SERVER							1
+#define ENABLE_EXPAND_CONSTANT					1
+#define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
+#define ENABLE_OBK_SCRIPTING					1
+//#define ENABLE_DRIVER_BL0942					1
+#define ENABLE_DRIVER_BL0937					1
+#define ENABLE_TASMOTA_JSON						1
+#define ENABLE_TASMOTADEVICEGROUPS				1
+#define ENABLE_I2C								1
+#define ENABLE_DRIVER_AHT2X						1
+#define ENABLE_NTP								1
+#define ENABLE_DRIVER_LED 						1
+#define ENABLE_DRIVER_WEMO						1
+#define ENABLE_DRIVER_SSDP						1
+#define ENABLE_DRIVER_TUYAMCU					1
+#define ENABLE_DRIVER_DS1820					1
+#define ENABLE_DRIVER_BMPI2C					1
+
+//#define ENABLE_OBK_BERRY						1
 
 #else
 

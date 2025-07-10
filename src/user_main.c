@@ -105,9 +105,10 @@ int DRV_SSDP_Active = 0;
 
 void Main_ForceUnsafeInit();
 
-#if PLATFORM_XR809 || PLATFORM_XR872
-size_t xPortGetFreeHeapSize() {
-	return 0;
+#if PLATFORM_XR806 || PLATFORM_XR872
+size_t xPortGetFreeHeapSize()
+{
+	return sram_free_heap_size();
 }
 #endif
 
@@ -161,7 +162,7 @@ void extended_app_waiting_for_launch2(void) {
 #endif
 
 
-#if defined(PLATFORM_LN882H) || defined(PLATFORM_ESPIDF) || defined(PLATFORM_XR872)
+#if defined(PLATFORM_LN882H) || defined(PLATFORM_ESPIDF) || defined(PLATFORM_ESP8266)
 
 int LWIP_GetMaxSockets() {
 	return 0;
@@ -171,8 +172,9 @@ int LWIP_GetActiveSockets() {
 }
 #endif
 
-#if defined(PLATFORM_BL602) || defined(PLATFORM_W800) || defined(PLATFORM_W600) || defined(PLATFORM_LN882H) \
-	|| defined(PLATFORM_ESPIDF) || defined(PLATFORM_TR6260) || defined(PLATFORM_REALTEK) || defined(PLATFORM_ECR6600)
+#if PLATFORM_BL602 || PLATFORM_W800 || PLATFORM_W600 || PLATFORM_LN882H \
+	|| PLATFORM_ESPIDF || PLATFORM_TR6260 || PLATFORM_REALTEK || PLATFORM_ECR6600 \
+	|| PLATFORM_XRADIO || PLATFORM_ESP8266
 
 OSStatus rtos_create_thread(beken_thread_t* thread,
 	uint8_t priority, const char* name,
@@ -534,7 +536,7 @@ bool Main_HasFastConnect() {
 	}
 	return false;
 }
-#if PLATFORM_LN882H || PLATFORM_ESPIDF
+#if PLATFORM_LN882H || PLATFORM_ESPIDF || PLATFORM_ESP8266
 // Quick hack to display LN-only temperature,
 // we may improve it in the future
 extern float g_wifi_temperature;
@@ -618,16 +620,12 @@ void Main_OnEverySecond()
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) \
- || defined (PLATFORM_RTL87X0C)
+ || defined (PLATFORM_RTL87X0C) || PLATFORM_ESP8266
 	UART_RunEverySecond();
 #endif
 #endif
 
-#if WINDOWS
-#elif PLATFORM_BL602
-#elif PLATFORM_W600 || PLATFORM_W800
-#elif PLATFORM_XR809 || PLATFORM_XR872
-#elif PLATFORM_BK7231N || PLATFORM_BK7231T
+#if PLATFORM_BK7231N || PLATFORM_BK7231T
 	if (ota_progress() == -1)
 #endif
 	{
@@ -910,11 +908,12 @@ void Main_OnEverySecond()
 
 static int g_wifiLedToggleTime = 0;
 static int g_wifi_ledState = 0;
-static uint32_t g_time = 0;
+unsigned int g_timeMs = 0;
 static uint32_t g_last_time = 0;
 int g_bWantPinDeepSleep;
 int g_pinDeepSleepWakeUp = 0;
 unsigned int g_deltaTimeMS;
+
 
 /////////////////////////////////////////////////////
 // this is what we do in a qucik tick
@@ -933,18 +932,18 @@ void QuickTick(void* param)
 #endif
 
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
-	g_time = rtos_get_time();
-#elif defined (PLATFORM_ESPIDF)
-	g_time = esp_timer_get_time() / 1000;
+	g_timeMs = rtos_get_time();
+#elif defined(PLATFORM_ESPIDF) //|| defined(PLATFORM_ESP8266)
+	g_timeMs = esp_timer_get_time() / 1000;
 #else
-	g_time += QUICK_TMR_DURATION;
+	g_timeMs += QUICK_TMR_DURATION;
 #endif
-	g_deltaTimeMS = g_time - g_last_time;
+	g_deltaTimeMS = g_timeMs - g_last_time;
 	// cope with wrap
 	if (g_deltaTimeMS > 0x4000) {
-		g_deltaTimeMS = ((g_time + 0x4000) - (g_last_time + 0x4000));
+		g_deltaTimeMS = ((g_timeMs + 0x4000) - (g_last_time + 0x4000));
 	}
-	g_last_time = g_time;
+	g_last_time = g_timeMs;
 
 #if ENABLE_OBK_SCRIPTING
 	SVM_RunThreads(g_deltaTimeMS);
@@ -999,13 +998,18 @@ void QuickTick(void* param)
 
 }
 
-
+#if PLATFORM_ESP8266 || PLATFORM_ESPIDF
+#define QT_STACK_SIZE 2048
+#else
+#define QT_STACK_SIZE 1024
+#endif
 
 ////////////////////////////////////////////////////////
 // this is the bit which runs the quick tick timer
 #if WINDOWS
 
-#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600 \
+	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF
 void quick_timer_thread(void* param)
 {
 	while (1) {
@@ -1013,9 +1017,7 @@ void quick_timer_thread(void* param)
 		QuickTick(0);
 	}
 }
-#elif PLATFORM_ESPIDF
-esp_timer_handle_t g_quick_timer;
-#elif PLATFORM_XR809 || PLATFORM_LN882H || PLATFORM_XR872
+#elif PLATFORM_XRADIO || PLATFORM_LN882H
 OS_Timer_t g_quick_timer;
 #else
 beken_timer_t g_quick_timer;
@@ -1024,18 +1026,10 @@ void QuickTick_StartThread(void)
 {
 #if WINDOWS
 
-#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600
-	xTaskCreate(quick_timer_thread, "quick", 1024, NULL, 15, NULL);
-#elif PLATFORM_ESPIDF
-	const esp_timer_create_args_t g_quick_timer_args =
-	{
-			.callback = &QuickTick,
-			.name = "quick"
-	};
-
-	esp_timer_create(&g_quick_timer_args, &g_quick_timer);
-	esp_timer_start_periodic(g_quick_timer, QUICK_TMR_DURATION * 1000);
-#elif PLATFORM_XR809 || PLATFORM_LN882H || PLATFORM_XR872
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600 \
+	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF
+	xTaskCreate(quick_timer_thread, "quick", QT_STACK_SIZE, NULL, 15, NULL);
+#elif PLATFORM_XRADIO || PLATFORM_LN882H
 
 	OS_TimerSetInvalid(&g_quick_timer);
 	if (OS_TimerCreate(&g_quick_timer, OS_TIMER_PERIODIC, QuickTick, NULL,
@@ -1426,6 +1420,7 @@ int HAL_PIN_Find(const char *name) {
 void Main_Init()
 {
 	g_unsafeInitDone = false;
+	bk_printf("%s, version %s\r\n", DEVICENAME_PREFIX_FULL, USER_SW_VER);
 
 #ifdef WINDOWS
 #if ENABLE_LED_BASIC

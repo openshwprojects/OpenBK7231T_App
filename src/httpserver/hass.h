@@ -131,7 +131,8 @@ HassDeviceInfo* hass_init_energy_sensor_device_info(int index, int asensdataseti
 HassDeviceInfo* hass_init_light_singleColor_onChannels(int toggle, int dimmer, int brightness_scale);
 HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse);
 HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int decPlaces, int decOffset, int divider);
-HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **fanOptions, int numFanOptions); 
+HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **fanOptions, int numFanOptions,
+	const char **swingOptions, int numSwingOptions, const char **swingHOptions, int numSwingHOptions);
 HassDeviceInfo* hass_createFanWithModes(const char *label, const char *stateTopic,
 	const char *command, const char **options, int numOptions);
 HassDeviceInfo* hass_createSelectEntity(const char* state_topic, const char* command_topic, int numoptions,

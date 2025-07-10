@@ -7,6 +7,9 @@
 #include <string.h>
 #include <time.h>
 #include <stdarg.h>
+// it is not in my Windows compiler, but I added it manually
+#include <stdint.h>
+#include <stdbool.h>
 
 #if WINDOWS && !LINUX
 #include <crtdbg.h>
@@ -126,6 +129,10 @@ typedef long BaseType_t;
 #define PLATFORM_MCU_NAME "ESP32S2"
 #elif CONFIG_IDF_TARGET_ESP32S3
 #define PLATFORM_MCU_NAME "ESP32S3"
+#elif CONFIG_IDF_TARGET_ESP32C5
+#define PLATFORM_MCU_NAME "ESP32C5"
+#elif CONFIG_IDF_TARGET_ESP32C61
+#define PLATFORM_MCU_NAME "ESP32C61"
 #else
 #define PLATFORM_MCU_NAME MANUFACTURER
 #endif
@@ -160,6 +167,11 @@ typedef long BaseType_t;
 #define DEVICENAME_PREFIX_SHORT "ecr6600"
 #define PLATFORM_MCU_NAME "ECR6600"
 #define MANUFACTURER "ESWIN"
+#elif PLATFORM_ESP8266
+#define DEVICENAME_PREFIX_FULL "OpenESP8266"
+#define DEVICENAME_PREFIX_SHORT "esp8266"
+#define PLATFORM_MCU_NAME "ESP8266"
+#define MANUFACTURER "Espressif"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -173,6 +185,10 @@ This platform is not supported, error!
 #define USER_SW_VER "Win_Test"
 #elif PLATFORM_XR809
 #define USER_SW_VER "XR809_Test"
+#elif PLATFORM_XR872
+#define USER_SW_VER "XR872_Test"
+#elif PLATFORM_XR806
+#define USER_SW_VER "XR806_Test"
 #elif defined(PLATFORM_BK7231N)
 #define USER_SW_VER "BK7231N_Test"
 #elif defined(PLATFORM_BK7231T)
@@ -207,6 +223,8 @@ This platform is not supported, error!
 #define USER_SW_VER "BK7252N_Test"
 #elif PLATFORM_ECR6600
 #define USER_SW_VER "ECR6600_Test"
+#elif PLATFORM_ESP8266
+#define USER_SW_VER "ESP8266_Test"
 #else
 #warning "USER_SW_VER undefined"
 #define USER_SW_VER "unknown"
@@ -235,21 +253,11 @@ This platform is not supported, error!
 #include <time.h>
 #include <math.h>
 
-#ifndef LINUX
-
-#include <stdint.h>
-
-#else
+#ifdef LINUX
 
 #include <netdb.h>  // For gethostbyname and struct hostent
 #include <limits.h>
-#include <stdint.h>
 #define closesocket close
-
-#endif
-
-#ifdef LINUX
-
 #define SOCKET int
 #define closesocket close
 #define ISVALIDSOCKET(s) ((s) >= 0)
@@ -262,7 +270,7 @@ This platform is not supported, error!
 // TODO
 #define SD_SEND	 0 
 
-#elif WINDOWS
+#else
 
 #define ISVALIDSOCKET(s) ((s) != INVALID_SOCKET)
 #define GETSOCKETERRNO() (WSAGetLastError())
@@ -290,8 +298,6 @@ typedef unsigned short u16_t;
 //typedef char int8_t;
 //typedef int int32_t;
 
-// it is not in my Windows compiler, but I added it manually
-#include <stdint.h>
 //
 //#ifndef UINT32_MAX
 //#define UINT32_MAX  (0xffffffff)
@@ -309,14 +315,6 @@ void doNothing();
 // os
 #define os_free free
 #define os_malloc malloc
-#define os_strlen strlen
-#define os_memset memset
-#define os_memcpy memcpy
-#define os_strstr strstr
-#define os_strcpy strcpy
-#define os_strchr strchr
-#define os_strcmp strcmp
-#define os_memmove memmove
 
 // RTOS
 typedef long portTickType;
@@ -344,14 +342,10 @@ typedef int (*beken_thread_function_t)(void *p);
 #include <task.h>
 #include <portable.h>
 #include <semphr.h>
-#include <stdbool.h>
-#include <stdint.h>
 
 #define ASSERT
-#define os_strcpy strcpy
-#define os_malloc malloc
 #define os_free free
-#define os_memset memset
+#define os_malloc malloc
 
 #define bk_printf printf
 
@@ -367,7 +361,7 @@ typedef int OSStatus;
 #define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
 #define BEKEN_APPLICATION_PRIORITY         (7)
 
-// wrappers for XR809 threads to work like bekken
+// wrappers for XR809 threads to work like beken
 OSStatus rtos_delete_thread( beken_thread_t* thread );
 OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint8_t priority, const char* name,
@@ -376,29 +370,47 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 OSStatus rtos_suspend_thread(beken_thread_t* thread);
 typedef unsigned int u32;
 
+#define lwip_close_force(x) lwip_close(x)
+
 #define OBK_OTA_EXTENSION ".bin.xz.ota"
 
-#elif PLATFORM_XR809 || PLATFORM_XR872
+#elif PLATFORM_XRADIO
 
-#include <stdbool.h>
 #include "FreeRTOS.h"
 #include "task.h"
 
-typedef unsigned char u8;
-typedef unsigned char uint8_t;
-typedef unsigned int uint32_t;
-typedef unsigned int UINT32;
+#if !PLATFORM_XR809
+#define OBK_OTA_EXTENSION ".img"
+#endif
+//typedef unsigned char u8;
+//typedef unsigned char uint8_t;
+//typedef unsigned int uint32_t;
+//typedef unsigned int UINT32;
 
 #define ASSERT
-#define os_strcpy strcpy
+#define bk_printf printf
 #define os_malloc malloc
 #define os_free free
-#define os_memset memset
 
-#if PLATFORM_XR806 || PLATFORM_XR872
+#define lwip_close_force(x) lwip_close(x)
 
+#define HAL_UART_Init OBK_HAL_UART_Init
+#define HAL_ADC_Init OBK_HAL_ADC_Init
+
+#if PLATFORM_XR806
+#define DS_MS_TO_S 1000
 #else
+#define DS_MS_TO_S 1111
+#endif
+
+#if PLATFORM_XR809
 #define close lwip_close
+#endif
+
+#ifdef __CONFIG_LWIP_V1
+#define sockaddr_storage sockaddr
+#define ss_family sa_family
+#define ip4_addr ip_addr
 #endif
 
 // OS_MSleep?
@@ -407,14 +419,14 @@ typedef unsigned int UINT32;
 
 #define kNoErr                      0       //! No error occurred.
 typedef void *beken_thread_arg_t;
-typedef void *beken_thread_t;
+typedef xTaskHandle* beken_thread_t;
 typedef void (*beken_thread_function_t)( beken_thread_arg_t arg );
 typedef int OSStatus;
 
 #define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
 #define BEKEN_APPLICATION_PRIORITY         (7)
 
-// wrappers for XR809 threads to work like bekken
+// wrappers for XR809 threads to work like beken
 OSStatus rtos_delete_thread( beken_thread_t* thread );
 OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint8_t priority, const char* name,
@@ -438,7 +450,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #include <portable.h>
 #include <semphr.h>
 #include "lwip/sys.h"
-#include <stdbool.h>
 
 #define GLOBAL_INT_DECLARATION()	;
 #define GLOBAL_INT_DISABLE()		;
@@ -449,8 +460,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #endif
 
 #define bk_printf printf
-#define os_strcpy strcpy
-#define os_memset memset
 #define os_malloc pvPortMalloc
 #define os_free vPortFree
 #define realloc pvPortRealloc
@@ -464,8 +473,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #define SemaphoreHandle_t xSemaphoreHandle
 
-#define os_strcpy strcpy
-
 #define kNoErr                      0       //! No error occurred.
 typedef void *beken_thread_arg_t;
 typedef xTaskHandle *beken_thread_t;
@@ -475,7 +482,7 @@ typedef int OSStatus;
 #define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
 #define BEKEN_APPLICATION_PRIORITY         (7)
 
-// wrappers for XR809 threads to work like bekken
+// wrappers for XR809 threads to work like beken
 OSStatus rtos_delete_thread( beken_thread_t* thread );
 OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint8_t priority, const char* name,
@@ -487,17 +494,15 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #elif PLATFORM_LN882H
 
-// TODO:LN882H Platform setup here.
-#include <stdbool.h>
 #include <FreeRTOS.h>
 #include <task.h>
 
 #define ASSERT
-#define os_strcpy strcpy
-#define os_malloc malloc
 #define os_free free
-#define os_memset memset
+#define os_malloc malloc
 
+
+#define lwip_close_force(x) lwip_close(x)
 #define bk_printf printf
 
 #define kNoErr                      0       //! No error occurred.
@@ -510,7 +515,7 @@ typedef int OSStatus;
 #define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
 #define BEKEN_APPLICATION_PRIORITY         (7)
 
-// wrappers for XR809??? threads to work like bekken
+// wrappers for XR809??? threads to work like beken
 OSStatus rtos_delete_thread( beken_thread_t* thread );
 OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint8_t priority, const char* name,
@@ -521,23 +526,20 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define OBK_OTA_EXTENSION		".bin"
 #define OBK_OTA_NAME_EXTENSION	"_OTA"
 
-#elif PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 
-#include <stdbool.h>
 #include <arch/sys_arch.h>
 #include "esp_timer.h"
 #include "esp_log.h"
 #include "esp_idf_version.h"
 
 #define ASSERT
-#define os_strcpy strcpy
-#define os_malloc malloc
 #define os_free free
-#define os_memset memset
+#define os_malloc malloc
 
-//#define bk_printf printf
+#define bk_printf printf
 
-#define bk_printf(...) ESP_LOGI("OpenBeken", __VA_ARGS__);
+//#define bk_printf(...) ESP_LOGI("OpenBeken", __VA_ARGS__);
 
 #define kNoErr                      0       //! No error occurred.
 #define rtos_delay_milliseconds sys_delay_ms
@@ -546,10 +548,12 @@ typedef TaskHandle_t beken_thread_t;
 typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
 typedef int OSStatus;
 
+#define lwip_close_force(x) lwip_close(x)
+
 #define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
 #define BEKEN_APPLICATION_PRIORITY         (7)
 
-// wrappers for XR809??? threads to work like bekken
+// wrappers for XR809??? threads to work like beken
 OSStatus rtos_delete_thread(beken_thread_t* thread);
 OSStatus rtos_create_thread(beken_thread_t* thread,
 	uint8_t priority, const char* name,
@@ -564,6 +568,10 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define UINT32 uint32_t
 
 #define OBK_OTA_EXTENSION ".img"
+
+#if PLATFORM_ESP8266
+#define xPortGetFreeHeapSize() esp_get_free_heap_size()
+#endif
 
 #elif PLATFORM_TR6260
 
@@ -585,21 +593,13 @@ typedef unsigned int UINT32;
 #define free    os_free
 #define malloc  os_malloc
 #define realloc  os_realloc
-#define strlen  os_strlen
-#define memset  os_memset
-#define memcpy  os_memcpy
-#define strstr  os_strstr
 #define strncpy  os_strncpy
-#define strchr  os_strchr
-#define strcmp  os_strcmp
-#define memmove os_memmove
-//#define strcat  os_strcat
-#define os_strcpy strcpy
 
 #define close lwip_close
 #define bk_printf system_printf
 #define printf system_printf
 
+#define lwip_close_force(x) lwip_close(x)
 // OS_MSleep?
 #define rtos_delay_milliseconds sys_delay_ms
 #define delay_ms sys_delay_ms
@@ -628,7 +628,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #elif PLATFORM_REALTEK
 
-#include <stdbool.h>
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
@@ -648,10 +647,9 @@ extern int g_sleepfactor;
 #undef ASSERT
 #define ASSERT
 
+#define lwip_close_force(x) lwip_close(x)
 #define os_malloc pvPortMalloc
 #define os_free vPortFree
-#define os_memset memset
-#define os_strcpy strcpy
 
 #if PLATFORM_RTL8720D
 #undef vsnprintf
@@ -718,7 +716,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #include "lwip/sys.h"
 #include "lwip/netdb.h"
 #include "lwip/dns.h"
-#include <stdbool.h>
 #include "os/oshal.h"
 
 typedef unsigned int UINT32;
@@ -732,8 +729,6 @@ typedef unsigned int UINT32;
 #define free		os_free
 #define calloc		os_calloc
 #define realloc		os_realloc
-#define memmove		os_memmove
-#define os_strcpy	strcpy
 
 #define bk_printf printf
 
@@ -742,6 +737,7 @@ extern void sys_delay_ms(uint32_t ms);
 #define rtos_delay_milliseconds sys_delay_ms
 #define delay_ms sys_delay_ms
 
+#define lwip_close_force(x) lwip_close(x)
 #define kNoErr                      0       //! No error occurred.
 typedef void* beken_thread_arg_t;
 typedef xTaskHandle beken_thread_t;
@@ -850,7 +846,8 @@ int strcpy_safe_checkForChanges(char *tg, const char *src, int tgMaxLen);
 void urldecode2_safe(char *dst, const char *srcin, int maxDstLen);
 int strIsInteger(const char *s);
 
-#if !defined(PLATFORM_ESPIDF) && !defined(PLATFORM_TR6260) && !defined(PLATFORM_ECR6600) && !defined(PLATFORM_BL602)
+#if !defined(PLATFORM_ESPIDF) && !defined(PLATFORM_TR6260) && !defined(PLATFORM_ECR6600) && !defined(PLATFORM_BL602) && \
+	!defined(PLATFORM_ESP8266)
 
 const char* strcasestr(const char* str1, const char* str2);
 #endif
@@ -884,7 +881,7 @@ int LWIP_GetMaxSockets();
 int LWIP_GetActiveSockets();
 
 #ifndef LINUX
-#ifndef PLATFORM_ESPIDF
+#if !PLATFORM_ESPIDF && !PLATFORM_ESP8266
 //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 void usleep(int r);
 #endif
@@ -910,7 +907,7 @@ typedef enum
     EXCELLENT,
 } WIFI_RSSI_LEVEL;
 
-#if PLATFORM_LN882H || PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_TR6260
+#if PLATFORM_LN882H || PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_TR6260 || PLATFORM_XRADIO
 #define IP_STRING_FORMAT	"%u.%u.%u.%u"
 #else
 #define IP_STRING_FORMAT	"%hhu.%hhu.%hhu.%hhu"
