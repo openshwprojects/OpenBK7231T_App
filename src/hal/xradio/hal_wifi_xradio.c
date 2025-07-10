@@ -172,25 +172,26 @@ int HAL_GetWifiStrength()
 }
 
 char* HAL_GetWiFiBSSID(char* bssid) {
-	bssid[0] = '\0';
 	wlan_sta_ap_t *ap = malloc(sizeof(wlan_sta_ap_t));	// to hold information of connected AP	
-	if (wlan_sta_ap_info(ap)) {
+	if (!wlan_sta_ap_info(ap)) {
 		sprintf(bssid, MACSTR, MAC2STR(ap->bssid));
-		free(ap);
 	}
 	else {
 		strcpy(bssid, "wlan info failed");//must be less than 32 chars
 	}
+	free(ap);
 	return bssid;
 };
 uint8_t HAL_GetWiFiChannel(uint8_t *chan) {
 	wlan_sta_ap_t *ap = malloc(sizeof(wlan_sta_ap_t));	// to hold information of connected AP	
-	if (wlan_sta_ap_info(ap)) {
+	if (!wlan_sta_ap_info(ap)) {
 		*chan = ap->channel;
-		free(ap);
-		return *chan;
 	}
-	return 0;
+	else {
+		*chan = 0;
+	}
+	free(ap);
+	return *chan;
 };
 
 const char *HAL_GetMyIPString()
