@@ -720,7 +720,8 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 bool HTTP_checkLFSOverride(http_request_t* request, const char *ext) {
 	char tmp[64];
 	//sprintf_s(tmp, sizeof(tmp), "override/%s", request->url);
-	sprintf_s(tmp, sizeof(tmp), "%s%s", request->url, ext);
+	//sprintf_s(tmp, sizeof(tmp), "%s%s", request->url, ext);
+	sprintf(tmp,  "%s%s", request->url, ext);
 	char *fix = strchr(tmp, '?');
 	if (fix) {
 		*fix = 0;
@@ -732,7 +733,7 @@ bool HTTP_checkLFSOverride(http_request_t* request, const char *ext) {
 	if (lfsres == 0) {
 		lfs_file_close(&lfs, file);
 		free(file);
-		sprintf_s(tmp, sizeof(tmp), "api/lfs/%s%s", request->url, ext);
+		sprintf(tmp,  "api/lfs/%s%s", request->url, ext);
 		char *oldURL = request->url;
 		request->url = tmp;
 		http_rest_get_lfs_file(request);
