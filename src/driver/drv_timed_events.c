@@ -493,34 +493,34 @@ int CLOCK_ClearEvents() {
 	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Removed %i events", t);
 	return t;
 }
-commandResult_t CMD_CLOCK_ClearEvents(const void* context, const char* cmd, const char* args, int cmdFlags) {
+commandResult_t CMD_NTP_ClearEvents(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
-	CLOCK_ClearEvents();
+	NTP_ClearEvents();
 
 	return CMD_RES_OK;
 }
-void CLOCK_Init_Events() {
+void NTP_Init_Events() {
 
 	//cmddetail:{"name":"addClockEvent","args":"[TimerSeconds or Time or sunrise or sunset] [WeekDayFlags] [UniqueIDForRemoval][Command]",
-	//cmddetail:"descr":"Schedule command to run on given time in given day of week. NTP must be running. TimerSeconds is seconds from midnight, Time is a time like HH:mm or HH:mm:ss, WeekDayFlag is a bitflag on which day to run, 0xff mean all days, 0x01 means sunday, 0x02 monday, 0x03 sunday and monday, etc, id is an unique id so event can be removed later. (NOTE: Use of sunrise/sunset requires compiling with ENABLE_CLOCK_SUNRISE_SUNSET set which adds about 11k of code)",
-	//cmddetail:"fn":"CMD_CLOCK_AddEvent","file":"driver/drv_timed_events.c","requires":"",
+	//cmddetail:"descr":"Schedule command to run on given time in given day of week. NTP must be running. TimerSeconds is seconds from midnight, Time is a time like HH:mm or HH:mm:ss, WeekDayFlag is a bitflag on which day to run, 0xff mean all days, 0x01 means sunday, 0x02 monday, 0x03 sunday and monday, etc, id is an unique id so event can be removed later. (NOTE: Use of sunrise/sunset requires compiling with ENABLE_NTP_SUNRISE_SUNSET set which adds about 11k of code)",
+	//cmddetail:"fn":"CMD_NTP_AddClockEvent","file":"driver/drv_ntp_events.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("addClockEvent",CMD_CLOCK_AddEvent, NULL);
+	CMD_RegisterCommand("addClockEvent",CMD_NTP_AddClockEvent, NULL);
 	//cmddetail:{"name":"removeClockEvent","args":"[ID]",
 	//cmddetail:"descr":"Removes clock event with given ID",
-	//cmddetail:"fn":"CMD_CLOCK_RemoveEvent","file":"driver/drv_timed_events.c","requires":"",
+	//cmddetail:"fn":"CMD_NTP_RemoveClockEvent","file":"driver/drv_ntp_events.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("removeClockEvent", CMD_CLOCK_RemoveEvent, NULL);
+	CMD_RegisterCommand("removeClockEvent", CMD_NTP_RemoveClockEvent, NULL);
 	//cmddetail:{"name":"listClockEvents","args":"",
 	//cmddetail:"descr":"Print the complete set clock events list",
-	//cmddetail:"fn":"CMD_CLOCK_ListEvents","file":"driver/drv_timed_events.c","requires":"",
+	//cmddetail:"fn":"CMD_NTP_ListEvents","file":"driver/drv_ntp_events.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("listClockEvents", CMD_CLOCK_ListEvents, NULL);
+	CMD_RegisterCommand("listClockEvents", CMD_NTP_ListEvents, NULL);
 	//cmddetail:{"name":"clearClockEvents","args":"",
 	//cmddetail:"descr":"Removes all set clock events",
-	//cmddetail:"fn":"CMD_CLOCK_ClearEvents","file":"driver/drv_timed_events.c","requires":"",
+	//cmddetail:"fn":"CMD_NTP_ClearEvents","file":"driver/drv_ntp_events.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("clearClockEvents", CMD_CLOCK_ClearEvents, NULL);
-	//CMD_RegisterCommand("addPeriodValue", CMD_CLOCK_AddPeriodValue, NULL);
+	CMD_RegisterCommand("clearClockEvents", CMD_NTP_ClearEvents, NULL);
+	//CMD_RegisterCommand("addPeriodValue", CMD_NTP_AddPeriodValue, NULL);
 }
 
