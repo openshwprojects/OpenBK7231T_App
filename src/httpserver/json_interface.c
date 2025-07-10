@@ -457,8 +457,10 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 	printer(request, "\"Wifi\":{"); // open WiFi
 	JSON_PrintKeyValue_Int(request, printer, "AP", 1, true);
 	JSON_PrintKeyValue_String(request, printer, "SSId", CFG_GetWiFiSSID(), true);
-	JSON_PrintKeyValue_String(request, printer, "BSSId", "30:B5:C2:5D:70:72", true);
-	JSON_PrintKeyValue_Int(request, printer, "Channel", 11, true);
+
+	JSON_PrintKeyValue_String(request, printer, "BSSId", g_wifi_bssid, true);
+	JSON_PrintKeyValue_Int(request, printer, "Channel", g_wifi_channel, true);
+
 	JSON_PrintKeyValue_String(request, printer, "Mode", "11n", true);
 	JSON_PrintKeyValue_Int(request, printer, "RSSI", (HAL_GetWifiStrength() + 100) * 2, true);
 	JSON_PrintKeyValue_Int(request, printer, "Signal", HAL_GetWifiStrength(), true);

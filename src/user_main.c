@@ -84,6 +84,8 @@ int bSafeMode = 0;
 // start disabled.
 int g_timeSinceLastPingReply = -1;
 int g_prevTimeSinceLastPingReply = -1;
+char g_wifi_bssid[33] = { "30:B5:C2:5D:70:72" };
+uint8_t g_wifi_channel = 12;
 // was it ran?
 static int g_bPingWatchDogStarted = 0;
 // current IP string, this is compared with IP returned from HAL
@@ -370,6 +372,10 @@ void Main_OnWiFiStatusChange(int code)
 #endif
 
 		if (bSafeMode == 0) {
+			HAL_GetWiFiBSSID(g_wifi_bssid);
+			HAL_GetWiFiChannel(&g_wifi_channel);
+
+
 			if (strlen(CFG_DeviceGroups_GetName()) > 0) {
 				ScheduleDriverStart("DGR", 5);
 			}
