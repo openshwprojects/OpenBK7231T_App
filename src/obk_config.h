@@ -105,6 +105,7 @@
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 #define ENABLE_LITTLEFS							1
 #define NEW_TCP_SERVER							1
+#define SAVETEMPS			              1
 
 #elif WINDOWS
 
@@ -321,7 +322,7 @@
 #define ENABLE_DRIVER_BMPI2C					1
 #define ENABLE_DRIVER_SHT3X						1
 #endif
-
+#define SAVETEMPS			                1
 
 #elif PLATFORM_LN882H
 

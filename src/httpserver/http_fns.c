@@ -72,6 +72,21 @@ int tuya_os_adapt_wifi_release_ap(AP_IF_S* ap);
 static const char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"></form>";
 
 
+#if SAVETEMPS
+#include "../ringbuff32.h"
+
+extern float intTemp2float(uint8_t val);	// in user_main.c
+extern RB32_t* g_temperature_rb;
+
+// callback function to "print" content to http request ...
+void RB_CB_DataAsFloatTemp(RBTYPE val, void *buff, char *concatstr) {
+	http_request_t *request = (http_request_t *)buff;
+	hprintf255(request,"%.2f%s", intTemp2float(val),concatstr);
+}
+
+
+#endif
+
 const char* g_typesOffLowMidHigh[] = { "Off","Low","Mid","High" };
 const char* g_typesOffLowMidHighHighest[] = { "Off", "Low","Mid","High","Highest" };
 const char* g_typesOffLowestLowMidHighHighest[] = { "Off", "Lowest", "Low", "Mid", "High", "Highest" };
@@ -1031,9 +1046,26 @@ typedef enum {
 		hprintf255(request, "Pins, relays, etc are disabled.</h5>");
 
 	}
+
+#if SAVETEMPS
+
+extern RB32_t* g_temperature_rb;
+const char delim[]=",";
+
+hprintf255(request, "\n<input type='hidden' id='graphdata' value='");
+
+iterateRBtoBuff(g_temperature_rb, RB_CB_DataAsFloatTemp, request,",\0");
+
+hprintf255(request, "'>\n<p>Scale graph <input type='range' min='0.5' max='3' step='0.1' value='.8' onchange='scalegraph(this.value)'>");
+#endif
+
 	// for normal page loads, show the rest of the HTML
 	if (!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
 		poststr(request, "</div>"); // end div#state
+#if SAVETEMPS
+hprintf255(request, "<p><svg xmlns='http://www.w3.org/2000/svg' id='mygraph' width='800' heigth='400' viewBox='-75 -75 1100 650' style='background: white'></svg>");
+hprintf255(request, "<script>function updategraph(){draw(document.getElementById(\"mygraph\"),document.getElementById(\"graphdata\").value.split(/\s*,\s*/).map(Number))};;</script>");
+#endif
 #if ENABLE_DRIVER_CHARTS		
 /*	// moved from drv_charts.c:
 	// on every "state" request, JS code will be loaded and canvas is redrawn
@@ -1049,7 +1081,6 @@ typedef enum {
 //	};
 
 #endif
-
 
 		// Shared UI elements 
 		poststr(request, "<form action=\"cfg\"><input type=\"submit\" value=\"Config\"/></form>");
@@ -2598,7 +2629,15 @@ int http_fn_cm(http_request_t* request) {
 
 	return 0;
 }
+#if SAVETEMPS
+int http_fn_jsgraph(http_request_t* request) {
 
+	char js[]="const gw=1e3,gh=500,labelmargin=50;function scalegraph(t,e){t.setAttribute(\"width\",gw*e),t.setAttribute(\"heigth\",gh*e)}function mydate(t){return new Date(t).toLocaleString().replace(\",\",\"&#13;\")}function draw(t,d){maxval=5*(1+~~(Math.max(...d)/5)),now=(new Date).getTime(),displaydate=now-d.length*dsteps,circ=\"\",axes=\"\",line=\"<path d='\";for(var e=0;e<d.length;e++)x=gw/d.length*e,y=gh-gh/maxval*d[e],circ+=\"<circle cx='\"+x+\"' cy='\"+y+\"' r='5' fill='#5cceee'><title> \"+d[e].toFixed(2)+\"°C &#13; \"+mydate(displaydate)+\"</title></circle>\",line+=e>0?\" L \":\"M \",line+=x+\" \"+y,e%~~(d.length/5)==0&&(axes+=\"<text  y='525' x='\"+(x-50)+\"'>\"+mydate(displaydate).replace(/\\&#13.*/,\"\")+\"<tspan></text>\",axes+=\"<text  y='550' x='\"+(x-50)+\"'>\"+mydate(displaydate).replace(/.*\\&#13; /,\"\")+\"<tspan></text>\"),displaydate+=dsteps;for(line+=\"' fill='transparent' stroke='black'></path>\",axes+=\" <line x1='0' x2='0' y1='0' y2='500'  stroke='black'></line><text font-size='30px' y='-25' x='-25'>°C</text>  \",axes+=\"  <line x1='0' x2='1000' y1='500' y2='500'  stroke='black'></line> \",e=0;e<5;e++)axes+=\"<text  x='-50' y='\"+e*gh/5+\"'>\"+(maxval-e*maxval/5)+\"</text>\";t.innerHTML=circ+line+axes}dsteps=1e3*MAXSAVETEMP;";
+	poststr(request, js);
+	poststr(request, NULL);
+	return 0;
+}
+#endif
 int http_fn_cfg(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Config");
