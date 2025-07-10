@@ -281,8 +281,6 @@ This platform is not supported, error!
 #define bk_printf printf
 
 // generic
-#include <stdbool.h>
-
 typedef int bool;
 #define true 1
 #define false 0
@@ -452,8 +450,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #include <portable.h>
 #include <semphr.h>
 #include "lwip/sys.h"
-#include <stdbool.h>
-
 
 #define GLOBAL_INT_DECLARATION()	;
 #define GLOBAL_INT_DISABLE()		;
