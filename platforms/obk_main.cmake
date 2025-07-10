@@ -51,7 +51,6 @@ set(OBKM_SRC
 	${OBK_SRCS}httpclient/http_client.c
 	${OBK_SRCS}httpclient/utils_net.c
 	${OBK_SRCS}httpclient/utils_timer.c
-	${OBK_SRCS}littlefs/lfs_util.c
 	${OBK_SRCS}littlefs/our_lfs.c
 	${OBK_SRCS}ota/ota.c
 
@@ -150,5 +149,5 @@ if(NOT DEFINED SDK_CJSON)
 endif()
 
 if(NOT DEFINED SDK_LFS)
-	set(OBKM_SRC ${OBKM_SRC} ${OBK_SRCS}littlefs/lfs.c)
+	set(OBKM_SRC ${OBKM_SRC} ${OBK_SRCS}littlefs/lfs.c ${OBK_SRCS}littlefs/lfs_util.c)
 endif()

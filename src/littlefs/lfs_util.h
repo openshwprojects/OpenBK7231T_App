@@ -49,9 +49,6 @@ extern void vPortFree(void* pv);
 #define os_malloc pvPortMalloc
 #define os_free vPortFree
 #endif
-#if PLATFORM_REALTEK_NEW
-#define LFS_CONFIG
-#endif
 
 #ifdef __cplusplus
 extern "C"

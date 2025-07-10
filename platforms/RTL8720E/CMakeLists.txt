@@ -1,25 +1,37 @@
 ameba_internal_library(OpenBeken)
 
-add_compile_definitions(PLATFORM_REALTEK=1)
-add_compile_definitions(PLATFORM_REALTEK_NEW=1)
-add_compile_definitions(PLATFORM_RTL8720E=1)
-add_compile_definitions(TCP_MSL=1000)
-#broken in current release
-#add_compile_definitions(LWIP_NETIF_HOSTNAME=1)
+set(public_definitions)
+set(SDK_CJSON true)
+set(SDK_LFS true)
+set(OBK_SRCS "../../src/")
+set(BERRY_SRCPATH "../../libraries/berry/src")
+set(BERRY_MODULEPATH "${OBK_SRCS}berry/modules")
+
+include(../obk_main.cmake)
+include(../../libraries/berry.cmake)
+
+ameba_list_append(public_definitions LWIP_NETIF_HOSTNAME=1 TCP_MSL=1000)
+ameba_global_define(${public_definitions})
+
+add_compile_definitions(
+	PLATFORM_REALTEK=1
+	PLATFORM_REALTEK_NEW=1
+	PLATFORM_RTL8720E=1
+)
 
 if(DEFINED ENV{APP_VERSION})
-	add_definitions( -DUSER_SW_VER="$ENV{APP_VERSION}" )
+	add_compile_definitions(USER_SW_VER="$ENV{APP_VERSION}")
 endif()
 if(DEFINED ENV{OBK_VARIANT})
-	add_definitions( -DOBK_VARIANT=$ENV{OBK_VARIANT} )
+	add_compile_definitions(OBK_VARIANT=$ENV{OBK_VARIANT})
 endif()
 
 target_compile_options(
-    ${CURRENT_LIB_NAME} PRIVATE
-    -Wno-undef
-    -Wno-unused-parameter
-    -Wno-unused-variable
-    -Wno-strict-prototypes
+	${CURRENT_LIB_NAME} PRIVATE
+	-Wno-undef
+	-Wno-unused-parameter
+	-Wno-unused-variable
+	-Wno-strict-prototypes
 	-Wno-implicit-fallthrough
 	-Wno-missing-field-initializers
 	-Wno-error=implicit-function-declaration
@@ -31,22 +43,14 @@ target_compile_options(
 	-Wno-error=type-limits
 	-Wno-error
 )
-set(SDK_CJSON true)
-set(SDK_LFS true)
-set(OBK_SRCS "../../src/")
-include(../obk_main.cmake)
 
-set(BERRY_SRCPATH "../../libraries/berry/src")
-set(BERRY_MODULEPATH "${OBK_SRCS}berry/modules")
-include_directories(${BERRY_SRCPATH})
-include(../../libraries/berry.cmake)
 target_include_directories(
 	${CURRENT_LIB_NAME} PRIVATE
-	../../libraries/berry/src
 	../../include
 	${CMAKE_CURRENT_SOURCE_DIR}
-	#../../libraries/easyflash/inc
+	${BERRY_SRCPATH}
 )
+
 target_sources(
 	${CURRENT_LIB_NAME} PRIVATE
 
@@ -62,12 +66,4 @@ target_sources(
 	${OBKM_SRC}
 	${BERRY_SRC_C}
 	../../libraries/mqtt_patched.c
-	#../../libraries/easyflash/ports/ef_port.c
-	#../../libraries/easyflash/src/easyflash.c
-	#../../libraries/easyflash/src/ef_env.c
-	#../../libraries/easyflash/src/ef_env_legacy.c
-	#../../libraries/easyflash/src/ef_env_legacy_wl.c
-	#../../libraries/easyflash/src/ef_iap.c
-	#../../libraries/easyflash/src/ef_log.c
-	#../../libraries/easyflash/src/ef_utils.c
 )

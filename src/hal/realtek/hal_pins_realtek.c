@@ -125,7 +125,7 @@ void HAL_PIN_PWM_Stop(int index)
 	if(pin->pwm == NULL) return;
 	//pwmout_stop(pin->pwm);
 #if PLATFORM_REALTEK_NEW
-	HAL_RTK_GetFreeChannel(pin->pwm->pwm_idx);
+	HAL_RTK_FreeChannel(pin->pwm->pwm_idx);
 #endif
 	pwmout_free(pin->pwm);
 	os_free(pin->pwm);

@@ -671,13 +671,7 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define RTW_MODE_STA_AP RTW_MODE_AP
 #define wifi_enable_powersave() wifi_set_lps_enable(1)
 #define wifi_disable_powersave() wifi_set_lps_enable(0)
-#define ef_get_env_blob(a,b,c,d) rt_kv_get(a,b,c)
-#define ef_set_env_blob rt_kv_set
 #define RTW_SUCCESS 0
-#define EF_ENV_INIT_FAILED -1
-#define EF_ENV_NAME_ERR -1
-#define easyflash_init()
-typedef int EfErrCode;
 typedef enum rtw_security rtw_security_t;
 typedef enum rtw_drv_op_mode rtw_mode_t;
 #endif
