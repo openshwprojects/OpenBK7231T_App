@@ -435,9 +435,16 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 	JSON_PrintKeyValue_String(request, printer, "Uptime", buff, true);
 	//JSON_PrintKeyValue_String(request, printer, "Uptime", "30T02:59:30", true);
 	JSON_PrintKeyValue_Int(request, printer, "UptimeSec", g_secondsElapsed, true);
-	JSON_PrintKeyValue_Int(request, printer, "Heap", 25, true);
-	JSON_PrintKeyValue_String(request, printer, "SleepMode", "Dynamic", true);
-	JSON_PrintKeyValue_Int(request, printer, "Sleep", 10, true);
+	// it seems to be in range like 20-30 on ESP8266 Tasmota, so I guess KB
+	JSON_PrintKeyValue_Int(request, printer, "Heap", xPortGetFreeHeapSize()/1024, true);
+	if (g_powersave) {
+		JSON_PrintKeyValue_String(request, printer, "SleepMode", "Dynamic", true);
+		JSON_PrintKeyValue_Int(request, printer, "Sleep", 10, true);
+	}
+	else {
+		JSON_PrintKeyValue_String(request, printer, "SleepMode", "None", true);
+		JSON_PrintKeyValue_Int(request, printer, "Sleep", 0, true);
+	}
 	JSON_PrintKeyValue_Int(request, printer, "LoadAvg", 99, true);
 	JSON_PrintKeyValue_Int(request, printer, "MqttCount", 23, true);
 #ifdef ENABLE_DRIVER_BATTERY
