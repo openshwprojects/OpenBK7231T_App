@@ -449,7 +449,8 @@ jobs:
         with:
           repository: Ameba-AIoT/ameba-rtos
           path: sdk/ameba-rtos
-          ref: release/v1.1
+          #ref: release/v1.1
+          ref: 6a93a16d819707d56beac3a8b829acb41a8634fc # pin commit until stable release
           submodules: recursive
       - uses: actions/setup-python@v5
         with:

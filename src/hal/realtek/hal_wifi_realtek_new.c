@@ -11,9 +11,11 @@
 #include <lwip_netconf.h>
 #include <dhcp/dhcps.h>
 #include "wifi_api.h"
+#include "wifi_fast_connect.h"
 
 extern struct netif xnetif[NET_IF_NUM];
 extern void InitEasyFlashIfNeeded();
+extern int wifi_do_fast_connect(void);
 
 typedef struct
 {
@@ -78,13 +80,14 @@ void HAL_PrintNetworkInfo()
 {
 	uint8_t mac[6];
 	WiFI_GetMacAddress((char*)mac);
-	ADDLOG_INFO(LOG_FEATURE_GENERAL, "+--------------- net device info ------------+\r\n");
-	ADDLOG_INFO(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_bOpenAccessPointMode == 0 ? "STA" : "AP");
-	ADDLOG_INFO(LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |\r\n", HAL_GetMyIPString());
-	ADDLOG_INFO(LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |\r\n", HAL_GetMyMaskString());
-	ADDLOG_INFO(LOG_FEATURE_GENERAL, "|netif gateway = %-16s            |\r\n", HAL_GetMyGatewayString());
-	ADDLOG_INFO(LOG_FEATURE_GENERAL, "|netif mac     : [%02X:%02X:%02X:%02X:%02X:%02X] %-7s |\r\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], "");
-	ADDLOG_INFO(LOG_FEATURE_GENERAL, "+--------------------------------------------+\r\n");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------- net device info ------------+\r\n");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_bOpenAccessPointMode == 0 ? "STA" : "AP");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif rssi    = %-16i            |\r\n", HAL_GetWifiStrength());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |\r\n", HAL_GetMyIPString());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |\r\n", HAL_GetMyMaskString());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif gateway = %-16s            |\r\n", HAL_GetMyGatewayString());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mac     : [%02X:%02X:%02X:%02X:%02X:%02X] %-7s |\r\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], "");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------------------------------------+\r\n");
 }
 
 int HAL_GetWifiStrength()
@@ -112,12 +115,6 @@ void obk_wifi_hdl_new(u8* buf, s32 buf_len, s32 flags, void* userdata)
 #if LWIP_NETIF_HOSTNAME
 		netif_set_hostname(&xnetif[0], CFG_GetDeviceName());
 #endif
-		if(!g_bStaticIP) LwIP_DHCP(0, DHCP_START);
-		if(g_wifiStatusCallback != NULL)
-		{
-			g_wifiStatusCallback(WIFI_STA_CONNECTED);
-		}
-		if(CFG_HasFlag(OBK_FLAG_WIFI_ENHANCED_FAST_CONNECT)) p_store_fast_connect_info(0, 0);
 		return;
 	}
 
@@ -164,13 +161,17 @@ void ConnectToWiFiTask(void* args)
 	connect_param.ssid.len = strlen(wdata.ssid);
 	connect_param.password = (unsigned char*)wdata.pwd;
 	connect_param.password_len = strlen(wdata.pwd);
-	wifi_reg_event_handler(RTW_EVENT_JOIN_STATUS, obk_wifi_hdl_new, NULL);
 
 	if(g_wifiStatusCallback != NULL)
 	{
 		g_wifiStatusCallback(WIFI_STA_CONNECTING);
 	}
 	wifi_connect(&connect_param, 1);
+	if(!g_bStaticIP) LwIP_DHCP(0, DHCP_START);
+	if(g_wifiStatusCallback != NULL)
+	{
+		g_wifiStatusCallback(WIFI_STA_CONNECTED);
+	}
 	vTaskDelete(NULL);
 }
 
@@ -182,6 +183,7 @@ void ConfigureSTA(obkStaticIP_t* ip)
 	struct ip_addr dnsserver;
 
 	wifi_set_autoreconnect(0);
+	wifi_reg_event_handler(RTW_EVENT_JOIN_STATUS, obk_wifi_hdl_new, NULL);
 
 	if(ip->localIPAddr[0] == 0)
 	{
@@ -252,9 +254,48 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	return 0;
 }
 
+void FastConnectToWiFiTask(void* args)
+{
+	struct wlan_fast_reconnect* data = (struct wlan_fast_reconnect*)malloc(sizeof(struct wlan_fast_reconnect));
+	struct wlan_fast_reconnect* empty_data = (struct wlan_fast_reconnect*)malloc(sizeof(struct wlan_fast_reconnect));
+	memset(data, 0xff, sizeof(struct wlan_fast_reconnect));
+	memset(empty_data, 0xff, sizeof(struct wlan_fast_reconnect));
+	int ret = rt_kv_get("wlan_data", (uint8_t*)data, sizeof(struct wlan_fast_reconnect));
+	if(ret < 0 || memcmp(empty_data, data, sizeof(struct wlan_fast_reconnect)) == 0)
+	{
+		ConnectToWiFiTask(args);
+		goto exit;
+	}
+	if(g_wifiStatusCallback != NULL)
+	{
+		g_wifiStatusCallback(WIFI_STA_CONNECTING);
+	}
+	wifi_do_fast_connect();
+	if(g_wifiStatusCallback != NULL)
+	{
+		g_wifiStatusCallback(WIFI_STA_CONNECTED);
+	}
+exit:
+	free(data);
+	free(empty_data);
+	vTaskDelete(NULL);
+}
+
 void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
 {
-	wifi_do_fast_connect();
+	g_bOpenAccessPointMode = 0;
+	strcpy((char*)&wdata.ssid, oob_ssid);
+	strncpy((char*)&wdata.pwd, connect_key, 64);
+
+	ConfigureSTA(ip);
+
+	xTaskCreate(
+		(TaskFunction_t)FastConnectToWiFiTask,
+		"WFC",
+		4096 / sizeof(StackType_t),
+		NULL,
+		9,
+		NULL);
 }
 
 void HAL_DisableEnhancedFastConnect()

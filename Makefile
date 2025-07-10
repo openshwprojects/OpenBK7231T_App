@@ -573,9 +573,8 @@ OpenRTL8720D: prebuild_OpenRTL8720D
 OpenRTL8721DA: prebuild_OpenRTL8721DA
 	cd sdk/ameba-rtos/amebadplus_gcc_project && APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) ./build.py -a ../../../platforms/RTL8721DA
 	mkdir -p output/$(APP_VERSION)
-	touch /tmp/OpenRTL8721DA_$(APP_VERSION).bin
-	dd conv=notrunc bs=1 if=sdk/ameba-rtos/amebadplus_gcc_project/km4_boot_all.bin of=/tmp/OpenRTL8721DA_$(APP_VERSION).bin seek=0
-	dd conv=notrunc bs=1 if=sdk/ameba-rtos/amebadplus_gcc_project/km0_km4_app.bin of=/tmp/OpenRTL8721DA_$(APP_VERSION).bin seek=$(shell printf "%d" 0x14000)
+	cp sdk/ameba-rtos/amebadplus_gcc_project/km4_boot_all.bin /tmp/OpenRTL8721DA_$(APP_VERSION).bin
+	dd conv=notrunc bs=1K if=sdk/ameba-rtos/amebadplus_gcc_project/km0_km4_app.bin of=/tmp/OpenRTL8721DA_$(APP_VERSION).bin seek=80
 	mv /tmp/OpenRTL8721DA_$(APP_VERSION).bin output/$(APP_VERSION)/
 	cp sdk/ameba-rtos/amebadplus_gcc_project/ota_all.bin output/$(APP_VERSION)/OpenRTL8721DA_$(APP_VERSION)_ota.img
 
@@ -583,9 +582,8 @@ OpenRTL8721DA: prebuild_OpenRTL8721DA
 OpenRTL8720E: prebuild_OpenRTL8720E
 	cd sdk/ameba-rtos/amebalite_gcc_project && APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) ./build.py -a ../../../platforms/RTL8720E
 	mkdir -p output/$(APP_VERSION)
-	touch /tmp/OpenRTL8720E_$(APP_VERSION).bin
-	dd conv=notrunc bs=1 if=sdk/ameba-rtos/amebalite_gcc_project/km4_boot_all.bin of=/tmp/OpenRTL8720E_$(APP_VERSION).bin seek=0
-	dd conv=notrunc bs=1 if=sdk/ameba-rtos/amebalite_gcc_project/kr4_km4_app.bin of=/tmp/OpenRTL8720E_$(APP_VERSION).bin seek=$(shell printf "%d" 0x14000)
+	cp sdk/ameba-rtos/amebalite_gcc_project/km4_boot_all.bin /tmp/OpenRTL8720E_$(APP_VERSION).bin
+	dd conv=notrunc bs=1K if=sdk/ameba-rtos/amebalite_gcc_project/kr4_km4_app.bin of=/tmp/OpenRTL8720E_$(APP_VERSION).bin seek=80
 	mv /tmp/OpenRTL8720E_$(APP_VERSION).bin output/$(APP_VERSION)/
 	cp sdk/ameba-rtos/amebalite_gcc_project/ota_all.bin output/$(APP_VERSION)/OpenRTL8720E_$(APP_VERSION)_ota.img
 
