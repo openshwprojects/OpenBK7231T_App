@@ -2033,8 +2033,17 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 
 		if (DRV_IsRunning("NTP")) {
 */
-			sprintf(dataStr, "%lu", Clock_GetCurrentTime());
-			return MQTT_DoItemPublishString("datetime", dataStr);
+#ifdef PLATFORM_ESP8266
+		// while all other platforms will accept uint32_t as long unsigned, ESP8266 needs %u 
+		// biuild fails otherwise because of -Werror=format
+		// src/mqtt/new_mqtt.c:2036:24: error: format '%ld' expects argument of type 'long int', but argument 3 has type 'uint32_t' {aka 'unsigned int'} [-Werror=format=]
+		// al other ESP:
+		/// src/mqtt/new_mqtt.c:2036:44: error: format '%d' expects argument of type 'int', but argument 3 has type 'uint32_t' {aka 'long unsigned int'} [-Werror=format=]
+		sprintf(dataStr, "%u", Clock_GetCurrentTime());
+#else
+		sprintf(dataStr, "%lu", Clock_GetCurrentTime());
+#endif
+		return MQTT_DoItemPublishString("datetime", dataStr);
 /*		}
 		else {
 			return OBK_PUBLISH_WAS_NOT_REQUIRED;
