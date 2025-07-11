@@ -205,8 +205,7 @@ int http_fn_pmntp(http_request_t* request) {
 	if (http_getArg(request->url, "EPOCH", tmpA, sizeof(tmpA))) {
 		actepoch = (uint32_t)strtoul(tmpA,0,10);
 		CLOCK_setDeviceTime(actepoch);
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"Set g_epochOnStartup to %u -- got actepoch=%u secondsElapsed=%u! \n",
-			g_epochOnStartup,actepoch, g_secondsElapsed);	
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"Set clock to %u! \n",actepoch);	
 	}
 #if ENABLE_CLOCK_DST
 	if (! IsDST_initialized()) {
