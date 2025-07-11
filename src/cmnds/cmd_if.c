@@ -277,6 +277,7 @@ float getFailedBoots(const char *s) {
 float getUpTime(const char *s) {
 	return g_secondsElapsed;
 }
+#ifdef ENABLE_LOCAL_CLOCK || ENABLE_NTP
 float getWeekDay(const char *s) {
 	return CLOCK_GetWeekDay();
 }
@@ -298,7 +299,7 @@ float getMonth(const char *s) {
 float getMDay(const char *s) {
 	return CLOCK_GetMDay();
 }
-
+#endif
 #ifdef ENABLE_NTP
 
 float getNTPOn(const char *s) {
@@ -455,7 +456,7 @@ const constant_t g_constants[] = {
 	////cnstdetail:"requires":""}
 	{ "$today", &getToday },
 #endif	//ENABLE_DRIVER_BL0937
-#ifdef ENABLE_NTP
+#ifdef ENABLE_LOCAL_CLOCK || ENABLE_NTP
 	//cnstdetail:{"name":"$day",
 	//cnstdetail:"title":"$day",
 	//cnstdetail:"descr":"Current weekday from NTP",
@@ -515,7 +516,7 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",
 	//cnstdetail:"requires":""}
 	{ "$NTPOn", &getNTPOn },
-#endif	//ENABLE_NTP
+#endif	// ENABLE_LOCAL_CLOCK || ENABLE_NTP
 #ifdef ENABLE_DRIVER_BATTERY
 	//cnstdetail:{"name":"$batteryVoltage",
 	//cnstdetail:"title":"$batteryVoltage",

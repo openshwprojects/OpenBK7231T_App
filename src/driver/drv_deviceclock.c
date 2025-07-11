@@ -209,6 +209,7 @@ static TimeComponents getCurrentComponents(void) {
 }
 
 // Individual getter functions
+#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 int CLOCK_GetSecond(void) {
     return getCurrentComponents().second;
 }
@@ -236,7 +237,7 @@ int CLOCK_GetYear(void) {
 int CLOCK_GetWeekDay(void) {
     return getCurrentComponents().wday;
 }
-
+#endif
 
 
 #if ENABLE_CLOCK_DST
@@ -437,8 +438,9 @@ void CLOCK_Init() {
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("clock_setTZ",SetTimeZoneOfs, NULL);
 #endif
-
+#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "CLOCK driver initialized.");
+#endif
 }
 
 void CLOCK_OnEverySecond()
@@ -513,10 +515,12 @@ int Clock_GetTimesZoneOfsSeconds()			// ... and for NTP_GetTimesZoneOfsSeconds()
 }
 void CLOCK_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState)
 {
+#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 	if (bPreState)
 		return;
 	uint32_t tempt=Clock_GetCurrentTime();
 	if (Clock_IsTimeSynced()) hprintf255(request, "<h5>Local clock: %s (%i)</h5>",TS2STR(tempt,TIME_FORMAT_LONG) ,tempt);
+#endif
 }
 
 
