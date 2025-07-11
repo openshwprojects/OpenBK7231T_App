@@ -2033,7 +2033,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 
 		if (DRV_IsRunning("NTP")) {
 */
-			sprintf(dataStr, "%ld", Clock_GetCurrentTime());
+			sprintf(dataStr, "%d", Clock_GetCurrentTime());
 			return MQTT_DoItemPublishString("datetime", dataStr);
 /*		}
 		else {
