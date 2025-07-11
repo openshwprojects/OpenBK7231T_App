@@ -24,7 +24,7 @@ uint32_t g_epochOnStartup = 0;
 // UTC offset
 int g_UTCoffset = 0;
 void CLOCK_setDeviceTime(uint32_t time){
-//	ADDLOG_INFO(LOG_FEATURE_RAW, "CLOCK_setDeviceTime - time = %lu - g_secondsElapsed =%lu \r\n",time,g_secondsElapsed);
+	ADDLOG_DEBUG(LOG_FEATURE_RAW, "CLOCK_setDeviceTime - time = %lu - g_secondsElapsed =%lu \r\n",time,g_secondsElapsed);
 	g_epochOnStartup = (uint32_t)time - g_secondsElapsed;
 #if ENABLE_CLOCK_DST
     setDST();	// just to be sure: recalculate DST
