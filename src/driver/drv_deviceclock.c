@@ -284,6 +284,11 @@ int IsDST() {
     return dst_config.DSTactive;
 }
 
+bool IsDST_initialized() {
+    return dst_config.DSTinitialized;
+}
+
+
 // make sure pointer is e.g. uint32_t DST[2];  
 void getDSTtransition(uint32_t * DST){
 	// if first entry starts DST, isDST2 will be 0 else it will be 1

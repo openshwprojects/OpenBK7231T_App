@@ -901,6 +901,8 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	if (http_checkUrlBase(urlStr, "ota")) return http_fn_ota(request);
 	if (http_checkUrlBase(urlStr, "ota_exec")) return http_fn_ota_exec(request);
 	if (http_checkUrlBase(urlStr, "cm")) return http_fn_cm(request);
+	
+	if (http_checkUrlBase(urlStr, "pmntp")) return http_fn_pmntp(request); // poor mans NTP
 
 	return http_fn_other(request);
 }

@@ -49,6 +49,7 @@ int Clock_GetTimesZoneOfsSeconds();			// ... and for NTP_GetTimesZoneOfsSeconds(
 
 #if ENABLE_CLOCK_DST
 int Time_IsDST();
+bool IsDST_initialized();
 uint32_t setDST();
 int getDST_offset();
 uint32_t RuleToTime(uint8_t dayOfWeek, uint8_t month, uint8_t weekNum, uint8_t hour, uint16_t year);

@@ -197,6 +197,36 @@ int http_fn_testmsg(http_request_t* request) {
 
 }
 
+// poor mans NTP
+int http_fn_pmntp(http_request_t* request) {
+	char tmpA[128];
+	uint32_t actepoch=0;
+	// javascripts "getTime()" should return time since 01.01.1970 (UTC)
+	if (http_getArg(request->url, "EPOCH", tmpA, sizeof(tmpA))) {
+		actepoch = (uint32_t)strtoul(tmpA,0,10);
+		CLOCK_setDeviceTime(actepoch);
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"Set g_epochOnStartup to %u -- got actepoch=%u secondsElapsed=%u! \n",
+			g_epochOnStartup,actepoch, g_secondsElapsed);	
+	}
+#if ENABLE_CLOCK_DST
+	if (! IsDST_initialized()) {
+#endif
+		if (http_getArg(request->url, "OFFSET", tmpA, sizeof(tmpA)) && actepoch != 0 ) {
+		// if actual time is during DST period, javascript will return 
+		// an offset including the one additional hour of DST  
+		// if we don't handle DST, simply accept this as "offset"
+		CLOCK_setDeviceTimeOffset(atoi(tmpA));
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"Clock - set g_UTCoffset to %i! \n",
+			atoi(tmpA));	
+		}
+#if ENABLE_CLOCK_DST
+	// ignore JS offset, if we can/will calculate DST on our own
+	} else setDST();
+#endif
+	poststr(request, "HTTP/1.1 302 OK\nLocation: /index\nConnection: close\n\n");
+	poststr(request, NULL);
+	return 0;
+}
 
 // bit mask telling which channels are hidden from HTTP
 // If given bit is set, then given channel is hidden
@@ -1070,6 +1100,7 @@ typedef enum {
 		}
 		poststr(request, "<form action=\"/app\" target=\"_blank\"><input type=\"submit\" value=\"Launch Web Application\"></form> ");
 		poststr(request, "<form action=\"about\"><input type=\"submit\" value=\"About\"/></form>");
+		poststr(request, "<input type='submit' value='Set clock to PC time' onclick='location.href =\"/pmntp?EPOCH=\"+((e=new Date)/1e3|0)+\"&OFFSET=\"+-60*e.getTimezoneOffset()'><p>");
 
 		poststr(request, htmlFooterRefreshLink);
 		http_html_end(request);
