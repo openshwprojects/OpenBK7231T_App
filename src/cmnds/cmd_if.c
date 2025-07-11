@@ -277,7 +277,7 @@ float getFailedBoots(const char *s) {
 float getUpTime(const char *s) {
 	return g_secondsElapsed;
 }
-#ifdef ENABLE_LOCAL_CLOCK || ENABLE_NTP
+#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 float getWeekDay(const char *s) {
 	return CLOCK_GetWeekDay();
 }
@@ -456,7 +456,7 @@ const constant_t g_constants[] = {
 	////cnstdetail:"requires":""}
 	{ "$today", &getToday },
 #endif	//ENABLE_DRIVER_BL0937
-#ifdef ENABLE_LOCAL_CLOCK || ENABLE_NTP
+#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 	//cnstdetail:{"name":"$day",
 	//cnstdetail:"title":"$day",
 	//cnstdetail:"descr":"Current weekday from NTP",
