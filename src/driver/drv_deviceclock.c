@@ -516,6 +516,7 @@ void CLOCK_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreSta
 	if (bPreState)
 		return;
 	uint32_t tempt=Clock_GetCurrentTime();
-	if (Clock_IsTimeSynced()) hprintf255(request, "<h5>Local clock %s (%i)</h5>",TS2STR(tempt,TIME_FORMAT_LONG) ,tempt);
+	if (Clock_IsTimeSynced()) hprintf255(request, "<h5>Local clock: %s (%i)</h5>",TS2STR(tempt,TIME_FORMAT_LONG) ,tempt);
 }
+
 

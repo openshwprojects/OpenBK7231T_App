@@ -134,7 +134,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"CLOCK driver will allways run. It will usually get time from NTP and handle timed events",
 	//drvdetail:"requires":""}
-	{ "CLOCK",		CLOCK_Init,			CLOCK_OnEverySecond,			NULL, NULL, NULL , NULL , NULL, false },
+	{ "CLOCK",		CLOCK_Init,			CLOCK_OnEverySecond,			CLOCK_AppendInformationToHTTPIndexPage, NULL, NULL , NULL , NULL, false },
 #if ENABLE_DRIVER_HTTPBUTTONS
 	//drvdetail:{"name":"HTTPButtons",
 	//drvdetail:"title":"TODO",
