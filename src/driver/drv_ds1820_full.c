@@ -757,7 +757,7 @@ void DS1820_full_AppendInformationToHTTPIndexPage(http_request_t* request, int b
 			}
 			int ch=ds18b20devices.channel[i];
 			char chan[5]=" - ";
-			if (ch >=0) sprintf(chan,"%i",ch);
+			if (ch >=0) sprintf(chan,"%i",(uint8_t)ch);
 			hprintf255(request, "<tr><td>%s</td>"
 			"<td> &nbsp; %02X %02X %02X %02X %02X %02X %02X %02X</td>"
 			"<td>%s</td><td>%s</td><td>%s</td></tr>",ds18b20devices.name[i],
@@ -797,7 +797,7 @@ int http_fn_cfg_ds18b20(http_request_t* request)
 	for (int i=0; i < ds18_count; i++) {
 		int ch=ds18b20devices.channel[i];
 		char chan[5]={0};
-		if (ch >=0) sprintf(chan,"%i",ch);
+		if (ch >=0) sprintf(chan,"%i",(uint8_t)ch);
 		hprintf255(request, "<tr><td id='a%i'>"DEVSTR"</td>"
 		"<td id='pin%i'> %i</th>"
 		"<td>&nbsp; <input name='ds1820name%i' id='ds1820name%i' value='%s'></td>",i,
