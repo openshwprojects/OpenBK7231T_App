@@ -755,11 +755,14 @@ void DS1820_full_AppendInformationToHTTPIndexPage(http_request_t* request, int b
 			else {
 				 sprintf(tmp, " -- </td><td> --");
 			}
+			int ch=ds18b20devices.channel[i];
+			char chan[5]=" - ";
+			if (ch >=0) sprintf(chan,"%i",ch);
 			hprintf255(request, "<tr><td>%s</td>"
 			"<td> &nbsp; %02X %02X %02X %02X %02X %02X %02X %02X</td>"
-			"<td>%s</td><td>%d</td><td>%s</td></tr>",ds18b20devices.name[i],
+			"<td>%s</td><td>%s</td><td>%s</td></tr>",ds18b20devices.name[i],
 			DEV2STR(ds18b20devices.array[i]),
-			pinalias, ds18b20devices.channel[i], tmp);
+			pinalias, chan, tmp);
 		}
 		hprintf255(request, "</table>");
 	}
@@ -789,25 +792,35 @@ int http_fn_cfg_ds18b20(http_request_t* request)
 
 
 //	poststr_h2(request, "Here you can configure DS18B20 sensors detected or configured");
-	hprintf255(request, "<h2>Configure DS18B20 sensors</h2><form action='/cfg_ds18b20'>");
+	hprintf255(request, "<h2>Configure DS18B20 sensors</h2><form action='/cfg_ds18b20' onsubmit='return chkchann()&&sc();'>");
 	hprintf255(request, "<table><tr><th width='38'>Sensor Adress</th><th width='4'>Pin</th><th width='25'> &nbsp; Name </th><th width='5'>Channel</th></tr>");
 	for (int i=0; i < ds18_count; i++) {
+		int ch=ds18b20devices.channel[i];
+		char chan[5]={0};
+		if (ch >=0) sprintf(chan,"%i",ch);
 		hprintf255(request, "<tr><td id='a%i'>"DEVSTR"</td>"
 		"<td id='pin%i'> %i</th>"
-		"<td>&nbsp; <input name='ds1820name%i' id='ds1820name%i' value='%s'></td>"
-		"<td>&nbsp; <input name='ds1820chan%i' id='ds1820chan%i' value='%i'></td></tr>",i,
+		"<td>&nbsp; <input name='ds1820name%i' id='ds1820name%i' value='%s'></td>",i,
 		DEV2STR(ds18b20devices.array[i]),
 		i,ds18b20devices.GPIO[i],
-		i,i,ds18b20devices.name[i],
-		i,i,ds18b20devices.channel[i]);
+		i,i,ds18b20devices.name[i]);
+		hprintf255(request, "<td>&nbsp; <input name='ds1820chan%i' id='ds1820chan%i' value='%s' onchange='chkchann()'></td></tr>",
+		i,i,chan);
 	}
 	hprintf255(request, "</table>");
 		
 
-	poststr(request, "<br><input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? ')\"></form><script>function gen(){v='';if(getElement('CB').checked){M=0;T='\\n'}else{M=1;T='; ';v+='backlog '};v+='alias sets DS1820_FULL_setsensor'+T+'startDriver DS1820_FULL';");
+	poststr(request, "<br><input type=\"submit\" value=\"Submit\"></form>");
+	poststr(request,"<br>Use multiline command <input type='checkbox' id='CB' onchange='gen()'><br><input type='button' value='generate command for config' onclick='gen(); ct.hidden=false;'><textarea id='text' hidden '> </textarea><p>");
+	hprintf255(request, "<script>chanels=document.querySelectorAll('[name*=\"ds1820chan\"]');chanInUse=Array(%i).fill(0);usedCH=[",CHANNEL_MAX);
+	for (int j = 0; j < CHANNEL_MAX-1; j++) {
+		hprintf255(request,"%i,",(CHANNEL_IsInUse(j)&&!ds18b20_used_channel(j))?1:0);
+	}
+	hprintf255(request,"%i];",(CHANNEL_IsInUse(CHANNEL_MAX-1)&&!ds18b20_used_channel(CHANNEL_MAX-1))?1:0);
+	poststr(request, "function chkchann(){ok=true;chanInUse.fill(0);chanels.forEach((e)=>{((i=parseInt(e.value))>=0)&&(chanInUse[i]++);});chanInUse.forEach((e,i)=>{if((e>0)&&((e>1)||(usedCH[i]!=0))){ok=false;alert('Channel '+i+' already in use!');}});return ok;};");
+	poststr(request, "function sc(){chanels.forEach((e) => {(e.value.trim()=='')&&(e.value=-1);})};ct=document.getElementById('text');function gen(){v='';if(getElement('CB').checked){M=0;T='\\n'}else{M=1;T='; ';v+='backlog '};v+='alias sets DS1820_FULL_setsensor'+T+'startDriver DS1820_FULL';");
 	hprintf255(request, "for (i=0;i<%i;i++){",ds18_count);
-	poststr(request, "v+=T+'sets '+'\"'+getElement('a'+i).innerHTML.replaceAll(/[ ]*0[xX]/g,'')+'\" '+getElement('pin'+i).innerHTML+' \"'+getElement('ds1820name'+i).value+'\" '+getElement('ds1820chan'+i).value}return v;};</script>");
-	poststr(request,"<br>Use multiline command <input type='checkbox' id='CB'><br><input type='button' value='generate command for config' onclick='t=document.getElementById(\"text\"); t.value=gen(); t.hidden=false;'><textarea id='text' hidden '> </textarea><p>");
+	poststr(request, "v+=T+'sets '+'\"'+getElement('a'+i).innerHTML.replaceAll(/[ ]*0[xX]/g,'')+'\" '+getElement('pin'+i).innerHTML+' \"'+getElement('ds1820name'+i).value+'\" '+getElement('ds1820chan'+i).value}ct.value=v;};</script>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
 	poststr(request, NULL);
