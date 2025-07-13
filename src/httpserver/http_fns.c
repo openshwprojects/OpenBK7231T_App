@@ -2617,7 +2617,7 @@ int http_fn_cfg(http_request_t* request) {
 	postFormAction(request, "cfg_ip", "Configure IP");
 #endif
 #if (ENABLE_DRIVER_DS1820_FULL)
-	postFormAction(request, "cfg_ds18b20", "Configure DS18B20 sensors");
+	postFormAction(request, "cfg_ds18b20", "Configure DS18B20 Sensors");
 #endif
 	postFormAction(request, "cfg_mqtt", "Configure MQTT");
 #if ENABLE_HTTP_NAMES
