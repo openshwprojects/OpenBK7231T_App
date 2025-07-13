@@ -792,8 +792,8 @@ int http_fn_cfg_ds18b20(http_request_t* request)
 
 
 //	poststr_h2(request, "Here you can configure DS18B20 sensors detected or configured");
-	hprintf255(request, "<h2>Configure DS18B20 sensors</h2><form action='/cfg_ds18b20' onsubmit='return chkchann()&&sc();'>");
-	hprintf255(request, "<table><tr><th width='38'>Sensor Adress</th><th width='4'>Pin</th><th width='25'> &nbsp; Name </th><th width='5'>Channel</th></tr>");
+	hprintf255(request, "<h2>Configure DS18B20 Sensors</h2><form action='/cfg_ds18b20' onsubmit='return chkchann()&&sc();'>");
+	hprintf255(request, "<table><tr><th width='38'>Sensor Address</th><th width='4'>Pin</th><th width='25'> &nbsp; Name </th><th width='5'>Channel</th></tr>");
 	for (int i=0; i < ds18_count; i++) {
 		int ch=ds18b20devices.channel[i];
 		char chan[5]={0};
