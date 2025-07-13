@@ -820,7 +820,7 @@ int http_fn_cfg_ds18b20(http_request_t* request)
 	poststr(request, "function chkchann(){ok=true;chanInUse.fill(0);chanels.forEach((e)=>{((i=parseInt(e.value))>=0)&&(chanInUse[i]++);});chanInUse.forEach((e,i)=>{if((e>0)&&((e>1)||(usedCH[i]!=0))){ok=false;alert('Channel '+i+' already in use!');}});return ok;};");
 	poststr(request, "function sc(){chanels.forEach((e) => {(e.value.trim()=='')&&(e.value=-1);})};ct=document.getElementById('text');function gen(){v='';if(getElement('CB').checked){M=0;T='\\n'}else{M=1;T='; ';v+='backlog '};v+='alias sets DS1820_FULL_setsensor'+T+'startDriver DS1820_FULL';");
 	hprintf255(request, "for (i=0;i<%i;i++){",ds18_count);
-	poststr(request, "v+=T+'sets '+'\"'+getElement('a'+i).innerHTML.replaceAll(/[ ]*0[xX]/g,'')+'\" '+getElement('pin'+i).innerHTML+' \"'+getElement('ds1820name'+i).value+'\" '+getElement('ds1820chan'+i).value}ct.value=v;};</script>");
+	poststr(request, "v+=T+'sets '+getElement('a'+i).innerHTML.replaceAll(/[ ]*0[xX]/g,'')+' '+getElement('pin'+i).innerHTML+' \"'+getElement('ds1820name'+i).value+'\" '+getElement('ds1820chan'+i).value}ct.value=v;};</script>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
 	poststr(request, NULL);
