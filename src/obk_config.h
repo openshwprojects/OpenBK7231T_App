@@ -514,6 +514,12 @@
 //#define ENABLE_BL_MOVINGAVG	1
 #endif
 
+// testing DS1820 full driver
+#if (ENABLE_DRIVER_DS1820)
+#define DS1820full			1
+#endif
+
+
 // closing OBK_CONFIG_H
 #endif
 
