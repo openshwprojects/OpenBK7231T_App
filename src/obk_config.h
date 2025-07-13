@@ -320,7 +320,8 @@
 #if (OBK_VARIANT == OBK_VARIANT_SENSORS)
 #define ENABLE_DRIVER_BMP280					1
 #define ENABLE_DRIVER_BMPI2C					1
-#define ENABLE_DRIVER_SHT3X						1
+#define ENABLE_DRIVER_SHT3X					1
+#define ENABLE_DRIVER_DS1820_FULL				1
 #endif
 
 
@@ -513,11 +514,6 @@
 //#define ENABLE_BL_TWIN	1
 //allow moving average energy calculation +180 bytes
 //#define ENABLE_BL_MOVINGAVG	1
-#endif
-
-//   !!! TESTING ONLY !!!
-#if (ENABLE_DRIVER_DS1820)
-#define ENABLE_DRIVER_DS1820_FULL	1
 #endif
 
 // closing OBK_CONFIG_H
