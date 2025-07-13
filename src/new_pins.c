@@ -20,8 +20,10 @@
 #ifdef PLATFORM_BEKEN
 #include <gpio_pub.h>
 #include "driver/drv_ir.h"
-#elif PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
+#include "hal/espidf/hal_pinmap_espidf.h"
 #include "esp_sleep.h"
+#include "esp_wifi.h"
 #elif PLATFORM_XRADIO
 #undef HAL_ADC_Init
 #include "hal/xradio/hal_pinmap_xradio.h"

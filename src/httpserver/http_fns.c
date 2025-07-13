@@ -53,7 +53,7 @@
 	extern hal_reset_reason_t reset_reason;
 	#endif
 	SemaphoreHandle_t scan_hdl;
-#elif defined(PLATFORM_ESPIDF)
+#elif defined(PLATFORM_ESPIDF) || PLATFORM_ESP8266
 #include "esp_wifi.h"
 #include "esp_system.h"
 #elif defined(PLATFORM_BK7231T)
@@ -1398,7 +1398,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 			hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", i + 1, (int)num, ar[i].ssid, ar[i].channel, ar[i].rssi);
 		}
 		tuya_os_adapt_wifi_release_ap(ar);
-#elif PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 		// doesn't work in ap mode, only sta/apsta
 		uint16_t ap_count = 0, number = 30;
 		wifi_ap_record_t ap_info[number];
@@ -2679,7 +2679,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 	poststr(request, "<p>The first field assigns a role to the given pin. The next field is used to enter channel index (relay index), used to support multiple relays and buttons. ");
 	poststr(request, "So, first button and first relay should have channel 1, second button and second relay have channel 2, etc.</p>");
 	poststr(request, "<p>Only for button roles another field will be provided to enter channel to toggle when doing double click. ");
-	poststr(request, "It shows up when you change role to button and save.</p>");
+	poststr(request, "It shows up when you change role to button.</p>");
 #if PLATFORM_BK7231N || PLATFORM_BK7231T
 	poststr(request, "<p>BK7231N/BK7231T supports PWM only on pins 6, 7, 8, 9, 24 and 26!</p>");
 #endif
@@ -3181,7 +3181,7 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 
 #elif PLATFORM_LN882H
 
-#elif PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 #elif PLATFORM_TR6260
 #elif PLATFORM_REALTEK
 #elif PLATFORM_ECR6600

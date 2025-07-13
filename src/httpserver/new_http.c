@@ -295,6 +295,17 @@ void http_setup(http_request_t* request, const char* type) {
 	poststr(request, "\r\n"); // end headers with double CRLF
 	poststr(request, "\r\n");
 }
+void http_setup_gz(http_request_t* request, const char* type) {
+	hprintf255(request, httpHeader, request->responseCode, type);
+	poststr(request, "\r\n"); // next header
+	poststr(request, httpCorsHeaders);
+	poststr(request, "\r\n");
+	poststr(request, "Content-Encoding: gzip");
+	poststr(request, "\r\n");
+	poststr(request, "Connection: close");
+	poststr(request, "\r\n"); // end headers with double CRLF
+	poststr(request, "\r\n");
+}
 
 void http_html_start(http_request_t* request, const char* pagename) {
 	poststr(request, htmlDoctype);
@@ -819,6 +830,16 @@ int HTTP_ProcessPacket(http_request_t* request) {
 		ADDLOG_ERROR(LOG_FEATURE_HTTP, "HTTP packet with auth fail\n");
 		return 0;
 	}
+
+#if ENABLE_HTTP_OVERRIDE
+	bool HTTP_checkLFSOverride(http_request_t* request, const char *ext);
+	if (HTTP_checkLFSOverride(request,".html")) {
+		return 1;
+	}
+	if (HTTP_checkLFSOverride(request, "")) {
+		return 1;
+	}
+#endif
 
 	if (http_checkUrlBase(urlStr, "")) return http_fn_empty_url(request);
 

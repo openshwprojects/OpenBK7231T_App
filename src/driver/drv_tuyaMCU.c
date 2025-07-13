@@ -449,7 +449,7 @@ void TuyaMCU_SendCommandWithData(byte cmdType, byte* data, int payload_len) {
 	
 	byte check_sum = (0xFF + cmdType + (payload_len >> 8) + (payload_len & 0xFF));
 
-	UART_InitUART(g_baudRate, 0, false);
+	//UART_InitUART(g_baudRate, 0, false);
 	if (CFG_HasFlag(OBK_FLAG_TUYAMCU_USE_QUEUE)) {
 		tuyaMCUPacket_t *p = TUYAMCU_AddToQueue(payload_len + 4);
 		p->data[0] = cmdType;

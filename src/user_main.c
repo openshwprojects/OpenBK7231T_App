@@ -84,6 +84,8 @@ int bSafeMode = 0;
 // start disabled.
 int g_timeSinceLastPingReply = -1;
 int g_prevTimeSinceLastPingReply = -1;
+char g_wifi_bssid[33] = { "30:B5:C2:5D:70:72" };
+uint8_t g_wifi_channel = 12;
 // was it ran?
 static int g_bPingWatchDogStarted = 0;
 // current IP string, this is compared with IP returned from HAL
@@ -160,7 +162,7 @@ void extended_app_waiting_for_launch2(void) {
 #endif
 
 
-#if defined(PLATFORM_LN882H) || defined(PLATFORM_ESPIDF)
+#if defined(PLATFORM_LN882H) || defined(PLATFORM_ESPIDF) || defined(PLATFORM_ESP8266)
 
 int LWIP_GetMaxSockets() {
 	return 0;
@@ -172,7 +174,7 @@ int LWIP_GetActiveSockets() {
 
 #if PLATFORM_BL602 || PLATFORM_W800 || PLATFORM_W600 || PLATFORM_LN882H \
 	|| PLATFORM_ESPIDF || PLATFORM_TR6260 || PLATFORM_REALTEK || PLATFORM_ECR6600 \
-	|| PLATFORM_XRADIO
+	|| PLATFORM_XRADIO || PLATFORM_ESP8266
 
 OSStatus rtos_create_thread(beken_thread_t* thread,
 	uint8_t priority, const char* name,
@@ -370,6 +372,10 @@ void Main_OnWiFiStatusChange(int code)
 #endif
 
 		if (bSafeMode == 0) {
+			HAL_GetWiFiBSSID(g_wifi_bssid);
+			HAL_GetWiFiChannel(&g_wifi_channel);
+
+
 			if (strlen(CFG_DeviceGroups_GetName()) > 0) {
 				ScheduleDriverStart("DGR", 5);
 			}
@@ -530,7 +536,7 @@ bool Main_HasFastConnect() {
 	}
 	return false;
 }
-#if PLATFORM_LN882H || PLATFORM_ESPIDF
+#if PLATFORM_LN882H || PLATFORM_ESPIDF || PLATFORM_ESP8266
 // Quick hack to display LN-only temperature,
 // we may improve it in the future
 extern float g_wifi_temperature;
@@ -614,7 +620,7 @@ void Main_OnEverySecond()
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_OnEverySecond();
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF) \
- || defined (PLATFORM_RTL87X0C)
+ || defined (PLATFORM_RTL87X0C) || PLATFORM_ESP8266
 	UART_RunEverySecond();
 #endif
 #endif
@@ -902,11 +908,12 @@ void Main_OnEverySecond()
 
 static int g_wifiLedToggleTime = 0;
 static int g_wifi_ledState = 0;
-static uint32_t g_time = 0;
+unsigned int g_timeMs = 0;
 static uint32_t g_last_time = 0;
 int g_bWantPinDeepSleep;
 int g_pinDeepSleepWakeUp = 0;
 unsigned int g_deltaTimeMS;
+
 
 /////////////////////////////////////////////////////
 // this is what we do in a qucik tick
@@ -925,18 +932,18 @@ void QuickTick(void* param)
 #endif
 
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
-	g_time = rtos_get_time();
-#elif defined (PLATFORM_ESPIDF)
-	g_time = esp_timer_get_time() / 1000;
+	g_timeMs = rtos_get_time();
+#elif defined(PLATFORM_ESPIDF) //|| defined(PLATFORM_ESP8266)
+	g_timeMs = esp_timer_get_time() / 1000;
 #else
-	g_time += QUICK_TMR_DURATION;
+	g_timeMs += QUICK_TMR_DURATION;
 #endif
-	g_deltaTimeMS = g_time - g_last_time;
+	g_deltaTimeMS = g_timeMs - g_last_time;
 	// cope with wrap
 	if (g_deltaTimeMS > 0x4000) {
-		g_deltaTimeMS = ((g_time + 0x4000) - (g_last_time + 0x4000));
+		g_deltaTimeMS = ((g_timeMs + 0x4000) - (g_last_time + 0x4000));
 	}
-	g_last_time = g_time;
+	g_last_time = g_timeMs;
 
 #if ENABLE_OBK_SCRIPTING
 	SVM_RunThreads(g_deltaTimeMS);
@@ -991,13 +998,18 @@ void QuickTick(void* param)
 
 }
 
-
+#if PLATFORM_ESP8266 || PLATFORM_ESPIDF
+#define QT_STACK_SIZE 2048
+#else
+#define QT_STACK_SIZE 1024
+#endif
 
 ////////////////////////////////////////////////////////
 // this is the bit which runs the quick tick timer
 #if WINDOWS
 
-#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600 \
+	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF
 void quick_timer_thread(void* param)
 {
 	while (1) {
@@ -1005,8 +1017,6 @@ void quick_timer_thread(void* param)
 		QuickTick(0);
 	}
 }
-#elif PLATFORM_ESPIDF
-esp_timer_handle_t g_quick_timer;
 #elif PLATFORM_XRADIO || PLATFORM_LN882H
 OS_Timer_t g_quick_timer;
 #else
@@ -1016,17 +1026,9 @@ void QuickTick_StartThread(void)
 {
 #if WINDOWS
 
-#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600
-	xTaskCreate(quick_timer_thread, "quick", 1024, NULL, 15, NULL);
-#elif PLATFORM_ESPIDF
-	const esp_timer_create_args_t g_quick_timer_args =
-	{
-			.callback = &QuickTick,
-			.name = "quick"
-	};
-
-	esp_timer_create(&g_quick_timer_args, &g_quick_timer);
-	esp_timer_start_periodic(g_quick_timer, QUICK_TMR_DURATION * 1000);
+#elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600 \
+	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF
+	xTaskCreate(quick_timer_thread, "quick", QT_STACK_SIZE, NULL, 15, NULL);
 #elif PLATFORM_XRADIO || PLATFORM_LN882H
 
 	OS_TimerSetInvalid(&g_quick_timer);
