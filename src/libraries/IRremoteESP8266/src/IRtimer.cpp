@@ -6,19 +6,10 @@
 #endif
 
 
-#if PLATFORM_BEKEN
+#if PLATFORM_BEKEN || PLATFORM_REALTEK
 //TODO
-static uint32_t  micros(void)
-{
-  //TODO
-  return 0;
-}
-
-static uint32_t  millis(void)
-{
-  //TODO
-  return 0;
-}
+extern unsigned long micros(void);
+extern unsigned long millis(void);
 
 #endif
 

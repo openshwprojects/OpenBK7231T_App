@@ -19,7 +19,7 @@ SRC_C  += $(OBK_DIR)/src/hal/realtek/hal_wifi_realtek.c
 OBK_SRCS = $(OBK_DIR)/src/
 include $(OBK_DIR)/platforms/obk_main.mk
 SRC_C += $(OBKM_SRC)
-#SRC_CPP += $(OBKM_SRC_CXX)
+SRC_CPP += $(OBKM_SRC_CXX)
 CFLAGS += $(OBK_CFLAGS)
 CPPFLAGS += $(INCLUDES) -fpermissive
 

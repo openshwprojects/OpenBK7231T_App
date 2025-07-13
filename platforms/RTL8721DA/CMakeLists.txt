@@ -57,7 +57,7 @@ target_sources(
 	${OBK_SRCS}hal/realtek/rtl8721da/hal_uart_rtl8721da.c
 
 	${OBKM_SRC}
-	#${OBKM_SRC_CXX}
+	${OBKM_SRC_CXX}
 	${BERRY_SRC_C}
 	../../libraries/mqtt_patched.c
 )
