@@ -4,7 +4,14 @@
 #include "../../logging/logging.h"
 #include "../../new_cfg.h"
 #include "../../new_pins.h"
-#include "hal_generic_realtek.h"
+#include "../hal_pins.h"
+#include "hal_pinmap_realtek.h"
+#if !PLATFORM_REALTEK_NEW
+#include "gpio_ex_api.h"
+#endif
+#if !PLATFORM_RTL8710A && !PLATFORM_RTL8710B
+#include "pwmout_ex_api.h"
+#endif
 
 #if PLATFORM_REALTEK_NEW
 
@@ -30,9 +37,10 @@ void HAL_RTK_FreeChannel(uint8_t channel)
 int PIN_GetPWMIndexForPinIndex(int index)
 {
 	rtlPinMapping_t* pin = g_pins + index;
-	if(index >= g_numPins || pin->pwm == NULL)
+	if(index >= g_numPins)
 		return -1;
-	return pin->pwm->pwm_idx;
+	if(pin->pwm != NULL) return pin->pwm->pwm_idx;
+	else return HAL_PIN_CanThisPinBePWM(index);
 }
 
 const char* HAL_PIN_GetPinNameAlias(int index)
@@ -137,7 +145,11 @@ void HAL_PIN_PWM_Start(int index, int freq)
 	if(index >= g_numPins || !HAL_PIN_CanThisPinBePWM(index))
 		return;
 	rtlPinMapping_t* pin = g_pins + index;
-	if(pin->pwm != NULL) return;
+	if(pin->pwm != NULL)
+	{
+		pwmout_period_us(pin->pwm, 1000000 / freq);
+		return;
+	}
 	if(pin->gpio != NULL)
 	{
 		gpio_deinit(pin->gpio);
@@ -157,7 +169,7 @@ void HAL_PIN_PWM_Start(int index, int freq)
 	pin->pwm->pwm_idx = ch;
 #endif
 	pwmout_init(pin->pwm, pin->pin);
-	pwmout_period_us(pin->pwm, freq);
+	pwmout_period_us(pin->pwm, 1000000 / freq);
 #ifndef PLATFORM_RTL8710A
 	pwmout_start(pin->pwm);
 #endif

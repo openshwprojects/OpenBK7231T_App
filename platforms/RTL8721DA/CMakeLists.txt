@@ -31,17 +31,10 @@ target_compile_options(
 	-Wno-undef
 	-Wno-unused-parameter
 	-Wno-unused-variable
-	-Wno-strict-prototypes
 	-Wno-implicit-fallthrough
 	-Wno-missing-field-initializers
-	-Wno-error=implicit-function-declaration
-	-Wno-error=unused-but-set-variable
-	-Wno-error=sign-compare
-	-Wno-error=discarded-qualifiers
-	-Wno-error=incompatible-pointer-types
-	-Wno-error=unused-function
-	-Wno-error=type-limits
 	-Wno-error
+	"$<$<COMPILE_LANGUAGE:C>:-Wno-strict-prototypes>"
 )
 
 target_include_directories(
@@ -53,7 +46,7 @@ target_include_directories(
 
 target_sources(
 	${CURRENT_LIB_NAME} PRIVATE
-
+	
 	${OBK_SRCS}hal/realtek/hal_flashConfig_realtek.c
 	${OBK_SRCS}hal/realtek/hal_flashVars_realtek.c
 	${OBK_SRCS}hal/realtek/hal_generic_realtek.c
@@ -64,6 +57,7 @@ target_sources(
 	${OBK_SRCS}hal/realtek/rtl8721da/hal_uart_rtl8721da.c
 
 	${OBKM_SRC}
+	#${OBKM_SRC_CXX}
 	${BERRY_SRC_C}
 	../../libraries/mqtt_patched.c
 )

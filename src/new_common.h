@@ -642,6 +642,10 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #elif PLATFORM_REALTEK
 
+#if __cplusplus && !PLATFORM_REALTEK_NEW
+typedef uint32_t in_addr_t;
+#endif
+
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
@@ -653,9 +657,8 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #include "lwip/sys.h"
 #include "lwip/netdb.h"
 #include "lwip/dns.h"
-#if !PLATFORM_REALTEK_NEW
-#include "cmsis_os.h"
-#else
+#include "PinNames.h"
+#if PLATFORM_REALTEK_NEW
 #include "wifi_api_event.h"
 #include "wifi_api_types.h"
 #include "wifi_api_ext.h"
@@ -677,7 +680,9 @@ typedef enum rtw_drv_op_mode rtw_mode_t;
 #endif
 
 typedef unsigned int UINT32;
+typedef uint8_t UINT8;
 extern int g_sleepfactor;
+extern u32 pwmout_pin2chan(PinName pin);
 
 #undef ASSERT
 #define ASSERT
