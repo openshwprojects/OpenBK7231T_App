@@ -35,6 +35,7 @@ typedef struct
 } wifi_data_t;
 
 bool g_STA_static_IP = 0;
+bool mac_init = false;
 
 static void (*g_wifiStatusCallback)(int code) = NULL;
 static int g_bOpenAccessPointMode = 0;
@@ -65,31 +66,63 @@ const char* HAL_GetMyMaskString()
 	return g_MS;
 }
 
+#if PLATFORM_RTL8710A
+extern int wifi_set_mac_address(char* mac);
+#endif
+
 int WiFI_SetMacAddress(char* mac)
 {
 	printf("WiFI_SetMacAddress\r\n");
-#ifdef PLATFORM_RTL8720D
+#if PLATFORM_RTL8720D
 	InitEasyFlashIfNeeded();
 	wifi_change_mac_address_from_ram(0, (uint8_t*)mac);
+	memcpy(wmac, mac, sizeof(wmac));
 	return ef_set_env_blob("rtlmac", mac, sizeof(wmac));
-#endif
+#elif PLATFORM_RTL8710A
+	InitEasyFlashIfNeeded();
+	char macstr[21];
+	memset(macstr, 0, sizeof(macstr));
+	sprintf(macstr, "%02x%02x%02x%02x%02x%02x", \
+		mac[0], mac[1], mac[2], \
+		mac[3], mac[4], mac[5]);
+	wifi_set_mac_address(macstr);
+	wifi_off();
+	vTaskDelay(20);
+	wifi_on(RTW_MODE_STA);
+	return ef_set_env_blob("rtlmac", mac, sizeof(wmac));
+#else
 	return 0; // error
+#endif
 }
 
 void WiFI_GetMacAddress(char* mac)
 {
-#ifdef PLATFORM_RTL8720D
+#if PLATFORM_RTL8720D || PLATFORM_RTL8710A
 	//if((wmac[0] == 255 && wmac[1] == 255 && wmac[2] == 255 && wmac[3] == 255 && wmac[4] == 255 && wmac[5] == 255)
 	//	|| (wmac[0] == 0 && wmac[1] == 0 && wmac[2] == 0 && wmac[3] == 0 && wmac[4] == 0 && wmac[5] == 0))
+	if(!mac_init)
 	{
 		InitEasyFlashIfNeeded();
 		uint8_t fmac[6] = { 0 };
 		int readLen = ef_get_env_blob("rtlmac", &fmac, sizeof(fmac), NULL);
 		if(readLen)
 		{
+#if PLATFORM_RTL8710A
+			char macstr[21];
+			memset(macstr, 0, sizeof(macstr));
+			sprintf(macstr, "%02x%02x%02x%02x%02x%02x", \
+				fmac[0], fmac[1], fmac[2], \
+				fmac[3], fmac[4], fmac[5]);
+			wifi_set_mac_address(macstr);
+			wifi_off();
+			vTaskDelay(20);
+			wifi_on(RTW_MODE_STA);
+#else
 			wifi_change_mac_address_from_ram(0, fmac);
+#endif
 			memcpy(wmac, fmac, sizeof(fmac));
 		}
+		mac_init = true;
 	}
 #endif
 	memcpy(mac, (char*)wmac, sizeof(wmac));
