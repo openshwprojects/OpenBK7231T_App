@@ -202,6 +202,8 @@ void TCL_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState
 void TCL_DoDiscovery(const char *topic);
 
 void GenericAC_DoDiscovery();
+void GenericAC_OnChannelChange(int ch, int value);
+void GenericAC_Init(void);
 
 #define SM2135_DELAY 4
 
