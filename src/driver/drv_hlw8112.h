@@ -2,6 +2,9 @@
 #ifndef __DRV_HLW8112_H__
 #define __DRV_HLW8112_H__
 
+#include "../httpserver/new_http.h"
+#include "../obk_config.h"
+
 typedef enum _hlw8112_reg_e
 {
     // Calibration Paramters and metering control registers
