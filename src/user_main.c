@@ -992,10 +992,10 @@ void QuickTick(void* param)
 
 }
 
-#if PLATFORM_ESP8266 || PLATFORM_ESPIDF
-#define QT_STACK_SIZE 2048
+#if PLATFORM_ESP8266 || PLATFORM_TR6260
+#define QT_STACK_SIZE 1536
 #else
-#define QT_STACK_SIZE 1024
+#define QT_STACK_SIZE 2048
 #endif
 
 ////////////////////////////////////////////////////////
@@ -1003,7 +1003,7 @@ void QuickTick(void* param)
 #if WINDOWS
 
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600 \
-	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF
+	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_XRADIO || PLATFORM_LN882H
 void quick_timer_thread(void* param)
 {
 	while (1) {
@@ -1011,8 +1011,6 @@ void quick_timer_thread(void* param)
 		QuickTick(0);
 	}
 }
-#elif PLATFORM_XRADIO || PLATFORM_LN882H
-OS_Timer_t g_quick_timer;
 #else
 beken_timer_t g_quick_timer;
 #endif
@@ -1021,18 +1019,8 @@ void QuickTick_StartThread(void)
 #if WINDOWS
 
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600 \
-	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF
+	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_XRADIO || PLATFORM_LN882H
 	xTaskCreate(quick_timer_thread, "quick", QT_STACK_SIZE, NULL, 15, NULL);
-#elif PLATFORM_XRADIO || PLATFORM_LN882H
-
-	OS_TimerSetInvalid(&g_quick_timer);
-	if (OS_TimerCreate(&g_quick_timer, OS_TIMER_PERIODIC, QuickTick, NULL,
-		QUICK_TMR_DURATION) != OS_OK) {
-		printf("Quick timer create failed\n");
-		return;
-	}
-
-	OS_TimerStart(&g_quick_timer); /* start OS timer to feed watchdog */
 #else
 	OSStatus result;
 
