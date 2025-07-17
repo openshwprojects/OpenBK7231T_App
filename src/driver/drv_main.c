@@ -2,6 +2,7 @@
 #include "../logging/logging.h"
 #include "drv_bl0937.h"
 #include "drv_bl0942.h"
+#include "drv_hlw8112.h"
 #include "drv_bl_shared.h"
 #include "drv_cse7766.h"
 #include "drv_ir.h"
@@ -204,7 +205,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"HLW8112 is a 2-channel power metering IC that can measure line voltage, current and calculate active power. You need to calibrate power metering once, just like in Tasmota.",
 	//drvdetail:"requires":""}
-	{ "HLW8112",		HLW8112_UART_Init,	HLW8112_UART_RunEverySecond,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+	{ "HLW8112",		HLW8112_SPI_Init,	HLW8112_SPI_RunEverySecond,		HLW8112_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_CHARGINGLIMIT
 	//drvdetail:{"name":"ChargingLimit",
