@@ -216,6 +216,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "BL0942SPI",	BL0942_SPI_Init,	BL0942_SPI_RunEverySecond,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_HLW8112
+	//drvdetail:{"name":"HLW8112",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"HLW8112 is a 2-channel power metering IC that can measure line voltage, current and calculate active power. You need to calibrate power metering once, just like in Tasmota.",
+	//drvdetail:"requires":""}
+	{ "HLW8112",		HLW8112_UART_Init,	HLW8112_UART_RunEverySecond,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+#endif
 #if ENABLE_DRIVER_CHARGINGLIMIT
 	//drvdetail:{"name":"ChargingLimit",
 	//drvdetail:"title":"TODO",
