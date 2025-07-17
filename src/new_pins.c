@@ -443,7 +443,7 @@ int PIN_IOR_NofChan(int test){
 	}
 	// Some roles don't need any channels
 	if (test == IOR_SGP_CLK || test == IOR_SHT3X_CLK || test == IOR_CHT83XX_CLK || test == IOR_Button_ToggleAll || test == IOR_Button_ToggleAll_n
-			|| test == IOR_BL0937_CF || test == IOR_BL0937_CF1 || test == IOR_BL0937_SEL
+			|| test == IOR_BL0937_CF || test == IOR_BL0937_CF1 || test == IOR_BL0937_SEL || test == IOR_BL0937_SEL_n
 			|| test == IOR_LED_WIFI || test == IOR_LED_WIFI_n || test == IOR_LED_WIFI_n
 			|| (test >= IOR_IRRecv && test <= IOR_DHT11)
 			|| (test >= IOR_SM2135_DAT && test <= IOR_BP1658CJ_CLK)) {
