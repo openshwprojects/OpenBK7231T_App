@@ -284,7 +284,7 @@ function getFolder(name, cb) {
 						}
 					}
 //					if (headerFile && line.startsWith('typedef enum ioRole_e {')) {
-          if (headerFile && line.startsWith('//START_OF_IODETAILS')) {
+					if (headerFile && line.startsWith('//START_OF_IODETAILS')) {
 						newlines.push(lines[i]);
 						let j;
 						for (j = i; j < lines.length; j++) {
@@ -364,7 +364,7 @@ function getFolder(name, cb) {
 								newlines.push(lines[j]);
 							}
 //              if (line2.endsWith('} ioRole_t;')) {
-							if (line2.startsWith('//END_OF_IODETAILS')) {
+              if (line2.startsWith('//END_OF_IODETAILS')) {
 								//newlines.push(line2raw);
 								break;
 							}
