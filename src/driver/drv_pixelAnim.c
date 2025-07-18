@@ -58,14 +58,14 @@ void ShootingStar_Run() {
 	if (direction == -1) {        // Reverse direction option for LEDs
 		if (count < pixel_count) {
 			SM16703P_setPixelWithBrig(pixel_count - (count % (pixel_count + 1)),
-				led_baseColors[0], led_baseColors[1], led_baseColors[2]);    // Set LEDs with the color value
+				led_baseColors[0], led_baseColors[1], led_baseColors[2], led_baseColors[3], led_baseColors[4]);    // Set LEDs with the color value
 		}
 		count++;
 	}
 	else {
 		if (count < pixel_count) {     // Forward direction option for LEDs
 			SM16703P_setPixelWithBrig(count % pixel_count,
-				led_baseColors[0], led_baseColors[1], led_baseColors[2]);    // Set LEDs with the color value
+				led_baseColors[0], led_baseColors[1], led_baseColors[2], led_baseColors[3], led_baseColors[4]);    // Set LEDs with the color value
 		}
 		count++;
 	}
@@ -81,7 +81,7 @@ void RainbowCycle_Run() {
 
 	for (i = 0; i < pixel_count; i++) {
 		c = RainbowWheel_Wheel(((i * 256 / pixel_count) + j) & 255);
-		SM16703P_setPixelWithBrig(pixel_count - 1 - i, *c, *(c + 1), *(c + 2));
+		SM16703P_setPixelWithBrig(pixel_count - 1 - i, *c, *(c + 1), *(c + 2), 0, 0);
 	}
 	SM16703P_Show();
 	j++;
@@ -98,13 +98,13 @@ void Fire_setPixelHeatColor(int Pixel, byte temperature) {
 
 	// Figure out which third of the spectrum we're in:
 	if (t192 > 0x80) {                    // hottest
-		SM16703P_setPixelWithBrig(Pixel, 255, 255, heatramp);
+		SM16703P_setPixelWithBrig(Pixel, 255, 255, heatramp, 0, 0); // red to yellow
 	}
 	else if (t192 > 0x40) {               // middle
-		SM16703P_setPixelWithBrig(Pixel, 255, heatramp, 0);
+		SM16703P_setPixelWithBrig(Pixel, 255, heatramp, 0, 0, 0); // red to yellow
 	}
 	else {                               // coolest
-		SM16703P_setPixelWithBrig(Pixel, heatramp, 0, 0);
+		SM16703P_setPixelWithBrig(Pixel, heatramp, 0, 0, 0, 0);
 	}
 }
 // FlameHeight - Use larger value for shorter flames, default=50.
