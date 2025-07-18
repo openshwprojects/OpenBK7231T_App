@@ -7,8 +7,11 @@
 #include <string.h>
 #include <time.h>
 #include <stdarg.h>
+// it is not in my Windows compiler, but I added it manually
+#include <stdint.h>
+#include <stdbool.h>
 
-#if WINDOWS
+#if WINDOWS && !LINUX
 #include <crtdbg.h>
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
@@ -43,10 +46,20 @@ void OTA_RequestDownloadFromHTTP(const char *s);
 #define DEVICENAME_PREFIX_SHORT "WT"
 #define PLATFORM_MCU_NAME "WIN32"
 #define MANUFACTURER "Microsoft"
+#elif PLATFORM_XR806
+#define DEVICENAME_PREFIX_FULL "OpenXR806"
+#define DEVICENAME_PREFIX_SHORT "oxr"
+#define PLATFORM_MCU_NAME "XR806"
+#define MANUFACTURER "Xradio Technology"
 #elif PLATFORM_XR809
 #define DEVICENAME_PREFIX_FULL "OpenXR809"
 #define DEVICENAME_PREFIX_SHORT "oxr"
 #define PLATFORM_MCU_NAME "XR809"
+#define MANUFACTURER "Xradio Technology"
+#elif PLATFORM_XR872
+#define DEVICENAME_PREFIX_FULL "OpenXR872"
+#define DEVICENAME_PREFIX_SHORT "oxr"
+#define PLATFORM_MCU_NAME "XR872"
 #define MANUFACTURER "Xradio Technology"
 #elif PLATFORM_BK7231N
 #define DEVICENAME_PREFIX_FULL "OpenBK7231N"
@@ -57,6 +70,26 @@ void OTA_RequestDownloadFromHTTP(const char *s);
 #define DEVICENAME_PREFIX_FULL "OpenBK7231T"
 #define DEVICENAME_PREFIX_SHORT "obk"
 #define PLATFORM_MCU_NAME "BK7231T"
+#define MANUFACTURER "Beken Corporation"
+#elif PLATFORM_BK7238
+#define DEVICENAME_PREFIX_FULL "OpenBK7238"
+#define DEVICENAME_PREFIX_SHORT "obk"
+#define PLATFORM_MCU_NAME "BK7238"
+#define MANUFACTURER "Beken Corporation"
+#elif PLATFORM_BK7231U
+#define DEVICENAME_PREFIX_FULL "OpenBK7231U"
+#define DEVICENAME_PREFIX_SHORT "obk"
+#define PLATFORM_MCU_NAME "BK7231U"
+#define MANUFACTURER "Beken Corporation"
+#elif PLATFORM_BK7252
+#define DEVICENAME_PREFIX_FULL "OpenBK7252"
+#define DEVICENAME_PREFIX_SHORT "obk"
+#define PLATFORM_MCU_NAME "BK7252"
+#define MANUFACTURER "Beken Corporation"
+#elif PLATFORM_BK7252N
+#define DEVICENAME_PREFIX_FULL "OpenBK7252N"
+#define DEVICENAME_PREFIX_SHORT "obk"
+#define PLATFORM_MCU_NAME "BK7252N"
 #define MANUFACTURER "Beken Corporation"
 #elif PLATFORM_BL602
 #define DEVICENAME_PREFIX_FULL "OpenBL602"
@@ -81,6 +114,64 @@ typedef long BaseType_t;
 #define DEVICENAME_PREFIX_SHORT "ln882h"
 #define PLATFORM_MCU_NAME "LN882H"
 #define MANUFACTURER "LightningSemi"
+#elif PLATFORM_ESPIDF
+#define MANUFACTURER "Espressif"
+#define DEVICENAME_PREFIX_SHORT "esp"
+#ifdef CONFIG_IDF_TARGET_ESP32C3
+#define PLATFORM_MCU_NAME "ESP32C3"
+#elif CONFIG_IDF_TARGET_ESP32C2
+#define PLATFORM_MCU_NAME "ESP32C2"
+#elif CONFIG_IDF_TARGET_ESP32
+#define PLATFORM_MCU_NAME "ESP32"
+#elif CONFIG_IDF_TARGET_ESP32C6
+#define PLATFORM_MCU_NAME "ESP32C6"
+#elif CONFIG_IDF_TARGET_ESP32S2
+#define PLATFORM_MCU_NAME "ESP32S2"
+#elif CONFIG_IDF_TARGET_ESP32S3
+#define PLATFORM_MCU_NAME "ESP32S3"
+#elif CONFIG_IDF_TARGET_ESP32C5
+#define PLATFORM_MCU_NAME "ESP32C5"
+#elif CONFIG_IDF_TARGET_ESP32C61
+#define PLATFORM_MCU_NAME "ESP32C61"
+#else
+#define PLATFORM_MCU_NAME MANUFACTURER
+#endif
+#define DEVICENAME_PREFIX_FULL "Open" PLATFORM_MCU_NAME
+#elif PLATFORM_TR6260
+#define DEVICENAME_PREFIX_FULL "OpenTR6260"
+#define DEVICENAME_PREFIX_SHORT "tr6260"
+#define PLATFORM_MCU_NAME "TR6260"
+#define MANUFACTURER "Transa Semi"
+#elif PLATFORM_RTL87X0C
+#define DEVICENAME_PREFIX_FULL "OpenRTL87X0C"
+#define DEVICENAME_PREFIX_SHORT "rtl87x0C"
+#define PLATFORM_MCU_NAME "RTL87X0C"
+#define MANUFACTURER "Realtek"
+#elif PLATFORM_RTL8710B
+#define DEVICENAME_PREFIX_FULL "OpenRTL8710B"
+#define DEVICENAME_PREFIX_SHORT "rtl8710b"
+#define PLATFORM_MCU_NAME "RTL8710B"
+#define MANUFACTURER "Realtek"
+#elif PLATFORM_RTL8710A
+#define DEVICENAME_PREFIX_FULL "OpenRTL8710A"
+#define DEVICENAME_PREFIX_SHORT "rtl8710a"
+#define PLATFORM_MCU_NAME "RTL8710A"
+#define MANUFACTURER "Realtek"
+#elif PLATFORM_RTL8720D
+#define DEVICENAME_PREFIX_FULL "OpenRTL8720D"
+#define DEVICENAME_PREFIX_SHORT "rtl8720d"
+#define PLATFORM_MCU_NAME "RTL8720D"
+#define MANUFACTURER "Realtek"
+#elif PLATFORM_ECR6600
+#define DEVICENAME_PREFIX_FULL "OpenECR6600"
+#define DEVICENAME_PREFIX_SHORT "ecr6600"
+#define PLATFORM_MCU_NAME "ECR6600"
+#define MANUFACTURER "ESWIN"
+#elif PLATFORM_ESP8266
+#define DEVICENAME_PREFIX_FULL "OpenESP8266"
+#define DEVICENAME_PREFIX_SHORT "esp8266"
+#define PLATFORM_MCU_NAME "ESP8266"
+#define MANUFACTURER "Espressif"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -94,6 +185,10 @@ This platform is not supported, error!
 #define USER_SW_VER "Win_Test"
 #elif PLATFORM_XR809
 #define USER_SW_VER "XR809_Test"
+#elif PLATFORM_XR872
+#define USER_SW_VER "XR872_Test"
+#elif PLATFORM_XR806
+#define USER_SW_VER "XR806_Test"
 #elif defined(PLATFORM_BK7231N)
 #define USER_SW_VER "BK7231N_Test"
 #elif defined(PLATFORM_BK7231T)
@@ -106,7 +201,32 @@ This platform is not supported, error!
 #define USER_SW_VER "W800_Test"
 #elif defined(PLATFORM_LN882H)
 #define USER_SW_VER "LN882H_Test"
+#elif defined(PLATFORM_ESPIDF)
+#define USER_SW_VER PLATFORM_MCU_NAME "_Test"
+#elif defined(PLATFORM_TR6260)
+#define USER_SW_VER "TR6260_Test"
+#elif defined(PLATFORM_RTL87X0C)
+#define USER_SW_VER "RTL87X0C_Test"
+#elif defined(PLATFORM_RTL8710B)
+#define USER_SW_VER "RTL8710B_Test"
+#elif defined(PLATFORM_RTL8710A)
+#define USER_SW_VER "RTL8710A_Test"
+#elif defined(PLATFORM_RTL8720D)
+#define USER_SW_VER "RTL8720D_Test"
+#elif defined(PLATFORM_BK7238)
+#define USER_SW_VER "BK7238_Test"
+#elif defined(PLATFORM_BK7231U)
+#define USER_SW_VER "BK7231U_Test"
+#elif defined(PLATFORM_BK7252)
+#define USER_SW_VER "BK7252_Test"
+#elif defined(PLATFORM_BK7252N)
+#define USER_SW_VER "BK7252N_Test"
+#elif PLATFORM_ECR6600
+#define USER_SW_VER "ECR6600_Test"
+#elif PLATFORM_ESP8266
+#define USER_SW_VER "ESP8266_Test"
 #else
+#warning "USER_SW_VER undefined"
 #define USER_SW_VER "unknown"
 #endif
 #endif
@@ -131,8 +251,31 @@ This platform is not supported, error!
 #if WINDOWS
 
 #include <time.h>
-#include <stdint.h>
 #include <math.h>
+
+#ifdef LINUX
+
+#include <netdb.h>  // For gethostbyname and struct hostent
+#include <limits.h>
+#define closesocket close
+#define SOCKET int
+#define closesocket close
+#define ISVALIDSOCKET(s) ((s) >= 0)
+#define GETSOCKETERRNO() (errno)
+#define ioctlsocket ioctl
+#define WSAEWOULDBLOCK EWOULDBLOCK
+#define SOCKET_ERROR	-1
+#define INVALID_SOCKET	-1
+#define WSAGetLastError() (errno)
+// TODO
+#define SD_SEND	 0 
+
+#else
+
+#define ISVALIDSOCKET(s) ((s) != INVALID_SOCKET)
+#define GETSOCKETERRNO() (WSAGetLastError())
+
+#endif
 
 #define portTICK_RATE_MS 1000
 #define bk_printf printf
@@ -155,8 +298,6 @@ typedef unsigned short u16_t;
 //typedef char int8_t;
 //typedef int int32_t;
 
-// it is not in my Windows compiler, but I added it manually
-#include <stdint.h>
 //
 //#ifndef UINT32_MAX
 //#define UINT32_MAX  (0xffffffff)
@@ -174,14 +315,6 @@ void doNothing();
 // os
 #define os_free free
 #define os_malloc malloc
-#define os_strlen strlen
-#define os_memset memset
-#define os_memcpy memcpy
-#define os_strstr strstr
-#define os_strcpy strcpy
-#define os_strchr strchr
-#define os_strcmp strcmp
-#define os_memmove memmove
 
 // RTOS
 typedef long portTickType;
@@ -209,14 +342,10 @@ typedef int (*beken_thread_function_t)(void *p);
 #include <task.h>
 #include <portable.h>
 #include <semphr.h>
-#include <stdbool.h>
-#include <stdint.h>
 
 #define ASSERT
-#define os_strcpy strcpy
-#define os_malloc malloc
 #define os_free free
-#define os_memset memset
+#define os_malloc malloc
 
 #define bk_printf printf
 
@@ -225,42 +354,64 @@ typedef int (*beken_thread_function_t)(void *p);
 
 #define kNoErr                      0       //! No error occurred.
 typedef void *beken_thread_arg_t;
-typedef void *beken_thread_t;
+typedef xTaskHandle beken_thread_t;
 typedef void (*beken_thread_function_t)( beken_thread_arg_t arg );
 typedef int OSStatus;
 
 #define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
 #define BEKEN_APPLICATION_PRIORITY         (7)
 
-// wrappers for XR809 threads to work like bekken
+// wrappers for XR809 threads to work like beken
 OSStatus rtos_delete_thread( beken_thread_t* thread );
 OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint8_t priority, const char* name,
 							beken_thread_function_t function,
 							uint32_t stack_size, beken_thread_arg_t arg );
+OSStatus rtos_suspend_thread(beken_thread_t* thread);
 typedef unsigned int u32;
-		
 
-#elif PLATFORM_XR809
+#define lwip_close_force(x) lwip_close(x)
 
+#define OBK_OTA_EXTENSION ".bin.xz.ota"
 
+#elif PLATFORM_XRADIO
 
-typedef int bool;
-#define true 1
-#define false 0
+#include "FreeRTOS.h"
+#include "task.h"
 
-typedef unsigned char u8;
-typedef unsigned char uint8_t;
-typedef unsigned int uint32_t;
-typedef unsigned int UINT32;
+#if !PLATFORM_XR809
+#define OBK_OTA_EXTENSION ".img"
+#endif
+//typedef unsigned char u8;
+//typedef unsigned char uint8_t;
+//typedef unsigned int uint32_t;
+//typedef unsigned int UINT32;
 
 #define ASSERT
-#define os_strcpy strcpy
+#define bk_printf printf
 #define os_malloc malloc
 #define os_free free
-#define os_memset memset
 
+#define lwip_close_force(x) lwip_close(x)
+
+#define HAL_UART_Init OBK_HAL_UART_Init
+#define HAL_ADC_Init OBK_HAL_ADC_Init
+
+#if PLATFORM_XR806
+#define DS_MS_TO_S 1000
+#else
+#define DS_MS_TO_S 1111
+#endif
+
+#if PLATFORM_XR809
 #define close lwip_close
+#endif
+
+#ifdef __CONFIG_LWIP_V1
+#define sockaddr_storage sockaddr
+#define ss_family sa_family
+#define ip4_addr ip_addr
+#endif
 
 // OS_MSleep?
 #define rtos_delay_milliseconds OS_ThreadSleep
@@ -268,20 +419,24 @@ typedef unsigned int UINT32;
 
 #define kNoErr                      0       //! No error occurred.
 typedef void *beken_thread_arg_t;
-typedef void *beken_thread_t;
+typedef xTaskHandle* beken_thread_t;
 typedef void (*beken_thread_function_t)( beken_thread_arg_t arg );
 typedef int OSStatus;
 
 #define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
 #define BEKEN_APPLICATION_PRIORITY         (7)
 
-// wrappers for XR809 threads to work like bekken
+// wrappers for XR809 threads to work like beken
 OSStatus rtos_delete_thread( beken_thread_t* thread );
 OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint8_t priority, const char* name,
 							beken_thread_function_t function,
 							uint32_t stack_size, beken_thread_arg_t arg );
+OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
+#include <FreeRTOS.h>
+#include <semphr.h>
+#include <task.h>
 #include "common/framework/platform_init.h"
 
 #include "kernel/os/os.h"
@@ -296,69 +451,314 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 #include <semphr.h>
 #include "lwip/sys.h"
 
-#define portTICK_RATE_MS                      ( ( portTickType ) 1000 / configTICK_RATE_HZ )
+#define GLOBAL_INT_DECLARATION()	;
+#define GLOBAL_INT_DISABLE()		;
+#define GLOBAL_INT_RESTORE()		;
+
+#ifndef portTICK_RATE_MS
+#define portTICK_RATE_MS ( ( portTickType ) 1000 / configTICK_RATE_HZ )
+#endif
 
 #define bk_printf printf
-#define os_strcpy strcpy
-#define os_malloc malloc
-#define os_free free
-#define os_memset memset
+#define os_malloc pvPortMalloc
+#define os_free vPortFree
+#define realloc pvPortRealloc
 
+#ifndef portTICK_PERIOD_MS
 #define portTICK_PERIOD_MS	portTICK_RATE_MS
+#endif
 
-#define rtos_delay_milliseconds sys_msleep
+#define rtos_delay_milliseconds(x) vTaskDelay(x / portTICK_PERIOD_MS)
 #define delay_ms sys_msleep
 
 #define SemaphoreHandle_t xSemaphoreHandle
 
-#define os_strcpy strcpy
-
 #define kNoErr                      0       //! No error occurred.
 typedef void *beken_thread_arg_t;
-typedef void *beken_thread_t;
+typedef xTaskHandle *beken_thread_t;
 typedef void (*beken_thread_function_t)( beken_thread_arg_t arg );
 typedef int OSStatus;
 
 #define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
 #define BEKEN_APPLICATION_PRIORITY         (7)
 
-// wrappers for XR809 threads to work like bekken
+// wrappers for XR809 threads to work like beken
 OSStatus rtos_delete_thread( beken_thread_t* thread );
 OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint8_t priority, const char* name,
 							beken_thread_function_t function,
 							uint32_t stack_size, beken_thread_arg_t arg );
+OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
+#define OBK_OTA_EXTENSION ".img"
 
 #elif PLATFORM_LN882H
 
-// TODO:LN882H Platform setup here.
-#include <stdbool.h>
+#include <FreeRTOS.h>
+#include <task.h>
 
 #define ASSERT
-#define os_strcpy strcpy
-#define os_malloc malloc
 #define os_free free
-#define os_memset memset
+#define os_malloc malloc
 
+
+#define lwip_close_force(x) lwip_close(x)
 #define bk_printf printf
 
 #define kNoErr                      0       //! No error occurred.
 #define rtos_delay_milliseconds OS_MsDelay
 typedef void *beken_thread_arg_t;
-typedef void *beken_thread_t;
+typedef xTaskHandle beken_thread_t;
 typedef void (*beken_thread_function_t)( beken_thread_arg_t arg );
 typedef int OSStatus;
 
 #define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
 #define BEKEN_APPLICATION_PRIORITY         (7)
 
-// wrappers for XR809??? threads to work like bekken
+// wrappers for XR809??? threads to work like beken
 OSStatus rtos_delete_thread( beken_thread_t* thread );
 OSStatus rtos_create_thread( beken_thread_t* thread,
 							uint8_t priority, const char* name,
 							beken_thread_function_t function,
 							uint32_t stack_size, beken_thread_arg_t arg );
+OSStatus rtos_suspend_thread(beken_thread_t* thread);
+
+#define OBK_OTA_EXTENSION		".bin"
+#define OBK_OTA_NAME_EXTENSION	"_OTA"
+
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
+
+#include <arch/sys_arch.h>
+#include "esp_timer.h"
+#include "esp_log.h"
+#include "esp_idf_version.h"
+
+#define ASSERT
+#define os_free free
+#define os_malloc malloc
+
+#define bk_printf printf
+
+//#define bk_printf(...) ESP_LOGI("OpenBeken", __VA_ARGS__);
+
+#define kNoErr                      0       //! No error occurred.
+#define rtos_delay_milliseconds sys_delay_ms
+typedef void* beken_thread_arg_t;
+typedef TaskHandle_t beken_thread_t;
+typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
+typedef int OSStatus;
+
+#define lwip_close_force(x) lwip_close(x)
+
+#define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
+#define BEKEN_APPLICATION_PRIORITY         (7)
+
+// wrappers for XR809??? threads to work like beken
+OSStatus rtos_delete_thread(beken_thread_t* thread);
+OSStatus rtos_create_thread(beken_thread_t* thread,
+	uint8_t priority, const char* name,
+	beken_thread_function_t function,
+	uint32_t stack_size, beken_thread_arg_t arg);
+OSStatus rtos_suspend_thread(beken_thread_t* thread);
+
+#define portTICK_RATE_MS portTICK_PERIOD_MS
+#define portTickType TickType_t
+#define xTaskHandle TaskHandle_t
+#define delay_ms sys_delay_ms
+#define UINT32 uint32_t
+
+#define OBK_OTA_EXTENSION ".img"
+
+#if PLATFORM_ESP8266
+#define xPortGetFreeHeapSize() esp_get_free_heap_size()
+#endif
+
+#elif PLATFORM_TR6260
+
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "queue.h"
+#include "event_groups.h"
+
+#include "lwip/err.h"
+#include "lwip/sockets.h"
+#include "lwip/sys.h"
+#include "lwip/netdb.h"
+#include "lwip/dns.h"
+
+typedef unsigned int UINT32;
+
+#define ASSERT
+#define free    os_free
+#define malloc  os_malloc
+#define realloc  os_realloc
+#define strncpy  os_strncpy
+
+#define close lwip_close
+#define bk_printf system_printf
+#define printf system_printf
+
+#define lwip_close_force(x) lwip_close(x)
+// OS_MSleep?
+#define rtos_delay_milliseconds sys_delay_ms
+#define delay_ms sys_delay_ms
+
+#define kNoErr                      0       //! No error occurred.
+typedef void* beken_thread_arg_t;
+typedef xTaskHandle beken_thread_t;
+typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
+typedef int OSStatus;
+
+#define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
+#define BEKEN_APPLICATION_PRIORITY         (7)
+
+OSStatus rtos_delete_thread(beken_thread_t* thread);
+OSStatus rtos_create_thread(beken_thread_t* thread,
+	uint8_t priority, const char* name,
+	beken_thread_function_t function,
+	uint32_t stack_size, beken_thread_arg_t arg);
+OSStatus rtos_suspend_thread(beken_thread_t* thread);
+
+#define GLOBAL_INT_DECLARATION()	;
+#define GLOBAL_INT_DISABLE()		;
+#define GLOBAL_INT_RESTORE()		;
+
+#define OBK_OTA_EXTENSION ".img"
+
+#elif PLATFORM_REALTEK
+
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "queue.h"
+#include "event_groups.h"
+
+#include "lwip/err.h"
+#include "lwip/sockets.h"
+#include "lwip/sys.h"
+#include "lwip/netdb.h"
+#include "lwip/dns.h"
+#include "cmsis_os.h"
+
+typedef unsigned int UINT32;
+extern int g_sleepfactor;
+
+#undef ASSERT
+#define ASSERT
+
+#define lwip_close_force(x) lwip_close(x)
+#define os_malloc pvPortMalloc
+#define os_free vPortFree
+
+#if PLATFORM_RTL8720D
+#undef vsnprintf
+#undef sprintf
+#undef atoi
+#undef printf
+#endif
+
+// for wifi
+#define BUFLEN_LEN				1
+#define MAC_LEN					6
+#define RSSI_LEN				4
+#define SECURITY_LEN			1
+#define SECURITY_LEN_EXTENDED	4
+#define WPS_ID_LEN				1
+#define CHANNEL_LEN				1
+
+#define bk_printf printf
+
+#if PLATFORM_RTL8710B || PLATFORM_RTL8710A
+#define atoi __wrap_atoi
+#endif
+
+#if PLATFORM_RTL8710B || PLATFORM_RTL8720D
+#define rtos_delay_milliseconds(x) vTaskDelay(x / portTICK_PERIOD_MS / g_sleepfactor)
+#define delay_ms(x) vTaskDelay(x / portTICK_PERIOD_MS / g_sleepfactor)
+#else
+#define rtos_delay_milliseconds(x) vTaskDelay(x / portTICK_PERIOD_MS)
+#define delay_ms(x) vTaskDelay(x / portTICK_PERIOD_MS)
+#endif
+
+#define kNoErr                      0       //! No error occurred.
+typedef void* beken_thread_arg_t;
+typedef xTaskHandle beken_thread_t;
+typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
+typedef int OSStatus;
+
+#define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
+#define BEKEN_APPLICATION_PRIORITY         (7)
+
+OSStatus rtos_delete_thread(beken_thread_t* thread);
+OSStatus rtos_create_thread(beken_thread_t* thread,
+	uint8_t priority, const char* name,
+	beken_thread_function_t function,
+	uint32_t stack_size, beken_thread_arg_t arg);
+OSStatus rtos_suspend_thread(beken_thread_t* thread);
+
+#define GLOBAL_INT_DECLARATION()	;
+#define GLOBAL_INT_DISABLE()		;
+#define GLOBAL_INT_RESTORE()		;
+
+#define OBK_OTA_EXTENSION ".img"
+
+#elif PLATFORM_ECR6600
+
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "queue.h"
+#include "event_groups.h"
+
+#include "lwip/err.h"
+#include "lwip/sockets.h"
+#include "lwip/sys.h"
+#include "lwip/netdb.h"
+#include "lwip/dns.h"
+#include "os/oshal.h"
+
+typedef unsigned int UINT32;
+
+#define ASSERT
+#undef os_malloc
+#undef os_free
+#define os_malloc	pvPortMalloc
+#define os_free		vPortFree
+#define malloc		os_malloc
+#define free		os_free
+#define calloc		os_calloc
+#define realloc		os_realloc
+
+#define bk_printf printf
+
+extern void sys_delay_ms(uint32_t ms);
+// OS_MSleep?
+#define rtos_delay_milliseconds sys_delay_ms
+#define delay_ms sys_delay_ms
+
+#define lwip_close_force(x) lwip_close(x)
+#define kNoErr                      0       //! No error occurred.
+typedef void* beken_thread_arg_t;
+typedef xTaskHandle beken_thread_t;
+typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
+typedef int OSStatus;
+
+#define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
+#define BEKEN_APPLICATION_PRIORITY         (7)
+
+OSStatus rtos_delete_thread(beken_thread_t* thread);
+OSStatus rtos_create_thread(beken_thread_t* thread,
+	uint8_t priority, const char* name,
+	beken_thread_function_t function,
+	uint32_t stack_size, beken_thread_arg_t arg);
+OSStatus rtos_suspend_thread(beken_thread_t* thread);
+
+#define GLOBAL_INT_DECLARATION()	;
+#define GLOBAL_INT_DISABLE()		;
+#define GLOBAL_INT_RESTORE()		;
+
+#define OBK_OTA_EXTENSION ".img"
 
 #else
 
@@ -378,17 +778,11 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 
 void delay_ms(UINT32 ms_count);
 
+#define OBK_OTA_EXTENSION ".rbl"
+
 #endif
 
 typedef unsigned char byte;
-
-
-#if PLATFORM_XR809
-#define LWIP_COMPAT_SOCKETS 1
-#define LWIP_POSIX_SOCKETS_IO_NAMES 1
-#endif
-
-
 
 #if WINDOWS
 
@@ -396,11 +790,26 @@ typedef unsigned char byte;
 
 #define WIN32_LEAN_AND_MEAN
 
+#ifndef LINUX
+
 #include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+#else
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <errno.h>
+
+#endif
 
 #else
 
@@ -412,10 +821,16 @@ typedef unsigned char byte;
 // stricmp fix
 #if WINDOWS
 
+#if LINUX
+
+#define stricmp strcasecmp
+
+#endif
 
 #else
 
 int wal_stricmp(const char *a, const char *b) ;
+#undef stricmp
 #define stricmp wal_stricmp
 char *strdup(const char *s);
 
@@ -430,13 +845,20 @@ int strcpy_safe(char *tg, const char *src, int tgMaxLen);
 int strcpy_safe_checkForChanges(char *tg, const char *src, int tgMaxLen);
 void urldecode2_safe(char *dst, const char *srcin, int maxDstLen);
 int strIsInteger(const char *s);
+
+#if !defined(PLATFORM_ESPIDF) && !defined(PLATFORM_TR6260) && !defined(PLATFORM_ECR6600) && !defined(PLATFORM_BL602) && \
+	!defined(PLATFORM_ESP8266)
+
 const char* strcasestr(const char* str1, const char* str2);
+#endif
 
 // user_main.c
 char Tiny_CRC8(const char *data,int length);
 void RESET_ScheduleModuleReset(int delSeconds);
 void MAIN_ScheduleUnsafeInit(int delSeconds);
+#if ENABLE_HA_DISCOVERY
 void Main_ScheduleHomeAssistantDiscovery(int seconds);
+#endif
 int Main_IsConnectedToWiFi();
 int Main_IsOpenAccessPointMode();
 void Main_Init();
@@ -447,17 +869,23 @@ int Main_HasWiFiConnected();
 void Main_OnPingCheckerReply(int ms);
 
 // new_ping.c
+#if ENABLE_PING_WATCHDOG
 void Main_SetupPingWatchDog(const char *target/*, int delayBetweenPings_Seconds*/);
 int PingWatchDog_GetTotalLost();
 int PingWatchDog_GetTotalReceived();
+#endif
 
 // my addon to LWIP library
 
 int LWIP_GetMaxSockets();
 int LWIP_GetActiveSockets();
 
+#ifndef LINUX
+#if !PLATFORM_ESPIDF && !PLATFORM_ESP8266
 //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 void usleep(int r);
+#endif
+#endif
 
 #define RESTARTS_REQUIRED_FOR_SAFE_MODE 4
 
@@ -479,7 +907,7 @@ typedef enum
     EXCELLENT,
 } WIFI_RSSI_LEVEL;
 
-#if PLATFORM_LN882H
+#if PLATFORM_LN882H || PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_TR6260 || PLATFORM_XRADIO
 #define IP_STRING_FORMAT	"%u.%u.%u.%u"
 #else
 #define IP_STRING_FORMAT	"%hhu.%hhu.%hhu.%hhu"
@@ -496,6 +924,8 @@ extern int g_bootFailures;
 extern int g_secondsElapsed;
 extern int g_rebootReason;
 extern float g_wifi_temperature;
+extern char g_wifi_bssid[33];
+extern uint8_t g_wifi_channel;
 
 typedef int(*jsonCb_t)(void *userData, const char *fmt, ...);
 #if ENABLE_TASMOTA_JSON

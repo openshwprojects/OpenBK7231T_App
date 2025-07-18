@@ -253,8 +253,10 @@ void SGP_OnEverySecond()
 	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_SGP : Measurement will run in %i cycle", g_sgpcycle);
 }
 
-void SGP_AppendInformationToHTTPIndexPage(http_request_t* request)
+void SGP_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
+	if(bPreState)
+		return;
 
 	hprintf255(request, "<h2>SGP CO2=%.1f ppm, TVoc=%.0f ppb</h2>", g_co2, g_tvoc);
 	if (channel_co2 == channel_tvoc) {

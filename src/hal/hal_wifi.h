@@ -21,8 +21,23 @@ typedef struct obkStaticIP_s {
 	unsigned char dnsServerIpAddr[4];
 } obkStaticIP_t;
 
+typedef struct
+{
+	char bssid[6];
+	unsigned int channel;
+	unsigned int security_type;
+#if PLATFORM_REALTEK
+	unsigned char wpa_global_PSK[40];
+	char pwd[128 + 1];
+#else
+	char psk[64];
+#endif
+} obkFastConnectData_t;
+
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid);
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip);
+void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip);
+void HAL_DisableEnhancedFastConnect();
 void HAL_DisconnectFromWifi();
 void HAL_WiFi_SetupStatusCallback(void (*cb)(int code));
 // This must return correct IP for both SOFT_AP and STATION modes,
@@ -32,6 +47,15 @@ const char* HAL_GetMyGatewayString();
 const char* HAL_GetMyDNSString();
 const char* HAL_GetMyMaskString();
 const char* HAL_GetMACStr(char* macstr);
+
+// Get WiFi Information (SSID / BSSID) - e.g. to display on status page 
+// ATM there is only one SSID, so need for this code
+//char* HAL_GetWiFiSSID(char* ssid);
+
+char* HAL_GetWiFiBSSID(char* bssid);
+typedef unsigned char uint8_t ;
+uint8_t HAL_GetWiFiChannel(uint8_t *chan);
+
 void WiFI_GetMacAddress(char* mac);
 int WiFI_SetMacAddress(char* mac);
 void HAL_PrintNetworkInfo();

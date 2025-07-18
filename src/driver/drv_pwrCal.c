@@ -1,5 +1,6 @@
 #include "drv_pwrCal.h"
 
+#include <math.h>
 #include "../cmnds/cmd_public.h"
 #include "../logging/logging.h"
 #include "../new_cfg.h"
@@ -30,8 +31,19 @@ static commandResult_t Calibrate(const char *cmd, const char *args, float raw,
                      CMD_GetResultString(CMD_RES_BAD_ARGUMENT));
         return CMD_RES_BAD_ARGUMENT;
     }
+#define VERY_SMALL_VAL 0.001f
+	if (raw > -VERY_SMALL_VAL && raw < VERY_SMALL_VAL) {
+		ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER, "Calibration incorrect - connect load first.");
+		return CMD_RES_ERROR;
+	}
+
 
     *cal = (cal_type == PWR_CAL_MULTIPLY ? real / raw : raw / real);
+    if (isnan(*cal) || ((*cal) > -VERY_SMALL_VAL && (*cal) < VERY_SMALL_VAL))
+    {
+        ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER, "Calibration incorrect - value is zero");
+        return CMD_RES_ERROR;
+    }
     CFG_SetPowerMeasurementCalibrationFloat(cfg_index, *cal);
 
 #ifdef PWRCAL_DEBUG

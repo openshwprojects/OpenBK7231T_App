@@ -103,6 +103,7 @@ enum {
 	ID_OPTIONS,
 	ID_LITTLEFS_FORMAT,
 	ID_LITTLEFS_SETAUTOEXEC,
+	ID_LITTLEFS_COPYAUTOEXECTOCLIPBOARD,
 	ID_HELP_ABOUT,
 	ID_ABOUT,
 };
@@ -164,6 +165,7 @@ void CWinMenuBar::createWindowsMenu(HWND windowRef) {
 
 
 	AppendMenu(hLittleFS, MF_STRING, ID_LITTLEFS_SETAUTOEXEC, "Upload autoexec.bat...");
+	AppendMenu(hLittleFS, MF_STRING, ID_LITTLEFS_COPYAUTOEXECTOCLIPBOARD, "Copy autoexec.bat to clipboard");
 	AppendMenu(hLittleFS, MF_STRING, ID_LITTLEFS_FORMAT, "Format FileSystem");
 
 	AppendMenu(hHelp, MF_STRING, ID_HELP_ABOUT, "About (open link)");
@@ -198,7 +200,9 @@ void CWinMenuBar::showSaveAsDialog() {
 		}
 		sim->saveSimulationAs(tmp.c_str());
 	}
-}
+}			
+extern "C" const char *CMD_ExpandConstantString(const char *s, const char *stop, char *out, int outLen);
+
 void CWinMenuBar::processEvent(const SDL_Event &Event) {
 	nfdchar_t *outPath = NULL;
 	nfdresult_t result;
@@ -229,6 +233,19 @@ void CWinMenuBar::processEvent(const SDL_Event &Event) {
 			{
 				ShellExecute(0, 0, "https://www.elektroda.com/rtvforum/topic4046056.html",
 					0, 0, SW_SHOW);
+			}
+			else if (id == ID_LITTLEFS_COPYAUTOEXECTOCLIPBOARD)
+			{
+				int maxLen = 1024 * 1024;
+				char *buffer = (char*)malloc(maxLen);
+				const char *res = CMD_ExpandConstantString("autoexec.bat", 0, buffer, maxLen);
+				if (res&&*res) {
+				}
+				else {
+					res = "No autoexec.bat file present!";
+				}
+				SDL_SetClipboardText(res);
+				free(buffer);
 			}
 			else if (id == ID_LITTLEFS_SETAUTOEXEC)
 			{

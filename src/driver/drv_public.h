@@ -32,7 +32,13 @@ typedef enum energySensor_e {
 	OBK__NUM_SENSORS,
 } energySensor_t;
 
-typedef struct energySensorNames_s {	
+#if ENABLE_BL_TWIN
+extern const int OBK_CONSUMPTION_STORED_LAST[2];
+#else
+extern const int OBK_CONSUMPTION_STORED_LAST[1];
+#endif
+
+typedef struct energySensorNames_s {
 	const char* const hass_dev_class;
 	const char* const units;
 	const char* const name_friendly;
@@ -43,7 +49,8 @@ typedef struct energySensorNames_s {
 extern int g_dhtsCount;
 
 void DRV_Generic_Init();
-void DRV_AppendInformationToHTTPIndexPage(http_request_t* request);
+void DRV_OnHassDiscovery(const char *topic);
+void DRV_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
 void DRV_OnEverySecond();
 void DHT_OnEverySecond();
 void DHT_OnPinsConfigChanged();
@@ -57,6 +64,7 @@ void DRV_OnChannelChanged(int channel, int iVal);
 #if PLATFORM_BK7231N
 void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push);
 #endif
+void DRV_GosundSW2_Write(float* rgbcw);
 void SM2135_Write(float* rgbcw);
 void BP5758D_Write(float* rgbcw);
 void BP1658CJ_Write(float* rgbcw);
@@ -69,10 +77,10 @@ void DRV_DGR_OnLedFinalColorsChange(byte rgbcw[5]);
 // OBK_POWER etc
 float DRV_GetReading(energySensor_t type);
 energySensorNames_t* DRV_GetEnergySensorNames(energySensor_t type);
+energySensorNames_t* DRV_GetEnergySensorNamesEx(int asensdatasetix, energySensor_t type);
 bool DRV_IsMeasuringPower();
 bool DRV_IsMeasuringBattery();
 bool DRV_IsSensor();
-void BL09XX_SaveEmeteringStatistics();
 
 // TuyaMCU exports for LED
 void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMode, float brightnessRange01, float temperatureRange01);

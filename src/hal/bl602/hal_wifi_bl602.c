@@ -3,10 +3,7 @@
 #include "../hal_wifi.h"
 #include "../../new_common.h"
 #include "../../new_cfg.h"
-
 #include <string.h>
-#include <cli.h>
-
 #include <FreeRTOS.h>
 #include <task.h>
 #include <portable.h>
@@ -22,6 +19,7 @@
 static char g_ipStr[32] = "unknown";
 static int g_bAccessPointMode = 1;
 static void (*g_wifiStatusCallback)(int code);
+extern bool g_powersave;
 
 void HAL_ConnectToWiFi(const char *ssid, const char *psk, obkStaticIP_t *ip)
 {
@@ -32,9 +30,12 @@ void HAL_ConnectToWiFi(const char *ssid, const char *psk, obkStaticIP_t *ip)
     else {
 	wifi_mgmr_sta_ip_set(*(int*)ip->localIPAddr, *(int*)ip->netMask, *(int*)ip->gatewayIPAddr, *(int*)ip->dnsServerIpAddr, 0);
     }
+    if(g_powersave) wifi_mgmr_sta_ps_exit();
     wifi_interface = wifi_mgmr_sta_enable();
 
-    wifi_mgmr_sta_connect(wifi_interface, ssid, psk, NULL, NULL, 0, 0);
+    // sending WIFI_CONNECT_PMF_CAPABLE is crucial here, without it, wpa3 or wpa2/3 mixed mode does not work and
+	// connection is unstable, mqtt disconnects every few minutes
+    wifi_mgmr_sta_connect_mid(wifi_interface, ssid, psk, NULL, NULL, 0, 0, ip->localIPAddr[0] == 0 ?1:0, WIFI_CONNECT_PMF_CAPABLE);
 
 	g_bAccessPointMode = 0;
 }
@@ -131,6 +132,7 @@ static void event_cb_wifi_event(input_event_t *event, void *private_data)
 			if(g_wifiStatusCallback!=0) {
 				g_wifiStatusCallback(WIFI_STA_CONNECTED);
 			}
+			if(g_powersave) wifi_mgmr_sta_ps_enter(2);
         }
         break;
         case CODE_WIFI_ON_PROV_SSID:
@@ -182,6 +184,37 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code)) {
     aos_register_event_filter(EV_WIFI, event_cb_wifi_event, NULL);
 }
 
+// Get WiFi Information (SSID / BSSID) - e.g. to display on status page 
+// use bl_wifi_sta_info_get(bl_wifi_ap_info_t* sta_info); or bl_wifi_ap_info_get(bl_wifi_ap_info_t* ap_info);
+//        ef_get_env_blob((const char *)WIFI_AP_PSM_INFO_CHANNEL, val_buf, val_len, NULL);
+//        ef_get_env_blob((const char *)WIFI_AP_PSM_INFO_BSSID, val_buf, val_len, NULL);
+//
+/*
+// ATM there is only one SSID, so need for this code
+char* HAL_GetWiFiSSID(char* ssid){
+	wifi_mgmr_sta_connect_ind_stat_info_t info;
+	memset(&info, 0, sizeof(info));
+	wifi_mgmr_sta_connect_ind_stat_get(&info);
+//	memcpy(ssid, info.ssid, sizeof(ssid));
+	strcpy(ssid, info.ssid);
+	return ssid;
+};
+*/
+char* HAL_GetWiFiBSSID(char* bssid){
+	wifi_mgmr_sta_connect_ind_stat_info_t info;
+	memset(&info, 0, sizeof(info));
+	wifi_mgmr_sta_connect_ind_stat_get(&info);
+//	memcpy(bssid, info.bssid, sizeof(bssid));
+	sprintf(bssid, MACSTR, MAC2STR(info.bssid));
+	return bssid;
+};
+uint8_t HAL_GetWiFiChannel(uint8_t *chan){
+	wifi_mgmr_sta_connect_ind_stat_info_t info;
+	memset(&info, 0, sizeof(info));
+	wifi_mgmr_sta_connect_ind_stat_get(&info);
+	*chan = info.chan_band;
+	return *chan;
+};
 
 void HAL_PrintNetworkInfo() {
 

@@ -6,6 +6,7 @@
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "../logging/logging.h"
+#include "../hal/hal_pins.h"
 
 #define MAX_CMD_LEN 512
 #define MAX_ARGS 32
@@ -21,7 +22,7 @@ static int tok_flags = 0;
 #define g_bAllowExpand (!(tok_flags&TOKENIZER_DONT_EXPAND))
 
 int str_to_ip(const char *s, byte *ip) {
-#if PLATFORM_W600 || PLATFORM_LN882H
+#if PLATFORM_W600 || PLATFORM_LN882H || PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_TR6260 || PLATFORM_XRADIO
 	//seems like sscanf in W600 does not support %hhu and uses it as %u, thus overwriting more memory, use temp array for it
 	// same for LN882h: %hhu isn't recognised, so we have to use %u for IP_STRING_FORMAT, which will lead to problems in sscanf, too
 	int tmp_ip[4];
@@ -209,6 +210,14 @@ int Tokenizer_GetArgIntegerRange(int i, int rangeMin, int rangeMax) {
 	}
 	return ret;
 }
+int Tokenizer_GetPin(int i, int def) {
+	int r;
+
+	if (g_numArgs <= i) {
+		return def;
+	}
+	return HAL_PIN_Find(g_args[i]);
+}
 int Tokenizer_GetArgIntegerDefault(int i, int def) {
 	int r;
 
@@ -343,7 +352,7 @@ void Tokenizer_TokenizeString(const char *s, int flags) {
 		g_argsFrom[g_numArgs] = g_buffer;
 		// some hack, but we fored to have only have one arg, so we can extend the string over array bondaries.
 		// probably better: introducing an union containing g_argsExpanded[][] and one sole string in the same memory area ...
-		CMD_ExpandConstantsWithinString(g_buffer,g_argsExpanded,sizeof(g_argsExpanded)-1);
+		CMD_ExpandConstantsWithinString(g_buffer,(char*)g_argsExpanded,sizeof(g_argsExpanded)-1);
 		g_numArgs = 1;
 		return;
 	}

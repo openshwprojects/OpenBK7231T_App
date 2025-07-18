@@ -348,5 +348,19 @@
     "title": "todo",
     "file": "new_pins.h",
     "descr": "[HTTP] Hide ON/OFF for relays (only red/green buttons)"
+  },
+  {
+    "index": "50",
+    "enum": "OBK_FLAG_MQTT_NEVERAPPENDGET",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[MQTT] Never add get sufix"
+  },
+  {
+    "index": "51",
+    "enum": "OBK_FLAG_WIFI_ENHANCED_FAST_CONNECT",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[WiFi] (RTL/BK) Enhanced fast connect by saving AP data to flash (preferable with Flag 37 & static ip). Quick reset 3 times to connect normally"
   }
 ]

@@ -55,7 +55,7 @@ void HAL_PIN_PWM_Stop(int index) {
 	bl_pwm_stop(pwm);
 }
 
-void HAL_PIN_PWM_Start(int index) {
+void HAL_PIN_PWM_Start(int index, int freq) {
 	int pwm;
 
 	pwm = BL_FindPWMForPin(index);

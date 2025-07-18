@@ -6,7 +6,10 @@
 
 
 CControllerSimulatorLink::CControllerSimulatorLink() {
-
+	bPowered = false;
+}
+bool CControllerSimulatorLink::isPowered() const {
+	return bPowered;
 }
 CJunction *CControllerSimulatorLink::findJunctionByGPIOIndex(int idx) {
 	for (int i = 0; i < related.size(); i++) {
@@ -26,10 +29,10 @@ void CControllerSimulatorLink::onPostSolveVoltages() {
 	CJunction *vdd = findJunctionByGPIOIndex(GPIO_VDD);
 	CJunction *gnd = findJunctionByGPIOIndex(GPIO_GND);
 	if (vdd->hasVoltage(3.3f) && gnd->hasVoltage(0.0f)) {
-		//printf("Powered\n");
+		bPowered = true;
 	}
 	else {
-		//printf("Not powered\n");
+		bPowered = false;
 	}
 }
 void CControllerSimulatorLink::onDrawn() {

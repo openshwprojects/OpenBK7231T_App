@@ -517,9 +517,11 @@ void SHT3X_OnEverySecond()
 	}
 }
 
-void SHT3X_AppendInformationToHTTPIndexPage(http_request_t* request)
+void SHT3X_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
-	hprintf255(request, "<h2>SHT3X Temperature=%.1f°c, Humidity=%.0f%</h2>", g_temp, g_humid);
+	if(bPreState)
+		return;
+	hprintf255(request, "<h2>SHT3X Temperature=%.1fC, Humidity=%.0f%%</h2>", g_temp, g_humid);
 	if (channel_humid == channel_temp) {
 		hprintf255(request, "WARNING: You don't have configured target channels for temp and humid results, set the first and second channel index in Pins!");
 	}

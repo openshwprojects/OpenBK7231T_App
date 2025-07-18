@@ -20,6 +20,8 @@ const char httpHeader[] = "HTTP/1.1 %d OK\nContent-type: %s";  // HTTP header
 const char httpMimeTypeHTML[] = "text/html";              // HTML MIME type
 const char httpMimeTypeText[] = "text/plain";           // TEXT MIME type
 const char httpMimeTypeXML[] = "text/xml";           // TEXT MIME type
+const char httpMimeTypeCSS[] = "text/css";           // CSS MIME type
+const char httpMimeTypeJavascript[] = "application/javascript";   // NOTE: According to RFC 4329 text/javascript became obsolete see: https://www.rfc-editor.org/rfc/rfc4329.html#section-7.2
 const char httpMimeTypeJson[] = "application/json";           // TEXT MIME type
 const char httpMimeTypeBinary[] = "application/octet-stream";   // binary/file MIME type
 
@@ -154,7 +156,7 @@ void poststr_escaped(http_request_t* request, char* str) {
 	bool foundChar = false;
 	int len = strlen(str);
 
-	//Do a quick check if escaping is necessary
+	// Do a quick check if escaping is necessary
 	for (i = 0; (foundChar == false) && (i < len); i++) {
 		switch (str[i]) {
 		case '<':
@@ -198,6 +200,53 @@ void poststr_escaped(http_request_t* request, char* str) {
 	}
 }
 
+void poststr_escapedForJSON(http_request_t* request, char* str) {
+	if (str == NULL) {
+		postany(request, NULL, 0);
+		return;
+	}
+
+	int i;
+	bool foundChar = false;
+	int len = strlen(str);
+
+	// Do a quick check if escaping is necessary
+	for (i = 0; (foundChar == false) && (i < len); i++) {
+		switch (str[i]) {
+		case '\n':
+			foundChar = true;
+			break;
+		case '\r':
+			foundChar = true;
+			break;
+		case '\"':
+			foundChar = true;
+			break;
+		}
+	}
+
+	if (foundChar) {
+		for (i = 0; i < len; i++) {
+			switch (str[i]) {
+			case '\n':
+				postany(request, "\\n", 2);
+				break;
+			case '\r':
+				postany(request, "\\r", 2);
+				break;
+			case '\"':
+				postany(request, "\\\"", 2);
+				break;
+			default:
+				postany(request, str + i, 1);
+				break;
+			}
+		}
+	}
+	else {
+		postany(request, str, strlen(str));
+	}
+}
 bool http_startsWith(const char* base, const char* substr) {
 	while (*substr != 0) {
 		if (*base != *substr)
@@ -246,6 +295,17 @@ void http_setup(http_request_t* request, const char* type) {
 	poststr(request, "\r\n"); // end headers with double CRLF
 	poststr(request, "\r\n");
 }
+void http_setup_gz(http_request_t* request, const char* type) {
+	hprintf255(request, httpHeader, request->responseCode, type);
+	poststr(request, "\r\n"); // next header
+	poststr(request, httpCorsHeaders);
+	poststr(request, "\r\n");
+	poststr(request, "Content-Encoding: gzip");
+	poststr(request, "\r\n");
+	poststr(request, "Connection: close");
+	poststr(request, "\r\n"); // end headers with double CRLF
+	poststr(request, "\r\n");
+}
 
 void http_html_start(http_request_t* request, const char* pagename) {
 	poststr(request, htmlDoctype);
@@ -265,8 +325,8 @@ void http_html_start(http_request_t* request, const char* pagename) {
 }
 
 
-const char pageScriptPart1[] = "<script type='text/javascript'>var firstTime,lastTime,onlineFor,req=null,onlineForEl=null,getElement=e=>document.getElementById(e);function showState(){clearTimeout(firstTime),clearTimeout(lastTime),null!=req&&req.abort(),(req=new XMLHttpRequest).onreadystatechange=()=>{var e;4==req.readyState&&\"OK\"==req.statusText&&((\"INPUT\"!=document.activeElement.tagName||\"number\"!=document.activeElement.type&&\"color\"!=document.activeElement.type)&&(e=getElement(\"state\"))&&(e.innerHTML=req.responseText),clearTimeout(firstTime),clearTimeout(lastTime),lastTime=setTimeout(showState,";
-const char pageScriptPart2[] = "))},req.open(\"GET\",\"index?state=1\",!0),req.send(),firstTime=setTimeout(showState,";
+const char pageScriptPart1[] = "<script type='text/javascript'>var firstTime,lastTime,onlineFor,req=null,onlineForEl=null,getElement=e=>document.getElementById(e);function showState(){clearTimeout(firstTime),clearTimeout(lastTime),null!=req&&req.abort(),(e=getElement(\"state\"))&&((req=new XMLHttpRequest).onreadystatechange=()=>{4==req.readyState&&\"OK\"==req.statusText&&((\"INPUT\"!=document.activeElement.tagName||\"number\"!=document.activeElement.type&&\"color\"!=document.activeElement.type)&&(e.innerHTML=req.responseText),clearTimeout(firstTime),clearTimeout(lastTime),lastTime=setTimeout(showState,";
+const char pageScriptPart2[] = "))},req.open(\"GET\",\"index?state=1\",!0),req.send()),firstTime=setTimeout(showState,";
 const char pageScriptPart3[] = ")}function fmtUpTime(e){var t,n,o=Math.floor(e/86400);return e%=86400,t=Math.floor(e/3600),e%=3600,n=Math.floor(e/60),e=e%60,0<o?o+` days, ${t} hours, ${n} minutes and ${e} seconds`:0<t?t+` hours, ${n} minutes and ${e} seconds`:0<n?n+` minutes and ${e} seconds`:`just ${e} seconds`}function updateOnlineFor(){onlineForEl.textContent=fmtUpTime(++onlineFor)}function onLoad(){(onlineForEl=getElement(\"onlineFor\"))&&(onlineFor=parseInt(onlineForEl.dataset.initial,10))&&setInterval(updateOnlineFor,1e3),showState()}function submitTemperature(e){var t=getElement(\"form132\");getElement(\"kelvin132\").value=Math.round(1e6/parseInt(e.value)),t.submit()}window.addEventListener(\"load\",onLoad),history.pushState(null,\"\",window.location.pathname.slice(1)),setTimeout(()=>{var e=getElement(\"changed\");e&&(e.innerHTML=\"\")},5e3);</script>";
 
 
@@ -287,6 +347,10 @@ void http_html_end(http_request_t* request) {
 	poststr(request, upTimeStr);
 	snprintf(upTimeStr, sizeof(upTimeStr), "<br>Short name: %s, Chipset %s", CFG_GetShortDeviceName(), PLATFORM_MCU_NAME);
 	poststr(request, upTimeStr);
+#ifdef PLATFORM_ESPIDF
+	snprintf(upTimeStr, sizeof(upTimeStr), " ESP-IDF %s", esp_get_idf_version());
+	poststr(request, upTimeStr);
+#endif
 
 	poststr(request, htmlBodyEnd);
 	poststr(request, pageScriptPart1);
@@ -490,6 +554,9 @@ const char* htmlPinRoleNames[] = {
 	"KP18058_CLK",
 	"KP18058_DAT",
 	"DS1820_IO",
+	"PWM_ScriptOnly",
+	"PWM_ScriptOnly_n",
+	"error",
 	"error",
 	"error",
 	"error",
@@ -542,12 +609,14 @@ void setupAllWB2SPinsAsButtons() {
 // call with str == NULL to force send. - can be binary.
 // supply length
 int postany(http_request_t* request, const char* str, int len) {
-#if PLATFORM_BL602
+#if PLATFORM_BL602 || PLATFORM_BEKEN_NEW || PLATFORM_RTL8720D
 	send(request->fd, str, len, 0);
 	return 0;
 #else
 	int currentlen;
 	int addlen = len;
+
+	//ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: got %i", len);
 
 	if (NULL == str) {
 		// fd will be NULL for unit tests where HTTP packet is faked locally
@@ -555,6 +624,7 @@ int postany(http_request_t* request, const char* str, int len) {
 			return request->replylen;
 		}
 		if (request->replylen > 0) {
+			//ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: send %i", request->replylen);
 			send(request->fd, request->reply, request->replylen, 0);
 		}
 		request->reply[0] = 0;
@@ -564,6 +634,7 @@ int postany(http_request_t* request, const char* str, int len) {
 
 	currentlen = request->replylen;
 	if (currentlen + addlen >= request->replymaxlen) {
+		//ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: send %i", request->replylen);
 		send(request->fd, request->reply, request->replylen, 0);
 		request->reply[0] = 0;
 		request->replylen = 0;
@@ -571,9 +642,11 @@ int postany(http_request_t* request, const char* str, int len) {
 	}
 	while (addlen >= request->replymaxlen) {
 		if (request->replylen > 0) {
+			//ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: send %i", request->replylen);
 			send(request->fd, request->reply, request->replylen, 0);
 			request->replylen = 0;
 		}
+		//ADDLOG_ERROR(LOG_FEATURE_HTTP, "postany: send %i", (request->replymaxlen - 1));
 		send(request->fd, str, (request->replymaxlen - 1), 0);
 		addlen -= (request->replymaxlen - 1);
 		str += (request->replymaxlen - 1);
@@ -667,6 +740,11 @@ int HTTP_ProcessPacket(http_request_t* request) {
 			return 0;
 		}
 	}
+	else {
+		// if p is 0, then strchr below would crash
+		ADDLOGF_ERROR("invalid request\n");
+		return 0;
+	}
 
 	request->url = urlStr;
 
@@ -756,8 +834,19 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	}
 
 	if (http_basic_auth_run(request) == HTTP_BASIC_AUTH_FAIL) {
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "HTTP packet with auth fail\n");
 		return 0;
 	}
+
+#if ENABLE_HTTP_OVERRIDE
+	bool HTTP_checkLFSOverride(http_request_t* request, const char *ext);
+	if (HTTP_checkLFSOverride(request,".html")) {
+		return 1;
+	}
+	if (HTTP_checkLFSOverride(request, "")) {
+		return 1;
+	}
+#endif
 
 	if (http_checkUrlBase(urlStr, "")) return http_fn_empty_url(request);
 
@@ -765,34 +854,56 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	if (http_checkUrlBase(urlStr, "index")) return http_fn_index(request);
 
 	if (http_checkUrlBase(urlStr, "about")) return http_fn_about(request);
-
+	
+#if ENABLE_HTTP_MQTT
 	if (http_checkUrlBase(urlStr, "cfg_mqtt")) return http_fn_cfg_mqtt(request);
-	if (http_checkUrlBase(urlStr, "cfg_ip")) return http_fn_cfg_ip(request);
 	if (http_checkUrlBase(urlStr, "cfg_mqtt_set")) return http_fn_cfg_mqtt_set(request);
+#endif
+#if ENABLE_HTTP_IP
+	if (http_checkUrlBase(urlStr, "cfg_ip")) return http_fn_cfg_ip(request);
+#endif
 
+#if ENABLE_HTTP_WEBAPP
 	if (http_checkUrlBase(urlStr, "cfg_webapp")) return http_fn_cfg_webapp(request);
 	if (http_checkUrlBase(urlStr, "cfg_webapp_set")) return http_fn_cfg_webapp_set(request);
+#endif
 
 	if (http_checkUrlBase(urlStr, "cfg_wifi")) return http_fn_cfg_wifi(request);
+#if ENABLE_HTTP_NAMES
 	if (http_checkUrlBase(urlStr, "cfg_name")) return http_fn_cfg_name(request);
+#endif
 	if (http_checkUrlBase(urlStr, "cfg_wifi_set")) return http_fn_cfg_wifi_set(request);
 
 	if (http_checkUrlBase(urlStr, "cfg_loglevel_set")) return http_fn_cfg_loglevel_set(request);
+#if ENABLE_HTTP_MAC
 	if (http_checkUrlBase(urlStr, "cfg_mac")) return http_fn_cfg_mac(request);
-
-//	if (http_checkUrlBase(urlStr, "flash_read_tool")) return http_fn_flash_read_tool(request);
+#endif
 	if (http_checkUrlBase(urlStr, "cmd_tool")) return http_fn_cmd_tool(request);
-	if (http_checkUrlBase(urlStr, "startup_command")) return http_fn_startup_command(request);
-	if (http_checkUrlBase(urlStr, "cfg_generic")) return http_fn_cfg_generic(request);
-	if (http_checkUrlBase(urlStr, "cfg_startup")) return http_fn_cfg_startup(request);
-	if (http_checkUrlBase(urlStr, "cfg_dgr")) return http_fn_cfg_dgr(request);
 
+#if ENABLE_HTTP_STARTUP
+	if (http_checkUrlBase(urlStr, "startup_command")) return http_fn_startup_command(request); 
+#endif
+#if ENABLE_HTTP_FLAGS
+	if (http_checkUrlBase(urlStr, "cfg_generic")) return http_fn_cfg_generic(request);
+#endif
+#if ENABLE_HTTP_STARTUP
+	if (http_checkUrlBase(urlStr, "cfg_startup")) return http_fn_cfg_startup(request);
+#endif
+#if ENABLE_HTTP_DGR
+	if (http_checkUrlBase(urlStr, "cfg_dgr")) return http_fn_cfg_dgr(request);
+#endif
+
+#if ENABLE_HA_DISCOVERY
 	if (http_checkUrlBase(urlStr, "ha_cfg")) return http_fn_ha_cfg(request);
 	if (http_checkUrlBase(urlStr, "ha_discovery")) return http_fn_ha_discovery(request);
+#endif
 	if (http_checkUrlBase(urlStr, "cfg")) return http_fn_cfg(request);
 
 	if (http_checkUrlBase(urlStr, "cfg_pins")) return http_fn_cfg_pins(request);
+#if ENABLE_HTTP_PING
 	if (http_checkUrlBase(urlStr, "cfg_ping")) return http_fn_cfg_ping(request);
+#endif
+
 
 	if (http_checkUrlBase(urlStr, "ota")) return http_fn_ota(request);
 	if (http_checkUrlBase(urlStr, "ota_exec")) return http_fn_ota_exec(request);

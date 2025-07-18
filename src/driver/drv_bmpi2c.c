@@ -2,6 +2,7 @@
 #include "../new_pins.h"
 #include "../logging/logging.h"
 #include "drv_local.h"
+#include <limits.h>
 
 static byte g_secondsBetweenMeasurements = 1, g_secondsUntilNextMeasurement = 1;
 static int32_t g_temperature, g_calTemp = 0, g_calHum = 0, g_calPres = 0;
@@ -156,10 +157,7 @@ void BMPI2C_Init()
 		}
 
 		//cmddetail:{"name":"BMPI2C_Configure","args":"[Mode][TempSampling][PressureSampling][HumSampling][IIRFilter][StandbyTime]",
-		//cmddetail:"descr":"Manual sensor configuration. Modes: 0 - normal, 1 - forced, 2 - sleep. Overampling range: -1 - skipped, 2^0 to 2^4. Default is X1
-		//cmddetail:IIRFilter range: 0 - off, 2^1 to 2^4 for most, up to 2^7 for BME68X",
-		//cmddetail:StandbyTime: 1 for 0.5ms, 63 for 62.5ms, 125, 250, 500, 1000, 2000, 4000. Mode and StandbyTime are not needed on BME68X
-		//cmddetail:All values will be rounded down to closest available (like sampling 10 will choose 8x)
+		//cmddetail:"descr":"Manual sensor configuration. Modes: 0 - normal, 1 - forced, 2 - sleep. Overampling range: -1 - skipped, 2^0 to 2^4. Default is X1. IIRFilter range: 0 - off, 2^1 to 2^4 for most, up to 2^7 for BME68X, StandbyTime: 1 for 0.5ms, 63 for 62.5ms, 125, 250, 500, 1000, 2000, 4000. Mode and StandbyTime are not needed on BME68X, All values will be rounded down to closest available (like sampling 10 will choose 8x)",
 		//cmddetail:"fn":"BMPI2C_Configure","file":"driver/drv_bmpi2c.c","requires":"",
 		//cmddetail:"examples":"BMPI2C_Configure 0 8 2 4 16 125 <br />"}
 		CMD_RegisterCommand("BMPI2C_Configure", BMPI2C_Configure, NULL);
@@ -193,8 +191,10 @@ void BMPI2C_OnEverySecond()
 	}
 }
 
-void BMPI2C_AppendInformationToHTTPIndexPage(http_request_t* request)
+void BMPI2C_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
+	if (bPreState)
+		return;
 	hprintf255(request, "<h2>%s Temperature=%.2f C, Pressure=%.2f hPa", g_chipName, g_temperature * 0.01f, g_pressure * 0.01f);
 	if(isHumidityAvail)
 	{

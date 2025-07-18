@@ -3,6 +3,11 @@
 // Use this for reference:
 // https://github.com/RN8209C/RN8209C-SDK/blob/master/src/rn8209c_u.c
 // Search for rn8209c_read_current
+
+#include "../obk_config.h"
+
+#if ENABLE_DRIVER_RN8209
+
 #include "../logging/logging.h"
 #include "../new_pins.h"
 #include "drv_bl_shared.h"
@@ -91,7 +96,7 @@ static bool RN8029_ReadReg(byte reg, unsigned int *res) {
 #define DEFAULT_POWER_CAL 71572720
 // startDriver RN8209
 void RN8209_Init(void) {
-	UART_InitUART(4800, 1);
+	UART_InitUART(4800, 1, false);
 	UART_InitReceiveRingBuffer(256);
 
 	BL_Shared_Init();
@@ -164,3 +169,5 @@ Let's verify checksum (sum modulo 256 and negated):
 77  -> 01001101
 178 -> 10110010
 */
+
+#endif

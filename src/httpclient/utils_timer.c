@@ -1,11 +1,26 @@
 /*
  * Copyright (C) 2015-2017 Alibaba Group Holding Limited
  */
-#include "include.h"
-//#include "lite-log.h"
-#include "utils_timer.h"
-#include "hal_machw.h"
 
+
+#include "../new_common.h"
+#include "../quicktick.h"
+
+#if ENABLE_SEND_POSTANDGET
+ //#include "lite-log.h"
+#include "utils_timer.h"
+
+#if PLATFORM_BEKEN || WINDOWS
+#include "hal_machw.h"
+#elif PLATFORM_ECR6600
+int hal_machw_time() {
+	return os_time_get() * 1000;
+}
+#else
+int hal_machw_time() {
+	return g_timeMs;
+}
+#endif
 
 void iotx_time_start(iotx_time_t *timer)
 {
@@ -93,8 +108,9 @@ uint32_t utils_time_get_ms(void)
 
 uint64_t utils_time_left(uint64_t t_end, uint64_t t_now)
 {
-    //uint64_t t_left;
-
-    return  (1!=(hal_machw_time_past(t_end*1000)));
+	int t = hal_machw_time();
+	return (t < (int)(t_end * 1000)) ? 1 : 0;
 }
 
+
+#endif

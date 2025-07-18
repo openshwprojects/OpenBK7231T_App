@@ -8,6 +8,11 @@
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 
+#if PLATFORM_BEKEN_NEW
+#include "uart.h"
+#include "arm_arch.h"
+#endif
+
 extern uint8_t g_StartupDelayOver;
 
 int g_loglevel = LOG_INFO; // default to info
@@ -76,7 +81,7 @@ char* logfeaturenames[] = {
 	"IR:", // = 20
 	"SENSOR:", // = 21
     "DRV:", // = 22,
-	"ERROR",// = 23,
+	"BERRY:",// = 23,
 	"ERROR",// = 24,
 	"ERROR",// = 25,
 	"ERROR",// = 26,
@@ -336,15 +341,6 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 #if WINDOWS
 	printf(tmp);
 #endif
-#if PLATFORM_XR809
-	printf(tmp);
-#endif
-#if PLATFORM_W600 || PLATFORM_W800
-	//printf(tmp);
-#endif
-//#if PLATFORM_BL602
-	//printf(tmp);
-//#endif
 	// This is used by HTTP console
 	if (g_log_alsoPrintToHTTP) {
 		// guard here is used for the rare case when poststr attempts to do an addLogAdv as well
@@ -521,13 +517,13 @@ void startLogServer() {
 	OSStatus err = kNoErr;
 
 	err = rtos_create_thread(NULL, BEKEN_APPLICATION_PRIORITY,
-		"TCP_server",
+		"Log_server",
 		(beken_thread_function_t)log_server_thread,
 		0x800,
 		(beken_thread_arg_t)0);
 	if (err != kNoErr)
 	{
-		bk_printf("create \"TCP_server\" thread failed!\r\n");
+		bk_printf("startLogServer: create \"TCP_server\" thread failed!\r\n");
 	}
 #endif
 }
@@ -588,7 +584,7 @@ void log_server_thread(beken_thread_arg_t arg)
 			client_fd = accept(tcp_listen_fd, (struct sockaddr*)&client_addr, &sockaddr_t_size);
 			if (client_fd >= 0)
 			{
-				os_strcpy(client_ip_str, inet_ntoa(client_addr.sin_addr));
+				strcpy(client_ip_str, inet_ntoa(client_addr.sin_addr));
 #ifdef PLATFORM_BEKEN
 				// Just note the new client port, if we have an available slot out of the two we record.
 				int found_port_slot = 0;
