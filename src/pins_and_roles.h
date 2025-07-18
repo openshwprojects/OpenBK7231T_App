@@ -623,6 +623,20 @@
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"driver":""}
 	X( IOR_DS1820_IO,"DS1820_IO",1,2 ),
+	//iodetail:{"name":"PWM_ScriptOnly",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"",
+	//iodetail:"enum":"PWM_ScriptOnly",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	X( IOR_PWM_ScriptOnly,"PWM_ScriptOnly",1,0 ),
+	//iodetail:{"name":"PWM_ScriptOnly_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"",
+	//iodetail:"enum":"PWM_ScriptOnly_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	X( IOR_PWM_ScriptOnly_n,"PWM_ScriptOnly_n",1,0 ),
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
