@@ -11,6 +11,7 @@
 #include "../logging/logging.h"
 #include "../mqtt/new_mqtt.h"
 
+#include "drv_local.h"
 #include "drv_spiLED.h"
 
 // Number of pixels that can be addressed
@@ -30,14 +31,20 @@ void SM16703P_GetPixel(uint32_t pixel, byte *dst) {
 	}
 }
 
-#define SM16703P_COLOR_ORDER_RGB         0x00
-#define SM16703P_COLOR_ORDER_RBG         0x01
-#define SM16703P_COLOR_ORDER_BRG         0x02
-#define SM16703P_COLOR_ORDER_BGR         0x03
-#define SM16703P_COLOR_ORDER_GRB         0x04
-#define SM16703P_COLOR_ORDER_GBR         0x05
-int color_order = SM16703P_COLOR_ORDER_RGB; // default to RGB
-
+enum ColorChannel {
+	COLOR_CHANNEL_RED,
+	COLOR_CHANNEL_GREEN,
+	COLOR_CHANNEL_BLUE,
+	COLOR_CHANNEL_COLD_WHITE,
+	COLOR_CHANNEL_WARM_WHITE
+};
+const enum ColorChannel default_color_channel_order[3] = {
+	COLOR_CHANNEL_RED,
+	COLOR_CHANNEL_GREEN,
+	COLOR_CHANNEL_BLUE
+};
+enum ColorChannel *color_channel_order = default_color_channel_order;
+int pixel_size = 3; // default is RGB -> 3 bytes per pixel
 
 bool SM16703P_VerifyPixel(uint32_t pixel, byte r, byte g, byte b) {
 	byte real[3];
@@ -52,44 +59,34 @@ bool SM16703P_VerifyPixel(uint32_t pixel, byte r, byte g, byte b) {
 }
 
 
-void SM16703P_setPixel(int pixel, int r, int g, int b) {
+void SM16703P_setPixel(int pixel, int r, int g, int b, int c, int w) {
 	if (!spiLED.ready)
 		return;
-	// Load data in correct format
-	int b0, b1, b2;
-	if (color_order == SM16703P_COLOR_ORDER_RGB) {
-		b0 = r;
-		b1 = g;
-		b2 = b;
+	int i;
+	for(i = 0; i < pixel_size; i++) 
+	{
+		switch (color_channel_order[i])
+		{
+			case COLOR_CHANNEL_RED:
+				translate_byte(r, spiLED.buf + (spiLED.ofs + i * 4 + (pixel * pixel_size * 4)));
+				break;
+			case COLOR_CHANNEL_GREEN:
+				translate_byte(g, spiLED.buf + (spiLED.ofs + i * 4 + (pixel * pixel_size * 4)));
+				break;
+			case COLOR_CHANNEL_BLUE:
+				translate_byte(b, spiLED.buf + (spiLED.ofs + i * 4 + (pixel * pixel_size * 4)));
+				break;
+			case COLOR_CHANNEL_COLD_WHITE:
+				translate_byte(c, spiLED.buf + (spiLED.ofs + i * 4 + (pixel * pixel_size * 4)));
+				break;
+			case COLOR_CHANNEL_WARM_WHITE:
+				translate_byte(w, spiLED.buf + (spiLED.ofs + i * 4 + (pixel * pixel_size * 4)));
+				break;
+			default:
+				ADDLOG_ERROR(LOG_FEATURE_CMD, "Unknown color channel %d at index %d", color_channel_order[i], i);
+				return;
+		}
 	}
-	else if (color_order == SM16703P_COLOR_ORDER_RBG) {
-		b0 = r;
-		b1 = b;
-		b2 = g;
-	}
-	else if (color_order == SM16703P_COLOR_ORDER_BRG) {
-		b0 = b;
-		b1 = r;
-		b2 = g;
-	}
-	else if (color_order == SM16703P_COLOR_ORDER_BGR) {
-		b0 = b;
-		b1 = g;
-		b2 = r;
-	}
-	else if (color_order == SM16703P_COLOR_ORDER_GRB) {
-		b0 = g;
-		b1 = r;
-		b2 = b;
-	}
-	else if (color_order == SM16703P_COLOR_ORDER_GBR) {
-		b0 = g;
-		b1 = b;
-		b2 = r;
-	}
-	translate_byte(b0, spiLED.buf + (spiLED.ofs + 0 + (pixel * 3 * 4)));
-	translate_byte(b1, spiLED.buf + (spiLED.ofs + 4 + (pixel * 3 * 4)));
-	translate_byte(b2, spiLED.buf + (spiLED.ofs + 8 + (pixel * 3 * 4)));
 }
 void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 
@@ -108,20 +105,24 @@ void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 		r = *data++;
 		g = *data++;
 		b = *data++;
-		SM16703P_setPixel((int)i, (int)r, (int)g, (int)b);
+		// TODO: Not sure how this works. Should we add Cold and Warm white here as well?
+		SM16703P_setPixel((int)i, (int)r, (int)g, (int)b, 0, 0);
 	}
 	if (push) {
 		SPIDMA_StartTX(spiLED.msg);
 	}
 }
 extern float g_brightness0to100;//TODO
-void SM16703P_setPixelWithBrig(int pixel, int r, int g, int b) {
+void SM16703P_setPixelWithBrig(int pixel, int r, int g, int b, int c, int w) {
+	// scale brightness
 #if ENABLE_LED_BASIC
 	r = (int)(r * g_brightness0to100*0.01f);
 	g = (int)(g * g_brightness0to100*0.01f);
 	b = (int)(b * g_brightness0to100*0.01f);
+	c = (int)(c * g_brightness0to100*0.01f);
+	w = (int)(w * g_brightness0to100*0.01f);
 #endif
-	SM16703P_setPixel(pixel,r, g, b);
+	SM16703P_setPixel(pixel,r, g, b, c, w);
 }
 #define SCALE8_PIXEL(x, scale) (uint8_t)(((uint32_t)x * (uint32_t)scale) / 256)
 
@@ -140,46 +141,13 @@ void SM16703P_scaleAllPixels(int scale) {
 		}
 	}
 }
-void SM16703P_setAllPixels(int r, int g, int b) {
+void SM16703P_setAllPixels(int r, int g, int b, int c, int w) {
 	int pixel;
 	if (!spiLED.ready)
 		return;
-	// Load data in correct format
-	int b0, b1, b2;
-	if (color_order == SM16703P_COLOR_ORDER_RGB) {
-		b0 = r;
-		b1 = g;
-		b2 = b;
-	}
-	if (color_order == SM16703P_COLOR_ORDER_RBG) {
-		b0 = r;
-		b1 = b;
-		b2 = g;
-	}
-	if (color_order == SM16703P_COLOR_ORDER_BRG) {
-		b0 = b;
-		b1 = r;
-		b2 = g;
-	}
-	if (color_order == SM16703P_COLOR_ORDER_BGR) {
-		b0 = b;
-		b1 = g;
-		b2 = r;
-	}
-	if (color_order == SM16703P_COLOR_ORDER_GRB) {
-		b0 = g;
-		b1 = r;
-		b2 = b;
-	}
-	if (color_order == SM16703P_COLOR_ORDER_GBR) {
-		b0 = g;
-		b1 = b;
-		b2 = r;
-	}
+	
 	for (pixel = 0; pixel < pixel_count; pixel++) {
-		translate_byte(b0, spiLED.buf + (spiLED.ofs + 0 + (pixel * 3 * 4)));
-		translate_byte(b1, spiLED.buf + (spiLED.ofs + 4 + (pixel * 3 * 4)));
-		translate_byte(b2, spiLED.buf + (spiLED.ofs + 8 + (pixel * 3 * 4)));
+		SM16703P_setPixel(pixel, r, g, b, c, w);
 	}
 }
 
@@ -195,12 +163,13 @@ commandResult_t SM16703P_CMD_setRaw(const void *context, const char *cmd, const 
 	return CMD_RES_OK;
 }
 commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, const char *args, int flags) {
-	int i, r, g, b;
+	int i, r, g, b, c, w;
 	int pixel = 0;
 	const char *all = 0;
 	Tokenizer_TokenizeString(args, 0);
 
-	if (Tokenizer_GetArgsCount() != 4) {
+	if (Tokenizer_GetArgsCount() < 4) {
+		// We need at least 4 arguments: pixel, red, green, blue - cold and warm white are optional
 		ADDLOG_INFO(LOG_FEATURE_CMD, "Not Enough Arguments for init SM16703P: Amount of LEDs missing");
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
@@ -216,16 +185,24 @@ commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, cons
 	r = Tokenizer_GetArgIntegerRange(1, 0, 255);
 	g = Tokenizer_GetArgIntegerRange(2, 0, 255);
 	b = Tokenizer_GetArgIntegerRange(3, 0, 255);
+	c = 0; // cold white is optional for backward compatibility
+	if (Tokenizer_GetArgsCount() > 4) {
+		c = Tokenizer_GetArgIntegerRange(4, 0, 255);
+	}
+	w = 0; // warm white is optional for backward compatibility
+	if (Tokenizer_GetArgsCount() > 5) {
+		w = Tokenizer_GetArgIntegerRange(5, 0, 255);
+	}
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, "Set Pixel %i to R %i G %i B %i", pixel, r, g, b);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Set Pixel %i to R %i G %i B %i C %i W %i", pixel, r, g, b, c, w);
 
 	if (all) {
 		for (i = 0; i < pixel_count; i++) {
-			SM16703P_setPixel(i, r, g, b);
+			SM16703P_setPixel(i, r, g, b, c, w);
 		}
 	}
 	else {
-		SM16703P_setPixel(pixel, r, g, b);
+		SM16703P_setPixel(pixel, r, g, b, c, w);
 
 		ADDLOG_INFO(LOG_FEATURE_CMD, "Raw Data 0x%02x 0x%02x 0x%02x 0x%02x - 0x%02x 0x%02x 0x%02x 0x%02x - 0x%02x 0x%02x 0x%02x 0x%02x",
 			spiLED.buf[spiLED.ofs + 0 + (pixel * 3 * 4)],
@@ -254,34 +231,46 @@ commandResult_t SM16703P_InitForLEDCount(const void *context, const char *cmd, c
 		ADDLOG_INFO(LOG_FEATURE_CMD, "Not Enough Arguments for init SM16703P: Amount of LEDs missing");
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
+	
+	SM16703P_Shutdown();
 
 	// First arg: number of pixel to address
 	pixel_count = Tokenizer_GetArgIntegerRange(0, 0, 255);
 	// Second arg (optional, default "RGB"): pixel format of "RGB" or "GRB"
 	if (Tokenizer_GetArgsCount() > 1) {
 		const char *format = Tokenizer_GetArg(1);
-		if (!stricmp(format, "RGB")) {
-			color_order = SM16703P_COLOR_ORDER_RGB;
-		}
-		else if (!stricmp(format, "RBG")) {
-			color_order = SM16703P_COLOR_ORDER_RBG;
-		}
-		else if (!stricmp(format, "BRG")) {
-			color_order = SM16703P_COLOR_ORDER_BRG;
-		}
-		else if (!stricmp(format, "BGR")) {
-			color_order = SM16703P_COLOR_ORDER_BGR;
-		}
-		else if (!stricmp(format, "GRB")) {
-			color_order = SM16703P_COLOR_ORDER_GRB;
-		}
-		else if (!stricmp(format, "GBR")) {
-			color_order = SM16703P_COLOR_ORDER_GBR;
-		}
-		else {
-			ADDLOG_INFO(LOG_FEATURE_CMD, "Invalid color format, should be combination of R,G,B", format);
+		size_t format_length = strlen(format);
+		enum ColorChannel *new_channel_order = os_malloc(sizeof(enum ColorChannel) * (format_length + 1));
+		if (!new_channel_order) {
+			ADDLOG_ERROR(LOG_FEATURE_CMD, "Failed to allocate memory for color channel order");
 			return CMD_RES_ERROR;
 		}
+		int i = 0;
+		for (const char *p = format; *p; p++) {
+			switch (*p) {
+				case 'R':
+					new_channel_order[i++] = COLOR_CHANNEL_RED;
+					break;
+				case 'G':
+					new_channel_order[i++] = COLOR_CHANNEL_GREEN;
+					break;
+				case 'B':
+					new_channel_order[i++] = COLOR_CHANNEL_BLUE;
+					break;
+				case 'C':
+					new_channel_order[i++] = COLOR_CHANNEL_COLD_WHITE;
+					break;
+				case 'W':
+					new_channel_order[i++] = COLOR_CHANNEL_WARM_WHITE;
+					break;
+				default:
+					ADDLOG_ERROR(LOG_FEATURE_CMD, "Invalid color '%c' in format '%s', should be combination of R,G,B,C,W", *p, format);
+					os_free(new_channel_order);
+					return CMD_RES_ERROR;
+			}
+		}
+		pixel_size = i; // number of color channels
+		color_channel_order = new_channel_order;
 	}
 	// Third arg (optional, default "0"): spiLED.ofs to prepend to each transmission
 	if (Tokenizer_GetArgsCount() > 2) {
@@ -296,7 +285,7 @@ commandResult_t SM16703P_InitForLEDCount(const void *context, const char *cmd, c
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Register driver with %i LEDs", pixel_count);
 	
 	// each pixel is RGB, so 3 bytes per pixel
-	SPILED_InitDMA(pixel_count * 3);
+	SPILED_InitDMA(pixel_count * pixel_size);
 
 	return CMD_RES_OK;
 }
@@ -333,7 +322,7 @@ void SM16703P_Init() {
 	SPILED_Init();
 
 	//cmddetail:{"name":"SM16703P_Init","args":"[NumberOfLEDs][ColorOrder]",
-	//cmddetail:"descr":"This will setup LED driver for a strip with given number of LEDs. Please note that it also works for WS2812B and similiar LEDs. You can optionally set the color order with either RGB, RBG, BRG, BGB, GRB or GBR (default RGB). See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
+	//cmddetail:"descr":"This will setup LED driver for a strip with given number of LEDs. Please note that it also works for WS2812B and similiar LEDs. You can optionally set the color order with can be any combination of R, G, B, C and W (e.g. RGBW or GRBWC, default is RGB). See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_sm16703P.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SM16703P_Init", SM16703P_InitForLEDCount, NULL);
@@ -354,5 +343,12 @@ void SM16703P_Init() {
 	CMD_RegisterCommand("SM16703P_SetRaw", SM16703P_CMD_setRaw, NULL);
 
 	//CMD_RegisterCommand("SM16703P_SendBytes", SM16703P_CMD_sendBytes, NULL);
+}
+
+void SM16703P_Shutdown() {
+	if (color_channel_order != default_color_channel_order) {
+		os_free(color_channel_order);
+		color_channel_order = default_color_channel_order;
+	}
 }
 #endif
