@@ -30,5 +30,7 @@
 | Linux    | x86 | ✅          | ❌  |
 
 ¹ Success dependant on partition layout set in bootloader. SPI flash QIO firmware for guaranteed OTA success
+
 ² HTTP server OTA only
+
 ³ Excluding 1MB variation
