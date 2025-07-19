@@ -81,6 +81,11 @@ void DS1820_driver_Init()
 	Pin = PIN_FindPinIndexForRole(IOR_DS1820_IO, -1);
 	if (Pin >= 0)
 		DS1820_DiscoverFamily();
+		
+#if ENABLE_DS1820_TEST_US	
+	init_TEST_US();
+#endif
+
 };
 
 void DS1820_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)

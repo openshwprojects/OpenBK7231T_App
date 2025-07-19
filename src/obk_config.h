@@ -516,6 +516,14 @@
 //#define ENABLE_BL_MOVINGAVG	1
 #endif
 
+// enable testing HAL_Delay_us with a special command
+// testus
+#if (ENABLE_DRIVER_DS1820 || ENABLE_DRIVER_DS1820_FULL)
+#define ENABLE_DS1820_TEST_US					1
+#endif
+
+
+
 // closing OBK_CONFIG_H
 #endif
 
