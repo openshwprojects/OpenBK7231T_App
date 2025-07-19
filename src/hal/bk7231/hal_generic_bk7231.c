@@ -50,8 +50,9 @@ static uint32_t getTicksCount() {
 // https://github.com/libretiny-eu/libretiny
 // not working on BK7238
 void HAL_Delay_us(int delay) {
-#if PLATFORM_BK7238
-	if (delay < 0){		// effectivly remove for testing
+#if 0	// try other delay for BK7238, too
+PLATFORM_BK7238
+	if (delay < 100){
 		usleep((17*delay)/10);
 	}else{
 		uint64_t m = (uint64_t)rtos_get_time_us();
