@@ -3,9 +3,9 @@
 | BK7231T              | Beken           | ✅     | ✅           |
 | BK7231N              | Beken           | ✅     | ✅           |
 | BK7231S/BK7231U      | Beken           | ✅     | ✅¹          |
-| BK7238               | Beken           | ✅     | ✅¹          |
+| BK7238               | Beken           | ✅     | ✅           |
 | BK7252               | Beken           | ✅     | ✅¹          |
-| BK7252N              | Beken           | ✅     | ✅¹          |
+| BK7252N              | Beken           | ✅     | ✅           |
 | BL2028N (BK7231N)    | Beken           | ✅     | ✅           |
 | T34 (BK7231N)        | Beken           | ✅     | ✅           |
 | CC8000 (BK7231U)     | Beken           | ✅     | ✅¹          |
