@@ -16,6 +16,7 @@ void HAL_RebootModule()
 	bk_reboot();
 }
 
+#if ! (PLATFORM_BK7252 || PLATFORM_BK7238)
 #if !defined TIMER0_2_READ_VALUE && defined TIMERR0_2_READ_VALUE
 //typo in sdk
 #define TIMER0_2_READ_VALUE TIMERR0_2_READ_VALUE
@@ -47,10 +48,12 @@ static uint32_t getTicksCount() {
 // 26 ticks per us * 15 000 000 us per overflow
 #define TICKS_PER_OVERFLOW (TICKS_PER_US * US_PER_OVERFLOW)
 
+#endif // #if ! (PLATFORM_BK7252 || PLATFORM_BK7238)
+
 // https://github.com/libretiny-eu/libretiny
 // not working on BK7238
 void HAL_Delay_us(int delay) {
-#if PLATFORM_BK7238
+#if (PLATFORM_BK7252) || (PLATFORM_BK7238)
 		// starting over again for BK7238
 		// read factors between 5 and 6,7 - using 6 seems a good start
 		// trying with 6.4 - higher values are off else
