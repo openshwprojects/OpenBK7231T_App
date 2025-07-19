@@ -9,7 +9,7 @@
 | BL2028N (BK7231N)    | Beken           | ✅     | ✅           |
 | T34 (BK7231N)        | Beken           | ✅     | ✅           |
 | CC8000 (BK7231U)     | Beken           | ✅     | ✅¹          |
-| XR809                | XRadio          | ✅     | ⚠️ Partial²  |
+| XR809                | XRadio          | ✅     | ❌           |
 | XR806                | XRadio          | ✅     | ⚠️ Partial²  |
 | XR872/XF16           | XRadio          | ✅     | ⚠️ Partial¹ ² |
 | BL602                | Bouffalo Lab    | ✅     | ✅           |
@@ -31,6 +31,6 @@
 
 ¹ Success dependant on partition layout set in bootloader. SPI flash QIO firmware for guaranteed OTA success
 
-² HTTP server OTA only
+² HTTP server OTA only (specify http URL path to binary file in OTA GUI)
 
 ³ Excluding 1MB variation
