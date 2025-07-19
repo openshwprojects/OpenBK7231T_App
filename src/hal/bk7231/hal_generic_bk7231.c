@@ -50,25 +50,9 @@ static uint32_t getTicksCount() {
 // https://github.com/libretiny-eu/libretiny
 // not working on BK7238
 void HAL_Delay_us(int delay) {
-#if 0	// try other delay for BK7238, too
-PLATFORM_BK7238
-	if (delay < 100){
-		usleep((17*delay)/10);
-	}else{
-		uint64_t m = (uint64_t)rtos_get_time_us();
-		uint64_t e = (m + delay);
-		if(m > e)
-		{ //overflow
-			while((uint64_t)rtos_get_time_us() > e)
-			{
-				__asm ("NOP");
-			}
-		}
-		while((uint64_t)rtos_get_time_us() < e)
-		{
-			__asm ("NOP");
-		}
-	}
+#if PLATFORM_BK7238
+		// starting over again for BK7238
+		usleep(delay);
 #else
 	uint32_t startTick = getTicksCount();
 	if (delay > 1 && startTick != BK_TIMER_FAILURE ){		// be sure, timer works
