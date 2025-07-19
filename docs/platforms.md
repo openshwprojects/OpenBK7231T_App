@@ -11,13 +11,13 @@
 | CC8000 (BK7231U)     | Beken           | ✅     | ✅¹          |
 | XR809                | XRadio          | ✅     | ❌           |
 | XR806                | XRadio          | ✅     | ✅           |
-| XR872/XF16           | XRadio          | ✅     | ✅           |
+| XR872/XF16           | XRadio          | ✅     | ✅²          |
 | BL602                | Bouffalo Lab    | ✅     | ✅           |
-| LF686                | Bouffalo Lab    | ✅     | ✅           |
+| LF686 (BL602)        | Bouffalo Lab    | ✅     | ✅           |
 | W800/W801            | WinnerMicro     | ✅     | ✅           |
 | W600/W601            | WinnerMicro     | ✅     | ✅           |
 | LN882H               | Lightning Semi  | ✅     | ✅           |
-| ESP8285/ESP8266      | Espressif       | ✅     | ✅³          |
+| ESP8285/ESP8266      | Espressif       | ✅     | ✅²          |
 | ESP32 | Espressif       | ✅     | ✅           |
 | ESP32 C2 | Espressif       | ✅     | ✅           |
 | ESP32 C5 | Espressif       | ✅     | ✅           |
@@ -37,6 +37,4 @@
 
 ¹ Success dependant on partition layout set in bootloader. SPI flash QIO firmware for guaranteed OTA success
 
-² HTTP server OTA only (specify http URL path to binary file in OTA GUI)
-
-³ Excluding 1MB variation
+² Excluding 1MB variation
