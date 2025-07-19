@@ -204,7 +204,7 @@ uint8_t Crc8CQuick(uint8_t* Buffer, uint8_t Size)
 }
 
 
-#if ENABLE_DS1820_TEST_US
+#if ENABLE_DS1820_TEST_US && ! WINDOWS
 // will allow testus <pin> <us between tests> <us val 1> <us val 2> .... 
 commandResult_t CMD_OW_testus(const void *context, const char *cmd, const char *args, int cmdFlags) {
    Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
@@ -249,7 +249,7 @@ commandResult_t CMD_OW_testus(const void *context, const char *cmd, const char *
 #endif
 
 void init_TEST_US(){
-#if ENABLE_DS1820_TEST_US	
+#if ENABLE_DS1820_TEST_US && ! WINDOWS	
 	//cmddetail:{"name":"testus","args":"pin <pause in us> <testval 1 in us> [<testval n in us>...]",
 	//cmddetail:"descr":"tests usleep on given pin ",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_ds1820_simple.c","requires":"",
