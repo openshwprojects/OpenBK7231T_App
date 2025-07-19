@@ -401,7 +401,7 @@ void BL0937_Init_Pins()
 #elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 
 	ESP_ConfigurePin(esp_cf1->pin, GPIO_MODE_INPUT, true, false, GPIO_INTR_NEGEDGE);
-	gpio_isr_handler_add((1ULL << (uint32_t)esp_cf1->pin), HlwCf1Interrupt, NULL);
+	gpio_isr_handler_add(esp_cf1->pin, HlwCf1Interrupt, NULL);
 
 #endif
 
@@ -456,7 +456,7 @@ void BL0937_Init_Pins()
 #elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 
 	ESP_ConfigurePin(esp_cf->pin, GPIO_MODE_INPUT, true, false, GPIO_INTR_NEGEDGE);
-	gpio_isr_handler_add((1ULL << (uint32_t)esp_cf->pin), HlwCfInterrupt, NULL);
+	gpio_isr_handler_add(esp_cf->pin, HlwCfInterrupt, NULL);
 
 #endif
 
