@@ -18,7 +18,13 @@
 | W600/W601            | WinnerMicro     | ✅     | ✅           |
 | LN882H               | Lightning Semi  | ✅     | ✅           |
 | ESP8285/ESP8266      | Espressif       | ✅     | ✅³          |
-| ESP32 (all variants) | Espressif       | ✅     | ✅           |
+| ESP32 | Espressif       | ✅     | ✅           |
+| ESP32 C2 | Espressif       | ✅     | ✅           |
+| ESP32 C5 | Espressif       | ✅     | ✅           |
+| ESP32 C6 | Espressif       | ✅     | ✅           |
+| ESP32 S2 | Espressif       | ✅     | ✅           |
+| ESP32 S3 | Espressif       | ✅     | ✅           |
+| ESP32 C61 | Espressif       | ✅     | ✅           |
 | TR6260               | Transa Semi     | ✅     | ❌           |
 | RTL8711AM (Ameba1)   | Realtek         | ✅     | ✅           |
 | RTL8710B (AmebaZ)    | Realtek         | ✅     | ✅           |
