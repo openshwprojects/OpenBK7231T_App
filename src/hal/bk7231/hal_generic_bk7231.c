@@ -52,12 +52,18 @@ static uint32_t getTicksCount() {
 
 // https://github.com/libretiny-eu/libretiny
 // not working on BK7238
+// not building for PLATFORM_BK7525
 void HAL_Delay_us(int delay) {
-#if (PLATFORM_BK7252) || (PLATFORM_BK7238)
-		// starting over again for BK7238
-		// read factors between 5 and 6,7 - using 6 seems a good start
-		// trying with 6.4 - higher values are off else
-		usleep((64*delay)/10);
+#if (PLATFORM_BK7252)
+	float adj = 1;
+	if(g_powersave) adj = 1.5;
+	// use original code for non BK7381 - I cant test
+	usleep((17 * delay * adj) / 10); // "1" is to fast and "2" to slow, 1.7 seems better than 1.5 (only from observing readings, no scope involved)
+#elif (PLATFORM_BK7238) 
+	// starting over again for BK7238
+	// read factors between 5 and 6,7 - using 6 seems a good start
+	// trying with 6.4 - higher values are off else
+	usleep((64*delay)/10);
 #else
 	uint32_t startTick = getTicksCount();
 	if (delay > 1 && startTick != BK_TIMER_FAILURE ){		// be sure, timer works
