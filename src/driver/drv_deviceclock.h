@@ -25,9 +25,7 @@ int CLOCK_RemoveEvent(int id);
 int CLOCK_ClearEvents();
 void CLOCK_Init();
 void CLOCK_OnEverySecond();
-#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 commandResult_t SetTimeZoneOfs(const void *context, const char *cmd, const char *args, int cmdFlags);
-#endif
 
 #if ENABLE_CLOCK_SUNRISE_SUNSET
 extern struct SUN_DATA {  /* sunrise / sunset globals */

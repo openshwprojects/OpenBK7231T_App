@@ -19,7 +19,6 @@
 
 
 // "eoch" on startup of device; If we add g_secondsElapsed we get the actual time  
-#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 uint32_t g_epochOnStartup = 0;
 // UTC offset
 int g_UTCoffset = 0;
@@ -80,8 +79,6 @@ commandResult_t SetTimeZoneOfs(const void *context, const char *cmd, const char 
 	);
 	return CMD_RES_OK;
 }
-
-#endif
 
 
 #if ENABLE_CLOCK_DST
@@ -209,7 +206,6 @@ static TimeComponents getCurrentComponents(void) {
 }
 
 // Individual getter functions
-#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 int CLOCK_GetSecond(void) {
     return getCurrentComponents().second;
 }
@@ -237,7 +233,6 @@ int CLOCK_GetYear(void) {
 int CLOCK_GetWeekDay(void) {
     return getCurrentComponents().wday;
 }
-#endif
 
 
 #if ENABLE_CLOCK_DST
@@ -431,16 +426,12 @@ void CLOCK_Init() {
     dst_config.DSTinitialized = 0;
     
 #endif
-#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 	//cmddetail:{"name":"clock_setTZ","args":"[Value]",
 	//cmddetail:"descr":"Sets the time zone offset in hours. Also supports HH:MM syntax if you want to specify value in minutes. For negative values, use -HH:MM syntax, for example -5:30 will shift time by 5 hours and 30 minutes negative.",
 	//cmddetail:"fn":"NTP_SetTimeZoneOfs","file":"driver/drv_deviceclock.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("clock_setTZ",SetTimeZoneOfs, NULL);
-#endif
-#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "CLOCK driver initialized.");
-#endif
 }
 
 void CLOCK_OnEverySecond()
@@ -464,34 +455,28 @@ void CLOCK_OnEverySecond()
 uint32_t Clock_GetCurrentTime(){ 			// replacement for NTP_GetCurrentTime() to return time regardless of NTP present/running
 // if we use "LOCAL_CLOCK", NTP will set this clock if enabled, so no further check needed
 uint32_t temp=0;
-#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 	if (g_epochOnStartup > 10) {
 		temp = g_epochOnStartup + g_secondsElapsed + g_UTCoffset;
 #if ENABLE_CLOCK_DST
 		temp +=  getDST_offset();
 #endif 
 	}	// no "else" needed, will return 0 anyway if we don't return here
-#endif
 //    	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Clock_GetCurrentTime - returning :%lu (g_epochOnStartup=%lu g_secondsElapsed=%lu g_UTCoffset=%i DST=%i)",temp,g_epochOnStartup, g_secondsElapsed, g_UTCoffset,getDST_offset());
 	return temp;					// we will report 1970-01-01 if no time present - avoids "hack" e.g. in json status ...
 
 };
 
 uint32_t Clock_GetCurrentTimeWithoutOffset(){ 	// ... same forNTP_GetCurrentTimeWithoutOffset()...
-#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 	if (g_epochOnStartup > 10) {
 		return g_epochOnStartup + g_secondsElapsed;
 	}
-#endif
 	return  0;
 };
 
 bool Clock_IsTimeSynced(){ 				// ... and for NTP_IsTimeSynced()
-#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 	if (g_epochOnStartup > 10) {
 		return true;
 	}
-#endif
 #if ENABLE_NTP
 	if (NTP_IsTimeSynced() == true) {
 		return true;
@@ -502,7 +487,6 @@ bool Clock_IsTimeSynced(){ 				// ... and for NTP_IsTimeSynced()
 
 int Clock_GetTimesZoneOfsSeconds()			// ... and for NTP_GetTimesZoneOfsSeconds()
 {
-#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 	if (g_epochOnStartup > 10) {
 		return g_UTCoffset 
 #if ENABLE_CLOCK_DST
@@ -510,17 +494,14 @@ int Clock_GetTimesZoneOfsSeconds()			// ... and for NTP_GetTimesZoneOfsSeconds()
 #endif 
 		;
 	}	// no "else" needed, will return 0 anyway if we don't return here
-#endif
 	return 0;
 }
 void CLOCK_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState)
 {
-#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 	if (bPreState)
 		return;
 	uint32_t tempt=Clock_GetCurrentTime();
 	if (Clock_IsTimeSynced()) hprintf255(request, "<h5>Local clock: %s (%i)</h5>",TS2STR(tempt,TIME_FORMAT_LONG) ,tempt);
-#endif
 }
 
 
