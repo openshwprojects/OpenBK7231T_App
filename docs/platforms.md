@@ -11,7 +11,7 @@
 | CC8000 (BK7231U)     | Beken           | ✅     | ✅¹          |
 | XR809                | XRadio          | ✅     | ❌           |
 | XR806                | XRadio          | ✅     | ⚠️ Partial²  |
-| XR872/XF16           | XRadio          | ✅     | ⚠️ Partial¹ ² |
+| XR872/XF16           | XRadio          | ✅     | ⚠️ Partial¹² |
 | BL602                | Bouffalo Lab    | ✅     | ✅           |
 | LF686                | Bouffalo Lab    | ✅     | ✅           |
 | W800/W801            | WinnerMicro     | ✅     | ✅           |
