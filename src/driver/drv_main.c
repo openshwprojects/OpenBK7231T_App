@@ -14,6 +14,8 @@
 #include "drv_tuyaMCU.h"
 #include "drv_uart.h"
 #include "drv_ds1820_simple.h"
+#include "drv_ds1820_full.h"
+#include "drv_ds1820_common.h"
 
 
 typedef struct driver_s {
@@ -459,6 +461,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "DS1820",     DS1820_driver_Init, DS1820_OnEverySecond,                       DS1820_AppendInformationToHTTPIndexPage, NULL, NULL, NULL,  false },
 #endif
+#if ENABLE_DRIVER_DS1820_FULL
+	//drvdetail:{"name":"DS1820_FULL",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Driver for oneWire temperature sensor DS18(B)20.",
+	//drvdetail:"requires":""}
+	{ "DS1820_FULL",     DS1820_full_driver_Init, DS1820_full_OnEverySecond,                       DS1820_full_AppendInformationToHTTPIndexPage, NULL, NULL, NULL,  false },
+#endif
 #if ENABLE_DRIVER_HT16K33
 	//drvdetail:{"name":"HT16K33",
 	//drvdetail:"title":"TODO",
@@ -632,8 +641,24 @@ void DRV_StartDriver(const char* name) {
 		return;
 	}
 	bStarted = 0;
+#if (ENABLE_DRIVER_DS1820) && (ENABLE_DRIVER_DS1820_FULL)
+			bool twinrunning=false;
+#endif
 	for (i = 0; i < g_numDrivers; i++) {
 		if (!stricmp(g_drivers[i].name, name)) {
+#if (ENABLE_DRIVER_DS1820) && (ENABLE_DRIVER_DS1820_FULL)
+			twinrunning=false;
+			if (!stricmp("DS1820", name) && DRV_IsRunning("DS1820_FULL")){
+				addLogAdv(LOG_ERROR, LOG_FEATURE_MAIN, "Drv DS1820_FULL is already loaded - can't start DS1820, too.\n", name);
+				twinrunning=true;
+				break;
+			}
+			if (!stricmp("DS1820_FULL", name) && DRV_IsRunning("DS1820")){
+				addLogAdv(LOG_ERROR, LOG_FEATURE_MAIN, "Drv DS1820 is already loaded - can't start DS1820_FULL, too.\n", name);
+				twinrunning=true;
+				break;
+			}
+#endif
 			if (g_drivers[i].bLoaded) {
 				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Drv %s is already loaded.\n", name);
 				bStarted = 1;
@@ -651,7 +676,11 @@ void DRV_StartDriver(const char* name) {
 			}
 		}
 	}
+#if (ENABLE_DRIVER_DS1820) && (ENABLE_DRIVER_DS1820_FULL)
+	if (!bStarted && !twinrunning) {
+#else
 	if (!bStarted) {
+#endif
 		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Driver %s is not known in this build.\n", name);
 		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Available drivers: ");
 		for (i = 0; i < g_numDrivers; i++) {
