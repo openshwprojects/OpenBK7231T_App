@@ -53,7 +53,8 @@ void HAL_Delay_us(int delay) {
 #if PLATFORM_BK7238
 		// starting over again for BK7238
 		// read factors between 5 and 6,7 - using 6 seems a good start
-		usleep(6*delay);
+		// trying with 6.4 - higher values are off else
+		usleep((64*delay)/10);
 #else
 	uint32_t startTick = getTicksCount();
 	if (delay > 1 && startTick != BK_TIMER_FAILURE ){		// be sure, timer works
