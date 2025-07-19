@@ -176,8 +176,8 @@ generateNotes:
         | ESP32 C3 4MB | OTA Flash  | [OpenESP32C3_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C3_{{version}}_4M.img)                   |
         | ESP32 C6 4MB | UART Flash | [OpenESP32C6_{{version}}_4M.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C6_{{version}}_4M.factory.bin)   |
         | ESP32 C6 4MB | OTA Flash  | [OpenESP32C6_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C6_{{version}}_4M.img)                   |
-        | ESP8266 1MB  | UART Flash | [OpenESP8266_1M_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP8266_1M_{{version}}.factory.bin) |
-        | ESP8266 2MB  | UART Flash | [OpenESP8266_2M_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP8266_2M_{{version}}.factory.bin) |
+        | ESP8266 1MB  | UART Flash | [OpenESP8266_1MB_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP8266_1MB_{{version}}.factory.bin) |
+        | ESP8266 2MB  | UART Flash | [OpenESP8266_2MB_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP8266_2MB_{{version}}.factory.bin) |
         | ESP8266      | OTA Flash  | [OpenESP8266_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP8266_{{version}}.img)                   |
         | Win32        |            | [obkSimulator_{{version}}.zip]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/obkSimulator_{{version}}.zip)                 |
 
