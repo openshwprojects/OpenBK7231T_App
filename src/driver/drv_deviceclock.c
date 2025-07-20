@@ -559,7 +559,7 @@ void CLOCK_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreSta
 	if (DRV_IsRunning("NTP")){
 		NTP_Server_Status(temp,sizeof(temp)-1);
 	}
-	if (Clock_IsTimeSynced()) hprintf255(request, "<h5>" LTSTR " (%i) %s</h5>",LTM2TIME(ltm),tempt,temp);
+	if (Clock_IsTimeSynced()) hprintf255(request, "<h5>" LTSTR " (%u) %s</h5>",LTM2TIME(ltm),(uint32_t)tempt,temp);
 }
 
 
