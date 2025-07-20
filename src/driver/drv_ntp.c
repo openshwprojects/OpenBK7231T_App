@@ -158,7 +158,7 @@ commandResult_t NTP_Info(const void *context, const char *cmd, const char *args,
 bool b_ntp_simulatedTime = false;
 void NTP_SetSimulatedTime(unsigned int timeNow) {
 	g_ntpTime = timeNow;
-	g_ntpTime += g_timeOffsetSeconds;
+	g_ntpTime += Clock_GetTimesZoneOfsSeconds();
 #if ENABLE_CLOCK_DST
 	g_ntpTime += setDST(0)*60;
 #endif
