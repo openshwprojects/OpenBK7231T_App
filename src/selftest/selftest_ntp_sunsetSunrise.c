@@ -9,6 +9,8 @@ void Test_CLOCK_SunsetSunrise() {
 
 	// reset whole device
 	SIM_ClearOBK(0);
+	// just in case we tested something with DST enabled this will interfere - set DST-offset to 0 
+	CMD_ExecuteCommand("clock_calcDST 0 0 0 0 0 0 0 0 0", 0);
 
 	// setup test case - Serbia
 	CMD_ExecuteCommand("startDriver NTP", 0);
