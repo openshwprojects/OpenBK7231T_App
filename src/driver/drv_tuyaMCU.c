@@ -25,7 +25,7 @@ https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccesspro
 #include "drv_uart.h"
 #include "drv_public.h"
 #include <time.h>
-#include "drv_ntp.h"
+#include "drv_deviceclock.h"
 #include "../rgb2hsv.h"
 
 
@@ -775,7 +775,7 @@ void TuyaMCU_Send_SetTime(struct tm* pTime, bool bSensorMode) {
 		TuyaMCU_SendCommandWithData(TUYA_CMD_SET_TIME, payload_buffer, 8);
 	}
 }
-struct tm* TuyaMCU_Get_NTP_Time() {
+struct tm* TuyaMCU_Get_Device_Time() {
 	struct tm* ptm;
 	time_t lt=(time_t)Clock_GetCurrentTime();
 
@@ -909,7 +909,7 @@ commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void* context, const ch
 
 commandResult_t TuyaMCU_Send_SetTime_Current(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
-	TuyaMCU_Send_SetTime(TuyaMCU_Get_NTP_Time(),g_sensorMode);
+	TuyaMCU_Send_SetTime(TuyaMCU_Get_Device_Time(),g_sensorMode);
 
 	return CMD_RES_OK;
 }
@@ -2036,7 +2036,7 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		break;
 	case TUYA_CMD_SET_TIME:
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: received TUYA_CMD_SET_TIME, so sending back time");
-		TuyaMCU_Send_SetTime(TuyaMCU_Get_NTP_Time(), false);
+		TuyaMCU_Send_SetTime(TuyaMCU_Get_Device_Time(), false);
 		break;
 		// 55 AA 00 01 00 ${"p":"e7dny8zvmiyhqerw","v":"1.0.0"}$
 		// uartFakeHex 55AA000100247B2270223A226537646E79387A766D69796871657277222C2276223A22312E302E30227D24
@@ -2068,7 +2068,7 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 	case TUYA_V0_CMD_OBTAINLOCALTIME:
 		if (version == 0) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: received TUYA_V0_CMD_OBTAINLOCALTIME, so sending back time");
-			TuyaMCU_Send_SetTime(TuyaMCU_Get_NTP_Time(),true);
+			TuyaMCU_Send_SetTime(TuyaMCU_Get_Device_Time(),true);
 		}
 		else {
 
@@ -2605,7 +2605,7 @@ void TuyaMCU_Init()
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_testSendTime", TuyaMCU_Send_SetTime_Example, NULL);
 	//cmddetail:{"name":"tuyaMcu_sendCurTime","args":"",
-	//cmddetail:"descr":"Sends a current date by TuyaMCU to clock/callendar MCU. Time is taken from NTP driver, so NTP also should be already running.",
+	//cmddetail:"descr":"Sends a current date by TuyaMCU to clock/callendar MCU. Time is taken from local clock, so clock should be set and/or NTP should be already running.",
 	//cmddetail:"fn":"TuyaMCU_Send_SetTime_Current","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_sendCurTime", TuyaMCU_Send_SetTime_Current, NULL);
