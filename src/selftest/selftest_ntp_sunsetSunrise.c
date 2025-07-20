@@ -117,15 +117,15 @@ void Test_CLOCK_SunsetSunrise() {
 	SELFTEST_ASSERT_EXPRESSION("$hour", 15);
 	SELFTEST_ASSERT_EXPRESSION("$minute", 26);
 
-	g_ntpTime += (9+6)*(60 * 60);
+	g_secondsElapsed += (9+6)*(60 * 60);
 	// 6:26 now
 	SELFTEST_ASSERT_EXPRESSION("$hour", 6);
 	SELFTEST_ASSERT_EXPRESSION("$minute", 26);
-	g_ntpTime += (34 * 60);
+	g_secondsElapsed += (34 * 60);
 	// 7:00 now
 	SELFTEST_ASSERT_EXPRESSION("$hour", 7);
 	SELFTEST_ASSERT_EXPRESSION("$minute", 0);
-	g_ntpTime += (35 * 60);
+	g_secondsElapsed += (35 * 60);
 	// 7:35 now
 	SELFTEST_ASSERT_EXPRESSION("$hour", 7);
 	SELFTEST_ASSERT_EXPRESSION("$minute", 35);
