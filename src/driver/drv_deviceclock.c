@@ -336,17 +336,15 @@ int8_t getDST_offset()
 
 
 // this will calculate the actual DST stage and the time of the next DST switch
-// usually, it will also set the clock accordingly (setCLOCK==1).
-// if we just got a new time (e.g. from NTP) ignore old settings (old offset)	(setCLOCK==0) 
-uint32_t setDST(bool setCLOCK)
+uint32_t setDST()
 {
    if (useDST && Clock_IsTimeSynced()){
 	int year=CLOCK_GetYear();
 	time_t tempt;
 	int8_t old_DST=0;
 	char tmp[40];	// to hold date string of timestamp
-	Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year);
-	End_DST_epoch = RuleToTime(dayEnd,monthEnd,nthWeekEnd,hourEnd,year);
+	Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year)-g_UTCoffset;	// will return the start time, which is given as local time. To get UTC time, remove offset 
+	End_DST_epoch = RuleToTime(dayEnd,monthEnd,nthWeekEnd,hourEnd,year) - g_UTCoffset - g_DST_offset; // will return the end time, which is given as local time. To get UTC time, remove offset and DST offset
 	old_DST = g_DST%128;	// 0 if "unset" because -128%128 = 0 
 
 	if ( Start_DST_epoch < End_DST_epoch ) {	// Northern --> begin before end
@@ -392,7 +390,7 @@ uint32_t setDST(bool setCLOCK)
 //			ADDLOG_INFO(LOG_FEATURE_RAW, "In second DST of %i. Info: DST ends next year at %lu (%.24s local time)\r\n",year,End_DST_epoch,ctime(&tempt));
 		}
 	}
-	g_ntpTime += (g_DST-old_DST)*60*setCLOCK;
+//	g_ntpTime += (g_DST-old_DST)*60*setCLOCK;
 	tempt = (time_t)next_DST_switch_epoch;
 
 	struct tm *ltm;
@@ -407,7 +405,7 @@ uint32_t setDST(bool setCLOCK)
 
 int IsDST()
 {
-	if (( g_DST == -128) || (g_ntpTime > next_DST_switch_epoch)) return setDST(1)!=0;	// only in case we don't know DST status, calculate it - and while at it: set ntpTime correctly...
+	if (( g_DST == -128) || (g_ntpTime > next_DST_switch_epoch)) return setDST()!=0;	// only in case we don't know DST status, calculate it
 	return g_DST!=0;									// otherwise we can safely return the prevously calculated value
 }
 
@@ -497,9 +495,9 @@ void CLOCK_OnEverySecond()
 	CLOCK_RunEvents(Clock_GetCurrentTime(), Clock_IsTimeSynced());
 #endif
 #if ENABLE_CLOCK_DST && ENABLE_NTP
-    if (useDST && (g_ntpTime >= next_DST_switch_epoch)){
+    if (useDST && (Clock_GetCurrentTimeWithoutOffset() >= next_DST_switch_epoch)){
     	int8_t old_DST=g_DST;
-	setDST(1);
+	setDST();
     	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Passed DST switch time - recalculated DST offset. Was:%i - now:%i",old_DST,g_DST);
     }
 #endif
@@ -529,6 +527,13 @@ uint32_t Clock_GetCurrentTimeWithoutOffset(){ 	// ... same forNTP_GetCurrentTime
 	return  0;
 };
 
+bool Clock_IsTimeSynced(){ 				// ... and for NTP_IsTimeSynced()
+	if (g_epochOnStartup > 10) {
+		return true;
+	}
+	return  false;
+}
+
 int Clock_GetTimesZoneOfsSeconds()			// ... and for NTP_GetTimesZoneOfsSeconds()
 {
 	if (g_epochOnStartup > 10) {
@@ -551,14 +556,15 @@ void CLOCK_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreSta
 {
 	if (bPreState)
 		return;
+	uint32_t tempt=Clock_GetCurrentTime();
 	struct tm *ltm;
 	time_t tempt = (time_t)Clock_GetCurrentTime();
-	ltm = gmtime(&tempt);
+	ltm = gmtime(&act_deviceTime);
 	char temp[128]={0};
 	if (DRV_IsRunning("NTP")){
 		NTP_Server_Status(temp,sizeof(temp)-1);
 	}
-	if (Clock_IsTimeSynced()) hprintf255(request, "<h5>" LTSTR " (%i) %s</h5>",LTM2TIME(ltm),tempt,temp);
+	if (Clock_IsTimeSynced()) hprintf255(request, "<h5>Local time: " LTSTR " (%i) %s%s</h5>",LTM2TIME(ltm),tempt,temp);
 }
 
 

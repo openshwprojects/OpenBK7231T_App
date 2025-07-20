@@ -481,7 +481,7 @@ commandResult_t CMD_CLOCK_ClearEvents(const void* context, const char* cmd, cons
 
 	return CMD_RES_OK;
 }
-void NTP_Init_Events() {
+void CLOCK_Init_Events() {
 
 	//cmddetail:{"name":"addClockEvent","args":"[TimerSeconds or Time or sunrise or sunset] [WeekDayFlags] [UniqueIDForRemoval][Command]",
 	//cmddetail:"descr":"Schedule command to run on given time in given day of week. NTP or Clock must be running. TimerSeconds is seconds from midnight, Time is a time like HH:mm or HH:mm:ss, WeekDayFlag is a bitflag on which day to run, 0xff mean all days, 0x01 means sunday, 0x02 monday, 0x03 sunday and monday, etc, id is an unique id so event can be removed later. (NOTE: Use of sunrise/sunset requires compiling with ENABLE_CLOCK_SUNRISE_SUNSET set which adds about 11k of code)",
