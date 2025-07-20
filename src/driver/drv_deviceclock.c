@@ -527,12 +527,6 @@ uint32_t Clock_GetCurrentTimeWithoutOffset(){ 	// ... same forNTP_GetCurrentTime
 	return  0;
 };
 
-bool Clock_IsTimeSynced(){ 				// ... and for NTP_IsTimeSynced()
-	if (g_epochOnStartup > 10) {
-		return true;
-	}
-	return  false;
-}
 
 int Clock_GetTimesZoneOfsSeconds()			// ... and for NTP_GetTimesZoneOfsSeconds()
 {
