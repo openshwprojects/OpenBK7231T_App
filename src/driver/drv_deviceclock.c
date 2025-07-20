@@ -331,9 +331,9 @@ uint32_t RuleToTime(uint8_t dow, uint8_t mo, uint8_t week,  uint8_t hr, int yr) 
   return t;
 }
 
-int8_t getDST_offset()
+int getDST_offset()
 {
-	return (g_DST%128)*60;	// return 0 if "unset" because -128%128 = 0 
+	return (g_DST%128)*3600;	// return 0 if "unset" because -128%128 = 0 
 };
 
 
@@ -342,21 +342,21 @@ uint32_t setDST()
 {
    if (useDST && Clock_IsTimeSynced()){
 	int year=CLOCK_GetYear();
-	time_t tempt;
+	time_t tempt = (time_t)Clock_GetCurrentTimeWithoutOffset();
 	int8_t old_DST=0;
 	char tmp[40];	// to hold date string of timestamp
 	Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year)-g_UTCoffset;	// will return the start time, which is given as local time. To get UTC time, remove offset 
-	End_DST_epoch = RuleToTime(dayEnd,monthEnd,nthWeekEnd,hourEnd,year) - g_UTCoffset - g_DST_offset; // will return the end time, which is given as local time. To get UTC time, remove offset and DST offset
+	End_DST_epoch = RuleToTime(dayEnd,monthEnd,nthWeekEnd,hourEnd,year) - g_UTCoffset - g_DST_offset*3600; // will return the end time, which is given as local time. To get UTC time, remove offset and DST offset
 	old_DST = g_DST%128;	// 0 if "unset" because -128%128 = 0 
 
 	if ( Start_DST_epoch < End_DST_epoch ) {	// Northern --> begin before end
-		if (g_ntpTime < Start_DST_epoch) {
+		if (tempt < Start_DST_epoch) {
 			// we are in winter time before start of summer time
 			next_DST_switch_epoch=Start_DST_epoch;
 			g_DST=0;
 //			tempt = (time_t)Start_DST_epoch;
 //			ADDLOG_INFO(LOG_FEATURE_RAW, "Before first DST switch in %i. Info: DST starts at %lu (%.24s local time)\r\n",year,Start_DST_epoch,ctime(&tempt));
-		} else if (g_ntpTime < End_DST_epoch ){
+		} else if (tempt < End_DST_epoch ){
 			// we in summer time
 			next_DST_switch_epoch=End_DST_epoch;
 			g_DST=g_DST_offset;
@@ -371,13 +371,13 @@ uint32_t setDST()
 //			ADDLOG_INFO(LOG_FEATURE_RAW, "After DST in %i. Info: Next DST start in next year at %lu (%.24s local time)\r\n",year,Start_DST_epoch,ctime(&tempt));
 		}
 	} else {	// so end of DST before begin of DST --> southern
-			if (g_ntpTime < End_DST_epoch) {
+			if (tempt < End_DST_epoch) {
 			// we in summer time at beginning of the yeay
 			next_DST_switch_epoch=End_DST_epoch;
 			g_DST=g_DST_offset;
 //			tempt = (time_t)End_DST_epoch;
 //			ADDLOG_INFO(LOG_FEATURE_RAW, "In first DST period of %i. Info: DST ends at %lu (%.24s local time)\r\n",year,End_DST_epoch,ctime(&tempt));
-		} else if (g_ntpTime < Start_DST_epoch ){
+		} else if (tempt < Start_DST_epoch ){
 			// we are in winter time 
 			next_DST_switch_epoch=Start_DST_epoch;
 			g_DST=0;
@@ -393,13 +393,13 @@ uint32_t setDST()
 		}
 	}
 //	g_ntpTime += (g_DST-old_DST)*60*setCLOCK;
-	tempt = (time_t)next_DST_switch_epoch;
+	tempt = (time_t)next_DST_switch_epoch + g_UTCoffset + g_DST_offset*3600*(g_DST>0);
 
 	struct tm *ltm;
 	ltm = gmtime(&tempt);
-	ADDLOG_INFO(LOG_FEATURE_RAW, "In %s time - next DST switch at %lu (" LTSTR ")\r\n",
+	ADDLOG_INFO(LOG_FEATURE_RAW, "In %s time - next DST switch at %lu (UTC) (" LTSTR ")\r\n",
 	(g_DST)?"summer":"standard", next_DST_switch_epoch, LTM2TIME(ltm));
-	return g_DST;
+	return (g_DST!=0);
   }
   else return 0;	// DST not (yet) set or can't be calculated (if ntp not synced)
 
@@ -432,7 +432,7 @@ commandResult_t CLOCK_CalcDST(const void *context, const char *cmd, const char *
 	monthStart = Tokenizer_GetArgInteger(5);
 	dayStart = Tokenizer_GetArgInteger(6);
 	hourStart = Tokenizer_GetArgInteger(7);
-	g_DST_offset=Tokenizer_GetArgIntegerDefault(8, 60);
+	g_DST_offset=Tokenizer_GetArgIntegerDefault(8, 1);
 	ADDLOG_INFO(LOG_FEATURE_RAW, "read values: %u,%u,%u,%u,%u,%u,%u,%u,(%u)\r\n",  nthWeekEnd, monthEnd, dayEnd, hourEnd, nthWeekStart, monthStart, dayStart, hourStart,g_DST_offset);
 
 /*	Start_DST_epoch = RuleToTime(dayStart,monthStart,nthWeekStart,hourStart,year);
@@ -500,7 +500,7 @@ void CLOCK_OnEverySecond()
     if (useDST && (Clock_GetCurrentTimeWithoutOffset() >= next_DST_switch_epoch)){
     	int8_t old_DST=g_DST;
 	setDST();
-    	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Passed DST switch time - recalculated DST offset. Was:%i - now:%i",old_DST,g_DST);
+    	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Passed DST switch time - recalculated DST offset. Was:%ih - now:%ih",old_DST,g_DST);
     }
 #endif
 

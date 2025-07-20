@@ -44,7 +44,7 @@ int Time_IsDST();
 // only after setting g_ntpTime freshly from an NTP packet	--> call setDST(0)
 // we must not alter g_ntpTime inside setDST in this case (the old offsets are no longer valid)
 uint32_t setDST();
-int8_t getDST_offset();
+int getDST_offset();
 
 #endif
 

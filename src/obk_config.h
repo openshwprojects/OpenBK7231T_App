@@ -97,6 +97,8 @@
 #define ENABLE_DRIVER_DS1820					1
 #define ENABLE_DRIVER_DHT						1
 #define ENABLE_NTP								1
+#define ENABLE_CLOCK_DST						1
+#define ENABLE_CALENDAR_EVENTS	1
 #define ENABLE_DRIVER_BMPI2C					1
 #define ENABLE_DRIVER_CHT83XX					1
 #define ENABLE_I2C								1
