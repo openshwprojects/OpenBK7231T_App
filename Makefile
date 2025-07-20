@@ -521,12 +521,12 @@ OpenESP8266: prebuild_ESP8266
 	APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake platforms/ESP8266 -B platforms/ESP8266/build
 	APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake --build ./platforms/ESP8266/build -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
-	python3 -m esptool -c esp8266 merge_bin -o output/$(APP_VERSION)/OpenESP8266_2MB_$(APP_VERSION).factory.bin --flash_mode dio --flash_size 2MB 0x0 ./platforms/ESP8266/build/bootloader/bootloader.bin 0x8000 ./platforms/ESP8266/build/partition_table/partition-table.bin 0x10000 ./platforms/ESP8266/build/OpenBeken.bin
+	python3 -m esptool -c esp8266 merge_bin -o output/$(APP_VERSION)/OpenESP8266_2MB_$(APP_VERSION).factory.bin --flash_mode dout --flash_size 2MB 0x0 ./platforms/ESP8266/build/bootloader/bootloader.bin 0x8000 ./platforms/ESP8266/build/partition_table/partition-table.bin 0x10000 ./platforms/ESP8266/build/OpenBeken.bin
 	cp ./platforms/ESP8266/build/OpenBeken.bin output/$(APP_VERSION)/OpenESP8266_$(APP_VERSION).img
 	-rm platforms/ESP-IDF/partitions.csv
 	cp platforms/ESP8266/partitions-1mb.csv platforms/ESP8266/partitions.csv
 	cd platforms/ESP8266/ && idf.py partition_table
-	python3 -m esptool -c esp8266 merge_bin -o output/$(APP_VERSION)/OpenESP8266_1MB_$(APP_VERSION).factory.bin --flash_mode dio --flash_size 1MB 0x0 ./platforms/ESP8266/build/bootloader/bootloader.bin 0x8000 ./platforms/ESP8266/build/partition_table/partition-table.bin 0x10000 ./platforms/ESP8266/build/OpenBeken.bin
+	python3 -m esptool -c esp8266 merge_bin -o output/$(APP_VERSION)/OpenESP8266_1MB_$(APP_VERSION).factory.bin --flash_mode dout --flash_size 1MB 0x0 ./platforms/ESP8266/build/bootloader/bootloader.bin 0x8000 ./platforms/ESP8266/build/partition_table/partition-table.bin 0x10000 ./platforms/ESP8266/build/OpenBeken.bin
 	
 .PHONY: OpenTR6260
 OpenTR6260: prebuild_OpenTR6260

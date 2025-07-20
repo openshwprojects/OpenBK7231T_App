@@ -157,6 +157,17 @@ int HAL_GetWifiStrength()
 	return rssi;
 }
 
+char* HAL_GetWiFiBSSID(char* bssid){
+	uint8_t mac[6];
+	wext_get_bssid(WLAN0_NAME, mac);
+	sprintf(bssid, MACSTR, MAC2STR(mac));
+	return bssid; 
+};
+uint8_t HAL_GetWiFiChannel(uint8_t *chan){
+	wext_get_channel(WLAN0_NAME, chan);
+	return *chan;
+};
+
 void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 {
 	g_wifiStatusCallback = cb;

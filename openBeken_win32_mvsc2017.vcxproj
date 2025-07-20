@@ -217,6 +217,8 @@
     <ClCompile Include="src\driver\drv_debouncer.c" />
     <ClCompile Include="src\driver\drv_dht.c" />
     <ClCompile Include="src\driver\drv_dht_internal.c" />
+    <ClCompile Include="src\driver\drv_ds1820_full.c" />
+    <ClCompile Include="src\driver\drv_ds1820_common.c" />
     <ClCompile Include="src\driver\drv_doorSensorWithDeepSleep.c" />
     <ClCompile Include="src\driver\drv_drawers.c" />
     <ClCompile Include="src\driver\drv_freeze.c" />

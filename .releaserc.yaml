@@ -93,7 +93,7 @@ generateNotes:
         - W600 (eg TW-01, TW-02, TW-03), W601 (WIS600, ESP-01W)
         - LN882H (eg LN-02, WL2S, WL2H)
         - ESP32 (including other xtensa/riscv variants)
-        - ESP8266 (1MB and 2MB variants)
+        - ESP8285/ESP8266 1MB/2MB (eg TYWE3S, TYWE2S, ESP-01S, ESP-M2) 
         - TR6260 (eg HLK-M20, XY-WE2S-A V1.1)
         - RTL8711AM (Ameba1 family, models with SDRAM only) (eg WRG1)
         - RTL8710B (AmebaZ family) (eg T102_V1.0, W302/T102_V1.0, T112_V1.1, WR2, WR3E, BW14)
@@ -118,70 +118,78 @@ generateNotes:
 
         ### Assets
         Refer to the following table for the usage of the various assests included in this release
-        | Platform   | Usage      | Filename                                                                                                                                           |
-        | ---        | ---        | ---                                                                                                                                                |
-        | BK7231T    | OTA Update | [OpenBK7231T_{{version}}.rbl]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231T_{{version}}.rbl)                         |
-        | BK7231T    | CCtr Flash | [OpenBK7231T_UG_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231T_UG_{{version}}.bin)                   |
-        | BK7231T    | UART Flash | [OpenBK7231T_UA_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231T_UA_{{version}}.bin)                   |
-        | BK7231T    | SPI Flash  | [OpenBK7231T_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231T_QIO_{{version}}.bin)                 |
-        | BK7231N    | OTA Update | [OpenBK7231N_{{version}}.rbl]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231N_{{version}}.rbl)                         |
-        | BK7231N    | CCtr Flash | [OpenBK7231N_UG_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231N_UG_{{version}}.bin)                   |
-        | BK7231N    | UART Flash | [OpenBK7231N_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231N_QIO_{{version}}.bin)                 |
-        | BK7231M    | UART Flash | [OpenBK7231M_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231M_QIO_{{version}}.bin)                 |
-        | BK7231U    | OTA Update | [OpenBK7231U_{{version}}.rbl]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231U_{{version}}.rbl)                         |
-        | BK7231U    | UART Flash | [OpenBK7231U_UA_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231U_UA_{{version}}.bin)                   |
-        | BK7231U    | SPI Flash  | [OpenBK7231U_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231U_QIO_{{version}}.bin)                 |
-        | BK7238     | OTA Update | [OpenBK7238_{{version}}.rbl]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7238_{{version}}.rbl)                           |
-        | BK7238     | UART Flash | [OpenBK7238_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7238_QIO_{{version}}.bin)                   |
-        | BK7252     | OTA Update | [OpenBK7252_{{version}}.rbl]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7252_{{version}}.rbl)                           |
-        | BK7252     | UART Flash | [OpenBK7252_UA_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7252_UA_{{version}}.bin)                     |
-        | BK7252     | SPI Flash  | [OpenBK7252_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7252_QIO_{{version}}.bin)                   |
-        | BK7252N    | OTA Update | [OpenBK7252N_{{version}}.rbl]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7252N_{{version}}.rbl)                         |
-        | BK7252N    | UART Flash | [OpenBK7252N_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7252N_QIO_{{version}}.bin)                 |
-        | XR809      | UART Flash | [OpenXR809_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenXR809_{{version}}.img)                             |
-        | XR806      | UART Flash | [OpenXR806_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenXR806_{{version}}.img)                             |
-        | XR806      | OTA Update | [OpenXR806_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenXR806_{{version}}_ota.img)                     |
-        | XR872      | UART Flash | [OpenXR872_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenXR872_{{version}}.img)                             |
-        | XR872      | OTA Update | [OpenXR872_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenXR872_{{version}}_ota.img)                     |
-        | BL602      | UART Flash | [OpenBL602_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBL602_{{version}}.bin)                             |
-        | BL602      | OTA Update | [OpenBL602_{{version}}_OTA.bin.xz.ota]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBL602_{{version}}_OTA.bin.xz.ota)       |
-        | W800       | OTA Update | [OpenW800_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenW800_{{version}}_ota.img)                       |
-        | W800       | UART Flash | [OpenW800_{{version}}.fls]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenW800_{{version}}.fls)                               |
-        | W600       | OTA Update | [OpenW600_{{version}}_gz.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenW600_{{version}}_gz.img)                         |
-        | W600       | UART Flash | [OpenW600_{{version}}.fls]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenW600_{{version}}.fls)                               |
-        | LN882H     | OTA Update | [OpenLN882H_{{version}}_OTA.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenLN882H_{{version}}_OTA.bin)                   |
-        | LN882H     | UART Flash | [OpenLN882H_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenLN882H_{{version}}.bin)                           |
-        | TR6260     | UART Flash | [OpenTR6260_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenTR6260_{{version}}.bin)                           |
-        | RTL8710A   | JTAG Flash | [OpenRTL8710A_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8710A_{{version}}.bin)                       |
-        | RTL8710A   | OTA Update | [OpenRTL8710A_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8710A_{{version}}_ota.img)               |
-        | RTL8710B   | UART Flash | [OpenRTL8710B_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8710B_{{version}}.bin)                       |
-        | RTL8710B   | OTA Update | [OpenRTL8710B_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8710B_{{version}}_ota.img)               |
-        | RTL87X0C   | UART Flash | [OpenRTL87X0C_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL87X0C_{{version}}.bin)                       |
-        | RTL87X0C   | OTA Update | [OpenRTL87X0C_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL87X0C_{{version}}_ota.img)               |
-        | RTL8720D   | UART Flash | [OpenRTL8720D_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8720D_{{version}}.bin)                       |
-        | RTL8720D   | OTA Update | [OpenRTL8720D_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8720D_{{version}}_ota.img)               |
-        | RTL8721DA  | UART Flash | [OpenRTL8721DA_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8721DA_{{version}}.bin)                     |
-        | RTL8721DA  | OTA Update | [OpenRTL8721DA_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8721DA_{{version}}_ota.img)             |
-        | RTL8720E   | UART Flash | [OpenRTL8720E_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8720E_{{version}}.bin)                       |
-        | RTL8720E   | OTA Update | [OpenRTL8720E_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8720E_{{version}}_ota.img)               |
-        | ECR6600    | UART Flash | [OpenECR6600_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenECR6600_{{version}}.bin)                         |
-        | ECR6600    | OTA Update | [OpenECR6600_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenECR6600_{{version}}_ota.img)                 |
-        | ESP32      | UART Flash | [OpenESP32_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32_{{version}}.factory.bin)             |
-        | ESP32      | OTA Flash  | [OpenESP32_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32_{{version}}.img)                             |
-        | ESP32-S2   | UART Flash | [OpenESP32S2_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32S2_{{version}}.factory.bin)         |
-        | ESP32-S2   | OTA Flash  | [OpenESP32S2_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32S2_{{version}}.img)                         |
-        | ESP32-S3   | UART Flash | [OpenESP32S3_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32S3_{{version}}.factory.bin)         |
-        | ESP32-S3   | OTA Flash  | [OpenESP32S3_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32S3_{{version}}.img)                         |
-        | ESP32-C2   | UART Flash | [OpenESP32C2_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C2_{{version}}.factory.bin)         |
-        | ESP32-C2   | OTA Flash  | [OpenESP32C2_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C2_{{version}}.img)                         |
-        | ESP32-C3   | UART Flash | [OpenESP32C3_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C3_{{version}}.factory.bin)         |
-        | ESP32-C3   | OTA Flash  | [OpenESP32C3_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C3_{{version}}.img)                         |
-        | ESP32-C6   | UART Flash | [OpenESP32C6_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C6_{{version}}.factory.bin)         |
-        | ESP32-C6   | OTA Flash  | [OpenESP32C6_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C6_{{version}}.img)                         |
-        | ESP8266_1M | UART Flash | [OpenESP8266_1MB_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP8266_1MB_{{version}}.factory.bin) |
-        | ESP8266_2M | UART Flash | [OpenESP8266_2MB_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP8266_2MB_{{version}}.factory.bin) |
-        | ESP8266_2M | OTA Flash  | [OpenESP8266_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP8266_{{version}}.img)                         |
-        | Win32      |            | [obkSimulator_{{version}}.zip]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/obkSimulator_{{version}}.zip)                       |
+        | Platform       | Usage      | Filename                                                                                                                                           |
+        | ---            | ---        | ---                                                                                                                                                |
+        | BK7231T        | OTA Update | [OpenBK7231T_{{version}}.rbl]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231T_{{version}}.rbl)                         |
+        | BK7231T        | CCtr Flash | [OpenBK7231T_UG_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231T_UG_{{version}}.bin)                   |
+        | BK7231T        | UART Flash | [OpenBK7231T_UA_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231T_UA_{{version}}.bin)                   |
+        | BK7231T        | SPI Flash  | [OpenBK7231T_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231T_QIO_{{version}}.bin)                 |
+        | BK7231N        | OTA Update | [OpenBK7231N_{{version}}.rbl]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231N_{{version}}.rbl)                         |
+        | BK7231N        | CCtr Flash | [OpenBK7231N_UG_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231N_UG_{{version}}.bin)                   |
+        | BK7231N        | UART Flash | [OpenBK7231N_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231N_QIO_{{version}}.bin)                 |
+        | BK7231M        | UART Flash | [OpenBK7231M_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231M_QIO_{{version}}.bin)                 |
+        | BK7231U        | OTA Update | [OpenBK7231U_{{version}}.rbl]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231U_{{version}}.rbl)                         |
+        | BK7231U        | UART Flash | [OpenBK7231U_UA_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231U_UA_{{version}}.bin)                   |
+        | BK7231U        | SPI Flash  | [OpenBK7231U_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231U_QIO_{{version}}.bin)                 |
+        | BK7238         | OTA Update | [OpenBK7238_{{version}}.rbl]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7238_{{version}}.rbl)                           |
+        | BK7238         | UART Flash | [OpenBK7238_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7238_QIO_{{version}}.bin)                   |
+        | BK7252         | OTA Update | [OpenBK7252_{{version}}.rbl]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7252_{{version}}.rbl)                           |
+        | BK7252         | UART Flash | [OpenBK7252_UA_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7252_UA_{{version}}.bin)                     |
+        | BK7252         | SPI Flash  | [OpenBK7252_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7252_QIO_{{version}}.bin)                   |
+        | BK7252N        | OTA Update | [OpenBK7252N_{{version}}.rbl]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7252N_{{version}}.rbl)                         |
+        | BK7252N        | UART Flash | [OpenBK7252N_QIO_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7252N_QIO_{{version}}.bin)                 |
+        | XR809          | UART Flash | [OpenXR809_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenXR809_{{version}}.img)                             |
+        | XR806          | UART Flash | [OpenXR806_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenXR806_{{version}}.img)                             |
+        | XR806          | OTA Update | [OpenXR806_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenXR806_{{version}}_ota.img)                     |
+        | XR872          | UART Flash | [OpenXR872_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenXR872_{{version}}.img)                             |
+        | XR872          | OTA Update | [OpenXR872_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenXR872_{{version}}_ota.img)                     |
+        | BL602          | UART Flash | [OpenBL602_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBL602_{{version}}.bin)                             |
+        | BL602          | OTA Update | [OpenBL602_{{version}}_OTA.bin.xz.ota]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBL602_{{version}}_OTA.bin.xz.ota)       |
+        | W800           | OTA Update | [OpenW800_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenW800_{{version}}_ota.img)                       |
+        | W800           | UART Flash | [OpenW800_{{version}}.fls]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenW800_{{version}}.fls)                               |
+        | W600           | OTA Update | [OpenW600_{{version}}_gz.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenW600_{{version}}_gz.img)                         |
+        | W600           | UART Flash | [OpenW600_{{version}}.fls]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenW600_{{version}}.fls)                               |
+        | LN882H         | OTA Update | [OpenLN882H_{{version}}_OTA.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenLN882H_{{version}}_OTA.bin)                   |
+        | LN882H         | UART Flash | [OpenLN882H_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenLN882H_{{version}}.bin)                           |
+        | TR6260         | UART Flash | [OpenTR6260_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenTR6260_{{version}}.bin)                           |
+        | RTL8710A       | JTAG Flash | [OpenRTL8710A_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8710A_{{version}}.bin)                       |
+        | RTL8710A       | OTA Update | [OpenRTL8710A_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8710A_{{version}}_ota.img)               |
+        | RTL8710B       | UART Flash | [OpenRTL8710B_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8710B_{{version}}.bin)                       |
+        | RTL8710B       | OTA Update | [OpenRTL8710B_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8710B_{{version}}_ota.img)               |
+        | RTL87X0C       | UART Flash | [OpenRTL87X0C_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL87X0C_{{version}}.bin)                       |
+        | RTL87X0C       | OTA Update | [OpenRTL87X0C_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL87X0C_{{version}}_ota.img)               |
+        | RTL8720D       | UART Flash | [OpenRTL8720D_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8720D_{{version}}.bin)                       |
+        | RTL8720D       | OTA Update | [OpenRTL8720D_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8720D_{{version}}_ota.img)               |
+        | RTL8721DA      | UART Flash | [OpenRTL8721DA_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8721DA_{{version}}.bin)                     |
+        | RTL8721DA      | OTA Update | [OpenRTL8721DA_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8721DA_{{version}}_ota.img)             |
+        | RTL8720E       | UART Flash | [OpenRTL8720E_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8720E_{{version}}.bin)                       |
+        | RTL8720E       | OTA Update | [OpenRTL8720E_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8720E_{{version}}_ota.img)               |
+        | ECR6600        | UART Flash | [OpenECR6600_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenECR6600_{{version}}.bin)                         |
+        | ECR6600        | OTA Update | [OpenECR6600_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenECR6600_{{version}}_ota.img)                 |
+        | ESP32 4MB      | UART Flash | [OpenESP32_{{version}}_4M.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32_{{version}}_4M.factory.bin)       |
+        | ESP32 4MB      | OTA Update | [OpenESP32_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32_{{version}}_4M.img)                       |
+        | ESP32-S2 4MB   | UART Flash | [OpenESP32S2_{{version}}_4M.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32S2_{{version}}_4M.factory.bin)   |
+        | ESP32-S2 4MB   | OTA Update | [OpenESP32S2_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32S2_{{version}}_4M.img)                   |
+        | ESP32-S3 4MB   | UART Flash | [OpenESP32S3_{{version}}_4M.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32S3_{{version}}_4M.factory.bin)   |
+        | ESP32-S3 4MB   | OTA Update | [OpenESP32S3_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32S3_{{version}}_4M.img)                   |
+        | ESP32-C2 2MB   | UART Flash | [OpenESP32C2_{{version}}_2M.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C2_{{version}}_2M.factory.bin)   |
+        | ESP32-C2 2MB   | OTA Update | [OpenESP32C2_{{version}}_2M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C2_{{version}}_2M.img)                   |
+        | ESP32 C2 4MB   | UART Flash | [OpenESP32C2_{{version}}_4M.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C2_{{version}}_4M.factory.bin)   |
+        | ESP32 C2 4MB   | OTA Update | [OpenESP32C2_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C2_{{version}}_4M.img)                   |
+        | ESP32-C3 2MB   | UART Flash | [OpenESP32C3_{{version}}_2M.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C3_{{version}}_2M.factory.bin)   |
+        | ESP32-C3 2MB   | OTA Update | [OpenESP32C3_{{version}}_2M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C3_{{version}}_2M.img)                   |
+        | ESP32 C3 4MB   | UART Flash | [OpenESP32C3_{{version}}_4M.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C3_{{version}}_4M.factory.bin)   |
+        | ESP32 C3 4MB   | OTA Update | [OpenESP32C3_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C3_{{version}}_4M.img)                   |
+        | ESP32 C5 4MB   | UART Flash | [OpenESP32C5_{{version}}_4M.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C5_{{version}}_4M.factory.bin)   |
+        | ESP32 C5 4MB   | OTA Update | [OpenESP32C5_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C5_{{version}}_4M.img)                   |
+        | ESP32-C6 4MB   | UART Flash | [OpenESP32C6_{{version}}_4M.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C6_{{version}}_4M.factory.bin)   |
+        | ESP32-C6 4MB   | OTA Update | [OpenESP32C6_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C6_{{version}}_4M.img)                   |
+        | ESP32 C61 4MB  | UART Flash | [OpenESP32C61_{{version}}_4M.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C61_{{version}}_4M.factory.bin) |
+        | ESP32 C61 4MB  | OTA Update | [OpenESP32C61_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C61_{{version}}_4M.img)                 |
+        | ESP8266 1MB    | UART Flash | [OpenESP8266_1MB_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP8266_1MB_{{version}}.factory.bin) |
+        | ESP8266 2MB    | UART Flash | [OpenESP8266_2MB_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP8266_2MB_{{version}}.factory.bin) |
+        | ESP8266 2MB    | OTA Update | [OpenESP8266_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP8266_{{version}}.img)                         |
+        | Win32          |            | [obkSimulator_{{version}}.zip]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/obkSimulator_{{version}}.zip)                       |
 
 
         CCtr Flash = Tuya cloud Cutter flash
