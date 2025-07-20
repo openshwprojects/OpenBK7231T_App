@@ -43,7 +43,7 @@ int Time_IsDST();
 // usually we want to set/correct g_ntpTime inside setDST()	--> call setDST(1)
 // only after setting g_ntpTime freshly from an NTP packet	--> call setDST(0)
 // we must not alter g_ntpTime inside setDST in this case (the old offsets are no longer valid)
-uint32_t setDST(bool setCLOCK);
+uint32_t setDST();
 int8_t getDST_offset();
 
 #endif

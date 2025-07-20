@@ -8,6 +8,8 @@
 #include "../httpserver/new_http.h"
 #include "../logging/logging.h"
 #include "../ota/ota.h"
+#include "drv_local.h" 		//for DRV_IsRunning
+
 
 #include "drv_deviceclock.h"
 // functions for handling device time even without NTP driver present
@@ -405,7 +407,7 @@ uint32_t setDST()
 
 int IsDST()
 {
-	if (( g_DST == -128) || (Clock_GetCurrentTimeWithoutOffset() > next_DST_switch_epoch)) return setDST()!=0;	// only in case we don't know DST status, calculate it
+	if (( g_DST == -128) || (Clock_GetCurrentTimeWithoutOffset() > next_DST_switch_epoch)) return (setDST()!=0);	// only in case we don't know DST status, calculate it
 	return g_DST!=0;									// otherwise we can safely return the prevously calculated value
 }
 
