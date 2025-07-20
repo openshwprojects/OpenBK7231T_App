@@ -161,24 +161,28 @@ generateNotes:
         | ECR6600      | UART Flash | [OpenECR6600_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenECR6600_{{version}}.bin)                   |
         | ECR6600      | OTA Update | [OpenECR6600_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenECR6600_{{version}}_ota.img)           |
         | ESP32 4MB    | UART Flash | [OpenESP32_{{version}}_4M.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32_{{version}}_4M.factory.bin)       |
-        | ESP32 4MB    | OTA Flash  | [OpenESP32_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32_{{version}}_4M.img)                       |
+        | ESP32 4MB    | OTA Update  | [OpenESP32_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32_{{version}}_4M.img)                       |
         | ESP32 S2 4MB | UART Flash | [OpenESP32S2_{{version}}_4M.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32S2_{{version}}_4M.factory.bin)   |
-        | ESP32 S2 4MB | OTA Flash  | [OpenESP32S2_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32S2_{{version}}_4M.img)                   |
+        | ESP32 S2 4MB | OTA Update  | [OpenESP32S2_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32S2_{{version}}_4M.img)                   |
         | ESP32 S3 4MB | UART Flash | [OpenESP32S3_{{version}}_4M.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32S3_{{version}}_4M.factory.bin)   |
-        | ESP32 S3 4MB | OTA Flash  | [OpenESP32S3_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32S3_{{version}}_4M.img)                   |
+        | ESP32 S3 4MB | OTA Update  | [OpenESP32S3_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32S3_{{version}}_4M.img)                   |
         | ESP32 C2 2MB | UART Flash | [OpenESP32C2_{{version}}_2M.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C2_{{version}}_2M.factory.bin)   |
-        | ESP32 C2 2MB | OTA Flash  | [OpenESP32C2_{{version}}_2M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C2_{{version}}_2M.img)                   |
+        | ESP32 C2 2MB | OTA Update  | [OpenESP32C2_{{version}}_2M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C2_{{version}}_2M.img)                   |
         | ESP32 C2 4MB | UART Flash | [OpenESP32C2_{{version}}_4M.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C2_{{version}}_4M.factory.bin)   |
-        | ESP32 C2 4MB | OTA Flash  | [OpenESP32C2_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C2_{{version}}_4M.img)                   |
+        | ESP32 C2 4MB | OTA Update  | [OpenESP32C2_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C2_{{version}}_4M.img)                   |
         | ESP32 C3 2MB | UART Flash | [OpenESP32C3_{{version}}_2M.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C3_{{version}}_2M.factory.bin)   |
-        | ESP32 C3 2MB | OTA Flash  | [OpenESP32C3_{{version}}_2M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C3_{{version}}_2M.img)                   |
+        | ESP32 C3 2MB | OTA Update  | [OpenESP32C3_{{version}}_2M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C3_{{version}}_2M.img)                   |
         | ESP32 C3 4MB | UART Flash | [OpenESP32C3_{{version}}_4M.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C3_{{version}}_4M.factory.bin)   |
-        | ESP32 C3 4MB | OTA Flash  | [OpenESP32C3_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C3_{{version}}_4M.img)                   |
+        | ESP32 C3 4MB | OTA Update  | [OpenESP32C3_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C3_{{version}}_4M.img)                   |
+        | ESP32 C5 4MB | UART Flash | [OpenESP32C5_{{version}}_4M.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C5_{{version}}_4M.factory.bin)   |
+        | ESP32 C5 4MB | OTA Update  | [OpenESP32C5_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C5_{{version}}_4M.img)                   |
         | ESP32 C6 4MB | UART Flash | [OpenESP32C6_{{version}}_4M.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C6_{{version}}_4M.factory.bin)   |
-        | ESP32 C6 4MB | OTA Flash  | [OpenESP32C6_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C6_{{version}}_4M.img)                   |
+        | ESP32 C6 4MB | OTA Update  | [OpenESP32C6_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C6_{{version}}_4M.img)                   |
+        | ESP32 C61 4MB | UART Flash | [OpenESP32C61_{{version}}_4M.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C61_{{version}}_4M.factory.bin)   |
+        | ESP32 C61 4MB | OTA Update  | [OpenESP32C61_{{version}}_4M.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP32C61_{{version}}_4M.img)                   |
         | ESP8266 1MB  | UART Flash | [OpenESP8266_1MB_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP8266_1MB_{{version}}.factory.bin) |
         | ESP8266 2MB  | UART Flash | [OpenESP8266_2MB_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP8266_2MB_{{version}}.factory.bin) |
-        | ESP8266      | OTA Flash  | [OpenESP8266_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP8266_{{version}}.img)                   |
+        | ESP8266      | OTA Update  | [OpenESP8266_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP8266_{{version}}.img)                   |
         | Win32        |            | [obkSimulator_{{version}}.zip]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/obkSimulator_{{version}}.zip)                 |
 
 
