@@ -2,7 +2,7 @@
 
 #include "selftest_local.h"
 
-void Test_NTP_DST() {
+void Test_CLOCK_DST() {
 	// reset whole device
 	SIM_ClearOBK(0);
 

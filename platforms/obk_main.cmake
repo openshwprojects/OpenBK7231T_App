@@ -100,7 +100,8 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_max72xx_single.c
 	${OBK_SRCS}driver/drv_mcp9808.c
 	${OBK_SRCS}driver/drv_ntp.c
-	${OBK_SRCS}driver/drv_ntp_events.c
+	${OBK_SRCS}driver/drv_deviceclock.c
+	${OBK_SRCS}driver/drv_timed_events.c
 	${OBK_SRCS}driver/drv_openWeatherMap.c
 	${OBK_SRCS}driver/drv_pir.c
 	${OBK_SRCS}driver/drv_pixelAnim.c
