@@ -2033,7 +2033,11 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 
 		if (DRV_IsRunning("NTP")) {
 */
-			sprintf(dataStr, "%ld", Clock_GetCurrentTime());
+#ifdef PLATFORM_ESP8266
+			sprintf(dataStr, "%u", Clock_GetCurrentTime());
+#else
+			sprintf(dataStr, "%lu", Clock_GetCurrentTime());
+#endif
 			return MQTT_DoItemPublishString("datetime", dataStr);
 /*		}
 		else {
