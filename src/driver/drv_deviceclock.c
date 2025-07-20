@@ -405,7 +405,7 @@ uint32_t setDST()
 
 int IsDST()
 {
-	if (( g_DST == -128) || (g_ntpTime > next_DST_switch_epoch)) return setDST()!=0;	// only in case we don't know DST status, calculate it
+	if (( g_DST == -128) || (Clock_GetCurrentTimeWithoutOffset() > next_DST_switch_epoch)) return setDST()!=0;	// only in case we don't know DST status, calculate it
 	return g_DST!=0;									// otherwise we can safely return the prevously calculated value
 }
 
@@ -550,15 +550,14 @@ void CLOCK_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreSta
 {
 	if (bPreState)
 		return;
-	uint32_t tempt=Clock_GetCurrentTime();
 	struct tm *ltm;
 	time_t tempt = (time_t)Clock_GetCurrentTime();
-	ltm = gmtime(&act_deviceTime);
+	ltm = gmtime(&tempt);
 	char temp[128]={0};
 	if (DRV_IsRunning("NTP")){
 		NTP_Server_Status(temp,sizeof(temp)-1);
 	}
-	if (Clock_IsTimeSynced()) hprintf255(request, "<h5>Local time: " LTSTR " (%i) %s%s</h5>",LTM2TIME(ltm),tempt,temp);
+	if (Clock_IsTimeSynced()) hprintf255(request, "<h5>" LTSTR " (%i) %s</h5>",LTM2TIME(ltm),tempt,temp);
 }
 
 
