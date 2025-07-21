@@ -1,6 +1,6 @@
 #ifdef PLATFORM_RTL8710B
 
-#include "../hal_generic_realtek.h"
+#include "../hal_pinmap_realtek.h"
 
 rtlPinMapping_t g_pins[] = {
 	{ "PA0",		PA_0,	NULL, NULL },
