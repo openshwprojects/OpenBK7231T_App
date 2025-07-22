@@ -75,7 +75,14 @@ void HAL_PrintNetworkInfo() {
 int HAL_GetWifiStrength() {
     return -1;
 }
-
+char* HAL_GetWiFiBSSID(char* bssid) {
+	strcpy(bssid, "30:B5:C2:5D:70:72");
+	return bssid;
+};
+uint8_t HAL_GetWiFiChannel(uint8_t *chan) {
+	*chan = 0;
+	return *chan;
+};
 const char *HAL_GetMyIPString() {
 	strcpy(g_ipStr,"127.0.0.1");
 	return g_ipStr;

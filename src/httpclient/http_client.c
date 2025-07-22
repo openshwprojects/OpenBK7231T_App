@@ -13,12 +13,9 @@
 
 #if ENABLE_SEND_POSTANDGET
 
-#include "include.h"
 #include "utils_timer.h"
 //#include "lite-log.h"
 #include "http_client.h"
-#include "rtos_pub.h"
-
 #include "iot_export_errno.h"
 
 #define log_err(a, ...)
@@ -92,7 +89,7 @@ int httpclient_parse_url(const char *url, char *scheme, uint32_t max_scheme_len,
                          int *port, char *path, uint32_t max_path_len)
 {
     char *scheme_ptr = (char *) url;
-    char *host_ptr = (char *) os_strstr(url, "://");
+    char *host_ptr = (char *) strstr(url, "://");
     uint32_t host_len = 0;
     uint32_t path_len;
     //char *port_ptr;
@@ -109,14 +106,14 @@ int httpclient_parse_url(const char *url, char *scheme, uint32_t max_scheme_len,
         ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "Scheme str is too small (%u >= %u)", max_scheme_len, (uint32_t)(host_ptr - scheme_ptr + 1));
         return ERROR_HTTP_PARSE;
     }
-    os_memcpy(scheme, scheme_ptr, host_ptr - scheme_ptr);
+    memcpy(scheme, scheme_ptr, host_ptr - scheme_ptr);
     scheme[host_ptr - scheme_ptr] = '\0';
 
     host_ptr += 3;
 
     *port = 0;
 
-    path_ptr = os_strchr(host_ptr, '/');
+    path_ptr = strchr(host_ptr, '/');
     if (NULL == path_ptr) {
         ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "invalid path");
         return -1;
@@ -131,14 +128,14 @@ int httpclient_parse_url(const char *url, char *scheme, uint32_t max_scheme_len,
         ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "Host str is too long (host_len(%d) >= max_len(%d))", host_len + 1, maxhost_len);
         return ERROR_HTTP_PARSE;
     }
-    os_memcpy(host, host_ptr, host_len);
+    memcpy(host, host_ptr, host_len);
     host[host_len] = '\0';
 
-    fragment_ptr = os_strchr(host_ptr, '#');
+    fragment_ptr = strchr(host_ptr, '#');
     if (fragment_ptr != NULL) {
         path_len = fragment_ptr - path_ptr;
     } else {
-        path_len = os_strlen(path_ptr);
+        path_len = strlen(path_ptr);
     }
 
     if (max_path_len < path_len + 1) {
@@ -146,7 +143,7 @@ int httpclient_parse_url(const char *url, char *scheme, uint32_t max_scheme_len,
         ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "Path str is too small (%d >= %d)", max_path_len, path_len + 1);
         return ERROR_HTTP_PARSE;
     }
-    os_memcpy(path, path_ptr, path_len);
+    memcpy(path, path_ptr, path_len);
     path[path_len] = '\0';
 
     return SUCCESS_RETURN;
@@ -154,7 +151,7 @@ int httpclient_parse_url(const char *url, char *scheme, uint32_t max_scheme_len,
 
 int httpclient_parse_host(const char *url, char *host, int *port, uint32_t maxhost_len)
 {
-    const char *host_ptr = (const char *) os_strstr(url, "://");
+    const char *host_ptr = (const char *) strstr(url, "://");
     uint32_t host_len = 0;
     char *path_ptr;
     char *port_ptr;
@@ -177,7 +174,7 @@ int httpclient_parse_host(const char *url, char *host, int *port, uint32_t maxho
     }
     host_ptr += 3;
 
-    path_ptr = os_strchr(host_ptr, '/');
+    path_ptr = strchr(host_ptr, '/');
     host_len = path_ptr - host_ptr;
 
     if (maxhost_len < host_len + 1) {
@@ -185,11 +182,11 @@ int httpclient_parse_host(const char *url, char *host, int *port, uint32_t maxho
         ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "Host str is too small (%d >= %d)", maxhost_len, host_len + 1);
         return ERROR_HTTP_PARSE;
     }
-    os_memcpy(host, host_ptr, host_len);
+    memcpy(host, host_ptr, host_len);
     host[host_len] = '\0';
 
     // parse port from host, and truncate host if found.
-    port_ptr = os_strchr(host, ':');
+    port_ptr = strchr(host, ':');
     if (port_ptr){
 		int p;
 		int num;
@@ -215,7 +212,7 @@ int httpclient_get_info(httpclient_t *client, char *send_buf, int *send_idx, cha
     int idx = *send_idx;
 
     if (len == 0) {
-        len = os_strlen(buf);
+        len = strlen(buf);
     }
 
     do {
@@ -225,7 +222,7 @@ int httpclient_get_info(httpclient_t *client, char *send_buf, int *send_idx, cha
             cp_len = HTTPCLIENT_SEND_BUF_SIZE - idx;
         }
 
-        os_memcpy(send_buf + idx, buf, cp_len);
+        memcpy(send_buf + idx, buf, cp_len);
         idx += cp_len;
         len -= cp_len;
 
@@ -255,7 +252,7 @@ void HTTPClient_SetCustomHeader(httpclient_t *client, const char *header)
 
 int httpclient_basic_auth(httpclient_t *client, char *user, char *password)
 {
-    if ((os_strlen(user) + os_strlen(password)) >= HTTPCLIENT_AUTHB_SIZE) {
+    if ((strlen(user) + strlen(password)) >= HTTPCLIENT_AUTHB_SIZE) {
         return ERROR_HTTP;
     }
     client->auth_user = user;
@@ -272,8 +269,8 @@ int httpclient_send_auth(httpclient_t *client, char *send_buf, int *send_idx)
     snprintf(base64buff, sizeof(base64buff), "%s:%s", client->auth_user, client->auth_password);
     ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "bAuth: %s", base64buff) ;
     httpclient_base64enc(b_auth, base64buff);
-    b_auth[os_strlen(b_auth) + 1] = '\0';
-    b_auth[os_strlen(b_auth)] = '\n';
+    b_auth[strlen(b_auth) + 1] = '\0';
+    b_auth[strlen(b_auth)] = '\n';
     ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "b_auth:%s", b_auth) ;
     httpclient_get_info(client, send_buf, send_idx, b_auth, 0);
     return SUCCESS_RETURN;
@@ -329,20 +326,20 @@ int httpclient_send_header(httpclient_t *client, const char *url, int method, ht
 
     //if (client->remote_port == 0)
     //{
-    if (os_strcmp(scheme, "http") == 0) {
+    if (strcmp(scheme, "http") == 0) {
         //client->remote_port = HTTP_PORT;
-    } else if (os_strcmp(scheme, "https") == 0) {
+    } else if (strcmp(scheme, "https") == 0) {
         //client->remote_port = HTTPS_PORT;
     }
     //}
 
     /* Send request */
-    os_memset(send_buf, 0, HTTPCLIENT_SEND_BUF_SIZE);
-    os_memset(buf, 0, HTTPCLIENT_SEND_BUF_SIZE);
+    memset(send_buf, 0, HTTPCLIENT_SEND_BUF_SIZE);
+    memset(buf, 0, HTTPCLIENT_SEND_BUF_SIZE);
     len = 0; /* Reset send buffer */
 
     snprintf(buf, HTTPCLIENT_SEND_BUF_SIZE, "%s %s HTTP/1.1\r\nHost: %s\r\n", meth, path, host); /* Write request */
-    ret = httpclient_get_info(client, send_buf, &len, buf, os_strlen(buf));
+    ret = httpclient_get_info(client, send_buf, &len, buf, strlen(buf));
     if (ret) {
         ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "Could not write request");
         //return ERROR_HTTP_CONN;
@@ -357,16 +354,16 @@ int httpclient_send_header(httpclient_t *client, const char *url, int method, ht
 
     /* Add user header information */
     if (client->header) {
-        httpclient_get_info(client, send_buf, &len, (char *) client->header, os_strlen(client->header));
+        httpclient_get_info(client, send_buf, &len, (char *) client->header, strlen(client->header));
     }
 
     if (client_data->post_buf != NULL) {
         snprintf(buf, HTTPCLIENT_SEND_BUF_SIZE, "Content-Length: %u\r\n", (unsigned int)client_data->post_buf_len);
-        httpclient_get_info(client, send_buf, &len, buf, os_strlen(buf));
+        httpclient_get_info(client, send_buf, &len, buf, strlen(buf));
 
         if (client_data->post_content_type != NULL) {
             snprintf(buf, HTTPCLIENT_SEND_BUF_SIZE, "Content-Type: %s\r\n", client_data->post_content_type);
-            httpclient_get_info(client, send_buf, &len, buf, os_strlen(buf));
+            httpclient_get_info(client, send_buf, &len, buf, strlen(buf));
         }
     }
 
@@ -514,12 +511,12 @@ int httpclient_retrieve_content_old(httpclient_t *client, char *data, int len, u
         while (true) {
             int ret, max_len;
             if (count + len < client_data->response_buf_len - 1) {
-                os_memcpy(client_data->response_buf + count, data, len);
+                memcpy(client_data->response_buf + count, data, len);
                 count += len;
                 client_data->response_buf[count] = '\0';
                 client_data->response_buf_filled = count;
             } else {
-                os_memcpy(client_data->response_buf + count, data, client_data->response_buf_len - 1 - count);
+                memcpy(client_data->response_buf + count, data, client_data->response_buf_len - 1 - count);
                 client_data->response_buf[client_data->response_buf_len - 1] = '\0';
                 client_data->response_buf_filled = client_data->response_buf_len - 1;
                 return HTTP_RETRIEVE_MORE_DATA;
@@ -600,7 +597,7 @@ int httpclient_retrieve_content_old(httpclient_t *client, char *data, int len, u
                 return ERROR_HTTP_UNRESOLVED_DNS;
             }
 
-            os_memmove(data, &data[crlf_pos + 2], len - (crlf_pos + 2)); /* Not need to move NULL-terminating char any more */
+            memmove(data, &data[crlf_pos + 2], len - (crlf_pos + 2)); /* Not need to move NULL-terminating char any more */
             len -= (crlf_pos + 2);
 
             if (readLen == 0) {
@@ -628,7 +625,7 @@ int httpclient_retrieve_content_old(httpclient_t *client, char *data, int len, u
             if (count + templen < client_data->response_buf_len - 1) {
                 count += templen;
                 log_debug("Copy data %d bytes to output %d\r\n", templen);
-                os_memcpy(client_data->response_buf+count, data, templen);
+                memcpy(client_data->response_buf+count, data, templen);
                 client_data->response_buf_filled = count;
                 client_data->response_buf[count] = '\0';
                 client_data->retrieve_len -= templen;
@@ -643,7 +640,7 @@ int httpclient_retrieve_content_old(httpclient_t *client, char *data, int len, u
 
             if (len > readLen) {
                 log_debug("memmove %d %d %d\r\n", readLen, len, client_data->retrieve_len);
-                os_memmove(b_data, &b_data[readLen], len - readLen); /* chunk case, read between two chunks */
+                memmove(b_data, &b_data[readLen], len - readLen); /* chunk case, read between two chunks */
                 len -= readLen;
                 readLen = 0;
                 client_data->retrieve_len = 0;
@@ -684,7 +681,7 @@ int httpclient_retrieve_content_old(httpclient_t *client, char *data, int len, u
                 log_err("Format error, %s", data); /* after memmove, the beginning of next chunk */
                 return ERROR_HTTP_UNRESOLVED_DNS;
             }
-            os_memmove(data, &data[2], len - 2); /* remove the \r\n */
+            memmove(data, &data[2], len - 2); /* remove the \r\n */
             len -= 2;
         } else {
             log_debug("no more (content-length)\r\n");
@@ -711,7 +708,7 @@ int httpclient_response_parse(httpclient_t *client, char *data, int len, uint32_
 
     client_data->response_content_len = -1;
 
-    crlf_ptr = os_strstr(data, "\r\n");
+    crlf_ptr = strstr(data, "\r\n");
     if (crlf_ptr == NULL) {
         ADDLOG_ERROR(LOG_FEATURE_HTTP_CLIENT, "\r\n not found");
         return ERROR_HTTP_UNRESOLVED_DNS;
@@ -734,7 +731,7 @@ int httpclient_response_parse(httpclient_t *client, char *data, int len, uint32_
 
     ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "Reading headers%s\r\n", data);
 
-    os_memmove(data, &data[crlf_pos + 2], len - (crlf_pos + 2) + 1); /* Be sure to move NULL-terminating char as well */
+    memmove(data, &data[crlf_pos + 2], len - (crlf_pos + 2) + 1); /* Be sure to move NULL-terminating char as well */
     len -= (crlf_pos + 2);
 
     client_data->is_chunked = false;
@@ -748,7 +745,7 @@ int httpclient_response_parse(httpclient_t *client, char *data, int len, uint32_
         key[31] = '\0';
         value[31] = '\0';
 
-        crlf_ptr = os_strstr(data, "\r\n");
+        crlf_ptr = strstr(data, "\r\n");
         if (crlf_ptr == NULL) {
             if (len < HTTPCLIENT_CHUNK_SIZE - 1) {
                 int new_trf_len, ret;
@@ -770,7 +767,7 @@ int httpclient_response_parse(httpclient_t *client, char *data, int len, uint32_
         crlf_pos = crlf_ptr - data;
         if (crlf_pos == 0) {
             /* End of headers */
-            os_memmove(data, &data[2], len - 2 + 1); /* Be sure to move NULL-terminating char as well */
+            memmove(data, &data[2], len - 2 + 1); /* Be sure to move NULL-terminating char as well */
             len -= 2;
             break;
         }
@@ -780,22 +777,22 @@ int httpclient_response_parse(httpclient_t *client, char *data, int len, uint32_
         n = sscanf(data, "%31[^:]: %31[^\r\n]", key, value);
         if (n == 2) {
             ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "Read header : %s: %s\r\n", key, value);
-            if (!os_strcmp(key, "Content-Length")) {
+            if (!strcmp(key, "Content-Length")) {
                 sscanf(value, "%d", (int *)&(client_data->response_content_len));
                 client_data->retrieve_len = client_data->response_content_len;
-            } else if (!os_strcmp(key, "Transfer-Encoding")) {
-                if (!os_strcmp(value, "Chunked") || !os_strcmp(value, "chunked")) {
+            } else if (!strcmp(key, "Transfer-Encoding")) {
+                if (!strcmp(value, "Chunked") || !strcmp(value, "chunked")) {
                     client_data->is_chunked = true;
                     client_data->response_content_len = 0;
                     client_data->retrieve_len = 0;
                 }
             }
-            os_memmove(data, &data[crlf_pos + 2], len - (crlf_pos + 2) + 1); /* Be sure to move NULL-terminating char as well */
+            memmove(data, &data[crlf_pos + 2], len - (crlf_pos + 2) + 1); /* Be sure to move NULL-terminating char as well */
             len -= (crlf_pos + 2);
 
         } else if ((n == 1) && (key[0])) {
             ADDLOG_DEBUG(LOG_FEATURE_HTTP_CLIENT, "Read header : %s: <no value>\r\n", key);
-            os_memmove(data, &data[crlf_pos + 2], len - (crlf_pos + 2) + 1); /* Be sure to move NULL-terminating char as well */
+            memmove(data, &data[crlf_pos + 2], len - (crlf_pos + 2) + 1); /* Be sure to move NULL-terminating char as well */
             len -= (crlf_pos + 2);
 
         } else {

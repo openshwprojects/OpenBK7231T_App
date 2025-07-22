@@ -108,7 +108,7 @@ int flash_vars_init() {
 		//ADDLOG_DEBUG(LOG_FEATURE_CFG, "got part info");
 		debug_delay(200);
 
-		os_memset(&flash_vars, 0, sizeof(flash_vars));
+		memset(&flash_vars, 0, sizeof(flash_vars));
 		flash_vars.len = sizeof(flash_vars);
 
 		//ADDLOG_DEBUG(LOG_FEATURE_CFG, "cleared structure");
@@ -150,7 +150,7 @@ static int flash_vars_valid() {
 	debug_delay(200);
 
 #ifdef TEST_MODE
-	os_memcpy(&tmp, &test_flash_area[start_addr - flash_vars_start], sizeof(tmp));
+	memcpy(&tmp, &test_flash_area[start_addr - flash_vars_start], sizeof(tmp));
 #else
 	GLOBAL_INT_DISABLE();
 	ddev_read(flash_hdl, (char*)&tmp, sizeof(tmp), start_addr);
@@ -204,7 +204,7 @@ static int flash_vars_write_magic() {
 		return -1;
 	}
 #ifdef TEST_MODE
-	os_memcpy(&test_flash_area[start_addr - flash_vars_start], &tmp, sizeof(tmp));
+	memcpy(&test_flash_area[start_addr - flash_vars_start], &tmp, sizeof(tmp));
 #else
 	bk_flash_enable_security(FLASH_PROTECT_NONE);
 
@@ -258,7 +258,7 @@ int flash_vars_read(FLASH_VARS_STRUCTURE* data) {
 	}
 	else {
 		ADDLOG_ERROR(LOG_FEATURE_CFG, "flash_vars_validity error");
-		os_memset(data, 0, sizeof(*data));
+		memset(data, 0, sizeof(*data));
 		data->len = sizeof(*data);
 		debug_delay(200);
 		return -1;
@@ -275,7 +275,7 @@ int flash_vars_read(FLASH_VARS_STRUCTURE* data) {
 	do {
 		start_addr -= sizeof(tmp);
 #ifdef TEST_MODE
-		os_memcpy(&tmp, &test_flash_area[start_addr - flash_vars_start], sizeof(tmp));
+		memcpy(&tmp, &test_flash_area[start_addr - flash_vars_start], sizeof(tmp));
 #else
 		GLOBAL_INT_DISABLE();
 		ddev_read(flash_hdl, (char*)&tmp, sizeof(tmp), start_addr);
@@ -293,7 +293,7 @@ int flash_vars_read(FLASH_VARS_STRUCTURE* data) {
 	if (tmp == 0xffffffff) {
 		// no data found, all erased
 		// clear result.
-		os_memset(data, 0, sizeof(*data));
+		memset(data, 0, sizeof(*data));
 		// set the len to the latest revision's len
 		data->len = sizeof(*data);
 #ifndef TEST_MODE
@@ -326,10 +326,10 @@ int flash_vars_read(FLASH_VARS_STRUCTURE* data) {
 		}
 		else {
 			// clear result.
-			os_memset(data, 0, sizeof(*data));
+			memset(data, 0, sizeof(*data));
 			// read the DATA portion into the structure
 #ifdef TEST_MODE
-			os_memcpy(data, &test_flash_area[start_addr - flash_vars_start], len - 1);
+			memcpy(data, &test_flash_area[start_addr - flash_vars_start], len - 1);
 #else
 			GLOBAL_INT_DISABLE();
 			ddev_read(flash_hdl, (char*)data, len - 1, start_addr);
@@ -421,7 +421,7 @@ int _flash_vars_write(void* data, unsigned int off_set, unsigned int size) {
 	}
 
 #ifdef TEST_MODE
-	os_memcpy(&test_flash_area[start_addr - flash_vars_start], data, size);
+	memcpy(&test_flash_area[start_addr - flash_vars_start], data, size);
 #else
 	GLOBAL_INT_DISABLE();
 	ddev_write(flash_hdl, data, size, start_addr);
@@ -478,7 +478,7 @@ int flash_vars_erase(unsigned int off_set, unsigned int size) {
 		}
 		ADDLOG_DEBUG(LOG_FEATURE_CFG, "flash vars erase block at addr 0x%X", param);
 #ifdef TEST_MODE
-		os_memset(&test_flash_area[param - flash_vars_start], 0xff, 0x1000);
+		memset(&test_flash_area[param - flash_vars_start], 0xff, 0x1000);
 #else
 		GLOBAL_INT_DISABLE();
 		ddev_control(flash_hdl, CMD_FLASH_ERASE_SECTOR, (void*)&param);

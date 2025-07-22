@@ -385,20 +385,6 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 	return 0;
 }
 
-#ifdef PLATFORM_XR809
-//XR809 does not support drivers but its build script compiles many drivers including ntp.
-
-#else
-#ifndef ENABLE_NTP
-unsigned int NTP_GetCurrentTime() {
-	return 0;
-}
-unsigned int NTP_GetCurrentTimeWithoutOffset() {
-	return 0;
-}
-#endif
-#endif
-
 // Topic:  tele/tasmota_48E7F3/STATE
 // Sample:
 /*
@@ -449,9 +435,16 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 	JSON_PrintKeyValue_String(request, printer, "Uptime", buff, true);
 	//JSON_PrintKeyValue_String(request, printer, "Uptime", "30T02:59:30", true);
 	JSON_PrintKeyValue_Int(request, printer, "UptimeSec", g_secondsElapsed, true);
-	JSON_PrintKeyValue_Int(request, printer, "Heap", 25, true);
-	JSON_PrintKeyValue_String(request, printer, "SleepMode", "Dynamic", true);
-	JSON_PrintKeyValue_Int(request, printer, "Sleep", 10, true);
+	// it seems to be in range like 20-30 on ESP8266 Tasmota, so I guess KB
+	JSON_PrintKeyValue_Int(request, printer, "Heap", xPortGetFreeHeapSize()/1024, true);
+	if (g_powersave) {
+		JSON_PrintKeyValue_String(request, printer, "SleepMode", "Dynamic", true);
+		JSON_PrintKeyValue_Int(request, printer, "Sleep", 10, true);
+	}
+	else {
+		JSON_PrintKeyValue_String(request, printer, "SleepMode", "None", true);
+		JSON_PrintKeyValue_Int(request, printer, "Sleep", 0, true);
+	}
 	JSON_PrintKeyValue_Int(request, printer, "LoadAvg", 99, true);
 	JSON_PrintKeyValue_Int(request, printer, "MqttCount", 23, true);
 #ifdef ENABLE_DRIVER_BATTERY
@@ -464,8 +457,10 @@ static int http_tasmota_json_status_STS(void* request, jsonCb_t printer, bool bA
 	printer(request, "\"Wifi\":{"); // open WiFi
 	JSON_PrintKeyValue_Int(request, printer, "AP", 1, true);
 	JSON_PrintKeyValue_String(request, printer, "SSId", CFG_GetWiFiSSID(), true);
-	JSON_PrintKeyValue_String(request, printer, "BSSId", "30:B5:C2:5D:70:72", true);
-	JSON_PrintKeyValue_Int(request, printer, "Channel", 11, true);
+
+	JSON_PrintKeyValue_String(request, printer, "BSSId", g_wifi_bssid, true);
+	JSON_PrintKeyValue_Int(request, printer, "Channel", g_wifi_channel, true);
+
 	JSON_PrintKeyValue_String(request, printer, "Mode", "11n", true);
 	JSON_PrintKeyValue_Int(request, printer, "RSSI", (HAL_GetWifiStrength() + 100) * 2, true);
 	JSON_PrintKeyValue_Int(request, printer, "Signal", HAL_GetWifiStrength(), true);
