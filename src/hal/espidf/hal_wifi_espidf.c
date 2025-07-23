@@ -109,6 +109,27 @@ int HAL_GetWifiStrength()
 	return ap.rssi;
 }
 
+char* HAL_GetWiFiBSSID(char* bssid){
+	wifi_ap_record_t ap_info;
+	memset((void*)&ap_info, 0, sizeof(wifi_ap_record_t));
+	if (esp_wifi_sta_get_ap_info(&ap_info) == ESP_OK){	
+		sprintf(bssid, MACSTR, MAC2STR(ap_info.bssid));
+		return bssid;
+	}
+	bssid[0]='\0';
+	return bssid; 
+};
+uint8_t HAL_GetWiFiChannel(uint8_t *chan){
+	wifi_ap_record_t ap_info;
+	memset((void*)&ap_info, 0, sizeof(wifi_ap_record_t));
+	if (esp_wifi_sta_get_ap_info(&ap_info) == ESP_OK){
+		*chan = ap_info.primary;
+		return *chan;
+	}
+	return 0;
+};
+
+
 void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 {
 	g_wifiStatusCallback = cb;
