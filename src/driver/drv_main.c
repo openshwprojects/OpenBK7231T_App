@@ -773,7 +773,7 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState
 				if (g_drivers[i].bLoaded) {
 					// if at least one name printed, add separator
 					if (j != 0) {
-						hprintf255(request, ",");
+						hprintf255(request, ", ");
 					}
 					hprintf255(request, g_drivers[i].name);
 					// one more name printed
@@ -782,7 +782,7 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState
 			}
 			hprintf255(request, ")");
 		}
-		hprintf255(request, ", total %i</h5>", g_numDrivers);
+		hprintf255(request, ", total: %i</h5>", g_numDrivers);
 	}
 }
 

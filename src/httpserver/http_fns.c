@@ -831,7 +831,7 @@ int http_fn_index(http_request_t* request) {
 		}
 		hprintf255(request, "</h5>");
 	}
-	hprintf255(request, "<h5>Cfg size: %i, change counter: %i, ota counter: %i, incomplete boots: %i (might change to 0 if you wait to 30 sec)!</h5>",
+	hprintf255(request, "<h5>Cfg size: %i, change counter: %i, ota counter: %i, incomplete boots: %i</h5>",
 		sizeof(g_cfg), g_cfg.changeCounter, g_cfg.otaCounter, g_bootFailures);
 
   // display temperature - thanks to giedriuslt
@@ -969,7 +969,7 @@ typedef enum {
 		hprintf255(request, "<h5>MQTT State: <span style=\"color:%s\">%s</span> RES: %d(%s)<br>", colorStr,
 			stateStr, MQTT_GetConnectResult(), get_error_name(MQTT_GetConnectResult()));
 		hprintf255(request, "MQTT ErrMsg: %s <br>", (MQTT_GetStatusMessage() != NULL) ? MQTT_GetStatusMessage() : "");
-		hprintf255(request, "MQTT Stats:CONN: %d PUB: %d RECV: %d ERR: %d </h5>", MQTT_GetConnectEvents(),
+		hprintf255(request, "MQTT Stats: CONN: %d PUB: %d RECV: %d ERR: %d </h5>", MQTT_GetConnectEvents(),
 			MQTT_GetPublishEventCounter(), MQTT_GetReceivedEventCounter(), MQTT_GetPublishErrorCounter());
 	}
 #endif
