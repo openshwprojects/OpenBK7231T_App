@@ -470,6 +470,7 @@ int http_getArgInteger(const char* base, const char* name) {
 	return atoi(tmp);
 }
 
+/*
 const char* htmlPinRoleNames[] = {
 	" ",
 	"Rel",
@@ -557,6 +558,11 @@ const char* htmlPinRoleNames[] = {
 	"error",
 	"error",
 };
+*/
+
+#define INCLUDED_BY_NEW_HTTP_C 1
+#include "../rolesNchannels.h"
+#undef INCLUDED_BY_NEW_PINS_C
 
 const char* PIN_RoleToString(int role) {
 	return htmlPinRoleNames[role];

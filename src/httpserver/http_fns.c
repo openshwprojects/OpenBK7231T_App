@@ -2746,64 +2746,157 @@ int http_fn_cfg_pins(http_request_t* request) {
 		hprintf255(request, "Pins update - %i reqs, %i changed!<br><br>", iChangedRequested, iChanged);
 	}
 	//	strcat(outbuf,"<button type=\"button\">Click Me!</button>");
+
+
+#define INCLUDED_BY_HTTP_FNS_C 1
+#include "../rolesNchannels.h"
+#undef INCLUDED_BY_HTTP_FNS_C
+
+
 	poststr(request, "<form action=\"cfg_pins\" id=\"x\">");
 
+#if (ENABLE_USE_PINROLE_CHAN_DESC)
+	// shoud be later included in generan style definition
+	poststr(request, "<style>.cht{width:5ch;text-align:right;padding:5;}</style>");
+#endif
 
-	poststr(request, "<script> var r = [");
+	poststr(request, "<script>byID=e=>document.getElementById(e); dce=e=>document.createElement(e);var r = [");
 	for (i = 0; i < IOR_Total_Options; i++) {
 		if (i) {
 			poststr(request, ",");
 		}
 		// print array with ["name_of_role",<Number of channnels for this role>]
+#if (ENABLE_USE_PINROLE_CHAN_DESC)
+		// if enabled, add a "description" for a channel if configured
+		tmpA[0]='\0';
+		if (Nofchandesk>0) for (int j=0; j< Nofchandesk; j++ ) {
+			if (chan_desc[j].id==i) {
+				sprintf(tmpA,",\"%s\",\"%s\"",chan_desc[j].ch1,chan_desc[j].ch2);
+			}
+		}
+		hprintf255(request, "[\"%s\",%i%s]", htmlPinRoleNames[i],PIN_IOR_NofChan(i),tmpA);
+#else
 		hprintf255(request, "[\"%s\",%i]", htmlPinRoleNames[i],PIN_IOR_NofChan(i));
+#endif // (ENABLE_USE_PINROLE_CHAN_DESC)
+		
 	}
 	poststr(request, "];");
 
-	poststr(request, "var  sr = r.map((e,i)=>{return e[0]+'#'+i}).sort(Intl.Collator().compare).map(e=>e.split('#'));");
+	poststr(request, "sr=r.map((e,i)=>{return e[0]+'#'+i}).sort(Intl.Collator().compare).map(e=>e.split('#'));");
 	
-	poststr(request, "function hide_show() {"
+	poststr(request, "cf=(e,v)=>{e.disabled=v;e.style.display=v?'none':'inline-block'};");
+#if (ENABLE_USE_PINROLE_CHAN_DESC)
+	poststr(request, "cf2=(n,vr,tr,ve,te)=>{cf(byID('r'+n),vr);cf(byID('e'+n),ve);t=byID('lr'+n);t.innerHTML=tr;cf(t,vr);t=byID('le'+n);t.innerHTML=te;cf(t,ve)};");
+#endif
+	poststr(request, "function hide_show(){"
 		"n=this.name;"
-		"er=getElement('r'+n);"
-		"ee=getElement('e'+n);"
-		"ch=r[this.value][1];"		// since we might have skiped PWM entries in options list, don't use "selectedIndex" but "value" (it's even shorter ;-)
-		"er.disabled = (ch<1); er.style.display= ch<1 ? 'none' : 'inline';"
-		"ee.disabled = (ch<2); ee.style.display= ch<2 ? 'none' : 'inline';"
+		"rv=r[this.value];"
+		"c=rv[1];"
+#if (ENABLE_USE_PINROLE_CHAN_DESC)
+		"cf2(n,(c<1), rv[2]??'',(c<2), rv[3]??'');"
+#else
+		"cf(byID('r'+n),(c<1));"
+		"cf(byID('e'+n),(c<2));"
+#endif
 		"}");
 
-	poststr(request, "function f(alias, id, c, b, ch1, ch2) {"
-		"let f = document.getElementById(\"x\");"
-		"let d = document.createElement(\"div\");"
-		"d.className = \"hdiv\";"
-		"d.innerHTML = \"<span class='disp-inline' style='min-width: 15ch'>\"+alias+\"</span>\";"
-		"f.appendChild(d);"
-		"let s = document.createElement(\"select\");"
-		"s.className = \"hele\";"
-		"s.name = id;"
-		"d.appendChild(s);"
-		"	for (var i = 0; i < sr.length; i++) {"
-		"	if(b && sr[i][0].startsWith(\"PWM\")) continue; "
-		"var o = document.createElement(\"option\");"
-		"	o.text = sr[i][0];"
-		"	o.value = sr[i][1];"
-		"	o.selected = (sr[i][1] == c);"
-		"s.add(o);s.onchange = hide_show;"
+	poststr(request, "\nfunction f(alias, id, c, b, ch1, ch2) {"
+// shortening js code a bit by some functions
+// 		setting classname "hele" (plus possibly another if with channel descriptions)
+#if (ENABLE_USE_PINROLE_CHAN_DESC)
+		"cn=(e,s)=>{s??='';e.className='hele '+s;};"
+#else
+		"cn=(e)=>{e.className='hele'};"
+#endif
+// 		appending a child c to e	
+		"ac=(e,c)=>{e.appendChild(c)};"
+		"var y=byID(\"x\");"
+		"let d=dce(\"div\");"
+		"d.className=\"hdiv\";"
+		"d.innerHTML=\"<span class='disp-inline'style='min-width:15ch'>\"+alias+\"</span>\";"
+//		"f.appendChild(d);"	f is now y
+		"ac(y,d);"
+		"let s=dce(\"select\");"
+//  cn(s) = short for	"s.className = \"hele\";"
+		"cn(s);"
+		"s.name=id;"
+//		"d.appendChild(s);"
+		"ac(d,s);"
+		"for(var i=0;i<sr.length;i++) {"
+		"if(b&&sr[i][0].startsWith(\"PWM\")) continue; "
+		"y=dce(\"option\");"
+		"si=sr[i];"
+		"y.text=si[0];"
+		"y.value=si[1];"
+		"y.selected=(si[1]==c);"
+		"s.add(y);"
+		"s.onchange=hide_show;"
 		"}"
-		"var y = document.createElement(\"input\");"
-		"y.className = \"hele\";"
-		"y.name = \"r\"+id;"
-		"y.id = \"r\"+id;"
-		"y.disabled = ch1==null;"
-		"y.style.display = ch1==null ? 'none' :'inline' ;"
-		"y.value = ch1==null ? 0 : ch1;"
-		"d.appendChild(y);"
-		"y = document.createElement(\"input\");"
-		"y.className = \"hele\";"
-		"y.name = \"e\"+id;"
-		"y.id = \"e\"+id;"
-		"y.disabled = ch2==null ;"
-		"y.style.display = ch2==null ? 'none' :'inline' ;"
-		"y.value = ch2==null ? 0 : ch2;"
-		"d.appendChild(y);"
+/*
+#if (ENABLE_USE_PINROLE_CHAN_DESC)
+// add a field for channel description
+		"y=dce('span');"
+		"y.id='lr'+id;"
+		"cn(y,'cht');"
+//		"d.appendChild(y);"
+		"ac(d,y);"
+#endif
+		"y=dce(\"input\");"
+//  cn(y) = short for	"y.className = \"hele\";"
+		"cn(y);"
+		"y.name=\"r\"+id;"
+		"y.id=\"r\"+id;"
+//		"y.disabled = ch1==null;"
+		"y.disabled=!ch1;"
+//		"y.style.display = ch1==null ? 'none' :'inline' ;"
+		"y.style.display=ch1?'inline':'none';"
+//		"y.value = ch1==null ? 0 : ch1;"
+		"y.value=ch1??0;"
+//		"d.appendChild(y);"
+		"ac(d,y);"
+#if (ENABLE_USE_PINROLE_CHAN_DESC)
+// add a field for channel description
+		"y=dce('span');"
+		"y.id='le'+id;"
+		"cn(y,'cht');"
+//		"d.appendChild(y);"
+		"ac(d,y);"
+#endif
+		"y=dce(\"input\");"
+//  cn(y) = short for	"y.className = \"hele\";"
+		"cn(y);"
+		"y.name=\"e\"+id;"
+		"y.id=\"e\"+id;"
+//		"y.disabled = ch2==null ;"
+		"y.disabled=!ch2;"
+//		"y.style.display = ch2==null ? 'none' :'inline' ;"
+		"y.style.display=ch2?'inline':'none';"
+//		"y.value = ch2==null ? 0 : ch2;"
+		"y.value=ch2??0;"
+//		"d.appendChild(y);"
+		"ac(d,y);"
+		"s.onchange();"
+		" }");
+*/
+		"xy=(x,c)=>{"
+#if (ENABLE_USE_PINROLE_CHAN_DESC)
+		"y=dce('span');"
+		"y.id='l'+x;"
+		"cn(y,'cht');"
+		"ac(d,y);"
+#endif
+		"y=dce('input');"
+		//  cn(y) = short for	"y.className = \"hele\";"
+		"cn(y);"
+		"y.name=x;"
+		"y.id=x;"
+		"y.disabled=!c;"
+		"y.style.display=c?'inline':'none';"
+		"y.value=c??0;"
+		"ac(d,y);};"
+		"xy('r'+id,ch1);"
+		"xy('e'+id,ch2);"
+		"s.onchange();"
 		" }");
 
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {

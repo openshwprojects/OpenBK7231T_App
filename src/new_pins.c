@@ -438,7 +438,7 @@ int PIN_GetPinChannel2ForPinIndex(int index) {
 }
 // return number of channels used for a role
 // taken from code in http_fnc.c
-int PIN_IOR_NofChan(int test){
+/*int PIN_IOR_NofChan(int test){
 	// For button, is relay index to toggle on double click
 	if (test == IOR_Button || test == IOR_Button_n || IS_PIN_DHT_ROLE(test) || IS_PIN_TEMP_HUM_SENSOR_ROLE(test) || IS_PIN_AIR_SENSOR_ROLE(test)){
 			return 2;
@@ -454,6 +454,11 @@ int PIN_IOR_NofChan(int test){
 	// all others have 1 channel
 	return 1;
 }
+*/
+#define INCLUDED_BY_NEW_PINS_C 1
+#include "rolesNchannels.h"
+#undef INCLUDED_BY_NEW_PINS_C
+
 
 void RAW_SetPinValue(int index, int iVal) {
 	if (index < 0 || index >= PLATFORM_GPIO_MAX) {
