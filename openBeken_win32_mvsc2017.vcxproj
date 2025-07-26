@@ -67,6 +67,7 @@
     </Link>
     <PreBuildEvent>
       <Command>cd libraries\berry &amp; mkdir generate &amp; python tools/coc/coc -o generate src ..\..\src\berry\modules -c ..\..\include\berry_conf.h</Command>
+      <Command>cd src &amp; awk -f gen_rolesNchannels.awk roles_and_channels.input > src/rolesNchannels.h</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>prebuild berry</Message>
@@ -90,6 +91,7 @@
     </Link>
     <PreBuildEvent>
       <Command>cd libraries\berry &amp; mkdir generate &amp; python tools/coc/coc -o generate src ..\..\src\berry\modules -c ..\..\include\berry_conf.h</Command>
+      <Command>cd src &amp; awk -f gen_rolesNchannels.awk roles_and_channels.input > src/rolesNchannels.h</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>prebuild berry</Message>
