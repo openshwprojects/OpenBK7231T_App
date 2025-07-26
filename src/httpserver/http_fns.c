@@ -2793,7 +2793,10 @@ int http_fn_cfg_pins(http_request_t* request) {
 		"rv=r[this.value];"
 		"c=rv[1];"
 #if (ENABLE_USE_PINROLE_CHAN_DESC)
-		"cf2(n,(c<1), rv[2]??'',(c<2), rv[3]??'');"
+		// split code to avoid JavaScript "??" to be interpreted as "trigraph ??'"
+		"cf2(n,(c<1), rv[2]?"
+		"?'',(c<2), rv[3]?"
+		"?'');"
 #else
 		"cf(byID('r'+n),(c<1));"
 		"cf(byID('e'+n),(c<2));"
@@ -2804,7 +2807,8 @@ int http_fn_cfg_pins(http_request_t* request) {
 // shortening js code a bit by some functions
 // 		setting classname "hele" (plus possibly another if with channel descriptions)
 #if (ENABLE_USE_PINROLE_CHAN_DESC)
-		"cn=(e,s)=>{s??='';e.className='hele '+s;};"
+		"cn=(e,s)=>{s?"
+		"?='';e.className='hele '+s;};"
 #else
 		"cn=(e)=>{e.className='hele'};"
 #endif
@@ -2892,7 +2896,8 @@ int http_fn_cfg_pins(http_request_t* request) {
 		"y.id=x;"
 		"y.disabled=!c;"
 		"y.style.display=c?'inline':'none';"
-		"y.value=c??0;"
+		"y.value=c?"
+		"?0;"
 		"ac(d,y);};"
 		"xy('r'+id,ch1);"
 		"xy('e'+id,ch2);"
