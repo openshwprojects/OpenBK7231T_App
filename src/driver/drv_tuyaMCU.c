@@ -204,6 +204,9 @@ static int g_baudRate = 9600;
 static int g_tuyaNextRequestDelay;
 static bool g_sensorMode = 0;
 
+// Flag to prevent automatic sending during boot/initialization
+static bool g_tuyaMCU_allowAutomaticSending = false;
+
 static bool heartbeat_valid = false;
 static int heartbeat_timer = 0;
 static int heartbeat_counter = 0;
@@ -2193,6 +2196,30 @@ commandResult_t Cmd_TuyaMCU_SetBatteryAckDelay(const void* context, const char* 
 	return CMD_RES_OK;
 }
 
+commandResult_t Cmd_TuyaMCU_EnableAutoSend(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int enable;
+
+	Tokenizer_TokenizeString(args, 0);
+	Tokenizer_CheckArgsCountAndPrintWarning(args, 1);
+
+	enable = Tokenizer_GetArgInteger(0);
+
+	if (!Tokenizer_IsArgInteger(0)) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "EnableAutoSend: requires 1 argument [0/1]\n");
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	if (enable != 0 && enable != 1) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "EnableAutoSend: argument must be 0 or 1\n");
+		return CMD_RES_BAD_ARGUMENT;
+	}
+
+	TuyaMCU_EnableAutomaticSending(enable != 0);
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU automatic sending %s\n", enable ? "enabled" : "disabled");
+
+	return CMD_RES_OK;
+}
+
 void TuyaMCU_RunWiFiUpdateAndPackets() {
 	//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"WifiCheck %d ", wifi_state_timer);
 	/* Monitor WIFI and MQTT connection and apply Wifi state
@@ -2464,8 +2491,17 @@ commandResult_t TuyaMCU_SetBaudRate(const void* context, const char* cmd, const 
 static SemaphoreHandle_t g_mutex = 0;
 static int g_previousLEDPower = -1;
 
+void TuyaMCU_EnableAutomaticSending(bool enable) {
+	g_tuyaMCU_allowAutomaticSending = enable;
+}
+
 void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMode, float brightnessRange01, float temperatureRange01) {
 	if (g_tuyaMCUled_id_color == -1) {
+		return;
+	}
+	
+	// Only send commands if automatic sending is enabled
+	if (!g_tuyaMCU_allowAutomaticSending) {
 		return;
 	}
 	if (g_mutex == 0)
@@ -2686,6 +2722,12 @@ void TuyaMCU_Init()
 	//cmddetail:"fn":"NULL);","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_setBatteryAckDelay", Cmd_TuyaMCU_SetBatteryAckDelay, NULL);
+	
+	//cmddetail:{"name":"tuyaMcu_enableAutoSend","args":"[0/1]",
+	//cmddetail:"descr":"Enable or disable automatic sending of commands to TuyaMCU during boot/initialization. Use 0 to disable, 1 to enable.",
+	//cmddetail:"fn":"Cmd_TuyaMCU_EnableAutoSend","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":"tuyaMcu_enableAutoSend 0"}
+	CMD_RegisterCommand("tuyaMcu_enableAutoSend", Cmd_TuyaMCU_EnableAutoSend, NULL);
 }
 
 
