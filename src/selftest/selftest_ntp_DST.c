@@ -2,7 +2,7 @@
 
 #include "selftest_local.h"
 
-void Test_NTP_DST() {
+void Test_CLOCK_DST() {
 	// reset whole device
 	SIM_ClearOBK(0);
 
@@ -29,7 +29,8 @@ void Test_NTP_DST() {
 	// 
 	// 0 10 1 3 	means "End of DST on 	last(=0) Octobers(=10) Sunday(=1) at 3"
 	// 0 3 1 2 	means "Start of DST on 	last(=0) Marchs(=3) Sunday(=1) at 2"
-	CMD_ExecuteCommand("CLOCK_calcDST 0 10 1 3 0 3 1 2", 0);
+//	CMD_ExecuteCommand("CLOCK_calcDST 0 10 1 3 0 3 1 2", 0);
+	CMD_ExecuteCommand("CLOCK_setDST 0 3 1 2 60 0 10 1 3 0", 0);
 	// test - we are (slightly) "before" DST
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 0);
 
