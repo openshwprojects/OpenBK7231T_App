@@ -58,7 +58,8 @@ void HAL_Delay_us(int delay) {
 	float adj = 1;
 	if(g_powersave) adj = 1.5;
 	// use original code for non BK7381 - I cant test
-	usleep((17 * delay * adj) / 10); // "1" is to fast and "2" to slow, 1.7 seems better than 1.5 (only from observing readings, no scope involved)
+	// from feedback by divadiow 1.7 (17/10) is too low by 1.3 to 4.2 - let's try 2.5 * 1.7 ~ 4.25 --> I'll take 4.3
+	usleep((43 * delay * adj) / 10); //  don't know if adjusting is needed, leave it for now
 #elif (PLATFORM_BK7238) 
 	// starting over again for BK7238
 	// read factors between 5 and 6,7 - using 6 seems a good start
