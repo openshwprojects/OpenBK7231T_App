@@ -258,7 +258,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"SM16703P is an individually addressable LEDs controller like WS2812B. Currently SM16703P LEDs are supported through hardware SPI, LEDs data should be connected to P16 (MOSI), [here you can read](https://www.elektroda.com/rtvforum/topic4005865.html) how to break it out on CB2S.",
 	//drvdetail:"requires":""}
-	{ "SM16703P",	SM16703P_Init,		NULL,						NULL, NULL, NULL, NULL, NULL, false },
+	{ "SM16703P",	SM16703P_Init,		NULL,						NULL, NULL, SM16703P_Shutdown, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_SM15155E
 	//drvdetail:{"name":"SM15155E",
@@ -773,7 +773,7 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState
 				if (g_drivers[i].bLoaded) {
 					// if at least one name printed, add separator
 					if (j != 0) {
-						hprintf255(request, ",");
+						hprintf255(request, ", ");
 					}
 					hprintf255(request, g_drivers[i].name);
 					// one more name printed
@@ -782,7 +782,7 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState
 			}
 			hprintf255(request, ")");
 		}
-		hprintf255(request, ", total %i</h5>", g_numDrivers);
+		hprintf255(request, ", total: %i</h5>", g_numDrivers);
 	}
 }
 
