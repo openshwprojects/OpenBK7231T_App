@@ -1,6 +1,6 @@
 #ifdef PLATFORM_RTL8710A
 
-#include "../hal_generic_realtek.h"
+#include "../hal_pinmap_realtek.h"
 
 // commented out pins are those not wired out on RTL8711AM
 rtlPinMapping_t g_pins[] = {

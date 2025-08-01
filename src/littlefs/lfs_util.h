@@ -43,7 +43,7 @@
 #elif PLATFORM_BL602 || PLATFORM_LN882H || PLATFORM_ESPIDF || PLATFORM_XRADIO || PLATFORM_ESP8266
 #define os_free free
 #define os_malloc malloc
-#elif PLATFORM_REALTEK || PLATFORM_W800 || PLATFORM_W600 
+#elif PLATFORM_REALTEK || PLATFORM_W800 || PLATFORM_W600
 extern void* pvPortMalloc(size_t xWantedSize);
 extern void vPortFree(void* pv);
 #define os_malloc pvPortMalloc
