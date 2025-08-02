@@ -66,10 +66,22 @@ void HAL_Delay_us(int delay) {
 	else if (delay >= 5) usleep((52*delay)/10);
 	else usleep((43 * delay * adj) / 10); //  don't know if adjusting is needed, leave it for now
 #elif (PLATFORM_BK7238) 
+	int adj = 100;
+	// use 3 for values >=10, 4 for < 10
+	//
+	// use 2.7 for values >=50
+	// use 3.5 for values < 50 but > 10
+	// use 5 for values <= 10
+	if(g_powersave) { 
+		if (delay >= 50) adj = 270;
+		else if (delay > 10) adj = 350;
+		else adj = 500;
+	}
+	
 	// starting over again for BK7238
 	// read factors between 5 and 6,7 - using 6 seems a good start
 	// trying with 6.4 - higher values are off else
-	usleep((64*delay)/10);
+	usleep(((64000/adj)*delay)/100);
 #else
 	uint32_t startTick = getTicksCount();
 	if (delay > 1 && startTick != BK_TIMER_FAILURE ){		// be sure, timer works
