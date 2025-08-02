@@ -2,7 +2,7 @@
 
 #include "../new_common.h"
 
-#if PLATFORM_BK7231N 
+#if PLATFORM_BK7231N || PLATFORM_BK7238 || PLATFORM_BK7252N
 
 #include "arm_arch.h"
 #include "drv_model_pub.h"
@@ -14,6 +14,10 @@
 #include "sys_ctrl_pub.h"
 #include "uart_pub.h"
 #include "spi_pub.h"
+#if PLATFORM_BEKEN_NEW
+#define GFUNC_MODE_SPI_USE_GPIO_14 GFUNC_MODE_SPI_GPIO_14
+#define GFUNC_MODE_SPI_USE_GPIO_16_17 GFUNC_MODE_SPI_GPIO_16_17
+#endif
 
 #elif WINDOWS
 

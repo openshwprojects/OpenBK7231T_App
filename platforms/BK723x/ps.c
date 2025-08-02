@@ -57,3 +57,6 @@ int bk_wlan_power_save_set_level(BK_PS_LEVEL level)
 
     return 0;
 }
+
+void __attribute__((weak)) phy_enter_11b_low_power(void) {}
+void __attribute__((weak)) phy_exit_11b_low_power(void) {}

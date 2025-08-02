@@ -1,6 +1,9 @@
-#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
+#if PLATFORM_BK7231N || PLATFORM_BK7238 || PLATFORM_BK7252N
 #include "arm_arch.h"
 
+#if PLATFORM_BEKEN_NEW
+#include "sys_config.h"
+#endif
 #include "drv_model_pub.h"
 #include "general_dma_pub.h"
 #include "gpio_pub.h"
@@ -8,7 +11,11 @@
 #include "spi_pub.h"
 
 #include "../../beken378/driver/general_dma/general_dma.h"
+#if PLATFORM_BEKEN_NEW
+#include "spi_bk7231n.h"
+#else
 #include "../../beken378/driver/spi/spi.h"
+#endif
 
 #include "../new_cfg.h"
 #include "../new_common.h"
