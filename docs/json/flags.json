@@ -39,7 +39,7 @@
     "enum": "OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER",
     "title": "todo",
     "file": "new_pins.h",
-    "descr": "[CMD] Enable TCP console command server (for Putty, etc)"
+    "descr": "[CMD] Enable TCP console command server (for PuTTY, etc)"
   },
   {
     "index": "6",
