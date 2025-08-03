@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include "new_common.h"
 
 #define RBTYPE	uint8_t
 
