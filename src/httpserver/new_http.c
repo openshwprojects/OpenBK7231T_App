@@ -324,6 +324,7 @@ void http_html_start(http_request_t* request, const char* pagename) {
 	poststr(request, htmlBodyStart2);
 }
 
+
 const char pageScriptPart1[] = "<script type='text/javascript'>var firstTime,lastTime,onlineFor,req=null,onlineForEl=null,getElement=e=>document.getElementById(e);function showState(){clearTimeout(firstTime),clearTimeout(lastTime),null!=req&&req.abort(),(e=getElement(\"state\"))&&((req=new XMLHttpRequest).onreadystatechange=()=>{4==req.readyState&&\"OK\"==req.statusText&&((\"INPUT\"!=document.activeElement.tagName||\"number\"!=document.activeElement.type&&\"color\"!=document.activeElement.type)&&(e.innerHTML=req.responseText),clearTimeout(firstTime),clearTimeout(lastTime),lastTime=setTimeout(showState,";
 const char pageScriptPart2[] = "))},req.open(\"GET\",\"index?state=1\",!0),req.send()),firstTime=setTimeout(showState,";
 const char pageScriptPart3[] = ")}function fmtUpTime(e){var t,n,o=Math.floor(e/86400);return e%=86400,t=Math.floor(e/3600),e%=3600,n=Math.floor(e/60),e=e%60,0<o?o+` days, ${t} hours, ${n} minutes and ${e} seconds`:0<t?t+` hours, ${n} minutes and ${e} seconds`:0<n?n+` minutes and ${e} seconds`:`just ${e} seconds`}function updateOnlineFor(){onlineForEl.textContent=fmtUpTime(++onlineFor)}function onLoad(){(onlineForEl=getElement(\"onlineFor\"))&&(onlineFor=parseInt(onlineForEl.dataset.initial,10))&&setInterval(updateOnlineFor,1e3),showState()}function submitTemperature(e){var t=getElement(\"form132\");getElement(\"kelvin132\").value=Math.round(1e6/parseInt(e.value)),t.submit()}window.addEventListener(\"load\",onLoad),history.pushState(null,\"\",window.location.pathname.slice(1)),setTimeout(()=>{var e=getElement(\"changed\");e&&(e.innerHTML=\"\")},5e3);</script>";
@@ -906,6 +907,7 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	if (http_checkUrlBase(urlStr, "ota")) return http_fn_ota(request);
 	if (http_checkUrlBase(urlStr, "ota_exec")) return http_fn_ota_exec(request);
 	if (http_checkUrlBase(urlStr, "cm")) return http_fn_cm(request);
+
 	return http_fn_other(request);
 }
 

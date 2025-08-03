@@ -101,7 +101,6 @@ uint32_t idleCount = 0;
 
 int DRV_SSDP_Active = 0;
 
-
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
 void Main_ForceUnsafeInit();
@@ -731,7 +730,6 @@ void Main_OnEverySecond()
 	}
 
 	g_secondsElapsed++;
-
 	if (bSafeMode) {
 		safe = "[SAFE] ";
 	}
@@ -1402,6 +1400,7 @@ void Main_Init_After_Delay()
 #endif
 		Main_Init_AfterDelay_Unsafe(true);
 	}
+
 	ADDLOGF_INFO("%s done", __func__);
 }
 
