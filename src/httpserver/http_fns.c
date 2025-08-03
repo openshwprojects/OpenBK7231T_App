@@ -2920,7 +2920,7 @@ const char* g_obk_flagNames[] = {
 	"[TuyaMCU] Store ALL data",
 	"[PWR] Invert AC dir",
 	"[HTTP] Hide ON/OFF for relays (only red/green buttons)",
-	"[MQTT] Never add get sufix",
+	"[MQTT] Never add GET suffix",
 	"[WiFi] (RTL/BK) Enhanced fast connect by saving AP data to flash (preferable with Flag 37 & static ip). Quick reset 3 times to connect normally",
 	"error",
 	"error",
