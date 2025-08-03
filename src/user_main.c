@@ -787,6 +787,7 @@ if (! stopped_savetemps){
 		ADDLOGF_INFO("[saveTepm] g_wifi_temperature=%.2f  -- rouded: %.2f -- saving as %i\n", g_wifi_temperature,round_to_5(g_wifi_temperature),(uint8_t)(2*round_to_5(g_wifi_temperature)+31));
 		savetemperature(floatTemp2int(g_wifi_temperature));
 	}
+}
 else RBfree(g_temperature_rb);
 #endif
 
