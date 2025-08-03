@@ -303,6 +303,7 @@ jobs:
           pip3 install configobj
           pip3 install toml
           pip3 install fdt
+          pip3 install esptool
       - name: Run make
         run: |
           cd sdk/esp-idf
