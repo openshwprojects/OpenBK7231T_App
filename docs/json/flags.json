@@ -263,7 +263,7 @@
     "enum": "OBK_FLAG_WIFI_FAST_CONNECT",
     "title": "todo",
     "file": "new_pins.h",
-    "descr": "[WiFi] Quick connect to WiFi on reboot (TODO: check if it works for you and report on github)"
+    "descr": "[WiFi] Quick connect to WiFi on reboot (TODO: check if it works for you and report on GitHub)"
   },
   {
     "index": "38",
@@ -354,7 +354,7 @@
     "enum": "OBK_FLAG_MQTT_NEVERAPPENDGET",
     "title": "todo",
     "file": "new_pins.h",
-    "descr": "[MQTT] Never add get sufix"
+    "descr": "[MQTT] Never add GET suffix"
   },
   {
     "index": "51",
