@@ -115,6 +115,8 @@ uint8_t savetemperature(uint8_t t){
 	RB_saveVal(g_temperature_rb, t);
 }
 
+bool stopped_savetemps = 0;
+
 
 // some helper functions 
 
@@ -779,12 +781,13 @@ void Main_OnEverySecond()
 
 #if SAVETEMPS
 
-
-//if (!(g_secondsElapsed % SAVETEMPRATE)) {
-if (!(g_secondsElapsed % 5)) {
-	ADDLOGF_INFO("[saveTepm] g_wifi_temperature=%.2f  -- rouded: %.2f -- saving as %i\n", g_wifi_temperature,round_to_5(g_wifi_temperature),(uint8_t)(2*round_to_5(g_wifi_temperature)+31));
-	savetemperature(floatTemp2int(g_wifi_temperature));
-}
+if (! stopped_savetemps){
+	if (!(g_secondsElapsed % SAVETEMPRATE)) {
+		//if (!(g_secondsElapsed % 5)) {
+		ADDLOGF_INFO("[saveTepm] g_wifi_temperature=%.2f  -- rouded: %.2f -- saving as %i\n", g_wifi_temperature,round_to_5(g_wifi_temperature),(uint8_t)(2*round_to_5(g_wifi_temperature)+31));
+		savetemperature(floatTemp2int(g_wifi_temperature));
+	}
+else RBfree(g_temperature_rb);
 #endif
 
 	g_secondsElapsed++;

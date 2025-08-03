@@ -273,6 +273,7 @@
     <ClCompile Include="src\driver\drv_ucs1912.c" />
     <ClCompile Include="src\driver\drv_widget.c" />
     <ClCompile Include="src\hal\bk7231\hal_adc_bk7231.c">
+    <ClCompile Include="src\ringbuff32.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
