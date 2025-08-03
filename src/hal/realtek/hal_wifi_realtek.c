@@ -7,6 +7,7 @@
 #include "../../new_pins.h"
 #include <lwip/sockets.h>
 #include <lwip/netif.h>
+#include <lwip/dns.h>
 #include <wifi/wifi_conf.h>
 #include <wifi/wifi_util.h>
 #include <lwip_netconf.h>
@@ -56,7 +57,7 @@ const char* HAL_GetMyGatewayString()
 
 const char* HAL_GetMyDNSString()
 {
-	return NULL;
+	return ipaddr_ntoa(dns_getserver(0));
 }
 
 const char* HAL_GetMyMaskString()
@@ -121,6 +122,17 @@ int HAL_GetWifiStrength()
 	wext_get_rssi(WLAN0_NAME, &rssi);
 	return rssi;
 }
+
+char* HAL_GetWiFiBSSID(char* bssid){
+	uint8_t mac[6];
+	wext_get_bssid(WLAN0_NAME, mac);
+	sprintf(bssid, MACSTR, MAC2STR(mac));
+	return bssid; 
+};
+uint8_t HAL_GetWiFiChannel(uint8_t *chan){
+	wext_get_channel(WLAN0_NAME, chan);
+	return *chan;
+};
 
 void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 {
@@ -301,6 +313,7 @@ void ConfigureSTA(obkStaticIP_t* ip)
 	struct ip_addr ipaddr;
 	struct ip_addr netmask;
 	struct ip_addr gw;
+	struct ip_addr dnsserver;
 
 	wifi_config_autoreconnect(1, 2, 3);
 
@@ -317,7 +330,9 @@ void ConfigureSTA(obkStaticIP_t* ip)
 		IP4_ADDR(ip_2_ip4(&ipaddr), ip->localIPAddr[0], ip->localIPAddr[1], ip->localIPAddr[2], ip->localIPAddr[3]);
 		IP4_ADDR(ip_2_ip4(&netmask), ip->netMask[0], ip->netMask[1], ip->netMask[2], ip->netMask[3]);
 		IP4_ADDR(ip_2_ip4(&gw), ip->gatewayIPAddr[0], ip->gatewayIPAddr[1], ip->gatewayIPAddr[2], ip->gatewayIPAddr[3]);
+		IP4_ADDR(ip_2_ip4(&dnsserver), ip->dnsServerIpAddr[0], ip->dnsServerIpAddr[1], ip->dnsServerIpAddr[2], ip->dnsServerIpAddr[3]);
 		netif_set_addr(&xnetif[0], ip_2_ip4(&ipaddr), ip_2_ip4(&netmask), ip_2_ip4(&gw));
+		dns_setserver(0, &dnsserver);
 	}
 	netif_set_hostname(&xnetif[0], CFG_GetDeviceName());
 }

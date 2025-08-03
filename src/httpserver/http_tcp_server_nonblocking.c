@@ -142,6 +142,7 @@ void HTTPServer_RunQuickTick() {
 				request.replylen = 0;
 				request.responseCode = HTTP_RESPONSE_OK;
 				request.replymaxlen = DEFAULT_BUFLEN;
+				request.receivedLenmax = DEFAULT_BUFLEN;
 
 				//printf("HTTP Server for Windows: Bytes received: %d \n", iResult);
 				len = HTTP_ProcessPacket(&request);

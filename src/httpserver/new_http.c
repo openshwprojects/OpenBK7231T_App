@@ -295,6 +295,17 @@ void http_setup(http_request_t* request, const char* type) {
 	poststr(request, "\r\n"); // end headers with double CRLF
 	poststr(request, "\r\n");
 }
+void http_setup_gz(http_request_t* request, const char* type) {
+	hprintf255(request, httpHeader, request->responseCode, type);
+	poststr(request, "\r\n"); // next header
+	poststr(request, httpCorsHeaders);
+	poststr(request, "\r\n");
+	poststr(request, "Content-Encoding: gzip");
+	poststr(request, "\r\n");
+	poststr(request, "Connection: close");
+	poststr(request, "\r\n"); // end headers with double CRLF
+	poststr(request, "\r\n");
+}
 
 void http_html_start(http_request_t* request, const char* pagename) {
 	poststr(request, htmlDoctype);
@@ -835,6 +846,16 @@ int HTTP_ProcessPacket(http_request_t* request) {
 		return 0;
 	}
 
+#if ENABLE_HTTP_OVERRIDE
+	bool HTTP_checkLFSOverride(http_request_t* request, const char *ext);
+	if (HTTP_checkLFSOverride(request,".html")) {
+		return 1;
+	}
+	if (HTTP_checkLFSOverride(request, "")) {
+		return 1;
+	}
+#endif
+
 	if (http_checkUrlBase(urlStr, "")) return http_fn_empty_url(request);
 
 	if (http_checkUrlBase(urlStr, "testmsg")) return http_fn_testmsg(request);
@@ -848,6 +869,12 @@ int HTTP_ProcessPacket(http_request_t* request) {
 #endif
 #if ENABLE_HTTP_IP
 	if (http_checkUrlBase(urlStr, "cfg_ip")) return http_fn_cfg_ip(request);
+#endif
+#if (ENABLE_DRIVER_DS1820_FULL)
+	// including "../driver/drv_ds1820_simple.h" will complain about typedefs not used here 
+	// so lets declare it "extern"
+	extern int http_fn_cfg_ds18b20(http_request_t* request);
+	if (http_checkUrlBase(urlStr, "cfg_ds18b20")) return http_fn_cfg_ds18b20(request);
 #endif
 
 #if ENABLE_HTTP_WEBAPP

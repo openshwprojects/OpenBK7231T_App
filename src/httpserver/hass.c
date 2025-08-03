@@ -347,7 +347,8 @@ HassDeviceInfo* hass_createSelectEntityIndexed(const char* state_topic, const ch
 	return info;
 }
 
-HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **fanOptions, int numFanOptions) {
+HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **fanOptions, int numFanOptions,
+	const char **swingOptions, int numSwingOptions, const char **swingHOptions, int numSwingHOptions) {
 	HassDeviceInfo* info = hass_init_device_info(HASS_HVAC, 0, NULL, NULL, 0, 0);
 
 	// Set the name for the HVAC device
@@ -377,6 +378,8 @@ HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **f
 	cJSON_AddItemToArray(modes, cJSON_CreateString("off"));
 	cJSON_AddItemToArray(modes, cJSON_CreateString("heat"));
 	cJSON_AddItemToArray(modes, cJSON_CreateString("cool"));
+	// fan does not work, it has to be fan_only
+	cJSON_AddItemToArray(modes, cJSON_CreateString("fan_only"));
 	cJSON_AddItemToObject(info->root, "modes", modes);
 
 	if (fanOptions && numFanOptions) {
@@ -391,10 +394,35 @@ HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **f
 			const char *mode = fanOptions[i];
 			cJSON_AddItemToArray(fan_modes, cJSON_CreateString(mode));
 		}
-		cJSON_AddItemToArray(fan_modes, cJSON_CreateString("high"));
 		cJSON_AddItemToObject(info->root, "fan_modes", fan_modes);
 	}
+	if (numSwingHOptions) {
+		// Add Swing Horizontal
+		cJSON_AddStringToObject(info->root, "swing_horizontal_mode_state_topic", "~/SwingH/get");
+		sprintf(g_hassBuffer, "cmnd/%s/SwingH", CFG_GetMQTTClientId());
+		cJSON_AddStringToObject(info->root, "swing_horizontal_mode_command_topic", g_hassBuffer);
 
+		cJSON* swingH_modes = cJSON_CreateArray();
+		for (int i = 0; i < numSwingHOptions; i++) {
+			const char *mode = swingHOptions[i];
+			cJSON_AddItemToArray(swingH_modes, cJSON_CreateString(mode));
+		}
+		cJSON_AddItemToObject(info->root, "swing_horizontal_modes", swingH_modes);
+	}
+	if (numSwingOptions) {
+		// Add Swing Vertical
+		cJSON_AddStringToObject(info->root, "swing_mode_state_topic", "~/SwingV/get");
+		sprintf(g_hassBuffer, "cmnd/%s/SwingV", CFG_GetMQTTClientId());
+		cJSON_AddStringToObject(info->root, "swing_mode_command_topic", g_hassBuffer);
+
+		cJSON* swing_modes = cJSON_CreateArray();
+		for (int i = 0; i < numSwingOptions; i++) {
+			const char *mode = swingOptions[i];
+			cJSON_AddItemToArray(swing_modes, cJSON_CreateString(mode));
+		}
+		cJSON_AddItemToObject(info->root, "swing_modes", swing_modes);
+
+	}
 	// Set availability topic
 	cJSON_AddStringToObject(info->root, "availability_topic", "~/status");
 	cJSON_AddStringToObject(info->root, "payload_available", "online");
@@ -1017,7 +1045,11 @@ const char* hass_build_discovery_json(HassDeviceInfo* info) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_HASS, "ERROR: someone passed NULL pointer to hass_build_discovery_json\r\n");
 		return "";
 	}
-	cJSON_PrintPreallocated(info->root, info->json, HASS_JSON_SIZE, 0);
+	int bOk = cJSON_PrintPreallocated(info->root, info->json, HASS_JSON_SIZE, 0);
+	if (bOk == false) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HASS, "ERROR: too long JSON in hass_build_discovery_json\r\n");
+		return "";
+	}
 	return info->json;
 }
 

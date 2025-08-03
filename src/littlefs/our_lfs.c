@@ -34,7 +34,7 @@ bool lfs_init = false;
 #include "hal/hal_flash.h"
 #include "flash_partition_table.h"
 
-#elif PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 
 #include "esp_partition.h"
 esp_partition_t* esplfs = NULL;
@@ -54,6 +54,11 @@ extern uint8_t flash_size_8720;
 #include "wm_internal_flash.h"
 #include "wm_socket_fwup.h"
 #include "wm_fwup.h"
+
+#elif PLATFORM_XR809 || PLATFORM_XR872 || PLATFORM_XR806
+
+#include "driver/chip/hal_flash.h"
+#include <image/flash.h>
 
 #endif
 
@@ -134,7 +139,7 @@ static commandResult_t CMD_LFS_Size(const void *context, const char *cmd, const 
         return CMD_RES_OK;
     }
 
-#if PLATFORM_ESPIDF || PLATFORM_RTL8720D || PLATFORM_BL602
+#if PLATFORM_ESPIDF || PLATFORM_RTL8720D || PLATFORM_BL602 || PLATFORM_ESP8266
 	ADDLOG_ERROR(LOG_FEATURE_CMD, PLATFORM_MCU_NAME" doesn't support changing LFS size");
 	return CMD_RES_ERROR;
 #endif
@@ -248,7 +253,7 @@ static commandResult_t CMD_LFS_Format(const void *context, const char *cmd, cons
 			break;
 	}
 
-#elif PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 
 	if(esplfs == NULL)
 	{
@@ -497,7 +502,7 @@ void init_lfs(int create){
 		newsize = lfs_info.size;
 		CFG_SetLFS_Size(lfs_info.size);
 
-#elif PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 
 		if(esplfs == NULL)
 		{
@@ -744,7 +749,7 @@ static int lfs_erase(const struct lfs_config *c, lfs_block_t block){
     return res;
 }
 
-#elif PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 
 static int lfs_read(const struct lfs_config* c, lfs_block_t block,
     lfs_off_t off, void* buffer, lfs_size_t size)
@@ -968,6 +973,58 @@ static int lfs_erase(const struct lfs_config* c, lfs_block_t block)
 
     res = tls_fls_erase(startAddr / LFS_BLOCK_SIZE);
     return res;
+}
+
+#elif PLATFORM_XRADIO
+
+static int lfs_read(const struct lfs_config* c, lfs_block_t block,
+	lfs_off_t off, void* buffer, lfs_size_t size)
+{
+	int res;
+
+	unsigned int startAddr = LFS_Start;
+	startAddr += block * LFS_BLOCK_SIZE;
+	startAddr += off;
+
+	res = flash_rw(0, startAddr, buffer, size, 0);
+	if(res == 0) res = LFS_ERR_IO;
+	res = LFS_ERR_OK;
+	return res;
+}
+
+// Program a region in a block. The block must have previously
+// been erased. Negative error codes are propogated to the user.
+// May return LFS_ERR_CORRUPT if the block should be considered bad.
+static int lfs_write(const struct lfs_config* c, lfs_block_t block,
+	lfs_off_t off, const void* buffer, lfs_size_t size)
+{
+	int res;
+
+	unsigned int startAddr = LFS_Start;
+	startAddr += block * LFS_BLOCK_SIZE;
+	startAddr += off;
+
+	res = flash_rw(0, startAddr, buffer, size, 1);
+	if(res == 0) res = LFS_ERR_IO;
+	res = LFS_ERR_OK;
+	return res;
+}
+
+// Erase a block. A block must be erased before being programmed.
+// The state of an erased block is undefined. Negative error codes
+// are propogated to the user.
+// May return LFS_ERR_CORRUPT if the block should be considered bad.
+static int lfs_erase(const struct lfs_config* c, lfs_block_t block)
+{
+	int res;
+
+	unsigned int startAddr = LFS_Start;
+	startAddr += block * LFS_BLOCK_SIZE;
+
+	res = flash_erase(0, startAddr, LFS_BLOCK_SIZE);
+	if(res != 0) res = LFS_ERR_IO;
+	res = LFS_ERR_OK;
+	return res;
 }
 
 #endif 
