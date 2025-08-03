@@ -15,6 +15,7 @@
 #include "drv_ds1820_simple.h"
 #include "drv_ds1820_full.h"
 #include "drv_ds1820_common.h"
+#include "drv_savetemps.h"
 
 
 typedef struct driver_s {
@@ -461,6 +462,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"Driver for oneWire temperature sensor DS18(B)20.",
 	//drvdetail:"requires":""}
 	{ "DS1820_FULL",     DS1820_full_driver_Init, DS1820_full_OnEverySecond,                       DS1820_full_AppendInformationToHTTPIndexPage, NULL, NULL, NULL,  false },
+#endif
+#if ENABLE_DRIVER_SAVETEMPS
+	//drvdetail:{"name":"SAVETEMPS",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Driver for saving chip temperature and display in a graph on main page.",
+	//drvdetail:"requires":""}
+	{ "SAVETEMPS",     SAVETEMPS_driver_Init, SAVETEMPS_OnEverySecond,                       SAVETEMPS_AppendInformationToHTTPIndexPage, NULL, SAVETEMPS_driver_Stop, NULL,  false },
 #endif
 #if ENABLE_DRIVER_HT16K33
 	//drvdetail:{"name":"HT16K33",

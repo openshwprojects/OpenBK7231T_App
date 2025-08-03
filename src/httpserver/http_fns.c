@@ -1047,25 +1047,9 @@ typedef enum {
 
 	}
 
-#if SAVETEMPS
-
-extern RB32_t* g_temperature_rb;
-const char delim[]=",";
-
-hprintf255(request, "\n<input type='hidden' id='graphdata' value='");
-
-iterateRBtoBuff(g_temperature_rb, RB_CB_DataAsFloatTemp, request,",\0");
-
-hprintf255(request, "'>\n<p>Scale graph <input type='range' min='0.5' max='3' step='0.1' value='.8' onchange='scalegraph(this.value)'>");
-#endif
-
 	// for normal page loads, show the rest of the HTML
 	if (!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
 		poststr(request, "</div>"); // end div#state
-#if SAVETEMPS
-hprintf255(request, "<p><svg xmlns='http://www.w3.org/2000/svg' id='mygraph' width='800' heigth='400' viewBox='-75 -75 1100 650' style='background: white'></svg>");
-hprintf255(request, "<script>function updategraph(){draw(document.getElementById(\"mygraph\"),document.getElementById(\"graphdata\").value.split(/\s*,\s*/).map(Number))};;</script>");
-#endif
 #if ENABLE_DRIVER_CHARTS		
 /*	// moved from drv_charts.c:
 	// on every "state" request, JS code will be loaded and canvas is redrawn

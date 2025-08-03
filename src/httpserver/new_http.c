@@ -318,18 +318,6 @@ void http_html_start(http_request_t* request, const char* pagename) {
 	poststr(request, htmlShortcutIcon);
 	poststr(request, htmlHeadMeta);
 	poststr(request, htmlHeadStyle);
-#if SAVETEMPS
-// this converts to string
-#define STR_(X) #X
-
-// this makes sure the argument is expanded before converting to string
-#define STR(X) STR_(X)
-
-//	poststr(request, "<script  src='/graph.js' type='text/javascript'></script>");
-//	char js[]="<script>const gw=1e3,gh=500,lm=50;function scalegraph(t){svg=document.getElementById(\"mygraph\"),svg.setAttribute(\"width\",gw*t),svg.setAttribute(\"heigth\",gh*t)}function md(t,e=\"a\"){return new Date(t).toLocaleString().replace(\"a\"==e?/,/:\"d\"==e?/,.*/:/.*, /,\"a\"==e?\"\\&#13;\":\"\")}function draw(){svg=document.getElementById(\"mygraph\"),svg.setAttribute(\"width\",gw),svg.setAttribute(\"heigth\",gh),svg.setAttribute(\"viewBox\",\"-75 -75 1100 700\"),maxval=5*(1+~~(Math.max(...data)/5)),now=(new Date).getTime(),dd=now-data.length*ds;for(var t=\"' fill='transparent' stroke='black'>\",e=\"<line x1='0' x2='\",a=\"\",g=\"\",n=\"<path d='\",d=0;d<data.length;d++)x=gw/data.length*d,y=gh-gh/maxval*data[d],a+=\"<circle cx='\"+x+\"' cy='\"+y+\"' r='10' fill='#5cceee'><title> \"+data[d].toFixed(2)+\"°C &#13; \"+md(dd)+\"</title></circle>\",n+=d>0?\" L \":\"M \",n+=x+\" \"+y,d%~~(data.length/5)==0&&(g+=\"<text  transform='translate(\"+x+\", 525) rotate(-45)' text-anchor='end'>\"+md(dd,\"t\")+\"</text>\"),dd+=ds;for(n+=t+\"</path>\",g+=e+\"0' y1='0' y2='\"+gh+t+\"</line><text font-size='30px' y='\"+\"-25' x='\"+\"-25'>°C</text>  \",g+=e+gw+\"' y1='\"+\"500' y2='\"+gh+t+\"</line> \",d=0;d<5;d++)g+=\"<text  x='-50' y='\"+d*gh/5+\"'>\"+(maxval-d*maxval/5)+\"</text>\";svg.innerHTML=a+n+g}ds=1e3*MAXSAVETEMP;</script>";
-	char js[]="<script>const gwi=1e3,gh=500,lm=50;function scalegraph(t){svg=document.getElementById(\"mygraph\"),svg.setAttribute(\"width\",gwi*t),svg.setAttribute(\"heigth\",gh*t)}function md(t,e=\"a\"){return new Date(t).toLocaleString().replace(\"a\"==e?/,/:\"d\"==e?/,.*/:/.*, /,\"a\"==e?\"\\&#13;\":\"\")}function draw(){var t=document.getElementById(\"mygraph\"),e=document.getElementById(\"graphdata\").value.split(/\s*,\s*/).map((t=>isNaN(parseInt(t))?t:parseFloat(t))),n=5*(1+~~(Math.max(...e)/5)),a=(new Date).getTime();dd=a-e.length*ds;for(var r=\"' fill='transparent' stroke='black'>\",g=\"<line x1='0' x2='\",d=\"\",l=\"\",i=\"<path d='\",h=0;h<e.length;h++)x=~~(gwi/e.length*h),y=~~(gh-gh/n*e[h]),d+=\"<circle cx='\"+x+\"' cy='\"+y+\"' r='7' fill='#5cceee'><title> \"+e[h].toFixed(2)+\"°C &#13; \"+md(dd)+\"</title></circle>\",i+=h>0?\" L \":\"M \",i+=x+\" \"+y,h%~~(e.length/5)==0&&(l+=\"<text  transform='translate(\"+x+\", 525) rotate(-45)' text-anchor='end'>\"+md(dd,\"t\")+\"</text>\"),dd+=ds;for(i+=r+\"</path>\",l+=g+\"0' y1='0' y2='\"+gh+r+\"</line><text font-size='30px' y='-25' x='-25'>°C</text>\",l+=g+gwi+\"' y1='\"+\"500' y2='\"+gh+r+\"</line> \",h=0;h<5;h++)l+=\"<text  x='-50' y='\"+h*gh/5+\"'>\"+(n-h*n/5)+\"</text>\";t.innerHTML=d+i+l}ds=1e3*" STR(SAVETEMPRATE)" ;</script>";
-	poststr(request, js);
-#endif
 	poststr(request, "</head>");
 	poststr(request, htmlBodyStart);
 	poststr(request, CFG_GetDeviceName());
@@ -337,11 +325,7 @@ void http_html_start(http_request_t* request, const char* pagename) {
 }
 
 const char pageScriptPart1[] = "<script type='text/javascript'>var firstTime,lastTime,onlineFor,req=null,onlineForEl=null,getElement=e=>document.getElementById(e);function showState(){clearTimeout(firstTime),clearTimeout(lastTime),null!=req&&req.abort(),(e=getElement(\"state\"))&&((req=new XMLHttpRequest).onreadystatechange=()=>{4==req.readyState&&\"OK\"==req.statusText&&((\"INPUT\"!=document.activeElement.tagName||\"number\"!=document.activeElement.type&&\"color\"!=document.activeElement.type)&&(e.innerHTML=req.responseText),clearTimeout(firstTime),clearTimeout(lastTime),lastTime=setTimeout(showState,";
-const char pageScriptPart2[] = "))},req.open(\"GET\",\"index?state=1\",!0),req.send()),"
-#if SAVETEMPS
-"updategraph(),"
-#endif  
-"firstTime=setTimeout(showState,";
+const char pageScriptPart2[] = "))},req.open(\"GET\",\"index?state=1\",!0),req.send()),firstTime=setTimeout(showState,";
 const char pageScriptPart3[] = ")}function fmtUpTime(e){var t,n,o=Math.floor(e/86400);return e%=86400,t=Math.floor(e/3600),e%=3600,n=Math.floor(e/60),e=e%60,0<o?o+` days, ${t} hours, ${n} minutes and ${e} seconds`:0<t?t+` hours, ${n} minutes and ${e} seconds`:0<n?n+` minutes and ${e} seconds`:`just ${e} seconds`}function updateOnlineFor(){onlineForEl.textContent=fmtUpTime(++onlineFor)}function onLoad(){(onlineForEl=getElement(\"onlineFor\"))&&(onlineFor=parseInt(onlineForEl.dataset.initial,10))&&setInterval(updateOnlineFor,1e3),showState()}function submitTemperature(e){var t=getElement(\"form132\");getElement(\"kelvin132\").value=Math.round(1e6/parseInt(e.value)),t.submit()}window.addEventListener(\"load\",onLoad),history.pushState(null,\"\",window.location.pathname.slice(1)),setTimeout(()=>{var e=getElement(\"changed\");e&&(e.innerHTML=\"\")},5e3);</script>";
 
 
@@ -922,9 +906,6 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	if (http_checkUrlBase(urlStr, "ota")) return http_fn_ota(request);
 	if (http_checkUrlBase(urlStr, "ota_exec")) return http_fn_ota_exec(request);
 	if (http_checkUrlBase(urlStr, "cm")) return http_fn_cm(request);
-#if SAVETEMPS
-	if (http_checkUrlBase(urlStr, "graph.js")) return http_fn_jsgraph(request);
-#endif
 	return http_fn_other(request);
 }
 

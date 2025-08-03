@@ -101,57 +101,6 @@ uint32_t idleCount = 0;
 
 int DRV_SSDP_Active = 0;
 
-#if SAVETEMPS
-// how many enties in buffer?
-// #define SAVEMAX 500
-// save every X seconds
-// #define SAVETEMPRATE 30
-//
-// definitions in new_common.h
-#include "ringbuff32.h"
-
-RB32_t* g_temperature_rb=NULL;	// will be initialized in Main_after_Delay ... 
-uint8_t savetemperature(uint8_t t){
-	RB_saveVal(g_temperature_rb, t);
-}
-
-bool stopped_savetemps = 0;
-
-
-// some helper functions 
-
-// round a float to next 0.5 value:
-//  5.24 -->  5.0
-//  5.25 -->  5.5
-//  5.76 -->  6.0
-// same for negative values
-// -5.24 --> -5.0
-// -5.26 --> -5.5
-// -5.76 --> -6.0
-float round_to_5(float t) {
-	int temp = t < 0 ? 2*t -0.5 : 2*t + 0.5;
-	return (float)temp/2;
-}
-
-
-// store Temperature values (floats) between -15.0° and +110°
-// in 0.5 steps as (uint8_t) integers
-// no check if temp is below lowest value yet
-// but this is prepared:
-// -15° ist stored as 1
-// so value 0 shuld be "below scale"
-// same for max value of 110° (stored at 251):
-// we can use 255 as "above scale"
-uint8_t floatTemp2int(float val){
-	return (uint8_t)(2*round_to_5(val)+31);
-}
-
-// reverse: return float from our temperature representation
-float intTemp2float(uint8_t val){
-	return (float)val/2-15.5;
-}
-
-#endif
 
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
@@ -635,7 +584,9 @@ void Main_OnEverySecond()
 		g_wifi_temperature = hal_adc_tempsensor();
 #elif WINDOWS
 		// set random temperature , change last value in ragnge +- 2 degrees 
-		g_wifi_temperature += -2.0*(rand() / (float) RAND_MAX);
+		g_wifi_temperature += 2 + -4.0*(rand() / (float) RAND_MAX);
+		if (g_wifi_temperature < 30) g_wifi_temperature = 30;
+		if (g_wifi_temperature > 80) g_wifi_temperature = 80;
 #endif
 	}
 
@@ -779,19 +730,8 @@ void Main_OnEverySecond()
 		}
 	}
 
-#if SAVETEMPS
-
-if (! stopped_savetemps){
-	if (!(g_secondsElapsed % SAVETEMPRATE)) {
-		//if (!(g_secondsElapsed % 5)) {
-		ADDLOGF_INFO("[saveTepm] g_wifi_temperature=%.2f  -- rouded: %.2f -- saving as %i\n", g_wifi_temperature,round_to_5(g_wifi_temperature),(uint8_t)(2*round_to_5(g_wifi_temperature)+31));
-		savetemperature(floatTemp2int(g_wifi_temperature));
-	}
-}
-else RBfree(g_temperature_rb);
-#endif
-
 	g_secondsElapsed++;
+
 	if (bSafeMode) {
 		safe = "[SAFE] ";
 	}
@@ -1462,10 +1402,6 @@ void Main_Init_After_Delay()
 #endif
 		Main_Init_AfterDelay_Unsafe(true);
 	}
-#if SAVETEMPS
-	g_temperature_rb = RBinit(SAVEMAX); 
-#endif
-
 	ADDLOGF_INFO("%s done", __func__);
 }
 

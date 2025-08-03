@@ -159,6 +159,7 @@ OBKM_SRC  += $(OBK_SRCS)i2c/drv_i2c_lcd_pcf8574t.c
 OBKM_SRC  += $(OBK_SRCS)i2c/drv_i2c_main.c
 OBKM_SRC  += $(OBK_SRCS)i2c/drv_i2c_mcp23017.c
 OBKM_SRC  += $(OBK_SRCS)i2c/drv_i2c_tc74.c
+OBKM_SRC  += $(OBK_SRCS)driver/drv_savetemps.c
 OBKM_SRC  += $(OBK_SRCS)ringbuff32.c
 
 OBKM_SRC_CXX += $(OBK_SRCS)driver/drv_ir.cpp

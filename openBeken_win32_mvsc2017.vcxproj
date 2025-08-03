@@ -272,6 +272,7 @@
     <ClCompile Include="src\driver\drv_uart.c" />
     <ClCompile Include="src\driver\drv_ucs1912.c" />
     <ClCompile Include="src\driver\drv_widget.c" />
+    <ClCompile Include="src\driver\drv_savetemps.c" />
     <ClCompile Include="src\ringbuff32.c" />
     <ClCompile Include="src\hal\bk7231\hal_adc_bk7231.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
