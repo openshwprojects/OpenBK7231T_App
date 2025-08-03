@@ -2892,7 +2892,7 @@ const char* g_obk_flagNames[] = {
 	"[MQTT] Retain power channels (Relay channels, etc)",
 	"[IR] Do MQTT publish (Tasmota JSON format) for incoming IR data",
 	"[LED] Automatically enable Light on any change of brightness, color or temperature",
-	"[LED] Emulate Cool White with RGB in device with four PWMS - Red is 0, Green 1, Blue 2, and Warm is 4",
+	"[LED] Emulate Cool White with RGB in device with four PWMs - Red is 0, Green 1, Blue 2, and Warm is 4",
 	"[POWER] Allow negative current/power for power measurement (all chips, BL0937, BL0942, etc)",
 	// On BL602, if marked, uses /dev/ttyS1, otherwise S0
 	// On Beken, if marked, uses UART2, otherwise UART1
