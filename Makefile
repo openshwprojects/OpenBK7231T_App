@@ -117,6 +117,7 @@ sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared:
 	ln -s "$(shell pwd)/src/" "sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared/src"
 	ln -s "$(shell pwd)/libraries/" "sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared/libraries"
 	ln -s "$(shell pwd)/include/" "sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared/include"
+	ln -s "$(shell pwd)/components/stage/cli/cli/include" "sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared/include/cli"
 
 sdk/OpenW800/sharedAppContainer/sharedApp:
 	@echo Create symlink for $(APP_NAME) into sdk folder
