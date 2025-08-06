@@ -1,6 +1,3 @@
-#if (PLATFORM_BK7231N || WINDOWS) || PLATFORM_BK7238 || PLATFORM_BK7252N
-
-
 #include "../new_cfg.h"
 #include "../new_common.h"
 #include "../new_pins.h"
@@ -11,10 +8,12 @@
 #include "../logging/logging.h"
 #include "../mqtt/new_mqtt.h"
 
+#if ENABLE_DRIVER_SM16703P || ENABLE_DRIVER_SM15155E
+
 #include "drv_spidma.h"
 #include "drv_spiLED.h"
 
-#if WINDOWS
+#if WINDOWS && !LINUX
 
 void SPIDMA_Init(struct spi_message *msg) {
 
@@ -162,7 +161,7 @@ void SPILED_Shutdown() {
 
 void SPILED_Init() {
 	uint32_t val;
-#if PLATFORM_BK7231N || PLATFORM_BK7238 || PLATFORM_BK7252N
+#if PLATFORM_BK7231N || PLATFORM_BEKEN_NEW
 	val = GFUNC_MODE_SPI_USE_GPIO_14;
 	sddev_control(GPIO_DEV_NAME, CMD_GPIO_ENABLE_SECOND, &val);
 

@@ -1,6 +1,3 @@
-#if PLATFORM_BK7231N || PLATFORM_BK7238 || PLATFORM_BK7252N || WINDOWS
-
-
 #include "../new_cfg.h"
 #include "../new_common.h"
 #include "../new_pins.h"
@@ -10,6 +7,8 @@
 #include "../httpserver/new_http.h"
 #include "../logging/logging.h"
 #include "../mqtt/new_mqtt.h"
+
+#if ENABLE_DRIVER_SM16703P
 
 #include "drv_local.h"
 #include "drv_spiLED.h"

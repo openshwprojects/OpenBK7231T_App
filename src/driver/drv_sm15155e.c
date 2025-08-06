@@ -11,9 +11,6 @@ LED_Map 0 1 3 2 4
 
 */
 
-#if PLATFORM_BK7231N || PLATFORM_BK7238 || PLATFORM_BK7252N || WINDOWS
-
-
 #include "../new_cfg.h"
 #include "../new_common.h"
 #include "../new_pins.h"
@@ -24,12 +21,10 @@ LED_Map 0 1 3 2 4
 #include "../logging/logging.h"
 #include "../mqtt/new_mqtt.h"
 
+#if ENABLE_DRIVER_SM15155E
+
 #include "drv_spiLED.h"
 #include "drv_local.h"
-
-
-
-
 
 void SM15155E_Write(float *rgbcw) {
 	byte packet[16];

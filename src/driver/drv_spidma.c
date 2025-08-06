@@ -1,4 +1,4 @@
-#if PLATFORM_BK7231N || PLATFORM_BK7238 || PLATFORM_BK7252N
+#if PLATFORM_BK7231N || PLATFORM_BEKEN_NEW
 #include "arm_arch.h"
 
 #if PLATFORM_BEKEN_NEW
@@ -12,6 +12,10 @@
 
 #include "../../beken378/driver/general_dma/general_dma.h"
 #if PLATFORM_BEKEN_NEW
+#if !PLATFORM_BK7231N && !PLATFORM_BK7238 && !PLATFORM_BK7252N
+#undef CFG_SOC_NAME
+#define CFG_SOC_NAME 5
+#endif
 #include "spi_bk7231n.h"
 #else
 #include "../../beken378/driver/spi/spi.h"
@@ -181,7 +185,7 @@ static void spidma_spi_configure(UINT32 rate, UINT32 mode) {
 	//sddev_control(SPI_DEV_NAME, CMD_SPI_SET_BITWIDTH, (void *)&param);
 
 	/* baudrate */
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "max_hz = %d \n", rate);
+	ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "max_hz = %d \n", rate);
 	//setSpiCtrlRegister(BIT_WDTH, param);
 	spi_set_clock(rate);
 	//sddev_control(SPI_DEV_NAME, CMD_SPI_SET_CKR, (void *)&rate);
@@ -230,7 +234,7 @@ static void spidma_spi_configure(UINT32 rate, UINT32 mode) {
 	//sddev_control(SPI_DEV_NAME, CMD_SPI_UNIT_ENABLE, (void *)&param);
 
 
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "spi_master:[CTRL]:0x%08x \n", REG_READ(SPI_CTRL));
+	ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "spi_master:[CTRL]:0x%08x \n", REG_READ(SPI_CTRL));
 }
 
 static void spidma_spi_unconfigure(void) {
@@ -274,7 +278,7 @@ void spidma_spi_dma_tx_finish_callback(UINT32 param) {
 	rtos_set_semaphore(&spi_dev->dma_tx_sem);
 
 	//ToDo: USer
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "spi dma tx finish callback\r\n");
+	ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "spi dma tx finish callback\r\n");
 	spidma_dma_tx_enable(0);
 }
 
@@ -283,7 +287,7 @@ int spidma_dma_master_tx_init(struct spi_message *spi_msg) {
 	GDMACFG_TPYES_ST init_cfg;
 	GDMA_CFG_ST en_cfg;
 
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "spi dma tx init\r\n");
+	ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "spi dma tx init\r\n");
 	os_memset(&init_cfg, 0, sizeof(GDMACFG_TPYES_ST));
 	os_memset(&en_cfg, 0, sizeof(GDMA_CFG_ST));
 
@@ -313,7 +317,7 @@ int spidma_dma_master_tx_init(struct spi_message *spi_msg) {
 	en_cfg.param = spi_msg->send_len; // dma translen
 	sddev_control(GDMA_DEV_NAME, CMD_GDMA_SET_TRANS_LENGTH, (void *)&en_cfg);
 
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "spi dma tx config: length:%d, first:%d\r\n", spi_msg->send_len, spi_msg->send_buf[0]);
+	ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "spi dma tx config: length:%d, first:%d\r\n", spi_msg->send_len, spi_msg->send_buf[0]);
 
 	en_cfg.channel = SPI_TX_DMA_CHANNEL;
 	en_cfg.param = 0; // 0:not repeat 1:repeat
@@ -328,7 +332,7 @@ int spidma_dma_master_tx_init(struct spi_message *spi_msg) {
 
 void spidma_spi_master_dma_config(UINT32 mode, UINT32 rate) {
 	UINT32 param;
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "spi master dma init: mode:%d, rate:%d\r\n", mode, rate);
+	ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "spi master dma init: mode:%d, rate:%d\r\n", mode, rate);
 	spidma_spi_configure(rate, mode);
 
 	//disable tx/rx int disable
@@ -384,8 +388,8 @@ void spidma_spi_master_dma_config(UINT32 mode, UINT32 rate) {
 	//param = 5000000;
 	//sddev_control(SPI_DEV_NAME, CMD_SPI_SET_CKR, (void *)&param);
 
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "spi_master [CTRL]:0x%08x \n", REG_READ(SPI_CTRL));
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "spi_master [CONFIG]:0x%08x \n", REG_READ(SPI_CONFIG));
+	ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "spi_master [CTRL]:0x%08x \n", REG_READ(SPI_CTRL));
+	ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "spi_master [CONFIG]:0x%08x \n", REG_READ(SPI_CONFIG));
 }
 
 int spidma_spi_master_dma_tx_init(UINT32 mode, UINT32 rate, struct spi_message *spi_msg) {
@@ -444,7 +448,7 @@ int spidma_spi_master_dma_send(struct spi_message *spi_msg) {
 	}
 
 	if (spi_dev->tx_ptr != spi_msg->send_buf) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "spi_dma_send_ set pointer!\n");
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "spi_dma_send_ set pointer!\n");
 
 		GDMA_CFG_ST en_cfg;
 		en_cfg.channel = SPI_TX_DMA_CHANNEL;
@@ -453,7 +457,7 @@ int spidma_spi_master_dma_send(struct spi_message *spi_msg) {
 		spi_dev->tx_ptr = spi_msg->send_buf;
 	}
 	if (spi_dev->tx_len != spi_msg->send_len) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "spi_dma_send_ set length!\n");
+		ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "spi_dma_send_ set length!\n");
 
 		GDMA_CFG_ST en_cfg;
 		//spi_ctrl(CMD_SPI_TXTRANS_EN, (void *)&spi_msg->send_len);
@@ -467,10 +471,10 @@ int spidma_spi_master_dma_send(struct spi_message *spi_msg) {
 	GLOBAL_INT_DISABLE();
 	spi_dev->flag |= TX_FINISH_FLAG;
 	GLOBAL_INT_RESTORE();
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "before enable tx 0x%08x\r\n", REG_READ(SPI_CONFIG));
+	ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "before enable tx 0x%08x\r\n", REG_READ(SPI_CONFIG));
 
 	spidma_dma_tx_enable(1);
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "enable tx 0x%08x\r\n", REG_READ(SPI_CONFIG));
+	ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "enable tx 0x%08x\r\n", REG_READ(SPI_CONFIG));
 	/* wait tx finish */
 	//if (user_dma_tx_finish_callback == NULL) {
 	//因为写DMA是主动操作，所以DMA传输完成后，SPI不一定发送完成了。
@@ -518,6 +522,21 @@ void SPIDMA_StartTX(struct spi_message *spi_msg) {
 
 void SPIDMA_StopTX() {
 	spidma_master_dma_tx_disable();
+}
+
+#else
+
+void SPIDMA_Init(struct spi_message* msg)
+{
+
+}
+void SPIDMA_StartTX(struct spi_message* msg)
+{
+
+}
+void SPIDMA_StopTX(void)
+{
+
 }
 
 #endif
