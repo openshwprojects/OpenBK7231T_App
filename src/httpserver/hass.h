@@ -141,6 +141,7 @@ HassDeviceInfo* hass_createSelectEntityIndexed(const char* state_topic, const ch
 	const char* options[], const char* title);
 
 HassDeviceInfo* hass_createToggle(const char *label, const char *stateTopic, const char *commandTopic);
+HassDeviceInfo* hass_init_textField_info(int index);
 const char* hass_build_discovery_json(HassDeviceInfo* info);
 void hass_free_device_info(HassDeviceInfo* info); 
 char *hass_generate_multiplyAndRound_template(int decimalPlacesForRounding, int decimalPointOffset, int divider);

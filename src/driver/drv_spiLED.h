@@ -1,4 +1,4 @@
-
+#include "drv_spidma.h"
 
 typedef struct spiLED_s {
 	byte *buf;

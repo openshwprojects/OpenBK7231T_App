@@ -116,6 +116,8 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_sm2235.c
 	${OBK_SRCS}driver/drv_soft_i2c.c
 	${OBK_SRCS}driver/drv_soft_spi.c
+	${OBK_SRCS}driver/drv_sm15155e.c
+	${OBK_SRCS}driver/drv_sm16703P.c
 	${OBK_SRCS}driver/drv_spi.c
 	${OBK_SRCS}driver/drv_spiLED.c
 	${OBK_SRCS}driver/drv_spi_flash.c
@@ -141,8 +143,6 @@ set(OBKM_SRC
 	${OBK_SRCS}i2c/drv_i2c_tc74.c
 
 #	${OBK_SRCS}driver/drv_bmp280.c
-#	${OBK_SRCS}driver/drv_sm15155e.c
-#	${OBK_SRCS}driver/drv_sm16703P.c
 #	${OBK_SRCS}driver/drv_test.c
 #	${OBK_SRCS}driver/drv_test_charts.c
 )

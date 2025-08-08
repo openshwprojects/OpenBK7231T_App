@@ -2,10 +2,15 @@ cmake_minimum_required(VERSION 3.16.0)
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 add_compile_definitions(PLATFORM_ESPIDF=1)
 add_compile_definitions(LWIP_NOASSERT=1)
+
+if (DEFINED $ENV{APP_VERSION})
 add_definitions( -DUSER_SW_VER="$ENV{APP_VERSION}" )
+endif()
+
 add_definitions( -DOBK_VARIANT=$ENV{OBK_VARIANT} )
 include_directories("$ENV{IDF_PATH}/../../libraries/berry/src")
 include_directories("$ENV{IDF_PATH}/../../include")
+
 set(PROJECT_VER "$ENV{APP_VERSION}")
 project(OpenBeken)
 idf_build_set_property(COMPILE_OPTIONS "-Wno-error=format-truncation" APPEND)

@@ -11,6 +11,7 @@
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
 #include "../httpserver/new_http.h"
+#include "drv_local.h"
 
 #if ENABLE_DRIVER_SM16703P
 #include "drv_spiLED.h"

@@ -56,7 +56,7 @@ struct bk_spi_dev {
 	volatile uint32_t flag;
 };
 
-#elif WINDOWS
+#else
 
 struct spi_message
 {
@@ -66,9 +66,6 @@ struct spi_message
 	byte* recv_buf;
 	unsigned int recv_len;
 };
-
-typedef int beken_semaphore_t;
-typedef int beken_mutex_t;
 
 #endif
 

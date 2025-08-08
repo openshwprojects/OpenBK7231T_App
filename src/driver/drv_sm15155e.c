@@ -30,7 +30,7 @@ void SM15155E_Write(float *rgbcw) {
 	byte packet[16];
 
 	int i;
-	unsigned short *cur_col_16 = (unsigned short)&packet[0];
+	unsigned short *cur_col_16 = (unsigned short*)&packet[0];
 
 	memset(packet, 0, sizeof(packet));
 
@@ -58,7 +58,9 @@ void SM15155E_Init() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("LED_Map", CMD_LEDDriver_Map, NULL);
 
-	SPILED_Init();
+	uint32_t pin = PIN_FindPinIndexForRole(IOR_SM16703P_DIN, 0);
+
+	SPILED_Init(pin);
 
 	// FF00 0000 0000 0000 0000 73 9C E7 1F 00
 	SPILED_InitDMA(15);

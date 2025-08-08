@@ -86,8 +86,11 @@ void SPILED_InitDMA(int numBytes) {
 
 	// Prepare buffer
 	uint32_t buffer_size = spiLED.ofs + (numBytes * 4) + spiLED.padding; //Add `spiLED.ofs` bytes for "Reset"
-
+#if PLATFORM_ESPIDF
+	spiLED.buf = heap_caps_malloc(sizeof(byte) * (buffer_size), MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA);
+#else
 	spiLED.buf = (byte *)os_malloc(sizeof(byte) * (buffer_size)); //18LEDs x RGB x 4Bytes
+#endif
 
 	// Fill `spiLED.ofs` slice of the buffer with zero
 	for (i = 0; i < spiLED.ofs; i++) {
@@ -147,6 +150,19 @@ void SPILED_SetRawBytes(int start_offset, byte *bytes, int numBytes, int push) {
 		SPIDMA_StartTX(spiLED.msg);
 	}
 }
+
+#if PLATFORM_ESPIDF
+
+#include "driver/spi_common.h"
+#include "driver/spi_master.h"
+#include "../hal/espidf/hal_pinmap_espidf.h"
+
+extern spi_device_handle_t obk_spidma;
+extern int spidma_led_pin;
+extern spi_host_device_t obk_spi_host;
+
+#endif
+
 void SPILED_Shutdown() {
 	spiLED.ready = 0;
 	if (spiLED.buf) {
@@ -157,11 +173,15 @@ void SPILED_Shutdown() {
 		free(spiLED.msg);
 		spiLED.msg = 0;
 	}
+#if PLATFORM_ESPIDF
+	spi_bus_remove_device(obk_spidma);
+	spi_bus_free(obk_spi_host);
+#endif
 }
 
-void SPILED_Init() {
-	uint32_t val;
+void SPILED_Init(uint32_t pin) {
 #if PLATFORM_BK7231N || PLATFORM_BEKEN_NEW
+	uint32_t val;
 	val = GFUNC_MODE_SPI_USE_GPIO_14;
 	sddev_control(GPIO_DEV_NAME, CMD_GPIO_ENABLE_SECOND, &val);
 
@@ -174,6 +194,8 @@ void SPILED_Init() {
 
 	param = PWD_SPI_CLK_BIT;
 	sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_UP, &param);
+#elif PLATFORM_ESPIDF
+	spidma_led_pin = (int)g_pins[pin].pin;
 #else
 
 

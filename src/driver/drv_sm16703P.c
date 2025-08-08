@@ -318,7 +318,9 @@ static commandResult_t SM16703P_StartTX(const void *context, const char *cmd, co
 // startDriver SM16703P
 // backlog startDriver SM16703P; SM16703P_Test
 void SM16703P_Init() {
-	SPILED_Init();
+
+	uint32_t pin = PIN_FindPinIndexForRole(IOR_SM16703P_DIN, 0);
+	SPILED_Init(pin);
 
 	//cmddetail:{"name":"SM16703P_Init","args":"[NumberOfLEDs][ColorOrder]",
 	//cmddetail:"descr":"This will setup LED driver for a strip with given number of LEDs. Please note that it also works for WS2812B and similiar LEDs. You can optionally set the color order with can be any combination of R, G, B, C and W (e.g. RGBW or GRBWC, default is RGB). See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",

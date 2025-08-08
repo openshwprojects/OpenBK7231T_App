@@ -524,7 +524,60 @@ void SPIDMA_StopTX() {
 	spidma_master_dma_tx_disable();
 }
 
+#elif PLATFORM_ESPIDF
+
+#include "../new_cfg.h"
+#include "../new_common.h"
+#include "../new_pins.h"
+
+#include "drv_spidma.h"
+#include "driver/spi_common.h"
+#include "driver/spi_master.h"
+
+#if SOC_SPI_PERIPH_NUM > 2
+spi_host_device_t obk_spi_host = SPI3_HOST;
 #else
+spi_host_device_t obk_spi_host = SPI2_HOST;
+#endif
+
+spi_device_handle_t obk_spidma;
+int spidma_led_pin = -1;
+
+void SPIDMA_Init(struct spi_message* msg)
+{
+	spi_bus_config_t buscfg = {};
+	buscfg.miso_io_num = -1;
+	buscfg.mosi_io_num = spidma_led_pin;
+	buscfg.sclk_io_num = -1;
+	buscfg.quadwp_io_num = -1;
+	buscfg.quadhd_io_num = -1;
+	buscfg.max_transfer_sz = msg->send_len;
+
+	spi_device_interface_config_t devcfg = {};
+	devcfg.clock_speed_hz = 3000000;
+	devcfg.mode = 0;
+	devcfg.spics_io_num = -1;
+	devcfg.queue_size = 1;
+	devcfg.command_bits = 0;
+	devcfg.address_bits = 0;
+
+	spi_bus_initialize(obk_spi_host, &buscfg, SPI_DMA_CH_AUTO);
+	spi_bus_add_device(obk_spi_host, &devcfg, &obk_spidma);
+}
+
+void SPIDMA_StartTX(struct spi_message* msg)
+{
+	spi_transaction_t transaction = { 0 };
+	transaction.length = msg->send_len * 8; // bits, not bytes
+	transaction.tx_buffer = msg->send_buf;
+	spi_device_transmit(obk_spidma, &transaction);
+}
+
+void SPIDMA_StopTX(void) { }
+
+#else
+
+#include "drv_spidma.h"
 
 void SPIDMA_Init(struct spi_message* msg)
 {
