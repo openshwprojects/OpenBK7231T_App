@@ -1,3 +1,5 @@
+#if PLATFORM_ECR6600
+
 #include "oshal.h"
 #include "cli.h"
 #include "flash.h"
@@ -79,11 +81,22 @@ int main(void)
 
 	wifi_main();
 
+	time_check_temp();
+	os_task_create("time_check_temp", SYSTEM_EVENT_LOOP_PRIORITY, 4096, time_check_temp, NULL);
+
 	// disabling this will crash when getting ip
 	psm_wifi_ble_init();
 
 	psm_boot_flag_dbg_op(true, 1);
-
+	extern volatile int rtc_task_handle;
+	extern void calculate_rtc_task();
+	rtc_task_handle = os_task_create("calculate_rtc_task", SYSTEM_EVENT_LOOP_PRIORITY, 4096, calculate_rtc_task, NULL);
+	if(rtc_task_handle)
+	{
+		os_printf(LM_OS, LL_INFO, "rtc calculate start!\r\n");
+	}
+	extern int health_mon_create_by_nv();
+	health_mon_create_by_nv();
 	//psm_wifi_ps_to_active();
 	//psm_sleep_mode_ena_op(true, 0);
 	//psm_set_psm_enable(0);
@@ -124,3 +137,5 @@ int main(void)
 	vTaskStartScheduler();
 	return 0;
 }
+
+#endif

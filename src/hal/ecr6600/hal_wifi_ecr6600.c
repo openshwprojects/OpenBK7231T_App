@@ -16,6 +16,7 @@
 static void (*g_wifiStatusCallback)(int code) = NULL;
 extern system_event_cb_t s_event_handler_cb;
 uint8_t wmac[6] = { 0 };
+uint8_t g_enable_cmw = 0;
 
 bool g_bStaticIP = false, mac_init = false;
 
@@ -201,6 +202,7 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 		IP_ADDR4(&if_ip.dns1, ip->dnsServerIpAddr[0], ip->dnsServerIpAddr[1], ip->dnsServerIpAddr[2], ip->dnsServerIpAddr[3]);
 		set_sta_ipconfig(&if_ip);
 	}
+	g_enable_cmw = 1;
 	wifi_set_status(STATION_IF, STA_STATUS_START);
 	struct netif* nif = NULL;
 	nif = get_netif_by_index(STATION_IF);
