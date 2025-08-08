@@ -10,6 +10,10 @@
 #include "../mqtt/new_mqtt.h"
 #include "../httpserver/new_http.h"
 #include "drv_uart.h"
+#include "../httpserver/hass.h"
+
+//const char **Channel_GetOptionsForChannelType(int type, int *numTypes) {
+
 
 #define TCL_UART_PACKET_LEN 1
 #define TCL_UART_PACKET_HEAD 0xff
@@ -792,7 +796,6 @@ void TCL_UART_RunEverySecond(void) {
 	}
 	TCL_UART_TryToGetNextPacket();
 }
-#include "../httpserver/hass.h"
 // backlog startDriver TCL; scheduleHADiscovery
 void TCL_DoDiscovery(const char *topic) {
 	HassDeviceInfo* dev_info = NULL;

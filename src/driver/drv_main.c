@@ -53,6 +53,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "Freeze",		Freeze_Init,			Freeze_OnEverySecond,			NULL, Freeze_RunFrame, NULL, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_GENERICAC
+	//drvdetail:{"name":"GenericAC",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Frqp.",
+	//drvdetail:"requires":""}
+	{ "GenericAC",		GenericAC_Init,			NULL,			NULL, NULL, NULL, GenericAC_OnChannelChange, GenericAC_DoDiscovery, false },
+#endif
 #if ENABLE_DRIVER_PIR
 	//drvdetail:{"name":"PIR",
 	//drvdetail:"title":"TODO",

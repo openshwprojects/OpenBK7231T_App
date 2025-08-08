@@ -401,6 +401,7 @@
     <ClCompile Include="src\selftest\selftest_tclAC.c" />
     <ClCompile Include="src\berry\modules\be_i2c.c" />
     <ClCompile Include="src\driver\drv_gosundSW2.c" />
+    <ClCompile Include="src\driver\drv_genericAC.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\base64\base64.h" />
