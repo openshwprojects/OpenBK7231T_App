@@ -2,9 +2,11 @@
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "../quicktick.h"
+#include "../cmnds/cmd_public.h"
 #include "../logging/logging.h"
 #include "errno.h"
 #include <lwip/sockets.h>
+#include "drv_uart.h"
 
 #if ENABLE_DRIVER_UART_TCP
 

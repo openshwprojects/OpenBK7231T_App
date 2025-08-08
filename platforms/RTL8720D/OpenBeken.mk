@@ -17,6 +17,7 @@ CSRC  += hal/realtek/hal_wifi_realtek.c
 OBK_SRCS = 
 include $(EFDIR)/../platforms/obk_main.mk
 CSRC += $(OBKM_SRC)
+#CPPSRC += $(OBKM_SRC_CXX)
 MODULE_IFLAGS += $(OBK_CFLAGS)
 
 CSRC += libraries/easyflash/ports/ef_port.c
