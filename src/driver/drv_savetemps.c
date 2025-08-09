@@ -94,9 +94,9 @@ void SAVETEMPS_AppendInformationToHTTPIndexPage(http_request_t* request, int bPr
 		poststr(request, "function scalegraph(t){svg.setAttribute(\"width\",gwi*t),svg.setAttribute(\"heigth\",gh*t)}"
 					"md=(t,e=\"a\")=>(new Date(t)).toLocaleString().replace(\"a\"==e?/,/:\"d\"==e?/,.*/:/.*, /,\"a\"==e?\"\\&#13;\":\"\");"
 					"function draw(s,e){"
-					"n=5*(1+~~(Math.max(...e)/5)),a=(new Date).getTime();dd=a-e.length*ds;for(var r=\"' fill='transparent' stroke='black'>\",g=\"<line x1='0' x2='\",d=\"\",l=\"\",i=\"<path d='\",h=0;h<e.length;h++)"
-					"x=~~(gwi/e.length*h),y=~~(gh-gh/n*e[h]),d+=\"<circle cx='\"+x+\"' cy='\"+y+\"' r='7' fill='#5cceee'><title> \"+e[h].toFixed(2)+\"°C &#13; \"+md(dd)+\"</title></circle>\","
-					"i+=h>0?\" L \":\"M \",i+=x+\" \"+y,h%~~(e.length/5)==0&&(l+=\"<text  transform='translate(\"+x+\", 525) rotate(-45)' text-anchor='end'>\"+md(dd,\"t\")+\"</text>\"),"
+					"j=0,el=e.length,n=5*(1+~~(Math.max(...e)/5)),a=(new Date).getTime();dd=a-(el-1)*ds;for(var r=\"' fill='transparent' stroke='black'>\",g=\"<line x1='0' x2='\",d=\"\",l=\"\",i=\"<path d='\",h=0;h<el;h++)"
+					"x=~~(gwi/(el-1)*h),y=~~(gh-gh/n*e[h]),d+=\"<circle cx='\"+x+\"' cy='\"+y+\"' r='7' fill='#5cceee'><title> \"+e[h].toFixed(2)+\"°C &#13; \"+md(dd)+\"</title></circle>\","
+					"i+=h>0?\" L \":\"M \",i+=x+\" \"+y,(x+1)>=(gwi/5)*j&&(j++,l+=\"<text  transform='translate(\"+x+\", 525) rotate(-45)' text-anchor='end'>\"+md(dd,\"t\")+\"</text>\"),"
 					"dd+=ds;for(i+=r+\"</path>\",l+=g+\"0' y1='0' y2='\"+gh+r+\"</line><text font-size='30px' y='-25' x='-25'>°C</text>\",l+=g+gwi+\"' y1='\"+\"500' y2='\"+gh+r+\"</line> \","
 					"h=0;h<5;h++)l+=\"<text  x='-50' y='\"+h*gh/5+\"'>\"+(n-h*n/5)+\"</text>\";s.innerHTML=d+i+l};function updategraph(){draw(svg,document.getElementById(\"graphdata\").value.split(/\s*,\s*/).map(Number))};</script>"
 		);
