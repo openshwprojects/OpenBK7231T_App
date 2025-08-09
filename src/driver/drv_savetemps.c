@@ -13,7 +13,7 @@
 #define STR(X) STR_(X)
 
 // how many enties in buffer?
-#define SAVEMAX 500
+#define SAVEMAX 100
 // save every X seconds
 #define SAVETEMPRATE 30
 //
@@ -21,7 +21,8 @@ int savetemprate = SAVETEMPRATE;
 extern float g_wifi_temperature;
 
 RB32_t* g_temperature_rb;
-
+uint32_t lastsaved=0;	//  g_secondsElapsed value on last save - so we can tell how "old" data is
+bool sent_update=1;	// set to 0 if new data to send
 
 uint8_t savetemperature(uint8_t t){
 	RB_saveVal(g_temperature_rb, t);
@@ -87,17 +88,29 @@ void SAVETEMPS_AppendInformationToHTTPIndexPage(http_request_t* request, int bPr
 {
 	if (bPreState){
 
-		char js[]="<script>const gwi=1e3,gh=500,lm=50;function scalegraph(t){svg=document.getElementById(\"mygraph\"),svg.setAttribute(\"width\",gwi*t),svg.setAttribute(\"heigth\",gh*t)}function md(t,e=\"a\"){return new Date(t).toLocaleString().replace(\"a\"==e?/,/:\"d\"==e?/,.*/:/.*, /,\"a\"==e?\"\\&#13;\":\"\")}function draw(){var t=document.getElementById(\"mygraph\"),e=document.getElementById(\"graphdata\").value.split(/\s*,\s*/).map((t=>isNaN(parseInt(t))?t:parseFloat(t))),n=5*(1+~~(Math.max(...e)/5)),a=(new Date).getTime();dd=a-e.length*ds;for(var r=\"' fill='transparent' stroke='black'>\",g=\"<line x1='0' x2='\",d=\"\",l=\"\",i=\"<path d='\",h=0;h<e.length;h++)x=~~(gwi/e.length*h),y=~~(gh-gh/n*e[h]),d+=\"<circle cx='\"+x+\"' cy='\"+y+\"' r='7' fill='#5cceee'><title> \"+e[h].toFixed(2)+\"°C &#13; \"+md(dd)+\"</title></circle>\",i+=h>0?\" L \":\"M \",i+=x+\" \"+y,h%~~(e.length/5)==0&&(l+=\"<text  transform='translate(\"+x+\", 525) rotate(-45)' text-anchor='end'>\"+md(dd,\"t\")+\"</text>\"),dd+=ds;for(i+=r+\"</path>\",l+=g+\"0' y1='0' y2='\"+gh+r+\"</line><text font-size='30px' y='-25' x='-25'>°C</text>\",l+=g+gwi+\"' y1='\"+\"500' y2='\"+gh+r+\"</line> \",h=0;h<5;h++)l+=\"<text  x='-50' y='\"+h*gh/5+\"'>\"+(n-h*n/5)+\"</text>\";t.innerHTML=d+i+l}ds=1e3*" STR(SAVETEMPRATE)" ;function updategraph(){draw(document.getElementById(\"mygraph\"),document.getElementById(\"graphdata\").value.split(/\s*,\s*/).map(Number))};</script>";
-		poststr(request, js);
-		
-		hprintf255(request, "<p><svg xmlns='http://www.w3.org/2000/svg' id='mygraph' width='800' heigth='400' viewBox='-75 -75 1100 650' style='background: white'></svg>");
-		hprintf255(request, "<p>Scale graph <input type='range' min='0.5' max='3' step='0.1' value='.8' onchange='scalegraph(this.value)'>");
+		poststr(request, "<p><svg xmlns='http://www.w3.org/2000/svg' id='mygraph' width='800' heigth='400' viewBox='-75 -75 1100 650' style='background: white'></svg>"
+				"<p>Scale graph <input type='range' min='0.5' max='3' step='0.1' value='.8' onchange='scalegraph(this.value)'>");
+		hprintf255(request, "<script>const gwi=1e3,gh=500,lm=50,ds=1e3*%i,svg=document.getElementById(\"mygraph\");",savetemprate);
+		poststr(request, "function scalegraph(t){svg.setAttribute(\"width\",gwi*t),svg.setAttribute(\"heigth\",gh*t)}"
+					"md=(t,e=\"a\")=>(new Date(t)).toLocaleString().replace(\"a\"==e?/,/:\"d\"==e?/,.*/:/.*, /,\"a\"==e?\"\\&#13;\":\"\");"
+					"function draw(s,e){"
+					"n=5*(1+~~(Math.max(...e)/5)),a=(new Date).getTime();dd=a-e.length*ds;for(var r=\"' fill='transparent' stroke='black'>\",g=\"<line x1='0' x2='\",d=\"\",l=\"\",i=\"<path d='\",h=0;h<e.length;h++)"
+					"x=~~(gwi/e.length*h),y=~~(gh-gh/n*e[h]),d+=\"<circle cx='\"+x+\"' cy='\"+y+\"' r='7' fill='#5cceee'><title> \"+e[h].toFixed(2)+\"°C &#13; \"+md(dd)+\"</title></circle>\","
+					"i+=h>0?\" L \":\"M \",i+=x+\" \"+y,h%~~(e.length/5)==0&&(l+=\"<text  transform='translate(\"+x+\", 525) rotate(-45)' text-anchor='end'>\"+md(dd,\"t\")+\"</text>\"),"
+					"dd+=ds;for(i+=r+\"</path>\",l+=g+\"0' y1='0' y2='\"+gh+r+\"</line><text font-size='30px' y='-25' x='-25'>°C</text>\",l+=g+gwi+\"' y1='\"+\"500' y2='\"+gh+r+\"</line> \","
+					"h=0;h<5;h++)l+=\"<text  x='-50' y='\"+h*gh/5+\"'>\"+(n-h*n/5)+\"</text>\";s.innerHTML=d+i+l};function updategraph(){draw(svg,document.getElementById(\"graphdata\").value.split(/\s*,\s*/).map(Number))};</script>"
+		);
+
+		sent_update = 0;	// after reload, make sure data is always written
 
 	}
 	else {
-		hprintf255(request, "\n<input type='hidden' id='graphdata' value='");
-		iterateRBtoBuff(g_temperature_rb, RB_CB_DataAsFloatTemp, request,",\0");
-		hprintf255(request, "'><style onload='updategraph();'></style>\n");
+		if (sent_update == 0) {
+			hprintf255(request, "\n<input type='hidden' id='graphdata' value='");
+			iterateRBtoBuff(g_temperature_rb, RB_CB_DataAsFloatTemp, request,",\0");
+			hprintf255(request, "'><style onload='updategraph();'></style>\n");
+			sent_update = 1;
+		}
 		
 	}
 }
@@ -107,8 +120,10 @@ void SAVETEMPS_AppendInformationToHTTPIndexPage(http_request_t* request, int bPr
 void SAVETEMPS_OnEverySecond()
 {
 	if (!(g_secondsElapsed % savetemprate)) {
-		ADDLOG_INFO(LOG_FEATURE_RAW,"[saveTepm] g_wifi_temperature=%.2f  -- rouded: %.2f -- saving as %i\n", g_wifi_temperature,round_to_5(g_wifi_temperature),(uint8_t)(2*round_to_5(g_wifi_temperature)+31));
+		ADDLOG_INFO(LOG_FEATURE_RAW,"[saveTepm] g_wifi_temperature=%.2f  -- rounded: %.2f -- saving as %i\n", g_wifi_temperature,round_to_5(g_wifi_temperature),(uint8_t)(2*round_to_5(g_wifi_temperature)+31));
 		savetemperature(floatTemp2int(g_wifi_temperature));
+//		lastsaved = g_secondsElapsed;
+		sent_update = 0;
 	}
 }
 
