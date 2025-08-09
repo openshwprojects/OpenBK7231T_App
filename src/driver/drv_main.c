@@ -53,6 +53,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "Freeze",		Freeze_Init,			Freeze_OnEverySecond,			NULL, Freeze_RunFrame, NULL, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_TESTSPIFLASH
+	//drvdetail:{"name":"TESTSPIFLASH",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TESTSPIFLASH",
+	//drvdetail:"requires":""}
+	{ "TESTSPIFLASH",		DRV_InitFlashMemoryTestFunctions,			NULL,			NULL, NULL, NULL, NULL, NULL, false },
+#endif
 #if ENABLE_DRIVER_PIR
 	//drvdetail:{"name":"PIR",
 	//drvdetail:"title":"TODO",

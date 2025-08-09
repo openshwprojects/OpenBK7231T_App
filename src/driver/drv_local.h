@@ -187,6 +187,8 @@ void Freeze_Init();
 void Freeze_OnEverySecond();
 void Freeze_RunFrame();
 
+void DRV_InitFlashMemoryTestFunctions();
+
 void PixelAnim_Init();
 void PixelAnim_SetAnimQuickTick();
 void PixelAnim_SetAnim(int j);

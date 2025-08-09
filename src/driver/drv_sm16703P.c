@@ -64,27 +64,29 @@ void SM16703P_setPixel(int pixel, int r, int g, int b, int c, int w) {
 	int i;
 	for(i = 0; i < pixel_size; i++) 
 	{
+		int pcolor;
 		switch (color_channel_order[i])
 		{
 			case COLOR_CHANNEL_RED:
-				translate_byte(r, spiLED.buf + (spiLED.ofs + i * 4 + (pixel * pixel_size * 4)));
+				pcolor = r;
 				break;
 			case COLOR_CHANNEL_GREEN:
-				translate_byte(g, spiLED.buf + (spiLED.ofs + i * 4 + (pixel * pixel_size * 4)));
+				pcolor = g;
 				break;
 			case COLOR_CHANNEL_BLUE:
-				translate_byte(b, spiLED.buf + (spiLED.ofs + i * 4 + (pixel * pixel_size * 4)));
+				pcolor = b;
 				break;
 			case COLOR_CHANNEL_COLD_WHITE:
-				translate_byte(c, spiLED.buf + (spiLED.ofs + i * 4 + (pixel * pixel_size * 4)));
+				pcolor = c;
 				break;
 			case COLOR_CHANNEL_WARM_WHITE:
-				translate_byte(w, spiLED.buf + (spiLED.ofs + i * 4 + (pixel * pixel_size * 4)));
+				pcolor = w;
 				break;
 			default:
 				ADDLOG_ERROR(LOG_FEATURE_CMD, "Unknown color channel %d at index %d", color_channel_order[i], i);
 				return;
 		}
+		translate_byte(pcolor, spiLED.buf + (spiLED.ofs + i * 4 + (pixel * pixel_size * 4)));
 	}
 }
 void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
