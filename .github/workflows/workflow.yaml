@@ -211,6 +211,10 @@ jobs:
           - platform: OpenBK7231N
             variant: sensors
 
+          # extras for BK7238
+          - platform: OpenBK7238
+            variant: irRemoteESP
+            
           - platform: OpenBL602
             variant: berry
     steps:
