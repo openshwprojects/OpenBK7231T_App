@@ -162,3 +162,6 @@ OBKM_SRC  += $(OBK_SRCS)i2c/drv_i2c_tc74.c
 
 OBKM_SRC_CXX += $(OBK_SRCS)driver/drv_ir.cpp
 OBKM_SRC_CXX += $(OBK_SRCS)driver/drv_ir_new.cpp
+OBKM_SRC_CXX += $(wildcard $(OBK_SRCS)libraries/IRremoteESP8266/src/*.cpp)
+
+
