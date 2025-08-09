@@ -145,4 +145,8 @@ set(OBKM_SRC
 #	${OBK_SRCS}driver/drv_sm15155e.c
 #	${OBK_SRCS}driver/drv_sm16703P.c
 #	${OBK_SRCS}driver/drv_test_charts.c
+	${OBK_SRCS}driver/drv_savetemps.c
+# ringbuffer for temparature_graph
+	${OBK_SRCS}ringbuff32.c
+
 )

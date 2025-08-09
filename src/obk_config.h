@@ -80,6 +80,7 @@
 #define ENABLE_OBK_SCRIPTING 1
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY 1
 #define ENABLE_LITTLEFS 1
+#define ENABLE_DRIVER_SAVETEMPS			              1
 
 #elif PLATFORM_W800
 
@@ -104,6 +105,7 @@
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY 1
 #define ENABLE_LITTLEFS 1
 #define NEW_TCP_SERVER 1
+#define ENABLE_DRIVER_SAVETEMPS			              1
 
 #elif WINDOWS
 
@@ -176,9 +178,11 @@
 #define ENABLE_OBK_SCRIPTING 1
 #define ENABLE_OBK_BERRY 1
 #define ENABLE_DRIVER_DS1820_FULL 1
+#define ENABLE_DRIVER_SAVETEMPS			              1
 
 #elif PLATFORM_BL602
 
+#define ENABLE_DRIVER_SAVETEMPS			                1
 // #define ENABLE_SEND_POSTANDGET		1
 #define ENABLE_HA_DISCOVERY 1
 // I have enabled drivers on BL602
@@ -210,6 +214,8 @@
 #endif
 
 #elif PLATFORM_BEKEN
+
+#define ENABLE_DRIVER_SAVETEMPS			                1
 
 //#define ENABLE_LFS_SPI 1
 //#define ENABLE_DRIVER_TESTSPIFLASH 1
@@ -326,6 +332,7 @@
 
 #elif PLATFORM_LN882H
 
+#define ENABLE_DRIVER_SAVETEMPS			                1
 //#define ENABLE_SEND_POSTANDGET		1
 #define	ENABLE_HA_DISCOVERY						1
 #define ENABLE_MQTT								1
