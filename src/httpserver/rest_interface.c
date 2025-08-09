@@ -849,10 +849,17 @@ static int http_rest_post_lfs_file(http_request_t* request) {
 
 		do {
 			loops++;
+#if ENABLE_LFS_SPI
+			if (loops > 50) {
+				loops = 0;
+				rtos_delay_milliseconds(1);
+			}
+#else
 			if (loops > 10) {
 				loops = 0;
 				rtos_delay_milliseconds(10);
 			}
+#endif
 			//ADDLOG_DEBUG(LOG_FEATURE_API, "%d bytes to write", writelen);
 			len = lfs_file_write(&lfs, file, writebuf, writelen);
 			if (len < 0) {
