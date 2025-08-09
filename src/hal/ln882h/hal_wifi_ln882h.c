@@ -300,6 +300,8 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
 
     wifi_manager_reg_event_callback(WIFI_MGR_EVENT_STA_CONNECTED, &wifi_connected_cb);
     wifi_manager_reg_event_callback(WIFI_MGR_EVENT_STA_CONNECT_FAILED, &wifi_connect_failed_cb);
+    extern void ln_wpa_sae_enable(void);
+    ln_wpa_sae_enable();
 
     wifi_sta_connect(&connect, &scan_cfg);
 }
