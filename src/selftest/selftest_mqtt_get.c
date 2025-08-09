@@ -137,7 +137,7 @@ void Test_MQTT_Get_LED_EnableAll() {
 		// cause an error
 		SIM_SendFakeMQTT("cmnd/myTestDevice/led_temperature", "0");
 #endif
-		// expect get reply - led_dimmer will publish its value on change - NO GET SUFIX AS DISABLED IN FLAGS
+		// expect get reply - led_dimmer will publish its value on change - NO GET SUFFIX AS DISABLED IN FLAGS
 		SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/led_temperature", tgState, false);
 		SIM_ClearMQTTHistory();
 
@@ -147,7 +147,7 @@ void Test_MQTT_Get_LED_EnableAll() {
 		SIM_ClearMQTTHistory();
 		SIM_SendFakeMQTT("myTestDevice/led_temperature/get", "");
 		Sim_RunFrames(4, false);
-		// expect get reply - led_dimmer will publish value because we have requested it - NO GET SUFIX AS DISABLED IN FLAGS
+		// expect get reply - led_dimmer will publish value because we have requested it - NO GET SUFFIX AS DISABLED IN FLAGS
 		SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("myTestDevice/led_temperature", tgState, false);
 		SIM_ClearMQTTHistory();
 	}

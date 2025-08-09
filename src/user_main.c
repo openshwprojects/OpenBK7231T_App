@@ -961,7 +961,7 @@ void QuickTick(void* param)
 #endif
 	CMD_RunUartCmndIfRequired();
 
-	// process recieved messages here..
+	// process received messages here..
 #if ENABLE_MQTT
 	MQTT_RunQuickTick();
 #endif
