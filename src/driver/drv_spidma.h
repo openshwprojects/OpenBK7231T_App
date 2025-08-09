@@ -72,3 +72,4 @@ struct spi_message
 void SPIDMA_Init(struct spi_message *spi_msg);
 void SPIDMA_StartTX(struct spi_message *spi_msg);
 void SPIDMA_StopTX(void);
+void SPIDMA_Deinit(void);

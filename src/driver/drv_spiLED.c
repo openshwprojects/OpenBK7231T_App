@@ -24,6 +24,9 @@ void SPIDMA_StartTX(struct spi_message *msg) {
 void SPIDMA_StopTX(void) {
 
 }
+void SPIDMA_Deinit(void) {
+
+}
 
 #endif
 static uint8_t data_translate[4] = { 0b10001000, 0b10001110, 0b11101000, 0b11101110 };
@@ -151,19 +154,9 @@ void SPILED_SetRawBytes(int start_offset, byte *bytes, int numBytes, int push) {
 	}
 }
 
-#if PLATFORM_ESPIDF
+#if !PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
 
-#include "driver/spi_common.h"
-#include "driver/spi_master.h"
-#include "../hal/espidf/hal_pinmap_espidf.h"
-
-extern spi_device_handle_t obk_spidma;
-extern int spidma_led_pin;
-extern spi_host_device_t obk_spi_host;
-
-#elif PLATFORM_LN882H
-
-extern uint32_t spidma_led_pin;
+int spidma_led_pin = -1;
 
 #endif
 
@@ -177,13 +170,10 @@ void SPILED_Shutdown() {
 		free(spiLED.msg);
 		spiLED.msg = 0;
 	}
-#if PLATFORM_ESPIDF
-	spi_bus_remove_device(obk_spidma);
-	spi_bus_free(obk_spi_host);
-#endif
+	SPIDMA_Deinit();
 }
 
-void SPILED_Init(uint32_t pin) {
+void SPILED_Init(int pin) {
 #if PLATFORM_BK7231N || PLATFORM_BEKEN_NEW
 	uint32_t val;
 	val = GFUNC_MODE_SPI_USE_GPIO_14;
@@ -198,13 +188,8 @@ void SPILED_Init(uint32_t pin) {
 
 	param = PWD_SPI_CLK_BIT;
 	sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_UP, &param);
-#elif PLATFORM_ESPIDF
-	spidma_led_pin = (int)g_pins[pin].pin;
-#elif PLATFORM_LN882H
-	spidma_led_pin = pin;
 #else
-
-
+	spidma_led_pin = pin;
 #endif
 }
 

@@ -319,7 +319,7 @@ static commandResult_t SM16703P_StartTX(const void *context, const char *cmd, co
 // backlog startDriver SM16703P; SM16703P_Test
 void SM16703P_Init() {
 
-	uint32_t pin = PIN_FindPinIndexForRole(IOR_SM16703P_DIN, 0);
+	int pin = PIN_FindPinIndexForRole(IOR_SM16703P_DIN, -1);
 	SPILED_Init(pin);
 
 	//cmddetail:{"name":"SM16703P_Init","args":"[NumberOfLEDs][ColorOrder]",

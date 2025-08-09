@@ -524,11 +524,17 @@ void SPIDMA_StopTX() {
 	spidma_master_dma_tx_disable();
 }
 
+void SPIDMA_Deinit(void)
+{
+
+}
+
 #elif PLATFORM_ESPIDF
 
 #include "../new_cfg.h"
 #include "../new_common.h"
 #include "../new_pins.h"
+#include "../hal/espidf/hal_pinmap_espidf.h"
 
 #include "drv_spidma.h"
 #include "driver/spi_common.h"
@@ -542,14 +548,14 @@ spi_host_device_t obk_spi_host = SPI2_HOST;
 #endif
 
 spi_device_handle_t obk_spidma;
-int spidma_led_pin = -1;
+extern int spidma_led_pin;
 
 void SPIDMA_Init(struct spi_message* msg)
 {
 	spi_bus_config_t buscfg = 
 	{
 		.miso_io_num = -1,
-		.mosi_io_num = spidma_led_pin,
+		.mosi_io_num = spidma_led_pin > 0 ? (int)g_pins[spidma_led_pin].pin : -1,
 		.sclk_io_num = -1,
 		.quadwp_io_num = -1,
 		.quadhd_io_num = -1,
@@ -578,7 +584,16 @@ void SPIDMA_StartTX(struct spi_message* msg)
 	spi_device_transmit(obk_spidma, &transaction);
 }
 
-void SPIDMA_StopTX(void) { }
+void SPIDMA_StopTX(void)
+{
+
+}
+
+void SPIDMA_Deinit(void)
+{
+	spi_bus_remove_device(obk_spidma);
+	spi_bus_free(obk_spi_host);
+}
 
 #elif PLATFORM_LN882H
 
@@ -594,11 +609,13 @@ void SPIDMA_StopTX(void) { }
 #include "hal/hal_dma.h"
 #include "hal/hal_spi.h"
 
-uint32_t spidma_led_pin;
+extern int spidma_led_pin;
+static int current_pin = 6;
 
 void SPIDMA_Init(struct spi_message* msg)
 {
-	lnPinMapping_t* pin = g_pins + spidma_led_pin;
+	current_pin = spidma_led_pin > 0 ? spidma_led_pin : 6;
+	lnPinMapping_t* pin = g_pins + current_pin;
 
 	hal_gpio_pin_afio_select(pin->base, pin->pin, SPI0_MOSI);
 	hal_gpio_pin_afio_en(pin->base, pin->pin, HAL_ENABLE);
@@ -619,7 +636,7 @@ void SPIDMA_Init(struct spi_message* msg)
 	
 	dma_init_t_def dma_init =
 	{
-		.dma_mem_addr = msg->send_buf,
+		.dma_mem_addr = (uint32_t)msg->send_buf,
 		.dma_data_num = msg->send_len,
 		.dma_dir = DMA_READ_FORM_MEM,
 		.dma_mem_inc_en = DMA_MEM_INC_EN,
@@ -651,6 +668,14 @@ void SPIDMA_StopTX(void)
 
 }
 
+void SPIDMA_Deinit(void)
+{
+	hal_spi_en(SPI0_BASE, HAL_DISABLE);
+	hal_spi_deinit(SPI0_BASE);
+	lnPinMapping_t* pin = g_pins + current_pin;
+	hal_gpio_pin_afio_en(pin->base, pin->pin, HAL_DISABLE);
+}
+
 #else
 
 #include "drv_spidma.h"
@@ -664,6 +689,10 @@ void SPIDMA_StartTX(struct spi_message* msg)
 
 }
 void SPIDMA_StopTX(void)
+{
+
+}
+void SPIDMA_Deinit(void)
 {
 
 }
