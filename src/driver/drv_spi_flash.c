@@ -27,6 +27,11 @@
 #define OBK_ENABLE_INTERRUPTS 
 #define OBK_DISABLE_INTERRUPTS
 
+#if PLATFORM_ESP8266
+#define spi_flash_erase_sector obk_spi_flash_erase_sector
+#define spi_flash_read obk_spi_flash_read
+#endif
+
 // LFS api is very simple.
 // To post file, use POST:
 // http://192.168.0.166/api/lfs/
