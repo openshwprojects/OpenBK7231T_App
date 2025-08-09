@@ -13,7 +13,10 @@
 #include "../../../../platforms/bk7231t/bk7231t_os/beken378/os/FreeRTOSv9.0.0/FreeRTOS/Source/portable/Keil/ARM968es/portmacro.h"
 #endif // PLATFORM_BK7231T
 #endif // PLATFORM_BK7231N
-
+#if PLATFORM_BEKEN_NEW
+#include "spi_pub.h"
+uint32_t mode = SPI_MASTER;
+#endif
 #include "../logging/logging.h"
 
 int SPI_DriverInit(void) {
@@ -22,6 +25,8 @@ int SPI_DriverInit(void) {
 #elif PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 	// Is called in dd.c
 	// spi_init();
+	return 0;
+#elif PLATFORM_BEKEN_NEW
 	return 0;
 #else
     ADDLOG_ERROR(LOG_FEATURE_DRV, "SPI_DriverInit not supported");
@@ -36,6 +41,8 @@ int SPI_DriverDeinit(void) {
 	// Is called in dd.c
 	// spi_exit();
 	return 0;
+#elif PLATFORM_BEKEN_NEW
+	return 0;
 #else
     ADDLOG_ERROR(LOG_FEATURE_DRV, "SPI_DriverDeinit not supported");
     return -1;
@@ -43,8 +50,21 @@ int SPI_DriverDeinit(void) {
 }
 
 int SPI_Init(const spi_config_t *config) {
-#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
+#if PLATFORM_BK7231N || PLATFORM_BK7238 || PLATFORM_BK7252N
+#if PLATFORM_BEKEN_NEW
+	struct spi_message msg;
+	msg.send_buf = os_malloc(sizeof(uint8_t));
+	msg.send_len = 0;
+	msg.recv_buf = os_malloc(sizeof(uint8_t));
+	msg.recv_len = 0;
+	mode = config->role == SPI_ROLE_MASTER ? SPI_MASTER : SPI_SLAVE;
+	int ret = bk_spi_master_dma_init((SPI_MODE_0 | SPI_MSB | mode), config->baud_rate, &msg);
+	free(msg.send_buf);
+	free(msg.recv_buf);
+	return ret;
+#else
 	return bk_spi_init(0, config);
+#endif
 #elif PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 	int err = 0;
 
@@ -93,6 +113,12 @@ int SPI_Init(const spi_config_t *config) {
 	spi_trans.trans_done = 1;
 
 	return err;
+#elif PLATFORM_BEKEN_NEW
+	mode = config->role == SPI_ROLE_MASTER ? SPI_MASTER : SPI_SLAVE;
+	if(mode == SPI_MASTER)
+		return bk_spi_master_init(config->baud_rate, ((config->polarity == SPI_POLARITY_LOW ? 0 : SPI_CPOL) | (config->phase == SPI_PHASE_1ST_EDGE ? 0 : SPI_CPHA)));
+	else
+		return bk_spi_slave_init(config->baud_rate, ((config->polarity == SPI_POLARITY_LOW ? 0 : SPI_CPOL) | (config->phase == SPI_PHASE_1ST_EDGE ? 0 : SPI_CPHA)));
 #else
     ADDLOG_ERROR(LOG_FEATURE_DRV, "SPI_Init not supported");
     return -1;
@@ -115,6 +141,11 @@ int SPI_Deinit(void) {
 	err |= sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_DOWN, &param);
 
 	return err;
+#elif PLATFORM_BEKEN_NEW
+	if(mode == SPI_MASTER)
+		return bk_spi_master_deinit();
+	else
+		return bk_spi_slave_deinit();
 #else
     ADDLOG_ERROR(LOG_FEATURE_DRV, "SPI_Deinit not supported");
     return -1;
@@ -135,8 +166,17 @@ static inline int Spi_wait_for_ready() {
 #endif
 
 int SPI_WriteBytes(const void *data, uint32_t size) {
-#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
+#if PLATFORM_BK7231N || PLATFORM_BK7238 || PLATFORM_BK7252N
+#if PLATFORM_BEKEN_NEW
+	struct spi_message msg;
+	msg.send_buf = data;
+	msg.send_len = size;
+	msg.recv_buf = NULL;
+	msg.recv_len = 0;
+	return bk_spi_dma_transfer(mode, &msg);
+#else
     return bk_spi_write_bytes(0, data, size);
+#endif
 #elif PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 	GLOBAL_INT_DECLARATION();
 	GLOBAL_INT_DISABLE();
@@ -159,6 +199,16 @@ int SPI_WriteBytes(const void *data, uint32_t size) {
 
 	err |= Spi_wait_for_ready();
 	return err;
+#elif PLATFORM_BEKEN_NEW
+	struct spi_message msg;
+	msg.send_buf = data;
+	msg.send_len = size;
+	msg.recv_buf = NULL;
+	msg.recv_len = 0;
+	if(mode == SPI_MASTER)
+		return bk_spi_master_xfer(&msg);
+	else
+		return bk_spi_slave_xfer(&msg);
 #else
     ADDLOG_ERROR(LOG_FEATURE_DRV, "SPI_WriteBytes not supported");
     return -1;
@@ -166,8 +216,17 @@ int SPI_WriteBytes(const void *data, uint32_t size) {
 }
 
 int SPI_ReadBytes(void *data, uint32_t size) {
-#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
+#if PLATFORM_BK7231N || PLATFORM_BK7238 || PLATFORM_BK7252N
+#if PLATFORM_BEKEN_NEW
+	struct spi_message msg;
+	msg.recv_buf = data;
+	msg.recv_len = size;
+	msg.send_buf = NULL;
+	msg.send_len = 0;
+	return bk_spi_dma_transfer(mode, &msg);
+#else
 	return bk_spi_read_bytes(0, data, size);
+#endif
 #elif PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 	GLOBAL_INT_DECLARATION();
 	GLOBAL_INT_DISABLE();
@@ -190,6 +249,16 @@ int SPI_ReadBytes(void *data, uint32_t size) {
 
 	err |= Spi_wait_for_ready();
 	return err;
+#elif PLATFORM_BEKEN_NEW
+	struct spi_message msg;
+	msg.recv_buf = data;
+	msg.recv_len = size;
+	msg.send_buf = NULL;
+	msg.send_len = 0;
+	if(mode == SPI_MASTER)
+		return bk_spi_master_xfer(&msg);
+	else
+		return bk_spi_slave_xfer(&msg);
 #else
     ADDLOG_ERROR(LOG_FEATURE_DRV, "SPI_ReadBytes not supported");
     return -1;
@@ -198,8 +267,17 @@ int SPI_ReadBytes(void *data, uint32_t size) {
 
 int SPI_Transmit(const void *txData, uint32_t txSize, void *rxData,
         uint32_t rxSize) {
-#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
+#if PLATFORM_BK7231N || PLATFORM_BK7238 || PLATFORM_BK7252N
+#if PLATFORM_BEKEN_NEW
+	struct spi_message msg;
+	msg.send_buf = txData;
+	msg.send_len = txSize;
+	msg.recv_buf = rxData;
+	msg.recv_len = rxSize;
+	return bk_spi_dma_transfer(mode, &msg);
+#else
 	return bk_spi_transmit(0, txData, txSize, rxData, rxSize);
+#endif
 #elif PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 	int err = 0;
 
@@ -210,6 +288,16 @@ int SPI_Transmit(const void *txData, uint32_t txSize, void *rxData,
 		err |= SPI_ReadBytes(rxData, rxSize);
 
 	return err;
+#elif PLATFORM_BEKEN_NEW
+	struct spi_message msg;
+	msg.send_buf = txData;
+	msg.send_len = txSize;
+	msg.recv_buf = rxData;
+	msg.recv_len = rxSize;
+	if(mode == SPI_MASTER)
+		return bk_spi_master_xfer(&msg);
+	else
+		return bk_spi_slave_xfer(&msg);
 #else
     ADDLOG_ERROR(LOG_FEATURE_DRV, "SPI_Transmit not supported");
     return -1;

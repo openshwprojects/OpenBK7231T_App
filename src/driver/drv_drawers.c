@@ -34,7 +34,7 @@ static int DR_LedIndex(http_request_t* request) {
 	int index = atoi(tmp);
 	g_timeOuts[index] = g_on_timeout_ms;
 #if ENABLE_DRIVER_SM16703P
-	SM16703P_setPixel(index, SPLIT_COLOR(g_on_color));
+	SM16703P_setPixel(index, SPLIT_COLOR(g_on_color), 0, 0);
 #endif
 	g_changes++;
 	return 0;
@@ -47,7 +47,7 @@ static void applyAmbient() {
 	g_changes++;
 	for (int i = 0; i < g_numLEDs; i++) {
 #if ENABLE_DRIVER_SM16703P
-		SM16703P_setPixel(i, SPLIT_COLOR(c));
+		SM16703P_setPixel(i, SPLIT_COLOR(c), 0, 0);
 #endif
 	}
 }
@@ -155,7 +155,7 @@ void Drawers_QuickTick() {
 			g_timeOuts[i] -= g_deltaTimeMS;
 			if (g_timeOuts[i] <= 0) {
 #if ENABLE_DRIVER_SM16703P
-				SM16703P_setPixel(i,SPLIT_COLOR(g_off_color));
+				SM16703P_setPixel(i,SPLIT_COLOR(g_off_color), 0, 0);
 #endif
 				g_timeOuts[i] = 0;
 				g_changes++;
