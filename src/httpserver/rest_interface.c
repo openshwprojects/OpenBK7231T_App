@@ -38,7 +38,7 @@ uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
 #include "hal/hal_flash.h"
 #include "flash_partition_table.h"
 
-#elif PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 
 #include "esp_system.h"
 #include "esp_ota_ops.h"
@@ -48,8 +48,16 @@ uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
 #include "nvs.h"
 #include "nvs_flash.h"
 #include "esp_wifi.h"
+#if PLATFORM_ESPIDF
+#include "esp_flash.h"
 #include "esp_pm.h"
-#include "esp_flash_spi_init.h"
+#else
+#include "esp_image_format.h"
+#include "spi_flash.h"
+#define esp_flash_read(a,b,c,d) spi_flash_read(c,b,d)
+#define OTA_WITH_SEQUENTIAL_WRITES OTA_SIZE_UNKNOWN
+#define esp_ota_abort esp_ota_end
+#endif
 
 #elif PLATFORM_REALTEK
 
@@ -309,7 +317,7 @@ static int http_rest_post(http_request_t* request) {
 		return http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_LN882H
 		return http_rest_post_flash(request, -1, -1);
-#elif PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 		return http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_REALTEK
 		return http_rest_post_flash(request, 0, -1);
@@ -538,6 +546,7 @@ static int http_rest_run_lfs_file(http_request_t* request) {
 	free(fpath);
 	return 0;
 }
+
 static int http_rest_get_lfs_file(http_request_t* request) {
 	char* fpath;
 	char* buff;
@@ -546,6 +555,7 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 	int total = 0;
 	lfs_file_t* file;
 	char *args;
+	bool isGzip;
 
 	// don't start LFS just because we're trying to read a file -
 	// it won't exist anyway
@@ -570,6 +580,8 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 		*args = 0;
 	}
 
+	isGzip = EndsWith(fpath, "gz");
+
 	ADDLOG_DEBUG(LOG_FEATURE_API, "LFS read of %s", fpath);
 	lfsres = lfs_file_open(&lfs, file, fpath, LFS_O_RDONLY);
 
@@ -577,7 +589,7 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 		lfs_dir_t* dir;
 		ADDLOG_DEBUG(LOG_FEATURE_API, "%s is a folder", fpath);
 		dir = os_malloc(sizeof(lfs_dir_t));
-		os_memset(dir, 0, sizeof(*dir));
+		memset(dir, 0, sizeof(*dir));
 		// if the thing is a folder.
 		lfsres = lfs_dir_open(&lfs, dir, fpath);
 
@@ -627,35 +639,59 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 	else {
 		ADDLOG_DEBUG(LOG_FEATURE_API, "LFS open [%s] gives %d", fpath, lfsres);
 		if (lfsres >= 0) {
-			const char* mimetype = httpMimeTypeBinary;
-			do {
-				if (EndsWith(fpath, ".ico")) {
-					mimetype = "image/x-icon";
-					break;
+			char* ext = fpath;
+			const char *mimetype = httpMimeTypeBinary;
+
+			if (isGzip) {
+				// find original extension (e.g., .js from .js.gz)
+				char* dot = strrchr(fpath, '.');
+				if (dot) {
+					*dot = '\0'; // temporarily strip .gz
+					if (EndsWith(fpath, ".js")) {
+						mimetype = httpMimeTypeJavascript;
+					}
+					else if (EndsWith(fpath, ".html")) {
+						mimetype = httpMimeTypeHTML;
+					}
+					else if (EndsWith(fpath, ".css")) {
+						mimetype = httpMimeTypeCSS;
+					}
+					else if (EndsWith(fpath, ".json")) {
+						mimetype = httpMimeTypeJson;
+					}
+					else if (EndsWith(fpath, ".ico")) {
+						mimetype = "image/x-icon";
+					}
+					*dot = '.'; // restore .gz
 				}
+			}
+			else {
 				if (EndsWith(fpath, ".js") || EndsWith(fpath, ".vue")) {
 					mimetype = httpMimeTypeJavascript;
-					break;
 				}
-				if (EndsWith(fpath, ".json")) {
+				else if (EndsWith(fpath, ".json")) {
 					mimetype = httpMimeTypeJson;
-					break;
 				}
-				if (EndsWith(fpath, ".html")) {
+				else if (EndsWith(fpath, ".html")) {
 					mimetype = httpMimeTypeHTML;
-					break;
 				}
-				if (EndsWith(fpath, ".css")) {
+				else if (EndsWith(fpath, ".css")) {
 					mimetype = httpMimeTypeCSS;
-					break;
 				}
-				break;
-			} while (0);
+				else if (EndsWith(fpath, ".ico")) {
+					mimetype = "image/x-icon";
+				}
+			}
 
-			http_setup(request, mimetype);
-//#if ENABLE_OBK_BERRY
-//			http_runBerryFile(request, fpath);
-//#else
+			if (isGzip) {
+				http_setup_gz(request, mimetype);
+			}
+			else {
+				http_setup(request, mimetype);
+			}
+			//#if ENABLE_OBK_BERRY
+			//			http_runBerryFile(request, fpath);
+			//#else
 			do {
 				len = lfs_file_read(&lfs, file, buff, 1024);
 				total += len;
@@ -663,8 +699,8 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 					//ADDLOG_DEBUG(LOG_FEATURE_API, "%d bytes read", len);
 					postany(request, buff, len);
 				}
-		} while (len > 0);
-//#endif
+			} while (len > 0);
+			//#endif
 			lfs_file_close(&lfs, file);
 			ADDLOG_DEBUG(LOG_FEATURE_API, "%d total bytes read", total);
 		}
@@ -681,7 +717,37 @@ static int http_rest_get_lfs_file(http_request_t* request) {
 	if (buff) os_free(buff);
 	return 0;
 }
-
+bool HTTP_checkLFSOverride(http_request_t* request, const char *ext) {
+	char tmp[64];
+	//sprintf_s(tmp, sizeof(tmp), "override/%s", request->url);
+	//sprintf_s(tmp, sizeof(tmp), "%s%s", request->url, ext);
+	strcpy_safe(tmp, request->url, sizeof(tmp));
+	strcat_safe(tmp, ext, sizeof(tmp));
+	char *fix = strchr(tmp, '?');
+	if (fix) {
+		*fix = 0;
+	}
+	lfs_file_t* file;
+	file = os_malloc(sizeof(lfs_file_t));
+	memset(file,0, sizeof(lfs_file_t));
+	int lfsres = lfs_file_open(&lfs, file, tmp, LFS_O_RDONLY);
+	if (lfsres == 0) {
+		lfs_file_close(&lfs, file);
+		free(file);
+		strcpy_safe(tmp, "api/lfs/", sizeof(tmp));
+		strcat_safe(tmp, request->url, sizeof(tmp));
+		strcat_safe(tmp, ext, sizeof(tmp));
+		char *oldURL = request->url;
+		request->url = tmp;
+		http_rest_get_lfs_file(request);
+		request->url = oldURL;
+		// "api/lfs/", 8)) {
+		// "api/run/", 8)) {
+		return 1;
+	}
+	free(file);
+	return 0;
+}
 static int http_rest_get_lfs_delete(http_request_t* request) {
 	char* fpath;
 	int lfsres;
@@ -1610,7 +1676,6 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	int towrite = request->bodylen;
 	char* writebuf = request->bodystart;
 	int writelen = request->bodylen;
-	int fsize = 0;
 
 	ADDLOG_DEBUG(LOG_FEATURE_OTA, "OTA post len %d", request->contentLength);
 
@@ -2148,7 +2213,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	}
 
 
-#elif PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 
 	ADDLOG_DEBUG(LOG_FEATURE_OTA, "Ota start!\r\n");
 	esp_err_t err;
@@ -2158,7 +2223,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 	update_partition = esp_ota_get_next_update_partition(NULL);
 	if(request->contentLength >= 0)
 	{
-		fsize = towrite = request->contentLength;
+		towrite = request->contentLength;
 	}
 
 	esp_wifi_set_ps(WIFI_PS_NONE);
@@ -2204,7 +2269,7 @@ static int http_rest_post_flash(http_request_t* request, int startaddr, int maxa
 			return -1;
 		}
 
-		ADDLOG_DEBUG(LOG_FEATURE_OTA, "OTA in progress: %.1f%%", (100 - ((float)towrite / fsize) * 100));
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Writelen %i at %i", writelen, total);
 		total += writelen;
 		startaddr += writelen;
 		towrite -= writelen;
@@ -3296,7 +3361,7 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 		res = tls_fls_read(startaddr, (uint8_t*)buffer, readlen);
 #elif PLATFORM_LN882H
 		res = hal_flash_read(startaddr, readlen, (uint8_t *)buffer);
-#elif PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 		res = esp_flash_read(NULL, (void*)buffer, startaddr, readlen);
 #elif PLATFORM_TR6260
 		res = hal_spiflash_read(startaddr, (uint8_t*)buffer, readlen);

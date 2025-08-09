@@ -72,7 +72,7 @@ static void tcp_client_thread(beken_thread_arg_t arg)
 		goto exit;
 	}
 	http_request_t request;
-	os_memset(&request, 0, sizeof(request));
+	memset(&request, 0, sizeof(request));
 
 	request.fd = fd;
 	request.received = buf;
@@ -184,7 +184,7 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 				OS_Thread_t clientThreadUnused;
 #endif
 #endif
-				os_strcpy(client_ip_str, inet_ntoa(client_addr.sin_addr));
+				strcpy(client_ip_str, inet_ntoa(client_addr.sin_addr));
 #if DISABLE_SEPARATE_THREAD_FOR_EACH_TCP_CLIENT
 				//ADDLOG_ERROR(LOG_FEATURE_HTTP, "HTTP [single thread] Client %s:%d connected, fd: %d", client_ip_str, client_addr.sin_port, client_fd);
 				// Use main server thread (blocking all other clients)

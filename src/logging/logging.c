@@ -584,7 +584,7 @@ void log_server_thread(beken_thread_arg_t arg)
 			client_fd = accept(tcp_listen_fd, (struct sockaddr*)&client_addr, &sockaddr_t_size);
 			if (client_fd >= 0)
 			{
-				os_strcpy(client_ip_str, inet_ntoa(client_addr.sin_addr));
+				strcpy(client_ip_str, inet_ntoa(client_addr.sin_addr));
 #ifdef PLATFORM_BEKEN
 				// Just note the new client port, if we have an available slot out of the two we record.
 				int found_port_slot = 0;

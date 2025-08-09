@@ -53,7 +53,7 @@
 	extern hal_reset_reason_t reset_reason;
 	#endif
 	SemaphoreHandle_t scan_hdl;
-#elif defined(PLATFORM_ESPIDF)
+#elif defined(PLATFORM_ESPIDF) || PLATFORM_ESP8266
 #include "esp_wifi.h"
 #include "esp_system.h"
 #elif defined(PLATFORM_BK7231T)
@@ -654,8 +654,14 @@ int http_fn_index(http_request_t* request) {
 		}
 	}
 
+	bool bForceShowSingleDimmer = 0;
+#if	ENABLE_DRIVER_GOSUNDSW2
+	if (DRV_IsRunning("GosundSW2")) {
+		bForceShowSingleDimmer = 1;
+	}
+#endif
 #if ENABLE_LED_BASIC
-	if (bRawPWMs == 0 || bForceShowRGBCW || bForceShowRGB) {
+	if (bRawPWMs == 0 || bForceShowRGBCW || bForceShowRGB || bForceShowSingleDimmer) {
 		int c_pwms;
 		int lm;
 		int c_realPwms = 0;
@@ -668,7 +674,10 @@ int http_fn_index(http_request_t* request) {
 		// into high power 3-outputs single colors LED controller
 		PIN_get_Relay_PWM_Count(0, &c_pwms, 0);
 		c_realPwms = c_pwms;
-		if (bForceShowRGBCW) {
+		if (bForceShowSingleDimmer) {
+			c_pwms = 1;
+		} 
+		else if (bForceShowRGBCW) {
 			c_pwms = 5;
 		}
 		else if (bForceShowRGB) {
@@ -822,7 +831,7 @@ int http_fn_index(http_request_t* request) {
 		}
 		hprintf255(request, "</h5>");
 	}
-	hprintf255(request, "<h5>Cfg size: %i, change counter: %i, ota counter: %i, incomplete boots: %i (might change to 0 if you wait to 30 sec)!</h5>",
+	hprintf255(request, "<h5>Cfg size: %i, change counter: %i, ota counter: %i, incomplete boots: %i</h5>",
 		sizeof(g_cfg), g_cfg.changeCounter, g_cfg.otaCounter, g_bootFailures);
 
   // display temperature - thanks to giedriuslt
@@ -960,7 +969,7 @@ typedef enum {
 		hprintf255(request, "<h5>MQTT State: <span style=\"color:%s\">%s</span> RES: %d(%s)<br>", colorStr,
 			stateStr, MQTT_GetConnectResult(), get_error_name(MQTT_GetConnectResult()));
 		hprintf255(request, "MQTT ErrMsg: %s <br>", (MQTT_GetStatusMessage() != NULL) ? MQTT_GetStatusMessage() : "");
-		hprintf255(request, "MQTT Stats:CONN: %d PUB: %d RECV: %d ERR: %d </h5>", MQTT_GetConnectEvents(),
+		hprintf255(request, "MQTT Stats: CONN: %d PUB: %d RECV: %d ERR: %d </h5>", MQTT_GetConnectEvents(),
 			MQTT_GetPublishEventCounter(), MQTT_GetReceivedEventCounter(), MQTT_GetPublishErrorCounter());
 	}
 #endif
@@ -1389,7 +1398,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 			hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", i + 1, (int)num, ar[i].ssid, ar[i].channel, ar[i].rssi);
 		}
 		tuya_os_adapt_wifi_release_ap(ar);
-#elif PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 		// doesn't work in ap mode, only sta/apsta
 		uint16_t ap_count = 0, number = 30;
 		wifi_ap_record_t ap_info[number];
@@ -2182,6 +2191,11 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				dev_info = hass_init_sensor_device_info(WATER_QUALITY_TDS, i, -1, 2, 1);
 			}
 			break;
+			case ChType_TextField:
+			{
+				dev_info = hass_init_textField_info(i);
+			}
+			break;
 			default:
 			{
 				int numOptions;
@@ -2607,6 +2621,9 @@ int http_fn_cfg(http_request_t* request) {
 #if ENABLE_HTTP_IP
 	postFormAction(request, "cfg_ip", "Configure IP");
 #endif
+#if (ENABLE_DRIVER_DS1820_FULL)
+	postFormAction(request, "cfg_ds18b20", "Configure DS18B20 Sensors");
+#endif
 	postFormAction(request, "cfg_mqtt", "Configure MQTT");
 #if ENABLE_HTTP_NAMES
 	postFormAction(request, "cfg_name", "Configure Names");
@@ -2667,7 +2684,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 	poststr(request, "<p>The first field assigns a role to the given pin. The next field is used to enter channel index (relay index), used to support multiple relays and buttons. ");
 	poststr(request, "So, first button and first relay should have channel 1, second button and second relay have channel 2, etc.</p>");
 	poststr(request, "<p>Only for button roles another field will be provided to enter channel to toggle when doing double click. ");
-	poststr(request, "It shows up when you change role to button and save.</p>");
+	poststr(request, "It shows up when you change role to button.</p>");
 #if PLATFORM_BK7231N || PLATFORM_BK7231T
 	poststr(request, "<p>BK7231N/BK7231T supports PWM only on pins 6, 7, 8, 9, 24 and 26!</p>");
 #endif
@@ -3169,7 +3186,7 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 
 #elif PLATFORM_LN882H
 
-#elif PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 #elif PLATFORM_TR6260
 #elif PLATFORM_REALTEK
 #elif PLATFORM_ECR6600

@@ -8,7 +8,12 @@
 #include "lwip/inet.h"
 #include "../logging/logging.h"
 #include "new_http.h"
-
+#if PLATFORM_ESP8266
+#define MAX_SOCKETS_TCP 2
+#define REPLY_BUFFER_SIZE			1024
+#define INCOMING_BUFFER_SIZE		1024
+#define HTTP_CLIENT_STACK_SIZE		4096
+#endif
 #ifndef MAX_SOCKETS_TCP
 #define MAX_SOCKETS_TCP MEMP_NUM_TCP_PCB
 #endif
@@ -16,11 +21,17 @@
 void HTTPServer_Start();
 
 #define HTTP_SERVER_PORT			80
-#define REPLY_BUFFER_SIZE			2048
-#define INCOMING_BUFFER_SIZE		2048
 #define INVALID_SOCK				-1
-#define HTTP_CLIENT_STACK_SIZE		8192
 
+#ifndef REPLY_BUFFER_SIZE
+#define REPLY_BUFFER_SIZE			2048
+#endif
+#ifndef INCOMING_BUFFER_SIZE
+#define INCOMING_BUFFER_SIZE		2048
+#endif
+#ifndef HTTP_CLIENT_STACK_SIZE
+#define HTTP_CLIENT_STACK_SIZE		8192
+#endif
 typedef struct
 {
 	int fd;
