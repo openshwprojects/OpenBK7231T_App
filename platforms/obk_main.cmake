@@ -124,6 +124,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_spidma.c
 	${OBK_SRCS}driver/drv_ssdp.c
 	${OBK_SRCS}driver/drv_tasmotaDeviceGroups.c
+	${OBK_SRCS}driver/drv_test.c
 	${OBK_SRCS}driver/drv_test_drivers.c
 	${OBK_SRCS}driver/drv_textScroller.c
 	${OBK_SRCS}driver/drv_tm1637.c
@@ -143,6 +144,5 @@ set(OBKM_SRC
 	${OBK_SRCS}i2c/drv_i2c_tc74.c
 
 #	${OBK_SRCS}driver/drv_bmp280.c
-#	${OBK_SRCS}driver/drv_test.c
 #	${OBK_SRCS}driver/drv_test_charts.c
 )

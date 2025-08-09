@@ -2191,6 +2191,11 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				dev_info = hass_init_sensor_device_info(WATER_QUALITY_TDS, i, -1, 2, 1);
 			}
 			break;
+			case ChType_TextField:
+			{
+				dev_info = hass_init_textField_info(i);
+			}
+			break;
 			default:
 			{
 				int numOptions;
