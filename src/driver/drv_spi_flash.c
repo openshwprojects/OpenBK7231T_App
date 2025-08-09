@@ -4,6 +4,7 @@
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 #include "../logging/logging.h"
+#include "../quicktick.h"
 #include "drv_local.h"
 #include "drv_soft_spi.h"
 #include "../driver/drv_soft_spi.h"
@@ -480,8 +481,10 @@ static commandResult_t CMD_SPITestFlash_TestPages(const void* context, const cha
 	spi.sck = SCK_PIN;
 
 	SPI_Setup(&spi);
-
+	unsigned int st = g_timeMs;
 	flash_test_pages(&spi, addr, len, (byte)pattern);
+	int ela = g_timeMs - st;
+	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_SPITestFlash_TestPages %i ms",ela);
 
 	return CMD_RES_OK;
 }
