@@ -32,7 +32,8 @@
 // http://192.168.0.166/api/lfs/
 // To get file, use GET:
 // http://192.168.0.166/api/lfs/
-#if (PLATFORM_BK7231T || PLATFORM_BK7231N) && !PLATFORM_BEKEN_NEW
+#if 0
+//(PLATFORM_BK7231T || PLATFORM_BK7231N) && !PLATFORM_BEKEN_NEW
 
 #include "include.h"
 #include "arm_arch.h"
@@ -513,6 +514,7 @@ void DRV_InitFlashMemoryTestFunctions() {
 	// backlog startDriver TESTSPIFLASH; SPITestFlash_ReadID
 	// backlog startDriver TESTSPIFLASH; SPITestFlash_Test 0 1024
 	// backlog startDriver TESTSPIFLASH; SPITestFlash_Test 0 16000
+	// backlog startDriver TESTSPIFLASH; SPITestFlash_Test 0 65536
 	// backlog startDriver TESTSPIFLASH; SPITestFlash_WriteStr 254 BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
 
 	//cmddetail:{"name":"SPITestFlash_ReadData","args":"CMD_SPITestFlash_ReadData",
