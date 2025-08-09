@@ -173,10 +173,21 @@ unsigned int period;
 
 uint8_t group, channel;
 
+// define to 1 to enable debug timer io output
+#if 0
+#define DEBUG_WAVE_WITH_GPIO 1
+#endif
+
 void SendIR2_ISR(uint8_t t) {
 	if (cur == 0)
 		return;
 	curTime += myPeriodUs;
+#if DEBUG_WAVE_WITH_GPIO
+	static int dbg_state = 0;
+	dbg_state = !dbg_state;
+	bk_gpio_output(txpin, dbg_state);
+	return;
+#endif
 	int tg = *cur;
 	if (tg <= curTime) {
 		curTime -= tg;
