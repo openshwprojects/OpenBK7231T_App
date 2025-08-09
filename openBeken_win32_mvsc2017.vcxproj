@@ -254,8 +254,10 @@
     <ClCompile Include="src\driver\drv_sm2135.c" />
     <ClCompile Include="src\driver\drv_sm2235.c" />
     <ClCompile Include="src\driver\drv_soft_i2c.c" />
+    <ClCompile Include="src\driver\drv_soft_spi.c" />
     <ClCompile Include="src\driver\drv_spi.c" />
     <ClCompile Include="src\driver\drv_spiLED.c" />
+    <ClCompile Include="src\driver\drv_spi_flash.c" />
     <ClCompile Include="src\driver\drv_ssdp.c" />
     <ClCompile Include="src\driver\drv_tasmotaDeviceGroups.c" />
     <ClCompile Include="src\driver\drv_tclAC.c" />
@@ -940,6 +942,7 @@
     <ClInclude Include="src\driver\drv_sgp.h" />
     <ClInclude Include="src\driver\drv_sht3x.h" />
     <ClInclude Include="src\driver\drv_sm2235.h" />
+    <ClInclude Include="src\driver\drv_soft_spi.h" />
     <ClInclude Include="src\driver\drv_spiLED.h" />
     <ClInclude Include="src\driver\drv_test_drivers.h" />
     <ClInclude Include="src\driver\drv_tm1637.h" />
