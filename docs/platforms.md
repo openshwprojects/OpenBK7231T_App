@@ -17,7 +17,7 @@
 | ESP8285/ESP8266                                         | Espressif       | ✅     | ❓   | ✅²'⁴ | ✅   | ✅       | ✅   | ✅⁷ | ❌  | ⚠️        | ❓⁹ |
 | ESP32<br>-C2<br>-C3<br>-C5<br>-C6<br>-C61<br>-S2<br>-S3 | Espressif       | ✅     | ❓   | ✅⁴   | ✅   | ✅       | ✅   | ✅  | ❓  | ✅¹⁰      | ✅  |
 | TR6260                                                  | Transa Semi     | ✅     | ❌   | ⚠️³'⁴ | ✅   | ❌       | ❌   | ✅⁸ | ❌  | ❌        | ✅⁹ |
-| RTL8711AM (Ameba1)                                      | Realtek         | ✅     | ✅   | ✅⁴   | ✅   | ✅       | ✅   | ✅⁸ | ❌  | ❌        | ✅  |
+| RTL8711AM (Ameba1)                                      | Realtek         | ✅     | ❓   | ✅⁴   | ✅   | ✅       | ✅   | ✅⁸ | ❌  | ❌        | ✅  |
 | RTL8710B (AmebaZ)                                       | Realtek         | ✅     | ✅   | ✅⁴   | ✅   | ✅       | ✅   | ✅⁸ | ❌  | ❌        | ✅  |
 | RTL8710C/RTL8720C (AmebaZ2)                             | Realtek         | ✅     | ✅   | ✅⁴   | ✅   | ✅       | ✅   | ✅⁸ | ❌  | ❌        | ✅  |
 | RTL8720D (AmebaD)<br>RTL872xCSM/RTL8720CS (AmebaCS)     | Realtek         | ✅     | ✅   | ✅⁴   | ✅   | ✅       | ✅   | ✅⁸ | ❌  | ❌        | ✅  |
