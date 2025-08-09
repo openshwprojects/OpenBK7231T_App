@@ -174,7 +174,7 @@ unsigned int period;
 uint8_t group, channel;
 
 // define to 1 to enable debug timer io output
-#if 0
+#if 1
 #define DEBUG_WAVE_WITH_GPIO 1
 #endif
 
