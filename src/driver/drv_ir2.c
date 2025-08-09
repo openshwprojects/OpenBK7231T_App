@@ -179,15 +179,15 @@ uint8_t group, channel;
 #endif
 
 void SendIR2_ISR(uint8_t t) {
-	if (cur == 0)
-		return;
-	curTime += myPeriodUs;
 #if DEBUG_WAVE_WITH_GPIO
 	static int dbg_state = 0;
 	dbg_state = !dbg_state;
 	bk_gpio_output(txpin, dbg_state);
 	return;
 #endif
+	if (cur == 0)
+		return;
+	curTime += myPeriodUs;
 	int tg = *cur;
 	if (tg <= curTime) {
 		curTime -= tg;
@@ -216,6 +216,8 @@ SetupIR2 50 0.5 0 8
 // send data
 SendIR2 3200 1300 950 500 900 1300 900 550 900 650 900
 // 
+
+backlog startDriver IR2; SetupIR2 50 0.5 0 9
 */
 static commandResult_t CMD_IR2_SendIR2(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	float frequency = 38000;
@@ -343,6 +345,8 @@ static commandResult_t CMD_IR2_SetupIR2(const void* context, const char* cmd, co
 	res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_ENABLE, &ir_chan);
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
 #endif
+
+	//ADDLOG_INFO(LOG_FEATURE_IR, "Time: %i", curTime);
 	return CMD_RES_OK;
 }
 
