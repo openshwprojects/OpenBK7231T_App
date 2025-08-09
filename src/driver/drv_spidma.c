@@ -533,6 +533,7 @@ void SPIDMA_StopTX() {
 #include "drv_spidma.h"
 #include "driver/spi_common.h"
 #include "driver/spi_master.h"
+#include "soc/spi_reg.h"
 
 #if SOC_SPI_PERIPH_NUM > 2
 spi_host_device_t obk_spi_host = SPI3_HOST;
@@ -545,21 +546,25 @@ int spidma_led_pin = -1;
 
 void SPIDMA_Init(struct spi_message* msg)
 {
-	spi_bus_config_t buscfg = {};
-	buscfg.miso_io_num = -1;
-	buscfg.mosi_io_num = spidma_led_pin;
-	buscfg.sclk_io_num = -1;
-	buscfg.quadwp_io_num = -1;
-	buscfg.quadhd_io_num = -1;
-	buscfg.max_transfer_sz = msg->send_len;
+	spi_bus_config_t buscfg = 
+	{
+		.miso_io_num = -1,
+		.mosi_io_num = spidma_led_pin,
+		.sclk_io_num = -1,
+		.quadwp_io_num = -1,
+		.quadhd_io_num = -1,
+		.max_transfer_sz = msg->send_len,
+	};
 
-	spi_device_interface_config_t devcfg = {};
-	devcfg.clock_speed_hz = 3000000;
-	devcfg.mode = 0;
-	devcfg.spics_io_num = -1;
-	devcfg.queue_size = 1;
-	devcfg.command_bits = 0;
-	devcfg.address_bits = 0;
+	spi_device_interface_config_t devcfg = 
+	{
+		.clock_speed_hz = 3000000,
+		.mode = 0,
+		.spics_io_num = -1,
+		.queue_size = 1,
+		.command_bits = 0,
+		.address_bits = 0,
+	};
 
 	spi_bus_initialize(obk_spi_host, &buscfg, SPI_DMA_CH_AUTO);
 	spi_bus_add_device(obk_spi_host, &devcfg, &obk_spidma);
@@ -574,6 +579,77 @@ void SPIDMA_StartTX(struct spi_message* msg)
 }
 
 void SPIDMA_StopTX(void) { }
+
+#elif PLATFORM_LN882H
+
+// this uses SPI + DMA
+// for native implementation, see https://github.com/openshwprojects/OpenBK7231T_App/pull/1414
+
+#include "../new_cfg.h"
+#include "../new_common.h"
+#include "../new_pins.h"
+
+#include "drv_spidma.h"
+#include "../hal/ln882h/hal_pinmap_ln882h.h"
+#include "hal/hal_dma.h"
+#include "hal/hal_spi.h"
+
+uint32_t spidma_led_pin;
+
+void SPIDMA_Init(struct spi_message* msg)
+{
+	lnPinMapping_t* pin = g_pins + spidma_led_pin;
+
+	hal_gpio_pin_afio_select(pin->base, pin->pin, SPI0_MOSI);
+	hal_gpio_pin_afio_en(pin->base, pin->pin, HAL_ENABLE);
+	
+	spi_init_type_def spi_init =
+	{
+		.spi_baud_rate_prescaler = SPI_BAUDRATEPRESCALER_16,
+		.spi_mode = SPI_MODE_MASTER,
+		.spi_data_size = SPI_DATASIZE_8B,
+		.spi_first_bit = SPI_FIRST_BIT_MSB,
+		.spi_cpol = SPI_CPOL_LOW,
+		.spi_cpha = SPI_CPHA_1EDGE,
+	};
+	
+	hal_spi_init(SPI0_BASE, &spi_init);
+	hal_spi_en(SPI0_BASE, HAL_ENABLE);
+	hal_spi_ssoe_en(SPI0_BASE, HAL_DISABLE);
+	
+	dma_init_t_def dma_init =
+	{
+		.dma_mem_addr = msg->send_buf,
+		.dma_data_num = msg->send_len,
+		.dma_dir = DMA_READ_FORM_MEM,
+		.dma_mem_inc_en = DMA_MEM_INC_EN,
+		.dma_p_addr = SPI0_DATA_REG,
+		.dma_p_size = DMA_P_SIZE_8_BIT,
+		.dma_mem_size = DMA_MEM_SIZE_8_BIT,
+	};
+	
+	hal_dma_init(DMA_CH_4, &dma_init);
+	hal_dma_en(DMA_CH_4, HAL_DISABLE);
+}
+
+void SPIDMA_StartTX(struct spi_message* msg)
+{
+	hal_dma_set_mem_addr(DMA_CH_4, (uint32_t)msg->send_buf);
+	hal_dma_set_data_num(DMA_CH_4, msg->send_len);
+
+	hal_spi_dma_en(SPI0_BASE, SPI_DMA_TX_EN, HAL_ENABLE);
+	hal_dma_en(DMA_CH_4, HAL_ENABLE);
+	
+	while(hal_dma_get_data_num(DMA_CH_4) != 0);
+	
+	hal_dma_en(DMA_CH_4, HAL_DISABLE);
+	hal_spi_dma_en(SPI0_BASE, SPI_DMA_TX_EN, HAL_DISABLE);
+}
+
+void SPIDMA_StopTX(void)
+{
+
+}
 
 #else
 

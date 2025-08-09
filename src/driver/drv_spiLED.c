@@ -161,6 +161,10 @@ extern spi_device_handle_t obk_spidma;
 extern int spidma_led_pin;
 extern spi_host_device_t obk_spi_host;
 
+#elif PLATFORM_LN882H
+
+extern uint32_t spidma_led_pin;
+
 #endif
 
 void SPILED_Shutdown() {
@@ -196,6 +200,8 @@ void SPILED_Init(uint32_t pin) {
 	sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_UP, &param);
 #elif PLATFORM_ESPIDF
 	spidma_led_pin = (int)g_pins[pin].pin;
+#elif PLATFORM_LN882H
+	spidma_led_pin = pin;
 #else
 
 
