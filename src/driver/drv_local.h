@@ -55,6 +55,11 @@ void SM15155E_Init();
 void DRV_GosundSW2_Init();
 void DRV_GosundSW2_RunFrame();
 
+
+void DRV_PinMutex_Init();
+void DRV_PinMutex_RunFrame();
+
+
 void SM16703P_Init();
 void SM16703P_Shutdown();
 // set RGBCW values - Cold and Warm White are optional and might be ignored if hardware does not support them, or if

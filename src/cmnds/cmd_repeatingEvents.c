@@ -178,7 +178,8 @@ commandResult_t RepeatingEvents_Cmd_AddRepeatingEvent(const void *context, const
 	}
 	interval = Tokenizer_GetArgFloat(0);
 	times = Tokenizer_GetArgInteger(1);
-	if(!stricmp(cmd,"addRepeatingEventID")) {
+	bool bUID = !stricmp(cmd, "addRepeatingEventUID");
+	if(!stricmp(cmd,"addRepeatingEventID") || bUID) {
 		userID = Tokenizer_GetArgInteger(2);
 		cmdToRepeat = Tokenizer_GetArgFrom(3);
 	} else { 
@@ -188,6 +189,9 @@ commandResult_t RepeatingEvents_Cmd_AddRepeatingEvent(const void *context, const
 	if (interval <= MIN_REPEATING_INTERVAL) {
 		interval = MIN_REPEATING_INTERVAL;
 		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Interval was too small!");
+	}
+	if (bUID) {
+		RepeatingEvents_CancelRepeatingEvents(userID);
 	}
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"addRepeatingEvent: interval %f, repeats %i, command [%s]",interval,times,cmdToRepeat);
@@ -260,7 +264,12 @@ void RepeatingEvents_Init() {
 	//cmddetail:"descr":"as addRepeatingEvent, but with a given ID. You can later cancel it with cancelRepeatingEvent.",
 	//cmddetail:"fn":"RepeatingEvents_Cmd_AddRepeatingEvent","file":"cmnds/cmd_repeatingEvents.c","requires":"",
 	//cmddetail:"examples":"addRepeatingEventID 2 -1 123 Power0 Toggle"}
-	CMD_RegisterCommand("addRepeatingEventID",RepeatingEvents_Cmd_AddRepeatingEvent, NULL); 
+	CMD_RegisterCommand("addRepeatingEventID",RepeatingEvents_Cmd_AddRepeatingEvent, NULL);
+	//cmddetail:{"name":"addRepeatingEventUID","args":"[IntervalSeconds][RepeatsOr-1][UserID][CommandToRun]",
+	//cmddetail:"descr":"as addRepeatingEventID, but also automatically cancels previous events with same ID.",
+	//cmddetail:"fn":"RepeatingEvents_Cmd_AddRepeatingEvent","file":"cmnds/cmd_repeatingEvents.c","requires":"",
+	//cmddetail:"examples":"addRepeatingEventUID 2 -1 123 Power0 Toggle"}
+	CMD_RegisterCommand("addRepeatingEventUID", RepeatingEvents_Cmd_AddRepeatingEvent, NULL);
 	//cmddetail:{"name":"cancelRepeatingEvent","args":"[UserIDInteger]",
 	//cmddetail:"descr":"Stops a given repeating event with a specified ID",
 	//cmddetail:"fn":"RepeatingEvents_Cmd_CancelRepeatingEvent","file":"cmnds/cmd_repeatingEvents.c","requires":"",
