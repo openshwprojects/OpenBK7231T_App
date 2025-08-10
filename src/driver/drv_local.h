@@ -55,6 +55,11 @@ void SM15155E_Init();
 void DRV_GosundSW2_Init();
 void DRV_GosundSW2_RunFrame();
 
+
+void DRV_PinMutex_Init();
+void DRV_PinMutex_RunFrame();
+
+
 void SM16703P_Init();
 void SM16703P_Shutdown();
 // set RGBCW values - Cold and Warm White are optional and might be ignored if hardware does not support them, or if
@@ -64,7 +69,10 @@ void SM16703P_setPixel(int pixel, int r, int g, int b, int c, int w);
 void SM16703P_setPixelWithBrig(int pixel, int r, int g, int b, int c, int w);
 void SM16703P_setAllPixels(int r, int g, int b, int c, int w);
 void SM16703P_scaleAllPixels(int scale);
+void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t* data, bool push);
 void SM16703P_Show();
+void SM15155E_Init();
+void SM15155E_Write();
 extern uint32_t pixel_count;
 
 void TM1637_Init();
@@ -184,9 +192,12 @@ void Freeze_Init();
 void Freeze_OnEverySecond();
 void Freeze_RunFrame();
 
+void DRV_InitFlashMemoryTestFunctions();
+
 void PixelAnim_Init();
 void PixelAnim_SetAnimQuickTick();
 void PixelAnim_SetAnim(int j);
+void PixelAnim_CreatePanel(http_request_t* request);
 
 void Drawers_Init();
 void Drawers_QuickTick();

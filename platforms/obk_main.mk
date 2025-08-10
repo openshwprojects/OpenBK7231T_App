@@ -127,8 +127,8 @@ OBKM_SRC  += $(OBK_SRCS)driver/drv_rn8209.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_sgp.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_shiftRegister.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_sht3x.c
-#OBKM_SRC += $(OBK_SRCS)driver/drv_sm15155e.c
-#OBKM_SRC += $(OBK_SRCS)driver/drv_sm16703P.c
+OBKM_SRC  += $(OBK_SRCS)driver/drv_sm15155e.c
+OBKM_SRC  += $(OBK_SRCS)driver/drv_sm16703P.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_sm2135.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_sm2235.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_soft_i2c.c
@@ -140,7 +140,7 @@ OBKM_SRC  += $(OBK_SRCS)driver/drv_spidma.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_ssdp.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_tasmotaDeviceGroups.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_tclAC.c
-OBKM_SRC += $(OBK_SRCS)driver/drv_test.c
+OBKM_SRC  += $(OBK_SRCS)driver/drv_test.c
 #OBKM_SRC += $(OBK_SRCS)driver/drv_test_charts.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_test_drivers.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_textScroller.c
@@ -162,3 +162,6 @@ OBKM_SRC  += $(OBK_SRCS)i2c/drv_i2c_tc74.c
 
 OBKM_SRC_CXX += $(OBK_SRCS)driver/drv_ir.cpp
 OBKM_SRC_CXX += $(OBK_SRCS)driver/drv_ir_new.cpp
+OBKM_SRC_CXX += $(wildcard $(OBK_SRCS)libraries/IRremoteESP8266/src/*.cpp)
+
+
