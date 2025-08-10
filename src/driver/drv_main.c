@@ -91,6 +91,14 @@ static driver_t g_drivers[] = {
 
 
 
+#if ENABLE_DRIVER_PINMUTEX
+	//drvdetail:{"name":"PinMutex",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"PinMutex.",
+	//drvdetail:"requires":""}
+	{ "PinMutex",		DRV_PinMutex_Init,			NULL, NULL, DRV_PinMutex_RunFrame, NULL, NULL, false },
+#endif
+
 #if ENABLE_DRIVER_GOSUNDSW2
 	//drvdetail:{"name":"GosundSW",
 	//drvdetail:"title":"TODO",

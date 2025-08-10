@@ -2294,7 +2294,7 @@ const char* g_channelTypeNames[] = {
 	"Frequency_div1000",
 	"OpenStopClose",
 	"Percent",
-	"error",
+	"StopUpDown",
 	"error",
 	"error",
 };
