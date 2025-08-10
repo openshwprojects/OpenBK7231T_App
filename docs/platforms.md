@@ -15,7 +15,7 @@
 | W600/W601                                               | WinnerMicro     | ❌         | ❌   | ✅    | ✅   | ✅      | ❓   | ✅  | ✅  | ❌         | ✅  | ❌     |
 | LN882H                                                  | Lightning Semi  | ❌         | ✅   | ✅⁴   | ✅   | ✅      | ❌   | ✅  | ⚠️  | ❌         | ✅  | ✅     |
 | ESP8285/ESP8266                                         | Espressif       | ❌         | ⚠️¹⁴ | ✅²'⁴ | ✅   | ✅      | ✅   | ✅⁷ | ❌  | ⚠️         | ❓⁹ | ❌     |
-| ESP32<br>-C2<br>-C3<br>-C5<br>-C6<br>-C61<br>-S2<br>-S3 | Espressif       | ⚠️¹³       | ❓   | ✅⁴   | ✅   | ✅      | ✅   | ✅  | ❓  | ✅¹⁰       | ✅  | ✅     |
+| ESP32<br>-C2<br>-C3<br>-C5<br>-C6<br>-C61<br>-S2<br>-S3 | Espressif       | ⚠️¹³       | ⚠️¹⁴ | ✅⁴   | ✅   | ✅      | ✅   | ✅  | ❓  | ✅¹⁰       | ✅  | ✅     |
 | TR6260                                                  | Transa Semi     | ❌         | ❌   | ⚠️³'⁴ | ✅   | ❌      | ❌   | ✅⁸ | ❌  | ❌         | ✅⁹ | ❌     |
 | RTL8711AM (Ameba1)                                      | Realtek         | ❌         | ⚠️   | ✅⁴   | ✅   | ✅      | ✅   | ✅⁸ | ❌  | ❌         | ✅  | ❌     |
 | RTL8710B (AmebaZ)                                       | Realtek         | ❌         | ✅   | ✅⁴   | ✅   | ✅      | ✅   | ✅⁸ | ❌  | ❌         | ✅  | ❌     |
@@ -42,5 +42,5 @@
 ¹⁰ Timer sleep only, no GPIO wakeup<br>
 ¹¹ After waking up device will refuse to connect to WiFi until power cycled<br>
 ¹² Only in _ALT builds<br>
-¹³ ESP32-C5 only
-¹⁴ Must be manually enabled (CONFIG_ESP8266_WIFI_ENABLE_WPA3_SAE to y in sdkconfig.defaults)
+¹³ ESP32-C5 only<br>
+¹⁴ Must be manually enabled (CONFIG_ESP8266_WIFI_ENABLE_WPA3_SAE/CONFIG_ESP_WIFI_ENABLE_WPA3_SAE to y in sdkconfig.defaults)<br>
