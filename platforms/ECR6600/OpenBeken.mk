@@ -7,11 +7,11 @@ INCPATHS += $(TOPDIR)/include/ota
 INCPATHS += $(TOPDIR)/include
 INCPATHS += $(TOPDIR)
 
-CSRCS   = main.c
-CSRCS  += hal/ecr6600/hal_adc_ecr6600.c
+CSRCS   = hal/ecr6600/hal_adc_ecr6600.c
 CSRCS  += hal/ecr6600/hal_flashConfig_ecr6600.c
 CSRCS  += hal/ecr6600/hal_flashVars_ecr6600.c
 CSRCS  += hal/ecr6600/hal_generic_ecr6600.c
+CSRCS  += hal/ecr6600/hal_main_ecr6600.c
 CSRCS  += hal/ecr6600/hal_pins_ecr6600.c
 CSRCS  += hal/ecr6600/hal_wifi_ecr6600.c
 CSRCS  += hal/ecr6600/hal_uart_ecr6600.c
