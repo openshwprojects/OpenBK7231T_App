@@ -1,4 +1,4 @@
-#ifdef PLATFORM_ESPIDF
+#if PLATFORM_ESPIDF || PLATFORM_ESP8266
 
 #include "../hal_uart.h"
 #include "../../new_pins.h"
@@ -21,6 +21,9 @@
 #endif
 
 uart_port_t uartnum = UART_NUM_0;
+
+#if 0//PLATFORM_ESPIDF
+
 static QueueHandle_t uart_queue;
 uint8_t* data = NULL;
 
@@ -48,6 +51,7 @@ static void uart_event_task(void* pvParameters)
 					xQueueReset(uart_queue);
 					break;
 				default:
+					addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "uart event type: %d", event.type);
 					break;
 			}
 		}
@@ -55,6 +59,43 @@ static void uart_event_task(void* pvParameters)
 	free(data);
 	data = NULL;
 	vTaskDelete(NULL);
+}
+
+#else
+
+//#include "esp8266/uart_register.h"
+//#include "esp8266/uart_struct.h"
+//static DRAM_ATTR uart_dev_t* const UART[UART_NUM_MAX] = { &uart0, &uart1 };
+//
+//static void IRAM_ATTR uart_intr_handle(void* arg)
+//{	
+//	uart_port_t uartn = *((uart_port_t*)arg);
+//	uint16_t status = UART[uartn]->int_st.val;
+//	uint16_t rx_fifo_len = UART[uartn]->status.rxfifo_cnt;
+//	while(rx_fifo_len)
+//	{
+//		UART_AppendByteToReceiveRingBuffer(UART[uartn]->fifo.rw_byte);
+//		rx_fifo_len--;
+//	}
+//	uart_clear_intr_status(uartnum, UART_RXFIFO_FULL_INT_CLR | UART_RXFIFO_TOUT_INT_CLR);
+//}
+
+#endif
+
+static void uart_event_task(void* pvParameters)
+{
+	uint8_t* data = (uint8_t*)malloc(512);
+	while(1)
+	{
+		int len = uart_read_bytes(uartnum, data, 512, 20 / portTICK_RATE_MS);
+		if(len)
+		{
+			for(int i = 0; i < len; i++)
+			{
+				UART_AppendByteToReceiveRingBuffer(data[i]);
+			}
+		}
+	}
 }
 
 void HAL_UART_SendByte(byte b)
@@ -85,11 +126,15 @@ int HAL_UART_Init(int baud, int parity, bool hwflowc)
 		.data_bits = UART_DATA_8_BITS,
 		.parity = parity > 0 ? parity + 1 : parity,
 		.stop_bits = UART_STOP_BITS_1,
-		.flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+		.flow_ctrl = hwflowc == false ? UART_HW_FLOWCTRL_DISABLE : UART_HW_FLOWCTRL_CTS_RTS,
+#if PLATFORM_ESPIDF
 		.source_clk = UART_SCLK_DEFAULT,
+#endif
 	};
-	uart_driver_install(uartnum, 512, 0, 20, &uart_queue, 0);
 	uart_param_config(uartnum, &uart_config);
+	uart_driver_install(uartnum, 512, 0, 0, NULL, 0);
+	uart_enable_rx_intr(uartnum);
+#if 0//PLATFORM_ESPIDF
 	if(uartnum == UART_NUM_0)
 	{
 		uart_set_pin(uartnum, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
@@ -100,10 +145,13 @@ int HAL_UART_Init(int baud, int parity, bool hwflowc)
 	}
 	if(data == NULL)
 	{
-		data = (uint8_t*)malloc(512);
+		//data = (uint8_t*)malloc(512);
 		xTaskCreate(uart_event_task, "uart_event_task", 2048, NULL, 16, NULL);
-		uart_enable_rx_intr(uartnum);
 	}
+#else
+	//uart_isr_register(uartnum, uart_intr_handle, &uartnum);
+#endif
+	xTaskCreate(uart_event_task, "uart_event_task", 1024, NULL, 16, NULL);
 	return 1;
 }
 

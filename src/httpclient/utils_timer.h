@@ -8,7 +8,7 @@
 //#include "iot_import.h"
 #include "../new_common.h"
 
-#if PLATFORM_BEKEN || WINDOWS
+#if ENABLE_SEND_POSTANDGET
 
 typedef struct {
     uint32_t time;

@@ -61,9 +61,13 @@ void DRV_PinMutex_RunFrame();
 
 
 void SM16703P_Init();
-void SM16703P_setPixel(int pixel, int r, int g, int b);
-void SM16703P_setPixelWithBrig(int pixel, int r, int g, int b);
-void SM16703P_setAllPixels(int r, int g, int b);
+void SM16703P_Shutdown();
+// set RGBCW values - Cold and Warm White are optional and might be ignored if hardware does not support them, or if
+// channel order does not include them.
+// default is RGB, so C and W are ignored by default - needs to be enabled with something like 'SM16703P_Init 20 RGBCW'
+void SM16703P_setPixel(int pixel, int r, int g, int b, int c, int w);
+void SM16703P_setPixelWithBrig(int pixel, int r, int g, int b, int c, int w);
+void SM16703P_setAllPixels(int r, int g, int b, int c, int w);
 void SM16703P_scaleAllPixels(int scale);
 void SM16703P_Show();
 extern uint32_t pixel_count;
@@ -184,6 +188,8 @@ void PWMG_Init();
 void Freeze_Init();
 void Freeze_OnEverySecond();
 void Freeze_RunFrame();
+
+void DRV_InitFlashMemoryTestFunctions();
 
 void PixelAnim_Init();
 void PixelAnim_SetAnimQuickTick();

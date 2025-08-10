@@ -32,7 +32,14 @@ void __attribute__((weak)) WiFI_GetMacAddress(char* mac)
 {
 
 }
-
+char* __attribute__((weak)) HAL_GetWiFiBSSID(char* bssid) {
+	strcpy(bssid, "30:B5:C2:5D:70:72");
+	return bssid;
+};
+uint8_t __attribute__((weak)) HAL_GetWiFiChannel(uint8_t *chan) {
+	*chan = 12;
+	return *chan;
+};
 const char* __attribute__((weak)) HAL_GetMACStr(char* macstr)
 {
 	return "error";

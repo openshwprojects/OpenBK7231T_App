@@ -1,4 +1,4 @@
-#ifdef PLATFORM_ESPIDF
+#if PLATFORM_ESPIDF || PLATFORM_ESP8266
 
 #include "../hal_flashConfig.h"
 #include "nvs_flash.h"

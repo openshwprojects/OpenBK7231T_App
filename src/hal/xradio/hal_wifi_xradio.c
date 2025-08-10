@@ -26,7 +26,7 @@
 #include "lwip/netdb.h"
 #include "lwip/dns.h"
 
-static void (*g_wifiStatusCallback)(int code);
+static void(*g_wifiStatusCallback)(int code);
 
 bool g_bOpenAccessPointMode = false;
 
@@ -42,7 +42,7 @@ void HAL_ConnectToWiFi(const char *ssid, const char *psk, obkStaticIP_t *ip)
 	wlan_sta_enable();
 
 	netif_set_hostname(g_wlan_netif, CFG_GetDeviceName());
-	if(ip->localIPAddr[0] != 0)
+	if (ip->localIPAddr[0] != 0)
 	{
 #if !__CONFIG_LWIP_V1
 		ip_addr_t ipaddr;
@@ -82,14 +82,14 @@ static void wlan_msg_recv(uint32_t event, uint32_t data, void *arg)
 
 	switch (type) {
 	case NET_CTRL_MSG_WLAN_CONNECTED:
-			if(g_wifiStatusCallback!=0) {
-				g_wifiStatusCallback(WIFI_STA_CONNECTED);
-			}
+		if (g_wifiStatusCallback != 0) {
+			g_wifiStatusCallback(WIFI_STA_CONNECTED);
+		}
 		break;
 	case NET_CTRL_MSG_WLAN_DISCONNECTED:
-			if(g_wifiStatusCallback!=0) {
-				g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
-			}
+		if (g_wifiStatusCallback != 0) {
+			g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
+		}
 		break;
 	case NET_CTRL_MSG_WLAN_SCAN_SUCCESS:
 	case NET_CTRL_MSG_WLAN_SCAN_FAILED:
@@ -100,9 +100,9 @@ static void wlan_msg_recv(uint32_t event, uint32_t data, void *arg)
 #endif
 	case NET_CTRL_MSG_WLAN_4WAY_HANDSHAKE_FAILED:
 	case NET_CTRL_MSG_WLAN_CONNECT_FAILED:
-			if(g_wifiStatusCallback!=0) {
-				g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
-			}
+		if (g_wifiStatusCallback != 0) {
+			g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
+		}
 		break;
 	case NET_CTRL_MSG_NETWORK_UP:
 	case NET_CTRL_MSG_NETWORK_DOWN:
@@ -116,13 +116,13 @@ static void wlan_msg_recv(uint32_t event, uint32_t data, void *arg)
 		break;
 	}
 }
-void HAL_WiFi_SetupStatusCallback(void (*cb)(int code)) {
+void HAL_WiFi_SetupStatusCallback(void(*cb)(int code)) {
 	g_wifiStatusCallback = cb;
 
 	observer_base *ob = sys_callback_observer_create(CTRL_MSG_TYPE_NETWORK,
-	                                                 NET_CTRL_MSG_ALL,
-	                                                 wlan_msg_recv,
-	                                                 NULL);
+		NET_CTRL_MSG_ALL,
+		wlan_msg_recv,
+		NULL);
 	if (ob == NULL) {
 		// error
 
@@ -145,10 +145,10 @@ int WiFI_SetMacAddress(char *mac) {
 
 }
 void WiFI_GetMacAddress(char *mac) {
-	memcpy(mac,g_cfg.mac,6);
+	memcpy(mac, g_cfg.mac, 6);
 }
 
-void HAL_PrintNetworkInfo() 
+void HAL_PrintNetworkInfo()
 {
 	uint8_t mac[6];
 	WiFI_GetMacAddress((char*)mac);
@@ -162,7 +162,7 @@ void HAL_PrintNetworkInfo()
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------------------------------------+\r\n");
 }
 
-int HAL_GetWifiStrength() 
+int HAL_GetWifiStrength()
 {
 	//wlan_sta_ap_info(&apinfo);
 	//return apinfo.level;
@@ -171,12 +171,35 @@ int HAL_GetWifiStrength()
 	return signal.rssi / 2 + signal.noise;
 }
 
-const char *HAL_GetMyIPString() 
+char* HAL_GetWiFiBSSID(char* bssid) {
+	wlan_sta_ap_t *ap = malloc(sizeof(wlan_sta_ap_t));	// to hold information of connected AP	
+	if (!wlan_sta_ap_info(ap)) {
+		sprintf(bssid, MACSTR, MAC2STR(ap->bssid));
+	}
+	else {
+		strcpy(bssid, "wlan info failed");//must be less than 32 chars
+	}
+	free(ap);
+	return bssid;
+};
+uint8_t HAL_GetWiFiChannel(uint8_t *chan) {
+	wlan_sta_ap_t *ap = malloc(sizeof(wlan_sta_ap_t));	// to hold information of connected AP	
+	if (!wlan_sta_ap_info(ap)) {
+		*chan = ap->channel;
+	}
+	else {
+		*chan = 0;
+	}
+	free(ap);
+	return *chan;
+};
+
+const char *HAL_GetMyIPString()
 {
 	return ipaddr_ntoa(&g_wlan_netif->ip_addr);
 }
 
-const char* HAL_GetMyGatewayString() 
+const char* HAL_GetMyGatewayString()
 {
 	return ipaddr_ntoa(&g_wlan_netif->gw);
 }
@@ -190,7 +213,7 @@ const char* HAL_GetMyDNSString()
 #endif
 }
 
-const char* HAL_GetMyMaskString() 
+const char* HAL_GetMyMaskString()
 {
 	return ipaddr_ntoa(&g_wlan_netif->netmask);
 }

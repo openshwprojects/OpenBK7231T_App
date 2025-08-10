@@ -13,6 +13,8 @@
 #include "drv_tuyaMCU.h"
 #include "drv_uart.h"
 #include "drv_ds1820_simple.h"
+#include "drv_ds1820_full.h"
+#include "drv_ds1820_common.h"
 
 
 typedef struct driver_s {
@@ -50,6 +52,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"Freeze is a test driver for watchdog. Enabling this will freeze device main loop.",
 	//drvdetail:"requires":""}
 	{ "Freeze",		Freeze_Init,			Freeze_OnEverySecond,			NULL, Freeze_RunFrame, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_TESTSPIFLASH
+	//drvdetail:{"name":"TESTSPIFLASH",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TESTSPIFLASH",
+	//drvdetail:"requires":""}
+	{ "TESTSPIFLASH",		DRV_InitFlashMemoryTestFunctions,			NULL,			NULL, NULL, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_PIR
 	//drvdetail:{"name":"PIR",
@@ -264,7 +273,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"SM16703P is an individually addressable LEDs controller like WS2812B. Currently SM16703P LEDs are supported through hardware SPI, LEDs data should be connected to P16 (MOSI), [here you can read](https://www.elektroda.com/rtvforum/topic4005865.html) how to break it out on CB2S.",
 	//drvdetail:"requires":""}
-	{ "SM16703P",	SM16703P_Init,		NULL,						NULL, NULL, NULL, NULL, NULL, false },
+	{ "SM16703P",	SM16703P_Init,		NULL,						NULL, NULL, SM16703P_Shutdown, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_SM15155E
 	//drvdetail:{"name":"SM15155E",
@@ -461,6 +470,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "DS1820",     DS1820_driver_Init, DS1820_OnEverySecond,                       DS1820_AppendInformationToHTTPIndexPage, NULL, NULL, NULL,  false },
 #endif
+#if ENABLE_DRIVER_DS1820_FULL
+	//drvdetail:{"name":"DS1820_FULL",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Driver for oneWire temperature sensor DS18(B)20.",
+	//drvdetail:"requires":""}
+	{ "DS1820_FULL",     DS1820_full_driver_Init, DS1820_full_OnEverySecond,                       DS1820_full_AppendInformationToHTTPIndexPage, NULL, NULL, NULL,  false },
+#endif
 #if ENABLE_DRIVER_HT16K33
 	//drvdetail:{"name":"HT16K33",
 	//drvdetail:"title":"TODO",
@@ -634,8 +650,24 @@ void DRV_StartDriver(const char* name) {
 		return;
 	}
 	bStarted = 0;
+#if (ENABLE_DRIVER_DS1820) && (ENABLE_DRIVER_DS1820_FULL)
+			bool twinrunning=false;
+#endif
 	for (i = 0; i < g_numDrivers; i++) {
 		if (!stricmp(g_drivers[i].name, name)) {
+#if (ENABLE_DRIVER_DS1820) && (ENABLE_DRIVER_DS1820_FULL)
+			twinrunning=false;
+			if (!stricmp("DS1820", name) && DRV_IsRunning("DS1820_FULL")){
+				addLogAdv(LOG_ERROR, LOG_FEATURE_MAIN, "Drv DS1820_FULL is already loaded - can't start DS1820, too.\n", name);
+				twinrunning=true;
+				break;
+			}
+			if (!stricmp("DS1820_FULL", name) && DRV_IsRunning("DS1820")){
+				addLogAdv(LOG_ERROR, LOG_FEATURE_MAIN, "Drv DS1820 is already loaded - can't start DS1820_FULL, too.\n", name);
+				twinrunning=true;
+				break;
+			}
+#endif
 			if (g_drivers[i].bLoaded) {
 				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Drv %s is already loaded.\n", name);
 				bStarted = 1;
@@ -653,7 +685,11 @@ void DRV_StartDriver(const char* name) {
 			}
 		}
 	}
+#if (ENABLE_DRIVER_DS1820) && (ENABLE_DRIVER_DS1820_FULL)
+	if (!bStarted && !twinrunning) {
+#else
 	if (!bStarted) {
+#endif
 		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Driver %s is not known in this build.\n", name);
 		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Available drivers: ");
 		for (i = 0; i < g_numDrivers; i++) {
@@ -752,7 +788,7 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState
 				if (g_drivers[i].bLoaded) {
 					// if at least one name printed, add separator
 					if (j != 0) {
-						hprintf255(request, ",");
+						hprintf255(request, ", ");
 					}
 					hprintf255(request, g_drivers[i].name);
 					// one more name printed
@@ -761,7 +797,7 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState
 			}
 			hprintf255(request, ")");
 		}
-		hprintf255(request, ", total %i</h5>", g_numDrivers);
+		hprintf255(request, ", total: %i</h5>", g_numDrivers);
 	}
 }
 

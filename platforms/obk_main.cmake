@@ -81,7 +81,9 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_dht.c
 	${OBK_SRCS}driver/drv_drawers.c
 	${OBK_SRCS}driver/drv_doorSensorWithDeepSleep.c
+	${OBK_SRCS}driver/drv_ds1820_common.c
 	${OBK_SRCS}driver/drv_ds1820_simple.c
+	${OBK_SRCS}driver/drv_ds1820_full.c
 	${OBK_SRCS}driver/drv_freeze.c
 	${OBK_SRCS}driver/drv_gn6932.c
 	${OBK_SRCS}driver/drv_hd2015.c
@@ -120,6 +122,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_spidma.c
 	${OBK_SRCS}driver/drv_ssdp.c
 	${OBK_SRCS}driver/drv_tasmotaDeviceGroups.c
+	${OBK_SRCS}driver/drv_test.c
 	${OBK_SRCS}driver/drv_test_drivers.c
 	${OBK_SRCS}driver/drv_textScroller.c
 	${OBK_SRCS}driver/drv_tm1637.c
@@ -141,6 +144,5 @@ set(OBKM_SRC
 #	${OBK_SRCS}driver/drv_bmp280.c
 #	${OBK_SRCS}driver/drv_sm15155e.c
 #	${OBK_SRCS}driver/drv_sm16703P.c
-#	${OBK_SRCS}driver/drv_test.c
 #	${OBK_SRCS}driver/drv_test_charts.c
 )

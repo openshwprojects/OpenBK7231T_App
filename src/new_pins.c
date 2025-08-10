@@ -20,8 +20,10 @@
 #ifdef PLATFORM_BEKEN
 #include <gpio_pub.h>
 #include "driver/drv_ir.h"
-#elif PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
+#include "hal/espidf/hal_pinmap_espidf.h"
 #include "esp_sleep.h"
+#include "esp_wifi.h"
 #elif PLATFORM_XRADIO
 #undef HAL_ADC_Init
 #include "hal/xradio/hal_pinmap_xradio.h"
@@ -1725,14 +1727,19 @@ bool CHANNEL_IsInUse(int ch) {
 
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if (g_cfg.pins.roles[i] != IOR_None) {
-			if (g_cfg.pins.channels[i] == ch) {
+			int NofC=PIN_IOR_NofChan(g_cfg.pins.roles[i]);
+			if (NofC>=1 && g_cfg.pins.channels[i] == ch) {
 				return true;
 			}
-			if (g_cfg.pins.channels2[i] == ch) {
+			if (NofC>=2 && g_cfg.pins.channels2[i] == ch) {
 				return true;
 			}
 		}
 	}
+#if (ENABLE_DRIVER_DS1820_FULL)
+#include "driver/drv_ds1820_full.h"
+	return ds18b20_used_channel(ch);
+#endif
 	return false;
 }
 
