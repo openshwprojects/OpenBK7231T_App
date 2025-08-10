@@ -4,21 +4,14 @@
 #include "../../logging/logging.h"
 #include "../../new_cfg.h"
 #include "../../new_pins.h"
+#include "hal_pinmap_ln882h.h"
 // LN882H header
-#include "hal/hal_gpio.h"
 #include "hal/hal_adv_timer.h"
 #include "hal/hal_clock.h"
 
 #define IS_QSPI_PIN(index) (index > 12 && index < 19)
 
 static int g_active_pwm = 0b0;
-
-typedef struct lnPinMapping_s {
-	const char *name;
-	uint32_t base;
-	gpio_pin_t pin;
-	int8_t pwm_cha;
-} lnPinMapping_t;
 
 lnPinMapping_t g_pins[] = {
 	{ "A0", GPIOA_BASE, GPIO_PIN_0, -1 },
@@ -51,7 +44,7 @@ lnPinMapping_t g_pins[] = {
 	// ETC TODO
 };
 
-static int g_numPins = sizeof(g_pins) / sizeof(g_pins[0]);
+int g_numPins = sizeof(g_pins) / sizeof(g_pins[0]);
 
 int HAL_PIN_Find(const char *name) {
 	if (isdigit(name[0])) {
