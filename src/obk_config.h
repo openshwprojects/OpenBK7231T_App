@@ -116,6 +116,7 @@
 
 #endif
 
+#define ENABLE_DRIVER_PINMUTEX					1
 #define ENABLE_DRIVER_TESTSPIFLASH				1
 
 #define ENABLE_HTTP_OVERRIDE					1
