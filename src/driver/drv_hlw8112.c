@@ -8,7 +8,6 @@
 #include "../logging/logging.h"
 #include "drv_public.h"
 #include "drv_spi.h"
-#include "cmd_public.h"
 #include "hal_pins.h"
 
 #define HLW8112_SPI_BAUD_RATE_HZ (1000000)
