@@ -100,7 +100,7 @@ void Test_Http_LED_RGB() {
 	CMD_ExecuteCommand("led_basecolor_rgb FF0000", 0);
 
 
-	// HTML page must contains dimmer, but no RGB and no temeprature controls
+	// HTML page must contains dimmer, but no RGB and no temperature controls
 	Test_FakeHTTPClientPacket_GET("index");
 	SELFTEST_ASSERT_HTTP_HAS_LED_DIMMER(true);
 	SELFTEST_ASSERT_HTTP_HAS_LED_TEMPERATURE(false);
@@ -228,7 +228,7 @@ void Test_Http_LED_RGB() {
 	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "0,255,255");
 
 
-	// HTML page must contains dimmer, but no RGB and no temeprature controls
+	// HTML page must contains dimmer, but no RGB and no temperature controls
 	Test_FakeHTTPClientPacket_GET("index");
 	// the green button is on the page
 	SELFTEST_ASSERT_HTTP_HAS_BUTTON_LEDS_ON(true);
@@ -244,7 +244,7 @@ void Test_Http_LED_RGB() {
 	// color is now 0,0,0 because it's OFF?
 	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "Color", "0,0,0");
 
-	// HTML page must contains dimmer, but no RGB and no temeprature controls
+	// HTML page must contains dimmer, but no RGB and no temperature controls
 	Test_FakeHTTPClientPacket_GET("index");
 	// the red button is on the page
 	SELFTEST_ASSERT_HTTP_HAS_BUTTON_LEDS_ON(false);
@@ -299,7 +299,7 @@ void Test_Http_LED_RGBCW() {
 	CMD_ExecuteCommand("led_basecolor_rgb FF0000", 0);
 
 
-	// HTML page must contains dimmer, but no RGB and no temeprature controls
+	// HTML page must contains dimmer, but no RGB and no temperature controls
 	Test_FakeHTTPClientPacket_GET("index");
 	SELFTEST_ASSERT_HTTP_HAS_LED_DIMMER(true);
 	SELFTEST_ASSERT_HTTP_HAS_LED_TEMPERATURE(true);
@@ -329,7 +329,7 @@ void Test_Http_LED_RGBCW() {
 
 
 
-	// HTML page must contains dimmer, but no RGB and no temeprature controls
+	// HTML page must contains dimmer, but no RGB and no temperature controls
 	Test_FakeHTTPClientPacket_GET("index");
 	// the green button is on the page
 	SELFTEST_ASSERT_HTTP_HAS_BUTTON_LEDS_ON(true);
@@ -340,7 +340,7 @@ void Test_Http_LED_RGBCW() {
 	CMD_ExecuteCommand("led_enableAll 0", 0);
 
 
-	// HTML page must contains dimmer, but no RGB and no temeprature controls
+	// HTML page must contains dimmer, but no RGB and no temperature controls
 	Test_FakeHTTPClientPacket_GET("index");
 	// the red button is on the page
 	SELFTEST_ASSERT_HTTP_HAS_BUTTON_LEDS_ON(false);
@@ -360,7 +360,7 @@ void Test_Http_LED_SingleChannel() {
 	CMD_ExecuteCommand("led_enableAll 1", 0);
 	CMD_ExecuteCommand("led_dimmer 100", 0);
 
-	// HTML page must contains dimmer, but no RGB and no temeprature controls
+	// HTML page must contains dimmer, but no RGB and no temperature controls
 	Test_FakeHTTPClientPacket_GET("index");
 	SELFTEST_ASSERT_HTTP_HAS_LED_DIMMER(true);
 	SELFTEST_ASSERT_HTTP_HAS_LED_TEMPERATURE(false);
@@ -387,7 +387,7 @@ void Test_Http_LED_SingleChannel() {
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "Dimmer", 100);
 	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "OFF");
 
-	// HTML page must contains dimmer, but no RGB and no temeprature controls
+	// HTML page must contains dimmer, but no RGB and no temperature controls
 	Test_FakeHTTPClientPacket_GET("index");
 	SELFTEST_ASSERT_HTTP_HAS_LED_DIMMER(true);
 	SELFTEST_ASSERT_HTTP_HAS_LED_TEMPERATURE(false);

@@ -159,7 +159,7 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 	tcp_listen_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 	server_addr.sin_family = AF_INET;
-	server_addr.sin_addr.s_addr = INADDR_ANY;/* Accept conenction request on all network interface */
+	server_addr.sin_addr.s_addr = INADDR_ANY;/* Accept connection request on all network interface */
 	server_addr.sin_port = htons(HTTP_SERVER_PORT);/* Server listen on port: 20000 */
 	err = bind(tcp_listen_fd, (struct sockaddr*)&server_addr, sizeof(server_addr));
 
@@ -228,7 +228,7 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 	}
 
 	if (err != kNoErr)
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Server listerner thread exit with err: %d", err);
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "Server listener thread exit with err: %d", err);
 
 	lwip_close(tcp_listen_fd);
 

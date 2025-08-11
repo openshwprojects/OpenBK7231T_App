@@ -226,7 +226,7 @@ static int g_tuyaMCUBatteryAckDelay = 0;
 // See: https://imgur.com/a/mEfhfiA
 static byte g_defaultTuyaMCUWiFiState = 0x00;
 
-// LED lighitng 
+// LED lighting
 // See: https://www.elektroda.com/rtvforum/viewtopic.php?p=20646359#20646359
 static short g_tuyaMCUled_id_color = -1;
 static short g_tuyaMCUled_format = -1;

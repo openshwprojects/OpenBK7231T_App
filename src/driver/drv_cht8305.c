@@ -42,7 +42,7 @@ static void CHT83XX_ReadEnv(float* temp, float* hum)
 	Soft_I2C_ReadBytes(&g_softI2C, buff, 4);
 	Soft_I2C_Stop(&g_softI2C);
 
-	//In case we have the new sensor 8310, overwrite humidity data reading it from 0x01, as it cannot be directrly read from 0x00, there is parity
+	//In case we have the new sensor 8310, overwrite humidity data reading it from 0x01, as it cannot be directly read from 0x00, there is parity
 	if(IS_CHT831X)
 	{
 		Soft_I2C_Start(&g_softI2C, CHT83XX_I2C_ADDR);

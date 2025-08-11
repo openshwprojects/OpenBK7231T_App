@@ -207,7 +207,7 @@ byte *LFS_ReadFile(const char *fname) {
 		lfsres = lfs_file_open(&lfs, &file, fname, LFS_O_RDONLY);
 
 		if (lfsres >= 0) {
-			ADDLOG_DEBUG(LOG_FEATURE_CMD, "LFS_ReadFile: openned file %s", fname);
+			ADDLOG_DEBUG(LOG_FEATURE_CMD, "LFS_ReadFile: opened file %s", fname);
 			//lfs_file_seek(&lfs,&file,0,LFS_SEEK_END);
 			//len = lfs_file_tell(&lfs,&file);
 			//lfs_file_seek(&lfs,&file,0,LFS_SEEK_SET);
@@ -220,7 +220,7 @@ byte *LFS_ReadFile(const char *fname) {
 			at = res;
 
 			if(res == 0) {
-				ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: openned file %s but malloc failed for %i", fname, len);
+				ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: opened file %s but malloc failed for %i", fname, len);
 			} else {
 #if 0
 				char buffer[32];
@@ -287,7 +287,7 @@ int LFS_WriteFile(const char *fname, const byte *data, int len, bool bAppend) {
 		}
 
 		if (lfsres >= 0) {
-			ADDLOG_DEBUG(LOG_FEATURE_CMD, "LFS_ReadFile: openned file %s", fname);
+			ADDLOG_DEBUG(LOG_FEATURE_CMD, "LFS_ReadFile: opened file %s", fname);
 
 			lfsres = lfs_file_write(&lfs, &file, data, len);
 			lfs_file_close(&lfs, &file);
@@ -324,7 +324,7 @@ static commandResult_t cmnd_lfsexec(const void * context, const char *cmd, const
 			}
 			lfsres = lfs_file_open(&lfs, file, fname, LFS_O_RDONLY);
 			if (lfsres >= 0) {
-				ADDLOG_DEBUG(LOG_FEATURE_CMD, "openned file %s", fname);
+				ADDLOG_DEBUG(LOG_FEATURE_CMD, "opened file %s", fname);
 				do {
 					char *p = line;
 					do {

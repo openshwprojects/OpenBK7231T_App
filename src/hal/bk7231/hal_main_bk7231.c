@@ -96,7 +96,7 @@ void OBK_TriggerButtonPoll(){
 
 
 void process_oneshot_timer(void *a, void*b){
-  // if mqtt process incomming data requested
+  // if mqtt process incoming data requested
   if (g_timer_triggers & ONESHOT_MQTT_PROCESS){
 #if ENABLE_MQTT
     MQTT_process_received();

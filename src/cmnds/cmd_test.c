@@ -234,7 +234,7 @@ static commandResult_t testJSON(const void * context, const char *cmd, const cha
 }
 
 
-// Usage for continous test: addRepeatingEvent 1 -1 lfs_test1 ir.bat
+// Usage for continuous test: addRepeatingEvent 1 -1 lfs_test1 ir.bat
 static commandResult_t cmnd_lfs_test1(const void * context, const char *cmd, const char *args, int cmdFlags) {
 #if ENABLE_LITTLEFS
 	if (lfs_present()) {
@@ -250,7 +250,7 @@ static commandResult_t cmnd_lfs_test1(const void * context, const char *cmd, con
 
 		ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: sizeof(lfs_file_t) %i", sizeof(lfs_file_t));
 		if (lfsres >= 0) {
-			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: openned file %s", args);
+			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: opened file %s", args);
 			do {
 				lfsres = lfs_file_read(&lfs, &file, &a, 1);
 				cnt++;
@@ -270,7 +270,7 @@ static commandResult_t cmnd_lfs_test1(const void * context, const char *cmd, con
 #endif
 	return CMD_RES_OK;
 }
-// Usage for continous test: addRepeatingEvent 1 -1 lfs_test2 ir.bat
+// Usage for continuous test: addRepeatingEvent 1 -1 lfs_test2 ir.bat
 static commandResult_t cmnd_lfs_test2(const void * context, const char *cmd, const char *args, int cmdFlags) {
 #if ENABLE_LITTLEFS
 	if (lfs_present()) {
@@ -291,7 +291,7 @@ static commandResult_t cmnd_lfs_test2(const void * context, const char *cmd, con
 
 			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: sizeof(lfs_file_t) %i", sizeof(lfs_file_t));
 			if (lfsres >= 0) {
-				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: openned file %s", args);
+				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: opened file %s", args);
 				do {
 					lfsres = lfs_file_read(&lfs, file, &a, 1);
 					cnt++;
@@ -337,7 +337,7 @@ static commandResult_t cmnd_json_test(const void * context, const char *cmd, con
 	free(msg);
 	return CMD_RES_OK;
 }
-// Usage for continous test: addRepeatingEvent 1 -1 lfs_test3 ir.bat
+// Usage for continuous test: addRepeatingEvent 1 -1 lfs_test3 ir.bat
 static commandResult_t cmnd_lfs_test3(const void * context, const char *cmd, const char *args, int cmdFlags) {
 	byte *res;
 

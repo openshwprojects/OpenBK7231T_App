@@ -1865,7 +1865,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 					break;
 				}
 			}
-			// find first togle
+			// find first toggle
 			toggle = -1;
 			for (i = 0; i < CHANNEL_MAX; i++) {
 				type = g_cfg.pins.channelTypes[i];
@@ -2780,7 +2780,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 		if (i) {
 			poststr(request, ",");
 		}
-		// print array with ["name_of_role",<Number of channnels for this role>]
+		// print array with ["name_of_role",<Number of channels for this role>]
 		hprintf255(request, "[\"%s\",%i]", htmlPinRoleNames[i],PIN_IOR_NofChan(i));
 	}
 	poststr(request, "];");
@@ -2791,7 +2791,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 		"n=this.name;"
 		"er=getElement('r'+n);"
 		"ee=getElement('e'+n);"
-		"ch=r[this.value][1];"		// since we might have skiped PWM entries in options list, don't use "selectedIndex" but "value" (it's even shorter ;-)
+		"ch=r[this.value][1];"		// since we might have skipped PWM entries in options list, don't use "selectedIndex" but "value" (it's even shorter ;-)
 		"er.disabled = (ch<1); er.style.display= ch<1 ? 'none' : 'inline';"
 		"ee.disabled = (ch<2); ee.style.display= ch<2 ? 'none' : 'inline';"
 		"}");
@@ -3289,7 +3289,7 @@ int http_fn_ota(http_request_t* request) {
 #ifdef OBK_OTA_NAME_EXTENSION
 	OBK_OTA_NAME_EXTENSION
 #endif
-	OBK_OTA_EXTENSION "/,SR=R.source,mr=(e)=>e.name.match(R);doota=()=>{f=o.files[0];if(f&&(f)){d.showModal();var t=30;setTimeout(()=>{d.close(),location.href='/'},1e3*t),setInterval(()=>d.innerHTML=D+t--+' secs',1e3),fetch('/api/ota',{method:'POST',body:f}).then((e)=>{e.ok&&fetch('/index?restart=1')})}else alert(f?'filename invalid':'no file selected')};d.innerHTML=D,o.addEventListener('change',((e)=>{const t=e.target.files[0];if(!t)return;h.innerHTML=mr(t)?'':'Selected file does <b>not</b> match reqired format '+SR+'!'}))</script>";
+	OBK_OTA_EXTENSION "/,SR=R.source,mr=(e)=>e.name.match(R);doota=()=>{f=o.files[0];if(f&&(f)){d.showModal();var t=30;setTimeout(()=>{d.close(),location.href='/'},1e3*t),setInterval(()=>d.innerHTML=D+t--+' secs',1e3),fetch('/api/ota',{method:'POST',body:f}).then((e)=>{e.ok&&fetch('/index?restart=1')})}else alert(f?'filename invalid':'no file selected')};d.innerHTML=D,o.addEventListener('change',((e)=>{const t=e.target.files[0];if(!t)return;h.innerHTML=mr(t)?'':'Selected file does <b>not</b> match required format '+SR+'!'}))</script>";
 
 	poststr(request, "<br><br><br>Expert feature: Upload firmware OTA file.<br>If unsure, please use Web App!<br><span id='hint' style='color: yellow;'></span><br><br>");
 	poststr(request, "<input id='otafile' type='file' accept='" OBK_OTA_EXTENSION "'>");

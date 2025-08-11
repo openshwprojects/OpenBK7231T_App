@@ -9,7 +9,7 @@ static uint8_t dsread = 0;
 static int Pin = -1;
 static int t = -12700;		//t is 100 * temperature (so we can represent 2 fractional digits) 
 static int errcount = 0;
-static int lastconv; // secondsElapsed on last successfull reading
+static int lastconv; // secondsElapsed on last successful reading
 static uint8_t ds18_family = 0;
 static int ds18_conversionPeriod = 0;
 

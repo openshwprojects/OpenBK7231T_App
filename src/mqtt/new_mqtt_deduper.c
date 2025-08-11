@@ -142,7 +142,7 @@ OBK_Publish_Result MQTT_PublishMain_StringString_DeDuped(int slotCode, int expir
 		return OBK_PUBLISH_OK; // do not resend if just few seconds passed
 	}
 #endif
-	// send futher
+	// send further
 	res = MQTT_PublishMain_StringString(sChannel,valueStr,flags);
 	if(res == OBK_PUBLISH_OK) {
 		slot->bValueDirty = false;

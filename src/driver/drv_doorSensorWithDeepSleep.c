@@ -1,7 +1,7 @@
 // Power-saving door sensor driver with deep sleep
 // Device reboots and waits for MQTT connection, while monitoring door sensor status.
 // After a certain amount of time with MQTT connection, to make sure that door state is 
-// already reported, and with no futher door state changes, device goes to deep sleep 
+// already reported, and with no further door state changes, device goes to deep sleep 
 // and waits for wakeup from door sensor input state change.
 
 #include "../new_common.h"

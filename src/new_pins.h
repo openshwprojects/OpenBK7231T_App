@@ -1075,7 +1075,7 @@ typedef enum channelType_e {
 // Special channel indexes
 // They were created so we can have easy and seamless
 // access to special variables internally.
-// Futhermore, they can be very useful for scripting,
+// Furthermore, they can be very useful for scripting,
 // because they can be plugged into "setChannel" command
 #define SPECIAL_CHANNEL_BRIGHTNESS		129
 #define SPECIAL_CHANNEL_LEDPOWER		130

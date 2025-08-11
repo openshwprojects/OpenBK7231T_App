@@ -184,21 +184,21 @@ struct lfs_config {
 
     // Erase a block. A block must be erased before being programmed.
     // The state of an erased block is undefined. Negative error codes
-    // are propogated to the user.
+    // are propagated to the user.
     // May return LFS_ERR_CORRUPT if the block should be considered bad.
     int (*erase)(const struct lfs_config *c, lfs_block_t block);
 
     // Sync the state of the underlying block device. Negative error codes
-    // are propogated to the user.
+    // are propagated to the user.
     int (*sync)(const struct lfs_config *c);
 
 #ifdef LFS_THREADSAFE
     // Lock the underlying block device. Negative error codes
-    // are propogated to the user.
+    // are propagated to the user.
     int (*lock)(const struct lfs_config *c);
 
     // Unlock the underlying block device. Negative error codes
-    // are propogated to the user.
+    // are propagated to the user.
     int (*unlock)(const struct lfs_config *c);
 #endif
 

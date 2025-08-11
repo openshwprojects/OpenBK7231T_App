@@ -209,7 +209,7 @@ void Test_TuyaMCU_BatteryPowered_Style2() {
 setChannelType 5 TextField
 // setup display name
 setChannelLabel 5 Temperature Interval
-// Make value persistant (stored between reboots), 
+// Make value persistent (stored between reboots), 
 // start value -1 means "remember last"
 SetStartValue 5 -1
 // set default value if not set

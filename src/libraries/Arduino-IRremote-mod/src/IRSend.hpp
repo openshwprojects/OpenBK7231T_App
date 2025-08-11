@@ -736,7 +736,7 @@ void IRsend::mark(unsigned int aMarkMicros) {
 #    if defined(OUTPUT_OPEN_DRAIN)
         digitalWriteFast(sendPin, LOW); // set output with pin mode OUTPUT_OPEN_DRAIN to active low
 #    else
-        pinModeFast(sendPin, OUTPUT); // active state for mimicking open drain
+        pinModeFast(sendPin, OUTPUT); // active state for mimicing open drain
 #    endif
 #  else
         // 3.5 us from FeedbackLed on to pin setting. 5.7 us from call of mark() to pin setting incl. setting of feedback pin.

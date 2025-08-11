@@ -1289,7 +1289,7 @@ void Main_Init_Before_Delay()
 }
 
 // a fixed delay of 750ms to wait for calibration routines in core thread,
-// which must complete before LWIP etc. are intialised,
+// which must complete before LWIP etc. are initialised,
 // and crucially before we use certain TCP/IP features.
 // it would be nicer to understand more about why, and to wait for TCPIP to be ready
 // rather than use a fixed delay.
@@ -1393,7 +1393,7 @@ void Main_Init_After_Delay()
 	ADDLOGF_INFO("%s done", __func__);
 }
 
-// to be overriden
+// to be overridden
 // Translate name like RB5 for OBK pin index
 #ifdef _MSC_VER
 ///#pragma comment(linker, "/alternatename:HAL_PIN_Find=Default_HAL_PIN_Find")

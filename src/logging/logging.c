@@ -566,7 +566,7 @@ void log_server_thread(beken_thread_arg_t arg)
 	tcp_select_fd = tcp_listen_fd + 1;
 
 	server_addr.sin_family = AF_INET;
-	server_addr.sin_addr.s_addr = INADDR_ANY;/* Accept conenction request on all network interface */
+	server_addr.sin_addr.s_addr = INADDR_ANY;/* Accept connection request on all network interface */
 	server_addr.sin_port = htons(logTcpPort);/* Server listen on port: 20000 */
 	err = bind(tcp_listen_fd, (struct sockaddr*)&server_addr, sizeof(server_addr));
 

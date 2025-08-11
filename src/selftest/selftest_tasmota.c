@@ -625,7 +625,7 @@ void Test_Backlog() {
 	SELFTEST_ASSERT_CHANNEL(1, 4);
 	SELFTEST_ASSERT(CMD_ExecuteCommand("backlog    setChannel 1     5 ;;;", 0) == CMD_RES_OK);
 	SELFTEST_ASSERT_CHANNEL(1, 5);
-	SELFTEST_ASSERT(CMD_ExecuteCommand("backlog    thiisCooommandNotExists 1     5 ;;;", 0)
+	SELFTEST_ASSERT(CMD_ExecuteCommand("backlog    thisCommandNotExists 1     5 ;;;", 0)
 		== CMD_RES_UNKNOWN_COMMAND);
 	SELFTEST_ASSERT_CHANNEL(1, 5);
 	SELFTEST_ASSERT(CMD_ExecuteCommand("backlog    setChannel 1;;;", 0) == CMD_RES_NOT_ENOUGH_ARGUMENTS);

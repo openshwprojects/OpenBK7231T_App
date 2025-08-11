@@ -74,7 +74,7 @@ void Bridge_driver_Init()
         addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Detected %i bridge channels\n", ch_count);
         if (br_ctrl != NULL)
             os_free(br_ctrl);
-        /* Allocate memeory */
+        /* Allocate memory */
         br_ctrl = (BRIDGE_CONTROL *)os_malloc(sizeof(BRIDGE_CONTROL)*ch_count);
         /* Reset settings */
         for(ch=0;ch<ch_count;ch++)

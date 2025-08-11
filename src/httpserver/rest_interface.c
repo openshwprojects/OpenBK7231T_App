@@ -953,7 +953,7 @@ static int http_rest_get_pins(http_request_t* request) {
 		}
 		hprintf255(request, "%d", g_cfg.pins.roles[i]);
 	}
-	// TODO: maybe we should cull futher channels that are not used?
+	// TODO: maybe we should cull further channels that are not used?
 	// I support many channels because I plan to use 16x relays module with I2C MCP23017 driver
 
 	// find max non-zero ch
@@ -3469,7 +3469,7 @@ static int http_rest_get_channels(http_request_t* request) {
 	http_setup(request, httpMimeTypeJson);
 	poststr(request, "{");
 
-	// TODO: maybe we should cull futher channels that are not used?
+	// TODO: maybe we should cull further channels that are not used?
 	// I support many channels because I plan to use 16x relays module with I2C MCP23017 driver
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		// "i" is a pin index

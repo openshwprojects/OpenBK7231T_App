@@ -86,25 +86,25 @@ extern UINT32 flash_ctrl(UINT32 cmd, void *parm);
 int boot_count = -1;
 #endif
 
-// Read a region in a block. Negative error codes are propogated
+// Read a region in a block. Negative error codes are propagated
 // to the user.
 static int lfs_read(const struct lfs_config *c, lfs_block_t block,
         lfs_off_t off, void *buffer, lfs_size_t size);
 
 // Program a region in a block. The block must have previously
-// been erased. Negative error codes are propogated to the user.
+// been erased. Negative error codes are propagated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int lfs_write(const struct lfs_config *c, lfs_block_t block,
         lfs_off_t off, const void *buffer, lfs_size_t size);
 
 // Erase a block. A block must be erased before being programmed.
 // The state of an erased block is undefined. Negative error codes
-// are propogated to the user.
+// are propagated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int lfs_erase(const struct lfs_config *c, lfs_block_t block);
 
 // Sync the state of the underlying block device. Negative error codes
-// are propogated to the user.
+// are propagated to the user.
 static int lfs_sync(const struct lfs_config *c);
 
 
@@ -620,7 +620,7 @@ void LFS_SPI_Flash_Read(int adr, int cnt, byte *data);
 
 void LFS_SPI_Flash_EraseSector(int addr);
 
-// Read a region in a block. Negative error codes are propogated
+// Read a region in a block. Negative error codes are propagated
 // to the user.
 static int lfs_read(const struct lfs_config *c, lfs_block_t block,
 	lfs_off_t off, void *buffer, lfs_size_t size) {
@@ -635,7 +635,7 @@ static int lfs_read(const struct lfs_config *c, lfs_block_t block,
 }
 
 // Program a region in a block. The block must have previously
-// been erased. Negative error codes are propogated to the user.
+// been erased. Negative error codes are propagated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int lfs_write(const struct lfs_config *c, lfs_block_t block,
 	lfs_off_t off, const void *buffer, lfs_size_t size) {
@@ -651,7 +651,7 @@ static int lfs_write(const struct lfs_config *c, lfs_block_t block,
 
 // Erase a block. A block must be erased before being programmed.
 // The state of an erased block is undefined. Negative error codes
-// are propogated to the user.
+// are propagated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int lfs_erase(const struct lfs_config *c, lfs_block_t block) {
 	unsigned int startAddr;
@@ -664,7 +664,7 @@ static int lfs_erase(const struct lfs_config *c, lfs_block_t block) {
 }
 
 #elif PLATFORM_BEKEN || WINDOWS
-// Read a region in a block. Negative error codes are propogated
+// Read a region in a block. Negative error codes are propagated
 // to the user.
 static int lfs_read(const struct lfs_config *c, lfs_block_t block,
         lfs_off_t off, void *buffer, lfs_size_t size){
@@ -680,7 +680,7 @@ static int lfs_read(const struct lfs_config *c, lfs_block_t block,
 }
 
 // Program a region in a block. The block must have previously
-// been erased. Negative error codes are propogated to the user.
+// been erased. Negative error codes are propagated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int lfs_write(const struct lfs_config *c, lfs_block_t block,
         lfs_off_t off, const void *buffer, lfs_size_t size){
@@ -705,7 +705,7 @@ static int lfs_write(const struct lfs_config *c, lfs_block_t block,
 
 // Erase a block. A block must be erased before being programmed.
 // The state of an erased block is undefined. Negative error codes
-// are propogated to the user.
+// are propagated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int lfs_erase(const struct lfs_config *c, lfs_block_t block){
     int res;
@@ -742,7 +742,7 @@ static int lfs_read(const struct lfs_config *c, lfs_block_t block,
 }
 
 // Program a region in a block. The block must have previously
-// been erased. Negative error codes are propogated to the user.
+// been erased. Negative error codes are propagated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int lfs_write(const struct lfs_config *c, lfs_block_t block,
 	lfs_off_t off, const void *buffer, lfs_size_t size)
@@ -761,7 +761,7 @@ static int lfs_write(const struct lfs_config *c, lfs_block_t block,
 
 // Erase a block. A block must be erased before being programmed.
 // The state of an erased block is undefined. Negative error codes
-// are propogated to the user.
+// are propagated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int lfs_erase(const struct lfs_config *c, lfs_block_t block)
 {
@@ -789,7 +789,7 @@ static int lfs_read(const struct lfs_config *c, lfs_block_t block,
 }
 
 // Program a region in a block. The block must have previously
-// been erased. Negative error codes are propogated to the user.
+// been erased. Negative error codes are propagated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int lfs_write(const struct lfs_config *c, lfs_block_t block,
         lfs_off_t off, const void *buffer, lfs_size_t size){
@@ -808,7 +808,7 @@ static int lfs_write(const struct lfs_config *c, lfs_block_t block,
 
 // Erase a block. A block must be erased before being programmed.
 // The state of an erased block is undefined. Negative error codes
-// are propogated to the user.
+// are propagated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int lfs_erase(const struct lfs_config *c, lfs_block_t block){
     int res = LFS_ERR_OK;
@@ -831,7 +831,7 @@ static int lfs_read(const struct lfs_config* c, lfs_block_t block,
 }
 
 // Program a region in a block. The block must have previously
-// been erased. Negative error codes are propogated to the user.
+// been erased. Negative error codes are propagated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int lfs_write(const struct lfs_config* c, lfs_block_t block,
     lfs_off_t off, const void* buffer, lfs_size_t size)
@@ -848,7 +848,7 @@ static int lfs_write(const struct lfs_config* c, lfs_block_t block,
 
 // Erase a block. A block must be erased before being programmed.
 // The state of an erased block is undefined. Negative error codes
-// are propogated to the user.
+// are propagated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int lfs_erase(const struct lfs_config* c, lfs_block_t block)
 {
@@ -874,7 +874,7 @@ static int lfs_read(const struct lfs_config* c, lfs_block_t block,
 }
 
 // Program a region in a block. The block must have previously
-// been erased. Negative error codes are propogated to the user.
+// been erased. Negative error codes are propagated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int lfs_write(const struct lfs_config* c, lfs_block_t block,
     lfs_off_t off, const void* buffer, lfs_size_t size)
@@ -891,7 +891,7 @@ static int lfs_write(const struct lfs_config* c, lfs_block_t block,
 
 // Erase a block. A block must be erased before being programmed.
 // The state of an erased block is undefined. Negative error codes
-// are propogated to the user.
+// are propagated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int lfs_erase(const struct lfs_config* c, lfs_block_t block)
 {
@@ -922,7 +922,7 @@ static int lfs_read(const struct lfs_config* c, lfs_block_t block,
 }
 
 // Program a region in a block. The block must have previously
-// been erased. Negative error codes are propogated to the user.
+// been erased. Negative error codes are propagated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int lfs_write(const struct lfs_config* c, lfs_block_t block,
     lfs_off_t off, const void* buffer, lfs_size_t size)
@@ -939,7 +939,7 @@ static int lfs_write(const struct lfs_config* c, lfs_block_t block,
 
 // Erase a block. A block must be erased before being programmed.
 // The state of an erased block is undefined. Negative error codes
-// are propogated to the user.
+// are propagated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int lfs_erase(const struct lfs_config* c, lfs_block_t block)
 {
@@ -968,7 +968,7 @@ static int lfs_read(const struct lfs_config* c, lfs_block_t block,
 }
 
 // Program a region in a block. The block must have previously
-// been erased. Negative error codes are propogated to the user.
+// been erased. Negative error codes are propagated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int lfs_write(const struct lfs_config* c, lfs_block_t block,
     lfs_off_t off, const void* buffer, lfs_size_t size)
@@ -985,7 +985,7 @@ static int lfs_write(const struct lfs_config* c, lfs_block_t block,
 
 // Erase a block. A block must be erased before being programmed.
 // The state of an erased block is undefined. Negative error codes
-// are propogated to the user.
+// are propagated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int lfs_erase(const struct lfs_config* c, lfs_block_t block)
 {
@@ -1014,7 +1014,7 @@ static int lfs_read(const struct lfs_config* c, lfs_block_t block,
 }
 
 // Program a region in a block. The block must have previously
-// been erased. Negative error codes are propogated to the user.
+// been erased. Negative error codes are propagated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int lfs_write(const struct lfs_config* c, lfs_block_t block,
     lfs_off_t off, const void* buffer, lfs_size_t size)
@@ -1031,7 +1031,7 @@ static int lfs_write(const struct lfs_config* c, lfs_block_t block,
 
 // Erase a block. A block must be erased before being programmed.
 // The state of an erased block is undefined. Negative error codes
-// are propogated to the user.
+// are propagated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int lfs_erase(const struct lfs_config* c, lfs_block_t block)
 {
@@ -1062,7 +1062,7 @@ static int lfs_read(const struct lfs_config* c, lfs_block_t block,
 }
 
 // Program a region in a block. The block must have previously
-// been erased. Negative error codes are propogated to the user.
+// been erased. Negative error codes are propagated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int lfs_write(const struct lfs_config* c, lfs_block_t block,
 	lfs_off_t off, const void* buffer, lfs_size_t size)
@@ -1081,7 +1081,7 @@ static int lfs_write(const struct lfs_config* c, lfs_block_t block,
 
 // Erase a block. A block must be erased before being programmed.
 // The state of an erased block is undefined. Negative error codes
-// are propogated to the user.
+// are propagated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int lfs_erase(const struct lfs_config* c, lfs_block_t block)
 {
@@ -1099,7 +1099,7 @@ static int lfs_erase(const struct lfs_config* c, lfs_block_t block)
 #endif 
 
 // Sync the state of the underlying block device. Negative error codes
-// are propogated to the user.
+// are propagated to the user.
 static int lfs_sync(const struct lfs_config *c){
     // nothing to do
     return 0;
