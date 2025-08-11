@@ -211,6 +211,10 @@ jobs:
           - platform: OpenBK7231N
             variant: sensors
 
+          # extras for BK7238
+          - platform: OpenBK7238
+            variant: irRemoteESP
+            
           - platform: OpenBL602
             variant: berry
     steps:
@@ -320,7 +324,7 @@ jobs:
             output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.img
             output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.factory.bin
           if-no-files-found: warn
-          
+
   build_8266:
     name: Build ESP8266
     needs: refs

@@ -625,7 +625,7 @@ extern "C" commandResult_t IR_Param(const void *context, const char *cmd, const 
 
 	if(!ourReceiver)
 	{
-		ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRParam: IR reciever disabled");
+		ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"IRParam: IR receiver disabled");
 		return CMD_RES_BAD_ARGUMENT;
 	}
 
@@ -842,7 +842,7 @@ extern "C" void DRV_IR_RunFrame() {
 				if (!hasACState(results.decode_type))
 					lastIrReceived += "," + String((int)results.bits);
 				else
-					ADDLOG_INFO(LOG_FEATURE_IR, "Recieved AC code:%s",proto_name.c_str());
+					ADDLOG_INFO(LOG_FEATURE_IR, "Received AC code:%s",proto_name.c_str());
 
 				char out[128];
 
@@ -928,7 +928,7 @@ extern "C" void DRV_IR_RunFrame() {
 					ADDLOG_DEBUG(LOG_FEATURE_IR, (char *)"IR fire event took %dms", counter_dur);
 				}
 			} else {
-				ADDLOG_INFO(LOG_FEATURE_IR, "Recieved Unknown IR ");
+				ADDLOG_INFO(LOG_FEATURE_IR, "Received Unknown IR ");
 			}
 			/*
 			* !!!Important!!! Enable receiving of the next value,

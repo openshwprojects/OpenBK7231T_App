@@ -177,7 +177,7 @@ static void flash_wait_for(softSPI_t* spi, byte mask) {
 static void flash_wait_while_busy(softSPI_t* spi) {
 	flash_wait_for(spi, STATUS_BUSY_MASK);
 }
-void spi_flash_read(softSPI_t* spi, int adr, byte* out, int cnt) {
+void softspi_flash_read(softSPI_t* spi, int adr, byte* out, int cnt) {
 	int i;
 
 	OBK_DISABLE_INTERRUPTS;
@@ -255,7 +255,7 @@ void spi_flash_write2(softSPI_t* spi, int adr, const byte* data, int cnt) {
 	OBK_ENABLE_INTERRUPTS;
 }
 
-void spi_flash_erase_sector(softSPI_t* spi, int addr) {
+void softspi_flash_erase_sector(softSPI_t* spi, int addr) {
 	OBK_DISABLE_INTERRUPTS;
 
 	SPI_Begin(spi);
@@ -290,12 +290,12 @@ void flash_test_pages(softSPI_t* spi, int baseAddr, int length, byte pattern) {
 		int endAddr = (baseAddr + length - 1) & ~(0xFFF); // align down last used address
 
 		for (int addr = startAddr; addr <= endAddr; addr += 4096) {
-			spi_flash_erase_sector(spi, addr);
+			softspi_flash_erase_sector(spi, addr);
 		}
 	}
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Erased flash.");
 
-	spi_flash_read(spi, baseAddr, readBuf, length);
+	softspi_flash_read(spi, baseAddr, readBuf, length);
 	for (i = 0; i < length; i++) {
 		if (readBuf[i] != 0xFF)
 			err++;
@@ -306,7 +306,7 @@ void flash_test_pages(softSPI_t* spi, int baseAddr, int length, byte pattern) {
 	spi_flash_write2(spi, baseAddr, writeBuf, length);
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Wrote pattern %02X to flash.", pattern);
 
-	spi_flash_read(spi, baseAddr, readBuf, length);
+	softspi_flash_read(spi, baseAddr, readBuf, length);
 	for (i = 0; i < length; i++) {
 		if (readBuf[i] != pattern)
 			err++;
@@ -333,7 +333,7 @@ void LFS_SPI_Flash_EraseSector(int addr) {
 	if (g_lfs_spi_ready == 0) {
 		LFS_SPI_Init();
 	}
-	spi_flash_erase_sector(&g_lfs_spi, addr);
+	softspi_flash_erase_sector(&g_lfs_spi, addr);
 }
 void spi_test() {
 	softSPI_t spi;
@@ -354,7 +354,7 @@ void LFS_SPI_Flash_Read(int adr, int cnt, byte *data) {
 	if (g_lfs_spi_ready == 0) {
 		LFS_SPI_Init();
 	}
-	spi_flash_read(&g_lfs_spi, adr, data, cnt);
+	softspi_flash_read(&g_lfs_spi, adr, data, cnt);
 }
 void LFS_SPI_Flash_Write(int adr, const byte *data, int cnt) {
 	if (g_lfs_spi_ready == 0) {

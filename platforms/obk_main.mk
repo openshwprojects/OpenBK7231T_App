@@ -164,3 +164,6 @@ OBKM_SRC  += $(OBK_SRCS)ringbuff32.c
 
 OBKM_SRC_CXX += $(OBK_SRCS)driver/drv_ir.cpp
 OBKM_SRC_CXX += $(OBK_SRCS)driver/drv_ir_new.cpp
+OBKM_SRC_CXX += $(wildcard $(OBK_SRCS)libraries/IRremoteESP8266/src/*.cpp)
+
+
