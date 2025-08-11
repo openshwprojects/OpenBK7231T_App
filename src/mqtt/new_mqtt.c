@@ -246,7 +246,7 @@ typedef struct mqtt_callback_tag {
 #define MAX_MQTT_CALLBACKS 32
 static mqtt_callback_t* callbacks[MAX_MQTT_CALLBACKS];
 static int numCallbacks = 0;
-// note: only one incomming can be processed at a time.
+// note: only one incoming can be processed at a time.
 static obk_mqtt_request_t g_mqtt_request;
 static obk_mqtt_request_t g_mqtt_request_cb;
 
