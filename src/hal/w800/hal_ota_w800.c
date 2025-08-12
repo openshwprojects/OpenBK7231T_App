@@ -1,16 +1,9 @@
-#include "../obk_config.h"
-
-#include "../new_common.h"
-#include "../logging/logging.h"
-#include "../httpserver/new_http.h"
-#include "../new_pins.h"
-#include "../jsmn/jsmn_h.h"
-#include "../hal/hal_ota.h"
-#include "../hal/hal_wifi.h"
-#include "../hal/hal_flashVars.h"
-#include "../littlefs/our_lfs.h"
+#include "../../obk_config.h"
+#include "../../new_common.h"
+#include "../../logging/logging.h"
+#include "../../httpserver/new_http.h"
+#include "../hal_ota.h"
 #include "lwip/sockets.h"
-
 
 #include "wm_internal_flash.h"
 #include "wm_socket_fwup.h"
