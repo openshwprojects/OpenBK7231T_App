@@ -211,6 +211,10 @@ jobs:
           - platform: OpenBK7231N
             variant: sensors
 
+          # extras for BK7238
+          - platform: OpenBK7238
+            variant: irRemoteESP
+            
           - platform: OpenBL602
             variant: berry
     steps:
@@ -289,7 +293,7 @@ jobs:
         with:
           repository: espressif/esp-idf
           path: sdk/esp-idf
-          ref: v5.5-beta1
+          ref: v5.5
           submodules: recursive
       - uses: actions/setup-python@v5
         with:
@@ -303,6 +307,7 @@ jobs:
           pip3 install configobj
           pip3 install toml
           pip3 install fdt
+          pip3 install esptool
       - name: Run make
         run: |
           cd sdk/esp-idf
@@ -319,7 +324,7 @@ jobs:
             output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.img
             output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.factory.bin
           if-no-files-found: warn
-          
+
   build_8266:
     name: Build ESP8266
     needs: refs

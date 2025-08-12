@@ -35,6 +35,9 @@
 #else
 #define DEEP_SLEEP PM_MODE_HIBERNATION
 #endif
+#elif PLATFORM_BL602
+#include "bl_flash.h"
+#include "bl602_hbn.h"
 #endif
 
 #ifdef PLATFORM_BEKEN_NEW
@@ -313,6 +316,31 @@ void PINS_BeginDeepSleepWithPinWakeUp(unsigned int wakeUpTime) {
 //	esp_sleep_enable_gpio_wakeup();
 //	esp_light_sleep_start();
 //#endif
+#elif PLATFORM_BL602
+	uint8_t wkup = HBN_WAKEUP_GPIO_NONE;
+	HBN_GPIO_INT_Trigger_Type edge = HBN_GPIO_INT_TRIGGER_ASYNC_RISING_EDGE;
+	uint8_t g7 = (g_gpio_index_map[0] >> 7) & 1;
+	uint8_t g8 = (g_gpio_index_map[0] >> 8) & 1;
+	uint8_t gf7 = (g_gpio_edge_map[0] >> 7) & 1;
+	uint8_t gf8 = (g_gpio_edge_map[0] >> 8) & 1;
+	if(g7) wkup |= HBN_WAKEUP_GPIO_7;
+	if(g8) wkup |= HBN_WAKEUP_GPIO_8;
+	// only one edge setting
+	if(gf8) edge = HBN_GPIO_INT_TRIGGER_ASYNC_FALLING_EDGE;
+	if(gf7) edge = HBN_GPIO_INT_TRIGGER_ASYNC_FALLING_EDGE;
+
+	HBN_APP_CFG_Type cfg = {
+		.useXtal32k = 0,
+		.sleepTime = wakeUpTime,
+		.gpioWakeupSrc = wkup,
+		.gpioTrigType = edge,
+		.flashCfg = bl_flash_get_flashCfg(),
+		.hbnLevel = wakeUpTime > 0 ? HBN_LEVEL_1 : HBN_LEVEL_3,
+		.ldoLevel = HBN_LDO_LEVEL_1P10V,
+	};
+	HBN_Clear_IRQ(HBN_INT_GPIO7);
+	HBN_Clear_IRQ(HBN_INT_GPIO8);
+	HBN_Mode_Enter(&cfg);
 #endif
 }
 
@@ -2294,7 +2322,7 @@ const char* g_channelTypeNames[] = {
 	"Frequency_div1000",
 	"OpenStopClose",
 	"Percent",
-	"error",
+	"StopUpDown",
 	"error",
 	"error",
 };

@@ -1,6 +1,3 @@
-#if (PLATFORM_BK7231N || WINDOWS) && !PLATFORM_BEKEN_NEW
-
-
 #include "../new_cfg.h"
 #include "../new_common.h"
 #include "../new_pins.h"
@@ -11,10 +8,12 @@
 #include "../logging/logging.h"
 #include "../mqtt/new_mqtt.h"
 
+#if ENABLE_DRIVER_SM16703P || ENABLE_DRIVER_SM15155E
+
 #include "drv_spidma.h"
 #include "drv_spiLED.h"
 
-#if WINDOWS
+#if WINDOWS && !LINUX
 
 void SPIDMA_Init(struct spi_message *msg) {
 
@@ -23,6 +22,9 @@ void SPIDMA_StartTX(struct spi_message *msg) {
 
 }
 void SPIDMA_StopTX(void) {
+
+}
+void SPIDMA_Deinit(void) {
 
 }
 
@@ -87,8 +89,11 @@ void SPILED_InitDMA(int numBytes) {
 
 	// Prepare buffer
 	uint32_t buffer_size = spiLED.ofs + (numBytes * 4) + spiLED.padding; //Add `spiLED.ofs` bytes for "Reset"
-
+#if PLATFORM_ESPIDF
+	spiLED.buf = heap_caps_malloc(sizeof(byte) * (buffer_size), MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA);
+#else
 	spiLED.buf = (byte *)os_malloc(sizeof(byte) * (buffer_size)); //18LEDs x RGB x 4Bytes
+#endif
 
 	// Fill `spiLED.ofs` slice of the buffer with zero
 	for (i = 0; i < spiLED.ofs; i++) {
@@ -148,6 +153,13 @@ void SPILED_SetRawBytes(int start_offset, byte *bytes, int numBytes, int push) {
 		SPIDMA_StartTX(spiLED.msg);
 	}
 }
+
+#if !PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
+
+int spidma_led_pin = -1;
+
+#endif
+
 void SPILED_Shutdown() {
 	spiLED.ready = 0;
 	if (spiLED.buf) {
@@ -158,11 +170,12 @@ void SPILED_Shutdown() {
 		free(spiLED.msg);
 		spiLED.msg = 0;
 	}
+	SPIDMA_Deinit();
 }
 
-void SPILED_Init() {
+void SPILED_Init(int pin) {
+#if PLATFORM_BK7231N || PLATFORM_BEKEN_NEW
 	uint32_t val;
-#if PLATFORM_BK7231N
 	val = GFUNC_MODE_SPI_USE_GPIO_14;
 	sddev_control(GPIO_DEV_NAME, CMD_GPIO_ENABLE_SECOND, &val);
 
@@ -176,8 +189,7 @@ void SPILED_Init() {
 	param = PWD_SPI_CLK_BIT;
 	sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_UP, &param);
 #else
-
-
+	spidma_led_pin = pin;
 #endif
 }
 

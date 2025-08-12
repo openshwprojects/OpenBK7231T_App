@@ -512,9 +512,11 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #include <task.h>
 
 #define ASSERT
-#define os_free free
-#define os_malloc malloc
-
+//#define os_free free
+//#define os_malloc malloc
+#define os_malloc pvPortMalloc
+#define os_free vPortFree
+#define realloc pvPortRealloc
 
 #define lwip_close_force(x) lwip_close(x)
 #define bk_printf printf

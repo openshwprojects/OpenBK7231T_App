@@ -349,8 +349,6 @@ void ConfigureSTA(obkStaticIP_t* ip)
 	struct ip_addr gw;
 	struct ip_addr dnsserver;
 
-	wifi_config_autoreconnect(1, 2, 3);
-
 	if(ip->localIPAddr[0] == 0)
 	{
 		//dhcps_init(&xnetif[0]);
@@ -368,6 +366,8 @@ void ConfigureSTA(obkStaticIP_t* ip)
 		netif_set_addr(&xnetif[0], ip_2_ip4(&ipaddr), ip_2_ip4(&netmask), ip_2_ip4(&gw));
 		dns_setserver(0, &dnsserver);
 	}
+	if(!g_bStaticIP) wifi_config_autoreconnect(1, 2, 3);
+	else wifi_set_autoreconnect(0);
 	netif_set_hostname(&xnetif[0], CFG_GetDeviceName());
 }
 
