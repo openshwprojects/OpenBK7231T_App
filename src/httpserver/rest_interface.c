@@ -2647,7 +2647,7 @@ update_ota_exit:
 	CFG_IncrementOTACount();
 	return 0;
 }
-#else
+#elif PLATFORM_BEKEN
 int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 {
 	int total = 0;
@@ -2656,8 +2656,6 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 	int writelen = request->bodylen;
 
 	ADDLOG_DEBUG(LOG_FEATURE_OTA, "OTA post len %d", request->contentLength);
-
-
 
 	init_ota(startaddr);
 
