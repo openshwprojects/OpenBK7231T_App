@@ -52,7 +52,7 @@ void Test_Http_LED_CW() {
 	SELFTEST_ASSERT_JSON_VALUE_STRING("StatusSTS", "POWER", "OFF");
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER("StatusSTS", "CT", 153);
 
-	// HTML page must contains dimmer, but no RGB and no temeprature controls
+	// HTML page must contains dimmer, but no RGB and no temperature controls
 	Test_FakeHTTPClientPacket_GET("index");
 	SELFTEST_ASSERT_HTTP_HAS_LED_DIMMER(true);
 	SELFTEST_ASSERT_HTTP_HAS_LED_TEMPERATURE(true);

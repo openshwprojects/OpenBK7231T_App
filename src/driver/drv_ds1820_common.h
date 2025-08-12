@@ -14,7 +14,7 @@
 #define SEARCH_ROM		0xF0	// to identify the ROM codes of all slave devices on the bus
 #define ALARM_SEARCH		0xEC	// all devices with an alarm condition (as SEARCH_ROM except only slaves with a set alarm flag will respond)
 #define READ_ROM		0x33	// Only single device! Read 64-bit ROM code without using the Search ROM procedure
-#define SKIP_ROM		0xCC	// Ignore ROM adress / address all devices
+#define SKIP_ROM		0xCC	// Ignore ROM address / address all devices
 #define CONVERT_T		0x44	// take temperature reading and copy it to scratchpad
 #define READ_SCRATCHPAD		0xBE	// Read scratchpad
 #define WRITE_SCRATCHPAD	0x4E	// Write scratchpad

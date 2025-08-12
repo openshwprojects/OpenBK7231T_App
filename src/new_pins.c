@@ -280,7 +280,7 @@ void PINS_BeginDeepSleepWithPinWakeUp(unsigned int wakeUpTime) {
 	// NOTE: this function:
 	// void bk_enter_deep_sleep(UINT32 gpio_index_map,UINT32 gpio_edge_map)
 	// On BK7231T, will overwrite HAL pin settings, and depending on edge map,
-	// will set a internal pullup or internall pulldown
+	// will set a internal pullup or internal pulldown
 #ifdef PLATFORM_BK7231T
 	extern void deep_sleep_wakeup_with_gpio(UINT32 gpio_index_map, UINT32 gpio_edge_map);
 	deep_sleep_wakeup_with_gpio(g_gpio_index_map[0], g_gpio_edge_map[0]);
@@ -2104,7 +2104,7 @@ void PIN_ticks(void* param)
 			}
 		}
 
-		// activepins is count of pins which are 'active', i.e. match thier expected active level
+		// activepins is count of pins which are 'active', i.e. match their expected active level
 		if (activepins) {
 			activepoll_time = 1000; //20 x 50ms = 1s of polls after button release
 		}

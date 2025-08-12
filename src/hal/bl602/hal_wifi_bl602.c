@@ -15,7 +15,7 @@
 #include <aos/kernel.h>
 #include <aos/yloop.h>
 
-// lenght of "192.168.103.103" is 15 but we also need a NULL terminating character
+// length of "192.168.103.103" is 15 but we also need a NULL terminating character
 static char g_ipStr[32] = "unknown";
 static int g_bAccessPointMode = 1;
 static void (*g_wifiStatusCallback)(int code);

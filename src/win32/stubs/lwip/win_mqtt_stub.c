@@ -563,7 +563,7 @@ static void mqtt_ringbuf_advance_get_idx(struct mqtt_ringbuf_t *rb, u16_t len)
 	}
 	/* move pointer */
 	rb->get += len;
-	/* wrapp arround */
+	/* wrap around */
 	if (rb->get >= MQTT_OUTPUT_RINGBUF_SIZE)
 	{
 		rb->get -= MQTT_OUTPUT_RINGBUF_SIZE;

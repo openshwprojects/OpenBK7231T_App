@@ -6,7 +6,7 @@
 // I've been testing the implementation for a week now and it seems to be working without any issues.
 
 #define BP1658CJ_ADDR_OUT     0xB0
-#define BP1658CJ_ADDR_SLEEP   0x80  // When this command + the subadress and 00 for every channel is send, the device goes to sleep. --> was send by original firmware
+#define BP1658CJ_ADDR_SLEEP   0x80  // When this command + the subaddress and 00 for every channel is send, the device goes to sleep. --> was send by original firmware
 
 // Sub Address
-#define BP1658CJ_SUBADDR      0x23  //assumed: this address has to be send for a color change (never saw any different subadress)
+#define BP1658CJ_SUBADDR      0x23  //assumed: this address has to be send for a color change (never saw any different subaddress)

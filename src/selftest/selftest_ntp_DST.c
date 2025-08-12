@@ -33,7 +33,7 @@ void Test_NTP_DST() {
 	// test - we are (slightly) "before" DST
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 0);
 
-	// advace 6 seconds, so we are 1 second after 2:00, hence summertime started
+	// advance 6 seconds, so we are 1 second after 2:00, hence summertime started
 	// in fact the actual time could never happen, since clock
 	// advances from 2:00:00 to 3:00:00 clock can't be 2:00:01 on this day
 	// --> NTP offset should be 2 now, we will set that later
@@ -63,10 +63,10 @@ void Test_NTP_DST() {
 	// test, that we are still _in_ DST now
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
 
-	// advace 6 seconds, so we are 1 second after 3:00, hence summertime ended
+	// advance 6 seconds, so we are 1 second after 3:00, hence summertime ended
 	Sim_RunSeconds(6, false);
 
-	// check time - DST switch should have hapened, so clock was 
+	// check time - DST switch should have happened, so clock was 
 	// turned back for 1 hour
 	SELFTEST_ASSERT_EXPRESSION("$hour", 2);
 	SELFTEST_ASSERT_EXPRESSION("$minute",00);

@@ -40,7 +40,7 @@ static commandResult_t Cmd_SetResolution(const void* context, const char* cmd, c
 	}
 	// arg can be 9 10 11 12
 	// the cfg for resolution shall be 9:0x1F 10:0x3F 11:0x5F 12:0x7F
-	// ignoring the "0x0F" an lookig just at the first digit, 
+	// ignoring the "0x0F" an looking just at the first digit, 
 	// we can easily see this is 1+(arg-9)*2
 	// so this can be written as 
 	uint8_t cfg = 0x1F | (arg-9)<<5 ;
@@ -121,7 +121,7 @@ static int DS1820_DiscoverFamily()
 	if(family == 0x10 || family == 0x28)
 	{
 		ds18_family = family;
-		DS1820_LOG(INFO, "Discoverd Family: %x", family);
+		DS1820_LOG(INFO, "Discovered Family: %x", family);
 		return 1;
 	}
 	else

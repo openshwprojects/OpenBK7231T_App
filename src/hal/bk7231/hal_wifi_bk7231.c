@@ -33,7 +33,7 @@ extern u8* wpas_get_sta_psk(void);
 
 static void (*g_wifiStatusCallback)(int code);
 
-// lenght of "192.168.103.103" is 15 but we also need a NULL terminating character
+// length of "192.168.103.103" is 15 but we also need a NULL terminating character
 static char g_IP[32] = "unknown";
 static int g_bOpenAccessPointMode = 0;
 char *get_security_type(int type);

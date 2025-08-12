@@ -43,7 +43,7 @@ bool sensors_reciveddata[BL_SENSDATASETS_COUNT] = { 0 };  //1 if data received
 int actual_mday[BL_SENSDATASETS_COUNT] = { -1 };
 #endif
 
-// Order corrsponds to enums OBK_VOLTAGE - OBK__LAST
+// Order corresponds to enums OBK_VOLTAGE - OBK__LAST
 // note that Wh/kWh units are overridden in hass_init_energy_sensor_device_info()
 const char UNIT_WH[] = "Wh";
 struct energysensor {

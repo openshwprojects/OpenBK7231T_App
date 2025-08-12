@@ -42,7 +42,7 @@ void BP1658CJ_Write(float *rgbcw) {
 	// Even though we could address changing channels only, in practice we observed that the lightbulb always sets all channels.
 	Soft_I2C_Start(&g_softI2C, BP1658CJ_ADDR_OUT);
 
-	// The First Byte is the Subadress
+	// The First Byte is the Subaddress
 	// OSHW update: no, it seems those are current values
 	// 4 bits for CW and 4 bits for RGB
 	// Our contributor was wrong

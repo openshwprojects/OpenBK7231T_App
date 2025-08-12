@@ -361,7 +361,7 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 		if (taken == pdTRUE) {
 			xSemaphoreGive(logMemory.mutex);
 		}
-		/* no need to delay becasue bk_printf currently delays
+		/* no need to delay because bk_printf currently delays
 		if (log_delay){
 			if (log_delay < 0){
 				int cps = (115200/8);

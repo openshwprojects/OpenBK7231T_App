@@ -13,14 +13,14 @@
 #include "../driver/drv_public.h"
 #include "../driver/drv_ntp.h"
 
-// Maximum lenght of both string value and publish name in MQTT deduper
+// Maximum length of both string value and publish name in MQTT deduper
 #define DEDUPER_MAX_STRING_LEN 32
 // put 1 to enable deduper of fast changing values
 // This is used to avoid sending, let's say, 20 packets per second for a led_dimmer that
 // is increased by one 20 times per second
 #define DEDUPER_ENABLE_DELAY_SEND_OF_FAST_CHANGING_VALUES 1
 // If option above is enabled,
-// do not send the same publish (even with differnt value) more often that this:
+// do not send the same publish (even with different value) more often that this:
 #define MIN_INTERVAL_BETWEEN_SENDS 1
 
 // TODO: diferriate between string and int types, do not malloc buffer for int type

@@ -488,7 +488,7 @@ static commandResult_t CMD_TMGN_Brightness(const void *context, const char *cmd,
 	return CMD_RES_OK;
 }
 // NOTE: TMGN_Print [Ofs] [MaxLen]
-// If MaxLen=0, then no lenght limit
+// If MaxLen=0, then no length limit
 
 // NOTE: TMGN_Brightness [Brightness0to8] [bOn]
 // The bOn is optional, default is 1

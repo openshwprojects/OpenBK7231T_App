@@ -85,7 +85,7 @@ void HAL_PIN_PWM_Update(int index, float value) {
 		value = 100;
 	duty = value;
 /*duty is the PWM Duty Cycle (0 to 100). When duty=25, it means that in every PWM Cycle...
---> PWM Ouput is 1 (High) for the initial 25% of the PWM Cycle
+--> PWM Output is 1 (High) for the initial 25% of the PWM Cycle
 --> Followed by PWM Output 0 (Low) for the remaining 75% of the PWM Cycle
 */
 

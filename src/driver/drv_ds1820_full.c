@@ -102,7 +102,7 @@ static commandResult_t Cmd_DS18B20_SetResolution(const void* context, const char
 		return CMD_RES_BAD_ARGUMENT;
 	// arg can be 9 10 11 12
 	// the newValue shall be 9:0x1F 10:0x3F 11:0x5F 12:0x7F
-	// ignoring the "0x0F" an lookig just at the first digit, 
+	// ignoring the "0x0F" an looking just at the first digit, 
 	// we can easily see this is 1+(arg-9)*2
 	// so this can be written as 
 	uint8_t newValue = 0x1F | (arg-9)<<5 ;
@@ -176,7 +176,7 @@ void ds18b20_requestConvertT(int GPIO) {
 
 
 
-// use same code to read scatchpad and test CRC in one
+// use same code to read scratchpad and test CRC in one
 // parameter beside scratchPad to fill is
 //	 only GPIO pin for single DS1820
 //	 sensor address for multiple devices
@@ -489,7 +489,7 @@ void insertArray(DS1820devices *a, DeviceAddress devaddr) {
 	for (int i=0; i < ds18_count; i++) {
 		if (! memcmp(devaddr,ds18b20devices.array[i],8)){	// found device, no need to reenter
 			a->GPIO[i]=DS18B20_GPIO; 	// just to be sure - maybe device is on other GPIO now?!?
-			bk_printf("device " DEVSTR " was allready present - just (re-)setting GPIO to %i",
+			bk_printf("device " DEVSTR " was already present - just (re-)setting GPIO to %i",
 		DEV2STR(devaddr),DS18B20_GPIO);
 			return;
 		}
@@ -576,7 +576,7 @@ int DS18B20_set_devicename(DeviceAddress devaddr,const char *name)
 	return 0;
 };
 
-// a sensor can have a channel assigned to send temparatures via MQTT
+// a sensor can have a channel assigned to send temperatures via MQTT
 int DS18B20_set_channel(DeviceAddress devaddr,int c)
 {
 	int i=0;

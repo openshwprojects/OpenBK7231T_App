@@ -109,7 +109,7 @@ const char* TuyaMCU_GetDataTypeString(int dpId) {
 
 const char* TuyaMCU_GetCommandTypeLabel(int t) {
 	if (t == TUYA_CMD_HEARTBEAT)
-		return "Hearbeat";
+		return "Heartbeat";
 	if (t == TUYA_CMD_QUERY_PRODUCT)
 		return "QueryProductInformation";
 	if (t == TUYA_CMD_MCU_CONF)
@@ -369,7 +369,7 @@ void TuyaMCU_SetHeartbeatCounter(int v) {
 	heartbeat_counter = v;
 }
 
-// header version command lenght data checksum
+// header version command length data checksum
 // 55AA     00      00      0000   xx   00
 
 #define MIN_TUYAMCU_PACKET_SIZE (2+1+1+2+1)
@@ -423,7 +423,7 @@ int UART_TryToGetNextTuyaPacket(byte* out, int maxSize) {
 	lenb = UART_GetByte(5); // lo
 	len = lenb | lena >> 8;
 	// now check if we have received whole packet
-	len += 2 + 1 + 1 + 2 + 1; // header 2 bytes, version, command, lenght, chekcusm
+	len += 2 + 1 + 1 + 2 + 1; // header 2 bytes, version, command, length, chekcusm
 	if (cs >= len) {
 		int ret;
 		// can packet fit into the buffer?
@@ -1862,7 +1862,7 @@ void TuyaMCU_V0_SendDPCacheReply() {
 			// type
 			*p = map->dpType;
 			p++;
-			// lenght
+			// length
 			*p = 0;
 			p++;
 			value = CHANNEL_Get(map->channel);
@@ -1951,7 +1951,7 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		working_mode_valid = true;
 		int dataCount;
 		// https://github.com/openshwprojects/OpenBK7231T_App/issues/291
-		// header	ver	TUYA_CMD_MCU_CONF	LENGHT							Chksum
+		// header	ver	TUYA_CMD_MCU_CONF	LENGTH							Chksum
 		// Pushing
 		// 55 AA	01	02					00 03	FF 01 01			06 
 		// 55 AA	01	02					00 03	FF 01 00			05 
@@ -1973,7 +1973,7 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 				(int)(data[6]), (int)(data[7]));
 		}
 		if (5 + dataCount + 2 != len) {
-			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: TUYA_CMD_MCU_CONF had wrong data lenght?");
+			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: TUYA_CMD_MCU_CONF had wrong data length?");
 		}
 		else {
 			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming: TUYA_CMD_MCU_CONF, TODO!");
