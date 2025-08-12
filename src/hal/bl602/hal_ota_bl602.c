@@ -1,3 +1,4 @@
+#ifdef PLATFORM_BL602
 
 #include <hal_boot2.h>
 #include <utils_sha256.h>
@@ -302,5 +303,8 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 	return 0;
 }
 
+
+
+#endif // PLATFORM_BL602
 
 
