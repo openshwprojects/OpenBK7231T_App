@@ -1,4 +1,4 @@
-#include "ota.h"
+#include "../hal_ota.h"
 
 #if defined(PLATFORM_W600)
 
