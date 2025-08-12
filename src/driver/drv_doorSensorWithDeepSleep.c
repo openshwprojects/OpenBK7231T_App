@@ -16,7 +16,7 @@
 #include "../httpserver/new_http.h"
 #include "../hal/hal_pins.h"
 #include "../hal/hal_adc.h"
-#include "../ota/ota.h"
+#include "../hal/hal_ota.h"
 
 static int g_noChangeTimePassed = 0; // time without change. Every event in any of the doorsensor channels resets it.
 static int g_emergencyTimeWithNoConnection = 0; // time without connection to MQTT. Extends the interval till Deep Sleep until connection is established or EMERGENCY_TIME_TO_SLEEP_WITHOUT_MQTT

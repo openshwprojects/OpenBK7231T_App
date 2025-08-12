@@ -14,7 +14,7 @@
 #include "../driver/drv_public.h"
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_tuyaMCU.h"
-#include "../ota/ota.h"
+#include "../hal/hal_ota.h"
 #ifndef WINDOWS
 #include <lwip/dns.h>
 #endif
