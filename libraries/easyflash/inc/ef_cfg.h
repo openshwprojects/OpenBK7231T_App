@@ -132,10 +132,20 @@
 #define EF_START_ADDR             0xEF000
 #define ENV_AREA_SIZE             0x8000
 
+#elif WINDOWS
+
+#define EF_START_ADDR             0
+extern uint32_t ENV_AREA_SIZE;
+#define DllExport __declspec(dllexport)
+
 #endif
 /* print debug information of flash */
 #ifdef PKG_EASYFLASH_DEBUG
 #define PRINT_DEBUG
+#endif
+
+#ifndef DllExport
+#define DllExport
 #endif
 
 #endif /* EF_CFG_H_ */

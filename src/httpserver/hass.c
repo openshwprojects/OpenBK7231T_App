@@ -175,6 +175,9 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char* uniq_id, HassDe
 	case RELAY:
 		sprintf(info->channel, "switch/%s/config", uniq_id);
 		break;
+	case HASS_TEXTFIELD:
+		sprintf(info->channel, "text/%s/config", uniq_id);
+		break;
 	case BINARY_SENSOR:
 		sprintf(info->channel, "binary_sensor/%s/config", uniq_id);
 		break;
@@ -584,7 +587,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 		}
 	}
 
-	if (!isSensor) {	//Sensors (except binary_sensor) don't use payload 
+	if (!isSensor && type != HASS_TEXTFIELD) {	//Sensors (except binary_sensor) don't use payload 
 		cJSON_AddStringToObject(info->root, "pl_on", payload_on);    //payload_on
 		cJSON_AddStringToObject(info->root, "pl_off", payload_off);   //payload_off
 	}
@@ -593,6 +596,24 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 	cJSON_AddNumberToObject(info->root, "qos", 1);
 
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "root=%p", info->root);
+	return info;
+}
+// backlog setchannelType 2 TextField; scheduleHADiscovery 1
+HassDeviceInfo* hass_init_textField_info(int index) {
+	HassDeviceInfo* info;
+	info = hass_init_device_info(HASS_TEXTFIELD, index, NULL, NULL, 0, NULL);
+
+	sprintf(g_hassBuffer, "~/%i/get", index);
+	cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);   //state_topic
+
+	sprintf(g_hassBuffer, "~/%i/set", index);
+	cJSON_AddStringToObject(info->root, "cmd_t", g_hassBuffer);    //command_topic
+
+	cJSON_AddStringToObject(info->root, "platform", "mqtt");       // required by HA
+	cJSON_AddStringToObject(info->root, "mode", "text");           // optional, default is "text"
+	cJSON_AddBoolToObject(info->root, "ret", true);                // retain = true, optional
+	cJSON_AddStringToObject(info->root, "entity_category", "config"); // optional, makes it a config-type field
+
 	return info;
 }
 
@@ -621,6 +642,8 @@ HassDeviceInfo* hass_createToggle(const char *label, const char *stateTopic, con
 
 	return info;
 }
+
+
 /// @brief Initializes HomeAssistant relay device discovery storage.
 /// @param index
 /// @return 
@@ -971,7 +994,7 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 		break;
 	case WATER_QUALITY_PH:
 		cJSON_AddStringToObject(info->root, "dev_cla", "ph");
-		cJSON_AddStringToObject(info->root, "unit_of_meas", "Ph");
+		//cJSON_AddStringToObject(info->root, "unit_of_meas", "Ph");
 		sprintf(g_hassBuffer, "~/%d/get", channel);
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		break;

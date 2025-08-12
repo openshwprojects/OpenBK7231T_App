@@ -1,5 +1,6 @@
 output/**
 **/*.o
+**/*.oo
 **/*.obj
 *.idb
 *.exe

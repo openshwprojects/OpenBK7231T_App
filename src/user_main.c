@@ -162,7 +162,7 @@ void extended_app_waiting_for_launch2(void) {
 #endif
 
 
-#if defined(PLATFORM_LN882H) || defined(PLATFORM_ESPIDF) || defined(PLATFORM_ESP8266)
+#if PLATFORM_LN882H || PLATFORM_ESPIDF || PLATFORM_ESP8266 || PLATFORM_REALTEK_NEW
 
 int LWIP_GetMaxSockets() {
 	return 0;
@@ -961,7 +961,7 @@ void QuickTick(void* param)
 #endif
 	CMD_RunUartCmndIfRequired();
 
-	// process recieved messages here..
+	// process received messages here..
 #if ENABLE_MQTT
 	MQTT_RunQuickTick();
 #endif

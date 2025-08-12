@@ -235,7 +235,7 @@
 #define BE_EXPLICIT_EXIT exit
 #endif
  // BK7231/RTL wraps malloc, free etc. to freertos ports. Some platforms don't do it.
-#if PLATFORM_W800 || PLATFORM_W600
+#if PLATFORM_W800 || PLATFORM_W600 || PLATFORM_LN882H
 #define BE_EXPLICIT_MALLOC pvPortMalloc
 #define BE_EXPLICIT_REALLOC pvPortRealloc
 #define BE_EXPLICIT_FREE vPortFree
