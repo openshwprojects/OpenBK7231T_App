@@ -41,26 +41,26 @@ extern "C" {
 #endif
 
 /* easyflash.c */
-EfErrCode easyflash_init(void);
+DllExport EfErrCode easyflash_init(void);
 
 #ifdef EF_USING_ENV
 /* only supported on ef_env.c */
-size_t ef_get_env_blob(const char *key, void *value_buf, size_t buf_len, size_t *saved_value_len);
-bool ef_get_env_obj(const char *key, env_node_obj_t env);
-size_t ef_read_env_value(env_node_obj_t env, uint8_t *value_buf, size_t buf_len);
-EfErrCode ef_set_env_blob(const char *key, const void *value_buf, size_t buf_len);
+DllExport size_t ef_get_env_blob(const char *key, void *value_buf, size_t buf_len, size_t *saved_value_len);
+DllExport bool ef_get_env_obj(const char *key, env_node_obj_t env);
+DllExport size_t ef_read_env_value(env_node_obj_t env, uint8_t *value_buf, size_t buf_len);
+DllExport EfErrCode ef_set_env_blob(const char *key, const void *value_buf, size_t buf_len);
 
 /* ef_env.c, ef_env_legacy_wl.c and ef_env_legacy.c */
-EfErrCode ef_load_env(void);
-void ef_print_env(void);
-char *ef_get_env(const char *key);
-EfErrCode ef_set_env(const char *key, const char *value);
-EfErrCode ef_del_env(const char *key);
-EfErrCode ef_save_env(void);
-EfErrCode ef_env_set_default(void);
-size_t ef_get_env_write_bytes(void);
-EfErrCode ef_set_and_save_env(const char *key, const char *value);
-EfErrCode ef_del_and_save_env(const char *key);
+DllExport EfErrCode ef_load_env(void);
+DllExport void ef_print_env(void);
+DllExport char *ef_get_env(const char *key);
+DllExport EfErrCode ef_set_env(const char *key, const char *value);
+DllExport EfErrCode ef_del_env(const char *key);
+DllExport EfErrCode ef_save_env(void);
+DllExport EfErrCode ef_env_set_default(void);
+DllExport size_t ef_get_env_write_bytes(void);
+DllExport EfErrCode ef_set_and_save_env(const char *key, const char *value);
+DllExport EfErrCode ef_del_and_save_env(const char *key);
 #endif
 
 #ifdef EF_USING_IAP
@@ -88,17 +88,17 @@ size_t ef_log_get_used_size(void);
 #endif
 
 /* ef_utils.c */
-uint32_t ef_calc_crc32(uint32_t crc, const void *buf, size_t size);
+DllExport uint32_t ef_calc_crc32(uint32_t crc, const void *buf, size_t size);
 
 /* ef_port.c */
-EfErrCode ef_port_read(uint32_t addr, uint32_t *buf, size_t size);
-EfErrCode ef_port_erase(uint32_t addr, size_t size);
-EfErrCode ef_port_write(uint32_t addr, const uint32_t *buf, size_t size);
-void ef_port_env_lock(void);
-void ef_port_env_unlock(void);
-void ef_log_debug(const char *file, const long line, const char *format, ...);
-void ef_log_info(const char *format, ...);
-void ef_print(const char *format, ...);
+DllExport EfErrCode ef_port_read(uint32_t addr, uint32_t *buf, size_t size);
+DllExport EfErrCode ef_port_erase(uint32_t addr, size_t size);
+DllExport EfErrCode ef_port_write(uint32_t addr, const uint32_t *buf, size_t size);
+DllExport void ef_port_env_lock(void);
+DllExport void ef_port_env_unlock(void);
+DllExport void ef_log_debug(const char *file, const long line, const char *format, ...);
+DllExport void ef_log_info(const char *format, ...);
+DllExport void ef_print(const char *format, ...);
 
 #ifdef __cplusplus
 }

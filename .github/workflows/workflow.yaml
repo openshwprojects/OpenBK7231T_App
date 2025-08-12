@@ -448,6 +448,56 @@ jobs:
             output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_Tuya_UA_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.bin
           if-no-files-found: warn
 
+  build_ameba:
+    name: Build ameba
+    needs: refs
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: OpenRTL8721DA
+            variant: default
+          - platform: OpenRTL8720E
+            variant: default
+    steps:
+      - name: Source checkout
+        uses: actions/checkout@v4
+      - name: SDK checkout
+        uses: actions/checkout@v4
+        with:
+          repository: Ameba-AIoT/ameba-rtos
+          path: sdk/ameba-rtos
+          #ref: release/v1.1
+          ref: 347af9133679eacb10b368010f9ce5e143ff1643 # pin commit until stable release
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          architecture: 'x64'
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install make cmake python3-venv
+          pip install -r sdk/ameba-rtos/tools/requirements.txt
+          mkdir /opt/rtk-toolchain
+          cd /opt/rtk-toolchain
+          wget https://github.com/Ameba-AIoT/ameba-toolchain/releases/download/prebuilts-v1.0.3/prebuilts-linux-1.0.3.tar.gz
+          tar -xzf prebuilts-linux-1.0.3.tar.gz
+          cd ~/work/OpenBK7231T_App/OpenBK7231T_App
+          source sdk/ameba-rtos/ameba.sh
+      - run: ls -la
+      - name: Run make
+        run: make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }}
+      - name: Save build assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_${{ matrix.platform }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}
+          path: |
+            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.bin
+            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}_ota.img
+          if-no-files-found: warn
+
   merge:
     name: Merge Artifacts
     runs-on: ubuntu-22.04

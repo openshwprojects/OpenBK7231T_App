@@ -69,3 +69,7 @@
 	path = sdk/ESP8266_RTOS_SDK
 	url = https://github.com/espressif/ESP8266_RTOS_SDK
 	branch = release/v3.4
+[submodule "sdk/ameba-rtos"]
+	path = sdk/ameba-rtos
+	url = https://github.com/Ameba-AIoT/ameba-rtos
+	branch = release/v1.1

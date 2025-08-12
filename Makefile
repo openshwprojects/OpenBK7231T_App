@@ -338,6 +338,24 @@ prebuild_OpenECR6600: berry
 	else echo "prebuild for OpenECR6600 not found ... "; \
 	fi
 
+prebuild_OpenRTL8721DA: berry
+	#git submodule update --init --recursive --depth=1 sdk/ameba-rtos
+	if [ ! -e sdk/ameba-rtos/amebadplus_gcc_project/menuconfig/.config ]; then cd sdk/ameba-rtos/amebadplus_gcc_project && ./menuconfig.py -f ../../../platforms/RTL8721DA/default.conf; fi
+	@if [ -e platforms/RTL8721DA/pre_build.sh ]; then \
+		echo "prebuild found for OpenRTL8721DA"; \
+		sh platforms/RTL8721DA/pre_build.sh; \
+	else echo "prebuild for OpenRTL8721DA not found ... "; \
+	fi
+
+prebuild_OpenRTL8720E: berry
+	#git submodule update --init --recursive --depth=1 sdk/ameba-rtos
+	if [ ! -e sdk/ameba-rtos/amebalite_gcc_project/menuconfig/.config ]; then cd sdk/ameba-rtos/amebalite_gcc_project && ./menuconfig.py -f ../../../platforms/RTL8720E/default.conf; fi
+	@if [ -e platforms/RTL8720E/pre_build.sh ]; then \
+		echo "prebuild found for OpenRTL8720E"; \
+		sh platforms/RTL8720E/pre_build.sh; \
+	else echo "prebuild for OpenRTL8720E not found ... "; \
+	fi
+
 # Build main binaries
 OpenBK7231T: prebuild_OpenBK7231T
 	mkdir -p output
@@ -551,6 +569,24 @@ OpenRTL8720D: prebuild_OpenRTL8720D
 	dd conv=notrunc bs=1 if=sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_hp/asdk/image/km0_km4_image2.bin of=output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION).bin seek=$(shell printf "%d" 0x6000)
 	cp sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_lp/asdk/image/OTA_All.bin output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION)_ota.img
 
+.PHONY: OpenRTL8721DA
+OpenRTL8721DA: prebuild_OpenRTL8721DA
+	cd sdk/ameba-rtos/amebadplus_gcc_project && APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) ./build.py -a ../../../platforms/RTL8721DA
+	mkdir -p output/$(APP_VERSION)
+	cp sdk/ameba-rtos/amebadplus_gcc_project/km4_boot_all.bin /tmp/OpenRTL8721DA_$(APP_VERSION).bin
+	dd conv=notrunc bs=1K if=sdk/ameba-rtos/amebadplus_gcc_project/km0_km4_app.bin of=/tmp/OpenRTL8721DA_$(APP_VERSION).bin seek=80
+	mv /tmp/OpenRTL8721DA_$(APP_VERSION).bin output/$(APP_VERSION)/
+	cp sdk/ameba-rtos/amebadplus_gcc_project/ota_all.bin output/$(APP_VERSION)/OpenRTL8721DA_$(APP_VERSION)_ota.img
+
+.PHONY: OpenRTL8720E
+OpenRTL8720E: prebuild_OpenRTL8720E
+	cd sdk/ameba-rtos/amebalite_gcc_project && APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) ./build.py -a ../../../platforms/RTL8720E
+	mkdir -p output/$(APP_VERSION)
+	cp sdk/ameba-rtos/amebalite_gcc_project/km4_boot_all.bin /tmp/OpenRTL8720E_$(APP_VERSION).bin
+	dd conv=notrunc bs=1K if=sdk/ameba-rtos/amebalite_gcc_project/kr4_km4_app.bin of=/tmp/OpenRTL8720E_$(APP_VERSION).bin seek=80
+	mv /tmp/OpenRTL8720E_$(APP_VERSION).bin output/$(APP_VERSION)/
+	cp sdk/ameba-rtos/amebalite_gcc_project/ota_all.bin output/$(APP_VERSION)/OpenRTL8720E_$(APP_VERSION)_ota.img
+
 .PHONY: OpenBK7238
 OpenBK7238: prebuild_OpenBK7238
 	cd sdk/beken_freertos_sdk && OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7238 $(APP_VERSION)
@@ -640,6 +676,10 @@ clean:
 	-test -d ./sdk/OpenRTL87X0C && $(MAKE) -C sdk/OpenRTL87X0C/project/OpenBeken/GCC-RELEASE clean
 	-test -d ./sdk/OpenRTL8710A_B && $(MAKE) -C sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE clean
 	-test -d ./sdk/OpenRTL8710A_B && $(MAKE) -C sdk/OpenRTL8710A_B/project/obk_ameba1/GCC-RELEASE clean
+	-test -d ./sdk/OpenRTL8720D && $(MAKE) -C sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_hp clean
+	-test -d ./sdk/OpenRTL8720D && $(MAKE) -C sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_lp clean
+	-test -d ./sdk/ameba-rtos && cd sdk/ameba-rtos/amebadplus_gcc_project && ./build.py -a ../../../platforms/RTL8721DA -c
+	-test -d ./sdk/ameba-rtos && cd sdk/ameba-rtos/amebalite_gcc_project && ./build.py -a ../../../platforms/RTL8720E -c
 	-test -d ./sdk/beken_freertos_sdk && $(MAKE) -C sdk/beken_freertos_sdk clean
 	-test -d ./sdk/OpenLN882H/build && cmake --build ./sdk/OpenLN882H/build --target clean
 	-test -d ./platforms/ESP-IDF/build-32 && cmake --build ./platforms/ESP-IDF/build-32 --target clean

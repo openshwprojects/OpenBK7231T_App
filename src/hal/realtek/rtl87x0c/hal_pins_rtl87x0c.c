@@ -1,6 +1,6 @@
 #ifdef PLATFORM_RTL87X0C
 
-#include "../hal_generic_realtek.h"
+#include "../hal_pinmap_realtek.h"
 
 rtlPinMapping_t g_pins[] = {
 	{ "PA0 (RX1)",	PA_0,	NULL, NULL },
@@ -33,7 +33,7 @@ int g_numPins = sizeof(g_pins) / sizeof(g_pins[0]);
 
 int HAL_PIN_CanThisPinBePWM(int index)
 {
-	if(index > 6 && index < 11) return 0;
+	if(index > 6 && index < 11) return -1;
 	return 1;
 }
 
