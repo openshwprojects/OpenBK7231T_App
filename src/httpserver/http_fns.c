@@ -43,7 +43,7 @@
 #include "temp_detect_pub.h"
 #elif defined(PLATFORM_LN882H)
 #elif defined(PLATFORM_TR6260)
-#elif defined(PLATFORM_REALTEK)
+#elif defined(PLATFORM_REALTEK) && !PLATFORM_REALTEK_NEW
 	#include "wifi_structures.h"
 	#include "wifi_constants.h"
 	#include "wifi_conf.h"
@@ -53,6 +53,11 @@
 	extern hal_reset_reason_t reset_reason;
 	#endif
 	SemaphoreHandle_t scan_hdl;
+#elif PLATFORM_REALTEK_NEW
+#include "lwip_netconf.h"
+#include "ameba_soc.h"
+#include "ameba_ota.h"
+extern uint32_t current_fw_idx;
 #elif defined(PLATFORM_ESPIDF) || PLATFORM_ESP8266
 #include "esp_wifi.h"
 #include "esp_system.h"
@@ -948,7 +953,7 @@ typedef enum {
 	}
 	hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", reset_reason, s);
 	hprintf255(request, "<h5>Current fw: FW%i</h5>", current_fw_idx);
-#elif PLATFORM_RTL8710B || PLATFORM_RTL8720D
+#elif PLATFORM_RTL8710B || PLATFORM_RTL8720D || PLATFORM_REALTEK_NEW
 	hprintf255(request, "<h5>Current fw: FW%i</h5>", current_fw_idx + 1);
 #elif PLATFORM_ECR6600
 	RST_TYPE reset_type = hal_get_reset_type();
@@ -1433,7 +1438,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 		{
 			hprintf255(request, "[%i/%u] SSID: %s, Channel: %i, Signal %i<br>", i + 1, number, ap_info[i].ssid, ap_info[i].primary, ap_info[i].rssi);
 		}
-#elif defined(PLATFORM_REALTEK)
+#elif defined(PLATFORM_REALTEK) && !PLATFORM_REALTEK_NEW
 #ifndef PLATFORM_RTL87X0C
 		extern void rltk_wlan_enable_scan_with_ssid_by_extended_security(bool);
 #endif
@@ -3201,15 +3206,8 @@ int http_fn_cfg_dgr(http_request_t* request) {
 #endif
 
 void OTA_RequestDownloadFromHTTP(const char* s) {
-#if WINDOWS
-
-#elif PLATFORM_BL602
-
-#elif PLATFORM_LN882H
-
-#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
-#elif PLATFORM_TR6260
-#elif PLATFORM_REALTEK
+#if PLATFORM_BEKEN
+	otarequest(s);
 #elif PLATFORM_ECR6600
 	extern int http_client_download_file(const char* url);
 	extern int ota_done(bool reset);
@@ -3248,8 +3246,33 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 	}
 
 	ota_reboot();
-#else
-	otarequest(s);
+#elif PLATFORM_REALTEK_NEW
+	ota_context* ctx = NULL;
+	ctx = (ota_context*)malloc(sizeof(ota_context));
+	if(ctx == NULL) goto exit;
+	memset(ctx, 0, sizeof(ota_context));
+	char url[256] = { 0 };
+	char resource[256] = { 0 };
+	uint16_t port;
+	parser_url(s, &url, &port, &resource, 256);
+	int ret = ota_update_init(ctx, &url, port, &resource, OTA_HTTP);
+	if(ret != 0)
+	{
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "ota_update_init failed");
+		goto exit;
+	}
+	ret = ota_update_start(ctx);
+	if(!ret)
+	{
+		addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "OTA finished");
+		sys_clear_ota_signature();
+		delay_ms(50);
+		sys_reset();
+	}
+exit:
+	ota_update_deinit(ctx);
+	addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "OTA failed");
+	if(ctx) free(ctx);
 #endif
 }
 int http_fn_ota_exec(http_request_t* request) {

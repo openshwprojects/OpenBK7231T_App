@@ -107,6 +107,13 @@
 #define LFS_BLOCKS_END 0x80000000
 #define LFS_BLOCKS_MAX_LEN 0x80000000
 
+#elif PLATFORM_REALTEK_NEW
+
+#define LFS_BLOCKS_START 0x1F0000
+#define LFS_BLOCKS_START_MIN 0x1F0000
+#define LFS_BLOCKS_END 0x80000000
+#define LFS_BLOCKS_MAX_LEN 0x80000000
+
 #elif PLATFORM_ECR6600
 
 #define LFS_BLOCKS_START 0x1D5000
@@ -155,7 +162,11 @@
 
 #if ENABLE_LITTLEFS
 
+#if PLATFORM_REALTEK_NEW
+#include "littlefs_adapter.h"
+#else
 #include "lfs.h"
+#endif
 
 // 512k MAX - i.e. no more that 0x80000
 // 0x8000 = 32k

@@ -8,28 +8,40 @@ extern "C" {
 	// these cause error: conflicting declaration of 'int bk_wlan_mcu_suppress_and_sleep(unsigned int)' with 'C' linkage
 #include "../new_common.h"
 
-#include "include.h"
-#include "arm_arch.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "../logging/logging.h"
 #include "../obk_config.h"
 #include "../cmnds/cmd_public.h"
+#include "../hal/hal_pins.h"
+#include "../hal/hal_generic.h"
+
+#if PLATFORM_BEKEN
+#include "include.h"
+#include "arm_arch.h"
 #include "bk_timer_pub.h"
 #include "drv_model_pub.h"
-
-// why can;t I call this?
-#include "../mqtt/new_mqtt.h"
-
 #include <gpio_pub.h>
 //#include "pwm.h"
 #include "pwm_pub.h"
-
 #include "../../beken378/func/include/net_param_pub.h"
 #include "../../beken378/func/user_driver/BkDriverPwm.h"
 #include "../../beken378/func/user_driver/BkDriverI2c.h"
 #include "../../beken378/driver/i2c/i2c1.h"
 #include "../../beken378/driver/gpio/gpio.h"
+#elif PLATFORM_REALTEK
+#define MBED_PERIPHERALNAMES_H
+#include "timer_api.h"
+#include "pwmout_api.h"
+#include "../hal/realtek/hal_pinmap_realtek.h"
+void pwmout_start(pwmout_t* obj);
+void pwmout_stop(pwmout_t* obj);
+#endif
+
+// why can;t I call this?
+#include "../mqtt/new_mqtt.h"
+
+
 
 
 	unsigned long ir_counter = 0;
@@ -39,6 +51,7 @@ extern "C" {
 	uint8_t gIRPinPolarity = 0;
 
 	extern int my_strnicmp(const char* a, const char* b, int len);
+	extern unsigned int g_timeMs;
 }
 
 
@@ -59,24 +72,34 @@ typedef unsigned short uint16_t;
 #define __FlashStringHelper char
 
 // dummy functions
-void noInterrupts() {}
-void interrupts() {}
-
-unsigned long millis() {
+#if PLATFORM_BEKEN
+void noInterrupts() { }
+void interrupts() { }
+void delay(int n) { }
+void delayMicroseconds(int n) { }
+unsigned long millis()
+{
 	return 0;
 }
-unsigned long micros() {
+unsigned long micros()
+{
 	return 0;
 }
-
-
-void delay(int n) {
-	return;
+#else
+void noInterrupts() { taskENTER_CRITICAL(); }
+void interrupts() { taskEXIT_CRITICAL(); }
+void delay(int n) { delay_ms(n); }
+void delayMicroseconds(int n) { HAL_Delay_us(n); }
+unsigned long millis()
+{
+	return g_timeMs;
 }
-
-void delayMicroseconds(int n) {
-	return;
+unsigned long micros()
+{
+	return g_timeMs * 1000;
 }
+#endif
+
 
 class Print {
 public:
@@ -107,10 +130,21 @@ Print Serial;
 // #define ISR void IR_ISR
 
 // THIS function is defined in src/libraries/IRremoteESP8266/src/IRrecv.cpp
-extern "C" void DRV_IR_ISR(UINT8 t);
+extern "C" void
+#if PLATFORM_BEKEN
+DRV_IR_ISR(UINT8 t)
+#else
+DRV_IR_ISR()
+#endif
+;
 extern void IR_ISR();
 
+#if PLATFORM_BEKEN
 static UINT32 ir_chan = BKTIMER0;
+#elif PLATFORM_REALTEK
+static gtimer_t ir_timer;
+static UINT32 ir_chan = TIMER2;
+#endif
 static UINT32 ir_div = 1;
 static UINT32 ir_periodus = 50;
 
@@ -121,6 +155,7 @@ void timerConfigForReceive() {
 void _timerConfigForReceive() {
 	ir_counter = 0;
 
+#if PLATFORM_BEKEN
 	timer_param_t params = {
 		(unsigned char)ir_chan,
 		(unsigned char)ir_div, // div
@@ -156,6 +191,9 @@ void _timerConfigForReceive() {
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer setup %u", res);
 	res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_ENABLE, &ir_chan);
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
+#elif PLATFORM_REALTEK
+	gtimer_init(&ir_timer, ir_chan);
+#endif
 }
 
 static void timer_enable() {
@@ -163,13 +201,21 @@ static void timer_enable() {
 static void timer_disable() {
 }
 static void _timer_enable() {
-	UINT32 res;
+	UINT32 res = 0;
+#if PLATFORM_BEKEN
 	res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_ENABLE, &ir_chan);
+#elif PLATFORM_REALTEK
+	gtimer_start_periodical(&ir_timer, ir_periodus, (void*)&DRV_IR_ISR, (uint32_t)&ir_timer);
+#endif
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
 }
 static void _timer_disable() {
-	UINT32 res;
+	UINT32 res = 0;
+#if PLATFORM_BEKEN
 	res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_DISABLE, &ir_chan);
+#elif PLATFORM_REALTEK
+	gtimer_stop(&ir_timer);
+#endif
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer disabled %u", res);
 }
 
@@ -196,8 +242,6 @@ SpoofIrReceiver IrReceiver;
 #endif
 #include "../libraries/IRremoteESP8266/src/IRproto.h"
 #include "../libraries/IRremoteESP8266/src/digitalWriteFast.h"
-
-extern "C" int PIN_GetPWMIndexForPinIndex(int pin);
 
 // override aspects of sending for our own interrupt driven sends
 // basically, IRsend calls mark(us) and space(us) to send.
@@ -262,19 +306,10 @@ public:
 		ADDLOG_INFO(LOG_FEATURE_IR, (char *)"enableIROut %d freq %d duty",(int)freq, (int)duty);
 		if(duty<1)
 			duty=1;
-		if(duty>100)
-			duty=100;
-		// just setup variables for use in ISR
-		//pwmfrequency = ((uint32_t)aFrequencyKHz) * 1000;
-		pwmperiod = (26000000 / freq);
-		pwmduty = pwmperiod / (100/duty);
-		
-		
-#if PLATFORM_BK7231N
-		bk_pwm_update_param((bk_pwm_t)this->pwmIndex, this->pwmperiod, pwmduty, 0, 0);
-#else
-		bk_pwm_update_param((bk_pwm_t)this->pwmIndex, this->pwmperiod, pwmduty);
-#endif
+		pwmduty = duty;
+
+		HAL_PIN_PWM_Start(this->sendPin, freq);
+		HAL_PIN_PWM_Update(this->sendPin, duty);
 	}
 
 	void resetsendqueue() {
@@ -302,14 +337,21 @@ public:
 		}
 		return val;
 	}
+#if PLATFORM_REALTEK
+	void ledOff()
+	{
+		pwmout_start(g_pins[sendPin].pwm);
+	}
 
+	void ledOn()
+	{
+		pwmout_stop(g_pins[sendPin].pwm);
+	}
+#endif
 	int currentsendtime;
 	int currentbitval;
 
 	uint8_t sendPin;
-	uint8_t pwmIndex;
-	uint32_t pwmfrequency;
-	uint32_t pwmperiod;
 	uint32_t pwmduty;
 
 	uint32_t our_ms;
@@ -323,9 +365,15 @@ IRrecv *ourReceiver = NULL;
 
 // this is our ISR.
 // it is called every 50us, so we need to work on making it as efficient as possible.
-extern "C" void DRV_IR_ISR(UINT8 t) {
+extern "C" void
+#if PLATFORM_BEKEN
+DRV_IR_ISR(UINT8 t)
+#else
+DRV_IR_ISR()
+#endif
+{
 	int sending = 0;
-	if (pIRsend && (pIRsend->pwmIndex >= 0)) {
+	if (pIRsend) {
 		pIRsend->our_us += 50;
 		if (pIRsend->our_us > 1000) {
 			pIRsend->our_ms++;
@@ -373,17 +421,13 @@ extern "C" void DRV_IR_ISR(UINT8 t) {
 		uint32_t duty = pIRsend->pwmduty;
 		if (!pinval) {
 			if (gIRPinPolarity) {
-				duty = pIRsend->pwmperiod;
+				duty = 100;
 			}
 			else {
 				duty = 0;
 			}
 		}
-#if PLATFORM_BK7231N
-		bk_pwm_update_param((bk_pwm_t)pIRsend->pwmIndex, pIRsend->pwmperiod, duty, 0, 0);
-#else
-		bk_pwm_update_param((bk_pwm_t)pIRsend->pwmIndex, pIRsend->pwmperiod, duty);
-#endif
+		HAL_PIN_PWM_Update(pIRsend->sendPin, duty);
 	}
 
 	// is someone really wants rx and TX at the same time, then allow it.
@@ -729,28 +773,16 @@ extern "C" void DRV_IR_Init() {
 	}
 
 	if (txpin > 0) {
-		int pwmIndex = PIN_GetPWMIndexForPinIndex(txpin);
 		// is this pin capable of PWM?
-		if (pwmIndex != -1) {
+		if (HAL_PIN_CanThisPinBePWM(txpin)) {
 			uint32_t pwmfrequency = 38000;
-			uint32_t period = (26000000 / pwmfrequency);
-			uint32_t duty = period / 2;
-#if PLATFORM_BK7231N
-			// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
-			bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty, 0, 0);
-#else
-			bk_pwm_initialize((bk_pwm_t)pwmIndex, period, duty);
-#endif
-			bk_pwm_start((bk_pwm_t)pwmIndex);
+			HAL_PIN_PWM_Start(txpin, pwmfrequency);
 			myIRsend *pIRsendTemp = new myIRsend((uint_fast8_t)txpin);
 			pIRsendTemp->resetsendqueue();
-			pIRsendTemp->enableIROut(pwmfrequency,50);
-			pIRsendTemp->pwmIndex = pwmIndex;
-			pIRsendTemp->pwmduty = duty;
-			pIRsendTemp->pwmperiod = period;
+			pIRsendTemp->enableIROut(pwmfrequency, 50);
+			pIRsendTemp->pwmduty = 50;
 
 			pIRsend = pIRsendTemp;
-			//bk_pwm_stop((bk_pwm_t)pIRsend->pwmIndex);
 
 			//cmddetail:{"name":"IRSend","args":"[PROT-ADDR-CMD-REP]",
 			//cmddetail:"descr":"Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0",
@@ -779,6 +811,7 @@ extern "C" void DRV_IR_Init() {
 	if ((pin > 0) || (txpin > 0)) {
 		// both tx and rx need the interrupt
 		_timerConfigForReceive();
+		delay_ms(10);
 		_timer_enable();
 	}
 }

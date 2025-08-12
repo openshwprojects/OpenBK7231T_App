@@ -4,7 +4,6 @@ set(OBKM_SRC
 	${OBK_SRCS}base64/base64.c
 	${OBK_SRCS}bitmessage/bitmessage_read.c
 	${OBK_SRCS}bitmessage/bitmessage_write.c
-	${OBK_SRCS}cJSON/cJSON.c
 	${OBK_SRCS}cmnds/cmd_berry.c
 	${OBK_SRCS}cmnds/cmd_channels.c
 	${OBK_SRCS}cmnds/cmd_eventHandlers.c
@@ -52,8 +51,6 @@ set(OBKM_SRC
 	${OBK_SRCS}httpclient/http_client.c
 	${OBK_SRCS}httpclient/utils_net.c
 	${OBK_SRCS}httpclient/utils_timer.c
-	${OBK_SRCS}littlefs/lfs_util.c
-	${OBK_SRCS}littlefs/lfs.c
 	${OBK_SRCS}littlefs/our_lfs.c
 	${OBK_SRCS}ota/ota.c
 
@@ -124,6 +121,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_spidma.c
 	${OBK_SRCS}driver/drv_ssdp.c
 	${OBK_SRCS}driver/drv_tasmotaDeviceGroups.c
+	${OBK_SRCS}driver/drv_tclAC.c
 	${OBK_SRCS}driver/drv_test.c
 	${OBK_SRCS}driver/drv_test_drivers.c
 	${OBK_SRCS}driver/drv_textScroller.c
@@ -149,4 +147,105 @@ set(OBKM_SRC
 # ringbuffer for temparature_graph
 	${OBK_SRCS}ringbuff32.c
 
+)
+
+
+if(NOT DEFINED SDK_CJSON)
+	set(OBKM_SRC ${OBKM_SRC} ${OBK_SRCS}cJSON/cJSON.c)
+endif()
+
+if(NOT DEFINED SDK_LFS)
+	set(OBKM_SRC ${OBKM_SRC} ${OBK_SRCS}littlefs/lfs.c ${OBK_SRCS}littlefs/lfs_util.c)
+endif()
+
+set(OBKM_SRC_CXX
+	${OBK_SRCS}driver/drv_ir.cpp
+	${OBK_SRCS}driver/drv_ir_new.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/IRac.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/IRproto.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/IRrecv.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/IRsend.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/IRtext.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/IRtimer.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/IRutils.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/String.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/digitalWriteFast.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Airton.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Airwell.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Aiwa.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Amcor.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Argo.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Arris.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Bosch.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Bose.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Carrier.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_ClimaButler.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Coolix.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Corona.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Daikin.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Delonghi.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Denon.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Dish.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Doshisha.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Ecoclim.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Electra.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_EliteScreens.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Epson.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Fujitsu.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_GICable.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_GlobalCache.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Goodweather.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Gorenje.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Gree.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Haier.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Hitachi.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Inax.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_JVC.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Kelon.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Kelvinator.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_LG.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Lasertag.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Lego.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Lutron.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_MWM.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Magiquest.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Metz.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Midea.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_MilesTag2.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Mirage.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Mitsubishi.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_MitsubishiHeavy.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Multibrackets.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_NEC.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Neoclima.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Nikai.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Panasonic.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Pioneer.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Pronto.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_RC5_RC6.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_RCMM.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Rhoss.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Samsung.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Sanyo.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Sharp.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Sherwood.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Sony.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Symphony.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Tcl.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Technibel.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Teco.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Teknopoint.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Toshiba.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Toto.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Transcold.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Trotec.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Truma.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Vestel.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Voltas.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Whirlpool.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Whynter.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Wowwee.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Xmp.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/ir_Zepeal.cpp
+	${OBK_SRCS}libraries/IRremoteESP8266/src/itoa.cpp
 )
