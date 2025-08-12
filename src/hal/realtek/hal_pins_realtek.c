@@ -4,14 +4,43 @@
 #include "../../logging/logging.h"
 #include "../../new_cfg.h"
 #include "../../new_pins.h"
-#include "hal_generic_realtek.h"
+#include "../hal_pins.h"
+#include "hal_pinmap_realtek.h"
+#if !PLATFORM_REALTEK_NEW
+#include "gpio_ex_api.h"
+#endif
+#if !PLATFORM_RTL8710A && !PLATFORM_RTL8710B
+#include "pwmout_ex_api.h"
+#endif
 
-extern rtlPinMapping_t g_pins[];
-extern int g_numPins;
+#if PLATFORM_REALTEK_NEW
 
-int PIN_GetPWMIndexForPinIndex(int pin)
+#include "pwmout_ex_api.h"
+static int g_active_pwm = 0b0;
+
+uint8_t HAL_RTK_GetFreeChannel()
 {
-	return -1;
+	uint8_t freech;
+	for(freech = 0; freech <= 9; freech++) if((g_active_pwm >> freech & 1) == 0) break;
+	if(freech == 9) return -1;
+	g_active_pwm |= 1 << freech;
+	return freech;
+}
+
+void HAL_RTK_FreeChannel(uint8_t channel)
+{
+	g_active_pwm &= ~(1 << channel);
+}
+
+#endif
+
+int PIN_GetPWMIndexForPinIndex(int index)
+{
+	rtlPinMapping_t* pin = g_pins + index;
+	if(index >= g_numPins)
+		return -1;
+	if(pin->pwm != NULL) return pin->pwm->pwm_idx;
+	else return HAL_PIN_CanThisPinBePWM(index);
 }
 
 const char* HAL_PIN_GetPinNameAlias(int index)
@@ -103,6 +132,9 @@ void HAL_PIN_PWM_Stop(int index)
 	rtlPinMapping_t* pin = g_pins + index;
 	if(pin->pwm == NULL) return;
 	//pwmout_stop(pin->pwm);
+#if PLATFORM_REALTEK_NEW
+	HAL_RTK_FreeChannel(pin->pwm->pwm_idx);
+#endif
 	pwmout_free(pin->pwm);
 	os_free(pin->pwm);
 	pin->pwm = NULL;
@@ -113,7 +145,11 @@ void HAL_PIN_PWM_Start(int index, int freq)
 	if(index >= g_numPins || !HAL_PIN_CanThisPinBePWM(index))
 		return;
 	rtlPinMapping_t* pin = g_pins + index;
-	if(pin->pwm != NULL) return;
+	if(pin->pwm != NULL)
+	{
+		pwmout_period_us(pin->pwm, 1000000 / freq);
+		return;
+	}
 	if(pin->gpio != NULL)
 	{
 		gpio_deinit(pin->gpio);
@@ -122,8 +158,18 @@ void HAL_PIN_PWM_Start(int index, int freq)
 	}
 	pin->pwm = os_malloc(sizeof(pwmout_t));
 	memset(pin->pwm, 0, sizeof(pwmout_t));
+#if PLATFORM_REALTEK_NEW
+	int ch = HAL_RTK_GetFreeChannel();
+	if(ch == -1)
+	{
+		os_free(pin->pwm);
+		pin->pwm = NULL;
+		return;
+	}
+	pin->pwm->pwm_idx = ch;
+#endif
 	pwmout_init(pin->pwm, pin->pin);
-	pwmout_period_us(pin->pwm, freq);
+	pwmout_period_us(pin->pwm, 1000000 / freq);
 #ifndef PLATFORM_RTL8710A
 	pwmout_start(pin->pwm);
 #endif

@@ -119,6 +119,11 @@ struct lfs_config cfg = {
     .erase = lfs_erase,
     .sync  = lfs_sync,
 
+#if PLATFORM_REALTEK_NEW
+    .lock = lfs_diskio_lock,
+    .unlock = lfs_diskio_unlock,
+#endif
+
     // block device configuration
     .read_size = 1,
     .prog_size = 1,
@@ -144,7 +149,7 @@ static commandResult_t CMD_LFS_Size(const void *context, const char *cmd, const 
         return CMD_RES_OK;
     }
 
-#if PLATFORM_ESPIDF || PLATFORM_RTL8720D || PLATFORM_BL602 || PLATFORM_ESP8266
+#if PLATFORM_ESPIDF || PLATFORM_RTL8720D || PLATFORM_BL602 || PLATFORM_ESP8266 || PLATFORM_REALTEK_NEW
 	ADDLOG_ERROR(LOG_FEATURE_CMD, PLATFORM_MCU_NAME" doesn't support changing LFS size");
 	return CMD_RES_ERROR;
 #endif
@@ -288,6 +293,20 @@ static commandResult_t CMD_LFS_Format(const void *context, const char *cmd, cons
 
 	LFS_Start = newstart = 0; // lfs_info.offset;
 	LFS_Size = newsize = lfs_info.size;
+
+#elif PLATFORM_REALTEK_NEW
+
+    switch(flash_size_8720)
+    {
+        case 4:
+            LFS_Start = newstart = 0x1F0000;
+            LFS_Size = newsize = 0x24000;
+            break;
+        default:
+            LFS_Start = newstart = 0x400000;
+            LFS_Size = newsize = (flash_size_8720 << 20) - LFS_Start;
+            break;
+    }
 
 #endif
 
@@ -554,6 +573,22 @@ void init_lfs(int create){
 		}
 		ADDLOGF_INFO("8720D Detected Flash Size: %i MB, adjusting LFS, start: 0x%X, size: 0x%X", flash_size_8720, newstart, newsize);
 		CFG_SetLFS_Size(newsize);
+
+#elif PLATFORM_REALTEK_NEW
+
+        switch(flash_size_8720)
+        {
+            case 4:
+                LFS_Start = newstart = 0x1F0000;
+                LFS_Size = newsize = 0x24000;
+                break;
+            default:
+                LFS_Start = newstart = 0x400000;
+                LFS_Size = newsize = (flash_size_8720 << 20) - LFS_Start;
+                break;
+        }
+        ADDLOGF_INFO("8721DA/8720E Detected Flash Size: %i MB, adjusting LFS, start: 0x%X, size: 0x%X", flash_size_8720, newstart, newsize);
+        CFG_SetLFS_Size(newsize);
 
 #endif
 

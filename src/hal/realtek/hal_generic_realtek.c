@@ -15,7 +15,11 @@ extern int g_sleepfactor;
 
 void HAL_RebootModule()
 {
+#if !PLATFORM_REALTEK_NEW
 	ota_platform_reset();
+#else
+	sys_reset();
+#endif
 }
 
 void HAL_Delay_us(int delay)
