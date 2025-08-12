@@ -181,56 +181,20 @@ int CLOCK_GetSunset()
 #endif
 
 int CLOCK_GetWeekDay() {
-	struct tm *ltm;
-	time_t act_deviceTime = (time_t)Clock_GetCurrentTime();
-
-	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime(&act_deviceTime);
-
-	if (ltm == 0) {
-		return 0;
-	}
-
-	return ltm->tm_wday;
+// simplify, no need for gmtime here
+       return ((int)(Clock_GetCurrentTime()/ 86400 )+4) % 7;   // 1970-01-01 was a Thursday
 }
 int CLOCK_GetHour() {
-	struct tm *ltm;
-	time_t act_deviceTime = (time_t)Clock_GetCurrentTime();
-
-	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime(&act_deviceTime);
-
-	if (ltm == 0) {
-		return 0;
-	}
-
-	return ltm->tm_hour;
+// simplify, no need for gmtime here
+	return (Clock_GetCurrentTime()/3600) % 24;
 }
 int CLOCK_GetMinute() {
-	struct tm *ltm;
-	time_t act_deviceTime = (time_t)Clock_GetCurrentTime();
-
-	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime(&act_deviceTime);
-
-	if (ltm == 0) {
-		return 0;
-	}
-
-	return ltm->tm_min;
+// simplify, no need for gmtime here
+	return (Clock_GetCurrentTime()/60) % 60;
 }
 int CLOCK_GetSecond() {
-	struct tm *ltm;
-	time_t act_deviceTime = (time_t)Clock_GetCurrentTime();
-
-	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime(&act_deviceTime);
-
-	if (ltm == 0) {
-		return 0;
-	}
-
-	return ltm->tm_sec;
+// simplify, no need for gmtime here
+	return Clock_GetCurrentTime() % 60;
 }
 int CLOCK_GetMDay() {
 	struct tm *ltm;
@@ -496,7 +460,7 @@ void CLOCK_OnEverySecond()
 #if ENABLE_CALENDAR_EVENTS
 	CLOCK_RunEvents(Clock_GetCurrentTime(), Clock_IsTimeSynced());
 #endif
-#if ENABLE_CLOCK_DST && ENABLE_NTP
+#if ENABLE_CLOCK_DST
     if (useDST && (Clock_GetCurrentTimeWithoutOffset() >= next_DST_switch_epoch)){
     	int8_t old_DST=g_DST;
 	setDST();
