@@ -37,7 +37,7 @@ int main(void)
 
 	wlan_network();
 
-	hal_misc_swd_pin_ctrl(0);
+	hal_misc_jtag_pin_ctrl(0);
 
 	efuse_logical_read(0x11A, 6, (uint8_t*)wmac);
 

@@ -75,8 +75,9 @@ void translate_byte(uint8_t input, uint8_t *dst) {
 }
 
 spiLED_t spiLED;
-
-
+#if PLATFORM_REALTEK
+byte* orig_ptr = NULL;
+#endif
 
 void SPILED_InitDMA(int numBytes) {
 	int i;
@@ -84,13 +85,23 @@ void SPILED_InitDMA(int numBytes) {
 	if (spiLED.ready) {
 		SPILED_Shutdown();
 	}
-
+#if PLATFORM_BEKEN
 	spiLED.padding = 64;
-
+#elif PLATFORM_REALTEK
+	// size for dma must be multiple of 32
+	spiLED.padding = (spiLED.ofs + (numBytes * 4)) % 32;
+#else
+	spiLED.padding = 0;
+#endif
 	// Prepare buffer
 	uint32_t buffer_size = spiLED.ofs + (numBytes * 4) + spiLED.padding; //Add `spiLED.ofs` bytes for "Reset"
 #if PLATFORM_ESPIDF
 	spiLED.buf = heap_caps_malloc(sizeof(byte) * (buffer_size), MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA);
+#elif PLATFORM_REALTEK
+	// memory for dma must be aligned to 32 bytes
+	orig_ptr = (byte*)os_malloc((sizeof(byte) * (buffer_size)) + 32 - 1);
+	uint32_t misalignment = (uint32_t)orig_ptr % 32;
+	spiLED.buf = (orig_ptr + 32 - misalignment);
 #else
 	spiLED.buf = (byte *)os_malloc(sizeof(byte) * (buffer_size)); //18LEDs x RGB x 4Bytes
 #endif
@@ -163,11 +174,16 @@ int spidma_led_pin = -1;
 void SPILED_Shutdown() {
 	spiLED.ready = 0;
 	if (spiLED.buf) {
-		free(spiLED.buf);
+#if PLATFORM_REALTEK
+		os_free(orig_ptr);
+		orig_ptr = NULL;
+#else
+		os_free(spiLED.buf);
+#endif
 		spiLED.buf = 0;
 	}
 	if (spiLED.msg) {
-		free(spiLED.msg);
+		os_free(spiLED.msg);
 		spiLED.msg = 0;
 	}
 	SPIDMA_Deinit();

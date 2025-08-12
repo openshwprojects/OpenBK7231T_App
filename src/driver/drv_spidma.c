@@ -676,6 +676,131 @@ void SPIDMA_Deinit(void)
 	hal_gpio_pin_afio_en(pin->base, pin->pin, HAL_DISABLE);
 }
 
+#elif PLATFORM_REALTEK
+
+#include "../hal/realtek/hal_pinmap_realtek.h"
+
+#include "drv_spidma.h"
+#include "spi_api.h"
+#include "spi_ex_api.h"
+
+static spi_t spi_master;
+extern int spidma_led_pin;
+rtlPinMapping_t* rtl_mosi;
+bool is_init = false;
+
+void SPIDMA_Init(struct spi_message* msg)
+{
+	is_init = false;
+	PinName mosi = NC, miso = NC, sclk = NC, ssel = NC;
+	rtl_mosi = g_pins + spidma_led_pin;
+#if PLATFORM_RTL8710A
+	// broken
+	switch(rtl_mosi->pin)
+	{
+		case PE_2:
+			sys_jtag_off();
+			mosi = PE_2;
+			miso = PE_3;
+			break;
+		case PC_2:
+			mosi = PC_2;
+			miso = PC_3;
+			sclk = PC_1;
+			ssel = PC_0;
+			break;
+		default: return;
+	}
+#elif PLATFORM_RTL8710B
+	// broken
+	switch(rtl_mosi->pin)
+	{
+		case PA_4:
+			spi_master.spi_idx = MBED_SPI0;
+			mosi = PA_4;
+			miso = PA_3;
+			sclk = PA_1;
+			ssel = PA_2;
+			break;
+		case PA_23:
+			spi_master.spi_idx = MBED_SPI1;
+			mosi = PA_23;
+			miso = PA_22;
+			sclk = PA_18;
+			ssel = PA_19;
+			break;
+		case PB_3:
+			spi_master.spi_idx = MBED_SPI1;
+			mosi = PB_3;
+			miso = PB_2;
+			sclk = PB_1;
+			ssel = PB_0;
+			break;
+		default: return;
+	}
+#elif PLATFORM_RTL87X0C
+	// those pins aren't wired out on BW16, and, except for A7, on WBR3
+	// they must be set, otherwise spi init will fail
+	miso = PA_10;
+	ssel = PA_7;
+	sclk = PA_8;
+	switch(rtl_mosi->pin)
+	{
+		case PA_4:
+			mosi = PA_4;
+			break;
+		case PA_9:
+			mosi = PA_9;
+			break;
+		case PA_19:
+			mosi = PA_19;
+			break;
+		default: return;
+	}
+#elif PLATFORM_RTL8720D
+	switch(rtl_mosi->pin)
+	{
+		case PB_18:
+			spi_master.spi_idx = MBED_SPI0;
+			mosi = PB_18;
+			break;
+		case PA_16:
+			spi_master.spi_idx = MBED_SPI0;
+			mosi = PA_16;
+			break;
+		case PA_12:
+			spi_master.spi_idx = MBED_SPI1;
+			mosi = PA_12;
+			break;
+		case PB_4:
+			spi_master.spi_idx = MBED_SPI1;
+			mosi = PB_4;
+			break;
+		default: return;
+	}
+#elif PLATFORM_REALTEK_NEW
+	spi_master.spi_idx = MBED_SPI1;
+	mosi = rtl_mosi->pin;
+#endif
+	spi_init(&spi_master, mosi, miso, sclk, ssel);
+	spi_format(&spi_master, 8, 0, 0);
+	spi_frequency(&spi_master, 3000000);
+	is_init = true;
+}
+void SPIDMA_StartTX(struct spi_message* msg)
+{
+	if(is_init) spi_master_write_stream_dma(&spi_master, (char*)msg->send_buf, msg->send_len);
+	//if(is_init) spi_master_write_stream(&spi_master, (char*)msg->send_buf, msg->send_len);
+}
+void SPIDMA_StopTX(void)
+{
+
+}
+void SPIDMA_Deinit(void)
+{
+	if(is_init) spi_free(&spi_master);
+}
+
 #else
 
 #include "drv_spidma.h"
