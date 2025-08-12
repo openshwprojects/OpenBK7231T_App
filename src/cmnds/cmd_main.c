@@ -49,7 +49,9 @@ extern void rtw_enable_wlan_low_pwr_mode(WLAN_LOW_PW_MODE mode);
 #elif PLATFORM_RTL8720D
 extern void SystemSetCpuClk(unsigned char CpuClk);
 #endif
+#if !PLATFORM_REALTEK_NEW
 #include "wifi_conf.h"
+#endif
 int g_sleepfactor = 1;
 #elif PLATFORM_BEKEN_NEW
 #include "co_math.h"
