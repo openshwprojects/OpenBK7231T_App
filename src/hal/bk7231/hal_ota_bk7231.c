@@ -1,20 +1,14 @@
 #include "../hal_ota.h"
 
-#if defined(PLATFORM_W600)
-
-//W600 uses OTA functions from its SDK.
-
-#elif PLATFORM_BEKEN
-
-#include "../new_common.h"
-#include "../new_cfg.h"
+#include "../../new_common.h"
+#include "../../new_cfg.h"
 #include "typedef.h"
 #include "flash_pub.h"
 //#include "flash.h"
-#include "../logging/logging.h"
-#include "../httpclient/http_client.h"
-#include "../driver/drv_public.h"
-#include "../driver/drv_bl_shared.h"
+#include "../../logging/logging.h"
+#include "../../httpclient/http_client.h"
+#include "../../driver/drv_public.h"
+#include "../../driver/drv_bl_shared.h"
 
 static unsigned char *sector = (void *)0;
 int sectorlen = 0;
@@ -221,14 +215,7 @@ void otarequest(const char *urlin){
   OTA_ResetProgress();
   OTA_IncrementProgress(1);
  }
-#else
 
-void otarequest(const char *urlin) {
-	addLogAdv(LOG_INFO, LOG_FEATURE_OTA, "");
-}
-#endif
-
-#endif
 
 
 /***** SDK independent code from this point. ******/
