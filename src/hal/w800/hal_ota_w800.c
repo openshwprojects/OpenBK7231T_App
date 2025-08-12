@@ -1,3 +1,5 @@
+#if defined(PLATFORM_W800) || defined(PLATFORM_W600) 
+
 #include "../../obk_config.h"
 #include "../../new_common.h"
 #include "../../logging/logging.h"
@@ -290,3 +292,4 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 	return 0;
 }
 
+#endif

@@ -1,3 +1,4 @@
+#ifdef PLATFORM_LN882H
 
 #include "hal/hal_flash.h"
 #include "flash_partition_table.h"
@@ -302,3 +303,7 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 	CFG_IncrementOTACount();
 	return 0;
 }
+
+
+#endif // PLATFORM_LN882H
+
