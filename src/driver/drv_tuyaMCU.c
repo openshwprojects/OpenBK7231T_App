@@ -205,7 +205,7 @@ static int g_tuyaNextRequestDelay;
 static bool g_sensorMode = 0;
 
 // Flag to prevent automatic sending during boot/initialization
-static bool g_tuyaMCU_allowAutomaticSending = false;
+static bool g_tuyaMCU_allowAutomaticSending = true;
 
 static bool heartbeat_valid = false;
 static int heartbeat_timer = 0;

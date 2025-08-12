@@ -18,8 +18,6 @@
 #ifndef __digitalWriteFast_h_
 #define __digitalWriteFast_h_ 1
 
-
-#if PLATFORM_BEKEN
 //TODO: check these?
 typedef enum {
   LOW     = 0,
@@ -34,9 +32,7 @@ typedef enum {
   OUTPUT          = 0x1,
   INPUT_PULLUP    = 0x2,
   INPUT_PULLDOWN  = 0x3,
-} PinMode;
-#endif
-
+} PinModeOBK;
 
 void digitalToggleFast(unsigned char P);
 unsigned char digitalReadFast(unsigned char P);
@@ -44,5 +40,3 @@ void digitalWriteFast(unsigned char P, unsigned char V);
 void pinModeFast(unsigned char P, unsigned char V);
 
 #endif //__digitalWriteFast_h_
-
-

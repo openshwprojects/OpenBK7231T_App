@@ -98,6 +98,36 @@ void Test_Events() {
 	SELFTEST_ASSERT(EVENT_ParseEventName("UnknownEvent") == CMD_EVENT_NONE);
 	SELFTEST_ASSERT(EVENT_ParseEventName("") == CMD_EVENT_NONE);
 	SELFTEST_ASSERT(EVENT_ParseEventName(" ") == CMD_EVENT_NONE);
+
+	CMD_ExecuteCommand("setchannel 20 0", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 0);
+	CMD_ExecuteCommand("addEventHandler2 IR_RC6 0x11 0x23 addChannel 20 1", 0);
+	// FireEvent 3 will call addEventHandler2 
+	// (it assumes that third argument is 'any')
+	// So if we want RC6 events for 0x20 0x20 with ANY repeats (press or hold)
+	// then both press and release calls event
+	EventHandlers_FireEvent3(CMD_EVENT_IR_RC6, 0x11, 0x23, 0);
+	SELFTEST_ASSERT_CHANNEL(20, 1);
+	EventHandlers_FireEvent3(CMD_EVENT_IR_RC6, 0x11, 0x23, 0);
+	SELFTEST_ASSERT_CHANNEL(20, 2);
+	EventHandlers_FireEvent3(CMD_EVENT_IR_RC6, 0x11, 0x23, 0);
+	SELFTEST_ASSERT_CHANNEL(20, 3);
+
+	CMD_ExecuteCommand("setchannel 10 0", 0);
+	SELFTEST_ASSERT_CHANNEL(10, 0);
+	CMD_ExecuteCommand("addEventHandler3 IR_RC6 0x10 0x10 1 addChannel 10 1", 0);
+	EventHandlers_FireEvent3(CMD_EVENT_IR_RC6, 0x10, 0x10, 0);
+	SELFTEST_ASSERT_CHANNEL(10, 0);
+	EventHandlers_FireEvent3(CMD_EVENT_IR_RC6, 0x10, 0x10, 1);
+	SELFTEST_ASSERT_CHANNEL(10, 1);
+	EventHandlers_FireEvent3(CMD_EVENT_IR_RC6, 0x10, 0x10, 1);
+	SELFTEST_ASSERT_CHANNEL(10, 2);
+	EventHandlers_FireEvent3(CMD_EVENT_IR_RC6, 0x10, 0x10, 0);
+	SELFTEST_ASSERT_CHANNEL(10, 2);
+	EventHandlers_FireEvent2(CMD_EVENT_IR_RC6, 0x10, 0x10);
+	SELFTEST_ASSERT_CHANNEL(10, 3);
+	EventHandlers_FireEvent2(CMD_EVENT_IR_RC6, 0x10, 0x10);
+	SELFTEST_ASSERT_CHANNEL(10, 4);
 }
 
 void Test_UART() {
@@ -148,9 +178,63 @@ void Test_UART() {
 	}
 }
 
+void Test_PinMutex() {
+	// reset whole device
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("startDriver PinMutex", 0);
+	// setMutex <index> <channel> <delayMs> <pinDown> <pinUp> 
+	CMD_ExecuteCommand("setMutex 0 0 100 10 11", 0);
+
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	Sim_RunMiliseconds(100, false);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	CMD_ExecuteCommand("setChannel 0 1", 0);
+	// from 0 0 to 1 0 set is quick
+	Sim_RunMiliseconds(25, false);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 1);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	CMD_ExecuteCommand("setChannel 0 2", 0);
+	Sim_RunMiliseconds(25, false);
+	// dead time
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	Sim_RunMiliseconds(25, false);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	Sim_RunMiliseconds(25, false);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	Sim_RunMiliseconds(50, false);
+	// set
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 1);
+	CMD_ExecuteCommand("setChannel 0 1", 0);
+	Sim_RunMiliseconds(25, false);
+	// dead time
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	Sim_RunMiliseconds(25, false);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	Sim_RunMiliseconds(25, false);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	Sim_RunMiliseconds(50, false);
+	// set
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 1);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	Sim_RunMiliseconds(25, false);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 1);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	
+
+}
 void Test_Commands_Generic() {
 	Test_UART();
 	Test_Events();
+	Test_PinMutex();
 
 	// reset whole device
 	SIM_ClearOBK(0);

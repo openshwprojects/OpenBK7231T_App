@@ -103,6 +103,15 @@ extern uint8_t flash_size_8720;
 #undef DEFAULT_FLASH_LEN
 #define DEFAULT_FLASH_LEN (flash_size_8720 << 20)
 
+#elif PLATFORM_REALTEK_NEW
+
+#include "ameba_ota.h"
+extern uint32_t current_fw_idx;
+extern uint32_t IMG_ADDR[OTA_IMGID_MAX][2];
+extern uint8_t flash_size_8720;
+#undef DEFAULT_FLASH_LEN
+#define DEFAULT_FLASH_LEN (flash_size_8720 << 20)
+
 #endif
 
 #elif PLATFORM_ECR6600
@@ -319,7 +328,7 @@ static int http_rest_post(http_request_t* request) {
 		return http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 		return http_rest_post_flash(request, -1, -1);
-#elif PLATFORM_REALTEK
+#elif PLATFORM_REALTEK && !PLATFORM_RTL8720E
 		return http_rest_post_flash(request, 0, -1);
 #elif PLATFORM_ECR6600 || PLATFORM_TR6260
 		return http_rest_post_flash(request, -1, -1);
@@ -327,7 +336,7 @@ static int http_rest_post(http_request_t* request) {
 		return http_rest_post_flash(request, 0, -1);
 #else
 		// TODO
-		ADDLOG_DEBUG(LOG_FEATURE_API, "No OTA");
+		ADDLOG_ERROR(LOG_FEATURE_API, "No OTA");
 #endif
 	}
 	if (!strncmp(request->url, "api/flash/", 10)) {
@@ -849,10 +858,17 @@ static int http_rest_post_lfs_file(http_request_t* request) {
 
 		do {
 			loops++;
+#if ENABLE_LFS_SPI
+			if (loops > 50) {
+				loops = 0;
+				rtos_delay_milliseconds(1);
+			}
+#else
 			if (loops > 10) {
 				loops = 0;
 				rtos_delay_milliseconds(10);
 			}
+#endif
 			//ADDLOG_DEBUG(LOG_FEATURE_API, "%d bytes to write", writelen);
 			len = lfs_file_write(&lfs, file, writebuf, writelen);
 			if (len < 0) {
@@ -3248,6 +3264,128 @@ update_ota_exit:
 		ADDLOG_ERROR(LOG_FEATURE_OTA, "OTA failed.");
 		return http_rest_error(request, ret, "error");
 	}
+#elif PLATFORM_REALTEK_NEW
+
+	// Bad implementation. While it somewhat works, it is not recommended to use. HTTP OTA is preferable.
+	int ret = 0;
+
+	if(request->contentLength > 0)
+	{
+		towrite = request->contentLength;
+	}
+	else
+	{
+		ret = -1;
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "Content-length is 0");
+		goto update_ota_exit;
+	}
+
+	flash_get_layout_info(IMG_BOOT, &IMG_ADDR[OTA_IMGID_BOOT][OTA_INDEX_1], NULL);
+	flash_get_layout_info(IMG_BOOT_OTA2, &IMG_ADDR[OTA_IMGID_BOOT][OTA_INDEX_2], NULL);
+	flash_get_layout_info(IMG_APP_OTA1, &IMG_ADDR[OTA_IMGID_APP][OTA_INDEX_1], NULL);
+	flash_get_layout_info(IMG_APP_OTA2, &IMG_ADDR[OTA_IMGID_APP][OTA_INDEX_2], NULL);
+	
+	ota_context ctx;
+	memset(&ctx, 0, sizeof(ota_context));
+	ctx.otactrl = malloc(sizeof(update_ota_ctrl_info));
+	memset(ctx.otactrl, 0, sizeof(update_ota_ctrl_info));
+
+	ctx.otaTargetHdr = malloc(sizeof(update_ota_target_hdr));
+	memset(ctx.otaTargetHdr, 0, sizeof(update_ota_target_hdr));
+	writebuf = request->received;
+	if(!writelen) writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
+	// for some reason we receive data along with HTTP header. Skip it.
+	int skip = 0;
+	for(; skip < writelen - 5; skip++)
+	{
+		if(*(uint32_t*)&writebuf[skip] == 0xFFFFFFFF && writebuf[skip + 4] == 0x01) break;
+	}
+	writebuf += skip;
+	writelen -= skip;
+	towrite -= skip;
+	update_file_hdr* pOtaFileHdr = (update_file_hdr*)(writebuf);
+	ctx.otaTargetHdr->FileHdr.FwVer = pOtaFileHdr->FwVer;
+	ctx.otaTargetHdr->FileHdr.HdrNum = pOtaFileHdr->HdrNum;
+
+	uint32_t RevHdrLen = pOtaFileHdr->HdrNum * SUB_HEADER_LEN + HEADER_LEN;
+	if(writelen < RevHdrLen)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "failed to recv file header");
+		ret = -1;
+		goto update_ota_exit;
+	}
+
+	if(!get_ota_tartget_header(&ctx, writebuf, RevHdrLen))
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "Get OTA header failed");
+		ret = -1;
+		goto update_ota_exit;
+	}
+	if(!ota_checkimage_layout(ctx.otaTargetHdr))
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "ota_checkimage_layout failed");
+		ret = -1;
+		goto update_ota_exit;
+	}
+	ctx.otactrl->IsGetOTAHdr = 1;
+	writebuf += RevHdrLen;
+	// magic values to make it somewhat work.
+	writelen -= RevHdrLen + 5 - 384;
+	towrite -= RevHdrLen + 5 - 384;
+	ctx.otactrl->NextImgLen = towrite;
+	do
+	{
+		int size = download_packet_process(&ctx, writebuf, writelen);
+		download_percentage(&ctx, size, ctx.otactrl->ImageLen);
+		rtos_delay_milliseconds(10);
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Writelen %i at %i", writelen, total);
+		total += writelen;
+		towrite -= writelen;
+
+		if(towrite > 0)
+		{
+			writebuf = request->received;
+			writelen = recv(request->fd, writebuf, 2048 < towrite ? 2048 : towrite, 0);
+			if(writelen < 0)
+			{
+				ADDLOG_ERROR(LOG_FEATURE_OTA, "recv returned %d - end of data - remaining %d", writelen, towrite);
+				ret = -1;
+				goto update_ota_exit;
+			}
+		}
+	} while((towrite > 0) && (writelen >= 0));
+
+	//erase manifest
+	flash_erase_sector(&flash, ctx.otactrl->FlashAddr);
+
+	if(!verify_ota_checksum(ctx.otaTargetHdr, ctx.otactrl->targetIdx, ctx.otactrl->index))
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "The checksum is wrong!");
+		ret = -1;
+		goto update_ota_exit;
+	}
+
+	if(!ota_update_manifest(ctx.otaTargetHdr, ctx.otactrl->targetIdx, ctx.otactrl->index))
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "Change signature failed!");
+		ret = -1;
+		goto update_ota_exit;
+	}
+
+update_ota_exit:
+	ota_update_deinit(&ctx);
+	if(ret != -1)
+	{
+		ADDLOG_INFO(LOG_FEATURE_OTA, "OTA is successful");
+		sys_clear_ota_signature();
+		//sys_recover_ota_signature();
+	}
+	else
+	{
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "OTA failed.");
+		return http_rest_error(request, ret, "error");
+	}
+
 #else
 
 	init_ota(startaddr);

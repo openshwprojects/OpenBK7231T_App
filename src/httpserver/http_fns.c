@@ -44,7 +44,7 @@
 #include "temp_detect_pub.h"
 #elif defined(PLATFORM_LN882H)
 #elif defined(PLATFORM_TR6260)
-#elif defined(PLATFORM_REALTEK)
+#elif defined(PLATFORM_REALTEK) && !PLATFORM_REALTEK_NEW
 	#include "wifi_structures.h"
 	#include "wifi_constants.h"
 	#include "wifi_conf.h"
@@ -54,6 +54,11 @@
 	extern hal_reset_reason_t reset_reason;
 	#endif
 	SemaphoreHandle_t scan_hdl;
+#elif PLATFORM_REALTEK_NEW
+#include "lwip_netconf.h"
+#include "ameba_soc.h"
+#include "ameba_ota.h"
+extern uint32_t current_fw_idx;
 #elif defined(PLATFORM_ESPIDF) || PLATFORM_ESP8266
 #include "esp_wifi.h"
 #include "esp_system.h"
@@ -63,6 +68,8 @@
 #include "tuya_hal_storge.h"
 #include "BkDriverFlash.h"
 #include "temp_detect_pub.h"
+#elif defined(PLATFORM_ECR6600)
+#include "hal_system.h"
 #endif
 
 #if (defined(PLATFORM_BK7231T) || defined(PLATFORM_BK7231N)) && !defined(PLATFORM_BEKEN_NEW)
@@ -81,6 +88,7 @@ const char* g_typesOffOnRemember[] = { "Off", "On", "Remember" };
 const char* g_typeLowMidHigh[] = { "Low","Mid","High" };
 const char* g_typesLowestLowMidHighHighest[] = { "Lowest", "Low", "Mid", "High", "Highest" };;
 const char* g_typeOpenStopClose[] = { "Open","Stop","Close" };
+const char* g_typeStopUpDown[] = { "Stop","Up","Down" };
 
 #define ADD_OPTION(t,a) if(type == t) { *numTypes = sizeof(a)/sizeof(a[0]); return a; }
 
@@ -93,6 +101,7 @@ const char **Channel_GetOptionsForChannelType(int type, int *numTypes) {
 	ADD_OPTION(ChType_OffOnRemember, g_typesOffOnRemember);
 	ADD_OPTION(ChType_LowMidHigh, g_typeLowMidHigh);
 	ADD_OPTION(ChType_OpenStopClose, g_typeOpenStopClose);
+	ADD_OPTION(ChType_StopUpDown, g_typeStopUpDown);
 	
 	*numTypes = 0;
 	return 0;
@@ -500,7 +509,7 @@ int http_fn_index(http_request_t* request) {
 			if (channelType == ChType_OffOnRemember) {
 				what = "memory";
 			}
-			else if (channelType == ChType_OpenStopClose) {
+			else if (channelType == ChType_OpenStopClose || channelType == ChType_StopUpDown) {
 				what = "mode";
 			}
 			else {
@@ -946,8 +955,25 @@ typedef enum {
 	}
 	hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", reset_reason, s);
 	hprintf255(request, "<h5>Current fw: FW%i</h5>", current_fw_idx);
-#elif PLATFORM_RTL8710B || PLATFORM_RTL8720D
+#elif PLATFORM_RTL8710B || PLATFORM_RTL8720D || PLATFORM_REALTEK_NEW
 	hprintf255(request, "<h5>Current fw: FW%i</h5>", current_fw_idx + 1);
+#elif PLATFORM_ECR6600
+	RST_TYPE reset_type = hal_get_reset_type();
+	const char* s;
+	switch(reset_type)
+	{
+		case RST_TYPE_POWER_ON:             s = "POWER_ON"; break;
+		case RST_TYPE_FATAL_EXCEPTION:      s = "FATAL_EXCEPTION"; break;
+		case RST_TYPE_SOFTWARE_REBOOT:      s = "SOFTWARE_REBOOT"; break;
+		case RST_TYPE_HARDWARE_REBOOT:      s = "HARDWARE_REBOOT"; break;
+		case RST_TYPE_OTA:                  s = "OTA"; break;
+		case RST_TYPE_WAKEUP:               s = "WAKEUP"; break;
+		case RST_TYPE_HARDWARE_WDT_TIMEOUT: s = "HARDWARE_WDT_TIMEOUT"; break;
+		case RST_TYPE_SOFTWARE_WDT_TIMEOUT: s = "SOFTWARE_WDT_TIMEOUT"; break;
+		case RST_TYPE_UNKOWN:               s = "UNKNOWN"; break;
+		default: s = "ERROR"; break;
+	}
+	hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", reset_type, s);
 #endif
 #if ENABLE_MQTT
 	if (CFG_GetMQTTHost()[0] == 0) {
@@ -1414,7 +1440,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 		{
 			hprintf255(request, "[%i/%u] SSID: %s, Channel: %i, Signal %i<br>", i + 1, number, ap_info[i].ssid, ap_info[i].primary, ap_info[i].rssi);
 		}
-#elif defined(PLATFORM_REALTEK)
+#elif defined(PLATFORM_REALTEK) && !PLATFORM_REALTEK_NEW
 #ifndef PLATFORM_RTL87X0C
 		extern void rltk_wlan_enable_scan_with_ssid_by_extended_security(bool);
 #endif
@@ -2880,7 +2906,7 @@ const char* g_obk_flagNames[] = {
 	"[MQTT] Broadcast self state every N (def: 60) seconds (delay configurable by 'mqtt_broadcastInterval' and 'mqtt_broadcastItemsPerSec' commands)",
 	"[LED][Debug] Show raw PWM controller on WWW index instead of new LED RGB/CW/etc picker",
 	"[LED] Force show RGBCW controller (for example, for SM2135 LEDs, or for DGR sender)",
-	"[CMD] Enable TCP console command server (for Putty, etc)",
+	"[CMD] Enable TCP console command server (for PuTTY, etc)",
 	"[BTN] Instant touch reaction instead of waiting for release (aka SetOption 13)",
 	"[MQTT] [Debug] Always set Retain flag to all published values",
 	"[LED] Alternate CW light mode (first PWM for warm/cold slider, second for brightness)",
@@ -2899,7 +2925,7 @@ const char* g_obk_flagNames[] = {
 	"[MQTT] Retain power channels (Relay channels, etc)",
 	"[IR] Do MQTT publish (Tasmota JSON format) for incoming IR data",
 	"[LED] Automatically enable Light on any change of brightness, color or temperature",
-	"[LED] Emulate Cool White with RGB in device with four PWMS - Red is 0, Green 1, Blue 2, and Warm is 4",
+	"[LED] Emulate Cool White with RGB in device with four PWMs - Red is 0, Green 1, Blue 2, and Warm is 4",
 	"[POWER] Allow negative current/power for power measurement (all chips, BL0937, BL0942, etc)",
 	// On BL602, if marked, uses /dev/ttyS1, otherwise S0
 	// On Beken, if marked, uses UART2, otherwise UART1
@@ -2927,7 +2953,7 @@ const char* g_obk_flagNames[] = {
 	"[TuyaMCU] Store ALL data",
 	"[PWR] Invert AC dir",
 	"[HTTP] Hide ON/OFF for relays (only red/green buttons)",
-	"[MQTT] Never add get sufix",
+	"[MQTT] Never add GET suffix",
 	"[WiFi] (RTL/BK) Enhanced fast connect by saving AP data to flash (preferable with Flag 37 & static ip). Quick reset 3 times to connect normally",
 	"error",
 	"error",
@@ -3182,20 +3208,13 @@ int http_fn_cfg_dgr(http_request_t* request) {
 #endif
 
 void OTA_RequestDownloadFromHTTP(const char* s) {
-#if WINDOWS
-
-#elif PLATFORM_BL602
-
-#elif PLATFORM_LN882H
-
-#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
-#elif PLATFORM_TR6260
-#elif PLATFORM_REALTEK
+#if PLATFORM_BEKEN
+	otarequest(s);
 #elif PLATFORM_ECR6600
-	extern int http_client_download_file(const char* url, unsigned int len);
+	extern int http_client_download_file(const char* url);
 	extern int ota_done(bool reset);
 	delay_ms(100);
-	int ret = http_client_download_file(s, strlen(s));
+	int ret = http_client_download_file(s);
 	if(ret != -1) ota_done(1);
 	else ota_done(0);
 #elif PLATFORM_W600 || PLATFORM_W800
@@ -3229,8 +3248,33 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 	}
 
 	ota_reboot();
-#else
-	otarequest(s);
+#elif PLATFORM_REALTEK_NEW
+	ota_context* ctx = NULL;
+	ctx = (ota_context*)malloc(sizeof(ota_context));
+	if(ctx == NULL) goto exit;
+	memset(ctx, 0, sizeof(ota_context));
+	char url[256] = { 0 };
+	char resource[256] = { 0 };
+	uint16_t port;
+	parser_url(s, &url, &port, &resource, 256);
+	int ret = ota_update_init(ctx, &url, port, &resource, OTA_HTTP);
+	if(ret != 0)
+	{
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "ota_update_init failed");
+		goto exit;
+	}
+	ret = ota_update_start(ctx);
+	if(!ret)
+	{
+		addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "OTA finished");
+		sys_clear_ota_signature();
+		delay_ms(50);
+		sys_reset();
+	}
+exit:
+	ota_update_deinit(ctx);
+	addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "OTA failed");
+	if(ctx) free(ctx);
 #endif
 }
 int http_fn_ota_exec(http_request_t* request) {

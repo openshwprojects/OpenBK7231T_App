@@ -172,6 +172,16 @@ typedef long BaseType_t;
 #define DEVICENAME_PREFIX_SHORT "esp8266"
 #define PLATFORM_MCU_NAME "ESP8266"
 #define MANUFACTURER "Espressif"
+#elif PLATFORM_RTL8721DA
+#define DEVICENAME_PREFIX_FULL "OpenRTL8721DA"
+#define DEVICENAME_PREFIX_SHORT "rtl8721da"
+#define PLATFORM_MCU_NAME "RTL8721DA"
+#define MANUFACTURER "Realtek"
+#elif PLATFORM_RTL8720E
+#define DEVICENAME_PREFIX_FULL "OpenRTL8720E"
+#define DEVICENAME_PREFIX_SHORT "rtl8720e"
+#define PLATFORM_MCU_NAME "RTL8720E"
+#define MANUFACTURER "Realtek"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -225,6 +235,10 @@ This platform is not supported, error!
 #define USER_SW_VER "ECR6600_Test"
 #elif PLATFORM_ESP8266
 #define USER_SW_VER "ESP8266_Test"
+#elif PLATFORM_RTL8721DA
+#define USER_SW_VER "RTL8721DA_Test"
+#elif PLATFORM_RTL8720E
+#define USER_SW_VER "RTL8720E_Test"
 #else
 #warning "USER_SW_VER undefined"
 #define USER_SW_VER "unknown"
@@ -630,6 +644,10 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #elif PLATFORM_REALTEK
 
+#if __cplusplus && !PLATFORM_REALTEK_NEW
+typedef uint32_t in_addr_t;
+#endif
+
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
@@ -641,10 +659,32 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #include "lwip/sys.h"
 #include "lwip/netdb.h"
 #include "lwip/dns.h"
-#include "cmsis_os.h"
+#include "PinNames.h"
+#if PLATFORM_REALTEK_NEW
+#include "wifi_api_event.h"
+#include "wifi_api_types.h"
+#include "wifi_api_ext.h"
+#include "kv.h"
+#if PLATFORM_RTL8721DA
+#include "autoconf_8721da.h"
+#elif PLATFORM_RTL8720E
+#include "autoconf_8720e.h"
+#endif
+#define wifi_is_up wifi_is_running
+#define RTW_STA_INTERFACE STA_WLAN_INDEX
+#define RTW_AP_INTERFACE SOFTAP_WLAN_INDEX
+#define RTW_MODE_STA_AP RTW_MODE_AP
+#define wifi_enable_powersave() wifi_set_lps_enable(1)
+#define wifi_disable_powersave() wifi_set_lps_enable(0)
+#define RTW_SUCCESS 0
+typedef enum rtw_security rtw_security_t;
+typedef enum rtw_drv_op_mode rtw_mode_t;
+#endif
 
 typedef unsigned int UINT32;
+typedef uint8_t UINT8;
 extern int g_sleepfactor;
+extern u32 pwmout_pin2chan(PinName pin);
 
 #undef ASSERT
 #define ASSERT
@@ -883,7 +923,7 @@ int LWIP_GetMaxSockets();
 int LWIP_GetActiveSockets();
 
 #ifndef LINUX
-#if !PLATFORM_ESPIDF && !PLATFORM_ESP8266
+#if !PLATFORM_ESPIDF && !PLATFORM_ESP8266 && !PLATFORM_REALTEK_NEW
 //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 void usleep(int r);
 #endif
