@@ -328,7 +328,7 @@ static int http_rest_post(http_request_t* request) {
 		return http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 		return http_rest_post_flash(request, -1, -1);
-#elif PLATFORM_REALTEK
+#elif PLATFORM_REALTEK && !PLATFORM_RTL8720E
 		return http_rest_post_flash(request, 0, -1);
 #elif PLATFORM_ECR6600 || PLATFORM_TR6260
 		return http_rest_post_flash(request, -1, -1);
@@ -336,7 +336,7 @@ static int http_rest_post(http_request_t* request) {
 		return http_rest_post_flash(request, 0, -1);
 #else
 		// TODO
-		ADDLOG_DEBUG(LOG_FEATURE_API, "No OTA");
+		ADDLOG_ERROR(LOG_FEATURE_API, "No OTA");
 #endif
 	}
 	if (!strncmp(request->url, "api/flash/", 10)) {
