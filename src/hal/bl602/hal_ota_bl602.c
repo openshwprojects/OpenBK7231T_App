@@ -6,6 +6,7 @@
 #include <bl_flash.h>
 #include "../../obk_config.h"
 #include "../../new_common.h"
+#include "../../httpserver/new_http.h"
 #include "lwip/sockets.h"
 
 
