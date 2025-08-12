@@ -112,7 +112,7 @@ sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared:
 	#so only linking source and copying required file
 	@echo mkdir shared
 	mkdir sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared
-	cp ./bouffalo.mk sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared
+	cp ./platforms/BL602/bouffalo.mk sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared
 	@echo Create symlink for $(APP_NAME) into sdk folder
 	ln -s "$(shell pwd)/src/" "sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared/src"
 	ln -s "$(shell pwd)/libraries/" "sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared/libraries"
@@ -393,7 +393,7 @@ build-BK7231: $(SDK_PATH)/apps/$(APP_NAME)
 	rm $(SDK_PATH)/platforms/$(TARGET_PLATFORM)/toolchain/$(APPS_BUILD_PATH)/tools/generate/$(APP_NAME)_*.bin || /bin/true
 
 OpenBL602: prebuild_OpenBL602 sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared
-	$(MAKE) -C sdk/OpenBL602/customer_app/bl602_sharedApp USER_SW_VER=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) CONFIG_CHIP_NAME=BL602 CONFIG_LINK_ROM=1 -j
+	$(MAKE) -C sdk/OpenBL602/customer_app/bl602_sharedApp USER_SW_VER=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) CONFIG_CHIP_NAME=BL602 CONFIG_LINK_ROM=1 -j $(shell nproc)
 	$(MAKE) -C sdk/OpenBL602/customer_app/bl602_sharedApp USER_SW_VER=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) CONFIG_CHIP_NAME=BL602 bins
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenBL602/customer_app/bl602_sharedApp/build_out/bl602_sharedApp.bin output/$(APP_VERSION)/OpenBL602_$(APP_VERSION).bin

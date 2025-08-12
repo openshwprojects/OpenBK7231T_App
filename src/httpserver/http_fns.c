@@ -62,6 +62,8 @@
 #include "tuya_hal_storge.h"
 #include "BkDriverFlash.h"
 #include "temp_detect_pub.h"
+#elif defined(PLATFORM_ECR6600)
+#include "hal_system.h"
 #endif
 
 #if (defined(PLATFORM_BK7231T) || defined(PLATFORM_BK7231N)) && !defined(PLATFORM_BEKEN_NEW)
@@ -948,6 +950,23 @@ typedef enum {
 	hprintf255(request, "<h5>Current fw: FW%i</h5>", current_fw_idx);
 #elif PLATFORM_RTL8710B || PLATFORM_RTL8720D
 	hprintf255(request, "<h5>Current fw: FW%i</h5>", current_fw_idx + 1);
+#elif PLATFORM_ECR6600
+	RST_TYPE reset_type = hal_get_reset_type();
+	const char* s;
+	switch(reset_type)
+	{
+		case RST_TYPE_POWER_ON:             s = "POWER_ON"; break;
+		case RST_TYPE_FATAL_EXCEPTION:      s = "FATAL_EXCEPTION"; break;
+		case RST_TYPE_SOFTWARE_REBOOT:      s = "SOFTWARE_REBOOT"; break;
+		case RST_TYPE_HARDWARE_REBOOT:      s = "HARDWARE_REBOOT"; break;
+		case RST_TYPE_OTA:                  s = "OTA"; break;
+		case RST_TYPE_WAKEUP:               s = "WAKEUP"; break;
+		case RST_TYPE_HARDWARE_WDT_TIMEOUT: s = "HARDWARE_WDT_TIMEOUT"; break;
+		case RST_TYPE_SOFTWARE_WDT_TIMEOUT: s = "SOFTWARE_WDT_TIMEOUT"; break;
+		case RST_TYPE_UNKOWN:               s = "UNKNOWN"; break;
+		default: s = "ERROR"; break;
+	}
+	hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", reset_type, s);
 #endif
 #if ENABLE_MQTT
 	if (CFG_GetMQTTHost()[0] == 0) {
@@ -3192,10 +3211,10 @@ void OTA_RequestDownloadFromHTTP(const char* s) {
 #elif PLATFORM_TR6260
 #elif PLATFORM_REALTEK
 #elif PLATFORM_ECR6600
-	extern int http_client_download_file(const char* url, unsigned int len);
+	extern int http_client_download_file(const char* url);
 	extern int ota_done(bool reset);
 	delay_ms(100);
-	int ret = http_client_download_file(s, strlen(s));
+	int ret = http_client_download_file(s);
 	if(ret != -1) ota_done(1);
 	else ota_done(0);
 #elif PLATFORM_W600 || PLATFORM_W800
