@@ -2501,7 +2501,7 @@ int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
 	device_mutex_unlock(RT_DEV_LOCK_FLASH);
 	return res;
 }
-#else
+#elif WINDOWS
 int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
 	int res;
 	res = 0;
