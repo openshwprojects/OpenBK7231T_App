@@ -1255,6 +1255,12 @@ int http_rest_error(http_request_t* request, int code, char* msg) {
 
 #if WINDOWS
 
+int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
+	int res;
+	res = 0;
+	return res;
+}
+
 int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 {
 
@@ -1296,14 +1302,6 @@ static int http_rest_post_flash_advanced(http_request_t* request) {
 	return http_rest_error(request, -1, "invalid url");
 }
 
-
-#if WINDOWS
-int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
-	int res;
-	res = 0;
-	return res;
-}
-#endif
 static int http_rest_get_flash(http_request_t* request, int startaddr, int len) {
 	char* buffer;
 	int res;
