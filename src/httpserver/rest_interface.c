@@ -16,7 +16,7 @@
 #if PLATFORM_XRADIO
 
 #include <image/flash.h>
-#include "hal/hal_ota.h"
+#include "../hal/hal_ota.h"
 
 uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
 #define FLASH_INDEX_XR809 0
