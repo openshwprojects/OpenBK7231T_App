@@ -35,7 +35,7 @@
 
 #elif PLATFORM_XRADIO
 #include <image/flash.h>
-#include "../hal/hal_ota.h"
+#include <hal/hal_ota.h>
 #elif defined(PLATFORM_BK7231N)
 // tuya-iotos-embeded-sdk-wifi-ble-bk7231n/sdk/include/tuya_hal_storage.h
 #include "tuya_hal_storage.h"
