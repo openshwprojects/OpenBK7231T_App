@@ -26,6 +26,11 @@ extern UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address);
 extern UINT32 flash_write(char *user_buf, UINT32 count, UINT32 address);
 extern UINT32 flash_ctrl(UINT32 cmd, void *parm);
 
+int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
+	int res;
+	res = flash_read((char*)buffer, readlen, startaddr);
+	return res;
+}
 
 int init_ota(unsigned int startaddr){
     flash_init();

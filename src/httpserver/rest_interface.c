@@ -82,8 +82,6 @@ extern int ota_done(bool reset);
 
 #else
 
-extern unsigned int flash_read(char* user_buf, unsigned int count, unsigned int address);
-
 #endif
 
 #include "../new_cfg.h"
@@ -2423,22 +2421,10 @@ static int http_rest_post_flash_advanced(http_request_t* request) {
 	return http_rest_error(request, -1, "invalid url");
 }
 
-#if PLATFORM_BEKEN
-int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
-	int res;
-	res = flash_read((char*)buffer, readlen, startaddr);
-	return res;
-}
-#elif PLATFORM_W600 || PLATFORM_W800
+#if PLATFORM_W600 || PLATFORM_W800
 int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
 	int res;
 	res = tls_fls_read(startaddr, (uint8_t*)buffer, readlen);
-	return res;
-}
-#elif PLATFORM_LN882H
-int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
-	int res;
-	res = hal_flash_read(startaddr, readlen, (uint8_t *)buffer);
 	return res;
 }
 #elif PLATFORM_TR6260

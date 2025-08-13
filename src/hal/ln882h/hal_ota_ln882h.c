@@ -305,6 +305,11 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 	return 0;
 }
 
+int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
+	int res;
+	res = hal_flash_read(startaddr, readlen, (uint8_t *)buffer);
+	return res;
+}
 
 #endif // PLATFORM_LN882H
 
