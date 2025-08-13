@@ -215,34 +215,3 @@ void otarequest(const char *urlin){
   OTA_IncrementProgress(1);
  }
 
-
-
-/***** SDK independent code from this point. ******/
-int ota_status = -1;
-int total_bytes = 0;
-
-int ota_progress()
-{
-  return ota_status;
-}
-
-extern void OTA_ResetProgress()
-{
-  ota_status = -1;
-}
-
-extern void OTA_IncrementProgress(int value)
-{
-  ota_status += value;
-}
-
-int OTA_GetTotalBytes()
-{
-  return total_bytes;
-}
-
-extern void OTA_SetTotalBytes(int value)
-{
-  total_bytes = value;
-}
-

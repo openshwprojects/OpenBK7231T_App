@@ -105,6 +105,40 @@ int DRV_SSDP_Active = 0;
 
 void Main_ForceUnsafeInit();
 
+
+
+// TEMPORARY
+int ota_status = -1;
+int total_bytes = 0;
+
+int ota_progress()
+{
+	return ota_status;
+}
+
+void OTA_ResetProgress()
+{
+	ota_status = -1;
+}
+
+void OTA_IncrementProgress(int value)
+{
+	ota_status += value;
+}
+
+int OTA_GetTotalBytes()
+{
+	return total_bytes;
+}
+
+void OTA_SetTotalBytes(int value)
+{
+	total_bytes = value;
+}
+
+
+
+
 #if PLATFORM_XR806 || PLATFORM_XR872
 size_t xPortGetFreeHeapSize()
 {
