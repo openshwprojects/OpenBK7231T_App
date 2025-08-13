@@ -13,15 +13,7 @@
 
 #define DEFAULT_FLASH_LEN 0x200000
 
-#if PLATFORM_XRADIO
-
-#include <image/flash.h>
-#include <ota/ota.h>
-
-uint32_t flash_read(uint32_t flash, uint32_t addr, void* buf, uint32_t size);
-#define FLASH_INDEX_XR809 0
-
-#elif PLATFORM_BL602
+#if PLATFORM_BL602
 
 #include <hal_boot2.h>
 #include <utils_sha256.h>
@@ -2459,36 +2451,63 @@ static int http_rest_post_flash_advanced(http_request_t* request) {
 	return http_rest_error(request, -1, "invalid url");
 }
 
+#if PLATFORM_BEKEN
 int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
 	int res;
-#if PLATFORM_BEKEN
 	res = flash_read((char*)buffer, readlen, startaddr);
-#elif PLATFORM_XRADIO
-	//uint32_t flash_read(uint32_t flash, uint32_t addr,void *buf, uint32_t size)
-	res = flash_read(0, startaddr, buffer, readlen);
-#elif PLATFORM_XR872
-	res = 0;
+	return res;
+}
 #elif PLATFORM_BL602
+int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
+	int res;
 	res = bl_flash_read(startaddr, (uint8_t *)buffer, readlen);
+	return res;
+}
 #elif PLATFORM_W600 || PLATFORM_W800
+int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
+	int res;
 	res = tls_fls_read(startaddr, (uint8_t*)buffer, readlen);
+	return res;
+}
 #elif PLATFORM_LN882H
+int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
+	int res;
 	res = hal_flash_read(startaddr, readlen, (uint8_t *)buffer);
+	return res;
+}
 #elif PLATFORM_ESPIDF || PLATFORM_ESP8266
+int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
+	int res;
 	res = esp_flash_read(NULL, (void*)buffer, startaddr, readlen);
+	return res;
+}
 #elif PLATFORM_TR6260
+int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
+	int res;
 	res = hal_spiflash_read(startaddr, (uint8_t*)buffer, readlen);
+	return res;
+}
 #elif PLATFORM_ECR6600
+int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
+	int res;
 	res = drv_spiflash_read(startaddr, (uint8_t*)buffer, readlen);
+	return res;
+}
 #elif PLATFORM_REALTEK
+int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
+	int res;
 	device_mutex_lock(RT_DEV_LOCK_FLASH);
 	flash_stream_read(&flash, startaddr, readlen, (uint8_t*)buffer);
 	device_mutex_unlock(RT_DEV_LOCK_FLASH);
-#else
-	res = 0;
-#endif
 	return res;
 }
+#else
+int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
+	int res;
+	res = 0;
+	return res;
+}
+#endif
 static int http_rest_get_flash(http_request_t* request, int startaddr, int len) {
 	char* buffer;
 	int res;

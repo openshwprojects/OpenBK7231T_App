@@ -137,4 +137,10 @@ update_ota_exit:
 	return 0;
 }
 
+int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
+	int res;
+	//uint32_t flash_read(uint32_t flash, uint32_t addr,void *buf, uint32_t size)
+	res = flash_read(0, startaddr, buffer, readlen);
+	return res;
+}
 #endif

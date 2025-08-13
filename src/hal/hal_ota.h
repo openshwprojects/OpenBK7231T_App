@@ -53,5 +53,7 @@ int OTA_GetTotalBytes();
 /// @param value 
 void OTA_SetTotalBytes(int value);
 
+int HAL_FlashRead(char*buffer, int readlen, int startaddr);
+
 #endif /* __OTA_H__ */
 
