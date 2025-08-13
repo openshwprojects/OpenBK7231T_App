@@ -20,27 +20,6 @@
 #include <bl_mtd.h>
 #include <bl_flash.h>
 
-#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
-
-#include "esp_system.h"
-#include "esp_ota_ops.h"
-#include "esp_app_format.h"
-#include "esp_flash_partitions.h"
-#include "esp_partition.h"
-#include "nvs.h"
-#include "nvs_flash.h"
-#include "esp_wifi.h"
-#if PLATFORM_ESPIDF
-#include "esp_flash.h"
-#include "esp_pm.h"
-#else
-#include "esp_image_format.h"
-#include "spi_flash.h"
-#define esp_flash_read(a,b,c,d) spi_flash_read(c,b,d)
-#define OTA_WITH_SEQUENTIAL_WRITES OTA_SIZE_UNKNOWN
-#define esp_ota_abort esp_ota_end
-#endif
-
 #elif PLATFORM_REALTEK
 
 #include "flash_api.h"
@@ -2473,12 +2452,6 @@ int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
 int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
 	int res;
 	res = hal_flash_read(startaddr, readlen, (uint8_t *)buffer);
-	return res;
-}
-#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
-int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
-	int res;
-	res = esp_flash_read(NULL, (void*)buffer, startaddr, readlen);
 	return res;
 }
 #elif PLATFORM_TR6260
