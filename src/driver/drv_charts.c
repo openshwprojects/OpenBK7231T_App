@@ -7,7 +7,7 @@
 #include "../logging/logging.h"
 #include "../hal/hal_pins.h"
 #include "../httpserver/new_http.h"
-#include "drv_ntp.h"
+#include "drv_deviceclock.h"
 /*
 // Sample 1
 // single variable chart
@@ -638,7 +638,7 @@ static commandResult_t CMD_Chart_AddNow(const void *context, const char *cmd, co
 		float f = Tokenizer_GetArgFloat(i);
 		Chart_SetSample(g_chart, i, f);
 	}
-	Chart_AddTime(g_chart, NTP_GetCurrentTimeWithoutOffset());  // Fix issue #1376 .....was NTP_GetCurrentTime() ... now "WithoutOffset" since NTP drivers timestamp are already offsetted
+	Chart_AddTime(g_chart, Clock_GetCurrentTimeWithoutOffset());  // Fix issue #1376 .....was NTP_GetCurrentTime() ... now "WithoutOffset" since NTP drivers timestamp are already offsetted
 
 	return CMD_RES_OK;
 }
