@@ -4,6 +4,7 @@
 #include "flash_partition_table.h"
 #include "../../obk_config.h"
 #include "../../new_common.h"
+#include "../../new_cfg.h"
 #include "../../logging/logging.h"
 #include "../../httpserver/new_http.h"
 #include "../hal_ota.h"
