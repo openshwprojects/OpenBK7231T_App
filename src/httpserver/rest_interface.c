@@ -158,7 +158,7 @@ static int http_rest_post_lfs_file(http_request_t* request);
 #endif
 
 static int http_rest_post_reboot(http_request_t* request);
-static int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr);
+int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr);
 static int http_rest_get_flash(http_request_t* request, int startaddr, int len);
 static int http_rest_get_flash_advanced(http_request_t* request);
 static int http_rest_post_flash_advanced(http_request_t* request);
@@ -2661,55 +2661,6 @@ update_ota_exit:
 	CFG_IncrementOTACount();
 	return 0;
 }
-#elif PLATFORM_BEKEN
-int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
-{
-	int total = 0;
-	int towrite = request->bodylen;
-	char* writebuf = request->bodystart;
-	int writelen = request->bodylen;
-
-	ADDLOG_DEBUG(LOG_FEATURE_OTA, "OTA post len %d", request->contentLength);
-
-	init_ota(startaddr);
-
-	if(request->contentLength >= 0)
-	{
-		towrite = request->contentLength;
-	}
-
-	if(writelen < 0 || (startaddr + writelen > maxaddr))
-	{
-		ADDLOG_DEBUG(LOG_FEATURE_OTA, "ABORTED: %d bytes to write", writelen);
-		return http_rest_error(request, -20, "writelen < 0 or end > 0x200000");
-	}
-
-	do
-	{
-		//ADDLOG_DEBUG(LOG_FEATURE_OTA, "%d bytes to write", writelen);
-		add_otadata((unsigned char*)writebuf, writelen);
-		total += writelen;
-		startaddr += writelen;
-		towrite -= writelen;
-		if(towrite > 0)
-		{
-			writebuf = request->received;
-			writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
-			if(writelen < 0)
-			{
-				ADDLOG_DEBUG(LOG_FEATURE_OTA, "recv returned %d - end of data - remaining %d", writelen, towrite);
-			}
-		}
-	} while((towrite > 0) && (writelen >= 0));
-	close_ota();
-	ADDLOG_DEBUG(LOG_FEATURE_OTA, "%d total bytes written", total);
-	http_setup(request, httpMimeTypeJson);
-	hprintf255(request, "{\"size\":%d}", total);
-	poststr(request, NULL);
-	CFG_IncrementOTACount();
-	return 0;
-}
-
 #endif
 
 static int http_rest_post_reboot(http_request_t* request) {
