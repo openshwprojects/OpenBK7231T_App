@@ -7,6 +7,7 @@
 #include "../../obk_config.h"
 #include "../../new_common.h"
 #include "../../httpserver/new_http.h"
+#include "../../logging/logging.h"
 #include "lwip/sockets.h"
 
 

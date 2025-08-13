@@ -127,7 +127,7 @@ extern unsigned int flash_read(char* user_buf, unsigned int count, unsigned int 
 #define MAX_JSON_VALUE_LENGTH   128
 
 
-static int http_rest_error(http_request_t* request, int code, char* msg);
+int http_rest_error(http_request_t* request, int code, char* msg);
 
 static int http_rest_get(http_request_t* request);
 static int http_rest_post(http_request_t* request);
@@ -1341,7 +1341,7 @@ static int http_rest_post_channelTypes(http_request_t* request) {
 	return http_rest_error(request, 200, "OK");
 }
 
-static int http_rest_error(http_request_t* request, int code, char* msg) {
+int http_rest_error(http_request_t* request, int code, char* msg) {
 	request->responseCode = code;
 	http_setup(request, httpMimeTypeJson);
 	if (code != 200) {
@@ -1354,7 +1354,15 @@ static int http_rest_error(http_request_t* request, int code, char* msg) {
 	return 0;
 }
 
-#if PLATFORM_ESPIDF || PLATFORM_ESP8266
+#if WINDOWS
+
+int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
+{
+
+	return 0;
+}
+
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 {
 	int total = 0;
