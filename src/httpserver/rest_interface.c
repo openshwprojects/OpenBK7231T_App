@@ -1253,22 +1253,6 @@ int http_rest_error(http_request_t* request, int code, char* msg) {
 	return 0;
 }
 
-#if WINDOWS
-
-int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
-	int res;
-	res = 0;
-	return res;
-}
-
-int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
-{
-
-	return 0;
-}
-
-#endif
-
 static int http_rest_post_reboot(http_request_t* request) {
 	http_setup(request, httpMimeTypeJson);
 	hprintf255(request, "{\"reboot\":%d}", 3);
