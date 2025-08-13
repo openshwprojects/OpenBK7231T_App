@@ -306,6 +306,11 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 	return 0;
 }
 
+int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
+	int res;
+	res = bl_flash_read(startaddr, (uint8_t *)buffer, readlen);
+	return res;
+}
 
 
 #endif // PLATFORM_BL602

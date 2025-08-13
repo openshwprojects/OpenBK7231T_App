@@ -13,14 +13,7 @@
 
 #define DEFAULT_FLASH_LEN 0x200000
 
-#if PLATFORM_BL602
-
-#include <hal_boot2.h>
-#include <utils_sha256.h>
-#include <bl_mtd.h>
-#include <bl_flash.h>
-
-#elif PLATFORM_REALTEK
+#if PLATFORM_REALTEK
 
 #include "flash_api.h"
 #include "device_lock.h"
@@ -2434,12 +2427,6 @@ static int http_rest_post_flash_advanced(http_request_t* request) {
 int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
 	int res;
 	res = flash_read((char*)buffer, readlen, startaddr);
-	return res;
-}
-#elif PLATFORM_BL602
-int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
-	int res;
-	res = bl_flash_read(startaddr, (uint8_t *)buffer, readlen);
 	return res;
 }
 #elif PLATFORM_W600 || PLATFORM_W800
