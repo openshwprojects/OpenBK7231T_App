@@ -2618,7 +2618,7 @@ static int http_rest_get_flash(http_request_t* request, int startaddr, int len) 
 		if (readlen > 1024) {
 			readlen = 1024;
 		}
-		res = HAL_FlashRead(buffer, readLen, startaddr);
+		res = HAL_FlashRead(buffer, readlen, startaddr);
 		startaddr += readlen;
 		len -= readlen;
 		postany(request, buffer, readlen);
