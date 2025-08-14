@@ -29,6 +29,8 @@ set(PROJ_ALL_SRC
 	startup/startup_${CHIP_SERIAL}_gcc.c
 	${MODULE_SRC}
 	${COMP_LWIP_DIR}/apps/mqtt/mqtt.c
+	${MCU_LN882X_DIR}/driver_${CHIP_SERIAL}/hal/hal_dma.c
+	${MCU_LN882X_DIR}/driver_${CHIP_SERIAL}/hal/hal_spi.c
 )
 
 set(COMP_DHCPD_SUPPORT          ON  PARENT_SCOPE)

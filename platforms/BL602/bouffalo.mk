@@ -14,6 +14,6 @@ COMPONENT_SRCS :=
 COMPONENT_OBJS := $(patsubst %.c,%.o, $(COMPONENT_SRCS))
 COMPONENT_OBJS := $(patsubst %.S,%.o, $(COMPONENT_OBJS))
 
-COMPONENT_SRCDIRS := src/ src/jsmn src/httpserver/ src/httpclient/ src/cmnds/ src/logging/ src/hal/bl602/ src/mqtt/ src/i2c/ src/cJSON src/base64 src/driver src/devicegroups src/bitmessage src/littlefs src/hal/generic libraries/berry/src src/berry src/berry/modules src/libraries/obktime/
+COMPONENT_SRCDIRS := src/ src/jsmn src/httpserver src/httpclient src/cmnds src/logging src/hal/bl602 src/mqtt src/i2c src/cJSON src/base64 src/driver src/devicegroups src/bitmessage src/littlefs src/hal/generic libraries/berry/src src/berry src/berry/modules src/libraries/obktime
 
 COMPONENT_ADD_LDFLAGS = -Wl,--whole-archive -l$(COMPONENT_NAME) -Wl,--no-whole-archive
