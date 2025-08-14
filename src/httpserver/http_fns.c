@@ -197,6 +197,7 @@ int http_fn_testmsg(http_request_t* request) {
 
 }
 
+#if ENABLE_CLOCK_PMNTP
 // poor mans NTP
 int http_fn_pmntp(http_request_t* request) {
 	char tmpA[128];
@@ -226,6 +227,7 @@ int http_fn_pmntp(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
+#endif
 
 // bit mask telling which channels are hidden from HTTP
 // If given bit is set, then given channel is hidden
@@ -1099,8 +1101,9 @@ typedef enum {
 		}
 		poststr(request, "<form action=\"/app\" target=\"_blank\"><input type=\"submit\" value=\"Launch Web Application\"></form> ");
 		poststr(request, "<form action=\"about\"><input type=\"submit\" value=\"About\"/></form>");
+#if ENABLE_CLOCK_PMNTP
 		poststr(request, "<input type='submit' value='Set clock to PC time' onclick='location.href =\"/pmntp?EPOCH=\"+((e=new Date)/1e3|0)+\"&OFFSET=\"+-60*e.getTimezoneOffset()'><p>");
-
+#endif
 		poststr(request, htmlFooterRefreshLink);
 		http_html_end(request);
 	}

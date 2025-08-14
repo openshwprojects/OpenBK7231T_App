@@ -26,6 +26,7 @@ int CLOCK_ClearEvents();
 void CLOCK_Init();
 void CLOCK_OnEverySecond();
 commandResult_t SetTimeZoneOfs(const void *context, const char *cmd, const char *args, int cmdFlags);
+commandResult_t SetDeviceTime(const void *context, const char *cmd, const char *args, int cmdFlags);
 
 #if ENABLE_CLOCK_SUNRISE_SUNSET
 extern struct SUN_DATA {  /* sunrise / sunset globals */

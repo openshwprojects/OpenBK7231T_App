@@ -148,7 +148,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t * request, int bPreS
     
     int i;
     const char *mode;
-    struct tm *ltm;
+//    struct tm *ltm;
 
     if(DRV_IsRunning("BL0937")) {
         mode = "BL0937";
@@ -636,7 +636,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
   char *msg;
   portTickType interval;
   time_t deviceTime;
-  struct tm *ltm;
+//  struct tm *ltm;
   char datetime[64];
   float diff;
 

@@ -714,7 +714,7 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 	JSON_PrintKeyValue_String(request, printer, "OtaUrl", "https://github.com/openshwprojects/OpenBK7231T_App/releases/latest", true);
 	JSON_PrintKeyValue_String(request, printer, "RestartReason", "HardwareWatchdog", true);
 	JSON_PrintKeyValue_Int(request, printer, "Uptime", g_secondsElapsed, true);
-	struct tm* ltm;
+//	struct tm* ltm;
 	time_t ntpTime = 0; // if no NTP_time set, we will not change this value, but just stick to 0 and hence "fake" start of epoch 1970-01-01T00:00:00
 	if (Clock_GetCurrentTimeWithoutOffset() > g_secondsElapsed) {	// would be negative else, leading to unwanted results when converted to (unsigned) time_t 
 		ntpTime = (time_t)Clock_GetCurrentTimeWithoutOffset() - (time_t)g_secondsElapsed;

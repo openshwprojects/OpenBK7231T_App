@@ -80,6 +80,22 @@ commandResult_t SetTimeZoneOfs(const void *context, const char *cmd, const char 
 	return CMD_RES_OK;
 }
 
+commandResult_t SetDeviceTime(const void *context, const char *cmd, const char *args, int cmdFlags) {
+    Tokenizer_TokenizeString(args,0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	CLOCK_setDeviceTime(Tokenizer_GetArgInteger(0));
+#if ENABLE_CLOCK_DST
+    	setDST();	// check if local time is DST or not and set offset
+#endif	
+	return CMD_RES_OK;
+}
+
+
 
 #if ENABLE_CLOCK_DST
 static uint32_t next_DST_switch_epoch=0;
@@ -428,9 +444,14 @@ void CLOCK_Init() {
 #endif
 	//cmddetail:{"name":"clock_setTZ","args":"[Value]",
 	//cmddetail:"descr":"Sets the time zone offset in hours. Also supports HH:MM syntax if you want to specify value in minutes. For negative values, use -HH:MM syntax, for example -5:30 will shift time by 5 hours and 30 minutes negative.",
-	//cmddetail:"fn":"NTP_SetTimeZoneOfs","file":"driver/drv_deviceclock.c","requires":"",
+	//cmddetail:"fn":"SetTimeZoneOfs","file":"driver/drv_deviceclock.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("clock_setTZ",SetTimeZoneOfs, NULL);
+	//cmddetail:{"name":"clock_setTTime","args":"[Value]",
+	//cmddetail:"descr":"Sets the time of device in seconds after 19700101.",
+	//cmddetail:"fn":"SetDeviceTime","file":"driver/drv_deviceclock.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("clock_setTime",SetDeviceTime, NULL);
     addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "CLOCK driver initialized.");
 }
 
