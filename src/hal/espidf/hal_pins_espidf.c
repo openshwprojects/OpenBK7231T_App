@@ -453,8 +453,8 @@ void InitLEDC()
 	{
 		ledc_timer_config_t ledc_timer =
 		{
-			.duty_resolution = LEDC_TIMER_13_BIT,
-			.freq_hz = 4000,
+			.duty_resolution = LEDC_TIMER_7_BIT,
+			.freq_hz = 2000,
 			.speed_mode = LEDC_LOW_SPEED_MODE,
 			.timer_num = LEDC_TIMER_0,
 #if PLATFORM_ESPIDF
@@ -575,7 +575,7 @@ void HAL_PIN_PWM_Update(int index, float value)
 	if(ch >= 0)
 	{
 #if PLATFORM_ESPIDF
-		uint32_t propduty = value * 81.91;
+		uint32_t propduty = value * 1.27;
 #else
 		uint32_t propduty = value * 81.96;
 #endif
