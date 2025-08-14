@@ -695,7 +695,7 @@ void SPIDMA_Init(struct spi_message* msg)
 	PinName mosi = NC, miso = NC, sclk = NC, ssel = NC;
 	rtl_mosi = g_pins + spidma_led_pin;
 #if PLATFORM_RTL8710A
-	// broken
+#define SPI_FREQ 4000000
 	switch(rtl_mosi->pin)
 	{
 		case PE_2:
@@ -706,13 +706,12 @@ void SPIDMA_Init(struct spi_message* msg)
 		case PC_2:
 			mosi = PC_2;
 			miso = PC_3;
-			sclk = PC_1;
-			ssel = PC_0;
 			break;
 		default: return;
 	}
+	pin_mode(mosi, PullDown);
 #elif PLATFORM_RTL8710B
-	// broken
+#define SPI_FREQ 3777777
 	switch(rtl_mosi->pin)
 	{
 		case PA_4:
@@ -738,8 +737,10 @@ void SPIDMA_Init(struct spi_message* msg)
 			break;
 		default: return;
 	}
+	pin_mode(mosi, PullDown);
 #elif PLATFORM_RTL87X0C
-	// those pins aren't wired out on BW16, and, except for A7, on WBR3
+#define SPI_FREQ 3000000
+	// those pins aren't wired out on BW15, and, except for A7, on WBR3
 	// they must be set, otherwise spi init will fail
 	miso = PA_10;
 	ssel = PA_7;
@@ -758,6 +759,7 @@ void SPIDMA_Init(struct spi_message* msg)
 		default: return;
 	}
 #elif PLATFORM_RTL8720D
+#define SPI_FREQ 3000000
 	switch(rtl_mosi->pin)
 	{
 		case PB_18:
@@ -779,12 +781,13 @@ void SPIDMA_Init(struct spi_message* msg)
 		default: return;
 	}
 #elif PLATFORM_REALTEK_NEW
+#define SPI_FREQ 3000000
 	spi_master.spi_idx = MBED_SPI1;
 	mosi = rtl_mosi->pin;
 #endif
 	spi_init(&spi_master, mosi, miso, sclk, ssel);
 	spi_format(&spi_master, 8, 0, 0);
-	spi_frequency(&spi_master, 3000000);
+	spi_frequency(&spi_master, SPI_FREQ);
 	is_init = true;
 }
 void SPIDMA_StartTX(struct spi_message* msg)
