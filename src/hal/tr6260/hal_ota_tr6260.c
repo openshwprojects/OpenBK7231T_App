@@ -73,7 +73,7 @@ update_ota_exit:
 	if (ret != -1)
 	{
 		ADDLOG_INFO(LOG_FEATURE_OTA, "OTA is successful");
-		otaHal_done(0);
+		otaHal_done();
 	}
 	else
 	{
