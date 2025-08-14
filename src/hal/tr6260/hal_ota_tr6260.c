@@ -1,4 +1,4 @@
-#if PLATFORM_ECR6600
+#if PLATFORM_TR6260
 
 #include "../../obk_config.h"
 #include "../../new_common.h"
@@ -7,15 +7,12 @@
 #include "../../httpserver/new_http.h"
 #include "../hal_ota.h"
 
-#include "flash.h"
-
-extern int ota_init(void);
-extern int ota_write(unsigned char* data, unsigned int len);
-extern int ota_done(bool reset);
+#include "otaHal.h"
+#include "drv_spiflash.h"
 
 int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
 	int res;
-	res = drv_spiflash_read(startaddr, (uint8_t*)buffer, readlen);
+	res = hal_spiflash_read(startaddr, (uint8_t*)buffer, readlen);
 	return res;
 }
 
@@ -42,7 +39,7 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 		goto update_ota_exit;
 	}
 
-	if (ota_init() != 0)
+	if (otaHal_init() != 0)
 	{
 		ret = -1;
 		goto update_ota_exit;
@@ -50,7 +47,7 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 
 	do
 	{
-		if (ota_write((unsigned char*)writebuf, writelen) != 0)
+		if (otaHal_write((unsigned char*)writebuf, writelen) != 0)
 		{
 			ret = -1;
 			goto update_ota_exit;
@@ -76,7 +73,7 @@ update_ota_exit:
 	if (ret != -1)
 	{
 		ADDLOG_INFO(LOG_FEATURE_OTA, "OTA is successful");
-		ota_done(0);
+		otaHal_done(0);
 	}
 	else
 	{
