@@ -289,7 +289,7 @@ jobs:
         with:
           repository: espressif/esp-idf
           path: sdk/esp-idf
-          ref: v5.5-beta1
+          ref: v5.5
           submodules: recursive
       - uses: actions/setup-python@v5
         with:
@@ -303,6 +303,7 @@ jobs:
           pip3 install configobj
           pip3 install toml
           pip3 install fdt
+          pip3 install esptool
       - name: Run make
         run: |
           cd sdk/esp-idf
@@ -344,14 +345,28 @@ jobs:
           repository: espressif/ESP8266_RTOS_SDK
           path: sdk/ESP8266_RTOS_SDK
           ref: release/v3.4
-          submodules: recursive
+          submodules: false
           fetch-tags: true
           fetch-depth: '200'
       - name: Install dependencies
         run: |
+          git config --global user.name github-actions
+          git config --global user.email github-actions@github.com
           apt-get update && apt-get -y install cmake
           pip2 install virtualenv
-          patch -p1 -d sdk/ESP8266_RTOS_SDK < platforms/ESP8266/sdk.patch
+          cd sdk/ESP8266_RTOS_SDK
+          git checkout c965e03d2b7418b085c394dc98c6a0d3371c2abd
+          patch -p1 -d . < ../../platforms/ESP8266/sdk.patch
+          git revert 0325f833aac7b34d7627619499949331a98fc3ab --no-edit
+          git submodule update --init components/coap/libcoap
+          cd components/coap/libcoap
+          git fetch
+          git checkout 017528d7d96dca2318ed587b5fd3c0d57a89e49a
+          cd ../../..
+          git add .
+          git commit -m "upd"
+          git submodule update --init --recursive
+          cd ../..
           python2 -m pip install --user -r sdk/ESP8266_RTOS_SDK/requirements.txt
           python3 -m pip install esptool
       - name: Run make
