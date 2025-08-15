@@ -13,19 +13,6 @@
 #define START_ADR_OF_BK_PARTITION_OTA 0x132000
 #endif
 
-/// @brief Initialise OTA flash starting at startaddr. Only used for Beken SDK.
-/// @param startaddr 
-/// @return 
-int init_ota(unsigned int startaddr);
-
-/// @brief Add any length of data to OTA. Only used for Beken SDK.
-/// @param data 
-/// @param len 
-void add_otadata(unsigned char *data, int len);
-
-/// @brief Finalise OTA flash (write last sector if incomplete). Only used for Beken SDK.
-void close_ota();
-
 /// @brief Handle OTA request. Only used for Beken SDK.
 /// @param urlin 
 void otarequest(const char *urlin);
