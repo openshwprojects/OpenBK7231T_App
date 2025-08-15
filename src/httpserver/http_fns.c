@@ -1045,12 +1045,10 @@ typedef enum {
 
 #endif
 
-#if PLATFORM_BK7231N || PLATFORM_BK7231T
 	if (OTA_GetProgress() >= 0)
 	{
 		hprintf255(request, "<h5>OTA In Progress. Downloaded: %i B Flashed: %06lXh</h5>", OTA_GetTotalBytes(), OTA_GetProgress());
 	}
-#endif
 	if (bSafeMode) {
 		hprintf255(request, "<h5 class='safe'>You are in safe mode (AP mode) because full reboot failed %i times. ",
 			g_bootFailures);

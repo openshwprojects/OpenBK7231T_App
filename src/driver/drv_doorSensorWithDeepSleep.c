@@ -110,11 +110,7 @@ void DoorDeepSleep_QueueNewEvents() {
 
 void DoorDeepSleep_OnEverySecond() {
 
-#if PLATFORM_BK7231N || PLATFORM_BK7231T
 	if (OTA_GetProgress() >= 0) {
-#else
-	if (false) {
-#endif
 		// update active
 		g_noChangeTimePassed = 0;
 		g_emergencyTimeWithNoConnection = 0;

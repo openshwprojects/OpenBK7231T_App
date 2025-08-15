@@ -659,9 +659,7 @@ void Main_OnEverySecond()
 #endif
 #endif
 
-#if PLATFORM_BK7231N || PLATFORM_BK7231T
 	if (OTA_GetProgress() == -1)
-#endif
 	{
 		CFG_Save_IfThereArePendingChanges();
 	}
