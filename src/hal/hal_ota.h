@@ -35,7 +35,7 @@ void otarequest(const char *urlin);
 
 /// @brief Indicates current OTA progress status. A non -ve value indicates active OTA.
 /// @return 
-int ota_progress();
+int OTA_GetProgress();
 
 /// @brief Reset OTA progress status to -1. This can be called from other SDKs.
 /// @param value 
