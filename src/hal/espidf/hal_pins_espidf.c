@@ -454,7 +454,7 @@ void InitLEDC()
 		ledc_timer_config_t ledc_timer =
 		{
 			.duty_resolution = LEDC_TIMER_7_BIT,
-			.freq_hz = 16000,
+			.freq_hz = 17000,
 			.speed_mode = LEDC_LOW_SPEED_MODE,
 			.timer_num = LEDC_TIMER_0,
 #if PLATFORM_ESPIDF
