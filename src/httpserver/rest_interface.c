@@ -182,28 +182,32 @@ static int http_rest_post(http_request_t* request) {
 		return http_rest_post_reboot(request);
 	}
 	if (!strcmp(request->url, "api/ota")) {
+		OTA_IncrementProgress(1);
+		int r = 0;
 #if PLATFORM_BEKEN
-		return http_rest_post_flash(request, START_ADR_OF_BK_PARTITION_OTA, LFS_BLOCKS_END);
+		r = http_rest_post_flash(request, START_ADR_OF_BK_PARTITION_OTA, LFS_BLOCKS_END);
 #elif PLATFORM_W600
-		return http_rest_post_flash(request, -1, -1);
+		r = http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_W800
-		return http_rest_post_flash(request, -1, -1);
+		r = http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_BL602
-		return http_rest_post_flash(request, -1, -1);
+		r = http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_LN882H
-		return http_rest_post_flash(request, -1, -1);
+		r = http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_ESPIDF || PLATFORM_ESP8266
-		return http_rest_post_flash(request, -1, -1);
+		r = http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_REALTEK && !PLATFORM_RTL8720E
-		return http_rest_post_flash(request, 0, -1);
+		r = http_rest_post_flash(request, 0, -1);
 #elif PLATFORM_ECR6600 || PLATFORM_TR6260
-		return http_rest_post_flash(request, -1, -1);
+		r = http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_XRADIO && !PLATFORM_XR809
-		return http_rest_post_flash(request, 0, -1);
+		r = http_rest_post_flash(request, 0, -1);
 #else
 		// TODO
 		ADDLOG_ERROR(LOG_FEATURE_API, "No OTA");
 #endif
+		OTA_ResetProgress();
+		return r;
 	}
 	if (!strncmp(request->url, "api/flash/", 10)) {
 		return http_rest_post_flash_advanced(request);
