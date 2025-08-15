@@ -111,7 +111,7 @@ void Main_ForceUnsafeInit();
 int ota_status = -1;
 int total_bytes = 0;
 
-int ota_progress()
+int OTA_GetProgress()
 {
 	return ota_status;
 }
@@ -660,7 +660,7 @@ void Main_OnEverySecond()
 #endif
 
 #if PLATFORM_BK7231N || PLATFORM_BK7231T
-	if (ota_progress() == -1)
+	if (OTA_GetProgress() == -1)
 #endif
 	{
 		CFG_Save_IfThereArePendingChanges();

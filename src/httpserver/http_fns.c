@@ -1046,9 +1046,9 @@ typedef enum {
 #endif
 
 #if PLATFORM_BK7231N || PLATFORM_BK7231T
-	if (ota_progress() >= 0)
+	if (OTA_GetProgress() >= 0)
 	{
-		hprintf255(request, "<h5>OTA In Progress. Downloaded: %i B Flashed: %06lXh</h5>", OTA_GetTotalBytes(), ota_progress());
+		hprintf255(request, "<h5>OTA In Progress. Downloaded: %i B Flashed: %06lXh</h5>", OTA_GetTotalBytes(), OTA_GetProgress());
 	}
 #endif
 	if (bSafeMode) {

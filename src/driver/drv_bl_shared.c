@@ -331,7 +331,7 @@ commandResult_t BL09XX_ResetEnergyCounterEx(int asensdatasetix, float* pvalue)
     }
     ConsumptionResetTime = (time_t)NTP_GetCurrentTime();
 #if PLATFORM_BK7231N || PLATFORM_BK7231T
-    if (ota_progress()==-1)
+    if (OTA_GetProgress()==-1)
 #endif
     { 
       BL09XX_SaveEmeteringStatistics();
@@ -722,7 +722,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
         //							sensdataset->sensors[OBK_CONSUMPTION_YESTERDAY].rounding_decimals, 0);
         //stat_updatesSent++;
 #if PLATFORM_BK7231N || PLATFORM_BK7231T
-        if (ota_progress()==-1)
+        if (OTA_GetProgress()==-1)
 #endif
         {
           BL09XX_SaveEmeteringStatistics();
@@ -918,7 +918,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
       ((xTaskGetTickCount() - lastConsumptionSaveStamp) >= (6 * 3600 * 1000 / portTICK_PERIOD_MS)))
     {
 #if PLATFORM_BK7231N || PLATFORM_BK7231T
-      if (ota_progress() == -1)
+      if (OTA_GetProgress() == -1)
 #endif
       {
         lastSavedEnergyCounterValue[asensdatasetix] = (float)sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading;

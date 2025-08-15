@@ -2184,7 +2184,7 @@ int MQTT_RunEverySecondUpdate()
 	{
 		//addLogAdv(LOG_INFO,LOG_FEATURE_MAIN, "Timer discovers disconnected mqtt %i\n",mqtt_loopsWithDisconnected);
 #if PLATFORM_BK7231N || PLATFORM_BK7231T
-		if (ota_progress() == -1)
+		if (OTA_GetProgress() == -1)
 #endif
 		{
 			mqtt_loopsWithDisconnected++;
@@ -2242,7 +2242,7 @@ int MQTT_RunEverySecondUpdate()
 		}
 		g_timeSinceLastMQTTPublish++;
 #if PLATFORM_BK7231N || PLATFORM_BK7231T
-		if (ota_progress() != -1)
+		if (OTA_GetProgress() != -1)
 		{
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "OTA started MQTT will be closed\n");
 			LOCK_TCPIP_CORE();

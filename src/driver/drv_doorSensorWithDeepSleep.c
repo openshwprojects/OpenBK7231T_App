@@ -111,7 +111,7 @@ void DoorDeepSleep_QueueNewEvents() {
 void DoorDeepSleep_OnEverySecond() {
 
 #if PLATFORM_BK7231N || PLATFORM_BK7231T
-	if (ota_progress() >= 0) {
+	if (OTA_GetProgress() >= 0) {
 #else
 	if (false) {
 #endif
