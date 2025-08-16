@@ -49,7 +49,7 @@ typedef struct {
 
 int SPI_DriverInit(void);
 int SPI_DriverDeinit(void);
-int SPI_Init(const spi_config_t *config);
+int OBK_SPI_Init(const spi_config_t *config);
 int SPI_Deinit(void);
 int SPI_WriteBytes(const void *data, uint32_t size);
 int SPI_ReadBytes(void *data, uint32_t size);

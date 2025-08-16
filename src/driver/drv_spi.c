@@ -49,7 +49,7 @@ int SPI_DriverDeinit(void) {
 #endif
 }
 
-int SPI_Init(const spi_config_t *config) {
+int OBK_SPI_Init(const spi_config_t *config) {
 #if PLATFORM_BK7231N || PLATFORM_BK7238 || PLATFORM_BK7252N
 #if PLATFORM_BEKEN_NEW
 	struct spi_message msg;

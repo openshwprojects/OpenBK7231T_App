@@ -424,7 +424,7 @@ void BL0942_SPI_Init(void) {
 	cfg.wire_mode = SPI_3WIRE_MODE;
 	cfg.baud_rate = BL0942_SPI_BAUD_RATE;
 	cfg.bit_order = SPI_MSB_FIRST;
-	SPI_Init(&cfg);
+	OBK_SPI_Init(&cfg);
 
     SPI_WriteReg(BL0942_REG_USR_WRPROT, BL0942_USR_WRPROT_DISABLE);
     SPI_WriteReg(BL0942_REG_MODE,
