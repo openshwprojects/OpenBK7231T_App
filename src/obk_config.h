@@ -58,7 +58,7 @@
 #if PLATFORM_XR806
 #define ENABLE_DRIVER_TUYAMCU					1
 #define ENABLE_DRIVER_DS1820					1
-#define ENABLE_DRIVER_DHT						1
+#define ENABLE_DRIVER_DHT						0
 #define ENABLE_DRIVER_AHT2X						1
 #define ENABLE_DRIVER_SSDP						1
 #define ENABLE_OBK_BERRY						1
