@@ -894,7 +894,7 @@ void SPIDMA_StopTX(void)
 
 void SPIDMA_Deinit(void)
 {
-
+	hosal_dma_chan_release(spidma_ch);
 }
 
 #else
