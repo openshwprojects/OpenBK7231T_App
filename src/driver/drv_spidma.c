@@ -804,6 +804,99 @@ void SPIDMA_Deinit(void)
 	if(is_init) spi_free(&spi_master);
 }
 
+#elif PLATFORM_BL602
+
+#include "drv_spidma.h"
+#include "hosal_spi.h"
+#include "hosal_dma.h"
+#include "bl602_dma.h"
+#include "bl602_gpio.h"
+#include "bl602_glb.h"
+#include "bl602_spi.h"
+#include "bl_irq.h"
+#include "bl_dma.h"
+
+extern int spidma_led_pin;
+static hosal_dma_chan_t spidma_ch;
+static DMA_LLI_Ctrl_Type spi_dma_lli[2];
+
+void SPIDMA_Init(struct spi_message* msg)
+{
+	GLB_GPIO_Func_Init(GPIO_FUN_SPI, (GLB_GPIO_Type*)&spidma_led_pin, 1);
+	GLB_Set_SPI_0_ACT_MOD_Sel(GLB_SPI_PAD_ACT_AS_MASTER);
+
+	SPI_CFG_Type spiCfg = 
+	{
+		DISABLE,
+		ENABLE,
+		SPI_BYTE_INVERSE_BYTE0_FIRST,
+		SPI_BIT_INVERSE_MSB_FIRST,
+		SPI_CLK_PHASE_INVERSE_0,
+		SPI_CLK_POLARITY_LOW,
+		SPI_FRAME_SIZE_8 
+	};
+
+	SPI_FifoCfg_Type fifoCfg =
+	{
+		1,
+		0,
+		ENABLE,
+		DISABLE
+	};
+
+	spidma_ch = hosal_dma_chan_request(0);
+
+	SPI_Disable(0, SPI_WORK_MODE_MASTER);
+	SPI_Init(0, &spiCfg);
+	SPI_FifoConfig(0, &fifoCfg);
+	SPI_SetClock(0, 3000000);
+	SPI_Enable(0, SPI_WORK_MODE_MASTER);
+
+	DMA_LLI_Cfg_Type llicfg =
+	{
+		DMA_TRNS_M2P,
+		DMA_REQ_NONE,
+		DMA_REQ_SPI_TX,
+	};
+
+	DMA_LLI_Init(spidma_ch, &llicfg);
+
+	struct DMA_Control_Reg dmactrl =
+	{
+		.TransferSize = msg->send_len,
+		.SBSize = DMA_BURST_SIZE_1,
+		.DBSize = DMA_BURST_SIZE_1,
+		.SWidth = DMA_TRNS_WIDTH_8BITS,
+		.DWidth = DMA_TRNS_WIDTH_8BITS,
+		.SLargerD = 0,
+		.SI = DMA_MINC_ENABLE,
+		.DI = DMA_MINC_DISABLE,
+		.Prot = 0,
+		.I = 0,
+	};
+
+	spi_dma_lli[0].srcDmaAddr = (uint32_t)(msg->send_buf);
+	spi_dma_lli[0].destDmaAddr = (uint32_t)(SPI_BASE + SPI_FIFO_WDATA_OFFSET);
+	spi_dma_lli[0].dmaCtrl = dmactrl;
+	spi_dma_lli[0].nextLLI = 0;
+}
+
+void SPIDMA_StartTX(struct spi_message* msg)
+{
+	DMA_LLI_Update(spidma_ch, (uint32_t)spi_dma_lli);
+	hosal_dma_chan_start(spidma_ch);
+}
+
+void SPIDMA_StopTX(void)
+{
+
+}
+
+void SPIDMA_Deinit(void)
+{
+
+}
+
 #else
 
 #include "drv_spidma.h"
