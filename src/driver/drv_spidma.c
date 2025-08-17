@@ -819,9 +819,31 @@ void SPIDMA_Deinit(void)
 extern int spidma_led_pin;
 static hosal_dma_chan_t spidma_ch;
 static DMA_LLI_Ctrl_Type spi_dma_lli[2];
+bool is_init = false;
 
 void SPIDMA_Init(struct spi_message* msg)
 {
+	is_init = false;
+	switch(spidma_led_pin)
+	{
+		case 0:
+		case 4:
+		case 8:
+		case 12:
+		case 16:
+		case 20:
+			GLB_Swap_SPI_0_MOSI_With_MISO(DISABLE);
+			break;
+		case 1:
+		case 5:
+		case 9:
+		case 13:
+		case 17:
+		case 21:
+			GLB_Swap_SPI_0_MOSI_With_MISO(ENABLE);
+			break;
+		default: return;
+	}
 	GLB_GPIO_Func_Init(GPIO_FUN_SPI, (GLB_GPIO_Type*)&spidma_led_pin, 1);
 	GLB_Set_SPI_0_ACT_MOD_Sel(GLB_SPI_PAD_ACT_AS_MASTER);
 
@@ -879,12 +901,16 @@ void SPIDMA_Init(struct spi_message* msg)
 	spi_dma_lli[0].destDmaAddr = (uint32_t)(SPI_BASE + SPI_FIFO_WDATA_OFFSET);
 	spi_dma_lli[0].dmaCtrl = dmactrl;
 	spi_dma_lli[0].nextLLI = 0;
+	is_init = true;
 }
 
 void SPIDMA_StartTX(struct spi_message* msg)
 {
-	DMA_LLI_Update(spidma_ch, (uint32_t)spi_dma_lli);
-	hosal_dma_chan_start(spidma_ch);
+	if(is_init)
+	{
+		DMA_LLI_Update(spidma_ch, (uint32_t)spi_dma_lli);
+		hosal_dma_chan_start(spidma_ch);
+	}
 }
 
 void SPIDMA_StopTX(void)
@@ -894,7 +920,7 @@ void SPIDMA_StopTX(void)
 
 void SPIDMA_Deinit(void)
 {
-	hosal_dma_chan_release(spidma_ch);
+	if(is_init) hosal_dma_chan_release(spidma_ch);
 }
 
 #else
