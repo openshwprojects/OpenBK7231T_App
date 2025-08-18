@@ -496,7 +496,7 @@ void CLOCK_OnEverySecond()
 	CLOCK_RunEvents(Clock_GetCurrentTime(), Clock_IsTimeSynced());
 #endif
 #if ENABLE_CLOCK_DST
-    if (useDST && (Clock_GetCurrentTimeWithoutOffset() >= next_DST_switch_epoch)){
+    if (useDST &&  Clock_IsTimeSynced() && (Clock_GetCurrentTimeWithoutOffset() >= next_DST_switch_epoch)){
     	int old_DST=getDST_offset();
 	setDST();
     	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Passed DST switch time - recalculated DST offset. Was:%i - now:%i",old_DST,getDST_offset());
