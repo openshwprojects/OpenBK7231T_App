@@ -394,7 +394,7 @@ commandResult_t CMD_CLOCK_SetDST(const void *context, const char *cmd, const cha
     }
     int clkargs[10];
     for (int i=0; i<10; i++){
-    	clkargs[i]=Tokenizer_GetArgInteger(1+i);
+    	clkargs[i]=Tokenizer_GetArgInteger(i);
     }
     return CLOCK_SetDST(clkargs);
 }
