@@ -10,7 +10,7 @@
 #
 #DIRNAME=$(dirname $0);
 #echo "PREBUILD script! Executed from $DIRNAME!"
-# allow whitspace in file or path, so take only newline as seperator
+# allow whitespace in file or path, so take only newline as seperator
 #OFS=$IFS
 #IFS='
 #'
