@@ -30,7 +30,7 @@
 #include "httpserver/http_tcp_server.h"
 #include "httpserver/rest_interface.h"
 #include "mqtt/new_mqtt.h"
-#include "ota/ota.h"
+#include "hal/hal_ota.h"
 
 #if ENABLE_LITTLEFS
 #include "littlefs/our_lfs.h"
@@ -106,6 +106,40 @@ int DRV_SSDP_Active = 0;
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
 void Main_ForceUnsafeInit();
+
+
+
+// TEMPORARY
+int ota_status = -1;
+int total_bytes = 0;
+
+int OTA_GetProgress()
+{
+	return ota_status;
+}
+
+void OTA_ResetProgress()
+{
+	ota_status = -1;
+}
+
+void OTA_IncrementProgress(int value)
+{
+	ota_status += value;
+}
+
+int OTA_GetTotalBytes()
+{
+	return total_bytes;
+}
+
+void OTA_SetTotalBytes(int value)
+{
+	total_bytes = value;
+}
+
+
+
 
 #if PLATFORM_XR806 || PLATFORM_XR872
 size_t xPortGetFreeHeapSize()
@@ -627,9 +661,7 @@ void Main_OnEverySecond()
 #endif
 #endif
 
-#if PLATFORM_BK7231N || PLATFORM_BK7231T
-	if (ota_progress() == -1)
-#endif
+	if (OTA_GetProgress() == -1)
 	{
 		CFG_Save_IfThereArePendingChanges();
 	}

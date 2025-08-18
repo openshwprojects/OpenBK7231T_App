@@ -9,7 +9,7 @@
 #include "../hal/hal_flashVars.h"
 #include "../logging/logging.h"
 #include "../mqtt/new_mqtt.h"
-#include "../ota/ota.h"
+#include "../hal/hal_ota.h"
 #include "drv_local.h"
 #include "drv_ntp.h"
 #include "drv_deviceclock.h"
@@ -334,9 +334,7 @@ commandResult_t BL09XX_ResetEnergyCounterEx(int asensdatasetix, float* pvalue)
       energyCounterStamp[asensdatasetix] = xTaskGetTickCount();
     }
     ConsumptionResetTime = (time_t)NTP_GetCurrentTime();
-#if PLATFORM_BK7231N || PLATFORM_BK7231T
-    if (ota_progress()==-1)
-#endif
+    if (OTA_GetProgress()==-1)
     { 
       BL09XX_SaveEmeteringStatistics();
       lastConsumptionSaveStamp = xTaskGetTickCount();
@@ -729,9 +727,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
         //MQTT_PublishMain_StringFloat(sensdataset->sensors[OBK_CONSUMPTION_YESTERDAY].names.name_mqtt, BL_ChangeEnergyUnitIfNeeded(sensors[OBK_CONSUMPTION_YESTERDAY].lastReading ),
         //							sensdataset->sensors[OBK_CONSUMPTION_YESTERDAY].rounding_decimals, 0);
         //stat_updatesSent++;
-#if PLATFORM_BK7231N || PLATFORM_BK7231T
-        if (ota_progress()==-1)
-#endif
+        if (OTA_GetProgress()==-1)
         {
           BL09XX_SaveEmeteringStatistics();
           lastConsumptionSaveStamp = xTaskGetTickCount();
@@ -951,9 +947,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
       if (((sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading - lastSavedEnergyCounterValue[asensdatasetix]) >= changeSavedThresholdEnergy) ||
       ((xTaskGetTickCount() - lastConsumptionSaveStamp) >= (6 * 3600 * 1000 / portTICK_PERIOD_MS)))
     {
-#if PLATFORM_BK7231N || PLATFORM_BK7231T
-      if (ota_progress() == -1)
-#endif
+      if (OTA_GetProgress() == -1)
       {
         lastSavedEnergyCounterValue[asensdatasetix] = (float)sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading;
         BL09XX_SaveEmeteringStatistics();

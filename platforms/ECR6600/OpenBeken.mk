@@ -15,6 +15,7 @@ CSRCS  += hal/ecr6600/hal_main_ecr6600.c
 CSRCS  += hal/ecr6600/hal_pins_ecr6600.c
 CSRCS  += hal/ecr6600/hal_wifi_ecr6600.c
 CSRCS  += hal/ecr6600/hal_uart_ecr6600.c
+CSRCS  += hal/ecr6600/hal_ota_ecr6600.c
 
 OBK_SRCS = 
 include $(TOPDIR)/../../platforms/obk_main.mk

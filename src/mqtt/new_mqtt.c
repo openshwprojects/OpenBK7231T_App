@@ -15,7 +15,7 @@
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_deviceclock.h"
 #include "../driver/drv_tuyaMCU.h"
-#include "../ota/ota.h"
+#include "../hal/hal_ota.h"
 #ifndef WINDOWS
 #include <lwip/dns.h>
 #endif
@@ -2196,9 +2196,7 @@ int MQTT_RunEverySecondUpdate()
 	if (mqtt_client == 0 || res == 0)
 	{
 		//addLogAdv(LOG_INFO,LOG_FEATURE_MAIN, "Timer discovers disconnected mqtt %i\n",mqtt_loopsWithDisconnected);
-#if PLATFORM_BK7231N || PLATFORM_BK7231T
-		if (ota_progress() == -1)
-#endif
+		if (OTA_GetProgress() == -1)
 		{
 			mqtt_loopsWithDisconnected++;
 			if (mqtt_loopsWithDisconnected > LOOPS_WITH_DISCONNECTED)
@@ -2254,8 +2252,7 @@ int MQTT_RunEverySecondUpdate()
 			g_wantTasmotaTeleSend = 0;
 		}
 		g_timeSinceLastMQTTPublish++;
-#if PLATFORM_BK7231N || PLATFORM_BK7231T
-		if (ota_progress() != -1)
+		if (OTA_GetProgress() != -1)
 		{
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "OTA started MQTT will be closed\n");
 			LOCK_TCPIP_CORE();
@@ -2263,7 +2260,6 @@ int MQTT_RunEverySecondUpdate()
 			UNLOCK_TCPIP_CORE();
 			return 1;
 		}
-#endif
 
 		if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES)) {
 			static int g_mqtt_tasmotaTeleCounter_sensor = 0;

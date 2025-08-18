@@ -52,7 +52,6 @@ set(OBKM_SRC
 	${OBK_SRCS}httpclient/utils_net.c
 	${OBK_SRCS}httpclient/utils_timer.c
 	${OBK_SRCS}littlefs/our_lfs.c
-	${OBK_SRCS}ota/ota.c
 
 	${OBK_SRCS}driver/drv_main.c
 

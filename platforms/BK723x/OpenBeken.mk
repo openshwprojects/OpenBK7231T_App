@@ -34,6 +34,7 @@ APP_C += $(OBK_DIR)/hal/bk7231/hal_main_bk7231.c
 APP_C += $(OBK_DIR)/hal/bk7231/hal_pins_bk7231.c
 APP_C += $(OBK_DIR)/hal/bk7231/hal_wifi_bk7231.c
 APP_C += $(OBK_DIR)/hal/bk7231/hal_uart_bk7231.c
+APP_C += $(OBK_DIR)/hal/bk7231/hal_ota_bk7231.c
 
 OBK_SRCS = $(OBK_DIR)/
 include $(OBK_DIR)/../platforms/obk_main.mk

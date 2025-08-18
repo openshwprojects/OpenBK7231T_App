@@ -362,6 +362,7 @@
     <ClCompile Include="src\hal\win32\hal_flashVars_win32.c" />
     <ClCompile Include="src\hal\win32\hal_generic_win32.c" />
     <ClCompile Include="src\hal\win32\hal_main_win32.c" />
+    <ClCompile Include="src\hal\win32\hal_ota_win32.c" />
     <ClCompile Include="src\hal\win32\hal_pins_win32.c" />
     <ClCompile Include="src\hal\win32\hal_wifi_win32.c" />
     <ClCompile Include="src\hal\win32\hal_uart_win32.c" />

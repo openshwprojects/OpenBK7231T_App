@@ -2,7 +2,7 @@
 #include "http_fns.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
-#include "../ota/ota.h"
+#include "../hal/hal_ota.h"
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 #include "../driver/drv_tuyaMCU.h"
@@ -36,7 +36,7 @@
 
 #elif PLATFORM_XRADIO
 #include <image/flash.h>
-#include "ota/ota.h"
+#include <ota/ota.h>
 #elif defined(PLATFORM_BK7231N)
 // tuya-iotos-embeded-sdk-wifi-ble-bk7231n/sdk/include/tuya_hal_storage.h
 #include "tuya_hal_storage.h"
@@ -1078,12 +1078,10 @@ typedef enum {
 
 #endif
 
-#if PLATFORM_BK7231N || PLATFORM_BK7231T
-	if (ota_progress() >= 0)
+	if (OTA_GetProgress() >= 0)
 	{
-		hprintf255(request, "<h5>OTA In Progress. Downloaded: %i B Flashed: %06lXh</h5>", OTA_GetTotalBytes(), ota_progress());
+		hprintf255(request, "<h5>OTA In Progress. Downloaded: %i B Flashed: %06lXh</h5>", OTA_GetTotalBytes(), OTA_GetProgress());
 	}
-#endif
 	if (bSafeMode) {
 		hprintf255(request, "<h5 class='safe'>You are in safe mode (AP mode) because full reboot failed %i times. ",
 			g_bootFailures);
