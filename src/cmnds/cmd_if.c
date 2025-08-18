@@ -459,56 +459,56 @@ const constant_t g_constants[] = {
 #if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 	//cnstdetail:{"name":"$day",
 	//cnstdetail:"title":"$day",
-	//cnstdetail:"descr":"Current weekday from NTP",
+	//cnstdetail:"descr":"Current weekday from device clock",
 	//cnstdetail:"requires":""}
 	{"$day", &getWeekDay},
 	//cnstdetail:{"name":"$hour",
 	//cnstdetail:"title":"$hour",
-	//cnstdetail:"descr":"Current hour from NTP",
+	//cnstdetail:"descr":"Current hour from device clock",
 	//cnstdetail:"requires":""}
 	{"$hour", &getHour},
 	//cnstdetail:{"name":"$minute",
 	//cnstdetail:"title":"$minute",
-	//cnstdetail:"descr":"Current minute from NTP",
+	//cnstdetail:"descr":"Current minute from device clock",
 	//cnstdetail:"requires":""}
 	{ "$minute", &getMinute },
 	//cnstdetail:{"name":"$second",
 	//cnstdetail:"title":"$second",
-	//cnstdetail:"descr":"Current second from NTP",
+	//cnstdetail:"descr":"Current second from device clock",
 	//cnstdetail:"requires":""}
 	{ "$second", &getSecond },
-	////cnstdetail:{"name":"$mday",
-	////cnstdetail:"title":"$mday",
-	////cnstdetail:"descr":"Current mday from NTP",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$mday",
+	//cnstdetail:"title":"$mday",
+	//cnstdetail:"descr":"Current mday from device clock",
+	//cnstdetail:"requires":""}
 	{ "$mday", &getMDay },
-	////cnstdetail:{"name":"$month",
-	////cnstdetail:"title":"$month",
-	////cnstdetail:"descr":"Current month from NTP",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$month",
+	//cnstdetail:"title":"$month",
+	//cnstdetail:"descr":"Current month from device clock",
+	//cnstdetail:"requires":""}
 	{ "$month", &getMonth },
-	////cnstdetail:{"name":"$year",
-	////cnstdetail:"title":"$year",
-	////cnstdetail:"descr":"Current Year from NTP",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$year",
+	//cnstdetail:"title":"$year",
+	//cnstdetail:"descr":"Current Year from device clock",
+	//cnstdetail:"requires":""}
 	{ "$year", &getYear },
 #if ENABLE_CLOCK_DST
-	////cnstdetail:{"name":"$isDST",
-	////cnstdetail:"title":"$isDST",
-	////cnstdetail:"descr":"",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$isDST",
+	//cnstdetail:"title":"$isDST",
+	//cnstdetail:"descr":"Returns 1 if DST (daylight saving time) is active, otherwise 0",
+	//cnstdetail:"requires":""}
 	{ "$isDST", &isDST },
 #endif
 #if ENABLE_CLOCK_SUNRISE_SUNSET
-	////cnstdetail:{"name":"$sunrise",
-	////cnstdetail:"title":"$sunrise",
-	////cnstdetail:"descr":"Next sunrise as a TimerSeconds from midnight",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$sunrise",
+	//cnstdetail:"title":"$sunrise",
+	//cnstdetail:"descr":"Next sunrise as a TimerSeconds from midnight - will also print time to log",
+	//cnstdetail:"requires":""}
 	{ "$sunrise", &getSunrise },
-	////cnstdetail:{"name":"$sunset",
-	////cnstdetail:"title":"$sunset",
-	////cnstdetail:"descr":"Next sunset as a TimerSeconds from midnight",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$sunset",
+	//cnstdetail:"title":"$sunset",
+	//cnstdetail:"descr":"Next sunset as a TimerSeconds from midnight - will also print time to log",
+	//cnstdetail:"requires":""}
 	{ "$sunset", &getSunset },
 #endif
 	//cnstdetail:{"name":"$NTPOn",

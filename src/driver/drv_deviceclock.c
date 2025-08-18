@@ -7,7 +7,6 @@
 #include "../cmnds/cmd_public.h"
 #include "../httpserver/new_http.h"
 #include "../logging/logging.h"
-#include "../ota/ota.h"
 
 #include "drv_deviceclock.h"
 #include "../libraries/obktime/obktime.h"
@@ -348,48 +347,25 @@ uint32_t setDST() {
 //	             |         |-- 1st rule: last_week March sunday 2_o_clock 60_minutes_DST_after_this_time  
 //	CLOCK_setDST 0 3 1 2 60 0 10 1 3 0	
 //	                       |         |-- 2nd_rule: last_week October sunday 3_o_clock 0_minutes_DST_after_this_time 
-commandResult_t CLOCK_SetDST(const void *context, const char *cmd, const char *args, int cmdFlags) {
-    Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
-    if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 10)) {
-        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-    }
-
+commandResult_t CLOCK_SetDST(const int *args) {
     // d1/d2 for day and DST values, needed more than once, so store values to avoid multiple "GetArg" calls
     uint8_t d1,d2;
 
-
-
     // DST1 must be before DST2
-    int8_t add=(Tokenizer_GetArgInteger(1) < Tokenizer_GetArgInteger(6))? 0 : 5;
-    add = (Tokenizer_GetArgInteger(1) < Tokenizer_GetArgInteger(6))? 0 : 5;		// first entry is "before" second 
-    dst_config.week1 = Tokenizer_GetArgInteger(add);
-    dst_config.month1 = Tokenizer_GetArgInteger(1+add);
-    dst_config.day1 = Tokenizer_GetArgInteger(2+add)-1;
-    dst_config.hour1 = Tokenizer_GetArgInteger(3+add);
-    d1 = Tokenizer_GetArgInteger(4+add);	// first DST offset
+    int add = (args[1] < args[6])? 0 : 5;		// check if first entry is "before" second (compare month number)
+    dst_config.week1 = args[add];
+    dst_config.month1 = args[1+add];
+    dst_config.day1 = args[2+add]-1;
+    dst_config.hour1 = args[3+add];
+    d1 = args[4+add];	// first DST offset
     // Second DST configuration - if we added 5 for first DST, we need to sub 5 now (no change for add=0)
     add *= -1;
-    dst_config.week2 = Tokenizer_GetArgInteger(5+add);
-    dst_config.month2 = Tokenizer_GetArgInteger(6+add);
-    dst_config.day2 = Tokenizer_GetArgInteger(7+add)-1;
-    dst_config.hour2 = Tokenizer_GetArgInteger(8+add);
-    d2 = Tokenizer_GetArgInteger(9+add);	// second DST offset
+    dst_config.week2 = args[5+add];
+    dst_config.month2 = args[6+add];
+    dst_config.day2 = args[7+add]-1;
+    dst_config.hour2 = args[8+add];
+    d2 = args[9+add];	// second DST offset
 
-/*
-    // DST1 must be before DST2
-    if ( (d1=Tokenizer_GetArgInteger(1)) > (d2=Tokenizer_GetArgInteger(6))) return CMD_RES_BAD_ARGUMENT;		// second entry is "before" first 
-    dst_config.week1 = Tokenizer_GetArgInteger(0);
-    dst_config.month1 = d1;
-    dst_config.day1 = Tokenizer_GetArgInteger(2)-1;
-    dst_config.hour1 = Tokenizer_GetArgInteger(3);
-    d1 = Tokenizer_GetArgInteger(4);	// first DST offset
-    dst_config.week2 = Tokenizer_GetArgInteger(5);
-    dst_config.month2 = d2;
-    dst_config.day2 = Tokenizer_GetArgInteger(7)-1;
-    dst_config.hour2 = Tokenizer_GetArgInteger(8);
-    d2 = Tokenizer_GetArgInteger(9);	// second DST offset
-
-*/
     // no case needed for "DSToffset": one entry must be 0, one != 0, so if valid, the sum is the DST offset 
     dst_config.DSToffset = 60*(d1+d2)*(d1*d2 == 0);
     if ( dst_config.DSToffset == 0 )  return CMD_RES_BAD_ARGUMENT;		// neither two times 0 nor two times != 0 is valid !
@@ -402,9 +378,62 @@ commandResult_t CLOCK_SetDST(const void *context, const char *cmd, const char *a
     
     dst_config.DSTinitialized = 1;
     
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "DST config set: offset=%d minutes", 
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "DST config set: offset=%d seconds", 
              dst_config.DSToffset);
     return CMD_RES_OK;
+}
+
+//
+//	             |         |-- 1st rule: last_week March sunday 2_o_clock 60_minutes_DST_after_this_time  
+//	CLOCK_setDST 0 3 1 2 60 0 10 1 3 0	
+//	                       |         |-- 2nd_rule: last_week October sunday 3_o_clock 0_minutes_DST_after_this_time 
+commandResult_t CMD_CLOCK_SetDST(const void *context, const char *cmd, const char *args, int cmdFlags) {
+    Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+    if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 10)) {
+        return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+    }
+    int clkargs[10];
+    for (int i=0; i<10; i++){
+    	clkargs[i]=Tokenizer_GetArgInteger(1+i);
+    }
+    return CLOCK_SetDST(clkargs);
+}
+
+
+
+
+// to keep compatibility to prior command
+commandResult_t CMD_CLOCK_CalcDST(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	// arguments:  nthWeekEnd, monthEnd, dayEnd, hourEnd, nthWeekStart, monthStart, dayStart, hourStart,g_DST_offset
+	// we know that new command "CLOCK_setDST" will take care or finding first or last DST event, so only add "0" as DST-Offset for "ending" (arg[4])
+	// and use 1 as default DST if non given (arg[9])
+	//
+	//  for reference
+	//
+	//
+	//	             |         |-- 1st rule: last_week March sunday 2_o_clock 60_minutes_DST_after_this_time  
+	//	CLOCK_setDST 0 3 1 2 60 0 10 1 3 0	
+	//	                       |         |-- 2nd_rule: last_week October sunday 3_o_clock 0_minutes_DST_after_this_time 
+	//
+	
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 8)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	
+	int clkargs[10];
+	clkargs[4]=0;	// starts with "DST-End", so after this DST offset is 0
+	for (int i=0; i<4; i++){
+		clkargs[i]=Tokenizer_GetArgInteger(i);
+	}
+	for (int i=4; i<8; i++){
+		clkargs[i+1]=Tokenizer_GetArgInteger(i);
+	}
+	clkargs[9]=Tokenizer_GetArgIntegerDefault(8, 1)*60;	// we'll use minutes with CLOCK_SetDST
+	return CLOCK_SetDST(clkargs);
 }
 
 
@@ -419,13 +448,13 @@ void CLOCK_Init() {
 #if ENABLE_CLOCK_SUNRISE_SUNSET
 	//cmddetail:{"name":"clock_setLatLong","args":"[Latlong]",
 	//cmddetail:"descr":"Sets the devices latitude and longitude",
-	//cmddetail:"fn":"CLOCK_SetLatlong","file":"driver/drv_ntp.c","requires":"",
+	//cmddetail:"fn":"CLOCK_SetLatlong","file":"driver/drv_deviceclock.c","requires":"",
 	//cmddetail:"examples":"CLOCK_SetLatlong -34.911498 138.809488"}
     CMD_RegisterCommand("clock_setLatLong", CLOCK_SetLatlong, NULL);    
 // and register an alias for backward compatibility
 	//cmddetail:{"name":"ntp_setLatLong","args":"[Latlong]",
-	//cmddetail:"descr":"obsolete! only for backward compatibility - please use 'clock_setLatLong' in the future",
-	//cmddetail:"fn":"CLOCK_SetLatlong","file":"driver/drv_ntp.c","requires":"",
+	//cmddetail:"descr":"Depreciated! Only for backward compatibility! Please use 'clock_setLatLong' in the future!",
+	//cmddetail:"fn":"CLOCK_SetLatlong","file":"driver/drv_deviceclock.c","requires":"",
 	//cmddetail:"examples":"ntp_SetLatlong -34.911498 138.809488"}
     CMD_RegisterCommand("ntp_setLatLong", CLOCK_SetLatlong, NULL);    
 #endif
@@ -433,11 +462,16 @@ void CLOCK_Init() {
 	CLOCK_Init_Events();
 #endif
 #if ENABLE_CLOCK_DST
-	//cmddetail:{"name":"CLOCK_setDST","args":" Rule# [1/2] nthWeek month day hour DSToffset [additional minutes _after_ this Point: DST-Offset for "start" of DST, 0 for "end" of DST]",
+	//cmddetail:{"name":"CLOCK_setDST","args":" Rule# [1/2] nthWeek month day hour DSToffset [additional minutes _after_ this Point: <DST-Offset> for "start" of DST, 0 for "end" of DST]",
 	//cmddetail:"descr":"Checks, if actual time is during DST or not.",
-	//cmddetail:"fn":"CLOCK_CalcDST","file":"driver/drv_ntp.c","requires":"",
-	//cmddetail:"examples":"CLOCK_setDST 0 3 1 2 60 0 10 1 3 0	-- 1st rule: last_week March sunday 2_o_clock 60_minutes_DST_after_this_time -- 2nd_rule: last_week October sunday 3_o_clock 0_minutes_DST_after_this_time "}
-    CMD_RegisterCommand("clock_setDST",CLOCK_SetDST, NULL);
+	//cmddetail:"fn":"CLOCK_CalcDST","file":"driver/drv_deviceclock.c","requires":"",
+	//cmddetail:"examples":"CLOCK_setDST 0 3 1 2 1 0 10 1 3 0	-- 1st rule: last_week March sunday 2_o_clock 1_hour_DST_after_this_time -- 2nd_rule: last_week October sunday 3_o_clock 0_hours_DST_after_this_time "}
+    CMD_RegisterCommand("clock_setDST",CMD_CLOCK_SetDST, NULL);
+	//cmddetail:{"name":"CLOCK_calcDST","args":" Depreciated! Only for backward compatibility! Please use 'CLOCK_setDST' in the future!",
+	//cmddetail:"descr":"Sets DST settings.",
+	//cmddetail:"fn":"CLOCK_CalcDST","file":"driver/drv_deviceclock.c","requires":"",
+	//cmddetail:"examples":"CLOCK_calcDST 0 10 1 3 0 3 1 2 1 	-- DST-End: last_week(0) October(10) sunday(1) 3_o_clock(3)  - DST-Start: last_week(0) March(3) sunday(1) 2_o_clock(2) 1_hour_DST_offset"}
+    CMD_RegisterCommand("clock_calcDST",CMD_CLOCK_CalcDST, NULL);
     
     dst_config.DSTinitialized = 0;
     
@@ -522,7 +556,27 @@ void CLOCK_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreSta
 	if (bPreState)
 		return;
 	uint32_t tempt=Clock_GetCurrentTime();
-	if (Clock_IsTimeSynced()) hprintf255(request, "<h5>Local clock: %s (%i)</h5>",TS2STR(tempt,TIME_FORMAT_LONG) ,tempt);
+#if ENABLE_NTP
+	char ntpinfo[50]={0};
+	if (NTP_IsTimeSynced()){
+		sprintf(ntpinfo," (NTP-Server: %s)",CFG_GetNTPServer());
+	}
+#endif
+	if (Clock_IsTimeSynced()) hprintf255(request, "<h5>Local clock: %s"
+#if ENABLE_CLOCK_DST
+	"%s"
+#endif 
+#if ENABLE_NTP
+	"%s"
+#endif
+	"</h5>",TS2STR(tempt,TIME_FORMAT_LONG)
+#if ENABLE_CLOCK_DST
+	, ! dst_config.DSTinitialized ? "" : IsDST()?" (summer-time)":" (winter-time)"
+#endif 
+#if ENABLE_NTP
+	, ntpinfo
+#endif
+	);
 }
 
 

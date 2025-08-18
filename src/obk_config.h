@@ -107,6 +107,9 @@
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 #define ENABLE_LITTLEFS							1
 #define NEW_TCP_SERVER							1
+#define ENABLE_CLOCK_SUNRISE_SUNSET				1
+// parse things like $CH1 or $hour etc
+#define ENABLE_EXPAND_CONSTANT					1
 
 #elif WINDOWS
 

@@ -59,7 +59,7 @@ static struct sockaddr_in g_address;
 static int adrLen;
 // in seconds, before next retry
 static int g_ntp_delay = 0;
-static bool g_synced;
+static bool g_synced = false;
 // time offset (time zone?) in seconds
 //#define CFG_DEFAULT_TIMEOFFSETSECONDS (-8 * 60 * 60)
 static int g_timeOffsetSeconds = 0;
@@ -366,11 +366,14 @@ void NTP_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState
     g_ntpTime=(time_t)Clock_GetCurrentTime();
 
     ltm = gmtime(&g_ntpTime);
-*/
     if (g_synced == true)
         hprintf255(request, "<h5>NTP (%s): local Time  %s </h5>",
 			CFG_GetNTPServer(),TS2STR(Clock_GetCurrentTime(),TIME_FORMAT_LONG));
     else 
+        hprintf255(request, "<h5>NTP: Syncing with %s....</h5>",CFG_GetNTPServer());
+*/
+    //  if NTP is synced, we'll print time with deviceclocks HTTP information
+    if (g_synced != true)
         hprintf255(request, "<h5>NTP: Syncing with %s....</h5>",CFG_GetNTPServer());
 }
 
