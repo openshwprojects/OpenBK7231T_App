@@ -4,6 +4,7 @@
 #ifndef OBK_CONFIG_H
 #define OBK_CONFIG_H
 
+#define IR_RAW_BUFFER_LENGTH 512
 #define OBK_VARIANT_DEFAULT			0
 #define OBK_VARIANT_BERRY			1
 #define OBK_VARIANT_TUYAMCU			2
@@ -155,7 +156,7 @@
 #define ENABLE_NTP_SUNRISE_SUNSET				1
 // parse things like $CH1 or $hour etc
 #define ENABLE_EXPAND_CONSTANT					1
-#define ENABLE_DRIVER_DHT						1
+// #define ENABLE_DRIVER_DHT						1
 #define ENABLE_DRIVER_SM16703P					1
 #define ENABLE_DRIVER_PIXELANIM					1
 #define ENABLE_DRIVER_TMGN						1
@@ -166,7 +167,7 @@
 #define ENABLE_DRIVER_ADCBUTTON					1
 #define ENABLE_DRIVER_SM15155E					1
 // #define ENABLE_DRIVER_IR						1
-// #define ENABLE_DRIVER_IR2					1
+#define ENABLE_DRIVER_IR2					1
 #define ENABLE_DRIVER_CHARTS					1
 #define ENABLE_DRIVER_WIDGET					1
 #define ENABLE_DRIVER_OPENWEATHERMAP			1
