@@ -108,6 +108,7 @@ void Beken_Interrupt(unsigned char pinNum) {
 }
 
 void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
+	g_handlers[pinIndex] = function;
 	gpio_int_enable(pinIndex, IRQ_TRIGGER_FALLING_EDGE, Beken_Interrupt);
 }
 void HAL_DetachInterrupt(int pinIndex) {
@@ -124,6 +125,7 @@ void W600_Interrupt(void* context) {
 }
 
 void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
+	g_handlers[pinIndex] = function;
 	int w600Pin = HAL_GetGPIOPin(pinIndex);
 	tls_gpio_isr_register(w600Pin, W600_Interrupt, pinIndex);
 	tls_gpio_irq_enable(w600Pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
@@ -134,6 +136,25 @@ void HAL_DetachInterrupt(int pinIndex) {
 	g_handlers[pinIndex] = 0;
 }
 
+#elif PLATFORM_BL602
+
+void BL602_Interrupt(void* context) {
+	int obkPinNum = (int)context;
+	if (g_handlers[obkPinNum]) {
+		g_handlers[obkPinNum](obkPinNum);
+	}
+	bl_gpio_intmask(pinIndex, 0);
+}
+
+void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
+	g_handlers[pinIndex] = function;
+	hal_gpio_register_handler(BL602_Interrupt, pinIndex,
+		GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_PULSE, (void*)pinIndex);
+}
+void HAL_DetachInterrupt(int pinIndex) {
+
+	g_handlers[pinIndex] = 0;
+}
 #else
 void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
 
