@@ -78,11 +78,7 @@ bool g_invertSEL = false;
 int GPIO_HLW_CF = 7;
 int GPIO_HLW_CF1 = 8;
 
-#if PLATFORM_W600
-//The above three actually are pin indices. For W600 the actual gpio_pins are different.
-unsigned int GPIO_HLW_CF_pin;
-unsigned int GPIO_HLW_CF1_pin;
-#endif
+
 
 bool g_sel = true;
 uint32_t res_v = 0;
@@ -246,6 +242,8 @@ void BL0937_Shutdown_Pins()
 {
 #if PLATFORM_W600
 
+	int GPIO_HLW_CF1_pin = HAL_GetGPIOPin(GPIO_HLW_CF1);
+	int GPIO_HLW_CF_pin = HAL_GetGPIOPin(GPIO_HLW_CF);
 	tls_gpio_irq_disable(GPIO_HLW_CF1_pin);
 	tls_gpio_irq_disable(GPIO_HLW_CF_pin);
 
@@ -306,11 +304,7 @@ void BL0937_Init_Pins()
 	GPIO_HLW_CF1 = PIN_FindPinIndexForRole(IOR_BL0937_CF1, GPIO_HLW_CF1);
 
 #if PLATFORM_W600
-
-	GPIO_HLW_CF1_pin = HAL_GetGPIOPin(GPIO_HLW_CF1);
-	GPIO_HLW_CF_pin = HAL_GetGPIOPin(GPIO_HLW_CF);
-	//printf("GPIO_HLW_CF=%d GPIO_HLW_CF1=%d\n", GPIO_HLW_CF, GPIO_HLW_CF1);
-	//printf("GPIO_HLW_CF1_pin=%d GPIO_HLW_CF_pin=%d\n", GPIO_HLW_CF1_pin, GPIO_HLW_CF_pin);
+ 
 
 #elif PLATFORM_REALTEK
 
@@ -356,7 +350,7 @@ void BL0937_Init_Pins()
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF1);
 
 #if PLATFORM_W600
-
+	int GPIO_HLW_CF1_pin = HAL_GetGPIOPin(GPIO_HLW_CF1);
 	tls_gpio_isr_register(GPIO_HLW_CF1_pin, HlwCf1Interrupt, GPIO_HLW_CF1_pin);
 	tls_gpio_irq_enable(GPIO_HLW_CF1_pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
 
@@ -412,7 +406,7 @@ void BL0937_Init_Pins()
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF);
 
 #if PLATFORM_W600
-
+	int GPIO_HLW_CF_pin = HAL_GetGPIOPin(GPIO_HLW_CF);
 	tls_gpio_isr_register(GPIO_HLW_CF_pin, HlwCfInterrupt, GPIO_HLW_CF_pin);
 	tls_gpio_irq_enable(GPIO_HLW_CF_pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
 
