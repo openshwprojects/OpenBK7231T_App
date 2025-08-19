@@ -193,6 +193,34 @@ void HAL_DetachInterrupt(int pinIndex) {
 	g_handlers[pinIndex] = 0;
 }
 
+#elif PLATFORM_XRADIO
+
+void XRadio_Interrupt(void* context) {
+	int obkPinNum = (int)context;
+	if (g_handlers[obkPinNum]) {
+		g_handlers[obkPinNum](obkPinNum);
+	}
+}
+
+void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
+	g_handlers[pinIndex] = function;
+
+	xrpin_t* = g_pins + pinIndex;
+	HAL_XR_ConfigurePin(xr_cf->port, xr_cf->pin, GPIOx_Pn_F6_EINT, GPIO_PULL_UP);
+	GPIO_IrqParam cfparam;
+	cfparam.event = GPIO_IRQ_EVT_FALLING_EDGE;
+	cfparam.callback = XRadio_Interrupt;
+	cfparam.arg = (void*)pinIndex;
+	HAL_GPIO_EnableIRQ(xr_cf->port, xr_cf->pin, &cfparam);
+
+}
+void HAL_DetachInterrupt(int pinIndex) {
+	xrpin_t* xr_cf;
+	xr_cf = g_pins + pinIndex;
+	HAL_GPIO_DeInit(xr_cf->port, xr_cf->pin);
+	HAL_GPIO_DisableIRQ(xr_cf->port, xr_cf->pin);
+	g_handlers[pinIndex] = 0;
+}
 
 #else
 void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
