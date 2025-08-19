@@ -112,7 +112,7 @@ void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler 
 }
 void HAL_DetachInterrupt(int pinIndex) {
 	gpio_int_disable(pinIndex);
-	g_handlers[pinNum] = 0;
+	g_handlers[pinIndex] = 0;
 }
 #elif PLATFORM_W600
 
@@ -131,7 +131,7 @@ void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler 
 void HAL_DetachInterrupt(int pinIndex) {
 	int w600Pin = HAL_GetGPIOPin(pinIndex);
 	tls_gpio_irq_disable(w600Pin);
-	g_handlers[pinNum] = 0;
+	g_handlers[pinIndex] = 0;
 }
 
 #else
