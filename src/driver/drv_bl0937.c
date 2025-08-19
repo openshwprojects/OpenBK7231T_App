@@ -114,6 +114,25 @@ void HAL_DetachInterrupt(int pinIndex) {
 	gpio_int_disable(pinIndex);
 	g_handlers[pinNum] = 0;
 }
+#elif PLATFORM_W600
+
+void W600_Interrupt(void* context) {
+	int obkPinNum = (int)context;
+	if (g_handlers[obkPinNum]) {
+		g_handlers[obkPinNum](obkPinNum);
+	}
+}
+
+void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
+	int w600Pin = HAL_GetGPIOPin(pinIndex);
+	tls_gpio_isr_register(w600Pin, W600_Interrupt, pinIndex);
+	tls_gpio_irq_enable(w600Pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
+}
+void HAL_DetachInterrupt(int pinIndex) {
+	int w600Pin = HAL_GetGPIOPin(pinIndex);
+	tls_gpio_irq_disable(w600Pin);
+	g_handlers[pinNum] = 0;
+}
 
 #else
 void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
