@@ -143,7 +143,7 @@ void BL602_Interrupt(void* context) {
 	if (g_handlers[obkPinNum]) {
 		g_handlers[obkPinNum](obkPinNum);
 	}
-	bl_gpio_intmask(pinIndex, 0);
+	bl_gpio_intmask(obkPinNum, 0);
 }
 
 void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
