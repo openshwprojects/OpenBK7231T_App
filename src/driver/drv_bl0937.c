@@ -117,7 +117,7 @@ void Realtek_Interrupt(uint32_t obkPinNum, gpio_irq_event event)
 void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
 	g_handlers[pinIndex] = function;
 
-	rtlPinMapping_t *rtl_cf = g_pins + GPIO_HLW_CF;
+	rtlPinMapping_t *rtl_cf = g_pins + pinIndex;
 #if PLATFORM_RTL87X0C
 	if (rtl_cf->gpio != NULL)
 	{
