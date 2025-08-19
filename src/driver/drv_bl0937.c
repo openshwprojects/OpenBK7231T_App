@@ -240,7 +240,7 @@ void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler 
 	}
 	espPinMapping_t* esp_cf = g_pins + pinIndex;
 	ESP_ConfigurePin(esp_cf->pin, GPIO_MODE_INPUT, true, false, GPIO_INTR_NEGEDGE);
-	gpio_isr_handler_add(esp_cf->pin, ESP_Interrupt, pinIndex);
+	gpio_isr_handler_add(esp_cf->pin, ESP_Interrupt, (void*)pinIndex);
 }
 void HAL_DetachInterrupt(int pinIndex) {
 
