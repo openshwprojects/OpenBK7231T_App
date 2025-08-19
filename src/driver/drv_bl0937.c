@@ -1,3 +1,4 @@
+// HLW8012 aka BL0937
 #include "drv_bl0937.h"
 #include "../obk_config.h"
 
@@ -23,10 +24,6 @@
 #include "sys_timer.h"
 #include "gw_intf.h"
 
-// HLW8012 aka BL0937
-
-#define ELE_HW_TIME 1
-#define HW_TIMER_ID 0
 
 #elif PLATFORM_BL602
 
