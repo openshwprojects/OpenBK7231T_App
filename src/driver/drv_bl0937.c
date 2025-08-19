@@ -42,8 +42,7 @@
 
 #include "gpio_irq_api.h"
 #include "../hal/realtek/hal_pinmap_realtek.h"
-rtlPinMapping_t* rtl_cf;
-rtlPinMapping_t* rtl_cf1;
+
 
 #elif PLATFORM_ECR6600
 
@@ -308,8 +307,8 @@ void BL0937_Init_Pins()
 
 #elif PLATFORM_REALTEK
 
-	rtl_cf = g_pins + GPIO_HLW_CF;
-	rtl_cf1 = g_pins + GPIO_HLW_CF1;
+	rtlPinMapping_t *rtl_cf = g_pins + GPIO_HLW_CF;
+	rtlPinMapping_t *rtl_cf1 = g_pins + GPIO_HLW_CF1;
 #if PLATFORM_RTL87X0C
 	if(rtl_cf->gpio != NULL)
 	{
@@ -429,6 +428,8 @@ void BL0937_Init_Pins()
 
 #elif PLATFORM_REALTEK
 
+	rtlPinMapping_t *rtl_cf = g_pins + GPIO_HLW_CF;
+	rtlPinMapping_t *rtl_cf1 = g_pins + GPIO_HLW_CF1;
 	gpio_irq_init(rtl_cf->irq, rtl_cf->pin, cf_irq_handler, NULL);
 	gpio_irq_set(rtl_cf->irq, IRQ_FALL, 1);
 	gpio_irq_enable(rtl_cf->irq);
