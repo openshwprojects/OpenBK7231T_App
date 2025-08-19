@@ -17,75 +17,6 @@
 #include "drv_pwrCal.h"
 #include "drv_uart.h"
 
-#if PLATFORM_BEKEN
-
-#include "BkDriverTimer.h"
-#include "BkDriverGpio.h"
-#include "sys_timer.h"
-#include "gw_intf.h"
-
-
-#elif PLATFORM_BL602
-
-#include "hal_gpio.h"
-#include "bl_gpio.h"
-
-#elif PLATFORM_LN882H
-
-#include "../../sdk/OpenLN882H/mcu/driver_ln882h/hal/hal_common.h"
-#include "../../sdk/OpenLN882H/mcu/driver_ln882h/hal/hal_gpio.h"
-
-#elif PLATFORM_REALTEK
-
-#include "gpio_irq_api.h"
-#include "../hal/realtek/hal_pinmap_realtek.h"
-
-
-#elif PLATFORM_ECR6600
-
-#include "gpio.h"
-
-#elif PLATFORM_XRADIO
-
-#include "../hal/xradio/hal_pinmap_xradio.h"
-extern void HAL_XR_ConfigurePin(GPIO_Port port, GPIO_Pin pin, GPIO_WorkMode mode, GPIO_PullType pull);
-
-
-#elif PLATFORM_ESP8266 || PLATFORM_ESPIDF
-
-#include "../hal/espidf/hal_pinmap_espidf.h"
-
-
-#else
-
-
-#endif
-
-#define DEFAULT_VOLTAGE_CAL 0.13253012048f
-#define DEFAULT_CURRENT_CAL 0.0118577075f
-#define DEFAULT_POWER_CAL 1.5f
-
-// Those can be set by Web page pins configurator
-// The below are default values for Mycket smart socket
-int GPIO_HLW_SEL = 24; // pwm4
-bool g_invertSEL = false;
-int GPIO_HLW_CF = 7;
-int GPIO_HLW_CF1 = 8;
-
-
-
-bool g_sel = true;
-uint32_t res_v = 0;
-uint32_t res_c = 0;
-uint32_t res_p = 0;
-float BL0937_PMAX = 3680.0f;
-float last_p = 0.0f;
-
-volatile uint32_t g_vc_pulses = 0;
-volatile uint32_t g_p_pulses = 0;
-static portTickType pulseStamp;
-
-
 
 
 typedef void(*OBKInterruptHandler)(int gpio);
@@ -96,7 +27,13 @@ typedef enum OBKInterrupt {
 
 OBKInterruptHandler g_handlers[PLATFORM_GPIO_MAX];
 
+
 #if PLATFORM_BEKEN
+
+#include "BkDriverTimer.h"
+#include "BkDriverGpio.h"
+#include "sys_timer.h"
+#include "gw_intf.h"
 
 void Beken_Interrupt(unsigned char pinNum) {
 	if (g_handlers[pinNum]) {
@@ -112,6 +49,7 @@ void HAL_DetachInterrupt(int pinIndex) {
 	gpio_int_disable(pinIndex);
 	g_handlers[pinIndex] = 0;
 }
+
 #elif PLATFORM_W600
 
 void W600_Interrupt(void* context) {
@@ -133,7 +71,12 @@ void HAL_DetachInterrupt(int pinIndex) {
 	g_handlers[pinIndex] = 0;
 }
 
+
+
 #elif PLATFORM_BL602
+
+#include "hal_gpio.h"
+#include "bl_gpio.h"
 
 void BL602_Interrupt(void* context) {
 	int obkPinNum = (int)context;
@@ -153,7 +96,16 @@ void HAL_DetachInterrupt(int pinIndex) {
 	g_handlers[pinIndex] = 0;
 }
 
+#elif PLATFORM_LN882H
+
+#include "../../sdk/OpenLN882H/mcu/driver_ln882h/hal/hal_common.h"
+#include "../../sdk/OpenLN882H/mcu/driver_ln882h/hal/hal_gpio.h"
+
 #elif PLATFORM_REALTEK
+
+#include "gpio_irq_api.h"
+#include "../hal/realtek/hal_pinmap_realtek.h"
+
 
 void Realtek_Interrupt(uint32_t obkPinNum, gpio_irq_event event)
 {
@@ -190,7 +142,16 @@ void HAL_DetachInterrupt(int pinIndex) {
 	g_handlers[pinIndex] = 0;
 }
 
+
+#elif PLATFORM_ECR6600
+
+#include "gpio.h"
+
 #elif PLATFORM_XRADIO
+
+#include "../hal/xradio/hal_pinmap_xradio.h"
+extern void HAL_XR_ConfigurePin(GPIO_Port port, GPIO_Pin pin, GPIO_WorkMode mode, GPIO_PullType pull);
+
 
 void XRadio_Interrupt(void* context) {
 	int obkPinNum = (int)context;
@@ -218,7 +179,11 @@ void HAL_DetachInterrupt(int pinIndex) {
 	HAL_GPIO_DisableIRQ(xr_cf->port, xr_cf->pin);
 	g_handlers[pinIndex] = 0;
 }
-#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
+
+#elif PLATFORM_ESP8266 || PLATFORM_ESPIDF
+
+#include "../hal/espidf/hal_pinmap_espidf.h"
+
 
 void ESP_Interrupt(void* context) {
 	int obkPinNum = (int)context;
@@ -248,6 +213,7 @@ void HAL_DetachInterrupt(int pinIndex) {
 	g_handlers[pinIndex] = 0;
 }
 
+
 #else
 void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
 
@@ -256,7 +222,36 @@ void HAL_DetachInterrupt(int pinIndex) {
 
 }
 
+
 #endif
+
+#define DEFAULT_VOLTAGE_CAL 0.13253012048f
+#define DEFAULT_CURRENT_CAL 0.0118577075f
+#define DEFAULT_POWER_CAL 1.5f
+
+// Those can be set by Web page pins configurator
+// The below are default values for Mycket smart socket
+int GPIO_HLW_SEL = 24; // pwm4
+bool g_invertSEL = false;
+int GPIO_HLW_CF = 7;
+int GPIO_HLW_CF1 = 8;
+
+
+
+bool g_sel = true;
+uint32_t res_v = 0;
+uint32_t res_c = 0;
+uint32_t res_p = 0;
+float BL0937_PMAX = 3680.0f;
+float last_p = 0.0f;
+
+volatile uint32_t g_vc_pulses = 0;
+volatile uint32_t g_p_pulses = 0;
+static portTickType pulseStamp;
+
+
+
+
 
 
 
