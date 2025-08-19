@@ -20,12 +20,16 @@
 
 
 typedef void(*OBKInterruptHandler)(int gpio);
-typedef enum OBKInterrupt {
-	INTERRUPT_STUB
+typedef enum {
+	INTERRUPT_STUB,
+	INTERRUPT_RISING,
+	INTERRUPT_FALLING,
+	INTERRUPT_CHANGE,
 
-} OBKInterrupt_t;
+} OBKInterruptType;
 
 OBKInterruptHandler g_handlers[PLATFORM_GPIO_MAX];
+OBKInterruptType g_modes[PLATFORM_GPIO_MAX];
 
 #if PLATFORM_BEKEN
 
@@ -40,7 +44,7 @@ void Beken_Interrupt(unsigned char pinNum) {
 	}
 }
 
-void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
 	g_handlers[pinIndex] = function;
 	gpio_int_enable(pinIndex, IRQ_TRIGGER_FALLING_EDGE, Beken_Interrupt);
 }
@@ -58,7 +62,7 @@ void W600_Interrupt(void* context) {
 	}
 }
 
-void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
 	g_handlers[pinIndex] = function;
 	int w600Pin = HAL_GetGPIOPin(pinIndex);
 	tls_gpio_isr_register(w600Pin, W600_Interrupt, pinIndex);
@@ -85,7 +89,7 @@ void BL602_Interrupt(void* context) {
 	bl_gpio_intmask(obkPinNum, 0);
 }
 
-void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
 	g_handlers[pinIndex] = function;
 	hal_gpio_register_handler(BL602_Interrupt, pinIndex,
 		GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_PULSE, (void*)pinIndex);
@@ -136,7 +140,7 @@ void GPIOB_IRQHandler()
 	Shared_Handler();
 }
 
-void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
 	g_handlers[pinIndex] = function;
 
 	hal_gpio_pin_it_cfg(GetBaseForPin(pinIndex), GetGPIOForPin(pinIndex), GPIO_INT_FALLING);
@@ -145,6 +149,11 @@ void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler 
 	NVIC_EnableIRQ(GetIRQForPin(pinIndex));
 
 }
+
+void HAL_DetachInterrupt(int pinIndex) {
+	g_handlers[pinIndex] = 0;
+}
+
 #elif PLATFORM_REALTEK
 
 #include "gpio_irq_api.h"
@@ -158,7 +167,7 @@ void Realtek_Interrupt(uint32_t obkPinNum, gpio_irq_event event)
 	}
 }
 
-void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
 	g_handlers[pinIndex] = function;
 
 	rtlPinMapping_t *rtl_cf = g_pins + pinIndex;
@@ -197,7 +206,7 @@ void ECR6600_Interrupt(unsigned char obkPinNum) {
 	}
 }
 
-void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
 	g_handlers[pinIndex] = function;
 
 	T_GPIO_ISR_CALLBACK cf1isr;
@@ -229,7 +238,7 @@ void XRadio_Interrupt(void* context) {
 	}
 }
 
-void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
 	g_handlers[pinIndex] = function;
 
 	xrpin_t* = g_pins + pinIndex;
@@ -262,7 +271,7 @@ void ESP_Interrupt(void* context) {
 }
 
 bool b_esp_ready = false;
-void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
 	g_handlers[pinIndex] = function;
 
 	if (b_esp_ready == false) {
@@ -284,7 +293,7 @@ void HAL_DetachInterrupt(int pinIndex) {
 
 
 #else
-void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
 
 }
 void HAL_DetachInterrupt(int pinIndex) {
