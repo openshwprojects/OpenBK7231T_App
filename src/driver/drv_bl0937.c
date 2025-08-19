@@ -147,8 +147,7 @@ void HAL_DetachInterrupt(int pinIndex) {
 
 #include "gpio.h"
 
-void ECR6600_Interrupt(void* context) {
-	int obkPinNum = (int)context;
+void ECR6600_Interrupt(unsigned char obkPinNum) {
 	if (g_handlers[obkPinNum]) {
 		g_handlers[obkPinNum](obkPinNum);
 	}
@@ -161,9 +160,9 @@ void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler 
 	cf1isr.gpio_callback = (&ECR6600_Interrupt);
 	cf1isr.gpio_data = pinIndex;
 
-	drv_gpio_ioctrl(GPIO_HLW_CF1, DRV_GPIO_CTRL_INTR_MODE, DRV_GPIO_ARG_INTR_MODE_N_EDGE);
-	drv_gpio_ioctrl(GPIO_HLW_CF1, DRV_GPIO_CTRL_REGISTER_ISR, (int)&cf1isr);
-	drv_gpio_ioctrl(GPIO_HLW_CF1, DRV_GPIO_CTRL_INTR_ENABLE, 0);
+	drv_gpio_ioctrl(pinIndex, DRV_GPIO_CTRL_INTR_MODE, DRV_GPIO_ARG_INTR_MODE_N_EDGE);
+	drv_gpio_ioctrl(pinIndex, DRV_GPIO_CTRL_REGISTER_ISR, (int)&cf1isr);
+	drv_gpio_ioctrl(pinIndex, DRV_GPIO_CTRL_INTR_ENABLE, 0);
 
 }
 void HAL_DetachInterrupt(int pinIndex) {
