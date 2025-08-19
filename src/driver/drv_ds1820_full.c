@@ -728,6 +728,12 @@ void DS1820_full_driver_Init()
 	CMD_RegisterCommand("DS1820_FULL_scansensors", CMD_DS18B20_scansensors, NULL);
 
 	// no need to discover the "family" we know the address, the first byte is the family
+
+#if ENABLE_DS1820_TEST_US	
+	init_TEST_US();
+#endif
+
+
 };
 
 void DS1820_full_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
