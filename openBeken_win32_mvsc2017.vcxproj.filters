@@ -402,6 +402,11 @@
     <ClCompile Include="src\berry\modules\be_i2c.c" />
     <ClCompile Include="src\driver\drv_gosundSW2.c" />
     <ClCompile Include="src\driver\drv_pinMutex.c" />
+    <ClCompile Include="src\driver\drv_ds1820_full.c" />
+    <ClCompile Include="src\driver\drv_ds1820_common.c" />
+    <ClCompile Include="src\driver\drv_soft_spi.c" />
+    <ClCompile Include="src\driver\drv_spi_flash.c" />
+    <ClCompile Include="src\hal\win32\hal_ota_win32.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\base64\base64.h" />
@@ -610,6 +615,7 @@
     <ClInclude Include="libraries\berry\generate\be_fixed_sys.h" />
     <ClInclude Include="libraries\berry\generate\be_fixed_time.h" />
     <ClInclude Include="libraries\berry\generate\be_fixed_undefined.h" />
+    <ClInclude Include="src\driver\drv_soft_spi.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\platforms\bk7231t\bk7231t_os\beken378\func\include\net_param_pub.h" />

@@ -11,6 +11,7 @@ CSRCS  += hal/tr6260/hal_generic_tr6260.c
 CSRCS  += hal/tr6260/hal_main_tr6260.c
 CSRCS  += hal/tr6260/hal_pins_tr6260.c
 CSRCS  += hal/tr6260/hal_wifi_tr6260.c
+CSRCS  += hal/tr6260/hal_ota_tr6260.c
 
 OBK_SRCS = 
 include $(OBK_PATH)/../platforms/obk_main.mk

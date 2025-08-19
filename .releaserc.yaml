@@ -118,7 +118,7 @@ generateNotes:
         {{/if}}
 
         ### Assets
-        Refer to the following table for the usage of the various assests included in this release
+        Refer to the following table for the usage of the various assets included in this release
         | Platform       | Usage      | Filename                                                                                                                                           |
         | ---            | ---        | ---                                                                                                                                                |
         | BK7231T        | OTA Update | [OpenBK7231T_{{version}}.rbl]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenBK7231T_{{version}}.rbl)                         |

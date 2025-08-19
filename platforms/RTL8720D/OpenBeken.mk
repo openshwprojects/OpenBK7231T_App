@@ -13,6 +13,7 @@ CSRC  += hal/realtek/hal_flashVars_realtek.c
 CSRC  += hal/realtek/hal_generic_realtek.c
 CSRC  += hal/realtek/hal_pins_realtek.c
 CSRC  += hal/realtek/hal_wifi_realtek.c
+CSRC  += hal/realtek/hal_ota_realtek.c
 
 OBK_SRCS = 
 include $(EFDIR)/../platforms/obk_main.mk

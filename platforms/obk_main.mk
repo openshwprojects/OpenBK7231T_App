@@ -69,7 +69,6 @@ OBKM_SRC  += $(OBK_SRCS)httpclient/utils_timer.c
 OBKM_SRC  += $(OBK_SRCS)littlefs/lfs_util.c
 OBKM_SRC  += $(OBK_SRCS)littlefs/lfs.c
 OBKM_SRC  += $(OBK_SRCS)littlefs/our_lfs.c
-OBKM_SRC  += $(OBK_SRCS)ota/ota.c
 
 OBKM_SRC  += $(OBK_SRCS)driver/drv_main.c
 

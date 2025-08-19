@@ -13,6 +13,7 @@ set(PROJ_ALL_SRC
 	${OBK_SRCS}hal/espidf/hal_pins_espidf.c
 	${OBK_SRCS}hal/espidf/hal_wifi_espidf.c
 	${OBK_SRCS}hal/espidf/hal_uart_espidf.c
+	${OBK_SRCS}hal/espidf/hal_ota_espidf.c
 	${OBKM_SRC}
 	${BERRY_SRC_C}
 	../../../libraries/mqtt_patched.c
