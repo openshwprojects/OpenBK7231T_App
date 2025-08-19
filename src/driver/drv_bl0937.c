@@ -112,13 +112,15 @@ static void HlwCfInterrupt(void* context)
 
 static void HlwCf1Interrupt(void* arg)
 {
+	int pinIndex = (int)arg;
 	g_vc_pulses++;
-	bl_gpio_intmask(GPIO_HLW_CF1, 0);
+	bl_gpio_intmask(pinIndex, 0);
 }
 static void HlwCfInterrupt(void* arg)
 {
+	int pinIndex = (int)arg;
 	g_p_pulses++;
-	bl_gpio_intmask(GPIO_HLW_CF, 0);
+	bl_gpio_intmask(pinIndex, 0);
 }
 
 #elif PLATFORM_LN882H
@@ -358,7 +360,8 @@ void BL0937_Init_Pins()
 
 #elif PLATFORM_BL602
 
-	tmp = hal_gpio_register_handler(HlwCf1Interrupt, GPIO_HLW_CF1, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_PULSE, (void*)NULL);
+	tmp = hal_gpio_register_handler(HlwCf1Interrupt, GPIO_HLW_CF1, 
+		GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_PULSE, (void*)GPIO_HLW_CF1);
 	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Registering CF1 handler status: %i \n", tmp);
 
 #elif PLATFORM_LN882H
@@ -413,7 +416,8 @@ void BL0937_Init_Pins()
 
 #elif PLATFORM_BL602
 
-	tmp = hal_gpio_register_handler(HlwCfInterrupt, GPIO_HLW_CF, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_PULSE, (void*)NULL);
+	tmp = hal_gpio_register_handler(HlwCfInterrupt, GPIO_HLW_CF, 
+		GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_PULSE, (void*)GPIO_HLW_CF);
 	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Registering CF handler status: %i \n", tmp);
 
 #elif PLATFORM_LN882H
