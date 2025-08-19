@@ -147,6 +147,32 @@ void HAL_DetachInterrupt(int pinIndex) {
 
 #include "gpio.h"
 
+void ECR6600_Interrupt(void* context) {
+	int obkPinNum = (int)context;
+	if (g_handlers[obkPinNum]) {
+		g_handlers[obkPinNum](obkPinNum);
+	}
+}
+
+void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
+	g_handlers[pinIndex] = function;
+
+	T_GPIO_ISR_CALLBACK cf1isr;
+	cf1isr.gpio_callback = (&ECR6600_Interrupt);
+	cf1isr.gpio_data = pinIndex;
+
+	drv_gpio_ioctrl(GPIO_HLW_CF1, DRV_GPIO_CTRL_INTR_MODE, DRV_GPIO_ARG_INTR_MODE_N_EDGE);
+	drv_gpio_ioctrl(GPIO_HLW_CF1, DRV_GPIO_CTRL_REGISTER_ISR, (int)&cf1isr);
+	drv_gpio_ioctrl(GPIO_HLW_CF1, DRV_GPIO_CTRL_INTR_ENABLE, 0);
+
+}
+void HAL_DetachInterrupt(int pinIndex) {
+
+	drv_gpio_ioctrl(pinIndex, DRV_GPIO_CTRL_INTR_DISABLE, 0);
+	g_handlers[pinIndex] = 0;
+}
+
+
 #elif PLATFORM_XRADIO
 
 #include "../hal/xradio/hal_pinmap_xradio.h"
@@ -431,8 +457,6 @@ void BL0937_Shutdown_Pins()
 
 #elif PLATFORM_ECR6600
 
-	drv_gpio_ioctrl(GPIO_HLW_CF1, DRV_GPIO_CTRL_INTR_DISABLE, 0);
-	drv_gpio_ioctrl(GPIO_HLW_CF, DRV_GPIO_CTRL_INTR_DISABLE, 0);
 
 #elif PLATFORM_XRADIO
 	xrpin_t* xr_cf;
