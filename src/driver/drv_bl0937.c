@@ -155,6 +155,45 @@ void HAL_DetachInterrupt(int pinIndex) {
 
 	g_handlers[pinIndex] = 0;
 }
+
+#elif PLATFORM_REALTEK
+
+void Realtek_Interrupt(uint32_t obkPinNum, gpio_irq_event event)
+{
+	if (g_handlers[obkPinNum]) {
+		g_handlers[obkPinNum](obkPinNum);
+	}
+}
+
+void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
+	g_handlers[pinIndex] = function;
+
+	rtlPinMapping_t *rtl_cf = g_pins + GPIO_HLW_CF;
+#if PLATFORM_RTL87X0C
+	if (rtl_cf->gpio != NULL)
+	{
+		hal_pinmux_unregister(rtl_cf->pin, PID_GPIO);
+		os_free(rtl_cf->gpio);
+		rtl_cf->gpio = NULL;
+	}
+#endif
+	rtl_cf->irq = os_malloc(sizeof(gpio_irq_t));
+	memset(rtl_cf->irq, 0, sizeof(gpio_irq_t));
+
+	gpio_irq_init(rtl_cf->irq, rtl_cf->pin, Realtek_Interrupt, pinIndex);
+	gpio_irq_set(rtl_cf->irq, IRQ_FALL, 1);
+	gpio_irq_enable(rtl_cf->irq);
+
+}
+void HAL_DetachInterrupt(int pinIndex) {
+	rtlPinMapping_t *rtl_cf = g_pins + pinIndex;
+	gpio_irq_free(rtl_cf->irq);
+	os_free(rtl_cf->irq);
+	rtl_cf->irq = NULL;
+	g_handlers[pinIndex] = 0;
+}
+
+
 #else
 void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
 
