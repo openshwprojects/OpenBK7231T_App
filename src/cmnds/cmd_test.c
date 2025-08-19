@@ -250,7 +250,7 @@ static commandResult_t cmnd_lfs_test1(const void * context, const char *cmd, con
 
 		ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: sizeof(lfs_file_t) %i", sizeof(lfs_file_t));
 		if (lfsres >= 0) {
-			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: openned file %s", args);
+			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test1: opened file %s", args);
 			do {
 				lfsres = lfs_file_read(&lfs, &file, &a, 1);
 				cnt++;
@@ -291,7 +291,7 @@ static commandResult_t cmnd_lfs_test2(const void * context, const char *cmd, con
 
 			ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: sizeof(lfs_file_t) %i", sizeof(lfs_file_t));
 			if (lfsres >= 0) {
-				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: openned file %s", args);
+				ADDLOG_INFO(LOG_FEATURE_CMD, "cmnd_lfs_test2: opened file %s", args);
 				do {
 					lfsres = lfs_file_read(&lfs, file, &a, 1);
 					cnt++;
