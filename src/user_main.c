@@ -30,6 +30,7 @@
 #include "mqtt/new_mqtt.h"
 #include "hal/hal_ota.h"
 
+#include "domoticz/domoticz.h"
 #if ENABLE_LITTLEFS
 #include "littlefs/our_lfs.h"
 #endif
@@ -696,6 +697,7 @@ void Main_OnEverySecond()
 		}
 	}
 
+
 	// some users say that despite our simple reconnect mechanism
 	// there are some rare cases when devices stuck outside network
 	// That is why we can also reconnect them by basing on ping
@@ -792,6 +794,13 @@ void Main_OnEverySecond()
 		HAL_PrintNetworkInfo();
 
 	}
+#ifdef ENABLE_DOMOTICZ
+
+	if (g_secondsElapsed % 10 == 0)
+	{
+		Dz_PublishEnergy();
+	}
+#endif
 	// IR TESTING ONLY!!!!
 #ifdef PLATFORM_BK7231T
 	//DRV_IR_Print();

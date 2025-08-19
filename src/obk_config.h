@@ -49,6 +49,10 @@
 #define ENABLE_DRIVER_WEMO						1
 #define ENABLE_DRIVER_HUE						1
 
+// Domoticz
+#define ENABLE_DOMOTICZ         1	
+#define MAX_DOMOTICZ_CHANNELS   8
+
 #if PLATFORM_XR809
 #define ENABLE_DRIVER_BATTERY					1
 #define ENABLE_OBK_BERRY						1
