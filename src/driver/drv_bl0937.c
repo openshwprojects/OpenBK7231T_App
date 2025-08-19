@@ -88,6 +88,45 @@ volatile uint32_t g_vc_pulses = 0;
 volatile uint32_t g_p_pulses = 0;
 static portTickType pulseStamp;
 
+
+
+
+typedef void(*OBKInterruptHandler)(int gpio);
+typedef enum OBKInterrupt {
+	INTERRUPT_STUB
+
+} OBKInterrupt_t;
+
+OBKInterruptHandler g_handlers[PLATFORM_GPIO_MAX];
+
+#if PLATFORM_BEKEN
+
+void Beken_Interrupt(unsigned char pinNum) {
+	if (g_handlers[pinNum]) {
+		g_handlers[pinNum](pinNum);
+	}
+}
+
+void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
+	gpio_int_enable(pinIndex, IRQ_TRIGGER_FALLING_EDGE, Beken_Interrupt);
+}
+void HAL_DetachInterrupt(int pinIndex) {
+	gpio_int_disable(pinIndex);
+	g_handlers[pinNum] = 0;
+}
+
+#else
+void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
+
+}
+void HAL_DetachInterrupt(int pinIndex) {
+
+}
+
+#endif
+
+
+
 #if PLATFORM_W600
 
 static void HlwCf1Interrupt(void* context)
