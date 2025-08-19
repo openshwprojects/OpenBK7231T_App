@@ -221,6 +221,35 @@ void HAL_DetachInterrupt(int pinIndex) {
 	HAL_GPIO_DisableIRQ(xr_cf->port, xr_cf->pin);
 	g_handlers[pinIndex] = 0;
 }
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
+
+void ESP_Interrupt(void* context) {
+	int obkPinNum = (int)context;
+	if (g_handlers[obkPinNum]) {
+		g_handlers[obkPinNum](obkPinNum);
+	}
+}
+
+bool b_esp_ready = false;
+void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
+	g_handlers[pinIndex] = function;
+
+	if (b_esp_ready == false) {
+		gpio_install_isr_service(0);
+		b_esp_ready = true;
+	}
+	espPinMapping_t* esp_cf = g_pins + pinIndex;
+	ESP_ConfigurePin(esp_cf->pin, GPIO_MODE_INPUT, true, false, GPIO_INTR_NEGEDGE);
+	gpio_isr_handler_add(esp_cf->pin, ESP_Interrupt, pinIndex);
+}
+void HAL_DetachInterrupt(int pinIndex) {
+
+	espPinMapping_t* esp_cf;
+	esp_cf = g_pins + pinIndex;
+	gpio_isr_handler_remove(esp_cf->pin);
+	///gpio_uninstall_isr_service();
+	g_handlers[pinIndex] = 0;
+}
 
 #else
 void HAL_AttachInterrupt(int pinIndex, OBKInterrupt_t mode, OBKInterruptHandler function) {
