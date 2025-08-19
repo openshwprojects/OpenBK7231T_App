@@ -1764,6 +1764,9 @@ bool CHANNEL_IsInUse(int ch) {
 			}
 		}
 	}
+#if (ENABLE_DRIVER_AHT2X)
+#include "driver/drv_aht2x.h"
+	return aht2x_used_channel(ch);
 #if (ENABLE_DRIVER_DS1820_FULL)
 #include "driver/drv_ds1820_full.h"
 	return ds18b20_used_channel(ch);
