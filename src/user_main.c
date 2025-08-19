@@ -574,6 +574,9 @@ bool Main_HasFastConnect() {
 // Quick hack to display LN-only temperature,
 // we may improve it in the future
 extern float g_wifi_temperature;
+#elif WINDOWS
+// set a staring temperature, will be "updated" by random later
+float g_wifi_temperature = 40;
 #else
 float g_wifi_temperature = 0;
 #endif
@@ -612,6 +615,11 @@ void Main_OnEverySecond()
 		g_wifi_temperature = HAL_ADC_Temp();
 #elif PLATFORM_ECR6600
 		g_wifi_temperature = hal_adc_tempsensor();
+#elif WINDOWS
+		// set random temperature , change last value in ragnge +- 2 degrees 
+		g_wifi_temperature += 2 + -4.0*(rand() / (float) RAND_MAX);
+		if (g_wifi_temperature < 30) g_wifi_temperature = 30;
+		if (g_wifi_temperature > 80) g_wifi_temperature = 80;
 #endif
 	}
 
@@ -1187,6 +1195,9 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	// but DON't run autoexec if we have had 2+ boot failures
 	CMD_Init_Early();
 #if WINDOWS
+	// init random generator (used for fake temperature)
+	srand((unsigned int)rtos_get_time());
+
 	CMD_InitSimulatorOnlyCommands();
 #endif
 
