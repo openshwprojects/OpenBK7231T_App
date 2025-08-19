@@ -99,12 +99,14 @@ static portTickType pulseStamp;
 
 static void HlwCf1Interrupt(void* context)
 {
-	tls_clr_gpio_irq_status(GPIO_HLW_CF1_pin);
+	int pinIndex = (int)context;
+	tls_clr_gpio_irq_status(pinIndex); //GPIO_HLW_CF1_pin
 	g_vc_pulses++;
 }
 static void HlwCfInterrupt(void* context)
 {
-	tls_clr_gpio_irq_status(GPIO_HLW_CF_pin);
+	int pinIndex = (int)context;
+	tls_clr_gpio_irq_status(pinIndex);//GPIO_HLW_CF_pin
 	g_p_pulses++;
 }
 
@@ -355,7 +357,7 @@ void BL0937_Init_Pins()
 
 #if PLATFORM_W600
 
-	tls_gpio_isr_register(GPIO_HLW_CF1_pin, HlwCf1Interrupt, NULL);
+	tls_gpio_isr_register(GPIO_HLW_CF1_pin, HlwCf1Interrupt, GPIO_HLW_CF1_pin);
 	tls_gpio_irq_enable(GPIO_HLW_CF1_pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
 
 #elif PLATFORM_BL602
@@ -411,7 +413,7 @@ void BL0937_Init_Pins()
 
 #if PLATFORM_W600
 
-	tls_gpio_isr_register(GPIO_HLW_CF_pin, HlwCfInterrupt, NULL);
+	tls_gpio_isr_register(GPIO_HLW_CF_pin, HlwCfInterrupt, GPIO_HLW_CF_pin);
 	tls_gpio_irq_enable(GPIO_HLW_CF_pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
 
 #elif PLATFORM_BL602
