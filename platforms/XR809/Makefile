@@ -9,6 +9,7 @@ SRCS += $(OBK_SRCS)hal/xradio/hal_pins_xradio
 SRCS += $(OBK_SRCS)hal/xradio/hal_flashConfig_xradio
 SRCS += $(OBK_SRCS)hal/xradio/hal_flashVars_xradio
 SRCS += $(OBK_SRCS)hal/xradio/hal_uart_xradio
+SRCS += $(OBK_SRCS)hal/xradio/hal_ota_xradio
 SRCS += $(OBK_SRCS)hal/xradio/xr809/hal_pins_xr809
 SRCS += $(OBK_SRCS)hal/xradio/xr806/hal_pins_xr806
 SRCS += $(OBK_SRCS)hal/xradio/xr872/hal_pins_xr872

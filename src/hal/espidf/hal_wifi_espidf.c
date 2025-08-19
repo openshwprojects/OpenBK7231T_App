@@ -216,7 +216,9 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 		strncpy((char*)wifi_config.sta.ssid, (char*)oob_ssid, 32);
 		strncpy((char*)wifi_config.sta.password, (char*)connect_key, 64);
 	}
-
+#if CONFIG_ESP8266_WIFI_ENABLE_WPA3_SAE
+	wifi_config.pmf_cfg.capable = true;
+#endif
 	esp_wifi_set_mode(WIFI_MODE_STA);
 	esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
 

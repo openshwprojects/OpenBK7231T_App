@@ -2,7 +2,7 @@
 #include "main.h"
 #include "wifi_constants.h"
 #include "rom_map.h"
-#include "flash_api.h"
+#include "rtl8721d_flash.h"
 #include "device_lock.h"
 
 extern void wlan_network(void);
@@ -119,7 +119,7 @@ static void app_dslp_wake(void)
 extern void Main_Init();
 extern void Main_OnEverySecond();
 extern uint32_t ota_get_cur_index(void);
-extern flash_t flash;
+extern void WiFI_GetMacAddress(char* mac);
 
 TaskHandle_t g_sys_task_handle1;
 uint8_t wmac[6] = { 0 };
@@ -132,6 +132,7 @@ __attribute__((weak)) void _fini(void) {}
 
 static void obk_task(void* pvParameters)
 {
+	WiFI_GetMacAddress(&wmac);
 	vTaskDelay(50 / portTICK_PERIOD_MS);
 	Main_Init();
 	for(;;)
@@ -182,18 +183,9 @@ int main(void)
 	free(efuse);
 	current_fw_idx = ota_get_cur_index();
 
-	uint8_t flash_size;
-	do
-	{
-		// HACK: determine flash size by reading 0x96969999 (boot signature).
-		uint32_t fboot;
-		device_mutex_lock(RT_DEV_LOCK_FLASH);
-		flash_read_word(&flash, flash_size_8720 << 20, &fboot);
-		device_mutex_unlock(RT_DEV_LOCK_FLASH);
-		if(fboot == 0x96969999) flash_size = flash_size_8720;
-	} while((flash_size_8720 /= 2) >= 2);
-
-	flash_size_8720 = flash_size;
+	uint8_t flash_ID[4];
+	FLASH_RxCmd(flash_init_para.FLASH_cmd_rd_id, 3, flash_ID);
+	flash_size_8720 = (1 << (flash_ID[2] - 0x11)) / 8;
 	app_start_autoicg();
 	//app_shared_btmem(ENABLE);
 

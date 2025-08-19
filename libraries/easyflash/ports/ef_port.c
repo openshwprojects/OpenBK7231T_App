@@ -30,9 +30,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#if !WINDOWS
 #include "FreeRTOS.h"
 #include "semphr.h"
 #include "queue.h"
+#endif
 
 #if PLATFORM_REALTEK
 
@@ -52,6 +54,43 @@ flash_t flash;
 #include "driver/chip/hal_flash.h"
 #include <image/flash.h>
 #define QueueHandle_t xQueueHandle
+
+#elif WINDOWS
+
+#include "framework.h"
+
+#define QueueHandle_t HANDLE
+extern QueueHandle_t ef_mutex;
+
+BYTE* env_area = NULL;
+uint32_t ENV_AREA_SIZE = 0;
+
+DllExport BYTE* get_env_area(void)
+{
+	return env_area;
+}
+
+DllExport void set_env_size(uint32_t size)
+{
+	ENV_AREA_SIZE = size;
+	if(env_area) free(env_area);
+	env_area = malloc(size * sizeof(BYTE));
+}
+
+HANDLE xSemaphoreCreateMutex()
+{
+	return CreateMutex(NULL, FALSE, NULL);
+}
+
+void xSemaphoreTake(HANDLE handle, int time)
+{
+	WaitForSingleObject(ef_mutex, time);
+}
+
+void xSemaphoreGive(HANDLE handle)
+{
+	ReleaseMutex(ef_mutex);
+}
 
 #endif
 
@@ -113,6 +152,9 @@ EfErrCode ef_port_read(uint32_t addr, uint32_t* buf, size_t size)
 	if(res == 0) res = EF_READ_ERR;
 	else res = EF_NO_ERR;
 	return res;
+#elif WINDOWS
+	memcpy(buf, env_area + addr, size);
+	return EF_NO_ERR;
 #endif
 }
 
@@ -147,6 +189,8 @@ EfErrCode ef_port_erase(uint32_t addr, size_t size)
 	if(res != 0) res = EF_ERASE_ERR;
 	else res = EF_NO_ERR;
 	return res;
+#elif WINDOWS
+	memset(env_area + addr, 0xFF, size);
 #endif
 	return result;
 }
@@ -180,6 +224,9 @@ EfErrCode ef_port_write(uint32_t addr, const uint32_t* buf, size_t size)
 	if(res == 0) res = EF_WRITE_ERR;
 	else res = EF_NO_ERR;
 	return res;
+#elif WINDOWS
+	memcpy(env_area + addr, buf, size);
+	return EF_NO_ERR;
 #endif
 }
 

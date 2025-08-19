@@ -16,4 +16,7 @@ typedef struct rtlPinMapping_s
 	pwmout_t* pwm;
 } rtlPinMapping_t;
 
+extern rtlPinMapping_t g_pins[];
+extern int g_numPins;
+
 #endif // PLATFORM_REALTEK

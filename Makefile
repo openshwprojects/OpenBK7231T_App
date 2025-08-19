@@ -112,7 +112,7 @@ sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared:
 	#so only linking source and copying required file
 	@echo mkdir shared
 	mkdir sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared
-	cp ./bouffalo.mk sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared
+	cp ./platforms/BL602/bouffalo.mk sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared
 	@echo Create symlink for $(APP_NAME) into sdk folder
 	ln -s "$(shell pwd)/src/" "sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared/src"
 	ln -s "$(shell pwd)/libraries/" "sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared/libraries"
@@ -338,6 +338,24 @@ prebuild_OpenECR6600: berry
 	else echo "prebuild for OpenECR6600 not found ... "; \
 	fi
 
+prebuild_OpenRTL8721DA: berry
+	#git submodule update --init --recursive --depth=1 sdk/ameba-rtos
+	if [ ! -e sdk/ameba-rtos/amebadplus_gcc_project/menuconfig/.config ]; then cd sdk/ameba-rtos/amebadplus_gcc_project && ./menuconfig.py -f ../../../platforms/RTL8721DA/default.conf; fi
+	@if [ -e platforms/RTL8721DA/pre_build.sh ]; then \
+		echo "prebuild found for OpenRTL8721DA"; \
+		sh platforms/RTL8721DA/pre_build.sh; \
+	else echo "prebuild for OpenRTL8721DA not found ... "; \
+	fi
+
+prebuild_OpenRTL8720E: berry
+	#git submodule update --init --recursive --depth=1 sdk/ameba-rtos
+	if [ ! -e sdk/ameba-rtos/amebalite_gcc_project/menuconfig/.config ]; then cd sdk/ameba-rtos/amebalite_gcc_project && ./menuconfig.py -f ../../../platforms/RTL8720E/default.conf; fi
+	@if [ -e platforms/RTL8720E/pre_build.sh ]; then \
+		echo "prebuild found for OpenRTL8720E"; \
+		sh platforms/RTL8720E/pre_build.sh; \
+	else echo "prebuild for OpenRTL8720E not found ... "; \
+	fi
+
 # Build main binaries
 OpenBK7231T: prebuild_OpenBK7231T
 	mkdir -p output
@@ -388,12 +406,12 @@ OpenXR809: prebuild_OpenXR809 sdk/OpenXR809/project/oxr_sharedApp/shared sdk/Ope
 
 .PHONY: build-BK7231
 build-BK7231: $(SDK_PATH)/apps/$(APP_NAME)
-	cd $(SDK_PATH)/platforms/$(TARGET_PLATFORM)/toolchain/$(APPS_BUILD_PATH) && sh $(APPS_BUILD_CMD) $(APP_NAME) $(APP_VERSION) $(TARGET_PLATFORM)
+	cd $(SDK_PATH)/platforms/$(TARGET_PLATFORM)/toolchain/$(APPS_BUILD_PATH) && bash $(APPS_BUILD_CMD) $(APP_NAME) $(APP_VERSION) $(TARGET_PLATFORM)
 	rm $(SDK_PATH)/platforms/$(TARGET_PLATFORM)/toolchain/$(APPS_BUILD_PATH)/tools/generate/$(APP_NAME)_*.rbl || /bin/true
 	rm $(SDK_PATH)/platforms/$(TARGET_PLATFORM)/toolchain/$(APPS_BUILD_PATH)/tools/generate/$(APP_NAME)_*.bin || /bin/true
 
 OpenBL602: prebuild_OpenBL602 sdk/OpenBL602/customer_app/bl602_sharedApp/bl602_sharedApp/shared
-	$(MAKE) -C sdk/OpenBL602/customer_app/bl602_sharedApp USER_SW_VER=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) CONFIG_CHIP_NAME=BL602 CONFIG_LINK_ROM=1 -j
+	$(MAKE) -C sdk/OpenBL602/customer_app/bl602_sharedApp USER_SW_VER=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) CONFIG_CHIP_NAME=BL602 CONFIG_LINK_ROM=1 -j $(shell nproc)
 	$(MAKE) -C sdk/OpenBL602/customer_app/bl602_sharedApp USER_SW_VER=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) CONFIG_CHIP_NAME=BL602 bins
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenBL602/customer_app/bl602_sharedApp/build_out/bl602_sharedApp.bin output/$(APP_VERSION)/OpenBL602_$(APP_VERSION).bin
@@ -439,7 +457,7 @@ OpenESP32: prebuild_ESPIDF
 	IDF_TARGET="esp32" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake platforms/ESP-IDF -B platforms/ESP-IDF/build-32 
 	IDF_TARGET="esp32" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake --build ./platforms/ESP-IDF/build-32 -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
-	esptool.py -c esp32 merge_bin -o output/$(APP_VERSION)/OpenESP32_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x1000 ./platforms/ESP-IDF/build-32/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-32/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-32/OpenBeken.bin
+	python3 -m esptool -c esp32 merge_bin -o output/$(APP_VERSION)/OpenESP32_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x1000 ./platforms/ESP-IDF/build-32/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-32/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-32/OpenBeken.bin
 	cp ./platforms/ESP-IDF/build-32/OpenBeken.bin output/$(APP_VERSION)/OpenESP32_$(APP_VERSION).img
 
 .PHONY: OpenESP32C3
@@ -447,7 +465,7 @@ OpenESP32C3: prebuild_ESPIDF
 	IDF_TARGET="esp32c3" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake platforms/ESP-IDF -B platforms/ESP-IDF/build-c3 
 	IDF_TARGET="esp32c3" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake --build ./platforms/ESP-IDF/build-c3 -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
-	esptool.py -c esp32c3 merge_bin -o output/$(APP_VERSION)/OpenESP32C3_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x0 ./platforms/ESP-IDF/build-c3/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-c3/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-c3/OpenBeken.bin
+	python3 -m esptool -c esp32c3 merge_bin -o output/$(APP_VERSION)/OpenESP32C3_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x0 ./platforms/ESP-IDF/build-c3/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-c3/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-c3/OpenBeken.bin
 	cp ./platforms/ESP-IDF/build-c3/OpenBeken.bin output/$(APP_VERSION)/OpenESP32C3_$(APP_VERSION).img
 
 .PHONY: OpenESP32C2
@@ -455,7 +473,7 @@ OpenESP32C2: prebuild_ESPIDF
 	IDF_TARGET="esp32c2" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake platforms/ESP-IDF -B platforms/ESP-IDF/build-c2 
 	IDF_TARGET="esp32c2" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake --build ./platforms/ESP-IDF/build-c2 -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
-	esptool.py -c esp32c2 merge_bin -o output/$(APP_VERSION)/OpenESP32C2_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x0 ./platforms/ESP-IDF/build-c2/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-c2/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-c2/OpenBeken.bin
+	python3 -m esptool -c esp32c2 merge_bin -o output/$(APP_VERSION)/OpenESP32C2_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x0 ./platforms/ESP-IDF/build-c2/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-c2/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-c2/OpenBeken.bin
 	cp ./platforms/ESP-IDF/build-c2/OpenBeken.bin output/$(APP_VERSION)/OpenESP32C2_$(APP_VERSION).img
 
 .PHONY: OpenESP32C5
@@ -463,7 +481,7 @@ OpenESP32C5: prebuild_ESPIDF
 	IDF_TARGET="esp32c5" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake platforms/ESP-IDF -B platforms/ESP-IDF/build-c5 
 	IDF_TARGET="esp32c5" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake --build ./platforms/ESP-IDF/build-c5 -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
-	esptool.py -c esp32c5 merge_bin -o output/$(APP_VERSION)/OpenESP32C5_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x0 ./platforms/ESP-IDF/build-c5/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-c5/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-c5/OpenBeken.bin
+	python3 -m esptool -c esp32c5 merge_bin -o output/$(APP_VERSION)/OpenESP32C5_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x0 ./platforms/ESP-IDF/build-c5/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-c5/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-c5/OpenBeken.bin
 	cp ./platforms/ESP-IDF/build-c5/OpenBeken.bin output/$(APP_VERSION)/OpenESP32C5_$(APP_VERSION).img
 
 .PHONY: OpenESP32C61
@@ -471,7 +489,7 @@ OpenESP32C61: prebuild_ESPIDF
 	IDF_TARGET="esp32c61" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake platforms/ESP-IDF -B platforms/ESP-IDF/build-c61 
 	IDF_TARGET="esp32c61" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake --build ./platforms/ESP-IDF/build-c61 -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
-	esptool.py -c esp32c61 merge_bin -o output/$(APP_VERSION)/OpenESP32C61_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x0 ./platforms/ESP-IDF/build-c61/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-c61/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-c61/OpenBeken.bin
+	python3 -m esptool -c esp32c61 merge_bin -o output/$(APP_VERSION)/OpenESP32C61_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x0 ./platforms/ESP-IDF/build-c61/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-c61/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-c61/OpenBeken.bin
 	cp ./platforms/ESP-IDF/build-c61/OpenBeken.bin output/$(APP_VERSION)/OpenESP32C61_$(APP_VERSION).img
 
 .PHONY: OpenESP32C6
@@ -479,7 +497,7 @@ OpenESP32C6: prebuild_ESPIDF
 	IDF_TARGET="esp32c6" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake platforms/ESP-IDF -B platforms/ESP-IDF/build-c6 
 	IDF_TARGET="esp32c6" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake --build ./platforms/ESP-IDF/build-c6 -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
-	esptool.py -c esp32c6 merge_bin -o output/$(APP_VERSION)/OpenESP32C6_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x0 ./platforms/ESP-IDF/build-c6/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-c6/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-c6/OpenBeken.bin
+	python3 -m esptool -c esp32c6 merge_bin -o output/$(APP_VERSION)/OpenESP32C6_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x0 ./platforms/ESP-IDF/build-c6/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-c6/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-c6/OpenBeken.bin
 	cp ./platforms/ESP-IDF/build-c6/OpenBeken.bin output/$(APP_VERSION)/OpenESP32C6_$(APP_VERSION).img
 
 .PHONY: OpenESP32S2
@@ -487,7 +505,7 @@ OpenESP32S2: prebuild_ESPIDF
 	IDF_TARGET="esp32s2" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake platforms/ESP-IDF -B platforms/ESP-IDF/build-s2 
 	IDF_TARGET="esp32s2" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake --build ./platforms/ESP-IDF/build-s2 -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
-	esptool.py -c esp32s2 merge_bin -o output/$(APP_VERSION)/OpenESP32S2_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x1000 ./platforms/ESP-IDF/build-s2/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-s2/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-s2/OpenBeken.bin
+	python3 -m esptool -c esp32s2 merge_bin -o output/$(APP_VERSION)/OpenESP32S2_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x1000 ./platforms/ESP-IDF/build-s2/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-s2/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-s2/OpenBeken.bin
 	cp ./platforms/ESP-IDF/build-s2/OpenBeken.bin output/$(APP_VERSION)/OpenESP32S2_$(APP_VERSION).img
 
 .PHONY: OpenESP32S3
@@ -495,7 +513,7 @@ OpenESP32S3: prebuild_ESPIDF
 	IDF_TARGET="esp32s3" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake platforms/ESP-IDF -B platforms/ESP-IDF/build-s3 
 	IDF_TARGET="esp32s3" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake --build ./platforms/ESP-IDF/build-s3 -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
-	esptool.py -c esp32s3 merge_bin -o output/$(APP_VERSION)/OpenESP32S3_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x0 ./platforms/ESP-IDF/build-s3/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-s3/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-s3/OpenBeken.bin
+	python3 -m esptool -c esp32s3 merge_bin -o output/$(APP_VERSION)/OpenESP32S3_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x0 ./platforms/ESP-IDF/build-s3/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-s3/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-s3/OpenBeken.bin
 	cp ./platforms/ESP-IDF/build-s3/OpenBeken.bin output/$(APP_VERSION)/OpenESP32S3_$(APP_VERSION).img
 
 .PHONY: OpenESP8266
@@ -508,7 +526,7 @@ OpenESP8266: prebuild_ESP8266
 	-rm platforms/ESP-IDF/partitions.csv
 	cp platforms/ESP8266/partitions-1mb.csv platforms/ESP8266/partitions.csv
 	cd platforms/ESP8266/ && idf.py partition_table
-	python3 -m esptool -c esp8266 merge_bin -o output/$(APP_VERSION)/OpenESP8266_1MB_$(APP_VERSION).factory.bin --flash_mode dout --flash_size 1MB 0x0 ./platforms/ESP8266/build/bootloader/bootloader.bin 0x8000 ./platforms/ESP8266/build/partition_table/partition-table.bin 0x10000 ./platforms/ESP8266/build/OpenBeken.bin
+	python3 -m esptool -c esp8266 merge-bin -o output/$(APP_VERSION)/OpenESP8266_1MB_$(APP_VERSION).factory.bin --flash-mode dout --flash-size 1MB 0x0 ./platforms/ESP8266/build/bootloader/bootloader.bin 0x8000 ./platforms/ESP8266/build/partition_table/partition-table.bin 0x10000 ./platforms/ESP8266/build/OpenBeken.bin
 	
 .PHONY: OpenTR6260
 OpenTR6260: prebuild_OpenTR6260
@@ -542,14 +560,32 @@ OpenRTL8710A: prebuild_OpenRTL8710A
 	
 .PHONY: OpenRTL8720D
 OpenRTL8720D: prebuild_OpenRTL8720D
-	$(MAKE) -C sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_hp APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
-	$(MAKE) -C sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_lp APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
+	$(MAKE) -C sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_hp --no-print-directory APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
+	$(MAKE) -C sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_lp --no-print-directory APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
 	mkdir -p output/$(APP_VERSION)
 	touch output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION).bin
-	dd conv=notrunc bs=1 if=sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_lp/asdk/image/km0_boot_all.bin of=output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION).bin seek=0
-	dd conv=notrunc bs=1 if=sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_hp/asdk/image/km4_boot_all.bin of=output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION).bin seek=$(shell printf "%d" 0x4000)
-	dd conv=notrunc bs=1 if=sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_hp/asdk/image/km0_km4_image2.bin of=output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION).bin seek=$(shell printf "%d" 0x6000)
+	dd conv=notrunc bs=1K if=sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_lp/asdk/image/km0_boot_all.bin of=output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION).bin seek=0
+	dd conv=notrunc bs=1K if=sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_hp/asdk/image/km4_boot_all.bin of=output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION).bin seek=16
+	dd conv=notrunc bs=1K if=sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_hp/asdk/image/km0_km4_image2.bin of=output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION).bin seek=24
 	cp sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_lp/asdk/image/OTA_All.bin output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION)_ota.img
+
+.PHONY: OpenRTL8721DA
+OpenRTL8721DA: prebuild_OpenRTL8721DA
+	cd sdk/ameba-rtos/amebadplus_gcc_project && APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) ./build.py -a ../../../platforms/RTL8721DA
+	mkdir -p output/$(APP_VERSION)
+	cp sdk/ameba-rtos/amebadplus_gcc_project/km4_boot_all.bin /tmp/OpenRTL8721DA_$(APP_VERSION).bin
+	dd conv=notrunc bs=1K if=sdk/ameba-rtos/amebadplus_gcc_project/km0_km4_app.bin of=/tmp/OpenRTL8721DA_$(APP_VERSION).bin seek=80
+	mv /tmp/OpenRTL8721DA_$(APP_VERSION).bin output/$(APP_VERSION)/
+	cp sdk/ameba-rtos/amebadplus_gcc_project/ota_all.bin output/$(APP_VERSION)/OpenRTL8721DA_$(APP_VERSION)_ota.img
+
+.PHONY: OpenRTL8720E
+OpenRTL8720E: prebuild_OpenRTL8720E
+	cd sdk/ameba-rtos/amebalite_gcc_project && APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) ./build.py -a ../../../platforms/RTL8720E
+	mkdir -p output/$(APP_VERSION)
+	cp sdk/ameba-rtos/amebalite_gcc_project/km4_boot_all.bin /tmp/OpenRTL8720E_$(APP_VERSION).bin
+	dd conv=notrunc bs=1K if=sdk/ameba-rtos/amebalite_gcc_project/kr4_km4_app.bin of=/tmp/OpenRTL8720E_$(APP_VERSION).bin seek=80
+	mv /tmp/OpenRTL8720E_$(APP_VERSION).bin output/$(APP_VERSION)/
+	cp sdk/ameba-rtos/amebalite_gcc_project/ota_all.bin output/$(APP_VERSION)/OpenRTL8720E_$(APP_VERSION)_ota.img
 
 .PHONY: OpenBK7238
 OpenBK7238: prebuild_OpenBK7238
@@ -640,6 +676,10 @@ clean:
 	-test -d ./sdk/OpenRTL87X0C && $(MAKE) -C sdk/OpenRTL87X0C/project/OpenBeken/GCC-RELEASE clean
 	-test -d ./sdk/OpenRTL8710A_B && $(MAKE) -C sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE clean
 	-test -d ./sdk/OpenRTL8710A_B && $(MAKE) -C sdk/OpenRTL8710A_B/project/obk_ameba1/GCC-RELEASE clean
+	-test -d ./sdk/OpenRTL8720D && $(MAKE) -C sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_hp clean
+	-test -d ./sdk/OpenRTL8720D && $(MAKE) -C sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_lp clean
+	-test -d ./sdk/ameba-rtos && cd sdk/ameba-rtos/amebadplus_gcc_project && ./build.py -a ../../../platforms/RTL8721DA -c
+	-test -d ./sdk/ameba-rtos && cd sdk/ameba-rtos/amebalite_gcc_project && ./build.py -a ../../../platforms/RTL8720E -c
 	-test -d ./sdk/beken_freertos_sdk && $(MAKE) -C sdk/beken_freertos_sdk clean
 	-test -d ./sdk/OpenLN882H/build && cmake --build ./sdk/OpenLN882H/build --target clean
 	-test -d ./platforms/ESP-IDF/build-32 && cmake --build ./platforms/ESP-IDF/build-32 --target clean

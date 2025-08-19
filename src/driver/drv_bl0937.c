@@ -41,8 +41,7 @@
 #elif PLATFORM_REALTEK
 
 #include "gpio_irq_api.h"
-#include "../hal/realtek/hal_generic_realtek.h"
-extern rtlPinMapping_t g_pins[];
+#include "../hal/realtek/hal_pinmap_realtek.h"
 rtlPinMapping_t* rtl_cf;
 rtlPinMapping_t* rtl_cf1;
 
