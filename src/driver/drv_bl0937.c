@@ -52,14 +52,12 @@
 
 #include "../hal/xradio/hal_pinmap_xradio.h"
 extern void HAL_XR_ConfigurePin(GPIO_Port port, GPIO_Pin pin, GPIO_WorkMode mode, GPIO_PullType pull);
-xrpin_t* xr_cf;
-xrpin_t* xr_cf1;
+
 
 #elif PLATFORM_ESP8266 || PLATFORM_ESPIDF
 
 #include "../hal/espidf/hal_pinmap_espidf.h"
-espPinMapping_t* esp_cf;
-espPinMapping_t* esp_cf1;
+
 
 #else
 
@@ -255,6 +253,8 @@ void BL0937_Shutdown_Pins()
 
 #elif PLATFORM_REALTEK
 
+	rtlPinMapping_t *rtl_cf1 = g_pins + GPIO_HLW_CF1;
+	rtlPinMapping_t *rtl_cf = g_pins + GPIO_HLW_CF;
 	gpio_irq_free(rtl_cf1->irq);
 	gpio_irq_free(rtl_cf->irq);
 	os_free(rtl_cf1->irq);
@@ -268,6 +268,10 @@ void BL0937_Shutdown_Pins()
 	drv_gpio_ioctrl(GPIO_HLW_CF, DRV_GPIO_CTRL_INTR_DISABLE, 0);
 
 #elif PLATFORM_XRADIO
+	xrpin_t* xr_cf;
+	xrpin_t* xr_cf1;
+	xr_cf = g_pins + GPIO_HLW_CF;
+	xr_cf1 = g_pins + GPIO_HLW_CF1;
 
 	HAL_GPIO_DeInit(xr_cf->port, xr_cf->pin);
 	HAL_GPIO_DisableIRQ(xr_cf->port, xr_cf->pin);
@@ -275,7 +279,10 @@ void BL0937_Shutdown_Pins()
 	HAL_GPIO_DisableIRQ(xr_cf1->port, xr_cf1->pin);
 
 #elif PLATFORM_ESPIDF || PLATFORM_ESP8266
-
+	espPinMapping_t* esp_cf;
+	espPinMapping_t* esp_cf1;
+	esp_cf = g_pins + GPIO_HLW_CF;
+	esp_cf1 = g_pins + GPIO_HLW_CF1;
 	gpio_isr_handler_remove(esp_cf->pin);
 	gpio_isr_handler_remove(esp_cf1->pin);
 	gpio_uninstall_isr_service();
@@ -330,13 +337,9 @@ void BL0937_Init_Pins()
 
 #elif PLATFORM_XRADIO
 
-	xr_cf = g_pins + GPIO_HLW_CF;
-	xr_cf1 = g_pins + GPIO_HLW_CF1;
 
 #elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 
-	esp_cf = g_pins + GPIO_HLW_CF;
-	esp_cf1 = g_pins + GPIO_HLW_CF1;
 	gpio_install_isr_service(0);
 
 #endif
@@ -372,6 +375,7 @@ void BL0937_Init_Pins()
 
 #elif PLATFORM_REALTEK
 
+	rtl_cf1 = g_pins + GPIO_HLW_CF1;
 	gpio_irq_init(rtl_cf1->irq, rtl_cf1->pin, cf1_irq_handler, NULL);
 	gpio_irq_set(rtl_cf1->irq, IRQ_FALL, 1);
 	gpio_irq_enable(rtl_cf1->irq);
@@ -387,7 +391,10 @@ void BL0937_Init_Pins()
 	drv_gpio_ioctrl(GPIO_HLW_CF1, DRV_GPIO_CTRL_INTR_ENABLE, 0);
 
 #elif PLATFORM_XRADIO
-
+	xrpin_t* xr_cf;
+	xr_cf = g_pins + GPIO_HLW_CF;
+	xrpin_t* xr_cf1;
+	xr_cf1 = g_pins + GPIO_HLW_CF1;
 	HAL_XR_ConfigurePin(xr_cf1->port, xr_cf1->pin, GPIOx_Pn_F6_EINT, GPIO_PULL_UP);
 	GPIO_IrqParam cf1param;
 	cf1param.event = GPIO_IRQ_EVT_FALLING_EDGE;
@@ -396,7 +403,8 @@ void BL0937_Init_Pins()
 	HAL_GPIO_EnableIRQ(xr_cf1->port, xr_cf1->pin, &cf1param);
 
 #elif PLATFORM_ESPIDF || PLATFORM_ESP8266
-
+	espPinMapping_t* esp_cf1;
+	esp_cf1 = g_pins + GPIO_HLW_CF1;
 	ESP_ConfigurePin(esp_cf1->pin, GPIO_MODE_INPUT, true, false, GPIO_INTR_NEGEDGE);
 	gpio_isr_handler_add(esp_cf1->pin, HlwCf1Interrupt, NULL);
 
@@ -428,8 +436,7 @@ void BL0937_Init_Pins()
 
 #elif PLATFORM_REALTEK
 
-	rtlPinMapping_t *rtl_cf = g_pins + GPIO_HLW_CF;
-	rtlPinMapping_t *rtl_cf1 = g_pins + GPIO_HLW_CF1;
+	rtl_cf = g_pins + GPIO_HLW_CF;
 	gpio_irq_init(rtl_cf->irq, rtl_cf->pin, cf_irq_handler, NULL);
 	gpio_irq_set(rtl_cf->irq, IRQ_FALL, 1);
 	gpio_irq_enable(rtl_cf->irq);
@@ -445,7 +452,6 @@ void BL0937_Init_Pins()
 	drv_gpio_ioctrl(GPIO_HLW_CF, DRV_GPIO_CTRL_INTR_ENABLE, 0);
 
 #elif PLATFORM_XRADIO
-
 	HAL_XR_ConfigurePin(xr_cf->port, xr_cf->pin, GPIOx_Pn_F6_EINT, GPIO_PULL_UP);
 	GPIO_IrqParam cfparam;
 	cfparam.event = GPIO_IRQ_EVT_FALLING_EDGE;
@@ -454,7 +460,8 @@ void BL0937_Init_Pins()
 	HAL_GPIO_EnableIRQ(xr_cf->port, xr_cf->pin, &cfparam);
 
 #elif PLATFORM_ESPIDF || PLATFORM_ESP8266
-
+	espPinMapping_t* esp_cf;
+	esp_cf = g_pins + GPIO_HLW_CF;
 	ESP_ConfigurePin(esp_cf->pin, GPIO_MODE_INPUT, true, false, GPIO_INTR_NEGEDGE);
 	gpio_isr_handler_add(esp_cf->pin, HlwCfInterrupt, NULL);
 
