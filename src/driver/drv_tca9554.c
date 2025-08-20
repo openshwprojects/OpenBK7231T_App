@@ -10,12 +10,14 @@
 #include "../httpserver/new_http.h"
 #include "../hal/hal_pins.h"
 
-#define TCA9554_ADDR 0x20
+#define TCA9554_ADDR (0x20 << 1)
 #define TCA_CHANNELS 8
 
 static softI2C_t tcI2C;
 static int tca_firstChannel;
 // startDriver TCA9554 [SCL] [SDA] [FirstChannel]
+// startDriver TCA9554 41 42
+// backlog stopDriver *; startDriver TCA9554 41 42
 void TCA9554_Init() {
 
 
