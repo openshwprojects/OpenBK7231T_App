@@ -1,4 +1,7 @@
 
+#ifndef __HAL_OBK_PINS_H__
+#define __HAL_OBK_PINS_H__
+
 void HAL_PIN_SetOutputValue(int index, int iVal);
 int HAL_PIN_ReadDigitalInput(int index);
 void HAL_PIN_Setup_Input_Pulldown(int index);
@@ -29,3 +32,6 @@ void HAL_DetachInterrupt(int pinIndex);
 /// @param index 
 /// @return 
 unsigned int HAL_GetGPIOPin(int index);
+
+#endif
+
