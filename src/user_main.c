@@ -759,9 +759,12 @@ void Main_OnEverySecond()
 			}
 		}
 	}
-//	g_secondsElapsed++;
+#ifdef WINDOWS
+	g_secondsElapsed++;
+#else
 	vTaskSetTimeOutState( &myTimeout );
 	g_secondsElapsed = (int)((((uint64_t) myTimeout.xOverflowCount << (sizeof(portTickType)*8) | myTimeout.xTimeOnEntering)*portTICK_RATE_MS ) / 1000 );
+#endif
 	if (bSafeMode) {
 		safe = "[SAFE] ";
 	}
