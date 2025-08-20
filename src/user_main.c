@@ -583,6 +583,11 @@ float g_wifi_temperature = 0;
 static byte g_secondsSpentInLowMemoryWarning = 0;
 void Main_OnEverySecond()
 {
+#if PLATFORM_W600 || PLATFORM_W800
+#define TimeOut_t xTimeOutType 
+#endif
+	TimeOut_t myTimeout;	// to get uptime from xTicks 
+
 	int newMQTTState;
 	const char* safe;
 	int i;
@@ -754,8 +759,9 @@ void Main_OnEverySecond()
 			}
 		}
 	}
-
-	g_secondsElapsed++;
+//	g_secondsElapsed++;
+	vTaskSetTimeOutState( &myTimeout );
+	g_secondsElapsed = (int)((((uint64_t) myTimeout.xOverflowCount << (sizeof(portTickType)*8) | myTimeout.xTimeOnEntering)*portTICK_RATE_MS ) / 1000 );
 	if (bSafeMode) {
 		safe = "[SAFE] ";
 	}

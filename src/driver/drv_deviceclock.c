@@ -87,7 +87,10 @@ commandResult_t SetDeviceTime(const void *context, const char *cmd, const char *
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	CLOCK_setDeviceTime(Tokenizer_GetArgInteger(0));
+//	uint32_t t=Tokenizer_GetArgInteger(0);
+	uint32_t t1=atol(Tokenizer_GetArg(0));
+//	CLOCK_setDeviceTime(Tokenizer_GetArgInteger(0));
+	CLOCK_setDeviceTime(t1);
 #if ENABLE_CLOCK_DST
     	setDST();	// check if local time is DST or not and set offset
 #endif	
