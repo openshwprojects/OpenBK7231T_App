@@ -314,8 +314,6 @@ bool g_invertSEL = false;
 int GPIO_HLW_CF = 7;
 int GPIO_HLW_CF1 = 8;
 
-
-
 bool g_sel = true;
 uint32_t res_v = 0;
 uint32_t res_c = 0;
@@ -336,7 +334,6 @@ void HlwCfInterrupt(int pinNum)
 {
 	g_p_pulses++;
 }
-
 
 commandResult_t BL0937_PowerMax(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
@@ -366,7 +363,6 @@ void BL0937_Shutdown_Pins()
 {
 	HAL_DetachInterrupt(GPIO_HLW_CF);
 	HAL_DetachInterrupt(GPIO_HLW_CF1);
-
 }
 
 void BL0937_Init_Pins()
