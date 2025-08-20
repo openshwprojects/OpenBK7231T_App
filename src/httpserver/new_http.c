@@ -552,6 +552,7 @@ const char* htmlPinRoleNames[] = {
 	"DS1820_IO",
 	"PWM_ScriptOnly",
 	"PWM_ScriptOnly_n",
+	"Counter_f",
 	"error",
 	"error",
 	"error",

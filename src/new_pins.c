@@ -887,6 +887,10 @@ void CHANNEL_DoSpecialToggleAll() {
 }
 extern int g_pwmFrequency;
 
+void PIN_InterruptHandler(int gpio) {
+	int ch = g_cfg.pins.channels[gpio];
+	CHANNEL_Add(ch, 1);
+}
 void PIN_SetPinRoleForPinIndex(int index, int role) {
 	bool bDHTChange = false;
 	bool bSampleInitialState = false;
@@ -960,6 +964,9 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_ADC_Button:
 		case IOR_ADC:
 			HAL_ADC_Deinit(index);
+			break;
+		case IOR_Counter_f:
+			HAL_DetachInterrupt(index);
 			break;
 		case IOR_BridgeForward:
 		case IOR_BridgeReverse:
@@ -1150,6 +1157,9 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 #else
 			HAL_ADC_Init(index);
 #endif
+			break; 
+		case IOR_Counter_f:
+			HAL_AttachInterrupt(index, INTERRUPT_FALLING, PIN_InterruptHandler);
 			break;
 		case IOR_PWM_n:
 		case IOR_PWM_ScriptOnly:
