@@ -18,8 +18,8 @@ static softI2C_t tcI2C;
 void TCA9554_Init() {
 
 
-	tcI2C.pin_clk = 9;
-	tcI2C.pin_data = 14;
+	tcI2C.pin_clk = 41;
+	tcI2C.pin_data = 42;
 
 	Soft_I2C_PreInit(&tcI2C);
 
