@@ -19,14 +19,7 @@
 
 
 
-typedef void(*OBKInterruptHandler)(int gpio);
-typedef enum {
-	INTERRUPT_STUB,
-	INTERRUPT_RISING,
-	INTERRUPT_FALLING,
-	INTERRUPT_CHANGE,
-
-} OBKInterruptType;
+#include "../new_pins.h"
 
 OBKInterruptHandler g_handlers[PLATFORM_GPIO_MAX];
 OBKInterruptType g_modes[PLATFORM_GPIO_MAX];

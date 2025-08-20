@@ -14,6 +14,17 @@ const char* HAL_PIN_GetPinNameAlias(int index);
 // Translate name like RB5 for OBK pin index
 int HAL_PIN_Find(const char *name);
 
+typedef void(*OBKInterruptHandler)(int gpio);
+typedef enum {
+	INTERRUPT_STUB,
+	INTERRUPT_RISING,
+	INTERRUPT_FALLING,
+	INTERRUPT_CHANGE,
+
+} OBKInterruptType;
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function);
+void HAL_DetachInterrupt(int pinIndex);
+
 /// @brief Get the actual GPIO pin for the pin index.
 /// @param index 
 /// @return 
