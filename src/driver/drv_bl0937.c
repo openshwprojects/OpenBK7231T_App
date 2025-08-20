@@ -220,7 +220,7 @@ void XRadio_Interrupt(void* context) {
 void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
 	g_handlers[pinIndex] = function;
 
-	xrpin_t* = g_pins + pinIndex;
+	xrpin_t *xr_cf = g_pins + pinIndex;
 	HAL_XR_ConfigurePin(xr_cf->port, xr_cf->pin, GPIOx_Pn_F6_EINT, GPIO_PULL_UP);
 	GPIO_IrqParam cfparam;
 	cfparam.event = GPIO_IRQ_EVT_FALLING_EDGE;
