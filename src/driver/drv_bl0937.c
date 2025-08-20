@@ -3,22 +3,8 @@
 #include "../obk_config.h"
 
 
-#if ENABLE_DRIVER_BL0937
 
-//dummy
-#include <math.h>
-
-#include "../cmnds/cmd_public.h"
 #include "../hal/hal_pins.h"
-#include "../logging/logging.h"
-#include "../new_cfg.h"
-#include "../new_pins.h"
-#include "drv_bl_shared.h"
-#include "drv_pwrCal.h"
-#include "drv_uart.h"
-
-
-
 #include "../new_pins.h"
 
 OBKInterruptHandler g_handlers[PLATFORM_GPIO_MAX];
@@ -295,6 +281,26 @@ void HAL_DetachInterrupt(int pinIndex) {
 
 
 #endif
+
+
+
+#if ENABLE_DRIVER_BL0937
+
+//dummy
+#include <math.h>
+
+#include "../cmnds/cmd_public.h"
+#include "../hal/hal_pins.h"
+#include "../logging/logging.h"
+#include "../new_cfg.h"
+#include "../new_pins.h"
+#include "drv_bl_shared.h"
+#include "drv_pwrCal.h"
+#include "drv_uart.h"
+
+
+
+
 
 #define DEFAULT_VOLTAGE_CAL 0.13253012048f
 #define DEFAULT_CURRENT_CAL 0.0118577075f
