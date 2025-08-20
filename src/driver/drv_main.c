@@ -51,7 +51,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"TCA9554.",
 	//drvdetail:"requires":""}
-	{ "TCA9554",		TCA9554_Init,			TCA9554_OnEverySecond,			NULL, NULL, NULL, NULL, NULL, false },
+	{ "TCA9554",		TCA9554_Init,			TCA9554_OnEverySecond,			NULL, NULL, NULL, TCA9554_OnChannelChanged , NULL, false },
 #endif
 #if ENABLE_DRIVER_FREEZE
 	//drvdetail:{"name":"FREEZE",

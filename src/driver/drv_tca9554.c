@@ -10,21 +10,28 @@
 #include "../httpserver/new_http.h"
 #include "../hal/hal_pins.h"
 
-#define SGP_I2C_ADDRESS (0x58 << 1)
+#define TCA9554_ADDR 0x20
+#define TCA_CHANNELS 8
 
 static softI2C_t tcI2C;
-
-// startDriver TCA9554
+static int tca_firstChannel;
+// startDriver TCA9554 [SCL] [SDA] [FirstChannel]
 void TCA9554_Init() {
 
 
-	tcI2C.pin_clk = 41;
-	tcI2C.pin_data = 42;
+	tcI2C.pin_clk = Tokenizer_GetArgIntegerDefault(2, 41);
+	tcI2C.pin_data = Tokenizer_GetArgIntegerDefault(3, 42);
+	tca_firstChannel = Tokenizer_GetArgIntegerDefault(4, 8);
 
 	Soft_I2C_PreInit(&tcI2C);
 
 }
-#define TCA9554_ADDR 0x20
+void TCA9554_OnChannelChanged(int ch, int value) {
+	if (ch >= tca_firstChannel && ch < (tca_firstChannel + TCA_CHANNELS)) {
+		int local = ch - tca_firstChannel;
+
+	}
+}
 int x = 0;
 void TCA9554_OnEverySecond()
 {

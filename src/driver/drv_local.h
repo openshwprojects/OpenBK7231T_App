@@ -188,6 +188,7 @@ void MAX31855_RunEverySecond();
 
 void TCA9554_Init();
 void TCA9554_OnEverySecond();
+void TCA9554_OnChannelChanged(int ch, int value);
 
 void PWMG_Init();
 
