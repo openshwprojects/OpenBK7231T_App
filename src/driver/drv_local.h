@@ -186,6 +186,9 @@ void MAX6675_RunEverySecond(void);
 void MAX31855_Init();
 void MAX31855_RunEverySecond();
 
+void TCA9554_Init();
+void TCA9554_OnEverySecond();
+
 void PWMG_Init();
 
 void Freeze_Init();
