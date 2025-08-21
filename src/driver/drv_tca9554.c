@@ -21,6 +21,19 @@ static int tca_values = 0;
 // startDriver TCA9554 [SCL] [SDA] [FirstChannel] [Adr]
 // startDriver TCA9554 41 42 8
 // backlog stopDriver *; startDriver TCA9554 41 42 8
+/*
+startDriver TCA9554 41 42 0
+setChannelType 0 Toggle
+setChannelType 1 Toggle
+setChannelType 2 Toggle
+setChannelType 3 Toggle
+setChannelType 4 Toggle
+setChannelType 5 Toggle
+setChannelType 6 Toggle
+setChannelType 7 Toggle
+
+
+*/
 void TCA9554_Init() {
 	tcI2C.pin_clk = Tokenizer_GetArgIntegerDefault(2, 41);
 	tcI2C.pin_data = Tokenizer_GetArgIntegerDefault(3, 42);
@@ -53,7 +66,22 @@ void TCA9554_OnChannelChanged(int ch, int value) {
 		TCA9954_ApplyChanges(); // write changes to TCA9554
 	}
 }
+
 void TCA9554_OnEverySecond()
 {
+	static int x = 0;
+	// launch measurement on sensor. 
+	Soft_I2C_Start(&tcI2C, tca_adr);
+	Soft_I2C_WriteByte(&tcI2C, 0x03);
+	Soft_I2C_WriteByte(&tcI2C, 0x00);
+	Soft_I2C_Stop(&tcI2C);
+
+	rtos_delay_milliseconds(12);
+	Soft_I2C_Start(&tcI2C, tca_adr);
+	Soft_I2C_WriteByte(&tcI2C, 0x01);
+	Soft_I2C_WriteByte(&tcI2C, x);
+	Soft_I2C_Stop(&tcI2C);
+
+	x = ~x;
 }
 
