@@ -28,6 +28,9 @@ void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandle
 	gpio_int_enable(pinIndex, IRQ_TRIGGER_FALLING_EDGE, Beken_Interrupt);
 }
 void HAL_DetachInterrupt(int pinIndex) {
+	if (g_handlers[pinIndex] == 0) {
+		return; // already removed;
+	}
 	gpio_int_disable(pinIndex);
 	g_handlers[pinIndex] = 0;
 }
@@ -48,6 +51,9 @@ void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandle
 	tls_gpio_irq_enable(w600Pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
 }
 void HAL_DetachInterrupt(int pinIndex) {
+	if (g_handlers[pinIndex] == 0) {
+		return; // already removed;
+	}
 	int w600Pin = HAL_GetGPIOPin(pinIndex);
 	tls_gpio_irq_disable(w600Pin);
 	g_handlers[pinIndex] = 0;
@@ -74,7 +80,9 @@ void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandle
 		GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_PULSE, (void*)pinIndex);
 }
 void HAL_DetachInterrupt(int pinIndex) {
-
+	if (g_handlers[pinIndex] == 0) {
+		return; // already removed;
+	}
 	g_handlers[pinIndex] = 0;
 }
 
@@ -130,6 +138,9 @@ void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandle
 }
 
 void HAL_DetachInterrupt(int pinIndex) {
+	if (g_handlers[pinIndex] == 0) {
+		return; // already removed;
+	}
 	g_handlers[pinIndex] = 0;
 }
 
@@ -167,6 +178,9 @@ void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandle
 
 }
 void HAL_DetachInterrupt(int pinIndex) {
+	if (g_handlers[pinIndex] == 0) {
+		return; // already removed;
+	}
 	rtlPinMapping_t *rtl_cf = g_pins + pinIndex;
 	gpio_irq_free(rtl_cf->irq);
 	os_free(rtl_cf->irq);
@@ -198,6 +212,9 @@ void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandle
 
 }
 void HAL_DetachInterrupt(int pinIndex) {
+	if (g_handlers[pinIndex] == 0) {
+		return; // already removed;
+	}
 
 	drv_gpio_ioctrl(pinIndex, DRV_GPIO_CTRL_INTR_DISABLE, 0);
 	g_handlers[pinIndex] = 0;
@@ -230,6 +247,9 @@ void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandle
 
 }
 void HAL_DetachInterrupt(int pinIndex) {
+	if (g_handlers[pinIndex] == 0) {
+		return; // already removed;
+	}
 	xrpin_t* xr_cf;
 	xr_cf = g_pins + pinIndex;
 	HAL_GPIO_DeInit(xr_cf->port, xr_cf->pin);
@@ -262,6 +282,9 @@ void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandle
 	gpio_isr_handler_add(esp_cf->pin, ESP_Interrupt, (void*)pinIndex);
 }
 void HAL_DetachInterrupt(int pinIndex) {
+	if (g_handlers[pinIndex] == 0) {
+		return; // already removed;
+	}
 
 	espPinMapping_t* esp_cf;
 	esp_cf = g_pins + pinIndex;
