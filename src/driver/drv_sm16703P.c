@@ -61,6 +61,9 @@ bool SM16703P_VerifyPixel(uint32_t pixel, byte r, byte g, byte b) {
 void SM16703P_setPixel(int pixel, int r, int g, int b, int c, int w) {
 	if (!spiLED.ready)
 		return;
+	if(pixel < 0 || pixel >= pixel_count) {
+		return; // out of range - would crash
+	}
 	int i;
 	for(i = 0; i < pixel_size; i++) 
 	{
