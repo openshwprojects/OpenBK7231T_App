@@ -586,8 +586,9 @@ void Main_OnEverySecond()
 #if PLATFORM_W600 || PLATFORM_W800
 #define TimeOut_t xTimeOutType 
 #endif
-	TimeOut_t myTimeout;	// to get uptime from xTicks 
-
+#ifndef WINDOWS
+	TimeOut_t myTimeout;	// to get uptime from xTicks - not working on WINDOWS
+#endif
 	int newMQTTState;
 	const char* safe;
 	int i;

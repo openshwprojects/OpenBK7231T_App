@@ -97,8 +97,6 @@
 #define ENABLE_DRIVER_DS1820					1
 #define ENABLE_DRIVER_DHT						1
 #define ENABLE_NTP								1
-#define ENABLE_CLOCK_DST						1
-#define ENABLE_CLOCK_PMNTP						1
 #define ENABLE_DRIVER_BMPI2C					1
 #define ENABLE_DRIVER_CHT83XX					1
 #define ENABLE_I2C								1
@@ -107,9 +105,6 @@
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 #define ENABLE_LITTLEFS							1
 #define NEW_TCP_SERVER							1
-#define ENABLE_CLOCK_SUNRISE_SUNSET				1
-// parse things like $CH1 or $hour etc
-#define ENABLE_EXPAND_CONSTANT					1
 
 #elif WINDOWS
 
