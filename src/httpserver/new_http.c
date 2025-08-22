@@ -553,7 +553,7 @@ const char* htmlPinRoleNames[] = {
 	"PWM_ScriptOnly",
 	"PWM_ScriptOnly_n",
 	"Counter_f",
-	"error",
+	"Counter_r",
 	"error",
 	"error",
 	"error",

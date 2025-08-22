@@ -990,6 +990,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			HAL_ADC_Deinit(index);
 			break;
 		case IOR_Counter_f:
+		case IOR_Counter_r:
 			HAL_DetachInterrupt(index);
 			break;
 		case IOR_BridgeForward:
@@ -1183,8 +1184,12 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 #endif
 			break; 
 		case IOR_Counter_f:
-			HAL_PIN_Setup_Input(index);
+			HAL_PIN_Setup_Input_Pullup(index);
 			HAL_AttachInterrupt(index, INTERRUPT_FALLING, PIN_InterruptHandler);
+			break;
+		case IOR_Counter_r:
+			HAL_PIN_Setup_Input_Pullup(index);
+			HAL_AttachInterrupt(index, INTERRUPT_RISING, PIN_InterruptHandler);
 			break;
 		case IOR_PWM_n:
 		case IOR_PWM_ScriptOnly:

@@ -25,7 +25,14 @@ void Beken_Interrupt(unsigned char pinNum) {
 
 void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
 	g_handlers[pinIndex] = function;
-	gpio_int_enable(pinIndex, IRQ_TRIGGER_FALLING_EDGE, Beken_Interrupt);
+	int bk_mode;
+	if (mode == INTERRUPT_RISING) {
+		bk_mode = IRQ_TRIGGER_RISING_EDGE;
+	}
+	else {
+		bk_mode = IRQ_TRIGGER_FALLING_EDGE;
+	}
+	gpio_int_enable(pinIndex, bk_mode, Beken_Interrupt);
 }
 void HAL_DetachInterrupt(int pinIndex) {
 	if (g_handlers[pinIndex] == 0) {
@@ -50,7 +57,14 @@ void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandle
 	g_handlers[pinIndex] = function;
 	int w600Pin = HAL_GetGPIOPin(pinIndex); 
 	tls_gpio_isr_register(w600Pin, W600_Interrupt, (void*)(intptr_t)pinIndex);
-	tls_gpio_irq_enable(w600Pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
+	int w_mode;
+	if (mode == INTERRUPT_RISING) {
+		w_mode = WM_GPIO_IRQ_TRIG_RISING_EDGE;
+	}
+	else {
+		w_mode = WM_GPIO_IRQ_TRIG_FALLING_EDGE;
+	}
+	tls_gpio_irq_enable(w600Pin, w_mode);
 }
 void HAL_DetachInterrupt(int pinIndex) {
 	if (g_handlers[pinIndex] == 0) {
@@ -132,7 +146,14 @@ void GPIOB_IRQHandler()
 void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
 	g_handlers[pinIndex] = function;
 
-	hal_gpio_pin_it_cfg(GetBaseForPin(pinIndex), GetGPIOForPin(pinIndex), GPIO_INT_FALLING);
+	int ln_mode;
+	if (mode == INTERRUPT_RISING) {
+		ln_mode = GPIO_INT_RISING;
+	}
+	else {
+		ln_mode = GPIO_INT_FALLING;
+	}
+	hal_gpio_pin_it_cfg(GetBaseForPin(pinIndex), GetGPIOForPin(pinIndex), ln_mode);
 	hal_gpio_pin_it_en(GetBaseForPin(pinIndex), GetGPIOForPin(pinIndex), HAL_ENABLE);
 	NVIC_SetPriority(GetIRQForPin(pinIndex), 1);
 	NVIC_EnableIRQ(GetIRQForPin(pinIndex));
