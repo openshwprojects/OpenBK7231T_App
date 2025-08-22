@@ -35,7 +35,7 @@ void HAL_DetachInterrupt(int pinIndex) {
 	g_handlers[pinIndex] = 0;
 }
 
-#elif PLATFORM_W600
+#elif PLATFORM_W600 || PLATFORM_W800
 
 void W600_Interrupt(void* context) {
 	int obkPinNum = (int)context;
