@@ -94,8 +94,8 @@
 #define ENABLE_DRIVER_SHT3X						1
 #define ENABLE_DRIVER_AHT2X						1
 #define ENABLE_TASMOTA_JSON						1
-#define ENABLE_DRIVER_DS1820					1
-#define ENABLE_DRIVER_DHT						1
+//#define ENABLE_DRIVER_DS1820					1
+//#define ENABLE_DRIVER_DHT						1
 #define ENABLE_NTP								1
 #define ENABLE_DRIVER_BMPI2C					1
 #define ENABLE_DRIVER_CHT83XX					1
@@ -103,7 +103,7 @@
 #define ENABLE_OBK_SCRIPTING					1
 #define ENABLE_OBK_BERRY						1
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
-#define ENABLE_LITTLEFS							1
+//#define ENABLE_LITTLEFS							1
 #define NEW_TCP_SERVER							1
 
 #elif WINDOWS
@@ -121,13 +121,13 @@
 #define ENABLE_DRIVER_TESTSPIFLASH				1
 
 #define ENABLE_HTTP_OVERRIDE					1
-#define ENABLE_DRIVER_TCL						1
-#define ENABLE_DRIVER_PIR						1
+//#define ENABLE_DRIVER_TCL						1
+//#define ENABLE_DRIVER_PIR						1
 #define ENABLE_HA_DISCOVERY						1
 #define ENABLE_SEND_POSTANDGET					1
 #define ENABLE_MQTT								1
 #define ENABLE_TASMOTADEVICEGROUPS				1
-#define ENABLE_LITTLEFS							1
+//#define ENABLE_LITTLEFS							1
 #define ENABLE_NTP								1
 #define ENABLE_NTP_DST							1
 #define ENABLE_DRIVER_LED						1
@@ -167,7 +167,7 @@
 #define ENABLE_DRIVER_ADCBUTTON					1
 #define ENABLE_DRIVER_SM15155E					1
 // #define ENABLE_DRIVER_IR						1
-// #define ENABLE_DRIVER_IR2					1
+#define ENABLE_DRIVER_IR2					1
 #define ENABLE_DRIVER_CHARTS					1
 #define ENABLE_DRIVER_WIDGET					1
 #define ENABLE_DRIVER_OPENWEATHERMAP			1
@@ -256,6 +256,8 @@
 #define ENABLE_DRIVER_SM16703P					1
 #define ENABLE_DRIVER_PIXELANIM					1
 #define ENABLE_DRIVER_SM15155E					1
+#define IR_RAW_BUFFER_LENGTH 1024
+
 #endif
 // parse things like $CH1 or $hour etc
 #define ENABLE_EXPAND_CONSTANT					1
