@@ -1183,6 +1183,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 #endif
 			break; 
 		case IOR_Counter_f:
+			HAL_PIN_Setup_Input(index);
 			HAL_AttachInterrupt(index, INTERRUPT_FALLING, PIN_InterruptHandler);
 			break;
 		case IOR_PWM_n:
