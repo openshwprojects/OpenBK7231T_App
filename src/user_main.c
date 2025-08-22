@@ -762,6 +762,8 @@ void Main_OnEverySecond()
 	}
 #ifdef WINDOWS
 	g_secondsElapsed++;
+#elif defined(PLATFORM_ESPIDF) //|| defined(PLATFORM_ESP8266)
+	g_secondsElapsed = (int)(esp_timer_get_time() / 1000000);
 #else
 	vTaskSetTimeOutState( &myTimeout );
 	g_secondsElapsed = (int)((((uint64_t) myTimeout.xOverflowCount << (sizeof(portTickType)*8) | myTimeout.xTimeOnEntering)*portTICK_RATE_MS ) / 1000 );
