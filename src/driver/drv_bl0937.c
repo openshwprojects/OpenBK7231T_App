@@ -42,6 +42,8 @@ void W600_Interrupt(void* context) {
 	if (g_handlers[obkPinNum]) {
 		g_handlers[obkPinNum](obkPinNum);
 	}
+	int w600Pin = HAL_GetGPIOPin(obkPinNum);
+	tls_clr_gpio_irq_status(w600Pin);
 }
 
 void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
