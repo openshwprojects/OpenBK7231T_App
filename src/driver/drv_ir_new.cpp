@@ -421,7 +421,7 @@ DRV_IR_ISR()
 		uint32_t duty = pIRsend->pwmduty;
 		if (!pinval) {
 			if (gIRPinPolarity) {
-				duty = 100;
+				duty = 50;
 			}
 			else {
 				duty = 0;
