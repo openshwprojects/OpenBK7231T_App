@@ -46,6 +46,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "tmSensor",	TuyaMCU_Sensor_Init, TuyaMCU_Sensor_RunEverySecond,	NULL, NULL, NULL, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_TCA9554
+	//drvdetail:{"name":"TCA9554",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TCA9554.",
+	//drvdetail:"requires":""}
+	{ "TCA9554",		TCA9554_Init,			TCA9554_OnEverySecond,			NULL, NULL, NULL, TCA9554_OnChannelChanged , NULL, false },
+#endif
 #if ENABLE_DRIVER_FREEZE
 	//drvdetail:{"name":"FREEZE",
 	//drvdetail:"title":"TODO",
