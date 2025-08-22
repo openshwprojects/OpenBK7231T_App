@@ -92,8 +92,15 @@ void BL602_Interrupt(void* context) {
 
 void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
 	g_handlers[pinIndex] = function;
+	int bl_mode;
+	if (mode == INTERRUPT_RISING) {
+		bl_mode = GPIO_INT_TRIG_POS_PULSE;
+	}
+	else {
+		bl_mode = GPIO_INT_TRIG_NEG_PULSE;
+	}
 	hal_gpio_register_handler(BL602_Interrupt, pinIndex,
-		GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_PULSE, (void*)pinIndex);
+		GPIO_INT_CONTROL_ASYNC, bl_mode, (void*)pinIndex);
 }
 void HAL_DetachInterrupt(int pinIndex) {
 	if (g_handlers[pinIndex] == 0) {
@@ -195,8 +202,15 @@ void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandle
 	rtl_cf->irq = os_malloc(sizeof(gpio_irq_t));
 	memset(rtl_cf->irq, 0, sizeof(gpio_irq_t));
 
+	int rtl_mode;
+	if (mode == INTERRUPT_RISING) {
+		rtl_mode = IRQ_RISE;
+	}
+	else {
+		rtl_mode = IRQ_FALL;
+	}
 	gpio_irq_init(rtl_cf->irq, rtl_cf->pin, Realtek_Interrupt, pinIndex);
-	gpio_irq_set(rtl_cf->irq, IRQ_FALL, 1);
+	gpio_irq_set(rtl_cf->irq, rtl_mode, 1);
 	gpio_irq_enable(rtl_cf->irq);
 
 }
