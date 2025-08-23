@@ -7,7 +7,7 @@
 #include "http_fns.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
-#include "../ota/ota.h"
+#include "../hal/hal_ota.h"
 #include "../hal/hal_wifi.h"
 #include "../base64/base64.h"
 #include "http_basic_auth.h"

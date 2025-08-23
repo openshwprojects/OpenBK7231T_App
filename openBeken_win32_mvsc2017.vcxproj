@@ -240,6 +240,7 @@
     <ClCompile Include="src\driver\drv_ntp.c" />
     <ClCompile Include="src\driver\drv_ntp_events.c" />
     <ClCompile Include="src\driver\drv_openWeatherMap.c" />
+    <ClCompile Include="src\driver\drv_pinMutex.c" />
     <ClCompile Include="src\driver\drv_pir.c" />
     <ClCompile Include="src\driver\drv_pixelAnim.c" />
     <ClCompile Include="src\driver\drv_pt6523.c" />
@@ -254,10 +255,13 @@
     <ClCompile Include="src\driver\drv_sm2135.c" />
     <ClCompile Include="src\driver\drv_sm2235.c" />
     <ClCompile Include="src\driver\drv_soft_i2c.c" />
+    <ClCompile Include="src\driver\drv_soft_spi.c" />
     <ClCompile Include="src\driver\drv_spi.c" />
     <ClCompile Include="src\driver\drv_spiLED.c" />
+    <ClCompile Include="src\driver\drv_spi_flash.c" />
     <ClCompile Include="src\driver\drv_ssdp.c" />
     <ClCompile Include="src\driver\drv_tasmotaDeviceGroups.c" />
+    <ClCompile Include="src\driver\drv_tca9554.c" />
     <ClCompile Include="src\driver\drv_tclAC.c" />
     <ClCompile Include="src\driver\drv_test.c" />
     <ClCompile Include="src\driver\drv_test_charts.c" />
@@ -357,6 +361,7 @@
     <ClCompile Include="src\hal\win32\hal_flashVars_win32.c" />
     <ClCompile Include="src\hal\win32\hal_generic_win32.c" />
     <ClCompile Include="src\hal\win32\hal_main_win32.c" />
+    <ClCompile Include="src\hal\win32\hal_ota_win32.c" />
     <ClCompile Include="src\hal\win32\hal_pins_win32.c" />
     <ClCompile Include="src\hal\win32\hal_wifi_win32.c" />
     <ClCompile Include="src\hal\win32\hal_uart_win32.c" />
@@ -940,6 +945,7 @@
     <ClInclude Include="src\driver\drv_sgp.h" />
     <ClInclude Include="src\driver\drv_sht3x.h" />
     <ClInclude Include="src\driver\drv_sm2235.h" />
+    <ClInclude Include="src\driver\drv_soft_spi.h" />
     <ClInclude Include="src\driver\drv_spiLED.h" />
     <ClInclude Include="src\driver\drv_test_drivers.h" />
     <ClInclude Include="src\driver\drv_tm1637.h" />

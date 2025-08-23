@@ -28,7 +28,7 @@
 #include "httpserver/http_tcp_server.h"
 #include "httpserver/rest_interface.h"
 #include "mqtt/new_mqtt.h"
-#include "ota/ota.h"
+#include "hal/hal_ota.h"
 
 #if ENABLE_LITTLEFS
 #include "littlefs/our_lfs.h"
@@ -105,6 +105,40 @@ int DRV_SSDP_Active = 0;
 
 void Main_ForceUnsafeInit();
 
+
+
+// TEMPORARY
+int ota_status = -1;
+int total_bytes = 0;
+
+int OTA_GetProgress()
+{
+	return ota_status;
+}
+
+void OTA_ResetProgress()
+{
+	ota_status = -1;
+}
+
+void OTA_IncrementProgress(int value)
+{
+	ota_status += value;
+}
+
+int OTA_GetTotalBytes()
+{
+	return total_bytes;
+}
+
+void OTA_SetTotalBytes(int value)
+{
+	total_bytes = value;
+}
+
+
+
+
 #if PLATFORM_XR806 || PLATFORM_XR872
 size_t xPortGetFreeHeapSize()
 {
@@ -162,7 +196,7 @@ void extended_app_waiting_for_launch2(void) {
 #endif
 
 
-#if defined(PLATFORM_LN882H) || defined(PLATFORM_ESPIDF) || defined(PLATFORM_ESP8266)
+#if PLATFORM_LN882H || PLATFORM_ESPIDF || PLATFORM_ESP8266 || PLATFORM_REALTEK_NEW
 
 int LWIP_GetMaxSockets() {
 	return 0;
@@ -625,9 +659,7 @@ void Main_OnEverySecond()
 #endif
 #endif
 
-#if PLATFORM_BK7231N || PLATFORM_BK7231T
-	if (ota_progress() == -1)
-#endif
+	if (OTA_GetProgress() == -1)
 	{
 		CFG_Save_IfThereArePendingChanges();
 	}
@@ -961,7 +993,7 @@ void QuickTick(void* param)
 #endif
 	CMD_RunUartCmndIfRequired();
 
-	// process recieved messages here..
+	// process received messages here..
 #if ENABLE_MQTT
 	MQTT_RunQuickTick();
 #endif
@@ -998,10 +1030,10 @@ void QuickTick(void* param)
 
 }
 
-#if PLATFORM_ESP8266 || PLATFORM_ESPIDF
-#define QT_STACK_SIZE 2048
+#if PLATFORM_ESP8266 || PLATFORM_TR6260
+#define QT_STACK_SIZE 1536
 #else
-#define QT_STACK_SIZE 1024
+#define QT_STACK_SIZE 2048
 #endif
 
 ////////////////////////////////////////////////////////
@@ -1009,7 +1041,7 @@ void QuickTick(void* param)
 #if WINDOWS
 
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600 \
-	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF
+	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_XRADIO || PLATFORM_LN882H
 void quick_timer_thread(void* param)
 {
 	while (1) {
@@ -1017,8 +1049,6 @@ void quick_timer_thread(void* param)
 		QuickTick(0);
 	}
 }
-#elif PLATFORM_XRADIO || PLATFORM_LN882H
-OS_Timer_t g_quick_timer;
 #else
 beken_timer_t g_quick_timer;
 #endif
@@ -1027,18 +1057,8 @@ void QuickTick_StartThread(void)
 #if WINDOWS
 
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600 \
-	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF
+	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_XRADIO || PLATFORM_LN882H
 	xTaskCreate(quick_timer_thread, "quick", QT_STACK_SIZE, NULL, 15, NULL);
-#elif PLATFORM_XRADIO || PLATFORM_LN882H
-
-	OS_TimerSetInvalid(&g_quick_timer);
-	if (OS_TimerCreate(&g_quick_timer, OS_TIMER_PERIODIC, QuickTick, NULL,
-		QUICK_TMR_DURATION) != OS_OK) {
-		printf("Quick timer create failed\n");
-		return;
-	}
-
-	OS_TimerStart(&g_quick_timer); /* start OS timer to feed watchdog */
 #else
 	OSStatus result;
 

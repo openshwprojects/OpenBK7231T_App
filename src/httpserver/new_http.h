@@ -97,5 +97,7 @@ int HTTP_RegisterCallback(const char* url, int method, http_callback_fn callback
 
 int my_strnicmp(const char* a, const char* b, int len);
 
+int http_rest_error(http_request_t* request, int code, char* msg);
+
 #endif
 

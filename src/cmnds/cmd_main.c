@@ -23,6 +23,8 @@ int cmd_uartInitIndex = 0;
 #endif
 #ifdef PLATFORM_BL602
 #include <wifi_mgmr_ext.h>
+#include "bl_flash.h"
+#include "bl602_hbn.h"
 #elif PLATFORM_LN882H
 #include <wifi.h>
 #include <power_mgmt/ln_pm.h>
@@ -47,7 +49,9 @@ extern void rtw_enable_wlan_low_pwr_mode(WLAN_LOW_PW_MODE mode);
 #elif PLATFORM_RTL8720D
 extern void SystemSetCpuClk(unsigned char CpuClk);
 #endif
+#if !PLATFORM_REALTEK_NEW
 #include "wifi_conf.h"
+#endif
 int g_sleepfactor = 1;
 #elif PLATFORM_BEKEN_NEW
 #include "co_math.h"
@@ -64,6 +68,8 @@ int g_sleepfactor = 1;
 #else
 #define DEEP_SLEEP PM_MODE_HIBERNATION
 #endif
+#elif PLATFORM_ECR6600
+#include "psm_system.h"
 #endif
 
 #define HASH_SIZE 128
@@ -294,6 +300,21 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	{
 		wlan_set_ps_mode(g_wlan_netif, 0);
 	}
+#elif PLATFORM_ECR6600
+	if (bOn)
+	{
+		psm_set_psm_enable(1);
+		PSM_SLEEP_SET(MODEM_SLEEP_EN);
+		if(bOn >= 2) PSM_SLEEP_SET(WFI_SLEEP_EN);
+		PSM_SLEEP_CLEAR(LIGHT_SLEEP_EN);
+	}
+	else
+	{
+		psm_sleep_mode_ena_op(true, 0);
+		psm_set_psm_enable(0);
+		psm_pwr_mgt_ctrl(0);
+		psm_sleep_mode_ena_op(true, 0);
+	}
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave is not implemented on this platform");
 #endif
@@ -330,17 +351,45 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 	return CMD_RES_OK;
 #elif defined(PLATFORM_W600)
 #elif PLATFORM_ESPIDF
-	esp_sleep_enable_timer_wakeup(timeMS * 1000);
+	esp_sleep_enable_timer_wakeup(timeMS * 1000000);
 #if CONFIG_IDF_TARGET_ESP32
 	rtc_gpio_isolate(GPIO_NUM_12);
 #endif
 	esp_deep_sleep_start();
 #elif PLATFORM_ESP8266
 	esp_wifi_stop();
-	esp_deep_sleep(timeMS * 1000);
+	esp_deep_sleep(timeMS * 1000000);
 #elif PLATFORM_XRADIO
 	HAL_Wakeup_SetTimer_mS(timeMS * DS_MS_TO_S);
 	pm_enter_mode(DEEP_SLEEP);
+#elif PLATFORM_BL602
+	HBN_APP_CFG_Type cfg = {
+		.useXtal32k = 0,
+		.sleepTime = timeMS,
+		.gpioWakeupSrc = HBN_WAKEUP_GPIO_NONE,
+		.gpioTrigType = HBN_GPIO_INT_TRIGGER_ASYNC_FALLING_EDGE,
+		.flashCfg = bl_flash_get_flashCfg(),
+		.hbnLevel = HBN_LEVEL_1,
+		.ldoLevel = HBN_LDO_LEVEL_1P10V,
+	};
+	HBN_Mode_Enter(&cfg);
+#elif PLATFORM_ECR6600
+	//unsigned int sleep_time;
+	//if(timeMS < 1000)
+	//{
+	//	sleep_time = 1;
+	//}
+	//else
+	//{
+	//	sleep_time = (timeMS + 1000 - 1) / 1000;
+	//}
+	// not working
+	//psm_set_deep_sleep(sleep_time);
+	// not working
+	//psm_enter_sleep(DEEP_SLEEP);
+	// this works fine, but wifi will not receive anything after waking up, and only full power cycle will fix it up.
+	drv_rtc_set_alarm_relative(timeMS * 1000 * 33);
+	psm_enter_deep_sleep();
 #endif
 
 	return CMD_RES_OK;
@@ -958,7 +1007,7 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DeepSleep", CMD_DeepSleep, NULL);
 	//cmddetail:{"name":"PowerSave","args":"[Optional 1 or 0, by default 1 is assumed]",
-	//cmddetail:"descr":"Enables dynamic power saving mode on Beken N/T, BL602, W600, W800 and LN882H. In the case of LN882H PowerSave will not work as a startup command, so use in autoexec. On LN882H PowerSave 1 = light sleep and Powersave >1 (eg PowerSave 2) = deeper sleep. On LN882H PowerSave 1 should be used if BL0937 metering is present. On all supported platforms PowerSave 0 can be used to disable power saving.",
+	//cmddetail:"descr":"Enables dynamic power saving mode on all platforms with the exception of TR6260. On LN882H PowerSave 1 = light sleep and Powersave >1 (eg PowerSave 2) = deeper sleep. On LN882H PowerSave 1 should be used if BL0937 metering is present. On all supported platforms PowerSave 0 can be used to disable power saving.",
 	//cmddetail:"fn":"CMD_PowerSave","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PowerSave", CMD_PowerSave, NULL);
@@ -1065,7 +1114,6 @@ void CMD_Init_Early() {
 			CMD_UARTConsole_Init();
 		}
 	}
-	//DRV_InitFlashMemoryTestFunctions();
 }
 
 

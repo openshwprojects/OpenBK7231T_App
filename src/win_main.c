@@ -610,12 +610,6 @@ void otarequest(const char *urlin) {
 	return;
 }
 
-int ota_progress() {
-	return 0;
-}
-int ota_total_bytes() {
-	return 0;
-}
 
 
 
