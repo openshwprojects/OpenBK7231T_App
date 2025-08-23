@@ -149,8 +149,8 @@ END {
 	sub(/,$/, "", channels1)
 	sub(/,$/, "", channels2)
 	sub(/,$/, "", chdesc_list)
-	sub(/[:space:]*||[:space:]*$/, "", ch0rule)
-	sub(/[:space:]*||[:space:]*$/, "", ch2rule)
+	sub(/[[:space:]]*\|\|[[:space:]]*$/, "", ch0rule)
+	sub(/[[:space:]]*\|\|[[:space:]]*$/, "", ch2rule)
 
 	# test for consecutive numbers to build 
 	#  (test >= 5)&&(test <=10) instead of
