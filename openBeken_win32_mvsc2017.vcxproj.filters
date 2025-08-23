@@ -61,7 +61,7 @@
     <ClCompile Include="src\driver\drv_max72xx_single.c" />
     <ClCompile Include="src\driver\drv_mcp9808.c" />
     <ClCompile Include="src\driver\drv_ntp.c" />
-    <ClCompile Include="src\driver\drv_ntp_events.c" />
+    <ClCompile Include="src\driver\drv_timed_events.c" />
     <ClCompile Include="src\driver\drv_pt6523.c" />
     <ClCompile Include="src\driver\drv_pwmToggler.c" />
     <ClCompile Include="src\driver\drv_pwrCal.c" />
