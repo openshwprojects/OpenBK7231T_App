@@ -2705,12 +2705,12 @@ int http_fn_cfg_pins(http_request_t* request) {
 	poststr(request, "<script>createBeforeMain();</script>");
 #endif
 
-	poststr(request, "<p>The first field assigns a role to the given pin. The next field is used to enter channel index (relay index), used to support multiple relays and buttons. ");
-	poststr(request, "So, first button and first relay should have channel 1, second button and second relay have channel 2, etc.</p>");
-	poststr(request, "<p>Only for button roles another field will be provided to enter channel to toggle when doing double click. ");
-	poststr(request, "It shows up when you change role to button."
+	poststr(request, "<p>The first field assigns a role to the given pin. Depending on the role, further field(s) are a channel index (relay index), to support multiple relays and buttons. "
+			"So, first button and first relay should have channel 1, second button and second relay have channel 2, etc.</p>"
+			"<p>For buttons, second channel will toggle on double click.<br>For sensors, channels are used for temperature and humidity."
 #if (ENABLE_USE_PINROLE_CHAN_DESC)
-	"<p>Unconfigured pins are not shown. Use \"Cofigure new Pin\" to start configuring!"
+	"<br><br>Functions: T: Temperature / H: Humidity / C: \"Connection\" / I: Input / X: Toggle<br>"
+	"<br>Unconfigured pins are not shown. Use \"Cofigure new Pin\" to start configuring!"
 #endif
 	"</p>");
 
@@ -2847,7 +2847,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 				);
 #else
 #endif
-	poststr(request, "\nfunction hide_show() {"
+	poststr(request, "\nfunction h_s() {"
 		"n=this.name;"
 		"rv=r[v=this.value];"
 		"c=rv[1];"
@@ -2863,20 +2863,20 @@ int http_fn_cfg_pins(http_request_t* request) {
 		"}");
 
 
-	poststr(request, "const form=byID(\"x\");\nfunction f(alias, id, c, b, ch1, ch2) {"
+	poststr(request, "form=byID(\"x\");\nfunction f(a,id,c,b,c1,c2) {"
 // shortening js code a bit by some functions
 // 		setting classname "hele" (plus possibly another if with channel descriptions)
 #if (ENABLE_USE_PINROLE_CHAN_DESC)
 		"cn=(e,s)=>{s?"
-		"?='';e.className = 'hele ' + s;};"
-		"dh[id]=[0,alias];"
+		"?='';e.className='hele '+s;};"
+		"dh[id]=[0,a];"
 #else
-		"cn=(e)=>{e.className = 'hele'};"
+		"cn=(e)=>{e.className='hele'};"
 #endif
 		"let d=dce(\"div\");"
 		"d.className=\"hdiv\";"
 		"d.id=\"div\"+id;"
-		"d.innerHTML=\"<span class='disp-inline' style='min-width:150px'>\"+alias+\"</span>\";"
+		"d.innerHTML=\"<span class='disp-inline' style='min-width:150px'>\"+a+\"</span>\";"
 //		"f.appendChild(d);"
 		"ac(form,d);"
 		"let s=dce(\"select\");"
@@ -2885,14 +2885,14 @@ int http_fn_cfg_pins(http_request_t* request) {
 		"s.name=id;"
 //		"d.appendChild(s);"
 		"ac(d,s);"
-		"for(var i = 0; i < sr.length; i++) {"
+		"for(var i=0;i<sr.length;i++){"
 		"if(b&&sr[i][0].startsWith(\"PWM\")) continue; "
 		"y=dce(\"option\");"
 		"y.text=sr[i][0];"
 		"y.value=sr[i][1];"
-		"y.selected=(sr[i][1] == c);"
+		"y.selected=(sr[i][1]==c);"
 		"s.add(y);"
-		"s.onchange=hide_show;"
+		"s.onchange=h_s;"
 		"}"
 		"xy=(x,c)=>{"
 #if (ENABLE_USE_PINROLE_CHAN_DESC)
@@ -2910,8 +2910,8 @@ int http_fn_cfg_pins(http_request_t* request) {
 		"y.style.display=c?'inline':'none';"
 		"y.value=c?""?0;"
 		"ac(d,y);};"
-		"xy('r'+id,ch1);"
-		"xy('e'+id,ch2);"
+		"xy('r'+id,c1);"
+		"xy('e'+id,c2);"
 		"s.onchange();"
 		" }");
 
