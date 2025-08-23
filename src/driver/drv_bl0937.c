@@ -243,7 +243,14 @@ void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandle
 	cf1isr.gpio_callback = (&ECR6600_Interrupt);
 	cf1isr.gpio_data = pinIndex;
 
-	drv_gpio_ioctrl(pinIndex, DRV_GPIO_CTRL_INTR_MODE, DRV_GPIO_ARG_INTR_MODE_N_EDGE);
+	int ecr_mode;
+	if (mode == INTERRUPT_RISING) {
+		ecr_mode = DRV_GPIO_ARG_INTR_MODE_P_EDGE;
+	}
+	else {
+		ecr_mode = DRV_GPIO_ARG_INTR_MODE_N_EDGE;
+	}
+	drv_gpio_ioctrl(pinIndex, DRV_GPIO_CTRL_INTR_MODE, ecr_mode);
 	drv_gpio_ioctrl(pinIndex, DRV_GPIO_CTRL_REGISTER_ISR, (int)&cf1isr);
 	drv_gpio_ioctrl(pinIndex, DRV_GPIO_CTRL_INTR_ENABLE, 0);
 
@@ -277,7 +284,14 @@ void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandle
 	xrpin_t *xr_cf = g_pins + pinIndex;
 	HAL_XR_ConfigurePin(xr_cf->port, xr_cf->pin, GPIOx_Pn_F6_EINT, GPIO_PULL_UP);
 	GPIO_IrqParam cfparam;
-	cfparam.event = GPIO_IRQ_EVT_FALLING_EDGE;
+	int xr_mode;
+	if (mode == INTERRUPT_RISING) {
+		xr_mode = GPIO_IRQ_EVT_RISING_EDGE;
+	}
+	else {
+		xr_mode = GPIO_IRQ_EVT_FALLING_EDGE;
+	}
+	cfparam.event = xr_mode;
 	cfparam.callback = XRadio_Interrupt;
 	cfparam.arg = (void*)pinIndex;
 	HAL_GPIO_EnableIRQ(xr_cf->port, xr_cf->pin, &cfparam);
