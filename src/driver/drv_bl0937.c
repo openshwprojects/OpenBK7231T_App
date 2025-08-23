@@ -329,7 +329,14 @@ void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandle
 		b_esp_ready = true;
 	}
 	espPinMapping_t* esp_cf = g_pins + pinIndex;
-	ESP_ConfigurePin(esp_cf->pin, GPIO_MODE_INPUT, true, false, GPIO_INTR_NEGEDGE);
+	int esp_mode;
+	if (mode == INTERRUPT_RISING) {
+		esp_mode = GPIO_INTR_POSEDGE;
+	}
+	else {
+		esp_mode = GPIO_INTR_NEGEDGE;
+	}
+	ESP_ConfigurePin(esp_cf->pin, GPIO_MODE_INPUT, true, false, esp_mode);
 	gpio_isr_handler_add(esp_cf->pin, ESP_Interrupt, (void*)pinIndex);
 }
 void HAL_DetachInterrupt(int pinIndex) {
