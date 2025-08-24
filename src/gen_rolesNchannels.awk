@@ -71,8 +71,14 @@ return rule;
 
 }
 
-# don't handle comment lines or empty lines
+
+# don't handle empty lines or comments exept "//iodetails: ..." lines
 /^[[:space:]]*$/ {next}
+/^[[:space:]]*\/\/iodetail:/ {
+	sub(/^[[:space:]]*/,"\t")
+	enum_list = enum_list $0 "\n"
+}
+
 /^[[:space:]]*\/\// {next}
 
 # Only process matching lines
@@ -102,10 +108,10 @@ return rule;
 	ch2funct = arr[5]
 
 	# Build enum
-	enum_list = enum_list role ",\n    "
+	enum_list = enum_list "\t" role ",\n"
 	# Build string array
 	# rolename kept " " during split
-	rolename_list = rolename_list rolename " ,\n    "
+	rolename_list = rolename_list "\t" rolename " ,\n"
 
 	# Fill an array to keep track of roles and enum values (to find consecutive ones later)
 	rn[indexcount]=role;
@@ -163,11 +169,11 @@ END {
 		
 	print "#if (INCLUDED_BY_NEW_PINS_H) || (INCLUDED_BY_NEW_PINS_C) || (INCLUDED_BY_NEW_HTTP_C) || (INCLUDED_BY_HTTP_FNS_C)\n\n\n"
 	print "#if (INCLUDED_BY_NEW_PINS_H)\n"
-	print "typedef enum ioRole_e {\n    " enum_list "\n} ioRole_t;\n"
+	print "typedef enum ioRole_e {\n" enum_list "\n} ioRole_t;\n"
 	print "#endif // (INCLUDED_BY_NEW_PINS_H)\n"
 	
 	print "#if (INCLUDED_BY_NEW_HTTP_C)\n"
-	print "const char* htmlPinRoleNames[] = {\n    " rolename_list "\n};\n"
+	print "const char* htmlPinRoleNames[] = {\n" rolename_list "\n};\n"
 	print "#endif // (INCLUDED_BY_NEW_HTTP_C)\n"
 
 	print "#if (INCLUDED_BY_NEW_PINS_C)\n"
