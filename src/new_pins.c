@@ -887,6 +887,34 @@ void CHANNEL_DoSpecialToggleAll() {
 }
 extern int g_pwmFrequency;
 
+#if 0
+void PIN_InterruptHandler(int gpio) {
+	int ch = g_cfg.pins.channels[gpio];
+	CHANNEL_Add(ch, 1);
+}
+#else
+
+
+#endif
+
+unsigned short g_counterDeltas[PLATFORM_GPIO_MAX];
+void PIN_InterruptHandler(int gpio) {
+	g_counterDeltas[gpio]++;
+}
+void PIN_ApplyCounterDeltas() {
+	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (g_counterDeltas[i]) {
+			// TODO: disable interrupts now so it won't get called in meantime?
+			int delta = g_counterDeltas[i];
+			g_counterDeltas[i] = 0;
+			int ch = g_cfg.pins.channels[i];
+			CHANNEL_Add(ch, delta);
+		}
+	}
+}
+
+
+
 void PIN_SetPinRoleForPinIndex(int index, int role) {
 	bool bDHTChange = false;
 	bool bSampleInitialState = false;
@@ -960,6 +988,10 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_ADC_Button:
 		case IOR_ADC:
 			HAL_ADC_Deinit(index);
+			break;
+		case IOR_Counter_f:
+		case IOR_Counter_r:
+			HAL_DetachInterrupt(index);
 			break;
 		case IOR_BridgeForward:
 		case IOR_BridgeReverse:
@@ -1150,6 +1182,14 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 #else
 			HAL_ADC_Init(index);
 #endif
+			break; 
+		case IOR_Counter_f:
+			HAL_PIN_Setup_Input_Pullup(index);
+			HAL_AttachInterrupt(index, INTERRUPT_FALLING, PIN_InterruptHandler);
+			break;
+		case IOR_Counter_r:
+			HAL_PIN_Setup_Input_Pullup(index);
+			HAL_AttachInterrupt(index, INTERRUPT_RISING, PIN_InterruptHandler);
 			break;
 		case IOR_PWM_n:
 		case IOR_PWM_ScriptOnly:
@@ -2031,6 +2071,9 @@ void PIN_ticks(void* param)
 {
 	int i;
 	int value;
+
+
+	PIN_ApplyCounterDeltas();
 
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	g_time = rtos_get_time();
