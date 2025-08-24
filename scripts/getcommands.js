@@ -629,7 +629,7 @@ function getFolder(name, cb) {
 
 					newlines.push(lines[i]);
 				}
-				if (modified) {
+				if (modified && false) {
 					let newdata = newlines.join('\n');
 					try {
 						fs.writeFileSync(file, newdata);
