@@ -6,6 +6,7 @@
 #include "../../new_pins.h"
 #include "hal_pinmap_espidf.h"
 #include "driver/ledc.h"
+#include "../hal_pins.h"
 
 #ifdef CONFIG_IDF_TARGET_ESP32C3
 

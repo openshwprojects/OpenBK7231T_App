@@ -2,6 +2,7 @@
 
 #include "../../new_common.h"
 #include "../../logging/logging.h"
+#include "../hal_pins.h"
 
 #include "hal_pinmap_xradio.h"
 

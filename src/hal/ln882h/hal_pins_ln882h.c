@@ -4,6 +4,7 @@
 #include "../../logging/logging.h"
 #include "../../new_cfg.h"
 #include "../../new_pins.h"
+#include "../hal_pins.h"
 #include "hal_pinmap_ln882h.h"
 // LN882H header
 #include "hal/hal_adv_timer.h"

@@ -3,6 +3,7 @@
 #include "../../logging/logging.h"
 #include "../../new_cfg.h"
 #include "../../new_pins.h"
+#include "../hal_pins.h"
 //#include "../../new_pins.h"
 #include <gpio_pub.h>
 
