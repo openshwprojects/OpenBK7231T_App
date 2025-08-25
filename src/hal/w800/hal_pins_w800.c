@@ -3,6 +3,7 @@
 #include "../../new_common.h"
 #include "../../logging/logging.h"
 #include "../hal_pins.h"
+#include "../../new_pins.h"
 
 #include "wm_include.h"
 

@@ -285,4 +285,13 @@ unsigned int HAL_GetGPIOPin(int index)
 	return index;
 }
 
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
+
+}
+void HAL_DetachInterrupt(int pinIndex) {
+
+}
+
+
+
 #endif // PLATFORM_TR6260
