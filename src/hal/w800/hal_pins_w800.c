@@ -116,7 +116,7 @@ static int IsPinIndexOk(int index) {
 		return 0;
 	return 1;
 }
-static int PIN_GetPWMIndexForPinIndex(int index) {
+int PIN_GetPWMIndexForPinIndex(int index) {
 	return g_pins[index].pwm_channel;
 }
 const char* HAL_PIN_GetPinNameAlias(int index) {
