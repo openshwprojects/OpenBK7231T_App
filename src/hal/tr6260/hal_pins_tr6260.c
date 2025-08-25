@@ -4,6 +4,7 @@
 #include "../../logging/logging.h"
 #include "../../new_cfg.h"
 #include "../../new_pins.h"
+#include "../hal_pins.h"
 #include "drv_gpio.h"
 #include "drv_pwm.h"
 #include "soc_pin_mux.h"
