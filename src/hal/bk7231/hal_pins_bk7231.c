@@ -151,3 +151,37 @@ void HAL_PIN_PWM_Update(int index, float value) {
 unsigned int HAL_GetGPIOPin(int index) {
 	return index;
 }
+
+OBKInterruptHandler g_handlers[PLATFORM_GPIO_MAX];
+OBKInterruptType g_modes[PLATFORM_GPIO_MAX];
+
+#include "BkDriverTimer.h"
+#include "BkDriverGpio.h"
+#include "sys_timer.h"
+#include "gw_intf.h"
+
+void Beken_Interrupt(unsigned char pinNum) {
+	if (g_handlers[pinNum]) {
+		g_handlers[pinNum](pinNum);
+	}
+}
+
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
+	g_handlers[pinIndex] = function;
+	int bk_mode;
+	if (mode == INTERRUPT_RISING) {
+		bk_mode = IRQ_TRIGGER_RISING_EDGE;
+	}
+	else {
+		bk_mode = IRQ_TRIGGER_FALLING_EDGE;
+	}
+	gpio_int_enable(pinIndex, bk_mode, Beken_Interrupt);
+}
+void HAL_DetachInterrupt(int pinIndex) {
+	if (g_handlers[pinIndex] == 0) {
+		return; // already removed;
+	}
+	gpio_int_disable(pinIndex);
+	g_handlers[pinIndex] = 0;
+}
+
