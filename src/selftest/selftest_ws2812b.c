@@ -150,6 +150,10 @@ void Test_WS2812B() {
 	SELFTEST_ASSERT_PIXEL(4, 0, 255, 0);
 	SELFTEST_ASSERT_PIXEL(5, 0, 0, 255);
 
+	CMD_ExecuteCommand("SM16703P_SetPixel all 123 231 132", 0);
+	for (int i = 0; i < 6; i++) {
+		SELFTEST_ASSERT_PIXEL(i, 123, 231, 132);
+	}
 
 
 #if ENABLE_LED_BASIC
