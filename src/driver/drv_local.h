@@ -192,6 +192,7 @@ void TCA9554_OnChannelChanged(int ch, int value);
 
 void DMX_Init();
 void DMX_OnEverySecond();
+void DMX_Shutdown();
 
 void PWMG_Init();
 

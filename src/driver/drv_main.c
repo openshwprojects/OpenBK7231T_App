@@ -58,7 +58,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"DMX.",
 	//drvdetail:"requires":""}
-	{ "DMX",		DMX_Init,			DMX_OnEverySecond,			NULL, NULL, NULL, NULL , NULL, false },
+	{ "DMX",		DMX_Init,			DMX_OnEverySecond,			NULL, NULL, DMX_Shutdown, NULL , NULL, false },
 #endif
 #if ENABLE_DRIVER_FREEZE
 	//drvdetail:{"name":"FREEZE",
