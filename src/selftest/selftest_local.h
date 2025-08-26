@@ -129,6 +129,7 @@ void Test_MQTT_Get_Relay();
 void Test_TuyaMCU_BatteryPowered();
 void Test_ChargeLimitDriver();
 void Test_WS2812B();
+void Test_DMX();
 void Test_DoorSensor();
 void Test_Enums();
 void Test_Expressions_RunTests_Basic();

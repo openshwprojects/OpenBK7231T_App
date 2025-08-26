@@ -183,6 +183,7 @@ void Win_DoUnitTests() {
 	//Test_Enums();
 	Test_Backlog();
 	Test_DoorSensor();
+	Test_DMX();
 	Test_WS2812B();
 	Test_Command_If_Else();
 	Test_MQTT();

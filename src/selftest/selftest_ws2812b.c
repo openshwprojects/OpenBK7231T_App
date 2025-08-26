@@ -9,6 +9,18 @@ bool SM16703P_VerifyPixel(uint32_t pixel, byte r, byte g, byte b);
 
 void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push);
 
+void Test_DMX() {
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	CMD_ExecuteCommand("startDriver DMX", 0);
+	CMD_ExecuteCommand("SM16703P_Init 3", 0);
+	CMD_ExecuteCommand("SM16703P_SetPixel all 255 0 128", 0);
+	SELFTEST_ASSERT_PIXEL(0, 255, 0, 128);
+	SELFTEST_ASSERT_PIXEL(1, 255, 0, 128);
+	SELFTEST_ASSERT_PIXEL(2, 255, 0, 128);
+
+}
 void Test_WS2812B() {
 	// reset whole device
 	SIM_ClearOBK(0);
