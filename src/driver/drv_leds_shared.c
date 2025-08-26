@@ -10,7 +10,6 @@
 
 #include "drv_local.h"
 #include "drv_leds_shared.h"
-#include "drv_spiLED.h"
 
 static ledStrip_t led_backend;
 
@@ -150,7 +149,17 @@ commandResult_t SM16703P_CMD_setRaw(const void *context, const char *cmd, const 
 	Tokenizer_TokenizeString(args, 0);
 	bPush = Tokenizer_GetArgInteger(0);
 	ofs = Tokenizer_GetArgInteger(1);
-	SPILED_SetRawHexString(ofs, Tokenizer_GetArg(2), bPush);
+	const char *s = Tokenizer_GetArg(2);
+	int i = 0;
+	// parse hex string like FFAABB0011 byte by byte
+	while (s[0] && s[1]) {
+		led_backend.setByte(i, hexbyte(s));
+		i++;
+		s += 2;
+	}
+	if (bPush) {
+		led_backend.apply();
+	}
 	return CMD_RES_OK;
 }
 commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, const char *args, int flags) {
