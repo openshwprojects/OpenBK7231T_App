@@ -17,23 +17,28 @@
 uint32_t pixel_count;
 
 typedef struct ledStrip_s {
-	void(*getPixel)(uint32_t pixel, byte *dst);
+	byte (*getByte)(uint32_t pixel);
+	void (*setByte)(uint32_t idx, byte val);
 } ledStrip_t;
 
+byte SM16703P_GetByte(uint32_t idx) {
+	if (spiLED.msg == 0)
+		return 0;
+	byte *input = spiLED.buf + spiLED.ofs + idx * 4;
+	byte ret = reverse_translate_byte(input);
+	return ret;
+}
 
 void SM16703P_GetPixel(uint32_t pixel, byte *dst) {
 	int i;
-	uint8_t *input;
-
-	if (spiLED.msg == 0)
-		return;
-	
-	input = spiLED.buf + spiLED.ofs + (pixel * 3 * 4);
 
 	for (i = 0; i < 3; i++) {
-		*dst++ = reverse_translate_byte(input + i * 4);
+		dst[i] = SM16703P_GetByte(pixel * 3 + i);
 	}
 }
+
+
+
 
 enum ColorChannel {
 	COLOR_CHANNEL_RED,
@@ -62,6 +67,9 @@ bool SM16703P_VerifyPixel(uint32_t pixel, byte r, byte g, byte b) {
 	return true;
 }
 
+void SM16703P_setByte(int index, byte color) {
+	translate_byte(color, spiLED.buf + (spiLED.ofs + index * 4));
+}
 
 void SM16703P_setPixel(int pixel, int r, int g, int b, int c, int w) {
 	if (!spiLED.ready)
@@ -72,7 +80,7 @@ void SM16703P_setPixel(int pixel, int r, int g, int b, int c, int w) {
 	int i;
 	for(i = 0; i < pixel_size; i++) 
 	{
-		int pcolor;
+		byte pcolor;
 		switch (color_channel_order[i])
 		{
 			case COLOR_CHANNEL_RED:
@@ -94,7 +102,8 @@ void SM16703P_setPixel(int pixel, int r, int g, int b, int c, int w) {
 				ADDLOG_ERROR(LOG_FEATURE_CMD, "Unknown color channel %d at index %d", color_channel_order[i], i);
 				return;
 		}
-		translate_byte(pcolor, spiLED.buf + (spiLED.ofs + i * 4 + (pixel * pixel_size * 4)));
+		SM16703P_setByte(i + (pixel * pixel_size), pcolor);
+		
 	}
 }
 void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
