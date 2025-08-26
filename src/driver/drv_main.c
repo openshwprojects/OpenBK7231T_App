@@ -53,6 +53,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "TCA9554",		TCA9554_Init,			TCA9554_OnEverySecond,			NULL, NULL, NULL, TCA9554_OnChannelChanged , NULL, false },
 #endif
+#if ENABLE_DRIVER_DMX
+	//drvdetail:{"name":"DMX",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"DMX.",
+	//drvdetail:"requires":""}
+	{ "DMX",		DMX_Init,			DMX_OnEverySecond,			NULL, NULL, NULL, NULL , NULL, false },
+#endif
 #if ENABLE_DRIVER_FREEZE
 	//drvdetail:{"name":"FREEZE",
 	//drvdetail:"title":"TODO",
