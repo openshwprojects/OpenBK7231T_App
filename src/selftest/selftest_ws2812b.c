@@ -27,6 +27,9 @@ void Test_WS2812B() {
 	SELFTEST_ASSERT_PIXEL(1, 0, 0, 255);
 	SELFTEST_ASSERT_PIXEL(2, 0, 0, 255);
 
+	// cannot crash
+	CMD_ExecuteCommand("SM16703P_SetPixel 1234 255 0 0", 0);
+	CMD_ExecuteCommand("SM16703P_SetPixel -123 255 0 0", 0);
 
 	// fake 3 pixels data
 	{ // RGB
