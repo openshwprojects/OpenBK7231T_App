@@ -16,6 +16,11 @@
 // Number of pixels that can be addressed
 uint32_t pixel_count;
 
+typedef struct ledStrip_s {
+	void(*getPixel)(uint32_t pixel, byte *dst);
+} ledStrip_t;
+
+
 void SM16703P_GetPixel(uint32_t pixel, byte *dst) {
 	int i;
 	uint8_t *input;
@@ -103,7 +108,6 @@ void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 		pixel = pixel_count;
 
 	// Iterate over pixel
-	uint8_t *dst = spiLED.buf + spiLED.ofs;
 	for (uint32_t i = 0; i < pixel; i++) {
 		uint8_t r, g, b;
 		r = *data++;
@@ -207,20 +211,6 @@ commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, cons
 	}
 	else {
 		SM16703P_setPixel(pixel, r, g, b, c, w);
-
-		ADDLOG_INFO(LOG_FEATURE_CMD, "Raw Data 0x%02x 0x%02x 0x%02x 0x%02x - 0x%02x 0x%02x 0x%02x 0x%02x - 0x%02x 0x%02x 0x%02x 0x%02x",
-			spiLED.buf[spiLED.ofs + 0 + (pixel * 3 * 4)],
-			spiLED.buf[spiLED.ofs + 1 + (pixel * 3 * 4)],
-			spiLED.buf[spiLED.ofs + 2 + (pixel * 3 * 4)],
-			spiLED.buf[spiLED.ofs + 3 + (pixel * 3 * 4)],
-			spiLED.buf[spiLED.ofs + 4 + (pixel * 3 * 4)],
-			spiLED.buf[spiLED.ofs + 5 + (pixel * 3 * 4)],
-			spiLED.buf[spiLED.ofs + 6 + (pixel * 3 * 4)],
-			spiLED.buf[spiLED.ofs + 7 + (pixel * 3 * 4)],
-			spiLED.buf[spiLED.ofs + 8 + (pixel * 3 * 4)],
-			spiLED.buf[spiLED.ofs + 9 + (pixel * 3 * 4)],
-			spiLED.buf[spiLED.ofs + 10 + (pixel * 3 * 4)],
-			spiLED.buf[spiLED.ofs + 11 + (pixel * 3 * 4)]);
 	}
 
 
