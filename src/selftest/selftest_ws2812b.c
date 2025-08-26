@@ -155,6 +155,22 @@ void Test_WS2812B() {
 		SELFTEST_ASSERT_PIXEL(i, 123, 231, 132);
 	}
 
+	CMD_ExecuteCommand("SM16703P_SetPixel all 128 128 128", 0);
+	for (int i = 0; i < 6; i++) {
+		SELFTEST_ASSERT_PIXEL(i, 128, 128, 128);
+	}
+	SM16703P_scaleAllPixels(128);
+	for (int i = 0; i < 6; i++) {
+		SELFTEST_ASSERT_PIXEL(i, 64, 64, 64);
+	}
+	SM16703P_scaleAllPixels(128);
+	for (int i = 0; i < 6; i++) {
+		SELFTEST_ASSERT_PIXEL(i, 32, 32, 32);
+	}
+	SM16703P_scaleAllPixels(64);
+	for (int i = 0; i < 6; i++) {
+		SELFTEST_ASSERT_PIXEL(i, 8, 8, 8);
+	}
 
 #if ENABLE_LED_BASIC
 	CMD_ExecuteCommand("startDriver PixelAnim", 0);

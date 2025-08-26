@@ -13,9 +13,6 @@
 #include "drv_local.h"
 #include "drv_spiLED.h"
 
-// Number of pixels that can be addressed
-uint32_t pixel_count;
-
 typedef struct ledStrip_s {
 	byte (*getByte)(uint32_t pixel);
 	void (*setByte)(uint32_t idx, byte val);
@@ -45,14 +42,6 @@ void SM16703P_setByte(int index, byte color) {
 
 
 
-void SM16703P_GetPixel(uint32_t pixel, byte *dst) {
-	int i;
-
-	for (i = 0; i < 3; i++) {
-		dst[i] = SM16703P_GetByte(pixel * 3 + i);
-	}
-}
-
 enum ColorChannel {
 	COLOR_CHANNEL_RED,
 	COLOR_CHANNEL_GREEN,
@@ -65,8 +54,19 @@ const enum ColorChannel default_color_channel_order[3] = {
 	COLOR_CHANNEL_GREEN,
 	COLOR_CHANNEL_BLUE
 };
+
 enum ColorChannel *color_channel_order = default_color_channel_order;
 int pixel_size = 3; // default is RGB -> 3 bytes per pixel
+// Number of pixels that can be addressed
+uint32_t pixel_count;
+
+void SM16703P_GetPixel(uint32_t pixel, byte *dst) {
+	int i;
+
+	for (i = 0; i < 3; i++) {
+		dst[i] = SM16703P_GetByte(pixel * 3 + i);
+	}
+}
 
 bool SM16703P_VerifyPixel(uint32_t pixel, byte r, byte g, byte b) {
 	byte real[3];
