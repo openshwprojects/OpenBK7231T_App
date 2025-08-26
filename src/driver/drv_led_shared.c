@@ -6,7 +6,7 @@
 #include "../logging/logging.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
-#include "cmd_public.h"
+#include "../cmnds/cmd_public.h"
 
 
 
