@@ -10,6 +10,7 @@
 
 #include "drv_local.h"
 #include "drv_leds_shared.h"
+#include "drv_spiLED.h"
 
 static ledStrip_t led_backend;
 
@@ -81,7 +82,7 @@ void SM16703P_setPixel(int pixel, int r, int g, int b, int c, int w) {
 			ADDLOG_ERROR(LOG_FEATURE_CMD, "Unknown color channel %d at index %d", color_channel_order[i], i);
 			return;
 		}
-		SM16703P_setByte(i + (pixel * pixel_size), pcolor);
+		led_backend.setByte(i + (pixel * pixel_size), pcolor);
 
 	}
 }
