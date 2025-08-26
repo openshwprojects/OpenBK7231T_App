@@ -19,7 +19,14 @@ uint32_t pixel_count;
 typedef struct ledStrip_s {
 	byte (*getByte)(uint32_t pixel);
 	void (*setByte)(uint32_t idx, byte val);
+	void(*apply)();
 } ledStrip_t;
+
+
+void SM16703P_Show() {
+	SPIDMA_StartTX(spiLED.msg);
+
+}
 
 byte SM16703P_GetByte(uint32_t idx) {
 	if (spiLED.msg == 0)
@@ -28,6 +35,15 @@ byte SM16703P_GetByte(uint32_t idx) {
 	byte ret = reverse_translate_byte(input);
 	return ret;
 }
+void SM16703P_setByte(int index, byte color) {
+	translate_byte(color, spiLED.buf + (spiLED.ofs + index * 4));
+}
+
+
+
+
+
+
 
 void SM16703P_GetPixel(uint32_t pixel, byte *dst) {
 	int i;
@@ -36,9 +52,6 @@ void SM16703P_GetPixel(uint32_t pixel, byte *dst) {
 		dst[i] = SM16703P_GetByte(pixel * 3 + i);
 	}
 }
-
-
-
 
 enum ColorChannel {
 	COLOR_CHANNEL_RED,
@@ -67,9 +80,6 @@ bool SM16703P_VerifyPixel(uint32_t pixel, byte r, byte g, byte b) {
 	return true;
 }
 
-void SM16703P_setByte(int index, byte color) {
-	translate_byte(color, spiLED.buf + (spiLED.ofs + index * 4));
-}
 
 void SM16703P_setPixel(int pixel, int r, int g, int b, int c, int w) {
 	if (!spiLED.ready)
@@ -126,7 +136,8 @@ void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 		SM16703P_setPixel((int)i, (int)r, (int)g, (int)b, 0, 0);
 	}
 	if (push) {
-		SPIDMA_StartTX(spiLED.msg);
+		SM16703P_Show();
+		
 	}
 }
 extern float g_brightness0to100;//TODO
@@ -293,9 +304,6 @@ commandResult_t SM16703P_InitForLEDCount(const void *context, const char *cmd, c
 	return CMD_RES_OK;
 }
 
-void SM16703P_Show() {
-	SPIDMA_StartTX(spiLED.msg);
-}
 static commandResult_t SM16703P_StartTX(const void *context, const char *cmd, const char *args, int flags) {
 	if (!spiLED.ready)
 		return CMD_RES_ERROR;
