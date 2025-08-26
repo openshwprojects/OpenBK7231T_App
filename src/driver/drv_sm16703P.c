@@ -303,22 +303,6 @@ static commandResult_t SM16703P_StartTX(const void *context, const char *cmd, co
 	SM16703P_Show();
 	return CMD_RES_OK;
 }
-//static commandResult_t SM16703P_CMD_sendBytes(const void *context, const char *cmd, const char *args, int flags) {
-//	if (!spiLED.ready)
-//		return CMD_RES_ERROR;
-//	const char *s = args;
-//	int i = spiLED.ofs;
-//	while (*s && s[1]) {
-//		*(spiLED.buf + (i)) = hexbyte(s);
-//		s += 2;
-//		i++;
-//	}
-//	while (i < spiLED.msg->send_len) {
-//		*(spiLED.buf + (i)) = 0;
-//	}
-//	SPIDMA_StartTX(spiLED.msg);
-//	return CMD_RES_OK;
-//}
 
 // startDriver SM16703P
 // backlog startDriver SM16703P; SM16703P_Test
