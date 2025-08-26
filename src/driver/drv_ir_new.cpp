@@ -253,6 +253,7 @@ SpoofIrReceiver IrReceiver;
 class myIRsend : public IRsend {
 public:
 	myIRsend(uint_fast8_t aSendPin) :IRsend(aSendPin) {
+		sendPin = aSendPin;
 		our_us = 0;
 		our_ms = 0;
 		resetsendqueue();
@@ -308,8 +309,8 @@ public:
 			duty=1;
 		pwmduty = duty;
 
-		HAL_PIN_PWM_Start(this->sendPin, freq);
-		HAL_PIN_PWM_Update(this->sendPin, duty);
+		HAL_PIN_PWM_Start(sendPin, freq);
+		HAL_PIN_PWM_Update(sendPin, duty);
 	}
 
 	void resetsendqueue() {
@@ -776,11 +777,9 @@ extern "C" void DRV_IR_Init() {
 		// is this pin capable of PWM?
 		if (HAL_PIN_CanThisPinBePWM(txpin)) {
 			uint32_t pwmfrequency = 38000;
-			HAL_PIN_PWM_Start(txpin, pwmfrequency);
 			myIRsend *pIRsendTemp = new myIRsend((uint_fast8_t)txpin);
 			pIRsendTemp->resetsendqueue();
 			pIRsendTemp->enableIROut(pwmfrequency, 50);
-			pIRsendTemp->pwmduty = 50;
 
 			pIRsend = pIRsendTemp;
 
