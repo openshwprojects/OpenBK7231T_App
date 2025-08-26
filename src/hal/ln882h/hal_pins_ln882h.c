@@ -9,6 +9,8 @@
 // LN882H header
 #include "hal/hal_adv_timer.h"
 #include "hal/hal_clock.h"
+#include "hal/hal_common.h"
+#include "hal/hal_gpio.h"
 
 #define IS_QSPI_PIN(index) (index > 12 && index < 19)
 
@@ -243,8 +245,6 @@ unsigned int HAL_GetGPIOPin(int index) {
 OBKInterruptHandler g_handlers[PLATFORM_GPIO_MAX];
 OBKInterruptType g_modes[PLATFORM_GPIO_MAX];
 
-#include "../../sdk/OpenLN882H/mcu/driver_ln882h/hal/hal_common.h"
-#include "../../sdk/OpenLN882H/mcu/driver_ln882h/hal/hal_gpio.h"
 
 uint32_t GetBaseForPin(int pinIndex)
 {
