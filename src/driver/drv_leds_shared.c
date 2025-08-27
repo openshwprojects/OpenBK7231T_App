@@ -34,19 +34,32 @@ uint32_t pixel_count;
 void SM16703P_GetPixel(uint32_t pixel, byte *dst) {
 	int i;
 
-	for (i = 0; i < 3; i++) {
-		dst[i] = led_backend.getByte(pixel * 3 + i);
+	for (i = 0; i < pixel_size; i++) {
+		dst[i] = led_backend.getByte(pixel * pixel_size + i);
 	}
 }
 
 bool SM16703P_VerifyPixel(uint32_t pixel, byte r, byte g, byte b) {
-	byte real[3];
+	byte real[4];
 	SM16703P_GetPixel(pixel, real);
 	if (real[0] != r)
 		return false;
 	if (real[1] != g)
 		return false;
 	if (real[2] != b)
+		return false;
+	return true;
+}
+bool SM16703P_VerifyPixel4(uint32_t pixel, byte r, byte g, byte b, byte w) {
+	byte real[4];
+	SM16703P_GetPixel(pixel, real);
+	if (real[0] != r)
+		return false;
+	if (real[1] != g)
+		return false;
+	if (real[2] != b)
+		return false;
+	if (real[3] != w)
 		return false;
 	return true;
 }

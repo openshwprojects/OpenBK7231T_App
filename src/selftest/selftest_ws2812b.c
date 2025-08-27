@@ -4,12 +4,14 @@
 
 
 bool SM16703P_VerifyPixel(uint32_t pixel, byte r, byte g, byte b);
+bool SM16703P_VerifyPixel4(uint32_t pixel, byte r, byte g, byte b);
 
 #define SELFTEST_ASSERT_PIXEL(index, r, g, b) SELFTEST_ASSERT(SM16703P_VerifyPixel(index, r, g, b));
+#define SELFTEST_ASSERT_PIXEL4(index, r, g, b, w) SELFTEST_ASSERT(SM16703P_VerifyPixel4(index, r, g, b, w));
 
 void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push);
 
-void Test_DMX() {
+void Test_DMX_RGB() {
 	// reset whole device
 	SIM_ClearOBK(0);
 
@@ -51,6 +53,50 @@ void Test_DMX() {
 		SELFTEST_ASSERT_HAS_SENT_UART_STRING("00 00 00 00 00");
 	}
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("00 00 00");
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+
+	// nothing is sent by OBK at that point
+}
+void Test_DMX_RGBW() {
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	SIM_UART_InitReceiveRingBuffer(4096);
+	SIM_ClearUART();
+
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+
+	CMD_ExecuteCommand("startDriver DMX", 0);
+	CMD_ExecuteCommand("SM16703P_Init 3 RGBC", 0);
+	CMD_ExecuteCommand("SM16703P_SetPixel all 255 0 128 255", 0);
+	SELFTEST_ASSERT_PIXEL4(0, 255, 0, 128, 255);
+	SELFTEST_ASSERT_PIXEL4(1, 255, 0, 128, 255);
+	SELFTEST_ASSERT_PIXEL4(2, 255, 0, 128, 255);
+
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	CMD_ExecuteCommand("SM16703P_Start", 0);
+	SELFTEST_ASSERT_HAS_SOME_DATA_IN_UART();
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("00  FF0080FF  FF0080FF  FF0080FF");
+	// 512 channels, but checked already 12
+	for (int i = 0; i < 100; i++) {
+		SELFTEST_ASSERT_HAS_SENT_UART_STRING("00 00 00 00 00");
+	}
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+
+	CMD_ExecuteCommand("SM16703P_SetPixel 0 128 128 128 128", 0);
+	CMD_ExecuteCommand("SM16703P_SetPixel 1 255 255 255 255", 0);
+	CMD_ExecuteCommand("SM16703P_SetPixel 2 15 15 15 15", 0);
+	SELFTEST_ASSERT_PIXEL4(0, 128, 128, 128, 128);
+	SELFTEST_ASSERT_PIXEL4(1, 255, 255, 255, 255);
+	SELFTEST_ASSERT_PIXEL4(2, 15, 15, 15, 15);
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	CMD_ExecuteCommand("SM16703P_Start", 0);
+	SELFTEST_ASSERT_HAS_SOME_DATA_IN_UART();
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("00  80808080  FFFFFFFF  0F0F0F0F");
+	// 512 channels, but checked already 12
+	for (int i = 0; i < 100; i++) {
+		SELFTEST_ASSERT_HAS_SENT_UART_STRING("00 00 00 00 00");
+	}
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 
 	// nothing is sent by OBK at that point
@@ -271,5 +317,10 @@ void Test_WS2812B() {
 #endif
 }
 
+void Test_LEDstrips() {
+	Test_DMX_RGB();
+	Test_DMX_RGBW();
+	Test_WS2812B();
+}
 
 #endif
