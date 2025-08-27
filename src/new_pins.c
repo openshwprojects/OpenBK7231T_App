@@ -2152,7 +2152,7 @@ void PIN_ticks(void* param)
 			activepoll_time = 1000; //20 x 50ms = 1s of polls after button release
 		}
 
-#if 1
+#if 0
 		if (g_cfg.pins.roles[i] == IOR_PWM || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly) {
 			HAL_PIN_PWM_Update(i, g_channelValuesFloats[g_cfg.pins.channels[i]]);
 		}
