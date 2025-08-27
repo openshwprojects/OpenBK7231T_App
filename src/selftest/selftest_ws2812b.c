@@ -230,6 +230,35 @@ void Test_WS2812B() {
 		SELFTEST_ASSERT_PIXEL(1, 0xFF, 0, 0);
 		SELFTEST_ASSERT_PIXEL(2, 0xFF, 0, 0xFF);
 	}
+	// fake DDP RGBW packet
+	{
+		byte ddpPacket[128];
+
+		ddpPacket[2] = 0x1A;
+
+		// data starts at offset 10
+		// pixel 0
+		ddpPacket[10] = 0xFF;
+		ddpPacket[11] = 0xFF;
+		ddpPacket[12] = 0xFF;
+		ddpPacket[13] = 0xFF;
+		// pixel 1
+		ddpPacket[14] = 0xFF;
+		ddpPacket[15] = 0x0;
+		ddpPacket[16] = 0x0;
+		ddpPacket[17] = 0xFF;
+		// pixel 2
+		ddpPacket[18] = 0xFF;
+		ddpPacket[19] = 0x0;
+		ddpPacket[20] = 0xFF;
+		ddpPacket[21] = 0xFF;
+
+		DDP_Parse(ddpPacket, sizeof(ddpPacket));
+
+		SELFTEST_ASSERT_PIXEL(0, 0xFF, 0xFF, 0xFF);
+		///SELFTEST_ASSERT_PIXEL(1, 0xFF, 0, 0);
+		//SELFTEST_ASSERT_PIXEL(2, 0xFF, 0, 0xFF);
+	}
 
 	CMD_ExecuteCommand("SM16703P_Init 6 RGB", 0);
 	CMD_ExecuteCommand("SM16703P_SetPixel 0 255 0 0", 0);
