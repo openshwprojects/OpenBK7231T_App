@@ -58,7 +58,7 @@ void DMX_SetLEDCount(int pixel_count, int pixel_size) {
 
 void DMX_Init() {
 	g_dmxBuffer = (byte*)malloc(DMX_BUFFER_SIZE);
-	memset(g_dmxBuffer, DMX_BUFFER_SIZE, 0);
+	memset(g_dmxBuffer, 0, DMX_BUFFER_SIZE);
 	ledStrip_t ws_export;
 	ws_export.apply = DMX_Show;
 	ws_export.getByte = DMX_GetByte;
@@ -73,6 +73,10 @@ void DMX_OnEverySecond() {
 
 
 void DMX_Shutdown() {
+	if (g_dmxBuffer) {
+		free(g_dmxBuffer);
+		g_dmxBuffer = 0;
+	}
 	LEDS_ShutdownShared();
 }
 #endif

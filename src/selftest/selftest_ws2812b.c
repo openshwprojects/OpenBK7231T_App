@@ -12,6 +12,9 @@ void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push);
 void Test_DMX() {
 	// reset whole device
 	SIM_ClearOBK(0);
+	SIM_ClearUART();
+
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
 
 	CMD_ExecuteCommand("startDriver DMX", 0);
 	CMD_ExecuteCommand("SM16703P_Init 3", 0);
@@ -20,6 +23,17 @@ void Test_DMX() {
 	SELFTEST_ASSERT_PIXEL(1, 255, 0, 128);
 	SELFTEST_ASSERT_PIXEL(2, 255, 0, 128);
 
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	CMD_ExecuteCommand("SM16703P_Start", 0);
+	SELFTEST_ASSERT_HAS_SOME_DATA_IN_UART();
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("00  FF0080  FF0080  FF0080");
+	// 512 channels, but checked already 12
+	for (int i = 0; i < 100; i++) {
+		SELFTEST_ASSERT_HAS_SENT_UART_STRING("00 00 00 00 00");
+	}
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+
+	// nothing is sent by OBK at that point
 }
 void Test_WS2812B() {
 	// reset whole device

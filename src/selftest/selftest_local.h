@@ -59,6 +59,7 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 #define SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY(topic, bPrefixMode, object1, object2, key, value, key2, value2, key3, value3, key4, value4) SELFTEST_ASSERT(SIM_HasMQTTHistoryStringWithJSONPayload(topic, bPrefixMode, object1, object2, key, value, key2, value2, key3, value3, key4, value4));
 #define SELFTEST_ASSERT_HAS_SENT_UART_STRING(str) SELFTEST_ASSERT(SIM_UART_ExpectAndConsumeHexStr(str));
 #define SELFTEST_ASSERT_HAS_UART_EMPTY() SELFTEST_ASSERT(SIM_UART_GetDataSize()==0);
+#define SELFTEST_ASSERT_HAS_SOME_DATA_IN_UART() SELFTEST_ASSERT(SIM_UART_GetDataSize()!=0);
 
 //#define FLOAT_EQUALS (a,b) (fabs(a-b)<0.001f)
 float myFabs(float f);
