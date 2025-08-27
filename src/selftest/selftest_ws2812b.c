@@ -12,6 +12,8 @@ void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push);
 void Test_DMX() {
 	// reset whole device
 	SIM_ClearOBK(0);
+
+	SIM_UART_InitReceiveRingBuffer(4096);
 	SIM_ClearUART();
 
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
@@ -27,10 +29,28 @@ void Test_DMX() {
 	CMD_ExecuteCommand("SM16703P_Start", 0);
 	SELFTEST_ASSERT_HAS_SOME_DATA_IN_UART();
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("00  FF0080  FF0080  FF0080");
-	// 512 channels, but checked already 12
+	// 512 channels, but checked already 10
 	for (int i = 0; i < 100; i++) {
 		SELFTEST_ASSERT_HAS_SENT_UART_STRING("00 00 00 00 00");
 	}
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("00 00 00");
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+
+	CMD_ExecuteCommand("SM16703P_SetPixel 0 128 128 128", 0);
+	CMD_ExecuteCommand("SM16703P_SetPixel 1 255 255 255", 0);
+	CMD_ExecuteCommand("SM16703P_SetPixel 2 15 15 15", 0);
+	SELFTEST_ASSERT_PIXEL(0, 128, 128, 128);
+	SELFTEST_ASSERT_PIXEL(1, 255, 255, 255);
+	SELFTEST_ASSERT_PIXEL(2, 15, 15, 15);
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	CMD_ExecuteCommand("SM16703P_Start", 0);
+	SELFTEST_ASSERT_HAS_SOME_DATA_IN_UART();
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("00  FFFFFF  808080  0F0F0F");
+	// 512 channels, but checked already 10
+	for (int i = 0; i < 100; i++) {
+		SELFTEST_ASSERT_HAS_SENT_UART_STRING("00 00 00 00 00");
+	}
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("00 00 00");
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 
 	// nothing is sent by OBK at that point
