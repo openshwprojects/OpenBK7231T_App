@@ -31,6 +31,7 @@ int HAL_PIN_ReadDigitalInput(int index) {
 	return iVal;
 }
 void HAL_PIN_Setup_Input_Pulldown(int index) {
+	bl_gpio_enable_input(index, 0, 1);
 }
 void HAL_PIN_Setup_Input_Pullup(int index) {
 	// int bl_gpio_enable_input(uint8_t pin, uint8_t pullup, uint8_t pulldown);
@@ -67,7 +68,8 @@ void HAL_PIN_PWM_Start(int index, int freq) {
 
 	//addLogAdv(LOG_INFO, LOG_FEATURE_MAIN,"HAL_PIN_PWM_Start: pin %i chose pwm %i\r\n",index,pwm);
     //  Frequency must be between 2000 and 800000
-	bl_pwm_init(pwm, index, 2000);
+	if(freq < 2000) freq = 2000;
+	bl_pwm_init(pwm, index, freq);
 	bl_pwm_start(pwm);
 
 }
