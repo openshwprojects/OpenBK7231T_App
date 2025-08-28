@@ -20,6 +20,8 @@ enum ColorChannel {
 	COLOR_CHANNEL_COLD_WHITE,
 	COLOR_CHANNEL_WARM_WHITE
 };
+
+#define DEFAULT_PIXEL_SIZE 3
 const enum ColorChannel default_color_channel_order[3] = {
 	COLOR_CHANNEL_RED,
 	COLOR_CHANNEL_GREEN,
@@ -27,7 +29,7 @@ const enum ColorChannel default_color_channel_order[3] = {
 };
 
 enum ColorChannel *color_channel_order = default_color_channel_order;
-int pixel_size = 3; // default is RGB -> 3 bytes per pixel
+int pixel_size = DEFAULT_PIXEL_SIZE; // default is RGB -> 3 bytes per pixel
 // Number of pixels that can be addressed
 uint32_t pixel_count;
 
@@ -319,4 +321,5 @@ void LEDS_ShutdownShared() {
 		os_free(color_channel_order);
 		color_channel_order = default_color_channel_order;
 	}
+	pixel_size = DEFAULT_PIXEL_SIZE;
 }
