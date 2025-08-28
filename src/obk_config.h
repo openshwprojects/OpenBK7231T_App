@@ -517,6 +517,16 @@
 
 // #define ENABLE_OBK_BERRY						1
 
+#elif PLATFORM_TXW81X
+
+#define NO_CHIP_TEMPERATURE						1
+#define NEW_TCP_SERVER							1
+#define ENABLE_MQTT								1
+#define ENABLE_HA_DISCOVERY						1
+#define ENABLE_EXPAND_CONSTANT					1
+#define ENABLE_OBK_SCRIPTING					1
+#define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
+
 #else
 
 // #error "Platform not defined"

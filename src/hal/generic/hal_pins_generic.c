@@ -2,7 +2,7 @@
 #include "../../logging/logging.h"
 #include "../../new_cfg.h"
 #include "../../new_pins.h"
-
+#include "../hal_pins.h"
 
 int __attribute__((weak)) PIN_GetPWMIndexForPinIndex(int pin)
 {
@@ -67,4 +67,13 @@ void __attribute__((weak)) HAL_PIN_PWM_Update(int index, float value)
 unsigned int __attribute__((weak)) HAL_GetGPIOPin(int index)
 {
 	return index;
+}
+
+void __attribute__((weak)) HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function)
+{
+
+}
+void __attribute__((weak)) HAL_DetachInterrupt(int pinIndex)
+{
+
 }

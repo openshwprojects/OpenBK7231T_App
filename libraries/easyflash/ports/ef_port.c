@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#if !WINDOWS
+#if !WINDOWS && !PLATFORM_TXW81X
 #include "FreeRTOS.h"
 #include "semphr.h"
 #include "queue.h"
@@ -54,6 +54,23 @@ flash_t flash;
 #include "driver/chip/hal_flash.h"
 #include <image/flash.h>
 #define QueueHandle_t xQueueHandle
+
+#elif PLATFORM_TXW81X
+
+#include "sys_config.h"
+#include "typesdef.h"
+#include "csi_kernel.h"
+#include "osal/csky/defs.h"
+#include "dev.h"
+#include "hal/spi_nor.h"
+#include "lib/syscfg/syscfg.h"
+#include "osal/csky/string.h"
+
+typedef k_mutex_handle_t QueueHandle_t;
+#define xSemaphoreCreateMutex csi_kernel_mutex_new
+#define xSemaphoreTake(a, b) csi_kernel_mutex_lock(a, b, 0)
+#define xSemaphoreGive(a) csi_kernel_mutex_unlock(a)
+static struct spi_nor_flash* flash = NULL;
 
 #elif WINDOWS
 
@@ -120,6 +137,12 @@ EfErrCode ef_port_init(ef_env const** default_env, size_t* default_env_size)
 	ef_mutex = xSemaphoreCreateMutex();
 #if defined(PLATFORM_W800) || defined(PLATFORM_W600)
 	tls_fls_init();
+#elif PLATFORM_TXW81X
+	struct syscfg_info info;
+	os_memset(&info, 0, sizeof(info));
+	syscfg_info_get(&info);
+	flash = info.flash1;
+	spi_nor_open(flash);
 #endif
 
 	return result;
@@ -154,6 +177,9 @@ EfErrCode ef_port_read(uint32_t addr, uint32_t* buf, size_t size)
 	return res;
 #elif WINDOWS
 	memcpy(buf, env_area + addr, size);
+	return EF_NO_ERR;
+#elif PLATFORM_TXW81X
+	spi_nor_read(flash, addr, buf, size);
 	return EF_NO_ERR;
 #endif
 }
@@ -191,6 +217,9 @@ EfErrCode ef_port_erase(uint32_t addr, size_t size)
 	return res;
 #elif WINDOWS
 	memset(env_area + addr, 0xFF, size);
+#elif PLATFORM_TXW81X
+	spi_nor_sector_erase(flash, addr);
+	return EF_NO_ERR;
 #endif
 	return result;
 }
@@ -226,6 +255,9 @@ EfErrCode ef_port_write(uint32_t addr, const uint32_t* buf, size_t size)
 	return res;
 #elif WINDOWS
 	memcpy(env_area + addr, buf, size);
+	return EF_NO_ERR;
+#elif PLATFORM_TXW81X
+	spi_nor_write(flash, addr, buf, size);
 	return EF_NO_ERR;
 #endif
 }

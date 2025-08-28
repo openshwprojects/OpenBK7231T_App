@@ -23,7 +23,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#if !PLATFORM_TXW81X
 #include <inttypes.h>
+#else
+#include "../win32/stubs/win_inttypes.h"
+#endif
 
 #ifndef LFS_NO_MALLOC
 #include <stdlib.h>
