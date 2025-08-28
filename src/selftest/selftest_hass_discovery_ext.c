@@ -461,7 +461,8 @@ void Test_HassDiscovery_Channel_Ph() {
 	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mdl", PLATFORM_MCU_NAME);
 
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "stat_t", "~/4/get");
-	SELFTEST_ASSERT_JSON_VALUE_STRING_NOT_PRESENT(0, "unit_of_meas", "Ph");
+	// user says it should not be set
+	SELFTEST_ASSERT_JSON_VALUE_STRING_NOT_PRESENT(0, "unit_of_meas");
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "dev_cla", "ph");
 }
 
