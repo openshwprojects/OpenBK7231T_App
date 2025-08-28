@@ -4,7 +4,7 @@
 
 
 bool SM16703P_VerifyPixel(uint32_t pixel, byte r, byte g, byte b);
-bool SM16703P_VerifyPixel4(uint32_t pixel, byte r, byte g, byte b);
+bool SM16703P_VerifyPixel4(uint32_t pixel, byte r, byte g, byte b, byte a);
 
 #define SELFTEST_ASSERT_PIXEL(index, r, g, b) SELFTEST_ASSERT(SM16703P_VerifyPixel(index, r, g, b));
 #define SELFTEST_ASSERT_PIXEL4(index, r, g, b, w) SELFTEST_ASSERT(SM16703P_VerifyPixel4(index, r, g, b, w));
