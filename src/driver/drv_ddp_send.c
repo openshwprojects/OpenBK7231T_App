@@ -15,6 +15,9 @@
 #include "../quicktick.h"
 
 static int g_socket_ddpSend = -1;
+static int stat_sendBytes = 0;
+static int stat_sendPackets = 0;
+static int stat_failedPackets = 0;
 
 typedef struct ddpQueueItem_s {
 	int curSize;
@@ -27,8 +30,7 @@ typedef struct ddpQueueItem_s {
 
 ddpQueueItem_t *g_queue = 0;
 
-void DRV_DDPSend_SendInternal(struct sockaddr_in *adr, const byte *frame, int numBytes) {
-
+int DRV_DDPSend_SendInternal(struct sockaddr_in *adr, const byte *frame, int numBytes) {
 	int nbytes = sendto(
 		g_socket_ddpSend,
 		(const char*)frame,
@@ -37,6 +39,13 @@ void DRV_DDPSend_SendInternal(struct sockaddr_in *adr, const byte *frame, int nu
 		(struct sockaddr*) adr,
 		sizeof(*adr)
 	);
+	if (nbytes == numBytes) {
+		stat_sendBytes += numBytes;
+		stat_sendPackets++;
+		return numBytes;
+	}
+	stat_failedPackets++;
+	return 0;
 }
 void DRV_DDPSend_Send(const char *ip, int port, const byte *frame, int numBytes, int delay) {
 	struct sockaddr_in adr;
@@ -59,23 +68,46 @@ void DRV_DDPSend_Send(const char *ip, int port, const byte *frame, int numBytes,
 	}
 	if (it == 0) {
 		it = (ddpQueueItem_t*)malloc(sizeof(ddpQueueItem_t));
+		if (it == 0) {
+			// malloc failed
+			return;
+		}
 		memset(it,0,sizeof(ddpQueueItem_t));
 		it->adr = adr;
 		it->totalSize = it->curSize = numBytes;
 		it->data = malloc(numBytes);
+		if (it->data == 0) {
+			// malloc failed
+			free(it);
+			return;
+		}
 		it->next = g_queue;
-		it->delay = delay;
 		g_queue = it;
 	}
+	if (it->totalSize < numBytes) {
+		byte *r = (byte*)realloc(it->data, numBytes);
+		if (r == 0) {
+			// realloc failed
+			return;
+		}
+		it->data = r;
+		it->totalSize = numBytes;
+	}
+	it->delay = delay;
+	memcpy(it->data, frame, numBytes);
+	it->curSize = numBytes;
 }
 void DRV_DDPSend_RunFrame() {
 	ddpQueueItem_t *t;
 	t = g_queue;
 	while (t) {
-		t->delay -= g_deltaTimeMS;
-		if (t->delay <= 0) {
-			DRV_DDPSend_SendInternal(&t->adr, t->data, t->curSize);
-			t->curSize = 0; // mark as empty
+		if (t->curSize > 0) {
+			t->delay -= g_deltaTimeMS;
+			if (t->delay <= 0) {
+				int sendBytes = DRV_DDPSend_SendInternal(&t->adr, t->data, t->curSize);
+				// TODO - do not clear if didn't send?
+				t->curSize = 0; // mark as empty
+			}
 		}
 		t = t->next;
 	}
@@ -86,10 +118,19 @@ void DRV_DDPSend_Shutdown()
 		close(g_socket_ddpSend);
 		g_socket_ddpSend = -1;
 	}
+	ddpQueueItem_t *it = g_queue;
+	while (it) {
+		ddpQueueItem_t *n = it->next;
+		free(it->data);
+		free(it);
+		it = n;
+	}
+	g_queue = 0;
 }
 void DRV_DDPSend_AppendInformationToHTTPIndexPage(http_request_t* request)
 {
-
+	hprintf255(request, "<h2>DDP sent: %i packets, %i bytes, errored packets: %i</h2>", 
+		stat_sendPackets, stat_sendBytes, stat_failedPackets);
 }
 void DRV_DDPSend_Init()
 {
