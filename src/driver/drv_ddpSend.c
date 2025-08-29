@@ -162,6 +162,7 @@ commandResult_t DDP_Send(const void* context, const char* cmd, const char* args,
 	}
 	DDP_SetHeader(data, pixelSize, (cur- headerSize));
 	DRV_DDPSend_Send(ip, host, data, cur, delay);
+	free(data);
 	return CMD_RES_OK;
 }
 void DRV_DDPSend_Init()
