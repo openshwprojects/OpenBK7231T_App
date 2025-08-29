@@ -133,10 +133,22 @@ void DRV_DDPSend_AppendInformationToHTTPIndexPage(http_request_t* request)
 	hprintf255(request, "<h2>DDP sent: %i packets, %i bytes, errored packets: %i</h2>", 
 		stat_sendPackets, stat_sendBytes, stat_failedPackets);
 }
+
+// ddp as in WLED
+#define DDP_TYPE_RGB24  0x0B // 00 001 011 (RGB , 8 bits per channel, 3 channels)
+#define DDP_TYPE_RGBW32 0x1B // 00 011 011 (RGBW, 8 bits per channel, 4 channels)
+
+// https://github.com/wled/WLED/blob/main/wled00/udp.cpp
 void DDP_SetHeader(byte *data, int pixelSize, int bytesCount) {
 	// set ident
 
 	// set pixel size
+	if (pixelSize == 4) {
+		data[2] = DDP_TYPE_RGBW32;
+	}
+	else if (pixelSize == 3) {
+		data[2] = DDP_TYPE_RGB24;
+	}
 
 	// set bytes count
 	data[8] = (byte)((bytesCount >> 8) & 0xFF); // MSB
