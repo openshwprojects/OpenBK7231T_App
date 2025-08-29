@@ -12,6 +12,7 @@
 #include "lwip/inet.h"
 #include "../httpserver/new_http.h"
 #include "drv_local.h"
+#include "../quicktick.h"
 
 static int g_socket_ddpSend = -1;
 
@@ -19,6 +20,7 @@ typedef struct ddpQueueItem_s {
 	int curSize;
 	int totalSize;
 	byte *data;
+	int delay;
 	struct sockaddr_in adr;
 	struct ddpQueueItem_s *next;
 } ddpQueueItem_t;
@@ -51,7 +53,7 @@ void DRV_DDPSend_Send(const char *ip, int port, const byte *frame, int numBytes,
 	ddpQueueItem_t *it = g_queue;
 	while (it) {
 		if (it->curSize == 0) {
-			break;
+			break; // found empty
 		}
 		it = it->next;
 	}
@@ -62,11 +64,21 @@ void DRV_DDPSend_Send(const char *ip, int port, const byte *frame, int numBytes,
 		it->totalSize = it->curSize = numBytes;
 		it->data = malloc(numBytes);
 		it->next = g_queue;
+		it->delay = delay;
 		g_queue = it;
 	}
 }
 void DRV_DDPSend_RunFrame() {
-	
+	ddpQueueItem_t *t;
+	t = g_queue;
+	while (t) {
+		t->delay -= g_deltaTimeMS;
+		if (t->delay <= 0) {
+			DRV_DDPSend_SendInternal(&t->adr, t->data, t->curSize);
+			t->curSize = 0; // mark as empty
+		}
+		t = t->next;
+	}
 }
 void DRV_DDPSend_Shutdown()
 {
