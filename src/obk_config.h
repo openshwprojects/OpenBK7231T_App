@@ -179,6 +179,7 @@
 #define ENABLE_OBK_SCRIPTING					1
 #define ENABLE_OBK_BERRY						1
 #define ENABLE_DRIVER_DS1820_FULL				1
+#define ENABLE_DRIVER_DMX						1
 
 #elif PLATFORM_BL602
 

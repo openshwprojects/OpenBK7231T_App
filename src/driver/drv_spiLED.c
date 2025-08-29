@@ -130,24 +130,7 @@ void SPILED_InitDMA(int numBytes) {
 
 
 
-void SPILED_SetRawHexString(int start_offset, const char *s, int push) {
-	// start offset is in bytes, and we do 2 bits per dst byte, so *4
-	uint8_t *dst = spiLED.buf + spiLED.ofs + start_offset * 4;
 
-	// parse hex string like FFAABB0011 byte by byte
-	while (s[0] && s[1]) {
-		byte b;
-		b = hexbyte(s);
-		*dst++ = translate_2bit((b >> 6));
-		*dst++ = translate_2bit((b >> 4));
-		*dst++ = translate_2bit((b >> 2));
-		*dst++ = translate_2bit(b);
-		s += 2;
-	}
-	if (push) {
-		SPIDMA_StartTX(spiLED.msg);
-	}
-}
 void SPILED_SetRawBytes(int start_offset, byte *bytes, int numBytes, int push) {
 	// start offset is in bytes, and we do 2 bits per dst byte, so *4
 	uint8_t *dst = spiLED.buf + spiLED.ofs + start_offset * 4;
