@@ -356,6 +356,17 @@ prebuild_OpenRTL8720E: berry
 	else echo "prebuild for OpenRTL8720E not found ... "; \
 	fi
 
+prebuild_OpenTXW81X: berry
+	git submodule update --init --recursive --depth=1 sdk/OpenTXW81X
+	if [ ! -e sdk/OpenTXW81X/tools/gcc/csky-elfabiv2 ]; then cd sdk/OpenTXW81X/tools/gcc && tar -xf *.tar.gz; fi
+	chmod +x sdk/OpenTXW81X/project/BinScript.exe
+	chmod +x sdk/OpenTXW81X/project/makecode.exe
+	@if [ -e platforms/TXW81X/pre_build.sh ]; then \
+		echo "prebuild found for OpenTXW81X"; \
+		sh platforms/TXW81X/pre_build.sh; \
+	else echo "prebuild for OpenTXW81X not found ... "; \
+	fi
+
 # Build main binaries
 OpenBK7231T: prebuild_OpenBK7231T
 	mkdir -p output
@@ -656,6 +667,13 @@ OpenECR6600: prebuild_OpenECR6600
 	cp $(ECRDIR)/build/OpenBeken/ECR6600F_standalone_OpenBeken_allinone.bin output/$(APP_VERSION)/OpenECR6600_$(APP_VERSION).bin
 	cp $(ECRDIR)/build/OpenBeken/ECR6600F_OpenBeken_Compress_ota_packeg.bin output/$(APP_VERSION)/OpenECR6600_$(APP_VERSION)_ota.img
 	
+.PHONY: OpenTXW81X
+OpenTXW81X: prebuild_OpenTXW81X
+	cd sdk/OpenTXW81X/project && make APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) && \
+	./BinScript.exe BinScript.BinScript && ./makecode.exe
+	mkdir -p output/$(APP_VERSION)
+	cp sdk/OpenTXW81X/project/APP.bin output/$(APP_VERSION)/OpenTXW81X_$(APP_VERSION).bin
+
 # Add custom Makefile if required
 -include custom.mk
 

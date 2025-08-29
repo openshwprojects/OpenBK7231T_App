@@ -526,6 +526,8 @@
 #define ENABLE_EXPAND_CONSTANT					1
 #define ENABLE_OBK_SCRIPTING					1
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
+#define ENABLE_LITTLEFS							1
+#define ENABLE_NTP 								1
 
 #else
 

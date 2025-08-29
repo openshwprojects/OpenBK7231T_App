@@ -4,10 +4,13 @@ CFLAGS +=  -DPLATFORM_TXW81X
 
 INCLUDES += -I$(OBK_DIR)/libraries/easyflash/inc
 
-SRC_C  += $(OBK_DIR)/src/hal/txw81x/hal_main_txw81x.c
-SRC_C  += $(OBK_DIR)/src/hal/txw81x/hal_wifi_txw81x.c
 SRC_C  += $(OBK_DIR)/src/hal/txw81x/hal_flashVars_txw81x.c
 SRC_C  += $(OBK_DIR)/src/hal/txw81x/hal_flashConfig_txw81x.c
+SRC_C  += $(OBK_DIR)/src/hal/txw81x/hal_generic_txw81x.c
+SRC_C  += $(OBK_DIR)/src/hal/txw81x/hal_main_txw81x.c
+SRC_C  += $(OBK_DIR)/src/hal/txw81x/hal_pins_txw81x.c
+SRC_C  += $(OBK_DIR)/src/hal/txw81x/hal_wifi_txw81x.c
+SRC_C  += $(OBK_DIR)/src/driver/drv_txw81x_camera.c
 
 OBK_SRCS = $(OBK_DIR)/src/
 include $(OBK_DIR)/platforms/obk_main.mk

@@ -220,6 +220,9 @@ void TCL_UART_RunEverySecond(void);
 void TCL_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 void TCL_DoDiscovery(const char *topic);
 
+void TXW_Cam_Init(void);
+void TXW_Cam_RunEverySecond(void);
+
 #define SM2135_DELAY 4
 
 // Software I2C

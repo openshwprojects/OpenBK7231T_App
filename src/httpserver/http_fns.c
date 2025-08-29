@@ -1833,7 +1833,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	ledDriverChipRunning = 0;
 #endif
 
-#if PLATFORM_TXW817
+#if PLATFORM_TXW81X
 	hooks.malloc_fn = _os_malloc;
 	hooks.free_fn = _os_free;
 #else

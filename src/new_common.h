@@ -826,8 +826,6 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #define rtos_delay_milliseconds csi_kernel_delay_ms
 #define delay_ms csi_kernel_delay_ms
-//#define os_malloc	_os_malloc
-//#define os_free		_os_free
 
 #define lwip_close_force(x) lwip_close(x)
 #define kNoErr                      0       //! No error occurred.
@@ -837,11 +835,8 @@ typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
 typedef int OSStatus;
 typedef k_mutex_handle_t SemaphoreHandle_t;
 #define xSemaphoreCreateMutex csi_kernel_mutex_new
-#define xSemaphoreTake(a, b) (csi_kernel_mutex_lock(a, csi_kernel_ms2tick(b), 0) != 0)
+#define xSemaphoreTake(a, b) (csi_kernel_mutex_lock(a, csi_kernel_ms2tick(b), 0) == 0)
 #define xSemaphoreGive csi_kernel_mutex_unlock
-//#define xSemaphoreCreateMutex() 0
-//#define xSemaphoreTake(a, b) (1)
-//#define xSemaphoreGive(x) 0
 #define pdTRUE true
 
 #define xPortGetFreeHeapSize() sysheap_freesize(&sram_heap)
@@ -1011,7 +1006,7 @@ typedef enum
     EXCELLENT,
 } WIFI_RSSI_LEVEL;
 
-#if PLATFORM_LN882H || PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_TR6260 || PLATFORM_XRADIO
+#if PLATFORM_LN882H || PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_TR6260 || PLATFORM_XRADIO || PLATFORM_TXW81X
 #define IP_STRING_FORMAT	"%u.%u.%u.%u"
 #else
 #define IP_STRING_FORMAT	"%hhu.%hhu.%hhu.%hhu"
