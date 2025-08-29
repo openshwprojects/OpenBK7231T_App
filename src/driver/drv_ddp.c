@@ -21,8 +21,8 @@ static const char* group = "239.255.250.250";
 static int port = 4048;
 static int g_ddp_socket_receive = -1;
 static int g_retry_delay = 5;
-static int stat_packetsReceived = 0;
-static int stat_bytesReceived = 0;
+int stat_ddpPacketsReceived = 0;
+static int stat_ddpBytesReceived = 0;
 static char *g_ddp_buffer = 0;
 static int g_ddp_bufferSize = 512;
 
@@ -184,12 +184,12 @@ void DRV_DDP_RunFrame() {
 		}
 		//addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"Received %i bytes from %s\n",nbytes,inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
 
-		stat_packetsReceived++;
-		stat_bytesReceived += nbytes;
+		stat_ddpPacketsReceived++;
+		stat_ddpBytesReceived += nbytes;
 
 		DDP_Parse((byte*)g_ddp_buffer, nbytes);
 
-		if (stat_packetsReceived % 10 == 0) {
+		if (stat_ddpPacketsReceived % 10 == 0) {
 			rtos_delay_milliseconds(5);
 		}
 	}
@@ -203,7 +203,7 @@ void DRV_DDP_Shutdown()
 }
 void DRV_DDP_AppendInformationToHTTPIndexPage(http_request_t* request)
 {
-	hprintf255(request, "<h2>DDP received: %i packets, %i bytes</h2>", stat_packetsReceived, stat_bytesReceived);
+	hprintf255(request, "<h2>DDP received: %i packets, %i bytes</h2>", stat_ddpPacketsReceived, stat_ddpBytesReceived);
 }
 void DRV_DDP_Init()
 {

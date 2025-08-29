@@ -145,6 +145,18 @@ void Test_DMX_RGBW() {
 
 	// nothing is sent by OBK at that point
 }
+extern int stat_ddpPacketsReceived;
+void SIM_WaitForDDPPacket() {
+	int prev = stat_ddpPacketsReceived;
+
+	for (int i = 0; i < 100; i++) {
+		Sim_RunFrames(1, true);
+		if (stat_ddpPacketsReceived > prev) {
+			break; // got it
+		}
+	}
+	
+}
 void Test_WS2812B() {
 	// reset whole device
 	SIM_ClearOBK(0);
@@ -277,18 +289,18 @@ void Test_WS2812B() {
 	CMD_ExecuteCommand("startDriver DDP", 0);
 	CMD_ExecuteCommand("startDriver DDPSend", 0);
 	CMD_ExecuteCommand("DDP_Send 127.0.0.1 4048 3 0 FF00AB", 0);
-	Sim_RunFrames(5, true);
+	SIM_WaitForDDPPacket();
 	// this requires udp to work so it can pass...
 	if (1) {
 		SELFTEST_ASSERT_PIXEL(0, 0xFF, 0x00, 0xAB);
 	}
 	CMD_ExecuteCommand("DDP_Send 127.0.0.1 4048 3 0 ABCDEF", 0);
-	Sim_RunFrames(5, true);
+	SIM_WaitForDDPPacket();
 	if (1) {
 		SELFTEST_ASSERT_PIXEL(0, 0xAB, 0xCD, 0xEF);
 	}
 	CMD_ExecuteCommand("DDP_Send 127.0.0.1 4048 3 0 ABCDEFAABBCC", 0);
-	Sim_RunFrames(5, true);
+	SIM_WaitForDDPPacket();
 	if (1) {
 		SELFTEST_ASSERT_PIXEL(0, 0xAB, 0xCD, 0xEF);
 		SELFTEST_ASSERT_PIXEL(1, 0xAA, 0xBB, 0xCC);
