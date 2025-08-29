@@ -282,6 +282,11 @@ void Test_WS2812B() {
 	if (0) {
 		SELFTEST_ASSERT_PIXEL(0, 0xFF, 0x00, 0xAB);
 	}
+	CMD_ExecuteCommand("DDP_Send 127.0.0.1 4048 3 0 ABCDEF", 0);
+	Sim_RunFrames(5, true);
+	if (0) {
+		SELFTEST_ASSERT_PIXEL(0, 0xAB, 0xCD, 0xEF);
+	}
 
 	
 	// fake DDP RGBW packet
