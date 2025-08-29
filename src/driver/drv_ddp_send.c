@@ -44,7 +44,7 @@ void DRV_DDPSend_Send(const char *ip, int port, const byte *frame, int numBytes,
 	adr.sin_port = htons(port);
 
 	if (delay <= 0) {
-		DRV_DDPSend_SendInternal(ip, port, frame, numBytes);
+		DRV_DDPSend_SendInternal(&adr, frame, numBytes);
 		return;
 	}
 
@@ -58,6 +58,11 @@ void DRV_DDPSend_Send(const char *ip, int port, const byte *frame, int numBytes,
 	if (it == 0) {
 		it = (ddpQueueItem_t*)malloc(sizeof(ddpQueueItem_t));
 		memset(it,0,sizeof(ddpQueueItem_t));
+		it->adr = adr;
+		it->totalSize = it->curSize = numBytes;
+		it->data = malloc(numBytes);
+		it->next = g_queue;
+		g_queue = it;
 	}
 }
 void DRV_DDPSend_RunFrame() {
