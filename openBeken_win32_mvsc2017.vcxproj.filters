@@ -410,7 +410,7 @@
     <ClCompile Include="src\driver\drv_tca9554.c" />
     <ClCompile Include="src\driver\drv_leds_shared.c" />
     <ClCompile Include="src\driver\drv_dmx512.c" />
-    <ClCompile Include="src\driver\drv_ddp_send.c" />
+    <ClCompile Include="src\driver\drv_ddpSend.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\base64\base64.h" />
