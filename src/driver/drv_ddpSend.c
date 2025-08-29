@@ -14,7 +14,6 @@
 #include "drv_local.h"
 #include "../quicktick.h"
 
-#define close closesocket
 
 static int g_socket_ddpSend = -1;
 static int stat_sendBytes = 0;
