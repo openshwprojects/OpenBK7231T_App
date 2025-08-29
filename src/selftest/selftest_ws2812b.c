@@ -274,6 +274,16 @@ void Test_WS2812B() {
 		SELFTEST_ASSERT_PIXEL(1, 0xFF, 0, 0);
 		SELFTEST_ASSERT_PIXEL(2, 0xFF, 0, 0xFF);
 	}
+	CMD_ExecuteCommand("startDriver DDP", 0);
+	CMD_ExecuteCommand("startDriver DDPSend", 0);
+	CMD_ExecuteCommand("DDP_Send 127.0.0.1 4048 3 0 FF00AB", 0);
+	Sim_RunFrames(5, true);
+	// this requires udp to work so it can pass...
+	if (0) {
+		SELFTEST_ASSERT_PIXEL(0, 0xFF, 0x00, 0xAB);
+	}
+
+	
 	// fake DDP RGBW packet
 	{
 		byte ddpPacket[128];
