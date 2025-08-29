@@ -315,7 +315,14 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_IR2
 	{ "IR2",			DRV_IR2_Init,		 NULL,						NULL, NULL, NULL, NULL, NULL, false },
 #endif
-		
+
+#if ENABLE_DRIVER_DDPSEND
+	//drvdetail:{"name":"DDPSend",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"DDPqqqqqqq. See [DDP topic](https://www.elektroda.com/rtvforum/topic4040325.html)",
+	//drvdetail:"requires":""}
+	{ "DDPSend",		DRV_DDPSend_Init,		NULL,						DRV_DDPSend_AppendInformationToHTTPIndexPage, DRV_DDPSend_RunFrame, DRV_DDPSend_Shutdown, NULL, NULL, false },
+#endif
 #if ENABLE_DRIVER_DDP
 	//drvdetail:{"name":"DDP",
 	//drvdetail:"title":"TODO",
