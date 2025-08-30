@@ -224,6 +224,11 @@ void TCL_UART_RunEverySecond(void);
 void TCL_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 void TCL_DoDiscovery(const char *topic);
 
+void DRV_DDPSend_Init();
+void DRV_DDPSend_Shutdown();
+void DRV_DDPSend_RunFrame();
+void DRV_DDPSend_AppendInformationToHTTPIndexPage(http_request_t* request);
+
 void TXW_Cam_Init(void);
 void TXW_Cam_RunEverySecond(void);
 
