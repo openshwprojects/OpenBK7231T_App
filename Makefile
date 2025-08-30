@@ -17,6 +17,10 @@ APP_NAME ?= $(shell basename $(CURDIR))
 TIMESTAMP := $(shell date +%Y%m%d_%H%M%S)
 APP_VERSION ?= dev_$(TIMESTAMP)
 
+# run the awk script to build rolesNchannels.h header file from textfile roles_and_channels.input
+$(shell if [ -e src/roles_and_channels.input ] && [ -e src/gen_rolesNchannels.awk ]; then awk -f src/gen_rolesNchannels.awk src/roles_and_channels.input > src/rolesNchannels.h; else echo bla  > src/rolesNchannels.h; fi)
+
+
 ifeq ($(VARIANT),berry)
 OBK_VARIANT = 1
 else ifeq ($(VARIANT),tuyaMCU)
