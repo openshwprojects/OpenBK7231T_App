@@ -24,6 +24,7 @@
 | RTL8721DA<br>RTL8711DAF (AmebaDplus)                    | Realtek         | ✅         | ✅   | ✅⁶   | ✅   | ✅      | ✅   | ✅  | ❌  | ❌         | ✅  | ✅     | ⚠️ |
 | RTL8720E<br>RTL8710ECF (AmebaLite)                      | Realtek         | ✅         | ✅   | ✅⁶   | ✅   | ✅      | ✅   | ✅  | ❌  | ❌         | ✅  | ✅     | ⚠️ |
 | ECR6600                                                 | ESWIN           | ❌         | ✅   | ✅    | ✅   | ✅      | ✅   | ✅⁸ | ⚠️  | ⚠️¹¹       | ✅  | ❌     | ❌ |
+| TXW81X                                                  | Taixin          | ❌         | ❓   | ❌    | ✅   | ❓      | ❌   | ❌  | ❌  | ❌         | ❓  | ❌     | ❌ |
 
 ✅ - Works
 ❓ - Not tested

@@ -1833,8 +1833,13 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	ledDriverChipRunning = 0;
 #endif
 
+#if PLATFORM_TXW81X
+	hooks.malloc_fn = _os_malloc;
+	hooks.free_fn = _os_free;
+#else
 	hooks.malloc_fn = os_malloc;
 	hooks.free_fn = os_free;
+#endif
 	cJSON_InitHooks(&hooks);
 
 	DRV_OnHassDiscovery(topic);

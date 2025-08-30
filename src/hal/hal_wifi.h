@@ -1,8 +1,12 @@
 #ifndef __HAL_WIFI_H__
 #define __HAL_WIFI_H__
 
+#ifndef MAC2STR
 #define MAC2STR(a) (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5]
+#endif
+#ifndef MACSTR
 #define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x"
+#endif
 
 typedef enum HALWifiStatus {
 	WIFI_UNDEFINED,
