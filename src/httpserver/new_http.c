@@ -554,6 +554,7 @@ const char* htmlPinRoleNames[] = {
 	"PWM_ScriptOnly_n",
 	"Counter_f",
 	"Counter_r",
+	"IRRecv_nPup",
 	"error",
 	"error",
 	"error",
