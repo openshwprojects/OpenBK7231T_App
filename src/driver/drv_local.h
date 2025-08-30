@@ -190,6 +190,10 @@ void TCA9554_Init();
 void TCA9554_OnEverySecond();
 void TCA9554_OnChannelChanged(int ch, int value);
 
+void DMX_Init();
+void DMX_OnEverySecond();
+void DMX_Shutdown();
+
 void PWMG_Init();
 
 void Freeze_Init();
@@ -219,6 +223,12 @@ void TCL_Init(void);
 void TCL_UART_RunEverySecond(void);
 void TCL_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 void TCL_DoDiscovery(const char *topic);
+
+void DRV_DDPSend_Init();
+void DRV_DDPSend_Shutdown();
+void DRV_DDPSend_RunFrame();
+void DRV_DDPSend_AppendInformationToHTTPIndexPage(http_request_t* request);
+
 
 #define SM2135_DELAY 4
 

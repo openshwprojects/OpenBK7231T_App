@@ -273,7 +273,6 @@ This platform is not supported, error!
 #include <limits.h>
 #define closesocket close
 #define SOCKET int
-#define closesocket close
 #define ISVALIDSOCKET(s) ((s) >= 0)
 #define GETSOCKETERRNO() (errno)
 #define ioctlsocket ioctl
@@ -286,6 +285,7 @@ This platform is not supported, error!
 
 #else
 
+#define close closesocket
 #define ISVALIDSOCKET(s) ((s) != INVALID_SOCKET)
 #define GETSOCKETERRNO() (WSAGetLastError())
 
