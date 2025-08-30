@@ -4,6 +4,7 @@
 #include "../../logging/logging.h"
 #include "../../new_cfg.h"
 #include "../../new_pins.h"
+#include "../hal_pins.h"
 #include "hal_gpio.h"
 #include "gpio.h"
 #include "pwm.h"
@@ -305,5 +306,43 @@ unsigned int HAL_GetGPIOPin(int index)
 {
 	return index;
 }
+
+OBKInterruptHandler g_handlers[PLATFORM_GPIO_MAX];
+OBKInterruptType g_modes[PLATFORM_GPIO_MAX];
+
+void ECR6600_Interrupt(unsigned char obkPinNum) {
+	if (g_handlers[obkPinNum]) {
+		g_handlers[obkPinNum](obkPinNum);
+	}
+}
+
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
+	g_handlers[pinIndex] = function;
+
+	T_GPIO_ISR_CALLBACK cf1isr;
+	cf1isr.gpio_callback = (&ECR6600_Interrupt);
+	cf1isr.gpio_data = pinIndex;
+
+	int ecr_mode;
+	if (mode == INTERRUPT_RISING) {
+		ecr_mode = DRV_GPIO_ARG_INTR_MODE_P_EDGE;
+	}
+	else {
+		ecr_mode = DRV_GPIO_ARG_INTR_MODE_N_EDGE;
+	}
+	drv_gpio_ioctrl(pinIndex, DRV_GPIO_CTRL_INTR_MODE, ecr_mode);
+	drv_gpio_ioctrl(pinIndex, DRV_GPIO_CTRL_REGISTER_ISR, (int)&cf1isr);
+	drv_gpio_ioctrl(pinIndex, DRV_GPIO_CTRL_INTR_ENABLE, 0);
+
+}
+void HAL_DetachInterrupt(int pinIndex) {
+	if (g_handlers[pinIndex] == 0) {
+		return; // already removed;
+	}
+
+	drv_gpio_ioctrl(pinIndex, DRV_GPIO_CTRL_INTR_DISABLE, 0);
+	g_handlers[pinIndex] = 0;
+}
+
 
 #endif // PLATFORM_ECR6600

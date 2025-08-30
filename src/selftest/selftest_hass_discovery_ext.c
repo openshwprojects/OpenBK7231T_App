@@ -437,6 +437,35 @@ void Test_HassDiscovery_Channel_Smoke() {
 	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "name", "Smoke");
 }
 
+void Test_HassDiscovery_Channel_Ph() {
+	const char *shortName = "WinCustom";
+	const char *fullName = "Windows Fake Custom";
+	const char *mqttName = "testCustom";
+	SIM_ClearOBK(shortName);
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
+
+	CFG_SetShortDeviceName(shortName);
+	CFG_SetDeviceName(fullName);
+
+	CHANNEL_SetType(4, ChType_Ph);
+
+	SIM_ClearMQTTHistory();
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(5, false);
+
+	// OBK device should publish JSON on MQTT topic "homeassistant"
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "name", shortName);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "sw", USER_SW_VER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mf", MANUFACTURER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mdl", PLATFORM_MCU_NAME);
+
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "stat_t", "~/4/get");
+	// user says it should not be set
+	SELFTEST_ASSERT_JSON_VALUE_STRING_NOT_PRESENT(0, "unit_of_meas");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "dev_cla", "ph");
+}
+
 void Test_HassDiscovery_Channel_Custom() {
 	const char *shortName = "WinCustom";
 	const char *fullName = "Windows Fake Custom";
@@ -674,6 +703,7 @@ void Test_HassDiscovery_Ext() {
 	Test_HassDiscovery_Channel_Custom();
 	Test_HassDiscovery_Channel_BatteryLevelPercent();
 	Test_HassDiscovery_Channel_Smoke();
+	Test_HassDiscovery_Channel_Ph();
 
 	
 }

@@ -3,6 +3,7 @@
 #include "../../new_pins.h"
 #include "../../new_common.h"
 #include "../../logging/logging.h"
+#include "../hal_pins.h"
 
 
 #include "bl_gpio.h"
@@ -96,6 +97,38 @@ void HAL_PIN_PWM_Update(int index, float value) {
 
 unsigned int HAL_GetGPIOPin(int index) {
 	return index;
+}
+
+OBKInterruptHandler g_handlers[PLATFORM_GPIO_MAX];
+OBKInterruptType g_modes[PLATFORM_GPIO_MAX];
+
+#include "hal_gpio.h"
+
+void BL602_Interrupt(void* context) {
+	int obkPinNum = (int)context;
+	if (g_handlers[obkPinNum]) {
+		g_handlers[obkPinNum](obkPinNum);
+	}
+	bl_gpio_intmask(obkPinNum, 0);
+}
+
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
+	g_handlers[pinIndex] = function;
+	int bl_mode;
+	if (mode == INTERRUPT_RISING) {
+		bl_mode = GPIO_INT_TRIG_POS_PULSE;
+	}
+	else {
+		bl_mode = GPIO_INT_TRIG_NEG_PULSE;
+	}
+	hal_gpio_register_handler(BL602_Interrupt, pinIndex,
+		GPIO_INT_CONTROL_ASYNC, bl_mode, (void*)pinIndex);
+}
+void HAL_DetachInterrupt(int pinIndex) {
+	if (g_handlers[pinIndex] == 0) {
+		return; // already removed;
+	}
+	g_handlers[pinIndex] = 0;
 }
 
 #endif

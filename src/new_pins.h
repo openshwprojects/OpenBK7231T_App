@@ -574,6 +574,20 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_PWM_ScriptOnly_n,
+	//iodetail:{"name":"IOR_Counter_f",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"",
+	//iodetail:"enum":"Counter_f",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_Counter_f,
+	//iodetail:{"name":"IOR_Counter_r",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"",
+	//iodetail:"enum":"Counter_r",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_Counter_r,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
