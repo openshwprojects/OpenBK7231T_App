@@ -214,9 +214,11 @@
     <ClCompile Include="src\driver\drv_cse7761.c" />
     <ClCompile Include="src\driver\drv_cse7766.c" />
     <ClCompile Include="src\driver\drv_ddp.c" />
+    <ClCompile Include="src\driver\drv_ddpSend.c" />
     <ClCompile Include="src\driver\drv_debouncer.c" />
     <ClCompile Include="src\driver\drv_dht.c" />
     <ClCompile Include="src\driver\drv_dht_internal.c" />
+    <ClCompile Include="src\driver\drv_dmx512.c" />
     <ClCompile Include="src\driver\drv_ds1820_full.c" />
     <ClCompile Include="src\driver\drv_ds1820_common.c" />
     <ClCompile Include="src\driver\drv_doorSensorWithDeepSleep.c" />
@@ -231,6 +233,7 @@
     <ClCompile Include="src\driver\drv_ir.cpp" />
     <ClCompile Include="src\driver\drv_kp18058.c" />
     <ClCompile Include="src\driver\drv_kp18068.c" />
+    <ClCompile Include="src\driver\drv_leds_shared.c" />
     <ClCompile Include="src\driver\drv_main.c" />
     <ClCompile Include="src\driver\drv_max6675.c" />
     <ClCompile Include="src\driver\drv_max72xx_clock.c" />

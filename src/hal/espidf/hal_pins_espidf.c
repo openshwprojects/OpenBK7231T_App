@@ -6,6 +6,7 @@
 #include "../../new_pins.h"
 #include "hal_pinmap_espidf.h"
 #include "driver/ledc.h"
+#include "../hal_pins.h"
 
 #ifdef CONFIG_IDF_TARGET_ESP32C3
 
@@ -604,6 +605,48 @@ void HAL_PIN_PWM_Update(int index, float value)
 unsigned int HAL_GetGPIOPin(int index)
 {
 	return index;
+}
+
+
+OBKInterruptHandler g_handlers[PLATFORM_GPIO_MAX];
+OBKInterruptType g_modes[PLATFORM_GPIO_MAX];
+
+void ESP_Interrupt(void* context) {
+	int obkPinNum = (int)context;
+	if (g_handlers[obkPinNum]) {
+		g_handlers[obkPinNum](obkPinNum);
+	}
+}
+
+bool b_esp_ready = false;
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
+	g_handlers[pinIndex] = function;
+
+	if (b_esp_ready == false) {
+		gpio_install_isr_service(0);
+		b_esp_ready = true;
+	}
+	espPinMapping_t* esp_cf = g_pins + pinIndex;
+	int esp_mode;
+	if (mode == INTERRUPT_RISING) {
+		esp_mode = GPIO_INTR_POSEDGE;
+	}
+	else {
+		esp_mode = GPIO_INTR_NEGEDGE;
+	}
+	ESP_ConfigurePin(esp_cf->pin, GPIO_MODE_INPUT, true, false, esp_mode);
+	gpio_isr_handler_add(esp_cf->pin, ESP_Interrupt, (void*)pinIndex);
+}
+void HAL_DetachInterrupt(int pinIndex) {
+	if (g_handlers[pinIndex] == 0) {
+		return; // already removed;
+	}
+
+	espPinMapping_t* esp_cf;
+	esp_cf = g_pins + pinIndex;
+	gpio_isr_handler_remove(esp_cf->pin);
+	///gpio_uninstall_isr_service();
+	g_handlers[pinIndex] = 0;
 }
 
 #endif // PLATFORM_ESPIDF

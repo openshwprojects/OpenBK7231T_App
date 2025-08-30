@@ -2,6 +2,8 @@
 
 #include "../../new_common.h"
 #include "../../logging/logging.h"
+#include "../hal_pins.h"
+#include "../../new_pins.h"
 
 #include "wm_include.h"
 
@@ -114,7 +116,7 @@ static int IsPinIndexOk(int index) {
 		return 0;
 	return 1;
 }
-static int PIN_GetPWMIndexForPinIndex(int index) {
+int PIN_GetPWMIndexForPinIndex(int index) {
 	return g_pins[index].pwm_channel;
 }
 const char* HAL_PIN_GetPinNameAlias(int index) {
@@ -248,4 +250,39 @@ void HAL_PIN_PWM_Update(int index, float value) {
 unsigned int HAL_GetGPIOPin(int index) {
 	return g_pins[index].code;
 }
+
+OBKInterruptHandler g_handlers[PLATFORM_GPIO_MAX];
+OBKInterruptType g_modes[PLATFORM_GPIO_MAX];
+
+void W600_Interrupt(void* context) {
+	int obkPinNum = (int)(intptr_t)context;
+	int w600Pin = HAL_GetGPIOPin(obkPinNum);
+	tls_clr_gpio_irq_status(w600Pin);
+	if (g_handlers[obkPinNum]) {
+		g_handlers[obkPinNum](obkPinNum);
+	}
+}
+
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
+	g_handlers[pinIndex] = function;
+	int w600Pin = HAL_GetGPIOPin(pinIndex);
+	tls_gpio_isr_register(w600Pin, W600_Interrupt, (void*)(intptr_t)pinIndex);
+	int w_mode;
+	if (mode == INTERRUPT_RISING) {
+		w_mode = WM_GPIO_IRQ_TRIG_RISING_EDGE;
+	}
+	else {
+		w_mode = WM_GPIO_IRQ_TRIG_FALLING_EDGE;
+	}
+	tls_gpio_irq_enable(w600Pin, w_mode);
+}
+void HAL_DetachInterrupt(int pinIndex) {
+	if (g_handlers[pinIndex] == 0) {
+		return; // already removed;
+	}
+	int w600Pin = HAL_GetGPIOPin(pinIndex);
+	tls_gpio_irq_disable(w600Pin);
+	g_handlers[pinIndex] = 0;
+}
+
 #endif

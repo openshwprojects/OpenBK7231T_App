@@ -2,6 +2,7 @@
 
 #include "../../new_common.h"
 #include "../../logging/logging.h"
+#include "../hal_pins.h"
 
 #include "hal_pinmap_xradio.h"
 
@@ -122,5 +123,46 @@ void HAL_PIN_PWM_Update(int index, float value)
 
 	HAL_PWM_ChSetDutyRatio(g_pins[index].pwm, (g_pins[index].max_duty / 100) * value);
 }
+
+OBKInterruptHandler g_handlers[PLATFORM_GPIO_MAX];
+OBKInterruptType g_modes[PLATFORM_GPIO_MAX];
+
+void XRadio_Interrupt(void* context) {
+	int obkPinNum = (int)context;
+	if (g_handlers[obkPinNum]) {
+		g_handlers[obkPinNum](obkPinNum);
+	}
+}
+
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
+	g_handlers[pinIndex] = function;
+
+	xrpin_t *xr_cf = g_pins + pinIndex;
+	HAL_XR_ConfigurePin(xr_cf->port, xr_cf->pin, GPIOx_Pn_F6_EINT, GPIO_PULL_UP);
+	GPIO_IrqParam cfparam;
+	int xr_mode;
+	if (mode == INTERRUPT_RISING) {
+		xr_mode = GPIO_IRQ_EVT_RISING_EDGE;
+	}
+	else {
+		xr_mode = GPIO_IRQ_EVT_FALLING_EDGE;
+	}
+	cfparam.event = xr_mode;
+	cfparam.callback = XRadio_Interrupt;
+	cfparam.arg = (void*)pinIndex;
+	HAL_GPIO_EnableIRQ(xr_cf->port, xr_cf->pin, &cfparam);
+
+}
+void HAL_DetachInterrupt(int pinIndex) {
+	if (g_handlers[pinIndex] == 0) {
+		return; // already removed;
+	}
+	xrpin_t* xr_cf;
+	xr_cf = g_pins + pinIndex;
+	HAL_GPIO_DeInit(xr_cf->port, xr_cf->pin);
+	HAL_GPIO_DisableIRQ(xr_cf->port, xr_cf->pin);
+	g_handlers[pinIndex] = 0;
+}
+
 
 #endif
