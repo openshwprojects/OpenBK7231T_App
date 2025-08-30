@@ -104,6 +104,7 @@ void HAL_PIN_Setup_Input_Pullup(int index)
 	txwpin_t* pin = g_pins + index;
 	gpio_set_dir(pin->pin, GPIO_DIR_INPUT);
 	gpio_set_mode(pin->pin, GPIO_PULL_UP, GPIO_PULL_LEVEL_4_7K);
+	gpio_iomap_input(pin->pin, GPIO_IOMAP_INPUT);
 }
 
 void HAL_PIN_Setup_Input_Pulldown(int index)
@@ -113,6 +114,7 @@ void HAL_PIN_Setup_Input_Pulldown(int index)
 	txwpin_t* pin = g_pins + index;
 	gpio_set_dir(pin->pin, GPIO_DIR_INPUT);
 	gpio_set_mode(pin->pin, GPIO_PULL_DOWN, GPIO_PULL_LEVEL_4_7K);
+	gpio_iomap_input(pin->pin, GPIO_IOMAP_INPUT);
 }
 
 void HAL_PIN_Setup_Input(int index)
@@ -122,6 +124,7 @@ void HAL_PIN_Setup_Input(int index)
 	txwpin_t* pin = g_pins + index;
 	gpio_set_dir(pin->pin, GPIO_DIR_INPUT);
 	gpio_set_mode(pin->pin, GPIO_PULL_NONE, GPIO_PULL_LEVEL_NONE);
+	gpio_iomap_input(pin->pin, GPIO_IOMAP_INPUT);
 }
 
 void HAL_PIN_Setup_Output(int index)
@@ -131,6 +134,7 @@ void HAL_PIN_Setup_Output(int index)
 	txwpin_t* pin = g_pins + index;
 	gpio_set_dir(pin->pin, GPIO_DIR_OUTPUT);
 	gpio_set_mode(pin->pin, GPIO_PULL_UP, GPIO_PULL_LEVEL_4_7K);
+	gpio_iomap_output(pin->pin, GPIO_IOMAP_OUTPUT);
 }
 
 OBKInterruptHandler g_handlers[PLATFORM_GPIO_MAX];
