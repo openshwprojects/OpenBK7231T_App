@@ -106,8 +106,8 @@ OBKInterruptType g_modes[PLATFORM_GPIO_MAX];
 
 #include "hal_gpio.h"
 
-void BL602_Interrupt(void* context) {
-	int obkPinNum = (int)context;
+void BL602_Interrupt(gpio_ctx_t* context) {
+	int obkPinNum = (int)context->arg;
 	if (g_handlers[obkPinNum]) {
 		g_handlers[obkPinNum](obkPinNum);
 	}
@@ -117,11 +117,11 @@ void BL602_Interrupt(void* context) {
 void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
 	g_handlers[pinIndex] = function;
 	int bl_mode;
-	if (mode == INTERRUPT_RISING) {
-		bl_mode = GPIO_INT_TRIG_POS_PULSE;
-	}
-	else {
-		bl_mode = GPIO_INT_TRIG_NEG_PULSE;
+	switch(mode)
+	{
+		case INTERRUPT_RISING: bl_mode = GPIO_INT_TRIG_POS_PULSE; break;
+		case INTERRUPT_FALLING: bl_mode = GPIO_INT_TRIG_NEG_PULSE; break;
+		default: bl_mode = GPIO_INT_TRIG_NEG_PULSE; break;
 	}
 	hal_gpio_register_handler(BL602_Interrupt, pinIndex,
 		GPIO_INT_CONTROL_ASYNC, bl_mode, (void*)pinIndex);
