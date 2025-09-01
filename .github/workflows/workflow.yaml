@@ -295,7 +295,7 @@ jobs:
         with:
           repository: espressif/esp-idf
           path: sdk/esp-idf
-          ref: v5.5
+          ref: v5.5.1
           submodules: recursive
       - uses: actions/setup-python@v5
         with:
