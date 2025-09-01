@@ -40,6 +40,17 @@ void pwmout_stop(pwmout_t* obj);
 #include "bl602_timer.h"
 #include "hosal_timer.h"
 #define UINT32 uint32_t
+#elif PLATFORM_LN882H
+#define __HAL_COMMON_H__
+typedef enum
+{
+	HAL_DISABLE = 0u,
+	HAL_ENABLE = 1u
+} hal_en_t;
+#include "hal/hal_timer.h"
+#include "hal/hal_clock.h"
+#define delay_ms OS_MsDelay
+#define UINT32 uint32_t
 #endif
 
 // why can;t I call this?
@@ -148,16 +159,24 @@ extern void IR_ISR();
 #if PLATFORM_BEKEN
 static UINT32 ir_chan = BKTIMER0;
 static UINT32 ir_div = 1;
-static UINT32 ir_periodus = 50;
 #elif PLATFORM_REALTEK
 static gtimer_t ir_timer;
 static UINT32 ir_chan = TIMER2;
-static UINT32 ir_periodus = 50;
 #elif PLATFORM_BL602
 static hosal_timer_dev_t ir_timer;
 static UINT32 ir_chan = TIMER_CH0;
-static UINT32 ir_periodus = 50;
+#elif PLATFORM_LN882H
+static UINT32 ir_chan = TIMER0_BASE;
+extern "C" void TIMER0_IRQHandler()
+{
+	if(hal_tim_get_it_flag(TIMER0_BASE, TIM_IT_FLAG_ACTIVE))
+	{
+		hal_tim_clr_it_flag(TIMER0_BASE, TIM_IT_FLAG_ACTIVE);
+		DRV_IR_ISR(NULL);
+	}
+}
 #endif
+static UINT32 ir_periodus = 50;
 
 void timerConfigForReceive() {
 	// nothing here`
@@ -211,6 +230,23 @@ void _timerConfigForReceive() {
 	ir_timer.config.cb = DRV_IR_ISR;
 	ir_timer.config.arg = NULL;
 	hosal_timer_init(&ir_timer);
+#elif PLATFORM_LN882H
+	tim_init_t_def tim_init;
+	memset(&tim_init, 0, sizeof(tim_init));
+	tim_init.tim_mode = TIM_USER_DEF_CNT_MODE;
+	if(ir_periodus < 1000)
+	{
+		tim_init.tim_div = 0;
+		tim_init.tim_load_value = ir_periodus * (uint32_t)(hal_clock_get_apb0_clk() / 1000000) - 1;
+	}
+	else
+	{
+		tim_init.tim_div = (uint32_t)(hal_clock_get_apb0_clk() / 1000000) - 1;
+		tim_init.tim_load_value = ir_periodus - 1;
+	}
+	hal_tim_init(ir_chan, &tim_init);
+	NVIC_SetPriority(TIMER0_IRQn, 4);
+	NVIC_EnableIRQ(TIMER0_IRQn);
 #endif
 }
 
@@ -226,6 +262,9 @@ static void _timer_enable() {
 	gtimer_start_periodical(&ir_timer, ir_periodus, (void*)&DRV_IR_ISR, (uint32_t)&ir_timer);
 #elif PLATFORM_BL602
 	hosal_timer_start(&ir_timer);
+#elif PLATFORM_LN882H
+	hal_tim_en(ir_chan, HAL_ENABLE);
+	hal_tim_it_cfg(ir_chan, TIM_IT_FLAG_ACTIVE, HAL_ENABLE);
 #endif
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
 }
@@ -238,6 +277,9 @@ static void _timer_disable() {
 #elif PLATFORM_BL602
 	hosal_timer_stop(&ir_timer);
 	hosal_timer_finalize(&ir_timer);
+#elif PLATFORM_LN882H
+	hal_tim_en(ir_chan, HAL_DISABLE);
+	hal_tim_it_cfg(ir_chan, TIM_IT_FLAG_ACTIVE, HAL_DISABLE);
 #endif
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer disabled %u", res);
 }
@@ -838,7 +880,7 @@ extern "C" void DRV_IR_Init() {
 			CMD_RegisterCommand("IRParam",IR_Param, NULL);
 		}
 	}
-	if ((pin > 0) || (txpin > 0)) {
+	if ((pin >= 0) || (txpin >= 0)) {
 		// both tx and rx need the interrupt
 		_timerConfigForReceive();
 		delay_ms(10);
