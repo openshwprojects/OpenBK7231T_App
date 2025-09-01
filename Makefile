@@ -18,7 +18,7 @@ TIMESTAMP := $(shell date +%Y%m%d_%H%M%S)
 APP_VERSION ?= dev_$(TIMESTAMP)
 
 # run the python script to build rolesNchannels.h header file from textfile roles_and_channels.txt
-$(shell if [ -e src/roles_and_channels.txt ] && [ -e src/gen_rolesNchannels.py ]; then python src/gen_rolesNchannels.py src/roles_and_channels.txt > src/rolesNchannels.h; else echo ERROR  > src/rolesNchannels.h; fi)
+$(shell if [ -e src/roles_and_channels.txt ] && [ -e src/gen_rolesNchannels.py ]; then python3 src/gen_rolesNchannels.py src/roles_and_channels.txt > src/rolesNchannels.h; else echo ERROR  > src/rolesNchannels.h; fi)
 
 
 ifeq ($(VARIANT),berry)
