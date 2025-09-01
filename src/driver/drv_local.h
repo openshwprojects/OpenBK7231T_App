@@ -194,6 +194,9 @@ void DMX_Init();
 void DMX_OnEverySecond();
 void DMX_Shutdown();
 
+void WS2811_LN882H_Init();
+void WS2811_LN882H_Shutdown();
+
 void PWMG_Init();
 
 void Freeze_Init();

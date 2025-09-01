@@ -53,6 +53,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "TCA9554",		TCA9554_Init,			TCA9554_OnEverySecond,			NULL, NULL, NULL, TCA9554_OnChannelChanged , NULL, false },
 #endif
+#if ENABLE_DRIVER_WS2811_LN882H
+	//drvdetail:{"name":"WS2811_LN882H",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"WS2811_LN882H.",
+	//drvdetail:"requires":""}
+	{ "WS2811_LN882H",		WS2811_LN882H_Init,			NULL,			NULL, NULL, WS2811_LN882H_Shutdown, NULL , NULL, false },
+#endif
 #if ENABLE_DRIVER_DMX
 	//drvdetail:{"name":"DMX",
 	//drvdetail:"title":"TODO",
