@@ -144,7 +144,7 @@ def main(file):
     print("#if (INCLUDED_BY_NEW_PINS_H) || (INCLUDED_BY_NEW_PINS_C) || (INCLUDED_BY_NEW_HTTP_C) || (INCLUDED_BY_HTTP_FNS_C)\n\n\n")
     print("#if (INCLUDED_BY_NEW_PINS_H)\n")
     print("typedef enum ioRole_e {\n" + "\n".join(enum_list) + "\n} ioRole_t;\n")
-    print("short chanvals[];\n")
+    print("extern short chanvals[];\n")
 
 
 
