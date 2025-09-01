@@ -132,7 +132,8 @@ def main(file):
             break
 
         # Print error for unhandled lines
-        print(f"Opps, please check line {line}", file=sys.stderr)
+#        print(f"Opps, please check line {line}", file=sys.stderr)
+        print("Opps, please check line " + str(line), file=sys.stderr)
 
 
     # Remove trailing commas
