@@ -18,12 +18,6 @@
 #include "hal/hal_ws2811.h"
 #include "../hal/ln882h/pin_mapping_ln882h.h"
 
-gpio_direction_t currentDirection = GPIO_INPUT;
-
-ws2811Data_t ws2811Data = {
-	.ready = false,
-	.pin_data = WS2811_DEFAULT_DATA_PIN
-};
 
 
 void WS2811_LN882H_Show() {
