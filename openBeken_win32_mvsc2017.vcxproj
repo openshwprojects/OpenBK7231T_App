@@ -66,10 +66,10 @@
       <AdditionalLibraryDirectories>.\libs_for_simulator\SDL2-2.24.2\lib\x86;.\libs_for_simulator\DevIL-Windows-SDK-1.8.0\lib\x86\Release;.\libs_for_simulator\freeglut-MSVC-3.0.0-2.mp\lib;.\libs_for_simulator\nativefiledialog\build\lib\Debug\x86</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>cd libraries\berry &amp; mkdir generate &amp; python tools/coc/coc -o generate src ..\..\src\berry\modules -c ..\..\include\berry_conf.h</Command>
+      <Command>cd libraries\berry &amp; mkdir generate &amp; python tools/coc/coc -o generate src ..\..\src\berry\modules -c ..\..\include\berry_conf.h &amp; cd ..\..\src &amp; python src/gen_rolesNchannels.py src/roles_and_channels.txt > src/rolesNchannels.h</Command>
     </PreBuildEvent>
     <PreBuildEvent>
-      <Message>prebuild berry</Message>
+      <Message>prebuild berry and generating rolesNchannels.h</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -89,10 +89,10 @@
       <AdditionalLibraryDirectories>.\libs_for_simulator\SDL2-2.24.2\lib\x86;.\libs_for_simulator\DevIL-Windows-SDK-1.8.0\lib\x86\Release;.\libs_for_simulator\freeglut-MSVC-3.0.0-2.mp\lib;.\libs_for_simulator\nativefiledialog\build\lib\Release\x86</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>cd libraries\berry &amp; mkdir generate &amp; python tools/coc/coc -o generate src ..\..\src\berry\modules -c ..\..\include\berry_conf.h</Command>
+      <Command>cd libraries\berry &amp; mkdir generate &amp; python tools/coc/coc -o generate src ..\..\src\berry\modules -c ..\..\include\berry_conf.h &amp; cd ..\..\src &amp; python src/gen_rolesNchannels.py src/roles_and_channels.txt > src/rolesNchannels.h</Command>
     </PreBuildEvent>
     <PreBuildEvent>
-      <Message>prebuild berry</Message>
+      <Message>prebuild berry and generating rolesNchannels.h</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

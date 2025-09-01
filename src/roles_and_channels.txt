@@ -1,6 +1,96 @@
 #if (INCLUDED_BY_NEW_PINS_H) || (INCLUDED_BY_NEW_PINS_C) || (INCLUDED_BY_NEW_HTTP_C) || (INCLUDED_BY_HTTP_FNS_C)
 
 
+// pseudo structure for values describing a channels usage
+typedef struct {
+	char* desc;		// description (like Temperature, Humidity ...). This MUST match iodetails "channel usage"
+	char* enum_desc;	// description for enum will be used as CHAN_<enum_desc> for enum buliding channel values (to make header file readable - just needs to be different per line)
+	char* comment;		// just for comments in enum to make header file better readable
+	char* htlm;		// this is used in web page to indicate the function - can be text or a unicode symbol like thermometer (&#x1F321;) for temperature
+}  cval_t;
+
+// pseudo array, only to build header file
+// values 
+// lines: {"<channel usage string, as in iodetail:>","<abbrevation for enum>","<comment for enum>","<HTML code used to indicate function>",<bool: display in legend>}
+//
+//
+//
+//	so e.g. this array
+//
+//      cval_t cvals[] = {
+//              {"","Empty","no channel description","",0},
+//              {"Connector","Con","Connector (LED, button, relay ...)","&#x1F4A1;",1},
+//              {"Temperature","Temp","Temperature value","&#x1F321;",1},
+//              {"Humidity","Hum","Humidity value","&#x1F4A7;",1},
+//              {"Input","Inp","Input pin value","&#x21A3;",1},
+//              {"Toggle","Toggl","Channel for toggling a value/relay","&#x1F504;",0},
+//              {"CO2","CO2","CO2 value","&#37;CO<sub>2</sub>",0},
+//              {"TVOC","TVOC","TVOC value","TVOC"},
+//              {"addFunctionhere 1","Func1","Room for additional functions","F1",0},
+//              {"addFunctionhere 2","Func2","Room for additional functions","F2",0}
+//      };
+//
+// 	would generate
+//
+//              typedef enum {
+//                      CHAN_Empty,             // 0 = no channel description
+//                      CHAN_Con,               // 1 = Connector (LED, button, relay ...)
+//                      CHAN_Temp,              // 2 = Temperature value
+//                      CHAN_Hum,               // 3 = Humidity value
+//                      CHAN_Inp,               // 4 = Input pin value
+//                      CHAN_Toggl,             // 5 = Channel for toggle a relay
+//                      CHAN_CO2,               // 6 = CO2 value
+//                      CHAN_TVOC,              // 7 = TVOC value
+//                      CHAN_Func1,             // 8 = Room for additional functions
+//                      CHAN_Func2,             // 9 = Room for additional functions
+//              } chanval_t ;
+//
+//              #define INFO2CHANVAL(r, nofc, c1, c2)  ((c2 * 1024) + (c1 * 16) + nofc)
+//
+//              short chanvals[] = {
+//                      INFO2CHANVAL(IOR_None, 0, CHAN_Empty, CHAN_Empty),
+//                      INFO2CHANVAL(IOR_Relay, 1, CHAN_Con, CHAN_Empty),
+//              ...
+//                      INFO2CHANVAL(IOR_DigitalInput, 1, CHAN_Inp, CHAN_Empty),
+//                      INFO2CHANVAL(IOR_DigitalInput_n, 1, CHAN_Inp, CHAN_Empty),
+//              ...
+//                      INFO2CHANVAL(IOR_Button_ScriptOnly_n, 0, CHAN_Empty, CHAN_Empty),
+//                      INFO2CHANVAL(IOR_DHT11, 2, CHAN_Temp, CHAN_Hum),
+//              ..
+//                      INFO2CHANVAL(IOR_SGP_CLK, 0, CHAN_Empty, CHAN_Empty),
+//                      INFO2CHANVAL(IOR_SGP_DAT, 2, CHAN_CO2, CHAN_TVOC),
+//                      INFO2CHANVAL(IOR_ADC_Button, 1, CHAN_Con, CHAN_Empty),
+//              ...
+//                      INFO2CHANVAL(IOR_Counter_r, 1, CHAN_Inp, CHAN_Empty),
+//                      INFO2CHANVAL(IOR_Total_Options, 1, CHAN_Empty, CHAN_Empty),
+//              };
+//
+//	(to calculate "chanvals" - coding number of channels and their usage as given in "//iodetails:" information)
+//
+//
+//	 and
+//		#define LEGENDSCRIPT "<script>de=[ '','&#x1F4A1;','&#x1F321;','&#x1F4A7;','&#x21A3;','&#x1F504;','&#37;CO<sub>2</sub>','TVOC','F1','F2' ]; \
+//		document.getElementById('legend').innerHTML=\"Functions: \" + de[1] + \": Connector / \" + de[2] + \": Temperature / \" + de[3] + \": Humidity / \" + de[4] + \": Input \"</script>"
+//
+//	(to define the text / symbols shown for the function of a channel in pincfg page)
+//	("linebreak" is just for better readability of the comment here, generated is one line)
+//
+//
+
+cval_t cvals[] = {
+        {"","Empty","no channel description","",0},
+        {"Connector","Con","Connector (LED, button, relay ...)","&#x1F4A1;",1},
+        {"Temperature","Temp","Temperature value","&#x1F321;",1},
+        {"Humidity","Hum","Humidity value","&#x1F4A7;",1},
+        {"Input","Inp","Input pin value","&#x21A3;",1},
+        {"Toggle","Toggl","Channel for toggling a value/relay","&#x1F504;",0},
+        {"CO2","CO2","CO2 value","&#37;CO<sub>2</sub>",0},
+        {"TVOC","TVOC","TVOC value","TVOC"},
+        {"addFunctionhere 1","Func1","Room for additional functions","F1",0},
+        {"addFunctionhere 2","Func2","Room for additional functions","F2",0}
+};
+
+
 
 #if (INCLUDED_BY_NEW_PINS_H)
 
@@ -918,6 +1008,17 @@ typedef enum ioRole_e {
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"driver":""}
 	IOR_Counter_r,
+	//iodetail:{"name":"IRRecv_nPup",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"IRRecv without pull-up",
+	//iodetail:"channels used":"1",
+	//iodetail:"channel 1 usage":"Input",
+	//iodetail:"channel 2 usage":"",
+	//iodetail:"htmlPinRoleName":"IRRecv_nPup",
+	//iodetail:"enum":"IRRecv_nPup",
+	//iodetail:"file":"pins_and_roles.h",
+	//iodetail:"driver":""}
+	IOR_IRRecv_nPup,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
