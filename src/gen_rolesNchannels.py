@@ -111,15 +111,18 @@ def main(file):
         m_enum = re.match(r'^\s*(IOR_[^,]+),?\s*$', line)
         if m_enum:
             role = m_enum.group(1)
-            enum_list.append(f"\t{role},")
+#            enum_list.append(f"\t{role},")
+            enum_list.append("\t" + role + ",")  # Using string concatenation - ESP8266 envoronment seems to use very old python
             rolename_val = iodetail_fields.get('rolename', '')
-            rolename_list.append(f"\t{rolename_val},")
+#            rolename_list.append(f"\t{rolename_val},")
+            rolename_list.append("\t" + rolename_val + ",")  # Using string concatenation - ESP8266 envoronment seems to use very old python
             ch1funct_val = iodetail_fields.get('ch1funct', '')
             ch2funct_val = iodetail_fields.get('ch2funct', '')
             channels_val = iodetail_fields.get('channels', 0)
             c1 = chan_usage.get(ch1funct_val, 'CHAN_Empty')
             c2 = chan_usage.get(ch2funct_val, 'CHAN_Empty')
-            INFO2CHANVAL.append(f"\tINFO2CHANVAL({role}, {channels_val}, {c1}, {c2}),")
+#            INFO2CHANVAL.append(f"\tINFO2CHANVAL({role}, {channels_val}, {c1}, {c2}),")
+            INFO2CHANVAL.append("\tINFO2CHANVAL(" + role + ", " + str(channels_val) + ", " + str(c1) + ", " + str(c2) + "),") # Using string concatenation - ESP8266 envoronment seems to use very old python
             indexcount += 1
             # Reset for next role
             iodetail_fields.clear()
