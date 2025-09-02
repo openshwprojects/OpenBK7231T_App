@@ -318,12 +318,8 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 	lmac_set_aggcnt(ops, 0);
 	lmac_set_rx_aggcnt(ops, 0);
 
-#if WPA_CRYPTO_OPS
-#ifdef CONFIG_SAE
-	ieee80211_crypto_bignum_support();
-	ieee80211_crypto_ec_support();
-#endif
-#endif
+	//ieee80211_crypto_bignum_support();
+	//ieee80211_crypto_ec_support();
 
 	struct ieee80211_initparam param;
 	os_memset(&param, 0, sizeof(param));

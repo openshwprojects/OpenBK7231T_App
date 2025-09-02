@@ -359,8 +359,6 @@ prebuild_OpenRTL8720E: berry
 prebuild_OpenTXW81X: berry
 	git submodule update --init --recursive --depth=1 sdk/OpenTXW81X
 	if [ ! -e sdk/OpenTXW81X/tools/gcc/csky-elfabiv2 ]; then cd sdk/OpenTXW81X/tools/gcc && tar -xf *.tar.gz; fi
-	chmod +x sdk/OpenTXW81X/project/BinScript.exe
-	chmod +x sdk/OpenTXW81X/project/makecode.exe
 	@if [ -e platforms/TXW81X/pre_build.sh ]; then \
 		echo "prebuild found for OpenTXW81X"; \
 		sh platforms/TXW81X/pre_build.sh; \
@@ -670,9 +668,10 @@ OpenECR6600: prebuild_OpenECR6600
 .PHONY: OpenTXW81X
 OpenTXW81X: prebuild_OpenTXW81X
 	cd sdk/OpenTXW81X/project && make APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) && \
-	./BinScript.exe BinScript.BinScript && ./makecode.exe
+	./BinScript.exe BinScript.BinScript > /dev/null && ./makecode.exe > /dev/null
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenTXW81X/project/APP.bin output/$(APP_VERSION)/OpenTXW81X_$(APP_VERSION).bin
+	#cp sdk/OpenTXW81X/project/APP_compress.bin output/$(APP_VERSION)/OpenTXW81X_$(APP_VERSION)_ota.img
 
 # Add custom Makefile if required
 -include custom.mk
@@ -699,6 +698,7 @@ clean:
 	-test -d ./sdk/ameba-rtos && cd sdk/ameba-rtos/amebadplus_gcc_project && ./build.py -a ../../../platforms/RTL8721DA -c
 	-test -d ./sdk/ameba-rtos && cd sdk/ameba-rtos/amebalite_gcc_project && ./build.py -a ../../../platforms/RTL8720E -c
 	-test -d ./sdk/beken_freertos_sdk && $(MAKE) -C sdk/beken_freertos_sdk clean
+	-test -d ./sdk/OpenTXW81X && $(MAKE) -C sdk/OpenTXW81X/project clean
 	-test -d ./sdk/OpenLN882H/build && cmake --build ./sdk/OpenLN882H/build --target clean
 	-test -d ./platforms/ESP-IDF/build-32 && cmake --build ./platforms/ESP-IDF/build-32 --target clean
 	-test -d ./platforms/ESP-IDF/build-c3 && cmake --build ./platforms/ESP-IDF/build-c3 --target clean
