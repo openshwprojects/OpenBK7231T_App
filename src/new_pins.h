@@ -588,6 +588,13 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_Counter_r,
+	//iodetail:{"name":"IRRecv_nPup",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"IRRecv without pull-up",
+	//iodetail:"enum":"IRRecv_nPup",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_IRRecv_nPup,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",

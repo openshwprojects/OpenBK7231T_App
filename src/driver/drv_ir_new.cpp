@@ -36,6 +36,10 @@ extern "C" {
 #include "../hal/realtek/hal_pinmap_realtek.h"
 void pwmout_start(pwmout_t* obj);
 void pwmout_stop(pwmout_t* obj);
+#elif PLATFORM_BL602
+#include "bl602_timer.h"
+#include "hosal_timer.h"
+#define UINT32 uint32_t
 #endif
 
 // why can;t I call this?
@@ -133,20 +137,27 @@ Print Serial;
 extern "C" void
 #if PLATFORM_BEKEN
 DRV_IR_ISR(UINT8 t)
-#else
+#elif PLATFORM_REALTEK
 DRV_IR_ISR()
+#else
+DRV_IR_ISR(void* arg)
 #endif
 ;
 extern void IR_ISR();
 
 #if PLATFORM_BEKEN
 static UINT32 ir_chan = BKTIMER0;
+static UINT32 ir_div = 1;
+static UINT32 ir_periodus = 50;
 #elif PLATFORM_REALTEK
 static gtimer_t ir_timer;
 static UINT32 ir_chan = TIMER2;
-#endif
-static UINT32 ir_div = 1;
 static UINT32 ir_periodus = 50;
+#elif PLATFORM_BL602
+static hosal_timer_dev_t ir_timer;
+static UINT32 ir_chan = TIMER_CH0;
+static UINT32 ir_periodus = 50;
+#endif
 
 void timerConfigForReceive() {
 	// nothing here`
@@ -193,6 +204,13 @@ void _timerConfigForReceive() {
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
 #elif PLATFORM_REALTEK
 	gtimer_init(&ir_timer, ir_chan);
+#elif PLATFORM_BL602
+	ir_timer.port = ir_chan;
+	ir_timer.config.period = ir_periodus;
+	ir_timer.config.reload_mode = TIMER_RELOAD_PERIODIC;
+	ir_timer.config.cb = DRV_IR_ISR;
+	ir_timer.config.arg = NULL;
+	hosal_timer_init(&ir_timer);
 #endif
 }
 
@@ -206,6 +224,8 @@ static void _timer_enable() {
 	res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_ENABLE, &ir_chan);
 #elif PLATFORM_REALTEK
 	gtimer_start_periodical(&ir_timer, ir_periodus, (void*)&DRV_IR_ISR, (uint32_t)&ir_timer);
+#elif PLATFORM_BL602
+	hosal_timer_start(&ir_timer);
 #endif
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
 }
@@ -215,6 +235,9 @@ static void _timer_disable() {
 	res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_DISABLE, &ir_chan);
 #elif PLATFORM_REALTEK
 	gtimer_stop(&ir_timer);
+#elif PLATFORM_BL602
+	hosal_timer_stop(&ir_timer);
+	hosal_timer_finalize(&ir_timer);
 #endif
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer disabled %u", res);
 }
@@ -369,8 +392,10 @@ IRrecv *ourReceiver = NULL;
 extern "C" void
 #if PLATFORM_BEKEN
 DRV_IR_ISR(UINT8 t)
-#else
+#elif PLATFORM_REALTEK
 DRV_IR_ISR()
+#else
+DRV_IR_ISR(void* arg)
 #endif
 {
 	int sending = 0;
@@ -741,9 +766,15 @@ extern "C" void DRV_IR_Init() {
 
 	int pin = -1; //9;// PWM3/25
 	int txpin = -1; //24;// PWM3/25
+	bool pup = true;
 
 	// allow user to change them
 	pin = PIN_FindPinIndexForRole(IOR_IRRecv, pin);
+	if(pin == -1)
+	{
+		pin = PIN_FindPinIndexForRole(IOR_IRRecv_nPup, pin);
+		if(pin >= 0) pup = false;
+	}
 	txpin = PIN_FindPinIndexForRole(IOR_IRSend, txpin);
 
 	if (ourReceiver){
@@ -752,19 +783,19 @@ extern "C" void DRV_IR_Init() {
 	     delete temp;
 	 }
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"DRV_IR_Init: recv pin %i", pin);
-	if ((pin > 0) || (txpin > 0)) {
+	if ((pin >= 0) || (txpin >= 0)) {
 	}
 	else {
 		_timer_disable();
 	}
 
-	if (pin > 0) {
+	if (pin >= 0) {
 		// setup IRrecv pin as input
 		//bk_gpio_config_input_pup((GPIO_INDEX)pin); // enabled by enableIRIn
 
 		//TODO: we should specify buffer size (now set to 1024), timeout (now 90ms) and tolerance 
 		 ourReceiver = new IRrecv(pin);
-		 ourReceiver->enableIRIn(true);// try with pullup
+		 ourReceiver->enableIRIn(pup);
 	}
 
 	if (pIRsend) {
