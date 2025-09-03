@@ -549,6 +549,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "UartTCP",		UART_TCP_Init,		NULL,	NULL, NULL, UART_TCP_Deinit, NULL, NULL, false }
 #endif
+#if PLATFORM_TXW81X
+	//drvdetail:{"name":"TXW81X Camera",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TXW81X Camera.",
+	//drvdetail:"requires":""}
+	{ "TXWCAM", TXW_Cam_Init, TXW_Cam_RunEverySecond, NULL, NULL, NULL, NULL, NULL, false }
+#endif
 };
 
 

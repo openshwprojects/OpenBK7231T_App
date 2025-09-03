@@ -202,6 +202,8 @@ static int http_rest_post(http_request_t* request) {
 		r = http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_XRADIO && !PLATFORM_XR809
 		r = http_rest_post_flash(request, 0, -1);
+#elif PLATFORM_TXW81X
+		r = http_rest_post_flash(request, 0, -1);
 #else
 		// TODO
 		ADDLOG_ERROR(LOG_FEATURE_API, "No OTA");
