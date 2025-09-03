@@ -196,6 +196,7 @@
 #define ENABLE_DRIVER_BL0937					1
 #define ENABLE_DRIVER_BL0942					1
 #define ENABLE_DRIVER_CSE7766					1
+#define ENABLE_DRIVER_BRIDGE	        1
 #define ENABLE_DRIVER_WEMO						1
 #define ENABLE_DRIVER_FREEZE					0
 #define ENABLE_DRIVER_DHT						1
