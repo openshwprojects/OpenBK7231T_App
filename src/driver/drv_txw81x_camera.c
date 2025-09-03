@@ -86,6 +86,7 @@ void TXW_Cam_Init(void)
 		bool csi_open();
 		if(csi_ret)
 			csi_open();
+		audio_adc_init();
 		spook_init();
 	}
 	isStarted = true;
