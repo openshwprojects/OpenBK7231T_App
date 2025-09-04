@@ -676,6 +676,253 @@ void SPIDMA_Deinit(void)
 	hal_gpio_pin_afio_en(pin->base, pin->pin, HAL_DISABLE);
 }
 
+#elif PLATFORM_REALTEK
+
+#include "../hal/realtek/hal_pinmap_realtek.h"
+
+#include "drv_spidma.h"
+#include "spi_api.h"
+#include "spi_ex_api.h"
+
+static spi_t spi_master;
+extern int spidma_led_pin;
+rtlPinMapping_t* rtl_mosi;
+bool is_init = false;
+
+void SPIDMA_Init(struct spi_message* msg)
+{
+	is_init = false;
+	PinName mosi = NC, miso = NC, sclk = NC, ssel = NC;
+	rtl_mosi = g_pins + spidma_led_pin;
+#if PLATFORM_RTL8710A
+#define SPI_FREQ 4000000
+	switch(rtl_mosi->pin)
+	{
+		case PE_2:
+			sys_jtag_off();
+			mosi = PE_2;
+			miso = PE_3;
+			break;
+		case PC_2:
+			mosi = PC_2;
+			miso = PC_3;
+			break;
+		default: return;
+	}
+	pin_mode(mosi, PullDown);
+#elif PLATFORM_RTL8710B
+#define SPI_FREQ 3777777
+	switch(rtl_mosi->pin)
+	{
+		case PA_4:
+			spi_master.spi_idx = MBED_SPI0;
+			mosi = PA_4;
+			miso = PA_3;
+			sclk = PA_1;
+			ssel = PA_2;
+			break;
+		case PA_23:
+			spi_master.spi_idx = MBED_SPI1;
+			mosi = PA_23;
+			miso = PA_22;
+			sclk = PA_18;
+			ssel = PA_19;
+			break;
+		case PB_3:
+			spi_master.spi_idx = MBED_SPI1;
+			mosi = PB_3;
+			miso = PB_2;
+			sclk = PB_1;
+			ssel = PB_0;
+			break;
+		default: return;
+	}
+	pin_mode(mosi, PullDown);
+#elif PLATFORM_RTL87X0C
+#define SPI_FREQ 3000000
+	// those pins aren't wired out on BW15, and, except for A7, on WBR3
+	// they must be set, otherwise spi init will fail
+	miso = PA_10;
+	ssel = PA_7;
+	sclk = PA_8;
+	switch(rtl_mosi->pin)
+	{
+		case PA_4:
+			mosi = PA_4;
+			break;
+		case PA_9:
+			mosi = PA_9;
+			break;
+		case PA_19:
+			mosi = PA_19;
+			break;
+		default: return;
+	}
+#elif PLATFORM_RTL8720D
+#define SPI_FREQ 3000000
+	switch(rtl_mosi->pin)
+	{
+		case PB_18:
+			spi_master.spi_idx = MBED_SPI0;
+			mosi = PB_18;
+			break;
+		case PA_16:
+			spi_master.spi_idx = MBED_SPI0;
+			mosi = PA_16;
+			break;
+		case PA_12:
+			spi_master.spi_idx = MBED_SPI1;
+			mosi = PA_12;
+			break;
+		case PB_4:
+			spi_master.spi_idx = MBED_SPI1;
+			mosi = PB_4;
+			break;
+		default: return;
+	}
+#elif PLATFORM_REALTEK_NEW
+#define SPI_FREQ 3000000
+	spi_master.spi_idx = MBED_SPI1;
+	mosi = rtl_mosi->pin;
+#endif
+	spi_init(&spi_master, mosi, miso, sclk, ssel);
+	spi_format(&spi_master, 8, 0, 0);
+	spi_frequency(&spi_master, SPI_FREQ);
+	is_init = true;
+}
+void SPIDMA_StartTX(struct spi_message* msg)
+{
+	if(is_init) spi_master_write_stream_dma(&spi_master, (char*)msg->send_buf, msg->send_len);
+	//if(is_init) spi_master_write_stream(&spi_master, (char*)msg->send_buf, msg->send_len);
+}
+void SPIDMA_StopTX(void)
+{
+
+}
+void SPIDMA_Deinit(void)
+{
+	if(is_init) spi_free(&spi_master);
+}
+
+#elif PLATFORM_BL602
+
+#include "drv_spidma.h"
+#include "hosal_spi.h"
+#include "hosal_dma.h"
+#include "bl602_dma.h"
+#include "bl602_gpio.h"
+#include "bl602_glb.h"
+#include "bl602_spi.h"
+#include "bl_irq.h"
+#include "bl_dma.h"
+
+extern int spidma_led_pin;
+static hosal_dma_chan_t spidma_ch;
+static DMA_LLI_Ctrl_Type spi_dma_lli[2];
+bool is_init = false;
+
+void SPIDMA_Init(struct spi_message* msg)
+{
+	is_init = false;
+	switch(spidma_led_pin)
+	{
+		case 0:
+		case 4:
+		case 8:
+		case 12:
+		case 16:
+		case 20:
+			GLB_Swap_SPI_0_MOSI_With_MISO(DISABLE);
+			break;
+		case 1:
+		case 5:
+		case 9:
+		case 13:
+		case 17:
+		case 21:
+			GLB_Swap_SPI_0_MOSI_With_MISO(ENABLE);
+			break;
+		default: return;
+	}
+	GLB_GPIO_Func_Init(GPIO_FUN_SPI, (GLB_GPIO_Type*)&spidma_led_pin, 1);
+	GLB_Set_SPI_0_ACT_MOD_Sel(GLB_SPI_PAD_ACT_AS_MASTER);
+
+	SPI_CFG_Type spiCfg = 
+	{
+		DISABLE,
+		ENABLE,
+		SPI_BYTE_INVERSE_BYTE0_FIRST,
+		SPI_BIT_INVERSE_MSB_FIRST,
+		SPI_CLK_PHASE_INVERSE_0,
+		SPI_CLK_POLARITY_LOW,
+		SPI_FRAME_SIZE_8 
+	};
+
+	SPI_FifoCfg_Type fifoCfg =
+	{
+		1,
+		0,
+		ENABLE,
+		DISABLE
+	};
+
+	spidma_ch = hosal_dma_chan_request(0);
+
+	SPI_Disable(0, SPI_WORK_MODE_MASTER);
+	SPI_Init(0, &spiCfg);
+	SPI_FifoConfig(0, &fifoCfg);
+	SPI_SetClock(0, 3000000);
+	SPI_Enable(0, SPI_WORK_MODE_MASTER);
+
+	DMA_LLI_Cfg_Type llicfg =
+	{
+		DMA_TRNS_M2P,
+		DMA_REQ_NONE,
+		DMA_REQ_SPI_TX,
+	};
+
+	DMA_LLI_Init(spidma_ch, &llicfg);
+
+	struct DMA_Control_Reg dmactrl =
+	{
+		.TransferSize = msg->send_len,
+		.SBSize = DMA_BURST_SIZE_1,
+		.DBSize = DMA_BURST_SIZE_1,
+		.SWidth = DMA_TRNS_WIDTH_8BITS,
+		.DWidth = DMA_TRNS_WIDTH_8BITS,
+		.SLargerD = 0,
+		.SI = DMA_MINC_ENABLE,
+		.DI = DMA_MINC_DISABLE,
+		.Prot = 0,
+		.I = 0,
+	};
+
+	spi_dma_lli[0].srcDmaAddr = (uint32_t)(msg->send_buf);
+	spi_dma_lli[0].destDmaAddr = (uint32_t)(SPI_BASE + SPI_FIFO_WDATA_OFFSET);
+	spi_dma_lli[0].dmaCtrl = dmactrl;
+	spi_dma_lli[0].nextLLI = 0;
+	is_init = true;
+}
+
+void SPIDMA_StartTX(struct spi_message* msg)
+{
+	if(is_init)
+	{
+		DMA_LLI_Update(spidma_ch, (uint32_t)spi_dma_lli);
+		hosal_dma_chan_start(spidma_ch);
+	}
+}
+
+void SPIDMA_StopTX(void)
+{
+
+}
+
+void SPIDMA_Deinit(void)
+{
+	if(is_init) hosal_dma_chan_release(spidma_ch);
+}
+
 #else
 
 #include "drv_spidma.h"

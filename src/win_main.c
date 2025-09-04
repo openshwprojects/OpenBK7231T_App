@@ -183,7 +183,7 @@ void Win_DoUnitTests() {
 	//Test_Enums();
 	Test_Backlog();
 	Test_DoorSensor();
-	Test_WS2812B();
+	Test_LEDstrips();
 	Test_Command_If_Else();
 	Test_MQTT();
 	Test_ChargeLimitDriver();
@@ -610,12 +610,6 @@ void otarequest(const char *urlin) {
 	return;
 }
 
-int ota_progress() {
-	return 0;
-}
-int ota_total_bytes() {
-	return 0;
-}
 
 
 

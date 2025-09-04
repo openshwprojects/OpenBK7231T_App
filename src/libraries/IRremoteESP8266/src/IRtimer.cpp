@@ -6,12 +6,12 @@
 #endif
 
 
-#if PLATFORM_BEKEN || PLATFORM_REALTEK
+//#if PLATFORM_BEKEN || PLATFORM_REALTEK || PLATFORM_BL602 || PLATFORM_LN882H
 //TODO
 extern unsigned long micros(void);
 extern unsigned long millis(void);
 
-#endif
+//#endif
 
 
 #ifdef UNIT_TEST

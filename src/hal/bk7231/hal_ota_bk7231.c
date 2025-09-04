@@ -1,20 +1,15 @@
-#include "ota.h"
+#include "../hal_ota.h"
 
-#if defined(PLATFORM_W600)
-
-//W600 uses OTA functions from its SDK.
-
-#elif PLATFORM_BEKEN
-
-#include "../new_common.h"
-#include "../new_cfg.h"
+#include "../../new_common.h"
+#include "../../new_cfg.h"
 #include "typedef.h"
 #include "flash_pub.h"
 //#include "flash.h"
-#include "../logging/logging.h"
-#include "../httpclient/http_client.h"
-#include "../driver/drv_public.h"
-#include "../driver/drv_bl_shared.h"
+#include "../../logging/logging.h"
+#include "../../httpclient/http_client.h"
+#include "../../httpserver/new_http.h"
+#include "../../driver/drv_public.h"
+#include "../../driver/drv_bl_shared.h"
 
 static unsigned char *sector = (void *)0;
 int sectorlen = 0;
@@ -31,6 +26,11 @@ extern UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address);
 extern UINT32 flash_write(char *user_buf, UINT32 count, UINT32 address);
 extern UINT32 flash_ctrl(UINT32 cmd, void *parm);
 
+int HAL_FlashRead(char*buffer, int readlen, int startaddr) {
+	int res;
+	res = flash_read((char*)buffer, readlen, startaddr);
+	return res;
+}
 
 int init_ota(unsigned int startaddr){
     flash_init();
@@ -112,7 +112,6 @@ static void store_sector(unsigned int addr, unsigned char *data){
     OTA_IncrementProgress(SECTOR_SIZE);
 }
 
-#if ENABLE_SEND_POSTANDGET
 
 httprequest_t httprequest;
 
@@ -221,42 +220,53 @@ void otarequest(const char *urlin){
   OTA_ResetProgress();
   OTA_IncrementProgress(1);
  }
-#else
 
-void otarequest(const char *urlin) {
-	addLogAdv(LOG_INFO, LOG_FEATURE_OTA, "");
-}
-#endif
-
-#endif
-
-
-/***** SDK independent code from this point. ******/
-int ota_status = -1;
-int total_bytes = 0;
-
-int ota_progress()
+int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 {
-  return ota_status;
+	int total = 0;
+	int towrite = request->bodylen;
+	char* writebuf = request->bodystart;
+	int writelen = request->bodylen;
+
+	ADDLOG_DEBUG(LOG_FEATURE_OTA, "OTA post len %d", request->contentLength);
+
+	init_ota(startaddr);
+
+	if (request->contentLength >= 0)
+	{
+		towrite = request->contentLength;
+	}
+
+	if (writelen < 0 || (startaddr + writelen > maxaddr))
+	{
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "ABORTED: %d bytes to write", writelen);
+		return http_rest_error(request, -20, "writelen < 0 or end > 0x200000");
+	}
+
+	do
+	{
+		//ADDLOG_DEBUG(LOG_FEATURE_OTA, "%d bytes to write", writelen);
+		add_otadata((unsigned char*)writebuf, writelen);
+		total += writelen;
+		startaddr += writelen;
+		towrite -= writelen;
+		if (towrite > 0)
+		{
+			writebuf = request->received;
+			writelen = recv(request->fd, writebuf, request->receivedLenmax, 0);
+			if (writelen < 0)
+			{
+				ADDLOG_DEBUG(LOG_FEATURE_OTA, "recv returned %d - end of data - remaining %d", writelen, towrite);
+			}
+		}
+	} while ((towrite > 0) && (writelen >= 0));
+	close_ota();
+	ADDLOG_DEBUG(LOG_FEATURE_OTA, "%d total bytes written", total);
+	http_setup(request, httpMimeTypeJson);
+	hprintf255(request, "{\"size\":%d}", total);
+	poststr(request, NULL);
+	CFG_IncrementOTACount();
+	return 0;
 }
 
-extern void OTA_ResetProgress()
-{
-  ota_status = -1;
-}
-
-extern void OTA_IncrementProgress(int value)
-{
-  ota_status += value;
-}
-
-int OTA_GetTotalBytes()
-{
-  return total_bytes;
-}
-
-extern void OTA_SetTotalBytes(int value)
-{
-  total_bytes = value;
-}
 

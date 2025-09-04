@@ -42,6 +42,7 @@ OBKM_SRC  += $(OBK_SRCS)hal/generic/hal_flashConfig_generic.c
 OBKM_SRC  += $(OBK_SRCS)hal/generic/hal_flashVars_generic.c
 OBKM_SRC  += $(OBK_SRCS)hal/generic/hal_generic.c
 OBKM_SRC  += $(OBK_SRCS)hal/generic/hal_main_generic.c
+OBKM_SRC  += $(OBK_SRCS)hal/generic/hal_ota_generic.c
 OBKM_SRC  += $(OBK_SRCS)hal/generic/hal_pins_generic.c
 OBKM_SRC  += $(OBK_SRCS)hal/generic/hal_wifi_generic.c
 OBKM_SRC  += $(OBK_SRCS)hal/generic/hal_uart_generic.c
@@ -69,7 +70,6 @@ OBKM_SRC  += $(OBK_SRCS)httpclient/utils_timer.c
 OBKM_SRC  += $(OBK_SRCS)littlefs/lfs_util.c
 OBKM_SRC  += $(OBK_SRCS)littlefs/lfs.c
 OBKM_SRC  += $(OBK_SRCS)littlefs/our_lfs.c
-OBKM_SRC  += $(OBK_SRCS)ota/ota.c
 
 OBKM_SRC  += $(OBK_SRCS)driver/drv_main.c
 
@@ -129,6 +129,7 @@ OBKM_SRC  += $(OBK_SRCS)driver/drv_shiftRegister.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_sht3x.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_sm15155e.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_sm16703P.c
+OBKM_SRC  += $(OBK_SRCS)driver/drv_leds_shared.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_sm2135.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_sm2235.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_soft_i2c.c

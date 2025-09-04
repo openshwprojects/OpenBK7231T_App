@@ -19,6 +19,16 @@ uint32_t mode = SPI_MASTER;
 #endif
 #include "../logging/logging.h"
 
+
+#if PLATFORM_BEKEN_NEW && (PLATFORM_BK7231N || PLATFORM_BK7238 || PLATFORM_BK7252N)
+#include "spi_bk7231n.h"
+#define bk_spi_master_init bk_spi_master_dma_init
+#define bk_spi_master_deinit() bk_spi_master_dma_deinit(1)
+#define bk_spi_slave_init bk_spi_slave_dma_init
+#define bk_spi_slave_deinit bk_spi_slave_dma_deinit
+#define bk_spi_master_xfer(x) bk_spi_master_dma_xfer(x, 0)
+#define bk_spi_slave_xfer bk_spi_slave_dma_xfer
+#endif
 int SPI_DriverInit(void) {
 #if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
     return bk_spi_driver_init();
@@ -49,22 +59,9 @@ int SPI_DriverDeinit(void) {
 #endif
 }
 
-int SPI_Init(const spi_config_t *config) {
-#if PLATFORM_BK7231N || PLATFORM_BK7238 || PLATFORM_BK7252N
-#if PLATFORM_BEKEN_NEW
-	struct spi_message msg;
-	msg.send_buf = os_malloc(sizeof(uint8_t));
-	msg.send_len = 0;
-	msg.recv_buf = os_malloc(sizeof(uint8_t));
-	msg.recv_len = 0;
-	mode = config->role == SPI_ROLE_MASTER ? SPI_MASTER : SPI_SLAVE;
-	int ret = bk_spi_master_dma_init((SPI_MODE_0 | SPI_MSB | mode), config->baud_rate, &msg);
-	free(msg.send_buf);
-	free(msg.recv_buf);
-	return ret;
-#else
+int OBK_SPI_Init(const spi_config_t *config) {
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
 	return bk_spi_init(0, config);
-#endif
 #elif PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 	int err = 0;
 
@@ -166,17 +163,8 @@ static inline int Spi_wait_for_ready() {
 #endif
 
 int SPI_WriteBytes(const void *data, uint32_t size) {
-#if PLATFORM_BK7231N || PLATFORM_BK7238 || PLATFORM_BK7252N
-#if PLATFORM_BEKEN_NEW
-	struct spi_message msg;
-	msg.send_buf = data;
-	msg.send_len = size;
-	msg.recv_buf = NULL;
-	msg.recv_len = 0;
-	return bk_spi_dma_transfer(mode, &msg);
-#else
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
     return bk_spi_write_bytes(0, data, size);
-#endif
 #elif PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 	GLOBAL_INT_DECLARATION();
 	GLOBAL_INT_DISABLE();
@@ -216,17 +204,8 @@ int SPI_WriteBytes(const void *data, uint32_t size) {
 }
 
 int SPI_ReadBytes(void *data, uint32_t size) {
-#if PLATFORM_BK7231N || PLATFORM_BK7238 || PLATFORM_BK7252N
-#if PLATFORM_BEKEN_NEW
-	struct spi_message msg;
-	msg.recv_buf = data;
-	msg.recv_len = size;
-	msg.send_buf = NULL;
-	msg.send_len = 0;
-	return bk_spi_dma_transfer(mode, &msg);
-#else
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
 	return bk_spi_read_bytes(0, data, size);
-#endif
 #elif PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 	GLOBAL_INT_DECLARATION();
 	GLOBAL_INT_DISABLE();
@@ -267,17 +246,8 @@ int SPI_ReadBytes(void *data, uint32_t size) {
 
 int SPI_Transmit(const void *txData, uint32_t txSize, void *rxData,
         uint32_t rxSize) {
-#if PLATFORM_BK7231N || PLATFORM_BK7238 || PLATFORM_BK7252N
-#if PLATFORM_BEKEN_NEW
-	struct spi_message msg;
-	msg.send_buf = txData;
-	msg.send_len = txSize;
-	msg.recv_buf = rxData;
-	msg.recv_len = rxSize;
-	return bk_spi_dma_transfer(mode, &msg);
-#else
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
 	return bk_spi_transmit(0, txData, txSize, rxData, rxSize);
-#endif
 #elif PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 	int err = 0;
 

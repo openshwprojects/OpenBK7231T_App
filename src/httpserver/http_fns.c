@@ -2,7 +2,7 @@
 #include "http_fns.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
-#include "../ota/ota.h"
+#include "../hal/hal_ota.h"
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 #include "../driver/drv_tuyaMCU.h"
@@ -35,7 +35,7 @@
 
 #elif PLATFORM_XRADIO
 #include <image/flash.h>
-#include "ota/ota.h"
+#include <ota/ota.h>
 #elif defined(PLATFORM_BK7231N)
 // tuya-iotos-embeded-sdk-wifi-ble-bk7231n/sdk/include/tuya_hal_storage.h
 #include "tuya_hal_storage.h"
@@ -1045,12 +1045,10 @@ typedef enum {
 
 #endif
 
-#if PLATFORM_BK7231N || PLATFORM_BK7231T
-	if (ota_progress() >= 0)
+	if (OTA_GetProgress() >= 0)
 	{
-		hprintf255(request, "<h5>OTA In Progress. Downloaded: %i B Flashed: %06lXh</h5>", OTA_GetTotalBytes(), ota_progress());
+		hprintf255(request, "<h5>OTA In Progress. Downloaded: %i B Flashed: %06lXh</h5>", OTA_GetTotalBytes(), OTA_GetProgress());
 	}
-#endif
 	if (bSafeMode) {
 		hprintf255(request, "<h5 class='safe'>You are in safe mode (AP mode) because full reboot failed %i times. ",
 			g_bootFailures);
@@ -1835,8 +1833,13 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	ledDriverChipRunning = 0;
 #endif
 
+#if PLATFORM_TXW81X
+	hooks.malloc_fn = _os_malloc;
+	hooks.free_fn = _os_free;
+#else
 	hooks.malloc_fn = os_malloc;
 	hooks.free_fn = os_free;
+#endif
 	cJSON_InitHooks(&hooks);
 
 	DRV_OnHassDiscovery(topic);
@@ -3312,7 +3315,7 @@ int http_fn_ota(http_request_t* request) {
 #ifdef OBK_OTA_NAME_EXTENSION
 	OBK_OTA_NAME_EXTENSION
 #endif
-	OBK_OTA_EXTENSION "/,SR=R.source,mr=(e)=>e.name.match(R);doota=()=>{f=o.files[0];if(f&&(f)){d.showModal();var t=30;setTimeout(()=>{d.close(),location.href='/'},1e3*t),setInterval(()=>d.innerHTML=D+t--+' secs',1e3),fetch('/api/ota',{method:'POST',body:f}).then((e)=>{e.ok&&fetch('/index?restart=1')})}else alert(f?'filename invalid':'no file selected')};d.innerHTML=D,o.addEventListener('change',((e)=>{const t=e.target.files[0];if(!t)return;h.innerHTML=mr(t)?'':'Selected file does <b>not</b> match reqired format '+SR+'!'}))</script>";
+	OBK_OTA_EXTENSION "/,SR=R.source,mr=(e)=>e.name.match(R);doota=()=>{f=o.files[0];if(f&&(f)){d.showModal();var t=30;setTimeout(()=>{d.close(),location.href='/'},1e3*t),setInterval(()=>d.innerHTML=D+t--+' secs',1e3),fetch('/api/ota',{method:'POST',body:f}).then((e)=>{e.ok&&fetch('/index?restart=1')})}else alert(f?'filename invalid':'no file selected')};d.innerHTML=D,o.addEventListener('change',((e)=>{const t=e.target.files[0];if(!t)return;h.innerHTML=mr(t)?'':'Selected file does <b>not</b> match required format '+SR+'!'}))</script>";
 
 	poststr(request, "<br><br><br>Expert feature: Upload firmware OTA file.<br>If unsure, please use Web App!<br><span id='hint' style='color: yellow;'></span><br><br>");
 	poststr(request, "<input id='otafile' type='file' accept='" OBK_OTA_EXTENSION "'>");

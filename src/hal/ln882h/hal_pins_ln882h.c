@@ -4,10 +4,13 @@
 #include "../../logging/logging.h"
 #include "../../new_cfg.h"
 #include "../../new_pins.h"
+#include "../hal_pins.h"
 #include "hal_pinmap_ln882h.h"
 // LN882H header
 #include "hal/hal_adv_timer.h"
 #include "hal/hal_clock.h"
+#include "hal/hal_common.h"
+#include "hal/hal_gpio.h"
 
 #define IS_QSPI_PIN(index) (index > 12 && index < 19)
 
@@ -212,13 +215,18 @@ void HAL_PIN_PWM_Start(int index, int freq)
 {
 	if(index >= g_numPins)
 		return;
+	lnPinMapping_t* pin = g_pins + index;
+	if(pin->pwm_cha > 0)
+	{
+		pwm_init(freq, pin->pwm_cha, pin->base, pin->pin);
+		return;
+	}
 	uint8_t freecha;
 	for(freecha = 0; freecha < 5; freecha++) if((g_active_pwm >> freecha & 1) == 0) break;
-	lnPinMapping_t* pin = g_pins + index;
 	g_active_pwm |= 1 << freecha;
 	pin->pwm_cha = freecha;
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "PWM_Start: ch_pwm: %u", freecha);
-	pwm_init(10000, freecha, pin->base, pin->pin);
+	pwm_init(freq, freecha, pin->base, pin->pin);
 	pwm_start(freecha);
 }
 
@@ -237,6 +245,70 @@ void HAL_PIN_PWM_Update(int index, float value)
 
 unsigned int HAL_GetGPIOPin(int index) {
 	return index;
+}
+
+OBKInterruptHandler g_handlers[PLATFORM_GPIO_MAX];
+OBKInterruptType g_modes[PLATFORM_GPIO_MAX];
+
+
+uint32_t GetBaseForPin(int pinIndex)
+{
+	return pinIndex < 16 ? GPIOA_BASE : GPIOB_BASE;
+}
+
+int GetIRQForPin(int pinIndex)
+{
+	return pinIndex < 16 ? GPIOA_IRQn : GPIOB_IRQn;
+}
+
+uint16_t GetGPIOForPin(int pinIndex)
+{
+	return (uint16_t)1 << (uint16_t)(pinIndex % 16);
+}
+void Shared_Handler() {
+	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (g_handlers[i]) {
+			uint32_t base = GetBaseForPin(i);
+			uint16_t gpio_pin = GetGPIOForPin(i);
+			if (hal_gpio_pin_get_it_flag(base, gpio_pin) == HAL_SET) {
+				hal_gpio_pin_clr_it_flag(base, gpio_pin);
+				g_handlers[i](i);
+			}
+		}
+	}
+}
+void GPIOA_IRQHandler()
+{
+	Shared_Handler();
+}
+
+void GPIOB_IRQHandler()
+{
+	Shared_Handler();
+}
+
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
+	g_handlers[pinIndex] = function;
+
+	int ln_mode;
+	if (mode == INTERRUPT_RISING) {
+		ln_mode = GPIO_INT_RISING;
+	}
+	else {
+		ln_mode = GPIO_INT_FALLING;
+	}
+	hal_gpio_pin_it_cfg(GetBaseForPin(pinIndex), GetGPIOForPin(pinIndex), ln_mode);
+	hal_gpio_pin_it_en(GetBaseForPin(pinIndex), GetGPIOForPin(pinIndex), HAL_ENABLE);
+	NVIC_SetPriority(GetIRQForPin(pinIndex), 1);
+	NVIC_EnableIRQ(GetIRQForPin(pinIndex));
+
+}
+
+void HAL_DetachInterrupt(int pinIndex) {
+	if (g_handlers[pinIndex] == 0) {
+		return; // already removed;
+	}
+	g_handlers[pinIndex] = 0;
 }
 
 #endif // PLATFORM_LN882H

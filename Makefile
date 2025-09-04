@@ -356,6 +356,15 @@ prebuild_OpenRTL8720E: berry
 	else echo "prebuild for OpenRTL8720E not found ... "; \
 	fi
 
+prebuild_OpenTXW81X: berry
+	git submodule update --init --recursive --depth=1 sdk/OpenTXW81X
+	if [ ! -e sdk/OpenTXW81X/tools/gcc/csky-elfabiv2 ]; then cd sdk/OpenTXW81X/tools/gcc && tar -xf *.tar.gz; fi
+	@if [ -e platforms/TXW81X/pre_build.sh ]; then \
+		echo "prebuild found for OpenTXW81X"; \
+		sh platforms/TXW81X/pre_build.sh; \
+	else echo "prebuild for OpenTXW81X not found ... "; \
+	fi
+
 # Build main binaries
 OpenBK7231T: prebuild_OpenBK7231T
 	mkdir -p output
@@ -481,7 +490,7 @@ OpenESP32C5: prebuild_ESPIDF
 	IDF_TARGET="esp32c5" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake platforms/ESP-IDF -B platforms/ESP-IDF/build-c5 
 	IDF_TARGET="esp32c5" APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake --build ./platforms/ESP-IDF/build-c5 -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
-	python3 -m esptool -c esp32c5 merge_bin -o output/$(APP_VERSION)/OpenESP32C5_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x0 ./platforms/ESP-IDF/build-c5/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-c5/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-c5/OpenBeken.bin
+	python3 -m esptool -c esp32c5 merge_bin -o output/$(APP_VERSION)/OpenESP32C5_$(APP_VERSION).factory.bin --flash_mode dio --flash_size $(ESP_FSIZE) 0x2000 ./platforms/ESP-IDF/build-c5/bootloader/bootloader.bin 0x8000 ./platforms/ESP-IDF/build-c5/partition_table/partition-table.bin 0x10000 ./platforms/ESP-IDF/build-c5/OpenBeken.bin
 	cp ./platforms/ESP-IDF/build-c5/OpenBeken.bin output/$(APP_VERSION)/OpenESP32C5_$(APP_VERSION).img
 
 .PHONY: OpenESP32C61
@@ -560,13 +569,13 @@ OpenRTL8710A: prebuild_OpenRTL8710A
 	
 .PHONY: OpenRTL8720D
 OpenRTL8720D: prebuild_OpenRTL8720D
-	$(MAKE) -C sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_hp APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
-	$(MAKE) -C sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_lp APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
+	$(MAKE) -C sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_hp --no-print-directory APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
+	$(MAKE) -C sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_lp --no-print-directory APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
 	mkdir -p output/$(APP_VERSION)
 	touch output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION).bin
-	dd conv=notrunc bs=1 if=sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_lp/asdk/image/km0_boot_all.bin of=output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION).bin seek=0
-	dd conv=notrunc bs=1 if=sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_hp/asdk/image/km4_boot_all.bin of=output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION).bin seek=$(shell printf "%d" 0x4000)
-	dd conv=notrunc bs=1 if=sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_hp/asdk/image/km0_km4_image2.bin of=output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION).bin seek=$(shell printf "%d" 0x6000)
+	dd conv=notrunc bs=1K if=sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_lp/asdk/image/km0_boot_all.bin of=output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION).bin seek=0
+	dd conv=notrunc bs=1K if=sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_hp/asdk/image/km4_boot_all.bin of=output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION).bin seek=16
+	dd conv=notrunc bs=1K if=sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_hp/asdk/image/km0_km4_image2.bin of=output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION).bin seek=24
 	cp sdk/OpenRTL8720D/project/OpenBeken/GCC-RELEASE/project_lp/asdk/image/OTA_All.bin output/$(APP_VERSION)/OpenRTL8720D_$(APP_VERSION)_ota.img
 
 .PHONY: OpenRTL8721DA
@@ -656,6 +665,14 @@ OpenECR6600: prebuild_OpenECR6600
 	cp $(ECRDIR)/build/OpenBeken/ECR6600F_standalone_OpenBeken_allinone.bin output/$(APP_VERSION)/OpenECR6600_$(APP_VERSION).bin
 	cp $(ECRDIR)/build/OpenBeken/ECR6600F_OpenBeken_Compress_ota_packeg.bin output/$(APP_VERSION)/OpenECR6600_$(APP_VERSION)_ota.img
 	
+.PHONY: OpenTXW81X
+OpenTXW81X: prebuild_OpenTXW81X
+	cd sdk/OpenTXW81X/project && make APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc) && \
+	./BinScript.exe BinScript.BinScript > /dev/null && ./makecode.exe > /dev/null
+	mkdir -p output/$(APP_VERSION)
+	cp sdk/OpenTXW81X/project/APP.bin output/$(APP_VERSION)/OpenTXW81X_$(APP_VERSION).bin
+	#cp sdk/OpenTXW81X/project/APP_compress.bin output/$(APP_VERSION)/OpenTXW81X_$(APP_VERSION)_ota.img
+
 # Add custom Makefile if required
 -include custom.mk
 
@@ -681,6 +698,7 @@ clean:
 	-test -d ./sdk/ameba-rtos && cd sdk/ameba-rtos/amebadplus_gcc_project && ./build.py -a ../../../platforms/RTL8721DA -c
 	-test -d ./sdk/ameba-rtos && cd sdk/ameba-rtos/amebalite_gcc_project && ./build.py -a ../../../platforms/RTL8720E -c
 	-test -d ./sdk/beken_freertos_sdk && $(MAKE) -C sdk/beken_freertos_sdk clean
+	-test -d ./sdk/OpenTXW81X && $(MAKE) -C sdk/OpenTXW81X/project clean
 	-test -d ./sdk/OpenLN882H/build && cmake --build ./sdk/OpenLN882H/build --target clean
 	-test -d ./platforms/ESP-IDF/build-32 && cmake --build ./platforms/ESP-IDF/build-32 --target clean
 	-test -d ./platforms/ESP-IDF/build-c3 && cmake --build ./platforms/ESP-IDF/build-c3 --target clean

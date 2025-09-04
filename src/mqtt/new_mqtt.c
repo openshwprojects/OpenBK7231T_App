@@ -14,7 +14,7 @@
 #include "../driver/drv_public.h"
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_tuyaMCU.h"
-#include "../ota/ota.h"
+#include "../hal/hal_ota.h"
 #ifndef WINDOWS
 #include <lwip/dns.h>
 #endif
@@ -1756,7 +1756,7 @@ static BENCHMARK_TEST_INFO* info = NULL;
 #if WINDOWS
 
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF || PLATFORM_TR6260 \
-	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_ESP8266
+	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_ESP8266 || PLATFORM_TXW81X
 static void mqtt_timer_thread(void* param)
 {
 	while (1)
@@ -1799,6 +1799,8 @@ commandResult_t MQTT_StartMQTTTestThread(const void* context, const char* cmd, c
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF || PLATFORM_TR6260 \
 	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_ESP8266
 	xTaskCreate(mqtt_timer_thread, "mqtt", 1024, (void*)info, 15, NULL);
+#elif PLATFORM_TXW81X
+	os_task_create("mqtt", mqtt_timer_thread, (void*)info, 15, 0, NULL, 1024);
 #elif PLATFORM_XRADIO || PLATFORM_LN882H
 	OS_TimerSetInvalid(&timer);
 	if (OS_TimerCreate(&timer, OS_TIMER_PERIODIC, MQTT_Test_Tick, (void*)info, MQTT_TMR_DURATION) != OS_OK)
@@ -2183,9 +2185,7 @@ int MQTT_RunEverySecondUpdate()
 	if (mqtt_client == 0 || res == 0)
 	{
 		//addLogAdv(LOG_INFO,LOG_FEATURE_MAIN, "Timer discovers disconnected mqtt %i\n",mqtt_loopsWithDisconnected);
-#if PLATFORM_BK7231N || PLATFORM_BK7231T
-		if (ota_progress() == -1)
-#endif
+		if (OTA_GetProgress() == -1)
 		{
 			mqtt_loopsWithDisconnected++;
 			if (mqtt_loopsWithDisconnected > LOOPS_WITH_DISCONNECTED)
@@ -2241,8 +2241,7 @@ int MQTT_RunEverySecondUpdate()
 			g_wantTasmotaTeleSend = 0;
 		}
 		g_timeSinceLastMQTTPublish++;
-#if PLATFORM_BK7231N || PLATFORM_BK7231T
-		if (ota_progress() != -1)
+		if (OTA_GetProgress() != -1)
 		{
 			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "OTA started MQTT will be closed\n");
 			LOCK_TCPIP_CORE();
@@ -2250,7 +2249,6 @@ int MQTT_RunEverySecondUpdate()
 			UNLOCK_TCPIP_CORE();
 			return 1;
 		}
-#endif
 
 		if (CFG_HasFlag(OBK_FLAG_DO_TASMOTA_TELE_PUBLISHES)) {
 			static int g_mqtt_tasmotaTeleCounter_sensor = 0;

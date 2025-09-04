@@ -182,6 +182,11 @@ typedef long BaseType_t;
 #define DEVICENAME_PREFIX_SHORT "rtl8720e"
 #define PLATFORM_MCU_NAME "RTL8720E"
 #define MANUFACTURER "Realtek"
+#elif PLATFORM_TXW81X
+#define DEVICENAME_PREFIX_FULL "OpenTXW81X"
+#define DEVICENAME_PREFIX_SHORT "txw81x"
+#define PLATFORM_MCU_NAME "TXW81X"
+#define MANUFACTURER "Taixin"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -239,6 +244,8 @@ This platform is not supported, error!
 #define USER_SW_VER "RTL8721DA_Test"
 #elif PLATFORM_RTL8720E
 #define USER_SW_VER "RTL8720E_Test"
+#elif PLATFORM_TXW81X
+#define USER_SW_VER "TXW81X_Test"
 #else
 #warning "USER_SW_VER undefined"
 #define USER_SW_VER "unknown"
@@ -273,7 +280,6 @@ This platform is not supported, error!
 #include <limits.h>
 #define closesocket close
 #define SOCKET int
-#define closesocket close
 #define ISVALIDSOCKET(s) ((s) >= 0)
 #define GETSOCKETERRNO() (errno)
 #define ioctlsocket ioctl
@@ -286,6 +292,7 @@ This platform is not supported, error!
 
 #else
 
+#define close closesocket
 #define ISVALIDSOCKET(s) ((s) != INVALID_SOCKET)
 #define GETSOCKETERRNO() (WSAGetLastError())
 
@@ -802,6 +809,56 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #define OBK_OTA_EXTENSION ".img"
 
+#elif PLATFORM_TXW81X
+
+#include "csi_kernel.h"
+#include "stdbool.h"
+#include "lwip/err.h"
+#include "lwip/sockets.h"
+#include "lwip/sys.h"
+#include "lwip/netdb.h"
+#include "lwip/dns.h"
+#include "osal/csky/defs.h"
+#include "lib/heap/sysheap.h"
+#include "osal/csky/string.h"
+
+#define bk_printf printf
+
+#define rtos_delay_milliseconds csi_kernel_delay_ms
+#define delay_ms csi_kernel_delay_ms
+
+#define lwip_close_force(x) lwip_close(x)
+#define kNoErr                      0       //! No error occurred.
+typedef void* beken_thread_arg_t;
+typedef k_task_handle_t beken_thread_t;
+typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
+typedef int OSStatus;
+typedef k_mutex_handle_t SemaphoreHandle_t;
+#define xSemaphoreCreateMutex csi_kernel_mutex_new
+#define xSemaphoreTake(a, b) (csi_kernel_mutex_lock(a, csi_kernel_ms2tick(b), 0) == 0)
+#define xSemaphoreGive csi_kernel_mutex_unlock
+#define pdTRUE true
+
+#define xPortGetFreeHeapSize() sysheap_freesize(&sram_heap)
+#define portTICK_RATE_MS RHINO_CONFIG_TICKS_PER_SECOND 
+typedef int BaseType_t;
+typedef uint64_t portTickType;
+#define xTaskGetTickCount csi_kernel_get_ticks
+
+#define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
+#define BEKEN_APPLICATION_PRIORITY         (7)
+
+OSStatus rtos_delete_thread(beken_thread_t* thread);
+OSStatus rtos_create_thread(beken_thread_t* thread,
+	uint8_t priority, const char* name,
+	beken_thread_function_t function,
+	uint32_t stack_size, beken_thread_arg_t arg);
+OSStatus rtos_suspend_thread(beken_thread_t* thread);
+
+#define GLOBAL_INT_DECLARATION()	;
+#define GLOBAL_INT_DISABLE()		;
+#define GLOBAL_INT_RESTORE()		;
+
 #else
 
 #include "gw_intf.h"
@@ -923,7 +980,7 @@ int LWIP_GetMaxSockets();
 int LWIP_GetActiveSockets();
 
 #ifndef LINUX
-#if !PLATFORM_ESPIDF && !PLATFORM_ESP8266 && !PLATFORM_REALTEK_NEW
+#if !PLATFORM_ESPIDF && !PLATFORM_ESP8266 && !PLATFORM_REALTEK_NEW && !PLATFORM_TXW81X
 //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 void usleep(int r);
 #endif
@@ -949,7 +1006,7 @@ typedef enum
     EXCELLENT,
 } WIFI_RSSI_LEVEL;
 
-#if PLATFORM_LN882H || PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_TR6260 || PLATFORM_XRADIO
+#if PLATFORM_LN882H || PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_TR6260 || PLATFORM_XRADIO || PLATFORM_TXW81X
 #define IP_STRING_FORMAT	"%u.%u.%u.%u"
 #else
 #define IP_STRING_FORMAT	"%hhu.%hhu.%hhu.%hhu"

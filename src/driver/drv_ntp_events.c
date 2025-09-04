@@ -8,7 +8,7 @@
 #include "../cmnds/cmd_public.h"
 #include "../httpserver/new_http.h"
 #include "../logging/logging.h"
-#include "../ota/ota.h"
+#include "../hal/hal_ota.h"
 
 #include "drv_ntp.h"
 

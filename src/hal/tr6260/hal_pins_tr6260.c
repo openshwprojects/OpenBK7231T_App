@@ -4,6 +4,7 @@
 #include "../../logging/logging.h"
 #include "../../new_cfg.h"
 #include "../../new_pins.h"
+#include "../hal_pins.h"
 #include "drv_gpio.h"
 #include "drv_pwm.h"
 #include "soc_pin_mux.h"
@@ -284,5 +285,14 @@ unsigned int HAL_GetGPIOPin(int index)
 {
 	return index;
 }
+
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
+
+}
+void HAL_DetachInterrupt(int pinIndex) {
+
+}
+
+
 
 #endif // PLATFORM_TR6260

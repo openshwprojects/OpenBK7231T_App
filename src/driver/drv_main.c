@@ -46,6 +46,20 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "tmSensor",	TuyaMCU_Sensor_Init, TuyaMCU_Sensor_RunEverySecond,	NULL, NULL, NULL, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_TCA9554
+	//drvdetail:{"name":"TCA9554",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TCA9554.",
+	//drvdetail:"requires":""}
+	{ "TCA9554",		TCA9554_Init,			TCA9554_OnEverySecond,			NULL, NULL, NULL, TCA9554_OnChannelChanged , NULL, false },
+#endif
+#if ENABLE_DRIVER_DMX
+	//drvdetail:{"name":"DMX",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"DMX.",
+	//drvdetail:"requires":""}
+	{ "DMX",		DMX_Init,			DMX_OnEverySecond,			NULL, NULL, DMX_Shutdown, NULL , NULL, false },
+#endif
 #if ENABLE_DRIVER_FREEZE
 	//drvdetail:{"name":"FREEZE",
 	//drvdetail:"title":"TODO",
@@ -301,7 +315,14 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_IR2
 	{ "IR2",			DRV_IR2_Init,		 NULL,						NULL, NULL, NULL, NULL, NULL, false },
 #endif
-		
+
+#if ENABLE_DRIVER_DDPSEND
+	//drvdetail:{"name":"DDPSend",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"DDPqqqqqqq. See [DDP topic](https://www.elektroda.com/rtvforum/topic4040325.html)",
+	//drvdetail:"requires":""}
+	{ "DDPSend",		DRV_DDPSend_Init,		NULL,						DRV_DDPSend_AppendInformationToHTTPIndexPage, DRV_DDPSend_RunFrame, DRV_DDPSend_Shutdown, NULL, NULL, false },
+#endif
 #if ENABLE_DRIVER_DDP
 	//drvdetail:{"name":"DDP",
 	//drvdetail:"title":"TODO",
@@ -527,6 +548,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"UART to TCP, mainly for WiFi Zigbee coordinators.",
 	//drvdetail:"requires":""}
 	{ "UartTCP",		UART_TCP_Init,		NULL,	NULL, NULL, UART_TCP_Deinit, NULL, NULL, false }
+#endif
+#if PLATFORM_TXW81X
+	//drvdetail:{"name":"TXW81X Camera",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TXW81X Camera.",
+	//drvdetail:"requires":""}
+	{ "TXWCAM", TXW_Cam_Init, TXW_Cam_RunEverySecond, NULL, NULL, NULL, NULL, NULL, false }
 #endif
 };
 

@@ -105,7 +105,7 @@ static void CMD_ServerThread( beken_thread_arg_t arg )
     }
 
     if ( err != kNoErr )
-		  ADDLOG_ERROR(LOG_FEATURE_CMD,  "Server listerner thread exit with err: %d", err );
+		  ADDLOG_ERROR(LOG_FEATURE_CMD,  "Server listener thread exit with err: %d", err );
 
     lwip_close( tcp_listen_fd );
 
