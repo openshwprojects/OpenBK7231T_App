@@ -565,5 +565,6 @@
 // #define ENABLE_BL_MOVINGAVG					1
 #endif
 
+
 // closing OBK_CONFIG_H
 #endif
