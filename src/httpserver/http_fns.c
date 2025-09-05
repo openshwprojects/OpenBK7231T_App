@@ -230,15 +230,6 @@ int http_fn_index(http_request_t* request) {
 		if (DRV_IsRunning("SM16703P")) {
 			bForceShowRGB = true;
 		}
-		else 
-#endif
-#if ENABLE_LED_BASIC
-		if (LED_IsLedDriverChipRunning()) {
-			bForceShowRGBCW = true;
-		}
-#else
-		{
-		}
 #endif
 	}
 	http_setup(request, httpMimeTypeHTML);	//Add mimetype regardless of the request
@@ -670,7 +661,8 @@ int http_fn_index(http_request_t* request) {
 	}
 #endif
 #if ENABLE_LED_BASIC
-	if (bRawPWMs == 0 || bForceShowRGBCW || bForceShowRGB || bForceShowSingleDimmer) {
+	if (bRawPWMs == 0 || bForceShowRGBCW || bForceShowRGB
+		|| bForceShowSingleDimmer || LED_IsLedDriverChipRunning()) {
 		int c_pwms;
 		int lm;
 		int c_realPwms = 0;
@@ -683,6 +675,9 @@ int http_fn_index(http_request_t* request) {
 		// into high power 3-outputs single colors LED controller
 		PIN_get_Relay_PWM_Count(0, &c_pwms, 0);
 		c_realPwms = c_pwms;
+		if (LED_IsLedDriverChipRunning()) {
+			c_pwms = CFG_CountLEDRemapChannels();
+		}
 		if (bForceShowSingleDimmer) {
 			c_pwms = 1;
 		} 

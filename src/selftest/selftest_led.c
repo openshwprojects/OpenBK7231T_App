@@ -589,7 +589,17 @@ void Test_LEDDriver_BP5758_RGBCW() {
 	SELFTEST_ASSERT(g_cfg.ledRemap.ar[4] == 2);
 
 	Test_FakeHTTPClientPacket_GET("index");
-	//SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS("LED RGB Color");
+	SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS("LED RGB Color");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("LED Temperature Slider");
+
+	CMD_ExecuteCommand("LED_Map 0 1 2 -1 -1", 0);
+	Test_FakeHTTPClientPacket_GET("index");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("LED RGB Color");
+	SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS("LED Temperature Slider");
+
+	CMD_ExecuteCommand("LED_Map 0 1 2 3 4", 0);
+	Test_FakeHTTPClientPacket_GET("index");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("LED RGB Color");
 	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("LED Temperature Slider");
 }
 void Test_LEDDriver_RGB(int firstChannel) {
