@@ -546,6 +546,52 @@ void Test_LEDDriver_RGBCW() {
 	SELFTEST_ASSERT_CHANNEL(4, 0);
 	SELFTEST_ASSERT_CHANNEL(5, 0);
 }
+void Test_LEDDriver_BP5758_RGBCW() {
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	Test_FakeHTTPClientPacket_GET("index");
+	SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS("LED RGB Color");
+	SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS("LED Temperature Slider");
+
+	CMD_ExecuteCommand("StartDriver BP5758D", 0);
+	CMD_ExecuteCommand("led_dimmer 100", 0);
+	CMD_ExecuteCommand("led_temperature 500", 0);
+
+	Test_FakeHTTPClientPacket_GET("index");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("LED RGB Color");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("LED Temperature Slider");
+
+	// Try force flag 
+	CFG_SetFlag(OBK_FLAG_LED_FORCE_MODE_RGB, 1);
+	Test_FakeHTTPClientPacket_GET("index");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("LED RGB Color");
+	SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS("LED Temperature Slider");
+
+	// Clear force flag 
+	CFG_SetFlag(OBK_FLAG_LED_FORCE_MODE_RGB, 0);
+	Test_FakeHTTPClientPacket_GET("index");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("LED RGB Color");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("LED Temperature Slider");
+
+	CMD_ExecuteCommand("LED_Map 0 3 4 1 2", 0);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[0] == 0);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[1] == 3);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[2] == 4);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[3] == 1);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[4] == 2);
+
+	CMD_ExecuteCommand("LED_Map -1 -1 -1 1 2", 0);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[0] == 0xff);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[1] == 0xff);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[2] == 0xff);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[3] == 1);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[4] == 2);
+
+	Test_FakeHTTPClientPacket_GET("index");
+	//SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS("LED RGB Color");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("LED Temperature Slider");
+}
 void Test_LEDDriver_RGB(int firstChannel) {
 	// reset whole device
 	SIM_ClearOBK(0);
@@ -690,6 +736,7 @@ void Test_LEDDriver() {
 	Test_LEDDriver_RGB(1);
 	Test_LEDDriver_RGBCW();
 	Test_LEDDriver_Palette();
+	Test_LEDDriver_BP5758_RGBCW();
 }
 
 #endif
