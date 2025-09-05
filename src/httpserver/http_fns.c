@@ -1896,7 +1896,10 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 
 
 #if ENABLE_LED_BASIC
-	if (pwmCount == 5 || ledDriverChipRunning || (pwmCount == 4 && CFG_HasFlag(OBK_FLAG_LED_EMULATE_COOL_WITH_RGB))) {
+	if (ledDriverChipRunning) {
+		pwmCount = CFG_CountLEDRemapChannels();
+	}
+	if (pwmCount == 5 || (pwmCount == 4 && CFG_HasFlag(OBK_FLAG_LED_EMULATE_COOL_WITH_RGB))) {
 		if (dev_info == NULL) {
 			dev_info = hass_init_light_device_info(LIGHT_RGBCW);
 		}
