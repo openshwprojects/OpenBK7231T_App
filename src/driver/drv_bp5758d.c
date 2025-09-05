@@ -101,6 +101,11 @@ void BP5758D_Write(float *rgbcw) {
 
 	}
 
+#if WINDOWS
+	void Simulator_StoreBP5758DColor(unsigned short *data);
+	Simulator_StoreBP5758DColor(cur_col_10);
+#endif
+
 	// If we receive 0 for all channels, we'll assume that the lightbulb is off, and activate BP5758d's sleep mode.
 	if (cur_col_10[0]==0 && cur_col_10[1]==0 && cur_col_10[2]==0 && cur_col_10[3]==0 && cur_col_10[4]==0) {
 		bIsSleeping = true;
