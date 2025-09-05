@@ -1455,12 +1455,15 @@ typedef struct mainConfig_s {
 	// offset 0x00000CBB (3259 decimal)
 	byte disable_web_server;
 	// offset 0x00000CBC (3260 decimal)
+	int domoticz_idx[MAX_DOMOTICZ_CHANNELS];
+	int domoticz_voltage_idx;
+	int domoticz_power_idx;
 #if PLATFORM_BEKEN
 	obkFastConnectData_t fcdata;
 	// offset 0x00000D0C (3340 decimal)
-	char unused[244];
+	char unused[244 - 2*MAX_DOMOTICZ_CHANNELS - 8];
 #else
-	char unused[324];
+	char unused[324 - 2*MAX_DOMOTICZ_CHANNELS - 8];
 #endif
 #endif
 } mainConfig_t;
