@@ -2707,19 +2707,19 @@ void TuyaMCU_Init()
 
 	//cmddetail:{"name":"tuyaMcu_sendColor","args":"[dpID] [red01] [green01] [blue01] [tuyaRGBformat]",
 	//cmddetail:"descr":"This sends a TuyaMCU color string of given format for given RGB values, where each value is in [0,1] range as float",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"fn":"Cmd_TuyaMCU_SendColor","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_sendColor", Cmd_TuyaMCU_SendColor, NULL);
 
 	//cmddetail:{"name":"tuyaMcu_setupLED","args":"[dpIDColor] [TasFormat] [dpIDPower]",
 	//cmddetail:"descr":"Setups the TuyaMCU LED driver for given color dpID and power dpID. Also allows you to choose color format.",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"fn":"Cmd_TuyaMCU_SetupLED","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_setupLED", Cmd_TuyaMCU_SetupLED, NULL);
 
-	//cmddetail:{"name":"Cmd_TuyaMCU_SetBatteryAckDelay","args":"[ackDelay]",
+	//cmddetail:{"name":"tuyaMcu_setBatteryAckDelay","args":"[ackDelay]",
 	//cmddetail:"descr":"Defines the delay before the ACK is sent to TuyaMCU sending the device to sleep. Default value is 0 seconds.",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"fn":"Cmd_TuyaMCU_SetBatteryAckDelay","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_setBatteryAckDelay", Cmd_TuyaMCU_SetBatteryAckDelay, NULL);
 	

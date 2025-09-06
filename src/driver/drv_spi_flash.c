@@ -522,6 +522,10 @@ void DRV_InitFlashMemoryTestFunctions() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SPITestFlash_ReadData", CMD_SPITestFlash_ReadData, NULL);
 
+	//cmddetail:{"name":"SPITestFlash_Test","args":"CMD_SPITestFlash_TestPages",
+	//cmddetail:"descr":"TODO",
+	//cmddetail:"fn":"CMD_SPITestFlash_TestPages","file":"driver/drv_spi_flash.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SPITestFlash_Test", CMD_SPITestFlash_TestPages, NULL);
 
 	/*

@@ -466,50 +466,50 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current second from NTP",
 	//cnstdetail:"requires":""}
 	{ "$second", &getSecond },
-	////cnstdetail:{"name":"$mday",
-	////cnstdetail:"title":"$mday",
-	////cnstdetail:"descr":"Current mday from NTP",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$mday",
+	//cnstdetail:"title":"$mday",
+	//cnstdetail:"descr":"Current mday from NTP",
+	//cnstdetail:"requires":""}
 	{ "$mday", &getMDay },
-	////cnstdetail:{"name":"$month",
-	////cnstdetail:"title":"$month",
-	////cnstdetail:"descr":"Current month from NTP",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$month",
+	//cnstdetail:"title":"$month",
+	//cnstdetail:"descr":"Current month from NTP",
+	//cnstdetail:"requires":""}
 	{ "$month", &getMonth },
-	////cnstdetail:{"name":"$year",
-	////cnstdetail:"title":"$year",
-	////cnstdetail:"descr":"Current Year from NTP",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$year",
+	//cnstdetail:"title":"$year",
+	//cnstdetail:"descr":"Current Year from NTP",
+	//cnstdetail:"requires":""}
 	{ "$year", &getYear },
 #ifdef ENABLE_DRIVER_BL0937
-	////cnstdetail:{"name":"$yesterday",
-	////cnstdetail:"title":"$yesterday",
-	////cnstdetail:"descr":"",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$yesterday",
+	//cnstdetail:"title":"$yesterday",
+	//cnstdetail:"descr":"",
+	//cnstdetail:"requires":""}
 	{ "$yesterday", &getYesterday },
-	////cnstdetail:{"name":"$today",
-	////cnstdetail:"title":"$today",
-	////cnstdetail:"descr":"",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$today",
+	//cnstdetail:"title":"$today",
+	//cnstdetail:"descr":"",
+	//cnstdetail:"requires":""}
 	{ "$today", &getToday },
 #endif
 #if ENABLE_NTP_DST
-	////cnstdetail:{"name":"$isDST",
-	////cnstdetail:"title":"$isDST",
-	////cnstdetail:"descr":"",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$isDST",
+	//cnstdetail:"title":"$isDST",
+	//cnstdetail:"descr":"",
+	//cnstdetail:"requires":""}
 	{ "$isDST", &isDST },
 #endif
 #if ENABLE_NTP_SUNRISE_SUNSET
-	////cnstdetail:{"name":"$sunrise",
-	////cnstdetail:"title":"$sunrise",
-	////cnstdetail:"descr":"Next sunrise as a TimerSeconds from midnight",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$sunrise",
+	//cnstdetail:"title":"$sunrise",
+	//cnstdetail:"descr":"Next sunrise as a TimerSeconds from midnight",
+	//cnstdetail:"requires":""}
 	{ "$sunrise", &getSunrise },
-	////cnstdetail:{"name":"$sunset",
-	////cnstdetail:"title":"$sunset",
-	////cnstdetail:"descr":"Next sunset as a TimerSeconds from midnight",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$sunset",
+	//cnstdetail:"title":"$sunset",
+	//cnstdetail:"descr":"Next sunset as a TimerSeconds from midnight",
+	//cnstdetail:"requires":""}
 	{ "$sunset", &getSunset },
 #endif
 	//cnstdetail:{"name":"$NTPOn",

@@ -161,7 +161,9 @@ function getFolder(name, cb) {
 									}
 								}
 								// move our parsing forward to skip all found
-								j = j2;
+								// we are allready BEHIND comments when we used break, 
+								// so we need to skip to j2-1 to handle the line in next loop 
+								j = j2 - 1 ;
 								let json = commentlines.join('\n');
 								try {
 									let chan = JSON.parse(json);
@@ -303,7 +305,9 @@ function getFolder(name, cb) {
 									}
 								}
 								// move our parsing forward to skip all found
-								j = j2;
+								// we are allready BEHIND comments when we used break, 
+								// so we need to skip to j2-1 to handle the line in next loop 
+								j = j2 - 1;
 								let json = commentlines.join('\n');
 								try {
 									let io = JSON.parse(json);
@@ -389,7 +393,9 @@ function getFolder(name, cb) {
 									}
 								}
 								// move our parsing forward to skip all found
-								j = j2;
+								// we are allready BEHIND comments when we used break, 
+								// so we need to skip to j2-1 to handle the line in next loop 
+								j = j2 -1 ;
 								let json = commentlines.join('\n');
 								try {
 									let drv = JSON.parse(json);
@@ -480,7 +486,9 @@ function getFolder(name, cb) {
 									}
 								}
 								// move our parsing forward to skip all found
-								j = j2;
+								// we are allready BEHIND comments when we used break, 
+								// so we need to skip to j2-1 to handle the line in next loop 
+								j = j2 - 1;
 								let json = commentlines.join('\n');
 								try {
 									let cnst = JSON.parse(json);
@@ -632,7 +640,8 @@ function getFolder(name, cb) {
 				if (modified) {
 					let newdata = newlines.join('\n');
 					try {
-						fs.writeFileSync(file, newdata);
+						// write new file as "proposal", so we can choose, if/how to change source file
+						fs.writeFileSync(file + ".getcommands", newdata);
 						console.log('updated ' + file);
 					} catch (e) {
 						console.error('failed to update ' + file);
