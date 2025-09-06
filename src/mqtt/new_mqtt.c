@@ -1901,8 +1901,8 @@ void MQTT_InitCallbacks() {
 		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 7, tasCmnd);
 	}
 	// test hack iobroker
-	snprintf(cbtopicbase, sizeof(cbtopicbase), "homeassistant/", clientId);
-	snprintf(cbtopicsub, sizeof(cbtopicsub), "homeassistant/+", clientId);
+	snprintf(cbtopicbase, sizeof(cbtopicbase), "homeassistant/");
+	snprintf(cbtopicsub, sizeof(cbtopicsub), "homeassistant/+");
 	MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 8, onHassStatus);
 }
  // initialise things MQTT
