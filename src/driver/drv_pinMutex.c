@@ -140,6 +140,10 @@ void DRV_PinMutex_Init() {
 		pms[i].pinUp = 0;
 		pms[i].pinDown = 0;
 	}
+	//cmddetail:{"name":"setMutex","args":"CMD_setMutex",
+	//cmddetail:"descr":"pinmutex driver (potentially for shutters)",
+	//cmddetail:"fn":"CMD_setMutex","file":"driver/drv_pinMutex.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("setMutex", CMD_setMutex, NULL);
 }
 

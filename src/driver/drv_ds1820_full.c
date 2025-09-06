@@ -718,12 +718,12 @@ void DS1820_full_driver_Init()
 	CMD_RegisterCommand("DS1820_FULL_SetResolution", Cmd_DS18B20_SetResolution, NULL);
 	//cmddetail:{"name":"DS1820_FULL_setsensor","args":"DS18B20-Addr name [channel]",
 	//cmddetail:"descr":"Sets a name [and optional channel] to a DS18B20 sensor by sensors address",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_ds1802_simple.c","requires":"",
+	//cmddetail:"fn":"CMD_DS18B20_setsensor","file":"driver/drv_ds1802_simple.c","requires":"",
 	//cmddetail:"examples":"DS1820_FULL_setsensor \"0x28 0x01 0x02 0x03 0x04 0x05 0x06 0x07\" \"kitchen\" 2"}
 	CMD_RegisterCommand("DS1820_FULL_setsensor", CMD_DS18B20_setsensor, NULL);
-	//cmddetail:{"name":"DS18B20_FULL_scansensors","args":"-",
+	//cmddetail:{"name":"DS1820_FULL_scansensors","args":"-",
 	//cmddetail:"descr":"(Re-)Scan all GPIOs defined for DS1820 for sensors",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_ds1802_simple.c","requires":"",
+	//cmddetail:"fn":"CMD_DS18B20_scansensors","file":"driver/drv_ds1802_simple.c","requires":"",
 	//cmddetail:"examples":"DS1820_FULL_scansensors"}
 	CMD_RegisterCommand("DS1820_FULL_scansensors", CMD_DS18B20_scansensors, NULL);
 

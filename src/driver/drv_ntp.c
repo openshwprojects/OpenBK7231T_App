@@ -521,7 +521,7 @@ void NTP_Init() {
 	NTP_Init_Events();
 #endif
 #if ENABLE_NTP_DST
-	//cmddetail:{"name":"CLOCK_CalcDST","args":"[nthWeekEnd monthEnd dayEnd hourEnd nthWeekStart monthStart dayStart hourStart [g_DSToffset hours - default is 1 if unset]",
+	//cmddetail:{"name":"clock_calcDST","args":"[nthWeekEnd monthEnd dayEnd hourEnd nthWeekStart monthStart dayStart hourStart [g_DSToffset hours - default is 1 if unset]",
 	//cmddetail:"descr":"Checks, if actual time is during DST or not.",
 	//cmddetail:"fn":"CLOCK_CalcDST","file":"driver/drv_ntp.c","requires":"",
 	//cmddetail:"examples":""}
