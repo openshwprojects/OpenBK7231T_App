@@ -120,11 +120,11 @@ commandResult_t CMD_LEDDriver_Map(const void *context, const char *cmd, const ch
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
-	r = Tokenizer_GetArgIntegerRange(0, 0, 4);
-	g = Tokenizer_GetArgIntegerRange(1, 0, 4);
-	b = Tokenizer_GetArgIntegerRange(2, 0, 4);
-	c = Tokenizer_GetArgIntegerRange(3, 0, 4);
-	w = Tokenizer_GetArgIntegerRange(4, 0, 4);
+	r = Tokenizer_GetArgIntegerRange(0, -1, 4);
+	g = Tokenizer_GetArgIntegerRange(1, -1, 4);
+	b = Tokenizer_GetArgIntegerRange(2, -1, 4);
+	c = Tokenizer_GetArgIntegerRange(3, -1, 4);
+	w = Tokenizer_GetArgIntegerRange(4, -1, 4);
 
 	CFG_SetLEDRemap(r, g, b, c, w);
 
