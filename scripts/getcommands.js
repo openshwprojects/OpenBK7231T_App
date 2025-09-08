@@ -580,7 +580,13 @@ function getFolder(name, cb) {
 								console.error('duplicate command "' + cmd.name + '" docs at file: ' + file + ' line: ' + line);
 								console.error(line);
 							} else {
-								// console.error('new command "' + cmd.name + '" docs at file: ' + file + ' line: ' + line);
+								//console.error('new command "' + cmd.name + '" docs at file: ' + file + ' line: ' + line + ' -- json='+ json );
+								if (cmd.file !== file.slice(6)) {
+									console.log('!!!! Posible wrong file location for command "' + cmd.name + '": found in file: "' + file.slice(6) + '" but claimes file: "' + cmd.file + '" - please verify! !!!!')
+									console.error('\t Posible fix: sed -i \''+ (i-3)  + ',' + (i-1) +  ' { /cmddetail:\\"fn\\":\\"' + cmd.fn + '\"/ s%'+cmd.file + "%" + file.slice(6) + '%} \'  src/' + file.slice(6))
+									console.error('\t test posible fix: sed -n \''+ (i-3)  + ',' + (i-1) +  ' {/cmddetail:\\"fn\\":\\"' + cmd.fn + '\"/ s%'+cmd.file + "%" + file.slice(6) + '% p }\'  src/' + file.slice(6))
+									
+								}
 								commands.push(cmd);
 								cmdindex[cmd.name] = cmd;
 							}
@@ -628,6 +634,11 @@ function getFolder(name, cb) {
 						//   modified++;
 						//}
 
+						if (cmdindex[cmd.name] && cmdindex[cmd.name].fn !== cmd.fn) {
+							console.log('!!!!  "' + cmd.name + '" in file ' + cmd.file + ' -- fn "' + cmdindex[cmd.name].fn + '"  != called function "' + cmd.fn + '"  !!!!');
+							console.log('\t possible fix: sed -i \'' + (i-3)  + ',' + (i-1) + ' { /cmddetail:\\"fn\\":\\"' + cmdindex[cmd.name].fn + '\\"/ s%' + cmdindex[cmd.name].fn + "%" + cmd.fn + '% }\'  src/' + file.slice(6));
+							console.log('\t test possible fix: sed -n \'' + (i-3)  + ',' + (i-1) + ' { /cmddetail:\\"fn\\":\\"' + cmdindex[cmd.name].fn + '\\"/ s%' + cmdindex[cmd.name].fn + "%" + cmd.fn + '% p }\'  src/' + file.slice(6));
+						}
 
 						if (!cmdindex[cmd.name]) {
 							// it did not have a doc line before

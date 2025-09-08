@@ -32,7 +32,7 @@ commandResult_t DRV_I2C_AddDevice_LCM1602(const void *context, const char *cmd, 
 void DRV_I2C_LCM1602_PreInit() {
 	//cmddetail:{"name":"addI2CDevice_LCM1602","args":"",
 	//cmddetail:"descr":"Adds a new I2C device - LCM1602",
-	//cmddetail:"fn":"DRV_I2C_AddDevice_LCM1602","file":"i2c/drv_i2c_main.c","requires":"",
+	//cmddetail:"fn":"DRV_I2C_AddDevice_LCM1602","file":"i2c/drv_i2c_lcm1602.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("addI2CDevice_LCM1602", DRV_I2C_AddDevice_LCM1602, NULL);
 

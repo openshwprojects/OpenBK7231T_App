@@ -244,7 +244,7 @@ void DRV_I2C_Init()
 
 	//cmddetail:{"name":"scanI2C","args":"[Soft/I2C1/I2C2]",
 	//cmddetail:"descr":"Scans given I2C line for addresses. I2C driver must be started first.",
-	//cmddetail:"fn":"DRV_I2C_MCP23017_MapPinToChannel","file":"i2c/drv_i2c_main.c","requires":"",
+	//cmddetail:"fn":"DRV_I2C_Scan","file":"i2c/drv_i2c_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("scanI2C", DRV_I2C_Scan, NULL);
 }

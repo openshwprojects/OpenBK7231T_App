@@ -670,7 +670,7 @@ void TM_GN_Display_SharedInit(tmGnType_t type) {
 
 	//cmddetail:{"name":"TMGN_SetBit","args":"[CharIndex] [BitIndex] [BitValue]",
 	//cmddetail:"descr":"Set given bit of given digit to 1 or 0.",
-	//cmddetail:"fn":"CMD_TMGN_SetBit","file":"driver/drv_tm1637.c","requires":"",
+	//cmddetail:"fn":"CMD_TMGN_SetBit","file":"driver/drv_tm_gn_display_shared.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TMGN_SetBit", CMD_TMGN_SetBit, NULL);
 	//cmddetail:{"name":"TMGN_Clear","args":"",
@@ -680,7 +680,7 @@ void TM_GN_Display_SharedInit(tmGnType_t type) {
 	CMD_RegisterCommand("TMGN_Clear", CMD_TMGN_Clear, NULL);
 	//cmddetail:{"name":"TMGN_Char","args":"[CharIndex] [CharCode]",
 	//cmddetail:"descr":"This allows you to set binary code for given char, valid chars range is 0 to 15, because this is 7-seg display",
-	//cmddetail:"fn":"CMD_TMGN_Char","file":"driver/drv_tm1637.c","requires":"",
+	//cmddetail:"fn":"CMD_TMGN_Char","file":"driver/drv_tm_gn_display_shared.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TMGN_Char", CMD_TMGN_Char, NULL);
 	//cmddetail:{"name":"TMGN_Print","args":"[StartOfs] [MaxLenOr0] [StringText] [optionalBClampWithZeroesForClock]",
@@ -705,17 +705,17 @@ void TM_GN_Display_SharedInit(tmGnType_t type) {
 	CMD_RegisterCommand("TMGN_Map", CMD_TMGN_Map, NULL);
 	//cmddetail:{"name":"TM1650_Test","args":"CMD_TM1650_Test",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"CMD_TM1650_Test","file":"driver/drv_tm1637.c","requires":"",
+	//cmddetail:"fn":"CMD_TM1650_Test","file":"driver/drv_tm_gn_display_shared.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TM1650_Test", CMD_TM1650_Test, NULL);
 	//cmddetail:{"name":"TMGN_Read","args":"",
 	//cmddetail:"descr":"Executes a single buttons read on TM/GN LED driver",
-	//cmddetail:"fn":"CMD_TMGN_Read","file":"driver/drv_tm1637.c","requires":"",
+	//cmddetail:"fn":"CMD_TMGN_Read","file":"driver/drv_tm_gn_display_shared.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TMGN_Read", CMD_TMGN_Read, NULL);
 	//cmddetail:{"name":"TMGN_SetupButtons","args":"[Interval]",
 	//cmddetail:"descr":"Setups periodic buttons read on TM/GN LED driver",
-	//cmddetail:"fn":"CMD_TMGN_SetupButtons","file":"driver/drv_tm1637.c","requires":"",
+	//cmddetail:"fn":"CMD_TMGN_SetupButtons","file":"driver/drv_tm_gn_display_shared.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TMGN_SetupButtons", CMD_TMGN_SetupButtons, NULL);
 

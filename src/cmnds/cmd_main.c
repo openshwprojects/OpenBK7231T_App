@@ -740,7 +740,7 @@ commandResult_t CMD_CreateAliasHelper(const char *alias, const char *ocmd) {
 
 	//cmddetail:{"name":"aliasMem","args":"",
 	//cmddetail:"descr":"Internal usage only. See docs for 'alias' command.",
-	//cmddetail:"fn":"runcmd","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"fn":"runcmd","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	command_t *cmd = CMD_RegisterCommand(aliasMem, runcmd, cmdMem);
 	if (cmd) {
@@ -968,7 +968,7 @@ static commandResult_t CMD_WebServer(const void* context, const char* cmd, const
 void CMD_Init_Early() {
 	//cmddetail:{"name":"alias","args":"[Alias][Command with spaces]",
 	//cmddetail:"descr":"add an aliased command, so a command with spaces can be called with a short, nospaced alias",
-	//cmddetail:"fn":"alias","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"fn":"CMD_CreateAliasForCommand","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("alias", CMD_CreateAliasForCommand, NULL);
 	//cmddetail:{"name":"echo","args":"[Message]",
@@ -1055,7 +1055,7 @@ void CMD_Init_Early() {
 	CMD_RegisterCommand("OpenAP", CMD_OpenAP, NULL);
 	//cmddetail:{"name":"DSEdge","args":"[edgeCode][optionalPinIndex]",
 	//cmddetail:"descr":"DeepSleep (PinDeepSleep) wake configuration command. 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2. Second argument is optional and allows to set per-pin DSEdge instead of setting it for all pins.",
-	//cmddetail:"fn":"CMD_DeepSleep_SetEdge","file":"drv/drv_doorSensorWithDeepSleep.c","requires":"",
+	//cmddetail:"fn":"CMD_DeepSleep_SetEdge","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DSEdge", CMD_DeepSleep_SetEdge, NULL);
 	//cmddetail:{"name":"SafeMode","args":"[OptionalDelayBeforeRestart]",

@@ -863,19 +863,19 @@ extern "C" void DRV_IR_Init() {
 			CMD_RegisterCommand("IRSend", IR_Send_Cmd, NULL);
 			//cmddetail:{"name":"IRAC","args":"[TODO]",
 			//cmddetail:"descr":"Sends IR commands for HVAC control (TODO)",
-			//cmddetail:"fn":"IR_AC_Cmd","file":"driver/drv_ir.cpp","requires":"",
+			//cmddetail:"fn":"IR_AC_Cmd","file":"driver/drv_ir_new.cpp","requires":"",
 			//cmddetail:"examples":""}
 			#ifdef ENABLE_IRAC
 			CMD_RegisterCommand("IRAC", IR_AC_Cmd, NULL);
 			#endif //ENABLE_IRAC
 			//cmddetail:{"name":"IREnable","args":"[Str][1or0]",
 			//cmddetail:"descr":"Enable/disable aspects of IR.  IREnable RXTX 0/1 - enable Rx whilst Tx.  IREnable [protocolname] 0/1 - enable/disable a specified protocol",
-			//cmddetail:"fn":"IR_Enable","file":"driver/drv_ir.cpp","requires":"",
+			//cmddetail:"fn":"IR_Enable","file":"driver/drv_ir_new.cpp","requires":"",
 			//cmddetail:"examples":""}
 			CMD_RegisterCommand("IREnable",IR_Enable, NULL);
 			//cmddetail:{"name":"IRParam","args":"[MinSize] [Noise Threshold]",
 			//cmddetail:"descr":"Set minimal size of the message and noise threshold",
-			//cmddetail:"fn":"IR_Enable","file":"driver/drv_ir.cpp","requires":"",
+			//cmddetail:"fn":"IR_Param","file":"driver/drv_ir_new.cpp","requires":"",
 			//cmddetail:"examples":""}
 			CMD_RegisterCommand("IRParam",IR_Param, NULL);
 		}

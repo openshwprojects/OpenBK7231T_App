@@ -260,7 +260,7 @@ void MCP9808_Init() {
 	CMD_RegisterCommand("MCP9808_AlertRange", MCP9808_AlertRange, NULL);
 	//cmddetail:{"name":"MCP9808_AlertMin","args":"[MinT] [OptionalBActiveHigh]",
 	//cmddetail:"descr":"Setup MCP9809 temperature alert for min mode",
-	//cmddetail:"fn":");","file":"driver/drv_mcp9808.c","requires":"",
+	//cmddetail:"fn":"MCP9808_AlertMin","file":"driver/drv_mcp9808.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MCP9808_AlertMin", MCP9808_AlertMin, NULL);
 

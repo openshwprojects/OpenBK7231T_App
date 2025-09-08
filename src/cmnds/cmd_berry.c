@@ -532,7 +532,7 @@ void CMD_InitBerry() {
 	CMD_RegisterCommand("berry", CMD_Berry, NULL);
 	//cmddetail:{"name":"stopBerry","args":"[Berry code]",
 	//cmddetail:"descr":"Stop Berry VM",
-	//cmddetail:"fn":"CMD_StopBerry","file":"cmnds/cmd_berry.c","requires":"",
+	//cmddetail:"fn":"CMD_StopBerryCommand","file":"cmnds/cmd_berry.c","requires":"",
 	//cmddetail:"examples":"stopBerry"}
 	CMD_RegisterCommand("stopBerry", CMD_StopBerryCommand, NULL);
 }

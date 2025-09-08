@@ -480,7 +480,7 @@ static commandResult_t CMD_BL0942opts(const void* context, const char* cmd, cons
 void BL0942_AddCommands(void) {
   //cmddetail:{"name":"BL0942opts","args":"opts",
   //cmddetail:"descr":"BL0942opts 0= default mode (as set in config Flag 26), 3= two BL0942 on both UARTs (bit0 BL0942 on UART1, bit1 BL0942 on UART2)",
-  //cmddetail:"fn":"CMD_BL0942opts","file":"driver/drv_pwrCal.c","requires":"",
+  //cmddetail:"fn":"CMD_BL0942opts","file":"driver/drv_bl0942.c","requires":"",
   //cmddetail:"examples":""}
   CMD_RegisterCommand("BL0942opts", CMD_BL0942opts, NULL);
 }

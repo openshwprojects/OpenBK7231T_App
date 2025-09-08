@@ -510,7 +510,7 @@ int CMD_InitTestCommands(){
     CMD_RegisterCommand("testArgs", testArgs, NULL);
 	//cmddetail:{"name":"testAtoi","args":"",
 	//cmddetail:"descr":"Test atoi function",
-	//cmddetail:"fn":"testArgs","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"fn":"testAtoi","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("testAtoi", testAtoi, NULL);
 	//cmddetail:{"name":"testStrdup","args":"",
@@ -520,17 +520,17 @@ int CMD_InitTestCommands(){
     CMD_RegisterCommand("testStrdup", testStrdup, NULL);
 	//cmddetail:{"name":"lfs_test1","args":"[FileName]",
 	//cmddetail:"descr":"Tests the LFS file reading feature.",
-	//cmddetail:"fn":"cmnd_lfs_test1","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"fn":"cmnd_lfs_test1","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_test1", cmnd_lfs_test1, NULL);
 	//cmddetail:{"name":"lfs_test2","args":"[FileName]",
 	//cmddetail:"descr":"Tests the LFS file reading feature.",
-	//cmddetail:"fn":"cmnd_lfs_test2","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"fn":"cmnd_lfs_test2","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_test2", cmnd_lfs_test2, NULL);
 	//cmddetail:{"name":"lfs_test3","args":"[FileName]",
 	//cmddetail:"descr":"Tests the LFS file reading feature.",
-	//cmddetail:"fn":"cmnd_lfs_test3","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"fn":"cmnd_lfs_test3","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_test3", cmnd_lfs_test3, NULL);
 	//cmddetail:{"name":"json_test","args":"",
@@ -540,22 +540,22 @@ int CMD_InitTestCommands(){
 	CMD_RegisterCommand("json_test", cmnd_json_test, NULL);
 	//cmddetail:{"name":"TimeSize","args":"",
 	//cmddetail:"descr":"Prints the size of time_t on current platform - sizeof(time_t), only for testing purposes",
-	//cmddetail:"fn":"CMD_TimeSize","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"fn":"CMD_TimeSize","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TimeSize", CMD_TimeSize, NULL);
 	//cmddetail:{"name":"stackOverflow","args":"",
 	//cmddetail:"descr":"Causes a stack overflow",
-	//cmddetail:"fn":"CMD_StackOverflow","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"fn":"CMD_StackOverflow","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("stackOverflow", CMD_StackOverflow, NULL);
 	//cmddetail:{"name":"crashNull","args":"",
 	//cmddetail:"descr":"Causes a crash",
-	//cmddetail:"fn":"CMD_CrashNull","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"fn":"CMD_CrashNull","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("crashNull", CMD_CrashNull, NULL);
 	//cmddetail:{"name":"simonirtest","args":"",
 	//cmddetail:"descr":"Simons Special Test",
-	//cmddetail:"fn":"CMD_SimonTest","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"fn":"CMD_SimonTest","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("simonirtest", CMD_SimonTest, NULL);
 
