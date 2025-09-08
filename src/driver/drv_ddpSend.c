@@ -191,7 +191,7 @@ void DRV_DDPSend_Init()
 	}
 	//cmddetail:{"name":"DDP_Send","args":"IP host pixelsize delay pData",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_ddpSend.c","requires":"",
+	//cmddetail:"fn":"DDP_Send","file":"driver/drv_ddpSend.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DDP_Send", DDP_Send, NULL);
 }

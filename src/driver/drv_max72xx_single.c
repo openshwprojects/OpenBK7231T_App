@@ -437,12 +437,12 @@ void DRV_MAX72XX_Init() {
 	CMD_RegisterCommand("MAX72XX_Setup", DRV_MAX72XX_Setup, NULL);
 	//cmddetail:{"name":"MAX72XX_Scroll","args":"DRV_MAX72XX_Scroll",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_max72xx_single.c","requires":"",
+	//cmddetail:"fn":"DRV_MAX72XX_Scroll","file":"driver/drv_max72xx_single.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MAX72XX_Scroll", DRV_MAX72XX_Scroll, NULL);
 	//cmddetail:{"name":"MAX72XX_Print","args":"DRV_MAX72XX_Print",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_max72xx_single.c","requires":"",
+	//cmddetail:"fn":"DRV_MAX72XX_Print","file":"driver/drv_max72xx_single.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MAX72XX_Print", DRV_MAX72XX_Print, NULL);
 }

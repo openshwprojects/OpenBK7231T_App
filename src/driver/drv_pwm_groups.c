@@ -97,12 +97,12 @@ void PWMG_Init() {
 
 	//cmddetail:{"name":"PWMG_Raw","args":"",
 	//cmddetail:"descr":"PWM grouping (synchronous PWM)",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_pwm_groups.c","requires":"",
+	//cmddetail:"fn":"CMD_PWMG_Raw","file":"driver/drv_pwm_groups.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PWMG_Raw", CMD_PWMG_Raw, NULL);
 	//cmddetail:{"name":"PWMG_Set","args":"Duty1Percent Duty2Percent DeadTimePercent Frequency PinA PinB",
 	//cmddetail:"descr":"PWM grouping (synchronous PWM)",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_pwm_groups.c","requires":"",
+	//cmddetail:"fn":"CMD_PWMG_Set","file":"driver/drv_pwm_groups.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PWMG_Set", CMD_PWMG_Set, NULL);
 }

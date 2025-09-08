@@ -477,7 +477,7 @@ void LFSAddCmds(){
 
 	//cmddetail:{"name":"lfs_mkdir","args":"CMD_LFS_MakeDirectory",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"littlefs/our_lfs.c","requires":"",
+	//cmddetail:"fn":"CMD_LFS_MakeDirectory","file":"littlefs/our_lfs.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_mkdir", CMD_LFS_MakeDirectory, NULL);
 }

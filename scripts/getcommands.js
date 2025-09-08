@@ -597,12 +597,16 @@ function getFolder(name, cb) {
 						line = line.slice('CMD_RegisterCommand('.length);
 						parts = line.split(',');
 						//cmddetail:{"name":"SetChannel", "args":"TODO", "fn":"CMD_SetChannel", "descr":"qqqqq0", "example":"", "file":"");
+						//
+						// CMD registration command line
+						// CMD_RegisterCommand("SetChannel", CMD_SetChannel, NULL);
+
 
 						let cmd = {
 							name: mytrim(parts[0]),
-							args: mytrim(parts[1]),
+							args: mytrim("TODO"),
 							descr: mytrim(""),
-							fn: mytrim(parts[2]),
+							fn: mytrim(parts[1]),
 							file: file.slice(6),
 							requires: "",
 							examples: "",
@@ -613,6 +617,17 @@ function getFolder(name, cb) {
 						//   lines[i] = lines[i].replace(', NULL, NULL);', ', NULL);');
 						//   modified++;
 						//}
+						//
+						// 20250908 only used once to fix broken auto-generated fn entries with "NULL);" entry
+						//if (cmdindex[cmd.name] && cmdindex[cmd.name].fn == 'NULL);'){
+						//    console.log('replace fn "'+cmdindex[cmd.name].fn+'" with ' + cmd.fn);
+						//    console.log('newlines i-2 =' +newlines[i-2]);
+						//    cmdindex[cmd.name].fn = cmd.fn;
+						//    newlines[i-2] = newlines[i-2].replace('NULL);', cmd.fn);
+						//    console.log('newlines i-2 =' +newlines[i-2]);
+						//   modified++;
+						//}
+
 
 						if (!cmdindex[cmd.name]) {
 							// it did not have a doc line before
