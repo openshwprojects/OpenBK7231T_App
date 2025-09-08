@@ -216,6 +216,16 @@ void CFG_SetDefaultLEDRemap(int r, int g, int b, int c, int w) {
 		CFG_SetLEDRemap(r, g, b, c, w);
 	}
 }
+int CFG_CountLEDRemapChannels() {
+	int r = 0;
+	for (int i = 0; i < 5; i++) {
+		int ch = g_cfg.ledRemap.ar[i];
+		if (ch != 0xff) {
+			r++;
+		}
+	}
+	return r;
+}
 const char *CFG_GetWebappRoot(){
 	return g_cfg.webappRoot;
 }

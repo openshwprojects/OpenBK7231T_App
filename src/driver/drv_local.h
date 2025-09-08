@@ -40,6 +40,8 @@ void PT6523_ClearString();
 void TS_RunQuickTick();
 void TS_Init();
 
+float GetRGBCW(float *ar, int index);
+
 void SM2135_Init();
 
 void SM2235_Init();
