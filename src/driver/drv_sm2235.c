@@ -28,7 +28,7 @@ void SM2235_Write(float *rgbcw) {
 	for (i = 0; i < 5; i++) {
 		// convert 0-255 to 0-1023
 		//cur_col_10[i] = rgbcw[g_cfg.ledRemap.ar[i]] * 4;
-		cur_col_10[i] = MAP(rgbcw[g_cfg.ledRemap.ar[i]], 0, 255.0f, 0, 1023.0f);
+		cur_col_10[i] = MAP(GetRGBCW(rgbcw,g_cfg.ledRemap.ar[i]), 0, 255.0f, 0, 1023.0f);
 	}
 
 #define SM2235_FIRST_BYTE(x) ((x >> 8) & 0xFF)

@@ -25,8 +25,7 @@ void BP1658CJ_Write(float *rgbcw) {
 
 	for(i = 0; i < 5; i++){
 		// convert 0-255 to 0-1023
-		//cur_col_10[i] = rgbcw[g_cfg.ledRemap.ar[i]] * 4;
-		cur_col_10[i] = MAP(rgbcw[g_cfg.ledRemap.ar[i]], 0, 255.0f, 0, 1023.0f);
+		cur_col_10[i] = MAP(GetRGBCW(rgbcw, g_cfg.ledRemap.ar[i]), 0, 255.0f, 0, 1023.0f);
 	}
   //ADDLOG_DEBUG(LOG_FEATURE_CMD, "Writing to Lamp (hex): #%02X%02X%02X%02X%02X", cur_col_10[0], cur_col_10[1], cur_col_10[2], cur_col_10[3], cur_col_10[4]);
 	// If we receive 0 for all channels, we'll assume that the lightbulb is off, and activate BP1658CJ's sleep mode ([0x80] ).

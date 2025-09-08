@@ -756,6 +756,17 @@ void MQTT_ProcessCommandReplyJSON(const char *cmd, const char *args, int flags) 
 	}
 }
 #endif
+
+int onHassStatus(obk_mqtt_request_t* request) {
+	if (!strcmp(request->topic, "homeassistant/status")) {
+		const char *args = (const char *)request->received;
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "HA status - %s\n", args);
+		if (!strcmp(args, "online")) {
+			MQTT_PublishWholeDeviceState_Internal(true);
+		}
+	}
+	return 1;
+}
 int tasCmnd(obk_mqtt_request_t* request) {
 	const char *p, *args;
     //const char *p2;
@@ -1889,6 +1900,10 @@ void MQTT_InitCallbacks() {
 		// note: this may REPLACE an existing entry with the same ID.  ID 7 !!!
 		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 7, tasCmnd);
 	}
+	// test hack iobroker
+	snprintf(cbtopicbase, sizeof(cbtopicbase), "homeassistant/");
+	snprintf(cbtopicsub, sizeof(cbtopicsub), "homeassistant/+");
+	MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 8, onHassStatus);
 }
  // initialise things MQTT
  // called from user_main
