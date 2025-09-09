@@ -161,7 +161,9 @@ function getFolder(name, cb) {
 									}
 								}
 								// move our parsing forward to skip all found
-								j = j2;
+								// we are allready BEHIND comments when we used break, 
+								// so we need to skip to j2-1 to handle the line in next loop 
+								j = j2 - 1 ;
 								let json = commentlines.join('\n');
 								try {
 									let chan = JSON.parse(json);
@@ -303,7 +305,9 @@ function getFolder(name, cb) {
 									}
 								}
 								// move our parsing forward to skip all found
-								j = j2;
+								// we are allready BEHIND comments when we used break, 
+								// so we need to skip to j2-1 to handle the line in next loop 
+								j = j2 - 1;
 								let json = commentlines.join('\n');
 								try {
 									let io = JSON.parse(json);
@@ -389,7 +393,9 @@ function getFolder(name, cb) {
 									}
 								}
 								// move our parsing forward to skip all found
-								j = j2;
+								// we are allready BEHIND comments when we used break, 
+								// so we need to skip to j2-1 to handle the line in next loop 
+								j = j2 -1 ;
 								let json = commentlines.join('\n');
 								try {
 									let drv = JSON.parse(json);
@@ -480,7 +486,9 @@ function getFolder(name, cb) {
 									}
 								}
 								// move our parsing forward to skip all found
-								j = j2;
+								// we are allready BEHIND comments when we used break, 
+								// so we need to skip to j2-1 to handle the line in next loop 
+								j = j2 - 1;
 								let json = commentlines.join('\n');
 								try {
 									let cnst = JSON.parse(json);
@@ -572,7 +580,13 @@ function getFolder(name, cb) {
 								console.error('duplicate command "' + cmd.name + '" docs at file: ' + file + ' line: ' + line);
 								console.error(line);
 							} else {
-								// console.error('new command "' + cmd.name + '" docs at file: ' + file + ' line: ' + line);
+								//console.error('new command "' + cmd.name + '" docs at file: ' + file + ' line: ' + line + ' -- json='+ json );
+								if (cmd.file !== file.slice(6)) {
+									console.log('!!!! Posible wrong file location for command "' + cmd.name + '": found in file: "' + file.slice(6) + '" but claimes file: "' + cmd.file + '" - please verify! !!!!')
+									console.error('\t Posible fix: sed -i \''+ (i-3)  + ',' + (i-1) +  ' { /cmddetail:\\"fn\\":\\"' + cmd.fn + '\"/ s%'+cmd.file + "%" + file.slice(6) + '%} \'  src/' + file.slice(6))
+									console.error('\t test posible fix: sed -n \''+ (i-3)  + ',' + (i-1) +  ' {/cmddetail:\\"fn\\":\\"' + cmd.fn + '\"/ s%'+cmd.file + "%" + file.slice(6) + '% p }\'  src/' + file.slice(6))
+									
+								}
 								commands.push(cmd);
 								cmdindex[cmd.name] = cmd;
 							}
@@ -589,12 +603,16 @@ function getFolder(name, cb) {
 						line = line.slice('CMD_RegisterCommand('.length);
 						parts = line.split(',');
 						//cmddetail:{"name":"SetChannel", "args":"TODO", "fn":"CMD_SetChannel", "descr":"qqqqq0", "example":"", "file":"");
+						//
+						// CMD registration command line
+						// CMD_RegisterCommand("SetChannel", CMD_SetChannel, NULL);
+
 
 						let cmd = {
 							name: mytrim(parts[0]),
-							args: mytrim(parts[1]),
+							args: mytrim("TODO"),
 							descr: mytrim(""),
-							fn: mytrim(parts[2]),
+							fn: mytrim(parts[1]),
 							file: file.slice(6),
 							requires: "",
 							examples: "",
@@ -605,6 +623,22 @@ function getFolder(name, cb) {
 						//   lines[i] = lines[i].replace(', NULL, NULL);', ', NULL);');
 						//   modified++;
 						//}
+						//
+						// 20250908 only used once to fix broken auto-generated fn entries with "NULL);" entry
+						//if (cmdindex[cmd.name] && cmdindex[cmd.name].fn == 'NULL);'){
+						//    console.log('replace fn "'+cmdindex[cmd.name].fn+'" with ' + cmd.fn);
+						//    console.log('newlines i-2 =' +newlines[i-2]);
+						//    cmdindex[cmd.name].fn = cmd.fn;
+						//    newlines[i-2] = newlines[i-2].replace('NULL);', cmd.fn);
+						//    console.log('newlines i-2 =' +newlines[i-2]);
+						//   modified++;
+						//}
+
+						if (cmdindex[cmd.name] && cmdindex[cmd.name].fn !== cmd.fn) {
+							console.log('!!!!  "' + cmd.name + '" in file ' + cmd.file + ' -- fn "' + cmdindex[cmd.name].fn + '"  != called function "' + cmd.fn + '"  !!!!');
+							console.log('\t possible fix: sed -i \'' + (i-3)  + ',' + (i-1) + ' { /cmddetail:\\"fn\\":\\"' + cmdindex[cmd.name].fn + '\\"/ s%' + cmdindex[cmd.name].fn + "%" + cmd.fn + '% }\'  src/' + file.slice(6));
+							console.log('\t test possible fix: sed -n \'' + (i-3)  + ',' + (i-1) + ' { /cmddetail:\\"fn\\":\\"' + cmdindex[cmd.name].fn + '\\"/ s%' + cmdindex[cmd.name].fn + "%" + cmd.fn + '% p }\'  src/' + file.slice(6));
+						}
 
 						if (!cmdindex[cmd.name]) {
 							// it did not have a doc line before
@@ -632,7 +666,8 @@ function getFolder(name, cb) {
 				if (modified) {
 					let newdata = newlines.join('\n');
 					try {
-						fs.writeFileSync(file, newdata);
+						// write new file as "proposal", so we can choose, if/how to change source file
+						fs.writeFileSync(file + ".getcommands", newdata);
 						console.log('updated ' + file);
 					} catch (e) {
 						console.error('failed to update ' + file);

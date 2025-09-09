@@ -93,7 +93,7 @@ void TXW_Cam_Init(void)
 
 	//cmddetail:{"name":"CAM_Show_Timestamp","args":"CMD_ShowTimestamp",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_txw81x_camera.c","requires":"NTP",
+	//cmddetail:"fn":"CMD_ShowTimestamp","file":"driver/drv_txw81x_camera.c","requires":"NTP",
 	//cmddetail:"examples":"CAM_Show_Timestamp 1"}
 	CMD_RegisterCommand("CAM_Show_Timestamp", CMD_ShowTimestamp, NULL);
 }

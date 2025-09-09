@@ -80,7 +80,7 @@ void DRV_ADCSmoother_Init() {
 
 	//cmddetail:{"name":"ADCSmoother","args":"[Pindex] [TotalSamples] [SampleIntervalMS] [TargetChannelADCValue] [MarginValue] [TargetChannel0or1]",
 	//cmddetail:"descr":"Starts the ADC smoother with given configuration",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_adcSmoother.c","requires":"",
+	//cmddetail:"fn":"Cmd_SetupADCSmoother","file":"driver/drv_adcSmoother.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("ADCSmoother", Cmd_SetupADCSmoother, NULL);
 }

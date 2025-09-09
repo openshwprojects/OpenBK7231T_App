@@ -2734,7 +2734,7 @@ void PIN_AddCommands(void)
 #ifdef ENABLE_BL_MOVINGAVG
 	//cmddetail:{"name":"setMovingAvg","args":"MovingAvg",
 	//cmddetail:"descr":"Moving average value for power and current. <=1 disable, >=2 count of avg values. The setting is temporary and need to be set at startup.",
-	//cmddetail:"fn":"NULL);","file":"new_pins.c","requires":"",
+	//cmddetail:"fn":"CMD_setMovingAvg","file":"new_pins.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("setMovingAvg", CMD_setMovingAvg, NULL);
 #endif
