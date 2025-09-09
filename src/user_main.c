@@ -803,7 +803,7 @@ void Main_OnEverySecond()
 			}
 		}
 	}
-#ifdef WINDOWS
+#ifdef WINDOWS || PLATFORM_TXW81X	// quick fix for TXW81X without RTOS
 	g_secondsElapsed++;
 #elif defined(PLATFORM_ESPIDF) //|| defined(PLATFORM_ESP8266)
 	g_secondsElapsed = (int)(esp_timer_get_time() / 1000000);
