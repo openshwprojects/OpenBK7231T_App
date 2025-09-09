@@ -49,6 +49,7 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 #define SELFTEST_ASSERT_INTEGER(current,expected) SELFTEST_ASSERT((expected==current));
 #define SELFTEST_ASSERT_HTML_REPLY(expected) SELFTEST_ASSERT((strcmp(Test_GetLastHTMLReply(),expected) == 0));
 #define SELFTEST_ASSERT_HTML_REPLY_CONTAINS(expected) SELFTEST_ASSERT((strstr(Test_GetLastHTMLReply(),expected)));
+#define SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS(expected) SELFTEST_ASSERT(!(strstr(Test_GetLastHTMLReply(),expected)));
 #define SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR(topic, value, bRetain) SELFTEST_ASSERT(SIM_CheckMQTTHistoryForString(topic,value,bRetain));
 #define SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT(topic, value, bRetain) SELFTEST_ASSERT(SIM_CheckMQTTHistoryForFloat(topic,value,bRetain));
 #define SELFTEST_ASSERT_FLAG(flag, value) SELFTEST_ASSERT(CFG_HasFlag(flag)==value);
@@ -59,6 +60,7 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 #define SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY(topic, bPrefixMode, object1, object2, key, value, key2, value2, key3, value3, key4, value4) SELFTEST_ASSERT(SIM_HasMQTTHistoryStringWithJSONPayload(topic, bPrefixMode, object1, object2, key, value, key2, value2, key3, value3, key4, value4));
 #define SELFTEST_ASSERT_HAS_SENT_UART_STRING(str) SELFTEST_ASSERT(SIM_UART_ExpectAndConsumeHexStr(str));
 #define SELFTEST_ASSERT_HAS_UART_EMPTY() SELFTEST_ASSERT(SIM_UART_GetDataSize()==0);
+#define SELFTEST_ASSERT_HAS_SOME_DATA_IN_UART() SELFTEST_ASSERT(SIM_UART_GetDataSize()!=0);
 
 //#define FLOAT_EQUALS (a,b) (fabs(a-b)<0.001f)
 float myFabs(float f);
@@ -129,6 +131,8 @@ void Test_MQTT_Get_Relay();
 void Test_TuyaMCU_BatteryPowered();
 void Test_ChargeLimitDriver();
 void Test_WS2812B();
+void Test_LEDstrips();
+void Test_DMX();
 void Test_DoorSensor();
 void Test_Enums();
 void Test_Expressions_RunTests_Basic();

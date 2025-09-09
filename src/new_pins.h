@@ -486,49 +486,49 @@ typedef enum ioRole_e {
 	//iodetail:{"name":"ADC_Button",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Single ADC with multiple buttons connected.d",
-	//iodetail:"enum":"ADC_Button",
+	//iodetail:"enum":"IOR_ADC_Button",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_ADC_Button,
 	//iodetail:{"name":"GN6932_CLK",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"QQQ",
-	//iodetail:"enum":"GN6932_CLK",
+	//iodetail:"descr":"GN6932 LED Display Driver - Clock pi",
+	//iodetail:"enum":"IOR_GN6932_CLK",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_GN6932_CLK,
 	//iodetail:{"name":"GN6932_DAT",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"QQQ",
-	//iodetail:"enum":"GN6932_DAT",
+	//iodetail:"descr":"GN6932 LED Display Driver - Data pin",
+	//iodetail:"enum":"IOR_GN6932_DAT",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_GN6932_DAT,
 	//iodetail:{"name":"GN6932_STB",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"QQQ",
-	//iodetail:"enum":"GN6932_STB",
+	//iodetail:"descr":"GN6932 LED Display Driver - STB pin (Latch Enable)",
+	//iodetail:"enum":"IOR_GN6932_STB",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_GN6932_STB,
 	//iodetail:{"name":"TM1638_CLK",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"QQQ",
-	//iodetail:"enum":"TM1638_CLK",
+	//iodetail:"descr":"TM1638 8x7 Segment Display - Clock pin",
+	//iodetail:"enum":"IOR_TM1638_CLK",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_TM1638_CLK,
 	//iodetail:{"name":"TM1638_DAT",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"QQQ",
-	//iodetail:"enum":"TM1638_DAT",
+	//iodetail:"descr":"TM1638 8x7 Segment Display - data pin",
+	//iodetail:"enum":"IOR_TM1638_DAT",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_TM1638_DAT,
 	//iodetail:{"name":"TM1638_STB",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"QQQ",
-	//iodetail:"enum":"TM1638_STB",
+	//iodetail:"descr":"TM1638 8x7 Segment Display - STB pin",
+	//iodetail:"enum":"IOR_TM1638_STB",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_TM1638_STB,
@@ -541,39 +541,60 @@ typedef enum ioRole_e {
 	IOR_BAT_Relay_n,
 	//iodetail:{"name":"KP18058_CLK",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"QQQ",
-	//iodetail:"enum":"KP18058_CLK",
+	//iodetail:"descr":"KP18058 LED linear constant current dimming chip with I2C interface - CLK pin",
+	//iodetail:"enum":"IOR_KP18058_CLK",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_KP18058_CLK,
 	//iodetail:{"name":"KP18058_DAT",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"QQQ",
-	//iodetail:"enum":"KP18058_DAT",
+	//iodetail:"descr":"KP18058 LED linear constant current dimming chip with I2C interface - DATA pin",
+	//iodetail:"enum":"IOR_KP18058_DAT",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_KP18058_DAT,
-	//iodetail:{"name":"DS1820",
+	//iodetail:{"name":"DS1820_IO",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"vers simple OneWire Temp sensor DS1820",
-	//iodetail:"enum":"DS1820_IO",
+	//iodetail:"enum":"IOR_DS1820_IO",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_DS1820_IO,
 	//iodetail:{"name":"PWM_ScriptOnly",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"",
-	//iodetail:"enum":"PWM_ScriptOnly",
+	//iodetail:"enum":"IOR_PWM_ScriptOnly",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_PWM_ScriptOnly,
 	//iodetail:{"name":"PWM_ScriptOnly_n",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"",
-	//iodetail:"enum":"PWM_ScriptOnly_n",
+	//iodetail:"enum":"IOR_PWM_ScriptOnly_n",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_PWM_ScriptOnly_n,
+	//iodetail:{"name":"Counter_f",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"",
+	//iodetail:"enum":"IOR_Counter_f",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_Counter_f,
+	//iodetail:{"name":"Counter_r",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"",
+	//iodetail:"enum":"IOR_Counter_r",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_Counter_r,
+	//iodetail:{"name":"IRRecv_nPup",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"IRRecv without pull-up",
+	//iodetail:"enum":"IOR_IRRecv_nPup",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_IRRecv_nPup,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
@@ -913,7 +934,7 @@ typedef enum channelType_e {
 	//chandetail:{"name":"Pressure_div100",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"Pressure in hPa, but divided by 100",
-	//chandetail:"enum":"Pressure_div100",
+	//chandetail:"enum":"ChType_Pressure_div100",
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Pressure_div100,
@@ -941,7 +962,7 @@ typedef enum channelType_e {
 	//chandetail:{"name":"Motion",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"Motion",
-	//chandetail:"enum":"Motion",
+	//chandetail:"enum":"ChType_Motion",
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Motion,
@@ -990,7 +1011,7 @@ typedef enum channelType_e {
 	//chandetail:{"name":"Motion_n",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"Motion_n",
-	//chandetail:"enum":"Motion_n",
+	//chandetail:"enum":"ChType_Motion_n",
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Motion_n,
@@ -1001,11 +1022,27 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Frequency_div1000,
-
+	//chandetail:{"name":"OpenStopClose",
+	//chandetail:"title":"OpenStopClose",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_OpenStopClose",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_OpenStopClose,
+	//chandetail:{"name":"Percent",
+	//chandetail:"title":"Percent",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_Percent",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_Percent,
+	//chandetail:{"name":"StopUpDown",
+	//chandetail:"title":"StopUpDown",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_StopUpDown",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
 	ChType_StopUpDown,
-		
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
@@ -1060,7 +1097,7 @@ typedef enum channelType_e {
 #define PLATFORM_GPIO_MAX 17
 #elif PLATFORM_RTL8710A
 #define PLATFORM_GPIO_MAX 20
-#elif PLATFORM_RTL8720D || PLATFORM_RTL8721DA
+#elif PLATFORM_RTL8720D || PLATFORM_RTL8721DA || PLATFORM_TXW81X
 #define PLATFORM_GPIO_MAX 64
 #elif PLATFORM_RTL8720E
 #define PLATFORM_GPIO_MAX 52
@@ -1135,7 +1172,7 @@ typedef struct pinsState_s
 	byte channelTypes[CHANNEL_MAX];
 } pinsState_t;
 
-#elif PLATFORM_RTL8720D || PLATFORM_RTL8721DA || PLATFORM_RTL8720E
+#elif PLATFORM_RTL8720D || PLATFORM_RTL8721DA || PLATFORM_RTL8720E || PLATFORM_TXW81X
 
 #define MAX_PIN_ROLES 64
 
@@ -1389,7 +1426,7 @@ typedef struct mainConfig_s {
 	byte unusedSectorAB[51];
 #elif PLATFORM_ESPIDF
 	byte unusedSectorAB[43];
-#elif PLATFORM_RTL8720D || PLATFORM_RTL8721DA || PLATFORM_RTL8720E
+#elif PLATFORM_RTL8720D || PLATFORM_RTL8721DA || PLATFORM_RTL8720E || PLATFORM_TXW81X
 	byte unusedSectorAB;
 #else    
 	byte unusedSectorAB[99];

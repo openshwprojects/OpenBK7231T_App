@@ -445,15 +445,15 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current value of energy counter from energy metering chip",
 	//cnstdetail:"requires":""}
 	{"$energy", &getEnergy},
-	////cnstdetail:{"name":"$yesterday",
-	////cnstdetail:"title":"$yesterday",
-	////cnstdetail:"descr":"Yesterdays energy consuption",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$yesterday",
+	//cnstdetail:"title":"$yesterday",
+	//cnstdetail:"descr":"Yesterdays energy consuption",
+	//cnstdetail:"requires":""}
 	{ "$yesterday", &getYesterday },
-	////cnstdetail:{"name":"$today",
-	////cnstdetail:"title":"$today",
-	////cnstdetail:"descr":"Todays energy consuption",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$today",
+	//cnstdetail:"title":"$today",
+	//cnstdetail:"descr":"Todays energy consuption",
+	//cnstdetail:"requires":""}
 	{ "$today", &getToday },
 #endif	//ENABLE_DRIVER_BL0937
 #if ENABLE_LOCAL_CLOCK || ENABLE_NTP

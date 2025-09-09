@@ -28,7 +28,7 @@ void SM2235_Write(float *rgbcw) {
 	for (i = 0; i < 5; i++) {
 		// convert 0-255 to 0-1023
 		//cur_col_10[i] = rgbcw[g_cfg.ledRemap.ar[i]] * 4;
-		cur_col_10[i] = MAP(rgbcw[g_cfg.ledRemap.ar[i]], 0, 255.0f, 0, 1023.0f);
+		cur_col_10[i] = MAP(GetRGBCW(rgbcw,g_cfg.ledRemap.ar[i]), 0, 255.0f, 0, 1023.0f);
 	}
 
 #define SM2235_FIRST_BYTE(x) ((x >> 8) & 0xFF)
@@ -98,12 +98,12 @@ void SM2235_Init() {
 
 	//cmddetail:{"name":"SM2235_RGBCW","args":"[HexColor]",
 	//cmddetail:"descr":"Don't use it. It's for direct access of SM2235 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
-	//cmddetail:"fn":"SM2235_RGBCW","file":"driver/drv_sm2235.c","requires":"",
+	//cmddetail:"fn":"CMD_LEDDriver_WriteRGBCW","file":"driver/drv_sm2235.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SM2235_RGBCW", CMD_LEDDriver_WriteRGBCW, NULL);
 	//cmddetail:{"name":"SM2235_Map","args":"[Ch0][Ch1][Ch2][Ch3][Ch4]",
 	//cmddetail:"descr":"Maps the RGBCW values to given indices of SM2235 channels. This is because SM2235 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: SM2235_Map 0 1 2 3 4",
-	//cmddetail:"fn":"SM2235_Map","file":"driver/drv_sm2235.c","requires":"",
+	//cmddetail:"fn":"CMD_LEDDriver_Map","file":"driver/drv_sm2235.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SM2235_Map", CMD_LEDDriver_Map, NULL);
 	//cmddetail:{"name":"SM2235_Current","args":"[Value]",

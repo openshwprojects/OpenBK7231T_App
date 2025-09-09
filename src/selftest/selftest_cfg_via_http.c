@@ -102,7 +102,7 @@ void Test_CFG_Via_HTTP() {
 
 	//cmddetail:{"name":"SimSaveArgs","args":"",
 	//cmddetail:"descr":"Internal usage only. Command for OBK self-test in Simulator",
-	//cmddetail:"fn":"0);","file":"selftest/selftest_cfg_via_http.c","requires":"",
+	//cmddetail:"fn":"CMD_SelfTest_SaveArgs","file":"selftest/selftest_cfg_via_http.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SimSaveArgs", CMD_SelfTest_SaveArgs, 0);
 

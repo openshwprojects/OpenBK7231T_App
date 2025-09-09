@@ -14,6 +14,7 @@ include_directories(${BERRY_SRCPATH})
 include(app/libraries/berry.cmake)
 
 set(PROJ_ALL_SRC
+	${OBKM_SRC_CXX}
 	${OBKM_SRC}
 	${BERRY_SRC_C}
 	${OBK_SRCS}hal/ln882h/hal_adc_ln882h.c
@@ -68,3 +69,5 @@ target_include_directories(${pro_executable_target}
 )
 
 include(gcc/gcc-custom-build-stage.cmake)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-undef -Wno-unused-parameter -Wno-pedantic -Wno-float-conversion")

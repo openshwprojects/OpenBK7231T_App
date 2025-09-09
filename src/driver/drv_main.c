@@ -47,8 +47,22 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "tmSensor",	TuyaMCU_Sensor_Init, TuyaMCU_Sensor_RunEverySecond,	NULL, NULL, NULL, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_TCA9554
+	//drvdetail:{"name":"TCA9554",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TCA9554.",
+	//drvdetail:"requires":""}
+	{ "TCA9554",		TCA9554_Init,			TCA9554_OnEverySecond,			NULL, NULL, NULL, TCA9554_OnChannelChanged , NULL, false },
+#endif
+#if ENABLE_DRIVER_DMX
+	//drvdetail:{"name":"DMX",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"DMX.",
+	//drvdetail:"requires":""}
+	{ "DMX",		DMX_Init,			DMX_OnEverySecond,			NULL, NULL, DMX_Shutdown, NULL , NULL, false },
+#endif
 #if ENABLE_DRIVER_FREEZE
-	//drvdetail:{"name":"FREEZE",
+	//drvdetail:{"name":"Freeze",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Freeze is a test driver for watchdog. Enabling this will freeze device main loop.",
 	//drvdetail:"requires":""}
@@ -89,9 +103,6 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "HGS02",		HGS02_Init,			HGS02_RunEverySecond,			NULL, NULL, NULL, NULL, NULL, false },
 #endif
-
-
-
 #if ENABLE_DRIVER_PINMUTEX
 	//drvdetail:{"name":"PinMutex",
 	//drvdetail:"title":"TODO",
@@ -99,16 +110,18 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "PinMutex",		DRV_PinMutex_Init,			NULL, NULL, DRV_PinMutex_RunFrame, NULL, NULL, false },
 #endif
-
 #if ENABLE_DRIVER_GOSUNDSW2
-	//drvdetail:{"name":"GosundSW",
+	//drvdetail:{"name":"GosundSW2",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"GosundSW2.",
+	//drvdetail:"descr":"GosundSW2",
 	//drvdetail:"requires":""}
 	{ "GosundSW2",		DRV_GosundSW2_Init,			NULL, NULL, DRV_GosundSW2_RunFrame, NULL, NULL, false },
 #endif
-
 #if ENABLE_DRIVER_TCL
+	//drvdetail:{"name":"TCL",
+	//drvdetail:"title":"TCL",
+	//drvdetail:"descr":"Driver for TCL-based air conditioners",
+	//drvdetail:"requires":""}
 	{ "TCL",		TCL_Init,			TCL_UART_RunEverySecond,		TCL_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, TCL_DoDiscovery, false },
 #endif
 
@@ -237,6 +250,10 @@ static driver_t g_drivers[] = {
 	{ "BL0937",		BL0937_Init,		BL0937_RunEverySecond,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_CSE7761
+	//drvdetail:{"name":"CSE7761",
+	//drvdetail:"title":"CSE7761",
+	//drvdetail:"descr":"Unfinished driver for CSE7761, a single-phase multi-purpose electric energy metering chip that incorporates three sigma delta ADCs, a power calculator, an energy frequency converter, one SPI interface, and one UART interface",
+	//drvdetail:"requires":""}
 	{ "CSE7761",	CSE7761_Init,		CSE7761_RunEverySecond,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_CSE7766
@@ -288,8 +305,6 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "SM15155E",	SM15155E_Init,		NULL,						NULL, NULL, NULL, NULL, NULL, false },
 #endif
-		
-
 #if ENABLE_DRIVER_IRREMOTEESP
 	//drvdetail:{"name":"IR",
 	//drvdetail:"title":"TODO",
@@ -305,9 +320,20 @@ static driver_t g_drivers[] = {
 	{ "IR",			DRV_IR_Init,		 NULL,						NULL, DRV_IR_RunFrame, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_IR2
+	//drvdetail:{"name":"IR2",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"simple IR2 driver for sending captures from flipper zero",
+	//drvdetail:"requires":""}
 	{ "IR2",			DRV_IR2_Init,		 NULL,						NULL, NULL, NULL, NULL, NULL, false },
 #endif
-		
+
+#if ENABLE_DRIVER_DDPSEND
+	//drvdetail:{"name":"DDPSend",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"DDPqqqqqqq. See [DDP topic](https://www.elektroda.com/rtvforum/topic4040325.html)",
+	//drvdetail:"requires":""}
+	{ "DDPSend",		DRV_DDPSend_Init,		NULL,						DRV_DDPSend_AppendInformationToHTTPIndexPage, DRV_DDPSend_RunFrame, DRV_DDPSend_Shutdown, NULL, NULL, false },
+#endif
 #if ENABLE_DRIVER_DDP
 	//drvdetail:{"name":"DDP",
 	//drvdetail:"title":"TODO",
@@ -391,7 +417,6 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "SM2235",		SM2235_Init,		NULL,			NULL, NULL, NULL, NULL, NULL, false },
 #endif
-
 #if ENABLE_DRIVER_BMP280
 	//drvdetail:{"name":"BMP280",
 	//drvdetail:"title":"TODO",
@@ -528,11 +553,18 @@ static driver_t g_drivers[] = {
 	{ "Bridge",     Bridge_driver_Init, NULL,                       NULL, Bridge_driver_QuickFrame, Bridge_driver_DeInit, Bridge_driver_OnChannelChanged, NULL, false }
 #endif
 #if ENABLE_DRIVER_UART_TCP
-	//drvdetail:{"name":"UART to TCP bridge",
+	//drvdetail:{"name":"UartTCP",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"UART to TCP, mainly for WiFi Zigbee coordinators.",
+	//drvdetail:"descr":"UART to TCP bridge, mainly for WiFi Zigbee coordinators.",
 	//drvdetail:"requires":""}
 	{ "UartTCP",		UART_TCP_Init,		NULL,	NULL, NULL, UART_TCP_Deinit, NULL, NULL, false }
+#endif
+#if PLATFORM_TXW81X
+	//drvdetail:{"name":"TXWCAM",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TXW81X Camera.",
+	//drvdetail:"requires":""}
+	{ "TXWCAM", TXW_Cam_Init, TXW_Cam_RunEverySecond, NULL, NULL, NULL, NULL, NULL, false }
 #endif
 };
 

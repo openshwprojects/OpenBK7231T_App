@@ -81,6 +81,8 @@
 #define ENABLE_OBK_SCRIPTING					1
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 #define ENABLE_LITTLEFS							1
+//#define ENABLE_DRIVER_TUYAMCU					1
+#undef ENABLE_HTTP_MAC
 
 #elif PLATFORM_W800
 
@@ -116,6 +118,7 @@
 
 #endif
 
+#define ENABLE_DRIVER_TCA9554					1
 #define ENABLE_DRIVER_PINMUTEX					1
 #define ENABLE_DRIVER_TESTSPIFLASH				1
 
@@ -162,6 +165,7 @@
 #define ENABLE_DRIVER_DRAWERS					1
 #define ENABLE_TASMOTA_JSON						1
 #define ENABLE_DRIVER_DDP						1
+#define ENABLE_DRIVER_DDPSEND					1
 #define ENABLE_DRIVER_SSDP						1
 #define ENABLE_DRIVER_ADCBUTTON					1
 #define ENABLE_DRIVER_SM15155E					1
@@ -178,6 +182,7 @@
 #define ENABLE_OBK_SCRIPTING					1
 #define ENABLE_OBK_BERRY						1
 #define ENABLE_DRIVER_DS1820_FULL				1
+#define ENABLE_DRIVER_DMX						1
 
 #elif PLATFORM_BL602
 
@@ -212,6 +217,15 @@
 #if (OBK_VARIANT == OBK_VARIANT_BERRY)
 #define ENABLE_OBK_BERRY						1
 #endif
+
+//#if (OBK_VARIANT == OBK_VARIANT_IRREMOTEESP)
+//#undef ENABLE_DRIVER_CHT83XX
+//#undef ENABLE_DRIVER_DS1820
+//#undef ENABLE_DRIVER_CSE7766
+//#undef ENABLE_DRIVER_BL0937
+//#undef ENABLE_DRIVER_BL0942
+#define ENABLE_DRIVER_IRREMOTEESP				1
+//#endif
 
 #elif PLATFORM_BEKEN
 
@@ -355,6 +369,7 @@
 #define ENABLE_OBK_BERRY						1
 #define ENABLE_DRIVER_SM16703P					1
 #define ENABLE_DRIVER_PIXELANIM					1
+#define ENABLE_DRIVER_IRREMOTEESP				1
 
 #elif PLATFORM_ESPIDF
 
@@ -391,6 +406,10 @@
 
 #if (OBK_VARIANT == OBK_VARIANT_ESP4M || OBK_VARIANT == OBK_VARIANT_ESP2M_BERRY)
 #define ENABLE_OBK_BERRY						1
+#endif
+
+#if (OBK_VARIANT == OBK_VARIANT_ESP4M)
+#define ENABLE_DRIVER_TCA9554					1
 #endif
 
 #elif PLATFORM_TR6260
@@ -513,6 +532,20 @@
 
 // #define ENABLE_OBK_BERRY						1
 
+#elif PLATFORM_TXW81X
+
+#define NO_CHIP_TEMPERATURE						1
+#define NEW_TCP_SERVER							1
+#define ENABLE_MQTT								1
+#define ENABLE_HA_DISCOVERY						1
+#define ENABLE_EXPAND_CONSTANT					1
+#define ENABLE_OBK_SCRIPTING					1
+//#define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
+#define ENABLE_LITTLEFS							1
+#define ENABLE_NTP 								1
+#undef ENABLE_HTTP_MAC
+#undef ENABLE_LED_BASIC
+
 #else
 
 // #error "Platform not defined"
@@ -534,6 +567,7 @@
 // allow moving average energy calculation +180 bytes
 // #define ENABLE_BL_MOVINGAVG					1
 #endif
+
 
 // closing OBK_CONFIG_H
 #endif

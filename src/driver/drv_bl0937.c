@@ -1,6 +1,8 @@
+// HLW8012 aka BL0937
 #include "drv_bl0937.h"
 #include "../obk_config.h"
-
+#include "../hal/hal_pins.h"
+#include "../new_pins.h"
 
 #if ENABLE_DRIVER_BL0937
 
@@ -16,57 +18,6 @@
 #include "drv_pwrCal.h"
 #include "drv_uart.h"
 
-#if PLATFORM_BEKEN
-
-#include "BkDriverTimer.h"
-#include "BkDriverGpio.h"
-#include "sys_timer.h"
-#include "gw_intf.h"
-
-// HLW8012 aka BL0937
-
-#define ELE_HW_TIME 1
-#define HW_TIMER_ID 0
-
-#elif PLATFORM_BL602
-
-#include "hal_gpio.h"
-#include "bl_gpio.h"
-
-#elif PLATFORM_LN882H
-
-#include "../../sdk/OpenLN882H/mcu/driver_ln882h/hal/hal_common.h"
-#include "../../sdk/OpenLN882H/mcu/driver_ln882h/hal/hal_gpio.h"
-
-#elif PLATFORM_REALTEK
-
-#include "gpio_irq_api.h"
-#include "../hal/realtek/hal_pinmap_realtek.h"
-rtlPinMapping_t* rtl_cf;
-rtlPinMapping_t* rtl_cf1;
-
-#elif PLATFORM_ECR6600
-
-#include "gpio.h"
-
-#elif PLATFORM_XRADIO
-
-#include "../hal/xradio/hal_pinmap_xradio.h"
-extern void HAL_XR_ConfigurePin(GPIO_Port port, GPIO_Pin pin, GPIO_WorkMode mode, GPIO_PullType pull);
-xrpin_t* xr_cf;
-xrpin_t* xr_cf1;
-
-#elif PLATFORM_ESP8266 || PLATFORM_ESPIDF
-
-#include "../hal/espidf/hal_pinmap_espidf.h"
-espPinMapping_t* esp_cf;
-espPinMapping_t* esp_cf1;
-
-#else
-
-
-#endif
-
 #define DEFAULT_VOLTAGE_CAL 0.13253012048f
 #define DEFAULT_CURRENT_CAL 0.0118577075f
 #define DEFAULT_POWER_CAL 1.5f
@@ -77,12 +28,6 @@ int GPIO_HLW_SEL = 24; // pwm4
 bool g_invertSEL = false;
 int GPIO_HLW_CF = 7;
 int GPIO_HLW_CF1 = 8;
-
-#if PLATFORM_W600
-//The above three actually are pin indices. For W600 the actual gpio_pins are different.
-unsigned int GPIO_HLW_CF_pin;
-unsigned int GPIO_HLW_CF1_pin;
-#endif
 
 bool g_sel = true;
 uint32_t res_v = 0;
@@ -95,124 +40,15 @@ volatile uint32_t g_vc_pulses = 0;
 volatile uint32_t g_p_pulses = 0;
 static portTickType pulseStamp;
 
-#if PLATFORM_W600
 
-static void HlwCf1Interrupt(void* context)
-{
-	tls_clr_gpio_irq_status(GPIO_HLW_CF1_pin);
-	g_vc_pulses++;
-}
-static void HlwCfInterrupt(void* context)
-{
-	tls_clr_gpio_irq_status(GPIO_HLW_CF_pin);
-	g_p_pulses++;
-}
-
-#elif PLATFORM_BL602
-
-static void HlwCf1Interrupt(void* arg)
-{
-	g_vc_pulses++;
-	bl_gpio_intmask(GPIO_HLW_CF1, 0);
-}
-static void HlwCfInterrupt(void* arg)
-{
-	g_p_pulses++;
-	bl_gpio_intmask(GPIO_HLW_CF, 0);
-}
-
-#elif PLATFORM_LN882H
-
-uint32_t GetBaseForPin(int pinIndex)
-{
-	return pinIndex < 16 ? GPIOA_BASE : GPIOB_BASE;
-}
-
-int GetIRQForPin(int pinIndex)
-{
-	return pinIndex < 16 ? GPIOA_IRQn : GPIOB_IRQn;
-}
-
-uint16_t GetGPIOForPin(int pinIndex)
-{
-	return (uint16_t)1 << (uint16_t)(pinIndex % 16);
-}
-
-void GPIOA_IRQHandler()
-{
-	uint32_t base = GetBaseForPin(GPIO_HLW_CF1);
-	uint16_t gpio_pin = GetGPIOForPin(GPIO_HLW_CF1);
-	if(hal_gpio_pin_get_it_flag(base, gpio_pin) == HAL_SET)
-	{
-		hal_gpio_pin_clr_it_flag(base, gpio_pin);
-		g_vc_pulses++;
-	}
-
-	base = GetBaseForPin(GPIO_HLW_CF);
-	gpio_pin = GetGPIOForPin(GPIO_HLW_CF);
-	if(hal_gpio_pin_get_it_flag(base, gpio_pin) == HAL_SET)
-	{
-		hal_gpio_pin_clr_it_flag(base, gpio_pin);
-		g_p_pulses++;
-	}
-}
-
-void GPIOB_IRQHandler()
-{
-	uint32_t base = GetBaseForPin(GPIO_HLW_CF1);
-	uint16_t gpio_pin = GetGPIOForPin(GPIO_HLW_CF1);
-	if(hal_gpio_pin_get_it_flag(base, gpio_pin) == HAL_SET)
-	{
-		hal_gpio_pin_clr_it_flag(base, gpio_pin);
-		g_vc_pulses++;
-	}
-
-	base = GetBaseForPin(GPIO_HLW_CF);
-	gpio_pin = GetGPIOForPin(GPIO_HLW_CF);
-	if(hal_gpio_pin_get_it_flag(base, gpio_pin) == HAL_SET)
-	{
-		hal_gpio_pin_clr_it_flag(base, gpio_pin);
-		g_p_pulses++;
-	}
-}
-
-#elif PLATFORM_REALTEK
-
-void cf_irq_handler(uint32_t id, gpio_irq_event event)
-{
-	g_p_pulses++;
-}
-
-void cf1_irq_handler(uint32_t id, gpio_irq_event event)
+void HlwCf1Interrupt(int pinNum)
 {
 	g_vc_pulses++;
 }
-
-#elif PLATFORM_XRADIO || PLATFORM_ESPIDF || PLATFORM_ESP8266
-
-static void HlwCf1Interrupt(void* arg)
-{
-	g_vc_pulses++;
-}
-static void HlwCfInterrupt(void* arg)
+void HlwCfInterrupt(int pinNum)
 {
 	g_p_pulses++;
 }
-
-#else
-
-void HlwCf1Interrupt(unsigned char pinNum)
-{
-	// Service Voltage and Current
-	g_vc_pulses++;
-}
-void HlwCfInterrupt(unsigned char pinNum)
-{
-	// Service Power
-	g_p_pulses++;
-}
-
-#endif
 
 commandResult_t BL0937_PowerMax(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
@@ -240,46 +76,8 @@ commandResult_t BL0937_PowerMax(const void* context, const char* cmd, const char
 
 void BL0937_Shutdown_Pins()
 {
-#if PLATFORM_W600
-
-	tls_gpio_irq_disable(GPIO_HLW_CF1_pin);
-	tls_gpio_irq_disable(GPIO_HLW_CF_pin);
-
-#elif PLATFORM_BL602
-	//Todo how?
-#elif PLATFORM_BEKEN
-
-	gpio_int_disable(GPIO_HLW_CF1);
-	gpio_int_disable(GPIO_HLW_CF);
-
-#elif PLATFORM_REALTEK
-
-	gpio_irq_free(rtl_cf1->irq);
-	gpio_irq_free(rtl_cf->irq);
-	os_free(rtl_cf1->irq);
-	os_free(rtl_cf->irq);
-	rtl_cf1->irq = NULL;
-	rtl_cf->irq = NULL;
-
-#elif PLATFORM_ECR6600
-
-	drv_gpio_ioctrl(GPIO_HLW_CF1, DRV_GPIO_CTRL_INTR_DISABLE, 0);
-	drv_gpio_ioctrl(GPIO_HLW_CF, DRV_GPIO_CTRL_INTR_DISABLE, 0);
-
-#elif PLATFORM_XRADIO
-
-	HAL_GPIO_DeInit(xr_cf->port, xr_cf->pin);
-	HAL_GPIO_DisableIRQ(xr_cf->port, xr_cf->pin);
-	HAL_GPIO_DeInit(xr_cf1->port, xr_cf1->pin);
-	HAL_GPIO_DisableIRQ(xr_cf1->port, xr_cf1->pin);
-
-#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
-
-	gpio_isr_handler_remove(esp_cf->pin);
-	gpio_isr_handler_remove(esp_cf1->pin);
-	gpio_uninstall_isr_service();
-
-#endif
+	HAL_DetachInterrupt(GPIO_HLW_CF);
+	HAL_DetachInterrupt(GPIO_HLW_CF1);
 }
 
 void BL0937_Init_Pins()
@@ -301,163 +99,16 @@ void BL0937_Init_Pins()
 	GPIO_HLW_CF = PIN_FindPinIndexForRole(IOR_BL0937_CF, GPIO_HLW_CF);
 	GPIO_HLW_CF1 = PIN_FindPinIndexForRole(IOR_BL0937_CF1, GPIO_HLW_CF1);
 
-#if PLATFORM_W600
-
-	GPIO_HLW_CF1_pin = HAL_GetGPIOPin(GPIO_HLW_CF1);
-	GPIO_HLW_CF_pin = HAL_GetGPIOPin(GPIO_HLW_CF);
-	//printf("GPIO_HLW_CF=%d GPIO_HLW_CF1=%d\n", GPIO_HLW_CF, GPIO_HLW_CF1);
-	//printf("GPIO_HLW_CF1_pin=%d GPIO_HLW_CF_pin=%d\n", GPIO_HLW_CF1_pin, GPIO_HLW_CF_pin);
-
-#elif PLATFORM_REALTEK
-
-	rtl_cf = g_pins + GPIO_HLW_CF;
-	rtl_cf1 = g_pins + GPIO_HLW_CF1;
-#if PLATFORM_RTL87X0C
-	if(rtl_cf->gpio != NULL)
-	{
-		hal_pinmux_unregister(rtl_cf->pin, PID_GPIO);
-		os_free(rtl_cf->gpio);
-		rtl_cf->gpio = NULL;
-	}
-	if(rtl_cf1->gpio != NULL)
-	{
-		hal_pinmux_unregister(rtl_cf1->pin, PID_GPIO);
-		os_free(rtl_cf1->gpio);
-		rtl_cf1->gpio = NULL;
-	}
-#endif
-	rtl_cf1->irq = os_malloc(sizeof(gpio_irq_t));
-	rtl_cf->irq = os_malloc(sizeof(gpio_irq_t));
-	memset(rtl_cf1->irq, 0, sizeof(gpio_irq_t));
-	memset(rtl_cf->irq, 0, sizeof(gpio_irq_t));
-
-#elif PLATFORM_XRADIO
-
-	xr_cf = g_pins + GPIO_HLW_CF;
-	xr_cf1 = g_pins + GPIO_HLW_CF1;
-
-#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
-
-	esp_cf = g_pins + GPIO_HLW_CF;
-	esp_cf1 = g_pins + GPIO_HLW_CF1;
-	gpio_install_isr_service(0);
-
-#endif
-
 	BL0937_PMAX = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER_MAX, BL0937_PMAX);
 
 	HAL_PIN_Setup_Output(GPIO_HLW_SEL);
 	HAL_PIN_SetOutputValue(GPIO_HLW_SEL, g_sel);
 
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF1);
-
-#if PLATFORM_W600
-
-	tls_gpio_isr_register(GPIO_HLW_CF1_pin, HlwCf1Interrupt, NULL);
-	tls_gpio_irq_enable(GPIO_HLW_CF1_pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
-
-#elif PLATFORM_BL602
-
-	tmp = hal_gpio_register_handler(HlwCf1Interrupt, GPIO_HLW_CF1, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_PULSE, (void*)NULL);
-	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Registering CF1 handler status: %i \n", tmp);
-
-#elif PLATFORM_LN882H
-
-	hal_gpio_pin_it_cfg(GetBaseForPin(GPIO_HLW_CF1), GetGPIOForPin(GPIO_HLW_CF1), GPIO_INT_FALLING);
-	hal_gpio_pin_it_en(GetBaseForPin(GPIO_HLW_CF1), GetGPIOForPin(GPIO_HLW_CF1), HAL_ENABLE);
-	NVIC_SetPriority(GetIRQForPin(GPIO_HLW_CF1), 1);
-	NVIC_EnableIRQ(GetIRQForPin(GPIO_HLW_CF1));
-
-#elif PLATFORM_BEKEN
-
-	gpio_int_enable(GPIO_HLW_CF1, IRQ_TRIGGER_FALLING_EDGE, HlwCf1Interrupt);
-
-#elif PLATFORM_REALTEK
-
-	gpio_irq_init(rtl_cf1->irq, rtl_cf1->pin, cf1_irq_handler, NULL);
-	gpio_irq_set(rtl_cf1->irq, IRQ_FALL, 1);
-	gpio_irq_enable(rtl_cf1->irq);
-
-#elif PLATFORM_ECR6600
-
-	T_GPIO_ISR_CALLBACK cf1isr;
-	cf1isr.gpio_callback = (&HlwCf1Interrupt);
-	cf1isr.gpio_data = 0;
-
-	drv_gpio_ioctrl(GPIO_HLW_CF1, DRV_GPIO_CTRL_INTR_MODE, DRV_GPIO_ARG_INTR_MODE_N_EDGE);
-	drv_gpio_ioctrl(GPIO_HLW_CF1, DRV_GPIO_CTRL_REGISTER_ISR, (int)&cf1isr);
-	drv_gpio_ioctrl(GPIO_HLW_CF1, DRV_GPIO_CTRL_INTR_ENABLE, 0);
-
-#elif PLATFORM_XRADIO
-
-	HAL_XR_ConfigurePin(xr_cf1->port, xr_cf1->pin, GPIOx_Pn_F6_EINT, GPIO_PULL_UP);
-	GPIO_IrqParam cf1param;
-	cf1param.event = GPIO_IRQ_EVT_FALLING_EDGE;
-	cf1param.callback = HlwCf1Interrupt;
-	cf1param.arg = (void*)0;
-	HAL_GPIO_EnableIRQ(xr_cf1->port, xr_cf1->pin, &cf1param);
-
-#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
-
-	ESP_ConfigurePin(esp_cf1->pin, GPIO_MODE_INPUT, true, false, GPIO_INTR_NEGEDGE);
-	gpio_isr_handler_add(esp_cf1->pin, HlwCf1Interrupt, NULL);
-
-#endif
-
 	HAL_PIN_Setup_Input_Pullup(GPIO_HLW_CF);
 
-#if PLATFORM_W600
-
-	tls_gpio_isr_register(GPIO_HLW_CF_pin, HlwCfInterrupt, NULL);
-	tls_gpio_irq_enable(GPIO_HLW_CF_pin, WM_GPIO_IRQ_TRIG_FALLING_EDGE);
-
-#elif PLATFORM_BL602
-
-	tmp = hal_gpio_register_handler(HlwCfInterrupt, GPIO_HLW_CF, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_NEG_PULSE, (void*)NULL);
-	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Registering CF handler status: %i \n", tmp);
-
-#elif PLATFORM_LN882H
-
-	hal_gpio_pin_it_cfg(GetBaseForPin(GPIO_HLW_CF), GetGPIOForPin(GPIO_HLW_CF), GPIO_INT_FALLING);
-	hal_gpio_pin_it_en(GetBaseForPin(GPIO_HLW_CF), GetGPIOForPin(GPIO_HLW_CF), HAL_ENABLE);
-	NVIC_SetPriority(GetIRQForPin(GPIO_HLW_CF), 1);
-	NVIC_EnableIRQ(GetIRQForPin(GPIO_HLW_CF));
-
-#elif PLATFORM_BEKEN
-
-	gpio_int_enable(GPIO_HLW_CF, IRQ_TRIGGER_FALLING_EDGE, HlwCfInterrupt);
-
-#elif PLATFORM_REALTEK
-
-	gpio_irq_init(rtl_cf->irq, rtl_cf->pin, cf_irq_handler, NULL);
-	gpio_irq_set(rtl_cf->irq, IRQ_FALL, 1);
-	gpio_irq_enable(rtl_cf->irq);
-
-#elif PLATFORM_ECR6600
-
-	T_GPIO_ISR_CALLBACK cfisr;
-	cfisr.gpio_callback = (&HlwCfInterrupt);
-	cfisr.gpio_data = 0;
-
-	drv_gpio_ioctrl(GPIO_HLW_CF, DRV_GPIO_CTRL_INTR_MODE, DRV_GPIO_ARG_INTR_MODE_N_EDGE);
-	drv_gpio_ioctrl(GPIO_HLW_CF, DRV_GPIO_CTRL_REGISTER_ISR, (int)&cfisr);
-	drv_gpio_ioctrl(GPIO_HLW_CF, DRV_GPIO_CTRL_INTR_ENABLE, 0);
-
-#elif PLATFORM_XRADIO
-
-	HAL_XR_ConfigurePin(xr_cf->port, xr_cf->pin, GPIOx_Pn_F6_EINT, GPIO_PULL_UP);
-	GPIO_IrqParam cfparam;
-	cfparam.event = GPIO_IRQ_EVT_FALLING_EDGE;
-	cfparam.callback = HlwCfInterrupt;
-	cfparam.arg = (void*)0;
-	HAL_GPIO_EnableIRQ(xr_cf->port, xr_cf->pin, &cfparam);
-
-#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
-
-	ESP_ConfigurePin(esp_cf->pin, GPIO_MODE_INPUT, true, false, GPIO_INTR_NEGEDGE);
-	gpio_isr_handler_add(esp_cf->pin, HlwCfInterrupt, NULL);
-
-#endif
+	HAL_AttachInterrupt(GPIO_HLW_CF, INTERRUPT_STUB, HlwCfInterrupt);
+	HAL_AttachInterrupt(GPIO_HLW_CF1, INTERRUPT_STUB, HlwCf1Interrupt);
 
 	g_vc_pulses = 0;
 	g_p_pulses = 0;
@@ -473,7 +124,7 @@ void BL0937_Init(void)
 
 	//cmddetail:{"name":"PowerMax","args":"[MaxPowerInW]",
 	//cmddetail:"descr":"Sets the maximum power limit for BL measurement used to filter incorrect values",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_bl0937.c","requires":"",
+	//cmddetail:"fn":"BL0937_PowerMax","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PowerMax", BL0937_PowerMax, NULL);
 

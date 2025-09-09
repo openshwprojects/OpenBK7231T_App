@@ -249,30 +249,30 @@ void MCP9808_Init() {
 
 	//cmddetail:{"name":"MCP9808_Adr","args":"[HexAdr]",
 	//cmddetail:"descr":"Sets the I2C address of MCP9808, like 0x30",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_mcp9808.c","requires":"",
+	//cmddetail:"fn":"MCP9808_Adr","file":"driver/drv_mcp9808.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MCP9808_Adr", MCP9808_Adr, NULL);
 	
 	//cmddetail:{"name":"MCP9808_AlertRange","args":"[MinT] [MaxT] [OptionalBActiveHigh]",
 	//cmddetail:"descr":"Setup MCP9809 temperature alert for range mode",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_mcp9808.c","requires":"",
+	//cmddetail:"fn":"MCP9808_AlertRange","file":"driver/drv_mcp9808.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MCP9808_AlertRange", MCP9808_AlertRange, NULL);
 	//cmddetail:{"name":"MCP9808_AlertMin","args":"[MinT] [OptionalBActiveHigh]",
 	//cmddetail:"descr":"Setup MCP9809 temperature alert for min mode",
-	//cmddetail:"fn":");","file":"driver/drv_mcp9808.c","requires":"",
+	//cmddetail:"fn":"MCP9808_AlertMin","file":"driver/drv_mcp9808.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MCP9808_AlertMin", MCP9808_AlertMin, NULL);
 
 
 	//cmddetail:{"name":"MCP9808_Calibrate","args":"[DeltaTemperature]",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_mcp9808.c","requires":"",
+	//cmddetail:"fn":"MCP9808_Calibrate","file":"driver/drv_mcp9808.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MCP9808_Calibrate", MCP9808_Calibrate, NULL);
 	//cmddetail:{"name":"MCP9808_Cycle","args":"[DelayInSeconds]",
 	//cmddetail:"descr":"Sets MCP9808 measurement interval",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_mcp9808.c","requires":"",
+	//cmddetail:"fn":"MCP9808_cycle","file":"driver/drv_mcp9808.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MCP9808_Cycle", MCP9808_cycle, NULL);
 

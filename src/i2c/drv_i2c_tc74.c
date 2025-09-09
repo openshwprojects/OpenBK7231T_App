@@ -100,7 +100,7 @@ void DRV_I2C_TC74_PreInit() {
 
 	//cmddetail:{"name":"addI2CDevice_TC74","args":"",
 	//cmddetail:"descr":"Adds a new I2C device - TC74",
-	//cmddetail:"fn":"DRV_I2C_AddDevice_TC74","file":"i2c/drv_i2c_main.c","requires":"",
+	//cmddetail:"fn":"DRV_I2C_AddDevice_TC74","file":"i2c/drv_i2c_tc74.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("addI2CDevice_TC74", DRV_I2C_AddDevice_TC74, NULL);
 

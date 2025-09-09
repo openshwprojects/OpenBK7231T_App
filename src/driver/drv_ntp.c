@@ -131,7 +131,7 @@ void NTP_Init() {
 #endif
 	//cmddetail:{"name":"ntp_timeZoneOfs","args":"[Value]",
 	//cmddetail:"descr":"Sets the time zone offset in hours. Also supports HH:MM syntax if you want to specify value in minutes. For negative values, use -HH:MM syntax, for example -5:30 will shift time by 5 hours and 30 minutes negative.",
-	//cmddetail:"fn":"NTP_SetTimeZoneOfs","file":"driver/drv_ntp.c","requires":"",
+	//cmddetail:"fn":"SetTimeZoneOfs","file":"driver/drv_ntp.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ntp_timeZoneOfs",SetTimeZoneOfs, NULL);
 	//cmddetail:{"name":"ntp_setServer","args":"[ServerIP]",

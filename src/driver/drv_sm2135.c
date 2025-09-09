@@ -16,6 +16,12 @@ static softI2C_t g_softI2C;
 static int g_current_setting_cw = SM2135_20MA;
 static int g_current_setting_rgb = SM2135_20MA;
 
+float GetRGBCW(float *ar, int index) {
+	if (index < 0 || index >= 5) {
+		return 0;
+	}
+	return ar[index];
+}
 void SM2135_Write(float *rgbcw) {
 	int i;
 	int bRGB;
@@ -24,7 +30,7 @@ void SM2135_Write(float *rgbcw) {
 	if(CFG_HasFlag(OBK_FLAG_SM2135_SEPARATE_MODES)) {
 		bRGB = 0;
 		for(i = 0; i < 3; i++){
-			if(rgbcw[g_cfg.ledRemap.ar[i]]!=0) {
+			if(GetRGBCW(rgbcw,g_cfg.ledRemap.ar[i])!=0) {
 				bRGB = 1;
 				break;
 			}
@@ -33,9 +39,9 @@ void SM2135_Write(float *rgbcw) {
 			Soft_I2C_Start(&g_softI2C, SM2135_ADDR_MC);
 			Soft_I2C_WriteByte(&g_softI2C, combinedCurrent);
 			Soft_I2C_WriteByte(&g_softI2C, SM2135_RGB);
-			Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.r]);
-			Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.g]);
-			Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.b]);
+			Soft_I2C_WriteByte(&g_softI2C, GetRGBCW(rgbcw,g_cfg.ledRemap.r));
+			Soft_I2C_WriteByte(&g_softI2C, GetRGBCW(rgbcw,g_cfg.ledRemap.g));
+			Soft_I2C_WriteByte(&g_softI2C, GetRGBCW(rgbcw,g_cfg.ledRemap.b));
 			Soft_I2C_Stop(&g_softI2C);
 		} else {
 			Soft_I2C_Start(&g_softI2C, SM2135_ADDR_MC);
@@ -45,8 +51,8 @@ void SM2135_Write(float *rgbcw) {
 			usleep(SM2135_DELAY);
 
 			Soft_I2C_Start(&g_softI2C, SM2135_ADDR_C);
-			Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.c]);
-			Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.w]);
+			Soft_I2C_WriteByte(&g_softI2C, GetRGBCW(rgbcw,g_cfg.ledRemap.c));
+			Soft_I2C_WriteByte(&g_softI2C, GetRGBCW(rgbcw,g_cfg.ledRemap.w));
 			Soft_I2C_Stop(&g_softI2C);
 
 		}
@@ -54,11 +60,11 @@ void SM2135_Write(float *rgbcw) {
 		Soft_I2C_Start(&g_softI2C, SM2135_ADDR_MC);
 		Soft_I2C_WriteByte(&g_softI2C, combinedCurrent);
 		Soft_I2C_WriteByte(&g_softI2C, SM2135_RGB);
-		Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.r]);
-		Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.g]);
-		Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.b]);
-		Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.c]);
-		Soft_I2C_WriteByte(&g_softI2C, rgbcw[g_cfg.ledRemap.w]);
+		Soft_I2C_WriteByte(&g_softI2C, GetRGBCW(rgbcw,g_cfg.ledRemap.r));
+		Soft_I2C_WriteByte(&g_softI2C, GetRGBCW(rgbcw,g_cfg.ledRemap.g));
+		Soft_I2C_WriteByte(&g_softI2C, GetRGBCW(rgbcw,g_cfg.ledRemap.b));
+		Soft_I2C_WriteByte(&g_softI2C, GetRGBCW(rgbcw,g_cfg.ledRemap.c));
+		Soft_I2C_WriteByte(&g_softI2C, GetRGBCW(rgbcw,g_cfg.ledRemap.w));
 		Soft_I2C_Stop(&g_softI2C);
 	}
 }
@@ -120,11 +126,11 @@ commandResult_t CMD_LEDDriver_Map(const void *context, const char *cmd, const ch
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
-	r = Tokenizer_GetArgIntegerRange(0, 0, 4);
-	g = Tokenizer_GetArgIntegerRange(1, 0, 4);
-	b = Tokenizer_GetArgIntegerRange(2, 0, 4);
-	c = Tokenizer_GetArgIntegerRange(3, 0, 4);
-	w = Tokenizer_GetArgIntegerRange(4, 0, 4);
+	r = Tokenizer_GetArgIntegerRange(0, -1, 4);
+	g = Tokenizer_GetArgIntegerRange(1, -1, 4);
+	b = Tokenizer_GetArgIntegerRange(2, -1, 4);
+	c = Tokenizer_GetArgIntegerRange(3, -1, 4);
+	w = Tokenizer_GetArgIntegerRange(4, -1, 4);
 
 	CFG_SetLEDRemap(r, g, b, c, w);
 
@@ -170,12 +176,12 @@ void SM2135_Init() {
 
 	//cmddetail:{"name":"SM2135_RGBCW","args":"[HexColor]",
 	//cmddetail:"descr":"Don't use it. It's for direct access of SM2135 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
-	//cmddetail:"fn":"SM2135_RGBCW","file":"driver/drv_sm2135.c","requires":"",
+	//cmddetail:"fn":"CMD_LEDDriver_WriteRGBCW","file":"driver/drv_sm2135.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SM2135_RGBCW", CMD_LEDDriver_WriteRGBCW, NULL);
 	//cmddetail:{"name":"SM2135_Map","args":"[Ch0][Ch1][Ch2][Ch3][Ch4]",
 	//cmddetail:"descr":"Maps the RGBCW values to given indices of SM2135 channels. This is because SM2135 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: SM2135_Map 0 1 2 3 4",
-	//cmddetail:"fn":"SM2135_Map","file":"driver/drv_sm2135.c","requires":"",
+	//cmddetail:"fn":"CMD_LEDDriver_Map","file":"driver/drv_sm2135.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("SM2135_Map", CMD_LEDDriver_Map, NULL);
 	//cmddetail:{"name":"SM2135_Current","args":"[RGBLimit][CWLimit]",
