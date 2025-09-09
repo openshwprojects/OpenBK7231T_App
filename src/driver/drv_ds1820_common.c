@@ -252,7 +252,7 @@ void init_TEST_US(){
 #if ENABLE_DS1820_TEST_US && ! WINDOWS	
 	//cmddetail:{"name":"testus","args":"pin <pause in us> <testval 1 in us> [<testval n in us>...]",
 	//cmddetail:"descr":"tests usleep on given pin ",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_ds1820_simple.c","requires":"",
+	//cmddetail:"fn":"CMD_OW_testus","file":"driver/drv_ds1820_common.c","requires":"",
 	//cmddetail:"examples":"testus 11 5 2 4 6 10 20 50 100 200 500"}
 	if (! testus_initialized) CMD_RegisterCommand("testus", CMD_OW_testus, NULL);
 	testus_initialized = true;

@@ -494,19 +494,19 @@ void DRV_InitFlashMemoryTestFunctions() {
 
 	//cmddetail:{"name":"SPITestFlash_ReadID","args":"CMD_SPITestFlash_ReadID",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"fn":"CMD_SPITestFlash_ReadID","file":"driver/drv_spi_flash.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SPITestFlash_ReadID", CMD_SPITestFlash_ReadID, NULL);
 
 	//cmddetail:{"name":"SPITestFlash_WriteStr","args":"CMD_SPITestFlash_WriteStr",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_spi_flash.c","requires":"",
+	//cmddetail:"fn":"CMD_SPITestFlash_WriteStr","file":"driver/drv_spi_flash.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SPITestFlash_WriteStr", CMD_SPITestFlash_WriteStr, NULL);
 
 	//cmddetail:{"name":"SPITestFlash_Erase","args":"CMD_SPITestFlash_Erase",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_spi_flash.c","requires":"",
+	//cmddetail:"fn":"CMD_SPITestFlash_Erase","file":"driver/drv_spi_flash.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SPITestFlash_Erase", CMD_SPITestFlash_Erase, NULL);
 
@@ -518,10 +518,14 @@ void DRV_InitFlashMemoryTestFunctions() {
 
 	//cmddetail:{"name":"SPITestFlash_ReadData","args":"CMD_SPITestFlash_ReadData",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"fn":"CMD_SPITestFlash_ReadData","file":"driver/drv_spi_flash.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SPITestFlash_ReadData", CMD_SPITestFlash_ReadData, NULL);
 
+	//cmddetail:{"name":"SPITestFlash_Test","args":"CMD_SPITestFlash_TestPages",
+	//cmddetail:"descr":"TODO",
+	//cmddetail:"fn":"CMD_SPITestFlash_TestPages","file":"driver/drv_spi_flash.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SPITestFlash_Test", CMD_SPITestFlash_TestPages, NULL);
 
 	/*

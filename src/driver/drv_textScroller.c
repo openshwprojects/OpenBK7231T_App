@@ -117,12 +117,12 @@ void TS_Init() {
 
 	//cmddetail:{"name":"TS_Clear","args":"",
 	//cmddetail:"descr":"Clears the text scroller buffer",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_textScroller.c","requires":"",
+	//cmddetail:"fn":"CMD_TS_Clear","file":"driver/drv_textScroller.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TS_Clear", CMD_TS_Clear, NULL);
 	//cmddetail:{"name":"TS_Print","args":"[StartOfs] [MaxLenOr0] [StringText] [optionalBClampWithZeroesForClock]",
 	//cmddetail:"descr":"Prints a text to the text scroller buffer",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_textScroller.c","requires":"",
+	//cmddetail:"fn":"CMD_TS_Print","file":"driver/drv_textScroller.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TS_Print", CMD_TS_Print, NULL);
 }

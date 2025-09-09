@@ -444,7 +444,7 @@ void SHT3X_Init() {
 
 	//cmddetail:{"name":"SHT_cycle","args":"[int]",
 	//cmddetail:"descr":"This is the interval between measurements in seconds, by default 10. Max is 255.",
-	//cmddetail:"fn":"SHT_cycle","file":"drv/drv_sht3x.c","requires":"",
+	//cmddetail:"fn":"SHT_cycle","file":"driver/drv_sht3x.c","requires":"",
 	//cmddetail:"examples":"SHT_Cycle 60"}
 	CMD_RegisterCommand("SHT_cycle", SHT_cycle, NULL);
 	//cmddetail:{"name":"SHT_Calibrate","args":"[DeltaTemp][DeltaHumidity]",
@@ -479,22 +479,22 @@ void SHT3X_Init() {
 	CMD_RegisterCommand("SHT_Heater", SHT3X_Heater, NULL);
 	//cmddetail:{"name":"SHT_GetStatus","args":"",
 	//cmddetail:"descr":"Get Sensor Status",
-	//cmddetail:"fn":"SHT3X_GetStatus","file":"driver/drv_sht3x.c","requires":"",
+	//cmddetail:"fn":"SHT3X_GetStatusCmd","file":"driver/drv_sht3x.c","requires":"",
 	//cmddetail:"examples":"SHT_GetStatusCmd"}
 	CMD_RegisterCommand("SHT_GetStatus", SHT3X_GetStatusCmd, NULL);
 	//cmddetail:{"name":"SHT_ClearStatus","args":"",
 	//cmddetail:"descr":"Clear Sensor Status",
-	//cmddetail:"fn":"SHT3X_ClearStatus","file":"driver/drv_sht3x.c","requires":"",
+	//cmddetail:"fn":"SHT3X_ClearStatusCmd","file":"driver/drv_sht3x.c","requires":"",
 	//cmddetail:"examples":"SHT_ClearStatusCmd"}
 	CMD_RegisterCommand("SHT_ClearStatus", SHT3X_ClearStatusCmd, NULL);
 	//cmddetail:{"name":"SHT_ReadAlert","args":"",
 	//cmddetail:"descr":"Get Sensor alert configuration",
-	//cmddetail:"fn":"SHT3X_ReadAlertcmd","file":"driver/drv_sht3x.c","requires":"",
+	//cmddetail:"fn":"SHT3X_ReadAlertCmd","file":"driver/drv_sht3x.c","requires":"",
 	//cmddetail:"examples":"SHT_ReadAlertCmd"}
 	CMD_RegisterCommand("SHT_ReadAlert", SHT3X_ReadAlertCmd, NULL);
 	//cmddetail:{"name":"SHT_SetAlert","args":"[temp_high, temp_low, hum_high, hum_low]",
 	//cmddetail:"descr":"Set Sensor alert configuration",
-	//cmddetail:"fn":"SHT3X_SetAlertcmd","file":"driver/drv_sht3x.c","requires":"all",
+	//cmddetail:"fn":"SHT3X_SetAlertCmd","file":"driver/drv_sht3x.c","requires":"all",
 	//cmddetail:"examples":"SHT_SetAlertCmd"}
 	CMD_RegisterCommand("SHT_SetAlert", SHT3X_SetAlertCmd, NULL);
 }

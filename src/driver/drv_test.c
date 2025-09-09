@@ -81,7 +81,7 @@ void Test_AppendInformationToHTTPIndexPage(http_request_t *request)
 void Test_Init(void) {
 	//cmddetail:{"name":"StartTest","args":"Test_Cmd_Start",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_test.c","requires":"",
+	//cmddetail:"fn":"Test_Cmd_Start","file":"driver/drv_test.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("StartTest", Test_Cmd_Start, NULL);
 
