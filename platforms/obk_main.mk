@@ -42,6 +42,7 @@ OBKM_SRC  += $(OBK_SRCS)hal/generic/hal_flashConfig_generic.c
 OBKM_SRC  += $(OBK_SRCS)hal/generic/hal_flashVars_generic.c
 OBKM_SRC  += $(OBK_SRCS)hal/generic/hal_generic.c
 OBKM_SRC  += $(OBK_SRCS)hal/generic/hal_main_generic.c
+OBKM_SRC  += $(OBK_SRCS)hal/generic/hal_ota_generic.c
 OBKM_SRC  += $(OBK_SRCS)hal/generic/hal_pins_generic.c
 OBKM_SRC  += $(OBK_SRCS)hal/generic/hal_wifi_generic.c
 OBKM_SRC  += $(OBK_SRCS)hal/generic/hal_uart_generic.c

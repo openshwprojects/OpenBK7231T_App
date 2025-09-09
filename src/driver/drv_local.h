@@ -40,6 +40,8 @@ void PT6523_ClearString();
 void TS_RunQuickTick();
 void TS_Init();
 
+float GetRGBCW(float *ar, int index);
+
 void SM2135_Init();
 
 void SM2235_Init();
@@ -229,6 +231,8 @@ void DRV_DDPSend_Shutdown();
 void DRV_DDPSend_RunFrame();
 void DRV_DDPSend_AppendInformationToHTTPIndexPage(http_request_t* request);
 
+void TXW_Cam_Init(void);
+void TXW_Cam_RunEverySecond(void);
 
 #define SM2135_DELAY 4
 

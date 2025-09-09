@@ -215,13 +215,18 @@ void HAL_PIN_PWM_Start(int index, int freq)
 {
 	if(index >= g_numPins)
 		return;
+	lnPinMapping_t* pin = g_pins + index;
+	if(pin->pwm_cha > 0)
+	{
+		pwm_init(freq, pin->pwm_cha, pin->base, pin->pin);
+		return;
+	}
 	uint8_t freecha;
 	for(freecha = 0; freecha < 5; freecha++) if((g_active_pwm >> freecha & 1) == 0) break;
-	lnPinMapping_t* pin = g_pins + index;
 	g_active_pwm |= 1 << freecha;
 	pin->pwm_cha = freecha;
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "PWM_Start: ch_pwm: %u", freecha);
-	pwm_init(10000, freecha, pin->base, pin->pin);
+	pwm_init(freq, freecha, pin->base, pin->pin);
 	pwm_start(freecha);
 }
 

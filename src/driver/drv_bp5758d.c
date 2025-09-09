@@ -97,9 +97,14 @@ void BP5758D_Write(float *rgbcw) {
 	for(i = 0; i < 5; i++){
 		// convert 0-255 to 0-1023
 		//cur_col_10[i] = rgbcw[g_cfg.ledRemap.ar[i]] * 4;
-		cur_col_10[i] = MAP(rgbcw[g_cfg.ledRemap.ar[i]], 0, 255.0f, 0, 1023.0f);
+		cur_col_10[i] = MAP(GetRGBCW(rgbcw, g_cfg.ledRemap.ar[i]), 0, 255.0f, 0, 1023.0f);
 
 	}
+
+#if WINDOWS
+	void Simulator_StoreBP5758DColor(unsigned short *data);
+	Simulator_StoreBP5758DColor(cur_col_10);
+#endif
 
 	// If we receive 0 for all channels, we'll assume that the lightbulb is off, and activate BP5758d's sleep mode.
 	if (cur_col_10[0]==0 && cur_col_10[1]==0 && cur_col_10[2]==0 && cur_col_10[3]==0 && cur_col_10[4]==0) {

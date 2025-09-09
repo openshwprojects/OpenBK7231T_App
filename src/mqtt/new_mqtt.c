@@ -757,6 +757,17 @@ void MQTT_ProcessCommandReplyJSON(const char *cmd, const char *args, int flags) 
 	}
 }
 #endif
+
+int onHassStatus(obk_mqtt_request_t* request) {
+	if (!strcmp(request->topic, "homeassistant/status")) {
+		const char *args = (const char *)request->received;
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "HA status - %s\n", args);
+		if (!strcmp(args, "online")) {
+			MQTT_PublishWholeDeviceState_Internal(true);
+		}
+	}
+	return 1;
+}
 int tasCmnd(obk_mqtt_request_t* request) {
 	const char *p, *args;
     //const char *p2;
@@ -1757,7 +1768,7 @@ static BENCHMARK_TEST_INFO* info = NULL;
 #if WINDOWS
 
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF || PLATFORM_TR6260 \
-	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_ESP8266
+	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_ESP8266 || PLATFORM_TXW81X
 static void mqtt_timer_thread(void* param)
 {
 	while (1)
@@ -1800,6 +1811,8 @@ commandResult_t MQTT_StartMQTTTestThread(const void* context, const char* cmd, c
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF || PLATFORM_TR6260 \
 	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_ESP8266
 	xTaskCreate(mqtt_timer_thread, "mqtt", 1024, (void*)info, 15, NULL);
+#elif PLATFORM_TXW81X
+	os_task_create("mqtt", mqtt_timer_thread, (void*)info, 15, 0, NULL, 1024);
 #elif PLATFORM_XRADIO || PLATFORM_LN882H
 	OS_TimerSetInvalid(&timer);
 	if (OS_TimerCreate(&timer, OS_TIMER_PERIODIC, MQTT_Test_Tick, (void*)info, MQTT_TMR_DURATION) != OS_OK)
@@ -1888,6 +1901,10 @@ void MQTT_InitCallbacks() {
 		// note: this may REPLACE an existing entry with the same ID.  ID 7 !!!
 		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 7, tasCmnd);
 	}
+	// test hack iobroker
+	snprintf(cbtopicbase, sizeof(cbtopicbase), "homeassistant/");
+	snprintf(cbtopicsub, sizeof(cbtopicsub), "homeassistant/+");
+	MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 8, onHassStatus);
 }
  // initialise things MQTT
  // called from user_main

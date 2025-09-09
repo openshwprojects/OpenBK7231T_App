@@ -15,6 +15,8 @@
 #include "../cJSON/cJSON.h"
 #include "../libraries/obktime/obktime.h"	// for time functions
 
+#if ENABLE_DRIVER_OPENWEATHERMAP
+
 #ifndef WINDOWS
 #include <lwip/err.h>
 #include <lwip/dns.h>
@@ -302,3 +304,4 @@ void DRV_OpenWeatherMap_Init() {
 
 }
 
+#endif

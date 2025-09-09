@@ -588,6 +588,13 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_Counter_r,
+	//iodetail:{"name":"IRRecv_nPup",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"IRRecv without pull-up",
+	//iodetail:"enum":"IRRecv_nPup",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_IRRecv_nPup,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
@@ -1074,7 +1081,7 @@ typedef enum channelType_e {
 #define PLATFORM_GPIO_MAX 17
 #elif PLATFORM_RTL8710A
 #define PLATFORM_GPIO_MAX 20
-#elif PLATFORM_RTL8720D || PLATFORM_RTL8721DA
+#elif PLATFORM_RTL8720D || PLATFORM_RTL8721DA || PLATFORM_TXW81X
 #define PLATFORM_GPIO_MAX 64
 #elif PLATFORM_RTL8720E
 #define PLATFORM_GPIO_MAX 52
@@ -1149,7 +1156,7 @@ typedef struct pinsState_s
 	byte channelTypes[CHANNEL_MAX];
 } pinsState_t;
 
-#elif PLATFORM_RTL8720D || PLATFORM_RTL8721DA || PLATFORM_RTL8720E
+#elif PLATFORM_RTL8720D || PLATFORM_RTL8721DA || PLATFORM_RTL8720E || PLATFORM_TXW81X
 
 #define MAX_PIN_ROLES 64
 
@@ -1403,7 +1410,7 @@ typedef struct mainConfig_s {
 	byte unusedSectorAB[51];
 #elif PLATFORM_ESPIDF
 	byte unusedSectorAB[43];
-#elif PLATFORM_RTL8720D || PLATFORM_RTL8721DA || PLATFORM_RTL8720E
+#elif PLATFORM_RTL8720D || PLATFORM_RTL8721DA || PLATFORM_RTL8720E || PLATFORM_TXW81X
 	byte unusedSectorAB;
 #else    
 	byte unusedSectorAB[99];
