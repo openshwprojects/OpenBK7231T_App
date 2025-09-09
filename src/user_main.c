@@ -629,8 +629,8 @@ void Main_OnEverySecond()
 #if PLATFORM_W600 || PLATFORM_W800
 #define TimeOut_t xTimeOutType 
 #endif
-#ifndef WINDOWS
-	TimeOut_t myTimeout;	// to get uptime from xTicks - not working on WINDOWS
+#if ! ( WINDOWS || PLATFORM_TXW81X) 
+	TimeOut_t myTimeout;	// to get uptime from xTicks - not working on WINDOWS or TXW81X
 #endif
 	int newMQTTState;
 	const char* safe;
@@ -803,9 +803,9 @@ void Main_OnEverySecond()
 			}
 		}
 	}
-#ifdef WINDOWS || PLATFORM_TXW81X	// quick fix for TXW81X without RTOS
+#if (WINDOWS || PLATFORM_TXW81X)
 	g_secondsElapsed++;
-#elif defined(PLATFORM_ESPIDF) //|| defined(PLATFORM_ESP8266)
+#elif defined(PLATFORM_ESPIDF) 
 	g_secondsElapsed = (int)(esp_timer_get_time() / 1000000);
 #else
 	vTaskSetTimeOutState( &myTimeout );
