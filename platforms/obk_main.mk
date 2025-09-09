@@ -115,6 +115,7 @@ OBKM_SRC  += $(OBK_SRCS)driver/drv_max72xx_single.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_mcp9808.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_ntp.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_deviceclock.c
+OBKM_SRC  += $(OBK_SRCS)driver/drv_ds3231.c
 OBKM_SRC  += $(OBK_SRCS)libraries/obktime/obktime.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_timed_events.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_openWeatherMap.c
