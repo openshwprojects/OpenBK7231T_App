@@ -183,24 +183,24 @@ void DS3231_Init()
     rtos_delay_milliseconds(100);
     ADDLOG_INFO(LOG_FEATURE_RAW, "DS3231 RTC Initialized.");
 
-    //cmddetail:{"name":"DS3231_GetTime,"args":"-",
+    //cmddetail:{"name":"DS3231_GetTime","args":"-",
     //cmddetail:"descr":"Gets time from RTC",
-    //cmddetail:"fn":"DS3231_GetTimeCmd","file":"drv/drv_ds3231.c","requires":"",
+    //cmddetail:"fn":"DS3231_GetTimeCmd","file":"driver/drv_ds3231.c","requires":"",
     //cmddetail:"examples":""}
     CMD_RegisterCommand("DS3231_GetTime", DS3231_GetTimeCmd, NULL);
-    //cmddetail:{"name":"DS3231_SetTime,"args":"<hours> <minutes> <seconds> <day> <month> <year>",
+    //cmddetail:{"name":"DS3231_SetTime","args":"<hours> <minutes> <seconds> <day> <month> <year>",
     //cmddetail:"descr":"Sets RTC time",
-    //cmddetail:"fn":"DS3231_SetTimeCmd","file":"drv/drv_ds3231.c","requires":"",
+    //cmddetail:"fn":"DS3231_SetTimeCmd","file":"driver/drv_ds3231.c","requires":"",
     //cmddetail:"examples":"DS3231_SetTime 19 50 01 13 8 2025"}
     CMD_RegisterCommand("DS3231_SetTime", DS3231_SetTimeCmd, NULL);
-    //cmddetail:{"name":"DS3231_GetTime as epoch,"args":"-",
+    //cmddetail:{"name":"DS3231_GetEpoch","args":"-",
     //cmddetail:"descr":"Gets time from RTC",
-    //cmddetail:"fn":"DS3231_GetTimeCmd","file":"drv/drv_ds3231.c","requires":"",
+    //cmddetail:"fn":"DS3231_GetEpochCmd","file":"driver/drv_ds3231.c","requires":"",
     //cmddetail:"examples":""}
     CMD_RegisterCommand("DS3231_GetEpoch", DS3231_GetEpochCmd, NULL);
-    //cmddetail:{"name":"DS3231_SetEpoch,"args":"<epoch>",
+    //cmddetail:{"name":"DS3231_SetEpoch","args":"<epoch>",
     //cmddetail:"descr":"Sets RTC time (to epoch)",
-    //cmddetail:"fn":"DS3231_SetEpochCmd","file":"drv/drv_ds3231.c","requires":"",
+    //cmddetail:"fn":"DS3231_SetEpochCmd","file":"driver/drv_ds3231.c","requires":"",
     //cmddetail:"examples":"DS3231_SetTime 3269879540"}
     CMD_RegisterCommand("DS3231_SetEpoch", DS3231_SetEpochCmd, NULL);
     sync2device=Tokenizer_GetArgIntegerDefault(3, 0);
