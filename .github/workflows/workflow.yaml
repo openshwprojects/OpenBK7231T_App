@@ -162,10 +162,13 @@ jobs:
             variant: default
           - platform: OpenXR809
             variant: default
+            gcc: 8-2019-q3
           - platform: OpenXR806
             variant: default
+            gcc: 8-2019-q3
           - platform: OpenXR872
             variant: default
+            gcc: 8-2019-q3
           - platform: OpenBL602
             variant: default
           - platform: OpenW800
@@ -174,16 +177,21 @@ jobs:
             variant: default
           - platform: OpenLN882H
             variant: default
+            gcc: 10.3-2021.10
           - platform: OpenTR6260
             variant: default
           - platform: OpenRTL8710A
             variant: default
+            gcc: 8-2019-q3
           - platform: OpenRTL8710B
             variant: default
+            gcc: 8-2019-q3
           - platform: OpenRTL87X0C
             variant: default
+            gcc: apt
           - platform: OpenRTL8720D
             variant: default
+            gcc: 10.3-2021.10
           - platform: OpenECR6600
             variant: default
 
@@ -210,10 +218,6 @@ jobs:
             variant: irRemoteESP
           - platform: OpenBK7231N
             variant: sensors
-
-          # extras for BK7238
-          - platform: OpenBK7238
-            variant: irRemoteESP
             
           - platform: OpenBL602
             variant: berry
@@ -223,18 +227,28 @@ jobs:
       - name: Source checkout
         uses: actions/checkout@v4
       - uses: actions/setup-python@v5
+        if: ${{ matrix.platform == 'OpenBL602' }}
         with:
-          python-version: '3.8'
+          python-version: '3.10'
           architecture: 'x64'
+          cache: 'pip'
       - name: Install dependencies
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: cmake
+          version: 1.0
+      - name: Install arm-none-eabi-gcc
+        if: ${{ matrix.gcc && matrix.gcc != 'apt' }}
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        with:
+          release: ${{ matrix.gcc }}
+          path-env-var: ARM_NONE_EABI_GCC_PATH
+      - name: Install arm-none-eabi-gcc
+        if: ${{ matrix.gcc == 'apt' }}
         run: |
-          sudo dpkg --add-architecture i386
+          curl -sL https://raw.githubusercontent.com/ilikenwf/apt-fast/master/quick-install.sh | sudo bash
           sudo apt-get update
-          sudo apt-get -y install libc6-i386 make cmake
-          pip3 install pycryptodomex
-          pip3 install configobj
-          pip3 install toml
-          pip3 install fdt
+          sudo apt-fast install -y gcc-arm-none-eabi
       - run: ls -la
       - name: Run make
         run: make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }}
@@ -299,17 +313,14 @@ jobs:
           submodules: recursive
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.8'
+          python-version: '3.10'
           architecture: 'x64'
+          cache: 'pip'
       - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get -y install make cmake python3-venv
-          pip3 install pycryptodomex
-          pip3 install configobj
-          pip3 install toml
-          pip3 install fdt
-          pip3 install esptool
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: cmake
+          version: 1.0
       - name: Run make
         run: |
           cd sdk/esp-idf
@@ -404,35 +415,45 @@ jobs:
           # default for all platforms
           - platform: OpenBK7231N_ALT
             variant: default
+            gcc: apt
           - platform: OpenBK7231T_ALT
             variant: default
+            gcc: apt
           - platform: OpenBK7231U
             variant: default
+            gcc: apt
           - platform: OpenBK7238
             variant: default
+            gcc: apt
           - platform: OpenBK7252
             variant: default
+            gcc: apt
           - platform: OpenBK7252N
             variant: default
+            gcc: apt
           
+          # extras for BK7238
           - platform: OpenBK7238
             variant: berry
+            gcc: apt
+          - platform: OpenBK7238
+            variant: irRemoteESP
+            gcc: apt
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Install arm-none-eabi-gcc
+        if: ${{ matrix.gcc && matrix.gcc != 'apt' }}
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
         with:
-          python-version: '3.8'
-          architecture: 'x64'
-      - name: Install dependencies
+          release: ${{ matrix.gcc }}
+          path-env-var: ARM_NONE_EABI_GCC_PATH
+      - name: Install arm-none-eabi-gcc
+        if: ${{ matrix.gcc == 'apt' }}
         run: |
-          sudo dpkg --add-architecture i386
+          curl -sL https://raw.githubusercontent.com/ilikenwf/apt-fast/master/quick-install.sh | sudo bash
           sudo apt-get update
-          sudo apt-get -y install libc6-i386 make
-          pip3 install pycryptodomex
-          pip3 install configobj
-          pip3 install toml
-          pip3 install fdt
+          sudo apt-fast install -y gcc-arm-none-eabi
       - run: ls -la
       - name: Run make
         run: make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }}
@@ -477,10 +498,14 @@ jobs:
         with:
           python-version: '3.10'
           architecture: 'x64'
+          cache: 'pip'
+      - name: Install dependencies
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: cmake
+          version: 1.0
       - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get -y install make cmake python3-venv
           pip install -r sdk/ameba-rtos/tools/requirements.txt
           mkdir /opt/rtk-toolchain
           cd /opt/rtk-toolchain
