@@ -102,6 +102,14 @@ void HAL_UART_SendByte(byte b)
 {
 	uart_write_bytes(uartnum, &b, 1);
 }
+void HAL_UART_Flush(void)
+{
+	uart_flush(uartnum);
+}
+void HAL_SetBaud(uint32_t baud)
+{
+	uart_set_baudrate(uartnum, baud);
+}
 
 int HAL_UART_Init(int baud, int parity, bool hwflowc)
 {
@@ -132,25 +140,16 @@ int HAL_UART_Init(int baud, int parity, bool hwflowc)
 #endif
 	};
 	uart_param_config(uartnum, &uart_config);
-	uart_driver_install(uartnum, 512, 0, 0, NULL, 0);
+	uart_driver_install(uartnum, 4096, 4096, 0, NULL, 0);
 	uart_enable_rx_intr(uartnum);
-#if 0//PLATFORM_ESPIDF
-	if(uartnum == UART_NUM_0)
-	{
-		uart_set_pin(uartnum, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-	}
-	else
-	{
-		uart_set_pin(uartnum, TX1_PIN, RX1_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-	}
-	if(data == NULL)
-	{
-		//data = (uint8_t*)malloc(512);
-		xTaskCreate(uart_event_task, "uart_event_task", 2048, NULL, 16, NULL);
-	}
-#else
-	//uart_isr_register(uartnum, uart_intr_handle, &uartnum);
+
+
+#if PLATFORM_ESPIDF
+	uart_set_pin(uartnum, 
+		22, 21, 
+		UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 #endif
+
 	xTaskCreate(uart_event_task, "uart_event_task", 1024, NULL, 16, NULL);
 	return 1;
 }

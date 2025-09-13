@@ -409,6 +409,7 @@
 
 #if (OBK_VARIANT == OBK_VARIANT_ESP4M)
 #define ENABLE_DRIVER_TCA9554					1
+#define ENABLE_DRIVER_DMX						1
 #endif
 
 #elif PLATFORM_TR6260

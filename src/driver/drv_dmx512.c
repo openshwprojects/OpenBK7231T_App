@@ -1,9 +1,30 @@
-﻿#include "../new_cfg.h"
+﻿/*
+
+// #define RS485_SE_PIN 19
+// digitalWrite(RS485_SE_PIN, HIGH);
+setPinRole 19 AlwaysHigh
+
+// #define RS485_EN_PIN 17
+// digitalWrite(RS485_EN_PIN, HIGH);
+setPinRole 17 AlwaysHigh
+
+// #define PIN_5V_EN 16
+// digitalWrite(PIN_5V_EN, HIGH);
+setPinRole 16 AlwaysHigh
+
+startDriver DMX
+SM16703P_Init 50 RGBW
+startDriver PixelAnim
+
+*/
+#include "../new_cfg.h"
 #include "../new_common.h"
 #include "../new_pins.h"
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 #include "../hal/hal_pins.h"
+#include "../hal/hal_uart.h"
+#include "../hal/hal_generic.h"
 #include "../httpserver/new_http.h"
 #include "../logging/logging.h"
 #include "../mqtt/new_mqtt.h"
@@ -20,20 +41,33 @@ static byte *g_dmxBuffer;
 static int dmx_pixelCount = 0;
 static int dmx_pixelSize = 3;
 
-int dmx_pin = 0;
+int dmx_pin = 22;
 
+void HAL_UART_Flush(void);
+void HAL_SetBaud(uint32_t baud);
 void DMX_Show() {
+	if (g_dmxBuffer == 0) {
+		return;
+	}
+#if 1
 	// BREAK: pull TX low manually
 	HAL_PIN_Setup_Output(dmx_pin);
 	HAL_PIN_SetOutputValue(dmx_pin, 0);
 	HAL_Delay_us(120); // ≥88µs
 	HAL_PIN_SetOutputValue(dmx_pin, 1);
 	HAL_Delay_us(12); // MAB ≥8µs
+#else
+#define DMX_BREAK_DURATION_MICROS 88
+	uint32_t breakBaud = 1000000 * 8 / DMX_BREAK_DURATION_MICROS;
+	HAL_SetBaud(breakBaud);
+	HAL_UART_SendByte(0);
+	//HAL_UART_Flush();
+	HAL_SetBaud(250000);
+#endif
 
 	// restore UART and send DMX data
-	HAL_UART_Init(250000, 2, true);
 	for (int i = 0; i < DMX_BUFFER_SIZE; i++) {
-		HAL_UART_SendByte(g_dmxBuffer[i]);
+			HAL_UART_SendByte(g_dmxBuffer[i]);
 	}
 	//Serial485.begin(250000, SERIAL_8N2, RS485_RX_PIN, RS485_TX_PIN);
 	////Serial485.write(dmxBuffer, sizeof(dmxBuffer));
@@ -47,7 +81,7 @@ byte DMX_GetByte(uint32_t idx) {
 }
 void DMX_setByte(int idx, byte color) {
 	if (idx >= DMX_CHANNELS_SIZE)
-		return 0;
+		return;
 	g_dmxBuffer[1 + idx] = color;
 }
 
@@ -66,9 +100,10 @@ void DMX_Init() {
 	ws_export.setLEDCount = DMX_SetLEDCount;
 
 	LEDS_InitShared(&ws_export);
+
+	HAL_UART_Init(250000, 2, false);
 }
 void DMX_OnEverySecond() {
-
 }
 
 
