@@ -167,6 +167,81 @@ void Fire_Run() {
 	Strip_Apply();
 
 }
+static int comet_pos = 0;
+static int comet_dir_local = 1;
+static int comet_tail_len = 16;
+
+void Comet_Run() {
+	int head = comet_pos;
+	int tail = comet_tail_len;
+	if (comet_dir_local > 0) {
+		comet_pos++;
+		if (comet_pos >= pixel_count) {
+			comet_pos = pixel_count - 1;
+			comet_dir_local = -1;
+		}
+	}
+	else {
+		comet_pos--;
+		if (comet_pos < 0) {
+			comet_pos = 0;
+			comet_dir_local = 1;
+		}
+	}
+
+	fadeToBlackBy(48);
+
+	SM16703P_setPixelWithBrig(head,
+		led_baseColors[0], led_baseColors[1], led_baseColors[2], led_baseColors[3], led_baseColors[4]);
+
+	for (int t = 1; t <= tail; t++) {
+		int idx = head - t * comet_dir_local;
+		if (idx < 0 || idx >= pixel_count) continue;
+		float scale = (float)(tail - t) / (float)tail;
+		if (scale < 0) scale = 0;
+		byte r = (byte)round(led_baseColors[0] * scale);
+		byte g = (byte)round(led_baseColors[1] * scale);
+		byte b = (byte)round(led_baseColors[2] * scale);
+		SM16703P_setPixelWithBrig(idx, r, g, b, 0, 0);
+	}
+
+	Strip_Apply();
+}
+static int chase_pos = 0;
+
+void TheaterChase_Run() {
+	fadeToBlackBy(200);
+
+	for (int i = 0; i < pixel_count; i++) {
+		if ((i + chase_pos) % 3 == 0) {
+			SM16703P_setPixelWithBrig(i,
+				led_baseColors[0], led_baseColors[1], led_baseColors[2],
+				led_baseColors[3], led_baseColors[4]);
+		}
+	}
+	Strip_Apply();
+
+	chase_pos++;
+	if (chase_pos >= 3) chase_pos = 0;
+}
+
+static int chase_rainbow_pos = 0;
+
+void TheaterChaseRainbow_Run() {
+	for (int i = 0; i < pixel_count; i++) {
+		if ((i + chase_rainbow_pos) % 3 == 0) {
+			byte *c = RainbowWheel_Wheel((i + chase_rainbow_pos * 8) & 255);
+			SM16703P_setPixelWithBrig(i, *c, *(c + 1), *(c + 2), 0, 0);
+		}
+		else {
+			SM16703P_setPixelWithBrig(i, 0, 0, 0, 0, 0);
+		}
+	}
+	Strip_Apply();
+
+	chase_rainbow_pos++;
+	if (chase_rainbow_pos >= 3) chase_rainbow_pos = 0;
+}
 // startDriver PixelAnim
 
 typedef struct ledAnim_s {
@@ -178,7 +253,10 @@ int activeAnim = -1;
 ledAnim_t g_anims[] = {
 	{ "Rainbow Cycle", RainbowCycle_Run },
 	{ "Fire", Fire_Run },
-	{ "Shooting Star", ShootingStar_Run }
+	{ "Shooting Star", ShootingStar_Run },
+	{ "Comet", Comet_Run },
+	{ "Theater Chase", TheaterChase_Run },
+	{ "Theater Chase Rainbow", TheaterChaseRainbow_Run }
 };
 int g_numAnims = sizeof(g_anims) / sizeof(g_anims[0]);
 int g_speed = 0;
