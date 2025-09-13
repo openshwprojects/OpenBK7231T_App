@@ -73,17 +73,26 @@ void DMX_Init() {
 	ws_export.setLEDCount = DMX_SetLEDCount;
 
 	LEDS_InitShared(&ws_export);
+
+	HAL_UART_Init(250000, 2, false);
 }
+void HAL_UART_Flush(void);
+void HAL_SetBaud(uint32_t baud);
 void DMX_OnEverySecond() {
 	// BREAK: pull TX low manually
-	HAL_PIN_Setup_Output(dmx_pin);
-	HAL_PIN_SetOutputValue(dmx_pin, 0);
-	HAL_Delay_us(120); // ≥88µs
-	HAL_PIN_SetOutputValue(dmx_pin, 1);
-	HAL_Delay_us(12); // MAB ≥8µs
-
+	//HAL_PIN_Setup_Output(dmx_pin);
+	//HAL_PIN_SetOutputValue(dmx_pin, 0);
+	//HAL_Delay_us(120); // ≥88µs
+	//HAL_PIN_SetOutputValue(dmx_pin, 1);
+	//HAL_Delay_us(12); // MAB ≥8µs
+#define DMX_BREAK_DURATION_MICROS 88
+	uint32_t breakBaud = 1000000 * 8 / DMX_BREAK_DURATION_MICROS;
+	HAL_SetBaud(breakBaud);
+	HAL_UART_SendByte(0);
+	HAL_UART_Flush();
+	HAL_SetBaud(250000);
+	
 	// restore UART and send DMX data
-	HAL_UART_Init(250000, 2, false);
 	for (int i = 0; i < DMX_BUFFER_SIZE; i++) {
 		HAL_UART_SendByte(g_dmxBuffer[i]);
 	}

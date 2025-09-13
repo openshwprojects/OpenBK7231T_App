@@ -102,6 +102,14 @@ void HAL_UART_SendByte(byte b)
 {
 	uart_write_bytes(uartnum, &b, 1);
 }
+void HAL_UART_Flush(void)
+{
+	uart_flush(uartnum);
+}
+void HAL_SetBaud(uint32_t baud)
+{
+	uart_set_baudrate(uartnum, baud);
+}
 
 int HAL_UART_Init(int baud, int parity, bool hwflowc)
 {
