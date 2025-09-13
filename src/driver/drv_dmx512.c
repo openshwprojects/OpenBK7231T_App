@@ -56,7 +56,7 @@ void DMX_Show() {
 	uint32_t breakBaud = 1000000 * 8 / DMX_BREAK_DURATION_MICROS;
 	HAL_SetBaud(breakBaud);
 	HAL_UART_SendByte(0);
-	HAL_UART_Flush();
+	//HAL_UART_Flush();
 	HAL_SetBaud(250000);
 
 	// restore UART and send DMX data
