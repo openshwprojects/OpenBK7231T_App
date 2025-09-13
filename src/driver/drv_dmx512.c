@@ -49,7 +49,7 @@ void DMX_Show() {
 	if (g_dmxBuffer == 0) {
 		return;
 	}
-#if 1
+#if 0
 	// BREAK: pull TX low manually
 	HAL_PIN_Setup_Output(dmx_pin);
 	HAL_PIN_SetOutputValue(dmx_pin, 0);
@@ -61,11 +61,11 @@ void DMX_Show() {
 	uint32_t breakBaud = 1000000 * 8 / DMX_BREAK_DURATION_MICROS;
 	HAL_SetBaud(breakBaud);
 	HAL_UART_SendByte(0);
-	//HAL_UART_Flush();
+	HAL_UART_Flush();
 	HAL_SetBaud(250000);
 #endif
 
-	HAL_UART_Init(250000, 2, false);
+	//HAL_UART_Init(250000, 2, false);
 	// restore UART and send DMX data
 	for (int i = 0; i < DMX_BUFFER_SIZE; i++) {
 		HAL_UART_SendByte(g_dmxBuffer[i]);
