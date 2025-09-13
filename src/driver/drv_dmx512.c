@@ -43,6 +43,8 @@ static int dmx_pixelSize = 3;
 
 int dmx_pin = 22;
 
+void HAL_UART_Flush(void);
+void HAL_SetBaud(uint32_t baud);
 void DMX_Show() {
 	// BREAK: pull TX low manually
 	//HAL_PIN_Setup_Output(dmx_pin);
@@ -95,8 +97,6 @@ void DMX_Init() {
 
 	HAL_UART_Init(250000, 2, false);
 }
-void HAL_UART_Flush(void);
-void HAL_SetBaud(uint32_t baud);
 void DMX_OnEverySecond() {
 }
 
