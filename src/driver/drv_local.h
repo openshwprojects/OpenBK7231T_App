@@ -75,6 +75,7 @@ void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t* data, bool push);
 void SM16703P_Show();
 void SM15155E_Init();
 void SM15155E_Write();
+void Strip_Apply();
 extern uint32_t pixel_count;
 
 void TM1637_Init();

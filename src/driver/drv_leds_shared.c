@@ -281,8 +281,11 @@ commandResult_t SM16703P_InitForLEDCount(const void *context, const char *cmd, c
 	return CMD_RES_OK;
 }
 
-static commandResult_t SM16703P_StartTX(const void *context, const char *cmd, const char *args, int flags) {
+void Strip_Apply() {
 	led_backend.apply();
+}
+static commandResult_t SM16703P_StartTX(const void *context, const char *cmd, const char *args, int flags) {
+	Strip_Apply();
 	return CMD_RES_OK;
 }
 

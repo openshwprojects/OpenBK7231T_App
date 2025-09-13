@@ -73,7 +73,7 @@ void ShootingStar_Run() {
 		count = 0;
 	}
 	fadeToBlackBy(tail_length);                 // Fade the tail LEDs to black
-	SM16703P_Show();
+	Strip_Apply();
 }
 void RainbowCycle_Run() {
 	byte *c;
@@ -83,7 +83,7 @@ void RainbowCycle_Run() {
 		c = RainbowWheel_Wheel(((i * 256 / pixel_count) + j) & 255);
 		SM16703P_setPixelWithBrig(pixel_count - 1 - i, *c, *(c + 1), *(c + 2), 0, 0);
 	}
-	SM16703P_Show();
+	Strip_Apply();
 	j++;
 	j %= 256;
 }
@@ -164,10 +164,9 @@ void Fire_Run() {
 	for (int j = 0; j < pixel_count; j++) {
 		Fire_setPixelHeatColor(j, heat[j]);
 	}
-	SM16703P_Show();
+	Strip_Apply();
 
 }
-
 // startDriver PixelAnim
 
 typedef struct ledAnim_s {
