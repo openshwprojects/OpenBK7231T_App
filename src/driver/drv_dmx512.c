@@ -1,4 +1,22 @@
-﻿#include "../new_cfg.h"
+﻿/*
+
+// #define RS485_SE_PIN 19
+// digitalWrite(RS485_SE_PIN, HIGH);
+setPinRole 19 AlwaysHigh
+
+// #define RS485_EN_PIN 17
+// digitalWrite(RS485_EN_PIN, HIGH);
+setPinRole 17 AlwaysHigh
+
+// #define PIN_5V_EN 16
+// digitalWrite(PIN_5V_EN, HIGH);
+setPinRole 16 AlwaysHigh
+
+startDriver DMX
+SM16703P_Init 50 RGBW
+
+*/
+#include "../new_cfg.h"
 #include "../new_common.h"
 #include "../new_pins.h"
 // Commands register, execution API and cmd tokenizer
