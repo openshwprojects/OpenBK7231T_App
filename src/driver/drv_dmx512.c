@@ -65,9 +65,10 @@ void DMX_Show() {
 	HAL_SetBaud(250000);
 #endif
 
+	HAL_UART_Init(250000, 2, false);
 	// restore UART and send DMX data
 	for (int i = 0; i < DMX_BUFFER_SIZE; i++) {
-			HAL_UART_SendByte(g_dmxBuffer[i]);
+		HAL_UART_SendByte(g_dmxBuffer[i]);
 	}
 	//Serial485.begin(250000, SERIAL_8N2, RS485_RX_PIN, RS485_TX_PIN);
 	////Serial485.write(dmxBuffer, sizeof(dmxBuffer));
