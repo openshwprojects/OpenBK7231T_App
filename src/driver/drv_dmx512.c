@@ -14,6 +14,7 @@ setPinRole 16 AlwaysHigh
 
 startDriver DMX
 SM16703P_Init 50 RGBW
+startDriver PixelAnim
 
 */
 #include "../new_cfg.h"
@@ -51,7 +52,7 @@ void DMX_Show() {
 	HAL_Delay_us(12); // MAB ≥8µs
 
 	// restore UART and send DMX data
-	HAL_UART_Init(250000, 2, true);
+	HAL_UART_Init(250000, 2, false);
 	for (int i = 0; i < DMX_BUFFER_SIZE; i++) {
 		HAL_UART_SendByte(g_dmxBuffer[i]);
 	}
