@@ -134,6 +134,13 @@ int HAL_UART_Init(int baud, int parity, bool hwflowc)
 	uart_param_config(uartnum, &uart_config);
 	uart_driver_install(uartnum, 512, 0, 0, NULL, 0);
 	uart_enable_rx_intr(uartnum);
+
+
+	uart_set_pin(uartnum, 
+		22, RX1_PIN, 
+		UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+
+
 #if 0//PLATFORM_ESPIDF
 	if(uartnum == UART_NUM_0)
 	{
