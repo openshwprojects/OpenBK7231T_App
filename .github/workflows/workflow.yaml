@@ -156,8 +156,8 @@ jobs:
       matrix:
         include:
           # default for all platforms
-          #- platform: OpenBL602
-          #  variant: irRemoteESP
+          - platform: OpenBK7231T
+            variant: default
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
@@ -322,6 +322,8 @@ jobs:
       matrix:
         include:
           # default for all platforms
+          - platform: OpenBK7231N_ALT
+            variant: default
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
