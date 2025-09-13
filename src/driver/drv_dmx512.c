@@ -22,6 +22,8 @@ SM16703P_Init 50 RGBW
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 #include "../hal/hal_pins.h"
+#include "../hal/hal_uart.h"
+#include "../hal/hal_generic.h"
 #include "../httpserver/new_http.h"
 #include "../logging/logging.h"
 #include "../mqtt/new_mqtt.h"
@@ -65,7 +67,7 @@ byte DMX_GetByte(uint32_t idx) {
 }
 void DMX_setByte(int idx, byte color) {
 	if (idx >= DMX_CHANNELS_SIZE)
-		return 0;
+		return;
 	g_dmxBuffer[1 + idx] = color;
 }
 
