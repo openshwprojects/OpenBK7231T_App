@@ -41,7 +41,7 @@ static byte *g_dmxBuffer;
 static int dmx_pixelCount = 0;
 static int dmx_pixelSize = 3;
 
-int dmx_pin = 0;
+int dmx_pin = 22;
 
 void DMX_Show() {
 	// BREAK: pull TX low manually
