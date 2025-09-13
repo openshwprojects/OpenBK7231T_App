@@ -104,7 +104,7 @@ void HAL_UART_SendByte(byte b)
 }
 void HAL_UART_Flush(void)
 {
-	uart_flush(uartnum);
+	uart_wait_tx_done(uartnum);
 }
 void HAL_SetBaud(uint32_t baud)
 {
