@@ -49,7 +49,7 @@ void DMX_Show() {
 	if (g_dmxBuffer == 0) {
 		return;
 	}
-#if 0
+#if WINDOWS
 	// BREAK: pull TX low manually
 	HAL_PIN_Setup_Output(dmx_pin);
 	HAL_PIN_SetOutputValue(dmx_pin, 0);
