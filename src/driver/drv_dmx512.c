@@ -44,21 +44,7 @@ static int dmx_pixelSize = 3;
 int dmx_pin = 22;
 
 void DMX_Show() {
-	// BREAK: pull TX low manually
-	HAL_PIN_Setup_Output(dmx_pin);
-	HAL_PIN_SetOutputValue(dmx_pin, 0);
-	HAL_Delay_us(120); // ≥88µs
-	HAL_PIN_SetOutputValue(dmx_pin, 1);
-	HAL_Delay_us(12); // MAB ≥8µs
 
-	// restore UART and send DMX data
-	HAL_UART_Init(250000, 2, false);
-	for (int i = 0; i < DMX_BUFFER_SIZE; i++) {
-		HAL_UART_SendByte(g_dmxBuffer[i]);
-	}
-	//Serial485.begin(250000, SERIAL_8N2, RS485_RX_PIN, RS485_TX_PIN);
-	////Serial485.write(dmxBuffer, sizeof(dmxBuffer));
-	//Serial485.flush();
 }
 
 byte DMX_GetByte(uint32_t idx) {
@@ -89,7 +75,21 @@ void DMX_Init() {
 	LEDS_InitShared(&ws_export);
 }
 void DMX_OnEverySecond() {
+	// BREAK: pull TX low manually
+	HAL_PIN_Setup_Output(dmx_pin);
+	HAL_PIN_SetOutputValue(dmx_pin, 0);
+	HAL_Delay_us(120); // ≥88µs
+	HAL_PIN_SetOutputValue(dmx_pin, 1);
+	HAL_Delay_us(12); // MAB ≥8µs
 
+	// restore UART and send DMX data
+	HAL_UART_Init(250000, 2, false);
+	for (int i = 0; i < DMX_BUFFER_SIZE; i++) {
+		HAL_UART_SendByte(g_dmxBuffer[i]);
+	}
+	//Serial485.begin(250000, SERIAL_8N2, RS485_RX_PIN, RS485_TX_PIN);
+	////Serial485.write(dmxBuffer, sizeof(dmxBuffer));
+	//Serial485.flush();
 }
 
 
