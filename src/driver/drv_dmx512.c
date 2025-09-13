@@ -46,6 +46,9 @@ int dmx_pin = 22;
 void HAL_UART_Flush(void);
 void HAL_SetBaud(uint32_t baud);
 void DMX_Show() {
+	if (g_dmxBuffer == 0) {
+		return;
+	}
 	// BREAK: pull TX low manually
 	//HAL_PIN_Setup_Output(dmx_pin);
 	//HAL_PIN_SetOutputValue(dmx_pin, 0);
