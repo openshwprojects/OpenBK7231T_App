@@ -17,5 +17,10 @@ int HAL_UART_Init(int baud, int parity, bool hwflowc)
 {
 	return 1;
 }
-
+void HAL_UART_Flush(void)
+{
+}
+void HAL_SetBaud(unsigned int baud)
+{
+}
 #endif
