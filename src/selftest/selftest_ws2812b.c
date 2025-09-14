@@ -3,13 +3,13 @@
 #include "selftest_local.h"
 
 
-bool SM16703P_VerifyPixel(uint32_t pixel, byte r, byte g, byte b);
-bool SM16703P_VerifyPixel4(uint32_t pixel, byte r, byte g, byte b, byte a);
+bool Strip_VerifyPixel(uint32_t pixel, byte r, byte g, byte b);
+bool Strip_VerifyPixel4(uint32_t pixel, byte r, byte g, byte b, byte a);
 
-#define SELFTEST_ASSERT_PIXEL(index, r, g, b) SELFTEST_ASSERT(SM16703P_VerifyPixel(index, r, g, b));
-#define SELFTEST_ASSERT_PIXEL4(index, r, g, b, w) SELFTEST_ASSERT(SM16703P_VerifyPixel4(index, r, g, b, w));
+#define SELFTEST_ASSERT_PIXEL(index, r, g, b) SELFTEST_ASSERT(Strip_VerifyPixel(index, r, g, b));
+#define SELFTEST_ASSERT_PIXEL4(index, r, g, b, w) SELFTEST_ASSERT(Strip_VerifyPixel4(index, r, g, b, w));
 
-void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push);
+void Strip_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push);
 
 void Test_DMX_RGB() {
 	// reset whole device
@@ -54,6 +54,32 @@ void Test_DMX_RGB() {
 	}
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("00 00 00");
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
+
+	CMD_ExecuteCommand("startDriver DDP", 0);
+	// fake DDP packet
+	{
+		byte ddpPacket[128];
+
+		// data starts at offset 10
+		// pixel 0
+		ddpPacket[10] = 0xFF;
+		ddpPacket[11] = 0xFF;
+		ddpPacket[12] = 0xFF;
+		// pixel 1
+		ddpPacket[13] = 0xFF;
+		ddpPacket[14] = 0x0;
+		ddpPacket[15] = 0x0;
+		// pixel 2
+		ddpPacket[16] = 0xFF;
+		ddpPacket[17] = 0x0;
+		ddpPacket[18] = 0xFF;
+
+		DDP_Parse(ddpPacket, sizeof(ddpPacket));
+
+		SELFTEST_ASSERT_PIXEL(0, 0xFF, 0xFF, 0xFF);
+		SELFTEST_ASSERT_PIXEL(1, 0xFF, 0, 0);
+		SELFTEST_ASSERT_PIXEL(2, 0xFF, 0, 0xFF);
+	}
 
 	// nothing is sent by OBK at that point
 }
@@ -185,7 +211,7 @@ void Test_WS2812B() {
 		uint8_t dat[9] = { 255, 0, 0,
 			0, 255, 0,
 			0, 0, 255 };
-		SM16703P_setMultiplePixel(3, dat, false);
+		Strip_setMultiplePixel(3, dat, false);
 		SELFTEST_ASSERT_PIXEL(0, 255, 0, 0);
 		SELFTEST_ASSERT_PIXEL(1, 0, 255, 0);
 		SELFTEST_ASSERT_PIXEL(2, 0, 0, 255);
@@ -195,7 +221,7 @@ void Test_WS2812B() {
 		uint8_t dat[9] = { 255, 0, 0,
 			0, 255, 0,
 			0, 0, 255 };
-		SM16703P_setMultiplePixel(3, dat, false);
+		Strip_setMultiplePixel(3, dat, false);
 		SELFTEST_ASSERT_PIXEL(0, 0, 0, 255);
 		SELFTEST_ASSERT_PIXEL(1, 0, 255, 0);
 		SELFTEST_ASSERT_PIXEL(2, 255, 0, 0);
@@ -205,7 +231,7 @@ void Test_WS2812B() {
 		uint8_t dat[9] = { 255, 0, 0,
 			0, 255, 0, 
 			0, 0, 255 };
-		SM16703P_setMultiplePixel(3, dat, false);
+		Strip_setMultiplePixel(3, dat, false);
 		SELFTEST_ASSERT_PIXEL(0, 0, 0, 255);
 		SELFTEST_ASSERT_PIXEL(1, 0, 255, 0);
 		SELFTEST_ASSERT_PIXEL(2, 255, 0, 0);
@@ -215,7 +241,7 @@ void Test_WS2812B() {
 		uint8_t dat[9] = { 255, 0, 0,
 			0, 255, 0, 
 			0, 0, 255 };
-		SM16703P_setMultiplePixel(3, dat, false);
+		Strip_setMultiplePixel(3, dat, false);
 		SELFTEST_ASSERT_PIXEL(0, 0, 255, 0);
 		SELFTEST_ASSERT_PIXEL(1, 255, 0, 0);
 		SELFTEST_ASSERT_PIXEL(2, 0, 0, 255);
@@ -225,7 +251,7 @@ void Test_WS2812B() {
 		uint8_t dat[9] = { 255, 0, 0, 
 			0, 255, 0, 
 			0, 0, 255 };
-		SM16703P_setMultiplePixel(3, dat, false);
+		Strip_setMultiplePixel(3, dat, false);
 		SELFTEST_ASSERT_PIXEL(0, 0, 255, 0);
 		SELFTEST_ASSERT_PIXEL(1, 0, 0, 255); 
 		SELFTEST_ASSERT_PIXEL(2, 255, 0, 0); 
@@ -360,15 +386,15 @@ void Test_WS2812B() {
 	for (int i = 0; i < 6; i++) {
 		SELFTEST_ASSERT_PIXEL(i, 128, 128, 128);
 	}
-	SM16703P_scaleAllPixels(128);
+	Strip_scaleAllPixels(128);
 	for (int i = 0; i < 6; i++) {
 		SELFTEST_ASSERT_PIXEL(i, 64, 64, 64);
 	}
-	SM16703P_scaleAllPixels(128);
+	Strip_scaleAllPixels(128);
 	for (int i = 0; i < 6; i++) {
 		SELFTEST_ASSERT_PIXEL(i, 32, 32, 32);
 	}
-	SM16703P_scaleAllPixels(64);
+	Strip_scaleAllPixels(64);
 	for (int i = 0; i < 6; i++) {
 		SELFTEST_ASSERT_PIXEL(i, 8, 8, 8);
 	}
