@@ -41,7 +41,7 @@ void SM16703P_GetPixel(uint32_t pixel, byte *dst) {
 	}
 }
 
-bool SM16703P_VerifyPixel(uint32_t pixel, byte r, byte g, byte b) {
+bool Strip_VerifyPixel(uint32_t pixel, byte r, byte g, byte b) {
 	byte real[4];
 	SM16703P_GetPixel(pixel, real);
 	if (real[0] != r)
@@ -52,7 +52,7 @@ bool SM16703P_VerifyPixel(uint32_t pixel, byte r, byte g, byte b) {
 		return false;
 	return true;
 }
-bool SM16703P_VerifyPixel4(uint32_t pixel, byte r, byte g, byte b, byte w) {
+bool Strip_VerifyPixel4(uint32_t pixel, byte r, byte g, byte b, byte w) {
 	byte real[4];
 	SM16703P_GetPixel(pixel, real);
 	if (real[0] != r)
@@ -67,7 +67,7 @@ bool SM16703P_VerifyPixel4(uint32_t pixel, byte r, byte g, byte b, byte w) {
 }
 
 
-void SM16703P_setPixel(int pixel, int r, int g, int b, int c, int w) {
+void Strip_setPixel(int pixel, int r, int g, int b, int c, int w) {
 	if (pixel < 0 || pixel >= pixel_count) {
 		return; // out of range - would crash
 	}
@@ -100,7 +100,7 @@ void SM16703P_setPixel(int pixel, int r, int g, int b, int c, int w) {
 
 	}
 }
-void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
+void Strip_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 	// Check max pixel
 	if (pixel > pixel_count)
 		pixel = pixel_count;
@@ -112,15 +112,14 @@ void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 		g = *data++;
 		b = *data++;
 		// TODO: Not sure how this works. Should we add Cold and Warm white here as well?
-		SM16703P_setPixel((int)i, (int)r, (int)g, (int)b, 0, 0);
+		Strip_setPixel((int)i, (int)r, (int)g, (int)b, 0, 0);
 	}
 	if (push) {
-		SM16703P_Show();
-
+		Strip_Apply();
 	}
 }
 extern float g_brightness0to100;//TODO
-void SM16703P_setPixelWithBrig(int pixel, int r, int g, int b, int c, int w) {
+void Strip_setPixelWithBrig(int pixel, int r, int g, int b, int c, int w) {
 	// scale brightness
 #if ENABLE_LED_BASIC
 	r = (int)(r * g_brightness0to100*0.01f);
@@ -129,11 +128,11 @@ void SM16703P_setPixelWithBrig(int pixel, int r, int g, int b, int c, int w) {
 	c = (int)(c * g_brightness0to100*0.01f);
 	w = (int)(w * g_brightness0to100*0.01f);
 #endif
-	SM16703P_setPixel(pixel, r, g, b, c, w);
+	Strip_setPixel(pixel, r, g, b, c, w);
 }
 #define SCALE8_PIXEL(x, scale) (uint8_t)(((uint32_t)x * (uint32_t)scale) / 256)
 
-void SM16703P_scaleAllPixels(int scale) {
+void Strip_scaleAllPixels(int scale) {
 	int pixel;
 	byte b;
 	int ofs;
@@ -148,11 +147,11 @@ void SM16703P_scaleAllPixels(int scale) {
 		}
 	}
 }
-void SM16703P_setAllPixels(int r, int g, int b, int c, int w) {
+void Strip_setAllPixels(int r, int g, int b, int c, int w) {
 	int pixel;
 
 	for (pixel = 0; pixel < pixel_count; pixel++) {
-		SM16703P_setPixel(pixel, r, g, b, c, w);
+		Strip_setPixel(pixel, r, g, b, c, w);
 	}
 }
 
@@ -213,11 +212,11 @@ commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, cons
 
 	if (all) {
 		for (i = 0; i < pixel_count; i++) {
-			SM16703P_setPixel(i, r, g, b, c, w);
+			Strip_setPixel(i, r, g, b, c, w);
 		}
 	}
 	else {
-		SM16703P_setPixel(pixel, r, g, b, c, w);
+		Strip_setPixel(pixel, r, g, b, c, w);
 	}
 
 
@@ -233,7 +232,7 @@ commandResult_t SM16703P_InitForLEDCount(const void *context, const char *cmd, c
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
-	SM16703P_Shutdown();
+	//SM16703P_Shutdown();
 
 	// First arg: number of pixel to address
 	pixel_count = Tokenizer_GetArgIntegerRange(0, 0, 255);
@@ -271,6 +270,9 @@ commandResult_t SM16703P_InitForLEDCount(const void *context, const char *cmd, c
 			}
 		}
 		pixel_size = i; // number of color channels
+		if (color_channel_order != default_color_channel_order) {
+			os_free(color_channel_order);
+		}
 		color_channel_order = new_channel_order;
 	}
 	led_backend.setLEDCount(pixel_count, pixel_size);
@@ -281,8 +283,17 @@ commandResult_t SM16703P_InitForLEDCount(const void *context, const char *cmd, c
 	return CMD_RES_OK;
 }
 
-static commandResult_t SM16703P_StartTX(const void *context, const char *cmd, const char *args, int flags) {
+bool Strip_IsActive() {
+	if (led_backend.apply) {
+		return true;
+	}
+	return false;
+}
+void Strip_Apply() {
 	led_backend.apply();
+}
+static commandResult_t SM16703P_StartTX(const void *context, const char *cmd, const char *args, int flags) {
+	Strip_Apply();
 	return CMD_RES_OK;
 }
 
@@ -322,4 +333,6 @@ void LEDS_ShutdownShared() {
 		color_channel_order = default_color_channel_order;
 	}
 	pixel_size = DEFAULT_PIXEL_SIZE;
+	pixel_count = 0;
+	memset(&led_backend, 0, sizeof(led_backend));
 }

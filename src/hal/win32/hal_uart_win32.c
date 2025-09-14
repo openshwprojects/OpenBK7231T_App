@@ -13,9 +13,14 @@ void HAL_UART_SendByte(byte b)
 	//addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU,"%02X", b);
 }
 
-int HAL_UART_Init(int baud, int parity, bool hwflowc)
+int HAL_UART_Init(int baud, int parity, bool hwflowc, int txOverride, int rxOverride)
 {
 	return 1;
 }
-
+void HAL_UART_Flush(void)
+{
+}
+void HAL_SetBaud(unsigned int baud)
+{
+}
 #endif
