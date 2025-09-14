@@ -161,17 +161,17 @@ void DDP_SetHeader(byte *data, int pixelSize, int bytesCount) {
 	data[9] = (byte)(bytesCount & 0xFF);        // LSB
 }
 // startDriver DDPSend
-// DDP_Send 192.168.0.226 4488 3 0 FF000000
+// DDP_Send 192.168.0.226 3 0 FF000000
 commandResult_t DDP_Send(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
 	if (Tokenizer_GetArgsCount() < 1) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	const char *ip = Tokenizer_GetArg(0);
-	int port = Tokenizer_GetArgInteger(1);
-	int pixelSize = Tokenizer_GetArgInteger(2);
-	int delay = Tokenizer_GetArgInteger(3);
-	const char *pData = Tokenizer_GetArg(4);
+	int port = 4048;// Tokenizer_GetArgInteger(1);
+	int pixelSize = Tokenizer_GetArgInteger(1);
+	int delay = Tokenizer_GetArgInteger(2);
+	const char *pData = Tokenizer_GetArg(3);
 	int numBytes = strlen(pData) / 2;
 	int headerSize = 10;
 	byte *data = malloc(headerSize+numBytes);
