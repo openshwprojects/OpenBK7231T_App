@@ -271,6 +271,9 @@ commandResult_t SM16703P_InitForLEDCount(const void *context, const char *cmd, c
 			}
 		}
 		pixel_size = i; // number of color channels
+		if (color_channel_order != default_color_channel_order) {
+			os_free(color_channel_order);
+		}
 		color_channel_order = new_channel_order;
 	}
 	led_backend.setLEDCount(pixel_count, pixel_size);
