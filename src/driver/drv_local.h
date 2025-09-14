@@ -76,6 +76,7 @@ void SM16703P_Show();
 void SM15155E_Init();
 void SM15155E_Write();
 void Strip_Apply();
+bool Strip_IsActive();
 extern uint32_t pixel_count;
 
 void TM1637_Init();

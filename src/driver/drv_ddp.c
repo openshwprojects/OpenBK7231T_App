@@ -129,7 +129,7 @@ void DDP_Parse(byte *data, int len) {
 		byte bytesPerPixel = ((data[2] & 0b00111000) >> 3 == 0b011) ? 4 : 3;
 
 #if ENABLE_DRIVER_SM16703P
-		if (spiLED.ready) {
+		if (Strip_IsActive()) {
 			// Note that this is limited by DDP msgbuf size
 			uint32_t numPixels = (len - 10) / 3;
 			// This immediately activates the pixels, maybe we should read the PUSH flag

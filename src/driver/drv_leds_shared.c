@@ -233,7 +233,7 @@ commandResult_t SM16703P_InitForLEDCount(const void *context, const char *cmd, c
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
-	SM16703P_Shutdown();
+	//SM16703P_Shutdown();
 
 	// First arg: number of pixel to address
 	pixel_count = Tokenizer_GetArgIntegerRange(0, 0, 255);
@@ -281,6 +281,12 @@ commandResult_t SM16703P_InitForLEDCount(const void *context, const char *cmd, c
 	return CMD_RES_OK;
 }
 
+bool Strip_IsActive() {
+	if (led_backend.apply) {
+		return true;
+	}
+	return false;
+}
 void Strip_Apply() {
 	led_backend.apply();
 }
@@ -325,4 +331,6 @@ void LEDS_ShutdownShared() {
 		color_channel_order = default_color_channel_order;
 	}
 	pixel_size = DEFAULT_PIXEL_SIZE;
+	pixel_count = 0;
+	memset(&led_backend, 0, sizeof(led_backend));
 }
