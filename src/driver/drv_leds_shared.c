@@ -115,8 +115,7 @@ void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push) {
 		SM16703P_setPixel((int)i, (int)r, (int)g, (int)b, 0, 0);
 	}
 	if (push) {
-		SM16703P_Show();
-
+		Strip_Apply();
 	}
 }
 extern float g_brightness0to100;//TODO
