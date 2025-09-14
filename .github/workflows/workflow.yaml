@@ -158,6 +158,67 @@ jobs:
           # default for all platforms
           - platform: OpenBK7231T
             variant: default
+          - platform: OpenBK7231N
+            variant: default
+          - platform: OpenXR809
+            variant: default
+          - platform: OpenXR806
+            variant: default
+          - platform: OpenXR872
+            variant: default
+          - platform: OpenBL602
+            variant: default
+          - platform: OpenW800
+            variant: default
+          - platform: OpenW600
+            variant: default
+          - platform: OpenLN882H
+            variant: default
+          - platform: OpenTR6260
+            variant: default
+          - platform: OpenRTL8710A
+            variant: default
+          - platform: OpenRTL8710B
+            variant: default
+          - platform: OpenRTL87X0C
+            variant: default
+          - platform: OpenRTL8720D
+            variant: default
+          - platform: OpenECR6600
+            variant: default
+
+          # extras for BK7231T
+          - platform: OpenBK7231T
+            variant: berry
+          - platform: OpenBK7231T
+            variant: tuyaMCU
+          - platform: OpenBK7231T
+            variant: powerMetering
+          - platform: OpenBK7231T
+            variant: irRemoteESP
+          - platform: OpenBK7231T
+            variant: sensors
+
+          # extras for BK7231N
+          - platform: OpenBK7231N
+            variant: berry
+          - platform: OpenBK7231N
+            variant: tuyaMCU
+          - platform: OpenBK7231N
+            variant: powerMetering
+          - platform: OpenBK7231N
+            variant: irRemoteESP
+          - platform: OpenBK7231N
+            variant: sensors
+
+          # extras for BK7238
+          - platform: OpenBK7238
+            variant: irRemoteESP
+            
+          - platform: OpenBL602
+            variant: berry
+          #- platform: OpenBL602
+          #  variant: irRemoteESP
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
@@ -205,7 +266,26 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - platform: OpenESP32C2
+            variant: 2M
+          - platform: OpenESP32C3
+            variant: 2M
+
           - platform: OpenESP32
+            variant: 4M
+          - platform: OpenESP32C2
+            variant: 4M
+          - platform: OpenESP32C3
+            variant: 4M
+          - platform: OpenESP32C6
+            variant: 4M
+          - platform: OpenESP32S3
+            variant: 4M
+          - platform: OpenESP32S2
+            variant: 4M
+          - platform: OpenESP32C5
+            variant: 4M
+          - platform: OpenESP32C61
             variant: 4M
     steps:
       - name: Source checkout
@@ -324,6 +404,19 @@ jobs:
           # default for all platforms
           - platform: OpenBK7231N_ALT
             variant: default
+          - platform: OpenBK7231T_ALT
+            variant: default
+          - platform: OpenBK7231U
+            variant: default
+          - platform: OpenBK7238
+            variant: default
+          - platform: OpenBK7252
+            variant: default
+          - platform: OpenBK7252N
+            variant: default
+          
+          - platform: OpenBK7238
+            variant: berry
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
