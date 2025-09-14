@@ -132,7 +132,7 @@ int HAL_UART_Init(int baud, int parity, bool hwflowc, int txOverride, int rxOver
 #endif
 	};
 	uart_param_config(uartnum, &uart_config);
-	uart_driver_install(uartnum, 512, 0, 0, NULL, 0);
+	uart_driver_install(uartnum, 4096, 4096, 0, NULL, 0);
 	uart_enable_rx_intr(uartnum);
 
 #if PLATFORM_ESPIDF
