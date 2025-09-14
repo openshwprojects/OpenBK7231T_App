@@ -60,7 +60,7 @@ void DMX_Show() {
 		HAL_Delay_us(120); // ≥88µs
 		HAL_PIN_SetOutputValue(dmx_pin, 1);
 		HAL_Delay_us(12); // MAB ≥8µs
-		HAL_UART_Init(250000, 2, false);
+		HAL_UART_Init(250000, 2, false, dmx_pin, -1);
 #else
 #define DMX_BREAK_DURATION_MICROS 88
 		uint32_t breakBaud = 1000000 * 8 / DMX_BREAK_DURATION_MICROS;
@@ -107,7 +107,7 @@ void DMX_Init() {
 
 	LEDS_InitShared(&ws_export);
 
-	HAL_UART_Init(250000, 2, false);
+	HAL_UART_Init(250000, 2, false, dmx_pin, -1);
 }
 void DMX_OnEverySecond() {
 }

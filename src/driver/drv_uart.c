@@ -254,7 +254,7 @@ int UART_InitUARTEx(int auartindex, int baud, int parity, bool hwflowc)
 #ifdef UART_2_UARTS_CONCURRENT
     HAL_UART_InitEx(auartindex, baud, parity, hwflowc);
 #else
-    HAL_UART_Init(baud, parity, hwflowc);
+    HAL_UART_Init(baud, parity, hwflowc, -1, -1);
 #endif
   return fuartbuf->g_uart_init_counter;
 }

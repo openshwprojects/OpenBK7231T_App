@@ -111,7 +111,7 @@ void HAL_SetBaud(uint32_t baud)
 	uart_set_baudrate(uartnum, baud);
 }
 
-int HAL_UART_Init(int baud, int parity, bool hwflowc)
+int HAL_UART_Init(int baud, int parity, bool hwflowc, int txOverride, int rxOverride)
 {
 	if(CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART))
 	{
@@ -145,9 +145,11 @@ int HAL_UART_Init(int baud, int parity, bool hwflowc)
 
 
 #if PLATFORM_ESPIDF
-	uart_set_pin(uartnum, 
-		22, 21, 
-		UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+	if (txOverride != -1) {
+		uart_set_pin(uartnum,
+			txOverride, 21,
+			UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+	}
 #endif
 
 	xTaskCreate(uart_event_task, "uart_event_task", 1024, NULL, 16, NULL);

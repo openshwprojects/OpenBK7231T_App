@@ -314,18 +314,18 @@ void Test_WS2812B() {
 	}
 	CMD_ExecuteCommand("startDriver DDP", 0);
 	CMD_ExecuteCommand("startDriver DDPSend", 0);
-	CMD_ExecuteCommand("DDP_Send 127.0.0.1 4048 3 0 FF00AB", 0);
+	CMD_ExecuteCommand("DDP_Send 127.0.0.1 3 0 FF00AB", 0);
 	SIM_WaitForDDPPacket();
 	// this requires udp to work so it can pass...
 	if (1) {
 		SELFTEST_ASSERT_PIXEL(0, 0xFF, 0x00, 0xAB);
 	}
-	CMD_ExecuteCommand("DDP_Send 127.0.0.1 4048 3 0 ABCDEF", 0);
+	CMD_ExecuteCommand("DDP_Send 127.0.0.1 3 0 ABCDEF", 0);
 	SIM_WaitForDDPPacket();
 	if (1) {
 		SELFTEST_ASSERT_PIXEL(0, 0xAB, 0xCD, 0xEF);
 	}
-	CMD_ExecuteCommand("DDP_Send 127.0.0.1 4048 3 0 ABCDEFAABBCC", 0);
+	CMD_ExecuteCommand("DDP_Send 127.0.0.1 3 0 ABCDEFAABBCC", 0);
 	SIM_WaitForDDPPacket();
 	if (1) {
 		SELFTEST_ASSERT_PIXEL(0, 0xAB, 0xCD, 0xEF);

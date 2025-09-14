@@ -12,5 +12,5 @@ int HAL_UART_InitEx(int auartindex, int baud, int parity, bool hwflowc);
 #else
 void HAL_UART_SendByte(byte b);
 
-int HAL_UART_Init(int baud, int parity, bool hwflowc);
+int HAL_UART_Init(int baud, int parity, bool hwflowc, int txOverride, int rxOverride);
 #endif
