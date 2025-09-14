@@ -103,6 +103,14 @@ void HAL_UART_SendByte(byte b)
 	uart_write_bytes(uartnum, &b, 1);
 }
 
+void HAL_UART_Flush(void)
+{
+	uart_wait_tx_done(uartnum, pdMS_TO_TICKS(100));
+}
+void HAL_SetBaud(uint32_t baud)
+{
+	uart_set_baudrate(uartnum, baud);
+}
 int HAL_UART_Init(int baud, int parity, bool hwflowc, int txOverride, int rxOverride)
 {
 	if (CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART))
