@@ -133,7 +133,7 @@ void DDP_Parse(byte *data, int len) {
 			// Note that this is limited by DDP msgbuf size
 			uint32_t numPixels = (len - 10) / 3;
 			// debug
-			addLogAdv(LOG_INFO, LOG_FEATURE_DDP, "DDP_Parse: STRIP path: %i pixels", numPixels);
+			//addLogAdv(LOG_INFO, LOG_FEATURE_DDP, "DDP_Parse: STRIP path: %i pixels", numPixels);
 			// This immediately activates the pixels, maybe we should read the PUSH flag
 			Strip_setMultiplePixel(numPixels, &data[10], true);
 		} else
@@ -143,7 +143,7 @@ void DDP_Parse(byte *data, int len) {
 			g = data[11];
 			b = data[12];
 
-			addLogAdv(LOG_INFO, LOG_FEATURE_DDP, "DDP_Parse: bulb path");
+			//addLogAdv(LOG_INFO, LOG_FEATURE_DDP, "DDP_Parse: bulb path");
 
 #if ENABLE_LED_BASIC
 			LED_SetDimmerIfChanged(100);

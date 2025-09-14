@@ -12,7 +12,8 @@ setPinRole 17 AlwaysHigh
 // digitalWrite(PIN_5V_EN, HIGH);
 setPinRole 16 AlwaysHigh
 
-startDriver DMX
+// UART TX (for RS485) on 22
+startDriver DMX 22
 SM16703P_Init 50 RGBW
 startDriver PixelAnim
 
@@ -97,6 +98,8 @@ void DMX_SetLEDCount(int pixel_count, int pixel_size) {
 }
 
 void DMX_Init() {
+	dmx_pin = Tokenizer_GetArgIntegerDefault(1, dmx_pin);
+
 	g_dmxBuffer = (byte*)malloc(DMX_BUFFER_SIZE);
 	memset(g_dmxBuffer, 0, DMX_BUFFER_SIZE);
 	ledStrip_t ws_export;
