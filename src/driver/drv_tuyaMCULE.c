@@ -932,6 +932,13 @@ void TuyaMCULE_Init() {
 }
 
 void TuyaMCULE_Shutdown() {
+	g_baudRate = 9600;
+
+	g_wifiReset = false;
+	g_tuyaNextRequestDelay;
+	g_tuyaBatteryPoweredState = TUYAMCULE_STATE_AWAITING_INFO;
+	g_defaultTuyaMCUWiFiState = TUYAMCULE_NETWORK_STATUS_SMART_CONNECT_SETUP;
+
 	TuyaMCULE_dpConfig_t *tmp = g_dpConfigs;
 	while (tmp) {
 		TuyaMCULE_dpConfig_t *nxt = tmp->next;
@@ -939,4 +946,6 @@ void TuyaMCULE_Shutdown() {
 		tmp = nxt;
 	}
 	g_dpConfigs = NULL;
+
+	g_HandleStateRcCbEpectedCount = 0;
 }
