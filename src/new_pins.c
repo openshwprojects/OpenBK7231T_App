@@ -1575,33 +1575,39 @@ void CHANNEL_Set_Ex(int ch, int iVal, int iFlags, int ausemovingaverage, CHANNEL
 	// special channels
 	if (ch == SPECIAL_CHANNEL_LEDPOWER) {
 		LED_SetEnableAll(iVal);
-		cb(arg);
+		if (cb)
+			cb(arg);
 		return;
 	}
 	if (ch == SPECIAL_CHANNEL_BRIGHTNESS) {
 		LED_SetDimmer(iVal);
-		cb(arg);
+		if (cb)
+			cb(arg);
 		return;
 	}
 	if (ch == SPECIAL_CHANNEL_TEMPERATURE) {
 		LED_SetTemperature(iVal, 1);
-		cb(arg);
+		if (cb)
+			cb(arg);
 		return;
 	}
 	if (ch >= SPECIAL_CHANNEL_BASECOLOR_FIRST && ch <= SPECIAL_CHANNEL_BASECOLOR_LAST) {
 		LED_SetBaseColorByIndex(ch - SPECIAL_CHANNEL_BASECOLOR_FIRST, iVal, 1);
-		cb(arg);
+		if (cb)
+			cb(arg);
 		return;
 	}
 #endif
 	if (ch >= SPECIAL_CHANNEL_FLASHVARS_FIRST && ch <= SPECIAL_CHANNEL_FLASHVARS_LAST) {
 		HAL_FlashVars_SaveChannel(ch - SPECIAL_CHANNEL_FLASHVARS_FIRST, iVal);
-		cb(arg);
+		if (cb)
+			cb(arg);
 		return;
 	}
 	if (ch < 0 || ch >= CHANNEL_MAX) {
 		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Set: Channel index %i is out of range <0,%i)\n", ch, CHANNEL_MAX);
-		cb(arg);
+		if (cb)
+			cb(arg);
 		return;
 	}
 	prevValue = g_channelValues[ch];
@@ -1610,7 +1616,8 @@ void CHANNEL_Set_Ex(int ch, int iVal, int iFlags, int ausemovingaverage, CHANNEL
 			if (bSilent == 0) {
 				addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "No change in channel %i (still set to %i) - ignoring\n", ch, prevValue);
 			}
-			cb(arg);
+			if (cb)
+				cb(arg);
 			return;
 		}
 	}

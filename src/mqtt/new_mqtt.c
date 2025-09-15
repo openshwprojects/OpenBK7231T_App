@@ -879,13 +879,18 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 	size_t sVal_len;
 	char* pub_topic;
 
-	if (client == 0)
+	if (client == 0) {
+		if (cb)
+			cb(arg);
 		return OBK_PUBLISH_WAS_DISCONNECTED;
+	}
 
 	if (flags & OBK_PUBLISH_FLAG_MUTEX_SILENT)
 	{
 		if (MQTT_Mutex_Take(100) == 0)
 		{
+			if (cb)
+				cb(arg);
 			return OBK_PUBLISH_MUTEX_FAIL;
 		}
 	}
@@ -893,6 +898,8 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 		if (MQTT_Mutex_Take(500) == 0)
 		{
 			addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "MQTT_PublishTopicToClient: mutex failed for %s=%s\r\n", sChannel, sVal);
+			if (cb)
+				cb(arg);
 			return OBK_PUBLISH_MUTEX_FAIL;
 		}
 	}
@@ -923,68 +930,70 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 	{
 		g_my_reconnect_mqtt_after_time = 5;
 		MQTT_Mutex_Free();
+		if (cb)
+			cb(arg);
 		return OBK_PUBLISH_WAS_DISCONNECTED;
 	}
 
 	g_timeSinceLastMQTTPublish = 0;
 
 	pub_topic = (char*)os_malloc(strlen(sTopic) + 1 + strlen(sChannel) + 5 + 1); //5 for /get
-	if ((pub_topic != NULL) && (sVal != NULL))
-	{
-		sVal_len = strlen(sVal);
-		if (flags & OBK_PUBLISH_FLAG_RAW_TOPIC_NAME)
-		{
-			strcpy(pub_topic, sChannel);
-		}
-		else 
-		{
-			sprintf(pub_topic, "%s/%s%s", sTopic, sChannel, (appendGet == true ? "/get" : ""));
-		}
-		if (sVal_len < 128)
-		{
-			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publishing val %s to %s retain=%i\n", sVal, pub_topic, retain);
-		}
-		else {
-			addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publishing val (%d bytes) to %s retain=%i\n", sVal_len, pub_topic, retain);
-		}
-
-
-		LOCK_TCPIP_CORE();
-		mqtt_pub_request_cb_arg_t *cba = NULL;
-		if (cb) {
-			cba = malloc(sizeof(mqtt_pub_request_cb_arg_t));
-			cba->cb = cb;
-			cba->arg = arg;
-		}
-		err = mqtt_publish(client, pub_topic, sVal, strlen(sVal), qos, retain, mqtt_pub_request_cb, cba);
-		UNLOCK_TCPIP_CORE();
-		os_free(pub_topic);
-
-		if (err != ERR_OK)
-		{
-			if (err == ERR_CONN)
-			{
-				addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "Publish err: ERR_CONN aka %d\n", err);
-			}
-			else if (err == ERR_MEM) {
-				addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "Publish err: ERR_MEM aka %d\n", err);
-				g_memoryErrorsThisSession++;
-			}
-			else {
-				addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "Publish err: %d\n", err);
-			}
-			mqtt_publish_errors++;
-			MQTT_Mutex_Free();
-			return OBK_PUBLISH_MEM_FAIL;
-		}
-		mqtt_published_events++;
+	if (pub_topic == NULL || sVal == NULL) {
 		MQTT_Mutex_Free();
-		return OBK_PUBLISH_OK;
+		if (cb)
+			cb(arg);
+		return OBK_PUBLISH_MEM_FAIL;
+	}
+
+	sVal_len = strlen(sVal);
+	if (flags & OBK_PUBLISH_FLAG_RAW_TOPIC_NAME)
+	{
+		strcpy(pub_topic, sChannel);
+	}
+	else 
+	{
+		sprintf(pub_topic, "%s/%s%s", sTopic, sChannel, (appendGet == true ? "/get" : ""));
+	}
+	if (sVal_len < 128)
+	{
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publishing val %s to %s retain=%i\n", sVal, pub_topic, retain);
 	}
 	else {
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publishing val (%d bytes) to %s retain=%i\n", sVal_len, pub_topic, retain);
+	}
+
+	LOCK_TCPIP_CORE();
+	mqtt_pub_request_cb_arg_t *cba = NULL;
+	if (cb) {
+		cba = malloc(sizeof(mqtt_pub_request_cb_arg_t));
+		cba->cb = cb;
+		cba->arg = arg;
+	}
+	err = mqtt_publish(client, pub_topic, sVal, strlen(sVal), qos, retain, mqtt_pub_request_cb, cba);
+	UNLOCK_TCPIP_CORE();
+	os_free(pub_topic);
+
+	if (err != ERR_OK)
+	{
+		if (err == ERR_CONN)
+		{
+			addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "Publish err: ERR_CONN aka %d\n", err);
+		}
+		else if (err == ERR_MEM) {
+			addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "Publish err: ERR_MEM aka %d\n", err);
+			g_memoryErrorsThisSession++;
+		}
+		else {
+			addLogAdv(LOG_ERROR, LOG_FEATURE_MQTT, "Publish err: %d\n", err);
+		}
+		mqtt_publish_errors++;
 		MQTT_Mutex_Free();
 		return OBK_PUBLISH_MEM_FAIL;
 	}
+
+	mqtt_published_events++;
+	MQTT_Mutex_Free();
+	return OBK_PUBLISH_OK;
 }
 
 // This is used to publish channel values in "obk0696FB33/1/get" format with numerical value,
