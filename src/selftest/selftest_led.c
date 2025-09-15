@@ -557,7 +557,7 @@ void Test_LEDDriver_BP5758_RGBCW() {
 	SIM_ClearOBK(0);
 
 	Test_FakeHTTPClientPacket_GET("index");
-	SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS("LED RGB Color");
+	SELFTEST_ASSERT_PAGE_NOT_CONTAINS("index","LED RGB Color");
 	SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS("LED Temperature Slider");
 
 	CMD_ExecuteCommand("StartDriver BP5758D", 0);
