@@ -58,7 +58,7 @@ jobs:
   build2:
     name: Build Simulator
     needs: refs
-    runs-on: windows-latest
+    runs-on: windows-2022
 
     steps:
     - name: Checkout repository
