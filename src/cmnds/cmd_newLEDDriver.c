@@ -10,6 +10,7 @@
 #include "../driver/drv_public.h"
 #include "../driver/drv_local.h"
 #include "../hal/hal_flashVars.h"
+#include "../hal/hal_pins.h"
 #include "../hal/hal_flashConfig.h"
 #include "../rgb2hsv.h"
 #include <ctype.h>
