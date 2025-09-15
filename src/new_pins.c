@@ -760,7 +760,7 @@ void CHANNEL_SetFirstChannelByTypeEx(int requiredType, int newVal, int ausemovin
 
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		if (CHANNEL_GetType(i) == requiredType) {
-			CHANNEL_Set_Ex(i, newVal, 0, ausemovingaverage);
+			CHANNEL_Set_Ex(i, newVal, 0, ausemovingaverage, 0, 0);
 			return;
 		}
 	}
@@ -1258,7 +1258,8 @@ void Channel_SaveInFlashIfNeeded(int ch) {
 		//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Channel_SaveInFlashIfNeeded: Channel %i is not saved to flash, state %i", ch, g_channelValues[ch]);
 	}
 }
-static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
+
+static void Channel_OnChanged(int ch, int prevValue, int iFlags, CHANNEL_SET_cb_t cb, void *arg) {
 	int i;
 	int iVal;
 	int bOn;
@@ -1299,9 +1300,12 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 #if ENABLE_MQTT
 	if ((iFlags & CHANNEL_SET_FLAG_SKIP_MQTT) == 0) {
 		if (CHANNEL_ShouldBePublished(ch)) {
-			MQTT_ChannelPublish(ch, 0);
+			MQTT_ChannelPublish(ch, 0, cb, arg);
 		}
 	}
+#else
+	if (cb)
+		cb(arg);
 #endif
 	// Simple event - it just says that there was a change
 	EventHandlers_FireEvent(CMD_EVENT_CHANNEL_ONCHANGE, ch);
@@ -1560,7 +1564,7 @@ void CHANNEL_SetSmart(int ch, float fVal, int iFlags) {
 	CHANNEL_Set(ch, divided, iFlags);
 }
 
-void CHANNEL_Set_Ex(int ch, int iVal, int iFlags, int ausemovingaverage) {
+void CHANNEL_Set_Ex(int ch, int iVal, int iFlags, int ausemovingaverage, CHANNEL_SET_cb_t cb, void *arg) {
 	int prevValue;
 	int bForce;
 	int bSilent;
@@ -1571,55 +1575,65 @@ void CHANNEL_Set_Ex(int ch, int iVal, int iFlags, int ausemovingaverage) {
 	// special channels
 	if (ch == SPECIAL_CHANNEL_LEDPOWER) {
 		LED_SetEnableAll(iVal);
+		cb(arg);
 		return;
 	}
 	if (ch == SPECIAL_CHANNEL_BRIGHTNESS) {
 		LED_SetDimmer(iVal);
+		cb(arg);
 		return;
 	}
 	if (ch == SPECIAL_CHANNEL_TEMPERATURE) {
 		LED_SetTemperature(iVal, 1);
+		cb(arg);
 		return;
 	}
 	if (ch >= SPECIAL_CHANNEL_BASECOLOR_FIRST && ch <= SPECIAL_CHANNEL_BASECOLOR_LAST) {
 		LED_SetBaseColorByIndex(ch - SPECIAL_CHANNEL_BASECOLOR_FIRST, iVal, 1);
+		cb(arg);
 		return;
 	}
 #endif
 	if (ch >= SPECIAL_CHANNEL_FLASHVARS_FIRST && ch <= SPECIAL_CHANNEL_FLASHVARS_LAST) {
 		HAL_FlashVars_SaveChannel(ch - SPECIAL_CHANNEL_FLASHVARS_FIRST, iVal);
+		cb(arg);
 		return;
 	}
 	if (ch < 0 || ch >= CHANNEL_MAX) {
-		//if(bMustBeSilent==0) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Set: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
-		//}
+		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_Set: Channel index %i is out of range <0,%i)\n", ch, CHANNEL_MAX);
+		cb(arg);
 		return;
 	}
 	prevValue = g_channelValues[ch];
 	if (bForce == 0) {
 		if (prevValue == iVal) {
 			if (bSilent == 0) {
-				addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "No change in channel %i (still set to %i) - ignoring\n\r", ch, prevValue);
+				addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "No change in channel %i (still set to %i) - ignoring\n", ch, prevValue);
 			}
+			cb(arg);
 			return;
 		}
 	}
 	if (bSilent == 0) {
-		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_Set channel %i has changed to %i (flags %i)\n\r", ch, iVal, iFlags);
+		addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_Set channel %i has changed to %i (flags %i)\n", ch, iVal, iFlags);
 	}
-	#ifdef ENABLE_BL_MOVINGAVG
-	//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_Set debug channel %i has changed to %i (flags %i)\n\r", ch, iVal, iFlags);
+#ifdef ENABLE_BL_MOVINGAVG
+	//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_Set debug channel %i has changed to %i (flags %i)\n", ch, iVal, iFlags);
 	if (ausemovingaverage) {
 		iVal=XJ_MovingAverage_int(prevValue, iVal);
 	}
-	#endif
+#endif
 	g_channelValues[ch] = iVal;
 
-	Channel_OnChanged(ch, prevValue, iFlags);
+	Channel_OnChanged(ch, prevValue, iFlags, cb, arg);
 }
+
 void CHANNEL_Set(int ch, int iVal, int iFlags) {
-	CHANNEL_Set_Ex(ch, iVal, iFlags, 0);
+	CHANNEL_Set_Ex(ch, iVal, iFlags, 0, 0, 0);
+}
+
+void CHANNEL_SetWithCB(int ch, int iVal, int iFlags, CHANNEL_SET_cb_t cb, void *arg) {
+	CHANNEL_Set_Ex(ch, iVal, iFlags, 0, cb, arg);
 }
 
 void CHANNEL_AddClamped(int ch, int iVal, int min, int max, int bWrapInsteadOfClamp) {
@@ -1647,7 +1661,7 @@ void CHANNEL_AddClamped(int ch, int iVal, int min, int max, int bWrapInsteadOfCl
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_AddClamped channel %i has changed to %i\n\r", ch, g_channelValues[ch]);
 
-	Channel_OnChanged(ch, prevValue, 0);
+	Channel_OnChanged(ch, prevValue, 0, 0, 0);
 #else
 	// we want to support special channel indexes, so it's better to use GET/SET interface
 	// Special channel indexes are used to access things like dimmer, led colors, etc
@@ -1683,7 +1697,7 @@ void CHANNEL_Add(int ch, int iVal) {
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_Add channel %i has changed to %i\n\r", ch, g_channelValues[ch]);
 
-	Channel_OnChanged(ch, prevValue, 0);
+	Channel_OnChanged(ch, prevValue, 0, 0, 0);
 #else
 	// we want to support special channel indexes, so it's better to use GET/SET interface
 	// Special channel indexes are used to access things like dimmer, led colors, etc
@@ -1737,7 +1751,7 @@ void CHANNEL_Toggle(int ch) {
 	else
 		g_channelValues[ch] = 0;
 
-	Channel_OnChanged(ch, prev, 0);
+	Channel_OnChanged(ch, prev, 0, 0, 0);
 }
 int CHANNEL_HasChannelPinWithRoleOrRole(int ch, int iorType, int iorType2) {
 	int i;

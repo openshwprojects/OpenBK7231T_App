@@ -627,7 +627,7 @@ int channelGet(obk_mqtt_request_t* request) {
 		return 0;
 	}
 
-	MQTT_ChannelPublish(channel, 0);
+	MQTT_ChannelPublish(channel, 0, 0, 0);
 
 	// return 1 to stop processing callbacks here.
 	// return 0 to allow later callbacks to process this topic.
@@ -841,18 +841,33 @@ static void MQTT_disconnect(mqtt_client_t* client)
 
 }
 
+typedef struct
+{
+	MQTT_ChannelPublish_cb_t cb;
+	void *arg;
+} mqtt_pub_request_cb_arg_t;
+
+
 /* Called when publish is complete either with sucess or failure */
 static void mqtt_pub_request_cb(void* arg, err_t result)
 {
+	mqtt_pub_request_cb_arg_t *cba = arg;
+
 	if (result != ERR_OK)
 	{
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish result: %d(%s)\n", result, get_error_name(result));
 		mqtt_publish_errors++;
 	}
+
+	if (cba)
+	{
+		cba->cb(cba->arg);
+		free(cba);
+	}
 }
 
 // This publishes value to the specified topic/channel.
-static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const char* sTopic, const char* sChannel, const char* sVal, int flags, bool appendGet)
+static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const char* sTopic, const char* sChannel, const char* sVal, int flags, bool appendGet, MQTT_ChannelPublish_cb_t cb, void *arg)
 {
 	err_t err;
 	u8_t qos = 1; /* 0 1 or 2, see MQTT specification */
@@ -935,7 +950,13 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 
 
 		LOCK_TCPIP_CORE();
-		err = mqtt_publish(client, pub_topic, sVal, strlen(sVal), qos, retain, mqtt_pub_request_cb, 0);
+		mqtt_pub_request_cb_arg_t *cba = NULL;
+		if (cb) {
+			cba = malloc(sizeof(mqtt_pub_request_cb_arg_t));
+			cba->cb = cb;
+			cba->arg = arg;
+		}
+		err = mqtt_publish(client, pub_topic, sVal, strlen(sVal), qos, retain, mqtt_pub_request_cb, cba);
 		UNLOCK_TCPIP_CORE();
 		os_free(pub_topic);
 
@@ -969,21 +990,21 @@ static OBK_Publish_Result MQTT_PublishTopicToClient(mqtt_client_t* client, const
 // This is used to publish channel values in "obk0696FB33/1/get" format with numerical value,
 // This is also used to publish custom information with string name,
 // for example, "obk0696FB33/voltage/get" is used to publish voltage from the sensor
-static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t* client, const char* sChannel, const char* sVal, int flags, bool appendGet)
+static OBK_Publish_Result MQTT_PublishMain(mqtt_client_t* client, const char* sChannel, const char* sVal, int flags, bool appendGet, MQTT_ChannelPublish_cb_t cb, void *arg)
 {
-	return MQTT_PublishTopicToClient(mqtt_client, CFG_GetMQTTClientId(), sChannel, sVal, flags, appendGet);
+	return MQTT_PublishTopicToClient(mqtt_client, CFG_GetMQTTClientId(), sChannel, sVal, flags, appendGet, cb, arg);
 }
 OBK_Publish_Result MQTT_PublishTele(const char* teleName, const char* teleValue)
 {
 	char topic[64];
 	snprintf(topic, sizeof(topic), "tele/%s", CFG_GetMQTTClientId());
-	return MQTT_PublishTopicToClient(mqtt_client, topic, teleName, teleValue, 0, false);
+	return MQTT_PublishTopicToClient(mqtt_client, topic, teleName, teleValue, 0, false, 0, 0);
 }
 OBK_Publish_Result MQTT_PublishStat(const char* statName, const char* statValue)
 {
 	char topic[64];
 	snprintf(topic,sizeof(topic),"stat/%s", CFG_GetMQTTClientId());
-	return MQTT_PublishTopicToClient(mqtt_client, topic, statName, statValue, 0, false);
+	return MQTT_PublishTopicToClient(mqtt_client, topic, statName, statValue, 0, false, 0, 0);
 }
 /// @brief Publish a MQTT message immediately.
 /// @param sTopic 
@@ -993,7 +1014,7 @@ OBK_Publish_Result MQTT_PublishStat(const char* statName, const char* statValue)
 /// @return 
 OBK_Publish_Result MQTT_Publish(const char* sTopic, const char* sChannel, const char* sVal, int flags)
 {
-	return MQTT_PublishTopicToClient(mqtt_client, sTopic, sChannel, sVal, flags, false);
+	return MQTT_PublishTopicToClient(mqtt_client, sTopic, sChannel, sVal, flags, false, 0, 0);
 }
 
 void MQTT_OBK_Printf(char* s) {
@@ -1436,7 +1457,7 @@ OBK_Publish_Result MQTT_PublishMain_StringInt(const char* sChannel, int iv, int 
 
 	sprintf(valueStr, "%i", iv);
 
-	return MQTT_PublishMain(mqtt_client, sChannel, valueStr, flags, true);
+	return MQTT_PublishMain(mqtt_client, sChannel, valueStr, flags, true, 0, 0);
 
 }
 OBK_Publish_Result MQTT_PublishMain_StringFloat(const char* sChannel, float f, int maxDecimalPlaces, int flags)
@@ -1449,17 +1470,17 @@ OBK_Publish_Result MQTT_PublishMain_StringFloat(const char* sChannel, float f, i
 		stripDecimalPlaces(valueStr, maxDecimalPlaces);
 	}
 
-	return MQTT_PublishMain(mqtt_client, sChannel, valueStr, flags, true);
+	return MQTT_PublishMain(mqtt_client, sChannel, valueStr, flags, true, 0, 0);
 
 }
 OBK_Publish_Result MQTT_PublishMain_StringString(const char* sChannel, const char* valueStr, int flags)
 {
 
-	return MQTT_PublishMain(mqtt_client, sChannel, valueStr, flags, true);
+	return MQTT_PublishMain(mqtt_client, sChannel, valueStr, flags, true, 0, 0);
 
 }
 
-OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
+OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags, MQTT_ChannelPublish_cb_t cb, void *arg)
 {
 	char channelNameStr[8];
 	char valueStr[16];
@@ -1495,7 +1516,7 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 		}
 	}
 
-	return MQTT_PublishMain(mqtt_client, channelNameStr, valueStr, flags, true);
+	return MQTT_PublishMain(mqtt_client, channelNameStr, valueStr, flags, true, cb, arg);
 }
 // This console command will trigger a publish of all used variables (channels and extra stuff)
 commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -1517,7 +1538,7 @@ commandResult_t MQTT_PublishChannel(const void* context, const char* cmd, const 
 	}
 	channelIndex = Tokenizer_GetArgInteger(0);
 
-	MQTT_ChannelPublish(channelIndex,0);
+	MQTT_ChannelPublish(channelIndex, 0, 0, 0);
 
 	return CMD_RES_OK;
 }
@@ -1983,7 +2004,7 @@ static float getInternalTemperature() {
 
 OBK_Publish_Result MQTT_DoItemPublishString(const char* sChannel, const char* valueStr)
 {
-	return MQTT_PublishMain(mqtt_client, sChannel, valueStr, OBK_PUBLISH_FLAG_MUTEX_SILENT, false);
+	return MQTT_PublishMain(mqtt_client, sChannel, valueStr, OBK_PUBLISH_FLAG_MUTEX_SILENT, false, 0, 0);
 }
 
 OBK_Publish_Result MQTT_DoItemPublish(int idx)
@@ -2097,7 +2118,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 	// TODO
 	//type = CHANNEL_GetType(idx);
 	if (bWantsToPublish) {
-		return MQTT_ChannelPublish(g_publishItemIndex, OBK_PUBLISH_FLAG_MUTEX_SILENT);
+		return MQTT_ChannelPublish(g_publishItemIndex, OBK_PUBLISH_FLAG_MUTEX_SILENT, 0, 0);
 	}
 
 	return OBK_PUBLISH_WAS_NOT_REQUIRED; // didnt publish
@@ -2458,7 +2479,7 @@ OBK_Publish_Result PublishQueuedItems() {
 	while ((head != NULL) && (count < MQTT_QUEUED_ITEMS_PUBLISHED_AT_ONCE) && (g_MqttPublishItemsQueued > 0)) {
 		if (!MQTT_QUEUE_ITEM_IS_REUSABLE(head)) {  //Skip reusable entries
 			count++;
-			result = MQTT_PublishTopicToClient(mqtt_client, head->topic, head->channel, head->value, head->flags, false);
+			result = MQTT_PublishTopicToClient(mqtt_client, head->topic, head->channel, head->value, head->flags, false, 0, 0);
 			MQTT_QUEUE_ITEM_SET_REUSABLE(head); //Flag item as reusable
 			g_MqttPublishItemsQueued--;   //decrement queued count
 
