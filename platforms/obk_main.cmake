@@ -130,7 +130,6 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_tm1638.c
 	${OBK_SRCS}driver/drv_tm_gn_display_shared.c
 	${OBK_SRCS}driver/drv_tuyaMCU.c
-	${OBK_SRCS}driver/drv_tuyaMCUSensor.c
 	${OBK_SRCS}driver/drv_uart.c
 	${OBK_SRCS}driver/drv_uart_tcp.c
 	${OBK_SRCS}driver/drv_ucs1912.c

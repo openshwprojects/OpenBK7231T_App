@@ -98,9 +98,6 @@ bool DRV_IsRunning(const char *name);
 void DGR_ProcessIncomingPacket(char *msgbuf, int nbytes);
 void DGR_SpoofNextDGRPacketSource(const char *ipStrs);
 
-void TuyaMCU_Sensor_RunEverySecond();
-void TuyaMCU_Sensor_Init();
-
 void DRV_Test_Charts_AddToHtmlPage(http_request_t *request, int bPreState);
 
 void DRV_Charts_AddToHtmlPage(http_request_t *request, int bPreState);
