@@ -63,7 +63,7 @@ typedef struct TuyaMCULE_dpConfig_s {
 static int g_baudRate = 9600;
 
 static bool g_wifiReset = false;
-static int g_tuyaNextRequestDelay;
+static int g_tuyaNextRequestDelay = 0;
 static byte g_tuyaBatteryPoweredState = TUYAMCULE_STATE_AWAITING_INFO;
 static byte g_defaultTuyaMCUWiFiState = TUYAMCULE_NETWORK_STATUS_SMART_CONNECT_SETUP;
 
@@ -130,8 +130,11 @@ void TuyaMCULE_SendCommand(byte cmd, byte* data, int len) {
 	UART_SendByte(check_sum);
 
 	char buffer_for_log[256] = { 0 };
-	for (int i = 0; i < len; i++)
-		snprintf(buffer_for_log, sizeof(buffer_for_log), "%s%02X ", buffer_for_log, data[i]);
+	for (int i = 0; i < len; i++) {
+		char temp[256];
+		memcpy(temp, buffer_for_log, sizeof(buffer_for_log));
+		snprintf(buffer_for_log, sizeof(buffer_for_log), "%s%02X ", temp, data[i]);
+	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "Sent: 55 AA 00 %02X %02X %02X %s%02X\n", cmd, len >> 8, len & 0xFF, buffer_for_log, check_sum);
 }
 
@@ -232,15 +235,21 @@ void TuyaMCULE_RunEverySecond() {
 
 void TuyaMCULE_PrintPacket(byte *data, int len) {
 	char buffer_for_log[256] = { 0 };
-	for (int i = 0; i < len; i++)
-		snprintf(buffer_for_log, sizeof(buffer_for_log), "%s%02X ", buffer_for_log, data[i]);
+	for (int i = 0; i < len; i++) {
+		char temp[256];
+		memcpy(temp, buffer_for_log, sizeof(buffer_for_log));
+		snprintf(buffer_for_log, sizeof(buffer_for_log), "%s%02X ", temp, data[i]);
+	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "Received: %s\n", buffer_for_log);
 
 #if 1
 	// redo sprintf without spaces
 	buffer_for_log[0] = 0;
-	for (int i = 0; i < len; i++)
-		snprintf(buffer_for_log, sizeof(buffer_for_log), "%s%02X", buffer_for_log, data[i]);
+	for (int i = 0; i < len; i++) {
+		char temp[256];
+		memcpy(temp, buffer_for_log, sizeof(buffer_for_log));
+		snprintf(buffer_for_log, sizeof(buffer_for_log), "%s%02X", temp, data[i]);
+	}
 
 	// fire string event, as we already have it sprintfed
 	// This is so we can have event handlers that fire
@@ -302,8 +311,11 @@ void TuyaMCULE_HandleState(const byte* data, int len) {
 			dpId, TuyaMCULE_GetDataTypeString(dpType), dpType, dpLen);
 
 	char buffer_for_log[256] = { 0 };
-	for (int i = 0; i < dpLen; i++)
-		snprintf(buffer_for_log, sizeof(buffer_for_log), "%s%02X ", buffer_for_log, data[4 + i]);
+	for (int i = 0; i < dpLen; i++) {
+		char temp[256];
+		memcpy(temp, buffer_for_log, sizeof(buffer_for_log));
+		snprintf(buffer_for_log, sizeof(buffer_for_log), "%s%02X ", temp, data[4 + i]);
+	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "HandleState: dpValue: %s\n", buffer_for_log);
 
 	TuyaMCULE_dpConfig_t *dpConfig = TuyaMCULE_getDPConfig(dpId);
@@ -387,8 +399,11 @@ void TuyaMCULE_HandleStateRC(const byte* data, int len) {
 		}
 
 		char buffer_for_log[256] = { 0 };
-		for (int i = 0; i < dpLen; i++)
-			snprintf(buffer_for_log, sizeof(buffer_for_log), "%s%02X ", buffer_for_log, data[4 + i]);
+		for (int i = 0; i < dpLen; i++) {
+			char temp[256];
+			memcpy(temp, buffer_for_log, sizeof(buffer_for_log));
+			snprintf(buffer_for_log, sizeof(buffer_for_log), "%s%02X ", temp, data[4 + i]);
+		}
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "HandleStateRC: dpValue: %s\n", buffer_for_log);
 
 		TuyaMCULE_dpConfig_t *dpConfig = TuyaMCULE_getDPConfig(dpId);
@@ -450,8 +465,11 @@ void TuyaMCULE_HandleGetDpCache(const byte* data, int len) {
 	}
 
 	char buffer_for_log[256] = { 0 };
-	for (int i = 0; i < dp_num; i++)
-		snprintf(buffer_for_log, sizeof(buffer_for_log), "%s%02X ", buffer_for_log, data[1 + i]);
+	for (int i = 0; i < dp_num; i++) {
+		char temp[256];
+		memcpy(temp, buffer_for_log, sizeof(buffer_for_log));
+		snprintf(buffer_for_log, sizeof(buffer_for_log), "%s%02X ", temp, data[1 + i]);
+	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "HandleGetDpCache: dpId table: %s\n", buffer_for_log);
 
 	byte *resp = NULL;
@@ -705,7 +723,9 @@ int TuyaMCULE_GetPacketFromUart(byte* out, int maxSize) {
 		if (UART_GetByte(0) == 0x55 && UART_GetByte(1) == 0xAA)
 			break;
 
-		snprintf(skippedBytes, sizeof(skippedBytes), "%s%02X ", skippedBytes, UART_GetByte(0));
+		char temp[256];
+		memcpy(temp, skippedBytes, sizeof(skippedBytes));
+		snprintf(skippedBytes, sizeof(skippedBytes), "%s%02X ", temp, UART_GetByte(0));
 		UART_ConsumeBytes(1);
 		c_garbage_consumed++;
 	}
@@ -937,7 +957,7 @@ void TuyaMCULE_Shutdown() {
 	g_baudRate = 9600;
 
 	g_wifiReset = false;
-	g_tuyaNextRequestDelay;
+	g_tuyaNextRequestDelay = 0;
 	g_tuyaBatteryPoweredState = TUYAMCULE_STATE_AWAITING_INFO;
 	g_defaultTuyaMCUWiFiState = TUYAMCULE_NETWORK_STATUS_SMART_CONNECT_SETUP;
 
