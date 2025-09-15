@@ -6,6 +6,12 @@
     "requires": ""
   },
   {
+    "name": "TuyaMCULE",
+    "title": "TODO",
+    "descr": "",
+    "requires": ""
+  },
+  {
     "name": "FREEZE",
     "title": "TODO",
     "descr": "Freeze is a test driver for watchdog. Enabling this will freeze device main loop.",

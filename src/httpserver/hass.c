@@ -579,7 +579,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 	flagavty = CFG_HasFlag(OBK_FLAG_NOT_PUBLISH_AVAILABILITY);
 	// if door sensor is running, then deep sleep will be invoked mostly, then we dont want availability
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	if (DRV_IsRunning("DoorSensor") == false)
+	if (DRV_IsRunning("DoorSensor") == false && DRV_IsRunning("TuyaMCULE") == false)
 #endif
 	{
 		if (!isSensor && !flagavty) {

@@ -11,6 +11,7 @@
 #include "drv_ssdp.h"
 #include "drv_test_drivers.h"
 #include "drv_tuyaMCU.h"
+#include "drv_tuyaMCULE.h"
 #include "drv_uart.h"
 #include "drv_ds1820_simple.h"
 #include "drv_ds1820_full.h"
@@ -37,6 +38,11 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"TuyaMCU is a protocol used for communication between WiFI module and external MCU. This protocol is using usually RX1/TX1 port of BK chips. See [TuyaMCU dimmer example](https://www.elektroda.com/rtvforum/topic3929151.html), see [TH06 LCD humidity/temperature sensor example](https://www.elektroda.com/rtvforum/topic3942730.html), see [fan controller example](https://www.elektroda.com/rtvforum/topic3908093.html), see [simple switch example](https://www.elektroda.com/rtvforum/topic3906443.html)",
 	//drvdetail:"requires":""}
 	{ "TuyaMCU",	TuyaMCU_Init,		TuyaMCU_RunEverySecond,			NULL, TuyaMCU_RunFrame, TuyaMCU_Shutdown, NULL, NULL, false },
+	//drvdetail:{"name":"TuyaMCULE",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TuyaMCULE is a protocol used for communication between WiFI module and external MCU.",
+	//drvdetail:"requires":""}
+	{ "TuyaMCULE",	TuyaMCULE_Init,		TuyaMCULE_RunEverySecond,			NULL, TuyaMCULE_RunFrame, TuyaMCULE_Shutdown, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_TCA9554
 	//drvdetail:{"name":"TCA9554",

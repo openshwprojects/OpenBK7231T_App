@@ -81,6 +81,7 @@
     <ClCompile Include="src\driver\drv_tm1638.c" />
     <ClCompile Include="src\driver\drv_tm_gn_display_shared.c" />
     <ClCompile Include="src\driver\drv_tuyaMCU.c" />
+    <ClCompile Include="src\driver\drv_tuyaMCULE.c" />
     <ClCompile Include="src\driver\drv_wemo.c" />
     <ClCompile Include="src\driver\drv_uart.c" />
     <ClCompile Include="src\driver\drv_ucs1912.c" />
@@ -639,6 +640,7 @@
     <CustomBuild Include="src\driver\drv_public.h" />
     <CustomBuild Include="src\driver\drv_sm2135.h" />
     <CustomBuild Include="src\driver\drv_tuyaMCU.h" />
+    <CustomBuild Include="src\driver\drv_tuyaMCULE.h" />
     <CustomBuild Include="src\driver\drv_uart.h" />
     <CustomBuild Include="src\httpclient\http_client.h" />
     <CustomBuild Include="src\httpclient\iot_export_errno.h" />
