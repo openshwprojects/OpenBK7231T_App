@@ -263,6 +263,9 @@ int http_fn_index(http_request_t* request) {
 		if (DRV_IsRunning("SM16703P")) {
 			bForceShowRGB = true;
 		}
+		if (DRV_IsRunning("DMX")) {
+			bForceShowRGB = true;
+		}
 #endif
 	}
 	http_setup(request, httpMimeTypeHTML);	//Add mimetype regardless of the request

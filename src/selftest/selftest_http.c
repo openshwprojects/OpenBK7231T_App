@@ -267,6 +267,10 @@ const char *Test_GetJSONValue_String(const char *keyword, const char *obj) {
 const char *Test_GetLastHTMLReply() {
 	return replyAt;
 }
+const char *Test_QueryHTMLReply(const char *url) {
+	Test_FakeHTTPClientPacket_GET(url);
+	return Test_GetLastHTMLReply();
+}
 void Test_Http_SingleRelayOnChannel1() {
 
 	SIM_ClearOBK(0);

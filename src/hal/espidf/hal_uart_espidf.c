@@ -30,29 +30,29 @@ uint8_t* data = NULL;
 static void uart_event_task(void* pvParameters)
 {
 	uart_event_t event;
-	for(;;)
+	for (;;)
 	{
-		if(xQueueReceive(uart_queue, (void*)&event, (TickType_t)portMAX_DELAY))
+		if (xQueueReceive(uart_queue, (void*)&event, (TickType_t)portMAX_DELAY))
 		{
 			bzero(data, 512);
-			switch(event.type)
+			switch (event.type)
 			{
-				case UART_DATA:
-					uart_read_bytes(uartnum, data, event.size, portMAX_DELAY);
-					for(int i = 0; i < event.size; i++)
-					{
-						UART_AppendByteToReceiveRingBuffer(data[i]);
-					}
-					break;
-				case UART_BUFFER_FULL:
-				case UART_FIFO_OVF:
-					addLogAdv(LOG_WARN, LOG_FEATURE_CMD, "%s", event.type == UART_BUFFER_FULL ? "UART_BUFFER_FULL" : "UART_FIFO_OVF");
-					uart_flush_input(uartnum);
-					xQueueReset(uart_queue);
-					break;
-				default:
-					addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "uart event type: %d", event.type);
-					break;
+			case UART_DATA:
+				uart_read_bytes(uartnum, data, event.size, portMAX_DELAY);
+				for (int i = 0; i < event.size; i++)
+				{
+					UART_AppendByteToReceiveRingBuffer(data[i]);
+				}
+				break;
+			case UART_BUFFER_FULL:
+			case UART_FIFO_OVF:
+				addLogAdv(LOG_WARN, LOG_FEATURE_CMD, "%s", event.type == UART_BUFFER_FULL ? "UART_BUFFER_FULL" : "UART_FIFO_OVF");
+				uart_flush_input(uartnum);
+				xQueueReset(uart_queue);
+				break;
+			default:
+				addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "uart event type: %d", event.type);
+				break;
 			}
 		}
 	}
@@ -85,12 +85,12 @@ static void uart_event_task(void* pvParameters)
 static void uart_event_task(void* pvParameters)
 {
 	uint8_t* data = (uint8_t*)malloc(512);
-	while(1)
+	while (1)
 	{
 		int len = uart_read_bytes(uartnum, data, 512, 20 / portTICK_RATE_MS);
-		if(len)
+		if (len)
 		{
-			for(int i = 0; i < len; i++)
+			for (int i = 0; i < len; i++)
 			{
 				UART_AppendByteToReceiveRingBuffer(data[i]);
 			}
@@ -103,9 +103,17 @@ void HAL_UART_SendByte(byte b)
 	uart_write_bytes(uartnum, &b, 1);
 }
 
-int HAL_UART_Init(int baud, int parity, bool hwflowc)
+void HAL_UART_Flush(void)
 {
-	if(CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART))
+	uart_wait_tx_done(uartnum, pdMS_TO_TICKS(100));
+}
+void HAL_SetBaud(uint32_t baud)
+{
+	uart_set_baudrate(uartnum, baud);
+}
+int HAL_UART_Init(int baud, int parity, bool hwflowc, int txOverride, int rxOverride)
+{
+	if (CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART))
 	{
 		uartnum = UART_NUM_1;
 		esp_log_level_set("*", ESP_LOG_INFO);
@@ -115,7 +123,7 @@ int HAL_UART_Init(int baud, int parity, bool hwflowc)
 		uartnum = UART_NUM_0;
 		esp_log_level_set("*", ESP_LOG_NONE);
 	}
-	if(uart_is_driver_installed(uartnum))
+	if (uart_is_driver_installed(uartnum))
 	{
 		uart_disable_rx_intr(uartnum);
 		uart_driver_delete(uartnum);
@@ -132,10 +140,19 @@ int HAL_UART_Init(int baud, int parity, bool hwflowc)
 #endif
 	};
 	uart_param_config(uartnum, &uart_config);
-	uart_driver_install(uartnum, 512, 0, 0, NULL, 0);
+	uart_driver_install(uartnum, 4096, 4096, 0, NULL, 0);
 	uart_enable_rx_intr(uartnum);
+
+#if PLATFORM_ESPIDF
+	if (txOverride != -1) {
+		uart_set_pin(uartnum,
+			txOverride, 21,
+			UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+	}
+#endif
+
 #if 0//PLATFORM_ESPIDF
-	if(uartnum == UART_NUM_0)
+	if (uartnum == UART_NUM_0)
 	{
 		uart_set_pin(uartnum, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 	}
@@ -143,7 +160,7 @@ int HAL_UART_Init(int baud, int parity, bool hwflowc)
 	{
 		uart_set_pin(uartnum, TX1_PIN, RX1_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 	}
-	if(data == NULL)
+	if (data == NULL)
 	{
 		//data = (uint8_t*)malloc(512);
 		xTaskCreate(uart_event_task, "uart_event_task", 2048, NULL, 16, NULL);
