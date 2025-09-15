@@ -26,7 +26,9 @@
 #define SP2STR(T)	DEV2STR(T),T[8]
 
 
-
+#if ENABLE_DS1820_TEST_US	
+	static bool testus_initialized = false;
+#endif
 
 int OWReset(int Pin)
 {
@@ -202,7 +204,7 @@ uint8_t Crc8CQuick(uint8_t* Buffer, uint8_t Size)
 }
 
 
-#if ENABLE_DS1820_TEST_US
+#if ENABLE_DS1820_TEST_US && ! WINDOWS
 // will allow testus <pin> <us between tests> <us val 1> <us val 2> .... 
 commandResult_t CMD_OW_testus(const void *context, const char *cmd, const char *args, int cmdFlags) {
    Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
@@ -216,16 +218,16 @@ commandResult_t CMD_OW_testus(const void *context, const char *cmd, const char *
    int pause = Tokenizer_GetArgInteger(1);
    if (tests > MAXUSTESTS){
       tests = MAXUSTESTS;
-      DS1820_LOG(INFO, "testus -  Warning, will only do the first %i tests!\r\n",tests);
+      ADDLOG_ERROR(LOG_FEATURE_CMD, "testus -  Warning, will only do the first %i tests!\r\n",tests);
    } 
    for (int i=0; i<tests; i++){
       testvals[i]=Tokenizer_GetArgInteger(2+i);
    }
-   DS1820_LOG(DEBUG, "testus - pin=%i pause=%i tests=%i ...",pin,pause,tests);
+   ADDLOG_DEBUG(LOG_FEATURE_CMD, "testus - pin=%i pause=%i tests=%i ...",pin,pause,tests);
    for (int i=0; i<tests; i++){
-      DS1820_LOG(DEBUG, "test %i value=%i ...",i,testvals[i]);
+      ADDLOG_DEBUG(LOG_FEATURE_CMD, "test %i value=%i ...",i,testvals[i]);
    }
-   DS1820_LOG(DEBUG, "\r\n starting tests ...");
+   ADDLOG_DEBUG(LOG_FEATURE_CMD, "\r\n starting tests ...");
 
    HAL_PIN_SetOutputValue(pin, 1);
    HAL_PIN_Setup_Output(pin);
@@ -241,18 +243,19 @@ commandResult_t CMD_OW_testus(const void *context, const char *cmd, const char *
       interrupts();
       HAL_Delay_us(pause);
    }
-   DS1820_LOG(DEBUG, "... tests done\r\n");
+   ADDLOG_DEBUG(LOG_FEATURE_CMD, "... tests done\r\n");
    return CMD_RES_OK;
 }
 #endif
 
 void init_TEST_US(){
-#if ENABLE_DS1820_TEST_US	
+#if ENABLE_DS1820_TEST_US && ! WINDOWS	
 	//cmddetail:{"name":"testus","args":"pin <pause in us> <testval 1 in us> [<testval n in us>...]",
 	//cmddetail:"descr":"tests usleep on given pin ",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_ds1820_simple.c","requires":"",
+	//cmddetail:"fn":"CMD_OW_testus","file":"driver/drv_ds1820_common.c","requires":"",
 	//cmddetail:"examples":"testus 11 5 2 4 6 10 20 50 100 200 500"}
-	CMD_RegisterCommand("testus", CMD_OW_testus, NULL);
+	if (! testus_initialized) CMD_RegisterCommand("testus", CMD_OW_testus, NULL);
+	testus_initialized = true;
 #endif
 }
 

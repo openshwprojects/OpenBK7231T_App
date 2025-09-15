@@ -3,6 +3,7 @@
 #include "../../logging/logging.h"
 #include "../../new_cfg.h"
 #include "../../new_pins.h"
+#include "../hal_pins.h"
 //#include "../../new_pins.h"
 #include <gpio_pub.h>
 
@@ -14,6 +15,7 @@
 
 // must fit all pwm indexes
 static uint32_t g_periods[6] = { 0 };
+static bool g_pwm_on[6] = { false };
 
 int PIN_GetPWMIndexForPinIndex(int pin) 
 {
@@ -65,24 +67,24 @@ int HAL_PIN_CanThisPinBePWM(int index) {
 	return 1;
 }
 void HAL_PIN_SetOutputValue(int index, int iVal) {
-	bk_gpio_output(index, iVal);
+	gpio_output(index, iVal);
 }
 
 int HAL_PIN_ReadDigitalInput(int index) {
-	return bk_gpio_input(index);
+	return gpio_input(index);
 }
 void HAL_PIN_Setup_Input_Pullup(int index) {
-	bk_gpio_config_input_pup(index);
+	gpio_config(index, GMODE_INPUT_PULLUP);
 }
 void HAL_PIN_Setup_Input_Pulldown(int index) {
-	bk_gpio_config_input_pdwn(index);
+	gpio_config(index, GMODE_INPUT_PULLDOWN);
 }
 void HAL_PIN_Setup_Input(int index) {
-	bk_gpio_config_input(index);
+	gpio_config(index, GMODE_INPUT);
 }
 void HAL_PIN_Setup_Output(int index) {
-	bk_gpio_config_output(index);
-	bk_gpio_output(index, 0);
+	gpio_config(index, GMODE_OUTPUT);
+	gpio_output(index, 0);
 }
 void HAL_PIN_PWM_Stop(int index) {
 	int pwmIndex;
@@ -96,6 +98,7 @@ void HAL_PIN_PWM_Stop(int index) {
 
 	g_periods[pwmIndex] = 0;
 	bk_pwm_stop(pwmIndex);
+	g_pwm_on[pwmIndex] = false;
 }
 
 void HAL_PIN_PWM_Start(int index, int freq) {
@@ -109,13 +112,9 @@ void HAL_PIN_PWM_Start(int index, int freq) {
 	}
 
 	uint32_t period = (26000000 / freq);
-	if(g_periods[pwmIndex] != 0 && g_periods[pwmIndex] != period)
-	{
-		g_periods[pwmIndex] = period;
-		return;
-	}
 
 	g_periods[pwmIndex] = period;
+	if(g_pwm_on[pwmIndex] == true) return;
 #if defined(PLATFORM_BK7231N) && !defined(PLATFORM_BEKEN_NEW)
 	// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
 	bk_pwm_initialize(pwmIndex, period, 0, 0, 0);
@@ -123,6 +122,7 @@ void HAL_PIN_PWM_Start(int index, int freq) {
 	bk_pwm_initialize(pwmIndex, period, 0);
 #endif
 	bk_pwm_start(pwmIndex);
+	g_pwm_on[pwmIndex] = true;
 }
 void HAL_PIN_PWM_Update(int index, float value) {
 	int pwmIndex;
@@ -151,3 +151,37 @@ void HAL_PIN_PWM_Update(int index, float value) {
 unsigned int HAL_GetGPIOPin(int index) {
 	return index;
 }
+
+OBKInterruptHandler g_handlers[PLATFORM_GPIO_MAX];
+OBKInterruptType g_modes[PLATFORM_GPIO_MAX];
+
+#include "BkDriverTimer.h"
+#include "BkDriverGpio.h"
+#include "sys_timer.h"
+#include "gw_intf.h"
+
+void Beken_Interrupt(unsigned char pinNum) {
+	if (g_handlers[pinNum]) {
+		g_handlers[pinNum](pinNum);
+	}
+}
+
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
+	g_handlers[pinIndex] = function;
+	int bk_mode;
+	if (mode == INTERRUPT_RISING) {
+		bk_mode = IRQ_TRIGGER_RISING_EDGE;
+	}
+	else {
+		bk_mode = IRQ_TRIGGER_FALLING_EDGE;
+	}
+	gpio_int_enable(pinIndex, bk_mode, Beken_Interrupt);
+}
+void HAL_DetachInterrupt(int pinIndex) {
+	if (g_handlers[pinIndex] == 0) {
+		return; // already removed;
+	}
+	gpio_int_disable(pinIndex);
+	g_handlers[pinIndex] = 0;
+}
+

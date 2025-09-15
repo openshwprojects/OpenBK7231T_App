@@ -254,6 +254,49 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread)
 	return kNoErr;
 }
 
+#elif PLATFORM_TXW81X
+
+OSStatus rtos_create_thread(beken_thread_t* thread,
+	uint8_t priority, const char* name,
+	beken_thread_function_t function,
+	uint32_t stack_size, beken_thread_arg_t arg)
+{
+	OSStatus err = kNoErr;
+
+	*thread = os_task_create(name, function, arg, priority, 0, NULL, stack_size);
+	if(*thread != NULL)
+	{
+		return 0;
+	}
+	else
+	{
+		printf("Thread create %s - err %i\n", name, err);
+	}
+	return 1;
+}
+
+OSStatus rtos_delete_thread(beken_thread_t* thread)
+{
+	if(thread == NULL)
+	{
+		k_task_handle_t hdl = os_task_current();
+		os_task_destroy(hdl);
+	}
+	else os_task_destroy(*thread);
+	return kNoErr;
+}
+
+OSStatus rtos_suspend_thread(beken_thread_t* thread)
+{
+	if(thread == NULL)
+	{
+		k_task_handle_t hdl = os_task_current();
+		os_task_suspend2(hdl);
+	}
+	else os_task_suspend2(*thread);
+	return kNoErr;
+}
+
 #endif
 
 void MAIN_ScheduleUnsafeInit(int delSeconds) {
@@ -1041,7 +1084,7 @@ void QuickTick(void* param)
 #if WINDOWS
 
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600 \
-	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_XRADIO || PLATFORM_LN882H
+	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_XRADIO || PLATFORM_LN882H || PLATFORM_TXW81X
 void quick_timer_thread(void* param)
 {
 	while (1) {
@@ -1059,6 +1102,8 @@ void QuickTick_StartThread(void)
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600 \
 	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_XRADIO || PLATFORM_LN882H
 	xTaskCreate(quick_timer_thread, "quick", QT_STACK_SIZE, NULL, 15, NULL);
+#elif PLATFORM_TXW81X
+	os_task_create("quick", quick_timer_thread, NULL, 15, 0, NULL, QT_STACK_SIZE);
 #else
 	OSStatus result;
 
@@ -1114,7 +1159,8 @@ void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
 	CMD_Init_Delayed();
 
 	if (bStartAutoRunScripts) {
-		if (PIN_FindPinIndexForRole(IOR_IRRecv, -1) != -1 || PIN_FindPinIndexForRole(IOR_IRSend, -1) != -1) {
+		if (PIN_FindPinIndexForRole(IOR_IRRecv, -1) != -1 || PIN_FindPinIndexForRole(IOR_IRSend, -1) != -1
+			|| PIN_FindPinIndexForRole(IOR_IRRecv_nPup, -1) != -1) {
 			// start IR driver 5 seconds after boot.  It may affect wifi connect?
 			// yet we also want it to start if no wifi for IR control...
 #ifndef OBK_DISABLE_ALL_DRIVERS

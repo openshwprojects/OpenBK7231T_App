@@ -22,9 +22,10 @@ void SIM_ClearUART() {
 
 int SIM_UART_GetDataSize()
 {
-    return (g_recvBufIn >= g_recvBufOut
+    int ret = (g_recvBufIn >= g_recvBufOut
                 ? g_recvBufIn - g_recvBufOut
                 : g_recvBufIn + (g_recvBufSize - g_recvBufOut) + 1);
+	return ret;
 }
 
 byte SIM_UART_GetByte(int idx) {
