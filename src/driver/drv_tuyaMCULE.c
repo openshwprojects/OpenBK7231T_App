@@ -182,7 +182,8 @@ void TuyaMCULE_SetLocalTime(struct tm* pTime) {
 // TUYAMCULE_CMD_SET_DATA_POINT
 
 void TuyaMCULE_SetRSSI(byte rssi) {
-	TuyaMCULE_SendCommand(TUYAMCULE_CMD_GET_RSSI, &rssi, 1);
+	byte buf[] = { 1, rssi };
+	TuyaMCULE_SendCommand(TUYAMCULE_CMD_GET_RSSI, buf, sizeof(buf));
 }
 
 // TUYAMCULE_CMD_UPDATE_TRANS
