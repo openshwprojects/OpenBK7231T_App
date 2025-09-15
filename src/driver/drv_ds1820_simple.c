@@ -74,7 +74,7 @@ void DS1820_driver_Init()
 
 	//cmddetail:{"name":"DS1820_SetResolution","args":"[int]",
 	//cmddetail:"descr":"Sets resolution for connected DS1820 sensor (9/10/11/12 bits)",
-	//cmddetail:"fn":"Cmd_SetResolution","file":"drv/drv_ds1820_simple.c","requires":"",
+	//cmddetail:"fn":"Cmd_SetResolution","file":"driver/drv_ds1820_simple.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DS1820_SetResolution", Cmd_SetResolution, NULL);
 	//Find PIN and check device so DS1820_SetResolution could be used in autoexec.bat

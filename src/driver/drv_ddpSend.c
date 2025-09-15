@@ -195,7 +195,10 @@ void DRV_DDPSend_Init()
 		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "DRV_DDPSend_Init: failed to do socket\n");
 		return;
 	}
-
+	//cmddetail:{"name":"DDP_Send","args":"IP host pixelsize delay pData",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"DDP_Send","file":"driver/drv_ddpSend.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DDP_Send", DDP_Send, NULL);
 }
 

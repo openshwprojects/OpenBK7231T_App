@@ -525,15 +525,15 @@ void Berry_RunThreads(int deltaMS) {
 
 }
 void CMD_InitBerry() {
-	// cmddetail:{"name":"berry","args":"[Berry code]",
-	// cmddetail:"descr":"Execute Berry code",
-	// cmddetail:"fn":"CMD_Berry","file":"cmnds/cmd_berry.c","requires":"",
-	// cmddetail:"examples":"berry 1+2"}
+	//cmddetail:{"name":"berry","args":"[Berry code]",
+	//cmddetail:"descr":"Execute Berry code",
+	//cmddetail:"fn":"CMD_Berry","file":"cmnds/cmd_berry.c","requires":"",
+	//cmddetail:"examples":"berry 1+2"}
 	CMD_RegisterCommand("berry", CMD_Berry, NULL);
-	// cmddetail:{"name":"stopBerry","args":"[Berry code]",
-	// cmddetail:"descr":"Stop Berry VM",
-	// cmddetail:"fn":"CMD_StopBerry","file":"cmnds/cmd_berry.c","requires":"",
-	// cmddetail:"examples":"stopBerry"}
+	//cmddetail:{"name":"stopBerry","args":"[Berry code]",
+	//cmddetail:"descr":"Stop Berry VM",
+	//cmddetail:"fn":"CMD_StopBerryCommand","file":"cmnds/cmd_berry.c","requires":"",
+	//cmddetail:"examples":"stopBerry"}
 	CMD_RegisterCommand("stopBerry", CMD_StopBerryCommand, NULL);
 }
 

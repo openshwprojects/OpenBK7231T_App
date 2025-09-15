@@ -297,12 +297,12 @@ void PixelAnim_Init() {
 
 	//cmddetail:{"name":"Anim","args":"[AnimationIndex]",
 	//cmddetail:"descr":"Starts given WS2812 animation by index.",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_pixelAnim.c","requires":"",
+	//cmddetail:"fn":"PA_Cmd_Anim","file":"driver/drv_pixelAnim.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Anim", PA_Cmd_Anim, NULL);
 	//cmddetail:{"name":"AnimSpeed","args":"[Interval]",
 	//cmddetail:"descr":"Sets WS2812 animation speed",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_pixelAnim.c","requires":"",
+	//cmddetail:"fn":"PA_Cmd_AnimSpeed","file":"driver/drv_pixelAnim.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("AnimSpeed", PA_Cmd_AnimSpeed, NULL);
 }

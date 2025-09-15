@@ -272,32 +272,32 @@ void HT16K33_Init() {
 
 	//cmddetail:{"name":"HT16K33_Test","args":"HT16K33_Test",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_ht16k33.c","requires":"",
+	//cmddetail:"fn":"HT16K33_Test","file":"driver/drv_ht16k33.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HT16K33_Test", HT16K33_Test, NULL);
 	//cmddetail:{"name":"HT16K33_Char","args":"HT16K33_Char",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_ht16k33.c","requires":"",
+	//cmddetail:"fn":"HT16K33_Char","file":"driver/drv_ht16k33.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HT16K33_Char", HT16K33_Char, NULL);
 	//cmddetail:{"name":"HT16K33_Raw","args":"HT16K33_Raw",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_ht16k33.c","requires":"",
+	//cmddetail:"fn":"HT16K33_Raw","file":"driver/drv_ht16k33.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HT16K33_Raw", HT16K33_Raw, NULL);
 	//cmddetail:{"name":"HT16K33_Print","args":"HT16K33_Print",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_ht16k33.c","requires":"",
+	//cmddetail:"fn":"HT16K33_Print","file":"driver/drv_ht16k33.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HT16K33_Print", HT16K33_Print, NULL);
 	//cmddetail:{"name":"HT16K33_Brightness","args":"HT16K33_Brightness",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_ht16k33.c","requires":"",
+	//cmddetail:"fn":"HT16K33_Brightness","file":"driver/drv_ht16k33.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HT16K33_Brightness", HT16K33_Brightness, NULL);
 	//cmddetail:{"name":"HT16K33_Blink","args":"HT16K33_Blink",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_ht16k33.c","requires":"",
+	//cmddetail:"fn":"HT16K33_Blink","file":"driver/drv_ht16k33.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HT16K33_Blink", HT16K33_Blink, NULL);
 }

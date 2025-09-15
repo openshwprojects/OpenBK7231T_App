@@ -124,7 +124,7 @@ void BL0937_Init(void)
 
 	//cmddetail:{"name":"PowerMax","args":"[MaxPowerInW]",
 	//cmddetail:"descr":"Sets the maximum power limit for BL measurement used to filter incorrect values",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_bl0937.c","requires":"",
+	//cmddetail:"fn":"BL0937_PowerMax","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PowerMax", BL0937_PowerMax, NULL);
 

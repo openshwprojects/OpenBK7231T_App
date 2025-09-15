@@ -11,6 +11,7 @@ bool Strip_VerifyPixel5(uint32_t pixel, byte r, byte g, byte b, byte c, byte w);
 #define SELFTEST_ASSERT_PIXEL4(index, r, g, b, w) SELFTEST_ASSERT(Strip_VerifyPixel4(index, r, g, b, w));
 #define SELFTEST_ASSERT_PIXEL5(index, r, g, b, c, w) SELFTEST_ASSERT(Strip_VerifyPixel5(index, r, g, b, c, w));
 
+
 void Strip_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push);
 
 void Test_DMX_RGB() {

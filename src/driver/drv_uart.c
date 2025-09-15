@@ -329,7 +329,7 @@ commandResult_t CMD_UART_Init(const void *context, const char *cmd, const char *
 void UART_AddCommands() {
 	//cmddetail:{"name":"uartSendHex","args":"[HexString]",
 	//cmddetail:"descr":"Sends raw data by UART, can be used to send TuyaMCU data, but you must write whole packet with checksum yourself",
-	//cmddetail:"fn":"CMD_UART_Send_Hex","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"fn":"CMD_UART_Send_Hex","file":"driver/drv_uart.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("uartSendHex", CMD_UART_Send_Hex, NULL);
 	//cmddetail:{"name":"uartSendASCII","args":"[AsciiString]",
