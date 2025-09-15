@@ -282,25 +282,35 @@ jobs:
         include:
           - platform: OpenESP32C2
             variant: 2M
+            version: v5.5.1
           - platform: OpenESP32C3
             variant: 2M
+            version: v5.5.1
 
           - platform: OpenESP32
             variant: 4M
+            version: v5.5.1
           - platform: OpenESP32C2
             variant: 4M
+            version: v5.5.1
           - platform: OpenESP32C3
             variant: 4M
+            version: v5.5.1
           - platform: OpenESP32C6
             variant: 4M
+            version: v5.5.1
           - platform: OpenESP32S3
             variant: 4M
+            version: v5.5.1
           - platform: OpenESP32S2
             variant: 4M
+            version: v5.5.1
           - platform: OpenESP32C5
             variant: 4M
+            version: v5.5.1
           - platform: OpenESP32C61
             variant: 4M
+            version: v5.5.1
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
@@ -309,7 +319,7 @@ jobs:
         with:
           repository: espressif/esp-idf
           path: sdk/esp-idf
-          ref: v5.5.1
+          ref: ${{ matrix.version }}
           submodules: recursive
       - uses: actions/setup-python@v5
         with:
@@ -321,10 +331,16 @@ jobs:
         with:
           packages: cmake
           version: 1.0
+      - name: Cache toolchain
+        id: cache-toolchain
+        uses: actions/cache@v4
+        with:
+          path: ~/.espressif # cache whole folder, not just dist
+          key: ESP-IDF_toolchain_${{ matrix.version }}
       - name: Run make
         run: |
           cd sdk/esp-idf
-          ./install.sh > /dev/null
+          ./install.sh
           . ./export.sh
           . ./add_path.sh
           cd ../..
