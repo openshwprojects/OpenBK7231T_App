@@ -13,14 +13,6 @@
 
 static ledStrip_t led_backend;
 
-enum ColorChannel {
-	COLOR_CHANNEL_RED,
-	COLOR_CHANNEL_GREEN,
-	COLOR_CHANNEL_BLUE,
-	COLOR_CHANNEL_COLD_WHITE,
-	COLOR_CHANNEL_WARM_WHITE
-};
-
 #define DEFAULT_PIXEL_SIZE 3
 const enum ColorChannel default_color_channel_order[3] = {
 	COLOR_CHANNEL_RED,
@@ -33,7 +25,16 @@ int pixel_size = DEFAULT_PIXEL_SIZE; // default is RGB -> 3 bytes per pixel
 // Number of pixels that can be addressed
 uint32_t pixel_count;
 
-void SM16703P_GetPixel(uint32_t pixel, byte *dst) {
+bool Strip_HasChannel(ColorChannel_t ch) {
+	for (int i = 0; i < pixel_size; i++) {
+		if (color_channel_order[i] == ch) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void Strip_GetPixel(uint32_t pixel, byte *dst) {
 	int i;
 
 	for (i = 0; i < pixel_size; i++) {
@@ -42,8 +43,8 @@ void SM16703P_GetPixel(uint32_t pixel, byte *dst) {
 }
 
 bool Strip_VerifyPixel(uint32_t pixel, byte r, byte g, byte b) {
-	byte real[4];
-	SM16703P_GetPixel(pixel, real);
+	byte real[5];
+	Strip_GetPixel(pixel, real);
 	if (real[0] != r)
 		return false;
 	if (real[1] != g)
@@ -52,9 +53,24 @@ bool Strip_VerifyPixel(uint32_t pixel, byte r, byte g, byte b) {
 		return false;
 	return true;
 }
+bool Strip_VerifyPixel5(uint32_t pixel, byte r, byte g, byte b, byte c, byte w) {
+	byte real[5];
+	Strip_GetPixel(pixel, real);
+	if (real[0] != r)
+		return false;
+	if (real[1] != g)
+		return false;
+	if (real[2] != b)
+		return false;
+	if (real[3] != c)
+		return false;
+	if (real[4] != w)
+		return false;
+	return true;
+}
 bool Strip_VerifyPixel4(uint32_t pixel, byte r, byte g, byte b, byte w) {
-	byte real[4];
-	SM16703P_GetPixel(pixel, real);
+	byte real[5];
+	Strip_GetPixel(pixel, real);
 	if (real[0] != r)
 		return false;
 	if (real[1] != g)
@@ -139,8 +155,8 @@ void Strip_scaleAllPixels(int scale) {
 	byte *data, *input;
 
 	for (pixel = 0; pixel < pixel_count; pixel++) {
-		for (ofs = 0; ofs < 3; ofs++) {
-			int byteIndex = pixel * 3 + ofs;
+		for (ofs = 0; ofs < pixel_size; ofs++) {
+			int byteIndex = pixel * pixel_size + ofs;
 			byte b = led_backend.getByte(byteIndex);
 			b = SCALE8_PIXEL(b, scale);
 			led_backend.setByte(byteIndex, b);
@@ -158,7 +174,7 @@ void Strip_setAllPixels(int r, int g, int b, int c, int w) {
 
 // SM16703P_SetRaw bUpdate byteOfs HexData
 // SM16703P_SetRaw 1 0 FF000000FF000000FF
-commandResult_t SM16703P_CMD_setRaw(const void *context, const char *cmd, const char *args, int flags) {
+commandResult_t Strip_CMD_setRaw(const void *context, const char *cmd, const char *args, int flags) {
 	int ofs, bPush;
 	Tokenizer_TokenizeString(args, 0);
 	bPush = Tokenizer_GetArgInteger(0);
@@ -176,7 +192,7 @@ commandResult_t SM16703P_CMD_setRaw(const void *context, const char *cmd, const 
 	}
 	return CMD_RES_OK;
 }
-commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, const char *args, int flags) {
+commandResult_t Strip_CMD_setPixel(const void *context, const char *cmd, const char *args, int flags) {
 	int i, r, g, b, c, w;
 	int pixel = 0;
 	const char *all = 0;
@@ -199,13 +215,21 @@ commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, cons
 	r = Tokenizer_GetArgIntegerRange(1, 0, 255);
 	g = Tokenizer_GetArgIntegerRange(2, 0, 255);
 	b = Tokenizer_GetArgIntegerRange(3, 0, 255);
-	c = 0; // cold white is optional for backward compatibility
-	if (Tokenizer_GetArgsCount() > 4) {
-		c = Tokenizer_GetArgIntegerRange(4, 0, 255);
-	}
+	c = 0; // cold white is optional for backward compatibility]
 	w = 0; // warm white is optional for backward compatibility
-	if (Tokenizer_GetArgsCount() > 5) {
-		w = Tokenizer_GetArgIntegerRange(5, 0, 255);
+	int numArgs = Tokenizer_GetArgsCount();
+	// this is a hack, so we can easily write commands for RGBW...
+	if (numArgs == 5 && Strip_HasChannel(COLOR_CHANNEL_WARM_WHITE)) {
+		// treat it as Warm (not Cool)
+		w = Tokenizer_GetArgIntegerRange(4, 0, 255);
+	}
+	else {
+		if (numArgs > 4) {
+			c = Tokenizer_GetArgIntegerRange(4, 0, 255);
+		}
+		if (numArgs > 5) {
+			w = Tokenizer_GetArgIntegerRange(5, 0, 255);
+		}
 	}
 
 	ADDLOG_INFO(LOG_FEATURE_CMD, "Set Pixel %i to R %i G %i B %i C %i W %i", pixel, r, g, b, c, w);
@@ -223,7 +247,7 @@ commandResult_t SM16703P_CMD_setPixel(const void *context, const char *cmd, cons
 	return CMD_RES_OK;
 }
 
-commandResult_t SM16703P_InitForLEDCount(const void *context, const char *cmd, const char *args, int flags) {
+commandResult_t Strip_CMD_InitForLEDCount(const void *context, const char *cmd, const char *args, int flags) {
 
 	Tokenizer_TokenizeString(args, 0);
 
@@ -292,7 +316,7 @@ bool Strip_IsActive() {
 void Strip_Apply() {
 	led_backend.apply();
 }
-static commandResult_t SM16703P_StartTX(const void *context, const char *cmd, const char *args, int flags) {
+static commandResult_t Strip_CMD_StartTX(const void *context, const char *cmd, const char *args, int flags) {
 	Strip_Apply();
 	return CMD_RES_OK;
 }
@@ -307,22 +331,26 @@ void LEDS_InitShared(ledStrip_t *api) {
 	//cmddetail:"descr":"This will setup LED driver for a strip with given number of LEDs. Please note that it also works for WS2812B and similiar LEDs. You can optionally set the color order with can be any combination of R, G, B, C and W (e.g. RGBW or GRBWC, default is RGB). See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_sm16703P.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("SM16703P_Init", SM16703P_InitForLEDCount, NULL);
+	CMD_RegisterCommand("SM16703P_Init", Strip_CMD_InitForLEDCount, NULL);
+	CMD_CreateAliasHelper("Strip_Init","SM16703P_Init");
 	//cmddetail:{"name":"SM16703P_Start","args":"",
 	//cmddetail:"descr":"This will send the currently set data to the strip. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_sm16703P.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("SM16703P_Start", SM16703P_StartTX, NULL);
+	CMD_RegisterCommand("SM16703P_Start", Strip_CMD_StartTX, NULL);
+	CMD_CreateAliasHelper("Strip_Start", "SM16703P_Start");
 	//cmddetail:{"name":"SM16703P_SetPixel","args":"[index/all] [R] [G] [B]",
 	//cmddetail:"descr":"Sets a pixel for LED strip. Index can be a number or 'all' keyword to set all. Then, 3 integer values for R, G and B. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_sm16703P.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("SM16703P_SetPixel", SM16703P_CMD_setPixel, NULL);
+	CMD_RegisterCommand("SM16703P_SetPixel", Strip_CMD_setPixel, NULL);
+	CMD_CreateAliasHelper("Strip_SetPixel", "SM16703P_SetPixel");
 	//cmddetail:{"name":"SM16703P_SetRaw","args":"[bUpdate] [byteOfs] [HexData]",
 	//cmddetail:"descr":"Sets the raw data bytes for SPI DMA LED driver at the given offset. Hex data should be as a hex string, for example, FF00AA, etc. The bUpdate, if set to 1, will run SM16703P_Start automatically after setting data. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
 	//cmddetail:"fn":"NULL);","file":"driver/drv_sm16703P.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("SM16703P_SetRaw", SM16703P_CMD_setRaw, NULL);
+	CMD_RegisterCommand("SM16703P_SetRaw", Strip_CMD_setRaw, NULL);
+	CMD_CreateAliasHelper("Strip_SetRaw", "SM16703P_SetRaw");
 
 	//CMD_RegisterCommand("SM16703P_SendBytes", SM16703P_CMD_sendBytes, NULL);
 }

@@ -5,9 +5,11 @@
 
 bool Strip_VerifyPixel(uint32_t pixel, byte r, byte g, byte b);
 bool Strip_VerifyPixel4(uint32_t pixel, byte r, byte g, byte b, byte a);
+bool Strip_VerifyPixel5(uint32_t pixel, byte r, byte g, byte b, byte c, byte w);
 
 #define SELFTEST_ASSERT_PIXEL(index, r, g, b) SELFTEST_ASSERT(Strip_VerifyPixel(index, r, g, b));
 #define SELFTEST_ASSERT_PIXEL4(index, r, g, b, w) SELFTEST_ASSERT(Strip_VerifyPixel4(index, r, g, b, w));
+#define SELFTEST_ASSERT_PIXEL5(index, r, g, b, c, w) SELFTEST_ASSERT(Strip_VerifyPixel5(index, r, g, b, c, w));
 
 void Strip_setMultiplePixel(uint32_t pixel, uint8_t *data, bool push);
 
@@ -20,8 +22,15 @@ void Test_DMX_RGB() {
 
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 
+	SELFTEST_ASSERT_PAGE_NOT_CONTAINS("index", "LED RGB Color");
+	SELFTEST_ASSERT_PAGE_NOT_CONTAINS("index", "LED Temperature Slider");
+
 	CMD_ExecuteCommand("startDriver DMX", 0);
-	CMD_ExecuteCommand("SM16703P_Init 3", 0);
+	CMD_ExecuteCommand("Strip_Init 3", 0);
+
+	SELFTEST_ASSERT_PAGE_CONTAINS("index", "LED RGB Color");
+	SELFTEST_ASSERT_PAGE_NOT_CONTAINS("index", "LED Temperature Slider");
+
 	CMD_ExecuteCommand("SM16703P_SetPixel all 255 0 128", 0);
 	SELFTEST_ASSERT_PIXEL(0, 255, 0, 128);
 	SELFTEST_ASSERT_PIXEL(1, 255, 0, 128);
@@ -110,13 +119,13 @@ void Test_DMX_RGBC() {
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 
 	CMD_ExecuteCommand("SM16703P_SetPixel 0 128 128 128 128", 0);
-	CMD_ExecuteCommand("SM16703P_SetPixel 1 255 255 255 255", 0);
+	CMD_ExecuteCommand("Strip_SetPixel 1 255 255 255 255", 0);
 	CMD_ExecuteCommand("SM16703P_SetPixel 2 15 15 15 15", 0);
 	SELFTEST_ASSERT_PIXEL4(0, 128, 128, 128, 128);
 	SELFTEST_ASSERT_PIXEL4(1, 255, 255, 255, 255);
 	SELFTEST_ASSERT_PIXEL4(2, 15, 15, 15, 15);
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
-	CMD_ExecuteCommand("SM16703P_Start", 0);
+	CMD_ExecuteCommand("Strip_Start", 0);
 	SELFTEST_ASSERT_HAS_SOME_DATA_IN_UART();
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("00  80808080  FFFFFFFF  0F0F0F0F");
 	// 512 channels, but checked already 12
@@ -129,37 +138,82 @@ void Test_DMX_RGBC() {
 }
 void Test_DMX_RGBW() {
 	// reset whole device
-	//SIM_ClearOBK(0);
+	SIM_ClearOBK(0);
 
-	//SIM_UART_InitReceiveRingBuffer(4096);
-	//SIM_ClearUART();
+	SIM_UART_InitReceiveRingBuffer(4096);
+	SIM_ClearUART();
 
-	//SELFTEST_ASSERT_HAS_UART_EMPTY();
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
 
-	//CMD_ExecuteCommand("startDriver DMX", 0);
-	//CMD_ExecuteCommand("SM16703P_Init 3 RGBW", 0);
-	//CMD_ExecuteCommand("SM16703P_SetPixel all 255 0 128 255", 0);
-	//SELFTEST_ASSERT_PIXEL4(0, 255, 0, 128, 255);
-	//SELFTEST_ASSERT_PIXEL4(1, 255, 0, 128, 255);
-	//SELFTEST_ASSERT_PIXEL4(2, 255, 0, 128, 255);
+	CMD_ExecuteCommand("startDriver DMX", 0);
+	CMD_ExecuteCommand("SM16703P_Init 3 RGBW", 0);
+	CMD_ExecuteCommand("SM16703P_SetPixel all 255 0 128 255", 0);
+	SELFTEST_ASSERT_PIXEL4(0, 255, 0, 128, 255);
+	SELFTEST_ASSERT_PIXEL4(1, 255, 0, 128, 255);
+	SELFTEST_ASSERT_PIXEL4(2, 255, 0, 128, 255);
 
-	//SELFTEST_ASSERT_HAS_UART_EMPTY();
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	CMD_ExecuteCommand("SM16703P_Start", 0);
+	SELFTEST_ASSERT_HAS_SOME_DATA_IN_UART();
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("00  FF0080FF  FF0080FF  FF0080FF");
+	// 512 channels, but checked already 12
+	for (int i = 0; i < 100; i++) {
+		SELFTEST_ASSERT_HAS_SENT_UART_STRING("00 00 00 00 00");
+	}
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+
+	CMD_ExecuteCommand("SM16703P_SetPixel 0 128 128 128 128", 0);
+	CMD_ExecuteCommand("SM16703P_SetPixel 1 255 255 255 255", 0);
+	CMD_ExecuteCommand("SM16703P_SetPixel 2 15 15 15 15", 0);
+	SELFTEST_ASSERT_PIXEL4(0, 128, 128, 128, 128);
+	SELFTEST_ASSERT_PIXEL4(1, 255, 255, 255, 255);
+	SELFTEST_ASSERT_PIXEL4(2, 15, 15, 15, 15);
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
 	//CMD_ExecuteCommand("SM16703P_Start", 0);
 	//SELFTEST_ASSERT_HAS_SOME_DATA_IN_UART();
-	//SELFTEST_ASSERT_HAS_SENT_UART_STRING("00  FF0080FF  FF0080FF  FF0080FF");
+	//SELFTEST_ASSERT_HAS_SENT_UART_STRING("00  80808080  FFFFFFFF  0F0F0F0F");
 	//// 512 channels, but checked already 12
 	//for (int i = 0; i < 100; i++) {
 	//	SELFTEST_ASSERT_HAS_SENT_UART_STRING("00 00 00 00 00");
 	//}
 	//SELFTEST_ASSERT_HAS_UART_EMPTY();
 
-	//CMD_ExecuteCommand("SM16703P_SetPixel 0 128 128 128 128", 0);
-	//CMD_ExecuteCommand("SM16703P_SetPixel 1 255 255 255 255", 0);
-	//CMD_ExecuteCommand("SM16703P_SetPixel 2 15 15 15 15", 0);
-	//SELFTEST_ASSERT_PIXEL4(0, 128, 128, 128, 128);
-	//SELFTEST_ASSERT_PIXEL4(1, 255, 255, 255, 255);
-	//SELFTEST_ASSERT_PIXEL4(2, 15, 15, 15, 15);
-	//SELFTEST_ASSERT_HAS_UART_EMPTY();
+	// nothing is sent by OBK at that point
+}
+void Test_DMX_RGBCW() {
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	SIM_UART_InitReceiveRingBuffer(4096);
+	SIM_ClearUART();
+
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+
+	CMD_ExecuteCommand("startDriver DMX", 0);
+	CMD_ExecuteCommand("SM16703P_Init 3 RGBCW", 0);
+	CMD_ExecuteCommand("SM16703P_SetPixel all 255 0 128 255 128", 0);
+	SELFTEST_ASSERT_PIXEL5(0, 255, 0, 128, 255, 128);
+	SELFTEST_ASSERT_PIXEL5(1, 255, 0, 128, 255, 128);
+	SELFTEST_ASSERT_PIXEL5(2, 255, 0, 128, 255, 128);
+
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	CMD_ExecuteCommand("SM16703P_Start", 0);
+	SELFTEST_ASSERT_HAS_SOME_DATA_IN_UART();
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("00  FF0080FF80  FF0080FF80  FF0080FF80");
+	// 512 channels, but checked already 12+3
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("00 00");
+	for (int i = 0; i < 99; i++) {
+		SELFTEST_ASSERT_HAS_SENT_UART_STRING("00 00 00 00 00");
+	}
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+
+	CMD_ExecuteCommand("SM16703P_SetPixel 0 128 128 128 128 11", 0);
+	CMD_ExecuteCommand("SM16703P_SetPixel 1 255 255 255 255 22", 0);
+	CMD_ExecuteCommand("SM16703P_SetPixel 2 15 15 15 15 33", 0);
+	SELFTEST_ASSERT_PIXEL5(0, 128, 128, 128, 128, 11);
+	SELFTEST_ASSERT_PIXEL5(1, 255, 255, 255, 255, 22);
+	SELFTEST_ASSERT_PIXEL5(2, 15, 15, 15, 15, 33);
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
 	//CMD_ExecuteCommand("SM16703P_Start", 0);
 	//SELFTEST_ASSERT_HAS_SOME_DATA_IN_UART();
 	//SELFTEST_ASSERT_HAS_SENT_UART_STRING("00  80808080  FFFFFFFF  0F0F0F0F");
@@ -453,6 +507,7 @@ void Test_LEDstrips() {
 	Test_DMX_RGB();
 	Test_DMX_RGBC();
 	Test_DMX_RGBW();
+	Test_DMX_RGBCW();
 	Test_WS2812B();
 }
 

@@ -4,7 +4,7 @@
 #include "Junction.h"
 
 extern "C" {
-	bool SM16703P_GetPixel(uint32_t pixel, byte *dst);
+	bool Strip_GetPixel(uint32_t pixel, byte *dst);
 }
 
 void CControllerWS2812::setShapesActive(bool b) {
@@ -26,7 +26,7 @@ void CControllerWS2812::onDrawn() {
 	if (b->getDepth() < idx)
 		idx = b->getDepth();
 	//printf("%i - depth %i\n", this, idx);
-	SM16703P_GetPixel(idx, rgb);
+	Strip_GetPixel(idx, rgb);
 	col_green.fromRGB(rgb);
 	setShapesActive(true);
 	setShapesFillColor(col_green);
