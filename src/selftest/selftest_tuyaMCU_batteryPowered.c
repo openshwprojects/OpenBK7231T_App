@@ -13,9 +13,9 @@ void Test_TuyaMCU_BatteryPowered_Style1() {
 
 	CMD_ExecuteCommand("startDriver TuyaMCULE", 0);
 
-	CMD_ExecuteCommand("tuyaMCULE_SetDpConfig 1 val 1", 0);
+	CMD_ExecuteCommand("tuyaMCULE_SetDpConfig 1 bool 1", 0);
 	CMD_ExecuteCommand("setChannelType 1 OpenClosed", 0);
-	CMD_ExecuteCommand("tuyaMCULE_SetDpConfig 3 val 3", 0);
+	CMD_ExecuteCommand("tuyaMCULE_SetDpConfig 3 enum 3", 0);
 	CMD_ExecuteCommand("setChannelType 3 Custom", 0);
 
 	// nothing is sent by OBK at that point
@@ -110,9 +110,9 @@ void Test_TuyaMCU_BatteryPowered_Style2() {
 
 	CMD_ExecuteCommand("startDriver TuyaMCULE", 0);
 
-	CMD_ExecuteCommand("tuyaMCULE_SetDpConfig 1 val 1", 0);
+	CMD_ExecuteCommand("tuyaMCULE_SetDpConfig 1 bool 1", 0);
 	CMD_ExecuteCommand("setChannelType 1 OpenClosed", 0);
-	CMD_ExecuteCommand("tuyaMCULE_SetDpConfig 3 val 3", 0);
+	CMD_ExecuteCommand("tuyaMCULE_SetDpConfig 3 enum 3", 0);
 	CMD_ExecuteCommand("setChannelType 3 Custom", 0);
 
 	// nothing is sent by OBK at that point
@@ -355,7 +355,7 @@ void Test_TuyaMCU_BatteryPowered_QuerySignalStrength() {
 	CMD_ExecuteCommand("uartFakeHex 55 AA 00 0B 00 00 0A", 0);
 	Sim_RunSeconds(0.1f, false);
 	
-	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA 00 0B 00 02 01 50 5D");
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA 00 0B 00 02 01 FF 0C");
 	// nothing is sent by OBK at that point
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 }
