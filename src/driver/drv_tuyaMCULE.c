@@ -588,8 +588,10 @@ void TuyaMCULE_HandleGetDpCache(const byte* data, int len) {
 	if (!resp) {
 		byte zero = 0;
 		TuyaMCULE_SendCommand(TUYAMCULE_CMD_GET_DP_CACHE, &zero, 1);
-	} else
+	} else {
 		TuyaMCULE_SendCommand(TUYAMCULE_CMD_GET_DP_CACHE, resp, resp_len);
+		free(resp);
+	}
 }
 
 void TuyaMCULE_ProcessIncoming(const byte *packet, int len) {
