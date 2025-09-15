@@ -45,7 +45,7 @@ void HAL_UART_SendByte(byte b)
 	tls_uart_write(used_uart, (char*)&b, 1);
 }
 
-int HAL_UART_Init(int baud, int parity, bool hwflowc)
+int HAL_UART_Init(int baud, int parity, bool hwflowc, int txOverride, int rxOverride)
 {
 	struct tls_uart_options uart_opts;
 	uart_opts.baudrate = baud;

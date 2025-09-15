@@ -178,12 +178,12 @@ void BP5758D_Init() {
 
 	//cmddetail:{"name":"BP5758D_RGBCW","args":"[HexColor]",
 	//cmddetail:"descr":"Don't use it. It's for direct access of BP5758D driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
-	//cmddetail:"fn":"BP5758D_RGBCW","file":"driver/drv_bp5758d.c","requires":"",
+	//cmddetail:"fn":"CMD_LEDDriver_WriteRGBCW","file":"driver/drv_bp5758d.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("BP5758D_RGBCW", CMD_LEDDriver_WriteRGBCW, NULL);
 	//cmddetail:{"name":"BP5758D_Map","args":"[Ch0][Ch1][Ch2][Ch3][Ch4]",
 	//cmddetail:"descr":"Maps the RGBCW values to given indices of BP5758D channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: BP5758D_Map 0 1 2 3 4",
-	//cmddetail:"fn":"BP5758D_Map","file":"driver/drv_bp5758d.c","requires":"",
+	//cmddetail:"fn":"CMD_LEDDriver_Map","file":"driver/drv_bp5758d.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("BP5758D_Map", CMD_LEDDriver_Map, NULL);
 	//cmddetail:{"name":"BP5758D_Current","args":"[MaxCurrentRGB][MaxCurrentCW]",

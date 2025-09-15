@@ -168,7 +168,7 @@ void BMPI2C_Init()
 		CMD_RegisterCommand("BMPI2C_Calibrate", BMPI2C_Calibrate, NULL);
 		//cmddetail:{"name":"BMPI2C_Cycle","args":"[IntervalSeconds]",
 		//cmddetail:"descr":"This is the interval between measurements in seconds, by default 1. Max is 255.",
-		//cmddetail:"fn":"BMPI2C_cycle","file":"drv/drv_bmpi2c.c","requires":"",
+		//cmddetail:"fn":"BMPI2C_Cycle","file":"driver/drv_bmpi2c.c","requires":"",
 		//cmddetail:"examples":"BMPI2C_Cycle 60 <br /> measurement is taken every 60 seconds"}
 		CMD_RegisterCommand("BMPI2C_Cycle", BMPI2C_Cycle, NULL);
 	}

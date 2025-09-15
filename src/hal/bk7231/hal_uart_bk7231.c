@@ -28,7 +28,7 @@ void HAL_UART_SendByteEx(int auartindex, byte b)
 	bk_send_byte(bk_port_from_portindex(auartindex), b);
 }
 
-int HAL_UART_InitEx(int auartindex, int baud, int parity, bool hwflowc)
+int HAL_UART_InitEx(int auartindex, int baud, int parity, bool hwflowc, int txOverride, int rxOverride)
 {
     bk_uart_config_t config;
 

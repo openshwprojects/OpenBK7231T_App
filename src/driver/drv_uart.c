@@ -252,9 +252,9 @@ int UART_InitUARTEx(int auartindex, int baud, int parity, bool hwflowc)
   uartbuf_t* fuartbuf = UART_GetBufFromPort(auartindex);
   fuartbuf->g_uart_init_counter++;
 #ifdef UART_2_UARTS_CONCURRENT
-    HAL_UART_InitEx(auartindex, baud, parity, hwflowc);
+    HAL_UART_InitEx(auartindex, baud, parity, hwflowc, -1, -1);
 #else
-    HAL_UART_Init(baud, parity, hwflowc);
+    HAL_UART_Init(baud, parity, hwflowc, -1, -1);
 #endif
   return fuartbuf->g_uart_init_counter;
 }
@@ -329,7 +329,7 @@ commandResult_t CMD_UART_Init(const void *context, const char *cmd, const char *
 void UART_AddCommands() {
 	//cmddetail:{"name":"uartSendHex","args":"[HexString]",
 	//cmddetail:"descr":"Sends raw data by UART, can be used to send TuyaMCU data, but you must write whole packet with checksum yourself",
-	//cmddetail:"fn":"CMD_UART_Send_Hex","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"fn":"CMD_UART_Send_Hex","file":"driver/drv_uart.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("uartSendHex", CMD_UART_Send_Hex, NULL);
 	//cmddetail:{"name":"uartSendASCII","args":"[AsciiString]",
