@@ -409,6 +409,9 @@ void PIN_SetupPins() {
 	// TODO: better place to call?
 	DHT_OnPinsConfigChanged();
 #endif
+#if ENABLE_LED_BASIC
+	LED_SetStripStateOutputs();
+#endif
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "PIN_SetupPins pins have been set up.\r\n");
 }
 
@@ -1141,6 +1144,20 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			}
 		}
 		break;
+#if ENABLE_LED_BASIC
+		case IOR_StripState:
+		case IOR_StripState_n:
+		{
+			HAL_PIN_Setup_Output(index);
+			if (role == IOR_StripState) {
+				HAL_PIN_SetOutputValue(index, LED_GetEnableAll());
+			}
+			else {
+				HAL_PIN_SetOutputValue(index, !LED_GetEnableAll());
+			}
+		}
+		break;
+#endif
 		case IOR_BridgeForward:
 		case IOR_BridgeReverse:
 		{

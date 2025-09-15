@@ -274,6 +274,7 @@ void LED_ToggleEnabled();
 bool LED_IsLedDriverChipRunning();
 bool LED_IsLEDRunning();
 void LED_SetEnableAll(int bEnable);
+void LED_SetStripStateOutputs();
 int LED_GetEnableAll();
 void LED_SaveStateToFlashVarsNow();
 void LED_GetBaseColorString(char* s);
