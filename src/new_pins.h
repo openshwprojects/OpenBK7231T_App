@@ -1043,6 +1043,13 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_StopUpDown,
+	//chandetail:{"name":"TemperatureUnit",
+	//chandetail:"title":"TemperatureUnit",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_TemperatureUnit",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_TemperatureUnit,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",

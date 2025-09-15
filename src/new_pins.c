@@ -2366,6 +2366,7 @@ const char* g_channelTypeNames[] = {
 	"OpenStopClose",
 	"Percent",
 	"StopUpDown",
+	"TemperatureUnit",
 	"error",
 	"error",
 };
