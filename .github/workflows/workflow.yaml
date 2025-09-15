@@ -337,10 +337,14 @@ jobs:
         with:
           path: ~/.espressif # cache whole folder, not just dist
           key: ESP-IDF_toolchain_${{ matrix.version }}
-      - name: Run make
+      - name: Get toolchain
+        if: steps.cache-toolchain.outputs.cache-hit != 'true'
         run: |
           cd sdk/esp-idf
           ./install.sh
+      - name: Run make
+        run: |
+          cd sdk/esp-idf
           . ./export.sh
           . ./add_path.sh
           cd ../..
