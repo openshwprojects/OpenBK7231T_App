@@ -10,6 +10,7 @@
 #include "../driver/drv_public.h"
 #include "../driver/drv_local.h"
 #include "../hal/hal_flashVars.h"
+#include "../hal/hal_pins.h"
 #include "../hal/hal_flashConfig.h"
 #include "../rgb2hsv.h"
 #include <ctype.h>
@@ -876,8 +877,20 @@ void LED_ToggleEnabled() {
 }
 bool g_guard_led_enable_event_cast = false;
 
+void LED_SetStripStateOutputs() {
+	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		int state = g_cfg.pins.roles[i];
+		if (state == IOR_StripState) {
+			HAL_PIN_SetOutputValue(i, g_lightEnableAll);
+		}
+		else if (state == IOR_StripState_n) {
+			HAL_PIN_SetOutputValue(i, !g_lightEnableAll);
+		}
+	}
+}
 void LED_SetEnableAll(int bEnable) {
 	bool bEnableAllWasSetTo1;
+	bool bHadChange;
 
 	if (g_lightEnableAll == 0 && bEnable == 1) {
 		bEnableAllWasSetTo1 = true;
@@ -904,6 +917,7 @@ void LED_SetEnableAll(int bEnable) {
 	}
 	g_lightEnableAll = bEnable;
 
+	LED_SetStripStateOutputs();
 	apply_smart_light();
 #if	ENABLE_TASMOTADEVICEGROUPS
 	DRV_DGR_OnLedEnableAllChange(bEnable);
