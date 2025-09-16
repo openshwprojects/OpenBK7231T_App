@@ -12,6 +12,7 @@
 #include "drv_test_drivers.h"
 #include "drv_tuyaMCU.h"
 #include "drv_tuyaMCULE.h"
+#include "drv_tuyaMCU_tmSensor.h"
 #include "drv_uart.h"
 #include "drv_ds1820_simple.h"
 #include "drv_ds1820_full.h"
@@ -43,6 +44,11 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"TuyaMCULE is a protocol used for communication between WiFI module and external MCU.",
 	//drvdetail:"requires":""}
 	{ "TuyaMCULE",	TuyaMCULE_Init,		TuyaMCULE_RunEverySecond,			NULL, TuyaMCULE_RunFrame, TuyaMCULE_Shutdown, NULL, NULL, false },
+	//drvdetail:{"name":"tmSensor",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Hacky module for legacy script compatibility",
+	//drvdetail:"requires":""}
+	{ "tmSensor",	TuyaMCUTmSensor_Init,		NULL,			NULL, NULL, TuyaMCUTmSensor_Shutdown, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_TCA9554
 	//drvdetail:{"name":"TCA9554",
