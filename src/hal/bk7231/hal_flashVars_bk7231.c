@@ -650,6 +650,8 @@ int HAL_FlashVars_GetChannelValue(int ch) {
 
 int HAL_GetEnergyMeterStatus(ENERGY_METERING_DATA* data)
 {
+	//FIXME hijacking emetering
+	return 0;
 #ifndef DISABLE_FLASH_VARS_VARS
 	if (!flash_vars_initialised)
 	{
@@ -665,6 +667,8 @@ int HAL_GetEnergyMeterStatus(ENERGY_METERING_DATA* data)
 
 int HAL_SetEnergyMeterStatus(ENERGY_METERING_DATA* data)
 {
+	//FIXME hijacking emetering
+	return 0;
 #ifndef DISABLE_FLASH_VARS_VARS
 	FLASH_VARS_STRUCTURE tmp;
 	// mark that we have completed a boot.
@@ -680,6 +684,8 @@ int HAL_SetEnergyMeterStatus(ENERGY_METERING_DATA* data)
 
 void HAL_FlashVars_SaveTotalConsumption(float total_consumption)
 {
+	//FIXME hijacking emetering
+	return 0;
 #ifndef DISABLE_FLASH_VARS_VARS
 	flash_vars.emetering.TotalConsumption = total_consumption;
 #endif
@@ -696,6 +702,60 @@ float HAL_FlashVars_GetEnergyExport()
 	memcpy(&f, &flash_vars.savedValues[MAX_RETAIN_CHANNELS - 2], sizeof(float));
 	return f;
 }
+
+#ifdef ENABLE_DRIVER_HLW8112SPI
+void HAL_FlashVars_SaveEnergy(ENERGY_DATA** data, int channel_count)
+{
+#ifndef DISABLE_FLASH_VARS_VARS
+	FLASH_VARS_STRUCTURE tmp;
+	if (data != NULL)
+	{
+		/*int offset = MAX_RETAIN_CHANNELS - ((channel+1) * sizeof(ENERGY_DATA));
+		int step = sizeof(float);
+		memcpy(&flash_vars.savedValues[offset], &data->Import, step);
+		memcpy(&flash_vars.savedValues[offset + step], &data->Export, step); */
+		
+		// memcpy(&flash_vars.energy[channel], data, sizeof(ENERGY_DATA));  // failed to boot with new struct. why ???
+		
+		//FIXME hijacking emetering
+		int base =   &flash_vars.emetering;
+		for(int i =0 ; i < channel_count; i++){
+			int offset =( i * sizeof(ENERGY_DATA));
+			int flash_addr = base + offset ;
+			memcpy(flash_addr, data[i], sizeof(ENERGY_DATA)); 
+		}
+		flash_vars_write();
+		flash_vars_read(&tmp);
+	}
+#endif
+}
+void HAL_FlashVars_GetEnergy(ENERGY_DATA* data, ENERGY_CHANNEL channel) 
+{
+#ifndef DISABLE_FLASH_VARS_VARS
+	if (!flash_vars_initialised)
+	{
+		flash_vars_init();
+	}
+	if (data != NULL)
+	{
+		/*int offset = MAX_RETAIN_CHANNELS - (channel+1) * sizeof(ENERGY_DATA);
+		int step = sizeof(float);
+
+		memcpy(&data->Import, &flash_vars.savedValues[offset], step);
+		memcpy(&data->Export, &flash_vars.savedValues[offset+step], step);*/
+
+		// failed to boot
+		// memcpy(data, &flash_vars.energy[channel], sizeof(ENERGY_DATA));
+
+		//FIXME hijacking emetering
+		int offset =((channel) * sizeof(ENERGY_DATA));
+		int base =   &flash_vars.emetering;
+		int flash_addr = base + offset;
+		memcpy(data ,flash_addr, sizeof(ENERGY_DATA));
+	}
+#endif
+}
+#endif
 
 #endif
 

@@ -155,6 +155,9 @@ int myhttpclientcallback(httprequest_t* request){
         BL09XX_SaveEmeteringStatistics();
       }
 #endif
+#if ENABLE_DRIVER_HLW8112SPI
+	  HLW8112_Save_Statistics();
+#endif 
       rtos_delay_milliseconds(1000);
       bk_reboot();
       break;
