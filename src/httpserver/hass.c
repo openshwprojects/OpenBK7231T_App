@@ -570,7 +570,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 			sprintf(g_hassBuffer, "Timestamp");
 			break;
 		case HASS_BUTTON:
-			sprintf(g_hassBuffer, "");
+			sprintf(g_hassBuffer, "%s" , "");
 			break;
 
 		default:
