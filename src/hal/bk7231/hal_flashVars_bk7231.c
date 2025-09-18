@@ -685,7 +685,7 @@ int HAL_SetEnergyMeterStatus(ENERGY_METERING_DATA* data)
 void HAL_FlashVars_SaveTotalConsumption(float total_consumption)
 {
 	//FIXME hijacking emetering
-	return 0;
+	return;
 #ifndef DISABLE_FLASH_VARS_VARS
 	flash_vars.emetering.TotalConsumption = total_consumption;
 #endif
@@ -718,11 +718,9 @@ void HAL_FlashVars_SaveEnergy(ENERGY_DATA** data, int channel_count)
 		// memcpy(&flash_vars.energy[channel], data, sizeof(ENERGY_DATA));  // failed to boot with new struct. why ???
 		
 		//FIXME hijacking emetering
-		int base =   &flash_vars.emetering;
 		for(int i =0 ; i < channel_count; i++){
 			int offset =( i * sizeof(ENERGY_DATA));
-			int flash_addr = base + offset ;
-			memcpy(flash_addr, data[i], sizeof(ENERGY_DATA)); 
+			memcpy(&flash_vars.emetering + offset, data[i], sizeof(ENERGY_DATA)); 
 		}
 		flash_vars_write();
 		flash_vars_read(&tmp);
@@ -749,9 +747,7 @@ void HAL_FlashVars_GetEnergy(ENERGY_DATA* data, ENERGY_CHANNEL channel)
 
 		//FIXME hijacking emetering
 		int offset =((channel) * sizeof(ENERGY_DATA));
-		int base =   &flash_vars.emetering;
-		int flash_addr = base + offset;
-		memcpy(data ,flash_addr, sizeof(ENERGY_DATA));
+		memcpy(data ,&flash_vars.emetering + offset, sizeof(ENERGY_DATA));
 	}
 #endif
 }

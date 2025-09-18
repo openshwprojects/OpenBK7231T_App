@@ -1,4 +1,7 @@
 #pragma once
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunknown-pragmas"
+
 #ifndef __DRV_HLW8112_H__
 #define __DRV_HLW8112_H__
 
@@ -440,3 +443,5 @@ int HLW8112_CheckCoeffs();
 int HLW8112_UpdateCoeff();
 
 #endif // __DRV_HLW8112_H__
+
+#pragma GCC diagnostic pop

@@ -10,6 +10,7 @@
 #include "../../httpserver/new_http.h"
 #include "../../driver/drv_public.h"
 #include "../../driver/drv_bl_shared.h"
+#include "../../driver/drv_hlw8112.h"
 
 static unsigned char *sector = (void *)0;
 int sectorlen = 0;

@@ -1,5 +1,9 @@
 // HLW8112
 
+// workaround for code folding region pragma remove it when compiler are updated
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunknown-pragmas" 
+
 #include "drv_hlw8112.h"
 #include "../obk_config.h"
 
@@ -9,18 +13,18 @@
 #include <stdint.h>
 #include <inttypes.h>
 
-#include "../hal/hal_pins.h"
-#include "../new_pins.h"
-#include "../hal/hal_flashVars.h"
+
 #include "../cmnds/cmd_public.h"
+#include "../hal/hal_flashVars.h"
+#include "../hal/hal_ota.h"
 #include "../hal/hal_pins.h"
+#include "../httpserver/hass.h"
 #include "../logging/logging.h"
+#include "../mqtt/new_mqtt.h"
 #include "../new_cfg.h"
 #include "../new_pins.h"
-#include "../httpserver/hass.h"
 
-//#include "drv_bl_shared.h"
-#include "drv_pwrCal.h"
+#include "drv_public.h"
 #include "drv_spi.h"
 
 
@@ -1243,3 +1247,5 @@ void HLW8112_Save_Statistics() {
 	}
 }
 #endif // ENABLE_DRIVER_HLW8112SPI
+
+#pragma GCC diagnostic pop

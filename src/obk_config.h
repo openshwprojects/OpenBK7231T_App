@@ -136,7 +136,6 @@
 #define ENABLE_DRIVER_BL0937					1
 #define ENABLE_DRIVER_BL0942					1
 #define ENABLE_DRIVER_BL0942SPI					1
-#define ENABLE_DRIVER_HLW8112SPI				1
 #define ENABLE_DRIVER_CSE7766					1
 #define ENABLE_DRIVER_CSE7761					1
 #define ENABLE_DRIVER_TESTPOWER					1
@@ -247,7 +246,6 @@
 #define ENABLE_DRIVER_BL0942					1
 #define ENABLE_DRIVER_BL0942SPI					1
 #define ENABLE_DRIVER_CSE7766					1
-#define ENABLE_DRIVER_HLW8112SPI				1
 // #define ENABLE_DRIVER_BMP280					1
 // #define ENABLE_DRIVER_PT6523					1
 // #define ENABLE_DRIVER_MAX6675				1
@@ -294,6 +292,9 @@
 #define NEW_TCP_SERVER							1
 #endif
 
+#if PLATFORM_BK7231N
+#define ENABLE_DRIVER_HLW8112SPI				1
+#endif
 // ENABLE_I2C_ is a syntax for
 // our I2C system defines for drv_i2c_main.c
 // #define ENABLE_I2C_ADS1115					1

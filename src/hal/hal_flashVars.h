@@ -28,7 +28,6 @@ typedef struct ENERGY_METERING_DATA {
 	char actual_mday;
 } ENERGY_METERING_DATA;
 
-#ifdef ENABLE_DRIVER_HLW8112SPI
 // size 8 bytes
 typedef struct {
 	float Import;
@@ -39,7 +38,7 @@ typedef enum {
 	ENERGY_CHANNEL_A = 0,
 	ENERGY_CHANNEL_B = 1,
 } ENERGY_CHANNEL;
-#endif
+
 typedef struct flash_vars_structure
 {
 	// offset  0
