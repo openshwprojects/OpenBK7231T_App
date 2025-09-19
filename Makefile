@@ -547,8 +547,8 @@ OpenRTL8710B: prebuild_OpenRTL8710B
 	$(MAKE) -C sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc)
 	$(MAKE) -C sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) ota_idx=2
 	mkdir -p output/$(APP_VERSION)
-	cp sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/boot_all.bin output/$(APP_VERSION)/OpenRTL8710B_boot.bin
-	cp sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/image2_all_ota1.bin output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION).bin
+	dd conv=notrunc bs=1K if=sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/boot_all.bin of=output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION).bin seek=0
+	dd conv=notrunc bs=1K if=sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/image2_all_ota1.bin of=output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION).bin seek=44
 	./platforms/RTL8710B/tools/amebaz_ota_combine sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/image2_all_ota1.bin sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/image2_all_ota2.bin output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION)_ota.img
 	
 .PHONY: OpenRTL8710A
