@@ -543,6 +543,7 @@
 //#define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 #define ENABLE_LITTLEFS							1
 #define ENABLE_NTP 								1
+#define ENABLE_I2C 								1
 #undef ENABLE_HTTP_MAC
 #undef ENABLE_LED_BASIC
 
