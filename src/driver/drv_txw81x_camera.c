@@ -23,6 +23,8 @@ bool isStarted = false;
 bool showTimestamp = false;
 extern time_t g_ntpTime;
 extern void set_time_watermark(uint16 year, uint16 month, uint16 day, uint16 hour, uint16 min, uint16 sec);
+int dvp_scl = PC_2;
+int dvp_sda = PC_3;
 
 uint8 vcam_en()
 {
@@ -72,6 +74,8 @@ void TXW_Cam_Init(void)
 {
 	if(!isStarted)
 	{
+		dvp_scl = PIN_FindPinIndexForRole(IOR_SOFT_SCL, dvp_scl);
+		dvp_sda = PIN_FindPinIndexForRole(IOR_SOFT_SDA, dvp_sda);
 		uint32_t buf_size = Tokenizer_GetArgIntegerDefault(1, 60 * 1000);
 		uint8 vcam;
 		vcam = vcam_en();
