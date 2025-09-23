@@ -150,13 +150,13 @@ void Batt_Init() {
 
 	//cmddetail:{"name":"Battery_Setup","args":"[minbatt][maxbatt][V_divider][Vref][AD Bits]",
 	//cmddetail:"descr":"measure battery based on ADC. <br />req. args: minbatt in mv, maxbatt in mv. <br />optional: V_divider(2), Vref(default 2400), ADC bits(4096)",
-	//cmddetail:"fn":"Battery_Setup","file":"drv/drv_battery.c","requires":"",
+	//cmddetail:"fn":"Battery_Setup","file":"driver/drv_battery.c","requires":"",
 	//cmddetail:"examples":"Battery_Setup 1500 3000 2 2400 4096"}
 	CMD_RegisterCommand("Battery_Setup", Battery_Setup, NULL);
 
 	//cmddetail:{"name":"Battery_cycle","args":"[int]",
 	//cmddetail:"descr":"change cycle of measurement by default every 10 seconds",
-	//cmddetail:"fn":"Battery_cycle","file":"drv/drv_battery.c","requires":"",
+	//cmddetail:"fn":"Battery_cycle","file":"driver/drv_battery.c","requires":"",
 	//cmddetail:"examples":"Battery_cycle 60"}
 	CMD_RegisterCommand("Battery_cycle", Battery_cycle, NULL);
 

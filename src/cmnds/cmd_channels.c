@@ -621,7 +621,7 @@ void CMD_InitChannelCommands(){
 	CMD_RegisterCommand("SetChannelVisible", CMD_SetChannelVisible, NULL);
 	//cmddetail:{"name":"SetChannelPrivate","args":"[ChannelIndex][bPrivate]",
 	//cmddetail:"descr":"Channels marked as private are NEVER published via MQTT and excluded from Home Assistant discovery",
-	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"fn":"CMD_SetChannelPrivate","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetChannelPrivate", CMD_SetChannelPrivate, NULL);
 	//cmddetail:{"name":"Ch","args":"[InputValue]",

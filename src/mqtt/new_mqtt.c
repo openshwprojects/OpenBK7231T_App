@@ -756,6 +756,17 @@ void MQTT_ProcessCommandReplyJSON(const char *cmd, const char *args, int flags) 
 	}
 }
 #endif
+
+int onHassStatus(obk_mqtt_request_t* request) {
+	if (!strcmp(request->topic, "homeassistant/status")) {
+		const char *args = (const char *)request->received;
+		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "HA status - %s\n", args);
+		if (!strcmp(args, "online")) {
+			MQTT_PublishWholeDeviceState_Internal(true);
+		}
+	}
+	return 1;
+}
 int tasCmnd(obk_mqtt_request_t* request) {
 	const char *p, *args;
     //const char *p2;
@@ -1618,6 +1629,21 @@ commandResult_t MQTT_PublishCommandFloat(const void* context, const char* cmd, c
 
 	return CMD_RES_OK;
 }
+commandResult_t MQTT_PublishCommandDriver(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	const char* driver;
+	OBK_Publish_Result ret;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	driver = Tokenizer_GetArg(0);
+	bool bOn = DRV_IsRunning(driver);
+
+	char full[32];
+	sprintf(full,"driver/%s", driver);
+	ret = MQTT_PublishMain_StringInt(full, bOn, OBK_PUBLISH_FLAG_FORCE_REMOVE_GET);
+
+	return CMD_RES_OK;
+}
 /****************************************************************************************************
  *
  ****************************************************************************************************/
@@ -1889,6 +1915,10 @@ void MQTT_InitCallbacks() {
 		// note: this may REPLACE an existing entry with the same ID.  ID 7 !!!
 		MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 7, tasCmnd);
 	}
+	// test hack iobroker
+	snprintf(cbtopicbase, sizeof(cbtopicbase), "homeassistant/");
+	snprintf(cbtopicsub, sizeof(cbtopicsub), "homeassistant/+");
+	MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 8, onHassStatus);
 }
  // initialise things MQTT
  // called from user_main
@@ -1910,12 +1940,12 @@ void MQTT_init()
 	CMD_RegisterCommand("publish", MQTT_PublishCommand, NULL);
 	//cmddetail:{"name":"publishInt","args":"[Topic][Value][bOptionalSkipPrefixAndSuffix]",
 	//cmddetail:"descr":"Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an integer, so you can also use math expressions like $CH10*10, etc.",
-	//cmddetail:"fn":"MQTT_PublishCommand","file":"mqtt/new_mqtt.c","requires":"",
+	//cmddetail:"fn":"MQTT_PublishCommandInteger","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("publishInt", MQTT_PublishCommandInteger, NULL);
 	//cmddetail:{"name":"publishFloat","args":"[Topic][Value][bOptionalSkipPrefixAndSuffix]",
 	//cmddetail:"descr":"Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an float, so you can also use math expressions like $CH10*0.0, etc.",
-	//cmddetail:"fn":"MQTT_PublishCommand","file":"mqtt/new_mqtt.c","requires":"",
+	//cmddetail:"fn":"MQTT_PublishCommandFloat","file":"mqtt/new_mqtt.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("publishFloat", MQTT_PublishCommandFloat, NULL);
 	//cmddetail:{"name":"publishAll","args":"",
@@ -1961,6 +1991,9 @@ void MQTT_init()
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("publishFile", MQTT_PublishFile, NULL);
 #endif
+
+
+	CMD_RegisterCommand("publishDriver", MQTT_PublishCommandDriver, NULL);
 }
 static float getInternalTemperature() {
 	return g_wifi_temperature;

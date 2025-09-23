@@ -45,10 +45,18 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 #define SELFTEST_ASSERT_HTTP_HAS_BUTTON_LEDS_OFF(bHas) SELFTEST_ASSERT((bHas) == SIM_HasHTTP_LED_Toggler(false));
 
 
+
+
+
+
+#define SELFTEST_ASSERT_PAGE_NOT_CONTAINS(page,expected) SELFTEST_ASSERT(!(strstr(Test_QueryHTMLReply(page),expected)));
+#define SELFTEST_ASSERT_PAGE_CONTAINS(page,expected) SELFTEST_ASSERT((strstr(Test_QueryHTMLReply(page),expected)));
+
 #define SELFTEST_ASSERT_STRING(current,expected) SELFTEST_ASSERT((strcmp(expected,current) == 0));
 #define SELFTEST_ASSERT_INTEGER(current,expected) SELFTEST_ASSERT((expected==current));
 #define SELFTEST_ASSERT_HTML_REPLY(expected) SELFTEST_ASSERT((strcmp(Test_GetLastHTMLReply(),expected) == 0));
 #define SELFTEST_ASSERT_HTML_REPLY_CONTAINS(expected) SELFTEST_ASSERT((strstr(Test_GetLastHTMLReply(),expected)));
+#define SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS(expected) SELFTEST_ASSERT(!(strstr(Test_GetLastHTMLReply(),expected)));
 #define SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR(topic, value, bRetain) SELFTEST_ASSERT(SIM_CheckMQTTHistoryForString(topic,value,bRetain));
 #define SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT(topic, value, bRetain) SELFTEST_ASSERT(SIM_CheckMQTTHistoryForFloat(topic,value,bRetain));
 #define SELFTEST_ASSERT_FLAG(flag, value) SELFTEST_ASSERT(CFG_HasFlag(flag)==value);
@@ -148,6 +156,7 @@ void Test_FakeHTTPClientPacket_POST(const char *tg, const char *data);
 void Test_FakeHTTPClientPacket_POST_withJSONReply(const char *tg, const char *data);
 void Test_FakeHTTPClientPacket_JSON(const char *tg);
 const char *Test_GetLastHTMLReply();
+const char *Test_QueryHTMLReply(const char *url);
 
 bool SIM_HasHTTPTemperature();
 bool SIM_HasHTTPRGB();

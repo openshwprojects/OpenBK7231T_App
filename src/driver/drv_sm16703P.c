@@ -14,7 +14,6 @@
 #include "drv_local.h"
 #include "drv_spiLED.h"
 
-
 void SM16703P_Show() {
 	if (spiLED.ready == 0)
 		return;

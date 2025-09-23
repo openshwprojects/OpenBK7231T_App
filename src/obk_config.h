@@ -81,6 +81,8 @@
 #define ENABLE_OBK_SCRIPTING					1
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 #define ENABLE_LITTLEFS							1
+//#define ENABLE_DRIVER_TUYAMCU					1
+#undef ENABLE_HTTP_MAC
 
 #elif PLATFORM_W800
 
@@ -408,6 +410,7 @@
 
 #if (OBK_VARIANT == OBK_VARIANT_ESP4M)
 #define ENABLE_DRIVER_TCA9554					1
+#define ENABLE_DRIVER_DMX						1
 #endif
 
 #elif PLATFORM_TR6260
@@ -565,6 +568,7 @@
 // allow moving average energy calculation +180 bytes
 // #define ENABLE_BL_MOVINGAVG					1
 #endif
+
 
 // closing OBK_CONFIG_H
 #endif

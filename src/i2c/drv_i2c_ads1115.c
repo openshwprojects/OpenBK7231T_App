@@ -123,7 +123,7 @@ void DRV_I2C_ADS1115_PreInit() {
 
 	//cmddetail:{"name":"addI2CDevice_ADS1115","args":"",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"i2c/drv_i2c_ads1115.c","requires":"",
+	//cmddetail:"fn":"DRV_I2C_AddDevice_ADS1115","file":"i2c/drv_i2c_ads1115.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("addI2CDevice_ADS1115", DRV_I2C_AddDevice_ADS1115, NULL);
 }
