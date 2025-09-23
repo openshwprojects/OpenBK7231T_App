@@ -187,6 +187,7 @@
 #elif PLATFORM_BL602
 
 // #define ENABLE_SEND_POSTANDGET				1
+#define ENABLE_DRIVER_BRIDGE					1
 #define ENABLE_HA_DISCOVERY 					1
 #define ENABLE_MQTT								1
 #define ENABLE_TASMOTADEVICEGROUPS				1
@@ -201,6 +202,7 @@
 #define ENABLE_DRIVER_WEMO						1
 #define ENABLE_DRIVER_FREEZE					0
 #define ENABLE_DRIVER_DHT						1
+#define ENABLE_DRIVER_BRIDGE					1
 // parse things like $CH1 or $hour etc
 #define ENABLE_EXPAND_CONSTANT					1
 #define ENABLE_TASMOTA_JSON						1
