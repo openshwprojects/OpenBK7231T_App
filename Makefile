@@ -362,6 +362,14 @@ prebuild_OpenTXW81X: berry
 	else echo "prebuild for OpenTXW81X not found ... "; \
 	fi
 
+prebuild_OpenRDA5981: berry
+	git submodule update --init --recursive --depth=1 sdk/OpenRDA5981
+	@if [ -e platforms/RDA5981/pre_build.sh ]; then \
+		echo "prebuild found for OpenRDA5981"; \
+		sh platforms/RDA5981/pre_build.sh; \
+	else echo "prebuild for OpenRDA5981 not found ... "; \
+	fi
+
 # Build main binaries
 OpenBK7231T: prebuild_OpenBK7231T
 	mkdir -p output
@@ -663,6 +671,16 @@ OpenTXW81X: prebuild_OpenTXW81X
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenTXW81X/project/APP.bin output/$(APP_VERSION)/OpenTXW81X_$(APP_VERSION).bin
 	#cp sdk/OpenTXW81X/project/APP_compress.bin output/$(APP_VERSION)/OpenTXW81X_$(APP_VERSION)_ota.img
+	
+.PHONY: OpenRDA5981
+OpenRDA5981: prebuild_OpenRDA5981
+	$(MAKE) -C sdk/OpenRDA5981 APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc)
+	mkdir -p output/$(APP_VERSION)
+	cp sdk/OpenRDA5981/.build/OpenBeken.bin output/$(APP_VERSION)/OpenRDA5981_$(APP_VERSION).img
+	#cp sdk/OpenRDA5981/ota_lzma/bootloader_lzma.bin output/$(APP_VERSION)/OpenRDA5981_$(APP_VERSION).bin
+	#dd conv=notrunc bs=1K if=sdk/OpenRDA5981/.build/OpenBeken.bin of=output/$(APP_VERSION)/OpenRDA5981_$(APP_VERSION).bin seek=12
+	#./sdk/OpenRDA5981/ota_lzma/imgpkt e sdk/OpenRDA5981/.build/OpenBeken.bin sdk/OpenRDA5981/.build/OpenBeken.bin.lzma
+	#python3 sdk/OpenRDA5981/ota_lzma/ota_pack_image_lzma.py sdk/OpenRDA5981/.build/OpenBeken.bin sdk/OpenRDA5981/.build/OpenBeken.bin.lzma output/$(APP_VERSION)/OpenRDA5981_$(APP_VERSION)_ota.img
 
 # Add custom Makefile if required
 -include custom.mk
@@ -690,6 +708,7 @@ clean:
 	-test -d ./sdk/ameba-rtos && cd sdk/ameba-rtos/amebalite_gcc_project && ./build.py -a ../../../platforms/RTL8720E -c
 	-test -d ./sdk/beken_freertos_sdk && $(MAKE) -C sdk/beken_freertos_sdk clean
 	-test -d ./sdk/OpenTXW81X && $(MAKE) -C sdk/OpenTXW81X/project clean
+	-test -d ./sdk/OpenRDA5981 && $(MAKE) -C sdk/OpenRDA5981 clean
 	-test -d ./sdk/OpenLN882H/build && cmake --build ./sdk/OpenLN882H/build --target clean
 	-test -d ./platforms/ESP-IDF/build-32 && cmake --build ./platforms/ESP-IDF/build-32 --target clean
 	-test -d ./platforms/ESP-IDF/build-c3 && cmake --build ./platforms/ESP-IDF/build-c3 --target clean

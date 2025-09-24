@@ -171,7 +171,7 @@ int state = 0;
 int pwmIndex = -1;
 unsigned int period;
 
-uint8_t group, channel;
+static uint8_t group, channel;
 
 // define to 1 to enable debug timer io output
 #if 0
