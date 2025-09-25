@@ -737,7 +737,7 @@ void DS1820_full_driver_Init()
 };
 
 
-*/
+/*
 		printer(request, "\"DS1820\":");
 		// following check will clear NaN values
 		printer(request, "{");
