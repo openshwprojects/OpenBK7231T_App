@@ -281,6 +281,7 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 		// close ENERGY block
 		printer(request, "},");
 	}
+#if (ENABLE_DRIVER_DS1820)
 	if (DRV_IsRunning("DS1820")) {		//DS1820_simple.c with one sensor
 		g_pin_1 = PIN_FindPinIndexForRole(IOR_DS1820_IO, g_pin_1);
 		channel_1 = g_cfg.pins.channels[g_pin_1];
@@ -294,10 +295,12 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 		// close ENERGY block
 		printer(request, "},");
 	}
+#endif
+#if (ENABLE_DRIVER_DS1820_FULL)
 	if (DRV_IsRunning("DS1820_full")) {		//DS1820_full.c with possibly multiple sensors
 		printer(request, DS1820_full_jsonSensors());
 	}
-
+#endif
 	if (DRV_IsRunning("CHT83XX")) {
 		g_pin_1 = PIN_FindPinIndexForRole(IOR_CHT83XX_DAT, g_pin_1);
 		channel_1 = g_cfg.pins.channels[g_pin_1];
