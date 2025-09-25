@@ -761,9 +761,10 @@ char *DS1820_full_jsonSensors(){
 	if (str == NULL) {
         	return NULL; // string allocation failed
         }
+	str[0] = 0;
 	for (int i=0; i < ds18_count; i++) {
 		char tmp[50 + DS18B20namel];
-		sprintf(tmp, "{\"DS1820_%s\":{\"Temperature\": %.1f},",ds18b20devices.name[i],ds18b20devices.lasttemp[i]);
+		sprintf(tmp, "\"DS1820_%s\":{\"Temperature\": %.1f},",ds18b20devices.name[i],ds18b20devices.lasttemp[i]);
 		strncat(str, tmp, size - strlen(str) - 1); // Concatenate to the main string
 	}
         jsonSensor_reststr = str;
