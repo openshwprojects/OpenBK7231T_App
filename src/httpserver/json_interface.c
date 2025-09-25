@@ -20,6 +20,9 @@
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_local.h"
 #include "../driver/drv_bl_shared.h"
+#include "../driver/drv_ds1820_simple.h"
+#include "../driver/drv_ds1820_full.h"
+
 
 #if ENABLE_TASMOTA_JSON
 
@@ -292,7 +295,7 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 		printer(request, "},");
 	}
 	if (DRV_IsRunning("DS1820_full")) {		//DS1820_full.c with possibly multiple sensors
-		printer(request, DS1820_full_jsonSensors);
+		printer(request, DS1820_full_jsonSensors());
 	}
 
 	if (DRV_IsRunning("CHT83XX")) {
