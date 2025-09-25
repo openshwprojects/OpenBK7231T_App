@@ -278,6 +278,23 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 		// close ENERGY block
 		printer(request, "},");
 	}
+	if (DRV_IsRunning("DS1820")) {		//DS1820_simple.c with one sensor
+		g_pin_1 = PIN_FindPinIndexForRole(IOR_DS1820_IO, g_pin_1);
+		channel_1 = g_cfg.pins.channels[g_pin_1];
+		chan_val1 = CHANNEL_GetFloat(channel_1) / 100.0f;
+
+		// writer header
+		printer(request, "\"DS1820\":");
+		// following check will clear NaN values
+		printer(request, "{");
+		printer(request, "\"Temperature\": %.1f", chan_val1);
+		// close ENERGY block
+		printer(request, "},");
+	}
+	if (DRV_IsRunning("DS1820_full")) {		//DS1820_full.c with possibly multiple sensors
+		printer(request, DS1820_full_jsonSensors);
+	}
+
 	if (DRV_IsRunning("CHT83XX")) {
 		g_pin_1 = PIN_FindPinIndexForRole(IOR_CHT83XX_DAT, g_pin_1);
 		channel_1 = g_cfg.pins.channels[g_pin_1];
@@ -295,6 +312,7 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 		// close ENERGY block
 		printer(request, "},");
 	}
+
 	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		int role = PIN_GetPinRoleForPinIndex(i);
 		if (role != IOR_DHT11 && role != IOR_DHT12 && role != IOR_DHT21 && role != IOR_DHT22)
