@@ -750,7 +750,7 @@ void DS1820_full_driver_Init()
 static char *jsonSensor_reststr = NULL;
 char *DS1820_full_jsonSensors(){
 	if (ds18_count <= 0 ) return NULL;
-	if (jsonSensor_reststr!=NULL) free jsonSensor_reststr; 
+	if (jsonSensor_reststr!=NULL) free(jsonSensor_reststr); 
 	// {"DS1820_<name>":{"Temperature": <temp>},
 	// {"DS1820_<name - DS18B20namel>":{"Temperature": <temp -127,00>},
 	// 123456789                     123456789012345678      1234567890   
@@ -763,7 +763,7 @@ char *DS1820_full_jsonSensors(){
         }
 	for (int i=0; i < ds18_count; i++) {
 		char tmp[50 + DS18B20namel];
-		sprintf(tmp, "{\"DS1820_%s\":{"\"Temperature\": %.1f},",ds18b20devices.name[i],ds18b20devices.lasttemp[i]);
+		sprintf(tmp, "{\"DS1820_%s\":{\"Temperature\": %.1f},",ds18b20devices.name[i],ds18b20devices.lasttemp[i]);
 		strncat(str, tmp, size - strlen(str) - 1); // Concatenate to the main string
 	}
         jsonSensor_reststr = str;
