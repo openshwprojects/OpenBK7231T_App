@@ -53,7 +53,6 @@ static HLW8112_UpdateData_t last_update_data = {
 	.ib_rms = 0, .pb =0, .eb= &energy_acc_b
 };	// last scaled values for ext systems 
 
-static bool oky_mqtt = false;
 static int stat_save_count_down = HLW8112_SAVE_COUNTER;
 int GPIO_HLW_SCSN = 9;
 
@@ -374,6 +373,20 @@ static commandResult_t HLW8112_SetEnergyStat(const void *context, const char *cm
 	return CMD_RES_OK;
 }
 
+static commandResult_t HLW8112_ClearEnergy(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	char* channel = Tokenizer_GetArg(0);
+	if (!strcmp("channel_a" , channel)) {
+		HLW8112_Set_EnergyStat(HLW8112_CHANNEL_A,0,0);
+	} else if (!strcmp("channel_b" , channel)){
+		HLW8112_Set_EnergyStat(HLW8112_CHANNEL_B,0,0);
+	}
+	return CMD_RES_OK;
+}
+
 #if HLW8112_SPI_RAWACCESS
 static commandResult_t HLW8112_write_reg(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
@@ -471,6 +484,7 @@ void HLW8112_addCommads(void){
     CMD_RegisterCommand("HLW8112_SetClock", HLW8112_SetClock, NULL);
     CMD_RegisterCommand("HLW8112_SetResistorGain", HLW8112_SetResistorGain, NULL);
     CMD_RegisterCommand("HLW8112_SetEnergyStat", HLW8112_SetEnergyStat, NULL);
+    CMD_RegisterCommand("clear_energy", HLW8112_ClearEnergy, NULL);
 #if HLW8112_SPI_RAWACCESS
 	CMD_RegisterCommand("HLW8112_write_reg", HLW8112_write_reg, NULL);
 	CMD_RegisterCommand("HLW8112_read_reg", HLW8112_read_reg, NULL);
@@ -538,56 +552,6 @@ void HLW8112_Init_Pins() {
   	HAL_PIN_Setup_Output(GPIO_HLW_SCSN);
   	HAL_PIN_SetOutputValue(GPIO_HLW_SCSN, 1);
 
-}
-
-int HLW8112_On_Mqtt_Command(obk_mqtt_request_t* request) {
-
-	const char* command , *args;;
-	command = MQTT_RemoveClientFromTopic(request->topic,"command");
-	if (command == NULL) {
-		return 0;
-	}
-	if (!strcmp(command, "clear_energy")){
-		args = (const char *)request->received;
-		if(!strcmp("channel_a", args)){
-			HLW8112_Set_EnergyStat(HLW8112_CHANNEL_A, 0, 0);
-			return 1;
-		}
-		else if(!strcmp("channel_b", args)){
-			HLW8112_Set_EnergyStat(HLW8112_CHANNEL_B, 0, 0);
-			return 1;
-		}
-	}
-	return 0;
-}
-
-int HLW8112_Init_Mqtt() {
-	char cbtopicbase[CGF_MQTT_CLIENT_ID_SIZE + 16];
-	char cbtopicsub[CGF_MQTT_CLIENT_ID_SIZE + 16];
-	const char* clientId;
-
-	clientId = CFG_GetMQTTClientId();
-
-	snprintf(cbtopicbase, sizeof(cbtopicbase), "command/%s/", clientId);
-	snprintf(cbtopicsub, sizeof(cbtopicsub), "command/%s/clear_energy", clientId);
-	int r = MQTT_RegisterCallback(cbtopicbase, cbtopicsub, 10, HLW8112_On_Mqtt_Command);
-	ADDLOG_ERROR( LOG_FEATURE_ENERGYMETER, "MQTT_RegisterCallback  r %d", r);
-	return r;
-}
-void HLW8112_DeInit_Mqqt(){
-	MQTT_RemoveCallback(20);
-}
-void HLW8112_Mqtt_Tick(){
-	bool q = MQTT_IsReady();
-	if (!oky_mqtt && q ){
-		int r =  HLW8112_Init_Mqtt();
-		if(r == 0){
-			oky_mqtt = true;
-		}
-	}
-	else if(!q){
-		oky_mqtt = false;
-	}
 }
 
 #pragma region register init and ops
@@ -795,7 +759,6 @@ void HLW8112SPI_Stop(void) {
 	HLW8112_Save_Statistics();
 	SPI_Deinit();
 	SPI_DriverDeinit();
-	HLW8112_DeInit_Mqqt();
 }
 
 void HLW8112_Init(void) {
@@ -1003,7 +966,6 @@ static void HLW8112_ScaleAndUpdate(HLW8112_Data_t* data) {
 
 
 void HLW8112_RunEverySecond(void) {
-	HLW8112_Mqtt_Tick();
 	HLW8112_Data_t data;
 
 	HLW8112_ReadRegister24(HLW8112_REG_RMSU, &data.v_rms);
@@ -1092,10 +1054,10 @@ void HLW8112_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreS
 			char channel[2];
 			if (http_getArg(request->url, "channel", channel, sizeof(channel))) {
 				if (!strcmp("a" , channel)) {
-						HLW8112_Set_EnergyStat(HLW8112_CHANNEL_A,0,0);
-					} else {
-						HLW8112_Set_EnergyStat(HLW8112_CHANNEL_B,0,0);
-					}
+					HLW8112_Set_EnergyStat(HLW8112_CHANNEL_A,0,0);
+				} else {
+					HLW8112_Set_EnergyStat(HLW8112_CHANNEL_B,0,0);
+				}
 			}
 		}
 		else if (http_getArgInteger(request->url, "reg_edit")) {

@@ -831,7 +831,7 @@ HassDeviceInfo* hass_init_button_device_info(char* title,char* cmd_id, char* pre
 	else {
 		cJSON_AddStringToObject(info->root, "entity_category", "config");
 	}
-	sprintf(g_hassBuffer, "command/%s/%s", clientId, cmd_id);
+	sprintf(g_hassBuffer, "cmnd/%s/%s", clientId, cmd_id);
 	cJSON_AddStringToObject(info->root, "command_topic", g_hassBuffer);
 	return info;
 }
