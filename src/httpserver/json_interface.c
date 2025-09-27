@@ -20,6 +20,9 @@
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_local.h"
 #include "../driver/drv_bl_shared.h"
+#include "../driver/drv_ds1820_simple.h"
+#include "../driver/drv_ds1820_full.h"
+
 
 #if ENABLE_TASMOTA_JSON
 
@@ -278,6 +281,36 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 		// close ENERGY block
 		printer(request, "},");
 	}
+#if (ENABLE_DRIVER_DS1820)
+	if (DRV_IsRunning("DS1820")) {		//DS1820_simple.c with one sensor
+		g_pin_1 = PIN_FindPinIndexForRole(IOR_DS1820_IO, g_pin_1);
+		channel_1 = g_cfg.pins.channels[g_pin_1];
+		chan_val1 = CHANNEL_GetFloat(channel_1) / 100.0f;
+
+		// writer header
+		printer(request, "\"DS1820\":");
+		// following check will clear NaN values
+		printer(request, "{");
+		printer(request, "\"Temperature\": %.1f", chan_val1);
+		// close ENERGY block
+		printer(request, "},");
+	}
+#endif
+#if (ENABLE_DRIVER_DS1820_FULL)
+	if (DRV_IsRunning("DS1820_full")) {		//DS1820_full.c with possibly multiple sensors
+		char *str = DS1820_full_jsonSensors();
+		int toprint = strlen(str);
+		while (*str && toprint > 250) {		// string can be long, longer than request, this would break output if not split
+			char t = str[250];
+			str[250]=0;
+			printer(request, str);
+			str[250]=t;
+			str+=250;
+			toprint -= 250;
+		}	 
+		printer(request, str);
+	}
+#endif
 	if (DRV_IsRunning("CHT83XX")) {
 		g_pin_1 = PIN_FindPinIndexForRole(IOR_CHT83XX_DAT, g_pin_1);
 		channel_1 = g_cfg.pins.channels[g_pin_1];
@@ -295,6 +328,7 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 		// close ENERGY block
 		printer(request, "},");
 	}
+
 	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		int role = PIN_GetPinRoleForPinIndex(i);
 		if (role != IOR_DHT11 && role != IOR_DHT12 && role != IOR_DHT21 && role != IOR_DHT22)

@@ -736,6 +736,41 @@ void DS1820_full_driver_Init()
 
 };
 
+
+/*
+		printer(request, "\"DS1820\":");
+		// following check will clear NaN values
+		printer(request, "{");
+		printer(request, "\"Temperature\": %.1f,", chan_val1);
+		// close ENERGY block
+		printer(request, "},");
+
+*/
+
+static char *jsonSensor_reststr = NULL;
+char *DS1820_full_jsonSensors(){
+	if (ds18_count <= 0 ) return NULL;
+	if (jsonSensor_reststr!=NULL) free(jsonSensor_reststr); 
+	// {"DS1820_<name>":{"Temperature": <temp>},
+	// {"DS1820_<name - DS18B20namel>":{"Temperature": <temp -127,00>},
+	// 123456789                     123456789012345678      1234567890   
+	// length of str: 10 + DS18B20namel + 18 + 10 --> 40 + DS18B20namel
+	
+	int size = (40 + DS18B20namel) * ds18_count;
+	char *str = (char *)malloc(size * sizeof(char));
+	if (str == NULL) {
+        	return NULL; // string allocation failed
+        }
+	str[0] = 0;
+	for (int i=0; i < ds18_count; i++) {
+		char tmp[50 + DS18B20namel];
+		sprintf(tmp, "\"DS1820_%s\":{\"Temperature\": %.1f},",ds18b20devices.name[i],ds18b20devices.lasttemp[i]);
+		strncat(str, tmp, size - strlen(str) - 1); // Concatenate to the main string
+	}
+        jsonSensor_reststr = str;
+	return jsonSensor_reststr;
+}
+
 void DS1820_full_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
 	if (bPreState){
