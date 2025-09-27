@@ -293,7 +293,7 @@
 #endif
 
 #if PLATFORM_BK7231N
-#define ENABLE_DRIVER_HLW8112SPI				1
+#define ENABLE_DRIVER_HLW8112SPI				0
 #endif
 // ENABLE_I2C_ is a syntax for
 // our I2C system defines for drv_i2c_main.c
