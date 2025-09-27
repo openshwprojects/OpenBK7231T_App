@@ -680,8 +680,6 @@ int HAL_SetEnergyMeterStatus(ENERGY_METERING_DATA* data)
 
 void HAL_FlashVars_SaveTotalConsumption(float total_consumption)
 {
-	//FIXME hijacking emetering
-	return;
 #ifndef DISABLE_FLASH_VARS_VARS
 	flash_vars.emetering.TotalConsumption = total_consumption;
 #endif
