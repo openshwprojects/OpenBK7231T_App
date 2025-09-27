@@ -59,7 +59,7 @@ int GPIO_HLW_SCSN = 9;
 
 #pragma region HLW8112 utils
 
-#ifdef HLW8112_SPI_RAWACCESS
+#if HLW8112_SPI_RAWACCESS
 
 void HLW8112_Print_Array(uint8_t *data, int size) {
 	for (int i = 0; i <= size; i++) {
@@ -374,7 +374,7 @@ static commandResult_t HLW8112_SetEnergyStat(const void *context, const char *cm
 	return CMD_RES_OK;
 }
 
-#ifdef HLW8112_SPI_RAWACCESS
+#if HLW8112_SPI_RAWACCESS
 static commandResult_t HLW8112_write_reg(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
   	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
@@ -471,7 +471,7 @@ void HLW8112_addCommads(void){
     CMD_RegisterCommand("HLW8112_SetClock", HLW8112_SetClock, NULL);
     CMD_RegisterCommand("HLW8112_SetResistorGain", HLW8112_SetResistorGain, NULL);
     CMD_RegisterCommand("HLW8112_SetEnergyStat", HLW8112_SetEnergyStat, NULL);
-#ifdef HLW8112_SPI_RAWACCESS
+#if HLW8112_SPI_RAWACCESS
 	CMD_RegisterCommand("HLW8112_write_reg", HLW8112_write_reg, NULL);
 	CMD_RegisterCommand("HLW8112_read_reg", HLW8112_read_reg, NULL);
 	CMD_RegisterCommand("HLW8112_print_coeff", HLW8112_print_coeff, NULL);
@@ -1142,7 +1142,7 @@ void HLW8112_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreS
 		  </td><td></td></tr>");
 
 	poststr(request, "</table>");
-#ifdef HLW8112_SPI_RAWACCESS
+#if HLW8112_SPI_RAWACCESS
 	poststr(request,"<style> \
                 div form { \
                     display: flex; align-items: stretch; gap: 10px;justify-content: center; \

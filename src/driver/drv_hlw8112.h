@@ -5,7 +5,7 @@
 #ifndef __DRV_HLW8112_H__
 #define __DRV_HLW8112_H__
 
-#define HLW8112_SPI_RAWACCESS 1
+#define HLW8112_SPI_RAWACCESS 0			//WIP 
 #include "../httpserver/new_http.h"
 #include "../hal/hal_flashVars.h"
 #include <stdint.h>
