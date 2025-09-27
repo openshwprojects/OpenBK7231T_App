@@ -697,5 +697,41 @@ float HAL_FlashVars_GetEnergyExport()
 	return f;
 }
 
+#ifdef ENABLE_DRIVER_HLW8112SPI
+void HAL_FlashVars_SaveEnergy(ENERGY_DATA** data, int channel_count)
+{
+#ifndef DISABLE_FLASH_VARS_VARS
+	FLASH_VARS_STRUCTURE tmp;
+	if (data != NULL)
+	{
+		uintptr_t base =  (uintptr_t) &flash_vars.emetering;
+		for(int i =0 ; i < channel_count; i++){
+			int offset =( i * sizeof(ENERGY_DATA));
+			uintptr_t flash_addr = base + offset ;
+			memcpy((void *)flash_addr, data[i], sizeof(ENERGY_DATA));
+		}
+		flash_vars_write();
+		flash_vars_read(&tmp);
+	}
+#endif
+}
+void HAL_FlashVars_GetEnergy(ENERGY_DATA* data, ENERGY_CHANNEL channel) 
+{
+#ifndef DISABLE_FLASH_VARS_VARS
+	if (!flash_vars_initialised)
+	{
+		flash_vars_init();
+	}
+	if (data != NULL)
+	{
+		int offset =((channel) * sizeof(ENERGY_DATA));
+		uintptr_t base =  (uintptr_t) &flash_vars.emetering;
+		uintptr_t flash_addr = base + offset;
+		memcpy(data ,(void *)flash_addr, sizeof(ENERGY_DATA));
+	}
+#endif
+}
+#endif
+
 #endif
 

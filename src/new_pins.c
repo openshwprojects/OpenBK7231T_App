@@ -479,7 +479,8 @@ int PIN_IOR_NofChan(int test){
 			|| test == IOR_BL0937_CF || test == IOR_BL0937_CF1 || test == IOR_BL0937_SEL
 			|| test == IOR_LED_WIFI || test == IOR_LED_WIFI_n || test == IOR_LED_WIFI_n
 			|| (test >= IOR_IRRecv && test <= IOR_DHT11)
-			|| (test >= IOR_SM2135_DAT && test <= IOR_BP1658CJ_CLK)) {
+			|| (test >= IOR_SM2135_DAT && test <= IOR_BP1658CJ_CLK)
+			|| (test == IOR_HLW8112_SCSN)) {
 			return 0;
 	}
 	// all others have 1 channel
@@ -1381,6 +1382,7 @@ int ChannelType_GetDivider(int type) {
 	case ChType_EnergyTotal_kWh_div1000:
 	case ChType_EnergyExport_kWh_div1000:
 	case ChType_EnergyToday_kWh_div1000:
+	case ChType_EnergyImport_kWh_div1000:
 	case ChType_Current_div1000:
 	case ChType_LeakageCurrent_div1000:
 	case ChType_ReadOnly_div1000:
@@ -1422,6 +1424,7 @@ const char *ChannelType_GetUnit(int type) {
 	case ChType_EnergyExport_kWh_div1000:
 	case ChType_EnergyToday_kWh_div1000:
 	case ChType_EnergyTotal_kWh_div100:
+	case ChType_EnergyImport_kWh_div1000:
 		return "kWh";
 	case ChType_PowerFactor_div1000:
 	case ChType_PowerFactor_div100:
@@ -1477,6 +1480,8 @@ const char *ChannelType_GetTitle(int type) {
 		return "EnergyExport";
 	case ChType_EnergyToday_kWh_div1000:
 		return "EnergyToday";
+	case ChType_EnergyImport_kWh_div1000:
+		return "EnergyImport";
 	case ChType_PowerFactor_div1000:
 	case ChType_PowerFactor_div100:
 		return "PowerFactor";
@@ -2383,6 +2388,7 @@ const char* g_channelTypeNames[] = {
 	"OpenStopClose",
 	"Percent",
 	"StopUpDown",
+	"EnergyImport_kWh_div1000",
 	"error",
 	"error",
 };

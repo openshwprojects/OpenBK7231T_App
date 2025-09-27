@@ -292,6 +292,9 @@
 #define NEW_TCP_SERVER							1
 #endif
 
+#if PLATFORM_BK7231N
+#define ENABLE_DRIVER_HLW8112SPI				0
+#endif
 // ENABLE_I2C_ is a syntax for
 // our I2C system defines for drv_i2c_main.c
 // #define ENABLE_I2C_ADS1115					1
@@ -322,6 +325,7 @@
 #undef ENABLE_DRIVER_BL0937
 #undef ENABLE_DRIVER_BL0942
 #undef ENABLE_DRIVER_BL0942SPI
+#undef ENABLE_DRIVER_HLW8112SPI
 #undef ENABLE_DRIVER_CSE7766
 #undef ENABLE_DRIVER_BRIDGE
 #endif

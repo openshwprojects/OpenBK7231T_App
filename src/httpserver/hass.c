@@ -131,6 +131,9 @@ void hass_populate_unique_id(ENTITY_TYPE type, int index, char* uniq_id, int ase
 	case HASS_PERCENT:
 		sprintf(uniq_id, "%s_%s_%d", longDeviceName, "number", index);
 		break;
+	case HASS_BUTTON:
+		sprintf(uniq_id, "%s_%s", longDeviceName, "button");
+		break;
 	default:
 		// TODO: USE type here as well?
 		// If type is not set, and we use "sensor" naming, we can easily make collision
@@ -203,6 +206,9 @@ void hass_populate_device_config_channel(ENTITY_TYPE type, char* uniq_id, HassDe
 	case TEMPERATURE_SENSOR:
 	case HUMIDITY_SENSOR:
 		sprintf(info->channel, "sensor/%s/config", uniq_id);
+		break;
+	case HASS_BUTTON:
+		sprintf(info->channel, "button/%s/config", uniq_id);
 		break;
 	default:
 		sprintf(info->channel, "sensor/%s/config", uniq_id);
@@ -563,13 +569,17 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 		case TIMESTAMP_SENSOR:
 			sprintf(g_hassBuffer, "Timestamp");
 			break;
+		case HASS_BUTTON:
+			sprintf(g_hassBuffer, "%s" , "");
+			break;
+
 		default:
 			sprintf(g_hassBuffer, "%s", CHANNEL_GetLabel(index));
 			break;
 		}
 	}
 	if (title) {
-		strcat(g_hassBuffer, "_");
+		if (type!=HASS_BUTTON) strcat(g_hassBuffer, "_");
 		strcat(g_hassBuffer, title);
 	}
 	cJSON_AddStringToObject(info->root, "name", g_hassBuffer);
@@ -588,8 +598,13 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 	}
 
 	if (!isSensor && type != HASS_TEXTFIELD) {	//Sensors (except binary_sensor) don't use payload 
-		cJSON_AddStringToObject(info->root, "pl_on", payload_on);    //payload_on
-		cJSON_AddStringToObject(info->root, "pl_off", payload_off);   //payload_off
+		if(type == HASS_BUTTON) {
+			cJSON_AddStringToObject(info->root, "payload_press", payload_on);
+		}
+		else if(type != HASS_TEXTFIELD){
+			cJSON_AddStringToObject(info->root, "pl_on", payload_on);    //payload_on
+			cJSON_AddStringToObject(info->root, "pl_off", payload_off);   //payload_off	
+		}
 	}
 
 	cJSON_AddStringToObject(info->root, "uniq_id", info->unique_id);  //unique_id
@@ -804,8 +819,22 @@ HassDeviceInfo* hass_init_energy_sensor_device_info(int index, int asensdataseti
 	// }
 	return info;
 }
-
 #endif
+
+HassDeviceInfo* hass_init_button_device_info(char* title,char* cmd_id, char* press_payload, HASS_CATEGORY_TYPE type) {
+	HassDeviceInfo* info = 0;
+	const char* clientId = CFG_GetMQTTClientId();
+	info = hass_init_device_info(HASS_BUTTON, 0, press_payload, NULL, 0, title);
+	if (type == HASS_CATEGORY_DIAGNOSTIC){
+		cJSON_AddStringToObject(info->root, "entity_category", "diagnostic");
+	}
+	else {
+		cJSON_AddStringToObject(info->root, "entity_category", "config");
+	}
+	sprintf(g_hassBuffer, "cmnd/%s/%s", clientId, cmd_id);
+	cJSON_AddStringToObject(info->root, "command_topic", g_hassBuffer);
+	return info;
+}
 
 // generate string like "{{ float(value)*0.1|round(2) }}"
 // {{ float(value)*0.1 }} for value=12 give 1.2000000000000002, using round() to limit the decimal places

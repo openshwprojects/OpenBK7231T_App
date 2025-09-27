@@ -654,5 +654,13 @@
     "enum": "IOR_Total_Options",
     "file": "new_pins.h",
     "driver": ""
+  },
+  {
+    "name": "HLW8112_SCSN",
+    "title": "HLW8112 SCSN Pin",
+    "descr": "SCSN pin for HLW8112 SPI energy measuring devices. ",
+    "enum": "IOR_BHLW8112_SCSN",
+    "file": "new_pins.h",
+    "driver": "HLW8112SPI"
   }
 ]

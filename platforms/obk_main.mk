@@ -103,6 +103,7 @@ OBKM_SRC  += $(OBK_SRCS)driver/drv_freeze.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_gn6932.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_hd2015.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_hgs02.c
+OBKM_SRC  += $(OBK_SRCS)driver/drv_hlw8112.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_ht16k33.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_httpButtons.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_hue.c

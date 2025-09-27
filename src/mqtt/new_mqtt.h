@@ -138,6 +138,7 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags);
 void MQTT_ClearCallbacks();
 int MQTT_RegisterCallback(const char* basetopic, const char* subscriptiontopic, int ID, mqtt_callback_fn callback);
 int MQTT_RemoveCallback(int ID);
+const char* MQTT_RemoveClientFromTopic(const char* topic, const char *prefix);
 
 // this is called from tcp_thread context to queue received mqtt,
 // and then we'll retrieve them from our own thread for processing.
