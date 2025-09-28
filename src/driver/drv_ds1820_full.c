@@ -794,7 +794,7 @@ char *DS1820_full_jsonSensors(){
 // extended Tasmoty style: Name + Tasmota-Id
 /*
 		char tmp[75 + DS18B20namel];
-		sprintf(tmp, "\"DS18B20-%i\":{\"Name\":\"%s\",\"Id\":\"%02X%02X%02X%02X%02X%02X\",\"Temperature\": %.1f},",i,ds18b20devices.name[i],
+		sprintf(tmp, "\"DS18B20-%i\":{\"Name\":\"%s\",\"Id\":\"%02X%02X%02X%02X%02X%02X\",\"Temperature\": %.1f},",i+1,ds18b20devices.name[i],
 			ds18b20devices.array[i][6],
 			ds18b20devices.array[i][5],
 			ds18b20devices.array[i][4],
@@ -806,7 +806,7 @@ char *DS1820_full_jsonSensors(){
 
 // "Plain" Tasmota style - only ID 
 		char tmp[60]; 
-		sprintf(tmp, "\"DS18B20-%i\":{\"Id\":\"%02X%02X%02X%02X%02X%02X\",\"Temperature\": %.1f},",i,
+		sprintf(tmp, "\"DS18B20-%i\":{\"Id\":\"%02X%02X%02X%02X%02X%02X\",\"Temperature\": %.1f},",i+1,
 			ds18b20devices.array[i][6],
 			ds18b20devices.array[i][5],
 			ds18b20devices.array[i][4],
