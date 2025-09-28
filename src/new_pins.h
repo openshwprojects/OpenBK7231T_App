@@ -595,6 +595,20 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_IRRecv_nPup,
+	//iodetail:{"name":"StripState",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"This is an output pin which has current led_enableAll value",
+	//iodetail:"enum":"IOR_StripState",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_StripState,
+	//iodetail:{"name":"StripState_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"This is an output pin which has negation of current led_enableAll value",
+	//iodetail:"enum":"IOR_StripState_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_StripState_n,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",

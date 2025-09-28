@@ -1630,6 +1630,21 @@ commandResult_t MQTT_PublishCommandFloat(const void* context, const char* cmd, c
 
 	return CMD_RES_OK;
 }
+commandResult_t MQTT_PublishCommandDriver(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	const char* driver;
+	OBK_Publish_Result ret;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	driver = Tokenizer_GetArg(0);
+	bool bOn = DRV_IsRunning(driver);
+
+	char full[32];
+	sprintf(full,"driver/%s", driver);
+	ret = MQTT_PublishMain_StringInt(full, bOn, OBK_PUBLISH_FLAG_FORCE_REMOVE_GET);
+
+	return CMD_RES_OK;
+}
 /****************************************************************************************************
  *
  ****************************************************************************************************/
@@ -1977,6 +1992,9 @@ void MQTT_init()
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("publishFile", MQTT_PublishFile, NULL);
 #endif
+
+
+	CMD_RegisterCommand("publishDriver", MQTT_PublishCommandDriver, NULL);
 }
 static float getInternalTemperature() {
 	return g_wifi_temperature;

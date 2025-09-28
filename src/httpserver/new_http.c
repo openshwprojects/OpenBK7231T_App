@@ -555,6 +555,8 @@ const char* htmlPinRoleNames[] = {
 	"Counter_f",
 	"Counter_r",
 	"IRRecv_nPup",
+	"StripState",
+	"StripState_n",
 	"error",
 	"error",
 	"error",
