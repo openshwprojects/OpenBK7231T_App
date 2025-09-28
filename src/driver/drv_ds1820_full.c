@@ -755,8 +755,15 @@ char *DS1820_full_jsonSensors(){
 	// {"DS1820_<name - DS18B20namel>":{"Temperature": <temp -127,00>},
 	// 123456789                     123456789012345678      1234567890   
 	// length of str: 10 + DS18B20namel + 18 + 10 --> 40 + DS18B20namel
+
+
+	// {"DS18B20-<id>":{"Name":"<name - DS18B20namel>","Id":"0102030405060708","Temperature": <temp -127,00>},
+	// 123456789012 123456789012  +    DS18B20namel  1234567890123456789012345678901234567890       1234567890        
+	// length of str: 12 + 12 + DS18B20namel + 40 + 10 --> 74 + DS18B20namel  --> use 75 + DS18B20namel
+
+
 	
-	int size = (40 + DS18B20namel) * ds18_count;
+	int size = (75 + DS18B20namel) * ds18_count;
 	char *str = (char *)malloc(size * sizeof(char));
 	if (str == NULL) {
         	return NULL; // string allocation failed
@@ -764,7 +771,7 @@ char *DS1820_full_jsonSensors(){
 	str[0] = 0;
 	for (int i=0; i < ds18_count; i++) {
 		char tmp[50 + DS18B20namel];
-		sprintf(tmp, "\"DS1820_%s\":{\"Temperature\": %.1f},",ds18b20devices.name[i],ds18b20devices.lasttemp[i]);
+		sprintf(tmp, "\"DS18B20-%i\":{\"Name\":\"%s\",\"Id\":\"%02X%02X%02X%02X%02X%02X%02X%02X\",\"Temperature\": %.1f},",i,ds18b20devices.name[i],DEV2STR(ds18b20devices.array[i]),ds18b20devices.lasttemp[i]);
 		strncat(str, tmp, size - strlen(str) - 1); // Concatenate to the main string
 	}
         jsonSensor_reststr = str;
