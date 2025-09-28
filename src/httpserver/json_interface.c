@@ -288,7 +288,7 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 		chan_val1 = CHANNEL_GetFloat(channel_1) / 100.0f;
 
 		// writer header
-		printer(request, "\"DS1820\":");
+		printer(request, "\"DS18B20\":");
 		// following check will clear NaN values
 		printer(request, "{");
 		printer(request, "\"Temperature\": %.1f", chan_val1);
