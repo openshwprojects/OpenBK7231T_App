@@ -751,20 +751,69 @@ static char *jsonSensor_reststr = NULL;
 char *DS1820_full_jsonSensors(){
 	if (ds18_count <= 0 ) return NULL;
 	if (jsonSensor_reststr!=NULL) free(jsonSensor_reststr); 
-	// {"DS1820_<name>":{"Temperature": <temp>},
-	// {"DS1820_<name - DS18B20namel>":{"Temperature": <temp -127,00>},
-	// 123456789                     123456789012345678      1234567890   
-	// length of str: 10 + DS18B20namel + 18 + 10 --> 40 + DS18B20namel
+	// {"DS18B20-<id>":{"Name":"<name - DS18B20namel>","Id":"0102030405060708","Temperature": <temp -127,00>},
+	// 123456789012 123456789012  +    DS18B20namel  1234567890123456789012345678901234567890       1234567890        
+	// length of str: 12 + 12 + DS18B20namel + 40 + 10 --> 74 + DS18B20namel  --> use 75 + DS18B20namel
+
+
+	// Tasmota style:
+	// {"DS18B20-XX":{"Id":"010203040506","Temperature":-XXX,X},
+	// 123456789012345678901234567890123456789012345678901234567
+	//          10        20        30        40        50
+	// length of str: 57  --> use 60
+	// Tasmota-ID:
+	// middle 6 bytes of 8 byte ROM-Address in reverse order:
+	//  ROM=2801020304050607  --> Id=060504030201
+	//
 	
-	int size = (40 + DS18B20namel) * ds18_count;
+	//	        char address[17];
+	//        for (uint32_t j = 0; j < 6; j++) {
+	//          sprintf(address+2*j, "%02X", ds18x20_sensor[index].address[6-j]);  // Skip sensor type and crc
+	//        }
+
+
+// for extended style	
+//	int size = (75 + DS18B20namel) * ds18_count;
+
+// for "plain" Tasmota style
+	int size = 60 * ds18_count;
+
+
 	char *str = (char *)malloc(size * sizeof(char));
 	if (str == NULL) {
+        	DS1820_LOG(ERROR, "Could not allocate memory for sensor string!!");
         	return NULL; // string allocation failed
         }
+        
 	str[0] = 0;
 	for (int i=0; i < ds18_count; i++) {
-		char tmp[50 + DS18B20namel];
-		sprintf(tmp, "\"DS1820_%s\":{\"Temperature\": %.1f},",ds18b20devices.name[i],ds18b20devices.lasttemp[i]);
+// full extension - complete ROM address + name 
+//		sprintf(tmp, "\"DS18B20-%i\":{\"Name\":\"%s\",\"Id\":\"%02X%02X%02X%02X%02X%02X%02X%02X\",\"Temperature\": %.1f},",i,ds18b20devices.name[i],DEV2STR(ds18b20devices.array[i]),ds18b20devices.lasttemp[i]);
+
+
+// extended Tasmoty style: Name + Tasmota-Id
+/*
+		char tmp[75 + DS18B20namel];
+		sprintf(tmp, "\"DS18B20-%i\":{\"Name\":\"%s\",\"Id\":\"%02X%02X%02X%02X%02X%02X\",\"Temperature\": %.1f},",i+1,ds18b20devices.name[i],
+			ds18b20devices.array[i][6],
+			ds18b20devices.array[i][5],
+			ds18b20devices.array[i][4],
+			ds18b20devices.array[i][3],
+			ds18b20devices.array[i][2],
+			ds18b20devices.array[i][1],
+			ds18b20devices.lasttemp[i]);
+*/
+
+// "Plain" Tasmota style - only ID 
+		char tmp[60]; 
+		sprintf(tmp, "\"DS18B20-%i\":{\"Id\":\"%02X%02X%02X%02X%02X%02X\",\"Temperature\": %.1f},",i+1,
+			ds18b20devices.array[i][6],
+			ds18b20devices.array[i][5],
+			ds18b20devices.array[i][4],
+			ds18b20devices.array[i][3],
+			ds18b20devices.array[i][2],
+			ds18b20devices.array[i][1],
+			ds18b20devices.lasttemp[i]);
 		strncat(str, tmp, size - strlen(str) - 1); // Concatenate to the main string
 	}
         jsonSensor_reststr = str;
