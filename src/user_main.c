@@ -1145,11 +1145,7 @@ void QuickTick(void* param)
 
 }
 
-#if PLATFORM_ESP8266 || PLATFORM_TR6260
-#define QT_STACK_SIZE 1536
-#else
 #define QT_STACK_SIZE 2048
-#endif
 
 ////////////////////////////////////////////////////////
 // this is the bit which runs the quick tick timer
