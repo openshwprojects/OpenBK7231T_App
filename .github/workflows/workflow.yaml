@@ -23,10 +23,9 @@ jobs:
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
-      - name: Update SDKs if required
-        run: make update-submodules
       - name: Semantic Release
         id: semantic
+        if: github.ref == 'refs/heads/main' || github.ref_name == 'alpha'
         uses: cycjimmy/semantic-release-action@v4
         with:
           dry_run: true
@@ -194,6 +193,9 @@ jobs:
             gcc: 10.3-2021.10
           - platform: OpenECR6600
             variant: default
+          - platform: OpenRDA5981
+            variant: default
+            gcc: 6-2017-q2
 
           # extras for BK7231T
           - platform: OpenBK7231T
@@ -233,6 +235,7 @@ jobs:
           architecture: 'x64'
           cache: 'pip'
       - name: Install dependencies
+        if: ${{ matrix.platform == 'OpenLN882H' }}
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: cmake
