@@ -10,7 +10,7 @@ int HAL_Configuration_ReadConfigMemory(void* target, int dataLen)
 
 int HAL_Configuration_SaveConfigMemory(void* src, int dataLen)
 {
-	int ret = rda5981_erase_flash(0x180fc000, 0x1000);
+	rda5981_erase_flash(0x180fc000, 0x1000);
 	return rda5981_write_flash(0x180fc000, src, dataLen) == 0;
 }
 

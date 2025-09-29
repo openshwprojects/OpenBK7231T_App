@@ -20,11 +20,7 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 
 	int ret = 0;
 
-	if (request->contentLength > 0)
-	{
-		towrite = request->contentLength;
-	}
-	else
+	if (request->contentLength <= 0)
 	{
 		ret = -1;
 		ADDLOG_ERROR(LOG_FEATURE_OTA, "Content-length is 0");
@@ -33,29 +29,32 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 	startaddr = 0x1807E000;
 	// if compressed ota
 	//startaddr = 0x1809C000;
-	if(rda5981_write_partition_start(startaddr, towrite) != 0)
+	int ret1 = rda5981_write_partition_start(startaddr, towrite + (towrite % 4096));
+	if(ret1 != 0)
 	{
-		ret = -1;
-		ADDLOG_ERROR(LOG_FEATURE_OTA, "rda5981_write_partition_start failed");
-		goto update_ota_exit;
+		//ret = -1;
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "rda5981_write_partition_start failed. %i", ret);
+		//goto update_ota_exit;
 	}
 
 	do
 	{
-		if(rda5981_write_partition(startaddr, (unsigned char*)writebuf, writelen) != 0)
+		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Writelen %i at %i", writelen, total);
+		ret1 = rda5981_write_partition(startaddr, (unsigned char*)writebuf, writelen);
+		if(ret1 != 0)
 		{
 			ret = -1;
+			ADDLOG_ERROR(LOG_FEATURE_OTA, "rda5981_write_partition failed. %i", ret1);
 			goto update_ota_exit;
 		}
 		delay_ms(5);
-		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Writelen %i at %i", writelen, total);
 		total += writelen;
 		startaddr += writelen;
 		towrite -= writelen;
 		if (towrite > 0)
 		{
 			writebuf = request->received;
-			writelen = recv(request->fd, writebuf, 2048, 0);
+			writelen = recv(request->fd, writebuf, 1024, 0);
 			if (writelen < 0)
 			{
 				ADDLOG_DEBUG(LOG_FEATURE_OTA, "recv returned %d - end of data - remaining %d", writelen, towrite);
@@ -67,7 +66,7 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 	int check = rda5981_write_partition_end();
 	if(check != 0)
 	{
-		ADDLOG_ERROR(LOG_FEATURE_OTA, "rda5981_write_partition_end failed");
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "rda5981_write_partition_end failed, %i", check);
 		ret = -1;
 	}
 update_ota_exit:
