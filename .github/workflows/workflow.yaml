@@ -23,16 +23,6 @@ jobs:
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
-      - name: Set outputs
-        id: refs
-        run: |
-          export BRANCH=${GITHUB_REF#refs/*/}
-          echo "branch: ${BRANCH}"
-          export BRANCHTRANSLATED=$(echo ${BRANCH} | tr '/' '_')
-          echo "short_ref: ${BRANCHTRANSLATED}"
-          export VERSION=${BRANCHTRANSLATED}_$(git rev-parse --short=12 HEAD)
-          echo "short_ref=${BRANCHTRANSLATED}" >> $GITHUB_OUTPUT
-          echo "sha_short=SHA-$(git rev-parse --short=12 HEAD)" >> $GITHUB_OUTPUT
       - name: Semantic Release
         id: semantic
         if: github.ref == 'refs/heads/main' || github.ref_name == 'alpha'
@@ -46,19 +36,22 @@ jobs:
             conventional-changelog-conventionalcommits@7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Set release outputs
-        id: refs_release
-        if: github.ref == 'refs/heads/main' || github.ref_name == 'alpha'
+      - name: Set outputs
+        id: refs
         run: |
+          export BRANCH=${GITHUB_REF#refs/*/}
+          echo "branch: ${BRANCH}"
+          export BRANCHTRANSLATED=$(echo ${BRANCH} | tr '/' '_')
+          echo "short_ref: ${BRANCHTRANSLATED}"
+          export VERSION=""
           if ${{ steps.semantic.outputs.new_release_published == 'true' }}; then
             export VERSION=${{ steps.semantic.outputs.new_release_version }}
           else
             export VERSION=${BRANCHTRANSLATED}_$(git rev-parse --short=12 HEAD)
           fi
           echo "new_release=${{ steps.semantic.outputs.new_release_published }}" >> $GITHUB_OUTPUT
-      - name: Set version
-        id: refs_version
-        run: |
+          echo "short_ref=${BRANCHTRANSLATED}" >> $GITHUB_OUTPUT
+          echo "sha_short=SHA-$(git rev-parse --short=12 HEAD)" >> $GITHUB_OUTPUT
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
   build2:
