@@ -701,8 +701,8 @@ void Main_OnEverySecond()
 #if PLATFORM_W600 || PLATFORM_W800
 #define TimeOut_t xTimeOutType 
 #endif
-#if ! ( WINDOWS || PLATFORM_TXW81X) 
-	TimeOut_t myTimeout;	// to get uptime from xTicks - not working on WINDOWS and TXW81X
+#if ! ( WINDOWS || PLATFORM_TXW81X  || PLATFORM_RDA5981) 
+	TimeOut_t myTimeout;	// to get uptime from xTicks - not working on WINDOWS and TXW81X and RDA5981
 #endif
 	int newMQTTState;
 	const char* safe;
@@ -875,7 +875,7 @@ void Main_OnEverySecond()
 			}
 		}
 	}
-#if (WINDOWS || PLATFORM_TXW81X)
+#if (WINDOWS || PLATFORM_TXW81X || PLATFORM_RDA5981)
 	g_secondsElapsed++;
 #elif defined(PLATFORM_ESPIDF)
 	g_secondsElapsed = (int)(esp_timer_get_time() / 1000000);
