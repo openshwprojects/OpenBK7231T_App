@@ -18,14 +18,14 @@ extern void InitEasyFlashIfNeeded();
 
 static int ReadFlashVars(void* target, int dataLen)
 {
-	g_loaded = rda5981_read_user_data(target, dataLen, BIT18) == 0;
+	g_loaded = rda5981_read_flash(0x180fd000, target, dataLen) == 0;
 	return dataLen;
 }
 
 static int SaveFlashVars(void* src, int dataLen)
 {
-	rda5981_erase_user_data(BIT18);
-	rda5981_write_user_data(src, dataLen, BIT18);
+	rda5981_erase_flash(0x180fd000, 0x1000);
+	rda5981_write_flash(0x180fd000, src, dataLen);
 	return dataLen;
 }
 
