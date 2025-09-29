@@ -315,6 +315,15 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 		psm_pwr_mgt_ctrl(0);
 		psm_sleep_mode_ena_op(true, 0);
 	}
+#elif PLATFORM_RDA5981
+	if(bOn)
+	{
+		wland_set_sta_sleep(1);
+	}
+	else
+	{
+		wland_set_sta_sleep(0);
+	}
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave is not implemented on this platform");
 #endif

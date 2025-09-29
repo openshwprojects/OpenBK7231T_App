@@ -124,7 +124,14 @@ exit:
 
 	lwip_close(fd);
 	arg->isCompleted = true;
+#if PLATFORM_RDA5981
+	arg->thread = NULL;
+	arg->isCompleted = false;
+	arg->fd = INVALID_SOCK;
+	rtos_delete_thread(NULL);
+#else
 	rtos_suspend_thread(NULL);
+#endif
 }
 
 static inline char* get_clientaddr(struct sockaddr_storage* source_addr)
