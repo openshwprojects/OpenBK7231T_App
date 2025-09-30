@@ -343,8 +343,7 @@ void TuyaMCULE_HandleState(const byte* data, int len) {
 		}
 
 		if (dpConfig->dpType != dpType) {
-			addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU, "HandleState: dpType is different then expected for dpId %d: %s (0x%x) != %s (0x%x)\n", dpId, TuyaMCULE_GetDataTypeString(dpConfig->dpType), dpConfig->dpType, TuyaMCULE_GetDataTypeString(dpType), dpType);
-			continue;
+			addLogAdv(LOG_WARN, LOG_FEATURE_TUYAMCU, "HandleState: dpType is different then expected for dpId %d: %s (0x%x) != %s (0x%x)\n", dpId, TuyaMCULE_GetDataTypeString(dpConfig->dpType), dpConfig->dpType, TuyaMCULE_GetDataTypeString(dpType), dpType);
 		}
 
 		int value = 0;
@@ -440,8 +439,7 @@ void TuyaMCULE_HandleStateRC(const byte* data, int len) {
 		}
 
 		if (dpConfig->dpType != dpType) {
-			addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU, "HandleStateRC: dpType is different then expected for dpId %d: %s (0x%x) != %s (0x%x)\n", dpId, TuyaMCULE_GetDataTypeString(dpConfig->dpType), dpConfig->dpType, TuyaMCULE_GetDataTypeString(dpType), dpType);
-			continue;
+			addLogAdv(LOG_WARN, LOG_FEATURE_TUYAMCU, "HandleStateRC: dpType is different then expected for dpId %d: %s (0x%x) != %s (0x%x)\n", dpId, TuyaMCULE_GetDataTypeString(dpConfig->dpType), dpConfig->dpType, TuyaMCULE_GetDataTypeString(dpType), dpType);
 		}
 
 		int value = 0;
