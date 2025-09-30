@@ -69,6 +69,7 @@ static byte g_defaultTuyaMCUWiFiState = TUYAMCULE_NETWORK_STATUS_SMART_CONNECT_S
 
 static TuyaMCULE_dpConfig_t *g_dpConfigs = 0;
 
+static int g_HandleStateCbEpectedCount = 0;
 static int g_HandleStateRcCbEpectedCount = 0;
 
 const char* TuyaMCULE_GetDataTypeString(int dpId) {
@@ -298,52 +299,78 @@ TUYAMCULE_CMD_WIFI_MODE
 */
 
 void TuyaMCULE_HandleStateCb(void *arg) {
-	byte zero = 0;
-	TuyaMCULE_SendCommand(TUYAMCULE_CMD_STATE, &zero, 1);
+	--g_HandleStateCbEpectedCount;
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCULE_HandleStateCb: g_HandleStateCbEpectedCount: %d\n", g_HandleStateCbEpectedCount);
+	if (g_HandleStateCbEpectedCount == 0) {
+		byte zero = 0;
+		TuyaMCULE_SendCommand(TUYAMCULE_CMD_STATE, &zero, 1);
+	}
 }
 
 void TuyaMCULE_HandleState(const byte* data, int len) {
-	byte dpId = data[0];
-	byte dpType = data[1];
-	unsigned short dpLen = ((data[2] << 8) | data[3]);
-
-	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "HandleState: dpId %d, dpType %s (0x%x) and %i data bytes\n",
-			dpId, TuyaMCULE_GetDataTypeString(dpType), dpType, dpLen);
-
-	char buffer_for_log[256] = { 0 };
-	for (int i = 0; i < dpLen; i++) {
-		char temp[256];
-		memcpy(temp, buffer_for_log, sizeof(buffer_for_log));
-		snprintf(buffer_for_log, sizeof(buffer_for_log), "%s%02X ", temp, data[4 + i]);
-	}
-	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "HandleState: dpValue: %s\n", buffer_for_log);
-
-	TuyaMCULE_dpConfig_t *dpConfig = TuyaMCULE_getDPConfig(dpId);
-	if (!dpConfig) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU, "HandleState: Missing conbig for dpId: %d\n", dpId);
-		TuyaMCULE_HandleStateCb(0);
-		return;
+	if (g_HandleStateCbEpectedCount > 0) {
+		addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU, "HandleState: Wtf?! g_HandleStateCbEpectedCount > 0 (%d)\n", g_HandleStateCbEpectedCount);
 	}
 
-	if (dpConfig->dpType != dpType) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU, "HandleState: dpType is different then expected for dpId %d: %s (0x%x) != %s (0x%x)\n", dpId, TuyaMCULE_GetDataTypeString(dpConfig->dpType), dpConfig->dpType, TuyaMCULE_GetDataTypeString(dpType), dpType);
-		TuyaMCULE_HandleStateCb(0);
-		return;
-	}
+	int setCount = 0;
 
-	int value = 0;
-	switch (dpLen)
+	while (len >= 4)
 	{
-		case 1: value = data[4]; break;
-		case 2: value = (data[4] << 8) | data[5]; break;
-		case 4: value = (data[4] << 24) | (data[5] << 16) | (data[6] << 8) | data[7]; break;
-		default:
-			addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU, "HandleState: supported dpLen (%d) for dpId %d\n", dpLen, dpId);
-			TuyaMCULE_HandleStateCb(0);
-			return;
+		byte dpId = data[0];
+		byte dpType = data[1];
+		unsigned short dpLen = ((data[2] << 8) | data[3]);
+
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "HandleState: dpId %d, dpType %s (0x%x) and %i data bytes\n",
+				dpId, TuyaMCULE_GetDataTypeString(dpType), dpType, dpLen);
+
+		if (dpLen > len) {
+			addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU, "HandleState: dpLen (%d) > len (%d)\n", dpLen, len);
+			break;
+		}
+
+		char buffer_for_log[256] = { 0 };
+		for (int i = 0; i < dpLen; i++) {
+			char temp[256];
+			memcpy(temp, buffer_for_log, sizeof(buffer_for_log));
+			snprintf(buffer_for_log, sizeof(buffer_for_log), "%s%02X ", temp, data[4 + i]);
+		}
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "HandleState: dpValue: %s\n", buffer_for_log);
+
+		TuyaMCULE_dpConfig_t *dpConfig = TuyaMCULE_getDPConfig(dpId);
+		if (!dpConfig) {
+			addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU, "HandleState: Missing config for dpId: %d\n", dpId);
+			continue;
+		}
+
+		if (dpConfig->dpType != dpType) {
+			addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU, "HandleState: dpType is different then expected for dpId %d: %s (0x%x) != %s (0x%x)\n", dpId, TuyaMCULE_GetDataTypeString(dpConfig->dpType), dpConfig->dpType, TuyaMCULE_GetDataTypeString(dpType), dpType);
+			continue;
+		}
+
+		int value = 0;
+		switch (dpLen)
+		{
+			case 1: value = data[4]; break;
+			case 2: value = (data[4] << 8) | data[5]; break;
+			case 4: value = (data[4] << 24) | (data[5] << 16) | (data[6] << 8) | data[7]; break;
+			default:
+				addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU, "HandleState: supported dpLen (%d) for dpId %d\n", dpLen, dpId);
+				continue;
+		}
+
+		++setCount;
+		++g_HandleStateCbEpectedCount;
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "HandleState: g_HandleStateCbEpectedCount: %d\n", g_HandleStateCbEpectedCount);
+		CHANNEL_SetWithCB(dpConfig->channel, value, 0, TuyaMCULE_HandleStateCb, 0);
+
+		data += 4 + dpLen;
+		len -= 4 + dpLen;
 	}
 
-	CHANNEL_SetWithCB(dpConfig->channel, value, 0, TuyaMCULE_HandleStateCb, 0);
+	if (setCount == 0) {
+		byte zero = 0;
+		TuyaMCULE_SendCommand(TUYAMCULE_CMD_STATE, &zero, 1);
+	}
 }
 
 void TuyaMCULE_HandleGetLocalTime(const byte* data, int len) {
@@ -390,7 +417,7 @@ void TuyaMCULE_HandleStateRC(const byte* data, int len) {
 		byte dpType = data[1];
 		unsigned short dpLen = ((data[2] << 8) | data[3]);
 
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "HandleStateRC: dpId %i, dpType %s (0x%x) and %i data bytes\n",
+		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "HandleStateRC: dpId %d, dpType %s (0x%x) and %i data bytes\n",
 				dpId, TuyaMCULE_GetDataTypeString(dpType), dpType, dpLen);
 
 		if (dpLen > len) {
@@ -408,7 +435,7 @@ void TuyaMCULE_HandleStateRC(const byte* data, int len) {
 
 		TuyaMCULE_dpConfig_t *dpConfig = TuyaMCULE_getDPConfig(dpId);
 		if (!dpConfig) {
-			addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU, "HandleStateRC: Missing conbig for dpId: %d\n", dpId);
+			addLogAdv(LOG_ERROR, LOG_FEATURE_TUYAMCU, "HandleStateRC: Missing config for dpId: %d\n", dpId);
 			continue;
 		}
 
