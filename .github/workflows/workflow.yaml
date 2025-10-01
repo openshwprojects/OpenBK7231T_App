@@ -23,10 +23,9 @@ jobs:
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
-      - name: Update SDKs if required
-        run: make update-submodules
       - name: Semantic Release
         id: semantic
+        if: github.ref == 'refs/heads/main' || github.ref_name == 'alpha'
         uses: cycjimmy/semantic-release-action@v4
         with:
           dry_run: true
@@ -58,7 +57,7 @@ jobs:
   build2:
     name: Build Simulator
     needs: refs
-    runs-on: windows-latest
+    runs-on: windows-2022
 
     steps:
     - name: Checkout repository
@@ -162,10 +161,13 @@ jobs:
             variant: default
           - platform: OpenXR809
             variant: default
+            gcc: 8-2019-q3
           - platform: OpenXR806
             variant: default
+            gcc: 8-2019-q3
           - platform: OpenXR872
             variant: default
+            gcc: 8-2019-q3
           - platform: OpenBL602
             variant: default
           - platform: OpenW800
@@ -174,18 +176,26 @@ jobs:
             variant: default
           - platform: OpenLN882H
             variant: default
+            gcc: 10.3-2021.10
           - platform: OpenTR6260
             variant: default
           - platform: OpenRTL8710A
             variant: default
+            gcc: 8-2019-q3
           - platform: OpenRTL8710B
             variant: default
+            gcc: 8-2019-q3
           - platform: OpenRTL87X0C
             variant: default
+            gcc: apt
           - platform: OpenRTL8720D
             variant: default
+            gcc: 10.3-2021.10
           - platform: OpenECR6600
             variant: default
+          - platform: OpenRDA5981
+            variant: default
+            gcc: 6-2017-q2
 
           # extras for BK7231T
           - platform: OpenBK7231T
@@ -210,10 +220,6 @@ jobs:
             variant: irRemoteESP
           - platform: OpenBK7231N
             variant: sensors
-
-          # extras for BK7238
-          - platform: OpenBK7238
-            variant: irRemoteESP
             
           - platform: OpenBL602
             variant: berry
@@ -223,18 +229,29 @@ jobs:
       - name: Source checkout
         uses: actions/checkout@v4
       - uses: actions/setup-python@v5
+        if: ${{ matrix.platform == 'OpenBL602' }}
         with:
-          python-version: '3.8'
+          python-version: '3.10'
           architecture: 'x64'
+          cache: 'pip'
       - name: Install dependencies
+        if: ${{ matrix.platform == 'OpenLN882H' }}
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: cmake
+          version: 1.0
+      - name: Install arm-none-eabi-gcc
+        if: ${{ matrix.gcc && matrix.gcc != 'apt' }}
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        with:
+          release: ${{ matrix.gcc }}
+          path-env-var: ARM_NONE_EABI_GCC_PATH
+      - name: Install arm-none-eabi-gcc
+        if: ${{ matrix.gcc == 'apt' }}
         run: |
-          sudo dpkg --add-architecture i386
+          curl -sL https://raw.githubusercontent.com/ilikenwf/apt-fast/master/quick-install.sh | sudo bash
           sudo apt-get update
-          sudo apt-get -y install libc6-i386 make cmake
-          pip3 install pycryptodomex
-          pip3 install configobj
-          pip3 install toml
-          pip3 install fdt
+          sudo apt-fast install -y gcc-arm-none-eabi
       - run: ls -la
       - name: Run make
         run: make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }}
@@ -268,25 +285,35 @@ jobs:
         include:
           - platform: OpenESP32C2
             variant: 2M
+            version: v5.5.1
           - platform: OpenESP32C3
             variant: 2M
+            version: v5.5.1
 
           - platform: OpenESP32
             variant: 4M
+            version: v5.5.1
           - platform: OpenESP32C2
             variant: 4M
+            version: v5.5.1
           - platform: OpenESP32C3
             variant: 4M
+            version: v5.5.1
           - platform: OpenESP32C6
             variant: 4M
+            version: v5.5.1
           - platform: OpenESP32S3
             variant: 4M
+            version: v5.5.1
           - platform: OpenESP32S2
             variant: 4M
+            version: v5.5.1
           - platform: OpenESP32C5
             variant: 4M
+            version: v5.5.1
           - platform: OpenESP32C61
             variant: 4M
+            version: v5.5.1
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
@@ -295,25 +322,32 @@ jobs:
         with:
           repository: espressif/esp-idf
           path: sdk/esp-idf
-          ref: v5.5.1
+          ref: ${{ matrix.version }}
           submodules: recursive
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.8'
+          python-version: '3.10'
           architecture: 'x64'
+          cache: 'pip'
       - name: Install dependencies
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: cmake
+          version: 1.0
+      - name: Cache toolchain
+        id: cache-toolchain
+        uses: actions/cache@v4
+        with:
+          path: ~/.espressif # cache whole folder, not just dist
+          key: ESP-IDF_toolchain_${{ matrix.version }}
+      - name: Get toolchain
+        if: steps.cache-toolchain.outputs.cache-hit != 'true'
         run: |
-          sudo apt-get update
-          sudo apt-get -y install make cmake python3-venv
-          pip3 install pycryptodomex
-          pip3 install configobj
-          pip3 install toml
-          pip3 install fdt
-          pip3 install esptool
+          cd sdk/esp-idf
+          ./install.sh
       - name: Run make
         run: |
           cd sdk/esp-idf
-          ./install.sh > /dev/null
           . ./export.sh
           . ./add_path.sh
           cd ../..
@@ -404,35 +438,45 @@ jobs:
           # default for all platforms
           - platform: OpenBK7231N_ALT
             variant: default
+            gcc: apt
           - platform: OpenBK7231T_ALT
             variant: default
+            gcc: apt
           - platform: OpenBK7231U
             variant: default
+            gcc: apt
           - platform: OpenBK7238
             variant: default
+            gcc: apt
           - platform: OpenBK7252
             variant: default
+            gcc: apt
           - platform: OpenBK7252N
             variant: default
+            gcc: apt
           
+          # extras for BK7238
           - platform: OpenBK7238
             variant: berry
+            gcc: apt
+          - platform: OpenBK7238
+            variant: irRemoteESP
+            gcc: apt
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Install arm-none-eabi-gcc
+        if: ${{ matrix.gcc && matrix.gcc != 'apt' }}
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
         with:
-          python-version: '3.8'
-          architecture: 'x64'
-      - name: Install dependencies
+          release: ${{ matrix.gcc }}
+          path-env-var: ARM_NONE_EABI_GCC_PATH
+      - name: Install arm-none-eabi-gcc
+        if: ${{ matrix.gcc == 'apt' }}
         run: |
-          sudo dpkg --add-architecture i386
+          curl -sL https://raw.githubusercontent.com/ilikenwf/apt-fast/master/quick-install.sh | sudo bash
           sudo apt-get update
-          sudo apt-get -y install libc6-i386 make
-          pip3 install pycryptodomex
-          pip3 install configobj
-          pip3 install toml
-          pip3 install fdt
+          sudo apt-fast install -y gcc-arm-none-eabi
       - run: ls -la
       - name: Run make
         run: make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }}
@@ -477,10 +521,14 @@ jobs:
         with:
           python-version: '3.10'
           architecture: 'x64'
+          cache: 'pip'
+      - name: Install dependencies
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: cmake
+          version: 1.0
       - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get -y install make cmake python3-venv
           pip install -r sdk/ameba-rtos/tools/requirements.txt
           mkdir /opt/rtk-toolchain
           cd /opt/rtk-toolchain

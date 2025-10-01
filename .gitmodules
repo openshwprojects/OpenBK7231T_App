@@ -77,3 +77,7 @@
 	path = sdk/OpenTXW81X
 	url = https://github.com/NonPIayerCharacter/OpenTXW81X
 	branch = main
+[submodule "sdk/OpenRDA5981"]
+	path = sdk/OpenRDA5981
+	url = https://github.com/NonPIayerCharacter/OpenRDA5981
+	branch = master

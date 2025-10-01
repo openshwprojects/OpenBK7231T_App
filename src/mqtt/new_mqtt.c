@@ -1630,6 +1630,21 @@ commandResult_t MQTT_PublishCommandFloat(const void* context, const char* cmd, c
 
 	return CMD_RES_OK;
 }
+commandResult_t MQTT_PublishCommandDriver(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	const char* driver;
+	OBK_Publish_Result ret;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	driver = Tokenizer_GetArg(0);
+	bool bOn = DRV_IsRunning(driver);
+
+	char full[32];
+	sprintf(full,"driver/%s", driver);
+	ret = MQTT_PublishMain_StringInt(full, bOn, OBK_PUBLISH_FLAG_FORCE_REMOVE_GET);
+
+	return CMD_RES_OK;
+}
 /****************************************************************************************************
  *
  ****************************************************************************************************/
@@ -1768,7 +1783,7 @@ static BENCHMARK_TEST_INFO* info = NULL;
 #if WINDOWS
 
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_ESPIDF || PLATFORM_TR6260 \
-	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_ESP8266 || PLATFORM_TXW81X
+	|| PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_ESP8266 || PLATFORM_TXW81X || PLATFORM_RDA5981
 static void mqtt_timer_thread(void* param)
 {
 	while (1)
@@ -1813,6 +1828,8 @@ commandResult_t MQTT_StartMQTTTestThread(const void* context, const char* cmd, c
 	xTaskCreate(mqtt_timer_thread, "mqtt", 1024, (void*)info, 15, NULL);
 #elif PLATFORM_TXW81X
 	os_task_create("mqtt", mqtt_timer_thread, (void*)info, 15, 0, NULL, 1024);
+#elif PLATFORM_RDA5981
+	rda_thread_new("mqtt", mqtt_timer_thread, NULL, 1024, osPriorityNormal);
 #elif PLATFORM_XRADIO || PLATFORM_LN882H
 	OS_TimerSetInvalid(&timer);
 	if (OS_TimerCreate(&timer, OS_TIMER_PERIODIC, MQTT_Test_Tick, (void*)info, MQTT_TMR_DURATION) != OS_OK)
@@ -1977,6 +1994,9 @@ void MQTT_init()
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("publishFile", MQTT_PublishFile, NULL);
 #endif
+
+
+	CMD_RegisterCommand("publishDriver", MQTT_PublishCommandDriver, NULL);
 }
 static float getInternalTemperature() {
 	return g_wifi_temperature;

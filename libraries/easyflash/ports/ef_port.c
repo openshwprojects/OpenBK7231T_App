@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#if !WINDOWS && !PLATFORM_TXW81X
+#if !WINDOWS && !PLATFORM_TXW81X && !PLATFORM_RDA5981
 #include "FreeRTOS.h"
 #include "semphr.h"
 #include "queue.h"
@@ -71,6 +71,16 @@ typedef k_mutex_handle_t QueueHandle_t;
 #define xSemaphoreTake(a, b) csi_kernel_mutex_lock(a, b, 0)
 #define xSemaphoreGive(a) csi_kernel_mutex_unlock(a)
 extern struct spi_nor_flash* obk_flash;
+
+#elif PLATFORM_RDA5981
+
+#include "stdbool.h"
+#include "rda_sys_wrapper.h"
+
+typedef void* QueueHandle_t;
+#define xSemaphoreCreateMutex rda_mutex_create
+#define xSemaphoreTake rda_mutex_wait
+#define xSemaphoreGive rda_mutex_realease
 
 #elif WINDOWS
 
@@ -172,7 +182,7 @@ EfErrCode ef_port_read(uint32_t addr, uint32_t* buf, size_t size)
 #elif WINDOWS
 	memcpy(buf, env_area + addr, size);
 	return EF_NO_ERR;
-#elif PLATFORM_TXW81X
+#elif PLATFORM_TXW81X || PLATFORM_RDA5981
 	HAL_FlashRead(buf, size, addr);
 	return EF_NO_ERR;
 #endif
@@ -211,7 +221,7 @@ EfErrCode ef_port_erase(uint32_t addr, size_t size)
 	return res;
 #elif WINDOWS
 	memset(env_area + addr, 0xFF, size);
-#elif PLATFORM_TXW81X
+#elif PLATFORM_TXW81X || PLATFORM_RDA5981
 	HAL_FlashEraseSector(addr);
 	return EF_NO_ERR;
 #endif
@@ -250,7 +260,7 @@ EfErrCode ef_port_write(uint32_t addr, const uint32_t* buf, size_t size)
 #elif WINDOWS
 	memcpy(env_area + addr, buf, size);
 	return EF_NO_ERR;
-#elif PLATFORM_TXW81X
+#elif PLATFORM_TXW81X || PLATFORM_RDA5981
 	HAL_FlashWrite(buf, size, addr);
 	return EF_NO_ERR;
 #endif

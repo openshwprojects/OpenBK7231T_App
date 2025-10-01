@@ -25,7 +25,7 @@ void HAL_UART_SendByte(byte b)
 	drv_uart_send_poll(uart, &b, 1);
 }
 
-int HAL_UART_Init(int baud, int parity, bool hwflowc)
+int HAL_UART_Init(int baud, int parity, bool hwflowc, int txOverride, int rxOverride)
 {
 	drv_uart_close(uart);
 	T_DRV_UART_CONFIG config = 

@@ -263,6 +263,9 @@ int http_fn_index(http_request_t* request) {
 		if (DRV_IsRunning("SM16703P")) {
 			bForceShowRGB = true;
 		}
+		if (DRV_IsRunning("DMX")) {
+			bForceShowRGB = true;
+		}
 #endif
 	}
 	http_setup(request, httpMimeTypeHTML);	//Add mimetype regardless of the request
@@ -1851,8 +1854,8 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 
 #ifdef ENABLE_DRIVER_BL0937
 	measuringPower = DRV_IsMeasuringPower();
-	measuringBattery = DRV_IsMeasuringBattery();
 #endif
+	measuringBattery = DRV_IsMeasuringBattery();
 
 	PIN_get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
 	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HASS counts: %i rels, %i pwms, %i inps, %i excluded", relayCount, pwmCount, dInputCount, excludedCount);
@@ -2231,6 +2234,16 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			case ChType_EnergyTotal_kWh_div100:
 			{
 				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 2, 1);
+			}
+			break;
+			case ChType_EnergyExport_kWh_div1000:
+			{
+				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 3, 1);
+			}
+			break;
+			case ChType_EnergyImport_kWh_div1000:
+			{
+				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 3, 1);
 			}
 			break;
 			case ChType_EnergyTotal_kWh_div1000:

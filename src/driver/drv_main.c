@@ -17,6 +17,7 @@
 #include "drv_ds1820_full.h"
 #include "drv_ds1820_common.h"
 #include "drv_ds3231.h"
+#include "drv_hlw8112.h"
 
 
 typedef struct driver_s {
@@ -242,6 +243,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"BL0942 driver version for SPI protocol. It's usually connected to SPI1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [PZIOT-E01 teardown example](https://www.elektroda.com/rtvforum/topic3945667.html). ",
 	//drvdetail:"requires":""}
 	{ "BL0942SPI",	BL0942_SPI_Init,	BL0942_SPI_RunEverySecond,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_HLW8112SPI
+	//drvdetail:{"name":"HLW8112SPI",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
+	{ "HLW8112SPI",	HLW8112SPI_Init,	HLW8112_RunEverySecond,			HLW8112_AppendInformationToHTTPIndexPage, NULL, HLW8112SPI_Stop, NULL, HLW8112_OnHassDiscovery, false },
 #endif
 #if ENABLE_DRIVER_CHARGINGLIMIT
 	//drvdetail:{"name":"ChargingLimit",
@@ -852,6 +860,7 @@ bool DRV_IsMeasuringPower() {
 	return DRV_IsRunning("BL0937") || DRV_IsRunning("BL0942")
 		|| DRV_IsRunning("CSE7766") || DRV_IsRunning("TESTPOWER")
 		|| DRV_IsRunning("BL0942SPI") || DRV_IsRunning("RN8209");
+		// || DRV_IsRunning("HLW8112SPI"); TODO messup ha config if enabled
 #else
 	return false;
 #endif
@@ -866,7 +875,7 @@ bool DRV_IsMeasuringBattery() {
 
 bool DRV_IsSensor() {
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	return DRV_IsRunning("SHT3X") || DRV_IsRunning("CHT83XX") || DRV_IsRunning("SGP") || DRV_IsRunning("AHT2X");
+	return DRV_IsRunning("SHT3X") || DRV_IsRunning("CHT83XX") || DRV_IsRunning("SGP") || DRV_IsRunning("AHT2X") || DRV_IsRunning("DS1820") || DRV_IsRunning("DS1820_full");
 #else
 	return false;
 #endif
