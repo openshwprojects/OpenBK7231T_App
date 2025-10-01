@@ -11,6 +11,7 @@
 //#include "driver/drv_ir.h"
 #include "driver/drv_public.h"
 #include "driver/drv_bl_shared.h"
+#include "driver/drv_hlw8112.h"
 //#include "ir/ir_local.h"
 
 #include "driver/drv_deviceclock.h"
@@ -1034,7 +1035,10 @@ void Main_OnEverySecond()
 			{
 				BL09XX_SaveEmeteringStatistics();
 			}
-#endif            
+#endif       
+#if ENABLE_DRIVER_HLW8112SPI
+			HLW8112_Save_Statistics();
+#endif 
 			ADDLOGF_INFO("Going to call HAL_RebootModule\r\n");
 			HAL_RebootModule();
 		}
@@ -1382,6 +1386,9 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 				(PIN_FindPinIndexForRole(IOR_GN6932_STB, -1) != -1))
 			{
 				DRV_StartDriver("GN6932");
+			}
+			if (PIN_FindPinIndexForRole(IOR_HLW8112_SCSN, -1) != -1) {
+				DRV_StartDriver("HLW8112SPI");
 			}
 //			if ((PIN_FindPinIndexForRole(IOR_TM1638_CLK, -1) != -1) &&
 //				(PIN_FindPinIndexForRole(IOR_TM1638_DAT, -1) != -1) &&

@@ -557,6 +557,7 @@ const char* htmlPinRoleNames[] = {
 	"IRRecv_nPup",
 	"StripState",
 	"StripState_n",
+	"HLW_8112_SCSN",
 	"error",
 	"error",
 	"error",
