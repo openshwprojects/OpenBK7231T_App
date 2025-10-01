@@ -409,6 +409,9 @@ void PIN_SetupPins() {
 	// TODO: better place to call?
 	DHT_OnPinsConfigChanged();
 #endif
+#if ENABLE_LED_BASIC
+	LED_SetStripStateOutputs();
+#endif
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "PIN_SetupPins pins have been set up.\r\n");
 }
 
@@ -476,7 +479,8 @@ int PIN_IOR_NofChan(int test){
 			|| test == IOR_BL0937_CF || test == IOR_BL0937_CF1 || test == IOR_BL0937_SEL
 			|| test == IOR_LED_WIFI || test == IOR_LED_WIFI_n || test == IOR_LED_WIFI_n
 			|| (test >= IOR_IRRecv && test <= IOR_DHT11)
-			|| (test >= IOR_SM2135_DAT && test <= IOR_BP1658CJ_CLK)) {
+			|| (test >= IOR_SM2135_DAT && test <= IOR_BP1658CJ_CLK)
+			|| (test == IOR_HLW8112_SCSN)) {
 			return 0;
 	}
 	// all others have 1 channel
@@ -1141,6 +1145,20 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			}
 		}
 		break;
+#if ENABLE_LED_BASIC
+		case IOR_StripState:
+		case IOR_StripState_n:
+		{
+			HAL_PIN_Setup_Output(index);
+			if (role == IOR_StripState) {
+				HAL_PIN_SetOutputValue(index, LED_GetEnableAll());
+			}
+			else {
+				HAL_PIN_SetOutputValue(index, !LED_GetEnableAll());
+			}
+		}
+		break;
+#endif
 		case IOR_BridgeForward:
 		case IOR_BridgeReverse:
 		{
@@ -1368,6 +1386,7 @@ int ChannelType_GetDivider(int type) {
 	case ChType_EnergyTotal_kWh_div1000:
 	case ChType_EnergyExport_kWh_div1000:
 	case ChType_EnergyToday_kWh_div1000:
+	case ChType_EnergyImport_kWh_div1000:
 	case ChType_Current_div1000:
 	case ChType_LeakageCurrent_div1000:
 	case ChType_ReadOnly_div1000:
@@ -1409,6 +1428,7 @@ const char *ChannelType_GetUnit(int type) {
 	case ChType_EnergyExport_kWh_div1000:
 	case ChType_EnergyToday_kWh_div1000:
 	case ChType_EnergyTotal_kWh_div100:
+	case ChType_EnergyImport_kWh_div1000:
 		return "kWh";
 	case ChType_PowerFactor_div1000:
 	case ChType_PowerFactor_div100:
@@ -1464,6 +1484,8 @@ const char *ChannelType_GetTitle(int type) {
 		return "EnergyExport";
 	case ChType_EnergyToday_kWh_div1000:
 		return "EnergyToday";
+	case ChType_EnergyImport_kWh_div1000:
+		return "EnergyImport";
 	case ChType_PowerFactor_div1000:
 	case ChType_PowerFactor_div100:
 		return "PowerFactor";
@@ -2387,6 +2409,7 @@ const char* g_channelTypeNames[] = {
 	"OpenStopClose",
 	"Percent",
 	"StopUpDown",
+	"EnergyImport_kWh_div1000",
 	"TemperatureUnit",
 	"error",
 	"error",

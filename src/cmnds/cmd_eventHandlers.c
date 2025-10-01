@@ -135,14 +135,6 @@ int EVENT_ParseEventName(const char *s) {
 	}
 	if (!stricmp(s, "noPingTime"))
 		return CMD_EVENT_CHANGE_NOPINGTIME;
-	if (!stricmp(s, "NoMQTTTime"))
-		return CMD_EVENT_CHANGE_NOMQTTTIME;
-	if(!stricmp(s,"voltage"))
-		return CMD_EVENT_CHANGE_VOLTAGE;
-	if(!stricmp(s,"current"))
-		return CMD_EVENT_CHANGE_CURRENT;
-	if(!stricmp(s,"power"))
-		return CMD_EVENT_CHANGE_POWER;
 	if(!stricmp(s,"OnRelease"))
 		return CMD_EVENT_PIN_ONRELEASE;
 	if (!stricmp(s, "OnPress"))
@@ -169,55 +161,75 @@ int EVENT_ParseEventName(const char *s) {
 		return CMD_EVENT_CHANNEL_ONCHANGE;
 	if(!stricmp(s,"OnUART"))
 		return CMD_EVENT_ON_UART;
+#if ENABLE_MQTT
 	if(!stricmp(s,"MQTTState"))
 		return CMD_EVENT_MQTT_STATE;
+	if(!stricmp(s, "NoMQTTTime"))
+		return CMD_EVENT_CHANGE_NOMQTTTIME;
+	if(!stricmp(s, "OnMQTT"))
+		return CMD_EVENT_ON_MQTT;
+#endif
+#if ENABLE_NTP
 	if (!stricmp(s, "NTPState"))
 		return CMD_EVENT_NTP_STATE;
+#endif
+#if ENABLE_LED_BASIC
 	if (!stricmp(s, "LEDState"))
 		return CMD_EVENT_LED_STATE;
 	if (!stricmp(s, "LEDMode"))
 		return CMD_EVENT_LED_MODE;
+#endif
+#if ENABLE_BL_SHARED
+    if(!stricmp(s, "voltage"))
+        return CMD_EVENT_CHANGE_VOLTAGE;
+    if(!stricmp(s, "current"))
+        return CMD_EVENT_CHANGE_CURRENT;
+    if(!stricmp(s, "power"))
+        return CMD_EVENT_CHANGE_POWER;
     if(!stricmp(s,"energycounter") || !stricmp(s, "energy"))
         return CMD_EVENT_CHANGE_CONSUMPTION_TOTAL;
     if(!stricmp(s,"energycounter_last_hour"))
         return CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR;
+#endif
+#if ENABLE_DRIVER_IRREMOTEESP || ENABLE_DRIVER_IR || ENABLE_DRIVER_IR2 || WINDOWS
     if(!stricmp(s,"IR_RC5"))
-		return CMD_EVENT_IR_RC5;
+        return CMD_EVENT_IR_RC5;
     if(!stricmp(s,"IR_RC6"))
-		return CMD_EVENT_IR_RC6;
+        return CMD_EVENT_IR_RC6;
     if(!stricmp(s,"IR_Samsung"))
-		return CMD_EVENT_IR_SAMSUNG;
+        return CMD_EVENT_IR_SAMSUNG;
     if(!stricmp(s,"IR_PANASONIC"))
-		return CMD_EVENT_IR_PANASONIC;
+        return CMD_EVENT_IR_PANASONIC;
     if(!stricmp(s,"IR_NEC"))
-		return CMD_EVENT_IR_NEC;
+        return CMD_EVENT_IR_NEC;
     if(!stricmp(s,"IR_SAMSUNG_LG"))
-		return CMD_EVENT_IR_SAMSUNG_LG;
+        return CMD_EVENT_IR_SAMSUNG_LG;
     if(!stricmp(s,"IR_SHARP"))
-		return CMD_EVENT_IR_SHARP;
+        return CMD_EVENT_IR_SHARP;
     if(!stricmp(s,"IR_SONY"))
-		return CMD_EVENT_IR_SONY;
-	// WiFi state has single argument: HALWifiStatus_t
-	if (!stricmp(s, "WiFiState"))
-		return CMD_EVENT_WIFI_STATE;
+        return CMD_EVENT_IR_SONY;
+#endif
+#if ENABLE_DRIVER_TUYAMCU
 	if (!stricmp(s, "TuyaMCUParsed"))
 		return CMD_EVENT_TUYAMCU_PARSED;
+	if(!stricmp(s, "OnDP"))
+		return CMD_EVENT_ON_DP;
+	if(!stricmp(s, "MissedHeartbeats"))
+		return CMD_EVENT_MISSEDHEARTBEATS;
+#endif
+	// WiFi state has single argument: HALWifiStatus_t
+	if(!stricmp(s, "WiFiState"))
+		return CMD_EVENT_WIFI_STATE;
 	if (!stricmp(s, "OnADCButton"))
 		return CMD_EVENT_ADC_BUTTON;
 	if (!stricmp(s, "OnCustomDown"))
 		return CMD_EVENT_CUSTOM_DOWN;
 	if (!stricmp(s, "OnCustomUP"))
 		return CMD_EVENT_CUSTOM_UP;
-	if (!stricmp(s, "OnMQTT"))
-		return CMD_EVENT_ON_MQTT;
 	if (!stricmp(s, "OnCMD"))
 		return CMD_EVENT_ON_CMD;
-	if (!stricmp(s, "OnDP"))
-		return CMD_EVENT_ON_DP;
 	if (!stricmp(s, "OnHTTP"))
 		return CMD_EVENT_ON_HTTP;
-	if (!stricmp(s, "MissedHeartbeats"))
-		return CMD_EVENT_MISSEDHEARTBEATS;
 	if (isdigit((unsigned char)*s)) {
 		return atoi(s);
 	}

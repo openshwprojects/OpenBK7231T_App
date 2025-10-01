@@ -595,6 +595,27 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_IRRecv_nPup,
+	//iodetail:{"name":"StripState",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"This is an output pin which has current led_enableAll value",
+	//iodetail:"enum":"IOR_StripState",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_StripState,
+	//iodetail:{"name":"StripState_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"This is an output pin which has negation of current led_enableAll value",
+	//iodetail:"enum":"IOR_StripState_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_StripState_n,
+	//iodetail:{"name":"HLW8112_SCSN",
+	//iodetail:"title":"HLW8112 SCSN Pin",
+	//iodetail:"descr":"SCSN pin for HLW8112 SPI energy measuring devices.",
+	//iodetail:"enum":"IOR_HLW8112_SCSN",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":"HLW8112SPI"}
+	IOR_HLW8112_SCSN,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
@@ -1043,6 +1064,13 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_StopUpDown,
+	//chandetail:{"name":"EnergyImport_kWh_div1000",
+	//chandetail:"title":"EnergyImport_kWh_div1000",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_EnergyImport_kWh_div1000",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_EnergyImport_kWh_div1000,
 	//chandetail:{"name":"TemperatureUnit",
 	//chandetail:"title":"TemperatureUnit",
 	//chandetail:"descr":"TODO",
@@ -1112,6 +1140,8 @@ typedef enum channelType_e {
 #define PLATFORM_GPIO_MAX 27
 #elif PLATFORM_BK7252 || PLATFORM_BK7252N
 #define PLATFORM_GPIO_MAX 40
+#elif PLATFORM_RDA5981
+#define PLATFORM_GPIO_MAX 29
 #else
 #define PLATFORM_GPIO_MAX 29
 #endif
@@ -1135,7 +1165,7 @@ typedef enum channelType_e {
 #define SPECIAL_CHANNEL_BASECOLOR_COOL	136
 #define SPECIAL_CHANNEL_BASECOLOR_WARM	137
 #define SPECIAL_CHANNEL_BASECOLOR_LAST	137
-#define SPECIAL_CHANNEL_OBK_FREQUENCY 138
+#define SPECIAL_CHANNEL_OBK_FREQUENCY	138
 
 // note: real limit here is MAX_RETAIN_CHANNELS
 #define SPECIAL_CHANNEL_FLASHVARS_FIRST	200
@@ -1310,7 +1340,11 @@ enum {
 	CFG_OBK_VOLTAGE = 0,
 	CFG_OBK_CURRENT,
 	CFG_OBK_POWER,
-	CFG_OBK_POWER_MAX
+	CFG_OBK_POWER_MAX,
+	CFG_OBK_CLK,		// HLW8112 clock freq internal or external
+	CFG_OBK_RES_KU,		// HLW8112 voltage channel K
+	CFG_OBK_RES_KIA,	// HLW8112 current A channel K
+	CFG_OBK_RES_KIB,	// HLW8112 current B channel K
 };
 
 typedef struct led_corr_s { // LED gamma correction and calibration data block

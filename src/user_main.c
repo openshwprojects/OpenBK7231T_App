@@ -11,6 +11,7 @@
 //#include "driver/drv_ir.h"
 #include "driver/drv_public.h"
 #include "driver/drv_bl_shared.h"
+#include "driver/drv_hlw8112.h"
 //#include "ir/ir_local.h"
 
 // Commands register, execution API and cmd tokenizer
@@ -140,10 +141,35 @@ void OTA_SetTotalBytes(int value)
 
 
 #if PLATFORM_XR806 || PLATFORM_XR872
+
 size_t xPortGetFreeHeapSize()
 {
 	return sram_free_heap_size();
 }
+
+#elif PLATFORM_RDA5981
+
+#include "hal/api/mbed_stats.h"
+extern uint32_t mbed_heap_size;
+size_t xPortGetFreeHeapSize()
+{
+	mbed_stats_heap_t heap_stats;
+	mbed_stats_heap_get(&heap_stats);
+	//ADDLOGF_DEBUG("mbed_heap_size: %i\n heap_stats.current_size: %i\nheap_stats.max_size: %i\nheap_stats.total_size: %i\nheap_stats.alloc_cnt: %i\nheap_stats.alloc_fail_cnt: %i\n",
+	//	mbed_heap_size, heap_stats.current_size, heap_stats.max_size, heap_stats.total_size, heap_stats.alloc_cnt, heap_stats.alloc_fail_cnt);
+	return mbed_heap_size - heap_stats.current_size;
+}
+int _kill(int pid, int sig)
+{
+	errno = EINVAL;
+	return -1;
+}
+
+pid_t _getpid()
+{
+	return 1;
+}
+
 #endif
 
 #if PLATFORM_BL602
@@ -294,6 +320,53 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread)
 		os_task_suspend2(hdl);
 	}
 	else os_task_suspend2(*thread);
+	return kNoErr;
+}
+
+#elif PLATFORM_RDA5981
+
+#include "rt_TypeDef.h"
+
+OSStatus rtos_create_thread(beken_thread_t thread,
+	uint8_t priority, const char* name,
+	beken_thread_function_t function,
+	uint32_t stack_size, beken_thread_arg_t arg)
+{
+	osThreadDef_t def;
+	osThreadId     id;
+
+	def.pthread = (os_pthread)function;
+	def.tpriority = osPriorityNormal;
+	def.stacksize = stack_size;
+	def.stack_pointer = malloc(stack_size);
+	if(def.stack_pointer == NULL)
+	{
+		printf("Error allocating the stack memory");
+		return 1;
+	}
+	thread = osThreadCreate(&def, arg);
+	if(thread == NULL)
+	{
+		free(def.stack_pointer);
+		printf("Thread create %s - err\n", name);
+		return 1;
+	}
+	//printf("Thread stack at 0x%lx %lu\n", (uint32_t)def.stack_pointer, stack_size);
+	return 0;
+}
+
+OSStatus rtos_delete_thread(beken_thread_t thread)
+{
+	if(thread == NULL)
+	{
+		thread = osThreadGetId();
+	}
+	P_TCB tcb = rt_tid2ptcb(thread);
+	uint32_t* stk = tcb->stack;
+	if(stk == NULL) printf("rtos_delete_thread stk is null\n");
+	//printf("Freeing stack at 0x%lx %u\n", (uint32_t)stk, tcb->priv_stack);
+	free(stk);
+	osThreadTerminate(thread);
 	return kNoErr;
 }
 
@@ -948,7 +1021,10 @@ void Main_OnEverySecond()
 			{
 				BL09XX_SaveEmeteringStatistics();
 			}
-#endif            
+#endif       
+#if ENABLE_DRIVER_HLW8112SPI
+			HLW8112_Save_Statistics();
+#endif 
 			ADDLOGF_INFO("Going to call HAL_RebootModule\r\n");
 			HAL_RebootModule();
 		}
@@ -1073,18 +1149,14 @@ void QuickTick(void* param)
 
 }
 
-#if PLATFORM_ESP8266 || PLATFORM_TR6260
-#define QT_STACK_SIZE 1536
-#else
 #define QT_STACK_SIZE 2048
-#endif
 
 ////////////////////////////////////////////////////////
 // this is the bit which runs the quick tick timer
 #if WINDOWS
 
 #elif PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800 || PLATFORM_TR6260 || defined(PLATFORM_REALTEK) || PLATFORM_ECR6600 \
-	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_XRADIO || PLATFORM_LN882H || PLATFORM_TXW81X
+	|| PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_XRADIO || PLATFORM_LN882H || PLATFORM_TXW81X || PLATFORM_RDA5981
 void quick_timer_thread(void* param)
 {
 	while (1) {
@@ -1104,6 +1176,8 @@ void QuickTick_StartThread(void)
 	xTaskCreate(quick_timer_thread, "quick", QT_STACK_SIZE, NULL, 15, NULL);
 #elif PLATFORM_TXW81X
 	os_task_create("quick", quick_timer_thread, NULL, 15, 0, NULL, QT_STACK_SIZE);
+#elif PLATFORM_RDA5981
+	rda_thread_new("quick", quick_timer_thread, NULL, QT_STACK_SIZE, osPriorityNormal);
 #else
 	OSStatus result;
 
@@ -1298,6 +1372,9 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 				(PIN_FindPinIndexForRole(IOR_GN6932_STB, -1) != -1))
 			{
 				DRV_StartDriver("GN6932");
+			}
+			if (PIN_FindPinIndexForRole(IOR_HLW8112_SCSN, -1) != -1) {
+				DRV_StartDriver("HLW8112SPI");
 			}
 //			if ((PIN_FindPinIndexForRole(IOR_TM1638_CLK, -1) != -1) &&
 //				(PIN_FindPinIndexForRole(IOR_TM1638_DAT, -1) != -1) &&

@@ -187,6 +187,11 @@ typedef long BaseType_t;
 #define DEVICENAME_PREFIX_SHORT "txw81x"
 #define PLATFORM_MCU_NAME "TXW81X"
 #define MANUFACTURER "Taixin"
+#elif PLATFORM_RDA5981
+#define DEVICENAME_PREFIX_FULL "OpenRDA5981"
+#define DEVICENAME_PREFIX_SHORT "rda5981"
+#define PLATFORM_MCU_NAME "RDA5981"
+#define MANUFACTURER "RDA Microelectronics"
 #else
 #error "You must define a platform.."
 This platform is not supported, error!
@@ -246,6 +251,8 @@ This platform is not supported, error!
 #define USER_SW_VER "RTL8720E_Test"
 #elif PLATFORM_TXW81X
 #define USER_SW_VER "TXW81X_Test"
+#elif PLATFORM_RDA5981
+#define USER_SW_VER "RDA5981_Test"
 #else
 #warning "USER_SW_VER undefined"
 #define USER_SW_VER "unknown"
@@ -858,6 +865,56 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 #define GLOBAL_INT_DECLARATION()	;
 #define GLOBAL_INT_DISABLE()		;
 #define GLOBAL_INT_RESTORE()		;
+
+#elif PLATFORM_RDA5981
+
+#include "stdbool.h"
+#include "rda_sys_wrapper.h"
+#include "cmsis_os.h"
+#include "lwip/err.h"
+#include "lwip/sockets.h"
+#include "lwip/sys.h"
+#include "lwip/netdb.h"
+#include "lwip/dns.h"
+
+#define bk_printf printf
+
+#define rtos_delay_milliseconds osDelay
+#define delay_ms osDelay
+#define os_malloc malloc
+#define os_free free
+
+#define lwip_close_force(x) lwip_close(x)
+#define kNoErr                      0       //! No error occurred.
+typedef void* beken_thread_arg_t;
+typedef void* beken_thread_t;
+typedef void (*beken_thread_function_t)(beken_thread_arg_t arg);
+typedef int OSStatus;
+typedef void* SemaphoreHandle_t;
+#define xSemaphoreCreateMutex rda_mutex_create
+#define xSemaphoreTake(a, b) (rda_mutex_wait(a, b) == 0)
+#define xSemaphoreGive rda_mutex_realease
+#define pdTRUE true
+
+#define portTICK_RATE_MS osKernelSysTickMicroSec(1000 * 1000) 
+typedef int BaseType_t;
+typedef uint64_t portTickType;
+#define xTaskGetTickCount osKernelSysTick
+
+#define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
+#define BEKEN_APPLICATION_PRIORITY         (7)
+
+OSStatus rtos_delete_thread(beken_thread_t thread);
+OSStatus rtos_create_thread(beken_thread_t thread,
+	uint8_t priority, const char* name,
+	beken_thread_function_t function,
+	uint32_t stack_size, beken_thread_arg_t arg);
+OSStatus rtos_suspend_thread(beken_thread_t thread);
+
+#define GLOBAL_INT_DECLARATION()	;
+#define GLOBAL_INT_DISABLE()		;
+#define GLOBAL_INT_RESTORE()		;
+
 
 #else
 

@@ -166,6 +166,9 @@ void SIM_ClearOBK(const char *flashPath) {
 	Main_Init();
 }
 void Win_DoUnitTests() {
+	//SELFTEST_ASSERT_EXPRESSION("sqrt(4)", 2)
+
+
 	Test_Driver_TCL_AC();
 
 	Test_PIR();
