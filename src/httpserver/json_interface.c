@@ -414,7 +414,11 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 		bHasAnyDHT = true;
 		break;
 	}
+#ifdef NO_CHIP_TEMPERATURE	
 	if (DRV_IsSensor() || bHasAnyDHT) {
+#else
+	if (1) {
+#endif
 		http_tasmota_json_SENSOR(request, printer);
 		JSON_PrintKeyValue_String(request, printer, "TempUnit", "C", false);
 	}
