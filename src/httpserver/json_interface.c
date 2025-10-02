@@ -264,6 +264,12 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 	float chan_val1, chan_val2;
 	int channel_1, channel_2, g_pin_1 = 0;
 	printer(request, ",");
+#ifndef NO_CHIP_TEMPERATURE
+		printer(request, "\"%s\":",PLATFORM_MCU_NAME);
+		printer(request, "{");
+		printer(request, "\"Temperature\": %.1f", g_wifi_temperature);
+		printer(request, "},");
+#endif
 	if (DRV_IsRunning("SHT3X")) {
 		g_pin_1 = PIN_FindPinIndexForRole(IOR_SHT3X_DAT, g_pin_1);
 		channel_1 = g_cfg.pins.channels[g_pin_1];
