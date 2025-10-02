@@ -19,6 +19,7 @@
 #include <time.h>
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_local.h"
+#include "../hal/txw81x/hal_pinmap_txw81x.h"
 #ifdef PLATFORM_BEKEN
 #include "start_type_pub.h"
 #endif
@@ -208,6 +209,7 @@ int http_fn_testmsg(http_request_t* request) {
 // bit mask telling which channels are hidden from HTTP
 // If given bit is set, then given channel is hidden
 extern int g_hiddenChannels;
+extern int g_numPins;
 
 int http_fn_index(http_request_t* request) {
 	int j, i, ch1, ch2;
