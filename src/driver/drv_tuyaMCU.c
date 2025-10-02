@@ -1120,10 +1120,6 @@ void TuyaMCU_ForcePublishChannelValues() {
 void TuyaMCU_ApplyMapping(tuyaMCUMapping_t* mapping, int dpID, int value) {
 	int mappedValue = value;
 
-	if (mapping->obkFlags & OBKTM_FLAG_NOREAD) {
-		// ignore
-		return;
-	}
 	// hardcoded values
 #if ENABLE_LED_BASIC
 	if (dpID == g_tuyaMCUled_id_power) {
@@ -1144,6 +1140,10 @@ void TuyaMCU_ApplyMapping(tuyaMCUMapping_t* mapping, int dpID, int value) {
 		return;
 	}
 	if (mapping->channel < 0) {
+		return;
+	}
+	if (mapping->obkFlags & OBKTM_FLAG_NOREAD) {
+		// ignore
 		return;
 	}
 
