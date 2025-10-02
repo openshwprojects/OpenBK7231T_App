@@ -1000,7 +1000,7 @@ typedef enum {
 	/* Format current PINS input state for all unused pins */
 	if (CFG_HasFlag(OBK_FLAG_HTTP_PINMONITOR))
 	{
-		for (i = 0; i < PLATFORM_GPIO_MAX; i++)
+		for (i = 0; i < g_numPins; i++)
 		{
 			if ((PIN_GetPinRoleForPinIndex(i) == IOR_None) && (i != 0) && (i != 1))
 			{
