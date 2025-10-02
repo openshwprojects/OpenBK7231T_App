@@ -512,7 +512,7 @@ void DRV_I2C_LCD_PCF8574_PreInit() {
 
 	//cmddetail:{"name":"addI2CDevice_LCD_PCF8574","args":"",
 	//cmddetail:"descr":"Adds a new I2C device - PCF8574",
-	//cmddetail:"fn":"DRV_I2C_AddDevice_PCF8574","file":"i2c/drv_i2c_main.c","requires":"",
+	//cmddetail:"fn":"DRV_I2C_AddDevice_PCF8574","file":"i2c/drv_i2c_lcd_pcf8574t.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("addI2CDevice_LCD_PCF8574", DRV_I2C_AddDevice_PCF8574, NULL);
 }

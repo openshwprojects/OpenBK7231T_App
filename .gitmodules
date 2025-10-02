@@ -73,3 +73,11 @@
 	path = sdk/ameba-rtos
 	url = https://github.com/Ameba-AIoT/ameba-rtos
 	branch = release/v1.1
+[submodule "sdk/OpenTXW81X"]
+	path = sdk/OpenTXW81X
+	url = https://github.com/NonPIayerCharacter/OpenTXW81X
+	branch = main
+[submodule "sdk/OpenRDA5981"]
+	path = sdk/OpenRDA5981
+	url = https://github.com/NonPIayerCharacter/OpenRDA5981
+	branch = master

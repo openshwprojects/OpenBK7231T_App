@@ -315,6 +315,15 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 		psm_pwr_mgt_ctrl(0);
 		psm_sleep_mode_ena_op(true, 0);
 	}
+#elif PLATFORM_RDA5981
+	if(bOn)
+	{
+		wland_set_sta_sleep(1);
+	}
+	else
+	{
+		wland_set_sta_sleep(0);
+	}
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "PowerSave is not implemented on this platform");
 #endif
@@ -740,7 +749,7 @@ commandResult_t CMD_CreateAliasHelper(const char *alias, const char *ocmd) {
 
 	//cmddetail:{"name":"aliasMem","args":"",
 	//cmddetail:"descr":"Internal usage only. See docs for 'alias' command.",
-	//cmddetail:"fn":"runcmd","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"fn":"runcmd","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	command_t *cmd = CMD_RegisterCommand(aliasMem, runcmd, cmdMem);
 	if (cmd) {
@@ -968,7 +977,7 @@ static commandResult_t CMD_WebServer(const void* context, const char* cmd, const
 void CMD_Init_Early() {
 	//cmddetail:{"name":"alias","args":"[Alias][Command with spaces]",
 	//cmddetail:"descr":"add an aliased command, so a command with spaces can be called with a short, nospaced alias",
-	//cmddetail:"fn":"alias","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"fn":"CMD_CreateAliasForCommand","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("alias", CMD_CreateAliasForCommand, NULL);
 	//cmddetail:{"name":"echo","args":"[Message]",
@@ -1055,7 +1064,7 @@ void CMD_Init_Early() {
 	CMD_RegisterCommand("OpenAP", CMD_OpenAP, NULL);
 	//cmddetail:{"name":"DSEdge","args":"[edgeCode][optionalPinIndex]",
 	//cmddetail:"descr":"DeepSleep (PinDeepSleep) wake configuration command. 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2. Second argument is optional and allows to set per-pin DSEdge instead of setting it for all pins.",
-	//cmddetail:"fn":"CMD_DeepSleep_SetEdge","file":"drv/drv_doorSensorWithDeepSleep.c","requires":"",
+	//cmddetail:"fn":"CMD_DeepSleep_SetEdge","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DSEdge", CMD_DeepSleep_SetEdge, NULL);
 	//cmddetail:{"name":"SafeMode","args":"[OptionalDelayBeforeRestart]",
@@ -1063,6 +1072,7 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_SafeMode","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SafeMode", CMD_SafeMode, NULL);
+#if ENABLE_PING_WATCHDOG
 	//cmddetail:{"name":"PingInterval","args":"[IntegerSeconds]",
 	//cmddetail:"descr":"Sets the interval between ping attempts for ping watchdog mechanism",
 	//cmddetail:"fn":"CMD_PingInterval","file":"cmnds/cmd_main.c","requires":"",
@@ -1073,6 +1083,7 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_PingHost","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PingHost", CMD_PingHost, NULL);
+#endif
 	//cmddetail:{"name":"StartupCommand","args":"[Command in quotation marks][bRunAfter]",
 	//cmddetail:"descr":"Sets the new startup command (short startup command, the one stored in config) to given string. Second argument is optional, if set to 1, command will be also executed after setting",
 	//cmddetail:"fn":"CMD_StartupCommand","file":"cmnds/cmd_main.c","requires":"",
@@ -1080,18 +1091,18 @@ void CMD_Init_Early() {
 	CMD_RegisterCommand("StartupCommand", CMD_StartupCommand, NULL);
 	//cmddetail:{"name":"Choice","args":"[IndexToExecute][Option0][Option1][Option2][OptionN][etc]",
 	//cmddetail:"descr":"This will choose a given argument by index and execute it as a command. Index to execute can be a variable like $CH1.",
-	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"fn":"CMD_Choice","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Choice", CMD_Choice, NULL);
 	//cmddetail:{"name":"PWMFrequency","args":"[FrequencyInHz]",
 	//cmddetail:"descr":"Sets the global PWM frequency.",
-	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"fn":"CMD_PWMFrequency","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PWMFrequency", CMD_PWMFrequency, NULL);
 
 	//cmddetail:{"name":"IndexRefreshInterval","args":"[Interval]",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"fn":"CMD_IndexRefreshInterval","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("IndexRefreshInterval", CMD_IndexRefreshInterval, NULL);
 

@@ -23,7 +23,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#if !PLATFORM_TXW81X
 #include <inttypes.h>
+#else
+#include "../win32/stubs/win_inttypes.h"
+#endif
 
 #ifndef LFS_NO_MALLOC
 #include <stdlib.h>
@@ -40,7 +44,7 @@
 
 #if PLATFORM_BEKEN
 #include "mem_pub.h"
-#elif PLATFORM_BL602 || PLATFORM_ESPIDF || PLATFORM_XRADIO || PLATFORM_ESP8266
+#elif PLATFORM_BL602 || PLATFORM_ESPIDF || PLATFORM_XRADIO || PLATFORM_ESP8266 || PLATFORM_TXW81X || PLATFORM_RDA5981
 #define os_free free
 #define os_malloc malloc
 #elif PLATFORM_REALTEK || PLATFORM_W800 || PLATFORM_W600 || PLATFORM_LN882H

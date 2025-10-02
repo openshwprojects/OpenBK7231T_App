@@ -441,43 +441,43 @@ void LFSAddCmds(){
     CMD_RegisterCommand("lfs_format", CMD_LFS_Format, NULL);
 	//cmddetail:{"name":"lfs_append","args":"[FileName][String]",
 	//cmddetail:"descr":"Appends a string to LFS file",
-	//cmddetail:"fn":"CMD_LFS_Append","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"fn":"CMD_LFS_Append","file":"littlefs/our_lfs.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_append", CMD_LFS_Append, NULL);
 	//cmddetail:{"name":"lfs_appendFloat","args":"[FileName][Float]",
 	//cmddetail:"descr":"Appends a float to LFS file",
-	//cmddetail:"fn":"CMD_LFS_AppendFloat","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"fn":"CMD_LFS_AppendFloat","file":"littlefs/our_lfs.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_appendFloat", CMD_LFS_AppendFloat, NULL);
 	//cmddetail:{"name":"lfs_appendInt","args":"[FileName][Int]",
 	//cmddetail:"descr":"Appends a Int to LFS file",
-	//cmddetail:"fn":"CMD_LFS_AppendInt","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"fn":"CMD_LFS_AppendInt","file":"littlefs/our_lfs.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_appendInt", CMD_LFS_AppendInt, NULL);
 	//cmddetail:{"name":"lfs_appendLine","args":"[FileName][String]",
 	//cmddetail:"descr":"Appends a string to LFS file with a next line marker",
-	//cmddetail:"fn":"CMD_LFS_AppendLine","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"fn":"CMD_LFS_AppendLine","file":"littlefs/our_lfs.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_appendLine", CMD_LFS_AppendLine, NULL);
 	//cmddetail:{"name":"lfs_remove","args":"[FileName]",
 	//cmddetail:"descr":"Deletes a LittleFS file",
-	//cmddetail:"fn":"CMD_LFS_Remove","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"fn":"CMD_LFS_Remove","file":"littlefs/our_lfs.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_remove", CMD_LFS_Remove, NULL);
 	//cmddetail:{"name":"lfs_write","args":"[FileName][String]",
 	//cmddetail:"descr":"Resets a LFS file and writes a new string to it",
-	//cmddetail:"fn":"CMD_LFS_Write","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"fn":"CMD_LFS_Write","file":"littlefs/our_lfs.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_write", CMD_LFS_Write, NULL);
 	//cmddetail:{"name":"lfs_writeLine","args":"[FileName][String]",
 	//cmddetail:"descr":"Resets a LFS file and writes a new string to it with newline",
-	//cmddetail:"fn":"CMD_LFS_WriteLine","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"fn":"CMD_LFS_WriteLine","file":"littlefs/our_lfs.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_writeLine", CMD_LFS_WriteLine, NULL);
 
 	//cmddetail:{"name":"lfs_mkdir","args":"CMD_LFS_MakeDirectory",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"littlefs/our_lfs.c","requires":"",
+	//cmddetail:"fn":"CMD_LFS_MakeDirectory","file":"littlefs/our_lfs.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("lfs_mkdir", CMD_LFS_MakeDirectory, NULL);
 }
@@ -1127,6 +1127,55 @@ static int lfs_erase(const struct lfs_config* c, lfs_block_t block)
 
 	res = flash_erase(0, startAddr, LFS_BLOCK_SIZE);
 	if(res != 0) res = LFS_ERR_IO;
+	res = LFS_ERR_OK;
+	return res;
+}
+
+#elif PLATFORM_TXW81X || PLATFORM_RDA5981
+
+static int lfs_read(const struct lfs_config* c, lfs_block_t block,
+	lfs_off_t off, void* buffer, lfs_size_t size)
+{
+	int res;
+
+	unsigned int startAddr = LFS_Start;
+	startAddr += block * LFS_BLOCK_SIZE;
+	startAddr += off;
+
+	HAL_FlashRead(buffer, size, startAddr);
+	res = LFS_ERR_OK;
+	return res;
+}
+
+// Program a region in a block. The block must have previously
+// been erased. Negative error codes are propogated to the user.
+// May return LFS_ERR_CORRUPT if the block should be considered bad.
+static int lfs_write(const struct lfs_config* c, lfs_block_t block,
+	lfs_off_t off, const void* buffer, lfs_size_t size)
+{
+	int res;
+
+	unsigned int startAddr = LFS_Start;
+	startAddr += block * LFS_BLOCK_SIZE;
+	startAddr += off;
+
+	HAL_FlashWrite(buffer, size, startAddr);
+	res = LFS_ERR_OK;
+	return res;
+}
+
+// Erase a block. A block must be erased before being programmed.
+// The state of an erased block is undefined. Negative error codes
+// are propogated to the user.
+// May return LFS_ERR_CORRUPT if the block should be considered bad.
+static int lfs_erase(const struct lfs_config* c, lfs_block_t block)
+{
+	int res;
+
+	unsigned int startAddr = LFS_Start;
+	startAddr += block * LFS_BLOCK_SIZE;
+
+	HAL_FlashEraseSector(startAddr);
 	res = LFS_ERR_OK;
 	return res;
 }

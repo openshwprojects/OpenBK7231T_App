@@ -28,7 +28,7 @@ void HAL_UART_SendByte(byte b)
 	serial_putc(&sobj, b);
 }
 
-int HAL_UART_Init(int baud, int parity, bool hwflowc)
+int HAL_UART_Init(int baud, int parity, bool hwflowc, int txOverride, int rxOverride)
 {
 	if(isInitialized)
 	{

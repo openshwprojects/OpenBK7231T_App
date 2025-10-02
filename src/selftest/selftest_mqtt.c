@@ -527,6 +527,24 @@ void Test_MQTT_Misc() {
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/mySecond/get", 12.3f, false);
 	SIM_ClearMQTTHistory();
 
+	CMD_ExecuteCommand("publishDriver DDP", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/driver/DDP", 0, false);
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("startDriver DDP", 0);
+	CMD_ExecuteCommand("publishDriver DDP", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/driver/DDP", 1, false);
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("stopDriver DDP", 0);
+	CMD_ExecuteCommand("publishDriver DDP", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/driver/DDP", 0, false);
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("publishDriver xyz123", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/driver/xyz123", 0, false);
+	SIM_ClearMQTTHistory();
+
 	//SIM_SendFakeMQTTAndRunSimFrame_CMND("setChannel", "3 100");
 	//CMD_ExecuteCommand("addEventHandler OnChannelChange 7 publishFloat thirdTest $CH7*0.01+$CH3", 0);
 	//// set channel 7 to 31.4 and see what we get

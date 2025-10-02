@@ -51,20 +51,20 @@ uint16_t count = 0;
 int direction = 1;
 void fadeToBlackBy(uint8_t fadeBy)
 {
-	SM16703P_scaleAllPixels(255-fadeBy);
+	Strip_scaleAllPixels(255-fadeBy);
 }
 void ShootingStar_Run() {
 	int tail_length = 32;
 	if (direction == -1) {        // Reverse direction option for LEDs
 		if (count < pixel_count) {
-			SM16703P_setPixelWithBrig(pixel_count - (count % (pixel_count + 1)),
+			Strip_setPixelWithBrig(pixel_count - (count % (pixel_count + 1)),
 				led_baseColors[0], led_baseColors[1], led_baseColors[2], led_baseColors[3], led_baseColors[4]);    // Set LEDs with the color value
 		}
 		count++;
 	}
 	else {
 		if (count < pixel_count) {     // Forward direction option for LEDs
-			SM16703P_setPixelWithBrig(count % pixel_count,
+			Strip_setPixelWithBrig(count % pixel_count,
 				led_baseColors[0], led_baseColors[1], led_baseColors[2], led_baseColors[3], led_baseColors[4]);    // Set LEDs with the color value
 		}
 		count++;
@@ -73,7 +73,7 @@ void ShootingStar_Run() {
 		count = 0;
 	}
 	fadeToBlackBy(tail_length);                 // Fade the tail LEDs to black
-	SM16703P_Show();
+	Strip_Apply();
 }
 void RainbowCycle_Run() {
 	byte *c;
@@ -81,9 +81,9 @@ void RainbowCycle_Run() {
 
 	for (i = 0; i < pixel_count; i++) {
 		c = RainbowWheel_Wheel(((i * 256 / pixel_count) + j) & 255);
-		SM16703P_setPixelWithBrig(pixel_count - 1 - i, *c, *(c + 1), *(c + 2), 0, 0);
+		Strip_setPixelWithBrig(pixel_count - 1 - i, *c, *(c + 1), *(c + 2), 0, 0);
 	}
-	SM16703P_Show();
+	Strip_Apply();
 	j++;
 	j %= 256;
 }
@@ -98,13 +98,13 @@ void Fire_setPixelHeatColor(int Pixel, byte temperature) {
 
 	// Figure out which third of the spectrum we're in:
 	if (t192 > 0x80) {                    // hottest
-		SM16703P_setPixelWithBrig(Pixel, 255, 255, heatramp, 0, 0); // red to yellow
+		Strip_setPixelWithBrig(Pixel, 255, 255, heatramp, 0, 0); // red to yellow
 	}
 	else if (t192 > 0x40) {               // middle
-		SM16703P_setPixelWithBrig(Pixel, 255, heatramp, 0, 0, 0); // red to yellow
+		Strip_setPixelWithBrig(Pixel, 255, heatramp, 0, 0, 0); // red to yellow
 	}
 	else {                               // coolest
-		SM16703P_setPixelWithBrig(Pixel, heatramp, 0, 0, 0, 0);
+		Strip_setPixelWithBrig(Pixel, heatramp, 0, 0, 0, 0);
 	}
 }
 // FlameHeight - Use larger value for shorter flames, default=50.
@@ -164,10 +164,84 @@ void Fire_Run() {
 	for (int j = 0; j < pixel_count; j++) {
 		Fire_setPixelHeatColor(j, heat[j]);
 	}
-	SM16703P_Show();
+	Strip_Apply();
 
 }
+static int comet_pos = 0;
+static int comet_dir_local = 1;
+static int comet_tail_len = 16;
 
+void Comet_Run() {
+	int head = comet_pos;
+	int tail = comet_tail_len;
+	if (comet_dir_local > 0) {
+		comet_pos++;
+		if (comet_pos >= pixel_count) {
+			comet_pos = pixel_count - 1;
+			comet_dir_local = -1;
+		}
+	}
+	else {
+		comet_pos--;
+		if (comet_pos < 0) {
+			comet_pos = 0;
+			comet_dir_local = 1;
+		}
+	}
+
+	fadeToBlackBy(48);
+
+	Strip_setPixelWithBrig(head,
+		led_baseColors[0], led_baseColors[1], led_baseColors[2], led_baseColors[3], led_baseColors[4]);
+
+	for (int t = 1; t <= tail; t++) {
+		int idx = head - t * comet_dir_local;
+		if (idx < 0 || idx >= pixel_count) continue;
+		float scale = (float)(tail - t) / (float)tail;
+		if (scale < 0) scale = 0;
+		byte r = (byte)round(led_baseColors[0] * scale);
+		byte g = (byte)round(led_baseColors[1] * scale);
+		byte b = (byte)round(led_baseColors[2] * scale);
+		Strip_setPixelWithBrig(idx, r, g, b, 0, 0);
+	}
+
+	Strip_Apply();
+}
+static int chase_pos = 0;
+
+void TheaterChase_Run() {
+	fadeToBlackBy(200);
+
+	for (int i = 0; i < pixel_count; i++) {
+		if ((i + chase_pos) % 3 == 0) {
+			Strip_setPixelWithBrig(i,
+				led_baseColors[0], led_baseColors[1], led_baseColors[2],
+				led_baseColors[3], led_baseColors[4]);
+		}
+	}
+	Strip_Apply();
+
+	chase_pos++;
+	if (chase_pos >= 3) chase_pos = 0;
+}
+
+static int chase_rainbow_pos = 0;
+
+void TheaterChaseRainbow_Run() {
+	for (int i = 0; i < pixel_count; i++) {
+		if ((i + chase_rainbow_pos) % 3 == 0) {
+			byte *c = RainbowWheel_Wheel((i + chase_rainbow_pos * 8) & 255);
+			Strip_setPixelWithBrig(i, *c, *(c + 1), *(c + 2), 0, 0);
+		}
+		else {
+			Strip_setPixelWithBrig(i, 0, 0, 0, 0, 0);
+		}
+	}
+	Strip_Apply();
+
+	chase_rainbow_pos++;
+	if (chase_rainbow_pos >= 3) chase_rainbow_pos = 0;
+}
 // startDriver PixelAnim
 
 typedef struct ledAnim_s {
@@ -179,7 +253,10 @@ int activeAnim = -1;
 ledAnim_t g_anims[] = {
 	{ "Rainbow Cycle", RainbowCycle_Run },
 	{ "Fire", Fire_Run },
-	{ "Shooting Star", ShootingStar_Run }
+	{ "Shooting Star", ShootingStar_Run },
+	{ "Comet", Comet_Run },
+	{ "Theater Chase", TheaterChase_Run },
+	{ "Theater Chase Rainbow", TheaterChaseRainbow_Run }
 };
 int g_numAnims = sizeof(g_anims) / sizeof(g_anims[0]);
 int g_speed = 0;
@@ -220,12 +297,12 @@ void PixelAnim_Init() {
 
 	//cmddetail:{"name":"Anim","args":"[AnimationIndex]",
 	//cmddetail:"descr":"Starts given WS2812 animation by index.",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_pixelAnim.c","requires":"",
+	//cmddetail:"fn":"PA_Cmd_Anim","file":"driver/drv_pixelAnim.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Anim", PA_Cmd_Anim, NULL);
 	//cmddetail:{"name":"AnimSpeed","args":"[Interval]",
 	//cmddetail:"descr":"Sets WS2812 animation speed",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_pixelAnim.c","requires":"",
+	//cmddetail:"fn":"PA_Cmd_AnimSpeed","file":"driver/drv_pixelAnim.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("AnimSpeed", PA_Cmd_AnimSpeed, NULL);
 }

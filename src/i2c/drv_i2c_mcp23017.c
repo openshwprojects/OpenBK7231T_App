@@ -228,12 +228,12 @@ void DRV_I2C_MCP23017_PreInit() {
 
 	//cmddetail:{"name":"MCP23017_MapPinToChannel","args":"",
 	//cmddetail:"descr":"Maps port expander bit to OBK channel",
-	//cmddetail:"fn":"DRV_I2C_MCP23017_MapPinToChannel","file":"i2c/drv_i2c_main.c","requires":"",
+	//cmddetail:"fn":"DRV_I2C_MCP23017_MapPinToChannel","file":"i2c/drv_i2c_mcp23017.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MCP23017_MapPinToChannel", DRV_I2C_MCP23017_MapPinToChannel, NULL);
 	//cmddetail:{"name":"addI2CDevice_MCP23017","args":"",
 	//cmddetail:"descr":"Adds a new I2C device - MCP23017",
-	//cmddetail:"fn":"DRV_I2C_AddDevice_MCP23017","file":"i2c/drv_i2c_main.c","requires":"",
+	//cmddetail:"fn":"DRV_I2C_AddDevice_MCP23017","file":"i2c/drv_i2c_mcp23017.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("addI2CDevice_MCP23017", DRV_I2C_AddDevice_MCP23017, NULL);
 }
