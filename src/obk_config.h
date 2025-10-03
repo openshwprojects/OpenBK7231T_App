@@ -74,7 +74,7 @@
 #define ENABLE_MQTT								1
 #define ENABLE_TASMOTADEVICEGROUPS				1
 #define ENABLE_NTP								1
-// #define ENABLE_NTP_DST						1
+//#define ENABLE_CLOCK_DST						1
 #define ENABLE_DRIVER_BL0937					1
 #define ENABLE_DRIVER_DHT						1
 #define ENABLE_TASMOTA_JSON						1
@@ -108,6 +108,7 @@
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 #define ENABLE_LITTLEFS							1
 #define NEW_TCP_SERVER							1
+#define ENABLE_DRIVER_DS3231						1
 
 #elif WINDOWS
 
@@ -132,7 +133,7 @@
 #define ENABLE_TASMOTADEVICEGROUPS				1
 #define ENABLE_LITTLEFS							1
 #define ENABLE_NTP								1
-#define ENABLE_NTP_DST							1
+#define ENABLE_CLOCK_DST							1
 #define ENABLE_DRIVER_LED						1
 #define ENABLE_DRIVER_BL0937					1
 #define ENABLE_DRIVER_BL0942					1
@@ -156,7 +157,7 @@
 #define ENABLE_DRIVER_PT6523					1
 #define ENABLE_DRIVER_MAX6675					1
 #define ENABLE_DRIVER_TEXTSCROLLER				1
-#define ENABLE_NTP_SUNRISE_SUNSET				1
+#define ENABLE_CLOCK_SUNRISE_SUNSET				1
 // parse things like $CH1 or $hour etc
 #define ENABLE_EXPAND_CONSTANT					1
 #define ENABLE_DRIVER_DHT						1
@@ -193,7 +194,7 @@
 #define ENABLE_TASMOTADEVICEGROUPS				1
 #define ENABLE_LITTLEFS							1
 #define ENABLE_NTP								1
-// #define ENABLE_NTP_DST						1
+// #define ENABLE_CLOCK_DST						1
 #define ENABLE_CALENDAR_EVENTS					1
 #define ENABLE_DRIVER_LED						1
 #define ENABLE_DRIVER_BL0937					1
@@ -240,8 +241,8 @@
 #define ENABLE_TASMOTADEVICEGROUPS				1
 #define ENABLE_LITTLEFS							1
 #define ENABLE_NTP								1
-// #define ENABLE_NTP_DST						1
-#define ENABLE_NTP_SUNRISE_SUNSET				1
+// #define ENABLE_CLOCK_DST						1
+#define ENABLE_CLOCK_SUNRISE_SUNSET				1
 #define ENABLE_DRIVER_LED						1
 #define ENABLE_DRIVER_BL0937					1
 #define ENABLE_DRIVER_BL0942					1
@@ -270,6 +271,7 @@
 #define ENABLE_DRIVER_SM16703P					1
 #define ENABLE_DRIVER_PIXELANIM					1
 #define ENABLE_DRIVER_SM15155E					1
+
 #endif
 // parse things like $CH1 or $hour etc
 #define ENABLE_EXPAND_CONSTANT					1
@@ -359,7 +361,7 @@
 #define ENABLE_MQTT								1
 #define ENABLE_TASMOTADEVICEGROUPS				1
 #define ENABLE_NTP								1
-//#define ENABLE_NTP_DST						1
+//#define ENABLE_CLOCK_DST						1
 #define ENABLE_DRIVER_BL0937					1
 #define ENABLE_DRIVER_LED 						1
 #define ENABLE_DRIVER_WEMO						1
@@ -387,7 +389,7 @@
 #define ENABLE_MQTT								1
 #define ENABLE_I2C								1
 #define ENABLE_NTP								1
-//#define ENABLE_NTP_DST						1
+//#define ENABLE_CLOCK_DST						1
 #define ENABLE_DRIVER_LED						1
 #define ENABLE_DRIVER_TUYAMCU					1
 #define ENABLE_LITTLEFS							1
