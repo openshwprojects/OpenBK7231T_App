@@ -11,12 +11,11 @@ void Test_TuyaMCU_BatteryPowered_Style1() {
 	CMD_ExecuteCommand("logfeature 12 1", 0);
 	CMD_ExecuteCommand("loglevel 6", 0);
 
-	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
-	CMD_ExecuteCommand("startDriver tmSensor", 0);
+	CMD_ExecuteCommand("startDriver TuyaMCULE", 0);
 
-	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 1 val 1", 0);
+	CMD_ExecuteCommand("tuyaMCULE_SetDpConfig 1 bool 1", 0);
 	CMD_ExecuteCommand("setChannelType 1 OpenClosed", 0);
-	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 3 val 3", 0);
+	CMD_ExecuteCommand("tuyaMCULE_SetDpConfig 3 enum 3", 0);
 	CMD_ExecuteCommand("setChannelType 3 Custom", 0);
 
 	// nothing is sent by OBK at that point
@@ -109,12 +108,11 @@ void Test_TuyaMCU_BatteryPowered_Style2() {
 	SIM_ClearOBK(0);
 	SIM_UART_InitReceiveRingBuffer(1024);
 
-	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
-	CMD_ExecuteCommand("startDriver tmSensor", 0);
+	CMD_ExecuteCommand("startDriver TuyaMCULE", 0);
 
-	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 1 val 1", 0);
+	CMD_ExecuteCommand("tuyaMCULE_SetDpConfig 1 bool 1", 0);
 	CMD_ExecuteCommand("setChannelType 1 OpenClosed", 0);
-	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 3 val 3", 0);
+	CMD_ExecuteCommand("tuyaMCULE_SetDpConfig 3 enum 3", 0);
 	CMD_ExecuteCommand("setChannelType 3 Custom", 0);
 
 	// nothing is sent by OBK at that point
@@ -216,14 +214,14 @@ SetStartValue 5 -1
 alias set_default_5 setChannel 5 1
 if $CH5==0 then set_default_5
 // link dpID 17 to channel 5, the type is val, extra '1' means that its dpCache variable
-linkTuyaMCUOutputToChannel 17 val 5 1
+tuyaMCULE_SetDpConfig 17 val 5 1
 
 setChannelType 6 TextField
 setChannelLabel 6 Humidity Interval
 SetStartValue 6 -1
 alias set_default_6 setChannel 6 1
 if $CH6==0 then set_default_6
-linkTuyaMCUOutputToChannel 18 val 6 1
+tuyaMCULE_SetDpConfig 18 val 6 1
 
 */
 void Test_TuyaMCU_BatteryPowered_DPcacheFeature() {
@@ -239,7 +237,7 @@ void Test_TuyaMCU_BatteryPowered_DPcacheFeature() {
 	SIM_ClearOBK(0);
 	SIM_UART_InitReceiveRingBuffer(1024);
 
-	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+	CMD_ExecuteCommand("startDriver TuyaMCULE", 0);
 
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 	// packet is the following:
@@ -249,14 +247,15 @@ void Test_TuyaMCU_BatteryPowered_DPcacheFeature() {
 	// dpId = 17 Len = 0004 Val V = 1
 	// 12 02 0004 00000001
 	// dpId = 18 Len = 0004 Val V = 1	
-	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 18 val 2 1", 0);
+	CMD_ExecuteCommand("tuyaMCULE_SetDpConfig 18 val 2", 0);
 	CMD_ExecuteCommand("setChannel 2 1", 0);
-	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 17 val 1 1", 0);
+	CMD_ExecuteCommand("tuyaMCULE_SetDpConfig 17 val 1", 0);
 	CMD_ExecuteCommand("setChannel 1 1", 0);
 
 	SIM_ClearUART();
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
-	TuyaMCU_V0_SendDPCacheReply();
+	byte zero[] = { 0 };
+	TuyaMCULE_HandleGetDpCache(zero, sizeof(zero));
 
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55AA0010001201021102000400000001120200040000000155");
 }
@@ -269,17 +268,18 @@ void Test_TuyaMCU_BatteryPowered_DPcacheFeature3() {
 	SIM_ClearOBK(0);
 	SIM_UART_InitReceiveRingBuffer(1024);
 
-	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+	CMD_ExecuteCommand("startDriver TuyaMCULE", 0);
 
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 
 	// just for fun, use channel 33, it doesn't matter, dpID is still 9
-	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 9 enum 33 1", 0);
+	CMD_ExecuteCommand("tuyaMCULE_SetDpConfig 9 enum 33", 0);
 	CMD_ExecuteCommand("setChannel 33 1", 0);
 
 	SIM_ClearUART();
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
-	TuyaMCU_V0_SendDPCacheReply();
+	byte zero[] = { 0 };
+	TuyaMCULE_HandleGetDpCache(zero, sizeof(zero));
 
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	10		00 07	01010904000101	27");
 }
@@ -292,17 +292,18 @@ void Test_TuyaMCU_BatteryPowered_DPcacheFeature4() {
 	SIM_ClearOBK(0);
 	SIM_UART_InitReceiveRingBuffer(1024);
 
-	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+	CMD_ExecuteCommand("startDriver TuyaMCULE", 0);
 
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 
 	// just for fun, use channel 33, it doesn't matter, dpID is still 9
-	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 9 enum 33 1", 0);
+	CMD_ExecuteCommand("tuyaMCULE_SetDpConfig 9 enum 33", 0);
 	CMD_ExecuteCommand("setChannel 33 0", 0);
 
 	SIM_ClearUART();
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
-	TuyaMCU_V0_SendDPCacheReply();
+	byte zero[] = { 0 };
+	TuyaMCULE_HandleGetDpCache(zero, sizeof(zero));
 
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55AA001000070101090400010026");
 }
@@ -320,17 +321,45 @@ void Test_TuyaMCU_BatteryPowered_DPcacheFeature2() {
 	SIM_ClearOBK(0);
 	SIM_UART_InitReceiveRingBuffer(1024);
 
-	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+	CMD_ExecuteCommand("startDriver TuyaMCULE", 0);
 
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
 
 	SIM_ClearUART();
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
-	TuyaMCU_V0_SendDPCacheReply();
+	byte zero[] = { 0 };
+	TuyaMCULE_HandleGetDpCache(zero, sizeof(zero));
 
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA	00	10		00 02	0100	12");
 }
 void Test_TuyaMCU_BatteryPowered_QuerySignalStrength() {
+	// reset whole device
+	SIM_ClearOBK(0);
+	SIM_UART_InitReceiveRingBuffer(1024);
+
+	CMD_ExecuteCommand("startDriver TuyaMCULE", 0);
+
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	/*
+	Pressed: 1. Send query product information
+	(simulated delays are disabled)
+	Sent: 55 AA 00 01 00 00 00
+	Sent: Ver=0, Cmd=QueryInfo, Len=0, CHECKSUM OK
+	*/
+	Sim_RunSeconds(3.0f, false);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA 00 01 00 00 00");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+	
+	CMD_ExecuteCommand("uartFakeHex 55 AA 00 0B 00 00 0A", 0);
+	Sim_RunSeconds(0.1f, false);
+	
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA 00 0B 00 02 01 FF 0C");
+	// nothing is sent by OBK at that point
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+}
+void Test_TuyaMCU_BatteryPowered_BackwardCompatiblity() {
 	// reset whole device
 	SIM_ClearOBK(0);
 	SIM_UART_InitReceiveRingBuffer(1024);
@@ -350,13 +379,6 @@ void Test_TuyaMCU_BatteryPowered_QuerySignalStrength() {
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA 00 01 00 00 00");
 	// nothing is sent by OBK at that point
 	SELFTEST_ASSERT_HAS_UART_EMPTY();
-	
-	CMD_ExecuteCommand("uartFakeHex 55 AA 00 0B 00 00 0A", 0);
-	Sim_RunSeconds(0.1f, false);
-	
-	SELFTEST_ASSERT_HAS_SENT_UART_STRING("55 AA 00 0B 00 02 01 50 5D");
-	// nothing is sent by OBK at that point
-	SELFTEST_ASSERT_HAS_UART_EMPTY();
 }
 void Test_TuyaMCU_BatteryPowered() {
 	Test_TuyaMCU_BatteryPowered_Style2();
@@ -369,6 +391,7 @@ void Test_TuyaMCU_BatteryPowered() {
 	Test_TuyaMCU_BatteryPowered_DPcacheFeature4();
 
 	Test_TuyaMCU_BatteryPowered_QuerySignalStrength();
+	Test_TuyaMCU_BatteryPowered_BackwardCompatiblity();
 }
 
 #endif
