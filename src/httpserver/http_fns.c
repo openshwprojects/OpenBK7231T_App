@@ -2841,7 +2841,9 @@ int http_fn_cfg_pins(http_request_t* request) {
 
 	// array of sorted roles, entries are ["roledescription",id of role]
 	// sr = [ [ " ", "0" ], [ "ADC_Button", "68" ], [ "ADC", "20" ], ...]
-	poststr(request, "var  sr = r.map((e,i)=>{return e[0]+'#'+i}).sort(Intl.Collator().compare).map(e=>e.split('#'));");
+//	poststr(request, "var  sr = r.map((e,i)=>{return e[0]+'#'+i}).sort(Intl.Collator().compare).map(e=>e.split('#'));");
+// filter out entries with channels = -1, these are roles not present because of missing driver
+	poststr(request, "var sr=r.map((e,i)=>[e[0],i]).filter(e=>r[e[1]][1]>=0).sort((a,b)=>a[0].localeCompare(b[0]));");
 	
 	// enable/disable element and hide it with "display: none"
 	poststr(request, "cf=(e,v)=>{e.disabled=v;e.style.display=v?'none':'inline-block'};");
@@ -2853,7 +2855,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 	// de = [ "", "C", "T", "H", "I", "X", "CO2", "TVOC" ]
 	// we'll remap complete r variable 
 	// this is done in "LEGENDSCRIPT" above (importet from generated header file rolesNchannels.h"
-	poststr(request,"en = e => [e & 0b1111, de[(e >> 4) & 0b111111], de[(e >> 10) & 0b111111]];"
+	poststr(request,"en = e => [e<0?-1 : e & 0b1111, de[(e >> 4) & 0b111111], de[(e >> 10) & 0b111111]];"
 				"var r=r.map(([str, N]) => [str, ...en(N)]);");
 
 	poststr(request, "cf2=(n,vr,tr,ve,te)=>{"
