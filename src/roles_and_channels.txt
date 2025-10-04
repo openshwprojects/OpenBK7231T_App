@@ -83,6 +83,7 @@ cval_t cvals[] = {
         {"Temperature","Temp","Temperature value","&#x1F321;",1},
         {"Humidity","Hum","Humidity value","&#x1F4A7;",1},
         {"Input","Inp","Input pin value","&#x21A3;",1},
+        {"Output","Out","Output pin value","Out",1},
         {"Toggle","Toggl","Channel for toggling a value/relay","&#x1F504;",0},
         {"CO2","CO2","CO2 value","&#37;CO<sub>2</sub>",0},
         {"TVOC","TVOC","TVOC value","TVOC"},
@@ -1066,17 +1067,17 @@ typedef enum ioRole_e {
 } ioRole_t;
 
 typedef enum {
-	CHAN_Empty,			// 0 = no Description
-	CHAN_Connector,		// 1 = Connector (LED, button, relay ...)
-	CHAN_Temperature,	// 2 = Temperature
-	CHAN_Humidity,		// 3 = Humidity
-	CHAN_Input,			// 4 = Input pin value
-	CHAN_Toggle,		// 5 = Channel for toggle
-	CHAN_CO2,			// 6 = Channel or CO2 value
-	CHAN_TVOC,			// 7 = Channel TVOC value
-	CHAN_Func1,			// 8 = Room for additional functions
-	CHAN_Func2,			// 9 = Room for additional functions
-	CHAN_Func3			// 10 = Room for additional functions
+	CHAN_Empty,		// 0 = no channel description
+	CHAN_Con,		// 1 = Connector (LED, button, relay ...)
+	CHAN_Temp,		// 2 = Temperature value
+	CHAN_Hum,		// 3 = Humidity value
+	CHAN_Inp,		// 4 = Input pin value
+	CHAN_Out,		// 5 = Output pin value
+	CHAN_Toggl,		// 6 = Channel for toggling a value/relay
+	CHAN_CO2,		// 7 = CO2 value
+	CHAN_TVOC,		// 8 = TVOC value
+	CHAN_Func1,		// 9 = Room for additional functions
+	CHAN_Func2,		// 10 = Room for additional functions
 } chanval_t ;
 
 
@@ -1084,26 +1085,26 @@ typedef enum {
 
 short chanvals[] = {
 	INFO2CHANVAL(IOR_None, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_Relay, 1, CHAN_Connector, CHAN_Empty),
-	INFO2CHANVAL(IOR_Relay_n, 1, CHAN_Connector, CHAN_Empty),
-	INFO2CHANVAL(IOR_Button, 2, CHAN_Connector, CHAN_Connector),
-	INFO2CHANVAL(IOR_Button_n, 2, CHAN_Connector, CHAN_Connector),
-	INFO2CHANVAL(IOR_LED, 1, CHAN_Connector, CHAN_Empty),
-	INFO2CHANVAL(IOR_LED_n, 1, CHAN_Connector, CHAN_Empty),
+	INFO2CHANVAL(IOR_Relay, 1, CHAN_Con, CHAN_Empty),
+	INFO2CHANVAL(IOR_Relay_n, 1, CHAN_Con, CHAN_Empty),
+	INFO2CHANVAL(IOR_Button, 2, CHAN_Con, CHAN_Con),
+	INFO2CHANVAL(IOR_Button_n, 2, CHAN_Con, CHAN_Con),
+	INFO2CHANVAL(IOR_LED, 1, CHAN_Con, CHAN_Empty),
+	INFO2CHANVAL(IOR_LED_n, 1, CHAN_Con, CHAN_Empty),
 	INFO2CHANVAL(IOR_PWM, 1, CHAN_Empty, CHAN_Empty),
 	INFO2CHANVAL(IOR_LED_WIFI, 0, CHAN_Empty, CHAN_Empty),
 	INFO2CHANVAL(IOR_LED_WIFI_n, 0, CHAN_Empty, CHAN_Empty),
 	INFO2CHANVAL(IOR_Button_ToggleAll, 0, CHAN_Empty, CHAN_Empty),
 	INFO2CHANVAL(IOR_Button_ToggleAll_n, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_DigitalInput, 1, CHAN_Input, CHAN_Empty),
-	INFO2CHANVAL(IOR_DigitalInput_n, 1, CHAN_Input, CHAN_Empty),
-	INFO2CHANVAL(IOR_ToggleChannelOnToggle, 1, CHAN_Toggle, CHAN_Empty),
-	INFO2CHANVAL(IOR_DigitalInput_NoPup, 1, CHAN_Input, CHAN_Empty),
-	INFO2CHANVAL(IOR_DigitalInput_NoPup_n, 1, CHAN_Input, CHAN_Empty),
+	INFO2CHANVAL(IOR_DigitalInput, 1, CHAN_Inp, CHAN_Empty),
+	INFO2CHANVAL(IOR_DigitalInput_n, 1, CHAN_Inp, CHAN_Empty),
+	INFO2CHANVAL(IOR_ToggleChannelOnToggle, 1, CHAN_Toggl, CHAN_Empty),
+	INFO2CHANVAL(IOR_DigitalInput_NoPup, 1, CHAN_Inp, CHAN_Empty),
+	INFO2CHANVAL(IOR_DigitalInput_NoPup_n, 1, CHAN_Inp, CHAN_Empty),
 	INFO2CHANVAL(IOR_BL0937_SEL, 0, CHAN_Empty, CHAN_Empty),
 	INFO2CHANVAL(IOR_BL0937_CF, 0, CHAN_Empty, CHAN_Empty),
 	INFO2CHANVAL(IOR_BL0937_CF1, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_ADC, 1, CHAN_Input, CHAN_Empty),
+	INFO2CHANVAL(IOR_ADC, 1, CHAN_Inp, CHAN_Empty),
 	INFO2CHANVAL(IOR_SM2135_DAT, 0, CHAN_Empty, CHAN_Empty),
 	INFO2CHANVAL(IOR_SM2135_CLK, 0, CHAN_Empty, CHAN_Empty),
 	INFO2CHANVAL(IOR_BP5758D_DAT, 0, CHAN_Empty, CHAN_Empty),
@@ -1125,13 +1126,13 @@ short chanvals[] = {
 	INFO2CHANVAL(IOR_Button_NextTemperature_n, 0, CHAN_Empty, CHAN_Empty),
 	INFO2CHANVAL(IOR_Button_ScriptOnly, 0, CHAN_Empty, CHAN_Empty),
 	INFO2CHANVAL(IOR_Button_ScriptOnly_n, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_DHT11, 2, CHAN_Temperature, CHAN_Humidity),
-	INFO2CHANVAL(IOR_DHT12, 2, CHAN_Temperature, CHAN_Humidity),
-	INFO2CHANVAL(IOR_DHT21, 2, CHAN_Temperature, CHAN_Humidity),
-	INFO2CHANVAL(IOR_DHT22, 2, CHAN_Temperature, CHAN_Humidity),
-	INFO2CHANVAL(IOR_CHT83XX_DAT, 2, CHAN_Temperature, CHAN_Humidity),
+	INFO2CHANVAL(IOR_DHT11, 2, CHAN_Temp, CHAN_Hum),
+	INFO2CHANVAL(IOR_DHT12, 2, CHAN_Temp, CHAN_Hum),
+	INFO2CHANVAL(IOR_DHT21, 2, CHAN_Temp, CHAN_Hum),
+	INFO2CHANVAL(IOR_DHT22, 2, CHAN_Temp, CHAN_Hum),
+	INFO2CHANVAL(IOR_CHT83XX_DAT, 2, CHAN_Temp, CHAN_Hum),
 	INFO2CHANVAL(IOR_CHT83XX_CLK, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_SHT3X_DAT, 2, CHAN_Temperature, CHAN_Humidity),
+	INFO2CHANVAL(IOR_SHT3X_DAT, 2, CHAN_Temp, CHAN_Hum),
 	INFO2CHANVAL(IOR_SHT3X_CLK, 0, CHAN_Empty, CHAN_Empty),
 	INFO2CHANVAL(IOR_SOFT_SDA, 1, CHAN_Empty, CHAN_Empty),
 	INFO2CHANVAL(IOR_SOFT_SCL, 1, CHAN_Empty, CHAN_Empty),
@@ -1139,19 +1140,19 @@ short chanvals[] = {
 	INFO2CHANVAL(IOR_SM2235_CLK, 1, CHAN_Empty, CHAN_Empty),
 	INFO2CHANVAL(IOR_BridgeForward, 1, CHAN_Empty, CHAN_Empty),
 	INFO2CHANVAL(IOR_BridgeReverse, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_SmartButtonForLEDs, 1, CHAN_Toggle, CHAN_Empty),
-	INFO2CHANVAL(IOR_SmartButtonForLEDs_n, 1, CHAN_Temperature, CHAN_Empty),
-	INFO2CHANVAL(IOR_DoorSensorWithDeepSleep, 1, CHAN_Input, CHAN_Empty),
-	INFO2CHANVAL(IOR_DoorSensorWithDeepSleep_NoPup, 1, CHAN_Input, CHAN_Empty),
+	INFO2CHANVAL(IOR_SmartButtonForLEDs, 1, CHAN_Toggl, CHAN_Empty),
+	INFO2CHANVAL(IOR_SmartButtonForLEDs_n, 1, CHAN_Temp, CHAN_Empty),
+	INFO2CHANVAL(IOR_DoorSensorWithDeepSleep, 1, CHAN_Inp, CHAN_Empty),
+	INFO2CHANVAL(IOR_DoorSensorWithDeepSleep_NoPup, 1, CHAN_Inp, CHAN_Empty),
 	INFO2CHANVAL(IOR_BAT_ADC, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_BAT_Relay, 1, CHAN_Connector, CHAN_Empty),
+	INFO2CHANVAL(IOR_BAT_Relay, 1, CHAN_Con, CHAN_Empty),
 	INFO2CHANVAL(IOR_TM1637_DIO, 1, CHAN_Empty, CHAN_Empty),
 	INFO2CHANVAL(IOR_TM1637_CLK, 1, CHAN_Empty, CHAN_Empty),
 	INFO2CHANVAL(IOR_BL0937_SEL_n, 0, CHAN_Empty, CHAN_Empty),
 	INFO2CHANVAL(IOR_DoorSensorWithDeepSleep_pd, 1, CHAN_Empty, CHAN_Empty),
 	INFO2CHANVAL(IOR_SGP_CLK, 0, CHAN_Empty, CHAN_Empty),
 	INFO2CHANVAL(IOR_SGP_DAT, 2, CHAN_CO2, CHAN_TVOC),
-	INFO2CHANVAL(IOR_ADC_Button, 1, CHAN_Connector, CHAN_Empty),
+	INFO2CHANVAL(IOR_ADC_Button, 1, CHAN_Con, CHAN_Empty),
 	INFO2CHANVAL(IOR_GN6932_CLK, 1, CHAN_Empty, CHAN_Empty),
 	INFO2CHANVAL(IOR_GN6932_DAT, 1, CHAN_Empty, CHAN_Empty),
 	INFO2CHANVAL(IOR_GN6932_STB, 1, CHAN_Empty, CHAN_Empty),
@@ -1161,11 +1162,15 @@ short chanvals[] = {
 	INFO2CHANVAL(IOR_BAT_Relay_n, 1, CHAN_Empty, CHAN_Empty),
 	INFO2CHANVAL(IOR_KP18058_CLK, 1, CHAN_Empty, CHAN_Empty),
 	INFO2CHANVAL(IOR_KP18058_DAT, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_DS1820_IO, 1, CHAN_Temperature, CHAN_Empty),
+	INFO2CHANVAL(IOR_DS1820_IO, 1, CHAN_Temp, CHAN_Empty),
 	INFO2CHANVAL(IOR_PWM_ScriptOnly, 1, CHAN_Empty, CHAN_Empty),
 	INFO2CHANVAL(IOR_PWM_ScriptOnly_n, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_Counter_f, 1, CHAN_Input, CHAN_Empty),
-	INFO2CHANVAL(IOR_Counter_r, 1, CHAN_Input, CHAN_Empty),
+	INFO2CHANVAL(IOR_Counter_f, 1, CHAN_Inp, CHAN_Empty),
+	INFO2CHANVAL(IOR_Counter_r, 1, CHAN_Inp, CHAN_Empty),
+	INFO2CHANVAL(IOR_IRRecv_nPup, 1, CHAN_Inp, CHAN_Empty),
+	INFO2CHANVAL(IOR_StripState, 1, CHAN_Out, CHAN_Empty),
+	INFO2CHANVAL(IOR_StripState_n, 1, CHAN_Out, CHAN_Empty),
+	INFO2CHANVAL(IOR_HLW8112_SCSN, 1, CHAN_Inp, CHAN_Empty),
 	INFO2CHANVAL(IOR_Total_Options, 1, CHAN_Empty, CHAN_Empty),
 };
 
@@ -1257,6 +1262,11 @@ const char* htmlPinRoleNames[] = {
 	"PWM_ScriptOnly_n" ,
 	"Counter_f" ,
 	"Counter_r" ,
+	"IRRecv_nPup" ,
+	"StripState" ,
+	"StripState_n" ,
+	"HLW8112_SCSN" ,
+	"error" ,
 	"error" 
 };
 
@@ -1269,6 +1279,14 @@ int PIN_IOR_NofChan(int test){
 	return chanvals[test]%16;
 }
 #endif // (INCLUDED_BY_NEW_PINS_C)
+
+#if (INCLUDED_BY_HTTP_FNS_C)
+
+
+#define LEGENDSCRIPT "<script>de=[ '','&#x1F4A1;','&#x1F321;','&#x1F4A7;','&#x21A3;','Out','&#x1F504;','&#37;CO<sub>2</sub>','TVOC','F1','F2' ];document.getElementById('legend').innerHTML=\"Functions: \" + de[1] + \": Connector / \" + de[2] + \": Temperature / \" + de[3] + \": Humidity / \" + de[4] + \": Input / \" + de[5] + \": Output \"</script>"
+
+#endif // (INCLUDED_BY_HTTP_FNS_C)
+
 
 #endif // (INCLUDED_BY_NEW_PINS_H) || (INCLUDED_BY_NEW_PINS_C) || (INCLUDED_BY_NEW_HTTP_C) || (INCLUDED_BY_HTTP_FNS_C)
 

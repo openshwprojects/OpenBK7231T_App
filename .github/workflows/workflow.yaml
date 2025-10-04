@@ -570,7 +570,7 @@ jobs:
         with:
           wsl-version: 1
           distribution: Ubuntu-22.04
-          additional-packages: make
+          additional-packages: make python3
       - name: Run make
         run: |
           make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }}
