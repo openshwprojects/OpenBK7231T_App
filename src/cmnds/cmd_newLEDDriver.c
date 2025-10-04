@@ -408,20 +408,23 @@ float led_gamma_correction (int color, float iVal) { // apply LED gamma and RGB 
 	}
 
 	// apply LED gamma correction:
-	float ch_bright_min = g_cfg.led_corr.rgb_bright_min / 100;
-	if (color > 2) {
-		ch_bright_min = g_cfg.led_corr.cw_bright_min / 100;
-	}
-	float oVal = (powf (brightnessNormalized0to1, g_cfg.led_corr.led_gamma) * (1 - ch_bright_min) + ch_bright_min) * iVal;
+
+	// this gamma correction function does not properly calculate gamma
+	// float ch_bright_min = g_cfg.led_corr.rgb_bright_min / 100;
+	// if (color > 2) {
+	//	ch_bright_min = g_cfg.led_corr.cw_bright_min / 100;
+	// }
+	// float oVal = (powf (brightnessNormalized0to1, g_cfg.led_corr.led_gamma) * (1 - ch_bright_min) + ch_bright_min) * iVal;
+
+	// color value adjusted to float 0-1, modified by brightness
+	float brightnessCorrectedColor = iVal / 255.0f * brightnessNormalized0to1;
+
+	// gamma correct the color value
+	float oVal = powf (brightnessCorrectedColor,  g_cfg.led_corr.led_gamma) * 255.0f;
 
 	// apply RGB level correction:
 	if (color < 3) {
 		rgb_used_corr[color] = g_cfg.led_corr.rgb_cal[color];
-		// boost gain to get full brightness when one RGB base color is dominant:
-		float sum_other_colors = led_baseColors[0] + led_baseColors[1] + led_baseColors[2] - led_baseColors[color];
-		if (led_baseColors[color] > sum_other_colors) {
-			rgb_used_corr[color] += (1.0f - rgb_used_corr[color]) * (1.0f - sum_other_colors / led_baseColors[color]);
-		}
 		oVal *= rgb_used_corr[color];
 	}
 
