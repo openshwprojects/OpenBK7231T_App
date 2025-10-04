@@ -104,6 +104,8 @@ generateNotes:
         - RTL87x1DA (AmebaDplus family) (eg BW20, WR11-U, WR11-2S)
         - RTL87x0E (AmebaLite family) (eg PKM8710ECF)
         - ECR6600 (eg AXYU, AXY2S, WG236, DSM-036, CDI-WX56600A-00, BL-M6600XT1, HF-LPT6200)
+        - TXW81X (eg TXW817-810)
+        - RDA5981 (eg RDA5981AM, RDA5981BM, WRD2L, TYWRD3S, HLK-M50)
 
       footerPartial: |
         {{#if noteGroups}}
@@ -190,6 +192,8 @@ generateNotes:
         | ESP8266 1MB    | UART Flash | [OpenESP8266_1MB_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP8266_1MB_{{version}}.factory.bin) |
         | ESP8266 2MB    | UART Flash | [OpenESP8266_2MB_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP8266_2MB_{{version}}.factory.bin) |
         | ESP8266 2MB    | OTA Update | [OpenESP8266_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP8266_{{version}}.img)                         |
+        | RDA5981        | UART/OTA   | [OpenRDA5981_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRDA5981_{{version}}.img)                         |
+        | TXW81X         |            | [OpenTXW81X_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenTXW81X_{{version}}.bin)                           |
         | Win32          |            | [obkSimulator_{{version}}.zip]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/obkSimulator_{{version}}.zip)                       |
 
 
@@ -199,6 +203,7 @@ generateNotes:
         BK7231M binary will work also for some BL2028Ns, they are also often just a BK7231N with 000000 etc keys.
 
         RTL8710A (RTL8711AM) can be flashed either via JTAG/SWD, or CH341A SPI.
+        TXW81X must be flashed via CK-Link
 
         Flashing instructions are available on the project's [README.md]({{host}}/{{owner}}/{{repository}}#readme)
     preset: conventionalcommits
@@ -256,6 +261,7 @@ publish:
       - path: "output/**/OpenRTL87*"
       - path: "output/**/OpenESP*"
       - path: "output/**/OpenECR*"
+      - path: "output/**/OpenTXW*"
       - path: "output/**/obkSimulator*"
 
 success:

@@ -30,6 +30,8 @@ Although this repository is named "OpenBK7231T_App", it has evolved into a multi
 -   RTL87x0E (AmebaLite family) (eg [PKM8710ECF](https://fccid.io/2BASB-PKM8710ECF))
 -   TR6260 (eg [HLK-M20](https://fccid.io/2AD56HLK-M20), XY-WE2S-A V1.1) (see [guide](https://www.elektroda.com/rtvforum/topic4093752.html))
 -   ECR6600 (eg [AXYU](https://developer.tuya.com/en/docs/iot/AXYU?id=Kb0rwbv5b7aiy), [AXY2S](https://developer.tuya.com/en/docs/iot/AXY2S?id=Kb1aztk507fxf), [WG236](https://www.skylabmodule.com/product/wifi6-802-11axbluetooth-ble-5-1-combo-module-wg236), [DSM-036](https://www.dusuniot.com/product-specification/dsm-036-wi-fi6-and-ble-dual-cloud-module]), CDI-WX56600A-00, [BL-M6600XT1](https://jkrorwxhkqmllp5m-static.micyjz.com/BL-M6600XT1_datasheet_V1.0.1.0_230817-aidllBpoKqpljSRnkmnkjlnjp.pdf?dp=GvUApKfKKUAU), [HF-LPT6200](http://www.hi-flying.com/hf-lpt6200) (see [guide](https://www.elektroda.com/rtvforum/topic4111822.html))
+-   TXW81X (eg TXW817-810, see [development thread](https://www.elektroda.com/rtvforum/topic4033757.html))
+-   RDA5981 (eg RDA5981AM, RDA5981BM, WRD2L, TYWRD3S, HLK-M50)
 
 Please use automatically compiled binaries from the Releases tab. To build OpenBeken yourself for any supported platform, fork our version of the submodule SDK first, and then check out this app repository alongside it. Details further down. Alternatively consider using the easier [override method.](https://www.elektroda.com/rtvforum/topic4082682.html)
 
@@ -119,6 +121,8 @@ OpenBeken supports [online builds](https://www.elektroda.com/rtvforum/viewtopic.
 For BK7231N, BK7231T, BK7231M, BK7238, BL2028N, T34 see our [GUI easy flash tool](https://github.com/openshwprojects/BK7231GUIFlashTool), also see [FLASHING.md](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/FLASHING.md)
 
 Repository of flash tools for [all other supported platforms](https://github.com/openshwprojects/FlashTools/tree/main)
+
+TXW81X requires either CK-Link or STM32F103 (64kb flash or more). See [flashing guide](https://www.elektroda.com/rtvforum/topic4123724.html)
 
 # [Docs - MQTT topics, Console Commands, Flags, Constants, Pin Roles, Channel Types, FAQ, autoexec.bat examples](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/docs)
 

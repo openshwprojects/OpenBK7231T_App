@@ -29,7 +29,7 @@ void HAL_UART_SendByte(byte b)
 	HAL_UART_Transmit_IT(uart, &b, 1);
 }
 
-int OBK_HAL_UART_Init(int baud, int parity, bool hwflowc)
+int OBK_HAL_UART_Init(int baud, int parity, bool hwflowc, int txOverride, int rxOverride)
 {
 	if(isInit) return 1;
 	HAL_Status status = HAL_ERROR;

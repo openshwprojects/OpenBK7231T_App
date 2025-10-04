@@ -1,4 +1,8 @@
+/*
 
+
+
+*/
 
 #include "../new_common.h"
 #include "../new_pins.h"
@@ -156,16 +160,18 @@ void DDP_SetHeader(byte *data, int pixelSize, int bytesCount) {
 	data[8] = (byte)((bytesCount >> 8) & 0xFF); // MSB
 	data[9] = (byte)(bytesCount & 0xFF);        // LSB
 }
+// startDriver DDPSend
+// DDP_Send 192.168.0.226 3 0 FF000000
 commandResult_t DDP_Send(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
 	if (Tokenizer_GetArgsCount() < 1) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	const char *ip = Tokenizer_GetArg(0);
-	int host = Tokenizer_GetArgInteger(1);
-	int pixelSize = Tokenizer_GetArgInteger(2);
-	int delay = Tokenizer_GetArgInteger(3);
-	const char *pData = Tokenizer_GetArg(4);
+	int port = 4048;// Tokenizer_GetArgInteger(1);
+	int pixelSize = Tokenizer_GetArgInteger(1);
+	int delay = Tokenizer_GetArgInteger(2);
+	const char *pData = Tokenizer_GetArg(3);
 	int numBytes = strlen(pData) / 2;
 	int headerSize = 10;
 	byte *data = malloc(headerSize+numBytes);
@@ -175,7 +181,7 @@ commandResult_t DDP_Send(const void* context, const char* cmd, const char* args,
 		cur++;
 	}
 	DDP_SetHeader(data, pixelSize, (cur- headerSize));
-	DRV_DDPSend_Send(ip, host, data, cur, delay);
+	DRV_DDPSend_Send(ip, port, data, cur, delay);
 	free(data);
 	return CMD_RES_OK;
 }
@@ -189,7 +195,10 @@ void DRV_DDPSend_Init()
 		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "DRV_DDPSend_Init: failed to do socket\n");
 		return;
 	}
-
+	//cmddetail:{"name":"DDP_Send","args":"IP host pixelsize delay pData",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"DDP_Send","file":"driver/drv_ddpSend.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DDP_Send", DDP_Send, NULL);
 }
 

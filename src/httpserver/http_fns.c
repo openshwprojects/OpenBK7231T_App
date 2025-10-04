@@ -230,14 +230,8 @@ int http_fn_index(http_request_t* request) {
 		if (DRV_IsRunning("SM16703P")) {
 			bForceShowRGB = true;
 		}
-		else 
-#endif
-#if ENABLE_LED_BASIC
-		if (LED_IsLedDriverChipRunning()) {
-			bForceShowRGBCW = true;
-		}
-#else
-		{
+		if (DRV_IsRunning("DMX")) {
+			bForceShowRGB = true;
 		}
 #endif
 	}
@@ -670,7 +664,8 @@ int http_fn_index(http_request_t* request) {
 	}
 #endif
 #if ENABLE_LED_BASIC
-	if (bRawPWMs == 0 || bForceShowRGBCW || bForceShowRGB || bForceShowSingleDimmer) {
+	if (bRawPWMs == 0 || bForceShowRGBCW || bForceShowRGB
+		|| bForceShowSingleDimmer || LED_IsLedDriverChipRunning()) {
 		int c_pwms;
 		int lm;
 		int c_realPwms = 0;
@@ -683,6 +678,9 @@ int http_fn_index(http_request_t* request) {
 		// into high power 3-outputs single colors LED controller
 		PIN_get_Relay_PWM_Count(0, &c_pwms, 0);
 		c_realPwms = c_pwms;
+		if (LED_IsLedDriverChipRunning()) {
+			c_pwms = CFG_CountLEDRemapChannels();
+		}
 		if (bForceShowSingleDimmer) {
 			c_pwms = 1;
 		} 
@@ -1002,7 +1000,7 @@ typedef enum {
 	/* Format current PINS input state for all unused pins */
 	if (CFG_HasFlag(OBK_FLAG_HTTP_PINMONITOR))
 	{
-		for (i = 0; i < 29; i++)
+		for (i = 0; i < PLATFORM_GPIO_MAX; i++)
 		{
 			if ((PIN_GetPinRoleForPinIndex(i) == IOR_None) && (i != 0) && (i != 1))
 			{
@@ -1011,7 +1009,7 @@ typedef enum {
 		}
 
 		hprintf255(request, "<h5> PIN States<br>");
-		for (i = 0; i < 29; i++)
+		for (i = 0; i < PLATFORM_GPIO_MAX; i++)
 		{
 			if ((PIN_GetPinRoleForPinIndex(i) != IOR_None) || (i == 0) || (i == 1))
 			{
@@ -1821,8 +1819,8 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 
 #ifdef ENABLE_DRIVER_BL0937
 	measuringPower = DRV_IsMeasuringPower();
-	measuringBattery = DRV_IsMeasuringBattery();
 #endif
+	measuringBattery = DRV_IsMeasuringBattery();
 
 	PIN_get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
 	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HASS counts: %i rels, %i pwms, %i inps, %i excluded", relayCount, pwmCount, dInputCount, excludedCount);
@@ -1833,8 +1831,13 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	ledDriverChipRunning = 0;
 #endif
 
+#if PLATFORM_TXW81X
+	hooks.malloc_fn = _os_malloc;
+	hooks.free_fn = _os_free;
+#else
 	hooks.malloc_fn = os_malloc;
 	hooks.free_fn = os_free;
+#endif
 	cJSON_InitHooks(&hooks);
 
 	DRV_OnHassDiscovery(topic);
@@ -1896,7 +1899,10 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 
 
 #if ENABLE_LED_BASIC
-	if (pwmCount == 5 || ledDriverChipRunning || (pwmCount == 4 && CFG_HasFlag(OBK_FLAG_LED_EMULATE_COOL_WITH_RGB))) {
+	if (ledDriverChipRunning) {
+		pwmCount = CFG_CountLEDRemapChannels();
+	}
+	if (pwmCount == 5 || (pwmCount == 4 && CFG_HasFlag(OBK_FLAG_LED_EMULATE_COOL_WITH_RGB))) {
 		if (dev_info == NULL) {
 			dev_info = hass_init_light_device_info(LIGHT_RGBCW);
 		}
@@ -2193,6 +2199,16 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			case ChType_EnergyTotal_kWh_div100:
 			{
 				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 2, 1);
+			}
+			break;
+			case ChType_EnergyExport_kWh_div1000:
+			{
+				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 3, 1);
+			}
+			break;
+			case ChType_EnergyImport_kWh_div1000:
+			{
+				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 3, 1);
 			}
 			break;
 			case ChType_EnergyTotal_kWh_div1000:

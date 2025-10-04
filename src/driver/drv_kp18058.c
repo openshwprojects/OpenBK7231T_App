@@ -64,7 +64,7 @@ void KP18058_Write(float *rgbcw) {
 		Soft_I2C_WriteByte(&g_softI2C, byte2);
 		Soft_I2C_WriteByte(&g_softI2C, byte3);
 		for (int i = 0; i < 5; i++) {
-			float useVal = rgbcw[g_cfg.ledRemap.ar[i]];
+			float useVal = GetRGBCW(rgbcw, g_cfg.ledRemap.ar[i]);
 			unsigned short cur_col_10 = MAP(useVal, 0, 255.0f, 0, 1023.0f);
 			byte a, b;
 			a = cur_col_10 & 0x1F;
@@ -109,12 +109,12 @@ void KP18058_Init() {
 
 	//cmddetail:{"name":"KP18058_RGBCW","args":"[HexColor]",
 	//cmddetail:"descr":"Don't use it. It's for direct access of KP18058 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
-	//cmddetail:"fn":"KP18058_RGBCW","file":"driver/drv_kp18058.c","requires":"",
+	//cmddetail:"fn":"CMD_LEDDriver_WriteRGBCW","file":"driver/drv_kp18058.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("KP18058_RGBCW", CMD_LEDDriver_WriteRGBCW, NULL);
 	//cmddetail:{"name":"KP18058_Map","args":"[Ch0][Ch1][Ch2][Ch3][Ch4]",
 	//cmddetail:"descr":"Maps KP18058_Map RGBCW values to given indices of KP18058 channels. This is because KP18058 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: KP18058_Map 0 1 2 3 4",
-	//cmddetail:"fn":"KP18058_Map","file":"driver/drv_kp18058.c","requires":"",
+	//cmddetail:"fn":"CMD_LEDDriver_Map","file":"driver/drv_kp18058.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("KP18058_Map", CMD_LEDDriver_Map, NULL);
 	//cmddetail:{"name":"KP18058_Current","args":"[RGBLimit][CWLimit]",

@@ -129,17 +129,21 @@ void DDP_Parse(byte *data, int len) {
 		byte bytesPerPixel = ((data[2] & 0b00111000) >> 3 == 0b011) ? 4 : 3;
 
 #if ENABLE_DRIVER_SM16703P
-		if (spiLED.ready) {
+		if (Strip_IsActive()) {
 			// Note that this is limited by DDP msgbuf size
 			uint32_t numPixels = (len - 10) / 3;
+			// debug
+			//addLogAdv(LOG_INFO, LOG_FEATURE_DDP, "DDP_Parse: STRIP path: %i pixels", numPixels);
 			// This immediately activates the pixels, maybe we should read the PUSH flag
-			SM16703P_setMultiplePixel(numPixels, &data[10], true);
+			Strip_setMultiplePixel(numPixels, &data[10], true);
 		} else
 #endif
 		{
 			r = data[10];
 			g = data[11];
 			b = data[12];
+
+			//addLogAdv(LOG_INFO, LOG_FEATURE_DDP, "DDP_Parse: bulb path");
 
 #if ENABLE_LED_BASIC
 			LED_SetDimmerIfChanged(100);

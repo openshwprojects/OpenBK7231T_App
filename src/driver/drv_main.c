@@ -15,6 +15,7 @@
 #include "drv_ds1820_simple.h"
 #include "drv_ds1820_full.h"
 #include "drv_ds1820_common.h"
+#include "drv_hlw8112.h"
 
 
 typedef struct driver_s {
@@ -61,7 +62,7 @@ static driver_t g_drivers[] = {
 	{ "DMX",		DMX_Init,			DMX_OnEverySecond,			NULL, NULL, DMX_Shutdown, NULL , NULL, false },
 #endif
 #if ENABLE_DRIVER_FREEZE
-	//drvdetail:{"name":"FREEZE",
+	//drvdetail:{"name":"Freeze",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Freeze is a test driver for watchdog. Enabling this will freeze device main loop.",
 	//drvdetail:"requires":""}
@@ -102,9 +103,6 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "HGS02",		HGS02_Init,			HGS02_RunEverySecond,			NULL, NULL, NULL, NULL, NULL, false },
 #endif
-
-
-
 #if ENABLE_DRIVER_PINMUTEX
 	//drvdetail:{"name":"PinMutex",
 	//drvdetail:"title":"TODO",
@@ -112,16 +110,18 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "PinMutex",		DRV_PinMutex_Init,			NULL, NULL, DRV_PinMutex_RunFrame, NULL, NULL, false },
 #endif
-
 #if ENABLE_DRIVER_GOSUNDSW2
-	//drvdetail:{"name":"GosundSW",
+	//drvdetail:{"name":"GosundSW2",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"GosundSW2.",
+	//drvdetail:"descr":"GosundSW2",
 	//drvdetail:"requires":""}
 	{ "GosundSW2",		DRV_GosundSW2_Init,			NULL, NULL, DRV_GosundSW2_RunFrame, NULL, NULL, false },
 #endif
-
 #if ENABLE_DRIVER_TCL
+	//drvdetail:{"name":"TCL",
+	//drvdetail:"title":"TCL",
+	//drvdetail:"descr":"Driver for TCL-based air conditioners",
+	//drvdetail:"requires":""}
 	{ "TCL",		TCL_Init,			TCL_UART_RunEverySecond,		TCL_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, TCL_DoDiscovery, false },
 #endif
 
@@ -230,6 +230,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "BL0942SPI",	BL0942_SPI_Init,	BL0942_SPI_RunEverySecond,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_HLW8112SPI
+	//drvdetail:{"name":"HLW8112SPI",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
+	{ "HLW8112SPI",	HLW8112SPI_Init,	HLW8112_RunEverySecond,			HLW8112_AppendInformationToHTTPIndexPage, NULL, HLW8112SPI_Stop, NULL, HLW8112_OnHassDiscovery, false },
+#endif
 #if ENABLE_DRIVER_CHARGINGLIMIT
 	//drvdetail:{"name":"ChargingLimit",
 	//drvdetail:"title":"TODO",
@@ -245,6 +252,10 @@ static driver_t g_drivers[] = {
 	{ "BL0937",		BL0937_Init,		BL0937_RunEverySecond,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_CSE7761
+	//drvdetail:{"name":"CSE7761",
+	//drvdetail:"title":"CSE7761",
+	//drvdetail:"descr":"Unfinished driver for CSE7761, a single-phase multi-purpose electric energy metering chip that incorporates three sigma delta ADCs, a power calculator, an energy frequency converter, one SPI interface, and one UART interface",
+	//drvdetail:"requires":""}
 	{ "CSE7761",	CSE7761_Init,		CSE7761_RunEverySecond,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_CSE7766
@@ -296,8 +307,6 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "SM15155E",	SM15155E_Init,		NULL,						NULL, NULL, NULL, NULL, NULL, false },
 #endif
-		
-
 #if ENABLE_DRIVER_IRREMOTEESP
 	//drvdetail:{"name":"IR",
 	//drvdetail:"title":"TODO",
@@ -313,6 +322,10 @@ static driver_t g_drivers[] = {
 	{ "IR",			DRV_IR_Init,		 NULL,						NULL, DRV_IR_RunFrame, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_IR2
+	//drvdetail:{"name":"IR2",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"simple IR2 driver for sending captures from flipper zero",
+	//drvdetail:"requires":""}
 	{ "IR2",			DRV_IR2_Init,		 NULL,						NULL, NULL, NULL, NULL, NULL, false },
 #endif
 
@@ -406,7 +419,6 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "SM2235",		SM2235_Init,		NULL,			NULL, NULL, NULL, NULL, NULL, false },
 #endif
-
 #if ENABLE_DRIVER_BMP280
 	//drvdetail:{"name":"BMP280",
 	//drvdetail:"title":"TODO",
@@ -543,11 +555,18 @@ static driver_t g_drivers[] = {
 	{ "Bridge",     Bridge_driver_Init, NULL,                       NULL, Bridge_driver_QuickFrame, Bridge_driver_DeInit, Bridge_driver_OnChannelChanged, NULL, false }
 #endif
 #if ENABLE_DRIVER_UART_TCP
-	//drvdetail:{"name":"UART to TCP bridge",
+	//drvdetail:{"name":"UartTCP",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"UART to TCP, mainly for WiFi Zigbee coordinators.",
+	//drvdetail:"descr":"UART to TCP bridge, mainly for WiFi Zigbee coordinators.",
 	//drvdetail:"requires":""}
 	{ "UartTCP",		UART_TCP_Init,		NULL,	NULL, NULL, UART_TCP_Deinit, NULL, NULL, false }
+#endif
+#if PLATFORM_TXW81X
+	//drvdetail:{"name":"TXWCAM",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TXW81X Camera.",
+	//drvdetail:"requires":""}
+	{ "TXWCAM", TXW_Cam_Init, TXW_Cam_RunEverySecond, NULL, NULL, NULL, NULL, NULL, false }
 #endif
 };
 
@@ -827,6 +846,7 @@ bool DRV_IsMeasuringPower() {
 	return DRV_IsRunning("BL0937") || DRV_IsRunning("BL0942")
 		|| DRV_IsRunning("CSE7766") || DRV_IsRunning("TESTPOWER")
 		|| DRV_IsRunning("BL0942SPI") || DRV_IsRunning("RN8209");
+		// || DRV_IsRunning("HLW8112SPI"); TODO messup ha config if enabled
 #else
 	return false;
 #endif
@@ -841,7 +861,7 @@ bool DRV_IsMeasuringBattery() {
 
 bool DRV_IsSensor() {
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	return DRV_IsRunning("SHT3X") || DRV_IsRunning("CHT83XX") || DRV_IsRunning("SGP") || DRV_IsRunning("AHT2X");
+	return DRV_IsRunning("SHT3X") || DRV_IsRunning("CHT83XX") || DRV_IsRunning("SGP") || DRV_IsRunning("AHT2X") || DRV_IsRunning("DS1820") || DRV_IsRunning("DS1820_full");
 #else
 	return false;
 #endif

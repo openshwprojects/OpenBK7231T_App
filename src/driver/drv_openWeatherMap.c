@@ -14,6 +14,8 @@
 #include "lwip/inet.h"
 #include "../cJSON/cJSON.h"
 
+#if ENABLE_DRIVER_OPENWEATHERMAP
+
 #ifndef WINDOWS
 #include <lwip/err.h>
 #include <lwip/dns.h>
@@ -279,20 +281,21 @@ owm_request
 void DRV_OpenWeatherMap_Init() {
 	//cmddetail:{"name":"owm_setup","args":"[lat][lng][api_key]",
 	//cmddetail:"descr":"Setups OWM driver for your location and API key",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_openWeatherMap.c","requires":"",
+	//cmddetail:"fn":"CMD_OWM_Setup","file":"driver/drv_openWeatherMap.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("owm_setup", CMD_OWM_Setup, NULL);
 	//cmddetail:{"name":"owm_request","args":"",
 	//cmddetail:"descr":"Sends OWM request to the API. Do not use it too often, as API may have limits",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_openWeatherMap.c","requires":"",
+	//cmddetail:"fn":"CMD_OWM_Request","file":"driver/drv_openWeatherMap.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("owm_request", CMD_OWM_Request, NULL);
 	//cmddetail:{"name":"owm_channels","args":"[temperature][humidity][pressure]",
 	//cmddetail:"descr":"Sets channels that will be used to store OWM response results",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_openWeatherMap.c","requires":"",
+	//cmddetail:"fn":"CMD_OWM_Channels","file":"driver/drv_openWeatherMap.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("owm_channels", CMD_OWM_Channels, NULL);
 
 
 }
 
+#endif

@@ -24,4 +24,4 @@ float ds18b20_getTempC(const uint8_t *deviceAddress);
 bool isConversionComplete();
 void reset_search();
 bool search(uint8_t *newAddr, bool search_mode, int Pin);
-
+char *DS1820_full_jsonSensors();

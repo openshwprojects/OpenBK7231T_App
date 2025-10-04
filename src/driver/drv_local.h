@@ -40,6 +40,8 @@ void PT6523_ClearString();
 void TS_RunQuickTick();
 void TS_Init();
 
+float GetRGBCW(float *ar, int index);
+
 void SM2135_Init();
 
 void SM2235_Init();
@@ -65,14 +67,16 @@ void SM16703P_Shutdown();
 // set RGBCW values - Cold and Warm White are optional and might be ignored if hardware does not support them, or if
 // channel order does not include them.
 // default is RGB, so C and W are ignored by default - needs to be enabled with something like 'SM16703P_Init 20 RGBCW'
-void SM16703P_setPixel(int pixel, int r, int g, int b, int c, int w);
-void SM16703P_setPixelWithBrig(int pixel, int r, int g, int b, int c, int w);
-void SM16703P_setAllPixels(int r, int g, int b, int c, int w);
-void SM16703P_scaleAllPixels(int scale);
-void SM16703P_setMultiplePixel(uint32_t pixel, uint8_t* data, bool push);
+void Strip_setPixel(int pixel, int r, int g, int b, int c, int w);
+void Strip_setPixelWithBrig(int pixel, int r, int g, int b, int c, int w);
+void Strip_setAllPixels(int r, int g, int b, int c, int w);
+void Strip_scaleAllPixels(int scale);
+void Strip_setMultiplePixel(uint32_t pixel, uint8_t* data, bool push);
 void SM16703P_Show();
 void SM15155E_Init();
-void SM15155E_Write();
+void SM15155E_Write(float *rgbcw);
+void Strip_Apply();
+bool Strip_IsActive();
 extern uint32_t pixel_count;
 
 void TM1637_Init();
@@ -229,6 +233,8 @@ void DRV_DDPSend_Shutdown();
 void DRV_DDPSend_RunFrame();
 void DRV_DDPSend_AppendInformationToHTTPIndexPage(http_request_t* request);
 
+void TXW_Cam_Init(void);
+void TXW_Cam_RunEverySecond(void);
 
 #define SM2135_DELAY 4
 

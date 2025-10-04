@@ -313,6 +313,12 @@ void Test_LEDDriver_Palette() {
 	CMD_ExecuteCommand("SPC 0 FF00FF", 0);
 
 }
+unsigned short sim_smChannels[5];
+void Simulator_StoreBP5758DColor(unsigned short *data) {
+	memcpy(sim_smChannels, data, sizeof(sim_smChannels));
+}
+
+#define SELFTEST_ASSERT_SM_CHANNELS(a, b, c, d, e) SELFTEST_ASSERT(sim_smChannels[0] == a && sim_smChannels[1] == b && sim_smChannels[2] == c && sim_smChannels[3] == d && sim_smChannels[4] == e);
 
 void Test_LEDDriver_RGBCW() {
 	// reset whole device
@@ -546,6 +552,130 @@ void Test_LEDDriver_RGBCW() {
 	SELFTEST_ASSERT_CHANNEL(4, 0);
 	SELFTEST_ASSERT_CHANNEL(5, 0);
 }
+void Test_LEDDriver_BP5758_RGBCW() {
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	PIN_SetPinRoleForPinIndex(10, IOR_StripState);
+	PIN_SetPinRoleForPinIndex(11, IOR_StripState_n);
+	SELFTEST_ASSERT_PIN_BOOLEAN(10, false); // IOR_StripState is false 
+	SELFTEST_ASSERT_PIN_BOOLEAN(11, true);  // IOR_StripState_n is true 
+
+	Test_FakeHTTPClientPacket_GET("index");
+	SELFTEST_ASSERT_PAGE_NOT_CONTAINS("index","LED RGB Color");
+	SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS("LED Temperature Slider");
+
+	CMD_ExecuteCommand("StartDriver BP5758D", 0);
+	CMD_ExecuteCommand("LED_Map 0 1 2 3 4", 0);
+	CMD_ExecuteCommand("led_dimmer 100", 0);
+	CMD_ExecuteCommand("led_temperature 500", 0);
+	CMD_ExecuteCommand("led_basecolor_rgb FF0000", 0);
+
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+	SELFTEST_ASSERT_PIN_BOOLEAN(10, true); // IOR_StripState is true 
+	SELFTEST_ASSERT_PIN_BOOLEAN(11, false);  // IOR_StripState_n is false 
+	// set RED  - FF0000 , remap 0 to 0 -> 1023 (10 bit resolution)
+	SELFTEST_ASSERT_SM_CHANNELS(1023, 0, 0, 0, 0);
+
+	CMD_ExecuteCommand("LED_Map 4 1 2 3 0", 0);
+	CMD_ExecuteCommand("led_enableAll 0", 0);
+	SELFTEST_ASSERT_PIN_BOOLEAN(10, false); // IOR_StripState is false 
+	SELFTEST_ASSERT_PIN_BOOLEAN(11, true);  // IOR_StripState_n is true 
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+	SELFTEST_ASSERT_PIN_BOOLEAN(10, true); // IOR_StripState is true 
+	SELFTEST_ASSERT_PIN_BOOLEAN(11, false);  // IOR_StripState_n is false 
+	SELFTEST_ASSERT_SM_CHANNELS(0, 0, 0, 0, 1023);
+
+	CMD_ExecuteCommand("LED_Map 1 4 2 3 0", 0);
+	CMD_ExecuteCommand("led_enableAll 0", 0);
+	SELFTEST_ASSERT_PIN_BOOLEAN(10, false); // IOR_StripState is false 
+	SELFTEST_ASSERT_PIN_BOOLEAN(11, true);  // IOR_StripState_n is true 
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+	SELFTEST_ASSERT_PIN_BOOLEAN(10, true); // IOR_StripState is true 
+	SELFTEST_ASSERT_PIN_BOOLEAN(11, false);  // IOR_StripState_n is false 
+	SELFTEST_ASSERT_SM_CHANNELS(0, 0, 0, 0, 1023);
+
+	CMD_ExecuteCommand("LED_Map 1 0 2 3 4", 0);
+	CMD_ExecuteCommand("led_enableAll 0", 0);
+	SELFTEST_ASSERT_PIN_BOOLEAN(10, false); // IOR_StripState is false 
+	SELFTEST_ASSERT_PIN_BOOLEAN(11, true);  // IOR_StripState_n is true 
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+	SELFTEST_ASSERT_PIN_BOOLEAN(10, true); // IOR_StripState is true 
+	SELFTEST_ASSERT_PIN_BOOLEAN(11, false);  // IOR_StripState_n is false 
+	SELFTEST_ASSERT_SM_CHANNELS(0, 1023, 0, 0, 0);
+
+	Test_FakeHTTPClientPacket_GET("index");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("LED RGB Color");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("LED Temperature Slider");
+
+	// Try force flag 
+	CFG_SetFlag(OBK_FLAG_LED_FORCE_MODE_RGB, 1);
+	Test_FakeHTTPClientPacket_GET("index");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("LED RGB Color");
+	SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS("LED Temperature Slider");
+
+	// Clear force flag 
+	CFG_SetFlag(OBK_FLAG_LED_FORCE_MODE_RGB, 0);
+	Test_FakeHTTPClientPacket_GET("index");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("LED RGB Color");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("LED Temperature Slider");
+
+	CMD_ExecuteCommand("LED_Map 0 3 4 1 2", 0);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[0] == 0);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[1] == 3);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[2] == 4);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[3] == 1);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[4] == 2);
+
+	CMD_ExecuteCommand("LED_Map -1 -1 -1 1 2", 0);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[0] == 0xff);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[1] == 0xff);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[2] == 0xff);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[3] == 1);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[4] == 2);
+
+	Test_FakeHTTPClientPacket_GET("index");
+	SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS("LED RGB Color");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("LED Temperature Slider");
+
+	CMD_ExecuteCommand("LED_Map -1 -1 -1 3 4", 0);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[0] == 0xff);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[1] == 0xff);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[2] == 0xff);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[3] == 3);
+	SELFTEST_ASSERT(g_cfg.ledRemap.ar[4] == 4);
+
+	CMD_ExecuteCommand("led_temperature 500", 0);
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+	CMD_ExecuteCommand("led_enableAll 1", 1);
+	SELFTEST_ASSERT_PIN_BOOLEAN(10, true); // IOR_StripState is true 
+	SELFTEST_ASSERT_PIN_BOOLEAN(11, false);  // IOR_StripState_n is false 
+	SELFTEST_ASSERT_SM_CHANNELS(0, 0, 0, 0, 1023);
+	CMD_ExecuteCommand("led_temperature 154", 0);
+	SELFTEST_ASSERT_SM_CHANNELS(0, 0, 0, 1023, 0);
+
+	CMD_ExecuteCommand("LED_Map 3 4 -1 -1 -1", 0);
+	CMD_ExecuteCommand("led_temperature 500", 0);
+	SELFTEST_ASSERT_SM_CHANNELS(0, 1023, 0, 0, 0);
+	CMD_ExecuteCommand("led_temperature 154", 0);
+	SELFTEST_ASSERT_SM_CHANNELS(1023, 0, 0, 0, 0);
+
+	CMD_ExecuteCommand("LED_Map 0 1 2 -1 -1", 0);
+	Test_FakeHTTPClientPacket_GET("index");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("LED RGB Color");
+	SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS("LED Temperature Slider");
+
+	CMD_ExecuteCommand("LED_Map 0 1 2 3 4", 0);
+	Test_FakeHTTPClientPacket_GET("index");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("LED RGB Color");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("LED Temperature Slider");
+
+	// absurd but still supported - single color
+	CMD_ExecuteCommand("LED_Map 0 -1 -1 -1 -1", 0);
+	Test_FakeHTTPClientPacket_GET("index");
+	SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS("LED RGB Color");
+	SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS("LED Temperature Slider");
+}
 void Test_LEDDriver_RGB(int firstChannel) {
 	// reset whole device
 	SIM_ClearOBK(0);
@@ -561,9 +691,17 @@ void Test_LEDDriver_RGB(int firstChannel) {
 	PIN_SetPinRoleForPinIndex(9, IOR_PWM);
 	PIN_SetPinChannelForPinIndex(9, firstChannel + 2);
 
+	PIN_SetPinRoleForPinIndex(10, IOR_StripState);
+	PIN_SetPinRoleForPinIndex(11, IOR_StripState_n);
+	
+	SELFTEST_ASSERT_PIN_BOOLEAN(10, false); // IOR_StripState is false 
+	SELFTEST_ASSERT_PIN_BOOLEAN(11, true);  // IOR_StripState_n is true 
+
 	CMD_ExecuteCommand("led_enableAll 1", 0);
+	SELFTEST_ASSERT_PIN_BOOLEAN(10, true); // IOR_StripState is true 
+	SELFTEST_ASSERT_PIN_BOOLEAN(11, false);  // IOR_StripState_n is false 
 	// check expressions (not really LED related but ok)
-	SELFTEST_ASSERT_EXPRESSION("$led_enableAll", 1.0f);
+ 	SELFTEST_ASSERT_EXPRESSION("$led_enableAll", 1.0f);
 	// Set red
 	CMD_ExecuteCommand("led_baseColor_rgb FF0000", 0);
 	// full brightness
@@ -633,11 +771,15 @@ void Test_LEDDriver_RGB(int firstChannel) {
 	SELFTEST_ASSERT_CHANNEL(firstChannel, 0);
 	SELFTEST_ASSERT_CHANNEL(firstChannel+1, 0);
 	SELFTEST_ASSERT_CHANNEL(firstChannel+2, 0);
+	SELFTEST_ASSERT_PIN_BOOLEAN(10, false); // IOR_StripState is false 
+	SELFTEST_ASSERT_PIN_BOOLEAN(11, true);  // IOR_StripState_n is true 
 	// Tasmota style command should enable LED
 	Test_FakeHTTPClientPacket_GET("cm?cmnd=POWER%201");
 	SELFTEST_ASSERT_CHANNEL(firstChannel, 0);
 	SELFTEST_ASSERT_CHANNEL(firstChannel+1, 0);
 	SELFTEST_ASSERT_CHANNEL(firstChannel+2, 79);
+	SELFTEST_ASSERT_PIN_BOOLEAN(10, true); // IOR_StripState is true 
+	SELFTEST_ASSERT_PIN_BOOLEAN(11, false);  // IOR_StripState_n is false 
 
 	// set 100% brightness
 	CMD_ExecuteCommand("led_dimmer 100", 0);
@@ -690,6 +832,7 @@ void Test_LEDDriver() {
 	Test_LEDDriver_RGB(1);
 	Test_LEDDriver_RGBCW();
 	Test_LEDDriver_Palette();
+	Test_LEDDriver_BP5758_RGBCW();
 }
 
 #endif

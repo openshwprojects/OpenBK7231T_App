@@ -10,6 +10,7 @@
 #include "../driver/drv_public.h"
 #include "../driver/drv_local.h"
 #include "../hal/hal_flashVars.h"
+#include "../hal/hal_pins.h"
 #include "../hal/hal_flashConfig.h"
 #include "../rgb2hsv.h"
 #include <ctype.h>
@@ -146,6 +147,7 @@ bool LED_IsLedDriverChipRunning()
 		|| DRV_IsRunning("KP18058")
 		|| DRV_IsRunning("SM16703P")
 		|| DRV_IsRunning("SM15155E")
+		|| DRV_IsRunning("DMX")
 		; 
 #else
 	return false;
@@ -660,8 +662,8 @@ void apply_smart_light() {
 #endif
 #if	ENABLE_DRIVER_SM16703P
 	if (pixel_count > 0 && (g_lightMode != Light_Anim || g_lightEnableAll == 0)) {
-		SM16703P_setAllPixels(finalColors[0], finalColors[1], finalColors[2], finalColors[3], finalColors[4]);
-		SM16703P_Show();
+		Strip_setAllPixels(finalColors[0], finalColors[1], finalColors[2], finalColors[3], finalColors[4]);
+		Strip_Apply();
 	}
 #endif
 	
@@ -875,8 +877,20 @@ void LED_ToggleEnabled() {
 }
 bool g_guard_led_enable_event_cast = false;
 
+void LED_SetStripStateOutputs() {
+	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		int state = g_cfg.pins.roles[i];
+		if (state == IOR_StripState) {
+			HAL_PIN_SetOutputValue(i, g_lightEnableAll);
+		}
+		else if (state == IOR_StripState_n) {
+			HAL_PIN_SetOutputValue(i, !g_lightEnableAll);
+		}
+	}
+}
 void LED_SetEnableAll(int bEnable) {
 	bool bEnableAllWasSetTo1;
+	bool bHadChange;
 
 	if (g_lightEnableAll == 0 && bEnable == 1) {
 		bEnableAllWasSetTo1 = true;
@@ -903,6 +917,7 @@ void LED_SetEnableAll(int bEnable) {
 	}
 	g_lightEnableAll = bEnable;
 
+	LED_SetStripStateOutputs();
 	apply_smart_light();
 #if	ENABLE_TASMOTADEVICEGROUPS
 	DRV_DGR_OnLedEnableAllChange(bEnable);
@@ -1748,7 +1763,7 @@ void NewLED_InitCommands(){
 	CMD_RegisterCommand("led_finishFullLerp", led_finishFullLerp, NULL);
 	//cmddetail:{"name":"led_gammaCtrl","args":"sub-cmd [par]",
 	//cmddetail:"descr":"control LED Gamma Correction and Calibration",
-	//cmddetail:"fn":"rgb_gamma_control","file":"cmnds/cmd_rgbGamma.c","requires":"",
+	//cmddetail:"fn":"led_gamma_control","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":"led_gammaCtrl on"}
     CMD_RegisterCommand("led_gammaCtrl", led_gamma_control, NULL);
 	//cmddetail:{"name":"CTRange","args":"[MinRange][MaxRange]",

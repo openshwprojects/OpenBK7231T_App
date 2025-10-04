@@ -171,7 +171,7 @@ int state = 0;
 int pwmIndex = -1;
 unsigned int period;
 
-uint8_t group, channel;
+static uint8_t group, channel;
 
 // define to 1 to enable debug timer io output
 #if 0
@@ -354,12 +354,12 @@ static commandResult_t CMD_IR2_SetupIR2(const void* context, const char* cmd, co
 void DRV_IR2_Init() {
 	//cmddetail:{"name":"SetupIR2","args":"[myPeriodUs] [dutyOnFrac] [dutyOffFrac] [txPin]",
 	//cmddetail:"descr":"Init IR2 pin and interrupt",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_ir2.c","requires":"",
+	//cmddetail:"fn":"CMD_IR2_SetupIR2","file":"driver/drv_ir2.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetupIR2", CMD_IR2_SetupIR2, NULL);
 	//cmddetail:{"name":"SendIR2","args":"CMD_IR2_SendIR2",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_ir2.c","requires":"",
+	//cmddetail:"fn":"CMD_IR2_SendIR2","file":"driver/drv_ir2.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SendIR2", CMD_IR2_SendIR2, NULL);
 

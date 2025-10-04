@@ -713,22 +713,112 @@ void DS1820_full_driver_Init()
 
 	//cmddetail:{"name":"DS1820_FULL_SetResolution","args":"[int]",
 	//cmddetail:"descr":"Sets resolution for connected DS1820 sensor (9/10/11/12 bits)",
-	//cmddetail:"fn":"Cmd_SetResolution","file":"drv/drv_ds1820_simple.c","requires":"",
+	//cmddetail:"fn":"Cmd_DS18B20_SetResolution","file":"driver/drv_ds1820_full.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DS1820_FULL_SetResolution", Cmd_DS18B20_SetResolution, NULL);
 	//cmddetail:{"name":"DS1820_FULL_setsensor","args":"DS18B20-Addr name [channel]",
 	//cmddetail:"descr":"Sets a name [and optional channel] to a DS18B20 sensor by sensors address",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_ds1802_simple.c","requires":"",
+	//cmddetail:"fn":"CMD_DS18B20_setsensor","file":"driver/drv_ds1820_full.c","requires":"",
 	//cmddetail:"examples":"DS1820_FULL_setsensor \"0x28 0x01 0x02 0x03 0x04 0x05 0x06 0x07\" \"kitchen\" 2"}
 	CMD_RegisterCommand("DS1820_FULL_setsensor", CMD_DS18B20_setsensor, NULL);
-	//cmddetail:{"name":"DS18B20_FULL_scansensors","args":"-",
+	//cmddetail:{"name":"DS1820_FULL_scansensors","args":"-",
 	//cmddetail:"descr":"(Re-)Scan all GPIOs defined for DS1820 for sensors",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_ds1802_simple.c","requires":"",
+	//cmddetail:"fn":"CMD_DS18B20_scansensors","file":"driver/drv_ds1820_full.c","requires":"",
 	//cmddetail:"examples":"DS1820_FULL_scansensors"}
 	CMD_RegisterCommand("DS1820_FULL_scansensors", CMD_DS18B20_scansensors, NULL);
 
 	// no need to discover the "family" we know the address, the first byte is the family
+
+#if ENABLE_DS1820_TEST_US	
+	init_TEST_US();
+#endif
+
+
 };
+
+
+/*
+		printer(request, "\"DS1820\":");
+		// following check will clear NaN values
+		printer(request, "{");
+		printer(request, "\"Temperature\": %.1f,", chan_val1);
+		// close ENERGY block
+		printer(request, "},");
+
+*/
+
+static char *jsonSensor_reststr = NULL;
+char *DS1820_full_jsonSensors(){
+	if (ds18_count <= 0 ) return NULL;
+	if (jsonSensor_reststr!=NULL) free(jsonSensor_reststr); 
+	// {"DS18B20-<id>":{"Name":"<name - DS18B20namel>","Id":"0102030405060708","Temperature": <temp -127,00>},
+	// 123456789012 123456789012  +    DS18B20namel  1234567890123456789012345678901234567890       1234567890        
+	// length of str: 12 + 12 + DS18B20namel + 40 + 10 --> 74 + DS18B20namel  --> use 75 + DS18B20namel
+
+
+	// Tasmota style:
+	// {"DS18B20-XX":{"Id":"010203040506","Temperature":-XXX,X},
+	// 123456789012345678901234567890123456789012345678901234567
+	//          10        20        30        40        50
+	// length of str: 57  --> use 60
+	// Tasmota-ID:
+	// middle 6 bytes of 8 byte ROM-Address in reverse order:
+	//  ROM=2801020304050607  --> Id=060504030201
+	//
+	
+	//	        char address[17];
+	//        for (uint32_t j = 0; j < 6; j++) {
+	//          sprintf(address+2*j, "%02X", ds18x20_sensor[index].address[6-j]);  // Skip sensor type and crc
+	//        }
+
+
+// for extended style	
+//	int size = (75 + DS18B20namel) * ds18_count;
+
+// for "plain" Tasmota style
+	int size = 60 * ds18_count;
+
+
+	char *str = (char *)malloc(size * sizeof(char));
+	if (str == NULL) {
+        	DS1820_LOG(ERROR, "Could not allocate memory for sensor string!!");
+        	return NULL; // string allocation failed
+        }
+        
+	str[0] = 0;
+	for (int i=0; i < ds18_count; i++) {
+// full extension - complete ROM address + name 
+//		sprintf(tmp, "\"DS18B20-%i\":{\"Name\":\"%s\",\"Id\":\"%02X%02X%02X%02X%02X%02X%02X%02X\",\"Temperature\": %.1f},",i,ds18b20devices.name[i],DEV2STR(ds18b20devices.array[i]),ds18b20devices.lasttemp[i]);
+
+
+// extended Tasmoty style: Name + Tasmota-Id
+/*
+		char tmp[75 + DS18B20namel];
+		sprintf(tmp, "\"DS18B20-%i\":{\"Name\":\"%s\",\"Id\":\"%02X%02X%02X%02X%02X%02X\",\"Temperature\": %.1f},",i+1,ds18b20devices.name[i],
+			ds18b20devices.array[i][6],
+			ds18b20devices.array[i][5],
+			ds18b20devices.array[i][4],
+			ds18b20devices.array[i][3],
+			ds18b20devices.array[i][2],
+			ds18b20devices.array[i][1],
+			ds18b20devices.lasttemp[i]);
+*/
+
+// "Plain" Tasmota style - only ID 
+		char tmp[60]; 
+		sprintf(tmp, "\"DS18B20-%i\":{\"Id\":\"%02X%02X%02X%02X%02X%02X\",\"Temperature\": %.1f},",i+1,
+			ds18b20devices.array[i][6],
+			ds18b20devices.array[i][5],
+			ds18b20devices.array[i][4],
+			ds18b20devices.array[i][3],
+			ds18b20devices.array[i][2],
+			ds18b20devices.array[i][1],
+			ds18b20devices.lasttemp[i]);
+		strncat(str, tmp, size - strlen(str) - 1); // Concatenate to the main string
+	}
+        jsonSensor_reststr = str;
+	return jsonSensor_reststr;
+}
 
 void DS1820_full_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {

@@ -35,11 +35,11 @@ void HTTPServer_Start();
 typedef struct
 {
 	int fd;
-	xTaskHandle thread;
+	beken_thread_t thread;
 	bool isCompleted;
 } tcp_thread_t;
 
-static xTaskHandle g_http_thread = NULL;
+static beken_thread_t g_http_thread = NULL;
 static const size_t max_socks = MAX_SOCKETS_TCP - 1;
 static int listen_sock = INVALID_SOCK;
 static tcp_thread_t sock[MAX_SOCKETS_TCP - 1] =
@@ -124,7 +124,14 @@ exit:
 
 	lwip_close(fd);
 	arg->isCompleted = true;
+#if PLATFORM_RDA5981
+	arg->thread = NULL;
+	arg->isCompleted = false;
+	arg->fd = INVALID_SOCK;
+	rtos_delete_thread(NULL);
+#else
 	rtos_suspend_thread(NULL);
+#endif
 }
 
 static inline char* get_clientaddr(struct sockaddr_storage* source_addr)
@@ -178,7 +185,7 @@ void HTTPServer_Stop(void* arg)
 void restart_tcp_server(void* arg)
 {
 	HTTPServer_Start();
-	vTaskDelete(NULL);
+	rtos_delete_thread(NULL);
 }
 
 static void tcp_server_thread(beken_thread_arg_t arg)
@@ -329,13 +336,11 @@ error:
 		}
 	}
 	rtos_delay_milliseconds(2000);
-	xTaskCreate(
-		(TaskFunction_t)restart_tcp_server,
+	rtos_create_thread(NULL, BEKEN_APPLICATION_PRIORITY,
 		"TCP Restart",
-		2048 / sizeof(StackType_t),
-		NULL,
-		BEKEN_APPLICATION_PRIORITY,
-		NULL);
+		(beken_thread_function_t)restart_tcp_server,
+		2048,
+		(beken_thread_arg_t)0);
 }
 
 void HTTPServer_Start()
