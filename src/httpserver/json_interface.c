@@ -267,6 +267,10 @@ static int http_tasmota_json_SENSOR(void* request, jsonCb_t printer) {
 	float chan_val1, chan_val2;
 	int channel_1, channel_2, g_pin_1 = 0;
 	printer(request, ",");
+#ifndef NO_CHIP_TEMPERATURE
+//		printer(request, "\"%s\":{\"Temperature\": %.1f},", PLATFORM_MCU_NAME, g_wifi_temperature);
+		printer(request, "\"ESP32\":{\"Temperature\": %.1f},", g_wifi_temperature);
+#endif
 	if (DRV_IsRunning("SHT3X")) {
 		g_pin_1 = PIN_FindPinIndexForRole(IOR_SHT3X_DAT, g_pin_1);
 		channel_1 = g_cfg.pins.channels[g_pin_1];
@@ -415,7 +419,11 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 		bHasAnyDHT = true;
 		break;
 	}
+#ifdef NO_CHIP_TEMPERATURE	
 	if (DRV_IsSensor() || bHasAnyDHT) {
+#else
+	if (1) {
+#endif
 		http_tasmota_json_SENSOR(request, printer);
 		JSON_PrintKeyValue_String(request, printer, "TempUnit", "C", false);
 	}
