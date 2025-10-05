@@ -19,6 +19,7 @@ def main(file):
     rx_ch1 = re.compile(r'"channel 1 usage":"([^"]*)"')
     rx_ch2 = re.compile(r'"channel 2 usage":"([^"]*)"')
     rx_driver = re.compile(r'"driver":"([^"]*)"')
+    rx_define = re.compile(r'"define":"([^"]*)"')
     rx_htmlPinRole = re.compile(r'"htmlPinRoleName":("[^"]*")')		# we need this as string, so with quotes 
     
     rx_cvalsstart = re.compile(r'^[ \t]*cval_t cvals\[\] = {')
@@ -95,15 +96,16 @@ def main(file):
             if rx_ch2.search(detail):
                 ch2funct = rx_ch2.search(detail).group(1)
                 iodetail_fields['ch2funct'] = ch2funct
-            if rx_driver.search(detail):
-                drvname = rx_driver.search(detail).group(1)
-                if drvname.strip():
-                    if drvname.strip() == "I2C":
-                       DRV = "ENABLE_I2C"
-                    else:
-                       DRV = "ENABLE_DRIVER_" +  drvname.strip()
+            if rx_define.search(detail):
+                define = rx_define.search(detail).group(1)
+                if define.strip():
+                    DEF = "( " + define.strip() + " )"
+#                    if drvname.strip() == "I2C":
+#                       DRV = "ENABLE_I2C"
+#                    else:
+#                       DRV = "ENABLE_DRIVER_" +  drvname.strip()
                 else:
-                    DRV = ""
+                    DEF = ""
             if rx_htmlPinRole.search(detail):
                 rolename = rx_htmlPinRole.search(detail).group(1)
                 iodetail_fields['rolename'] = rolename
@@ -125,20 +127,26 @@ def main(file):
             enum_list.append("\t" + role + ",")  # Using string concatenation - ESP8266 environment seems to use very old python
             rolename_val = iodetail_fields.get('rolename', '')
 #            rolename_list.append(f"\t{rolename_val},")
+            if DEF:
+                rolename_list.append("#if !" + DEF)
+                rolename_list.append("\t\"\",")
+                rolename_list.append("#else")
             rolename_list.append("\t" + rolename_val + ",")  # Using string concatenation - ESP8266 environment seems to use very old python
+            if DEF:
+                rolename_list.append("#endif")
             ch1funct_val = iodetail_fields.get('ch1funct', '')
             ch2funct_val = iodetail_fields.get('ch2funct', '')
             channels_val = iodetail_fields.get('channels', 0)
             c1 = chan_usage.get(ch1funct_val, 'CHAN_Empty')
             c2 = chan_usage.get(ch2funct_val, 'CHAN_Empty')
 #            INFO2CHANVAL.append(f"\tINFO2CHANVAL({role}, {channels_val}, {c1}, {c2}),")
-            if DRV:
-                INFO2CHANVAL.append("#if !" + DRV)
-                INFO2CHANVAL.append("\t-1,")
-                INFO2CHANVAL.append("#else")
+#            if DEF:
+#                INFO2CHANVAL.append("#if !" + DEF)
+#                INFO2CHANVAL.append("\t-1,")
+#                INFO2CHANVAL.append("#else")
             INFO2CHANVAL.append("\tINFO2CHANVAL(" + role + ", " + str(channels_val) + ", " + str(c1) + ", " + str(c2) + "),") # Using string concatenation - ESP8266 envoronment seems to use very old python
-            if DRV:
-                INFO2CHANVAL.append("#endif")
+#            if DEF:
+#               INFO2CHANVAL.append("#endif")
             indexcount += 1
             # Reset for next role
             iodetail_fields.clear()

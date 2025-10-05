@@ -2843,7 +2843,8 @@ int http_fn_cfg_pins(http_request_t* request) {
 	// sr = [ [ " ", "0" ], [ "ADC_Button", "68" ], [ "ADC", "20" ], ...]
 //	poststr(request, "var  sr = r.map((e,i)=>{return e[0]+'#'+i}).sort(Intl.Collator().compare).map(e=>e.split('#'));");
 // filter out entries with channels = -1, these are roles not present because of missing driver
-	poststr(request, "var sr=r.map((e,i)=>[e[0],i]).filter(e=>r[e[1]][1]>=0).sort((a,b)=>a[0].localeCompare(b[0]));");
+//	poststr(request, "var sr=r.map((e,i)=>[e[0],i]).filter(e=>r[e[1]][1]>=0).sort((a,b)=>a[0].localeCompare(b[0]));");
+	poststr(request, "var sr=r.map((e,i)=>[e[0],i]).sort((a,b)=>a[0].localeCompare(b[0]));");
 	
 	// enable/disable element and hide it with "display: none"
 	poststr(request, "cf=(e,v)=>{e.disabled=v;e.style.display=v?'none':'inline-block'};");
@@ -2869,7 +2870,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 				"cf(t,ve)};"
 				"const dh=Array();"  // [ <hidden?>, <pinalias>] array, if div for pin is visible . hidden div = 1 , init with 0 in f()
 				"updateHR=()=>{var e=byID(\"hrs\");e.innerHTML='<option value="">Configure new Pin</option>',"
-				"dh.forEach(((t,n)=>{1==t[0]&&(x=dce(\"option\"),x.value=n,x.textContent=t[1],ac(e,x))}))},"
+				"dh.forEach(((t,n)=>{1==t[0]&&(x=dce(\"option\"),x.value=n,x.textContent=t[1],x.hidden=t[1],ac(e,x))}))},"
 				"usr=()=>{var e=byID(\"hrs\").value;e&&(byID(\"div\"+e).style.display=\"\",dh[e][0]=0,updateHR())};"
 				);
 #else
@@ -2913,11 +2914,12 @@ int http_fn_cfg_pins(http_request_t* request) {
 //		"d.appendChild(s);"
 		"ac(d,s);"
 		"for(var i=0;i<sr.length;i++){"
-		"if(b&&sr[i][0].startsWith(\"PWM\")) continue; "
+		"s0=sr[i][0];s1=sr[i][1];"
+		"if(b&&s0.startsWith(\"PWM\")) continue; "
 		"y=dce(\"option\");"
-		"y.text=sr[i][0];"
-		"y.value=sr[i][1];"
-		"y.selected=(sr[i][1]==c);"
+		"y.text=s0?s0:s1+ \" no DRV for role\";"
+		"y.value=s1;y.hidden=(!s0);"
+		"y.selected=(s1==c);"
 		"s.add(y);"
 		"s.onchange=h_s;"
 		"}"
