@@ -835,14 +835,31 @@ float LED_GetTemperature0to1Range() {
 }
 
 void LED_SetTemperature(int tmpInteger, bool bApply) {
-	float f;
+	float ww,cw,max_cw_ww;
 
 	led_temperature_current = tmpInteger;
 
-	f = LED_GetTemperature0to1Range();
+	ww = LED_GetTemperature0to1Range();
+	cw = 1 - ww;
 
-	led_baseColors[3] = (255.0f) * (1-f);
-	led_baseColors[4] = (255.0f) * f;
+	//normalize to have a local max of 100%
+	if (ww > cw)
+		max_cw_ww = ww;
+	else
+		max_cw_ww = cw;
+
+	ww = ww / max_cw_ww;
+	cw = cw / max_cw_ww;
+
+	//uncorrect for gamma to allow gamma correcting brightness later
+	if (g_cfg.led_corr.led_gamma >= 1 && g_cfg.led_corr.led_gamma <= 3) {
+		ww = powf(ww, 1 / g_cfg.led_corr.led_gamma);
+		cw = powf(cw, 1 / g_cfg.led_corr.led_gamma);
+	}
+
+	led_baseColors[3] = (255.0f) * cw;
+	led_baseColors[4] = (255.0f) * ww;
+
 
 	if(bApply) {
 		if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_ANY_ACTION)) {
@@ -1256,9 +1273,18 @@ void LED_SetFinalRGBW(byte r, byte g, byte b, byte w) {
 	led_baseColors[0] = r;
 	led_baseColors[1] = g;
 	led_baseColors[2] = b;
+
 	// half between Cool and Warm
-	led_baseColors[3] = w / 2;
-	led_baseColors[4] = w / 2;
+    float w_half = w / 2 / 255.0f;
+    LED_SetTemperature0to1Range(0.5f);
+
+    //uncorrect for gamma to allow gamma correcting brightness later
+	if (g_cfg.led_corr.led_gamma >= 1 && g_cfg.led_corr.led_gamma <= 3) {
+		w_half = powf(w_half, 1 / g_cfg.led_corr.led_gamma);
+	}
+
+	led_baseColors[3] = (255.0f) * w_half;
+	led_baseColors[4] = (255.0f) * w_half;
 
 	RGBtoHSV(led_baseColors[0] / 255.0f, led_baseColors[1] / 255.0f, led_baseColors[2] / 255.0f, &g_hsv_h, &g_hsv_s, &g_hsv_v);
 
