@@ -1005,7 +1005,7 @@ typedef enum {
 	/* Format current PINS input state for all unused pins */
 	if (CFG_HasFlag(OBK_FLAG_HTTP_PINMONITOR))
 	{
-		for (i = 0; i < 29; i++)
+		for (i = 0; i < PLATFORM_GPIO_MAX; i++)
 		{
 			if ((PIN_GetPinRoleForPinIndex(i) == IOR_None) && (i != 0) && (i != 1))
 			{
@@ -1014,7 +1014,7 @@ typedef enum {
 		}
 
 		hprintf255(request, "<h5> PIN States<br>");
-		for (i = 0; i < 29; i++)
+		for (i = 0; i < PLATFORM_GPIO_MAX; i++)
 		{
 			if ((PIN_GetPinRoleForPinIndex(i) != IOR_None) || (i == 0) || (i == 1))
 			{
