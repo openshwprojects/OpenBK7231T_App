@@ -1650,7 +1650,12 @@ void CHANNEL_AddClamped(int ch, int iDelta, int min, int max, int bWrapInsteadOf
 	// Special channel indexes are used to access things like dimmer, led colors, etc
 	int newVal;;
 
-	if (bWrapInsteadOfClamp == 2) {
+	if (bWrapInsteadOfClamp == 3) {
+		if (g_channelPingPongs) {
+			g_channelPingPongs[ch] *= -1;
+		}
+		return;
+	} else if (bWrapInsteadOfClamp == 2) {
 		// ping-pong logic
 		if (g_channelPingPongs == 0) {
 			g_channelPingPongs = (char*)malloc(CHANNEL_MAX);
