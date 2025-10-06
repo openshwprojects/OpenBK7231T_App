@@ -114,7 +114,7 @@
 #define SECTOR_SIZE                              EF_ERASE_MIN_SIZE
 #define SECTOR_NUM                               (ENV_AREA_SIZE / (EF_ERASE_MIN_SIZE))
 
-#if !WINDOWS
+#if !WINDOWS && !LINUX
 #if (SECTOR_NUM < 2)
 #error "The sector number must lager then or equal to 2"
 #endif
