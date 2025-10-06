@@ -341,6 +341,23 @@ void Test_Commands_Channels() {
 	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
 	SELFTEST_ASSERT_CHANNEL(1, 100);
 	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 76);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 52);
+	// revert dir
+	CMD_ExecuteCommand("addChannel 1 0 0 100 3", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 52);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 76);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 76);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 52);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 28);
+
 	// cause error
 	//SELFTEST_ASSERT_CHANNEL(3, 666);
 }
