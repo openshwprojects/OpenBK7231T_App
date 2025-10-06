@@ -8,7 +8,7 @@ Do not add anything here, as it will overwritten with next rebuild.
 | Driver        | Description  |
 |:------------- | -----:|
 | TuyaMCU |  TuyaMCU is a protocol used for communication between WiFI module and external MCU. This protocol is using usually RX1/TX1 port of BK chips. See [TuyaMCU dimmer example](https://www.elektroda.com/rtvforum/topic3929151.html), see [TH06 LCD humidity/temperature sensor example](https://www.elektroda.com/rtvforum/topic3942730.html), see [fan controller example](https://www.elektroda.com/rtvforum/topic3908093.html), see [simple switch example](https://www.elektroda.com/rtvforum/topic3906443.html).<br/>See also [TuyaMCU on forum](https://www.elektroda.com/rtvforum/find.php?q=TuyaMCU). |
-| tmSensor |  The tmSensor must be used only when TuyaMCU is already started. tmSensor is a TuyaMcu Sensor, it's used for Low Power TuyaMCU communication on devices like TuyaMCU door sensor, or TuyaMCU humidity sensor. After device reboots, tmSensor uses TuyaMCU to request data update from the sensor and reports it on MQTT. Then MCU turns off WiFi module again and goes back to sleep. See an [example door sensor here](https://www.elektroda.com/rtvforum/topic3914412.html).<br/>See also [tmSensor on forum](https://www.elektroda.com/rtvforum/find.php?q=tmSensor). |
+| TuyaMCULE |   |
 | FREEZE |  Freeze is a test driver for watchdog. Enabling this will freeze device main loop.<br/>See also [FREEZE on forum](https://www.elektroda.com/rtvforum/find.php?q=FREEZE). |
 | PIR |  PIR.<br/>See also [PIR on forum](https://www.elektroda.com/rtvforum/find.php?q=PIR). |
 | PixelAnim |  PixelAnim provides a simple set of WS2812B animations.<br/>See also [PixelAnim on forum](https://www.elektroda.com/rtvforum/find.php?q=PixelAnim). |

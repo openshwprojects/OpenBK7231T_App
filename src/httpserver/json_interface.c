@@ -22,7 +22,7 @@
 #include "../driver/drv_bl_shared.h"
 #include "../driver/drv_ds1820_simple.h"
 #include "../driver/drv_ds1820_full.h"
-
+#include "../driver/drv_tuyaMCU.h"
 
 #if ENABLE_TASMOTA_JSON
 
@@ -818,8 +818,6 @@ static int http_tasmota_json_status_generic(void* request, jsonCb_t printer) {
 
 	return 0;
 }
-// drv_tuyaMCU.c
-int http_obk_json_dps(int id, void* request, jsonCb_t printer);
 
 int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, jsonCb_t printer, int flags) {
 	int i;

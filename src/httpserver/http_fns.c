@@ -88,6 +88,7 @@ const char* g_typeLowMidHigh[] = { "Low","Mid","High" };
 const char* g_typesLowestLowMidHighHighest[] = { "Lowest", "Low", "Mid", "High", "Highest" };;
 const char* g_typeOpenStopClose[] = { "Open","Stop","Close" };
 const char* g_typeStopUpDown[] = { "Stop","Up","Down" };
+const char* g_typeTemperatureUnit[] = { "Celsius","Fahrenheit" };
 
 #define ADD_OPTION(t,a) if(type == t) { *numTypes = sizeof(a)/sizeof(a[0]); return a; }
 
@@ -101,6 +102,7 @@ const char **Channel_GetOptionsForChannelType(int type, int *numTypes) {
 	ADD_OPTION(ChType_LowMidHigh, g_typeLowMidHigh);
 	ADD_OPTION(ChType_OpenStopClose, g_typeOpenStopClose);
 	ADD_OPTION(ChType_StopUpDown, g_typeStopUpDown);
+	ADD_OPTION(ChType_TemperatureUnit, g_typeTemperatureUnit);
 	
 	*numTypes = 0;
 	return 0;
@@ -503,6 +505,9 @@ int http_fn_index(http_request_t* request) {
 			}
 			else if (channelType == ChType_OpenStopClose || channelType == ChType_StopUpDown) {
 				what = "mode";
+			}
+			else if (channelType == ChType_TemperatureUnit) {
+				what = "unit";
 			}
 			else {
 				what = "speed";

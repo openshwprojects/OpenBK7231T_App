@@ -11,6 +11,8 @@
 #include "drv_ssdp.h"
 #include "drv_test_drivers.h"
 #include "drv_tuyaMCU.h"
+#include "drv_tuyaMCULE.h"
+#include "drv_tuyaMCU_tmSensor.h"
 #include "drv_uart.h"
 #include "drv_ds1820_simple.h"
 #include "drv_ds1820_full.h"
@@ -30,9 +32,6 @@ typedef struct driver_s {
 	bool bLoaded;
 } driver_t;
 
-
-void TuyaMCU_RunEverySecond();
-
 // startDriver BL0937
 static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_TUYAMCU
@@ -41,11 +40,16 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"TuyaMCU is a protocol used for communication between WiFI module and external MCU. This protocol is using usually RX1/TX1 port of BK chips. See [TuyaMCU dimmer example](https://www.elektroda.com/rtvforum/topic3929151.html), see [TH06 LCD humidity/temperature sensor example](https://www.elektroda.com/rtvforum/topic3942730.html), see [fan controller example](https://www.elektroda.com/rtvforum/topic3908093.html), see [simple switch example](https://www.elektroda.com/rtvforum/topic3906443.html)",
 	//drvdetail:"requires":""}
 	{ "TuyaMCU",	TuyaMCU_Init,		TuyaMCU_RunEverySecond,			NULL, TuyaMCU_RunFrame, TuyaMCU_Shutdown, NULL, NULL, false },
+	//drvdetail:{"name":"TuyaMCULE",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"TuyaMCULE is a protocol used for communication between WiFI module and external MCU.",
+	//drvdetail:"requires":""}
+	{ "TuyaMCULE",	TuyaMCULE_Init,		TuyaMCULE_RunEverySecond,			NULL, TuyaMCULE_RunFrame, TuyaMCULE_Shutdown, NULL, NULL, false },
 	//drvdetail:{"name":"tmSensor",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"The tmSensor must be used only when TuyaMCU is already started. tmSensor is a TuyaMcu Sensor, it's used for Low Power TuyaMCU communication on devices like TuyaMCU door sensor, or TuyaMCU humidity sensor. After device reboots, tmSensor uses TuyaMCU to request data update from the sensor and reports it on MQTT. Then MCU turns off WiFi module again and goes back to sleep. See an [example door sensor here](https://www.elektroda.com/rtvforum/topic3914412.html).",
+	//drvdetail:"descr":"Hacky module for legacy script compatibility",
 	//drvdetail:"requires":""}
-	{ "tmSensor",	TuyaMCU_Sensor_Init, TuyaMCU_Sensor_RunEverySecond,	NULL, NULL, NULL, NULL, NULL, false },
+	{ "tmSensor",	TuyaMCUTmSensor_Init,		NULL,			NULL, NULL, TuyaMCUTmSensor_Shutdown, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_TCA9554
 	//drvdetail:{"name":"TCA9554",

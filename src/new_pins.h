@@ -1071,6 +1071,13 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_EnergyImport_kWh_div1000,
+	//chandetail:{"name":"TemperatureUnit",
+	//chandetail:"title":"TemperatureUnit",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_TemperatureUnit",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_TemperatureUnit,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
@@ -1555,8 +1562,10 @@ bool CHANNEL_Check(int ch);
 void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex));
 void CHANNEL_ClearAllChannels();
 // CHANNEL_SET_FLAG_*
-void CHANNEL_Set_Ex(int ch, int iVal, int iFlags, int ausemovingaverage);
+typedef void (*CHANNEL_SET_cb_t)(void *arg);
+void CHANNEL_Set_Ex(int ch, int iVal, int iFlags, int ausemovingaverage, CHANNEL_SET_cb_t cb, void *arg);
 void CHANNEL_Set(int ch, int iVal, int iFlags);
+void CHANNEL_SetWithCB(int ch, int iVal, int iFlags, CHANNEL_SET_cb_t cb, void *arg);
 void CHANNEL_SetSmart(int ch, float fVal, int iFlags);
 void CHANNEL_Set_FloatPWM(int ch, float fVal, int iFlags);
 void CHANNEL_Add(int ch, int iVal);
