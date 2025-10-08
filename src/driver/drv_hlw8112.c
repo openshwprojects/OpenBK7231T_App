@@ -36,8 +36,14 @@ static const uint32_t E_RESOLUTION  = 536870912; // 1 << 29;
 
 static HLW8112_Device_Conf_t device;   // coeff reg k1 k2 pga etc
 static HLW8112_Data_t last_data;		// last read reg values
-static HLW8112_UpdateData_t last_update_data;	// last scaled values for ext systems 
-
+static HLW8112_UpdateData_t last_update_data;	// last scaled values for ext systems
+static HLW8112_AccumulatorData_t accumulator_data;
+static int accumulator_index;
+static int update_interval = 1;
+static int save_index;
+static int save_interval = 300;
+static uint32_t data_index;
+static HLW8112_SaveFlags_t save_flags =  HLW8112_SAVE_NONE;
 
 // energy stats saved/restored in/out flash
 static ENERGY_DATA energy_acc_a = {
@@ -387,6 +393,18 @@ static commandResult_t HLW8112_ClearEnergy(const void *context, const char *cmd,
 	return CMD_RES_OK;
 }
 
+
+static commandResult_t HLW8112_SetInterval(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	update_interval = Tokenizer_GetArgInteger(0);
+	save_interval = Tokenizer_GetArgInteger(1);
+	return CMD_RES_OK;
+}
+
 #if HLW8112_SPI_RAWACCESS
 static commandResult_t HLW8112_write_reg(const void *context, const char *cmd, const char *args, int cmdFlags) {
 
@@ -485,6 +503,7 @@ void HLW8112_addCommads(void){
     CMD_RegisterCommand("HLW8112_SetResistorGain", HLW8112_SetResistorGain, NULL);
     CMD_RegisterCommand("HLW8112_SetEnergyStat", HLW8112_SetEnergyStat, NULL);
     CMD_RegisterCommand("clear_energy", HLW8112_ClearEnergy, NULL);
+	CMD_RegisterCommand("HLW8112_SetInterval", HLW8112_SetInterval, NULL);
 #if HLW8112_SPI_RAWACCESS
 	CMD_RegisterCommand("HLW8112_write_reg", HLW8112_write_reg, NULL);
 	CMD_RegisterCommand("HLW8112_read_reg", HLW8112_read_reg, NULL);
@@ -520,6 +539,7 @@ void HLW8112_Init_Channels() {
 	//CHANNEL_SetType(HLW8112_Channel_ResCof_A, ChType_Custom);
 	//CHANNEL_SetType(HLW8112_Channel_ResCof_B, ChType_Custom);
 	//CHANNEL_SetType(HLW8112_Channel_Clk, ChType_Custom);
+	CHANNEL_SetType(HLW8112_Channel_Index, ChType_Custom);
 
 	CHANNEL_SetLabel(HLW8112_Channel_PowerFactor , "Power Factor", 1);
 	CHANNEL_SetLabel(HLW8112_Channel_current_B , "Current B", 1);
@@ -535,6 +555,7 @@ void HLW8112_Init_Channels() {
 	//CHANNEL_SetLabel(HLW8112_Channel_ResCof_A, "Channel A Resistor Ratio", 1);
 	//CHANNEL_SetLabel(HLW8112_Channel_ResCof_B, "Channel b Resistor Ratio",1 );
 	//CHANNEL_SetLabel(HLW8112_Channel_ResCof_B, "CLK",1 );
+	CHANNEL_SetLabel(HLW8112_Channel_Index, "Data Index",1 );
 
 }
 
@@ -908,58 +929,135 @@ static void HLW8112_ScaleAndUpdate(HLW8112_Data_t* data) {
 	//	"Values X v=%d f=%d pf=%d ca=%d pa=%d ap=%d ea=%d cb=%d pb=%d eb=%d",
 	//	voltage, frequency, power_factor, current_a, power_a, apparent_power, energy_a, current_b, power_b, energy_b);
 
-	last_update_data.v_rms = voltage;
-	last_update_data.freq = frequency;
-	last_update_data.pf = power_factor;
-	last_update_data.ap = apparent_power;
-	last_update_data.ia_rms = current_a;
-	last_update_data.ib_rms = current_b;
-	last_update_data.pa = power_a;
-	last_update_data.pb = power_b;
 
-	HLW8112_SaveFlags_t save =  HLW8112_SAVE_NONE;
-	if (energy_a !=0  ) {
-		ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER, "EA val %08X", data->ea);
-		ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER, "EA scaled val %08X", energy_a);
-		ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER, "Import before %f", energy_acc_a.Import);
-		if (power_a > 0) {
-			energy_acc_a.Import +=  (double)energy_a / 10000000.0;
-			save |= HLW8112_SAVE_A_IMP;
-		}else {
-			energy_acc_a.Export +=  (double)energy_a / 10000000.0;
-			save |= HLW8112_SAVE_A_EXP;
-		}
-
-		ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER, "Import after %f", energy_acc_a.Import);
-		}
-	if (energy_b !=0.0f ) {
-		if (power_b > 0) {
-			energy_acc_b.Import +=  energy_b / 10000000.0;
-			save |= HLW8112_SAVE_B_IMP;
-		}else {
-			energy_acc_b.Export +=  energy_b/ 10000000.0;
-			save |= HLW8112_SAVE_B_EXP;
-		}
-	}
-	if (save != HLW8112_SAVE_NONE) {
-		HLW8112_save_stats(save);
-	}
-    // BL_ProcessUpdate(voltage, current_a, power_a, frequency, energy_a);
-
-	// update
+	accumulator_data.v_rms += voltage;
+	accumulator_data.freq += frequency;
+	accumulator_data.pf += power_factor;
+	accumulator_data.ap += apparent_power;
+	accumulator_data.ia_rms += current_a;
+	accumulator_data.ib_rms += current_b;
+	accumulator_data.pa += power_a;
+	accumulator_data.pb += power_b;
 	
-	CHANNEL_Set(HLW8112_Channel_Voltage, last_update_data.v_rms / 10.0, 0);
-	CHANNEL_Set(HLW8112_Channel_Frequency,last_update_data.freq , 0);
-	CHANNEL_Set(HLW8112_Channel_PowerFactor, last_update_data.pf, 0);
-	CHANNEL_Set(HLW8112_Channel_current_B, last_update_data.ib_rms, 0);
-	CHANNEL_Set(HLW8112_Channel_current_A,last_update_data.ia_rms , 0);
-	CHANNEL_Set(HLW8112_Channel_power_B, last_update_data.pb / 10.0, 0);
-	CHANNEL_Set(HLW8112_Channel_power_A, last_update_data.pa / 10.0, 0);
-	CHANNEL_Set(HLW8112_Channel_apparent_power_A, last_update_data.ap / 10.0, 0);
-	CHANNEL_Set(HLW8112_Channel_export_B, last_update_data.eb->Export * 1000, 0);
-	CHANNEL_Set(HLW8112_Channel_export_A, last_update_data.ea->Export * 1000, 0);
-	CHANNEL_Set(HLW8112_Channel_import_B, last_update_data.eb->Import * 1000, 0);
-	CHANNEL_Set(HLW8112_Channel_import_A, last_update_data.ea->Import * 1000, 0);
+	if (power_a > 0) {
+		accumulator_data.import_ea += energy_a;
+		save_flags |= HLW8112_SAVE_A_IMP;
+	}
+	else {
+		accumulator_data.export_ea += energy_a;
+		save_flags |= HLW8112_SAVE_A_EXP;
+	}
+
+	if (power_b > 0) {
+		accumulator_data.import_eb += energy_b;
+		save_flags |= HLW8112_SAVE_B_IMP;
+	}
+	else {
+		accumulator_data.export_eb += energy_b;
+		save_flags |= HLW8112_SAVE_B_EXP;
+	}
+
+	if (++accumulator_index >= update_interval)
+	{
+		data_index++;
+		accumulator_data.v_rms /= update_interval;
+		accumulator_data.freq /= update_interval;
+		accumulator_data.pf /= update_interval;
+		accumulator_data.ap /= update_interval;
+
+		accumulator_data.ia_rms /= update_interval;
+		accumulator_data.pa /= update_interval;
+		accumulator_data.import_ea /= update_interval;
+		accumulator_data.export_ea /= update_interval;
+		
+		accumulator_data.ib_rms /= update_interval;
+		accumulator_data.pb /= update_interval;
+		accumulator_data.import_eb /= update_interval;
+		accumulator_data.export_eb /= update_interval;
+
+		last_update_data.v_rms = accumulator_data.v_rms;
+		last_update_data.freq = accumulator_data.freq;
+		last_update_data.pf = accumulator_data.pf;
+		last_update_data.ap = accumulator_data.ap;
+		last_update_data.ia_rms = accumulator_data.ia_rms;
+		last_update_data.ib_rms = accumulator_data.ib_rms;
+		last_update_data.pa = accumulator_data.pa;
+		last_update_data.pb = accumulator_data.pb;
+
+		energy_acc_a.Export += (double) accumulator_data.export_ea / 10000000.0;
+		energy_acc_b.Export += (double) accumulator_data.export_eb / 10000000.0;
+		energy_acc_a.Import += (double) accumulator_data.import_ea / 10000000.0;
+		energy_acc_b.Import += (double) accumulator_data.import_eb / 10000000.0;
+
+		CHANNEL_Set(HLW8112_Channel_Voltage, accumulator_data.v_rms / 10.0, 0);
+		CHANNEL_Set(HLW8112_Channel_Frequency,accumulator_data.freq , 0);
+		CHANNEL_Set(HLW8112_Channel_PowerFactor, accumulator_data.pf, 0);
+		CHANNEL_Set(HLW8112_Channel_current_A,accumulator_data.ia_rms , 0);
+		CHANNEL_Set(HLW8112_Channel_current_B, accumulator_data.ib_rms, 0);
+		CHANNEL_Set(HLW8112_Channel_power_A, accumulator_data.pa / 10.0, 0);
+		CHANNEL_Set(HLW8112_Channel_power_B, accumulator_data.pb / 10.0, 0);
+		CHANNEL_Set(HLW8112_Channel_apparent_power_A, accumulator_data.ap / 10.0, 0);
+		CHANNEL_Set(HLW8112_Channel_export_A, energy_acc_a.Export * 1000, 0);
+		CHANNEL_Set(HLW8112_Channel_export_B, energy_acc_b.Export * 1000, 0);
+		CHANNEL_Set(HLW8112_Channel_import_A, energy_acc_a.Import * 1000, 0);
+		CHANNEL_Set(HLW8112_Channel_import_B, energy_acc_b.Import * 1000, 0);
+		CHANNEL_Set(HLW8112_Channel_Index, data_index, 0);
+
+		if (++save_index >= save_interval)
+		{
+			HLW8112_save_stats(save_flags);
+			save_index = 0;
+			save_flags = HLW8112_SAVE_NONE;
+		}
+
+		accumulator_index = 0;
+		memset(&accumulator_data, 0, sizeof(accumulator_data));
+	}
+
+
+	// HLW8112_SaveFlags_t save =  HLW8112_SAVE_NONE;
+	// if (energy_a !=0  ) {
+	// 	ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER, "EA val %08X", data->ea);
+	// 	ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER, "EA scaled val %08X", energy_a);
+	// 	ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER, "Import before %f", energy_acc_a.Import);
+	// 	if (power_a > 0) {
+	// 		energy_acc_a.Import +=  (double)energy_a / 10000000.0;
+	// 		save |= HLW8112_SAVE_A_IMP;
+	// 	}else {
+	// 		energy_acc_a.Export +=  (double)energy_a / 10000000.0;
+	// 		save |= HLW8112_SAVE_A_EXP;
+	// 	}
+
+	// 	ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER, "Import after %f", energy_acc_a.Import);
+	// 	}
+	// if (energy_b !=0.0f ) {
+	// 	if (power_b > 0) {
+	// 		energy_acc_b.Import +=  energy_b / 10000000.0;
+	// 		save |= HLW8112_SAVE_B_IMP;
+	// 	}else {
+	// 		energy_acc_b.Export +=  energy_b/ 10000000.0;
+	// 		save |= HLW8112_SAVE_B_EXP;
+	// 	}
+	// }
+	// if (save != HLW8112_SAVE_NONE) {
+	// 	HLW8112_save_stats(save);
+	// }
+    // // BL_ProcessUpdate(voltage, current_a, power_a, frequency, energy_a);
+
+	// // update
+	
+	// CHANNEL_Set(HLW8112_Channel_Voltage, last_update_data.v_rms / 10.0, 0);
+	// CHANNEL_Set(HLW8112_Channel_Frequency,last_update_data.freq , 0);
+	// CHANNEL_Set(HLW8112_Channel_PowerFactor, last_update_data.pf, 0);
+	// CHANNEL_Set(HLW8112_Channel_current_B, last_update_data.ib_rms, 0);
+	// CHANNEL_Set(HLW8112_Channel_current_A,last_update_data.ia_rms , 0);
+	// CHANNEL_Set(HLW8112_Channel_power_B, last_update_data.pb / 10.0, 0);
+	// CHANNEL_Set(HLW8112_Channel_power_A, last_update_data.pa / 10.0, 0);
+	// CHANNEL_Set(HLW8112_Channel_apparent_power_A, last_update_data.ap / 10.0, 0);
+	// CHANNEL_Set(HLW8112_Channel_export_B, last_update_data.eb->Export * 1000, 0);
+	// CHANNEL_Set(HLW8112_Channel_export_A, last_update_data.ea->Export * 1000, 0);
+	// CHANNEL_Set(HLW8112_Channel_import_B, last_update_data.eb->Import * 1000, 0);
+	// CHANNEL_Set(HLW8112_Channel_import_A, last_update_data.ea->Import * 1000, 0);
 }
 
 #pragma endregion
@@ -1080,6 +1178,45 @@ void HLW8112_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreS
 		//?action=reg_edit&reg_value=&reg=100&reg_width=24&compliment=1
 		return;
 	}
+	poststr(request, "<hr><table style='width:100%'>");
+	appendTableRow(request, "Voltage", "", accumulator_data.v_rms, 1, 1 );
+	appendTableRow(request, "Frequency", "", accumulator_data.freq, 1, 1 );
+	appendTableRow(request, "Power Factor", "", accumulator_data.pf, 1, 1 );
+	appendTableRow(request, "Apparent Power", "", accumulator_data.ap, 1, 1 );
+
+	appendTableRow(request, "Channel A Current", "", accumulator_data.ia_rms, 1, 1 );
+	appendTableRow(request, "Channel A Power", "", accumulator_data.pa, 1, 1 );
+	appendTableRow(request, "Channel A Import", "", accumulator_data.import_ea, 1, 1 );
+	appendTableRow(request, "Channel A Export", "", accumulator_data.export_ea, 1, 1 );
+	
+	appendTableRow(request, "Channel B Current", "", accumulator_data.ib_rms, 1, 1 );
+	appendTableRow(request, "Channel B Power", "", accumulator_data.pb, 1, 1 );
+	appendTableRow(request, "Channel B Import", "", accumulator_data.import_eb, 1, 1 );
+	appendTableRow(request, "Channel B Export", "", accumulator_data.export_eb, 1, 1 );
+
+	appendTableRow(request, "KU", "", device.ResistorCoeff.KU * 1000.0f, 4, 1000.0f );
+	appendTableRow(request, "KIA", "", device.ResistorCoeff.KIA * 1000.0f, 4, 1000.0f );
+	appendTableRow(request, "KIB", "", device.ResistorCoeff.KIB * 1000.0f, 4, 1000.0f );
+	poststr(request, "</table>");
+
+	// Scale factors
+	poststr(request, "<hr><table style='width:100%'>");
+
+	appendTableRow(request, "v_rms", "", device.ScaleFactor.v_rms * 1000.0f, 8, 1000.0f );
+	appendTableRow(request, "freq", "", device.ScaleFactor.freq * 1000.0f, 8, 1000.0f );
+	appendTableRow(request, "pf", "", device.ScaleFactor.pf * 1000.0f, 8, 1000.0f );
+
+	appendTableRow(request, "A i", "", device.ScaleFactor.a.i * 1000.0f, 8, 1000.0f );
+	appendTableRow(request, "A p", "", device.ScaleFactor.a.p * 1000.0f, 8, 1000.0f );
+	appendTableRow(request, "A e", "", device.ScaleFactor.a.e * 1000.0f, 8, 1000.0f );
+	appendTableRow(request, "A ap", "", device.ScaleFactor.a.ap * 1000.0f, 8, 1000.0f );
+	
+	appendTableRow(request, "B i", "", device.ScaleFactor.b.i * 1000.0f, 8, 1000.0f );
+	appendTableRow(request, "B p", "", device.ScaleFactor.b.p * 1000.0f, 8, 1000.0f );
+	appendTableRow(request, "B e", "", device.ScaleFactor.b.e * 1000.0f, 8, 1000.0f );
+	appendTableRow(request, "B ap", "", device.ScaleFactor.b.ap * 1000.0f, 8, 1000.0f );
+
+	poststr(request, "</table>");
 
 	poststr(request, "<hr><table style='width:100%'>");
 	appendTableRow(request, "Voltage", "V", last_update_data.v_rms, 2,1000.0f );

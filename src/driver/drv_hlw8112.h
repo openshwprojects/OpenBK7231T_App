@@ -348,6 +348,24 @@ typedef struct {
 
 
 typedef struct {
+	uint32_t v_rms;  	// rms voltage (1000.0 V)
+	uint32_t freq;		// frquency (100.0 Hz)
+	uint32_t pf;		// power factor (1000.0 )
+	int32_t ap;		// Channel A aparent power (1000.0)
+
+	int32_t ia_rms;	// Channel A rms current (1 mA)
+	int32_t pa;		// Channel A active power (1000.0)
+	uint32_t import_ea;	// Channel A Import Energy (10 mWh)
+	uint32_t export_ea;	// Channel A Export Energy (10 mWh)
+
+	int32_t ib_rms;	// Channel B rms current (1 mA)
+	int32_t pb;		// Channel B active power (1000.0)
+	uint32_t import_eb;	// Channel B Import Energy (10 mWh)
+	uint32_t export_eb;	// Channel B Export Energy (10 mWh)
+
+} HLW8112_AccumulatorData_t;
+
+typedef struct {
 	double i;
 	double p;
 	double e;
@@ -434,6 +452,7 @@ typedef enum  {
 //	HLW8112_Channel_ResCof_A = 13,
 //	HLW8112_Channel_ResCof_B = 14,
 //	HLW8112_Channel_Clk = 15,
+	HLW8112_Channel_Index = 16,
 } HLW8112_Device_channels;
 
 
