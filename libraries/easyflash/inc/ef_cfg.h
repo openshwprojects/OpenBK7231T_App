@@ -148,6 +148,12 @@
 extern uint32_t ENV_AREA_SIZE;
 #define DllExport __declspec(dllexport)
 
+#elif LINUX
+
+#define EF_START_ADDR             0
+extern uint32_t ENV_AREA_SIZE;
+#define DllExport __attribute__((dllexport))
+
 #endif
 /* print debug information of flash */
 #ifdef PKG_EASYFLASH_DEBUG
