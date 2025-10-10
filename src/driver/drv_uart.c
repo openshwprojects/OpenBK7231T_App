@@ -293,8 +293,10 @@ void UART_DebugTool_Run(int auartindex) {
         UART_ConsumeBytesEx(auartindex,1);
     }
     *p = 0;
-    addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "UART %i received %i bytes: %s\n",
-		auartindex, bytes, tmp);
+	if (bytes) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "UART %i received %i bytes: %s\n",
+			auartindex, bytes, tmp);
+	}
 }
 
 void UART_RunEverySecond() {
