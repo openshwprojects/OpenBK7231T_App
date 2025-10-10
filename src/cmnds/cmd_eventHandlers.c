@@ -394,6 +394,23 @@ int EventHandlers_FireEvent2(byte eventCode, int argument, int argument2) {
 	}
 	return ret;
 }
+// for simulator only
+const char *EventHandlers_GetHandlerCommand2(byte eventCode, int argument, int argument2) {
+
+	struct eventHandler_s *ev;
+
+	ev = g_eventHandlers;
+
+	while (ev) {
+		if (eventCode == ev->eventCode) {
+			if (argument == ev->requiredArgument && argument2 == ev->requiredArgument2) {
+				return ev->command;
+			}
+		}
+		ev = ev->next;
+	}
+	return NULL;
+}
 
 
 void EventHandlers_FireEvent(byte eventCode, int argument) {
