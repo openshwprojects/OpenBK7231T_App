@@ -2287,7 +2287,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 					break;
 				}
 
-				const char* options[en->numOptions];
+				char* options=(char*)malloc(en->numOptions * sizeof(char));
 				for (int o = 0; o < en->numOptions; o++) {
 					options[o] = en->options[o].label;
 				}
@@ -2317,6 +2317,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 						false
 					);
 				}
+				free(options);
 			}
 			break;
 			default:

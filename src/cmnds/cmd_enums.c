@@ -8,7 +8,7 @@
 #include "cmd_local.h"
 #include "cmd_enums.h"
 
-#define CMD_ENUM_MAX_LABEL_SIZE 64
+#define CMD_ENUM_MAX_LABEL_SIZE 32
 
 channelEnum_t **g_enums = 0;
 
