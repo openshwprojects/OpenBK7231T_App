@@ -21,6 +21,7 @@ OBKM_SRC  += $(OBK_SRCS)bitmessage/bitmessage_write.c
 OBKM_SRC  += $(OBK_SRCS)cJSON/cJSON.c
 OBKM_SRC  += $(OBK_SRCS)cmnds/cmd_berry.c
 OBKM_SRC  += $(OBK_SRCS)cmnds/cmd_channels.c
+OBKM_SRC  += $(OBK_SRCS)cmnds/cmd_enums.c
 OBKM_SRC  += $(OBK_SRCS)cmnds/cmd_eventHandlers.c
 OBKM_SRC  += $(OBK_SRCS)cmnds/cmd_if.c
 OBKM_SRC  += $(OBK_SRCS)cmnds/cmd_main.c
