@@ -38,12 +38,9 @@ void CMD_FormatEnumTemplate(channelEnum_t *e, char *out,
 
 		strcat_safe(out, tmp, outSize);
 	}
-	// set an undefined (only in templates) if no mapping found
-	// because enums are not ordered,
-	// and we aren't tracking the max value... using an unlikely number
 	if (!isCommand) {
 		strcat_safe(out, "99999: 'Undefined'} %}", outSize);
-		strcat_safe(out,"{{ mapper[(value | int(99999))] | default(\"undefined enum [\" ~ value~ \"]\") }}",outSize);
+		strcat_safe(out,"{{ mapper[(value | int(99999))] | default(\"Undefined\")}}",outSize);
 	} else {
 		strcat_safe(out, "'Undefined': '99999'} %}", outSize);
 		strcat_safe(out,"{{ (mapper[value] | default(99999)) }}",outSize);
@@ -60,6 +57,7 @@ commandResult_t CMD_SetChannelEnum(const void *context, const char *cmd,
 	const char *args, int cmdFlags) {
 	int ch;
 	const char *s;
+	char *label;
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 	// following check must be done after 'Tokenizer_TokenizeString',
@@ -75,8 +73,18 @@ commandResult_t CMD_SetChannelEnum(const void *context, const char *cmd,
 		g_enums = malloc(sizeof(channelEnum_t*)*CHANNEL_MAX);
 		memset(g_enums,0, sizeof(channelEnum_t*)*CHANNEL_MAX);
 	}
-	channelEnum_t *en = malloc(sizeof(channelEnum_t));
-	g_enums[ch] = en;
+	channelEnum_t *en;
+
+	if (g_enums[ch] != 0 && g_enums[ch]->numOptions != 0) {
+		// free any previously defined channel enums
+		en = g_enums[ch];
+		for (int i = 0; i< en->numOptions; i++) {
+			os_free(en->options[i].label);
+		}
+	} else {
+		en = malloc(sizeof(channelEnum_t));
+		g_enums[ch] = en;
+	}
 	en->numOptions = Tokenizer_GetArgsCount()-1;
 	en->options = malloc(sizeof(channelEnumOption_t)*en->numOptions);
 	for (int i = 0; i < en->numOptions; i++) {
@@ -89,7 +97,14 @@ commandResult_t CMD_SetChannelEnum(const void *context, const char *cmd,
 			}
 			s++;
 		}
-		en->options[i].label = strndup(s, CMD_ENUM_MAX_LABEL_SIZE);
+
+		//en->options[i].label = strdup(s);
+		int llen = strlen(s) > CMD_ENUM_MAX_LABEL_SIZE ? CMD_ENUM_MAX_LABEL_SIZE : strlen(s);
+		label = (char *)malloc(llen+1);
+		strncpy(label,s,llen);
+		label[llen]='\0';
+		en->options[i].label = label;
+		os_free(s);
 	}
 	return CMD_RES_OK;
 }

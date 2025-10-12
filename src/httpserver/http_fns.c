@@ -2287,10 +2287,11 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 					break;
 				}
 
-				char* options=(char*)malloc(en->numOptions * sizeof(char));
+				const char **options=(char**)malloc(en->numOptions * sizeof(char *));
 				for (int o = 0; o < en->numOptions; o++) {
 					options[o] = en->options[o].label;
 				}
+				//options[en->numOptions]="Undefined";
 
 				if (en->options != NULL && en->numOptions >0) {
 					// backlog setChannelType 1 Enum; setChannelEnum 0:red 2:blue 3:green; scheduleHADiscovery 1
@@ -2317,7 +2318,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 						false
 					);
 				}
-				free(options);
+				os_free(options);
 			}
 			break;
 			default:
