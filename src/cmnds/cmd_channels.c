@@ -18,6 +18,7 @@ int g_doNotPublishChannels = 0;
 
 void CHANNEL_FreeLabels() {
 	for (int ch = 0; ch < CHANNEL_MAX; ch++) {
+		CMD_FreeLabels(); // free any enum labels
 		if (g_channelLabels[ch]) {
 			free(g_channelLabels[ch]);
 			g_channelLabels[ch] = 0;

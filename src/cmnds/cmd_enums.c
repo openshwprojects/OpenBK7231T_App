@@ -12,6 +12,28 @@
 
 channelEnum_t **g_enums = 0;
 
+void CMD_FreeChannelEnumOptions(int ch) {
+	if (g_enums && g_enums[ch] && g_enums[ch]->numOptions != 0) {
+		for (int i = 0; i < g_enums[ch]->numOptions; i++) {
+			os_free(g_enums[ch]->options[i].label);
+		}
+		os_free(g_enums[ch]->options);
+		g_enums[ch]->numOptions=0;
+		os_free(g_enums[ch]);
+		g_enums[ch] = 0;
+	}
+}
+// method to clean up on shutdown
+void CMD_FreeLabels() {
+	for (int ch = 0; ch < CHANNEL_MAX; ch++) {
+	//	if (g_enums && g_enums[ch] && g_enums[ch]->numOptions != 0) {
+		CMD_FreeChannelEnumOptions(ch);
+			//os_free(g_enums[ch]);
+	}
+	//os_free(g_enums);
+	//g_enums = 0;
+
+}
 
 // helpers for preparing a homeassistant select template for enums
 void CMD_GenEnumValueTemplate(channelEnum_t *e, char *out, int outSize) {
@@ -62,6 +84,7 @@ commandResult_t CMD_SetChannelEnum(const void *context, const char *cmd,
 	int ch;
 	const char *s;
 	char *label;
+	channelEnum_t *en;
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 	// following check must be done after 'Tokenizer_TokenizeString',
@@ -77,18 +100,14 @@ commandResult_t CMD_SetChannelEnum(const void *context, const char *cmd,
 		g_enums = malloc(sizeof(channelEnum_t*)*CHANNEL_MAX);
 		memset(g_enums,0, sizeof(channelEnum_t*)*CHANNEL_MAX);
 	}
-	channelEnum_t *en;
 
 	if (g_enums[ch] != 0 && g_enums[ch]->numOptions != 0) {
 		// free any previously defined channel enums
-		en = g_enums[ch];
-		for (int i = 0; i< en->numOptions; i++) {
-			os_free(en->options[i].label);
-		}
-	} else {
-		en = malloc(sizeof(channelEnum_t));
-		g_enums[ch] = en;
+		CMD_FreeChannelEnumOptions(ch);
 	}
+	en = malloc(sizeof(channelEnum_t));
+	g_enums[ch] = en;
+
 	en->numOptions = Tokenizer_GetArgsCount()-1;
 	en->options = malloc(sizeof(channelEnumOption_t)*en->numOptions);
 	for (int i = 0; i < en->numOptions; i++) {
@@ -126,3 +145,4 @@ char* CMD_FindChannelEnumLabel(channelEnum_t *channelEnum, int value) {
 	}
 	return notfound;
 }
+
