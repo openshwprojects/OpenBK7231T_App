@@ -2393,6 +2393,7 @@ const char* g_channelTypeNames[] = {
 	"StopUpDown",
 	"EnergyImport_kWh_div1000",
 	"Enum",
+	"ReadOnlyEnum",
 	"error",
 	"error",
 };

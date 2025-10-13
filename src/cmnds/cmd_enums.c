@@ -28,22 +28,26 @@ void CMD_GenEnumCommandTemplate(channelEnum_t *e, char *out, int outSize) {
 void CMD_FormatEnumTemplate(channelEnum_t *e, char *out,
 	int outSize, bool isCommand) {
 	char tmp[CMD_ENUM_MAX_LABEL_SIZE+24];
+	int numOptions = 0;
 	*out = 0;
-	strcat_safe(out, "{% set mapper = { ", outSize);
-	for (int i = 0; i < e->numOptions; i++) {
+	strcat_safe(out, "{{ {", outSize);
+	if (e != NULL && e != 0)
+		numOptions = e->numOptions;
+
+	for (int i = 0; i < numOptions; i++) {
 		if (!isCommand)
-			sprintf(tmp, "%i: '%s', ", e->options[i].value,e->options[i].label);
+			sprintf(tmp, "%i:'%s', ", e->options[i].value,e->options[i].label);
 		else
-			sprintf(tmp, "'%s': '%i', ", e->options[i].label,e->options[i].value);
+			sprintf(tmp, "'%s':'%i', ", e->options[i].label,e->options[i].value);
 
 		strcat_safe(out, tmp, outSize);
 	}
 	if (!isCommand) {
-		strcat_safe(out, "99999: 'Undefined'} %}", outSize);
-		strcat_safe(out,"{{ mapper[(value | int(99999))] | default(\"Undefined\")}}",outSize);
+		strcat_safe(out, "99999:'Undefined'}", outSize);
+		strcat_safe(out,"[(value | int(99999))] | default(\"Undefined Enum [\"~value~\"]\") }}",outSize);
 	} else {
-		strcat_safe(out, "'Undefined': '99999'} %}", outSize);
-		strcat_safe(out,"{{ (mapper[value] | default(99999)) }}",outSize);
+		strcat_safe(out, "'Undefined':'99999'}", outSize);
+		strcat_safe(out,"[value] | default(99999) }}",outSize);
 	}
 
 #if WINDOWS
@@ -104,16 +108,15 @@ commandResult_t CMD_SetChannelEnum(const void *context, const char *cmd,
 		strncpy(label,s,llen);
 		label[llen]='\0';
 		en->options[i].label = label;
-		os_free(s);
 	}
 	return CMD_RES_OK;
 }
 
 // helper function to map enum values to labels
 char* CMD_FindChannelEnumLabel(channelEnum_t *channelEnum, int value) {
-	char* notfound = (char*)malloc(sizeof(char) * 5); // assuming INT_MAX 32k
+	static char notfound[5]; // assuming INT_MAX 32k
 	snprintf(notfound, 5, "%i", value); // if no label defined, use the value
-	if (channelEnum == NULL || channelEnum->numOptions == 0  ) { // g_enum zeroed on init
+	if (channelEnum == NULL || channelEnum == 0 || channelEnum->numOptions == 0  ) { // g_enum zeroed on init
 		return notfound;
 	}
 

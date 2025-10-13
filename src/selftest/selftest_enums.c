@@ -12,8 +12,17 @@ void Test_Enums() {
 
 	SELFTEST_ASSERT(g_enums == 0);
 
-	CMD_ExecuteCommand("SetChannelEnum 4 1:Ok 0:Bad", 0);
+	CMD_ExecuteCommand("SetChannelType 4 Enum", 0);
+	CMD_ExecuteCommand("SetChannelEnum 4 1:Bad 0:Ok", 0);
+	CMD_ExecuteCommand("SetChannelEnum 4 1:Ok 0:Bad", 0); // check options overwrite
+
+	// null checks
 	SELFTEST_ASSERT(g_enums);
+	SELFTEST_ASSERT(!strcmp(CMD_FindChannelEnumLabel(g_enums[14],1), "1"));
+	CMD_GenEnumValueTemplate(g_enums[14], tmp, sizeof(tmp));
+	// actual discovery template content assertions are in selftst_hass_discovery_ext.c
+	SELFTEST_ASSERT(!strcmp(tmp,"{{ {99999:'Undefined'}[(value | int(99999))] | default(\"Undefined Enum [\"~value~\"]\") }}"));
+
 	for (int i = 0; i < CHANNEL_MAX; i++) {
 		if (i != 4) {
 			SELFTEST_ASSERT(!g_enums[i]);

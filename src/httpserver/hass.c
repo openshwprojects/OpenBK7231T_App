@@ -5,6 +5,7 @@
 #include "../hal/hal_wifi.h"
 #include "../driver/drv_public.h"
 #include "../new_pins.h"
+#include "../cmnds/cmd_enums.h"
 
 #if ENABLE_HA_DISCOVERY
 
@@ -333,11 +334,11 @@ HassDeviceInfo* hass_createSelectEntityIndexed(const char* state_topic, const ch
 	generate_command_template(numoptions, options, command_template, sizeof(command_template));
 
 	return hass_createSelectEntityIndexedCustom(state_topic, command_topic, numoptions, options, title,
-		value_template, command_template, true);
+		value_template, command_template);
 }
 
 HassDeviceInfo* hass_createSelectEntityIndexedCustom(const char* state_topic, const char* command_topic, int numoptions,
-	const char* options[], const char* title, char* value_template, char* command_template, bool enable_status) {
+	const char* options[], const char* title, char* value_template, char* command_template) {
 	HassDeviceInfo* info = hass_init_device_info(HASS_SELECT, 0, NULL, NULL, 0, title);
 
 	cJSON_AddStringToObject(info->root, "name", title);
@@ -354,10 +355,8 @@ HassDeviceInfo* hass_createSelectEntityIndexedCustom(const char* state_topic, co
 	cJSON_AddStringToObject(info->root, "value_template", value_template);
 	cJSON_AddStringToObject(info->root, "command_template", command_template);
 
-	// TODO: these don't appear to be tied into mqtt events
-	// left them intact since hass_createSelectEntityIndexed publish them
-	if (enable_status) {
-		cJSON_AddStringToObject(info->root, "availability_topic", "~/status");
+	if (!CFG_HasFlag(OBK_FLAG_NOT_PUBLISH_AVAILABILITY)) {
+		cJSON_AddStringToObject(info->root, "availability_topic", "~/connected");
 		cJSON_AddStringToObject(info->root, "payload_available", "online");
 		cJSON_AddStringToObject(info->root, "payload_not_available", "offline");
 	}
@@ -587,7 +586,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 		case HASS_BUTTON:
 			sprintf(g_hassBuffer, "%s" , "");
 			break;
-
+		case HASS_READONLYENUM:
 		default:
 			sprintf(g_hassBuffer, "%s", CHANNEL_GetLabel(index));
 			break;
@@ -620,6 +619,12 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 			cJSON_AddStringToObject(info->root, "pl_on", payload_on);    //payload_on
 			cJSON_AddStringToObject(info->root, "pl_off", payload_off);   //payload_off	
 		}
+	}
+
+	if (type == HASS_READONLYENUM) {
+		char value_template[1024];
+		CMD_GenEnumValueTemplate(g_enums[index], value_template, sizeof(value_template));
+		cJSON_AddStringToObject(info->root, "value_template", value_template);
 	}
 
 	cJSON_AddStringToObject(info->root, "uniq_id", info->unique_id);  //unique_id
@@ -1027,6 +1032,11 @@ HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int 
 		sprintf(g_hassBuffer, "~/%d/get", channel);
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		break;
+	case HASS_READONLYENUM:
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		// str sensor can't have state_class, so return before it gets set
+		return info;
 	case CUSTOM_SENSOR:
 		sprintf(g_hassBuffer, "~/%d/get", channel);
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);

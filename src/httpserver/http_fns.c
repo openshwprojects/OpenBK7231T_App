@@ -512,7 +512,6 @@ int http_fn_index(http_request_t* request) {
 				hprintf255(request, "</form>");
 				poststr(request, "</td></tr>");
 			} else {
-				//label = findChannelEnumLabel(en, iValue);
 				en = g_enums[i];
 
 				poststr(request, "<tr><td>");
@@ -535,6 +534,18 @@ int http_fn_index(http_request_t* request) {
 				hprintf255(request, "</select></form>");
 				poststr(request, "</td></tr>");
 			}
+		}
+		else if (channelType == ChType_ReadOnlyEnum) {
+			iValue = CHANNEL_Get(i);
+			const char* oLabel;
+			if (g_enums == NULL || g_enums[i]->numOptions == 0)
+				oLabel = CHANNEL_GetLabel(i);
+			else
+				oLabel = CMD_FindChannelEnumLabel(g_enums[i], iValue);
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "Channel %s = %s [%i]", CHANNEL_GetLabel(i), oLabel, iValue);
+			poststr(request, "</td></tr>");
 		}
 		else if ((types = Channel_GetOptionsForChannelType(channelType, &numTypes)) != 0) {
 			const char *what;
@@ -2276,6 +2287,11 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				dev_info = hass_init_textField_info(i);
 			}
 			break;
+			case ChType_ReadOnlyEnum:
+			{
+				dev_info = hass_init_sensor_device_info(HASS_READONLYENUM, i, -1, -1, -1);
+			}
+			break;
 			case ChType_Enum:
 			{
 			        channelEnum_t *en;
@@ -2287,11 +2303,10 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 					break;
 				}
 
-				const char **options=(char**)malloc(en->numOptions * sizeof(char *));
+				char **options=(char**)malloc(en->numOptions * sizeof(char *));
 				for (int o = 0; o < en->numOptions; o++) {
 					options[o] = en->options[o].label;
 				}
-				//options[en->numOptions]="Undefined";
 
 				if (en->options != NULL && en->numOptions >0) {
 					// backlog setChannelType 1 Enum; setChannelEnum 0:red 2:blue 3:green; scheduleHADiscovery 1
@@ -2311,11 +2326,10 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 						stateTopic,
 						cmdTopic,
 						en->numOptions,
-						options,
+						(const char**)options,
 						title,
 						value_tmp,
-						command_tmp,
-						false
+						command_tmp
 					);
 				}
 				os_free(options);
