@@ -193,7 +193,7 @@ void Win_DoUnitTests() {
 	Test_Demo_ConditionalRelay();
 	Test_Expressions_RunTests_Braces();
 	Test_Expressions_RunTests_Basic();
-	//Test_Enums();
+	Test_Enums();
 	Test_Backlog();
 	Test_DoorSensor();
 	Test_LEDstrips();
