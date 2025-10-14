@@ -2044,8 +2044,8 @@
   },
   {
     "name": "SetChannelEnum",
-    "args": "[ChannelIndex][Value,Title][Value,Title]",
-    "descr": "Creates a custom channel enumeration.",
+    "args": "[ChannelIndex][Value:Title][Value:Title]",
+    "descr": "Creates a channel enumeration type.  Channel type must be set to Enum or ReadOnlyEnum. e.g. SetChannelEnum 1:One \"2:Enum Two\" 5:Five",
     "fn": "SetChannelEnum",
     "file": "cmnds/cmd_channels.c",
     "requires": "",
