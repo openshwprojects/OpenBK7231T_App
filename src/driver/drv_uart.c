@@ -276,6 +276,7 @@ void UART_DebugTool_Run(int auartindex) {
     char tmp[128];
     char *p = tmp;
     int i;
+	int bytes = 0;
 
     for (i = 0; i < sizeof(tmp) - 4; i++) {
 		if (UART_GetDataSizeEx(auartindex)==0) {
@@ -286,12 +287,16 @@ void UART_DebugTool_Run(int auartindex) {
             *p = ' ';
             p++;
         }
+		bytes++;
         sprintf(p, "%02X", b);
         p += 2;
         UART_ConsumeBytesEx(auartindex,1);
     }
     *p = 0;
-    addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "UART %i received: %s\n", auartindex, tmp);
+	if (bytes) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "UART %i received %i bytes: %s\n",
+			auartindex, bytes, tmp);
+	}
 }
 
 void UART_RunEverySecond() {
@@ -301,7 +306,7 @@ void UART_RunEverySecond() {
     }
   }
 }
-
+// uartInit 115200
 commandResult_t CMD_UART_Init(const void *context, const char *cmd, const char *args, int cmdFlags) {
     int baud;
 

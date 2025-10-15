@@ -249,6 +249,114 @@ void Test_Commands_Channels() {
 	SELFTEST_ASSERT_CHANNEL(10, -123);
 
 
+	// clamp test
+	CMD_ExecuteCommand("SetChannel 1 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	// [ChannelIndex][ValueToAdd][ClampMin][ClampMax][bWrapInsteadOfClamp]
+	CMD_ExecuteCommand("addChannel 1 10 0 100 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 10);
+	CMD_ExecuteCommand("addChannel 1 10 0 100 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 20);
+	CMD_ExecuteCommand("addChannel 1 80 0 100 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	CMD_ExecuteCommand("addChannel 1 80 0 100 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	CMD_ExecuteCommand("addChannel 1 80 0 100 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	CMD_ExecuteCommand("addChannel 1 -1 0 100 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 99);
+
+	// wrap test
+	CMD_ExecuteCommand("addChannel 1 1 0 100 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	CMD_ExecuteCommand("addChannel 1 1 0 100 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	CMD_ExecuteCommand("addChannel 1 1 0 100 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	CMD_ExecuteCommand("addChannel 1 1 0 100 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 2);
+	CMD_ExecuteCommand("addChannel 1 -1 0 100 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	CMD_ExecuteCommand("addChannel 1 1 0 100 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 2);
+	CMD_ExecuteCommand("addChannel 1 2 0 100 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 4);
+	CMD_ExecuteCommand("addChannel 1 10 0 100 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 14);
+	CMD_ExecuteCommand("addChannel 1 80 0 100 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 94);
+	CMD_ExecuteCommand("addChannel 1 5 0 100 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 99);
+	CMD_ExecuteCommand("addChannel 1 5 0 100 1", 0);
+	// TODO: stop at 100, then go to min?
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+
+	// pingpongtest
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	CMD_ExecuteCommand("addChannel 1 25 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 25);
+	CMD_ExecuteCommand("addChannel 1 25 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 50);
+	CMD_ExecuteCommand("addChannel 1 25 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 75);
+	CMD_ExecuteCommand("addChannel 1 25 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	CMD_ExecuteCommand("addChannel 1 25 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 75);
+	CMD_ExecuteCommand("addChannel 1 25 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 50);
+	CMD_ExecuteCommand("addChannel 1 25 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 25);
+	CMD_ExecuteCommand("addChannel 1 25 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	CMD_ExecuteCommand("addChannel 1 25 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 25);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 49);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 73);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 97);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	// SPECIAL - STOP AT 100
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 76);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 52);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 28);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 4);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 24);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 48);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 72);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 96);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 76);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 52);
+	// revert dir
+	CMD_ExecuteCommand("addChannel 1 0 0 100 3", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 52);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 76);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 76);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 52);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 28);
 
 	// cause error
 	//SELFTEST_ASSERT_CHANNEL(3, 666);

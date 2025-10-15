@@ -1,0 +1,44 @@
+CROSS_COMPILE ?=
+CC	:= $(CROSS_COMPILE)gcc
+OP	:= $(CROSS_COMPILE)objcopy
+AR	:= $(CROSS_COMPILE)ar
+AS	:= $(CROSS_COMPILE)as
+LD	:= $(CROSS_COMPILE)gcc
+NM	:= $(CROSS_COMPILE)nm
+OD	:= $(CROSS_COMPILE)objdump
+RD	:= $(CROSS_COMPILE)readelf
+ST	:= $(CROSS_COMPILE)strip
+
+all: library
+
+SRC_C += ef_port.c
+SRC_C += ../src/easyflash.c
+SRC_C += ../src/ef_env.c
+SRC_C += ../src/ef_env_legacy.c
+SRC_C += ../src/ef_env_legacy_wl.c
+SRC_C += ../src/ef_iap.c
+SRC_C += ../src/ef_log.c
+SRC_C += ../src/ef_utils.c
+
+SRC_O = $(patsubst %.c,%.o,$(SRC_C))
+
+INCLUDES = -I../inc
+LDFLAGS = -g -ggdb -fPIC -shared -Lstatic -Lpthread
+CFLAGS = -Os -g -ggdb -fPIC
+DEFINES = -DLINUX=1
+
+.PHONY: library
+library: $(SRC_O)
+	@ echo "Linking"
+	@$(CC) $(LDFLAGS) -o libef.so $(SRC_O)
+
+
+.PHONY: clean
+clean:
+	rm -f $(SRC_O)
+	rm -f libef.so
+	
+$(SRC_O): %.o : %.c
+	@ echo "build_c $@"
+	@$(CC) $(CFLAGS) $(INCLUDES) $(DEFINES) -c $< -o $@
+	@$(CC) $(CFLAGS) $(INCLUDES) $(DEFINES) -c $< -MM -MT $@ -MF $(patsubst %.o,%.d,$@)

@@ -233,7 +233,8 @@ void EventHandlers_FireEvent_String(byte eventCode, const char* argument);
 // This is useful to fire an event when, for example, a button is pressed.
 // Then eventCode is a BUTTON_PRESS and argument is a button index.
 void EventHandlers_FireEvent(byte eventCode, int argument);
-void EventHandlers_FireEvent2(byte eventCode, int argument, int argument2);
+int EventHandlers_FireEvent2(byte eventCode, int argument, int argument2);
+const char *EventHandlers_GetHandlerCommand2(byte eventCode, int argument, int argument2);
 void EventHandlers_FireEvent3(byte eventCode, int argument, int argument2, int argument3);
 // This is more advanced event handler. It will only fire handlers when a variable state changes from one to another.
 // For example, you can watch for Voltage from BL0942 to change below 230, and it will fire event only when it becomes below 230.

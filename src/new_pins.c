@@ -1643,55 +1643,58 @@ void CHANNEL_Set_Ex(int ch, int iVal, int iFlags, int ausemovingaverage) {
 void CHANNEL_Set(int ch, int iVal, int iFlags) {
 	CHANNEL_Set_Ex(ch, iVal, iFlags, 0);
 }
+char *g_channelPingPongs = 0;
 
-void CHANNEL_AddClamped(int ch, int iVal, int min, int max, int bWrapInsteadOfClamp) {
-#if 0
-	int prevValue;
-	if (ch < 0 || ch >= CHANNEL_MAX) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_AddClamped: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
-		return;
-	}
-	prevValue = g_channelValues[ch];
-	g_channelValues[ch] = g_channelValues[ch] + iVal;
-
-	if (bWrapInsteadOfClamp) {
-		if (g_channelValues[ch] > max)
-			g_channelValues[ch] = min;
-		if (g_channelValues[ch] < min)
-			g_channelValues[ch] = max;
-	}
-	else {
-		if (g_channelValues[ch] > max)
-			g_channelValues[ch] = max;
-		if (g_channelValues[ch] < min)
-			g_channelValues[ch] = min;
-	}
-
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_AddClamped channel %i has changed to %i\n\r", ch, g_channelValues[ch]);
-
-	Channel_OnChanged(ch, prevValue, 0);
-#else
+void CHANNEL_AddClamped(int ch, int iDelta, int min, int max, int bWrapInsteadOfClamp) {
 	// we want to support special channel indexes, so it's better to use GET/SET interface
 	// Special channel indexes are used to access things like dimmer, led colors, etc
-	iVal = CHANNEL_Get(ch) + iVal;
+	int newVal;;
 
-	if (bWrapInsteadOfClamp) {
-		if (iVal > max)
-			iVal = min;
-		if (iVal < min)
-			iVal = max;
+	if (bWrapInsteadOfClamp == 3) {
+		if (g_channelPingPongs) {
+			g_channelPingPongs[ch] *= -1;
+		}
+		return;
+	} else if (bWrapInsteadOfClamp == 2) {
+		// ping-pong logic
+		if (g_channelPingPongs == 0) {
+			g_channelPingPongs = (char*)malloc(CHANNEL_MAX);
+			memset(g_channelPingPongs, 1, CHANNEL_MAX);
+		}
+		int prevVal = CHANNEL_Get(ch);
+		newVal = prevVal + iDelta * g_channelPingPongs[ch];
+		if (prevVal == min && newVal < min) {
+			g_channelPingPongs[ch] *= -1;
+		}
+		else if (prevVal == max && newVal > max) {
+			g_channelPingPongs[ch] *= -1;
+		}
+		newVal = prevVal + iDelta * g_channelPingPongs[ch];
+		if (newVal > max) {
+			newVal = max;
+		}
+		else if (newVal < min) {
+			newVal = min;
+		}
+	} else if (bWrapInsteadOfClamp) {
+		newVal = CHANNEL_Get(ch) + iDelta;
+		if (newVal > max)
+			newVal = min;
+		if (newVal < min)
+			newVal = max;
 	}
 	else {
-		if (iVal > max)
-			iVal = max;
-		if (iVal < min)
-			iVal = min;
+		newVal = CHANNEL_Get(ch) + iDelta;
+		if (newVal > max)
+			newVal = max;
+		if (newVal < min)
+			newVal = min;
 	}
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_AddClamped channel %i has changed to %i\n\r", ch, iVal);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, 
+		"CHANNEL_AddClamped channel %i has changed to %i\n\r", ch, newVal);
 
-	CHANNEL_Set(ch, iVal, 0);
-#endif
+	CHANNEL_Set(ch, newVal, 0);
 }
 void CHANNEL_Add(int ch, int iVal) {
 #if 0
@@ -2389,6 +2392,8 @@ const char* g_channelTypeNames[] = {
 	"Percent",
 	"StopUpDown",
 	"EnergyImport_kWh_div1000",
+	"Enum",
+	"ReadOnlyEnum",
 	"error",
 	"error",
 };
