@@ -220,6 +220,8 @@ jobs:
             variant: irRemoteESP
           - platform: OpenBK7231N
             variant: sensors
+          - platform: OpenBK7231N
+            variant: hlw8112
             
           - platform: OpenBL602
             variant: berry
