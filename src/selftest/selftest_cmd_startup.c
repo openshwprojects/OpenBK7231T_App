@@ -42,6 +42,60 @@ void Test_Commands_Startup() {
 	CFG_SetShortStartupCommand(loremIpsum3);
 	CMD_ExecuteCommand(CFG_GetShortStartupCommand(), 0);
 
+	{
+		SIM_ShutdownOBK();
+		const char *t = "startDriver IR\n"
+			"setFlag 1 1\n"
+			"addEventHandler2 IR_NEC 0xC7EA 0x17 backlog IRSend NEC 0x0 0xA8; IRSend NEC 0x0 0xA8; IRSend NEC 0x0 0xA8\n"
+			"addEventHandler2 IR_NEC 0xC7EA 0xF backlog IRSend NEC 0x0 0x8C; IRSend NEC 0x0 0x8C; IRSend NEC 0x0 0x8C; IRSend NEC 0x0 0x8C; IRSend NEC 0x0 0x8C\n"
+			"addEventHandler2 IR_NEC 0xC7EA 0x10 backlog IRSend NEC 0x0 0x9C; IRSend NEC 0x0 0x9C; IRSend NEC 0x0 0x9C; IRSend NEC 0x0 0x9C\n";
+
+		CFG_SetShortStartupCommand(t);
+		CFG_Save_IfThereArePendingChanges();
+		// NOTE: THIS WILL RUN STARTUP COMMAND!!!!
+		SIM_StartOBK(0);
+
+		printf("TEST 0x17: %s\n",
+			EventHandlers_GetHandlerCommand2(CMD_EVENT_IR_NEC, 0xC7EA, 0x17));
+		printf("TEST 0xF %s\n",
+			EventHandlers_GetHandlerCommand2(CMD_EVENT_IR_NEC, 0xC7EA, 0xF));
+		printf("TEST 0x10 %s\n",
+			EventHandlers_GetHandlerCommand2(CMD_EVENT_IR_NEC, 0xC7EA, 0x10));
+		SELFTEST_ASSERT(1 == EventHandlers_FireEvent2(CMD_EVENT_IR_NEC, 0xC7EA, 0x17));
+		SELFTEST_ASSERT(1 == EventHandlers_FireEvent2(CMD_EVENT_IR_NEC, 0xC7EA, 0xF));
+		SELFTEST_ASSERT(1 == EventHandlers_FireEvent2(CMD_EVENT_IR_NEC, 0xC7EA, 0x10));
+
+	}
+	{
+		SIM_ShutdownOBK();
+		const char *t = "startDriver IR\n"
+			"setFlag 1 1\n"
+			"addEventHandler2 IR_NEC 0xC7EA 0x17 backlog IRSend NEC 0x0 0xA8; IRSend NEC 0x0 0xA8; IRSend NEC 0x0 0xA8\n"
+			"addEventHandler2 IR_NEC 0xC7EA 0xF backlog IRSend NEC 0x0 0x8C; IRSend NEC 0x0 0x8C; IRSend NEC 0x0 0x8C; IRSend NEC 0x0 0x8C; IRSend NEC 0x0 0x8C\n"
+			"addEventHandler2 IR_NEC 0xC7EA 0x10 backlog IRSend NEC 0x0 0x9C; IRSend NEC 0x0 0x9C; IRSend NEC 0x0 0x9C; IRSend NEC 0x0 0x9C\n"
+			"addEventHandler2 IR_NEC 0xC7EA 0x11 backlog IRSend NEC 0x0 0x9D; IRSend NEC 0x0 0x9D; IRSend NEC 0x0 0x9D; IRSend NEC 0x0 0x9D\n";
+
+		CFG_SetShortStartupCommand(t);
+		CFG_Save_IfThereArePendingChanges();
+		// NOTE: THIS WILL RUN STARTUP COMMAND!!!!
+		SIM_StartOBK(0);
+
+		printf("TEST 0x17: %s\n",
+			EventHandlers_GetHandlerCommand2(CMD_EVENT_IR_NEC, 0xC7EA, 0x17));
+		printf("TEST 0xF %s\n",
+			EventHandlers_GetHandlerCommand2(CMD_EVENT_IR_NEC, 0xC7EA, 0xF));
+		printf("TEST 0x10 %s\n",
+			EventHandlers_GetHandlerCommand2(CMD_EVENT_IR_NEC, 0xC7EA, 0x10));
+		printf("TEST 0x11 %s\n",
+			EventHandlers_GetHandlerCommand2(CMD_EVENT_IR_NEC, 0xC7EA, 0x11));
+		SELFTEST_ASSERT(1 == EventHandlers_FireEvent2(CMD_EVENT_IR_NEC, 0xC7EA, 0x17));
+		SELFTEST_ASSERT(1 == EventHandlers_FireEvent2(CMD_EVENT_IR_NEC, 0xC7EA, 0xF));
+		SELFTEST_ASSERT(1 == EventHandlers_FireEvent2(CMD_EVENT_IR_NEC, 0xC7EA, 0x10));
+		SELFTEST_ASSERT(1 == EventHandlers_FireEvent2(CMD_EVENT_IR_NEC, 0xC7EA, 0x11));
+
+	}
+
+
 }
 
 

@@ -6,6 +6,7 @@ set(OBKM_SRC
 	${OBK_SRCS}bitmessage/bitmessage_write.c
 	${OBK_SRCS}cmnds/cmd_berry.c
 	${OBK_SRCS}cmnds/cmd_channels.c
+	${OBK_SRCS}cmnds/cmd_enums.c
 	${OBK_SRCS}cmnds/cmd_eventHandlers.c
 	${OBK_SRCS}cmnds/cmd_if.c
 	${OBK_SRCS}cmnds/cmd_main.c
