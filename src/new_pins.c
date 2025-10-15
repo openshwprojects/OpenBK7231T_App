@@ -2392,6 +2392,8 @@ const char* g_channelTypeNames[] = {
 	"Percent",
 	"StopUpDown",
 	"EnergyImport_kWh_div1000",
+	"Enum",
+	"ReadOnlyEnum",
 	"error",
 	"error",
 };

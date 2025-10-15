@@ -18,6 +18,7 @@ int g_doNotPublishChannels = 0;
 
 void CHANNEL_FreeLabels() {
 	for (int ch = 0; ch < CHANNEL_MAX; ch++) {
+		CMD_FreeLabels(); // free any enum labels
 		if (g_channelLabels[ch]) {
 			free(g_channelLabels[ch]);
 			g_channelLabels[ch] = 0;
@@ -592,13 +593,11 @@ void CMD_InitChannelCommands(){
 	//cmddetail:"fn":"CMD_FullBootTime","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("FullBootTime", CMD_FullBootTime, NULL);
-	//cmddetail:{"name":"SetChannelEnum","args":"[ChannelIndex][Value,Title][Value,Title]",
-	//cmddetail:"descr":"Creates a custom channel enumeration.",
+	//cmddetail:{"name":"SetChannelEnum","args":"[ChannelIndex][Value:Title][Value:Title]",
+	//cmddetail:"descr":"Creates a channel enumeration type.  Channel type must be set to Enum or ReadOnlyEnum. e.g. SetChannelEnum 1:One \"2:Enum Two\" 5:Five",
 	//cmddetail:"fn":"SetChannelEnum","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
-#if WINDOWS
-	//CMD_RegisterCommand("SetChannelEnum", CMD_SetChannelEnum, NULL);
-#endif
+	CMD_RegisterCommand("SetChannelEnum", CMD_SetChannelEnum, NULL);
 	//cmddetail:{"name":"SetChannelLabel","args":"[ChannelIndex][Str][bHideTogglePrefix]",
 	//cmddetail:"descr":"Sets a channel label for UI and default entity name for Home Assistant discovery. If you use 1 for bHideTogglePrefix, then the 'Toggle ' prefix from UI button will be omitted",
 	//cmddetail:"fn":"CMD_SetChannelLabel","file":"cmnds/cmd_channels.c","requires":"",

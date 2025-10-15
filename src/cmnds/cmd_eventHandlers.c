@@ -376,8 +376,9 @@ void EventHandlers_FireEvent3(byte eventCode, int argument, int argument2, int a
 		ev = ev->next;
 	}
 }
-void EventHandlers_FireEvent2(byte eventCode, int argument, int argument2) {
+int EventHandlers_FireEvent2(byte eventCode, int argument, int argument2) {
 	struct eventHandler_s *ev;
+	int ret = 0;
 
 	ev = g_eventHandlers;
 
@@ -386,10 +387,29 @@ void EventHandlers_FireEvent2(byte eventCode, int argument, int argument2) {
 			if(argument == ev->requiredArgument && argument2 == ev->requiredArgument2) {
 				ADDLOG_INFO(LOG_FEATURE_EVENT, "EventHandlers_FireEvent2: executing command %s",ev->command);
 				CMD_ExecuteCommand(ev->command, COMMAND_FLAG_SOURCE_SCRIPT);
+				ret++;
 			}
 		}
 		ev = ev->next;
 	}
+	return ret;
+}
+// for simulator only
+const char *EventHandlers_GetHandlerCommand2(byte eventCode, int argument, int argument2) {
+
+	struct eventHandler_s *ev;
+
+	ev = g_eventHandlers;
+
+	while (ev) {
+		if (eventCode == ev->eventCode) {
+			if (argument == ev->requiredArgument && argument2 == ev->requiredArgument2) {
+				return ev->command;
+			}
+		}
+		ev = ev->next;
+	}
+	return NULL;
 }
 
 

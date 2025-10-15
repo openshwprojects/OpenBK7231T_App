@@ -179,6 +179,7 @@
     <ClCompile Include="src\cJSON\cJSON.c" />
     <ClCompile Include="src\cmnds\cmd_berry.c" />
     <ClCompile Include="src\cmnds\cmd_channels.c" />
+    <ClCompile Include="src\cmnds\cmd_enums.c" />
     <ClCompile Include="src\cmnds\cmd_eventHandlers.c" />
     <ClCompile Include="src\cmnds\cmd_if.c" />
     <ClCompile Include="src\cmnds\cmd_main.c" />
@@ -785,6 +786,7 @@
     <ClCompile Include="src\selftest\selftest_demo_signAndValue.c" />
     <ClCompile Include="src\selftest\selftest_doorSensor.c" />
     <ClCompile Include="src\selftest\selftest_flashSearch.c" />
+    <ClCompile Include="src\selftest\selftest_enums.c" />
     <ClCompile Include="src\selftest\selftest_hass_discovery_base.c" />
     <ClCompile Include="src\selftest\selftest_hass_discovery_ext.c" />
     <ClCompile Include="src\selftest\selftest_http_led.c" />

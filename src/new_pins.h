@@ -1071,6 +1071,20 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_EnergyImport_kWh_div1000,
+	//chandetail:{"name":"Enum",
+	//chandetail:"title":"Enum",
+	//chandetail:"descr":"This channel type allows creating custom Enum types in combination with SetChannelEnum command. Ideal for defining TuyaMCU enum mappings.",
+	//chandetail:"enum":"ChType_Enum",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Enum,
+	//chandetail:{"name":"ReadOnlyEnum",
+	//chandetail:"title":"ReadOnlyEnum",
+	//chandetail:"descr":"Read Only Enum Channel type for use in combination with SetChannelEnum command. Ideal for defining TuyaMCU enum mappings.",
+	//chandetail:"enum":"ChType_ReadOnlyEnum",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_ReadOnlyEnum,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
