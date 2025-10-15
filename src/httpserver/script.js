@@ -21,8 +21,9 @@ function showState() {
 		if (req.readyState == 4 && req.statusText == "OK") {
 			if (
 				!(
-					document.activeElement.tagName == "INPUT" &&
-					(document.activeElement.type == "number" || document.activeElement.type == "color")
+					document.activeElement.tagName == "SELECT" &&
+					(document.activeElement.tagName == "INPUT" &&
+					(document.activeElement.type == "number" || document.activeElement.type == "color"))
 				)
 			) {
 				var stateEl = getElement("state");

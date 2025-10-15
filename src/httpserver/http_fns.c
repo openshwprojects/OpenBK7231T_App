@@ -5,6 +5,7 @@
 #include "../hal/hal_ota.h"
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
+#include "../cmnds/cmd_enums.h"
 #include "../driver/drv_tuyaMCU.h"
 #include "../driver/drv_public.h"
 #include "../driver/drv_bl_shared.h"
@@ -527,6 +528,56 @@ int http_fn_index(http_request_t* request) {
 			else {
 				hprintf255(request, "Channel %s = %i", CHANNEL_GetLabel(i), iValue);
 			}
+			poststr(request, "</td></tr>");
+		} else if (channelType == ChType_Enum) {
+			iValue = CHANNEL_Get(i);
+			channelEnum_t *en;
+
+
+			// if setChannelEnum has not been defined, treat ChType_Enum as a textfield
+			if (g_enums == NULL || g_enums[i]->numOptions == 0 ) {
+				//en = g_enums[i];
+				poststr(request, "<tr><td>");
+				hprintf255(request, "<p>Change channel %s enum:</p><form action=\"index\">", CHANNEL_GetLabel(i));
+				hprintf255(request, "<input type=\"hidden\" name=\"setIndex\" value=\"%i\">", i);
+				hprintf255(request, "<input type=\"number\" name=\"set\" value=\"%i\" onblur=\"this.form.submit()\">", iValue);
+				hprintf255(request, "<input type=\"submit\" value=\"Set!\"/></form>");
+				hprintf255(request, "</form>");
+				poststr(request, "</td></tr>");
+			} else {
+				en = g_enums[i];
+
+				poststr(request, "<tr><td>");
+				hprintf255(request, "<form action=\"index\"><label for=\"select%i\">Channel %s Enum:</label>", i, CHANNEL_GetLabel(i));
+				hprintf255(request, "<input type=\"hidden\" name=\"setIndex\" value=\"%i\">", i);
+				hprintf255(request, "<select id=\"select%i\" name=\"set\" onchange=\"this.form.submit()\">", i);
+
+				bool found = false;
+				for (int o = 0; o < en->numOptions; o++) {
+					const char* selected;
+					if (en->options[o].value == iValue) {
+						selected = "selected";
+						found = true;
+					} else
+						selected = "";
+					hprintf255(request, "<option value=\"%i\" %s>%s [%i]</option>", en->options[o].value, selected, en->options[o].label,en->options[o].value);
+				}
+				if (!found) // create an item if no label is found
+					hprintf255(request, "<option value=\"%i\" selected>undefined enum [%i]</option>", iValue,iValue);
+				hprintf255(request, "</select></form>");
+				poststr(request, "</td></tr>");
+			}
+		}
+		else if (channelType == ChType_ReadOnlyEnum) {
+			iValue = CHANNEL_Get(i);
+			const char* oLabel;
+			if (g_enums == NULL || g_enums[i]->numOptions == 0)
+				oLabel = CHANNEL_GetLabel(i);
+			else
+				oLabel = CMD_FindChannelEnumLabel(g_enums[i], iValue);
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "Channel %s = %s [%i]", CHANNEL_GetLabel(i), oLabel, iValue);
 			poststr(request, "</td></tr>");
 		}
 		else if ((types = Channel_GetOptionsForChannelType(channelType, &numTypes)) != 0) {
@@ -2269,6 +2320,54 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			case ChType_TextField:
 			{
 				dev_info = hass_init_textField_info(i);
+			}
+			break;
+			case ChType_ReadOnlyEnum:
+			{
+				dev_info = hass_init_sensor_device_info(HASS_READONLYENUM, i, -1, -1, -1);
+			}
+			break;
+			case ChType_Enum:
+			{
+			        channelEnum_t *en;
+				if (g_enums != NULL && g_enums[i]->numOptions != 0) {
+					en = g_enums[i];
+				} else {
+					// revert to textfield if no enums are defined
+					dev_info = hass_init_textField_info(i);
+					break;
+				}
+
+				char **options=(char**)malloc(en->numOptions * sizeof(char *));
+				for (int o = 0; o < en->numOptions; o++) {
+					options[o] = en->options[o].label;
+				}
+
+				if (en->options != NULL && en->numOptions >0) {
+					// backlog setChannelType 1 Enum; setChannelEnum 0:red 2:blue 3:green; scheduleHADiscovery 1
+					char stateTopic[32];
+					char cmdTopic[32];
+					char title[64];
+					char value_tmp[1024];
+					char command_tmp[1024];
+
+					CMD_GenEnumValueTemplate(en, value_tmp, sizeof(value_tmp));
+					CMD_GenEnumCommandTemplate(en, command_tmp, sizeof(command_tmp));
+
+					strcpy(title, CHANNEL_GetLabel(i));
+					sprintf(stateTopic, "~/%i/get", i);
+					sprintf(cmdTopic, "~/%i/set", i);
+					dev_info = hass_createSelectEntityIndexedCustom(
+						stateTopic,
+						cmdTopic,
+						en->numOptions,
+						(const char**)options,
+						title,
+						value_tmp,
+						command_tmp
+					);
+				}
+				os_free(options);
 			}
 			break;
 			default:

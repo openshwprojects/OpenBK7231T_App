@@ -496,6 +496,22 @@
     "driver": ""
   },
   {
+    "name": "Enum",
+    "title": "Enum",
+    "descr": "This channel type allows creating custom Enum types in combination with SetChannelEnum command. Ideal for defining TuyaMCU enum mappings.",
+    "enum": "ChType_Enum",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "ReadOnlyEnum",
+    "title": "ReadOnlyEnum",
+    "descr": "Read Only Enum Channel type for use in combination with SetChannelEnum command. Ideal for defining TuyaMCU enum mappings.",
+    "enum": "ChType_ReadOnlyEnum",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
     "name": "Max",
     "title": "TODO",
     "descr": "This is the current total number of available channel types.",
