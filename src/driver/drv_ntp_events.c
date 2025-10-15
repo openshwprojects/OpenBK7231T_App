@@ -446,9 +446,9 @@ int NTP_PrintEventList() {
 				sprintf(sun," (sunset)");
 			}
 		}
-		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Ev %i - %i:%i:%i%s, days 0x%02x, cmd %s\n", (int)e->id, (int)e->hour, (int)e->minute, (int)e->second, sun, (int)e->weekDayFlags, e->command);
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Ev %i - %02i:%02i:%02i%s, days 0x%02x, cmd %s\n", (int)e->id, (int)e->hour, (int)e->minute, (int)e->second, sun, (int)e->weekDayFlags, e->command);
 #else
-		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Ev %i - %i:%i:%i, days 0x%02x, cmd %s\n", (int)e->id, (int)e->hour, (int)e->minute, (int)e->second, (int)e->weekDayFlags, e->command);
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Ev %i - %02i:%02i:%02i, days 0x%02x, cmd %s\n", (int)e->id, (int)e->hour, (int)e->minute, (int)e->second, (int)e->weekDayFlags, e->command);
 #endif
 		t++;
 		e = e->next;
