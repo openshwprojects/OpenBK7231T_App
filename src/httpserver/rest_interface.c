@@ -13,7 +13,14 @@
 
 #define DEFAULT_FLASH_LEN 0x200000
 
-
+#if PLATFORM_RTL8710A
+#undef DEFAULT_FLASH_LEN
+#define DEFAULT_FLASH_LEN 0x400000
+#elif PLATFORM_RTL8720D || PLATFORM_REALTEK_NEW
+extern uint8_t flash_size_8720;
+#undef DEFAULT_FLASH_LEN
+#define DEFAULT_FLASH_LEN (flash_size_8720 << 20)
+#endif
 
 #include "../new_cfg.h"
 // Commands register, execution API and cmd tokenizer
@@ -196,7 +203,7 @@ static int http_rest_post(http_request_t* request) {
 		r = http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 		r = http_rest_post_flash(request, -1, -1);
-#elif PLATFORM_REALTEK && !PLATFORM_RTL8720E
+#elif PLATFORM_REALTEK
 		r = http_rest_post_flash(request, 0, -1);
 #elif PLATFORM_ECR6600 || PLATFORM_TR6260
 		r = http_rest_post_flash(request, -1, -1);

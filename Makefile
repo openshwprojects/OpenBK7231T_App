@@ -338,7 +338,10 @@ prebuild_OpenECR6600: berry
 	fi
 
 prebuild_OpenRTL8721DA: berry
-	#git submodule update --init --recursive --depth=1 sdk/ameba-rtos
+	git submodule update --init --recursive --depth=1 sdk/ameba-rtos
+ifdef GITHUB_ACTIONS
+	bash platforms/RTL8721DA/gh_prebuild.sh
+endif
 	if [ ! -e sdk/ameba-rtos/amebadplus_gcc_project/menuconfig/.config ]; then cd sdk/ameba-rtos/amebadplus_gcc_project && ./menuconfig.py -f ../../../platforms/RTL8721DA/default.conf; fi
 	@if [ -e platforms/RTL8721DA/pre_build.sh ]; then \
 		echo "prebuild found for OpenRTL8721DA"; \
@@ -347,7 +350,10 @@ prebuild_OpenRTL8721DA: berry
 	fi
 
 prebuild_OpenRTL8720E: berry
-	#git submodule update --init --recursive --depth=1 sdk/ameba-rtos
+	git submodule update --init --recursive --depth=1 sdk/ameba-rtos
+ifdef GITHUB_ACTIONS
+	bash platforms/RTL8720E/gh_prebuild.sh
+endif
 	if [ ! -e sdk/ameba-rtos/amebalite_gcc_project/menuconfig/.config ]; then cd sdk/ameba-rtos/amebalite_gcc_project && ./menuconfig.py -f ../../../platforms/RTL8720E/default.conf; fi
 	@if [ -e platforms/RTL8720E/pre_build.sh ]; then \
 		echo "prebuild found for OpenRTL8720E"; \
@@ -672,7 +678,7 @@ OpenTXW81X: prebuild_OpenTXW81X
 	./BinScript.exe BinScript.BinScript > /dev/null && ./makecode.exe > /dev/null
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenTXW81X/project/APP.bin output/$(APP_VERSION)/OpenTXW81X_$(APP_VERSION).bin
-	#cp sdk/OpenTXW81X/project/APP_compress.bin output/$(APP_VERSION)/OpenTXW81X_$(APP_VERSION)_ota.img
+	cp sdk/OpenTXW81X/project/APP_compress.bin output/$(APP_VERSION)/OpenTXW81X_$(APP_VERSION)_ota.img
 	
 .PHONY: OpenRDA5981
 OpenRDA5981: prebuild_OpenRDA5981
