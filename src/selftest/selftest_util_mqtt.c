@@ -186,8 +186,10 @@ bool SIM_HasMQTTHistoryStringWithJSONPayload(const char *topic, bool bPrefixMode
 								bOk = false;
 							}
 						}
-						if (bOk)
+						if (bOk) {
+							cJSON_Delete(json);
 							return true;
+						}
 					}
 				}
 				cJSON_Delete(json);
