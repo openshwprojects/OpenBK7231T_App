@@ -8,7 +8,12 @@ void Test_Enums() {
 	char tmp[1024];
 
 	// reset whole device
-	SIM_ClearOBK(0);
+	const char *shortName = "myShortName";
+	SIM_ClearOBK(shortName);
+	const char *fullName = "Windows Enum";
+	const char *mqttName = "obkEnumDemo";
+
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
 
 	SELFTEST_ASSERT(g_enums == 0);
 
@@ -58,6 +63,14 @@ void Test_Enums() {
 	SELFTEST_ASSERT(!strcmp(CMD_FindChannelEnumLabel(g_enums[14],3), "Three"));
 
 
+
+
+	CFG_SetShortDeviceName(shortName);
+	CFG_SetDeviceName(fullName);
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(10, false);
 }
 
 
