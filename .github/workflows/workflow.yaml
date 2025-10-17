@@ -364,6 +364,7 @@ jobs:
           ref: ${{ matrix.version }}
           submodules: recursive
       - uses: actions/setup-python@v5
+        id: pysetup
         with:
           python-version: '3.10'
           architecture: 'x64'
@@ -378,7 +379,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.espressif # cache whole folder, not just dist
-          key: ESP-IDF_toolchain_${{ matrix.version }}
+          key: ESP-IDF_toolchain_${{ matrix.version }}_${{ steps.pysetup.outputs.python-version }}
       - name: Get toolchain
         if: steps.cache-toolchain.outputs.cache-hit != 'true'
         run: |
