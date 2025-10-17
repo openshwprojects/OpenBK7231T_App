@@ -95,7 +95,15 @@ bool CheckForKeyVal(cJSON *tmp, const char *key, const char *value) {
 				}
 			}
 			else {
-				printf("TODO: float compare selftest");
+				char *json_str = cJSON_PrintUnformatted(tmp);
+				bool bOk = false;
+				if (json_str) {
+					if (!strcmp(json_str, value)) {
+						bOk = true;
+					}
+					free(json_str); // or cJSON_free(json_str) depending on your build
+				}
+				return bOk;
 			}
 		}
 	}
