@@ -2348,11 +2348,9 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				if (options && numOptions) {
 					// backlog setChannelType 2 LowMidHigh; scheduleHADiscovery 1
 					// backlog setChannelType 3 OpenStopClose; scheduleHADiscovery 1
-					char stateTopic[32];
-					char cmdTopic[32];
-					char title[64];
+					char stateTopic[16];
+					char cmdTopic[16];
 					// TODO: lengths
-					strcpy(title, CHANNEL_GetLabel(i));
 					sprintf(stateTopic, "~/%i/get", i);
 					sprintf(cmdTopic, "~/%i/set", i);
 					dev_info = hass_createSelectEntityIndexed(
@@ -2360,7 +2358,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 						cmdTopic,
 						numOptions,
 						options,
-						title
+						CHANNEL_GetLabel(i)
 					);
 				}
 			}
