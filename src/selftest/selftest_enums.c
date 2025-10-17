@@ -2,7 +2,45 @@
 
 #include "selftest_local.h"
 #include "../cmnds/cmd_enums.h"
+void Test_Enum_LowMidH() {
+	// reset whole device
+	const char *shortName = "myShortName";
+	SIM_ClearOBK(shortName);
+	const char *fullName = "Windows Enum";
+	const char *mqttName = "obkEnumDemo";
 
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
+
+	CMD_ExecuteCommand("SetChannelType 14 LowMidHigh", 0);
+	SELFTEST_ASSERT(g_cfg.pins.channelTypes[14] == ChType_LowMidHigh);
+
+	CFG_SetShortDeviceName(shortName);
+	CFG_SetDeviceName(fullName);
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(10, false);
+
+
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
+		"state_topic", "~/14/get",
+		"uniq_id", "Windows_Enum_select_14",
+		"uniq_id", "Windows_Enum_select_14",
+		"uniq_id", "Windows_Enum_select_14");
+
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
+		"availability_topic", "~/connected",
+		"payload_available", "online",
+		"payload_not_available", "offline",
+		"uniq_id", "Windows_Enum_select_14");
+
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
+		"command_topic", "~/14/set",
+		"options", "[\"Low\",\"Mid\",\"High\"]",
+		"value_template", "{{ {'0': 'Low', '1': 'Mid', '2': 'High'} [value] }}",
+		"command_template", "{{ {'Low': '0', 'Mid': '1', 'High': '2'} [value] }}");
+
+}
 void Test_Enum_3opts() {
 	// reset whole device
 	const char *shortName = "myShortName";
@@ -140,6 +178,7 @@ void Test_Enums() {
 
 	Test_Enum_BadOk();
 	Test_Enum_3opts();
+	Test_Enum_LowMidH();
 }
 
 
