@@ -11,8 +11,8 @@ void Test_Enum_LowMidH() {
 
 	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
 
-	CMD_ExecuteCommand("SetChannelType 14 LowMidHigh", 0);
-	SELFTEST_ASSERT(g_cfg.pins.channelTypes[14] == ChType_LowMidHigh);
+	CMD_ExecuteCommand("SetChannelType 13 LowMidHigh", 0);
+	SELFTEST_ASSERT(g_cfg.pins.channelTypes[13] == ChType_LowMidHigh);
 
 	CFG_SetShortDeviceName(shortName);
 	CFG_SetDeviceName(fullName);
@@ -23,22 +23,61 @@ void Test_Enum_LowMidH() {
 
 
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
-		"state_topic", "~/14/get",
-		"uniq_id", "Windows_Enum_select_14",
-		"uniq_id", "Windows_Enum_select_14",
-		"uniq_id", "Windows_Enum_select_14");
+		"state_topic", "~/13/get",
+		"uniq_id", "Windows_Enum_select_13",
+		"uniq_id", "Windows_Enum_select_13",
+		"uniq_id", "Windows_Enum_select_13");
 
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
 		"availability_topic", "~/connected",
 		"payload_available", "online",
 		"payload_not_available", "offline",
-		"uniq_id", "Windows_Enum_select_14");
+		"uniq_id", "Windows_Enum_select_13");
 
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
-		"command_topic", "~/14/set",
+		"command_topic", "~/13/set",
 		"options", "[\"Low\",\"Mid\",\"High\"]",
 		"value_template", "{{ {'0': 'Low', '1': 'Mid', '2': 'High'} [value] }}",
 		"command_template", "{{ {'Low': '0', 'Mid': '1', 'High': '2'} [value] }}");
+
+}
+void Test_Enum_LowMidHighOff() {
+	// reset whole device
+	const char *shortName = "myShortName";
+	SIM_ClearOBK(shortName);
+	const char *fullName = "Windows Enum";
+	const char *mqttName = "obkEnumDemo";
+
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
+
+	CMD_ExecuteCommand("SetChannelType 12 OffLowMidHigh", 0);
+	SELFTEST_ASSERT(g_cfg.pins.channelTypes[12] == ChType_OffLowMidHigh);
+
+	CFG_SetShortDeviceName(shortName);
+	CFG_SetDeviceName(fullName);
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(10, false);
+
+
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
+		"state_topic", "~/12/get",
+		"uniq_id", "Windows_Enum_select_12",
+		"uniq_id", "Windows_Enum_select_12",
+		"uniq_id", "Windows_Enum_select_12");
+
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
+		"availability_topic", "~/connected",
+		"payload_available", "online",
+		"payload_not_available", "offline",
+		"uniq_id", "Windows_Enum_select_12");
+
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
+		"command_topic", "~/12/set",
+		"options", "[\"Off\",\"Low\",\"Mid\",\"High\"]",
+		"value_template", "{{ {'0': 'Off', '1': 'Low', '2': 'Mid', '3': 'High'} [value] }}",
+		"command_template", "{{ {'Off': '0', 'Low': '1', 'Mid': '2', 'High': '3'} [value] }}");
 
 }
 void Test_Enum_3opts() {
@@ -179,6 +218,7 @@ void Test_Enums() {
 	Test_Enum_BadOk();
 	Test_Enum_3opts();
 	Test_Enum_LowMidH();
+	Test_Enum_LowMidHighOff();
 }
 
 
