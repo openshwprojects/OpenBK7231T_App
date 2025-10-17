@@ -363,9 +363,9 @@ HassDeviceInfo* hass_createSelectEntityIndexedCustom(const char* state_topic, co
 
 	sprintf(info->channel, "select/%s/config", info->unique_id);
 
-	cJSON* dev = info->device;
-	cJSON_ReplaceItemInObject(dev, "manufacturer", cJSON_CreateString("Custom"));
-	cJSON_ReplaceItemInObject(dev, "model", cJSON_CreateString("C-Swing-Control"));
+	//cJSON* dev = info->device;
+	//cJSON_ReplaceItemInObject(dev, "manufacturer", cJSON_CreateString("Custom"));
+	//cJSON_ReplaceItemInObject(dev, "model", cJSON_CreateString("C-Swing-Control"));
 
 	return info;
 }
