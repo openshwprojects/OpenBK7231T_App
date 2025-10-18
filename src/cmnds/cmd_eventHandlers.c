@@ -361,20 +361,22 @@ void EventHandlers_AddEventHandler_String(byte eventCode, int type, const char *
 	ev->requiredArgument = 0;
 	ev->requiredArgument2 = 0;
 }
-void EventHandlers_FireEvent3(byte eventCode, int argument, int argument2, int argument3) {
+int EventHandlers_FireEvent3(byte eventCode, int argument, int argument2, int argument3) {
 	struct eventHandler_s *ev;
 
 	ev = g_eventHandlers;
-
+	int ran = 0;
 	while (ev) {
 		if (eventCode == ev->eventCode) {
 			if (argument == ev->requiredArgument && argument2 == ev->requiredArgument2 && argument3 == ev->requiredArgument3) {
 				ADDLOG_INFO(LOG_FEATURE_EVENT, "EventHandlers_FireEvent3: executing command %s", ev->command);
 				CMD_ExecuteCommand(ev->command, COMMAND_FLAG_SOURCE_SCRIPT);
+				ran++;
 			}
 		}
 		ev = ev->next;
 	}
+	return ran;
 }
 int EventHandlers_FireEvent2(byte eventCode, int argument, int argument2) {
 	struct eventHandler_s *ev;
