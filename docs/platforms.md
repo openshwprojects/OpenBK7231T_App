@@ -16,7 +16,7 @@
 | LN882H                                                  | Lightning Semi | ✅   | ✅⁴    | ✅   | ✅      | ❌   | ✅  | ❗️  | ❌         | ✅  | ✅     | ✅ |
 | ESP8266<br>ESP8285                                      | Espressif      | ⚠️¹³ | ✅²'⁴  | ✅   | ✅      | ✅   | ✅⁷ | ❌  | ❗️         | ❓⁹ | ❌     | ❌ |
 | ESP32<br>-C2<br>-C3<br>-C5<br>-C6<br>-C61<br>-S2<br>-S3 | Espressif      | ⚠️¹³ | ✅⁴    | ✅   | ✅      | ✅   | ✅  | ❓  | ✅¹⁰       | ✅  | ✅     | ❌ |
-| TR6260                                                  | Transa Semi    | ❌   | ❗️³'⁴  | ✅   | ❌      | ❌   | ✅⁸ | ❌  | ❌         | ✅⁹ | ❌     | ❌ |
+| TR6260                                                  | Transa Semi    | ❌   | ❗️³'⁴  | ✅   | ✅      | ❌   | ✅⁸ | ❌  | ❌         | ✅⁹ | ❌     | ❌ |
 | RTL8711AM (Ameba1)                                      | Realtek        | ❗️   | ✅⁴    | ✅   | ✅      | ✅   | ✅⁸ | ❌  | ❌         | ✅  | ✅     | ❌ |
 | RTL8710B (AmebaZ)                                       | Realtek        | ✅   | ✅⁴    | ✅   | ✅      | ✅   | ✅⁸ | ❌  | ❌         | ✅  | ✅     | ❌ |
 | RTL8710C<br>RTL8720C (AmebaZ2)                          | Realtek        | ✅   | ✅⁴    | ✅   | ✅      | ✅   | ✅⁸ | ➖  | ❌         | ✅  | ✅     | ✅ |
