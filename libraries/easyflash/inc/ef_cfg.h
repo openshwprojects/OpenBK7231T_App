@@ -139,8 +139,8 @@
 
 #elif PLATFORM_RDA5981
 
-#define EF_START_ADDR             0xF0000
-#define ENV_AREA_SIZE             0xB000
+#define EF_START_ADDR             0xF4000
+#define ENV_AREA_SIZE             0xA000
 
 #elif WINDOWS
 
