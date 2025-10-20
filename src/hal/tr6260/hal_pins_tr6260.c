@@ -361,13 +361,49 @@ unsigned int HAL_GetGPIOPin(int index)
 	return index;
 }
 
-void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
+OBKInterruptHandler g_handlers[PLATFORM_GPIO_MAX];
+OBKInterruptType g_modes[PLATFORM_GPIO_MAX];
 
+void TR6260_Interrupt(int obkPinNum)
+{
+	if(g_handlers[obkPinNum])
+	{
+		g_handlers[obkPinNum](obkPinNum);
+	}
 }
-void HAL_DetachInterrupt(int pinIndex) {
 
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function)
+{
+	if(pinIndex >= g_numPins)
+		return;
+	g_handlers[pinIndex] = function;
+	trPinMapping_t* pin = g_pins + pinIndex;
+	gpio_isr_init();
+	uint32_t irqmode = DRV_GPIO_INT_NEG_EDGE;
+	switch(mode)
+	{
+		case INTERRUPT_RISING:
+			irqmode = DRV_GPIO_INT_POS_EDGE;
+			break;
+		case INTERRUPT_FALLING:
+			irqmode = DRV_GPIO_INT_NEG_EDGE;
+			break;
+		case INTERRUPT_CHANGE:
+			irqmode = DRV_GPIO_INT_DUAL_EDGE;
+			break;
+	}
+	gpio_irq_level(pin->pin, irqmode);
+	gpio_irq_callback_register(pin->pin, TR6260_Interrupt, pinIndex);
+	gpio_irq_unmusk(pin->pin);
 }
 
-
+void HAL_DetachInterrupt(int pinIndex)
+{
+	if(pinIndex >= g_numPins || g_handlers[pinIndex] == 0)
+		return;
+	trPinMapping_t* pin = g_pins + pinIndex;
+	gpio_irq_musk(pin->pin);
+	g_handlers[pinIndex] = 0;
+}
 
 #endif // PLATFORM_TR6260
