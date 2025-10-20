@@ -11,78 +11,6 @@
 
 uint32_t OTA_Offset = 0x18095000;
 
-static int flash_write(unsigned int addr, char* buf, unsigned int len)
-{
-	if(len == 0) return 0;
-	int ret;
-	int left;
-	unsigned int addr_t, len_t;
-	char* temp_buf = NULL;
-	addr_t = addr & 0xffffff00;
-	len_t = addr - addr_t + len;
-	if(len_t % 256)
-		len_t += 256 - len_t % 256;
-	//printf("addr %x addr_t %x\r\n", addr, addr_t);
-	//printf("len %d len_t %d\r\n", len, len_t);
-	temp_buf = (char*)malloc(256);
-	if(temp_buf == NULL)
-		return -1;
-
-	ret = rda5981_read_flash(addr_t, temp_buf, 256);
-	if(ret)
-	{
-		free(temp_buf);
-		return -1;
-	}
-	left = 256 - (addr - addr_t);
-	if(len < left)
-		memcpy(temp_buf + addr - addr_t, buf, len);//256-(addr-addr_t));
-	else
-		memcpy(temp_buf + addr - addr_t, buf, left);
-	ret = rda5981_write_flash(addr_t, temp_buf, 256);
-	if(ret)
-	{
-		free(temp_buf);
-		return -1;
-	}
-
-	len_t -= 256;
-	buf += 256 - (addr - addr_t);
-	len -= 256 - (addr - addr_t);
-	addr_t += 256;
-
-	while(len_t != 0)
-	{
-		//printf("len_t %d buf %x len %d addr_t %x\r\n", len_t, buf, len, addr_t);
-		if(len >= 256)
-		{
-			memcpy(temp_buf, buf, 256);
-		}
-		else
-		{
-			ret = rda5981_read_flash(addr_t, temp_buf, 256);
-			if(ret)
-			{
-				free(temp_buf);
-				return -1;
-			}
-			memcpy(temp_buf, buf, len);
-		}
-		ret = rda5981_write_flash(addr_t, temp_buf, 256);
-		if(ret)
-		{
-			free(temp_buf);
-			return -1;
-		}
-		len_t -= 256;
-		buf += 256;
-		len -= 256;
-		addr_t += 256;
-	}
-	free(temp_buf);
-	return 0;
-}
-
 int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 {
 	int total = 0;
@@ -116,7 +44,7 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 	do
 	{
 		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Writelen %i at %i", writelen, total);
-		ret1 = flash_write(startaddr, writebuf, writelen);
+		ret1 = HAL_FlashWrite(writebuf, writelen, startaddr - 0x18000000);
 		if(ret1 != 0)
 		{
 			ret = -1;
