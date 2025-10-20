@@ -31,7 +31,7 @@ trPinMapping_t g_pins[] = {
 	{ "GPIO11",			DRV_GPIO_11 },
 	{ "GPIO12",			DRV_GPIO_12 },
 	{ "GPIO13 (PWM5)",	DRV_GPIO_13 },
-	{ "GPIO14",			DRV_GPIO_14 },
+	{ "GPIO14 (PWM3)",	DRV_GPIO_14 },
 	{ "GPIO15 (PWM5)",	DRV_GPIO_15 },
 	{ "GPIO16",			DRV_GPIO_16 },
 	{ "GPIO17",			DRV_GPIO_17 },
