@@ -690,9 +690,10 @@ OpenRDA5981: prebuild_OpenRDA5981
 	mkdir -p output/$(APP_VERSION)
 	#cp sdk/OpenRDA5981/.build/OpenBeken.bin output/$(APP_VERSION)/OpenRDA5981_$(APP_VERSION).img
 	python3 sdk/OpenRDA5981/ota_lzma/image_pack_firmware.py sdk/OpenRDA5981/.build/OpenBeken.bin $(APP_VERSION) 0
-	cp sdk/OpenRDA5981/ota_lzma/bootloader_lzma.bin output/$(APP_VERSION)/OpenRDA5981_$(APP_VERSION).bin
+	cp sdk/OpenRDA5981/ota_lzma/bootloader.bin output/$(APP_VERSION)/OpenRDA5981_$(APP_VERSION).bin
 	dd conv=notrunc bs=1K if=sdk/OpenRDA5981/.build/OpenBeken_fwpacked.bin of=output/$(APP_VERSION)/OpenRDA5981_$(APP_VERSION).bin seek=8
-	./sdk/OpenRDA5981/ota_lzma/imgpkt e sdk/OpenRDA5981/.build/OpenBeken.bin sdk/OpenRDA5981/.build/OpenBeken.bin.lzma
+	#./sdk/OpenRDA5981/ota_lzma/imgpkt e sdk/OpenRDA5981/.build/OpenBeken.bin sdk/OpenRDA5981/.build/OpenBeken.bin.lzma
+	./sdk/OpenRDA5981/ota_lzma/xz --format=lzma -A -z -k -v -c sdk/OpenRDA5981/.build/OpenBeken.bin > sdk/OpenRDA5981/.build/OpenBeken.bin.lzma
 	python3 sdk/OpenRDA5981/ota_lzma/ota_pack_image_lzma.py sdk/OpenRDA5981/.build/OpenBeken.bin sdk/OpenRDA5981/.build/OpenBeken.bin.lzma output/$(APP_VERSION)/OpenRDA5981_$(APP_VERSION)_ota.img $(APP_VERSION)
 
 # Add custom Makefile if required

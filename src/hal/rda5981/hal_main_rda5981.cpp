@@ -21,9 +21,6 @@ __attribute__((used)) int main()
 	wifi.init();
 	rda5981_flash_read_mac_addr((unsigned char*)&macaddr);
 	Main_Init();
-	char* temp_buf = (char*)malloc(256);
-	rda5981_read_flash(OTA_Offset, temp_buf, 256);
-	if(temp_buf[0] == 0xAE && temp_buf[1] == 0xAE) rda5981_erase_flash(OTA_Offset, 1024);
 	while(true)
 	{
 		osDelay(1000);
