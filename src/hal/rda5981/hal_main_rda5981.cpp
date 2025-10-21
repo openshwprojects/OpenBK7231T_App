@@ -24,6 +24,7 @@ __attribute__((used)) int main()
 	char* temp_buf = (char*)malloc(256);
 	rda5981_read_flash(OTA_Offset, temp_buf, 256);
 	if(temp_buf[0] == 0xAE && temp_buf[1] == 0xAE) rda5981_erase_flash(OTA_Offset, 1024);
+	free(temp_buf);
 	while(true)
 	{
 		osDelay(1000);
