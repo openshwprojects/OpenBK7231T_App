@@ -193,12 +193,6 @@ void CLOCK_RunEventsForSecond(time_t runTime) {
 //				if (BIT_CHECK(e->weekDayFlags, ltm->tm_wday)) {
 				if (BIT_CHECK(e->weekDayFlags, tc.wday)) {
 #if ENABLE_CLOCK_SUNRISE_SUNSET
-//					if (e->sunflags & (SUNRISE_FLAG || SUNSET_FLAG)) {
-					// wrong! let's eval:		if (e->sunflags & ((1 << 0) || (1 << 1) ))
-					// 				if (e->sunflags & (1 || 2)) 
-					// 				(e->sunflags & (1))	--> NOT working for sunset!!!
-					//
-
 					if (e->sunflags) {	// no need to check for sunrise/sunset here. If sunflags != 0, it's either of them!!
 /*
 						if (e->lastDay != ltm->tm_wday) {

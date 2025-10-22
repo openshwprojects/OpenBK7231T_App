@@ -18,7 +18,7 @@ Sensor - https://www.home-assistant.io/integrations/sensor.mqtt/
 
 //Buffer used to populate values in cJSON_Add* calls. The values are based on
 //CFG_GetShortDeviceName and clientId so it needs to be bigger than them. +64 for light/switch/etc.
-static char g_hassBuffer[CGF_MQTT_CLIENT_ID_SIZE + 64];
+static char g_hassBuffer[CGF_MQTT_CLIENT_ID_SIZE + 128];
 const char *g_template_lowMidHigh = "{% if value == '0' %}\n"
 			"	Low\n"
 			"{% elif value == '1' %}\n"
@@ -363,9 +363,9 @@ HassDeviceInfo* hass_createSelectEntityIndexedCustom(const char* state_topic, co
 
 	sprintf(info->channel, "select/%s/config", info->unique_id);
 
-	cJSON* dev = info->device;
-	cJSON_ReplaceItemInObject(dev, "manufacturer", cJSON_CreateString("Custom"));
-	cJSON_ReplaceItemInObject(dev, "model", cJSON_CreateString("C-Swing-Control"));
+	//cJSON* dev = info->device;
+	//cJSON_ReplaceItemInObject(dev, "manufacturer", cJSON_CreateString("Custom"));
+	//cJSON_ReplaceItemInObject(dev, "model", cJSON_CreateString("C-Swing-Control"));
 
 	return info;
 }
@@ -622,9 +622,10 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 	}
 
 	if (type == HASS_READONLYENUM) {
-		char value_template[1024];
-		CMD_GenEnumValueTemplate(g_enums[index], value_template, sizeof(value_template));
-		cJSON_AddStringToObject(info->root, "value_template", value_template);
+		// Sorry, you can't do that on stack
+		//char value_template[1024];
+		CMD_GenEnumValueTemplate(g_enums[index], g_hassBuffer, sizeof(g_hassBuffer));
+		cJSON_AddStringToObject(info->root, "value_template", g_hassBuffer);
 	}
 
 	cJSON_AddStringToObject(info->root, "uniq_id", info->unique_id);  //unique_id

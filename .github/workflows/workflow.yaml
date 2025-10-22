@@ -196,6 +196,10 @@ jobs:
           - platform: OpenRDA5981
             variant: default
             gcc: 6-2017-q2
+          - platform: OpenRTL8721DA
+            variant: default
+          - platform: OpenRTL8720E
+            variant: default
 
           # extras for BK7231T
           - platform: OpenBK7231T
@@ -225,38 +229,70 @@ jobs:
             
           - platform: OpenBL602
             variant: berry
-          #- platform: OpenBL602
-          #  variant: irRemoteESP
+
+          # ALT firmware
+          - platform: OpenBK7231N_ALT
+            variant: default
+            gcc: apt
+          - platform: OpenBK7231T_ALT
+            variant: default
+            gcc: apt
+          - platform: OpenBK7231U
+            variant: default
+            gcc: apt
+          - platform: OpenBK7238
+            variant: default
+            gcc: apt
+          - platform: OpenBK7252
+            variant: default
+            gcc: apt
+          - platform: OpenBK7252N
+            variant: default
+            gcc: apt
+          # extras for BK7238
+          - platform: OpenBK7238
+            variant: berry
+            gcc: apt
+          - platform: OpenBK7238
+            variant: irRemoteESP
+            gcc: apt
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
-        if: ${{ matrix.platform == 'OpenBL602' }}
+        if: ${{ matrix.platform == 'OpenBL602' || matrix.platform == 'OpenRTL8721DA' || matrix.platform == 'OpenRTL8720E' || matrix.platform == 'OpenRDA5981' }}
         with:
           python-version: '3.10'
           architecture: 'x64'
           cache: 'pip'
+
       - name: Install dependencies
         if: ${{ matrix.platform == 'OpenLN882H' }}
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: cmake
           version: 1.0
+
       - name: Install arm-none-eabi-gcc
         if: ${{ matrix.gcc && matrix.gcc != 'apt' }}
         uses: carlosperate/arm-none-eabi-gcc-action@v1
         with:
           release: ${{ matrix.gcc }}
           path-env-var: ARM_NONE_EABI_GCC_PATH
+
       - name: Install arm-none-eabi-gcc
         if: ${{ matrix.gcc == 'apt' }}
         run: |
           curl -sL https://raw.githubusercontent.com/ilikenwf/apt-fast/master/quick-install.sh | sudo bash
           sudo apt-get update
           sudo apt-fast install -y gcc-arm-none-eabi
+
       - run: ls -la
+  
       - name: Run make
         run: make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }}
+
       - name: Save build assets
         uses: actions/upload-artifact@v4
         with:
@@ -266,6 +302,7 @@ jobs:
             output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_UG_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.bin
             output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_QIO_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.bin
             output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/OpenBK7231M_QIO_${{ needs.refs.outputs.version }}.bin
+            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/OpenBK7231M_ALT_QIO_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.bin
             output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.rbl
             output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.img
             output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.bin
@@ -327,6 +364,7 @@ jobs:
           ref: ${{ matrix.version }}
           submodules: recursive
       - uses: actions/setup-python@v5
+        id: pysetup
         with:
           python-version: '3.10'
           architecture: 'x64'
@@ -341,7 +379,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.espressif # cache whole folder, not just dist
-          key: ESP-IDF_toolchain_${{ matrix.version }}
+          key: ESP-IDF_toolchain_${{ matrix.version }}_${{ steps.pysetup.outputs.python-version }}
       - name: Get toolchain
         if: steps.cache-toolchain.outputs.cache-hit != 'true'
         run: |
@@ -429,127 +467,6 @@ jobs:
             output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_1MB_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.factory.bin
           if-no-files-found: warn
 
-  build_beken:
-    name: Build beken alt
-    needs: refs
-    runs-on: ubuntu-22.04
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          # default for all platforms
-          - platform: OpenBK7231N_ALT
-            variant: default
-            gcc: apt
-          - platform: OpenBK7231T_ALT
-            variant: default
-            gcc: apt
-          - platform: OpenBK7231U
-            variant: default
-            gcc: apt
-          - platform: OpenBK7238
-            variant: default
-            gcc: apt
-          - platform: OpenBK7252
-            variant: default
-            gcc: apt
-          - platform: OpenBK7252N
-            variant: default
-            gcc: apt
-          
-          # extras for BK7238
-          - platform: OpenBK7238
-            variant: berry
-            gcc: apt
-          - platform: OpenBK7238
-            variant: irRemoteESP
-            gcc: apt
-    steps:
-      - name: Source checkout
-        uses: actions/checkout@v4
-      - name: Install arm-none-eabi-gcc
-        if: ${{ matrix.gcc && matrix.gcc != 'apt' }}
-        uses: carlosperate/arm-none-eabi-gcc-action@v1
-        with:
-          release: ${{ matrix.gcc }}
-          path-env-var: ARM_NONE_EABI_GCC_PATH
-      - name: Install arm-none-eabi-gcc
-        if: ${{ matrix.gcc == 'apt' }}
-        run: |
-          curl -sL https://raw.githubusercontent.com/ilikenwf/apt-fast/master/quick-install.sh | sudo bash
-          sudo apt-get update
-          sudo apt-fast install -y gcc-arm-none-eabi
-      - run: ls -la
-      - name: Run make
-        run: make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }}
-      - name: Save build assets
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_${{ matrix.platform }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}
-          path: |
-            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_UA_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.bin
-            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_UG_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.bin
-            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_QIO_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.bin
-            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/OpenBK7231M_ALT_QIO_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.bin
-            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.rbl
-            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_Tuya_QIO_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.bin
-            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_Tuya_UA_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.bin
-          if-no-files-found: warn
-
-  build_ameba:
-    name: Build ameba
-    needs: refs
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: OpenRTL8721DA
-            variant: default
-          - platform: OpenRTL8720E
-            variant: default
-    steps:
-      - name: Source checkout
-        uses: actions/checkout@v4
-      - name: SDK checkout
-        uses: actions/checkout@v4
-        with:
-          repository: Ameba-AIoT/ameba-rtos
-          path: sdk/ameba-rtos
-          #ref: release/v1.1
-          ref: 347af9133679eacb10b368010f9ce5e143ff1643 # pin commit until stable release
-          submodules: recursive
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-          architecture: 'x64'
-          cache: 'pip'
-      - name: Install dependencies
-        uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: cmake
-          version: 1.0
-      - name: Install dependencies
-        run: |
-          pip install -r sdk/ameba-rtos/tools/requirements.txt
-          mkdir /opt/rtk-toolchain
-          cd /opt/rtk-toolchain
-          wget https://github.com/Ameba-AIoT/ameba-toolchain/releases/download/prebuilts-v1.0.3/prebuilts-linux-1.0.3.tar.gz
-          tar -xzf prebuilts-linux-1.0.3.tar.gz
-          cd ~/work/OpenBK7231T_App/OpenBK7231T_App
-          source sdk/ameba-rtos/ameba.sh
-      - run: ls -la
-      - name: Run make
-        run: make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }}
-      - name: Save build assets
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_${{ matrix.platform }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}
-          path: |
-            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.bin
-            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}_ota.img
-          if-no-files-found: warn
-
   build_txw81x:
     name: Build TXW81X
     needs: refs
@@ -580,12 +497,13 @@ jobs:
           name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_${{ matrix.platform }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}
           path: |
             output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.bin
+            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}_ota.img
           if-no-files-found: warn
 
   merge:
     name: Merge Artifacts
     runs-on: ubuntu-22.04
-    needs: [refs, build, build2, build_idf, build_beken, build_8266, build_txw81x]
+    needs: [refs, build, build2, build_idf, build_8266, build_txw81x]
     #if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
     steps:
       - name: Merge Artifacts
