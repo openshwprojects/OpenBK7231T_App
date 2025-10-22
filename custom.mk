@@ -14,6 +14,17 @@ INC_DIRS := $(filter-out src/hal/bl602 src/hal/xr809 src/hal/w800 src/hal/bk7231
 
 INCLUDES := $(addprefix -I,$(INC_DIRS))
 
+# run python script to build src/platformdefines.h header file which generates a string "platformdefines" with all defines in this build
+PYTHON_PRESENT := $(shell command -v python3 2> /dev/null)
+GENDEF_PRESENT := $(shell [ -e src/gendefines.py ] && echo "yes" || echo "no")
+ifneq ($(PYTHON_PRESENT),)
+    ifeq ($(GENDEF_PRESENT),yes)
+        $(shell python3 src/gendefines.py src/obk_config.h > src/platformdefines.h)
+    else
+	$(shell echo "//ERROR\nchar platformdefines[]=\"ERROR\";"  > src/platformdefines.h)
+    endif
+endif
+
 default: $(BUILD_DIR)/$(TARGET_EXEC)
 
 BERRY_MODULEPATH = src/berry/modules
