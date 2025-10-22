@@ -192,7 +192,8 @@ generateNotes:
         | ESP8266 1MB    | UART Flash | [OpenESP8266_1MB_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP8266_1MB_{{version}}.factory.bin) |
         | ESP8266 2MB    | UART Flash | [OpenESP8266_2MB_{{version}}.factory.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP8266_2MB_{{version}}.factory.bin) |
         | ESP8266 2MB    | OTA Update | [OpenESP8266_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenESP8266_{{version}}.img)                         |
-        | RDA5981        | UART/OTA   | [OpenRDA5981_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRDA5981_{{version}}.img)                         |
+        | RDA5981        | UART Flash | [OpenRDA5981_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRDA5981_{{version}}.bin)                         |
+        | RDA5981        | OTA Update | [OpenRDA5981_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRDA5981_{{version}}_ota.img)                 |
         | TXW81X         |            | [OpenTXW81X_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenTXW81X_{{version}}.bin)                           |
         | Win32          |            | [obkSimulator_{{version}}.zip]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/obkSimulator_{{version}}.zip)                       |
 
@@ -262,6 +263,7 @@ publish:
       - path: "output/**/OpenESP*"
       - path: "output/**/OpenECR*"
       - path: "output/**/OpenTXW*"
+      - path: "output/**/OpenRDA*"
       - path: "output/**/obkSimulator*"
 
 success:

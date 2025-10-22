@@ -9,14 +9,17 @@
 extern "C" {
 	extern void Main_Init();
 	extern void Main_OnEverySecond();
+	extern uint32_t OTA_Offset;
+	uint8_t macaddr[6];
 }
 
 extern WiFiStackInterface wifi;
 
 __attribute__((used)) int main()
 {
-	//rda5981_set_user_data_addr(0x180FB000, 0x180FC000, 3584);
+	rda5981_set_user_data_addr(0x180FF000, 0x180FE000, 0x1000);
 	wifi.init();
+	rda5981_flash_read_mac_addr((unsigned char*)&macaddr);
 	Main_Init();
 	while(true)
 	{

@@ -1836,6 +1836,50 @@ int http_fn_startup_command(http_request_t* request) {
 #endif
 
 #if ENABLE_HA_DISCOVERY
+HassDeviceInfo *hass_createEnumChannelInfo(int i) {
+	HassDeviceInfo *dev_info = 0;
+	channelEnum_t *en;
+	if (g_enums != NULL && g_enums[i]->numOptions != 0) {
+		en = g_enums[i];
+	}
+	else {
+		// revert to textfield if no enums are defined
+		dev_info = hass_init_textField_info(i);
+		return dev_info;;
+	}
+
+	char **options = (char**)malloc(en->numOptions * sizeof(char *));
+	for (int o = 0; o < en->numOptions; o++) {
+		options[o] = en->options[o].label;
+	}
+
+	if (en->options != NULL && en->numOptions > 0) {
+		// backlog setChannelType 1 Enum; setChannelEnum 0:red 2:blue 3:green; scheduleHADiscovery 1
+		char stateTopic[32];
+		char cmdTopic[32];
+		char title[64];
+		char value_tmp[1024];
+		char command_tmp[1024];
+
+		CMD_GenEnumValueTemplate(en, value_tmp, sizeof(value_tmp));
+		CMD_GenEnumCommandTemplate(en, command_tmp, sizeof(command_tmp));
+
+		strcpy(title, CHANNEL_GetLabel(i));
+		sprintf(stateTopic, "~/%i/get", i);
+		sprintf(cmdTopic, "~/%i/set", i);
+		dev_info = hass_createSelectEntityIndexedCustom(
+			stateTopic,
+			cmdTopic,
+			en->numOptions,
+			(const char**)options,
+			title,
+			value_tmp,
+			command_tmp
+		);
+	}
+	os_free(options);
+	return dev_info;
+}
 void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	int i;
 	int relayCount;
@@ -2293,46 +2337,8 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			}
 			break;
 			case ChType_Enum:
-			{
-			        channelEnum_t *en;
-				if (g_enums != NULL && g_enums[i]->numOptions != 0) {
-					en = g_enums[i];
-				} else {
-					// revert to textfield if no enums are defined
-					dev_info = hass_init_textField_info(i);
-					break;
-				}
-
-				char **options=(char**)malloc(en->numOptions * sizeof(char *));
-				for (int o = 0; o < en->numOptions; o++) {
-					options[o] = en->options[o].label;
-				}
-
-				if (en->options != NULL && en->numOptions >0) {
-					// backlog setChannelType 1 Enum; setChannelEnum 0:red 2:blue 3:green; scheduleHADiscovery 1
-					char stateTopic[32];
-					char cmdTopic[32];
-					char title[64];
-					char value_tmp[1024];
-					char command_tmp[1024];
-
-					CMD_GenEnumValueTemplate(en, value_tmp, sizeof(value_tmp));
-					CMD_GenEnumCommandTemplate(en, command_tmp, sizeof(command_tmp));
-
-					strcpy(title, CHANNEL_GetLabel(i));
-					sprintf(stateTopic, "~/%i/get", i);
-					sprintf(cmdTopic, "~/%i/set", i);
-					dev_info = hass_createSelectEntityIndexedCustom(
-						stateTopic,
-						cmdTopic,
-						en->numOptions,
-						(const char**)options,
-						title,
-						value_tmp,
-						command_tmp
-					);
-				}
-				os_free(options);
+			{			
+				dev_info = hass_createEnumChannelInfo(i);
 			}
 			break;
 			default:
@@ -2342,11 +2348,9 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				if (options && numOptions) {
 					// backlog setChannelType 2 LowMidHigh; scheduleHADiscovery 1
 					// backlog setChannelType 3 OpenStopClose; scheduleHADiscovery 1
-					char stateTopic[32];
-					char cmdTopic[32];
-					char title[64];
+					char stateTopic[16];
+					char cmdTopic[16];
 					// TODO: lengths
-					strcpy(title, CHANNEL_GetLabel(i));
 					sprintf(stateTopic, "~/%i/get", i);
 					sprintf(cmdTopic, "~/%i/set", i);
 					dev_info = hass_createSelectEntityIndexed(
@@ -2354,7 +2358,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 						cmdTopic,
 						numOptions,
 						options,
-						title
+						CHANNEL_GetLabel(i)
 					);
 				}
 			}
