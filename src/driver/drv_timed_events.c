@@ -193,7 +193,7 @@ void CLOCK_RunEventsForSecond(time_t runTime) {
 //				if (BIT_CHECK(e->weekDayFlags, ltm->tm_wday)) {
 				if (BIT_CHECK(e->weekDayFlags, tc.wday)) {
 #if ENABLE_CLOCK_SUNRISE_SUNSET
-					if (e->sunflags & (SUNRISE_FLAG || SUNSET_FLAG)) {
+					if (e->sunflags) {	// no need to check for sunrise/sunset here. If sunflags != 0, it's either of them!!
 /*
 						if (e->lastDay != ltm->tm_wday) {
 							e->lastDay = ltm->tm_wday;  // stop any further sun events today 
@@ -458,8 +458,19 @@ int CLOCK_Print_EventList() {
 
 	while (e) {
 		// Print the command
-		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Ev %i - %i:%i:%i, days 0x%02x, cmd %s\n", (int)e->id, (int)e->hour, (int)e->minute, (int)e->second, (int)e->weekDayFlags, e->command);
-
+#if ENABLE_CLOCK_SUNRISE_SUNSET
+		char sun[25] = {0};
+		if (e->sunflags) {
+			if (e->sunflags & SUNRISE_FLAG){
+				sprintf(sun," (sunrise)");
+			} else{
+				sprintf(sun," (sunset)");
+			}
+		}
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Ev %i - %02i:%02i:%02i%s, days 0x%02x, cmd %s\n", (int)e->id, (int)e->hour, (int)e->minute, (int)e->second, sun, (int)e->weekDayFlags, e->command);
+#else
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Ev %i - %02i:%02i:%02i, days 0x%02x, cmd %s\n", (int)e->id, (int)e->hour, (int)e->minute, (int)e->second, (int)e->weekDayFlags, e->command);
+#endif
 		t++;
 		e = e->next;
 	}

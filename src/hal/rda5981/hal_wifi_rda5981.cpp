@@ -14,6 +14,7 @@ extern "C" {
 bool g_bOpenAccessPointMode = 0;
 static void (*g_wifiStatusCallback)(int code);
 extern struct netif lwip_sta_netif;
+extern uint8_t macaddr[6];
 
 const char* HAL_GetMyIPString()
 {
@@ -37,9 +38,12 @@ const char* HAL_GetMyMaskString()
 
 void WiFI_GetMacAddress(char* mac)
 {
-	r_u8 addr[6];
-	rda59xx_get_macaddr((r_u8*)&addr, 0);
-	memcpy(mac, addr, sizeof(mac));
+	memcpy(mac, macaddr, sizeof(mac));
+}
+
+int WiFI_SetMacAddress(char* mac)
+{
+	return rda5981_flash_write_mac_addr((uint8_t*)mac) == 0;
 }
 
 uint8_t HAL_GetWiFiChannel(uint8_t *chan)
