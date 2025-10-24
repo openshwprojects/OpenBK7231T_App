@@ -65,7 +65,7 @@ void KP18058_Write(float *rgbcw) {
 		Soft_I2C_WriteByte(&g_softI2C, byte3);
 		for (int i = 0; i < 5; i++) {
 			float useVal = GetRGBCW(rgbcw, g_cfg.ledRemap.ar[i]);
-			unsigned short cur_col_10 = MAP(useVal, 0, 255.0f, 0, 1023.0f);
+			unsigned short cur_col_10 = MAP(useVal, 0, 1000.0f, 0, 1023.0f);
 			byte a, b;
 			a = cur_col_10 & 0x1F;
 			b = (cur_col_10 >> 5) & 0x1F;
