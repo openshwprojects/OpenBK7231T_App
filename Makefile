@@ -371,6 +371,10 @@ prebuild_OpenTXW81X: berry
 	fi
 
 prebuild_OpenRDA5981: berry
+ifdef GITHUB_ACTIONS
+	# just so that there would be no cache error
+	pip3 install fdt toml configobj pycryptodomex
+endif
 	git submodule update --init --recursive --depth=1 sdk/OpenRDA5981
 	@if [ -e platforms/RDA5981/pre_build.sh ]; then \
 		echo "prebuild found for OpenRDA5981"; \
@@ -684,11 +688,13 @@ OpenTXW81X: prebuild_OpenTXW81X
 OpenRDA5981: prebuild_OpenRDA5981
 	$(MAKE) -C sdk/OpenRDA5981 APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
-	cp sdk/OpenRDA5981/.build/OpenBeken.bin output/$(APP_VERSION)/OpenRDA5981_$(APP_VERSION).img
-	#cp sdk/OpenRDA5981/ota_lzma/bootloader_lzma.bin output/$(APP_VERSION)/OpenRDA5981_$(APP_VERSION).bin
-	#dd conv=notrunc bs=1K if=sdk/OpenRDA5981/.build/OpenBeken.bin of=output/$(APP_VERSION)/OpenRDA5981_$(APP_VERSION).bin seek=12
+	#cp sdk/OpenRDA5981/.build/OpenBeken.bin output/$(APP_VERSION)/OpenRDA5981_$(APP_VERSION).img
+	python3 sdk/OpenRDA5981/ota_lzma/image_pack_firmware.py sdk/OpenRDA5981/.build/OpenBeken.bin $(APP_VERSION) 0
+	cp sdk/OpenRDA5981/ota_lzma/bootloader.bin output/$(APP_VERSION)/OpenRDA5981_$(APP_VERSION).bin
+	dd conv=notrunc bs=1K if=sdk/OpenRDA5981/.build/OpenBeken_fwpacked.bin of=output/$(APP_VERSION)/OpenRDA5981_$(APP_VERSION).bin seek=8
 	#./sdk/OpenRDA5981/ota_lzma/imgpkt e sdk/OpenRDA5981/.build/OpenBeken.bin sdk/OpenRDA5981/.build/OpenBeken.bin.lzma
-	#python3 sdk/OpenRDA5981/ota_lzma/ota_pack_image_lzma.py sdk/OpenRDA5981/.build/OpenBeken.bin sdk/OpenRDA5981/.build/OpenBeken.bin.lzma output/$(APP_VERSION)/OpenRDA5981_$(APP_VERSION)_ota.img
+	./sdk/OpenRDA5981/ota_lzma/xz --format=lzma -A -z -k -v -c sdk/OpenRDA5981/.build/OpenBeken.bin > sdk/OpenRDA5981/.build/OpenBeken.bin.lzma
+	python3 sdk/OpenRDA5981/ota_lzma/ota_pack_image_lzma.py sdk/OpenRDA5981/.build/OpenBeken.bin sdk/OpenRDA5981/.build/OpenBeken.bin.lzma output/$(APP_VERSION)/OpenRDA5981_$(APP_VERSION)_ota.img $(APP_VERSION)
 
 # Add custom Makefile if required
 -include custom.mk

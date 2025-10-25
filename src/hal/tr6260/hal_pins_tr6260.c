@@ -17,35 +17,35 @@ typedef struct trPinMapping_s
 } trPinMapping_t;
 
 trPinMapping_t g_pins[] = {
-	{ "GPIO0",  DRV_GPIO_0 },
-	{ "GPIO1",  DRV_GPIO_1 },
-	{ "GPIO2",  DRV_GPIO_2 },
-	{ "GPIO3",  DRV_GPIO_3 },
-	{ "GPIO4",  DRV_GPIO_4 },
-	{ "GPIO5 (RX0)",  DRV_GPIO_5 },
-	{ "GPIO6 (TX0)",  DRV_GPIO_6 },
-	{ "GPIO7",  DRV_GPIO_7 },
-	{ "GPIO8",  DRV_GPIO_8 },
-	{ "GPIO9",  DRV_GPIO_9 },
-	{ "GPIO10", DRV_GPIO_10 },
-	{ "GPIO11", DRV_GPIO_11 },
-	{ "GPIO12", DRV_GPIO_12 },
-	{ "GPIO13 (PWM5)", DRV_GPIO_13 },
-	{ "GPIO14", DRV_GPIO_14 },
-	{ "GPIO15", DRV_GPIO_15 },
-	{ "GPIO16", DRV_GPIO_16 },
-	{ "GPIO17", DRV_GPIO_17 },
-	{ "GPIO18", DRV_GPIO_18 },
-	{ "GPIO19", DRV_GPIO_19 },
-	{ "GPIO20 (PWM0)", DRV_GPIO_20 },
-	{ "GPIO21 (PWM1)", DRV_GPIO_21 },
-	{ "GPIO22 (PWM2)", DRV_GPIO_22 },
+	{ "GPIO0 (PWM0)",	DRV_GPIO_0  },
+	{ "GPIO1 (PWM1)",	DRV_GPIO_1  },
+	{ "GPIO2 (PWM2)",	DRV_GPIO_2  },
+	{ "GPIO3 (PWM3)",	DRV_GPIO_3  },
+	{ "GPIO4 (PWM4)",	DRV_GPIO_4  },
+	{ "GPIO5 (RX0)",	DRV_GPIO_5  },
+	{ "GPIO6 (TX0)",	DRV_GPIO_6  },
+	{ "GPIO7",			DRV_GPIO_7  },
+	{ "GPIO8",			DRV_GPIO_8  },
+	{ "GPIO9",			DRV_GPIO_9  },
+	{ "GPIO10",			DRV_GPIO_10 },
+	{ "GPIO11",			DRV_GPIO_11 },
+	{ "GPIO12",			DRV_GPIO_12 },
+	{ "GPIO13 (PWM5)",	DRV_GPIO_13 },
+	{ "GPIO14 (PWM3)",	DRV_GPIO_14 },
+	{ "GPIO15 (PWM5)",	DRV_GPIO_15 },
+	{ "GPIO16",			DRV_GPIO_16 },
+	{ "GPIO17",			DRV_GPIO_17 },
+	{ "GPIO18",			DRV_GPIO_18 },
+	{ "GPIO19",			DRV_GPIO_19 },
+	{ "GPIO20 (PWM0)",	DRV_GPIO_20 },
+	{ "GPIO21 (PWM1)",	DRV_GPIO_21 },
+	{ "GPIO22 (PWM2)",	DRV_GPIO_22 },
 #if defined (_USR_TR6260)
-	{ "GPIO23 (PWM3)", DRV_GPIO_23 },
-	{ "GPIO24 (PWM4)", DRV_GPIO_24 },
+	{ "GPIO23 (PWM3)",	DRV_GPIO_23 },
+	{ "GPIO24 (PWM4)",	DRV_GPIO_24 },
 #else
-	{ "GPIO23", DRV_GPIO_23 },
-	{ "GPIO24", DRV_GPIO_24 },
+	{ "GPIO23",			DRV_GPIO_23 },
+	{ "GPIO24",			DRV_GPIO_24 },
 #endif
 };
 
@@ -55,14 +55,17 @@ int PIN_GetPWMIndexForPinIndex(int pin)
 {
 	switch(pin)
 	{
-		case 13: return PMW_CHANNEL_5;
+		case 0:
 		case 20: return PMW_CHANNEL_0;
+		case 1:
 		case 21: return PMW_CHANNEL_1;
+		case 2:
 		case 22: return PMW_CHANNEL_2;
-#if defined (_USR_TR6260)
-		case 23: return PMW_CHANNEL_3;
-		case 24: return PMW_CHANNEL_4;
-#endif
+		case 3:
+		case 14: return PMW_CHANNEL_3;
+		case 4: return PMW_CHANNEL_4;
+		case 13:
+		case 15: return PMW_CHANNEL_5;
 		default: return -1;
 	}
 }
@@ -254,7 +257,42 @@ void HAL_PIN_PWM_Stop(int index)
 	int ch = PIN_GetPWMIndexForPinIndex(index);
 	if(ch < 0) return;
 	pwm_stop(ch);
-	pwm_deinit(ch);
+	switch(index)
+	{
+		case 0:
+			PIN_FUNC_SET(IO_MUX0_GPIO0, FUNC_GPIO0_GPIO0);
+			break;
+		case 20:
+			PIN_FUNC_SET(IO_MUX0_GPIO20, FUNC_GPIO20_GPIO20);
+			break;
+		case 1:
+			PIN_FUNC_SET(IO_MUX0_GPIO1, FUNC_GPIO1_GPIO1);
+			break;
+		case 21:
+			PIN_FUNC_SET(IO_MUX0_GPIO21, FUNC_GPIO21_GPIO21);
+			break;
+		case 2:
+			PIN_FUNC_SET(IO_MUX0_GPIO2, FUNC_GPIO2_GPIO2);
+			break;
+		case 22:
+			PIN_FUNC_SET(IO_MUX0_GPIO22, FUNC_GPIO22_GPIO22);
+			break;
+		case 3:
+			PIN_FUNC_SET(IO_MUX0_GPIO3, FUNC_GPIO3_GPIO3);
+			break;
+		case 14:
+			PIN_FUNC_SET(IO_MUX0_GPIO14, FUNC_GPIO14_GPIO14);
+			break;
+		case 4:
+			PIN_FUNC_SET(IO_MUX0_GPIO4, FUNC_GPIO4_GPIO4);
+			break;
+		case 13:
+			PIN_FUNC_SET(IO_MUX0_GPIO13, FUNC_GPIO13_GPIO13);
+			break;
+		case 15:
+			PIN_FUNC_SET(IO_MUX0_GPIO15, FUNC_GPIO15_GPIO15);
+			break;
+	}
 }
 
 void HAL_PIN_PWM_Start(int index, int freq)
@@ -262,9 +300,46 @@ void HAL_PIN_PWM_Start(int index, int freq)
 	if(index >= g_numPins)
 		return;
 	int ch = PIN_GetPWMIndexForPinIndex(index);
-	g_pins[index].freq = freq;
 	if(ch < 0) return;
-	pwm_init(ch);
+	g_pins[index].freq = freq;
+	pwm_stop(ch);
+	switch(index)
+	{
+		case 0:
+			PIN_FUNC_SET(IO_MUX0_GPIO0, FUNC_GPIO0_PWM_CTRL0);
+			break;
+		case 20:
+			PIN_FUNC_SET(IO_MUX0_GPIO20, FUNC_GPIO20_PWM_CTRL0);
+			break;
+		case 1:
+			PIN_FUNC_SET(IO_MUX0_GPIO1, FUNC_GPIO1_PWM_CTRL1);
+			break;
+		case 21:
+			PIN_FUNC_SET(IO_MUX0_GPIO21, FUNC_GPIO21_PWM_CTRL1);
+			break;
+		case 2:
+			PIN_FUNC_SET(IO_MUX0_GPIO2, FUNC_GPIO2_PWM_CTRL2);
+			break;
+		case 22:
+			PIN_FUNC_SET(IO_MUX0_GPIO22, FUNC_GPIO22_PWM_CTRL2);
+			break;
+		case 3:
+			PIN_FUNC_SET(IO_MUX0_GPIO3, FUNC_GPIO3_PWM_CTRL3);
+			break;
+		case 14:
+			PIN_FUNC_SET(IO_MUX0_GPIO14, FUNC_GPIO14_PWM_CTRL3);
+			break;
+		case 4:
+			PIN_FUNC_SET(IO_MUX0_GPIO4, FUNC_GPIO4_PWM_CTRL4);
+			break;
+		case 13:
+			PIN_FUNC_SET(IO_MUX0_GPIO13, FUNC_GPIO13_PWM_CTRL5);
+			break;
+		case 15:
+			PIN_FUNC_SET(IO_MUX0_GPIO15, FUNC_GPIO15_PWM_CTRL5);
+			break;
+	}
+	pwm_start(ch);
 }
 
 void HAL_PIN_PWM_Update(int index, float value)
@@ -273,10 +348,10 @@ void HAL_PIN_PWM_Update(int index, float value)
 		return;
 	int ch = PIN_GetPWMIndexForPinIndex(index);
 	if(ch < 0) return;
-	if(value < 0)
-		value = 0;
-	if(value > 100)
-		value = 100;
+	if(value < 0.1)
+		value = 0.1;
+	if(value >= 100)
+		value = 99.9;
 	pwm_config(ch, g_pins[index].freq, (uint32_t)(value * 10));
 	pwm_start(ch);
 }
@@ -286,13 +361,49 @@ unsigned int HAL_GetGPIOPin(int index)
 	return index;
 }
 
-void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
+OBKInterruptHandler g_handlers[PLATFORM_GPIO_MAX];
+OBKInterruptType g_modes[PLATFORM_GPIO_MAX];
 
+void TR6260_Interrupt(int obkPinNum)
+{
+	if(g_handlers[obkPinNum])
+	{
+		g_handlers[obkPinNum](obkPinNum);
+	}
 }
-void HAL_DetachInterrupt(int pinIndex) {
 
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function)
+{
+	if(pinIndex >= g_numPins)
+		return;
+	g_handlers[pinIndex] = function;
+	trPinMapping_t* pin = g_pins + pinIndex;
+	gpio_isr_init();
+	uint32_t irqmode = DRV_GPIO_INT_NEG_EDGE;
+	switch(mode)
+	{
+		case INTERRUPT_RISING:
+			irqmode = DRV_GPIO_INT_POS_EDGE;
+			break;
+		case INTERRUPT_FALLING:
+			irqmode = DRV_GPIO_INT_NEG_EDGE;
+			break;
+		case INTERRUPT_CHANGE:
+			irqmode = DRV_GPIO_INT_DUAL_EDGE;
+			break;
+	}
+	gpio_irq_level(pin->pin, irqmode);
+	gpio_irq_callback_register(pin->pin, TR6260_Interrupt, pinIndex);
+	gpio_irq_unmusk(pin->pin);
 }
 
-
+void HAL_DetachInterrupt(int pinIndex)
+{
+	if(pinIndex >= g_numPins || g_handlers[pinIndex] == 0)
+		return;
+	trPinMapping_t* pin = g_pins + pinIndex;
+	gpio_irq_musk(pin->pin);
+	g_handlers[pinIndex] = 0;
+}
 
 #endif // PLATFORM_TR6260

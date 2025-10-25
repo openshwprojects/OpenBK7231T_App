@@ -9,6 +9,8 @@
 
 #include "rda5981_ota.h"
 
+uint32_t OTA_Offset = 0x18095000;
+
 int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 {
 	int total = 0;
@@ -26,32 +28,34 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 		ADDLOG_ERROR(LOG_FEATURE_OTA, "Content-length is 0");
 		goto update_ota_exit;
 	}
-	startaddr = 0x1807E000;
-	// if compressed ota
-	//startaddr = 0x1809C000;
-	int ret1 = rda5981_write_partition_start(startaddr, towrite + (towrite % 4096));
+	else
+	{
+		towrite = request->contentLength;
+	}
+	startaddr = OTA_Offset;
+	int ret1 = rda5981_erase_flash(startaddr, towrite);
 	if(ret1 != 0)
 	{
-		//ret = -1;
-		ADDLOG_ERROR(LOG_FEATURE_OTA, "rda5981_write_partition_start failed. %i", ret);
-		//goto update_ota_exit;
+		ret = -1;
+		ADDLOG_ERROR(LOG_FEATURE_OTA, "rda5981_erase_flash failed. %i", ret);
+		goto update_ota_exit;
 	}
 
 	do
 	{
 		ADDLOG_DEBUG(LOG_FEATURE_OTA, "Writelen %i at %i", writelen, total);
-		ret1 = rda5981_write_partition(startaddr, (unsigned char*)writebuf, writelen);
+		ret1 = HAL_FlashWrite(writebuf, writelen, startaddr - 0x18000000);
 		if(ret1 != 0)
 		{
 			ret = -1;
-			ADDLOG_ERROR(LOG_FEATURE_OTA, "rda5981_write_partition failed. %i", ret1);
+			ADDLOG_ERROR(LOG_FEATURE_OTA, "flash_write failed. %i", ret1);
 			goto update_ota_exit;
 		}
 		delay_ms(5);
 		total += writelen;
 		startaddr += writelen;
 		towrite -= writelen;
-		if (towrite > 0)
+		if(towrite > 0)
 		{
 			writebuf = request->received;
 			writelen = recv(request->fd, writebuf, 1024, 0);
@@ -59,16 +63,11 @@ int http_rest_post_flash(http_request_t* request, int startaddr, int maxaddr)
 			{
 				ADDLOG_DEBUG(LOG_FEATURE_OTA, "recv returned %d - end of data - remaining %d", writelen, towrite);
 				ret = -1;
+				goto update_ota_exit;
 			}
 		}
 	} while ((towrite > 0) && (writelen >= 0));
 
-	int check = rda5981_write_partition_end();
-	if(check != 0)
-	{
-		ADDLOG_ERROR(LOG_FEATURE_OTA, "rda5981_write_partition_end failed, %i", check);
-		ret = -1;
-	}
 update_ota_exit:
 	if (ret != -1)
 	{
