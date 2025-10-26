@@ -166,6 +166,23 @@ void NTP_CalculateSunset(byte *outHour, byte *outMinute) {
 }
 #endif
 
+#if ENABLE_NTP_SUNRISE_SUNSET && ENABLE_NTP_DST
+// in case a DST switch happens, we should change future events of sunset/sunrise, since this will be different after a switch
+// since we calculated the events in advance, we need to "fix" all events, postulating the DST switch happens allways before a days sunrise and sunset
+void fix_DSTforEvents(int hours){
+	ntpEvent_t *e;
+	e = ntp_events;
+	while (e) {
+//		addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"fix_DSTforEvents(%i) - testing  %s",hours,e->command);
+		if (e->command && e->sunflags) {	// only for (future) sunflag events
+//		addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"fix_DSTforEvents(%i) - fixing  %s",hours,e->command);
+			e->hour += hours;
+		}
+		e = e->next;
+	}
+}
+#endif
+
 void NTP_RunEventsForSecond(time_t runTime) {
 	ntpEvent_t *e;
 	struct tm *ltm;
