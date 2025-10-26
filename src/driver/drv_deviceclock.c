@@ -338,7 +338,15 @@ uint32_t setDST() {
     }
 
     tempt = next_DST_switch_epoch + (uint32_t)g_UTCoffset + (dst_config.DSTactive)*dst_config.DSToffset;	// DST calculation is in UTC, so add offset for local time
-    
+#if ENABLE_CLOCK_SUNRISE_SUNSET
+    if (old_DST_active != dst_config.DSTactive){
+	// if we had a DST switch, we might corect sunset/sunrise events, which were calculated before (with "previous" DST settings)
+	// if we changed to DST, we need to add DST_offset (old_DST_active = 0)
+	// if we were in DST before switch, we need to sub DST_offset (old_DST_active = 1)
+	 ADDLOG_INFO(LOG_FEATURE_RAW, "DST switch - calling  fix_DSTforEvents(%d)\r\n", old_DST_active ? - dst_config.DSToffset / 60 : dst_config.DSToffset / 60 );
+	fix_DSTforEvents( old_DST_active ? - dst_config.DSToffset / 60 : dst_config.DSToffset / 60 );
+    }
+#endif
     ADDLOG_INFO(LOG_FEATURE_RAW, "In %s time - next DST switch at %u (%s) \r\n", (dst_config.DSTactive)?"summer":"standard",  (uint32_t)tempt, TS2STR(tempt,TIME_FORMAT_LONG));
 
     return dst_config.DSTactive;

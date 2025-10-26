@@ -222,7 +222,25 @@ void CLOCK_RunEventsForSecond(time_t runTime) {
 		e = e->next;
 	}
 }
-
+#if ENABLE_CLOCK_SUNRISE_SUNSET && ENABLE_CLOCK_DST
+// in case a DST switch happens, we should change future events of sunset/sunrise, since this will be different after a switch
+// since we calculated the events in advance, we need to "fix" all events, postulating the DST switch is allways before a days sunrise and sunset
+void fix_DSTforEvents(int minutes){
+	clockEvent_t *e;
+	e = clock_events;
+	while (e) {
+//		addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"fix_DSTforEvents(%i) - testing  %s",minutes,e->command);
+		if (e->command && e->sunflags) {	// only for (future) sunflag events
+//		addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"fix_DSTforEvents(%i) - fixing  %s",minutes,e->command);
+			int h = minutes/60;
+			int m = minutes % 60;
+			e->hour += h;
+			e->minute += m;
+		}
+		e = e->next;
+	}
+}
+#endif
 void CLOCK_RunEvents(unsigned int newTime, bool bTimeValid) {
 	unsigned int delta;
 	unsigned int i;

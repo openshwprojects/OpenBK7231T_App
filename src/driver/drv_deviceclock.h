@@ -51,6 +51,12 @@ int Time_IsDST();
 bool IsDST_initialized();
 uint32_t setDST();
 int getDST_offset();
+#if ENABLE_CLOCK_SUNRISE_SUNSET
+// since we calculate time "in the future", which might be after a DST switch, we migth need to fix sunset/sunrise time (add ore sub DST_offset)
+// in case a DST switch happens, we should change future events of sunset/sunrise, since this will be different after a switch
+// since we calculated the events in advance, we need to "fix" all events, postulating the DST switch is allways before a days sunrise and sunset
+void fix_DSTforEvents(int minutes);	// inside "drv_timed_events.c"
+#endif
 uint32_t RuleToTime(uint8_t dayOfWeek, uint8_t month, uint8_t weekNum, uint8_t hour, uint16_t year);
 void getDSTtransition(uint32_t * DST);
 #endif
