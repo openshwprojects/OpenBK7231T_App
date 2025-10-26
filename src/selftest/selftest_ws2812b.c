@@ -238,6 +238,87 @@ void SIM_WaitForDDPPacket() {
 	}
 	
 }
+void Test_WS2812B_and_PWM_CW() {
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	CFG_SetFlag(OBK_FLAG_LED_USE_OLD_LINEAR_MODE, 1);
+
+	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(24, 3);
+
+	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(26, 4);
+
+	CMD_ExecuteCommand("startDriver SM16703P", 0);
+	CMD_ExecuteCommand("SM16703P_Init 3", 0);
+	CMD_ExecuteCommand("led_basecolor_rgb FF0080", 0);
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+
+	SELFTEST_ASSERT_PIXEL(0, 255, 0, 128);
+	SELFTEST_ASSERT_PIXEL(1, 255, 0, 128);
+	SELFTEST_ASSERT_PIXEL(2, 255, 0, 128);
+
+	CMD_ExecuteCommand("led_dimmer 50", 0);
+	SELFTEST_ASSERT_PIXEL(0, 127, 0, 64);
+	SELFTEST_ASSERT_PIXEL(1, 127, 0, 64);
+	SELFTEST_ASSERT_PIXEL(2, 127, 0, 64);
+
+	// set 100% Warm
+	CMD_ExecuteCommand("led_temperature 500", 0);
+	CMD_ExecuteCommand("led_dimmer 100", 0);
+
+	SELFTEST_ASSERT_CHANNEL(3, 0); // Cool
+	SELFTEST_ASSERT_CHANNEL(4, 100); // Warm
+	SELFTEST_ASSERT_PIXEL(0, 0, 0, 0);
+	SELFTEST_ASSERT_PIXEL(1, 0, 0, 0);
+	SELFTEST_ASSERT_PIXEL(2, 0, 0, 0);
+
+	// 50% Warm
+	CMD_ExecuteCommand("led_dimmer 50", 0);
+	SELFTEST_ASSERT_CHANNEL(3, 0); // Cool
+	SELFTEST_ASSERT_CHANNEL(4, 50); // Warm
+	SELFTEST_ASSERT_PIXEL(0, 0, 0, 0);
+	SELFTEST_ASSERT_PIXEL(1, 0, 0, 0);
+	SELFTEST_ASSERT_PIXEL(2, 0, 0, 0);
+
+	// set 100% Cool
+	CMD_ExecuteCommand("led_temperature 154", 0);
+	CMD_ExecuteCommand("led_dimmer 100", 0);
+	SELFTEST_ASSERT_CHANNEL(3, 100); // Cool
+	SELFTEST_ASSERT_CHANNEL(4, 0); // Warm
+	SELFTEST_ASSERT_PIXEL(0, 0, 0, 0);
+	SELFTEST_ASSERT_PIXEL(1, 0, 0, 0);
+	SELFTEST_ASSERT_PIXEL(2, 0, 0, 0);
+}
+void Test_WS2812B_and_PWM_White() {
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	CFG_SetFlag(OBK_FLAG_LED_USE_OLD_LINEAR_MODE, 1);
+
+	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(26, 4);
+
+	CMD_ExecuteCommand("startDriver SM16703P", 0);
+	CMD_ExecuteCommand("SM16703P_Init 3", 0);
+	CMD_ExecuteCommand("led_basecolor_rgb FF0080", 0);
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+
+	SELFTEST_ASSERT_PIXEL(0, 255, 0, 128);
+	SELFTEST_ASSERT_PIXEL(1, 255, 0, 128);
+	SELFTEST_ASSERT_PIXEL(2, 255, 0, 128);
+
+	CMD_ExecuteCommand("led_dimmer 50", 0);
+	SELFTEST_ASSERT_PIXEL(0, 127, 0, 64);
+	SELFTEST_ASSERT_PIXEL(1, 127, 0, 64);
+	SELFTEST_ASSERT_PIXEL(2, 127, 0, 64);
+
+	// set 100% Warm
+	CMD_ExecuteCommand("led_temperature 500", 0);
+	CMD_ExecuteCommand("led_dimmer 100", 0);
+
+}
 void Test_WS2812B() {
 	// reset whole device
 	SIM_ClearOBK(0);
@@ -510,6 +591,8 @@ void Test_LEDstrips() {
 	Test_DMX_RGBW();
 	Test_DMX_RGBCW();
 	Test_WS2812B();
+	Test_WS2812B_and_PWM_CW();
+	Test_WS2812B_and_PWM_White();
 }
 
 #endif

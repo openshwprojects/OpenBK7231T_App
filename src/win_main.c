@@ -177,6 +177,7 @@ void SIM_ClearOBK(const char *flashPath) {
 void Win_DoUnitTests() {
 	//SELFTEST_ASSERT_EXPRESSION("sqrt(4)", 2)
 
+	Test_LEDstrips();
 	Test_Commands_Channels();
 
 	Test_Driver_TCL_AC();
@@ -196,7 +197,6 @@ void Win_DoUnitTests() {
 	Test_Enums();
 	Test_Backlog();
 	Test_DoorSensor();
-	Test_LEDstrips();
 	Test_Command_If_Else();
 	Test_MQTT();
 	Test_ChargeLimitDriver();
