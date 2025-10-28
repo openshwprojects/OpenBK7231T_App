@@ -1298,6 +1298,10 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 	TuyaMCU_OnChannelChanged(ch, iVal);
 #endif
 
+#if ENABLE_DRIVER_GIRERMCU
+	GirerMCU_OnChannelChanged(ch, iVal);
+#endif
+
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		if (g_cfg.pins.channels[i] == ch) {
 			if (g_cfg.pins.roles[i] == IOR_Relay || g_cfg.pins.roles[i] == IOR_BAT_Relay || g_cfg.pins.roles[i] == IOR_LED) {
@@ -1893,6 +1897,12 @@ bool CHANNEL_ShouldBePublished(int ch) {
 		return true;
 	}
 #endif
+#ifdef ENABLE_DRIVER_GIRERMCU
+	if (CFG_HasFlag(OBK_FLAG_GIRERMCU_ALWAYSPUBLISHCHANNELS) && GirerMCU_IsChannelUsedByGirerMCU(ch)) {
+		return true;
+	}
+#endif
+
 	if (CFG_HasFlag(OBK_FLAG_MQTT_PUBLISH_ALL_CHANNELS)) {
 		return true;
 	}

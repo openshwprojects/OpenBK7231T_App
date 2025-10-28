@@ -7,6 +7,7 @@
 #include "../cmnds/cmd_public.h"
 #include "../cmnds/cmd_enums.h"
 #include "../driver/drv_tuyaMCU.h"
+#include "../driver/drv_girerMCU.h"
 #include "../driver/drv_public.h"
 #include "../driver/drv_bl_shared.h"
 #include "../hal/hal_wifi.h"
@@ -1988,6 +1989,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			dev_info = hass_init_light_singleColor_onChannels(toggle, dimmer, brightness_scale);
 			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 			hass_free_device_info(dev_info);
+			discoveryQueued = true;
 		}
 	}
 #endif
@@ -3070,6 +3072,7 @@ const char* g_obk_flagNames[] = {
 	"[HTTP] Hide ON/OFF for relays (only red/green buttons)",
 	"[MQTT] Never add GET suffix",
 	"[WiFi] (RTL/BK) Enhanced fast connect by saving AP data to flash (preferable with Flag 37 & static ip). Quick reset 3 times to connect normally",
+	"[GirerMCU] Use queue",
 	"error",
 	"error",
 	"error",
