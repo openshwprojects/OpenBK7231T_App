@@ -11,6 +11,7 @@
 #include "drv_ssdp.h"
 #include "drv_test_drivers.h"
 #include "drv_tuyaMCU.h"
+#include "drv_girierMCU.h"
 #include "drv_uart.h"
 #include "drv_ds1820_simple.h"
 #include "drv_ds1820_full.h"
@@ -32,6 +33,7 @@ typedef struct driver_s {
 
 
 void TuyaMCU_RunEverySecond();
+void GirierMCU_RunEverySecond();
 
 // startDriver BL0937
 static driver_t g_drivers[] = {
@@ -47,6 +49,10 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "tmSensor",	TuyaMCU_Sensor_Init, TuyaMCU_Sensor_RunEverySecond,	NULL, NULL, NULL, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_GIRIERMCU
+	{ "GirierMCU",	GirierMCU_Init, GirierMCU_RunEverySecond, NULL, GirierMCU_RunFrame, GirierMCU_Shutdown, NULL, NULL, false },
+#endif
+
 #if ENABLE_DRIVER_TCA9554
 	//drvdetail:{"name":"TCA9554",
 	//drvdetail:"title":"TODO",
