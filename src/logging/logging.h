@@ -86,7 +86,7 @@ typedef enum {
     LOG_FEATURE_SENSOR          = 21,
     LOG_FEATURE_DRV             = 22,
     LOG_FEATURE_BERRY           = 23,
-    LOG_FEATURE_MAX             = 24,
+    LOG_FEATURE_MAX             = 24
 } log_features;
 
 #endif

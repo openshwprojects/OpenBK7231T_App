@@ -1296,6 +1296,7 @@ static void Channel_OnChanged(int ch, int prevValue, int iFlags) {
 
 #if ENABLE_DRIVER_TUYAMCU
 	TuyaMCU_OnChannelChanged(ch, iVal);
+	GirierMCU_OnChannelChanged(ch, iVal);
 #endif
 
 	for (i = 0; i < PLATFORM_GPIO_MAX; i++) {
@@ -1887,12 +1888,13 @@ bool CHANNEL_ShouldBePublished(int ch) {
 		return true;
 	}
 #ifdef ENABLE_DRIVER_TUYAMCU
-	// publish if channel is used by TuyaMCU (no pin role set), for example door sensor state with power saving V0 protocol
+	// publish if channel is used by TuyaMCU or Girier (no pin role set), for example door sensor state with power saving V0 protocol
 	// Not enabled by default, you have to set OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS flag
-	if (CFG_HasFlag(OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS) && TuyaMCU_IsChannelUsedByTuyaMCU(ch)) {
+	if (CFG_HasFlag(OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS) && (TuyaMCU_IsChannelUsedByTuyaMCU(ch) || GirierMCU_IsChannelUsedByGirierMCU(ch))) {
 		return true;
 	}
 #endif
+
 	if (CFG_HasFlag(OBK_FLAG_MQTT_PUBLISH_ALL_CHANNELS)) {
 		return true;
 	}
