@@ -1142,7 +1142,7 @@ int JSON_ProcessCommandReply(const char* cmd, const char* arg, void* request, js
 		http_obk_json_channels(request, printer, includeIndex);
 	}
 #ifndef OBK_DISABLE_ALL_DRIVERS
-#if ENABLE_DRIVER_TUYAMCU || ENABLE_DRIVER_GIRIERMCU
+#if ENABLE_DRIVER_TUYAMCU
 	else if (!wal_strnicmp(cmd, "Dp", 2)) {
 		int id = -1;
 		if (isdigit((int)cmd[2])) {

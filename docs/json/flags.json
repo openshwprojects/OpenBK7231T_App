@@ -137,7 +137,7 @@
     "enum": "OBK_FLAG_TUYAMCU_ALWAYSPUBLISHCHANNELS",
     "title": "todo",
     "file": "new_pins.h",
-    "descr": "[MQTT] Always publish channels used by TuyaMCU"
+    "descr": "[MQTT] Always publish channels used by TuyaMCU or GirierMCU"
   },
   {
     "index": "20",
@@ -305,7 +305,7 @@
     "enum": "OBK_FLAG_TUYAMCU_USE_QUEUE",
     "title": "todo",
     "file": "new_pins.h",
-    "descr": "[TuyaMCU] Use queue"
+    "descr": "[TuyaMCU/GirierMCU] Use queue"
   },
   {
     "index": "44",
@@ -362,12 +362,5 @@
     "title": "todo",
     "file": "new_pins.h",
     "descr": "[WiFi] (RTL/BK) Enhanced fast connect by saving AP data to flash (preferable with Flag 37 & static ip). Quick reset 3 times to connect normally"
-  },
-  {
-    "index": "52",
-    "enum": "OBK_FLAG_GIRIERMCU_USE_QUEUE",
-    "title": "todo",
-    "file": "new_pins.h",
-    "descr": "[GirierMCU] Use queue"
   }
 ]

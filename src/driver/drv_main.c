@@ -48,8 +48,6 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"The tmSensor must be used only when TuyaMCU is already started. tmSensor is a TuyaMcu Sensor, it's used for Low Power TuyaMCU communication on devices like TuyaMCU door sensor, or TuyaMCU humidity sensor. After device reboots, tmSensor uses TuyaMCU to request data update from the sensor and reports it on MQTT. Then MCU turns off WiFi module again and goes back to sleep. See an [example door sensor here](https://www.elektroda.com/rtvforum/topic3914412.html).",
 	//drvdetail:"requires":""}
 	{ "tmSensor",	TuyaMCU_Sensor_Init, TuyaMCU_Sensor_RunEverySecond,	NULL, NULL, NULL, NULL, NULL, false },
-#endif
-#if ENABLE_DRIVER_GIRIERMCU
 	{ "GirierMCU",	GirierMCU_Init, GirierMCU_RunEverySecond, NULL, GirierMCU_RunFrame, GirierMCU_Shutdown, NULL, NULL, false },
 #endif
 
