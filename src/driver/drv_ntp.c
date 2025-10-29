@@ -334,6 +334,16 @@ uint32_t setDST(bool setNTP)
 
 	struct tm *ltm;
 	ltm = gmtime(&tempt);
+#if ENABLE_NTP_SUNRISE_SUNSET
+    if (old_DST != g_DST){
+	// if we had a DST switch, we might corect sunset/sunrise events, which were calculated before (with "previous" DST settings)
+	// if we changed to DST, we need to add DST_offset (old_DST = 0)
+	// if we were in DST before switch, we need to sub DST_offset (old_DST = g_DST_offset)
+	ADDLOG_INFO(LOG_FEATURE_RAW, "DST switch - calling  fix_DSTforEvents(%d)\r\n", old_DST ? - g_DST_offset : g_DST_offset );
+	fix_DSTforEvents( old_DST ? - g_DST_offset : g_DST_offset );
+    }
+#endif
+
 	ADDLOG_INFO(LOG_FEATURE_RAW, "In %s time - next DST switch at %lu (" LTSTR ")\r\n",
 	(g_DST)?"summer":"standard", next_DST_switch_epoch, LTM2TIME(ltm));
 	return g_DST;
