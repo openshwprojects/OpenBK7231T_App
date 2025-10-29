@@ -552,7 +552,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"o.",
 	//drvdetail:"requires":""}
-	{ "BKPartitions",     BKPartitions_Init, NULL,                       NULL, BKPartitions_QuickFrame, NULL, NULL, NULL, false }
+	{ "BKPartitions",     BKPartitions_Init, NULL,                       NULL, BKPartitions_QuickFrame, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_BRIDGE
 	//drvdetail:{"name":"Bridge",

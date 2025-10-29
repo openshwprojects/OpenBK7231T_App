@@ -174,9 +174,18 @@ void SIM_ClearOBK(const char *flashPath) {
 	SIM_ShutdownOBK();
 	SIM_StartOBK(flashPath);
 }
+void Test_PartitionSearch() {
+	SIM_ClearOBK(0);
+	SIM_SetupFlashFileReading("W:/GIT/FlashDumps/IoT/BK7231N/BK7231N_Milfra_3g_TB11_QIO_2024-20-8-15-32-47.bin");
+
+	CMD_ExecuteCommand("startDriver BKPartitions", 0);
+	Sim_RunFrames(500000, false);
+
+}
 void Win_DoUnitTests() {
 	//SELFTEST_ASSERT_EXPRESSION("sqrt(4)", 2)
 
+	Test_PartitionSearch();
 	Test_LEDstrips();
 	Test_Commands_Channels();
 
