@@ -6,8 +6,10 @@
 #include "drv_public.h"
 #include "../logging/logging.h"
 #include "../hal/hal_pins.h"
+#include "../hal/hal_ota.h"
 #include "../hal/hal_adc.h"
 #include "../mqtt/new_mqtt.h"
+
 static const char *search_magic = "01PE";
 static int cur_adr = 0x0; 
 static int start_adr = 0x0; 
