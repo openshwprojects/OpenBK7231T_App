@@ -48,7 +48,7 @@ void BKPartitions_QuickFrame() {
 	if (to_read <= 0) return;
 
 	// read raw 2176 bytes
-	int r = HAL_FlashRead((char*)g_buf, to_read, cur_adr);
+	int r = HAL_FlashRead((char*)g_buf, to_read, cur_adr + 0x200000);
 	r = to_read;
 	if (r <= 0) {
 		cur_adr += data_size * (records_per_chunk - 1);
