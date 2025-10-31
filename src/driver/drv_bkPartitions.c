@@ -1,4 +1,4 @@
-#include "../new_common.h"
+﻿#include "../new_common.h"
 #include "../new_pins.h"
 #include "../quicktick.h"
 #include "../cmnds/cmd_public.h"
@@ -19,7 +19,6 @@ static int record_size = 34;
 static int data_size = 32;
 static int records_per_chunk = 64;
 static int raw_chunk = 34 * 64; // 2176
-static int collapsed_chunk = 32 * 64; // 2048
 static byte *g_buf;
 static int magic_len = 0;
 
@@ -35,47 +34,146 @@ static int is_position_in_data_zone(int abs_offset) {
 	return (mod < 32);
 }
 
+uint16_t crc16(const uint8_t *b, int from, int to)
+{
+	uint16_t crc = 0xFFFF;
+	int i, j;
+	for (i = from; i <= to; i++)
+	{
+		crc ^= b[i];
+		for (j = 0; j < 8; j++)
+			crc = (crc & 1) ? (crc >> 1) ^ 0xA001 : (crc >> 1);
+	}
+	return crc;
+}
+int ReadSection(int ofs) {
+	int to_read = raw_chunk;
+	if (ofs + to_read > max_adr)
+		to_read = max_adr - ofs;
+	if (to_read <= 0) return;
+
+	int r = HAL_FlashRead((char*)g_buf, to_read, ofs);
+	r = to_read;
+	if (r <= 0) {
+		return;
+	}
+
+	// In-place collapse (skip bytes 32 and 33 of each 34-byte record)
+	int realSize = 0;
+	for (int rec = 0; rec < records_per_chunk; rec++) {
+		int base = rec * record_size;
+		if (base + record_size > to_read)
+			break;
+
+		// Compute CRC of the 32 bytes of data
+		//uint16_t crc = crc16(g_buf, base, base + data_size - 1);
+
+		//// Read stored CRC (little-endian)
+		//uint16_t stored = g_buf[base + data_size + 1] |
+		//	(g_buf[base + data_size] << 8);
+
+		//if (crc != stored) {
+		//	// CRC FAIL — skip record (or handle differently)
+		//	continue;
+		//}
+
+		// CRC OK → copy 32 bytes to the output position
+		memmove(&g_buf[realSize], &g_buf[base], data_size);
+		realSize += data_size;
+	}
+	return realSize;
+}
+typedef struct {
+	char name[25];
+	char flash[17];
+	uint32_t offset;
+	uint32_t length;
+	uint32_t extra;
+	char layout[8]; // "fal64" or "fal48"
+} PartitionRecord;
+
+static int is_printable_str(const char *s) {
+	if (!s || !*s) return 0;
+	for (int i = 0; s[i]; i++) {
+		if (!(s[i] >= 32 && s[i] <= 126)) return 0;
+	}
+	return 1;
+}
+
+static int parse_fal64(byte *buf, int pos, PartitionRecord *out) {
+	uint32_t magic = buf[pos] | (buf[pos + 1] << 8) | (buf[pos + 2] << 16) | (buf[pos + 3] << 24);
+	if (magic != 0x45503130) return 0;
+
+	memcpy(out->name, &buf[pos + 4], 24); out->name[24] = 0;
+	memcpy(out->flash, &buf[pos + 28], 16); out->flash[16] = 0;
+
+	out->offset = buf[pos + 52] | (buf[pos + 53] << 8) | (buf[pos + 54] << 16) | (buf[pos + 55] << 24);
+	out->length = buf[pos + 56] | (buf[pos + 57] << 8) | (buf[pos + 58] << 16) | (buf[pos + 59] << 24);
+	out->extra = buf[pos + 60] | (buf[pos + 61] << 8) | (buf[pos + 62] << 16) | (buf[pos + 63] << 24);
+
+	strcpy(out->layout, "fal64");
+
+	if (!is_printable_str(out->name) || !is_printable_str(out->flash)) return 0;
+	return 1;
+}
+
+static int parse_fal48(byte *buf, int pos, PartitionRecord *out) {
+	uint32_t magic = buf[pos] | (buf[pos + 1] << 8) | (buf[pos + 2] << 16) | (buf[pos + 3] << 24);
+	if (magic != 0x45503130) return 0;
+
+	memcpy(out->name, &buf[pos + 4], 16); out->name[16] = 0;
+	memcpy(out->flash, &buf[pos + 20], 16); out->flash[16] = 0;
+
+	out->offset = buf[pos + 36] | (buf[pos + 37] << 8) | (buf[pos + 38] << 16) | (buf[pos + 39] << 24);
+	out->length = buf[pos + 40] | (buf[pos + 41] << 8) | (buf[pos + 42] << 16) | (buf[pos + 43] << 24);
+	out->extra = buf[pos + 44] | (buf[pos + 45] << 8) | (buf[pos + 46] << 16) | (buf[pos + 47] << 24);
+
+	strcpy(out->layout, "fal48");
+
+	if (!is_printable_str(out->name) || !is_printable_str(out->flash)) return 0;
+	return 1;
+}
+
+void ReadPartition(int ofs) {
+	int realSize = ReadSection(ofs);
+	int scan_len = realSize - magic_len;
+
+	for (int pos = 0; pos <= scan_len; pos++) {
+		if (memcmp(&g_buf[pos], search_magic, magic_len) != 0) continue;
+
+		PartitionRecord rec;
+		if (parse_fal64(g_buf, pos, &rec) || parse_fal48(g_buf, pos, &rec)) {
+			unsigned int abs_off = ofs + pos;
+			addLogAdv(LOG_INFO, LOG_FEATURE_CMD,
+				"Partition found at 0x%X: %s flash=%s offset=0x%X size=%u extra=%u layout=%s\n",
+				abs_off, rec.name, rec.flash, rec.offset, rec.length, rec.extra, rec.layout);
+		}
+	}
+}
+
+
 void BKPartitions_QuickFrame() {
 	if (!g_buf) return;
 	if (cur_adr >= max_adr) {
 		cur_adr = start_adr;
 	}
 
-
-	int to_read = raw_chunk;
-	if (cur_adr + to_read > max_adr)
-		to_read = max_adr - cur_adr;
-	if (to_read <= 0) return;
-
-	// read raw 2176 bytes
-	int r = HAL_FlashRead((char*)g_buf, to_read, cur_adr + 0x200000);
-	r = to_read;
-	if (r <= 0) {
-		cur_adr += data_size * (records_per_chunk - 1);
-		return;
-	}
-
-	// In-place collapse (skip bytes 32 and 33 of each 34-byte record)
-	int w = 0;
-	for (int rec = 0; rec < records_per_chunk; rec++) {
-		int base = rec * record_size;
-		if (base + data_size > r) break;
-		// copy first 32 bytes to current write position
-		memmove(&g_buf[w], &g_buf[base], data_size);
-		w += data_size;
-	}
-
-	int scan_len = w - magic_len;
+	int realSize = ReadSection(cur_adr);
+	int scan_len = realSize - magic_len;
 	for (int pos = 0; pos <= scan_len; pos++) {
 		if (memcmp(&g_buf[pos], search_magic, magic_len) == 0) {
 			unsigned int abs_off = (unsigned int)(cur_adr + pos);
 			addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "AS: found magic at 0x%X\n", abs_off);
+			// find nearest first record 
+			int nearest = (abs_off/ 34) * 34;
+			addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "AS: nearest at 0x%X\n", nearest);
+			ReadPartition(nearest);
 		}
 	}
 
 	//printf("At %i\n", cur_adr);
 
-	// move by 32*63 = 2016 bytes (overlap one record)
-	cur_adr += data_size * (records_per_chunk - 1);
+	// move by one record less
+	cur_adr += record_size * (records_per_chunk - 1);
 }
 
