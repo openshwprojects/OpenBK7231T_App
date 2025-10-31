@@ -100,6 +100,17 @@ static int is_printable_str(const char *s) {
 	return 1;
 }
 
+bool is_valid_pr(PartitionRecord *out) {
+
+	if (out->length > 0x400000) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD,
+			"Abnormal partition length, probably invalid, skipping");
+		return 0;
+	}
+	if (!is_printable_str(out->name) || !is_printable_str(out->flash))
+		return 0;
+	return 1;
+}
 static int parse_fal64(byte *buf, int pos, PartitionRecord *out) {
 	uint32_t magic = buf[pos] | (buf[pos + 1] << 8) | (buf[pos + 2] << 16) | (buf[pos + 3] << 24);
 	if (magic != 0x45503130) return 0;
@@ -113,8 +124,7 @@ static int parse_fal64(byte *buf, int pos, PartitionRecord *out) {
 
 	strcpy(out->layout, "fal64");
 
-	if (!is_printable_str(out->name) || !is_printable_str(out->flash)) return 0;
-	return 1;
+	return is_valid_pr(out);
 }
 
 static int parse_fal48(byte *buf, int pos, PartitionRecord *out) {
@@ -130,8 +140,7 @@ static int parse_fal48(byte *buf, int pos, PartitionRecord *out) {
 
 	strcpy(out->layout, "fal48");
 
-	if (!is_printable_str(out->name) || !is_printable_str(out->flash)) return 0;
-	return 1;
+	return is_valid_pr(out);
 }
 
 void ReadPartition(int ofs) {
@@ -142,7 +151,9 @@ void ReadPartition(int ofs) {
 		if (memcmp(&g_buf[pos], search_magic, magic_len) != 0) continue;
 
 		PartitionRecord rec;
-		if (parse_fal64(g_buf, pos, &rec) || parse_fal48(g_buf, pos, &rec)) {
+		if (
+			parse_fal64(g_buf, pos, &rec) || 
+			parse_fal48(g_buf, pos, &rec)) {
 			unsigned int abs_off = ofs + pos;
 			addLogAdv(LOG_INFO, LOG_FEATURE_CMD,
 				"Partition found at 0x%X: %s flash=%s offset=0x%X size=%u extra=%u layout=%s\n",
