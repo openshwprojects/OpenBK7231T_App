@@ -383,7 +383,10 @@ static commandResult_t DRV_MAX72XX_Setup(const void *context, const char *cmd, c
 static commandResult_t DRV_MAX72XX_Scroll(const void *context, const char *cmd, const char *args, int flags) {
 	if (g_max == 0)
 		return CMD_RES_ERROR;
-	MAX72XX_shift(g_max,1);
+	int ofs = atoi(args);
+	if (ofs == 0)
+		ofs = 1;
+	MAX72XX_shift(g_max, ofs);
 	MAX72XX_refresh(g_max);
 
 	return CMD_RES_OK;
