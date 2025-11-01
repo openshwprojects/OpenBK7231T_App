@@ -431,7 +431,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"MAX72XX LED matrix display driver with font and simple script interface. See [protocol explanation](https://www.elektroda.pl/rtvforum/viewtopic.php?p=18040628#18040628)",
 	//drvdetail:"requires":""}
-	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, NULL, NULL, NULL, false },
+	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, DRV_MAX72XX_Shutdown, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_BMPI2C
 		//drvdetail:{"name":"BMPI2C",

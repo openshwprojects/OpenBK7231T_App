@@ -164,6 +164,7 @@ void PIR_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState
 void TMGN_RunQuickTick();
 
 void DRV_MAX72XX_Init();
+void DRV_MAX72XX_Shutdown();
 
 void apply_smart_light();
 

@@ -382,7 +382,18 @@ void Test_Commands_Channels() {
 	SELFTEST_ASSERT_FLOATCOMPARE(temp, 88.0f);
 
 
+	CMD_ExecuteCommand("startDriver MAX72XX", 0);
+	CMD_ExecuteCommand("MAX72XX_Setup 10 8 9 16", 0);
+	CMD_ExecuteCommand("MAX72XX_Print 1232132131212", 0);
+	CMD_ExecuteCommand("MAX72XX_Scroll 1", 0);
+	CMD_ExecuteCommand("stopDriver MAX72XX", 0);
+	
 
+	CMD_ExecuteCommand("startDriver MAX72XX", 0);
+	CMD_ExecuteCommand("MAX72XX_Setup 10 8 9 64", 0);
+	CMD_ExecuteCommand("MAX72XX_Print 1232132131212", 0);
+	CMD_ExecuteCommand("MAX72XX_Scroll 1", 0);
+	CMD_ExecuteCommand("stopDriver MAX72XX", 0);
 }
 
 

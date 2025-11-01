@@ -32,6 +32,16 @@
 #define MAX72XX_DELAY
 // #define MAX72XX_DELAY usleep(123);
 
+byte *max_buffer = 0;
+int max_buffer_size = 0;
+
+void MAX_FreeBuffer() {
+	if (max_buffer) {
+		free(max_buffer);
+		max_buffer = 0;
+	}
+	max_buffer_size = 0;
+}
 void PORT_shiftOut(int dataPin, int clockPin, int bitOrder, int val, int totalBytes)
 {
 	int i;
@@ -102,6 +112,11 @@ void MAX72XX_setIntensity(max72XX_t *led, int addr, int intensity) {
 	if (intensity >= 0 && intensity < 16)
 		MAX72XX_spiTransfer(led, addr, OP_INTENSITY, intensity);
 }
+void MAX72XX_free(max72XX_t *led) {
+	free(led->spidata);
+	free(led->led_status);
+	free(led);
+}
 void MAX72XX_refresh(max72XX_t *led) {
 	int i;
 	//int mx;
@@ -165,20 +180,33 @@ void MAX72XX_shift(max72XX_t *led, int d) {
 	// byte tmp;
 	 //int offset;
 	 //int row;
-	byte na[64];
 	mx = led->maxDevices * 8;
+	if (mx > max_buffer_size) {
+		byte *nb;
+		if (max_buffer) {
+			nb = (byte*)realloc(max_buffer, mx);
+		}
+		else {
+			nb = (byte*)malloc(mx);
+		}
+		if (nb == 0) {
+			return;
+		}
+		max_buffer_size = mx;
+		max_buffer = nb;
+	}
 	for (i = 0; i < mx; i++)
 	{
-		na[i] = 0;
+		max_buffer[i] = 0;
 	}
 	if (d == 1)
 	{
 		for (i = 0; i < mx; i++)
 		{
-			na[i] |= led->led_status[i] << 1;
+			max_buffer[i] |= led->led_status[i] << 1;
 			if (led->led_status[i] & 0b10000000 && i > 0)
 			{
-				na[(i + 8) % mx] |= 0b00000001;
+				max_buffer[(i + 8) % mx] |= 0b00000001;
 			}
 		}
 	}
@@ -186,16 +214,16 @@ void MAX72XX_shift(max72XX_t *led, int d) {
 	{
 		for (i = 0; i < mx; i++)
 		{
-			na[i] |= led->led_status[i] >> 1;
+			max_buffer[i] |= led->led_status[i] >> 1;
 			if (led->led_status[i] & 0b00000001 && i > 0)
 			{
-				na[(i - 8 + mx) % mx] |= 0b10000000;
+				max_buffer[(i - 8 + mx) % mx] |= 0b10000000;
 			}
 		}
 	}
 	for (i = 0; i < mx; i++)
 	{
-		led->led_status[i] = na[i];
+		led->led_status[i] = max_buffer[i];
 	}
 	//  for(i = 0; i < mx; i++)
 	//  {
@@ -268,6 +296,8 @@ void MAX72XX_init(max72XX_t *led) {
 void MAX72XX_setupPins(max72XX_t *led, int csi, int clki, int mosii, int maxDevices)
 {
 	led->maxDevices = maxDevices;
+	led->spidata = (byte*)malloc(maxDevices * 2);
+	led->led_status = (byte*)malloc(maxDevices * 8);
 	led->port_cs = csi;
 	led->port_clk = clki;
 	led->port_mosi = mosii;

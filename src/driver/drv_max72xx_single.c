@@ -425,6 +425,11 @@ goto again
 
 
 */
+void DRV_MAX72XX_Shutdown() {
+	MAX72XX_free(g_max);
+	g_max = 0;
+	MAX_FreeBuffer();
+}
 // backlog startDriver MAX72XX; MAX72XX_Setup
 // MAX72XX_Print 0 1234567
 // backlog startDriver MAX72XX; MAX72XX_Setup; MAX72XX_Print 0 1234567
