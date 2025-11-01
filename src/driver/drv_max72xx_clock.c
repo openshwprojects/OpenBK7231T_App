@@ -141,7 +141,7 @@ void Run_Animated() {
 		CMD_ExecuteCommandArgs("MAX72XX_Print", time, 0);
 	}
 	else {
-		CMD_ExecuteCommandArgs("MAX72XX_Scroll", "1", 0);
+		CMD_ExecuteCommandArgs("MAX72XX_Scroll", "-1", 0);
 	}
 }
 bool g_animated = true;
