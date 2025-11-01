@@ -547,6 +547,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "Battery",	Batt_Init,		Batt_OnEverySecond,		Batt_AppendInformationToHTTPIndexPage, NULL, Batt_StopDriver, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_BKPARTITIONS
+	//drvdetail:{"name":"BKPartitions",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"o.",
+	//drvdetail:"requires":""}
+	{ "BKPartitions",     BKPartitions_Init, NULL,                       NULL, BKPartitions_QuickFrame, NULL, NULL, NULL, false },
+#endif
 #if ENABLE_DRIVER_BRIDGE
 	//drvdetail:{"name":"Bridge",
 	//drvdetail:"title":"TODO",

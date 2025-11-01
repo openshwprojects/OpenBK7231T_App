@@ -152,6 +152,9 @@ void Batt_OnEverySecond();
 void Batt_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 void Batt_StopDriver();
 
+void BKPartitions_Init();
+void BKPartitions_QuickFrame();
+ 
 void Shift_Init();
 void Shift_OnEverySecond();
 void Shift_OnChannelChanged(int ch, int value);
