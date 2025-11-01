@@ -144,11 +144,16 @@ void Run_Animated() {
 		CMD_ExecuteCommandArgs("MAX72XX_Scroll", "1", 0);
 	}
 }
+bool g_animated = true;
 void DRV_MAX72XX_Clock_OnEverySecond() {
-	Run_NoAnimation();
+	if (g_animated == false) {
+		Run_NoAnimation();
+	}
 }
 void DRV_MAX72XX_Clock_RunFrame() {
-
+	if (g_animated) {
+		Run_Animation();
+	}
 }
 /*
 Config for my clock with IR
