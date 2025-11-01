@@ -21,6 +21,8 @@ static int records_per_chunk = 64;
 static int raw_chunk = 34 * 64; // 2176
 static byte *g_buf;
 static int magic_len = 0;
+static int crc_ok = 0;
+static int crc_error = 0;
 
 void BKPartitions_Init() {
 	magic_len = (int)strlen(search_magic);
@@ -33,18 +35,31 @@ static int is_position_in_data_zone(int abs_offset) {
 	int mod = abs_offset % 34;
 	return (mod < 32);
 }
-
-uint16_t crc16(const uint8_t *b, int from, int to)
+uint16_t crc16(const uint8_t *b, int from, int to, uint16_t initial_value)
 {
-	uint16_t crc = 0xFFFF;
-	int i, j;
-	for (i = from; i <= to; i++)
+	uint16_t reg = initial_value;
+	uint16_t poly = 0x8005;
+	for (int p = from; p < to; p++)
 	{
-		crc ^= b[i];
-		for (j = 0; j < 8; j++)
-			crc = (crc & 1) ? (crc >> 1) ^ 0xA001 : (crc >> 1);
+		uint8_t octet = b[p];
+		for (int i = 0; i < 8; i++)
+		{
+			uint16_t topbit = reg & 0x8000;
+			if (octet & (0x80 >> i))
+				topbit ^= 0x8000;
+			reg <<= 1;
+			if (topbit)
+				reg ^= poly;
+			reg &= 0xFFFF;
+		}
 	}
-	return crc;
+	return reg;
+}
+int block_crc_check(const uint8_t *data, size_t len, const uint8_t *crc_bytes)
+{
+	uint16_t stored = (uint16_t)crc_bytes[0] | ((uint16_t)crc_bytes[1] << 8);
+	uint16_t calc = crc16(data, 0, len, 0xffff);
+	return (stored == calc);
 }
 int ReadSection(int ofs) {
 	int to_read = raw_chunk;
@@ -57,7 +72,6 @@ int ReadSection(int ofs) {
 	if (r <= 0) {
 		return;
 	}
-
 	// In-place collapse (skip bytes 32 and 33 of each 34-byte record)
 	int realSize = 0;
 	for (int rec = 0; rec < records_per_chunk; rec++) {
@@ -66,17 +80,20 @@ int ReadSection(int ofs) {
 			break;
 
 		// Compute CRC of the 32 bytes of data
-		//uint16_t crc = crc16(g_buf, base, base + data_size - 1);
+		uint16_t crc = crc16(g_buf, base, base + data_size, 0xffff);
 
-		//// Read stored CRC (little-endian)
-		//uint16_t stored = g_buf[base + data_size + 1] |
-		//	(g_buf[base + data_size] << 8);
+		// Read stored CRC (little-endian)
+		uint16_t stored = g_buf[base + data_size + 1] |
+			(g_buf[base + data_size ] << 8);
 
-		//if (crc != stored) {
-		//	// CRC FAIL — skip record (or handle differently)
-		//	continue;
-		//}
-
+		if (crc != stored) {
+			//addLogAdv(LOG_INFO, LOG_FEATURE_CMD,"Invalid CRC at %i",base);
+			crc_error++;
+			// CRC FAIL
+		}
+		else {
+			crc_ok++;
+		}
 		// CRC OK → copy 32 bytes to the output position
 		memmove(&g_buf[realSize], &g_buf[base], data_size);
 		realSize += data_size;
