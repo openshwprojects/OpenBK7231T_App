@@ -124,6 +124,7 @@ void Run_Animated() {
 	if (ltm->tm_sec == 0) {
 		time[0] = 0;
 		p = time;
+		p = my_strcat(p, "  ");
 
 		p = add_padded(p, ltm->tm_hour);
 		p = my_strcat(p, ":");
@@ -131,12 +132,12 @@ void Run_Animated() {
 		strcat(p, " ");
 
 		p = my_strcat(p, " ");
-		p = add_padded(p, ltm->tm_year);
+		p = add_padded(p, ltm->tm_year+1900);
 		p = my_strcat(p, ".");
 		p = add_padded(p, ltm->tm_mon + 1);
 		p = my_strcat(p, ".");
 		p = add_padded(p, ltm->tm_mday);
-		strcat(p, "");
+		strcat(p, "   ");
 
 		CMD_ExecuteCommandArgs("MAX72XX_Print", time, 0);
 	}
