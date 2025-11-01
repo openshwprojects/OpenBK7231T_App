@@ -65,12 +65,12 @@ int ReadSection(int ofs) {
 	int to_read = raw_chunk;
 	if (ofs + to_read > max_adr)
 		to_read = max_adr - ofs;
-	if (to_read <= 0) return;
+	if (to_read <= 0) return 0;
 
 	int r = HAL_FlashRead((char*)g_buf, to_read, ofs);
 	r = to_read;
 	if (r <= 0) {
-		return;
+		return 0;
 	}
 	// In-place collapse (skip bytes 32 and 33 of each 34-byte record)
 	int realSize = 0;
