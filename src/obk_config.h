@@ -188,7 +188,7 @@
 #elif PLATFORM_BL602
 
 // #define ENABLE_SEND_POSTANDGET				1
-#define ENABLE_HA_DISCOVERY 					1
+//___#define ENABLE_HA_DISCOVERY 					1
 #define ENABLE_MQTT								1
 #define ENABLE_TASMOTADEVICEGROUPS				1
 #define ENABLE_LITTLEFS							1
