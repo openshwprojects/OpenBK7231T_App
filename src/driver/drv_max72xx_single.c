@@ -358,7 +358,7 @@ static commandResult_t DRV_MAX72XX_Setup(const void *context, const char *cmd, c
 	int devices;
 
 	Tokenizer_TokenizeString(args, 0);
-
+	
 	clk = Tokenizer_GetArgInteger(0);
 	cs = Tokenizer_GetArgInteger(1);
 	din = Tokenizer_GetArgInteger(2);
@@ -430,7 +430,7 @@ goto again
 // backlog startDriver MAX72XX; MAX72XX_Setup; MAX72XX_Print 0 1234567
 void DRV_MAX72XX_Init() {
 
-	//cmddetail:{"name":"MAX72XX_Setup","args":"[Value]",
+	//cmddetail:{"name":"MAX72XX_Setup","args":"[clk][cs][din][segments]",
 	//cmddetail:"descr":"Sets the maximum current for LED driver.",
 	//cmddetail:"fn":"DRV_MAX72XX_Setup","file":"driver/drv_max72xx_single.c","requires":"",
 	//cmddetail:"examples":""}

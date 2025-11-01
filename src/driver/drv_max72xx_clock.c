@@ -29,40 +29,6 @@ enum {
 	CLOCK_HUMIDITY,
 	CLOCK_TEMPERATURE,
 };
-bool CHANNEL_IsHumidity(int type) {
-	if (type == ChType_Humidity)
-		return true;
-	if (type == ChType_Humidity_div10)
-		return true;
-	return false;
-}
-bool CHANNEL_IsTemperature(int type) {
-	if (type == ChType_Temperature)
-		return true;
-	if (type == ChType_Temperature_div10)
-		return true;
-	if (type == ChType_Temperature_div100)
-		return true;
-	return false;
-}
-bool CHANNEL_GetGenericOfType(float *out, bool (*checker)(int type)) {
-	int i, t;
-
-	for (i = 0; i < CHANNEL_MAX; i++) {
-		t = g_cfg.pins.channelTypes[i];
-		if (checker(t)) {
-			*out = CHANNEL_GetFinalValue(i);
-			return true;
-		}
-	}
-	return false;
-}
-bool CHANNEL_GetGenericHumidity(float *out) {
-	return CHANNEL_GetGenericOfType(out, CHANNEL_IsHumidity);
-}
-bool CHANNEL_GetGenericTemperature(float *out) {
-	return CHANNEL_GetGenericOfType(out, CHANNEL_IsTemperature);
-}
 void Clock_Send(int type) {
 	char time[64];
 	struct tm *ltm;
@@ -94,11 +60,17 @@ void Clock_Send(int type) {
 		strcat(p, "   ");
 	}
 	else if (type == CLOCK_HUMIDITY) {
-		CHANNEL_GetGenericHumidity(&val);
+		if (false==CHANNEL_GetGenericHumidity(&val)) {
+			// failed - exit early, do not change string
+			return;
+		}
 		sprintf(time, "H: %i%%   ", (int)val);
 	} 
 	else if (type == CLOCK_TEMPERATURE) {
-		CHANNEL_GetGenericTemperature(&val);
+		if (false == CHANNEL_GetGenericTemperature(&val)) {
+			// failed - exit early, do not change string
+			return;
+		}
 		sprintf(time, "T: %iC    ", (int)val);
 	}
 
@@ -180,7 +152,6 @@ void DRV_MAX72XX_Clock_RunFrame() {
 }
 /*
 Config for my clock with IR
-
 
 startDriver MAX72XX
 MAX72XX_Setup 0 1 26
