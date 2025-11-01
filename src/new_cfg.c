@@ -457,6 +457,11 @@ bool CHANNEL_IsTemperature(int type) {
 		return true;
 	return false;
 }
+bool CHANNEL_IsPressure(int type) {
+	if (type == ChType_Pressure_div100)
+		return true;
+	return false;
+}
 bool CHANNEL_GetGenericOfType(float *out, bool(*checker)(int type)) {
 	int i, t;
 
@@ -474,6 +479,9 @@ bool CHANNEL_GetGenericHumidity(float *out) {
 }
 bool CHANNEL_GetGenericTemperature(float *out) {
 	return CHANNEL_GetGenericOfType(out, CHANNEL_IsTemperature);
+}
+bool CHANNEL_GetGenericPressure(float *out) {
+	return CHANNEL_GetGenericOfType(out, CHANNEL_IsPressure);
 }
 void CHANNEL_SetType(int ch, int type) {
 	if (g_cfg.pins.channelTypes[ch] != type) {
