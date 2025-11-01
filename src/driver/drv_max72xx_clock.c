@@ -152,7 +152,7 @@ void DRV_MAX72XX_Clock_OnEverySecond() {
 }
 void DRV_MAX72XX_Clock_RunFrame() {
 	if (g_animated) {
-		Run_Animation();
+		Run_Animated();
 	}
 }
 /*
