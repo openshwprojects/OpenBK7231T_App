@@ -88,7 +88,7 @@ void Clock_SendHumidity() {
 void Clock_SendTemperature() {
 	Clock_Send(CLOCK_TEMPERATURE);
 }
-static int cycle = 0;
+static unsigned int cycle = 0;
 
 void Run_NoAnimation() {
 	cycle+=4;
@@ -108,6 +108,11 @@ void Run_NoAnimation() {
 	cycle %= 40;
 }
 void Run_Animated() {
+	cycle++;
+	if (cycle < 4) {
+		return;
+	}
+	cycle = 0;
 	char time[64];
 	struct tm *ltm;
 	char *p;
