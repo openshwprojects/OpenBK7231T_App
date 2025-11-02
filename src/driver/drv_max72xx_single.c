@@ -465,7 +465,7 @@ void DRV_MAX72XX_Init() {
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"DRV_DRV_MAX72XX_Clear","file":"driver/drv_max72xx_single.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("DRV_MAX72XX_Clear", DRV_MAX72XX_Clear, NULL);
+	CMD_RegisterCommand("MAX72XX_Clear", DRV_MAX72XX_Clear, NULL);
 }
 
 

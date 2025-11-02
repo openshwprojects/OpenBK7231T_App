@@ -221,9 +221,19 @@ if $CH10==4 then my_send_style_blue
 
 
 */
+static commandResult_t DRV_MAX72XX_Clock_Animate(const void *context, const char *cmd, const char *args, int flags) {
+
+
+	Tokenizer_TokenizeString(args, 0);
+
+	g_animated = Tokenizer_GetArgInteger(0);
+
+
+	return CMD_RES_OK;
+}
 void DRV_MAX72XX_Clock_Init() {
 
-
+	CMD_RegisterCommand("MAX72XXClock_Animate", DRV_MAX72XX_Clock_Animate, NULL);
 }
 
 

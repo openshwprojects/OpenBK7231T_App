@@ -394,6 +394,13 @@ void Test_Commands_Channels() {
 	CMD_ExecuteCommand("MAX72XX_Print 1232132131212", 0);
 	CMD_ExecuteCommand("MAX72XX_Scroll 1", 0);
 	CMD_ExecuteCommand("stopDriver MAX72XX", 0);
+
+	CMD_ExecuteCommand("startDriver MAX72XX", 0);
+	CMD_ExecuteCommand("startDriver MAX72XX_Clock", 0);
+	Sim_RunSeconds(1, false); 
+	CMD_ExecuteCommand("MAX72XXClock_Animate 1", 0);
+	Sim_RunSeconds(1, false);
+	CMD_ExecuteCommand("stopDriver MAX72XX", 0);
 }
 
 
