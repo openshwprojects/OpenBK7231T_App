@@ -91,9 +91,6 @@ void Clock_SendTemperature() {
 static int cycle = 0;
 
 void Run_NoAnimation() {
-	//int max_cycle;
-	//bool bHasDHT;
-
 	cycle+=4;
 	if (cycle < 10) {
 		Clock_SendDate();
@@ -107,6 +104,7 @@ void Run_NoAnimation() {
 	else {
 		Clock_SendTemperature();
 	}
+	CMD_ExecuteCommandArgs("MAX72XX_Show", "", 0);
 	cycle %= 40;
 }
 void Run_Animated() {
@@ -144,6 +142,7 @@ void Run_Animated() {
 		CMD_ExecuteCommandArgs("MAX72XX_Print", time, 0);
 	}
 	CMD_ExecuteCommandArgs("MAX72XX_Scroll", "-1", 0);
+	CMD_ExecuteCommandArgs("MAX72XX_Show", "", 0);
 }
 bool g_animated = false;
 void DRV_MAX72XX_Clock_OnEverySecond() {

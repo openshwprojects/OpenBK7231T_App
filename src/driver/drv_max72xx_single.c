@@ -363,9 +363,6 @@ static commandResult_t DRV_MAX72XX_Setup(const void *context, const char *cmd, c
 	cs = Tokenizer_GetArgInteger(1);
 	din = Tokenizer_GetArgInteger(2);
 	devices = Tokenizer_GetArgInteger(3);
-	//clk = 9;
-	//cs = 14;
-	//din = 8;
 
 	if (devices == 0) {
 		devices = 4;
@@ -387,8 +384,9 @@ static commandResult_t DRV_MAX72XX_Scroll(const void *context, const char *cmd, 
 	if (ofs == 0)
 		ofs = 1;
 	MAX72XX_shift(g_max, ofs);
-	MAX72XX_refresh(g_max);
-
+	if (0) {
+		MAX72XX_refresh(g_max);
+	}
 	return CMD_RES_OK;
 }
 int MAX72XXSingle_CountPixels(bool bOn) {
@@ -399,11 +397,19 @@ int MAX72XXSingle_GetScrollCount() {
 		return 0;
 	return g_max->scrollCount;
 }
+static commandResult_t DRV_MAX72XX_Show(const void *context, const char *cmd, const char *args, int flags) {
+
+
+	MAX72XX_refresh(g_max);
+	return CMD_RES_OK;
+}
 static commandResult_t DRV_MAX72XX_Clear(const void *context, const char *cmd, const char *args, int flags) {
 
 
 	MAX72XX_clearDisplayFullNoSend(g_max);
-	MAX72XX_refresh(g_max);
+	if (0) {
+		MAX72XX_refresh(g_max);
+	}
 	return CMD_RES_OK;
 }
 static commandResult_t DRV_MAX72XX_Print(const void *context, const char *cmd, const char *args, int flags) {
@@ -421,7 +427,9 @@ static commandResult_t DRV_MAX72XX_Print(const void *context, const char *cmd, c
 
 	MAX72XX_print(g_max, ofs, args);
 	MAX72XX_rotate90CW(g_max);
-	MAX72XX_refresh(g_max);
+	if (0) {
+		MAX72XX_refresh(g_max);
+	}
 
 	return CMD_RES_OK;
 }
@@ -469,6 +477,8 @@ void DRV_MAX72XX_Init() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MAX72XX_Print", DRV_MAX72XX_Print, NULL);
 
+	CMD_RegisterCommand("MAX72XX_refresh", DRV_MAX72XX_Show, NULL);
+	
 	//cmddetail:{"name":"DRV_MAX72XX_Clear","args":"DRV_MAX72XX_Clear",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"DRV_DRV_MAX72XX_Clear","file":"driver/drv_max72xx_single.c","requires":"",

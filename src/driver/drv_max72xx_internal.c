@@ -114,7 +114,7 @@ void MAX72XX_clearDisplayFullNoSend(max72XX_t *led) {
 	}
 }
 
-void MAX72XX_clearDisplay(max72XX_t *led, int addr) {
+void MAX72XX_clearDisplayAndSend(max72XX_t *led, int addr) {
 	if (led == 0) {
 		return;
 	}
@@ -351,7 +351,7 @@ void MAX72XX_init(max72XX_t *led) {
 		MAX72XX_setScanLimit(led, i, 7);
 		//decode is done in source
 		MAX72XX_spiTransfer(led, i, OP_DECODEMODE, 0);
-		MAX72XX_clearDisplay(led, i);
+		MAX72XX_clearDisplayAndSend(led, i);
 		//we go into shutdown-mode on startup
 		MAX72XX_shutdown(led, i, 1);
 	}
@@ -361,7 +361,7 @@ void MAX72XX_init(max72XX_t *led) {
 		/* Set the brightness to a medium values */
 		MAX72XX_setIntensity(led, i, 8);
 		/* and clear the display */
-		MAX72XX_clearDisplay(led, i);
+		MAX72XX_clearDisplayAndSend(led, i);
 	}
 }
 void MAX72XX_setupPins(max72XX_t *led, int csi, int clki, int mosii, int maxDevices)
