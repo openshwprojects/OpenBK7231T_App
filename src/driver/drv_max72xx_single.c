@@ -394,7 +394,7 @@ static commandResult_t DRV_MAX72XX_Scroll(const void *context, const char *cmd, 
 int MAX72XXSingle_CountPixels(bool bOn) {
 	return MAX72XX_countPixels(g_max, bOn);
 }
-int MAX72XXSingle_GetScrollCount(n) {
+int MAX72XXSingle_GetScrollCount() {
 	if (g_max == 0)
 		return 0;
 	return g_max->scrollCount;
