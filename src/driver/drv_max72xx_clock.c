@@ -120,8 +120,9 @@ void Run_Animated() {
 	if (ltm == 0) {
 		return;
 	}
+	int scroll = MAX72XXSingle_GetScrollCount();
 	//scroll_cycle = 0;
-	if (ltm->tm_sec == 0) {
+	if (scroll == 0) {
 		time[0] = 0;
 		p = time;
 		p = my_strcat(p, "  ");
@@ -142,9 +143,7 @@ void Run_Animated() {
 		CMD_ExecuteCommandArgs("MAX72XX_Clear", NULL, 0);
 		CMD_ExecuteCommandArgs("MAX72XX_Print", time, 0);
 	}
-	else {
-		CMD_ExecuteCommandArgs("MAX72XX_Scroll", "-1", 0);
-	}
+	CMD_ExecuteCommandArgs("MAX72XX_Scroll", "-1", 0);
 }
 bool g_animated = false;
 void DRV_MAX72XX_Clock_OnEverySecond() {
