@@ -7,6 +7,7 @@ typedef struct max72XX_s {
 	byte maxDevices;
 	unsigned char *spidata;
 	byte *led_status;
+	int scrollCount;
 } max72XX_t;
 
 int MAX72XX_countPixels(max72XX_t *led, bool bOn);

@@ -239,6 +239,9 @@ void MAX72XX_shift(max72XX_t *led, int d) {
 	}
 	int i;
 	int mx;
+
+	led->scrollCount = (led->scrollCount + d + (led->maxDevices * 8)) % (led->maxDevices * 8);
+
 	// byte tmp;
 	 //int offset;
 	 //int row;
