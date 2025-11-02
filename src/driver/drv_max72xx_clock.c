@@ -146,7 +146,7 @@ void Run_Animated() {
 		CMD_ExecuteCommandArgs("MAX72XX_Scroll", "-1", 0);
 	}
 }
-bool g_animated = true;
+bool g_animated = false;
 void DRV_MAX72XX_Clock_OnEverySecond() {
 	if (g_animated == false) {
 		Run_NoAnimation();
