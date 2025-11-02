@@ -106,12 +106,14 @@ void MAX72XX_clearDisplayFullNoSend(max72XX_t *led) {
 	if (led == 0) {
 		return;
 	}
-	for (int offset = 0; offset < led->maxDevices; offset++) {
-		for (int i = 0; i < 8; i++) {
-			led->led_status[offset + i] = 0;
+	for (int dev = 0; dev < led->maxDevices; dev++) {
+		int base = dev * 8;
+		for (int row = 0; row < 8; row++) {
+			led->led_status[base + row] = 0;
 		}
 	}
 }
+
 void MAX72XX_clearDisplay(max72XX_t *led, int addr) {
 	if (led == 0) {
 		return;
@@ -145,6 +147,29 @@ void MAX72XX_free(max72XX_t *led) {
 	free(led->led_status);
 	free(led);
 }
+int MAX72XX_countPixels(max72XX_t *led, bool bOn) {
+	if (led == 0)
+		return 0;
+
+	int count = 0;
+	int total = led->maxDevices * 8;
+
+	if (bOn) {
+		for (int i = 0; i < total; i++) {
+			byte v = led->led_status[i];
+			while (v) {
+				count += v & 1;
+				v >>= 1;
+			}
+		}
+	}
+	else {
+		count = led->maxDevices * 8 * 8;
+	}
+
+	return count;
+}
+
 void MAX72XX_refresh(max72XX_t *led) {
 	if (led == 0) {
 		return;

@@ -391,6 +391,9 @@ static commandResult_t DRV_MAX72XX_Scroll(const void *context, const char *cmd, 
 
 	return CMD_RES_OK;
 }
+int MAX72XXSingle_CountPixels(bool bOn) {
+	return MAX72XX_countPixels(g_max, bOn);
+}
 static commandResult_t DRV_MAX72XX_Clear(const void *context, const char *cmd, const char *args, int flags) {
 
 

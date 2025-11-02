@@ -9,6 +9,7 @@ typedef struct max72XX_s {
 	byte *led_status;
 } max72XX_t;
 
+int MAX72XX_countPixels(max72XX_t *led, bool bOn);
 void MAX72XX_refresh(max72XX_t *led);
 void MAX72XX_free(max72XX_t *led);
 void MAX72XX_shutdown(max72XX_t *led, int addr, bool b);
