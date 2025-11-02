@@ -165,6 +165,8 @@ void TMGN_RunQuickTick();
 
 void DRV_MAX72XX_Init();
 void DRV_MAX72XX_Shutdown();
+int MAX72XXSingle_CountPixels(bool bOn);
+int MAX72XXSingle_GetScrollCount();
 
 void apply_smart_light();
 
