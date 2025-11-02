@@ -93,6 +93,13 @@ void MAX72XX_setScanLimit(max72XX_t *led, int addr, int limit) {
 	if (limit >= 0 && limit < 8)
 		MAX72XX_spiTransfer(led, addr, OP_SCANLIMIT, limit);
 }
+void MAX72XX_clearDisplayFullNoSend(max72XX_t *led) {
+	for (int offset = 0; offset < led->maxDevices; offset++) {
+		for (int i = 0; i < 8; i++) {
+			led->led_status[offset + i] = 0;
+		}
+	}
+}
 void MAX72XX_clearDisplay(max72XX_t *led, int addr) {
 	int offset;
 	int i;

@@ -391,6 +391,13 @@ static commandResult_t DRV_MAX72XX_Scroll(const void *context, const char *cmd, 
 
 	return CMD_RES_OK;
 }
+static commandResult_t DRV_MAX72XX_Clear(const void *context, const char *cmd, const char *args, int flags) {
+
+
+	MAX72XX_clearDisplayFullNoSend(g_max);
+	MAX72XX_refresh(g_max);
+	return CMD_RES_OK;
+}
 static commandResult_t DRV_MAX72XX_Print(const void *context, const char *cmd, const char *args, int flags) {
 	int ofs;
 	//const char *s;
@@ -453,6 +460,12 @@ void DRV_MAX72XX_Init() {
 	//cmddetail:"fn":"DRV_MAX72XX_Print","file":"driver/drv_max72xx_single.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MAX72XX_Print", DRV_MAX72XX_Print, NULL);
+
+	//cmddetail:{"name":"DRV_MAX72XX_Clear","args":"DRV_MAX72XX_Clear",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"DRV_DRV_MAX72XX_Clear","file":"driver/drv_max72xx_single.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("DRV_MAX72XX_Clear", DRV_MAX72XX_Clear, NULL);
 }
 
 

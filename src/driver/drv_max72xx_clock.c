@@ -139,6 +139,7 @@ void Run_Animated() {
 		p = add_padded(p, ltm->tm_mday);
 		strcat(p, "   ");
 
+		CMD_ExecuteCommandArgs("MAX72XX_Clear", NULL, 0);
 		CMD_ExecuteCommandArgs("MAX72XX_Print", time, 0);
 	}
 	else {
