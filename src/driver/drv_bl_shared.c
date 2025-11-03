@@ -72,7 +72,7 @@ energysensdataset_t datasetlist[BL_SENSDATASETS_COUNT] = {
 	  {{"voltage",		"V",		"Voltage",				"voltage",					"0",		},  1,			0.25,		},	// OBK_VOLTAGE
 	  {{"current",		"A",		"Current",				"current",					"1",		},	3,			0.002,		},	// OBK_CURRENT
 	  {{"power",			"W",		"Power",				"power",					"2",		},	2,			0.25,		},	// OBK_POWER
-	  {{"frequency",			"Hz",		"Frequency",				"frequency",					"3",		},	2,			0.01,		},	// OBK_FREQUENCY
+	  {{"frequency",			"Hz",		"Frequency",				"frequency",					"138",		},	3,			0.01,		},	// OBK_FREQUENCY
 	  {{"apparent_power",	"VA",		"Apparent Power",		"power_apparent",			"9",		},	2,			0.25,		},	// OBK_POWER_APPARENT
 	  {{"reactive_power",	"var",		"Reactive Power",		"power_reactive",			"10",		},	2,			0.25,		},	// OBK_POWER_REACTIVE
 	  {{"power_factor",	"",			"Power Factor",			"power_factor",				"11",		},	2,			0.05,		},	// OBK_POWER_FACTOR
@@ -92,7 +92,7 @@ energysensdataset_t datasetlist[BL_SENSDATASETS_COUNT] = {
     {{"voltage",		"V",		"Voltage B",				"voltage_b",					"b_0",		},  1,			0.25,		},	// OBK_VOLTAGE
     {{"current",		"A",		"Current B",				"current_b",					"b_1",		},	3,			0.002,		},	// OBK_CURRENT
     {{"power",			"W",		"Power B",				"power_b",					"b_2",		},	2,			0.25,		},	// OBK_POWER
-    {{"frequency",			"Hz",		"Frequency B",				"frequency_b",					"b_3",		},	2,			0.01,		},	// OBK_FREQUENCY
+    {{"frequency",			"Hz",		"Frequency B",				"frequency_b",					"b_138",		},	3,			0.01,		},	// OBK_FREQUENCY
     {{"apparent_power",	"VA",		"Apparent Power B",		"power_apparent_b",			"b_9",		},	2,			0.25,		},	// OBK_POWER_APPARENT
     {{"reactive_power",	"var",		"Reactive Power B",		"power_reactive_b",			"b_10",		},	2,			0.25,		},	// OBK_POWER_REACTIVE
     {{"power_factor",	"",			"Power Factor B",			"power_factor_b",				"b_11",		},	2,			0.05,		},	// OBK_POWER_FACTOR
