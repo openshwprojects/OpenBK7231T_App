@@ -29,11 +29,11 @@
   {
     "name": "AddChangeHandler",
     "args": "[Variable][Relation][Constant][Command]",
-    "descr": "This can listen to change in channel value (for example channel 0 becoming 100), or for a voltage/current/power change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be 'Power', or 'Current' or 'Voltage'",
+    "descr": "Trigger based on change in channel value (for example channel 0 becoming 100), or for a voltage/current/power/frequency change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be 'Power', 'Current', 'Voltage' or 'Frequency'",
     "fn": "CMD_AddChangeHandler",
     "file": "cmnds/cmd_eventHandlers.c",
     "requires": "",
-    "examples": ""
+    "examples": "Values are compared as integers.  This affects Current (*1000) and Frequency (*100). Example handler where Current is greather than 2Amps:<br/> `AddChangeHandler Current > 2000 SetChannel 1 0`"
   },
   {
     "name": "AddChannel",
@@ -3205,8 +3205,8 @@
   },
   {
     "name": "VCPPublishThreshold",
-    "args": "[VoltageDeltaVolts][CurrentDeltaAmpers][PowerDeltaWats][EnergyDeltaWh]",
-    "descr": "Sets the minimal change between previous reported value over MQTT and next reported value over MQTT. Very useful for BL0942, BL0937, etc. So, if you set, VCPPublishThreshold 0.5 0.001 0.5, it will only report voltage again if the delta from previous reported value is largen than 0.5V. Remember, that the device will also ALWAYS force-report values every N seconds (default 60)",
+    "args": "[VoltageDeltaVolts][CurrentDeltaAmpers][Frequency][PowerDeltaWats][EnergyDeltaWh]",
+    "descr": "Sets the minimal change between previous reported value over MQTT and next reported value over MQTT. Very useful for BL0942, BL0937, etc. So, if you set, VCPPublishThreshold 0.5 0.001 0.5, it will only report voltage again if the delta from previous reported value is larger than 0.5V. Remember, that the device will also ALWAYS force-report values every N seconds (default 60)",
     "fn": "BL09XX_VCPPublishThreshold",
     "file": "driver/drv_bl_shared.c",
     "requires": "",

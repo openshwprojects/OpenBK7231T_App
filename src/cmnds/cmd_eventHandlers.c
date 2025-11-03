@@ -186,6 +186,8 @@ int EVENT_ParseEventName(const char *s) {
         return CMD_EVENT_CHANGE_CURRENT;
     if(!stricmp(s, "power"))
         return CMD_EVENT_CHANGE_POWER;
+    if(!stricmp(s, "frequency"))
+        return CMD_EVENT_CHANGE_FREQUENCY;
     if(!stricmp(s,"energycounter") || !stricmp(s, "energy"))
         return CMD_EVENT_CHANGE_CONSUMPTION_TOTAL;
     if(!stricmp(s,"energycounter_last_hour"))
@@ -616,9 +618,9 @@ void EventHandlers_Init() {
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("AddEventHandler", CMD_AddEventHandler, NULL);
 	//cmddetail:{"name":"AddChangeHandler","args":"[Variable][Relation][Constant][Command]",
-	//cmddetail:"descr":"This can listen to change in channel value (for example channel 0 becoming 100), or for a voltage/current/power change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be 'Power', or 'Current' or 'Voltage'",
+	//cmddetail:"descr":"Trigger based on change in channel value (for example channel 0 becoming 100), or for a voltage/current/power/frequency change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be 'Power', 'Current', 'Voltage' or 'Frequency'",
 	//cmddetail:"fn":"CMD_AddChangeHandler","file":"cmnds/cmd_eventHandlers.c","requires":"",
-	//cmddetail:"examples":""}
+	//cmddetail:"examples":"Values are compared as integers.  This affects Current (*1000) and Frequency (*100). Example handler where Current is greather than 2Amps:<br/> `AddChangeHandler Current > 2000 SetChannel 1 0`"}
     CMD_RegisterCommand("AddChangeHandler", CMD_AddChangeHandler, NULL);
 	//cmddetail:{"name":"listEventHandlers","args":"",
 	//cmddetail:"descr":"Prints full list of added event handlers",
