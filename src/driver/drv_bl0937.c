@@ -40,6 +40,8 @@ volatile uint32_t g_vc_pulses = 0;
 volatile uint32_t g_p_pulses = 0;
 static portTickType pulseStamp;
 
+//based on drv_sht3x.c
+static g_sht_secondsUntilNextMeasurement = 1, g_sht_secondsBetweenMeasurements = 15;
 
 void HlwCf1Interrupt(int pinNum)
 {
@@ -189,72 +191,80 @@ void BL0937_RunEverySecond(void)
 
 
 #endif
-	if(g_sel)
-	{
-		if(g_invertSEL)
+	if (g_sht_secondsUntilNextMeasurement <= 0) {
+		if(g_sel)
 		{
-			res_c = g_vc_pulses;
+			if(g_invertSEL)
+			{
+				res_c = g_vc_pulses;
+			}
+			else
+			{
+				res_v = g_vc_pulses;
+			}
+			g_sel = false;
 		}
 		else
 		{
-			res_v = g_vc_pulses;
+			if(g_invertSEL)
+			{
+				res_v = g_vc_pulses;
+			}
+			else
+			{
+				res_c = g_vc_pulses;
+			}
+			g_sel = true;
 		}
-		g_sel = false;
-	}
-	else
-	{
-		if(g_invertSEL)
-		{
-			res_v = g_vc_pulses;
-		}
-		else
-		{
-			res_c = g_vc_pulses;
-		}
-		g_sel = true;
-	}
-	HAL_PIN_SetOutputValue(GPIO_HLW_SEL, g_sel);
-	g_vc_pulses = 0;
-
-	res_p = g_p_pulses;
-	g_p_pulses = 0;
+		HAL_PIN_SetOutputValue(GPIO_HLW_SEL, g_sel);
+		g_vc_pulses = 0;
+	
+		res_p = g_p_pulses;
+		g_p_pulses = 0;
 #if PLATFORM_BEKEN
-	GLOBAL_INT_RESTORE();
+		GLOBAL_INT_RESTORE();
 #else
 
 #endif
-	xPassedTicks = xTaskGetTickCount();
-	ticksElapsed = (xPassedTicks - pulseStamp);
-	pulseStamp = xPassedTicks;
-	//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
-
-	PwrCal_Scale(res_v, res_c, res_p, &final_v, &final_c, &final_p);
-
-	final_v *= (1000.0f / (float)portTICK_PERIOD_MS);
-	final_v /= (float)ticksElapsed;
-
-	final_c *= (1000.0f / (float)portTICK_PERIOD_MS);
-	final_c /= (float)ticksElapsed;
-
-	final_p *= (1000.0f / (float)portTICK_PERIOD_MS);
-	final_p /= (float)ticksElapsed;
-
-	/* patch to limit max power reading, filter random reading errors */
-	if(final_p > BL0937_PMAX)
-	{
-		/* MAX value breach, use last value */
+		xPassedTicks = xTaskGetTickCount();
+		ticksElapsed = (xPassedTicks - pulseStamp);
+		pulseStamp = xPassedTicks;
+		//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
+	
+		PwrCal_Scale(res_v, res_c, res_p, &final_v, &final_c, &final_p);
+	
+		final_v *= (1000.0f / (float)portTICK_PERIOD_MS);
+		final_v /= (float)ticksElapsed;
+	
+		final_c *= (1000.0f / (float)portTICK_PERIOD_MS);
+		final_c /= (float)ticksElapsed;
+	
+		final_p *= (1000.0f / (float)portTICK_PERIOD_MS);
+		final_p /= (float)ticksElapsed;
+	
+		/* patch to limit max power reading, filter random reading errors */
+		if(final_p > BL0937_PMAX)
 		{
-			char dbg[128];
-			snprintf(dbg, sizeof(dbg), "Power reading: %f exceeded MAX limit: %f, Last: %f\n", final_p, BL0937_PMAX, last_p);
-			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, dbg);
+			/* MAX value breach, use last value */
+			{
+				char dbg[128];
+				snprintf(dbg, sizeof(dbg), "Power reading: %f exceeded MAX limit: %f, Last: %f\n", final_p, BL0937_PMAX, last_p);
+				addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, dbg);
+			}
+			final_p = last_p;
 		}
-		final_p = last_p;
+		else
+		{
+			/* Valid value save for next time */
+			last_p = final_p;
+		}
+		g_sht_secondsUntilNextMeasurement = g_sht_secondsBetweenMeasurements;
 	}
-	else
-	{
-		/* Valid value save for next time */
-		last_p = final_p;
+
+	if (g_sht_secondsUntilNextMeasurement > 0) {
+		g_sht_secondsUntilNextMeasurement--;
 	}
+
 #if 0
 	{
 		char dbg[128];
