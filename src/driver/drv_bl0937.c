@@ -264,7 +264,9 @@ void BL0937_RunEverySecond(void)
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i, ticks %i (prev %i / now %i)\n", res_v, res_c, res_p, ticksElapsed, pulseStampPrev, pulseStampNow);
 	
 		PwrCal_Scale(res_v, res_c, res_p, &final_v, &final_c, &final_p);
-	
+
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"Scaled v %.1f c %.4f p %.2f\n", final_v, final_c, final_p);
+		
 		final_v *= (1000.0f / (float)portTICK_PERIOD_MS);
 		final_v /= (float)ticksElapsed;
 	
