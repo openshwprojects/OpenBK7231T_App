@@ -189,7 +189,12 @@ void BL0937_RunEverySecond(void)
 #endif
 
 #if 1
-	if (g_sht_secondsUntilNextMeasurement <= 0) {
+	if (g_p_pulses >= g_p_pulsesprev) {
+		res_p = g_p_pulses-g_p_pulsesprev;
+	} else {
+		res_p = (0xFFFFFFFF - g_p_pulsesprev) + g_p_pulses + 1;
+	}
+	if (g_sht_secondsUntilNextMeasurement <= 0 || res_p > 2) {
 		if(bNeedRestart)
 		{
 			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "BL0937 pins have changed, will reset the interrupts");
@@ -236,12 +241,7 @@ void BL0937_RunEverySecond(void)
 //do not reset, calc considering overflow
 //		res_p = g_p_pulses;
 //		g_p_pulses = 0;
-		if (g_p_pulses >= g_p_pulsesprev) {
-			res_p = g_p_pulses-g_p_pulsesprev;
-		} else {
-			res_p = (0xFFFFFFFF - g_p_pulsesprev) + g_p_pulses + 1;
-		}
-		g_p_pulses = g_p_pulsesprev;
+		g_p_pulsesprev = g_p_pulses;
 		
 	#if PLATFORM_BEKEN
 		GLOBAL_INT_RESTORE();
