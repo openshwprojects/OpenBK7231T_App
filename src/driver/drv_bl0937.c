@@ -37,9 +37,9 @@ float BL0937_PMAX = 3680.0f;
 float last_p = 0.0f;
 
 volatile uint32_t g_vc_pulses = 0;
-volatile uint32_t g_p_pulses = 0;
-static portTickType pulseStamp;
-static g_sht_secondsUntilNextMeasurement = 1, g_sht_secondsBetweenMeasurements = 15;
+volatile uint32_t g_p_pulses = 0, g_p_pulsesprev = 0;
+static portTickType pulseStampPrev;
+static int g_sht_secondsUntilNextMeasurement = 1, g_sht_secondsBetweenMeasurements = 15;
 
 
 void HlwCf1Interrupt(int pinNum)
@@ -113,7 +113,7 @@ void BL0937_Init_Pins()
 
 	g_vc_pulses = 0;
 	g_p_pulses = 0;
-	pulseStamp = xTaskGetTickCount();
+	pulseStampPrev = xTaskGetTickCount();
 }
 
 void BL0937_Init(void)
@@ -139,7 +139,8 @@ void BL0937_RunEverySecond(void)
 	float final_p;
 	bool bNeedRestart;
 	portTickType ticksElapsed;
-	portTickType xPassedTicks;
+//	portTickType xPassedTicks;
+	portTickType pulseStampNow;
 
 	bNeedRestart = false;
 	if(g_invertSEL)
@@ -218,17 +219,34 @@ void BL0937_RunEverySecond(void)
 		HAL_PIN_SetOutputValue(GPIO_HLW_SEL, g_sel);
 		g_vc_pulses = 0;
 	
-		res_p = g_p_pulses;
-		g_p_pulses = 0;
+//do not reset, calc considering overflow
+//		res_p = g_p_pulses;
+//		g_p_pulses = 0;
+		if (g_p_pulses >= g_p_pulsesprev) {
+			res_p = g_p_pulses-g_p_pulsesprev;
+		} else {
+			res_p = (0xFFFFFFFF - g_p_pulsesprev) + g_p_pulses + 1;
+		}
+		g_p_pulses = g_p_pulsesprev;
+		
 	#if PLATFORM_BEKEN
 		GLOBAL_INT_RESTORE();
 	#else
 	
 	#endif
-		xPassedTicks = xTaskGetTickCount();
-		ticksElapsed = (xPassedTicks - pulseStamp);
-		pulseStamp = xPassedTicks;
+//change to calc with overflow, assume always 32bit 
+//		xPassedTicks = xTaskGetTickCount();
+//		ticksElapsed = (xPassedTicks - pulseStamp);
+//		pulseStamp = xPassedTicks;
+		pulseStampNow = xTaskGetTickCount();
+		if (pulseStampNow >= pulseStampPrev) {
+			ticksElapsed = pulseStampNow-pulseStampPrev;
+		} else {
+			ticksElapsed = (0xFFFFFFFF - pulseStampPrev) + pulseStampNow + 1;
+		}
+
 		//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i, ticks %i\n", res_v, res_c, res_p, ticksElapsed);
 	
 		PwrCal_Scale(res_v, res_c, res_p, &final_v, &final_c, &final_p);
 	
