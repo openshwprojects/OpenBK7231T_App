@@ -258,9 +258,10 @@ void BL0937_RunEverySecond(void)
 		} else {
 			ticksElapsed = (0xFFFFFFFF - pulseStampPrev) + pulseStampNow + 1;
 		}
+		pulseStampPrev = pulseStampNow;
 
 		//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
-		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i, ticks %i\n", res_v, res_c, res_p, ticksElapsed);
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i, ticks %i (prev %i / now%i)\n", res_v, res_c, res_p, ticksElapsed, pulseStampPrev, pulseStampNow);
 	
 		PwrCal_Scale(res_v, res_c, res_p, &final_v, &final_c, &final_p);
 	
