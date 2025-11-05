@@ -194,7 +194,7 @@ void BL0937_RunEverySecond(void)
 	} else {
 		res_p = (0xFFFFFFFF - g_p_pulsesprev) + g_p_pulses + 1;
 	}
-	if (g_sht_secondsUntilNextMeasurement <= 0 || res_p > 2) {
+	if (g_sht_secondsUntilNextMeasurement <= 0 || res_p > 4) {
 		if(bNeedRestart)
 		{
 			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "BL0937 pins have changed, will reset the interrupts");
@@ -261,7 +261,7 @@ void BL0937_RunEverySecond(void)
 		pulseStampPrev = pulseStampNow;
 
 		//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
-		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i, ticks %i (prev %i / now%i)\n", res_v, res_c, res_p, ticksElapsed, pulseStampPrev, pulseStampNow);
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i, ticks %i (prev %i / now %i)\n", res_v, res_c, res_p, ticksElapsed, pulseStampPrev, pulseStampNow);
 	
 		PwrCal_Scale(res_v, res_c, res_p, &final_v, &final_c, &final_p);
 	
