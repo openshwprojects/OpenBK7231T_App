@@ -155,7 +155,9 @@ void BL0937_RunEverySecond(void)
 	portTickType ticksElapsed;
 //	portTickType xPassedTicks;
 	portTickType pulseStampNow;
-
+	float power_cal;
+	float voltage_cal;
+	
 	bNeedRestart = false;
 	if(g_invertSEL)
 	{
@@ -265,7 +267,18 @@ void BL0937_RunEverySecond(void)
 	
 		PwrCal_Scale(res_v, res_c, res_p, &final_v, &final_c, &final_p);
 
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"Scaled v %.1f c %.4f p %.2f\n", final_v, final_c, final_p);
+//		voltage_cal = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, default_voltage_cal);
+//	    current_cal = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, default_current_cal);
+//	    power_cal = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, default_power_cal);
+		voltage_cal = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, DEFAULT_VOLTAGE_CAL);
+//	    current_cal = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, default_current_cal);
+	    power_cal = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, DEFAULT_POWER_CAL);
+		if (voltage_cal != DEFAULT_VOLTAGE_CAL ) {
+			float v_cal2p=DEFAULT_VOLTAGE_CAL/voltage_cal;
+			addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"Scaled v %.1f c %.4f p %.2f (/v_cal2p %.6f=%.2f)\n", final_v, final_c, final_p, v_cal2p, final_p / v_cal2p);
+			final_p /= v_cal2p;
+		}
+		
 		
 		final_v *= (1000.0f / (float)portTICK_PERIOD_MS);
 		final_v /= (float)ticksElapsed;
