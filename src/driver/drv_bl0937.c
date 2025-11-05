@@ -39,7 +39,7 @@ float last_p = 0.0f;
 volatile uint32_t g_vc_pulses = 0;
 volatile uint32_t g_p_pulses = 0, g_p_pulsesprev = 0;
 static portTickType pulseStampPrev;
-static int g_sht_secondsUntilNextMeasurement = 1, g_sht_secondsBetweenMeasurements = 15;
+static int g_sht_secondsUntilNextMeasurement = 1, g_sht_secondsBetweenMeasurements = 10;
 
 
 void HlwCf1Interrupt(int pinNum)
@@ -72,6 +72,19 @@ commandResult_t BL0937_PowerMax(const void* context, const char* cmd, const char
 			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, dbg);
 		}
 	}
+	return CMD_RES_OK;
+}
+
+commandResult_t BL0937_Interval(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	g_sht_secondsBetweenMeasurements = Tokenizer_GetArgInteger(0);
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Measurement will run every %i seconds", g_sht_secondsBetweenMeasurements);
+
 	return CMD_RES_OK;
 }
 
@@ -128,6 +141,7 @@ void BL0937_Init(void)
 	//cmddetail:"fn":"BL0937_PowerMax","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PowerMax", BL0937_PowerMax, NULL);
+	CMD_RegisterCommand("Interval", BL0937_Interval, NULL);
 
 	BL0937_Init_Pins();
 }
