@@ -221,14 +221,16 @@ void BL0937_RunEverySecond(void)
 	}
 	pulseStampPrev = pulseStampNow;
 
-	if(g_sel && g_invertSEL || !g_sel && !g_invertSEL)	{
+	if( (g_sel && g_invertSEL) || (!g_sel && !g_invertSEL))	{
 		res_c = g_vc_pulses;
 		ticksElapsed_c=ticksElapsed;
-	} else if(g_sel && !g_invertSEL || !g_sel && g_invertSEL) {
+	} else if( (g_sel && !g_invertSEL) || (!g_sel && g_invertSEL)) {
 		res_v = g_vc_pulses;
 		ticksElapsed_v=ticksElapsed;
 	}
-	g_sel=!g_sel;
+	if ( g_sht_secondsUntilNextMeasurement %2 < 1 || res_c > 0 ) {
+		g_sel=!g_sel;
+	}
 	/*
 	if(g_sel)
 	{
@@ -286,7 +288,7 @@ void BL0937_RunEverySecond(void)
 		pulseStampPrev_p = pulseStampNow;
 
 		//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
-		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i, ticks %i (prev %i / now %i)\n", res_v, res_c, res_p, ticksElapsed_p, pulseStampPrev, pulseStampNow);
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i / ticks %i, current %i / ticks %i, power %i / ticks %i (prev %i / now %i)\n", res_v, ticksElapsed_v, res_c, ticksElapsed_c, res_p, ticksElapsed_p, pulseStampPrev, pulseStampNow);
 	
 		PwrCal_Scale(res_v, res_c, res_p, &final_v, &final_c, &final_p);
 
