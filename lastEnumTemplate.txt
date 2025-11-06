@@ -1,1 +1,0 @@
-{{ {1:'One Switch', 0:'Zero', 3:'Three', 99999:'Undefined'}[(value | int(99999))] | default("Undefined Enum ["~value~"]") }}
