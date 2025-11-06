@@ -177,6 +177,7 @@ void SIM_ClearOBK(const char *flashPath) {
 void Win_DoUnitTests() {
 	//SELFTEST_ASSERT_EXPRESSION("sqrt(4)", 2)
 
+	Test_MAX72XX();
 	Test_LEDstrips();
 	Test_Commands_Channels();
 
