@@ -260,11 +260,6 @@ void BL0937_RunEverySecond(void)
 	HAL_PIN_SetOutputValue(GPIO_HLW_SEL, g_sel);
 	g_vc_pulses = 0;
 	
-//do not reset, calc considering overflow
-//		res_p = g_p_pulses;
-//		g_p_pulses = 0;
-		g_p_pulsesprev = g_p_pulses;
-		
 	#if PLATFORM_BEKEN
 		GLOBAL_INT_RESTORE();
 	#else
@@ -286,6 +281,12 @@ void BL0937_RunEverySecond(void)
 			ticksElapsed_p = (0xFFFFFFFF - pulseStampPrev_p) + pulseStampNow + 1;
 		}
 		pulseStampPrev_p = pulseStampNow;
+
+		//do not reset, calc considering overflow
+//		res_p = g_p_pulses;
+//		g_p_pulses = 0;
+		g_p_pulsesprev = g_p_pulses;
+		
 
 		//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
 		addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i / ticks %i, current %i / ticks %i, power %i / ticks %i (prev %i / now %i)\n", res_v, ticksElapsed_v, res_c, ticksElapsed_c, res_p, ticksElapsed_p, pulseStampPrev, pulseStampNow);
