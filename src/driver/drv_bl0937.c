@@ -40,16 +40,21 @@ uint32_t res_p = 0;
 float BL0937_PMAX = 3680.0f;
 float last_p = 0.0f;
 
-volatile uint32_t g_vc_pulses = 0;
-volatile portTickType ticksElapsed_v=0,ticksElapsed_c=0;
+volatile uint32_t g_v_pulses = 0, g_c_pulses = 0;
+volatile portTickType g_ticksElapsed_v=0, g_ticksElapsed_c=0;
 volatile uint32_t g_p_pulses = 0, g_p_pulsesprev = 0;
-static portTickType pulseStampPrev, pulseStampPrev_p;
-static int g_sht_secondsUntilNextMeasurement = 1, g_sht_secondsBetweenMeasurements = 15;
+volatile portTickType g_pulseStampPrev_v=0, g_pulseStampPrev_c=0, g_pulseStampPrev_p=0;
+static int g_sht_secondsUntilNextMeasurement = 1, g_sht_secondsBetweenMeasurements = 20;
 
 
 void HlwCf1Interrupt(int pinNum)
 {
-	g_vc_pulses++;
+//		g_vc_pulses++;
+	if (g_sel) {
+		g_v_pulses++;
+	} else {
+		g_c_pulses++;
+	}
 }
 void HlwCfInterrupt(int pinNum)
 {
@@ -77,19 +82,6 @@ commandResult_t BL0937_PowerMax(const void* context, const char* cmd, const char
 			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, dbg);
 		}
 	}
-	return CMD_RES_OK;
-}
-
-commandResult_t BL0937_Interval(const void* context, const char* cmd, const char* args, int cmdFlags) {
-
-	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
-	g_sht_secondsBetweenMeasurements = Tokenizer_GetArgInteger(0);
-
-	ADDLOG_INFO(LOG_FEATURE_CMD, "Measurement will run every %i seconds", g_sht_secondsBetweenMeasurements);
-
 	return CMD_RES_OK;
 }
 
@@ -129,9 +121,14 @@ void BL0937_Init_Pins()
 	HAL_AttachInterrupt(GPIO_HLW_CF, INTERRUPT_STUB, HlwCfInterrupt);
 	HAL_AttachInterrupt(GPIO_HLW_CF1, INTERRUPT_STUB, HlwCf1Interrupt);
 
-	g_vc_pulses = 0;
+//	g_vc_pulses = 0;
+	g_v_pulses = 0;
+	g_c_pulses = 0;
 	g_p_pulses = 0;
-	pulseStampPrev = xTaskGetTickCount();
+	g_pulseStampPrev_v = xTaskGetTickCount();
+	g_pulseStampPrev_c = g_pulseStampPrev_v;
+	g_pulseStampPrev_p = g_pulseStampPrev_v;
+
 }
 
 void BL0937_Init(void)
@@ -146,7 +143,6 @@ void BL0937_Init(void)
 	//cmddetail:"fn":"BL0937_PowerMax","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PowerMax", BL0937_PowerMax, NULL);
-	CMD_RegisterCommand("Interval", BL0937_Interval, NULL);
 
 	BL0937_Init_Pins();
 }
@@ -156,12 +152,15 @@ void BL0937_RunEverySecond(void)
 	float final_v;
 	float final_c;
 	float final_p;
+	float freq_v_mhz, freq_c_mhz, freq_p_mhz;
 	bool bNeedRestart;
-	portTickType ticksElapsed, ticksElapsed_p;
+//	portTickType ticksElapsed, ticksElapsed_p;
+	portTickType ticksElapsed_p;
 //	portTickType xPassedTicks;
 	portTickType pulseStampNow;
-	float power_cal;
-	float voltage_cal;
+	float power_cal_cur;
+	float current_cal_cur;
+	float voltage_cal_cur;
 	
 	bNeedRestart = false;
 	if(g_invertSEL)
@@ -213,108 +212,127 @@ void BL0937_RunEverySecond(void)
 	
 	#endif
 // V and I measurement must be done/changed every second
-	pulseStampNow = xTaskGetTickCount();
-	if (pulseStampNow >= pulseStampPrev) {
-		ticksElapsed = pulseStampNow-pulseStampPrev;
+ 	pulseStampNow = xTaskGetTickCount();
+	if (g_p_pulses >= g_p_pulsesprev) {
+		res_p = g_p_pulses-g_p_pulsesprev;
 	} else {
-		ticksElapsed = (0xFFFFFFFF - pulseStampPrev) + pulseStampNow + 1;
+		res_p = (0xFFFFFFFF - g_p_pulsesprev) + g_p_pulses + 1;
 	}
-	pulseStampPrev = pulseStampNow;
-
-	if( (g_sel && g_invertSEL) || (!g_sel && !g_invertSEL))	{
-		res_c = g_vc_pulses;
-		ticksElapsed_c=ticksElapsed;
-	} else if( (g_sel && !g_invertSEL) || (!g_sel && g_invertSEL)) {
-		res_v = g_vc_pulses;
-		ticksElapsed_v=ticksElapsed;
-	}
-	if ( g_sht_secondsUntilNextMeasurement %2 < 1 || res_c > 0 ) {
+	if ( g_sht_secondsUntilNextMeasurement %1 < 1 || res_p > 2) { //|| res_c > 0
+		if( (g_sel && g_invertSEL) || (!g_sel && !g_invertSEL))	{
+			//res_c = g_vc_pulses;
+			res_c = g_c_pulses;
+//			g_ticksElapsed_c = ticksElapsed;
+			if (pulseStampNow >= g_pulseStampPrev_c) {
+				g_ticksElapsed_c = pulseStampNow-g_pulseStampPrev_c;
+			} else {
+				g_ticksElapsed_c = (0xFFFFFFFF - g_pulseStampPrev_c) + pulseStampNow + 1;
+			}
+			g_pulseStampPrev_c = pulseStampNow;
+			g_c_pulses=0;
+		} else if( (g_sel && !g_invertSEL) || (!g_sel && g_invertSEL)) {
+//			res_v = g_vc_pulses;
+			res_v = g_v_pulses;
+			if (pulseStampNow >= g_pulseStampPrev_v) {
+				g_ticksElapsed_v = pulseStampNow-g_pulseStampPrev_v;
+			} else {
+				g_ticksElapsed_v = (0xFFFFFFFF - g_pulseStampPrev_v) + pulseStampNow + 1;
+			}
+			g_pulseStampPrev_v = pulseStampNow;
+			g_v_pulses=0;
+//			g_ticksElapsed_v = ticksElapsed;
+		}
 		g_sel=!g_sel;
 	}
-	/*
-	if(g_sel)
-	{
-		if(g_invertSEL)
-		{
-			res_c = g_vc_pulses;
-		}
-		else
-		{
-			res_v = g_vc_pulses;
-		}
-		g_sel = false;
-	}
-	else
-	{
-		if(g_invertSEL)
-		{
-			res_v = g_vc_pulses;
-		}
-		else
-		{
-			res_c = g_vc_pulses;
-		}
-		g_sel = true;
-	}
-	*/
+
 	HAL_PIN_SetOutputValue(GPIO_HLW_SEL, g_sel);
-	g_vc_pulses = 0;
+	//g_vc_pulses = 0;
 	
 	#if PLATFORM_BEKEN
 		GLOBAL_INT_RESTORE();
 	#else
 	
 	#endif
-	if (g_p_pulses >= g_p_pulsesprev) {
-		res_p = g_p_pulses-g_p_pulsesprev;
-	} else {
-		res_p = (0xFFFFFFFF - g_p_pulsesprev) + g_p_pulses + 1;
-	}
-	if (g_sht_secondsUntilNextMeasurement <= 0 || res_p > 4) {
+
+	if (g_sht_secondsUntilNextMeasurement <= 0 || res_p > 8) {
 //change to calc with overflow, assume always 32bit 
 //		xPassedTicks = xTaskGetTickCount();
 //		ticksElapsed = (xPassedTicks - pulseStamp);
 //		pulseStamp = xPassedTicks;
-		if (pulseStampNow >= pulseStampPrev_p) {
-			ticksElapsed_p = pulseStampNow-pulseStampPrev_p;
+		if (pulseStampNow >= g_pulseStampPrev_p) {
+			ticksElapsed_p = pulseStampNow-g_pulseStampPrev_p;
 		} else {
-			ticksElapsed_p = (0xFFFFFFFF - pulseStampPrev_p) + pulseStampNow + 1;
+			ticksElapsed_p = (0xFFFFFFFF - g_pulseStampPrev_p) + pulseStampNow + 1;
 		}
-		pulseStampPrev_p = pulseStampNow;
-
-		//do not reset, calc considering overflow
-//		res_p = g_p_pulses;
-//		g_p_pulses = 0;
-		g_p_pulsesprev = g_p_pulses;
-		
 
 		//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i / ticks %i, current %i / ticks %i, power %i / ticks %i (prev %i / now %i)\n", res_v, ticksElapsed_v, res_c, ticksElapsed_c, res_p, ticksElapsed_p, pulseStampPrev, pulseStampNow);
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Volt pulses %i / (ts %i) vticks %i, current %i /  (ts %i) cticks %i, power %i / pticks %i (prev %i) tsnow %i \n"
+			, res_v,  g_pulseStampPrev_v, g_ticksElapsed_v, res_c,  g_pulseStampPrev_c, g_ticksElapsed_c, res_p, ticksElapsed_p, g_pulseStampPrev_p, pulseStampNow);
 	
-		PwrCal_Scale(res_v, res_c, res_p, &final_v, &final_c, &final_p);
+		//do not reset, calc considering overflow
+		g_p_pulsesprev = g_p_pulses;
+		g_pulseStampPrev_p = pulseStampNow;
+		
+
+//		PwrCal_Scale(res_v, res_c, res_p, &final_v, &final_c, &final_p);
 
 //		voltage_cal = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, default_voltage_cal);
 //	    current_cal = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, default_current_cal);
 //	    power_cal = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, default_power_cal);
-		voltage_cal = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, DEFAULT_VOLTAGE_CAL);
-//	    current_cal = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, default_current_cal);
-	    power_cal = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, DEFAULT_POWER_CAL);
-		if (voltage_cal != DEFAULT_VOLTAGE_CAL ) {
-			float v_cal2p=DEFAULT_VOLTAGE_CAL/voltage_cal;
-			addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"Scaled v %.1f c %.4f p %.2f (/v_cal2p %.6f=%.2f)\n", final_v, final_c, final_p, v_cal2p, final_p / v_cal2p);
+		voltage_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, DEFAULT_VOLTAGE_CAL);
+	    current_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, DEFAULT_CURRENT_CAL);
+	    power_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, DEFAULT_POWER_CAL);
+	
+		//Vref=1.218, R1=6*330kO, R2=1kO, K=15397
+		//Vref=1.218, Rs=1mO, K=94638
+		//Vref=1.218, R1=6*330kO, R2=1kO, Rs=1mO, K=1721506
+	
+//		final_v = (float)res_v * (1000.0f / (float)portTICK_PERIOD_MS);
+//		final_v /= (float)g_ticksElapsed_v;
+		freq_v_mhz = (float)res_v / (float)g_ticksElapsed_v;
+		freq_v_mhz /= (1000.0f / (float)portTICK_PERIOD_MS);
+//		final_v = (float)freq_v_mhz;
+		final_v = freq_v_mhz * 1.218f;
+	//	final_v /= 15397.0f;	
+		final_v /= 15397.0f;
+		final_v *= (330.0f*6.0f + 1.0f) / 1.0f;
+
+	//	final_v *= voltage_cal_cur; 
+	
+//		final_c = (float)res_v * (1000.0f / (float)portTICK_PERIOD_MS);
+//		final_c /= (float)g_ticksElapsed_c;
+		freq_c_mhz = (float)res_c / (float)g_ticksElapsed_c;
+		freq_c_mhz /= (1000.0f / (float)portTICK_PERIOD_MS);
+//		final_c = (float)freq_c_mhz;
+		final_c = freq_c_mhz * 1.218f;
+//		final_c /= 94638.0f;	
+		final_c /= 94638.0f;
+		final_c *= 1000.0f; // to Amps from mA	
+
+	//final_c *= current_cal_cur;		
+			
+//		final_p = (float)res_p * (1000.0f /  (float)portTICK_PERIOD_MS);
+//		final_p /= (float)ticksElapsed_p;
+		freq_p_mhz = (float)res_p / (float)ticksElapsed_p;
+		freq_p_mhz /= (1000.0f / (float)portTICK_PERIOD_MS);
+//		final_p = (float)freq_p_mhz;
+		final_p = freq_p_mhz * 1.218f;
+		final_p *= 1.218f;
+		final_p /= 1721506.0f;
+		final_p *= ((330.0f*6.0f + 1.0f) / 1.0f);	
+		final_p /= 1000.0f; 
+	
+	//	final_p *= power_cal_cur;
+
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"v202511062255 Scaled v %.1f (vf %.1f) c %.4f (cf %.3f) p %.2f  (pf %.2f) . Scalefact v %.6f c %.6f p %.6f tick_period_ms %.2f"
+			,final_v, freq_v_mhz, final_c, freq_c_mhz, final_p, freq_p_mhz, voltage_cal_cur, current_cal_cur, power_cal_cur, (float)portTICK_PERIOD_MS);
+
+		if (voltage_cal_cur != DEFAULT_VOLTAGE_CAL && power_cal_cur != DEFAULT_POWER_CAL) {
+			float v_cal2p=DEFAULT_VOLTAGE_CAL/voltage_cal_cur;
+			addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"Scaled v %.1f c %.4f p %.2f (/v_cal2p %.6f=%.2f), pcal %f\n", final_v, final_c, final_p, v_cal2p, final_p / v_cal2p, power_cal_cur, portTICK_PERIOD_MS);
 			final_p /= v_cal2p;
 		}
-		
-		
-		final_v *= (1000.0f / (float)portTICK_PERIOD_MS);
-		final_v /= (float)ticksElapsed_v;
-	
-		final_c *= (1000.0f / (float)portTICK_PERIOD_MS);
-		final_c /= (float)ticksElapsed_c;
-	
-		final_p *= (1000.0f / (float)portTICK_PERIOD_MS);
-		final_p /= (float)ticksElapsed_p;
-	
+
 		/* patch to limit max power reading, filter random reading errors */
 		if(final_p > BL0937_PMAX)
 		{
