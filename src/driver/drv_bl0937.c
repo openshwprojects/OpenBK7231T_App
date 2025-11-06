@@ -18,9 +18,13 @@
 #include "drv_pwrCal.h"
 #include "drv_uart.h"
 
-#define DEFAULT_VOLTAGE_CAL 0.13253012048f
-#define DEFAULT_CURRENT_CAL 0.0118577075f
-#define DEFAULT_POWER_CAL 1.5f
+//#define DEFAULT_VOLTAGE_CAL 0.13253012048f
+//#define DEFAULT_CURRENT_CAL 0.0118577075f
+//#define DEFAULT_POWER_CAL 1.5f
+
+#define DEFAULT_VOLTAGE_CAL 0.15813353251f 	//Vref=1.218, R1=6*330kO, R2=1kO, K=15397
+#define DEFAULT_CURRENT_CAL 0.01287009447f 	//Vref=1.218, Rs=1mO, K=94638
+#define DEFAULT_POWER_CAL 1.72265706655f 	//Vref=1.218, R1=6*330kO, R2=1kO, Rs=1mO, K=1721506
 
 // Those can be set by Web page pins configurator
 // The below are default values for Mycket smart socket
@@ -37,9 +41,10 @@ float BL0937_PMAX = 3680.0f;
 float last_p = 0.0f;
 
 volatile uint32_t g_vc_pulses = 0;
+volatile portTickType ticksElapsed_v=0,ticksElapsed_c=0;
 volatile uint32_t g_p_pulses = 0, g_p_pulsesprev = 0;
-static portTickType pulseStampPrev;
-static int g_sht_secondsUntilNextMeasurement = 1, g_sht_secondsBetweenMeasurements = 10;
+static portTickType pulseStampPrev, pulseStampPrev_p;
+static int g_sht_secondsUntilNextMeasurement = 1, g_sht_secondsBetweenMeasurements = 15;
 
 
 void HlwCf1Interrupt(int pinNum)
@@ -152,7 +157,7 @@ void BL0937_RunEverySecond(void)
 	float final_c;
 	float final_p;
 	bool bNeedRestart;
-	portTickType ticksElapsed;
+	portTickType ticksElapsed, ticksElapsed_p;
 //	portTickType xPassedTicks;
 	portTickType pulseStampNow;
 	float power_cal;
@@ -191,54 +196,67 @@ void BL0937_RunEverySecond(void)
 #endif
 
 #if 1
-	if (g_p_pulses >= g_p_pulsesprev) {
-		res_p = g_p_pulses-g_p_pulsesprev;
-	} else {
-		res_p = (0xFFFFFFFF - g_p_pulsesprev) + g_p_pulses + 1;
+	if(bNeedRestart)
+	{
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "BL0937 pins have changed, will reset the interrupts");
+
+		BL0937_Shutdown_Pins();
+		BL0937_Init_Pins();
+#if PLATFORM_BEKEN
+		GLOBAL_INT_RESTORE();
+#else
+
+#endif
+		return;
 	}
-	if (g_sht_secondsUntilNextMeasurement <= 0 || res_p > 4) {
-		if(bNeedRestart)
-		{
-			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "BL0937 pins have changed, will reset the interrupts");
-	
-			BL0937_Shutdown_Pins();
-			BL0937_Init_Pins();
-	#if PLATFORM_BEKEN
-			GLOBAL_INT_RESTORE();
-	#else
-	
-	#endif
-			return;
-		}
 	
 	
 	#endif
-		if(g_sel)
+// V and I measurement must be done/changed every second
+	pulseStampNow = xTaskGetTickCount();
+	if (pulseStampNow >= pulseStampPrev) {
+		ticksElapsed = pulseStampNow-pulseStampPrev;
+	} else {
+		ticksElapsed = (0xFFFFFFFF - pulseStampPrev) + pulseStampNow + 1;
+	}
+	pulseStampPrev = pulseStampNow;
+
+	if(g_sel && g_invertSEL || !g_sel && !g_invertSEL)	{
+		res_c = g_vc_pulses;
+		ticksElapsed_c=ticksElapsed;
+	} else if(g_sel && !g_invertSEL || !g_sel && g_invertSEL) {
+		res_v = g_vc_pulses;
+		ticksElapsed_v=ticksElapsed;
+	}
+	g_sel=!g_sel;
+	/*
+	if(g_sel)
+	{
+		if(g_invertSEL)
 		{
-			if(g_invertSEL)
-			{
-				res_c = g_vc_pulses;
-			}
-			else
-			{
-				res_v = g_vc_pulses;
-			}
-			g_sel = false;
+			res_c = g_vc_pulses;
 		}
 		else
 		{
-			if(g_invertSEL)
-			{
-				res_v = g_vc_pulses;
-			}
-			else
-			{
-				res_c = g_vc_pulses;
-			}
-			g_sel = true;
+			res_v = g_vc_pulses;
 		}
-		HAL_PIN_SetOutputValue(GPIO_HLW_SEL, g_sel);
-		g_vc_pulses = 0;
+		g_sel = false;
+	}
+	else
+	{
+		if(g_invertSEL)
+		{
+			res_v = g_vc_pulses;
+		}
+		else
+		{
+			res_c = g_vc_pulses;
+		}
+		g_sel = true;
+	}
+	*/
+	HAL_PIN_SetOutputValue(GPIO_HLW_SEL, g_sel);
+	g_vc_pulses = 0;
 	
 //do not reset, calc considering overflow
 //		res_p = g_p_pulses;
@@ -250,20 +268,25 @@ void BL0937_RunEverySecond(void)
 	#else
 	
 	#endif
+	if (g_p_pulses >= g_p_pulsesprev) {
+		res_p = g_p_pulses-g_p_pulsesprev;
+	} else {
+		res_p = (0xFFFFFFFF - g_p_pulsesprev) + g_p_pulses + 1;
+	}
+	if (g_sht_secondsUntilNextMeasurement <= 0 || res_p > 4) {
 //change to calc with overflow, assume always 32bit 
 //		xPassedTicks = xTaskGetTickCount();
 //		ticksElapsed = (xPassedTicks - pulseStamp);
 //		pulseStamp = xPassedTicks;
-		pulseStampNow = xTaskGetTickCount();
-		if (pulseStampNow >= pulseStampPrev) {
-			ticksElapsed = pulseStampNow-pulseStampPrev;
+		if (pulseStampNow >= pulseStampPrev_p) {
+			ticksElapsed_p = pulseStampNow-pulseStampPrev_p;
 		} else {
-			ticksElapsed = (0xFFFFFFFF - pulseStampPrev) + pulseStampNow + 1;
+			ticksElapsed_p = (0xFFFFFFFF - pulseStampPrev_p) + pulseStampNow + 1;
 		}
-		pulseStampPrev = pulseStampNow;
+		pulseStampPrev_p = pulseStampNow;
 
 		//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
-		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i, ticks %i (prev %i / now %i)\n", res_v, res_c, res_p, ticksElapsed, pulseStampPrev, pulseStampNow);
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i, ticks %i (prev %i / now %i)\n", res_v, res_c, res_p, ticksElapsed_p, pulseStampPrev, pulseStampNow);
 	
 		PwrCal_Scale(res_v, res_c, res_p, &final_v, &final_c, &final_p);
 
@@ -281,13 +304,13 @@ void BL0937_RunEverySecond(void)
 		
 		
 		final_v *= (1000.0f / (float)portTICK_PERIOD_MS);
-		final_v /= (float)ticksElapsed;
+		final_v /= (float)ticksElapsed_v;
 	
 		final_c *= (1000.0f / (float)portTICK_PERIOD_MS);
-		final_c /= (float)ticksElapsed;
+		final_c /= (float)ticksElapsed_c;
 	
 		final_p *= (1000.0f / (float)portTICK_PERIOD_MS);
-		final_p /= (float)ticksElapsed;
+		final_p /= (float)ticksElapsed_p;
 	
 		/* patch to limit max power reading, filter random reading errors */
 		if(final_p > BL0937_PMAX)
