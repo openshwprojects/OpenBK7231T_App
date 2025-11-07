@@ -152,7 +152,7 @@ void BL0937_RunEverySecond(void)
 	float final_v;
 	float final_c;
 	float final_p;
-	float freq_v_mhz, freq_c_mhz, freq_p_mhz;
+	uint32_t freq_v, freq_c, freq_p;
 	bool bNeedRestart;
 //	portTickType ticksElapsed, ticksElapsed_p;
 	portTickType ticksElapsed_p;
@@ -218,10 +218,9 @@ void BL0937_RunEverySecond(void)
 	} else {
 		res_p = (0xFFFFFFFF - g_p_pulsesprev) + g_p_pulses + 1;
 	}
-	if ( g_sht_secondsUntilNextMeasurement %1 < 1 || res_p > 2) { //|| res_c > 0
+	if ( g_sht_secondsUntilNextMeasurement %2 < 1 ) { //|| res_c > 0
 		if( (g_sel && g_invertSEL) || (!g_sel && !g_invertSEL))	{
 			//res_c = g_vc_pulses;
-			res_c = g_c_pulses;
 //			g_ticksElapsed_c = ticksElapsed;
 			if (pulseStampNow >= g_pulseStampPrev_c) {
 				g_ticksElapsed_c = pulseStampNow-g_pulseStampPrev_c;
@@ -229,20 +228,22 @@ void BL0937_RunEverySecond(void)
 				g_ticksElapsed_c = (0xFFFFFFFF - g_pulseStampPrev_c) + pulseStampNow + 1;
 			}
 			g_pulseStampPrev_c = pulseStampNow;
+			res_c = g_c_pulses;
 			g_c_pulses=0;
 		} else if( (g_sel && !g_invertSEL) || (!g_sel && g_invertSEL)) {
-//			res_v = g_vc_pulses;
-			res_v = g_v_pulses;
 			if (pulseStampNow >= g_pulseStampPrev_v) {
 				g_ticksElapsed_v = pulseStampNow-g_pulseStampPrev_v;
 			} else {
 				g_ticksElapsed_v = (0xFFFFFFFF - g_pulseStampPrev_v) + pulseStampNow + 1;
 			}
 			g_pulseStampPrev_v = pulseStampNow;
+//			res_v = g_vc_pulses;
+			res_v = g_v_pulses;
 			g_v_pulses=0;
 //			g_ticksElapsed_v = ticksElapsed;
 		}
 		g_sel=!g_sel;
+//		g_sel=true;
 	}
 
 	HAL_PIN_SetOutputValue(GPIO_HLW_SEL, g_sel);
@@ -254,7 +255,7 @@ void BL0937_RunEverySecond(void)
 	
 	#endif
 
-	if (g_sht_secondsUntilNextMeasurement <= 0 || res_p > 8) {
+	if (g_sht_secondsUntilNextMeasurement <= 0 || res_p > 6) {
 //change to calc with overflow, assume always 32bit 
 //		xPassedTicks = xTaskGetTickCount();
 //		ticksElapsed = (xPassedTicks - pulseStamp);
@@ -274,7 +275,6 @@ void BL0937_RunEverySecond(void)
 		g_pulseStampPrev_p = pulseStampNow;
 		
 
-//		PwrCal_Scale(res_v, res_c, res_p, &final_v, &final_c, &final_p);
 
 //		voltage_cal = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, default_voltage_cal);
 //	    current_cal = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, default_current_cal);
@@ -282,50 +282,69 @@ void BL0937_RunEverySecond(void)
 		voltage_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, DEFAULT_VOLTAGE_CAL);
 	    current_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, DEFAULT_CURRENT_CAL);
 	    power_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, DEFAULT_POWER_CAL);
-	
+
+//		PwrCal_Scale(res_v, (float)res_c, res_p, &final_v, &final_c, &final_p);
+//		final_v = final_v / (( (float)g_ticksElapsed_v * (float)portTICK_PERIOD_MS) /1000.0f );
+//		final_c = final_c / (( (float)g_ticksElapsed_c * (float)portTICK_PERIOD_MS) /1000.0f );
+//		final_p = final_p / (( (float)ticksElapsed_p * (float)portTICK_PERIOD_MS) /1000.0f );
+
 		//Vref=1.218, R1=6*330kO, R2=1kO, K=15397
 		//Vref=1.218, Rs=1mO, K=94638
 		//Vref=1.218, R1=6*330kO, R2=1kO, Rs=1mO, K=1721506
 	
 //		final_v = (float)res_v * (1000.0f / (float)portTICK_PERIOD_MS);
 //		final_v /= (float)g_ticksElapsed_v;
-		freq_v_mhz = (float)res_v / (float)g_ticksElapsed_v;
-		freq_v_mhz /= (1000.0f / (float)portTICK_PERIOD_MS);
-//		final_v = (float)freq_v_mhz;
-		final_v = freq_v_mhz * 1.218f;
+//		freq_v = (float)res_v * (1000.0f / (float)portTICK_PERIOD_MS);
+//		freq_v /= (float)g_ticksElapsed_v;
+		freq_v = (res_v * 10 * (1000 / portTICK_PERIOD_MS)) / g_ticksElapsed_v;
+		//freq_v /= g_ticksElapsed_v;
+//		final_v = (float)freq_v;
+//		final_v = freq_v * 1.218f;
 	//	final_v /= 15397.0f;	
-		final_v /= 15397.0f;
-		final_v *= (330.0f*6.0f + 1.0f) / 1.0f;
+//		final_v /= 15397.0f;
+//		final_v *= (330.0f*6.0f + 1.0f) / 1.0f;
 
 	//	final_v *= voltage_cal_cur; 
 	
 //		final_c = (float)res_v * (1000.0f / (float)portTICK_PERIOD_MS);
 //		final_c /= (float)g_ticksElapsed_c;
-		freq_c_mhz = (float)res_c / (float)g_ticksElapsed_c;
-		freq_c_mhz /= (1000.0f / (float)portTICK_PERIOD_MS);
-//		final_c = (float)freq_c_mhz;
-		final_c = freq_c_mhz * 1.218f;
+//		freq_c = (float)res_c * (1000.0f / (float)portTICK_PERIOD_MS);
+//		freq_c /= (float)g_ticksElapsed_c;
+//		freq_c = res_c * 10 / ((g_ticksElapsed_c * portTICK_PERIOD_MS) /1000 );
+		freq_c = (res_c * 10  * (1000 / portTICK_PERIOD_MS)) / g_ticksElapsed_c;
+		//freq_c /= g_ticksElapsed_c;
+///		final_c = (float)freq_c;
+//		final_c = freq_c * 1.218f;
 //		final_c /= 94638.0f;	
-		final_c /= 94638.0f;
-		final_c *= 1000.0f; // to Amps from mA	
+//		final_c /= 94638.0f;
+//		final_c *= 1000.0f; // to Amps from mA	
 
 	//final_c *= current_cal_cur;		
 			
 //		final_p = (float)res_p * (1000.0f /  (float)portTICK_PERIOD_MS);
 //		final_p /= (float)ticksElapsed_p;
-		freq_p_mhz = (float)res_p / (float)ticksElapsed_p;
-		freq_p_mhz /= (1000.0f / (float)portTICK_PERIOD_MS);
-//		final_p = (float)freq_p_mhz;
-		final_p = freq_p_mhz * 1.218f;
-		final_p *= 1.218f;
-		final_p /= 1721506.0f;
-		final_p *= ((330.0f*6.0f + 1.0f) / 1.0f);	
-		final_p /= 1000.0f; 
+//		freq_p = (float)res_p * (1000.0f / (float)portTICK_PERIOD_MS);
+//		freq_p /= (float)ticksElapsed_p;
+//		freq_p = res_p * 10  / ( (ticksElapsed_p * portTICK_PERIOD_MS) /1000 );
+		freq_p = (res_p  * 10 * (1000 / portTICK_PERIOD_MS)) / ticksElapsed_p;
+		//freq_p /= ticksElapsed_p;
+///		final_p = (float)freq_p;
+//		final_p = freq_p * 1.218f;
+//		final_p *= 1.218f;
+//		final_p /= 1721506.0f;
+//		final_p *= ((330.0f*6.0f + 1.0f) / 1.0f);	
+//		final_p *= 1000.0f; 
 	
+		//muss aufgerufen werden, damit die Kalibrierffunktionen aktiv werden
+//		PwrCal_Scale(res_v, res_c, res_p, &final_v, &final_c, &final_p);
+		PwrCal_Scale(freq_v, (float)freq_c, freq_p, &final_v, &final_c, &final_p);
 	//	final_p *= power_cal_cur;
+//		final_v /= 100.0f;
+//		final_c /= 100.0f;
+//		final_p /= 100.0f;
 
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"v202511062255 Scaled v %.1f (vf %.1f) c %.4f (cf %.3f) p %.2f  (pf %.2f) . Scalefact v %.6f c %.6f p %.6f tick_period_ms %.2f"
-			,final_v, freq_v_mhz, final_c, freq_c_mhz, final_p, freq_p_mhz, voltage_cal_cur, current_cal_cur, power_cal_cur, (float)portTICK_PERIOD_MS);
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"v202511070140 Scaled v %.1f (vf %.1f) c %.4f (cf %.3f) p %.2f  (pf %.2f) . Scalefact v %.6f c %.6f p %.6f tick_period_ms %.2f"
+			,final_v, (float)freq_v, final_c, (float)freq_c, final_p, (float)freq_p, voltage_cal_cur, current_cal_cur, power_cal_cur, (float)portTICK_PERIOD_MS);
 
 		if (voltage_cal_cur != DEFAULT_VOLTAGE_CAL && power_cal_cur != DEFAULT_POWER_CAL) {
 			float v_cal2p=DEFAULT_VOLTAGE_CAL/voltage_cal_cur;
