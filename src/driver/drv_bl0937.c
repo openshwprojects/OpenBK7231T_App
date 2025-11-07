@@ -43,7 +43,11 @@ float last_p = 0.0f;
 volatile uint32_t g_v_pulses = 0, g_c_pulses = 0;
 volatile portTickType g_ticksElapsed_v=0, g_ticksElapsed_c=0;
 volatile uint32_t g_p_pulses = 0, g_p_pulsesprev = 0;
-volatile portTickType g_pulseStampPrev_v=0, g_pulseStampPrev_c=0, g_pulseStampPrev_p=0;
+volatile portTickType g_pulseStampStart_v=0, g_pulseStampStart_c=0, g_pulseStampStart_p=0;
+#define PULSESTAMPDEBUG 0
+#if PULSESTAMPDEBUG>0
+volatile portTickType g_pulseStampEnd_v=0, g_pulseStampEnd_c=0;
+#endif
 static int g_sht_secondsUntilNextMeasurement = 1, g_sht_secondsBetweenMeasurements = 20;
 
 
@@ -125,9 +129,9 @@ void BL0937_Init_Pins()
 	g_v_pulses = 0;
 	g_c_pulses = 0;
 	g_p_pulses = 0;
-	g_pulseStampPrev_v = xTaskGetTickCount();
-	g_pulseStampPrev_c = g_pulseStampPrev_v;
-	g_pulseStampPrev_p = g_pulseStampPrev_v;
+	g_pulseStampStart_v = xTaskGetTickCount();
+	g_pulseStampStart_c = g_pulseStampStart_v;
+	g_pulseStampStart_p = g_pulseStampStart_v;
 
 }
 
@@ -152,12 +156,17 @@ void BL0937_RunEverySecond(void)
 	float final_v;
 	float final_c;
 	float final_p;
-	uint32_t freq_v, freq_c, freq_p;
+	float freq_v, freq_c, freq_p; //range during calculation quite dynamic
+//	bool valid_v=false, valid_c=false, valid_p=false;
+	bool g_sel_change=false;
 	bool bNeedRestart;
 //	portTickType ticksElapsed, ticksElapsed_p;
 	portTickType ticksElapsed_p;
 //	portTickType xPassedTicks;
-	portTickType pulseStampNow;
+	portTickType pulseStampNow;	
+#if PULSESTAMPDEBUG>0
+	portTickType pulseStamp_g_sel_change=0;
+#endif
 	float power_cal_cur;
 	float current_cal_cur;
 	float voltage_cal_cur;
@@ -213,41 +222,66 @@ void BL0937_RunEverySecond(void)
 	#endif
 // V and I measurement must be done/changed every second
  	pulseStampNow = xTaskGetTickCount();
-	if (g_p_pulses >= g_p_pulsesprev) {
-		res_p = g_p_pulses-g_p_pulsesprev;
-	} else {
-		res_p = (0xFFFFFFFF - g_p_pulsesprev) + g_p_pulses + 1;
-	}
-	if ( g_sht_secondsUntilNextMeasurement %2 < 1 ) { //|| res_c > 0
-		if( (g_sel && g_invertSEL) || (!g_sel && !g_invertSEL))	{
-			//res_c = g_vc_pulses;
-//			g_ticksElapsed_c = ticksElapsed;
-			if (pulseStampNow >= g_pulseStampPrev_c) {
-				g_ticksElapsed_c = pulseStampNow-g_pulseStampPrev_c;
+	if ((g_sel && !g_invertSEL) || (!g_sel && g_invertSEL)) {
+//	if ( g_sel ) {		
+		if ( g_v_pulses>200 )  { //valid reading
+#if PULSESTAMPDEBUG>0
+			g_pulseStampEnd_v = pulseStampNow;
+			addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"now %i gsel=%i vp %i tsv %i %i \n"
+				, pulseStampNow, g_sel, g_v_pulses, g_pulseStampStart_v, g_pulseStampEnd_v);
+#endif
+			if (pulseStampNow >= g_pulseStampStart_v) {
+				g_ticksElapsed_v = pulseStampNow-g_pulseStampStart_v;
 			} else {
-				g_ticksElapsed_c = (0xFFFFFFFF - g_pulseStampPrev_c) + pulseStampNow + 1;
+				g_ticksElapsed_v = (0xFFFFFFFF - g_pulseStampStart_v) + pulseStampNow + 1;
 			}
-			g_pulseStampPrev_c = pulseStampNow;
-			res_c = g_c_pulses;
-			g_c_pulses=0;
-		} else if( (g_sel && !g_invertSEL) || (!g_sel && g_invertSEL)) {
-			if (pulseStampNow >= g_pulseStampPrev_v) {
-				g_ticksElapsed_v = pulseStampNow-g_pulseStampPrev_v;
-			} else {
-				g_ticksElapsed_v = (0xFFFFFFFF - g_pulseStampPrev_v) + pulseStampNow + 1;
-			}
-			g_pulseStampPrev_v = pulseStampNow;
-//			res_v = g_vc_pulses;
 			res_v = g_v_pulses;
 			g_v_pulses=0;
-//			g_ticksElapsed_v = ticksElapsed;
+//			valid_v=true;
+		} else {
+//			res_v = 0;
+//			valid_v=false;
 		}
-		g_sel=!g_sel;
-//		g_sel=true;
-	}
+//		g_sel=false;
+		g_pulseStampStart_c = pulseStampNow;
+		g_sel_change=true;
+	} else if( (g_sel && g_invertSEL) || (!g_sel && !g_invertSEL))	{
+//	} else {
+		if ( g_c_pulses>3 || g_sht_secondsUntilNextMeasurement <= 0 )  { //reading high enough or max sample time
+#if PULSESTAMPDEBUG>0
+			g_pulseStampEnd_c = pulseStampNow;
+			addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"now %i gsel=%i vc %i tsc %i %i \n"
+				, pulseStampNow, g_sel, g_c_pulses, g_pulseStampStart_c, g_pulseStampEnd_c);
+#endif
+			if (pulseStampNow >= g_pulseStampStart_c) {
+				g_ticksElapsed_c = pulseStampNow-g_pulseStampStart_v;
+			} else {
+				g_ticksElapsed_c = (0xFFFFFFFF - g_pulseStampStart_c) + pulseStampNow + 1;
+			}
+			res_c = g_c_pulses;
+			g_c_pulses=0;
+//			valid_c=true;
+//			g_sel=true;
+			g_pulseStampStart_v = pulseStampNow;
+			g_sel_change=true;
+		} else {
+//			res_c = 0;
+//			valid_c=false;
+			g_sel_change=false;
+		}
+	} 
+#if PULSESTAMPDEBUG>0
+ 	addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"now %i gsel=%i g_sel_change %i \n"
+		, pulseStampNow, g_sel, g_sel_change);
+#endif
 
-	HAL_PIN_SetOutputValue(GPIO_HLW_SEL, g_sel);
-	//g_vc_pulses = 0;
+	if ( g_sel_change) {
+		g_sel = !g_sel;
+		HAL_PIN_SetOutputValue(GPIO_HLW_SEL, g_sel);
+#if PULSESTAMPDEBUG>0
+		pulseStamp_g_sel_change= pulseStampNow;
+#endif
+	}
 	
 	#if PLATFORM_BEKEN
 		GLOBAL_INT_RESTORE();
@@ -255,103 +289,96 @@ void BL0937_RunEverySecond(void)
 	
 	#endif
 
-	if (g_sht_secondsUntilNextMeasurement <= 0 || res_p > 6) {
-//change to calc with overflow, assume always 32bit 
-//		xPassedTicks = xTaskGetTickCount();
-//		ticksElapsed = (xPassedTicks - pulseStamp);
-//		pulseStamp = xPassedTicks;
-		if (pulseStampNow >= g_pulseStampPrev_p) {
-			ticksElapsed_p = pulseStampNow-g_pulseStampPrev_p;
+	if (g_p_pulses >= g_p_pulsesprev) {
+		res_p = g_p_pulses-g_p_pulsesprev;
+	} else {
+		res_p = (0xFFFFFFFF - g_p_pulsesprev) + g_p_pulses + 1;
+	}
+
+	if (res_p > 5 || g_sht_secondsUntilNextMeasurement <= 0 ) {
+		if (pulseStampNow >= g_pulseStampStart_p) {
+			ticksElapsed_p = pulseStampNow-g_pulseStampStart_p;
 		} else {
-			ticksElapsed_p = (0xFFFFFFFF - g_pulseStampPrev_p) + pulseStampNow + 1;
+			ticksElapsed_p = (0xFFFFFFFF - g_pulseStampStart_p) + pulseStampNow + 1;
 		}
 
-		//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Voltage pulses %i, current %i, power %i\n", res_v, res_c, res_p);
-		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Volt pulses %i / (ts %i) vticks %i, current %i /  (ts %i) cticks %i, power %i / pticks %i (prev %i) tsnow %i \n"
-			, res_v,  g_pulseStampPrev_v, g_ticksElapsed_v, res_c,  g_pulseStampPrev_c, g_ticksElapsed_c, res_p, ticksElapsed_p, g_pulseStampPrev_p, pulseStampNow);
-	
+#if PULSESTAMPDEBUG>0
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"Volt pulses %i / (tsend %i) vticks %i, current %i /  (tsend %i) cticks %i, power %i / pticks %i (prev %i) tsnow %i gselchg %i\n"
+			, res_v, g_pulseStampEnd_v, g_ticksElapsed_v
+			, res_c, g_pulseStampEnd_c, g_ticksElapsed_c
+			, res_p, ticksElapsed_p, g_pulseStampStart_p, pulseStampNow, pulseStamp_g_sel_change);
+#else
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"Volt pulses %i / (tsstrt %i) vticks %i, current %i /  (tsstrt %i) cticks %i, power %i / pticks %i (prev %i) tsnow %i \n"
+			, res_v, g_pulseStampStart_v, g_ticksElapsed_v
+			, res_c, g_pulseStampStart_c, g_ticksElapsed_c
+			, res_p, ticksElapsed_p, g_pulseStampStart_p, pulseStampNow);
+#endif	
 		//do not reset, calc considering overflow
 		g_p_pulsesprev = g_p_pulses;
-		g_pulseStampPrev_p = pulseStampNow;
-		
+		g_pulseStampStart_p = pulseStampNow;
 
+		// at reference design (6x330kO / 1kO), 1mO, [lower with Tuya Plug (~2.030MO)]
+		//frequency V: 80..250V = 550.5 .. 1595.3 HZ [-50Hz], 10mV=0.063812 [0.062241] Hz
+		//frequency C: .001 .. 20A = 0.077700 1553,99 Hz, 0.1mA=0.007770 Hz
+		//frequency P:  @80V: 0.08 .. 1600W = 0.046862 ..  937.237 Hz, 0,1W=0,058577 [0.057135] Hz
+		//frequency P: @250V: 0.25 .. 5000W = 0.146443 .. 2928.866 Hz, 0,1W=0,058577 [0.057135] Hz
 
-//		voltage_cal = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, default_voltage_cal);
-//	    current_cal = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, default_current_cal);
-//	    power_cal = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, default_power_cal);
 		voltage_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, DEFAULT_VOLTAGE_CAL);
 	    current_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, DEFAULT_CURRENT_CAL);
 	    power_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, DEFAULT_POWER_CAL);
-
-//		PwrCal_Scale(res_v, (float)res_c, res_p, &final_v, &final_c, &final_p);
-//		final_v = final_v / (( (float)g_ticksElapsed_v * (float)portTICK_PERIOD_MS) /1000.0f );
-//		final_c = final_c / (( (float)g_ticksElapsed_c * (float)portTICK_PERIOD_MS) /1000.0f );
-//		final_p = final_p / (( (float)ticksElapsed_p * (float)portTICK_PERIOD_MS) /1000.0f );
-
+	
 		//Vref=1.218, R1=6*330kO, R2=1kO, K=15397
 		//Vref=1.218, Rs=1mO, K=94638
 		//Vref=1.218, R1=6*330kO, R2=1kO, Rs=1mO, K=1721506
 	
-//		final_v = (float)res_v * (1000.0f / (float)portTICK_PERIOD_MS);
-//		final_v /= (float)g_ticksElapsed_v;
-//		freq_v = (float)res_v * (1000.0f / (float)portTICK_PERIOD_MS);
-//		freq_v /= (float)g_ticksElapsed_v;
-		freq_v = (res_v * 10 * (1000 / portTICK_PERIOD_MS)) / g_ticksElapsed_v;
-		//freq_v /= g_ticksElapsed_v;
-//		final_v = (float)freq_v;
-//		final_v = freq_v * 1.218f;
-	//	final_v /= 15397.0f;	
-//		final_v /= 15397.0f;
-//		final_v *= (330.0f*6.0f + 1.0f) / 1.0f;
-
-	//	final_v *= voltage_cal_cur; 
-	
-//		final_c = (float)res_v * (1000.0f / (float)portTICK_PERIOD_MS);
-//		final_c /= (float)g_ticksElapsed_c;
-//		freq_c = (float)res_c * (1000.0f / (float)portTICK_PERIOD_MS);
-//		freq_c /= (float)g_ticksElapsed_c;
-//		freq_c = res_c * 10 / ((g_ticksElapsed_c * portTICK_PERIOD_MS) /1000 );
-		freq_c = (res_c * 10  * (1000 / portTICK_PERIOD_MS)) / g_ticksElapsed_c;
-		//freq_c /= g_ticksElapsed_c;
-///		final_c = (float)freq_c;
-//		final_c = freq_c * 1.218f;
-//		final_c /= 94638.0f;	
-//		final_c /= 94638.0f;
-//		final_c *= 1000.0f; // to Amps from mA	
-
-	//final_c *= current_cal_cur;		
-			
-//		final_p = (float)res_p * (1000.0f /  (float)portTICK_PERIOD_MS);
-//		final_p /= (float)ticksElapsed_p;
-//		freq_p = (float)res_p * (1000.0f / (float)portTICK_PERIOD_MS);
-//		freq_p /= (float)ticksElapsed_p;
-//		freq_p = res_p * 10  / ( (ticksElapsed_p * portTICK_PERIOD_MS) /1000 );
-		freq_p = (res_p  * 10 * (1000 / portTICK_PERIOD_MS)) / ticksElapsed_p;
-		//freq_p /= ticksElapsed_p;
-///		final_p = (float)freq_p;
-//		final_p = freq_p * 1.218f;
-//		final_p *= 1.218f;
-//		final_p /= 1721506.0f;
-//		final_p *= ((330.0f*6.0f + 1.0f) / 1.0f);	
-//		final_p *= 1000.0f; 
-	
-		//muss aufgerufen werden, damit die Kalibrierffunktionen aktiv werden
-//		PwrCal_Scale(res_v, res_c, res_p, &final_v, &final_c, &final_p);
-		PwrCal_Scale(freq_v, (float)freq_c, freq_p, &final_v, &final_c, &final_p);
-	//	final_p *= power_cal_cur;
-//		final_v /= 100.0f;
-//		final_c /= 100.0f;
-//		final_p /= 100.0f;
-
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"v202511070140 Scaled v %.1f (vf %.1f) c %.4f (cf %.3f) p %.2f  (pf %.2f) . Scalefact v %.6f c %.6f p %.6f tick_period_ms %.2f"
-			,final_v, (float)freq_v, final_c, (float)freq_c, final_p, (float)freq_p, voltage_cal_cur, current_cal_cur, power_cal_cur, (float)portTICK_PERIOD_MS);
-
-		if (voltage_cal_cur != DEFAULT_VOLTAGE_CAL && power_cal_cur != DEFAULT_POWER_CAL) {
-			float v_cal2p=DEFAULT_VOLTAGE_CAL/voltage_cal_cur;
-			addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"Scaled v %.1f c %.4f p %.2f (/v_cal2p %.6f=%.2f), pcal %f\n", final_v, final_c, final_p, v_cal2p, final_p / v_cal2p, power_cal_cur, portTICK_PERIOD_MS);
-			final_p /= v_cal2p;
+		if (g_ticksElapsed_v > 0) {
+			freq_v = (float)res_v * (1000.0f / (float)portTICK_PERIOD_MS);
+			freq_v /= (float)g_ticksElapsed_v;
+/*			final_v = freq_v * 1.218f;
+			final_v /= 15397.0f;
+			final_v *= (330.0f*6.0f + 1.0f) / 1.0f; //voltage divider
+*/
+		} else {
+			final_v = 11.1;	
+			freq_v = 9999;
 		}
+	
+		if (g_ticksElapsed_c > 0) {
+			freq_c = (float)res_c * (1000.0f / (float)portTICK_PERIOD_MS);
+			freq_c /= (float)g_ticksElapsed_c;
+/*			final_c = freq_c * 1.218f;
+			final_c /= 94638.0f;
+			final_c *= 1000.0f; // Rs=	
+*/
+		} else {
+			final_c = 22.222f;	
+			freq_c = 9999;
+		}
+		if (ticksElapsed_p > 0) {
+			freq_p = (float)res_p * (1000.0f / (float)portTICK_PERIOD_MS);	
+			freq_p /= (float)ticksElapsed_p;
+			// accurate volt measurements is easier --> apply to power automatically
+			// inaccuracy because of voltage divider deviation (fe.g. from datasheet) while V and P freq calc use same inputV to chip V(v)
+			if (voltage_cal_cur != DEFAULT_VOLTAGE_CAL && power_cal_cur == DEFAULT_POWER_CAL) {
+				float v_cal2p=DEFAULT_VOLTAGE_CAL/voltage_cal_cur;
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"Scaled v %.1f c %.4f p %.2f (/v_cal2p %.6f=%.2f), pcal %f\n", final_v, final_c, final_p, v_cal2p, final_p / v_cal2p, power_cal_cur, portTICK_PERIOD_MS);
+				final_p /= v_cal2p;
+			}
+/*			final_p = freq_p * 1.218f;
+			final_p *= 1.218f;
+			final_p /= 1721506.0f;
+			final_p *= ((330.0f*6.0f + 1.0f) / 1.0f);	
+			final_p /= 1000.0f; 
+*/	
+		} else {
+			final_p = 9999.99f;	
+			freq_p = 9999;
+		}	
+		PwrCal_Scale((int)(freq_v*100), (float)(freq_c*1000), (int)(freq_p*1000), &final_v, &final_c, &final_p);
 
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Scaled v %.1f (vf %.2f) c %.4f (cf %.3f) p %.2f  (pf %3f) . Scalefact v %.6f c %.6f p %.6f "
+			,final_v, freq_v, final_c, freq_c, final_p, freq_p, voltage_cal_cur, current_cal_cur, power_cal_cur);
+		
 		/* patch to limit max power reading, filter random reading errors */
 		if(final_p > BL0937_PMAX)
 		{
@@ -386,4 +413,3 @@ void BL0937_RunEverySecond(void)
 
 // close ENABLE_DRIVER_BL0937
 #endif
-
