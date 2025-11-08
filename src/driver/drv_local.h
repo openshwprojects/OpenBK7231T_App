@@ -61,6 +61,8 @@ void DRV_GosundSW2_RunFrame();
 void DRV_PinMutex_Init();
 void DRV_PinMutex_RunFrame();
 
+void MultiPinI2CScanner_Init();
+void MultiPinI2CScanner_RunFrame();
 
 void SM16703P_Init();
 void SM16703P_Shutdown();
