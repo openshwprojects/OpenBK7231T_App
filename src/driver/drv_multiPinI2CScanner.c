@@ -9,12 +9,14 @@
 
 int g_adr = 1;
 int g_scl = 0;
-int g_sda = 0;
+int g_sda = 1;
 softI2C_t g_scanI2C;
 
 void MultiPinI2CScanner_RunFrame() {
 
-
+	g_scanI2C.pin_clk = g_scl;
+	g_scanI2C.pin_data = g_sda;
+	Soft_I2C_PreInit(&g_scanI2C);
 	bool bOk = Soft_I2C_Start(&g_scanI2C, (g_adr << 1) + 0);
 	Soft_I2C_Stop(&g_scanI2C);
 	if (bOk) {
@@ -24,6 +26,7 @@ void MultiPinI2CScanner_RunFrame() {
 	g_adr++;
 	if (g_adr >= 128) {
 		g_scl++;
+		g_adr = 0;
 		if (g_scl == g_sda) {
 			g_scl++;
 		}
