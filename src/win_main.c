@@ -205,6 +205,7 @@ void Win_DoUnitTests()
 
 	// Test_PartitionSearch();
 	Test_MAX72XX();
+
 	Test_LEDstrips();
 	Test_Commands_Channels();
 
