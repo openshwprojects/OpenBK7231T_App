@@ -200,7 +200,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"qq.",
 	//drvdetail:"requires":""}
-	{ "MultiPinI2CScanner",		MultiPinI2CScanner_Init,		NULL,		NULL, MultiPinI2CScanner_RunQuickTick, NULL, NULL, NULL, false },
+	{ "MultiPinI2CScanner",		MultiPinI2CScanner_Init,		NULL,		NULL, MultiPinI2CScanner_RunFrame, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_I2C
 	//drvdetail:{"name":"I2C",
