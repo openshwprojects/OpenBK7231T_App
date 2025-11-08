@@ -414,6 +414,7 @@
     <ClCompile Include="src\driver\drv_ddpSend.c" />
     <ClCompile Include="src\cmnds\cmd_enums.c" />
     <ClCompile Include="src\selftest\selftest_max72xx.c" />
+    <ClCompile Include="src\driver\drv_bkPartitions.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\base64\base64.h" />
