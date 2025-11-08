@@ -63,7 +63,7 @@ void DRV_PinMutex_RunFrame();
 
 void MultiPinI2CScanner_Init();
 void MultiPinI2CScanner_RunFrame();
-void MultiPinI2CScanner_AppendInformationToHTTPIndexPage(http_request_t *request);
+void MultiPinI2CScanner_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 
 void SM16703P_Init();
 void SM16703P_Shutdown();
@@ -240,7 +240,7 @@ void TCL_DoDiscovery(const char *topic);
 void DRV_DDPSend_Init();
 void DRV_DDPSend_Shutdown();
 void DRV_DDPSend_RunFrame();
-void DRV_DDPSend_AppendInformationToHTTPIndexPage(http_request_t* request);
+void DRV_DDPSend_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
 
 void TXW_Cam_Init(void);
 void TXW_Cam_RunEverySecond(void);
