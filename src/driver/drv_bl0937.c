@@ -22,9 +22,13 @@
 //#define DEFAULT_CURRENT_CAL 0.0118577075f
 //#define DEFAULT_POWER_CAL 1.5f
 
-#define DEFAULT_VOLTAGE_CAL 0.15813353251f 	//Vref=1.218, R1=6*330kO, R2=1kO, K=15397
-#define DEFAULT_CURRENT_CAL 0.01287009447f 	//Vref=1.218, Rs=1mO, K=94638
-#define DEFAULT_POWER_CAL 1.72265706655f 	//Vref=1.218, R1=6*330kO, R2=1kO, Rs=1mO, K=1721506
+#define DEFAULT_VOLTAGE_CAL 1.581335325E-03f 	//factor 100 for precision Vref=1.218, R1=6*330kO, R2=1kO, K=15397
+#define DEFAULT_CURRENT_CAL 1.287009447E-05f	//factor 1000 for precision Vref=1.218, Rs=1mO, K=94638
+#define DEFAULT_POWER_CAL 	1.707145397E-03f 	//factor 1000 for precision Vref=1.218, R1=6*330kO, R2=1kO, Rs=1mO, K=1721506
+
+#define MINPULSES_VOLTAGE 200
+#define MINPULSES_CURRENT 3
+#define MINPULSES_POWER 5
 
 // Those can be set by Web page pins configurator
 // The below are default values for Mycket smart socket
@@ -41,15 +45,18 @@ float BL0937_PMAX = 3680.0f;
 float last_p = 0.0f;
 
 volatile uint32_t g_v_pulses = 0, g_c_pulses = 0;
-volatile portTickType g_ticksElapsed_v=0, g_ticksElapsed_c=0;
+static portTickType g_ticksElapsed_v=0, g_ticksElapsed_c=0;
 volatile uint32_t g_p_pulses = 0, g_p_pulsesprev = 0;
-volatile portTickType g_pulseStampStart_v=0, g_pulseStampStart_c=0, g_pulseStampStart_p=0;
+static portTickType g_pulseStampStart_v=0, g_pulseStampStart_c=0, g_pulseStampStart_p=0;
 #define PULSESTAMPDEBUG 0
 #if PULSESTAMPDEBUG>0
 volatile portTickType g_pulseStampEnd_v=0, g_pulseStampEnd_c=0;
 #endif
-static int g_sht_secondsUntilNextMeasurement = 1, g_sht_secondsBetweenMeasurements = 20;
+static uint32_t g_bl_secUntilNextCalc= 1, g_bl_secMaxNextCalc = 30, g_bl_secMinNextCalc = 3; //at 230V minintervall/Pdiff 15s=0.115W, 7.5s=0.23W, 3s=0.575W, 1.5s=1.15W, 1s=1.73W
+static int g_minPulsesV = MINPULSES_VOLTAGE, g_minPulsesC = MINPULSES_CURRENT, g_minPulsesP = MINPULSES_POWER;
 
+//static	uint8_t cyclecnt=0, cyclecnt_prev=0;
+static portTickType g_pulseStampTestPrev=0;
 
 void HlwCf1Interrupt(int pinNum)
 {
@@ -87,6 +94,70 @@ commandResult_t BL0937_PowerMax(const void* context, const char* cmd, const char
 		}
 	}
 	return CMD_RES_OK;
+}
+
+commandResult_t BL0937_IntervalPowerCurrentMinMax(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+	if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2))
+	{
+		ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_IntervalPowerCurrentMinMax: not enough arguments, current values %i %i."
+			, g_bl_secMinNextCalc, g_bl_secMaxNextCalc);
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+
+	int minCycleTime = Tokenizer_GetArgInteger(0);
+	int maxCycleTime = Tokenizer_GetArgInteger(1);
+	if( minCycleTime < 1 || maxCycleTime < minCycleTime || maxCycleTime > 900 || minCycleTime > maxCycleTime)
+	{
+		ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_IntervalPowerCurrentMinMax: minimum 1 second, maximum 900 seconds allowed, min %i between max %i (keep current %i %i)."
+			, minCycleTime, maxCycleTime, g_bl_secMinNextCalc, g_bl_secMaxNextCalc);
+		return CMD_RES_BAD_ARGUMENT;
+	}
+	else
+	{
+		g_bl_secMinNextCalc = minCycleTime;
+		g_bl_secMaxNextCalc = maxCycleTime;
+	}
+
+	ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_IntervalPowerMax: one cycle will have max %i seconds.", g_bl_secMaxNextCalc);
+
+	return CMD_RES_OK;
+}
+
+commandResult_t BL0937_MinPulsesVCP(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+	if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3))
+	{
+		ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_MinPulsesVCP: not enough arguments, current values %i %i %i."
+			, g_minPulsesV, g_minPulsesC, g_minPulsesP);
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_MinPulsesVCP: min pulses VCP %i %i %i (old=%i %i %i)"
+		, Tokenizer_GetArgInteger(0), Tokenizer_GetArgInteger(1), Tokenizer_GetArgInteger(2)
+		, g_minPulsesV, g_minPulsesC, g_minPulsesP);
+	g_minPulsesV = Tokenizer_GetArgInteger(0);
+	g_minPulsesC = Tokenizer_GetArgInteger(1);
+	g_minPulsesP = Tokenizer_GetArgInteger(2);
+
+	return CMD_RES_OK;
+}
+
+uint32_t BL0937_utlDiffCalcU32(uint32_t lowval, uint32_t highval)
+{
+
+//c++ automatically handles overflow, but we want to be explicit here
+	uint32_t diff;
+	if (highval >= lowval) {
+		diff = highval-lowval;
+	} else {
+		diff = (0xFFFFFFFFUL - lowval) + highval + 1;
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"diff low %lu high %lu = %lu\n", lowval, highval, diff, highval-lowval);
+	}
+
+//	return diff;
+	return highval-lowval;
 }
 
 void BL0937_Shutdown_Pins()
@@ -147,6 +218,21 @@ void BL0937_Init(void)
 	//cmddetail:"fn":"BL0937_PowerMax","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PowerMax", BL0937_PowerMax, NULL);
+
+	//cmddetail:{"name":"BL0937_IntervalPowerCurrentMinMax","args":"[MaxIntervalSeconds]",
+	//cmddetail:"descr":"Sets the min and max interval for power and current readings (calculation). 
+	//	Max setting applies to low power loads, because frequency of BL0937 below 1Hz", 
+	//	min increases resolution (at 230V: 1sec max ~1.7W, 30sec ~0.115W)
+	//cmddetail:"fn":"BL0937_IntervalPowerCurrentMinMax","file":"driver/drv_bl0937.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("BL0937_IntervalPowerCurrentMinMax", BL0937_IntervalPowerCurrentMinMax, NULL);
+
+	//cmddetail:{"name":"BL0937_MinPulsesVCP","args":"[MinPulsesVCP]",
+	//cmddetail:"descr":"Sets the minimum pulses for voltage, current and power calculations 
+	//	(at low V C P values). Limited by BL0937_IntervalPowerCurrentMinMax",
+	//cmddetail:"fn":"BL0937_MinPulsesVCP","file":"driver/drv_bl0937.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("BL0937_MinPulsesVCP", BL0937_MinPulsesVCP, NULL);
 
 	BL0937_Init_Pins();
 }
@@ -223,18 +309,14 @@ void BL0937_RunEverySecond(void)
 // V and I measurement must be done/changed every second
  	pulseStampNow = xTaskGetTickCount();
 	if ((g_sel && !g_invertSEL) || (!g_sel && g_invertSEL)) {
-//	if ( g_sel ) {		
-		if ( g_v_pulses>200 )  { //valid reading
+//	if ( g_sel ) {
+		if ( g_v_pulses >= g_minPulsesV ) { //|| g_bl_secUntilNextCalc >= g_bl_secMaxNextCalc -1  )  { extended interval reserved for current
 #if PULSESTAMPDEBUG>0
 			g_pulseStampEnd_v = pulseStampNow;
 			addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"now %i gsel=%i vp %i tsv %i %i \n"
 				, pulseStampNow, g_sel, g_v_pulses, g_pulseStampStart_v, g_pulseStampEnd_v);
 #endif
-			if (pulseStampNow >= g_pulseStampStart_v) {
-				g_ticksElapsed_v = pulseStampNow-g_pulseStampStart_v;
-			} else {
-				g_ticksElapsed_v = (0xFFFFFFFF - g_pulseStampStart_v) + pulseStampNow + 1;
-			}
+			g_ticksElapsed_v = BL0937_utlDiffCalcU32(g_pulseStampStart_v, pulseStampNow);
 			res_v = g_v_pulses;
 			g_v_pulses=0;
 //			valid_v=true;
@@ -247,17 +329,14 @@ void BL0937_RunEverySecond(void)
 		g_sel_change=true;
 	} else if( (g_sel && g_invertSEL) || (!g_sel && !g_invertSEL))	{
 //	} else {
-		if ( g_c_pulses>3 || g_sht_secondsUntilNextMeasurement <= 0 )  { //reading high enough or max sample time
+		if ( (g_c_pulses >= g_minPulsesC && (g_bl_secUntilNextCalc <= g_bl_secMaxNextCalc - g_bl_secMinNextCalc)) 
+				|| g_bl_secUntilNextCalc <= 1 )  { //reading high enough or max sample time
 #if PULSESTAMPDEBUG>0
 			g_pulseStampEnd_c = pulseStampNow;
 			addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"now %i gsel=%i vc %i tsc %i %i \n"
 				, pulseStampNow, g_sel, g_c_pulses, g_pulseStampStart_c, g_pulseStampEnd_c);
 #endif
-			if (pulseStampNow >= g_pulseStampStart_c) {
-				g_ticksElapsed_c = pulseStampNow-g_pulseStampStart_v;
-			} else {
-				g_ticksElapsed_c = (0xFFFFFFFF - g_pulseStampStart_c) + pulseStampNow + 1;
-			}
+			g_ticksElapsed_c = BL0937_utlDiffCalcU32(g_pulseStampStart_c, pulseStampNow);
 			res_c = g_c_pulses;
 			g_c_pulses=0;
 //			valid_c=true;
@@ -288,20 +367,24 @@ void BL0937_RunEverySecond(void)
 	#else
 	
 	#endif
+	res_p = BL0937_utlDiffCalcU32(g_p_pulsesprev, g_p_pulses);
 
-	if (g_p_pulses >= g_p_pulsesprev) {
-		res_p = g_p_pulses-g_p_pulsesprev;
-	} else {
-		res_p = (0xFFFFFFFF - g_p_pulsesprev) + g_p_pulses + 1;
-	}
-
-	if (res_p > 5 || g_sht_secondsUntilNextMeasurement <= 0 ) {
-		if (pulseStampNow >= g_pulseStampStart_p) {
-			ticksElapsed_p = pulseStampNow-g_pulseStampStart_p;
-		} else {
-			ticksElapsed_p = (0xFFFFFFFF - g_pulseStampStart_p) + pulseStampNow + 1;
-		}
-
+	if ( (res_p >= g_minPulsesP  && (g_bl_secUntilNextCalc <= g_bl_secMaxNextCalc - g_bl_secMinNextCalc))
+			|| g_bl_secUntilNextCalc <= 0 ) {
+				portTickType g_pulseStampTest= pulseStampNow*10000;
+				uint32_t difftestov=0;
+				uint32_t difftest=0;
+				if (g_pulseStampTest < g_pulseStampTestPrev)
+				{
+					difftestov = (0xFFFFFFFFUL - g_pulseStampTestPrev) + g_pulseStampTest + 1;
+					difftest=g_pulseStampTest-g_pulseStampTestPrev;
+					addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"tick overflow low %lu high %lu = %lu %lu\n"
+						, g_pulseStampTest, g_pulseStampTestPrev, difftestov, difftest);
+				}
+				g_pulseStampTestPrev= g_pulseStampTest;
+				
+		ticksElapsed_p = BL0937_utlDiffCalcU32(g_pulseStampStart_p*10000, pulseStampNow*10000); //test overflow
+		ticksElapsed_p = BL0937_utlDiffCalcU32(g_pulseStampStart_p, pulseStampNow);
 #if PULSESTAMPDEBUG>0
 		addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"Volt pulses %i / (tsend %i) vticks %i, current %i /  (tsend %i) cticks %i, power %i / pticks %i (prev %i) tsnow %i gselchg %i\n"
 			, res_v, g_pulseStampEnd_v, g_ticksElapsed_v
@@ -340,7 +423,7 @@ void BL0937_RunEverySecond(void)
 */
 		} else {
 			final_v = 11.1;	
-			freq_v = 9999;
+			freq_v = 99999;
 		}
 	
 		if (g_ticksElapsed_c > 0) {
@@ -352,7 +435,7 @@ void BL0937_RunEverySecond(void)
 */
 		} else {
 			final_c = 22.222f;	
-			freq_c = 9999;
+			freq_c = 99999;
 		}
 		if (ticksElapsed_p > 0) {
 			freq_p = (float)res_p * (1000.0f / (float)portTICK_PERIOD_MS);	
@@ -362,7 +445,7 @@ void BL0937_RunEverySecond(void)
 			if (voltage_cal_cur != DEFAULT_VOLTAGE_CAL && power_cal_cur == DEFAULT_POWER_CAL) {
 				float v_cal2p=DEFAULT_VOLTAGE_CAL/voltage_cal_cur;
 				addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"Scaled v %.1f c %.4f p %.2f (/v_cal2p %.6f=%.2f), pcal %f\n", final_v, final_c, final_p, v_cal2p, final_p / v_cal2p, power_cal_cur, portTICK_PERIOD_MS);
-				final_p /= v_cal2p;
+				freq_p /= v_cal2p;
 			}
 /*			final_p = freq_p * 1.218f;
 			final_p *= 1.218f;
@@ -372,11 +455,11 @@ void BL0937_RunEverySecond(void)
 */	
 		} else {
 			final_p = 9999.99f;	
-			freq_p = 9999;
+			freq_p = 99999;
 		}	
 		PwrCal_Scale((int)(freq_v*100), (float)(freq_c*1000), (int)(freq_p*1000), &final_v, &final_c, &final_p);
-
-		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Scaled v %.1f (vf %.2f) c %.4f (cf %.3f) p %.2f  (pf %3f) . Scalefact v %.6f c %.6f p %.6f "
+		
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Scaled v %.2f (vf %.2f) c %.6f (cf %.4f) p %.6f  (pf %4f) . Scalefact v %E c %E p %E "
 			,final_v, freq_v, final_c, freq_c, final_p, freq_p, voltage_cal_cur, current_cal_cur, power_cal_cur);
 		
 		/* patch to limit max power reading, filter random reading errors */
@@ -403,13 +486,25 @@ void BL0937_RunEverySecond(void)
 		}
 	#endif
 		BL_ProcessUpdate(final_v, final_c, final_p, NAN, NAN);
-		g_sht_secondsUntilNextMeasurement = g_sht_secondsBetweenMeasurements;
+		g_bl_secUntilNextCalc = g_bl_secMaxNextCalc;
 	}
-	if (g_sht_secondsUntilNextMeasurement > 0) {
-		g_sht_secondsUntilNextMeasurement--;
+	if (g_bl_secUntilNextCalc > 0) {
+		g_bl_secUntilNextCalc--;
 	}
-
-}
-
+/*
+	cyclecnt_prev = cyclecnt;
+	cyclecnt++;
+	uint8_t diffc;
+	if (cyclecnt < cyclecnt_prev) {
+		//overflow
+		diffc = (0xFF - cyclecnt_prev) + cyclecnt + 1;
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"pwrcalc counter overflow cur %i prev %i diff %i prev-cur %i\n"
+			, cyclecnt, cyclecnt_prev, diffc, cyclecnt - cyclecnt_prev);
+	} else {
+		diffc = cyclecnt - cyclecnt_prev;
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"pwrcalc counter cur %i prev %i diff %i\n"
+			, cyclecnt, cyclecnt_prev, diffc);
+	}
+*/}
 // close ENABLE_DRIVER_BL0937
 #endif
