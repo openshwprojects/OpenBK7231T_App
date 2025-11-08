@@ -13,12 +13,14 @@ int g_sda = 1;
 softI2C_t g_scanI2C;
 
 bool canUsePin(int pin) {
+#if PLATFORM_ESP8266
 	if (pin == 6) {
 		return false;
 	}
 	if (pin == 7) {
 		return false;
 	}
+#endif
 	return true;
 }
 static int nextValidPin(int pin) {
