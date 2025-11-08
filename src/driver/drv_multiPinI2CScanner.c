@@ -12,6 +12,12 @@ int g_scl = 0;
 int g_sda = 1;
 softI2C_t g_scanI2C;
 
+
+void MultiPinI2CScanner_AppendInformationToHTTPIndexPage(http_request_t *request)
+{
+	hprintf255(request, "Scan pins: %i %i, adr %i", g_scl, g_sda, g_adr);
+
+}
 void MultiPinI2CScanner_RunFrame() {
 
 	g_scanI2C.pin_clk = g_scl;

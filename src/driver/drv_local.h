@@ -63,6 +63,7 @@ void DRV_PinMutex_RunFrame();
 
 void MultiPinI2CScanner_Init();
 void MultiPinI2CScanner_RunFrame();
+void MultiPinI2CScanner_AppendInformationToHTTPIndexPage(http_request_t *request);
 
 void SM16703P_Init();
 void SM16703P_Shutdown();
