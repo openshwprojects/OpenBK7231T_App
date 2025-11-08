@@ -23,6 +23,8 @@ void MultiPinI2CScanner_RunFrame() {
 	g_scanI2C.pin_clk = g_scl;
 	g_scanI2C.pin_data = g_sda;
 	Soft_I2C_PreInit(&g_scanI2C);
+	addLogAdv(LOG_INFO, LOG_FEATURE_I2C, "Try SDA = %i, SCL =%i",
+		g_sda, g_scl);
 	bool bOk = Soft_I2C_Start(&g_scanI2C, (g_adr << 1) + 0);
 	Soft_I2C_Stop(&g_scanI2C);
 	if (bOk) {
