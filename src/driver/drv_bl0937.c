@@ -52,8 +52,9 @@ static portTickType g_pulseStampStart_v=0, g_pulseStampStart_c=0, g_pulseStampSt
 #if PULSESTAMPDEBUG>0
 volatile portTickType g_pulseStampEnd_v=0, g_pulseStampEnd_c=0;
 #endif
-static uint32_t g_bl_secUntilNextCalc= 1, g_bl_secMaxNextCalc = 30, g_bl_secMinNextCalc = 3; //at 230V minintervall/Pdiff 15s=0.115W, 7.5s=0.23W, 3s=0.575W, 1.5s=1.15W, 1s=1.73W
+static uint32_t g_bl_secUntilNextCalc= 1, g_bl_secForceNextCalc = 30, g_bl_secMinNextCalc = 3; //at 230V minintervall/Pdiff 15s=0.115W, 7.5s=0.23W, 3s=0.575W, 1.5s=1.15W, 1s=1.73W
 static int g_minPulsesV = MINPULSES_VOLTAGE, g_minPulsesC = MINPULSES_CURRENT, g_minPulsesP = MINPULSES_POWER;
+static int g_factorScaleV=100, g_factorScaleC=1000, g_factorScaleP=1000;
 
 //static	uint8_t cyclecnt=0, cyclecnt_prev=0;
 static portTickType g_pulseStampTestPrev=0;
@@ -72,7 +73,7 @@ void HlwCfInterrupt(int pinNum)
 	g_p_pulses++;
 }
 
-commandResult_t BL0937_PowerMax(const void* context, const char* cmd, const char* args, int cmdFlags)
+commandResult_t BL0937_cmdPowerMax(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
 	float maxPower;
 
@@ -96,13 +97,13 @@ commandResult_t BL0937_PowerMax(const void* context, const char* cmd, const char
 	return CMD_RES_OK;
 }
 
-commandResult_t BL0937_IntervalPowerCurrentMinMax(const void* context, const char* cmd, const char* args, int cmdFlags)
+commandResult_t BL0937_cmdIntervalCPMinMax(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
 	if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2))
 	{
-		ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_IntervalPowerCurrentMinMax: not enough arguments, current values %i %i."
-			, g_bl_secMinNextCalc, g_bl_secMaxNextCalc);
+		ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_IntervalCPMinMax: not enough arguments, current values %i %i."
+			, g_bl_secMinNextCalc, g_bl_secForceNextCalc);
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
@@ -110,22 +111,29 @@ commandResult_t BL0937_IntervalPowerCurrentMinMax(const void* context, const cha
 	int maxCycleTime = Tokenizer_GetArgInteger(1);
 	if( minCycleTime < 1 || maxCycleTime < minCycleTime || maxCycleTime > 900 || minCycleTime > maxCycleTime)
 	{
-		ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_IntervalPowerCurrentMinMax: minimum 1 second, maximum 900 seconds allowed, min %i between max %i (keep current %i %i)."
-			, minCycleTime, maxCycleTime, g_bl_secMinNextCalc, g_bl_secMaxNextCalc);
+		ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_IntervalCPMinMax: minimum 1 second, maximum 900 seconds allowed, min %i between max %i (keep current %i %i)."
+			, minCycleTime, maxCycleTime, g_bl_secMinNextCalc, g_bl_secForceNextCalc);
 		return CMD_RES_BAD_ARGUMENT;
 	}
 	else
 	{
 		g_bl_secMinNextCalc = minCycleTime;
-		g_bl_secMaxNextCalc = maxCycleTime;
+		int alreadyWaitedSec=g_bl_secForceNextCalc-g_bl_secUntilNextCalc;
+		if (alreadyWaitedSec > maxCycleTime) {
+			g_bl_secUntilNextCalc = 2;
+		} else {
+			g_bl_secUntilNextCalc = maxCycleTime - alreadyWaitedSec;
+		}
+		g_bl_secForceNextCalc = maxCycleTime;
 	}
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_IntervalPowerMax: one cycle will have max %i seconds.", g_bl_secMaxNextCalc);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_IntervalCPMinMax: one cycle will have min %i and max %i seconds. Remaining current cycle %i"
+		, g_bl_secMinNextCalc, g_bl_secForceNextCalc, g_bl_secUntilNextCalc);
 
 	return CMD_RES_OK;
 }
 
-commandResult_t BL0937_MinPulsesVCP(const void* context, const char* cmd, const char* args, int cmdFlags)
+commandResult_t BL0937_cmdMinPulsesVCP(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
 	if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3))
@@ -134,7 +142,7 @@ commandResult_t BL0937_MinPulsesVCP(const void* context, const char* cmd, const 
 			, g_minPulsesV, g_minPulsesC, g_minPulsesP);
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_MinPulsesVCP: min pulses VCP %i %i %i (old=%i %i %i)"
+	ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_MinPulsesVCP: min pulses VCP %i %i %i (old=%i %i %i), one P-pulse equals ~0.474..0.486 mWh"
 		, Tokenizer_GetArgInteger(0), Tokenizer_GetArgInteger(1), Tokenizer_GetArgInteger(2)
 		, g_minPulsesV, g_minPulsesC, g_minPulsesP);
 	g_minPulsesV = Tokenizer_GetArgInteger(0);
@@ -143,6 +151,31 @@ commandResult_t BL0937_MinPulsesVCP(const void* context, const char* cmd, const 
 
 	return CMD_RES_OK;
 }
+
+commandResult_t BL0937_cmdScalefactorMultiply(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	float voltage_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, DEFAULT_VOLTAGE_CAL);
+	float current_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, DEFAULT_CURRENT_CAL);
+	float power_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, DEFAULT_POWER_CAL);
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+	if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1))
+	{
+		ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_ScalefactorMultiply: not enough arguments, current values %E %E %E."
+			, g_minPulsesV, g_minPulsesC, g_minPulsesP);
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_ScalefactorMultiply: min pulses VCP %E %E %E (old=%E %E %E)"
+		, Tokenizer_GetArgInteger(0), Tokenizer_GetArgInteger(1), Tokenizer_GetArgInteger(2)
+		, voltage_cal_cur, current_cal_cur, power_cal_cur);
+	voltage_cal_cur *= Tokenizer_GetArgInteger(0);
+	current_cal_cur *= Tokenizer_GetArgInteger(1);
+	power_cal_cur *= Tokenizer_GetArgInteger(2);	
+	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, voltage_cal_cur);
+	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, current_cal_cur);
+	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, power_cal_cur);	
+	return CMD_RES_OK;
+}
+
 
 uint32_t BL0937_utlDiffCalcU32(uint32_t lowval, uint32_t highval)
 {
@@ -217,22 +250,32 @@ void BL0937_Init(void)
 	//cmddetail:"descr":"Sets the maximum power limit for BL measurement used to filter incorrect values",
 	//cmddetail:"fn":"BL0937_PowerMax","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("PowerMax", BL0937_PowerMax, NULL);
+	CMD_RegisterCommand("PowerMax", BL0937_cmdPowerMax, NULL);
 
-	//cmddetail:{"name":"BL0937_IntervalPowerCurrentMinMax","args":"[MaxIntervalSeconds]",
+	//cmddetail:{"name":"BL0937_IntervalCPMinMax","args":"[MaxIntervalSeconds]",
 	//cmddetail:"descr":"Sets the min and max interval for power and current readings (calculation). 
 	//	Max setting applies to low power loads, because frequency of BL0937 below 1Hz", 
 	//	min increases resolution (at 230V: 1sec max ~1.7W, 30sec ~0.115W)
-	//cmddetail:"fn":"BL0937_IntervalPowerCurrentMinMax","file":"driver/drv_bl0937.c","requires":"",
+	//cmddetail:"fn":"BL0937_IntervalCPMinMax","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("BL0937_IntervalPowerCurrentMinMax", BL0937_IntervalPowerCurrentMinMax, NULL);
+	CMD_RegisterCommand("BL0937_IntervalCPMinMax", BL0937_cmdIntervalCPMinMax, NULL);
 
 	//cmddetail:{"name":"BL0937_MinPulsesVCP","args":"[MinPulsesVCP]",
 	//cmddetail:"descr":"Sets the minimum pulses for voltage, current and power calculations 
-	//	(at low V C P values). Limited by BL0937_IntervalPowerCurrentMinMax",
+	//	(at low V C P values). Limited by BL0937_IntervalCPMinMax",
 	//cmddetail:"fn":"BL0937_MinPulsesVCP","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("BL0937_MinPulsesVCP", BL0937_MinPulsesVCP, NULL);
+	CMD_RegisterCommand("BL0937_MinPulsesVCP", BL0937_cmdMinPulsesVCP, NULL);
+
+	//cmddetail:{"name":"BL0937_ScalefactorMultiply","args":"[VoltageFactor][CurrentFactor][PowerFactor]",
+	//cmddetail:"descr":"Multiplies the scale factors for voltage, current and power measurements (for migration)",
+	//cmddetail:"fn":"BL0937_ScalefactorMultiply","file":"driver/drv_bl0937.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("BL0937_ScalefactorMultiply", BL0937_cmdScalefactorMultiply, NULL);
+
+//MinPulsesVCP defines minimum level of changes to be measured (similar to hysteresis)
+//One pulse equals 0.474207 mWh
+//MinIntervalCPMax defines kind of averaging for low power levels
 
 	BL0937_Init_Pins();
 }
@@ -310,7 +353,7 @@ void BL0937_RunEverySecond(void)
  	pulseStampNow = xTaskGetTickCount();
 	if ((g_sel && !g_invertSEL) || (!g_sel && g_invertSEL)) {
 //	if ( g_sel ) {
-		if ( g_v_pulses >= g_minPulsesV ) { //|| g_bl_secUntilNextCalc >= g_bl_secMaxNextCalc -1  )  { extended interval reserved for current
+		if ( g_v_pulses >= g_minPulsesV ) { //|| g_bl_secUntilNextCalc >= g_bl_secForceNextCalc -1  )  { extended interval reserved for current
 #if PULSESTAMPDEBUG>0
 			g_pulseStampEnd_v = pulseStampNow;
 			addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"now %i gsel=%i vp %i tsv %i %i \n"
@@ -329,7 +372,7 @@ void BL0937_RunEverySecond(void)
 		g_sel_change=true;
 	} else if( (g_sel && g_invertSEL) || (!g_sel && !g_invertSEL))	{
 //	} else {
-		if ( (g_c_pulses >= g_minPulsesC && (g_bl_secUntilNextCalc <= g_bl_secMaxNextCalc - g_bl_secMinNextCalc)) 
+		if ( (g_c_pulses >= g_minPulsesC && (g_bl_secUntilNextCalc <= g_bl_secForceNextCalc - g_bl_secMinNextCalc)) 
 				|| g_bl_secUntilNextCalc <= 1 )  { //reading high enough or max sample time
 #if PULSESTAMPDEBUG>0
 			g_pulseStampEnd_c = pulseStampNow;
@@ -369,7 +412,7 @@ void BL0937_RunEverySecond(void)
 	#endif
 	res_p = BL0937_utlDiffCalcU32(g_p_pulsesprev, g_p_pulses);
 
-	if ( (res_p >= g_minPulsesP  && (g_bl_secUntilNextCalc <= g_bl_secMaxNextCalc - g_bl_secMinNextCalc))
+	if ( (res_p >= g_minPulsesP  && (g_bl_secUntilNextCalc <= g_bl_secForceNextCalc - g_bl_secMinNextCalc))
 			|| g_bl_secUntilNextCalc <= 0 ) {
 				portTickType g_pulseStampTest= pulseStampNow*10000;
 				uint32_t difftestov=0;
@@ -407,9 +450,35 @@ void BL0937_RunEverySecond(void)
 		//frequency P: @250V: 0.25 .. 5000W = 0.146443 .. 2928.866 Hz, 0,1W=0,058577 [0.057135] Hz
 
 		voltage_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, DEFAULT_VOLTAGE_CAL);
-	    current_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, DEFAULT_CURRENT_CAL);
-	    power_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, DEFAULT_POWER_CAL);
-	
+		current_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, DEFAULT_CURRENT_CAL);
+		power_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, DEFAULT_POWER_CAL);
+
+#define SCALECOMPATIBILITYFIX 1
+#if SCALECOMPATIBILITYFIX>0
+		// adjust scale factors to match old calculation method (multiplication factor in calibration value)
+		
+		if (voltage_cal_cur < 0.01f ) {
+			g_factorScaleV=100;
+		} else if (voltage_cal_cur < 0.01f ) {
+			g_factorScaleV=1;
+		}
+		if (current_cal_cur < 0.0001f ) {
+			g_factorScaleC=1000;
+		} else {
+			g_factorScaleC=1;
+		}
+		if (power_cal_cur < 0.01f ) {
+			g_factorScaleP=1000;
+		} else {
+			g_factorScaleP=1;
+		}
+#endif
+
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER, "Scalefactor default/used [raw2float multiplier]: v %f [%d] c %f [%d] p %f [%d], usedv %E c %E p %E v %E c %E p %E \n"
+			, DEFAULT_VOLTAGE_CAL/voltage_cal_cur,g_factorScaleV, DEFAULT_CURRENT_CAL/current_cal_cur, g_factorScaleC
+			, DEFAULT_POWER_CAL/power_cal_cur, g_factorScaleP, voltage_cal_cur, current_cal_cur, power_cal_cur);
+
+
 		//Vref=1.218, R1=6*330kO, R2=1kO, K=15397
 		//Vref=1.218, Rs=1mO, K=94638
 		//Vref=1.218, R1=6*330kO, R2=1kO, Rs=1mO, K=1721506
@@ -444,7 +513,8 @@ void BL0937_RunEverySecond(void)
 			// inaccuracy because of voltage divider deviation (fe.g. from datasheet) while V and P freq calc use same inputV to chip V(v)
 			if (voltage_cal_cur != DEFAULT_VOLTAGE_CAL && power_cal_cur == DEFAULT_POWER_CAL) {
 				float v_cal2p=DEFAULT_VOLTAGE_CAL/voltage_cal_cur;
-				addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"Scaled v %.1f c %.4f p %.2f (/v_cal2p %.6f=%.2f), pcal %f\n", final_v, final_c, final_p, v_cal2p, final_p / v_cal2p, power_cal_cur, portTICK_PERIOD_MS);
+				addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"Scaled v %.1f c %.4f p %.2f (/v_cal2p %.6f=%.2f), pcal %f\n"
+					, final_v, final_c, final_p, v_cal2p, final_p / v_cal2p, power_cal_cur, portTICK_PERIOD_MS);
 				freq_p /= v_cal2p;
 			}
 /*			final_p = freq_p * 1.218f;
@@ -457,10 +527,14 @@ void BL0937_RunEverySecond(void)
 			final_p = 9999.99f;	
 			freq_p = 99999;
 		}	
-		PwrCal_Scale((int)(freq_v*100), (float)(freq_c*1000), (int)(freq_p*1000), &final_v, &final_c, &final_p);
-		
-		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Scaled v %.2f (vf %.2f) c %.6f (cf %.4f) p %.6f  (pf %4f) . Scalefact v %E c %E p %E "
-			,final_v, freq_v, final_c, freq_c, final_p, freq_p, voltage_cal_cur, current_cal_cur, power_cal_cur);
+//		PwrCal_Scale((int)(freq_v*100), (float)(freq_c*1000), (int)(freq_p*1000), &final_v, &final_c, &final_p);
+		freq_v *= (float)g_factorScaleV;
+		freq_c *= (float)g_factorScaleC;
+		freq_p *= (float)g_factorScaleP;
+		PwrCal_Scale((int)freq_v, (float)freq_c, (int)freq_p, &final_v, &final_c, &final_p);
+
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Scaled v %.2f (vf %.3f / %i) c %.6f (cf %.3f / %i) p %.6f  (pf %.3f / %i) \n"
+			,final_v, freq_v, g_factorScaleV, final_c, freq_c, g_factorScaleC, final_p, freq_p, g_factorScaleP);
 		
 		/* patch to limit max power reading, filter random reading errors */
 		if(final_p > BL0937_PMAX)
@@ -486,7 +560,7 @@ void BL0937_RunEverySecond(void)
 		}
 	#endif
 		BL_ProcessUpdate(final_v, final_c, final_p, NAN, NAN);
-		g_bl_secUntilNextCalc = g_bl_secMaxNextCalc;
+		g_bl_secUntilNextCalc = g_bl_secForceNextCalc;
 	}
 	if (g_bl_secUntilNextCalc > 0) {
 		g_bl_secUntilNextCalc--;
