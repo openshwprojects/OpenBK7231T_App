@@ -675,8 +675,17 @@ void BL_ProcessUpdate(float voltage, float current, float power,
   {
     float energy = 0;
     if (isnan(energyWh)) {
-      xPassedTicks = (int)(xTaskGetTickCount() - energyCounterStamp[asensdatasetix]);
-      // FIXME: Wrong calculation if tick count overflows
+//fix for this below      xPassedTicks = (int)(xTaskGetTickCount() - energyCounterStamp[asensdatasetix]);
+      //fixed? FIXME: Wrong calculation if tick count overflows
+//reuse same var, verify on every platform tickcount is uint32, otherwise replace 0xFFFFFFFFUL accordingly with 16/64bit constant
+	xPassedTicks = xTaskGetTickCount();
+	if (xPassedTicks >= energyCounterStamp[asensdatasetix]) {
+		xPassedTicks -= energyCounterStamp[asensdatasetix];
+	} else {
+		xPassedTicks = (0xFFFFFFFFUL - xPassedTicks) + energyCounterStamp[asensdatasetix] + 1;
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"diff prev %lu now = %lu\n"
+			, energyCounterStamp[asensdatasetix], xPassedTicks);
+	}
       if (xPassedTicks <= 0)
         xPassedTicks = 1;
       energy = xPassedTicks * power / (3600000.0f / portTICK_PERIOD_MS);
