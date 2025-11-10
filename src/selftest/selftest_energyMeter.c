@@ -21,17 +21,17 @@ void Test_EnergyMeter_Basic() {
 	SELFTEST_ASSERT_EXPRESSION("$current", 0);
 	SELFTEST_ASSERT_EXPRESSION("$power", 0);
 	SELFTEST_ASSERT_EXPRESSION("$frequency", 0);
-	CMD_ExecuteCommand("SetupTestPower 230 0.26 60 50.12 0", 0);
+	CMD_ExecuteCommand("SetupTestPower 230 0.26 60 50.10 0", 0);
 	Sim_RunSeconds(10, false);
 	SELFTEST_ASSERT_EXPRESSION("$voltage", 230);
 	SELFTEST_ASSERT_EXPRESSION("$current", 0.26f);
 	SELFTEST_ASSERT_EXPRESSION("$power", 60);
-	SELFTEST_ASSERT_EXPRESSION("$frequency", 50.12f);
+	SELFTEST_ASSERT_EXPRESSION("$frequency", 50.1f);
 
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/voltage/get", 230.0f, false);
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/current/get", 0.26f, false);
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/power/get", 60.0f, false);
-	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/frequency/get", 50.12f, false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/138/get", 50.1f, false);
 
 	SIM_ClearMQTTHistory();
 
@@ -45,7 +45,7 @@ void Test_EnergyMeter_Basic() {
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/voltage/get", 241.0f, false);
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/current/get", 0.36f, false);
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/power/get", 80.0f, false);
-	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/frequency/get", 49.90f, false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/138/get", 49.90f, false);
 
 	SIM_ClearMQTTHistory();
 
@@ -60,7 +60,7 @@ void Test_EnergyMeter_Basic() {
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/voltage/get", 221.0f, false);
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/current/get", 0.46f, false);
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/power/get", 70.0f, false);
-	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/frequency/get", 52.31f, false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/138/get", 52.31f, false);
 
 
 	SIM_ClearMQTTHistory();
@@ -438,6 +438,61 @@ void Test_EnergyMeter_TurnOffScript() {
 
 	SIM_ClearMQTTHistory();
 }
+
+void Test_EnergyMeter_Limits() {
+	SIM_ClearOBK(0);
+	SIM_ClearAndPrepareForMQTTTesting("powerDevice", "bekens");
+
+	PIN_SetPinRoleForPinIndex(9, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(9, 1);
+
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("startDriver TESTPOWER", 0);
+	Sim_RunSeconds(5, false);
+	CMD_ExecuteCommand("SetupTestPower 230 2.0 460 49.90 0", 0);
+	Sim_RunSeconds(60, false);
+
+	CMD_ExecuteCommand("VCPPublishThreshold 5 0.5 10", 0);
+	CMD_ExecuteCommand("SetupTestPower 233 2.2 463 49.90 0", 0);
+	Sim_RunSeconds(5, false);
+	// VCPPubishThreshold not reached - values should not have changed
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("powerDevice/voltage/get", 230, false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("powerDevice/current/get", 2.0f, false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("powerDevice/power/get", 460, false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("powerDevice/138/get", 49.90f, false);
+
+	CMD_ExecuteCommand("SetupTestPower 240 2.9 695 49.90 0", 0);
+	Sim_RunSeconds(5, false);
+	SELFTEST_ASSERT_EXPRESSION("$voltage", 240);
+	SELFTEST_ASSERT_EXPRESSION("$current", 2.9f);
+	SELFTEST_ASSERT_EXPRESSION("$power", 695);
+	SELFTEST_ASSERT_EXPRESSION("$frequency", 49.90f);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("powerDevice/voltage/get", 240, false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("powerDevice/current/get", 2.9f, false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("powerDevice/power/get", 695, false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("powerDevice/138/get", 49.90f, false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("powerDevice/power_apparent/get", 512.60f, false);
+
+	CMD_ExecuteCommand("VCPPublishThreshold 5 0.5 5 5 0.5", 0);
+	CMD_ExecuteCommand("SetupTestPower 240 2.9 695 50.00 0", 0);
+	Sim_RunSeconds(5, false);
+	// VCPPubishThreshold not reached - values should not have changed
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("powerDevice/voltage/get", 240, false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("powerDevice/current/get", 2.9f, false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("powerDevice/power/get", 695, false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("powerDevice/138/get", 49.90f, false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("powerDevice/power_apparent/get", 696.0f, false);
+
+	CMD_ExecuteCommand("SetupTestPower 240 2.9 705 50.70 0", 0);
+	Sim_RunSeconds(10, false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("powerDevice/voltage/get", 240, false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("powerDevice/current/get", 2.9f, false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("powerDevice/power/get", 705, false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("powerDevice/138/get", 50.70f, false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("powerDevice/power_apparent/get", 696.0f, false);
+
+}
 void Test_EnergyMeter() {
 	Test_EnergyMeter_CSE7766();
 #ifndef LINUX
@@ -448,6 +503,7 @@ void Test_EnergyMeter() {
 	Test_EnergyMeter_Tasmota();
 	Test_EnergyMeter_Events();
 	Test_EnergyMeter_TurnOffScript();
+	Test_EnergyMeter_Limits();
 }
 
 #endif
