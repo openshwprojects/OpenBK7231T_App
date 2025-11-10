@@ -13,6 +13,7 @@
 #endif
 
 
+
 #define DEFAULT_BOOT_SUCCESS_TIME 5
 
 mainConfig_t g_cfg;
