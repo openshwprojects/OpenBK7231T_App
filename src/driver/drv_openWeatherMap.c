@@ -36,6 +36,10 @@ static char g_reply[1024];
 weatherData_t g_weather;
 weatherChannels_t g_channels;
 
+weatherData_t *Weather_GetData() {
+	return &g_weather;
+}
+
 void Weather_SetReply(const char *s) {
 	const char *json_start = strstr(s, "\r\n\r\n");
 	if (json_start) {

@@ -795,6 +795,7 @@
     <ClCompile Include="src\selftest\selftest_max72xx.c" />
     <ClCompile Include="src\selftest\selftest_mqtt_get.c" />
     <ClCompile Include="src\selftest\selftest_ntp_sunsetSunrise.c" />
+    <ClCompile Include="src\selftest\selftest_openWeatherMap.c" />
     <ClCompile Include="src\selftest\selftest_pir.c" />
     <ClCompile Include="src\selftest\selftest_role_toggleAll_2.c" />
     <ClCompile Include="src\selftest\selftest_cfg_via_http.c" />

@@ -204,6 +204,7 @@ void Win_DoUnitTests()
 	// SELFTEST_ASSERT_EXPRESSION("sqrt(4)", 2)
 
 	// Test_PartitionSearch();
+	Test_OpenWeatherMap();
 	Test_MAX72XX();
 
 	Test_LEDstrips();
