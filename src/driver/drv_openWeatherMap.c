@@ -31,25 +31,7 @@ xTaskHandle g_weather_thread = NULL;
 static char g_request[512];
 static char g_reply[1024];
 
-typedef struct weatherData_s {
-	double lon;
-	double lat;
-	char main_weather[32];
-	char description[32];
-	double temp;
-	int pressure;
-	int humidity;
-	int timezone;
-	int sunrise;
-	int sunset;
-} weatherData_t;
-
-typedef struct weatherChannels_s {
-	byte bInitialized;
-	char temperature;
-	char humidity;
-	char pressure;
-} weatherChannels_t;
+#include "drv_openWeatherMap.h"
 
 weatherData_t g_weather;
 weatherChannels_t g_channels;
