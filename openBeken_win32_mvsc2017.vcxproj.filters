@@ -412,6 +412,8 @@
     <ClCompile Include="src\driver\drv_leds_shared.c" />
     <ClCompile Include="src\driver\drv_dmx512.c" />
     <ClCompile Include="src\driver\drv_ddpSend.c" />
+    <ClCompile Include="src\cmnds\cmd_enums.c" />
+    <ClCompile Include="src\driver\drv_bkPartitions.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\base64\base64.h" />
