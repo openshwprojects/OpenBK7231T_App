@@ -3,7 +3,7 @@
 #include "selftest_local.h"
 #include "../driver/drv_openWeatherMap.h"
 
-const char *sample_reply =
+char sample_reply[8192] =
 "HTTP/1.1 200 OK\r\n"
 "Date: Sat, 09 Nov 2025 12:00:00 GMT\r\n"
 "Server: openweathermap.org\r\n"
