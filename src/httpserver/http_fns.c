@@ -895,7 +895,7 @@ int http_fn_index(http_request_t* request) {
   // display temperature - thanks to giedriuslt
   // only in Normal mode, and if boot is not failing
 #ifndef NO_CHIP_TEMPERATURE
-	hprintf255(request, "<h5>Chip temperature: %.1f°C</h5>", g_wifi_temperature);
+	hprintf255(request, "<h5>Chip temperatures: %.1f°C</h5>", g_wifi_temperature);
 #endif
 
 #if ENABLE_PING_WATCHDOG
