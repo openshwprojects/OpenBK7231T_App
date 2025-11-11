@@ -195,6 +195,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "Test",	Test_Init, NULL, Test_AppendInformationToHTTPIndexPage, Test_RunQuickTick, NULL, NULL, NULL, false },
 #endif
+#if ENABLE_MULTIPINI2CSCANNER
+	//drvdetail:{"name":"MultiPinI2CScanner",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"qq.",
+	//drvdetail:"requires":""}
+	{ "MultiPinI2CScanner",		MultiPinI2CScanner_Init,		NULL,		MultiPinI2CScanner_AppendInformationToHTTPIndexPage, MultiPinI2CScanner_RunFrame, NULL, NULL, NULL, false },
+#endif
 #if ENABLE_I2C
 	//drvdetail:{"name":"I2C",
 	//drvdetail:"title":"TODO",
@@ -431,7 +438,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"MAX72XX LED matrix display driver with font and simple script interface. See [protocol explanation](https://www.elektroda.pl/rtvforum/viewtopic.php?p=18040628#18040628)",
 	//drvdetail:"requires":""}
-	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, NULL, NULL, NULL, false },
+	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, DRV_MAX72XX_Shutdown, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_BMPI2C
 		//drvdetail:{"name":"BMPI2C",

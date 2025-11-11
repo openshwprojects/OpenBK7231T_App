@@ -242,6 +242,7 @@
     <ClCompile Include="src\driver\drv_max72xx_internal.c" />
     <ClCompile Include="src\driver\drv_max72xx_single.c" />
     <ClCompile Include="src\driver\drv_mcp9808.c" />
+    <ClCompile Include="src\driver\drv_multiPinI2CScanner.c" />
     <ClCompile Include="src\driver\drv_ntp.c" />
     <ClCompile Include="src\driver\drv_ntp_events.c" />
     <ClCompile Include="src\driver\drv_openWeatherMap.c" />
@@ -791,8 +792,10 @@
     <ClCompile Include="src\selftest\selftest_http_led.c" />
     <ClCompile Include="src\selftest\selftest_if_inside_backlog.c" />
     <ClCompile Include="src\selftest\selftest_json_lib.c" />
+    <ClCompile Include="src\selftest\selftest_max72xx.c" />
     <ClCompile Include="src\selftest\selftest_mqtt_get.c" />
     <ClCompile Include="src\selftest\selftest_ntp_sunsetSunrise.c" />
+    <ClCompile Include="src\selftest\selftest_openWeatherMap.c" />
     <ClCompile Include="src\selftest\selftest_pir.c" />
     <ClCompile Include="src\selftest\selftest_role_toggleAll_2.c" />
     <ClCompile Include="src\selftest\selftest_cfg_via_http.c" />

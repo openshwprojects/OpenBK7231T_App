@@ -360,6 +360,27 @@ void Test_Commands_Channels() {
 
 	// cause error
 	//SELFTEST_ASSERT_CHANNEL(3, 666);
+
+
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	float hum, temp;
+	SELFTEST_ASSERT(false == CHANNEL_GetGenericHumidity(&hum));
+
+	CMD_ExecuteCommand("setChannelType 5 Humidity", 0);
+	CMD_ExecuteCommand("setChannel 5 88", 0);
+	SELFTEST_ASSERT(true == CHANNEL_GetGenericHumidity(&hum));
+	SELFTEST_ASSERT_FLOATCOMPARE(hum, 88.0f);
+	SELFTEST_ASSERT(false == CHANNEL_GetGenericTemperature(&temp));
+	CMD_ExecuteCommand("setChannelType 5 Temperature_div10", 0);
+	SELFTEST_ASSERT(false == CHANNEL_GetGenericHumidity(&hum));
+	SELFTEST_ASSERT(true == CHANNEL_GetGenericTemperature(&temp));
+	SELFTEST_ASSERT_FLOATCOMPARE(temp, 8.80f);
+	CMD_ExecuteCommand("setChannelType 5 Temperature", 0);
+	SELFTEST_ASSERT(true == CHANNEL_GetGenericTemperature(&temp));
+	SELFTEST_ASSERT_FLOATCOMPARE(temp, 88.0f);
+
 }
 
 
