@@ -31,6 +31,8 @@
 #include "mqtt/new_mqtt.h"
 #include "hal/hal_ota.h"
 
+#include "user_hello_task.h"
+
 #if ENABLE_LITTLEFS
 #include "littlefs/our_lfs.h"
 #endif
@@ -1529,6 +1531,7 @@ void Main_Init_After_Delay()
 #endif		
 		HTTPServer_Start();
 		ADDLOGF_DEBUG("Started http tcp server\r\n");
+		HelloTask_Init();
 #if MQTT_USE_TLS
 	} 
 #endif		
