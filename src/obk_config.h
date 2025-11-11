@@ -234,6 +234,8 @@
 //#define ENABLE_LFS_SPI						1
 //#define ENABLE_DRIVER_TESTSPIFLASH			1
 
+//#define	ENABLE_DRIVER_UART_TCP					1
+
 // #define	ENABLE_DRIVER_PIR					1
 //#define ENABLE_DRIVER_BKPARTITIONS				1
 #define ENABLE_HA_DISCOVERY						1
