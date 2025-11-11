@@ -3,7 +3,7 @@
 #include "selftest_local.h"
 #include "../driver/drv_openWeatherMap.h"
 
-char sample_reply[8192] =
+const char *sample_reply =
 "HTTP/1.1 200 OK\r\n"
 "Date: Sat, 09 Nov 2025 12:00:00 GMT\r\n"
 "Server: openweathermap.org\r\n"
@@ -33,6 +33,9 @@ char sample_reply[8192] =
 "  \"cod\": 200"
 "}";
 
+const char *reply_no_weather =
+"HTTP/1.1 200 OK\r\n\r\n"
+"{\"coord\":{\"lon\":10,\"lat\":50},\"main\":{\"temp\":20,\"pressure\":900,\"humidity\":60}}";
 
 void Test_OpenWeatherMap() {
 
@@ -47,6 +50,8 @@ void Test_OpenWeatherMap() {
 	SELFTEST_ASSERT_STRING(w->description, "clear sky");
 	SELFTEST_ASSERT_FLOATCOMPARE(w->lat, 50);
 	SELFTEST_ASSERT_FLOATCOMPARE(w->lon, 10);
+
+
 }
 
 
