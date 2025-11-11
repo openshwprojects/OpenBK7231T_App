@@ -150,6 +150,7 @@ OBKM_SRC  += $(OBK_SRCS)driver/drv_textScroller.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_tm1637.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_tm1638.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_tm_gn_display_shared.c
+OBKM_SRC  += $(OBK_SRCS)driver/drv_girierMCU.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_tuyaMCU.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_tuyaMCUSensor.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_uart.c
