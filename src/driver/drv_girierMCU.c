@@ -350,6 +350,7 @@ commandResult_t GirierMCU_LinkGirierMCUOutputToChannel(const void* context, cons
 	else {
 		channelID = Tokenizer_GetArgInteger(2);
 	}
+	dpType = 0; // TODO - uninitialized
 	obkFlags = Tokenizer_GetArgInteger(3);
 	mult = Tokenizer_GetArgFloatDefault(4, 1.0f);
 	inv = Tokenizer_GetArgInteger(5);
