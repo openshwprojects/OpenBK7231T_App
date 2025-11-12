@@ -167,15 +167,15 @@ void Test_CLOCK_DST() {
 	// 1761440395 = Sun, Oct 26 2025 02:59:55 CEST - 5 seconds before DST switch
 	NTP_SetSimulatedTime(1761440395);
 	CMD_ExecuteCommand("addClockEvent sunset 0xff 31 setChannel 0 1", 0);	// 16:17:00
-	SELFTEST_ASSERT_INTCOMPARE(NTP_GetEventTime(31), 16*3600 + 17*60);
+	SELFTEST_ASSERT_INTCOMPARE(CLOCK_GetEventTime(31), 16*3600 + 17*60);
 	CMD_ExecuteCommand("addClockEvent sunrise 0xff 32 setChannel 0 0", 0);	// 06:21:00
-	SELFTEST_ASSERT_INTCOMPARE(NTP_GetEventTime(32), 6*3600 + 21*60);
+	SELFTEST_ASSERT_INTCOMPARE(CLOCK_GetEventTime(32), 6*3600 + 21*60);
 	// 1761440395 = Sun, Oct 26 2025 02:59:55 CEST
 	Sim_RunSeconds(7, false);
 	// Switch from summertime to winter time, so time is now one hour back
 	// test, if sunset/sunrise events are corrected
-	SELFTEST_ASSERT_INTCOMPARE(NTP_GetEventTime(31), 15*3600 + 17*60);
-	SELFTEST_ASSERT_INTCOMPARE(NTP_GetEventTime(32), 5*3600 + 21*60);
+	SELFTEST_ASSERT_INTCOMPARE(CLOCK_GetEventTime(31), 15*3600 + 17*60);
+	SELFTEST_ASSERT_INTCOMPARE(CLOCK_GetEventTime(32), 5*3600 + 21*60);
 #endif
 
 }
