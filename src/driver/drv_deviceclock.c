@@ -343,10 +343,10 @@ uint32_t setDST() {
 	// if we had a DST switch, we might corect sunset/sunrise events, which were calculated before (with "previous" DST settings)
 	// if we changed to DST, we need to add DST_offset (old_DST_active = 0)
 	// if we were in DST before switch, we need to sub DST_offset (old_DST_active = 1)
-	int DSTinMinutes = dst_config.DSToffset / 60;
-	int factor = old_DST_active ? -1 : 1;
-	ADDLOG_INFO(LOG_FEATURE_RAW, "DST switch (dst_config.DSToffset=%i / DSTinMinutes= %i / factor=%i) - calling  fix_DSTforEvents(%d)\r\n", dst_config.DSToffset, DSTinMinutes, factor ,old_DST_active ? - DSTinMinutes : DSTinMinutes );
-	fix_DSTforEvents( old_DST_active ? - DSTinMinutes : DSTinMinutes );
+	int fix_DSTMinutes = (dst_config.DSToffset / 60);
+	fix_DSTMinutes *= old_DST_active ? -1 : 1;
+	ADDLOG_INFO(LOG_FEATURE_RAW, "DST switch - calling  fix_DSTforEvents(%d)\r\n", fix_DSTMinutes );
+	fix_DSTforEvents(fix_DSTMinutes);
     }
 #endif
     ADDLOG_INFO(LOG_FEATURE_RAW, "In %s time - next DST switch at %u (%s) \r\n", (dst_config.DSTactive)?"summer":"standard",  (uint32_t)tempt, TS2STR(tempt,TIME_FORMAT_LONG));
