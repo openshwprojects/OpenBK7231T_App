@@ -338,7 +338,15 @@ uint32_t setDST() {
     }
 
     tempt = next_DST_switch_epoch + (uint32_t)g_UTCoffset + (dst_config.DSTactive)*dst_config.DSToffset;	// DST calculation is in UTC, so add offset for local time
-    
+#if ENABLE_CLOCK_SUNRISE_SUNSET
+    if (old_DST_active != dst_config.DSTactive){
+	// if we had a DST switch, we might corect sunset/sunrise events, which were calculated before (with "previous" DST settings)
+	// if we changed to DST, we need to add DST_offset (old_DST_active = 0)
+	// if we were in DST before switch, we need to sub DST_offset (old_DST_active = 1)
+	 ADDLOG_INFO(LOG_FEATURE_RAW, "DST switch - calling  fix_DSTforEvents(%d)\r\n", old_DST_active ? - dst_config.DSToffset / 60 : dst_config.DSToffset / 60 );
+	fix_DSTforEvents( old_DST_active ? - dst_config.DSToffset / 60 : dst_config.DSToffset / 60 );
+    }
+#endif
     ADDLOG_INFO(LOG_FEATURE_RAW, "In %s time - next DST switch at %u (%s) \r\n", (dst_config.DSTactive)?"summer":"standard",  (uint32_t)tempt, TS2STR(tempt,TIME_FORMAT_LONG));
 
     return dst_config.DSTactive;
@@ -465,15 +473,15 @@ void CLOCK_Init() {
 	CLOCK_Init_Events();
 #endif
 #if ENABLE_CLOCK_DST
-	//cmddetail:{"name":"clock_setDST","args":" Rule# [1/2] nthWeek month day hour DSToffset [additional minutes _after_ this Point: <DST-Offset> for 'start' of DST, 0 for 'end' of DST]",
+	//cmddetail:{"name":"CLOCK_setDST","args":" Rule# [1/2] nthWeek month day hour DSToffset [additional minutes _after_ this Point: <DST-Offset> for "start" of DST, 0 for "end" of DST]",
 	//cmddetail:"descr":"Checks, if actual time is during DST or not.",
-	//cmddetail:"fn":"CMD_CLOCK_SetDST","file":"driver/drv_deviceclock.c","requires":"",
-	//cmddetail:"examples":"CLOCK_setDST 0 3 1 2 1 0 10 1 3 0     -- 1st rule: last_week March sunday 2_o_clock 1_hour_DST_after_this_time -- 2nd_rule: last_week October sunday 3_o_clock 0_hours_DST_after_this_time "}
+	//cmddetail:"fn":"CLOCK_CalcDST","file":"driver/drv_deviceclock.c","requires":"",
+	//cmddetail:"examples":"CLOCK_setDST 0 3 1 2 1 0 10 1 3 0	-- 1st rule: last_week March sunday 2_o_clock 1_hour_DST_after_this_time -- 2nd_rule: last_week October sunday 3_o_clock 0_hours_DST_after_this_time "}
     CMD_RegisterCommand("clock_setDST",CMD_CLOCK_SetDST, NULL);
-	//cmddetail:{"name":"clock_calcDST","args":" Depreciated! Only for backward compatibility! Please use 'CLOCK_setDST' in the future!",
+	//cmddetail:{"name":"CLOCK_calcDST","args":" Depreciated! Only for backward compatibility! Please use 'CLOCK_setDST' in the future!",
 	//cmddetail:"descr":"Sets DST settings.",
-	//cmddetail:"fn":"CMD_CLOCK_CalcDST","file":"driver/drv_deviceclock.c","requires":"",
-	//cmddetail:"examples":"CLOCK_calcDST 0 10 1 3 0 3 1 2 1      -- DST-End: last_week(0) October(10) sunday(1) 3_o_clock(3)  - DST-Start: last_week(0) March(3) sunday(1) 2_o_clock(2) 1_hour_DST_offset"}
+	//cmddetail:"fn":"CLOCK_CalcDST","file":"driver/drv_deviceclock.c","requires":"",
+	//cmddetail:"examples":"CLOCK_calcDST 0 10 1 3 0 3 1 2 1 	-- DST-End: last_week(0) October(10) sunday(1) 3_o_clock(3)  - DST-Start: last_week(0) March(3) sunday(1) 2_o_clock(2) 1_hour_DST_offset"}
     CMD_RegisterCommand("clock_calcDST",CMD_CLOCK_CalcDST, NULL);
     
     dst_config.DSTinitialized = 0;

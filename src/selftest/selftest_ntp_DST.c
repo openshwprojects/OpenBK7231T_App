@@ -157,7 +157,7 @@ void Test_CLOCK_DST() {
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 0);
 	
 	
-#if ENABLE_NTP_SUNRISE_SUNSET
+#if ENABLE_CLOCK_SUNRISE_SUNSET
 	// test DST and sunset/sunrise events:
 	// after such an event took place, the next event will calculated
 	// if a DST switch takes place, before the sunset/sunrise takes place
