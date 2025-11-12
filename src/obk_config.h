@@ -108,7 +108,6 @@
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 #define ENABLE_LITTLEFS							1
 #define NEW_TCP_SERVER							1
-#define ENABLE_DRIVER_DS3231						1
 
 #elif WINDOWS
 
@@ -599,6 +598,10 @@
 // allow moving average energy calculation +180 bytes
 // #define ENABLE_BL_MOVINGAVG					1
 #endif
+
+
+//enable DS3231 driver for all platforms to test compilation and compare size 
+#define ENABLE_DRIVER_DS3231						1
 
 
 // closing OBK_CONFIG_H
