@@ -252,6 +252,9 @@ float getCurrent(const char *s) {
 float getPower(const char *s) {
 	return DRV_GetReading(OBK_POWER);
 }
+float getFrequency(const char *s) {
+	return DRV_GetReading(OBK_FREQUENCY);
+}
 float getEnergy(const char *s) {
 	return DRV_GetReading(OBK_CONSUMPTION_TOTAL);
 }
@@ -440,6 +443,11 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current value of power from energy metering chip",
 	//cnstdetail:"requires":""}
 	{"$power", &getPower},
+	//cnstdetail:{"name":"$frequency",
+	//cnstdetail:"title":"$frequency",
+	//cnstdetail:"descr":"Current value of frequency from energy metering chip",
+	//cnstdetail:"requires":""}
+	{"$frequency", &getFrequency},
 	//cnstdetail:{"name":"$energy",
 	//cnstdetail:"title":"$energy",
 	//cnstdetail:"descr":"Current value of energy counter from energy metering chip",

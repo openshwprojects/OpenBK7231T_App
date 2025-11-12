@@ -209,6 +209,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "Test",	Test_Init, NULL, Test_AppendInformationToHTTPIndexPage, Test_RunQuickTick, NULL, NULL, NULL, false },
 #endif
+#if ENABLE_MULTIPINI2CSCANNER
+	//drvdetail:{"name":"MultiPinI2CScanner",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"qq.",
+	//drvdetail:"requires":""}
+	{ "MultiPinI2CScanner",		MultiPinI2CScanner_Init,		NULL,		MultiPinI2CScanner_AppendInformationToHTTPIndexPage, MultiPinI2CScanner_RunFrame, NULL, NULL, NULL, false },
+#endif
 #if ENABLE_I2C
 	//drvdetail:{"name":"I2C",
 	//drvdetail:"title":"TODO",
@@ -445,7 +452,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"MAX72XX LED matrix display driver with font and simple script interface. See [protocol explanation](https://www.elektroda.pl/rtvforum/viewtopic.php?p=18040628#18040628)",
 	//drvdetail:"requires":""}
-	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, NULL, NULL, NULL, false },
+	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, DRV_MAX72XX_Shutdown, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_BMPI2C
 		//drvdetail:{"name":"BMPI2C",
@@ -561,27 +568,35 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "Battery",	Batt_Init,		Batt_OnEverySecond,		Batt_AppendInformationToHTTPIndexPage, NULL, Batt_StopDriver, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_BKPARTITIONS
+	//drvdetail:{"name":"BKPartitions",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"o.",
+	//drvdetail:"requires":""}
+	{ "BKPartitions",     BKPartitions_Init, NULL,                       NULL, BKPartitions_QuickFrame, NULL, NULL, NULL, false },
+#endif
 #if ENABLE_DRIVER_BRIDGE
 	//drvdetail:{"name":"Bridge",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"A bridge relay driver, added for [TONGOU TO-Q-SY1-JWT Din Rail Switch](https://www.elektroda.com/rtvforum/topic3934580.html). See linked topic for info.",
 	//drvdetail:"requires":""}
-	{ "Bridge",     Bridge_driver_Init, NULL,                       NULL, Bridge_driver_QuickFrame, Bridge_driver_DeInit, Bridge_driver_OnChannelChanged, NULL, false }
+	{ "Bridge",     Bridge_driver_Init, NULL,                       NULL, Bridge_driver_QuickFrame, Bridge_driver_DeInit, Bridge_driver_OnChannelChanged, NULL, false },
 #endif
 #if ENABLE_DRIVER_UART_TCP
 	//drvdetail:{"name":"UartTCP",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"UART to TCP bridge, mainly for WiFi Zigbee coordinators.",
 	//drvdetail:"requires":""}
-	{ "UartTCP",		UART_TCP_Init,		NULL,	NULL, NULL, UART_TCP_Deinit, NULL, NULL, false }
+	{ "UartTCP",		UART_TCP_Init,		NULL,	NULL, NULL, UART_TCP_Deinit, NULL, NULL, false },
 #endif
 #if PLATFORM_TXW81X
 	//drvdetail:{"name":"TXWCAM",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"TXW81X Camera.",
 	//drvdetail:"requires":""}
-	{ "TXWCAM", TXW_Cam_Init, TXW_Cam_RunEverySecond, NULL, NULL, NULL, NULL, NULL, false }
+	{ "TXWCAM", TXW_Cam_Init, TXW_Cam_RunEverySecond, NULL, NULL, NULL, NULL, NULL, false },
 #endif
+	//{ "", NULL, NULL, NULL, NULL, NULL, NULL, NULL, false },
 };
 
 

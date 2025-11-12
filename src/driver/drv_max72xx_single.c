@@ -358,14 +358,11 @@ static commandResult_t DRV_MAX72XX_Setup(const void *context, const char *cmd, c
 	int devices;
 
 	Tokenizer_TokenizeString(args, 0);
-
+	
 	clk = Tokenizer_GetArgInteger(0);
 	cs = Tokenizer_GetArgInteger(1);
 	din = Tokenizer_GetArgInteger(2);
 	devices = Tokenizer_GetArgInteger(3);
-	//clk = 9;
-	//cs = 14;
-	//din = 8;
 
 	if (devices == 0) {
 		devices = 4;
@@ -383,9 +380,36 @@ static commandResult_t DRV_MAX72XX_Setup(const void *context, const char *cmd, c
 static commandResult_t DRV_MAX72XX_Scroll(const void *context, const char *cmd, const char *args, int flags) {
 	if (g_max == 0)
 		return CMD_RES_ERROR;
-	MAX72XX_shift(g_max,1);
-	MAX72XX_refresh(g_max);
+	int ofs = atoi(args);
+	if (ofs == 0)
+		ofs = 1;
+	MAX72XX_shift(g_max, ofs);
+	if (0) {
+		MAX72XX_refresh(g_max);
+	}
+	return CMD_RES_OK;
+}
+int MAX72XXSingle_CountPixels(bool bOn) {
+	return MAX72XX_countPixels(g_max, bOn);
+}
+int MAX72XXSingle_GetScrollCount() {
+	if (g_max == 0)
+		return 0;
+	return g_max->scrollCount;
+}
+static commandResult_t DRV_MAX72XX_Show(const void *context, const char *cmd, const char *args, int flags) {
 
+
+	MAX72XX_refresh(g_max);
+	return CMD_RES_OK;
+}
+static commandResult_t DRV_MAX72XX_Clear(const void *context, const char *cmd, const char *args, int flags) {
+
+
+	MAX72XX_clearDisplayFullNoSend(g_max);
+	if (0) {
+		MAX72XX_refresh(g_max);
+	}
 	return CMD_RES_OK;
 }
 static commandResult_t DRV_MAX72XX_Print(const void *context, const char *cmd, const char *args, int flags) {
@@ -403,7 +427,9 @@ static commandResult_t DRV_MAX72XX_Print(const void *context, const char *cmd, c
 
 	MAX72XX_print(g_max, ofs, args);
 	MAX72XX_rotate90CW(g_max);
-	MAX72XX_refresh(g_max);
+	if (0) {
+		MAX72XX_refresh(g_max);
+	}
 
 	return CMD_RES_OK;
 }
@@ -425,12 +451,17 @@ goto again
 
 
 */
+void DRV_MAX72XX_Shutdown() {
+	MAX72XX_free(g_max);
+	g_max = 0;
+	MAX_FreeBuffer();
+}
 // backlog startDriver MAX72XX; MAX72XX_Setup
 // MAX72XX_Print 0 1234567
 // backlog startDriver MAX72XX; MAX72XX_Setup; MAX72XX_Print 0 1234567
 void DRV_MAX72XX_Init() {
 
-	//cmddetail:{"name":"MAX72XX_Setup","args":"[Value]",
+	//cmddetail:{"name":"MAX72XX_Setup","args":"[clk][cs][din][segments]",
 	//cmddetail:"descr":"Sets the maximum current for LED driver.",
 	//cmddetail:"fn":"DRV_MAX72XX_Setup","file":"driver/drv_max72xx_single.c","requires":"",
 	//cmddetail:"examples":""}
@@ -445,6 +476,14 @@ void DRV_MAX72XX_Init() {
 	//cmddetail:"fn":"DRV_MAX72XX_Print","file":"driver/drv_max72xx_single.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MAX72XX_Print", DRV_MAX72XX_Print, NULL);
+
+	CMD_RegisterCommand("MAX72XX_refresh", DRV_MAX72XX_Show, NULL);
+	
+	//cmddetail:{"name":"DRV_MAX72XX_Clear","args":"DRV_MAX72XX_Clear",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"DRV_DRV_MAX72XX_Clear","file":"driver/drv_max72xx_single.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("MAX72XX_Clear", DRV_MAX72XX_Clear, NULL);
 }
 
 

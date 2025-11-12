@@ -32,28 +32,36 @@ xTaskHandle g_weather_thread = NULL;
 static char g_request[512];
 static char g_reply[1024];
 
-typedef struct weatherData_s {
-	double lon;
-	double lat;
-	char main_weather[32];
-	char description[32];
-	double temp;
-	int pressure;
-	int humidity;
-	int timezone;
-	int sunrise;
-	int sunset;
-} weatherData_t;
-
-typedef struct weatherChannels_s {
-	byte bInitialized;
-	char temperature;
-	char humidity;
-	char pressure;
-} weatherChannels_t;
+#include "drv_openWeatherMap.h"
 
 weatherData_t g_weather;
 weatherChannels_t g_channels;
+
+weatherData_t *Weather_GetData() {
+	return &g_weather;
+}
+static double json_get_double(cJSON *parent, const char *name, double def) {
+	cJSON *n = cJSON_GetObjectItem(parent, name);
+	if (n && cJSON_IsNumber(n)) {
+		return n->valuedouble;
+	}
+	return def;
+}
+
+static int json_get_int(cJSON *parent, const char *name, int def) {
+	cJSON *n = cJSON_GetObjectItem(parent, name);
+	if (n && cJSON_IsNumber(n)) {
+		return n->valueint;
+	}
+	return def;
+}
+
+static void json_get_string(cJSON *parent, const char *name, char *dst, int dstSize, const char *def) {
+	cJSON *n = cJSON_GetObjectItem(parent, name);
+	const char *src = (n && cJSON_IsString(n)) ? n->valuestring : def;
+	strncpy(dst, src, dstSize - 1);
+	dst[dstSize - 1] = '\0';
+}
 
 void Weather_SetReply(const char *s) {
 	const char *json_start = strstr(s, "\r\n\r\n");
@@ -63,31 +71,36 @@ void Weather_SetReply(const char *s) {
 
 		cJSON *json = cJSON_Parse(json_start);
 		if (json) {
+
 			cJSON *coord = cJSON_GetObjectItem(json, "coord");
 			if (coord) {
-				g_weather.lon = cJSON_GetObjectItem(coord, "lon") ? cJSON_GetObjectItem(coord, "lon")->valuedouble : 0.0;
-				g_weather.lat = cJSON_GetObjectItem(coord, "lat") ? cJSON_GetObjectItem(coord, "lat")->valuedouble : 0.0;
+				g_weather.lon = json_get_double(coord, "lon", 0.0);
+				g_weather.lat = json_get_double(coord, "lat", 0.0);
 			}
 
 			cJSON *weather_array = cJSON_GetObjectItem(json, "weather");
 			if (weather_array && cJSON_IsArray(weather_array)) {
 				cJSON *weather = cJSON_GetArrayItem(weather_array, 0);
 				if (weather) {
-					strncpy(g_weather.main_weather, cJSON_GetObjectItem(weather, "main") ? cJSON_GetObjectItem(weather, "main")->valuestring : "Unknown", sizeof(g_weather.main_weather) - 1);
-					strncpy(g_weather.description, cJSON_GetObjectItem(weather, "description") ? cJSON_GetObjectItem(weather, "description")->valuestring : "Unknown", sizeof(g_weather.description) - 1);
+					json_get_string(weather, "main", g_weather.main_weather, sizeof(g_weather.main_weather), "Unknown");
+					json_get_string(weather, "description", g_weather.description, sizeof(g_weather.description), "Unknown");
 				}
 			}
 
 			cJSON *main = cJSON_GetObjectItem(json, "main");
 			if (main) {
-				g_weather.temp = cJSON_GetObjectItem(main, "temp") ? cJSON_GetObjectItem(main, "temp")->valuedouble : 0.0;
-				g_weather.pressure = cJSON_GetObjectItem(main, "pressure") ? cJSON_GetObjectItem(main, "pressure")->valueint : 0;
-				g_weather.humidity = cJSON_GetObjectItem(main, "humidity") ? cJSON_GetObjectItem(main, "humidity")->valueint : 0;
+				g_weather.temp = json_get_double(main, "temp", 0.0);
+				g_weather.pressure = json_get_int(main, "pressure", 0);
+				g_weather.humidity = json_get_int(main, "humidity", 0);
 			}
 
-			g_weather.timezone = cJSON_GetObjectItem(json, "timezone") ? cJSON_GetObjectItem(json, "timezone")->valueint : 0;
-			g_weather.sunrise = cJSON_GetObjectItem(json, "sys") ? cJSON_GetObjectItem(cJSON_GetObjectItem(json, "sys"), "sunrise")->valueint : 0;
-			g_weather.sunset = cJSON_GetObjectItem(json, "sys") ? cJSON_GetObjectItem(cJSON_GetObjectItem(json, "sys"), "sunset")->valueint : 0;
+			g_weather.timezone = json_get_int(json, "timezone", 0);
+
+			cJSON *sys = cJSON_GetObjectItem(json, "sys");
+			if (sys) {
+				g_weather.sunrise = json_get_int(sys, "sunrise", 0);
+				g_weather.sunset = json_get_int(sys, "sunset", 0);
+			}
 
 			cJSON_Delete(json);
 		}
@@ -99,6 +112,7 @@ void Weather_SetReply(const char *s) {
 		g_reply[0] = '\0';
 		ADDLOG_ERROR(LOG_FEATURE_HTTP, "No JSON found in reply");
 	}
+
 	if (g_channels.bInitialized) {
 		if (g_channels.temperature != -1) {
 			CHANNEL_SetSmart(g_channels.temperature, g_weather.temp, 0);
@@ -111,6 +125,7 @@ void Weather_SetReply(const char *s) {
 		}
 	}
 }
+
 #if 0
 
 static void sendQueryThreadInternal() {

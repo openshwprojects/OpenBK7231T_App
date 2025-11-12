@@ -75,6 +75,7 @@ energysensdataset_t datasetlist[BL_SENSDATASETS_COUNT] = {
 	  {{"voltage",		"V",		"Voltage",				"voltage",					"0",		},  1,			0.25,		},	// OBK_VOLTAGE
 	  {{"current",		"A",		"Current",				"current",					"1",		},	3,			0.002,		},	// OBK_CURRENT
 	  {{"power",			"W",		"Power",				"power",					"2",		},	2,			0.25,		},	// OBK_POWER
+	  {{"frequency",			"Hz",		"Frequency",				"138",					"138",		},	2,			0.02,		},	// OBK_FREQUENCY - SPECIAL_CHANNEL_OBK_FREQUENCY is 138
 	  {{"apparent_power",	"VA",		"Apparent Power",		"power_apparent",			"9",		},	2,			0.25,		},	// OBK_POWER_APPARENT
 	  {{"reactive_power",	"var",		"Reactive Power",		"power_reactive",			"10",		},	2,			0.25,		},	// OBK_POWER_REACTIVE
 	  {{"power_factor",	"",			"Power Factor",			"power_factor",				"11",		},	2,			0.05,		},	// OBK_POWER_FACTOR
@@ -94,6 +95,7 @@ energysensdataset_t datasetlist[BL_SENSDATASETS_COUNT] = {
     {{"voltage",		"V",		"Voltage B",				"voltage_b",					"b_0",		},  1,			0.25,		},	// OBK_VOLTAGE
     {{"current",		"A",		"Current B",				"current_b",					"b_1",		},	3,			0.002,		},	// OBK_CURRENT
     {{"power",			"W",		"Power B",				"power_b",					"b_2",		},	2,			0.25,		},	// OBK_POWER
+    {{"frequency",			"Hz",		"Frequency B",				"frequency_b",					"b_138",		},	2,			0.02,		},	// OBK_FREQUENCY
     {{"apparent_power",	"VA",		"Apparent Power B",		"power_apparent_b",			"b_9",		},	2,			0.25,		},	// OBK_POWER_APPARENT
     {{"reactive_power",	"var",		"Reactive Power B",		"power_reactive_b",			"b_10",		},	2,			0.25,		},	// OBK_POWER_REACTIVE
     {{"power_factor",	"",			"Power Factor B",			"power_factor_b",				"b_11",		},	2,			0.05,		},	// OBK_POWER_FACTOR
@@ -109,7 +111,6 @@ energysensdataset_t datasetlist[BL_SENSDATASETS_COUNT] = {
 #endif
 };
 
-float lastReadingFrequency = NAN;
 
 //static double energyCounter = 0.0;
 portTickType energyCounterStamp[BL_SENSDATASETS_COUNT];
@@ -166,14 +167,6 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t * request, int bPreS
 
     poststr(request, "<hr><table style='width:100%'>");
 
-    if (asensdatasetix == BL_SENSORS_IX_0) 
-    {
-      if (!isnan(lastReadingFrequency)) {
-        poststr(request,
-          "<tr><td><b>Frequency</b></td><td style='text-align: right;'>");
-        hprintf255(request, "%.2f</td><td>Hz</td>", lastReadingFrequency);
-      }
-    }
 
 	for (int i = OBK__FIRST; i <= OBK_CONSUMPTION__DAILY_LAST; i++) {
 #if ENABLE_BL_TWIN
@@ -182,6 +175,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t * request, int bPreS
     //in twin mode, for ix0 is last OBK_CONSUMPTION_YESTERDAY, for ix1 ,OBK_CONSUMPTION_TODAY
     if (i > OBK_CONSUMPTION_STORED_LAST[asensdatasetix]) continue;
 #endif
+    // conditions for frequency
+    if (i == OBK_FREQUENCY && (asensdatasetix != BL_SENSORS_IX_0 || isnan(sensdataset->sensors[i].lastReading))) continue;
     if ((energyCounterMinutes == NULL) && (i == OBK_CONSUMPTION_LAST_HOUR)) {
       continue;
     }
@@ -504,6 +499,10 @@ commandResult_t BL09XX_VCPPrecision(const void* context, const char* cmd, const 
       for (int j = OBK_CONSUMPTION__DAILY_FIRST; j <= OBK_CONSUMPTION__DAILY_LAST; j++) {
         sensdataset->sensors[j].rounding_decimals = val;
       };
+      break;
+    case 4: // frequency
+      sensdataset->sensors[OBK_FREQUENCY].rounding_decimals = val;
+      break;
 
     };
   }
@@ -538,8 +537,8 @@ commandResult_t BL09XX_VCPPublishThreshold(const void* context, const char* cmd,
   sensdataset->sensors[OBK_VOLTAGE].changeSendThreshold = Tokenizer_GetArgFloat(0);
   sensdataset->sensors[OBK_CURRENT].changeSendThreshold = Tokenizer_GetArgFloat(1);
   sensdataset->sensors[OBK_POWER].changeSendThreshold = Tokenizer_GetArgFloat(2);
-  sensdataset->sensors[OBK_POWER_APPARENT].changeSendThreshold = Tokenizer_GetArgFloat(2);
-  sensdataset->sensors[OBK_POWER_REACTIVE].changeSendThreshold = Tokenizer_GetArgFloat(2);
+  sensdataset->sensors[OBK_POWER_APPARENT].changeSendThreshold = Tokenizer_GetArgFloatDefault(2,sensdataset->sensors[OBK_POWER_APPARENT].changeSendThreshold);
+  sensdataset->sensors[OBK_POWER_REACTIVE].changeSendThreshold = Tokenizer_GetArgFloatDefault(2,sensdataset->sensors[OBK_POWER_REACTIVE].changeSendThreshold);
   //sensdataset->sensors[OBK_POWER_FACTOR].changeSendThreshold = Tokenizer_GetArgFloat(TODO);
 
   if (Tokenizer_GetArgsCount() >= 4) {
@@ -547,6 +546,8 @@ commandResult_t BL09XX_VCPPublishThreshold(const void* context, const char* cmd,
       sensdataset->sensors[i].changeSendThreshold = Tokenizer_GetArgFloat(3);
     }
   }
+
+  sensdataset->sensors[OBK_FREQUENCY].changeSendThreshold = Tokenizer_GetArgFloatDefault(4,sensdataset->sensors[OBK_FREQUENCY].changeSendThreshold);
   return CMD_RES_OK;
 }
 
@@ -665,6 +666,7 @@ void BL_ProcessUpdate(float voltage, float current, float power,
   sensdataset->sensors[OBK_VOLTAGE].lastReading = voltage;
   sensdataset->sensors[OBK_CURRENT].lastReading = current;
   sensdataset->sensors[OBK_POWER].lastReading = power;
+  sensdataset->sensors[OBK_FREQUENCY].lastReading = frequency;
   sensdataset->sensors[OBK_POWER_APPARENT].lastReading = sensdataset->sensors[OBK_VOLTAGE].lastReading * sensdataset->sensors[OBK_CURRENT].lastReading;
   sensdataset->sensors[OBK_POWER_REACTIVE].lastReading = (sensdataset->sensors[OBK_POWER_APPARENT].lastReading <= fabsf((float)sensdataset->sensors[OBK_POWER].lastReading)
     ? 0
@@ -673,7 +675,6 @@ void BL_ProcessUpdate(float voltage, float current, float power,
   sensdataset->sensors[OBK_POWER_FACTOR].lastReading =
     (sensdataset->sensors[OBK_POWER_APPARENT].lastReading == 0 ? 1 : sensdataset->sensors[OBK_POWER].lastReading / sensdataset->sensors[OBK_POWER_APPARENT].lastReading);
 
-  lastReadingFrequency = frequency;
 
   sensors_reciveddata[asensdatasetix] = 1;
   {
@@ -869,12 +870,20 @@ void BL_ProcessUpdate(float voltage, float current, float power,
       case OBK_VOLTAGE:				eventChangeCode = CMD_EVENT_CHANGE_VOLTAGE;	break;
       case OBK_CURRENT:				eventChangeCode = CMD_EVENT_CHANGE_CURRENT;	break;
       case OBK_POWER:					eventChangeCode = CMD_EVENT_CHANGE_POWER; break;
+      case OBK_FREQUENCY:			eventChangeCode = CMD_EVENT_CHANGE_FREQUENCY; break;
       case OBK_CONSUMPTION_TOTAL:		eventChangeCode = CMD_EVENT_CHANGE_CONSUMPTION_TOTAL; break;
       case OBK_CONSUMPTION_LAST_HOUR:	eventChangeCode = CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR; break;
       default:						eventChangeCode = CMD_EVENT_NONE; break;
       }
       switch (eventChangeCode) {
       case CMD_EVENT_NONE:
+        break;
+      case CMD_EVENT_CHANGE_FREQUENCY:;
+	// the event change comparisons are stored as int types, so frequency compared as *100
+	// i.e. 50.10 becomes 5010
+        int prev_hz = (int)(sensdataset->sensors[i].lastSentValue * 100);
+        int now_hz = (int)(sensdataset->sensors[i].lastReading * 100);
+        EventHandlers_ProcessVariableChange_Integer(eventChangeCode, prev_hz, now_hz);
         break;
       case CMD_EVENT_CHANGE_CURRENT:;
         int prev_mA = (int)(sensdataset->sensors[i].lastSentValue * 1000);
@@ -924,14 +933,6 @@ void BL_ProcessUpdate(float voltage, float current, float power,
           float val = (float)sensdataset->sensors[i].lastReading;
           if (sensdataset->sensors[i].names.units == UNIT_WH) val = BL_ChangeEnergyUnitIfNeeded(val);
           MQTT_PublishMain_StringFloat(sensdataset->sensors[i].names.name_mqtt, val, sensdataset->sensors[i].rounding_decimals, OBK_PUBLISH_FLAG_QOS_ZERO);
-        }
-        if ((asensdatasetix==BL_SENSORS_IX_0) && (i == OBK_VOLTAGE)) {
-          //20250319 XJIKKA to simplify and save space in flash frequency together with voltage
-          if (!isnan(lastReadingFrequency)) {
-            char schannel[4];
-            snprintf(schannel, sizeof(schannel), "%i", SPECIAL_CHANNEL_OBK_FREQUENCY);
-            MQTT_PublishMain_StringFloat(schannel, lastReadingFrequency, 2, OBK_PUBLISH_FLAG_QOS_ZERO);
-          }
         }
         stat_updatesSent[asensdatasetix]++;
       }
@@ -1040,18 +1041,18 @@ void BL_Shared_Init(void) {
 	//cmddetail:"fn":"BL09XX_SetupConsumptionThreshold","file":"driver/drv_bl_shared.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ConsumptionThreshold", BL09XX_SetupConsumptionThreshold, NULL);
-	//cmddetail:{"name":"VCPPublishThreshold","args":"[VoltageDeltaVolts][CurrentDeltaAmpers][PowerDeltaWats][EnergyDeltaWh]",
-	//cmddetail:"descr":"Sets the minimal change between previous reported value over MQTT and next reported value over MQTT. Very useful for BL0942, BL0937, etc. So, if you set, VCPPublishThreshold 0.5 0.001 0.5, it will only report voltage again if the delta from previous reported value is largen than 0.5V. Remember, that the device will also ALWAYS force-report values every N seconds (default 60)",
+	//cmddetail:{"name":"VCPPublishThreshold","args":"[VoltageDeltaVolts][CurrentDeltaAmpers][PowerDeltaWats][EnergyDeltaWh][Frequency]",
+	//cmddetail:"descr":"Sets the minimal change between previous reported value over MQTT and next reported value over MQTT. Very useful for BL0942, BL0937, etc. So, if you set, `VCPPublishThreshold 0.25 0.002 0.5 0.25 0.25 0.01` (the default), it will only report voltage again if the delta from previous reported value is larger than 0.25V. Remember, that the device will also ALWAYS force-report values every N seconds (default 60).  The last there arugments are optional",
 	//cmddetail:"fn":"BL09XX_VCPPublishThreshold","file":"driver/drv_bl_shared.c","requires":"",
-	//cmddetail:"examples":""}
+	//cmddetail:"examples":"`VCPPublishThreshold 0.5 0.02 1`"}
 	CMD_RegisterCommand("VCPPublishThreshold", BL09XX_VCPPublishThreshold, NULL);
-	//cmddetail:{"name":"VCPPrecision","args":"[VoltageDigits][CurrentDigitsAmpers][PowerDigitsWats][EnergyDigitsWh]",
-	//cmddetail:"descr":"Sets the number of digits after decimal point for power metering publishes. Default is BL09XX_VCPPrecision 1 3 2 3. This works for OBK-style publishes.",
+	//cmddetail:{"name":"VCPPrecision","args":"[VoltageDigits][CurrentDigitsAmpers][PowerDigitsWats][EnergyDigitsWh][Frequency]",
+	//cmddetail:"descr":"Sets the number of digits after decimal point for power metering publishes for BL09XX. Default is `VCPPrecision 1 3 2 3 3`. This works for OBK-style publishes.  Only the first argument is required, others are optional.",
 	//cmddetail:"fn":"BL09XX_VCPPrecision","file":"driver/drv_bl_shared.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("VCPPrecision", BL09XX_VCPPrecision, NULL);
 	//cmddetail:{"name":"VCPPublishIntervals","args":"[MinDelayBetweenPublishes][ForcedPublishInterval]",
-	//cmddetail:"descr":"First argument is minimal allowed interval in second between Voltage/Current/Power/Energy publishes (even if there is a large change), second value is an interval in which V/C/P/E is always published, even if there is no change",
+	//cmddetail:"descr":"First argument is minimal allowed interval in second between Voltage/Current/Power/Energy publishes (even if there is a large change), second value is an interval in which V/C/P/E is always published, even if there is no change.  Frequency is published with Voltage",
 	//cmddetail:"fn":"BL09XX_VCPPublishIntervals","file":"driver/drv_bl_shared.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("VCPPublishIntervals", BL09XX_VCPPublishIntervals, NULL);

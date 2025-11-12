@@ -5,14 +5,18 @@
 typedef struct max72XX_s {
 	byte port_clk, port_cs, port_mosi;
 	byte maxDevices;
-	unsigned char spidata[16];
-	byte led_status[8*8];
+	unsigned char *spidata;
+	byte *led_status;
+	int scrollCount;
 } max72XX_t;
 
+int MAX72XX_countPixels(max72XX_t *led, bool bOn);
 void MAX72XX_refresh(max72XX_t *led);
+void MAX72XX_free(max72XX_t *led);
 void MAX72XX_shutdown(max72XX_t *led, int addr, bool b);
 void MAX72XX_setScanLimit(max72XX_t *led, int addr, int limit);
-void MAX72XX_clearDisplay(max72XX_t *led,int addr) ;
+void MAX72XX_clearDisplayAndSend(max72XX_t *led,int addr) ;
+void MAX72XX_clearDisplayFullNoSend(max72XX_t *led);
 void MAX72XX_rotate90CW(max72XX_t *led);
 void MAX72XX_setIntensity(max72XX_t *led,int addr, int intensity) ;
 void MAX72XX_displayArray(max72XX_t* led, byte *p, int devs, int ofs)  ;
@@ -21,3 +25,4 @@ void MAX72XX_setLed(max72XX_t *led,int addr, int row, int column, bool state) ;
 void MAX72XX_init(max72XX_t *led);
 void MAX72XX_setupPins(max72XX_t *led, int csi, int clki, int mosii, int maxD);
 max72XX_t *MAX72XX_alloc();
+void MAX_FreeBuffer();

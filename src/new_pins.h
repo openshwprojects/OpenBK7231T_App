@@ -1584,6 +1584,13 @@ bool CHANNEL_IsPowerRelayChannel(int ch);
 // See: enum channelType_t
 void CHANNEL_SetType(int ch, int type);
 int CHANNEL_GetType(int ch);
+bool CHANNEL_IsHumidity(int type);
+bool CHANNEL_IsTemperature(int type);
+bool CHANNEL_IsPressure(int type);
+bool CHANNEL_GetGenericOfType(float *out, bool(*checker)(int type));
+bool CHANNEL_GetGenericHumidity(float *out);
+bool CHANNEL_GetGenericTemperature(float *out);
+bool CHANNEL_GetGenericPressure(float *out);
 void CHANNEL_SetFirstChannelByTypeEx(int requiredType, int newVal, int ausemovingaverage);
 void CHANNEL_SetFirstChannelByType(int requiredType, int newVal);
 // CHANNEL_SET_FLAG_*

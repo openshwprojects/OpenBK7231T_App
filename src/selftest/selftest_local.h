@@ -151,6 +151,8 @@ void Test_Http();
 void Test_Demo_ConditionalRelay();
 void Test_PIR();
 void Test_Driver_TCL_AC();
+void Test_MAX72XX();
+void Test_OpenWeatherMap();
 
 void Test_GetJSONValue_Setup(const char *text);
 void Test_FakeHTTPClientPacket_GET(const char *tg);
