@@ -154,6 +154,28 @@ void Test_NTP_DST() {
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 1);
 	Sim_RunSeconds(6, false);
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 0);
+	
+	
+#if ENABLE_NTP_SUNRISE_SUNSET
+	// test DST and sunset/sunrise events:
+	// after such an event took place, the next event will calculated
+	// if a DST switch takes place, before the sunset/sunrise takes place
+	// the prior calculated time is no longer valid, but needs to be adjusted
+	// set Warsaw
+	CMD_ExecuteCommand("ntp_setLatlong 52.237049 21.017532", 0);
+	// 1761440395 = Sun, Oct 26 2025 02:59:55 CEST - 5 seconds before DST switch
+	NTP_SetSimulatedTime(1761440395);
+	CMD_ExecuteCommand("addClockEvent sunset 0xff 31 setChannel 0 1", 0);	// 16:17:00
+	SELFTEST_ASSERT_INTCOMPARE(NTP_GetEventTime(31), 16*3600 + 17*60);
+	CMD_ExecuteCommand("addClockEvent sunrise 0xff 32 setChannel 0 0", 0);	// 06:21:00
+	SELFTEST_ASSERT_INTCOMPARE(NTP_GetEventTime(32), 6*3600 + 21*60);
+	// 1761440395 = Sun, Oct 26 2025 02:59:55 CEST
+	Sim_RunSeconds(7, false);
+	// Switch from summertime to winter time, so time is now one hour back
+	// test, if sunset/sunrise events are corrected
+	SELFTEST_ASSERT_INTCOMPARE(NTP_GetEventTime(31), 15*3600 + 17*60);
+	SELFTEST_ASSERT_INTCOMPARE(NTP_GetEventTime(32), 5*3600 + 21*60);
+#endif
 
 }
 
