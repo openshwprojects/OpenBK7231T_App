@@ -9,6 +9,7 @@
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 #include "../logging/logging.h"
+#include "../mqtt/new_mqtt.h"
 #include "drv_girierMCU.h"
 #include "drv_uart.h"
 
