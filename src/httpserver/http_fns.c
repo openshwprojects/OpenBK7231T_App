@@ -3072,7 +3072,7 @@ const char* g_obk_flagNames[] = {
 	"[HTTP] Hide ON/OFF for relays (only red/green buttons)",
 	"[MQTT] Never add GET suffix",
 	"[WiFi] (RTL/BK) Enhanced fast connect by saving AP data to flash (preferable with Flag 37 & static ip). Quick reset 3 times to connect normally",
-	"[GirierMCU] Use queue",
+	"error",
 	"error",
 	"error",
 	"error",
