@@ -36,9 +36,6 @@ static commandResult_t Calibrate(const char *cmd, const char *args, float raw,
 		ADDLOG_ERROR(LOG_FEATURE_ENERGYMETER, "Calibration incorrect - connect load first.");
 		return CMD_RES_ERROR;
 	}
-
-
-#define VERY_SMALL_CAL 1.0E-5f //BL0937 has very small cal value because for scale function V and P raw is defined as int
     *cal = (cal_type == PWR_CAL_MULTIPLY ? real / raw : raw / real);
     if (isnan(*cal) || ((*cal) > -VERY_SMALL_VAL && (*cal) < VERY_SMALL_VAL))
     {
