@@ -23,7 +23,8 @@
 //#define DEFAULT_POWER_CAL 1.5f
 
 #define DEFAULT_VOLTAGE_CAL 1.581335325E-03f 	//factor 100 for precision Vref=1.218, R1=6*330kO, R2=1kO, K=15397
-#define DEFAULT_CURRENT_CAL 1.287009447E-05f	//factor 1000 for precision Vref=1.218, Rs=1mO, K=94638
+//#define DEFAULT_CURRENT_CAL 1.287009447E-05f	//factor 1000 for precision Vref=1.218, Rs=1mO, K=94638
+#define DEFAULT_CURRENT_CAL 1.287009447E-02f	//factor 1000 maybe not necessary because scale uses float for C for precision Vref=1.218, Rs=1mO, K=94638
 #define DEFAULT_POWER_CAL 	1.707145397E-03f 	//factor 1000 for precision Vref=1.218, R1=6*330kO, R2=1kO, Rs=1mO, K=1721506
 
 #define MINPULSES_VOLTAGE 200
