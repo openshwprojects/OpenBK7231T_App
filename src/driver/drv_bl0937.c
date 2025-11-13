@@ -128,7 +128,7 @@ commandResult_t BL0937_cmdIntervalCPMinMax(const void* context, const char* cmd,
 		g_bl_secForceNextCalc = maxCycleTime;
 	}
 
-	ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_IntervalCPMinMax: one cycle will have min %i and max %i seconds. Remaining current cycle %i"
+	ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_IntervalCPMinMax: one cycle will have min %i and max %i seconds. Remaining to max cycle time %i"
 		, g_bl_secMinNextCalc, g_bl_secForceNextCalc, g_bl_secUntilNextCalc);
 
 	return CMD_RES_OK;
