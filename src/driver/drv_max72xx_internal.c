@@ -32,6 +32,16 @@
 #define MAX72XX_DELAY
 // #define MAX72XX_DELAY usleep(123);
 
+byte *max_buffer = 0;
+int max_buffer_size = 0;
+
+void MAX_FreeBuffer() {
+	if (max_buffer) {
+		free(max_buffer);
+		max_buffer = 0;
+	}
+	max_buffer_size = 0;
+}
 void PORT_shiftOut(int dataPin, int clockPin, int bitOrder, int val, int totalBytes)
 {
 	int i;
@@ -51,6 +61,9 @@ void PORT_shiftOut(int dataPin, int clockPin, int bitOrder, int val, int totalBy
 }
 
 void MAX72XX_spiTransfer(max72XX_t *led, int adddr, unsigned char opcode, byte datta) {
+	if (led == 0) {
+		return;
+	}
 	int offset, maxbytes;
 	int i;
 
@@ -70,6 +83,9 @@ void MAX72XX_spiTransfer(max72XX_t *led, int adddr, unsigned char opcode, byte d
 	HAL_PIN_SetOutputValue(led->port_cs, HIGH);
 }
 void MAX72XX_shutdown(max72XX_t *led, int addr, bool b) {
+	if (led == 0) {
+		return;
+	}
 	if (addr < 0 || addr >= led->maxDevices)
 		return;
 	if (b)
@@ -78,12 +94,30 @@ void MAX72XX_shutdown(max72XX_t *led, int addr, bool b) {
 		MAX72XX_spiTransfer(led, addr, OP_SHUTDOWN, 1);
 }
 void MAX72XX_setScanLimit(max72XX_t *led, int addr, int limit) {
+	if (led == 0) {
+		return;
+	}
 	if (addr < 0 || addr >= led->maxDevices)
 		return;
 	if (limit >= 0 && limit < 8)
 		MAX72XX_spiTransfer(led, addr, OP_SCANLIMIT, limit);
 }
-void MAX72XX_clearDisplay(max72XX_t *led, int addr) {
+void MAX72XX_clearDisplayFullNoSend(max72XX_t *led) {
+	if (led == 0) {
+		return;
+	}
+	for (int dev = 0; dev < led->maxDevices; dev++) {
+		int base = dev * 8;
+		for (int row = 0; row < 8; row++) {
+			led->led_status[base + row] = 0;
+		}
+	}
+}
+
+void MAX72XX_clearDisplayAndSend(max72XX_t *led, int addr) {
+	if (led == 0) {
+		return;
+	}
 	int offset;
 	int i;
 
@@ -97,12 +131,49 @@ void MAX72XX_clearDisplay(max72XX_t *led, int addr) {
 }
 
 void MAX72XX_setIntensity(max72XX_t *led, int addr, int intensity) {
+	if (led == 0) {
+		return;
+	}
 	if (addr < 0 || addr >= led->maxDevices)
 		return;
 	if (intensity >= 0 && intensity < 16)
 		MAX72XX_spiTransfer(led, addr, OP_INTENSITY, intensity);
 }
+void MAX72XX_free(max72XX_t *led) {
+	if (led == 0) {
+		return;
+	}
+	free(led->spidata);
+	free(led->led_status);
+	free(led);
+}
+int MAX72XX_countPixels(max72XX_t *led, bool bOn) {
+	if (led == 0)
+		return 0;
+
+	int count = 0;
+	int total = led->maxDevices * 8;
+
+	if (bOn) {
+		for (int i = 0; i < total; i++) {
+			byte v = led->led_status[i];
+			while (v) {
+				count += v & 1;
+				v >>= 1;
+			}
+		}
+	}
+	else {
+		count = led->maxDevices * 8 * 8;
+	}
+
+	return count;
+}
+
 void MAX72XX_refresh(max72XX_t *led) {
+	if (led == 0) {
+		return;
+	}
 	int i;
 	//int mx;
 	//byte tmp;
@@ -129,6 +200,9 @@ byte Byte_ReverseBits(byte num)
 }
 void MAX72XX_displayArray(max72XX_t* led, byte *p, int devs, int ofs)
 {
+	if (led == 0) {
+		return;
+	}
 	byte *tg;
 	int i, mx;
 	int targetIndex;
@@ -160,25 +234,44 @@ void MAX72XX_displayArray(max72XX_t* led, byte *p, int devs, int ofs)
 }
 
 void MAX72XX_shift(max72XX_t *led, int d) {
+	if (led == 0) {
+		return;
+	}
 	int i;
 	int mx;
+
+	led->scrollCount = (led->scrollCount + d + (led->maxDevices * 8)) % (led->maxDevices * 8);
+
 	// byte tmp;
 	 //int offset;
 	 //int row;
-	byte na[64];
 	mx = led->maxDevices * 8;
+	if (mx > max_buffer_size) {
+		byte *nb;
+		if (max_buffer) {
+			nb = (byte*)realloc(max_buffer, mx);
+		}
+		else {
+			nb = (byte*)malloc(mx);
+		}
+		if (nb == 0) {
+			return;
+		}
+		max_buffer_size = mx;
+		max_buffer = nb;
+	}
 	for (i = 0; i < mx; i++)
 	{
-		na[i] = 0;
+		max_buffer[i] = 0;
 	}
 	if (d == 1)
 	{
 		for (i = 0; i < mx; i++)
 		{
-			na[i] |= led->led_status[i] << 1;
+			max_buffer[i] |= led->led_status[i] << 1;
 			if (led->led_status[i] & 0b10000000 && i > 0)
 			{
-				na[(i + 8) % mx] |= 0b00000001;
+				max_buffer[(i + 8) % mx] |= 0b00000001;
 			}
 		}
 	}
@@ -186,16 +279,16 @@ void MAX72XX_shift(max72XX_t *led, int d) {
 	{
 		for (i = 0; i < mx; i++)
 		{
-			na[i] |= led->led_status[i] >> 1;
+			max_buffer[i] |= led->led_status[i] >> 1;
 			if (led->led_status[i] & 0b00000001 && i > 0)
 			{
-				na[(i - 8 + mx) % mx] |= 0b10000000;
+				max_buffer[(i - 8 + mx) % mx] |= 0b10000000;
 			}
 		}
 	}
 	for (i = 0; i < mx; i++)
 	{
-		led->led_status[i] = na[i];
+		led->led_status[i] = max_buffer[i];
 	}
 	//  for(i = 0; i < mx; i++)
 	//  {
@@ -208,6 +301,9 @@ void MAX72XX_shift(max72XX_t *led, int d) {
 
 }
 void MAX72XX_setLed(max72XX_t *led, int addr, int row, int column, bool state) {
+	if (led == 0) {
+		return;
+	}
 	int offset;
 	byte val = 0x00;
 
@@ -241,6 +337,9 @@ void MAX72XX_rotate90CW(max72XX_t *led) {
 }
 
 void MAX72XX_init(max72XX_t *led) {
+	if (led == 0) {
+		return;
+	}
 	int i;
 
 	HAL_PIN_SetOutputValue(led->port_cs, HIGH);
@@ -252,7 +351,7 @@ void MAX72XX_init(max72XX_t *led) {
 		MAX72XX_setScanLimit(led, i, 7);
 		//decode is done in source
 		MAX72XX_spiTransfer(led, i, OP_DECODEMODE, 0);
-		MAX72XX_clearDisplay(led, i);
+		MAX72XX_clearDisplayAndSend(led, i);
 		//we go into shutdown-mode on startup
 		MAX72XX_shutdown(led, i, 1);
 	}
@@ -262,12 +361,17 @@ void MAX72XX_init(max72XX_t *led) {
 		/* Set the brightness to a medium values */
 		MAX72XX_setIntensity(led, i, 8);
 		/* and clear the display */
-		MAX72XX_clearDisplay(led, i);
+		MAX72XX_clearDisplayAndSend(led, i);
 	}
 }
 void MAX72XX_setupPins(max72XX_t *led, int csi, int clki, int mosii, int maxDevices)
 {
+	if (led == 0) {
+		return;
+	}
 	led->maxDevices = maxDevices;
+	led->spidata = (byte*)malloc(maxDevices * 2);
+	led->led_status = (byte*)malloc(maxDevices * 8);
 	led->port_cs = csi;
 	led->port_clk = clki;
 	led->port_mosi = mosii;
