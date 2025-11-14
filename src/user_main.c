@@ -204,7 +204,7 @@ void extended_app_waiting_for_launch2()
 	// wait 100ms at the start.
 	// TCP is being setup in a different thread, and there does not seem to be a way to find out if it's complete yet?
 	// so just wait a bit, and then start.
-	int startDelay = 100;
+	int startDelay = 250;
 	bk_printf("\r\ndelaying start\r\n");
 	for(int i = 0; i < startDelay / 10; i++)
 	{
@@ -482,10 +482,12 @@ void Main_OnWiFiStatusChange(int code)
 	case WIFI_STA_DISCONNECTED:
 		// try to connect again in few seconds
 		// if we are already disconnected, why must we call disconnect again?
-		//if (g_bHasWiFiConnected != 0)
-		//{
-		//	HAL_DisconnectFromWifi();
-		//}
+#if PLATFORM_BEKEN
+		if (g_bHasWiFiConnected != 0)
+		{
+			HAL_DisconnectFromWifi();
+		}
+#endif
 		if(g_secondsElapsed < 30)
 		{
 			g_connectToWiFi = 5;
