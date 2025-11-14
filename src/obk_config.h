@@ -601,7 +601,7 @@
 
 
 //enable DS3231 driver for all platforms to test compilation and compare size 
-#define ENABLE_DRIVER_DS3231						1
+//#define ENABLE_DRIVER_DS3231						1
 
 
 // closing OBK_CONFIG_H
