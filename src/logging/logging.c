@@ -41,7 +41,8 @@ unsigned int logfeatures = (
 	(1 << 21) |
 	(1 << 22) |
 	(1 << 23) |
-	(1 << 24)
+	(1 << 24) |
+	(1 << 25)
 	);
 static int log_delay = 0;
 

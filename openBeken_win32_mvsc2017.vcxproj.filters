@@ -413,6 +413,7 @@
     <ClCompile Include="src\driver\drv_dmx512.c" />
     <ClCompile Include="src\driver\drv_ddpSend.c" />
     <ClCompile Include="src\cmnds\cmd_enums.c" />
+    <ClCompile Include="src\driver\drv_girierMCU.c" />
     <ClCompile Include="src\driver\drv_bkPartitions.c" />
     <ClCompile Include="src\selftest\selftest_max72xx.c" />
     <ClCompile Include="src\driver\drv_multiPinI2CScanner.c" />
