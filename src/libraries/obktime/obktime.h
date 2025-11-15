@@ -12,7 +12,7 @@ typedef struct {
     uint8_t hour;    // 0-23
     uint8_t day;     // 1-31
     uint8_t month;   // 1-12
-    uint16_t year;   // 1970+
+    uint16_t year;   // full year, e.g. 1899 or 2025
     uint8_t wday;    // 0-6 (Sunday=0)
 } TimeComponents;
 

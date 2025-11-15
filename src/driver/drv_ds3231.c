@@ -2,7 +2,9 @@
 #include "../logging/logging.h"
 #include "drv_local.h"
 #include "drv_ds3231.h"
-#include <time.h>
+//#include <time.h>
+#include "../libraries/obktime/obktime.h"	// for time functions
+
 #include "drv_deviceclock.h"
 
 
@@ -23,6 +25,7 @@ static uint8_t dec_to_bcd(uint8_t val) {
 // Epoch helpers
 static time_t DS3231_TimeToEpoch(const ds3231_time_t* time)
 {
+/*
     struct tm t;
     t.tm_sec  = time->seconds;
     t.tm_min  = time->minutes;
@@ -32,11 +35,14 @@ static time_t DS3231_TimeToEpoch(const ds3231_time_t* time)
     t.tm_year = time->year + 100; // DS3231 year is 00-99, tm_year since 1900
     t.tm_isdst = -1;
     return mktime(&t);
+*/
+    return (time_t)dateToEpoch((uint16_t)time->year+2000, time->month, time->date, 
+                    time->hours, time->minutes, time->seconds);
 }
 
 static void DS3231_EpochToTime(time_t epoch, ds3231_time_t* time)
 {
-    struct tm* t = gmtime(&epoch);
+/*    struct tm* t = gmtime(&epoch);
     time->seconds = t->tm_sec;
     time->minutes = t->tm_min;
     time->hours   = t->tm_hour;
@@ -44,6 +50,15 @@ static void DS3231_EpochToTime(time_t epoch, ds3231_time_t* time)
     time->month   = t->tm_mon + 1;
     time->year    = t->tm_year - 100;
     time->day     = t->tm_wday;
+*/
+    TimeComponents tc=calculateComponents((uint32_t) epoch);	
+    time->seconds = tc.second;
+    time->minutes = tc.minute;
+    time->hours   = tc.hour;
+    time->date    = tc.day;
+    time->month   = tc.month;
+    time->year    = tc.year%100;		// tc.year: "full" years, but DS3231 has only 00-99; so get years in century, mod 100 
+    time->day     = tc.wday;
 }
 
 
@@ -137,7 +152,7 @@ commandResult_t DS3231_SetTimeCmd(const void* context, const char* cmd, const ch
     time.seconds = Tokenizer_GetArgInteger(2);
     time.date    = Tokenizer_GetArgInteger(3);
     time.month   = Tokenizer_GetArgInteger(4);
-    time.year    = Tokenizer_GetArgInteger(5);
+    time.year    = Tokenizer_GetArgInteger(5)%100;
 
     if (DS3231_SetTime(&time)) {
         return CMD_RES_OK;
@@ -191,7 +206,7 @@ void DS3231_Init()
     //cmddetail:{"name":"DS3231_SetTime","args":"<hours> <minutes> <seconds> <day> <month> <year>",
     //cmddetail:"descr":"Sets RTC time",
     //cmddetail:"fn":"DS3231_SetTimeCmd","file":"driver/drv_ds3231.c","requires":"",
-    //cmddetail:"examples":"DS3231_SetTime 19 50 01 13 8 2025"}
+    //cmddetail:"examples":"DS3231_SetTime 19 50 01 13 8 25"}
     CMD_RegisterCommand("DS3231_SetTime", DS3231_SetTimeCmd, NULL);
     //cmddetail:{"name":"DS3231_GetEpoch","args":"-",
     //cmddetail:"descr":"Gets time from RTC",
