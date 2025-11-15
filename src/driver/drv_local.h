@@ -61,6 +61,9 @@ void DRV_GosundSW2_RunFrame();
 void DRV_PinMutex_Init();
 void DRV_PinMutex_RunFrame();
 
+void MultiPinI2CScanner_Init();
+void MultiPinI2CScanner_RunFrame();
+void MultiPinI2CScanner_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 
 void SM16703P_Init();
 void SM16703P_Shutdown();
@@ -152,6 +155,9 @@ void Batt_OnEverySecond();
 void Batt_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 void Batt_StopDriver();
 
+void BKPartitions_Init();
+void BKPartitions_QuickFrame();
+ 
 void Shift_Init();
 void Shift_OnEverySecond();
 void Shift_OnChannelChanged(int ch, int value);
@@ -164,6 +170,9 @@ void PIR_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState
 void TMGN_RunQuickTick();
 
 void DRV_MAX72XX_Init();
+void DRV_MAX72XX_Shutdown();
+int MAX72XXSingle_CountPixels(bool bOn);
+int MAX72XXSingle_GetScrollCount();
 
 void apply_smart_light();
 
@@ -231,7 +240,7 @@ void TCL_DoDiscovery(const char *topic);
 void DRV_DDPSend_Init();
 void DRV_DDPSend_Shutdown();
 void DRV_DDPSend_RunFrame();
-void DRV_DDPSend_AppendInformationToHTTPIndexPage(http_request_t* request);
+void DRV_DDPSend_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
 
 void TXW_Cam_Init(void);
 void TXW_Cam_RunEverySecond(void);

@@ -120,6 +120,12 @@
     "requires": ""
   },
   {
+    "name": "$frequency",
+    "title": "$frequency",
+    "descr": "Current value of frequency from energy metering chip",
+    "requires": ""
+  },
+  {
     "name": "$energy",
     "title": "$energy",
     "descr": "Current value of energy counter from energy metering chip",

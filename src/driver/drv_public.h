@@ -8,6 +8,7 @@ typedef enum energySensor_e {
 	OBK_VOLTAGE = OBK__FIRST, // must match order in cmd_public.h
 	OBK_CURRENT,
 	OBK_POWER,
+	OBK_FREQUENCY,
 	OBK_POWER_APPARENT,
 	OBK_POWER_REACTIVE,
 	OBK_POWER_FACTOR,
