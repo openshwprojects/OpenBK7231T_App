@@ -445,23 +445,23 @@ void BL0937_RunEverySecond(void)
 
 #define SCALECOMPATIBILITYFIX 1
 #if SCALECOMPATIBILITYFIX>0
-		// adjust scale factors to match old calculation method (multiplication factor in calibration value)
-		
-		if (voltage_cal_cur < 0.01f ) {
-			g_factorScaleV=100;
-		} else if (voltage_cal_cur < 0.01f ) {
-			g_factorScaleV=1;
-		}
-		if (current_cal_cur < 0.0001f ) {
-			g_factorScaleC=1000;
-		} else {
-			g_factorScaleC=1;
-		}
-		if (power_cal_cur < 0.01f ) {
-			g_factorScaleP=100;
-		} else {
-			g_factorScaleP=1;
-		}
+	// adjust scale factors to match old calculation method (multiplication factor in calibration value)
+	
+	if (voltage_cal_cur < 0.01f ) {
+		g_factorScaleV=100;
+	} else if (voltage_cal_cur < 0.01f ) {
+		g_factorScaleV=1;
+	}
+	if (current_cal_cur < 0.0001f ) {
+		g_factorScaleC=1000;
+	} else {
+		g_factorScaleC=1;
+	}
+	if (power_cal_cur < 0.01f ) {
+		g_factorScaleP=100;
+	} else {
+		g_factorScaleP=1;
+	}
 #endif
 
 //--> force on pwr roc
@@ -469,10 +469,10 @@ void BL0937_RunEverySecond(void)
 //	uint32_t freq_p_lastsec = BL0937_utlDiffCalcU32(g_p_pulsesprevsec, g_p_pulses) * (1000 / portTICK_PERIOD_MS);
 //	freq_p_lastsec /= (1000 / portTICK_PERIOD_MS);
 //accuracy of function call all every second should be enough, otherwise other port tick store and calc required
-	uint32_t freq_p_lastsec = BL0937_utlDiffCalcU32(g_p_pulsesprevsec, g_p_pulses);
-	int p_thissec = (int)(freq_p_lastsec * g_factorScaleP * power_cal_cur);
+	uint32_t freq_p_thissec = BL0937_utlDiffCalcU32(g_p_pulsesprevsec, g_p_pulses);
+	int p_thissec = (freq_p_thissec * (int)((float)g_factorScaleP * power_cal_cur));
 	int p_roc = p_thissec - g_p_prevsec;
-	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER,"power prev / lastsec [limit] %i / %i [%i]\n", g_p_prevsec, p_thissec, g_p_forceonroc);
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER,"power prev %i / now %i -> roc=%i [limit=%i]\n", g_p_prevsec, p_thissec, p_roc, g_p_forceonroc);
 	g_p_pulsesprevsec=g_p_pulses;
 //<-- force on pwr roc
 
