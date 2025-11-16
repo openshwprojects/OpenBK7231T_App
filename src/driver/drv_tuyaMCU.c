@@ -1762,7 +1762,7 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 				break;
 				case DP_TYPE_RAW_TAC2121C_VCP:
 				{
-					if (sectorLen = 6) {
+					if (sectorLen == 6) {
 						int iV, iC, iP;
 						// voltage
 						iV = data[ofs + 0 + 4] << 8 | data[ofs + 1 + 4];
