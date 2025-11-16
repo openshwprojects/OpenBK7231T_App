@@ -1366,6 +1366,7 @@ int ChannelType_GetDivider(int type) {
 	case ChType_Power_div10:
 	case ChType_Frequency_div10:
 	case ChType_ReadOnly_div10:
+	case ChType_Current_div10:
 		return 10;
 	case ChType_Frequency_div100:
 	case ChType_Current_div100:
@@ -1419,6 +1420,7 @@ const char *ChannelType_GetUnit(int type) {
 	case ChType_LeakageCurrent_div1000:
 	case ChType_Current_div1000:
 	case ChType_Current_div100:
+	case ChType_Current_div10:
 		return "A";
 	case ChType_EnergyTotal_kWh_div1000:
 	case ChType_EnergyExport_kWh_div1000:
@@ -1470,6 +1472,7 @@ const char *ChannelType_GetTitle(int type) {
 		return "Frequency";
 	case ChType_Current_div1000:
 	case ChType_Current_div100:
+	case ChType_Current_div10:
 		return "Current";
 	case ChType_LeakageCurrent_div1000:
 		return "Leakage"; 
@@ -2394,6 +2397,9 @@ const char* g_channelTypeNames[] = {
 	"EnergyImport_kWh_div1000",
 	"Enum",
 	"ReadOnlyEnum",
+	"Current_div10",
+	"error",
+	"error",
 	"error",
 	"error",
 };
