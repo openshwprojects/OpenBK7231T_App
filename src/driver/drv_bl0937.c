@@ -25,11 +25,7 @@
 #define DEFAULT_VOLTAGE_CAL 1.581335325E-03f 	//factor 100 for precision Vref=1.218, R1=6*330kO, R2=1kO, K=15397
 //#define DEFAULT_CURRENT_CAL 1.287009447E-05f	//factor 1000 for precision Vref=1.218, Rs=1mO, K=94638
 #define DEFAULT_CURRENT_CAL 1.287009447E-02f	//factor 1000 maybe not necessary because scale uses float for C for precision Vref=1.218, Rs=1mO, K=94638
-#define DEFAULT_POWER_CAL 	1.707145397E-03f 	//factor 1000 for precision Vref=1.218, R1=6*330kO, R2=1kO, Rs=1mO, K=1721506
-
-#define MINPULSES_VOLTAGE 200
-#define MINPULSES_CURRENT 3
-#define MINPULSES_POWER 5
+#define DEFAULT_POWER_CAL 	1.707145397E-02f 	//factor 100 for precision Vref=1.218, R1=6*330kO, R2=1kO, Rs=1mO, K=1721506
 
 // Those can be set by Web page pins configurator
 // The below are default values for Mycket smart socket
@@ -53,9 +49,20 @@ static portTickType g_pulseStampStart_v=0, g_pulseStampStart_c=0, g_pulseStampSt
 #if PULSESTAMPDEBUG>0
 volatile portTickType g_pulseStampEnd_v=0, g_pulseStampEnd_c=0;
 #endif
-static uint32_t g_bl_secUntilNextCalc= 1, g_bl_secForceNextCalc = 30, g_bl_secMinNextCalc = 3; //at 230V minintervall/Pdiff 15s=0.115W, 7.5s=0.23W, 3s=0.575W, 1.5s=1.15W, 1s=1.73W
-static int g_minPulsesV = MINPULSES_VOLTAGE, g_minPulsesC = MINPULSES_CURRENT, g_minPulsesP = MINPULSES_POWER;
-static int g_factorScaleV=100, g_factorScaleC=1000, g_factorScaleP=1000;
+
+#define NEW_UPDATE_CYCLES 0
+#if NEW_UPDATE_CYCLES>0
+	static int g_minPulsesV = 200, g_minPulsesC = 3, g_minPulsesP = 5; 
+	static uint32_t g_bl_secUntilNextCalc= 1, g_bl_secForceNextCalc = 30, g_bl_secMinNextCalc = 3; //at 230V minintervall/Pdiff 15s=0.115W, 7.5s=0.23W, 
+#else
+	static uint32_t g_bl_secUntilNextCalc= 0, g_bl_secForceNextCalc = 0, g_bl_secMinNextCalc = 0; //at 230V minintervall/Pdiff 15s=0.115W, 7.5s=0.23W, 3s=0.575W, 1.5s=1.15W, 1s=1.73W
+	static int g_minPulsesV = 0, g_minPulsesC = 0, g_minPulsesP = 0;	// keep behaviour for compatibility
+#endif
+
+static int g_factorScaleV=100, g_factorScaleC=1, g_factorScaleP=100;
+static int g_p_forceonroc=100; //resolution of 1W/s should be sufficient, otherwise change to float
+static int g_p_prevsec=0;
+static uint32_t g_p_pulsesprevsec = 0;
 
 //static	uint8_t cyclecnt=0, cyclecnt_prev=0;
 static portTickType g_pulseStampTestPrev=0;
@@ -170,10 +177,23 @@ commandResult_t BL0937_cmdScalefactorMultiply(const void* context, const char* c
 		, voltage_cal_cur, current_cal_cur, power_cal_cur);
 	voltage_cal_cur *= Tokenizer_GetArgInteger(0);
 	current_cal_cur *= Tokenizer_GetArgInteger(1);
-	power_cal_cur *= Tokenizer_GetArgInteger(2);	
+	power_cal_cur *= Tokenizer_GetArgInteger(2);
 	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, voltage_cal_cur);
 	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, current_cal_cur);
 	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, power_cal_cur);	
+	return CMD_RES_OK;
+}
+
+commandResult_t BL0937_cmdForceOnPwrROC(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+	if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1))
+	{
+		ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_ForceOnPwrROC: not enough arguments, current roc recognition %f W/s.", g_p_forceonroc);
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	g_p_forceonroc=Tokenizer_GetArgInteger(0);
+	ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_ForceOnPwrROC: %f W/s", g_p_forceonroc);
 	return CMD_RES_OK;
 }
 
@@ -273,6 +293,12 @@ void BL0937_Init(void)
 	//cmddetail:"fn":"BL0937_ScalefactorMultiply","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("BL0937_ScalefactorMultiply", BL0937_cmdScalefactorMultiply, NULL);
+
+	//cmddetail:{"name":"BL0937_ForceOnPwrROC","args":"[rate of change in W/sec]",
+	//cmddetail:"descr":"Define rate of change of power to force update even if min time or pulses not reached",
+	//cmddetail:"fn":"ForceOnPwrROC","file":"driver/drv_bl0937.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("ForceOnPwrROC", BL0937_cmdForceOnPwrROC, NULL);
 
 //MinPulsesVCP defines minimum level of changes to be measured (similar to hysteresis)
 //One pulse equals 0.474207 mWh
@@ -413,8 +439,45 @@ void BL0937_RunEverySecond(void)
 	#endif
 	res_p = BL0937_utlDiffCalcU32(g_p_pulsesprev, g_p_pulses);
 
+	voltage_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, DEFAULT_VOLTAGE_CAL);
+	current_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, DEFAULT_CURRENT_CAL);
+	power_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, DEFAULT_POWER_CAL);
+
+#define SCALECOMPATIBILITYFIX 1
+#if SCALECOMPATIBILITYFIX>0
+		// adjust scale factors to match old calculation method (multiplication factor in calibration value)
+		
+		if (voltage_cal_cur < 0.01f ) {
+			g_factorScaleV=100;
+		} else if (voltage_cal_cur < 0.01f ) {
+			g_factorScaleV=1;
+		}
+		if (current_cal_cur < 0.0001f ) {
+			g_factorScaleC=1000;
+		} else {
+			g_factorScaleC=1;
+		}
+		if (power_cal_cur < 0.01f ) {
+			g_factorScaleP=100;
+		} else {
+			g_factorScaleP=1;
+		}
+#endif
+
+//--> force on pwr roc
+//	uint32_t pulsediff_p_prevsec = BL0937_utlDiffCalcU32(g_p_pulsesprevsec, g_p_pulses);
+//	uint32_t freq_p_lastsec = BL0937_utlDiffCalcU32(g_p_pulsesprevsec, g_p_pulses) * (1000 / portTICK_PERIOD_MS);
+//	freq_p_lastsec /= (1000 / portTICK_PERIOD_MS);
+//accuracy of function call all every second should be enough, otherwise other port tick store and calc required
+	uint32_t freq_p_lastsec = BL0937_utlDiffCalcU32(g_p_pulsesprevsec, g_p_pulses);
+	int p_thissec = (int)(freq_p_lastsec * g_factorScaleP * power_cal_cur);
+	int p_roc = p_thissec - g_p_prevsec;
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER,"power prev / lastsec [limit] %i / %i [%i]\n", g_p_prevsec, p_thissec, g_p_forceonroc);
+	g_p_pulsesprevsec=g_p_pulses;
+//<-- force on pwr roc
+
 	if ( (res_p >= g_minPulsesP  && (g_bl_secUntilNextCalc <= g_bl_secForceNextCalc - g_bl_secMinNextCalc))
-			|| g_bl_secUntilNextCalc <= 0 ) {
+			|| g_bl_secUntilNextCalc <= 0 || abs(p_roc) >= g_p_forceonroc ) {
 				portTickType g_pulseStampTest= pulseStampNow*10000;
 				uint32_t difftestov=0;
 				uint32_t difftest=0;
@@ -427,7 +490,6 @@ void BL0937_RunEverySecond(void)
 				}
 				g_pulseStampTestPrev= g_pulseStampTest;
 				
-		ticksElapsed_p = BL0937_utlDiffCalcU32(g_pulseStampStart_p*10000, pulseStampNow*10000); //test overflow
 		ticksElapsed_p = BL0937_utlDiffCalcU32(g_pulseStampStart_p, pulseStampNow);
 #if PULSESTAMPDEBUG>0
 		addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER,"Volt pulses %i / (tsend %i) vticks %i, current %i /  (tsend %i) cticks %i, power %i / pticks %i (prev %i) tsnow %i gselchg %i\n"
@@ -449,31 +511,6 @@ void BL0937_RunEverySecond(void)
 		//frequency C: .001 .. 20A = 0.077700 1553,99 Hz, 0.1mA=0.007770 Hz
 		//frequency P:  @80V: 0.08 .. 1600W = 0.046862 ..  937.237 Hz, 0,1W=0,058577 [0.057135] Hz
 		//frequency P: @250V: 0.25 .. 5000W = 0.146443 .. 2928.866 Hz, 0,1W=0,058577 [0.057135] Hz
-
-		voltage_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, DEFAULT_VOLTAGE_CAL);
-		current_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, DEFAULT_CURRENT_CAL);
-		power_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, DEFAULT_POWER_CAL);
-
-#define SCALECOMPATIBILITYFIX 1
-#if SCALECOMPATIBILITYFIX>0
-		// adjust scale factors to match old calculation method (multiplication factor in calibration value)
-		
-		if (voltage_cal_cur < 0.01f ) {
-			g_factorScaleV=100;
-		} else if (voltage_cal_cur < 0.01f ) {
-			g_factorScaleV=1;
-		}
-		if (current_cal_cur < 0.0001f ) {
-			g_factorScaleC=1000;
-		} else {
-			g_factorScaleC=1;
-		}
-		if (power_cal_cur < 0.01f ) {
-			g_factorScaleP=1000;
-		} else {
-			g_factorScaleP=1;
-		}
-#endif
 
 		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER, "Scalefactor default/used [raw2float multiplier]: v %f [%d] c %f [%d] p %f [%d], usedv %E c %E p %E v %E c %E p %E \n"
 			, DEFAULT_VOLTAGE_CAL/voltage_cal_cur,g_factorScaleV, DEFAULT_CURRENT_CAL/current_cal_cur, g_factorScaleC
