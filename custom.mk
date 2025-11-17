@@ -3,6 +3,10 @@ TARGET_EXEC ?= win_main
 BUILD_DIR ?= build
 #SRC_DIRS ?= src/ src/bitmessage src/cJSON src/cmnds src/devicegroups src/driver src/hal/win32 src/httpclient src/httpserver src/jsmn src/libraries src/littlefs src/logging src/mqtt src/ota src/win32
 
+# run the python script to build rolesNchannels.h header file from textfile roles_and_channels.txt
+$(shell if [ -e src/roles_and_channels.txt ] && [ -e src/gen_rolesNchannels.py ]; then python src/gen_rolesNchannels.py src/roles_and_channels.txt > src/rolesNchannels.h; else echo ERROR  > src/rolesNchannels.h; fi)
+
+
 SRC_DIRS ?= src/
 
 EXCLUDED_FILES ?= src/httpserver/http_tcp_server.c src/ota/ota.c src/cmnds/cmd_tcp.c src/memory/memtest.c src/new_ping.c src/win_main_scriptOnly.c src/driver/drv_ir2.c src/driver/drv_ir.cpp 
