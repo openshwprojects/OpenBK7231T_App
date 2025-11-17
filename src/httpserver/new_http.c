@@ -470,6 +470,10 @@ int http_getArgInteger(const char* base, const char* name) {
 	return atoi(tmp);
 }
 
+
+// now part of struct "IOroles"
+// Names are to be given in pins_and_roles.h
+/*
 const char* htmlPinRoleNames[] = {
 	" ",
 	"Rel",
@@ -562,9 +566,11 @@ const char* htmlPinRoleNames[] = {
 	"error",
 	"error",
 };
+*/
 
 const char* PIN_RoleToString(int role) {
-	return htmlPinRoleNames[role];
+//	return htmlPinRoleNames[role];
+	return IORoles[role].HTTP_name;
 }
 int PIN_ParsePinRoleName(const char* name) {
 	int i;
@@ -574,7 +580,8 @@ int PIN_ParsePinRoleName(const char* name) {
 	}
 
 	for (i = 0; i < IOR_Total_Options; i++) {
-		if (!stricmp(name, htmlPinRoleNames[i]))
+//		if (!stricmp(name, htmlPinRoleNames[i]))
+		if (!stricmp(name, IORoles[i].HTTP_name))
 			return i;
 	}
 	return IOR_Total_Options;
