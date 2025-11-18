@@ -325,7 +325,7 @@ espPinMapping_t g_pins[] = {
 	{ "IO13", GPIO_NUM_13, false }, // 9
 	{ "IO14", GPIO_NUM_14, false }, // 10
 	{ "IO15", GPIO_NUM_15, false }, // 11
-	{ "IO16", GPIO_NUM_15, false }, // 12
+	{ "IO16", GPIO_NUM_16, false }, // 12
 };
 
 
