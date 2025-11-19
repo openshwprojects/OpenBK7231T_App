@@ -64,9 +64,9 @@ commandResult_t EEPROM_ReadCmd(const void*ctx, const char*cmd, const char*args, 
 	uint16_t addr = Tokenizer_GetArgInteger(0);
 	int len = Tokenizer_GetArgInteger(1);
 	if (len <= 0 || len > 512)return CMD_RES_BAD_ARGUMENT;
-	uint8_t buf[512];
+	uint8_t buf[64];
 	EEPROM_Read(addr, buf, len);
-	char out[1024];
+	char out[256];
 	int p = 0;
 	for (int i = 0; i < len; i++)p += sprintf(out + p, "%02X ", buf[i]);
 	ADDLOG_INFO(LOG_FEATURE_CMD, "EEPROM_Read %s", out);
@@ -75,10 +75,12 @@ commandResult_t EEPROM_ReadCmd(const void*ctx, const char*cmd, const char*args, 
 
 commandResult_t EEPROM_WriteCmd(const void*ctx, const char*cmd, const char*args, int f) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
-	if (Tokenizer_GetArgsCount() < 2)return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	if (Tokenizer_GetArgsCount() < 2)
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	uint16_t addr = Tokenizer_GetArgInteger(0);
-	const char* hex = args + strlen(Tokenizer_GetArg(0));
-	while (*hex == ' ')hex++;
+	const char* hex = Tokenizer_GetArg(1);
+	while (*hex == ' ')
+		hex++;
 	uint8_t buf[512];
 	int len = 0;
 	while (hex[0] && hex[1]) {
@@ -111,6 +113,9 @@ commandResult_t EEPROM_DumpCmd(const void*ctx, const char*cmd, const char*args, 
 	return CMD_RES_OK;
 }
 
+// startDriver SimpleEEPROM 5 4
+// EEPROM_Write 0 TEST123
+// EEPROM_Read 0 16
 void EEPROM_Init() {
 	g_eepI2C.pin_clk = Tokenizer_GetArgIntegerDefault(1, g_eepI2C.pin_clk); 
 	g_eepI2C.pin_data = Tokenizer_GetArgIntegerDefault(2, g_eepI2C.pin_data);
