@@ -201,6 +201,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "Test",	Test_Init, NULL, Test_AppendInformationToHTTPIndexPage, Test_RunQuickTick, NULL, NULL, NULL, false },
 #endif
+#if ENABLE_SIMPLEEEPROM
+	//drvdetail:{"name":"SimpleEEPROM",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"SimpleEEPROM",
+	//drvdetail:"requires":""}
+	{ "SimpleEEPROM", EEPROM_Init, NULL, EEPROM_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+#endif
 #if ENABLE_MULTIPINI2CSCANNER
 	//drvdetail:{"name":"MultiPinI2CScanner",
 	//drvdetail:"title":"TODO",
