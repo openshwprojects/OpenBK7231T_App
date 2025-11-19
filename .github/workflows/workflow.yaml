@@ -1,10 +1,11 @@
 name: Build App
-
 on:
   push:
-    branches: ['**']
+    branches:
+      - '**'
   pull_request:
-    branches: ['**']
+    branches: 
+      - '**'
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -22,7 +23,6 @@ jobs:
     steps:
       - name: Source checkout
         uses: actions/checkout@v4
-
       - name: Semantic Release
         id: semantic
         if: github.ref == 'refs/heads/main' || github.ref_name == 'alpha'
@@ -36,32 +36,36 @@ jobs:
             conventional-changelog-conventionalcommits@7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Set outputs
         id: refs
         run: |
-          BRANCH=${GITHUB_REF#refs/*/}
-          BRANCHTRANSLATED=$(echo ${BRANCH} | tr '/' '_')
+          export BRANCH=${GITHUB_REF#refs/*/}
+          echo "branch: ${BRANCH}"
+          export BRANCHTRANSLATED=$(echo ${BRANCH} | tr '/' '_')
+          echo "short_ref: ${BRANCHTRANSLATED}"
+          export VERSION=""
           if ${{ steps.semantic.outputs.new_release_published == 'true' }}; then
-            VERSION=${{ steps.semantic.outputs.new_release_version }}
+            export VERSION=${{ steps.semantic.outputs.new_release_version }}
           else
-            VERSION=${BRANCHTRANSLATED}_$(git rev-parse --short=12 HEAD)
+            export VERSION=${BRANCHTRANSLATED}_$(git rev-parse --short=12 HEAD)
           fi
           echo "new_release=${{ steps.semantic.outputs.new_release_published }}" >> $GITHUB_OUTPUT
           echo "short_ref=${BRANCHTRANSLATED}" >> $GITHUB_OUTPUT
           echo "sha_short=SHA-$(git rev-parse --short=12 HEAD)" >> $GITHUB_OUTPUT
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
-  build_sim:
-    name: Build Simulator (Windows)
+  build2:
+    name: Build Simulator
     needs: refs
     runs-on: windows-2022
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
     - name: Checkout berry submodule
-      run: git submodule update --init --recursive libraries/berry
+      run: |
+        git submodule update --init --recursive libraries/berry
 
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
@@ -70,78 +74,187 @@ jobs:
       run: |
         git clone https://github.com/openshwprojects/obkSimulator
         mkdir -p ./libs_for_simulator
-        cp -r obkSimulator/simulator/libs_for_simulator/* libs_for_simulator
+        cp -r ./obkSimulator/simulator/libs_for_simulator/* ./libs_for_simulator
 
     - name: Build project
       run: msbuild openBeken_win32_mvsc2017.vcxproj /p:Configuration=Release /p:PlatformToolset=v143
-
     - name: Flatten build assets
       run: |
-        mkdir flat
-        cp Release/openBeken_win32.exe flat/
-        cp obkSimulator/simulator/*.dll flat/
-        cp run_*.bat flat/
-        mkdir flat/examples
-        cp -r obkSimulator/examples/* flat/examples/
-
+        mkdir -p flat
+        cp ./Release/openBeken_win32.exe flat/
+        cp ./obkSimulator/simulator/*.dll flat/
+        cp ./run_*.bat flat/
+        mkdir -p flat/examples
+        cp -r ./obkSimulator/examples/* flat/examples/
     - name: Run unit tests
-      run: ./flat/openBeken_win32.exe -runUnitTests 2
-
-    - name: Compress
-      run: Compress-Archive -Path flat/* -DestinationPath obkSimulator_win32_${{ needs.refs.outputs.version }}.zip
-
-    - name: Upload build
+      run: |
+        ./flat/openBeken_win32.exe -runUnitTests 2
+    - name: Compress build assets
+      run: |
+        Compress-Archive -Path flat/* -DestinationPath obkSimulator_win32_${{ needs.refs.outputs.version }}.zip
+    - name: Copy build assets
+      run: |
+        mkdir -Force output/${{ needs.refs.outputs.version }}
+        cp obkSimulator_win32_${{ needs.refs.outputs.version }}.zip output/${{ needs.refs.outputs.version }}/obkSimulator_${{ needs.refs.outputs.version }}.zip
+    - name: Upload build assets
       uses: actions/upload-artifact@v4
       with:
-        name: simulator_${{ needs.refs.outputs.version }}
-        path: obkSimulator_win32_${{ needs.refs.outputs.version }}.zip
+        name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_sim
+        path: output/${{ needs.refs.outputs.version }}/obkSimulator_${{ needs.refs.outputs.version }}.zip
+
+  build_asan:
+    name: Build Linux Simulator and Run Tests With Address Sanitizer
+    needs: refs
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Checkout berry submodule
+      run: |
+        git submodule update --init --recursive libraries/berry
+        mkdir -p libraries/berry/generate
+        ./libraries/berry/tools/coc/coc -o libraries/berry/generate libraries/berry/src src/berry/modules -c include/berry_conf.h
+
+    - name: Build project
+      run: ASAN=1 make -f custom.mk
+    - name: Run unit tests
+      run: |
+        export LSAN_OPTIONS=suppressions=platforms/linux/asan.suppressions
+        ./build/win_main -runUnitTests 2
+
+  build_ubsan:
+    name: Build Linux Simulator and Run Tests With Undefined Behavior Sanitizer
+    needs: refs
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Checkout berry submodule
+      run: |
+        git submodule update --init --recursive libraries/berry
+        mkdir -p libraries/berry/generate
+        ./libraries/berry/tools/coc/coc -o libraries/berry/generate libraries/berry/src src/berry/modules -c include/berry_conf.h
+
+    - name: Build project
+      run: UBSAN=1 make -f custom.mk
+    - name: Run unit tests
+      run: |
+        export UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1:suppressions=platforms/linux/ubsan.suppressions
+        ./build/win_main -runUnitTests 2
+
 
   build_8266:
     name: Build ESP8266
     needs: refs
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
     container:
       image: coatldev/six:latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: OpenESP8266
+            variant: default
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Checkout SDK
+      - name: Source checkout
+        uses: actions/checkout@v4
+      - name: SDK checkout
         uses: actions/checkout@v4
         with:
           repository: espressif/ESP8266_RTOS_SDK
           path: sdk/ESP8266_RTOS_SDK
           ref: release/v3.4
           submodules: false
-          fetch-depth: 200
-
-      - name: Install deps
+          fetch-tags: true
+          fetch-depth: '200'
+      - name: Install dependencies
         run: |
-          apt-get update && apt-get -y install cmake python2 python3-pip
+          git config --global user.name github-actions
+          git config --global user.email github-actions@github.com
+          apt-get update && apt-get -y install cmake
           pip2 install virtualenv
-
           cd sdk/ESP8266_RTOS_SDK
-          git checkout c965e03d2b
+          git checkout c965e03d2b7418b085c394dc98c6a0d3371c2abd
           patch -p1 -d . < ../../platforms/ESP8266/sdk.patch
           git revert 0325f833aac7b34d7627619499949331a98fc3ab --no-edit
+          git submodule update --init components/coap/libcoap
+          cd components/coap/libcoap
+          git fetch
+          git checkout 017528d7d96dca2318ed587b5fd3c0d57a89e49a
+          cd ../../..
+          git add .
+          git commit -m "upd"
           git submodule update --init --recursive
           cd ../..
           python2 -m pip install --user -r sdk/ESP8266_RTOS_SDK/requirements.txt
           python3 -m pip install esptool
-
-      - name: Build firmware
+      - name: Run make
         run: |
           cd sdk/ESP8266_RTOS_SDK
-          ./install.sh >/dev/null
+          ./install.sh > /dev/null
           . ./export.sh
           . ./add_path.sh
           cd ../..
-          make APP_VERSION=${{ needs.refs.outputs.version }} APP_NAME=OpenESP8266 VARIANT=default OpenESP8266
-
-      - name: Upload
+          make APP_VERSION=${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }} APP_NAME=${{ matrix.platform }} VARIANT="${{ matrix.variant }}" ${{ matrix.platform }}
+      - name: Save build assets
         uses: actions/upload-artifact@v4
         with:
-          name: esp8266_${{ needs.refs.outputs.version }}
+          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}_${{ matrix.platform }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}
           path: |
-            output/${{ needs.refs.outputs.version }}/OpenESP8266_${{ needs.refs.outputs.version }}.img
-            output/${{ needs.refs.outputs.version }}/OpenESP8266_2MB_${{ needs.refs.outputs.version }}.factory.bin
-            output/${{ needs.refs.outputs.version }}/OpenESP8266_1MB_${{ needs.refs.outputs.version }}.factory.bin
+            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.img
+            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_2MB_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.factory.bin
+            output/${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}/${{ matrix.platform }}_1MB_${{ needs.refs.outputs.version }}${{ matrix.variant != 'default' && '_' || '' }}${{ matrix.variant != 'default' && matrix.variant || '' }}.factory.bin
+          if-no-files-found: warn
+
+
+  merge:
+    name: Merge Artifacts
+    runs-on: ubuntu-22.04
+    needs: [refs, build_8266]
+    #if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
+    steps:
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
+          #delete-merged: true
+
+  release:
+    name: Semantic Release Images and Artifacts
+    runs-on: ubuntu-22.04
+    needs: [merge, refs]
+    if: always() && needs.refs.outputs.new_release == 'true' && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
+    steps:
+      - name: Source checkout
+        uses: actions/checkout@v4
+      - name: Fetch build assets
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.APP_NAME }}_${{ needs.refs.outputs.version }}
+          path: output/${{ needs.refs.outputs.version }}
+      - name: Run Semantic Release
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v4
+        with:
+          dry_run: false
+          semantic_version: 21
+          extra_plugins: |
+            @semantic-release/changelog
+            @semantic-release/git
+            conventional-changelog-conventionalcommits@7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Echo Semantic Release Versions
+        if: steps.semantic.outputs.new_release_published == 'true'
+        run: |
+          echo ${{ steps.semantic.outputs.new_release_version }}
+          echo ${{ steps.semantic.outputs.new_release_major_version }}
+          echo ${{ steps.semantic.outputs.new_release_minor_version }}
+          echo ${{ steps.semantic.outputs.new_release_patch_version }}
