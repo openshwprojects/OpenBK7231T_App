@@ -195,11 +195,13 @@ jobs:
           cd ../..
           python2 -m pip install --user -r sdk/ESP8266_RTOS_SDK/requirements.txt
           python3 -m pip install esptool
-      - name: Checkout berry submodule
-        run: |
+
+    - name: Checkout berry submodule
+      run: |
         git submodule update --init --recursive libraries/berry
         mkdir -p libraries/berry/generate
         ./libraries/berry/tools/coc/coc -o libraries/berry/generate libraries/berry/src src/berry/modules -c include/berry_conf.h
+
       - name: Run make
         run: |
           cd sdk/ESP8266_RTOS_SDK
