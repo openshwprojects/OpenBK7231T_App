@@ -22,10 +22,12 @@
 //#define DEFAULT_CURRENT_CAL 0.0118577075f
 //#define DEFAULT_POWER_CAL 1.5f
 
-#define DEFAULT_VOLTAGE_CAL 1.581335325E-03f 	//factor 100 for precision Vref=1.218, R1=6*330kO, R2=1kO, K=15397
-//#define DEFAULT_CURRENT_CAL 1.287009447E-05f	//factor 1000 for precision Vref=1.218, Rs=1mO, K=94638
-#define DEFAULT_CURRENT_CAL 1.287009447E-02f	//factor 1000 maybe not necessary because scale uses float for C for precision Vref=1.218, Rs=1mO, K=94638
-#define DEFAULT_POWER_CAL 	1.707145397E-02f 	//factor 100 for precision Vref=1.218, R1=6*330kO, R2=1kO, Rs=1mO, K=1721506
+#define DEFAULT_VOLTAGE_CAL 1.581335325E-02f 	//factor 10 for precision (resolution should be ~16mV) Vref=1.218, R1=6*330kO, R2=1kO, K=15397
+#define DEFAULT_VOLTAGE_FREQMULTIPLY 10
+#define DEFAULT_CURRENT_CAL 1.287009447E-02f	//no factor because scale uses float Vref=1.218, Rs=1mO, K=94638
+#define DEFAULT_CURRENT_FREQMULTIPLY 1
+#define DEFAULT_POWER_CAL 	1.707145397E-03f 	//factor 1000 for precision (resolution should be ~1.75mW) Vref=1.218, R1=6*330kO, R2=1kO, Rs=1mO, K=1721506
+#define DEFAULT_POWER_FREQ_MULTIPLY 1000
 
 // Those can be set by Web page pins configurator
 // The below are default values for Mycket smart socket
@@ -59,7 +61,7 @@ volatile portTickType g_pulseStampEnd_v=0, g_pulseStampEnd_c=0;
 	static int g_minPulsesV = 0, g_minPulsesC = 0, g_minPulsesP = 0;	// keep behaviour for compatibility
 #endif
 
-static int g_factorScaleV=100, g_factorScaleC=1, g_factorScaleP=100;
+static int g_freqmultiplierV=100, g_freqmultiplierP=1000; //not needed for C because float used
 static int g_p_forceonroc=100; //resolution of 1W/s should be sufficient, otherwise change to float
 static int g_p_prevsec=0;
 static uint32_t g_p_pulsesprevsec = 0;
@@ -165,12 +167,31 @@ commandResult_t BL0937_cmdScalefactorMultiply(const void* context, const char* c
 	float voltage_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, DEFAULT_VOLTAGE_CAL);
 	float current_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, DEFAULT_CURRENT_CAL);
 	float power_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, DEFAULT_POWER_CAL);
+
+	float scaledefault2cur = DEFAULT_VOLTAGE_CAL/voltage_cal_cur;
+	int multiplyscale=(scaledefault2cur < 0) ? -scaledefault2cur : scaledefault2cur; 
+	int scaledigits = (multiplyscale == 0) ? 1 : (int)log10(multiplyscale);
+	float multiplyscale_v = 1/((int)pow(10, scaledigits));
+
+	scaledefault2cur = DEFAULT_CURRENT_CAL/current_cal_cur;
+	multiplyscale=(scaledefault2cur < 0) ? -scaledefault2cur : scaledefault2cur; 
+	scaledigits = (multiplyscale == 0) ? 1 : (int)log10(multiplyscale);
+	float multiplyscale_c = 1/((int)pow(10, scaledigits));
+
+	scaledefault2cur = DEFAULT_POWER_CAL/power_cal_cur;
+	multiplyscale=(scaledefault2cur < 0) ? -scaledefault2cur : scaledefault2cur; 
+	scaledigits = (multiplyscale == 0) ? 1 : (int)log10(multiplyscale);
+	
+	int multiplyscale_p = BL0937_utlGetFactor10((float)DEFAULT_POWER_CAL, power_cal_cur);
+
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-	if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1))
+	if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3))
 	{
-		ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_ScalefactorMultiply: not enough arguments, current values %E %E %E."
-			, g_minPulsesV, g_minPulsesC, g_minPulsesP);
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+		ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_ScalefactorMultiply: not enough arguments to change. Current values %.4f %.4f %.4f, recommended factors 1/%.6f %.6f 1/%i"
+			, voltage_cal_cur, current_cal_cur, power_cal_cur, multiplyscale_v, multiplyscale_c, multiplyscale_p);
+//		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+
+		return CMD_RES_OK;
 	}
 	ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_ScalefactorMultiply: min pulses VCP %E %E %E (old=%E %E %E)"
 		, Tokenizer_GetArgInteger(0), Tokenizer_GetArgInteger(1), Tokenizer_GetArgInteger(2)
@@ -213,6 +234,18 @@ uint32_t BL0937_utlDiffCalcU32(uint32_t lowval, uint32_t highval)
 //	return diff;
 	return highval-lowval;
 }
+
+int BL0937_utlGetFactor10(float val1, float val2)
+{
+	float div = val1 / val2;
+    int factor = 1;
+    while (div > 10) {
+        div /= 10;
+        factor *= 10;
+    }
+	return factor;
+}
+
 
 void BL0937_Shutdown_Pins()
 {
@@ -446,22 +479,26 @@ void BL0937_RunEverySecond(void)
 #define SCALECOMPATIBILITYFIX 1
 #if SCALECOMPATIBILITYFIX>0
 	// adjust scale factors to match old calculation method (multiplication factor in calibration value)
-	
+
 	if (voltage_cal_cur < 0.01f ) {
-		g_factorScaleV=100;
+		g_freqmultiplierV=10;
 	} else if (voltage_cal_cur < 0.01f ) {
-		g_factorScaleV=1;
+		g_freqmultiplierV=1;
 	}
-	if (current_cal_cur < 0.0001f ) {
-		g_factorScaleC=1000;
+/*	if (power_cal_cur < 0.01f ) {
+		g_freqmultiplierP=100;
 	} else {
-		g_factorScaleC=1;
+		g_freqmultiplierP=1;
 	}
-	if (power_cal_cur < 0.01f ) {
-		g_factorScaleP=100;
-	} else {
-		g_factorScaleP=1;
-	}
+*/
+	g_freqmultiplierP = BL0937_utlGetFactor10(DEFAULT_POWER_CAL, power_cal_cur);
+
+/*float scaledefault2cur = DEFAULT_POWER_CAL/power_cal_cur;
+	int multiplyscale=(scaledefault2cur < 0) ? -scaledefault2cur : scaledefault2cur; 
+	int scaledigits = (multiplyscale == 0) ? 1 : (int)log10(multiplyscale) + 1;
+	float multiplyscale_p = 1/((int)pow(10, scaledigits));
+	g_freqmultiplierP=(int)multiplyscale_p;
+*/
 #endif
 
 //--> force on pwr roc
@@ -470,7 +507,7 @@ void BL0937_RunEverySecond(void)
 //	freq_p_lastsec /= (1000 / portTICK_PERIOD_MS);
 //accuracy of function call all every second should be enough, otherwise other port tick store and calc required
 	uint32_t freq_p_thissec = BL0937_utlDiffCalcU32(g_p_pulsesprevsec, g_p_pulses);
-	int p_thissec = (freq_p_thissec * (int)((float)g_factorScaleP * power_cal_cur));
+	int p_thissec = (freq_p_thissec * (int)((float)g_freqmultiplierP * power_cal_cur));
 	int p_roc = p_thissec - g_p_prevsec;
 	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER,"power prev %i / now %i -> roc=%i [limit=%i]\n", g_p_prevsec, p_thissec, p_roc, g_p_forceonroc);
 	g_p_pulsesprevsec=g_p_pulses;
@@ -509,12 +546,13 @@ void BL0937_RunEverySecond(void)
 		// at reference design (6x330kO / 1kO), 1mO, [lower with Tuya Plug (~2.030MO)]
 		//frequency V: 80..250V = 550.5 .. 1595.3 HZ [-50Hz], 10mV=0.063812 [0.062241] Hz
 		//frequency C: .001 .. 20A = 0.077700 1553,99 Hz, 0.1mA=0.007770 Hz
-		//frequency P:  @80V: 0.08 .. 1600W = 0.046862 ..  937.237 Hz, 0,1W=0,058577 [0.057135] Hz
-		//frequency P: @250V: 0.25 .. 5000W = 0.146443 .. 2928.866 Hz, 0,1W=0,058577 [0.057135] Hz
+		//frequency P:  @80V: 0.08 .. 1600W = 0.046862 ..  937.237 Hz, 0.1W=0.058577 [0.057135] Hz
+		//frequency P: @250V: 0.25 .. 5000W = 0.146443 .. 2928.866 Hz, 0.1W=0.058577 [0.057135] Hz
 
-		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER, "Scalefactor default/used [raw2float multiplier]: v %f [%d] c %f [%d] p %f [%d], usedv %E c %E p %E v %E c %E p %E \n"
-			, DEFAULT_VOLTAGE_CAL/voltage_cal_cur,g_factorScaleV, DEFAULT_CURRENT_CAL/current_cal_cur, g_factorScaleC
-			, DEFAULT_POWER_CAL/power_cal_cur, g_factorScaleP, voltage_cal_cur, current_cal_cur, power_cal_cur);
+
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER, "Scalefactor default/used [frequency multiplier]: v %E [%i] c %E [1] p %E [%i], usedscalefactor v %E c %E p %E v %E c %E p %E \n"
+			, DEFAULT_VOLTAGE_CAL/voltage_cal_cur,g_freqmultiplierV, DEFAULT_CURRENT_CAL/current_cal_cur
+			, DEFAULT_POWER_CAL/power_cal_cur, g_freqmultiplierP, voltage_cal_cur, current_cal_cur, power_cal_cur);
 
 
 		//Vref=1.218, R1=6*330kO, R2=1kO, K=15397
@@ -566,13 +604,12 @@ void BL0937_RunEverySecond(void)
 			freq_p = 99999;
 		}	
 //		PwrCal_Scale((int)(freq_v*100), (float)(freq_c*1000), (int)(freq_p*1000), &final_v, &final_c, &final_p);
-		freq_v *= (float)g_factorScaleV;
-		freq_c *= (float)g_factorScaleC;
-		freq_p *= (float)g_factorScaleP;
+		freq_v *= (float)g_freqmultiplierV;
+		freq_p *= (float)g_freqmultiplierP;
 		PwrCal_Scale((int)freq_v, (float)freq_c, (int)freq_p, &final_v, &final_c, &final_p);
 
-		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Scaled v %.2f (vf %.3f / %i) c %.6f (cf %.3f / %i) p %.6f  (pf %.3f / %i) \n"
-			,final_v, freq_v, g_factorScaleV, final_c, freq_c, g_factorScaleC, final_p, freq_p, g_factorScaleP);
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER,"Scaled v %.2f (vf %.3f / %f) c %.6f (cf %.3f / 1) p %.6f  (pf %.3f / %f) \n"
+			,final_v, freq_v, g_freqmultiplierV, final_c, freq_c, final_p, freq_p, g_freqmultiplierP);
 		
 		/* patch to limit max power reading, filter random reading errors */
 		if(final_p > BL0937_PMAX)
