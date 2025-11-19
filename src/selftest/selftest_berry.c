@@ -1450,6 +1450,38 @@ void Test_Berry_NTP() {
 
 	CMD_ExecuteCommand("berry setChannel(5,getVar(\"$day\"))", 0);
 	SELFTEST_ASSERT_CHANNEL(5, 5);
+
+	CMD_ExecuteCommand("berry setChannel(5,getVar(\"$minute\"))", 0); 
+	SELFTEST_ASSERT_CHANNEL(5, 27);
+
+	CMD_ExecuteCommand("berry setChannel(5, gmtime(\"YMDhms\")[0])", 0);
+	SELFTEST_ASSERT_CHANNEL(5, 2022);
+
+	CMD_ExecuteCommand("berry setChannel(6, gmtime(\"YMDhms\")[1])", 0);
+	SELFTEST_ASSERT_CHANNEL(6, 6);
+
+	CMD_ExecuteCommand("berry setChannel(7, gmtime(\"YMDhms\")[2])", 0);
+	SELFTEST_ASSERT_CHANNEL(7, 10);
+
+	CMD_ExecuteCommand("berry setChannel(8, gmtime(\"YMDhms\")[3])", 0);
+	SELFTEST_ASSERT_CHANNEL(8, 9);  // hour
+
+	CMD_ExecuteCommand("berry setChannel(9, gmtime(\"YMDhms\")[4])", 0);
+	SELFTEST_ASSERT_CHANNEL(9, 27); // minute
+
+	CMD_ExecuteCommand("berry setChannel(10, gmtime(\"YMDhms\")[5])", 0);
+	SELFTEST_ASSERT_CHANNEL(10, 34); // second
+
+	CMD_ExecuteCommand("berry setChannel(11, gmtime(\"YMDhmsw\")[6])", 0);
+	SELFTEST_ASSERT_CHANNEL(11, 5);  // weekday
+
+	CMD_ExecuteCommand("berry setChannel(11, gmtime(\"sw\")[1])", 0);
+	SELFTEST_ASSERT_CHANNEL(11, 5);  // weekday
+
+	CMD_ExecuteCommand("berry setChannel(11, gmtime(\"ws\")[0])", 0);
+	SELFTEST_ASSERT_CHANNEL(11, 5);  // weekday
+
+	SELFTEST_ASSERT_CHANNEL(5, 2022);
 }
 
 
