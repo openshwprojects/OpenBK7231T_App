@@ -61,8 +61,8 @@ volatile portTickType g_pulseStampEnd_v=0, g_pulseStampEnd_c=0;
 	static int g_minPulsesV = 0, g_minPulsesC = 0, g_minPulsesP = 0;	// keep behaviour for compatibility
 #endif
 
-static int g_freqmultiplierV=100, g_freqmultiplierP=1000; //not needed for C because float used
-static int g_p_forceonroc=100; //resolution of 1W/s should be sufficient, otherwise change to float
+static int g_freqmultiplierV=DEFAULT_VOLTAGE_FREQMULTIPLY, g_freqmultiplierP=DEFAULT_POWER_FREQ_MULTIPLY ; //not needed for C because float used
+static float g_p_forceonroc=100; 
 static int g_p_prevsec=0;
 static uint32_t g_p_pulsesprevsec = 0;
 
@@ -509,7 +509,7 @@ void BL0937_RunEverySecond(void)
 	uint32_t freq_p_thissec = BL0937_utlDiffCalcU32(g_p_pulsesprevsec, g_p_pulses);
 	int p_thissec = (freq_p_thissec * (int)((float)g_freqmultiplierP * power_cal_cur));
 	int p_roc = p_thissec - g_p_prevsec;
-	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER,"power prev %i / now %i -> roc=%i [limit=%i]\n", g_p_prevsec, p_thissec, p_roc, g_p_forceonroc);
+	addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER,"power prev %i / now %i -> roc=%i [limit=%f]\n", g_p_prevsec, p_thissec, p_roc, g_p_forceonroc);
 	g_p_pulsesprevsec=g_p_pulses;
 //<-- force on pwr roc
 
