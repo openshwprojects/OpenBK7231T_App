@@ -60,38 +60,75 @@ static int EEPROM_Read(uint16_t addr, uint8_t*data, int len) {
 
 commandResult_t EEPROM_ReadCmd(const void*ctx, const char*cmd, const char*args, int f) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
-	if (Tokenizer_GetArgsCount() < 2)return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	if (Tokenizer_GetArgsCount() < 2) return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	uint16_t addr = Tokenizer_GetArgInteger(0);
 	int len = Tokenizer_GetArgInteger(1);
-	if (len <= 0 || len > 512)return CMD_RES_BAD_ARGUMENT;
-	uint8_t buf[64];
+
+	uint8_t *buf = (uint8_t*)malloc(len);
+	if (!buf) return CMD_RES_ERROR;
+
 	EEPROM_Read(addr, buf, len);
-	char out[256];
+
+	int outLen = len * 3 + 1;
+	char *out = (char*)malloc(outLen);
+	if (!out) {
+		free(buf);
+		return CMD_RES_ERROR;
+	}
+
 	int p = 0;
-	for (int i = 0; i < len; i++)p += sprintf(out + p, "%02X ", buf[i]);
+	for (int i = 0; i < len; i++) p += sprintf(out + p, "%02X ", buf[i]);
+
 	ADDLOG_INFO(LOG_FEATURE_CMD, "EEPROM_Read %s", out);
+
+	free(buf);
+	free(out);
+
 	return CMD_RES_OK;
 }
 
-commandResult_t EEPROM_WriteCmd(const void*ctx, const char*cmd, const char*args, int f) {
+
+commandResult_t EEPROM_WriteHexCmd(const void*ctx, const char*cmd, const char*args, int f) {
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
 	if (Tokenizer_GetArgsCount() < 2)
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	uint16_t addr = Tokenizer_GetArgInteger(0);
-	const char* hex = Tokenizer_GetArg(1);
+	const char* hex = args+strlen(Tokenizer_GetArg(0));
 	while (*hex == ' ')
 		hex++;
-	uint8_t buf[512];
-	int len = 0;
-	while (hex[0] && hex[1]) {
+
+	const char* p = hex;
+	int count = 0;
+	while (p[0] && p[1]) {
 		unsigned int b;
-		if (sscanf(hex, "%02x", &b) != 1)break;
-		buf[len++] = b;
-		hex += 2;
-		while (*hex == ' ')hex++;
-		if (len >= 512)break;
+		if (sscanf(p, "%02x", &b) != 1) break;
+		count++;
+		p += 2;
+		while (*p == ' ')
+			p++;
 	}
+
+	if (count == 0)
+		return CMD_RES_BAD_ARGUMENT;
+
+	uint8_t* buf = (uint8_t*)malloc(count);
+	if (!buf)
+		return CMD_RES_ERROR;
+
+	p = hex;
+	int len = 0;
+	while (p[0] && p[1] && len < count) {
+		unsigned int b;
+		if (sscanf(p, "%02x", &b) != 1) break;
+		buf[len++] = b;
+		p += 2;
+		while (*p == ' ')
+			p++;
+	}
+
 	EEPROM_Write(addr, buf, len);
+	free(buf);
+
 	ADDLOG_INFO(LOG_FEATURE_CMD, "EEPROM_Write %d bytes", len);
 	return CMD_RES_OK;
 }
@@ -114,14 +151,14 @@ commandResult_t EEPROM_DumpCmd(const void*ctx, const char*cmd, const char*args, 
 }
 
 // startDriver SimpleEEPROM 5 4
-// EEPROM_Write 0 TEST123
+// EEPROM_Write 0 AABBCC
 // EEPROM_Read 0 16
 void EEPROM_Init() {
 	g_eepI2C.pin_clk = Tokenizer_GetArgIntegerDefault(1, g_eepI2C.pin_clk); 
 	g_eepI2C.pin_data = Tokenizer_GetArgIntegerDefault(2, g_eepI2C.pin_data);
 	Soft_I2C_PreInit(&g_eepI2C);
 	CMD_RegisterCommand("EEPROM_Read", EEPROM_ReadCmd, NULL);
-	CMD_RegisterCommand("EEPROM_Write", EEPROM_WriteCmd, NULL);
+	CMD_RegisterCommand("EEPROM_WriteHex", EEPROM_WriteHexCmd, NULL);
 	CMD_RegisterCommand("EEPROM_Dump", EEPROM_DumpCmd, NULL);
 }
 
