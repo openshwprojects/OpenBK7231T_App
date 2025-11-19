@@ -1764,7 +1764,30 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 				break;
 				case DP_TYPE_RAW_TAC2121C_VCP:
 				{
-					if (sectorLen == 8 || sectorLen == 10) {
+					if (sectorLen == 6) {
+						int iV, iC, iP;
+						// voltage
+						iV = data[ofs + 0 + 4] << 8 | data[ofs + 1 + 4];
+						// current
+						iC = data[ofs + 2 + 4] << 8 | data[ofs + 3 + 4];
+						// power
+						iP = data[ofs + 4 + 4] << 8 | data[ofs + 5 + 4];
+						// calibration
+						CALIB_IF_NONZERO(iV, mapping->delta);
+						CALIB_IF_NONZERO(iC, mapping->delta2);
+						CALIB_IF_NONZERO(iP, mapping->delta3);
+						if (mapping->channel < 0) {
+							CHANNEL_SetFirstChannelByType(ChType_Voltage_div10, iV);
+							CHANNEL_SetFirstChannelByType(ChType_Current_div10, iC);
+							CHANNEL_SetFirstChannelByType(ChType_Power_div10, iP);
+						}
+						else {
+							CHANNEL_Set(mapping->channel, iV, 0);
+							CHANNEL_Set(mapping->channel + 1, iC, 0);
+							CHANNEL_Set(mapping->channel + 2, iP, 0);
+						}
+					}
+					else if (sectorLen == 8 || sectorLen == 10) {
 						int iV, iC, iP;
 						// voltage
 						iV = data[ofs + 0 + 4] << 8 | data[ofs + 1 + 4];
