@@ -550,7 +550,7 @@ void BL0937_RunEverySecond(void)
 		//frequency P: @250V: 0.25 .. 5000W = 0.146443 .. 2928.866 Hz, 0.1W=0.058577 [0.057135] Hz
 
 
-		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER, "Scalefactor default/used [frequency multiplier]: v %E [%i] c %E [1] p %E [%i], usedscalefactor v %E c %E p %E v %E c %E p %E \n"
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER, "Scalefactor default/used [frequency multiplier]: v %E [%i] c %E [1] p %E [%i], usedscalefactor v %E c %E p %E \n"
 			, DEFAULT_VOLTAGE_CAL/voltage_cal_cur,g_freqmultiplierV, DEFAULT_CURRENT_CAL/current_cal_cur
 			, DEFAULT_POWER_CAL/power_cal_cur, g_freqmultiplierP, voltage_cal_cur, current_cal_cur, power_cal_cur);
 
