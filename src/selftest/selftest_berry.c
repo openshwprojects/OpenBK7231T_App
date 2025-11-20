@@ -1499,6 +1499,9 @@ void Test_Berry_JSON() {
 
 	CMD_ExecuteCommand("berry import json; setChannel(11, 1000+json.load('{\"a\": 567}')[\"a\"])", 0);
 	SELFTEST_ASSERT_CHANNEL(11, 1000+567);
+
+	CMD_ExecuteCommand("berry import json; setChannel(11, 1000+json.load('{\"a\": {\"b\": 678}}')[\"a\"][\"b\"])", 0);
+	SELFTEST_ASSERT_CHANNEL(11, 1000 + 678);
 }
 extern const char *owm_sample_reply;
 void Test_Berry_OpenWeatherMap() {
