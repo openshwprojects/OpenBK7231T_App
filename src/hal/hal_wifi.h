@@ -36,6 +36,9 @@ typedef struct
 #else
 	char psk[64];
 #endif
+#if PLATFORM_BL602
+	char pwd[64 + 1];
+#endif
 } obkFastConnectData_t;
 
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid);
