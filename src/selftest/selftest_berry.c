@@ -1512,7 +1512,14 @@ void Test_Berry_OpenWeatherMap() {
 	SELFTEST_ASSERT_CHANNEL(11, 998);
 	CMD_ExecuteCommand("berry import json; setChannel(11, json.load(getOpenWeatherReply())[\"main\"][\"humidity\"])", 0);
 	SELFTEST_ASSERT_CHANNEL(11, 85);
+	CMD_ExecuteCommand("berry import json; setChannel(11, 10*json.load(getOpenWeatherReply())[\"wind\"][\"speed\"])", 0);
+	SELFTEST_ASSERT_CHANNEL(11, 36);
+	CMD_ExecuteCommand("berry import json; setChannel(11, 100*json.load(getOpenWeatherReply())[\"wind\"][\"speed\"])", 0);
+	SELFTEST_ASSERT_CHANNEL(11, 360);
+	CMD_ExecuteCommand("berry import json; setChannel(11, 1*json.load(getOpenWeatherReply())[\"wind\"][\"deg\"])", 0);
+	SELFTEST_ASSERT_CHANNEL(11, 180);
 }
+
 void Test_Berry() {
 
 	Test_Berry_Click_And_Timeout();
