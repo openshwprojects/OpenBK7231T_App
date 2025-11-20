@@ -128,7 +128,7 @@ void Run_Animated() {
 	if (scroll == 0) {
 		time[0] = 0;
 		p = time;
-		p = my_strcat(p, "  ");
+		//p = my_strcat(p, "  ");
 
 		p = add_padded(p, ltm->tm_hour);
 		p = my_strcat(p, ":");
