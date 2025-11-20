@@ -22,5 +22,6 @@ typedef struct weatherChannels_s {
 } weatherChannels_t;
 
 weatherData_t *Weather_GetData();
+const char *Weather_GetReply();
 
 #endif // __DRV_OPENWEATHERMAP_H__

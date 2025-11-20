@@ -61,7 +61,9 @@ static void json_get_string(cJSON *parent, const char *name, char *dst, int dstS
 	strncpy(dst, src, dstSize - 1);
 	dst[dstSize - 1] = '\0';
 }
-
+const char *Weather_GetReply() {
+	return g_reply;
+}
 void Weather_SetReply(const char *s) {
 	const char *json_start = strstr(s, "\r\n\r\n");
 	if (json_start) {

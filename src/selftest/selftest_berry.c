@@ -1481,10 +1481,38 @@ void Test_Berry_NTP() {
 	CMD_ExecuteCommand("berry setChannel(11, gmtime(\"ws\")[0])", 0);
 	SELFTEST_ASSERT_CHANNEL(11, 5);  // weekday
 
+	CMD_ExecuteCommand("berry setChannel(11, gmtime(\"sw\")[0]+gmtime(\"sw\")[1])", 0);
+	SELFTEST_ASSERT_CHANNEL(11, 5+34);  // weekday+second
+
 	SELFTEST_ASSERT_CHANNEL(5, 2022);
 }
 
+void Test_Berry_JSON() {
 
+	// reset whole device
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("lfs_format", 0);
+
+	CMD_ExecuteCommand("berry import json; setChannel(11, json.load('{\"key\": 123}')[\"key\"])", 0);
+	SELFTEST_ASSERT_CHANNEL(11, 123);  
+
+
+	CMD_ExecuteCommand("berry import json; setChannel(11, 1000+json.load('{\"a\": 567}')[\"a\"])", 0);
+	SELFTEST_ASSERT_CHANNEL(11, 1000+567);
+}
+extern const char *owm_sample_reply;
+void Test_Berry_OpenWeatherMap() {
+
+	// HTTP header + json
+	Weather_SetReply(owm_sample_reply);
+
+	CMD_ExecuteCommand("berry import json; setChannel(11, json.load(getOpenWeatherReply())[\"main\"][\"temp\"])", 0);
+	SELFTEST_ASSERT_CHANNEL(11, 23);
+	CMD_ExecuteCommand("berry import json; setChannel(11, json.load(getOpenWeatherReply())[\"main\"][\"pressure\"])", 0);
+	SELFTEST_ASSERT_CHANNEL(11, 998);
+	CMD_ExecuteCommand("berry import json; setChannel(11, json.load(getOpenWeatherReply())[\"main\"][\"humidity\"])", 0);
+	SELFTEST_ASSERT_CHANNEL(11, 85);
+}
 void Test_Berry() {
 
 	Test_Berry_Click_And_Timeout();
@@ -1520,6 +1548,8 @@ void Test_Berry() {
 	Test_Berry_TuyaMCU_Bytes();
 	Test_Berry_TuyaMCU_Bytes2();
 	Test_Berry_NTP();
+	Test_Berry_JSON();
+	Test_Berry_OpenWeatherMap();
 }
 
 #endif

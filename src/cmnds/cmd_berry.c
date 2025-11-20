@@ -310,6 +310,14 @@ int be_setTimeout(bvm *vm) {
 	be_setTimeoutInternal(vm, 0);
 	return 1;
 }
+#if ENABLE_DRIVER_OPENWEATHERMAP
+int be_getOpenWeatherReply(bvm *vm) {
+	const char *data = Weather_GetReply();
+	be_pushstring(vm, data);
+	be_return(vm);
+	return 1;
+}
+#endif
 int be_get(bvm *vm) {
 	char tmpA[64];
 	int top = be_top(vm);
@@ -401,6 +409,9 @@ static int BasicInit() {
 
 		be_regfunc(g_vm, "gmtime", be_gmtime);
 
+#if ENABLE_DRIVER_OPENWEATHERMAP
+		be_regfunc(g_vm, "getOpenWeatherReply", be_getOpenWeatherReply);
+#endif
 		be_regfunc(g_vm, "rtosDelayMs", be_rtosDelayMs);
 		be_regfunc(g_vm, "delayUs", be_delayUs);
 		be_regfunc(g_vm, "cancel", be_CancelThread);
