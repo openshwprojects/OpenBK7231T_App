@@ -130,7 +130,6 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "TCL",		TCL_Init,			TCL_UART_RunEverySecond,		TCL_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, TCL_DoDiscovery, false },
 #endif
-
 #if ENABLE_DRIVER_OPENWEATHERMAP
 	//drvdetail:{"name":"OpenWeatherMap",
 	//drvdetail:"title":"TODO",
