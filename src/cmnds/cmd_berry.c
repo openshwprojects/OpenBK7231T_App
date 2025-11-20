@@ -5,6 +5,7 @@
 
 #if ENABLE_OBK_BERRY
 
+#include "../driver/drv_openWeatherMap.h"
 #include "../driver/drv_ir.h"
 #include "../driver/drv_ntp.h"
 #include "../driver/drv_local.h"
