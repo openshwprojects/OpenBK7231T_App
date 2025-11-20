@@ -3,7 +3,7 @@
 #include "selftest_local.h"
 #include "../driver/drv_openWeatherMap.h"
 
-const char *sample_reply =
+const char *owm_sample_reply =
 "HTTP/1.1 200 OK\r\n"
 "Date: Sat, 09 Nov 2025 12:00:00 GMT\r\n"
 "Server: openweathermap.org\r\n"
@@ -40,7 +40,7 @@ const char *reply_no_weather =
 void Test_OpenWeatherMap() {
 
 	// HTTP header + json
-	Weather_SetReply(sample_reply);
+	Weather_SetReply(owm_sample_reply);
 
 	weatherData_t *w = Weather_GetData();
 	SELFTEST_ASSERT_FLOATCOMPARE(w->humidity, 85);
