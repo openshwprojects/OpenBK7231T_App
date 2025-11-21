@@ -104,7 +104,7 @@ void Run_NoAnimation() {
 	else {
 		Clock_SendTemperature();
 	}
-	CMD_ExecuteCommandArgs("MAX72XX_Show", "", 0);
+	CMD_ExecuteCommandArgs("MAX72XX_refresh", "", 0);
 	cycle %= 40;
 }
 static int g_del = 0;
@@ -150,11 +150,11 @@ void Run_Animated() {
 	}
 	if (g_del > 0) {
 		g_del--;
-		CMD_ExecuteCommandArgs("MAX72XX_Show", "", 0);
+		CMD_ExecuteCommandArgs("MAX72XX_refresh", "", 0);
 		return;
 	}
 	CMD_ExecuteCommandArgs("MAX72XX_Scroll", "-1", 0);
-	CMD_ExecuteCommandArgs("MAX72XX_Show", "", 0);
+	CMD_ExecuteCommandArgs("MAX72XX_refresh", "", 0);
 }
 bool g_animated = false;
 void DRV_MAX72XX_Clock_OnEverySecond() {
