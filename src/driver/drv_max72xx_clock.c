@@ -126,10 +126,10 @@ void Run_Animated() {
 	}
 	int scroll = MAX72XXSingle_GetScrollCount();
 	//scroll_cycle = 0;
-	if (scroll == 0) {
+	if (scroll == 0 && g_del == 0) {
 		time[0] = 0;
 		p = time;
-		//p = my_strcat(p, "  ");
+		p = my_strcat(p, "  ");
 
 		p = add_padded(p, ltm->tm_hour);
 		p = my_strcat(p, ":");
@@ -146,11 +146,11 @@ void Run_Animated() {
 
 		CMD_ExecuteCommandArgs("MAX72XX_Clear", NULL, 0);
 		CMD_ExecuteCommandArgs("MAX72XX_Print", time, 0);
-		g_del = 20;
+		CMD_ExecuteCommandArgs("MAX72XX_refresh", "", 0);
+		g_del = 10;
 	}
 	if (g_del > 0) {
 		g_del--;
-		CMD_ExecuteCommandArgs("MAX72XX_refresh", "", 0);
 		return;
 	}
 	CMD_ExecuteCommandArgs("MAX72XX_Scroll", "-1", 0);
