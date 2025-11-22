@@ -1421,6 +1421,8 @@ void Main_Init_Before_Delay()
 	// it registers a cllback from RTOS IDLE function.
 	// why is it called IRDA??  is this where they check for IR?
 	bg_register_irda_check_func(isidle);
+#elif PLATFORM_TR6260
+	system_register_idle_callback(isidle);
 #endif
 
 	g_bootFailures = HAL_FlashVars_GetBootFailures();
@@ -1585,4 +1587,17 @@ void Main_Init()
 
 }
 
+#if PLATFORM_ESPIDF || PLATFORM_ESP8266 || PLATFORM_BL602 || (PLATFORM_REALTEK && !PLATFORM_REALTEK_NEW) || PLATFORM_XRADIO
 
+void vApplicationIdleHook(void)
+{
+	isidle();
+#if PLATFORM_BL602
+	// sleep
+	__asm volatile(
+	"   wfi     "
+		);
+#endif
+}
+
+#endif

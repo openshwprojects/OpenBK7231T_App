@@ -65,10 +65,10 @@
 	path = sdk/OpenXR806
 	url = https://github.com/openshwprojects/OpenXR806
 	branch = master
-[submodule "sdk/ESP8266_RTOS_SDK"]
-	path = sdk/ESP8266_RTOS_SDK
-	url = https://github.com/espressif/ESP8266_RTOS_SDK
-	branch = release/v3.4
+[submodule "sdk/OpenESP8266"]
+	path = sdk/OpenESP8266
+	url = https://github.com/NonPIayerCharacter/OpenESP8266
+	branch = obk
 [submodule "sdk/ameba-rtos"]
 	path = sdk/ameba-rtos
 	url = https://github.com/Ameba-AIoT/ameba-rtos
