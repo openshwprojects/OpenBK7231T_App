@@ -202,6 +202,7 @@
     <ClCompile Include="src\devicegroups\deviceGroups_write.c" />
     <ClCompile Include="src\driver\drv_adcButton.c" />
     <ClCompile Include="src\driver\drv_adcSmoother.c" />
+    <ClCompile Include="src\driver\drv_aht2x.c" />
     <ClCompile Include="src\driver\drv_battery.c" />
     <ClCompile Include="src\driver\drv_bkPartitions.c" />
     <ClCompile Include="src\driver\drv_bl0937.c" />

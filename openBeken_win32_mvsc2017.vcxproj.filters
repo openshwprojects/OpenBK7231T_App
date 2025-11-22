@@ -419,6 +419,7 @@
     <ClCompile Include="src\driver\drv_multiPinI2CScanner.c" />
     <ClCompile Include="src\selftest\selftest_openWeatherMap.c" />
     <ClCompile Include="src\driver\drv_simpleEEPROM.c" />
+    <ClCompile Include="src\driver\drv_aht2x.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\base64\base64.h" />
