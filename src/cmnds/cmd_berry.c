@@ -21,7 +21,8 @@
 #include "be_repl.h"
 #include "be_vm.h"
 #include "berry.h"
-
+#include "../libraries/obktime/obktime.h"	// for time functions
+#include "../driver/drv_deviceclock.h"
 bvm *g_vm = NULL;
 
 typedef struct berryInstance_s
