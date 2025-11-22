@@ -1,3 +1,9 @@
+/*
+
+EEPROM_WriteHex 0 AABBCCDDEEFFBAADF00DAABB
+
+
+*/
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
