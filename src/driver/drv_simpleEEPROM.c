@@ -1,7 +1,7 @@
 /*
-
+startDriver SimpleEEPROM 5 4
 EEPROM_WriteHex 0 AABBCCDDEEFFBAADF00DAABB
-
+EEPROM_Read 0 32
 
 */
 #include "../new_common.h"
