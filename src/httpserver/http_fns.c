@@ -3106,7 +3106,7 @@ const char* g_obk_flagNames[] = {
 	"[PWR] Invert AC dir",
 	"[HTTP] Hide ON/OFF for relays (only red/green buttons)",
 	"[MQTT] Never add GET suffix",
-	"[WiFi] (RTL/BK) Enhanced fast connect by saving AP data to flash (preferable with Flag 37 & static ip). Quick reset 3 times to connect normally",
+	"[WiFi] (RTL/BK/BL602) Enhanced fast connect by saving AP data to flash (preferable with Flag 37 & static ip). Quick reset 3 times to connect normally",
 	"error",
 	"error",
 	"error",
