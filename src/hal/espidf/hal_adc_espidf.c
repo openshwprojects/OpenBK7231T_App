@@ -111,7 +111,7 @@ int HAL_ADC_Read(int pinNumber)
 #include "../hal_adc.h"
 #include "../../logging/logging.h"
 
-extern uint16_t system_adc_read(void);
+extern unsigned short system_adc_read(void);
 
 void HAL_ADC_Init(int pinNumber)
 {
