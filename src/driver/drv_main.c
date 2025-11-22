@@ -7,6 +7,7 @@
 #include "drv_ir.h"
 #include "drv_local.h"
 #include "drv_ntp.h"
+#include "drv_deviceclock.h"
 #include "drv_public.h"
 #include "drv_ssdp.h"
 #include "drv_test_drivers.h"
@@ -16,6 +17,7 @@
 #include "drv_ds1820_simple.h"
 #include "drv_ds1820_full.h"
 #include "drv_ds1820_common.h"
+#include "drv_ds3231.h"
 #include "drv_hlw8112.h"
 
 
@@ -164,8 +166,20 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"NTP driver is required to get current time and date from web. Without it, there is no correct datetime. Put 'startDriver NTP' in short startup line or autoexec.bat to run it on start.",
 	//drvdetail:"requires":""}
-	{ "NTP",		NTP_Init,			NTP_OnEverySecond,			NTP_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+	{ "NTP",		NTP_Init,			NTP_OnEverySecond,			NTP_AppendInformationToHTTPIndexPage, NULL,NTP_Stop , NULL, NULL, false },
 #endif
+	//drvdetail:{"name":"CLOCK",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"CLOCK driver will allways run. It will usually get time from NTP and handle timed events",
+	//drvdetail:"requires":""}
+	{ "CLOCK",		CLOCK_Init,			CLOCK_OnEverySecond,			CLOCK_AppendInformationToHTTPIndexPage, NULL, NULL , NULL , NULL, false },
+#if ENABLE_DRIVER_DS3231
+	//drvdetail:{"name":"DS3231",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Driver for DS3231 RTC. Start with \"startdriver DS3231 <CLK-Pin> <DATA-Pin> [<optional sync>]\". Sync values: 0 - do nothing / 1: set device clock to RTC on driver start / 2: regulary (every minute) set device clock to RTC (so RTC is time source)",
+	//drvdetail:"requires":""}
+	{ "DS3231",		DS3231_Init,			DS3231_OnEverySecond,			DS3231_AppendInformationToHTTPIndexPage, NULL, DS3231_Stop, NULL, NULL, false },
+ #endif
 #if ENABLE_DRIVER_HTTPBUTTONS
 	//drvdetail:{"name":"HTTPButtons",
 	//drvdetail:"title":"TODO",
