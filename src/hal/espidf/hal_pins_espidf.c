@@ -327,7 +327,7 @@ espPinMapping_t g_pins[] = {
 	{ "IO15", GPIO_NUM_15, false }, // 11
 	{ "IO16", GPIO_NUM_16, false }, // 12
 	// ADC only I guess (no GPIO)
-	{ "ADC", GPIO_NUM_17, false }, // 13
+	{ "ADC", GPIO_NUM_NC, false }, // 13
 };
 
 
