@@ -174,6 +174,10 @@ void DRV_MAX72XX_Shutdown();
 int MAX72XXSingle_CountPixels(bool bOn);
 int MAX72XXSingle_GetScrollCount();
 
+void EEPROM_Init();
+void EEPROM_OnEverySecond();
+void EEPROM_AppendInformationToHTTPIndexPage(http_request_t*r, int pre);
+
 void apply_smart_light();
 
 void WEMO_Init();
