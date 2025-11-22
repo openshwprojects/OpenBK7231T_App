@@ -110,7 +110,6 @@ int HAL_ADC_Read(int pinNumber)
 
 #include "../hal_adc.h"
 #include "../../logging/logging.h"
-#include "hal_pinmap_espidf.h"
 
 extern uint16_t system_adc_read(void);
 
