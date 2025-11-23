@@ -20,6 +20,7 @@ void MAX72XX_clearDisplayFullNoSend(max72XX_t *led);
 void MAX72XX_rotate90CW(max72XX_t *led);
 void MAX72XX_setIntensity(max72XX_t *led,int addr, int intensity) ;
 void MAX72XX_displayArray(max72XX_t* led, byte *p, int devs, int ofs)  ;
+void MAX72XX_setPixel(max72XX_t* led, int x, int y, int b);
 void MAX72XX_shift(max72XX_t *led,int d);
 void MAX72XX_setLed(max72XX_t *led,int addr, int row, int column, bool state) ;
 void MAX72XX_init(max72XX_t *led);

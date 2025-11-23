@@ -422,36 +422,21 @@ jobs:
       - name: SDK checkout
         uses: actions/checkout@v4
         with:
-          repository: espressif/ESP8266_RTOS_SDK
-          path: sdk/ESP8266_RTOS_SDK
-          ref: release/v3.4
-          submodules: false
+          repository: NonPIayerCharacter/OpenESP8266
+          path: sdk/OpenESP8266
+          ref: obk
           fetch-tags: true
-          fetch-depth: '200'
+          fetch-depth: '10'
+          submodules: recursive
       - name: Install dependencies
         run: |
-          git config --global user.name github-actions
-          git config --global user.email github-actions@github.com
-          apt-get update && apt-get -y install cmake
+          apt update && apt install -y cmake
           pip2 install virtualenv
-          cd sdk/ESP8266_RTOS_SDK
-          git checkout c965e03d2b7418b085c394dc98c6a0d3371c2abd
-          patch -p1 -d . < ../../platforms/ESP8266/sdk.patch
-          git revert 0325f833aac7b34d7627619499949331a98fc3ab --no-edit
-          git submodule update --init components/coap/libcoap
-          cd components/coap/libcoap
-          git fetch
-          git checkout 017528d7d96dca2318ed587b5fd3c0d57a89e49a
-          cd ../../..
-          git add .
-          git commit -m "upd"
-          git submodule update --init --recursive
-          cd ../..
-          python2 -m pip install --user -r sdk/ESP8266_RTOS_SDK/requirements.txt
+          python2 -m pip install --user -r sdk/OpenESP8266/requirements.txt
           python3 -m pip install esptool
       - name: Run make
         run: |
-          cd sdk/ESP8266_RTOS_SDK
+          cd sdk/OpenESP8266
           ./install.sh > /dev/null
           . ./export.sh
           . ./add_path.sh
@@ -544,3 +529,4 @@ jobs:
           echo ${{ steps.semantic.outputs.new_release_major_version }}
           echo ${{ steps.semantic.outputs.new_release_minor_version }}
           echo ${{ steps.semantic.outputs.new_release_patch_version }}
+          
