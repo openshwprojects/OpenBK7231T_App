@@ -54,8 +54,9 @@ public:
 	virtual bool isWireJunction() const {
 		return false;
 	}
-	void setFill(bool b) {
+	CShape *setFill(bool b) {
 		bFill = b;
+		return this;
 	}
 	void setActive(bool b) {
 		bActive = b;
@@ -100,9 +101,7 @@ public:
 		return getAbsPosition().dist(o->getAbsPosition());
 	}
 	virtual float moveTowards(const Coord &tg, float dt);
-	void setController(CControllerBase *c) {
-		controller = c;
-	}
+	void setController(CControllerBase *c);
 	CControllerBase *getController() {
 		return controller;
 	}
@@ -149,6 +148,7 @@ public:
 	void rotateDegreesAroundSelf(float f);
 	class CShape* addLine(float x, float y, float x2, float y2);
 	class CShape* addRect(float x, float y, float w, float h);
+	class CShape* addPoint(float x, float y);
 	class CShape* addCircle(float x, float y, float r);
 	class CShape* addText(float x, float y, const char *s, bool bDeepText = false, bool bAllowNewLine = true);
 	class CJunction* addJunction(float x, float y, const char *name = "", int gpio = -1);

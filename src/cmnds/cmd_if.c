@@ -947,7 +947,12 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 			c = a / b;
 			break;
 		case OP_MODULO:
-			c = ((int)a) % ((int)b);
+			if (b == 0) {
+				c = 0;
+			}
+			else {
+				c = ((int)a) % ((int)b);
+			}
 			break;
 		default:
 			c = 0;

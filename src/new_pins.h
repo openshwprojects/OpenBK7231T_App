@@ -1137,7 +1137,8 @@ typedef enum channelType_e {
 #define PLATFORM_GPIO_MAX 0
 #endif
 #elif PLATFORM_ESP8266
-#define PLATFORM_GPIO_MAX 13
+// 2025-11-22 - I added ADC, so bump from 13 to 14
+#define PLATFORM_GPIO_MAX 14
 #elif PLATFORM_TR6260
 #define PLATFORM_GPIO_MAX 25
 #elif PLATFORM_RTL87X0C

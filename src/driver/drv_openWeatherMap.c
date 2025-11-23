@@ -213,7 +213,7 @@ void startWeatherThread() {
 	err = rtos_create_thread(&g_weather_thread, BEKEN_APPLICATION_PRIORITY,
 		"OWM",
 		(beken_thread_function_t)weather_thread,
-		8192,
+		4096,
 		(beken_thread_arg_t)0);
 	if (err != kNoErr)
 	{

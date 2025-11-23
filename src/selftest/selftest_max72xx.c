@@ -11,8 +11,13 @@ void Test_MAX72XX() {
 	CMD_ExecuteCommand("MAX72XX_Print 1232132131212", 0);
 	CMD_ExecuteCommand("MAX72XX_Scroll 1", 0);
 	CMD_ExecuteCommand("stopDriver MAX72XX", 0);
-	
-	
+
+	CMD_ExecuteCommand("startDriver MAX72XX", 0);
+	CMD_ExecuteCommand("MAX72XX_Setup 10 8 9 4", 0);
+	CMD_ExecuteCommand("MAX72XX_Print 1232132131212", 0);
+	CMD_ExecuteCommand("MAX72XX_Scroll 1", 0);
+	CMD_ExecuteCommand("stopDriver MAX72XX", 0);
+
 	CMD_ExecuteCommand("startDriver MAX72XX", 0);
 	CMD_ExecuteCommand("MAX72XX_Setup 10 8 9 16", 0);
 	CMD_ExecuteCommand("MAX72XX_Clear", 0);
@@ -101,6 +106,21 @@ void Test_MAX72XX() {
 		}
 	}
 	CMD_ExecuteCommand("stopDriver MAX72XX", 0);
+
+	CMD_ExecuteCommand("startDriver MAX72XX", 0);
+	CMD_ExecuteCommand("MAX72XX_Setup 10 8 9 16", 0);
+	CMD_ExecuteCommand("MAX72XX_Clear", 0);
+	SELFTEST_ASSERT(MAX72XXSingle_GetScrollCount() == 0);
+	SELFTEST_ASSERT(MAX72XXSingle_CountPixels(true) == 0);
+	CMD_ExecuteCommand("MAX72XX_SetPixel 1 1 1", 0);
+	SELFTEST_ASSERT(MAX72XXSingle_GetScrollCount() == 0);
+	SELFTEST_ASSERT(MAX72XXSingle_CountPixels(true) == 1);
+	CMD_ExecuteCommand("MAX72XX_Scroll 1", 0);
+	SELFTEST_ASSERT(MAX72XXSingle_CountPixels(true) == 1);
+	CMD_ExecuteCommand("MAX72XX_SetPixel 1 1 1", 0);
+	SELFTEST_ASSERT(MAX72XXSingle_CountPixels(true) == 2);
+	CMD_ExecuteCommand("stopDriver MAX72XX", 0);
+	
 }
 
 

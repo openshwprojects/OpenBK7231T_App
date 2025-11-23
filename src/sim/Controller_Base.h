@@ -6,6 +6,11 @@
 class CControllerBase {
 
 public:
+	class CShape *baseShape;
+
+	CControllerBase() {
+		baseShape = 0;
+	}
 	virtual void onDrawn() { }
 	virtual void sendEvent(int code, const class Coord &mouseOfs) { }
 	virtual void rotateDegreesAround(float f, const class Coord &p) { }
