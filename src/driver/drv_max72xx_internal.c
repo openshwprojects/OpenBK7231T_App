@@ -80,7 +80,7 @@ void MAX72XX_spiTransfer(max72XX_t *led, int adddr, unsigned char opcode, byte d
 	MAX72XX_DELAY
 	for (i = maxbytes; i > 0; i--)
 		PORT_shiftOut(led->port_mosi, led->port_clk, MSBFIRST, led->spidata[i - 1], 1);
-#if WINDOWS
+#if WINDOWS && !LINUX
 	SIM_SetMAX7219Pixels(led->led_status, led->maxDevices);
 #endif
 	MAX72XX_DELAY
