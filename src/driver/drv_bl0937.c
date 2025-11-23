@@ -75,6 +75,9 @@ static uint32_t g_p_pulsesprevsec = 0;
 
 #define TIME_CHECK_COMPARE_NTP 1
 #if TIME_CHECK_COMPARE_NTP > 0
+#include "drv_ntp.h"
+#include <time.h>
+
 time_t g_ntpTime;
 struct tm *ltm;
 int_fast8_t g_ntp_hourlast=-1;
@@ -85,6 +88,8 @@ time_t g_sfreqcalc_ntpTime_last;
 uint g_sfreqcalc_secelap_last=0;
 float g_scale_samplefreq=1;
 #endif
+
+#define CMD_SEND_VAL_MQTT 1
 
 void HlwCf1Interrupt(int pinNum)
 {
@@ -102,12 +107,15 @@ void HlwCfInterrupt(int pinNum)
 
 commandResult_t BL0937_cmdPowerMax(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
+	const char cmdName[] = "PowerMax";
 	float maxPower;
+	int argok=-2;
 
 	if(args == 0 || *args == 0)
 	{
 		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "This command needs one argument");
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+//		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+		argok=-1;
 	}
 	maxPower = atof(args);
 	if((maxPower > 200.0) && (maxPower < 7200.0f))
@@ -120,69 +128,93 @@ commandResult_t BL0937_cmdPowerMax(const void* context, const char* cmd, const c
 			snprintf(dbg, sizeof(dbg), "PowerMax: set max to %f\n", BL0937_PMAX);
 			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, dbg);
 		}
+		argok=1;
 	}
-	return CMD_RES_OK;
+#if CMD_SEND_VAL_MQTT > 0
+	char curvalstr[8]; 
+	if ( (float)maxPower < 10000.0f ) { //ensure there is no strlen overflow
+		sprintf(curvalstr, "%.2f", (float)maxPower);
+	} else {
+		strcpy(curvalstr, "invalid");
+	}
+	MQTT_PublishMain_StringString(cmdName, curvalstr, OBK_PUBLISH_FLAG_QOS_ZERO);
+#endif
+	return (argok>0)?CMD_RES_OK:((argok>=-1)?CMD_RES_NOT_ENOUGH_ARGUMENTS:CMD_RES_BAD_ARGUMENT);
 }
 
 commandResult_t BL0937_cmdIntervalCPMinMax(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
+	const char cmdName[] = "BL0937_IntervalCPMinMax";
+	int argok=0;
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-//	if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2))
-	if(Tokenizer_GetArgsCount()<2)	
-	{
-		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d BL0937_IntervalCPMinMax: not enough arguments, current values %lu %lu. \n", g_secondsElapsed
+	if(Tokenizer_GetArgsCount()<2) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: not enough arguments, current values %lu %lu. \n", g_secondsElapsed, cmdName
 			, g_bl_secMinNextCalc, g_bl_secForceNextCalc);
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
-
-	int minCycleTime = Tokenizer_GetArgInteger(0);
-	int maxCycleTime = Tokenizer_GetArgInteger(1);
-	if( minCycleTime < 1 || maxCycleTime < minCycleTime || maxCycleTime > 900 || minCycleTime > maxCycleTime)
-	{
-		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d BL0937_IntervalCPMinMax: minimum 1 second, maximum 900 seconds allowed, min %i between max %i (keep current %i %i). \n", g_secondsElapsed
-			, minCycleTime, maxCycleTime, g_bl_secMinNextCalc, g_bl_secForceNextCalc);
-		return CMD_RES_BAD_ARGUMENT;
-	}
-	else
-	{
-		g_bl_secMinNextCalc = minCycleTime;
-		int alreadyWaitedSec=g_bl_secForceNextCalc-g_bl_secUntilNextCalc;
-		if (alreadyWaitedSec > maxCycleTime || g_secondsElapsed < 30) { //if used in startup command (first 30 sec)
-			g_bl_secUntilNextCalc = 2;
-		} else {
-			g_bl_secUntilNextCalc = maxCycleTime - alreadyWaitedSec;
+//		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+		argok=-1;
+	} else {
+		int minCycleTime = Tokenizer_GetArgInteger(0);
+		int maxCycleTime = Tokenizer_GetArgInteger(1);
+		if( minCycleTime < 0 || maxCycleTime < minCycleTime || maxCycleTime > 900 || minCycleTime > maxCycleTime) {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: minimum 0 second, maximum 900 seconds allowed, min %i between max %i (keep current %i %i). \n", g_secondsElapsed, cmdName
+				, minCycleTime, maxCycleTime, g_bl_secMinNextCalc, g_bl_secForceNextCalc);
+	//		return CMD_RES_BAD_ARGUMENT;
+			argok=-2;
+		} else 	{
+			g_bl_secMinNextCalc = minCycleTime;
+			int alreadyWaitedSec=g_bl_secForceNextCalc-g_bl_secUntilNextCalc;
+			if (alreadyWaitedSec > maxCycleTime || g_secondsElapsed < 30) { //if used in startup command (first 30 sec)
+				g_bl_secUntilNextCalc = 2;
+			} else {
+				g_bl_secUntilNextCalc = maxCycleTime - alreadyWaitedSec;
+			}
+			g_bl_secForceNextCalc = maxCycleTime;
+			argok=1;
 		}
-		g_bl_secForceNextCalc = maxCycleTime;
+		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: one cycle will have min %i and max %i seconds. Remaining to max cycle time %i \n", g_secondsElapsed, cmdName
+			, g_bl_secMinNextCalc, g_bl_secForceNextCalc, g_bl_secUntilNextCalc);
 	}
-
-	ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_IntervalCPMinMax: one cycle will have min %i and max %i seconds. Remaining to max cycle time %i \n", g_secondsElapsed
-		, g_bl_secMinNextCalc, g_bl_secForceNextCalc, g_bl_secUntilNextCalc);
-
-	return CMD_RES_OK;
+#if CMD_SEND_VAL_MQTT > 0
+	char curvalstr[24]; //10+1 char per uint32
+	sprintf(curvalstr, "%lu %lu", g_bl_secMinNextCalc, g_bl_secForceNextCalc);
+	MQTT_PublishMain_StringString(cmdName, curvalstr, OBK_PUBLISH_FLAG_QOS_ZERO);
+#endif
+//	return CMD_RES_OK;
+	return (argok>0)?CMD_RES_OK:((argok>=-1)?CMD_RES_NOT_ENOUGH_ARGUMENTS:CMD_RES_BAD_ARGUMENT);
 }
 
 commandResult_t BL0937_cmdMinPulsesVCP(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
+	const char cmdName[] = "BL0937_MinPulsesVCP";
+	int argok=0;
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-//	if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3))
-	if(Tokenizer_GetArgsCount()<3)	
-	{
-		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d BL0937_MinPulsesVCP: not enough arguments, current values %lu %lu %lu.", g_secondsElapsed
+	if(Tokenizer_GetArgsCount()<3) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: not enough arguments, current values %lu %lu %lu.", g_secondsElapsed, cmdName
 			, g_minPulsesV, g_minPulsesC, g_minPulsesP);
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+//		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+		argok=-1;
+	} else {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: min pulses VCP %i %i %i (old=%i %i %i), one P-pulse equals ~0.474..0.486 mWh \n", g_secondsElapsed, cmdName
+			, Tokenizer_GetArgInteger(0), Tokenizer_GetArgInteger(1), Tokenizer_GetArgInteger(2)
+			, g_minPulsesV, g_minPulsesC, g_minPulsesP);
+		g_minPulsesV = Tokenizer_GetArgInteger(0);
+		g_minPulsesC = Tokenizer_GetArgInteger(1);
+		g_minPulsesP = Tokenizer_GetArgInteger(2);
+		argok=1;
 	}
-	ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d BL0937_MinPulsesVCP: min pulses VCP %i %i %i (old=%i %i %i), one P-pulse equals ~0.474..0.486 mWh \n", g_secondsElapsed
-		, Tokenizer_GetArgInteger(0), Tokenizer_GetArgInteger(1), Tokenizer_GetArgInteger(2)
-		, g_minPulsesV, g_minPulsesC, g_minPulsesP);
-	g_minPulsesV = Tokenizer_GetArgInteger(0);
-	g_minPulsesC = Tokenizer_GetArgInteger(1);
-	g_minPulsesP = Tokenizer_GetArgInteger(2);
-
-	return CMD_RES_OK;
+#if CMD_SEND_VAL_MQTT > 0
+	char curvalstr[36]; //10+1 char per uint32
+	sprintf(curvalstr, "%lu %lu %lu", g_minPulsesV, g_minPulsesC, g_minPulsesP);
+	MQTT_PublishMain_StringString(cmdName, curvalstr, OBK_PUBLISH_FLAG_QOS_ZERO);
+#endif
+//	return CMD_RES_OK;
+	return (argok>0)?CMD_RES_OK:((argok>=-1)?CMD_RES_NOT_ENOUGH_ARGUMENTS:CMD_RES_BAD_ARGUMENT);
 }
 
 commandResult_t BL0937_cmdScalefactorMultiply(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
+	const char cmdName[] = "BL0937_ScalefactorMultiply";
+	int argok=0;
 	float voltage_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, DEFAULT_VOLTAGE_CAL);
 	float current_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, DEFAULT_CURRENT_CAL);
 	float power_cal_cur = CFG_GetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, DEFAULT_POWER_CAL);
@@ -191,62 +223,74 @@ commandResult_t BL0937_cmdScalefactorMultiply(const void* context, const char* c
 	float multiplyscale_c = (float)BL0937_utlGetDigitFactor((float)DEFAULT_CURRENT_CAL, current_cal_cur);
 	float multiplyscale_p = (float)BL0937_utlGetDigitFactor((float)DEFAULT_POWER_CAL, power_cal_cur);
 
-//	float multipliereaddrv=0, multipliereaddrc=0, multipliereaddrp=0;
-//	float multiplyscale_v = (float)BL0937_utlGetDigitFactor((float)DEFAULT_VOLTAGE_CAL, voltage_cal_cur, &multipliereaddrv);
-//	float multiplyscale_c = (float)BL0937_utlGetDigitFactor((float)DEFAULT_CURRENT_CAL, current_cal_cur, &multipliereaddrc);
-//	float multiplyscale_p = (float)BL0937_utlGetDigitFactor((float)DEFAULT_POWER_CAL, power_cal_cur, &multipliereaddrp);
-
-
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
 //	if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3))
-	if(Tokenizer_GetArgsCount()<3)
-	{
-		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d BL0937_ScalefactorMultiply: not enough arguments to change. Current (default) values V %E (%E) C %E (%E) P %E (%E), recommended factors %f %f %f \n", g_secondsElapsed
+	if(Tokenizer_GetArgsCount()<3) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: not enough arguments to change. Current (default) values V %E (%E) C %E (%E) P %E (%E), recommended factors %f %f %f \n", g_secondsElapsed, cmdName
 			, voltage_cal_cur, DEFAULT_VOLTAGE_CAL, current_cal_cur, DEFAULT_CURRENT_CAL, power_cal_cur, DEFAULT_POWER_CAL
 			, multiplyscale_v, multiplyscale_c, multiplyscale_p );
 //		ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_ScalefactorMultiply: not enough arguments to change. Current values %E %E %E, recommended factors %f (%f) %f (%f) %f (%f) \n"
 //			, voltage_cal_cur, current_cal_cur, power_cal_cur, 1.0f/multiplyscale_v, multipliereaddrv
 //			, 1.0f/multiplyscale_c, multipliereaddrc, 1.0f/multiplyscale_p, multipliereaddrp);
 //		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+		argok=-1;
+	} else {
+		float factor_v = (float)Tokenizer_GetArgFloat(0);
+		float factor_c = (float)Tokenizer_GetArgFloat(1);
+		float factor_p = (float)Tokenizer_GetArgFloat(2);
 
-		return CMD_RES_OK;
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "ts %5d %s: V %E * %f C  %E * %f P %E * %f \n", g_secondsElapsed, cmdName
+			, voltage_cal_cur, factor_v, current_cal_cur, factor_c, power_cal_cur, factor_p);
+		voltage_cal_cur *= factor_v;
+		current_cal_cur *= factor_c;
+		power_cal_cur *= factor_p;
+		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: write new scale factors to CFG %E %E %E\n", g_secondsElapsed, cmdName
+			, voltage_cal_cur, current_cal_cur, power_cal_cur);
+		CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, voltage_cal_cur);
+		CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, current_cal_cur);
+		CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, power_cal_cur);	
+
+		//new scale factors are only updated on next reboot, trigger it here for uninterrupted usage
+		PwrCal_Init(PWR_CAL_MULTIPLY, DEFAULT_VOLTAGE_CAL, DEFAULT_CURRENT_CAL,
+		DEFAULT_POWER_CAL);
+		argok=1;
 	}
+#if CMD_SEND_VAL_MQTT > 0
+	char curvalstr[64]; 
+	sprintf(curvalstr, "%.6E %.6E %.6E", voltage_cal_cur, current_cal_cur, power_cal_cur);
+	MQTT_PublishMain_StringString("ScalefactorsVCP", curvalstr, OBK_PUBLISH_FLAG_QOS_ZERO);
+#endif
 
-	float factor_v = (float)Tokenizer_GetArgFloat(0);
-	float factor_c = (float)Tokenizer_GetArgFloat(1);
-	float factor_p = (float)Tokenizer_GetArgFloat(2);
-
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "ts %5d BL0937_ScalefactorMultiply: V %E * %f C  %E * %f P %E * %f \n", g_secondsElapsed
-		, voltage_cal_cur, factor_v, current_cal_cur, factor_c, power_cal_cur, factor_p);
-	voltage_cal_cur *= factor_v;
-	current_cal_cur *= factor_c;
-	power_cal_cur *= factor_p;
-	ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d BL0937_ScalefactorMultiply: write new scale factors to CFG %E %E %E\n", g_secondsElapsed
-		, voltage_cal_cur, current_cal_cur, power_cal_cur);
-	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_VOLTAGE, voltage_cal_cur);
-	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_CURRENT, current_cal_cur);
-	CFG_SetPowerMeasurementCalibrationFloat(CFG_OBK_POWER, power_cal_cur);	
-
-	//new scale factors are only updated on next reboot, trigger it here for uninterrupted usage
-	PwrCal_Init(PWR_CAL_MULTIPLY, DEFAULT_VOLTAGE_CAL, DEFAULT_CURRENT_CAL,
-	DEFAULT_POWER_CAL);
-
-	return CMD_RES_OK;
+//	return CMD_RES_OK;
+	return (argok>0)?CMD_RES_OK:((argok>=-1)?CMD_RES_NOT_ENOUGH_ARGUMENTS:CMD_RES_BAD_ARGUMENT);
 }
 
 commandResult_t BL0937_cmdForceOnPwrROC(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
+	const char cmdName[] = "BL0937_ForceOnPwrROC";
+	int argok=0;
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-//	if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1))
-	if(Tokenizer_GetArgsCount()<1)
-	{
-		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d BL0937_ForceOnPwrROC: not enough arguments to change, current roc recognition %f W/s.\n", g_secondsElapsed, (float)g_p_forceonroc);
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	if(Tokenizer_GetArgsCount()<1) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: not enough arguments to change, current roc recognition %f W/s.\n", g_secondsElapsed, cmdName, (float)g_p_forceonroc);
+//		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+		argok=-1;
+	} else {
+		g_p_pulsesprevsec = g_p_pulses; //update to prevent misleading error message
+		g_p_forceonroc=(float)Tokenizer_GetArgInteger(0);
+		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: %f W/s", (float)g_p_forceonroc);
+		argok=1;
 	}
-	g_p_pulsesprevsec = g_p_pulses; //update to prevent misleading error message
-	g_p_forceonroc=(float)Tokenizer_GetArgInteger(0);
-	ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d BL0937_ForceOnPwrROC: %f W/s", (float)g_p_forceonroc);
-	return CMD_RES_OK;
+#if CMD_SEND_VAL_MQTT > 0
+	char curvalstr[8]; 
+	if ( (float)g_p_forceonroc < 10000.0f ) { //ensure there is no strlen overflow
+		sprintf(curvalstr, "%.2f", (float)g_p_forceonroc);
+	} else {
+		strcpy(curvalstr, "invalid");
+	}
+	MQTT_PublishMain_StringString(cmdName, curvalstr, OBK_PUBLISH_FLAG_QOS_ZERO);
+#endif
+//	return CMD_RES_OK;
+	return (argok>0)?CMD_RES_OK:((argok>=-1)?CMD_RES_NOT_ENOUGH_ARGUMENTS:CMD_RES_BAD_ARGUMENT);
 }
 
 
@@ -714,6 +758,11 @@ void BL0937_RunEverySecond(void)
 	struct tm* ltm = gmtime(&g_ntpTime);
 	#define NTPTIMEOFFSET 1763850000
 	if (NTP_IsTimeSynced()) {
+		if ( g_sfreqcalc_ntphour_last <  3600) {
+			g_sfreqcalc_secelap_last = g_ntpTime;
+			g_sfreqcalc_ntphour_last = g_secondsElapsed;
+		}
+
 		g_ntpTime = (time_t)NTP_GetCurrentTime();
 		ltm = gmtime(&g_ntpTime);
 		if (g_ntp_hourlast != ltm->tm_hour ) {
