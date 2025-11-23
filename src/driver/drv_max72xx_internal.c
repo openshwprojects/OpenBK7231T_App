@@ -60,6 +60,7 @@ void PORT_shiftOut(int dataPin, int clockPin, int bitOrder, int val, int totalBy
 	}
 }
 
+void SIM_SetMAX7219Pixels(byte *data, int size);
 void MAX72XX_spiTransfer(max72XX_t *led, int adddr, unsigned char opcode, byte datta) {
 	if (led == 0) {
 		return;
@@ -79,6 +80,9 @@ void MAX72XX_spiTransfer(max72XX_t *led, int adddr, unsigned char opcode, byte d
 	MAX72XX_DELAY
 	for (i = maxbytes; i > 0; i--)
 		PORT_shiftOut(led->port_mosi, led->port_clk, MSBFIRST, led->spidata[i - 1], 1);
+#if WINDOWS
+	SIM_SetMAX7219Pixels(led->led_status, led->maxDevices);
+#endif
 	MAX72XX_DELAY
 	HAL_PIN_SetOutputValue(led->port_cs, HIGH);
 }
@@ -343,7 +347,7 @@ void MAX72XX_init(max72XX_t *led) {
 	int i;
 
 	HAL_PIN_SetOutputValue(led->port_cs, HIGH);
-	for (i = 0; i < 64; i++)
+	for (i = 0; i < led->maxDevices * 8; i++)
 		led->led_status[i] = 0x00;
 	for (i = 0; i < led->maxDevices; i++) {
 		MAX72XX_spiTransfer(led, i, OP_DISPLAYTEST, 0);

@@ -850,6 +850,7 @@
     <ClCompile Include="src\sim\Controller_Bulb.cpp" />
     <ClCompile Include="src\sim\Controller_Button.cpp" />
     <ClCompile Include="src\sim\Controller_DHT11.cpp" />
+    <ClCompile Include="src\sim\Controller_MAX7219.cpp" />
     <ClCompile Include="src\sim\Controller_Pot.cpp" />
     <ClCompile Include="src\sim\Controller_SimulatorLink.cpp" />
     <ClCompile Include="src\sim\Controller_Switch.cpp" />
@@ -857,6 +858,7 @@
     <ClCompile Include="src\sim\CursorManager.cpp" />
     <ClCompile Include="src\sim\Junction.cpp" />
     <ClCompile Include="src\sim\Line.cpp" />
+    <ClCompile Include="src\sim\Point.cpp" />
     <ClCompile Include="src\sim\PrefabManager.cpp" />
     <ClCompile Include="src\sim\RecentList.cpp" />
     <ClCompile Include="src\sim\Rect.cpp" />
