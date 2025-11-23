@@ -45,9 +45,9 @@ uint32_t res_p = 0;
 float BL0937_PMAX = 3680.0f;
 float last_p = 0.0f;
 
-volatile uint32_t g_v_pulses = 0, g_c_pulses = 0;
+volatile unsigned long g_v_pulses = 0, g_c_pulses = 0;
 static portTickType g_ticksElapsed_v=1, g_ticksElapsed_c=1; //initial value > 0 to enable calculation at first run
-volatile uint32_t g_p_pulses = 0, g_p_pulsesprev = 0;
+volatile unsigned long g_p_pulses = 0, g_p_pulsesprev = 0;
 static portTickType g_pulseStampStart_v=0, g_pulseStampStart_c=0, g_pulseStampStart_p=0;
 #define PULSESTAMPDEBUG 0
 #if PULSESTAMPDEBUG>0
@@ -56,11 +56,11 @@ volatile portTickType g_pulseStampEnd_v=0, g_pulseStampEnd_c=0;
 
 #define NEW_UPDATE_CYCLES 0
 #if NEW_UPDATE_CYCLES>0
-	static uint32_t g_minPulsesV = 200, g_minPulsesC = 3, g_minPulsesP = 5; 
-	static uint32_t g_bl_secUntilNextCalc= 1, g_bl_secForceNextCalc = 30, g_bl_secMinNextCalc = 3; //at 230V minintervall/Pdiff 15s=0.115W, 7.5s=0.23W, 
+	static unsigned long g_minPulsesV = 200, g_minPulsesC = 3, g_minPulsesP = 5; 
+	static unsigned long g_bl_secUntilNextCalc= 1, g_bl_secForceNextCalc = 30, g_bl_secMinNextCalc = 3; //at 230V minintervall/Pdiff 15s=0.115W, 7.5s=0.23W, 
 #else
-	static uint32_t g_bl_secUntilNextCalc= 0, g_bl_secForceNextCalc = 0, g_bl_secMinNextCalc = 0; //at 230V minintervall/Pdiff 15s=0.115W, 7.5s=0.23W, 3s=0.575W, 1.5s=1.15W, 1s=1.73W
-	static uint32_t g_minPulsesV = 0, g_minPulsesC = 0, g_minPulsesP = 0;	// keep behaviour for compatibility
+	static unsigned long g_bl_secUntilNextCalc= 0, g_bl_secForceNextCalc = 0, g_bl_secMinNextCalc = 0; //at 230V minintervall/Pdiff 15s=0.115W, 7.5s=0.23W, 3s=0.575W, 1.5s=1.15W, 1s=1.73W
+	static unsigned long g_minPulsesV = 0, g_minPulsesC = 0, g_minPulsesP = 0;	// keep behaviour for compatibility
 #endif
 
 static portTickType g_pulseStampTestPrev=0;
@@ -69,7 +69,7 @@ static float g_freqmultiplierV=DEFAULT_VOLTAGE_FREQMULTIPLY, g_freqmultiplierP=D
 static float g_p_forceonroc=0.0f; 
 static int g_forceonroc_gtlim=-1;
 static float g_p_prevsec=0;
-static uint32_t g_p_pulsesprevsec = 0;
+static unsigned long g_p_pulsesprevsec = 0;
 
 #define TIME_CHECK_COMPARE_NTP 1
 #if TIME_CHECK_COMPARE_NTP > 0
@@ -83,7 +83,7 @@ int g_diff_ntp_secel=0;
 int g_sfreqcalcdone=0;
 int_fast8_t g_sfreqcalc_ntphour_last=-1;
 time_t g_sfreqcalc_ntpTime_last;
-uint32_t g_sfreqcalc_secelap_last=0;
+unsigned long g_sfreqcalc_secelap_last=0;
 float g_scale_samplefreq=1;
 #endif
 
@@ -592,7 +592,7 @@ void BL0937_RunEverySecond(void)
 	float p_roc = 0.0f;
 	float p_thissec = -9999.99f;
 	if (g_p_forceonroc > 0) {
-		uint32_t freq_p_thissec = (uint32_t)BL0937_utlDiffCalcU32(g_p_pulsesprevsec, g_p_pulses);
+		unsigned long freq_p_thissec = (unsigned long)BL0937_utlDiffCalcU32(g_p_pulsesprevsec, g_p_pulses);
 		if (freq_p_thissec > 10000) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "ts %5d p roc detection invalid freq %i p_pulses prevsec %i now %i]\n", g_secondsElapsed
 				,freq_p_thissec, g_p_prevsec, g_p_pulses);
@@ -621,8 +621,8 @@ void BL0937_RunEverySecond(void)
 	if ( (res_p >= g_minPulsesP  && (g_bl_secUntilNextCalc <= g_bl_secForceNextCalc - g_bl_secMinNextCalc))
 			|| g_bl_secUntilNextCalc <= 0 || g_forceonroc_gtlim >0 ) {
 				portTickType g_pulseStampTest= pulseStampNow*10000;
-				uint32_t difftestov=0;
-				uint32_t difftest=0;
+				unsigned long difftestov=0;
+				unsigned long difftest=0;
 				if (g_pulseStampTest < g_pulseStampTestPrev)
 				{
 					difftestov = (0xFFFFFFFFUL - g_pulseStampTestPrev) + g_pulseStampTest + 1;
