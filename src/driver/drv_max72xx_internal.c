@@ -202,6 +202,26 @@ byte Byte_ReverseBits(byte num)
 	}
 	return reversed;
 }
+void MAX72XX_setPixel(max72XX_t* led, int x, int y, int b)
+{
+	if (led == 0) return;
+	if (x < 0 || y < 0) return;
+	int totalWidth = led->maxDevices * 8;
+	if (x >= totalWidth || y > 7) return;
+
+	int addr = x / 8;
+	int column = x % 8;
+	column = 7 - column;
+	int offset = addr * 8;
+	byte mask = (byte)(0x80 >> column);
+
+	if (b)
+		led->led_status[offset + y] |= mask;
+	else
+		led->led_status[offset + y] &= (byte)(~mask);
+
+	MAX72XX_spiTransfer(led, addr, y + 1, led->led_status[offset + y]);
+}
 void MAX72XX_displayArray(max72XX_t* led, byte *p, int devs, int ofs)
 {
 	if (led == 0) {

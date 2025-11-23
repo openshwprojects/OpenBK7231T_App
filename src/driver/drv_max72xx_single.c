@@ -412,6 +412,23 @@ static commandResult_t DRV_MAX72XX_Clear(const void *context, const char *cmd, c
 	}
 	return CMD_RES_OK;
 }
+static commandResult_t DRV_MAX72XX_SetPixel(const void *context, const char *cmd, const char *args, int flags) {
+
+	if (g_max == 0)
+		return CMD_RES_ERROR;
+
+	Tokenizer_TokenizeString(args, 0);
+
+
+	int x, y, b;
+	x = Tokenizer_GetArgInteger(0);
+	y = Tokenizer_GetArgInteger(1);
+	b = Tokenizer_GetArgInteger(2);
+
+	MAX72XX_setPixel(g_max, x, y, b);
+
+	return CMD_RES_OK;
+}
 static commandResult_t DRV_MAX72XX_Print(const void *context, const char *cmd, const char *args, int flags) {
 	int ofs;
 	//const char *s;
@@ -484,6 +501,7 @@ void DRV_MAX72XX_Init() {
 	//cmddetail:"fn":"DRV_DRV_MAX72XX_Clear","file":"driver/drv_max72xx_single.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MAX72XX_Clear", DRV_MAX72XX_Clear, NULL);
+	CMD_RegisterCommand("MAX72XX_SetPixel", DRV_MAX72XX_SetPixel, NULL);
 }
 
 
