@@ -70,22 +70,20 @@ static float g_p_forceonroc=0.0f;
 static int g_forceonroc_gtlim=-1;
 static float g_p_prevsec=0;
 static uint32_t g_p_pulsesprevsec = 0;
-//static uint g_secondsElapsed=0;
-//static	uint8_t cyclecnt=0, cyclecnt_prev=0;
 
 #define TIME_CHECK_COMPARE_NTP 1
 #if TIME_CHECK_COMPARE_NTP > 0
 #include "drv_ntp.h"
 #include <time.h>
 
-time_t g_ntpTime;
+//time_t g_ntpTime;
 struct tm *ltm;
 int_fast8_t g_ntp_hourlast=-1;
 int g_diff_ntp_secel=0;
 int g_sfreqcalcdone=0;
 int_fast8_t g_sfreqcalc_ntphour_last=-1;
 time_t g_sfreqcalc_ntpTime_last;
-uint g_sfreqcalc_secelap_last=0;
+uint32_t g_sfreqcalc_secelap_last=0;
 float g_scale_samplefreq=1;
 #endif
 
@@ -594,7 +592,7 @@ void BL0937_RunEverySecond(void)
 	float p_roc = 0.0f;
 	float p_thissec = -9999.99f;
 	if (g_p_forceonroc > 0) {
-		uint freq_p_thissec = (uint)BL0937_utlDiffCalcU32(g_p_pulsesprevsec, g_p_pulses);
+		uint32_t freq_p_thissec = (uint)BL0937_utlDiffCalcU32(g_p_pulsesprevsec, g_p_pulses);
 		if (freq_p_thissec > 10000) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "ts %5d p roc detection invalid freq %i p_pulses prevsec %i now %i]\n", g_secondsElapsed
 				,freq_p_thissec, g_p_prevsec, g_p_pulses);
