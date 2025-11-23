@@ -592,7 +592,7 @@ void BL0937_RunEverySecond(void)
 	float p_roc = 0.0f;
 	float p_thissec = -9999.99f;
 	if (g_p_forceonroc > 0) {
-		uint32_t freq_p_thissec = (uint)BL0937_utlDiffCalcU32(g_p_pulsesprevsec, g_p_pulses);
+		uint32_t freq_p_thissec = (uint32_t)BL0937_utlDiffCalcU32(g_p_pulsesprevsec, g_p_pulses);
 		if (freq_p_thissec > 10000) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "ts %5d p roc detection invalid freq %i p_pulses prevsec %i now %i]\n", g_secondsElapsed
 				,freq_p_thissec, g_p_prevsec, g_p_pulses);
@@ -761,7 +761,7 @@ void BL0937_RunEverySecond(void)
 			g_sfreqcalc_ntphour_last = g_secondsElapsed;
 		}
 
-		g_ntpTime = (time_t)NTP_GetCurrentTime();
+//		g_ntpTime = (time_t)NTP_GetCurrentTime();
 		ltm = gmtime(&g_ntpTime);
 		if (g_ntp_hourlast != ltm->tm_hour ) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "ts %5d ntpts %d cur diff (with offset NTPTIMEOFFSET %d) %d\n", g_secondsElapsed
