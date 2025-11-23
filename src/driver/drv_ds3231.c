@@ -15,6 +15,7 @@
 
 static softI2C_t g_ds3231_softI2C;
 static uint8_t sync2device = 0;			// 0 do nothing		1 set devicetime to RTC on startup	2 set devicetime to RTC regulary
+static uint8_t clocksetcounter = 0;		// if deviceclock is set, this driver is informed, so it can decide, if RTC should be set, too (e.g on first event and the every 60 events (1 hour for ntp)
 
 
 static uint8_t bcd_to_dec(uint8_t val) {
@@ -107,6 +108,13 @@ bool DS3231_SetEpoch(const time_t st)
     return (DS3231_SetTime(&time));
 }
 
+void DS3231_informClockWasSet(bool force){
+//    ADDLOG_DEBUG(LOG_FEATURE_RAW, "DS3231_informClockWasSet called. force=%i - clocksetcounter=%i",force,  clocksetcounter);
+    if ((clocksetcounter++ % 60 == 0) || force){
+    	ADDLOG_INFO(LOG_FEATURE_RAW, "DS3231_informClockWasSet - setting RTC time. force=%i - clocksetcounter=%i",force,  clocksetcounter);
+    	DS3231_SetEpoch(Clock_GetCurrentTimeWithoutOffset());
+    }
+}
 
 
 bool DS3231_SetTime(const ds3231_time_t* time)

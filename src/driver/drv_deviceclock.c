@@ -23,6 +23,9 @@ uint32_t g_epochOnStartup = 0;
 int g_UTCoffset = 0;
 void CLOCK_setDeviceTime(uint32_t time){
 	ADDLOG_DEBUG(LOG_FEATURE_RAW, "CLOCK_setDeviceTime - time = %lu - g_secondsElapsed =%lu \r\n",time,g_secondsElapsed);
+#if (ENABLE_DRIVER_DS3231)
+	uint32_t temp = g_epochOnStartup;
+#endif
 	g_epochOnStartup = (uint32_t)time - g_secondsElapsed;
 #if ENABLE_CLOCK_DST
 	setDST();	// just to be sure: recalculate DST
@@ -30,7 +33,10 @@ void CLOCK_setDeviceTime(uint32_t time){
 #if (ENABLE_DRIVER_DS3231)
 #include "drv_public.h"
 #include "drv_ds3231.h"
-	if (DRV_IsRunning("DS3231")) DS3231_SetEpoch(time);
+//	ADDLOG_DEBUG(LOG_FEATURE_RAW, "CLOCK_setDeviceTime 1 - temp = %lu - g_epochOnStartup = %lu \r\n",temp,g_epochOnStartup);
+	temp -= g_epochOnStartup;
+//	ADDLOG_DEBUG(LOG_FEATURE_RAW, "CLOCK_setDeviceTime 2 - temp = %lu \r\n",temp);
+	if (DRV_IsRunning("DS3231")) DS3231_informClockWasSet( (temp*temp > 25));		// use "force" if new time differs more than 5 seconds (temp*temp is allways positive)
 #endif
 
 //	ADDLOG_INFO(LOG_FEATURE_RAW, "CLOCK_setDeviceTime - time = %lu - g_secondsElapsed =%lu - g_epochOnStartup=%lu \r\n",time,g_secondsElapsed,g_epochOnStartup);
