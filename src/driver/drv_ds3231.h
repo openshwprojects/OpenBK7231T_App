@@ -18,6 +18,7 @@ void DS3231_Init();
 void DS3231_Stop();
 bool DS3231_ReadTime(ds3231_time_t* time);
 bool DS3231_SetTime(const ds3231_time_t* time);
+bool DS3231_SetEpoch(const time_t st);
 void DS3231_RegisterCommands();
 void DS3231_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState);
 void DS3231_OnEverySecond();

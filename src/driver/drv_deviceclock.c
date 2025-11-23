@@ -28,6 +28,8 @@ void CLOCK_setDeviceTime(uint32_t time){
 	setDST();	// just to be sure: recalculate DST
 #endif
 #if (ENABLE_DRIVER_DS3231)
+#include "drv_public.h"
+#include "drv_ds3231.h"
 	if (DRV_IsRunning("DS3231")) DS3231_SetEpoch(time);
 #endif
 
