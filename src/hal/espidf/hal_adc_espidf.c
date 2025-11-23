@@ -106,5 +106,25 @@ int HAL_ADC_Read(int pinNumber)
 	}
 	return raw;
 }
+#elif PLATFORM_ESP8266
 
-#endif // PLATFORM_ESPIDF
+#include "../hal_adc.h"
+#include "../../logging/logging.h"
+
+extern unsigned short system_adc_read(void);
+
+void HAL_ADC_Init(int pinNumber)
+{
+
+}
+
+int HAL_ADC_Read(int pinNumber)
+{
+
+	// system_adc_read() returns 10-bit value (0–1023)
+	int raw = system_adc_read();
+
+	return raw;
+}
+
+#endif 

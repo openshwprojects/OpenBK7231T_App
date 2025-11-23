@@ -60,6 +60,7 @@ void PORT_shiftOut(int dataPin, int clockPin, int bitOrder, int val, int totalBy
 	}
 }
 
+void SIM_SetMAX7219Pixels(byte *data, int size);
 void MAX72XX_spiTransfer(max72XX_t *led, int adddr, unsigned char opcode, byte datta) {
 	if (led == 0) {
 		return;
@@ -79,6 +80,9 @@ void MAX72XX_spiTransfer(max72XX_t *led, int adddr, unsigned char opcode, byte d
 	MAX72XX_DELAY
 	for (i = maxbytes; i > 0; i--)
 		PORT_shiftOut(led->port_mosi, led->port_clk, MSBFIRST, led->spidata[i - 1], 1);
+#if WINDOWS && !LINUX
+	SIM_SetMAX7219Pixels(led->led_status, led->maxDevices);
+#endif
 	MAX72XX_DELAY
 	HAL_PIN_SetOutputValue(led->port_cs, HIGH);
 }
@@ -197,6 +201,26 @@ byte Byte_ReverseBits(byte num)
 		reversed |= bit << (8 - 1 - i);
 	}
 	return reversed;
+}
+void MAX72XX_setPixel(max72XX_t* led, int x, int y, int b)
+{
+	if (led == 0) return;
+	if (x < 0 || y < 0) return;
+	int totalWidth = led->maxDevices * 8;
+	if (x >= totalWidth || y > 7) return;
+
+	int addr = x / 8;
+	int column = x % 8;
+	column = 7 - column;
+	int offset = addr * 8;
+	byte mask = (byte)(0x80 >> column);
+
+	if (b)
+		led->led_status[offset + y] |= mask;
+	else
+		led->led_status[offset + y] &= (byte)(~mask);
+
+	MAX72XX_spiTransfer(led, addr, y + 1, led->led_status[offset + y]);
 }
 void MAX72XX_displayArray(max72XX_t* led, byte *p, int devs, int ofs)
 {
@@ -343,7 +367,7 @@ void MAX72XX_init(max72XX_t *led) {
 	int i;
 
 	HAL_PIN_SetOutputValue(led->port_cs, HIGH);
-	for (i = 0; i < 64; i++)
+	for (i = 0; i < led->maxDevices * 8; i++)
 		led->led_status[i] = 0x00;
 	for (i = 0; i < led->maxDevices; i++) {
 		MAX72XX_spiTransfer(led, i, OP_DISPLAYTEST, 0);
