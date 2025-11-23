@@ -1,3 +1,6 @@
+#include "../obk_config.h"
+
+#if (ENABLE_DRIVER_DS3231)
 #include "../new_pins.h"
 #include "../logging/logging.h"
 #include "drv_local.h"
@@ -246,3 +249,4 @@ void DS3231_OnEverySecond(){
 	if ( sync2device > 1 && g_secondsElapsed % 60 == 2 )
 		CLOCK_setDeviceTime(DS3231_ReadEpoch());
 };
+#endif // #if (ENABLE_DRIVER_DS3231)
