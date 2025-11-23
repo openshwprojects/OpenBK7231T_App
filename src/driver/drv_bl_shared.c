@@ -18,6 +18,8 @@
 #include <math.h>
 #include <time.h>
 
+#define CMD_SEND_VAL_MQTT 1
+
 #if ENABLE_BL_TWIN
 #define BL_SENSDATASETS_COUNT 2
 #else
@@ -444,18 +446,27 @@ commandResult_t BL09XX_SetupEnergyStatistic(const void *context, const char *cmd
 
 commandResult_t BL09XX_VCPPublishIntervals(const void *context, const char *cmd, const char *args, int cmdFlags)
 {
+	int argok=0;
 	Tokenizer_TokenizeString(args, 0);
 	// following check must be done after 'Tokenizer_TokenizeString',
 	// so we know arguments count in Tokenizer. 'cmd' argument is
 	// only for warning display
-	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+//	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+	if(Tokenizer_GetArgsCount()<2) {
+//		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+		argok=-1;
+	} else {
+		changeDoNotSendMinFrames = Tokenizer_GetArgInteger(0);
+		changeSendAlwaysFrames = Tokenizer_GetArgInteger(1);
+		argok=1;
 	}
-
-	changeDoNotSendMinFrames = Tokenizer_GetArgInteger(0);
-	changeSendAlwaysFrames = Tokenizer_GetArgInteger(1);
-
-	return CMD_RES_OK;
+#if CMD_SEND_VAL_MQTT > 0
+	char curvalstr[24]; 
+	sprintf(curvalstr, "%i %i", changeDoNotSendMinFrames, changeSendAlwaysFrames);
+	MQTT_PublishMain_StringString("VCPPublishIntervals", curvalstr, OBK_PUBLISH_FLAG_QOS_ZERO);
+#endif
+//	return CMD_RES_OK;
+	return (argok>0)?CMD_RES_OK:((argok>=-1)?CMD_RES_NOT_ENOUGH_ARGUMENTS:CMD_RES_BAD_ARGUMENT);
 }
 
 #if ENABLE_BL_TWIN
@@ -469,40 +480,52 @@ commandResult_t BL09XX_VCPPrecision(const void* context, const char* cmd, const 
   energysensdataset_t* sensdataset = &datasetlist[asensdatasetix];
 
   int i;
+	int argok=0;
 	Tokenizer_TokenizeString(args, 0);
 	// following check must be done after 'Tokenizer_TokenizeString',
 	// so we know arguments count in Tokenizer. 'cmd' argument is
 	// only for warning display
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+//		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+		argok=-1;
+	} else {
+
+	  for (i = 0; i < Tokenizer_GetArgsCount(); i++) {
+		int val = Tokenizer_GetArgInteger(i);
+		switch(i) {
+		case 0: // voltage
+		sensdataset->sensors[OBK_VOLTAGE].rounding_decimals = val;
+		break;
+		case 1: // current
+		sensdataset->sensors[OBK_CURRENT].rounding_decimals = val;
+		break;
+		case 2: // power
+		sensdataset->sensors[OBK_POWER].rounding_decimals = val;
+		sensdataset->sensors[OBK_POWER_APPARENT].rounding_decimals = val;
+		sensdataset->sensors[OBK_POWER_REACTIVE].rounding_decimals = val;
+		break;
+		case 3: // energy
+		for (int j = OBK_CONSUMPTION__DAILY_FIRST; j <= OBK_CONSUMPTION__DAILY_LAST; j++) {
+			sensdataset->sensors[j].rounding_decimals = val;
+		};
+		break;
+		case 4: // frequency
+		sensdataset->sensors[OBK_FREQUENCY].rounding_decimals = val;
+		break;
+
+		};
+	  }
+//		return CMD_RES_OK;
+		argok=1;
 	}
-
-  for (i = 0; i < Tokenizer_GetArgsCount(); i++) {
-    int val = Tokenizer_GetArgInteger(i);
-    switch(i) {
-    case 0: // voltage
-      sensdataset->sensors[OBK_VOLTAGE].rounding_decimals = val;
-      break;
-    case 1: // current
-      sensdataset->sensors[OBK_CURRENT].rounding_decimals = val;
-      break;
-    case 2: // power
-      sensdataset->sensors[OBK_POWER].rounding_decimals = val;
-      sensdataset->sensors[OBK_POWER_APPARENT].rounding_decimals = val;
-      sensdataset->sensors[OBK_POWER_REACTIVE].rounding_decimals = val;
-      break;
-    case 3: // energy
-      for (int j = OBK_CONSUMPTION__DAILY_FIRST; j <= OBK_CONSUMPTION__DAILY_LAST; j++) {
-        sensdataset->sensors[j].rounding_decimals = val;
-      };
-      break;
-    case 4: // frequency
-      sensdataset->sensors[OBK_FREQUENCY].rounding_decimals = val;
-      break;
-
-    };
-  }
-	return CMD_RES_OK;
+#if CMD_SEND_VAL_MQTT > 0
+	char curvalstr[60]; 
+	sprintf(curvalstr, "%i %i %i %i %i", sensdataset->sensors[OBK_VOLTAGE].rounding_decimals, sensdataset->sensors[OBK_CURRENT].rounding_decimals
+		, sensdataset->sensors[OBK_POWER].rounding_decimals, sensdataset->sensors[OBK_CONSUMPTION__DAILY_FIRST].rounding_decimals
+		, sensdataset->sensors[OBK_FREQUENCY].rounding_decimals);
+	MQTT_PublishMain_StringString("VCPPrecision", curvalstr, OBK_PUBLISH_FLAG_QOS_ZERO);
+#endif
+	return (argok>0)?CMD_RES_OK:((argok>=-1)?CMD_RES_NOT_ENOUGH_ARGUMENTS:CMD_RES_BAD_ARGUMENT);
 }
 
 #if ENABLE_BL_TWIN
@@ -521,30 +544,41 @@ commandResult_t BL09XX_VCPPublishThreshold(const void* context, const char* cmd,
   int asensdatasetix = BL_SENSORS_IX_0;
 #endif
   energysensdataset_t* sensdataset = &datasetlist[asensdatasetix];
-
+	int argok=0;
   Tokenizer_TokenizeString(args, 0);
   // following check must be done after 'Tokenizer_TokenizeString',
   // so we know arguments count in Tokenizer. 'cmd' argument is
   // only for warning display
   if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3)) {
-    return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-  }
+//		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+		argok=-1;
+	} else {
 
-  sensdataset->sensors[OBK_VOLTAGE].changeSendThreshold = Tokenizer_GetArgFloat(0);
-  sensdataset->sensors[OBK_CURRENT].changeSendThreshold = Tokenizer_GetArgFloat(1);
-  sensdataset->sensors[OBK_POWER].changeSendThreshold = Tokenizer_GetArgFloat(2);
-  sensdataset->sensors[OBK_POWER_APPARENT].changeSendThreshold = Tokenizer_GetArgFloatDefault(2,sensdataset->sensors[OBK_POWER_APPARENT].changeSendThreshold);
-  sensdataset->sensors[OBK_POWER_REACTIVE].changeSendThreshold = Tokenizer_GetArgFloatDefault(2,sensdataset->sensors[OBK_POWER_REACTIVE].changeSendThreshold);
-  //sensdataset->sensors[OBK_POWER_FACTOR].changeSendThreshold = Tokenizer_GetArgFloat(TODO);
+		sensdataset->sensors[OBK_VOLTAGE].changeSendThreshold = Tokenizer_GetArgFloat(0);
+		sensdataset->sensors[OBK_CURRENT].changeSendThreshold = Tokenizer_GetArgFloat(1);
+		sensdataset->sensors[OBK_POWER].changeSendThreshold = Tokenizer_GetArgFloat(2);
+		sensdataset->sensors[OBK_POWER_APPARENT].changeSendThreshold = Tokenizer_GetArgFloatDefault(2,sensdataset->sensors[OBK_POWER_APPARENT].changeSendThreshold);
+		sensdataset->sensors[OBK_POWER_REACTIVE].changeSendThreshold = Tokenizer_GetArgFloatDefault(2,sensdataset->sensors[OBK_POWER_REACTIVE].changeSendThreshold);
+		//sensdataset->sensors[OBK_POWER_FACTOR].changeSendThreshold = Tokenizer_GetArgFloat(TODO);
 
-  if (Tokenizer_GetArgsCount() >= 4) {
-    for (int i = OBK_CONSUMPTION_LAST_HOUR; i <= OBK_CONSUMPTION__DAILY_LAST; i++) {
-      sensdataset->sensors[i].changeSendThreshold = Tokenizer_GetArgFloat(3);
-    }
-  }
+		if (Tokenizer_GetArgsCount() >= 4) {
+			for (int i = OBK_CONSUMPTION_LAST_HOUR; i <= OBK_CONSUMPTION__DAILY_LAST; i++) {
+			sensdataset->sensors[i].changeSendThreshold = Tokenizer_GetArgFloat(3);
+			}
+		}
 
-  sensdataset->sensors[OBK_FREQUENCY].changeSendThreshold = Tokenizer_GetArgFloatDefault(4,sensdataset->sensors[OBK_FREQUENCY].changeSendThreshold);
-  return CMD_RES_OK;
+		sensdataset->sensors[OBK_FREQUENCY].changeSendThreshold = Tokenizer_GetArgFloatDefault(4,sensdataset->sensors[OBK_FREQUENCY].changeSendThreshold);
+		//		return CMD_RES_OK;
+		argok=1;
+	}
+#if CMD_SEND_VAL_MQTT > 0
+	char curvalstr[106]; //20char per value should be enough
+	sprintf(curvalstr, "%g %g %g %g %g", sensdataset->sensors[OBK_VOLTAGE].changeSendThreshold, sensdataset->sensors[OBK_CURRENT].changeSendThreshold
+		, sensdataset->sensors[OBK_POWER].changeSendThreshold, sensdataset->sensors[OBK_CONSUMPTION__DAILY_FIRST].changeSendThreshold
+		, sensdataset->sensors[OBK_FREQUENCY].changeSendThreshold);
+	MQTT_PublishMain_StringString("VCPPublishThreshold", curvalstr, OBK_PUBLISH_FLAG_QOS_ZERO);
+#endif
+	return (argok>0)?CMD_RES_OK:((argok>=-1)?CMD_RES_NOT_ENOUGH_ARGUMENTS:CMD_RES_BAD_ARGUMENT);
 }
 
 #if ENABLE_BL_TWIN
@@ -558,24 +592,34 @@ commandResult_t BL09XX_VCPPublishThreshold(const void* context, const char* cmd,
 commandResult_t BL09XX_SetupConsumptionThreshold(const void *context, const char *cmd, const char *args, int cmdFlags)
 {
     float threshold;
+	int argok=0;
     Tokenizer_TokenizeString(args,0);
 	// following check must be done after 'Tokenizer_TokenizeString',
 	// so we know arguments count in Tokenizer. 'cmd' argument is
 	// only for warning display
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
-		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-	}
+//		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+		argok=-1;
+	} else {
     
-    threshold = (float)atof(Tokenizer_GetArg(0));
+		threshold = (float)atof(Tokenizer_GetArg(0));
 
-    if (threshold<1.0f)
-        threshold = 1.0f;
-    if (threshold>5000.0f)
-        threshold = 5000.0f;
-    changeSavedThresholdEnergy = threshold;
-    addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "ConsumptionThreshold: %1.1f", changeSavedThresholdEnergy);
+		if (threshold<1.0f)
+			threshold = 1.0f;
+		if (threshold>5000.0f)
+			threshold = 5000.0f;
+		changeSavedThresholdEnergy = threshold;
+		addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "ConsumptionThreshold: %1.1f", changeSavedThresholdEnergy);
 
-    return CMD_RES_OK;
+//		return CMD_RES_OK;
+		argok=1;
+	}
+#if CMD_SEND_VAL_MQTT > 0
+	char curvalstr[12]; 
+	sprintf(curvalstr, "%f", changeSavedThresholdEnergy); //limited above
+	MQTT_PublishMain_StringString("VCPPrecision", curvalstr, OBK_PUBLISH_FLAG_QOS_ZERO);
+#endif
+	return (argok>0)?CMD_RES_OK:((argok>=-1)?CMD_RES_NOT_ENOUGH_ARGUMENTS:CMD_RES_BAD_ARGUMENT);
 }
 
 bool Channel_AreAllRelaysOpen() {
