@@ -1526,7 +1526,11 @@ commandResult_t MQTT_PublishChannel(const void* context, const char* cmd, const 
 }
 commandResult_t MQTT_PublishCommand(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	const char* topic, * value;
+#ifdef WINDOWS
+	OBK_Publish_Result ret;
+#else
 	OBK_Publish_Result ret __attribute__((unused));
+#endif
 	int flags = 0;
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS | TOKENIZER_EXPAND_EARLY);
@@ -1554,7 +1558,11 @@ commandResult_t MQTT_PublishCommand(const void* context, const char* cmd, const 
 #if ENABLE_LITTLEFS
 commandResult_t MQTT_PublishFile(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	const char* topic, *fname;
+#ifdef WINDOWS
+	OBK_Publish_Result ret;
+#else
 	OBK_Publish_Result ret __attribute__((unused));
+#endif	
 	int flags = 0;
 	byte*data;
 
@@ -1584,7 +1592,11 @@ commandResult_t MQTT_PublishFile(const void* context, const char* cmd, const cha
 commandResult_t MQTT_PublishCommandInteger(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	const char* topic;
 	int value;
+#ifdef WINDOWS
+	OBK_Publish_Result ret;
+#else
 	OBK_Publish_Result ret __attribute__((unused));
+#endif	
 	int flags = 0;
 
 	Tokenizer_TokenizeString(args, 0);
@@ -1609,7 +1621,11 @@ commandResult_t MQTT_PublishCommandInteger(const void* context, const char* cmd,
 commandResult_t MQTT_PublishCommandFloat(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	const char* topic;
 	float value;
+#ifdef WINDOWS
+	OBK_Publish_Result ret;
+#else
 	OBK_Publish_Result ret __attribute__((unused));
+#endif
 	int flags = 0;
 	int decimalPlaces;
 
@@ -1634,8 +1650,11 @@ commandResult_t MQTT_PublishCommandFloat(const void* context, const char* cmd, c
 }
 commandResult_t MQTT_PublishCommandDriver(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	const char* driver;
+#ifdef WINDOWS
+	OBK_Publish_Result ret;
+#else
 	OBK_Publish_Result ret __attribute__((unused));
-
+#endif
 	Tokenizer_TokenizeString(args, 0);
 
 	driver = Tokenizer_GetArg(0);
