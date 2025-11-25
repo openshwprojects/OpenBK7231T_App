@@ -1007,6 +1007,13 @@ void Test_LEDDriver_RGB(int firstChannel) {
 	SELFTEST_ASSERT_CHANNEL(firstChannel + 3, 0);
 	SELFTEST_ASSERT_CHANNEL(firstChannel + 4, 0);
 
+	CMD_ExecuteCommand("Color 255,255,255", 0);
+	SELFTEST_ASSERT_CHANNEL(firstChannel, 25);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 1, 25);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 2, 25);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 3, 0);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 4, 0);
+
 	// make error
 	//SELFTEST_ASSERT_CHANNEL(firstChannel+2, 666);
 
