@@ -97,6 +97,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_max72xx_internal.c
 	${OBK_SRCS}driver/drv_max72xx_single.c
 	${OBK_SRCS}driver/drv_mcp9808.c
+	${OBK_SRCS}driver/drv_multiPinI2CScanner.c
 	${OBK_SRCS}driver/drv_ntp.c
 	${OBK_SRCS}driver/drv_ntp_events.c
 	${OBK_SRCS}driver/drv_openWeatherMap.c
@@ -116,6 +117,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_soft_spi.c
 	${OBK_SRCS}driver/drv_sm15155e.c
 	${OBK_SRCS}driver/drv_sm16703P.c
+	${OBK_SRCS}driver/drv_simpleEEPROM.c
 	${OBK_SRCS}driver/drv_leds_shared.c
 	${OBK_SRCS}driver/drv_spi.c
 	${OBK_SRCS}driver/drv_spiLED.c
@@ -131,6 +133,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_tm1637.c
 	${OBK_SRCS}driver/drv_tm1638.c
 	${OBK_SRCS}driver/drv_tm_gn_display_shared.c
+	${OBK_SRCS}driver/drv_girierMCU.c
 	${OBK_SRCS}driver/drv_tuyaMCU.c
 	${OBK_SRCS}driver/drv_tuyaMCUSensor.c
 	${OBK_SRCS}driver/drv_uart.c

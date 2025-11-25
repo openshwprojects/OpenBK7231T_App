@@ -1085,6 +1085,13 @@ typedef enum channelType_e {
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_ReadOnlyEnum,
+	//chandetail:{"name":"Current_div10",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI",
+	//chandetail:"enum":"ChType_Current_div10",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Current_div10,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
@@ -1130,7 +1137,8 @@ typedef enum channelType_e {
 #define PLATFORM_GPIO_MAX 0
 #endif
 #elif PLATFORM_ESP8266
-#define PLATFORM_GPIO_MAX 13
+// 2025-11-22 - I added ADC, so bump from 13 to 14
+#define PLATFORM_GPIO_MAX 14
 #elif PLATFORM_TR6260
 #define PLATFORM_GPIO_MAX 25
 #elif PLATFORM_RTL87X0C
@@ -1584,6 +1592,13 @@ bool CHANNEL_IsPowerRelayChannel(int ch);
 // See: enum channelType_t
 void CHANNEL_SetType(int ch, int type);
 int CHANNEL_GetType(int ch);
+bool CHANNEL_IsHumidity(int type);
+bool CHANNEL_IsTemperature(int type);
+bool CHANNEL_IsPressure(int type);
+bool CHANNEL_GetGenericOfType(float *out, bool(*checker)(int type));
+bool CHANNEL_GetGenericHumidity(float *out);
+bool CHANNEL_GetGenericTemperature(float *out);
+bool CHANNEL_GetGenericPressure(float *out);
 void CHANNEL_SetFirstChannelByTypeEx(int requiredType, int newVal, int ausemovingaverage);
 void CHANNEL_SetFirstChannelByType(int requiredType, int newVal);
 // CHANNEL_SET_FLAG_*

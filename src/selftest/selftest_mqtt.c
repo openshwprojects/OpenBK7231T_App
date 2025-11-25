@@ -560,7 +560,31 @@ void Test_MQTT_Misc() {
 	//CMD_ExecuteCommand("publish myMagicResult \"{\\\"state\\\": \\\"$CH1\\\"}\"", 0);
 	//SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("miscDevice/myMagicResult/get", "{\"state\": \"100\"}", false);
 	//SIM_ClearMQTTHistory();
-	
+
+
+	CMD_ExecuteCommand("setChannel 4 456", 0);
+	CMD_ExecuteCommand("publishChannel 4", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("miscDevice/4/get", "456", false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/4/get", 456, false);
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("setChannelType 4 Current_div10", 0);
+	CFG_SetFlag(OBK_FLAG_PUBLISH_MULTIPLIED_VALUES, 1);
+	CMD_ExecuteCommand("publishChannel 4", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/4/get", 45.6f, false);
+	SIM_ClearMQTTHistory();
+	CFG_SetFlag(OBK_FLAG_PUBLISH_MULTIPLIED_VALUES, 0);
+	CMD_ExecuteCommand("publishChannel 4", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/4/get", 456.0f, false);
+	SIM_ClearMQTTHistory();
+	CFG_SetFlag(OBK_FLAG_PUBLISH_MULTIPLIED_VALUES, 1);
+	CMD_ExecuteCommand("publishChannel 4", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/4/get", 45.60f, false);
+	SIM_ClearMQTTHistory();
+	CMD_ExecuteCommand("setChannelType 4 Current_div100", 0);
+	CMD_ExecuteCommand("publishChannel 4", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/4/get", 4.560f, false);
+
 }
 void Test_MQTT_Topic_With_Slashes() {
 	SIM_ClearOBK(0);

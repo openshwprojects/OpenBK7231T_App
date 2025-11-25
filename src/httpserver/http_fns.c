@@ -7,6 +7,7 @@
 #include "../cmnds/cmd_public.h"
 #include "../cmnds/cmd_enums.h"
 #include "../driver/drv_tuyaMCU.h"
+#include "../driver/drv_girierMCU.h"
 #include "../driver/drv_public.h"
 #include "../driver/drv_bl_shared.h"
 #include "../hal/hal_wifi.h"
@@ -1994,6 +1995,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			dev_info = hass_init_light_singleColor_onChannels(toggle, dimmer, brightness_scale);
 			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 			hass_free_device_info(dev_info);
+			discoveryQueued = true;
 		}
 	}
 #endif
@@ -2123,6 +2125,13 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			discoveryQueued = true;
 		}
 	}
+	//{
+	//	HassDeviceInfo*dev_info = hass_createGarageEntity("~/1/get", "~/1/set",
+	//	 "Main Door");
+	//	MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+	//	hass_free_device_info(dev_info);
+	//	discoveryQueued = true;
+	//}
 #if ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		type = g_cfg.pins.channelTypes[i];
@@ -3075,7 +3084,8 @@ const char* g_obk_flagNames[] = {
 	"[PWR] Invert AC dir",
 	"[HTTP] Hide ON/OFF for relays (only red/green buttons)",
 	"[MQTT] Never add GET suffix",
-	"[WiFi] (RTL/BK) Enhanced fast connect by saving AP data to flash (preferable with Flag 37 & static ip). Quick reset 3 times to connect normally",
+	"[WiFi] (RTL/BK/BL602) Enhanced fast connect by saving AP data to flash (preferable with Flag 37 & static ip). Quick reset 3 times to connect normally",
+	"error",
 	"error",
 	"error",
 	"error",

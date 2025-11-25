@@ -11,6 +11,7 @@
 #include "drv_ssdp.h"
 #include "drv_test_drivers.h"
 #include "drv_tuyaMCU.h"
+#include "drv_girierMCU.h"
 #include "drv_uart.h"
 #include "drv_ds1820_simple.h"
 #include "drv_ds1820_full.h"
@@ -32,6 +33,7 @@ typedef struct driver_s {
 
 
 void TuyaMCU_RunEverySecond();
+void GirierMCU_RunEverySecond();
 
 // startDriver BL0937
 static driver_t g_drivers[] = {
@@ -47,6 +49,10 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "tmSensor",	TuyaMCU_Sensor_Init, TuyaMCU_Sensor_RunEverySecond,	NULL, NULL, NULL, NULL, NULL, false },
 #endif
+#ifdef ENABLE_DRIVER_GIRIERMCU
+	{ "GirierMCU",	GirierMCU_Init, GirierMCU_RunEverySecond, NULL, GirierMCU_RunFrame, GirierMCU_Shutdown, NULL, NULL, false },
+#endif
+
 #if ENABLE_DRIVER_TCA9554
 	//drvdetail:{"name":"TCA9554",
 	//drvdetail:"title":"TODO",
@@ -124,7 +130,6 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "TCL",		TCL_Init,			TCL_UART_RunEverySecond,		TCL_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, TCL_DoDiscovery, false },
 #endif
-
 #if ENABLE_DRIVER_OPENWEATHERMAP
 	//drvdetail:{"name":"OpenWeatherMap",
 	//drvdetail:"title":"TODO",
@@ -194,6 +199,20 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"Self test of the device",
 	//drvdetail:"requires":""}
 	{ "Test",	Test_Init, NULL, Test_AppendInformationToHTTPIndexPage, Test_RunQuickTick, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_SIMPLEEEPROM
+	//drvdetail:{"name":"SimpleEEPROM",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"SimpleEEPROM",
+	//drvdetail:"requires":""}
+	{ "SimpleEEPROM", EEPROM_Init, NULL, EEPROM_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_MULTIPINI2CSCANNER
+	//drvdetail:{"name":"MultiPinI2CScanner",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"qq.",
+	//drvdetail:"requires":""}
+	{ "MultiPinI2CScanner",		MultiPinI2CScanner_Init,		NULL,		MultiPinI2CScanner_AppendInformationToHTTPIndexPage, MultiPinI2CScanner_RunFrame, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_I2C
 	//drvdetail:{"name":"I2C",
@@ -431,7 +450,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"MAX72XX LED matrix display driver with font and simple script interface. See [protocol explanation](https://www.elektroda.pl/rtvforum/viewtopic.php?p=18040628#18040628)",
 	//drvdetail:"requires":""}
-	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, NULL, NULL, NULL, false },
+	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, DRV_MAX72XX_Shutdown, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_BMPI2C
 		//drvdetail:{"name":"BMPI2C",
@@ -547,27 +566,35 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "Battery",	Batt_Init,		Batt_OnEverySecond,		Batt_AppendInformationToHTTPIndexPage, NULL, Batt_StopDriver, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_BKPARTITIONS
+	//drvdetail:{"name":"BKPartitions",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"o.",
+	//drvdetail:"requires":""}
+	{ "BKPartitions",     BKPartitions_Init, NULL,                       NULL, BKPartitions_QuickFrame, NULL, NULL, NULL, false },
+#endif
 #if ENABLE_DRIVER_BRIDGE
 	//drvdetail:{"name":"Bridge",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"A bridge relay driver, added for [TONGOU TO-Q-SY1-JWT Din Rail Switch](https://www.elektroda.com/rtvforum/topic3934580.html). See linked topic for info.",
 	//drvdetail:"requires":""}
-	{ "Bridge",     Bridge_driver_Init, NULL,                       NULL, Bridge_driver_QuickFrame, Bridge_driver_DeInit, Bridge_driver_OnChannelChanged, NULL, false }
+	{ "Bridge",     Bridge_driver_Init, NULL,                       NULL, Bridge_driver_QuickFrame, Bridge_driver_DeInit, Bridge_driver_OnChannelChanged, NULL, false },
 #endif
 #if ENABLE_DRIVER_UART_TCP
 	//drvdetail:{"name":"UartTCP",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"UART to TCP bridge, mainly for WiFi Zigbee coordinators.",
 	//drvdetail:"requires":""}
-	{ "UartTCP",		UART_TCP_Init,		NULL,	NULL, NULL, UART_TCP_Deinit, NULL, NULL, false }
+	{ "UartTCP",		UART_TCP_Init,		NULL,	NULL, NULL, UART_TCP_Deinit, NULL, NULL, false },
 #endif
 #if PLATFORM_TXW81X
 	//drvdetail:{"name":"TXWCAM",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"TXW81X Camera.",
 	//drvdetail:"requires":""}
-	{ "TXWCAM", TXW_Cam_Init, TXW_Cam_RunEverySecond, NULL, NULL, NULL, NULL, NULL, false }
+	{ "TXWCAM", TXW_Cam_Init, TXW_Cam_RunEverySecond, NULL, NULL, NULL, NULL, NULL, false },
 #endif
+	//{ "", NULL, NULL, NULL, NULL, NULL, NULL, NULL, false },
 };
 
 
