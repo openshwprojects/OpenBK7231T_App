@@ -1556,6 +1556,7 @@ static commandResult_t cmdDimmerScale(const void *context, const char *cmd, cons
 	g_brightnessScale = Tokenizer_GetArgFloat(0);
 
 	apply_smart_light();
+	return CMD_RES_OK;
 }
 static commandResult_t cmdSaveStateIfModifiedInterval(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
