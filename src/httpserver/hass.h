@@ -103,6 +103,8 @@ typedef enum {
 	HASS_BUTTON,
 	// @Brief ChType_ReadOnlyEnum, readonly with value_template
 	HASS_READONLYENUM,
+	HASS_GARAGE,
+
 } ENTITY_TYPE;
 
 typedef enum {
@@ -149,6 +151,8 @@ HassDeviceInfo* hass_createSelectEntityIndexed(const char* state_topic, const ch
 	const char* options[], const char* title);
 HassDeviceInfo* hass_createSelectEntityIndexedCustom(const char* state_topic, const char* command_topic, int numoptions,
 	const char* options[], const char* title, char* value_template, char* command_template);
+HassDeviceInfo* hass_createGarageEntity(const char* state_topic, const char* command_topic,
+	const char *title);
 
 HassDeviceInfo* hass_createToggle(const char *label, const char *stateTopic, const char *commandTopic);
 HassDeviceInfo* hass_init_textField_info(int index);
