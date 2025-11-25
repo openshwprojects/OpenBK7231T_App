@@ -62,6 +62,9 @@ void SM2235_Write(float *rgbcw) {
 	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_SECOND_BYTE(cur_col_10[3])));
 	Soft_I2C_Stop(&g_softI2C);
 
+#if WINDOWS
+	Simulator_StoreBP5758DColor(cur_col_10);
+#endif
 }
 
 static void SM2235_SetCurrent(int curValRGB, int curValCW) {
