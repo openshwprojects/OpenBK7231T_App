@@ -19,6 +19,7 @@
 #include "drv_hlw8112.h"
 
 
+
 typedef struct driver_s {
 	const char* name;
 	void(*initFunc)();
