@@ -2,6 +2,7 @@
 
 #include "selftest_local.h"
 #include "../driver/drv_ntp.h"
+#include "../driver/drv_deviceclock.h"
 
 void Test_TIME_SunsetSunrise() {
 	byte hour, minute;
