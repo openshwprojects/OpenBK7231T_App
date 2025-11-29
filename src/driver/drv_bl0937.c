@@ -161,7 +161,8 @@ commandResult_t BL0937_cmdIntervalCPMinMax(const void* context, const char* cmd,
 	int argok=0;
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
 	if(Tokenizer_GetArgsCount()<2) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: not enough arguments, current values %lu %lu. \n", g_secondsElapsed, cmdName
+		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: not enough arguments, current values %lu %lu. \n"
+			, g_secondsElapsed, cmdName
 			, g_bl_secMinNextCalc, g_bl_secForceNextCalc);
 //		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 		argok=-1;
@@ -169,7 +170,8 @@ commandResult_t BL0937_cmdIntervalCPMinMax(const void* context, const char* cmd,
 		int minCycleTime = Tokenizer_GetArgInteger(0);
 		int maxCycleTime = Tokenizer_GetArgInteger(1);
 		if( minCycleTime < 0 || maxCycleTime < minCycleTime || maxCycleTime > 900 || minCycleTime > maxCycleTime) {
-			ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: minimum 0 second, maximum 900 seconds allowed, min %i between max %i (keep current %i %i). \n", g_secondsElapsed, cmdName
+			ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: minimum 0 second, maximum 900 seconds allowed, min %i between max %i (keep current %i %i). \n"
+				, g_secondsElapsed, cmdName
 				, minCycleTime, maxCycleTime, g_bl_secMinNextCalc, g_bl_secForceNextCalc);
 	//		return CMD_RES_BAD_ARGUMENT;
 			argok=-2;
@@ -184,7 +186,8 @@ commandResult_t BL0937_cmdIntervalCPMinMax(const void* context, const char* cmd,
 			g_bl_secForceNextCalc = maxCycleTime;
 			argok=1;
 		}
-		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: one cycle will have min %i and max %i seconds. Remaining to max cycle time %i \n", g_secondsElapsed, cmdName
+		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: one cycle will have min %i and max %i seconds. Remaining to max cycle time %i \n"
+			, g_secondsElapsed, cmdName
 			, g_bl_secMinNextCalc, g_bl_secForceNextCalc, g_bl_secUntilNextCalc);
 	}
 #if CMD_SEND_VAL_MQTT > 0
@@ -204,7 +207,8 @@ commandResult_t BL0937_cmdMinPulsesVCP(const void* context, const char* cmd, con
 	int argok=0;
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
 	if(Tokenizer_GetArgsCount()<3) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: not enough arguments, current values %lu %lu %lu.", g_secondsElapsed, cmdName
+		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: not enough arguments, current values %lu %lu %lu."
+			, g_secondsElapsed, cmdName
 			, g_minPulsesV, g_minPulsesC, g_minPulsesP);
 //		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 		argok=-1;
@@ -243,7 +247,8 @@ commandResult_t BL0937_cmdScalefactorMultiply(const void* context, const char* c
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
 //	if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3))
 	if(Tokenizer_GetArgsCount()<3) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: not enough arguments to change. Current (default) values V %E (%E) C %E (%E) P %E (%E), recommended factors %f %f %f \n", g_secondsElapsed, cmdName
+		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: not enough arguments to change. Current (default) values V %E (%E) C %E (%E) P %E (%E), recommended factors %f %f %f \n"
+			, g_secondsElapsed, cmdName
 			, voltage_cal_cur, DEFAULT_VOLTAGE_CAL, current_cal_cur, DEFAULT_CURRENT_CAL, power_cal_cur, DEFAULT_POWER_CAL
 			, multiplyscale_v, multiplyscale_c, multiplyscale_p );
 //		ADDLOG_INFO(LOG_FEATURE_CMD, "BL0937_ScalefactorMultiply: not enough arguments to change. Current values %E %E %E, recommended factors %f (%f) %f (%f) %f (%f) \n"
@@ -256,7 +261,8 @@ commandResult_t BL0937_cmdScalefactorMultiply(const void* context, const char* c
 		float factor_c = (float)Tokenizer_GetArgFloat(1);
 		float factor_p = (float)Tokenizer_GetArgFloat(2);
 
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "ts %5d %s: V %E * %f C  %E * %f P %E * %f \n", g_secondsElapsed, cmdName
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "ts %5d %s: V %E * %f C  %E * %f P %E * %f \n"
+			, g_secondsElapsed, cmdName
 			, voltage_cal_cur, factor_v, current_cal_cur, factor_c, power_cal_cur, factor_p);
 		voltage_cal_cur *= factor_v;
 		current_cal_cur *= factor_c;
@@ -290,7 +296,8 @@ commandResult_t BL0937_cmdForceOnPwrROC(const void* context, const char* cmd, co
 	int argok=0;
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
 	if(Tokenizer_GetArgsCount()<2) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: not enough arguments given, current limits roc %f W/s | pwr %f Wcycle.\n", g_secondsElapsed, cmdName
+		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: not enough arguments given, current limits roc %f W/s | pwr %f Wcycle.\n"
+			, g_secondsElapsed, cmdName
 			, (float)g_p_forceonroc, (float)g_p_forceonpwr);
 //		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 		argok=-1;
@@ -323,7 +330,8 @@ commandResult_t cmdSendTimestamps(const void* context, const char* cmd, const ch
 	int argok=0;
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
 	if(Tokenizer_GetArgsCount()<1) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: not enough arguments to change, current val = %i\n", g_enable_sendtimestamps, cmdName);
+		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: not enough arguments to change, current val = %i\n"
+			, g_secondsElapsed, cmdName, g_enable_sendtimestamps);
 //		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 		argok=-1;
 	} else {
@@ -347,7 +355,8 @@ commandResult_t cmdEnabeMQTTOnCommand(const void* context, const char* cmd, cons
 	int argok=0;
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
 	if(Tokenizer_GetArgsCount()<1) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: not enough arguments to change, current val = %d\n", g_enable_mqtt_on_cmd, cmdName);
+		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: not enough arguments to change, current val = %d\n"
+			, g_secondsElapsed, cmdName, g_enable_mqtt_on_cmd);
 //		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 		argok=-1;
 	} else {
