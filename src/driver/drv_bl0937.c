@@ -74,6 +74,7 @@ static float g_p_prevsec=0;
 static unsigned long g_p_pulsesprevsec = 0;
 
 static int g_enable_mqtt_on_cmd = 1;
+static int g_enable_sendtimestamps = 0;
 
 static int g_v_avg_res=0;
 static int g_v_avg_ticks=0;
@@ -314,6 +315,30 @@ commandResult_t BL0937_cmdForceOnPwrROC(const void* context, const char* cmd, co
 	return (argok>0)?CMD_RES_OK:((argok>=-1)?CMD_RES_NOT_ENOUGH_ARGUMENTS:CMD_RES_BAD_ARGUMENT);
 }
 
+#if TIME_CHECK_COMPARE_NTP > 0
+commandResult_t cmdSendTimestamps(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	const char cmdName[] = "SendTimestamps";
+	int argok=0;
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+	if(Tokenizer_GetArgsCount()<1) {
+		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: not enough arguments to change, current val = %i\n", g_enable_sendtimestamps);
+//		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+		argok=-1;
+	} else {
+		g_enable_sendtimestamps=(int)Tokenizer_GetArgInteger(0);
+		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: %i", g_secondsElapsed, cmdName, g_enable_sendtimestamps);
+		argok=1;
+	}
+	char curvalstr[12]; 
+	sprintf(curvalstr, "%i", g_enable_sendtimestamps);
+	MQTT_PublishMain_StringString(cmdName, curvalstr, OBK_PUBLISH_FLAG_QOS_ZERO);
+
+//	return CMD_RES_OK;
+	return (argok>0)?CMD_RES_OK:((argok>=-1)?CMD_RES_NOT_ENOUGH_ARGUMENTS:CMD_RES_BAD_ARGUMENT);
+}
+#endif
+
 #if CMD_SEND_VAL_MQTT > 0
 commandResult_t cmdEnabeMQTTOnCommand(const void* context, const char* cmd, const char* args, int cmdFlags)
 {
@@ -326,7 +351,7 @@ commandResult_t cmdEnabeMQTTOnCommand(const void* context, const char* cmd, cons
 		argok=-1;
 	} else {
 		g_enable_mqtt_on_cmd=(int)Tokenizer_GetArgInteger(0);
-		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: %f W/s", g_secondsElapsed, cmdName, g_enable_mqtt_on_cmd);
+		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: %i", g_secondsElapsed, cmdName, g_enable_mqtt_on_cmd);
 		argok=1;
 	}
 	char curvalstr[12]; 
@@ -466,6 +491,14 @@ void BL0937_Init(void)
 	//cmddetail:"fn":"ForceOnPwrROC","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("BL0937_ForceOnPwrROC", BL0937_cmdForceOnPwrROC, NULL);
+
+#if TIME_CHECK_COMPARE_NTP > 0
+	//cmddetail:{"name":"SendTimestamps","args":"[0/1]",
+	//cmddetail:"descr":"Enable/disable sending timestamps with measurements",
+	//cmddetail:"fn":"cmdSendTimestamps","file":"driver/drv_bl0937.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("SendTimestamps", cmdSendTimestamps, NULL);
+#endif
 
 #if CMD_SEND_VAL_MQTT > 0
 	//cmddetail:{"name":"EnabeMQTTOnCommand","args":"[0/1]",
@@ -897,7 +930,7 @@ void BL0937_RunEverySecond(void)
 #if TIME_CHECK_COMPARE_NTP > 0
 	struct tm* ltm = gmtime(&g_ntpTime);
 	#define NTPTIMEOFFSET 1763850000
-	if (NTP_IsTimeSynced()) {
+	if (g_enable_sendtimestamps>0 && NTP_IsTimeSynced()) {
 		if ( g_sfreqcalc_ntphour_last <  3600) {
 			g_sfreqcalc_secelap_last = g_ntpTime;
 			g_sfreqcalc_ntphour_last = g_secondsElapsed;
