@@ -39,6 +39,10 @@ float TIME_GetLatitude();
 float TIME_GetLongitude();
 void TIME_setLatitude(float lat);
 void TIME_setLongitude(float longi);
+#if ENABLE_CALENDAR_EVENTS
+void TIME_CalculateSunrise(byte *outHour, byte *outMinute);	
+void TIME_CalculateSunset(byte *outHour, byte *outMinute);
+#endif	// to #if ENABLE_CALENDAR_EVENTS
 #endif
 uint32_t TIME_GetCurrentTime(); 			// might replace for NTP_GetCurrentTime() to return time regardless of NTP present/running
 uint32_t TIME_GetCurrentTimeWithoutOffset(); 		// ... same for NTP_GetCurrentTimeWithoutOffset()...
