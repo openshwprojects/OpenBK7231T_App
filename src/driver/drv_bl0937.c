@@ -73,9 +73,6 @@ static int g_forceonpwr_gtlim=-1;
 static float g_p_prevsec=0;
 static unsigned long g_p_pulsesprevsec = 0;
 
-static int g_enable_mqtt_on_cmd = 1;
-static int g_enable_sendtimestamps = 0;
-
 static int g_v_avg_res=0;
 static int g_v_avg_ticks=0;
 static int g_v_avg_count=0;
@@ -97,9 +94,13 @@ int_fast8_t g_sfreqcalc_ntphour_last=-1;
 time_t g_sfreqcalc_ntpTime_last;
 unsigned long g_sfreqcalc_secelap_last=0;
 float g_scale_samplefreq=1;
+static int g_enable_sendtimestamps = 0;
 #endif
 
 #define CMD_SEND_VAL_MQTT 1
+#if CMD_SEND_VAL_MQTT > 0
+static int g_enable_mqtt_on_cmd = 1;
+#endif	
 
 void HlwCf1Interrupt(int pinNum)
 {
@@ -322,7 +323,7 @@ commandResult_t cmdSendTimestamps(const void* context, const char* cmd, const ch
 	int argok=0;
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
 	if(Tokenizer_GetArgsCount()<1) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: not enough arguments to change, current val = %i\n", g_enable_sendtimestamps);
+		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: not enough arguments to change, current val = %i\n", g_enable_sendtimestamps, cmdName);
 //		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 		argok=-1;
 	} else {
@@ -346,7 +347,7 @@ commandResult_t cmdEnabeMQTTOnCommand(const void* context, const char* cmd, cons
 	int argok=0;
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
 	if(Tokenizer_GetArgsCount()<1) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: not enough arguments to change, current val = %d\n", g_enable_mqtt_on_cmd);
+		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: not enough arguments to change, current val = %d\n", g_enable_mqtt_on_cmd, cmdName);
 //		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 		argok=-1;
 	} else {
