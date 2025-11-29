@@ -17,6 +17,7 @@
 #include "lib/net/eloop/eloop.h"
 #include "lib/video/dvp/jpeg/jpg.h"
 #include "project_config.h"
+#include "../libraries/obktime/obktime.h"	// for time functions
 
 extern struct vpp_device* vpp_test;
 bool isStarted = false;
