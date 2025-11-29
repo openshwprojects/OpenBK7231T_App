@@ -2154,6 +2154,13 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			discoveryQueued = true;
 		}
 	}
+	//{
+	//	HassDeviceInfo*dev_info = hass_createGarageEntity("~/1/get", "~/1/set",
+	//	 "Main Door");
+	//	MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+	//	hass_free_device_info(dev_info);
+	//	discoveryQueued = true;
+	//}
 #if ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		type = g_cfg.pins.channelTypes[i];
