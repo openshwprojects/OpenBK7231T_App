@@ -91,7 +91,7 @@ void BMP280_OnEverySecond() {
 	}
 }
 
-void BMP280_AppendInformationToHTTPIndexPage(http_request_t* request)
+void BMP280_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
 	hprintf255(request, "<h2>%s Temperature=%.2f C, Pressure=%.2f hPa", chip_name, g_temperature*0.01f, g_pressure*0.01f);
 	if(isHumidityAvail)

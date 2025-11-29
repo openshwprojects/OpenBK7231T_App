@@ -562,7 +562,10 @@ void DRV_DGR_Shutdown()
 	g_dgr_send_seq = 0;
 }
 
-void DRV_DGR_AppendInformationToHTTPIndexPage(http_request_t* request) {
+void DRV_DGR_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState) {
+	if (bPreState){
+		return;
+	}
 	hprintf255(request, "<h4>DGR received: %i, send: %i</h4>", g_dgr_stat_received, g_dgr_stat_sent);
 }
 // DGR_SendPower testSocket 1 1

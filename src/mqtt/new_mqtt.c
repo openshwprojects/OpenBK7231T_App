@@ -2064,7 +2064,7 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 
 
 	case PUBLISHITEM_SELF_DATETIME:
-// Clock_GetCurrentTime() is allways present
+// TIME_GetCurrentTime() is allways present
 /*		//Drivers are only built on BK7231 chips
 #ifndef OBK_DISABLE_ALL_DRIVERS
 
@@ -2076,9 +2076,9 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 		// src/mqtt/new_mqtt.c:2036:24: error: format '%ld' expects argument of type 'long int', but argument 3 has type 'uint32_t' {aka 'unsigned int'} [-Werror=format=]
 		// al other ESP:
 		/// src/mqtt/new_mqtt.c:2036:44: error: format '%d' expects argument of type 'int', but argument 3 has type 'uint32_t' {aka 'long unsigned int'} [-Werror=format=]
-		sprintf(dataStr, "%u", Clock_GetCurrentTime());
+		sprintf(dataStr, "%u", TIME_GetCurrentTime());
 #else
-		sprintf(dataStr, "%lu", Clock_GetCurrentTime());
+		sprintf(dataStr, "%lu", TIME_GetCurrentTime());
 #endif
 		return MQTT_DoItemPublishString("datetime", dataStr);
 /*		}
@@ -2589,7 +2589,7 @@ struct tm* mbedtls_platform_gmtime_r(const mbedtls_time_t* tt, struct tm* tm_buf
 		return ltm;
 	}
 	time_t ntpTime;
-	ntpTime=(time_t)Clock_GetCurrentTime();
+	ntpTime=(time_t)TIME_GetCurrentTime();
 	return gmtime_r((time_t*)&ntpTime, tm_buf);
 }
 #endif  //MBEDTLS_PLATFORM_GMTIME_R_ALT

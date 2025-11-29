@@ -913,7 +913,7 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	if (http_checkUrlBase(urlStr, "ota_exec")) return http_fn_ota_exec(request);
 	if (http_checkUrlBase(urlStr, "cm")) return http_fn_cm(request);
 	
-#if ENABLE_CLOCK_PMNTP
+#if ENABLE_TIME_PMNTP
 	if (http_checkUrlBase(urlStr, "pmntp")) return http_fn_pmntp(request); // poor mans NTP
 #endif
 	return http_fn_other(request);

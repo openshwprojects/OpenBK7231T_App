@@ -783,7 +783,7 @@ struct tm* TuyaMCU_Get_NTP_Time() {
 	struct tm* ptm;
 	time_t ntpTime;
 
-	ntpTime=(time_t)Clock_GetCurrentTime();
+	ntpTime=(time_t)TIME_GetCurrentTime();
 	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "MCU time to set: %i\n", ntpTime);
 	ptm = gmtime(&ntpTime);
 	if (ptm != 0) {

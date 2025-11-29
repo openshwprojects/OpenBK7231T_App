@@ -12,7 +12,7 @@
 #include "../httpserver/new_http.h"
 #include "../logging/logging.h"
 #include "../hal/hal_ota.h"
-#include "drv_deviceclock.h"	// for CLOCK_Init()
+#include "drv_deviceclock.h"	// for TIME_Init()
 #include "../libraries/obktime/obktime.h"	// for time functions
 #include "drv_ntp.h"
 
@@ -81,7 +81,7 @@ void NTP_SetTimesZoneOfsSeconds(int o) {
 	g_ntpTime += g_timeOffsetSeconds;	// add offset again
 */	
 	g_timeOffsetSeconds = o;		// set new offset
-	CLOCK_setDeviceTimeOffset(g_timeOffsetSeconds);
+	TIME_setDeviceTimeOffset(g_timeOffsetSeconds);
 }
 
 
@@ -104,7 +104,7 @@ commandResult_t NTP_SetServer(const void *context, const char *cmd, const char *
 
 //Display settings used by the NTP driver
 commandResult_t NTP_Info(const void *context, const char *cmd, const char *args, int cmdFlags) {
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "Server=%s, Time offset=%d", CFG_GetNTPServer(), Clock_GetTimesZoneOfsSeconds());
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "Server=%s, Time offset=%d", CFG_GetNTPServer(), TIME_GetTimesZoneOfsSeconds());
     return CMD_RES_OK;
 }
 
@@ -115,8 +115,8 @@ void NTP_SetSimulatedTime(unsigned int timeNow) {
 	g_ntpTime = timeNow;
 	g_ntpTime += g_timeOffsetSeconds;
 */
-	CLOCK_setDeviceTime(timeNow);
-#if ENABLE_CLOCK_DST
+	TIME_setDeviceTime(timeNow);
+#if ENABLE_TIME_DST
 //	g_ntpTime += setDST(0)*60;
 	setDST(0);
 #endif
@@ -159,10 +159,10 @@ void NTP_Stop() {
 
 // just for compatibility 
 unsigned int NTP_GetCurrentTime() {
-    return Clock_GetCurrentTime();
+    return TIME_GetCurrentTime();
 }
 unsigned int NTP_GetCurrentTimeWithoutOffset() {
-	return Clock_GetCurrentTimeWithoutOffset();
+	return TIME_GetCurrentTimeWithoutOffset();
 }
 
 
@@ -285,17 +285,17 @@ void NTP_CheckForReceive() {
     g_ntpTime = secsSince1900 - NTP_OFFSET;
     g_ntpTime += g_timeOffsetSeconds;
 */
-   CLOCK_setDeviceTime((uint32_t) (secsSince1900 - NTP_OFFSET) );
-//    g_ntpTime=(time_t)Clock_GetCurrentTime();
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u - local Time %s",(uint32_t) (secsSince1900 - NTP_OFFSET),TS2STR(Clock_GetCurrentTime(),TIME_FORMAT_LONG));
+   TIME_setDeviceTime((uint32_t) (secsSince1900 - NTP_OFFSET) );
+//    g_ntpTime=(time_t)TIME_GetCurrentTime();
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u - local Time %s",(uint32_t) (secsSince1900 - NTP_OFFSET),TS2STR(TIME_GetCurrentTime(),TIME_FORMAT_LONG));
 //    ltm = gmtime(&g_ntpTime);
 //    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, LTSTR, LTM2TIME(ltm));
 
 	if (g_synced == false) {
 		EventHandlers_FireEvent(CMD_EVENT_NTP_STATE, 1);
-		// so now clock is synced. If it wasn't set before, start "CLOCK_Init()" for timed events
+		// so now clock is synced. If it wasn't set before, start "TIME_Init()" for timed events
 		// done in CMD_Init_Delayed()  in cmd_main.c
-//		if (! Clock_IsTimeSynced() ) CLOCK_Init();
+//		if (! TIME_IsTimeSynced() ) TIME_Init();
 	}
     g_synced = true;
 #if 0
@@ -363,12 +363,12 @@ void NTP_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState
 		return;
 /*
     struct tm *ltm;
-    g_ntpTime=(time_t)Clock_GetCurrentTime();
+    g_ntpTime=(time_t)TIME_GetCurrentTime();
 
     ltm = gmtime(&g_ntpTime);
     if (g_synced == true)
         hprintf255(request, "<h5>NTP (%s): local Time  %s </h5>",
-			CFG_GetNTPServer(),TS2STR(Clock_GetCurrentTime(),TIME_FORMAT_LONG));
+			CFG_GetNTPServer(),TS2STR(TIME_GetCurrentTime(),TIME_FORMAT_LONG));
     else 
         hprintf255(request, "<h5>NTP: Syncing with %s....</h5>",CFG_GetNTPServer());
 */

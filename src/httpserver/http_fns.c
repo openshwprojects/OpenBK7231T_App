@@ -208,7 +208,7 @@ int http_fn_testmsg(http_request_t* request) {
 
 }
 
-#if ENABLE_CLOCK_PMNTP
+#if ENABLE_TIME_PMNTP
 // poor mans NTP
 int http_fn_pmntp(http_request_t* request) {
 	char tmpA[128];
@@ -216,21 +216,21 @@ int http_fn_pmntp(http_request_t* request) {
 	// javascripts "getTime()" should return time since 01.01.1970 (UTC)
 	if (http_getArg(request->url, "EPOCH", tmpA, sizeof(tmpA))) {
 		actepoch = (uint32_t)strtoul(tmpA,0,10);
-		CLOCK_setDeviceTime(actepoch);
+		TIME_setDeviceTime(actepoch);
 		addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"Set clock to %u! \n",actepoch);	
 	}
-#if ENABLE_CLOCK_DST
+#if ENABLE_TIME_DST
 	if (! IsDST_initialized()) {
 #endif
 		if (http_getArg(request->url, "OFFSET", tmpA, sizeof(tmpA)) && actepoch != 0 ) {
 		// if actual time is during DST period, javascript will return 
 		// an offset including the one additional hour of DST  
 		// if we don't handle DST, simply accept this as "offset"
-		CLOCK_setDeviceTimeOffset(atoi(tmpA));
+		TIME_setDeviceTimeOffset(atoi(tmpA));
 		addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"Clock - set g_UTCoffset to %i! \n",
 			atoi(tmpA));	
 		}
-#if ENABLE_CLOCK_DST
+#if ENABLE_TIME_DST
 	// ignore JS offset, if we can/will calculate DST on our own
 	} else setDST();
 #endif
@@ -1175,7 +1175,7 @@ typedef enum {
 		}
 		poststr(request, "<form action=\"/app\" target=\"_blank\"><input type=\"submit\" value=\"Launch Web Application\"></form> ");
 		poststr(request, "<form action=\"about\"><input type=\"submit\" value=\"About\"/></form>");
-#if ENABLE_CLOCK_PMNTP
+#if ENABLE_TIME_PMNTP
 		poststr(request, "<input type='submit' value='Set clock to PC time' onclick='location.href =\"/pmntp?EPOCH=\"+((e=new Date)/1e3|0)+\"&OFFSET=\"+-60*e.getTimezoneOffset()'><p>");
 #endif
 		poststr(request, htmlFooterRefreshLink);

@@ -24,7 +24,7 @@ typedef struct clockEvent_s {
 	byte minute;
 	byte second;
 	byte weekDayFlags;
-#if ENABLE_CLOCK_SUNRISE_SUNSET
+#if ENABLE_TIME_SUNRISE_SUNSET
 	byte lastDay;  /* used so we don't repeat sunrise sunset events the same day */
 	byte sunflags;  /* flags for sunrise/sunset as follows: */
 #define SUNRISE_FLAG (1 << 0)
@@ -37,7 +37,7 @@ typedef struct clockEvent_s {
 
 clockEvent_t *clock_events = 0;
 
-#if ENABLE_CLOCK_SUNRISE_SUNSET
+#if ENABLE_TIME_SUNRISE_SUNSET
 /* Sunrise/sunset algorithm, somewhat based on https://edwilliams.org/sunrise_sunset_algorithm.htm and tasmota code */
 const float pi2 = (M_PI * 2);
 const float pi = M_PI;
@@ -95,9 +95,9 @@ static inline uint32_t JulianDay(void)
 	{
 	/* https://en.wikipedia.org/wiki/Julian_day */
 
-	uint32_t Year = CLOCK_GetYear();    /* Year ex:2020 */
-	uint32_t Month = CLOCK_GetMonth();       /* 1..12 */
-	uint32_t Day = CLOCK_GetMDay();      /* 1..31 */
+	uint32_t Year = TIME_GetYear();    /* Year ex:2020 */
+	uint32_t Month = TIME_GetMonth();       /* 1..12 */
+	uint32_t Day = TIME_GetMDay();      /* 1..31 */
 	uint32_t Julian;               /* Julian day number */
 
 	if (Month <= 2) {
@@ -126,7 +126,7 @@ static void dusk2Dawn(struct SUN_DATA *Settings, byte sunflags, uint8_t *hour, u
 
 	float geoLatitude = Settings->latitude / (1000000.0f / RAD);
 	float geoLongitude = ((float) Settings->longitude) / 1000000;
-	float timeZone = ((float) Clock_GetTimesZoneOfsSeconds()) / 3600;  /* convert to hours */
+	float timeZone = ((float) TIME_GetTimesZoneOfsSeconds()) / 3600;  /* convert to hours */
 	float timeEquation = TimeFormula(&declination, Tdays);
 	float timeDiff = acosf((sin_h - sinf(geoLatitude) * sinf(declination)) / (cosf(geoLatitude) * cosf(declination))) * (12.0f / pi);
 
@@ -160,15 +160,15 @@ static int calc_day_offset(int tm_wday, int weekDayFlags)
 		}
 	return (day_offset);
 	}
-void CLOCK_CalculateSunrise(byte *outHour, byte *outMinute) {
+void TIME_CalculateSunrise(byte *outHour, byte *outMinute) {
 	dusk2Dawn(&sun_data, SUNRISE_FLAG, outHour, outMinute, 0);
 }
-void CLOCK_CalculateSunset(byte *outHour, byte *outMinute) {
+void TIME_CalculateSunset(byte *outHour, byte *outMinute) {
 	dusk2Dawn(&sun_data, SUNSET_FLAG, outHour, outMinute, 0);
 }
 #endif
 
-void CLOCK_RunEventsForSecond(time_t runTime) {
+void TIME_RunEventsForSecond(time_t runTime) {
 	clockEvent_t *e;
 	
 /*
@@ -192,7 +192,7 @@ void CLOCK_RunEventsForSecond(time_t runTime) {
 				// weekday check
 //				if (BIT_CHECK(e->weekDayFlags, ltm->tm_wday)) {
 				if (BIT_CHECK(e->weekDayFlags, tc.wday)) {
-#if ENABLE_CLOCK_SUNRISE_SUNSET
+#if ENABLE_TIME_SUNRISE_SUNSET
 					if (e->sunflags) {	// no need to check for sunrise/sunset here. If sunflags != 0, it's either of them!!
 /*
 						if (e->lastDay != ltm->tm_wday) {
@@ -222,7 +222,7 @@ void CLOCK_RunEventsForSecond(time_t runTime) {
 		e = e->next;
 	}
 }
-#if ENABLE_CLOCK_SUNRISE_SUNSET && ENABLE_CLOCK_DST
+#if ENABLE_TIME_SUNRISE_SUNSET && ENABLE_TIME_DST
 // in case a DST switch happens, we should change future events of sunset/sunrise, since this will be different after a switch
 // since we calculated the events in advance, we need to "fix" all events, postulating the DST switch is allways before a days sunrise and sunset
 void fix_DSTforEvents(int minutes){
@@ -241,7 +241,7 @@ void fix_DSTforEvents(int minutes){
 	}
 }
 #endif
-void CLOCK_RunEvents(unsigned int newTime, bool bTimeValid) {
+void TIME_RunEvents(unsigned int newTime, bool bTimeValid) {
 	unsigned int delta;
 	unsigned int i;
 
@@ -267,16 +267,16 @@ void CLOCK_RunEvents(unsigned int newTime, bool bTimeValid) {
 		if (delta > 100)
 			delta = 100;
 		for (i = 0; i < delta; i++) {
-			CLOCK_RunEventsForSecond(clock_eventsTime + i);
+			TIME_RunEventsForSecond(clock_eventsTime + i);
 		}
 	}
 	clock_eventsTime = (time_t)newTime;
 }
 
-#if ENABLE_CLOCK_SUNRISE_SUNSET
-void CLOCK_AddEvent(int hour, int minute, int second, int weekDayFlags, int id, int sunflags, const char* command) {
+#if ENABLE_TIME_SUNRISE_SUNSET
+void TIME_AddEvent(int hour, int minute, int second, int weekDayFlags, int id, int sunflags, const char* command) {
 #else
-void CLOCK_AddEvent(int hour, int minute, int second, int weekDayFlags, int id, const char* command) {
+void TIME_AddEvent(int hour, int minute, int second, int weekDayFlags, int id, const char* command) {
 #endif
 	clockEvent_t* newEvent = (clockEvent_t*)malloc(sizeof(clockEvent_t));
 	if (newEvent == NULL) {
@@ -288,7 +288,7 @@ void CLOCK_AddEvent(int hour, int minute, int second, int weekDayFlags, int id, 
 	newEvent->minute = minute;
 	newEvent->second = second;
 	newEvent->weekDayFlags = weekDayFlags;
-#if ENABLE_CLOCK_SUNRISE_SUNSET
+#if ENABLE_TIME_SUNRISE_SUNSET
 	newEvent->lastDay = -1;  /* mark with anything but a valid day of week */
 	newEvent->sunflags = sunflags;
 #endif
@@ -298,7 +298,7 @@ void CLOCK_AddEvent(int hour, int minute, int second, int weekDayFlags, int id, 
 
 	clock_events = newEvent;
 }
-int CLOCK_RemoveEvent(int id) {
+int TIME_RemoveEvent(int id) {
 	int ret = 0;
 	clockEvent_t* curr = clock_events;
 	clockEvent_t* prev = NULL;
@@ -338,12 +338,12 @@ int CLOCK_RemoveEvent(int id) {
 // addClockEvent 15:06:00 0xff 123 POWER TOGGLE
 // Example: do event every Wednesday at sunrise
 // addClockEvent sunrise 0x08 12 POWER OFF
-commandResult_t CMD_CLOCK_AddEvent(const void *context, const char *cmd, const char *args, int cmdFlags) {
+commandResult_t CMD_TIME_AddEvent(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int hour, minute = 0, second = 0;
 	const char *s;
 	int flags;
 	int id;
-#if ENABLE_CLOCK_SUNRISE_SUNSET
+#if ENABLE_TIME_SUNRISE_SUNSET
 	uint8_t hour_b, minute_b;
 	int sunflags = 0;
 //	struct tm *ltm = gmtime(&clock_eventsTime);
@@ -363,7 +363,7 @@ commandResult_t CMD_CLOCK_AddEvent(const void *context, const char *cmd, const c
 	if (sscanf(s, "%2d:%2d:%2d", &hour, &minute, &second) >= 2) {
 		// hour, minute and second has correct value parsed
 	}
-#if ENABLE_CLOCK_SUNRISE_SUNSET
+#if ENABLE_TIME_SUNRISE_SUNSET
 //#include <string.h>
 //	else if (strcasestr(s, "sunrise")) {	// eg W800 won't have strcasestr, so use wal_stricmp from new_common
 	else if (! wal_stricmp(s, "sunrise")) {
@@ -385,7 +385,7 @@ commandResult_t CMD_CLOCK_AddEvent(const void *context, const char *cmd, const c
 
 	id = Tokenizer_GetArgInteger(2);
 	s = Tokenizer_GetArgFrom(3);
-#if ENABLE_CLOCK_SUNRISE_SUNSET
+#if ENABLE_TIME_SUNRISE_SUNSET
 	if (sunflags) {
 //		dusk2Dawn(&sun_data, sunflags, &hour_b, &minute_b, calc_day_offset(ltm->tm_wday, flags));
 		dusk2Dawn(&sun_data, sunflags, &hour_b, &minute_b, calc_day_offset(tc.wday, flags));
@@ -394,14 +394,14 @@ commandResult_t CMD_CLOCK_AddEvent(const void *context, const char *cmd, const c
 		addLogAdv(LOG_DEBUG, LOG_FEATURE_CMD,"Adding sunflags %2x",sunflags);
 	}
 
-	CLOCK_AddEvent(hour, minute, second, flags, id, sunflags, s);
+	TIME_AddEvent(hour, minute, second, flags, id, sunflags, s);
 #else
-	CLOCK_AddEvent(hour, minute, second, flags, id, s);
+	TIME_AddEvent(hour, minute, second, flags, id, s);
 #endif
 	  return CMD_RES_OK;
 }
 // addPeriodValue [ChannelIndex] [Start_DayOfWeek] [Start_HH:MM:SS] [End_DayOfWeek] [End_HH:MM:SS] [Value] [UniqueID] [Flags]
-//commandResult_t CMD_CLOCK_AddPeriodValue(const void *context, const char *cmd, const char *args, int cmdFlags) {
+//commandResult_t CMD_TIME_AddPeriodValue(const void *context, const char *cmd, const char *args, int cmdFlags) {
 //	int start_hour, start_minute, start_second, start_day;
 //	int end_hour, end_minute, end_second, end_day;
 //	const char *s;
@@ -436,7 +436,7 @@ commandResult_t CMD_CLOCK_AddEvent(const void *context, const char *cmd, const c
 //	return CMD_RES_OK;
 //}
 
-commandResult_t CMD_CLOCK_RemoveEvent(const void* context, const char* cmd, const char* args, int cmdFlags) {
+commandResult_t CMD_TIME_RemoveEvent(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int id;
 
 	// tokenize the args string
@@ -451,12 +451,12 @@ commandResult_t CMD_CLOCK_RemoveEvent(const void* context, const char* cmd, cons
 	id = Tokenizer_GetArgInteger(0);
 
 	// Remove the clock event with the given id
-	CLOCK_RemoveEvent(id);
+	TIME_RemoveEvent(id);
 
 	return CMD_RES_OK;
 }
 
-int CLOCK_GetEventTime(int id) {
+int TIME_GetEventTime(int id) {
 	for (clockEvent_t* e = clock_events; e; e = e->next)
 	{
 		if (e->id == id)
@@ -468,7 +468,7 @@ int CLOCK_GetEventTime(int id) {
 	return -1;
 }
 
-int CLOCK_Print_EventList() {
+int TIME_Print_EventList() {
 	clockEvent_t* e;
 	int t;
 
@@ -477,7 +477,7 @@ int CLOCK_Print_EventList() {
 
 	while (e) {
 		// Print the command
-#if ENABLE_CLOCK_SUNRISE_SUNSET
+#if ENABLE_TIME_SUNRISE_SUNSET
 		char sun[25] = {0};
 		if (e->sunflags) {
 			if (e->sunflags & SUNRISE_FLAG){
@@ -497,13 +497,13 @@ int CLOCK_Print_EventList() {
 	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Total %i events", t);
 	return t;
 }
-commandResult_t CMD_CLOCK_ListEvents(const void* context, const char* cmd, const char* args, int cmdFlags) {
+commandResult_t CMD_TIME_ListEvents(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
-	CLOCK_Print_EventList();
+	TIME_Print_EventList();
 	return CMD_RES_OK;
 }
 
-int CLOCK_ClearEvents() {
+int TIME_ClearEvents() {
 	clockEvent_t* e;
 	int t;
 
@@ -523,34 +523,34 @@ int CLOCK_ClearEvents() {
 	addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "Removed %i events", t);
 	return t;
 }
-commandResult_t CMD_CLOCK_ClearEvents(const void* context, const char* cmd, const char* args, int cmdFlags) {
+commandResult_t CMD_TIME_ClearEvents(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
-	CLOCK_ClearEvents();
+	TIME_ClearEvents();
 
 	return CMD_RES_OK;
 }
-void CLOCK_Init_Events() {
+void TIME_Init_Events() {
 
 	//cmddetail:{"name":"addClockEvent","args":"[TimerSeconds or Time or sunrise or sunset] [WeekDayFlags] [UniqueIDForRemoval][Command]",
-	//cmddetail:"descr":"Schedule command to run on given time in given day of week. CLOCK must be running. TimerSeconds is seconds from midnight, Time is a time like HH:mm or HH:mm:ss, WeekDayFlag is a bitflag on which day to run, 0xff mean all days, 0x01 means sunday, 0x02 monday, 0x03 sunday and monday, etc, id is an unique id so event can be removed later. (NOTE: Use of sunrise/sunset requires compiling with ENABLE_CLOCK_SUNRISE_SUNSET set which adds about 11k of code)",
-	//cmddetail:"fn":"CMD_CLOCK_AddEvent","file":"driver/drv_timed_events.c","requires":"",
+	//cmddetail:"descr":"Schedule command to run on given time in given day of week. CLOCK must be running. TimerSeconds is seconds from midnight, Time is a time like HH:mm or HH:mm:ss, WeekDayFlag is a bitflag on which day to run, 0xff mean all days, 0x01 means sunday, 0x02 monday, 0x03 sunday and monday, etc, id is an unique id so event can be removed later. (NOTE: Use of sunrise/sunset requires compiling with ENABLE_TIME_SUNRISE_SUNSET set which adds about 11k of code)",
+	//cmddetail:"fn":"CMD_TIME_AddEvent","file":"driver/drv_timed_events.c","requires":"",
  	//cmddetail:"examples":""}
-	CMD_RegisterCommand("addClockEvent",CMD_CLOCK_AddEvent, NULL);
+	CMD_RegisterCommand("addClockEvent",CMD_TIME_AddEvent, NULL);
 	//cmddetail:{"name":"removeClockEvent","args":"[ID]",
 	//cmddetail:"descr":"Removes clock event with given ID",
-	//cmddetail:"fn":"CMD_CLOCK_RemoveEvent","file":"driver/drv_timed_events.c","requires":"",
+	//cmddetail:"fn":"CMD_TIME_RemoveEvent","file":"driver/drv_timed_events.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("removeClockEvent", CMD_CLOCK_RemoveEvent, NULL);
+	CMD_RegisterCommand("removeClockEvent", CMD_TIME_RemoveEvent, NULL);
 	//cmddetail:{"name":"listClockEvents","args":"",
 	//cmddetail:"descr":"Print the complete set clock events list",
-	//cmddetail:"fn":"CMD_CLOCK_ListEvents","file":"driver/drv_timed_events.c","requires":"",
+	//cmddetail:"fn":"CMD_TIME_ListEvents","file":"driver/drv_timed_events.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("listClockEvents", CMD_CLOCK_ListEvents, NULL);
+	CMD_RegisterCommand("listClockEvents", CMD_TIME_ListEvents, NULL);
 	//cmddetail:{"name":"clearClockEvents","args":"",
 	//cmddetail:"descr":"Removes all set clock events",
-	//cmddetail:"fn":"CMD_CLOCK_ClearEvents","file":"driver/drv_timed_events.c","requires":"",
+	//cmddetail:"fn":"CMD_TIME_ClearEvents","file":"driver/drv_timed_events.c","requires":"",
 	//cmddetail:"examples":""}
-	CMD_RegisterCommand("clearClockEvents", CMD_CLOCK_ClearEvents, NULL);
-	//CMD_RegisterCommand("addPeriodValue", CMD_CLOCK_AddPeriodValue, NULL);
+	CMD_RegisterCommand("clearClockEvents", CMD_TIME_ClearEvents, NULL);
+	//CMD_RegisterCommand("addPeriodValue", CMD_TIME_AddPeriodValue, NULL);
 }
 

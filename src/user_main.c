@@ -1399,7 +1399,7 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 //				DRV_StartDriver("TM1638");
 //			}
 #ifndef OBK_DISABLE_ALL_DRIVERS
-				DRV_StartDriver("CLOCK");	// allways start "CLOCK" driver, will do nothing but return time 0 if ntp not running
+				DRV_StartDriver("TIME");	// allways start "CLOCK" driver, will do nothing but return time 0 if ntp not running
 #endif			
 		}
 #endif

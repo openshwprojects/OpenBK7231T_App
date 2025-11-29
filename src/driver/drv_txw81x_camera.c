@@ -106,8 +106,14 @@ void TXW_Cam_RunEverySecond(void)
 {
 	if(showTimestamp)
 	{
+/*
 		struct tm* ltm = gmtime(&g_ntpTime);
 		set_time_watermark(ltm->tm_year + 1900, ltm->tm_mon + 1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+*/
+		TimeComponents tc;
+		tc=calculateComponents(TIME_GetCurrentTime());
+		set_time_watermark(tc.year, tc.month, tc.day, tc.hour, tc.minute, tc.second);
+
 	}
 }
 

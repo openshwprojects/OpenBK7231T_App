@@ -328,7 +328,7 @@ commandResult_t BL09XX_ResetEnergyCounterEx(int asensdatasetix, float* pvalue)
       sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading = *pvalue;
       energyCounterStamp[asensdatasetix] = xTaskGetTickCount();
     }
-    ConsumptionResetTime = (time_t)NTP_GetCurrentTime();
+    ConsumptionResetTime = (time_t)TIME_GetCurrentTime();
     if (OTA_GetProgress()==-1)
     { 
       BL09XX_SaveEmeteringStatistics();
@@ -704,9 +704,9 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     sensdataset->sensors[OBK_CONSUMPTION_TODAY].lastReading += energy;
 
     if (Clock_IsTimeSynced()) {
-      deviceTime = (time_t)Clock_GetCurrentTime();
+      deviceTime = (time_t)TIME_GetCurrentTime();
 //      ltm = gmtime(&deviceTime);
-      uint8_t mday=CLOCK_GetMDay();
+      uint8_t mday=TIME_GetMDay();
       if (ConsumptionResetTime == 0)
         ConsumptionResetTime = (time_t)deviceTime;
 

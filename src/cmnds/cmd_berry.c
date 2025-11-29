@@ -382,7 +382,7 @@ int be_gmtime(bvm *vm) {
 */
 
 	TimeComponents tc;
-	tc=calculateComponents(Clock_GetCurrentTime());
+	tc=calculateComponents(TIME_GetCurrentTime());
 
 	be_newobject(vm, "list"); // create a new list on top of the stack
 

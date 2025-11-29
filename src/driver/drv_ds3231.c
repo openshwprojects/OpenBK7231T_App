@@ -112,7 +112,7 @@ void DS3231_informClockWasSet(bool force){
 //    ADDLOG_DEBUG(LOG_FEATURE_RAW, "DS3231_informClockWasSet called. force=%i - clocksetcounter=%i",force,  clocksetcounter);
     if ((clocksetcounter++ % 60 == 0) || force){
     	ADDLOG_INFO(LOG_FEATURE_RAW, "DS3231_informClockWasSet - setting RTC time. force=%i - clocksetcounter=%i",force,  clocksetcounter);
-    	DS3231_SetEpoch(Clock_GetCurrentTimeWithoutOffset());
+    	DS3231_SetEpoch(TIME_GetCurrentTimeWithoutOffset());
     }
 }
 
@@ -233,7 +233,7 @@ void DS3231_Init()
     if (sync2device > 0 ) {
 	ADDLOG_INFO(LOG_FEATURE_RAW, "DS3231 set deviceclock to RTC time.");
     	time_t t = DS3231_ReadEpoch();
-    	if ( t > g_secondsElapsed + 3600 ) CLOCK_setDeviceTime(t);
+    	if ( t > g_secondsElapsed + 3600 ) TIME_setDeviceTime(t);
     }  
 }
 
@@ -244,7 +244,7 @@ void DS3231_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreSt
 	if (bPreState){
 		return;
 	}
-	if (! Clock_IsTimeSynced()){
+	if (! TIME_IsTimeSynced()){
 	    ds3231_time_t time;
 	    if (DS3231_ReadTime(&time)) {
 		hprintf255(request, "<h5>DS3231 Time: %02d/%02d/%02d %02d:%02d:%02d</h5>", 
@@ -255,6 +255,6 @@ void DS3231_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreSt
 
 void DS3231_OnEverySecond(){
 	if ( sync2device > 1 && g_secondsElapsed % 60 == 2 )
-		CLOCK_setDeviceTime(DS3231_ReadEpoch());
+		TIME_setDeviceTime(DS3231_ReadEpoch());
 };
 #endif // #if (ENABLE_DRIVER_DS3231)

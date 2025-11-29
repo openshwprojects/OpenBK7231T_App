@@ -280,50 +280,48 @@ float getFailedBoots(const char *s) {
 float getUpTime(const char *s) {
 	return g_secondsElapsed;
 }
-#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 float getWeekDay(const char *s) {
-	return CLOCK_GetWeekDay();
+	return TIME_GetWeekDay();
 }
 float getMinute(const char *s) {
-	return CLOCK_GetMinute();
+	return TIME_GetMinute();
 }
 float getHour(const char *s) {
-	return CLOCK_GetHour();
+	return TIME_GetHour();
 }
 float getSecond(const char *s) {
-	return CLOCK_GetSecond();
+	return TIME_GetSecond();
 }
 float getYear(const char *s) {
-	return CLOCK_GetYear();
+	return TIME_GetYear();
 }
 float getMonth(const char *s) {
-	return CLOCK_GetMonth();
+	return TIME_GetMonth();
 }
 float getMDay(const char *s) {
-	return CLOCK_GetMDay();
+	return TIME_GetMDay();
 }
-#endif
 #ifdef ENABLE_NTP
 
 float getNTPOn(const char *s) {
 	return NTP_IsTimeSynced();
 }
 #endif
-#if ENABLE_CLOCK_DST
+#if ENABLE_TIME_DST
 
 float isDST(const char *s){
 	return Time_IsDST();
 }
 #endif
 
-#if ENABLE_CLOCK_SUNRISE_SUNSET
+#if ENABLE_TIME_SUNRISE_SUNSET
 
 
 float getSunrise(const char *s) {
-	return CLOCK_GetSunrise();
+	return TIME_GetSunrise();
 }
 float getSunset(const char *s) {
-	return CLOCK_GetSunset();
+	return TIME_GetSunset();
 }
 
 #endif
@@ -464,7 +462,6 @@ const constant_t g_constants[] = {
 	//cnstdetail:"requires":""}
 	{ "$today", &getToday },
 #endif	//ENABLE_DRIVER_BL0937
-#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 	//cnstdetail:{"name":"$day",
 	//cnstdetail:"title":"$day",
 	//cnstdetail:"descr":"Current weekday from device clock",
@@ -500,14 +497,14 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current Year from device clock",
 	//cnstdetail:"requires":""}
 	{ "$year", &getYear },
-#if ENABLE_CLOCK_DST
+#if ENABLE_TIME_DST
 	//cnstdetail:{"name":"$isDST",
 	//cnstdetail:"title":"$isDST",
 	//cnstdetail:"descr":"Returns 1 if DST (daylight saving time) is active, otherwise 0",
 	//cnstdetail:"requires":""}
 	{ "$isDST", &isDST },
 #endif
-#if ENABLE_CLOCK_SUNRISE_SUNSET
+#if ENABLE_TIME_SUNRISE_SUNSET
 	//cnstdetail:{"name":"$sunrise",
 	//cnstdetail:"title":"$sunrise",
 	//cnstdetail:"descr":"Next sunrise as a TimerSeconds from midnight - will also print time to log",
@@ -519,12 +516,13 @@ const constant_t g_constants[] = {
 	//cnstdetail:"requires":""}
 	{ "$sunset", &getSunset },
 #endif
+#if ENABLE_NTP
 	//cnstdetail:{"name":"$NTPOn",
 	//cnstdetail:"title":"$NTPOn",
 	//cnstdetail:"descr":"Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",
 	//cnstdetail:"requires":""}
 	{ "$NTPOn", &getNTPOn },
-#endif	// ENABLE_LOCAL_CLOCK || ENABLE_NTP
+#endif
 #ifdef ENABLE_DRIVER_BATTERY
 	//cnstdetail:{"name":"$batteryVoltage",
 	//cnstdetail:"title":"$batteryVoltage",
