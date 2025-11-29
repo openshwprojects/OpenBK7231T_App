@@ -2,7 +2,7 @@
 
 #include "selftest_local.h"
 
-void Test_NTP_DST() {
+void Test_TIME_DST() {
 	// reset whole device
 	SIM_ClearOBK(0);
 
@@ -29,7 +29,8 @@ void Test_NTP_DST() {
 	// 
 	// 0 10 1 3 	means "End of DST on 	last(=0) Octobers(=10) Sunday(=1) at 3"
 	// 0 3 1 2 	means "Start of DST on 	last(=0) Marchs(=3) Sunday(=1) at 2"
-	CMD_ExecuteCommand("CLOCK_calcDST 0 10 1 3 0 3 1 2", 0);
+//	CMD_ExecuteCommand("CLOCK_calcDST 0 10 1 3 0 3 1 2", 0);
+	CMD_ExecuteCommand("TIME_setDST 0 3 1 2 60 0 10 1 3 0", 0);
 	// test - we are (slightly) "before" DST
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 0);
 
@@ -156,7 +157,7 @@ void Test_NTP_DST() {
 	SELFTEST_ASSERT_EXPRESSION("$isDST", 0);
 	
 	
-#if ENABLE_NTP_SUNRISE_SUNSET
+#if ENABLE_TIME_SUNRISE_SUNSET
 	// test DST and sunset/sunrise events:
 	// after such an event took place, the next event will calculated
 	// if a DST switch takes place, before the sunset/sunrise takes place
@@ -165,16 +166,17 @@ void Test_NTP_DST() {
 	CMD_ExecuteCommand("ntp_setLatlong 52.237049 21.017532", 0);
 	// 1761440395 = Sun, Oct 26 2025 02:59:55 CEST - 5 seconds before DST switch
 	NTP_SetSimulatedTime(1761440395);
-	CMD_ExecuteCommand("addClockEvent sunset 0xff 31 setChannel 0 1", 0);	// 16:17:00
-	SELFTEST_ASSERT_INTCOMPARE(NTP_GetEventTime(31), 16*3600 + 17*60);
-	CMD_ExecuteCommand("addClockEvent sunrise 0xff 32 setChannel 0 0", 0);	// 06:21:00
-	SELFTEST_ASSERT_INTCOMPARE(NTP_GetEventTime(32), 6*3600 + 21*60);
+	CMD_ExecuteCommand("echo sunset=$sunset sunrise=$sunrise", 0);	// expected: 17:17:00 and 07:21:00
+	CMD_ExecuteCommand("addClockEvent sunset 0xff 31 setChannel 0 1", 0);	// 17:17:00
+	SELFTEST_ASSERT_INTCOMPARE(TIME_GetEventTime(31), 17*3600 + 17*60);
+	CMD_ExecuteCommand("addClockEvent sunrise 0xff 32 setChannel 0 0", 0);	// 07:21:00
+	SELFTEST_ASSERT_INTCOMPARE(TIME_GetEventTime(32), 7*3600 + 21*60);
 	// 1761440395 = Sun, Oct 26 2025 02:59:55 CEST
 	Sim_RunSeconds(7, false);
 	// Switch from summertime to winter time, so time is now one hour back
 	// test, if sunset/sunrise events are corrected
-	SELFTEST_ASSERT_INTCOMPARE(NTP_GetEventTime(31), 15*3600 + 17*60);
-	SELFTEST_ASSERT_INTCOMPARE(NTP_GetEventTime(32), 5*3600 + 21*60);
+	SELFTEST_ASSERT_INTCOMPARE(TIME_GetEventTime(31), 16*3600 + 17*60);
+	SELFTEST_ASSERT_INTCOMPARE(TIME_GetEventTime(32), 6*3600 + 21*60);
 #endif
 
 }

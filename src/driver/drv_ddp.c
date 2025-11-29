@@ -205,7 +205,7 @@ void DRV_DDP_Shutdown()
 		g_ddp_socket_receive = -1;
 	}
 }
-void DRV_DDP_AppendInformationToHTTPIndexPage(http_request_t* request)
+void DRV_DDP_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
 	hprintf255(request, "<h2>DDP received: %i packets, %i bytes</h2>", stat_ddpPacketsReceived, stat_ddpBytesReceived);
 }

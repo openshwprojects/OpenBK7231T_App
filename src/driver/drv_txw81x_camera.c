@@ -17,6 +17,7 @@
 #include "lib/net/eloop/eloop.h"
 #include "lib/video/dvp/jpeg/jpg.h"
 #include "project_config.h"
+#include "../libraries/obktime/obktime.h"	// for time functions
 
 extern struct vpp_device* vpp_test;
 bool isStarted = false;
@@ -106,8 +107,14 @@ void TXW_Cam_RunEverySecond(void)
 {
 	if(showTimestamp)
 	{
+/*
 		struct tm* ltm = gmtime(&g_ntpTime);
 		set_time_watermark(ltm->tm_year + 1900, ltm->tm_mon + 1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+*/
+		TimeComponents tc;
+		tc=calculateComponents(TIME_GetCurrentTime());
+		set_time_watermark(tc.year, tc.month, tc.day, tc.hour, tc.minute, tc.second);
+
 	}
 }
 

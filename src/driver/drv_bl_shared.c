@@ -12,11 +12,14 @@
 #include "../hal/hal_ota.h"
 #include "drv_local.h"
 #include "drv_ntp.h"
+#include "drv_deviceclock.h"
 #include "drv_public.h"
 #include "drv_uart.h"
 #include "../cmnds/cmd_public.h" //for enum EventCode
 #include <math.h>
-#include <time.h>
+//#include <time.h>
+#include "../libraries/obktime/obktime.h"	// for time functions
+
 
 #if ENABLE_BL_TWIN
 #define BL_SENSDATASETS_COUNT 2
@@ -146,7 +149,7 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t * request, int bPreS
     
     int i;
     const char *mode;
-    struct tm *ltm;
+//    struct tm *ltm;
 
     if(DRV_IsRunning("BL0937")) {
         mode = "BL0937";
@@ -177,7 +180,8 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t * request, int bPreS
     if ((energyCounterMinutes == NULL) && (i == OBK_CONSUMPTION_LAST_HOUR)) {
       continue;
     }
-    if (i <= OBK__NUM_MEASUREMENTS || NTP_IsTimeSynced()) {
+    if (i <= OBK__NUM_MEASUREMENTS || TIME_IsTimeSynced()) {
+
 			poststr(request, "<tr><td><b>");
 			poststr(request, sensdataset->sensors[i].names.name_friendly);
 			poststr(request, "</b></td><td style='text-align: right;'>");
@@ -197,18 +201,18 @@ void BL09XX_AppendInformationToHTTPIndexPage(http_request_t * request, int bPreS
     {
       poststr(request, "<h5>Energy Clear Date: ");
       if (ConsumptionResetTime) {
-        ltm = gmtime(&ConsumptionResetTime);
+/*        ltm = gmtime(&ConsumptionResetTime);
         hprintf255(request, "%04d-%02d-%02d %02d:%02d:%02d",
           ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+*/
+        hprintf255(request, "%s",TS2STR(ConsumptionResetTime,TIME_FORMAT_LONG));
       } else {
         poststr(request, "(not set)");
       }
 
       hprintf255(request, "<br>");
-      if(DRV_IsRunning("NTP")==false) {
-        hprintf255(request,"NTP driver is not started, daily energy stats disabled.");
-      } else if (!NTP_IsTimeSynced()) {
-        hprintf255(request,"Daily energy stats awaiting NTP driver to sync real time...");
+      if(TIME_IsTimeSynced()==false) {
+        hprintf255(request,"Device time not in sync, daily energy stats disabled.");
       }
       hprintf255(request, "</h5>");
 
@@ -324,7 +328,7 @@ commandResult_t BL09XX_ResetEnergyCounterEx(int asensdatasetix, float* pvalue)
       sensdataset->sensors[OBK_CONSUMPTION_TOTAL].lastReading = *pvalue;
       energyCounterStamp[asensdatasetix] = xTaskGetTickCount();
     }
-    ConsumptionResetTime = (time_t)NTP_GetCurrentTime();
+    ConsumptionResetTime = (time_t)TIME_GetCurrentTime();
     if (OTA_GetProgress()==-1)
     { 
       BL09XX_SaveEmeteringStatistics();
@@ -630,8 +634,8 @@ void BL_ProcessUpdate(float voltage, float current, float power,
   cJSON* stats;
   char *msg;
   portTickType interval;
-  time_t ntpTime;
-  struct tm *ltm;
+  time_t deviceTime;
+//  struct tm *ltm;
   char datetime[64];
   float diff;
 
@@ -699,23 +703,27 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     #endif
     sensdataset->sensors[OBK_CONSUMPTION_TODAY].lastReading += energy;
 
-    if (NTP_IsTimeSynced()) {
-      ntpTime = (time_t)NTP_GetCurrentTime();
-      ltm = gmtime(&ntpTime);
+    if (TIME_IsTimeSynced()) {
+      deviceTime = (time_t)TIME_GetCurrentTime();
+//      ltm = gmtime(&deviceTime);
+      uint8_t mday=TIME_GetMDay();
       if (ConsumptionResetTime == 0)
-        ConsumptionResetTime = (time_t)ntpTime;
+        ConsumptionResetTime = (time_t)deviceTime;
 
       if (actual_mday[asensdatasetix] == -1)
       {
-        actual_mday[asensdatasetix] = ltm->tm_mday;
+//        actual_mday[asensdatasetix] = ltm->tm_mday;
+        actual_mday[asensdatasetix] = mday;
       }
-      if (actual_mday[asensdatasetix] != ltm->tm_mday)
+//      if (actual_mday[asensdatasetix] != ltm->tm_mday)
+      if (actual_mday[asensdatasetix] != mday)
       {
         for (i = OBK_CONSUMPTION__DAILY_LAST; i >= OBK_CONSUMPTION__DAILY_FIRST; i--) {
           sensdataset->sensors[i].lastReading = sensdataset->sensors[i - 1].lastReading;
         }
         sensdataset->sensors[OBK_CONSUMPTION_TODAY].lastReading = 0.0;
-        actual_mday[asensdatasetix] = ltm->tm_mday;
+//        actual_mday[asensdatasetix] = ltm->tm_mday;
+        actual_mday[asensdatasetix] = mday;
 
         //MQTT_PublishMain_StringFloat(sensdataset->sensors[OBK_CONSUMPTION_YESTERDAY].names.name_mqtt, BL_ChangeEnergyUnitIfNeeded(sensors[OBK_CONSUMPTION_YESTERDAY].lastReading ),
         //							sensdataset->sensors[OBK_CONSUMPTION_YESTERDAY].rounding_decimals, 0);
@@ -751,21 +759,34 @@ void BL_ProcessUpdate(float voltage, float current, float power,
           cJSON_AddNumberToObject(root, "consumption_stat_index", energyCounterMinutesIndex);
           cJSON_AddNumberToObject(root, "consumption_sample_count", energyCounterSampleCount);
           cJSON_AddNumberToObject(root, "consumption_sampling_period", energyCounterSampleInterval);
-          if(NTP_IsTimeSynced() == true)
+          if(TIME_IsTimeSynced() == true)
           {
             cJSON_AddNumberToObject(root, "consumption_today", BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_TODAY)));
             cJSON_AddNumberToObject(root, "consumption_yesterday", BL_ChangeEnergyUnitIfNeeded(DRV_GetReading(OBK_CONSUMPTION_YESTERDAY)));
-            ltm = gmtime(&ConsumptionResetTime);
-            if (NTP_GetTimesZoneOfsSeconds()>0)
+//            ltm = gmtime(&ConsumptionResetTime);
+/*
+            if (TIME_GetTimesZoneOfsSeconds()>0)
             {
               snprintf(datetime,sizeof(datetime), "%04i-%02i-%02iT%02i:%02i+%02i:%02i",
                 ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
-                NTP_GetTimesZoneOfsSeconds()/3600, (NTP_GetTimesZoneOfsSeconds()/60) % 60);
+                TIME_GetTimesZoneOfsSeconds()/3600, (TIME_GetTimesZoneOfsSeconds()/60) % 60);
             } else {
               snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i-%02i:%02i",
                 ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
-                abs(NTP_GetTimesZoneOfsSeconds()/3600), (abs(NTP_GetTimesZoneOfsSeconds())/60) % 60);
+                abs(TIME_GetTimesZoneOfsSeconds()/3600), (abs(TIME_GetTimesZoneOfsSeconds())/60) % 60);
             }
+*/
+            // optimized output: since we can be sure, a negative offset is minumum 1 hour, 
+            // the sign for the hour will be "-" for "negative" timezones 
+            //    this wouldn't work if a negative offset less than one hour would be possible
+/*
+            snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i%+03i:%02i",
+                ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
+                TIME_GetTimesZoneOfsSeconds()/3600, (abs(TIME_GetTimesZoneOfsSeconds())/60) % 60);
+*/            
+            snprintf(datetime, sizeof(datetime), "%.16s%+03i:%02i",TS2STR(ConsumptionResetTime, TIME_FORMAT_ISO_8601),
+                TIME_GetTimesZoneOfsSeconds()/3600, (abs(TIME_GetTimesZoneOfsSeconds())/60) % 60);
+
             cJSON_AddStringToObject(root, "consumption_clear_date", datetime);
           }
 
@@ -881,18 +902,31 @@ void BL_ProcessUpdate(float voltage, float current, float power,
         if (i == OBK_CONSUMPTION_CLEAR_DATE) {
           {
             sensdataset->sensors[i].lastReading = ConsumptionResetTime; //Only to make the 'nochangeframe' mechanism work here
-            ltm = gmtime(&ConsumptionResetTime);
+//            ltm = gmtime(&ConsumptionResetTime);
             /* 2019-09-07T15:50-04:00 */
-            if (NTP_GetTimesZoneOfsSeconds()>0)
+/*
+            if (TIME_GetTimesZoneOfsSeconds()>0)
             {
               snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i+%02i:%02i",
                 ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
-                NTP_GetTimesZoneOfsSeconds()/3600, (NTP_GetTimesZoneOfsSeconds()/60) % 60);
+                TIME_GetTimesZoneOfsSeconds()/3600, (TIME_GetTimesZoneOfsSeconds()/60) % 60);
             } else {
               snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i-%02i:%02i",
                 ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
-                abs(NTP_GetTimesZoneOfsSeconds()/3600), (abs(NTP_GetTimesZoneOfsSeconds())/60) % 60);
+                abs(TIME_GetTimesZoneOfsSeconds()/3600), (abs(TIME_GetTimesZoneOfsSeconds())/60) % 60);
             }
+*/
+            // optimized output: since we can be sure, a negative offset is minumum 1 hour, 
+            // the sign for the hour will be "-" for "negative" timezones 
+            //    this wouldn't work if a negative offset less than one hour would be possible
+/*
+            snprintf(datetime, sizeof(datetime), "%04i-%02i-%02iT%02i:%02i%+03i:%02i",
+                ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min,
+                TIME_GetTimesZoneOfsSeconds()/3600, (abs(TIME_GetTimesZoneOfsSeconds())/60) % 60);
+*/
+            snprintf(datetime, sizeof(datetime), "%.16s%+03i:%02i",TS2STR(ConsumptionResetTime, TIME_FORMAT_ISO_8601),
+                TIME_GetTimesZoneOfsSeconds()/3600, (abs(TIME_GetTimesZoneOfsSeconds())/60) % 60);
+            
             MQTT_PublishMain_StringString(sensdataset->sensors[i].names.name_mqtt, datetime, 0);
           }
         } else { //all other sensors

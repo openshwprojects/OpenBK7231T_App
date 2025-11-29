@@ -8,21 +8,21 @@ void DRV_DGR_RunQuickTick();
 void DRV_DGR_RunEverySecond();
 void DRV_DGR_Shutdown();
 void DRV_DGR_OnChannelChanged(int ch, int value);
-void DRV_DGR_AppendInformationToHTTPIndexPage(http_request_t *request);
+void DRV_DGR_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 
 void DRV_DDP_Init();
 void DRV_DDP_RunFrame();
 void DRV_DDP_Shutdown();
-void DRV_DDP_AppendInformationToHTTPIndexPage(http_request_t *request);
+void DRV_DDP_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 
 void BMP280_Init();
 void BMP280_OnEverySecond();
-void BMP280_AppendInformationToHTTPIndexPage(http_request_t *request);
+void BMP280_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 
 void DoorDeepSleep_Init();
 void DoorDeepSleep_OnEverySecond();
 void DoorDeepSleep_StopDriver();
-void DoorDeepSleep_AppendInformationToHTTPIndexPage(http_request_t *request);
+void DoorDeepSleep_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 void DoorDeepSleep_OnChannelChanged(int ch, int value);
 
 void DRV_MAX72XX_Clock_OnEverySecond();

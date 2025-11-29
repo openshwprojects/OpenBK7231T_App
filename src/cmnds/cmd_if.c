@@ -7,6 +7,7 @@
 #include "../driver/drv_public.h"
 #include "../driver/drv_battery.h"
 #include "../driver/drv_ntp.h"
+#include "../driver/drv_deviceclock.h"
 #include "../hal/hal_flashVars.h"
 #include <ctype.h> // isspace
 
@@ -280,49 +281,47 @@ float getUpTime(const char *s) {
 	return g_secondsElapsed;
 }
 float getWeekDay(const char *s) {
-	return NTP_GetWeekDay();
+	return TIME_GetWeekDay();
 }
 float getMinute(const char *s) {
-	return NTP_GetMinute();
+	return TIME_GetMinute();
 }
 float getHour(const char *s) {
-	return NTP_GetHour();
+	return TIME_GetHour();
 }
 float getSecond(const char *s) {
-	return NTP_GetSecond();
+	return TIME_GetSecond();
 }
 float getYear(const char *s) {
-	return NTP_GetYear();
+	return TIME_GetYear();
 }
 float getMonth(const char *s) {
-	return NTP_GetMonth();
+	return TIME_GetMonth();
 }
 float getMDay(const char *s) {
-	return NTP_GetMDay();
+	return TIME_GetMDay();
 }
-
 #ifdef ENABLE_NTP
 
-float getNTPOn(const char* s)
-{
+float getNTPOn(const char *s) {
 	return NTP_IsTimeSynced();
 }
-
 #endif
+#if ENABLE_TIME_DST
 
-#if ENABLE_NTP_DST
 float isDST(const char *s){
 	return Time_IsDST();
 }
 #endif
 
-#if ENABLE_NTP_SUNRISE_SUNSET
+#if ENABLE_TIME_SUNRISE_SUNSET
+
 
 float getSunrise(const char *s) {
-	return NTP_GetSunrise();
+	return TIME_GetSunrise();
 }
 float getSunset(const char *s) {
-	return NTP_GetSunset();
+	return TIME_GetSunset();
 }
 
 #endif
@@ -452,80 +451,78 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current value of energy counter from energy metering chip",
 	//cnstdetail:"requires":""}
 	{"$energy", &getEnergy},
-	//cnstdetail:{"name":"$day",
-	//cnstdetail:"title":"$day",
-	//cnstdetail:"descr":"Current weekday from NTP",
-	//cnstdetail:"requires":""}
-#endif	//ENABLE_DRIVER_BL0937
-#ifdef ENABLE_NTP
-	{"$day", &getWeekDay},
-	//cnstdetail:{"name":"$hour",
-	//cnstdetail:"title":"$hour",
-	//cnstdetail:"descr":"Current hour from NTP",
-	//cnstdetail:"requires":""}
-	{"$hour", &getHour},
-	//cnstdetail:{"name":"$minute",
-	//cnstdetail:"title":"$minute",
-	//cnstdetail:"descr":"Current minute from NTP",
-	//cnstdetail:"requires":""}
-	{ "$minute", &getMinute },
-	//cnstdetail:{"name":"$second",
-	//cnstdetail:"title":"$second",
-	//cnstdetail:"descr":"Current second from NTP",
-	//cnstdetail:"requires":""}
-	{ "$second", &getSecond },
-	//cnstdetail:{"name":"$mday",
-	//cnstdetail:"title":"$mday",
-	//cnstdetail:"descr":"Current mday from NTP",
-	//cnstdetail:"requires":""}
-	{ "$mday", &getMDay },
-	//cnstdetail:{"name":"$month",
-	//cnstdetail:"title":"$month",
-	//cnstdetail:"descr":"Current month from NTP",
-	//cnstdetail:"requires":""}
-	{ "$month", &getMonth },
-	//cnstdetail:{"name":"$year",
-	//cnstdetail:"title":"$year",
-	//cnstdetail:"descr":"Current Year from NTP",
-	//cnstdetail:"requires":""}
-	{ "$year", &getYear },
-#ifdef ENABLE_DRIVER_BL0937
 	//cnstdetail:{"name":"$yesterday",
 	//cnstdetail:"title":"$yesterday",
-	//cnstdetail:"descr":"",
+	//cnstdetail:"descr":"Yesterdays energy consuption",
 	//cnstdetail:"requires":""}
 	{ "$yesterday", &getYesterday },
 	//cnstdetail:{"name":"$today",
 	//cnstdetail:"title":"$today",
-	//cnstdetail:"descr":"",
+	//cnstdetail:"descr":"Todays energy consuption",
 	//cnstdetail:"requires":""}
 	{ "$today", &getToday },
-#endif
-#if ENABLE_NTP_DST
+#endif	//ENABLE_DRIVER_BL0937
+	//cnstdetail:{"name":"$day",
+	//cnstdetail:"title":"$day",
+	//cnstdetail:"descr":"Current weekday from device clock",
+	//cnstdetail:"requires":""}
+	{"$day", &getWeekDay},
+	//cnstdetail:{"name":"$hour",
+	//cnstdetail:"title":"$hour",
+	//cnstdetail:"descr":"Current hour from device clock",
+	//cnstdetail:"requires":""}
+	{"$hour", &getHour},
+	//cnstdetail:{"name":"$minute",
+	//cnstdetail:"title":"$minute",
+	//cnstdetail:"descr":"Current minute from device clock",
+	//cnstdetail:"requires":""}
+	{ "$minute", &getMinute },
+	//cnstdetail:{"name":"$second",
+	//cnstdetail:"title":"$second",
+	//cnstdetail:"descr":"Current second from device clock",
+	//cnstdetail:"requires":""}
+	{ "$second", &getSecond },
+	//cnstdetail:{"name":"$mday",
+	//cnstdetail:"title":"$mday",
+	//cnstdetail:"descr":"Current mday from device clock",
+	//cnstdetail:"requires":""}
+	{ "$mday", &getMDay },
+	//cnstdetail:{"name":"$month",
+	//cnstdetail:"title":"$month",
+	//cnstdetail:"descr":"Current month from device clock",
+	//cnstdetail:"requires":""}
+	{ "$month", &getMonth },
+	//cnstdetail:{"name":"$year",
+	//cnstdetail:"title":"$year",
+	//cnstdetail:"descr":"Current Year from device clock",
+	//cnstdetail:"requires":""}
+	{ "$year", &getYear },
+#if ENABLE_TIME_DST
 	//cnstdetail:{"name":"$isDST",
 	//cnstdetail:"title":"$isDST",
-	//cnstdetail:"descr":"",
+	//cnstdetail:"descr":"Returns 1 if DST (daylight saving time) is active, otherwise 0",
 	//cnstdetail:"requires":""}
 	{ "$isDST", &isDST },
 #endif
-#if ENABLE_NTP_SUNRISE_SUNSET
+#if ENABLE_TIME_SUNRISE_SUNSET
 	//cnstdetail:{"name":"$sunrise",
 	//cnstdetail:"title":"$sunrise",
-	//cnstdetail:"descr":"Next sunrise as a TimerSeconds from midnight",
+	//cnstdetail:"descr":"Next sunrise as a TimerSeconds from midnight - will also print time to log",
 	//cnstdetail:"requires":""}
 	{ "$sunrise", &getSunrise },
 	//cnstdetail:{"name":"$sunset",
 	//cnstdetail:"title":"$sunset",
-	//cnstdetail:"descr":"Next sunset as a TimerSeconds from midnight",
+	//cnstdetail:"descr":"Next sunset as a TimerSeconds from midnight - will also print time to log",
 	//cnstdetail:"requires":""}
 	{ "$sunset", &getSunset },
 #endif
+#if ENABLE_NTP
 	//cnstdetail:{"name":"$NTPOn",
 	//cnstdetail:"title":"$NTPOn",
 	//cnstdetail:"descr":"Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",
 	//cnstdetail:"requires":""}
 	{ "$NTPOn", &getNTPOn },
-#endif	//ENABLE_NTP
+#endif
 #ifdef ENABLE_DRIVER_BATTERY
 	//cnstdetail:{"name":"$batteryVoltage",
 	//cnstdetail:"title":"$batteryVoltage",
