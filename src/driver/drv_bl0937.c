@@ -63,13 +63,12 @@ volatile portTickType g_pulseStampEnd_v=0, g_pulseStampEnd_c=0;
 	static unsigned long g_minPulsesV = 0, g_minPulsesC = 0, g_minPulsesP = 0;	// keep behaviour for compatibility
 #endif
 
-static portTickType g_pulseStampTestPrev=0;
 
 static float g_freqmultiplierV=DEFAULT_VOLTAGE_FREQMULTIPLY, g_freqmultiplierP=DEFAULT_POWER_FREQMULTIPLY; //not needed for C because float used
-static float g_p_forceonroc=0.0f; //pwr change within last second
-static float g_p_forceonpwr=0.0f; //pwr change within current cycle
-static int g_forceonroc_gtlim=-1;
-static int g_forceonpwr_gtlim=-1;
+static float g_p_forceonroc_limit=0.0f; //pwr change within last second
+static float g_p_forceonpcyc_limit=0.0f; //pwr change within current cycle
+static int g_forceonroc=-1;
+static int g_forceonpwr=-1;
 static float g_p_prevsec=0;
 static unsigned long g_p_pulsesprevsec = 0;
 
@@ -298,21 +297,21 @@ commandResult_t BL0937_cmdForceOnPwrROC(const void* context, const char* cmd, co
 	if(Tokenizer_GetArgsCount()<2) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: not enough arguments given, current limits roc %f W/s | pwr %f Wcycle.\n"
 			, g_secondsElapsed, cmdName
-			, (float)g_p_forceonroc, (float)g_p_forceonpwr);
+			, (float)g_p_forceonroc_limit, (float)g_p_forceonpcyc_limit);
 //		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 		argok=-1;
 	} else {
-		g_p_forceonroc=(float)Tokenizer_GetArgInteger(0);
-		g_p_forceonpwr=(float)Tokenizer_GetArgInteger(1);
+		g_p_forceonroc_limit=(float)Tokenizer_GetArgFloat(0);
+		g_p_forceonpcyc_limit=(float)Tokenizer_GetArgFloat(1);
 		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: %f W/s %f Wcycle", g_secondsElapsed, cmdName
-			, (float)g_p_forceonroc, (float)g_p_forceonpwr);
+			, (float)g_p_forceonroc_limit, (float)g_p_forceonpcyc_limit);
 		argok=1;
 	}
 #if CMD_SEND_VAL_MQTT > 0
 	if (g_enable_mqtt_on_cmd>0)	{
 		char curvalstr[16]; 
-		if ( (float)g_p_forceonroc < 10000.0f && (float)g_p_forceonpwr < 10000.0f) { //ensure there is no strlen overflow
-			sprintf(curvalstr, "%.2f %.2f", (float)g_p_forceonroc, (float)g_p_forceonpwr);
+		if ( (float)g_p_forceonroc_limit < 10000.0f && (float)g_p_forceonpcyc_limit < 10000.0f) { //ensure there is no strlen overflow
+			sprintf(curvalstr, "%.2f %.2f", (float)g_p_forceonroc_limit, (float)g_p_forceonpcyc_limit);
 		} else {
 			strcpy(curvalstr, "invalid");
 		}
@@ -611,14 +610,15 @@ void BL0937_RunEverySecond(void)
 
 #endif
 
-	//--> force on pwr roc
-//	uint32_t pulsediff_p_prevsec = BL0937_utlDiffCalcU32(g_p_pulsesprevsec, g_p_pulses);
-//	uint32_t freq_p_lastsec = BL0937_utlDiffCalcU32(g_p_pulsesprevsec, g_p_pulses) * (1000 / portTICK_PERIOD_MS);
-//	freq_p_lastsec /= (1000 / portTICK_PERIOD_MS);
-//accuracy of function call every second should be enough, otherwise other port tick store and calc required
+// get power ticks and pulses within cycle in any case and before change detection
+	ticksElapsed_p = BL0937_utlDiffCalcU32(g_pulseStampStart_p, pulseStampNow); //use same for detection an normal calculation
+	res_p = BL0937_utlDiffCalcU32(g_p_pulsesprev, g_p_pulses);
+
+//--> force on pwr roc
+//accuracy of function call every second should be enough, otherwise additional port tick store and calc required
 	float p_roc = 0.0f;
-	float p_thissec = -9999.99f;
-	if (g_p_forceonroc > 0) {
+	float p_thissec = -9999.999f;
+	if ( g_p_forceonroc_limit > 0.0f ) {
 		unsigned long freq_p_thissec = (unsigned long)BL0937_utlDiffCalcU32(g_p_pulsesprevsec, g_p_pulses);
 		if (freq_p_thissec > 10000) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "ts %5d p roc detection invalid freq %i p_pulses prevsec %i now %i]\n", g_secondsElapsed
@@ -628,32 +628,30 @@ void BL0937_RunEverySecond(void)
 			p_roc = p_thissec - g_p_prevsec;
 			g_p_prevsec = p_thissec;		
 		}
-		g_p_pulsesprevsec=g_p_pulses;
-		if( fabs(p_roc) >= g_p_forceonroc) {
+		g_p_pulsesprevsec = g_p_pulses;
+		if( fabs(p_roc) >= g_p_forceonroc_limit) {
 			/*force for two cycles otherwise in case of
 				change to low power last value kept a while, 
 				positive change first value is an average 
 					-->optionally change to report higher value immediately? */		
-			g_forceonroc_gtlim =  2; 
+			g_forceonroc = 2; //g_bl_secUntilNextCalc = 0 would trigger only one update but we need 2 due to average before
 		} else {
-			g_forceonroc_gtlim--;
+			g_forceonroc--;
 		}
-		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d power prev %.2f / now %.2f (%d Hz * %f * %.3E) -> roc=%.1f [limit=%.2f, force=%i sec2next=%d], p_pulsestot %d\n", g_secondsElapsed
-			, g_p_prevsec, p_thissec, freq_p_thissec, (float)g_freqmultiplierP, power_cal_cur, p_roc, g_p_forceonroc, g_forceonroc_gtlim, g_bl_secUntilNextCalc, res_p);
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d power prevsec %.2f / now %.2f (%d Hz * %.1f * %.3E) -> roc=%.1f [limit=%.2f, force=%i sec2nextmax=%d], p_pulsestot %d\n", g_secondsElapsed
+			, g_p_prevsec, p_thissec, freq_p_thissec, (float)g_freqmultiplierP, power_cal_cur, p_roc, g_p_forceonroc_limit, g_forceonroc, g_bl_secUntilNextCalc, res_p);
 	} else {
-		g_forceonroc_gtlim=0;
+		g_forceonroc=0;
 	}
 //<-- force on pwr roc
-
 //--> force on pwr within cycle
 	float p_cycle = 0.0f;
 //	float p_diff = 0.0f;
 	float freq_p_cycle = 0.0f;
-	if (g_p_forceonpwr > 0) {
-		uint32_t ticksElapsed_p_cycle=BL0937_utlDiffCalcU32(g_pulseStampStart_p, pulseStampNow);
-		if (ticksElapsed_p_cycle > 0) {
+	if (g_p_forceonpcyc_limit > 0) {
+		if (ticksElapsed_p > 0) {
 			freq_p_cycle= (float)res_p * (1000.0f / (float)portTICK_PERIOD_MS);	
-			freq_p_cycle /= (float)ticksElapsed_p_cycle;		
+			freq_p_cycle /= (float)ticksElapsed_p;		
 			p_cycle = ((float)freq_p_cycle * ((float)g_freqmultiplierP * power_cal_cur));
 		} 
 		if (freq_p_cycle > 10000 || p_cycle > BL0937_PMAX) {
@@ -662,25 +660,24 @@ void BL0937_RunEverySecond(void)
 		} else {
 //			p_diff = (p_cycle > last_p)? (p_cycle - last_p) : (last_p - p_cycle);
 //			p_diff = p_cycle - last_p;
-			if( fabs(p_cycle - last_p) >= g_p_forceonpwr) {
-				g_forceonpwr_gtlim =  1; 
+			if( fabs(p_cycle - last_p) >= g_p_forceonpcyc_limit) {
+				g_forceonpwr =  1; // can be done with g_bl_secUntilNextCalc only but then we have no indicator for debug
 			} else {
-				g_forceonpwr_gtlim--;
+				g_forceonpwr--;
 			}
-			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d power prev %.2f / cycle %.2f [limit=%.2f, force=%i sec2next=%d], p_pulsestot %d\n", g_secondsElapsed
-				, last_p, p_cycle, freq_p_cycle, g_p_forceonpwr, g_forceonpwr_gtlim, g_bl_secUntilNextCalc, res_p);
+			addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d power prevcycl %.2f / cycle %.2f [limit=%.2f, force=%i sec2nextmax=%d], p_pulsestot %d\n", g_secondsElapsed
+				, last_p, p_cycle, g_p_forceonpcyc_limit, g_forceonpwr, g_bl_secUntilNextCalc, res_p);
 		}
 	} else {
-		g_forceonroc_gtlim=0;
+		g_forceonpwr=0;
 	}
 
-	res_p = BL0937_utlDiffCalcU32(g_p_pulsesprev, g_p_pulses);
 	//<-- force on pwr roc
 
 	//check if P will cause update
 	int p_update = 0;
-	if ( (res_p >= g_minPulsesP  && (g_bl_secUntilNextCalc <= g_bl_secForceNextCalc - g_bl_secMinNextCalc))
-			|| g_bl_secUntilNextCalc <= 0 || g_forceonroc_gtlim > 0 || g_forceonpwr_gtlim > 0) {
+	if ( (res_p >= g_minPulsesP  && (g_bl_secUntilNextCalc <= (g_bl_secForceNextCalc - g_bl_secMinNextCalc) ))
+			|| g_bl_secUntilNextCalc <= 0 || g_forceonroc > 0 || g_forceonpwr > 0) {
 		p_update = 1;
 	}
 
@@ -761,22 +758,11 @@ void BL0937_RunEverySecond(void)
 	
 	#endif
 
+//--> update readings
 //	if ( (res_p >= g_minPulsesP  && (g_bl_secUntilNextCalc <= g_bl_secForceNextCalc - g_bl_secMinNextCalc))
-//			|| g_bl_secUntilNextCalc <= 0 || g_forceonroc_gtlim > 0 || g_forceonpwr_gtlim > 0) {
+//			|| g_bl_secUntilNextCalc <= 0 || g_forceonroc > 0 || g_forceonpwr > 0) {
 	if ( p_update > 0 || g_bl_secUntilNextCalc <= 0 ) {
-				portTickType g_pulseStampTest= pulseStampNow*10000;
-				unsigned long difftestov=0;
-				unsigned long difftest=0;
-				if (g_pulseStampTest < g_pulseStampTestPrev)
-				{
-					difftestov = (0xFFFFFFFFUL - g_pulseStampTestPrev) + g_pulseStampTest + 1;
-					difftest=g_pulseStampTest-g_pulseStampTestPrev;
-					addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "ts %5d tick overflow low %lu high %lu = %lu %lu\n", g_secondsElapsed
-						, g_pulseStampTest, g_pulseStampTestPrev, difftestov, difftest);
-				}
-				g_pulseStampTestPrev= g_pulseStampTest;
-				
-		ticksElapsed_p = BL0937_utlDiffCalcU32(g_pulseStampStart_p, pulseStampNow);
+//		ticksElapsed_p = BL0937_utlDiffCalcU32(g_pulseStampStart_p, pulseStampNow); //already done for change detection
 #if PULSESTAMPDEBUG>0
 		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d Volt pulses %lu / (tsend %lu) vticks %lu, current %lu /  (tsend %lu) cticks %lu, power %lu / pticks %lu (prev %lu) tsnow %lu gselchg %lu\n", g_secondsElapsed
 			, res_v, g_pulseStampEnd_v, g_ticksElapsed_v
@@ -799,10 +785,10 @@ void BL0937_RunEverySecond(void)
 		//frequency P: @250V: 0.25 .. 5000W = 0.146443 .. 2928.866 Hz, 0.1W=0.058577 [0.057135] Hz
 
 
-		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d Scalefactor default/used [frequency multiplier]: v %E [%f] c %E [1] p %E [%f], usedscalefactor v %E c %E p %E \n", g_secondsElapsed
-			, DEFAULT_VOLTAGE_CAL/voltage_cal_cur, (float)g_freqmultiplierV, DEFAULT_CURRENT_CAL/current_cal_cur
-			, DEFAULT_POWER_CAL/power_cal_cur, (float)g_freqmultiplierP, voltage_cal_cur, current_cal_cur, power_cal_cur);
-	#if VOLT_CURR_AVG>0
+//		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d Scalefactor default/used [frequency multiplier]: v %E [%f] c %E [1] p %E [%f], usedscalefactor v %E c %E p %E \n", g_secondsElapsed
+//			, DEFAULT_VOLTAGE_CAL/voltage_cal_cur, (float)g_freqmultiplierV, DEFAULT_CURRENT_CAL/current_cal_cur
+//			, DEFAULT_POWER_CAL/power_cal_cur, (float)g_freqmultiplierP, voltage_cal_cur, current_cal_cur, power_cal_cur);
+	#if VOLT_CURR_AVG>10
 		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d Volt avg pulses %lu / vticks %lu, current avg pulses %lu /  cticks %lu\n", g_secondsElapsed
 			, g_v_avg_res, g_v_avg_ticks
 			, g_c_avg_res, g_c_avg_ticks);
@@ -816,13 +802,13 @@ void BL0937_RunEverySecond(void)
 			freq_v = (float)res_v * (1000.0f / (float)portTICK_PERIOD_MS);
 			freq_v /= (float)g_ticksElapsed_v;
 	#if VOLT_CURR_AVG>0
-//			if (g_v_avg_count > 0) {
+			if (g_v_avg_count > 0) {
 				freq_v_avg = (float)g_v_avg_res * (1000.0f / (float)portTICK_PERIOD_MS);
 				freq_v_avg /= (float)g_v_avg_ticks;
 //				g_v_avg_count = 0;
-//			} else {
-//				freq_v_avg = freq_v;
-//			}
+			} else {
+				freq_v_avg = 9999.999f;
+			}
 	#endif
 /*			final_v = freq_v * 1.218f;
 			final_v /= 15397.0f;
@@ -830,7 +816,7 @@ void BL0937_RunEverySecond(void)
 */
 		} else {
 			final_v = 11.1;	
-			freq_v = 99999;
+			freq_v = 99999.0f;
 			freq_v_avg = freq_v;
 		}
 	
@@ -838,13 +824,13 @@ void BL0937_RunEverySecond(void)
 			freq_c = (float)res_c * (1000.0f / (float)portTICK_PERIOD_MS);
 			freq_c /= (float)g_ticksElapsed_c;
 	#if VOLT_CURR_AVG>0
-//			if (g_c_avg_count > 0) {
+			if (g_c_avg_count > 0) {
 				freq_c_avg = (float)g_c_avg_res * (1000.0f / (float)portTICK_PERIOD_MS);
 				freq_c_avg /= (float)g_c_avg_ticks;
 //				g_c_avg_count = 0;
-//			} else {
-//				freq_c_avg = freq_c;
-//			}
+			} else {
+				freq_c_avg = 9999.999f;
+			}
 	#endif
 /*			final_c = freq_c * 1.218f;
 			final_c /= 94638.0f;
@@ -852,7 +838,7 @@ void BL0937_RunEverySecond(void)
 */
 		} else {
 			final_c = 22.222f;	
-			freq_c = 99999;
+			freq_c = 99999.0f;
 			freq_c_avg = freq_c;
 		}
 		if (ticksElapsed_p > 0) {
@@ -874,19 +860,22 @@ void BL0937_RunEverySecond(void)
 			final_p /= 1000.0f; 
 */	
 		} else {
-			final_p = 9999.99f;	
+			final_p = 9999.999f;	
 			freq_p = 99999;
 		}	
 //		PwrCal_Scale((int)(freq_v*100), (float)(freq_c*1000), (int)(freq_p*1000), &final_v, &final_c, &final_p);
 		freq_p *= (float)g_freqmultiplierP;
 		freq_v *= (float)g_freqmultiplierV;
 #if VOLT_CURR_AVG>0
-//		freq_v_avg = (g_v_avg_count > 0) ? (freq_v_avg * (float)g_freqmultiplierV) : freq_v;
-//		freq_c_avg = (g_c_avg_count > 0) ? freq_c_avg : freq_c;
 		PwrCal_Scale((int)((g_v_avg_count > 0) ? (freq_v_avg * (float)g_freqmultiplierV) : freq_v)
 			, (float)((g_c_avg_count > 0) ? freq_c_avg : freq_c), (int)freq_p, &final_v, &final_c, &final_p);
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d Scaled v %.2f (vf %.3f [%.3f x %i] / %.3f) c %.5f (cf %.3f [%.3f x %i] / 1) p %.5f  (pf %.3f / %.3f \n", g_secondsElapsed
-			,final_v, freq_v, freq_v_avg, g_v_avg_count, (float)g_freqmultiplierV, final_c, freq_c, freq_c_avg, g_c_avg_count, final_p, freq_p, (float)g_freqmultiplierP);
+		if ( g_forceonroc > 0 || g_forceonpwr > 0) {
+			addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d Scaled v %.2f (vf %.3f [%.3f x %i] / %.3f) c %.5f (cf %.3f [%.3f x %i] / 1) p %.5f  (pf %.3f / %.3f), force %i roc %i pcyc %i \n", g_secondsElapsed
+				,final_v, freq_v, freq_v_avg, g_v_avg_count, (float)g_freqmultiplierV, final_c, freq_c, freq_c_avg, g_c_avg_count, final_p, freq_p, (float)g_freqmultiplierP, p_update, g_forceonroc, g_forceonpwr);
+		} else {
+			addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d Scaled v %.2f (vf %.3f [%.3f x %i] / %.3f) c %.5f (cf %.3f [%.3f x %i] / 1) p %.5f  (pf %.3f / %.3f) \n", g_secondsElapsed
+				,final_v, freq_v, freq_v_avg, g_v_avg_count, (float)g_freqmultiplierV, final_c, freq_c, freq_c_avg, g_c_avg_count, final_p, freq_p, (float)g_freqmultiplierP);
+		}
 		if (g_v_avg_count > 0) { //just for testing, reset only if at least one sample error with ROC
 			g_v_avg_res = 0;
 			g_v_avg_ticks = 0;
@@ -904,7 +893,7 @@ void BL0937_RunEverySecond(void)
 #endif
 
 		
-		if (g_forceonroc_gtlim > 1 && final_p < ( p_thissec - g_p_forceonroc/2 ) ) { 
+		if (g_forceonroc > 1 && final_p < ( p_thissec - g_p_forceonroc_limit/2 ) ) { 
 			final_p = p_thissec;
 		}
 		/* patch to limit max power reading, filter random reading errors */
@@ -932,7 +921,7 @@ void BL0937_RunEverySecond(void)
 	#endif
 		BL_ProcessUpdate(final_v, final_c, final_p, NAN, NAN);
 		g_bl_secUntilNextCalc = g_bl_secForceNextCalc;
-	}
+	} 
 	if (g_bl_secUntilNextCalc > 0) {
 		g_bl_secUntilNextCalc--;
 	}
@@ -960,7 +949,8 @@ void BL0937_RunEverySecond(void)
 			MQTT_PublishMain_StringInt("timechk_pulseStampNow", pulseStampNow, OBK_PUBLISH_FLAG_QOS_ZERO);
 			MQTT_PublishMain_StringInt("timechk_diff_ntp_pulsestamp", (int)(g_ntpTime - ( (pulseStampNow * portTICK_PERIOD_MS) / 1000 )), OBK_PUBLISH_FLAG_QOS_ZERO);
 			g_ntp_hourlast = ltm->tm_hour;
-			#define SAMPLEFREQCALC_EVERY_X_HOUR 2			
+		#define SAMPLEFREQCALC_EVERY_X_HOUR 2
+		#if SAMPLEFREQCALC_EVERY_X_HOUR > 0
 			int secntpdiffday=(int)(g_ntpTime - g_sfreqcalc_ntpTime_last);
 			if ( secntpdiffday >= ((SAMPLEFREQCALC_EVERY_X_HOUR-0 * 3600) - 60) ) {
 				if ( g_sfreqcalcdone < 1 && ( SAMPLEFREQCALC_EVERY_X_HOUR != 24 || 4 == ltm->tm_hour) ) { //specific hour if every 24hours
@@ -976,6 +966,7 @@ void BL0937_RunEverySecond(void)
 					g_sfreqcalcdone = 0;
 				}
 			}
+		#endif
 		} else {
 		}
 	}
