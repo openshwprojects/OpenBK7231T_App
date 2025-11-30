@@ -168,8 +168,8 @@ commandResult_t BL0937_cmdIntervalCPMinMax(const void* context, const char* cmd,
 	} else {
 		int minCycleTime = Tokenizer_GetArgInteger(0);
 		int maxCycleTime = Tokenizer_GetArgInteger(1);
-		if( minCycleTime < 0 || maxCycleTime < minCycleTime || maxCycleTime > 900 || minCycleTime > maxCycleTime) {
-			ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: minimum 0 second, maximum 900 seconds allowed, min %i between max %i (keep current %i %i). \n"
+		if( minCycleTime < 0 || maxCycleTime < minCycleTime || minCycleTime > maxCycleTime) {
+			ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: minimum 0 second, min %i between max %i (keep current %i %i). \n"
 				, g_secondsElapsed, cmdName
 				, minCycleTime, maxCycleTime, g_bl_secMinNextCalc, g_bl_secForceNextCalc);
 	//		return CMD_RES_BAD_ARGUMENT;
