@@ -476,7 +476,7 @@ void BL0937_Init(void)
 	//	Max setting applies to low power loads, because frequency of BL0937 below 1Hz", 
 	//	min increases resolution (at 230V: 1sec max ~1.7W, 30sec ~0.115W)
 	//  note: mqtt interval / VCPPublishInterval and threshod setting may delay publish additionally
-	//  OR logic with P from MinPulsesVCP (max time or min P pulses)
+	//  combined logic with P from MinPulsesVCP (max time or (min P pulses and min time))
 	//cmddetail:"fn":"BL0937_IntervalCPMinMax","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("BL0937_IntervalCPMinMax", BL0937_cmdIntervalCPMinMax, NULL);
@@ -485,7 +485,7 @@ void BL0937_Init(void)
 	//cmddetail:"descr":"Sets the minimum pulses for voltage, current and power calculations 
 	//	(at low V C P values). Limited by BL0937_IntervalCPMinMax",
 	//  V and C used for switch between V/C measure, 
-	//  P used for OR logic with BL0937_IntervalCPMinMax to update (max time or min P pulses)
+	//  P used for logic with BL0937_IntervalCPMinMax to update (max time or (min P pulses and min time))
 	//cmddetail:"fn":"BL0937_MinPulsesVCP","file":"driver/drv_bl0937.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("BL0937_MinPulsesVCP", BL0937_cmdMinPulsesVCP, NULL);
