@@ -596,7 +596,7 @@ void CMD_InitChannelCommands(){
 	CMD_RegisterCommand("FullBootTime", CMD_FullBootTime, NULL);
 	//cmddetail:{"name":"SetChannelEnum","args":"[ChannelIndex][Value:Title][Value:Title]",
 	//cmddetail:"descr":"Creates a channel enumeration type.  Channel type must be set to Enum or ReadOnlyEnum. e.g. SetChannelEnum 1:One \"2:Enum Two\" 5:Five",
-	//cmddetail:"fn":"SetChannelEnum","file":"cmnds/cmd_channels.c","requires":"",
+	//cmddetail:"fn":"CMD_SetChannelEnum","file":"cmnds/cmd_channels.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetChannelEnum", CMD_SetChannelEnum, NULL);
 	//cmddetail:{"name":"SetChannelLabel","args":"[ChannelIndex][Str][bHideTogglePrefix]",
