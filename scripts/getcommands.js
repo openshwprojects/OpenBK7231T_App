@@ -8,6 +8,7 @@ let ios = [];
 let ioindex = {};
 let drvs = [];
 let drvindex = {};
+let drvdefines = {};	// try to save the "#if ENABLE_DRIVER_XY"
 let flags = [];
 let flagindex = {};
 let cnsts = [];
@@ -376,9 +377,14 @@ function getFolder(name, cb) {
 					if (sourceFile && line.startsWith('static driver_t g_drivers[] = {')) {
 						newlines.push(lines[i]);
 						let j;
+						let lasthash="nothing yet";
 						for (j = i; j < lines.length; j++) {
 							let line2raw = lines[j];
 							let line2 = line2raw.trim();
+							if (line2.startsWith('#if')) {
+								// try finding #if ENABLE_DRIVER_XY so we can use it in cas of a duplicate driver
+								lasthash=line2;
+							} 
 							if (line2.startsWith('//drvdetail:')) {
 								let commentlines = [];
 								let j2;
@@ -400,11 +406,13 @@ function getFolder(name, cb) {
 								try {
 									let drv = JSON.parse(json);
 									if (drvindex[drv.name]) {
-										console.error('duplicate driver docs at file: ' + file + ' line: ' + line);
-										console.error(line);
+										console.error('duplicate driver docs (in "' + line + '") for drv.name="' + drv.name + '" at file: ' + file + '  --  actual line:' + line2);
+										 console.error('\tlast "#if" statement: "' + lasthash +'"'+ '\n\tfirst defined with "#if" statement: "' + drvdefines[drv.name] +'"' );
+										//console.error(line);
 									} else {
 										drvs.push(drv);
 										drvindex[drv.name] = drv;
+										drvdefines[drv.name] = lasthash;
 									}
 								} catch (e) {
 									console.error('error in json at file: ' + file + ' line: ' + line + ' er ' + e);
