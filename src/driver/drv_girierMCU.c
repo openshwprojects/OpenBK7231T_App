@@ -554,7 +554,15 @@ void GirierMCU_Init() {
 	UART_InitUART(g_baudRate, 0, false);
 	UART_InitReceiveRingBuffer(1024);
 	GirierMCU_SendInit();
+	//cmddetail:{"name":"linkGirierMCUOutputToChannel","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"GirierMCU_LinkGirierMCUOutputToChannel","file":"driver/drv_girierMCU.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("linkGirierMCUOutputToChannel", GirierMCU_LinkGirierMCUOutputToChannel, NULL);
+	//cmddetail:{"name":"GirierMCU_setBaudRate","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"GirierMCU_SetBaudRate","file":"driver/drv_girierMCU.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("GirierMCU_setBaudRate", GirierMCU_SetBaudRate, NULL);
 
 }

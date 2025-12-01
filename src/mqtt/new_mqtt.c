@@ -1995,6 +1995,10 @@ void MQTT_init()
 #endif
 
 
+	//cmddetail:{"name":"publishDriver","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"MQTT_PublishCommandDriver","file":"mqtt/new_mqtt.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("publishDriver", MQTT_PublishCommandDriver, NULL);
 }
 static float getInternalTemperature() {

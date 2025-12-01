@@ -787,7 +787,7 @@ void TCL_Init(void) {
 
 	//cmddetail:{"name":"Gen","args":"Gen",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"Gen","file":"driver/drv_tclAC.c","requires":"",
+	//cmddetail:"fn":"CMD_Gen","file":"driver/drv_tclAC.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Gen", CMD_Gen, NULL);
 	

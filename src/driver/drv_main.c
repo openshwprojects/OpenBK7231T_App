@@ -68,6 +68,10 @@ static driver_t g_drivers[] = {
 	},
 #endif
 #ifdef ENABLE_DRIVER_GIRIERMCU
+	//drvdetail:{"name":"GirierMCU",
+	//drvdetail:"title":"GirierMCU",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
 	{ "GirierMCU",                           // Driver Name
 	GirierMCU_Init,                          // Init
 	GirierMCU_RunEverySecond,                // onEverySecond
@@ -79,7 +83,6 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 #endif
-
 #if ENABLE_DRIVER_TCA9554
 	//drvdetail:{"name":"TCA9554",
 	//drvdetail:"title":"TODO",
@@ -752,7 +755,6 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 #endif
-
 #if ENABLE_DRIVER_DDPSEND
 	//drvdetail:{"name":"DDPSend",
 	//drvdetail:"title":"TODO",
