@@ -411,7 +411,7 @@ function getFolder(name, cb) {
 									console.error(json);
 								}
 							} else if (line2.startsWith('//')) {
-								newlines.push(line2);
+								newlines.push(line2raw);
 								continue;
 							} else if (line2.startsWith('#')) {
 								newlines.push(line2);
@@ -456,6 +456,28 @@ function getFolder(name, cb) {
 										drvindex[drv.name] = drv;
 									}
 									newlines.push(lines[j]);
+									// we found a driver definition before, so if its not a "one liner" we already copied before
+									// we need to copy the next lines, until we find the closing "},"
+									if (! lines[j].trim().endsWith('},')) {
+										let j2;
+										for (j2 = j+1; j2 < lines.length; j2++) {
+											let l = lines[j2].trim();
+											if (l.endsWith('},')) {
+												newlines.push(lines[j2]);
+												break;
+											}
+											else {
+												newlines.push(lines[j2]);
+											}
+										}
+										// move our parsing forward to skip all found
+										// arguments,  
+										// so we need to skip to j2-1 to handle the line in next loop 
+										j = j2;
+									}
+									
+									
+									
 								}
 							}
 							if (line2.endsWith('};')) {
