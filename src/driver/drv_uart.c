@@ -261,7 +261,7 @@ int UART_InitUARTEx(int auartindex, int baud, int parity,int stop_bits, bool hwf
 
 int UART_InitUART(int baud, int parity,int stop_bits, bool hwflowc) {
   int fuartindex = UART_GetSelectedPortIndex();
-  return UART_InitUARTEx(fuartindex, baud, parity,int stop_bits, hwflowc);
+  return UART_InitUARTEx(fuartindex, baud, parity,stop_bits, hwflowc);
 }
 
 void UART_LogBufState(int auartindex) {
