@@ -75,8 +75,9 @@ commandResult_t CMD_ExecuteCommandArgs(const char* cmd, const char* args, int cm
 // like a strdup, but will expand constants.
 // Please remember to free the returned string
 char* CMD_ExpandingStrdup(const char* in);
+int CMD_CountVarsInString(const char *in);
 commandResult_t CMD_CreateAliasHelper(const char *alias, const char *ocmd);
-const char *CMD_ExpandConstant(const char *s, const char *stop, float *out);
+const char *CMD_ExpandConstantFloat(const char *s, const char *stop, float *out);
 byte CMD_ParseOrExpandHexByte(const char **p);
 
 enum EventCode {
