@@ -273,7 +273,7 @@ byte *LFS_ReadFile(const char *fname) {
 byte* LFS_ReadFileExpanding(const char* fname) {
 	byte *d = LFS_ReadFile(fname);
 	if (d == 0)
-		return;
+		return 0;
 	const char *s = (const char *)d;
 	int vars = CMD_CountVarsInString(s);
 	if (vars == 0) {
