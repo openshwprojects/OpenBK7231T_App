@@ -247,21 +247,21 @@ void UART_ResetForSimulator() {
   }
 }
 
-int UART_InitUARTEx(int auartindex, int baud, int parity, bool hwflowc)
+int UART_InitUARTEx(int auartindex, int baud, int parity,int stop_bits, bool hwflowc)
 {
   uartbuf_t* fuartbuf = UART_GetBufFromPort(auartindex);
   fuartbuf->g_uart_init_counter++;
 #ifdef UART_2_UARTS_CONCURRENT
-    HAL_UART_InitEx(auartindex, baud, parity, hwflowc, -1, -1);
+    HAL_UART_InitEx(auartindex, baud, parity,stop_bits, hwflowc, -1, -1);
 #else
     HAL_UART_Init(baud, parity, hwflowc, -1, -1);
 #endif
   return fuartbuf->g_uart_init_counter;
 }
 
-int UART_InitUART(int baud, int parity, bool hwflowc) {
+int UART_InitUART(int baud, int parity,int stop_bits, bool hwflowc) {
   int fuartindex = UART_GetSelectedPortIndex();
-  return UART_InitUARTEx(fuartindex, baud, parity, hwflowc);
+  return UART_InitUARTEx(fuartindex, baud, parity,int stop_bits, hwflowc);
 }
 
 void UART_LogBufState(int auartindex) {
@@ -323,7 +323,7 @@ commandResult_t CMD_UART_Init(const void *context, const char *cmd, const char *
 
     UART_InitReceiveRingBufferEx(fuartindex, UART_DEFAULT_BUFIZE);
 
-    UART_InitUARTEx(fuartindex, baud, 0, false);
+    UART_InitUARTEx(fuartindex, baud, 0,0, false);
     uartbuf_t* fuartbuf = UART_GetBufFromPort(fuartindex);
     fuartbuf->g_uart_manualInitCounter = fuartbuf->g_uart_init_counter;
 
