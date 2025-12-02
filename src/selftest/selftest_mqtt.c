@@ -544,6 +544,32 @@ void Test_MQTT_Misc() {
 	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("homeassistant/cover/miscDevice/config", "{\"name\":\"miscDevice\",\"uniq_id\":\"miscDevice\",\"~\":\"miscDevice\",\"dev_cla\":\"shutter\",\"cmd_t\":\"~/backlog\",\"stat_t\":\"~/shutterState/get\",\"pl_open\":\"OPEN\",\"pl_cls\":\"CLOSE\",\"pl_stop\":\"STOP\",\"stat_o\":\"open\",\"stat_c\":\"closed\"}", false);
 	SIM_ClearMQTTHistory();
 
+
+	CMD_ExecuteCommand("lfs_format", 0);
+	// send file content as POST to REST interface
+	Test_FakeHTTPClientPacket_POST("api/lfs/unitTestFile.txt", "filetext");
+	// get this file 
+	CMD_ExecuteCommand("publishFile homeassistant/cover/$mqtt_client/config unitTestFile.txt 1", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("homeassistant/cover/miscDevice/config", "filetext", false);
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("lfs_format", 0);
+	// send file content as POST to REST interface
+	Test_FakeHTTPClientPacket_POST("api/lfs/unitTestFile.txt", "My name is $mqtt_client");
+	// get this file 
+	CMD_ExecuteCommand("publishFile homeassistant/cover/$mqtt_client/config unitTestFile.txt 1", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("homeassistant/cover/miscDevice/config", "My name is miscDevice", false);
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("lfs_format", 0);
+	CMD_ExecuteCommand("SetChannel 5 123", 0);
+	// send file content as POST to REST interface
+	Test_FakeHTTPClientPacket_POST("api/lfs/unitTestFile.txt", "My name is $mqtt_client $CH5");
+	// get this file 
+	CMD_ExecuteCommand("publishFile homeassistant/cover/$mqtt_client/config unitTestFile.txt 1", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("homeassistant/cover/miscDevice/config", "My name is miscDevice 123", false);
+	SIM_ClearMQTTHistory();
+
 	CMD_ExecuteCommand("addEventHandler OnChannelChange 5 publish myMagicResult $CH5", 0);
 	// set channel 5 to 50 and see what we get
 	SIM_SendFakeMQTTAndRunSimFrame_CMND("setChannel", "5 50");

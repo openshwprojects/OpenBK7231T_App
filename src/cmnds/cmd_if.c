@@ -662,7 +662,7 @@ void SIM_GenerateChannelStatesDesc(char *o, int outLen) {
 		}
 	}
 }
-
+#endif
 const char *CMD_ExpandConstantString(const char *s, const char *stop, char *out, int outLen) {
 	int idx;
 	const char *ret;
@@ -750,7 +750,6 @@ const char *CMD_ExpandConstantString(const char *s, const char *stop, char *out,
 	}
 	return false;
 }
-#endif
 
 const char* CMD_ExpandConstantToString(const char* constant, char* out, char* stop)
 {
