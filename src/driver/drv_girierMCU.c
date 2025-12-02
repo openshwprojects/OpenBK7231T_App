@@ -211,7 +211,7 @@ void GirierMCU_SendInit() {
 			0x00, 0x00, 0xff, 0x55, 0x02, 0x79, 0x00, 0x05, 0xdc, 0x0a, 0x00, 0x00
 		 };
 
-		UART_InitUART(g_baudRate, 0, false);
+		UART_InitUART(g_baudRate, 0,0, false);
 		UART_SendByte(0x00);
 
 		for (size_t i = 0; i < sizeof(girier_hello); i++) {
@@ -229,7 +229,7 @@ void GirierMCU_SendCommandWithData(byte* data, int payload_len) {
 	);
 	int i;
 	
-	UART_InitUART(g_baudRate, 0, false);
+	UART_InitUART(g_baudRate, 0,0, false);
 	 if (CFG_HasFlag(OBK_FLAG_TUYAMCU_USE_QUEUE)) {
 		GirierMCUPacket_t *p = GirierMCU_AddToQueue(payload_len);
 		p->data[0] = payload_len & 0xFF;
@@ -458,7 +458,7 @@ commandResult_t GirierMCU_SetBaudRate(const void* context, const char* cmd, cons
 	}
 
 	g_baudRate = Tokenizer_GetArgInteger(0);
-	UART_InitUART(g_baudRate, 0, false);
+	UART_InitUART(g_baudRate, 0,0, false);
 
 	return CMD_RES_OK;
 }
@@ -551,7 +551,7 @@ void GirierMCU_Init() {
 		g_GirierMCUpayloadBuffer = (byte*)malloc(GIRIERMCU_BUFFER_SIZE);
 	}
 
-	UART_InitUART(g_baudRate, 0, false);
+	UART_InitUART(g_baudRate, 0,0, false);
 	UART_InitReceiveRingBuffer(1024);
 	GirierMCU_SendInit();
 	CMD_RegisterCommand("linkGirierMCUOutputToChannel", GirierMCU_LinkGirierMCUOutputToChannel, NULL);

@@ -751,7 +751,7 @@ static commandResult_t CMD_Buzzer(const void* context, const char* cmd, const ch
 }
 void TCL_Init(void) {
 
-	UART_InitUART(TCL_baudRate, 2, false);
+	UART_InitUART(TCL_baudRate, 2,0, false);
 	UART_InitReceiveRingBuffer(TCL_UART_RECEIVE_BUFFER_SIZE);
 
 	//cmddetail:{"name":"ACMode","args":"CMD_ACMode",
