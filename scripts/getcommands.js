@@ -408,6 +408,8 @@ function getFolder(name, cb) {
 									if (drvindex[drv.name]) {
 										console.error('duplicate driver docs (in "' + line + '") for drv.name="' + drv.name + '" at file: ' + file + '  --  actual line:' + line2);
 										 console.error('\tlast "#if" statement: "' + lasthash +'"'+ '\n\tfirst defined with "#if" statement: "' + drvdefines[drv.name] +'"' );
+										 if (JSON.stringify(drvindex[drv.name]) == JSON.stringify(drv)) console.error('\tshould be safe to ignore, because documentation is equal!' );
+										 else console.error('\tFirst occurence:\n\t\t"' + JSON.stringify(drvindex[drv.name])  + '"\n\tactual:\n\t\t"' + JSON.stringify(drv) + '"' );
 										//console.error(line);
 									} else {
 										drvs.push(drv);
@@ -607,12 +609,17 @@ function getFolder(name, cb) {
 						try {
 							let cmd = JSON.parse(json);
 							if (cmdindex[cmd.name]) {
-								console.error('duplicate command "' + cmd.name + '" docs at file: ' + file + ' line: ' + line);
-								console.error(line);
-							} else {
+								console.error('duplicate command "' + cmd.name + '" docs at file: ' + file + ' line: ' + line + '\n\tfirst seen in "' + cmdindex[cmd.name].file + '"');
+								tmp=cmdindex[cmd.name];	// to test, if oth are equal (despit different file) construct a helper ...
+								tmp.file = cmd.file;	// ... and set its "file" to the actual value
+								if (JSON.stringify(tmp) == JSON.stringify(cmd))	console.error('\tshould be safe to ignore, they are equal beside the file name!');
+								else {
+									console.error('\tFirst found:\n\t\t"' + JSON.stringify(cmdindex[cmd.name]).replace(/,\"/g,"\n\t\t\t\"")+ '"\n\tthis occurence:\n\t\t"'+JSON.stringify(cmd).replace(/,\"/g,"\n\t\t\t\""));
+								}
+							}  {
 								//console.error('new command "' + cmd.name + '" docs at file: ' + file + ' line: ' + line + ' -- json='+ json );
 								if (cmd.file !== file.slice(6)) {
-									console.log('!!!! Posible wrong file location for command "' + cmd.name + '": found in file: "' + file.slice(6) + '" but claimes file: "' + cmd.file + '" - please verify! !!!!')
+									console.error('!!!! Posible wrong file location for command "' + cmd.name + '": found in file: "' + file.slice(6) + '" but claimes file: "' + cmd.file + '" - please verify! !!!!')
 									console.error('\t Posible fix: sed -i \''+ (i-3)  + ',' + (i-1) +  ' { /cmddetail:\\"fn\\":\\"' + cmd.fn + '\"/ s%'+cmd.file + "%" + file.slice(6) + '%} \'  src/' + file.slice(6))
 									console.error('\t test posible fix: sed -n \''+ (i-3)  + ',' + (i-1) +  ' {/cmddetail:\\"fn\\":\\"' + cmd.fn + '\"/ s%'+cmd.file + "%" + file.slice(6) + '% p }\'  src/' + file.slice(6))
 									
