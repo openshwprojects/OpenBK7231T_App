@@ -341,20 +341,6 @@ static driver_t g_drivers[] = {
    	false,                                   // loaded
 	},
 #endif
-	//drvdetail:{"name":"TIME",
-	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":" driver will allways run. It will usually get time from NTP and handle timed events",
-	//drvdetail:"requires":""}
-	{ "TIME",                                // Driver Name
-   	TIME_Init,                               // Init
-   	TIME_OnEverySecond,                      // onEverySecond
-   	TIME_AppendInformationToHTTPIndexPage,   // appendInformationToHTTPIndexPage
-   	NULL,                                    // runQuickTick
-	NULL,                                    // stopFunction
-	NULL,                                    // onChannelChanged
-	NULL,                                    // onHassDiscovery
-	false,                                   // loaded
-	},
 #if ENABLE_DRIVER_DS3231
 	//drvdetail:{"name":"DS3231",
 	//drvdetail:"title":"TODO",
@@ -1553,6 +1539,10 @@ static commandResult_t DRV_Start(const void* context, const char* cmd, const cha
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	// unconditionally run TIME
+	TIME_OnEverySecond();
+#endif	
 
 	DRV_StartDriver(Tokenizer_GetArg(0));
 	return CMD_RES_OK;
@@ -1582,6 +1572,10 @@ void DRV_Generic_Init() {
 	//cmddetail:"fn":"DRV_Stop","file":"driver/drv_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("stopDriver", DRV_Stop, NULL);
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	// init TIME unconditionally on start
+	TIME_Init();
+#endif
 }
 
 void DRV_OnHassDiscovery(const char *topic) {
@@ -1607,6 +1601,9 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState
 	if (DRV_Mutex_Take(100) == false) {
 		return;
 	}
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	TIME_AppendInformationToHTTPIndexPage(request, bPreState);
+#endif
 	for (i = 0; i < g_numDrivers; i++) {
 		if (g_drivers[i].bLoaded) {
 			c_active++;
