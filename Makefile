@@ -264,9 +264,9 @@ prebuild_OpenRTL8710B: berry
 		echo "amebaz_ota_combine is already compiled"; \
 	else g++ -o platforms/RTL8710B/tools/amebaz_ota_combine platforms/RTL8710B/tools/amebaz_ota_combine.cpp --std=c++17 -lstdc++fs; \
 	fi
-	@if [ -e platforms/RTL8710B/tools/amebaz_ug_from_obk ]; then \
-		echo "amebaz_ug_from_obk is already compiled"; \
-	else g++ -o platforms/RTL8710B/tools/amebaz_ug_from_obk platforms/RTL8710B/tools/amebaz_ug_from_obk.cpp --std=c++17; \
+	@if [ -e platforms/RTL8710B/tools/amebaz_ug_from_ota ]; then \
+		echo "amebaz_ug_from_ota is already compiled"; \
+	else g++ -o platforms/RTL8710B/tools/amebaz_ug_from_ota platforms/RTL8710B/tools/amebaz_ug_from_ota.cpp --std=c++17; \
 	fi
 
 prebuild_OpenRTL8710A: berry
@@ -574,7 +574,7 @@ OpenRTL8710B: prebuild_OpenRTL8710B
 	dd conv=notrunc bs=1K if=sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/boot_all.bin of=output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION).bin seek=0
 	dd conv=notrunc bs=1K if=sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/image2_all_ota1.bin of=output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION).bin seek=44
 	./platforms/RTL8710B/tools/amebaz_ota_combine sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/image2_all_ota1.bin sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/image2_all_ota2.bin output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION)_ota.img
-	./platforms/RTL8710B/tools/amebaz_ug_from_obk output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION)_ota.img output/$(APP_VERSION)/OpenRTL8710B_UG_$(APP_VERSION).bin
+	./platforms/RTL8710B/tools/amebaz_ug_from_ota output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION)_ota.img output/$(APP_VERSION)/OpenRTL8710B_UG_$(APP_VERSION).bin
 
 .PHONY: OpenRTL8710A
 OpenRTL8710A: prebuild_OpenRTL8710A
