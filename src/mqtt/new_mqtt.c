@@ -1555,7 +1555,7 @@ commandResult_t MQTT_PublishFile(const void* context, const char* cmd, const cha
 	int flags = 0;
 	byte*data;
 
-	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS);
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS | TOKENIZER_EXPAND_EARLY);
 
 	if (Tokenizer_GetArgsCount() < 2) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish command requires two arguments (topic and value)");
@@ -1567,7 +1567,7 @@ commandResult_t MQTT_PublishFile(const void* context, const char* cmd, const cha
 	if (Tokenizer_GetArgIntegerDefault(2, 0) != 0) {
 		flags = OBK_PUBLISH_FLAG_RAW_TOPIC_NAME;
 	}
-	data = LFS_ReadFile(fname);
+	data = LFS_ReadFileExpanding(fname);
 	if (data) {
 		ret = MQTT_PublishMain_StringString(topic, (const char*)data, flags);
 		free(data);
