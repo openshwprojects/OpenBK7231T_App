@@ -494,13 +494,21 @@ void DRV_MAX72XX_Init() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MAX72XX_Print", DRV_MAX72XX_Print, NULL);
 
+	//cmddetail:{"name":"MAX72XX_refresh","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"DRV_MAX72XX_Show","file":"driver/drv_max72xx_single.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MAX72XX_refresh", DRV_MAX72XX_Show, NULL);
 	
-	//cmddetail:{"name":"DRV_MAX72XX_Clear","args":"DRV_MAX72XX_Clear",
+	//cmddetail:{"name":"MAX72XX_Clear","args":"TODO",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"DRV_DRV_MAX72XX_Clear","file":"driver/drv_max72xx_single.c","requires":"",
+	//cmddetail:"fn":"DRV_MAX72XX_Clear","file":"driver/drv_max72xx_single.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MAX72XX_Clear", DRV_MAX72XX_Clear, NULL);
+	//cmddetail:{"name":"MAX72XX_SetPixel","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"DRV_MAX72XX_SetPixel","file":"driver/drv_max72xx_single.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MAX72XX_SetPixel", DRV_MAX72XX_SetPixel, NULL);
 }
 
