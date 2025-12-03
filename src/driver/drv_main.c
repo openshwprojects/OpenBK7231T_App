@@ -1402,6 +1402,10 @@ void DRV_OnEverySecond() {
 			}
 		}
 	}
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	// unconditionally run TIME
+	TIME_OnEverySecond();
+#endif
 	DRV_Mutex_Free();
 }
 void DRV_RunQuickTick() {
@@ -1539,11 +1543,6 @@ static commandResult_t DRV_Start(const void* context, const char* cmd, const cha
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-#ifndef OBK_DISABLE_ALL_DRIVERS
-	// unconditionally run TIME
-	TIME_OnEverySecond();
-#endif	
-
 	DRV_StartDriver(Tokenizer_GetArg(0));
 	return CMD_RES_OK;
 }
