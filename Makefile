@@ -574,7 +574,7 @@ OpenRTL8710B: prebuild_OpenRTL8710B
 	dd conv=notrunc bs=1K if=sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/boot_all.bin of=output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION).bin seek=0
 	dd conv=notrunc bs=1K if=sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/image2_all_ota1.bin of=output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION).bin seek=44
 	./platforms/RTL8710B/tools/amebaz_ota_combine sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/image2_all_ota1.bin sdk/OpenRTL8710A_B/project/obk_amebaz/GCC-RELEASE/application/Debug/bin/image2_all_ota2.bin output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION)_ota.img
-	./platforms/RTL8710B/tools/amebaz_ug_from_ota output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION)_ota.img output/$(APP_VERSION)/OpenRTL8710B_UG_$(APP_VERSION).bin
+	./platforms/RTL8710B/tools/amebaz_ug_from_ota output/$(APP_VERSION)/OpenRTL8710B_$(APP_VERSION)_ota.img output/$(APP_VERSION)/OpenRTL8710B_UG_$(APP_VERSION).img
 
 .PHONY: OpenRTL8710A
 OpenRTL8710A: prebuild_OpenRTL8710A
