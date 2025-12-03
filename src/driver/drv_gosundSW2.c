@@ -48,7 +48,7 @@ void DRV_GosundSW2_Write(float* finalRGBCW) {
 // startDriver GosundSW2
 // backlog clearConfig; startDriver GosundSW2
 void DRV_GosundSW2_Init() {
-	UART_InitUART(SW2_BAUDRATE, 0, false);
+	UART_InitUART(SW2_BAUDRATE, 0,0, false);
 	UART_InitReceiveRingBuffer(256);
 }
 
