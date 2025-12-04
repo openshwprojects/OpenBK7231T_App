@@ -340,8 +340,8 @@ void http_html_end(http_request_t* request) {
 	poststr(request, g_build_str);
 
 	hprintf255(request, "<br>Online for&nbsp;<span id=\"onlineFor\" data-initial=\"%i\">-</span>", g_secondsElapsed);
-
 	WiFI_GetMacAddress((char*)mac);
+
 
 	snprintf(upTimeStr, sizeof(upTimeStr), "<br>Device MAC: %02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 	poststr(request, upTimeStr);
@@ -912,7 +912,10 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	if (http_checkUrlBase(urlStr, "ota")) return http_fn_ota(request);
 	if (http_checkUrlBase(urlStr, "ota_exec")) return http_fn_ota_exec(request);
 	if (http_checkUrlBase(urlStr, "cm")) return http_fn_cm(request);
-
+	
+#if ENABLE_TIME_PMNTP
+	if (http_checkUrlBase(urlStr, "pmntp")) return http_fn_pmntp(request); // poor mans NTP
+#endif
 	return http_fn_other(request);
 }
 

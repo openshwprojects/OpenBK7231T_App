@@ -7,6 +7,7 @@
 #include "drv_ir.h"
 #include "drv_local.h"
 #include "drv_ntp.h"
+#include "drv_deviceclock.h"
 #include "drv_public.h"
 #include "drv_ssdp.h"
 #include "drv_test_drivers.h"
@@ -16,6 +17,7 @@
 #include "drv_ds1820_simple.h"
 #include "drv_ds1820_full.h"
 #include "drv_ds1820_common.h"
+#include "drv_ds3231.h"
 #include "drv_hlw8112.h"
 
 
@@ -333,10 +335,26 @@ static driver_t g_drivers[] = {
 	NTP_OnEverySecond,                       // onEverySecond
 	NTP_AppendInformationToHTTPIndexPage,    // appendInformationToHTTPIndexPage
 	NULL,                                    // runQuickTick
-	NULL,                                    // stopFunction
-	NULL,                                    // onChannelChanged
-	NULL,                                    // onHassDiscovery
-	false,                                   // loaded
+   	NTP_Stop,                                // stopFunction
+   	NULL,                                    // onChannelChanged
+   	NULL,                                    // onHassDiscovery
+   	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_DS3231
+	//drvdetail:{"name":"DS3231",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Driver for DS3231 RTC. Start with \"startdriver DS3231 <CLK-Pin> <DATA-Pin> [<optional sync>]\". Sync values: 0 - do nothing / 1: set device clock to RTC on driver start / 2: regulary (every minute) set device clock to RTC (so RTC is time source)",
+	//drvdetail:"requires":""}
+	{ "DS3231",                              // Driver Name
+   	DS3231_Init,                             // Init
+   	DS3231_OnEverySecond,                    // onEverySecond
+   	DS3231_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+   	NULL,                                    // runQuickTick
+   	DS3231_Stop,                             // stopFunction
+   	NULL,                                    // onChannelChanged
+   	NULL,                                    // onHassDiscovery
+   	false,                                   // loaded
 	},
 #endif
 #if ENABLE_DRIVER_HTTPBUTTONS
@@ -1384,6 +1402,10 @@ void DRV_OnEverySecond() {
 			}
 		}
 	}
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	// unconditionally run TIME
+	TIME_OnEverySecond();
+#endif
 	DRV_Mutex_Free();
 }
 void DRV_RunQuickTick() {
@@ -1521,7 +1543,6 @@ static commandResult_t DRV_Start(const void* context, const char* cmd, const cha
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-
 	DRV_StartDriver(Tokenizer_GetArg(0));
 	return CMD_RES_OK;
 }
@@ -1550,6 +1571,10 @@ void DRV_Generic_Init() {
 	//cmddetail:"fn":"DRV_Stop","file":"driver/drv_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("stopDriver", DRV_Stop, NULL);
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	// init TIME unconditionally on start
+	TIME_Init();
+#endif
 }
 
 void DRV_OnHassDiscovery(const char *topic) {
@@ -1575,6 +1600,9 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState
 	if (DRV_Mutex_Take(100) == false) {
 		return;
 	}
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	TIME_AppendInformationToHTTPIndexPage(request, bPreState);
+#endif
 	for (i = 0; i < g_numDrivers; i++) {
 		if (g_drivers[i].bLoaded) {
 			c_active++;

@@ -315,7 +315,6 @@ byte g_font[] =
 	4, 157, 160, 160, 125,    // 255 - y diaresis
 	255,
 };
-
 byte *MAX_GetFontStart(byte code) {
 	byte *p;
 	byte current;
