@@ -381,19 +381,19 @@ commandResult_t BL09XX_SetupEnergyStatistic(const void *context, const char *cmd
     /* Security limits for sample interval */
     if (sample_time <10)
         sample_time = 10;
-    if (sample_time >900)
-        sample_time = 900;
+    if (sample_time >86400)
+        sample_time = 86400;
 
     /* Security limits for sample count */
-    if (sample_count < 10)
-        sample_count = 10;
+    if (sample_count < 1)
+        sample_count = 1;
     if (sample_count > 180)
         sample_count = 180;   
 
     /* process changes */
     if (enable != 0)
     {
-        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Consumption History enabled");
+        addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "Consumption History enabled with with time %d and count %d", sample_time, sample_count);
         /* Enable function */
         energyCounterStatsEnable = true;
         if (energyCounterSampleCount != sample_count)
@@ -786,13 +786,18 @@ void BL_ProcessUpdate(float voltage, float current, float power,
     {
       interval = energyCounterSampleInterval;
       interval *= (1000 / portTICK_PERIOD_MS);
-      if ((xTaskGetTickCount() - energyCounterMinutesStamp) >= interval)
+	  int samplesperhour = (int)(3600 / energyCounterSampleInterval);
+	  addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d encounterSintvl %d = interval %d now-encounterTS %d ensamplelcnt %d\n smp/hr %d", g_secondsElapsed
+			, energyCounterSampleInterval, interval, (xTaskGetTickCount() - energyCounterMinutesStamp), energyCounterSampleCount, samplesperhour);
+	  if ((xTaskGetTickCount() - energyCounterMinutesStamp) >= interval)
       {
         if (energyCounterMinutes != NULL) {
           sensdataset->sensors[OBK_CONSUMPTION_LAST_HOUR].lastReading = 0;
           for (int i = 0; i < energyCounterSampleCount; i++) {
             sensdataset->sensors[OBK_CONSUMPTION_LAST_HOUR].lastReading += energyCounterMinutes[i];
           }
+			addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d encounterSintvl %d = interval %d, diff now-encounterTS - interval = %d ensamplelcnt %d\n smp/hr %d", g_secondsElapsed
+					, energyCounterSampleInterval, (xTaskGetTickCount() - energyCounterMinutesStamp) - interval, energyCounterSampleCount, samplesperhour);
         }
 #if ENABLE_MQTT
         if ((energyCounterStatsJSONEnable == true) && (MQTT_IsReady() == true))
