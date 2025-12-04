@@ -69,7 +69,7 @@ int g_openAP = 0;
 // connect to wifi after this number of seconds
 static int g_connectToWiFi = 0;
 // reset after this number of seconds
-static int g_reset = 0;
+int g_reset = 0;
 // is connected to WiFi?
 static int g_bHasWiFiConnected = 0;
 // is Open Access point or a client?
