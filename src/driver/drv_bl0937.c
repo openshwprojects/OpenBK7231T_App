@@ -111,6 +111,8 @@ static int g_enable_sendtimestamps = 0;
   #define CMD_SEND_VAL_MQTT 1
 #endif
 
+extern bool Channel_AreAllRelaysOpen(void);
+
 void HlwCf1Interrupt(int pinNum)
 {
 //		g_vc_pulses++;
@@ -939,7 +941,6 @@ void BL0937_RunEverySecond(void)
 
 #if TIME_CHECK_COMPARE_NTP > 0
 	struct tm* ltm = gmtime(&g_ntpTime);
-	#define NTPTIMEOFFSET 1763850000
 	if (g_enable_sendtimestamps>0 && NTP_IsTimeSynced()) {
 		if ( g_sfreqcalc_ntphour_last <  3600) {
 			g_sfreqcalc_secelap_last = g_ntpTime;
@@ -948,17 +949,28 @@ void BL0937_RunEverySecond(void)
 
 //		g_ntpTime = (time_t)NTP_GetCurrentTime();
 		ltm = gmtime(&g_ntpTime);
+		static int offs_ntp_diff; 
+		static int diff_ntp_secelap;
+		static int diff_ntp_stamp;
+		diff_ntp_secelap = (int)(g_ntpTime - g_secondsElapsed);
+		if ( g_secondsElapsed < 300 && diff_ntp_secelap > 1764000000 ) { //init once
+			offs_ntp_diff = (g_ntpTime - g_secondsElapsed);
+			diff_ntp_secelap -= offs_ntp_diff;
+		} else {
+			offs_ntp_diff = 0;
+		}
+		diff_ntp_stamp = (int)(g_ntpTime - ( (pulseStampNow * portTICK_PERIOD_MS) / 1000 )) - diff_ntp_secelap;
 		if (g_ntp_hourlast != ltm->tm_hour ) {
-			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "ts %5d ntpts %d cur diff (with offset NTPTIMEOFFSET %d) %d\n", g_secondsElapsed
-				, g_ntpTime, NTPTIMEOFFSET, (g_ntpTime - g_secondsElapsed - NTPTIMEOFFSET));
+			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "ts %5d ntpts %d cur diff secelap %d pulsestamp %d\n", g_secondsElapsed
+				, g_ntpTime, diff_ntp_secelap, diff_ntp_stamp);
 			
 //				char valueStr[16];
 //				sprintf(valueStr, "%f", f);
 			MQTT_PublishMain_StringInt("timechk_ntptime", (int)g_ntpTime, OBK_PUBLISH_FLAG_QOS_ZERO);
 			MQTT_PublishMain_StringInt("timechk_secelapsed", (int)g_secondsElapsed, OBK_PUBLISH_FLAG_QOS_ZERO);
-			MQTT_PublishMain_StringInt("timechk_diff_ntp_secelapsed", (int)(g_ntpTime - g_secondsElapsed), OBK_PUBLISH_FLAG_QOS_ZERO);
+			MQTT_PublishMain_StringInt("timechk_diff_ntp_secelapsed", (int)(diff_ntp_secelap), OBK_PUBLISH_FLAG_QOS_ZERO);
 			MQTT_PublishMain_StringInt("timechk_pulseStampNow", pulseStampNow, OBK_PUBLISH_FLAG_QOS_ZERO);
-			MQTT_PublishMain_StringInt("timechk_diff_ntp_pulsestamp", (int)(g_ntpTime - ( (pulseStampNow * portTICK_PERIOD_MS) / 1000 )), OBK_PUBLISH_FLAG_QOS_ZERO);
+			MQTT_PublishMain_StringInt("timechk_diff_ntp_pulsestamp", (int)(diff_ntp_stamp), OBK_PUBLISH_FLAG_QOS_ZERO);
 			g_ntp_hourlast = ltm->tm_hour;
 		#define SAMPLEFREQCALC_EVERY_X_HOUR 2
 		#if SAMPLEFREQCALC_EVERY_X_HOUR > 0
