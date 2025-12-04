@@ -163,8 +163,20 @@ void EEPROM_Init() {
 	g_eepI2C.pin_clk = Tokenizer_GetArgIntegerDefault(1, g_eepI2C.pin_clk); 
 	g_eepI2C.pin_data = Tokenizer_GetArgIntegerDefault(2, g_eepI2C.pin_data);
 	Soft_I2C_PreInit(&g_eepI2C);
+	//cmddetail:{"name":"EEPROM_Read","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"EEPROM_ReadCmd","file":"driver/drv_simpleEEPROM.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("EEPROM_Read", EEPROM_ReadCmd, NULL);
+	//cmddetail:{"name":"EEPROM_WriteHex","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"EEPROM_WriteHexCmd","file":"driver/drv_simpleEEPROM.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("EEPROM_WriteHex", EEPROM_WriteHexCmd, NULL);
+	//cmddetail:{"name":"EEPROM_Dump","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"EEPROM_DumpCmd","file":"driver/drv_simpleEEPROM.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("EEPROM_Dump", EEPROM_DumpCmd, NULL);
 }
 

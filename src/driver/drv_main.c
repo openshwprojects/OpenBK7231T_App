@@ -7,6 +7,7 @@
 #include "drv_ir.h"
 #include "drv_local.h"
 #include "drv_ntp.h"
+#include "drv_deviceclock.h"
 #include "drv_public.h"
 #include "drv_ssdp.h"
 #include "drv_test_drivers.h"
@@ -16,6 +17,7 @@
 #include "drv_ds1820_simple.h"
 #include "drv_ds1820_full.h"
 #include "drv_ds1820_common.h"
+#include "drv_ds3231.h"
 #include "drv_hlw8112.h"
 
 
@@ -42,499 +44,1174 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"TuyaMCU is a protocol used for communication between WiFI module and external MCU. This protocol is using usually RX1/TX1 port of BK chips. See [TuyaMCU dimmer example](https://www.elektroda.com/rtvforum/topic3929151.html), see [TH06 LCD humidity/temperature sensor example](https://www.elektroda.com/rtvforum/topic3942730.html), see [fan controller example](https://www.elektroda.com/rtvforum/topic3908093.html), see [simple switch example](https://www.elektroda.com/rtvforum/topic3906443.html)",
 	//drvdetail:"requires":""}
-	{ "TuyaMCU",	TuyaMCU_Init,		TuyaMCU_RunEverySecond,			NULL, TuyaMCU_RunFrame, TuyaMCU_Shutdown, NULL, NULL, false },
+	{ "TuyaMCU",                             // Driver Name
+	TuyaMCU_Init,                            // Init
+	TuyaMCU_RunEverySecond,                  // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	TuyaMCU_RunFrame,                        // runQuickTick
+	TuyaMCU_Shutdown,                        // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 	//drvdetail:{"name":"tmSensor",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"The tmSensor must be used only when TuyaMCU is already started. tmSensor is a TuyaMcu Sensor, it's used for Low Power TuyaMCU communication on devices like TuyaMCU door sensor, or TuyaMCU humidity sensor. After device reboots, tmSensor uses TuyaMCU to request data update from the sensor and reports it on MQTT. Then MCU turns off WiFi module again and goes back to sleep. See an [example door sensor here](https://www.elektroda.com/rtvforum/topic3914412.html).",
 	//drvdetail:"requires":""}
-	{ "tmSensor",	TuyaMCU_Sensor_Init, TuyaMCU_Sensor_RunEverySecond,	NULL, NULL, NULL, NULL, NULL, false },
+	{ "tmSensor",                            // Driver Name
+	TuyaMCU_Sensor_Init,                     // Init
+	TuyaMCU_Sensor_RunEverySecond,           // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #ifdef ENABLE_DRIVER_GIRIERMCU
-	{ "GirierMCU",	GirierMCU_Init, GirierMCU_RunEverySecond, NULL, GirierMCU_RunFrame, GirierMCU_Shutdown, NULL, NULL, false },
+	//drvdetail:{"name":"GirierMCU",
+	//drvdetail:"title":"GirierMCU",
+	//drvdetail:"descr":"TODO",
+	//drvdetail:"requires":""}
+	{ "GirierMCU",                           // Driver Name
+	GirierMCU_Init,                          // Init
+	GirierMCU_RunEverySecond,                // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	GirierMCU_RunFrame,                      // runQuickTick
+	GirierMCU_Shutdown,                      // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
-
 #if ENABLE_DRIVER_TCA9554
 	//drvdetail:{"name":"TCA9554",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"TCA9554.",
 	//drvdetail:"requires":""}
-	{ "TCA9554",		TCA9554_Init,			TCA9554_OnEverySecond,			NULL, NULL, NULL, TCA9554_OnChannelChanged , NULL, false },
+	{ "TCA9554",                             // Driver Name
+	TCA9554_Init,                            // Init
+	TCA9554_OnEverySecond,                   // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	TCA9554_OnChannelChanged,                // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_DMX
 	//drvdetail:{"name":"DMX",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"DMX.",
 	//drvdetail:"requires":""}
-	{ "DMX",		DMX_Init,			DMX_OnEverySecond,			NULL, NULL, DMX_Shutdown, NULL , NULL, false },
+	{ "DMX",                                 // Driver Name
+	DMX_Init,                                // Init
+	DMX_OnEverySecond,                       // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	DMX_Shutdown,                            // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_FREEZE
 	//drvdetail:{"name":"Freeze",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Freeze is a test driver for watchdog. Enabling this will freeze device main loop.",
 	//drvdetail:"requires":""}
-	{ "Freeze",		Freeze_Init,			Freeze_OnEverySecond,			NULL, Freeze_RunFrame, NULL, NULL, NULL, false },
+	{ "Freeze",                              // Driver Name
+	Freeze_Init,                             // Init
+	Freeze_OnEverySecond,                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	Freeze_RunFrame,                         // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_TESTSPIFLASH
 	//drvdetail:{"name":"TESTSPIFLASH",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"TESTSPIFLASH",
 	//drvdetail:"requires":""}
-	{ "TESTSPIFLASH",		DRV_InitFlashMemoryTestFunctions,			NULL,			NULL, NULL, NULL, NULL, NULL, false },
+	{ "TESTSPIFLASH",                        // Driver Name
+	DRV_InitFlashMemoryTestFunctions,        // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_PIR
 	//drvdetail:{"name":"PIR",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"PIR",
 	//drvdetail:"requires":""}
-	{ "PIR",		PIR_Init,			PIR_OnEverySecond,			PIR_AppendInformationToHTTPIndexPage, NULL, NULL, PIR_OnChannelChanged, NULL, false },
+	{ "PIR",                                 // Driver Name
+	PIR_Init,                                // Init
+	PIR_OnEverySecond,                       // onEverySecond
+	PIR_AppendInformationToHTTPIndexPage,    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	PIR_OnChannelChanged,                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_PIXELANIM
 	//drvdetail:{"name":"PixelAnim",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"PixelAnim provides a simple set of WS2812B animations",
 	//drvdetail:"requires":""}
-	{ "PixelAnim",		PixelAnim_Init,			NULL,			NULL, PixelAnim_SetAnimQuickTick, NULL, NULL, NULL, false },
+	{ "PixelAnim",                           // Driver Name
+	PixelAnim_Init,                          // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	PixelAnim_SetAnimQuickTick,              // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_DRAWERS
 	//drvdetail:{"name":"Drawers",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"WS2812B driver wrapper with REST API for [smart drawers project](https://www.elektroda.com/rtvforum/topic4054134.html)",
 	//drvdetail:"requires":""}
-	{ "Drawers",		Drawers_Init,			NULL,			NULL, Drawers_QuickTick, NULL, NULL, NULL, false },
+	{ "Drawers",                             // Driver Name
+	Drawers_Init,                            // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	Drawers_QuickTick,                       // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_HGS02
 	//drvdetail:{"name":"HGS02",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"[HGS02](https://www.elektroda.com/rtvforum/viewtopic.php?p=21177061#21177061)",
 	//drvdetail:"requires":""}
-	{ "HGS02",		HGS02_Init,			HGS02_RunEverySecond,			NULL, NULL, NULL, NULL, NULL, false },
+	{ "HGS02",                               // Driver Name
+	HGS02_Init,                              // Init
+	HGS02_RunEverySecond,                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_PINMUTEX
 	//drvdetail:{"name":"PinMutex",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"PinMutex.",
 	//drvdetail:"requires":""}
-	{ "PinMutex",		DRV_PinMutex_Init,			NULL, NULL, DRV_PinMutex_RunFrame, NULL, NULL, false },
+	{ "PinMutex",                            // Driver Name
+	DRV_PinMutex_Init,                       // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	DRV_PinMutex_RunFrame,                   // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_GOSUNDSW2
 	//drvdetail:{"name":"GosundSW2",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"GosundSW2",
 	//drvdetail:"requires":""}
-	{ "GosundSW2",		DRV_GosundSW2_Init,			NULL, NULL, DRV_GosundSW2_RunFrame, NULL, NULL, false },
+	{ "GosundSW2",                           // Driver Name
+	DRV_GosundSW2_Init,                      // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	DRV_GosundSW2_RunFrame,                  // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_TCL
 	//drvdetail:{"name":"TCL",
 	//drvdetail:"title":"TCL",
 	//drvdetail:"descr":"Driver for TCL-based air conditioners",
 	//drvdetail:"requires":""}
-	{ "TCL",		TCL_Init,			TCL_UART_RunEverySecond,		TCL_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, TCL_DoDiscovery, false },
+	{ "TCL",                                 // Driver Name
+	TCL_Init,                                // Init
+	TCL_UART_RunEverySecond,                 // onEverySecond
+	TCL_AppendInformationToHTTPIndexPage,    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	TCL_DoDiscovery,                         // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_OPENWEATHERMAP
 	//drvdetail:{"name":"OpenWeatherMap",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"OpenWeatherMap integration allows you to fetch current weather for your lat/long. You can later extract temperatura, humidity and pressure data and display it on main page.",
 	//drvdetail:"requires":""}
-	{ "OpenWeatherMap",		DRV_OpenWeatherMap_Init,			NULL, OWM_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+	{ "OpenWeatherMap",                      // Driver Name
+	DRV_OpenWeatherMap_Init,                 // Init
+	NULL,                                    // onEverySecond
+	OWM_AppendInformationToHTTPIndexPage,    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_WIDGET
 	//drvdetail:{"name":"Widget",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Widget driver allows you to create custom HTML snippets that are displayed on main OBK page. Snippets are loaded from LittleFS file system and can use OBK REST API.",
 	//drvdetail:"requires":""}
-	{ "Widget",		DRV_Widget_Init,			NULL,			DRV_Widget_AddToHtmlPage, NULL, NULL, NULL, NULL, false },
+	{ "Widget",                              // Driver Name
+	DRV_Widget_Init,                         // Init
+	NULL,                                    // onEverySecond
+	DRV_Widget_AddToHtmlPage,                // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if WINDOWS
 	//drvdetail:{"name":"TestCharts",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Development only driver - a sample of chart generation with chart.js.",
 	//drvdetail:"requires":""}
-	{ "TestCharts",		NULL,			NULL,			DRV_Test_Charts_AddToHtmlPage, NULL, NULL, NULL, NULL, false },
+	{ "TestCharts",                          // Driver Name
+	NULL,                                    // Init
+	NULL,                                    // onEverySecond
+	DRV_Test_Charts_AddToHtmlPage,           // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_CHARTS
 	//drvdetail:{"name":"Charts",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Charts driver allows you to create a customizable chart directly on your device. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
 	//drvdetail:"requires":""}
-	{ "Charts",		DRV_Charts_Init,			NULL,			DRV_Charts_AddToHtmlPage, NULL, NULL, NULL, NULL, false },
+	{ "Charts",                              // Driver Name
+	DRV_Charts_Init,                         // Init
+	NULL,                                    // onEverySecond
+	DRV_Charts_AddToHtmlPage,                // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_NTP
 	//drvdetail:{"name":"NTP",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"NTP driver is required to get current time and date from web. Without it, there is no correct datetime. Put 'startDriver NTP' in short startup line or autoexec.bat to run it on start.",
 	//drvdetail:"requires":""}
-	{ "NTP",		NTP_Init,			NTP_OnEverySecond,			NTP_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+	{ "NTP",                                 // Driver Name
+	NTP_Init,                                // Init
+	NTP_OnEverySecond,                       // onEverySecond
+	NTP_AppendInformationToHTTPIndexPage,    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+   	NTP_Stop,                                // stopFunction
+   	NULL,                                    // onChannelChanged
+   	NULL,                                    // onHassDiscovery
+   	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_DS3231
+	//drvdetail:{"name":"DS3231",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Driver for DS3231 RTC. Start with \"startdriver DS3231 <CLK-Pin> <DATA-Pin> [<optional sync>]\". Sync values: 0 - do nothing / 1: set device clock to RTC on driver start / 2: regulary (every minute) set device clock to RTC (so RTC is time source)",
+	//drvdetail:"requires":""}
+	{ "DS3231",                              // Driver Name
+   	DS3231_Init,                             // Init
+   	DS3231_OnEverySecond,                    // onEverySecond
+   	DS3231_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+   	NULL,                                    // runQuickTick
+   	DS3231_Stop,                             // stopFunction
+   	NULL,                                    // onChannelChanged
+   	NULL,                                    // onHassDiscovery
+   	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_HTTPBUTTONS
 	//drvdetail:{"name":"HTTPButtons",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This driver allows you to create custom, scriptable buttons on main WWW page. You can create those buttons in autoexec.bat and assign commands to them",
 	//drvdetail:"requires":""}
-	{ "HTTPButtons",	DRV_InitHTTPButtons, NULL, NULL, NULL, NULL, NULL, NULL, false },
+	{ "HTTPButtons",                         // Driver Name
+	DRV_InitHTTPButtons,                     // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_TESTPOWER
 	//drvdetail:{"name":"TESTPOWER",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This is a fake POWER measuring socket driver, only for testing",
 	//drvdetail:"requires":""}
-	{ "TESTPOWER",	Test_Power_Init,	 Test_Power_RunEverySecond,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+	{ "TESTPOWER",                           // Driver Name
+	Test_Power_Init,                         // Init
+	Test_Power_RunEverySecond,               // onEverySecond
+	BL09XX_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_TESTLED
 	//drvdetail:{"name":"TESTLED",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This is a fake I2C LED driver, only for testing",
 	//drvdetail:"requires":""}
-	{ "TESTLED",	Test_LED_Driver_Init, Test_LED_Driver_RunEverySecond, NULL, NULL, NULL, Test_LED_Driver_OnChannelChanged, NULL, false },
+	{ "TESTLED",                             // Driver Name
+	Test_LED_Driver_Init,                    // Init
+	Test_LED_Driver_RunEverySecond,          // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	Test_LED_Driver_OnChannelChanged,        // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_TESTUART
 	//drvdetail:{"name":"TESTUART",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"g",
 	//drvdetail:"requires":""}
-	{ "TESTUART",	Test_UART_Init, Test_UART_RunEverySecond, Test_UART_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+	{ "TESTUART",                            // Driver Name
+	Test_UART_Init,                          // Init
+	Test_UART_RunEverySecond,                // onEverySecond
+	Test_UART_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_TEST_COMMANDS
 	//drvdetail:{"name":"Test",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Self test of the device",
 	//drvdetail:"requires":""}
-	{ "Test",	Test_Init, NULL, Test_AppendInformationToHTTPIndexPage, Test_RunQuickTick, NULL, NULL, NULL, false },
+	{ "Test",                                // Driver Name
+	Test_Init,                               // Init
+	NULL,                                    // onEverySecond
+	Test_AppendInformationToHTTPIndexPage,   // appendInformationToHTTPIndexPage
+	Test_RunQuickTick,                       // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_SIMPLEEEPROM
 	//drvdetail:{"name":"SimpleEEPROM",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"SimpleEEPROM",
 	//drvdetail:"requires":""}
-	{ "SimpleEEPROM", EEPROM_Init, NULL, EEPROM_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+	{ "SimpleEEPROM",                        // Driver Name
+	EEPROM_Init,                             // Init
+	NULL,                                    // onEverySecond
+	EEPROM_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_MULTIPINI2CSCANNER
 	//drvdetail:{"name":"MultiPinI2CScanner",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"qq.",
 	//drvdetail:"requires":""}
-	{ "MultiPinI2CScanner",		MultiPinI2CScanner_Init,		NULL,		MultiPinI2CScanner_AppendInformationToHTTPIndexPage, MultiPinI2CScanner_RunFrame, NULL, NULL, NULL, false },
+	{ "MultiPinI2CScanner",                  // Driver Name
+	MultiPinI2CScanner_Init,                 // Init
+	NULL,                                    // onEverySecond
+	MultiPinI2CScanner_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	MultiPinI2CScanner_RunFrame,             // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_I2C
 	//drvdetail:{"name":"I2C",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Generic I2C, not used for LED drivers, but may be useful for displays or port expanders. Supports both hardware and software I2C.",
 	//drvdetail:"requires":""}
-	{ "I2C",		DRV_I2C_Init,		DRV_I2C_EverySecond,		NULL, NULL, DRV_I2C_Shutdown, NULL, NULL, false },
+	{ "I2C",                                 // Driver Name
+	DRV_I2C_Init,                            // Init
+	DRV_I2C_EverySecond,                     // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	DRV_I2C_Shutdown,                        // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_RN8209
 	//drvdetail:{"name":"RN8209",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"WIP driver for power-metering chip RN8209 found in one of Zmai-90 versions.",
 	//drvdetail:"requires":""}
-	{ "RN8209", RN8209_Init, RN8029_RunEverySecond, BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+	{ "RN8209",                              // Driver Name
+	RN8209_Init,                             // Init
+	RN8029_RunEverySecond,                   // onEverySecond
+	BL09XX_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_BL0942
 	//drvdetail:{"name":"BL0942",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [LSPA9 teardown example](https://www.elektroda.com/rtvforum/topic3887748.html). By default, it uses 4800 baud, but you can also enable it with baud 9600 by using 'startDriver BL0942 9600', see [related topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20957896#20957896)",
 	//drvdetail:"requires":""}
-	{ "BL0942",		BL0942_UART_Init,	BL0942_UART_RunEverySecond,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+	{ "BL0942",                              // Driver Name
+	BL0942_UART_Init,                        // Init
+	BL0942_UART_RunEverySecond,              // onEverySecond
+	BL09XX_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_PWM_GROUP
 	//drvdetail:{"name":"PWMG",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"PWM Groups (synchronized PWMs) driver for OpenBeken.",
 	//drvdetail:"requires":""}
-	{ "PWMG",		PWMG_Init,	NULL,		NULL, NULL, NULL, NULL, NULL, false },
+	{ "PWMG",                                // Driver Name
+	PWMG_Init,                               // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_BL0942SPI
 	//drvdetail:{"name":"BL0942SPI",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"BL0942 driver version for SPI protocol. It's usually connected to SPI1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [PZIOT-E01 teardown example](https://www.elektroda.com/rtvforum/topic3945667.html). ",
 	//drvdetail:"requires":""}
-	{ "BL0942SPI",	BL0942_SPI_Init,	BL0942_SPI_RunEverySecond,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+	{ "BL0942SPI",                           // Driver Name
+	BL0942_SPI_Init,                         // Init
+	BL0942_SPI_RunEverySecond,               // onEverySecond
+	BL09XX_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_HLW8112SPI
 	//drvdetail:{"name":"HLW8112SPI",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"TODO",
 	//drvdetail:"requires":""}
-	{ "HLW8112SPI",	HLW8112SPI_Init,	HLW8112_RunEverySecond,			HLW8112_AppendInformationToHTTPIndexPage, NULL, HLW8112SPI_Stop, NULL, HLW8112_OnHassDiscovery, false },
+	{ "HLW8112SPI",                          // Driver Name
+	HLW8112SPI_Init,                         // Init
+	HLW8112_RunEverySecond,                  // onEverySecond
+	HLW8112_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	HLW8112SPI_Stop,                         // stopFunction
+	NULL,                                    // onChannelChanged
+	HLW8112_OnHassDiscovery,                 // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_CHARGINGLIMIT
 	//drvdetail:{"name":"ChargingLimit",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Mechanism to perform an action based on a max. delta value and max time. Used to control Electric Vehicle chargers. See [discussion](https://github.com/openshwprojects/OpenBK7231T_App/issues/892).",
 	//drvdetail:"requires":""}
-	{ "ChargingLimit", ChargingLimit_Init, ChargingLimit_OnEverySecond, ChargingLimit_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+	{ "ChargingLimit",                       // Driver Name
+	ChargingLimit_Init,                      // Init
+	ChargingLimit_OnEverySecond,             // onEverySecond
+	ChargingLimit_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_BL0937
 	//drvdetail:{"name":"BL0937",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"BL0937 is a power-metering chip which uses custom protocol to report data. It requires setting 3 pins in pin config: CF, CF1 and SEL",
 	//drvdetail:"requires":""}
-	{ "BL0937",		BL0937_Init,		BL0937_RunEverySecond,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+	{ "BL0937",                              // Driver Name
+	BL0937_Init,                             // Init
+	BL0937_RunEverySecond,                   // onEverySecond
+	BL09XX_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_CSE7761
 	//drvdetail:{"name":"CSE7761",
 	//drvdetail:"title":"CSE7761",
 	//drvdetail:"descr":"Unfinished driver for CSE7761, a single-phase multi-purpose electric energy metering chip that incorporates three sigma delta ADCs, a power calculator, an energy frequency converter, one SPI interface, and one UART interface",
 	//drvdetail:"requires":""}
-	{ "CSE7761",	CSE7761_Init,		CSE7761_RunEverySecond,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+	{ "CSE7761",                             // Driver Name
+	CSE7761_Init,                            // Init
+	CSE7761_RunEverySecond,                  // onEverySecond
+	BL09XX_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_CSE7766
 	//drvdetail:{"name":"CSE7766",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"CSE7766 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK",
 	//drvdetail:"requires":""}
-	{ "CSE7766",	CSE7766_Init,		CSE7766_RunEverySecond,			BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+	{ "CSE7766",                             // Driver Name
+	CSE7766_Init,                            // Init
+	CSE7766_RunEverySecond,                  // onEverySecond
+	BL09XX_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_MAX6675
 	//drvdetail:{"name":"MAX6675",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Thermocouple driver for measuring high temperatures, see [presentation](https://www.elektroda.com/rtvforum/topic4055231.html)",
 	//drvdetail:"requires":""}
-	{ "MAX6675",	MAX6675_Init,		MAX6675_RunEverySecond,			NULL, NULL, NULL, NULL, NULL, false },
+	{ "MAX6675",                             // Driver Name
+	MAX6675_Init,                            // Init
+	MAX6675_RunEverySecond,                  // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_MAX31855
 	//drvdetail:{"name":"MAX31855",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"T",
 	//drvdetail:"requires":""}
-	{ "MAX31855",	MAX31855_Init,		MAX31855_RunEverySecond,			NULL, NULL, NULL, NULL, false },
+	{ "MAX31855",                            // Driver Name
+	MAX31855_Init,                           // Init
+	MAX31855_RunEverySecond,                 // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_PT6523
 	//drvdetail:{"name":"PT6523",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Car radio LCD driver, see [teardown and presentation](https://www.elektroda.com/rtvforum/topic3983111.html)",
 	//drvdetail:"requires":""}
-	{ "PT6523",	PT6523_Init,		PT6523_RunFrame,			NULL, NULL, NULL, NULL, NULL, false },
+	{ "PT6523",                              // Driver Name
+	PT6523_Init,                             // Init
+	PT6523_RunFrame,                         // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_TEXTSCROLLER
 	//drvdetail:{"name":"TextScroller",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Wrapper utility that can do text scrolling animation on implemented displays (WIP)",
 	//drvdetail:"requires":""}
-	{ "TextScroller",	TS_Init,		NULL,			NULL, TS_RunQuickTick, NULL, NULL, NULL, false },
+	{ "TextScroller",                        // Driver Name
+	TS_Init,                                 // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	TS_RunQuickTick,                         // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_SM16703P
 	//drvdetail:{"name":"SM16703P",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"SM16703P is an individually addressable LEDs controller like WS2812B. Currently SM16703P LEDs are supported through hardware SPI, LEDs data should be connected to P16 (MOSI), [here you can read](https://www.elektroda.com/rtvforum/topic4005865.html) how to break it out on CB2S.",
 	//drvdetail:"requires":""}
-	{ "SM16703P",	SM16703P_Init,		NULL,						NULL, NULL, SM16703P_Shutdown, NULL, NULL, false },
+	{ "SM16703P",                            // Driver Name
+	SM16703P_Init,                           // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	SM16703P_Shutdown,                       // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_SM15155E
 	//drvdetail:{"name":"SM15155E",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"SM15155E is a WS2812B-like single wire LED controller. It's also always using P16 (SPI out) on Beken. See [reverse-engineering topic](https://www.elektroda.com/rtvforum/topic4060227.html)",
 	//drvdetail:"requires":""}
-	{ "SM15155E",	SM15155E_Init,		NULL,						NULL, NULL, NULL, NULL, NULL, false },
+	{ "SM15155E",                            // Driver Name
+	SM15155E_Init,                           // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_IRREMOTEESP
 	//drvdetail:{"name":"IR",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"IRLibrary wrapper, so you can receive remote signals and send them. See [forum discussion here](https://www.elektroda.com/rtvforum/topic3920360.html), also see [LED strip and IR YT video](https://www.youtube.com/watch?v=KU0tDwtjfjw)",
 	//drvdetail:"requires":""}
-	{ "IR",			DRV_IR_Init,		 NULL,						NULL, DRV_IR_RunFrame, NULL, NULL, NULL, false },
+	{ "IR",                                  // Driver Name
+	DRV_IR_Init,                             // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	DRV_IR_RunFrame,                         // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_IR
 	//drvdetail:{"name":"IR",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"IRLibrary wrapper, so you can receive remote signals and send them. See [forum discussion here](https://www.elektroda.com/rtvforum/topic3920360.html), also see [LED strip and IR YT video](https://www.youtube.com/watch?v=KU0tDwtjfjw)",
 	//drvdetail:"requires":""}
-	{ "IR",			DRV_IR_Init,		 NULL,						NULL, DRV_IR_RunFrame, NULL, NULL, NULL, false },
+	{ "IR",                                  // Driver Name
+	DRV_IR_Init,                             // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	DRV_IR_RunFrame,                         // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_IR2
 	//drvdetail:{"name":"IR2",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"simple IR2 driver for sending captures from flipper zero",
 	//drvdetail:"requires":""}
-	{ "IR2",			DRV_IR2_Init,		 NULL,						NULL, NULL, NULL, NULL, NULL, false },
+	{ "IR2",                                 // Driver Name
+	DRV_IR2_Init,                            // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
-
 #if ENABLE_DRIVER_DDPSEND
 	//drvdetail:{"name":"DDPSend",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"DDPqqqqqqq. See [DDP topic](https://www.elektroda.com/rtvforum/topic4040325.html)",
 	//drvdetail:"requires":""}
-	{ "DDPSend",		DRV_DDPSend_Init,		NULL,						DRV_DDPSend_AppendInformationToHTTPIndexPage, DRV_DDPSend_RunFrame, DRV_DDPSend_Shutdown, NULL, NULL, false },
+	{ "DDPSend",                             // Driver Name
+	DRV_DDPSend_Init,                        // Init
+	NULL,                                    // onEverySecond
+	DRV_DDPSend_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	DRV_DDPSend_RunFrame,                    // runQuickTick
+	DRV_DDPSend_Shutdown,                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_DDP
 	//drvdetail:{"name":"DDP",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"DDP is a LED control protocol that is using UDP. You can use xLights or any other app to control OBK LEDs that way. See [DDP topic](https://www.elektroda.com/rtvforum/topic4040325.html)",
 	//drvdetail:"requires":""}
-	{ "DDP",		DRV_DDP_Init,		NULL,						DRV_DDP_AppendInformationToHTTPIndexPage, DRV_DDP_RunFrame, DRV_DDP_Shutdown, NULL, NULL, false },
+	{ "DDP",                                 // Driver Name
+	DRV_DDP_Init,                            // Init
+	NULL,                                    // onEverySecond
+	DRV_DDP_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	DRV_DDP_RunFrame,                        // runQuickTick
+	DRV_DDP_Shutdown,                        // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_SSDP
 	//drvdetail:{"name":"SSDP",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"SSDP is a discovery protocol, so BK devices can show up in, for example, Windows network section",
 	//drvdetail:"requires":""}
-	{ "SSDP",		DRV_SSDP_Init,		DRV_SSDP_RunEverySecond,	NULL, DRV_SSDP_RunQuickTick, DRV_SSDP_Shutdown, NULL, NULL, false },
+	{ "SSDP",                                // Driver Name
+	DRV_SSDP_Init,                           // Init
+	DRV_SSDP_RunEverySecond,                 // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	DRV_SSDP_RunQuickTick,                   // runQuickTick
+	DRV_SSDP_Shutdown,                       // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_TASMOTADEVICEGROUPS
 	//drvdetail:{"name":"DGR",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Tasmota Device groups driver. See [forum example](https://www.elektroda.com/rtvforum/topic3925472.html) and [video tutorial](https://www.youtube.com/watch?v=e1xcq3OUR5M&ab_channel=Elektrodacom)",
 	//drvdetail:"requires":""}
-	{ "DGR",		DRV_DGR_Init,		DRV_DGR_RunEverySecond,		DRV_DGR_AppendInformationToHTTPIndexPage, DRV_DGR_RunQuickTick, DRV_DGR_Shutdown, DRV_DGR_OnChannelChanged, NULL, false },
+	{ "DGR",                                 // Driver Name
+	DRV_DGR_Init,                            // Init
+	DRV_DGR_RunEverySecond,                  // onEverySecond
+	DRV_DGR_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	DRV_DGR_RunQuickTick,                    // runQuickTick
+	DRV_DGR_Shutdown,                        // stopFunction
+	DRV_DGR_OnChannelChanged,                // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_WEMO
 	//drvdetail:{"name":"Wemo",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Wemo emulation for Alexa. You must also start SSDP so it can run, because it depends on SSDP discovery.",
 	//drvdetail:"requires":""}
-	{ "Wemo",		WEMO_Init,		NULL,		WEMO_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+	{ "Wemo",                                // Driver Name
+	WEMO_Init,                               // Init
+	NULL,                                    // onEverySecond
+	WEMO_AppendInformationToHTTPIndexPage,   // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_HUE
 	//drvdetail:{"name":"Hue",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Hue emulation for Alexa. You must also start SSDP so it can run, because it depends on SSDP discovery.",
 	//drvdetail:"requires":""}
-	{ "Hue",		HUE_Init,		NULL,		HUE_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+	{ "Hue",                                 // Driver Name
+	HUE_Init,                                // Init
+	NULL,                                    // onEverySecond
+	HUE_AppendInformationToHTTPIndexPage,    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	//drvdetail:{"name":"PWMToggler",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"PWMToggler is a custom abstraction layer that can run on top of raw PWM channels. It provides ability to turn off/on the PWM while keeping it's value, which is not possible by direct channel operations. It can be used for some custom devices with extra lights/lasers. See example [here](https://www.elektroda.com/rtvforum/topic3939064.html).",
 	//drvdetail:"requires":""}
-	{ "PWMToggler",	DRV_InitPWMToggler, NULL, DRV_Toggler_AppendInformationToHTTPIndexPage, DRV_Toggler_QuickTick, NULL, NULL, NULL, false },
+	{ "PWMToggler",                          // Driver Name
+	DRV_InitPWMToggler,                      // Init
+	NULL,                                    // onEverySecond
+	DRV_Toggler_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	DRV_Toggler_QuickTick,                   // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 	//drvdetail:{"name":"DoorSensor",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"DoorSensor is using deep sleep to preserve battery. This is used for devices without TuyaMCU, where BK deep sleep and wakeup on GPIO is used. This drives requires you to set a DoorSensor pin. Change on door sensor pin wakes up the device. If there are no changes for some time, device goes to sleep. See example [here](https://www.elektroda.com/rtvforum/topic3960149.html). If your door sensor does not wake up in certain pos, please use DSEdge command (try all 3 options, default is 2). ",
 	//drvdetail:"requires":""}
-	{ "DoorSensor",		DoorDeepSleep_Init,		DoorDeepSleep_OnEverySecond,	DoorDeepSleep_AppendInformationToHTTPIndexPage, NULL, NULL, DoorDeepSleep_OnChannelChanged, NULL, false },
+	{ "DoorSensor",                          // Driver Name
+	DoorDeepSleep_Init,                      // Init
+	DoorDeepSleep_OnEverySecond,             // onEverySecond
+	DoorDeepSleep_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	DoorDeepSleep_OnChannelChanged,          // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_ADCBUTTON
 	//drvdetail:{"name":"ADCButton",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This allows you to connect multiple buttons on single ADC pin. Each button must have a different resistor value, this works by probing the voltage on ADC from a resistor divider. You need to select AB_Map first. See forum post for [details](https://www.elektroda.com/rtvforum/viewtopic.php?p=20541973#20541973).",
 	//drvdetail:"requires":""}
-	{ "ADCButton",		DRV_ADCButton_Init,		NULL,	NULL, DRV_ADCButton_RunFrame, NULL, NULL, NULL, false },
+	{ "ADCButton",                           // Driver Name
+	DRV_ADCButton_Init,                      // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	DRV_ADCButton_RunFrame,                  // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_MAX72XX
 	//drvdetail:{"name":"MAX72XX_Clock",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Simple hardcoded driver for MAX72XX clock. Requires manual start of MAX72XX driver with MAX72XX setup and NTP start.",
 	//drvdetail:"requires":""}
-	{ "MAX72XX_Clock",		DRV_MAX72XX_Clock_Init,		DRV_MAX72XX_Clock_OnEverySecond,	NULL, DRV_MAX72XX_Clock_RunFrame, NULL, NULL, NULL, false },
+	{ "MAX72XX_Clock",                       // Driver Name
+	DRV_MAX72XX_Clock_Init,                  // Init
+	DRV_MAX72XX_Clock_OnEverySecond,         // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	DRV_MAX72XX_Clock_RunFrame,              // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_LED
 	//drvdetail:{"name":"SM2135",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"SM2135 custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both SM2135 pin roles. This may need you to remap the RGBCW indexes with SM2135_Map command",
 	//drvdetail:"requires":""}
-	{ "SM2135",		SM2135_Init,		NULL,			NULL, NULL, NULL, NULL, NULL, false },
+	{ "SM2135",                              // Driver Name
+	SM2135_Init,                             // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 	//drvdetail:{"name":"BP5758D",
 	//drvdetail:"title":"TODO",	
 	//drvdetail:"descr":"BP5758D custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both BP5758D pin roles. This may need you to remap the RGBCW indexes with BP5758D_Map command. This driver is used in some of BL602/Sonoff bulbs, see [video flashing tutorial here](https://www.youtube.com/watch?v=L6d42IMGhHw)",
 	//drvdetail:"requires":""}
-	{ "BP5758D",	BP5758D_Init,		NULL,			NULL, NULL, NULL, NULL, NULL, false },
+	{ "BP5758D",                             // Driver Name
+	BP5758D_Init,                            // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 	//drvdetail:{"name":"BP1658CJ",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"BP1658CJ custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both BP1658CJ pin roles. This may need you to remap the RGBCW indexes with BP1658CJ_Map command",
 	//drvdetail:"requires":""}
-	{ "BP1658CJ",	BP1658CJ_Init,		NULL,			NULL, NULL, NULL, NULL, NULL, false },
+	{ "BP1658CJ",                            // Driver Name
+	BP1658CJ_Init,                           // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 	//drvdetail:{"name":"SM2235",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"SM2335 andd SM2235 custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both SM2235 pin roles. This may need you to remap the RGBCW indexes with SM2235_Map command. This driver also works for SM2185N.",
 	//drvdetail:"requires":""}
-	{ "SM2235",		SM2235_Init,		NULL,			NULL, NULL, NULL, NULL, NULL, false },
+	{ "SM2235",                              // Driver Name
+	SM2235_Init,                             // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_BMP280
 	//drvdetail:{"name":"BMP280",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"BMP280 is a Temperature and Pressure sensor with I2C interface.",
 	//drvdetail:"requires":""}
-	{ "BMP280", BMP280_Init, BMP280_OnEverySecond, BMP280_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+	{ "BMP280",                              // Driver Name
+	BMP280_Init,                             // Init
+	BMP280_OnEverySecond,                    // onEverySecond
+	BMP280_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_MAX72XX
 	//drvdetail:{"name":"MAX72XX",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"MAX72XX LED matrix display driver with font and simple script interface. See [protocol explanation](https://www.elektroda.pl/rtvforum/viewtopic.php?p=18040628#18040628)",
 	//drvdetail:"requires":""}
-	{ "MAX72XX",	DRV_MAX72XX_Init,		NULL,		NULL, NULL, DRV_MAX72XX_Shutdown, NULL, NULL, false },
+	{ "MAX72XX",                             // Driver Name
+	DRV_MAX72XX_Init,                        // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	DRV_MAX72XX_Shutdown,                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_BMPI2C
 		//drvdetail:{"name":"BMPI2C",
 		//drvdetail:"title":"TODO",
 		//drvdetail:"descr":"Driver for BMP085, BMP180, BMP280, BME280, BME68X sensors with I2C interface.",
 		//drvdetail:"requires":""}
-	{ "BMPI2C", BMPI2C_Init, BMPI2C_OnEverySecond, BMPI2C_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+	{ "BMPI2C",                              // Driver Name
+	BMPI2C_Init,                             // Init
+	BMPI2C_OnEverySecond,                    // onEverySecond
+	BMPI2C_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_CHT83XX
 	//drvdetail:{"name":"CHT83XX",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"CHT8305, CHT8310 and CHT8315 are a Temperature and Humidity sensors with I2C interface.",
 	//drvdetail:"requires":""}
-	{ "CHT83XX",	CHT83XX_Init,		CHT83XX_OnEverySecond,		CHT83XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+	{ "CHT83XX",                             // Driver Name
+	CHT83XX_Init,                            // Init
+	CHT83XX_OnEverySecond,                   // onEverySecond
+	CHT83XX_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_MCP9808
 	//drvdetail:{"name":"MCP9808",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"MCP9808 is a Temperature sensor with I2C interface and an external wakeup pin, see [docs](https://www.elektroda.pl/rtvforum/topic3988466.html).",
 	//drvdetail:"requires":""}
-	{ "MCP9808",	MCP9808_Init,		MCP9808_OnEverySecond,		MCP9808_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+	{ "MCP9808",                             // Driver Name
+	MCP9808_Init,                            // Init
+	MCP9808_OnEverySecond,                   // onEverySecond
+	MCP9808_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_KP18058
 	//drvdetail:{"name":"KP18058",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"KP18058 I2C LED driver. Supports also KP18068. Working, see reverse-engineering [topic](https://www.elektroda.pl/rtvforum/topic3991620.html)",
 	//drvdetail:"requires":""}
-	{ "KP18058",		KP18058_Init,		NULL,			NULL, NULL, NULL, NULL, NULL, false },
+	{ "KP18058",                             // Driver Name
+	KP18058_Init,                            // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_ADCSMOOTHER
 	//drvdetail:{"name":"ADCSmoother",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"ADCSmoother is used for 3-way stairs switches synchronized via extra wire.",
 	//drvdetail:"requires":""}
-	{ "ADCSmoother", DRV_ADCSmoother_Init, NULL, NULL, DRV_ADCSmoother_RunFrame, NULL, NULL, NULL, false },
+	{ "ADCSmoother",                         // Driver Name
+	DRV_ADCSmoother_Init,                    // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	DRV_ADCSmoother_RunFrame,                // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_SHT3X
 	//drvdetail:{"name":"SHT3X",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Humidity/temperature sensor. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html)",
 	//drvdetail:"requires":""}
-	{ "SHT3X",	    SHT3X_Init,		SHT3X_OnEverySecond,		SHT3X_AppendInformationToHTTPIndexPage, NULL, SHT3X_StopDriver, NULL, NULL, false },
+	{ "SHT3X",                               // Driver Name
+	SHT3X_Init,                              // Init
+	SHT3X_OnEverySecond,                     // onEverySecond
+	SHT3X_AppendInformationToHTTPIndexPage,  // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	SHT3X_StopDriver,                        // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_SGP
 	//drvdetail:{"name":"SGP",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"SGP Air Quality sensor with I2C interface. See [this DIY sensor](https://www.elektroda.com/rtvforum/topic3967174.html) for setup information.",
 	//drvdetail:"requires":""}
-	{ "SGP",	    SGP_Init,		SGP_OnEverySecond,		SGP_AppendInformationToHTTPIndexPage, NULL, SGP_StopDriver, NULL, NULL, false },
+	{ "SGP",                                 // Driver Name
+	SGP_Init,                                // Init
+	SGP_OnEverySecond,                       // onEverySecond
+	SGP_AppendInformationToHTTPIndexPage,    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	SGP_StopDriver,                          // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_SHIFTREGISTER
 	//drvdetail:{"name":"ShiftRegister",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Simple Shift Register driver that allows you to map channels to shift register output. See [related topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20533505#20533505)",
 	//drvdetail:"requires":""}
-	{ "ShiftRegister",	    Shift_Init,		Shift_OnEverySecond,		NULL, NULL, NULL, Shift_OnChannelChanged, NULL, false },
+	{ "ShiftRegister",                       // Driver Name
+	Shift_Init,                              // Init
+	Shift_OnEverySecond,                     // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	Shift_OnChannelChanged,                  // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_AHT2X
 	//drvdetail:{"name":"AHT2X",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"AHT Humidity/temperature sensor. Supported sensors are: AHT10, AHT2X, AHT30. See [presentation guide](https://www.elektroda.com/rtvforum/topic4052685.html)",
 	//drvdetail:"requires":""}
-	{ "AHT2X",	AHT2X_Init,	AHT2X_OnEverySecond,	AHT2X_AppendInformationToHTTPIndexPage,	NULL,	AHT2X_StopDriver,	NULL,	false },
+	{ "AHT2X",                               // Driver Name
+	AHT2X_Init,                              // Init
+	AHT2X_OnEverySecond,                     // onEverySecond
+	AHT2X_AppendInformationToHTTPIndexPage,  // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	AHT2X_StopDriver,                        // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_DS1820
 	//drvdetail:{"name":"DS1820",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Very simple driver for oneWire temperature sensor DS1820.",
 	//drvdetail:"requires":""}
-	{ "DS1820",     DS1820_driver_Init, DS1820_OnEverySecond,                       DS1820_AppendInformationToHTTPIndexPage, NULL, NULL, NULL,  false },
+	{ "DS1820",                              // Driver Name
+	DS1820_driver_Init,                      // Init
+	DS1820_OnEverySecond,                    // onEverySecond
+	DS1820_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_DS1820_FULL
 	//drvdetail:{"name":"DS1820_FULL",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Driver for oneWire temperature sensor DS18(B)20.",
 	//drvdetail:"requires":""}
-	{ "DS1820_FULL",     DS1820_full_driver_Init, DS1820_full_OnEverySecond,                       DS1820_full_AppendInformationToHTTPIndexPage, NULL, NULL, NULL,  false },
+	{ "DS1820_FULL",                         // Driver Name
+	DS1820_full_driver_Init,                 // Init
+	DS1820_full_OnEverySecond,               // onEverySecond
+	DS1820_full_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_HT16K33
 	//drvdetail:{"name":"HT16K33",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Driver for 16-segment LED display with I2C. See [protocol explanation](https://www.elektroda.pl/rtvforum/topic3984616.html)",
 	//drvdetail:"requires":""}
-	{ "HT16K33",	HT16K33_Init,		NULL,		NULL, NULL,NULL,  NULL, NULL, false },
+	{ "HT16K33",                             // Driver Name
+	HT16K33_Init,                            // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 	// Shared driver for TM1637, GN6932, TM1638 - TM_GN_Display_SharedInit
 #if ENABLE_DRIVER_TMGN
@@ -542,57 +1219,138 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK interface. See [TM1637 information](https://www.elektroda.com/rtvforum/viewtopic.php?p=20468593#20468593)",
 	//drvdetail:"requires":""}
-	{ "TM1637",	TM1637_Init,		NULL,		NULL,  TMGN_RunQuickTick,NULL, NULL, NULL, false },
+	{ "TM1637",                              // Driver Name
+	TM1637_Init,                             // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	TMGN_RunQuickTick,                       // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 	//drvdetail:{"name":"GN6932",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK/STB interface. See [this topic](https://www.elektroda.com/rtvforum/topic3971252.html) for details.",
 	//drvdetail:"requires":""}
-	{ "GN6932",	GN6932_Init,		NULL,		NULL, TMGN_RunQuickTick, NULL, NULL, NULL, false },
+	{ "GN6932",                              // Driver Name
+	GN6932_Init,                             // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	TMGN_RunQuickTick,                       // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 	//drvdetail:{"name":"TM1638",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK/STB interface. TM1638 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20553628#20553628) for details.",
 	//drvdetail:"requires":""}
-	{ "TM1638",	TM1638_Init,		NULL,		NULL, TMGN_RunQuickTick,NULL,  NULL, NULL, false },
+	{ "TM1638",                              // Driver Name
+	TM1638_Init,                             // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	TMGN_RunQuickTick,                       // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 	//drvdetail:{"name":"HD2015",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Driver for 7-segment LED display with I2C-like interface. Seems to be compatible with TM1650. HD2015 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/topic4052946.html) for details.",
 	//drvdetail:"requires":""}
-	{ "HD2015",	HD2015_Init,		NULL,		NULL, TMGN_RunQuickTick,NULL,  NULL, NULL, false },
+	{ "HD2015",                              // Driver Name
+	HD2015_Init,                             // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	TMGN_RunQuickTick,                       // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_BATTERY
 	//drvdetail:{"name":"Battery",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Custom mechanism to measure battery level with ADC and an optional relay. See [example here](https://www.elektroda.com/rtvforum/topic3959103.html).",
 	//drvdetail:"requires":""}
-	{ "Battery",	Batt_Init,		Batt_OnEverySecond,		Batt_AppendInformationToHTTPIndexPage, NULL, Batt_StopDriver, NULL, NULL, false },
+	{ "Battery",                             // Driver Name
+	Batt_Init,                               // Init
+	Batt_OnEverySecond,                      // onEverySecond
+	Batt_AppendInformationToHTTPIndexPage,   // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	Batt_StopDriver,                         // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_BKPARTITIONS
 	//drvdetail:{"name":"BKPartitions",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"o.",
 	//drvdetail:"requires":""}
-	{ "BKPartitions",     BKPartitions_Init, NULL,                       NULL, BKPartitions_QuickFrame, NULL, NULL, NULL, false },
+	{ "BKPartitions",                        // Driver Name
+	BKPartitions_Init,                       // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	BKPartitions_QuickFrame,                 // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_BRIDGE
 	//drvdetail:{"name":"Bridge",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"A bridge relay driver, added for [TONGOU TO-Q-SY1-JWT Din Rail Switch](https://www.elektroda.com/rtvforum/topic3934580.html). See linked topic for info.",
 	//drvdetail:"requires":""}
-	{ "Bridge",     Bridge_driver_Init, NULL,                       NULL, Bridge_driver_QuickFrame, Bridge_driver_DeInit, Bridge_driver_OnChannelChanged, NULL, false },
+	{ "Bridge",                              // Driver Name
+	Bridge_driver_Init,                      // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	Bridge_driver_QuickFrame,                // runQuickTick
+	Bridge_driver_DeInit,                    // stopFunction
+	Bridge_driver_OnChannelChanged,          // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if ENABLE_DRIVER_UART_TCP
 	//drvdetail:{"name":"UartTCP",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"UART to TCP bridge, mainly for WiFi Zigbee coordinators.",
 	//drvdetail:"requires":""}
-	{ "UartTCP",		UART_TCP_Init,		NULL,	NULL, NULL, UART_TCP_Deinit, NULL, NULL, false },
+	{ "UartTCP",                             // Driver Name
+	UART_TCP_Init,                           // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	UART_TCP_Deinit,                         // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 #if PLATFORM_TXW81X
 	//drvdetail:{"name":"TXWCAM",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"TXW81X Camera.",
 	//drvdetail:"requires":""}
-	{ "TXWCAM", TXW_Cam_Init, TXW_Cam_RunEverySecond, NULL, NULL, NULL, NULL, NULL, false },
+	{ "TXWCAM",                              // Driver Name
+	TXW_Cam_Init,                            // Init
+	TXW_Cam_RunEverySecond,                  // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
 #endif
 	//{ "", NULL, NULL, NULL, NULL, NULL, NULL, NULL, false },
 };
@@ -644,6 +1402,10 @@ void DRV_OnEverySecond() {
 			}
 		}
 	}
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	// unconditionally run TIME
+	TIME_OnEverySecond();
+#endif
 	DRV_Mutex_Free();
 }
 void DRV_RunQuickTick() {
@@ -781,7 +1543,6 @@ static commandResult_t DRV_Start(const void* context, const char* cmd, const cha
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-
 	DRV_StartDriver(Tokenizer_GetArg(0));
 	return CMD_RES_OK;
 }
@@ -810,6 +1571,10 @@ void DRV_Generic_Init() {
 	//cmddetail:"fn":"DRV_Stop","file":"driver/drv_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("stopDriver", DRV_Stop, NULL);
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	// init TIME unconditionally on start
+	TIME_Init();
+#endif
 }
 
 void DRV_OnHassDiscovery(const char *topic) {
@@ -835,6 +1600,9 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState
 	if (DRV_Mutex_Take(100) == false) {
 		return;
 	}
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	TIME_AppendInformationToHTTPIndexPage(request, bPreState);
+#endif
 	for (i = 0; i < g_numDrivers; i++) {
 		if (g_drivers[i].bLoaded) {
 			c_active++;

@@ -20,6 +20,7 @@
 #include "../cJSON/cJSON.h"
 #include <time.h>
 #include "../driver/drv_ntp.h"
+#include "../driver/drv_deviceclock.h"		// to set clock via Javascript in pmntp
 #include "../driver/drv_local.h"
 #ifdef PLATFORM_BEKEN
 #include "start_type_pub.h"
@@ -206,6 +207,38 @@ int http_fn_testmsg(http_request_t* request) {
 	return 0;
 
 }
+
+#if ENABLE_TIME_PMNTP
+// poor mans NTP
+int http_fn_pmntp(http_request_t* request) {
+	char tmpA[128];
+	uint32_t actepoch=0;
+	// javascripts "getTime()" should return time since 01.01.1970 (UTC)
+	if (http_getArg(request->url, "EPOCH", tmpA, sizeof(tmpA))) {
+		actepoch = (uint32_t)strtoul(tmpA,0,10);
+		TIME_setDeviceTime(actepoch);
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"Set clock to %u! \n",actepoch);	
+	}
+#if ENABLE_TIME_DST
+	if (! IsDST_initialized()) {
+#endif
+		if (http_getArg(request->url, "OFFSET", tmpA, sizeof(tmpA)) && actepoch != 0 ) {
+		// if actual time is during DST period, javascript will return 
+		// an offset including the one additional hour of DST  
+		// if we don't handle DST, simply accept this as "offset"
+		TIME_setDeviceTimeOffset(atoi(tmpA));
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"Clock - set g_UTCoffset to %i! \n",
+			atoi(tmpA));	
+		}
+#if ENABLE_TIME_DST
+	// ignore JS offset, if we can/will calculate DST on our own
+	} else setDST();
+#endif
+	poststr(request, "HTTP/1.1 302 OK\nLocation: /index\nConnection: close\n\n");
+	poststr(request, NULL);
+	return 0;
+}
+#endif
 
 // bit mask telling which channels are hidden from HTTP
 // If given bit is set, then given channel is hidden
@@ -1142,7 +1175,9 @@ typedef enum {
 		}
 		poststr(request, "<form action=\"/app\" target=\"_blank\"><input type=\"submit\" value=\"Launch Web Application\"></form> ");
 		poststr(request, "<form action=\"about\"><input type=\"submit\" value=\"About\"/></form>");
-
+#if ENABLE_TIME_PMNTP
+		poststr(request, "<input type='submit' value='Set clock to PC time' onclick='location.href =\"/pmntp?EPOCH=\"+((e=new Date)/1e3|0)+\"&OFFSET=\"+-60*e.getTimezoneOffset()'><p>");
+#endif
 		poststr(request, htmlFooterRefreshLink);
 		http_html_end(request);
 	}
@@ -1937,6 +1972,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	cJSON_InitHooks(&hooks);
 
 	DRV_OnHassDiscovery(topic);
+	EventHandlers_FireEvent(CMD_EVENT_ON_DISCOVERY, 0);
 
 #if ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY
 	// try to pair toggles with dimmers. This is needed only for TuyaMCU, 
