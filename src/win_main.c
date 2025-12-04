@@ -203,6 +203,8 @@ void Win_DoUnitTests()
 {
 	// SELFTEST_ASSERT_EXPRESSION("sqrt(4)", 2)
 
+	Test_MQTT();
+	Test_HTTP_Client();
 	// Test_PartitionSearch();
 	Test_OpenWeatherMap();
 	Test_MAX72XX();
@@ -227,7 +229,6 @@ void Win_DoUnitTests()
 	Test_Backlog();
 	Test_DoorSensor();
 	Test_Command_If_Else();
-	Test_MQTT();
 	Test_ChargeLimitDriver();
 #if ENABLE_BL_SHARED
 	Test_EnergyMeter();
@@ -276,7 +277,6 @@ void Win_DoUnitTests()
 	Test_NTP();
 	Test_NTP_DST();
 	Test_NTP_SunsetSunrise();
-	Test_HTTP_Client();
 	Test_ExpandConstant();
 	Test_ChangeHandlers_MQTT();
 	Test_ChangeHandlers();

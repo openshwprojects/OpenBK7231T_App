@@ -582,7 +582,7 @@ static int g_totalConstants = sizeof(g_constants) / sizeof(g_constants[0]);
 // Etc etc
 // Returns true if constant matches
 // Returns false if no constants found
-const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
+const char *CMD_ExpandConstantFloat(const char *s, const char *stop, float *out) {
 #if ENABLE_EXPAND_CONSTANT
 	const constant_t *var;
 	int i;
@@ -592,7 +592,7 @@ const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 		const char *ret = strCompareBound(s, var->constantName, stop, bAllowWildCard);
 		if (ret) {
 			*out = var->getValue(s);
-			ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: %s", var->name);
+			ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstantFloat: %s", var->name);
 			return ret;
 		}
 	}
@@ -611,7 +611,7 @@ byte CMD_ParseOrExpandHexByte(const char **p) {
 		while (*stop && *stop != '$') {
 			stop++;
 		}
-		CMD_ExpandConstant(*p, stop, &fv);
+		CMD_ExpandConstantFloat(*p, stop, &fv);
 		val = fv;
 
 		*p = stop;
@@ -662,12 +662,13 @@ void SIM_GenerateChannelStatesDesc(char *o, int outLen) {
 		}
 	}
 }
-
+#endif
 const char *CMD_ExpandConstantString(const char *s, const char *stop, char *out, int outLen) {
 	int idx;
 	const char *ret;
 	char tmp[32];
 
+#if WINDOWS
 	ret = strCompareBound(s, "$autoexec.bat", stop, false);
 	if (ret) {
 		byte* data = LFS_ReadFile("autoexec.bat");
@@ -728,9 +729,27 @@ const char *CMD_ExpandConstantString(const char *s, const char *stop, char *out,
 		SIM_GeneratePowerStateDesc(out, outLen);
 		return ret;
 	}
+#endif
+	ret = strCompareBound(s, "$mqtt_client", stop, false);
+	if (ret) {
+		const char *res = CFG_GetMQTTClientId();
+		strcpy_safe(out, res, outLen);
+		return ret;
+	}
+	ret = strCompareBound(s, "$shortName", stop, false);
+	if (ret) {
+		const char *res = CFG_GetShortDeviceName();
+		strcpy_safe(out, res, outLen);
+		return ret;
+	}
+	ret = strCompareBound(s, "$name", stop, false);
+	if (ret) {
+		const char *res = CFG_GetDeviceName();
+		strcpy_safe(out, res, outLen);
+		return ret;
+	}
 	return false;
 }
-#endif
 
 const char* CMD_ExpandConstantToString(const char* constant, char* out, char* stop)
 {
@@ -742,14 +761,12 @@ const char* CMD_ExpandConstantToString(const char* constant, char* out, char* st
 
 	outLen = (stop - out) - 1;
 
-	after = CMD_ExpandConstant(constant, 0, &value);
-#if WINDOWS
+	after = CMD_ExpandConstantFloat(constant, 0, &value);
 	if(after == 0)
 	{
 		after = CMD_ExpandConstantString(constant, 0, out, outLen);
 		return after;
 	}
-#endif
 	if(after == 0)
 		return 0;
 
@@ -800,6 +817,17 @@ void CMD_ExpandConstantsWithinString(const char *in, char *out, int outLen) {
 	}
 	*out = 0;
 }
+int CMD_CountVarsInString(const char *in) {
+	const char *p = in;
+	int varCount = 0;
+	while (*p) {
+		if (*p == '$') {
+			varCount++;
+		}
+		p++;
+	}
+	return varCount;
+}
 // like a strdup, but will expand constants.
 // Please remember to free the returned string
 char *CMD_ExpandingStrdup(const char *in) {
@@ -808,29 +836,25 @@ char *CMD_ExpandingStrdup(const char *in) {
 	int varCount;
 	int realLen;
 
-	realLen = 0;
-	varCount = 0;
 	// I am not sure which approach should I take
 	// It could be easily done with external buffer, but it would have to be on stack or a global one...
 	// Maybe let's just assume that variables cannot grow string way too big
-	p = in;
-	while (*p) {
-		if (*p == '$') {
-			varCount++;
-		}
-		realLen++;
-		p++;
-	}
-
+	realLen = strlen(in);
+	varCount = CMD_CountVarsInString(in);
+	
 	// not all var names are short, some are long...
 	// but $CH1 is short and could expand to something longer like, idk, 123456?
 	// just to be on safe side....
-	realLen += varCount * 5;
+	realLen += varCount * 10;
 
 	// space for NULL and also space to be sure
 	realLen += 2;
 
 	ret = (char*)malloc(realLen);
+	if (ret == 0) {
+		// malloc failed
+		return ret;
+	}
 	CMD_ExpandConstantsWithinString(in, ret, realLen);
 	return ret;
 }
@@ -964,7 +988,7 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 	if (s[0] == '!') {
 		return !CMD_EvaluateExpression(s + 1, stop);
 	}
-	if (CMD_ExpandConstant(s, stop, &c)) {
+	if (CMD_ExpandConstantFloat(s, stop, &c)) {
 		return c;
 	}
 

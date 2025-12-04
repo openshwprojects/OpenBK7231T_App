@@ -243,6 +243,10 @@ static commandResult_t DRV_MAX72XX_Clock_Animate(const void *context, const char
 }
 void DRV_MAX72XX_Clock_Init() {
 
+	//cmddetail:{"name":"MAX72XXClock_Animate","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"DRV_MAX72XX_Clock_Animate","file":"driver/drv_max72xx_clock.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MAX72XXClock_Animate", DRV_MAX72XX_Clock_Animate, NULL);
 }
 

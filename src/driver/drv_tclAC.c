@@ -24,6 +24,7 @@ set_cmd_t m_set_cmd = { 0 };
 get_cmd_resp_t m_get_cmd_resp = { 0 };
 int g_buzzer = 1;
 int g_disp = 1;
+int g_gen = 0;
 
 typedef enum {
 	CLIMATE_MODE_OFF,
@@ -116,6 +117,7 @@ void build_set_cmd(get_cmd_resp_t * get_cmd_resp) {
 	}
 
 	m_set_cmd.data.half_degree = 0;
+	m_set_cmd.data.byte_7_bit_0_1 = g_gen;
 
 	for (int i = 0; i < sizeof(m_set_cmd.raw) - 1; i++) m_set_cmd.raw[sizeof(m_set_cmd.raw) - 1] ^= m_set_cmd.raw[i];
 }
@@ -271,6 +273,16 @@ void OBK_SetFanMode(fanMode_e fan_mode) {
 	build_set_cmd(&get_cmd_resp);
 	ready_to_send_set_cmd_flag = true;
 
+}
+void OBK_SetGen(int gen) {
+
+	get_cmd_resp_t get_cmd_resp = { 0 };
+	memcpy(get_cmd_resp.raw, m_get_cmd_resp.raw, sizeof(get_cmd_resp.raw));
+
+	g_gen = gen;
+
+	build_set_cmd(&get_cmd_resp);
+	ready_to_send_set_cmd_flag = true;
 }
 void OBK_SetBuzzer(int buzzer) {
 
@@ -719,6 +731,15 @@ static commandResult_t CMD_Display(const void* context, const char* cmd, const c
 	OBK_SetDisplay(display);
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_Gen(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	int gen;
+
+	Tokenizer_TokenizeString(args, 0);
+
+	gen = Tokenizer_GetArgInteger(0);
+	OBK_SetGen(gen);
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_Buzzer(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int buzzer;
 
@@ -763,6 +784,13 @@ void TCL_Init(void) {
 	//cmddetail:"fn":"CMD_Buzzer","file":"driver/drv_tclAC.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Buzzer", CMD_Buzzer, NULL);
+
+	//cmddetail:{"name":"Gen","args":"Gen",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_Gen","file":"driver/drv_tclAC.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("Gen", CMD_Gen, NULL);
+	
 	//cmddetail:{"name":"Display","args":"CMD_Display",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"CMD_Display","file":"driver/drv_tclAC.c","requires":"",
@@ -770,6 +798,7 @@ void TCL_Init(void) {
 	CMD_RegisterCommand("Display", CMD_Display, NULL);
 }
 
+// backlog startDriver TCL; Gen 3
 void TCL_UART_RunEverySecond(void) {
 	uint8_t req_cmd[] = { 0xBB, 0x00, 0x01, 0x04, 0x02, 0x01, 0x00, 0xBD };
 

@@ -326,7 +326,7 @@ int be_get(bvm *vm) {
 		const char *name = be_tostring(vm, 1);
 		if (name[0] == '$') {
 			float ret;
-			CMD_ExpandConstant(name, 0, &ret);
+			CMD_ExpandConstantFloat(name, 0, &ret);
 			be_pushreal(vm, ret);
 			be_return(vm);
 		}

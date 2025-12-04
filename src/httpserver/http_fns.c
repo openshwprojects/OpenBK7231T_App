@@ -1943,6 +1943,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	cJSON_InitHooks(&hooks);
 
 	DRV_OnHassDiscovery(topic);
+	EventHandlers_FireEvent(CMD_EVENT_ON_DISCOVERY, 0);
 
 #if ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY
 	// try to pair toggles with dimmers. This is needed only for TuyaMCU, 
