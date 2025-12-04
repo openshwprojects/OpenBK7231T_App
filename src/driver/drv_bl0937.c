@@ -49,6 +49,10 @@ volatile unsigned long g_v_pulses = 0, g_c_pulses = 0;
 static portTickType g_ticksElapsed_v=1, g_ticksElapsed_c=1; //initial value > 0 to enable calculation at first run
 volatile unsigned long g_p_pulses = 0, g_p_pulsesprev = 0;
 static portTickType g_pulseStampStart_v=0, g_pulseStampStart_c=0, g_pulseStampStart_p=0;
+
+extern int energyCounterSampleInterval;
+
+static int dbglvl_bl937 = 0;
 #define PULSESTAMPDEBUG 0
 #if PULSESTAMPDEBUG>0
 volatile portTickType g_pulseStampEnd_v=0, g_pulseStampEnd_c=0;
@@ -71,6 +75,8 @@ static int g_forceonroc=-1;
 static int g_forceonpwr=-1;
 static float g_p_prevsec=0;
 static unsigned long g_p_pulsesprevsec = 0;
+static int g_forceonrelay=-1;
+static int g_relay_open_last = 0;
 
 static int g_v_avg_res=0;
 static int g_v_avg_ticks=0;
@@ -96,10 +102,14 @@ float g_scale_samplefreq=1;
 static int g_enable_sendtimestamps = 0;
 #endif
 
-#define CMD_SEND_VAL_MQTT 1
-#if CMD_SEND_VAL_MQTT > 0
-static int g_enable_mqtt_on_cmd = 1;
-#endif	
+#if ENABLE_MQTT > 0
+  #define CMD_SEND_VAL_MQTT 1
+  #if CMD_SEND_VAL_MQTT > 0
+  static int g_enable_mqtt_on_cmd = 1;
+  #endif	
+#else
+  #define CMD_SEND_VAL_MQTT 1
+#endif
 
 void HlwCf1Interrupt(int pinNum)
 {
@@ -158,11 +168,16 @@ commandResult_t BL0937_cmdIntervalCPMinMax(const void* context, const char* cmd,
 {
 	const char cmdName[] = "BL0937_IntervalCPMinMax";
 	int argok=0;
+//	extern energyCounterSampleInterval;
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
 	if(Tokenizer_GetArgsCount()<2) {
 		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: not enough arguments, current values %lu %lu. \n"
 			, g_secondsElapsed, cmdName
 			, g_bl_secMinNextCalc, g_bl_secForceNextCalc);
+		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: not enough arguments, current values %lu %lu. history sample interval %d\n"
+			, g_secondsElapsed, cmdName
+			, g_bl_secMinNextCalc, g_bl_secForceNextCalc, energyCounterSampleInterval);
+
 //		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 		argok=-1;
 	} else {
@@ -311,7 +326,7 @@ commandResult_t BL0937_cmdForceOnPwrROC(const void* context, const char* cmd, co
 	if (g_enable_mqtt_on_cmd>0)	{
 		char curvalstr[16]; 
 		if ( (float)g_p_forceonroc_limit < 10000.0f && (float)g_p_forceonpcyc_limit < 10000.0f) { //ensure there is no strlen overflow
-			sprintf(curvalstr, "%.2f %.2f", (float)g_p_forceonroc_limit, (float)g_p_forceonpcyc_limit);
+			sprintf(curvalstr, "%.1f %.1f", (float)g_p_forceonroc_limit, (float)g_p_forceonpcyc_limit);
 		} else {
 			strcpy(curvalstr, "invalid");
 		}
@@ -387,7 +402,7 @@ uint32_t BL0937_utlDiffCalcU32(uint32_t lowval, uint32_t highval)
 	return highval-lowval;
 }
 
-static float BL0937_utlGetDigitFactor(float val1, float val2)
+float BL0937_utlGetDigitFactor(float val1, float val2)
 {
 	//returns factor of 10 to multiply val2 to get close to val1 (to compare/move decimal point)
 	float factor = 1.0f;
@@ -634,11 +649,11 @@ void BL0937_RunEverySecond(void)
 				change to low power last value kept a while, 
 				positive change first value is an average 
 					-->optionally change to report higher value immediately? */		
-			g_forceonroc = 2; //g_bl_secUntilNextCalc = 0 would trigger only one update but we need 2 due to average before
+			g_forceonroc = 3; //g_bl_secUntilNextCalc = 0 would trigger only one update but we need 2 due to average before
 		} else {
 			g_forceonroc--;
 		}
-		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d power prevsec %.2f / now %.2f (%d Hz * %.1f * %.3E) -> roc=%.1f [limit=%.2f, force=%i sec2nextmax=%d], p_pulsestot %d\n", g_secondsElapsed
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d power prevsec %4g / now %.2f (%d Hz * %.1f * %.3E) -> roc=%.1f [limit=%.2f, force=%i sec2nextmax=%d], p_pulsestot %d\n", g_secondsElapsed
 			, g_p_prevsec, p_thissec, freq_p_thissec, (float)g_freqmultiplierP, power_cal_cur, p_roc, g_p_forceonroc_limit, g_forceonroc, g_bl_secUntilNextCalc, res_p);
 	} else {
 		g_forceonroc=0;
@@ -661,7 +676,7 @@ void BL0937_RunEverySecond(void)
 //			p_diff = (p_cycle > last_p)? (p_cycle - last_p) : (last_p - p_cycle);
 //			p_diff = p_cycle - last_p;
 			if( fabs(p_cycle - last_p) >= g_p_forceonpcyc_limit) {
-				g_forceonpwr =  1; // can be done with g_bl_secUntilNextCalc only but then we have no indicator for debug
+				g_forceonpwr =  3; // can be done with g_bl_secUntilNextCalc only but then we have no indicator for debug
 			} else {
 				g_forceonpwr--;
 			}
@@ -674,74 +689,69 @@ void BL0937_RunEverySecond(void)
 
 	//<-- force on pwr roc
 
-	//check if P will cause update
+	int relay_open = Channel_AreAllRelaysOpen();
+	if (g_relay_open_last != relay_open ) {
+		g_forceonrelay = 3;
+	} else {
+		g_forceonrelay--;
+	}
+	//check if P or any force condition will cause update. 
+	// if forced by rate of change or relay change, two updates required:
+	//   1. cover all P pulses so far of the part of the cycle, 2. to see real new P value asap
+	// AND update both, V and C
 	int p_update = 0;
+//	g_reset=delay until reset, ensure update energy before reboot
 	if ( (res_p >= g_minPulsesP  && (g_bl_secUntilNextCalc <= (g_bl_secForceNextCalc - g_bl_secMinNextCalc) ))
-			|| g_bl_secUntilNextCalc <= 0 || g_forceonroc > 0 || g_forceonpwr > 0) {
+			|| g_bl_secUntilNextCalc <= 0 || g_forceonroc > 0 || g_forceonpwr > 0 || g_forceonrelay > 0 || g_reset > 0) { 
 		p_update = 1;
 	}
 
-
 // V and I measurement must be done/changed every second
+	g_sel_change=false;
 	if ((g_sel && !g_invertSEL) || (!g_sel && g_invertSEL)) {
-//	if ( g_sel ) {
+		g_ticksElapsed_v = BL0937_utlDiffCalcU32(g_pulseStampStart_v, pulseStampNow);
+		res_v = g_v_pulses;
+#define VOLT_CURR_AVG 1
+#if VOLT_CURR_AVG>0
+		g_v_avg_res += res_v;
+		g_v_avg_ticks += g_ticksElapsed_v;
+		g_v_avg_count++;
+#endif
 		if ( g_v_pulses >= g_minPulsesV ) {
-#if PULSESTAMPDEBUG>0
+#if PULSESTAMPDEBUG>10
 			g_pulseStampEnd_v = pulseStampNow;
 			addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d now %lu gsel=%i vp %lu tsv %lu %lu \n", g_secondsElapsed
 				, pulseStampNow, g_sel, g_v_pulses, g_pulseStampStart_v, g_pulseStampEnd_v);
 #endif
-			g_ticksElapsed_v = BL0937_utlDiffCalcU32(g_pulseStampStart_v, pulseStampNow);
-			res_v = g_v_pulses;
-	#define VOLT_CURR_AVG 1
-	#if VOLT_CURR_AVG>0
-			g_v_avg_res += res_v;
-			g_v_avg_ticks += g_ticksElapsed_v;
-			g_v_avg_count++;
-	#endif
 			g_v_pulses=0;
-//			valid_v=true;
-		} else {
-//			res_v = 0;
-//			valid_v=false;
+	//		g_sel=false;
+			g_pulseStampStart_c = pulseStampNow;
+			g_sel_change=true;
 		}
-//		g_sel=false;
-		g_pulseStampStart_c = pulseStampNow;
-		g_sel_change=true;
 	} else if( (g_sel && g_invertSEL) || (!g_sel && !g_invertSEL))	{
-//	} else {
-//		if ( (g_c_pulses >= g_minPulsesC && (g_bl_secUntilNextCalc <= g_bl_secForceNextCalc - g_bl_secMinNextCalc)) 
-//				|| g_bl_secUntilNextCalc <= 1 )  { //reading high enough or max sample time
-		// doesn't switch if min pulses too high
+		g_ticksElapsed_c = BL0937_utlDiffCalcU32(g_pulseStampStart_c, pulseStampNow);
+		res_c = g_c_pulses;
+#define VOLT_CURR_AVG 1
+#if VOLT_CURR_AVG>0
+		g_c_avg_res += res_c;
+		g_c_avg_ticks += g_ticksElapsed_c;
+		g_c_avg_count++;
+#endif
 		if ( (g_c_pulses >= g_minPulsesC && (g_bl_secUntilNextCalc <= (g_bl_secForceNextCalc - g_bl_secMinNextCalc) ) )
 		 || g_bl_secUntilNextCalc <= 1 || p_update > 0 )  { //reading high enough and min cycle timeor max sample time, reserve one cycle for volt
-#if PULSESTAMPDEBUG>0
+#if PULSESTAMPDEBUG>10
 			g_pulseStampEnd_c = pulseStampNow;
 			addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d now %lu gsel=%i vc %lu tsc %lu %lu \n", g_secondsElapsed
 				, pulseStampNow, g_sel, g_c_pulses, g_pulseStampStart_c, g_pulseStampEnd_c);
 #endif
-			g_ticksElapsed_c = BL0937_utlDiffCalcU32(g_pulseStampStart_c, pulseStampNow);
-			res_c = g_c_pulses;
-	#define VOLT_CURR_AVG 1
-	#if VOLT_CURR_AVG>0
-			g_c_avg_res += res_c;
-			g_c_avg_ticks += g_ticksElapsed_c;
-			g_c_avg_count++;
-	#endif
 			g_c_pulses=0;
-//			valid_c=true;
-//			g_sel=true;
 			g_pulseStampStart_v = pulseStampNow;
 			g_sel_change=true;
-		} else {
-//			res_c = 0;
-//			valid_c=false;
-			g_sel_change=false;
 		}
 	} 
 #if PULSESTAMPDEBUG>0
- 	addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d now %lu gsel=%i g_sel_change %i \n", g_secondsElapsed
-		, pulseStampNow, g_sel, g_sel_change);
+ 	addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d now %lu gsel=%i gselinv=%i g_sel_change %i pupd %i, vavgcnt %i cavgcnt %i sec2next %i\n", g_secondsElapsed
+		, pulseStampNow, g_sel,g_invertSEL , g_sel_change, p_update, g_v_avg_count, g_c_avg_count, g_bl_secUntilNextCalc);
 #endif
 
 	if ( g_sel_change) {
@@ -785,7 +795,7 @@ void BL0937_RunEverySecond(void)
 		//frequency P: @250V: 0.25 .. 5000W = 0.146443 .. 2928.866 Hz, 0.1W=0.058577 [0.057135] Hz
 
 
-//		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d Scalefactor default/used [frequency multiplier]: v %E [%f] c %E [1] p %E [%f], usedscalefactor v %E c %E p %E \n", g_secondsElapsed
+//		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d relation scalefactor default/used [frequency multiplier]: v %E [%f] c %E [1] p %E [%f], usedscalefactor v %E c %E p %E \n", g_secondsElapsed
 //			, DEFAULT_VOLTAGE_CAL/voltage_cal_cur, (float)g_freqmultiplierV, DEFAULT_CURRENT_CAL/current_cal_cur
 //			, DEFAULT_POWER_CAL/power_cal_cur, (float)g_freqmultiplierP, voltage_cal_cur, current_cal_cur, power_cal_cur);
 	#if VOLT_CURR_AVG>10
@@ -869,9 +879,9 @@ void BL0937_RunEverySecond(void)
 #if VOLT_CURR_AVG>0
 		PwrCal_Scale((int)((g_v_avg_count > 0) ? (freq_v_avg * (float)g_freqmultiplierV) : freq_v)
 			, (float)((g_c_avg_count > 0) ? freq_c_avg : freq_c), (int)freq_p, &final_v, &final_c, &final_p);
-		if ( g_forceonroc > 0 || g_forceonpwr > 0) {
-			addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d Scaled v %.2f (vf %.3f [%.3f x %i] / %.3f) c %.5f (cf %.3f [%.3f x %i] / 1) p %.5f  (pf %.3f / %.3f), force %i roc %i pcyc %i \n", g_secondsElapsed
-				,final_v, freq_v, freq_v_avg, g_v_avg_count, (float)g_freqmultiplierV, final_c, freq_c, freq_c_avg, g_c_avg_count, final_p, freq_p, (float)g_freqmultiplierP, p_update, g_forceonroc, g_forceonpwr);
+		if ( g_forceonroc > 0 || g_forceonpwr > 0 || g_forceonrelay > 0) {
+			addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d Scaled v %.2f (vf %.3f [%.3f x %i] / %.3f) c %.5f (cf %.3f [%.3f x %i] / 1) p %.5f  (pf %.3f / %.3f), force %i roc %i pcyc %i relay %i\n", g_secondsElapsed
+				,final_v, freq_v, freq_v_avg, g_v_avg_count, (float)g_freqmultiplierV, final_c, freq_c, freq_c_avg, g_c_avg_count, final_p, freq_p, (float)g_freqmultiplierP, p_update, g_forceonroc, g_forceonpwr, g_forceonrelay);
 		} else {
 			addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d Scaled v %.2f (vf %.3f [%.3f x %i] / %.3f) c %.5f (cf %.3f [%.3f x %i] / 1) p %.5f  (pf %.3f / %.3f) \n", g_secondsElapsed
 				,final_v, freq_v, freq_v_avg, g_v_avg_count, (float)g_freqmultiplierV, final_c, freq_c, freq_c_avg, g_c_avg_count, final_p, freq_p, (float)g_freqmultiplierP);
@@ -925,6 +935,7 @@ void BL0937_RunEverySecond(void)
 	if (g_bl_secUntilNextCalc > 0) {
 		g_bl_secUntilNextCalc--;
 	}
+	g_relay_open_last = relay_open;
 
 #if TIME_CHECK_COMPARE_NTP > 0
 	struct tm* ltm = gmtime(&g_ntpTime);
