@@ -74,16 +74,22 @@ Do not add anything here, as it will overwritten with next rebuild.
 | SGP_CLK | SGP Quality Sensor Clock line. will autostart related driver |
 | SGP_DAT | SGP Quality Sensor Data line. will autostart related driver |
 | ADC_Button | Single ADC with multiple buttons connected.d |
-| GN6932_CLK | QQQ |
-| GN6932_DAT | QQQ |
-| GN6932_STB | QQQ |
-| TM1638_CLK | QQQ |
-| TM1638_DAT | QQQ |
-| TM1638_STB | QQQ |
+| GN6932_CLK | GN6932 LED Display Driver - Clock pi |
+| GN6932_DAT | GN6932 LED Display Driver - Data pin |
+| GN6932_STB | GN6932 LED Display Driver - STB pin (Latch Enable) |
+| TM1638_CLK | TM1638 8x7 Segment Display - Clock pin |
+| TM1638_DAT | TM1638 8x7 Segment Display - data pin |
+| TM1638_STB | TM1638 8x7 Segment Display - STB pin |
 | BAT_Relay_n | Like BAT_Relay, but inversed. See [battery driver topic here](https://www.elektroda.com/rtvforum/topic3959103.html) |
-| KP18058_CLK | QQQ |
-| KP18058_DAT | QQQ |
-| DS1820 | vers simple OneWire Temp sensor DS1820 |
+| KP18058_CLK | KP18058 LED linear constant current dimming chip with I2C interface - CLK pin |
+| KP18058_DAT | KP18058 LED linear constant current dimming chip with I2C interface - DATA pin |
+| DS1820_IO | vers simple OneWire Temp sensor DS1820 |
 | PWM_ScriptOnly |  |
 | PWM_ScriptOnly_n |  |
+| Counter_f |  |
+| Counter_r |  |
+| IRRecv_nPup | IRRecv without pull-up |
+| StripState | This is an output pin which has current led_enableAll value |
+| StripState_n | This is an output pin which has negation of current led_enableAll value |
+| HLW8112_SCSN | SCSN pin for HLW8112 SPI energy measuring devices. |
 | Total_Options | Current total number of available IOR roles |
