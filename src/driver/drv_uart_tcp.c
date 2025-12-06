@@ -125,7 +125,7 @@ static void UTCP_RX_Thd(void* param)
 			}
             ret = recv(client_fd, buffer, sizeof(buffer), 0);
 		}
-		else if(tx_closed)
+		if(tx_closed)
 		{
 			goto exit;
 		}
