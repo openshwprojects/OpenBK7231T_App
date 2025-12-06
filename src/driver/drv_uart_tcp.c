@@ -108,7 +108,7 @@ static void UTCP_RX_Thd(void* param)
 		if(client_fd == INVALID_SOCK) goto exit;
 
         int total = 0;
-        while ((ret = recv(socket, &buffer[total], sizeof (buffer) - total, 0x08)) > 0)
+        while ((ret = recv(client_fd, &buffer[total], sizeof (buffer) - total, 0x08)) > 0)
         {
             total += ret;
             rtos_delay_milliseconds(10);
