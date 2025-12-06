@@ -108,6 +108,31 @@
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 #define ENABLE_LITTLEFS							1
 #define NEW_TCP_SERVER							1
+// parse things like $CH1 or $hour etc
+#define ENABLE_EXPAND_CONSTANT					1
+#define ENABLE_HA_DISCOVERY						1
+#define ENABLE_DRIVER_OPENWEATHERMAP			1
+#define ENABLE_DRIVER_SSDP						1
+#define ENABLE_DRIVER_CHARTS					1
+#define ENABLE_MQTT								1
+#define ENABLE_DRIVER_SHT3X						1
+#define ENABLE_DRIVER_AHT2X						1
+#define ENABLE_TASMOTA_JSON						1
+#define ENABLE_DRIVER_DS1820					1
+#define ENABLE_DRIVER_DHT						1
+//#define ENABLE_NTP								1
+#define ENABLE_DRIVER_BMPI2C					1
+#define ENABLE_DRIVER_CHT83XX					1
+#define ENABLE_I2C								1
+#define ENABLE_OBK_SCRIPTING					1
+#define ENABLE_OBK_BERRY						1
+#define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
+#define ENABLE_LITTLEFS							1
+#define NEW_TCP_SERVER							1
+#define ENABLE_TIME_DST						1
+#define ENABLE_TIME_SUNRISE_SUNSET				1
+#define ENABLE_TIME_PMNTP 					1
+#define ENABLE_DRIVER_MAX72XX					1
 
 #elif WINDOWS
 
@@ -607,6 +632,14 @@
 // #define ENABLE_BL_TWIN						1
 // allow moving average energy calculation +180 bytes
 // #define ENABLE_BL_MOVINGAVG					1
+#endif
+
+#if !(PLATFORM_TR6260 || PLATFORM_RTL87X0C || CONFIG_IDF_TARGET_ESP32C3)	// its too big for these platforms
+#define ENABLE_TIME_DST						1
+#define ENABLE_TIME_SUNRISE_SUNSET				1
+#define ENABLE_TIME_PMNTP 					1
+#define ENABLE_DRIVER_MAX72XX					1
+#define ENABLE_DRIVER_DS3231					1
 #endif
 
 // closing OBK_CONFIG_H
