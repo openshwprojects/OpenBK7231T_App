@@ -107,24 +107,25 @@ static void UTCP_RX_Thd(void* param)
 
 		if(client_fd == INVALID_SOCK) goto exit;
 
-		rtos_delay_milliseconds(5);
-		while(1)
-		{
-            ret = recv(client_fd, buffer, sizeof(buffer), 0x08);
-			if(ret <= 0){
-                break;
-            }
+        int total = 0;
+        while ((ret = recv(socket, &buffer[total], sizeof (buffer) - total, 0x08)) > 0)
+        {
+            total += ret;
+            rtos_delay_milliseconds(10);
+        }
+        if(total>0){
 #if UTCP_DEBUG
-			char data[ret * 2];
-			char* p = data;
-			for(int i = 0; i < ret; i++)
-			{
-				sprintf(p, "%02X", buffer[i]);
-				p += 2;
-			}
-			ADDLOG_EXTRADEBUG(LOG_FEATURE_DRV, "%d bytes TCP RX->UART TX: %s", ret, data);
+        char data[total * 2];
+        char* p = data;
+        for(int i = 0; i < total; i++)
+        {
+            sprintf(p, "%02X", buffer[i]);
+            p += 2;
+        }
+        ADDLOG_EXTRADEBUG(LOG_FEATURE_DRV, "%d bytes TCP RX->UART TX: %s", ret, data);
 #endif
-			for(int i = 0; i < ret; i++)
+
+			for(int i = 0; i < total; i++)
 			{
 				UART_SendByte(buffer[i]);
 			}
@@ -137,7 +138,7 @@ static void UTCP_RX_Thd(void* param)
 		// ret == -1 and socket error == EAGAIN when no data received for nonblocking
 		if((ret == -1) && (errno == EAGAIN))
 			continue;
-		else if(ret <= 0)
+		else if(total <= 0)
 		{
 			ADDLOG_DEBUG(LOG_FEATURE_DRV, "ret: %i, errno: %i", ret, errno);
 			goto exit;
