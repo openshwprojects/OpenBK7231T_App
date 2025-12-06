@@ -21,6 +21,21 @@
 #else
 #define STACK_SIZE				3584
 #endif
+
+#if PLATFORM_ESPIDF
+#include "freertos/task.h"
+#define noInterrupts() portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;taskENTER_CRITICAL(&mux)
+#define interrupts() taskEXIT_CRITICAL(&mux)
+#elif LINUX || WINDOWS
+#define noInterrupts()
+#define interrupts()
+#else
+#include <task.h>
+#define noInterrupts() taskENTER_CRITICAL()
+#define interrupts() taskEXIT_CRITICAL()
+#endif
+
+
 extern int Main_HasWiFiConnected();
 static uint16_t buf_size = DEFAULT_BUF_SIZE;
 static int g_conn_channel = -1;
@@ -125,10 +140,12 @@ static void UTCP_RX_Thd(void* param)
         ADDLOG_EXTRADEBUG(LOG_FEATURE_DRV, "%d bytes TCP RX->UART TX: %s", ret, data);
 #endif
 
+noInterrupts();
 			for(int i = 0; i < total; i++)
 			{
 				UART_SendByte(buffer[i]);
 			}
+interrupts();
 		}
 		if(tx_closed)
 		{
