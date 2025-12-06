@@ -129,23 +129,13 @@ static void UTCP_RX_Thd(void* param)
             rtos_delay_milliseconds(10);
         }
         if(total>0){
-#if UTCP_DEBUG
-        char data[total * 2];
-        char* p = data;
-        for(int i = 0; i < total; i++)
-        {
-            sprintf(p, "%02X", buffer[i]);
-            p += 2;
-        }
-        ADDLOG_EXTRADEBUG(LOG_FEATURE_DRV, "%d bytes TCP RX->UART TX: %s", ret, data);
-#endif
-
-noInterrupts();
+            noInterrupts();
 			for(int i = 0; i < total; i++)
 			{
 				UART_SendByte(buffer[i]);
 			}
-interrupts();
+            UART_SendByte(5);
+            interrupts();
 		}
 		if(tx_closed)
 		{
