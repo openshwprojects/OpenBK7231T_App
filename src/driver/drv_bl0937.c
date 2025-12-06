@@ -949,17 +949,17 @@ void BL0937_RunEverySecond(void)
 
 //		g_ntpTime = (time_t)NTP_GetCurrentTime();
 		ltm = gmtime(&g_ntpTime);
-		static int offs_ntp_diff; 
+		static int offs_ntp_diff=0; 
 		static int diff_ntp_secelap;
 		static int diff_ntp_stamp;
-		diff_ntp_secelap = (int)(g_ntpTime - g_secondsElapsed);
-		if ( g_secondsElapsed < 300 && diff_ntp_secelap > 1764000000 ) { //init once
+		diff_ntp_secelap = (int)(g_ntpTime - g_secondsElapsed- offs_ntp_diff);
+		if ( diff_ntp_secelap > 1764000000 && offs_ntp_diff < 86400 ) { //init once
 			offs_ntp_diff = (g_ntpTime - g_secondsElapsed);
-			diff_ntp_secelap -= offs_ntp_diff;
+//			diff_ntp_secelap -= offs_ntp_diff;
 		} else {
-			offs_ntp_diff = 0;
+//			offs_ntp_diff = 0;
 		}
-		diff_ntp_stamp = (int)(g_ntpTime - ( (pulseStampNow * portTICK_PERIOD_MS) / 1000 )) - diff_ntp_secelap;
+		diff_ntp_stamp = (int)(g_ntpTime - ( (pulseStampNow * portTICK_PERIOD_MS) / 1000 )) - offs_ntp_diff;
 		if (g_ntp_hourlast != ltm->tm_hour ) {
 			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "ts %5d ntpts %d cur diff secelap %d pulsestamp %d\n", g_secondsElapsed
 				, g_ntpTime, diff_ntp_secelap, diff_ntp_stamp);
@@ -992,7 +992,13 @@ void BL0937_RunEverySecond(void)
 		#endif
 		} else {
 		}
-	}
+/*		if ( g_secondsElapsed % 30 == 0 ) {
+			addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER, "ts %5d ntpts %d offs %d cur diff secelap %d pulsestamp %d enbl %d lasthour %d ntphour %d\n", g_secondsElapsed
+				,g_ntpTime, offs_ntp_diff, diff_ntp_secelap, diff_ntp_stamp, g_enable_sendtimestamps, g_ntp_hourlast, ltm->tm_hour);
+			
+		}
+*/
+		}
 #endif
 }
 // close ENABLE_DRIVER_BL0937
