@@ -555,7 +555,7 @@
 //#define ENABLE_OBK_BERRY						1
 //#define ENABLE_DRIVER_CHARTS					1
 //#define ENABLE_DRIVER_OPENWEATHERMAP			1
-//#define ENABLE_DRIVER_DHT						1
+#define ENABLE_DRIVER_DHT						1
 
 
 
