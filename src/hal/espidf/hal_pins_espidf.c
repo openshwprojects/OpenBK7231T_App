@@ -312,7 +312,7 @@ espPinMapping_t g_pins[] = {
 
 #elif PLATFORM_ESP8266
 
-*/espPinMapping_t g_pins[] = {
+/*espPinMapping_t g_pins[] = {
 	{ "IO0", GPIO_NUM_0, false }, // 0
 	{ "IO1", GPIO_NUM_1, false }, // 1
 	{ "IO2", GPIO_NUM_2, false }, // 2
