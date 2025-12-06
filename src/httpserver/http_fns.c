@@ -472,6 +472,7 @@ int http_fn_index(http_request_t* request) {
 
 		role = PIN_GetPinRoleForPinIndex(i);
 
+#if ENABLE_DRIVER_DHT
 		if (IS_PIN_DHT_ROLE(role)) {
 			// DHT pin has two channels - temperature and humidity
 			poststr(request, "<tr><td>");
@@ -486,6 +487,7 @@ int http_fn_index(http_request_t* request) {
 			}
 			poststr(request, "</td></tr>");
 		}
+#endif
 	}
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		const char **types;

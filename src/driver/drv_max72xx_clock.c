@@ -474,8 +474,7 @@ void Clock_Send(int type) {
 			// failed - exit early, do not change string
 			return;
 		}
-//		sprintf(time, "T: %iC    ", (int)val);
-		sprintf(time, "0123456789");
+		sprintf(time, "T: %iC    ", (int)val);
 	}
 
 //	CMD_ExecuteCommandArgs("MAX72XX_Print", time, 0);
@@ -500,7 +499,7 @@ static unsigned int cycle = 0;
 
 void Run_NoAnimation() {
 	cycle+=4;
-	if (cycle < 0) {
+	if (cycle < 10) {
 //		g_bdisptime = false;
 		Clock_SendDate();
 	}
