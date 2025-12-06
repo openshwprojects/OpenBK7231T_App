@@ -107,7 +107,7 @@ static void UTCP_RX_Thd(void* param)
 
 		if(client_fd == INVALID_SOCK) goto exit;
 		ret = recv(client_fd, buffer, sizeof(buffer), 0);
-		if(ret > 0)
+		while(ret > 0)
 		{
 #if UTCP_DEBUG
 			char data[ret * 2];
@@ -123,6 +123,7 @@ static void UTCP_RX_Thd(void* param)
 			{
 				UART_SendByte(buffer[i]);
 			}
+            ret = recv(client_fd, buffer, sizeof(buffer), 0);
 		}
 		else if(tx_closed)
 		{
