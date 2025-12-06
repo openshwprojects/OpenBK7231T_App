@@ -501,22 +501,22 @@ static unsigned int cycle = 0;
 void Run_NoAnimation() {
 	cycle+=4;
 	if (cycle < 0) {
-		g_bdisptime = false;
+//		g_bdisptime = false;
 		Clock_SendDate();
 	}
-//	else if(cycle < 20) {
-	else {
+	else if(cycle < 20) {
+//	else {
 		g_bdisptime = true;
 		Clock_SendTime();
 	}
-/*
+
 	else if (cycle < 30) {
 		Clock_SendHumidity();
 	}
 	else {
 		Clock_SendTemperature();
 	}
-*/
+
 	CMD_ExecuteCommandArgs("MAX72XX_refresh", "", 0);
 	cycle %= 40;
 }
@@ -625,16 +625,19 @@ void DRV_MAX72XX_Clock_OnEverySecond() {
 	if (g_animated == false) {
 		Run_NoAnimation();
 	}
-	ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - DRV_MAX72XX_Clock_OnEverySecond() -- g_QuickTickCount=%i  (g_TimeSentCount=%i)\n",g_QuickTickCount, g_TimeSentCount);
+//	ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - DRV_MAX72XX_Clock_OnEverySecond() -- g_QuickTickCount=%i  (g_TimeSentCount=%i)\n",g_QuickTickCount, g_TimeSentCount);
 }
 
 void DRV_MAX72XX_Clock_RunFrame() {
 	if (g_animated) {
 		Run_Animated();
 	}
+/*
 	if (g_bdisptime && ! (g_QuickTickCount++ % 3) ){
 		Clock_Send(CLOCK_TIME);
 	}
+*/
+
 }
 /*
 Config for my clock with IR
