@@ -547,55 +547,55 @@
     "name": "ADC_Button",
     "title": "TODO",
     "descr": "Single ADC with multiple buttons connected.d",
-    "enum": "ADC_Button",
+    "enum": "IOR_ADC_Button",
     "file": "new_pins.h",
     "driver": ""
   },
   {
     "name": "GN6932_CLK",
     "title": "TODO",
-    "descr": "QQQ",
-    "enum": "GN6932_CLK",
+    "descr": "GN6932 LED Display Driver - Clock pi",
+    "enum": "IOR_GN6932_CLK",
     "file": "new_pins.h",
     "driver": ""
   },
   {
     "name": "GN6932_DAT",
     "title": "TODO",
-    "descr": "QQQ",
-    "enum": "GN6932_DAT",
+    "descr": "GN6932 LED Display Driver - Data pin",
+    "enum": "IOR_GN6932_DAT",
     "file": "new_pins.h",
     "driver": ""
   },
   {
     "name": "GN6932_STB",
     "title": "TODO",
-    "descr": "QQQ",
-    "enum": "GN6932_STB",
+    "descr": "GN6932 LED Display Driver - STB pin (Latch Enable)",
+    "enum": "IOR_GN6932_STB",
     "file": "new_pins.h",
     "driver": ""
   },
   {
     "name": "TM1638_CLK",
     "title": "TODO",
-    "descr": "QQQ",
-    "enum": "TM1638_CLK",
+    "descr": "TM1638 8x7 Segment Display - Clock pin",
+    "enum": "IOR_TM1638_CLK",
     "file": "new_pins.h",
     "driver": ""
   },
   {
     "name": "TM1638_DAT",
     "title": "TODO",
-    "descr": "QQQ",
-    "enum": "TM1638_DAT",
+    "descr": "TM1638 8x7 Segment Display - data pin",
+    "enum": "IOR_TM1638_DAT",
     "file": "new_pins.h",
     "driver": ""
   },
   {
     "name": "TM1638_STB",
     "title": "TODO",
-    "descr": "QQQ",
-    "enum": "TM1638_STB",
+    "descr": "TM1638 8x7 Segment Display - STB pin",
+    "enum": "IOR_TM1638_STB",
     "file": "new_pins.h",
     "driver": ""
   },
@@ -610,24 +610,24 @@
   {
     "name": "KP18058_CLK",
     "title": "TODO",
-    "descr": "QQQ",
-    "enum": "KP18058_CLK",
+    "descr": "KP18058 LED linear constant current dimming chip with I2C interface - CLK pin",
+    "enum": "IOR_KP18058_CLK",
     "file": "new_pins.h",
     "driver": ""
   },
   {
     "name": "KP18058_DAT",
     "title": "TODO",
-    "descr": "QQQ",
-    "enum": "KP18058_DAT",
+    "descr": "KP18058 LED linear constant current dimming chip with I2C interface - DATA pin",
+    "enum": "IOR_KP18058_DAT",
     "file": "new_pins.h",
     "driver": ""
   },
   {
-    "name": "DS1820",
+    "name": "DS1820_IO",
     "title": "TODO",
     "descr": "vers simple OneWire Temp sensor DS1820",
-    "enum": "DS1820_IO",
+    "enum": "IOR_DS1820_IO",
     "file": "new_pins.h",
     "driver": ""
   },
@@ -635,7 +635,7 @@
     "name": "PWM_ScriptOnly",
     "title": "TODO",
     "descr": "",
-    "enum": "PWM_ScriptOnly",
+    "enum": "IOR_PWM_ScriptOnly",
     "file": "new_pins.h",
     "driver": ""
   },
@@ -643,9 +643,57 @@
     "name": "PWM_ScriptOnly_n",
     "title": "TODO",
     "descr": "",
-    "enum": "PWM_ScriptOnly_n",
+    "enum": "IOR_PWM_ScriptOnly_n",
     "file": "new_pins.h",
     "driver": ""
+  },
+  {
+    "name": "Counter_f",
+    "title": "TODO",
+    "descr": "",
+    "enum": "IOR_Counter_f",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "Counter_r",
+    "title": "TODO",
+    "descr": "",
+    "enum": "IOR_Counter_r",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "IRRecv_nPup",
+    "title": "TODO",
+    "descr": "IRRecv without pull-up",
+    "enum": "IOR_IRRecv_nPup",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "StripState",
+    "title": "TODO",
+    "descr": "This is an output pin which has current led_enableAll value",
+    "enum": "IOR_StripState",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "StripState_n",
+    "title": "TODO",
+    "descr": "This is an output pin which has negation of current led_enableAll value",
+    "enum": "IOR_StripState_n",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "HLW8112_SCSN",
+    "title": "HLW8112 SCSN Pin",
+    "descr": "SCSN pin for HLW8112 SPI energy measuring devices.",
+    "enum": "IOR_HLW8112_SCSN",
+    "file": "new_pins.h",
+    "driver": "HLW8112SPI"
   },
   {
     "name": "Total_Options",
@@ -654,13 +702,5 @@
     "enum": "IOR_Total_Options",
     "file": "new_pins.h",
     "driver": ""
-  },
-  {
-    "name": "HLW8112_SCSN",
-    "title": "HLW8112 SCSN Pin",
-    "descr": "SCSN pin for HLW8112 SPI energy measuring devices. ",
-    "enum": "IOR_BHLW8112_SCSN",
-    "file": "new_pins.h",
-    "driver": "HLW8112SPI"
   }
 ]

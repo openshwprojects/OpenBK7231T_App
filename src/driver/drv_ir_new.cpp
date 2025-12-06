@@ -858,7 +858,7 @@ extern "C" void DRV_IR_Init() {
 
 			//cmddetail:{"name":"IRSend","args":"[PROT-ADDR-CMD-REP]",
 			//cmddetail:"descr":"Sends IR commands in the form PROT-ADDR-CMD-REP, e.g. NEC-1-1A-0",
-			//cmddetail:"fn":"IR_Send_Cmd","file":"driver/drv_ir.cpp","requires":"",
+			//cmddetail:"fn":"IR_Send_Cmd","file":"driver/drv_ir_new.cpp","requires":"",
 			//cmddetail:"examples":""}
 			CMD_RegisterCommand("IRSend", IR_Send_Cmd, NULL);
 			//cmddetail:{"name":"IRAC","args":"[TODO]",

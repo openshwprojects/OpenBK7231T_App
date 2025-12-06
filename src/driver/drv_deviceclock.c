@@ -486,15 +486,15 @@ void TIME_Init() {
 	TIME_Init_Events();
 #endif
 #if ENABLE_TIME_DST
-	//cmddetail:{"name":"TIME_setDST","args":" Rule# [1/2] nthWeek month day hour DSToffset [additional minutes _after_ this Point: <DST-Offset> for "start" of DST, 0 for "end" of DST]",
-	//cmddetail:"descr":"Checks, if actual time is during DST or not.",
-	//cmddetail:"fn":"CLOCK_CalcDST","file":"driver/drv_deviceclock.c","requires":"",
-	//cmddetail:"examples":"TIME_setDST 0 3 1 2 1 0 10 1 3 0	-- 1st rule: last_week March sunday 2_o_clock 1_hour_DST_after_this_time -- 2nd_rule: last_week October sunday 3_o_clock 0_hours_DST_after_this_time "}
+	//cmddetail:{"name":"time_setDST","args":" Rule# [1/2] nthWeek month day hour DSToffset [additional minutes _after_ this Point: <DST-Offset> for 'start' of DST, 0 for 'end' of DST]",
+	//cmddetail:"descr":"Sets daylight saving time (DST).",
+	//cmddetail:"fn":"CMD_TIME_SetDST","file":"driver/drv_deviceclock.c","requires":"",
+	//cmddetail:"examples":"TIME_setDST 0 3 1 2 1 0 10 1 3 0 \n     -- 1st rule: last_week March sunday 2_o_clock 1_hour_DST_after_this_time \n     -- 2nd_rule: last_week October sunday 3_o_clock 0_hours_DST_after_this_time "}
     CMD_RegisterCommand("time_setDST",CMD_TIME_SetDST, NULL);
-	//cmddetail:{"name":"CLOCK_calcDST","args":" Depreciated! Only for backward compatibility! Please use 'TIME_setDST' in the future!",
+	//cmddetail:{"name":"clock_calcDST","args":" Depreciated! Only for backward compatibility! Please use 'TIME_setDST' in the future!",
 	//cmddetail:"descr":"Sets DST settings.",
-	//cmddetail:"fn":"CLOCK_CalcDST","file":"driver/drv_deviceclock.c","requires":"",
-	//cmddetail:"examples":"CLOCK_calcDST 0 10 1 3 0 3 1 2 1 	-- DST-End: last_week(0) October(10) sunday(1) 3_o_clock(3)  - DST-Start: last_week(0) March(3) sunday(1) 2_o_clock(2) 1_hour_DST_offset"}
+	//cmddetail:"fn":"CMD_TIME_CalcDST","file":"driver/drv_deviceclock.c","requires":"",
+	//cmddetail:"examples":"CLOCK_calcDST 0 10 1 3 0 3 1 2 1 \n     -- DST-End: last_week(0) October(10) sunday(1) 3_o_clock(3) \n     -- DST-Start: last_week(0) March(3) sunday(1) 2_o_clock(2) 1_hour_DST_offset"}
     CMD_RegisterCommand("clock_calcDST",CMD_TIME_CalcDST, NULL);
     
     dst_config.DSTinitialized = 0;
