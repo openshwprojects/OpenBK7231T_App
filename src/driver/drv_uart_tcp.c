@@ -305,8 +305,9 @@ void UART_TCP_Init()
 	g_conn_channel = Tokenizer_GetArgIntegerDefault(3, -1);
 	int flowcontrol = Tokenizer_GetArgIntegerDefault(4, 0);
 	int stop_bits = Tokenizer_GetArgIntegerDefault(5, 0);
+	int data_width = Tokenizer_GetArgIntegerDefault(6, 3);
 
-	UART_InitUART(g_baudRate, 0,stop_bits, flowcontrol > 0 ? true : false);
+	UART_InitUART(g_baudRate, 0,stop_bits,data_width, flowcontrol > 0 ? true : false);
 	UART_InitReceiveRingBuffer(buf_size * 2);
 
 	if(g_start_thread != NULL)

@@ -134,7 +134,7 @@ void CSE7761_Init(void) {
    //             DEFAULT_POWER_CAL);
 
 	// 8 data bits, even parity, 1 stop bit
-	UART_InitUART(CSE7761_BAUD_RATE, 1,1, false);
+	UART_InitUART(CSE7761_BAUD_RATE, 1,1,3, false);
 	UART_InitReceiveRingBuffer(512);
 }
 

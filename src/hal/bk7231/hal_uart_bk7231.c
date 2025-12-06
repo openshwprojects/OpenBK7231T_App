@@ -28,12 +28,12 @@ void HAL_UART_SendByteEx(int auartindex, byte b)
 	bk_send_byte(bk_port_from_portindex(auartindex), b);
 }
 
-int HAL_UART_InitEx(int auartindex, int baud, int parity,int stop_bits, bool hwflowc, int txOverride, int rxOverride)
+int HAL_UART_InitEx(int auartindex, int baud, int parity,int stop_bits,int data_width, bool hwflowc, int txOverride, int rxOverride)
 {
     bk_uart_config_t config;
 
     config.baud_rate = baud;
-    config.data_width = 0x03;
+    config.data_width = data_width;
     config.parity = parity;    //0:no parity,1:odd,2:even
     config.stop_bits = stop_bits;   //0:1bit,1:2bit
     config.flow_control = hwflowc == false ? 0 : 3;   //FLOW_CTRL_DISABLED or FLOW_CTRL_RTS_CTS
