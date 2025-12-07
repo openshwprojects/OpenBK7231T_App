@@ -24,7 +24,7 @@ set_cmd_t m_set_cmd = { 0 };
 get_cmd_resp_t m_get_cmd_resp = { 0 };
 int g_buzzer = 1;
 int g_disp = 1;
-int g_gen = 0;
+int g_gen = 1;
 
 typedef enum {
 	CLIMATE_MODE_OFF,
