@@ -134,7 +134,6 @@ static void UTCP_RX_Thd(void* param)
 			{
 				UART_SendByte(buffer[i]);
 			}
-            UART_SendByte(5);
             interrupts();
 		}
 		if(tx_closed)
