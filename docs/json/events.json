@@ -1,7 +1,7 @@
 [
   {
-    "name": "channel&lt;X&gt;",
-    "CMD": "CMD_EVENT_CHANGE_CHANNEL0&lt;X&gt;"
+    "name": "channel<X>",
+    "CMD": "CMD_EVENT_CHANGE_CHANNEL0<X>"
   },
   {
     "name": "noPingTime",

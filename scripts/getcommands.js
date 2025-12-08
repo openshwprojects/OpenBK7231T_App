@@ -308,13 +308,13 @@ function getFolder(name, cb) {
 							if (/if.*str[ni]*cmp/.test(line2)) {
 								let Ename = line2.replace(/if.*str[ni]*cmp\(s,[ ]*"/,"").replace(/"[^"]*$/,'');
 								if (Ename=='channel'){
-									Ename=Ename.replace("channel","channel<X>").replace("<","&lt;").replace(">","&gt;"); // special case for channels and its number (...atoi ...)
+									Ename=Ename.replace("channel","channel<X>"); // special case for channels and its number (...atoi ...)
 								}
 								let l = lines[++j].trim();
 								i++;
 								let CMD = l.replace(/^.*return /,"").replace(";","");
 								if (CMD.startsWith('CMD_EVENT_CHANGE_CHANNEL0')){
-									CMD=CMD.replace(/[ ]*\+[ ]*atoi.*/,'<X>').replace("<","&lt;").replace(">","&gt;"); // special case for channels and its number (...atoi ...)
+									CMD=CMD.replace(/[ ]*\+[ ]*atoi.*/,'<X>'); // special case for channels and its number (...atoi ...)
 								}
 								let event = {
 									name: Ename,
@@ -924,7 +924,7 @@ for (let i = 0; i < evnts.length; i++) {
 	let ev = evnts[i];
 
 
-	let textshort = `| ${ev.name} | ${ev.CMD}${ev.ifdef ? '\nonly if defined:\n' + ev.ifdef.replace(/\|/g,"\\|") : ''} |`;
+	let textshort = `| ${ev.name.replace("<","&lt;").replace(">","&gt;")} | ${ev.CMD.replace("<","&lt;").replace(">","&gt;")}${ev.ifdef ? '\nonly if defined:\n' + ev.ifdef.replace(/\|/g,"\\|") : ''} |`;
 	// allow multi-row entries in table entries.
 	textshort = textshort.replace(/\n/g, '<br/>');
 	evntsmdshort += textshort +'\n' ;
