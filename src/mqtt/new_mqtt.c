@@ -13,6 +13,7 @@
 #include "../hal/hal_wifi.h"
 #include "../driver/drv_public.h"
 #include "../driver/drv_ntp.h"
+#include "../driver/drv_deviceclock.h"
 #include "../driver/drv_tuyaMCU.h"
 #include "../hal/hal_ota.h"
 #ifndef WINDOWS
@@ -1555,7 +1556,7 @@ commandResult_t MQTT_PublishFile(const void* context, const char* cmd, const cha
 	int flags = 0;
 	byte*data;
 
-	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS);
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS | TOKENIZER_EXPAND_EARLY);
 
 	if (Tokenizer_GetArgsCount() < 2) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_MQTT, "Publish command requires two arguments (topic and value)");
@@ -1567,7 +1568,7 @@ commandResult_t MQTT_PublishFile(const void* context, const char* cmd, const cha
 	if (Tokenizer_GetArgIntegerDefault(2, 0) != 0) {
 		flags = OBK_PUBLISH_FLAG_RAW_TOPIC_NAME;
 	}
-	data = LFS_ReadFile(fname);
+	data = LFS_ReadFileExpanding(fname);
 	if (data) {
 		ret = MQTT_PublishMain_StringString(topic, (const char*)data, flags);
 		free(data);
@@ -1995,6 +1996,10 @@ void MQTT_init()
 #endif
 
 
+	//cmddetail:{"name":"publishDriver","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"MQTT_PublishCommandDriver","file":"mqtt/new_mqtt.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("publishDriver", MQTT_PublishCommandDriver, NULL);
 }
 static float getInternalTemperature() {
@@ -2063,19 +2068,31 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 
 
 	case PUBLISHITEM_SELF_DATETIME:
-		//Drivers are only built on BK7231 chips
+// TIME_GetCurrentTime() is allways present
+/*		//Drivers are only built on BK7231 chips
 #ifndef OBK_DISABLE_ALL_DRIVERS
+
 		if (DRV_IsRunning("NTP")) {
-			sprintf(dataStr, "%d", NTP_GetCurrentTime());
-			return MQTT_DoItemPublishString("datetime", dataStr);
-		}
+*/
+#ifdef PLATFORM_ESP8266
+		// while all other platforms will accept uint32_t as long unsigned, ESP8266 needs %u 
+		// biuild fails otherwise because of -Werror=format
+		// src/mqtt/new_mqtt.c:2036:24: error: format '%ld' expects argument of type 'long int', but argument 3 has type 'uint32_t' {aka 'unsigned int'} [-Werror=format=]
+		// al other ESP:
+		/// src/mqtt/new_mqtt.c:2036:44: error: format '%d' expects argument of type 'int', but argument 3 has type 'uint32_t' {aka 'long unsigned int'} [-Werror=format=]
+		sprintf(dataStr, "%u", TIME_GetCurrentTime());
+#else
+		sprintf(dataStr, "%lu", TIME_GetCurrentTime());
+#endif
+		return MQTT_DoItemPublishString("datetime", dataStr);
+/*		}
 		else {
 			return OBK_PUBLISH_WAS_NOT_REQUIRED;
 		}
 #else
 		return OBK_PUBLISH_WAS_NOT_REQUIRED;
 #endif
-
+*/
 	case PUBLISHITEM_SELF_SOCKETS:
 		sprintf(dataStr, "%d", LWIP_GetActiveSockets());
 		return MQTT_DoItemPublishString("sockets", dataStr);
@@ -2575,7 +2592,9 @@ struct tm* mbedtls_platform_gmtime_r(const mbedtls_time_t* tt, struct tm* tm_buf
 		}			
 		return ltm;
 	}
-	return gmtime_r((time_t*)&g_ntpTime, tm_buf);
+	time_t ntpTime;
+	ntpTime=(time_t)TIME_GetCurrentTime();
+	return gmtime_r((time_t*)&ntpTime, tm_buf);
 }
 #endif  //MBEDTLS_PLATFORM_GMTIME_R_ALT
 

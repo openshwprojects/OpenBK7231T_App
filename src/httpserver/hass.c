@@ -337,6 +337,31 @@ HassDeviceInfo* hass_createSelectEntityIndexed(const char* state_topic, const ch
 		value_template, command_template);
 }
 
+
+HassDeviceInfo* hass_createGarageEntity(const char* state_topic, const char* command_topic,
+	const char *title) {
+	HassDeviceInfo* info = hass_init_device_info(HASS_GARAGE, 0, NULL, NULL, 0, title);
+
+	cJSON_AddStringToObject(info->root, "name", title);
+	cJSON_AddStringToObject(info->root, "unique_id", title);
+	cJSON_AddStringToObject(info->root, "device_class", "garage");
+	cJSON_AddStringToObject(info->root, "state_topic", state_topic);
+	cJSON_AddStringToObject(info->root, "command_topic", command_topic);
+	// publish [Topic] [Value]
+	// publish 1 open
+	// publish 1 closed
+	// publish 1 opening  
+	// obk0696FB33/[Topic]/get
+	cJSON_AddStringToObject(info->root, "payload_open", "OPEN");
+	cJSON_AddStringToObject(info->root, "payload_close", "CLOSE");
+	cJSON_AddStringToObject(info->root, "payload_stop", "STOP");
+	cJSON_AddStringToObject(info->root, "state_open", "open");
+	cJSON_AddStringToObject(info->root, "state_closed", "closed");
+
+	sprintf(info->channel, "cover/%s/config", info->unique_id);
+	return info;
+}
+
 HassDeviceInfo* hass_createSelectEntityIndexedCustom(const char* state_topic, const char* command_topic, int numoptions,
 	const char* options[], const char* title, char* value_template, char* command_template) {
 	HassDeviceInfo* info = hass_init_device_info(HASS_SELECT, 0, NULL, NULL, 0, title);
@@ -575,6 +600,9 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 			break;
 		case HASS_IP:
 			sprintf(g_hassBuffer, "IP");
+			break; 
+		case HASS_GARAGE:
+			sprintf(g_hassBuffer, "Garage");
 			break;
 		case ENERGY_SENSOR:
 			isSensor = true;
@@ -593,7 +621,8 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 		}
 	}
 	if (title) {
-		if (type!=HASS_BUTTON) strcat(g_hassBuffer, "_");
+		if (type!=HASS_BUTTON) 
+			strcat(g_hassBuffer, "_");
 		strcat(g_hassBuffer, title);
 	}
 	cJSON_AddStringToObject(info->root, "name", g_hassBuffer);
@@ -611,7 +640,7 @@ HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* p
 		}
 	}
 
-	if (!isSensor && type != HASS_TEXTFIELD) {	//Sensors (except binary_sensor) don't use payload 
+	if (!isSensor && type != HASS_TEXTFIELD && type != HASS_GARAGE) {	//Sensors (except binary_sensor) don't use payload 
 		if(type == HASS_BUTTON) {
 			cJSON_AddStringToObject(info->root, "payload_press", payload_on);
 		}

@@ -15,7 +15,7 @@ void Test_UART_RunEverySecond(void) {
 
 }
 
-void Test_UART_AppendInformationToHTTPIndexPage(http_request_t *request) {
+void Test_UART_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState) {
 
 }
 

@@ -21,7 +21,8 @@
 #include "be_repl.h"
 #include "be_vm.h"
 #include "berry.h"
-
+#include "../libraries/obktime/obktime.h"	// for time functions
+#include "../driver/drv_deviceclock.h"
 bvm *g_vm = NULL;
 
 typedef struct berryInstance_s
@@ -326,7 +327,7 @@ int be_get(bvm *vm) {
 		const char *name = be_tostring(vm, 1);
 		if (name[0] == '$') {
 			float ret;
-			CMD_ExpandConstant(name, 0, &ret);
+			CMD_ExpandConstantFloat(name, 0, &ret);
 			be_pushreal(vm, ret);
 			be_return(vm);
 		}
@@ -357,6 +358,7 @@ int be_gmtime(bvm *vm) {
 		fields = "YMDhmsw"; // default all fields
 	}
 
+/*
 	ltm = gmtime(&g_ntpTime);
 
 	be_newobject(vm, "list"); // create a new list on top of the stack
@@ -377,6 +379,31 @@ int be_gmtime(bvm *vm) {
 		be_data_push(vm, -2);     // append value to list at -2
 		be_pop(vm, 1);            // pop the temporary value
 	}
+*/
+
+	TimeComponents tc;
+	tc=calculateComponents(TIME_GetCurrentTime());
+
+	be_newobject(vm, "list"); // create a new list on top of the stack
+
+	for (i = 0; fields[i]; i++) {
+		int value = 0;
+		switch (fields[i]) {
+		case 'Y': value = tc.year;   break;
+		case 'M': value = tc.month;  break;
+		case 'D': value = tc.day;    break;
+		case 'h': value = tc.hour;   break;
+		case 'm': value = tc.minute; break;
+		case 's': value = tc.second; break;
+		case 'w': value = tc.wday;   break;
+		}
+
+		be_pushint(vm, value);    // push value onto stack
+		be_data_push(vm, -2);     // append value to list at -2
+		be_pop(vm, 1);            // pop the temporary value
+	}
+
+
 
 	be_pop(vm, 1);
 	be_return(vm); // return the list on top of the stack

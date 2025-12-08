@@ -8,6 +8,7 @@ let ios = [];
 let ioindex = {};
 let drvs = [];
 let drvindex = {};
+let drvdefines = {};	// try to save the "#if ENABLE_DRIVER_XY"
 let flags = [];
 let flagindex = {};
 let cnsts = [];
@@ -376,9 +377,14 @@ function getFolder(name, cb) {
 					if (sourceFile && line.startsWith('static driver_t g_drivers[] = {')) {
 						newlines.push(lines[i]);
 						let j;
+						let lasthash="nothing yet";
 						for (j = i; j < lines.length; j++) {
 							let line2raw = lines[j];
 							let line2 = line2raw.trim();
+							if (line2.startsWith('#if')) {
+								// try finding #if ENABLE_DRIVER_XY so we can use it in cas of a duplicate driver
+								lasthash=line2;
+							} 
 							if (line2.startsWith('//drvdetail:')) {
 								let commentlines = [];
 								let j2;
@@ -400,18 +406,25 @@ function getFolder(name, cb) {
 								try {
 									let drv = JSON.parse(json);
 									if (drvindex[drv.name]) {
-										console.error('duplicate driver docs at file: ' + file + ' line: ' + line);
-										console.error(line);
+										console.error('duplicate driver docs (in "' + line + '") for drv.name="' + drv.name + '" at file: ' + file + '  --  actual line:' + line2);
+										 console.error('\tlast "#if" statement: "' + lasthash +'"'+ '\n\tfirst defined with "#if" statement: "' + drvdefines[drv.name] +'"' );
+										 let tmpcmd=drvindex[drv.name];
+										 delete tmpcmd.define;		// we added "define" on the other element, but it's not present here
+										 if (JSON.stringify(tmpcmd) == JSON.stringify(drv)) console.error('\tshould be safe to ignore, because documentation is equal!' );
+										 else console.error('\tFirst found:\n\t\t"' + JSON.stringify(tmpcmd).replace(/,\"/g,"\n\t\t\t\"")  + '"\n\tactual:\n\t\t"' + JSON.stringify(drv).replace(/,\"/g,"\n\t\t\t\"") + '"' );
+										//console.error(line);
 									} else {
+										drv.define = 'Enabled by defining "' + lasthash.replace("defined(","").replace(")","").replace(/#if[^ ]* /,"<b>") + '</b>" for your platform ';
 										drvs.push(drv);
 										drvindex[drv.name] = drv;
+										drvdefines[drv.name] = lasthash;
 									}
 								} catch (e) {
 									console.error('error in json at file: ' + file + ' line: ' + line + ' er ' + e);
 									console.error(json);
 								}
 							} else if (line2.startsWith('//')) {
-								newlines.push(line2);
+								newlines.push(line2raw);
 								continue;
 							} else if (line2.startsWith('#')) {
 								newlines.push(line2);
@@ -456,6 +469,28 @@ function getFolder(name, cb) {
 										drvindex[drv.name] = drv;
 									}
 									newlines.push(lines[j]);
+									// we found a driver definition before, so if its not a "one liner" we already copied before
+									// we need to copy the next lines, until we find the closing "},"
+									if (! lines[j].trim().endsWith('},')) {
+										let j2;
+										for (j2 = j+1; j2 < lines.length; j2++) {
+											let l = lines[j2].trim();
+											if (l.endsWith('},')) {
+												newlines.push(lines[j2]);
+												break;
+											}
+											else {
+												newlines.push(lines[j2]);
+											}
+										}
+										// move our parsing forward to skip all found
+										// arguments,  
+										// so we need to skip to j2-1 to handle the line in next loop 
+										j = j2;
+									}
+									
+									
+									
 								}
 							}
 							if (line2.endsWith('};')) {
@@ -577,12 +612,17 @@ function getFolder(name, cb) {
 						try {
 							let cmd = JSON.parse(json);
 							if (cmdindex[cmd.name]) {
-								console.error('duplicate command "' + cmd.name + '" docs at file: ' + file + ' line: ' + line);
-								console.error(line);
-							} else {
+								console.error('duplicate command "' + cmd.name + '" docs at file: ' + file + ' line: ' + line + '\n\tfirst seen in "' + cmdindex[cmd.name].file + '"');
+								tmp=cmdindex[cmd.name];	// to test, if oth are equal (despit different file) construct a helper ...
+								tmp.file = cmd.file;	// ... and set its "file" to the actual value
+								if (JSON.stringify(tmp) == JSON.stringify(cmd))	console.error('\tshould be safe to ignore, they are equal beside the file name!');
+								else {
+									console.error('\tFirst found:\n\t\t"' + JSON.stringify(cmdindex[cmd.name]).replace(/,\"/g,"\n\t\t\t\"")+ '"\n\tactual:\n\t\t"'+JSON.stringify(cmd).replace(/,\"/g,"\n\t\t\t\""));
+								}
+							}  {
 								//console.error('new command "' + cmd.name + '" docs at file: ' + file + ' line: ' + line + ' -- json='+ json );
 								if (cmd.file !== file.slice(6)) {
-									console.log('!!!! Posible wrong file location for command "' + cmd.name + '": found in file: "' + file.slice(6) + '" but claimes file: "' + cmd.file + '" - please verify! !!!!')
+									console.error('!!!! Posible wrong file location for command "' + cmd.name + '": found in file: "' + file.slice(6) + '" but claimes file: "' + cmd.file + '" - please verify! !!!!')
 									console.error('\t Posible fix: sed -i \''+ (i-3)  + ',' + (i-1) +  ' { /cmddetail:\\"fn\\":\\"' + cmd.fn + '\"/ s%'+cmd.file + "%" + file.slice(6) + '%} \'  src/' + file.slice(6))
 									console.error('\t test posible fix: sed -n \''+ (i-3)  + ',' + (i-1) +  ' {/cmddetail:\\"fn\\":\\"' + cmd.fn + '\"/ s%'+cmd.file + "%" + file.slice(6) + '% p }\'  src/' + file.slice(6))
 									
@@ -781,7 +821,7 @@ Remember that some drivers might not be yet enabled on certain platforms,
 but we can enable them for you per request. Some drivers might also be WIP.
 Do not add anything here, as it will overwritten with next rebuild.
 | Driver        | Description  |
-|:------------- | -----:|
+|:------------- |:----- |
 `;
 
 let constantsmdshort =
@@ -804,7 +844,7 @@ Also remember that commands can be put in autoexec.bat to run at startup (see We
 <br><br>
 Do not add anything here, as it will overwritten with next rebuild.
 | Command        | Arguments          | Description  |
-|:------------- |:------------- | -----:|
+|:------------- |:------------- |:----- |
 `;
 
 let mdlong =
@@ -1007,8 +1047,8 @@ for (let i = 0; i < drvs.length; i++) {
 
 	let descMore = "<br/>" + genReadMore(drv.name);
 	let descBasic = formatDesc(drv.descr);
-	let textshort = `| ${drv.name} |  ${descBasic}${descMore} |`;
-
+	let textshort = `| ${drv.name} |  ${descBasic}\n${drv.define}(for Details see [here](https://www.elektroda.com/rtvforum/topic4033833.html)).${descMore} |`;
+	
 	// allow multi-row entries in table entries.
 	textshort = textshort.replace(/\n/g, '<br/>');
 

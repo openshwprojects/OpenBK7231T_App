@@ -8,8 +8,9 @@
 #include "../hal/hal_pins.h"
 #include "drv_public.h"
 #include "drv_local.h"
-#include "drv_ntp.h"
-#include <time.h>
+#include "drv_deviceclock.h"
+//#include <time.h>
+#include "../libraries/obktime/obktime.h"	// for time functions
 
 char *my_strcat(char *p, const char *s) {
 	strcat(p, s);
@@ -29,14 +30,17 @@ enum {
 	CLOCK_HUMIDITY,
 	CLOCK_TEMPERATURE,
 };
+/*
 void Clock_Send(int type) {
 	char time[64];
 	struct tm *ltm;
 	float val;
 	char *p;
+	time_t ntpTime;
 
+	ntpTime=(time_t)TIME_GetCurrentTime();
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime(&g_ntpTime);
+	ltm = gmtime(&ntpTime);
 
 	if (ltm == 0) {
 		return;
@@ -76,6 +80,54 @@ void Clock_Send(int type) {
 
 	CMD_ExecuteCommandArgs("MAX72XX_Print", time, 0);
 }
+*/
+void Clock_Send(int type) {
+	char time[64];
+	TimeComponents tc;
+	float val;
+	char *p;
+	time_t ntpTime;
+
+	ntpTime=(time_t)TIME_GetCurrentTime();
+	// NOTE: on windows, you need _USE_32BIT_TIME_T 
+	tc=calculateComponents((uint32_t)ntpTime);
+
+	time[0] = 0;
+	p = time;
+	if (type == CLOCK_TIME) {
+		p = my_strcat(p, " ");
+		p = add_padded(p, tc.hour);
+		p = my_strcat(p, ":");
+		p = add_padded(p, tc.minute);
+		strcat(p, "   ");
+	}
+	else if (type == CLOCK_DATE) {
+		p = my_strcat(p, " ");
+		p = add_padded(p, tc.day);
+		p = my_strcat(p, ".");
+		p = add_padded(p, tc.month);
+		p = my_strcat(p, ".");
+		//p = add_padded(p, tc.year);
+		strcat(p, "   ");
+	}
+	else if (type == CLOCK_HUMIDITY) {
+		if (false==CHANNEL_GetGenericHumidity(&val)) {
+			// failed - exit early, do not change string
+			return;
+		}
+		sprintf(time, "H: %i%%   ", (int)val);
+	} 
+	else if (type == CLOCK_TEMPERATURE) {
+		if (false == CHANNEL_GetGenericTemperature(&val)) {
+			// failed - exit early, do not change string
+			return;
+		}
+		sprintf(time, "T: %iC    ", (int)val);
+	}
+
+	CMD_ExecuteCommandArgs("MAX72XX_Print", time, 0);
+}
+
 void Clock_SendTime() {
 	Clock_Send(CLOCK_TIME);
 }
@@ -108,6 +160,7 @@ void Run_NoAnimation() {
 	cycle %= 40;
 }
 static int g_del = 0;
+/*
 void Run_Animated() {
 	cycle++;
 	if (cycle < 4) {
@@ -117,9 +170,11 @@ void Run_Animated() {
 	char time[64];
 	struct tm *ltm;
 	char *p;
+	time_t ntpTime;
 
+	ntpTime=(time_t)TIME_GetCurrentTime();
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime(&g_ntpTime);
+	ltm = gmtime(&ntpTime);
 
 	if (ltm == 0) {
 		return;
@@ -142,6 +197,54 @@ void Run_Animated() {
 		p = add_padded(p, ltm->tm_mon + 1);
 		p = my_strcat(p, ".");
 		p = add_padded(p, ltm->tm_mday);
+		strcat(p, "   ");
+
+		CMD_ExecuteCommandArgs("MAX72XX_Clear", NULL, 0);
+		CMD_ExecuteCommandArgs("MAX72XX_Print", time, 0);
+		CMD_ExecuteCommandArgs("MAX72XX_refresh", "", 0);
+		g_del = 10;
+	}
+	if (g_del > 0) {
+		g_del--;
+		return;
+	}
+	CMD_ExecuteCommandArgs("MAX72XX_Scroll", "-1", 0);
+	CMD_ExecuteCommandArgs("MAX72XX_refresh", "", 0);
+}
+*/
+void Run_Animated() {
+	cycle++;
+	if (cycle < 4) {
+		return;
+	}
+	cycle = 0;
+	char time[64];
+	TimeComponents tc;
+	char *p;
+	time_t ntpTime;
+
+	ntpTime=(time_t)TIME_GetCurrentTime();
+	// NOTE: on windows, you need _USE_32BIT_TIME_T 
+	tc=calculateComponents((uint32_t)ntpTime);
+
+	int scroll = MAX72XXSingle_GetScrollCount();
+	//scroll_cycle = 0;
+	if (scroll == 0 && g_del == 0) {
+		time[0] = 0;
+		p = time;
+		p = my_strcat(p, "  ");
+
+		p = add_padded(p, tc.hour);
+		p = my_strcat(p, ":");
+		p = add_padded(p, tc.minute);
+		strcat(p, " ");
+
+		p = my_strcat(p, " ");
+		p = add_padded(p, tc.year);
+		p = my_strcat(p, ".");
+		p = add_padded(p, tc.month);
+		p = my_strcat(p, ".");
+		p = add_padded(p, tc.month);
 		strcat(p, "   ");
 
 		CMD_ExecuteCommandArgs("MAX72XX_Clear", NULL, 0);
@@ -243,6 +346,10 @@ static commandResult_t DRV_MAX72XX_Clock_Animate(const void *context, const char
 }
 void DRV_MAX72XX_Clock_Init() {
 
+	//cmddetail:{"name":"MAX72XXClock_Animate","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"DRV_MAX72XX_Clock_Animate","file":"driver/drv_max72xx_clock.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MAX72XXClock_Animate", DRV_MAX72XX_Clock_Animate, NULL);
 }
 

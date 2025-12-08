@@ -24,7 +24,7 @@ set_cmd_t m_set_cmd = { 0 };
 get_cmd_resp_t m_get_cmd_resp = { 0 };
 int g_buzzer = 1;
 int g_disp = 1;
-int g_gen = 0;
+int g_gen = 1;
 
 typedef enum {
 	CLIMATE_MODE_OFF,
@@ -788,6 +788,7 @@ void TCL_Init(void) {
 	//cmddetail:{"name":"Gen","args":"Gen",
 	//cmddetail:"descr":"",
 	//cmddetail:"fn":"Gen","file":"driver/drv_tclAC.c","requires":"",
+	//cmddetail:"fn":"CMD_Gen","file":"driver/drv_tclAC.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Gen", CMD_Gen, NULL);
 	

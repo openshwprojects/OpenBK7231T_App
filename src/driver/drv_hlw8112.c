@@ -481,15 +481,51 @@ static commandResult_t HLW8112_a(const void *context, const char *cmd, const cha
 #endif
 
 void HLW8112_addCommads(void){
+	//cmddetail:{"name":"HLW8112_SetClock","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"HLW8112_SetClock","file":"driver/drv_hlw8112.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("HLW8112_SetClock", HLW8112_SetClock, NULL);
+	//cmddetail:{"name":"HLW8112_SetResistorGain","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"HLW8112_SetResistorGain","file":"driver/drv_hlw8112.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("HLW8112_SetResistorGain", HLW8112_SetResistorGain, NULL);
+	//cmddetail:{"name":"HLW8112_SetEnergyStat","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"HLW8112_SetEnergyStat","file":"driver/drv_hlw8112.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("HLW8112_SetEnergyStat", HLW8112_SetEnergyStat, NULL);
+	//cmddetail:{"name":"clear_energy","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"HLW8112_ClearEnergy","file":"driver/drv_hlw8112.c","requires":"",
+	//cmddetail:"examples":""}
     CMD_RegisterCommand("clear_energy", HLW8112_ClearEnergy, NULL);
 #if HLW8112_SPI_RAWACCESS
+	//cmddetail:{"name":"HLW8112_write_reg","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"HLW8112_write_reg","file":"driver/drv_hlw8112.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HLW8112_write_reg", HLW8112_write_reg, NULL);
+	//cmddetail:{"name":"HLW8112_read_reg","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"HLW8112_read_reg","file":"driver/drv_hlw8112.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HLW8112_read_reg", HLW8112_read_reg, NULL);
+	//cmddetail:{"name":"HLW8112_print_coeff","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"HLW8112_print_coeff","file":"driver/drv_hlw8112.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HLW8112_print_coeff", HLW8112_print_coeff, NULL);
+	//cmddetail:{"name":"HLW8112_c","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"HLW8112_c","file":"driver/drv_hlw8112.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HLW8112_c", HLW8112_c, NULL);
+	//cmddetail:{"name":"HLW8112_a","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"HLW8112_a","file":"driver/drv_hlw8112.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("HLW8112_a", HLW8112_a, NULL);
 #endif
 }

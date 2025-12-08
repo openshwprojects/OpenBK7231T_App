@@ -14,6 +14,8 @@
 #include "driver/drv_hlw8112.h"
 //#include "ir/ir_local.h"
 
+#include "driver/drv_deviceclock.h"
+
 // Commands register, execution API and cmd tokenizer
 #include "cmnds/cmd_public.h"
 
@@ -699,6 +701,12 @@ float g_wifi_temperature = 0;
 static byte g_secondsSpentInLowMemoryWarning = 0;
 void Main_OnEverySecond()
 {
+#if PLATFORM_W600 || PLATFORM_W800
+#define TimeOut_t xTimeOutType 
+#endif
+#if ! ( WINDOWS || PLATFORM_TXW81X  || PLATFORM_RDA5981) 
+	TimeOut_t myTimeout;	// to get uptime from xTicks - not working on WINDOWS and TXW81X and RDA5981
+#endif
 	int newMQTTState;
 	const char* safe;
 	int i;
@@ -870,8 +878,14 @@ void Main_OnEverySecond()
 			}
 		}
 	}
-
+#if (WINDOWS || PLATFORM_TXW81X || PLATFORM_RDA5981)
 	g_secondsElapsed++;
+#elif defined(PLATFORM_ESPIDF)
+	g_secondsElapsed = (int)(esp_timer_get_time() / 1000000);
+#else
+	vTaskSetTimeOutState( &myTimeout );
+	g_secondsElapsed = (int)((((uint64_t) myTimeout.xOverflowCount << (sizeof(portTickType)*8) | myTimeout.xTimeOnEntering)*portTICK_RATE_MS ) / 1000 );
+#endif
 	if (bSafeMode) {
 		safe = "[SAFE] ";
 	}
