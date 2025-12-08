@@ -14,6 +14,7 @@
 #include "../libraries/obktime/obktime.h"	// for time functions
 
 #define SECSinSTATIC	5		// seconds keeping display in one mode before animating to next value
+#define AnimStartIndex	40		// start of second text content. 40: width is 32 (for 4 elements), so start with 8 "empty" colomns a space
 
 
 char *my_strcat(char *p, const char *s) {
@@ -501,8 +502,8 @@ void Run_NoAnimation() {
 				actdisp = actdisp % CLOCK_NUMofELEMS;
 				s=Clock_get(actdisp);				
 			}
-			print2arr(s, completedisp + 40, font);			// add next content after the actual, so we can scroll ... add at "40" (width is 32) to have some space before next content // Todo: static width of 4 x 8x8 displays 
-			g_animationcycles = 40 ;				// Todo: static width of 4 x 8x8 displays 
+			print2arr(s, completedisp + AnimStartIndex, font);			// add next content after the actual, so we can scroll ...  // Todo: static width of 4 x 8x8 displays 
+			g_animationcycles = AnimStartIndex ;				// Todo: static width of 4 x 8x8 displays 
 			
 		}
 	}
@@ -517,7 +518,7 @@ void Run_Animated() {
 	}
 	char *p = completedisp;
 	if ((cycle++ % 5) == 0){
-		MAX72XX_printRaw(p + (32 - g_animationcycles +1 ) , 32);		// Todo: static width of 4 x 8x8 displays 
+		MAX72XX_printRaw(p + (AnimStartIndex - g_animationcycles +1 ) , 32);		// Todo: static width of 4 x 8x8 displays 
 		g_animationcycles--;
 //		ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Run_Animated  -- g_animationcycles=%i",g_animationcycles);
 		CMD_ExecuteCommandArgs("MAX72XX_refresh", "", 0);
