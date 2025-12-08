@@ -323,7 +323,7 @@ void print2arr(char *text, char *arr, FontCharacter *f){
     char *p = text;
     if (!f) return;
     uint8_t ofs = 0;
-    memset(arr, 0, 64); // set to 0 - we know we have 64 elemtents!
+    memset(arr, 0, 64); // set to 0 - we know we have 64 at least elements!			// Todo: static size - use var?!?
     ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - print2arr, \"printing\" text \"%s\"",text);
 
     while (*p != '\0') {
@@ -334,8 +334,8 @@ void print2arr(char *text, char *arr, FontCharacter *f){
         }
         FontCharacter c = f[index];
         uint8_t w = c.width;
-	ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - print2arr, \"printing\" char \"%c\" - width=%i  -- x%02x x%02x x%02x x%02x x%02x",*p, w, c.bitmap[0], c.bitmap[1], c.bitmap[2], c.bitmap[3], c.bitmap[4]);
         if ((ofs + w) < 64 && c.bitmap) {
+//	ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - print2arr, \"printing\" char \"%c\" - width=%i  -- x%02x x%02x x%02x x%02x x%02x",*p, w, c.bitmap[0], c.bitmap[1], c.bitmap[2], c.bitmap[3], c.bitmap[4]);
             memcpy(arr + ofs, c.bitmap, w);
             ofs += w; // adjust offset after the copy
         }
@@ -510,58 +510,6 @@ void Run_NoAnimation() {
 	cycle %= 40;
 }
 
-/*
-void Run_Animated() {
-	cycle++;
-	if (cycle < 4) {
-		return;
-	}
-	cycle = 0;
-	char time[64];
-	struct tm *ltm;
-	char *p;
-	time_t ntpTime;
-
-	ntpTime=(time_t)TIME_GetCurrentTime();
-	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime(&ntpTime);
-
-	if (ltm == 0) {
-		return;
-	}
-	int scroll = MAX72XXSingle_GetScrollCount();
-	//scroll_cycle = 0;
-	if (scroll == 0 && g_del == 0) {
-		time[0] = 0;
-		p = time;
-		p = my_strcat(p, "  ");
-
-		p = add_padded(p, ltm->tm_hour);
-		p = my_strcat(p, ":");
-		p = add_padded(p, ltm->tm_min);
-		strcat(p, " ");
-
-		p = my_strcat(p, " ");
-		p = add_padded(p, ltm->tm_year+1900);
-		p = my_strcat(p, ".");
-		p = add_padded(p, ltm->tm_mon + 1);
-		p = my_strcat(p, ".");
-		p = add_padded(p, ltm->tm_mday);
-		strcat(p, "   ");
-
-		CMD_ExecuteCommandArgs("MAX72XX_Clear", NULL, 0);
-		CMD_ExecuteCommandArgs("MAX72XX_Print", time, 0);
-		CMD_ExecuteCommandArgs("MAX72XX_refresh", "", 0);
-		g_del = 10;
-	}
-	if (g_del > 0) {
-		g_del--;
-		return;
-	}
-	CMD_ExecuteCommandArgs("MAX72XX_Scroll", "-1", 0);
-	CMD_ExecuteCommandArgs("MAX72XX_refresh", "", 0);
-}
-*/
 
 void Run_Animated() {
 	if (g_keepdisplay > 0 || g_animationcycles == 0){		// we are in "static" display (so don't animate) or nothing to do
@@ -595,13 +543,8 @@ void DRV_MAX72XX_Clock_RunFrame() {
 	if (g_animated) {
 		Run_Animated();
 	}
-/*
-	if (g_bdisptime && ! (g_QuickTickCount++ % 3) ){
-		Clock_Send(CLOCK_TIME);
-	}
-*/
-
 }
+
 /*
 Config for my clock with IR
 
