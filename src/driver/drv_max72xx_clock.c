@@ -13,6 +13,9 @@
 //#include <time.h>
 #include "../libraries/obktime/obktime.h"	// for time functions
 
+#define SECSinSTATIC	5		// seconds keeping display in one mode before animating to next value
+
+
 char *my_strcat(char *p, const char *s) {
 	strcat(p, s);
 	return p + strlen(s);
@@ -25,15 +28,22 @@ char *add_padded(char *o, int i) {
 	sprintf(o, "%i", i);
 	return o + strlen(o);
 }
-static bool g_bdisptime = false;	// keep track, if displaying time - then allow QuickTick to avoid missing seconds dicplay
-static uint8_t g_QuickTickCount=0;
-static uint8_t g_TimeSentCount=0;
+
+
+char completedisp[255] ={0} ;		// Todo - adjust to actual needed size (2 * "width" of the display) !
+
+static bool g_animated = false;
+
+
+static int g_animationcycles = 0 ;	// how many columns to scroll; if > 0 we are "ainmating" the display --> don't show fixed content
+static int g_keepdisplay = SECSinSTATIC ;		// how many seconds left to keep actual "static" display; if > 0 we must not "ainmate" the display --> only show/update "fixed" content (time, date, temp, hum)
 
 enum {
 	CLOCK_DATE,
 	CLOCK_TIME,
 	CLOCK_HUMIDITY,
 	CLOCK_TEMPERATURE,
+	CLOCK_NUMofELEMS
 };
 
 
@@ -302,64 +312,6 @@ FontCharacter font[] = {
 	{4,(unsigned char[]){ 157, 160, 160, 125}},                 // 255 - y diaresis
 };	                                               
 
-char disparr[64]={0};
-
-
-
-
-/*
-void Clock_Send(int type) {
-	char time[64];
-	struct tm *ltm;
-	float val;
-	char *p;
-	time_t ntpTime;
-
-	ntpTime=(time_t)TIME_GetCurrentTime();
-	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime(&ntpTime);
-
-	if (ltm == 0) {
-		return;
-	}
-	time[0] = 0;
-	p = time;
-	if (type == CLOCK_TIME) {
-		p = my_strcat(p, " ");
-		p = add_padded(p, ltm->tm_hour);
-		p = my_strcat(p, ":");
-		p = add_padded(p, ltm->tm_min);
-		strcat(p, "   ");
-	}
-	else if (type == CLOCK_DATE) {
-		p = my_strcat(p, " ");
-		p = add_padded(p, ltm->tm_mday);
-		p = my_strcat(p, ".");
-		p = add_padded(p, ltm->tm_mon + 1);
-		//p = my_strcat(p, ".");
-		//p = add_padded(p, ltm->tm_year);
-		strcat(p, "   ");
-	}
-	else if (type == CLOCK_HUMIDITY) {
-		if (false==CHANNEL_GetGenericHumidity(&val)) {
-			// failed - exit early, do not change string
-			return;
-		}
-		sprintf(time, "H: %i%%   ", (int)val);
-	} 
-	else if (type == CLOCK_TEMPERATURE) {
-		if (false == CHANNEL_GetGenericTemperature(&val)) {
-			// failed - exit early, do not change string
-			return;
-		}
-		sprintf(time, "T: %iC    ", (int)val);
-	}
-
-	CMD_ExecuteCommandArgs("MAX72XX_Print", time, 0);
-}
-*/
-
-
 
 void transposeString(char *input, int shift) {
     for (int i = 0; i < strlen(input); i++) {
@@ -367,33 +319,12 @@ void transposeString(char *input, int shift) {
     }
 }
 
-/*
-void print2arr(char *text, FontCharacter *f){
-	char *p=text;
-	if (!f) return;
-	uint8_t ofs = 0;
-	memset(disparr, 0, sizeof(disparr));	// set to 0
-	while(p){
-		FontCharacter c=f[(int)*p];
-		uint8_t w = c.width ;
-//		ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - print2arr, \"printing\" char \"%c\" - width=%i  -- x%02x x%02x x%02x x%02x x%02x",*p, w, c.bitmap[0], c.bitmap[1], c.bitmap[2], c.bitmap[3], c.bitmap[4]);
-		if ( (ofs + w) < sizeof(disparr)) memcpy(disparr + ofs, c.bitmap, w);
-//		for (int i=0; ofs < sizeof(disparr) && i<c.width ; i++){		// todo: check for max width
-//			disparr[ofs] = c.bitmap[i];
-//			ofs++ 
-//		}
-		ofs += w+1;	// add +1, to (possibly) add an empty column (only used, if there is another char im p)
-		if (ofs >=sizeof(disparr)) return;	// break, if array is full
-		p++;
-	}
-
-}
-*/
-void print2arr(char *text, FontCharacter *f){
+void print2arr(char *text, char *arr, FontCharacter *f){
     char *p = text;
     if (!f) return;
     uint8_t ofs = 0;
-    memset(disparr, 0, sizeof(disparr)); // set to 0
+    memset(arr, 0, 64); // set to 0 - we know we have 64 elemtents!
+    ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - print2arr, \"printing\" text \"%s\"",text);
 
     while (*p != '\0') {
         int index = (int)*p; // get the ASCII index
@@ -403,12 +334,13 @@ void print2arr(char *text, FontCharacter *f){
         }
         FontCharacter c = f[index];
         uint8_t w = c.width;
-        if ((ofs + w) < sizeof(disparr) && c.bitmap) {
-            memcpy(disparr + ofs, c.bitmap, w);
+	ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - print2arr, \"printing\" char \"%c\" - width=%i  -- x%02x x%02x x%02x x%02x x%02x",*p, w, c.bitmap[0], c.bitmap[1], c.bitmap[2], c.bitmap[3], c.bitmap[4]);
+        if ((ofs + w) < 64 && c.bitmap) {
+            memcpy(arr + ofs, c.bitmap, w);
             ofs += w; // adjust offset after the copy
         }
-        // Break if the next position would exceed the size of disparr
-        if ((ofs + 1) >= sizeof(disparr)) {
+        // Break if the next position would exceed the size of arr ( if its 64 bytes)
+        if ((ofs + 1) >= 64) {
             return; // break, if array is full
         }
         ofs += 1; // add an empty column (if needed)
@@ -416,14 +348,58 @@ void print2arr(char *text, FontCharacter *f){
     }
 }
 
+void Clock_SendStr2Disp(char *p) {
+	ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Clock_SendStr2Disp, \"printing\" text \"%s\"",p);
+	print2arr(p, completedisp, font);
+	MAX72XX_printRaw(completedisp, 32);		// Todo: static width of 4 x 8x8 displays 
+}
 
+
+char *Clock_get(int type) {
+	TimeComponents tc;
+	float val;
+	time_t ntpTime;
+	static char time[64];
+	ntpTime=(time_t)TIME_GetCurrentTime();
+	tc=calculateComponents((uint32_t)ntpTime);
+
+	time[0] = 0;
+	char tempstr[5];	// temp string for seconds or year -> converted to "small" digits
+	if (type == CLOCK_TIME) {
+		sprintf(tempstr,"%02i",tc.second);
+		transposeString(tempstr, -38);		// move second digits from 48 - 57  --> 10 - 19 (small numbers)
+		sprintf(time,"%02i:%02i%c%s", tc.hour,tc.minute, 127, tempstr);
+	}
+	else if (type == CLOCK_DATE) {
+		sprintf(tempstr,"%02i",(tc.year%100));
+		transposeString(tempstr, -38);		// move year digits from 48 - 57  --> 10 - 19 (small numbers)		
+		sprintf(time,"%02i.%02i.%c%s", tc.day,tc.month, 127, tempstr);
+	}
+	else if (type == CLOCK_HUMIDITY) {
+		if (false==CHANNEL_GetGenericHumidity(&val)) {
+			// failed - exit early, do not change string
+			return NULL;
+		}
+		sprintf(time, "H: %i%%   ", (int)val);
+	} 
+	else if (type == CLOCK_TEMPERATURE) {
+		if (false == CHANNEL_GetGenericTemperature(&val)) {
+			// failed - exit early, do not change string
+			return NULL;
+		}
+		sprintf(time, "T: %iC    ", (int)val);
+	}
+	ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Clock_get(%i), returing text \"%s\"",type,time);
+	return time;
+}
+
+/*
 void Clock_Send(int type) {
-	char time[64];
 	TimeComponents tc;
 	float val;
 	char *p;
 	time_t ntpTime;
-
+	char time[64];
 	ntpTime=(time_t)TIME_GetCurrentTime();
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
 	tc=calculateComponents((uint32_t)ntpTime);
@@ -432,32 +408,12 @@ void Clock_Send(int type) {
 	p = time;
 	char tempstr[5];	// temp string for seconds or year -> converted to "small" digits
 	if (type == CLOCK_TIME) {
-/*
-//		p = my_strcat(p, " ");
-		p = add_padded(p, tc.hour);
-		p = my_strcat(p, " ");
-//		p = my_strcat(p, ":");
-		p = add_padded(p, tc.minute);
-		p = my_strcat(p, " ");
-//		p = my_strcat(p, ":");
-		p = add_padded(p, tc.second);
-		strcat(p, "   ");
-*/
-		g_TimeSentCount++;
 		sprintf(tempstr,"%02i",tc.second);
 		transposeString(tempstr, -38);		// move second digits from 48 - 57  --> 10 - 19 (small numbers)
 		sprintf(time,"%02i:%02i%c%s", tc.hour,tc.minute, 127, tempstr);
 	}
 	else if (type == CLOCK_DATE) {
-/*
-//		p = my_strcat(p, " ");
-		p = add_padded(p, tc.day);
-		p = my_strcat(p, ".");
-		p = add_padded(p, tc.month);
-		p = my_strcat(p, ".");
-		//p = add_padded(p, tc.year);
-		strcat(p, "   ");
-*/
+
 		sprintf(tempstr,"%02i",(tc.year%100));
 		transposeString(tempstr, -38);		// move year digits from 48 - 57  --> 10 - 19 (small numbers)		
 		sprintf(time,"%02i.%02i.%c%s", tc.day,tc.month, 127, tempstr);
@@ -477,11 +433,12 @@ void Clock_Send(int type) {
 		sprintf(time, "T: %iC    ", (int)val);
 	}
 
-//	CMD_ExecuteCommandArgs("MAX72XX_Print", time, 0);
-	print2arr(time, font);
-	MAX72XX_printRaw(disparr, 64); 
-
+	print2arr(time, completedisp, font);
+	MAX72XX_printRaw(completedisp, 64); 
 }
+
+
+
 
 void Clock_SendTime() {
 	Clock_Send(CLOCK_TIME);
@@ -495,31 +452,64 @@ void Clock_SendHumidity() {
 void Clock_SendTemperature() {
 	Clock_Send(CLOCK_TEMPERATURE);
 }
+*/
+
 static unsigned int cycle = 0;
 
+
 void Run_NoAnimation() {
-	cycle+=4;
-	if (cycle < 10) {
-//		g_bdisptime = false;
-		Clock_SendDate();
+	static uint8_t actdisp = 0;			// actual "static" display in animation case
+	char *s;				// to contain string to "print" to display
+	ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Run_NoAnimation actdisp=%i / g_animated=%i / g_animationcycles=%i / g_keepdisplay=%i",actdisp, g_animated, g_animationcycles, g_keepdisplay);
+	if (g_animated == true && g_animationcycles>0){	// no "static" display if animation is active
+		return;
 	}
-	else if(cycle < 20) {
-//	else {
-		g_bdisptime = true;
-		Clock_SendTime();
-	}
+	if (g_animated == false) {
+		cycle+=4;
+		if (cycle < 10) {
+			s=Clock_get(CLOCK_DATE);
+			ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Run_NoAnimation DATE, \"printing\" text \"%s\"",s);
+			Clock_SendStr2Disp(s);
+		}
+		else if(cycle < 20) {
+			s=Clock_get(CLOCK_TIME);
+			ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Run_NoAnimation TIME, \"printing\" text \"%s\"",s);
+			Clock_SendStr2Disp(s);
+		}
 
-	else if (cycle < 30) {
-		Clock_SendHumidity();
+		else if (cycle < 30) {
+			s=Clock_get(CLOCK_HUMIDITY);
+			if (s) Clock_SendStr2Disp(s);
+		}
+		else {
+			s=Clock_get(CLOCK_TEMPERATURE);
+			if (s) Clock_SendStr2Disp(s);
+		}
+	} else {			// every second if "animation" is active (we can be sure, "g_animationcycles == 0")
+		if (g_keepdisplay-- > 0){
+			Clock_SendStr2Disp(Clock_get(actdisp));
+		}
+		if (g_keepdisplay == 0) {			// we just ended "static" display, now move to next (and "animate")
+			ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Run_NoAnimation TIME, start for animating text ..");
+			memset(completedisp, 0, sizeof(completedisp));	// set to 0
+			print2arr(Clock_get(actdisp), completedisp, font);	// first set actual display ...
+			actdisp++;
+			actdisp = actdisp % CLOCK_NUMofELEMS;
+			s=Clock_get(actdisp);
+			while (! s){				// maybe there's no temp or hum, in this case use next
+				actdisp++;
+				actdisp = actdisp % CLOCK_NUMofELEMS;
+				s=Clock_get(actdisp);				
+			}
+			print2arr(s, completedisp + 32, font);			// add next content after the actual, so we can scroll ... // Todo: static width of 4 x 8x8 displays 
+			g_animationcycles = 32 ;				// Todo: static width of 4 x 8x8 displays 
+			
+		}
 	}
-	else {
-		Clock_SendTemperature();
-	}
-
 	CMD_ExecuteCommandArgs("MAX72XX_refresh", "", 0);
 	cycle %= 40;
 }
-static int g_del = 0;
+
 /*
 void Run_Animated() {
 	cycle++;
@@ -572,59 +562,33 @@ void Run_Animated() {
 	CMD_ExecuteCommandArgs("MAX72XX_refresh", "", 0);
 }
 */
+
 void Run_Animated() {
-	cycle++;
-	if (cycle < 4) {
+	if (g_keepdisplay > 0 || g_animationcycles == 0){		// we are in "static" display (so don't animate) or nothing to do
 		return;
 	}
-	cycle = 0;
-	char time[64];
-	TimeComponents tc;
-	char *p;
-	time_t ntpTime;
-
-	ntpTime=(time_t)TIME_GetCurrentTime();
-	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	tc=calculateComponents((uint32_t)ntpTime);
-
-	int scroll = MAX72XXSingle_GetScrollCount();
-	//scroll_cycle = 0;
-	if (scroll == 0 && g_del == 0) {
-		time[0] = 0;
-		p = time;
-		p = my_strcat(p, "  ");
-
-		p = add_padded(p, tc.hour);
-		p = my_strcat(p, ":");
-		p = add_padded(p, tc.minute);
-		strcat(p, " ");
-
-		p = my_strcat(p, " ");
-		p = add_padded(p, tc.year);
-		p = my_strcat(p, ".");
-		p = add_padded(p, tc.month);
-		p = my_strcat(p, ".");
-		p = add_padded(p, tc.day);
-		strcat(p, "   ");
-
-		CMD_ExecuteCommandArgs("MAX72XX_Clear", NULL, 0);
-		CMD_ExecuteCommandArgs("MAX72XX_Print", time, 0);
+	char *p = completedisp;
+	if ((cycle++ % 5) == 0){
+		MAX72XX_printRaw(p + (32 - g_animationcycles +1 ) , 32);		// Todo: static width of 4 x 8x8 displays 
+		g_animationcycles--;
+		ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Run_Animated  -- g_animationcycles=%i",g_animationcycles);
 		CMD_ExecuteCommandArgs("MAX72XX_refresh", "", 0);
-		g_del = 10;
 	}
-	if (g_del > 0) {
-		g_del--;
-		return;
+	if (g_animationcycles == 0){		// we just ended animation, so we are back to "static"
+		g_keepdisplay = SECSinSTATIC;
 	}
-	CMD_ExecuteCommandArgs("MAX72XX_Scroll", "-1", 0);
-	CMD_ExecuteCommandArgs("MAX72XX_refresh", "", 0);
+//	cycle = 0;
+
 }
-bool g_animated = false;
+
+
+
+
+
 void DRV_MAX72XX_Clock_OnEverySecond() {
-	if (g_animated == false) {
+	if (g_animated == false || g_keepdisplay > 0) {
 		Run_NoAnimation();
 	}
-//	ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - DRV_MAX72XX_Clock_OnEverySecond() -- g_QuickTickCount=%i  (g_TimeSentCount=%i)\n",g_QuickTickCount, g_TimeSentCount);
 }
 
 void DRV_MAX72XX_Clock_RunFrame() {
