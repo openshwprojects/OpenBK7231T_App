@@ -501,8 +501,8 @@ void Run_NoAnimation() {
 				actdisp = actdisp % CLOCK_NUMofELEMS;
 				s=Clock_get(actdisp);				
 			}
-			print2arr(s, completedisp + 32, font);			// add next content after the actual, so we can scroll ... // Todo: static width of 4 x 8x8 displays 
-			g_animationcycles = 32 ;				// Todo: static width of 4 x 8x8 displays 
+			print2arr(s, completedisp + 40, font);			// add next content after the actual, so we can scroll ... add at "40" (width is 32) to have some space before next content // Todo: static width of 4 x 8x8 displays 
+			g_animationcycles = 40 ;				// Todo: static width of 4 x 8x8 displays 
 			
 		}
 	}
