@@ -324,7 +324,7 @@ void print2arr(char *text, char *arr, FontCharacter *f){
     if (!f) return;
     uint8_t ofs = 0;
     memset(arr, 0, 64); // set to 0 - we know we have 64 at least elements!			// Todo: static size - use var?!?
-    ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - print2arr, \"printing\" text \"%s\"",text);
+//    ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - print2arr, \"printing\" text \"%s\"",text);
 
     while (*p != '\0') {
         int index = (int)*p; // get the ASCII index
@@ -349,7 +349,7 @@ void print2arr(char *text, char *arr, FontCharacter *f){
 }
 
 void Clock_SendStr2Disp(char *p) {
-	ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Clock_SendStr2Disp, \"printing\" text \"%s\"",p);
+//	ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Clock_SendStr2Disp, \"printing\" text \"%s\"",p);
 	print2arr(p, completedisp, font);
 	MAX72XX_printRaw(completedisp, 32);		// Todo: static width of 4 x 8x8 displays 
 }
@@ -389,7 +389,7 @@ char *Clock_get(int type) {
 		}
 		sprintf(time, "T: %iC    ", (int)val);
 	}
-	ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Clock_get(%i), returing text \"%s\"",type,time);
+//	ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Clock_get(%i), returing text \"%s\"",type,time);
 	return time;
 }
 
@@ -460,7 +460,7 @@ static unsigned int cycle = 0;
 void Run_NoAnimation() {
 	static uint8_t actdisp = 0;			// actual "static" display in animation case
 	char *s;				// to contain string to "print" to display
-	ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Run_NoAnimation actdisp=%i / g_animated=%i / g_animationcycles=%i / g_keepdisplay=%i",actdisp, g_animated, g_animationcycles, g_keepdisplay);
+//	ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Run_NoAnimation actdisp=%i / g_animated=%i / g_animationcycles=%i / g_keepdisplay=%i",actdisp, g_animated, g_animationcycles, g_keepdisplay);
 	if (g_animated == true && g_animationcycles>0){	// no "static" display if animation is active
 		return;
 	}
@@ -468,12 +468,12 @@ void Run_NoAnimation() {
 		cycle+=4;
 		if (cycle < 10) {
 			s=Clock_get(CLOCK_DATE);
-			ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Run_NoAnimation DATE, \"printing\" text \"%s\"",s);
+//			ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Run_NoAnimation DATE, \"printing\" text \"%s\"",s);
 			Clock_SendStr2Disp(s);
 		}
 		else if(cycle < 20) {
 			s=Clock_get(CLOCK_TIME);
-			ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Run_NoAnimation TIME, \"printing\" text \"%s\"",s);
+//			ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Run_NoAnimation TIME, \"printing\" text \"%s\"",s);
 			Clock_SendStr2Disp(s);
 		}
 
@@ -490,7 +490,7 @@ void Run_NoAnimation() {
 			Clock_SendStr2Disp(Clock_get(actdisp));
 		}
 		if (g_keepdisplay == 0) {			// we just ended "static" display, now move to next (and "animate")
-			ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Run_NoAnimation TIME, start for animating text ..");
+//			ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Run_NoAnimation, start for animating text ..");
 			memset(completedisp, 0, sizeof(completedisp));	// set to 0
 			print2arr(Clock_get(actdisp), completedisp, font);	// first set actual display ...
 			actdisp++;
@@ -519,7 +519,7 @@ void Run_Animated() {
 	if ((cycle++ % 5) == 0){
 		MAX72XX_printRaw(p + (32 - g_animationcycles +1 ) , 32);		// Todo: static width of 4 x 8x8 displays 
 		g_animationcycles--;
-		ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Run_Animated  -- g_animationcycles=%i",g_animationcycles);
+//		ADDLOG_INFO(LOG_FEATURE_RAW, "MAX72xx_clock - Run_Animated  -- g_animationcycles=%i",g_animationcycles);
 		CMD_ExecuteCommandArgs("MAX72XX_refresh", "", 0);
 	}
 	if (g_animationcycles == 0){		// we just ended animation, so we are back to "static"
