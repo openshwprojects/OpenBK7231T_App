@@ -15,5 +15,7 @@
 	"C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: LLVM, UseTab: Always, IndentWidth: 4, TabWidth: 4, BreakBeforeBraces: Attach, AllowShortIfStatementsOnASingleLine: false, IndentCaseLabels: false, ColumnLimit: 0, AccessModifierOffset: -4, NamespaceIndentation: All, FixNamespaceComments: false }",
 	"prettier.tabWidth": 4,
 	"prettier.useTabs": true,
-	"prettier.printWidth": 120
+	"prettier.printWidth": 120,
+	"cmake.sourceDirectory": "C:/Users/David/Documents/GitHub/OpenBK7231T_App/libraries/berry",
+	"C_Cpp.default.compilerPath": "c:\\Users\\David\\Documents\\GitHub\\OpenBK7231T_App\\src\\driver\\drv_tclAC.c"
 }

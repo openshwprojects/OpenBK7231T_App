@@ -152,6 +152,9 @@ static const struct {
 //const char *fanOptions[] = { "auto", "low", "medium", "high" };
 const char *fanOptions[] = { "off", "1", "2", "3", "4", "5", "mute", "turbo", "auto" };
 
+// GEN options for Home Assistant: allow selecting 1,2,3,0 (user requested order)
+const char *genOptions[] = { "1", "2", "3", "0" };
+
 fanMode_e parseFanMode(const char *s) {
 	for (int i = 0; i < sizeof(fanModeMap) / sizeof(fanModeMap[0]); ++i) {
 		if (!stricmp(s, fanModeMap[i].name)) {
@@ -279,7 +282,11 @@ void OBK_SetGen(int gen) {
 	get_cmd_resp_t get_cmd_resp = { 0 };
 	memcpy(get_cmd_resp.raw, m_get_cmd_resp.raw, sizeof(get_cmd_resp.raw));
 
-	g_gen = gen;
+	// publish retained state only when value actually changes
+	if (g_gen != gen) {
+		g_gen = gen;
+		MQTT_PublishMain_StringInt("Gen", g_gen, 1); // retain the Gen state
+	}
 
 	build_set_cmd(&get_cmd_resp);
 	ready_to_send_set_cmd_flag = true;
@@ -681,15 +688,26 @@ void TCL_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState
 		HTTP_CreateSelect(request, fanOptions, sizeof(fanOptions) / sizeof(fanOptions[0]), climateModeToStr(g_mode), "ACMode");
 		HTTP_CreateSelect(request, vertical_swing_options, sizeof(vertical_swing_options) / sizeof(vertical_swing_options[0]), getSwingVLabel(g_swingV), "SwingV");
 		HTTP_CreateSelect(request, horizontal_swing_options, sizeof(horizontal_swing_options) / sizeof(horizontal_swing_options[0]), getSwingHLabel(g_swingH),"SwingH");
+		{
+			char gen_val[4];
+			sprintf(gen_val, "%d", g_gen);
+			HTTP_CreateSelect(request, genOptions, sizeof(genOptions) / sizeof(genOptions[0]), gen_val, "Gen");
+		}
 		hprintf255(request, "</div>");
 	}
 	else {
 		HTTP_CreateRadio(request, fanOptions, sizeof(fanOptions) / sizeof(fanOptions[0]), climateModeToStr(g_mode), "ACMode");
 		HTTP_CreateRadio(request, vertical_swing_options, sizeof(vertical_swing_options) / sizeof(vertical_swing_options[0]), getSwingVLabel(g_swingV), "SwingV");
 		HTTP_CreateRadio(request, horizontal_swing_options, sizeof(horizontal_swing_options) / sizeof(horizontal_swing_options[0]), getSwingHLabel(g_swingH), "SwingH");
+		{
+			char gen_val[4];
+			sprintf(gen_val, "%d", g_gen);
+			HTTP_CreateRadio(request, genOptions, sizeof(genOptions) / sizeof(genOptions[0]), gen_val, "Gen");
+		}
 		hprintf255(request, "<h3>SwingH: %s</h3>", getSwingHLabel(g_swingH));
 		hprintf255(request, "<h3>SwingV: %s</h3>", getSwingVLabel(g_swingV));
 		hprintf255(request, "<h3>Mode: %s</h3>", climateModeToStr(g_mode));
+		hprintf255(request, "<h3>Gen: %d</h3>", g_gen);
 		hprintf255(request, "<h3>Current temperature: %f</h3>", current_temperature);
 		hprintf255(request, "<h3>Target temperature: %f</h3>", target_temperature);
 	}
@@ -808,6 +826,7 @@ void TCL_UART_RunEverySecond(void) {
 	MQTT_PublishMain_StringString("FANMode", fanModeToStr(g_fanMode), 0);
 	MQTT_PublishMain_StringInt("Buzzer", g_buzzer, 0);
 	MQTT_PublishMain_StringInt("Display", g_disp, 0);
+	MQTT_PublishMain_StringInt("Gen", g_gen, 0);
 	MQTT_PublishMain_StringString("SwingH", getSwingHLabel(g_swingH), 0);
 	MQTT_PublishMain_StringString("SwingV", getSwingVLabel(g_swingV), 0);
 
@@ -845,6 +864,21 @@ void TCL_DoDiscovery(const char *topic) {
 	dev_info = hass_createToggle("Display", "~/Display/get", "Display");
 	MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 	hass_free_device_info(dev_info);
+
+	// GEN select entity: options 1,2,3,0 (command topic will be cmnd/<clientid>/Gen)
+	{
+		char command_topic[64];
+		sprintf(command_topic, "cmnd/%s/Gen", CFG_GetMQTTClientId());
+		dev_info = hass_createSelectEntity(
+			"~/Gen/get",               // state_topic
+			command_topic,              // command_topic
+			4,                          // numoptions
+			genOptions,                 // options array
+			"Gen"                     // title
+		);
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+	}
 
 
 		//char command_topic[64];
