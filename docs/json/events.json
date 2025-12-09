@@ -1,0 +1,205 @@
+[
+  {
+    "name": "channel<X>",
+    "CMD": "CMD_EVENT_CHANGE_CHANNEL0<X>"
+  },
+  {
+    "name": "noPingTime",
+    "CMD": "CMD_EVENT_CHANGE_NOPINGTIME"
+  },
+  {
+    "name": "OnRelease",
+    "CMD": "CMD_EVENT_PIN_ONRELEASE"
+  },
+  {
+    "name": "OnPress",
+    "CMD": "CMD_EVENT_PIN_ONPRESS"
+  },
+  {
+    "name": "OnClick",
+    "CMD": "CMD_EVENT_PIN_ONCLICK"
+  },
+  {
+    "name": "OnToggle",
+    "CMD": "CMD_EVENT_PIN_ONTOGGLE"
+  },
+  {
+    "name": "IPChange",
+    "CMD": "CMD_EVENT_IPCHANGE"
+  },
+  {
+    "name": "OnHold",
+    "CMD": "CMD_EVENT_PIN_ONHOLD"
+  },
+  {
+    "name": "OnHoldStart",
+    "CMD": "CMD_EVENT_PIN_ONHOLDSTART"
+  },
+  {
+    "name": "OnDblClick",
+    "CMD": "CMD_EVENT_PIN_ONDBLCLICK"
+  },
+  {
+    "name": "On3Click",
+    "CMD": "CMD_EVENT_PIN_ON3CLICK"
+  },
+  {
+    "name": "On4Click",
+    "CMD": "CMD_EVENT_PIN_ON4CLICK"
+  },
+  {
+    "name": "On5Click",
+    "CMD": "CMD_EVENT_PIN_ON5CLICK"
+  },
+  {
+    "name": "OnChannelChange",
+    "CMD": "CMD_EVENT_CHANNEL_ONCHANGE"
+  },
+  {
+    "name": "OnUART",
+    "CMD": "CMD_EVENT_ON_UART"
+  },
+  {
+    "name": "MQTTState",
+    "CMD": "CMD_EVENT_MQTT_STATE",
+    "ifdef": "ENABLE_MQTT"
+  },
+  {
+    "name": "NoMQTTTime",
+    "CMD": "CMD_EVENT_CHANGE_NOMQTTTIME",
+    "ifdef": "ENABLE_MQTT"
+  },
+  {
+    "name": "OnMQTT",
+    "CMD": "CMD_EVENT_ON_MQTT",
+    "ifdef": "ENABLE_MQTT"
+  },
+  {
+    "name": "NTPState",
+    "CMD": "CMD_EVENT_NTP_STATE",
+    "ifdef": "ENABLE_NTP"
+  },
+  {
+    "name": "LEDState",
+    "CMD": "CMD_EVENT_LED_STATE",
+    "ifdef": "ENABLE_LED_BASIC"
+  },
+  {
+    "name": "LEDMode",
+    "CMD": "CMD_EVENT_LED_MODE",
+    "ifdef": "ENABLE_LED_BASIC"
+  },
+  {
+    "name": "voltage",
+    "CMD": "CMD_EVENT_CHANGE_VOLTAGE",
+    "ifdef": "ENABLE_BL_SHARED"
+  },
+  {
+    "name": "current",
+    "CMD": "CMD_EVENT_CHANGE_CURRENT",
+    "ifdef": "ENABLE_BL_SHARED"
+  },
+  {
+    "name": "power",
+    "CMD": "CMD_EVENT_CHANGE_POWER",
+    "ifdef": "ENABLE_BL_SHARED"
+  },
+  {
+    "name": "frequency",
+    "CMD": "CMD_EVENT_CHANGE_FREQUENCY",
+    "ifdef": "ENABLE_BL_SHARED"
+  },
+  {
+    "name": "energy",
+    "CMD": "CMD_EVENT_CHANGE_CONSUMPTION_TOTAL",
+    "ifdef": "ENABLE_BL_SHARED"
+  },
+  {
+    "name": "energycounter_last_hour",
+    "CMD": "CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR",
+    "ifdef": "ENABLE_BL_SHARED"
+  },
+  {
+    "name": "IR_RC5",
+    "CMD": "CMD_EVENT_IR_RC5",
+    "ifdef": "ENABLE_DRIVER_IRREMOTEESP || ENABLE_DRIVER_IR || ENABLE_DRIVER_IR2 || WINDOWS"
+  },
+  {
+    "name": "IR_RC6",
+    "CMD": "CMD_EVENT_IR_RC6",
+    "ifdef": "ENABLE_DRIVER_IRREMOTEESP || ENABLE_DRIVER_IR || ENABLE_DRIVER_IR2 || WINDOWS"
+  },
+  {
+    "name": "IR_Samsung",
+    "CMD": "CMD_EVENT_IR_SAMSUNG",
+    "ifdef": "ENABLE_DRIVER_IRREMOTEESP || ENABLE_DRIVER_IR || ENABLE_DRIVER_IR2 || WINDOWS"
+  },
+  {
+    "name": "IR_PANASONIC",
+    "CMD": "CMD_EVENT_IR_PANASONIC",
+    "ifdef": "ENABLE_DRIVER_IRREMOTEESP || ENABLE_DRIVER_IR || ENABLE_DRIVER_IR2 || WINDOWS"
+  },
+  {
+    "name": "IR_NEC",
+    "CMD": "CMD_EVENT_IR_NEC",
+    "ifdef": "ENABLE_DRIVER_IRREMOTEESP || ENABLE_DRIVER_IR || ENABLE_DRIVER_IR2 || WINDOWS"
+  },
+  {
+    "name": "IR_SAMSUNG_LG",
+    "CMD": "CMD_EVENT_IR_SAMSUNG_LG",
+    "ifdef": "ENABLE_DRIVER_IRREMOTEESP || ENABLE_DRIVER_IR || ENABLE_DRIVER_IR2 || WINDOWS"
+  },
+  {
+    "name": "IR_SHARP",
+    "CMD": "CMD_EVENT_IR_SHARP",
+    "ifdef": "ENABLE_DRIVER_IRREMOTEESP || ENABLE_DRIVER_IR || ENABLE_DRIVER_IR2 || WINDOWS"
+  },
+  {
+    "name": "IR_SONY",
+    "CMD": "CMD_EVENT_IR_SONY",
+    "ifdef": "ENABLE_DRIVER_IRREMOTEESP || ENABLE_DRIVER_IR || ENABLE_DRIVER_IR2 || WINDOWS"
+  },
+  {
+    "name": "TuyaMCUParsed",
+    "CMD": "CMD_EVENT_TUYAMCU_PARSED",
+    "ifdef": "ENABLE_DRIVER_TUYAMCU"
+  },
+  {
+    "name": "OnDP",
+    "CMD": "CMD_EVENT_ON_DP",
+    "ifdef": "ENABLE_DRIVER_TUYAMCU"
+  },
+  {
+    "name": "MissedHeartbeats",
+    "CMD": "CMD_EVENT_MISSEDHEARTBEATS",
+    "ifdef": "ENABLE_DRIVER_TUYAMCU"
+  },
+  {
+    "name": "WiFiState",
+    "CMD": "CMD_EVENT_WIFI_STATE"
+  },
+  {
+    "name": "OnADCButton",
+    "CMD": "CMD_EVENT_ADC_BUTTON"
+  },
+  {
+    "name": "OnCustomDown",
+    "CMD": "CMD_EVENT_CUSTOM_DOWN"
+  },
+  {
+    "name": "OnCustomUP",
+    "CMD": "CMD_EVENT_CUSTOM_UP"
+  },
+  {
+    "name": "OnCMD",
+    "CMD": "CMD_EVENT_ON_CMD"
+  },
+  {
+    "name": "OnHTTP",
+    "CMD": "CMD_EVENT_ON_HTTP"
+  },
+  {
+    "name": "OnDiscovery",
+    "CMD": "CMD_EVENT_ON_DISCOVERY"
+  }
+]
