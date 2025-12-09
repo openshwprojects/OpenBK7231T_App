@@ -277,6 +277,7 @@
 #define ENABLE_DRIVER_PIXELANIM					1
 #define ENABLE_DRIVER_SM15155E					1
 #define ENABLE_DRIVER_UART_TCP					1
+#define ENABLE_DRIVER_ZK10022					1
 
 #endif
 // parse things like $CH1 or $hour etc

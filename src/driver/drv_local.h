@@ -233,6 +233,10 @@ void HGS02_RunEverySecond(void);
 void UART_TCP_Init(void);
 void UART_TCP_Deinit(void);
 
+void ZK10022_Init(void);
+void ZK10022_Deinit(void);
+void ZK10022_AddCommands(void);
+
 void CSE7761_Init(void);
 void CSE7761_RunEverySecond(void);
 

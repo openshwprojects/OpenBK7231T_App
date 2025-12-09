@@ -1144,6 +1144,9 @@ void CMD_Init_Delayed() {
 	BL0942_AddCommands();
 #endif
 #endif
+#if ENABLE_DRIVER_ZK10022
+	ZK10022_AddCommands();
+#endif
 }
 
 

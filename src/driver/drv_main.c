@@ -587,6 +587,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "UartTCP",		UART_TCP_Init,		NULL,	NULL, NULL, UART_TCP_Deinit, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_ZK10022
+	//drvdetail:{"name":"UartTCP",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"UART to TCP bridge, mainly for WiFi Zigbee coordinators.",
+	//drvdetail:"requires":""}
+	{ "ZK10022",		ZK10022_Init,		NULL,	NULL, NULL, ZK10022_Deinit, NULL, NULL, false },
+#endif
 #if PLATFORM_TXW81X
 	//drvdetail:{"name":"TXWCAM",
 	//drvdetail:"title":"TODO",
