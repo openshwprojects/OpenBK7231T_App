@@ -47,7 +47,7 @@ static void console_cb_read(int fd, void* param)
 		{
 			fd_console = fd;
 			buffer[ret] = 0;
-			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "BL602 received: %s\n", buffer);
+			addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER, "BL602 received: %s\n", buffer);
 			for(i = 0; i < ret; i++)
 			{
 				UART_AppendByteToReceiveRingBuffer(buffer[i]);
@@ -78,6 +78,8 @@ int HAL_UART_Init(int baud, int parity, bool hwflowc, int txOverride, int rxOver
 		//bl_irq_register(UART1_IRQn, MY_UART1_IRQHandler);
 		//bl_irq_enable(UART1_IRQn);
 		//vfs_uart_init_simple_mode(0, 7, 16, baud, "/dev/ttyS0");
+		// Info: serial 1: RX_pin=3 TX_pin=4
+		// dev-Board: IO3=Pin 7 	IO4=Pin 26
 
 		if(CFG_HasFlag(OBK_FLAG_USE_SECONDARY_UART))
 		{
