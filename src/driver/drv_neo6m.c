@@ -32,6 +32,7 @@ static int H,M,S,SS,DD,MM,YY;
 static float Lat_f,Long_f;
 static char NS,EW;
 static bool gpslocked=false;
+static uint8_t failedTries = 0;
 
 
 enum {
@@ -223,7 +224,10 @@ void parseGPS(char *data){
 
 	p = strstr(++p, "$GPRMC,");
 
-	} else ADDLOG_INFO(LOG_FEATURE_DRV, "parseGPS:  p is  NULL -- data=%s  .... ",data);
+	} else{
+		ADDLOG_INFO(LOG_FEATURE_DRV, "parseGPS:  p is  NULL -- data=%s  .... ",data);
+		failedTries++;
+	}
 //ADDLOG_INFO(LOG_FEATURE_DRV, "... end of parseGPS ");
 
 }
@@ -281,6 +285,19 @@ static void UART_WriteDisableNMEA(void) {
     	"$PUBX,40,RMC,0,1,0,0*46\r\n",   // Enable RMC
     	"$PUBX,40,VTG,0,0,0,0*5E\r\n",
     	"$PUBX,40,ZDA,0,0,0,0*44\r\n"
+    	};
+    byte b;
+    for (int i = 0; i < 7; i++) {
+	    for (int j = 0; j < sizeof(send[i]); j++) {
+	    	b = (byte)send[i][j];
+        	UART_SendByte(b);
+            }
+    }
+}
+static void UART_WriteEnableRMC(void) {
+    char send[2][26]={
+    	"$PUBX,40,RMC,0,1,0,0*46\r\n",   // Enable RMC
+    	"$PUBX,40,RMC,0,1,0,0*46\r\n"   // Enable RMC
     	};
     byte b;
     for (int i = 0; i < 7; i++) {
@@ -421,13 +438,16 @@ void NEO6M_UART_RunEverySecond(void) {
 */
 		}
 	}
-/*	if (g_secondsElapsed % 5 == 4) {	// every 5 seconds
+	if (g_secondsElapsed % 5 == 3) {	// every 5 seconds
+		if (failedTries >=5){
+			UART_WriteEnableRMC();	// try to enable NMEA RMC messages, just in case
+			failedTries = 0;
+		}
 		cs=UART_GetDataSize();
 		if (cs > 1) UART_ConsumeBytes(cs -1); // empty buffer before polling
 ADDLOG_INFO(LOG_FEATURE_DRV, "EO6M_UART_RunEverySecond: calling UART_WritePollReq \r\n");
 //		UART_WritePollReq();
 	}
-*/
 
 }
 
