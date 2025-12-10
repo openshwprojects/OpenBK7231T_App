@@ -144,6 +144,7 @@ void parseGPS(char *data){
 			
 		};
 
+		NS='?';	// otherwise the string will be cut here 
 		if (Nvalue[NMEA_LAT_DIR][0]) NS=Nvalue[NMEA_LAT_DIR][0];
 
 		// NMEA returns degrees as degree and "minutes" of latitude/longitude 
@@ -166,6 +167,7 @@ void parseGPS(char *data){
 
 
 
+		EW='?';	// otherwise the string will be cut here
 		if (Nvalue[NMEA_LONG_DIR][0]) EW=Nvalue[NMEA_LONG_DIR][0];
 
 
@@ -378,7 +380,7 @@ void NEO6M_UART_RunEverySecond(void) {
 	else { 
 		if (cs > 1){
 //ADDLOG_INFO(LOG_FEATURE_DRV, "EO6M_UART_RunEverySecond: UART_ConsumeBytes(%i); \r\n",cs -1);
-			UART_ConsumeBytes(cs -1);	// empty buffer so the old vales are not read
+			UART_ConsumeBytes(cs -1);	// empty buffer so the old values are not read
 		}
 	}
 	if (g_secondsElapsed % 5 == 4) {	// every 5 seconds, one second before requesting data
