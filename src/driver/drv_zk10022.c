@@ -206,7 +206,7 @@ static commandResult_t CMD_ZK10022_Set_Switch(const void* context, const char* c
 
 	Tokenizer_TokenizeString(args, 0);
 	if (Tokenizer_GetArgsCount() == 1) {
-		float current = Tokenizer_GetArgInt(0);
+		float current = Tokenizer_GetArgInteger(0);
 		writeRegister(0x12,(int)current*100);
 	}
 }
