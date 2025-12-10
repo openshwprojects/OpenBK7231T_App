@@ -132,24 +132,7 @@ void parseGPS(char *data){
 		if (NMEACS != readcs) {        
 			ADDLOG_WARN(LOG_FEATURE_DRV, "parseGPS:  calculated CS (%2X) !=  read CS (%2X) ! Data might be invalid!\r\n",NMEACS,readcs); 		
 		};
-/*		
-		float tmpfl=0;
-		int tmpi=0;
-		
-		tmpfl=atof(Nvalue[NMEA_TIME]);
-		SS=(int)(tempfl*100)-(int)tempfl*100;
-		H=tempfl/10000;
-		M=tempfl/100 - H*100;
-		S=(int)tempfl%100;		
-		
-		tmpi=atoi(Nvalue[NMEA_DATE]);
-		DD=tmpi/10000;
-		MM=tmpi/100 - DD*100;
-		YY=2000+tmpi%100;
 
-*/		
-		
-		
 		bool timeread =0, dateread=0;
 		timeread = (sscanf (Nvalue[NMEA_TIME],"%2d%2d%2d.%d",&H,&M,&S,&SS) >=3);
 		dateread = (sscanf (Nvalue[NMEA_DATE],"%2d%2d%2d",&DD,&MM,&YY) ==3);
@@ -174,9 +157,6 @@ void parseGPS(char *data){
 
 		float frac;
 		int whole=0;						// need to get tw digits as %2d, using "%2f" will take the whole value as float?!?
-//		sscanf (Nvalue[NMEA_LAT],"%2f%f",&Lat_f,&frac);			// Lat_f now contains whole part of degrees
-//		sscanf (Nvalue[NMEA_LAT],"%2d%f",&whole,&frac);			// whole now contains whole part of degrees
-//		sscanf (Nvalue[NMEA_LAT],"%f",&frac);			// frac now contains the complete float (degrees + minutes)
 
 		ADDLOG_DEBUG(LOG_FEATURE_DRV,"NEO6M: fakelat=%s  Nvalue[NMEA_LAT]=%s ",fakelat,Nvalue[NMEA_LAT]);		
 		if (*fakelat && strlen(fakelat) <= strlen(Nvalue[NMEA_LAT])) memcpy(Nvalue[NMEA_LAT],fakelat,strlen(fakelat));
@@ -187,9 +167,6 @@ void parseGPS(char *data){
 
 
 		if (Nvalue[NMEA_LONG_DIR][0]) EW=Nvalue[NMEA_LONG_DIR][0];
-//		sscanf (Nvalue[NMEA_LONG],"%3f%f",&Long_f,&frac);			// Long_f now contains whole part of degrees
-//		sscanf (Nvalue[NMEA_LONG],"%3d%f",&whole,&frac);			// whole now contains whole part of degrees
-//		sscanf (Nvalue[NMEA_LONG],"%f",&frac);					// frac now contains the complete float (degrees + minutes)
 
 
 		ADDLOG_DEBUG(LOG_FEATURE_DRV,"NEO6M: fakelong=%s  Nvalue[NMEA_LONG]=%s ",fakelong,Nvalue[NMEA_LONG]);		
@@ -201,9 +178,6 @@ void parseGPS(char *data){
 		whole = (int)(Long_f/100);
 		Long_f=(float)whole + (Long_f - 100*whole)/60;
 		uint32_t epoch_time=obkmktime(YY,MM-1,DD,H,M,S);
-/*
-			    "Read GPS DATA:%02i.%02i.%i - %02i:%02i:%02i.%02i (epoch=%u) LAT=%f%c - LONG=%f%c  \r\n", DD,MM,YY,H,M,S,SS,epoch_time,Lat_f,NS,Long_f,EW);
-*/
 		tempstr[0]='\0';
 		if (setclock2gps && gpslocked && timeread && dateread){
 			TIME_setDeviceTime(epoch_time);
@@ -274,7 +248,7 @@ $PUBX,40,VTG,0,0,0,0*5E   // Disable VTG
 $PUBX,40,ZDA,0,0,0,0*44   // Disable ZDA
 */
 static void UART_WriteDisableNMEA(void) {
-    char send[8][26]={
+    char send[][26]={
     	"$PUBX,40,GGA,0,0,0,0*5A\r\n",
     	"$PUBX,40,GGA,0,0,0,0*5A\r\n",
 //    	"$PUBX,40,GGA,0,1,0,0*5B\r\n",   // Enable GGA
@@ -295,7 +269,7 @@ static void UART_WriteDisableNMEA(void) {
     }
 }
 static void UART_WriteEnableRMC(void) {
-    char send[2][26]={
+    char send[][26]={
     	"$PUBX,40,RMC,0,1,0,0*46\r\n",   // Enable RMC
     	"$PUBX,40,RMC,0,1,0,0*46\r\n"   // Enable RMC
     	};
@@ -311,24 +285,6 @@ static void UART_WriteEnableRMC(void) {
 static void Init(void) {
 
 }
-
-
-
-
-/*
-// THIS IS called by 'startDriver NEO6M' command
-// You can set alternate baud with 'startDriver NEO6M <rate>' syntax
-void NEO6M_UART_Init(void) {
-	Init();
-
-	NEO6M_baudRate = Tokenizer_GetArgIntegerDefault(1, 9600);
-	UART_InitUART(NEO6M_baudRate, 0, 0);
-	UART_InitReceiveRingBuffer(NEO6M_UART_RECEIVE_BUFFER_SIZE);
-	UART_WriteDisableNMEA();
-	
-
-}
-*/
 
 // THIS IS called by 'startDriver NEO6M' command
 // You can set alternate baud with 'startDriver NEO6M <rate>' syntax
@@ -405,47 +361,34 @@ void NEO6M_UART_Init(void) {
 
 void NEO6M_requestData(void) {
 //ADDLOG_INFO(LOG_FEATURE_DRV, "NEO6M_requestData \r\n");
-
-//    UART_InitUART(NEO6M_baudRate, 0);
     UART_GetNextPacket();
-//    UART_InitUART(NEO6M_baudRate, 0);
-
 }
 
 
 
 void NEO6M_UART_RunEverySecond(void) {
 
-/*
-    UART_TryToGetNextPacket();
-
-    UART_InitUART(NEO6M_baudRate, 0);
-*/
-
 	int cs= UART_GetDataSize();
 
-/*ADDLOG_INFO(LOG_FEATURE_DRV, 
-			    "NEO6M_UART_RunEverySecond: UART_GetDataSize() = %i  \r\n",cs);
+//ADDLOG_INFO(LOG_FEATURE_DRV,"NEO6M_UART_RunEverySecond: UART_GetDataSize() = %i  \r\n",cs);
 
-*/
 	if (g_secondsElapsed % 5 == 0) {	// every 5 seconds
 			NEO6M_requestData();
 	}
 	else { 
 		if (cs > 1){
-/*ADDLOG_INFO(LOG_FEATURE_DRV, "EO6M_UART_RunEverySecond: UART_ConsumeBytes(%i); \r\n",cs -1);
-			UART_ConsumeBytes(cs -1);
-*/
+//ADDLOG_INFO(LOG_FEATURE_DRV, "EO6M_UART_RunEverySecond: UART_ConsumeBytes(%i); \r\n",cs -1);
+			UART_ConsumeBytes(cs -1);	// empty buffer so the old vales are not read
 		}
 	}
-	if (g_secondsElapsed % 5 == 3) {	// every 5 seconds
+	if (g_secondsElapsed % 5 == 4) {	// every 5 seconds, one second before requesting data
 		if (failedTries >=5){
 			UART_WriteEnableRMC();	// try to enable NMEA RMC messages, just in case
 			failedTries = 0;
 		}
-		cs=UART_GetDataSize();
-		if (cs > 1) UART_ConsumeBytes(cs -1); // empty buffer before polling
-ADDLOG_INFO(LOG_FEATURE_DRV, "EO6M_UART_RunEverySecond: calling UART_WritePollReq \r\n");
+// we could also disable all NMEA outpot and only poll the data
+// this will be less serial "traffic", but time is available only on next cycle, so one additional second later
+//ADDLOG_INFO(LOG_FEATURE_DRV, "EO6M_UART_RunEverySecond: calling UART_WritePollReq \r\n");
 //		UART_WritePollReq();
 	}
 
