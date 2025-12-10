@@ -878,13 +878,18 @@ void Main_OnEverySecond()
 			}
 		}
 	}
-#if (WINDOWS || PLATFORM_TXW81X || PLATFORM_RDA5981)
 	g_secondsElapsed++;
-#elif defined(PLATFORM_ESPIDF)
-	g_secondsElapsed = (int)(esp_timer_get_time() / 1000000);
+// adjust clock to "internam timer" every minute (if platform supports this)
+#if !(WINDOWS || PLATFORM_TXW81X || PLATFORM_RDA5981)
+	if (g_secondsElapsed%60 == 0){
+#if defined(PLATFORM_ESPIDF)
+		g_secondsElapsed = (int)(esp_timer_get_time() / 1000000);
 #else
-	vTaskSetTimeOutState( &myTimeout );
-	g_secondsElapsed = (int)((((uint64_t) myTimeout.xOverflowCount << (sizeof(portTickType)*8) | myTimeout.xTimeOnEntering)*portTICK_RATE_MS ) / 1000 );
+		vTaskSetTimeOutState( &myTimeout );
+		g_secondsElapsed = (int)((((uint64_t) myTimeout.xOverflowCount << (sizeof(portTickType)*8) | myTimeout.xTimeOnEntering)*portTICK_RATE_MS ) / 1000 );
+#endif
+		ADDLOGF_INFO("Time: adjusted g_secondsElapsed \r\n");
+	}
 #endif
 	if (bSafeMode) {
 		safe = "[SAFE] ";
