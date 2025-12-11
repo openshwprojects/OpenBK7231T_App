@@ -112,7 +112,7 @@ static void readHoldingRegisters(){
 	if(receive_buffer[1]!=0x03){
 	// error
 	}
-	int registers [13];
+	int registers [16];
 	int register_count=receive_buffer[1]/2;
 	int i=0;
 	while(i<register_count){
@@ -149,7 +149,7 @@ static void monitoringThread(void* param)
 	while(1)
 	{
 		readHoldingRegisters();
-		rtos_delay_milliseconds(100);
+		rtos_delay_milliseconds(1000);
 	}
 }
 
