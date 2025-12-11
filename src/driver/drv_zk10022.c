@@ -87,14 +87,14 @@ static void readHoldingRegisters(){
 		UART_SendByte(buffer[i]);
 	}
 
-	rtos_delay_milliseconds(100);
+	rtos_delay_milliseconds(200);
 
 
 	unsigned char receive_buffer[1024];
 	int len = UART_GetDataSize();
 	int delay=0;
 
-	while(len < 1024 && delay < 10)
+	while(len < 1024 && delay < 30)
 	{
 		rtos_delay_milliseconds(1);
 		len = UART_GetDataSize();
@@ -109,8 +109,8 @@ static void readHoldingRegisters(){
 		}
 		UART_ConsumeBytes(len);
 	}
-    UART_SendByte(0x01);
-    UART_SendByte((byte)len);
+
+    addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Recv %d bytes.", len);
 	if(receive_buffer[1]!=0x03){
 	// error
 	}
@@ -129,7 +129,6 @@ static void readHoldingRegisters(){
 	bool protection_status = registers[0x10];
 	bool constant_current_status = registers[0x11];
 	bool switch_output = registers[0x12];
-    UART_SendByte(0x02);
 
 	#if ENABLE_MQTT
 		MQTT_PublishMain_StringFloat("zk_10022_set_voltage", set_voltage,2, 0);
