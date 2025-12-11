@@ -109,6 +109,8 @@ static void readHoldingRegisters(){
 		}
 		UART_ConsumeBytes(len);
 	}
+    UART_SendByte(0x01);
+    UART_SendByte((byte)len);
 	if(receive_buffer[1]!=0x03){
 	// error
 	}
@@ -127,6 +129,7 @@ static void readHoldingRegisters(){
 	bool protection_status = registers[0x10];
 	bool constant_current_status = registers[0x11];
 	bool switch_output = registers[0x12];
+    UART_SendByte(0x02);
 
 	#if ENABLE_MQTT
 		MQTT_PublishMain_StringFloat("zk_10022_set_voltage", set_voltage,2, 0);
