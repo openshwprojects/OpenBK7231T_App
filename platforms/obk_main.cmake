@@ -138,6 +138,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_tuyaMCUSensor.c
 	${OBK_SRCS}driver/drv_uart.c
 	${OBK_SRCS}driver/drv_uart_tcp.c
+	${OBK_SRCS}driver/drv_zk10022.c
 	${OBK_SRCS}driver/drv_ucs1912.c
 	${OBK_SRCS}driver/drv_wemo.c
 	${OBK_SRCS}driver/drv_widget.c

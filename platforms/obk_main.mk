@@ -158,6 +158,7 @@ OBKM_SRC  += $(OBK_SRCS)driver/drv_tuyaMCU.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_tuyaMCUSensor.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_uart.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_uart_tcp.c
+OBKM_SRC  += $(OBK_SRCS)driver/drv_zk10022.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_ucs1912.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_wemo.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_widget.c
