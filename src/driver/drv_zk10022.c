@@ -112,7 +112,7 @@ static void readHoldingRegisters(){
 	if(receive_buffer[1]!=0x03){
 	// error
 	}
-	int registers [16];
+	int registers [18];
 	int register_count=receive_buffer[1]/2;
 	int i=0;
 	while(i<register_count){
