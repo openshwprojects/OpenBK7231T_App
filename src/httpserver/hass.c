@@ -932,6 +932,212 @@ HassDeviceInfo* hass_init_light_singleColor_onChannels(int toggle, int dimmer, i
 
 	return dev_info;
 }
+
+
+HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, const char* state_topic, int decPlaces, int decOffset, int divider) {
+	//Assuming that there is only one DHT setup per device which keeps uniqueid/names simpler
+	HassDeviceInfo* info = hass_init_device_info(type, channel, NULL, NULL, 0, NULL);	//using channel as index to generate uniqueId
+
+	//https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes
+	switch (type) {
+	case HASS_PERCENT:
+		// backlog setChannelType 5 Percent; scheduleHADiscovery
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "%");
+		cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
+
+		// State topic for reading the percentage value
+		sprintf(g_hassBuffer, "%s", state_topic);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+
+		// Value template to ensure the value is between 0 and 100
+		//cJSON_AddStringToObject(info->root, "val_tpl", "{{ value | float | round(0) | max(0) | min(100) }}");
+
+
+		// Add number-specific properties for the slider
+		cJSON_AddStringToObject(info->root, "mode", "slider"); // Use slider mode in HA
+		cJSON_AddNumberToObject(info->root, "min", 0);        // Minimum value
+		cJSON_AddNumberToObject(info->root, "max", 100);      // Maximum value
+		cJSON_AddNumberToObject(info->root, "step", 1);       // Step value for slider
+		break;
+	case TEMPERATURE_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "temperature");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "°C");
+
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case HUMIDITY_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "humidity");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "%");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case SMOKE_SENSOR:
+		// there is no "smoke" class!
+		//cJSON_AddStringToObject(info->root, "dev_cla", "smoke");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "%");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case CO2_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "carbon_dioxide");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "ppm");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case PRESSURE_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "pressure");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "hPa");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case TVOC_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "volatile_organic_compounds");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "ppb");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case ILLUMINANCE_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "illuminance");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "lx");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case BATTERY_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "battery");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "%");
+		cJSON_AddStringToObject(info->root, "stat_t", "~/battery/get");
+		break;
+	case BATTERY_CHANNEL_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "battery");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "%");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case BATTERY_VOLTAGE_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "voltage");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "mV");
+		cJSON_AddStringToObject(info->root, "stat_t", "~/voltage/get");
+		break;
+	case VOLTAGE_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "voltage");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "V");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case CURRENT_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "current");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "A");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case POWER_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "power");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "W");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case ENERGY_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "energy");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "kWh");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_cla", "total_increasing");
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case POWERFACTOR_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "power_factor");
+		//cJSON_AddStringToObject(info->root, "unit_of_meas", "W");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case FREQUENCY_SENSOR:
+		cJSON_AddStringToObject(info->root, "dev_cla", "frequency");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "Hz");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case HASS_READONLYENUM:
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		// str sensor can't have state_class, so return before it gets set
+		return info;
+	case CUSTOM_SENSOR:
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case READONLYLOWMIDHIGH_SENSOR:
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		cJSON_AddStringToObject(info->root, "val_tpl", g_template_lowMidHigh);
+		break;
+	case WATER_QUALITY_PH:
+		cJSON_AddStringToObject(info->root, "dev_cla", "ph");
+		//cJSON_AddStringToObject(info->root, "unit_of_meas", "Ph");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case WATER_QUALITY_ORP:
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "mV");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case WATER_QUALITY_TDS:
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "ppm");
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		break;
+	case HASS_TEMP:
+		cJSON_AddStringToObject(info->root, "dev_cla", "temperature");
+		cJSON_AddStringToObject(info->root, "stat_t", "~/temp");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "°C");
+		cJSON_AddStringToObject(info->root, "entity_category", "diagnostic");
+		break;
+	case HASS_RSSI:
+		cJSON_AddStringToObject(info->root, "dev_cla", "signal_strength");
+		cJSON_AddStringToObject(info->root, "stat_t", "~/rssi");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "dBm");
+		cJSON_AddStringToObject(info->root, "entity_category", "diagnostic");
+		break;
+	case HASS_UPTIME:
+		cJSON_AddStringToObject(info->root, "dev_cla", "duration");
+		cJSON_AddStringToObject(info->root, "stat_t", "~/uptime");
+		cJSON_AddStringToObject(info->root, "unit_of_meas", "s");
+		cJSON_AddStringToObject(info->root, "entity_category", "diagnostic");
+		cJSON_AddStringToObject(info->root, "stat_cla", "total_increasing");
+		break;
+	case HASS_BUILD:
+		cJSON_AddStringToObject(info->root, "stat_t", "~/build");
+		cJSON_AddStringToObject(info->root, "entity_category", "diagnostic");
+		break;
+	case HASS_SSID:
+		cJSON_AddStringToObject(info->root, "stat_t", "~/ssid");
+		cJSON_AddStringToObject(info->root, "entity_category", "diagnostic");
+		cJSON_AddStringToObject(info->root, "icon", "mdi:access-point-network");
+		break;
+	case HASS_IP:
+		cJSON_AddStringToObject(info->root, "stat_t", "~/ip");
+		cJSON_AddStringToObject(info->root, "entity_category", "diagnostic");
+		cJSON_AddStringToObject(info->root, "icon", "mdi:ip-network");
+		break;
+	default:
+		sprintf(g_hassBuffer, "~/%d/get", channel);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
+		return NULL;
+	}
+
+	if (type != READONLYLOWMIDHIGH_SENSOR && type != HASS_BUILD && type != HASS_SSID && type != HASS_IP && !cJSON_HasObjectItem(info->root, "stat_cla")) {
+		cJSON_AddStringToObject(info->root, "stat_cla", "measurement");
+	}
+
+
+	if (decPlaces != -1 && decOffset != -1 && divider != -1 && type != HASS_PERCENT) {
+		//https://www.home-assistant.io/integrations/sensor.mqtt/ refers to value_template (val_tpl)
+		cJSON_AddStringToObject(info->root, "val_tpl", hass_generate_multiplyAndRound_template(decPlaces, decOffset, divider));
+	}
+
+	return info;
+}
+
 /// @brief Initializes HomeAssistant sensor device discovery storage.
 /// @param type
 /// @param channel

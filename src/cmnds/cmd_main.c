@@ -8,6 +8,7 @@
 #include "../driver/drv_uart.h"
 #if ENABLE_DRIVER_BL0942
 #include "../driver/drv_bl0942.h"
+#include "../driver/drv_local.h"
 #endif
 #include "../driver/drv_public.h"
 #include "../hal/hal_adc.h"

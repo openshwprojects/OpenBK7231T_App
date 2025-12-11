@@ -2034,6 +2034,14 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		}
 	}
 #endif
+#ifdef ENABLE_DRIVER_ZK10022
+			dev_info = hass_init_sensor_device_info(VOLTAGE_SENSOR,zk_10022_set_voltage,-1,-1,-1);
+			if (dev_info) {
+				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+				hass_free_device_info(dev_info);
+				discoveryQueued = true;
+			}
+#end
 
 #ifdef ENABLE_DRIVER_BL0937
 	if (measuringPower == true) {
