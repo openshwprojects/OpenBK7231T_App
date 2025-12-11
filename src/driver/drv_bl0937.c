@@ -320,15 +320,20 @@ commandResult_t BL0937_cmdForceOnPwrROC(const void* context, const char* cmd, co
 	} else {
 		g_p_forceonroc_limit=(float)Tokenizer_GetArgFloat(0);
 		g_p_forceonpcyc_limit=(float)Tokenizer_GetArgFloat(1);
-		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: %f W/s %f Wcycle", g_secondsElapsed, cmdName
-			, (float)g_p_forceonroc_limit, (float)g_p_forceonpcyc_limit);
+		int prec=(g_p_forceonroc_limit>2.0f || g_p_forceonpcyc_limit>2.0f)?0:2;
+		ADDLOG_INFO(LOG_FEATURE_CMD, "ts %5d %s: %.*f W/s %.*f Wcycle", g_secondsElapsed, cmdName
+			, prec, (float)g_p_forceonroc_limit, prec, (float)g_p_forceonpcyc_limit);
 		argok=1;
 	}
 #if CMD_SEND_VAL_MQTT > 0
 	if (g_enable_mqtt_on_cmd>0)	{
 		char curvalstr[16]; 
+		int prec=1;
+		if ( g_p_forceonroc_limit==0.0f && g_p_forceonpcyc_limit==0.0f ) {
+			prec=0;
+		}
 		if ( (float)g_p_forceonroc_limit < 10000.0f && (float)g_p_forceonpcyc_limit < 10000.0f) { //ensure there is no strlen overflow
-			sprintf(curvalstr, "%.1f %.1f", (float)g_p_forceonroc_limit, (float)g_p_forceonpcyc_limit);
+			sprintf(curvalstr, "%.*f %.*f", prec, (float)g_p_forceonroc_limit, prec, (float)g_p_forceonpcyc_limit);
 		} else {
 			strcpy(curvalstr, "invalid");
 		}
@@ -955,7 +960,8 @@ void BL0937_RunEverySecond(void)
 		diff_ntp_secelap = (int)(g_ntpTime - g_secondsElapsed- offs_ntp_diff);
 		if ( diff_ntp_secelap > 1764000000 && offs_ntp_diff < 86400 ) { //init once
 			offs_ntp_diff = (g_ntpTime - g_secondsElapsed);
-//			diff_ntp_secelap -= offs_ntp_diff;
+			diff_ntp_secelap -= offs_ntp_diff;
+			MQTT_PublishMain_StringInt("timechk_diff_offset", (int)offs_ntp_diff, OBK_PUBLISH_FLAG_QOS_ZERO);
 		} else {
 //			offs_ntp_diff = 0;
 		}
