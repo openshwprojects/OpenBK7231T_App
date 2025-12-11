@@ -957,6 +957,7 @@ void BL0937_RunEverySecond(void)
 		static int offs_ntp_diff=0; 
 		static int diff_ntp_secelap;
 		static int diff_ntp_stamp;
+		static int diff_ntp_count=0;
 		diff_ntp_secelap = (int)(g_ntpTime - g_secondsElapsed- offs_ntp_diff);
 		if ( diff_ntp_secelap > 1764000000 && offs_ntp_diff < 86400 ) { //init once
 			offs_ntp_diff = (g_ntpTime - g_secondsElapsed);
@@ -977,6 +978,8 @@ void BL0937_RunEverySecond(void)
 			MQTT_PublishMain_StringInt("timechk_diff_ntp_secelapsed", (int)(diff_ntp_secelap), OBK_PUBLISH_FLAG_QOS_ZERO);
 			MQTT_PublishMain_StringInt("timechk_pulseStampNow", pulseStampNow, OBK_PUBLISH_FLAG_QOS_ZERO);
 			MQTT_PublishMain_StringInt("timechk_diff_ntp_pulsestamp", (int)(diff_ntp_stamp), OBK_PUBLISH_FLAG_QOS_ZERO);
+			MQTT_PublishMain_StringInt("timechk_diff_ntp_count", (int)(diff_ntp_count), OBK_PUBLISH_FLAG_QOS_ZERO);
+			diff_ntp_count++;
 			g_ntp_hourlast = ltm->tm_hour;
 		#define SAMPLEFREQCALC_EVERY_X_HOUR 2
 		#if SAMPLEFREQCALC_EVERY_X_HOUR > 0
