@@ -13,13 +13,11 @@
 #if ENABLE_DRIVER_ZK10022
 
 
-extern int Main_HasWiFiConnected();
 static int g_baudRate = 115200;
 static xTaskHandle g_start_thread = NULL;
 
 static void monitoringThread(void* arg);
 static void writeRegister(int registerAddress,int value);
-void ZK10022_Deinit();
 
 static uint16_t MODBUS_CRC16( const unsigned char *buf, unsigned int len )
 {
