@@ -101,6 +101,9 @@ static void readHoldingRegisters(){
 		delay++;
 	}
 
+    UART_SendByte(0x00);
+    UART_SendByte((byte)len);
+
 	if(len > 0)
 	{
 		for(int i = 0; i < len; i++)
@@ -109,6 +112,7 @@ static void readHoldingRegisters(){
 		}
 		UART_ConsumeBytes(len);
 	}
+    UART_SendByte(0x01);
 
     addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Recv %d bytes.", len);
 	if(receive_buffer[1]!=0x03){
@@ -117,15 +121,19 @@ static void readHoldingRegisters(){
 	int registers [18];
 	int register_count=receive_buffer[1]/2;
 	int i=0;
+    UART_SendByte(0x02);
+
 	while(i<register_count){
 		registers[i]=receive_buffer[2+i*2]+receive_buffer[2+i*2+1]*256;
 	}
 	float set_voltage=registers[0]*0.01;
 	float set_current=registers[1]*0.01;
+    UART_SendByte(0x03);
 	float output_voltage=registers[2]*0.01;
 	float output_current=registers[3]*0.01;
 	float output_power=registers[4]*0.1;
 	float temperature=registers[13]*0.1;
+    UART_SendByte(0x04);
 	bool protection_status = registers[0x10];
 	bool constant_current_status = registers[0x11];
 	bool switch_output = registers[0x12];
