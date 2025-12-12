@@ -112,7 +112,7 @@ void readHoldingRegisters(){
 	// error
 	}
 	int registers [30];
-	int register_count=receive_buffer[1]/2;
+	int register_count=receive_buffer[2]/2;
 	int i=0;
 
     MQTT_PublishMain_StringInt("zk_10022_debug", 2, 0);
@@ -121,6 +121,7 @@ void readHoldingRegisters(){
 		registers[i]=receive_buffer[2+i*2]+receive_buffer[3+i*2]*256;
         MQTT_PublishMain_StringInt("zk_10022_debug_register", registers[i], 0);
         MQTT_PublishMain_StringInt("zk_10022_debug_register_index", i, 0);
+        i++;
 	}
     MQTT_PublishMain_StringInt("zk_10022_debug", 3, 0);
 	float set_voltage=registers[0]*0.01;
