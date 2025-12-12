@@ -249,7 +249,7 @@ int writeRegister(int registerAddress,short value){
 	int len = UART_GetDataSize();
 
 	int delay=0;
-	while(len =0 && delay < 250)
+	while(len == 0 && delay < 250)
 	{
 		rtos_delay_milliseconds(1);
 		len = UART_GetDataSize();
