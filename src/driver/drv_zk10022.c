@@ -119,7 +119,7 @@ void readHoldingRegisters(){
 	while(i<register_count){
 		registers[i]=receive_buffer[2+i*2]+receive_buffer[2+i*2+1]*256;
 	}
-    MQTT_PublishMain_StringInt("zk_10022_debug_register_count", register_count,2, 0);
+    MQTT_PublishMain_StringInt("zk_10022_debug_register_count", register_count, 0);
     MQTT_PublishMain_StringInt("zk_10022_debug", 3, 0);
 	float set_voltage=registers[0]*0.01;
 	float set_current=registers[1]*0.01;
