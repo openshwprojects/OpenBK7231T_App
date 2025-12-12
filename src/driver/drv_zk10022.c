@@ -86,6 +86,7 @@ static void readHoldingRegisters(){
 	{
 		UART_SendByte(buffer[i]);
 	}
+    rtos_delay_milliseconds(50);
 
 
 	unsigned char receive_buffer[1024];
@@ -93,9 +94,9 @@ static void readHoldingRegisters(){
     UART_SendByte((byte)len);
 	int delay=0;
 
-	while(len < 1024 && delay < 30)
+	while(len < 1024 && delay < 500)
 	{
-		rtos_delay_milliseconds(1);
+		rtos_delay_milliseconds(2);
 		len = UART_GetDataSize();
 		delay++;
 	}
