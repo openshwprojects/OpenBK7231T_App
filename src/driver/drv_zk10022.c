@@ -15,7 +15,7 @@
 
 static int g_baudRate = 115200;
 
-static void writeRegister(int registerAddress,int value);
+static int writeRegister(int registerAddress,int value);
 
 
 static SemaphoreHandle_t g_mutex = 0;
@@ -126,6 +126,7 @@ void readHoldingRegisters(){
     UART_ConsumeBytes(len);
 
 	if(len==0){
+        Mutex_Free();
         return;
     }
 
@@ -191,30 +192,39 @@ static commandResult_t CMD_ZK10022_Set_Voltage(const void* context, const char* 
 	Tokenizer_TokenizeString(args, 0);
 	if (Tokenizer_GetArgsCount() == 1) {
 		float voltage = Tokenizer_GetArgFloat(0);
-		writeRegister(0,(int)voltage*100);
+		if(writeRegister(0,(int)voltage*100)==0){
+            return CMD_RES_OK;
+        }
 	}
+    return CMD_RES_ERROR;
 }
 static commandResult_t CMD_ZK10022_Set_Current(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, 0);
 	if (Tokenizer_GetArgsCount() == 1) {
 		float current = Tokenizer_GetArgFloat(0);
-		writeRegister(1,(int)current*100);
-	}
+		if(writeRegister(1,(int)current*100)==0){
+            return CMD_RES_OK;
+        }
+    }
+    return CMD_RES_ERROR;
 }
 static commandResult_t CMD_ZK10022_Set_Switch(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, 0);
 	if (Tokenizer_GetArgsCount() == 1) {
 		float current = Tokenizer_GetArgInteger(0);
-		writeRegister(0x12,(int)current*100);
-	}
+		if(writeRegister(0x12,(int)current*100)==0){
+            return CMD_RES_OK;
+        }
+    }
+    return CMD_RES_ERROR;
 }
-static void writeRegister(int registerAddress,int value){
+static int writeRegister(int registerAddress,int value){
 
 	if(!Mutex_Take(500)){
 		ADDLOG_ERROR(LOG_FEATURE_DRV, "Locking Mutex failed\n");
-		return;
+		return 1;
     }
 	unsigned char buffer[8];
 	buffer[0] = 0x01;
@@ -259,9 +269,10 @@ static void writeRegister(int registerAddress,int value){
 		UART_ConsumeBytes(len);
 	}
 	if(receive_buffer[1]!=0x06){
-		// error
+		return 1;
 	}
 	Mutex_Free();
+    return 0;
 }
 
 
