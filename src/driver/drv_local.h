@@ -234,6 +234,7 @@ void UART_TCP_Init(void);
 void UART_TCP_Deinit(void);
 
 void ZK10022_Init(void);
+void ZK10022_RunEverySecond(void);
 void ZK10022_Deinit(void);
 void ZK10022_AddCommands(void);
 

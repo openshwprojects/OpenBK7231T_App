@@ -14,9 +14,7 @@
 
 
 static int g_baudRate = 115200;
-static xTaskHandle g_start_thread = NULL;
 
-static void monitoringThread(void* arg);
 static void writeRegister(int registerAddress,int value);
 
 static uint16_t MODBUS_CRC16( const unsigned char *buf, unsigned int len )
@@ -68,7 +66,7 @@ static uint16_t MODBUS_CRC16( const unsigned char *buf, unsigned int len )
 	return crc;
 }
 
-static void readHoldingRegisters(){
+void readHoldingRegisters(){
 
 	unsigned char buffer[8];
 	buffer[0] = 0x01;
@@ -93,9 +91,9 @@ static void readHoldingRegisters(){
 	int len = UART_GetDataSize();
 	int delay=0;
 
-	while(len < 1024 && delay < 500)
+	while(len < 1024 && delay < 250)
 	{
-		rtos_delay_milliseconds(2);
+		rtos_delay_milliseconds(1);
 		len = UART_GetDataSize();
 		delay++;
 	}
@@ -109,7 +107,6 @@ static void readHoldingRegisters(){
     UART_SendByte(0x01);
     UART_SendByte((byte)len);
 
-    addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Recv %d bytes.", len);
 	if(receive_buffer[1]!=0x03){
 	// error
 	}
@@ -149,13 +146,9 @@ static void readHoldingRegisters(){
 }
 
 
-static void monitoringThread(void* param)
+void ZK10022_RunEverySecond()
 {
-	while(1)
-	{
 		readHoldingRegisters();
-		rtos_delay_milliseconds(1000);
-	}
 }
 
 
@@ -168,19 +161,6 @@ void ZK10022_Init()
 	UART_InitUART(g_baudRate, 0,0,3, false);
 	UART_InitReceiveRingBuffer(512);
 
-	if(g_start_thread != NULL)
-	{
-		rtos_delete_thread(&g_start_thread);
-	}
-	OSStatus err = rtos_create_thread(&g_start_thread, BEKEN_APPLICATION_PRIORITY-1,
-		"ZK10022_MONITORING",
-		(beken_thread_function_t)monitoringThread,
-		0xF00,
-		(beken_thread_arg_t)0);
-	if(err != kNoErr)
-	{
-		ADDLOG_ERROR(LOG_FEATURE_DRV, "create \"ZK10022_MONITORING\" thread failed with %i!", err);
-	}
 }
 void ZK10022_Deinit(){
 }
