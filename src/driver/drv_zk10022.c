@@ -102,11 +102,11 @@ void readHoldingRegisters(){
     }
     UART_ConsumeBytes(len);
 
-    UART_SendByte(0x01);
-    UART_SendByte((byte)len);
 	if(len==0){
         return;
     }
+    MQTT_PublishMain_StringInt("zk_10022_debug_len", len,2, 0);
+    MQTT_PublishMain_StringInt("zk_10022_debug", 1,2, 0);
 
 	if(receive_buffer[1]!=0x03){
 	// error
@@ -114,19 +114,21 @@ void readHoldingRegisters(){
 	int registers [18];
 	int register_count=receive_buffer[1]/2;
 	int i=0;
-    UART_SendByte(0x02);
 
+    MQTT_PublishMain_StringInt("zk_10022_debug", 2,2, 0);
 	while(i<register_count){
 		registers[i]=receive_buffer[2+i*2]+receive_buffer[2+i*2+1]*256;
 	}
+    MQTT_PublishMain_StringInt("zk_10022_debug_register_count", register_count,2, 0);
+    MQTT_PublishMain_StringInt("zk_10022_debug", 3,2, 0);
 	float set_voltage=registers[0]*0.01;
 	float set_current=registers[1]*0.01;
-    UART_SendByte(0x03);
+    MQTT_PublishMain_StringInt("zk_10022_debug", 4,2, 0);
 	float output_voltage=registers[2]*0.01;
 	float output_current=registers[3]*0.01;
 	float output_power=registers[4]*0.1;
 	float temperature=registers[13]*0.1;
-    UART_SendByte(0x04);
+    MQTT_PublishMain_StringInt("zk_10022_debug", 5,2, 0);
 	bool protection_status = registers[0x10];
 	bool constant_current_status = registers[0x11];
 	bool switch_output = registers[0x12];
