@@ -163,12 +163,8 @@ static void monitoringThread(void* param)
 // backlog stopDriver ZK10022; startDriver ZK10022 115200 0 0 3
 void ZK10022_Init()
 {
-	g_baudRate = Tokenizer_GetArgIntegerDefault(1, g_baudRate);
-	int flowcontrol = Tokenizer_GetArgIntegerDefault(4, 0);
-	int stop_bits = Tokenizer_GetArgIntegerDefault(5, 0);
-	int data_width = Tokenizer_GetArgIntegerDefault(6, 3);
 
-	UART_InitUART(g_baudRate, 0,stop_bits,data_width, flowcontrol > 0 ? true : false);
+	UART_InitUART(g_baudRate, 0,0,3, false);
 	UART_InitReceiveRingBuffer(512);
 
 	if(g_start_thread != NULL)
