@@ -105,6 +105,7 @@ static void readHoldingRegisters(){
         receive_buffer[i] = UART_GetByte(i);
     }
     UART_ConsumeBytes(len);
+
     UART_SendByte(0x01);
     UART_SendByte((byte)len);
 
@@ -171,10 +172,10 @@ void ZK10022_Init()
 	{
 		rtos_delete_thread(&g_start_thread);
 	}
-	OSStatus err = rtos_create_thread(&g_start_thread, BEKEN_APPLICATION_PRIORITY,
+	OSStatus err = rtos_create_thread(&g_start_thread, BEKEN_APPLICATION_PRIORITY-1,
 		"ZK10022_MONITORING",
 		(beken_thread_function_t)monitoringThread,
-		0x800,
+		0xF00,
 		(beken_thread_arg_t)0);
 	if(err != kNoErr)
 	{
