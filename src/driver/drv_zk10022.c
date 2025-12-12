@@ -89,7 +89,7 @@ static void readHoldingRegisters(){
     rtos_delay_milliseconds(50);
 
 
-	unsigned char receive_buffer[1024];
+	unsigned char receive_buffer[256];
 	int len = UART_GetDataSize();
 	int delay=0;
 
@@ -100,14 +100,11 @@ static void readHoldingRegisters(){
 		delay++;
 	}
 
-	if(len > 0)
-	{
-		for(int i = 0; i < len; i++)
-		{
-			receive_buffer[i] = UART_GetByte(i);
-		}
-		UART_ConsumeBytes(len);
-	}
+    for(int i = 0; i < len; i++)
+    {
+        receive_buffer[i] = UART_GetByte(i);
+    }
+    UART_ConsumeBytes(len);
     UART_SendByte(0x01);
     UART_SendByte((byte)len);
 
@@ -172,7 +169,7 @@ void ZK10022_Init()
 	int data_width = Tokenizer_GetArgIntegerDefault(6, 3);
 
 	UART_InitUART(g_baudRate, 0,stop_bits,data_width, flowcontrol > 0 ? true : false);
-	UART_InitReceiveRingBuffer(2048);
+	UART_InitReceiveRingBuffer(512);
 
 	if(g_start_thread != NULL)
 	{
