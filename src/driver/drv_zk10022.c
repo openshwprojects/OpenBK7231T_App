@@ -139,7 +139,7 @@ void readHoldingRegisters(){
 	int i=0;
 
 	while(i<register_count){
-		registers[i]=receive_buffer[2+i*2]<<8+receive_buffer[3+i*2];
+		registers[i]=receive_buffer[3+i*2]<<8+receive_buffer[4+i*2];
         i++;
 	}
 	float set_voltage=registers[0]*0.01;
