@@ -87,8 +87,6 @@ static void readHoldingRegisters(){
 		UART_SendByte(buffer[i]);
 	}
 
-	rtos_delay_milliseconds(200);
-
 
 	unsigned char receive_buffer[1024];
 	int len = UART_GetDataSize();
@@ -101,9 +99,6 @@ static void readHoldingRegisters(){
 		delay++;
 	}
 
-    UART_SendByte(0x00);
-    UART_SendByte((byte)len);
-
 	if(len > 0)
 	{
 		for(int i = 0; i < len; i++)
@@ -113,6 +108,7 @@ static void readHoldingRegisters(){
 		UART_ConsumeBytes(len);
 	}
     UART_SendByte(0x01);
+    UART_SendByte((byte)len);
 
     addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Recv %d bytes.", len);
 	if(receive_buffer[1]!=0x03){
