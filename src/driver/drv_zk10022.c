@@ -91,7 +91,6 @@ static void readHoldingRegisters(){
 
 	unsigned char receive_buffer[1024];
 	int len = UART_GetDataSize();
-    UART_SendByte((byte)len);
 	int delay=0;
 
 	while(len < 1024 && delay < 500)
