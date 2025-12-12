@@ -15,7 +15,7 @@
 
 static int g_baudRate = 115200;
 
-static int writeRegister(int registerAddress,int value);
+static int writeRegister(int registerAddress,short value);
 
 
 static SemaphoreHandle_t g_mutex = 0;
@@ -192,7 +192,7 @@ static commandResult_t CMD_ZK10022_Set_Voltage(const void* context, const char* 
 	Tokenizer_TokenizeString(args, 0);
 	if (Tokenizer_GetArgsCount() == 1) {
 		float voltage = Tokenizer_GetArgFloat(0);
-		if(writeRegister(0,(int)voltage*100)==0){
+		if(writeRegister(0,(short)(voltage*100))==0){
             return CMD_RES_OK;
         }
 	}
@@ -203,7 +203,7 @@ static commandResult_t CMD_ZK10022_Set_Current(const void* context, const char* 
 	Tokenizer_TokenizeString(args, 0);
 	if (Tokenizer_GetArgsCount() == 1) {
 		float current = Tokenizer_GetArgFloat(0);
-		if(writeRegister(1,(int)current*100)==0){
+		if(writeRegister(1,(short)(current*100))==0){
             return CMD_RES_OK;
         }
     }
@@ -214,13 +214,13 @@ static commandResult_t CMD_ZK10022_Set_Switch(const void* context, const char* c
 	Tokenizer_TokenizeString(args, 0);
 	if (Tokenizer_GetArgsCount() == 1) {
 		float current = Tokenizer_GetArgInteger(0);
-		if(writeRegister(0x12,(int)current*100)==0){
+		if(writeRegister(0x12,(int)(current*100))==0){
             return CMD_RES_OK;
         }
     }
     return CMD_RES_ERROR;
 }
-static int writeRegister(int registerAddress,int value){
+static int writeRegister(int registerAddress,short value){
 
 	if(!Mutex_Take(500)){
 		ADDLOG_ERROR(LOG_FEATURE_DRV, "Locking Mutex failed\n");
@@ -233,8 +233,8 @@ static int writeRegister(int registerAddress,int value){
 	buffer[2] = registerAddress>>8 & 0xFF;
 	buffer[3] = registerAddress & 0xFF;
 
-	buffer[4] = value >> 8 & 0xFF;
-	buffer[5] = value & 0xFF;
+	buffer[4] = (byte)(value >> 8) ;
+	buffer[5] = (byte)(value) ;
 	uint16_t crc = MODBUS_CRC16(buffer, 6);
 
 	buffer[6] = crc & 0xFF;
