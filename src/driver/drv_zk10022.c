@@ -139,9 +139,10 @@ void readHoldingRegisters(){
 	int i=0;
 
 	while(i<register_count){
-		registers[i]=receive_buffer[3+i*2]<<8+receive_buffer[4+i*2];
+		registers[i]=receive_buffer[3+i*2]*255+receive_buffer[4+i*2];
         i++;
 	}
+    MQTT_PublishMain_StringFloat("zk_10022_register_0", registers[0],2, 0);
 	float set_voltage=registers[0]*0.01;
 	float set_current=registers[1]*0.01;
 	float output_voltage=registers[2]*0.01;
@@ -265,11 +266,10 @@ static int writeRegister(int registerAddress,short value){
 		}
 		UART_ConsumeBytes(len);
 	}
+    Mutex_Free();
 	if(receive_buffer[1]!=0x06){
-        Mutex_Free();
 		return 1;
 	}
-	Mutex_Free();
     return 0;
 }
 
