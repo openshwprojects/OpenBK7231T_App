@@ -106,6 +106,9 @@ void readHoldingRegisters(){
 
     UART_SendByte(0x01);
     UART_SendByte((byte)len);
+	if(len==0){
+        return;
+    }
 
 	if(receive_buffer[1]!=0x03){
 	// error

@@ -592,7 +592,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"UART to TCP bridge, mainly for WiFi Zigbee coordinators.",
 	//drvdetail:"requires":""}
-	{ "ZK10022",		ZK10022_Init,		ZK_10022_RunEverySecond,	NULL, NULL, ZK10022_Deinit, NULL, NULL, false },
+	{ "ZK10022",		ZK10022_Init,		ZK10022_RunEverySecond,	NULL, NULL, ZK10022_Deinit, NULL, NULL, false },
 #endif
 #if PLATFORM_TXW81X
 	//drvdetail:{"name":"TXWCAM",
