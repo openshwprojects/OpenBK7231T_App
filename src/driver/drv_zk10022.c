@@ -139,7 +139,7 @@ void readHoldingRegisters(){
 	int i=0;
 
 	while(i<register_count){
-		registers[i]=receive_buffer[2+i*2]+receive_buffer[3+i*2]*255;
+		registers[i]=receive_buffer[2+i*2]<<8+receive_buffer[3+i*2];
         i++;
 	}
 	float set_voltage=registers[0]*0.01;
@@ -233,8 +233,8 @@ static int writeRegister(int registerAddress,short value){
 	buffer[2] = registerAddress>>8 & 0xFF;
 	buffer[3] = registerAddress & 0xFF;
 
-	buffer[4] = (byte)(value >> 8) ;
-	buffer[5] = (byte)(value) ;
+	buffer[4] = (byte)(value >> 8 & 0xFF) ;
+	buffer[5] = (byte)(value & 0xFF) ;
 	uint16_t crc = MODBUS_CRC16(buffer, 6);
 
 	buffer[6] = crc & 0xFF;
@@ -246,14 +246,11 @@ static int writeRegister(int registerAddress,short value){
 		UART_SendByte(buffer[i]);
 	}
 
-	rtos_delay_milliseconds(30);
-
-
-	unsigned char receive_buffer[1024];
+	unsigned char receive_buffer[256];
 	int len = UART_GetDataSize();
 
 	int delay=0;
-	while(len =0 && delay < 10)
+	while(len =0 && delay < 250)
 	{
 		rtos_delay_milliseconds(1);
 		len = UART_GetDataSize();
@@ -269,6 +266,7 @@ static int writeRegister(int registerAddress,short value){
 		UART_ConsumeBytes(len);
 	}
 	if(receive_buffer[1]!=0x06){
+        Mutex_Free();
 		return 1;
 	}
 	Mutex_Free();
