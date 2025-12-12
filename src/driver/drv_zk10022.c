@@ -119,8 +119,6 @@ void readHoldingRegisters(){
     MQTT_PublishMain_StringInt("zk_10022_debug_register_count", register_count, 0);
 	while(i<register_count){
 		registers[i]=receive_buffer[2+i*2]+receive_buffer[3+i*2]*256;
-        MQTT_PublishMain_StringInt("zk_10022_debug_register", registers[i], 0);
-        MQTT_PublishMain_StringInt("zk_10022_debug_register_index", i, 0);
         i++;
 	}
     MQTT_PublishMain_StringInt("zk_10022_debug", 3, 0);
