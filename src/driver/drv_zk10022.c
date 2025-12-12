@@ -172,6 +172,7 @@ void ZK10022_Init()
 	int data_width = Tokenizer_GetArgIntegerDefault(6, 3);
 
 	UART_InitUART(g_baudRate, 0,stop_bits,data_width, flowcontrol > 0 ? true : false);
+	UART_InitReceiveRingBuffer(2048);
 
 	if(g_start_thread != NULL)
 	{
