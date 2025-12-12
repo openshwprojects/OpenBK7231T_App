@@ -124,9 +124,9 @@ void readHoldingRegisters(){
         receive_buffer[i] = UART_GetByte(i);
     }
     UART_ConsumeBytes(len);
+    Mutex_Free();
 
 	if(len==0){
-        Mutex_Free();
         return;
     }
 
@@ -139,10 +139,9 @@ void readHoldingRegisters(){
 	int i=0;
 
 	while(i<register_count){
-		registers[i]=receive_buffer[3+i*2]*255+receive_buffer[4+i*2];
+		registers[i]=receive_buffer[3+i*2]*256+receive_buffer[4+i*2];
         i++;
 	}
-    MQTT_PublishMain_StringFloat("zk_10022_register_0", registers[0],2, 0);
 	float set_voltage=registers[0]*0.01;
 	float set_current=registers[1]*0.01;
 	float output_voltage=registers[2]*0.01;
@@ -164,7 +163,6 @@ void readHoldingRegisters(){
 		MQTT_PublishMain_StringInt("zk_10022_constant_current_status", (int)constant_current_status, 0);
 		MQTT_PublishMain_StringInt("zk_10022_switch_output", (int)switch_output, 0);
 	#endif
-    Mutex_Free();
 }
 
 
@@ -188,7 +186,7 @@ void ZK10022_Deinit(){
 }
 
 
-static commandResult_t CMD_ZK10022_Set_Voltage(const void* context, const char* cmd, const char* args, int cmdFlags) {
+commandResult_t CMD_ZK10022_Set_Voltage(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, 0);
 	if (Tokenizer_GetArgsCount() == 1) {
@@ -199,7 +197,7 @@ static commandResult_t CMD_ZK10022_Set_Voltage(const void* context, const char* 
 	}
     return CMD_RES_ERROR;
 }
-static commandResult_t CMD_ZK10022_Set_Current(const void* context, const char* cmd, const char* args, int cmdFlags) {
+commandResult_t CMD_ZK10022_Set_Current(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, 0);
 	if (Tokenizer_GetArgsCount() == 1) {
@@ -210,7 +208,7 @@ static commandResult_t CMD_ZK10022_Set_Current(const void* context, const char* 
     }
     return CMD_RES_ERROR;
 }
-static commandResult_t CMD_ZK10022_Set_Switch(const void* context, const char* cmd, const char* args, int cmdFlags) {
+commandResult_t CMD_ZK10022_Set_Switch(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, 0);
 	if (Tokenizer_GetArgsCount() == 1) {
@@ -221,7 +219,7 @@ static commandResult_t CMD_ZK10022_Set_Switch(const void* context, const char* c
     }
     return CMD_RES_ERROR;
 }
-static int writeRegister(int registerAddress,short value){
+int writeRegister(int registerAddress,short value){
 
 	if(!Mutex_Take(500)){
 		ADDLOG_ERROR(LOG_FEATURE_DRV, "Locking Mutex failed\n");
@@ -257,17 +255,17 @@ static int writeRegister(int registerAddress,short value){
 		len = UART_GetDataSize();
 		delay++;
 	}
+    MQTT_PublishMain_StringInt("zk_10022_debug_len", len, 0);
 
-	if(len > 0)
-	{
-		for(int i = 0; i < len; i++)
-		{
-			receive_buffer[i] = UART_GetByte(i);
-		}
-		UART_ConsumeBytes(len);
-	}
+    for(int i = 0; i < len; i++)
+    {
+        receive_buffer[i] = UART_GetByte(i);
+    }
+    UART_ConsumeBytes(len);
     Mutex_Free();
 	if(receive_buffer[1]!=0x06){
+		ADDLOG_ERROR(LOG_FEATURE_DRV, "Error UART\n");
+		MQTT_PublishMain_StringInt("zk_10022_error_uart_write", receive_buffer[1], 0);
 		return 1;
 	}
     return 0;
