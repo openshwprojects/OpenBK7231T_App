@@ -17,6 +17,26 @@ static int g_baudRate = 115200;
 
 static void writeRegister(int registerAddress,int value);
 
+
+static SemaphoreHandle_t g_mutex = 0;
+
+bool Mutex_Take(int del) {
+	int taken;
+
+	if (g_mutex == 0)
+	{
+		g_mutex = xSemaphoreCreateMutex();
+	}
+	taken = xSemaphoreTake(g_mutex, del);
+	if (taken == pdTRUE) {
+		return true;
+	}
+	return false;
+}
+void Mutex_Free() {
+	xSemaphoreGive(g_mutex);
+}
+
 static uint16_t MODBUS_CRC16( const unsigned char *buf, unsigned int len )
 {
 	static const uint16_t table[256] = {
@@ -68,6 +88,9 @@ static uint16_t MODBUS_CRC16( const unsigned char *buf, unsigned int len )
 
 void readHoldingRegisters(){
 
+	if(!Mutex_Take(10)){
+		return;
+    }
 	unsigned char buffer[8];
 	buffer[0] = 0x01;
 	buffer[1] = 0x03;
@@ -105,31 +128,25 @@ void readHoldingRegisters(){
 	if(len==0){
         return;
     }
-    MQTT_PublishMain_StringInt("zk_10022_debug_len", len, 0);
-    MQTT_PublishMain_StringInt("zk_10022_debug", 1, 0);
 
 	if(receive_buffer[1]!=0x03){
-	// error
+
+		MQTT_PublishMain_StringInt("zk_10022_error_uart", receive_buffer[1], 0);
 	}
 	int registers [30];
 	int register_count=receive_buffer[2]/2;
 	int i=0;
 
-    MQTT_PublishMain_StringInt("zk_10022_debug", 2, 0);
-    MQTT_PublishMain_StringInt("zk_10022_debug_register_count", register_count, 0);
 	while(i<register_count){
-		registers[i]=receive_buffer[2+i*2]+receive_buffer[3+i*2]*256;
+		registers[i]=receive_buffer[2+i*2]+receive_buffer[3+i*2]*255;
         i++;
 	}
-    MQTT_PublishMain_StringInt("zk_10022_debug", 3, 0);
 	float set_voltage=registers[0]*0.01;
 	float set_current=registers[1]*0.01;
-    MQTT_PublishMain_StringInt("zk_10022_debug", 4, 0);
 	float output_voltage=registers[2]*0.01;
 	float output_current=registers[3]*0.01;
 	float output_power=registers[4]*0.1;
-	float temperature=registers[13]*0.1;
-    MQTT_PublishMain_StringInt("zk_10022_debug", 5, 0);
+	float temperature=registers[0x0d]*0.1;
 	bool protection_status = registers[0x10];
 	bool constant_current_status = registers[0x11];
 	bool switch_output = registers[0x12];
@@ -145,8 +162,7 @@ void readHoldingRegisters(){
 		MQTT_PublishMain_StringInt("zk_10022_constant_current_status", (int)constant_current_status, 0);
 		MQTT_PublishMain_StringInt("zk_10022_switch_output", (int)switch_output, 0);
 	#endif
-
-
+    Mutex_Free();
 }
 
 
@@ -196,15 +212,19 @@ static commandResult_t CMD_ZK10022_Set_Switch(const void* context, const char* c
 }
 static void writeRegister(int registerAddress,int value){
 
+	if(!Mutex_Take(500)){
+		ADDLOG_ERROR(LOG_FEATURE_DRV, "Locking Mutex failed\n");
+		return;
+    }
 	unsigned char buffer[8];
 	buffer[0] = 0x01;
 	buffer[1] = 0x06;
 
-	buffer[2] = registerAddress>>8 & 0x255;
-	buffer[3] = registerAddress & 0x255;
+	buffer[2] = registerAddress>>8 & 0xFF;
+	buffer[3] = registerAddress & 0xFF;
 
-	buffer[4] = value >> 8 & 0x255;
-	buffer[5] = value & 0x255;
+	buffer[4] = value >> 8 & 0xFF;
+	buffer[5] = value & 0xFF;
 	uint16_t crc = MODBUS_CRC16(buffer, 6);
 
 	buffer[6] = crc & 0xFF;
@@ -216,14 +236,14 @@ static void writeRegister(int registerAddress,int value){
 		UART_SendByte(buffer[i]);
 	}
 
-	rtos_delay_milliseconds(100);
+	rtos_delay_milliseconds(30);
 
 
 	unsigned char receive_buffer[1024];
 	int len = UART_GetDataSize();
 
 	int delay=0;
-	while(len < 1024 && delay < 10)
+	while(len =0 && delay < 10)
 	{
 		rtos_delay_milliseconds(1);
 		len = UART_GetDataSize();
@@ -241,6 +261,7 @@ static void writeRegister(int registerAddress,int value){
 	if(receive_buffer[1]!=0x06){
 		// error
 	}
+	Mutex_Free();
 }
 
 
