@@ -18,13 +18,13 @@
 
 #include "drv_tclAC.h"
 
-uint8_t set_cmd_base[35] = { 0xBB, 0x00, 0x01, 0x03, 0x1D, 0x00, 0x00, 0x64, 0x03, 0xF3, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+uint8_t set_cmd_base[35] = { 0xBB, 0x00, 0x01, 0x03, 0x1D, 0x00, 0x00, 0x64, 0x03, 0xF3, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0[...]
 bool ready_to_send_set_cmd_flag = false;
 set_cmd_t m_set_cmd = { 0 };
 get_cmd_resp_t m_get_cmd_resp = { 0 };
 int g_buzzer = 1;
 int g_disp = 1;
-int g_gen = 0;
+int g_gen = 1;
 
 typedef enum {
 	CLIMATE_MODE_OFF,
@@ -151,6 +151,9 @@ static const struct {
 };
 //const char *fanOptions[] = { "auto", "low", "medium", "high" };
 const char *fanOptions[] = { "off", "1", "2", "3", "4", "5", "mute", "turbo", "auto" };
+
+/* Added Gen options (0..3). Adjust if you want a different range. */
+const char *genOptions[] = { "0", "1", "2", "3" };
 
 fanMode_e parseFanMode(const char *s) {
 	for (int i = 0; i < sizeof(fanModeMap) / sizeof(fanModeMap[0]); ++i) {
@@ -676,22 +679,32 @@ void TCL_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState
 		HTTP_CreateDIV(request, "ACMode");
 		HTTP_CreateDIV(request, "SwingV");
 		HTTP_CreateDIV(request, "SwingH");
+		HTTP_CreateDIV(request, "Gen");
 		hprintf255(request, "</div>");
 		hprintf255(request, "<div style=\"display: grid; grid-auto-flow: column;\">");
 		HTTP_CreateSelect(request, fanOptions, sizeof(fanOptions) / sizeof(fanOptions[0]), climateModeToStr(g_mode), "ACMode");
 		HTTP_CreateSelect(request, vertical_swing_options, sizeof(vertical_swing_options) / sizeof(vertical_swing_options[0]), getSwingVLabel(g_swingV), "SwingV");
 		HTTP_CreateSelect(request, horizontal_swing_options, sizeof(horizontal_swing_options) / sizeof(horizontal_swing_options[0]), getSwingHLabel(g_swingH),"SwingH");
+		{
+			char gen_active[8];
+			sprintf(gen_active, "%d", g_gen);
+			HTTP_CreateSelect(request, genOptions, sizeof(genOptions) / sizeof(genOptions[0]), gen_active, "Gen");
+		}
 		hprintf255(request, "</div>");
 	}
 	else {
+		char gen_active[8];
+		sprintf(gen_active, "%d", g_gen);
 		HTTP_CreateRadio(request, fanOptions, sizeof(fanOptions) / sizeof(fanOptions[0]), climateModeToStr(g_mode), "ACMode");
 		HTTP_CreateRadio(request, vertical_swing_options, sizeof(vertical_swing_options) / sizeof(vertical_swing_options[0]), getSwingVLabel(g_swingV), "SwingV");
 		HTTP_CreateRadio(request, horizontal_swing_options, sizeof(horizontal_swing_options) / sizeof(horizontal_swing_options[0]), getSwingHLabel(g_swingH), "SwingH");
+		HTTP_CreateRadio(request, genOptions, sizeof(genOptions) / sizeof(genOptions[0]), gen_active, "Gen");
 		hprintf255(request, "<h3>SwingH: %s</h3>", getSwingHLabel(g_swingH));
 		hprintf255(request, "<h3>SwingV: %s</h3>", getSwingVLabel(g_swingV));
 		hprintf255(request, "<h3>Mode: %s</h3>", climateModeToStr(g_mode));
 		hprintf255(request, "<h3>Current temperature: %f</h3>", current_temperature);
 		hprintf255(request, "<h3>Target temperature: %f</h3>", target_temperature);
+		hprintf255(request, "<h3>Gen: %d</h3>", g_gen);
 	}
 
 }
@@ -755,19 +768,19 @@ void TCL_Init(void) {
 	UART_InitReceiveRingBuffer(TCL_UART_RECEIVE_BUFFER_SIZE);
 
 	//cmddetail:{"name":"ACMode","args":"CMD_ACMode",
-	//cmddetail:"descr":"",
+	//cmndetail:"descr":"",
 	//cmddetail:"fn":"CMD_ACMode","file":"driver/drv_tclAC.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("ACMode", CMD_ACMode, NULL);
 	//cmddetail:{"name":"FANMode","args":"CMD_FANMode",
-	//cmddetail:"descr":"",
-	//cmddetail:"fn":"CMD_FANMode","file":"driver/drv_tclAC.c","requires":"",
-	//cmddetail:"examples":""}
+	//cmndetail:"descr":"",
+	//cmndetail:"fn":"CMD_FANMode","file":"driver/drv_tclAC.c","requires":"",
+	//cmndetail:"examples":""}
 	CMD_RegisterCommand("FANMode", CMD_FANMode, NULL);
-	//cmddetail:{"name":"SwingH","args":"CMD_SwingH",
-	//cmddetail:"descr":"",
-	//cmddetail:"fn":"CMD_SwingH","file":"driver/drv_tclAC.c","requires":"",
-	//cmddetail:"examples":""}
+	//cmndetail:{"name":"SwingH","args":"CMD_SwingH",
+	//cmndetail:"descr":"",
+	//cmndetail:"fn":"CMD_SwingH","file":"driver/drv_tclAC.c","requires":"",
+	//cmndetail:"examples":""}
 	CMD_RegisterCommand("SwingH", CMD_SwingH, NULL);
 	//cmddetail:{"name":"SwingV","args":"CMD_SwingV",
 	//cmddetail:"descr":"",
@@ -810,6 +823,7 @@ void TCL_UART_RunEverySecond(void) {
 	MQTT_PublishMain_StringInt("Display", g_disp, 0);
 	MQTT_PublishMain_StringString("SwingH", getSwingHLabel(g_swingH), 0);
 	MQTT_PublishMain_StringString("SwingV", getSwingVLabel(g_swingV), 0);
+	MQTT_PublishMain_StringInt("Gen", g_gen, 0);
 
 	if (ready_to_send_set_cmd_flag) {
 		ADDLOG_WARN(LOG_FEATURE_ENERGYMETER, "Sending data");
@@ -846,32 +860,36 @@ void TCL_DoDiscovery(const char *topic) {
 	MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 	hass_free_device_info(dev_info);
 
+	/* Add Gen select entity so HA shows a dropdown for selecting Gen */
+	{
+		char command_topic[64];
+		// command topic is cmnd/<clientid>/Gen, hass_createSelectEntity expects a full command topic
+		sprintf(command_topic, "cmnd/%s/Gen", CFG_GetMQTTClientId());
+		dev_info = hass_createSelectEntity("~/Gen/get", command_topic, sizeof(genOptions) / sizeof(genOptions[0]), genOptions, "Gen");
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+	}
 
-		//char command_topic[64];
+	//dev_info = hass_createSelectEntity(
+	//	"~/SwingV/get",               // state_topic
+	//	command_topic,                          // command_topic
+	//	9,                                      // numoptions (VerticalSwingMode has 9 values)
+	//	vertical_swing_options,                 // fanOptions array
+	//	"Vertical Swing Mode"                   // title
+	//);
+	//MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+	//hass_free_device_info(dev_info);
 
-		//// Vertical Swing Entity
-		//sprintf(command_topic, "cmnd/%s/SwingV", CFG_GetMQTTClientId());
-		//dev_info = hass_createSelectEntity(
-		//	"~/SwingV/get",               // state_topic
-		//	command_topic,                          // command_topic
-		//	9,                                      // numoptions (VerticalSwingMode has 9 values)
-		//	vertical_swing_options,                 // fanOptions array
-		//	"Vertical Swing Mode"                   // title
-		//);
-		//MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-		//hass_free_device_info(dev_info);
-
-		//// Horizontal Swing Entity
-		//sprintf(command_topic, "cmnd/%s/SwingH", CFG_GetMQTTClientId());
-		//dev_info = hass_createSelectEntity(
-		//	"~/SwingH/get",            // state_topic
-		//	command_topic,                          // command_topic
-		//	10,                                     // numoptions (HorizontalSwing has 10 values)
-		//	horizontal_swing_options,               // fanOptions array
-		//	"Horizontal Swing Mode"                 // title
-		//);
-	//	MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
-		//hass_free_device_info(dev_info);
+	//// Horizontal Swing Entity
+	//sprintf(command_topic, "cmnd/%s/SwingH", CFG_GetMQTTClientId());
+	//dev_info = hass_createSelectEntity(
+	//	"~/SwingH/get",            // state_topic
+	//	command_topic,                          // command_topic
+	//	10,                                     // numoptions (HorizontalSwing has 10 values)
+	//	horizontal_swing_options,               // fanOptions array
+	//	"Horizontal Swing Mode"                 // title
+	//);
+	//MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+	//hass_free_device_info(dev_info);
 
 }
-
