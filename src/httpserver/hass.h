@@ -103,8 +103,6 @@ typedef enum {
 	HASS_BUTTON,
 	// @Brief ChType_ReadOnlyEnum, readonly with value_template
 	HASS_READONLYENUM,
-	HASS_GARAGE,
-
 } ENTITY_TYPE;
 
 typedef enum {
@@ -142,7 +140,7 @@ HassDeviceInfo* hass_init_light_singleColor_onChannels(int toggle, int dimmer, i
 HassDeviceInfo* hass_init_binary_sensor_device_info(int index, bool bInverse);
 HassDeviceInfo* hass_init_sensor_device_info(ENTITY_TYPE type, int channel, int decPlaces, int decOffset, int divider);
 HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **fanOptions, int numFanOptions,
-	const char **swingOptions, int numSwingOptions, const char **swingHOptions, int numSwingHOptions);
+	const char **swingOptions, int numSwingOptions, const char **swingHOptions, int numSwingHOptions, const char **GenOptions, int numGenOptions);
 HassDeviceInfo* hass_createFanWithModes(const char *label, const char *stateTopic,
 	const char *command, const char **options, int numOptions);
 HassDeviceInfo* hass_createSelectEntity(const char* state_topic, const char* command_topic, int numoptions,
@@ -151,8 +149,6 @@ HassDeviceInfo* hass_createSelectEntityIndexed(const char* state_topic, const ch
 	const char* options[], const char* title);
 HassDeviceInfo* hass_createSelectEntityIndexedCustom(const char* state_topic, const char* command_topic, int numoptions,
 	const char* options[], const char* title, char* value_template, char* command_template);
-HassDeviceInfo* hass_createGarageEntity(const char* state_topic, const char* command_topic,
-	const char *title);
 
 HassDeviceInfo* hass_createToggle(const char *label, const char *stateTopic, const char *commandTopic);
 HassDeviceInfo* hass_init_textField_info(int index);
@@ -162,3 +158,4 @@ char *hass_generate_multiplyAndRound_template(int decimalPlacesForRounding, int 
 HassDeviceInfo* hass_init_textField_info(int index);
 HassDeviceInfo* hass_init_button_device_info(char* title,char* cmd_id, char* press_payload, HASS_CATEGORY_TYPE type);
 #endif // ENABLE_HA_DISCOVERY
+
