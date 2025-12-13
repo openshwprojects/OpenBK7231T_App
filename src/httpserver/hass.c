@@ -396,7 +396,7 @@ HassDeviceInfo* hass_createSelectEntityIndexedCustom(const char* state_topic, co
 }
 
 HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **fanOptions, int numFanOptions,
-	const char **swingOptions, int numSwingOptions, const char **swingHOptions, int numSwingHOptions) {
+	const char **swingOptions, int numSwingOptions, const char **swingHOptions, int numSwingHOptions, const char **genOptions, int numGenOptions) {
 	HassDeviceInfo* info = hass_init_device_info(HASS_HVAC, 0, NULL, NULL, 0, 0);
 
 	// Set the name for the HVAC device
@@ -411,6 +411,15 @@ HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **f
 	cJSON_AddStringToObject(info->root, "temperature_command_topic", g_hassBuffer);
 	cJSON_AddStringToObject(info->root, "temperature_state_topic", "~/TargetTemperature/get");
 
+	// Set Gen range and step
+	cJSON* modes = cJSON_CreateArray();
+	cJSON_AddItemToArray(modes,cJSON_CcreateString("30%"));
+	cJSON_AddItemToArray(modes,cJSON_CcreateString("50%"));
+	cJSON_AddItemToArray(modes,cJSON_CcreateString("80%"));
+	cJSON_AddItemToArray(modes,cJSON_CcreateString("100%"));
+	cJSON_AddItemToObject(info->root, "modes", modes);
+
+	
 	// Set temperature range and step
 	cJSON_AddNumberToObject(info->root, "min_temp", min);
 	cJSON_AddNumberToObject(info->root, "max_temp", max);
@@ -469,6 +478,22 @@ HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **f
 			cJSON_AddItemToArray(swing_modes, cJSON_CreateString(mode));
 		}
 		cJSON_AddItemToObject(info->root, "swing_modes", swing_modes);
+
+	}
+
+	}
+	if (numGenOptions) {
+		// Add Gen
+		cJSON_AddStringToObject(info->root, "gen_mode_state_topic", "~/Gen/get");
+		sprintf(g_hassBuffer, "cmnd/%s/Gen", CFG_GetMQTTClientId());
+		cJSON_AddStringToObject(info->root, "gen_mode_command_topic", g_hassBuffer);
+
+		cJSON* gen_modes = cJSON_CreateArray();
+		for (int i = 0; i < numGenOptions; i++) {
+			const char *mode = genOptions[i];
+			cJSON_AddItemToArray(gen_modes, cJSON_CreateString(mode));
+		}
+		cJSON_AddItemToObject(info->root, "gen_modes", gen_modes);
 
 	}
 	// Set availability topic
