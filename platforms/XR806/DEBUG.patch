@@ -1,15 +1,14 @@
-diff --git a/project/common/framework/platform_init.c b/project/common/framework/platform_init.c
-index e09204a..657ab35 100644
---- a/project/common/framework/platform_init.c
-+++ b/project/common/framework/platform_init.c
-@@ -256,6 +256,10 @@ static void platform_xip_init(void)
+index b2f13b3..09fe2f6 100644
+--- a/src/rom/rom_bin/src/image/image.c
++++ b/src/rom/rom_bin/src/image/image.c
+@@ -472,6 +472,10 @@ uint32_t tzboot_image_get_addr(image_priv_t *img, image_seq_t seq, uint32_t id)
+  */
+ uint32_t image_get_section_addr(uint32_t id)
  {
- 	uint32_t addr;
- 
 +	image_set_dbg_mask(IMAGE_ERR_FLAG | FDCM_ERR_FLAG | FLASH_ERR_FLAG |
 +			   IMAGE_WRN_FLAG | FDCM_WRN_FLAG | FLASH_WRN_FLAG |
 +			   IMAGE_DBG_FLAG | FDCM_DBG_FLAG | FLASH_DBG_FLAG);
 +
- 	addr = image_get_section_addr(IMAGE_APP_XIP_ID);
- 	if (addr == IMAGE_INVALID_ADDR) {
- 		FWK_NX_ERR("no xip section\n");
+ 	IMAGE_DBG("%s(), seq %u, id %#x\n", __func__, image_priv.iop.running_seq, id);
+ 	return image_get_addr(&image_priv, image_priv.iop.running_seq, id);
+ }
