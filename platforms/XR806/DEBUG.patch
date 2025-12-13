@@ -1,3 +1,32 @@
+index 1ea9c93..000a0df 100644
+--- a/src/image/image_debug.h
++++ b/src/image/image_debug.h
+@@ -37,18 +37,18 @@
+ extern "C" {
+ #endif
+ 
+-#define IMAGE_DBG_ON    0
+-#define IMAGE_WRN_ON    0
++#define IMAGE_DBG_ON    1
++#define IMAGE_WRN_ON    1
+ #define IMAGE_ERR_ON    1
+ #define IMAGE_ABORT_ON  0
+ 
+-#define FDCM_DBG_ON     0
+-#define FDCM_WRN_ON     0
++#define FDCM_DBG_ON     1
++#define FDCM_WRN_ON     1
+ #define FDCM_ERR_ON     1
+ #define FDCM_ABORT_ON   0
+ 
+-#define FLASH_DBG_ON    0
+-#define FLASH_WRN_ON    0
++#define FLASH_DBG_ON    1
++#define FLASH_WRN_ON    1
+ #define FLASH_ERR_ON    1
+ #define FLASH_ABORT_ON  0
+ 
+diff --git a/src/rom/rom_bin/src/image/image.c b/src/rom/rom_bin/src/image/image.c
 index b2f13b3..09fe2f6 100644
 --- a/src/rom/rom_bin/src/image/image.c
 +++ b/src/rom/rom_bin/src/image/image.c
