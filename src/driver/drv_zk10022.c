@@ -131,8 +131,8 @@ void readHoldingRegisters(){
     }
 
 	if(receive_buffer[1]!=0x03){
-
 		MQTT_PublishMain_StringInt("zk_10022_error_uart", receive_buffer[1], 0);
+		return;
 	}
 	int registers [30];
 	int register_count=receive_buffer[2]/2;
@@ -255,7 +255,6 @@ int writeRegister(int registerAddress,short value){
 		len = UART_GetDataSize();
 		delay++;
 	}
-    MQTT_PublishMain_StringInt("zk_10022_debug_len", len, 0);
 
     for(int i = 0; i < len; i++)
     {
