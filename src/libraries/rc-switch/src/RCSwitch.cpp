@@ -701,7 +701,7 @@ void RCSwitch::sendGeneric(unsigned long long code, unsigned int length) {
 #if not defined( RCSwitchDisableReceiving )
   // enable receiver again if we just disabled it
   if (nReceiverInterrupt_backup != -1) {
-    this->enableReceive(nReceiverInterrupt_backup);
+    this->enableReceive(nReceiverInterrupt_backup, bUsePullUp);
   }
 #endif
 }
@@ -889,12 +889,19 @@ void RC_ISR(uint8_t t) {
 		RCSwitch::handleInterrupt(0);
 	}
 }
+static uint32_t ir_chan
+#if PLATFORM_BEKEN
+= BKTIMER0
+#endif
+;
+static uint32_t ir_div = 1;
+static uint32_t ir_periodus = 50;
 void obk_startTimer() {
 #if PLATFORM_BEKEN
 	timer_param_t params = {
 	 (unsigned char)ir_chan,
 	 (unsigned char)ir_div, // div
-	 50, // us
+	 ir_periodus, // us
 	RC_ISR
 	};
 	//GLOBAL_INT_DECLARATION();
@@ -904,28 +911,18 @@ void obk_startTimer() {
 	// test what error we get with an invalid command
 	res = sddev_control((char *)TIMER_DEV_NAME, -1, 0);
 
-	if (res == 1) {
-		ADDLOG_INFO(LOG_FEATURE_IR, (char *)"bk_timer already initialised");
-	}
-	else {
-		ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"bk_timer driver not initialised?");
-		if ((int)res == -5) {
-			ADDLOG_INFO(LOG_FEATURE_IR, (char *)"bk_timer sddev not found - not initialised?");
-			return;
-		}
-		return;
-	}
+
 
 
 	//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer init");
 	// do not need to do this
 	//bk_timer_init();
 	//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer init done");
-	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"will ir timer setup %u", res);
+	//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"will ir timer setup %u", res);
 	res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_INIT_PARAM_US, &params);
-	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer setup %u", res);
+	//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer setup %u", res);
 	res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_ENABLE, &ir_chan);
-	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
+	//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
 #endif
 }
 void RCSwitch::enableReceive() {
