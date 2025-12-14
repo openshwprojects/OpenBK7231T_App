@@ -46,6 +46,7 @@
 #else
    // #include "WProgram.h"
 	#include "../../../obk_config.h"
+	#include "../../../new_common.h"
 	#include "../../../hal/hal_pins.h"
 #endif
 

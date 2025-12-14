@@ -266,10 +266,10 @@ bool RCSwitch::updateSeparationLimit()
 
       // nSeparationLimit must be longer than any of the following pulses to avoid detecting a new transmission in the middle of a frame.
       unsigned int longestDataPulseCount = headerShortPulseCount;
-      longestDataPulseCount = MAX<unsigned int>(longestDataPulseCount, proto[i].zero.high);
-      longestDataPulseCount = MAX<unsigned int>(longestDataPulseCount, proto[i].zero.low);
-      longestDataPulseCount = MAX<unsigned int>(longestDataPulseCount, proto[i].one.high);
-      longestDataPulseCount = MAX<unsigned int>(longestDataPulseCount, proto[i].one.low);
+      longestDataPulseCount = MAX(longestDataPulseCount, proto[i].zero.high);
+      longestDataPulseCount = MAX(longestDataPulseCount, proto[i].zero.low);
+      longestDataPulseCount = MAX(longestDataPulseCount, proto[i].one.high);
+      longestDataPulseCount = MAX(longestDataPulseCount, proto[i].one.low);
 
       const unsigned int longestDataPulseTime = proto[i].pulseLength * longestDataPulseCount;
 
