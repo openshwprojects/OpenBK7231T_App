@@ -21,10 +21,10 @@ void DRV_RC_Init() {
 	// allow user to change them
 	int pin = -1;
 	bool pup = true;
-	pin = PIN_FindPinIndexForRole(IOR_IRRecv, pin);
+	pin = PIN_FindPinIndexForRole(IOR_RCRecv, pin);
 	if (pin == -1)
 	{
-		pin = PIN_FindPinIndexForRole(IOR_IRRecv_nPup, pin);
+		pin = PIN_FindPinIndexForRole(IOR_RCRecv_nPup, pin);
 		if (pin >= 0)
 			pup = false;
 	}
