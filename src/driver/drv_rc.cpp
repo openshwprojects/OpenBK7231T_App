@@ -32,13 +32,15 @@ void DRV_RC_Init() {
 }
 extern long g_micros;
 extern int rc_triggers;
+extern int g_rcpin;
 void RC_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState) {
 
 	if (bPreState) {
 	}
 	else {
-		hprintf255(request, "<h3>Triggers: %i</h3>", rc_triggers);
-		hprintf255(request, "<h3>Micros: %i</h3>", g_micros);
+		hprintf255(request, "<h3>Triggers: %i</h3>", (int)rc_triggers);
+		hprintf255(request, "<h3>Micros: %i</h3>", (int)g_micros);
+		hprintf255(request, "<h3>g_rcpin: %i</h3>", (int)g_rcpin);
 	}
 }
 void DRV_RC_RunFrame() {
