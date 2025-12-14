@@ -5,6 +5,7 @@
 #include "drv_bl_shared.h"
 #include "drv_cse7766.h"
 #include "drv_ir.h"
+#include "drv_rc.h"
 #include "drv_local.h"
 #include "drv_ntp.h"
 #include "drv_deviceclock.h"
@@ -751,6 +752,22 @@ static driver_t g_drivers[] = {
 	NULL,                                    // onEverySecond
 	NULL,                                    // appendInformationToHTTPIndexPage
 	DRV_IR_RunFrame,                         // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_RC
+		//drvdetail:{"name":"RC",
+		//drvdetail:"title":"TODO",
+		//drvdetail:"descr":"",
+		//drvdetail:"requires":""}
+	{ "RC",                                  // Driver Name
+	DRV_RC_Init,                             // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	DRV_RC_RunFrame,                         // runQuickTick
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery

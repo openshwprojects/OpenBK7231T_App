@@ -44,7 +44,7 @@
 #elif defined(SPARK)
     #include "application.h"
 #else
-    #include "WProgram.h"
+   // #include "WProgram.h"
 #endif
 
 #include <stdint.h>
