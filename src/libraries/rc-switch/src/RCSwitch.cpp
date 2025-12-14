@@ -586,7 +586,7 @@ void RCSwitch::sendTriState(const char* sCodeWord) {
     }
     length += 2;
   }
-  this->send(code, length);
+  this->sendGeneric(code, length);
 }
 
 /**
@@ -612,7 +612,7 @@ static inline void safeDelayMicroseconds(unsigned long duration) {
 /**
  * @param sCodeWord   a binary code word consisting of the letter 0, 1
  */
-void RCSwitch::send(const char* sCodeWord) {
+void RCSwitch::sendGeneric(const char* sCodeWord) {
   // turn the tristate code word into the corresponding bit pattern, then send it
   unsigned long long code = 0;
   unsigned int length = 0;
@@ -622,7 +622,7 @@ void RCSwitch::send(const char* sCodeWord) {
       code |= 1ULL;
     length++;
   }
-  this->send(code, length);
+  this->sendGeneric(code, length);
 }
 
 /**
@@ -630,7 +630,7 @@ void RCSwitch::send(const char* sCodeWord) {
  * bits are sent from MSB to LSB, i.e., first the bit at position length-1,
  * then the bit at position length-2, and so on, till finally the bit at position 0.
  */
-void RCSwitch::send(unsigned long long code, unsigned int length) {
+void RCSwitch::sendGeneric(unsigned long long code, unsigned int length) {
   if (this->nTransmitterPin == -1)
     return;
 
