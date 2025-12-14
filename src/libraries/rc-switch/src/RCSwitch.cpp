@@ -59,6 +59,7 @@
 
 #if PLATFORM_BEKEN
 
+extern "C" {
 #include "include.h"
 #include "arm_arch.h"
 #include "bk_timer_pub.h"
@@ -81,6 +82,7 @@
 #include "../../beken378/driver/pwm/pwm_new.h"
 #endif
 #endif
+}
 #endif
 
 
