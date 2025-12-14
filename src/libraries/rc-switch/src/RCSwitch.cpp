@@ -55,7 +55,6 @@
 
 #endif
 
-
 /* Protocol description format
  *
  * {
@@ -602,10 +601,10 @@ static inline void safeDelayMicroseconds(unsigned long duration) {
     }
   }
   else {
-    delayMicroseconds(duration);
+    usleep(duration);
   }
 #else
-  delayMicroseconds(duration);
+  usleep(duration);
 #endif
 }
 
@@ -688,11 +687,11 @@ void RCSwitch::transmit(HighLow pulses) {
 
   if (pulses.high > 0) {
     HAL_PIN_SetOutputValue(this->nTransmitterPin, firstLogicLevel);
-    delayMicroseconds( this->protocol.pulseLength * pulses.high);
+    usleep( this->protocol.pulseLength * pulses.high);
   }
   if (pulses.low > 0) {
     HAL_PIN_SetOutputValue(this->nTransmitterPin, secondLogicLevel);
-    delayMicroseconds( this->protocol.pulseLength * pulses.low);
+    usleep( this->protocol.pulseLength * pulses.low);
   }
 }
 
