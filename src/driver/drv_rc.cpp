@@ -59,6 +59,10 @@ void DRV_RC_RunFrame() {
 			(unsigned long)mySwitch.getReceivedValue(),
 			mySwitch.getReceivedBitlength(),
 			mySwitch.getReceivedProtocol());
+		// TODO 64 bit
+		// addEventHandler RC 1234 toggleChannel 5 123
+		EventHandlers_FireEvent(CMD_EVENT_RC, mySwitch.getReceivedValue());
+
 
 		mySwitch.resetAvailable();
 	}
