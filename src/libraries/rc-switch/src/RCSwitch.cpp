@@ -111,7 +111,7 @@
 #if defined(ESP8266) || defined(ESP32)
 static const VAR_ISR_ATTR RCSwitch::Protocol proto[] = {
 #else
-static const RCSwitch::Protocol PROGMEM proto[] = {
+static const RCSwitch::Protocol proto[] = {
 #endif
   { 350,  0, { 0, 0 }, 1, {  1, 31 }, { 1,  3 }, { 3, 1 }, false,  0 },  // 01 (Princeton, PT-2240)
   { 650,  0, { 0, 0 }, 1, {  1, 10 }, { 1,  2 }, { 2, 1 }, false,  0 },  // 02
