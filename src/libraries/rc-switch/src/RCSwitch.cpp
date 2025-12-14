@@ -37,7 +37,7 @@
     // PROGMEM and _P functions are for AVR based microprocessors,
     // so we must normalize these for the ARM processor:
     #define PROGMEM
-    #define memcpy_P(dest, src, num) memcpy((dest), (src), (num))
+    #define memcpy(dest, src, num) memcpy((dest), (src), (num))
 #endif
 
 #if defined(ESP8266)
@@ -51,8 +51,12 @@
 #else
     #define RECEIVE_ATTR
     #define VAR_ISR_ATTR
+
+
 #endif
 
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
+#define MAX(a,b) ((a) > (b) ? (a) : (b))
 
 /* Protocol description format
  *
@@ -205,7 +209,7 @@ void RCSwitch::setProtocol(int nProtocol) {
 #if defined(ESP8266) || defined(ESP32)
   this->protocol = proto[nProtocol-1];
 #else
-  memcpy_P(&this->protocol, &proto[nProtocol-1], sizeof(Protocol));
+  memcpy(&this->protocol, &proto[nProtocol-1], sizeof(Protocol));
 #endif
 }
 
@@ -253,8 +257,8 @@ bool RCSwitch::updateSeparationLimit()
   unsigned long long thisMask = 1;
   for(unsigned int i = 0; i < numProto; i++) {
     if (RCSwitch::nReceiveProtocolMask & thisMask) {
-      const unsigned int headerShortPulseCount = std::min(proto[i].Header.high, proto[i].Header.low);
-      const unsigned int headerLongPulseCount = std::max(proto[i].Header.high, proto[i].Header.low);
+      const unsigned int headerShortPulseCount = MIN(proto[i].Header.high, proto[i].Header.low);
+      const unsigned int headerLongPulseCount = MAX(proto[i].Header.high, proto[i].Header.low);
 
       // This must be the longest pulse-length of this protocol. nSeparationLimit must of this length or shorter.
       // This pulse will be used to detect the beginning of a transmission.
@@ -262,15 +266,15 @@ bool RCSwitch::updateSeparationLimit()
 
       // nSeparationLimit must be longer than any of the following pulses to avoid detecting a new transmission in the middle of a frame.
       unsigned int longestDataPulseCount = headerShortPulseCount;
-      longestDataPulseCount = std::max<unsigned int>(longestDataPulseCount, proto[i].zero.high);
-      longestDataPulseCount = std::max<unsigned int>(longestDataPulseCount, proto[i].zero.low);
-      longestDataPulseCount = std::max<unsigned int>(longestDataPulseCount, proto[i].one.high);
-      longestDataPulseCount = std::max<unsigned int>(longestDataPulseCount, proto[i].one.low);
+      longestDataPulseCount = MAX<unsigned int>(longestDataPulseCount, proto[i].zero.high);
+      longestDataPulseCount = MAX<unsigned int>(longestDataPulseCount, proto[i].zero.low);
+      longestDataPulseCount = MAX<unsigned int>(longestDataPulseCount, proto[i].one.high);
+      longestDataPulseCount = MAX<unsigned int>(longestDataPulseCount, proto[i].one.low);
 
       const unsigned int longestDataPulseTime = proto[i].pulseLength * longestDataPulseCount;
 
-      longestPulseTime = std::min(longestPulseTime, headerLongPulseTime);
-      shortestPulseTime = std::max(shortestPulseTime, longestDataPulseTime);
+      longestPulseTime = MIN(longestPulseTime, headerLongPulseTime);
+      shortestPulseTime = MAX(shortestPulseTime, longestDataPulseTime);
     }
     thisMask <<= 1;
   }
@@ -767,7 +771,7 @@ bool RECEIVE_ATTR RCSwitch::receiveProtocol(const int p, unsigned int changeCoun
     const Protocol &pro = proto[p-1];
 #else
     Protocol pro;
-    memcpy_P(&pro, &proto[p-1], sizeof(Protocol));
+    memcpy(&pro, &proto[p-1], sizeof(Protocol));
 #endif
 
     unsigned long long code = 0;
