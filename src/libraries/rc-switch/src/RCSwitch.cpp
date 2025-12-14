@@ -249,7 +249,7 @@ bool RCSwitch::setReceiveProtocolMask(unsigned long long mask) {
 
 bool RCSwitch::updateSeparationLimit()
 {
-  unsigned int longestPulseTime = std::numeric_limits<unsigned int>::max();
+  unsigned int longestPulseTime = UINT_MAX;
   unsigned int shortestPulseTime = 0;
 
   unsigned long long thisMask = 1;
@@ -724,7 +724,7 @@ void RCSwitch::enableReceive() {
  */
 void RCSwitch::disableReceive() {
 #if not defined(RaspberryPi) // Arduino
-  detachInterrupt(this->nReceiverInterrupt);
+	HAL_DetachInterrupt(this->nReceiverInterrupt);
 #endif // For Raspberry Pi (wiringPi) you can't unregister the ISR
   this->nReceiverInterrupt = -1;
 }
@@ -860,7 +860,7 @@ bool RECEIVE_ATTR RCSwitch::receiveProtocol(const int p, unsigned int changeCoun
     return false;
 }
 
-void RECEIVE_ATTR RCSwitch::handleInterrupt() {
+void RECEIVE_ATTR RCSwitch::handleInterrupt(int xyz) {
 
   static unsigned int changeCount = 0;
   static unsigned long lastTime = 0;
