@@ -948,7 +948,9 @@ void RCSwitch::enableReceive() {
 		obk_startTimer();
 	}
 }
-int rc_checkedProtocols = 0;
+int rc_checkedProtocols = 0; 
+int rc_singleRepeats = 0; 
+int rc_repeats = 0; 
 void RECEIVE_ATTR RCSwitch::handleInterrupt(int xyz) {
 
   static unsigned int changeCount = 0;
@@ -988,8 +990,10 @@ void RECEIVE_ATTR RCSwitch::handleInterrupt(int xyz) {
 
       // количество повторных пакетов
       repeatCount++;
+	  rc_repeats++;
       // при приеме второго повторного начинаем анализ принятого первым
       if (repeatCount == 1) {
+		  rc_singleRepeats++;
         unsigned long long thismask = 1;
         for(unsigned int i = 1; i <= numProto; i++) {
           if (RCSwitch::nReceiveProtocolMask & thismask) {
