@@ -28,8 +28,16 @@ void DRV_RC_Init() {
 	}
 	mySwitch.enableReceive(pin, pup);  // Receiver on interrupt 0 => that is pin #2
 }
+extern long g_micros;
+extern int rc_triggers;
 void RC_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState) {
 
+	if (bPreState) {
+	}
+	else {
+		hprintf255(request, "<h3>Triggers: %i</h3>", rc_triggers);
+		hprintf255(request, "<h3>Micros: %i</h3>", g_micros);
+	}
 }
 void DRV_RC_RunFrame() {
 

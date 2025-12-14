@@ -876,6 +876,7 @@ bool RECEIVE_ATTR RCSwitch::receiveProtocol(const int p, unsigned int changeCoun
 }
 
 long g_micros = 0;
+int rc_triggers = 0;
 int prev = 0;
 int g_pin = 0;
 void RC_ISR(uint8_t t) {
@@ -883,6 +884,7 @@ void RC_ISR(uint8_t t) {
 	int n = HAL_PIN_ReadDigitalInput(g_pin);
 	if (n != g_pin) {
 		g_pin = n;
+		rc_triggers++;
 		RCSwitch::handleInterrupt(0);
 	}
 }
