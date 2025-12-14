@@ -700,8 +700,9 @@ void RCSwitch::transmit(HighLow pulses) {
 /**
  * Enable receiving data
  */
-void RCSwitch::enableReceive(int interrupt) {
+void RCSwitch::enableReceive(int interrupt, bool pup) {
   this->nReceiverInterrupt = interrupt;
+  this->bUsePullUp = pup;
   this->enableReceive();
 }
 
@@ -903,7 +904,12 @@ void RCSwitch::enableReceive() {
 		RCSwitch::nReceivedBitlength = 0;
 		// attachInterrupt(this->nReceiverInterrupt, handleInterrupt, CHANGE);
 		//HAL_AttachInterrupt(this->nReceiverInterrupt, INTERRUPT_CHANGE, handleInterrupt);
-		HAL_PIN_Setup_Input(this->nReceiverInterrupt);
+		if (bUsePullUp) {
+			HAL_PIN_Setup_Input_Pullup(this->nReceiverInterrupt);
+		}
+		else {
+			HAL_PIN_Setup_Input(this->nReceiverInterrupt);
+		}
 		g_pin = this->nReceiverInterrupt;
 		obk_startTimer();
 	}

@@ -14,19 +14,24 @@ extern "C" {
 
 RCSwitch mySwitch = RCSwitch();
 void DRV_RC_Init() {
-	mySwitch.enableReceive(0);  // Receiver on interrupt 0 => that is pin #2
+	// allow user to change them
+	int pin = 0;
+	bool pup = true;
+	pin = PIN_FindPinIndexForRole(IOR_IRRecv, pin);
+	if (pin == -1)
+	{
+		pin = PIN_FindPinIndexForRole(IOR_IRRecv_nPup, pin);
+		if (pin >= 0)
+			pup = false;
+	}
+	mySwitch.enableReceive(pin, pup);  // Receiver on interrupt 0 => that is pin #2
 }
 void DRV_RC_RunFrame() {
 
 	if (mySwitch.available()) {
 
-		Serial.print("Received ");
-		Serial.print(mySwitch.getReceivedValue());
-		Serial.print(" / ");
-		Serial.print(mySwitch.getReceivedBitlength());
-		Serial.print("bit ");
-		Serial.print("Protocol: ");
-		Serial.println(mySwitch.getReceivedProtocol());
+		ADDLOG_INFO(LOG_FEATURE_IR, "Received %i / %i bit protocol %i\n",
+			mySwitch.getReceivedValue(),mySwitch.getReceivedBitlength(),mySwitch.getReceivedProtocol());
 
 		mySwitch.resetAvailable();
 	}

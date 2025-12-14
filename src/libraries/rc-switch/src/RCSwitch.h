@@ -94,7 +94,7 @@ class RCSwitch {
     void sendGeneric(const char* sCodeWord);
 
     #if not defined( RCSwitchDisableReceiving )
-    void enableReceive(int interrupt);
+    void enableReceive(int interrupt, bool pup);
     void enableReceive();
     void disableReceive();
     bool available();
@@ -179,6 +179,7 @@ class RCSwitch {
     static bool receiveProtocol(const int p, unsigned int changeCount);
     static bool updateSeparationLimit();
     int nReceiverInterrupt;
+	bool bUsePullUp;
     #endif
     int nTransmitterPin;
     int nRepeatTransmit;
