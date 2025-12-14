@@ -52,17 +52,34 @@ void RC_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState)
 		hprintf255(request, "<h3>rc_repeats: %i</h3>", (int)rc_repeats);
 	}
 }
+unsigned long rc_prev = 0;
+int loopsUntilClear = 0;
 void DRV_RC_RunFrame() {
-
+	if (loopsUntilClear) {
+		loopsUntilClear--;
+		if (loopsUntilClear <= 0) {
+			rc_prev = 0;
+			ADDLOG_INFO(LOG_FEATURE_IR, "Clearing hold timer\n");
+		}
+	}
 	if (mySwitch.available()) {
-
-		ADDLOG_INFO(LOG_FEATURE_IR, "Received %lu / %u bit protocol %u\n",
-			(unsigned long)mySwitch.getReceivedValue(),
-			mySwitch.getReceivedBitlength(),
-			mySwitch.getReceivedProtocol());
+		unsigned long rc_now = mySwitch.getReceivedValue();
+		int bHold = 0;
+		if (rc_now != rc_prev) {
+			rc_prev = rc_now;
+		}
+		else {
+			bHold = 1;
+		}
+		loopsUntilClear = 50;
 		// TODO 64 bit
 		// addEventHandler RC 1234 toggleChannel 5 123
-		EventHandlers_FireEvent(CMD_EVENT_RC, mySwitch.getReceivedValue());
+		ADDLOG_INFO(LOG_FEATURE_IR, "Received %lu / %u bit protocol %u, hold %i\n",
+			rc_now,
+			mySwitch.getReceivedBitlength(),
+			mySwitch.getReceivedProtocol(),
+			bHold);
+		EventHandlers_FireEvent2(CMD_EVENT_RC, mySwitch.getReceivedValue(), bHold);
 
 
 		mySwitch.resetAvailable();
