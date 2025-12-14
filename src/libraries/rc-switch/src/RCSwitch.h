@@ -45,6 +45,8 @@
     #include "application.h"
 #else
    // #include "WProgram.h"
+	#include <string.h> /* memcpy */
+	#include <stdlib.h> /* abs */
 	#include "../../../obk_config.h"
 	#include "../../../new_common.h"
 	#include "../../../hal/hal_pins.h"
