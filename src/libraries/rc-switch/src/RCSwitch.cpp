@@ -885,8 +885,9 @@ volatile long g_micros = 0;
 volatile int rc_triggers = 0;
 int prev = 0;
 int g_rcpin = 0;
+static const uint32_t ir_periodus = 50;
 void RC_ISR(uint8_t t) {
-	g_micros += 50;
+	g_micros += ir_periodus;
 	int n = HAL_PIN_ReadDigitalInput(g_rcpin);
 	if (n != prev) {
 		prev = n;
@@ -900,7 +901,6 @@ static uint32_t ir_chan
 #endif
 ;
 static uint32_t ir_div = 1;
-static uint32_t ir_periodus = 50;
 void obk_startTimer() {
 #if PLATFORM_BEKEN
 	timer_param_t params = {
@@ -948,6 +948,7 @@ void RCSwitch::enableReceive() {
 		obk_startTimer();
 	}
 }
+int rc_checkedProtocols = 0;
 void RECEIVE_ATTR RCSwitch::handleInterrupt(int xyz) {
 
   static unsigned int changeCount = 0;
@@ -992,6 +993,7 @@ void RECEIVE_ATTR RCSwitch::handleInterrupt(int xyz) {
         unsigned long long thismask = 1;
         for(unsigned int i = 1; i <= numProto; i++) {
           if (RCSwitch::nReceiveProtocolMask & thismask) {
+			 rc_checkedProtocols++;
             if (receiveProtocol(i, changeCount)) {
               // receive succeeded for protocol i
               break;
