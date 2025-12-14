@@ -938,11 +938,12 @@ void RCSwitch::enableReceive() {
 		//HAL_AttachInterrupt(this->nReceiverInterrupt, INTERRUPT_CHANGE, handleInterrupt);
 		if (bUsePullUp) {
 			HAL_PIN_Setup_Input_Pullup(this->nReceiverInterrupt);
+			ADDLOG_INFO(LOG_FEATURE_IR, "RC: Using pin %i (with pullup)\n", this->nReceiverInterrupt);
 		}
 		else {
 			HAL_PIN_Setup_Input(this->nReceiverInterrupt);
+			ADDLOG_INFO(LOG_FEATURE_IR, "RC: Using pin %i (no pullup)\n", this->nReceiverInterrupt);
 		}
-		ADDLOG_INFO(LOG_FEATURE_IR, "RC: Using pin %i\n", this->nReceiverInterrupt);
 		g_rcpin = this->nReceiverInterrupt;
 		obk_startTimer();
 	}
