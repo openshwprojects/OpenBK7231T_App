@@ -886,8 +886,8 @@ int g_pin = 0;
 void RC_ISR(uint8_t t) {
 	g_micros += 50;
 	int n = HAL_PIN_ReadDigitalInput(g_pin);
-	if (n != g_pin) {
-		g_pin = n;
+	if (n != prev) {
+		prev = n;
 		rc_triggers++;
 		RCSwitch::handleInterrupt(0);
 	}
