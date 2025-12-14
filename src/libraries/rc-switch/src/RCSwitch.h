@@ -175,7 +175,9 @@ class RCSwitch {
     void transmit(HighLow pulses);
 
     #if not defined( RCSwitchDisableReceiving )
+public:
     static void handleInterrupt(int xyz);
+private:
     static bool receiveProtocol(const int p, unsigned int changeCount);
     static bool updateSeparationLimit();
     int nReceiverInterrupt;

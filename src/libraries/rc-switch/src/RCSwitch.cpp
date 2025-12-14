@@ -81,6 +81,7 @@
 #include "../../beken378/driver/pwm/pwm_new.h"
 #endif
 #endif
+#endif
 
 
 /* Protocol description format
