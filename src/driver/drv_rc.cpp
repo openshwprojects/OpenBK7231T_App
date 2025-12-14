@@ -8,6 +8,8 @@ extern "C" {
 #include "../new_common.h"
 #include "../httpserver/new_http.h"
 #include "../logging/logging.h"
+#include "../new_pins.h"
+#include "../new_cfg.h"
 
 }
 
