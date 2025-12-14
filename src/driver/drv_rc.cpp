@@ -28,6 +28,7 @@ void DRV_RC_Init() {
 		if (pin >= 0)
 			pup = false;
 	}
+	ADDLOG_INFO(LOG_FEATURE_IR, "DRV_RC_Init: passing pin %i\n", pin);
 	mySwitch.enableReceive(pin, pup);  // Receiver on interrupt 0 => that is pin #2
 }
 extern long g_micros;
