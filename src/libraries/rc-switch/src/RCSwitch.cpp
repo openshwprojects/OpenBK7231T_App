@@ -705,18 +705,6 @@ void RCSwitch::enableReceive(int interrupt) {
   this->enableReceive();
 }
 
-void RCSwitch::enableReceive() {
-  if (this->nReceiverInterrupt != -1) {
-    RCSwitch::nReceivedValue = 0;
-    RCSwitch::nReceivedBitlength = 0;
-#if defined(RaspberryPi) // Raspberry Pi
-    wiringPiISR(this->nReceiverInterrupt, INT_EDGE_BOTH, &handleInterrupt);
-#else // Arduino
-   // attachInterrupt(this->nReceiverInterrupt, handleInterrupt, CHANGE);
-	HAL_AttachInterrupt(this->nReceiverInterrupt, INTERRUPT_CHANGE, handleInterrupt);
-#endif
-  }
-}
 
 /**
  * Disable receiving data
@@ -859,13 +847,74 @@ bool RECEIVE_ATTR RCSwitch::receiveProtocol(const int p, unsigned int changeCoun
     return false;
 }
 
+long g_micros = 0;
+int prev = 0;
+int g_pin = 0;
+void RC_ISR(uint8_t t) {
+	g_micros += 50;
+	int n = HAL_PIN_ReadDigitalInput(g_pin);
+	if (n != g_pin) {
+		g_pin = n;
+		handleInterrupt(0);
+	}
+}
+void obk_startTimer() {
+#if PLATFORM_BEKEN
+	timer_param_t params = {
+	 (unsigned char)ir_chan,
+	 (unsigned char)ir_div, // div
+	 50, // us
+	RC_ISR
+	};
+	//GLOBAL_INT_DECLARATION();
+
+
+	UINT32 res;
+	// test what error we get with an invalid command
+	res = sddev_control((char *)TIMER_DEV_NAME, -1, 0);
+
+	if (res == 1) {
+		ADDLOG_INFO(LOG_FEATURE_IR, (char *)"bk_timer already initialised");
+	}
+	else {
+		ADDLOG_ERROR(LOG_FEATURE_IR, (char *)"bk_timer driver not initialised?");
+		if ((int)res == -5) {
+			ADDLOG_INFO(LOG_FEATURE_IR, (char *)"bk_timer sddev not found - not initialised?");
+			return;
+		}
+		return;
+	}
+
+
+	//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer init");
+	// do not need to do this
+	//bk_timer_init();
+	//ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer init done");
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"will ir timer setup %u", res);
+	res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_INIT_PARAM_US, &params);
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer setup %u", res);
+	res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_ENABLE, &ir_chan);
+	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
+#endif
+}
+void RCSwitch::enableReceive() {
+	if (this->nReceiverInterrupt != -1) {
+		RCSwitch::nReceivedValue = 0;
+		RCSwitch::nReceivedBitlength = 0;
+		// attachInterrupt(this->nReceiverInterrupt, handleInterrupt, CHANGE);
+		//HAL_AttachInterrupt(this->nReceiverInterrupt, INTERRUPT_CHANGE, handleInterrupt);
+		HAL_PIN_Setup_Input(this->nReceiverInterrupt);
+		g_pin = this->nReceiverInterrupt;
+		obk_startTimer();
+	}
+}
 void RECEIVE_ATTR RCSwitch::handleInterrupt(int xyz) {
 
   static unsigned int changeCount = 0;
   static unsigned long lastTime = 0;
   static unsigned char repeatCount = 0;
 
-  const long time = micros();
+  const long time = g_micros; // micros();
   const unsigned int duration = time - lastTime;
 
   RCSwitch::buftimings[3]=RCSwitch::buftimings[2];
