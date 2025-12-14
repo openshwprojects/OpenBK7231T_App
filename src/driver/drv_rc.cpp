@@ -19,7 +19,7 @@ extern "C" {
 RCSwitch mySwitch = RCSwitch();
 void DRV_RC_Init() {
 	// allow user to change them
-	int pin = 0;
+	int pin = -1;
 	bool pup = true;
 	pin = PIN_FindPinIndexForRole(IOR_IRRecv, pin);
 	if (pin == -1)
