@@ -34,6 +34,8 @@ void DRV_RC_Init() {
 extern long g_micros;
 extern int rc_triggers;
 extern int g_rcpin;
+extern int rc_checkedProtocols;
+++;
 void RC_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState) {
 
 	if (bPreState) {
@@ -42,6 +44,7 @@ void RC_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState)
 		hprintf255(request, "<h3>Triggers: %i</h3>", (int)rc_triggers);
 		hprintf255(request, "<h3>Micros: %i</h3>", (int)g_micros);
 		hprintf255(request, "<h3>g_rcpin: %i</h3>", (int)g_rcpin);
+		hprintf255(request, "<h3>rc_checkedProtocols: %i</h3>", (int)rc_checkedProtocols);
 	}
 }
 void DRV_RC_RunFrame() {
