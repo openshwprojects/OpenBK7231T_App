@@ -50,6 +50,7 @@
 extern "C" {
 #include "../../../obk_config.h"
 #include "../../../new_common.h"
+#include "../../../logging/logging.h"
 #include "../../../hal/hal_pins.h"
 }
 #endif

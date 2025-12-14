@@ -83,6 +83,8 @@ extern "C" {
 #endif
 #endif
 }
+
+
 #endif
 
 
@@ -940,6 +942,7 @@ void RCSwitch::enableReceive() {
 		else {
 			HAL_PIN_Setup_Input(this->nReceiverInterrupt);
 		}
+		ADDLOG_INFO(LOG_FEATURE_IR, "RC: Using pin %i\n", this->nReceiverInterrupt);
 		g_rcpin = this->nReceiverInterrupt;
 		obk_startTimer();
 	}
