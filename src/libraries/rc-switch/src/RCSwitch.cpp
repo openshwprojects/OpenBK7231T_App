@@ -191,9 +191,7 @@ static const RCSwitch::Protocol proto[] = {
   { 560,  0, { 0, 0 }, 1, {   15, 1 }, { 3,  1 }, { 7, 1 }, true,   0 }   // 39 Hyundai WS Senzor 77/77TH, 36 bits (requires disabled protocol 38: 'RfProtocol38 0')
 };
 
-enum {
-   numProto = sizeof(proto) / sizeof(proto[0])
-};
+int numProto = sizeof(proto) / sizeof(proto[0]);
 
 #if not defined( RCSwitchDisableReceiving )
 volatile unsigned long long RCSwitch::nReceivedValue = 0;
@@ -217,6 +215,7 @@ RCSwitch::RCSwitch() {
   RCSwitch::nReceivedValue = 0;
   RCSwitch::nReceiveProtocolMask = (1ULL << numProto)-1;  //pow(2,numProto)-1;
   #endif
+  RCSwitch::nReceiveProtocolMask = -1;
 }
 
 uint8_t RCSwitch::getNumProtos() {
@@ -286,7 +285,8 @@ bool RCSwitch::updateSeparationLimit()
 
   unsigned long long thisMask = 1;
   for(unsigned int i = 0; i < numProto; i++) {
-    if (RCSwitch::nReceiveProtocolMask & thisMask) {
+    //if (RCSwitch::nReceiveProtocolMask & thisMask) 
+	{
       const unsigned int headerShortPulseCount = MIN(proto[i].Header.high, proto[i].Header.low);
       const unsigned int headerLongPulseCount = MAX(proto[i].Header.high, proto[i].Header.low);
 
@@ -996,7 +996,8 @@ void RECEIVE_ATTR RCSwitch::handleInterrupt(int xyz) {
 		  rc_singleRepeats++;
         unsigned long long thismask = 1;
         for(unsigned int i = 1; i <= numProto; i++) {
-          if (RCSwitch::nReceiveProtocolMask & thismask) {
+          //if (RCSwitch::nReceiveProtocolMask & thismask) 
+		  {
 			 rc_checkedProtocols++;
             if (receiveProtocol(i, changeCount)) {
               // receive succeeded for protocol i
