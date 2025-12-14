@@ -10,6 +10,7 @@ extern "C" {
 #include "../logging/logging.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
+#include "../cmnds/cmd_public.h"
 
 }
 
