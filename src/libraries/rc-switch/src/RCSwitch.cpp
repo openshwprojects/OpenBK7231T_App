@@ -715,7 +715,8 @@ void RCSwitch::enableReceive() {
 #if defined(RaspberryPi) // Raspberry Pi
     wiringPiISR(this->nReceiverInterrupt, INT_EDGE_BOTH, &handleInterrupt);
 #else // Arduino
-    attachInterrupt(this->nReceiverInterrupt, handleInterrupt, CHANGE);
+   // attachInterrupt(this->nReceiverInterrupt, handleInterrupt, CHANGE);
+	HAL_AttachInterrupt(this->nReceiverInterrupt, INTERRUPT_CHANGE, handleInterrupt);
 #endif
   }
 }
