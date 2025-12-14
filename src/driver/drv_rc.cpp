@@ -55,9 +55,10 @@ void DRV_RC_RunFrame() {
 
 	if (mySwitch.available()) {
 
-		ADDLOG_INFO(LOG_FEATURE_IR, "Received %i / %i bit protocol %i\n",
-			(int)mySwitch.getReceivedValue(), (int)mySwitch.getReceivedBitlength(),
-			(int)mySwitch.getReceivedProtocol());
+		ADDLOG_INFO(LOG_FEATURE_IR, "Received %lu / %u bit protocol %u\n",
+			(unsigned long)mySwitch.getReceivedValue(),
+			mySwitch.getReceivedBitlength(),
+			mySwitch.getReceivedProtocol());
 
 		mySwitch.resetAvailable();
 	}
