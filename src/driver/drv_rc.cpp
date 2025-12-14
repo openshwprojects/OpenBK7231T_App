@@ -35,7 +35,7 @@ extern long g_micros;
 extern int rc_triggers;
 extern int g_rcpin;
 extern int rc_checkedProtocols;
-++;
+
 void RC_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState) {
 
 	if (bPreState) {
