@@ -55,6 +55,33 @@
 
 #endif
 
+
+
+#if PLATFORM_BEKEN
+
+#include "include.h"
+#include "arm_arch.h"
+#include "bk_timer_pub.h"
+#include "drv_model_pub.h"
+
+#include <gpio_pub.h>
+//#include "pwm.h"
+#include "pwm_pub.h"
+
+#include "../../beken378/func/include/net_param_pub.h"
+#include "../../beken378/func/user_driver/BkDriverPwm.h"
+#include "../../beken378/func/user_driver/BkDriverI2c.h"
+#include "../../beken378/driver/i2c/i2c1.h"
+#include "../../beken378/driver/gpio/gpio.h"
+#include "../../beken378/driver/pwm/pwm.h"
+#if PLATFORM_BK7231N
+#if PLATFORM_BEKEN_NEW
+#include "pwm_bk7231n.h"
+#else
+#include "../../beken378/driver/pwm/pwm_new.h"
+#endif
+
+
 /* Protocol description format
  *
  * {
@@ -856,7 +883,7 @@ void RC_ISR(uint8_t t) {
 	int n = HAL_PIN_ReadDigitalInput(g_pin);
 	if (n != g_pin) {
 		g_pin = n;
-		handleInterrupt(0);
+		RCSwitch::handleInterrupt(0);
 	}
 }
 void obk_startTimer() {

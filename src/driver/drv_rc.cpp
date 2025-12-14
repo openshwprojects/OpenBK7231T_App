@@ -6,6 +6,8 @@
 extern "C" {
 	// these cause error: conflicting declaration of 'int bk_wlan_mcu_suppress_and_sleep(unsigned int)' with 'C' linkage
 #include "../new_common.h"
+#include "../httpserver/new_http.h"
+#include "../logging/logging.h"
 
 }
 
@@ -25,6 +27,9 @@ void DRV_RC_Init() {
 			pup = false;
 	}
 	mySwitch.enableReceive(pin, pup);  // Receiver on interrupt 0 => that is pin #2
+}
+void RC_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState) {
+
 }
 void DRV_RC_RunFrame() {
 

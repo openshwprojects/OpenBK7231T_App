@@ -766,7 +766,7 @@ static driver_t g_drivers[] = {
 	{ "RC",                                  // Driver Name
 	DRV_RC_Init,                             // Init
 	NULL,                                    // onEverySecond
-	NULL,                                    // appendInformationToHTTPIndexPage
+	RC_AppendInformationToHTTPIndexPage,                                    // appendInformationToHTTPIndexPage
 	DRV_RC_RunFrame,                         // runQuickTick
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
