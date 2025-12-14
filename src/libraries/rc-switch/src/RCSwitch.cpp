@@ -299,7 +299,7 @@ bool RCSwitch::updateSeparationLimit()
  */
 void RCSwitch::enableTransmit(int nTransmitterPin) {
   this->nTransmitterPin = nTransmitterPin;
-  pinMode(this->nTransmitterPin, OUTPUT);
+  HAL_PIN_Setup_Output(this->nTransmitterPin);
 }
 
 /**
@@ -665,13 +665,13 @@ void RCSwitch::send(unsigned long long code, unsigned int length) {
     }
     // Set the guard Time
     if (protocol.Guard > 0) {
-      digitalWrite(this->nTransmitterPin, LOW);
+      HAL_PIN_SetOutputValue(this->nTransmitterPin, 0);
       safeDelayMicroseconds(this->protocol.pulseLength * protocol.Guard);
     }
   }
 
   // Disable transmit after sending (i.e., for inverted protocols)
-  digitalWrite(this->nTransmitterPin, LOW);
+  HAL_PIN_SetOutputValue(this->nTransmitterPin, 0);
 
 #if not defined( RCSwitchDisableReceiving )
   // enable receiver again if we just disabled it
@@ -685,15 +685,15 @@ void RCSwitch::send(unsigned long long code, unsigned int length) {
  * Transmit a single high-low pulse.
  */
 void RCSwitch::transmit(HighLow pulses) {
-  uint8_t firstLogicLevel = (this->protocol.invertedSignal) ? LOW : HIGH;
-  uint8_t secondLogicLevel = (this->protocol.invertedSignal) ? HIGH : LOW;
+  uint8_t firstLogicLevel = (this->protocol.invertedSignal) ? 0 : 1;
+  uint8_t secondLogicLevel = (this->protocol.invertedSignal) ? 1 : 0;
 
   if (pulses.high > 0) {
-    digitalWrite(this->nTransmitterPin, firstLogicLevel);
+    HAL_PIN_SetOutputValue(this->nTransmitterPin, firstLogicLevel);
     delayMicroseconds( this->protocol.pulseLength * pulses.high);
   }
   if (pulses.low > 0) {
-    digitalWrite(this->nTransmitterPin, secondLogicLevel);
+    HAL_PIN_SetOutputValue(this->nTransmitterPin, secondLogicLevel);
     delayMicroseconds( this->protocol.pulseLength * pulses.low);
   }
 }
@@ -865,7 +865,7 @@ void RECEIVE_ATTR RCSwitch::handleInterrupt() {
 
   static unsigned int changeCount = 0;
   static unsigned long lastTime = 0;
-  static byte repeatCount = 0;
+  static unsigned char repeatCount = 0;
 
   const long time = micros();
   const unsigned int duration = time - lastTime;
