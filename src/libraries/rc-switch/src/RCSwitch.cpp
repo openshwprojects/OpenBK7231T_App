@@ -879,13 +879,13 @@ bool RECEIVE_ATTR RCSwitch::receiveProtocol(const int p, unsigned int changeCoun
     return false;
 }
 
-long g_micros = 0;
-int rc_triggers = 0;
+volatile long g_micros = 0;
+volatile int rc_triggers = 0;
 int prev = 0;
-int g_pin = 0;
+int g_rcpin = 0;
 void RC_ISR(uint8_t t) {
 	g_micros += 50;
-	int n = HAL_PIN_ReadDigitalInput(g_pin);
+	int n = HAL_PIN_ReadDigitalInput(g_rcpin);
 	if (n != prev) {
 		prev = n;
 		rc_triggers++;
@@ -940,7 +940,7 @@ void RCSwitch::enableReceive() {
 		else {
 			HAL_PIN_Setup_Input(this->nReceiverInterrupt);
 		}
-		g_pin = this->nReceiverInterrupt;
+		g_rcpin = this->nReceiverInterrupt;
 		obk_startTimer();
 	}
 }
