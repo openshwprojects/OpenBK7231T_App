@@ -32,24 +32,26 @@ void DRV_RC_Init() {
 	ADDLOG_INFO(LOG_FEATURE_IR, "DRV_RC_Init: passing pin %i\n", pin);
 	mySwitch.enableReceive(pin, pup);  // Receiver on interrupt 0 => that is pin #2
 }
-extern long g_micros;
-extern int rc_triggers;
-extern int g_rcpin;
-extern int rc_checkedProtocols;
-extern int rc_singleRepeats;
-extern int rc_repeats;
+//extern long g_micros;
+//extern int rc_triggers;
+//extern int g_rcpin;
+//extern int rc_checkedProtocols;
+//extern int rc_singleRepeats;
+//extern int rc_repeats;
+static int rc_totalDecoded = 0;
 
 void RC_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState) {
 
 	if (bPreState) {
 	}
 	else {
-		hprintf255(request, "<h3>Triggers: %i</h3>", (int)rc_triggers);
-		hprintf255(request, "<h3>Micros: %i</h3>", (int)g_micros);
-		hprintf255(request, "<h3>g_rcpin: %i</h3>", (int)g_rcpin);
-		hprintf255(request, "<h3>rc_checkedProtocols: %i</h3>", (int)rc_checkedProtocols);
-		hprintf255(request, "<h3>rc_singleRepeats: %i</h3>", (int)rc_singleRepeats);
-		hprintf255(request, "<h3>rc_repeats: %i</h3>", (int)rc_repeats);
+		hprintf255(request, "<h3>RC signals decoded: %i</h3>", rc_totalDecoded);
+		//hprintf255(request, "<h3>Triggers: %i</h3>", (int)rc_triggers);
+		//hprintf255(request, "<h3>Micros: %i</h3>", (int)g_micros);
+		//hprintf255(request, "<h3>g_rcpin: %i</h3>", (int)g_rcpin);
+		//hprintf255(request, "<h3>rc_checkedProtocols: %i</h3>", (int)rc_checkedProtocols);
+		//hprintf255(request, "<h3>rc_singleRepeats: %i</h3>", (int)rc_singleRepeats);
+		//hprintf255(request, "<h3>rc_repeats: %i</h3>", (int)rc_repeats);
 	}
 }
 unsigned long rc_prev = 0;
@@ -63,6 +65,8 @@ void DRV_RC_RunFrame() {
 		}
 	}
 	if (mySwitch.available()) {
+		rc_totalDecoded++;
+
 		unsigned long rc_now = mySwitch.getReceivedValue();
 		int bHold = 0;
 		if (rc_now != rc_prev) {
@@ -71,9 +75,14 @@ void DRV_RC_RunFrame() {
 		else {
 			bHold = 1;
 		}
-		loopsUntilClear = 50;
+		loopsUntilClear = 15;
 		// TODO 64 bit
+		// generic
 		// addEventHandler RC 1234 toggleChannel 5 123
+		// on first receive
+		// addEventHandler2 RC 1234 0 toggleChannel 5 123
+		// on hold
+		// addEventHandler2 RC 1234 1 toggleChannel 5 123
 		ADDLOG_INFO(LOG_FEATURE_IR, "Received %lu / %u bit protocol %u, hold %i\n",
 			rc_now,
 			mySwitch.getReceivedBitlength(),
