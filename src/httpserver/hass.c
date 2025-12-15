@@ -417,7 +417,7 @@ HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **f
 	cJSON_AddNumberToObject(info->root, "temp_step", step);
 
 	// Set generation mode and step
-	cJSON_AddNumberToObject(info->root, "mode_state_topic", "~/GenMode/get");
+	cJSON_AddStringToObject(info->root, "mode_state_topic", "~/GenMode/get");
 	sprintf(g_hassBuffer, "cmnd/%s/GenMode", CFG_GetMQTTClientId());
 	cJSON_AddStringToObject(info->root, "mode_command_topic", g_hassBuffer);
 
