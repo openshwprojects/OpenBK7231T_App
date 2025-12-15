@@ -616,6 +616,20 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":"HLW8112SPI"}
 	IOR_HLW8112_SCSN,
+	//iodetail:{"name":"IOR_RCRecv",
+	//iodetail:"title":"IOR_RCRecv Pin",
+	//iodetail:"descr":"IOR_RCRecv.",
+	//iodetail:"enum":"IOR_RCRecv",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":"RC"}
+	IOR_RCRecv,
+	//iodetail:{"name":"IOR_RCRecv_nPup",
+	//iodetail:"title":"IOR_RCRecv_nPup Pin",
+	//iodetail:"descr":"IOR_RCRecv_nPup.",
+	//iodetail:"enum":"IOR_RCRecv_nPup",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":"RC"}
+	IOR_RCRecv_nPup,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
