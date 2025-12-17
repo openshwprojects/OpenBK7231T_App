@@ -24,7 +24,7 @@ for X in $(find platforms/BK7231N/override/ -type f);do
 #	# if file is present, we replace it, otherwise file is added ...
 	[ -e $D ] && echo "PREBUILD: replacing file\n\t$D\n\twith file\n\t$S" || echo "PREBUILD: adding file\n\t$S\n\tas\n\t$D"
 	cp $S $D;
-#done
+done
 ## restore IFS to whatever it was before ...
 IFS=$OFS
 
