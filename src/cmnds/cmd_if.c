@@ -745,6 +745,12 @@ const char *CMD_ExpandConstantString(const char *s, const char *stop, char *out,
 		strcpy_safe(out, res, outLen);
 		return ret;
 	}
+	ret = strCompareBound(s, "$ip", stop, false);
+	if (ret) {
+		const char *res = HAL_GetMyIPString();
+		strcpy_safe(out, res, outLen);
+		return ret;
+	}
 	return false;
 }
 
