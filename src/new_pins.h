@@ -618,14 +618,14 @@ typedef enum ioRole_e {
 	IOR_HLW8112_SCSN,
 	//iodetail:{"name":"IOR_RCRecv",
 	//iodetail:"title":"IOR_RCRecv Pin",
-	//iodetail:"descr":"IOR_RCRecv.",
+	//iodetail:"descr":"433MHz RC receiver input (uses internal pull-up).",
 	//iodetail:"enum":"IOR_RCRecv",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":"RC"}
 	IOR_RCRecv,
 	//iodetail:{"name":"IOR_RCRecv_nPup",
 	//iodetail:"title":"IOR_RCRecv_nPup Pin",
-	//iodetail:"descr":"IOR_RCRecv_nPup.",
+	//iodetail:"descr":"433MHz RC receiver input without internal pull-up.",
 	//iodetail:"enum":"IOR_RCRecv_nPup",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":"RC"}
