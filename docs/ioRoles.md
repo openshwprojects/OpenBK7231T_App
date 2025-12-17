@@ -92,4 +92,6 @@ Do not add anything here, as it will overwritten with next rebuild.
 | StripState | This is an output pin which has current led_enableAll value |
 | StripState_n | This is an output pin which has negation of current led_enableAll value |
 | HLW8112_SCSN | SCSN pin for HLW8112 SPI energy measuring devices. |
+| RCRecv | 433MHz RC receiver input (uses internal pull-up). |
+| RCRecv_nPup | 433MHz RC receiver input without internal pull-up. |
 | Total_Options | Current total number of available IOR roles |
