@@ -50,4 +50,5 @@ Do not add anything here, as it will overwritten with next rebuild.
 | OnCMD | CMD_EVENT_ON_CMD |
 | OnHTTP | CMD_EVENT_ON_HTTP |
 | OnDiscovery | CMD_EVENT_ON_DISCOVERY |
+| RC | CMD_EVENT_RC |
 
