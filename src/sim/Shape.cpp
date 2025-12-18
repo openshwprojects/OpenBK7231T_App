@@ -3,6 +3,7 @@
 #include "Circle.h"
 #include "Rect.h"
 #include "Line.h"
+#include "Point.h"
 #include "Text.h"
 #include "Junction.h"
 #include "Controller_Base.h"
@@ -50,6 +51,7 @@ void CShape::cloneShapeTo(CShape *o) {
 	if (this->controller != 0) {
 		o->setController(this->controller->cloneController(this,o));
 	}
+	o->setActive(this->isActive());
 }
 CShape *CShape::cloneShape() {
 	CShape *r = new CShape();
@@ -132,6 +134,11 @@ class CShape* CShape::addCircle(float x, float y, float r) {
 	addShape(n);
 	return n;
 }
+class CShape* CShape::addPoint(float x, float y) {
+	CPoint *n = new CPoint(x, y);
+	addShape(n);
+	return n;
+}
 class CShape* CShape::addRect(float x, float y, float w, float h) {
 	CRect *n = new CRect(x, y, w, h);
 	addShape(n);
@@ -143,6 +150,12 @@ class CShape* CShape::addText(float x, float y, const char *s, bool bDeepText, b
 	n->setAllowNewLine(bAllowNewLine);
 	addShape(n);
 	return n;
+}
+void CShape::setController(CControllerBase *c) {
+	controller = c;
+	if (controller) {
+		controller->baseShape = this;
+	}
 }
 Coord CShape::getAbsPosition() const {
 	Coord ofs = this->getPosition();

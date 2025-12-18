@@ -25,7 +25,7 @@ https://developer.tuya.com/en/docs/iot/tuyacloudlowpoweruniversalserialaccesspro
 #include "drv_uart.h"
 #include "drv_public.h"
 #include <time.h>
-#include "drv_ntp.h"
+#include "drv_deviceclock.h"
 #include "../rgb2hsv.h"
 
 
@@ -781,9 +781,11 @@ void TuyaMCU_Send_SetTime(struct tm* pTime, bool bSensorMode) {
 }
 struct tm* TuyaMCU_Get_NTP_Time() {
 	struct tm* ptm;
+	time_t ntpTime;
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "MCU time to set: %i\n", g_ntpTime);
-	ptm = gmtime(&g_ntpTime);
+	ntpTime=(time_t)TIME_GetCurrentTime();
+	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "MCU time to set: %i\n", ntpTime);
+	ptm = gmtime(&ntpTime);
 	if (ptm != 0) {
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ptime ->gmtime => tm_hour: %i\n", ptm->tm_hour);
 		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ptime ->gmtime => tm_min: %i\n", ptm->tm_min);
@@ -1762,7 +1764,30 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 				break;
 				case DP_TYPE_RAW_TAC2121C_VCP:
 				{
-					if (sectorLen == 8 || sectorLen == 10) {
+					if (sectorLen == 6) {
+						int iV, iC, iP;
+						// voltage
+						iV = data[ofs + 0 + 4] << 8 | data[ofs + 1 + 4];
+						// current
+						iC = data[ofs + 2 + 4] << 8 | data[ofs + 3 + 4];
+						// power
+						iP = data[ofs + 4 + 4] << 8 | data[ofs + 5 + 4];
+						// calibration
+						CALIB_IF_NONZERO(iV, mapping->delta);
+						CALIB_IF_NONZERO(iC, mapping->delta2);
+						CALIB_IF_NONZERO(iP, mapping->delta3);
+						if (mapping->channel < 0) {
+							CHANNEL_SetFirstChannelByType(ChType_Voltage_div10, iV);
+							CHANNEL_SetFirstChannelByType(ChType_Current_div10, iC);
+							CHANNEL_SetFirstChannelByType(ChType_Power_div10, iP);
+						}
+						else {
+							CHANNEL_Set(mapping->channel, iV, 0);
+							CHANNEL_Set(mapping->channel + 1, iC, 0);
+							CHANNEL_Set(mapping->channel + 2, iP, 0);
+						}
+					}
+					else if (sectorLen == 8 || sectorLen == 10) {
 						int iV, iC, iP;
 						// voltage
 						iV = data[ofs + 0 + 4] << 8 | data[ofs + 1 + 4];

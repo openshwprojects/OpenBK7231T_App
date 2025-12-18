@@ -14,6 +14,8 @@
 #include "driver/drv_hlw8112.h"
 //#include "ir/ir_local.h"
 
+#include "driver/drv_deviceclock.h"
+
 // Commands register, execution API and cmd tokenizer
 #include "cmnds/cmd_public.h"
 
@@ -202,7 +204,7 @@ void extended_app_waiting_for_launch2()
 	// wait 100ms at the start.
 	// TCP is being setup in a different thread, and there does not seem to be a way to find out if it's complete yet?
 	// so just wait a bit, and then start.
-	int startDelay = 100;
+	int startDelay = 250;
 	bk_printf("\r\ndelaying start\r\n");
 	for(int i = 0; i < startDelay / 10; i++)
 	{
@@ -480,10 +482,12 @@ void Main_OnWiFiStatusChange(int code)
 	case WIFI_STA_DISCONNECTED:
 		// try to connect again in few seconds
 		// if we are already disconnected, why must we call disconnect again?
-		//if (g_bHasWiFiConnected != 0)
-		//{
-		//	HAL_DisconnectFromWifi();
-		//}
+#if PLATFORM_BEKEN
+		if (g_bHasWiFiConnected != 0)
+		{
+			HAL_DisconnectFromWifi();
+		}
+#endif
 		if(g_secondsElapsed < 30)
 		{
 			g_connectToWiFi = 5;
@@ -697,6 +701,12 @@ float g_wifi_temperature = 0;
 static byte g_secondsSpentInLowMemoryWarning = 0;
 void Main_OnEverySecond()
 {
+#if PLATFORM_W600 || PLATFORM_W800
+#define TimeOut_t xTimeOutType 
+#endif
+#if ! ( WINDOWS || PLATFORM_TXW81X  || PLATFORM_RDA5981) 
+	TimeOut_t myTimeout;	// to get uptime from xTicks - not working on WINDOWS and TXW81X and RDA5981
+#endif
 	int newMQTTState;
 	const char* safe;
 	int i;
@@ -868,8 +878,14 @@ void Main_OnEverySecond()
 			}
 		}
 	}
-
+#if (WINDOWS || PLATFORM_TXW81X || PLATFORM_RDA5981)
 	g_secondsElapsed++;
+#elif defined(PLATFORM_ESPIDF)
+	g_secondsElapsed = (int)(esp_timer_get_time() / 1000000);
+#else
+	vTaskSetTimeOutState( &myTimeout );
+	g_secondsElapsed = (int)((((uint64_t) myTimeout.xOverflowCount << (sizeof(portTickType)*8) | myTimeout.xTimeOnEntering)*portTICK_RATE_MS ) / 1000 );
+#endif
 	if (bSafeMode) {
 		safe = "[SAFE] ";
 	}
@@ -1419,6 +1435,8 @@ void Main_Init_Before_Delay()
 	// it registers a cllback from RTOS IDLE function.
 	// why is it called IRDA??  is this where they check for IR?
 	bg_register_irda_check_func(isidle);
+#elif PLATFORM_TR6260
+	system_register_idle_callback(isidle);
 #endif
 
 	g_bootFailures = HAL_FlashVars_GetBootFailures();
@@ -1583,4 +1601,17 @@ void Main_Init()
 
 }
 
+#if PLATFORM_ESPIDF || PLATFORM_ESP8266 || PLATFORM_BL602 || (PLATFORM_REALTEK && !PLATFORM_REALTEK_NEW) || PLATFORM_XRADIO
 
+void vApplicationIdleHook(void)
+{
+	isidle();
+#if PLATFORM_BL602
+	// sleep
+	__asm volatile(
+	"   wfi     "
+		);
+#endif
+}
+
+#endif

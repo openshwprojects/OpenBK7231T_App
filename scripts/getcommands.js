@@ -8,10 +8,12 @@ let ios = [];
 let ioindex = {};
 let drvs = [];
 let drvindex = {};
+let drvdefines = {};	// try to save the "#if ENABLE_DRIVER_XY"
 let flags = [];
 let flagindex = {};
 let cnsts = [];
 let cnstindex = {};
+let evnts = [];
 
 let inFile = 0;
 
@@ -26,7 +28,7 @@ function mytrim(text) {
 
 
 function getFolder(name, cb) {
-	//console.log('dir:'+name);
+	//console.error('dir:'+name);
 
 	let list = fs.readdirSync(name);
 	for (let i = 0; i < list.length; i++) {
@@ -40,7 +42,7 @@ function getFolder(name, cb) {
 			let headerFile = file.toLowerCase().endsWith('.h');
 			if (sourceFile || headerFile) {
 				inFile++;
-				//console.log('file:'+file);
+				//console.error('file:'+file);
 				let data = fs.readFileSync(file);
 				let text = data.toString('utf-8');
 				let lines = text.split('\n');
@@ -285,6 +287,48 @@ function getFolder(name, cb) {
 							}
 						}
 					}
+					// test for events (in cmd_eventHandlers.c)
+					if (sourceFile && line.startsWith('int EVENT_ParseEventName')) {
+						let j;
+						let event;
+						let foundif = "";
+						for (j = i; j < lines.length; j++) {
+							let line2raw = lines[j];
+							let line2 = line2raw.trim();
+
+							if (line2.endsWith('return CMD_EVENT_NONE;')) {
+									break;
+							}
+							if (line2.startsWith("#if ")) {
+								foundif = line2.replace(/^#if /,"");
+							}
+							if (line2.startsWith("#endif")) {
+								foundif = "";
+							}
+							if (/if.*str[ni]*cmp/.test(line2)) {
+								let Ename = line2.replace(/if.*str[ni]*cmp\(s,[ ]*"/,"").replace(/"[^"]*$/,'');
+								if (Ename=='channel'){
+									Ename=Ename.replace("channel","channel<X>"); // special case for channels and its number (...atoi ...)
+								}
+								let l = lines[++j].trim();
+								i++;
+								let CMD = l.replace(/^.*return /,"").replace(";","");
+								if (CMD.startsWith('CMD_EVENT_CHANGE_CHANNEL0')){
+									CMD=CMD.replace(/[ ]*\+[ ]*atoi.*/,'<X>'); // special case for channels and its number (...atoi ...)
+								}
+								let event = {
+									name: Ename,
+									CMD: CMD,
+								};
+
+								if (foundif != "") {
+									event.ifdef = foundif;
+								}
+								evnts.push(event);
+							}
+						}
+						i += j;
+					}
 					if (headerFile && line.startsWith('typedef enum ioRole_e {')) {
 						newlines.push(lines[i]);
 						let j;
@@ -376,9 +420,14 @@ function getFolder(name, cb) {
 					if (sourceFile && line.startsWith('static driver_t g_drivers[] = {')) {
 						newlines.push(lines[i]);
 						let j;
+						let lasthash="nothing yet";
 						for (j = i; j < lines.length; j++) {
 							let line2raw = lines[j];
 							let line2 = line2raw.trim();
+							if (line2.startsWith('#if')) {
+								// try finding #if ENABLE_DRIVER_XY so we can use it in cas of a duplicate driver
+								lasthash=line2;
+							} 
 							if (line2.startsWith('//drvdetail:')) {
 								let commentlines = [];
 								let j2;
@@ -400,18 +449,25 @@ function getFolder(name, cb) {
 								try {
 									let drv = JSON.parse(json);
 									if (drvindex[drv.name]) {
-										console.error('duplicate driver docs at file: ' + file + ' line: ' + line);
-										console.error(line);
+										console.error('duplicate driver docs (in "' + line + '") for drv.name="' + drv.name + '" at file: ' + file + '  --  actual line:' + line2);
+										 console.error('\tlast "#if" statement: "' + lasthash +'"'+ '\n\tfirst defined with "#if" statement: "' + drvdefines[drv.name] +'"' );
+										 let tmpcmd=drvindex[drv.name];
+										 delete tmpcmd.define;		// we added "define" on the other element, but it's not present here
+										 if (JSON.stringify(tmpcmd) == JSON.stringify(drv)) console.error('\tshould be safe to ignore, because documentation is equal!' );
+										 else console.error('\tFirst found:\n\t\t"' + JSON.stringify(tmpcmd).replace(/,\"/g,"\n\t\t\t\"")  + '"\n\tactual:\n\t\t"' + JSON.stringify(drv).replace(/,\"/g,"\n\t\t\t\"") + '"' );
+										//console.error(line);
 									} else {
+										drv.define = 'Enabled by defining "' + lasthash.replace("defined(","").replace(")","").replace(/#if[^ ]* /,"<b>") + '</b>" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ';
 										drvs.push(drv);
 										drvindex[drv.name] = drv;
+										drvdefines[drv.name] = lasthash;
 									}
 								} catch (e) {
 									console.error('error in json at file: ' + file + ' line: ' + line + ' er ' + e);
 									console.error(json);
 								}
 							} else if (line2.startsWith('//')) {
-								newlines.push(line2);
+								newlines.push(line2raw);
 								continue;
 							} else if (line2.startsWith('#')) {
 								newlines.push(line2);
@@ -456,6 +512,28 @@ function getFolder(name, cb) {
 										drvindex[drv.name] = drv;
 									}
 									newlines.push(lines[j]);
+									// we found a driver definition before, so if its not a "one liner" we already copied before
+									// we need to copy the next lines, until we find the closing "},"
+									if (! lines[j].trim().endsWith('},')) {
+										let j2;
+										for (j2 = j+1; j2 < lines.length; j2++) {
+											let l = lines[j2].trim();
+											if (l.endsWith('},')) {
+												newlines.push(lines[j2]);
+												break;
+											}
+											else {
+												newlines.push(lines[j2]);
+											}
+										}
+										// move our parsing forward to skip all found
+										// arguments,  
+										// so we need to skip to j2-1 to handle the line in next loop 
+										j = j2;
+									}
+									
+									
+									
 								}
 							}
 							if (line2.endsWith('};')) {
@@ -577,12 +655,17 @@ function getFolder(name, cb) {
 						try {
 							let cmd = JSON.parse(json);
 							if (cmdindex[cmd.name]) {
-								console.error('duplicate command "' + cmd.name + '" docs at file: ' + file + ' line: ' + line);
-								console.error(line);
-							} else {
+								console.error('duplicate command "' + cmd.name + '" docs at file: ' + file + ' line: ' + line + '\n\tfirst seen in "' + cmdindex[cmd.name].file + '"');
+								tmp=cmdindex[cmd.name];	// to test, if oth are equal (despit different file) construct a helper ...
+								tmp.file = cmd.file;	// ... and set its "file" to the actual value
+								if (JSON.stringify(tmp) == JSON.stringify(cmd))	console.error('\tshould be safe to ignore, they are equal beside the file name!');
+								else {
+									console.error('\tFirst found:\n\t\t"' + JSON.stringify(cmdindex[cmd.name]).replace(/,\"/g,"\n\t\t\t\"")+ '"\n\tactual:\n\t\t"'+JSON.stringify(cmd).replace(/,\"/g,"\n\t\t\t\""));
+								}
+							}  {
 								//console.error('new command "' + cmd.name + '" docs at file: ' + file + ' line: ' + line + ' -- json='+ json );
 								if (cmd.file !== file.slice(6)) {
-									console.log('!!!! Posible wrong file location for command "' + cmd.name + '": found in file: "' + file.slice(6) + '" but claimes file: "' + cmd.file + '" - please verify! !!!!')
+									console.error('!!!! Posible wrong file location for command "' + cmd.name + '": found in file: "' + file.slice(6) + '" but claimes file: "' + cmd.file + '" - please verify! !!!!')
 									console.error('\t Posible fix: sed -i \''+ (i-3)  + ',' + (i-1) +  ' { /cmddetail:\\"fn\\":\\"' + cmd.fn + '\"/ s%'+cmd.file + "%" + file.slice(6) + '%} \'  src/' + file.slice(6))
 									console.error('\t test posible fix: sed -n \''+ (i-3)  + ',' + (i-1) +  ' {/cmddetail:\\"fn\\":\\"' + cmd.fn + '\"/ s%'+cmd.file + "%" + file.slice(6) + '% p }\'  src/' + file.slice(6))
 									
@@ -781,7 +864,7 @@ Remember that some drivers might not be yet enabled on certain platforms,
 but we can enable them for you per request. Some drivers might also be WIP.
 Do not add anything here, as it will overwritten with next rebuild.
 | Driver        | Description  |
-|:------------- | -----:|
+|:------------- |:----- |
 `;
 
 let constantsmdshort =
@@ -804,7 +887,7 @@ Also remember that commands can be put in autoexec.bat to run at startup (see We
 <br><br>
 Do not add anything here, as it will overwritten with next rebuild.
 | Command        | Arguments          | Description  |
-|:------------- |:------------- | -----:|
+|:------------- |:------------- |:----- |
 `;
 
 let mdlong =
@@ -827,6 +910,30 @@ Publishes send by OBK device:
 | Topic        | Sample Value          | Description  |
 |:------------- |:------------- | -----:|
 `;
+
+let evntsmdshort =
+	`# Events
+Here is the latest, up to date documentation of possible events (Work in progress).
+This file was autogenerated by running 'node scripts/getcommands.js' in the repository.
+All descriptions were taken from code.
+Do not add anything here, as it will overwritten with next rebuild.
+| Event     |  Eventcmd  |
+|:------------- |:------- |
+`;
+for (let i = 0; i < evnts.length; i++) {
+	let ev = evnts[i];
+
+
+	let textshort = `| ${ev.name.replace("<","&lt;").replace(">","&gt;")} | ${ev.CMD.replace("<","&lt;").replace(">","&gt;")}${ev.ifdef ? '\nonly if defined:\n' + ev.ifdef.replace(/\|/g,"\\|") : ''} |`;
+	// allow multi-row entries in table entries.
+	textshort = textshort.replace(/\n/g, '<br/>');
+	evntsmdshort += textshort +'\n' ;
+}
+
+evntsmdshort += '\n';
+
+
+
 
 function genReadMore(name) {
 	let textmore = `See also [${name} on forum](https://www.elektroda.com/rtvforum/find.php?q=${name}).`;
@@ -1007,8 +1114,8 @@ for (let i = 0; i < drvs.length; i++) {
 
 	let descMore = "<br/>" + genReadMore(drv.name);
 	let descBasic = formatDesc(drv.descr);
-	let textshort = `| ${drv.name} |  ${descBasic}${descMore} |`;
-
+	let textshort = `| ${drv.name} |  ${descBasic}\n${drv.define}(for Details see [here](https://www.elektroda.com/rtvforum/topic4033833.html)).${descMore} |`;
+	
 	// allow multi-row entries in table entries.
 	textshort = textshort.replace(/\n/g, '<br/>');
 
@@ -1107,6 +1214,7 @@ writeDocMD_Array('autoexecExamples', autoexecsmdshort, autoexecExamples, "Autoex
 writeDocMD_Array('mqttTopics', mqttText, publishes_and_listens, "MQTT Topics", false, generic.mqttTopics);
 writeDocMD_Array('scriptExamples', scriptsmdshort, scriptExamples, "Script examples", false, generic.scriptExamples);
 writeDocMD_Array('commands-extended', mdlong, commands, "Console/Script commands [Extended Edition]", false, "More details on commands.")
+writeDocMD_Array('events', evntsmdshort, evnts, "Events", true, generic.events);
 
 let links_md =
 	`# Documentation

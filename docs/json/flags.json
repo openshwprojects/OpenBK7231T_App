@@ -263,7 +263,7 @@
     "enum": "OBK_FLAG_WIFI_FAST_CONNECT",
     "title": "todo",
     "file": "new_pins.h",
-    "descr": "[WiFi] Quick connect to WiFi on reboot (TODO: check if it works for you and report on GitHub)"
+    "descr": "[WiFi] Quick connect to WiFi on reboot (TODO: check if it works for you and report on github)"
   },
   {
     "index": "38",
@@ -361,6 +361,6 @@
     "enum": "OBK_FLAG_WIFI_ENHANCED_FAST_CONNECT",
     "title": "todo",
     "file": "new_pins.h",
-    "descr": "[WiFi] (RTL/BK) Enhanced fast connect by saving AP data to flash (preferable with Flag 37 & static ip). Quick reset 3 times to connect normally"
+    "descr": "[WiFi] (RTL/BK/BL602) Enhanced fast connect by saving AP data to flash (preferable with Flag 37 & static ip). Quick reset 3 times to connect normally"
   }
 ]

@@ -62,7 +62,7 @@
     <ClCompile Include="src\driver\drv_max72xx_single.c" />
     <ClCompile Include="src\driver\drv_mcp9808.c" />
     <ClCompile Include="src\driver\drv_ntp.c" />
-    <ClCompile Include="src\driver\drv_ntp_events.c" />
+    <ClCompile Include="src\driver\drv_timed_events.c" />
     <ClCompile Include="src\driver\drv_pt6523.c" />
     <ClCompile Include="src\driver\drv_pwmToggler.c" />
     <ClCompile Include="src\driver\drv_pwrCal.c" />
@@ -412,6 +412,16 @@
     <ClCompile Include="src\driver\drv_leds_shared.c" />
     <ClCompile Include="src\driver\drv_dmx512.c" />
     <ClCompile Include="src\driver\drv_ddpSend.c" />
+    <ClCompile Include="src\cmnds\cmd_enums.c" />
+    <ClCompile Include="src\driver\drv_girierMCU.c" />
+    <ClCompile Include="src\driver\drv_bkPartitions.c" />
+    <ClCompile Include="src\selftest\selftest_max72xx.c" />
+    <ClCompile Include="src\driver\drv_multiPinI2CScanner.c" />
+    <ClCompile Include="src\selftest\selftest_openWeatherMap.c" />
+    <ClCompile Include="src\driver\drv_simpleEEPROM.c" />
+    <ClCompile Include="src\driver\drv_aht2x.c" />
+    <ClCompile Include="src\sim\Controller_MAX7219.cpp" />
+    <ClCompile Include="src\sim\Point.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\base64\base64.h" />

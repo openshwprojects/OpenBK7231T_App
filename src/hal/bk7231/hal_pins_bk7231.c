@@ -39,14 +39,18 @@ const char *HAL_PIN_GetPinNameAlias(int index)
 #if PLATFORM_BK7238
 		case 1:		return "RXD2/ADC5";
 		case 10:	return "RXD1/ADC6";
-		case 26:	return "PWM5/ADC1";
-		case 24:	return "PWM4/ADC2";
 		case 20:	return "ADC3";
 		case 28:	return "ADC4";
 #else
 		case 1:		return "RXD2";
 		case 10:	return "RXD1";
 		case 23:	return "ADC3";
+		case 13:	return "ADC7";
+#endif
+#if PLATFORM_BK7238 || PLATFORM_BK7231N
+		case 24:	return "PWM4/ADC2";
+		case 26:	return "PWM5/ADC1";
+#else
 		case 24:	return "PWM4";
 		case 26:	return "PWM5";
 #endif
@@ -56,6 +60,17 @@ const char *HAL_PIN_GetPinNameAlias(int index)
 		case 7:		return "PWM1";
 		case 8:		return "PWM2";
 		case 9:		return "PWM3";
+#if PLATFORM_BK7231N
+		case 28:	return "ADC4";
+		case 22:	return "ADC5";
+		case 21:	return "ADC6";
+#elif !PLATFORM_BK7238
+		case 4:		return "ADC1";
+		case 5:		return "ADC2";
+		case 2:		return "ADC4";
+		case 3:		return "ADC5";
+		case 12:	return "ADC6";
+#endif
 		default:	return "N/A";
 	}
 }

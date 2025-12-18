@@ -5,7 +5,9 @@
 
 #if ENABLE_OBK_BERRY
 
+#include "../driver/drv_openWeatherMap.h"
 #include "../driver/drv_ir.h"
+#include "../driver/drv_ntp.h"
 #include "../driver/drv_local.h"
 #include "../driver/drv_public.h"
 #include "../driver/drv_uart.h"
@@ -19,7 +21,8 @@
 #include "be_repl.h"
 #include "be_vm.h"
 #include "berry.h"
-
+#include "../libraries/obktime/obktime.h"	// for time functions
+#include "../driver/drv_deviceclock.h"
 bvm *g_vm = NULL;
 
 typedef struct berryInstance_s
@@ -309,6 +312,14 @@ int be_setTimeout(bvm *vm) {
 	be_setTimeoutInternal(vm, 0);
 	return 1;
 }
+#if ENABLE_DRIVER_OPENWEATHERMAP
+int be_getOpenWeatherReply(bvm *vm) {
+	const char *data = Weather_GetReply();
+	be_pushstring(vm, data);
+	be_return(vm);
+	return 1;
+}
+#endif
 int be_get(bvm *vm) {
 	char tmpA[64];
 	int top = be_top(vm);
@@ -316,7 +327,7 @@ int be_get(bvm *vm) {
 		const char *name = be_tostring(vm, 1);
 		if (name[0] == '$') {
 			float ret;
-			CMD_ExpandConstant(name, 0, &ret);
+			CMD_ExpandConstantFloat(name, 0, &ret);
 			be_pushreal(vm, ret);
 			be_return(vm);
 		}
@@ -334,6 +345,75 @@ int be_setInterval(bvm *vm) {
 	be_setTimeoutInternal(vm, -1);
 	return 1;
 }
+int be_gmtime(bvm *vm) {
+	struct tm *ltm;
+	const char *fields;
+	int i;
+
+	int top = be_top(vm);
+	if (top == 1 && be_isstring(vm, 1)) {
+		fields = be_tostring(vm, 1);
+	}
+	else {
+		fields = "YMDhmsw"; // default all fields
+	}
+
+/*
+	ltm = gmtime(&g_ntpTime);
+
+	be_newobject(vm, "list"); // create a new list on top of the stack
+
+	for (i = 0; fields[i]; i++) {
+		int value = 0;
+		switch (fields[i]) {
+		case 'Y': value = ltm->tm_year + 1900; break;
+		case 'M': value = ltm->tm_mon + 1;     break;
+		case 'D': value = ltm->tm_mday;        break;
+		case 'h': value = ltm->tm_hour;        break;
+		case 'm': value = ltm->tm_min;         break;
+		case 's': value = ltm->tm_sec;         break;
+		case 'w': value = ltm->tm_wday;        break;
+		}
+
+		be_pushint(vm, value);    // push value onto stack
+		be_data_push(vm, -2);     // append value to list at -2
+		be_pop(vm, 1);            // pop the temporary value
+	}
+*/
+
+	TimeComponents tc;
+	tc=calculateComponents(TIME_GetCurrentTime());
+
+	be_newobject(vm, "list"); // create a new list on top of the stack
+
+	for (i = 0; fields[i]; i++) {
+		int value = 0;
+		switch (fields[i]) {
+		case 'Y': value = tc.year;   break;
+		case 'M': value = tc.month;  break;
+		case 'D': value = tc.day;    break;
+		case 'h': value = tc.hour;   break;
+		case 'm': value = tc.minute; break;
+		case 's': value = tc.second; break;
+		case 'w': value = tc.wday;   break;
+		}
+
+		be_pushint(vm, value);    // push value onto stack
+		be_data_push(vm, -2);     // append value to list at -2
+		be_pop(vm, 1);            // pop the temporary value
+	}
+
+
+
+	be_pop(vm, 1);
+	be_return(vm); // return the list on top of the stack
+}
+
+
+
+
+
+
 
 static int BasicInit() {
 	if (!g_vm) {
@@ -354,7 +434,12 @@ static int BasicInit() {
 		be_regfunc(g_vm, "runCmd", be_runCmd);
 		be_regfunc(g_vm, "poststr", be_poststr);
 		be_regfunc(g_vm, "echo", be_echo);
-		
+
+		be_regfunc(g_vm, "gmtime", be_gmtime);
+
+#if ENABLE_DRIVER_OPENWEATHERMAP
+		be_regfunc(g_vm, "getOpenWeatherReply", be_getOpenWeatherReply);
+#endif
 		be_regfunc(g_vm, "rtosDelayMs", be_rtosDelayMs);
 		be_regfunc(g_vm, "delayUs", be_delayUs);
 		be_regfunc(g_vm, "cancel", be_CancelThread);

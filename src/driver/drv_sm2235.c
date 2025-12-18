@@ -18,6 +18,8 @@
 #include "drv_sm2235.h"
 
 static softI2C_t g_softI2C;
+static int g_cur_RGB = 2;
+static int g_cur_CW = 4;
 
 void SM2235_Write(float *rgbcw) {
 	unsigned short cur_col_10[5];
@@ -37,7 +39,7 @@ void SM2235_Write(float *rgbcw) {
 	// Byte 0
 	Soft_I2C_Start(&g_softI2C,SM2235_BYTE_0);
 	// Byte 1
-	Soft_I2C_WriteByte(&g_softI2C, SM2235_BYTE_1);
+	Soft_I2C_WriteByte(&g_softI2C, g_cur_RGB << 4 | g_cur_CW);
 	// Byte 2
 	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_FIRST_BYTE(cur_col_10[0])));  //Red
 	// Byte 3
@@ -60,26 +62,31 @@ void SM2235_Write(float *rgbcw) {
 	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_SECOND_BYTE(cur_col_10[3])));
 	Soft_I2C_Stop(&g_softI2C);
 
+#if WINDOWS
+	Simulator_StoreBP5758DColor(cur_col_10);
+#endif
 }
 
 static void SM2235_SetCurrent(int curValRGB, int curValCW) {
-	//g_current_setting_rgb = curValRGB;
-	//g_current_setting_cw = curValCW;
+	g_cur_RGB = curValRGB;
+	g_cur_CW = curValCW;
 }
 
 static commandResult_t SM2235_Current(const void *context, const char *cmd, const char *args, int flags){
-	/*int valRGB;
+	int valRGB;
 	int valCW;
 	Tokenizer_TokenizeString(args,0);
 
 	if(Tokenizer_GetArgsCount()<=1) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "SM2235_Current: requires 2 arguments [RGB,CW]. Current value is: %i %i!\n",g_current_setting_rgb,g_current_setting_cw);
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, 
+			"SM2235_Current: requires 2 arguments [RGB,CW]. Current value is: %i %i!\n",
+			g_cur_RGB, g_cur_CW);
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	valRGB = Tokenizer_GetArgInteger(0);
 	valCW = Tokenizer_GetArgInteger(1);
 
-	SM2235_SetCurrent(valRGB,valCW);*/
+	SM2235_SetCurrent(valRGB,valCW);
 	return CMD_RES_OK;
 }
 

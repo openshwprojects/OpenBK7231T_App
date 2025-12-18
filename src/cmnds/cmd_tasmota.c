@@ -270,6 +270,19 @@ byte *LFS_ReadFile(const char *fname) {
 #endif
 	return 0;
 }
+byte* LFS_ReadFileExpanding(const char* fname) {
+	byte *d = LFS_ReadFile(fname);
+	if (d == 0)
+		return 0;
+	const char *s = (const char *)d;
+	int vars = CMD_CountVarsInString(s);
+	if (vars == 0) {
+		return d;
+	}
+	char *r = CMD_ExpandingStrdup(s);
+	free(d);
+	return (byte*)r;
+}
 int LFS_WriteFile(const char *fname, const byte *data, int len, bool bAppend) {
 #if ENABLE_LITTLEFS
 	init_lfs(1);
