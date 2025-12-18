@@ -1,14 +1,3 @@
-#if (INCLUDED_BY_NEW_PINS_H) || (INCLUDED_BY_NEW_PINS_C) || (INCLUDED_BY_NEW_HTTP_C) || (INCLUDED_BY_HTTP_FNS_C)
-
-
-// pseudo structure for values describing a channels usage
-typedef struct {
-	char* desc;		// description (like Temperature, Humidity ...). This MUST match iodetails "channel usage"
-	char* enum_desc;	// description for enum will be used as CHAN_<enum_desc> for enum buliding channel values (to make header file readable - just needs to be different per line)
-	char* comment;		// just for comments in enum to make header file better readable
-	char* htlm;		// this is used in web page to indicate the function - can be text or a unicode symbol like thermometer (&#x1F321;) for temperature
-}  cval_t;
-
 // pseudo array, only to build header file
 // values 
 // lines: {"<channel usage string, as in iodetail:>","<abbrevation for enum>","<comment for enum>","<HTML code used to indicate function>",<bool: display in legend>}
@@ -92,9 +81,6 @@ cval_t cvals[] = {
 };
 
 
-
-#if (INCLUDED_BY_NEW_PINS_H)
-
 typedef enum ioRole_e {
 	//iodetail:{"name":"None",
 	//iodetail:"title":"TODO",
@@ -106,6 +92,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_None",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_None,
 	//iodetail:{"name":"Relay",
@@ -118,6 +105,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_Relay",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_Relay,
 	//iodetail:{"name":"Relay_n",
@@ -130,6 +118,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_Relay_n",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_Relay_n,
 	//iodetail:{"name":"Button",
@@ -142,6 +131,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_Button",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_Button,
 	//iodetail:{"name":"Button_n",
@@ -154,6 +144,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_Button_n",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_Button_n,
 	//iodetail:{"name":"LED",
@@ -166,6 +157,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_LED",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_LED,
 	//iodetail:{"name":"LED_n",
@@ -178,6 +170,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_LED_n",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_LED_n,
 	//iodetail:{"name":"PWM",
@@ -190,6 +183,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_PWM",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_PWM,
 	//iodetail:{"name":"LED_WIFI",
@@ -202,6 +196,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_LED_WIFI",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_LED_WIFI,
 	//iodetail:{"name":"LED_WIFI_n",
@@ -214,6 +209,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_LED_WIFI_n",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_LED_WIFI_n,
 	//iodetail:{"name":"Button_ToggleAll",
@@ -226,6 +222,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_Button_ToggleAll",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_Button_ToggleAll,
 	//iodetail:{"name":"Button_ToggleAll_n",
@@ -238,6 +235,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_Button_ToggleAll_n",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_Button_ToggleAll_n,
 	//iodetail:{"name":"DigitalInput",
@@ -250,6 +248,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_DigitalInput",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_DigitalInput,
 	//iodetail:{"name":"DigitalInput_n",
@@ -262,6 +261,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_DigitalInput_n",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_DigitalInput_n,
 	//iodetail:{"name":"ToggleChannelOnToggle",
@@ -274,6 +274,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_ToggleChannelOnToggle",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_ToggleChannelOnToggle,
 	//iodetail:{"name":"DigitalInput_NoPup",
@@ -286,6 +287,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_DigitalInput_NoPup",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_DigitalInput_NoPup,
 	//iodetail:{"name":"DigitalInput_NoPup_n",
@@ -298,6 +300,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_DigitalInput_NoPup_n",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_DigitalInput_NoPup_n,
 	//iodetail:{"name":"BL0937_SEL",
@@ -310,7 +313,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_BL0937_SEL",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_BL0937",
-	//iodetail:"driver":"src/driver/drv_bl0937.c"}
+	//iodetail:"driverfile":"src/driver/drv_bl0937.c",
+	//iodetail:"driver":"BL0937"}
 	IOR_BL0937_SEL,
 	//iodetail:{"name":"BL0937_CF",
 	//iodetail:"title":"TODO",
@@ -322,7 +326,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_BL0937_CF",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_BL0937",
-	//iodetail:"driver":"src/driver/drv_bl0937.c"}
+	//iodetail:"driverfile":"src/driver/drv_bl0937.c",
+	//iodetail:"driver":"BL0937"}
 	IOR_BL0937_CF,
 	//iodetail:{"name":"BL0937_CF1",
 	//iodetail:"title":"TODO",
@@ -334,7 +339,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_BL0937_CF1",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_BL0937",
-	//iodetail:"driver":"src/driver/drv_bl0937.c"}
+	//iodetail:"driverfile":"src/driver/drv_bl0937.c",
+	//iodetail:"driver":"BL0937"}
 	IOR_BL0937_CF1,
 	//iodetail:{"name":"ADC",
 	//iodetail:"title":"TODO",
@@ -346,6 +352,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_ADC",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_ADC,
 	//iodetail:{"name":"SM2135_DAT",
@@ -358,7 +365,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_SM2135_DAT",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_LED",
-	//iodetail:"driver":"src/driver/drv_sm2135.c"}
+	//iodetail:"driverfile":"src/driver/drv_sm2135.c",
+	//iodetail:"driver":"SM2135"}
 	IOR_SM2135_DAT,
 	//iodetail:{"name":"SM2135_CLK",
 	//iodetail:"title":"TODO",
@@ -370,7 +378,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_SM2135_CLK",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_LED",
-	//iodetail:"driver":"src/driver/drv_sm2135.c"}
+	//iodetail:"driverfile":"src/driver/drv_sm2135.c",
+	//iodetail:"driver":"SM2135"}
 	IOR_SM2135_CLK,
 	//iodetail:{"name":"BP5758D_DAT",
 	//iodetail:"title":"TODO",
@@ -382,7 +391,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_BP5758D_DAT",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_LED",
-	//iodetail:"driver":"src/driver/drv_bp5758d.c"}
+	//iodetail:"driverfile":"src/driver/drv_bp5758d.c",
+	//iodetail:"driver":"BP5758D"}
 	IOR_BP5758D_DAT,
 	//iodetail:{"name":"BP5758D_CLK",
 	//iodetail:"title":"TODO",
@@ -394,7 +404,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_BP5758D_CLK",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_LED",
-	//iodetail:"driver":"src/driver/drv_bp5758d.c"}
+	//iodetail:"driverfile":"src/driver/drv_bp5758d.c",
+	//iodetail:"driver":"BP5758D"}
 	IOR_BP5758D_CLK,
 	//iodetail:{"name":"BP1658CJ_DAT",
 	//iodetail:"title":"TODO",
@@ -406,7 +417,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_BP1658CJ_DAT",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_LED",
-	//iodetail:"driver":"src/driver/drv_bp1658cj.c"}
+	//iodetail:"driverfile":"src/driver/drv_bp1658cj.c",
+	//iodetail:"driver":"BP1658CJ"}
 	IOR_BP1658CJ_DAT,
 	//iodetail:{"name":"BP1658CJ_CLK",
 	//iodetail:"title":"TODO",
@@ -418,7 +430,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_BP1658CJ_CLK",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_LED",
-	//iodetail:"driver":"src/driver/drv_bp1658cj.c"}
+	//iodetail:"driverfile":"src/driver/drv_bp1658cj.c",
+	//iodetail:"driver":"BP1658CJ"}
 	IOR_BP1658CJ_CLK,
 	//iodetail:{"name":"PWM_n",
 	//iodetail:"title":"TODO",
@@ -430,6 +443,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_PWM_n",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_PWM_n,
 	//iodetail:{"name":"IRRecv",
@@ -442,7 +456,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_IRRecv",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_IR || ENABLE_DRIVER_IRREMOTEESP",
-	//iodetail:"driver":"src/driver/drv_ir_new.cpp + src/driver/drv_ir.cpp"}
+	//iodetail:"driverfile":"src/driver/drv_ir_new.cpp + src/driver/drv_ir.cpp",
 	//iodetail:"driver":"IR"}
 	IOR_IRRecv,
 	//iodetail:{"name":"IRSend",
@@ -455,7 +469,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_IRSend",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_IR || ENABLE_DRIVER_IRREMOTEESP",
-	//iodetail:"driver":"src/driver/drv_ir_new.cpp + src/driver/drv_ir.cpp"}
+	//iodetail:"driverfile":"src/driver/drv_ir_new.cpp + src/driver/drv_ir.cpp",
+	//iodetail:"driver":"IR"}
 	IOR_IRSend,
 	//iodetail:{"name":"Button_NextColor",
 	//iodetail:"title":"TODO",
@@ -467,6 +482,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_Button_NextColor",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_Button_NextColor,
 	//iodetail:{"name":"Button_NextColor_n",
@@ -479,6 +495,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_Button_NextColor_n",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_Button_NextColor_n,
 	//iodetail:{"name":"Button_NextDimmer",
@@ -491,6 +508,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_Button_NextDimmer",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_Button_NextDimmer,
 	//iodetail:{"name":"Button_NextDimmer_n",
@@ -503,6 +521,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_Button_NextDimmer_n",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_Button_NextDimmer_n,
 	//iodetail:{"name":"AlwaysHigh",
@@ -515,6 +534,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_AlwaysHigh",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_AlwaysHigh,
 	//iodetail:{"name":"AlwaysLow",
@@ -527,6 +547,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_AlwaysLow",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_AlwaysLow,
 	//iodetail:{"name":"UCS1912_DIN",
@@ -539,7 +560,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_UCS1912_DIN",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_UCS1912",
-	//iodetail:"driver":"src/driver/drv_ucs1912.c"}
+	//iodetail:"driverfile":"src/driver/drv_ucs1912.c",
+	//iodetail:"driver":""}
 	IOR_UCS1912_DIN,
 	//iodetail:{"name":"SM16703P_DIN",
 	//iodetail:"title":"TODO",
@@ -551,7 +573,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_SM16703P_DIN",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_SM16703P",
-	//iodetail:"driver":"src/driver/drv_sm15155e.c"}
+	//iodetail:"driverfile":"src/driver/drv_sm15155e.c",
+	//iodetail:"driver":"SM15155E"}
 	IOR_SM16703P_DIN,
 	//iodetail:{"name":"Button_NextTemperature",
 	//iodetail:"title":"TODO",
@@ -563,6 +586,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_Button_NextTemperature",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_Button_NextTemperature,
 	//iodetail:{"name":"Button_NextTemperature_n",
@@ -575,6 +599,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_Button_NextTemperature_n",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_Button_NextTemperature_n,
 	//iodetail:{"name":"Button_ScriptOnly",
@@ -587,6 +612,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_Button_ScriptOnly",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_Button_ScriptOnly,
 	//iodetail:{"name":"Button_ScriptOnly_n",
@@ -599,6 +625,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_Button_ScriptOnly_n",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_Button_ScriptOnly_n,
 	//iodetail:{"name":"DHT11",
@@ -611,7 +638,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_DHT11",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_DHT",
-	//iodetail:"driver":"src/driver/drv_dht.c"}
+	//iodetail:"driverfile":"src/driver/drv_dht.c",
+	//iodetail:"driver":"DHT11"}
 	IOR_DHT11,
 	//iodetail:{"name":"DHT12",
 	//iodetail:"title":"TODO",
@@ -623,7 +651,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_DHT12",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_DHT",
-	//iodetail:"driver":"src/driver/drv_dht.c"}
+	//iodetail:"driverfile":"src/driver/drv_dht.c",
+	//iodetail:"driver":"DHT12"}
 	IOR_DHT12,
 	//iodetail:{"name":"DHT21",
 	//iodetail:"title":"TODO",
@@ -635,7 +664,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_DHT21",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_DHT",
-	//iodetail:"driver":"src/driver/drv_dht.c"}
+	//iodetail:"driverfile":"src/driver/drv_dht.c",
+	//iodetail:"driver":"DHT21"}
 	IOR_DHT21,
 	//iodetail:{"name":"DHT22",
 	//iodetail:"title":"TODO",
@@ -647,7 +677,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_DHT22",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_DHT",
-	//iodetail:"driver":"src/driver/drv_dht.c"}
+	//iodetail:"driverfile":"src/driver/drv_dht.c",
+	//iodetail:"driver":"DHT22"}
 	IOR_DHT22,
 	//iodetail:{"name":"CHT83XX_DAT",
 	//iodetail:"title":"TODO",
@@ -659,7 +690,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_CHT83XX_DAT",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_CHT83XX",
-	//iodetail:"driver":"src/driver/drv_cht8305.c"}
+	//iodetail:"driverfile":"src/driver/drv_cht8305.c",
+	//iodetail:"driver":"CHT83XX"}
 	IOR_CHT83XX_DAT,
 	//iodetail:{"name":"CHT83XX_CLK",
 	//iodetail:"title":"TODO",
@@ -671,7 +703,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_CHT83XX_CLK",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_CHT83XX",
-	//iodetail:"driver":"src/driver/drv_cht8305.c"}
+	//iodetail:"driverfile":"src/driver/drv_cht8305.c",
+	//iodetail:"driver":"CHT83XX"}
 	IOR_CHT83XX_CLK,
 	//iodetail:{"name":"SHT3X_DAT",
 	//iodetail:"title":"TODO",	
@@ -683,7 +716,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_SHT3X_DAT",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_SHT3X",
-	//iodetail:"driver":"src/driver/drv_sht3x.c"}
+	//iodetail:"driverfile":"src/driver/drv_sht3x.c",
+	//iodetail:"driver":"SHT3X"}
 	IOR_SHT3X_DAT,
 	//iodetail:{"name":"SHT3X_CLK",
 	//iodetail:"title":"TODO",
@@ -695,7 +729,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_SHT3X_CLK",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_SHT3X",
-	//iodetail:"driver":"src/driver/drv_sht3x.c"}
+	//iodetail:"driverfile":"src/driver/drv_sht3x.c",
+	//iodetail:"driver":"SHT3X"}
 	IOR_SHT3X_CLK,
 	//iodetail:{"name":"SOFT_SDA",
 	//iodetail:"title":"TODO",
@@ -707,7 +742,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_SOFT_SDA",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_I2C",
-	//iodetail:"driver":"src/driver/drv_txw81x_camera.c"}
+	//iodetail:"driverfile":"src/driver/drv_txw81x_camera.c",
+	//iodetail:"driver":"TXWCAM"}
 	IOR_SOFT_SDA,
 	//iodetail:{"name":"SOFT_SCL",
 	//iodetail:"title":"TODO",
@@ -719,7 +755,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_SOFT_SCL",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_I2C",
-	//iodetail:"driver":"src/driver/drv_txw81x_camera.c"}
+	//iodetail:"driverfile":"src/driver/drv_txw81x_camera.c",
+	//iodetail:"driver":"TXWCAM"}
 	IOR_SOFT_SCL,
 	//iodetail:{"name":"SM2235_DAT",
 	//iodetail:"title":"TODO",	
@@ -731,7 +768,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_SM2235_DAT",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_LED",
-	//iodetail:"driver":"src/driver/drv_sm2235.c"}
+	//iodetail:"driverfile":"src/driver/drv_sm2235.c",
+	//iodetail:"driver":"SM2235"}
 	IOR_SM2235_DAT,
 	//iodetail:{"name":"SM2235_CLK",
 	//iodetail:"title":"TODO",	
@@ -743,7 +781,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_SM2235_CLK",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_LED",
-	//iodetail:"driver":"src/driver/drv_sm2235.c"}
+	//iodetail:"driverfile":"src/driver/drv_sm2235.c",
+	//iodetail:"driver":"SM2235"}
 	IOR_SM2235_CLK,
 	//iodetail:{"name":"BridgeForward",
 	//iodetail:"title":"TODO",
@@ -755,6 +794,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_BridgeForward",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_BridgeForward,
 	//iodetail:{"name":"BridgeReverse",
@@ -767,6 +807,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_BridgeReverse",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_BridgeReverse,
 	//iodetail:{"name":"SmartButtonForLEDs",
@@ -779,6 +820,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_SmartButtonForLEDs",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_SmartButtonForLEDs,
 	//iodetail:{"name":"SmartButtonForLEDs_n",
@@ -791,6 +833,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_SmartButtonForLEDs_n",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_SmartButtonForLEDs_n,
 	//iodetail:{"name":"DoorSensorWithDeepSleep",
@@ -803,6 +846,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_DoorSensorWithDeepSleep",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_DoorSensorWithDeepSleep,
 	//iodetail:{"name":"DoorSensorWithDeepSleep_NoPup",
@@ -815,6 +859,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_DoorSensorWithDeepSleep_NoPup",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_DoorSensorWithDeepSleep_NoPup,
 	//iodetail:{"name":"BAT_ADC",
@@ -827,6 +872,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_BAT_ADC",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_BAT_ADC,
 	//iodetail:{"name":"BAT_Relay",
@@ -839,6 +885,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_BAT_Relay",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_BAT_Relay,
 	//iodetail:{"name":"TM1637_DIO",
@@ -851,7 +898,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_TM1637_DIO",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_TMGN",
-	//iodetail:"driver":"src/driver/drv_tm_gn_display_shared.c"}
+	//iodetail:"driverfile":"src/driver/drv_tm_gn_display_shared.c",
+	//iodetail:"driver":"TM1637"}
 	IOR_TM1637_DIO,
 	//iodetail:{"name":"TM1637_CLK",
 	//iodetail:"title":"TODO",
@@ -863,7 +911,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_TM1637_CLK",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_TMGN",
-	//iodetail:"driver":"src/driver/drv_tm_gn_display_shared.c"}
+	//iodetail:"driverfile":"src/driver/drv_tm_gn_display_shared.c",
+	//iodetail:"driver":"TM1637"}
 	IOR_TM1637_CLK,
 	//iodetail:{"name":"BL0937_SEL_n",
 	//iodetail:"title":"TODO",
@@ -875,6 +924,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_BL0937_SEL_n",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_BL0937",
+	//iodetail:"driverfile":"src/driver/drv_bl0937.c",
 	//iodetail:"driver":"BL0937"}
 	IOR_BL0937_SEL_n,
 	//iodetail:{"name":"DoorSensorWithDeepSleep_pd",
@@ -887,6 +937,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_DoorSensorWithDeepSleep_pd",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_DoorSensorWithDeepSleep_pd,
 	//iodetail:{"name":"SGP_CLK",
@@ -898,8 +949,9 @@ typedef enum ioRole_e {
 	//iodetail:"htmlPinRoleName":"SGP_CLK",
 	//iodetail:"enum":"IOR_SGP_CLK",
 	//iodetail:"file":"pins_and_roles.h",
-	//iodetail:"define":"",
-	//iodetail:"driver":""}
+	//iodetail:"define":"ENABLE_DRIVER_SGP",
+	//iodetail:"driverfile":"src/driver/drv_sgp.c",
+	//iodetail:"driver":"SGP"}
 	IOR_SGP_CLK,
 	//iodetail:{"name":"SGP_DAT",
 	//iodetail:"title":"TODO",
@@ -911,6 +963,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_SGP_DAT",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_SGP",
+	//iodetail:"driverfile":"src/driver/drv_sgp.c",
 	//iodetail:"driver":"SGP"}
 	IOR_SGP_DAT,
 	//iodetail:{"name":"ADC_Button",
@@ -923,6 +976,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_ADC_Button",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_ADC_Button,
 	//iodetail:{"name":"GN6932_CLK",
@@ -935,7 +989,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_GN6932_CLK",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_TMGN",
-	//iodetail:"driver":"src/driver/drv_tm_gn_display_shared.c"}
+	//iodetail:"driverfile":"src/driver/drv_tm_gn_display_shared.c",
+	//iodetail:"driver":"GN6932"}
 	IOR_GN6932_CLK,
 	//iodetail:{"name":"GN6932_DAT",
 	//iodetail:"title":"TODO",
@@ -947,7 +1002,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_GN6932_DAT",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_TMGN",
-	//iodetail:"driver":"src/driver/drv_tm_gn_display_shared.c"}
+	//iodetail:"driverfile":"src/driver/drv_tm_gn_display_shared.c",
+	//iodetail:"driver":"GN6932"}
 	IOR_GN6932_DAT,
 	//iodetail:{"name":"GN6932_STB",
 	//iodetail:"title":"TODO",
@@ -959,7 +1015,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_GN6932_STB",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_TMGN",
-	//iodetail:"driver":"src/driver/drv_tm_gn_display_shared.c"}
+	//iodetail:"driverfile":"src/driver/drv_tm_gn_display_shared.c",
+	//iodetail:"driver":"GN6932"}
 	IOR_GN6932_STB,
 	//iodetail:{"name":"TM1638_CLK",
 	//iodetail:"title":"TODO",
@@ -971,7 +1028,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_TM1638_CLK",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_TMGN",
-	//iodetail:"driver":"src/driver/drv_tm_gn_display_shared.c"}
+	//iodetail:"driverfile":"src/driver/drv_tm_gn_display_shared.c",
+	//iodetail:"driver":"TM1638"}
 	IOR_TM1638_CLK,
 	//iodetail:{"name":"TM1638_DAT",
 	//iodetail:"title":"TODO",
@@ -983,7 +1041,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_TM1638_DAT",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_TMGN",
-	//iodetail:"driver":"src/driver/drv_tm_gn_display_shared.c"}
+	//iodetail:"driverfile":"src/driver/drv_tm_gn_display_shared.c",
+	//iodetail:"driver":"TM1638"}
 	IOR_TM1638_DAT,
 	//iodetail:{"name":"TM1638_STB",
 	//iodetail:"title":"TODO",
@@ -995,7 +1054,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_TM1638_STB",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_TMGN",
-	//iodetail:"driver":"src/driver/drv_tm_gn_display_shared.c"}
+	//iodetail:"driverfile":"src/driver/drv_tm_gn_display_shared.c",
+	//iodetail:"driver":"TM1638"}
 	IOR_TM1638_STB,
 	//iodetail:{"name":"BAT_Relay_n",
 	//iodetail:"title":"TODO",
@@ -1007,6 +1067,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_BAT_Relay_n",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_BAT_Relay_n,
 	//iodetail:{"name":"KP18058_CLK",
@@ -1019,11 +1080,12 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_KP18058_CLK",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_KP18058",
-	//iodetail:"driver":"src/driver/drv_kp18058.c"}
+	//iodetail:"driverfile":"src/driver/drv_kp18058.c",
+	//iodetail:"driver":"KP18058"}
 	IOR_KP18058_CLK,
 	//iodetail:{"name":"KP18058_DAT",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"KP18058 LED linear constant current dimming chip with I2C interface - DAT pin",
+	//iodetail:"descr":"KP18058 LED linear constant current dimming chip with I2C interface - DATA pin",
 	//iodetail:"channels used":"1",
 	//iodetail:"channel 1 usage":"",
 	//iodetail:"channel 2 usage":"",
@@ -1031,9 +1093,10 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_KP18058_DAT",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_KP18058",
-	//iodetail:"driver":"src/driver/drv_kp18058.c"}
+	//iodetail:"driverfile":"src/driver/drv_kp18058.c",
+	//iodetail:"driver":"KP18058"}
 	IOR_KP18058_DAT,
-	//iodetail:{"name":"DS1820",
+	//iodetail:{"name":"DS1820_IO",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"vers simple OneWire Temp sensor DS1820",
 	//iodetail:"channels used":"1",
@@ -1043,7 +1106,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_DS1820_IO",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_DS1820 || ENABLE_DRIVER_DS1820_FULL",
-	//iodetail:"driver":"src/driver/drv_ds1820_simple.c + src/driver/drv_ds1820_full.c"}
+	//iodetail:"driverfile":"src/driver/drv_ds1820_simple.c + src/driver/drv_ds1820_full.c",
+	//iodetail:"driver":"DS1820 + DS1820_FULL"}
 	IOR_DS1820_IO,
 	//iodetail:{"name":"PWM_ScriptOnly",
 	//iodetail:"title":"TODO",
@@ -1055,6 +1119,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"PWM_ScriptOnly",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_PWM_ScriptOnly,
 	//iodetail:{"name":"PWM_ScriptOnly_n",
@@ -1067,9 +1132,10 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_PWM_ScriptOnly_n",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_PWM_ScriptOnly_n,
-	//iodetail:{"name":"IOR_Counter_f",
+	//iodetail:{"name":"Counter_f",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"",
 	//iodetail:"channels used":"1",
@@ -1079,9 +1145,10 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_Counter_f",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_Counter_f,
-	//iodetail:{"name":"IOR_Counter_r",
+	//iodetail:{"name":"Counter_r",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"",
 	//iodetail:"channels used":"1",
@@ -1091,6 +1158,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_Counter_r",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_Counter_r,
 	//iodetail:{"name":"IRRecv_nPup",
@@ -1103,7 +1171,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_IRRecv_nPup",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_IRREMOTEESP",
-	//iodetail:"driver":"src/driver/drv_ir_new.cpp"}
+	//iodetail:"driverfile":"src/driver/drv_ir_new.cpp",
+	//iodetail:"driver":"IR"}
 	IOR_IRRecv_nPup,
 	//iodetail:{"name":"StripState",
 	//iodetail:"title":"TODO",
@@ -1115,6 +1184,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_StripState",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_StripState,
 	//iodetail:{"name":"StripState_n",
@@ -1127,6 +1197,7 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_StripState_n",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_StripState_n,
 	//iodetail:{"name":"HLW8112_SCSN",
@@ -1139,8 +1210,35 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_HLW8112_SCSN",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"ENABLE_DRIVER_HLW8112SPI",
-	//iodetail:"driver":"src/driver/drv_hlw8112.c"}
+	//iodetail:"driverfile":"src/driver/drv_hlw8112.c",
+	//iodetail:"driver":"HLW8112SPI"}
 	IOR_HLW8112_SCSN,
+	//iodetail:{"name":"RCRecv",
+	//iodetail:"title":"RCRecv Pin",
+	//iodetail:"descr":"433MHz RC receiver input (uses internal pull-up).",
+	//iodetail:"channels used":"0",
+	//iodetail:"channel 1 usage":"",
+	//iodetail:"channel 2 usage":"",
+	//iodetail:"htmlPinRoleName":"RCRecv",
+	//iodetail:"enum":"IOR_RCRecv",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"define":"ENABLE_DRIVER_RC",
+	//iodetail:"driverfile":"src/driver/drv_rc.cpp",
+	//iodetail:"driver":"RC"}
+	IOR_RCRecv,
+	//iodetail:{"name":"RCRecv_nPup",
+	//iodetail:"title":"RCRecv_nPup Pin",
+	//iodetail:"descr":"433MHz RC receiver input without internal pull-up.",
+	//iodetail:"channels used":"0",
+	//iodetail:"channel 1 usage":"",
+	//iodetail:"channel 2 usage":"",
+	//iodetail:"htmlPinRoleName":"RCRecv_nPup",
+	//iodetail:"enum":"IOR_RCRecv_nPup",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"define":"ENABLE_DRIVER_RC",
+	//iodetail:"driverfile":"src/driver/drv_rc.cpp",
+	//iodetail:"driver":"RC"}
+	IOR_RCRecv_nPup,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
@@ -1151,233 +1249,8 @@ typedef enum ioRole_e {
 	//iodetail:"enum":"IOR_Total_Options",
 	//iodetail:"file":"pins_and_roles.h",
 	//iodetail:"define":"",
+	//iodetail:"driverfile":"",
 	//iodetail:"driver":""}
 	IOR_Total_Options
 } ioRole_t;
-
-typedef enum {
-	CHAN_Empty,		// 0 = no channel description
-	CHAN_Con,		// 1 = Connector (LED, button, relay ...)
-	CHAN_Temp,		// 2 = Temperature value
-	CHAN_Hum,		// 3 = Humidity value
-	CHAN_Inp,		// 4 = Input pin value
-	CHAN_Out,		// 5 = Output pin value
-	CHAN_Toggl,		// 6 = Channel for toggling a value/relay
-	CHAN_CO2,		// 7 = CO2 value
-	CHAN_TVOC,		// 8 = TVOC value
-	CHAN_Func1,		// 9 = Room for additional functions
-	CHAN_Func2,		// 10 = Room for additional functions
-} chanval_t ;
-
-
-#define INFO2CHANVAL(r, nofc, c1, c2)  ((c2 * 1024) + (c1 * 16) + nofc) 
-
-short chanvals[] = {
-	INFO2CHANVAL(IOR_None, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_Relay, 1, CHAN_Con, CHAN_Empty),
-	INFO2CHANVAL(IOR_Relay_n, 1, CHAN_Con, CHAN_Empty),
-	INFO2CHANVAL(IOR_Button, 2, CHAN_Con, CHAN_Con),
-	INFO2CHANVAL(IOR_Button_n, 2, CHAN_Con, CHAN_Con),
-	INFO2CHANVAL(IOR_LED, 1, CHAN_Con, CHAN_Empty),
-	INFO2CHANVAL(IOR_LED_n, 1, CHAN_Con, CHAN_Empty),
-	INFO2CHANVAL(IOR_PWM, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_LED_WIFI, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_LED_WIFI_n, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_Button_ToggleAll, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_Button_ToggleAll_n, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_DigitalInput, 1, CHAN_Inp, CHAN_Empty),
-	INFO2CHANVAL(IOR_DigitalInput_n, 1, CHAN_Inp, CHAN_Empty),
-	INFO2CHANVAL(IOR_ToggleChannelOnToggle, 1, CHAN_Toggl, CHAN_Empty),
-	INFO2CHANVAL(IOR_DigitalInput_NoPup, 1, CHAN_Inp, CHAN_Empty),
-	INFO2CHANVAL(IOR_DigitalInput_NoPup_n, 1, CHAN_Inp, CHAN_Empty),
-	INFO2CHANVAL(IOR_BL0937_SEL, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_BL0937_CF, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_BL0937_CF1, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_ADC, 1, CHAN_Inp, CHAN_Empty),
-	INFO2CHANVAL(IOR_SM2135_DAT, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_SM2135_CLK, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_BP5758D_DAT, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_BP5758D_CLK, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_BP1658CJ_DAT, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_BP1658CJ_CLK, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_PWM_n, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_IRRecv, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_IRSend, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_Button_NextColor, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_Button_NextColor_n, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_Button_NextDimmer, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_Button_NextDimmer_n, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_AlwaysHigh, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_AlwaysLow, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_UCS1912_DIN, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_SM16703P_DIN, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_Button_NextTemperature, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_Button_NextTemperature_n, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_Button_ScriptOnly, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_Button_ScriptOnly_n, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_DHT11, 2, CHAN_Temp, CHAN_Hum),
-	INFO2CHANVAL(IOR_DHT12, 2, CHAN_Temp, CHAN_Hum),
-	INFO2CHANVAL(IOR_DHT21, 2, CHAN_Temp, CHAN_Hum),
-	INFO2CHANVAL(IOR_DHT22, 2, CHAN_Temp, CHAN_Hum),
-	INFO2CHANVAL(IOR_CHT83XX_DAT, 2, CHAN_Temp, CHAN_Hum),
-	INFO2CHANVAL(IOR_CHT83XX_CLK, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_SHT3X_DAT, 2, CHAN_Temp, CHAN_Hum),
-	INFO2CHANVAL(IOR_SHT3X_CLK, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_SOFT_SDA, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_SOFT_SCL, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_SM2235_DAT, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_SM2235_CLK, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_BridgeForward, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_BridgeReverse, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_SmartButtonForLEDs, 1, CHAN_Toggl, CHAN_Empty),
-	INFO2CHANVAL(IOR_SmartButtonForLEDs_n, 1, CHAN_Temp, CHAN_Empty),
-	INFO2CHANVAL(IOR_DoorSensorWithDeepSleep, 1, CHAN_Inp, CHAN_Empty),
-	INFO2CHANVAL(IOR_DoorSensorWithDeepSleep_NoPup, 1, CHAN_Inp, CHAN_Empty),
-	INFO2CHANVAL(IOR_BAT_ADC, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_BAT_Relay, 1, CHAN_Con, CHAN_Empty),
-	INFO2CHANVAL(IOR_TM1637_DIO, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_TM1637_CLK, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_BL0937_SEL_n, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_DoorSensorWithDeepSleep_pd, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_SGP_CLK, 0, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_SGP_DAT, 2, CHAN_CO2, CHAN_TVOC),
-	INFO2CHANVAL(IOR_ADC_Button, 1, CHAN_Con, CHAN_Empty),
-	INFO2CHANVAL(IOR_GN6932_CLK, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_GN6932_DAT, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_GN6932_STB, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_TM1638_CLK, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_TM1638_DAT, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_TM1638_STB, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_BAT_Relay_n, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_KP18058_CLK, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_KP18058_DAT, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_DS1820_IO, 1, CHAN_Temp, CHAN_Empty),
-	INFO2CHANVAL(IOR_PWM_ScriptOnly, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_PWM_ScriptOnly_n, 1, CHAN_Empty, CHAN_Empty),
-	INFO2CHANVAL(IOR_Counter_f, 1, CHAN_Inp, CHAN_Empty),
-	INFO2CHANVAL(IOR_Counter_r, 1, CHAN_Inp, CHAN_Empty),
-	INFO2CHANVAL(IOR_IRRecv_nPup, 1, CHAN_Inp, CHAN_Empty),
-	INFO2CHANVAL(IOR_StripState, 1, CHAN_Out, CHAN_Empty),
-	INFO2CHANVAL(IOR_StripState_n, 1, CHAN_Out, CHAN_Empty),
-	INFO2CHANVAL(IOR_HLW8112_SCSN, 1, CHAN_Inp, CHAN_Empty),
-	INFO2CHANVAL(IOR_Total_Options, 1, CHAN_Empty, CHAN_Empty),
-};
-
-#endif // (INCLUDED_BY_NEW_PINS_H)
-
-#if (INCLUDED_BY_NEW_HTTP_C)
-
-const char* htmlPinRoleNames[] = {
-	" " ,
-	"Rel" ,
-	"Rel_n" ,
-	"Btn" ,
-	"Btn_n" ,
-	"LED" ,
-	"LED_n" ,
-	"PWM" ,
-	"WifiLED" ,
-	"WifiLED_n" ,
-	"Btn_Tgl_All" ,
-	"Btn_Tgl_All_n" ,
-	"dInput" ,
-	"dInput_n" ,
-	"TglChanOnTgl" ,
-	"dInput_NoPullUp" ,
-	"dInput_NoPullUp_n" ,
-	"BL0937SEL" ,
-	"BL0937CF" ,
-	"BL0937CF1" ,
-	"ADC" ,
-	"SM2135DAT" ,
-	"SM2135CLK" ,
-	"BP5758D_DAT" ,
-	"BP5758D_CLK" ,
-	"BP1658CJ_DAT" ,
-	"BP1658CJ_CLK" ,
-	"PWM_n" ,
-	"IRRecv" ,
-	"IRSend" ,
-	"Btn_NextColor" ,
-	"Btn_NextColor_n" ,
-	"Btn_NextDimmer" ,
-	"Btn_NextDimmer_n" ,
-	"AlwaysHigh" ,
-	"AlwaysLow" ,
-	"UCS1912_DIN" ,
-	"SM16703P_DIN" ,
-	"Btn_NextTemperature" ,
-	"Btn_NextTemperature_n" ,
-	"Btn_ScriptOnly" ,
-	"Btn_ScriptOnly_n" ,
-	"DHT11" ,
-	"DHT12" ,
-	"DHT21" ,
-	"DHT22" ,
-	"CHT83XX_SDA" ,
-	"CHT83XX_SCK" ,
-	"SHT3X_SDA" ,
-	"SHT3X_SCK" ,
-	"SoftSDA" ,
-	"SoftSCL" ,
-	"SM2235DAT" ,
-	"SM2235CLK" ,
-	"BridgeFWD" ,
-	"BridgeREV" ,
-	"Btn_SmartLED" ,
-	"Btn_SmartLED_n" ,
-	"DoorSnsrWSleep" ,
-	"DoorSnsrWSleep_nPup" ,
-	"BAT_ADC" ,
-	"BAT_Relay" ,
-	"TM1637_DIO" ,
-	"TM1637_CLK" ,
-	"BL0937SEL_n" ,
-	"DoorSnsrWSleep_pd" ,
-	"SGP_CLK" ,
-	"SGP_DAT" ,
-	"ADC_Button" ,
-	"GN6932_CLK" ,
-	"GN6932_DAT" ,
-	"GN6932_STB" ,
-	"TM1638_CLK" ,
-	"TM1638_DAT" ,
-	"TM1638_STB" ,
-	"BAT_Relay_n" ,
-	"KP18058_CLK" ,
-	"KP18058_DAT" ,
-	"DS1820_IO" ,
-	"PWM_ScriptOnly" ,
-	"PWM_ScriptOnly_n" ,
-	"Counter_f" ,
-	"Counter_r" ,
-	"IRRecv_nPup" ,
-	"StripState" ,
-	"StripState_n" ,
-	"HLW8112_SCSN" ,
-	"error" ,
-	"error" 
-};
-
-#endif // (INCLUDED_BY_NEW_HTTP_C)
-
-#if (INCLUDED_BY_NEW_PINS_C)
-
-
-int PIN_IOR_NofChan(int test){
-	return chanvals[test]>=0? chanvals[test]%16 : -1;
-}
-#endif // (INCLUDED_BY_NEW_PINS_C)
-
-#if (INCLUDED_BY_HTTP_FNS_C)
-
-
-#define LEGENDSCRIPT "<script>de=[ '','&#x1F4A1;','&#x1F321;','&#x1F4A7;','&#x21A3;','Out','&#x1F504;','&#37;CO<sub>2</sub>','TVOC','F1','F2' ];document.getElementById('legend').innerHTML=\"Functions: \" + de[1] + \": Connector / \" + de[2] + \": Temperature / \" + de[3] + \": Humidity / \" + de[4] + \": Input / \" + de[5] + \": Output \"</script>"
-
-#endif // (INCLUDED_BY_HTTP_FNS_C)
-
-
-#endif // (INCLUDED_BY_NEW_PINS_H) || (INCLUDED_BY_NEW_PINS_C) || (INCLUDED_BY_NEW_HTTP_C) || (INCLUDED_BY_HTTP_FNS_C)
-
-
 
