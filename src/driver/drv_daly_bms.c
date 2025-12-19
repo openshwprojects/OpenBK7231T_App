@@ -47,7 +47,7 @@ void readCellVoltages(){
 	buffer[2] = 0x95; // read cell voltage command
 	buffer[3] = 0x08; // length
 	for(int i=4;i<12;i++){
-		buffer[i]=0x00
+		buffer[i]=0x00;
 	}
 	int checksum=0;
 	for(int i=0;i<11;i++){
@@ -85,11 +85,11 @@ void readCellVoltages(){
     Mutex_Free();
 	MQTT_PublishMain_StringInt("daly_bms_debug", 3, 0);
 	int cellNo=0;
-	for(int k=0;i<2;k++){
+	char tmp[23];
+	for(int k=0;k<2;k++){
 		for(int i=0;i<3;i++){
 				cellVoltage[cellNo]=(float)(receive_buffer[5+i+i]<<8+receive_buffer[6+i+i]);
 
-				static char tmp[23];
 				sprintf(tmp, "daly_bms_cell_voltage_%d", cellNo);
 
 				MQTT_PublishMain_StringFloat(tmp, cellVoltage[cellNo],2, 0);
