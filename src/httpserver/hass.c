@@ -396,7 +396,7 @@ HassDeviceInfo* hass_createSelectEntityIndexedCustom(const char* state_topic, co
 }
 
 HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **fanOptions, int numFanOptions,
-	const char **swingOptions, int numSwingOptions, const char **swingHOptions, int numSwingHOptions) {
+	const char **swingOptions, int numSwingOptions, const char **swingHOptions, int numSwingHOptions, const char **genOptions, int numGenOptions) {
 	HassDeviceInfo* info = hass_init_device_info(HASS_HVAC, 0, NULL, NULL, 0, 0);
 
 	// Set the name for the HVAC device
@@ -416,6 +416,19 @@ HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **f
 	cJSON_AddNumberToObject(info->root, "max_temp", max);
 	cJSON_AddNumberToObject(info->root, "temp_step", step);
 
+	// Set generation mode and step
+	cJSON_AddStringToObject(info->root, "mode_state_topic", "~/GenMode/get");
+	sprintf(g_hassBuffer, "cmnd/%s/GenMode", CFG_GetMQTTClientId());
+	cJSON_AddStringToObject(info->root, "mode_command_topic", g_hassBuffer);
+
+	// Add supported moddes
+	cJSON* modes = cJSON_CreateArray();
+	cJSON_AddItemToArray(modes, cJSON_CreateString("10%"));
+	cJSON_AddItemToArray(modes, cJSON_CreateString("50%"));
+	cJSON_AddItemToArray(modes, cJSON_CreateString("80%"));
+	cJSON_AddItemToArray(modes, cJSON_CreateString("100%"));
+	cJSON_AddItemToObject(info->root, "modes", modes);
+
 	// Set mode topics
 	cJSON_AddStringToObject(info->root, "mode_state_topic", "~/ACMode/get");
 	sprintf(g_hassBuffer, "cmnd/%s/ACMode", CFG_GetMQTTClientId());
@@ -429,6 +442,23 @@ HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **f
 	// fan does not work, it has to be fan_only
 	cJSON_AddItemToArray(modes, cJSON_CreateString("fan_only"));
 	cJSON_AddItemToObject(info->root, "modes", modes);
+
+
+
+	if (genOptions && numGenOptions) {
+		// Add gen mode topics
+		cJSON_AddStringToObject(info->root, "gen_mode_state_topic", "~/GenMode/get");
+		sprintf(g_hassBuffer, "cmnd/%s/GenMode", CFG_GetMQTTClientId());
+		cJSON_AddStringToObject(info->root, "gen_mode_command_topic", g_hassBuffer);
+
+		// Add supported fan modes
+		cJSON* gen_modes = cJSON_CreateArray();
+		for (int i = 0; i < numGenOptions; i++) {
+			const char *mode = genOptions[i];
+			cJSON_AddItemToArray(gen_modes, cJSON_CreateString(mode));
+		}
+		cJSON_AddItemToObject(info->root, "gen_modes", gen_modes);
+	}	
 
 	if (fanOptions && numFanOptions) {
 		// Add fan mode topics
