@@ -696,6 +696,22 @@
     "driver": "HLW8112SPI"
   },
   {
+    "name": "RCRecv",
+    "title": "RCRecv Pin",
+    "descr": "433MHz RC receiver input (uses internal pull-up).",
+    "enum": "IOR_RCRecv",
+    "file": "new_pins.h",
+    "driver": "RC"
+  },
+  {
+    "name": "RCRecv_nPup",
+    "title": "RCRecv_nPup Pin",
+    "descr": "433MHz RC receiver input without internal pull-up.",
+    "enum": "IOR_RCRecv_nPup",
+    "file": "new_pins.h",
+    "driver": "RC"
+  },
+  {
     "name": "Total_Options",
     "title": "TODO",
     "descr": "Current total number of available IOR roles",

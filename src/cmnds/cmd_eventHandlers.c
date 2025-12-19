@@ -234,6 +234,8 @@ int EVENT_ParseEventName(const char *s) {
 		return CMD_EVENT_ON_HTTP;
 	if (!stricmp(s, "OnDiscovery"))
 		return CMD_EVENT_ON_DISCOVERY;
+	if (!stricmp(s, "RC"))
+		return CMD_EVENT_RC;
 	if (isdigit((unsigned char)*s)) {
 		return atoi(s);
 	}
