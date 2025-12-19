@@ -17,28 +17,28 @@ static int g_baudRate = 9600;
 
 static int writeRegister(int registerAddress,short value);
 
-static SemaphoreHandle_t g_mutex = 0;
+static SemaphoreHandle_t g_daly_mutex = 0;
 
-bool Mutex_Take(int del) {
+bool DALY_BMS_Mutex_Take(int del) {
 	int taken;
 
-	if (g_mutex == 0)
+	if (g_daly_mutex == 0)
 	{
-		g_mutex = xSemaphoreCreateMutex();
+		g_daly_mutex = xSemaphoreCreateMutex();
 	}
-	taken = xSemaphoreTake(g_mutex, del);
+	taken = xSemaphoreTake(g_daly_mutex, del);
 	if (taken == pdTRUE) {
 		return true;
 	}
 	return false;
 }
-void Mutex_Free() {
-	xSemaphoreGive(g_mutex);
+void DALY_BMS_Mutex_Free() {
+	xSemaphoreGive(g_daly_mutex);
 }
 
 void readCellVoltages(){
 
-	if(!Mutex_Take(10)){
+	if(!DALY_BMS_Mutex_Take(10)){
 		return;
     }
 	unsigned char buffer[8];
@@ -82,7 +82,7 @@ void readCellVoltages(){
 	}
 	float cellVoltage[6];
     UART_ConsumeBytes(len);
-    Mutex_Free();
+    DALY_BMS_Mutex_Free();
 	MQTT_PublishMain_StringInt("daly_bms_debug", 3, 0);
 	int cellNo=0;
 	char tmp[23];
