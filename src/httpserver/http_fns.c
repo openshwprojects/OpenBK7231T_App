@@ -2041,6 +2041,60 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
         hass_free_device_info(dev_info);
         discoveryQueued = true;
     }
+	dev_info = hass_init_sensor_device_info_topic(CURRENT_SENSOR,"zk_10022_set_current",0,-1,-1,-1);
+	if (dev_info) {
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		discoveryQueued = true;
+	}
+	dev_info = hass_init_sensor_device_info_topic(VOLTAGE_SENSOR,"zk_10022_output",0,-1,-1,-1);
+	if (dev_info) {
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		discoveryQueued = true;
+	}
+	dev_info = hass_init_sensor_device_info_topic(CURRENT_SENSOR,"zk_10022_output_current",0,-1,-1,-1);
+	if (dev_info) {
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		discoveryQueued = true;
+	}
+	dev_info = hass_init_sensor_device_info_topic(CURRENT_SENSOR,"zk_10022_output_power",0,-1,-1,-1);
+	if (dev_info) {
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		discoveryQueued = true;
+	}
+	dev_info = hass_init_sensor_device_info_topic(BINARY_SENSOR,"zk_10022_switch_output",0,-1,-1,-1);
+	if (dev_info) {
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		discoveryQueued = true;
+	}
+	dev_info = hass_init_sensor_device_info_topic(BINARY_SENSOR,"zk_10022_protection_status",0,-1,-1,-1);
+	if (dev_info) {
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		discoveryQueued = true;
+	}
+	dev_info = hass_init_sensor_device_info_topic(BINARY_SENSOR,"zk_10022_constant_current_status",0,-1,-1,-1);
+	if (dev_info) {
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		discoveryQueued = true;
+	}
+	dev_info = hass_init_sensor_device_info_topic(TEMPERATURE_SENSOR,"zk_10022_temperature",0,-1,-1,-1);
+	if (dev_info) {
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		discoveryQueued = true;
+	}
+	dev_info = hass_init_sensor_device_info_topic(POWER_SENSOR,"zk_10022_output_power",0,-1,-1,-1);
+	if (dev_info) {
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		discoveryQueued = true;
+	}
 #endif
 
 #ifdef ENABLE_DRIVER_BL0937
