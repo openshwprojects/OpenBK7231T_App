@@ -78,6 +78,25 @@ void Test_HassDiscovery_Relay_2x() {
 }
 
 
+static const char *gen_modes[] = {
+	"GEN0_100%",
+	"GEN1_30%",
+	"GEN2_50%",
+	"GEN3_80%",
+	NULL
+};
+
+
+@@
+	HA_AddSelect(
+	"gen",
+	"GEN Power Limit",
+	gen_modes,
+	"cmnd/GEN",
+	"stat/GEN"
+);
+
+
 void Test_HassDiscovery_LED_CW() {
 	const char *shortName = "WinCWtest";
 	const char *fullName = "Windows Fake CoolWarm";
@@ -238,7 +257,7 @@ void Test_HassDiscovery_DHT11() {
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
 	//SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, "dev", 0, "name", shortName);
 	// first dev - as temperature
-	//SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "°C");
+	//SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "Â°C");
 	// old method - round
 	//SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "val_tpl", "{{ float(value)*0.1|round(2) }}");
 	// new method - format
@@ -320,7 +339,7 @@ void Test_HassDiscovery_SHTSensor() {
 		"dev_cla", "temperature",
 		"stat_t", "~/2/get",
 		"stat_cla", "measurement");
-	//SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "°C");
+	//SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "Â°C");
 	// second dev - 
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
 		"dev_cla", "humidity",
