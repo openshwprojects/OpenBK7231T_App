@@ -970,7 +970,7 @@ HassDeviceInfo* hass_init_sensor_device_info_topic(ENTITY_TYPE type, const char*
 		cJSON_AddStringToObject(info->root, "dev_cla", "humidity");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "%");
 		sprintf(g_hassBuffer, "%s", state_topic);
-		cJSON_AddStringToObject(info->root, "stat_t", g_hassbuffer);
+		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		break;
 	case SMOKE_SENSOR:
 		// there is no "smoke" class!
@@ -982,7 +982,7 @@ HassDeviceInfo* hass_init_sensor_device_info_topic(ENTITY_TYPE type, const char*
 	case CO2_SENSOR:
 		cJSON_AddStringToObject(info->root, "dev_cla", "carbon_dioxide");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "ppm");
-		sprintf(g_hassbuffer, "%s", state_topic);
+		sprintf(g_hassBuffer, "%s", state_topic);
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		break;
 	case PRESSURE_SENSOR:
