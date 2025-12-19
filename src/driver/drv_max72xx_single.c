@@ -349,6 +349,35 @@ void MAX72XX_print(max72XX_t *led, int ofs, const char *p) {
 		p++;
 	}
 }
+// "printing" the matrix given in char array "p" with tength "l"
+// e.g. an array "char text[64]" can represent the common display with 4 x 8 x 8 points 
+// MAX72XX_printRaw(g_max, teext, int 64)
+void MAX72XX_printRaw(const char *p, int l) {
+	if (! g_max) return;
+	int b2write = g_max->maxDevices * 8;		// max bytes
+	if (l < b2write) b2write = l;
+	memcpy ( g_max->led_status,p,b2write);
+/*
+	for (int i=0; i<l; i++){
+		MAX72XX_displayArray(g_max, &p[i], 1, i);
+	}
+*/
+	MAX72XX_rotate90CW(g_max);
+}
+void MAX72XX_printRawAnimated(const char *o, const char *p, int l, int delay) {
+	if (! g_max || o==NULL || p ==NULL) return;
+	int b2write, maxbytes = g_max->maxDevices * 8;		// max bytes
+	b2write = maxbytes;
+	if (l < b2write) b2write = l;
+	
+	for (int i=1; i<b2write; i++){
+		memcpy ( g_max->led_status, o + i, maxbytes-i );	// copy "old" content, shifted
+		memcpy ( g_max->led_status + maxbytes-i, p , i );	// copy "new" content to the end
+		MAX72XX_rotate90CW(g_max);
+		for (int j=0; j<delay*1000; j++) {};
+	}
+//	MAX72XX_rotate90CW(g_max);
+}
 // backlog startDriver MAX72XX; MAX72XX_Setup 0 1 26
 static commandResult_t DRV_MAX72XX_Setup(const void *context, const char *cmd, const char *args, int flags) {
 	int din;
