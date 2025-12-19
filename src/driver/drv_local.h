@@ -238,6 +238,11 @@ void ZK10022_RunEverySecond(void);
 void ZK10022_Deinit(void);
 void ZK10022_AddCommands(void);
 
+void DALY_BMS_Init(void);
+void DALY_BMS_RunEverySecond(void);
+void DALY_BMS_Deinit(void);
+void DALY_BMS_AddCommands(void);
+
 void CSE7761_Init(void);
 void CSE7761_RunEverySecond(void);
 

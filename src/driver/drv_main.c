@@ -594,6 +594,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "ZK10022",		ZK10022_Init,		ZK10022_RunEverySecond,	NULL, NULL, ZK10022_Deinit, NULL, NULL, false },
 #endif
+#if ENABLE_DRIVER_DALY_BMS
+	//drvdetail:{"name":"UartTCP",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"UART to TCP bridge, mainly for WiFi Zigbee coordinators.",
+	//drvdetail:"requires":""}
+	{ "DalyBms",		DALY_BMS_Init,		DALY_BMS_RunEverySecond,	NULL, NULL, DALY_BMS_Deinit, NULL, NULL, false },
+#endif
 #if PLATFORM_TXW81X
 	//drvdetail:{"name":"TXWCAM",
 	//drvdetail:"title":"TODO",

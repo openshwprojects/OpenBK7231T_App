@@ -1148,6 +1148,9 @@ void CMD_Init_Delayed() {
 #if ENABLE_DRIVER_ZK10022
 	ZK10022_AddCommands();
 #endif
+#if ENABLE_DRIVER_DALY_BMS
+	DALY_BMS_AddCommands();
+#endif
 }
 
 
