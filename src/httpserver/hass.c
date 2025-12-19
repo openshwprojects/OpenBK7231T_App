@@ -936,7 +936,7 @@ HassDeviceInfo* hass_init_light_singleColor_onChannels(int toggle, int dimmer, i
 
 HassDeviceInfo* hass_init_sensor_device_info_topic(ENTITY_TYPE type, const char* state_topic,int channel, int decPlaces, int decOffset, int divider) {
 	//Assuming that there is only one DHT setup per device which keeps uniqueid/names simpler
-	HassDeviceInfo* info = hass_init_device_info(type, channel, NULL, NULL, 0, NULL);	//using channel as index to generate uniqueId
+	HassDeviceInfo* info = hass_init_device_info(type, channel, NULL, NULL, 0, state_topic);	//using channel as index to generate uniqueId
 
 	//https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes
 	switch (type) {
