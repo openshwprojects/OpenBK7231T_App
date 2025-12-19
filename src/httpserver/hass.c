@@ -963,14 +963,14 @@ HassDeviceInfo* hass_init_sensor_device_info_topic(ENTITY_TYPE type, const char*
 		cJSON_AddStringToObject(info->root, "dev_cla", "temperature");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "°C");
 
-		sprintf(g_hassbuffer, "%s", state_topic);
-		cjson_addstringtoobject(info->root, "stat_t", g_hassbuffer);
+		sprintf(g_hassBuffer, "%s", state_topic);
+		cjson_addstringtoobject(info->root, "stat_t", g_hassBuffer);
 		break;
 	case HUMIDITY_SENSOR:
 		cJSON_AddStringToObject(info->root, "dev_cla", "humidity");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "%");
-		sprintf(g_hassbuffer, "%s", state_topic);
-		cjson_addstringtoobject(info->root, "stat_t", g_hassbuffer);
+		sprintf(g_hassBuffer, "%s", state_topic);
+		cjson_addstringtoobject(info->root, "stat_t", g_hassBuffer);
 		break;
 	case SMOKE_SENSOR:
 		// there is no "smoke" class!
@@ -982,14 +982,14 @@ HassDeviceInfo* hass_init_sensor_device_info_topic(ENTITY_TYPE type, const char*
 	case CO2_SENSOR:
 		cJSON_AddStringToObject(info->root, "dev_cla", "carbon_dioxide");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "ppm");
-		sprintf(g_hassbuffer, "%s", state_topic);
-		cjson_addstringtoobject(info->root, "stat_t", g_hassbuffer);
+		sprintf(g_hassBuffer, "%s", state_topic);
+		cjson_addstringtoobject(info->root, "stat_t", g_hassBuffer);
 		break;
 	case PRESSURE_SENSOR:
 		cJSON_AddStringToObject(info->root, "dev_cla", "pressure");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "hPa");
-		sprintf(g_hassbuffer, "%s", state_topic);
-		cjson_addstringtoobject(info->root, "stat_t", g_hassbuffer);
+		sprintf(g_hassBuffer, "%s", state_topic);
+		cjson_addstringtoobject(info->root, "stat_t", g_hassBuffer);
 		break;
 	case TVOC_SENSOR:
 		cJSON_AddStringToObject(info->root, "dev_cla", "volatile_organic_compounds");
