@@ -97,7 +97,7 @@ void readProtectionRegisters(){
 	buffer[2] = 0x00;
 	buffer[3] = 0x52;
 	buffer[4] = 0x00;
-	buffer[5] = 0x0B;
+	buffer[5] = 0x0C;
 	uint16_t crc = MODBUS_CRC16(buffer, 6);
 
 	buffer[6] = crc & 0xFF;
