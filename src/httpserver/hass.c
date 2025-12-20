@@ -486,7 +486,7 @@ HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **f
 
 	return info;
 }
-HassDeviceInfo* hass_init_device_info_name(ENTITY_TYPE type, const char* payload_on, const char* payload_off, int asensdatasetix, const char *uniq_id,const chart *name) {
+HassDeviceInfo* hass_init_device_info_name(ENTITY_TYPE type, const char* payload_on, const char* payload_off, int asensdatasetix, const char *uniq_id,const char *name) {
 	HassDeviceInfo* info = os_malloc(sizeof(HassDeviceInfo));
 	addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "hass_init_device_info=%p", info);
 
