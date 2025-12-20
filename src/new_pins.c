@@ -1174,7 +1174,18 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			HAL_PIN_SetOutputValue(index, 0);
 		}
 		break;
+		case IOR_ShutterA:
+		case IOR_ShutterB:
+		{
+			int channelIndex;
+			int channelValue;
 
+			channelIndex = PIN_GetPinChannelForPinIndex(index);
+			channelValue = g_channelValues[channelIndex];
+
+			HAL_PIN_Setup_Output(index);
+		}
+		break;
 		case IOR_AlwaysHigh:
 		{
 			HAL_PIN_Setup_Output(index);

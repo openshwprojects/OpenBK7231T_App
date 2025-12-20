@@ -630,6 +630,20 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":"RC"}
 	IOR_RCRecv_nPup,
+	//iodetail:{"name":"RCRecv_nPup",
+	//iodetail:"title":"RCRecv_nPup Pin",
+	//iodetail:"descr":"433MHz RC receiver input without internal pull-up.",
+	//iodetail:"enum":"IOR_RCRecv_nPup",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":"RC"}
+	IOR_ShutterA,
+	//iodetail:{"name":"RCRecv_nPup",
+	//iodetail:"title":"RCRecv_nPup Pin",
+	//iodetail:"descr":"433MHz RC receiver input without internal pull-up.",
+	//iodetail:"enum":"IOR_RCRecv_nPup",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":"RC"}
+	IOR_ShutterB,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
