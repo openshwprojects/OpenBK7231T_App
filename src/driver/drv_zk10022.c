@@ -86,6 +86,76 @@ static uint16_t MODBUS_CRC16( const unsigned char *buf, unsigned int len )
 	return crc;
 }
 
+void readProtectionRegisters(){
+
+	if(!Mutex_Take(10)){
+		return;
+    }
+	unsigned char buffer[8];
+	buffer[0] = 0x01;
+	buffer[1] = 0x03;
+	buffer[2] = 0x00;
+	buffer[3] = 0x52;
+	buffer[4] = 0x00;
+	buffer[5] = 0x0B;
+	uint16_t crc = MODBUS_CRC16(buffer, 6);
+
+	buffer[6] = crc & 0xFF;
+	buffer[7] = (crc >> 8) & 0xFF;
+
+	for(int i = 0; i < 8; i++)
+	{
+		UART_SendByte(buffer[i]);
+	}
+
+	unsigned char receive_buffer[256];
+	int len = UART_GetDataSize();
+	int delay=0;
+
+	while(len ==0 && delay < 250)
+	{
+		rtos_delay_milliseconds(1);
+		len = UART_GetDataSize();
+		delay++;
+	}
+
+    for(int i = 0; i < len; i++)
+    {
+        receive_buffer[i] = UART_GetByte(i);
+    }
+    UART_ConsumeBytes(len);
+    Mutex_Free();
+
+	if(len==0){
+        return;
+    }
+
+	if(receive_buffer[1]!=0x03){
+		MQTT_PublishMain_StringInt("zk_10022_error_uart", receive_buffer[1], 0);
+		return;
+	}
+	int registers [30];
+	int register_count=receive_buffer[2]/2;
+	int i=0;
+
+	while(i<register_count){
+		registers[i]=receive_buffer[3+i*2]*256+receive_buffer[4+i*2];
+        i++;
+	}
+	float low_voltage_protection = registers[0x00] * 0.01;
+	float over_voltage_protection = registers[0x01] * 0.01;
+	float over_current_protection = registers[0x02] * 0.01;
+	float over_power_protection = registers[0x03] * 0.1;
+	float over_temperature_protection = registers[0x0A]*0.1;
+
+	#if ENABLE_MQTT
+		MQTT_PublishMain_StringFloat("zk_10022_low_voltage_protection", low_voltage_protection,2, 0);
+		MQTT_PublishMain_StringFloat("zk_10022_over_voltage_protection", over_voltage_protection,2, 0);
+		MQTT_PublishMain_StringFloat("zk_10022_over_current_protection", over_current_protection,2, 0);
+		MQTT_PublishMain_StringFloat("zk_10022_over_power_protection", over_power_protection,2, 0);
+		MQTT_PublishMain_StringFloat("zk_10022_over_temperature_protection", over_temperature_protection,2, 0);
+	#endif
+}
 void readHoldingRegisters(){
 
 	if(!Mutex_Take(10)){
@@ -97,7 +167,7 @@ void readHoldingRegisters(){
 	buffer[2] = 0x00;
 	buffer[3] = 0x00;
 	buffer[4] = 0x00;
-	buffer[5] = 0x5C;
+	buffer[5] = 0x0C;
 	uint16_t crc = MODBUS_CRC16(buffer, 6);
 
 	buffer[6] = crc & 0xFF;
@@ -153,12 +223,6 @@ void readHoldingRegisters(){
 	bool constant_current_status = registers[0x11];
 	bool switch_output = registers[0x12];
 
-	float low_voltage_protection = registers[0x52] * 0.01;
-	float over_voltage_protection = registers[0x53] * 0.01;
-	float over_current_protection = registers[0x54] * 0.01;
-	float over_power_protection = registers[0x55] * 0.1;
-	float over_temperature_protection = registers[0x5C]*0.1;
-
 	#if ENABLE_MQTT
 		MQTT_PublishMain_StringFloat("zk_10022_set_voltage", set_voltage,2, 0);
 		MQTT_PublishMain_StringFloat("zk_10022_set_current", set_current,2, 0);
@@ -170,11 +234,6 @@ void readHoldingRegisters(){
 		MQTT_PublishMain_StringInt("zk_10022_protection_status", (int)protection_status, 0);
 		MQTT_PublishMain_StringInt("zk_10022_constant_current_status", (int)constant_current_status, 0);
 		MQTT_PublishMain_StringInt("zk_10022_switch_output", (int)switch_output, 0);
-		MQTT_PublishMain_StringFloat("zk_10022_low_voltage_protection", low_voltage_protection,2, 0);
-		MQTT_PublishMain_StringFloat("zk_10022_over_voltage_protection", over_voltage_protection,2, 0);
-		MQTT_PublishMain_StringFloat("zk_10022_over_current_protection", over_current_protection,2, 0);
-		MQTT_PublishMain_StringFloat("zk_10022_over_power_protection", over_power_protection,2, 0);
-		MQTT_PublishMain_StringFloat("zk_10022_over_temperature_protection", over_temperature_protection,2, 0);
 	#endif
 }
 
@@ -182,6 +241,7 @@ void readHoldingRegisters(){
 void ZK10022_RunEverySecond()
 {
 		readHoldingRegisters();
+		readProtectionRegisters();
 }
 
 
