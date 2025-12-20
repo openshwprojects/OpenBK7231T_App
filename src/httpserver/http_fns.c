@@ -2035,61 +2035,61 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	}
 #endif
 #ifdef ENABLE_DRIVER_ZK10022
-    dev_info = hass_init_sensor_device_info_topic(VOLTAGE_SENSOR,"zk_10022_set_voltage",0,-1,-1,-1);
+    dev_info = hass_init_sensor_device_info_topic(VOLTAGE_SENSOR,"zk_10022_set_voltage/get",0,-1,-1,-1);
     if (dev_info) {
         MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
         hass_free_device_info(dev_info);
         discoveryQueued = true;
     }
-	dev_info = hass_init_sensor_device_info_topic(CURRENT_SENSOR,"zk_10022_set_current",1,-1,-1,-1);
+	dev_info = hass_init_sensor_device_info_topic(CURRENT_SENSOR,"zk_10022_set_current/get",1,-1,-1,-1);
 	if (dev_info) {
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
 		discoveryQueued = true;
 	}
-	dev_info = hass_init_sensor_device_info_topic(VOLTAGE_SENSOR,"zk_10022_output_voltage",2,-1,-1,-1);
+	dev_info = hass_init_sensor_device_info_topic(VOLTAGE_SENSOR,"zk_10022_output_voltage/get",2,-1,-1,-1);
 	if (dev_info) {
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
 		discoveryQueued = true;
 	}
-	dev_info = hass_init_sensor_device_info_topic(CURRENT_SENSOR,"zk_10022_output_current",3,-1,-1,-1);
+	dev_info = hass_init_sensor_device_info_topic(CURRENT_SENSOR,"zk_10022_output_current/get",3,-1,-1,-1);
 	if (dev_info) {
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
 		discoveryQueued = true;
 	}
-	dev_info = hass_init_sensor_device_info_topic(CURRENT_SENSOR,"zk_10022_output_power",4,-1,-1,-1);
+	dev_info = hass_init_sensor_device_info_topic(CURRENT_SENSOR,"zk_10022_output_power/get",4,-1,-1,-1);
 	if (dev_info) {
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
 		discoveryQueued = true;
 	}
-	dev_info = hass_init_sensor_device_info_topic(BINARY_SENSOR,"zk_10022_switch_output",5,-1,-1,-1);
+	dev_info = hass_init_sensor_device_info_topic(BINARY_SENSOR,"zk_10022_switch_output/get",5,-1,-1,-1);
 	if (dev_info) {
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
 		discoveryQueued = true;
 	}
-	dev_info = hass_init_sensor_device_info_topic(BINARY_SENSOR,"zk_10022_protection_status",6,-1,-1,-1);
+	dev_info = hass_init_sensor_device_info_topic(BINARY_SENSOR,"zk_10022_protection_status/get",6,-1,-1,-1);
 	if (dev_info) {
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
 		discoveryQueued = true;
 	}
-	dev_info = hass_init_sensor_device_info_topic(BINARY_SENSOR,"zk_10022_constant_current_status",7,-1,-1,-1);
+	dev_info = hass_init_sensor_device_info_topic(BINARY_SENSOR,"zk_10022_constant_current_status/get",7,-1,-1,-1);
 	if (dev_info) {
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
 		discoveryQueued = true;
 	}
-	dev_info = hass_init_sensor_device_info_topic(TEMPERATURE_SENSOR,"zk_10022_temperature",8,-1,-1,-1);
+	dev_info = hass_init_sensor_device_info_topic(TEMPERATURE_SENSOR,"zk_10022_temperature/get",8,-1,-1,-1);
 	if (dev_info) {
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
 		discoveryQueued = true;
 	}
-	dev_info = hass_init_sensor_device_info_topic(POWER_SENSOR,"zk_10022_output_power",9,-1,-1,-1);
+	dev_info = hass_init_sensor_device_info_topic(POWER_SENSOR,"zk_10022_output_power/get",9,-1,-1,-1);
 	if (dev_info) {
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
