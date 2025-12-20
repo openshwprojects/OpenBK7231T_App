@@ -15,6 +15,10 @@ void DRV_DDP_RunFrame();
 void DRV_DDP_Shutdown();
 void DRV_DDP_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 
+void DRV_Shutters_RunQuickTick();
+void DRV_Shutters_AddToHtmlPage(http_request_t *request, int bPreState);
+void DRV_Shutters_Init();
+
 void BMP280_Init();
 void BMP280_OnEverySecond();
 void BMP280_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);

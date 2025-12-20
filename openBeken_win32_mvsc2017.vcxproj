@@ -249,6 +249,7 @@
     <ClCompile Include="src\driver\drv_deviceclock.c" />
     <ClCompile Include="src\driver\drv_ds3231.c" />
     <ClCompile Include="src\driver\drv_rc.cpp" />
+    <ClCompile Include="src\driver\drv_shutters.c" />
     <ClCompile Include="src\libraries\obktime\obktime.c" />
     <ClCompile Include="src\driver\drv_timed_events.c" />
     <ClCompile Include="src\driver\drv_openWeatherMap.c" />

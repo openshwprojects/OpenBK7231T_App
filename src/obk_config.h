@@ -135,6 +135,7 @@
 #define ENABLE_LITTLEFS							1
 #define ENABLE_NTP								1
 #define ENABLE_TIME_DST							1
+#define ENABLE_DRIVER_SHUTTERS					1
 #define ENABLE_DRIVER_LED						1
 #define ENABLE_DRIVER_BL0937					1
 #define ENABLE_DRIVER_BL0942					1

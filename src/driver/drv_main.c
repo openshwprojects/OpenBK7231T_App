@@ -806,6 +806,22 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 #endif
+#if ENABLE_DRIVER_SHUTTERS
+	//drvdetail:{"name":"Shutters",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"ShutterShutters",
+	//drvdetail:"requires":""}
+	{ "Shutters",                                 // Driver Name
+	DRV_Shutters_Init,                            // Init
+	NULL,                                    // onEverySecond
+	DRV_Shutters_AddToHtmlPage, // appendInformationToHTTPIndexPage
+	DRV_Shutters_RunQuickTick,                        // runQuickTick
+	NULL,                        // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
 #if ENABLE_DRIVER_DDP
 	//drvdetail:{"name":"DDP",
 	//drvdetail:"title":"TODO",
