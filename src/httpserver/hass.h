@@ -136,7 +136,7 @@ typedef struct HassDeviceInfo_s {
 void hass_print_unique_id(http_request_t* request, const char* fmt, ENTITY_TYPE type, int index, int asensdatasetix);
 HassDeviceInfo* hass_init_relay_device_info(int index, ENTITY_TYPE type, bool bInverse);
 HassDeviceInfo* hass_init_device_info(ENTITY_TYPE type, int index, const char* payload_on, const char* payload_off, int asensdatasetix, const char *title);
-HassDeviceInfo* hass_init_device_info_name(ENTITY_TYPE type, const char* payload_on, const char* payload_off, int asensdatasetix, const char *uniq_id,const chart *name) {
+HassDeviceInfo* hass_init_device_info_name(ENTITY_TYPE type, const char* payload_on, const char* payload_off, int asensdatasetix, const char *uniq_id,const chart *name);
 HassDeviceInfo* hass_init_light_device_info(ENTITY_TYPE type);
 HassDeviceInfo* hass_init_energy_sensor_device_info(int index, int asensdatasetix);
 HassDeviceInfo* hass_init_light_singleColor_onChannels(int toggle, int dimmer, int brightness_scale);
