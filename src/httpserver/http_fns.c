@@ -2095,6 +2095,37 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		hass_free_device_info(dev_info);
 		discoveryQueued = true;
 	}
+	dev_info = hass_init_sensor_device_info_topic(TEMPERATURE_SENSOR,"zk_10022_low_voltage_protection","zk_10022_low_voltage_protection/get",-1,-1,-1,"Low Voltage Protection");
+	if (dev_info) {
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		discoveryQueued = true;
+	}
+	dev_info = hass_init_sensor_device_info_topic(TEMPERATURE_SENSOR,"zk_10022_over_voltage_protection","zk_10022_over_voltage_protection/get",-1,-1,-1,"Over Voltage Protection");
+	if (dev_info) {
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		discoveryQueued = true;
+	}
+	dev_info = hass_init_sensor_device_info_topic(TEMPERATURE_SENSOR,"zk_10022_over_current_protection","zk_10022_over_current_protection/get",-1,-1,-1,"Over Current Protection");
+	if (dev_info) {
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		discoveryQueued = true;
+	}
+	dev_info = hass_init_sensor_device_info_topic(TEMPERATURE_SENSOR,"zk_10022_over_power_protection","zk_10022_over_power_protection/get",-1,-1,-1,"Over Power Protection");
+	if (dev_info) {
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		discoveryQueued = true;
+	}
+	dev_info = hass_init_sensor_device_info_topic(TEMPERATURE_SENSOR,"zk_10022_over_temperature_protection","zk_10022_over_temperature_protection/get",-1,-1,-1,"Over Temperature Protection");
+	if (dev_info) {
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		discoveryQueued = true;
+	}
+
 #endif
 
 #ifdef ENABLE_DRIVER_BL0937

@@ -97,7 +97,7 @@ void readHoldingRegisters(){
 	buffer[2] = 0x00;
 	buffer[3] = 0x00;
 	buffer[4] = 0x00;
-	buffer[5] = 0x0F;
+	buffer[5] = 0x5C;
 	uint16_t crc = MODBUS_CRC16(buffer, 6);
 
 	buffer[6] = crc & 0xFF;
@@ -153,6 +153,12 @@ void readHoldingRegisters(){
 	bool constant_current_status = registers[0x11];
 	bool switch_output = registers[0x12];
 
+	float low_voltage_protection = registers[0x52] * 0.01
+	float over_voltage_protection = registers[0x53] * 0.01
+	float over_current_protection = registers[0x54] * 0.01
+	float over_power_protection = registers[0x55] * 0.1
+	float over_temperature_protection = registers[0x5C]*0.1
+
 	#if ENABLE_MQTT
 		MQTT_PublishMain_StringFloat("zk_10022_set_voltage", set_voltage,2, 0);
 		MQTT_PublishMain_StringFloat("zk_10022_set_current", set_current,2, 0);
@@ -164,6 +170,11 @@ void readHoldingRegisters(){
 		MQTT_PublishMain_StringInt("zk_10022_protection_status", (int)protection_status, 0);
 		MQTT_PublishMain_StringInt("zk_10022_constant_current_status", (int)constant_current_status, 0);
 		MQTT_PublishMain_StringInt("zk_10022_switch_output", (int)switch_output, 0);
+		MQTT_PublishMain_StringFloat("zk_10022_low_voltage_protection", low_voltage_protection,2, 0);
+		MQTT_PublishMain_StringFloat("zk_10022_over_voltage_protection", over_voltage_protection,2, 0);
+		MQTT_PublishMain_StringFloat("zk_10022_over_current_protection", over_current_protection,2, 0);
+		MQTT_PublishMain_StringFloat("zk_10022_over_power_protection", over_power_protection,2, 0);
+		MQTT_PublishMain_StringFloat("zk_10022_over_temperature_protection", over_temperature_protection,2, 0);
 	#endif
 }
 
@@ -210,6 +221,61 @@ commandResult_t CMD_ZK10022_Set_Current(const void* context, const char* cmd, co
     }
     return CMD_RES_ERROR;
 }
+commandResult_t CMD_ZK10022_Set_LowVoltageProtection(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_GetArgsCount() == 1) {
+		float current = Tokenizer_GetArgFloat(0);
+		if(writeRegister(0x52,(short)(current*100))==0){
+            return CMD_RES_OK;
+        }
+    }
+    return CMD_RES_ERROR;
+}
+commandResult_t CMD_ZK10022_Set_OverVoltageProtection(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_GetArgsCount() == 1) {
+		float current = Tokenizer_GetArgFloat(0);
+		if(writeRegister(0x53,(short)(current*100))==0){
+            return CMD_RES_OK;
+        }
+    }
+    return CMD_RES_ERROR;
+}
+commandResult_t CMD_ZK10022_Set_OverCurrentProtection(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_GetArgsCount() == 1) {
+		float current = Tokenizer_GetArgFloat(0);
+		if(writeRegister(0x54,(short)(current*100))==0){
+            return CMD_RES_OK;
+        }
+    }
+    return CMD_RES_ERROR;
+}
+commandResult_t CMD_ZK10022_Set_OverPowerProtection(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_GetArgsCount() == 1) {
+		float current = Tokenizer_GetArgFloat(0);
+		if(writeRegister(0x55,(short)(current*10))==0){
+            return CMD_RES_OK;
+        }
+    }
+    return CMD_RES_ERROR;
+}
+commandResult_t CMD_ZK10022_Set_OverTemperatureProtection(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_GetArgsCount() == 1) {
+		float current = Tokenizer_GetArgFloat(0);
+		if(writeRegister(0x5C,(short)(current*10))==0){
+            return CMD_RES_OK;
+        }
+    }
+    return CMD_RES_ERROR;
+}
 commandResult_t CMD_ZK10022_Set_Switch(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, 0);
@@ -221,6 +287,7 @@ commandResult_t CMD_ZK10022_Set_Switch(const void* context, const char* cmd, con
     }
     return CMD_RES_ERROR;
 }
+
 int writeRegister(int registerAddress,short value){
 
 	if(!Mutex_Take(500)){
@@ -281,5 +348,10 @@ void ZK10022_AddCommands(void) {
 	CMD_RegisterCommand("ZK10022_Set_Voltage", CMD_ZK10022_Set_Voltage, NULL);
 	CMD_RegisterCommand("ZK10022_Set_Current", CMD_ZK10022_Set_Current, NULL);
 	CMD_RegisterCommand("ZK10022_Set_Switch", CMD_ZK10022_Set_Switch, NULL);
+	CMD_RegisterCommand("ZK10022_Set_LowVoltageProtection", CMD_ZK10022_Set_LowVoltageProtection, NULL);
+	CMD_RegisterCommand("ZK10022_Set_OverVoltageProtection", CMD_ZK10022_Set_OverVoltageProtection, NULL);
+	CMD_RegisterCommand("ZK10022_Set_OverCurrentProtection", CMD_ZK10022_Set_OverCurrentProtection, NULL);
+	CMD_RegisterCommand("ZK10022_Set_OverPowerProtection", CMD_ZK10022_Set_OverPowerProtection, NULL);
+	CMD_RegisterCommand("ZK10022_Set_OverTemperatureProtection", CMD_ZK10022_Set_OverTemperatureProtection, NULL);
 }
 #endif
