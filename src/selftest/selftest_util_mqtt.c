@@ -4,8 +4,10 @@
 #include "../cJSON/cJSON.h"
 
 void SIM_SendFakeMQTT(const char *text, const char *arguments) {
+#if ENABLE_MQTT
 	MQTT_Post_Received_Str(text, arguments);
 	Sim_RunFrames(1, false);
+#endif
 }
 void SIM_SendFakeMQTTAndRunSimFrame_CMND_Generic(const char *myName , const char *command, const char *arguments) {
 
@@ -93,7 +95,15 @@ bool CheckForKeyVal(cJSON *tmp, const char *key, const char *value) {
 				}
 			}
 			else {
-				printf("TODO: float compare selftest");
+				char *json_str = cJSON_PrintUnformatted(tmp);
+				bool bOk = false;
+				if (json_str) {
+					if (!strcmp(json_str, value)) {
+						bOk = true;
+					}
+					free(json_str); // or cJSON_free(json_str) depending on your build
+				}
+				return bOk;
 			}
 		}
 	}
@@ -176,8 +186,10 @@ bool SIM_HasMQTTHistoryStringWithJSONPayload(const char *topic, bool bPrefixMode
 								bOk = false;
 							}
 						}
-						if (bOk)
+						if (bOk) {
+							cJSON_Delete(json);
 							return true;
+						}
 					}
 				}
 				cJSON_Delete(json);

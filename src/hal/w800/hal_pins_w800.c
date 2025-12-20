@@ -2,6 +2,8 @@
 
 #include "../../new_common.h"
 #include "../../logging/logging.h"
+#include "../hal_pins.h"
+#include "../../new_pins.h"
 
 #include "wm_include.h"
 
@@ -14,6 +16,7 @@ typedef struct wmPin_s {
 //NOTE: pwm_channel is defined based on demo/wm_pwm_demo.cs. Both W600 nd W800 support 5 PWM channels.
 
 #if PLATFORM_W800
+#include "wm_gpio_afsel.h"
 
 static wmPin_t g_pins[] = {
     {"PA0",WM_IO_PA_00, -1},
@@ -33,17 +36,17 @@ static wmPin_t g_pins[] = {
     {"PA13",WM_IO_PA_13, -1},
     {"PA14",WM_IO_PA_14, -1},
     {"PA15",WM_IO_PA_15, -1},    
-	{"PB0",WM_IO_PB_00, 0},
-	{"PB1",WM_IO_PB_01, 1},
-	{"PB2",WM_IO_PB_02, 2},
+	{"PB0",WM_IO_PB_00, 0}, // 16
+	{"PB1",WM_IO_PB_01, 1}, // 17
+	{"PB2",WM_IO_PB_02, 2}, // 18
 	{"PB3",WM_IO_PB_03, 3},
 
-	{"PB4",WM_IO_PB_04, -1},
+	{"PB4",WM_IO_PB_04, -1}, // 20
 	{"PB5",WM_IO_PB_05, -1},
-	{"PB6",WM_IO_PB_06, -1},
+	{"PB6",WM_IO_PB_06, -1}, // 22
 	{"PB7",WM_IO_PB_07, -1},
-	{"PB8",WM_IO_PB_08, -1},
-	{"PB9",WM_IO_PB_09, -1},
+	{"PB8",WM_IO_PB_08, -1}, // 24
+	{"PB9",WM_IO_PB_09, -1}, // 25
 	{"PB10",WM_IO_PB_10, -1},
 	{"PB11",WM_IO_PB_11, -1},
     {"PB12",WM_IO_PB_12, -1},
@@ -94,6 +97,18 @@ static wmPin_t g_pins[] = {
 
 static int g_numPins = sizeof(g_pins) / sizeof(g_pins[0]);
 
+int HAL_PIN_Find(const char *name) {
+	if (isdigit(name[0])) {
+		return atoi(name);
+	}
+	for (int i = 0; i < g_numPins; i++) {
+		if (!stricmp(g_pins[i].name, name)) {
+			return i;
+		}
+	}
+	return -1;
+}
+
 static int IsPinIndexOk(int index) {
 	if (index < 0)
 		return 0;
@@ -101,7 +116,7 @@ static int IsPinIndexOk(int index) {
 		return 0;
 	return 1;
 }
-static int PIN_GetPWMIndexForPinIndex(int index) {
+int PIN_GetPWMIndexForPinIndex(int index) {
 	return g_pins[index].pwm_channel;
 }
 const char* HAL_PIN_GetPinNameAlias(int index) {
@@ -200,7 +215,7 @@ void HAL_PIN_PWM_Stop(int index) {
 	tls_pwm_stop(channel);
 }
 
-void HAL_PIN_PWM_Start(int index) {
+void HAL_PIN_PWM_Start(int index, int freq) {
 	int ret;
 	int channel;
 	if (IsPinIndexOk(index) == 0)
@@ -235,4 +250,39 @@ void HAL_PIN_PWM_Update(int index, float value) {
 unsigned int HAL_GetGPIOPin(int index) {
 	return g_pins[index].code;
 }
+
+OBKInterruptHandler g_handlers[PLATFORM_GPIO_MAX];
+OBKInterruptType g_modes[PLATFORM_GPIO_MAX];
+
+void W600_Interrupt(void* context) {
+	int obkPinNum = (int)(intptr_t)context;
+	int w600Pin = HAL_GetGPIOPin(obkPinNum);
+	tls_clr_gpio_irq_status(w600Pin);
+	if (g_handlers[obkPinNum]) {
+		g_handlers[obkPinNum](obkPinNum);
+	}
+}
+
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
+	g_handlers[pinIndex] = function;
+	int w600Pin = HAL_GetGPIOPin(pinIndex);
+	tls_gpio_isr_register(w600Pin, W600_Interrupt, (void*)(intptr_t)pinIndex);
+	int w_mode;
+	if (mode == INTERRUPT_RISING) {
+		w_mode = WM_GPIO_IRQ_TRIG_RISING_EDGE;
+	}
+	else {
+		w_mode = WM_GPIO_IRQ_TRIG_FALLING_EDGE;
+	}
+	tls_gpio_irq_enable(w600Pin, w_mode);
+}
+void HAL_DetachInterrupt(int pinIndex) {
+	if (g_handlers[pinIndex] == 0) {
+		return; // already removed;
+	}
+	int w600Pin = HAL_GetGPIOPin(pinIndex);
+	tls_gpio_irq_disable(w600Pin);
+	g_handlers[pinIndex] = 0;
+}
+
 #endif

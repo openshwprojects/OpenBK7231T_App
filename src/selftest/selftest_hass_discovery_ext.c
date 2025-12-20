@@ -382,6 +382,90 @@ void Test_HassDiscovery_Channel_LowMidHigh() {
 	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mdl", PLATFORM_MCU_NAME);
 
 }
+void Test_HassDiscovery_Channel_BatteryLevelPercent() {
+	const char *shortName = "WinCustom";
+	const char *fullName = "Windows Fake Custom";
+	const char *mqttName = "testCustom";
+	SIM_ClearOBK(shortName);
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
+
+	CFG_SetShortDeviceName(shortName);
+	CFG_SetDeviceName(fullName);
+
+	CHANNEL_SetType(4, ChType_BatteryLevelPercent);
+
+	SIM_ClearMQTTHistory();
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(5, false);
+
+	// OBK device should publish JSON on MQTT topic "homeassistant"
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "name", shortName);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "sw", USER_SW_VER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mf", MANUFACTURER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mdl", PLATFORM_MCU_NAME);
+
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "stat_t", "~/4/get");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "dev_cla", "battery");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "unit_of_meas", "%");
+}
+void Test_HassDiscovery_Channel_Smoke() {
+	const char *shortName = "WinCustom";
+	const char *fullName = "Windows Fake Custom";
+	const char *mqttName = "testCustom";
+	SIM_ClearOBK(shortName);
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
+
+	CFG_SetShortDeviceName(shortName);
+	CFG_SetDeviceName(fullName);
+
+	CHANNEL_SetType(4, ChType_SmokePercent);
+
+	SIM_ClearMQTTHistory();
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(5, false);
+
+	// OBK device should publish JSON on MQTT topic "homeassistant"
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "name", shortName);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "sw", USER_SW_VER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mf", MANUFACTURER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mdl", PLATFORM_MCU_NAME);
+
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "stat_t", "~/4/get");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "unit_of_meas", "%");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "name", "Smoke");
+}
+
+void Test_HassDiscovery_Channel_Ph() {
+	const char *shortName = "WinCustom";
+	const char *fullName = "Windows Fake Custom";
+	const char *mqttName = "testCustom";
+	SIM_ClearOBK(shortName);
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
+
+	CFG_SetShortDeviceName(shortName);
+	CFG_SetDeviceName(fullName);
+
+	CHANNEL_SetType(4, ChType_Ph);
+
+	SIM_ClearMQTTHistory();
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(5, false);
+
+	// OBK device should publish JSON on MQTT topic "homeassistant"
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "name", shortName);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "sw", USER_SW_VER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mf", MANUFACTURER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mdl", PLATFORM_MCU_NAME);
+
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "stat_t", "~/4/get");
+	// user says it should not be set
+	SELFTEST_ASSERT_JSON_VALUE_STRING_NOT_PRESENT(0, "unit_of_meas");
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "dev_cla", "ph");
+}
+
 void Test_HassDiscovery_Channel_Custom() {
 	const char *shortName = "WinCustom";
 	const char *fullName = "Windows Fake Custom";
@@ -597,6 +681,107 @@ void Test_HassDiscovery_Channel_Toggle_2x() {
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "stat_t", "~/5/get");
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "cmd_t", "~/5/set");
 }
+void Test_HassDiscovery_Enum() {
+	const char *shortName = "Enumtest";
+	const char *fullName = "Windows Fake Enum";
+	const char *mqttName = "testEnum";
+
+	SIM_ClearOBK(shortName);
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
+
+	CFG_SetShortDeviceName(shortName);
+	CFG_SetDeviceName(fullName);
+
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("SetChannelType 4 Enum", 0);
+	CMD_ExecuteCommand("SetChannelLabel 4 EnumFour", 0);
+	CMD_ExecuteCommand("SetChannelEnum 4 1:Ok 0:Bad", 0);
+
+	CMD_ExecuteCommand("SetChannelType 14 Enum", 0);
+	CMD_ExecuteCommand("SetChannelLabel 14 Enum14", 0);
+	CMD_ExecuteCommand("SetChannelEnum 14 \"1:One Switch\" 0:Zero 3:Three", 0);
+
+
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(5, false);
+
+
+	// OBK device should publish JSON on MQTT topic "homeassistant/select"
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant/select", true);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "name", shortName);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "sw", USER_SW_VER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mf", MANUFACTURER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mdl", PLATFORM_MCU_NAME);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "~", mqttName);
+
+	// channel 4
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_3KEY("homeassistant/select", true, 0, 0,
+		"unique_id", "EnumFour",
+		"state_topic", "~/4/get",
+		"command_topic", "~/4/set");
+	SELFTEST_ASSERT_JSON_VALUE_STRING_NESTED_ARRAY(0,"options",0,"Ok");
+	SELFTEST_ASSERT_JSON_VALUE_STRING_NESTED_ARRAY(0,"options",1,"Bad");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant/select", true, 0, 0, "command_template", "{{ {'Ok':'1', 'Bad':'0', 'Undefined':'99999'}[value] | default(99999) }}");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant/select", true, 0, 0, "value_template", "{{ {1:'Ok', 0:'Bad', 99999:'Undefined'}[(value | int(99999))] | default(\"Undefined Enum [\"~value~\"]\") }}");
+
+	// channel 14
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_3KEY("homeassistant/select", true, 0, 0,
+		"unique_id", "Enum14",
+		"state_topic", "~/14/get",
+		"command_topic", "~/14/set");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant/select", true, 0, 0, "value_template", "{{ {1:'One Switch', 0:'Zero', 3:'Three', 99999:'Undefined'}[(value | int(99999))] | default(\"Undefined Enum [\"~value~\"]\") }}");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant/select", true, 0, 0, "command_template", "{{ {'One Switch':'1', 'Zero':'0', 'Three':'3', 'Undefined':'99999'}[value] | default(99999) }}");
+}
+
+void Test_HassDiscovery_ReadOnlyEnum() {
+	const char *shortName = "ReadOnlyEnumtest";
+	const char *fullName = "Windows Fake ReadOnlyEnum";
+	const char *mqttName = "testReadOnlyEnum";
+
+	SIM_ClearOBK(shortName);
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
+
+	CFG_SetShortDeviceName(shortName);
+	CFG_SetDeviceName(fullName);
+
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("SetChannelType 4 ReadOnlyEnum", 0);
+	CMD_ExecuteCommand("SetChannelLabel 4 ReadOnlyEnumFour", 0);
+	CMD_ExecuteCommand("SetChannelEnum 4 1:Ok 0:Bad", 0);
+
+	//CHANNEL_SetType(14, ChType_ReadOnlyEnum);
+	CMD_ExecuteCommand("SetChannelType 14 ReadOnlyEnum", 0);
+	CMD_ExecuteCommand("SetChannelLabel 14 ReadOnlyEnum14", 0);
+	CMD_ExecuteCommand("SetChannelEnum 14 \"1:One Switch\" 0:Zero 3:Three", 0);
+
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(5, false);
+
+	// MQTT Config should be sensor for ReadOnlyEnum
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant/sensor", true);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "name", shortName);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "sw", USER_SW_VER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mf", MANUFACTURER);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "mdl", PLATFORM_MCU_NAME);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "~", mqttName);
+
+	// channel 4
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant/sensor", true, 0, 0, "name", "ReadOnlyEnumFour");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant/sensor", true, 0, 0, "stat_t", "~/4/get");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant/sensor", true, 0, 0, "value_template", "{{ {1:'Ok', 0:'Bad', 99999:'Undefined'}[(value | int(99999))] | default(\"Undefined Enum [\"~value~\"]\") }}");
+	// state_class should not be defined
+	SELFTEST_ASSERT_HAS_NOT_MQTT_JSON_SENT_ANY("homeassistant/sensor/Windows_Fake_ReadOnlyEnum_sensor_4", true, 0, 0, "stat_cla", "temperature");
+	SELFTEST_ASSERT_HAS_NOT_MQTT_JSON_SENT_ANY("homeassistant/sensor/Windows_Fake_ReadOnlyEnum_sensor_4", true, 0, 0, "stat_cla", "measurement");
+
+	// channel 14
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant/sensor", true, 0, 0, "name", "ReadOnlyEnum14");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant/sensor", true, 0, 0, "stat_t", "~/14/get");
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant/sensor", true, 0, 0, "value_template", "{{ {1:'One Switch', 0:'Zero', 3:'Three', 99999:'Undefined'}[(value | int(99999))] | default(\"Undefined Enum [\"~value~\"]\") }}");
+
+}
+
 void Test_HassDiscovery_Ext() {
 	Test_HassDiscovery_TuyaMCU_VoltageCurrentPower();
 	Test_HassDiscovery_TuyaMCU_Power10();
@@ -617,8 +802,13 @@ void Test_HassDiscovery_Ext() {
 	Test_HassDiscovery_Channel_Illuminance();
 	Test_HassDiscovery_Channel_LowMidHigh();
 	Test_HassDiscovery_Channel_Custom();
+	Test_HassDiscovery_Channel_BatteryLevelPercent();
+	Test_HassDiscovery_Channel_Smoke();
+	Test_HassDiscovery_Channel_Ph();
 
-
+	Test_HassDiscovery_Enum();
+	Test_HassDiscovery_ReadOnlyEnum();
+	
 }
 
 

@@ -191,7 +191,9 @@ void DRV_WEMO_Send_Advert_To(int mode, struct sockaddr_in *addr) {
 	DRV_SSDP_SendReply(addr, buffer_out);
 }
 
-void WEMO_AppendInformationToHTTPIndexPage(http_request_t* request) {
+void WEMO_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState) {
+	if(bPreState)
+		return;
 	hprintf255(request, "<h4>WEMO: searches %i, setup %i, events %i, mService %i, event %i </h4>",
 		stat_searchesReceived, stat_setupXMLVisits, stat_eventsReceived, stat_metaServiceXMLVisits, stat_eventServiceXMLVisits);
 
@@ -200,10 +202,13 @@ void WEMO_AppendInformationToHTTPIndexPage(http_request_t* request) {
 
 bool Main_GetFirstPowerState() {
 	int i;
+#if ENABLE_LED_BASIC
 	if (LED_IsLEDRunning()) {
 		return LED_GetEnableAll();
 	}
-	else {
+	else 
+#endif
+	{
 		// relays driver
 		for (i = 0; i < CHANNEL_MAX; i++) {
 			if (h_isChannelRelay(i) || CHANNEL_GetType(i) == ChType_Toggle) {

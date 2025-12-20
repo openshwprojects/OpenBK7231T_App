@@ -2,11 +2,14 @@
 #include "http_fns.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
-#include "../ota/ota.h"
+#include "../hal/hal_ota.h"
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
+#include "../cmnds/cmd_enums.h"
 #include "../driver/drv_tuyaMCU.h"
+#include "../driver/drv_girierMCU.h"
 #include "../driver/drv_public.h"
+#include "../driver/drv_bl_shared.h"
 #include "../hal/hal_wifi.h"
 #include "../hal/hal_pins.h"
 #include "../hal/hal_flashConfig.h"
@@ -17,9 +20,11 @@
 #include "../cJSON/cJSON.h"
 #include <time.h>
 #include "../driver/drv_ntp.h"
+#include "../driver/drv_deviceclock.h"		// to set clock via Javascript in pmntp
 #include "../driver/drv_local.h"
-
-static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"></form>";
+#ifdef PLATFORM_BEKEN
+#include "start_type_pub.h"
+#endif
 
 #ifdef WINDOWS
 // nothing
@@ -31,8 +36,9 @@ static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"
 #include <wifi_mgmr_ext.h> //For BL602 WiFi AP Scan
 #elif PLATFORM_W600 || PLATFORM_W800
 
-#elif PLATFORM_XR809
+#elif PLATFORM_XRADIO
 #include <image/flash.h>
+#include <ota/ota.h>
 #elif defined(PLATFORM_BK7231N)
 // tuya-iotos-embeded-sdk-wifi-ble-bk7231n/sdk/include/tuya_hal_storage.h
 #include "tuya_hal_storage.h"
@@ -40,21 +46,40 @@ static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"
 #include "temp_detect_pub.h"
 #elif defined(PLATFORM_LN882H)
 #elif defined(PLATFORM_TR6260)
-#elif defined(PLATFORM_ESPIDF)
+#elif defined(PLATFORM_REALTEK) && !PLATFORM_REALTEK_NEW
+	#include "wifi_structures.h"
+	#include "wifi_constants.h"
+	#include "wifi_conf.h"
+	extern uint32_t current_fw_idx;
+	#ifdef PLATFORM_RTL87X0C
+	#include "hal_sys_ctrl.h"
+	extern hal_reset_reason_t reset_reason;
+	#endif
+	SemaphoreHandle_t scan_hdl;
+#elif PLATFORM_REALTEK_NEW
+#include "lwip_netconf.h"
+#include "ameba_soc.h"
+#include "ameba_ota.h"
+extern uint32_t current_fw_idx;
+#elif defined(PLATFORM_ESPIDF) || PLATFORM_ESP8266
 #include "esp_wifi.h"
 #include "esp_system.h"
-#else
+#elif defined(PLATFORM_BK7231T)
 // REALLY? A typo in Tuya SDK? Storge?
 // tuya-iotos-embeded-sdk-wifi-ble-bk7231t/platforms/bk7231t/tuya_os_adapter/include/driver/tuya_hal_storge.h
 #include "tuya_hal_storge.h"
 #include "BkDriverFlash.h"
 #include "temp_detect_pub.h"
+#elif defined(PLATFORM_ECR6600)
+#include "hal_system.h"
 #endif
 
-#if defined(PLATFORM_BK7231T) || defined(PLATFORM_BK7231N)
+#if (defined(PLATFORM_BK7231T) || defined(PLATFORM_BK7231N)) && !defined(PLATFORM_BEKEN_NEW)
 int tuya_os_adapt_wifi_all_ap_scan(AP_IF_S** ap_ary, unsigned int* num);
 int tuya_os_adapt_wifi_release_ap(AP_IF_S* ap);
 #endif
+
+static const char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"></form>";
 
 
 const char* g_typesOffLowMidHigh[] = { "Off","Low","Mid","High" };
@@ -64,6 +89,8 @@ const char* g_typesLowMidHighHighest[] = { "Low","Mid","High","Highest" };
 const char* g_typesOffOnRemember[] = { "Off", "On", "Remember" };
 const char* g_typeLowMidHigh[] = { "Low","Mid","High" };
 const char* g_typesLowestLowMidHighHighest[] = { "Lowest", "Low", "Mid", "High", "Highest" };;
+const char* g_typeOpenStopClose[] = { "Open","Stop","Close" };
+const char* g_typeStopUpDown[] = { "Stop","Up","Down" };
 
 #define ADD_OPTION(t,a) if(type == t) { *numTypes = sizeof(a)/sizeof(a[0]); return a; }
 
@@ -75,6 +102,8 @@ const char **Channel_GetOptionsForChannelType(int type, int *numTypes) {
 	ADD_OPTION(ChType_LowMidHighHighest, g_typesLowMidHighHighest);
 	ADD_OPTION(ChType_OffOnRemember, g_typesOffOnRemember);
 	ADD_OPTION(ChType_LowMidHigh, g_typeLowMidHigh);
+	ADD_OPTION(ChType_OpenStopClose, g_typeOpenStopClose);
+	ADD_OPTION(ChType_StopUpDown, g_typeStopUpDown);
 	
 	*numTypes = 0;
 	return 0;
@@ -179,6 +208,38 @@ int http_fn_testmsg(http_request_t* request) {
 
 }
 
+#if ENABLE_TIME_PMNTP
+// poor mans NTP
+int http_fn_pmntp(http_request_t* request) {
+	char tmpA[128];
+	uint32_t actepoch=0;
+	// javascripts "getTime()" should return time since 01.01.1970 (UTC)
+	if (http_getArg(request->url, "EPOCH", tmpA, sizeof(tmpA))) {
+		actepoch = (uint32_t)strtoul(tmpA,0,10);
+		TIME_setDeviceTime(actepoch);
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"Set clock to %u! \n",actepoch);	
+	}
+#if ENABLE_TIME_DST
+	if (! IsDST_initialized()) {
+#endif
+		if (http_getArg(request->url, "OFFSET", tmpA, sizeof(tmpA)) && actepoch != 0 ) {
+		// if actual time is during DST period, javascript will return 
+		// an offset including the one additional hour of DST  
+		// if we don't handle DST, simply accept this as "offset"
+		TIME_setDeviceTimeOffset(atoi(tmpA));
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_HTTP,"Clock - set g_UTCoffset to %i! \n",
+			atoi(tmpA));	
+		}
+#if ENABLE_TIME_DST
+	// ignore JS offset, if we can/will calculate DST on our own
+	} else setDST();
+#endif
+	poststr(request, "HTTP/1.1 302 OK\nLocation: /index\nConnection: close\n\n");
+	poststr(request, NULL);
+	return 0;
+}
+#endif
+
 // bit mask telling which channels are hidden from HTTP
 // If given bit is set, then given channel is hidden
 extern int g_hiddenChannels;
@@ -204,16 +265,16 @@ int http_fn_index(http_request_t* request) {
 		if (DRV_IsRunning("SM16703P")) {
 			bForceShowRGB = true;
 		}
-		else
-#endif
-		if (LED_IsLedDriverChipRunning()) {
-			bForceShowRGBCW = true;
+		if (DRV_IsRunning("DMX")) {
+			bForceShowRGB = true;
 		}
+#endif
 	}
 	http_setup(request, httpMimeTypeHTML);	//Add mimetype regardless of the request
 
 	// use ?state URL parameter to only request current state
 	if (!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
+		// full update - include header
 		http_html_start(request, NULL);
 
 		poststr(request, "<div id=\"changed\">");
@@ -242,6 +303,7 @@ int http_fn_index(http_request_t* request) {
 			hprintf255(request, "<h3>Enabled %s!</h3>", CHANNEL_GetLabel(j));
 			CHANNEL_Set(j, 255, 1);
 		}
+#if ENABLE_LED_BASIC
 		if (http_getArg(request->url, "rgb", tmpA, sizeof(tmpA))) {
 			hprintf255(request, "<h3>Set RGB to %s!</h3>", tmpA);
 			LED_SetBaseColor(0, "led_basecolor", tmpA, 0);
@@ -251,7 +313,7 @@ int http_fn_index(http_request_t* request) {
 				LED_SetEnableAll(true);
 			}
 		}
-
+#endif
 		if (http_getArg(request->url, "off", tmpA, sizeof(tmpA))) {
 			j = atoi(tmpA);
 			hprintf255(request, "<h3>Disabled %s!</h3>", CHANNEL_GetLabel(j));
@@ -269,6 +331,7 @@ int http_fn_index(http_request_t* request) {
 			}
 			CHANNEL_Set(j, newPWMValue, 1);
 
+#if ENABLE_LED_BASIC
 			if (j == SPECIAL_CHANNEL_TEMPERATURE) {
 				// auto enable - but only for changes made from WWW panel
 				// This happens when users changes TEMPERATURE
@@ -276,6 +339,7 @@ int http_fn_index(http_request_t* request) {
 					LED_SetEnableAll(true);
 				}
 			}
+#endif
 		}
 		if (http_getArg(request->url, "dim", tmpA, sizeof(tmpA))) {
 			int newDimmerValue = atoi(tmpA);
@@ -289,6 +353,7 @@ int http_fn_index(http_request_t* request) {
 			}
 			CHANNEL_Set(j, newDimmerValue, 1);
 
+#if ENABLE_LED_BASIC
 			if (j == SPECIAL_CHANNEL_BRIGHTNESS) {
 				// auto enable - but only for changes made from WWW panel
 				// This happens when users changes DIMMER
@@ -296,6 +361,7 @@ int http_fn_index(http_request_t* request) {
 					LED_SetEnableAll(true);
 				}
 			}
+#endif
 		}
 		if (http_getArg(request->url, "set", tmpA, sizeof(tmpA))) {
 			int newSetValue = atoi(tmpA);
@@ -315,13 +381,23 @@ int http_fn_index(http_request_t* request) {
 		poststr(request, "</div>"); // end div#change
 
 
-#if defined(ENABLE_DRIVER_WIDGET)
-		if (DRV_IsRunning("Widget")) {
-			DRV_Widget_BeforeState(request);
-		}
+#if ENABLE_OBK_BERRY
+		void Berry_SaveRequest(http_request_t *r);
+		Berry_SaveRequest(request);
+		CMD_Berry_RunEventHandlers_StrPtr(CMD_EVENT_ON_HTTP, "prestate", request);
 #endif
+#ifndef OBK_DISABLE_ALL_DRIVERS
+		DRV_AppendInformationToHTTPIndexPage(request, true);
+#endif
+
 		poststr(request, "<div id=\"state\">"); // replaceable content follows
 	}
+
+#if ENABLE_OBK_BERRY
+	void Berry_SaveRequest(http_request_t *r);
+	Berry_SaveRequest(request);
+	CMD_Berry_RunEventHandlers_StrPtr(CMD_EVENT_ON_HTTP, "state", request);
+#endif
 
 	if (!CFG_HasFlag(OBK_FLAG_HTTP_NO_ONOFF_WORDS)){
 		poststr(request, "<table>");	//Table default to 100% width in stylesheet
@@ -454,11 +530,64 @@ int http_fn_index(http_request_t* request) {
 				hprintf255(request, "Channel %s = %i", CHANNEL_GetLabel(i), iValue);
 			}
 			poststr(request, "</td></tr>");
+		} else if (channelType == ChType_Enum) {
+			iValue = CHANNEL_Get(i);
+			channelEnum_t *en;
+
+
+			// if setChannelEnum has not been defined, treat ChType_Enum as a textfield
+			if (g_enums == NULL || g_enums[i]->numOptions == 0 ) {
+				//en = g_enums[i];
+				poststr(request, "<tr><td>");
+				hprintf255(request, "<p>Change channel %s enum:</p><form action=\"index\">", CHANNEL_GetLabel(i));
+				hprintf255(request, "<input type=\"hidden\" name=\"setIndex\" value=\"%i\">", i);
+				hprintf255(request, "<input type=\"number\" name=\"set\" value=\"%i\" onblur=\"this.form.submit()\">", iValue);
+				hprintf255(request, "<input type=\"submit\" value=\"Set!\"/></form>");
+				hprintf255(request, "</form>");
+				poststr(request, "</td></tr>");
+			} else {
+				en = g_enums[i];
+
+				poststr(request, "<tr><td>");
+				hprintf255(request, "<form action=\"index\"><label for=\"select%i\">Channel %s Enum:</label>", i, CHANNEL_GetLabel(i));
+				hprintf255(request, "<input type=\"hidden\" name=\"setIndex\" value=\"%i\">", i);
+				hprintf255(request, "<select id=\"select%i\" name=\"set\" onchange=\"this.form.submit()\">", i);
+
+				bool found = false;
+				for (int o = 0; o < en->numOptions; o++) {
+					const char* selected;
+					if (en->options[o].value == iValue) {
+						selected = "selected";
+						found = true;
+					} else
+						selected = "";
+					hprintf255(request, "<option value=\"%i\" %s>%s [%i]</option>", en->options[o].value, selected, en->options[o].label,en->options[o].value);
+				}
+				if (!found) // create an item if no label is found
+					hprintf255(request, "<option value=\"%i\" selected>undefined enum [%i]</option>", iValue,iValue);
+				hprintf255(request, "</select></form>");
+				poststr(request, "</td></tr>");
+			}
+		}
+		else if (channelType == ChType_ReadOnlyEnum) {
+			iValue = CHANNEL_Get(i);
+			const char* oLabel;
+			if (g_enums == NULL || g_enums[i]->numOptions == 0)
+				oLabel = CHANNEL_GetLabel(i);
+			else
+				oLabel = CMD_FindChannelEnumLabel(g_enums[i], iValue);
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "Channel %s = %s [%i]", CHANNEL_GetLabel(i), oLabel, iValue);
+			poststr(request, "</td></tr>");
 		}
 		else if ((types = Channel_GetOptionsForChannelType(channelType, &numTypes)) != 0) {
 			const char *what;
 			if (channelType == ChType_OffOnRemember) {
 				what = "memory";
+			}
+			else if (channelType == ChType_OpenStopClose || channelType == ChType_StopUpDown) {
+				what = "mode";
 			}
 			else {
 				what = "speed";
@@ -539,7 +668,9 @@ int http_fn_index(http_request_t* request) {
 		else if (h_isChannelRelay(i) || channelType == ChType_Toggle || channelType == ChType_Toggle_Inv) {
 			// HANDLED ABOVE in previous loop
 		}
-		else if ((bRawPWMs && h_isChannelPWM(i)) || (channelType == ChType_Dimmer) || (channelType == ChType_Dimmer256) || (channelType == ChType_Dimmer1000)) {
+		else if ((bRawPWMs && h_isChannelPWM(i)) ||
+			(channelType == ChType_Dimmer) || (channelType == ChType_Dimmer256) || (channelType == ChType_Dimmer1000)
+			|| channelType == ChType_Percent) {
 			int maxValue;
 			// PWM and dimmer both use a slider control
 			inputName = h_isChannelPWM(i) ? "pwm" : "dim";
@@ -611,7 +742,15 @@ int http_fn_index(http_request_t* request) {
 		}
 	}
 
-	if (bRawPWMs == 0 || bForceShowRGBCW || bForceShowRGB) {
+	bool bForceShowSingleDimmer = 0;
+#if	ENABLE_DRIVER_GOSUNDSW2
+	if (DRV_IsRunning("GosundSW2")) {
+		bForceShowSingleDimmer = 1;
+	}
+#endif
+#if ENABLE_LED_BASIC
+	if (bRawPWMs == 0 || bForceShowRGBCW || bForceShowRGB
+		|| bForceShowSingleDimmer || LED_IsLedDriverChipRunning()) {
 		int c_pwms;
 		int lm;
 		int c_realPwms = 0;
@@ -624,7 +763,13 @@ int http_fn_index(http_request_t* request) {
 		// into high power 3-outputs single colors LED controller
 		PIN_get_Relay_PWM_Count(0, &c_pwms, 0);
 		c_realPwms = c_pwms;
-		if (bForceShowRGBCW) {
+		if (LED_IsLedDriverChipRunning()) {
+			c_pwms = CFG_CountLEDRemapChannels();
+		}
+		if (bForceShowSingleDimmer) {
+			c_pwms = 1;
+		} 
+		else if (bForceShowRGBCW) {
 			c_pwms = 5;
 		}
 		else if (bForceShowRGB) {
@@ -718,6 +863,7 @@ int http_fn_index(http_request_t* request) {
 		}
 
 	}
+#endif
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	if (DRV_IsRunning("PWMToggler")) {
 		DRV_Toggler_AddToHtmlPage(request);
@@ -731,7 +877,7 @@ int http_fn_index(http_request_t* request) {
 
 	poststr(request, "</table>");
 #ifndef OBK_DISABLE_ALL_DRIVERS
-	DRV_AppendInformationToHTTPIndexPage(request);
+	DRV_AppendInformationToHTTPIndexPage(request, false);
 #endif
 
 	if (1) {
@@ -777,13 +923,16 @@ int http_fn_index(http_request_t* request) {
 		}
 		hprintf255(request, "</h5>");
 	}
-	hprintf255(request, "<h5>Cfg size: %i, change counter: %i, ota counter: %i, incomplete boots: %i (might change to 0 if you wait to 30 sec)!</h5>",
+	hprintf255(request, "<h5>Cfg size: %i, change counter: %i, ota counter: %i, incomplete boots: %i</h5>",
 		sizeof(g_cfg), g_cfg.changeCounter, g_cfg.otaCounter, g_bootFailures);
 
   // display temperature - thanks to giedriuslt
   // only in Normal mode, and if boot is not failing
+#ifndef NO_CHIP_TEMPERATURE
 	hprintf255(request, "<h5>Chip temperature: %.1f°C</h5>", g_wifi_temperature);
+#endif
 
+#if ENABLE_PING_WATCHDOG
 	inputName = CFG_GetPingHost();
 	if (inputName && *inputName && CFG_GetPingDisconnectedSecondsToRestart()) {
 		hprintf255(request, "<h5>Ping watchdog (%s) - ", inputName);
@@ -795,6 +944,7 @@ int http_fn_index(http_request_t* request) {
 				PingWatchDog_GetTotalLost(), PingWatchDog_GetTotalReceived(), g_timeSinceLastPingReply);
 		}
 	}
+#endif
 	if (Main_HasWiFiConnected())
 	{
 		int rssi = HAL_GetWifiStrength();
@@ -875,7 +1025,38 @@ typedef enum {
 	default: break;
 	}
 	hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", reason, s);
+#elif PLATFORM_RTL87X0C
+	const char* s = "Unk";
+	switch(reset_reason)
+	{
+		case HAL_RESET_REASON_POWER_ON: s = "Pwr"; break;
+		case HAL_RESET_REASON_SOFTWARE: s = "Soft"; break;
+		case HAL_RESET_REASON_WATCHDOG: s = "Wdt"; break;
+		default: break;
+	}
+	hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", reset_reason, s);
+	hprintf255(request, "<h5>Current fw: FW%i</h5>", current_fw_idx);
+#elif PLATFORM_RTL8710B || PLATFORM_RTL8720D || PLATFORM_REALTEK_NEW
+	hprintf255(request, "<h5>Current fw: FW%i</h5>", current_fw_idx + 1);
+#elif PLATFORM_ECR6600
+	RST_TYPE reset_type = hal_get_reset_type();
+	const char* s;
+	switch(reset_type)
+	{
+		case RST_TYPE_POWER_ON:             s = "POWER_ON"; break;
+		case RST_TYPE_FATAL_EXCEPTION:      s = "FATAL_EXCEPTION"; break;
+		case RST_TYPE_SOFTWARE_REBOOT:      s = "SOFTWARE_REBOOT"; break;
+		case RST_TYPE_HARDWARE_REBOOT:      s = "HARDWARE_REBOOT"; break;
+		case RST_TYPE_OTA:                  s = "OTA"; break;
+		case RST_TYPE_WAKEUP:               s = "WAKEUP"; break;
+		case RST_TYPE_HARDWARE_WDT_TIMEOUT: s = "HARDWARE_WDT_TIMEOUT"; break;
+		case RST_TYPE_SOFTWARE_WDT_TIMEOUT: s = "SOFTWARE_WDT_TIMEOUT"; break;
+		case RST_TYPE_UNKOWN:               s = "UNKNOWN"; break;
+		default: s = "ERROR"; break;
+	}
+	hprintf255(request, "<h5>Reboot reason: %i - %s</h5>", reset_type, s);
 #endif
+#if ENABLE_MQTT
 	if (CFG_GetMQTTHost()[0] == 0) {
 		hprintf255(request, "<h5>MQTT State: not configured<br>");
 	}
@@ -897,13 +1078,14 @@ typedef enum {
 		hprintf255(request, "<h5>MQTT State: <span style=\"color:%s\">%s</span> RES: %d(%s)<br>", colorStr,
 			stateStr, MQTT_GetConnectResult(), get_error_name(MQTT_GetConnectResult()));
 		hprintf255(request, "MQTT ErrMsg: %s <br>", (MQTT_GetStatusMessage() != NULL) ? MQTT_GetStatusMessage() : "");
-		hprintf255(request, "MQTT Stats:CONN: %d PUB: %d RECV: %d ERR: %d </h5>", MQTT_GetConnectEvents(),
+		hprintf255(request, "MQTT Stats: CONN: %d PUB: %d RECV: %d ERR: %d </h5>", MQTT_GetConnectEvents(),
 			MQTT_GetPublishEventCounter(), MQTT_GetReceivedEventCounter(), MQTT_GetPublishErrorCounter());
 	}
+#endif
 	/* Format current PINS input state for all unused pins */
 	if (CFG_HasFlag(OBK_FLAG_HTTP_PINMONITOR))
 	{
-		for (i = 0; i < 29; i++)
+		for (i = 0; i < PLATFORM_GPIO_MAX; i++)
 		{
 			if ((PIN_GetPinRoleForPinIndex(i) == IOR_None) && (i != 0) && (i != 1))
 			{
@@ -912,7 +1094,7 @@ typedef enum {
 		}
 
 		hprintf255(request, "<h5> PIN States<br>");
-		for (i = 0; i < 29; i++)
+		for (i = 0; i < PLATFORM_GPIO_MAX; i++)
 		{
 			if ((PIN_GetPinRoleForPinIndex(i) != IOR_None) || (i == 0) || (i == 1))
 			{
@@ -946,16 +1128,10 @@ typedef enum {
 
 #endif
 
-#if WINDOWS
-#elif PLATFORM_BL602
-#elif PLATFORM_W600 || PLATFORM_W800
-#elif PLATFORM_XR809
-#elif PLATFORM_BK7231N || PLATFORM_BK7231T
-	if (ota_progress() >= 0)
+	if (OTA_GetProgress() >= 0)
 	{
-		hprintf255(request, "<h5>OTA In Progress. Downloaded: %i B Flashed: %06lXh</h5>", OTA_GetTotalBytes(), ota_progress());
+		hprintf255(request, "<h5>OTA In Progress. Downloaded: %i B Flashed: %06lXh</h5>", OTA_GetTotalBytes(), OTA_GetProgress());
 	}
-#endif
 	if (bSafeMode) {
 		hprintf255(request, "<h5 class='safe'>You are in safe mode (AP mode) because full reboot failed %i times. ",
 			g_bootFailures);
@@ -999,7 +1175,9 @@ typedef enum {
 		}
 		poststr(request, "<form action=\"/app\" target=\"_blank\"><input type=\"submit\" value=\"Launch Web Application\"></form> ");
 		poststr(request, "<form action=\"about\"><input type=\"submit\" value=\"About\"/></form>");
-
+#if ENABLE_TIME_PMNTP
+		poststr(request, "<input type='submit' value='Set clock to PC time' onclick='location.href =\"/pmntp?EPOCH=\"+((e=new Date)/1e3|0)+\"&OFFSET=\"+-60*e.getTimezoneOffset()'><p>");
+#endif
 		poststr(request, htmlFooterRefreshLink);
 		http_html_end(request);
 	}
@@ -1017,7 +1195,53 @@ int http_fn_about(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
+#if ENABLE_HTTP_MQTT
 
+int http_fn_cfg_mqtt_set(http_request_t* request) {
+	char tmpA[128];
+	http_setup(request, httpMimeTypeHTML);
+	http_html_start(request, "Saving MQTT");
+
+	if (http_getArg(request->url, "host", tmpA, sizeof(tmpA))) {
+	}
+	// FIX: always set, so people can clear field
+	CFG_SetMQTTHost(tmpA);
+	if (http_getArg(request->url, "port", tmpA, sizeof(tmpA))) {
+		CFG_SetMQTTPort(atoi(tmpA));
+	}
+
+#if MQTT_USE_TLS
+	CFG_SetMQTTUseTls(http_getArg(request->url, "mqtt_use_tls", tmpA, sizeof(tmpA)));
+	CFG_SetMQTTVerifyTlsCert(http_getArg(request->url, "mqtt_verify_tls_cert", tmpA, sizeof(tmpA)));
+	http_getArg(request->url, "mqtt_cert_file", tmpA, sizeof(tmpA));
+	CFG_SetMQTTCertFile(tmpA);
+#endif
+
+	if (http_getArg(request->url, "user", tmpA, sizeof(tmpA))) {
+		CFG_SetMQTTUserName(tmpA);
+	}
+	if (http_getArg(request->url, "password", tmpA, sizeof(tmpA))) {
+		CFG_SetMQTTPass(tmpA);
+	}
+	if (http_getArg(request->url, "client", tmpA, sizeof(tmpA))) {
+		CFG_SetMQTTClientId(tmpA);
+	}
+	if (http_getArg(request->url, "group", tmpA, sizeof(tmpA))) {
+		CFG_SetMQTTGroupTopic(tmpA);
+	}
+
+	CFG_Save_SetupTimer();
+
+	poststr(request, "Please wait for module to connect... if there is problem, restart it from Index html page...");
+#if ENABLE_MQTT
+	g_mqtt_bBaseTopicDirty = 1;
+#endif
+	poststr(request, "<br><a href=\"cfg_mqtt\">Return to MQTT settings</a><br>");
+	poststr(request, htmlFooterReturnToCfgOrMainPage);
+	http_html_end(request);
+	poststr(request, NULL);
+	return 0;
+}
 int http_fn_cfg_mqtt(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "MQTT");
@@ -1029,6 +1253,21 @@ int http_fn_cfg_mqtt(http_request_t* request) {
 
 	add_label_text_field(request, "Host", "host", CFG_GetMQTTHost(), "<form action=\"/cfg_mqtt_set\">");
 	add_label_numeric_field(request, "Port", "port", CFG_GetMQTTPort(), "<br>");
+#if MQTT_USE_TLS
+	hprintf255(request, "<input type=\"checkbox\" id=\"mqtt_use_tls\" name=\"mqtt_use_tls\" value=\"1\"");
+	if (CFG_GetMQTTUseTls()) {
+		hprintf255(request, " checked>");
+	}
+	hprintf255(request, "<label for=\"mqtt_use_tls\">Use TLS</label><br>");
+
+	hprintf255(request, "<input type=\"checkbox\" id=\"mqtt_verify_tls_cert\" name=\"mqtt_verify_tls_cert\" value=\"1\"");
+	if (CFG_GetMQTTVerifyTlsCert()) {
+		hprintf255(request, " checked>");
+	}
+	hprintf255(request, "<label for=\"mqtt_use_tls\">Verify TLS Certificate</label><br>");
+
+	add_label_text_field(request, "Certificate File (CA Root or Public Certificate PEM format)", "mqtt_cert_file", CFG_GetMQTTCertFile(), "<br>");
+#endif
 	add_label_text_field(request, "Client Topic (Base Topic)", "client", CFG_GetMQTTClientId(), "<br><br>");
 	add_label_text_field(request, "Group Topic (Secondary Topic to only receive cmnds)", "group", CFG_GetMQTTGroupTopic(), "<br>");
 	add_label_text_field(request, "User", "user", CFG_GetMQTTUserName(), "<br>");
@@ -1040,7 +1279,8 @@ int http_fn_cfg_mqtt(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
-
+#endif
+#if ENABLE_HTTP_IP
 int http_fn_cfg_ip(http_request_t* request) {
 	char tmp[64];
 	int g_changes = 0;
@@ -1053,22 +1293,22 @@ int http_fn_cfg_ip(http_request_t* request) {
 
 	if (http_getArg(request->url, "IP", tmp, sizeof(tmp))) {
 		str_to_ip(tmp, g_cfg.staticIP.localIPAddr);
-//hprintf255(request, "<br>IP=%s (%02x %02x %02x %02x)<br>",tmp,g_cfg.staticIP.localIPAddr[0],g_cfg.staticIP.localIPAddr[1],g_cfg.staticIP.localIPAddr[2],g_cfg.staticIP.localIPAddr[3]);
+		hprintf255(request, "<br>IP=%s (%02x %02x %02x %02x)<br>",tmp,g_cfg.staticIP.localIPAddr[0],g_cfg.staticIP.localIPAddr[1],g_cfg.staticIP.localIPAddr[2],g_cfg.staticIP.localIPAddr[3]);
 		g_changes++;
 	}
 	if (http_getArg(request->url, "mask", tmp, sizeof(tmp))) {
 		str_to_ip(tmp, g_cfg.staticIP.netMask);
-//hprintf255(request, "<br>Mask=%s (%02x %02x %02x %02x)<br>",tmp, g_cfg.staticIP.netMask[0], g_cfg.staticIP.netMask[1], g_cfg.staticIP.netMask[2], g_cfg.staticIP.netMask[3]);
+		hprintf255(request, "<br>Mask=%s (%02x %02x %02x %02x)<br>",tmp, g_cfg.staticIP.netMask[0], g_cfg.staticIP.netMask[1], g_cfg.staticIP.netMask[2], g_cfg.staticIP.netMask[3]);
 		g_changes++;
 	}
 	if (http_getArg(request->url, "dns", tmp, sizeof(tmp))) {
 		str_to_ip(tmp, g_cfg.staticIP.dnsServerIpAddr);
-//hprintf255(request, "<br>DNS=%s (%02x %02x %02x %02x)<br>",tmp, g_cfg.staticIP.dnsServerIpAddr[0], g_cfg.staticIP.dnsServerIpAddr[1], g_cfg.staticIP.dnsServerIpAddr[2], g_cfg.staticIP.dnsServerIpAddr[3]);
+		hprintf255(request, "<br>DNS=%s (%02x %02x %02x %02x)<br>",tmp, g_cfg.staticIP.dnsServerIpAddr[0], g_cfg.staticIP.dnsServerIpAddr[1], g_cfg.staticIP.dnsServerIpAddr[2], g_cfg.staticIP.dnsServerIpAddr[3]);
 		g_changes++;
 	}
 	if (http_getArg(request->url, "gate", tmp, sizeof(tmp))) {
 		str_to_ip(tmp, g_cfg.staticIP.gatewayIPAddr);
-//hprintf255(request, "<br>GW=%s (%02x %02x %02x %02x)<br>",tmp, g_cfg.staticIP.gatewayIPAddr[0], g_cfg.staticIP.gatewayIPAddr[1], g_cfg.staticIP.gatewayIPAddr[2], g_cfg.staticIP.gatewayIPAddr[3]);
+		hprintf255(request, "<br>GW=%s (%02x %02x %02x %02x)<br>",tmp, g_cfg.staticIP.gatewayIPAddr[0], g_cfg.staticIP.gatewayIPAddr[1], g_cfg.staticIP.gatewayIPAddr[2], g_cfg.staticIP.gatewayIPAddr[3]);
 		g_changes++;
 	}
 	if (g_changes) {
@@ -1090,49 +1330,22 @@ int http_fn_cfg_ip(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
+#endif
 
-int http_fn_cfg_mqtt_set(http_request_t* request) {
-	char tmpA[128];
-	http_setup(request, httpMimeTypeHTML);
-	http_html_start(request, "Saving MQTT");
-
-	if (http_getArg(request->url, "host", tmpA, sizeof(tmpA))) {
-	}
-	// FIX: always set, so people can clear field
-	CFG_SetMQTTHost(tmpA);
-	if (http_getArg(request->url, "port", tmpA, sizeof(tmpA))) {
-		CFG_SetMQTTPort(atoi(tmpA));
-	}
-	if (http_getArg(request->url, "user", tmpA, sizeof(tmpA))) {
-		CFG_SetMQTTUserName(tmpA);
-	}
-	if (http_getArg(request->url, "password", tmpA, sizeof(tmpA))) {
-		CFG_SetMQTTPass(tmpA);
-	}
-	if (http_getArg(request->url, "client", tmpA, sizeof(tmpA))) {
-		CFG_SetMQTTClientId(tmpA);
-	}
-	if (http_getArg(request->url, "group", tmpA, sizeof(tmpA))) {
-		CFG_SetMQTTGroupTopic(tmpA);
-	}
-
-	CFG_Save_SetupTimer();
-
-	poststr(request, "Please wait for module to connect... if there is problem, restart it from Index html page...");
-
-	g_mqtt_bBaseTopicDirty = 1;
-
-	poststr(request, "<br><a href=\"cfg_mqtt\">Return to MQTT settings</a><br>");
-	poststr(request, htmlFooterReturnToCfgOrMainPage);
-	http_html_end(request);
-	poststr(request, NULL);
-	return 0;
-}
-
+#if ENABLE_HTTP_WEBAPP
 int http_fn_cfg_webapp(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Set Webapp");
 	add_label_text_field(request, "URL of the Webapp", "url", CFG_GetWebappRoot(), "<form action=\"/cfg_webapp_set\">");
+
+#if MQTT_USE_TLS
+	hprintf255(request, "<input type=\"checkbox\" id=\"enable_web_server\" name=\"enable_web_server\" value=\"1\"");
+	if (!CFG_GetDisableWebServer()) {
+		hprintf255(request, " checked>");
+	}
+	hprintf255(request, "<label for=\"enable_web_server\">Web Server Enabled</label><br>");
+#endif
+
 	poststr(request, SUBMIT_AND_END_FORM);
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
@@ -1154,17 +1367,26 @@ int http_fn_cfg_webapp_set(http_request_t* request) {
 		poststr(request, "Webapp url not set because you didn't specify the argument.");
 	}
 
+#if MQTT_USE_TLS
+	CFG_SetDisableWebServer(!http_getArg(request->url, "enable_web_server", tmpA, sizeof(tmpA)));
+	if (CFG_GetDisableWebServer()) {
+		poststr(request, "<br>");
+		poststr(request, "Webapp will be disabled on next boot!");
+	}
+#endif
+
 	poststr(request, "<br>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
 	poststr(request, NULL);
 	return 0;
 }
+#endif
 
 
 
 
-
+#if ENABLE_HTTP_PING
 int http_fn_cfg_ping(http_request_t* request) {
 	char tmpA[128];
 	int bChanged;
@@ -1221,6 +1443,7 @@ int http_fn_cfg_ping(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
+#endif
 int http_fn_cfg_wifi(http_request_t* request) {
 	// for a test, show password as well...
 	char tmpA[128];
@@ -1246,11 +1469,6 @@ int http_fn_cfg_wifi(http_request_t* request) {
 #ifdef WINDOWS
 
 		poststr(request, "Not available on Windows<br>");
-#elif PLATFORM_XR809
-		poststr(request, "TODO XR809<br>");
-
-#elif PLATFORM_W600 || PLATFORM_W800
-		poststr(request, "TODO W800<br>");
 #elif PLATFORM_BL602
                wifi_mgmr_ap_item_t *ap_info;
                uint32_t i, ap_num;
@@ -1263,7 +1481,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
                        hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", (i+1), (int)ap_num, ap_info[i].ssid, ap_info[i].channel, ap_info[i].rssi);
                }
                vPortFree(ap_info);
-#elif PLATFORM_BK7231T
+#elif defined(PLATFORM_BK7231T) && !defined(PLATFORM_BEKEN_NEW)
 		int i;
 
 		AP_IF_S* ar;
@@ -1276,7 +1494,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 			hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", i, (int)num, ar[i].ssid, ar[i].channel, ar[i].rssi);
 		}
 		tuya_hal_wifi_release_ap(ar);
-#elif PLATFORM_BK7231N
+#elif defined(PLATFORM_BK7231N) && !defined(PLATFORM_BEKEN_NEW)
 		int i;
 
 		AP_IF_S* ar;
@@ -1289,10 +1507,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 			hprintf255(request, "[%i/%i] SSID: %s, Channel: %i, Signal %i<br>", i + 1, (int)num, ar[i].ssid, ar[i].channel, ar[i].rssi);
 		}
 		tuya_os_adapt_wifi_release_ap(ar);
-#elif PLATFORM_LN882H
-// TODO:LN882H action
-        poststr(request, "TODO LN882H<br>");
-#elif PLATFORM_ESPIDF
+#elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 		// doesn't work in ap mode, only sta/apsta
 		uint16_t ap_count = 0, number = 30;
 		wifi_ap_record_t ap_info[number];
@@ -1306,11 +1521,37 @@ int http_fn_cfg_wifi(http_request_t* request) {
 		{
 			hprintf255(request, "[%i/%u] SSID: %s, Channel: %i, Signal %i<br>", i + 1, number, ap_info[i].ssid, ap_info[i].primary, ap_info[i].rssi);
 		}
-#elif PLATFORM_TR6260
-		poststr(request, "TODO TR6260<br>");
+#elif defined(PLATFORM_REALTEK) && !PLATFORM_REALTEK_NEW
+#ifndef PLATFORM_RTL87X0C
+		extern void rltk_wlan_enable_scan_with_ssid_by_extended_security(bool);
+#endif
+
+		rtw_result_t scan_result_handler(rtw_scan_handler_result_t* result)
+		{
+			http_request_t* request = (http_request_t*)result->user_data;
+
+			if(result->scan_complete == RTW_TRUE)
+			{
+				xSemaphoreGive(scan_hdl);
+				return RTW_SUCCESS;
+			}
+			rtw_scan_result_t* record = &result->ap_details;
+			record->SSID.val[record->SSID.len] = 0;
+			hprintf255(request, "SSID: %s, Channel: %i, Signal %i<br>", record->SSID.val, record->channel, record->signal_strength);
+			return 0;
+		}
+
+		scan_hdl = xSemaphoreCreateBinary();
+		rltk_wlan_enable_scan_with_ssid_by_extended_security(1);
+		xSemaphoreTake(scan_hdl, 1);
+		if(wifi_scan_networks(scan_result_handler, request) != RTW_SUCCESS)
+		{
+			poststr(request, "Wifi scan failed!<br>");
+		}
+		xSemaphoreTake(scan_hdl, pdMS_TO_TICKS(10 * 1000));
+		vSemaphoreDelete(scan_hdl);
 #else
-#error "Unknown platform"
-		poststr(request, "Unknown platform<br>");
+		hprintf255(request, "TODO %s<br>", PLATFORM_MCU_NAME);
 #endif
 	}
 	poststr(request, "<form action=\"/cfg_wifi\">\
@@ -1348,6 +1589,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
+#if ENABLE_HTTP_NAMES
 int http_fn_cfg_name(http_request_t* request) {
 	// for a test, show password as well...
 	char tmpA[128];
@@ -1385,7 +1627,7 @@ int http_fn_cfg_name(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
-
+#endif
 int http_fn_cfg_wifi_set(http_request_t* request) {
 	char tmpA[128];
 	int bChanged;
@@ -1408,6 +1650,7 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 			bChanged |= CFG_SetWiFiPass(tmpA);
 		}
 		poststr(request, "WiFi mode set: connect to WLAN.");
+		if(bChanged) HAL_DisableEnhancedFastConnect();
 	}
 	if (http_getArg(request->url, "ssid2", tmpA, sizeof(tmpA))) {
 		bChanged |= CFG_SetWiFiSSID2(tmpA);
@@ -1476,7 +1719,7 @@ int http_fn_cfg_loglevel_set(http_request_t* request) {
 	return 0;
 }
 
-
+#if ENABLE_HTTP_MAC
 int http_fn_cfg_mac(http_request_t* request) {
 	// must be unsigned, else print below prints negatives as e.g. FFFFFFFe
 	unsigned char mac[6];
@@ -1516,97 +1759,8 @@ int http_fn_cfg_mac(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
-//
-//int http_fn_flash_read_tool(http_request_t* request) {
-//	int len = 16;
-//	int ofs = 1970176;
-//	int res;
-//	int rem;
-//	int now;
-//	int nowOfs;
-//	int hex;
-//	int i;
-//	char tmpA[128];
-//	char tmpB[64];
-//
-//	http_setup(request, httpMimeTypeHTML);
-//	http_html_start(request, "Flash read");
-//	poststr_h4(request, "Flash Read Tool");
-//	if (http_getArg(request->url, "hex", tmpA, sizeof(tmpA))) {
-//		hex = atoi(tmpA);
-//	}
-//	else {
-//		hex = 0;
-//	}
-//
-//	if (http_getArg(request->url, "offset", tmpA, sizeof(tmpA)) &&
-//		http_getArg(request->url, "len", tmpB, sizeof(tmpB))) {
-//		unsigned char buffer[128];
-//		len = atoi(tmpB);
-//		ofs = atoi(tmpA);
-//		hprintf255(request, "Memory at %i with len %i reads: ", ofs, len);
-//		poststr(request, "<br>");
-//
-//		///res = bekken_hal_flash_read (ofs, buffer,len);
-//		//sprintf(tmpA,"Result %i",res);
-//	//	strcat(outbuf,tmpA);
-//	///	strcat(outbuf,"<br>");
-//
-//		nowOfs = ofs;
-//		rem = len;
-//		while (1) {
-//			if (rem > sizeof(buffer)) {
-//				now = sizeof(buffer);
-//			}
-//			else {
-//				now = rem;
-//			}
-//#if PLATFORM_XR809
-//			//uint32_t flash_read(uint32_t flash, uint32_t addr,void *buf, uint32_t size)
-//#define FLASH_INDEX_XR809 0
-//			res = flash_read(FLASH_INDEX_XR809, nowOfs, buffer, now);
-//#elif PLATFORM_BL602
-//
-//#elif PLATFORM_W600 || PLATFORM_W800
-//
-//#else
-//			res = bekken_hal_flash_read(nowOfs, buffer, now);
-//#endif
-//			for (i = 0; i < now; i++) {
-//				unsigned char val = buffer[i];
-//				if (!hex && isprint(val)) {
-//					hprintf255(request, "'%c' ", val);
-//				}
-//				else {
-//					hprintf255(request, "%02X ", val);
-//				}
-//			}
-//			rem -= now;
-//			nowOfs += now;
-//			if (rem <= 0) {
-//				break;
-//			}
-//		}
-//
-//		poststr(request, "<br>");
-//	}
-//	poststr(request, "<form action=\"/flash_read_tool\">");
-//
-//	poststr(request, "<input type=\"checkbox\" id=\"hex\" name=\"hex\" value=\"1\"");
-//	if (hex) {
-//		poststr(request, " checked");
-//	}
-//	poststr(request, "><label for=\"hex\">Show all hex?</label><br>");
-//
-//	add_label_numeric_field(request, "Offset", "offset", ofs, "");
-//	add_label_numeric_field(request, "Length", "len", len, "<br>");
-//	poststr(request, SUBMIT_AND_END_FORM);
-//
-//	poststr(request, htmlFooterReturnToCfgOrMainPage);
-//	http_html_end(request);
-//	poststr(request, NULL);
-//	return 0;
-//}
+#endif
+
 const char* CMD_GetResultString(commandResult_t r) {
 	if (r == CMD_RES_OK)
 		return "OK";
@@ -1674,8 +1828,9 @@ int http_fn_cmd_tool(http_request_t* request) {
 	return 0;
 }
 
+#if ENABLE_HTTP_STARTUP
 int http_fn_startup_command(http_request_t* request) {
-	char tmpA[512];
+	char tmpA[8];
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Set startup command");
 	poststr_h4(request, "Set/Change/Clear startup command line");
@@ -1685,15 +1840,27 @@ int http_fn_startup_command(http_request_t* request) {
 		"Use backlog cmd1; cmd2; cmd3; etc to enter multiple commands</p>");
 
 	if (http_getArg(request->url, "startup_cmd", tmpA, sizeof(tmpA))) {
-		http_getArg(request->url, "data", tmpA, sizeof(tmpA));
-		//  hprintf255(request,"<h3>Set command to  %s!</h3>",tmpA);
-		// tmpA can be longer than 128 bytes and this would crash
-		hprintf255(request, "<h3>Command changed!</h3>");
-		CFG_SetShortStartupCommand(tmpA);
+		// direct config access to remove buffer on stack
+		int realSize = http_getArg(request->url, "data", g_cfg.initCommandLine, sizeof(g_cfg.initCommandLine));
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+		if (realSize >= sizeof(g_cfg.initCommandLine)) {
+			hprintf255(request, "<h3 style='color:red'>Command trimmed from %i to %i!</h3>",realSize, sizeof(g_cfg.initCommandLine));
+		} else {
+			hprintf255(request, "<h3>Command changed!</h3>");
+		}
 		CFG_Save_IfThereArePendingChanges();
 	}
 
+#if ENABLE_OBK_SCRIPTING
+	poststr(request, "<form action=\"/startup_command\">");
+	poststr(request, "<label for='data'>Startup command</label><br>");
+	poststr(request, "<textarea id='data' name='data' rows='15' cols='40'>");
+	poststr(request, CFG_GetShortStartupCommand());
+	poststr(request, "</textarea><br>");
+#else
 	add_label_text_field(request, "Startup command", "data", CFG_GetShortStartupCommand(), "<form action=\"/startup_command\">");
+#endif
 	poststr(request, "<input type='hidden' name='startup_cmd' value='1'>");
 	poststr(request, SUBMIT_AND_END_FORM);
 
@@ -1702,7 +1869,53 @@ int http_fn_startup_command(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
+#endif
 
+#if ENABLE_HA_DISCOVERY
+HassDeviceInfo *hass_createEnumChannelInfo(int i) {
+	HassDeviceInfo *dev_info = 0;
+	channelEnum_t *en;
+	if (g_enums != NULL && g_enums[i]->numOptions != 0) {
+		en = g_enums[i];
+	}
+	else {
+		// revert to textfield if no enums are defined
+		dev_info = hass_init_textField_info(i);
+		return dev_info;;
+	}
+
+	char **options = (char**)malloc(en->numOptions * sizeof(char *));
+	for (int o = 0; o < en->numOptions; o++) {
+		options[o] = en->options[o].label;
+	}
+
+	if (en->options != NULL && en->numOptions > 0) {
+		// backlog setChannelType 1 Enum; setChannelEnum 0:red 2:blue 3:green; scheduleHADiscovery 1
+		char stateTopic[32];
+		char cmdTopic[32];
+		char title[64];
+		char value_tmp[1024];
+		char command_tmp[1024];
+
+		CMD_GenEnumValueTemplate(en, value_tmp, sizeof(value_tmp));
+		CMD_GenEnumCommandTemplate(en, command_tmp, sizeof(command_tmp));
+
+		strcpy(title, CHANNEL_GetLabel(i));
+		sprintf(stateTopic, "~/%i/get", i);
+		sprintf(cmdTopic, "~/%i/set", i);
+		dev_info = hass_createSelectEntityIndexedCustom(
+			stateTopic,
+			cmdTopic,
+			en->numOptions,
+			(const char**)options,
+			title,
+			value_tmp,
+			command_tmp
+		);
+	}
+	os_free(options);
+	return dev_info;
+}
 void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	int i;
 	int relayCount;
@@ -1719,7 +1932,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	// warning - this is 32 bit
 	int flagsChannelPublished;
 	int ch;
-	int dimmer, toggle, brightness_scale;
+	int dimmer, toggle, brightness_scale = 0;
 
 	// no channels published yet
 	flagsChannelPublished = 0;
@@ -1737,18 +1950,29 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 
 #ifdef ENABLE_DRIVER_BL0937
 	measuringPower = DRV_IsMeasuringPower();
-	measuringBattery = DRV_IsMeasuringBattery();
 #endif
+	measuringBattery = DRV_IsMeasuringBattery();
 
 	PIN_get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
 	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HASS counts: %i rels, %i pwms, %i inps, %i excluded", relayCount, pwmCount, dInputCount, excludedCount);
 
+#if ENABLE_LED_BASIC
 	ledDriverChipRunning = LED_IsLedDriverChipRunning();
+#else
+	ledDriverChipRunning = 0;
+#endif
 
+#if PLATFORM_TXW81X
+	hooks.malloc_fn = _os_malloc;
+	hooks.free_fn = _os_free;
+#else
 	hooks.malloc_fn = os_malloc;
 	hooks.free_fn = os_free;
+#endif
 	cJSON_InitHooks(&hooks);
 
+	DRV_OnHassDiscovery(topic);
+	EventHandlers_FireEvent(CMD_EVENT_ON_DISCOVERY, 0);
 
 #if ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY
 	// try to pair toggles with dimmers. This is needed only for TuyaMCU, 
@@ -1801,12 +2025,17 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			dev_info = hass_init_light_singleColor_onChannels(toggle, dimmer, brightness_scale);
 			MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 			hass_free_device_info(dev_info);
+			discoveryQueued = true;
 		}
 	}
 #endif
 
 
-	if (pwmCount == 5 || ledDriverChipRunning || (pwmCount == 4 && CFG_HasFlag(OBK_FLAG_LED_EMULATE_COOL_WITH_RGB))) {
+#if ENABLE_LED_BASIC
+	if (ledDriverChipRunning) {
+		pwmCount = CFG_CountLEDRemapChannels();
+	}
+	if (pwmCount == 5 || (pwmCount == 4 && CFG_HasFlag(OBK_FLAG_LED_EMULATE_COOL_WITH_RGB))) {
 		if (dev_info == NULL) {
 			dev_info = hass_init_light_device_info(LIGHT_RGBCW);
 		}
@@ -1839,18 +2068,42 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			discoveryQueued = true;
 		}
 	}
+#endif
 
 #ifdef ENABLE_DRIVER_BL0937
 	if (measuringPower == true) {
 		for (i = OBK__FIRST; i <= OBK__LAST; i++)
 		{
-			dev_info = hass_init_energy_sensor_device_info(i);
+			dev_info = hass_init_energy_sensor_device_info(i, BL_SENSORS_IX_0);
 			if (dev_info) {
 				MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 				hass_free_device_info(dev_info);
 				discoveryQueued = true;
 			}
+			if (i == OBK_VOLTAGE) {
+				//20250319 XJIKKA to simplify and save space in flash frequency together with voltage
+				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, SPECIAL_CHANNEL_OBK_FREQUENCY, -1, -1, -1);
+				if (dev_info) {
+					MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+					hass_free_device_info(dev_info);
+					discoveryQueued = true;
+				}
+			}
 		}
+#if ENABLE_BL_TWIN
+		//BL_SENSORS_IX_1 - mqtt hass discovery using hass_uniq_id_suffix (_b) from drv_bl_shared.c
+		if (BL_IsMeteringDeviceIndexActive(BL_SENSORS_IX_1)) {
+			for (i = OBK__FIRST; i <= OBK__LAST; i++)
+			{
+				dev_info = hass_init_energy_sensor_device_info(i, BL_SENSORS_IX_1);
+				if (dev_info) {
+					MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+					hass_free_device_info(dev_info);
+					discoveryQueued = true;
+				}
+			}
+		}
+#endif
 	}
 #endif
 
@@ -1902,6 +2155,13 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			discoveryQueued = true;
 		}
 	}
+	//{
+	//	HassDeviceInfo*dev_info = hass_createGarageEntity("~/1/get", "~/1/set",
+	//	 "Main Door");
+	//	MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+	//	hass_free_device_info(dev_info);
+	//	discoveryQueued = true;
+	//}
 #if ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY
 	for (i = 0; i < CHANNEL_MAX; i++) {
 		type = g_cfg.pins.channelTypes[i];
@@ -1947,6 +2207,11 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			case ChType_ReadOnlyLowMidHigh:
 			{
 				dev_info = hass_init_sensor_device_info(READONLYLOWMIDHIGH_SENSOR, i, -1, -1, 1);
+			}
+			break;
+			case ChType_BatteryLevelPercent:
+			{
+				dev_info = hass_init_sensor_device_info(BATTERY_CHANNEL_SENSOR, i, -1, -1, 1);
 			}
 			break;
 			case ChType_SmokePercent:
@@ -2056,6 +2321,16 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, i, 3, 2, 1);
 			}
 			break;
+			case ChType_Percent:
+			{
+				dev_info = hass_init_sensor_device_info(HASS_PERCENT, i, 3, 2, 1);
+			}
+			break;
+			case ChType_Frequency_div1000:
+			{
+				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, i, 4, 3, 1);
+			}
+			break;
 			case ChType_Frequency_div10:
 			{
 				dev_info = hass_init_sensor_device_info(FREQUENCY_SENSOR, i, 3, 1, 1);
@@ -2064,6 +2339,16 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			case ChType_EnergyTotal_kWh_div100:
 			{
 				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 2, 1);
+			}
+			break;
+			case ChType_EnergyExport_kWh_div1000:
+			{
+				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 3, 1);
+			}
+			break;
+			case ChType_EnergyImport_kWh_div1000:
+			{
+				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 3, 1);
 			}
 			break;
 			case ChType_EnergyTotal_kWh_div1000:
@@ -2084,6 +2369,43 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			case ChType_Tds:
 			{
 				dev_info = hass_init_sensor_device_info(WATER_QUALITY_TDS, i, -1, 2, 1);
+			}
+			break;
+			case ChType_TextField:
+			{
+				dev_info = hass_init_textField_info(i);
+			}
+			break;
+			case ChType_ReadOnlyEnum:
+			{
+				dev_info = hass_init_sensor_device_info(HASS_READONLYENUM, i, -1, -1, -1);
+			}
+			break;
+			case ChType_Enum:
+			{			
+				dev_info = hass_createEnumChannelInfo(i);
+			}
+			break;
+			default:
+			{
+				int numOptions;
+				const char **options = Channel_GetOptionsForChannelType(type, &numOptions);
+				if (options && numOptions) {
+					// backlog setChannelType 2 LowMidHigh; scheduleHADiscovery 1
+					// backlog setChannelType 3 OpenStopClose; scheduleHADiscovery 1
+					char stateTopic[16];
+					char cmdTopic[16];
+					// TODO: lengths
+					sprintf(stateTopic, "~/%i/get", i);
+					sprintf(cmdTopic, "~/%i/set", i);
+					dev_info = hass_createSelectEntityIndexed(
+						stateTopic,
+						cmdTopic,
+						numOptions,
+						options,
+						CHANNEL_GetLabel(i)
+					);
+				}
 			}
 			break;
 		}
@@ -2136,10 +2458,13 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 			}
 		}
 	}
-	if (1) {
+	if(CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEPERMINUTE) || CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEONCONNECT)) {
 		//use -1 for channel as these don't correspond to channels
+#ifndef NO_CHIP_TEMPERATURE
 		dev_info = hass_init_sensor_device_info(HASS_TEMP, -1, -1, -1, 1);
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+#endif
 		dev_info = hass_init_sensor_device_info(HASS_RSSI, -1, -1, -1, 1);
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
@@ -2196,7 +2521,9 @@ int http_fn_ha_discovery(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
+#endif
 
+#if ENABLE_OLD_YAML_GENERATOR
 void http_generate_singleColor_cfg(http_request_t* request, const char* clientId) {
 	hprintf255(request, "    command_topic: \"cmnd/%s/led_enableAll\"\n", clientId);
 	hprintf255(request, "    state_topic: \"%s/led_enableAll/get\"\n", clientId);
@@ -2229,6 +2556,8 @@ void hprintf_qos_payload(http_request_t* request, const char* clientId) {
 	hprintf255(request, "    availability:\n");
 	hprintf255(request, "      - topic: \"%s/connected\"\n", clientId);
 }
+#endif
+#if ENABLE_HA_DISCOVERY
 int http_fn_ha_cfg(http_request_t* request) {
 	int relayCount;
 	int pwmCount;
@@ -2249,6 +2578,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 	http_html_start(request, "Home Assistant Setup");
 	poststr_h4(request, "Home Assistant Cfg");
 	hprintf255(request, "<h4>Note that your short device name is: %s</h4>", shortDeviceName);
+#if ENABLE_OLD_YAML_GENERATOR
 	poststr_h4(request, "Paste this to configuration yaml");
 	poststr(request, "<h5>Make sure that you have \"switch:\" keyword only once! Home Assistant doesn't like dup keywords.</h5>");
 	poststr(request, "<h5>You can also use \"switch MyDeviceName:\" to avoid keyword duplication!</h5>");
@@ -2270,7 +2600,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 					switchAdded = 1;
 				}
 
-				hass_print_unique_id(request, "  - unique_id: \"%s\"\n", RELAY, i);
+				hass_print_unique_id(request, "  - unique_id: \"%s\"\n", RELAY, i, 0);
 				hprintf255(request, "    name: %i\n", i);
 				hprintf255(request, "    state_topic: \"%s/%i/get\"\n", clientId, i);
 				hprintf255(request, "    command_topic: \"%s/%i/set\"\n", clientId, i);
@@ -2290,13 +2620,14 @@ int http_fn_ha_cfg(http_request_t* request) {
 					switchAdded = 1;
 				}
 
-				hass_print_unique_id(request, "  - unique_id: \"%s\"\n", BINARY_SENSOR, i);
+				hass_print_unique_id(request, "  - unique_id: \"%s\"\n", BINARY_SENSOR, i, 0);
 				hprintf255(request, "    name: %i\n", i);
 				hprintf255(request, "    state_topic: \"%s/%i/get\"\n", clientId, i);
 				hprintf_qos_payload(request, clientId);
 			}
 		}
 	}
+#if ENABLE_LED_BASIC
 	if (pwmCount == 5 || LED_IsLedDriverChipRunning()) {
 		// Enable + RGB control + CW control
 		if (mqttAdded == 0) {
@@ -2308,7 +2639,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 			switchAdded = 1;
 		}
 
-		hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_RGBCW, i);
+		hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_RGBCW, i, 0);
 		hprintf255(request, "    name: %i\n", i);
 		http_generate_rgb_cfg(request, clientId);
 		//hprintf255(request, "    #brightness_value_template: \"{{ value }}\"\n");
@@ -2328,7 +2659,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 				switchAdded = 1;
 			}
 
-			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_RGB, i);
+			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_RGB, i, 0);
 			hprintf255(request, "    name: Light\n");
 			http_generate_rgb_cfg(request, clientId);
 		}
@@ -2343,7 +2674,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 				switchAdded = 1;
 			}
 
-			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_PWM, i);
+			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_PWM, i, 0);
 			hprintf255(request, "    name: Light\n");
 			http_generate_singleColor_cfg(request, clientId);
 		}
@@ -2358,7 +2689,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 				switchAdded = 1;
 			}
 
-			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_PWMCW, i);
+			hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_PWMCW, i, 0);
 			hprintf255(request, "    name: Light\n");
 			http_generate_cw_cfg(request, clientId);
 		}
@@ -2375,7 +2706,7 @@ int http_fn_ha_cfg(http_request_t* request) {
 						lightAdded = 1;
 					}
 
-					hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_PWM, i);
+					hass_print_unique_id(request, "  - unique_id: \"%s\"\n", LIGHT_PWM, i, 0);
 					hprintf255(request, "    name: %i\n", i);
 					hprintf255(request, "    state_topic: \"%s/%i/get\"\n", clientId, i);
 					hprintf255(request, "    command_topic: \"%s/%i/set\"\n", clientId, i);
@@ -2392,8 +2723,10 @@ int http_fn_ha_cfg(http_request_t* request) {
 				}
 			}
 		}
+#endif
 
 	poststr(request, "</textarea>");
+#endif
 	poststr(request, "<br/><div><label for=\"ha_disc_topic\">Discovery topic:</label><input id=\"ha_disc_topic\" value=\"homeassistant\"><button onclick=\"send_ha_disc();\">Start Home Assistant Discovery</button>&nbsp;<form action=\"cfg_mqtt\" class='disp-inline'><button type=\"submit\">Configure MQTT</button></form></div><br/>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
@@ -2401,6 +2734,8 @@ int http_fn_ha_cfg(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
+
+#endif
 
 void runHTTPCommandInternal(http_request_t* request, const char *cmd) {
 	bool bEchoHack = strncmp(cmd, "echo", 4) == 0;
@@ -2461,21 +2796,43 @@ int http_fn_cfg(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Config");
 	postFormAction(request, "cfg_pins", "Configure Module");
+#if ENABLE_HTTP_FLAGS
 	postFormAction(request, "cfg_generic", "Configure General/Flags");
+#endif
+#if ENABLE_HTTP_STARTUP
 	postFormAction(request, "cfg_startup", "Configure Startup");
+#endif
+#if ENABLE_HTTP_DGR
 	postFormAction(request, "cfg_dgr", "Configure Device Groups");
+#endif
 	postFormAction(request, "cfg_wifi", "Configure WiFi &amp; Web");
+#if ENABLE_HTTP_IP
 	postFormAction(request, "cfg_ip", "Configure IP");
+#endif
+#if (ENABLE_DRIVER_DS1820_FULL)
+	postFormAction(request, "cfg_ds18b20", "Configure DS18B20 Sensors");
+#endif
 	postFormAction(request, "cfg_mqtt", "Configure MQTT");
+#if ENABLE_HTTP_NAMES
 	postFormAction(request, "cfg_name", "Configure Names");
+#endif
+#if ENABLE_HTTP_MAC
 	postFormAction(request, "cfg_mac", "Change MAC");
+#endif
+#if ENABLE_HTTP_PING
 	postFormAction(request, "cfg_ping", "Ping Watchdog (network lost restarter)");
+#endif
+#if ENABLE_HTTP_WEBAPP
 	postFormAction(request, "cfg_webapp", "Configure WebApp");
+#endif
+#if ENABLE_HA_DISCOVERY
 	postFormAction(request, "ha_cfg", "Home Assistant Configuration");
+#endif
 	postFormAction(request, "ota", "OTA (update software by WiFi)");
 	postFormAction(request, "cmd_tool", "Execute Custom Command");
-	//postFormAction(request, "flash_read_tool", "Flash Read Tool");
+#if ENABLE_HTTP_STARTUP
 	postFormAction(request, "startup_command", "Change Startup Command Text");
+#endif
 
 #if 0
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
@@ -2505,10 +2862,17 @@ int http_fn_cfg_pins(http_request_t* request) {
 
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Pin config");
+
+#if 0
+	poststr(request, "<script src=\"https://openbekeniot.github.io/webapp/test1.js\"></script>");
+	//poststr(request, "<script src=\"http://localhost:8080/test1.js\"></script>");
+	poststr(request, "<script>createBeforeMain();</script>");
+#endif
+
 	poststr(request, "<p>The first field assigns a role to the given pin. The next field is used to enter channel index (relay index), used to support multiple relays and buttons. ");
 	poststr(request, "So, first button and first relay should have channel 1, second button and second relay have channel 2, etc.</p>");
 	poststr(request, "<p>Only for button roles another field will be provided to enter channel to toggle when doing double click. ");
-	poststr(request, "It shows up when you change role to button and save.</p>");
+	poststr(request, "It shows up when you change role to button.</p>");
 #if PLATFORM_BK7231N || PLATFORM_BK7231T
 	poststr(request, "<p>BK7231N/BK7231T supports PWM only on pins 6, 7, 8, 9, 24 and 26!</p>");
 #endif
@@ -2567,9 +2931,11 @@ int http_fn_cfg_pins(http_request_t* request) {
 		CFG_Save_IfThereArePendingChanges();
 
 		// Invoke Hass discovery if configuration has changed and not in safe mode.
+#if ENABLE_HA_DISCOVERY
 		if (!bSafeMode && CFG_HasFlag(OBK_FLAG_AUTOMAIC_HASS_DISCOVERY)) {
 			Main_ScheduleHomeAssistantDiscovery(1);
 		}
+#endif
 		hprintf255(request, "Pins update - %i reqs, %i changed!<br><br>", iChangedRequested, iChanged);
 	}
 	//	strcat(outbuf,"<button type=\"button\">Click Me!</button>");
@@ -2692,6 +3058,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 	return 0;
 }
 
+#if ENABLE_HTTP_FLAGS
 
 const char* g_obk_flagNames[] = {
 	"[MQTT] Broadcast led params together (send dimmer and color when dimmer or color changes, topic name: YourDevName/led_basecolor_rgb/get, YourDevName/led_dimmer/get)",
@@ -2699,7 +3066,7 @@ const char* g_obk_flagNames[] = {
 	"[MQTT] Broadcast self state every N (def: 60) seconds (delay configurable by 'mqtt_broadcastInterval' and 'mqtt_broadcastItemsPerSec' commands)",
 	"[LED][Debug] Show raw PWM controller on WWW index instead of new LED RGB/CW/etc picker",
 	"[LED] Force show RGBCW controller (for example, for SM2135 LEDs, or for DGR sender)",
-	"[CMD] Enable TCP console command server (for Putty, etc)",
+	"[CMD] Enable TCP console command server (for PuTTY, etc)",
 	"[BTN] Instant touch reaction instead of waiting for release (aka SetOption 13)",
 	"[MQTT] [Debug] Always set Retain flag to all published values",
 	"[LED] Alternate CW light mode (first PWM for warm/cold slider, second for brightness)",
@@ -2718,7 +3085,7 @@ const char* g_obk_flagNames[] = {
 	"[MQTT] Retain power channels (Relay channels, etc)",
 	"[IR] Do MQTT publish (Tasmota JSON format) for incoming IR data",
 	"[LED] Automatically enable Light on any change of brightness, color or temperature",
-	"[LED] Emulate Cool White with RGB in device with four PWMS - Red is 0, Green 1, Blue 2, and Warm is 4",
+	"[LED] Emulate Cool White with RGB in device with four PWMs - Red is 0, Green 1, Blue 2, and Warm is 4",
 	"[POWER] Allow negative current/power for power measurement (all chips, BL0937, BL0942, etc)",
 	// On BL602, if marked, uses /dev/ttyS1, otherwise S0
 	// On Beken, if marked, uses UART2, otherwise UART1
@@ -2746,11 +3113,33 @@ const char* g_obk_flagNames[] = {
 	"[TuyaMCU] Store ALL data",
 	"[PWR] Invert AC dir",
 	"[HTTP] Hide ON/OFF for relays (only red/green buttons)",
-	"[MQTT] Never add get sufix",
+	"[MQTT] Never add GET suffix",
+	"[WiFi] (RTL/BK/BL602) Enhanced fast connect by saving AP data to flash (preferable with Flag 37 & static ip). Quick reset 3 times to connect normally",
+	"error",
 	"error",
 	"error",
 	"error",
 }; 
+
+void uint64_to_str(uint64_t num, char* str) {
+	char temp[21];  // uint64_t 20 numbers + \0
+	int i = 0;
+	if (num == 0) {
+		temp[i++] = '0';
+	} else {
+		while (num > 0) {
+			temp[i++] = '0' + (num % 10);
+			num /= 10;
+		}
+	}
+	temp[i] = '\0';
+	int j;
+	for (j = 0; j < i; j++) {
+		str[j] = temp[i - j - 1];
+	}
+	str[j] = '\0';
+}
+
 int http_fn_cfg_generic(http_request_t* request) {
 	int i;
 	char tmpA[64];
@@ -2788,9 +3177,12 @@ int http_fn_cfg_generic(http_request_t* request) {
 	CFG_Save_IfThereArePendingChanges();
 
 	// 32 bit type
-	hprintf255(request, "<h4>Flags (Current value=%i)</h4>", CFG_GetFlags());
+	//hprintf255(request, "<h4>Flags (Current value=%i)</h4>", CFG_GetFlags());
 	// 64 bit - TODO fixme
-	//hprintf255(request, "<h4>Flags (Current value=%lu)</h4>", CFG_GetFlags64());
+	//hprintf255(request, "<h4>Flags (Current value=%llu)</h4>", CFG_GetFlags64());
+	char buf[21];
+	uint64_to_str(CFG_GetFlags64(), buf);
+	hprintf255(request, "<h4>Flags (Current value=%s)</h4>", buf);
 	poststr(request, "<form action=\"/cfg_generic\">");
 
 	for (i = 0; i < OBK_TOTAL_FLAGS; i++) {
@@ -2819,6 +3211,8 @@ int http_fn_cfg_generic(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
+#endif
+#if ENABLE_HTTP_STARTUP
 int http_fn_cfg_startup(http_request_t* request) {
 	int channelIndex;
 	int newValue;
@@ -2873,7 +3267,8 @@ int http_fn_cfg_startup(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
-
+#endif
+#if ENABLE_HTTP_DGR
 int http_fn_cfg_dgr(http_request_t* request) {
 	char tmpA[128];
 	bool bForceSet;
@@ -2971,24 +3366,76 @@ int http_fn_cfg_dgr(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
-
-void XR809_RequestOTAHTTP(const char* s);
+#endif
 
 void OTA_RequestDownloadFromHTTP(const char* s) {
-#if WINDOWS
-
-#elif PLATFORM_BL602
-
-#elif PLATFORM_LN882H
-
-#elif PLATFORM_ESPIDF
-#elif PLATFORM_TR6260
+#if PLATFORM_BEKEN
+	otarequest(s);
+#elif PLATFORM_ECR6600
+	extern int http_client_download_file(const char* url);
+	extern int ota_done(bool reset);
+	delay_ms(100);
+	int ret = http_client_download_file(s);
+	if(ret != -1) ota_done(1);
+	else ota_done(0);
 #elif PLATFORM_W600 || PLATFORM_W800
 	t_http_fwup(s);
-#elif PLATFORM_XR809
-	XR809_RequestOTAHTTP(s);
-#else
-	otarequest(s);
+#elif PLATFORM_XRADIO
+	uint32_t* verify_value;
+	ota_verify_t      verify_type;
+	ota_verify_data_t verify_data;
+
+	if(ota_get_image(OTA_PROTOCOL_HTTP, s) != OTA_STATUS_OK)
+	{
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "OTA http get image failed");
+		return;
+	}
+
+	if(ota_get_verify_data(&verify_data) != OTA_STATUS_OK)
+	{
+		verify_type = OTA_VERIFY_NONE;
+		verify_value = NULL;
+	}
+	else
+	{
+		verify_type = verify_data.ov_type;
+		verify_value = (uint32_t*)(verify_data.ov_data);
+	}
+
+	if(ota_verify_image(verify_type, verify_value) != OTA_STATUS_OK)
+	{
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "OTA http verify image failed");
+		return;
+	}
+
+	ota_reboot();
+#elif PLATFORM_REALTEK_NEW
+	ota_context* ctx = NULL;
+	ctx = (ota_context*)malloc(sizeof(ota_context));
+	if(ctx == NULL) goto exit;
+	memset(ctx, 0, sizeof(ota_context));
+	char url[256] = { 0 };
+	char resource[256] = { 0 };
+	uint16_t port;
+	parser_url(s, &url, &port, &resource, 256);
+	int ret = ota_update_init(ctx, &url, port, &resource, OTA_HTTP);
+	if(ret != 0)
+	{
+		addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "ota_update_init failed");
+		goto exit;
+	}
+	ret = ota_update_start(ctx);
+	if(!ret)
+	{
+		addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "OTA finished");
+		sys_clear_ota_signature();
+		delay_ms(50);
+		sys_reset();
+	}
+exit:
+	ota_update_deinit(ctx);
+	addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "OTA failed");
+	if(ctx) free(ctx);
 #endif
 }
 int http_fn_ota_exec(http_request_t* request) {
@@ -3011,11 +3458,30 @@ int http_fn_ota_exec(http_request_t* request) {
 int http_fn_ota(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "OTA system");
-	poststr(request, "<p>For a more user-friendly experience, it is recommended to use the OTA option in the Web Application, where you can easily drag and drop files without needing to set up a server. On Beken platforms, the .rbl file is used for OTA updates. In the OTA section below, paste the link to the .rbl file (an HTTP server is required).</p>");
-	add_label_text_field(request, "URL for new bin file", "host", "", "<form action=\"/ota_exec\">");
+#ifndef OBK_OTA_EXTENSION
+	poststr(request, "<h3>Sorry, OTA update not implemented for " DEVICENAME_PREFIX_FULL " </h3>");
+#else
+	poststr(request, "<p>It's recommended to use the OTA option in the Web Application, where you can easily drag and drop files.<br><br>If you have an HTTP server providing the OTA file, you may enter the URL below. "
+#if PLATFORM_BEKEN
+	" On Beken platforms, the .rbl file is used for OTA updates."
+#endif
+	"</p>");
+	add_label_text_field(request, "URL for ota firmware file", "host", "", "<form action=\"/ota_exec\">");
 	poststr(request, "<br>\
 <input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure?')\">\
 </form>");
+
+	const char htmlOTA[] = "<script>var o=document.getElementById('otafile'),d=document.querySelector('dialog'),h=document.getElementById('hint'),D='OTA started! Please wait ',R=/" DEVICENAME_PREFIX_FULL "_.*" 
+#ifdef OBK_OTA_NAME_EXTENSION
+	OBK_OTA_NAME_EXTENSION
+#endif
+	OBK_OTA_EXTENSION "/,SR=R.source,mr=(e)=>e.name.match(R);doota=()=>{f=o.files[0];if(f&&(f)){d.showModal();var t=30;setTimeout(()=>{d.close(),location.href='/'},1e3*t),setInterval(()=>d.innerHTML=D+t--+' secs',1e3),fetch('/api/ota',{method:'POST',body:f}).then((e)=>{e.ok&&fetch('/index?restart=1')})}else alert(f?'filename invalid':'no file selected')};d.innerHTML=D,o.addEventListener('change',((e)=>{const t=e.target.files[0];if(!t)return;h.innerHTML=mr(t)?'':'Selected file does <b>not</b> match required format '+SR+'!'}))</script>";
+
+	poststr(request, "<br><br><br>Expert feature: Upload firmware OTA file.<br>If unsure, please use Web App!<br><span id='hint' style='color: yellow;'></span><br><br>");
+	poststr(request, "<input id='otafile' type='file' accept='" OBK_OTA_EXTENSION "'>");
+	poststr(request, "<input type='button' class='bred' onclick='doota();' value='START OTA - No file check - will reboot after OTA'><dialog></dialog>");
+	poststr(request, htmlOTA);
+#endif
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
 	poststr(request, NULL);
@@ -3024,6 +3490,11 @@ int http_fn_ota(http_request_t* request) {
 
 int http_fn_other(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
+#if ENABLE_OBK_BERRY
+	if (CMD_Berry_RunEventHandlers_StrPtr(CMD_EVENT_ON_HTTP, request->url, request)) {
+		return 0;
+	}
+#endif
 	http_html_start(request, "Not found");
 	poststr(request, "Not found.<br/>");
 	poststr(request, htmlFooterReturnToMainPage);

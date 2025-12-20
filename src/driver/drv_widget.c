@@ -11,6 +11,7 @@
 
 /*
 startDriver widget
+// widget_create [LocationIndex][bAllowCache][FileName]
 widget_create 0 0 demo1.html
 
 */
@@ -67,12 +68,14 @@ void DRV_Widget_DisplayList(http_request_t* request, WidgetLocation loc) {
 		w = w->next;
 	}
 }
-void DRV_Widget_BeforeState(http_request_t* request) {
-	DRV_Widget_DisplayList(request, WIDGET_STATIC);
-}
 
-void DRV_Widget_AddToHtmlPage(http_request_t *request) {
-	DRV_Widget_DisplayList(request, WIDGET_STATE);
+void DRV_Widget_AddToHtmlPage(http_request_t *request, int bPreState) {
+	if (bPreState) {
+		DRV_Widget_DisplayList(request, WIDGET_STATIC);
+	}
+	else {
+		DRV_Widget_DisplayList(request, WIDGET_STATE);
+	}
 }
 void Widget_Add(widget_t **first, widget_t *n) {
 	if (*first == 0) {
@@ -118,8 +121,16 @@ static commandResult_t CMD_Widget_ClearAll(const void *context, const char *cmd,
 
 void DRV_Widget_Init() {
 	
+	//cmddetail:{"name":"widget_clearAll","args":"",
+	//cmddetail:"descr":"Removes all registered widgets",
+	//cmddetail:"fn":"CMD_Widget_ClearAll","file":"driver/drv_widget.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("widget_clearAll", CMD_Widget_ClearAll, NULL);
 
+	//cmddetail:{"name":"widget_create","args":"[LocationIndex][bAllowCache][FileName]",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_Widget_Create","file":"driver/drv_widget.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("widget_create", CMD_Widget_Create, NULL);
 
 }

@@ -1,58 +1,39 @@
-# moved part to include app sources here to be able to edit them outside sdks folder
-SRCS += ../shared/src/new_cfg
-SRCS += ../shared/src/new_pins
-SRCS += ../shared/src/new_common
-SRCS += ../shared/src/rgb2hsv
+OBK_SRCS = ../shared/src/
+CC_FLAGS += -DPLATFORM_XRADIO
 
-SRCS += ../shared/src/httpserver/hass
-SRCS += ../shared/src/httpserver/http_basic_auth
-SRCS += ../shared/src/httpserver/new_http
-SRCS += ../shared/src/httpserver/http_tcp_server
-SRCS += ../shared/src/httpserver/http_fns
-SRCS += ../shared/src/httpserver/rest_interface
-SRCS += ../shared/src/httpserver/json_interface
+SRCS += $(OBK_SRCS)hal/xradio/hal_adc_xradio
+SRCS += $(OBK_SRCS)hal/xradio/hal_wifi_xradio
+SRCS += $(OBK_SRCS)hal/xradio/hal_generic_xradio
+SRCS += $(OBK_SRCS)hal/xradio/hal_main_xradio
+SRCS += $(OBK_SRCS)hal/xradio/hal_pins_xradio
+SRCS += $(OBK_SRCS)hal/xradio/hal_flashConfig_xradio
+SRCS += $(OBK_SRCS)hal/xradio/hal_flashVars_xradio
+SRCS += $(OBK_SRCS)hal/xradio/hal_uart_xradio
+SRCS += $(OBK_SRCS)hal/xradio/hal_ota_xradio
+SRCS += $(OBK_SRCS)hal/xradio/xr809/hal_pins_xr809
+SRCS += $(OBK_SRCS)hal/xradio/xr806/hal_pins_xr806
+SRCS += $(OBK_SRCS)hal/xradio/xr872/hal_pins_xr872
 
-SRCS += ../shared/src/logging/logging
-SRCS += ../shared/src/jsmn/jsmn
-SRCS += ../shared/src/mqtt/new_mqtt_deduper
-SRCS += ../shared/src/mqtt/new_mqtt
-SRCS += ../shared/src/tiny_crc8
-SRCS += ../shared/src/new_ping
+include ../shared/platforms/obk_main.mk
+SRCS += $(OBKM_SRC:.c=)
+CC_FLAGS += $(OBK_CFLAGS)
 
-SRCS += ../shared/src/cmnds/cmd_channels
-SRCS += ../shared/src/cmnds/cmd_eventHandlers
-SRCS += ../shared/src/cmnds/cmd_main
-SRCS += ../shared/src/cmnds/cmd_newLEDDriver
-SRCS += ../shared/src/cmnds/cmd_newLEDDriver_colors
-SRCS += ../shared/src/cmnds/cmd_repeatingEvents
-SRCS += ../shared/src/cmnds/cmd_tasmota
-SRCS += ../shared/src/cmnds/cmd_tcp
-SRCS += ../shared/src/cmnds/cmd_test
-SRCS += ../shared/src/cmnds/cmd_if
-SRCS += ../shared/src/cmnds/cmd_tokenizer
+INCLUDE_PATHS += -I../shared/libraries/easyflash/inc
 
-SRCS += ../shared/src/cJSON/cJSON
-SRCS += ../shared/src/base64/base64
+SRCS += ../shared/libraries/easyflash/ports/ef_port
+SRCS += ../shared/libraries/easyflash/src/easyflash
+#SRCS += ../shared/libraries/easyflash/src/ef_cmd
+SRCS += ../shared/libraries/easyflash/src/ef_env
+SRCS += ../shared/libraries/easyflash/src/ef_env_legacy
+SRCS += ../shared/libraries/easyflash/src/ef_env_legacy_wl
+SRCS += ../shared/libraries/easyflash/src/ef_iap
+SRCS += ../shared/libraries/easyflash/src/ef_log
+SRCS += ../shared/libraries/easyflash/src/ef_utils
 
-SRCS += ../shared/src/driver/drv_bl0942
-SRCS += ../shared/src/driver/drv_main
-SRCS += ../shared/src/driver/drv_ntp
-SRCS += ../shared/src/driver/drv_tuyaMCU
-SRCS += ../shared/src/driver/drv_uart
+BERRY_MODULEPATH = $(OBK_SRCS)berry/modules
+BERRY_SRCPATH = ../shared/libraries/berry/src
+INCLUDE_PATHS += -I$(BERRY_SRCPATH)
+INCLUDE_PATHS += -I../shared/include
+include ../shared/libraries/berry.mk
 
-SRCS += ../shared/src/i2c/drv_i2c_main
-SRCS += ../shared/src/i2c/drv_i2c_mcp23017
-SRCS += ../shared/src/i2c/drv_i2c_tc74
-SRCS += ../shared/src/i2c/drv_i2c_lcd_pcf8574t
-
-SRCS += ../shared/src/hal/xr809/hal_adc_xr809
-SRCS += ../shared/src/hal/xr809/hal_wifi_xr809
-SRCS += ../shared/src/hal/xr809/hal_generic_xr809
-SRCS += ../shared/src/hal/xr809/hal_main_xr809
-SRCS += ../shared/src/hal/xr809/hal_pins_xr809
-SRCS += ../shared/src/hal/xr809/hal_flashConfig_xr809
-SRCS += ../shared/src/hal/xr809/hal_flashVars_xr809
-
-SRCS += ../shared/src/user_main
-
-
+SRCS += $(BERRY_SRC_C:.c=)

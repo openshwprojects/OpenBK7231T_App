@@ -1,5 +1,8 @@
 
 #include "new_mqtt.h"
+
+#if ENABLE_MQTT
+
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
@@ -151,3 +154,5 @@ OBK_Publish_Result MQTT_PublishMain_StringString_DeDuped(int slotCode, int expir
 	stat_deduper_send++;
 	return res;
 }
+
+#endif // ENABLE_MQTT

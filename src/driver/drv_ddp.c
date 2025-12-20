@@ -11,6 +11,7 @@
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
 #include "../httpserver/new_http.h"
+#include "drv_local.h"
 
 #if ENABLE_DRIVER_SM16703P
 #include "drv_spiLED.h"
@@ -20,8 +21,8 @@ static const char* group = "239.255.250.250";
 static int port = 4048;
 static int g_ddp_socket_receive = -1;
 static int g_retry_delay = 5;
-static int stat_packetsReceived = 0;
-static int stat_bytesReceived = 0;
+int stat_ddpPacketsReceived = 0;
+static int stat_ddpBytesReceived = 0;
 static char *g_ddp_buffer = 0;
 static int g_ddp_bufferSize = 512;
 
@@ -123,19 +124,28 @@ void DDP_Parse(byte *data, int len) {
 	if(len > 12) {
 		byte r, g, b;
 
-		r = data[10];
-		g = data[11];
-		b = data[12];
+		// This is done by WLED, but not checked in Tasmota
+		// data type 0x1B (formerly 0x1A) is RGBW (type 3, 8 bit/channel)
+		byte bytesPerPixel = ((data[2] & 0b00111000) >> 3 == 0b011) ? 4 : 3;
 
 #if ENABLE_DRIVER_SM16703P
-		if (spiLED.ready) {
+		if (Strip_IsActive()) {
 			// Note that this is limited by DDP msgbuf size
-			uint32_t pixel = (len - 10) / 3;
+			uint32_t numPixels = (len - 10) / 3;
+			// debug
+			//addLogAdv(LOG_INFO, LOG_FEATURE_DDP, "DDP_Parse: STRIP path: %i pixels", numPixels);
 			// This immediately activates the pixels, maybe we should read the PUSH flag
-			SM16703P_setMultiplePixel(pixel, &data[10], true);
+			Strip_setMultiplePixel(numPixels, &data[10], true);
 		} else
 #endif
 		{
+			r = data[10];
+			g = data[11];
+			b = data[12];
+
+			//addLogAdv(LOG_INFO, LOG_FEATURE_DDP, "DDP_Parse: bulb path");
+
+#if ENABLE_LED_BASIC
 			LED_SetDimmerIfChanged(100);
 			if (data[9] == 4) {
 				LED_SetFinalRGBW(r, g, b, data[13]);
@@ -143,6 +153,7 @@ void DDP_Parse(byte *data, int len) {
 			else {
 				LED_SetFinalRGB(r, g, b);
 			}
+#endif
 		}
 	}
 }
@@ -177,12 +188,12 @@ void DRV_DDP_RunFrame() {
 		}
 		//addLogAdv(LOG_INFO, LOG_FEATURE_DDP,"Received %i bytes from %s\n",nbytes,inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
 
-		stat_packetsReceived++;
-		stat_bytesReceived += nbytes;
+		stat_ddpPacketsReceived++;
+		stat_ddpBytesReceived += nbytes;
 
 		DDP_Parse((byte*)g_ddp_buffer, nbytes);
 
-		if (stat_packetsReceived % 10 == 0) {
+		if (stat_ddpPacketsReceived % 10 == 0) {
 			rtos_delay_milliseconds(5);
 		}
 	}
@@ -194,9 +205,12 @@ void DRV_DDP_Shutdown()
 		g_ddp_socket_receive = -1;
 	}
 }
-void DRV_DDP_AppendInformationToHTTPIndexPage(http_request_t* request)
+void DRV_DDP_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
-	hprintf255(request, "<h2>DDP received: %i packets, %i bytes</h2>", stat_packetsReceived, stat_bytesReceived);
+	if (bPreState){
+		return;
+	}
+	hprintf255(request, "<h2>DDP received: %i packets, %i bytes</h2>", stat_ddpPacketsReceived, stat_ddpBytesReceived);
 }
 void DRV_DDP_Init()
 {

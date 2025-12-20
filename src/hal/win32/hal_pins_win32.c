@@ -38,6 +38,9 @@ static int adcToGpio[] = {
 };
 static int c_adcToGpio = sizeof(adcToGpio)/sizeof(adcToGpio[0]);
 
+int HAL_PIN_Find(const char *name) {
+	return atoi(name); 
+}
 
 static int gpioToAdc(int gpio) {
 	int i;
@@ -208,7 +211,7 @@ void HAL_PIN_Setup_Output(int index) {
 void HAL_PIN_PWM_Stop(int pinIndex) {
 }
 
-void HAL_PIN_PWM_Start(int index) {
+void HAL_PIN_PWM_Start(int index, int freq) {
 	g_pinModes[index] = SIM_PIN_PWM;
 }
 void HAL_PIN_PWM_Update(int index, float value) {
@@ -222,6 +225,14 @@ void HAL_PIN_PWM_Update(int index, float value) {
 unsigned int HAL_GetGPIOPin(int index) {
 	return index;
 }
+
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function) {
+
+}
+void HAL_DetachInterrupt(int pinIndex) {
+
+}
+
 
 #endif
 

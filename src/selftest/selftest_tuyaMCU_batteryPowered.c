@@ -8,6 +8,9 @@ void Test_TuyaMCU_BatteryPowered_Style1() {
 	SIM_ClearOBK(0);
 	SIM_UART_InitReceiveRingBuffer(1024);
 
+	CMD_ExecuteCommand("logfeature 12 1", 0);
+	CMD_ExecuteCommand("loglevel 6", 0);
+
 	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
 	CMD_ExecuteCommand("startDriver tmSensor", 0);
 

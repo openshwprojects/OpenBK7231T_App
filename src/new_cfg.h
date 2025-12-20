@@ -39,6 +39,7 @@ void CFG_SetMQTTPass(const char *s);
 const char *CFG_GetWebappRoot();
 void CFG_SetLEDRemap(int r, int g, int b, int c, int w);
 void CFG_SetDefaultLEDRemap(int r, int g, int b, int c, int w);
+int CFG_CountLEDRemapChannels();
 int CFG_SetWebappRoot(const char *s);
 void CFG_InitAndLoad();
 //void CFG_ApplyStartChannelValues();
@@ -69,14 +70,14 @@ void CFG_DeviceGroups_SetRecvFlags(int newSendFlags);
 const char *CFG_DeviceGroups_GetName();
 int CFG_DeviceGroups_GetSendFlags();
 int CFG_DeviceGroups_GetRecvFlags();
-void CFG_SetFlags(int first4bytes, int second4bytes);
+void CFG_SetFlags(uint32_t first4bytes, uint32_t second4bytes);
 void CFG_SetFlag(int flag, bool bValue);
 bool CFG_HasFlag(int flag);
 void CFG_SetLoggerFlag(int flag, bool bValue);
 bool CFG_HasLoggerFlag(int flag);
 void CFG_SetMac(char *mac);
 int CFG_GetFlags();
-unsigned long CFG_GetFlags64();
+uint64_t CFG_GetFlags64();
 const char* CFG_GetNTPServer();
 void CFG_SetNTPServer(const char *s);
 // BL0937, BL0942, etc constants
@@ -93,9 +94,20 @@ const char *CFG_GetWebPassword();
 void CFG_SetWebPassword(const char *s);
 
 #if ENABLE_LITTLEFS
-    void CFG_SetLFS_Size(uint32_t value);
-    uint32_t CFG_GetLFS_Size();
+void CFG_SetLFS_Size(uint32_t value);
+uint32_t CFG_GetLFS_Size();
 #endif 
+
+#if MQTT_USE_TLS
+void CFG_SetMQTTUseTls(byte value);
+void CFG_SetMQTTVerifyTlsCert(byte value);
+void CFG_SetMQTTCertFile(const char* s);
+byte CFG_GetMQTTUseTls();
+byte CFG_GetMQTTVerifyTlsCert();
+const char* CFG_GetMQTTCertFile();
+byte CFG_GetDisableWebServer();
+void CFG_SetDisableWebServer(byte value);
+#endif
 
 #endif
 

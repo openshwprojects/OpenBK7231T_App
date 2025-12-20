@@ -486,49 +486,49 @@ typedef enum ioRole_e {
 	//iodetail:{"name":"ADC_Button",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Single ADC with multiple buttons connected.d",
-	//iodetail:"enum":"ADC_Button",
+	//iodetail:"enum":"IOR_ADC_Button",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_ADC_Button,
 	//iodetail:{"name":"GN6932_CLK",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"QQQ",
-	//iodetail:"enum":"GN6932_CLK",
+	//iodetail:"descr":"GN6932 LED Display Driver - Clock pi",
+	//iodetail:"enum":"IOR_GN6932_CLK",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_GN6932_CLK,
 	//iodetail:{"name":"GN6932_DAT",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"QQQ",
-	//iodetail:"enum":"GN6932_DAT",
+	//iodetail:"descr":"GN6932 LED Display Driver - Data pin",
+	//iodetail:"enum":"IOR_GN6932_DAT",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_GN6932_DAT,
 	//iodetail:{"name":"GN6932_STB",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"QQQ",
-	//iodetail:"enum":"GN6932_STB",
+	//iodetail:"descr":"GN6932 LED Display Driver - STB pin (Latch Enable)",
+	//iodetail:"enum":"IOR_GN6932_STB",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_GN6932_STB,
 	//iodetail:{"name":"TM1638_CLK",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"QQQ",
-	//iodetail:"enum":"TM1638_CLK",
+	//iodetail:"descr":"TM1638 8x7 Segment Display - Clock pin",
+	//iodetail:"enum":"IOR_TM1638_CLK",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_TM1638_CLK,
 	//iodetail:{"name":"TM1638_DAT",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"QQQ",
-	//iodetail:"enum":"TM1638_DAT",
+	//iodetail:"descr":"TM1638 8x7 Segment Display - data pin",
+	//iodetail:"enum":"IOR_TM1638_DAT",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_TM1638_DAT,
 	//iodetail:{"name":"TM1638_STB",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"QQQ",
-	//iodetail:"enum":"TM1638_STB",
+	//iodetail:"descr":"TM1638 8x7 Segment Display - STB pin",
+	//iodetail:"enum":"IOR_TM1638_STB",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_TM1638_STB,
@@ -541,25 +541,95 @@ typedef enum ioRole_e {
 	IOR_BAT_Relay_n,
 	//iodetail:{"name":"KP18058_CLK",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"QQQ",
-	//iodetail:"enum":"KP18058_CLK",
+	//iodetail:"descr":"KP18058 LED linear constant current dimming chip with I2C interface - CLK pin",
+	//iodetail:"enum":"IOR_KP18058_CLK",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_KP18058_CLK,
 	//iodetail:{"name":"KP18058_DAT",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"QQQ",
-	//iodetail:"enum":"KP18058_DAT",
+	//iodetail:"descr":"KP18058 LED linear constant current dimming chip with I2C interface - DATA pin",
+	//iodetail:"enum":"IOR_KP18058_DAT",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_KP18058_DAT,
-	//iodetail:{"name":"DS1820",
+	//iodetail:{"name":"DS1820_IO",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"vers simple OneWire Temp sensor DS1820",
-	//iodetail:"enum":"DS1820_IO",
+	//iodetail:"enum":"IOR_DS1820_IO",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_DS1820_IO,
+	//iodetail:{"name":"PWM_ScriptOnly",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"",
+	//iodetail:"enum":"IOR_PWM_ScriptOnly",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_PWM_ScriptOnly,
+	//iodetail:{"name":"PWM_ScriptOnly_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"",
+	//iodetail:"enum":"IOR_PWM_ScriptOnly_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_PWM_ScriptOnly_n,
+	//iodetail:{"name":"Counter_f",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"",
+	//iodetail:"enum":"IOR_Counter_f",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_Counter_f,
+	//iodetail:{"name":"Counter_r",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"",
+	//iodetail:"enum":"IOR_Counter_r",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_Counter_r,
+	//iodetail:{"name":"IRRecv_nPup",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"IRRecv without pull-up",
+	//iodetail:"enum":"IOR_IRRecv_nPup",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_IRRecv_nPup,
+	//iodetail:{"name":"StripState",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"This is an output pin which has current led_enableAll value",
+	//iodetail:"enum":"IOR_StripState",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_StripState,
+	//iodetail:{"name":"StripState_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"This is an output pin which has negation of current led_enableAll value",
+	//iodetail:"enum":"IOR_StripState_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_StripState_n,
+	//iodetail:{"name":"HLW8112_SCSN",
+	//iodetail:"title":"HLW8112 SCSN Pin",
+	//iodetail:"descr":"SCSN pin for HLW8112 SPI energy measuring devices.",
+	//iodetail:"enum":"IOR_HLW8112_SCSN",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":"HLW8112SPI"}
+	IOR_HLW8112_SCSN,
+	//iodetail:{"name":"RCRecv",
+	//iodetail:"title":"RCRecv Pin",
+	//iodetail:"descr":"433MHz RC receiver input (uses internal pull-up).",
+	//iodetail:"enum":"IOR_RCRecv",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":"RC"}
+	IOR_RCRecv,
+	//iodetail:{"name":"RCRecv_nPup",
+	//iodetail:"title":"RCRecv_nPup Pin",
+	//iodetail:"descr":"433MHz RC receiver input without internal pull-up.",
+	//iodetail:"enum":"IOR_RCRecv_nPup",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":"RC"}
+	IOR_RCRecv_nPup,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
@@ -898,8 +968,8 @@ typedef enum channelType_e {
 	ChType_PowerFactor_div100,
 	//chandetail:{"name":"Pressure_div100",
 	//chandetail:"title":"TODO",
-	//chandetail:"descr":".",
-	//chandetail:"enum":"Pressure_div100",
+	//chandetail:"descr":"Pressure in hPa, but divided by 100",
+	//chandetail:"enum":"ChType_Pressure_div100",
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Pressure_div100,
@@ -912,7 +982,7 @@ typedef enum channelType_e {
 	ChType_Temperature_div100,
 	//chandetail:{"name":"LeakageCurrent_div1000",
 	//chandetail:"title":"TODO",
-	//chandetail:"descr":".",
+	//chandetail:"descr":"Leakage current in mA",
 	//chandetail:"enum":"ChType_LeakageCurrent_div1000",
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
@@ -927,7 +997,7 @@ typedef enum channelType_e {
 	//chandetail:{"name":"Motion",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"Motion",
-	//chandetail:"enum":"Motion",
+	//chandetail:"enum":"ChType_Motion",
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Motion,
@@ -976,10 +1046,66 @@ typedef enum channelType_e {
 	//chandetail:{"name":"Motion_n",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"Motion_n",
-	//chandetail:"enum":"Motion_n",
+	//chandetail:"enum":"ChType_Motion_n",
 	//chandetail:"file":"new_pins.h",
 	//chandetail:"driver":""}
 	ChType_Motion_n,
+	//chandetail:{"name":"Frequency_div1000",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI",
+	//chandetail:"enum":"ChType_Frequency_div1000",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Frequency_div1000,
+	//chandetail:{"name":"OpenStopClose",
+	//chandetail:"title":"OpenStopClose",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_OpenStopClose",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_OpenStopClose,
+	//chandetail:{"name":"Percent",
+	//chandetail:"title":"Percent",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_Percent",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Percent,
+	//chandetail:{"name":"StopUpDown",
+	//chandetail:"title":"StopUpDown",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_StopUpDown",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_StopUpDown,
+	//chandetail:{"name":"EnergyImport_kWh_div1000",
+	//chandetail:"title":"EnergyImport_kWh_div1000",
+	//chandetail:"descr":"TODO",
+	//chandetail:"enum":"ChType_EnergyImport_kWh_div1000",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_EnergyImport_kWh_div1000,
+	//chandetail:{"name":"Enum",
+	//chandetail:"title":"Enum",
+	//chandetail:"descr":"This channel type allows creating custom Enum types in combination with SetChannelEnum command. Ideal for defining TuyaMCU enum mappings.",
+	//chandetail:"enum":"ChType_Enum",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Enum,
+	//chandetail:{"name":"ReadOnlyEnum",
+	//chandetail:"title":"ReadOnlyEnum",
+	//chandetail:"descr":"Read Only Enum Channel type for use in combination with SetChannelEnum command. Ideal for defining TuyaMCU enum mappings.",
+	//chandetail:"enum":"ChType_ReadOnlyEnum",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_ReadOnlyEnum,
+	//chandetail:{"name":"Current_div10",
+	//chandetail:"title":"TODO",
+	//chandetail:"descr":"For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI",
+	//chandetail:"enum":"ChType_Current_div10",
+	//chandetail:"file":"new_pins.h",
+	//chandetail:"driver":""}
+	ChType_Current_div10,
 	//chandetail:{"name":"Max",
 	//chandetail:"title":"TODO",
 	//chandetail:"descr":"This is the current total number of available channel types.",
@@ -993,7 +1119,11 @@ typedef enum channelType_e {
 #if PLATFORM_BL602
 #define PLATFORM_GPIO_MAX 24
 #elif PLATFORM_XR809
-#define PLATFORM_GPIO_MAX 13
+#define PLATFORM_GPIO_MAX 24
+#elif PLATFORM_XR806
+#define PLATFORM_GPIO_MAX 27
+#elif PLATFORM_XR872
+#define PLATFORM_GPIO_MAX 36
 #elif PLATFORM_W600
 #define PLATFORM_GPIO_MAX 17
 #elif PLATFORM_W800
@@ -1013,11 +1143,34 @@ typedef enum channelType_e {
 #define PLATFORM_GPIO_MAX 31
 #elif CONFIG_IDF_TARGET_ESP32
 #define PLATFORM_GPIO_MAX 40
+#elif CONFIG_IDF_TARGET_ESP32C5
+#define PLATFORM_GPIO_MAX 29
+#elif CONFIG_IDF_TARGET_ESP32C61
+#define PLATFORM_GPIO_MAX 22
 #else
 #define PLATFORM_GPIO_MAX 0
 #endif
+#elif PLATFORM_ESP8266
+// 2025-11-22 - I added ADC, so bump from 13 to 14
+#define PLATFORM_GPIO_MAX 14
 #elif PLATFORM_TR6260
 #define PLATFORM_GPIO_MAX 25
+#elif PLATFORM_RTL87X0C
+#define PLATFORM_GPIO_MAX 24
+#elif PLATFORM_RTL8710B
+#define PLATFORM_GPIO_MAX 17
+#elif PLATFORM_RTL8710A
+#define PLATFORM_GPIO_MAX 20
+#elif PLATFORM_RTL8720D || PLATFORM_RTL8721DA || PLATFORM_TXW81X
+#define PLATFORM_GPIO_MAX 64
+#elif PLATFORM_RTL8720E
+#define PLATFORM_GPIO_MAX 52
+#elif PLATFORM_ECR6600
+#define PLATFORM_GPIO_MAX 27
+#elif PLATFORM_BK7252 || PLATFORM_BK7252N
+#define PLATFORM_GPIO_MAX 40
+#elif PLATFORM_RDA5981
+#define PLATFORM_GPIO_MAX 29
 #else
 #define PLATFORM_GPIO_MAX 29
 #endif
@@ -1041,13 +1194,16 @@ typedef enum channelType_e {
 #define SPECIAL_CHANNEL_BASECOLOR_COOL	136
 #define SPECIAL_CHANNEL_BASECOLOR_WARM	137
 #define SPECIAL_CHANNEL_BASECOLOR_LAST	137
+#define SPECIAL_CHANNEL_OBK_FREQUENCY	138
 
 // note: real limit here is MAX_RETAIN_CHANNELS
 #define SPECIAL_CHANNEL_FLASHVARS_FIRST	200
 #define SPECIAL_CHANNEL_FLASHVARS_LAST	264
 
 
-#if PLATFORM_W800
+#if PLATFORM_W800 || PLATFORM_BK7252 || PLATFORM_BK7252N || PLATFORM_XR872
+
+#define MAX_PIN_ROLES 48
 
 typedef struct pinsState_s {
 	// All above values are indexed by physical pin index
@@ -1065,6 +1221,8 @@ typedef struct pinsState_s {
 
 #elif PLATFORM_ESPIDF
 
+#define MAX_PIN_ROLES 50
+
 typedef struct pinsState_s
 {
 	// All above values are indexed by physical pin index
@@ -1080,7 +1238,28 @@ typedef struct pinsState_s
 	byte channelTypes[CHANNEL_MAX];
 } pinsState_t;
 
+#elif PLATFORM_RTL8720D || PLATFORM_RTL8721DA || PLATFORM_RTL8720E || PLATFORM_TXW81X
+
+#define MAX_PIN_ROLES 64
+
+typedef struct pinsState_s
+{
+	// All above values are indexed by physical pin index
+	// (so we assume we have maximum of 32 pins)
+	byte roles[64];
+	byte channels[64];
+	// extra channels array - this is needed for
+	// buttons, so button can toggle one relay on single click
+	// and other relay on double click
+	byte channels2[64];
+	// This single field above, is indexed by CHANNEL INDEX
+	// (not by pin index)
+	byte channelTypes[CHANNEL_MAX];
+} pinsState_t;
+
 #else
+
+#define MAX_PIN_ROLES 32
 
 typedef struct pinsState_s {
 	// All above values are indexed by physical pin index
@@ -1096,6 +1275,10 @@ typedef struct pinsState_s {
 	byte channelTypes[CHANNEL_MAX];
 } pinsState_t;
 
+#endif
+
+#if MAX_PIN_ROLES < PLATFORM_GPIO_MAX
+#error "MAX_PIN_ROLES < PLATFORM_GPIO_MAX, undefined behaviour"
 #endif
 
 // bit indexes (not values), so 0 1 2 3 4
@@ -1134,10 +1317,10 @@ typedef struct pinsState_s {
 #define OBK_FLAG_LED_USE_OLD_LINEAR_MODE			32
 #define OBK_FLAG_PUBLISH_MULTIPLIED_VALUES			33
 #define OBK_FLAG_MQTT_HASS_ADD_RELAYS_AS_LIGHTS		34
-#define OBK_FLAG_NOT_PUBLISH_AVAILABILITY			 35
-#define OBK_FLAG_DRV_DISABLE_AUTOSTART              36
-#define OBK_FLAG_WIFI_FAST_CONNECT		            37
-#define OBK_FLAG_POWER_FORCE_ZERO_IF_RELAYS_OPEN    38
+#define OBK_FLAG_NOT_PUBLISH_AVAILABILITY			35
+#define OBK_FLAG_DRV_DISABLE_AUTOSTART				36
+#define OBK_FLAG_WIFI_FAST_CONNECT					37
+#define OBK_FLAG_POWER_FORCE_ZERO_IF_RELAYS_OPEN	38
 #define OBK_FLAG_MQTT_PUBLISH_ALL_CHANNELS			39
 #define OBK_FLAG_MQTT_ENERGY_IN_KWH					40
 #define OBK_FLAG_BUTTON_DISABLE_ALL					41
@@ -1150,8 +1333,9 @@ typedef struct pinsState_s {
 #define OBK_FLAG_POWER_INVERT_AC					48
 #define OBK_FLAG_HTTP_NO_ONOFF_WORDS				49
 #define OBK_FLAG_MQTT_NEVERAPPENDGET				50
+#define OBK_FLAG_WIFI_ENHANCED_FAST_CONNECT			51
 
-#define OBK_TOTAL_FLAGS 51
+#define OBK_TOTAL_FLAGS 52
 
 #define LOGGER_FLAG_MQTT_DEDUPER					1
 #define LOGGER_FLAG_POWER_SAVE						2
@@ -1185,7 +1369,11 @@ enum {
 	CFG_OBK_VOLTAGE = 0,
 	CFG_OBK_CURRENT,
 	CFG_OBK_POWER,
-	CFG_OBK_POWER_MAX
+	CFG_OBK_POWER_MAX,
+	CFG_OBK_CLK,		// HLW8112 clock freq internal or external
+	CFG_OBK_RES_KU,		// HLW8112 voltage channel K
+	CFG_OBK_RES_KIA,	// HLW8112 current A channel K
+	CFG_OBK_RES_KIB,	// HLW8112 current B channel K
 };
 
 typedef struct led_corr_s { // LED gamma correction and calibration data block
@@ -1235,9 +1423,9 @@ typedef struct mainConfig_s {
 	// 0x4
 	int version;
 	// 0x08
-	int genericFlags;
+	uint32_t genericFlags;
 	// 0x0C
-	int genericFlags2;
+	uint32_t genericFlags2;
 	// 0x10
 	unsigned short changeCounter;
 	unsigned short otaCounter;
@@ -1304,10 +1492,12 @@ typedef struct mainConfig_s {
 	// offset 0x000004BC
 	unsigned long LFS_Size; // szie of LFS volume.  it's aligned against the end of OTA
 	int loggerFlags;
-#if PLATFORM_W800
+#if PLATFORM_W800 || PLATFORM_BK7252 || PLATFORM_BK7252N || PLATFORM_XR872
 	byte unusedSectorAB[51];
 #elif PLATFORM_ESPIDF
 	byte unusedSectorAB[43];
+#elif PLATFORM_RTL8720D || PLATFORM_RTL8721DA || PLATFORM_RTL8720E || PLATFORM_TXW81X
+	byte unusedSectorAB;
 #else    
 	byte unusedSectorAB[99];
 #endif    
@@ -1343,9 +1533,23 @@ typedef struct mainConfig_s {
 	// offset 0x00000C84 (3204 decimal)
 	char webPassword[33];
 	// offset 0x00000CA5 (3237 decimal)
-	char unused[347];
+	byte mqtt_use_tls;
+	// offset 0x00000CA6 (3238 decimal)
+	byte mqtt_verify_tls_cert;
+	// offset 0x00000CA7 (3239 decimal)
+	char mqtt_cert_file[20];
+	// offset 0x00000CBB (3259 decimal)
+	byte disable_web_server;
+	// offset 0x00000CBC (3260 decimal)
+#if PLATFORM_BEKEN
+	obkFastConnectData_t fcdata;
+	// offset 0x00000D0C (3340 decimal)
+	char unused[244];
+#else
+	char unused[324];
 #endif
-} mainConfig_t; 
+#endif
+} mainConfig_t;
 
 // one sector is 4096 so it we still have some expand possibility
 #define MAGIC_CONFIG_SIZE_V3		2016
@@ -1387,6 +1591,7 @@ bool CHANNEL_Check(int ch);
 void PIN_SetGenericDoubleClickCallback(void (*cb)(int pinIndex));
 void CHANNEL_ClearAllChannels();
 // CHANNEL_SET_FLAG_*
+void CHANNEL_Set_Ex(int ch, int iVal, int iFlags, int ausemovingaverage);
 void CHANNEL_Set(int ch, int iVal, int iFlags);
 void CHANNEL_SetSmart(int ch, float fVal, int iFlags);
 void CHANNEL_Set_FloatPWM(int ch, float fVal, int iFlags);
@@ -1401,6 +1606,14 @@ bool CHANNEL_IsPowerRelayChannel(int ch);
 // See: enum channelType_t
 void CHANNEL_SetType(int ch, int type);
 int CHANNEL_GetType(int ch);
+bool CHANNEL_IsHumidity(int type);
+bool CHANNEL_IsTemperature(int type);
+bool CHANNEL_IsPressure(int type);
+bool CHANNEL_GetGenericOfType(float *out, bool(*checker)(int type));
+bool CHANNEL_GetGenericHumidity(float *out);
+bool CHANNEL_GetGenericTemperature(float *out);
+bool CHANNEL_GetGenericPressure(float *out);
+void CHANNEL_SetFirstChannelByTypeEx(int requiredType, int newVal, int ausemovingaverage);
 void CHANNEL_SetFirstChannelByType(int requiredType, int newVal);
 // CHANNEL_SET_FLAG_*
 void CHANNEL_SetAll(int iVal, int iFlags);
@@ -1410,9 +1623,13 @@ int CHANNEL_HasChannelPinWithRoleOrRole(int ch, int iorType, int iorType2);
 bool CHANNEL_IsInUse(int ch);
 void Channel_SaveInFlashIfNeeded(int ch);
 int CHANNEL_FindMaxValueForChannel(int ch);
+int CHANNEL_FindIndexForType(int requiredType); 
+int CHANNEL_FindIndexForPinType(int requiredType);
+int CHANNEL_FindIndexForPinType2(int requiredType, int requiredType2);
 // cmd_channels.c
 bool CHANNEL_HasLabel(int ch);
 const char* CHANNEL_GetLabel(int ch);
+void CHANNEL_SetLabel(int ch, const char *s, int bHideTogglePrefix);
 bool CHANNEL_ShouldAddTogglePrefixToUI(int ch);
 bool CHANNEL_HasNeverPublishFlag(int ch);
 //ledRemap_t *CFG_GetLEDRemap();
@@ -1422,12 +1639,13 @@ int h_isChannelPWM(int tg_ch);
 int h_isChannelRelay(int tg_ch);
 int h_isChannelDigitalInput(int tg_ch);
 
+int CHANNEL_ParseChannelType(const char* s);
 const char *ChannelType_GetTitle(int type);
 const char *ChannelType_GetUnit(int type);
 int ChannelType_GetDivider(int type);
 int ChannelType_GetDecimalPlaces(int type);
 
-//int PIN_GetPWMIndexForPinIndex(int pin);
+int PIN_GetPWMIndexForPinIndex(int pin);
 
 int PIN_ParsePinRoleName(const char* name);
 const char* PIN_RoleToString(int role);
@@ -1440,6 +1658,11 @@ extern const char* g_channelTypeNames[];
 #if ALLOW_SSID2
 int FV_GetStartupSSID_StoredValue(int adefault);
 void FV_UpdateStartupSSIDIfChanged_StoredValue(int assidindex);
+#endif
+
+#ifdef ENABLE_BL_MOVINGAVG
+float XJ_MovingAverage_float(float aprevvalue, float aactvalue);
+int XJ_MovingAverage_int(int aprevvalue, int aactvalue);
 #endif
 
 #endif

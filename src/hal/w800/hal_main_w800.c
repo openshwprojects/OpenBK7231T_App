@@ -8,11 +8,6 @@
 
 #define LOG_FEATURE LOG_FEATURE_MAIN
 
-#if defined(PLATFORM_W800)
-//portTICK_RATE_MS is not defined in portmacro.h for W800. Copying this from W600.
-
-#define portTICK_RATE_MS			( ( portTickType ) 1000 / configTICK_RATE_HZ )
-#endif
 
 #if 0
 
@@ -66,8 +61,27 @@ void user_main(void)
 
 }
 
-#else
+#elif PLATFORM_W800
 
+//extern unsigned int total_mem_size;
+
+void UserMain(void)
+{
+	Main_Init();
+
+	for(;;)
+	{
+		vTaskDelay(1000 / portTICK_PERIOD_MS);
+		Main_OnEverySecond();
+
+		//bk_printf("libc heap remain size: %d\r\n", total_mem_size);
+	}
+	vTaskDelete(NULL);
+}
+
+#else
+__attribute__((weak))
+void _fini(void) {}
 // static void print_rtc()
 // {
 // 	struct tm tblock;

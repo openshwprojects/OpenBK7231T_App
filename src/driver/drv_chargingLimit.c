@@ -54,7 +54,7 @@ void ChargingLimit_Init() {
 
 	//cmddetail:{"name":"chSetupLimit","args":"[limitChannelIndex] [maxAllowedLimitChannelDelta] [timeoutOr-1] [commandToRun]",
 	//cmddetail:"descr":"After executing this command, chargingLimit driver will watch channel for changes and count down timer. When a timer runs our or channel change (from the initial state) is larger than given margin, given command is run",
-	//cmddetail:"fn":"ChargingLimit_SetupCommand);","file":"driver/drv_chargingLimit.c","requires":"",
+	//cmddetail:"fn":"ChargingLimit_SetupCommand","file":"driver/drv_chargingLimit.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("chSetupLimit", ChargingLimit_SetupCommand, NULL);
 }
@@ -91,8 +91,10 @@ void ChargingLimit_OnEverySecond() {
 	}
 }
 
-void ChargingLimit_AppendInformationToHTTPIndexPage(http_request_t* request)
+void ChargingLimit_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
+	if (bPreState)
+		return;
 	const char *rStr;
 	int type;
 

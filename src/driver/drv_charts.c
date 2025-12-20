@@ -8,6 +8,8 @@
 #include "../hal/hal_pins.h"
 #include "../httpserver/new_http.h"
 #include "drv_ntp.h"
+#include "drv_deviceclock.h"
+
 /*
 // Sample 1
 // single variable chart
@@ -509,8 +511,10 @@ void Chart_Display(http_request_t *request, chart_t *s) {
 	poststr(request, "<style onload='cha();'></style>");
 
 }
-void DRV_Charts_AddToHtmlPage_Test(http_request_t *request) {
-
+void DRV_Charts_AddToHtmlPage_Test(http_request_t *request, int bPreState) {
+	if (bPreState) {
+		return;
+	}
 	// chart_create [NumSamples] [NumVariables] [NumAxes]
 	// chart_create 16 3 2
 	chart_t *s = Chart_Create(16, 3, 2);
@@ -557,11 +561,9 @@ void DRV_Charts_AddToHtmlPage_Test(http_request_t *request) {
 	Chart_Free(&s);
 }
 // startDriver Charts
-void DRV_Charts_AddToHtmlPage(http_request_t *request) {
-	if (0) {
-		DRV_Charts_AddToHtmlPage_Test(request);
+void DRV_Charts_AddToHtmlPage(http_request_t *request, int bPreState) {
+	if (bPreState)
 		return;
-	}
 	if (g_chart) {
 		Chart_Display(request, g_chart);
 	}
@@ -638,7 +640,7 @@ static commandResult_t CMD_Chart_AddNow(const void *context, const char *cmd, co
 		float f = Tokenizer_GetArgFloat(i);
 		Chart_SetSample(g_chart, i, f);
 	}
-	Chart_AddTime(g_chart, NTP_GetCurrentTimeWithoutOffset());  // Fix issue #1376 .....was NTP_GetCurrentTime() ... now "WithoutOffset" since NTP drivers timestamp are already offsetted
+	Chart_AddTime(g_chart, TIME_GetCurrentTimeWithoutOffset());  // Fix issue #1376 .....was NTP_GetCurrentTime() ... now "WithoutOffset" since NTP drivers timestamp are already offsetted
 
 	return CMD_RES_OK;
 }
@@ -669,30 +671,31 @@ void DRV_Charts_Init() {
 
 
 
-	//cmddetail:{"name":"chart_setAxis","args":"",
+	//cmddetail:{"name":"chart_setAxis","args":"[axis_index][name][flags][label]",
 	//cmddetail:"descr":"Sets up an axis with a name, flags, and label. Currently flags can be 0 (left axis) or 1 (right axis). See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_charts.c","requires":"",
+	//cmddetail:"fn":"CMD_Chart_SetAxis","file":"driver/drv_charts.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("chart_setAxis", CMD_Chart_SetAxis, NULL);
-	//cmddetail:{"name":"chart_setVar","args":"",
+	//cmddetail:{"name":"chart_setVar","args":"[var_index][title][axis]",
 	//cmddetail:"descr":"Associates a variable with a specific axis. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_charts.c","requires":"",
+	//cmddetail:"fn":"CMD_Chart_SetVar","file":"driver/drv_charts.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("chart_setVar", CMD_Chart_SetVar, NULL);
-	//cmddetail:{"name":"chart_create","args":"",
+	//cmddetail:{"name":"chart_create","args":"[max_samples][num_vars][num_axes]",
 	//cmddetail:"descr":"Creates a chart with a specified number of samples, variables, and axes. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_charts.c","requires":"",
+	//cmddetail:"fn":"CMD_Chart_Create","file":"driver/drv_charts.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("chart_create", CMD_Chart_Create, NULL);
-	//cmddetail:{"name":"chart_addNow","args":"",
+	//cmddetail:{"name":"chart_addNow","args":"[val1][val2]...[valN]",
 	//cmddetail:"descr":"Adds data to the chart using the current NTP time. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_charts.c","requires":"",
+	//cmddetail:"fn":"CMD_Chart_AddNow","file":"driver/drv_charts.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("chart_addNow", CMD_Chart_AddNow, NULL);
-	//cmddetail:{"name":"chart_add","args":"",
+	//cmddetail:{"name":"chart_add","args":"[ntp_time][val1][val2]...[valN]",
 	//cmddetail:"descr":"Adds data to the chart with specified variables at a specific NTP time. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_charts.c","requires":"",
+	//cmddetail:"fn":"CMD_Chart_Add","file":"driver/drv_charts.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("chart_add", CMD_Chart_Add, NULL);
+
 }
 

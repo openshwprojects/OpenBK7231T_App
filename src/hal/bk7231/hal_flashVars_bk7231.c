@@ -11,7 +11,8 @@
 */
 
 #ifndef PLATFORM_XR809
-
+#ifdef PLATFORM_BEKEN_NEW
+#endif
 #include "include.h"
 #include "mem_pub.h"
 #include "drv_model_pub.h"
@@ -107,7 +108,7 @@ int flash_vars_init() {
 		//ADDLOG_DEBUG(LOG_FEATURE_CFG, "got part info");
 		debug_delay(200);
 
-		os_memset(&flash_vars, 0, sizeof(flash_vars));
+		memset(&flash_vars, 0, sizeof(flash_vars));
 		flash_vars.len = sizeof(flash_vars);
 
 		//ADDLOG_DEBUG(LOG_FEATURE_CFG, "cleared structure");
@@ -149,7 +150,7 @@ static int flash_vars_valid() {
 	debug_delay(200);
 
 #ifdef TEST_MODE
-	os_memcpy(&tmp, &test_flash_area[start_addr - flash_vars_start], sizeof(tmp));
+	memcpy(&tmp, &test_flash_area[start_addr - flash_vars_start], sizeof(tmp));
 #else
 	GLOBAL_INT_DISABLE();
 	ddev_read(flash_hdl, (char*)&tmp, sizeof(tmp), start_addr);
@@ -203,7 +204,7 @@ static int flash_vars_write_magic() {
 		return -1;
 	}
 #ifdef TEST_MODE
-	os_memcpy(&test_flash_area[start_addr - flash_vars_start], &tmp, sizeof(tmp));
+	memcpy(&test_flash_area[start_addr - flash_vars_start], &tmp, sizeof(tmp));
 #else
 	bk_flash_enable_security(FLASH_PROTECT_NONE);
 
@@ -257,7 +258,7 @@ int flash_vars_read(FLASH_VARS_STRUCTURE* data) {
 	}
 	else {
 		ADDLOG_ERROR(LOG_FEATURE_CFG, "flash_vars_validity error");
-		os_memset(data, 0, sizeof(*data));
+		memset(data, 0, sizeof(*data));
 		data->len = sizeof(*data);
 		debug_delay(200);
 		return -1;
@@ -274,7 +275,7 @@ int flash_vars_read(FLASH_VARS_STRUCTURE* data) {
 	do {
 		start_addr -= sizeof(tmp);
 #ifdef TEST_MODE
-		os_memcpy(&tmp, &test_flash_area[start_addr - flash_vars_start], sizeof(tmp));
+		memcpy(&tmp, &test_flash_area[start_addr - flash_vars_start], sizeof(tmp));
 #else
 		GLOBAL_INT_DISABLE();
 		ddev_read(flash_hdl, (char*)&tmp, sizeof(tmp), start_addr);
@@ -292,7 +293,7 @@ int flash_vars_read(FLASH_VARS_STRUCTURE* data) {
 	if (tmp == 0xffffffff) {
 		// no data found, all erased
 		// clear result.
-		os_memset(data, 0, sizeof(*data));
+		memset(data, 0, sizeof(*data));
 		// set the len to the latest revision's len
 		data->len = sizeof(*data);
 #ifndef TEST_MODE
@@ -325,10 +326,10 @@ int flash_vars_read(FLASH_VARS_STRUCTURE* data) {
 		}
 		else {
 			// clear result.
-			os_memset(data, 0, sizeof(*data));
+			memset(data, 0, sizeof(*data));
 			// read the DATA portion into the structure
 #ifdef TEST_MODE
-			os_memcpy(data, &test_flash_area[start_addr - flash_vars_start], len - 1);
+			memcpy(data, &test_flash_area[start_addr - flash_vars_start], len - 1);
 #else
 			GLOBAL_INT_DISABLE();
 			ddev_read(flash_hdl, (char*)data, len - 1, start_addr);
@@ -420,7 +421,7 @@ int _flash_vars_write(void* data, unsigned int off_set, unsigned int size) {
 	}
 
 #ifdef TEST_MODE
-	os_memcpy(&test_flash_area[start_addr - flash_vars_start], data, size);
+	memcpy(&test_flash_area[start_addr - flash_vars_start], data, size);
 #else
 	GLOBAL_INT_DISABLE();
 	ddev_write(flash_hdl, data, size, start_addr);
@@ -477,7 +478,7 @@ int flash_vars_erase(unsigned int off_set, unsigned int size) {
 		}
 		ADDLOG_DEBUG(LOG_FEATURE_CFG, "flash vars erase block at addr 0x%X", param);
 #ifdef TEST_MODE
-		os_memset(&test_flash_area[param - flash_vars_start], 0xff, 0x1000);
+		memset(&test_flash_area[param - flash_vars_start], 0xff, 0x1000);
 #else
 		GLOBAL_INT_DISABLE();
 		ddev_control(flash_hdl, CMD_FLASH_ERASE_SECTOR, (void*)&param);
@@ -695,6 +696,42 @@ float HAL_FlashVars_GetEnergyExport()
 	memcpy(&f, &flash_vars.savedValues[MAX_RETAIN_CHANNELS - 2], sizeof(float));
 	return f;
 }
+
+#ifdef ENABLE_DRIVER_HLW8112SPI
+void HAL_FlashVars_SaveEnergy(ENERGY_DATA** data, int channel_count)
+{
+#ifndef DISABLE_FLASH_VARS_VARS
+	FLASH_VARS_STRUCTURE tmp;
+	if (data != NULL)
+	{
+		uintptr_t base =  (uintptr_t) &flash_vars.emetering;
+		for(int i =0 ; i < channel_count; i++){
+			int offset =( i * sizeof(ENERGY_DATA));
+			uintptr_t flash_addr = base + offset ;
+			memcpy((void *)flash_addr, data[i], sizeof(ENERGY_DATA));
+		}
+		flash_vars_write();
+		flash_vars_read(&tmp);
+	}
+#endif
+}
+void HAL_FlashVars_GetEnergy(ENERGY_DATA* data, ENERGY_CHANNEL channel) 
+{
+#ifndef DISABLE_FLASH_VARS_VARS
+	if (!flash_vars_initialised)
+	{
+		flash_vars_init();
+	}
+	if (data != NULL)
+	{
+		int offset =((channel) * sizeof(ENERGY_DATA));
+		uintptr_t base =  (uintptr_t) &flash_vars.emetering;
+		uintptr_t flash_addr = base + offset;
+		memcpy(data ,(void *)flash_addr, sizeof(ENERGY_DATA));
+	}
+#endif
+}
+#endif
 
 #endif
 

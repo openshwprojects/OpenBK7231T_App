@@ -1,10 +1,21 @@
 #ifndef _FLASH_PUB_H
 #define _FLASH_PUB_H
 
+#ifndef LINUX
+
 #include <conio.h>
+#include <BaseTsd.h>
+
+#else
+
+#define UINT8 uint8_t
+#define UINT16 uint16_t
+#define UINT32 uint32_t
+
+#endif
+
 #include <stdio.h>
 #include <stdint.h>
-#include <BaseTsd.h>
 
 #define FLASH_DEV_NAME                ("flash")
 
@@ -67,7 +78,7 @@ extern void flash_exit(void);
 extern UINT8 flash_get_line_mode(void);
 extern void flash_set_line_mode(UINT8 );
 UINT32 flash_read(char *user_buf, UINT32 count, UINT32 address);
-int bekken_hal_flash_read(const uint32_t addr, uint8_t *dst, const uint32_t size);
+int beken_hal_flash_read(const uint32_t addr, uint8_t *dst, const uint32_t size);
 UINT32 flash_write(char *user_buf, UINT32 count, UINT32 address);
 UINT32 flash_ctrl(UINT32 cmd, void *parm);
 

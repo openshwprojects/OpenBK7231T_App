@@ -237,9 +237,150 @@ void Test_Commands_Channels() {
 		CMD_ExecuteCommand("setChannel 1 $rand", 0);
 		printf("Rand - channel 1 is %i\n", CHANNEL_Get(1));
 	}
+	// test for https://www.elektroda.pl/rtvforum/viewtopic.php?p=21382506#21382506
+	CMD_ExecuteCommand("setChannelType 10 ReadOnly", 0);
+	SELFTEST_ASSERT(g_cfg.pins.channelTypes[10] == ChType_ReadOnly);
+	CMD_ExecuteCommand("setChannelLabel 10 \"Set max temp\"", 0);
+	CMD_ExecuteCommand("SetChannel 10 250", 0);
+	SELFTEST_ASSERT_CHANNEL(10, 250);
+	CMD_ExecuteCommand("SetChannel 10 4444", 0);
+	SELFTEST_ASSERT_CHANNEL(10, 4444);
+	CMD_ExecuteCommand("SetChannel 10 -123", 0);
+	SELFTEST_ASSERT_CHANNEL(10, -123);
+
+
+	// clamp test
+	CMD_ExecuteCommand("SetChannel 1 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	// [ChannelIndex][ValueToAdd][ClampMin][ClampMax][bWrapInsteadOfClamp]
+	CMD_ExecuteCommand("addChannel 1 10 0 100 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 10);
+	CMD_ExecuteCommand("addChannel 1 10 0 100 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 20);
+	CMD_ExecuteCommand("addChannel 1 80 0 100 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	CMD_ExecuteCommand("addChannel 1 80 0 100 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	CMD_ExecuteCommand("addChannel 1 80 0 100 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	CMD_ExecuteCommand("addChannel 1 -1 0 100 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 99);
+
+	// wrap test
+	CMD_ExecuteCommand("addChannel 1 1 0 100 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	CMD_ExecuteCommand("addChannel 1 1 0 100 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	CMD_ExecuteCommand("addChannel 1 1 0 100 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	CMD_ExecuteCommand("addChannel 1 1 0 100 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 2);
+	CMD_ExecuteCommand("addChannel 1 -1 0 100 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 1);
+	CMD_ExecuteCommand("addChannel 1 1 0 100 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 2);
+	CMD_ExecuteCommand("addChannel 1 2 0 100 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 4);
+	CMD_ExecuteCommand("addChannel 1 10 0 100 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 14);
+	CMD_ExecuteCommand("addChannel 1 80 0 100 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 94);
+	CMD_ExecuteCommand("addChannel 1 5 0 100 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 99);
+	CMD_ExecuteCommand("addChannel 1 5 0 100 1", 0);
+	// TODO: stop at 100, then go to min?
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+
+	// pingpongtest
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	CMD_ExecuteCommand("addChannel 1 25 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 25);
+	CMD_ExecuteCommand("addChannel 1 25 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 50);
+	CMD_ExecuteCommand("addChannel 1 25 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 75);
+	CMD_ExecuteCommand("addChannel 1 25 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	CMD_ExecuteCommand("addChannel 1 25 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 75);
+	CMD_ExecuteCommand("addChannel 1 25 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 50);
+	CMD_ExecuteCommand("addChannel 1 25 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 25);
+	CMD_ExecuteCommand("addChannel 1 25 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	CMD_ExecuteCommand("addChannel 1 25 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 25);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 49);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 73);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 97);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	// SPECIAL - STOP AT 100
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 76);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 52);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 28);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 4);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 24);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 48);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 72);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 96);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 76);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 52);
+	// revert dir
+	CMD_ExecuteCommand("addChannel 1 0 0 100 3", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 52);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 76);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 76);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 52);
+	CMD_ExecuteCommand("addChannel 1 24 0 100 2", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 28);
 
 	// cause error
 	//SELFTEST_ASSERT_CHANNEL(3, 666);
+
+
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	float hum, temp;
+	SELFTEST_ASSERT(false == CHANNEL_GetGenericHumidity(&hum));
+
+	CMD_ExecuteCommand("setChannelType 5 Humidity", 0);
+	CMD_ExecuteCommand("setChannel 5 88", 0);
+	SELFTEST_ASSERT(true == CHANNEL_GetGenericHumidity(&hum));
+	SELFTEST_ASSERT_FLOATCOMPARE(hum, 88.0f);
+	SELFTEST_ASSERT(false == CHANNEL_GetGenericTemperature(&temp));
+	CMD_ExecuteCommand("setChannelType 5 Temperature_div10", 0);
+	SELFTEST_ASSERT(false == CHANNEL_GetGenericHumidity(&hum));
+	SELFTEST_ASSERT(true == CHANNEL_GetGenericTemperature(&temp));
+	SELFTEST_ASSERT_FLOATCOMPARE(temp, 8.80f);
+	CMD_ExecuteCommand("setChannelType 5 Temperature", 0);
+	SELFTEST_ASSERT(true == CHANNEL_GetGenericTemperature(&temp));
+	SELFTEST_ASSERT_FLOATCOMPARE(temp, 88.0f);
+
 }
 
 

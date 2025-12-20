@@ -43,7 +43,7 @@ When running the docker image, you may pass the following environment variables 
   * `OpenLN882H`
 
   For example, to build `OpenBK7231T` and `OpenXR809`, the options should be `-env TARGET_SDKS="OpenBK7231T,OpenXR809"`
-* `MAKEFLAGS` - This is the standard `make` environment variable for setting default `make` flags. It is recommended to use this to configure `make` to use multiple cores. for exmaple, to use 8 cores: `--env MAKEFLAGS="-j 8"`
+* `MAKEFLAGS` - This is the standard `make` environment variable for setting default `make` flags. It is recommended to use this to configure `make` to use multiple cores. for example, to use 8 cores: `--env MAKEFLAGS="-j 8"`
 
 ## Building on a Apple Silicon Macs
 The software that the build process uses to compile the binaries is for the `x86` platform and can only be run by `x86` CPUs. Fortunately, this does not mean you cannot build OpenBeken on Apple Silicon (ARM) Macintosh computers. Docker is able to run `x86` docker images on Apple Silicon Macs through the Rosetta emulator. To do this, you need to enable running `x86` images in docker by following [the instructions outlined in this article](https://blog.jaimyn.dev/how-to-build-multi-architecture-docker-images-on-an-m1-mac/) (or [this article](https://levelup.gitconnected.com/docker-on-apple-silicon-mac-how-to-run-x86-containers-with-rosetta-2-4a679913a0d5)).

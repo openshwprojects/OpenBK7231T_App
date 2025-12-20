@@ -10,6 +10,10 @@
 // One ping for "ping watchdog", second ran from console by user, etc etc
 //
 
+#include "obk_config.h"
+
+#if ENABLE_PING_WATCHDOG
+
 #include "lwip/mem.h"
 #include "lwip/raw.h"
 #include "lwip/icmp.h"
@@ -205,3 +209,4 @@ void Main_SetupPingWatchDog(const char *target/*, int delayBetweenPings_Seconds*
 
 }
 
+#endif // ENABLE_PING_WATCHDOG

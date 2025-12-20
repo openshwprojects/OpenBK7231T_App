@@ -239,7 +239,39 @@ void Test_Scripting_WaitingForSmth() {
 	SELFTEST_ASSERT_CHANNEL(21, 789);
 	SELFTEST_ASSERT_INTEGER(CMD_GetCountActiveScriptThreads(), 0);
 }
+void Test_Scripting_ClickEventAndBacklog() {
+	// reset whole device
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("lfs_format", 0);
+	CMD_ExecuteCommand("addEventHandler OnClick 8 backlog setChannel 1 0; addRepeatingEvent 0.5 1 setChannel 1 1", 0);
+	for (int tr = 0; tr < 3; tr++)
+	{
+		CMD_ExecuteCommand("setChannel 1 1", 0);
+		SELFTEST_ASSERT_CHANNEL(1, 1);
+		// simuulate click
+		EventHandlers_FireEvent(CMD_EVENT_PIN_ONCLICK, 8);
+		SELFTEST_ASSERT_CHANNEL(1, 0);
+		Sim_RunMiliseconds(250, false);
+		SELFTEST_ASSERT_CHANNEL(1, 0);
+		Sim_RunMiliseconds(100, false);
+		// 350 mark
+		SELFTEST_ASSERT_CHANNEL(1, 0);
+		Sim_RunMiliseconds(100, false);
+		// 450 mark
+		SELFTEST_ASSERT_CHANNEL(1, 0);
+		// now will trigger on
+		Sim_RunMiliseconds(200, false);
+		// 650 mark
+		SELFTEST_ASSERT_CHANNEL(1, 1);
+		// will not trigger again to 1
+		CMD_ExecuteCommand("setChannel 1 0", 0);
+		for (int i = 0; i < 5; i++) {
+			Sim_RunMiliseconds(100, false);
+			SELFTEST_ASSERT_CHANNEL(1, 0);
+		}
+	}
 
+}
 void Test_Scripting() {
 	Test_Scripting_Loop1();
 	Test_Scripting_Loop2();
@@ -247,6 +279,7 @@ void Test_Scripting() {
 	Test_Scripting_NestedLoop();
 	Test_Scripting_StartScript();
 	Test_Scripting_WaitingForSmth();
+	Test_Scripting_ClickEventAndBacklog();
 }
 
 #endif

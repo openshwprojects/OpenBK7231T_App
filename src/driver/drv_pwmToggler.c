@@ -96,16 +96,20 @@ static float g_current[MAX_ONOFF_SLOTS];
 int parsePowerArgument(const char *s);
 
 void publish_enableState(int index) {
+#if ENABLE_MQTT 
 	char topic[32];
 	snprintf(topic, sizeof(topic), "toggler_enable%i", index);
 
 	MQTT_PublishMain_StringInt(topic, g_enabled[index], 0);
+#endif
 }
 void publish_value(int index) {
+#if ENABLE_MQTT 
 	char topic[32];
 	snprintf(topic, sizeof(topic), "toggler_set%i", index);
 
 	MQTT_PublishMain_StringInt(topic, g_values[index], 0);
+#endif
 }
 void setTargetChannel(int index) {
 
@@ -351,7 +355,9 @@ void DRV_Toggler_QuickTick() {
 		}
 	}
 }
-void DRV_Toggler_AppendInformationToHTTPIndexPage(http_request_t* request) {
+void DRV_Toggler_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState) {
+	if (bPreState)
+		return;
 	int i;
 	hprintf255(request, "<h4>Toggler: ");
 	int cnt = 0;

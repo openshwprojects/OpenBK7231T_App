@@ -6,3 +6,4 @@
 //#define BEKEN_PIN_GPI_INTERRUPTS
 
 extern unsigned int g_deltaTimeMS;
+extern unsigned int g_timeMs;

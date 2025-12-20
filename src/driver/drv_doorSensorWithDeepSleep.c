@@ -16,7 +16,7 @@
 #include "../httpserver/new_http.h"
 #include "../hal/hal_pins.h"
 #include "../hal/hal_adc.h"
-#include "../ota/ota.h"
+#include "../hal/hal_ota.h"
 
 static int g_noChangeTimePassed = 0; // time without change. Every event in any of the doorsensor channels resets it.
 static int g_emergencyTimeWithNoConnection = 0; // time without connection to MQTT. Extends the interval till Deep Sleep until connection is established or EMERGENCY_TIME_TO_SLEEP_WITHOUT_MQTT
@@ -67,7 +67,7 @@ void DoorDeepSleep_Init() {
 
 	//cmddetail:{"name":"DSTime","args":"[timeSeconds][optionalAutoWakeUpTimeSeconds]",
 	//cmddetail:"descr":"DoorSensor driver configuration command. Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival. You can also use this to extend current awake time (at runtime) with syntax: 'DSTime +10', this will make device stay awake 10 seconds longer. You can also restart current value of awake counter by 'DSTime clear', this will make counter go from 0 again.",
-	//cmddetail:"fn":"DoorDeepSleep_SetTime","file":"drv/drv_doorSensorWithDeepSleep.c","requires":"",
+	//cmddetail:"fn":"DoorDeepSleep_SetTime","file":"driver/drv_doorSensorWithDeepSleep.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("DSTime", DoorDeepSleep_SetTime, NULL);
 }
@@ -98,9 +98,11 @@ void DoorDeepSleep_QueueNewEvents() {
 			if (curr_value != g_lastEventState) {
 				g_lastEventState = curr_value;
 				sprintf(sValue, "%i", curr_value); // get the value of the channel
+#if ENABLE_MQTT
 				MQTT_QueuePublish(CFG_GetMQTTClientId(), sChannel, sValue, 0); // queue the publishing
 				// Current state (or state change) will be queued and published when device establishes 
 				// the connection to WiFi and MQTT Broker (300 seconds by default for that).  
+#endif
 			}
 		}
 	}
@@ -108,18 +110,16 @@ void DoorDeepSleep_QueueNewEvents() {
 
 void DoorDeepSleep_OnEverySecond() {
 
-#if PLATFORM_BK7231N || PLATFORM_BK7231T
-	if (ota_progress() >= 0) {
-#else
-	if (false) {
-#endif
+	if (OTA_GetProgress() >= 0) {
 		// update active
 		g_noChangeTimePassed = 0;
 		g_emergencyTimeWithNoConnection = 0;
 	} else if (Main_HasMQTTConnected() && Main_HasWiFiConnected()) { // executes every second when connection is established
 			
 			DoorDeepSleep_QueueNewEvents();
+#if ENABLE_MQTT
 			PublishQueuedItems(); // publish those items that were queued when device was offline
+#endif
 			
 			g_noChangeTimePassed++;
 			if (g_noChangeTimePassed >= setting_timeRequiredUntilDeepSleep) {
@@ -147,8 +147,11 @@ void DoorDeepSleep_StopDriver() {
 
 }
 
-void DoorDeepSleep_AppendInformationToHTTPIndexPage(http_request_t* request)
+void DoorDeepSleep_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
+	if (bPreState){
+		return;
+	}
 	int untilSleep;
 
 	if (Main_HasMQTTConnected()) {

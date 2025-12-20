@@ -221,22 +221,22 @@ void SGP_Init() {
 
 	//cmddetail:{"name":"SGP_cycle","args":"[int]",
 	//cmddetail:"descr":"change cycle of measurement by default every 10 seconds 0 to deactivate",
-	//cmddetail:"fn":"SGP_cycle","file":"drv/drv_sgp.c","requires":"",
+	//cmddetail:"fn":"SGP_cycle","file":"driver/drv_sgp.c","requires":"",
 	//cmddetail:"examples":"SGP_Cycle 60"}
 	CMD_RegisterCommand("SGP_cycle", SGP_cycle, NULL);
 	//cmddetail:{"name":"SGP_GetVersion","args":"",
 	//cmddetail:"descr":"SGP : get version",
-	//cmddetail:"fn":"SGP_GetVersion","file":"drv/drv_sgp.c","requires":"",
+	//cmddetail:"fn":"SGP_GetVersioncmd","file":"driver/drv_sgp.c","requires":"",
 	//cmddetail:"examples":"SGP_GetVersion"}
 	CMD_RegisterCommand("SGP_GetVersion", SGP_GetVersioncmd, NULL);
 	//cmddetail:{"name":"SGP_GetBaseline","args":"",
 	//cmddetail:"descr":"SGP Get baseline",
-	//cmddetail:"fn":"SGP_GetBaseline","file":"drv/drv_sgp.c","requires":"",
+	//cmddetail:"fn":"SGP_GetBaselinecmd","file":"driver/drv_sgp.c","requires":"",
 	//cmddetail:"examples":"SGP_GetBaseline"}
 	CMD_RegisterCommand("SGP_GetBaseline", SGP_GetBaselinecmd, NULL);
 	//cmddetail:{"name":"SGP_SoftReset","args":"",
 	//cmddetail:"descr":"SGP i2C soft reset",
-	//cmddetail:"fn":"SGP_SoftReset","file":"drv/drv_sgp.c","requires":"",
+	//cmddetail:"fn":"SGP_SoftResetcmd","file":"driver/drv_sgp.c","requires":"",
 	//cmddetail:"examples":"SGP_SoftReset"}
 	CMD_RegisterCommand("SGP_SoftReset", SGP_SoftResetcmd, NULL);
 }
@@ -253,8 +253,10 @@ void SGP_OnEverySecond()
 	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_SGP : Measurement will run in %i cycle", g_sgpcycle);
 }
 
-void SGP_AppendInformationToHTTPIndexPage(http_request_t* request)
+void SGP_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
+	if(bPreState)
+		return;
 
 	hprintf255(request, "<h2>SGP CO2=%.1f ppm, TVoc=%.0f ppb</h2>", g_co2, g_tvoc);
 	if (channel_co2 == channel_tvoc) {

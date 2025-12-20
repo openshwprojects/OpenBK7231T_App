@@ -11,9 +11,6 @@ LED_Map 0 1 3 2 4
 
 */
 
-#if PLATFORM_BK7231N || WINDOWS
-
-
 #include "../new_cfg.h"
 #include "../new_common.h"
 #include "../new_pins.h"
@@ -24,18 +21,16 @@ LED_Map 0 1 3 2 4
 #include "../logging/logging.h"
 #include "../mqtt/new_mqtt.h"
 
+#if ENABLE_DRIVER_SM15155E
+
 #include "drv_spiLED.h"
 #include "drv_local.h"
-
-
-
-
 
 void SM15155E_Write(float *rgbcw) {
 	byte packet[16];
 
 	int i;
-	unsigned short *cur_col_16 = (unsigned short)&packet[0];
+	unsigned short *cur_col_16 = (unsigned short*)&packet[0];
 
 	memset(packet, 0, sizeof(packet));
 
@@ -57,13 +52,15 @@ void SM15155E_Write(float *rgbcw) {
 
 // startDriver SM15155E
 void SM15155E_Init() {
-	//cmddetail:{"name":"LED_Map","args":"CMD_LEDDriver_Map",
+	//cmddetail:{"name":"LED_Map","args":"[Ch0][Ch1][Ch2][Ch3][Ch4]",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_sm15155e.c","requires":"",
+	//cmddetail:"fn":"CMD_LEDDriver_Map","file":"driver/drv_sm15155e.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("LED_Map", CMD_LEDDriver_Map, NULL);
 
-	SPILED_Init();
+	uint32_t pin = PIN_FindPinIndexForRole(IOR_SM16703P_DIN, 0);
+
+	SPILED_Init(pin);
 
 	// FF00 0000 0000 0000 0000 73 9C E7 1F 00
 	SPILED_InitDMA(15);

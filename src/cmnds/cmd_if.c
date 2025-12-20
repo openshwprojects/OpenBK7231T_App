@@ -7,6 +7,7 @@
 #include "../driver/drv_public.h"
 #include "../driver/drv_battery.h"
 #include "../driver/drv_ntp.h"
+#include "../driver/drv_deviceclock.h"
 #include "../hal/hal_flashVars.h"
 #include <ctype.h> // isspace
 
@@ -189,6 +190,7 @@ float getFlagValue(const char *s) {
 	return CFG_HasFlag(idx);
 }
 
+#if ENABLE_LED_BASIC
 float getLedDimmer(const char *s) {
 	return LED_GetDimmer();
 }
@@ -220,24 +222,28 @@ float getLedSaturation(const char *s) {
 float getLedTemperature(const char *s) {
 	return LED_GetTemperature();
 }
+#endif
 
 float getActiveRepeatingEvents(const char *s) {
 	return RepeatingEvents_GetActiveCount();
 }
+
+#ifdef ENABLE_DRIVER_BATTERY
+float getBatteryVoltage(const char* s)
+{
+	return Battery_lastreading(OBK_BATT_VOLTAGE);
+}
+float getBatteryLevel(const char* s)
+{
+	return Battery_lastreading(OBK_BATT_LEVEL);
+}
+#endif
 
 #ifdef ENABLE_DRIVER_BL0937
 
 float getVoltage(const char *s) {
 	return DRV_GetReading(OBK_VOLTAGE);
 }
-#ifdef ENABLE_DRIVER_BATTERY
-float getBatteryVoltage(const char *s) {
-	return Battery_lastreading(OBK_BATT_VOLTAGE);
-}
-float getBatteryLevel(const char *s) {
-	return Battery_lastreading(OBK_BATT_LEVEL);
-}
-#endif
 
 float getCurrent(const char *s) {
 	return DRV_GetReading(OBK_CURRENT);
@@ -245,6 +251,9 @@ float getCurrent(const char *s) {
 
 float getPower(const char *s) {
 	return DRV_GetReading(OBK_POWER);
+}
+float getFrequency(const char *s) {
+	return DRV_GetReading(OBK_FREQUENCY);
 }
 float getEnergy(const char *s) {
 	return DRV_GetReading(OBK_CONSUMPTION_TOTAL);
@@ -254,12 +263,6 @@ float getYesterday(const char *s) {
 }
 float getToday(const char *s) {
 	return DRV_GetReading(OBK_CONSUMPTION_TODAY);
-}
-
-
-
-float getNTPOn(const char *s) {
-	return NTP_IsTimeSynced();
 }
 
 #endif
@@ -278,34 +281,47 @@ float getUpTime(const char *s) {
 	return g_secondsElapsed;
 }
 float getWeekDay(const char *s) {
-	return NTP_GetWeekDay();
+	return TIME_GetWeekDay();
 }
 float getMinute(const char *s) {
-	return NTP_GetMinute();
+	return TIME_GetMinute();
 }
 float getHour(const char *s) {
-	return NTP_GetHour();
+	return TIME_GetHour();
 }
 float getSecond(const char *s) {
-	return NTP_GetSecond();
+	return TIME_GetSecond();
 }
 float getYear(const char *s) {
-	return NTP_GetYear();
+	return TIME_GetYear();
 }
 float getMonth(const char *s) {
-	return NTP_GetMonth();
+	return TIME_GetMonth();
 }
 float getMDay(const char *s) {
-	return NTP_GetMDay();
+	return TIME_GetMDay();
 }
+#ifdef ENABLE_NTP
 
-#if ENABLE_NTP_SUNRISE_SUNSET
+float getNTPOn(const char *s) {
+	return NTP_IsTimeSynced();
+}
+#endif
+#if ENABLE_TIME_DST
+
+float isDST(const char *s){
+	return Time_IsDST();
+}
+#endif
+
+#if ENABLE_TIME_SUNRISE_SUNSET
+
 
 float getSunrise(const char *s) {
-	return NTP_GetSunrise();
+	return TIME_GetSunrise();
 }
 float getSunset(const char *s) {
-	return NTP_GetSunset();
+	return TIME_GetSunset();
 }
 
 #endif
@@ -357,6 +373,7 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Provides flag access, as above.",
 	//cnstdetail:"requires":""}
 	{"$FLAG*", &getFlagValue},
+#if ENABLE_LED_BASIC
 	//cnstdetail:{"name":"$led_dimmer",
 	//cnstdetail:"title":"$led_dimmer",
 	//cnstdetail:"descr":"Current value of LED dimmer, 0-100 range",
@@ -397,6 +414,7 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current LED temperature value",
 	//cnstdetail:"requires":""}
 	{"$led_temperature", &getLedTemperature},
+#endif
 	//cnstdetail:{"name":"$activeRepeatingEvents",
 	//cnstdetail:"title":"$activeRepeatingEvents",
 	//cnstdetail:"descr":"Current number of active repeating events",
@@ -423,76 +441,88 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current value of power from energy metering chip",
 	//cnstdetail:"requires":""}
 	{"$power", &getPower},
+	//cnstdetail:{"name":"$frequency",
+	//cnstdetail:"title":"$frequency",
+	//cnstdetail:"descr":"Current value of frequency from energy metering chip",
+	//cnstdetail:"requires":""}
+	{"$frequency", &getFrequency},
 	//cnstdetail:{"name":"$energy",
 	//cnstdetail:"title":"$energy",
 	//cnstdetail:"descr":"Current value of energy counter from energy metering chip",
 	//cnstdetail:"requires":""}
 	{"$energy", &getEnergy},
+	//cnstdetail:{"name":"$yesterday",
+	//cnstdetail:"title":"$yesterday",
+	//cnstdetail:"descr":"Yesterdays energy consuption",
+	//cnstdetail:"requires":""}
+	{ "$yesterday", &getYesterday },
+	//cnstdetail:{"name":"$today",
+	//cnstdetail:"title":"$today",
+	//cnstdetail:"descr":"Todays energy consuption",
+	//cnstdetail:"requires":""}
+	{ "$today", &getToday },
+#endif	//ENABLE_DRIVER_BL0937
 	//cnstdetail:{"name":"$day",
 	//cnstdetail:"title":"$day",
-	//cnstdetail:"descr":"Current weekday from NTP",
+	//cnstdetail:"descr":"Current weekday from device clock",
 	//cnstdetail:"requires":""}
-#endif	//ENABLE_DRIVER_BL0937
-#ifdef ENABLE_NTP
 	{"$day", &getWeekDay},
 	//cnstdetail:{"name":"$hour",
 	//cnstdetail:"title":"$hour",
-	//cnstdetail:"descr":"Current hour from NTP",
+	//cnstdetail:"descr":"Current hour from device clock",
 	//cnstdetail:"requires":""}
 	{"$hour", &getHour},
 	//cnstdetail:{"name":"$minute",
 	//cnstdetail:"title":"$minute",
-	//cnstdetail:"descr":"Current minute from NTP",
+	//cnstdetail:"descr":"Current minute from device clock",
 	//cnstdetail:"requires":""}
 	{ "$minute", &getMinute },
 	//cnstdetail:{"name":"$second",
 	//cnstdetail:"title":"$second",
-	//cnstdetail:"descr":"Current second from NTP",
+	//cnstdetail:"descr":"Current second from device clock",
 	//cnstdetail:"requires":""}
 	{ "$second", &getSecond },
-	////cnstdetail:{"name":"$mday",
-	////cnstdetail:"title":"$mday",
-	////cnstdetail:"descr":"Current mday from NTP",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$mday",
+	//cnstdetail:"title":"$mday",
+	//cnstdetail:"descr":"Current mday from device clock",
+	//cnstdetail:"requires":""}
 	{ "$mday", &getMDay },
-	////cnstdetail:{"name":"$month",
-	////cnstdetail:"title":"$month",
-	////cnstdetail:"descr":"Current month from NTP",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$month",
+	//cnstdetail:"title":"$month",
+	//cnstdetail:"descr":"Current month from device clock",
+	//cnstdetail:"requires":""}
 	{ "$month", &getMonth },
-	////cnstdetail:{"name":"$year",
-	////cnstdetail:"title":"$year",
-	////cnstdetail:"descr":"Current Year from NTP",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$year",
+	//cnstdetail:"title":"$year",
+	//cnstdetail:"descr":"Current Year from device clock",
+	//cnstdetail:"requires":""}
 	{ "$year", &getYear },
-	////cnstdetail:{"name":"$yesterday",
-	////cnstdetail:"title":"$yesterday",
-	////cnstdetail:"descr":"",
-	////cnstdetail:"requires":""}
-	{ "$yesterday", &getYesterday },
-	////cnstdetail:{"name":"$today",
-	////cnstdetail:"title":"$today",
-	////cnstdetail:"descr":"",
-	////cnstdetail:"requires":""}
-	{ "$today", &getToday },
-#if ENABLE_NTP_SUNRISE_SUNSET
-	////cnstdetail:{"name":"$sunrise",
-	////cnstdetail:"title":"$sunrise",
-	////cnstdetail:"descr":"Next sunrise as a TimerSeconds from midnight",
-	////cnstdetail:"requires":""}
+#if ENABLE_TIME_DST
+	//cnstdetail:{"name":"$isDST",
+	//cnstdetail:"title":"$isDST",
+	//cnstdetail:"descr":"Returns 1 if DST (daylight saving time) is active, otherwise 0",
+	//cnstdetail:"requires":""}
+	{ "$isDST", &isDST },
+#endif
+#if ENABLE_TIME_SUNRISE_SUNSET
+	//cnstdetail:{"name":"$sunrise",
+	//cnstdetail:"title":"$sunrise",
+	//cnstdetail:"descr":"Next sunrise as a TimerSeconds from midnight - will also print time to log",
+	//cnstdetail:"requires":""}
 	{ "$sunrise", &getSunrise },
-	////cnstdetail:{"name":"$sunset",
-	////cnstdetail:"title":"$sunset",
-	////cnstdetail:"descr":"Next sunset as a TimerSeconds from midnight",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$sunset",
+	//cnstdetail:"title":"$sunset",
+	//cnstdetail:"descr":"Next sunset as a TimerSeconds from midnight - will also print time to log",
+	//cnstdetail:"requires":""}
 	{ "$sunset", &getSunset },
 #endif
+#if ENABLE_NTP
 	//cnstdetail:{"name":"$NTPOn",
 	//cnstdetail:"title":"$NTPOn",
 	//cnstdetail:"descr":"Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",
 	//cnstdetail:"requires":""}
 	{ "$NTPOn", &getNTPOn },
-#endif	//ENABLE_NTP
+#endif
 #ifdef ENABLE_DRIVER_BATTERY
 	//cnstdetail:{"name":"$batteryVoltage",
 	//cnstdetail:"title":"$batteryVoltage",
@@ -532,11 +562,13 @@ const constant_t g_constants[] = {
 	//cnstdetail:"requires":""}
 	{ "$rebootReason", &getRebootReason },
 #endif
+#ifndef NO_CHIP_TEMPERATURE
 	//cnstdetail:{"name":"$intTemp",
 	//cnstdetail:"title":"$intTemp",
 	//cnstdetail:"descr":"Internal temperature (of WiFi module sensor)",
 	//cnstdetail:"requires":""}
 	{ "$intTemp", &getInternalTemperature },
+#endif
 };
 
 static int g_totalConstants = sizeof(g_constants) / sizeof(g_constants[0]);
@@ -547,7 +579,7 @@ static int g_totalConstants = sizeof(g_constants) / sizeof(g_constants[0]);
 // Etc etc
 // Returns true if constant matches
 // Returns false if no constants found
-const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
+const char *CMD_ExpandConstantFloat(const char *s, const char *stop, float *out) {
 #if ENABLE_EXPAND_CONSTANT
 	const constant_t *var;
 	int i;
@@ -557,7 +589,7 @@ const char *CMD_ExpandConstant(const char *s, const char *stop, float *out) {
 		const char *ret = strCompareBound(s, var->constantName, stop, bAllowWildCard);
 		if (ret) {
 			*out = var->getValue(s);
-			ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstant: %s", var->name);
+			ADDLOG_IF_MATHEXP_DBG(LOG_FEATURE_EVENT, "CMD_ExpandConstantFloat: %s", var->name);
 			return ret;
 		}
 	}
@@ -576,7 +608,7 @@ byte CMD_ParseOrExpandHexByte(const char **p) {
 		while (*stop && *stop != '$') {
 			stop++;
 		}
-		CMD_ExpandConstant(*p, stop, &fv);
+		CMD_ExpandConstantFloat(*p, stop, &fv);
 		val = fv;
 
 		*p = stop;
@@ -627,12 +659,13 @@ void SIM_GenerateChannelStatesDesc(char *o, int outLen) {
 		}
 	}
 }
-
+#endif
 const char *CMD_ExpandConstantString(const char *s, const char *stop, char *out, int outLen) {
 	int idx;
 	const char *ret;
 	char tmp[32];
 
+#if WINDOWS
 	ret = strCompareBound(s, "$autoexec.bat", stop, false);
 	if (ret) {
 		byte* data = LFS_ReadFile("autoexec.bat");
@@ -693,9 +726,27 @@ const char *CMD_ExpandConstantString(const char *s, const char *stop, char *out,
 		SIM_GeneratePowerStateDesc(out, outLen);
 		return ret;
 	}
+#endif
+	ret = strCompareBound(s, "$mqtt_client", stop, false);
+	if (ret) {
+		const char *res = CFG_GetMQTTClientId();
+		strcpy_safe(out, res, outLen);
+		return ret;
+	}
+	ret = strCompareBound(s, "$shortName", stop, false);
+	if (ret) {
+		const char *res = CFG_GetShortDeviceName();
+		strcpy_safe(out, res, outLen);
+		return ret;
+	}
+	ret = strCompareBound(s, "$name", stop, false);
+	if (ret) {
+		const char *res = CFG_GetDeviceName();
+		strcpy_safe(out, res, outLen);
+		return ret;
+	}
 	return false;
 }
-#endif
 
 const char* CMD_ExpandConstantToString(const char* constant, char* out, char* stop)
 {
@@ -707,14 +758,12 @@ const char* CMD_ExpandConstantToString(const char* constant, char* out, char* st
 
 	outLen = (stop - out) - 1;
 
-	after = CMD_ExpandConstant(constant, 0, &value);
-#if WINDOWS
+	after = CMD_ExpandConstantFloat(constant, 0, &value);
 	if(after == 0)
 	{
 		after = CMD_ExpandConstantString(constant, 0, out, outLen);
 		return after;
 	}
-#endif
 	if(after == 0)
 		return 0;
 
@@ -765,6 +814,17 @@ void CMD_ExpandConstantsWithinString(const char *in, char *out, int outLen) {
 	}
 	*out = 0;
 }
+int CMD_CountVarsInString(const char *in) {
+	const char *p = in;
+	int varCount = 0;
+	while (*p) {
+		if (*p == '$') {
+			varCount++;
+		}
+		p++;
+	}
+	return varCount;
+}
 // like a strdup, but will expand constants.
 // Please remember to free the returned string
 char *CMD_ExpandingStrdup(const char *in) {
@@ -773,29 +833,25 @@ char *CMD_ExpandingStrdup(const char *in) {
 	int varCount;
 	int realLen;
 
-	realLen = 0;
-	varCount = 0;
 	// I am not sure which approach should I take
 	// It could be easily done with external buffer, but it would have to be on stack or a global one...
 	// Maybe let's just assume that variables cannot grow string way too big
-	p = in;
-	while (*p) {
-		if (*p == '$') {
-			varCount++;
-		}
-		realLen++;
-		p++;
-	}
-
+	realLen = strlen(in);
+	varCount = CMD_CountVarsInString(in);
+	
 	// not all var names are short, some are long...
 	// but $CH1 is short and could expand to something longer like, idk, 123456?
 	// just to be on safe side....
-	realLen += varCount * 5;
+	realLen += varCount * 10;
 
 	// space for NULL and also space to be sure
 	realLen += 2;
 
 	ret = (char*)malloc(realLen);
+	if (ret == 0) {
+		// malloc failed
+		return ret;
+	}
 	CMD_ExpandConstantsWithinString(in, ret, realLen);
 	return ret;
 }
@@ -913,7 +969,12 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 			c = a / b;
 			break;
 		case OP_MODULO:
-			c = ((int)a) % ((int)b);
+			if (b == 0) {
+				c = 0;
+			}
+			else {
+				c = ((int)a) % ((int)b);
+			}
 			break;
 		default:
 			c = 0;
@@ -924,7 +985,7 @@ float CMD_EvaluateExpression(const char *s, const char *stop) {
 	if (s[0] == '!') {
 		return !CMD_EvaluateExpression(s + 1, stop);
 	}
-	if (CMD_ExpandConstant(s, stop, &c)) {
+	if (CMD_ExpandConstantFloat(s, stop, &c)) {
 		return c;
 	}
 

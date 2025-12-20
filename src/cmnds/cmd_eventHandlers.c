@@ -135,14 +135,6 @@ int EVENT_ParseEventName(const char *s) {
 	}
 	if (!stricmp(s, "noPingTime"))
 		return CMD_EVENT_CHANGE_NOPINGTIME;
-	if (!stricmp(s, "NoMQTTTime"))
-		return CMD_EVENT_CHANGE_NOMQTTTIME;
-	if(!stricmp(s,"voltage"))
-		return CMD_EVENT_CHANGE_VOLTAGE;
-	if(!stricmp(s,"current"))
-		return CMD_EVENT_CHANGE_CURRENT;
-	if(!stricmp(s,"power"))
-		return CMD_EVENT_CHANGE_POWER;
 	if(!stricmp(s,"OnRelease"))
 		return CMD_EVENT_PIN_ONRELEASE;
 	if (!stricmp(s, "OnPress"))
@@ -169,47 +161,81 @@ int EVENT_ParseEventName(const char *s) {
 		return CMD_EVENT_CHANNEL_ONCHANGE;
 	if(!stricmp(s,"OnUART"))
 		return CMD_EVENT_ON_UART;
+#if ENABLE_MQTT
 	if(!stricmp(s,"MQTTState"))
 		return CMD_EVENT_MQTT_STATE;
+	if(!stricmp(s, "NoMQTTTime"))
+		return CMD_EVENT_CHANGE_NOMQTTTIME;
+	if(!stricmp(s, "OnMQTT"))
+		return CMD_EVENT_ON_MQTT;
+#endif
+#if ENABLE_NTP
 	if (!stricmp(s, "NTPState"))
 		return CMD_EVENT_NTP_STATE;
+#endif
+#if ENABLE_LED_BASIC
 	if (!stricmp(s, "LEDState"))
 		return CMD_EVENT_LED_STATE;
 	if (!stricmp(s, "LEDMode"))
 		return CMD_EVENT_LED_MODE;
+#endif
+#if ENABLE_BL_SHARED
+    if(!stricmp(s, "voltage"))
+        return CMD_EVENT_CHANGE_VOLTAGE;
+    if(!stricmp(s, "current"))
+        return CMD_EVENT_CHANGE_CURRENT;
+    if(!stricmp(s, "power"))
+        return CMD_EVENT_CHANGE_POWER;
+    if(!stricmp(s, "frequency"))
+        return CMD_EVENT_CHANGE_FREQUENCY;
     if(!stricmp(s,"energycounter") || !stricmp(s, "energy"))
         return CMD_EVENT_CHANGE_CONSUMPTION_TOTAL;
     if(!stricmp(s,"energycounter_last_hour"))
         return CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR;
+#endif
+#if ENABLE_DRIVER_IRREMOTEESP || ENABLE_DRIVER_IR || ENABLE_DRIVER_IR2 || WINDOWS
     if(!stricmp(s,"IR_RC5"))
-		return CMD_EVENT_IR_RC5;
+        return CMD_EVENT_IR_RC5;
     if(!stricmp(s,"IR_RC6"))
-		return CMD_EVENT_IR_RC6;
+        return CMD_EVENT_IR_RC6;
     if(!stricmp(s,"IR_Samsung"))
-		return CMD_EVENT_IR_SAMSUNG;
+        return CMD_EVENT_IR_SAMSUNG;
     if(!stricmp(s,"IR_PANASONIC"))
-		return CMD_EVENT_IR_PANASONIC;
+        return CMD_EVENT_IR_PANASONIC;
     if(!stricmp(s,"IR_NEC"))
-		return CMD_EVENT_IR_NEC;
+        return CMD_EVENT_IR_NEC;
     if(!stricmp(s,"IR_SAMSUNG_LG"))
-		return CMD_EVENT_IR_SAMSUNG_LG;
+        return CMD_EVENT_IR_SAMSUNG_LG;
     if(!stricmp(s,"IR_SHARP"))
-		return CMD_EVENT_IR_SHARP;
+        return CMD_EVENT_IR_SHARP;
     if(!stricmp(s,"IR_SONY"))
-		return CMD_EVENT_IR_SONY;
-	// WiFi state has single argument: HALWifiStatus_t
-	if (!stricmp(s, "WiFiState"))
-		return CMD_EVENT_WIFI_STATE;
+        return CMD_EVENT_IR_SONY;
+#endif
+#if ENABLE_DRIVER_TUYAMCU
 	if (!stricmp(s, "TuyaMCUParsed"))
 		return CMD_EVENT_TUYAMCU_PARSED;
+	if(!stricmp(s, "OnDP"))
+		return CMD_EVENT_ON_DP;
+	if(!stricmp(s, "MissedHeartbeats"))
+		return CMD_EVENT_MISSEDHEARTBEATS;
+#endif
+	// WiFi state has single argument: HALWifiStatus_t
+	if(!stricmp(s, "WiFiState"))
+		return CMD_EVENT_WIFI_STATE;
 	if (!stricmp(s, "OnADCButton"))
 		return CMD_EVENT_ADC_BUTTON;
 	if (!stricmp(s, "OnCustomDown"))
 		return CMD_EVENT_CUSTOM_DOWN;
 	if (!stricmp(s, "OnCustomUP"))
 		return CMD_EVENT_CUSTOM_UP;
-	if (!stricmp(s, "MissedHeartbeats"))
-		return CMD_EVENT_MISSEDHEARTBEATS;
+	if (!stricmp(s, "OnCMD"))
+		return CMD_EVENT_ON_CMD;
+	if (!stricmp(s, "OnHTTP"))
+		return CMD_EVENT_ON_HTTP;
+	if (!stricmp(s, "OnDiscovery"))
+		return CMD_EVENT_ON_DISCOVERY;
+	if (!stricmp(s, "RC"))
+		return CMD_EVENT_RC;
 	if (isdigit((unsigned char)*s)) {
 		return atoi(s);
 	}
@@ -304,7 +330,7 @@ void EventHandlers_ProcessVariableChange_Integer(byte eventCode, int oldValue, i
 		ev = ev->next;
 	}
 
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_LN882H) 
+#if ENABLE_OBK_SCRIPTING
 	CMD_Script_ProcessWaitersForEvent(eventCode, newValue);
 #endif
 }
@@ -341,23 +367,26 @@ void EventHandlers_AddEventHandler_String(byte eventCode, int type, const char *
 	ev->requiredArgument = 0;
 	ev->requiredArgument2 = 0;
 }
-void EventHandlers_FireEvent3(byte eventCode, int argument, int argument2, int argument3) {
+int EventHandlers_FireEvent3(byte eventCode, int argument, int argument2, int argument3) {
 	struct eventHandler_s *ev;
 
 	ev = g_eventHandlers;
-
+	int ran = 0;
 	while (ev) {
 		if (eventCode == ev->eventCode) {
 			if (argument == ev->requiredArgument && argument2 == ev->requiredArgument2 && argument3 == ev->requiredArgument3) {
 				ADDLOG_INFO(LOG_FEATURE_EVENT, "EventHandlers_FireEvent3: executing command %s", ev->command);
 				CMD_ExecuteCommand(ev->command, COMMAND_FLAG_SOURCE_SCRIPT);
+				ran++;
 			}
 		}
 		ev = ev->next;
 	}
+	return ran;
 }
-void EventHandlers_FireEvent2(byte eventCode, int argument, int argument2) {
+int EventHandlers_FireEvent2(byte eventCode, int argument, int argument2) {
 	struct eventHandler_s *ev;
+	int ret = 0;
 
 	ev = g_eventHandlers;
 
@@ -366,10 +395,29 @@ void EventHandlers_FireEvent2(byte eventCode, int argument, int argument2) {
 			if(argument == ev->requiredArgument && argument2 == ev->requiredArgument2) {
 				ADDLOG_INFO(LOG_FEATURE_EVENT, "EventHandlers_FireEvent2: executing command %s",ev->command);
 				CMD_ExecuteCommand(ev->command, COMMAND_FLAG_SOURCE_SCRIPT);
+				ret++;
 			}
 		}
 		ev = ev->next;
 	}
+	return ret;
+}
+// for simulator only
+const char *EventHandlers_GetHandlerCommand2(byte eventCode, int argument, int argument2) {
+
+	struct eventHandler_s *ev;
+
+	ev = g_eventHandlers;
+
+	while (ev) {
+		if (eventCode == ev->eventCode) {
+			if (argument == ev->requiredArgument && argument2 == ev->requiredArgument2) {
+				return ev->command;
+			}
+		}
+		ev = ev->next;
+	}
+	return NULL;
 }
 
 
@@ -388,7 +436,7 @@ void EventHandlers_FireEvent(byte eventCode, int argument) {
 		ev = ev->next;
 	}
 
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_LN882H)
+#if ENABLE_OBK_SCRIPTING
 	CMD_Script_ProcessWaitersForEvent(eventCode, argument);
 #endif
 }
@@ -574,9 +622,9 @@ void EventHandlers_Init() {
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("AddEventHandler", CMD_AddEventHandler, NULL);
 	//cmddetail:{"name":"AddChangeHandler","args":"[Variable][Relation][Constant][Command]",
-	//cmddetail:"descr":"This can listen to change in channel value (for example channel 0 becoming 100), or for a voltage/current/power change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be 'Power', or 'Current' or 'Voltage'",
+	//cmddetail:"descr":"Trigger based on change in channel value (for example channel 0 becoming 100), or for a voltage/current/power/frequency change for BL0942/BL0937. This supports multiple relations, like ==, !=, >=, < etc. The Variable name for channel is Channel0, Channel2, etc, for BL0XXX it can be 'Power', 'Current', 'Voltage' or 'Frequency'",
 	//cmddetail:"fn":"CMD_AddChangeHandler","file":"cmnds/cmd_eventHandlers.c","requires":"",
-	//cmddetail:"examples":""}
+	//cmddetail:"examples":"Values are compared as integers.  This affects Current (*1000) and Frequency (*100). Example handler where Current is greather than 2Amps:<br/> `AddChangeHandler Current > 2000 SetChannel 1 0`"}
     CMD_RegisterCommand("AddChangeHandler", CMD_AddChangeHandler, NULL);
 	//cmddetail:{"name":"listEventHandlers","args":"",
 	//cmddetail:"descr":"Prints full list of added event handlers",

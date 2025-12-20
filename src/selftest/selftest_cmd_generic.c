@@ -87,6 +87,8 @@ void Test_Events() {
 	SELFTEST_ASSERT(EVENT_ParseEventName("OnADCButton") == CMD_EVENT_ADC_BUTTON);
 	SELFTEST_ASSERT(EVENT_ParseEventName("OnCustomDown") == CMD_EVENT_CUSTOM_DOWN);
 	SELFTEST_ASSERT(EVENT_ParseEventName("OnCustomUP") == CMD_EVENT_CUSTOM_UP);
+	SELFTEST_ASSERT(EVENT_ParseEventName("OnMQTT") == CMD_EVENT_ON_MQTT);
+	SELFTEST_ASSERT(EVENT_ParseEventName("OnDP") == CMD_EVENT_ON_DP);
 
 	// test for numeric strings
 	SELFTEST_ASSERT(EVENT_ParseEventName("123") == 123);
@@ -96,6 +98,36 @@ void Test_Events() {
 	SELFTEST_ASSERT(EVENT_ParseEventName("UnknownEvent") == CMD_EVENT_NONE);
 	SELFTEST_ASSERT(EVENT_ParseEventName("") == CMD_EVENT_NONE);
 	SELFTEST_ASSERT(EVENT_ParseEventName(" ") == CMD_EVENT_NONE);
+
+	CMD_ExecuteCommand("setchannel 20 0", 0);
+	SELFTEST_ASSERT_CHANNEL(20, 0);
+	CMD_ExecuteCommand("addEventHandler2 IR_RC6 0x11 0x23 addChannel 20 1", 0);
+	// FireEvent 3 will call addEventHandler2 
+	// (it assumes that third argument is 'any')
+	// So if we want RC6 events for 0x20 0x20 with ANY repeats (press or hold)
+	// then both press and release calls event
+	EventHandlers_FireEvent3(CMD_EVENT_IR_RC6, 0x11, 0x23, 0);
+	SELFTEST_ASSERT_CHANNEL(20, 1);
+	EventHandlers_FireEvent3(CMD_EVENT_IR_RC6, 0x11, 0x23, 0);
+	SELFTEST_ASSERT_CHANNEL(20, 2);
+	EventHandlers_FireEvent3(CMD_EVENT_IR_RC6, 0x11, 0x23, 0);
+	SELFTEST_ASSERT_CHANNEL(20, 3);
+
+	CMD_ExecuteCommand("setchannel 10 0", 0);
+	SELFTEST_ASSERT_CHANNEL(10, 0);
+	CMD_ExecuteCommand("addEventHandler3 IR_RC6 0x10 0x10 1 addChannel 10 1", 0);
+	EventHandlers_FireEvent3(CMD_EVENT_IR_RC6, 0x10, 0x10, 0);
+	SELFTEST_ASSERT_CHANNEL(10, 0);
+	EventHandlers_FireEvent3(CMD_EVENT_IR_RC6, 0x10, 0x10, 1);
+	SELFTEST_ASSERT_CHANNEL(10, 1);
+	EventHandlers_FireEvent3(CMD_EVENT_IR_RC6, 0x10, 0x10, 1);
+	SELFTEST_ASSERT_CHANNEL(10, 2);
+	EventHandlers_FireEvent3(CMD_EVENT_IR_RC6, 0x10, 0x10, 0);
+	SELFTEST_ASSERT_CHANNEL(10, 2);
+	EventHandlers_FireEvent2(CMD_EVENT_IR_RC6, 0x10, 0x10);
+	SELFTEST_ASSERT_CHANNEL(10, 3);
+	EventHandlers_FireEvent2(CMD_EVENT_IR_RC6, 0x10, 0x10);
+	SELFTEST_ASSERT_CHANNEL(10, 4);
 }
 
 void Test_UART() {
@@ -146,9 +178,63 @@ void Test_UART() {
 	}
 }
 
+void Test_PinMutex() {
+	// reset whole device
+	SIM_ClearOBK(0);
+	CMD_ExecuteCommand("startDriver PinMutex", 0);
+	// setMutex <index> <channel> <delayMs> <pinDown> <pinUp> 
+	CMD_ExecuteCommand("setMutex 0 0 100 10 11", 0);
+
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	Sim_RunMiliseconds(100, false);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	CMD_ExecuteCommand("setChannel 0 1", 0);
+	// from 0 0 to 1 0 set is quick
+	Sim_RunMiliseconds(25, false);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 1);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	CMD_ExecuteCommand("setChannel 0 2", 0);
+	Sim_RunMiliseconds(25, false);
+	// dead time
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	Sim_RunMiliseconds(25, false);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	Sim_RunMiliseconds(25, false);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	Sim_RunMiliseconds(50, false);
+	// set
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 1);
+	CMD_ExecuteCommand("setChannel 0 1", 0);
+	Sim_RunMiliseconds(25, false);
+	// dead time
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	Sim_RunMiliseconds(25, false);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	Sim_RunMiliseconds(25, false);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 0);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	Sim_RunMiliseconds(50, false);
+	// set
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 1);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	Sim_RunMiliseconds(25, false);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(10) == 1);
+	SELFTEST_ASSERT(SIM_GetSimulatedPinValue(11) == 0);
+	
+
+}
 void Test_Commands_Generic() {
 	Test_UART();
 	Test_Events();
+	Test_PinMutex();
 
 	// reset whole device
 	SIM_ClearOBK(0);
@@ -161,6 +247,18 @@ void Test_Commands_Generic() {
 
 	CMD_ExecuteCommand("MqttPassword Secret1", 0);
 	SELFTEST_ASSERT_STRING(CFG_GetMQTTPass(), "Secret1");
+
+	CMD_ExecuteCommand("MqttPassword \"\"", 0);
+	SELFTEST_ASSERT_STRING(CFG_GetMQTTPass(), "");
+
+	CMD_ExecuteCommand("MqttPassword \"Xyz\"", 0);
+	SELFTEST_ASSERT_STRING(CFG_GetMQTTPass(), "Xyz");
+
+	CMD_ExecuteCommand("MqttUser Tester2", 0);
+	SELFTEST_ASSERT_STRING(CFG_GetMQTTUserName(), "Tester2");
+
+	CMD_ExecuteCommand("MqttUser \"\"", 0);
+	SELFTEST_ASSERT_STRING(CFG_GetMQTTUserName(), "");
 
 	CMD_ExecuteCommand("SSID1 TPLink123", 0);
 	SELFTEST_ASSERT_STRING(CFG_GetWiFiSSID(), "TPLink123");
@@ -182,6 +280,52 @@ void Test_Commands_Generic() {
 	CMD_ExecuteCommand("SetChannel 10 2", 0);
 	CMD_ExecuteCommand("Choice $CH10+1 \"SetChannel 12 222\" \"SetChannel 12 333\" \"SetChannel 12 444\" \"SetChannel 12 555\" \"SetChannel 12 666\"", 0);
 	SELFTEST_ASSERT_CHANNEL(12, 555);
+
+
+
+	CMD_ExecuteCommand("Flags 123455", 0);
+	SELFTEST_ASSERT(CFG_GetFlags()== 123455);
+	SELFTEST_ASSERT(CFG_GetFlags64() == 123455);
+	CMD_ExecuteCommand("Flags 444", 0);
+	SELFTEST_ASSERT(CFG_GetFlags() == 444);
+	SELFTEST_ASSERT(CFG_GetFlags64() == 444);
+	//CMD_ExecuteCommand("Flags 8589934592", 0);
+	//SELFTEST_ASSERT(CFG_GetFlags64() == 8589934592);
+
+
+	// https://github.com/openshwprojects/OpenBK7231T_App/issues/1646
+	CMD_ExecuteCommand("addEventHandler2 IR_NEC 0xEF00 0x0 setChannel 12 1", 0);
+	CMD_ExecuteCommand("addEventHandler2 IR_NEC 0xEF00 0x1 setChannel 12 2", 0);
+	CMD_ExecuteCommand("addEventHandler2 IR_NEC 0xEF00 0x10 setChannel 12 3", 0);
+	CMD_ExecuteCommand("addEventHandler2 IR_NEC 0xEF00 0x4 setChannel 12 4", 0);
+	CMD_ExecuteCommand("addEventHandler2 IR_NEC 0xEF00 0x5 setChannel 12 5", 0);
+	CMD_ExecuteCommand("addEventHandler2 IR_NEC 0xEF00 0x6 setChannel 12 6", 0);
+
+	EventHandlers_FireEvent2(CMD_EVENT_IR_NEC, 0xEF00, 0x0);
+	SELFTEST_ASSERT_CHANNEL(12, 1);
+	EventHandlers_FireEvent2(CMD_EVENT_IR_NEC, 0xEF00, 0x1);
+	SELFTEST_ASSERT_CHANNEL(12, 2);
+	EventHandlers_FireEvent2(CMD_EVENT_IR_NEC, 0xEF00, 0x10);
+	SELFTEST_ASSERT_CHANNEL(12, 3);
+	EventHandlers_FireEvent2(CMD_EVENT_IR_NEC, 0xEF00, 0x4);
+	SELFTEST_ASSERT_CHANNEL(12, 4);
+	EventHandlers_FireEvent2(CMD_EVENT_IR_NEC, 0xEF00, 0x5);
+	SELFTEST_ASSERT_CHANNEL(12, 5);
+	EventHandlers_FireEvent2(CMD_EVENT_IR_NEC, 0xEF00, 0x6);
+	SELFTEST_ASSERT_CHANNEL(12, 6);
+
+	EventHandlers_FireEvent3(CMD_EVENT_IR_NEC, 0xEF00, 0x0, 0);
+	SELFTEST_ASSERT_CHANNEL(12, 1);
+	EventHandlers_FireEvent3(CMD_EVENT_IR_NEC, 0xEF00, 0x1, 0);
+	SELFTEST_ASSERT_CHANNEL(12, 2);
+	EventHandlers_FireEvent3(CMD_EVENT_IR_NEC, 0xEF00, 0x10, 0);
+	SELFTEST_ASSERT_CHANNEL(12, 3);
+	EventHandlers_FireEvent3(CMD_EVENT_IR_NEC, 0xEF00, 0x4, 0);
+	SELFTEST_ASSERT_CHANNEL(12, 4);
+	EventHandlers_FireEvent3(CMD_EVENT_IR_NEC, 0xEF00, 0x5, 0);
+	SELFTEST_ASSERT_CHANNEL(12, 5);
+	EventHandlers_FireEvent3(CMD_EVENT_IR_NEC, 0xEF00, 0x6, 0);
+	SELFTEST_ASSERT_CHANNEL(12, 6);
 }
 
 

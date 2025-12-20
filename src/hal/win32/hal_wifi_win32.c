@@ -26,6 +26,16 @@ void HAL_ConnectToWiFi(const char *ssid, const char *psk, obkStaticIP_t *ip)
 	}
 }
 
+void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
+{
+	HAL_ConnectToWiFi(oob_ssid, connect_key, ip);
+}
+
+void HAL_DisableEnhancedFastConnect()
+{
+
+}
+
 void HAL_DisconnectFromWifi()
 {
 
@@ -65,7 +75,14 @@ void HAL_PrintNetworkInfo() {
 int HAL_GetWifiStrength() {
     return -1;
 }
-
+char* HAL_GetWiFiBSSID(char* bssid) {
+	strcpy(bssid, "30:B5:C2:5D:70:72");
+	return bssid;
+};
+uint8_t HAL_GetWiFiChannel(uint8_t *chan) {
+	*chan = 0;
+	return *chan;
+};
 const char *HAL_GetMyIPString() {
 	strcpy(g_ipStr,"127.0.0.1");
 	return g_ipStr;

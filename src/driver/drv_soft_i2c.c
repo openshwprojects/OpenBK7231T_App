@@ -10,7 +10,7 @@
 #include "../httpserver/new_http.h"
 #include "../hal/hal_pins.h"
 
-#ifndef PLATFORM_ESPIDF
+#if !PLATFORM_ESPIDF && !PLATFORM_XR806 && !PLATFORM_XR872 && !PLATFORM_ESP8266 && !PLATFORM_REALTEK_NEW && !PLATFORM_TXW81X
 void usleep(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
 {
 #ifdef WIN32

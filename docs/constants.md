@@ -22,21 +22,24 @@ Do not add anything here, as it will overwritten with next rebuild.
 | $led_saturation |  Current LED saturation value |
 | $led_temperature |  Current LED temperature value |
 | $activeRepeatingEvents |  Current number of active repeating events |
+| $Flash* |  Provides flashvarse channel access, as above. |
 | $voltage |  Current value of voltage from energy metering chip. You can use those variables to make, for example, a change handler that fires when voltage is above 245, etc. |
 | $current |  Current value of current from energy metering chip |
 | $power |  Current value of power from energy metering chip |
+| $frequency |  Current value of frequency from energy metering chip |
 | $energy |  Current value of energy counter from energy metering chip |
-| $day |  Current weekday from NTP |
-| $hour |  Current hour from NTP |
-| $minute |  Current minute from NTP |
-| $second |  Current second from NTP |
-| $mday |  TODO |
-| $month |  TODO |
-| $year |  TODO |
-| $yesterday |  TODO |
-| $today |  TODO |
-| $sunrise |  TODO |
-| $sunset |  TODO |
+| $yesterday |  Yesterdays energy consuption |
+| $today |  Todays energy consuption |
+| $day |  Current weekday from device clock |
+| $hour |  Current hour from device clock |
+| $minute |  Current minute from device clock |
+| $second |  Current second from device clock |
+| $mday |  Current mday from device clock |
+| $month |  Current month from device clock |
+| $year |  Current Year from device clock |
+| $isDST |  Returns 1 if DST (daylight saving time) is active, otherwise 0 |
+| $sunrise |  Next sunrise as a TimerSeconds from midnight - will also print time to log |
+| $sunset |  Next sunset as a TimerSeconds from midnight - will also print time to log |
 | $NTPOn |  Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0. |
 | $batteryVoltage |  Battery driver voltage |
 | $batteryLevel |  Battery driver level |

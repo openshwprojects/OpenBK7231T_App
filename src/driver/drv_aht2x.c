@@ -183,10 +183,11 @@ commandResult_t AHT2X_Reinit(const void* context, const char* cmd, const char* a
 	return CMD_RES_OK;
 }
 
+// startDriver AHT2X 4 5 3 4
 void AHT2X_Init()
 {
-	g_softI2C.pin_clk = Tokenizer_GetArgIntegerDefault(1, 9);
-	g_softI2C.pin_data = Tokenizer_GetArgIntegerDefault(2, 14);
+	g_softI2C.pin_clk = Tokenizer_GetPin(1, 9);
+	g_softI2C.pin_data = Tokenizer_GetPin(2, 14);
 	channel_temp = Tokenizer_GetArgIntegerDefault(3, -1);
 	channel_humid = Tokenizer_GetArgIntegerDefault(4, -1);
 
@@ -202,17 +203,17 @@ void AHT2X_Init()
 	CMD_RegisterCommand("AHT2X_Calibrate", AHT2X_Calibrate, NULL);
 	//cmddetail:{"name":"AHT2X_Cycle","args":"[IntervalSeconds]",
 	//cmddetail:"descr":"This is the interval between measurements in seconds, by default 1. Max is 255.",
-	//cmddetail:"fn":"AHT2X_cycle","file":"drv/drv_aht2X.c","requires":"",
+	//cmddetail:"fn":"AHT2X_Cycle","file":"driver/drv_aht2x.c","requires":"",
 	//cmddetail:"examples":"AHT2X_Cycle 60 <br /> measurement is taken every 60 seconds"}
 	CMD_RegisterCommand("AHT2X_Cycle", AHT2X_Cycle, NULL);
 	//cmddetail:{"name":"AHT2X_Measure","args":"",
 	//cmddetail:"descr":"Retrieve OneShot measurement.",
-	//cmddetail:"fn":"AHT2X_Measure","file":"drv/drv_aht2X.c","requires":"",
+	//cmddetail:"fn":"AHT2X_Force","file":"driver/drv_aht2x.c","requires":"",
 	//cmddetail:"examples":"AHT2X_Measure"}
 	CMD_RegisterCommand("AHT2X_Measure", AHT2X_Force, NULL);
 	//cmddetail:{"name":"AHT2X_Reinit","args":"",
 	//cmddetail:"descr":"Reinitialize sensor.",
-	//cmddetail:"fn":"AHT2X_Reinit","file":"drv/drv_aht2X.c","requires":"",
+	//cmddetail:"fn":"AHT2X_Reinit","file":"driver/drv_aht2x.c","requires":"",
 	//cmddetail:"examples":"AHT2X_Reinit"}
 	CMD_RegisterCommand("AHT2X_Reinit", AHT2X_Reinit, NULL);
 }
@@ -230,9 +231,11 @@ void AHT2X_OnEverySecond()
 	}
 }
 
-void AHT2X_AppendInformationToHTTPIndexPage(http_request_t* request)
+void AHT2X_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
-	hprintf255(request, "<h2>AHT2X Temperature=%f, Humidity=%f</h2>", g_temp, g_humid);
+	if (bPreState)
+		return;
+	hprintf255(request, "<h2>AHT2X Temperature=%.1fC, Humidity=%.0f%%</h2>", g_temp, g_humid);
 	if(!isWorking)
 	{
 		hprintf255(request, "WARNING: AHT sensor appears to have failed initialization, check if configured pins are correct!");

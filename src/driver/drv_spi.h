@@ -2,8 +2,8 @@
 
 #include <stdint.h>
 
-// spi_config_t and its member types are copied from BK7321N SPI implementation.
-// Don't modify. If modified a mapping routine is required for BK7321N.
+// spi_config_t and its member types are copied from BK7231N SPI implementation.
+// Don't modify. If modified a mapping routine is required for BK7231N.
 
 typedef enum {
 	SPI_ROLE_SLAVE = 0, /**< SPI as slave */
@@ -49,7 +49,7 @@ typedef struct {
 
 int SPI_DriverInit(void);
 int SPI_DriverDeinit(void);
-int SPI_Init(const spi_config_t *config);
+int OBK_SPI_Init(const spi_config_t *config);
 int SPI_Deinit(void);
 int SPI_WriteBytes(const void *data, uint32_t size);
 int SPI_ReadBytes(void *data, uint32_t size);

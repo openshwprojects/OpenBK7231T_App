@@ -51,9 +51,9 @@ Do not add anything here, as it will overwritten with next rebuild.
 | TimerSeconds |  This will display time formatted to minutes, hours, etc. |
 | Frequency_div10 |  For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI |
 | PowerFactor_div100 |  For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI |
-| Pressure_div100 |  . |
+| Pressure_div100 |  Pressure in hPa, but divided by 100 |
 | Temperature_div100 |  Just like humidity_div100, but for temperature. |
-| LeakageCurrent_div1000 |  . |
+| LeakageCurrent_div1000 |  Leakage current in mA |
 | Power_div100 |  Just like power, but with one decimal place (but stored as integer, for TuyaMCU support) |
 | Motion |  Motion |
 | ReadOnly_div10 |  This channel is read only. |
@@ -63,4 +63,12 @@ Do not add anything here, as it will overwritten with next rebuild.
 | Orp |  Orp Water Quality |
 | Tds |  TDS Water Quality |
 | Motion_n |  Motion_n |
+| Frequency_div1000 |  For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI |
+| OpenStopClose |  TODO |
+| Percent |  TODO |
+| StopUpDown |  TODO |
+| EnergyImport_kWh_div1000 |  TODO |
+| Enum |  This channel type allows creating custom Enum types in combination with SetChannelEnum command. Ideal for defining TuyaMCU enum mappings. |
+| ReadOnlyEnum |  Read Only Enum Channel type for use in combination with SetChannelEnum command. Ideal for defining TuyaMCU enum mappings. |
+| Current_div10 |  For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI |
 | Max |  This is the current total number of available channel types. |

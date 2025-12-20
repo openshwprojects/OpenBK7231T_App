@@ -4,6 +4,8 @@
 #include "../httpclient/http_client.h"
 #include "cmd_local.h"
 
+#if ENABLE_SEND_POSTANDGET
+
 // SendGet http://192.168.0.112/cm?cmnd=Power0%20Toggle
 // addRepeatingEvent 5 -1 SendGet http://192.168.0.112/cm?cmnd=Power0%20Toggle
 // addEventHandler OnClick 8 SendGet http://192.168.0.112/cm?cmnd=Power0%20Toggle
@@ -17,12 +19,8 @@ static commandResult_t CMD_SendGET(const void* context, const char* cmd, const c
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS);
 
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	HTTPClient_Async_SendGet(Tokenizer_GetArg(0), Tokenizer_GetArg(1));
-#else
-	ADDLOG_INFO(LOG_FEATURE_CMD, " CMD_SendGET not supported!");
 
-#endif
 	return CMD_RES_OK;
 }
 // SendPOST http://localhost:3000/ 3000 "application/json" "{ \"a\":123, \"b\":77 }"
@@ -31,33 +29,14 @@ static commandResult_t CMD_SendPOST(const void* context, const char* cmd, const 
 
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_ALLOW_ESCAPING_QUOTATIONS);
 
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	HTTPClient_Async_SendPost(Tokenizer_GetArg(0),
 		Tokenizer_GetArgIntegerDefault(1, 80),
 		Tokenizer_GetArg(2),
 		Tokenizer_GetArg(3),
 		Tokenizer_GetArg(4));
-#else
-	ADDLOG_INFO(LOG_FEATURE_CMD, " CMD_SendPOST not supported!");
 
-#endif
 	return CMD_RES_OK;
 }
-static commandResult_t CMD_TestPOST(const void* context, const char* cmd, const char* args, int cmdFlags) {
-
-#if defined(PLATFORM_BEKEN) || defined(WINDOWS)
-	HTTPClient_Async_SendPost("http://localhost:3000/",
-		3000,
-		"application/json",
-		"{ \"a\":123, \"b\":77 }",
-		0);
-#else
-	ADDLOG_INFO(LOG_FEATURE_CMD, " CMD_SendPOST not supported!");
-
-#endif
-	return CMD_RES_OK;
-}
-
 
 int CMD_InitSendCommands() {
 	//cmddetail:{"name":"sendGet","args":"[TargetURL]",
@@ -75,6 +54,8 @@ int CMD_InitSendCommands() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("sendPOST", CMD_SendPOST, NULL);
 
-	//CMD_RegisterCommand("testPost", CMD_TestPOST, NULL);
 	return 0;
 }
+
+#endif
+

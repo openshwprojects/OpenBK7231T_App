@@ -6,6 +6,7 @@
 #include "cmd_local.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
+#include "../cJSON/cJSON.h"
 #if ENABLE_LITTLEFS
 	#include "../littlefs/our_lfs.h"
 #endif
@@ -18,6 +19,37 @@ int parsePowerArgument(const char *s) {
 	if(!stricmp(s,"OFF"))
 		return 0;
 	return atoi(s);
+}
+
+
+static commandResult_t cmnd_JsonCommand(const void *context, const char *cmd, const char *args, int cmdFlags) {
+    cJSON *root = cJSON_Parse(args);
+    if(!root) {
+        ADDLOG_ERROR(LOG_FEATURE_CMD, "Invalid JSON input: %s", args);
+        return CMD_RES_BAD_ARGUMENT;
+    }
+
+    cJSON *element = root->child;
+    while(element) {
+        if (cJSON_IsString(element)) {
+            char buffer[256];
+            snprintf(buffer, sizeof(buffer), "%s %s", element->string, element->valuestring);
+            CMD_ExecuteCommand(buffer, cmdFlags);
+        }
+        else if (cJSON_IsNumber(element)) {
+            char buffer[256];
+            if (element->valuedouble == (int)element->valuedouble) {
+                snprintf(buffer, sizeof(buffer), "%s %d", element->string, (int)element->valuedouble);
+            } else {
+                snprintf(buffer, sizeof(buffer), "%s %.2f", element->string, element->valuedouble);
+            }
+            CMD_ExecuteCommand(buffer, cmdFlags);
+        }
+        element = element->next;
+    }
+
+    cJSON_Delete(root);
+    return CMD_RES_OK;
 }
 
 static commandResult_t power(const void *context, const char *cmd, const char *args, int cmdFlags){
@@ -34,10 +66,13 @@ static commandResult_t power(const void *context, const char *cmd, const char *a
 		if (strlen(cmd) > 5) {
 			channel = atoi(cmd+5);
 
+#if ENABLE_LED_BASIC
 			if (LED_IsLEDRunning()) {
 				channel = SPECIAL_CHANNEL_LEDPOWER;
 			}
-			else {
+			else 
+#endif
+			{
 				if (bRelayIndexingStartsWithZero) {
 					channel--;
 					if (channel < 0)
@@ -45,10 +80,13 @@ static commandResult_t power(const void *context, const char *cmd, const char *a
 				}
 			}
 		} else {
+#if ENABLE_LED_BASIC
 			// if new LED driver active
 			if(LED_IsLEDRunning()) {
 				channel = SPECIAL_CHANNEL_LEDPOWER;
-			} else {
+			} else
+#endif
+			{
 				// find first active channel, because some people index with 0 and some with 1
 				for(i = 0; i < CHANNEL_MAX; i++) {
 					if (h_isChannelRelay(i) || CHANNEL_GetType(i) == ChType_Toggle) {
@@ -98,30 +136,30 @@ static commandResult_t powerAll(const void *context, const char *cmd, const char
 }
 
 
+static commandResult_t cmnd_backlog_old(const void * context, const char *cmd, const char *args, int cmdFlags) {
 
-static commandResult_t cmnd_backlog(const void * context, const char *cmd, const char *args, int cmdFlags){
 	const char *subcmd;
 	const char *p;
 	int count = 0;
-    char copy[128];
-    char *c;
+	char copy[128];
+	char *c;
 	int localRes;
 	int res = CMD_RES_OK;
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "backlog [%s]", args);
 
 	subcmd = args;
 	p = args;
-	while (*subcmd){
-        c = copy;
-		while (*p){
-			if (*p == ';'){
+	while (*subcmd) {
+		c = copy;
+		while (*p) {
+			if (*p == ';') {
 				p++;
 				break;
 			}
-            *(c) = *(p++);
-            if (c - copy < (sizeof(copy)-1)){
-                c++;
-            }
+			*(c) = *(p++);
+			if (c - copy < (sizeof(copy) - 1)) {
+				c++;
+			}
 		}
 		*c = 0;
 		count++;
@@ -132,7 +170,22 @@ static commandResult_t cmnd_backlog(const void * context, const char *cmd, const
 		subcmd = p;
 	}
 	ADDLOG_DEBUG(LOG_FEATURE_CMD, "backlog executed %d", count);
-
+	return res;
+}
+static commandResult_t cmnd_backlog(const void * context, const char *cmd, const char *args, int cmdFlags){
+	commandResult_t res;
+#if ENABLE_OBK_SCRIPTING
+	if (strcasestr(args, "delay_ms") || strcasestr(args, "delay_s") || strcasestr(args, "waitFor")) {
+		// backlog with delay?
+		SVM_StartBacklog(args);
+		res = CMD_RES_OK;
+	}
+	else 
+#endif
+	{
+		// old backlog - in place
+		res = cmnd_backlog_old(context, cmd, args, cmdFlags);
+	}
 	return res;
 }
 
@@ -154,7 +207,7 @@ byte *LFS_ReadFile(const char *fname) {
 		lfsres = lfs_file_open(&lfs, &file, fname, LFS_O_RDONLY);
 
 		if (lfsres >= 0) {
-			ADDLOG_DEBUG(LOG_FEATURE_CMD, "LFS_ReadFile: openned file %s", fname);
+			ADDLOG_DEBUG(LOG_FEATURE_CMD, "LFS_ReadFile: opened file %s", fname);
 			//lfs_file_seek(&lfs,&file,0,LFS_SEEK_END);
 			//len = lfs_file_tell(&lfs,&file);
 			//lfs_file_seek(&lfs,&file,0,LFS_SEEK_SET);
@@ -167,7 +220,7 @@ byte *LFS_ReadFile(const char *fname) {
 			at = res;
 
 			if(res == 0) {
-				ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: openned file %s but malloc failed for %i", fname, len);
+				ADDLOG_INFO(LOG_FEATURE_CMD, "LFS_ReadFile: opened file %s but malloc failed for %i", fname, len);
 			} else {
 #if 0
 				char buffer[32];
@@ -217,6 +270,19 @@ byte *LFS_ReadFile(const char *fname) {
 #endif
 	return 0;
 }
+byte* LFS_ReadFileExpanding(const char* fname) {
+	byte *d = LFS_ReadFile(fname);
+	if (d == 0)
+		return 0;
+	const char *s = (const char *)d;
+	int vars = CMD_CountVarsInString(s);
+	if (vars == 0) {
+		return d;
+	}
+	char *r = CMD_ExpandingStrdup(s);
+	free(d);
+	return (byte*)r;
+}
 int LFS_WriteFile(const char *fname, const byte *data, int len, bool bAppend) {
 #if ENABLE_LITTLEFS
 	init_lfs(1);
@@ -234,7 +300,7 @@ int LFS_WriteFile(const char *fname, const byte *data, int len, bool bAppend) {
 		}
 
 		if (lfsres >= 0) {
-			ADDLOG_DEBUG(LOG_FEATURE_CMD, "LFS_ReadFile: openned file %s", fname);
+			ADDLOG_DEBUG(LOG_FEATURE_CMD, "LFS_ReadFile: opened file %s", fname);
 
 			lfsres = lfs_file_write(&lfs, &file, data, len);
 			lfs_file_close(&lfs, &file);
@@ -271,7 +337,7 @@ static commandResult_t cmnd_lfsexec(const void * context, const char *cmd, const
 			}
 			lfsres = lfs_file_open(&lfs, file, fname, LFS_O_RDONLY);
 			if (lfsres >= 0) {
-				ADDLOG_DEBUG(LOG_FEATURE_CMD, "openned file %s", fname);
+				ADDLOG_DEBUG(LOG_FEATURE_CMD, "opened file %s", fname);
 				do {
 					char *p = line;
 					do {
@@ -363,6 +429,17 @@ static commandResult_t cmnd_MqttClient(const void * context, const char *cmd, co
 	CFG_SetMQTTClientId(Tokenizer_GetArg(0));
 	return CMD_RES_OK;
 }
+static commandResult_t cmnd_MqttGroup(const void * context, const char *cmd, const char *args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	CFG_SetMQTTGroupTopic(Tokenizer_GetArg(0));
+	return CMD_RES_OK;
+}
 static commandResult_t cmnd_stub(const void * context, const char *cmd, const char *args, int cmdFlags) {
 
 	return CMD_RES_OK;
@@ -429,6 +506,11 @@ int taslike_commands_init(){
 	//cmddetail:"fn":"cmnd_MqttClient","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("MqttClient", cmnd_MqttClient, NULL);
+	//cmddetail:{"name":"MqttGroup","args":"[ValueString]",
+	//cmddetail:"descr":"Sets the MQTT Group topic. Command keeps Tasmota syntax",
+	//cmddetail:"fn":"cmnd_MqttGroup","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("MqttGroup", cmnd_MqttGroup, NULL);
 
 	// those are stubs, they are handled elsewhere so we can have Tasmota style replies
 
@@ -452,5 +534,10 @@ int taslike_commands_init(){
 	//cmddetail:"fn":"cmnd_stub","file":"cmnds/cmd_tasmota.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Result", cmnd_stub, NULL);
+	//cmddetail:{"name":"Json","args":"json array of commands",
+	//cmddetail:"descr":"A stub for Tasmota",
+	//cmddetail:"fn":"cmnd_JsonCommand","file":"cmnds/cmd_tasmota.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("Json", cmnd_JsonCommand, NULL);
     return 0;
 }

@@ -9,7 +9,11 @@
 #include "../httpserver/new_http.h"
 
 // startDriver TestCharts
-void DRV_Test_Charts_AddToHtmlPage(http_request_t *request) {
+void DRV_Test_Charts_AddToHtmlPage(http_request_t *request, int bPreState) {
+	if (bPreState) {
+		return;
+	}
+
 	time_t timeStamps[16];
 	float temperature[16];
 	float humidity[16];

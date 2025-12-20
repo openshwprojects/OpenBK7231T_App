@@ -1,9 +1,9 @@
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
 #include "../../beken378/func/user_driver/armino/spi/spi.h"
 #else
-// spi_config_t and its member types are copied from BK7321N SPI implementation.
+// spi_config_t and its member types are copied from BK7231N SPI implementation.
 #include "drv_spi.h"
-#if PLATFORM_BK7231T
+#if PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 #include "../../../../platforms/bk7231t/bk7231t_os/beken378/common/typedef.h"
 #include "../../../../platforms/bk7231t/bk7231t_os/beken378/driver/entry/arch.h"
 #include "../../../../platforms/bk7231t/bk7231t_os/beken378/driver/include/drv_model_pub.h"
@@ -13,15 +13,30 @@
 #include "../../../../platforms/bk7231t/bk7231t_os/beken378/os/FreeRTOSv9.0.0/FreeRTOS/Source/portable/Keil/ARM968es/portmacro.h"
 #endif // PLATFORM_BK7231T
 #endif // PLATFORM_BK7231N
-
+#if PLATFORM_BEKEN_NEW
+#include "spi_pub.h"
+uint32_t mode = SPI_MASTER;
+#endif
 #include "../logging/logging.h"
 
+
+#if PLATFORM_BEKEN_NEW && (PLATFORM_BK7231N || PLATFORM_BK7238 || PLATFORM_BK7252N)
+#include "spi_bk7231n.h"
+#define bk_spi_master_init bk_spi_master_dma_init
+#define bk_spi_master_deinit() bk_spi_master_dma_deinit(1)
+#define bk_spi_slave_init bk_spi_slave_dma_init
+#define bk_spi_slave_deinit bk_spi_slave_dma_deinit
+#define bk_spi_master_xfer(x) bk_spi_master_dma_xfer(x, 0)
+#define bk_spi_slave_xfer bk_spi_slave_dma_xfer
+#endif
 int SPI_DriverInit(void) {
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
     return bk_spi_driver_init();
-#elif PLATFORM_BK7231T
+#elif PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 	// Is called in dd.c
 	// spi_init();
+	return 0;
+#elif PLATFORM_BEKEN_NEW
 	return 0;
 #else
     ADDLOG_ERROR(LOG_FEATURE_DRV, "SPI_DriverInit not supported");
@@ -30,11 +45,13 @@ int SPI_DriverInit(void) {
 }
 
 int SPI_DriverDeinit(void) {
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
     return bk_spi_driver_deinit();
-#elif PLATFORM_BK7231T
+#elif PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 	// Is called in dd.c
 	// spi_exit();
+	return 0;
+#elif PLATFORM_BEKEN_NEW
 	return 0;
 #else
     ADDLOG_ERROR(LOG_FEATURE_DRV, "SPI_DriverDeinit not supported");
@@ -42,10 +59,10 @@ int SPI_DriverDeinit(void) {
 #endif
 }
 
-int SPI_Init(const spi_config_t *config) {
-#if PLATFORM_BK7231N
+int OBK_SPI_Init(const spi_config_t *config) {
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
 	return bk_spi_init(0, config);
-#elif PLATFORM_BK7231T
+#elif PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 	int err = 0;
 
 	uint32_t param = PWD_SPI_CLK_BIT;
@@ -93,6 +110,12 @@ int SPI_Init(const spi_config_t *config) {
 	spi_trans.trans_done = 1;
 
 	return err;
+#elif PLATFORM_BEKEN_NEW
+	mode = config->role == SPI_ROLE_MASTER ? SPI_MASTER : SPI_SLAVE;
+	if(mode == SPI_MASTER)
+		return bk_spi_master_init(config->baud_rate, ((config->polarity == SPI_POLARITY_LOW ? 0 : SPI_CPOL) | (config->phase == SPI_PHASE_1ST_EDGE ? 0 : SPI_CPHA)));
+	else
+		return bk_spi_slave_init(config->baud_rate, ((config->polarity == SPI_POLARITY_LOW ? 0 : SPI_CPOL) | (config->phase == SPI_PHASE_1ST_EDGE ? 0 : SPI_CPHA)));
 #else
     ADDLOG_ERROR(LOG_FEATURE_DRV, "SPI_Init not supported");
     return -1;
@@ -100,9 +123,9 @@ int SPI_Init(const spi_config_t *config) {
 }
 
 int SPI_Deinit(void) {
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
 	return bk_spi_deinit(0);
-#elif PLATFORM_BK7231T
+#elif PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 	int err = 0;
 
 	uint8_t enable = 0;
@@ -115,13 +138,18 @@ int SPI_Deinit(void) {
 	err |= sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_DOWN, &param);
 
 	return err;
+#elif PLATFORM_BEKEN_NEW
+	if(mode == SPI_MASTER)
+		return bk_spi_master_deinit();
+	else
+		return bk_spi_slave_deinit();
 #else
     ADDLOG_ERROR(LOG_FEATURE_DRV, "SPI_Deinit not supported");
     return -1;
 #endif
 }
 
-#if PLATFORM_BK7231T
+#if PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 static inline int Spi_wait_for_ready() {
 	uint8_t busy = 0;
 	int err = 0;
@@ -135,9 +163,9 @@ static inline int Spi_wait_for_ready() {
 #endif
 
 int SPI_WriteBytes(const void *data, uint32_t size) {
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
     return bk_spi_write_bytes(0, data, size);
-#elif PLATFORM_BK7231T
+#elif PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 	GLOBAL_INT_DECLARATION();
 	GLOBAL_INT_DISABLE();
 		
@@ -159,6 +187,16 @@ int SPI_WriteBytes(const void *data, uint32_t size) {
 
 	err |= Spi_wait_for_ready();
 	return err;
+#elif PLATFORM_BEKEN_NEW
+	struct spi_message msg;
+	msg.send_buf = data;
+	msg.send_len = size;
+	msg.recv_buf = NULL;
+	msg.recv_len = 0;
+	if(mode == SPI_MASTER)
+		return bk_spi_master_xfer(&msg);
+	else
+		return bk_spi_slave_xfer(&msg);
 #else
     ADDLOG_ERROR(LOG_FEATURE_DRV, "SPI_WriteBytes not supported");
     return -1;
@@ -166,9 +204,9 @@ int SPI_WriteBytes(const void *data, uint32_t size) {
 }
 
 int SPI_ReadBytes(void *data, uint32_t size) {
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
 	return bk_spi_read_bytes(0, data, size);
-#elif PLATFORM_BK7231T
+#elif PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 	GLOBAL_INT_DECLARATION();
 	GLOBAL_INT_DISABLE();
 
@@ -190,6 +228,16 @@ int SPI_ReadBytes(void *data, uint32_t size) {
 
 	err |= Spi_wait_for_ready();
 	return err;
+#elif PLATFORM_BEKEN_NEW
+	struct spi_message msg;
+	msg.recv_buf = data;
+	msg.recv_len = size;
+	msg.send_buf = NULL;
+	msg.send_len = 0;
+	if(mode == SPI_MASTER)
+		return bk_spi_master_xfer(&msg);
+	else
+		return bk_spi_slave_xfer(&msg);
 #else
     ADDLOG_ERROR(LOG_FEATURE_DRV, "SPI_ReadBytes not supported");
     return -1;
@@ -198,9 +246,9 @@ int SPI_ReadBytes(void *data, uint32_t size) {
 
 int SPI_Transmit(const void *txData, uint32_t txSize, void *rxData,
         uint32_t rxSize) {
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
 	return bk_spi_transmit(0, txData, txSize, rxData, rxSize);
-#elif PLATFORM_BK7231T
+#elif PLATFORM_BK7231T && !PLATFORM_BEKEN_NEW
 	int err = 0;
 
     if (txSize && txData)
@@ -210,6 +258,16 @@ int SPI_Transmit(const void *txData, uint32_t txSize, void *rxData,
 		err |= SPI_ReadBytes(rxData, rxSize);
 
 	return err;
+#elif PLATFORM_BEKEN_NEW
+	struct spi_message msg;
+	msg.send_buf = txData;
+	msg.send_len = txSize;
+	msg.recv_buf = rxData;
+	msg.recv_len = rxSize;
+	if(mode == SPI_MASTER)
+		return bk_spi_master_xfer(&msg);
+	else
+		return bk_spi_slave_xfer(&msg);
 #else
     ADDLOG_ERROR(LOG_FEATURE_DRV, "SPI_Transmit not supported");
     return -1;

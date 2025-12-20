@@ -2,7 +2,6 @@
 # It allows you to make changes to the SDK, for example..
 # For example, you can use changed files in the SDK for the automated build during the checks for a PR without changing the SDK itself:
 # So your PR needs a modified define in the SDK, for example ? This script can make this change directly before the build.
-
 #
 #
 # As an example you will find a script below which will copy all content of the "override"
@@ -10,7 +9,7 @@
 #
 #DIRNAME=$(dirname $0);
 #echo "PREBUILD script! Executed from $DIRNAME!"
-# allow whitspace in file or path, so take only newline as seperator
+# allow whitespace in file or path, so take only newline as seperator
 #OFS=$IFS
 #IFS='
 #'
@@ -27,7 +26,6 @@
 #done
 ## restore IFS to whatever it was before ...
 #IFS=$OFS
-
 # you can also use all other commands to change files, like
 # sed -i "s/#define FOO bar/#define FOO baz/" sdk/OpenW600/platform/drivers/file_to_change.c
 # or, let's assume you made a local change to your SDK
@@ -38,4 +36,3 @@
 # and then in pre_build.sh you apply this patch with:
 #
 # patch -p 1 -d sdk/OpenW600 < platforms/W600/my_change.diff
-

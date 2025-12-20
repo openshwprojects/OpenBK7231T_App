@@ -39,7 +39,7 @@
     "enum": "OBK_FLAG_CMD_ENABLETCPRAWPUTTYSERVER",
     "title": "todo",
     "file": "new_pins.h",
-    "descr": "[CMD] Enable TCP console command server (for Putty, etc)"
+    "descr": "[CMD] Enable TCP console command server (for PuTTY, etc)"
   },
   {
     "index": "6",
@@ -172,7 +172,7 @@
     "enum": "OBK_FLAG_LED_EMULATE_COOL_WITH_RGB",
     "title": "todo",
     "file": "new_pins.h",
-    "descr": "[LED] Emulate Cool White with RGB in device with four PWMS - Red is 0, Green 1, Blue 2, and Warm is 4"
+    "descr": "[LED] Emulate Cool White with RGB in device with four PWMs - Red is 0, Green 1, Blue 2, and Warm is 4"
   },
   {
     "index": "25",
@@ -354,6 +354,13 @@
     "enum": "OBK_FLAG_MQTT_NEVERAPPENDGET",
     "title": "todo",
     "file": "new_pins.h",
-    "descr": "[MQTT] Never add get sufix"
+    "descr": "[MQTT] Never add GET suffix"
+  },
+  {
+    "index": "51",
+    "enum": "OBK_FLAG_WIFI_ENHANCED_FAST_CONNECT",
+    "title": "todo",
+    "file": "new_pins.h",
+    "descr": "[WiFi] (RTL/BK/BL602) Enhanced fast connect by saving AP data to flash (preferable with Flag 37 & static ip). Quick reset 3 times to connect normally"
   }
 ]

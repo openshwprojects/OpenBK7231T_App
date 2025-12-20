@@ -14,6 +14,9 @@ void Test_IF_Inside_Backlog() {
 	PIN_SetPinRoleForPinIndex(26, IOR_PWM);
 	PIN_SetPinChannelForPinIndex(26, 2);
 
+
+#if ENABLE_LED_BASIC
+
 	CMD_ExecuteCommand("led_enableAll 1", 0);
 
 	CMD_ExecuteCommand("alias day_lights backlog led_temperature 200", 0);
@@ -45,6 +48,9 @@ void Test_IF_Inside_Backlog() {
 	CMD_ExecuteCommand("set_lights", 0);
 
 	SELFTEST_ASSERT_EXPRESSION("$led_temperature", 500);
+#endif
+
+
 }
 
 

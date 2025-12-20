@@ -8,7 +8,12 @@
 #include "lwip/inet.h"
 #include "../logging/logging.h"
 #include "new_http.h"
-
+#if PLATFORM_ESP8266
+#define MAX_SOCKETS_TCP 2
+#define REPLY_BUFFER_SIZE			1024
+#define INCOMING_BUFFER_SIZE		1024
+#define HTTP_CLIENT_STACK_SIZE		4096
+#endif
 #ifndef MAX_SOCKETS_TCP
 #define MAX_SOCKETS_TCP MEMP_NUM_TCP_PCB
 #endif
@@ -16,19 +21,26 @@
 void HTTPServer_Start();
 
 #define HTTP_SERVER_PORT			80
-#define REPLY_BUFFER_SIZE			2048
-#define INCOMING_BUFFER_SIZE		1024
 #define INVALID_SOCK				-1
-#define HTTP_CLIENT_STACK_SIZE		8192
 
+#ifndef REPLY_BUFFER_SIZE
+#define REPLY_BUFFER_SIZE			2048
+#endif
+#ifndef INCOMING_BUFFER_SIZE
+#define INCOMING_BUFFER_SIZE		2048
+#endif
+#ifndef HTTP_CLIENT_STACK_SIZE
+#define HTTP_CLIENT_STACK_SIZE		8192
+#endif
 typedef struct
 {
 	int fd;
-	TaskHandle_t thread;
+	beken_thread_t thread;
 	bool isCompleted;
 } tcp_thread_t;
 
-static xTaskHandle g_http_thread = NULL;
+static beken_thread_t g_http_thread = NULL;
+static const size_t max_socks = MAX_SOCKETS_TCP - 1;
 static int listen_sock = INVALID_SOCK;
 static tcp_thread_t sock[MAX_SOCKETS_TCP - 1] =
 {
@@ -42,11 +54,8 @@ static void tcp_client_thread(tcp_thread_t* arg)
 	char* reply = NULL;
 	int replyBufferSize = REPLY_BUFFER_SIZE;
 
-	GLOBAL_INT_DECLARATION();
-	GLOBAL_INT_DISABLE();
 	reply = (char*)os_malloc(replyBufferSize);
 	buf = (char*)os_malloc(INCOMING_BUFFER_SIZE);
-	GLOBAL_INT_RESTORE();
 
 	if(buf == 0 || reply == 0)
 	{
@@ -54,7 +63,7 @@ static void tcp_client_thread(tcp_thread_t* arg)
 		goto exit;
 	}
 	http_request_t request;
-	os_memset(&request, 0, sizeof(request));
+	memset(&request, 0, sizeof(request));
 
 	request.fd = fd;
 	request.received = buf;
@@ -74,11 +83,9 @@ static void tcp_client_thread(tcp_thread_t* arg)
 		{
 			break;
 		}
-		// grow by 1024
-		request.receivedLenmax += 1024;
-		GLOBAL_INT_DISABLE();
+		// grow by INCOMING_BUFFER_SIZE
+		request.receivedLenmax += INCOMING_BUFFER_SIZE;
 		request.received = (char*)realloc(request.received, request.receivedLenmax + 2);
-		GLOBAL_INT_RESTORE();
 		if(request.received == NULL)
 		{
 			// no memory
@@ -110,16 +117,21 @@ static void tcp_client_thread(tcp_thread_t* arg)
 	}
 
 exit:
-	GLOBAL_INT_DISABLE();
 	if(buf != NULL)
 		os_free(buf);
 	if(reply != NULL)
 		os_free(reply);
-	GLOBAL_INT_RESTORE();
 
 	lwip_close(fd);
 	arg->isCompleted = true;
+#if PLATFORM_RDA5981
+	arg->thread = NULL;
+	arg->isCompleted = false;
+	arg->fd = INVALID_SOCK;
+	rtos_delete_thread(NULL);
+#else
 	rtos_suspend_thread(NULL);
+#endif
 }
 
 static inline char* get_clientaddr(struct sockaddr_storage* source_addr)
@@ -144,17 +156,42 @@ static inline char* get_clientaddr(struct sockaddr_storage* source_addr)
 	return address_str;
 }
 
+void HTTPServer_Stop(void* arg)
+{
+	if(g_http_thread != NULL)
+	{
+		rtos_delete_thread(&g_http_thread);
+	}
+	if(listen_sock != INVALID_SOCK)
+	{
+		close(listen_sock);
+	}
+
+	for(int i = 0; i < max_socks; ++i)
+	{
+		if(sock[i].thread != NULL)
+		{
+			rtos_delete_thread(&sock[i].thread);
+			sock[i].thread = NULL;
+		}
+		if(sock[i].fd != INVALID_SOCK)
+		{
+			close(sock[i].fd);
+			sock[i].fd = INVALID_SOCK;
+		}
+	}
+}
+
 void restart_tcp_server(void* arg)
 {
 	HTTPServer_Start();
-	vTaskDelete(NULL);
+	rtos_delete_thread(NULL);
 }
 
 static void tcp_server_thread(beken_thread_arg_t arg)
 {
 	OSStatus err = kNoErr;
 	int reuse = 1;
-	const size_t max_socks = MAX_SOCKETS_TCP - 1;
 
 	struct sockaddr_in server_addr =
 	{
@@ -213,18 +250,21 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 		socklen_t addr_len = sizeof(source_addr);
 
 		int new_idx = 0;
+		for(int i = 0; i < max_socks; ++i)
+		{
+			if(sock[i].isCompleted)
+			{
+				if(sock[i].thread != NULL)
+				{
+					rtos_delete_thread(&sock[i].thread);
+					sock[i].thread = NULL;
+				}
+				sock[i].isCompleted = false;
+				sock[i].fd = INVALID_SOCK;
+			}
+		}
 		for(new_idx = 0; new_idx < max_socks; ++new_idx)
 		{
-			if(sock[new_idx].isCompleted)
-			{
-				if(sock[new_idx].thread != NULL)
-				{
-					rtos_delete_thread(&sock[new_idx].thread);
-					sock[new_idx].thread = NULL;
-				}
-				sock[new_idx].isCompleted = false;
-				sock[new_idx].fd = INVALID_SOCK;
-			}
 			if(sock[new_idx].fd == INVALID_SOCK)
 			{
 				break;
@@ -233,6 +273,13 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 		if(new_idx < max_socks)
 		{
 			sock[new_idx].fd = accept(listen_sock, (struct sockaddr*)&source_addr, &addr_len);
+
+#if LWIP_SO_RCVTIMEO && !PLATFORM_ECR6600 && !PLATFORM_TR6260
+			struct timeval tv;
+			tv.tv_sec = 30;
+			tv.tv_usec = 0;
+			setsockopt(sock[new_idx].fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
+#endif
 
 			if(sock[new_idx].fd < 0)
 			{
@@ -265,7 +312,7 @@ static void tcp_server_thread(beken_thread_arg_t arg)
 				}
 			}
 		}
-		vTaskDelay(pdMS_TO_TICKS(10));
+		rtos_delay_milliseconds(10);
 	}
 
 error:
@@ -288,13 +335,12 @@ error:
 			sock[i].fd = INVALID_SOCK;
 		}
 	}
-	xTaskCreate(
-		(TaskFunction_t)restart_tcp_server,
+	rtos_delay_milliseconds(2000);
+	rtos_create_thread(NULL, BEKEN_APPLICATION_PRIORITY,
 		"TCP Restart",
-		2048 / sizeof(StackType_t),
-		NULL,
-		BEKEN_APPLICATION_PRIORITY,
-		NULL);
+		(beken_thread_function_t)restart_tcp_server,
+		2048,
+		(beken_thread_arg_t)0);
 }
 
 void HTTPServer_Start()

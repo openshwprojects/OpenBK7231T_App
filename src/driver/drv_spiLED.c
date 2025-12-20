@@ -1,6 +1,3 @@
-#if PLATFORM_BK7231N || WINDOWS
-
-
 #include "../new_cfg.h"
 #include "../new_common.h"
 #include "../new_pins.h"
@@ -11,10 +8,12 @@
 #include "../logging/logging.h"
 #include "../mqtt/new_mqtt.h"
 
+#if ENABLE_DRIVER_SM16703P || ENABLE_DRIVER_SM15155E
+
 #include "drv_spidma.h"
 #include "drv_spiLED.h"
 
-#if WINDOWS
+#if WINDOWS && !LINUX
 
 void SPIDMA_Init(struct spi_message *msg) {
 
@@ -23,6 +22,9 @@ void SPIDMA_StartTX(struct spi_message *msg) {
 
 }
 void SPIDMA_StopTX(void) {
+
+}
+void SPIDMA_Deinit(void) {
 
 }
 
@@ -73,19 +75,36 @@ void translate_byte(uint8_t input, uint8_t *dst) {
 }
 
 spiLED_t spiLED;
-
-
-
+#if PLATFORM_REALTEK
+byte* orig_ptr = NULL;
+#endif
 
 void SPILED_InitDMA(int numBytes) {
 	int i;
 
+	if (spiLED.ready) {
+		SPILED_Shutdown();
+	}
+#if PLATFORM_BEKEN
 	spiLED.padding = 64;
-
+#elif PLATFORM_REALTEK
+	// size for dma must be multiple of 32
+	spiLED.padding = (spiLED.ofs + (numBytes * 4)) % 32;
+#else
+	spiLED.padding = 0;
+#endif
 	// Prepare buffer
 	uint32_t buffer_size = spiLED.ofs + (numBytes * 4) + spiLED.padding; //Add `spiLED.ofs` bytes for "Reset"
-
-	spiLED.buf = (UINT8 *)os_malloc(sizeof(UINT8) * (buffer_size)); //18LEDs x RGB x 4Bytes
+#if PLATFORM_ESPIDF
+	spiLED.buf = heap_caps_malloc(sizeof(byte) * (buffer_size), MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA);
+#elif PLATFORM_REALTEK
+	// memory for dma must be aligned to 32 bytes
+	orig_ptr = (byte*)os_malloc((sizeof(byte) * (buffer_size)) + 32 - 1);
+	uint32_t misalignment = (uint32_t)orig_ptr % 32;
+	spiLED.buf = (orig_ptr + 32 - misalignment);
+#else
+	spiLED.buf = (byte *)os_malloc(sizeof(byte) * (buffer_size)); //18LEDs x RGB x 4Bytes
+#endif
 
 	// Fill `spiLED.ofs` slice of the buffer with zero
 	for (i = 0; i < spiLED.ofs; i++) {
@@ -111,24 +130,7 @@ void SPILED_InitDMA(int numBytes) {
 
 
 
-void SPILED_SetRawHexString(int start_offset, const char *s, int push) {
-	// start offset is in bytes, and we do 2 bits per dst byte, so *4
-	uint8_t *dst = spiLED.buf + spiLED.ofs + start_offset * 4;
 
-	// parse hex string like FFAABB0011 byte by byte
-	while (s[0] && s[1]) {
-		byte b;
-		b = hexbyte(s);
-		*dst++ = translate_2bit((b >> 6));
-		*dst++ = translate_2bit((b >> 4));
-		*dst++ = translate_2bit((b >> 2));
-		*dst++ = translate_2bit(b);
-		s += 2;
-	}
-	if (push) {
-		SPIDMA_StartTX(spiLED.msg);
-	}
-}
 void SPILED_SetRawBytes(int start_offset, byte *bytes, int numBytes, int push) {
 	// start offset is in bytes, and we do 2 bits per dst byte, so *4
 	uint8_t *dst = spiLED.buf + spiLED.ofs + start_offset * 4;
@@ -145,13 +147,34 @@ void SPILED_SetRawBytes(int start_offset, byte *bytes, int numBytes, int push) {
 		SPIDMA_StartTX(spiLED.msg);
 	}
 }
+
+#if !PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
+
+int spidma_led_pin = -1;
+
+#endif
+
 void SPILED_Shutdown() {
 	spiLED.ready = 0;
+	if (spiLED.buf) {
+#if PLATFORM_REALTEK
+		os_free(orig_ptr);
+		orig_ptr = NULL;
+#else
+		os_free(spiLED.buf);
+#endif
+		spiLED.buf = 0;
+	}
+	if (spiLED.msg) {
+		os_free(spiLED.msg);
+		spiLED.msg = 0;
+	}
+	SPIDMA_Deinit();
 }
 
-void SPILED_Init() {
+void SPILED_Init(int pin) {
+#if PLATFORM_BK7231N || PLATFORM_BEKEN_NEW
 	uint32_t val;
-#if PLATFORM_BK7231N
 	val = GFUNC_MODE_SPI_USE_GPIO_14;
 	sddev_control(GPIO_DEV_NAME, CMD_GPIO_ENABLE_SECOND, &val);
 
@@ -165,8 +188,7 @@ void SPILED_Init() {
 	param = PWD_SPI_CLK_BIT;
 	sddev_control(ICU_DEV_NAME, CMD_CLK_PWR_UP, &param);
 #else
-
-
+	spidma_led_pin = pin;
 #endif
 }
 

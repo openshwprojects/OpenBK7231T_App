@@ -1,0 +1,7 @@
+shift-base:PIN_get_Relay_PWM_Count
+shift-base:CFG_HasFlag
+shift-base:http_fn_index
+shift-base:CHANNEL_HasNeverPublishFlag
+shift-base:doHomeAssistantDiscovery
+shift-base:BL0942_Init
+shift-base:CFG_SetFlag

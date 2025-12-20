@@ -33,7 +33,7 @@ int HAL_Configuration_ReadConfigMemory(void *target, int dataLen){
     flashlen = pt->partition_length;
 
     if (dataLen > flashlen){
-        ADDLOG_ERROR(LOG_FEATURE_CFG, "HAL_Configuration_ReadConfigMemory - table too big - can't save");
+        ADDLOG_ERROR(LOG_FEATURE_CFG, "%s - table too big - can't save", __func__);
         return 0;
     }
 
@@ -43,7 +43,7 @@ int HAL_Configuration_ReadConfigMemory(void *target, int dataLen){
     ddev_close(flash_handle);
 	hal_flash_unlock();
 
-	ADDLOG_DEBUG(LOG_FEATURE_CFG, "HAL_Configuration_ReadConfigMemory: read %d bytes to %d", dataLen, flashaddr);
+	ADDLOG_DEBUG(LOG_FEATURE_CFG, "%s: read %d bytes to %d", __func__, dataLen, flashaddr);
 
     return dataLen;
 }
@@ -51,7 +51,7 @@ int HAL_Configuration_ReadConfigMemory(void *target, int dataLen){
 
 
 
-int bekken_hal_flash_read(const unsigned int addr, void *dst, const unsigned int size)
+int beken_hal_flash_read(const unsigned int addr, void *dst, const unsigned int size)
 {
     UINT32 status;
     if(NULL == dst) {
@@ -86,7 +86,7 @@ int HAL_Configuration_SaveConfigMemory(void *src, int dataLen){
     taken = xSemaphoreTake( config_mutex, 100 );
 
     if (dataLen > flashlen){
-        ADDLOG_ERROR(LOG_FEATURE_CFG, "HAL_Configuration_SaveConfigMemory - table too big - can't save");
+        ADDLOG_ERROR(LOG_FEATURE_CFG, "%s - table too big - can't save", __func__);
         if (taken == pdTRUE)
 			xSemaphoreGive( config_mutex );
         return 0;
@@ -103,7 +103,7 @@ int HAL_Configuration_SaveConfigMemory(void *src, int dataLen){
     if (taken == pdTRUE)
 		xSemaphoreGive( config_mutex );
 
-	ADDLOG_DEBUG(LOG_FEATURE_CFG, "HAL_Configuration_SaveConfigMemory: saved %d bytes to %d", dataLen, flashaddr);
+	ADDLOG_DEBUG(LOG_FEATURE_CFG, "%s: saved %d bytes to %d", __func__, dataLen, flashaddr);
     return dataLen;
 }
 

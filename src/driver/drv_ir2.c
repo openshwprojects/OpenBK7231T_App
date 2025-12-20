@@ -3,16 +3,16 @@
 
 #include "drv_local.h"
 #include "../new_common.h"
-
-#if PLATFORM_BEKEN
-
-#include "include.h"
-#include "arm_arch.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
 #include "../logging/logging.h"
 #include "../obk_config.h"
 #include "../cmnds/cmd_public.h"
+
+#if PLATFORM_BEKEN
+
+#include "include.h"
+#include "arm_arch.h"
 #include "bk_timer_pub.h"
 #include "drv_model_pub.h"
 
@@ -27,8 +27,11 @@
 #include "../../beken378/driver/gpio/gpio.h"
 #include "../../beken378/driver/pwm/pwm.h"
 #if PLATFORM_BK7231N
+#if PLATFORM_BEKEN_NEW
+#include "pwm_bk7231n.h"
+#else
 #include "../../beken378/driver/pwm/pwm_new.h"
-
+#endif
 
 
 #define REG_PWM_BASE_ADDR                   	(0x00802B00UL)
@@ -139,17 +142,20 @@ void bk_gpio_config_output(int x) {
 }
 #endif
 
+#ifndef PLATFORM_BEKEN
+#define MY_SET_DUTY(x)
+#endif
 
-static UINT32 ir_chan
-#ifndef WINDOWS
+static uint32_t ir_chan
+#if PLATFORM_BEKEN
 = BKTIMER0
 #endif
 ;
 
-static UINT32 ir_div = 1;
-static UINT32 ir_periodus = 50;
-static UINT32 duty_on, duty_off;
-static UINT32 reg_duty;
+static uint32_t ir_div = 1;
+static uint32_t ir_periodus = 50;
+static uint32_t duty_on, duty_off;
+static uint32_t reg_duty;
 
 
 
@@ -165,16 +171,27 @@ int state = 0;
 int pwmIndex = -1;
 unsigned int period;
 
-UINT8 group, channel;
+static uint8_t group, channel;
 
-void SendIR2_ISR(UINT8 t) {
+// define to 1 to enable debug timer io output
+#if 0
+#define DEBUG_WAVE_WITH_GPIO 1
+#endif
+
+void SendIR2_ISR(uint8_t t) {
+#if DEBUG_WAVE_WITH_GPIO
+	static int dbg_state = 0;
+	dbg_state = !dbg_state;
+	bk_gpio_output(txpin, dbg_state);
+	return;
+#endif
 	if (cur == 0)
 		return;
 	curTime += myPeriodUs;
 	int tg = *cur;
 	if (tg <= curTime) {
 		curTime -= tg;
-		state = !state; 
+		state = !state;
 		if (state == 0) {
 			MY_SET_DUTY(duty_off);
 		}
@@ -184,7 +201,7 @@ void SendIR2_ISR(UINT8 t) {
 		cur++;
 		if (cur == stop) {
 			// done
-			cur = 0; 
+			cur = 0;
 
 			MY_SET_DUTY(duty_off);
 		}
@@ -198,7 +215,9 @@ startDriver IR2
 SetupIR2 50 0.5 0 8
 // send data
 SendIR2 3200 1300 950 500 900 1300 900 550 900 650 900
-// 
+//
+
+backlog startDriver IR2; SetupIR2 50 0.5 0 9
 */
 static commandResult_t CMD_IR2_SendIR2(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	float frequency = 38000;
@@ -217,7 +236,7 @@ static commandResult_t CMD_IR2_SendIR2(const void* context, const char* cmd, con
 		if (stop - times < maxTimes) {
 			int x = atoi(args);
 			*stop = x;
-			ADDLOG_INFO(LOG_FEATURE_IR, "Value: %i",x);
+			ADDLOG_INFO(LOG_FEATURE_IR, "Value: %i", x);
 			stop++;
 		}
 		else {
@@ -228,12 +247,12 @@ static commandResult_t CMD_IR2_SendIR2(const void* context, const char* cmd, con
 		}
 	}
 	state = 0;
-	ADDLOG_INFO(LOG_FEATURE_IR, "Queue size %i",(stop - times));
+	ADDLOG_INFO(LOG_FEATURE_IR, "Queue size %i", (stop - times));
 
 
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
 	bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off, 0, 0);
-#else
+#elif PLATFORM_BEKEN
 	bk_pwm_update_param((bk_pwm_t)pwmIndex, period, duty_off);
 #endif
 
@@ -245,6 +264,7 @@ static commandResult_t CMD_IR2_SendIR2(const void* context, const char* cmd, con
 #endif
 	return CMD_RES_OK;
 }
+// SetupIR2 [myPeriodUs] [dutyOnFrac] [dutyOffFrac] [txPin]
 static commandResult_t CMD_IR2_SetupIR2(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, 0);
@@ -252,7 +272,6 @@ static commandResult_t CMD_IR2_SetupIR2(const void* context, const char* cmd, co
 	myPeriodUs = Tokenizer_GetArgIntegerDefault(0, 50);
 	float duty_on_frac = Tokenizer_GetArgFloatDefault(1, 0.5f);
 	float duty_off_frac = Tokenizer_GetArgFloatDefault(2, 0.0f);
-
 	txpin = Tokenizer_GetArgIntegerDefault(3, 26);
 
 #if DEBUG_WAVE_WITH_GPIO
@@ -275,10 +294,10 @@ static commandResult_t CMD_IR2_SetupIR2(const void* context, const char* cmd, co
 			reg_duty = REG_GROUP_PWM1_T1_ADDR(group);
 		}
 #endif
-#ifndef WINDOWS
-#if PLATFORM_BK7231N
+#if PLATFORM_BEKEN
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
 		// OSStatus bk_pwm_initialize(bk_pwm_t pwm, uint32_t frequency, uint32_t duty_cycle);
-		bk_pwm_initialize((bk_pwm_t)pwmIndex, period, period/2, 0, 0);
+		bk_pwm_initialize((bk_pwm_t)pwmIndex, period, period / 2, 0, 0);
 #else
 		bk_pwm_initialize((bk_pwm_t)pwmIndex, period, period / 2);
 #endif
@@ -289,7 +308,7 @@ static commandResult_t CMD_IR2_SetupIR2(const void* context, const char* cmd, co
 	}
 #endif
 
-#ifndef WINDOWS
+#if PLATFORM_BEKEN
 	timer_param_t params = {
 	 (unsigned char)ir_chan,
 	 (unsigned char)ir_div, // div
@@ -326,19 +345,21 @@ static commandResult_t CMD_IR2_SetupIR2(const void* context, const char* cmd, co
 	res = sddev_control((char *)TIMER_DEV_NAME, CMD_TIMER_UNIT_ENABLE, &ir_chan);
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
 #endif
+
+	//ADDLOG_INFO(LOG_FEATURE_IR, "Time: %i", curTime);
 	return CMD_RES_OK;
 }
 
 
 void DRV_IR2_Init() {
-	//cmddetail:{"name":"SetupIR2","args":"CMD_IR2_SetupIR2",
-	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_ir2.c","requires":"",
+	//cmddetail:{"name":"SetupIR2","args":"[myPeriodUs] [dutyOnFrac] [dutyOffFrac] [txPin]",
+	//cmddetail:"descr":"Init IR2 pin and interrupt",
+	//cmddetail:"fn":"CMD_IR2_SetupIR2","file":"driver/drv_ir2.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SetupIR2", CMD_IR2_SetupIR2, NULL);
 	//cmddetail:{"name":"SendIR2","args":"CMD_IR2_SendIR2",
 	//cmddetail:"descr":"",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_ir2.c","requires":"",
+	//cmddetail:"fn":"CMD_IR2_SendIR2","file":"driver/drv_ir2.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("SendIR2", CMD_IR2_SendIR2, NULL);
 

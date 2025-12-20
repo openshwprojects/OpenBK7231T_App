@@ -1,12 +1,19 @@
 #ifndef __NEW_MQTT_H__
 #define __NEW_MQTT_H__
 
+#include "../obk_config.h"
+
+#if ENABLE_MQTT
+
 #include "../new_common.h"
 
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
+#ifndef WINDOWS
 #include "lwip/netdb.h"
+#endif
+
 #if PLATFORM_XR809
 #include "my_lwip2_mqtt_replacement.h"
 #else
@@ -64,6 +71,7 @@ enum OBK_Publish_Result_e {
 #define OBK_PUBLISH_FLAG_FORCE_REMOVE_GET		4
 // do not add anything to given topic
 #define OBK_PUBLISH_FLAG_RAW_TOPIC_NAME			8
+#define OBK_PUBLISH_FLAG_QOS_ZERO				16
 
 
 #include "new_mqtt_deduper.h"
@@ -78,7 +86,7 @@ typedef struct obk_mqtt_request_tag {
 
 #define MQTT_PUBLISH_ITEM_TOPIC_LENGTH    64
 #define MQTT_PUBLISH_ITEM_CHANNEL_LENGTH  128
-#define MQTT_PUBLISH_ITEM_VALUE_LENGTH    1023
+#define MQTT_PUBLISH_ITEM_VALUE_LENGTH    1512
 
 typedef enum PostPublishCommands_e {
 	None,
@@ -130,6 +138,7 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags);
 void MQTT_ClearCallbacks();
 int MQTT_RegisterCallback(const char* basetopic, const char* subscriptiontopic, int ID, mqtt_callback_fn callback);
 int MQTT_RemoveCallback(int ID);
+const char* MQTT_RemoveClientFromTopic(const char* topic, const char *prefix);
 
 // this is called from tcp_thread context to queue received mqtt,
 // and then we'll retrieve them from our own thread for processing.
@@ -170,6 +179,8 @@ typedef struct obk_mqtt_publishReplyPrinter_s {
 
 void MQTT_PublishPrinterContentsToStat(obk_mqtt_publishReplyPrinter_t *printer, const char *statName);
 void MQTT_PublishPrinterContentsToTele(obk_mqtt_publishReplyPrinter_t *printer, const char *statName);
+
+#endif // ENABLE_MQTT
 
 
 #endif // __NEW_MQTT_H__

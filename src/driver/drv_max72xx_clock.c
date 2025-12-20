@@ -8,8 +8,9 @@
 #include "../hal/hal_pins.h"
 #include "drv_public.h"
 #include "drv_local.h"
-#include "drv_ntp.h"
-#include <time.h>
+#include "drv_deviceclock.h"
+//#include <time.h>
+#include "../libraries/obktime/obktime.h"	// for time functions
 
 char *my_strcat(char *p, const char *s) {
 	strcat(p, s);
@@ -29,48 +30,17 @@ enum {
 	CLOCK_HUMIDITY,
 	CLOCK_TEMPERATURE,
 };
-bool CHANNEL_IsHumidity(int type) {
-	if (type == ChType_Humidity)
-		return true;
-	if (type == ChType_Humidity_div10)
-		return true;
-	return false;
-}
-bool CHANNEL_IsTemperature(int type) {
-	if (type == ChType_Temperature)
-		return true;
-	if (type == ChType_Temperature_div10)
-		return true;
-	if (type == ChType_Temperature_div100)
-		return true;
-	return false;
-}
-bool CHANNEL_GetGenericOfType(float *out, bool (*checker)(int type)) {
-	int i, t;
-
-	for (i = 0; i < CHANNEL_MAX; i++) {
-		t = g_cfg.pins.channelTypes[i];
-		if (checker(t)) {
-			*out = CHANNEL_GetFinalValue(i);
-			return true;
-		}
-	}
-	return false;
-}
-bool CHANNEL_GetGenericHumidity(float *out) {
-	return CHANNEL_GetGenericOfType(out, CHANNEL_IsHumidity);
-}
-bool CHANNEL_GetGenericTemperature(float *out) {
-	return CHANNEL_GetGenericOfType(out, CHANNEL_IsTemperature);
-}
+/*
 void Clock_Send(int type) {
 	char time[64];
 	struct tm *ltm;
 	float val;
 	char *p;
+	time_t ntpTime;
 
+	ntpTime=(time_t)TIME_GetCurrentTime();
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime(&g_ntpTime);
+	ltm = gmtime(&ntpTime);
 
 	if (ltm == 0) {
 		return;
@@ -94,16 +64,70 @@ void Clock_Send(int type) {
 		strcat(p, "   ");
 	}
 	else if (type == CLOCK_HUMIDITY) {
-		CHANNEL_GetGenericHumidity(&val);
+		if (false==CHANNEL_GetGenericHumidity(&val)) {
+			// failed - exit early, do not change string
+			return;
+		}
 		sprintf(time, "H: %i%%   ", (int)val);
 	} 
 	else if (type == CLOCK_TEMPERATURE) {
-		CHANNEL_GetGenericTemperature(&val);
+		if (false == CHANNEL_GetGenericTemperature(&val)) {
+			// failed - exit early, do not change string
+			return;
+		}
 		sprintf(time, "T: %iC    ", (int)val);
 	}
 
 	CMD_ExecuteCommandArgs("MAX72XX_Print", time, 0);
 }
+*/
+void Clock_Send(int type) {
+	char time[64];
+	TimeComponents tc;
+	float val;
+	char *p;
+	time_t ntpTime;
+
+	ntpTime=(time_t)TIME_GetCurrentTime();
+	// NOTE: on windows, you need _USE_32BIT_TIME_T 
+	tc=calculateComponents((uint32_t)ntpTime);
+
+	time[0] = 0;
+	p = time;
+	if (type == CLOCK_TIME) {
+		p = my_strcat(p, " ");
+		p = add_padded(p, tc.hour);
+		p = my_strcat(p, ":");
+		p = add_padded(p, tc.minute);
+		strcat(p, "   ");
+	}
+	else if (type == CLOCK_DATE) {
+		p = my_strcat(p, " ");
+		p = add_padded(p, tc.day);
+		p = my_strcat(p, ".");
+		p = add_padded(p, tc.month);
+		p = my_strcat(p, ".");
+		//p = add_padded(p, tc.year);
+		strcat(p, "   ");
+	}
+	else if (type == CLOCK_HUMIDITY) {
+		if (false==CHANNEL_GetGenericHumidity(&val)) {
+			// failed - exit early, do not change string
+			return;
+		}
+		sprintf(time, "H: %i%%   ", (int)val);
+	} 
+	else if (type == CLOCK_TEMPERATURE) {
+		if (false == CHANNEL_GetGenericTemperature(&val)) {
+			// failed - exit early, do not change string
+			return;
+		}
+		sprintf(time, "T: %iC    ", (int)val);
+	}
+
+	CMD_ExecuteCommandArgs("MAX72XX_Print", time, 0);
+}
+
 void Clock_SendTime() {
 	Clock_Send(CLOCK_TIME);
 }
@@ -116,12 +140,9 @@ void Clock_SendHumidity() {
 void Clock_SendTemperature() {
 	Clock_Send(CLOCK_TEMPERATURE);
 }
-static int cycle = 0;
+static unsigned int cycle = 0;
 
 void Run_NoAnimation() {
-	//int max_cycle;
-	//bool bHasDHT;
-
 	cycle+=4;
 	if (cycle < 10) {
 		Clock_SendDate();
@@ -135,23 +156,35 @@ void Run_NoAnimation() {
 	else {
 		Clock_SendTemperature();
 	}
+	CMD_ExecuteCommandArgs("MAX72XX_refresh", "", 0);
 	cycle %= 40;
 }
+static int g_del = 0;
+/*
 void Run_Animated() {
+	cycle++;
+	if (cycle < 4) {
+		return;
+	}
+	cycle = 0;
 	char time[64];
 	struct tm *ltm;
 	char *p;
+	time_t ntpTime;
 
+	ntpTime=(time_t)TIME_GetCurrentTime();
 	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime(&g_ntpTime);
+	ltm = gmtime(&ntpTime);
 
 	if (ltm == 0) {
 		return;
 	}
+	int scroll = MAX72XXSingle_GetScrollCount();
 	//scroll_cycle = 0;
-	if (ltm->tm_sec == 0) {
+	if (scroll == 0 && g_del == 0) {
 		time[0] = 0;
 		p = time;
+		p = my_strcat(p, "  ");
 
 		p = add_padded(p, ltm->tm_hour);
 		p = my_strcat(p, ":");
@@ -159,28 +192,86 @@ void Run_Animated() {
 		strcat(p, " ");
 
 		p = my_strcat(p, " ");
-		p = add_padded(p, ltm->tm_year);
+		p = add_padded(p, ltm->tm_year+1900);
 		p = my_strcat(p, ".");
 		p = add_padded(p, ltm->tm_mon + 1);
 		p = my_strcat(p, ".");
 		p = add_padded(p, ltm->tm_mday);
-		strcat(p, "");
+		strcat(p, "   ");
 
+		CMD_ExecuteCommandArgs("MAX72XX_Clear", NULL, 0);
 		CMD_ExecuteCommandArgs("MAX72XX_Print", time, 0);
+		CMD_ExecuteCommandArgs("MAX72XX_refresh", "", 0);
+		g_del = 10;
 	}
-	else {
-		CMD_ExecuteCommandArgs("MAX72XX_Scroll", "1", 0);
+	if (g_del > 0) {
+		g_del--;
+		return;
 	}
+	CMD_ExecuteCommandArgs("MAX72XX_Scroll", "-1", 0);
+	CMD_ExecuteCommandArgs("MAX72XX_refresh", "", 0);
 }
+*/
+void Run_Animated() {
+	cycle++;
+	if (cycle < 4) {
+		return;
+	}
+	cycle = 0;
+	char time[64];
+	TimeComponents tc;
+	char *p;
+	time_t ntpTime;
+
+	ntpTime=(time_t)TIME_GetCurrentTime();
+	// NOTE: on windows, you need _USE_32BIT_TIME_T 
+	tc=calculateComponents((uint32_t)ntpTime);
+
+	int scroll = MAX72XXSingle_GetScrollCount();
+	//scroll_cycle = 0;
+	if (scroll == 0 && g_del == 0) {
+		time[0] = 0;
+		p = time;
+		p = my_strcat(p, "  ");
+
+		p = add_padded(p, tc.hour);
+		p = my_strcat(p, ":");
+		p = add_padded(p, tc.minute);
+		strcat(p, " ");
+
+		p = my_strcat(p, " ");
+		p = add_padded(p, tc.year);
+		p = my_strcat(p, ".");
+		p = add_padded(p, tc.month);
+		p = my_strcat(p, ".");
+		p = add_padded(p, tc.month);
+		strcat(p, "   ");
+
+		CMD_ExecuteCommandArgs("MAX72XX_Clear", NULL, 0);
+		CMD_ExecuteCommandArgs("MAX72XX_Print", time, 0);
+		CMD_ExecuteCommandArgs("MAX72XX_refresh", "", 0);
+		g_del = 10;
+	}
+	if (g_del > 0) {
+		g_del--;
+		return;
+	}
+	CMD_ExecuteCommandArgs("MAX72XX_Scroll", "-1", 0);
+	CMD_ExecuteCommandArgs("MAX72XX_refresh", "", 0);
+}
+bool g_animated = false;
 void DRV_MAX72XX_Clock_OnEverySecond() {
-	Run_NoAnimation();
+	if (g_animated == false) {
+		Run_NoAnimation();
+	}
 }
 void DRV_MAX72XX_Clock_RunFrame() {
-
+	if (g_animated) {
+		Run_Animated();
+	}
 }
 /*
 Config for my clock with IR
-
 
 startDriver MAX72XX
 MAX72XX_Setup 0 1 26
@@ -243,9 +334,23 @@ if $CH10==4 then my_send_style_blue
 
 
 */
+static commandResult_t DRV_MAX72XX_Clock_Animate(const void *context, const char *cmd, const char *args, int flags) {
+
+
+	Tokenizer_TokenizeString(args, 0);
+
+	g_animated = Tokenizer_GetArgInteger(0);
+
+
+	return CMD_RES_OK;
+}
 void DRV_MAX72XX_Clock_Init() {
 
-
+	//cmddetail:{"name":"MAX72XXClock_Animate","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"DRV_MAX72XX_Clock_Animate","file":"driver/drv_max72xx_clock.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("MAX72XXClock_Animate", DRV_MAX72XX_Clock_Animate, NULL);
 }
 
 
