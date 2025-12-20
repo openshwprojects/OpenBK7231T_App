@@ -270,6 +270,19 @@ static void UART_WriteDisableNMEA(void) {
             }
     }
 }
+
+static void UART_Write_SAVE(void) {
+uint8_t cfg_cfg_save_all[] ={ 0xB5,0x62,0x06,0x09,0x0D,0x00,0x00,0x00,0x00,0x00,0xFF,0xFF,0x00,0x00,0x00,0x00,0x00,0x00,0x03,0x1D,0xAB };
+    byte b;
+    for (int j = 0; j < sizeof(cfg_cfg_save_all); j++) {
+    	b = (byte)cfg_cfg_save_all[j];
+       	UART_SendByte(b);
+    }
+}
+
+
+
+
 static void UART_WriteEnableRMC(void) {
     char send[][26]={
     	"$PUBX,40,RMC,0,1,0,0*46\r\n",   // Enable RMC
@@ -302,6 +315,7 @@ void NEO6M_UART_Init(void) {
 	setclock2gps = false;
 	fakelat[0]='\0';
 	fakelong[0]='\0';
+	bool savecfg=0;
 	for (int i=1; i<=temp; i++) {
 		arg = Tokenizer_GetArg(i);
 		
@@ -344,6 +358,12 @@ void NEO6M_UART_Init(void) {
 			fakelong[i]='\0';
 			ADDLOG_INFO(LOG_FEATURE_DRV,"NEO6M: fakelong=%s",fakelong);
 		} 
+		
+		fake=NULL;
+		fake=strstr(arg, "savecfg");
+		if ( arg && fake ) {
+			savecfg=1;
+		} 
 
 		if (Tokenizer_IsArgInteger(i)){
 			NEO6M_baudRate = Tokenizer_GetArgInteger(i);
@@ -353,8 +373,7 @@ void NEO6M_UART_Init(void) {
 	UART_InitUART(NEO6M_baudRate, 0, 0);
 	UART_InitReceiveRingBuffer(NEO6M_UART_RECEIVE_BUFFER_SIZE);
 	UART_WriteDisableNMEA();
-	
-
+	if (savecfg) UART_Write_SAVE();
 }
 
 
