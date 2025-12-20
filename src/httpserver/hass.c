@@ -486,6 +486,54 @@ HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **f
 
 	return info;
 }
+HassDeviceInfo* hass_init_device_info_name(ENTITY_TYPE type, const char* payload_on, const char* payload_off, int asensdatasetix, const char *uniq_id,const chart *name) {
+	HassDeviceInfo* info = os_malloc(sizeof(HassDeviceInfo));
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "hass_init_device_info=%p", info);
+
+	sprintf(info->unique_id, "%s", uniq_id);
+	hass_populate_device_config_channel(type, info->unique_id, info);
+
+	info->ids = cJSON_CreateArray();
+	cJSON_AddItemToArray(info->ids, cJSON_CreateString(CFG_GetDeviceName()));
+
+	info->device = hass_build_device_node(info->ids);
+
+	info->root = cJSON_CreateObject();
+	cJSON_AddItemToObject(info->root, "dev", info->device);    //device
+
+	bool isSensor = false;	//This does not count binary_sensor
+
+	cJSON_AddStringToObject(info->root, "name", name);
+	cJSON_AddStringToObject(info->root, "~", CFG_GetMQTTClientId());      //base topic
+	// remove availability information for sensor to keep last value visible on Home Assistant
+	bool flagavty = false;
+	flagavty = CFG_HasFlag(OBK_FLAG_NOT_PUBLISH_AVAILABILITY);
+	// if door sensor is running, then deep sleep will be invoked mostly, then we dont want availability
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	if (DRV_IsRunning("DoorSensor") == false && DRV_IsRunning("tmSensor") == false)
+#endif
+	{
+		if (!isSensor && !flagavty) {
+			cJSON_AddStringToObject(info->root, "avty_t", "~/connected");   //availability_topic, `online` value is broadcasted
+		}
+	}
+
+	if (!isSensor && type != HASS_TEXTFIELD && type != HASS_GARAGE) {	//Sensors (except binary_sensor) don't use payload
+		if(type == HASS_BUTTON) {
+			cJSON_AddStringToObject(info->root, "payload_press", payload_on);
+		}
+		else if(type != HASS_TEXTFIELD){
+			cJSON_AddStringToObject(info->root, "pl_on", payload_on);    //payload_on
+			cJSON_AddStringToObject(info->root, "pl_off", payload_off);   //payload_off
+		}
+	}
+
+	cJSON_AddStringToObject(info->root, "uniq_id", info->unique_id);  //unique_id
+	cJSON_AddNumberToObject(info->root, "qos", 1);
+
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_HASS, "root=%p", info->root);
+	return info;
+}
 /// @brief Initializes HomeAssistant device discovery storage with common values.
 /// @param type 
 /// @param index This is used to generate generate unique_id and name. 
@@ -934,9 +982,9 @@ HassDeviceInfo* hass_init_light_singleColor_onChannels(int toggle, int dimmer, i
 }
 
 
-HassDeviceInfo* hass_init_sensor_device_info_topic(ENTITY_TYPE type, const char* state_topic,int channel, int decPlaces, int decOffset, int divider) {
+HassDeviceInfo* hass_init_sensor_device_info_topic(ENTITY_TYPE type,const char* uniq_id const char* state_topic,int channel, int decPlaces, int decOffset, int divider,const char* name) {
 	//Assuming that there is only one DHT setup per device which keeps uniqueid/names simpler
-	HassDeviceInfo* info = hass_init_device_info(type, channel, NULL, NULL, 0, state_topic);	//using channel as index to generate uniqueId
+	HassDeviceInfo* info = hass_init_device_info_name(type, NULL, NULL, 0, uniq_id,name);	//using channel as index to generate uniqueId_
 
 	//https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes
 	switch (type) {
