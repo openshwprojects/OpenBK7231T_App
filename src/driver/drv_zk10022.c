@@ -153,11 +153,11 @@ void readHoldingRegisters(){
 	bool constant_current_status = registers[0x11];
 	bool switch_output = registers[0x12];
 
-	float low_voltage_protection = registers[0x52] * 0.01
-	float over_voltage_protection = registers[0x53] * 0.01
-	float over_current_protection = registers[0x54] * 0.01
-	float over_power_protection = registers[0x55] * 0.1
-	float over_temperature_protection = registers[0x5C]*0.1
+	float low_voltage_protection = registers[0x52] * 0.01;
+	float over_voltage_protection = registers[0x53] * 0.01;
+	float over_current_protection = registers[0x54] * 0.01;
+	float over_power_protection = registers[0x55] * 0.1;
+	float over_temperature_protection = registers[0x5C]*0.1;
 
 	#if ENABLE_MQTT
 		MQTT_PublishMain_StringFloat("zk_10022_set_voltage", set_voltage,2, 0);
