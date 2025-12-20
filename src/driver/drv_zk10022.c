@@ -147,6 +147,7 @@ void readHoldingRegisters(){
 	float output_voltage=registers[2]*0.01;
 	float output_current=registers[3]*0.01;
 	float output_power=registers[4]*0.1;
+	float input_voltage=registers[5]*0.01;
 	float temperature=registers[0x0d]*0.1;
 	bool protection_status = registers[0x10];
 	bool constant_current_status = registers[0x11];
@@ -158,6 +159,7 @@ void readHoldingRegisters(){
 		MQTT_PublishMain_StringFloat("zk_10022_output_voltage", output_voltage,2, 0);
 		MQTT_PublishMain_StringFloat("zk_10022_output_current", output_current,2, 0);
 		MQTT_PublishMain_StringFloat("zk_10022_output_power", output_power,2, 0);
+		MQTT_PublishMain_StringFloat("zk_10022_input_voltage", input_voltage,2, 0);
 		MQTT_PublishMain_StringFloat("zk_10022_temperature", temperature,2, 0);
 		MQTT_PublishMain_StringInt("zk_10022_protection_status", (int)protection_status, 0);
 		MQTT_PublishMain_StringInt("zk_10022_constant_current_status", (int)constant_current_status, 0);

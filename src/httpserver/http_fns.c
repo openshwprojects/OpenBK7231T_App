@@ -2089,6 +2089,12 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		hass_free_device_info(dev_info);
 		discoveryQueued = true;
 	}
+	dev_info = hass_init_sensor_device_info_topic(TEMPERATURE_SENSOR,"zk_10022_input_voltage","zk_10022_input_voltage/get",-1,-1,-1,"Input Voltage");
+	if (dev_info) {
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		discoveryQueued = true;
+	}
 #endif
 
 #ifdef ENABLE_DRIVER_BL0937
