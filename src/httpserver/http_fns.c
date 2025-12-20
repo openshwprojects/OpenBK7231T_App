@@ -2041,49 +2041,49 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
         hass_free_device_info(dev_info);
         discoveryQueued = true;
     }
-	dev_info = hass_init_sensor_device_info_topic(CURRENT_SENSOR,"zk_10022_set_current","zk_10022_set_current/get",1,-1,-1,-1,"Set Current");
+	dev_info = hass_init_sensor_device_info_topic(CURRENT_SENSOR,"zk_10022_set_current","zk_10022_set_current/get",-1,-1,-1,"Set Current");
 	if (dev_info) {
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
 		discoveryQueued = true;
 	}
-	dev_info = hass_init_sensor_device_info_topic(VOLTAGE_SENSOR,"zk_10022_output_voltage","zk_10022_output_voltage/get",2,-1,-1,-1,"Output Voltage");
+	dev_info = hass_init_sensor_device_info_topic(VOLTAGE_SENSOR,"zk_10022_output_voltage","zk_10022_output_voltage/get",-1,-1,-1,"Output Voltage");
 	if (dev_info) {
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
 		discoveryQueued = true;
 	}
-	dev_info = hass_init_sensor_device_info_topic(CURRENT_SENSOR,"zk_10022_output_current","zk_10022_output_current/get",3,-1,-1,-1,"Output Current");
+	dev_info = hass_init_sensor_device_info_topic(CURRENT_SENSOR,"zk_10022_output_current","zk_10022_output_current/get",-1,-1,-1,"Output Current");
 	if (dev_info) {
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
 		discoveryQueued = true;
 	}
-	dev_info = hass_init_sensor_device_info_topic(CURRENT_SENSOR,"zk_10022_output_power","zk_10022_output_power/get",4,-1,-1,-1,"Output Power");
+	dev_info = hass_init_sensor_device_info_topic(CURRENT_SENSOR,"zk_10022_output_power","zk_10022_output_power/get",-1,-1,-1,"Output Power");
 	if (dev_info) {
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
 		discoveryQueued = true;
 	}
-	dev_info = hass_init_sensor_device_info_topic(BINARY_SENSOR,"zk_10022_switch_output","zk_10022_switch_output/get",5,-1,-1,-1,"Switch Output");
+	dev_info = hass_init_sensor_device_info_topic(BINARY_SENSOR,"zk_10022_switch_output","zk_10022_switch_output/get",-1,-1,-1,"Switch Output");
 	if (dev_info) {
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
 		discoveryQueued = true;
 	}
-	dev_info = hass_init_sensor_device_info_topic(BINARY_SENSOR,"zk_10022_protection_status","zk_10022_protection_status/get",6,-1,-1,-1,"Protection Status");
+	dev_info = hass_init_sensor_device_info_topic(BINARY_SENSOR,"zk_10022_protection_status","zk_10022_protection_status/get",-1,-1,-1,"Protection Status");
 	if (dev_info) {
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
 		discoveryQueued = true;
 	}
-	dev_info = hass_init_sensor_device_info_topic(BINARY_SENSOR,"zk_10022_constant_current_status","zk_10022_constant_current_status/get",7,-1,-1,-1,"Constant Current Status");
+	dev_info = hass_init_sensor_device_info_topic(BINARY_SENSOR,"zk_10022_constant_current_status","zk_10022_constant_current_status/get",-1,-1,-1,"Constant Current Status");
 	if (dev_info) {
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);
 		discoveryQueued = true;
 	}
-	dev_info = hass_init_sensor_device_info_topic(TEMPERATURE_SENSOR,"zk_10022_temperature","zk_10022_temperature/get",8,-1,-1,-1,"Temperature");
+	dev_info = hass_init_sensor_device_info_topic(TEMPERATURE_SENSOR,"zk_10022_temperature","zk_10022_temperature/get",-1,-1,-1,"Temperature");
 	if (dev_info) {
 		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 		hass_free_device_info(dev_info);

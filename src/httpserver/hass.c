@@ -982,7 +982,7 @@ HassDeviceInfo* hass_init_light_singleColor_onChannels(int toggle, int dimmer, i
 }
 
 
-HassDeviceInfo* hass_init_sensor_device_info_topic(ENTITY_TYPE type,const char* uniq_id, const char* state_topic,int channel, int decPlaces, int decOffset, int divider,const char* name) {
+HassDeviceInfo* hass_init_sensor_device_info_topic(ENTITY_TYPE type,const char* uniq_id, const char* state_topic, int decPlaces, int decOffset, int divider,const char* name) {
 	//Assuming that there is only one DHT setup per device which keeps uniqueid/names simpler
 	HassDeviceInfo* info = hass_init_device_info_name(type, NULL, NULL, 0, uniq_id,name);	//using channel as index to generate uniqueId_
 
@@ -1060,7 +1060,7 @@ HassDeviceInfo* hass_init_sensor_device_info_topic(ENTITY_TYPE type,const char* 
 	case BATTERY_CHANNEL_SENSOR:
 		cJSON_AddStringToObject(info->root, "dev_cla", "battery");
 		cJSON_AddStringToObject(info->root, "unit_of_meas", "%");
-		sprintf(g_hassBuffer, "~/%d/get", channel);
+		sprintf(g_hassBuffer, "~/%s", state_topic);
 		cJSON_AddStringToObject(info->root, "stat_t", g_hassBuffer);
 		break;
 	case BATTERY_VOLTAGE_SENSOR:
