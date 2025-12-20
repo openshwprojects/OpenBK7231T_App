@@ -167,7 +167,7 @@ void readHoldingRegisters(){
 	buffer[2] = 0x00;
 	buffer[3] = 0x00;
 	buffer[4] = 0x00;
-	buffer[5] = 0x0C;
+	buffer[5] = 0x0E;
 	uint16_t crc = MODBUS_CRC16(buffer, 6);
 
 	buffer[6] = crc & 0xFF;
