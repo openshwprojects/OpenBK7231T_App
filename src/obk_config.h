@@ -239,6 +239,7 @@
 
 //#define	ENABLE_DRIVER_UART_TCP					1
 
+#define ENABLE_DRIVER_SHUTTERS					1
 // #define	ENABLE_DRIVER_PIR					1
 //#define ENABLE_DRIVER_BKPARTITIONS				1
 #define ENABLE_HA_DISCOVERY						1
