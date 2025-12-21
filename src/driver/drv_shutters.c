@@ -106,11 +106,11 @@ void DRV_Shutters_AddToHtmlPage(http_request_t *request, int bPreState) {
 		hprintf255(request,
 			"<div>"
 			"<button class='btn' onclick='sendCmd(\"ShutterMoveTo %i 1\")'>Open</button> "
-			"<button class='btn' onclick='sendCmd(\"ShutterMoveTo %i %.2f\")'>Stop</button> "
+			"<button class='btn' onclick='sendCmd(\"ShutterMoveTo %i stop\")'>Stop</button> "
 			"<button class='btn' onclick='sendCmd(\"ShutterMoveTo %i 0\")'>Close</button>"
 			"</div>",
 			s->channel,
-			s->channel, (s->frac >= 0.0f) ? s->frac : 0.0f,
+			s->channel,
 			s->channel
 		);
 
@@ -182,14 +182,24 @@ static commandResult_t CMD_Shutter_MoveTo(const void *context, const char *cmd, 
 	Tokenizer_TokenizeString(args, 0);
 
 	int index = Tokenizer_GetArgInteger(0);
+
+	shutter_t *s = GetForChannel(index);
+	if (!s)
+		return CMD_RES_BAD_ARGUMENT;
+
+	const char *target = Tokenizer_GetArg(1);
+	if (!stricmp(target, "stop")) {
+		// stop right now
+		Shutter_Stop(s);
+		// it's fair to assume that if we stop, target is the current pos
+		s->targetFrac = s->frac;
+		return CMD_RES_OK;
+	}
 	float frac = Tokenizer_GetArgFloat(1);
 
 	if (frac < 0.0f) frac = 0.0f;
 	if (frac > 1.0f) frac = 1.0f;
 
-	shutter_t *s = GetForChannel(index);
-	if (!s)
-		return CMD_RES_BAD_ARGUMENT;
 
 	s->targetFrac = frac;
 
