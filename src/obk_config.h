@@ -602,8 +602,6 @@
 #define ENABLE_I2C								1
 #define ENABLE_LITTLEFS							1
 
-#define ENABLE_DRIVER_DCF77					1
-
 #else
 
 // #error "Platform not defined"
