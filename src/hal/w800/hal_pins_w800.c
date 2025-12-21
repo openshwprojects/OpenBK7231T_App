@@ -271,8 +271,10 @@ void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandle
 	if (mode == INTERRUPT_RISING) {
 		w_mode = WM_GPIO_IRQ_TRIG_RISING_EDGE;
 	}
-	else {
+	else if (mode == INTERRUPT_FALLING) {
 		w_mode = WM_GPIO_IRQ_TRIG_FALLING_EDGE;
+	} else {
+		w_mode = WM_GPIO_IRQ_TRIG_DOUBLE_EDGE;
 	}
 	tls_gpio_irq_enable(w600Pin, w_mode);
 }

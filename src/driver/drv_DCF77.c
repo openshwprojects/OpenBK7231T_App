@@ -31,7 +31,7 @@
 #elif PLATFORM_LN882H
 #include "../../sdk/OpenLN882H/mcu/driver_ln882h/hal/hal_common.h"
 #include "../../sdk/OpenLN882H/mcu/driver_ln882h/hal/hal_gpio.h"
-#define IRQ_raise_and_fall 1
+//#define IRQ_raise_and_fall 1
 #elif PLATFORM_REALTEK
 #include "gpio_irq_api.h"
 #include "../hal/realtek/hal_pinmap_realtek.h"
@@ -60,8 +60,8 @@ unsigned int GPIO_DCF77_pin;
 #endif
 
 #define DCF77_SYNC_THRESHOLD_MS 1500 // missing pulse threshold (between bits ~1000ms, missing pulse ~2000ms)
-#define DCF77_MIN_PULSE_MS 20
-#define DCF77_MAX_PULSE_MS 400
+#define DCF77_MIN_PULSE_MS 50
+#define DCF77_MAX_PULSE_MS 250
 
 typedef enum {
 	RISING = 0,
@@ -73,10 +73,11 @@ uint8_t STARTEDGE = RISING;
 
 static uint8_t next_IRQ;
 // define max duration for "0" bit and min duration of "1" bit - might be overridden by command line 
-static uint8_t end0=180;
-static uint8_t start1=180;
+static uint8_t end0=150;
+static uint8_t start1=150;
 
-#if PLATFORM_BEKEN || PLATFORM_BL602
+//#if PLATFORM_BEKEN || PLATFORM_BL602
+#ifndef IRQ_raise_and_fall
 // will be used to "toggle" between the edges
 uint8_t TRIGGER_START, TRIGGER_END;
 #else
@@ -84,32 +85,21 @@ uint8_t TRIGGER_START, TRIGGER_END;
 
 
 static volatile uint32_t dcf77_last_edge_tick = 0;
-static volatile uint32_t dcf77_pulse_length_ms = 0;
+static volatile uint16_t dcf77_pulse_length = 0;
 static volatile uint8_t dcf77_minute_bits[59];
 static volatile uint8_t dcf77_pulse_count = 0;
 static volatile bool dcf77_synced = false;
 static volatile time_t dcf77_next_minute_epoch = 0;
+static uint64_t actbit=1;
+
 //static volatile bool dcf77_has_valid_epoch = false;
 
 static uint32_t get_ms_tick() {
 #ifdef PLATFORM_W600
 	typedef portTickType TickType_t;		// W600/W800: xTaskGetTickCount() is of type "portTickType", all others "TickType_t" , W600 has no definition for TickType_t
 #endif
-#if PLATFORM_BEKEN || PLATFORM_LN882H || PLATFORM_REALTEK || PLATFORM_XRADIO || PLATFORM_ESP8266 || PLATFORM_ESPIDF || PLATFORM_W600 || PLATFORM_W800
     return xTaskGetTickCount() * portTICK_PERIOD_MS;
-#elif 0
-    portTICK_RATE_MS * xTaskGetTickCount();
-#elif PLATFORM_BL602 || PLATFORM_ECR6600
-    return xTaskGetTickCount() * portTICK_PERIOD_MS;
-#else
-    return xTaskGetTickCount() * portTICK_PERIOD_MS;
-#endif
 }
-
-#if PLATFORM_BL602 || PLATFORM_BEKEN
-static void DCF77_Interrupt(void* arg);
-#endif
-
 
 
 int minute;
@@ -118,11 +108,6 @@ int day;
 int weekday;
 int month;
 int year;
-int part_par_date;	// well start and calc parity up to day, so only year is open in ISR
-int partdecoded=0;
-//struct tm t;
-//TimeComponents tc;
-int pre_valid=0;
 // DCF77 epoch calculation
 
 // Helper: convert BCD bits to int
@@ -216,19 +201,7 @@ static int dcf77_decode_u64(const uint64_t bits, time_t* epoch_out) {
     // just to be sure: a range check
     if (minute > 59 || hour > 23 || day < 1 || day > 31 || month < 1 || month > 12 || year > 99) return 0;
 
-/*    struct tm t;
-    t.tm_sec = 0;
-    t.tm_min = minute;
-    t.tm_hour = hour;
-    t.tm_mday = day;
-    t.tm_mon = month-1;
-    t.tm_year = year+100; // DCF77 gives 2-digit year; assume 2000+
-    t.tm_isdst = -1;
-    time_t epoch = mktime(&t);
-*/
     time_t epoch = (time_t)dateToEpoch((uint16_t)year+2000, month, day, hour, minute, 0);
-//    const char *wdays[] = {"Sun","Mon", "Tue", "Wed", "Thu", "Fri", "Sat","Sun"}; 
-//    addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: dcf77_decode %s %d.%d.%d %d:%d:00",wdays[weekday],day,month,year+2000,hour,minute);
     addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: dcf77_decode %02d.%02d.%d %02d:%02d:00",day,month,year+2000,hour,minute);
 
     if (epoch_out) *epoch_out = epoch;
@@ -238,94 +211,35 @@ static int dcf77_decode_u64(const uint64_t bits, time_t* epoch_out) {
 static uint64_t dcfbits=0;	// we are storing our bits here 
 static uint64_t dcfbits_last=0;	// backup to show on main page if requested 
 
-/*
-// START for DEBUG 
-static uint64_t dcfbits150=0;	// we are storing our bits here 
-static uint64_t dcfbits180=0;	// we are storing our bits here 
-// END for DEBUG 
-*/
+uint16_t debugtime=0;	// time from last interrupt - set in ISR, possibly print in QuickTick
 
 // new DCF77 interrupt handler
 static void DCF77_ISR_Common() {
-    static uint64_t actbit=1;
     
     uint32_t now = get_ms_tick();
     if (dcf77_last_edge_tick == 0) dcf77_last_edge_tick = now;		// start is no detected sync ;-)
-
-    addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_RAW, "DCF77: DEBUG: gap to prev. interrupt  %i", now - dcf77_last_edge_tick );
-   
-    // handle detection of "long gap" == start of sync
-    if (now - dcf77_last_edge_tick > DCF77_SYNC_THRESHOLD_MS){
-//           addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: DEBUG: detected sync pulse > %i", now - dcf77_last_edge_tick );
-           dcf77_pulse_count = 0;
-           dcfbits=0;
-/*
-// START for DEBUG 
-dcfbits150=0;
-dcfbits180=0;
-// END for DEBUG 
-*/
-           actbit=1;
-           dcf77_synced = true;
-           settime=0;
-    }
-    
-    
-    /*
-	// We started by defining "STARTEDGE" to see wich edge "starts" the bit
-	//
-	// and to toggle between RISING and FALLING we define TRIGGER_START and TRIGGER_END
-	// to change the edge after we found one     
-    
-#if PLATFORM_BEKEN
-    if (STARTEDGE == RISING){
-    	uint8_t TRIGGER_START = IRQ_TRIGGER_RISING_EDGE, TRIGGER_END = IRQ_TRIGGER_FALLING_EDGE; 
-    }
-    else {
-    	uint8_t TRIGGER_START = IRQ_TRIGGER_FALLING_EDGE, TRIGGER_END = IRQ_TRIGGER_RISING_EDGE; 
-    }
-#elif PLATFORM_BL602
-    if (STARTEDGE == RISING){
-    	uint8_t TRIGGER_START = GPIO_INT_TRIG_POS_PULSE, TRIGGER_END = GPIO_INT_TRIG_NEG_PULSE; 
-    }
-    else {
-    	uint8_t TRIGGER_START = GPIO_INT_TRIG_NEG_PULSE, TRIGGER_END = GPIO_INT_TRIG_POS_PULSE; 
-    }
-#else
-#endif
-
-
-    
-    */
-#if PLATFORM_BEKEN
-    next_IRQ ^= 1;	// toggle IRQ between 0 and 1
-
-    if (next_IRQ != STARTEDGE){		// caution, we already toggled the value
-    	gpio_int_enable(GPIO_DCF77, TRIGGER_END , DCF77_Interrupt);
-    	dcf77_last_edge_tick = now;
-    	return;
-    } else {
-    	gpio_int_enable(GPIO_DCF77, TRIGGER_START , DCF77_Interrupt);
-    }
-#elif PLATFORM_BL602
-    next_IRQ ^= 1;	// toggle IRQ between 0 and 1
-
-    if (next_IRQ != STARTEDGE){		// caution, we already toggled the value
-	hal_gpio_register_handler(DCF77_Interrupt, GPIO_DCF77, GPIO_INT_CONTROL_ASYNC, TRIGGER_END, (void*)NULL);
-    	dcf77_last_edge_tick = now;
-    	return;
-    } else {
-	hal_gpio_register_handler(DCF77_Interrupt, GPIO_DCF77, GPIO_INT_CONTROL_ASYNC, TRIGGER_START, (void*)NULL);
-    }
-#else
-
+    debugtime = now - dcf77_last_edge_tick;
+	
+// now check, if a new starting edge was found.
+// if platform only allows interrupts on "rise" and "fall", we need to "toggle" the interrupt here, so we find the next change ("else" tree)
+#if IRQ_raise_and_fall
     // this ISR is for both rising and falling, 
     // if STARTEDGE == RISING (RISING = 0) pulse starts with rising edge  --> check, if pin is 1 after interrupt
     // if STARTEDGE == FALLING (FALLING = 1) pulse starts with falling edge  --> check, if pin is 0 after interrupt
     // --> check for !=  STARTEDGE 
     if (HAL_PIN_ReadDigitalInput(GPIO_DCF77) != STARTEDGE){		// start of "bit"
     	dcf77_last_edge_tick = now;
+    	dcf77_pulse_length = 0;
     	return;
+    }
+#else
+    next_IRQ ^= 1;	// toggle IRQ between 0 and 1
+    if (next_IRQ != STARTEDGE){		// caution, we already toggled the value
+    	dcf77_last_edge_tick = now;
+	HAL_AttachInterrupt(GPIO_DCF77, TRIGGER_END, DCF77_ISR_Common);
+    	return;
+    } else {
+    	HAL_AttachInterrupt(GPIO_DCF77, TRIGGER_START, DCF77_ISR_Common);
     }
 #endif
     // wait for sync
@@ -336,92 +250,54 @@ dcfbits180=0;
 
     // if we reached this point
     //		we are synced and 
-    //		we just had the edge "ending" the bit 
-    uint32_t pulse_length = now - dcf77_last_edge_tick;
-//    addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: DEBUG: actual pulse length %i (count=%i)", pulse_length, dcf77_pulse_count);
-    if (dcf77_pulse_count < 59) {
-        if ( dcf77_pulse_count > 20 && // ignore "lenght" errors outside of time information (starts at bit 21)
-        	(pulse_length < DCF77_MIN_PULSE_MS || pulse_length > DCF77_MAX_PULSE_MS || (pulse_length > end0 && pulse_length < start1))) {
-            // Invalid pulse, lose sync
-            dcf77_synced = false;
-            dcf77_pulse_count = 0;
-            actbit=1;
-            addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: bit illegal pulse length %i", pulse_length );
-            return;
-        }
-        // pulse is of valid length. All bits are 0, so only on a long pulse we need to set this position to 1
-        if (pulse_length > start1) dcfbits |= actbit;
-/*
-// START for DEBUG 
-        if (pulse_length > 150) dcfbits150 |= actbit;
-        if (pulse_length > 180) dcfbits180 |= actbit;
-// END for DEBUG 
-*/
-
-//        addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_RAW, "DCF77: bit %i is %i", dcf77_pulse_count,  (pulse_length > 150));
-        dcf77_pulse_count++;
-        actbit <<= 1;
-    }
-    if (dcf77_pulse_count == 59) {
-        // Buffer full, copy to decode for next minute (outside ISR)
-        settime=1;
-       // Wait for next sync
-       dcf77_synced = false;
-    }
+    //		we just had the edge "ending" the bit
+    // --> "reuse" the already computed length
+    dcf77_pulse_length = debugtime;
+    
 }
 
+void DCF77_QuickTick(){
+	if (debugtime){
+		addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_RAW, "DCF77: DEBUG: gap to prev. interrupt  %i", debugtime );
+		// handle detection of "long gap" == start of sync
+		if (debugtime > DCF77_SYNC_THRESHOLD_MS){
+			dcf77_pulse_count = 0;
+			dcfbits=0;
+			actbit=1;
+			dcf77_synced = true;
+			settime=0;
+		}
+		debugtime=0;
+	}
+	if (dcf77_pulse_length) {
+	    if (dcf77_pulse_count < 59) {
+		if ( dcf77_pulse_count > 20 && // ignore "length" errors outside of time information (starts at bit 21)
+			(dcf77_pulse_length < DCF77_MIN_PULSE_MS || dcf77_pulse_length > DCF77_MAX_PULSE_MS || (dcf77_pulse_length > end0 && dcf77_pulse_length < start1))) {
+		    // Invalid pulse, lose sync
+		    dcf77_synced = false;
+		    dcf77_pulse_count = 0;
+		    actbit=1;
+		    addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: bit illegal pulse length %i", dcf77_pulse_length );
+		    dcf77_pulse_length=0;
+		    return;
+		}
+		// pulse is of valid length. All bits are 0, so only on a long pulse we need to set this position to 1
+		if (dcf77_pulse_length > start1) dcfbits |= actbit;
+		dcf77_pulse_count++;
+		actbit <<= 1;
+	    }
+	    if (dcf77_pulse_count == 59) {
+		// Buffer full, copy to decode for next minute (outside ISR)
+		settime=1;
+	       // Wait for next sync
+	       dcf77_synced = false;
+	    }
+		
+	dcf77_pulse_length=0;
+	}
+}
 
 
-#if PLATFORM_W600 || PLATFORM_W800
-static void DCF77_Interrupt(void* context) {
-    tls_clr_gpio_irq_status(GPIO_DCF77_pin);
-    DCF77_ISR_Common();
-}
-#elif PLATFORM_BL602
-static void DCF77_Interrupt(void* arg) {
-    DCF77_ISR_Common();
-    bl_gpio_intmask(GPIO_DCF77, 0);
-}
-#elif PLATFORM_LN882H
-// handler are defined in BL0937
-#if ! (ENABLE_DRIVER_BL0937)
-void GPIOA_IRQHandler() {
-    uint32_t base = GPIO_DCF77 < 16 ? GPIOA_BASE : GPIOB_BASE;
-    uint16_t gpio_pin = (uint16_t)1 << (uint16_t)(GPIO_DCF77 % 16);
-    if(hal_gpio_pin_get_it_flag(base, gpio_pin) == HAL_SET) {
-        hal_gpio_pin_clr_it_flag(base, gpio_pin);
-        DCF77_ISR_Common();
-    }
-}
-void GPIOB_IRQHandler() {
-    GPIOA_IRQHandler(); // Same logic for simplicity
-}
-#endif
-#elif PLATFORM_BEKEN
-static void DCF77_Interrupt(void* arg) {
-    DCF77_ISR_Common();
-}
-#elif PLATFORM_REALTEK
-void dcf77_irq_handler(uint32_t id, gpio_irq_event event) {
-    DCF77_ISR_Common();
-}
-#elif PLATFORM_ECR6600
-void DCF77_Interrupt(unsigned char pinNum) {
-    DCF77_ISR_Common();
-}
-#elif PLATFORM_XRADIO
-static void DCF77_Interrupt(void* arg) {
-    DCF77_ISR_Common();
-}
-#elif PLATFORM_ESP8266 || PLATFORM_ESPIDF
-static void DCF77_Interrupt(void* arg) {
-    DCF77_ISR_Common();
-}
-#else
-void DCF77_Interrupt(unsigned char pinNum) {
-    DCF77_ISR_Common();
-}
-#endif
 
 void DCF77_Init_Pin() {
     GPIO_DCF77 = PIN_FindPinIndexForRole(IOR_DCF77, -1);
@@ -432,34 +308,49 @@ void DCF77_Init_Pin() {
     HAL_PIN_Setup_Input_Pulldown(GPIO_DCF77);
 
 #if PLATFORM_W600 || PLATFORM_W800
+// supports "CHANGE" (WM_GPIO_IRQ_TRIG_DOUBLE_EDGE)
+/*
     GPIO_DCF77_pin = HAL_GetGPIOPin(GPIO_DCF77);
     tls_gpio_cfg(GPIO_DCF77_pin, WM_GPIO_DIR_INPUT, WM_GPIO_ATTR_PULLLOW);
     tls_gpio_isr_register(GPIO_DCF77_pin, DCF77_Interrupt, NULL);
     tls_gpio_irq_enable(GPIO_DCF77_pin, WM_GPIO_IRQ_TRIG_DOUBLE_EDGE);
+*/
+    HAL_AttachInterrupt(GPIO_DCF77,INTERRUPT_CHANGE, DCF77_ISR_Common);
 #elif PLATFORM_BL602
-    hal_gpio_register_handler(DCF77_Interrupt, GPIO_DCF77, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_POS_PULSE, (void*)NULL);
+//    hal_gpio_register_handler(DCF77_Interrupt, GPIO_DCF77, GPIO_INT_CONTROL_ASYNC, GPIO_INT_TRIG_POS_PULSE, (void*)NULL);
+    HAL_AttachInterrupt(GPIO_DCF77,INTERRUPT_RISING, DCF77_ISR_Common);
 #elif PLATFORM_LN882H
+/*
     hal_gpio_pin_it_cfg(GPIO_DCF77 < 16 ? GPIOA_BASE : GPIOB_BASE, (uint16_t)1 << (GPIO_DCF77 % 16), GPIO_INT_FALLING);
     hal_gpio_pin_it_en(GPIO_DCF77 < 16 ? GPIOA_BASE : GPIOB_BASE, (uint16_t)1 << (GPIO_DCF77 % 16), HAL_ENABLE);
     NVIC_SetPriority(GPIO_DCF77 < 16 ? GPIOA_IRQn : GPIOB_IRQn, 1);
     NVIC_EnableIRQ(GPIO_DCF77 < 16 ? GPIOA_IRQn : GPIOB_IRQn);
+*/
+    HAL_AttachInterrupt(GPIO_DCF77,INTERRUPT_CHANGE, DCF77_ISR_Common);
 #elif PLATFORM_BEKEN
-    gpio_int_enable(GPIO_DCF77, IRQ_TRIGGER_RISING_EDGE, DCF77_Interrupt);
+//    gpio_int_enable(GPIO_DCF77, IRQ_TRIGGER_RISING_EDGE, DCF77_Interrupt);
+    HAL_AttachInterrupt(GPIO_DCF77,INTERRUPT_RISING, DCF77_ISR_Common);
 #elif PLATFORM_REALTEK
+/*
     rtl_dcf77 = g_pins + GPIO_DCF77;
     rtl_dcf77->irq = os_malloc(sizeof(gpio_irq_t));
     memset(rtl_dcf77->irq, 0, sizeof(gpio_irq_t));
     gpio_irq_init(rtl_dcf77->irq, rtl_dcf77->pin, dcf77_irq_handler, NULL);
     gpio_irq_set(rtl_dcf77->irq, IRQ_FALL, 1);
     gpio_irq_enable(rtl_dcf77->irq);
+*/
+    HAL_AttachInterrupt(GPIO_DCF77,INTERRUPT_RISING, DCF77_ISR_Common);
 #elif PLATFORM_ECR6600
-    T_GPIO_ISR_CALLBACK dcf77isr;
+/*    T_GPIO_ISR_CALLBACK dcf77isr;
     dcf77isr.gpio_callback = (&DCF77_Interrupt);
     dcf77isr.gpio_data = 0;
     drv_gpio_ioctrl(GPIO_DCF77, DRV_GPIO_CTRL_INTR_MODE, DRV_GPIO_ARG_INTR_MODE_N_EDGE);
     drv_gpio_ioctrl(GPIO_DCF77, DRV_GPIO_CTRL_REGISTER_ISR, (int)&dcf77isr);
     drv_gpio_ioctrl(GPIO_DCF77, DRV_GPIO_CTRL_INTR_ENABLE, 0);
+*/
+    HAL_AttachInterrupt(GPIO_DCF77,INTERRUPT_RISING, DCF77_ISR_Common);
 #elif PLATFORM_XRADIO
+/*
     xr_dcf77 = g_pins + GPIO_DCF77;
     HAL_XR_ConfigurePin(xr_dcf77->port, xr_dcf77->pin, GPIOx_Pn_F6_EINT, GPIO_PULL_UP);
     GPIO_IrqParam dcf77param;
@@ -467,17 +358,23 @@ void DCF77_Init_Pin() {
     dcf77param.callback = DCF77_Interrupt;
     dcf77param.arg = (void*)0;
     HAL_GPIO_EnableIRQ(xr_dcf77->port, xr_dcf77->pin, &dcf77param);
+*/
+    HAL_AttachInterrupt(GPIO_DCF77,INTERRUPT_RISING, DCF77_ISR_Common);
 #elif PLATFORM_ESP8266 || PLATFORM_ESPIDF
+*/
     esp_dcf77 = g_pins + GPIO_DCF77;
     gpio_install_isr_service(0);
     ESP_ConfigurePin(esp_dcf77->pin, GPIO_MODE_INPUT, true, false, GPIO_INTR_ANYEDGE);
     gpio_isr_handler_add(esp_dcf77->pin, DCF77_Interrupt, NULL);
+*/
+    HAL_AttachInterrupt(GPIO_DCF77,INTERRUPT_CHANGE, DCF77_ISR_Common);
 #else
  
 #endif
 }
 
 void DCF77_Shutdown_Pin() {
+/*
 #if PLATFORM_W600 || PLATFORM_W800
     tls_gpio_irq_disable(GPIO_DCF77_pin);
 #elif PLATFORM_BEKEN
@@ -495,6 +392,9 @@ void DCF77_Shutdown_Pin() {
     gpio_isr_handler_remove(esp_dcf77->pin);
     gpio_uninstall_isr_service();
 #endif
+*/
+HAL_DetachInterrupt(GPIO_DCF77);
+
 }
 
 static time_t act_epoch;
@@ -613,6 +513,7 @@ void DCF77_Init(void) {
     dcf77_pulse_count = 0;
     dcf77_synced = false;
     next_IRQ = STARTEDGE;
+/*
 #if PLATFORM_BEKEN
     if (STARTEDGE == RISING){
     	TRIGGER_START = IRQ_TRIGGER_RISING_EDGE;
@@ -632,6 +533,17 @@ void DCF77_Init(void) {
     	TRIGGER_END = GPIO_INT_TRIG_POS_PULSE; 
     }
 #else
+#endif
+*/
+#ifndef IRQ_raise_and_fall
+    if (STARTEDGE == RISING){
+    	TRIGGER_START = INTERRUPT_RISING;
+    	TRIGGER_END = INTERRUPT_FALLING; 
+    }
+    else {
+    	TRIGGER_START = INTERRUPT_FALLING;
+    	TRIGGER_END = INTERRUPT_RISING; 
+    }
 #endif
 
 }

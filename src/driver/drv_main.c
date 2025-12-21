@@ -368,7 +368,7 @@ static driver_t g_drivers[] = {
    	DCF77_Init,                              // Init
    	DCF77_OnEverySecond,                     // onEverySecond
    	DCF77_AppendInformationToHTTPIndexPage,  // appendInformationToHTTPIndexPage
-   	NULL,                                    // runQuickTick
+   	DCF77_QuickTick,                         // runQuickTick
    	DCF77_Stop,                              // stopFunction
    	NULL,                                    // onChannelChanged
    	NULL,                                    // onHassDiscovery

@@ -16,5 +16,6 @@ void DCF77_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreSta
 // Optionally, call on shutdown/reconfig
 void DCF77_Stop(void);
 void DCF77_Shutdown_Pin(void);
+void DCF77_QuickTick(void);
 
 
