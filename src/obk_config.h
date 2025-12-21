@@ -456,6 +456,8 @@
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 #define ENABLE_OBK_BERRY						1
 
+#define ENABLE_DRIVER_DCF77					1
+
 #elif PLATFORM_REALTEK
 
 #define ENABLE_SEND_POSTANDGET					1
@@ -488,6 +490,8 @@
 #define ENABLE_DRIVER_TCL						1
 #define ENABLE_DRIVER_SM16703P					1
 #define ENABLE_DRIVER_PIXELANIM					1
+
+#define ENABLE_DRIVER_DCF77					1
 
 #ifndef PLATFORM_RTL8710B
 #define ENABLE_OBK_BERRY						1
@@ -529,6 +533,8 @@
 #define ENABLE_DRIVER_BL0937					1
 #define ENABLE_OBK_BERRY						1
 
+#define ENABLE_DRIVER_DCF77					1
+
 #elif PLATFORM_ESP8266
 
 //#define ENABLE_MULTIPINI2CSCANNER				1
@@ -565,6 +571,8 @@
 #define ENABLE_DRIVER_DS1820					1
 #define ENABLE_DRIVER_BMPI2C					1
 
+#define ENABLE_DRIVER_DCF77					1
+
 // #define ENABLE_OBK_BERRY						1
 
 #elif PLATFORM_TXW81X
@@ -593,6 +601,8 @@
 #define ENABLE_DRIVER_AHT2X						1
 #define ENABLE_I2C								1
 #define ENABLE_LITTLEFS							1
+
+#define ENABLE_DRIVER_DCF77					1
 
 #else
 

@@ -35,16 +35,16 @@
 #elif PLATFORM_REALTEK
 #include "gpio_irq_api.h"
 #include "../hal/realtek/hal_pinmap_realtek.h"
-rtlPinMapping_t* rtl_dcf77;
+//rtlPinMapping_t* rtl_dcf77;
 #elif PLATFORM_ECR6600
 #include "gpio.h"
 #elif PLATFORM_XRADIO
 #include "../hal/xradio/hal_pinmap_xradio.h"
-extern void HAL_XR_ConfigurePin(GPIO_Port port, GPIO_Pin pin, GPIO_WorkMode mode, GPIO_PullType pull);
-xrpin_t* xr_dcf77;
+//extern void HAL_XR_ConfigurePin(GPIO_Port port, GPIO_Pin pin, GPIO_WorkMode mode, GPIO_PullType pull);
+//xrpin_t* xr_dcf77;
 #elif PLATFORM_ESP8266 || PLATFORM_ESPIDF
 #include "../hal/espidf/hal_pinmap_espidf.h"
-espPinMapping_t* esp_dcf77;
+//espPinMapping_t* esp_dcf77;
 #define IRQ_raise_and_fall 1
 #endif
 
@@ -361,7 +361,7 @@ void DCF77_Init_Pin() {
 */
     HAL_AttachInterrupt(GPIO_DCF77,INTERRUPT_RISING, DCF77_ISR_Common);
 #elif PLATFORM_ESP8266 || PLATFORM_ESPIDF
-*/
+/*
     esp_dcf77 = g_pins + GPIO_DCF77;
     gpio_install_isr_service(0);
     ESP_ConfigurePin(esp_dcf77->pin, GPIO_MODE_INPUT, true, false, GPIO_INTR_ANYEDGE);
