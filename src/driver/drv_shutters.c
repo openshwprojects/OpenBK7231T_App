@@ -178,28 +178,21 @@ static void Shutter_Stop(shutter_t *s) {
 	}
 	Shutter_SetPins(s, s->state);
 }
-static commandResult_t CMD_Shutter_MoveTo(const void *context, const char *cmd, const char *args, int flags) {
-	Tokenizer_TokenizeString(args, 0);
-
-	int index = Tokenizer_GetArgInteger(0);
-
+void Shutter_MoveByIndex(int index, float frac) {
 	shutter_t *s = GetForChannel(index);
-	if (!s)
-		return CMD_RES_BAD_ARGUMENT;
-
-	const char *target = Tokenizer_GetArg(1);
-	if (!stricmp(target, "stop")) {
+	if (!s) {
+		return;
+	}
+	if (frac < 0) {
 		// stop right now
 		Shutter_Stop(s);
 		// it's fair to assume that if we stop, target is the current pos
 		s->targetFrac = s->frac;
-		return CMD_RES_OK;
+		return;
 	}
-	float frac = Tokenizer_GetArgFloat(1);
 
 	if (frac < 0.0f) frac = 0.0f;
 	if (frac > 1.0f) frac = 1.0f;
-
 
 	s->targetFrac = frac;
 
@@ -213,7 +206,17 @@ static commandResult_t CMD_Shutter_MoveTo(const void *context, const char *cmd, 
 		s->state = SHUTTER_CLOSING;
 	}
 	Shutter_SetPins(s, s->state);
-
+}
+static commandResult_t CMD_Shutter_MoveTo(const void *context, const char *cmd, const char *args, int flags) {
+	Tokenizer_TokenizeString(args, 0);
+	int index = Tokenizer_GetArgInteger(0);
+	const char *target = Tokenizer_GetArg(1);
+	if (!stricmp(target, "stop")) {
+		Shutter_MoveByIndex(index, -1);
+		return CMD_RES_OK;
+	}
+	float frac = Tokenizer_GetArgFloat(1);
+	Shutter_MoveByIndex(index, frac);
 	return CMD_RES_OK;
 }
 void Shutter_SetTimes(int channel, float timeOpen, float timeClose) {

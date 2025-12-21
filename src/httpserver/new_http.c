@@ -562,6 +562,9 @@ const char* htmlPinRoleNames[] = {
 	"RCRecv_nPup",
 	"ShutterA",
 	"ShutterB",
+	"BtnShutterUp",
+	"BtnShutterDown",
+	"error",
 	"error",
 };
 

@@ -18,6 +18,7 @@ void DRV_DDP_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreS
 void DRV_Shutters_RunQuickTick();
 void DRV_Shutters_AddToHtmlPage(http_request_t *request, int bPreState);
 void DRV_Shutters_Init();
+void Shutter_MoveByIndex(int index, float frac);
 
 void BMP280_Init();
 void BMP280_OnEverySecond();
