@@ -108,7 +108,9 @@
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 #define ENABLE_LITTLEFS							1
 #define NEW_TCP_SERVER							1
-
+#define ENABLE_DRIVER_NEO6M						1
+#define ENABLE_TIME_SUNRISE_SUNSET					1
+#define ENABLE_TIME_DST				1
 #elif WINDOWS
 
 #if LINUX
@@ -230,6 +232,7 @@
 //#undef ENABLE_DRIVER_BL0942
 #define ENABLE_DRIVER_IRREMOTEESP				1
 //#endif
+#define ENABLE_DRIVER_NEO6M					1
 
 #elif PLATFORM_BEKEN
 
@@ -300,6 +303,7 @@
 #if PLATFORM_BEKEN_NEW
 #define NEW_TCP_SERVER							1
 #endif
+#define ENABLE_DRIVER_NEO6M						1
 
 // ENABLE_I2C_ is a syntax for
 // our I2C system defines for drv_i2c_main.c
@@ -558,6 +562,7 @@
 #define ENABLE_DRIVER_TUYAMCU					1
 #define ENABLE_DRIVER_DS1820					1
 #define ENABLE_DRIVER_BMPI2C					1
+#define ENABLE_DRIVER_NEO6M					1
 
 // #define ENABLE_OBK_BERRY						1
 
