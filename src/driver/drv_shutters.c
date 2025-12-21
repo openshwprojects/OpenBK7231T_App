@@ -50,9 +50,44 @@ void DRV_Shutters_AddToHtmlPage(http_request_t *request, int bPreState) {
 			"  fetch('/cm?cmnd=' + encodeURIComponent(cmd));"
 			"}"
 			"</script>");
+
+		hprintf255(request, "<h1>Shutters Calibration Section</h1>");
+
+		shutter_t *s = g_shutters;
+		while (s) {
+			hprintf255(request, "<hr>");
+			hprintf255(request, "<h5>Shutter %i</h5>", s->channel);
+
+			hprintf255(request,
+				"<form onsubmit='return false;'>"
+				"<label>Open time (s):</label> "
+				"<input id='ot%i' type='number' step='0.1' value='%.2f'> ",
+				s->channel, s->openTimeSeconds
+			);
+
+			hprintf255(request,
+				"<label>Close time (s):</label> "
+				"<input id='ct%i' type='number' step='0.1' value='%.2f'> ",
+				s->channel, s->closeTimeSeconds
+			);
+
+			hprintf255(request,
+				"<button class='btn' onclick='sendCmd(\"ShutterCalibrate %i \" + "
+				"document.getElementById(\"ot%i\").value + \" \" + "
+				"document.getElementById(\"ct%i\").value)'>Set</button>"
+				"</form>",
+				s->channel,
+				s->channel,
+				s->channel
+			);
+
+
+			s = s->next;
+		}
 		return;
 	}
 
+	hprintf255(request, "<h1>Shutters Controls Section</h1>");
 	shutter_t *s = g_shutters;
 	while (s) {
 		int currentPercent = (s->frac < 0.0f) ? -1 : (int)(s->frac * 100.0f + 0.5f);
@@ -171,6 +206,30 @@ static commandResult_t CMD_Shutter_MoveTo(const void *context, const char *cmd, 
 
 	return CMD_RES_OK;
 }
+void Shutter_SetTimes(int channel, float timeOpen, float timeClose) {
+	shutter_t *s = GetForChannel(channel);
+	if (!s)
+		return;
+
+	if (timeOpen > 0.0f)
+		s->openTimeSeconds = timeOpen;
+
+	if (timeClose > 0.0f)
+		s->closeTimeSeconds = timeClose;
+}
+
+static commandResult_t CMD_Shutter_Calibrate(const void *context, const char *cmd, const char *args, int flags) {
+	Tokenizer_TokenizeString(args, 0);
+
+	int index = Tokenizer_GetArgInteger(0);
+	// can be - or -1 or 0 to mean 'skip'
+	float timeOpen = Tokenizer_GetArgFloat(1);
+	float timeClose = Tokenizer_GetArgFloat(2);
+
+	Shutter_SetTimes(index, timeOpen, timeClose);
+
+	return CMD_RES_OK;
+}
 void DRV_Shutter_Tick(shutter_t *s) {
 	float dt = g_deltaTimeMS * 0.001f;
 
@@ -222,5 +281,6 @@ void DRV_Shutters_Init() {
 		}
 	}
 	CMD_RegisterCommand("ShutterMoveTo", CMD_Shutter_MoveTo, NULL);
+	CMD_RegisterCommand("ShutterCalibrate", CMD_Shutter_Calibrate, NULL);
 }
 
