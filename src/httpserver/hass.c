@@ -486,6 +486,41 @@ HassDeviceInfo* hass_createHVAC(float min, float max, float step, const char **f
 
 	return info;
 }
+HassDeviceInfo* hass_createShutter(int index) {
+	HassDeviceInfo* info = hass_init_device_info(HASS_GARAGE, index, NULL, NULL, 0, 0);
+
+	char buffer[64];
+
+	//cJSON_AddStringToObject(info->root, "name", title);
+	//cJSON_AddStringToObject(info->root, "unique_id", title);
+	cJSON_AddStringToObject(info->root, "device_class", "garage");
+
+	sprintf(buffer, "~/shutterState%i/get", index);
+	cJSON_AddStringToObject(info->root, "state_topic", buffer);
+
+	sprintf(buffer, "cmnd/%s/ShutterMove%d", CFG_GetMQTTClientId(), index);
+	cJSON_AddStringToObject(info->root, "command_topic", buffer);
+
+	cJSON_AddStringToObject(info->root, "state_open", "open");
+	cJSON_AddStringToObject(info->root, "state_closed", "closed");
+	cJSON_AddStringToObject(info->root, "payload_open", "OPEN");
+	cJSON_AddStringToObject(info->root, "payload_close", "CLOSE");
+	cJSON_AddStringToObject(info->root, "payload_stop", "STOP");
+
+	if (1) {
+		sprintf(buffer, "~/shutterPos%i/get", index);
+		cJSON_AddStringToObject(info->root, "position_topic", buffer);
+		sprintf(buffer, "cmnd/%s/ShutterMove%d", CFG_GetMQTTClientId(), index);
+		cJSON_AddStringToObject(info->root, "set_position_topic", buffer);
+
+		cJSON_AddNumberToObject(info->root, "position_open", 100);
+		cJSON_AddNumberToObject(info->root, "position_closed", 0);
+	}
+
+	sprintf(info->channel, "cover/%s/config", info->unique_id);
+	return info;
+}
+
 /// @brief Initializes HomeAssistant device discovery storage with common values.
 /// @param type 
 /// @param index This is used to generate generate unique_id and name. 

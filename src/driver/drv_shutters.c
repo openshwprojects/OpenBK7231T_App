@@ -105,9 +105,9 @@ void DRV_Shutters_AddToHtmlPage(http_request_t *request, int bPreState) {
 
 		hprintf255(request,
 			"<div>"
-			"<button class='btn' onclick='sendCmd(\"ShutterMoveTo %i 1\")'>Open</button> "
-			"<button class='btn' onclick='sendCmd(\"ShutterMoveTo %i stop\")'>Stop</button> "
-			"<button class='btn' onclick='sendCmd(\"ShutterMoveTo %i 0\")'>Close</button>"
+			"<button class='btn' onclick='sendCmd(\"ShutterMove%i 100\")'>Open</button> "
+			"<button class='btn' onclick='sendCmd(\"ShutterMove%i stop\")'>Stop</button> "
+			"<button class='btn' onclick='sendCmd(\"ShutterMove%i 0\")'>Close</button>"
 			"</div>",
 			s->channel,
 			s->channel,
@@ -119,7 +119,7 @@ void DRV_Shutters_AddToHtmlPage(http_request_t *request, int bPreState) {
 			"<form onsubmit='return false;'>"
 			"<label>Set Target:</label>"
 			"<input type='range' min='0' max='100' value='%i' "
-			"onchange='sendCmd(\"ShutterMoveTo %i \" + (this.value/100))'>"
+			"onchange='sendCmd(\"ShutterMove%i \" + (this.value))'>"
 			"</form>",
 			targetPercent,
 			s->channel
@@ -209,13 +209,26 @@ void Shutter_MoveByIndex(int index, float frac) {
 }
 static commandResult_t CMD_Shutter_MoveTo(const void *context, const char *cmd, const char *args, int flags) {
 	Tokenizer_TokenizeString(args, 0);
-	int index = Tokenizer_GetArgInteger(0);
-	const char *target = Tokenizer_GetArg(1);
+	int index = atoi(cmd + strlen("ShutterMove"));
+	const char *target = Tokenizer_GetArg(0);
+	if (!stricmp(target, "open")) {
+		Shutter_MoveByIndex(index, 1);
+		return CMD_RES_OK;
+	}
+	if (!stricmp(target, "close")) {
+		Shutter_MoveByIndex(index, 0);
+		return CMD_RES_OK;
+	}
 	if (!stricmp(target, "stop")) {
 		Shutter_MoveByIndex(index, -1);
 		return CMD_RES_OK;
 	}
-	float frac = Tokenizer_GetArgFloat(1);
+	/*
+	Matches HA standard: https://www.home-assistant.io/integrations/cover.mqtt/
+      position_open: 100
+      position_closed: 0
+	*/
+	float frac = atof(target) * 0.01f;
 	Shutter_MoveByIndex(index, frac);
 	return CMD_RES_OK;
 }
@@ -270,6 +283,18 @@ void DRV_Shutters_RunQuickTick() {
 		s = s->next;
 	}
 }
+void DRV_Shutters_RunEverySecond() {
+
+	shutter_t *s = g_shutters;
+	while (s) {
+		char buffer[64];
+		sprintf(buffer, "shutterState%i", s->channel);
+		MQTT_PublishMain_StringString(buffer, "OPEN", 0);
+		sprintf(buffer, "shutterPos%i", s->channel);
+		MQTT_PublishMain_StringInt(buffer, (int)(s->frac*100.0f), 0);
+		s = s->next;
+	}
+}
 static void RegisterShutterForChannel(int channel) {
 	shutter_t *s = GetForChannel(channel);
 	if (!s) {
@@ -285,7 +310,18 @@ static void RegisterShutterForChannel(int channel) {
 		g_shutters = s;
 	}
 }
-// backlog setPinRole 5 ShutterA; startDriver Shutters
+#include "../httpserver/hass.h"
+void DRV_Shutters_DoDiscovery(const char *topic) {
+	shutter_t *s = g_shutters;
+	while (s) {
+		HassDeviceInfo* dev_info = NULL;
+		dev_info = hass_createShutter(s->channel);
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		s = s->next;
+	}
+}
+// backlog setPinRole 5 ShutterA; startDriver Shutters; scheduleHADiscovery 1
 void DRV_Shutters_Init() {
 	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
 		int r = g_cfg.pins.roles[i];
@@ -293,7 +329,7 @@ void DRV_Shutters_Init() {
 			RegisterShutterForChannel(g_cfg.pins.channels[i]);
 		}
 	}
-	CMD_RegisterCommand("ShutterMoveTo", CMD_Shutter_MoveTo, NULL);
+	CMD_RegisterCommand("ShutterMove", CMD_Shutter_MoveTo, NULL);
 	CMD_RegisterCommand("ShutterCalibrate", CMD_Shutter_Calibrate, NULL);
 }
 

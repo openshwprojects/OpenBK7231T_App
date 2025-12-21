@@ -813,12 +813,12 @@ static driver_t g_drivers[] = {
 	//drvdetail:"requires":""}
 	{ "Shutters",                                 // Driver Name
 	DRV_Shutters_Init,                            // Init
-	NULL,                                    // onEverySecond
+	DRV_Shutters_RunEverySecond,                                    // onEverySecond
 	DRV_Shutters_AddToHtmlPage, // appendInformationToHTTPIndexPage
 	DRV_Shutters_RunQuickTick,                        // runQuickTick
 	NULL,                        // stopFunction
 	NULL,                                    // onChannelChanged
-	NULL,                                    // onHassDiscovery
+	DRV_Shutters_DoDiscovery,                 // onHassDiscovery
 	false,                                   // loaded
 	},
 #endif
