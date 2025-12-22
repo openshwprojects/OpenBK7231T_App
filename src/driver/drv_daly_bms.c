@@ -40,7 +40,7 @@ void sendRequest(byte address){
 	unsigned char buffer[13];
 	buffer[0] = 0xA5;
 	buffer[1] = 0x40;
-	buffer[2] = address
+	buffer[2] = address;
 	buffer[3] = 0x08;
 	for(int i=4;i<12;i++){
 		buffer[i]=0x00;
