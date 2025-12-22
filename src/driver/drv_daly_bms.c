@@ -89,6 +89,8 @@ void readCellVoltages(){
 	MQTT_PublishMain_StringInt("daly_bms_debug_recv", receive_buffer[2], 0);
 	MQTT_PublishMain_StringInt("daly_bms_debug_recv", receive_buffer[3], 0);
 	MQTT_PublishMain_StringInt("daly_bms_debug_recv", receive_buffer[4], 0);
+	MQTT_PublishMain_StringInt("daly_bms_debug_recv", receive_buffer[5], 0);
+	MQTT_PublishMain_StringInt("daly_bms_debug_recv", receive_buffer[6], 0);
 	float cellVoltage[6];
     DALY_BMS_Mutex_Free();
 	MQTT_PublishMain_StringInt("daly_bms_debug", 3, 0);
@@ -96,10 +98,21 @@ void readCellVoltages(){
 	char tmp[30];
 	for(int k=0;k<2;k++){
 		for(int i=0;i<3;i++){
+				//Response
+				// 0xA5 // StartFlag
+				// 0x01 // Address
+				// 0x01 // Data Id
+				// 0x08 // Data Length
+				// Frame
+				// 0x01 // Index
+				// 3x2Bytes volrages // voltages // Start at Index 5
+				// 1 Byte padding
+				// Start of next frame 12
 
-				cellVoltage[cellNo]=(float)(receive_buffer[5+i+k]<<8+receive_buffer[6+i+k]);
 
-				sprintf(tmp, "daly_bms_cell_voltage_%f", cellNo);
+				cellVoltage[cellNo]=(float)(receive_buffer[5+i+(k*8)]<<8+receive_buffer[6+i+(k*8)]);
+
+				sprintf(tmp, "daly_bms_cell_voltage_%d", cellNo);
 
 				MQTT_PublishMain_StringFloat(tmp, cellVoltage[cellNo],0, 0);
 				cellNo++;
