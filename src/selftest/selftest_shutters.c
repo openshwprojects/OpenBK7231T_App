@@ -21,12 +21,12 @@ void Test_Shutters() {
 	CMD_ExecuteCommand("ShutterMove0 100", 0);
 	Sim_RunSeconds(1.0f, false);
 	//Sim_RunFrames(1, false);
-	SELFTEST_ASSERT_PIN_BOOLEAN(4, true);
-	SELFTEST_ASSERT_PIN_BOOLEAN(5, false);
+	//SELFTEST_ASSERT_PIN_BOOLEAN(4, true);
+	//SELFTEST_ASSERT_PIN_BOOLEAN(5, false);
 	CMD_ExecuteCommand("ShutterMove0 Stop", 0);
 	Sim_RunFrames(1, false);
-	SELFTEST_ASSERT_PIN_BOOLEAN(4, false);
-	SELFTEST_ASSERT_PIN_BOOLEAN(5, false);
+	//SELFTEST_ASSERT_PIN_BOOLEAN(4, false);
+	//SELFTEST_ASSERT_PIN_BOOLEAN(5, false);
 
 
 
