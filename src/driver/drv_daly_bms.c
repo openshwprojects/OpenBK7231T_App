@@ -119,13 +119,13 @@ void readSocTotalVoltage(){
 
 	char tmp[30];
 	for(int k=0;k<(len/13);k++){
-		float cumulativeVoltage=(receive_buffer[5]*256+receive_buffer[6])*0.1
+		float cumulativeVoltage=(receive_buffer[5]*256+receive_buffer[6])*0.1;
 		MQTT_PublishMain_StringFloat("daly_bms_cum_voltage", cumulativeVoltage,1, 0);
-		float gatherVoltage=(receive_buffer[7]*256+receive_buffer[8])*0.1
+		float gatherVoltage=(receive_buffer[7]*256+receive_buffer[8])*0.1;
 		MQTT_PublishMain_StringFloat("daly_bms_gather_voltage", gatherVoltage,1, 0);
-		float current=(receive_buffer[9]*256+receive_buffer[10])*0.1
+		float current=(receive_buffer[9]*256+receive_buffer[10])*0.1;
 		MQTT_PublishMain_StringFloat("daly_bms_current", current,1, 0);
-		float stateOfCharge=(receive_buffer[11]*256+receive_buffer[12])*0.1
+		float stateOfCharge=(receive_buffer[11]*256+receive_buffer[12])*0.1;
 		MQTT_PublishMain_StringFloat("daly_bms_soc", stateOfCharge,1, 0);
 	}
 }
