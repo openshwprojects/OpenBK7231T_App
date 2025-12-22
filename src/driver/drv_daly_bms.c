@@ -38,9 +38,11 @@ void DALY_BMS_Mutex_Free() {
 
 void readCellVoltages(){
 
+	MQTT_PublishMain_StringInt("daly_bms_pre_debug", 1, 0);
 	if(!DALY_BMS_Mutex_Take(10)){
 		return;
     }
+	MQTT_PublishMain_StringInt("daly_bms_pre_debug", 2, 0);
 	unsigned char buffer[13];
 	buffer[0] = 0xA5; // header
 	buffer[1] = 0x40; // address
@@ -49,13 +51,15 @@ void readCellVoltages(){
 	for(int i=4;i<12;i++){
 		buffer[i]=0x00;
 	}
+	MQTT_PublishMain_StringInt("daly_bms_pre_debug", 3, 0);
 	int checksum=0;
 	for(int i=0;i<11;i++){
 		checksum+=buffer[i];
 	}
 	buffer[12]=checksum;
+	MQTT_PublishMain_StringInt("daly_bms_pre_debug", 4, 0);
 
-	for(int i = 0; i < 8; i++)
+	for(int i = 0; i < 13; i++)
 	{
 		UART_SendByte(buffer[i]);
 	}
