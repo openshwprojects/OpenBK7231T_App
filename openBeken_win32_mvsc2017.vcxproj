@@ -840,6 +840,7 @@
     <ClCompile Include="src\selftest\selftest_role_toggleAll.c" />
     <ClCompile Include="src\selftest\selftest_script.c" />
     <ClCompile Include="src\selftest\selftest_demo_exclusiveRelays.c" />
+    <ClCompile Include="src\selftest\selftest_shutters.c" />
     <ClCompile Include="src\selftest\selftest_tasmota.c" />
     <ClCompile Include="src\selftest\selftest_tclAC.c" />
     <ClCompile Include="src\selftest\selftest_tokenizer.c" />

@@ -288,8 +288,8 @@ void DRV_Shutters_RunEverySecond() {
 	shutter_t *s = g_shutters;
 	while (s) {
 		char buffer[64];
-		sprintf(buffer, "shutterState%i", s->channel);
-		MQTT_PublishMain_StringString(buffer, "OPEN", 0);
+		//sprintf(buffer, "shutterState%i", s->channel);
+		//MQTT_PublishMain_StringString(buffer, "open", 0);
 		sprintf(buffer, "shutterPos%i", s->channel);
 		MQTT_PublishMain_StringInt(buffer, (int)(s->frac*100.0f), 0);
 		s = s->next;
@@ -302,7 +302,7 @@ static void RegisterShutterForChannel(int channel) {
 		memset(s, 0, sizeof(shutter_t));
 		s->channel = channel;
 		s->frac = 0.0f;  // unknown position
-		s->state = SHUTTER_OPEN;
+		s->state = SHUTTER_CLOSED;
 		s->targetFrac = 0.0f;
 		s->openTimeSeconds = 10.0f;  // default
 		s->closeTimeSeconds = 10.0f; // default

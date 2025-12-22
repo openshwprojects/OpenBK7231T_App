@@ -495,9 +495,10 @@ HassDeviceInfo* hass_createShutter(int index) {
 	//cJSON_AddStringToObject(info->root, "unique_id", title);
 	cJSON_AddStringToObject(info->root, "device_class", "garage");
 
-	sprintf(buffer, "~/shutterState%i/get", index);
-	cJSON_AddStringToObject(info->root, "state_topic", buffer);
-
+	if (0) {
+		sprintf(buffer, "~/shutterState%i/get", index);
+		cJSON_AddStringToObject(info->root, "state_topic", buffer);
+	}
 	sprintf(buffer, "cmnd/%s/ShutterMove%d", CFG_GetMQTTClientId(), index);
 	cJSON_AddStringToObject(info->root, "command_topic", buffer);
 
