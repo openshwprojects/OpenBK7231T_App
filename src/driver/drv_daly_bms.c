@@ -88,9 +88,9 @@ void readCellVoltages(){
 	int cellNo=0;
 	char tmp[30];
 	for(int k=0;k<2;k++){
-		MQTT_PublishMain_StringInt("daly_bms_debug_frame_nr", receive_buffer[k*8+4], 0);
-		MQTT_PublishMain_StringInt("daly_bms_debug_volt", receive_buffer[5+k*8], 0);
-		MQTT_PublishMain_StringInt("daly_bms_debug_volt", receive_buffer[6+k*8], 0);
+		MQTT_PublishMain_StringInt("daly_bms_debug_frame_nr", receive_buffer[k*13+4], 0);
+		MQTT_PublishMain_StringInt("daly_bms_debug_volt", receive_buffer[5+13*8], 0);
+		MQTT_PublishMain_StringInt("daly_bms_debug_volt", receive_buffer[6+13*8], 0);
 		for(int i=0;i<3;i++){
 				//Response
 				// 0xA5 // StartFlag
@@ -104,7 +104,7 @@ void readCellVoltages(){
 				// Start of next frame 12
 
 
-				cellVoltage[cellNo]=(receive_buffer[5+i+(k*8)]<<8+receive_buffer[6+i+(k*8)]);
+				cellVoltage[cellNo]=(receive_buffer[5+i+(k*13)]<<8+receive_buffer[6+i+(k*13)]);
 
 				sprintf(tmp, "daly_bms_cell_voltage_%d", cellNo);
 
