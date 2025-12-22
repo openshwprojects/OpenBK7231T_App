@@ -41,7 +41,7 @@ void readCellVoltages(){
 	if(!DALY_BMS_Mutex_Take(10)){
 		return;
     }
-	unsigned char buffer[8];
+	unsigned char buffer[13];
 	buffer[0] = 0xA5; // header
 	buffer[1] = 0x40; // address
 	buffer[2] = 0x95; // read cell voltage command
