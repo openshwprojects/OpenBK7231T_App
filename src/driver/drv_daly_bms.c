@@ -82,6 +82,7 @@ void readCellVoltages(){
         receive_buffer[i] = UART_GetByte(i);
     }
 	if(len==0){
+		DALY_BMS_Mutex_Free();
 		return;
 	}
 	float cellVoltage[6];
@@ -111,9 +112,7 @@ void DALY_BMS_RunEverySecond()
 }
 
 
-// startDriver ZK10022 [baudrate] [hw flow control] [stop_bits] [data_width]
-
-// backlog stopDriver ZK10022; startDriver ZK10022 115200 0 0 3
+// backlog stopDriver DalyBms; startDriver DalyBms
 void DALY_BMS_Init()
 {
 
