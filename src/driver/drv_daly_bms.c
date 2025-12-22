@@ -14,6 +14,7 @@
 
 
 static int g_baudRate = 9600;
+static int g_noOfCells=0;
 
 static int writeRegister(int registerAddress,short value);
 
@@ -97,6 +98,10 @@ void readCellBalanceState(){
 				int balancerState=receive_buffer[5+i]&(1<<cellIndex)==(1<<cellIndex)?1:0;
 				sprintf(tmp, "daly_bms_balancer_state_%d", cellIndex+i*8);
 				MQTT_PublishMain_StringInt(tmp, balancerState, 0);
+
+				if(cellIndex+i*8>=g_noOfCells){
+					return;
+				}
 			}
 		}
 	}
@@ -153,6 +158,9 @@ void readCellVoltages(){
 				sprintf(tmp, "daly_bms_cell_voltage_%d", cellNo);
 				MQTT_PublishMain_StringFloat(tmp, cellVoltage,3, 0);
 				cellNo++;
+				if(cellNo>=g_noOfCells){
+					return;
+				}
 		}
 	}
 }
@@ -166,10 +174,11 @@ void DALY_BMS_RunEverySecond()
 }
 
 
-// backlog stopDriver DalyBms; startDriver DalyBms
+// backlog stopDriver DalyBms; startDriver DalyBms #noOfCells
 void DALY_BMS_Init()
 {
 
+	g_noOfCells = Tokenizer_GetArgIntegerDefault(1, 0);
 	UART_InitUART(g_baudRate, 0,0,3, false);
 	UART_InitReceiveRingBuffer(512);
 
