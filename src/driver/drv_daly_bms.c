@@ -120,7 +120,6 @@ void readSocTotalVoltage(){
 	if(len==0){
 		return;
 	}
-	DALY_BMS_Mutex_Free();
 
 	char tmp[30];
 	for(int k=0;k<(len/13);k++){
@@ -152,7 +151,9 @@ void readCellVoltages(){
 
 	int cellNo=0;
 	char tmp[30];
+    MQTT_PublishMain_StringInt("daly_bms_debug_len", len, 0);
 	for(int k=0;k<(len/13);k++){
+        MQTT_PublishMain_StringInt("daly_bms_debug_frame_number", receive_buffer[4+k*13], 0);
 		for(int i=0;i<3;i++){
 				float cellVoltage= (receive_buffer[5+i+i+(k*13)]*256+receive_buffer[6+i+i+(k*13)])*0.001 ;
 				sprintf(tmp, "daly_bms_cell_voltage_%d", cellNo);
