@@ -87,7 +87,7 @@ bool DRV_IsSensor();
 void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMode, float brightnessRange01, float temperatureRange01);
 bool TuyaMCU_IsLEDRunning();
 
-void Shutter_MoveByIndex(int index, float frac);
+void Shutter_MoveByIndex(int index, float frac, bool bStopOnDuplicate);
 
 #endif /* __DRV_PUBLIC_H__ */
 

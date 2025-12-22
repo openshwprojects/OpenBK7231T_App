@@ -586,12 +586,12 @@ void Button_OnShortClick(int index)
 #if ENABLE_DRIVER_SHUTTERS
 		if (g_cfg.pins.roles[index] == IOR_Button_ShutterUp)
 		{
-			Shutter_MoveByIndex(g_cfg.pins.channels[index], 1.0f);
+			Shutter_MoveByIndex(g_cfg.pins.channels[index], 1.0f, true);
 			return;
 		}
 		if (g_cfg.pins.roles[index] == IOR_Button_ShutterDown)
 		{
-			Shutter_MoveByIndex(g_cfg.pins.channels[index], 0.0f);
+			Shutter_MoveByIndex(g_cfg.pins.channels[index], 0.0f, true);
 			return;
 		}
 #endif
@@ -644,13 +644,13 @@ void Button_OnDoubleClick(int index)
 	if (g_cfg.pins.roles[index] == IOR_Button_ShutterUp)
 	{
 		// issue stop order
-		Shutter_MoveByIndex(g_cfg.pins.channels[index], -1.0f);
+		Shutter_MoveByIndex(g_cfg.pins.channels[index], -1.0f, true);
 		return;
 	}
 	if (g_cfg.pins.roles[index] == IOR_Button_ShutterDown)
 	{
 		// issue stop order
-		Shutter_MoveByIndex(g_cfg.pins.channels[index], -1.0f);
+		Shutter_MoveByIndex(g_cfg.pins.channels[index], -1.0f, true);
 		return;
 	}
 #endif

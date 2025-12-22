@@ -197,7 +197,7 @@ static void Shutter_Stop(shutter_t *s) {
 	}
 	Shutter_SetPins(s, s->state);
 }
-void Shutter_MoveByIndex(int index, float frac) {
+void Shutter_MoveByIndex(int index, float frac, bool bStopOnDuplicate) {
 	shutter_t *s = GetForChannel(index);
 	if (!s) {
 		return;
@@ -214,6 +214,13 @@ void Shutter_MoveByIndex(int index, float frac) {
 	if (frac < 0.0f) frac = 0.0f;
 	if (frac > 1.0f) frac = 1.0f;
 
+	if (bStopOnDuplicate && s->targetFrac == frac) {
+		// stop right now
+		Shutter_Stop(s);
+		// it's fair to assume that if we stop, target is the current pos
+		s->targetFrac = s->frac;
+		return;
+	}
 	s->targetFrac = frac;
 
 	if (s->frac < 0.0f)
@@ -232,15 +239,15 @@ static commandResult_t CMD_Shutter_MoveTo(const void *context, const char *cmd, 
 	int index = atoi(cmd + strlen("ShutterMove"));
 	const char *target = Tokenizer_GetArg(0);
 	if (!stricmp(target, "open")) {
-		Shutter_MoveByIndex(index, 1);
+		Shutter_MoveByIndex(index, 1, false);
 		return CMD_RES_OK;
 	}
 	if (!stricmp(target, "close")) {
-		Shutter_MoveByIndex(index, 0);
+		Shutter_MoveByIndex(index, 0, false);
 		return CMD_RES_OK;
 	}
 	if (!stricmp(target, "stop")) {
-		Shutter_MoveByIndex(index, -1);
+		Shutter_MoveByIndex(index, -1, false);
 		return CMD_RES_OK;
 	}
 	/*
@@ -249,7 +256,7 @@ static commandResult_t CMD_Shutter_MoveTo(const void *context, const char *cmd, 
       position_closed: 0
 	*/
 	float frac = atof(target) * 0.01f;
-	Shutter_MoveByIndex(index, frac);
+	Shutter_MoveByIndex(index, frac, false);
 	return CMD_RES_OK;
 }
 void Shutter_SetTimes(int channel, float timeOpen, float timeClose) {
