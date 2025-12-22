@@ -57,7 +57,7 @@ void sendRequest(byte address){
 	}
 }
 
-int getUartDataSize(unsigned char* receiveBuffer){
+int getUartDataSize(unsigned char* receive_buffer){
 	int len = UART_GetDataSize();
 	int delay=0;
 
@@ -93,7 +93,7 @@ void readCellBalanceState(){
 	char tmp[30];
 	for(int k=0;k<(len/13);k++){
 		for(int i=0;i<6;i++){
-			for(int cellIndex=0;cellIndex<8;celIndex++){
+			for(int cellIndex=0;cellIndex<8;cellIndex++){
 				int balancerState=receive_buffer[5+i]&(1<<cellIndex)==(1<<cellIndex)?1:0;
 				sprintf(tmp, "daly_bms_balancer_state_%d", cellIndex+i*8);
 				MQTT_PublishMain_StringInt(tmp, balancerState, 0);
