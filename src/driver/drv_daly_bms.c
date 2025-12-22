@@ -38,11 +38,9 @@ void DALY_BMS_Mutex_Free() {
 
 void readCellVoltages(){
 
-	MQTT_PublishMain_StringInt("daly_bms_pre_debug", 1, 0);
 	if(!DALY_BMS_Mutex_Take(10)){
 		return;
     }
-	MQTT_PublishMain_StringInt("daly_bms_pre_debug", 2, 0);
 	unsigned char buffer[13];
 	buffer[0] = 0xA5; // header
 	buffer[1] = 0x40; // address
@@ -51,13 +49,11 @@ void readCellVoltages(){
 	for(int i=4;i<12;i++){
 		buffer[i]=0x00;
 	}
-	MQTT_PublishMain_StringInt("daly_bms_pre_debug", 3, 0);
 	int checksum=0;
 	for(int i=0;i<11;i++){
 		checksum+=buffer[i];
 	}
 	buffer[12]=checksum;
-	MQTT_PublishMain_StringInt("daly_bms_pre_debug", 4, 0);
 
 	for(int i = 0; i < 13; i++)
 	{
@@ -65,7 +61,6 @@ void readCellVoltages(){
 	}
 	MQTT_PublishMain_StringInt("daly_bms_debug", 1, 0);
 
-	unsigned char receive_buffer[256];
 	int len = UART_GetDataSize();
 	int delay=0;
 
@@ -76,28 +71,37 @@ void readCellVoltages(){
 		delay++;
 	}
 	MQTT_PublishMain_StringInt("daly_bms_debug", 2, 0);
+	MQTT_PublishMain_StringInt("daly_bms_debug_len", len, 0);
 
+	unsigned char receive_buffer[256];
     for(int i = 0; i < len; i++)
     {
         receive_buffer[i] = UART_GetByte(i);
     }
+    UART_ConsumeBytes(len);
+	DALY_BMS_Mutex_Free();
+
 	if(len==0){
-		DALY_BMS_Mutex_Free();
 		return;
 	}
+	MQTT_PublishMain_StringInt("daly_bms_debug_recv", receive_buffer[0], 0);
+	MQTT_PublishMain_StringInt("daly_bms_debug_recv", receive_buffer[1], 0);
+	MQTT_PublishMain_StringInt("daly_bms_debug_recv", receive_buffer[2], 0);
+	MQTT_PublishMain_StringInt("daly_bms_debug_recv", receive_buffer[3], 0);
+	MQTT_PublishMain_StringInt("daly_bms_debug_recv", receive_buffer[4], 0);
 	float cellVoltage[6];
-    UART_ConsumeBytes(len);
     DALY_BMS_Mutex_Free();
 	MQTT_PublishMain_StringInt("daly_bms_debug", 3, 0);
 	int cellNo=0;
-	char tmp[23];
+	char tmp[30];
 	for(int k=0;k<2;k++){
 		for(int i=0;i<3;i++){
-				cellVoltage[cellNo]=(float)(receive_buffer[5+i+i]<<8+receive_buffer[6+i+i]);
 
-				sprintf(tmp, "daly_bms_cell_voltage_%d", cellNo);
+				cellVoltage[cellNo]=(float)(receive_buffer[5+i+k]<<8+receive_buffer[6+i+k]);
 
-				MQTT_PublishMain_StringFloat(tmp, cellVoltage[cellNo],2, 0);
+				sprintf(tmp, "daly_bms_cell_voltage_%f", cellNo);
+
+				MQTT_PublishMain_StringFloat(tmp, cellVoltage[cellNo],0, 0);
 				cellNo++;
 		}
 	}
