@@ -11,6 +11,8 @@
 #include "drv_ntp.h"
 #include "drv_deviceclock.h"
 
+#define DEFAULT_TIME 10.0f
+
 typedef enum shutterState_t {
 	SHUTTER_OPEN,
 	SHUTTER_CLOSED,
@@ -32,6 +34,23 @@ typedef struct shutter_s {
 
 shutter_t *g_shutters = 0;
 
+
+void Shutter_Save(shutter_t *s) {
+	HAL_FlashVars_SaveChannel(s->channel * 3 + 0, s->openTimeSeconds * 100);
+	HAL_FlashVars_SaveChannel(s->channel * 3 + 1, s->closeTimeSeconds * 100);
+	HAL_FlashVars_SaveChannel(s->channel * 3 + 2, s->frac * 100);
+}
+void Shutter_Read(shutter_t *s) {
+	s->openTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 0) * 0.01f;
+	if (s->openTimeSeconds == 0.0f) {
+		s->openTimeSeconds = DEFAULT_TIME;
+	}
+	s->closeTimeSeconds = HAL_FlashVars_GetChannelValue(s->channel * 3 + 1) * 0.01f;
+	if (s->closeTimeSeconds == 0.0f) {
+		s->closeTimeSeconds = DEFAULT_TIME;
+	}
+	s->frac = HAL_FlashVars_GetChannelValue(s->channel * 3 + 2) * 0.01f;
+}
 shutter_t *GetForChannel(int i) {
 	shutter_t *s = g_shutters;
 	while (s) {
@@ -183,6 +202,7 @@ void Shutter_MoveByIndex(int index, float frac) {
 	if (!s) {
 		return;
 	}
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Shutter command: %i go to %f", index, frac);
 	if (frac < 0) {
 		// stop right now
 		Shutter_Stop(s);
@@ -283,18 +303,6 @@ void DRV_Shutters_RunQuickTick() {
 		s = s->next;
 	}
 }
-void DRV_Shutters_RunEverySecond() {
-
-	shutter_t *s = g_shutters;
-	while (s) {
-		char buffer[64];
-		//sprintf(buffer, "shutterState%i", s->channel);
-		//MQTT_PublishMain_StringString(buffer, "open", 0);
-		sprintf(buffer, "shutterPos%i", s->channel);
-		MQTT_PublishMain_StringInt(buffer, (int)(s->frac*100.0f), 0);
-		s = s->next;
-	}
-}
 static void RegisterShutterForChannel(int channel) {
 	shutter_t *s = GetForChannel(channel);
 	if (!s) {
@@ -304,10 +312,28 @@ static void RegisterShutterForChannel(int channel) {
 		s->frac = 0.0f;  // unknown position
 		s->state = SHUTTER_CLOSED;
 		s->targetFrac = 0.0f;
-		s->openTimeSeconds = 10.0f;  // default
-		s->closeTimeSeconds = 10.0f; // default
+		s->openTimeSeconds = DEFAULT_TIME;  // default
+		s->closeTimeSeconds = DEFAULT_TIME; // default
 		s->next = g_shutters;
 		g_shutters = s;
+	}
+}
+void DRV_Shutters_RunEverySecond() {
+	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		int r = g_cfg.pins.roles[i];
+		if (r == IOR_ShutterA || r == IOR_ShutterB) {
+			RegisterShutterForChannel(g_cfg.pins.channels[i]);
+		}
+	}
+
+	shutter_t *s = g_shutters;
+	while (s) {
+		char buffer[64];
+		//sprintf(buffer, "shutterState%i", s->channel);
+		//MQTT_PublishMain_StringString(buffer, "open", 0);
+		sprintf(buffer, "shutterPos%i", s->channel);
+		MQTT_PublishMain_StringInt(buffer, (int)(s->frac*100.0f), 0);
+		s = s->next;
 	}
 }
 #include "../httpserver/hass.h"
@@ -323,12 +349,6 @@ void DRV_Shutters_DoDiscovery(const char *topic) {
 }
 // backlog setPinRole 5 ShutterA; startDriver Shutters; scheduleHADiscovery 1
 void DRV_Shutters_Init() {
-	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
-		int r = g_cfg.pins.roles[i];
-		if (r == IOR_ShutterA || r == IOR_ShutterB) {
-			RegisterShutterForChannel(g_cfg.pins.channels[i]);
-		}
-	}
 	CMD_RegisterCommand("ShutterMove", CMD_Shutter_MoveTo, NULL);
 	CMD_RegisterCommand("ShutterCalibrate", CMD_Shutter_Calibrate, NULL);
 }
