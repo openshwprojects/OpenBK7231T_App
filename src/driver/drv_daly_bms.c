@@ -36,16 +36,12 @@ void DALY_BMS_Mutex_Free() {
 	xSemaphoreGive(g_daly_mutex);
 }
 
-void readCellVoltages(){
-
-	if(!DALY_BMS_Mutex_Take(10)){
-		return;
-    }
+void sendRequest(byte address){
 	unsigned char buffer[13];
-	buffer[0] = 0xA5; // header
-	buffer[1] = 0x40; // address
-	buffer[2] = 0x95; // read cell voltage command
-	buffer[3] = 0x08; // length
+	buffer[0] = 0xA5;
+	buffer[1] = 0x40;
+	buffer[2] = address
+	buffer[3] = 0x08;
 	for(int i=4;i<12;i++){
 		buffer[i]=0x00;
 	}
@@ -59,7 +55,9 @@ void readCellVoltages(){
 	{
 		UART_SendByte(buffer[i]);
 	}
+}
 
+int getUartDataSize(unsigned char* receiveBuffer){
 	int len = UART_GetDataSize();
 	int delay=0;
 
@@ -69,42 +67,91 @@ void readCellVoltages(){
 		len = UART_GetDataSize();
 		delay++;
 	}
+	for(int i = 0; i < len; i++)
+	{
+		receive_buffer[i] = UART_GetByte(i);
+	}
+	UART_ConsumeBytes(len);
+	return len;
+}
+
+void readCellBalanceState(){
+	if(!DALY_BMS_Mutex_Take(10)){
+		return;
+	}
+	sendRequest(0x97);
 
 	unsigned char receive_buffer[256];
-    for(int i = 0; i < len; i++)
-    {
-        receive_buffer[i] = UART_GetByte(i);
-    }
-    UART_ConsumeBytes(len);
+	int len= getUartDataSize(receive_buffer);
+
+	DALY_BMS_Mutex_Free();
+
+	if(len==0){
+		return;
+	}
+
+	char tmp[30];
+	for(int k=0;k<(len/13);k++){
+		for(int i=0;i<6;i++){
+			for(int cellIndex=0;cellIndex<8;celIndex++){
+				int balancerState=receive_buffer[5+i]&(1<<cellIndex)==(1<<cellIndex)?1:0;
+				sprintf(tmp, "daly_bms_balancer_state_%d", cellIndex+i*8);
+				MQTT_PublishMain_StringInt(tmp, balancerState, 0);
+			}
+		}
+	}
+}
+
+void readSocTotalVoltage(){
+	if(!DALY_BMS_Mutex_Take(10)){
+		return;
+	}
+	sendRequest(0x90);
+
+	unsigned char receive_buffer[256];
+	int len= getUartDataSize(receive_buffer);
+	DALY_BMS_Mutex_Free();
+
+	if(len==0){
+		return;
+	}
+	DALY_BMS_Mutex_Free();
+
+	char tmp[30];
+	for(int k=0;k<(len/13);k++){
+		float cumulativeVoltage=(receive_buffer[5]*256+receive_buffer[6])*0.1
+		MQTT_PublishMain_StringFloat("daly_bms_cum_voltage", cumulativeVoltage,1, 0);
+		float gatherVoltage=(receive_buffer[7]*256+receive_buffer[8])*0.1
+		MQTT_PublishMain_StringFloat("daly_bms_gather_voltage", gatherVoltage,1, 0);
+		float current=(receive_buffer[9]*256+receive_buffer[10])*0.1
+		MQTT_PublishMain_StringFloat("daly_bms_current", current,1, 0);
+		float stateOfCharge=(receive_buffer[11]*256+receive_buffer[12])*0.1
+		MQTT_PublishMain_StringFloat("daly_bms_soc", stateOfCharge,1, 0);
+	}
+}
+
+void readCellVoltages(){
+	if(!DALY_BMS_Mutex_Take(10)){
+		return;
+	}
+	sendRequest(0x95);
+
+	unsigned char receive_buffer[256];
+	int len= getUartDataSize(receive_buffer);
 	DALY_BMS_Mutex_Free();
 
 	if(len==0){
 		return;
 	}
     DALY_BMS_Mutex_Free();
+
 	int cellNo=0;
 	char tmp[30];
-	for(int k=0;k<2;k++){
-		MQTT_PublishMain_StringInt("daly_bms_debug_frame_nr", receive_buffer[4+k*13], 0);
+	for(int k=0;k<(len/13);k++){
 		for(int i=0;i<3;i++){
-				//Response
-				// 0xA5 // StartFlag
-				// 0x01 // Address
-				// 0x01 // Data Id
-				// 0x08 // Data Length
-				// Frame
-				// 0x01 // Index
-				// 3x2Bytes volrages // voltages // Start at Index 5
-				// 1 Byte padding
-				// Start of next frame 12
-
-
-				int cellVoltage= receive_buffer[5+i+i+(k*13)]*256+receive_buffer[6+i+i+(k*13)] ;
-				MQTT_PublishMain_StringInt("daly_bms_debug_volt", receive_buffer[5+13*k+i+i]+receive_buffer[6+13*k+i+i], 0);
-
+				float cellVoltage= (receive_buffer[5+i+i+(k*13)]*256+receive_buffer[6+i+i+(k*13)])*0.001 ;
 				sprintf(tmp, "daly_bms_cell_voltage_%d", cellNo);
-
-				MQTT_PublishMain_StringInt(tmp, cellVoltage, 0);
+				MQTT_PublishMain_StringFloat(tmp, cellVoltage,3, 0);
 				cellNo++;
 		}
 	}
@@ -113,7 +160,9 @@ void readCellVoltages(){
 
 void DALY_BMS_RunEverySecond()
 {
-		readCellVoltages();
+	readCellVoltages();
+	readCellBalanceState();
+	readSocTotalVoltage();
 }
 
 
