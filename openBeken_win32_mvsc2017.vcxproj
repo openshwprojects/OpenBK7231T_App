@@ -250,6 +250,7 @@
     <ClCompile Include="src\driver\drv_ds3231.c" />
     <ClCompile Include="src\driver\drv_neo6m.c" />
     <ClCompile Include="src\driver\drv_rc.cpp" />
+    <ClCompile Include="src\driver\drv_shutters.c" />
     <ClCompile Include="src\libraries\obktime\obktime.c" />
     <ClCompile Include="src\driver\drv_timed_events.c" />
     <ClCompile Include="src\driver\drv_openWeatherMap.c" />
@@ -840,6 +841,7 @@
     <ClCompile Include="src\selftest\selftest_role_toggleAll.c" />
     <ClCompile Include="src\selftest\selftest_script.c" />
     <ClCompile Include="src\selftest\selftest_demo_exclusiveRelays.c" />
+    <ClCompile Include="src\selftest\selftest_shutters.c" />
     <ClCompile Include="src\selftest\selftest_tasmota.c" />
     <ClCompile Include="src\selftest\selftest_tclAC.c" />
     <ClCompile Include="src\selftest\selftest_tokenizer.c" />

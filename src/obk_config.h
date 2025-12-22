@@ -137,6 +137,7 @@
 #define ENABLE_LITTLEFS							1
 #define ENABLE_NTP								1
 #define ENABLE_TIME_DST							1
+#define ENABLE_DRIVER_SHUTTERS					1
 #define ENABLE_DRIVER_LED						1
 #define ENABLE_DRIVER_BL0937					1
 #define ENABLE_DRIVER_BL0942					1
@@ -241,6 +242,7 @@
 
 //#define	ENABLE_DRIVER_UART_TCP					1
 
+#define ENABLE_DRIVER_SHUTTERS					1
 // #define	ENABLE_DRIVER_PIR					1
 //#define ENABLE_DRIVER_BKPARTITIONS				1
 #define ENABLE_HA_DISCOVERY						1

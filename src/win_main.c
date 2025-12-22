@@ -203,6 +203,8 @@ void Win_DoUnitTests()
 {
 	// SELFTEST_ASSERT_EXPRESSION("sqrt(4)", 2)
 
+	Test_Shutters();
+
 	Test_MQTT();
 	Test_HTTP_Client();
 	// Test_PartitionSearch();
