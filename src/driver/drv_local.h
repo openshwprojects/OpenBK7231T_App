@@ -20,7 +20,6 @@ void DRV_Shutters_RunEverySecond();
 void DRV_Shutters_AddToHtmlPage(http_request_t *request, int bPreState);
 void DRV_Shutters_Init();
 void DRV_Shutters_DoDiscovery(const char *topic);
-void Shutter_MoveByIndex(int index, float frac);
 
 void BMP280_Init();
 void BMP280_OnEverySecond();

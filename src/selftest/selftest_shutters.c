@@ -12,6 +12,9 @@ void Test_Shutters() {
 	PIN_SetPinRoleForPinIndex(4, IOR_ShutterA);
 	PIN_SetPinRoleForPinIndex(5, IOR_ShutterB);
 
+	PIN_SetPinRoleForPinIndex(6, IOR_Button_ShutterUp);
+	PIN_SetPinRoleForPinIndex(7, IOR_Button_ShutterDown);
+
 	CMD_ExecuteCommand("startDriver Shutters", 0);
 	SELFTEST_ASSERT_PIN_BOOLEAN(4, false);
 	SELFTEST_ASSERT_PIN_BOOLEAN(5, false);
