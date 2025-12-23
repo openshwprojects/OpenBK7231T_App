@@ -175,10 +175,10 @@ void DALY_BMS_RunEverySecond()
         readCellVoltages();
     }
     if(g_currentIndex==1){
-        readCellBalanceState();
+       // readCellBalanceState();
     }
     if(g_currentIndex==2){
-        readSocTotalVoltage();
+     //   readSocTotalVoltage();
     }
     g_currentIndex++;
     if(g_currentIndex==3){
