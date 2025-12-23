@@ -231,7 +231,7 @@ void readMinMaxVoltage()
     MQTT_PublishMain_StringFloat("daly_bms_max_cell_voltage", maxCellV,3, 0);
     MQTT_PublishMain_StringInt("daly_bms_max_cell_num", receive_buffer[6], 0);
     float minCellV = (float)((receive_buffer[7] << 8) | receive_buffer[8])*0.001;
-    MQTT_PublishMain_StringFloat("daly_bms_min_cell_voltage", maxCellV,3, 0);
+    MQTT_PublishMain_StringFloat("daly_bms_min_cell_voltage", minCellV,3, 0);
     MQTT_PublishMain_StringInt("daly_bms_min_cell_num", receive_buffer[9], 0);
     MQTT_PublishMain_StringFloat("daly_bms_cell_dif", maxCellV-minCellV,3, 0);
 }
@@ -384,6 +384,9 @@ void readFailureCodes()
 	unsigned char receive_buffer[256];
 	int len= getUartDataSize(receive_buffer,13);
 	DALY_BMS_Mutex_Free();
+	if(len==0){
+        return;
+    }
 
     memset(g_errorString, '\0', sizeof(g_errorString));
     if (bitRead(receive_buffer[4], 1))
@@ -557,6 +560,7 @@ void sendSetRequest(byte address,const byte* setBuffer){
 	buffer[1] = 0x40;
 	buffer[2] = address;
 	buffer[3] = 0x08;
+    MQTT_PublishMain_StringInt("daly_bms_debug_set", 3, 0);
 	for(int i=4;i<12;i++){
 		buffer[i]=setBuffer[i-4];
 	}
@@ -566,6 +570,7 @@ void sendSetRequest(byte address,const byte* setBuffer){
 	}
 	buffer[12]=checksum;
 
+    MQTT_PublishMain_StringInt("daly_bms_debug_set", 4, 0);
 	for(int i = 0; i < 13; i++)
 	{
 		UART_SendByte(buffer[i]);
@@ -576,9 +581,12 @@ void sendSetRequest(byte address,const byte* setBuffer){
 
 void setCellVoltageThreshold(float voltageMinWarn,float voltageMinOff,float voltageMaxWarn,float voltageMaxOff)
 {
+    MQTT_PublishMain_StringInt("daly_bms_debug_set", 1, 0);
 	if(!DALY_BMS_Mutex_Take(10)){
 		return;
 	}
+
+    MQTT_PublishMain_StringInt("daly_bms_debug_set", 2, 0);
 	byte set_buffer[8];
 	set_buffer[0]= ((int) (voltageMaxWarn*1000))>>8;
 	set_buffer[1]= ((int) (voltageMaxWarn*1000));
@@ -593,16 +601,22 @@ void setCellVoltageThreshold(float voltageMinWarn,float voltageMinOff,float volt
 	set_buffer[7]= ((int) (voltageMinOff*1000));
 
 	sendSetRequest(0x59,set_buffer);
+    MQTT_PublishMain_StringInt("daly_bms_debug_set", 5, 0);
 
 	unsigned char receive_buffer[256];
 
 	int len= getUartDataSize(receive_buffer,13);
 	DALY_BMS_Mutex_Free();
+	if(len==0){
+        return;
+    }
+    MQTT_PublishMain_StringInt("daly_bms_debug_set", 6, 0);
 
     float maxCellThreshold1 = (float)((receive_buffer[4] << 8) | receive_buffer[5])*0.001;
     MQTT_PublishMain_StringFloat("daly_bms_max_cell_threshold_1", maxCellThreshold1,3, 0);
     float maxCellThreshold2 = (float)((receive_buffer[6] << 8) | receive_buffer[7])*0.001;
     MQTT_PublishMain_StringFloat("daly_bms_max_cell_threshold_2", maxCellThreshold2,3, 0);
+
     float minCellThreshold1 = (float)((receive_buffer[8] << 8) | receive_buffer[9])*0.001;
     MQTT_PublishMain_StringFloat("daly_bms_min_cell_threshold_1", minCellThreshold1,3, 0);
     float minCellThreshold2 = (float)((receive_buffer[10] << 8) | receive_buffer[11])*0.001;
@@ -622,7 +636,7 @@ commandResult_t CMD_DALY_BMS_Set_Voltage_Thresholds(const void* context, const c
         return CMD_RES_OK;
 
 	}
-    return CMD_RES_ERROR;
+    return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 }
 
 
