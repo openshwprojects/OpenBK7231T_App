@@ -41,3 +41,4 @@ enc_temp_folder/**
 *.su
 /.idea/**
 *.so
+.vscode/settings.json
