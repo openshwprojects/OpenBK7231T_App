@@ -36,17 +36,19 @@ static int g_timeSinceLastEvent = 0;
 void RotaryEncoder_Init()
 {
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "Initializing Rotary Encoder Driver\r\n");
-	
-	// Find pins for CLK, DT, and optional button
-	g_clkPin = PIN_FindPinIndexForRole(IOR_DigitalInput_n, -1);
-	g_dtPin = PIN_FindPinIndexForRole(IOR_DigitalInput_n, g_clkPin + 1);
-	while(g_dtPin == g_clkPin && g_dtPin != -1) {
-		g_dtPin = PIN_FindPinIndexForRole(IOR_DigitalInput_n, g_dtPin + 1);
-		if(g_dtPin > 32) {
-			g_dtPin = -1;
-			break;
+
+	// Find first two pins assigned as DigitalInput_n for CLK and DT
+	for(int i=0; i<PLATFORM_GPIO_MAX; i++) {
+		if(g_cfg.pins.roles[i] == IOR_DigitalInput_n) {
+			if(g_clkPin == -1) {
+				g_clkPin = i;
+			} else if(g_dtPin == -1) {
+				g_dtPin = i;
+				break;
+			}
 		}
 	}
+	// Find optional button pin assigned as Button_n
 	g_buttonPin = PIN_FindPinIndexForRole(IOR_Button_n, -1);
 	
 	// Check if we have at least CLK and DT pins
