@@ -126,7 +126,7 @@ void readStatusInformation(){
 		return;
 	}
 
-    int statusDIO=receive_buffer[8]
+    int statusDIO=receive_buffer[8];
 
     MQTT_PublishMain_StringInt("daly_bms_no_of_batteries", receive_buffer[4], 0);
     MQTT_PublishMain_StringInt("daly_bms_no_of_temperatures", receive_buffer[5], 0);
@@ -210,7 +210,7 @@ void readCellVoltageThreshold()
     MQTT_PublishMain_StringFloat("daly_bms_max_cell_threshold_2", maxCellThreshold2,3, 0);
     float minCellThreshold1 = (float)((receive_buffer[8] << 8) | receive_buffer[9])*0.001;
     MQTT_PublishMain_StringFloat("daly_bms_min_cell_threshold_1", minCellThreshold1,3, 0);
-    float minCellThreshold2 = (float)((receive_buffer[10] << 8) | receive_bufferf[11])*0.001;
+    float minCellThreshold2 = (float)((receive_buffer[10] << 8) | receive_buffer[11])*0.001;
     MQTT_PublishMain_StringFloat("daly_bms_min_cell_threshold_2", minCellThreshold2,3, 0);
 }
 void readPackVoltageThreshold()
@@ -230,7 +230,7 @@ void readPackVoltageThreshold()
     MQTT_PublishMain_StringFloat("daly_bms_max_pack_voltage_threshold_2", maxPackThreshold2,3, 0);
     float minPackThreshold1 = (float)((receive_buffer[8] << 8) | receive_buffer[9])*0.001;
     MQTT_PublishMain_StringFloat("daly_bms_min_pack_voltage_threshold_1", minPackThreshold1,3, 0);
-    float minPackThreshold2 = (float)((receive_buffer[10] << 8) | receive_bufferf[11])*0.001;
+    float minPackThreshold2 = (float)((receive_buffer[10] << 8) | receive_buffer[11])*0.001;
     MQTT_PublishMain_StringFloat("daly_bms_min_pack_voltage_threshold_2", minPackThreshold2,3, 0);
 }
 void readCurrentThreshold()
@@ -250,7 +250,7 @@ void readCurrentThreshold()
     MQTT_PublishMain_StringFloat("daly_bms_max_current_threshold_2", maxCurrentThreshold2,3, 0);
     float minCurrentThreshold1 = (float)((receive_buffer[8] << 8) | receive_buffer[9])*0.001;
     MQTT_PublishMain_StringFloat("daly_bms_min_current_threshold_1", minCurrentThreshold1,3, 0);
-    float minCurrentThreshold2 = (float)((receive_buffer[10] << 8) | receive_bufferf[11])*0.001;
+    float minCurrentThreshold2 = (float)((receive_buffer[10] << 8) | receive_buffer[11])*0.001;
     MQTT_PublishMain_StringFloat("daly_bms_min_current_threshold_2", minCurrentThreshold2,3, 0);
 }
 void readTemperatureThreshold()
@@ -292,7 +292,7 @@ void readChargeThreshold()
     MQTT_PublishMain_StringFloat("daly_bms_max_charge_current_threshold_2", maxChargeCurrentThreshold2,3, 0);
     float minChargeCurrentThreshold1 = (float)((receive_buffer[8] << 8) | receive_buffer[9])*0.001;
     MQTT_PublishMain_StringFloat("daly_bms_min_charge_current_threshold_1", minChargeCurrentThreshold1,3, 0);
-    float minChargeCurrentThreshold2 = (float)((receive_buffer[10] << 8) | receive_bufferf[11])*0.001;
+    float minChargeCurrentThreshold2 = (float)((receive_buffer[10] << 8) | receive_buffer[11])*0.001;
     MQTT_PublishMain_StringFloat("daly_bms_min_charge_current_threshold_2", minChargeCurrentThreshold2,3, 0);
 }
 
