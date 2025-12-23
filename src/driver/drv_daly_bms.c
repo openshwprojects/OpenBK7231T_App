@@ -115,6 +115,7 @@ void readSocTotalVoltage(){
 	}
 	sendRequest(0x90);
 
+    rtos_delay_milliseconds(20);
 	unsigned char receive_buffer[256];
 	int len= getUartDataSize(receive_buffer);
 	DALY_BMS_Mutex_Free();
@@ -123,8 +124,10 @@ void readSocTotalVoltage(){
 		return;
 	}
 
-	char tmp[30];
+    MQTT_PublishMain_StringInt("daly_bms_debug_len", len, 0);
 	for(int k=0;k<(len/13);k++){
+        MQTT_PublishMain_StringInt("daly_bms_debug_frame_number", receive_buffer[4+k*13], 0);
+
 		float cumulativeVoltage=(receive_buffer[5]*256+receive_buffer[6])*0.1;
 		MQTT_PublishMain_StringFloat("daly_bms_cum_voltage", cumulativeVoltage,1, 0);
 		float gatherVoltage=(receive_buffer[7]*256+receive_buffer[8])*0.1;
@@ -178,7 +181,7 @@ void DALY_BMS_RunEverySecond()
        // readCellBalanceState();
     }
     if(g_currentIndex==2){
-     //   readSocTotalVoltage();
+        readSocTotalVoltage();
     }
     g_currentIndex++;
     if(g_currentIndex==3){
