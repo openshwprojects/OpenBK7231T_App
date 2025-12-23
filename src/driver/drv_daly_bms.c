@@ -59,12 +59,12 @@ void sendRequest(byte address){
 	}
 }
 
-int getUartDataSize(unsigned char* receive_buffer){
+int getUartDataSize(unsigned char* receive_buffer,int expected_length){
     rtos_delay_milliseconds(10);
 	int len = UART_GetDataSize();
 	int delay=0;
 
-	while(len ==0 && delay < 250)
+	while(len <expected_length && delay < 250)
 	{
 		rtos_delay_milliseconds(2);
 		len = UART_GetDataSize();
@@ -84,8 +84,9 @@ void readCellBalanceState(){
 	}
 	sendRequest(0x97);
 
+    rtos_delay_milliseconds(20);
 	unsigned char receive_buffer[256];
-	int len= getUartDataSize(receive_buffer);
+	int len= getUartDataSize(receive_buffer,13);
 
 	DALY_BMS_Mutex_Free();
 
@@ -117,7 +118,7 @@ void readSocTotalVoltage(){
 
     rtos_delay_milliseconds(20);
 	unsigned char receive_buffer[256];
-	int len= getUartDataSize(receive_buffer);
+	int len= getUartDataSize(receive_buffer,13);
 	DALY_BMS_Mutex_Free();
 
 	if(len==0){
@@ -146,7 +147,7 @@ void readCellVoltages(){
 	sendRequest(0x95);
 
 	unsigned char receive_buffer[256];
-	int len= getUartDataSize(receive_buffer);
+	int len= getUartDataSize(receive_buffer,g_noOfCells/3*13);
 	DALY_BMS_Mutex_Free();
 
 	if(len==0){
