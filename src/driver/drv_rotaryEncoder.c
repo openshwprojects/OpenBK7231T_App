@@ -27,7 +27,7 @@ static int g_position = 0;
 static int g_lastClkState = 0;
 static int g_lastDtState = 0;
 static int g_lastButtonState = 0;
-static int g_debounceCounter = 0;
+static int g_buttonDebounceCounter = 0;
 static int g_timeSinceLastEvent = 0;
 
 #define DEBOUNCE_TIME_MS 10
@@ -98,49 +98,36 @@ void RotaryEncoder_RunFrame()
 	int clkState = HAL_PIN_ReadDigitalInput(g_clkPin);
 	int dtState = HAL_PIN_ReadDigitalInput(g_dtPin);
 	
-	// Debounce: only process if state has been stable for DEBOUNCE_TIME_MS
+	// Process immediately without debounce for encoder signals
 	if (clkState != g_lastClkState || dtState != g_lastDtState) {
-		g_debounceCounter += g_deltaTimeMS;
-		
-		if (g_debounceCounter >= DEBOUNCE_TIME_MS) {
-			// State has been stable long enough, update
-			if (clkState != g_lastClkState || dtState != g_lastDtState) {
-				// Quadrature decoding: detect rotation direction
-				// Full cycle: 00 -> 10 -> 11 -> 01 -> 00 (clockwise)
-				//            00 -> 01 -> 11 -> 10 -> 00 (counter-clockwise)
+		// Quadrature decoding: detect rotation direction
+		// Full cycle: 00 -> 10 -> 11 -> 01 -> 00 (clockwise)
+		//            00 -> 01 -> 11 -> 10 -> 00 (counter-clockwise)
+		if (clkState != g_lastClkState) {
+			// CLK changed - this indicates rotation
+			if (clkState == 1 && dtState != g_lastDtState) {
+				// Detecting on rising edge of CLK
+				if (dtState == g_lastClkState) {
+					// CW direction: CLK 0->1, DT follows
+					g_position++;
+					EventHandlers_FireEvent(CMD_EVENT_CUSTOM_UP, g_position);
+					addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, "Rotary: CW, pos=%d\r\n", g_position);
+				} else {
+					// CCW direction: CLK 0->1, DT opposite
+					g_position--;
+					EventHandlers_FireEvent(CMD_EVENT_CUSTOM_DOWN, g_position);
+					addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, "Rotary: CCW, pos=%d\r\n", g_position);
+				}
 				
-				if (clkState != g_lastClkState) {
-					// CLK changed - this indicates rotation
-					if (clkState == 1 && dtState != g_lastDtState) {
-						// Detecting on rising edge of CLK
-						if (dtState == g_lastClkState) {
-							// CW direction: CLK 0->1, DT follows
-							g_position++;
-							EventHandlers_FireEvent(CMD_EVENT_CUSTOM_UP, g_position);
-							addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, "Rotary: CW, pos=%d\r\n", g_position);
-						} else {
-							// CCW direction: CLK 0->1, DT opposite
-							g_position--;
-							EventHandlers_FireEvent(CMD_EVENT_CUSTOM_DOWN, g_position);
-							addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, "Rotary: CCW, pos=%d\r\n", g_position);
-						}
-						
-						// Update position channel if configured
-						if (g_positionChannel != -1) {
-							CHANNEL_Set(g_positionChannel, g_position, 0);
-						}
-					}
+				// Update position channel if configured
+				if (g_positionChannel != -1) {
+					CHANNEL_Set(g_positionChannel, g_position, 0);
 				}
 			}
-			
-			g_lastClkState = clkState;
-			g_lastDtState = dtState;
-			g_debounceCounter = 0;
-			g_timeSinceLastEvent = 0;
 		}
-	} else {
-		// State is stable, reset debounce counter
-		g_debounceCounter = 0;
+		g_lastClkState = clkState;
+		g_lastDtState = dtState;
+		g_timeSinceLastEvent = 0;
 	}
 	
 	// Handle optional button
@@ -148,9 +135,9 @@ void RotaryEncoder_RunFrame()
 		int buttonState = HAL_PIN_ReadDigitalInput(g_buttonPin);
 		
 		if (buttonState != g_lastButtonState) {
-			g_debounceCounter += g_deltaTimeMS;
+			g_buttonDebounceCounter += g_deltaTimeMS;
 			
-			if (g_debounceCounter >= DEBOUNCE_TIME_MS) {
+			if (g_buttonDebounceCounter >= DEBOUNCE_TIME_MS) {
 				g_lastButtonState = buttonState;
 				
 				if (buttonState == 0) {
@@ -167,10 +154,10 @@ void RotaryEncoder_RunFrame()
 					CHANNEL_Set(g_buttonChannel, buttonState == 0 ? 1 : 0, 0);
 				}
 				
-				g_debounceCounter = 0;
+				g_buttonDebounceCounter = 0;
 			}
 		} else {
-			g_debounceCounter = 0;
+			g_buttonDebounceCounter = 0;
 		}
 	}
 }
