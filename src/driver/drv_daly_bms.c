@@ -98,7 +98,7 @@ void readCellBalanceState(){
 	for(int k=0;k<(len/13);k++){
 		for(int i=0;i<6;i++){
 			for(int cellIndex=0;cellIndex<8;cellIndex++){
-				int balancerState=receive_buffer[5+i]&(1<<cellIndex)==(1<<cellIndex)?1:0;
+				int balancerState=receive_buffer[4+i]&(1<<cellIndex)==(1<<cellIndex)?1:0;
 				sprintf(tmp, "daly_bms_balancer_state_%d", cellIndex+i*8);
 				MQTT_PublishMain_StringInt(tmp, balancerState, 0);
 
@@ -129,13 +129,16 @@ void readSocTotalVoltage(){
 	for(int k=0;k<(len/13);k++){
         MQTT_PublishMain_StringInt("daly_bms_debug_frame_number", receive_buffer[4+k*13], 0);
 
-		float cumulativeVoltage=(receive_buffer[5]*256+receive_buffer[6])*0.1;
+		float cumulativeVoltage=(receive_buffer[4]*256+receive_buffer[5])*0.1;
 		MQTT_PublishMain_StringFloat("daly_bms_cum_voltage", cumulativeVoltage,1, 0);
-		float gatherVoltage=(receive_buffer[7]*256+receive_buffer[8])*0.1;
+
+		float gatherVoltage=(receive_buffer[6]*256+receive_buffer[7])*0.1;
 		MQTT_PublishMain_StringFloat("daly_bms_gather_voltage", gatherVoltage,1, 0);
-		float current=(receive_buffer[9]*256+receive_buffer[10])*0.1;
+
+		float current=(receive_buffer[8]*256+receive_buffer[9])*0.1;
 		MQTT_PublishMain_StringFloat("daly_bms_current", current,1, 0);
-		float stateOfCharge=(receive_buffer[11]*256+receive_buffer[12])*0.1;
+
+		float stateOfCharge=(receive_buffer[10]*256+receive_buffer[11])*0.1;
 		MQTT_PublishMain_StringFloat("daly_bms_soc", stateOfCharge,1, 0);
 	}
 }
@@ -179,7 +182,7 @@ void DALY_BMS_RunEverySecond()
         readCellVoltages();
     }
     if(g_currentIndex==1){
-       // readCellBalanceState();
+        readCellBalanceState();
     }
     if(g_currentIndex==2){
         readSocTotalVoltage();
