@@ -15,6 +15,7 @@
 
 static int g_baudRate = 9600;
 static int g_noOfCells=0;
+static int g_currentIndex=0;
 
 static int writeRegister(int registerAddress,short value);
 
@@ -59,12 +60,13 @@ void sendRequest(byte address){
 }
 
 int getUartDataSize(unsigned char* receive_buffer){
+    rtos_delay_milliseconds(10);
 	int len = UART_GetDataSize();
 	int delay=0;
 
 	while(len ==0 && delay < 250)
 	{
-		rtos_delay_milliseconds(1);
+		rtos_delay_milliseconds(2);
 		len = UART_GetDataSize();
 		delay++;
 	}
@@ -169,9 +171,19 @@ void readCellVoltages(){
 
 void DALY_BMS_RunEverySecond()
 {
-	readCellVoltages();
-	readCellBalanceState();
-	readSocTotalVoltage();
+    if(g_currentIndex==0){
+        readCellVoltages();
+    }
+    if(g_currentIndex==1){
+        readCellBalanceState();
+    }
+    if(g_currentIndex==2){
+        readSocTotalVoltage();
+    }
+    g_currentIndex++;
+    if(g_currentIndex==3){
+        g_currentIndex=0;
+    }
 }
 
 
