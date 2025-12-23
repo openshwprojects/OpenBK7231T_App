@@ -332,6 +332,7 @@ void readChargeThreshold()
     MQTT_PublishMain_StringFloat("daly_bms_max_charge_current_threshold_1", maxChargeCurrentThreshold1,3, 0);
     float maxChargeCurrentThreshold2 = (float)((receive_buffer[6] << 8) | receive_buffer[7])*0.001;
     MQTT_PublishMain_StringFloat("daly_bms_max_charge_current_threshold_2", maxChargeCurrentThreshold2,3, 0);
+
     float minChargeCurrentThreshold1 = (float)((receive_buffer[8] << 8) | receive_buffer[9])*0.001;
     MQTT_PublishMain_StringFloat("daly_bms_min_charge_current_threshold_1", minChargeCurrentThreshold1,3, 0);
     float minChargeCurrentThreshold2 = (float)((receive_buffer[10] << 8) | receive_buffer[11])*0.001;
@@ -436,7 +437,7 @@ void readFailureCodes()
     else if (bitRead(receive_buffer[6], 6))
         strcat(g_errorString,"SOC l l1,");
 	if(strlen(g_errorString)>300){
-        MQTT_PublishMain_StringFloat("daly_bms_min_charge_current_threshold_2", minChargeCurrentThreshold2,3, 0);
+        MQTT_PublishMain_StringString("daly_bms_error", g_errorString, 0);
 		return;
     }
     /* 0x03 */
@@ -492,7 +493,7 @@ void readFailureCodes()
     if (bitRead(receive_buffer[10], 3))
         strcat(g_errorString,"L V forb chg fault,");
 
-    MQTT_PublishMain_StringFloat("daly_bms_min_charge_current_threshold_2", minChargeCurrentThreshold2,3, 0);
+    MQTT_PublishMain_StringString("daly_bms_error", g_errorString, 0);
     return;
 }
 
