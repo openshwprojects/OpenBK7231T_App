@@ -249,6 +249,10 @@ void DRV_DDPSend_AppendInformationToHTTPIndexPage(http_request_t* request, int b
 void TXW_Cam_Init(void);
 void TXW_Cam_RunEverySecond(void);
 
+void RotaryEncoder_Init();
+void RotaryEncoder_RunFrame();
+void RotaryEncoder_OnChannelChanged(int chIndex, int oldValue, int newValue);
+
 #define SM2135_DELAY 4
 
 // Software I2C

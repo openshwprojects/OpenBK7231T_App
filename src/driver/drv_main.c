@@ -1387,6 +1387,24 @@ static driver_t g_drivers[] = {
 	},
 #endif
 	//{ "", NULL, NULL, NULL, NULL, NULL, NULL, NULL, false },
+
+#if ENABLE_DRIVER_ROTARYENCODER
+	//drvdetail:{"name":"RotaryEncoder",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Rotary Encoder driver.",
+	//drvdetail:"requires":""}
+	{ "RotaryEncoder",                       // Driver Name
+	RotaryEncoder_Init,                      // Init
+	NULL,                                    // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	RotaryEncoder_RunFrame,                  // runQuickTick
+	NULL,                                    // stopFunction
+	RotaryEncoder_OnChannelChanged,          // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+
 };
 
 
