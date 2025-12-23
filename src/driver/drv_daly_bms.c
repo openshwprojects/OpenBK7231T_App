@@ -121,7 +121,7 @@ void readMosFet()
 	sendRequest(0x94);
 
 	unsigned char receive_buffer[256];
-	int len= getUartDataSize(receive_buffer,13);
+	getUartDataSize(receive_buffer,13);
 	DALY_BMS_Mutex_Free();
 
 	switch(receive_buffer[4]){
@@ -131,7 +131,7 @@ void readMosFet()
 		case 1:
             MQTT_PublishMain_StringString("daly_bms_status", "Charge", 0);
 			break;
-		case 1:
+		case 2:
             MQTT_PublishMain_StringString("daly_bms_status", "Discharge", 0);
 			break;
     }
@@ -235,7 +235,7 @@ void readMinMaxVoltage()
     MQTT_PublishMain_StringInt("daly_bms_min_cell_num", receive_buffer[9], 0);
     MQTT_PublishMain_StringFloat("daly_bms_cell_dif", maxCellV-minCellV,3, 0);
 }
-}
+
 void readCellVoltageThreshold()
 {
 	if(!DALY_BMS_Mutex_Take(10)){
@@ -385,8 +385,6 @@ void readFailureCodes()
 	DALY_BMS_Mutex_Free();
 
     memset(g_errorString, '\0', sizeof(g_errorString));
-    failCodeArr = "";
-    /* 0x00 */
     if (bitRead(receive_buffer[4], 1))
         strcat(g_errorString,"Cell v h l2,");
     else if (bitRead(receive_buffer[4], 0))
@@ -580,7 +578,7 @@ void setCellVoltageThreshold(float voltageMinWarn,float voltageMinOff,float volt
 	if(!DALY_BMS_Mutex_Take(10)){
 		return;
 	}
-	unsigned byte set_buffer[8];
+	byte set_buffer[8];
 	set_buffer[0]= ((int) (voltageMaxWarn*1000))>>8;
 	set_buffer[1]= ((int) (voltageMaxWarn*1000));
 
