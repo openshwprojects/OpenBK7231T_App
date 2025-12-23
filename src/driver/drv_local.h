@@ -99,7 +99,6 @@ void DRV_ADCSmoother_RunFrame();
 
 void RotaryEncoder_Init();
 void RotaryEncoder_RunFrame();
-void RotaryEncoder_OnChannelChanged(int ch, int value);
 
 bool DRV_IsRunning(const char *name);
 

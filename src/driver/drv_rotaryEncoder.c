@@ -164,12 +164,3 @@ void RotaryEncoder_RunFrame()
 		}
 	}
 }
-
-void RotaryEncoder_OnChannelChanged(int chIndex, int oldValue, int newValue)
-{
-	// Can be used to reset position or handle other channel changes
-	if (chIndex == g_positionChannel && newValue != oldValue) {
-		g_position = newValue;
-		addLogAdv(LOG_DEBUG, LOG_FEATURE_GENERAL, "Rotary: Position set to %d\r\n", newValue);
-	}
-}

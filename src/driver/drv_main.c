@@ -1399,7 +1399,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // appendInformationToHTTPIndexPage
 	RotaryEncoder_RunFrame,                  // runQuickTick
 	NULL,                                    // stopFunction
-	RotaryEncoder_OnChannelChanged,          // onChannelChanged
+	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
 	},
