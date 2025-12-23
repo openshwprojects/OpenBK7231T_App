@@ -7,6 +7,7 @@
 #include "../logging/logging.h"
 #include "../hal/hal_pins.h"
 #include "../mqtt/new_mqtt.h"
+#include "drv_rotaryEncoder.h"
 
 // Rotary encoder state machine for quadrature decoding
 // Gray code sequence for quadrature encoding: 00 -> 10 -> 11 -> 01 -> 00

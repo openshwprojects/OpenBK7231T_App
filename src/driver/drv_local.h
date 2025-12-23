@@ -97,9 +97,6 @@ void DRV_IR2_Init();
 void DRV_ADCSmoother_Init();
 void DRV_ADCSmoother_RunFrame();
 
-void RotaryEncoder_Init();
-void RotaryEncoder_RunFrame();
-
 bool DRV_IsRunning(const char *name);
 
 // this is exposed here only for debug tool with automatic testing
