@@ -736,7 +736,7 @@ void setCommand1002(short address,int value1,int value2){
 }
 
 void setMaxCellVoltage(float voltage){
-    setCommand06(0x032d,voltage*1000-200)
+    setCommand06(0x032d,voltage*1000-200);
     setCommand1003(0x0130,voltage*1000-100,voltage*1000);
     setCommand1002(0x01c3,voltage*1000+50,voltage*1000-50);
 }
