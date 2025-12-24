@@ -609,7 +609,37 @@ static uint16_t MODBUS_CRC16( const unsigned char *buf, unsigned int len )
 	return crc;
 }
 
-void setMaxCellVoltage(float voltage1, float voltage2){
+
+//4.18
+//81 06 032d 0f8c 0212
+//           3980
+//81 10 0130 0003 0ff0 1054 0ff0 f9f5
+//                4080 4180 4080
+void setMaxCellVoltage1(float voltage){
+	unsigned char buffer[8];
+	buffer[0] = 0x81;
+	buffer[1] = 0x06;
+	buffer[2] = 0x03;
+	buffer[3] = 0x2d;
+
+    buffer[4] = ((int)(voltage*1000-200))>>8;
+    buffer[5] = ((int)(voltage*1000-200));
+	uint16_t crc = MODBUS_CRC16(buffer, 6);
+
+	buffer[6] = crc & 0xFF;
+	buffer[7] = (crc >> 8) & 0xFF;
+
+	if(!DALY_BMS_Mutex_Take(100)){
+		return;
+	}
+	for(int i = 0; i < 8; i++)
+	{
+		UART_SendByte(buffer[i]);
+	}
+    emptyUart();
+	DALY_BMS_Mutex_Free();
+}
+void setMaxCellVoltage2(float voltage){
 	unsigned char buffer[14];
 	buffer[0] = 0x81;
 	buffer[1] = 0x10;
@@ -628,16 +658,52 @@ void setMaxCellVoltage(float voltage1, float voltage2){
     buffer[11] = ((int)(voltage1*1000));
 
 
-	uint16_t crc = MODBUS_CRC16(buffer, 11);
+	uint16_t crc = MODBUS_CRC16(buffer, 12);
 
 	buffer[12] = crc & 0xFF;
 	buffer[13] = (crc >> 8) & 0xFF;
 
+	if(!DALY_BMS_Mutex_Take(100)){
+		return;
+	}
 	for(int i = 0; i < 14; i++)
 	{
 		UART_SendByte(buffer[i]);
 	}
     emptyUart();
+	DALY_BMS_Mutex_Free();
+}
+//81 10 01c3 0002 1086 1022 c81a
+//                4230 4130
+void setMaxCellVoltage3(float voltage){
+	unsigned char buffer[12];
+	buffer[0] = 0x81;
+	buffer[1] = 0x10;
+	buffer[2] = 0x01;
+	buffer[3] = 0xc3;
+	buffer[4] = 0x00;
+	buffer[5] = 0x02;
+
+    buffer[6] = ((int)(voltage*1000+50))>>8;
+    buffer[7] = ((int)(voltage*1000+50));
+
+    buffer[8] = ((int)(voltage*1000-50))>>8;
+    buffer[9] = ((int)(voltage*1000-50));
+
+	uint16_t crc = MODBUS_CRC16(buffer, 10);
+
+	buffer[10] = crc & 0xFF;
+	buffer[11] = (crc >> 8) & 0xFF;
+
+	if(!DALY_BMS_Mutex_Take(100)){
+		return;
+	}
+	for(int i = 0; i < 12; i++)
+	{
+		UART_SendByte(buffer[i]);
+	}
+    emptyUart();
+	DALY_BMS_Mutex_Free();
 }
 
 void setMinCellVoltage(float voltage1, float voltage2){
@@ -813,13 +879,14 @@ void setMaxChargeTemp(int temp){
 commandResult_t CMD_DALY_BMS_Set_Voltage_Thresholds(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 	Tokenizer_TokenizeString(args, 0);
-	if (Tokenizer_GetArgsCount() == 4) {
-		float vMin1 = Tokenizer_GetArgFloat(0);
-		float vMin2 = Tokenizer_GetArgFloat(1);
-		float vMax1 = Tokenizer_GetArgFloat(2);
-		float vMax2 = Tokenizer_GetArgFloat(3);
-        setMaxCellVoltage(vMax1,vMax2);
-        setMinCellVoltage(vMin1,vMin2);
+	if (Tokenizer_GetArgsCount() == 2) {
+		float vMin = Tokenizer_GetArgFloat(0);
+		float vMax = Tokenizer_GetArgFloat(1);
+        setMaxCellVoltage1(vMax);
+        setMaxCellVoltage2(vMax);
+        setMaxCellVoltage3(vMax);
+        g_firstIteration=true;
+        //setMinCellVoltage(vMin1,vMin2);
         return CMD_RES_OK;
 
 	}
