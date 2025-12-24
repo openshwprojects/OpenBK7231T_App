@@ -80,11 +80,14 @@ int getUartDataSize(unsigned char* receive_buffer,int expected_length){
 	UART_ConsumeBytes(len);
 	return len;
 }
-int emptyUart(){
-    rtos_delay_milliseconds(30);
-	int len = UART_GetDataSize();
-	UART_ConsumeBytes(len);
-	return len;
+void emptyUart(){
+	int delay=0;
+    while(delay<200){
+        rtos_delay_milliseconds(1);
+        int len = UART_GetDataSize();
+        UART_ConsumeBytes(len);
+        delay++;
+    }
 }
 
 void readCellBalanceState(){
@@ -609,21 +612,15 @@ static uint16_t MODBUS_CRC16( const unsigned char *buf, unsigned int len )
 	return crc;
 }
 
-
-//4.18
-//81 06 032d 0f8c 0212
-//           3980
-//81 10 0130 0003 0ff0 1054 0ff0 f9f5
-//                4080 4180 4080
-void setMaxCellVoltage1(float voltage){
+void setCommand06(short address,short value){
 	unsigned char buffer[8];
 	buffer[0] = 0x81;
 	buffer[1] = 0x06;
-	buffer[2] = 0x03;
-	buffer[3] = 0x2d;
+	buffer[2] = address>>8;
+	buffer[3] = address;
 
-    buffer[4] = ((int)(voltage*1000-200))>>8;
-    buffer[5] = ((int)(voltage*1000-200));
+    buffer[4] = value>>8;
+    buffer[5] = value;
 	uint16_t crc = MODBUS_CRC16(buffer, 6);
 
 	buffer[6] = crc & 0xFF;
@@ -639,23 +636,23 @@ void setMaxCellVoltage1(float voltage){
     emptyUart();
 	DALY_BMS_Mutex_Free();
 }
-void setMaxCellVoltage2(float voltage){
+void setCommand1003(short address,int value1,int value2){
 	unsigned char buffer[14];
 	buffer[0] = 0x81;
 	buffer[1] = 0x10;
-	buffer[2] = 0x01;
-	buffer[3] = 0x30;
+	buffer[2] = address>>8;
+	buffer[3] = address;
 	buffer[4] = 0x00;
 	buffer[5] = 0x03;
 
-    buffer[6] = ((int)(voltage*1000-100))>>8;
-    buffer[7] = ((int)(voltage*1000-100));
+    buffer[6] = value1>>8;
+    buffer[7] = value1;
 
-    buffer[8] = ((int)(voltage*1000))>>8;
-    buffer[9] = ((int)(voltage*1000));
+    buffer[8] = value2>>8;
+    buffer[9] = value2;
 
-    buffer[10] = ((int)(voltage*1000-100))>>8;
-    buffer[11] = ((int)(voltage*1000-100));
+    buffer[10] =value1>>8;
+    buffer[11] = value1;
 
 
 	uint16_t crc = MODBUS_CRC16(buffer, 12);
@@ -673,22 +670,54 @@ void setMaxCellVoltage2(float voltage){
     emptyUart();
 	DALY_BMS_Mutex_Free();
 }
-//81 10 01c3 0002 1086 1022 c81a
-//                4230 4130
-void setMaxCellVoltage3(float voltage){
+void setCommand1003_ex(short address,int value1,int value2,int value3){
+	unsigned char buffer[14];
+	buffer[0] = 0x81;
+	buffer[1] = 0x10;
+	buffer[2] = address>>8;
+	buffer[3] = address;
+	buffer[4] = 0x00;
+	buffer[5] = 0x03;
+
+    buffer[6] = value1>>8;
+    buffer[7] = value1;
+
+    buffer[8] = value2>>8;
+    buffer[9] = value2;
+
+    buffer[10] =value3>>8;
+    buffer[11] = value3;
+
+
+	uint16_t crc = MODBUS_CRC16(buffer, 12);
+
+	buffer[12] = crc & 0xFF;
+	buffer[13] = (crc >> 8) & 0xFF;
+
+	if(!DALY_BMS_Mutex_Take(100)){
+		return;
+	}
+	for(int i = 0; i < 14; i++)
+	{
+		UART_SendByte(buffer[i]);
+	}
+    emptyUart();
+	DALY_BMS_Mutex_Free();
+}
+void setCommand1002(short address,int value1,int value2){
 	unsigned char buffer[12];
 	buffer[0] = 0x81;
 	buffer[1] = 0x10;
-	buffer[2] = 0x01;
-	buffer[3] = 0xc3;
+	buffer[2] = address>>8;
+	buffer[3] = address;
 	buffer[4] = 0x00;
 	buffer[5] = 0x02;
 
-    buffer[6] = ((int)(voltage*1000+50))>>8;
-    buffer[7] = ((int)(voltage*1000+50));
+    buffer[6] = value1>>8;
+    buffer[7] = value1;
 
-    buffer[8] = ((int)(voltage*1000-50))>>8;
-    buffer[9] = ((int)(voltage*1000-50));
+    buffer[8] = value2>>8;
+    buffer[9] = value2;
 
 	uint16_t crc = MODBUS_CRC16(buffer, 10);
 
@@ -706,196 +735,192 @@ void setMaxCellVoltage3(float voltage){
 	DALY_BMS_Mutex_Free();
 }
 
-void setMinCellVoltage(float voltage1, float voltage2){
-	unsigned char buffer[12];
-	buffer[0] = 0x81;
-	buffer[1] = 0x10;
-	buffer[2] = 0x01;
-	buffer[3] = 0xC6;
-	buffer[4] = 0x00;
-	buffer[5] = 0x02;
-
-    buffer[6] = ((int)(voltage1*1000))>>8;
-    buffer[7] = ((int)(voltage1*1000));
-
-    buffer[8] = ((int)(voltage2*1000))>>8;
-    buffer[9] = ((int)(voltage2*1000));
-
-
-	uint16_t crc = MODBUS_CRC16(buffer, 11);
-
-	buffer[10] = crc & 0xFF;
-	buffer[11] = (crc >> 8) & 0xFF;
-
-	for(int i = 0; i < 12; i++)
-	{
-		UART_SendByte(buffer[i]);
-	}
-    emptyUart();
+void setMaxCellVoltage(float voltage){
+    setCommand06(0x032d,voltage*1000-200)
+    setCommand1003(0x0130,voltage*1000-100,voltage*1000);
+    setCommand1002(0x01c3,voltage*1000+50,voltage*1000-50);
 }
-void setMaxPackVoltage(float voltage1, float voltage2){
-	unsigned char buffer[14];
-	buffer[0] = 0x81;
-	buffer[1] = 0x10;
-	buffer[2] = 0x01;
-	buffer[3] = 0x38;
-	buffer[4] = 0x00;
-	buffer[5] = 0x03;
-
-    buffer[6] = ((int)(voltage1*10))>>8;
-    buffer[7] = ((int)(voltage1*10));
-
-    buffer[8] = ((int)(voltage2*10))>>8;
-    buffer[9] = ((int)(voltage2*10));
-
-    buffer[10] = ((int)(voltage1*10))>>8;
-    buffer[11] = ((int)(voltage1*10));
-
-
-	uint16_t crc = MODBUS_CRC16(buffer, 11);
-
-	buffer[12] = crc & 0xFF;
-	buffer[13] = (crc >> 8) & 0xFF;
-
-	for(int i = 0; i < 14; i++)
-	{
-		UART_SendByte(buffer[i]);
-	}
-    emptyUart();
+void setMinCellVoltage(float voltage){
+    setCommand06(0x032e,voltage*1000+200);
+    setCommand1003(0x0134,voltage*1000+100,voltage*1000);
+    setCommand1002(0x01c6,voltage*1000-100,voltage*1000);
 }
 
-void setMinPackVoltage(float voltage1, float voltage2){
-	unsigned char buffer[14];
-	buffer[0] = 0x81;
-	buffer[1] = 0x10;
-	buffer[2] = 0x01;
-	buffer[3] = 0x3c;
-	buffer[4] = 0x00;
-	buffer[5] = 0x03;
-
-    buffer[6] = ((int)(voltage1*10))>>8;
-    buffer[7] = ((int)(voltage1*10));
-
-    buffer[8] = ((int)(voltage2*10))>>8;
-    buffer[9] = ((int)(voltage2*10));
-
-    buffer[10] = ((int)(voltage1*10))>>8;
-    buffer[11] = ((int)(voltage1*10));
-
-
-	uint16_t crc = MODBUS_CRC16(buffer, 11);
-
-	buffer[12] = crc & 0xFF;
-	buffer[13] = (crc >> 8) & 0xFF;
-
-	for(int i = 0; i < 14; i++)
-	{
-		UART_SendByte(buffer[i]);
-	}
-    emptyUart();
+void setMaxPackVoltage(float voltage){
+    setCommand06(0x032f,voltage*10-12);
+    setCommand1003(0x0138,voltage*10+6,voltage*10);
+    setCommand1002(0x01c9,voltage*10+3,voltage*10-3);
 }
-void setMaxChargeCurrent(float current1, float current2){
-	unsigned char buffer[12];
-	buffer[0] = 0x81;
-	buffer[1] = 0x10;
-	buffer[2] = 0x01;
-	buffer[3] = 0x40;
-	buffer[4] = 0x00;
-	buffer[5] = 0x02;
-
-    buffer[6] = ((int)(30000-current1*10))>>8;
-    buffer[7] = ((int)(30000-current1*10));
-
-    buffer[8] = ((int)(30000-current2*10))>>8;
-    buffer[9] = ((int)(30000-current2*10));
-
-	uint16_t crc = MODBUS_CRC16(buffer, 11);
-
-	buffer[10] = crc & 0xFF;
-	buffer[11] = (crc >> 8) & 0xFF;
-
-	for(int i = 0; i < 12; i++)
-	{
-		UART_SendByte(buffer[i]);
-	}
-    emptyUart();
+void setMinPackVoltage(float voltage){
+    setCommand06(0x0330,voltage*10+6);
+    setCommand1003(0x0138,voltage*10+6,voltage*10);
+    setCommand1002(0x01c9,voltage*10-6,voltage*10+6);
 }
 
-void setMaxDischargeCurrent(float current1, float current2){
-	unsigned char buffer[12];
-	buffer[0] = 0x81;
-	buffer[1] = 0x10;
-	buffer[2] = 0x01;
-	buffer[3] = 0x40;
-	buffer[4] = 0x00;
-	buffer[5] = 0x02;
-
-    buffer[6] = ((int)(30000+current1*10))>>8;
-    buffer[7] = ((int)(30000+current1*10));
-
-    buffer[8] = ((int)(30000+current2*10))>>8;
-    buffer[9] = ((int)(30000+current2*10));
-
-	uint16_t crc = MODBUS_CRC16(buffer, 11);
-
-	buffer[10] = crc & 0xFF;
-	buffer[11] = (crc >> 8) & 0xFF;
-
-	for(int i = 0; i < 12; i++)
-	{
-		UART_SendByte(buffer[i]);
-	}
-    emptyUart();
+void setChargeOvercurrent(float current){
+    setCommand06(0x0331,30000-(current*10*0.8-20));
+    setCommand1002(0x0140,30000-(current*10*0.8),30000-(current*10));
+    setCommand06(0x0143,30000-(current*10*1.33));
 }
+void setDischargeOvercurrent(float current){
+    setCommand06(0x0332,30000+(current*10*0.8-20));
+    setCommand1002(0x0145,30000+(current*10*0.8),30000+(current*10));
+    setCommand06(0x0148,30000+(current*10*1.33));
+}
+
+void setMaxDiffVoltage(float voltage){
+    setCommand1003(0x015a,voltage*1000-300,voltage*1000);
+    setCommand1002(0x01db,voltage*1000+200,voltage*1000);
+}
+
 void setMaxChargeTemp(int temp){
-	unsigned char buffer[12];
-	buffer[0] = 0x81;
-	buffer[1] = 0x10;
-	buffer[2] = 0x01;
-	buffer[3] = 0x4a;
-	buffer[4] = 0x00;
-	buffer[5] = 0x03;
-
-    buffer[6] = ((int)(30+temp))>>8;
-    buffer[7] = ((int)(30+temp));
-    buffer[8] = ((int)(40+temp))>>8;
-    buffer[9] = ((int)(40+temp));
-    buffer[10] = ((int)(35+temp))>>8;
-    buffer[11] = ((int)(35+temp));
-
-
-	uint16_t crc = MODBUS_CRC16(buffer, 11);
-
-	buffer[11] = crc & 0xFF;
-	buffer[12] = (crc >> 8) & 0xFF;
-
-	for(int i = 0; i < 12; i++)
-	{
-		UART_SendByte(buffer[i]);
-	}
-    emptyUart();
+    setCommand06(0x0333,temp+40-15);
+    setCommand1003_ex(0x014a,temp+40-10,temp+40,temp+40-5);
+    setCommand1002(0x01cf,temp+40+10,temp+40+5);
 }
 
-commandResult_t CMD_DALY_BMS_Set_Voltage_Thresholds(const void* context, const char* cmd, const char* args, int cmdFlags) {
+void setMinChargeTemp(int temp){
+    setCommand06(0x0334,temp+40+10);
+    setCommand1003(0x014e,temp+40+5,temp+40);
+    setCommand1002(0x01d2,temp+40-5,temp+40);
+}
 
+void setMaxDischargeTemp(int temp){
+    setCommand06(0x0335,temp+40-10);
+    setCommand1003(0x0152,temp+40-5,temp+40);
+    setCommand1002(0x01d5,temp+40+5,temp+40);
+}
+void setMinDischargeTemp(int temp){
+    setCommand06(0x0336,temp+40+10);
+    setCommand1003(0x0156,temp+40+5,temp+40);
+    setCommand1002(0x01d8,temp+40-5,temp+40);
+}
+void setChargeSwitch(int status){
+    setCommand06(0x0121,status);
+}
+void setDischargeSwitch(int status){
+    setCommand06(0x0122,status);
+}
+void setBalanceSwitch(int status){
+    setCommand06(0x0119,status);
+}
+
+
+commandResult_t CMD_DALY_BMS_Set_Cell_Voltage_Thresholds(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
 	if (Tokenizer_GetArgsCount() == 2) {
 		float vMin = Tokenizer_GetArgFloat(0);
 		float vMax = Tokenizer_GetArgFloat(1);
-        setMaxCellVoltage1(vMax);
-        setMaxCellVoltage2(vMax);
-        setMaxCellVoltage3(vMax);
+        setMaxCellVoltage(vMax);
+        setMinCellVoltage(vMin);
         g_firstIteration=true;
-        //setMinCellVoltage(vMin1,vMin2);
         return CMD_RES_OK;
-
+	}
+    return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+}
+commandResult_t CMD_DALY_BMS_Set_Pack_Voltage_Thresholds(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_GetArgsCount() == 2) {
+		float vMin = Tokenizer_GetArgFloat(0);
+		float vMax = Tokenizer_GetArgFloat(1);
+        setMaxPackVoltage(vMax);
+        setMinPackVoltage(vMin);
+        g_firstIteration=true;
+        return CMD_RES_OK;
+	}
+    return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+}
+commandResult_t CMD_DALY_BMS_Set_Max_Charge_Current(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_GetArgsCount() == 1) {
+		float current = Tokenizer_GetArgFloat(0);
+        setChargeOvercurrent(current);
+        g_firstIteration=true;
+        return CMD_RES_OK;
+	}
+    return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+}
+commandResult_t CMD_DALY_BMS_Set_Max_Discharge_Current(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_GetArgsCount() == 1) {
+		float current = Tokenizer_GetArgFloat(0);
+        setDischargeOvercurrent(current);
+        g_firstIteration=true;
+        return CMD_RES_OK;
+	}
+    return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+}
+commandResult_t CMD_DALY_BMS_Set_Max_Voltage_Diff(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_GetArgsCount() == 1) {
+		float voltage = Tokenizer_GetArgFloat(0);
+        setMaxDiffVoltage(voltage);
+        g_firstIteration=true;
+        return CMD_RES_OK;
+	}
+    return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+}
+commandResult_t CMD_DALY_BMS_Set_Charge_Temp_Thresholds(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_GetArgsCount() == 2) {
+		float min = Tokenizer_GetArgFloat(0);
+		float max = Tokenizer_GetArgFloat(1);
+        setMinChargeTemp(min);
+        setMaxChargeTemp(max);
+        g_firstIteration=true;
+        return CMD_RES_OK;
+	}
+    return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+}
+commandResult_t CMD_DALY_BMS_Set_Discharge_Temp_Thresholds(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_GetArgsCount() == 2) {
+		float min = Tokenizer_GetArgFloat(0);
+		float max = Tokenizer_GetArgFloat(1);
+        setMinDischargeTemp(min);
+        setMaxDischargeTemp(max);
+        g_firstIteration=true;
+        return CMD_RES_OK;
+	}
+    return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+}
+commandResult_t CMD_DALY_BMS_Set_Charge_Switch(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_GetArgsCount() == 2) {
+		float value = Tokenizer_GetArgInt(0);
+        setChargeSwitch(value);
+        return CMD_RES_OK;
+	}
+    return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+}
+commandResult_t CMD_DALY_BMS_Set_Discharge_Switch(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_GetArgsCount() == 2) {
+		float value = Tokenizer_GetArgInt(0);
+        setDischargeSwitch(value);
+        return CMD_RES_OK;
+	}
+    return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+}
+commandResult_t CMD_DALY_BMS_Set_Balance_Switch(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_GetArgsCount() == 2) {
+		float value = Tokenizer_GetArgInt(0);
+        setBalanceSwitch(value);
+        return CMD_RES_OK;
 	}
     return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 }
 
 
 void DALY_BMS_AddCommands(void) {
-
-	CMD_RegisterCommand("DalyBms_Set_Cell_Voltage_Thresholds", CMD_DALY_BMS_Set_Voltage_Thresholds, NULL);
+	CMD_RegisterCommand("DalyBms_Set_Cell_Voltage_Thresholds", CMD_DALY_BMS_Set_Cell_Voltage_Thresholds, NULL);
+	CMD_RegisterCommand("DalyBms_Set_Pack_Voltage_Thresholds", CMD_DALY_BMS_Set_Pack_Voltage_Thresholds, NULL);
+	CMD_RegisterCommand("DalyBms_Set_Max_Voltage_Diff", CMD_DALY_BMS_Set_Max_Voltage_Diff, NULL);
+	CMD_RegisterCommand("DalyBms_Set_Charge_Temp_Thresholds", CMD_DALY_BMS_Set_Charge_Temp_Thresholds, NULL);
+	CMD_RegisterCommand("DalyBms_Set_Discharge_Temp_Thresholds", CMD_DALY_BMS_Set_Discharge_Temp_Thresholds, NULL);
+	CMD_RegisterCommand("DalyBms_Set_Charge_Switch", CMD_DALY_BMS_Set_Charge_Switch, NULL);
+	CMD_RegisterCommand("DalyBms_Set_Discharge_Switch", CMD_DALY_BMS_Set_Discharge_Switch, NULL);
+	CMD_RegisterCommand("DalyBms_Set_Balance_Switch", CMD_DALY_BMS_Set_Balance_Switch, NULL);
 }
 #endif
