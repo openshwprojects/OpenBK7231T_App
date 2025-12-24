@@ -648,14 +648,14 @@ void setMaxCellVoltage2(float voltage){
 	buffer[4] = 0x00;
 	buffer[5] = 0x03;
 
-    buffer[6] = ((int)(voltage1*1000))>>8;
-    buffer[7] = ((int)(voltage1*1000));
+    buffer[6] = ((int)(voltage*1000-100))>>8;
+    buffer[7] = ((int)(voltage*1000-100));
 
-    buffer[8] = ((int)(voltage2*1000))>>8;
-    buffer[9] = ((int)(voltage2*1000));
+    buffer[8] = ((int)(voltage*1000))>>8;
+    buffer[9] = ((int)(voltage*1000));
 
-    buffer[10] = ((int)(voltage1*1000))>>8;
-    buffer[11] = ((int)(voltage1*1000));
+    buffer[10] = ((int)(voltage*1000-100))>>8;
+    buffer[11] = ((int)(voltage*1000-100));
 
 
 	uint16_t crc = MODBUS_CRC16(buffer, 12);
