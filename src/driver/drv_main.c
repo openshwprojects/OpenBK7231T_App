@@ -3,6 +3,7 @@
 #include "drv_bl0937.h"
 #include "drv_bl0942.h"
 #include "drv_bl_shared.h"
+#include "drv_neo6m.h"
 #include "drv_cse7766.h"
 #include "drv_ir.h"
 #include "drv_rc.h"
@@ -1379,6 +1380,22 @@ static driver_t g_drivers[] = {
 	TXW_Cam_Init,                            // Init
 	TXW_Cam_RunEverySecond,                  // onEverySecond
 	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_NEO6M
+	//drvdetail:{"name":"NEO6M",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"NEO6M is a GPS chip which uses UART protocol for communication. By default, it uses 9600 baud, but you can also enable it with other baud rates by using 'startDriver NEO6M <rate>'.",
+	//drvdetail:"requires":""}
+	{ "NEO6M",                               // Driver Name
+	NEO6M_UART_Init,                         // Init
+	NEO6M_UART_RunEverySecond,               // onEverySecond
+	NEO6M_AppendInformationToHTTPIndexPage,  // appendInformationToHTTPIndexPage
 	NULL,                                    // runQuickTick
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged

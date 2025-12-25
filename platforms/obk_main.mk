@@ -121,6 +121,7 @@ OBKM_SRC  += $(OBK_SRCS)driver/drv_multiPinI2CScanner.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_ntp.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_deviceclock.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_ds3231.c
+OBKM_SRC  += $(OBK_SRCS)driver/drv_neo6m.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_DCF77.c
 OBKM_SRC  += $(OBK_SRCS)libraries/obktime/obktime.c
 OBKM_SRC  += $(OBK_SRCS)driver/drv_timed_events.c
