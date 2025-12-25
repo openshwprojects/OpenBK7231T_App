@@ -887,7 +887,7 @@ commandResult_t CMD_DALY_BMS_Set_Discharge_Temp_Thresholds(const void* context, 
 commandResult_t CMD_DALY_BMS_Set_Charge_Switch(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
 	if (Tokenizer_GetArgsCount() == 2) {
-		float value = Tokenizer_GetArgInt(0);
+		float value = Tokenizer_GetArgInteger(0);
         setChargeSwitch(value);
         return CMD_RES_OK;
 	}
@@ -896,7 +896,7 @@ commandResult_t CMD_DALY_BMS_Set_Charge_Switch(const void* context, const char* 
 commandResult_t CMD_DALY_BMS_Set_Discharge_Switch(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
 	if (Tokenizer_GetArgsCount() == 2) {
-		float value = Tokenizer_GetArgInt(0);
+		float value = Tokenizer_GetArgInteger(0);
         setDischargeSwitch(value);
         return CMD_RES_OK;
 	}
@@ -905,7 +905,7 @@ commandResult_t CMD_DALY_BMS_Set_Discharge_Switch(const void* context, const cha
 commandResult_t CMD_DALY_BMS_Set_Balance_Switch(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
 	if (Tokenizer_GetArgsCount() == 2) {
-		float value = Tokenizer_GetArgInt(0);
+		float value = Tokenizer_GetArgInteger(0);
         setBalanceSwitch(value);
         return CMD_RES_OK;
 	}
