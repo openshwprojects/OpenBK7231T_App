@@ -751,10 +751,11 @@ void setMaxPackVoltage(float voltage){
     setCommand1003(0x0138,voltage*10+6,voltage*10);
     setCommand1002(0x01c9,voltage*10+3,voltage*10-3);
 }
+
 void setMinPackVoltage(float voltage){
     setCommand06(0x0330,voltage*10+6);
-    setCommand1003(0x0138,voltage*10+6,voltage*10);
-    setCommand1002(0x01c9,voltage*10-6,voltage*10+6);
+    setCommand1003(0x013c,voltage*10+6,voltage*10);
+    setCommand1002(0x01cc,voltage*10-6,voltage*10+6);
 }
 
 void setChargeOvercurrent(float current){
@@ -886,7 +887,7 @@ commandResult_t CMD_DALY_BMS_Set_Discharge_Temp_Thresholds(const void* context, 
 }
 commandResult_t CMD_DALY_BMS_Set_Charge_Switch(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
-	if (Tokenizer_GetArgsCount() == 2) {
+	if (Tokenizer_GetArgsCount() == 1) {
 		float value = Tokenizer_GetArgInteger(0);
         setChargeSwitch(value);
         return CMD_RES_OK;
@@ -895,7 +896,7 @@ commandResult_t CMD_DALY_BMS_Set_Charge_Switch(const void* context, const char* 
 }
 commandResult_t CMD_DALY_BMS_Set_Discharge_Switch(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
-	if (Tokenizer_GetArgsCount() == 2) {
+	if (Tokenizer_GetArgsCount() == 1) {
 		float value = Tokenizer_GetArgInteger(0);
         setDischargeSwitch(value);
         return CMD_RES_OK;
@@ -904,7 +905,7 @@ commandResult_t CMD_DALY_BMS_Set_Discharge_Switch(const void* context, const cha
 }
 commandResult_t CMD_DALY_BMS_Set_Balance_Switch(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
-	if (Tokenizer_GetArgsCount() == 2) {
+	if (Tokenizer_GetArgsCount() == 1) {
 		float value = Tokenizer_GetArgInteger(0);
         setBalanceSwitch(value);
         return CMD_RES_OK;
@@ -916,6 +917,8 @@ commandResult_t CMD_DALY_BMS_Set_Balance_Switch(const void* context, const char*
 void DALY_BMS_AddCommands(void) {
 	CMD_RegisterCommand("DalyBms_Set_Cell_Voltage_Thresholds", CMD_DALY_BMS_Set_Cell_Voltage_Thresholds, NULL);
 	CMD_RegisterCommand("DalyBms_Set_Pack_Voltage_Thresholds", CMD_DALY_BMS_Set_Pack_Voltage_Thresholds, NULL);
+	CMD_RegisterCommand("DalyBms_Set_Max_Charge_Current", CMD_DALY_BMS_Set_Max_Charge_Current, NULL);
+	CMD_RegisterCommand("DalyBms_Set_Max_Discharge_Current", CMD_DALY_BMS_Set_Max_Discharge_Current, NULL);
 	CMD_RegisterCommand("DalyBms_Set_Max_Voltage_Diff", CMD_DALY_BMS_Set_Max_Voltage_Diff, NULL);
 	CMD_RegisterCommand("DalyBms_Set_Charge_Temp_Thresholds", CMD_DALY_BMS_Set_Charge_Temp_Thresholds, NULL);
 	CMD_RegisterCommand("DalyBms_Set_Discharge_Temp_Thresholds", CMD_DALY_BMS_Set_Discharge_Temp_Thresholds, NULL);
