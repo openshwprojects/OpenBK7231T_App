@@ -37,7 +37,7 @@ static commandResult_t Calibrate(const char *cmd, const char *args, float raw,
 		return CMD_RES_ERROR;
 	}
 
-
+	
     *cal = (cal_type == PWR_CAL_MULTIPLY ? real / raw : raw / real);
     if (isnan(*cal) || ((*cal) > -VERY_SMALL_VAL && (*cal) < VERY_SMALL_VAL))
     {
