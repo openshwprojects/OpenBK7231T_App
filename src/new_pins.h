@@ -630,6 +630,13 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":"RC"}
 	IOR_RCRecv_nPup,
+	//iodetail:{"name":"DCF77",
+	//iodetail:"title":"Pin for DCF77 signal",
+	//iodetail:"descr":"Input for DCF77 signal",
+	//iodetail:"enum":"IOR_DCF77",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_DCF77,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",

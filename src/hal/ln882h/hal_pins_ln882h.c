@@ -294,8 +294,10 @@ void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandle
 	if (mode == INTERRUPT_RISING) {
 		ln_mode = GPIO_INT_RISING;
 	}
-	else {
+	else if (mode == INTERRUPT_FALLING) {
 		ln_mode = GPIO_INT_FALLING;
+	} else {
+		ln_mode = GPIO_INT_RISING_FALLING;
 	}
 	hal_gpio_pin_it_cfg(GetBaseForPin(pinIndex), GetGPIOForPin(pinIndex), ln_mode);
 	hal_gpio_pin_it_en(GetBaseForPin(pinIndex), GetGPIOForPin(pinIndex), HAL_ENABLE);
