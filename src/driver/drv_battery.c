@@ -158,16 +158,23 @@ void Batt_Init() {
 
 void Batt_OnEverySecond() {
 
-	if (g_battcycle == 0) {
+	// Do nothing if cycle is set to zero and the last cycle is complete
+	if ((g_battcycleref == 0) && (g_battcycle == 0)) {
+		return;
+	}
+
+	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY : Measurement will run in %i cycle(s)", g_battcycle - 1);
+	if (g_battcycle == 1) {
+		// End of the cycle, poll battery
 		Batt_Measure();
+	}
+	if (g_battcycle > 1) {
+		// In middle of cycle, reduce counter
+		--g_battcycle;
+	} else {
+		// Cycle changed/ended, start new cycle
 		g_battcycle = g_battcycleref;
 	}
-	if (g_battcycle > 0) {
-		--g_battcycle;
-	}
-	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY : Measurement will run in  %i cycle", g_battcycle);
-
-
 }
 
 
