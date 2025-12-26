@@ -38,12 +38,6 @@ static void Batt_Measure() {
 		//channel_rel = g_cfg.pins.channels[g_pin_rel];
 		//}
 	}
-	// should be already initialized in pins
-	//HAL_ADC_Init(g_pin_adc);
-	g_battlevel = HAL_ADC_Read(g_pin_adc);
-	if (g_battlevel < 1024) {
-		ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : ADC Value low device not on battery");
-	}
 	if (g_vdivider > 1) {
 		//CHANNEL_Set(channel_rel, 1, 0);
 		if (g_pin_rel > 0) {
@@ -52,7 +46,7 @@ static void Batt_Measure() {
 		rtos_delay_milliseconds(10);
 	}
 	g_battvoltage = HAL_ADC_Read(g_pin_adc);
-	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY : ADC binary Measurement : %f and channel %i", g_battvoltage, channel_adc);
+	ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : ADC binary Measurement : %f and channel %i", g_battvoltage, channel_adc);
 	if (g_vdivider > 1) {
 		if (g_pin_rel > 0) {
 			HAL_PIN_SetOutputValue(g_pin_rel, !writeVal);
