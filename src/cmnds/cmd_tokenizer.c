@@ -175,6 +175,11 @@ const char *Tokenizer_GetArg(int i) {
 		if (!strcmp(s + 1, "IP")) {
 			strcpy_safe(g_argsExpanded[i], HAL_GetMyIPString(), sizeof(g_argsExpanded[i]));
 		}
+		else if (!strcmp(s + 1, "MAC")) {
+			char tmpStr[19];	// will be used for MAC string 6*3 chars (18 would be o.k, since last hex has no ":" ...)
+			HAL_GetMACStr(tmpStr);
+			strcpy_safe(g_argsExpanded[i],tmpStr, sizeof(g_argsExpanded[i]));
+		}	
 		else if (!strcmp(s + 1, "ShortName")) {
 			strcpy_safe(g_argsExpanded[i], CFG_GetShortDeviceName(), sizeof(g_argsExpanded[i]));
 		}
