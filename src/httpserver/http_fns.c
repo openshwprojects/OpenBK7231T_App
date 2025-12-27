@@ -2127,6 +2127,51 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	}
 
 #endif
+#ifdef ENABLE_DRIVER_DALY_BMS
+	dev_info = hass_init_sensor_device_info_topic(VOLTAGE_SENSOR,"daly_bms_total_voltage","daly_bms_cum_voltage/get",-1,-1,-1,"Total Voltage");
+	if (dev_info) {
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		discoveryQueued = true;
+	}
+	dev_info = hass_init_sensor_device_info_topic(CURRENT_SENSOR,"daly_bms_current","daly_bms_current/get",-1,-1,-1,"Current");
+	if (dev_info) {
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		discoveryQueued = true;
+	}
+	dev_info = hass_init_sensor_device_info_topic(HASS_PERCENT,"daly_bms_soc","daly_bms_soc/get",-1,-1,-1,"State of Charge");
+	if (dev_info) {
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		discoveryQueued = true;
+	}
+	dev_info = hass_init_sensor_device_info_topic(HASS_PERCENT,"daly_bms_max_cell_voltage","daly_bms_max_cell_voltage/get",-1,-1,-1,"Max Cell Voltage");
+	if (dev_info) {
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		discoveryQueued = true;
+	}
+	dev_info = hass_init_sensor_device_info_topic(HASS_PERCENT,"daly_bms_min_cell_voltage","daly_bms_min_cell_voltage/get",-1,-1,-1,"Min Cell Voltage");
+	if (dev_info) {
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		discoveryQueued = true;
+	}
+	dev_info = hass_init_sensor_device_info_topic(TEMPERATURE_SENSOR,"daly_bms_temperature_1","daly_bms_temperature_1/get",-1,-1,-1,"Temperature");
+	if (dev_info) {
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		discoveryQueued = true;
+	}
+	dev_info = hass_init_sensor_device_info_topic(CUSTOM_SENSOR,"daly_bms_status","daly_bms_status/get",-1,-1,-1,"Status");
+	if (dev_info) {
+		MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+		hass_free_device_info(dev_info);
+		discoveryQueued = true;
+	}
+#endif
+#endif
 
 #ifdef ENABLE_DRIVER_BL0937
 	if (measuringPower == true) {
