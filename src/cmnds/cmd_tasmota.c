@@ -426,14 +426,13 @@ static commandResult_t cmnd_MqttClient(const void * context, const char *cmd, co
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-
+	//lay sang *arg0 ...
 	const char *arg0 = Tokenizer_GetArg(0); 
 	// Check if arg0 contains '$'
 	if (strchr(arg0, '$') != NULL) {
 	    // Found the character
 	   arg0=Tokenizer_GetArgExpanding(0);
 	}
-
 	CFG_SetMQTTClientId(arg0);//(Tokenizer_GetArg(0));
 	return CMD_RES_OK;
 }
