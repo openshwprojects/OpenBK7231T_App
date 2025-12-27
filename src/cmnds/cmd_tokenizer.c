@@ -114,7 +114,7 @@ const char *Tokenizer_GetArgExpanding(int i) {
 			if (!strcmp(tconst, "${IP}") || !strcmp(tconst, "$IP")) {
 				strcat_safe(Templine, HAL_GetMyIPString(), sizeof(Templine));
 			}
-			else if (!strcmp(tconst, "${MAC}") || !strcmp(tconst, "$MAC")) {
+			else if (!strcmp(tconst, "${MAC}") || !strcmp(tconst, "$MAC")) {//hieu modify
 				char tmpStr[19];	// will be used for MAC string 6*3 chars (18 would be o.k, since last hex has no ":" ...)
 				HAL_GetMACStr(tmpStr);
 				strcat_safe(Templine, tmpStr, sizeof(Templine));
@@ -180,7 +180,7 @@ const char *Tokenizer_GetArg(int i) {
 		if (!strcmp(s + 1, "IP")) {
 			strcpy_safe(g_argsExpanded[i], HAL_GetMyIPString(), sizeof(g_argsExpanded[i]));
 		}
-		else if (!strcmp(s + 1, "MAC")) {
+		else if (!strcmp(s + 1, "MAC")) {//hieu modify
 			char tmpStr[19];	// will be used for MAC string 6*3 chars (18 would be o.k, since last hex has no ":" ...)
 			HAL_GetMACStr(tmpStr);
 			strcpy_safe(g_argsExpanded[i],tmpStr, sizeof(g_argsExpanded[i]));
