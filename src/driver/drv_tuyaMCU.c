@@ -250,7 +250,7 @@ enum TuyaMCUV0State {
 static byte g_tuyaBatteryPoweredState = 0;
 static byte g_hello[] = { 0x55, 0xAA, 0x00, 0x01, 0x00, 0x00, 0x00 };
 //static byte g_request_state[] = { 0x55, 0xAA, 0x00, 0x02, 0x00, 0x01, 0x04, 0x06 };
-static bool g_tuyaMCU_powerSave = false;
+static bool g_tuyaMCU_batteryPoweredMode = false;
 
 typedef struct tuyaMCUPacket_s {
 	byte *data;
@@ -2270,7 +2270,7 @@ commandResult_t Cmd_TuyaMCU_EnableAutoSend(const void* context, const char* cmd,
 	return CMD_RES_OK;
 }
 
-commandResult_t Cmd_TuyaMCU_PowerSave(const void* context, const char* cmd, const char* args, int cmdFlags) {
+commandResult_t Cmd_TuyaMCU_BatteryPoweredMode(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int enable = 1;
 
 	Tokenizer_TokenizeString(args, 0);
@@ -2279,7 +2279,7 @@ commandResult_t Cmd_TuyaMCU_PowerSave(const void* context, const char* cmd, cons
 		enable = Tokenizer_GetArgInteger(0);
 	}
 	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "TuyaMCU power saving %s\n", enable ? "enabled" : "disabled");
-	TuyaMCU_PowerSave(enable != 0);
+	TuyaMCU_BatteryPoweredMode(enable != 0);
 
 	return CMD_RES_OK;
 }
@@ -2362,7 +2362,7 @@ void TuyaMCU_RunStateMachine_V3() {
 	/* For power saving mode */
 	/* Devices are powered by the TuyaMCU, transmit information and get turned off */
 	/* Use the minimal amount of communications */
-	if (g_tuyaMCU_powerSave) {
+	if (g_tuyaMCU_batteryPoweredMode) {
 		/* Don't worry about connection after state is updated device will be turned off */
 		if (!state_updated) {
 			/* Don't send heartbeats just work on product information */
@@ -2584,8 +2584,8 @@ void TuyaMCU_EnableAutomaticSending(bool enable) {
 	g_tuyaMCU_allowAutomaticSending = enable;
 }
 
-void TuyaMCU_PowerSave(bool enable) {
-	g_tuyaMCU_powerSave = enable;
+void TuyaMCU_BatteryPoweredMode(bool enable) {
+	g_tuyaMCU_batteryPoweredMode = enable;
 }
 
 void TuyaMCU_OnRGBCWChange(const float *rgbcw, int bLightEnableAll, int iLightMode, float brightnessRange01, float temperatureRange01) {
@@ -2822,11 +2822,11 @@ void TuyaMCU_Init()
 	//cmddetail:"examples":"tuyaMcu_enableAutoSend 0"}
 	CMD_RegisterCommand("tuyaMcu_enableAutoSend", Cmd_TuyaMCU_EnableAutoSend, NULL);
 
-	//cmddetail:{"name":"tuyaMcu_powerSave","args": "[Optional 1 or 0, by default 1 is assumed]",
-	//cmddetail:"descr":"Enables power saving mode on version 3 TuyaMCU communication. PowerSave 0 can be used to disable power saving.",
-	//cmddetail:"fn":"Cmd_TuyaMCU_PowerSave","file":"driver/drv_tuyaMCU.c","requires":"",
-	//cmddetail:"examples":"tuyaMcu_powerSave"}
-	CMD_RegisterCommand("tuyaMcu_powerSave", Cmd_TuyaMCU_PowerSave, NULL);
+	//cmddetail:{"name":"tuyaMcu_batteryPoweredMode ","args": "[Optional 1 or 0, by default 1 is assumed]",
+	//cmddetail:"descr":"Enables battery mode communications for version 3 TuyaMCU. tuyaMcu_batteryPoweredMode 0 can be used to disable the mode.",
+	//cmddetail:"fn":"Cmd_TuyaMCU_BatteryPoweredMode","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"examples":"tuyaMcu_batteryPoweredMode "}
+	CMD_RegisterCommand("tuyaMcu_batteryPoweredMode", Cmd_TuyaMCU_BatteryPoweredMode, NULL);
 }
 
 
