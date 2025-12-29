@@ -341,11 +341,22 @@ commandResult_t CMD_ZK10022_Set_Switch(const void* context, const char* cmd, con
 	Tokenizer_TokenizeString(args, 0);
 	if (Tokenizer_GetArgsCount() == 1) {
 		float current = Tokenizer_GetArgInteger(0);
-		if(writeRegister(0x12,(int)(current*100))==0){
+		if(writeRegister(0x12,(int)(current))==0){
             return CMD_RES_OK;
         }
     }
     return CMD_RES_ERROR;
+}
+commandResult_t CMD_ZK10022_Set_PowerOnSwitch(const void* context, const char* cmd, const char* args, int cmdFlags) {
+
+	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_GetArgsCount() == 1) {
+		float current = Tokenizer_GetArgInteger(0);
+		if(writeRegister(0x5D,(int)(current))==0){
+			return CMD_RES_OK;
+		}
+	}
+	return CMD_RES_ERROR;
 }
 
 int writeRegister(int registerAddress,short value){
@@ -408,6 +419,7 @@ void ZK10022_AddCommands(void) {
 	CMD_RegisterCommand("ZK10022_Set_Voltage", CMD_ZK10022_Set_Voltage, NULL);
 	CMD_RegisterCommand("ZK10022_Set_Current", CMD_ZK10022_Set_Current, NULL);
 	CMD_RegisterCommand("ZK10022_Set_Switch", CMD_ZK10022_Set_Switch, NULL);
+	CMD_RegisterCommand("ZK10022_Set_PowerOnSwitch", CMD_ZK10022_Set_PowerOnSwitch, NULL);
 	CMD_RegisterCommand("ZK10022_Set_LowVoltageProtection", CMD_ZK10022_Set_LowVoltageProtection, NULL);
 	CMD_RegisterCommand("ZK10022_Set_OverVoltageProtection", CMD_ZK10022_Set_OverVoltageProtection, NULL);
 	CMD_RegisterCommand("ZK10022_Set_OverCurrentProtection", CMD_ZK10022_Set_OverCurrentProtection, NULL);

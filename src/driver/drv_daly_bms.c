@@ -17,6 +17,8 @@ static int g_baudRate = 9600;
 static int g_noOfCells=0;
 static int g_noOfTempSensors=0;
 static int g_currentIndex=0;
+static int g_heatingPin=-1;
+static int g_heatingPin_n=-1;
 static bool g_firstIteration=true;
 static char g_errorString[768];
 
@@ -185,11 +187,15 @@ void readCellTemperature(){
 	if(len==0){
 		return;
 	}
+	bool heat=true;
 
 	char tmp[30];
 	for(int k=0;k<(len/13);k++){
         for(int tempIndex=0;tempIndex<8;tempIndex++){
             int temperature=receive_buffer[k*13+5+tempIndex]-40;
+			if(temperature>10){
+				heat=false;
+			}
             sprintf(tmp, "daly_bms_temperature_%d", k*13+tempIndex);
             MQTT_PublishMain_StringInt(tmp, temperature, 0);
             if((k*13+tempIndex+1)>=g_noOfTempSensors){
@@ -197,6 +203,11 @@ void readCellTemperature(){
             }
 		}
 	}
+	if(g_heatingPin!=null&&g_heatingPin_n!=null){
+        sprintf(tmp, "daly_bms_heating", heat?1:0);
+        HAL_PIN_SetOutputValue(g_heatingPin,heat?1:0);
+        HAL_PIN_SetOutputValue(g_heatingPin_n,0);
+    }
 }
 
 void readSocTotalVoltage(){
@@ -525,6 +536,7 @@ void DALY_BMS_RunEverySecond()
 
     readFailureCodes();
     readMinMaxVoltage();
+    readCellTemperature();
 
     if(g_currentIndex==0){
         readCellVoltages();
@@ -537,9 +549,6 @@ void DALY_BMS_RunEverySecond()
     }
     if(g_currentIndex==4){
         readStatusInformation();
-    }
-    if(g_currentIndex==4){
-        readCellTemperature();
     }
     g_currentIndex++;
     if(g_currentIndex==5){
@@ -557,7 +566,8 @@ void DALY_BMS_Init()
 	UART_InitUART(g_baudRate, 0,0,3, false);
 	UART_InitReceiveRingBuffer(512);
 	g_firstIteration=true;
-
+	g_heatingPin=PIN_FindPinIndexForRole(IOR_BAT_Relay, -1)
+	g_heatingPin_n=PIN_FindPinIndexForRole(IOR_BAT_Relay_n, -1)
 }
 void DALY_BMS_Deinit(){
 }
