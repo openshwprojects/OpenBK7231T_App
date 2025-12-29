@@ -203,7 +203,7 @@ void readCellTemperature(){
             }
 		}
 	}
-	if(g_heatingPin!=null&&g_heatingPin_n!=null){
+	if(g_heatingPin != -1 && g_heatingPin_n != -1){
         sprintf(tmp, "daly_bms_heating", heat?1:0);
         HAL_PIN_SetOutputValue(g_heatingPin,heat?1:0);
         HAL_PIN_SetOutputValue(g_heatingPin_n,0);
