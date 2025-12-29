@@ -2171,7 +2171,6 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 		discoveryQueued = true;
 	}
 #endif
-#endif
 
 #ifdef ENABLE_DRIVER_BL0937
 	if (measuringPower == true) {
