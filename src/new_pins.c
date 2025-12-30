@@ -583,6 +583,18 @@ void Button_OnShortClick(int index)
 			return;
 		}
 #endif
+#if ENABLE_DRIVER_SHUTTERS
+		if (g_cfg.pins.roles[index] == IOR_Button_ShutterUp)
+		{
+			Shutter_MoveByIndex(g_cfg.pins.channels[index], 1.0f, true);
+			return;
+		}
+		if (g_cfg.pins.roles[index] == IOR_Button_ShutterDown)
+		{
+			Shutter_MoveByIndex(g_cfg.pins.channels[index], 0.0f, true);
+			return;
+		}
+#endif
 		if (g_cfg.pins.roles[index] == IOR_Button_NextDimmer || g_cfg.pins.roles[index] == IOR_Button_NextDimmer_n)
 		{
 			return;
@@ -628,6 +640,20 @@ void Button_OnDoubleClick(int index)
 		// double click toggles SECOND CHANNEL linked to this button
 		CHANNEL_Toggle(g_cfg.pins.channels2[index]);
 	}
+#if ENABLE_DRIVER_SHUTTERS
+	if (g_cfg.pins.roles[index] == IOR_Button_ShutterUp)
+	{
+		// issue stop order
+		Shutter_MoveByIndex(g_cfg.pins.channels[index], -1.0f, true);
+		return;
+	}
+	if (g_cfg.pins.roles[index] == IOR_Button_ShutterDown)
+	{
+		// issue stop order
+		Shutter_MoveByIndex(g_cfg.pins.channels[index], -1.0f, true);
+		return;
+	}
+#endif
 #if ENABLE_LED_BASIC
 	if (g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[index] == IOR_SmartButtonForLEDs_n) {
 		LED_NextColor();
@@ -825,6 +851,10 @@ void CHANNEL_SetAll(int iVal, int iFlags) {
 		case IOR_Button_ScriptOnly_n:
 		case IOR_SmartButtonForLEDs:
 		case IOR_SmartButtonForLEDs_n:
+#if ENABLE_DRIVER_SHUTTERS
+		case IOR_Button_ShutterUp:
+		case IOR_Button_ShutterDown:
+#endif
 		{
 
 		}
@@ -968,6 +998,10 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_Button_ScriptOnly_n:
 		case IOR_SmartButtonForLEDs:
 		case IOR_SmartButtonForLEDs_n:
+#if ENABLE_DRIVER_SHUTTERS
+		case IOR_Button_ShutterUp:
+		case IOR_Button_ShutterDown:
+#endif
 		{
 			//pinButton_s *bt = &g_buttons[index];
 			// TODO: disable button
@@ -1036,6 +1070,10 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_Button_NextTemperature:
 		case IOR_Button_ScriptOnly:
 		case IOR_SmartButtonForLEDs:
+#if ENABLE_DRIVER_SHUTTERS
+		case IOR_Button_ShutterUp:
+		case IOR_Button_ShutterDown:
+#endif
 			falling = 1;
 		case IOR_Button_n:
 		case IOR_Button_ToggleAll_n:
@@ -1174,7 +1212,18 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			HAL_PIN_SetOutputValue(index, 0);
 		}
 		break;
+		case IOR_ShutterA:
+		case IOR_ShutterB:
+		{
+			int channelIndex;
+			int channelValue;
 
+			channelIndex = PIN_GetPinChannelForPinIndex(index);
+			channelValue = g_channelValues[channelIndex];
+
+			HAL_PIN_Setup_Output(index);
+		}
+		break;
 		case IOR_AlwaysHigh:
 		{
 			HAL_PIN_Setup_Output(index);
@@ -2206,7 +2255,11 @@ void PIN_ticks(void* param)
 				|| g_cfg.pins.roles[i] == IOR_Button_NextDimmer || g_cfg.pins.roles[i] == IOR_Button_NextDimmer_n
 				|| g_cfg.pins.roles[i] == IOR_Button_NextTemperature || g_cfg.pins.roles[i] == IOR_Button_NextTemperature_n
 				|| g_cfg.pins.roles[i] == IOR_Button_ScriptOnly || g_cfg.pins.roles[i] == IOR_Button_ScriptOnly_n
-				|| g_cfg.pins.roles[i] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[i] == IOR_SmartButtonForLEDs_n) {
+				|| g_cfg.pins.roles[i] == IOR_SmartButtonForLEDs || g_cfg.pins.roles[i] == IOR_SmartButtonForLEDs_n
+#if ENABLE_DRIVER_SHUTTERS
+				|| g_cfg.pins.roles[i] == IOR_Button_ShutterUp || g_cfg.pins.roles[i] == IOR_Button_ShutterDown
+#endif
+				) {
 				//addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL,"Test hold %i\r\n",i);
 				PIN_Input_Handler(i, t_diff);
 			}
