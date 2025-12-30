@@ -1500,7 +1500,16 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 }
 // This console command will trigger a publish of all used variables (channels and extra stuff)
 commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	MQTT_PublishWholeDeviceState_Internal(true);
+	int _idx;
+	Tokenizer_TokenizeString(args, 0);
+	
+	if (Tokenizer_GetArgsCount() == 2 ) { // cai dau tien bo, vi broker ko cho phep goi thieu tham so ...
+		_idx= Tokenizer_GetArgInteger(1);
+		MQTT_DoItemPublish(_idx);
+	}else{
+		//old behavior
+		MQTT_PublishWholeDeviceState_Internal(true);
+	}	
 	return CMD_RES_OK;// TODO make return values consistent for all console commands
 }
 // This console command will trigger a publish of runtime variables
