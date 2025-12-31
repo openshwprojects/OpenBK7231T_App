@@ -366,7 +366,7 @@ void readCellVoltages(){
 	sendRequest(0x95);
 
 	unsigned char receive_buffer[256];
-	int len= getUartDataSize(receive_buffer,g_noOfCells/3*13);
+	int len= getUartDataSize(receive_buffer,(int)(ceil(g_noOfCells/3.0))*13);
 	DALY_BMS_Mutex_Free();
 
 	if(len==0){
