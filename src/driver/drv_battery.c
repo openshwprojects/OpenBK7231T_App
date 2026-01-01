@@ -38,12 +38,6 @@ static void Batt_Measure() {
 		//channel_rel = g_cfg.pins.channels[g_pin_rel];
 		//}
 	}
-	// should be already initialized in pins
-	//HAL_ADC_Init(g_pin_adc);
-	g_battlevel = HAL_ADC_Read(g_pin_adc);
-	if (g_battlevel < 1024) {
-		ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : ADC Value low device not on battery");
-	}
 	if (g_vdivider > 1) {
 		//CHANNEL_Set(channel_rel, 1, 0);
 		if (g_pin_rel > 0) {
@@ -52,7 +46,7 @@ static void Batt_Measure() {
 		rtos_delay_milliseconds(10);
 	}
 	g_battvoltage = HAL_ADC_Read(g_pin_adc);
-	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY : ADC binary Measurement : %f and channel %i", g_battvoltage, channel_adc);
+	ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : ADC binary Measurement : %f and channel %i", g_battvoltage, channel_adc);
 	if (g_vdivider > 1) {
 		if (g_pin_rel > 0) {
 			HAL_PIN_SetOutputValue(g_pin_rel, !writeVal);
@@ -65,6 +59,12 @@ static void Batt_Measure() {
 	g_battvoltage = g_battvoltage * vref;
 	// multiply by 2 cause ADC is measured after the Voltage Divider
 	g_battvoltage = g_battvoltage * g_vdivider;
+	// ignore values less then half the minimum but don't quit trying
+	if ((g_minbatt / 2) > g_battvoltage) {
+		ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : Reading invalid, ignoring will try again");
+		++g_battcycle;
+		return;
+	}
 	batt_ref = g_maxbatt - g_minbatt;
 	batt_res = g_battvoltage - g_minbatt;
 	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY : Ref battery: %f, rest battery %f", batt_ref, batt_res);
@@ -164,16 +164,23 @@ void Batt_Init() {
 
 void Batt_OnEverySecond() {
 
-	if (g_battcycle == 0) {
+	// Do nothing if cycle is set to zero and the last cycle is complete
+	if ((g_battcycleref == 0) && (g_battcycle == 0)) {
+		return;
+	}
+
+	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY : Measurement will run in %i cycle(s)", g_battcycle - 1);
+	if (g_battcycle == 1) {
+		// End of the cycle, poll battery
 		Batt_Measure();
+	}
+	if (g_battcycle > 1) {
+		// In middle of cycle, reduce counter
+		--g_battcycle;
+	} else {
+		// Cycle changed/ended, start new cycle
 		g_battcycle = g_battcycleref;
 	}
-	if (g_battcycle > 0) {
-		--g_battcycle;
-	}
-	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY : Measurement will run in  %i cycle", g_battcycle);
-
-
 }
 
 
