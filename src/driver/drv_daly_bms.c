@@ -566,8 +566,8 @@ void DALY_BMS_Init()
 	UART_InitUART(g_baudRate, 0,0,3, false);
 	UART_InitReceiveRingBuffer(512);
 	g_firstIteration=true;
-	g_heatingPin=PIN_FindPinIndexForRole(IOR_BAT_Relay, -1)
-	g_heatingPin_n=PIN_FindPinIndexForRole(IOR_BAT_Relay_n, -1)
+	g_heatingPin=PIN_FindPinIndexForRole(IOR_BAT_Relay, -1);
+	g_heatingPin_n=PIN_FindPinIndexForRole(IOR_BAT_Relay_n, -1);
 }
 void DALY_BMS_Deinit(){
 }
