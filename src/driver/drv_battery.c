@@ -59,6 +59,12 @@ static void Batt_Measure() {
 	g_battvoltage = g_battvoltage * vref;
 	// multiply by 2 cause ADC is measured after the Voltage Divider
 	g_battvoltage = g_battvoltage * g_vdivider;
+	// ignore values less then half the minimum but don't quit trying
+	if ((g_minbatt / 2) > g_battvoltage) {
+		ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : Reading invalid, ignoring will try again");
+		++g_battcycle;
+		return;
+	}
 	batt_ref = g_maxbatt - g_minbatt;
 	batt_res = g_battvoltage - g_minbatt;
 	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY : Ref battery: %f, rest battery %f", batt_ref, batt_res);
