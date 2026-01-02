@@ -295,7 +295,7 @@ static struct mqtt_connect_client_info_t mqtt_client_info =
   // do not fil those settings, they are overriden when read from memory
   "user", /* user */
   "pass", /* pass */
-  100,  /* keep alive */
+  30,  /* hieu modify 100 keep alive */
   NULL, /* will_topic */
   NULL, /* will_msg */
   1,    /* will_qos */
