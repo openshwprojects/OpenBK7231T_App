@@ -278,9 +278,10 @@ static int http_rest_post(http_request_t* request) {
 
 static int http_rest_app(http_request_t* request) {
 	const char* webhost = CFG_GetWebappRoot();
-	const char* ourip = HAL_GetMyIPString(); //CFG_GetOurIP();
+//	const char* ourip = HAL_GetMyIPString(); //CFG_GetOurIP();
 	http_setup(request, httpMimeTypeHTML);
-	if (webhost && ourip) {
+//	if (webhost && ourip) {
+	if (webhost) {			// we will use JS "location.hostname" hence the IP of the GUI we are using - no need to check for IP
 		poststr(request, htmlDoctype);
 
 		poststr(request, "<head><title>");
@@ -289,7 +290,8 @@ static int http_rest_app(http_request_t* request) {
 
 		poststr(request, htmlShortcutIcon);
 		poststr(request, htmlHeadMeta);
-		hprintf255(request, "<script>var root='%s',device='http://%s';</script>", webhost, ourip);
+//		hprintf255(request, "<script>var root='%s',device='http://%s';</script>", webhost, ourip);
+		hprintf255(request, "<script>var root='%s',device='http://'+location.hostname;</script>", webhost);
 		hprintf255(request, "<script src='%s/startup.js'></script>", webhost);
 		poststr(request, "</head><body></body></html>");
 	}

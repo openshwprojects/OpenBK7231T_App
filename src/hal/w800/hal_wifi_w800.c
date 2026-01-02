@@ -14,7 +14,10 @@ static void (*g_wifiStatusCallback)(int code);
 
 // lenght of "192.168.103.103" is 15 but we also need a NULL terminating character
 static char g_IP[32] = "unknown";
-static int g_bOpenAccessPointMode = 0;
+// is (Open-) Access point or a client?
+// included as "extern uint8_t g_AccessPointMode;" from new_common.h
+// initilized in user_main.c
+// values:	0 = STA	1 = OpenAP	2 = WAP-AP
 
 const char* security_names[] = {
 	"OPEN",
@@ -108,7 +111,9 @@ void HAL_PrintNetworkInfo()
 				"\tIP=%s, GW=%s, MASK=%s, MAC=%s, DNS=%s\r\n",
 				bss.rssi, bss.ssid, MAC2STR(bss.bssid), bss.channel, 
 				( bss.encryptype >=  IEEE80211_ENCRYT_NONE && bss.encryptype <= IEEE80211_ENCRYT_AUTO_WPA2) ? security_names[bss.encryptype] : "-",
-				 ip, gw, netmask, macstr, dns );
+//				 ip, gw, netmask, macstr, dns );
+				 inet_ntoa(netif->ip_addr), inet_ntoa(netif->gw), inet_ntoa(netif->netmask), macstr, g_AccessPointMode == 0? dns :"-" );
+				 				 
 	bk_printf(buffer);
 	// do we need this in web Log?
 	// disable for now
@@ -186,6 +191,10 @@ static void apsta_net_status(u8 status)
 		break;
 	case NETIF_IP_NET2_UP:
 		// wm_printf("\napsta_net_status: softap ip: %v\n", netif->next->ip_addr.addr);
+		if (g_wifiStatusCallback != 0)
+		{
+			g_wifiStatusCallback(WIFI_AP_CONNECTED);
+		}
 		break;
 	default:
 		break;
@@ -255,13 +264,12 @@ static int connect_wifi_demo(char* ssid, char* pwd, obkStaticIP_t *ip)
 }
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip)
 {
-	g_bOpenAccessPointMode = 0;
 	connect_wifi_demo(oob_ssid, connect_key, ip);
 }
 
 void HAL_DisconnectFromWifi()
 {
-
+	tls_wifi_disconnect();
 }
 
 
@@ -380,7 +388,28 @@ int demo_create_softap(u8* ssid, u8* key, int chan, int encrypt, int format)
 
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
-	demo_create_softap(ssid, "", 15, 0, 1);
+	demo_create_softap(ssid, "", HAL_AP_Wifi_Channel, 0, 1);
+
+	// dhcp_server_start(0);
+	// dhcp_server_stop(void);
+
+	return 0;
+}
+
+int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
+{
+
+	if ( key && strlen(key) < 8){
+		printf("ERROR! key(%s) needs to be at least 8 characters!\r\n", key);
+		if (g_wifiStatusCallback != 0) {
+			g_wifiStatusCallback(WIFI_AP_FAILED);
+		}
+		return -1;
+	}
+
+
+	// int demo_create_softap(u8 *ssid, u8 *key, int chan, int encrypt, int format)  		format: key's format: 0-HEX, 1-ASCII
+	demo_create_softap(ssid, key, HAL_AP_Wifi_Channel, IEEE80211_ENCRYT_CCMP_WPA2, 1);	// tls_softap_info_t has no "AUTO", only tls_ibss_info_t ...
 
 	// dhcp_server_start(0);
 	// dhcp_server_stop(void);

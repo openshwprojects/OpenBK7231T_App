@@ -28,7 +28,10 @@
 
 static void(*g_wifiStatusCallback)(int code);
 
-bool g_bOpenAccessPointMode = false;
+// is (Open-) Access point or a client?
+// included as "extern uint8_t g_AccessPointMode;" from new_common.h
+// initilized in user_main.c
+// values:	0 = STA	1 = OpenAP	2 = WAP-AP
 
 void HAL_ConnectToWiFi(const char *ssid, const char *psk, obkStaticIP_t *ip)
 {
@@ -66,7 +69,8 @@ void HAL_DisconnectFromWifi()
 
 int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
 	char ap_psk[8] = { 0 };
-	g_bOpenAccessPointMode = true;
+// set in user_main - included as "extern"
+//	g_AccessPointMode = 1; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 	net_switch_mode(WLAN_MODE_HOSTAP);
 	wlan_ap_disable();
 	wlan_ap_set((uint8_t *)ssid, strlen(ssid), (uint8_t *)ap_psk);
@@ -74,6 +78,27 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
 
 	return 0;
 }
+
+int HAL_SetupWiFiAccessPoint(const char *ssid, const char *key) {
+	
+	if ( !key || strlen(key) < 8){
+		printf("ERROR! key(%s) needs to be at least 8 characters!\r\n", key);
+		if (g_wifiStatusCallback != 0) {
+			g_wifiStatusCallback(WIFI_AP_FAILED);
+		}
+		return -1;
+	}
+// set in user_main - included as "extern"
+//	g_AccessPointMode = 2; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+
+	net_switch_mode(WLAN_MODE_HOSTAP);
+	wlan_ap_disable();
+	wlan_ap_set((uint8_t *)ssid, strlen(ssid), (uint8_t *)key);
+	wlan_ap_enable();
+
+	return 0;
+}
+
 
 static void wlan_msg_recv(uint32_t event, uint32_t data, void *arg)
 {
@@ -153,7 +178,7 @@ void HAL_PrintNetworkInfo()
 	uint8_t mac[6];
 	WiFI_GetMacAddress((char*)mac);
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------- net device info ------------+\r\n");
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_bOpenAccessPointMode == 0 ? "STA" : "AP");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_AccessPointMode == 0 ? "STA" : "AP");
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif rssi    = %-16i            |\r\n", HAL_GetWifiStrength());
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |\r\n", HAL_GetMyIPString());
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |\r\n", HAL_GetMyMaskString());

@@ -78,9 +78,35 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
 
     wifi_interface = wifi_mgmr_ap_enable();
     /*no password when only one param*/
-    wifi_mgmr_ap_start(wifi_interface, (char*)ssid, hidden_ssid, NULL, 1);
+    
+    wifi_mgmr_ap_start(wifi_interface, ssid, hidden_ssid, NULL, HAL_AP_Wifi_Channel);
 
-	g_bAccessPointMode = 1;
+// set in user_main - included as "extern"
+//	g_AccessPointMode = 1;
+
+	return 0;
+}
+int HAL_SetupWiFiAccessPoint(const char *ssid, const char *key) {
+
+	uint8_t hidden_ssid = 0;
+	//int channel;
+
+	if ( key && strlen(key) < 8){
+		printf("ERROR! key(%s) needs to be at least 8 characters!\r\n", key);
+		if (g_wifiStatusCallback != 0) {
+			g_wifiStatusCallback(WIFI_AP_FAILED);
+		}
+		return -1;
+	}
+	wifi_mgmr_sta_disconnect();
+	wifi_interface_t wifi_interface={0};
+	wifi_mgmr_sta_autoconnect_disable();
+	wifi_mgmr_sta_disable(wifi_interface);		// needs interface, but won't use it, so we can use local var here ...
+	//struct netif *net;
+	wifi_interface = wifi_mgmr_ap_enable();
+	wifi_mgmr_ap_start(wifi_interface, ssid, hidden_ssid, key, HAL_AP_Wifi_Channel);
+// set in user_main - included as "extern"
+//	g_AccessPointMode = 0;
 
 	return 0;
 }
@@ -139,29 +165,10 @@ static void event_cb_wifi_event(input_event_t *event, void *private_data)
         {
             printf("[APP] [EVT] GOT IP %lld\r\n", aos_now_ms());
             printf("[SYS] Memory left is %d Bytes\r\n", xPortGetFreeHeapSize());
-            if(g_wifiStatusCallback!=0) {
-                g_wifiStatusCallback(WIFI_STA_CONNECTED);
-            }
-            if(g_powersave) wifi_mgmr_sta_ps_enter(2);
-
-            if(CFG_HasFlag(OBK_FLAG_WIFI_ENHANCED_FAST_CONNECT))
-            {
-                wifi_mgmr_sta_connect_ind_stat_info_t info;
-                wifi_mgmr_sta_connect_ind_stat_get(&info);
-                ef_get_env_blob("fcdata", &fcdata, sizeof(obkFastConnectData_t), NULL);
-                if(strcmp((const char*)info.passphr, fcdata.pwd) != 0 ||
-                    memcmp(&info.bssid, fcdata.bssid, 6) != 0 ||
-                    info.chan_id != fcdata.channel)
-                {
-                    ADDLOG_INFO(LOG_FEATURE_GENERAL, "Saved fast connect data differ to current one, saving...");
-                    memset(&fcdata, 0, sizeof(obkFastConnectData_t));
-                    strcpy(fcdata.pwd, (const char*)info.passphr);
-                    fcdata.channel = info.chan_id;
-                    wifi_mgmr_psk_cal(info.passphr, info.ssid, strlen(info.ssid), fcdata.psk);
-                    memcpy(&fcdata.bssid, (char*)&info.bssid, sizeof(fcdata.bssid));
-                    ef_set_env_blob("fcdata", &fcdata, sizeof(obkFastConnectData_t));
-                }
-            }
+			if(g_wifiStatusCallback!=0) {
+				g_wifiStatusCallback(WIFI_STA_CONNECTED);
+			}
+			if(g_powersave) wifi_mgmr_sta_ps_enter(2);
         }
         break;
         case CODE_WIFI_ON_PROV_SSID:
@@ -254,51 +261,30 @@ int HAL_GetWifiStrength() {
     return rssi;	
 }
 
-const char *HAL_GetMyIPString()
-{
-    uint32_t ip;
-    uint32_t gw;
-    uint32_t mask;
+const char *HAL_GetMyIPString() {
+	uint32_t ip;
+	uint32_t gw;
+	uint32_t mask;
 
-    if(g_bAccessPointMode == 1)
-    {
-        wifi_mgmr_ap_ip_get(&ip, &gw, &mask);
-    }
-    else
-    {
-        wifi_mgmr_sta_ip_get(&ip, &gw, &mask);
-    }
+	if(g_AccessPointMode != 0) {
+		wifi_mgmr_ap_ip_get(&ip, &gw, &mask);
+	} else {
+		wifi_mgmr_sta_ip_get(&ip, &gw, &mask);
+	}
 
-    strcpy(g_ipStr,inet_ntoa(ip));
-    strcpy(g_gwStr, inet_ntoa(gw));
-    strcpy(g_maskStr, inet_ntoa(mask));
+	strcpy(g_ipStr,inet_ntoa(ip));
 
-    return g_ipStr;
+	return g_ipStr;
 }
 
-const char* HAL_GetMyGatewayString()
-{
-    return g_gwStr;
+const char* HAL_GetMyGatewayString() {
+	return "192.168.0.1";
 }
-const char* HAL_GetMyDNSString()
-{
-    uint32_t dns1;
-    uint32_t dns2;
-
-    if(g_bAccessPointMode == 1)
-    {
-        return "none";
-    }
-    else
-    {
-        wifi_mgmr_sta_dns_get(&dns1, &dns2);
-    }
-    strcpy(g_dnsStr, inet_ntoa(dns1));
-    return g_dnsStr;
+const char* HAL_GetMyDNSString() {
+	return "192.168.0.1";
 }
-const char* HAL_GetMyMaskString()
-{
-    return g_maskStr;
+const char* HAL_GetMyMaskString() {
+	return "255.255.255.0";
 }
 
 void WiFI_GetMacAddress(char *mac) {
@@ -307,7 +293,7 @@ void WiFI_GetMacAddress(char *mac) {
 }
 const char *HAL_GetMACStr(char *macstr) {
 	uint8_t mac[6];
-	if(g_bAccessPointMode == 1) {
+	if(g_AccessPointMode != 0) {
 		wifi_mgmr_ap_mac_get(mac);
 	} else {
 		wifi_mgmr_sta_mac_get(mac);
