@@ -87,6 +87,9 @@ int bSafeMode = 0;
 // start disabled.
 int g_timeSinceLastPingReply = -1;
 int g_prevTimeSinceLastPingReply = -1;
+// if set, after this time the device will use OpenAP mode if WiFi was not connected ...
+int g_SecsToFallbackToOpenAP = -1;
+int act_SecsToFallbackToOpenAP = -1;
 char g_wifi_bssid[33] = { "30:B5:C2:5D:70:72" };
 uint8_t g_wifi_channel = 12;
 // was it ran?
@@ -519,6 +522,7 @@ void Main_OnWiFiStatusChange(int code)
 #endif		
 
 		g_bHasWiFiConnected = 1;
+		act_SecsToFallbackToOpenAP = g_SecsToFallbackToOpenAP;	// "reset" countdown, otherwise if Wifi fails repeatedly for some seconds, this might cause an unwanted switch to OpenAP  
 		ADDLOGF_INFO("%s - WIFI_STA_CONNECTED - %i\r\n", __func__, code);
 
 #if ALLOW_SSID2
@@ -586,10 +590,13 @@ int Main_HasMQTTConnected()
 	return bMQTTconnected;
 }
 
+// use identical function Main_IsConnectedToWiFi() instead
+/*
 int Main_HasWiFiConnected()
 {
 	return g_bHasWiFiConnected;
 }
+*/
 
 #ifdef OBK_MCU_SLEEP_METRICS_ENABLE
 extern OBK_MCU_SLEEP_METRICS OBK_Mcu_metrics;
@@ -898,9 +905,11 @@ void Main_OnEverySecond()
 		//MQTT_GetStats(&mqtt_cur, &mqtt_max, &mqtt_mem);
 		//ADDLOGF_INFO("mqtt req %i/%i, free mem %i\n", mqtt_cur,mqtt_max,mqtt_mem);
 #if ENABLE_MQTT
-		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i %s\n",
+		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d, MQTT %i(%i), bWifi %i, %s:%i, secondsWithNoPing %i, socks %i/%i %s\n",
 			safe, g_secondsElapsed, idleCount, xPortGetFreeHeapSize(), bMQTTconnected,
-			MQTT_GetConnectEvents(),g_bHasWiFiConnected, g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets(),
+			MQTT_GetConnectEvents(),g_bHasWiFiConnected,
+			g_SecsToFallbackToOpenAP >-1 ? "secs until OAP":"FBOAP:", act_SecsToFallbackToOpenAP, 
+			g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets(),
 			g_powersave ? "POWERSAVE" : "");
 #else
 		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d,  bWifi %i, secondsWithNoPing %i, socks %i/%i %s\n",
@@ -1004,10 +1013,18 @@ void Main_OnEverySecond()
 		}
 
 	}
+	else{
+		if (g_connectToWiFi && act_SecsToFallbackToOpenAP > 0){
+			if (--act_SecsToFallbackToOpenAP == 0){
+				g_openAP = 1;
+				g_connectToWiFi = 0;
+			}
+		}
+	}
 	if (g_connectToWiFi)
 	{
 		g_connectToWiFi--;
-		if (0 == g_connectToWiFi && g_bHasWiFiConnected == 0)
+		if (0 == g_connectToWiFi && g_bHasWiFiConnected != 1)
 		{
 			Main_ConnectToWiFiNow();
 		}
