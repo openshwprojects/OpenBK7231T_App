@@ -21,6 +21,7 @@
 #include "drv_ds1820_common.h"
 #include "drv_ds3231.h"
 #include "drv_hlw8112.h"
+#include "drv_DCF77.h"
 
 
 typedef struct driver_s {
@@ -354,6 +355,22 @@ static driver_t g_drivers[] = {
    	DS3231_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
    	NULL,                                    // runQuickTick
    	DS3231_Stop,                             // stopFunction
+   	NULL,                                    // onChannelChanged
+   	NULL,                                    // onHassDiscovery
+   	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_DCF77
+	//drvdetail:{"name":"DSCF77",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Decoding DCF77 signal (german radio time source sending near Frankfurt Main, Germany)",
+	//drvdetail:"requires":""}
+	{ "DCF77",                              // Driver Name
+   	DCF77_Init,                              // Init
+   	DCF77_OnEverySecond,                     // onEverySecond
+   	DCF77_AppendInformationToHTTPIndexPage,  // appendInformationToHTTPIndexPage
+   	DCF77_QuickTick,                         // runQuickTick
+   	DCF77_Stop,                              // stopFunction
    	NULL,                                    // onChannelChanged
    	NULL,                                    // onHassDiscovery
    	false,                                   // loaded
