@@ -38,7 +38,10 @@ bool g_STA_static_IP = 0;
 bool mac_init = false;
 
 static void (*g_wifiStatusCallback)(int code) = NULL;
-static int g_bOpenAccessPointMode = 0;
+// is (Open-) Access point or a client?
+// included as "extern uint8_t g_AccessPointMode;" from new_common.h
+// initilized in user_main.c
+// values:	0 = STA	1 = OpenAP	2 = WAP-AP
 static wifi_data_t wdata = { 0 };
 static int g_bStaticIP = 0;
 static char g_IP[16] = "unknown";
@@ -141,7 +144,7 @@ void HAL_PrintNetworkInfo()
 	uint8_t mac[6];
 	WiFI_GetMacAddress((char*)mac);
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------- net device info ------------+\r\n");
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_bOpenAccessPointMode == 0 ? "STA" : "AP");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_AccessPointMode == 0 ? "STA" : "AP");
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif rssi    = %-16i            |\r\n", HAL_GetWifiStrength());
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |\r\n", HAL_GetMyIPString());
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |\r\n", HAL_GetMyMaskString());
@@ -253,9 +256,9 @@ void wifi_conned_hdl(u8* buf, u32 buf_len, u32 flags, void* userdata)
 		memset(&g_IP, 0, 16);
 		memset(&g_GW, 0, 16);
 		memset(&g_MS, 0, 16);
-		strcpy((char*)&g_IP, ipaddr_ntoa((const ip4_addr_t*)&xnetif[g_bOpenAccessPointMode].ip_addr.addr));
-		strcpy((char*)&g_GW, ipaddr_ntoa((const ip4_addr_t*)&xnetif[g_bOpenAccessPointMode].gw.addr));
-		strcpy((char*)&g_MS, ipaddr_ntoa((const ip4_addr_t*)&xnetif[g_bOpenAccessPointMode].netmask.addr));
+		strcpy((char*)&g_IP, ipaddr_ntoa((const ip4_addr_t*)&xnetif[(g_AccessPointMode>0)].ip_addr.addr));
+		strcpy((char*)&g_GW, ipaddr_ntoa((const ip4_addr_t*)&xnetif[(g_AccessPointMode>0)].gw.addr));
+		strcpy((char*)&g_MS, ipaddr_ntoa((const ip4_addr_t*)&xnetif[(g_AccessPointMode>0)].netmask.addr));
 	}
 }
 
@@ -385,7 +388,8 @@ void RegisterHandlers()
 
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
 {
-	g_bOpenAccessPointMode = 0;
+// set in user_main - included as "extern"
+//	g_AccessPointMode = 0;
 	strcpy((char*)&wdata.ssid, oob_ssid);
 	strncpy((char*)&wdata.pwd, connect_key, 64);
 	
@@ -451,9 +455,47 @@ void HAL_DisconnectFromWifi()
 	if(wifi_is_connected_to_ap()) wifi_disconnect();
 }
 
+
+int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
+{
+// set in user_main - included as "extern"
+//	g_AccessPointMode = (! key || key[0] == 0) ? 1 : 2 ; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+	rtw_mode_t mode = RTW_MODE_STA_AP;
+	struct ip_addr ipaddr;
+	struct ip_addr netmask;
+	struct ip_addr gw;
+	struct netif* pnetif = &xnetif[mode == RTW_MODE_STA_AP ? 1 : 0];
+	dhcps_deinit();
+	wifi_off();
+	vTaskDelay(20);
+	if(wifi_on(mode) < 0)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_GENERAL, "Failed to enable wifi");
+		return 0;
+	}
+
+	if(wifi_start_ap((char*)ssid, (! key || key[0] == 0) ? RTW_SECURITY_OPEN : RTW_SECURITY_WPA2_MIXED_PSK, (! key || key[0] == 0) ? NULL : key, strlen(ssid), key ? strlen(key) : 0, HAL_AP_Wifi_Channel) < 0)
+	{
+		ADDLOG_ERROR(LOG_FEATURE_GENERAL, "Failed to start AP");
+		return 0;
+	}
+	IP4_ADDR(ip_2_ip4(&ipaddr), 192, 168, 4, 1);
+	IP4_ADDR(ip_2_ip4(&netmask), 255, 255, 255, 0);
+	IP4_ADDR(ip_2_ip4(&gw), 192, 168, 4, 1);
+	strcpy((char*)&g_IP, "192.168.4.1");
+	strcpy((char*)&g_GW, "192.168.4.1");
+	strcpy((char*)&g_MS, "255.255.255.0");
+	netif_set_addr(pnetif, ip_2_ip4(&ipaddr), ip_2_ip4(&netmask), ip_2_ip4(&gw));
+	dhcps_init(pnetif);
+	return 0;
+}
+
+
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
-	g_bOpenAccessPointMode = 1;
+
+/*
+	g_AccessPointMode = 1;		// 0 = STA	1 = OpenAP	2 = WAP-AP 
 	rtw_mode_t mode = RTW_MODE_STA_AP;
 	struct ip_addr ipaddr;
 	struct ip_addr netmask;
@@ -482,6 +524,8 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	netif_set_addr(pnetif, ip_2_ip4(&ipaddr), ip_2_ip4(&netmask), ip_2_ip4(&gw));
 	dhcps_init(pnetif);
 	return 0;
+*/
+	return HAL_SetupWiFiAccessPoint(ssid, NULL);
 }
 
 #endif // PLATFORM_REALTEK

@@ -49,6 +49,9 @@
 #define ENABLE_NTP								1
 #define ENABLE_DRIVER_WEMO						1
 #define ENABLE_DRIVER_HUE						1
+// allow usage as an WPA2 AP and define number of clients to connect
+#define ENABLE_WPA_AP						1
+#define WPA_AP_STA_CLIENTS					3
 
 #if PLATFORM_XR809
 #define ENABLE_DRIVER_BATTERY					1
@@ -64,6 +67,9 @@
 #define ENABLE_DRIVER_SSDP						1
 #define ENABLE_OBK_BERRY						1
 #endif
+// allow usage as an WPA2 AP and define number of clients to connect
+#define ENABLE_WPA_AP						1
+#define WPA_AP_STA_CLIENTS					3
 
 #elif PLATFORM_W600
 
@@ -84,6 +90,9 @@
 #define ENABLE_LITTLEFS							1
 //#define ENABLE_DRIVER_TUYAMCU					1
 #undef ENABLE_HTTP_MAC
+// allow usage as an WPA2 AP and define number of clients to connect
+#define ENABLE_WPA_AP						1
+#define WPA_AP_STA_CLIENTS					3
 
 #elif PLATFORM_W800
 
@@ -111,6 +120,11 @@
 #define ENABLE_DRIVER_NEO6M						1
 #define ENABLE_TIME_SUNRISE_SUNSET					1
 #define ENABLE_TIME_DST				1
+// allow usage as an WPA2 AP and define number of clients to connect
+#define ENABLE_WPA_AP						1
+#define WPA_AP_STA_CLIENTS					3
+
+
 #elif WINDOWS
 
 #if LINUX
@@ -233,6 +247,9 @@
 #define ENABLE_DRIVER_IRREMOTEESP				1
 //#endif
 #define ENABLE_DRIVER_NEO6M					1
+// allow usage as an WPA2 AP and define number of clients to connect
+#define ENABLE_WPA_AP						1
+#define WPA_AP_STA_CLIENTS					3
 
 #elif PLATFORM_BEKEN
 
@@ -363,6 +380,9 @@
 #undef ENABLE_DRIVER_BL0942SPI
 #undef ENABLE_DRIVER_CSE7766
 #endif
+// allow usage as an WPA2 AP and define number of clients to connect
+#define ENABLE_WPA_AP						1
+#define WPA_AP_STA_CLIENTS					3
 
 #elif PLATFORM_LN882H
 
@@ -391,6 +411,9 @@
 #define ENABLE_DRIVER_SM16703P					1
 #define ENABLE_DRIVER_PIXELANIM					1
 #define ENABLE_DRIVER_IRREMOTEESP				1
+// allow usage as an WPA2 AP and define number of clients to connect
+#define ENABLE_WPA_AP						1
+#define WPA_AP_STA_CLIENTS					3
 
 #elif PLATFORM_ESPIDF
 
@@ -433,6 +456,9 @@
 #define ENABLE_DRIVER_TCA9554					1
 #define ENABLE_DRIVER_DMX						1
 #endif
+// allow usage as an WPA2 AP and define number of clients to connect
+#define ENABLE_WPA_AP						1
+#define WPA_AP_STA_CLIENTS					3
 
 #elif PLATFORM_TR6260
 
@@ -453,6 +479,9 @@
 #define ENABLE_OBK_SCRIPTING					1
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 #define ENABLE_OBK_BERRY						1
+// allow usage as an WPA2 AP and define number of clients to connect
+#define ENABLE_WPA_AP						1
+#define WPA_AP_STA_CLIENTS					3
 
 #elif PLATFORM_REALTEK
 
@@ -499,6 +528,9 @@
 #if PLATFORM_RTL8720E
 #undef NO_CHIP_TEMPERATURE
 #endif
+// allow usage as an WPA2 AP and define number of clients to connect
+#define ENABLE_WPA_AP						1
+#define WPA_AP_STA_CLIENTS					3
 
 #elif PLATFORM_ECR6600
 
@@ -526,6 +558,9 @@
 #define ENABLE_DRIVER_BL0942					1
 #define ENABLE_DRIVER_BL0937					1
 #define ENABLE_OBK_BERRY						1
+// allow usage as an WPA2 AP and define number of clients to connect
+#define ENABLE_WPA_AP						1
+#define WPA_AP_STA_CLIENTS					3
 
 #elif PLATFORM_ESP8266
 
@@ -563,6 +598,9 @@
 #define ENABLE_DRIVER_DS1820					1
 #define ENABLE_DRIVER_BMPI2C					1
 #define ENABLE_DRIVER_NEO6M					1
+// allow usage as an WPA2 AP and define number of clients to connect
+#define ENABLE_WPA_AP						1
+#define WPA_AP_STA_CLIENTS					3
 
 // #define ENABLE_OBK_BERRY						1
 
@@ -579,6 +617,9 @@
 #define ENABLE_NTP 								1
 #undef ENABLE_HTTP_MAC
 #undef ENABLE_LED_BASIC
+// allow usage as an WPA2 AP and define number of clients to connect
+#define ENABLE_WPA_AP						1
+#define WPA_AP_STA_CLIENTS					3
 
 #elif PLATFORM_RDA5981
 
@@ -592,6 +633,9 @@
 #define ENABLE_DRIVER_AHT2X						1
 #define ENABLE_I2C								1
 #define ENABLE_LITTLEFS							1
+// allow usage as an WPA2 AP and define number of clients to connect
+#define ENABLE_WPA_AP						1
+#define WPA_AP_STA_CLIENTS					3
 
 #else
 

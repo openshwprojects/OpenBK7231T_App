@@ -27,6 +27,7 @@ static esp_netif_t* ap_netif = NULL;
 #define esp_netif_ip_info_t tcpip_adapter_ip_info_t
 #define esp_event_handler_instance_t esp_event_handler_t
 #define esp_event_handler_instance_register(a,b,c,d,e) esp_event_handler_register(a,b,c,e)
+#define esp_event_handler_instance_unregister(a,b,c) esp_event_handler_unregister(a,b,c)
 #define esp_netif_t tcpip_adapter_if_t
 #define esp_netif_set_hostname tcpip_adapter_set_hostname
 #define esp_netif_get_ip_info tcpip_adapter_get_ip_info
@@ -38,7 +39,10 @@ static tcpip_adapter_if_t ap_netif = TCPIP_ADAPTER_IF_AP;
 #endif
 
 static void (*g_wifiStatusCallback)(int code);
-static int g_bOpenAccessPointMode = 0;
+// is (Open-) Access point or a client?
+// included as "extern uint8_t g_AccessPointMode;" from new_common.h
+// initilized in user_main.c
+// values:	0 = STA	1 = OpenAP	2 = WAP-AP
 static esp_netif_ip_info_t g_ip_info;
 esp_event_handler_instance_t instance_any_id, instance_got_ip;
 bool handlers_registered = false;
@@ -93,7 +97,7 @@ void HAL_PrintNetworkInfo()
 	uint8_t mac[6];
 	WiFI_GetMacAddress((char*)&mac);
 	bk_printf("+--------------- net device info ------------+\r\n");
-	bk_printf("|netif type    : %-16s            |\r\n", g_bOpenAccessPointMode == 0 ? "STA" : "AP");
+	bk_printf("|netif type    : %-16s            |\r\n", g_AccessPointMode == 0 ? "STA" : "AP");
 	bk_printf("|netif rssi    = %-16i            |\r\n", HAL_GetWifiStrength());
 	bk_printf("|netif ip      = %-16s            |\r\n", HAL_GetMyIPString());
 	bk_printf("|netif mask    = %-16s            |\r\n", HAL_GetMyMaskString());
@@ -138,7 +142,7 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 void event_handler(void* arg, esp_event_base_t event_base,
 	int32_t event_id, void* event_data)
 {
-	if(event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START && !g_bOpenAccessPointMode)
+	if(event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START && g_AccessPointMode==0)
 	{
 		if(g_wifiStatusCallback != NULL)
 		{
@@ -232,9 +236,97 @@ void HAL_DisconnectFromWifi()
 	esp_wifi_disconnect();
 }
 
+int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
+{
+// set in user_main - included as "extern"
+//	g_AccessPointMode = (! key || key[0] == 0) ? 1 : 2 ; 	// 0 = STA	1 = OpenAP	2 = WAP-AP
+#if PLATFORM_ESPIDF
+	if(sta_netif != NULL)
+#else
+	if(1)
+#endif
+	{
+		esp_wifi_stop();
+		esp_netif_destroy(sta_netif);
+		esp_wifi_deinit();
+		delay_ms(50);
+	}
+	ap_netif = esp_netif_create_default_wifi_ap();
+//	sta_netif = esp_netif_create_default_wifi_sta();
+	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+	cfg.nvs_enable = false;
+	esp_wifi_init(&cfg);
+
+/*
+	if(handlers_registered)
+	{
+		esp_event_handler_instance_unregister(IP_EVENT,
+			IP_EVENT_STA_GOT_IP,
+			instance_got_ip);
+		esp_event_handler_instance_unregister(WIFI_EVENT,
+			ESP_EVENT_ANY_ID,
+			instance_any_id);
+		handlers_registered = false;
+	}
+*/
+	if(!handlers_registered)
+	{
+		esp_event_handler_instance_register(WIFI_EVENT,
+			ESP_EVENT_ANY_ID,
+			&event_handler,
+			NULL,
+			&instance_any_id);
+		handlers_registered = true;
+	}
+	wifi_config_t wifi_ap_config =
+	{
+		.ap =
+		{
+			.ssid_len = strlen(ssid),
+			.channel = HAL_AP_Wifi_Channel,
+#ifndef WPA_AP_STA_CLIENTS
+#define WPA_AP_STA_CLIENTS 1
+#endif
+			.max_connection = WPA_AP_STA_CLIENTS,
+			.authmode = (! key || key[0] == 0) ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA_PSK,
+//			.authmode =  WIFI_AUTH_OPEN,
+#if !PLATFORM_ESP8266
+			.pmf_cfg =
+			{
+				.required = false,
+			},
+#endif
+		},
+	};
+
+	wifi_config_t wifi_sta_config =
+	{
+		.sta = { },
+	};
+	strncpy((char*)wifi_ap_config.ap.ssid, (char*)ssid, 32);
+	if ( key && key[0] != 0 ) strncpy((char*)wifi_ap_config.ap.password, (char*)key, 64);
+//	memcpy(wifi_config.sta.password, evt->password, sizeof(wifi_config.sta.password));
+//	if ( key && key[0] != 0 ) memcpy(wifi_ap_config.ap.password, (uint8_t*)key, sizeof(wifi_ap_config.ap.password));
+	esp_netif_set_hostname(ap_netif, CFG_GetDeviceName());
+
+	esp_wifi_set_config(WIFI_IF_AP, &wifi_ap_config);
+	esp_wifi_set_config(WIFI_IF_STA, &wifi_sta_config);
+//	esp_wifi_set_mode(WIFI_MODE_APSTA);
+	esp_wifi_set_mode(WIFI_MODE_AP);
+	esp_wifi_set_max_tx_power(10 * 4);
+	esp_wifi_start();
+
+	//esp_netif_set_default_netif(ap_netif);
+
+	esp_netif_get_ip_info(ap_netif, &g_ip_info);
+
+	return 1;
+}
+
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
-	g_bOpenAccessPointMode = 1;
+/*
+	g_AccessPointMode = 1; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 	ap_netif = esp_netif_create_default_wifi_ap();
 	sta_netif = esp_netif_create_default_wifi_sta();
 	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
@@ -282,6 +374,8 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	esp_netif_get_ip_info(ap_netif, &g_ip_info);
 
 	return 1;
+*/
+	return HAL_SetupWiFiAccessPoint(ssid, NULL);
 }
 
 #endif // PLATFORM_ESPIDF
