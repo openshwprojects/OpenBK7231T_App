@@ -2180,7 +2180,7 @@ int MQTT_RunEverySecondUpdate()
 	if (!mqtt_initialised)
 		return 0;
 
-	if (Main_HasWiFiConnected() == 0)
+	if (Main_IsConnectedToWiFi() == 0)
 	{
 		mqtt_reconnect = 0;
 		if (Main_HasFastConnect()) {
