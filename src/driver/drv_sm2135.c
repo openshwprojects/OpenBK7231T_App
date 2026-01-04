@@ -13,8 +13,8 @@
 #include "drv_sm2135.h"
 
 static softI2C_t g_softI2C;
-static int g_current_setting_cw = SM2135_20MA;
-static int g_current_setting_rgb = SM2135_20MA;
+static int g_current_setting_cw = SM2135_15MA;
+static int g_current_setting_rgb = SM2135_15MA;
 
 float GetRGBCW(float *ar, int index) {
 	if (index < 0 || index >= 5) {

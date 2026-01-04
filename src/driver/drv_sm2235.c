@@ -18,8 +18,8 @@
 #include "drv_sm2235.h"
 
 static softI2C_t g_softI2C;
-static int g_cur_RGB = 2;
-static int g_cur_CW = 4;
+static int g_cur_RGB = 1;
+static int g_cur_CW = 2;
 
 void SM2235_Write(float *rgbcw) {
 	unsigned short cur_col_10[5];
