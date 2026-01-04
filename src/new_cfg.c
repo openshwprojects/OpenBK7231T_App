@@ -230,6 +230,7 @@ const char *CFG_GetWebappRoot(){
 	return g_cfg.webappRoot;
 }
 const char *CFG_GetShortStartupCommand() {
+	ADDLOGF_TIMING("%i - %s - Running startup command.", xTaskGetTickCount(), __func__);
 	return g_cfg.initCommandLine;
 }
 

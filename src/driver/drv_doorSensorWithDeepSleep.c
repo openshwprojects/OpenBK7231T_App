@@ -62,6 +62,7 @@ commandResult_t DoorDeepSleep_SetTime(const void* context, const char* cmd, cons
 }
 
 void DoorDeepSleep_Init() {
+	ADDLOGF_TIMING("%i - %s", xTaskGetTickCount(), __func__);
 	// 0 seconds since last change
 	g_noChangeTimePassed = 0;
 
@@ -96,6 +97,7 @@ void DoorDeepSleep_QueueNewEvents() {
 
 			curr_value = CHANNEL_Get(channel);
 			if (curr_value != g_lastEventState) {
+				ADDLOGF_TIMING("%i - %s - Channel %i is being set to state %i, last state %i", xTaskGetTickCount(), __func__, channel, curr_value, g_lastEventState);
 				g_lastEventState = curr_value;
 				sprintf(sValue, "%i", curr_value); // get the value of the channel
 #if ENABLE_MQTT
