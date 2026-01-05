@@ -20,56 +20,59 @@
 static softI2C_t g_softI2C;
 static int g_cur_RGB = 2;
 static int g_cur_CW = 4;
-
-void SM2235_Write(float *rgbcw) {
-	unsigned short cur_col_10[5];
-	int i;
-
-	//ADDLOG_DEBUG(LOG_FEATURE_CMD, "Writing to Lamp: %f %f %f %f %f", rgbcw[0], rgbcw[1], rgbcw[2], rgbcw[3], rgbcw[4]);
-
-	for (i = 0; i < 5; i++) {
-		// convert 0-255 to 0-1023
-		//cur_col_10[i] = rgbcw[g_cfg.ledRemap.ar[i]] * 4;
-		cur_col_10[i] = MAP(GetRGBCW(rgbcw,g_cfg.ledRemap.ar[i]), 0, 255.0f, 0, 1023.0f);
-	}
+static unsigned short g_cur_col_10[5] = {0};
 
 #define SM2235_FIRST_BYTE(x) ((x >> 8) & 0xFF)
 #define SM2235_SECOND_BYTE(x) (x & 0xFF)
 
+static void SendControlMessage(void) {
 	// Byte 0
 	Soft_I2C_Start(&g_softI2C,SM2235_BYTE_0);
 	// Byte 1
 	Soft_I2C_WriteByte(&g_softI2C, g_cur_RGB << 4 | g_cur_CW);
 	// Byte 2
-	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_FIRST_BYTE(cur_col_10[0])));  //Red
+	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_FIRST_BYTE(g_cur_col_10[0])));  //Red
 	// Byte 3
-	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_SECOND_BYTE(cur_col_10[0])));
+	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_SECOND_BYTE(g_cur_col_10[0])));
 	// Byte 4
-	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_FIRST_BYTE(cur_col_10[1]))); //Green
+	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_FIRST_BYTE(g_cur_col_10[1]))); //Green
 	// Byte 5
-	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_SECOND_BYTE(cur_col_10[1])));
+	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_SECOND_BYTE(g_cur_col_10[1])));
 	// Byte 6
-	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_FIRST_BYTE(cur_col_10[2]))); //Blue
+	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_FIRST_BYTE(g_cur_col_10[2]))); //Blue
 	// Byte 7
-	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_SECOND_BYTE(cur_col_10[2])));
+	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_SECOND_BYTE(g_cur_col_10[2])));
 	// Byte 8
-	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_FIRST_BYTE(cur_col_10[4]))); //Cold
+	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_FIRST_BYTE(g_cur_col_10[4]))); //Cold
 	// Byte 9
-	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_SECOND_BYTE(cur_col_10[4])));
+	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_SECOND_BYTE(g_cur_col_10[4])));
 	// Byte 10
-	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_FIRST_BYTE(cur_col_10[3]))); //Warm
+	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_FIRST_BYTE(g_cur_col_10[3]))); //Warm
 	// Byte 11
-	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_SECOND_BYTE(cur_col_10[3])));
+	Soft_I2C_WriteByte(&g_softI2C, (uint8_t)(SM2235_SECOND_BYTE(g_cur_col_10[3])));
 	Soft_I2C_Stop(&g_softI2C);
 
 #if WINDOWS
-	Simulator_StoreBP5758DColor(cur_col_10);
+	Simulator_StoreBP5758DColor(g_cur_col_10);
 #endif
+}
+
+void SM2235_Write(float *rgbcw) {
+	//ADDLOG_DEBUG(LOG_FEATURE_CMD, "Writing to Lamp: %f %f %f %f %f", rgbcw[0], rgbcw[1], rgbcw[2], rgbcw[3], rgbcw[4]);
+
+	for (int i = 0; i < 5; i++) {
+		// convert 0-255 to 0-1023
+		//g_cur_col_10[i] = rgbcw[g_cfg.ledRemap.ar[i]] * 4;
+		g_cur_col_10[i] = MAP(GetRGBCW(rgbcw,g_cfg.ledRemap.ar[i]), 0, 255.0f, 0, 1023.0f);
+	}
+
+	SendControlMessage();
 }
 
 static void SM2235_SetCurrent(int curValRGB, int curValCW) {
 	g_cur_RGB = curValRGB;
 	g_cur_CW = curValCW;
+	SendControlMessage();
 }
 
 static commandResult_t SM2235_Current(const void *context, const char *cmd, const char *args, int flags){
