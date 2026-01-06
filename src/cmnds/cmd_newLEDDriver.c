@@ -396,6 +396,15 @@ void LED_RunQuickColorLerp(int deltaMS) {
 	LED_I2CDriver_WriteRGBCW(led_rawLerpCurrent);
 }
 
+void LED_ResendCurrentColors() {
+	if (CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS)) {
+		LED_I2CDriver_WriteRGBCW(led_rawLerpCurrent);
+	}
+	else {
+		LED_I2CDriver_WriteRGBCW(finalColors);
+	}
+}
+
 
 int led_gamma_enable_channel_messages = 0;
 
