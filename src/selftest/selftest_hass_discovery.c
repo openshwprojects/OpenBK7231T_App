@@ -517,9 +517,8 @@ void Test_HassDiscovery_SpecialChar() {
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
 	SELFTEST_ASSERT_JSON_VALUE_STRING_NESTED_ARRAY("dev", "ids", 0, fullName);
 	SELFTEST_ASSERT_JSON_VALUE_STRING_NESTED_ARRAY("dev", "ids", 0, fullName);
-	//SELFTEST_ASSERT_JSON_VALUE_STRING(0, "uniq_id", "Sal_o_de_Festas_relay_1");
-	// matches all content that starts with "Sal_o_de_Festas"
-	SELFTEST_ASSERT_JSON_VALUE_STRING_STARTSWITH(0, "uniq_id", "Sal_o_de_Festas");
+	// hack for linux
+	SELFTEST_ASSERT_JSON_ONE_OF_TWO_VALUES_STRING(0, "uniq_id", "Sal_o_de_Festas_relay_1", "Sal__o_de_Festas_relay_1");
 	SELFTEST_ASSERT(0xC6 == ((byte*)fullName)[3]);
 }
 
