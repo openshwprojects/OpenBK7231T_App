@@ -11,6 +11,7 @@
 #if PLATFORM_BEKEN_NEW
 #include "uart.h"
 #include "arm_arch.h"
+#undef PLATFORM_BEKEN
 #endif
 
 extern uint8_t g_StartupDelayOver;
