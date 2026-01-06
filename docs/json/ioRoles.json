@@ -712,6 +712,14 @@
     "driver": "RC"
   },
   {
+	"name":"TuyaMCU_dummy",
+	"title":"TuyaMCU Dummy Pin",
+	"descr":"Dummy pin to trigger driver autoload.",
+	"enum":"IOR_TuyaMCU",
+	"file":"new_pins.h",
+	"driver":"TuyaMCU"
+  },
+  {
     "name": "Total_Options",
     "title": "TODO",
     "descr": "Current total number of available IOR roles",
