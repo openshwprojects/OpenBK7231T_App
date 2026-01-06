@@ -489,8 +489,11 @@ void Test_HassDiscovery_SpecialChar() {
 	// Our test name
 	const char *shortName = "TestChar";
 	// 0xC6 is 198 decimal
-	const char *fullName = "Salão de Festas";
+	char fullName[128];
 	const char *mqttName = "testChar";
+
+	strcpy(fullName, "Salão de Festas");
+	fullName[3] = 0xC6;
 
 	SIM_ClearOBK(shortName);
 	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
@@ -513,6 +516,7 @@ void Test_HassDiscovery_SpecialChar() {
 	// Verify that the device block contains our special name
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
 	SELFTEST_ASSERT_JSON_VALUE_STRING_NESTED_ARRAY("dev", "ids", 0, fullName);
+	SELFTEST_ASSERT(0xC6 == ((byte*)fullName)[3]);
 }
 
 void Test_HassDiscovery() {
