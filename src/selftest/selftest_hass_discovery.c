@@ -489,7 +489,7 @@ void Test_HassDiscovery_SpecialChar() {
 	// Our test name
 	const char *shortName = "TestChar";
 	// 0xC6 is 198 decimal
-	const char *fullName = "Test char \xC6";
+	const char *fullName = "Salão de Festas";
 	const char *mqttName = "testChar";
 
 	SIM_ClearOBK(shortName);
@@ -512,7 +512,7 @@ void Test_HassDiscovery_SpecialChar() {
 	// OBK device should publish JSON on MQTT topic "homeassistant"
 	// Verify that the device block contains our special name
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
-	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "name", fullName);
+	SELFTEST_ASSERT_JSON_VALUE_STRING_NESTED_ARRAY("dev", "ids", 0, fullName);
 }
 
 void Test_HassDiscovery() {
