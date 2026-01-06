@@ -1,4 +1,4 @@
-#ifdef WINDOWS
+﻿#ifdef WINDOWS
 
 #include "selftest_local.h"
 
@@ -238,7 +238,7 @@ void Test_HassDiscovery_DHT11() {
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
 	//SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, "dev", 0, "name", shortName);
 	// first dev - as temperature
-	//SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "�C");
+	//SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "°C");
 	// old method - round
 	//SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "val_tpl", "{{ float(value)*0.1|round(2) }}");
 	// new method - format
@@ -320,7 +320,7 @@ void Test_HassDiscovery_SHTSensor() {
 		"dev_cla", "temperature",
 		"stat_t", "~/2/get",
 		"stat_cla", "measurement");
-	//SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "�C");
+	//SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY("homeassistant", true, 0, 0, "unit_of_meas", "°C");
 	// second dev - 
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY("homeassistant", true, 0, 0,
 		"dev_cla", "humidity",
@@ -484,7 +484,39 @@ void Test_HassDiscovery_digitalInputNoAVTY() {
 
 }
 
+// 0xC6 is ã in CP850
+void Test_HassDiscovery_SpecialChar() {
+	// Our test name
+	const char *shortName = "TestChar";
+	// 0xC6 is 198 decimal
+	const char *fullName = "Test char \xC6";
+	const char *mqttName = "testChar";
+
+	SIM_ClearOBK(shortName);
+	SIM_ClearAndPrepareForMQTTTesting(mqttName, "bekens");
+
+	CFG_SetShortDeviceName(shortName);
+	CFG_SetDeviceName(fullName);
+
+	const char *verify = CFG_GetDeviceName();
+	SELFTEST_ASSERT_STRING(verify, fullName);
+
+	// fake relay
+	PIN_SetPinRoleForPinIndex(24, IOR_Relay);
+	PIN_SetPinChannelForPinIndex(24, 1);
+
+	SIM_ClearMQTTHistory();
+	CMD_ExecuteCommand("scheduleHADiscovery 1", 0);
+	Sim_RunSeconds(5, false);
+
+	// OBK device should publish JSON on MQTT topic "homeassistant"
+	// Verify that the device block contains our special name
+	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
+	SELFTEST_ASSERT_JSON_VALUE_STRING("dev", "name", fullName);
+}
+
 void Test_HassDiscovery() {
+    Test_HassDiscovery_SpecialChar();
 	Test_HassDiscovery_SHTSensor();
 #if ENABLE_DRIVER_BL0942
 	Test_HassDiscovery_BL0942();
@@ -509,3 +541,4 @@ void Test_HassDiscovery() {
 
 
 #endif
+
