@@ -516,6 +516,8 @@ void Test_HassDiscovery_SpecialChar() {
 	// Verify that the device block contains our special name
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("homeassistant", true);
 	SELFTEST_ASSERT_JSON_VALUE_STRING_NESTED_ARRAY("dev", "ids", 0, fullName);
+	SELFTEST_ASSERT_JSON_VALUE_STRING_NESTED_ARRAY("dev", "ids", 0, fullName);
+	SELFTEST_ASSERT_JSON_VALUE_STRING(0, "uniq_id", "Sal_o_de_Festas_relay_1");
 	SELFTEST_ASSERT(0xC6 == ((byte*)fullName)[3]);
 }
 
