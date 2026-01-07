@@ -649,9 +649,10 @@ scriptInstance_t *SVM_StartScript(const char *fname, const char *label, int uniq
 			fname++;
 		}
 		char tmp[64];
-		sprintf(tmp, "berry import %s",fname);
-		tmp[strlen(tmp) - 3] = 0;
+		snprintf(tmp, sizeof(tmp), "berry import %s",fname);
+		tmp[sizeof(tmp) - 1] = 0;
 		// strip .be
+		tmp[strlen(tmp) - 3] = 0;
 		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_StartScript: will run %s", tmp);
 		CMD_ExecuteCommand(tmp,0);
 		return NULL;
