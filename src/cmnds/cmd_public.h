@@ -306,6 +306,7 @@ OBK_Publish_Result LED_SendCurrentLightModeParam_TempOrColor();
 void LED_ResetGlobalVariablesToDefaults();
 extern float led_temperature_min;
 extern float led_temperature_max;
+void LED_ResendCurrentColors();
 #endif
 
 // cmd_test.c
