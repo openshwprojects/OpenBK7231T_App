@@ -1518,7 +1518,9 @@ typedef struct mainConfig_s {
 	char ping_host[64];
 	// ofs 0x000005E0 (dec 1504)
 	//char initCommandLine[512];
-#if PLATFORM_W600 || PLATFORM_W800
+//20260106 - try for V4 of config for W600 and W800
+#if 0
+//#if PLATFORM_W600 || PLATFORM_W800
 #define ALLOW_SSID2 0
 #define ALLOW_WEB_PASSWORD 0
 	char initCommandLine[512];
