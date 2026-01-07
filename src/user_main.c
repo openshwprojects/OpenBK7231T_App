@@ -74,8 +74,12 @@ static int g_connectToWiFi = 0;
 static int g_reset = 0;
 // is connected to WiFi?
 static int g_bHasWiFiConnected = 0;
-// is Open Access point or a client?
-static int g_bOpenAccessPointMode = 0;
+// is (Open-) Access point or a client? 
+// included as "external int g_AccessPointMode;" from new_common.h in other 
+// code like hal_wifi or http_fns.c
+// in order to change when moving e.g. from sta to access-point.
+// otherwise user_main.c will try to connect as client if this is not changed!
+uint8_t g_AccessPointMode = 0;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 // in safe mode, user can press a button to enter the unsafe one
 static int g_doUnsafeInitIn = 0;
 int g_bootFailures = 0;
@@ -488,17 +492,19 @@ void Main_OnWiFiStatusChange(int code)
 			HAL_DisconnectFromWifi();
 		}
 #endif
-		if(g_secondsElapsed < 30)
-		{
-			g_connectToWiFi = 5;
-		}
-		else
-		{
-			g_connectToWiFi = 15;
+		if (g_AccessPointMode == 0){	// if changing from STA to AP, we will disconnect STA, but don't want it to reconnect !
+			if(g_secondsElapsed < 30)
+			{
+				g_connectToWiFi = 5;
+			}
+			else
+			{
+				g_connectToWiFi = 15;
+			}
 		}
 		g_bHasWiFiConnected = 0;
 		g_timeSinceLastPingReply = -1;
-		ADDLOGF_INFO("%s - WIFI_STA_DISCONNECTED - %i\r\n", __func__, code);
+		ADDLOGF_INFO("%s - WIFI_STA_DISCONNECTED - %i (g_AccessPointMode = %i)\r\n", __func__, code, g_AccessPointMode);
 		break;
 	case WIFI_STA_AUTH_FAILED:
 		// try to connect again in few seconds
@@ -553,6 +559,7 @@ void Main_OnWiFiStatusChange(int code)
 		/* for softap mode */
 	case WIFI_AP_CONNECTED:
 		g_bHasWiFiConnected = 1;
+		g_connectToWiFi = 0;	// to be sure: we don't want STA to reconnect
 		ADDLOGF_INFO("%s - WIFI_AP_CONNECTED - %i\r\n", __func__, code);
 		break;
 	case WIFI_AP_FAILED:
@@ -652,7 +659,7 @@ void Main_ScheduleHomeAssistantDiscovery(int seconds) {
 void Main_ConnectToWiFiNow() {
 	const char* wifi_ssid, * wifi_pass;
 
-	g_bOpenAccessPointMode = 0;
+	g_AccessPointMode = 0;
 	CheckForSSID12_Switch();
 	wifi_ssid = CFG_GetWiFiSSIDX();
 	wifi_pass = CFG_GetWiFiPassX();
@@ -898,14 +905,29 @@ void Main_OnEverySecond()
 		//MQTT_GetStats(&mqtt_cur, &mqtt_max, &mqtt_mem);
 		//ADDLOGF_INFO("mqtt req %i/%i, free mem %i\n", mqtt_cur,mqtt_max,mqtt_mem);
 #if ENABLE_MQTT
+#if ENABLE_WPA_AP
+		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i, g_openAP %i, g_connectToWiFi %i, g_bHasWiFiConnected %i %s\n",
+			safe, g_secondsElapsed, idleCount, xPortGetFreeHeapSize(), bMQTTconnected,
+			MQTT_GetConnectEvents(),g_bHasWiFiConnected, g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets(),
+			g_openAP, g_connectToWiFi, g_bHasWiFiConnected,
+			g_powersave ? "POWERSAVE" : "");
+#else
 		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i %s\n",
 			safe, g_secondsElapsed, idleCount, xPortGetFreeHeapSize(), bMQTTconnected,
 			MQTT_GetConnectEvents(),g_bHasWiFiConnected, g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets(),
+			g_powersave ? "POWERSAVE" : "");
+#endif //#if ENABLE_WPA_AP
+#else
+#if ENABLE_WPA_AP
+		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d,  bWifi %i, secondsWithNoPing %i, socks %i/%i %s\n",
+			safe, g_secondsElapsed, idleCount, xPortGetFreeHeapSize(),g_bHasWiFiConnected, g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets(),
+			g_openAP, g_connectToWiFi, g_bHasWiFiConnected,
 			g_powersave ? "POWERSAVE" : "");
 #else
 		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d,  bWifi %i, secondsWithNoPing %i, socks %i/%i %s\n",
 			safe, g_secondsElapsed, idleCount, xPortGetFreeHeapSize(),g_bHasWiFiConnected, g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets(),
 			g_powersave ? "POWERSAVE" : "");
+#endif //#if ENABLE_WPA_AP
 #endif
 		// reset so it's a per-second counter.
 		idleCount = 0;
@@ -971,7 +993,7 @@ void Main_OnEverySecond()
 		if (0 == g_openAP)
 		{
 			HAL_SetupWiFiOpenAccessPoint(CFG_GetDeviceName());
-			g_bOpenAccessPointMode = 1;
+			g_AccessPointMode = 1;
 		}
 	}
 
@@ -1003,6 +1025,9 @@ void Main_OnEverySecond()
 			}
 		}
 
+	}
+	if (g_connectToWiFi && g_AccessPointMode != 0){
+		g_connectToWiFi = 0;	// if changing from STA to AP, we will disconnect STA, but don't want it to reconnect !
 	}
 	if (g_connectToWiFi)
 	{
@@ -1221,7 +1246,7 @@ void app_on_generic_dbl_click(int btnIndex)
 
 int Main_IsOpenAccessPointMode()
 {
-	return g_bOpenAccessPointMode;
+	return g_AccessPointMode;
 }
 
 int Main_IsConnectedToWiFi()

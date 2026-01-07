@@ -15,7 +15,10 @@
 #include "lib/net/dhcpd/dhcpd.h"
 
 static void (*g_wifiStatusCallback)(int code) = NULL;
-static int g_bOpenAccessPointMode = 0;
+// is (Open-) Access point or a client?
+// included as "extern uint8_t g_AccessPointMode;" from new_common.h
+// initilized in user_main.c
+// values:	0 = STA	1 = OpenAP	2 = WAP-AP
 struct system_status sys_status;
 extern u8_t netif_num;
 
@@ -60,7 +63,7 @@ void HAL_PrintNetworkInfo()
 	uint8_t mac[6];
 	WiFI_GetMacAddress((char*)mac);
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------- net device info ------------+\r\n");
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_bOpenAccessPointMode == 0 ? "STA" : "AP");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_AccessPointMode == 0 ? "STA" : "AP");
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif rssi    = %-16i            |\r\n", HAL_GetWifiStrength());
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |\r\n", HAL_GetMyIPString());
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |\r\n", HAL_GetMyMaskString());
@@ -72,7 +75,7 @@ void HAL_PrintNetworkInfo()
 int HAL_GetWifiStrength()
 {
 	struct ieee80211_stainfo stainfo;
-	if(!g_bOpenAccessPointMode) ieee80211_conf_get_stainfo(WIFI_MODE_STA, 0, NULL, &stainfo);
+	if(g_AccessPointMode==0) ieee80211_conf_get_stainfo(WIFI_MODE_STA, 0, NULL, &stainfo);
 	return stainfo.rssi;
 }
 
@@ -371,11 +374,121 @@ void HAL_DisconnectFromWifi()
 	}
 }
 
-int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
+int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 {
 	int32 ret;
-	g_bOpenAccessPointMode = 1;
+	os_sprintf(sys_cfgs.ssid, "%s", ssid);
+	void* ops;
+	struct lmac_init_param lparam;
 
+#if DCDC_EN
+	pmu_dcdc_open();
+#endif
+	void* rxbuf = (void*)os_malloc(16 * 1024);
+	lparam.rxbuf = (uint32_t)rxbuf;
+	lparam.rxbuf_size = 16 * 1024;
+	ops = lmac_bgn_init(&lparam);
+#ifdef CONFIG_SLEEP
+	void* bgn_dsleep_init(void* ops);
+	bgn_dsleep_init(ops);
+#endif
+
+#ifdef LMAC_BGN_PCF
+	lmac_set_bbm_mode_init(ops, 1); //init before ieee80211_support_txw80x
+#endif
+
+	lmac_set_aggcnt(ops, 0);
+	lmac_set_rx_aggcnt(ops, 0);
+
+	struct ieee80211_initparam param;
+	os_memset(&param, 0, sizeof(param));
+	param.vif_maxcnt = 2;
+	param.sta_maxcnt = 2;
+	param.bss_maxcnt = 2;
+	param.bss_lifetime = 300; //300 seconds
+	param.no_rxtask = 1;
+	param.evt_cb = sys_wifi_event;
+	ieee80211_init(&param);
+	ieee80211_support_txw80x(ops);
+
+	sys_wifi_parameter_init(ops);
+	ieee80211_iface_create_ap(WIFI_MODE_AP, IEEE80211_BAND_2GHZ);
+	//ieee80211_iface_create_sta(WIFI_MODE_STA, IEEE80211_BAND_2GHZ);
+
+	wificfg_flush(WIFI_MODE_STA);
+
+	//sys_wifi_start_acs(ops);
+
+	struct lmac_acs_ctl acs_ctl;
+	if(sys_cfgs.wifi_mode == WIFI_MODE_AP)
+	{
+		if(sys_cfgs.channel == 0)
+		{
+			acs_ctl.enable = 1;
+			acs_ctl.scan_ms = WIFI_ACS_SCAN_TIME;;
+			acs_ctl.chn_bitmap = WIFI_ACS_CHAN_LISTS;
+
+			ret = lmac_start_acs(ops, &acs_ctl, 1);  //阻塞式扫描
+			if(ret != RET_ERR)
+			{
+				sys_cfgs.channel = ret;
+			}
+		}
+	}
+
+	wificfg_flush(WIFI_MODE_AP);
+
+	uint8 txq[][8] = {
+		{0x00, 0x00, 0x01, 0x00, 0x02, 0x00, 0x01, 0x00,},
+		{0x00, 0x00, 0x01, 0x00, 0x02, 0x00, 0x01, 0x01,},
+		{0x00, 0x00, 0x01, 0x00, 0x02, 0x00, 0x01, 0x02,},
+		{0x00, 0x00, 0x01, 0x00, 0x02, 0x00, 0x01, 0x03,},
+	};
+
+
+	ieee80211_conf_set_wmm_param(WIFI_MODE_AP, 0xf0, (struct ieee80211_wmm_param*)&txq[0]);
+	ieee80211_conf_set_wmm_param(WIFI_MODE_AP, 0xf1, (struct ieee80211_wmm_param*)&txq[1]);
+	ieee80211_conf_set_wmm_param(WIFI_MODE_AP, 0xf2, (struct ieee80211_wmm_param*)&txq[2]);
+	ieee80211_conf_set_wmm_param(WIFI_MODE_AP, 0xf3, (struct ieee80211_wmm_param*)&txq[3]);
+	os_sleep_ms(1);
+
+	{
+		struct netdev* ndev;
+		ip_addr_t ipaddr, netmask, gw;
+		ndev = (struct netdev*)dev_get(HG_WIFI1_DEVID);
+		ipaddr.addr = sys_cfgs.ipaddr;
+		netmask.addr = sys_cfgs.netmask;
+		gw.addr = sys_cfgs.gw_ip;
+		lwip_netif_add(ndev, "w0", &ipaddr, &netmask, &gw);
+		lwip_netif_remove_register(ndev);
+		lwip_netif_set_default(ndev);
+
+		struct dhcpd_param param;
+		os_memset(&param, 0, sizeof(param));
+		param.start_ip = sys_cfgs.dhcpd_startip;
+		param.end_ip = sys_cfgs.dhcpd_endip;
+		param.netmask = sys_cfgs.netmask;
+		param.router = sys_cfgs.gw_ip;
+		param.dns1 = sys_cfgs.gw_ip;
+		param.lease_time = sys_cfgs.dhcpd_lease_time;
+		if(dhcpd_start_eloop("w0", &param))
+		{
+			os_printf("dhcpd start error\r\n");
+		}
+		dns_start_eloop("w0");
+	}
+	if (! key || key[0] == 0){
+		wifi_create_ap(ssid, NULL, WPA_KEY_MGMT_NONE, HAL_AP_Wifi_Channel);
+	} else {
+		wifi_create_ap(ssid, key, WPA_KEY_MGMT_PSK, HAL_AP_Wifi_Channel);
+	}
+	ieee80211_iface_start(WIFI_MODE_AP);
+}
+
+
+int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
+{
+/*	int32 ret;
 	os_sprintf(sys_cfgs.ssid, "%s", ssid);
 	void* ops;
 	struct lmac_init_param lparam;
@@ -477,8 +590,11 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 		dns_start_eloop("w0");
 	}
 
-	wifi_create_ap(ssid, NULL, WPA_KEY_MGMT_NONE, 1);
+	wifi_create_ap(ssid, NULL, WPA_KEY_MGMT_NONE, HAL_AP_Wifi_Channel);
 	ieee80211_iface_start(WIFI_MODE_AP);
+*/
+	return HAL_SetupWiFiAccessPoint(ssid, NULL);
+
 }
 
 #endif // PLATFORM_TXW81X

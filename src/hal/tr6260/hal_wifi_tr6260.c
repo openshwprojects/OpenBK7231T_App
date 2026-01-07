@@ -15,7 +15,10 @@ extern system_event_cb_t s_event_handler_cb;
 bool g_bStaticIP = 0;
 
 static struct ip_info if_ip;
-static int g_bOpenAccessPointMode = 0;
+// is (Open-) Access point or a client?
+// included as "extern uint8_t g_AccessPointMode;" from new_common.h
+// initilized in user_main.c
+// values:	0 = STA	1 = OpenAP	2 = WAP-AP
 
 const char* HAL_GetMyIPString()
 {
@@ -62,7 +65,7 @@ void HAL_PrintNetworkInfo()
 	uint8_t mac[6];
 	WiFI_GetMacAddress(mac);
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------- net device info ------------+\r\n");
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_bOpenAccessPointMode == 0 ? "STA" : "AP");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_AccessPointMode == 0 ? "STA" : "AP");
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif rssi    = %-16i            |\r\n", HAL_GetWifiStrength());
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |\r\n", HAL_GetMyIPString());
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |\r\n", HAL_GetMyMaskString());
@@ -167,7 +170,8 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
 {
-	g_bOpenAccessPointMode = 0;
+// set in user_main - included as "extern"
+//	g_AccessPointMode = 0; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 	unsigned int sta_ip = 0, count = 0;
 	while(!wifi_is_ready_full())
 	{
@@ -206,10 +210,72 @@ void HAL_DisconnectFromWifi()
 	wifi_disconnect();
 }
 
+
+int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
+{
+	wifi_set_opmode(WIFI_MODE_AP_STA);
+	int channel = HAL_AP_Wifi_Channel, ret;
+	ip_info_t ip_info;
+	wifi_config_u config;
+	uint8_t mac[6] = { 0 }, ip_part2, ip_part3;
+
+	wifi_get_mac_addr(SOFTAP_IF, mac);
+	ip_part2 = mac[4];
+	ip_part3 = mac[5];
+
+	memset(&config, 0, sizeof(config));
+	strlcpy((char*)config.ap.ssid, ssid, sizeof(config.ap.ssid));
+	if (key && key[0] != 0){
+		strlcpy((char*)config.ap.password, key, sizeof(config.ap.password));
+		config.ap.authmode =  AUTH_WPA2_PSK;
+	} else{
+		config.ap.authmode = AUTH_OPEN;
+	}
+	config.ap.channel = channel;
+
+	while(!wifi_is_ready())
+	{
+		system_printf("wifi not ready!\n");
+		delay_ms(10);
+	}
+
+	ret = wifi_start_softap(&config);
+	if(SYS_OK != ret)
+	{
+		system_printf("HAL_SetupWiFiAccessPoint failed, err: %d\n", ret);
+		if(g_wifiStatusCallback != NULL)
+		{
+			g_wifiStatusCallback(WIFI_AP_FAILED);
+		}
+		return ret;
+	}
+
+	memset(&ip_info, 0, sizeof(ip_info));
+	ip_info.ip.addr = ipaddr_addr((const char*)"192.168.4.1");
+	ip_info.gw.addr = ipaddr_addr((const char*)"192.168.4.1");
+	ip_info.netmask.addr = ipaddr_addr((const char*)"255.255.255.0");
+	set_softap_ipconfig(&ip_info);
+
+	struct dhcps_lease dhcp_cfg_info;
+	dhcp_cfg_info.enable = true;
+	// todo: set number of clients according to WPA_AP_STA_CLIENTS
+	dhcp_cfg_info.start_ip.addr = ipaddr_addr((const char*)"192.168.4.100");
+	dhcp_cfg_info.end_ip.addr = ipaddr_addr((const char*)"192.168.4.150");
+
+	wifi_softap_set_dhcps_lease(&dhcp_cfg_info);
+	wifi_get_ip_info(SOFTAP_IF, &if_ip);
+	if(g_wifiStatusCallback != NULL)
+	{
+		g_wifiStatusCallback(WIFI_AP_CONNECTED);
+	}
+	return 0;
+}
+
+
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
 	wifi_set_opmode(WIFI_MODE_AP_STA);
-	int channel = 1, ret;
+	int channel = HAL_AP_Wifi_Channel, ret;
 	ip_info_t ip_info;
 	wifi_config_u config;
 	uint8_t mac[6] = { 0 }, ip_part2, ip_part3;
