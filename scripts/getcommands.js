@@ -783,6 +783,25 @@ function getFolder(name, cb) {
 
 console.log('starting');
 
+function removeGetCommandsFiles(dir) {
+	let list = fs.readdirSync(dir);
+	for (let i = 0; i < list.length; i++) {
+		let filename = list[i];
+		let file = dir + '/' + filename;
+		let s = fs.statSync(file);
+		if (s.isDirectory()) {
+			removeGetCommandsFiles(file);
+		} else {
+			if (filename.endsWith('.getcommands')) {
+				fs.unlinkSync(file);
+				console.log('Removed ' + file);
+			}
+		}
+	}
+}
+
+removeGetCommandsFiles('./src');
+
 getFolder('./src');
 
 
