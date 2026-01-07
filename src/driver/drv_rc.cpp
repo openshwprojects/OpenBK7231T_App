@@ -10,6 +10,7 @@ extern "C" {
 #include "../logging/logging.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
+#include "../mqtt/new_mqtt.h"
 #include "../cmnds/cmd_public.h"
 
 }
@@ -88,6 +89,18 @@ void DRV_RC_RunFrame() {
 			mySwitch.getReceivedBitlength(),
 			mySwitch.getReceivedProtocol(),
 			bHold);
+
+		{
+			char s[128];
+			snprintf(s, sizeof(s), "{\"RfReceived\":{\"Protocol\":%u,\"Bits\":%u,\"Data\":\"0x%lX\",\"Pulse\":%u,\"Hold\":%i}}",
+				mySwitch.getReceivedProtocol(),
+				mySwitch.getReceivedBitlength(),
+				mySwitch.getReceivedValue(),
+				mySwitch.getReceivedDelay(),
+				bHold);
+			MQTT_PublishMain_StringString("RESULT", s, 0);
+		}
+
 		EventHandlers_FireEvent2(CMD_EVENT_RC, mySwitch.getReceivedValue(), bHold);
 
 
