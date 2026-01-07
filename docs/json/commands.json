@@ -3366,6 +3366,15 @@
     "examples": ""
   },
   {
+    "name": "tuyaMcu_batteryPoweredMode",
+    "args": "[Optional 1 or 0, by default 1 is assumed]",
+    "descr": "Enables battery mode communications for version 3 TuyaMCU. tuyaMcu_batteryPoweredMode 0 can be used to disable the mode.",
+    "fn": "Cmd_TuyaMCU_BatteryPoweredMode",
+    "file": "driver/drv_tuyaMCU.c",
+    "requires": "",
+    "examples": "tuyaMcu_batteryPoweredMode"
+  },
+  {
     "name": "tuyaMcu_defWiFiState",
     "args": "",
     "descr": "Command sets the default WiFi state for TuyaMCU when device is not online. It may be required for some devices to work, because Tuya designs them to ignore touch buttons or beep when not paired. Please see [values table and description here](https://www.elektroda.com/rtvforum/viewtopic.php?p=20483899#20483899).",
