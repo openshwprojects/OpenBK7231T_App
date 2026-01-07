@@ -520,8 +520,8 @@ void Test_EnergyMeter_ResetBug() {
 	SELFTEST_ASSERT_EXPRESSION("$today>0.06", 1);
 	SELFTEST_ASSERT_EXPRESSION("$yesterday==0", 1);
 
-	// reset with 0
-	CMD_ExecuteCommand("EnergyCntReset 0", 0);
+	// reset with 0???
+	CMD_ExecuteCommand("EnergyCntReset", 0);
 
 	// Verify TOTAL is 0
 	SELFTEST_ASSERT_EXPRESSION("$energycounter", 0);
