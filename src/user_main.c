@@ -708,7 +708,6 @@ void Main_OnEverySecond()
 #if ! ( WINDOWS || PLATFORM_TXW81X  || PLATFORM_RDA5981) 
 	TimeOut_t myTimeout;	// to get uptime from xTicks - not working on WINDOWS and TXW81X and RDA5981
 #endif
-	int newMQTTState;
 	const char* safe;
 	int i;
 
@@ -742,23 +741,17 @@ void Main_OnEverySecond()
 #endif
 	}
 
-#if ENABLE_MQTT
-	// run_adc_test();
-	newMQTTState = MQTT_RunEverySecondUpdate();
-	if (newMQTTState != bMQTTconnected) {
-		bMQTTconnected = newMQTTState;
-		if (newMQTTState) {
-			EventHandlers_FireEvent(CMD_EVENT_MQTT_STATE, 1);
-		}
-		else {
-			EventHandlers_FireEvent(CMD_EVENT_MQTT_STATE, 0);
-		}
-	}
-#endif
 	if (g_newWiFiStatus != g_prevWiFiStatus) {
 		g_prevWiFiStatus = g_newWiFiStatus;
 		// Argument type here is HALWifiStatus_t enumeration
 		EventHandlers_FireEvent(CMD_EVENT_WIFI_STATE, g_newWiFiStatus);
+	}
+
+#if ENABLE_MQTT
+	// run_adc_test();
+	if (MQTT_RunEverySecondUpdate() != bMQTTconnected) {
+		bMQTTconnected = !bMQTTconnected;
+		EventHandlers_FireEvent(CMD_EVENT_MQTT_STATE, bMQTTconnected);
 	}
 	// Update time with no MQTT
 	if (bMQTTconnected) {
@@ -771,8 +764,6 @@ void Main_OnEverySecond()
 	// save new value
 	g_noMQTTTime = i;
 
-
-#if ENABLE_MQTT
 	MQTT_Dedup_Tick();
 #endif
 #if ENABLE_LED_BASIC
