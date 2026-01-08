@@ -36,23 +36,14 @@ void Soft_I2C_SetHigh(uint8_t pin) {
 static commandResult_t CMD_SoftI2C_SetClkPeriod(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
 
-	if (Tokenizer_GetArgsCount() != 1) {
-		ADDLOG_INFO(LOG_FEATURE_I2C, "This command requires 1 argument - period - current %i", g_clk_period);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 
-
-	int period = Tokenizer_GetArgInteger(0);
-	if (period < 2) {
-		// Necessary because in some cases g_clk_period is
-		// divided by 2, which would result in a delay of 0.
-		ADDLOG_ERROR(LOG_FEATURE_I2C, "Clock period must be at least 2");
-		return CMD_RES_BAD_ARGUMENT;
-	}
-
-	g_clk_period = period;
-	ADDLOG_INFO(LOG_FEATURE_I2C, "Set SoftI2C clock period to: %i", g_clk_period);
-
+	g_clk_period = Tokenizer_GetArgInteger(0);
 	return CMD_RES_OK;
 }
 
