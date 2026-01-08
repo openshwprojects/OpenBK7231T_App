@@ -204,9 +204,17 @@ void extended_app_waiting_for_launch2()
 	// wait 100ms at the start.
 	// TCP is being setup in a different thread, and there does not seem to be a way to find out if it's complete yet?
 	// so just wait a bit, and then start.
-	int startDelay = 250;
+#if (OBK_VARIANT == OBK_VARIANT_BATTERY)
+	#if PLATFORM_BEKEN_NEW
+	uint8_t startDelay = 10;
+	#else
+	uint8_t startDelay = 0;
+	#endif
+#else
+	uint8_t startDelay = 250;
+#endif
 	bk_printf("\r\ndelaying start\r\n");
-	for(int i = 0; i < startDelay / 10; i++)
+	for(uint8_t i = 0; i < startDelay / 10; i++)
 	{
 		rtos_delay_milliseconds(10);
 		bk_printf("#Startup delayed %dms#\r\n", i * 10);
