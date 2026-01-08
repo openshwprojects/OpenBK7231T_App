@@ -10,8 +10,8 @@
   },
   {
     "name": "ACMode",
-    "args": "CMD_ACMode",
-    "descr": "",
+    "args": "[Mode]",
+    "descr": "Sets the climate mode (off, cool, dry, fan_only, heat, heatcool, auto)",
     "fn": "CMD_ACMode",
     "file": "driver/drv_tclAC.c",
     "requires": "",
