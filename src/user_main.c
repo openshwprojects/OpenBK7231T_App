@@ -562,6 +562,7 @@ void Main_OnWiFiStatusChange(int code)
 	default:
 		break;
 	}
+	ADDLOGF_TIMING("%i - %s - Code: %i", xTaskGetTickCount(), __func__, code);
 	g_newWiFiStatus = code;
 }
 
@@ -707,7 +708,6 @@ void Main_OnEverySecond()
 #if ! ( WINDOWS || PLATFORM_TXW81X  || PLATFORM_RDA5981) 
 	TimeOut_t myTimeout;	// to get uptime from xTicks - not working on WINDOWS and TXW81X and RDA5981
 #endif
-	int newMQTTState;
 	const char* safe;
 	int i;
 
@@ -741,23 +741,17 @@ void Main_OnEverySecond()
 #endif
 	}
 
-#if ENABLE_MQTT
-	// run_adc_test();
-	newMQTTState = MQTT_RunEverySecondUpdate();
-	if (newMQTTState != bMQTTconnected) {
-		bMQTTconnected = newMQTTState;
-		if (newMQTTState) {
-			EventHandlers_FireEvent(CMD_EVENT_MQTT_STATE, 1);
-		}
-		else {
-			EventHandlers_FireEvent(CMD_EVENT_MQTT_STATE, 0);
-		}
-	}
-#endif
 	if (g_newWiFiStatus != g_prevWiFiStatus) {
 		g_prevWiFiStatus = g_newWiFiStatus;
 		// Argument type here is HALWifiStatus_t enumeration
 		EventHandlers_FireEvent(CMD_EVENT_WIFI_STATE, g_newWiFiStatus);
+	}
+
+#if ENABLE_MQTT
+	// run_adc_test();
+	if (MQTT_RunEverySecondUpdate() != bMQTTconnected) {
+		bMQTTconnected = !bMQTTconnected;
+		EventHandlers_FireEvent(CMD_EVENT_MQTT_STATE, bMQTTconnected);
 	}
 	// Update time with no MQTT
 	if (bMQTTconnected) {
@@ -770,8 +764,6 @@ void Main_OnEverySecond()
 	// save new value
 	g_noMQTTTime = i;
 
-
-#if ENABLE_MQTT
 	MQTT_Dedup_Tick();
 #endif
 #if ENABLE_LED_BASIC
@@ -1273,6 +1265,7 @@ void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
 	}
 }
 void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
+	ADDLOGF_TIMING("%i - %s", xTaskGetTickCount(), __func__);
 	g_unsafeInitDone = true;
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_Generic_Init();
@@ -1426,6 +1419,7 @@ void Main_ForceUnsafeInit() {
 // power on.
 void Main_Init_Before_Delay()
 {
+	ADDLOGF_TIMING("%i - %s", xTaskGetTickCount(), __func__);
 	ADDLOGF_INFO("%s", __func__);
 	// read or initialise the boot count flash area
 	HAL_FlashVars_IncreaseBootCount();
@@ -1469,6 +1463,7 @@ void Main_Init_Before_Delay()
 // (e.g. are we delayed by it reading temperature?)
 void Main_Init_Delay()
 {
+	ADDLOGF_TIMING("%i - %s", xTaskGetTickCount(), __func__);
 	ADDLOGF_INFO("%s", __func__);
 	bk_printf("\r\%s\r\n", __func__);
 
@@ -1488,8 +1483,8 @@ void Main_Init_Delay()
 void Main_Init_After_Delay()
 {
 	const char* wifi_ssid, * wifi_pass;
+	ADDLOGF_TIMING("%i - %s", xTaskGetTickCount(), __func__);
 	ADDLOGF_INFO("%s", __func__);
-
 	// we can log this after delay.
 	if (bSafeMode) {
 		ADDLOGF_INFO("###### safe mode activated - boot failures %d", g_bootFailures);

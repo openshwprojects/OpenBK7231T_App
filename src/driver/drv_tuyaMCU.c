@@ -1272,7 +1272,7 @@ void TuyaMCU_ParseQueryProductInformation(const byte* data, int len) {
 	memcpy(name, data, useLen);
 	name[useLen] = 0;
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseQueryProductInformation: received %s\n", name);
+	ADDLOG_DEBUG(LOG_FEATURE_TUYAMCU, "ParseQueryProductInformation: received %s\n", name);
 
 	if (g_sensorMode) {
 		if (g_tuyaBatteryPoweredState == TM0_STATE_AWAITING_INFO) {
@@ -1618,7 +1618,7 @@ void TuyaMCU_ParseStateMessage(const byte* data, int len) {
 		sectorLen = data[ofs + 2] << 8 | data[ofs + 3];
 		dpId = data[ofs];
 		dataType = data[ofs + 1];
-		addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ParseState: id %i type %i-%s len %i\n",
+		ADDLOG_DEBUG(LOG_FEATURE_TUYAMCU, "ParseState: id %i type %i-%s len %i\n",
 			dpId, dataType, TuyaMCU_GetDataTypeString(dataType), sectorLen);
 
 		mapping = TuyaMCU_FindDefForID(dpId);
@@ -1938,7 +1938,7 @@ void TuyaMCU_V0_SendDPCacheReply() {
 }
 void TuyaMCU_ParseReportStatusType(const byte *value, int len) {
 	int subcommand = value[0];
-	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "0x%X command, subcommand 0x%X\n", TUYA_CMD_REPORT_STATUS_RECORD_TYPE, subcommand);
+	ADDLOG_DEBUG(LOG_FEATURE_TUYAMCU, "command %i, subcommand %i\n", TUYA_CMD_REPORT_STATUS_RECORD_TYPE, subcommand);
 	byte reply[2] = { 0x00, 0x00 };
 	reply[0] = subcommand;
 	switch (subcommand)
@@ -1990,7 +1990,8 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 		return;
 	}
 	cmd = data[3];
-	addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "ProcessIncoming[v=%i]: cmd %i (%s) len %i\n", version, cmd, TuyaMCU_GetCommandTypeLabel(cmd), len);
+	ADDLOGF_TIMING("%i - %s - ProcessIncoming[v=%i]: cmd %i (%s) len %i", xTaskGetTickCount(), __func__, version, cmd, TuyaMCU_GetCommandTypeLabel(cmd), len);
+	ADDLOG_INFO(LOG_FEATURE_TUYAMCU, "ProcessIncoming[v=%i]: cmd %i (%s) len %i\n", version, cmd, TuyaMCU_GetCommandTypeLabel(cmd), len);
 	switch (cmd)
 	{
 	case TUYA_CMD_HEARTBEAT:
@@ -2328,7 +2329,7 @@ void TuyaMCU_PrintPacket(byte *data, int len) {
 				snprintf(buffer2, sizeof(buffer2), "%02X ", data[i]);
 				strcat_safe(buffer_for_log, buffer2, sizeof(buffer_for_log));
 			}
-			addLogAdv(LOG_INFO, LOG_FEATURE_TUYAMCU, "Received: %s\n", buffer_for_log);
+			ADDLOG_DEBUG(LOG_FEATURE_TUYAMCU, "Received: %s\n", buffer_for_log);
 #if 1
 			// redo sprintf without spaces
 			buffer_for_log[0] = 0;
@@ -2827,6 +2828,8 @@ void TuyaMCU_Init()
 	//cmddetail:"fn":"Cmd_TuyaMCU_BatteryPoweredMode","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":"tuyaMcu_batteryPoweredMode"}
 	CMD_RegisterCommand("tuyaMcu_batteryPoweredMode", Cmd_TuyaMCU_BatteryPoweredMode, NULL);
+
+	ADDLOGF_TIMING("%i - %s - Initialization of TuyaMCU", xTaskGetTickCount(), __func__);
 }
 
 
