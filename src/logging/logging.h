@@ -17,18 +17,41 @@
 void addLogAdv(int level, int feature, const char *fmt, ...);
 void LOG_SetRawSocketCallback(int newFD);
 
+#if OBK_LOG_TIMING_DISABLED
+#define ADDLOGF_TIMING(fmt, ...)
+#else
+#define ADDLOGF_TIMING(fmt, ...)  addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, fmt, ##__VA_ARGS__)
+#endif
+
+#if OBK_LOG_INFO_DISABLED
+#define ADDLOG_INFO(x, fmt, ...)
+#define ADDLOGF_INFO(fmt, ...)
+#else
+#define ADDLOG_INFO(x, fmt, ...)  addLogAdv(LOG_INFO, x, fmt, ##__VA_ARGS__)
+#define ADDLOGF_INFO(fmt, ...)  addLogAdv(LOG_INFO, LOG_FEATURE, fmt, ##__VA_ARGS__)
+#endif
+
+#if OBK_LOG_DEBUG_DISABLED
+#define ADDLOG_DEBUG(x, fmt, ...)
+#define ADDLOGF_DEBUG(fmt, ...)
+#else
+#define ADDLOG_DEBUG(x, fmt, ...) addLogAdv(LOG_DEBUG, x, fmt, ##__VA_ARGS__)
+#define ADDLOGF_DEBUG(fmt, ...) addLogAdv(LOG_DEBUG, LOG_FEATURE, fmt, ##__VA_ARGS__)
+#endif
+
+#if OBK_LOG_EXTRADEBUG_DISABLED
+#define ADDLOG_EXTRADEBUG(x, fmt, ...)
+#define ADDLOGF_EXTRADEBUG(fmt, ...)
+#else
+#define ADDLOG_EXTRADEBUG(x, fmt, ...) addLogAdv(LOG_EXTRADEBUG, x, fmt, ##__VA_ARGS__)
+#define ADDLOGF_EXTRADEBUG(fmt, ...) addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE, fmt, ##__VA_ARGS__)
+#endif
+
 #define ADDLOG_ERROR(x, fmt, ...) addLogAdv(LOG_ERROR, x, fmt, ##__VA_ARGS__)
 #define ADDLOG_WARN(x, fmt, ...)  addLogAdv(LOG_WARN, x, fmt, ##__VA_ARGS__)
-#define ADDLOG_INFO(x, fmt, ...)  addLogAdv(LOG_INFO, x, fmt, ##__VA_ARGS__)
-#define ADDLOG_DEBUG(x, fmt, ...) addLogAdv(LOG_DEBUG, x, fmt, ##__VA_ARGS__)
-#define ADDLOG_EXTRADEBUG(x, fmt, ...) addLogAdv(LOG_EXTRADEBUG, x, fmt, ##__VA_ARGS__)
 
 #define ADDLOGF_ERROR(fmt, ...) addLogAdv(LOG_ERROR, LOG_FEATURE, fmt, ##__VA_ARGS__)
 #define ADDLOGF_WARN(fmt, ...)  addLogAdv(LOG_WARN, LOG_FEATURE, fmt, ##__VA_ARGS__)
-#define ADDLOGF_INFO(fmt, ...)  addLogAdv(LOG_INFO, LOG_FEATURE, fmt, ##__VA_ARGS__)
-#define ADDLOGF_DEBUG(fmt, ...) addLogAdv(LOG_DEBUG, LOG_FEATURE, fmt, ##__VA_ARGS__)
-#define ADDLOGF_EXTRADEBUG(fmt, ...) addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE, fmt, ##__VA_ARGS__)
-
 
 extern int g_loglevel;
 extern char *loglevelnames[];

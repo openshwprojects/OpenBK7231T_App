@@ -279,7 +279,8 @@ void NTP_CheckForReceive() {
     // combine the four bytes (two words) into a long integer
     // this is NTP time (seconds since Jan 1 1900):
     secsSince1900 = highWord << 16 | lowWord;
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Seconds since Jan 1 1900 = %u",secsSince1900);
+	ADDLOGF_TIMING("%i - %s - Seconds since Jan 1 1900 = %u", xTaskGetTickCount(), __func__, secsSince1900);
+    ADDLOG_INFO(LOG_FEATURE_NTP,"Seconds since Jan 1 1900 = %u",secsSince1900);
 
 /*
     g_ntpTime = secsSince1900 - NTP_OFFSET;

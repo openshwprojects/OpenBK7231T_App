@@ -562,6 +562,7 @@ void Main_OnWiFiStatusChange(int code)
 	default:
 		break;
 	}
+	ADDLOGF_TIMING("%i - %s - Code: %i", xTaskGetTickCount(), __func__, code);
 	g_newWiFiStatus = code;
 }
 
@@ -1273,6 +1274,7 @@ void Main_Init_AfterDelay_Unsafe(bool bStartAutoRunScripts) {
 	}
 }
 void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
+	ADDLOGF_TIMING("%i - %s", xTaskGetTickCount(), __func__);
 	g_unsafeInitDone = true;
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_Generic_Init();
@@ -1426,6 +1428,7 @@ void Main_ForceUnsafeInit() {
 // power on.
 void Main_Init_Before_Delay()
 {
+	ADDLOGF_TIMING("%i - %s", xTaskGetTickCount(), __func__);
 	ADDLOGF_INFO("%s", __func__);
 	// read or initialise the boot count flash area
 	HAL_FlashVars_IncreaseBootCount();
@@ -1469,6 +1472,7 @@ void Main_Init_Before_Delay()
 // (e.g. are we delayed by it reading temperature?)
 void Main_Init_Delay()
 {
+	ADDLOGF_TIMING("%i - %s", xTaskGetTickCount(), __func__);
 	ADDLOGF_INFO("%s", __func__);
 	bk_printf("\r\%s\r\n", __func__);
 
@@ -1488,8 +1492,8 @@ void Main_Init_Delay()
 void Main_Init_After_Delay()
 {
 	const char* wifi_ssid, * wifi_pass;
+	ADDLOGF_TIMING("%i - %s", xTaskGetTickCount(), __func__);
 	ADDLOGF_INFO("%s", __func__);
-
 	// we can log this after delay.
 	if (bSafeMode) {
 		ADDLOGF_INFO("###### safe mode activated - boot failures %d", g_bootFailures);
