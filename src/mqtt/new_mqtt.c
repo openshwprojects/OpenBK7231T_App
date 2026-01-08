@@ -1491,17 +1491,22 @@ OBK_Publish_Result MQTT_ChannelPublish(int channel, int flags)
 	MQTT_BroadcastTasmotaTeleSTATE();
 	MQTT_BroadcastTasmotaTeleSENSOR();
 
-	// String from channel number
-	sprintf(channelNameStr, "%i", channel);
-
 	// This will set RETAIN flag for all channels that are used for RELAY
 	if (CFG_HasFlag(OBK_FLAG_MQTT_RETAIN_POWER_CHANNELS)) {
 		if (CHANNEL_IsPowerRelayChannel(channel)) {
 			flags |= OBK_PUBLISH_FLAG_RETAIN;
 		}
 	}
-
-	return MQTT_PublishMain(mqtt_client, channelNameStr, valueStr, flags, true);
+	if (MQTT_IsReady()) {
+		// direct publish use just channel number
+		sprintf(channelNameStr, "%i", channel);
+		return MQTT_PublishMain(mqtt_client, channelNameStr, valueStr, flags, true);
+	} else {
+		// publish to queue requires /get addition
+		sprintf(channelNameStr, "%i/get", channel);
+		MQTT_QueuePublish(CFG_GetMQTTClientId(),channelNameStr,valueStr,flags);
+		return OBK_PUBLISH_OK;
+	}
 }
 // This console command will trigger a publish of all used variables (channels and extra stuff)
 commandResult_t MQTT_PublishAll(const void* context, const char* cmd, const char* args, int cmdFlags) {
