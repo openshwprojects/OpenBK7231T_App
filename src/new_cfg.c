@@ -23,6 +23,8 @@ int g_cfg_pendingChanges = 0;
 #define CFG_IDENT_1 'F'
 #define CFG_IDENT_2 'G'
 
+//20260107 remove special handling for W600 - use default config
+/*
 #define MAIN_CFG_VERSION_V3 3
 // version 4 - bumped size by 1024,
 // added alternate ssid fields
@@ -31,6 +33,8 @@ int g_cfg_pendingChanges = 0;
 #else
 #define MAIN_CFG_VERSION 5
 #endif
+*/
+#define MAIN_CFG_VERSION 5
 
 static byte CFG_CalcChecksum(mainConfig_t *inf) {
 	int header_size;
@@ -40,6 +44,8 @@ static byte CFG_CalcChecksum(mainConfig_t *inf) {
 
 	header_size = ((byte*)&inf->version)-((byte*)inf);
 
+//20260107 remove special handling for W600 - use default config
+/*
 	if (inf->version == MAIN_CFG_VERSION_V3) {
 		configSize = MAGIC_CONFIG_SIZE_V3;
 #if ALLOW_SSID2
@@ -52,6 +58,8 @@ static byte CFG_CalcChecksum(mainConfig_t *inf) {
 	{
 		configSize = sizeof(mainConfig_t);
 	}
+*/
+	configSize = sizeof(mainConfig_t);
 	remaining_size = configSize - header_size;
 
 	ADDLOG_DEBUG(LOG_FEATURE_CFG, "CFG_CalcChecksum: header size %i, total size %i, rem size %i\n",
