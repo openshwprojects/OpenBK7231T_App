@@ -50,6 +50,7 @@
 #include "BkDriverWdg.h"
 
 void bg_register_irda_check_func(FUNCPTR func);
+extern void WFI(void);
 #elif PLATFORM_BL602
 #include <bl_sys.h>
 #include <hosal_adc.h>
@@ -108,6 +109,12 @@ int DRV_SSDP_Active = 0;
 
 void Main_ForceUnsafeInit();
 
+#if PLATFORM_BL602
+#define DEF_USE_WFI 1
+#else
+#define DEF_USE_WFI 0
+#endif
+bool g_use_wfi = DEF_USE_WFI;
 
 
 // TEMPORARY
@@ -1234,6 +1241,9 @@ int Main_IsConnectedToWiFi()
 // - just so we know it is running.
 void isidle() {
 	idleCount++;
+#if PLATFORM_BEKEN
+	if(g_use_wfi) WFI();
+#endif
 }
 
 bool g_unsafeInitDone = false;
@@ -1606,11 +1616,9 @@ void Main_Init()
 void vApplicationIdleHook(void)
 {
 	isidle();
-#if PLATFORM_BL602
+#if PLATFORM_BL602 || PLATFORM_REALTEK || PLATFORM_XRADIO
 	// sleep
-	__asm volatile(
-	"   wfi     "
-		);
+	if(g_use_wfi) __asm volatile("   wfi     ");
 #endif
 }
 

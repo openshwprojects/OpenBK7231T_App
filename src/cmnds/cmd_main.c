@@ -942,6 +942,19 @@ commandResult_t CMD_DeepSleep_SetEdge(const void* context, const char* cmd, cons
 
 	return CMD_RES_OK;
 }
+static commandResult_t CMD_PowerSave_WFI(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	int bOn = 1;
+	Tokenizer_TokenizeString(args, 0);
+
+	if(Tokenizer_GetArgsCount() > 0)
+	{
+		bOn = Tokenizer_GetArgInteger(0);
+	}
+	extern bool g_use_wfi;
+	g_use_wfi = (bOn);
+	return CMD_RES_OK;
+}
 
 #if MQTT_USE_TLS
 static commandResult_t CMD_WebServer(const void* context, const char* cmd, const char* args, int cmdFlags) {	
@@ -1020,6 +1033,11 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_PowerSave","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PowerSave", CMD_PowerSave, NULL);
+	//cmddetail:{"name":"PowerSave_WFI","args":"[Optional 1 or 0, by default 1 is assumed]",
+	//cmddetail:"descr":"Extra power save by sleeping during idle. Available on Beken, BL602, XR8xx and Realteks. Reduces current by 0.001-0.002A on Beken. Enabled by default on BL602 (SDK behaviour).",
+	//cmddetail:"fn":"CMD_PowerSave_WFI","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("PowerSave_WFI", CMD_PowerSave_WFI, NULL);
 	//cmddetail:{"name":"if","args":"[Condition]['then'][CommandA]['else'][CommandB]",
 	//cmddetail:"descr":"Executed a conditional. Condition should be single line. You must always use 'then' after condition. 'else' is optional. Use aliases or quotes for commands with spaces",
 	//cmddetail:"fn":"CMD_If","file":"cmnds/cmd_main.c","requires":"",
