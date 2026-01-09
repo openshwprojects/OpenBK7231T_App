@@ -226,6 +226,8 @@ jobs:
             variant: sensors
           - platform: OpenBK7231N
             variant: hlw8112
+          - platform: OpenBK7231N
+            variant: battery
             
           - platform: OpenBL602
             variant: berry
@@ -255,6 +257,9 @@ jobs:
             gcc: apt
           - platform: OpenBK7238
             variant: irRemoteESP
+            gcc: apt
+          - platform: OpenBK7238
+            variant: battery
             gcc: apt
     steps:
       - name: Source checkout
