@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Semantic Release
         id: semantic
-        if: github.ref == 'refs/heads/main' || github.ref_name == 'alpha'
+        if: (github.repository_owner == 'openshwprojects') && (github.ref == 'refs/heads/main' || github.ref_name == 'alpha')
         uses: cycjimmy/semantic-release-action@v4
         with:
           dry_run: true
