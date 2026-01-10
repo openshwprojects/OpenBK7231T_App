@@ -79,6 +79,8 @@ int tuya_os_adapt_wifi_all_ap_scan(AP_IF_S** ap_ary, unsigned int* num);
 int tuya_os_adapt_wifi_release_ap(AP_IF_S* ap);
 #endif
 
+//extern int g_SecsToFallbackToOpenAP;	// in user_main.c
+
 static const char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"></form>";
 
 
@@ -945,7 +947,7 @@ int http_fn_index(http_request_t* request) {
 		}
 	}
 #endif
-	if (Main_HasWiFiConnected())
+	if (Main_IsConnectedToWiFi())
 	{
 		int rssi = HAL_GetWifiStrength();
 		hprintf255(request, "<h5>Wifi RSSI: %s (%idBm)</h5>", str_rssi[wifi_rssi_scale(rssi)], rssi);
@@ -1566,13 +1568,17 @@ int http_fn_cfg_wifi(http_request_t* request) {
 	poststr_h2(request, "Use this to connect to your WiFi");
 	add_label_text_field(request, "SSID", "ssid", CFG_GetWiFiSSID(), "<form action=\"/cfg_wifi_set\">");
 	add_label_password_field(request, "", "pass", CFG_GetWiFiPass(), "<br>Password<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears existing)</span>");
+#ifdef PLATFORM_BEKEN
 	poststr_h2(request, "Alternate WiFi (used when first one is not responding)");
 	poststr(request, "Note: It is possible to retain used SSID using command setStartupSSIDChannel in early.bat");
-#ifndef PLATFORM_BEKEN
-	poststr_h2(request, "SSID2 only on Beken Platform (BK7231T, BK7231N)");
-#endif
 	add_label_text_field(request, "SSID2", "ssid2", CFG_GetWiFiSSID2(), "");
 	add_label_password_field(request, "", "pass2", CFG_GetWiFiPass2(), "<br>Password2<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass2');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears existing)</span>");
+#endif
+/*
+	hprintf255(request, "<input type=\"checkbox\" name='OAPfallbackEnabled' value='1' onclick=\"e=getElement('secs');e.style.display=(this.checked)?'inline':'none';\"%s>",g_SecsToFallbackToOpenAP >0 ? " checked":"");
+	hprintf255(request," fallback to OpenAP if connection to WiFi fails <span id='secs' style='display:%s'> after <input name='sec2OAP' style='width:5em' value='%i'> seconds</span>",
+		g_SecsToFallbackToOpenAP >0 ?"inline":"none",g_SecsToFallbackToOpenAP==-1?500:g_SecsToFallbackToOpenAP);
+*/
 #if ALLOW_WEB_PASSWORD
 	int web_password_enabled = strcmp(CFG_GetWebPassword(), "") == 0 ? 0 : 1;
 	poststr_h2(request, "Web Authentication");
@@ -1658,6 +1664,23 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 	if (http_getArg(request->url, "pass2", tmpA, sizeof(tmpA))) {
 		bChanged |= CFG_SetWiFiPass2(tmpA);
 	}
+
+
+/*
+	if (http_getArg(request->url, "OAPfallbackEnabled", tmpA, sizeof(tmpA))) {
+		int OAPfallbackEnabled = atoi(tmpA);
+		if (OAPfallbackEnabled > 0 && http_getArg(request->url, "sec2OAP", tmpA, sizeof(tmpA))) {
+			OAPfallbackEnabled = atoi(tmpA);
+			if (OAPfallbackEnabled > 30) {	// give at least 30 seconds!
+				g_SecsToFallbackToOpenAP = OAPfallbackEnabled;
+				hprintf255(request, "<p>Fallback to OpenAP after %i seconds.</p>",g_SecsToFallbackToOpenAP);
+			} else {
+				g_SecsToFallbackToOpenAP = -1;
+				hprintf255(request, "<p>Error: Got fallback to OpenAP after %i seconds.</p>",g_SecsToFallbackToOpenAP);
+			}
+		}
+	}
+*/
 #if ALLOW_WEB_PASSWORD
 	if (http_getArg(request->url, "web_admin_password_enabled", tmpA, sizeof(tmpA))) {
 		int web_password_enabled = atoi(tmpA);
