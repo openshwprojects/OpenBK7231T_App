@@ -576,14 +576,14 @@ typedef enum ioRole_e {
 	IOR_PWM_ScriptOnly_n,
 	//iodetail:{"name":"Counter_f",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"",
+	//iodetail:"descr":"Counts pulses on falling edge (transition from high to low). Each transitions adds 1 to linked channel.",
 	//iodetail:"enum":"IOR_Counter_f",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}
 	IOR_Counter_f,
 	//iodetail:{"name":"Counter_r",
 	//iodetail:"title":"TODO",
-	//iodetail:"descr":"",
+	//iodetail:"descr":"Counts pulses on rising edge (transition from low to high). Each transitions adds 1 to linked channel.",
 	//iodetail:"enum":"IOR_Counter_r",
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":""}

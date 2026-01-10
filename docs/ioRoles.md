@@ -86,8 +86,8 @@ Do not add anything here, as it will overwritten with next rebuild.
 | DS1820_IO | vers simple OneWire Temp sensor DS1820 |
 | PWM_ScriptOnly |  |
 | PWM_ScriptOnly_n |  |
-| Counter_f |  |
-| Counter_r |  |
+| Counter_f | Counts pulses on falling edge (transition from high to low). Each transitions adds 1 to linked channel. |
+| Counter_r | Counts pulses on rising edge (transition from low to high). Each transitions adds 1 to linked channel. |
 | IRRecv_nPup | IRRecv without pull-up |
 | StripState | This is an output pin which has current led_enableAll value |
 | StripState_n | This is an output pin which has negation of current led_enableAll value |
