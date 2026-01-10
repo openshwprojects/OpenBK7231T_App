@@ -10,8 +10,8 @@
   },
   {
     "name": "ACMode",
-    "args": "CMD_ACMode",
-    "descr": "",
+    "args": "[Mode]",
+    "descr": "Sets the climate mode (off, cool, dry, fan_only, heat, heatcool, auto)",
     "fn": "CMD_ACMode",
     "file": "driver/drv_tclAC.c",
     "requires": "",
@@ -3364,6 +3364,15 @@
     "file": "driver/drv_textScroller.c",
     "requires": "",
     "examples": ""
+  },
+  {
+    "name": "tuyaMcu_batteryPoweredMode",
+    "args": "[Optional 1 or 0, by default 1 is assumed]",
+    "descr": "Enables battery mode communications for version 3 TuyaMCU. tuyaMcu_batteryPoweredMode 0 can be used to disable the mode.",
+    "fn": "Cmd_TuyaMCU_BatteryPoweredMode",
+    "file": "driver/drv_tuyaMCU.c",
+    "requires": "",
+    "examples": "tuyaMcu_batteryPoweredMode"
   },
   {
     "name": "tuyaMcu_defWiFiState",

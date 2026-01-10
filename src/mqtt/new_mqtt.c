@@ -16,6 +16,7 @@
 #include "../driver/drv_deviceclock.h"
 #include "../driver/drv_tuyaMCU.h"
 #include "../hal/hal_ota.h"
+#include <math.h>
 #ifndef WINDOWS
 #include <lwip/dns.h>
 #endif
@@ -1443,6 +1444,9 @@ OBK_Publish_Result MQTT_PublishMain_StringInt(const char* sChannel, int iv, int 
 OBK_Publish_Result MQTT_PublishMain_StringFloat(const char* sChannel, float f, int maxDecimalPlaces, int flags)
 {
 	char valueStr[16];
+	if (isnan(f)) {
+		f = 0;
+	}
 
 	sprintf(valueStr, "%f", f);
 	// fix decimal places

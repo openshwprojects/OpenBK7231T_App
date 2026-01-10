@@ -89,6 +89,7 @@ commandResult_t KP18058_Current(const void *context, const char *cmd, const char
 
 	g_current_RGB = Tokenizer_GetArgIntegerRange(0, 0, 31);
 	g_current_CW = Tokenizer_GetArgIntegerRange(1, 0, 31);
+	LED_ResendCurrentColors();
 
 	return CMD_RES_OK;
 }
