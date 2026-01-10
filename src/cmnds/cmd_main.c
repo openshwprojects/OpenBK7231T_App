@@ -143,23 +143,12 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	else {
 		bk_wlan_power_save_set_level(0);
 	}
-#elif defined(PLATFORM_W600)
+#elif defined(PLATFORM_W600) || defined(PLATFORM_W800)
 	if (bOn) {
 		tls_wifi_set_psflag(1, 0);	//Enable powersave but don't save to flash
 	}
 	else {
 		tls_wifi_set_psflag(0, 0);	//Disable powersave but don't save to flash
-	}
-#elif defined(PLATFORM_W800)
-	if(bOn)
-	{
-		uint8_t enable = 1;
-		tls_param_set(TLS_PARAM_ID_PSM, (void*)&enable, false);
-	}
-	else
-	{
-		uint8_t enable = 0;
-		tls_param_set(TLS_PARAM_ID_PSM, (void*)&enable, false);
 	}
 #elif defined(PLATFORM_BL602)
 	if (bOn) {
