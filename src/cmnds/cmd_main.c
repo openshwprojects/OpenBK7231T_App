@@ -1034,7 +1034,7 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PowerSave", CMD_PowerSave, NULL);
 	//cmddetail:{"name":"PowerSave_WFI","args":"[Optional 1 or 0, by default 1 is assumed]",
-	//cmddetail:"descr":"Extra power save by sleeping during idle. Available on Beken, BL602, XR8xx and Realteks. Reduces current by 0.001-0.002A on Beken. Enabled by default on BL602 (SDK behaviour).",
+	//cmddetail:"descr":"Extra power save by sleeping during idle. Available on Beken, BL602, XR8xx, Realteks, W600 and W800. Reduces current by 0.001-0.002A on Beken. Enabled by default on BL602/W600/W800 (SDK behaviour).",
 	//cmddetail:"fn":"CMD_PowerSave_WFI","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("PowerSave_WFI", CMD_PowerSave_WFI, NULL);

@@ -109,10 +109,17 @@ int DRV_SSDP_Active = 0;
 
 void Main_ForceUnsafeInit();
 
-#if PLATFORM_BL602
+#if PLATFORM_BL602 || PLATFORM_W600 || PLATFORM_W800
 #define DEF_USE_WFI 1
 #else
 #define DEF_USE_WFI 0
+#endif
+#if PLATFORM_BEKEN
+#define WFI_FUNC WFI
+#elif PLATFORM_BL602 || PLATFORM_REALTEK || PLATFORM_XRADIO || PLATFORM_W600 || PLATFORM_RDA5981
+#define WFI_FUNC() __asm volatile("wfi")
+#elif PLATFORM_W800
+#define WFI_FUNC __WFI
 #endif
 bool g_use_wfi = DEF_USE_WFI;
 
@@ -1239,10 +1246,13 @@ int Main_IsConnectedToWiFi()
 
 // called from idle thread each loop.
 // - just so we know it is running.
+#if PLATFORM_ESPIDF || PLATFORM_ESP8266 || PLATFORM_BL602 || (PLATFORM_REALTEK && !PLATFORM_REALTEK_NEW) || PLATFORM_XRADIO
+inline __attribute__((always_inline))
+#endif
 void isidle() {
 	idleCount++;
-#if PLATFORM_BEKEN
-	if(g_use_wfi) WFI();
+#ifdef WFI_FUNC
+	if(g_use_wfi) WFI_FUNC();
 #endif
 }
 
@@ -1611,15 +1621,11 @@ void Main_Init()
 
 }
 
-#if PLATFORM_ESPIDF || PLATFORM_ESP8266 || PLATFORM_BL602 || (PLATFORM_REALTEK && !PLATFORM_REALTEK_NEW) || PLATFORM_XRADIO
+#if PLATFORM_ESPIDF || PLATFORM_ESP8266 || PLATFORM_BL602 || (PLATFORM_REALTEK && !PLATFORM_REALTEK_NEW) || PLATFORM_XRADIO || PLATFORM_W600 || PLATFORM_W800
 
 void vApplicationIdleHook(void)
 {
 	isidle();
-#if PLATFORM_BL602 || PLATFORM_REALTEK || PLATFORM_XRADIO
-	// sleep
-	if(g_use_wfi) __asm volatile("   wfi     ");
-#endif
 }
 
 #endif
