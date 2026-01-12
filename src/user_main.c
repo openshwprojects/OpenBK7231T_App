@@ -470,6 +470,7 @@ const char* CFG_GetWiFiPassX() {
 
 void Main_OnWiFiStatusChange(int code)
 {
+	ADDLOGF_TIMING("%i - %s - Code: %i", xTaskGetTickCount(), __func__, code);
 	// careful what you do in here.
 	// e.g. creata socket?  probably not....
 	switch (code)
@@ -529,6 +530,8 @@ void Main_OnWiFiStatusChange(int code)
 			HAL_GetWiFiBSSID(g_wifi_bssid);
 			HAL_GetWiFiChannel(&g_wifi_channel);
 
+			if (Main_HasFastConnect())
+				MQTT_FastConnect();
 
 			if (strlen(CFG_DeviceGroups_GetName()) > 0) {
 				ScheduleDriverStart("DGR", 5);
@@ -562,7 +565,6 @@ void Main_OnWiFiStatusChange(int code)
 	default:
 		break;
 	}
-	ADDLOGF_TIMING("%i - %s - Code: %i", xTaskGetTickCount(), __func__, code);
 	g_newWiFiStatus = code;
 }
 
@@ -582,9 +584,13 @@ int g_bBootMarkedOK = 0;
 int g_rebootReason = 0;
 static int bMQTTconnected = 0;
 
+// if not fast connect
+// returns bMQTTconnected updated every second
+// if fast connect
+// returns MQTT_IsReady() for sub second processing of messages
 int Main_HasMQTTConnected()
 {
-	return bMQTTconnected;
+	return Main_HasFastConnect() ? MQTT_IsReady() : bMQTTconnected;
 }
 
 int Main_HasWiFiConnected()
@@ -715,7 +721,7 @@ void Main_OnEverySecond()
 	g_bHasWiFiConnected = 1;
 #endif
 
-	// display temperature - thanks to giedriuslt
+// display temperature - thanks to giedriuslt
 // only in Normal mode, and if boot is not failing
 	if (!bSafeMode && g_bootFailures <= 1)
 	{
@@ -994,7 +1000,6 @@ void Main_OnEverySecond()
 				}
 			}
 		}
-
 	}
 	if (g_connectToWiFi)
 	{
@@ -1121,6 +1126,7 @@ void QuickTick(void* param)
 	CMD_RunUartCmndIfRequired();
 
 	// process received messages here..
+	// process MQTT fast connect..
 #if ENABLE_MQTT
 	MQTT_RunQuickTick();
 #endif

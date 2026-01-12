@@ -19,7 +19,7 @@
 
 // Logging defines
 // Allows timing information in ticks to be displayed
-#define OBK_LOG_TIMING_DISABLED					1
+//#define OBK_LOG_TIMING_DISABLED					1
 //#define OBK_LOG_INFO_DISABLED					1
 //#define OBK_LOG_DEBUG_DISABLED					1
 //#define OBK_LOG_EXTRADEBUG_DISABLED				1

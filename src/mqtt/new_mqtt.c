@@ -1221,6 +1221,8 @@ void dnsFound(const char *name, ip_addr_t *ipaddr, void *arg)
 	dns_in_progress_time = 0;
 }
 
+#define MQTT_ROUTE_DELAYS 5		// upto 40,20,20,... ms
+
 static int MQTT_do_connect(mqtt_client_t* client)
 {
 	const char* mqtt_userName, * mqtt_host, * mqtt_pass, * mqtt_clientID;
@@ -1397,11 +1399,23 @@ static int MQTT_do_connect(mqtt_client_t* client)
 		  For now MQTT version 3.1.1 is always used */
 
 		LOCK_TCPIP_CORE();
-		res = mqtt_client_connect(mqtt_client,
-			&mqtt_ip, mqtt_port,
-			mqtt_connection_cb, LWIP_CONST_CAST(void*, &mqtt_client_info),
-			&mqtt_client_info);
+		// wait for up to 120 ms for a route to the broker
+		int notGivingUp = Main_HasFastConnect() ? MQTT_ROUTE_DELAYS + 1 : 1;
+		do {
+			res = mqtt_client_connect(mqtt_client,
+				&mqtt_ip, mqtt_port,
+				mqtt_connection_cb, LWIP_CONST_CAST(void*, &mqtt_client_info),
+				&mqtt_client_info);
+			if (res != ERR_RTE) {
+				break;
+			} else if (--notGivingUp) {
+				UNLOCK_TCPIP_CORE();
+				rtos_delay_milliseconds((notGivingUp == MQTT_ROUTE_DELAYS) ? 40 : 20);
+				LOCK_TCPIP_CORE();
+			}
+		} while (notGivingUp);
 		UNLOCK_TCPIP_CORE();
+		ADDLOGF_TIMING("%i - %s - Finished mqtt_client_connect, using %i of %i delays", xTaskGetTickCount(), __func__, MQTT_ROUTE_DELAYS - notGivingUp + 1, MQTT_ROUTE_DELAYS);
 		mqtt_connect_result = res;
 		if (res != ERR_OK)
 		{
@@ -2154,15 +2168,6 @@ OBK_Publish_Result MQTT_DoItemPublish(int idx)
 	return OBK_PUBLISH_WAS_NOT_REQUIRED; // didnt publish
 }
 
-// from 5ms quicktick
-int MQTT_RunQuickTick(){
-#ifndef PLATFORM_BEKEN
-	// on Beken, we use a one-shot timer for this.
-	MQTT_process_received();
-#endif
-	return 0;
-}
-
 int g_wantTasmotaTeleSend = 0;
 void MQTT_BroadcastTasmotaTeleSENSOR() {
 #if ENABLE_TASMOTA_JSON
@@ -2188,6 +2193,64 @@ void MQTT_BroadcastTasmotaTeleSTATE() {
 	MQTT_ProcessCommandReplyJSON("STATE", "", COMMAND_FLAG_SOURCE_TELESENDER);
 #endif
 }
+
+// fast first connect to MQTT, no previous mqtt_client, no OTA
+// run after wifi connected
+void MQTT_FastConnect() {
+	if (!mqtt_initialised || mqtt_client || (OTA_GetProgress() != -1))
+		return;
+
+	if (MQTT_Mutex_Take(100) == 0)
+		return;
+
+	LOCK_TCPIP_CORE();
+	mqtt_client = mqtt_client_new();
+	UNLOCK_TCPIP_CORE();
+
+	mqtt_connect_events++;
+	// routine should try reconnecting but might fail anyway
+	int ret = MQTT_do_connect(mqtt_client);
+	MQTT_Mutex_Free();
+	if (ret == ERR_RTE) {
+		return;
+	}
+	mqtt_loopsWithDisconnected = 0;
+	ADDLOGF_TIMING("%i - %s - Continue with MQTT fast connect, return %i", xTaskGetTickCount(), __func__, ret);
+}
+
+// clears just connected flag and processes items
+// that run just after connection either from
+// OnEverySecond or QuickTick
+void MQTT_JustConnected() {
+	g_just_connected = 0;
+	// publish all values on state
+	if (CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEONCONNECT)) {
+		g_wantTasmotaTeleSend = 1;
+		MQTT_PublishWholeDeviceState();
+	}
+	else {
+		//MQTT_PublishOnlyDeviceChannelsIfPossible();
+	}
+}
+
+// from 5ms quicktick
+int MQTT_RunQuickTick(){
+#ifndef PLATFORM_BEKEN
+	// on Beken, we use a one-shot timer for this.
+	MQTT_process_received();
+#endif
+	// only run from here if fast connect is enabled even if
+	// fast connect is enabled the OnEverySecond function may
+	// run this first
+	if (g_just_connected && Main_HasFastConnect()) {
+		// do just connected logic
+		MQTT_JustConnected();
+		// publish queued items
+		PublishQueuedItems();
+	}
+	return 0;
+}
+
 // called from user timer.
 // return true/false on connected/disconnected
 bool MQTT_RunEverySecondUpdate()
@@ -2223,6 +2286,7 @@ bool MQTT_RunEverySecondUpdate()
 			UNLOCK_TCPIP_CORE();
 		}
 		MQTT_Mutex_Free();
+		mqtt_initialised = 0; // don't come back here until restart
 		return false;
 	}
 
@@ -2264,56 +2328,30 @@ bool MQTT_RunEverySecondUpdate()
 	if (!isReady) {
 		//ADDLOG_INFO(LOG_FEATURE_MAIN, "Timer discovers disconnected mqtt %i\n",mqtt_loopsWithDisconnected);
 		mqtt_loopsWithDisconnected++;
-		if (mqtt_loopsWithDisconnected <= LOOPS_WITH_DISCONNECTED) {
-			MQTT_Mutex_Free();
-			return false;
-		} else {
+		if (mqtt_loopsWithDisconnected > LOOPS_WITH_DISCONNECTED) {
+			LOCK_TCPIP_CORE();
 			if (mqtt_client == 0) {
-				LOCK_TCPIP_CORE();
 				mqtt_client = mqtt_client_new();
-				UNLOCK_TCPIP_CORE();
 			} else {
-				LOCK_TCPIP_CORE();
 				mqtt_disconnect(mqtt_client);
 #if defined(MQTT_CLIENT_CLEANUP)
 				mqtt_client_cleanup(mqtt_client);
 #endif
-				UNLOCK_TCPIP_CORE();
 			}
-			mqtt_connect_events++;
-			if ( MQTT_do_connect(mqtt_client) == ERR_RTE) {
-				MQTT_Mutex_Free();
-				return false;
-			} else {
+			UNLOCK_TCPIP_CORE();
+			if (MQTT_do_connect(mqtt_client) != ERR_RTE) {
 				mqtt_loopsWithDisconnected = 0;
-				// wait for up to 200 ms in the hope of connecting to the MQTT broker
-				// g_just_connected is set in the mqtt_connection_cb routine
-				int notGivingUp = Main_HasFastConnect() ? 21 : 1;
-				while (!g_just_connected && --notGivingUp) {
-					rtos_delay_milliseconds(10);
-				}
-				if (!notGivingUp) {
-					MQTT_Mutex_Free();
-					return false;
-				}
-				ADDLOGF_TIMING("%i - %s - Waited for %i ms for connection", xTaskGetTickCount(), __func__, 200 - notGivingUp * 10);
+			mqtt_connect_events++;
 			}
 		}
+		MQTT_Mutex_Free();
+		return false;
 	}
 
 	MQTT_Mutex_Free();
 
-	// things to do in our threads on connection accepted.
 	if (g_just_connected) {
-		g_just_connected = 0;
-		// publish all values on state
-		if (CFG_HasFlag(OBK_FLAG_MQTT_BROADCASTSELFSTATEONCONNECT)) {
-			g_wantTasmotaTeleSend = 1;
-			MQTT_PublishWholeDeviceState();
-		}
-		else {
-			//MQTT_PublishOnlyDeviceChannelsIfPossible();
-		}
+		MQTT_JustConnected();
 	}
 
 	// it is connected publish TELE
