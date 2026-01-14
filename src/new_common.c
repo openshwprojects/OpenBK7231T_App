@@ -316,7 +316,11 @@ const char* skipToNextWord(const char* p) {
 int STR_ReplaceWhiteSpacesWithUnderscore(char *p) {
 	int r = 0;
 	while (*p) {
-		if (*p == ' ' || *p == '\t') {
+		bool bSpecialChar = false;
+		if (*((byte*)p) > 127) {
+			bSpecialChar = true;
+		}
+		if (*p == ' ' || *p == '\t' || bSpecialChar) {
 			r++;
 			*p = '_';
 		}
