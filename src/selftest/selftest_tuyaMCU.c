@@ -257,20 +257,14 @@ void Test_TuyaMCU_Dimmer_Issue() {
 	// process frames
 	Sim_RunFrames(50, false);
 
-	// We expect TuyaMCU packet for DP 2 (val 2), value should be 1000 (because
-	// 100% of 0-1000 range) Packet structure: HEAD: 55 AA VER: 00 CMD: 06 (SetDP)
-	// LEN: 00 08 (Size of following data)
-	// DPID: 02
-	// TYPE: 02 (Value)
-	// DPLEN: 00 04
-	// VAL: 00 00 03 E8 (1000 in hex)
-	// CHK: Sum of bytes from VER to VAL % 256
-	// 00 + 06 + 00 + 08 + 02 + 02 + 00 + 04 + 00 + 00 + 03 + E8 = 257. 257 % 256
-	// = 1. So Checksum is 01.
-
-	// Assert that we sent this packet
 	SELFTEST_ASSERT_HAS_SENT_UART_STRING(
-		"55 AA 00 06 00 08 02 02 00 04 00 00 03 E8 01");
+		"55 AA 00 06 00 08 02 02 00 04 00 00 03 E8 00");
+
+	SIM_ClearUART();
+	CMD_ExecuteCommand("setChannel 2 1", 0);
+	Sim_RunFrames(50, false);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING(
+		"55 AA 00 06 00 08 02 02 00 04 00 00 00 0A 1F");
 
 	CMD_ExecuteCommand("dimmer 100", 0);
 	// process frames
