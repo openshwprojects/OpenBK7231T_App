@@ -12,46 +12,50 @@
 #include "../hal/hal_adc.h"
 #include "drv_battery.h"
 
-static int g_pin_adc = 0, channel_adc = 0, g_pin_rel = 0, g_battcycle = 1, g_battcycleref = 10;
-//static int channel_rel = 0;
+static int g_pin_adc = -1, g_pin_rel = -1, g_val_rel = -1, g_battcycle = 1, g_battcycleref = 10;
 static float g_battvoltage = 0.0, g_battlevel = 0.0;
 static int g_lastbattvoltage = 0, g_lastbattlevel = 0;
 static float g_vref = 2400, g_vdivider = 2.29, g_maxbatt = 3000, g_minbatt = 2000, g_adcbits = 4096;
 
+static int Batt_Load() {
+	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		switch (g_cfg.pins.roles[i])
+		{
+		case IOR_BAT_ADC:
+			g_pin_adc = i;
+			break;
+		case IOR_BAT_Relay:
+			g_pin_rel = i;
+			g_val_rel = 1;
+			break;
+		case IOR_BAT_Relay_n:
+			g_pin_rel = i;
+			g_val_rel = 0;
+			break;
+		default:
+			break;
+		}
+	}
+	return g_pin_adc;
+}
+
 static void Batt_Measure() {
 	//this command has only been tested on CBU
 	float batt_ref, batt_res, vref;
-	int writeVal = 1;
-	ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : Measure Battery volt en perc");
-	g_pin_adc = PIN_FindPinIndexForRole(IOR_BAT_ADC, g_pin_adc);
-	if (PIN_FindPinIndexForRole(IOR_BAT_Relay, -1) == -1 && PIN_FindPinIndexForRole(IOR_BAT_Relay_n, -1) == -1) {
-		g_vdivider = 1;
+	if (g_pin_adc == -1) {
+		ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : ADC pin not registered, reset device");
+		return;
 	}
-	// if divider equal to 1 then no need for relay activation
-	if (g_vdivider > 1) {
-		g_pin_rel = PIN_FindPinIndexForRole(IOR_BAT_Relay, -1);
-		if (g_pin_rel == -1) {
-			g_pin_rel = PIN_FindPinIndexForRole(IOR_BAT_Relay_n, -1);
-			writeVal = 0;
-		}
-		//if(g_pin_rel>0) {
-		//channel_rel = g_cfg.pins.channels[g_pin_rel];
-		//}
-	}
-	if (g_vdivider > 1) {
-		//CHANNEL_Set(channel_rel, 1, 0);
-		if (g_pin_rel > 0) {
-			HAL_PIN_SetOutputValue(g_pin_rel, writeVal);
-		}
+
+	// if relay pin is registered use relay
+	if (g_pin_rel != -1) {
+		HAL_PIN_SetOutputValue(g_pin_rel, g_val_rel);
 		rtos_delay_milliseconds(10);
 	}
 	g_battvoltage = HAL_ADC_Read(g_pin_adc);
-	ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : ADC binary Measurement : %f and channel %i", g_battvoltage, channel_adc);
-	if (g_vdivider > 1) {
-		if (g_pin_rel > 0) {
-			HAL_PIN_SetOutputValue(g_pin_rel, !writeVal);
-		}
-		//CHANNEL_Set(channel_rel, 0, 0);
+	ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : ADC binary Measurement : %f", g_battvoltage);
+	if (g_pin_rel != -1) {
+		HAL_PIN_SetOutputValue(g_pin_rel, !g_val_rel);
 	}
 	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY : Calculation with param : %f %f %f", g_vref, g_adcbits, g_vdivider);
 	// batt_value = batt_value / vref / 12bits value should be 10 un doc ... but on CBU is 12 ....
@@ -59,12 +63,14 @@ static void Batt_Measure() {
 	g_battvoltage = g_battvoltage * vref;
 	// multiply by 2 cause ADC is measured after the Voltage Divider
 	g_battvoltage = g_battvoltage * g_vdivider;
+
 	// ignore values less then half the minimum but don't quit trying
 	if ((g_minbatt / 2) > g_battvoltage) {
 		ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : Reading invalid, ignoring will try again");
 		++g_battcycle;
 		return;
 	}
+
 	batt_ref = g_maxbatt - g_minbatt;
 	batt_res = g_battvoltage - g_minbatt;
 	ADDLOG_DEBUG(LOG_FEATURE_DRV, "DRV_BATTERY : Ref battery: %f, rest battery %f", batt_ref, batt_res);
@@ -160,6 +166,12 @@ void Batt_Init() {
 	//cmddetail:"examples":"Battery_cycle 60"}
 	CMD_RegisterCommand("Battery_cycle", Battery_cycle, NULL);
 
+	// do a quick and dirty to make the first reading valid
+	if ((Batt_Load() != -1) && (g_pin_rel != -1)) {
+		HAL_PIN_SetOutputValue(g_pin_rel, g_val_rel);
+		HAL_ADC_Read(g_pin_adc);
+		HAL_PIN_SetOutputValue(g_pin_rel, !g_val_rel);
+	}
 }
 
 void Batt_OnEverySecond() {
@@ -185,7 +197,9 @@ void Batt_OnEverySecond() {
 
 
 void Batt_StopDriver() {
-
+	g_pin_adc = -1;
+	g_pin_rel = -1;
+	g_val_rel = -1;
 }
 void Batt_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
