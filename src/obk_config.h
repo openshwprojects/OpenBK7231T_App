@@ -593,6 +593,22 @@
 #define ENABLE_I2C								1
 #define ENABLE_LITTLEFS							1
 
+#elif PLATFORM_LN8825
+
+//#define ENABLE_SEND_POSTANDGET				1
+#define	ENABLE_HA_DISCOVERY						1
+#define ENABLE_MQTT								1
+#define ENABLE_TASMOTADEVICEGROUPS				1
+#define ENABLE_NTP								1
+#define ENABLE_DRIVER_LED 						1
+#define ENABLE_LITTLEFS							1
+#define ENABLE_TEST_COMMANDS					1
+#define ENABLE_EXPAND_CONSTANT					1
+#define ENABLE_TASMOTA_JSON						1
+#define ENABLE_OBK_SCRIPTING					1
+#define ENABLE_DRIVER_SSDP						1
+#define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
+
 #else
 
 // #error "Platform not defined"

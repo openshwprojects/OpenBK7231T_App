@@ -1,4 +1,4 @@
-#ifdef PLATFORM_LN882H
+#if PLATFORM_LN882H || PLATFORM_LN8825
 
 #include "../../new_common.h"
 #include "../../logging/logging.h"
@@ -7,14 +7,21 @@
 #include "../hal_pins.h"
 #include "hal_pinmap_ln882h.h"
 // LN882H header
+#if PLATFORM_LN882H
 #include "hal/hal_adv_timer.h"
 #include "hal/hal_clock.h"
+#endif
 #include "hal/hal_common.h"
 #include "hal/hal_gpio.h"
 
 #define IS_QSPI_PIN(index) (index > 12 && index < 19)
 
 static int g_active_pwm = 0b0;
+
+OBKInterruptHandler g_handlers[PLATFORM_GPIO_MAX];
+OBKInterruptType g_modes[PLATFORM_GPIO_MAX];
+
+#if PLATFORM_LN882H
 
 lnPinMapping_t g_pins[] = {
 	{ "A0", GPIOA_BASE, GPIO_PIN_0, -1 },
@@ -46,6 +53,41 @@ lnPinMapping_t g_pins[] = {
 	{ "B9", GPIOB_BASE, GPIO_PIN_9, -1 }, // 25
 	// ETC TODO
 };
+
+#else
+
+lnPinMapping_t g_pins[] = {
+	{ "A0",  GPIOA_0, -1 },
+	{ "A1",  GPIOA_1, -1 },
+	{ "A2",  GPIOA_2, -1 },
+	{ "A3",  GPIOA_3, -1 },
+	{ "A4",  GPIOA_4, -1 },
+	{ "A5",  GPIOA_5, -1 },
+	{ "A6",  GPIOA_6, -1 },
+	{ "A7",  GPIOA_7, -1 },
+	{ "A8",  GPIOA_8, -1 },
+	{ "A9",  GPIOA_9, -1 },
+	{ "A10", GPIOA_10, -1 },
+	{ "A11", GPIOA_11, -1 },
+	{ "A12", GPIOA_12, -1 },
+	{ "A13", GPIOA_13, -1 },
+	{ "A14", GPIOA_14, -1 },
+	{ "A15", GPIOA_15, -1 },
+	// port B
+	{ "B0", GPIOB_0, -1 }, // 16
+	{ "B1", GPIOB_1, -1 }, // 17
+	{ "B2", GPIOB_2, -1 }, // 18
+	{ "B3", GPIOB_3, -1 }, // 19
+	{ "B4", GPIOB_4, -1 }, // 20
+	{ "B5", GPIOB_5, -1 }, // 21
+	{ "B6", GPIOB_6, -1 }, // 22
+	{ "B7", GPIOB_7, -1 }, // 23
+	{ "B8", GPIOB_8, -1 }, // 24
+	{ "B9", GPIOB_9, -1 }, // 25
+	// ETC TODO
+};
+
+#endif
 
 int g_numPins = sizeof(g_pins) / sizeof(g_pins[0]);
 
@@ -79,6 +121,13 @@ int HAL_PIN_CanThisPinBePWM(int index)
 		return 0;
 	else return 1;
 }
+
+unsigned int HAL_GetGPIOPin(int index)
+{
+	return index;
+}
+
+#if PLATFORM_LN882H
 
 void HAL_PIN_SetOutputValue(int index, int iVal) {
 	if (index >= g_numPins)
@@ -243,14 +292,6 @@ void HAL_PIN_PWM_Update(int index, float value)
 	pwm_set_duty(value, pin->pwm_cha);
 }
 
-unsigned int HAL_GetGPIOPin(int index) {
-	return index;
-}
-
-OBKInterruptHandler g_handlers[PLATFORM_GPIO_MAX];
-OBKInterruptType g_modes[PLATFORM_GPIO_MAX];
-
-
 uint32_t GetBaseForPin(int pinIndex)
 {
 	return pinIndex < 16 ? GPIOA_BASE : GPIOB_BASE;
@@ -310,5 +351,173 @@ void HAL_DetachInterrupt(int pinIndex) {
 	}
 	g_handlers[pinIndex] = 0;
 }
+
+#else
+
+void HAL_PIN_SetOutputValue(int index, int iVal)
+{
+	if(index >= g_numPins)
+		return;
+	lnPinMapping_t* pin = g_pins + index;
+	HAL_GPIO_WritePin(pin->pin, iVal > 0 ? GPIO_VALUE_HIGH : GPIO_VALUE_LOW);
+}
+
+int HAL_PIN_ReadDigitalInput(int index)
+{
+	if(index >= g_numPins)
+		return 0;
+	lnPinMapping_t* pin = g_pins + index;
+	return HAL_GPIO_ReadPin(pin->pin);
+}
+
+void Basic_GPIO_Setup(lnPinMapping_t* pin, int direction)
+{
+	GPIO_InitTypeDef gpio_init;
+	memset(&gpio_init, 0, sizeof(gpio_init));
+	gpio_init.dir = direction;
+	HAL_GPIO_Init(pin->pin, gpio_init);
+}
+
+void HAL_PIN_Setup_Input_Pullup(int index)
+{
+	if(index >= g_numPins)
+		return;
+	lnPinMapping_t* pin = g_pins + index;
+	Basic_GPIO_Setup(pin, GPIO_INPUT);
+	HAL_SYSCON_GPIO_PullUp(pin->pin);
+}
+
+void HAL_PIN_Setup_Input_Pulldown(int index)
+{
+	if(index >= g_numPins)
+		return;
+	lnPinMapping_t* pin = g_pins + index;
+	Basic_GPIO_Setup(pin, GPIO_INPUT);
+	HAL_SYSCON_GPIO_PullDown(pin->pin);
+}
+
+void HAL_PIN_Setup_Input(int index)
+{
+	if(index >= g_numPins)
+		return;
+	lnPinMapping_t* pin = g_pins + index;
+	Basic_GPIO_Setup(pin, GPIO_INPUT);
+	HAL_SYSCON_GPIO_NoPull(pin->pin);
+}
+
+void HAL_PIN_Setup_Output(int index)
+{
+	if(index >= g_numPins)
+		return;
+	if(IS_QSPI_PIN(index))
+		return;
+	lnPinMapping_t* pin = g_pins + index;
+	Basic_GPIO_Setup(pin, GPIO_OUTPUT);
+	HAL_SYSCON_GPIO_PullUp(pin->pin);
+}
+
+static int g_pwmfreq[11];
+
+void HAL_PIN_PWM_Stop(int index)
+{
+	if(index >= g_numPins)
+		return;
+	lnPinMapping_t* pin = g_pins + index;
+	if(pin->pwm_cha < 0) return;
+	HAL_PWM_Stop(pin->pwm_cha);
+	g_active_pwm &= ~(1 << pin->pwm_cha);
+	g_pwmfreq[pin->pwm_cha] = 0;
+	HAL_SYSCON_FuncIOSet(pin->pwm_cha + 14, pin->pin, 0);
+	uint8_t chan = pin->pwm_cha;
+	pin->pwm_cha = -1;
+	ADDLOG_DEBUG(LOG_FEATURE_CMD, "PWM_Stop: ch: %i, all: %i", chan, g_active_pwm);
+}
+
+void HAL_PIN_PWM_Start(int index, int freq)
+{
+	if(index >= g_numPins)
+		return;
+	lnPinMapping_t* pin = g_pins + index;
+	if(pin->pwm_cha > 0)
+	{
+		g_pwmfreq[pin->pwm_cha] = freq;
+		HAL_PWM_Start(pin->pwm_cha);
+		return;
+	}
+	uint8_t freecha;
+	for(freecha = 0; freecha < 11; freecha++) if((g_active_pwm >> freecha & 1) == 0) break;
+	g_active_pwm |= 1 << freecha;
+	pin->pwm_cha = freecha;
+	g_pwmfreq[pin->pwm_cha] = freq;
+	HAL_SYSCON_FuncIOSet(pin->pwm_cha + GPIO_AF_PWM0, pin->pin, 1);
+	ADDLOG_DEBUG(LOG_FEATURE_CMD, "PWM_Start: ch_pwm: %u", freecha);
+	HAL_PWM_Config(pin->pwm_cha, g_pwmfreq[pin->pwm_cha], 0);
+	HAL_PWM_Start(pin->pwm_cha);
+}
+
+void HAL_PIN_PWM_Update(int index, float value)
+{
+	if(index >= g_numPins)
+		return;
+	lnPinMapping_t* pin = g_pins + index;
+	if(pin->pwm_cha < 0) return;
+	if(value < 0)
+		value = 0;
+	if(value > 100)
+		value = 100;
+	HAL_PWM_Config(pin->pwm_cha, g_pwmfreq[pin->pwm_cha], value / 100);
+}
+
+void GPIO_IRQHandler()
+{
+	uint32_t status = HAL_GPIO_IntStatus();
+	for(int i = 0; i < PLATFORM_GPIO_MAX; i++)
+	{
+		if(status & (1U << (i)))
+		{
+			if(g_handlers[i]) g_handlers[i](i);
+			HAL_GPIO_IrqClear(i);
+		}
+	}
+}
+
+void HAL_AttachInterrupt(int pinIndex, OBKInterruptType mode, OBKInterruptHandler function)
+{
+	if(!IS_PORTA_GPIO(pinIndex))
+	{
+		return;
+	}
+	g_handlers[pinIndex] = function;
+
+	switch(mode)
+	{
+		case INTERRUPT_CHANGE:
+			HAL_GPIO_TrigBothEdge(pinIndex, 1);
+			break;
+		case INTERRUPT_RISING:
+			HAL_GPIO_TrigType(pinIndex, GPIO_TRIG_RISING_EDGE);
+			break;
+		case INTERRUPT_FALLING:
+		default:
+			HAL_GPIO_TrigType(pinIndex, GPIO_TRIG_FALLING_EDGE);
+			break;
+	}
+	HAL_GPIO_UnmaskIrq(pinIndex);
+	HAL_GPIO_IntEnable(pinIndex);
+	NVIC_SetPriority(GPIO_IRQn, 1);
+	NVIC_EnableIRQ(GPIO_IRQn);
+}
+
+void HAL_DetachInterrupt(int pinIndex)
+{
+	if(g_handlers[pinIndex] == 0)
+	{
+		return; // already removed;
+	}
+	HAL_GPIO_MaskIrq(pinIndex);
+	g_handlers[pinIndex] = 0;
+}
+
+#endif
 
 #endif // PLATFORM_LN882H

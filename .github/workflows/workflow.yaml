@@ -200,6 +200,9 @@ jobs:
             variant: default
           - platform: OpenRTL8720E
             variant: default
+          - platform: OpenLN8825
+            variant: default
+            gcc: apt
 
           # extras for BK7231T
           - platform: OpenBK7231T
@@ -268,7 +271,7 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
-        if: ${{ matrix.platform == 'OpenLN882H' }}
+        if: ${{ matrix.platform == 'OpenLN882H' || matrix.platform == 'OpenLN882H' }}
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: cmake

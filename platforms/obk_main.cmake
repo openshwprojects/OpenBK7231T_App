@@ -28,6 +28,7 @@ set(OBKM_SRC
 	${OBK_SRCS}hal/generic/hal_flashVars_generic.c
 	${OBK_SRCS}hal/generic/hal_generic.c
 	${OBK_SRCS}hal/generic/hal_main_generic.c
+	${OBK_SRCS}hal/generic/hal_ota_generic.c
 	${OBK_SRCS}hal/generic/hal_pins_generic.c
 	${OBK_SRCS}hal/generic/hal_wifi_generic.c
 	${OBK_SRCS}hal/generic/hal_uart_generic.c
