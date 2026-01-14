@@ -754,8 +754,8 @@ void TCL_Init(void) {
 	UART_InitUART(TCL_baudRate, 2, false);
 	UART_InitReceiveRingBuffer(TCL_UART_RECEIVE_BUFFER_SIZE);
 
-	//cmddetail:{"name":"ACMode","args":"CMD_ACMode",
-	//cmddetail:"descr":"",
+	//cmddetail:{"name":"ACMode","args":"[Mode]",
+	//cmddetail:"descr":"Sets the climate mode (off, cool, dry, fan_only, heat, heatcool, auto)",
 	//cmddetail:"fn":"CMD_ACMode","file":"driver/drv_tclAC.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("ACMode", CMD_ACMode, NULL);

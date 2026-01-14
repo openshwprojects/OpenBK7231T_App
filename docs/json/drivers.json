@@ -578,5 +578,12 @@
     "descr": "TXW81X Camera.",
     "requires": "",
     "define": "Enabled by defining \"<b>PLATFORM_TXW81X</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+  },
+  {
+    "name": "NEO6M",
+    "title": "TODO",
+    "descr": "NEO6M is a GPS chip which uses UART protocol for communication. By default, it uses 9600 baud, but you can also enable it with other baud rates by using 'startDriver NEO6M <rate>'.",
+    "requires": "",
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_NEO6M</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
   }
 ]
