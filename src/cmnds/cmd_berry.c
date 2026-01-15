@@ -188,8 +188,7 @@ int be_addClosure(bvm *vm, const char *eventName, int relation, int reqArg, cons
 		th->wait.waitingForEvent = eventCode;
 		th->wait.waitingForArgument = reqArg;
 		if (reqArgStr) {
-			// TODO: safe
-			strcpy(th->wait.waitingForArgumentStr, reqArgStr);
+			strcpy_safe(th->wait.waitingForArgumentStr, reqArgStr, sizeof(th->wait.waitingForArgumentStr));
 		}
 		else {
 			th->wait.waitingForArgumentStr[0] = 0;
