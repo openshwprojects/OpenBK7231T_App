@@ -271,7 +271,7 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
-        if: ${{ matrix.platform == 'OpenLN882H' || matrix.platform == 'OpenLN882H' }}
+        if: ${{ matrix.platform == 'OpenLN882H' || matrix.platform == 'OpenLN8825' }}
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: cmake

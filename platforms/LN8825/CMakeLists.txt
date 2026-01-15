@@ -1,8 +1,20 @@
 add_compile_definitions(PLATFORM_LN8825=1)
 
-add_definitions( -DUSER_SW_VER="$ENV{APP_VERSION}" )
-add_definitions( -DOBK_VARIANT=$ENV{OBK_VARIANT} )
-add_definitions( -DWRAP_PRINTF )
+if($ENV{APP_VERSION} MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+$")
+    string(REPLACE "." ";" VERSION_LIST "$ENV{APP_VERSION}")
+    list(GET VERSION_LIST 1 VER_MAJOR)
+    list(GET VERSION_LIST 2 VER_MINOR)
+else()
+    set(VER_MAJOR 0)
+    set(VER_MINOR 1)
+endif()
+
+add_definitions(
+	-DUSER_SW_VER="$ENV{APP_VERSION}"
+	-DOBK_VARIANT=$ENV{OBK_VARIANT}
+	-DWRAP_PRINTF
+)
+
 set(PRO_DIR  ${CMAKE_CURRENT_SOURCE_DIR})
 set(OBK_SRCS "app/src/")
 include(app/platforms/obk_main.cmake)
@@ -22,6 +34,7 @@ set(PROJ_ALL_SRC
 	${OBK_SRCS}hal/ln882h/hal_wifi_ln882h.c
 	${OBK_SRCS}hal/ln882h/hal_ota_ln882h.c
 	${OBKM_SRC}
+	${OBKM_SRC_CXX}
 	${BERRY_SRC_C}
 	${PRO_DIR}/main.c
 	${PRO_DIR}/usr_app.c
@@ -31,7 +44,6 @@ set(PROJ_ALL_SRC
 	${CMAKE_SOURCE_DIR}/components/libc/newlib_stub.c
 	${CMAKE_SOURCE_DIR}/components/atcmd/console.c
 	${COMP_LWIP_DIR}/apps/mqtt/mqtt.c
-	${MODULE_SRC}
 )
 
 link_directories(${CMAKE_SOURCE_DIR}/lib/gcclib)

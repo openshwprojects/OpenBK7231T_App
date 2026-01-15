@@ -564,6 +564,7 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #if PLATFORM_LN8825
+#define malloc os_malloc
 #include "utils/debug/log.h"
 #undef bk_printf
 #define bk_printf(...) LOG(LOG_LVL_INFO, __VA_ARGS__)
@@ -1086,7 +1087,7 @@ typedef enum
     EXCELLENT,
 } WIFI_RSSI_LEVEL;
 
-#if PLATFORM_LN882H || PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_TR6260 || PLATFORM_XRADIO || PLATFORM_TXW81X
+#if PLATFORM_LN882H || PLATFORM_REALTEK || PLATFORM_ECR6600 || PLATFORM_TR6260 || PLATFORM_XRADIO || PLATFORM_TXW81X || PLATFORM_LN8825
 #define IP_STRING_FORMAT	"%u.%u.%u.%u"
 #else
 #define IP_STRING_FORMAT	"%hhu.%hhu.%hhu.%hhu"

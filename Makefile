@@ -495,7 +495,7 @@ OpenLN8825: prebuild_OpenLN8825 sdk/OpenLN8825/project/OpenBeken/app
 	CROSS_TOOLCHAIN_ROOT=$(ARM_NONE_EABI_GCC_PATH)/../ APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) cmake --build ./sdk/OpenLN8825/build -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenLN8825/build/bin/flashimage.bin output/$(APP_VERSION)/OpenLN8825_$(APP_VERSION).bin
-	cp sdk/OpenLN8825/build/bin/flashimage-ota-xz-v0.1.bin output/$(APP_VERSION)/OpenLN8825_$(APP_VERSION)_ota.img
+	cp sdk/OpenLN8825/build/bin/flashimage-ota-xz.bin output/$(APP_VERSION)/OpenLN8825_$(APP_VERSION)_ota.img
 
 .PHONY: OpenESP32
 OpenESP32: prebuild_ESPIDF

@@ -199,7 +199,6 @@ uint8_t HAL_GetWiFiChannel(uint8_t *chan){
 
 void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 {
-    alert_log("HAL_WiFi_SetupStatusCallback");
 	g_wifiStatusCallback = cb;
 }
 
@@ -362,9 +361,19 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
     hal_sleep_set_mode(ACTIVE);
     wifi_set_mode(init_param.wifi_mode);
     wifi_set_config(STATION_IF, &connect);
-    reg_wifi_msg_callbcak(WIFI_MSG_ID_STA_CONNECTED, &wifi_connected_cb);
+    if(g_STA_static_IP)
+    {
+        reg_wifi_msg_callbcak(WIFI_MSG_ID_STA_CONNECTED, &wifi_connected_cb);
+        reg_wifi_msg_callbcak(WIFI_MSG_ID_STA_DHCP_GOT_IP, NULL);
+    }
+    else
+    {
+        reg_wifi_msg_callbcak(WIFI_MSG_ID_STA_CONNECTED, NULL);
+        reg_wifi_msg_callbcak(WIFI_MSG_ID_STA_DHCP_GOT_IP, &wifi_connected_cb);
+    }
     reg_wifi_msg_callbcak(WIFI_MSG_ID_STA_DISCONNECTED, &wifi_disconnected_cb);
-    wifi_station_scan(&scan_cfg);
+    reg_wifi_msg_callbcak(WIFI_MSG_ID_STA_DHCP_TIMEOUT, &wifi_disconnected_cb);
+    //wifi_station_scan(&scan_cfg);
 
     if(!wifi_start(&init_param, true))
     {
@@ -378,14 +387,12 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
 
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip)
 {
-    alert_log("HAL_ConnectToWiFi");
 	g_bOpenAccessPointMode = 0;
 	wifi_init_sta(oob_ssid, connect_key, ip);
 }
 
 void HAL_DisconnectFromWifi()
 {
-    alert_log("HAL_DisconnectFromWifi");
     wifi_sta_disconnect();
     if (g_wifiStatusCallback != NULL) {
         g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
