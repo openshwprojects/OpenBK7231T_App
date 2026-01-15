@@ -416,7 +416,7 @@ int str_match_in_alias(const char* alias, const char* str) {
 }
 
 int HAL_PIN_Find(const char *name) {
-	if (isdigit(name[0])) {
+	if (isdigit((unsigned char)name[0])) {
 		return atoi(name);
 	}
 //	for (int i = 0; i < g_numPins; i++) {
