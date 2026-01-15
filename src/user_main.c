@@ -190,6 +190,15 @@ static int get_tsen_adc(
 #endif
 
 #if PLATFORM_BEKEN
+#if (OBK_VARIANT == OBK_VARIANT_BATTERY)
+	#if PLATFORM_BEKEN_NEW
+		#define START_MS_DELAY 10;
+	#else
+		#define START_MS_DELAY 0;
+	#endif
+#else
+	#define START_MS_DELAY 250;
+#endif
 // this function waits for the extended app functions to finish starting.
 extern void extended_app_waiting_for_launch(void);
 void extended_app_waiting_for_launch2()
@@ -204,9 +213,9 @@ void extended_app_waiting_for_launch2()
 	// wait 100ms at the start.
 	// TCP is being setup in a different thread, and there does not seem to be a way to find out if it's complete yet?
 	// so just wait a bit, and then start.
-	int startDelay = 250;
+	uint8_t startDelay = START_MS_DELAY;
 	bk_printf("\r\ndelaying start\r\n");
-	for(int i = 0; i < startDelay / 10; i++)
+	for(uint8_t i = 0; i < startDelay / 10; i++)
 	{
 		rtos_delay_milliseconds(10);
 		bk_printf("#Startup delayed %dms#\r\n", i * 10);
@@ -722,11 +731,16 @@ void Main_OnEverySecond()
 #if PLATFORM_BEKEN
 		UINT32 temperature;
 		temp_single_get_current_temperature(&temperature);
-#if PLATFORM_BK7231T
-		g_wifi_temperature = 2.21f * (temperature / 25.0f) - 65.91f;
 #if PLATFORM_BEKEN_NEW
-		g_wifi_temperature = temperature * 0.04f;
-#endif
+	#if PLATFORM_BK7231N
+		g_wifi_temperature = (-0.38f * temperature) + 156.0f;
+	#elif PLATFORM_BK7238 || PLATFORM_BK7252N
+		g_wifi_temperature = (-0.4f * temperature) + 131.0f;
+	#else
+		g_wifi_temperature = temperature * 0.128f;
+	#endif
+#elif PLATFORM_BK7231T
+		g_wifi_temperature = 2.21f * (temperature / 25.0f) - 65.91f;
 #else
 		g_wifi_temperature = (-0.457f * temperature) + 188.474f;
 #endif
