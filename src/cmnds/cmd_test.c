@@ -13,6 +13,12 @@
 
 #if ENABLE_TEST_COMMANDS
 
+static commandResult_t CMD_getPin(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args,0);
+	
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Pin index for %s is %i", Tokenizer_GetArg(0), HAL_PIN_Find(Tokenizer_GetArg(0)));
+	return CMD_RES_OK;
+}
 static commandResult_t CMD_TimeSize(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	ADDLOG_INFO(LOG_FEATURE_CMD, "sizeof(time_t) = %i, sizeof(int) = %i", sizeof(time_t), sizeof(int));
 	return CMD_RES_OK;
@@ -478,6 +484,11 @@ static commandResult_t CMD_TestIPtoStr(const void* context, const char* cmd, con
 
 
 int CMD_InitTestCommands(){
+	//cmddetail:{"name":"getPin","args":"string",
+	//cmddetail:"descr":"find pin index for a pin alias",
+	//cmddetail:"fn":"CMD_getPin","file":"cmnds/cmd_test.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("getPin", CMD_getPin, NULL);
 	//cmddetail:{"name":"testMallocFree","args":"",
 	//cmddetail:"descr":"Test malloc and free functionality to see if the device crashes",
 	//cmddetail:"fn":"testMallocFree","file":"cmnds/cmd_test.c","requires":"",

@@ -50,6 +50,80 @@ const char* HAL_PIN_GetPinNameAlias(int index)
 	return g_pins[index].name;
 }
 
+
+// code to find a pin index by name
+// we migth have "complex" or alternate names like
+// "IO0/A0" or even "IO2 (B2/TX1)" and would like all to match
+// so we need to make sure the substring is found an propperly "terminated"
+// by '\0', '/' , '(', ')' or ' '
+
+
+// Define valid "terminators" and "start characters" for a string
+#define TERMINATORS " ()/\0"
+#define STARTCHARS " /()"
+
+int is_valid_termination(char ch) {
+    // Check if character is in defined terminators
+    return strchr(TERMINATORS, ch) != NULL;
+}
+
+int is_start_character(char ch) {
+    // Check if character is a valid start character
+    return strchr(STARTCHARS, ch) != NULL;
+}
+
+
+int str_match_in_alias(const char* alias, const char* str) {
+    size_t alias_length = strlen(alias);
+    size_t str_length = strlen(str);
+
+    // Early return if `str` (substring) is longer than `alias`
+    if (str_length > alias_length) {
+        return 0; // No match possible
+    }
+
+    // Check if the substring is at the start of the string
+    // --> no need (and no possibility) to check previous char
+    if (strncmp(alias, str, str_length) == 0) {
+        if (str_length < alias_length) {
+            char following = alias[str_length];
+            if (is_valid_termination(following)) {
+                return 1;  // Match found at the start with valid termination
+            }
+        } else {
+            return 1; // whole string matches
+        }
+    }
+
+    // try finding str inside alias (not at beginning)
+    const char* found = strstr(alias, str);
+    while (found != NULL) {
+        char previous = *(found - 1);
+        if (previous) {  // Ensure previous is valid
+            char following = *(found + str_length);
+            if (is_start_character(previous) && (following == '\0' || is_valid_termination(following))) {
+                return 1; // Match found at valid boundaries
+            }
+        }
+        found = strstr(found + 1, str);  // Continue searching
+    }
+
+    return 0;  // No valid match found
+}
+
+int HAL_PIN_Find(const char *name) {
+	if (isdigit(name[0])) {
+		return atoi(name);
+	}
+	for (int i = 0; i < g_numPins; i++) {
+		if (str_match_in_alias(HAL_PIN_GetPinNameAlias(i), name)) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+
 void RTL_GPIO_Init(rtlPinMapping_t* pin)
 {
 	if(pin->gpio != NULL || pin->irq != NULL)
