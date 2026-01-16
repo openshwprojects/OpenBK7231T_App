@@ -123,7 +123,7 @@ const char *Tokenizer_GetArgExpanding(int i) {
 			else {
 				float f;
 				int iValue;
-				CMD_ExpandConstant(tconst, 0, &f);
+				CMD_ExpandConstantFloat(tconst, 0, &f);
 				iValue = f;
 				sprintf(convert, "%i", iValue);
 				strcat_safe(Templine, convert, sizeof(Templine));
@@ -184,7 +184,7 @@ const char *Tokenizer_GetArg(int i) {
 		else {
 			float f;
 			int iValue;
-			CMD_ExpandConstant(s, 0, &f);
+			CMD_ExpandConstantFloat(s, 0, &f);
 			iValue = f;
 			sprintf(g_argsExpanded[i], "%i", iValue);
 		}

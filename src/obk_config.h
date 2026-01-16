@@ -11,6 +11,7 @@
 #define OBK_VARIANT_IRREMOTEESP					4
 #define OBK_VARIANT_SENSORS						5
 #define OBK_VARIANT_HLW8112						6
+#define OBK_VARIANT_BATTERY						7
 #define OBK_VARIANT_ESP2M						1
 #define OBK_VARIANT_ESP4M						2
 #define OBK_VARIANT_ESP2M_BERRY					3
@@ -74,7 +75,7 @@
 #define ENABLE_MQTT								1
 #define ENABLE_TASMOTADEVICEGROUPS				1
 #define ENABLE_NTP								1
-// #define ENABLE_NTP_DST						1
+//#define ENABLE_TIME_DST						1
 #define ENABLE_DRIVER_BL0937					1
 #define ENABLE_DRIVER_DHT						1
 #define ENABLE_TASMOTA_JSON						1
@@ -108,6 +109,9 @@
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 #define ENABLE_LITTLEFS							1
 #define NEW_TCP_SERVER							1
+#define ENABLE_DRIVER_NEO6M						1
+#define ENABLE_TIME_SUNRISE_SUNSET					1
+#define ENABLE_TIME_DST				1
 #define ENABLE_USE_PINROLE_CHAN_DESC					1
 
 #elif WINDOWS
@@ -124,6 +128,8 @@
 #define ENABLE_DRIVER_PINMUTEX					1
 #define ENABLE_DRIVER_TESTSPIFLASH				1
 
+#define ENABLE_DRIVER_GIRIERMCU					1
+
 #define ENABLE_HTTP_OVERRIDE					1
 #define ENABLE_DRIVER_TCL						1
 #define ENABLE_DRIVER_PIR						1
@@ -133,7 +139,7 @@
 #define ENABLE_TASMOTADEVICEGROUPS				1
 #define ENABLE_LITTLEFS							1
 #define ENABLE_NTP								1
-#define ENABLE_NTP_DST							1
+#define ENABLE_TIME_DST							1
 #define ENABLE_DRIVER_LED						1
 #define ENABLE_DRIVER_BL0937					1
 #define ENABLE_DRIVER_BL0942					1
@@ -154,10 +160,11 @@
 #define ENABLE_DRIVER_HUE						1
 #define ENABLE_DRIVER_CHARGINGLIMIT				1
 #define ENABLE_DRIVER_BATTERY					1
+#define ENABLE_DRIVER_BKPARTITIONS				1
 #define ENABLE_DRIVER_PT6523					1
 #define ENABLE_DRIVER_MAX6675					1
 #define ENABLE_DRIVER_TEXTSCROLLER				1
-#define ENABLE_NTP_SUNRISE_SUNSET				1
+#define ENABLE_TIME_SUNRISE_SUNSET				1
 // parse things like $CH1 or $hour etc
 #define ENABLE_EXPAND_CONSTANT					1
 #define ENABLE_DRIVER_DHT						1
@@ -195,7 +202,7 @@
 #define ENABLE_TASMOTADEVICEGROUPS				1
 #define ENABLE_LITTLEFS							1
 #define ENABLE_NTP								1
-// #define ENABLE_NTP_DST						1
+// #define ENABLE_TIME_DST						1
 #define ENABLE_CALENDAR_EVENTS					1
 #define ENABLE_DRIVER_LED						1
 #define ENABLE_DRIVER_BL0937					1
@@ -229,21 +236,25 @@
 //#undef ENABLE_DRIVER_BL0942
 #define ENABLE_DRIVER_IRREMOTEESP				1
 //#endif
+#define ENABLE_DRIVER_NEO6M					1
 
 #elif PLATFORM_BEKEN
 
 //#define ENABLE_LFS_SPI						1
 //#define ENABLE_DRIVER_TESTSPIFLASH			1
 
+//#define	ENABLE_DRIVER_UART_TCP					1
+
 // #define	ENABLE_DRIVER_PIR					1
+//#define ENABLE_DRIVER_BKPARTITIONS				1
 #define ENABLE_HA_DISCOVERY						1
 #define ENABLE_SEND_POSTANDGET					1
 #define ENABLE_MQTT								1
 #define ENABLE_TASMOTADEVICEGROUPS				1
 #define ENABLE_LITTLEFS							1
 #define ENABLE_NTP								1
-// #define ENABLE_NTP_DST						1
-#define ENABLE_NTP_SUNRISE_SUNSET				1
+// #define ENABLE_TIME_DST						1
+#define ENABLE_TIME_SUNRISE_SUNSET				1
 #define ENABLE_DRIVER_LED						1
 #define ENABLE_DRIVER_BL0937					1
 #define ENABLE_DRIVER_BL0942					1
@@ -272,6 +283,7 @@
 #define ENABLE_DRIVER_SM16703P					1
 #define ENABLE_DRIVER_PIXELANIM					1
 #define ENABLE_DRIVER_SM15155E					1
+
 #endif
 // parse things like $CH1 or $hour etc
 #define ENABLE_EXPAND_CONSTANT					1
@@ -284,6 +296,7 @@
 #define ENABLE_DRIVER_DDP						1
 #define ENABLE_DRIVER_SSDP						1
 #define ENABLE_DRIVER_IR						1
+#define ENABLE_DRIVER_RC						1
 // #define ENABLE_DRIVER_IR2					1
 #define ENABLE_DRIVER_DS1820					1
 #define ENABLE_DRIVER_CHT83XX					1
@@ -294,6 +307,7 @@
 #if PLATFORM_BEKEN_NEW
 #define NEW_TCP_SERVER							1
 #endif
+#define ENABLE_DRIVER_NEO6M						1
 
 // ENABLE_I2C_ is a syntax for
 // our I2C system defines for drv_i2c_main.c
@@ -321,7 +335,7 @@
 #undef ENABLE_DRIVER_ADCSMOOTHER
 #endif
 
-#if (OBK_VARIANT == OBK_VARIANT_TUYAMCU || OBK_VARIANT == OBK_VARIANT_IRREMOTEESP || OBK_VARIANT == OBK_VARIANT_SENSORS || PLATFORM_BK7252 || PLATFORM_BK7252N)
+#if (OBK_VARIANT == OBK_VARIANT_TUYAMCU || OBK_VARIANT == OBK_VARIANT_IRREMOTEESP || OBK_VARIANT == OBK_VARIANT_SENSORS || OBK_VARIANT == OBK_VARIANT_BATTERY || PLATFORM_BK7252 || PLATFORM_BK7252N)
 #undef ENABLE_DRIVER_BL0937
 #undef ENABLE_DRIVER_BL0942
 #undef ENABLE_DRIVER_BL0942SPI
@@ -339,7 +353,7 @@
 #define ENABLE_DRIVER_IRREMOTEESP				1
 #endif
 
-#if (OBK_VARIANT == OBK_VARIANT_SENSORS)
+#if (OBK_VARIANT == OBK_VARIANT_SENSORS || OBK_VARIANT == OBK_VARIANT_BATTERY)
 #define ENABLE_DRIVER_BMP280					1
 #define ENABLE_DRIVER_BMPI2C					1
 #define ENABLE_DRIVER_SHT3X						1
@@ -354,6 +368,18 @@
 #undef ENABLE_DRIVER_CSE7766
 #endif
 
+#if (OBK_VARIANT == OBK_VARIANT_BATTERY)
+#undef ENABLE_DRIVER_BMP280
+#undef ENABLE_DRIVER_LED
+#undef ENABLE_DRIVER_SM16703P
+#undef ENABLE_DRIVER_PIXELANIM
+#undef ENABLE_DRIVER_SM15155E
+#undef ENABLE_DRIVER_IR
+#undef ENABLE_DRIVER_NEO6M
+#undef ENABLE_DRIVER_HTTPBUTTONS
+#undef ENABLE_DRIVER_KP18058
+#endif
+
 #elif PLATFORM_LN882H
 
 //#define ENABLE_SEND_POSTANDGET				1
@@ -361,7 +387,7 @@
 #define ENABLE_MQTT								1
 #define ENABLE_TASMOTADEVICEGROUPS				1
 #define ENABLE_NTP								1
-//#define ENABLE_NTP_DST						1
+//#define ENABLE_TIME_DST						1
 #define ENABLE_DRIVER_BL0937					1
 #define ENABLE_DRIVER_LED 						1
 #define ENABLE_DRIVER_WEMO						1
@@ -389,7 +415,7 @@
 #define ENABLE_MQTT								1
 #define ENABLE_I2C								1
 #define ENABLE_NTP								1
-//#define ENABLE_NTP_DST						1
+//#define ENABLE_TIME_DST						1
 #define ENABLE_DRIVER_LED						1
 #define ENABLE_DRIVER_TUYAMCU					1
 #define ENABLE_LITTLEFS							1
@@ -519,6 +545,17 @@
 
 #elif PLATFORM_ESP8266
 
+//#define ENABLE_MULTIPINI2CSCANNER				1
+//#define ENABLE_DRIVER_MAX72XX					1
+//#define ENABLE_SIMPLEEEPROM						1
+//#define ENABLE_OBK_BERRY						1
+//#define ENABLE_DRIVER_CHARTS					1
+//#define ENABLE_DRIVER_OPENWEATHERMAP			1
+//#define ENABLE_DRIVER_DHT						1
+
+
+
+
 #define ENABLE_SEND_POSTANDGET					1
 #define NO_CHIP_TEMPERATURE						1
 #define ENABLE_HA_DISCOVERY						1
@@ -541,6 +578,7 @@
 #define ENABLE_DRIVER_TUYAMCU					1
 #define ENABLE_DRIVER_DS1820					1
 #define ENABLE_DRIVER_BMPI2C					1
+#define ENABLE_DRIVER_NEO6M					1
 
 // #define ENABLE_OBK_BERRY						1
 
@@ -592,7 +630,6 @@
 // allow moving average energy calculation +180 bytes
 // #define ENABLE_BL_MOVINGAVG					1
 #endif
-
 
 // closing OBK_CONFIG_H
 #endif

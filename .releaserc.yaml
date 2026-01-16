@@ -159,6 +159,7 @@ generateNotes:
         | RTL8710A       | OTA Update | [OpenRTL8710A_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8710A_{{version}}_ota.img)               |
         | RTL8710B       | UART Flash | [OpenRTL8710B_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8710B_{{version}}.bin)                       |
         | RTL8710B       | OTA Update | [OpenRTL8710B_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8710B_{{version}}_ota.img)               |
+        | RTL8710B       | CCtr Flash | [OpenRTL8710B_UG_{{version}}.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8710B_UG_{{version}}.img)                 |
         | RTL87X0C       | UART Flash | [OpenRTL87X0C_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL87X0C_{{version}}.bin)                       |
         | RTL87X0C       | OTA Update | [OpenRTL87X0C_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL87X0C_{{version}}_ota.img)               |
         | RTL8720D       | UART Flash | [OpenRTL8720D_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRTL8720D_{{version}}.bin)                       |

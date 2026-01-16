@@ -17,6 +17,56 @@ void DDP_SimulatePacket(const char *s) {
 	DDP_Parse(buffer, byteCount);
 }
 
+
+void Test_LEDDriver_SingleColor() {
+	int i;
+	// reset whole device
+	SIM_ClearOBK(0);
+
+	// CW bulb requires two PWMs - first on channel 1, second on channel 2
+	// NOTE: we also support case where first PWM is on channel 0, and second on 1
+	PIN_SetPinRoleForPinIndex(24, IOR_PWM);
+	PIN_SetPinChannelForPinIndex(24, 1);
+
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+
+	// check expressions (not really LED related but ok)
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll", 1.0f);
+
+	CMD_ExecuteCommand("Dimmer 100", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+
+	CMD_ExecuteCommand("led_enableAll 0", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	
+	// Tasmota style command should disable LED
+	Test_FakeHTTPClientPacket_GET("cm?cmnd=POWER%200");
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll", 0.0f);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	// Tasmota style command should enable LED
+	Test_FakeHTTPClientPacket_GET("cm?cmnd=POWER%201");
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll", 1.0f);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("POWER", "ON");
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll", 1.0f);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("POWER", "OFF");
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll", 0.0f);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("POWER", "ON");
+	SELFTEST_ASSERT_EXPRESSION("$led_enableAll", 1.0f);
+	SELFTEST_ASSERT_CHANNEL(1, 100);
+
+	Test_FakeHTTPClientPacket_GET("index");
+	SELFTEST_ASSERT_PAGE_CONTAINS("index", "Dimmer");
+	SELFTEST_ASSERT_PAGE_NOT_CONTAINS("index", "LED RGB Color");
+	SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS("LED Temperature Slider");
+}
+
 void Test_LEDDriver_CW() {
 	int i;
 	// reset whole device
@@ -102,6 +152,9 @@ void Test_LEDDriver_CW() {
 		CMD_ExecuteCommand("add_dimmer 1", 0);
 		SELFTEST_ASSERT_EXPRESSION("$led_dimmer", i+1);
 	}
+	Test_FakeHTTPClientPacket_GET("index");
+	SELFTEST_ASSERT_PAGE_NOT_CONTAINS("index", "LED RGB Color");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("LED Temperature Slider");
 }
 
 void Test_LEDDriver_CW_OtherChannels() {
@@ -189,6 +242,10 @@ void Test_LEDDriver_CW_OtherChannels() {
 		CMD_ExecuteCommand("add_dimmer 1", 0);
 		SELFTEST_ASSERT_EXPRESSION("$led_dimmer", i + 1);
 	}
+	Test_FakeHTTPClientPacket_GET("index");
+	SELFTEST_ASSERT_PAGE_NOT_CONTAINS("index", "LED RGB Color");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("LED Temperature Slider");
+
 }
 void Test_LEDDriver_CW_Alternate() {
 	int i;
@@ -294,6 +351,11 @@ void Test_LEDDriver_CW_Alternate() {
 		CMD_ExecuteCommand("add_dimmer 1", 0);
 		SELFTEST_ASSERT_EXPRESSION("$led_dimmer", i + 1);
 	}
+
+	Test_FakeHTTPClientPacket_GET("index");
+	SELFTEST_ASSERT_PAGE_NOT_CONTAINS("index", "LED RGB Color");
+	SELFTEST_ASSERT_HTML_REPLY_CONTAINS("LED Temperature Slider");
+
 }
 
 
@@ -551,6 +613,96 @@ void Test_LEDDriver_RGBCW() {
 	SELFTEST_ASSERT_CHANNEL(3, 100);
 	SELFTEST_ASSERT_CHANNEL(4, 0);
 	SELFTEST_ASSERT_CHANNEL(5, 0);
+
+	CFG_SetFlag(OBK_FLAG_LED_USE_OLD_LINEAR_MODE, true);
+	CMD_ExecuteCommand("led_dimmerScale 0.5", 0);
+
+	CMD_ExecuteCommand("Color 0,0,255", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 0);
+	SELFTEST_ASSERT_CHANNEL(3, 50); // dimmer scale 0.5
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+
+	CMD_ExecuteCommand("Color 0,255,255", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 50);
+	SELFTEST_ASSERT_CHANNEL(3, 50); // dimmer scale 0.5
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+	CMD_ExecuteCommand("led_dimmer 50", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 25);
+	SELFTEST_ASSERT_CHANNEL(3, 25); // dimmer scale 0.5
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+	CMD_ExecuteCommand("led_dimmerScale 1", 0);
+	SELFTEST_ASSERT_CHANNEL(1, 0);
+	SELFTEST_ASSERT_CHANNEL(2, 50);
+	SELFTEST_ASSERT_CHANNEL(3, 50); // dimmer scale 1
+	SELFTEST_ASSERT_CHANNEL(4, 0);
+	SELFTEST_ASSERT_CHANNEL(5, 0);
+}
+
+void Test_LEDDriver_SM2235_RGBCW() {
+	SIM_ClearOBK(0);
+
+	CMD_ExecuteCommand("StartDriver SM2235", 0);
+	CMD_ExecuteCommand("LED_Map 0 1 2 3 4", 0);
+	CMD_ExecuteCommand("led_dimmer 100", 0);
+	CMD_ExecuteCommand("led_temperature 500", 0);
+	CMD_ExecuteCommand("led_basecolor_rgb FF0000", 0);
+	SELFTEST_ASSERT_SM_CHANNELS(0, 0, 0, 0, 0);
+
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+
+	SELFTEST_ASSERT_SM_CHANNELS(1023, 0, 0, 0, 0);
+
+	CMD_ExecuteCommand("LED_Map 1 0 2 3 4", 0);
+	CMD_ExecuteCommand("led_enableAll 0", 0);
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+	SELFTEST_ASSERT_SM_CHANNELS(0, 1023, 0, 0, 0);
+
+	CMD_ExecuteCommand("LED_Map 2 1 0 3 4", 0);
+	CMD_ExecuteCommand("led_enableAll 0", 0);
+	CMD_ExecuteCommand("led_enableAll 1", 0);
+	SELFTEST_ASSERT_SM_CHANNELS(0, 0, 1023, 0, 0);
+
+	CMD_ExecuteCommand("led_temperature 500", 0);
+	SELFTEST_ASSERT_SM_CHANNELS(0, 0, 0, 0, 1023);
+
+	CMD_ExecuteCommand("led_temperature 154", 0);
+	SELFTEST_ASSERT_SM_CHANNELS(0, 0, 0, 1023, 0);
+
+	CFG_SetFlag(OBK_FLAG_LED_USE_OLD_LINEAR_MODE, true);
+	CMD_ExecuteCommand("led_dimmerScale 0.5", 0);
+
+	CMD_ExecuteCommand("led_temperature 154", 0);
+	SELFTEST_ASSERT_SM_CHANNELS(0, 0, 0, 511, 0); // dimmer scale 0.5 
+
+	CMD_ExecuteCommand("led_temperature 500", 0);
+	SELFTEST_ASSERT_SM_CHANNELS(0, 0, 0, 0, 511); // dimmer scale 0.5 
+
+	CMD_ExecuteCommand("led_temperature 500", 0);
+	SELFTEST_ASSERT_SM_CHANNELS(0, 0, 0, 0, 511); // dimmer scale 0.5 
+
+	CMD_ExecuteCommand("LED_Map 0 1 2 3 4", 0);
+	CMD_ExecuteCommand("led_basecolor_rgb FF0000", 0);
+	SELFTEST_ASSERT_SM_CHANNELS(511, 0, 0, 0, 0);
+	CMD_ExecuteCommand("led_dimmerScale 1", 0);
+	CMD_ExecuteCommand("led_basecolor_rgb FF0000", 0);
+	SELFTEST_ASSERT_SM_CHANNELS(1023, 0, 0, 0, 0);
+	CMD_ExecuteCommand("led_dimmerScale 0.25", 0);
+	CMD_ExecuteCommand("led_basecolor_rgb FF0000", 0);
+	SELFTEST_ASSERT_SM_CHANNELS(255, 0, 0, 0, 0);
+	CMD_ExecuteCommand("led_basecolor_rgb FF00FF", 0);
+	SELFTEST_ASSERT_SM_CHANNELS(255, 0, 255, 0, 0);
+	CMD_ExecuteCommand("led_basecolor_rgb FFFFFF", 0);
+	SELFTEST_ASSERT_SM_CHANNELS(255, 255, 255, 0, 0);
+	CMD_ExecuteCommand("led_dimmerScale 1", 0);
+	CMD_ExecuteCommand("led_basecolor_rgb FFFFFF", 0);
+	SELFTEST_ASSERT_SM_CHANNELS(1023, 1023, 1023, 0, 0);
+
 }
 void Test_LEDDriver_BP5758_RGBCW() {
 	// reset whole device
@@ -675,6 +827,9 @@ void Test_LEDDriver_BP5758_RGBCW() {
 	Test_FakeHTTPClientPacket_GET("index");
 	SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS("LED RGB Color");
 	SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS("LED Temperature Slider");
+
+
+
 }
 void Test_LEDDriver_RGB(int firstChannel) {
 	// reset whole device
@@ -817,6 +972,47 @@ void Test_LEDDriver_RGB(int firstChannel) {
 	SELFTEST_ASSERT_CHANNEL(firstChannel+3, 0);
 	SELFTEST_ASSERT_CHANNEL(firstChannel+4, 0);
 
+	Test_FakeHTTPClientPacket_GET("index");
+	SELFTEST_ASSERT_PAGE_CONTAINS("index", "LED RGB Color");
+	SELFTEST_ASSERT_HTML_REPLY_NOT_CONTAINS("LED Temperature Slider");
+
+	CFG_SetFlag(OBK_FLAG_LED_USE_OLD_LINEAR_MODE, 1);
+
+	CMD_ExecuteCommand("led_dimmerScale 0.5", 0);
+	SELFTEST_ASSERT_EXPRESSION("$led_dimmer", 100.0f);
+
+	SELFTEST_ASSERT_CHANNEL(firstChannel, 0);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 1, 0);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 2, 50);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 3, 0);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 4, 0);
+
+	CMD_ExecuteCommand("led_dimmerScale 0.75", 0);
+	SELFTEST_ASSERT_EXPRESSION("$led_dimmer", 100.0f);
+
+	SELFTEST_ASSERT_CHANNEL(firstChannel, 0);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 1, 0);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 2, 75);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 3, 0);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 4, 0);
+
+	CMD_ExecuteCommand("led_dimmerScale 0.5", 0);
+	SELFTEST_ASSERT_EXPRESSION("$led_dimmer", 100.0f);
+	CMD_ExecuteCommand("led_dimmer 50", 0);
+	SELFTEST_ASSERT_EXPRESSION("$led_dimmer", 50.0f);
+
+	SELFTEST_ASSERT_CHANNEL(firstChannel, 0);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 1, 0);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 2, 25);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 3, 0);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 4, 0);
+
+	CMD_ExecuteCommand("Color 255,255,255", 0);
+	SELFTEST_ASSERT_CHANNEL(firstChannel, 25);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 1, 25);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 2, 25);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 3, 0);
+	SELFTEST_ASSERT_CHANNEL(firstChannel + 4, 0);
 
 	// make error
 	//SELFTEST_ASSERT_CHANNEL(firstChannel+2, 666);
@@ -824,6 +1020,7 @@ void Test_LEDDriver_RGB(int firstChannel) {
 }
 void Test_LEDDriver() {
 
+	Test_LEDDriver_SingleColor();
 	Test_LEDDriver_CW_Alternate();
 	Test_LEDDriver_CW();
 	Test_LEDDriver_CW_OtherChannels();
@@ -833,6 +1030,7 @@ void Test_LEDDriver() {
 	Test_LEDDriver_RGBCW();
 	Test_LEDDriver_Palette();
 	Test_LEDDriver_BP5758_RGBCW();
+	Test_LEDDriver_SM2235_RGBCW();
 }
 
 #endif

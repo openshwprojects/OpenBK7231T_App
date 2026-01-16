@@ -183,6 +183,7 @@ commandResult_t AHT2X_Reinit(const void* context, const char* cmd, const char* a
 	return CMD_RES_OK;
 }
 
+// startDriver AHT2X 4 5 3 4
 void AHT2X_Init()
 {
 	g_softI2C.pin_clk = Tokenizer_GetPin(1, 9);

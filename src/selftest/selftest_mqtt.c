@@ -515,6 +515,61 @@ void Test_MQTT_Misc() {
 	SIM_ClearOBK(0);
 	SIM_ClearAndPrepareForMQTTTesting("miscDevice", "bekens");
 
+	CMD_ExecuteCommand("publish homeassistant/test/laaa payload 1", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("homeassistant/test/laaa", "payload", false);
+	SIM_ClearMQTTHistory();
+	// var in topic
+	CMD_ExecuteCommand("publish homeassistant/$mqtt_client/laaa payload 1", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("homeassistant/miscDevice/laaa", "payload", false);
+	SIM_ClearMQTTHistory();
+	// var in payload
+	CMD_ExecuteCommand("publish homeassistant/hey/laaa $mqtt_client 1", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("homeassistant/hey/laaa", "miscDevice", false);
+	// var in payload
+	CMD_ExecuteCommand("publish homeassistant/hey/laaa my_name_is_$mqtt_client 1", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("homeassistant/hey/laaa", "my_name_is_miscDevice", false);
+	SIM_ClearMQTTHistory();
+
+
+	CMD_ExecuteCommand("publish homeassistant/hey/laaa my_name_is_$mqtt_client 1", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("homeassistant/hey/laaa", "my_name_is_miscDevice", false);
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("publish homeassistant/cover/$mqtt_client/config {\"name\":\"$mqtt_client\"} 1", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("homeassistant/cover/miscDevice/config", "{\"name\":\"miscDevice\"}", false);
+	SIM_ClearMQTTHistory();
+
+
+	CMD_ExecuteCommand("publish homeassistant/cover/$mqtt_client/config {\"name\":\"$mqtt_client\",\"uniq_id\":\"$mqtt_client\",\"~\":\"$mqtt_client\",\"dev_cla\":\"shutter\",\"cmd_t\":\"~/backlog\",\"stat_t\":\"~/shutterState/get\",\"pl_open\":\"OPEN\",\"pl_cls\":\"CLOSE\",\"pl_stop\":\"STOP\",\"stat_o\":\"open\",\"stat_c\":\"closed\"} 1", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("homeassistant/cover/miscDevice/config", "{\"name\":\"miscDevice\",\"uniq_id\":\"miscDevice\",\"~\":\"miscDevice\",\"dev_cla\":\"shutter\",\"cmd_t\":\"~/backlog\",\"stat_t\":\"~/shutterState/get\",\"pl_open\":\"OPEN\",\"pl_cls\":\"CLOSE\",\"pl_stop\":\"STOP\",\"stat_o\":\"open\",\"stat_c\":\"closed\"}", false);
+	SIM_ClearMQTTHistory();
+
+
+	CMD_ExecuteCommand("lfs_format", 0);
+	// send file content as POST to REST interface
+	Test_FakeHTTPClientPacket_POST("api/lfs/unitTestFile.txt", "filetext");
+	// get this file 
+	CMD_ExecuteCommand("publishFile homeassistant/cover/$mqtt_client/config unitTestFile.txt 1", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("homeassistant/cover/miscDevice/config", "filetext", false);
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("lfs_format", 0);
+	// send file content as POST to REST interface
+	Test_FakeHTTPClientPacket_POST("api/lfs/unitTestFile.txt", "My name is $mqtt_client");
+	// get this file 
+	CMD_ExecuteCommand("publishFile homeassistant/cover/$mqtt_client/config unitTestFile.txt 1", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("homeassistant/cover/miscDevice/config", "My name is miscDevice", false);
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("lfs_format", 0);
+	CMD_ExecuteCommand("SetChannel 5 123", 0);
+	// send file content as POST to REST interface
+	Test_FakeHTTPClientPacket_POST("api/lfs/unitTestFile.txt", "My name is $mqtt_client $CH5");
+	// get this file 
+	CMD_ExecuteCommand("publishFile homeassistant/cover/$mqtt_client/config unitTestFile.txt 1", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("homeassistant/cover/miscDevice/config", "My name is miscDevice 123", false);
+	SIM_ClearMQTTHistory();
+
 	CMD_ExecuteCommand("addEventHandler OnChannelChange 5 publish myMagicResult $CH5", 0);
 	// set channel 5 to 50 and see what we get
 	SIM_SendFakeMQTTAndRunSimFrame_CMND("setChannel", "5 50");
@@ -560,7 +615,31 @@ void Test_MQTT_Misc() {
 	//CMD_ExecuteCommand("publish myMagicResult \"{\\\"state\\\": \\\"$CH1\\\"}\"", 0);
 	//SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("miscDevice/myMagicResult/get", "{\"state\": \"100\"}", false);
 	//SIM_ClearMQTTHistory();
-	
+
+
+	CMD_ExecuteCommand("setChannel 4 456", 0);
+	CMD_ExecuteCommand("publishChannel 4", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_STR("miscDevice/4/get", "456", false);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/4/get", 456, false);
+	SIM_ClearMQTTHistory();
+
+	CMD_ExecuteCommand("setChannelType 4 Current_div10", 0);
+	CFG_SetFlag(OBK_FLAG_PUBLISH_MULTIPLIED_VALUES, 1);
+	CMD_ExecuteCommand("publishChannel 4", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/4/get", 45.6f, false);
+	SIM_ClearMQTTHistory();
+	CFG_SetFlag(OBK_FLAG_PUBLISH_MULTIPLIED_VALUES, 0);
+	CMD_ExecuteCommand("publishChannel 4", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/4/get", 456.0f, false);
+	SIM_ClearMQTTHistory();
+	CFG_SetFlag(OBK_FLAG_PUBLISH_MULTIPLIED_VALUES, 1);
+	CMD_ExecuteCommand("publishChannel 4", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/4/get", 45.60f, false);
+	SIM_ClearMQTTHistory();
+	CMD_ExecuteCommand("setChannelType 4 Current_div100", 0);
+	CMD_ExecuteCommand("publishChannel 4", 0);
+	SELFTEST_ASSERT_HAD_MQTT_PUBLISH_FLOAT("miscDevice/4/get", 4.560f, false);
+
 }
 void Test_MQTT_Topic_With_Slashes() {
 	SIM_ClearOBK(0);

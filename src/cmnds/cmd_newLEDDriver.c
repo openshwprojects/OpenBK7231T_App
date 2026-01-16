@@ -65,6 +65,7 @@ float g_hsv_v = 1; // 0 to 1
 // By default, colors are in 255 to 0 range, while our channels accept 0 to 100 range
 float g_cfg_colorScaleToChannel = 100.0f/255.0f;
 float g_brightness0to100 = 100.0f;
+float g_brightnessScale = 1.0f;
 float rgb_used_corr[3];   // RGB correction currently used
 // for smart dimmer, etc
 int led_defaultDimmerDeltaForHold = 10;
@@ -347,7 +348,7 @@ void LED_RunQuickColorLerp(int deltaMS) {
 	target_value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
 	if (g_lightEnableAll) {
 		if (g_lightMode == Light_Temperature) {
-			target_value_brightness = g_brightness0to100;
+			target_value_brightness = g_brightness0to100 * g_brightnessScale;
 		}
 	}
 
@@ -395,6 +396,15 @@ void LED_RunQuickColorLerp(int deltaMS) {
 	LED_I2CDriver_WriteRGBCW(led_rawLerpCurrent);
 }
 
+void LED_ResendCurrentColors() {
+	if (CFG_HasFlag(OBK_FLAG_LED_SMOOTH_TRANSITIONS)) {
+		LED_I2CDriver_WriteRGBCW(led_rawLerpCurrent);
+	}
+	else {
+		LED_I2CDriver_WriteRGBCW(finalColors);
+	}
+}
+
 
 int led_gamma_enable_channel_messages = 0;
 
@@ -402,7 +412,7 @@ float led_gamma_correction (int color, float iVal) { // apply LED gamma and RGB 
 	if ((color < 0) || (color > 4)) {
 		return iVal;
 	}
-	float brightnessNormalized0to1 = g_brightness0to100 * 0.01f;
+	float brightnessNormalized0to1 = g_brightness0to100 * 0.01f * g_brightnessScale;
 	if (CFG_HasFlag(OBK_FLAG_LED_USE_OLD_LINEAR_MODE)) {
 		return iVal * brightnessNormalized0to1;
 	}
@@ -550,7 +560,7 @@ void apply_smart_light() {
 		value_cold_or_warm = LED_GetTemperature0to1Range() * 100.0f;
 		if (g_lightEnableAll) {
 			if (g_lightMode == Light_Temperature) {
-				value_brightness = g_brightness0to100;
+				value_brightness = g_brightness0to100 * g_brightnessScale;
 			}
 		}
 	}
@@ -562,7 +572,7 @@ void apply_smart_light() {
 			finalRGBCW[i] = 0;
 		}
 		if(g_lightEnableAll) {
-			float brightnessNormalized0to1 = g_brightness0to100 * 0.01f;
+			float brightnessNormalized0to1 = g_brightness0to100 * 0.01f * g_brightnessScale;
 			for(i = 3; i < 5; i++) {
 				finalColors[i] = led_baseColors[i] * brightnessNormalized0to1;
 				finalRGBCW[i] = led_baseColors[i] * brightnessNormalized0to1;
@@ -661,7 +671,7 @@ void apply_smart_light() {
 	DRV_DGR_OnLedFinalColorsChange(baseRGBCW);
 #endif
 #if	ENABLE_DRIVER_TUYAMCU
-	TuyaMCU_OnRGBCWChange(finalColors, g_lightEnableAll, g_lightMode, g_brightness0to100*0.01f, LED_GetTemperature0to1Range());
+	TuyaMCU_OnRGBCWChange(finalColors, g_lightEnableAll, g_lightMode, g_brightness0to100*g_brightnessScale*0.01f, LED_GetTemperature0to1Range());
 #endif
 #if	ENABLE_DRIVER_SM16703P
 	if (pixel_count > 0 && (g_lightMode != Light_Anim || g_lightEnableAll == 0)) {
@@ -1548,6 +1558,15 @@ static commandResult_t lerpSpeed(const void *context, const char *cmd, const cha
 
 	return CMD_RES_OK;
 }
+static commandResult_t cmdDimmerScale(const void *context, const char *cmd, const char *args, int cmdFlags) {
+	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
+	Tokenizer_TokenizeString(args, 0);
+
+	g_brightnessScale = Tokenizer_GetArgFloat(0);
+
+	apply_smart_light();
+	return CMD_RES_OK;
+}
 static commandResult_t cmdSaveStateIfModifiedInterval(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
 	Tokenizer_TokenizeString(args, 0);
@@ -1669,6 +1688,8 @@ commandResult_t commandSetPaletteColor(const void *context, const char *cmd, con
 
 void NewLED_InitCommands(){
 	int pwmCount;
+
+	g_brightnessScale = 1.0f;
 
 	// set, but do not apply (force a refresh)
 	LED_SetTemperature(led_temperature_current,0);
@@ -1811,6 +1832,13 @@ void NewLED_InitCommands(){
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("led_saveInterval", cmdSaveStateIfModifiedInterval, NULL);
 
+	//cmddetail:{"name":"led_dimmerScale","args":"[Scale]",
+	//cmddetail:"descr":"led_dimmerScale is a simple way of decreasing LED bulbs heating. led_dimmerScale expects argument in 0-1 range. For example, if you set led_dimmerScale to 0.8, then OBK/Home Assistant dimmer at 100% will in reality translate to 80% PWM duty cycle, so LEDs will be slightly darker, but they will heat less and it will prolong LEDs life..",
+	//cmddetail:"fn":"cmdDimmerScale","file":"cmnds/cmd_newLEDDriver.c","requires":"",
+	//cmddetail:"examples":""}
+	CMD_RegisterCommand("led_dimmerScale", cmdDimmerScale, NULL);
+
+	
 	//cmddetail:{"name":"SPC","args":"[Index][RGB]",
 	//cmddetail:"descr":"Sets Palette Color by index.",
 	//cmddetail:"fn":"commandSetPaletteColor","file":"cmnds/cmd_newLEDDriver.c","requires":"",

@@ -75,8 +75,9 @@ commandResult_t CMD_ExecuteCommandArgs(const char* cmd, const char* args, int cm
 // like a strdup, but will expand constants.
 // Please remember to free the returned string
 char* CMD_ExpandingStrdup(const char* in);
+int CMD_CountVarsInString(const char *in);
 commandResult_t CMD_CreateAliasHelper(const char *alias, const char *ocmd);
-const char *CMD_ExpandConstant(const char *s, const char *stop, float *out);
+const char *CMD_ExpandConstantFloat(const char *s, const char *stop, float *out);
 byte CMD_ParseOrExpandHexByte(const char **p);
 
 enum EventCode {
@@ -97,6 +98,7 @@ enum EventCode {
 	CMD_EVENT_CHANGE_VOLTAGE, // must match order in drv_bl0942.c
 	CMD_EVENT_CHANGE_CURRENT,
 	CMD_EVENT_CHANGE_POWER,
+	CMD_EVENT_CHANGE_FREQUENCY,
 	CMD_EVENT_CHANGE_CONSUMPTION_TOTAL,
 	CMD_EVENT_CHANGE_CONSUMPTION_LAST_HOUR,
 
@@ -167,6 +169,10 @@ enum EventCode {
 	CMD_EVENT_ON_HTTP,
 
 	CMD_EVENT_ON_CMD,
+
+	CMD_EVENT_ON_DISCOVERY,
+
+	CMD_EVENT_RC,
 
 	// must be lower than 256
 	CMD_EVENT_MAX_TYPES
@@ -300,6 +306,7 @@ OBK_Publish_Result LED_SendCurrentLightModeParam_TempOrColor();
 void LED_ResetGlobalVariablesToDefaults();
 extern float led_temperature_min;
 extern float led_temperature_max;
+void LED_ResendCurrentColors();
 #endif
 
 // cmd_test.c
@@ -326,6 +333,7 @@ void SVM_RunThreads(int deltaMS);
 void CMD_InitScripting();
 void SVM_RunStartupCommandAsScript();
 byte* LFS_ReadFile(const char* fname);
+byte* LFS_ReadFileExpanding(const char* fname);
 int LFS_WriteFile(const char *fname, const byte *data, int len, bool bAppend);
 
 commandResult_t CMD_ClearAllHandlers(const void* context, const char* cmd, const char* args, int cmdFlags);
