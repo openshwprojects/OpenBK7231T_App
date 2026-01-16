@@ -417,8 +417,9 @@ void HAL_PIN_Setup_Output(int index)
 }
 
 #include "hal/hal_pwm.h"
+#include "ll/ll_pwm.h"
 
-static int g_pwmfreq[PWM_CH_MAX];
+static uint16_t g_pwm_load[PWM_CH_MAX];
 
 void HAL_PIN_PWM_Stop(int index)
 {
@@ -429,7 +430,6 @@ void HAL_PIN_PWM_Stop(int index)
 	pin->pwm_cha = -1;
 	HAL_PWM_Stop(chan);
 	g_active_pwm &= ~(1 << chan);
-	g_pwmfreq[chan] = 0;
 	HAL_SYSCON_FuncIOSet(chan + GPIO_AF_PWM0, pin->pin, 0);
 }
 
@@ -437,10 +437,31 @@ void HAL_PIN_PWM_Start(int index, int freq)
 {
 	if(index >= g_numPins) return;
 	lnPinMapping_t* pin = g_pins + index;
-	if(freq < 2000) freq = 2000;
+
+	if(freq < 1) freq = 1;
+
+	uint32_t div;
+	uint32_t load;
+
+	for(div = 0; div < 64; div++)
+	{
+		load = APBUS0_CLOCK / ((div + 1) * freq);
+		if(load > 0 && load <= 65535) break;
+	}
+
+	if(div == 64)
+	{
+		div = 63;
+		load = 65535;
+	}
+
 	if(pin->pwm_cha >= 0)
 	{
-		g_pwmfreq[pin->pwm_cha] = freq;
+		LL_PWM_Stop(pin->pwm_cha);
+		LL_PWM_Div_Set(pin->pwm_cha, div);
+		LL_PWM_Load_Set(pin->pwm_cha, load);
+		g_pwm_load[pin->pwm_cha] = load;
+		LL_PWM_Start(pin->pwm_cha);
 		return;
 	}
 	uint8_t freecha;
@@ -448,37 +469,33 @@ void HAL_PIN_PWM_Start(int index, int freq)
 
 	g_active_pwm |= 1 << freecha;
 	pin->pwm_cha = freecha;
-	g_pwmfreq[pin->pwm_cha] = freq;
+	g_pwm_load[freecha] = load;
 
-	HAL_SYSCON_FuncIOSet(pin->pwm_cha + GPIO_AF_PWM0, pin->pin, 1);
+	HAL_SYSCON_FuncIOSet(freecha + GPIO_AF_PWM0, pin->pin, 1);
 
-	HAL_PWM_Stop(pin->pwm_cha);
-	uint32_t load_val = APBUS0_CLOCK / freq;
-	if(load_val == 0) load_val = 1;
-	uint32_t cmp_val = 1;
-	if(cmp_val >= load_val) cmp_val = load_val - 1;
-	LL_PWM_Load_Set(pin->pwm_cha, (uint16_t)load_val);
-	LL_PWM_Compare_Set(pin->pwm_cha, (uint16_t)cmp_val);
-	HAL_PWM_CntModeSet(pin->pwm_cha, PWM_COUNT_MOD_UP);
-	HAL_PWM_Start(pin->pwm_cha);
+	LL_PWM_Stop(freecha);
+	LL_PWM_Div_Set(freecha, div);
+	LL_PWM_Load_Set(freecha, load);
+	uint16_t cmp = (load > 1) ? 1 : 0;
+	LL_PWM_Compare_Set(freecha, cmp);
+	LL_PWM_CntMode_Set(freecha, 0);
+	LL_PWM_Start(freecha);
 }
 
 void HAL_PIN_PWM_Update(int index, float value)
 {
 	if(index >= g_numPins) return;
 	lnPinMapping_t* pin = g_pins + index;
-	if(pin->pwm_cha < 0 || g_pwmfreq[pin->pwm_cha] <= 0) return;
+	if(pin->pwm_cha < 0) return;
 	if(value < 0) value = 0;
 	if(value > 100) value = 100;
-	uint32_t freq = g_pwmfreq[pin->pwm_cha];
-	uint32_t load_val = APBUS0_CLOCK / freq;
-	if(load_val == 0) load_val = 1;
-	uint32_t cmp_val = (uint32_t)(load_val * value / 100.0f + 0.5f);
-	if(cmp_val == 0 && value > 0) cmp_val = 1;
-	if(cmp_val >= load_val) cmp_val = load_val - 1;
-	HAL_PWM_Stop(pin->pwm_cha);
-	LL_PWM_Compare_Set(pin->pwm_cha, (uint16_t)cmp_val);
-	HAL_PWM_Start(pin->pwm_cha);
+	value = 100 - value;
+
+	uint32_t cmp = (uint32_t)(g_pwm_load[pin->pwm_cha] * value / 100.0f);
+
+	if(cmp == 0 && value > 0) cmp = 1;
+	if(cmp >= g_pwm_load[pin->pwm_cha]) cmp = g_pwm_load[pin->pwm_cha] - 1;
+	LL_PWM_Compare_Set(pin->pwm_cha, (uint16_t)cmp);
 }
 
 void GPIO_IRQHandler()

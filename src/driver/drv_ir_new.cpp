@@ -53,6 +53,7 @@ typedef enum
 #define UINT32 uint32_t
 #elif PLATFORM_LN8825
 #include "hal/hal_timer.h"
+#include "hal/hal_sleep.h"
 #define delay_ms OS_MsDelay
 #define UINT32 uint32_t
 #endif
@@ -180,7 +181,7 @@ extern "C" void TIMER0_IRQHandler()
 	}
 }
 #elif PLATFORM_LN8825
-static TIMER_Index ir_chan = TIMER_1;
+static TIMER_Index ir_chan = TIMER_2;
 #endif
 static UINT32 ir_periodus = 50;
 
@@ -258,13 +259,16 @@ void _timerConfigForReceive() {
 
 	hwtimer_cfg.index = ir_chan;
 	hwtimer_cfg.mask = TIMER_MASKED_NO;
-	hwtimer_cfg.mode = TIMER_MODE_FREERUNNING;
+	hwtimer_cfg.mode = TIMER_MODE_USERDEFINED;
 	hwtimer_cfg.user_freq = 1000 * 1000;
 	hwtimer_cfg.timer_cb.cb_func = (timer_cb_func_t)DRV_IR_ISR;
 	hwtimer_cfg.timer_cb.arg = NULL;
 
 	HAL_TIMER_Init(&hwtimer_cfg);
-	HAL_TIMER_LoadCount_Set((TIMER_Index)hwtimer_cfg.index, (hwtimer_cfg.user_freq / 1000000) * ir_periodus);
+	HAL_TIMER_LoadCount_Set(ir_chan, (hwtimer_cfg.user_freq / 1000000) * ir_periodus);
+	hal_sleep_register((hal_peripheral_module_t)(14 + ir_chan), NULL, NULL, NULL);
+	HAL_TIMER_Enable(ir_chan, TIMER_DISABLE);
+	NVIC_EnableIRQ(TIMER_IRQn);
 #endif
 }
 
@@ -284,7 +288,6 @@ static void _timer_enable() {
 	hal_tim_en(ir_chan, HAL_ENABLE);
 	hal_tim_it_cfg(ir_chan, TIM_IT_FLAG_ACTIVE, HAL_ENABLE);
 #elif PLATFORM_LN8825
-	NVIC_EnableIRQ(TIMER_IRQn);
 	HAL_TIMER_Enable(ir_chan, TIMER_ENABLE);
 #endif
 	ADDLOG_INFO(LOG_FEATURE_IR, (char *)"ir timer enabled %u", res);
