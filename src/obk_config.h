@@ -628,5 +628,9 @@
 // #define ENABLE_BL_MOVINGAVG					1
 #endif
 
+// for testing add for all platforms!
+#define ENABLE_TEST_COMMANDS					1
+
+
 // closing OBK_CONFIG_H
 #endif
