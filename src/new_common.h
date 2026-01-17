@@ -999,6 +999,7 @@ char *strdup(const char *s);
 const char* skipToNextWord(const char* p);
 void stripDecimalPlaces(char *p, int maxDecimalPlaces);
 int wal_stricmp(const char *a, const char *b);
+char *wal_stristr(const char *haystack, const char *needle);
 int wal_strnicmp(const char *a, const char *b, int count);
 int strcat_safe(char *tg, const char *src, int tgMaxLen);
 int strcpy_safe(char *tg, const char *src, int tgMaxLen);

@@ -299,6 +299,14 @@ int wal_strnicmp(const char* a, const char* b, int count) {
 	return ca - cb;
 }
 
+char *wal_stristr(const char *haystack, const char *needle) {
+    size_t nlen = strlen(needle);
+    for (; *haystack; haystack++) {
+        if (wal_strnicmp(haystack, needle, nlen) == 0) return (char *)haystack;
+    }
+    return NULL;
+}
+
 const char* skipToNextWord(const char* p) {
 	while (isWhiteSpace(*p) == false) {
 		if (*p == 0)
