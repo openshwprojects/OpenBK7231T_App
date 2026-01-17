@@ -558,11 +558,13 @@ int CMD_InitTestCommands(){
 	//cmddetail:"fn":"CMD_TimeSize","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("TimeSize", CMD_TimeSize, NULL);
+#ifndef PLATFORM_ESPIDF
 	//cmddetail:{"name":"stackOverflow","args":"",
 	//cmddetail:"descr":"Causes a stack overflow",
 	//cmddetail:"fn":"CMD_StackOverflow","file":"cmnds/cmd_test.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("stackOverflow", CMD_StackOverflow, NULL);
+#endif
 	//cmddetail:{"name":"crashNull","args":"",
 	//cmddetail:"descr":"Causes a crash",
 	//cmddetail:"fn":"CMD_CrashNull","file":"cmnds/cmd_test.c","requires":"",
