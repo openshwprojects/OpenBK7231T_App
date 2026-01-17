@@ -355,6 +355,8 @@ static commandResult_t cmnd_lfs_test3(const void * context, const char *cmd, con
 	}
 	return CMD_RES_OK;
 }
+// ESP will refuse compilation ( error: infinite recursion detected [-Werror=infinite-recursion])
+#ifndef PLATFORM_ESPIDF
 static void stackOverflow(int a) {
 	char lala[64];
 	int i;
@@ -371,6 +373,7 @@ static commandResult_t CMD_StackOverflow(const void* context, const char* cmd, c
 
 	return CMD_RES_OK;
 }
+#endif
 static commandResult_t CMD_CrashNull(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int *p = (int*)0;
 
