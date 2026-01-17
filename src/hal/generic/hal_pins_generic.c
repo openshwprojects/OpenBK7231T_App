@@ -115,6 +115,9 @@ int HAL_PIN_Find(const char *name) {
 
 #endif
 
+// WINDOWS doesn't seem to like theese weak functions ... 
+#if !WINDOWS
+
 int __attribute__((weak)) PIN_GetPWMIndexForPinIndex(int pin)
 {
 	return -1;
@@ -188,3 +191,4 @@ void __attribute__((weak)) HAL_DetachInterrupt(int pinIndex)
 {
 
 }
+#endif // #if !WINDOWS
