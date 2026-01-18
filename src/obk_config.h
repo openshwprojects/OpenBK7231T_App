@@ -4,6 +4,8 @@
 #ifndef OBK_CONFIG_H
 #define OBK_CONFIG_H
 
+#define ENABLE_DRIVER_BLE 1
+#define ENABLE_BLE_BEACON 1
 #define OBK_VARIANT_DEFAULT						0
 #define OBK_VARIANT_BERRY						1
 #define OBK_VARIANT_TUYAMCU						2
