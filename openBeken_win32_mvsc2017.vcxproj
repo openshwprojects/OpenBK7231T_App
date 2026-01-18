@@ -371,7 +371,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\hal\win32\hal_adc_win32.c" />
-    <ClCompile Include="src\hal\generic\hal_pins_generic.c" />
     <ClCompile Include="src\hal\win32\hal_flashConfig_win32.c" />
     <ClCompile Include="src\hal\win32\hal_flashVars_win32.c" />
     <ClCompile Include="src\hal\win32\hal_generic_win32.c" />

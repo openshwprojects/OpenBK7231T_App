@@ -210,14 +210,17 @@ int Tokenizer_GetArgIntegerRange(int i, int rangeMin, int rangeMax) {
 	}
 	return ret;
 }
+
 int Tokenizer_GetPin(int i, int def) {
 	int r;
 
 	if (g_numArgs <= i) {
 		return def;
 	}
-	return HAL_PIN_Find(g_args[i]);
+//	return HAL_PIN_Find(g_args[i]);
+	return Tokenizer_IsArgInteger(i) ? Tokenizer_GetArgInteger(i) : PIN_FindIndexFromString(g_args[i]);
 }
+
 int Tokenizer_GetArgIntegerDefault(int i, int def) {
 	int r;
 

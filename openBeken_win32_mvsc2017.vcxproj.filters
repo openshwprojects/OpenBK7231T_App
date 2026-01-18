@@ -107,7 +107,6 @@
     <ClCompile Include="src\hal\w800\hal_pins_w800.c" />
     <ClCompile Include="src\hal\w800\hal_wifi_w800.c" />
     <ClCompile Include="src\hal\win32\hal_adc_win32.c" />
-    <ClCompile Include="src\hal\generic\hal_pins_generic.c" />
     <ClCompile Include="src\hal\win32\hal_flashConfig_win32.c" />
     <ClCompile Include="src\hal\win32\hal_flashVars_win32.c" />
     <ClCompile Include="src\hal\win32\hal_generic_win32.c" />

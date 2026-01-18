@@ -1665,4 +1665,9 @@ float XJ_MovingAverage_float(float aprevvalue, float aactvalue);
 int XJ_MovingAverage_int(int aprevvalue, int aactvalue);
 #endif
 
+// Find index of a pin from string.
+// Either a number or an alias for a pin.
+// used e.g. for Tokenizer_GetPin()
+int PIN_FindIndexFromString(const char *name);
+
 #endif

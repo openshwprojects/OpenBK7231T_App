@@ -43,18 +43,18 @@ const char *HAL_PIN_GetPinNameAlias(int index) {
 }
 
 */
-	printf("################################################################# Start Selftest HAL_Pin_Find() #################################################################\r\n");
-	SELFTEST_ASSERT_INTCOMPARE(HAL_PIN_Find("TXD1"), 11);
-	SELFTEST_ASSERT_INTCOMPARE(HAL_PIN_Find("ADC3"),23);
-	SELFTEST_ASSERT_INTCOMPARE(HAL_PIN_Find("Test13"),13);
-	SELFTEST_ASSERT_INTCOMPARE(HAL_PIN_Find("X13"),15);
-	SELFTEST_ASSERT_INTCOMPARE(HAL_PIN_Find("RX13"),15);
-	SELFTEST_ASSERT_INTCOMPARE(HAL_PIN_Find("RRX13"),13);
-	SELFTEST_ASSERT_INTCOMPARE(HAL_PIN_Find("XX13"),13);
-	SELFTEST_ASSERT_INTCOMPARE(HAL_PIN_Find("IO14"),14);
-	SELFTEST_ASSERT_INTCOMPARE(HAL_PIN_Find("RX14"),14);
-	SELFTEST_ASSERT_INTCOMPARE(HAL_PIN_Find("TDX2"),-1);
-	printf("################################################################## End Selftest HAL_Pin_Find() ##################################################################\r\n");
+	printf("################################################################# Start Selftest PIN_FindIndexFromString() #################################################################\r\n");
+	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("TXD1"), 11);
+	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("ADC3"),23);
+	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("Test13"),13);
+	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("X13"),15);
+	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("RX13"),15);
+	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("RRX13"),13);
+	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("XX13"),13);
+	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("IO14"),14);
+	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("RX14"),14);
+	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("TDX2"),-1);
+	printf("################################################################## End Selftest PIN_FindIndexFromString() ##################################################################\r\n");
 }
 
 #endif

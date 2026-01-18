@@ -2748,6 +2748,78 @@ int XJ_MovingAverage_int(int aprevvalue, int aactvalue) {
 }
 #endif
 
+
+// use "complete" search as default, only "simple" one for these platforms
+#if !(PLATFORM_LN882H || PLATFORM_W800 || PLATFORM_TXW81X || (PLATFORM_ESPIDF && ! CONFIG_IDF_TARGET_ESP32C3))
+// start helpers for finding (su-)string in pinalias
+
+// code to find a pin index by name
+// we migth have "complex" or alternate names like
+// "IO0/A0" or even "IO2 (B2/TX1)" and would like all to match
+// so we need to make sure the substring is found an propperly "terminated"
+// by '\0', '/' , '(', ')' or ' '
+
+
+// Define valid start and end characters for a string (e.g. for "(RX1/IO10)" we would need "()/"
+int is_valid_start_end(char ch) {
+    // Check if character is in defined terminators
+    return strchr(" ()/\0", ch) != NULL;
+}
+
+// new version, case insensitive, use 
+// wal_stricmp() and (new introduced) wal_stristr()
+// from new_common.c
+int str_match_in_alias(const char* alias, const char* str) {
+    size_t alen = strlen(alias), slen = strlen(str);
+
+    if (slen > alen) return 0; // No match
+
+    // found at start of alisa, no test for a valid "start" 
+    if (wal_strnicmp(alias, str, slen) == 0) {
+        return (slen == alen || is_valid_start_end(alias[slen]));
+    }
+
+    // not at start, so found-1 is a valid position in string
+    for (char *found = wal_stristr(alias + 1, str); found; found = wal_stristr(found + 1, str)) {
+    
+        if (is_valid_start_end(*(found - 1)) && (is_valid_start_end(found[slen]) || found[slen] == '\0')) {
+            return 1; // Match found
+        }
+    }
+
+    return 0; // No match
+}
+
+// END helpers
+
+int PIN_FindIndexFromString(const char *name) {
+	if (strIsInteger(name)) {
+		return atoi(name);
+	}
+	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (str_match_in_alias(HAL_PIN_GetPinNameAlias(i), name)) {
+			return i;
+		}
+	}
+	return -1;
+}
+#else
+int PIN_FindIndexFromString(const char *name) {
+	if (strIsInteger(name)) {
+		return atoi(name);
+	}
+	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (!stricmp(HAL_PIN_GetPinNameAlias(i), name)) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+#endif
+
+
+
 void PIN_AddCommands(void)
 {
 	//cmddetail:{"name":"showgpi","args":"NULL",
