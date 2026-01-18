@@ -661,9 +661,10 @@ commandResult_t CMD_DS18B20_setsensor(const void *context, const char *cmd, cons
 	}
 
 	const char *dev = Tokenizer_GetArg(0);
-	int gpio = Tokenizer_IsArgInteger(1) ? Tokenizer_GetArgInteger(1) : HAL_PIN_Find(Tokenizer_GetArg(1));
+//	int gpio = Tokenizer_IsArgInteger(1) ? Tokenizer_GetArgInteger(1) : HAL_PIN_Find(Tokenizer_GetArg(1));
+	int gpio = Tokenizer_GetPin(1,-1);
 	if (gpio < 0) {
-		DS1820_LOG(ERROR, "DS18B20_setsensor: failed to find GPIO for '%s' (as int: %i)",Tokenizer_GetArg(1),gpio);
+		DS1820_LOG(ERROR, "DS18B20_setsensor: failed to find GPIO for '%s' (returned index: %i)",Tokenizer_GetArg(1),gpio);
 		return CMD_RES_ERROR;
 	}
 	const char *name = Tokenizer_GetArg(2);

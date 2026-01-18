@@ -17,7 +17,7 @@
 static commandResult_t CMD_getPin(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args,0);
 	
-	ADDLOG_INFO(LOG_FEATURE_CMD, "Pin index for %s is %i", Tokenizer_GetArg(0), HAL_PIN_Find(Tokenizer_GetArg(0)));
+	ADDLOG_INFO(LOG_FEATURE_CMD, "Pin index for %s is %i", Tokenizer_GetArg(0), Tokenizer_GetPin(0,-1));
 	return CMD_RES_OK;
 }
 static commandResult_t CMD_TimeSize(const void* context, const char* cmd, const char* args, int cmdFlags) {
