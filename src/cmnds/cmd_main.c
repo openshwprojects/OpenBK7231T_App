@@ -630,6 +630,54 @@ static commandResult_t CMD_OpenAP(const void* context, const char* cmd, const ch
 
 	return CMD_RES_OK;
 }
+#if ENABLE_WPA_AP
+static commandResult_t CMD_WPA_AP(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+	if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2))
+	{
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	char *ssid = Tokenizer_GetArg(0);
+	char *pw = Tokenizer_GetArg(1);
+		
+	HAL_AP_Wifi_Channel = (uint8_t)Tokenizer_GetArgIntegerDefault(2,1);
+	snprintf(g_HAL_AP_Wifi_SSID, sizeof(g_HAL_AP_Wifi_SSID), "%s", ssid);
+	g_AccessPointMode = 2;	// make sure, we don't try to connect as STA client!
+	HAL_DisconnectFromWifi();
+	HAL_SetupWiFiAccessPoint(ssid, pw);	
+/*
+
+	uint8_t argnum=Tokenizer_GetArgsCount();
+	const char* arg;
+	const char* search=NULL;
+	uint8_t chan = 1;
+	uint8_t mac_clients = WPA_AP_STA_CLIENTS;
+	
+	
+	if (argnum > 2){
+		for (int i=2; i<=argnum; i++) {
+			arg = Tokenizer_GetArg(i);
+			ADDLOG_INFO(LOG_FEATURE_DRV,"WPA_AP: argument %i/%i is %s",i,argnum,arg);		
+			search=strstr(arg, "chan=");
+			if ( arg && search ) {
+				search += 5;
+				chan = atoi(search);
+				ADDLOG_INFO(LOG_FEATURE_DRV,"WPA_AP: chan=%i",chan);
+			} 
+			search=NULL;
+			search=strstr(arg, "maxclients=");
+			if ( arg && search ) {
+				search += 11;
+				max_clients = atoi(search);
+				ADDLOG_INFO(LOG_FEATURE_DRV,"WPA_AP: max_clients=%i",chan);
+			} 
+
+		}
+	}
+*/
+	return CMD_RES_OK;
+}
+#endif
 static commandResult_t CMD_SafeMode(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	int i;
 	int startSaveModeIn;
@@ -1069,6 +1117,13 @@ void CMD_Init_Early() {
 	//cmddetail:"fn":"CMD_OpenAP","file":"cmnds/cmd_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("OpenAP", CMD_OpenAP, NULL);
+#if ENABLE_WPA_AP
+	//cmddetail:{"name":"WPA_AP","args":"<ssid> <password> <optional channel - default 1>",
+	//cmddetail:"descr":"Disconnects from programmed WiFi network and opens an WPA2 Access Point",
+	//cmddetail:"fn":"CMD_WPA_AP","file":"cmnds/cmd_main.c","requires":"",
+	//cmddetail:"examples":"WPA_AP OBK_AP obkOBKobk 12"}
+	CMD_RegisterCommand("WPA_AP", CMD_WPA_AP, NULL);
+#endif
 	//cmddetail:{"name":"DSEdge","args":"[edgeCode][optionalPinIndex]",
 	//cmddetail:"descr":"DeepSleep (PinDeepSleep) wake configuration command. 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2. Second argument is optional and allows to set per-pin DSEdge instead of setting it for all pins.",
 	//cmddetail:"fn":"CMD_DeepSleep_SetEdge","file":"cmnds/cmd_main.c","requires":"",

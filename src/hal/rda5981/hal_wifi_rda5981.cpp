@@ -11,19 +11,26 @@ extern "C" {
 #include "../../logging/logging.h"
 #include "../../new_cfg.h"
 #undef connect
-bool g_bOpenAccessPointMode = 0;
+
+// is (Open-) Access point or a client?
+// included as "extern uint8_t g_AccessPointMode;" from new_common.h
+// initilized in user_main.c
+// values:	0 = STA	1 = OpenAP	2 = WAP-AP
+// bool g_AccessPointMode = 0;
+
+
 static void (*g_wifiStatusCallback)(int code);
 extern struct netif lwip_sta_netif;
 extern uint8_t macaddr[6];
 
 const char* HAL_GetMyIPString()
 {
-	return g_bOpenAccessPointMode ? wifi.get_ip_address_ap() : wifi.get_ip_address();
+	return g_AccessPointMode ? wifi.get_ip_address_ap() : wifi.get_ip_address();
 }
 
 const char* HAL_GetMyGatewayString()
 {
-	return g_bOpenAccessPointMode ? wifi.get_gateway_ap() : wifi.get_gateway();
+	return g_AccessPointMode ? wifi.get_gateway_ap() : wifi.get_gateway();
 }
 
 const char* HAL_GetMyDNSString()
@@ -33,7 +40,7 @@ const char* HAL_GetMyDNSString()
 
 const char* HAL_GetMyMaskString()
 {
-	return g_bOpenAccessPointMode ? wifi.get_netmask_ap() : wifi.get_netmask();
+	return g_AccessPointMode ? wifi.get_netmask_ap() : wifi.get_netmask();
 }
 
 void WiFI_GetMacAddress(char* mac)
@@ -65,7 +72,7 @@ void HAL_PrintNetworkInfo()
 	uint8_t mac[6];
 	WiFI_GetMacAddress((char*)mac);
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------- net device info ------------+\r\n");
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_bOpenAccessPointMode == 0 ? "STA" : "AP");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_AccessPointMode == 0 ? "STA" : "AP");
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif rssi    = %-16i            |\r\n", HAL_GetWifiStrength());
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |\r\n", HAL_GetMyIPString());
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |\r\n", HAL_GetMyMaskString());
@@ -128,11 +135,26 @@ void HAL_DisconnectFromWifi()
 	wifi.disconnect();
 }
 
+int HAL_SetupWiFiAccessPoint(const char* ssid, const char *key)
+{
+// set in user_main - included as "extern"
+//	g_AccessPointMode = 1;
+	char dhcpend[16]={0};	//4 * up to 3 digits (=12) + 3 "." (=15) + "\0" --> 16
+#ifndef WPA_AP_STA_CLIENTS
+#define WPA_AP_STA_CLIENTS 1
+#endif
+	sprintf(dhcpend,"192.168.4.%i",2 + WPA_AP_STA_CLIENTS);
+	
+	wifi.set_network_ap("192.168.4.1", "255.255.255.0", "192.168.4.1", "192.168.4.2", "192.168.4.254");
+	wifi.start_ap(ssid, key, HAL_AP_Wifi_Channel);
+	return 0;
+}
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
-	g_bOpenAccessPointMode = 1;
+// set in user_main - included as "extern"
+//	g_AccessPointMode = 1;
 	wifi.set_network_ap("192.168.4.1", "255.255.255.0", "192.168.4.1", "192.168.4.2", "192.168.4.254");
-	wifi.start_ap(ssid, "", 1);
+	wifi.start_ap(ssid, "", HAL_AP_Wifi_Channel);
 	return 0;
 }
 

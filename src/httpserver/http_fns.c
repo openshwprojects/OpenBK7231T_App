@@ -945,6 +945,11 @@ int http_fn_index(http_request_t* request) {
 		}
 	}
 #endif
+#if ENABLE_WPA_AP
+	if (g_AccessPointMode == 2) {
+		hprintf255(request, "<h5>Wifi: WPA-AP \"%s\"</h5>", g_HAL_AP_Wifi_SSID);
+	} else
+#endif
 	if (Main_HasWiFiConnected())
 	{
 		int rssi = HAL_GetWifiStrength();
@@ -1563,6 +1568,15 @@ int http_fn_cfg_wifi(http_request_t* request) {
 <input type=\"hidden\" id=\"open\" name=\"open\" value=\"1\">\
 <input type=\"submit\" value=\"Convert to Open Access WiFi\" onclick=\"return confirm('Are you sure you want to switch to open access WiFi?')\">\
 </form>");
+#if ENABLE_WPA_AP
+	poststr_h2(request, "Start a (WPA2 based) WiFi Accesspoint");
+	poststr(request, "<form action=\"/cfg_wifi_set\"  onsubmit=\"txt='';ts=this.SSIDAP.value;tp=this.PWAP.value;(ts.length<1)&&(txt='SSID is empty!');(tp.length<8)&&(txt+=' Password is less than 8 chars!'); if (txt != ''){alert(txt); return false}  else   return confirm('Are you sure to convert module to access point with \\nSSID='+ts+' \\nPW='+tp+' \\n?\\n\\nThis is non permanent - after a reboot actual state is restored!')\" >\
+<input type=\"hidden\" name=\"WPA-AP\" value=\"1\">\
+<label>APs SSID:<br><input name=\"SSIDAP\"><label>\
+<label>APs passphrase:<br><input name=\"PWAP\"><label>\
+<input type=\"submit\" value=\"Convert to access point with the above data\">\
+</form>");
+#endif
 	poststr_h2(request, "Use this to connect to your WiFi");
 	add_label_text_field(request, "SSID", "ssid", CFG_GetWiFiSSID(), "<form action=\"/cfg_wifi_set\">");
 	add_label_password_field(request, "", "pass", CFG_GetWiFiPass(), "<br>Password<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears existing)</span>");
@@ -1631,6 +1645,9 @@ int http_fn_cfg_name(http_request_t* request) {
 int http_fn_cfg_wifi_set(http_request_t* request) {
 	char tmpA[128];
 	int bChanged;
+#if ENABLE_WPA_AP
+	char ssid[32],pw[32];
+#endif
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HTTP_ProcessPacket: generating cfg_wifi_set \r\n");
 	bChanged = 0;
@@ -1642,6 +1659,30 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 		bChanged |= CFG_SetWiFiPass("");
 		poststr(request, "WiFi mode set: open access point.");
 	}
+#if ENABLE_WPA_AP
+	else if (http_getArg(request->url, "WPA-AP", tmpA, sizeof(tmpA))) {
+		if (http_getArg(request->url, "SSIDAP", tmpA, sizeof(tmpA))) {
+			strcpy(ssid,tmpA);
+	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "WPA-AP: ssid=%s \r\n",ssid);
+		}
+		if (http_getArg(request->url, "PWAP", tmpA, sizeof(tmpA))) {
+			strcpy(pw,tmpA);
+	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "WPA-AP: PW=%s \r\n",pw);
+		}
+		poststr(request, "WiFi mode set to access point.");
+		if (ssid[0] !=0 && pw[0] != 0 && strlen(pw) >7 ){ 
+			// is (Open-) Access point or a client?
+			// included as "extern uint8_t g_AccessPointMode;" from new_common.h
+			// initilized in user_main.c
+			// values:     0 = STA 1 = OpenAP      2 = WAP-AP
+			g_AccessPointMode = 2;	// make sure, we don't try to connect as STA client!
+			HAL_DisconnectFromWifi();
+			strncpy(g_HAL_AP_Wifi_SSID, ssid, sizeof(g_HAL_AP_Wifi_SSID)-1);
+			g_HAL_AP_Wifi_SSID[sizeof(g_HAL_AP_Wifi_SSID) - 1] = '\0'; // just to ensure null-termination
+			HAL_SetupWiFiAccessPoint(ssid, pw);
+		}
+	}
+#endif
 	else {
 		if (http_getArg(request->url, "ssid", tmpA, sizeof(tmpA))) {
 			bChanged |= CFG_SetWiFiSSID(tmpA);

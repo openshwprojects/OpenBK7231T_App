@@ -78,9 +78,35 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
 
     wifi_interface = wifi_mgmr_ap_enable();
     /*no password when only one param*/
-    wifi_mgmr_ap_start(wifi_interface, (char*)ssid, hidden_ssid, NULL, 1);
+    
+    wifi_mgmr_ap_start(wifi_interface, (char*)ssid, hidden_ssid, NULL, HAL_AP_Wifi_Channel);
 
-	g_bAccessPointMode = 1;
+// set in user_main - included as "extern"
+//	g_AccessPointMode = 1;
+
+	return 0;
+}
+int HAL_SetupWiFiAccessPoint(const char *ssid, const char *key) {
+
+	uint8_t hidden_ssid = 0;
+	//int channel;
+
+	if ( key && strlen(key) < 8){
+		printf("ERROR! key(%s) needs to be at least 8 characters!\r\n", key);
+		if (g_wifiStatusCallback != 0) {
+			g_wifiStatusCallback(WIFI_AP_FAILED);
+		}
+		return -1;
+	}
+	wifi_mgmr_sta_disconnect();
+	wifi_interface_t wifi_interface={0};
+	wifi_mgmr_sta_autoconnect_disable();
+	wifi_mgmr_sta_disable(wifi_interface);		// needs interface, but won't use it, so we can use local var here ...
+	//struct netif *net;
+	wifi_interface = wifi_mgmr_ap_enable();
+	wifi_mgmr_ap_start(wifi_interface, (char*)ssid, hidden_ssid, key, HAL_AP_Wifi_Channel);
+// set in user_main - included as "extern"
+//	g_AccessPointMode = 0;
 
 	return 0;
 }
@@ -260,7 +286,7 @@ const char *HAL_GetMyIPString()
     uint32_t gw;
     uint32_t mask;
 
-    if(g_bAccessPointMode == 1)
+    if(g_bAccessPointMode != 0)
     {
         wifi_mgmr_ap_ip_get(&ip, &gw, &mask);
     }
@@ -285,7 +311,7 @@ const char* HAL_GetMyDNSString()
     uint32_t dns1;
     uint32_t dns2;
 
-    if(g_bAccessPointMode == 1)
+    if(g_bAccessPointMode != 0)
     {
         return "none";
     }
@@ -307,7 +333,7 @@ void WiFI_GetMacAddress(char *mac) {
 }
 const char *HAL_GetMACStr(char *macstr) {
 	uint8_t mac[6];
-	if(g_bAccessPointMode == 1) {
+	if(g_AccessPointMode != 0) {
 		wifi_mgmr_ap_mac_get(mac);
 	} else {
 		wifi_mgmr_sta_mac_get(mac);
