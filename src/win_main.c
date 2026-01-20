@@ -291,6 +291,7 @@ void Win_DoUnitTests()
 	Test_LFS();
 	Test_Scripting();
 	Test_Tokenizer();
+	Test_Pins();
 	Test_Http();
 	Test_Http_LED();
 	Test_DeviceGroups();

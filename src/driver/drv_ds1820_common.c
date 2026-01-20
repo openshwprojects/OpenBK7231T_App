@@ -214,7 +214,9 @@ commandResult_t CMD_OW_testus(const void *context, const char *cmd, const char *
    }
 #define MAXUSTESTS 10
    int testvals[MAXUSTESTS];
-   int pin = Tokenizer_GetArgInteger(0);
+//   int pin = Tokenizer_GetArgInteger(0);
+   int pin = Tokenizer_GetPin(0,-1);
+   if (pin==-1) return CMD_RES_BAD_ARGUMENT;
    int pause = Tokenizer_GetArgInteger(1);
    if (tests > MAXUSTESTS){
       tests = MAXUSTESTS;
