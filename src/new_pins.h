@@ -1128,7 +1128,7 @@ typedef enum channelType_e {
 #define PLATFORM_GPIO_MAX 17
 #elif PLATFORM_W800
 #define PLATFORM_GPIO_MAX 44
-#elif PLATFORM_LN882H
+#elif PLATFORM_LN882H || PLATFORM_LN8825
 #define PLATFORM_GPIO_MAX 26
 #elif PLATFORM_ESPIDF
 #ifdef CONFIG_IDF_TARGET_ESP32C3
@@ -1666,5 +1666,10 @@ void FV_UpdateStartupSSIDIfChanged_StoredValue(int assidindex);
 float XJ_MovingAverage_float(float aprevvalue, float aactvalue);
 int XJ_MovingAverage_int(int aprevvalue, int aactvalue);
 #endif
+
+// Find index of a pin from string.
+// Either a number or an alias for a pin.
+// used e.g. for Tokenizer_GetPin()
+int PIN_FindIndexFromString(const char *name);
 
 #endif

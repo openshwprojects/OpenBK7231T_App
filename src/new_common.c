@@ -29,7 +29,9 @@ const char *str_rssi[] = { "N/A", "Weak", "Fair", "Good", "Excellent" };
 #ifdef WRAP_PRINTF
 #define vsnprintf3 __wrap_vsnprintf
 #define snprintf3 __wrap_snprintf
+#if !PLATFORM_LN8825
 #define sprintf3 __wrap_sprintf
+#endif
 #define vsprintf3 __wrap_vsprintf
 #endif
 
@@ -297,6 +299,14 @@ int wal_strnicmp(const char* a, const char* b, int count) {
 		count--;
 	} while ((ca == cb) && (ca != '\0') && (count > 0));
 	return ca - cb;
+}
+
+char *wal_stristr(const char *haystack, const char *needle) {
+    size_t nlen = strlen(needle);
+    for (; *haystack; haystack++) {
+        if (wal_strnicmp(haystack, needle, nlen) == 0) return (char *)haystack;
+    }
+    return NULL;
 }
 
 const char* skipToNextWord(const char* p) {

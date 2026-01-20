@@ -38,10 +38,6 @@ static int adcToGpio[] = {
 };
 static int c_adcToGpio = sizeof(adcToGpio)/sizeof(adcToGpio[0]);
 
-int HAL_PIN_Find(const char *name) {
-	return atoi(name); 
-}
-
 static int gpioToAdc(int gpio) {
 	int i;
 	for (i = 0; i < c_adcToGpio; i++) {
@@ -177,6 +173,16 @@ const char *HAL_PIN_GetPinNameAlias(int index) {
 		return "RXD1";
 	if (index == 11)
 		return "TXD1";
+/*
+//######################### START TESTING PIN_Find only #########################
+	if (index == 13)
+		return "IO13/Test13/RRX13 XX13 15T";
+	if (index == 15)
+		return "IO15 151 X13(RX13)";
+	if (index == 14)
+		return "IO14 Test14 (X14/RX14/XX14)";
+//#########################' END TESTING PIN_Find only #'########################
+*/
 	return "N/A";
 }
 

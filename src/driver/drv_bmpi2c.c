@@ -123,8 +123,10 @@ void BMPI2C_Measure()
 // Adr8bit 0 for 0x77, 1 for 0x76
 void BMPI2C_Init()
 {
-	g_softI2C.pin_clk = Tokenizer_GetArgIntegerDefault(1, 8);
-	g_softI2C.pin_data = Tokenizer_GetArgIntegerDefault(2, 14);
+//	g_softI2C.pin_clk = Tokenizer_GetArgIntegerDefault(1, 8);
+//	g_softI2C.pin_data = Tokenizer_GetArgIntegerDefault(2, 14);
+	g_softI2C.pin_clk = Tokenizer_GetPin(1, 8);
+	g_softI2C.pin_data = Tokenizer_GetPin(2, 14);
 	g_targetChannelTemperature = Tokenizer_GetArgIntegerDefault(3, -1);
 	g_targetChannelPressure = Tokenizer_GetArgIntegerDefault(4, -1);
 	g_targetChannelHumidity = Tokenizer_GetArgIntegerDefault(5, -1);

@@ -28,6 +28,12 @@ int cmd_uartInitIndex = 0;
 #elif PLATFORM_LN882H
 #include <wifi.h>
 #include <power_mgmt/ln_pm.h>
+#elif PLATFORM_LN8825
+#include <wifi.h>
+#include <hal/hal_sleep.h>
+#define wifi_sta_set_powersave wifi_station_set_powersave
+#define ln_pm_sleep_mode_set hal_sleep_set_mode
+#define sysparam_sta_powersave_update(x)
 #elif PLATFORM_ESPIDF || PLATFORM_ESP8266
 #include "esp_wifi.h"
 #include "esp_sleep.h"
@@ -95,7 +101,7 @@ static int generateHashValue(const char* fname) {
 command_t* g_commands[HASH_SIZE] = { NULL };
 bool g_powersave;
 
-#if defined(PLATFORM_LN882H)
+#if defined(PLATFORM_LN882H) || PLATFORM_LN8825
 // this will be applied after WiFi connect
 int g_ln882h_pendingPowerSaveCommand = -1;
 
@@ -125,7 +131,7 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	if (Tokenizer_GetArgsCount() > 0) {
 		bOn = Tokenizer_GetArgInteger(0);
 	}
-#if (PLATFORM_LN882H)	
+#if PLATFORM_LN882H || PLATFORM_LN8825
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_PowerSave: will set to %i%s", bOn, Main_IsConnectedToWiFi() == 0 ? " after WiFi is connected" : "");
 #else
 	ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_PowerSave: will set to %i", bOn);
@@ -157,7 +163,7 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	else {
 		wifi_mgmr_sta_ps_exit();
 	}
-#elif defined(PLATFORM_LN882H)
+#elif defined(PLATFORM_LN882H) || PLATFORM_LN8825
 	// this will be applied after WiFi connect
 	if (Main_IsConnectedToWiFi() == 0){
 		g_ln882h_pendingPowerSaveCommand = bOn;

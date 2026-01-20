@@ -106,6 +106,7 @@ generateNotes:
         - ECR6600 (eg AXYU, AXY2S, WG236, DSM-036, CDI-WX56600A-00, BL-M6600XT1, HF-LPT6200)
         - TXW81X (eg TXW817-810)
         - RDA5981 (eg RDA5981AM, RDA5981BM, WRD2L, TYWRD3S, HLK-M50)
+        - LN8825B (eg SCW-T503)
 
       footerPartial: |
         {{#if noteGroups}}
@@ -196,6 +197,8 @@ generateNotes:
         | RDA5981        | UART Flash | [OpenRDA5981_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRDA5981_{{version}}.bin)                         |
         | RDA5981        | OTA Update | [OpenRDA5981_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenRDA5981_{{version}}_ota.img)                 |
         | TXW81X         |            | [OpenTXW81X_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenTXW81X_{{version}}.bin)                           |
+        | LN8825B        | UART Flash | [OpenLN8825_{{version}}.bin]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenLN8825_{{version}}.bin)                           |
+        | LN8825B        | OTA Update | [OpenLN8825_{{version}}_ota.img]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/OpenLN8825_{{version}}_ota.img)                   |
         | Win32          |            | [obkSimulator_{{version}}.zip]({{host}}/{{owner}}/{{repository}}/releases/download/{{version}}/obkSimulator_{{version}}.zip)                       |
 
 
@@ -258,7 +261,7 @@ publish:
       - path: "output/**/OpenBL602*"
       - path: "output/**/OpenW600*"
       - path: "output/**/OpenW800*"
-      - path: "output/**/OpenLN882H*"
+      - path: "output/**/OpenLN882*"
       - path: "output/**/OpenTR6260*"
       - path: "output/**/OpenRTL87*"
       - path: "output/**/OpenESP*"
