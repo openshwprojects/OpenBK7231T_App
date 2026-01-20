@@ -269,7 +269,7 @@ static commandResult_t CMD_SetPinRole(const void *context, const char *cmd, cons
 	}
 
 	pin = Tokenizer_GetPin(0,-1);
-	if (role==-1){
+	if (pin==-1){
 		ADDLOG_INFO(LOG_FEATURE_CMD, "Unknown pin %s",Tokenizer_GetArg(0));
 		return CMD_RES_BAD_ARGUMENT;
 	}
