@@ -988,7 +988,7 @@ typedef enum {
 	char reason[26];
 	bl_sys_rstinfo_getsting(reason);
 	hprintf255(request, "<h5>Reboot reason: %s</h5>", reason);
-#elif PLATFORM_LN882H
+#elif PLATFORM_LN882H || PLATFORM_LN8825
 	// type is chip_reboot_cause_t
 	g_rebootReason = ln_chip_get_reboot_cause();
 	{

@@ -29,7 +29,9 @@ const char *str_rssi[] = { "N/A", "Weak", "Fair", "Good", "Excellent" };
 #ifdef WRAP_PRINTF
 #define vsnprintf3 __wrap_vsnprintf
 #define snprintf3 __wrap_snprintf
+#if !PLATFORM_LN8825
 #define sprintf3 __wrap_sprintf
+#endif
 #define vsprintf3 __wrap_vsprintf
 #endif
 
