@@ -2750,7 +2750,8 @@ int XJ_MovingAverage_int(int aprevvalue, int aactvalue) {
 
 
 // use "complete" search as default, only "simple" one for these platforms
-#if !(PLATFORM_LN882H || PLATFORM_W800 || PLATFORM_TXW81X || (PLATFORM_ESPIDF && ! CONFIG_IDF_TARGET_ESP32C3))
+//#if !(PLATFORM_LN882H || PLATFORM_W800 || PLATFORM_TXW81X || (PLATFORM_ESPIDF && ! CONFIG_IDF_TARGET_ESP32C3))
+#if !(PLATFORM_LN882H || PLATFORM_TXW81X || (PLATFORM_ESPIDF && ! CONFIG_IDF_TARGET_ESP32C3))
 // start helpers for finding (su-)string in pinalias
 
 // code to find a pin index by name

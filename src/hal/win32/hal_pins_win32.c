@@ -173,6 +173,7 @@ const char *HAL_PIN_GetPinNameAlias(int index) {
 		return "RXD1";
 	if (index == 11)
 		return "TXD1";
+/*
 //######################### START TESTING PIN_Find only #########################
 	if (index == 13)
 		return "IO13/Test13/RRX13 XX13 15T";
@@ -181,6 +182,7 @@ const char *HAL_PIN_GetPinNameAlias(int index) {
 	if (index == 14)
 		return "IO14 Test14 (X14/RX14/XX14)";
 //#########################' END TESTING PIN_Find only #'########################
+*/
 	return "N/A";
 }
 

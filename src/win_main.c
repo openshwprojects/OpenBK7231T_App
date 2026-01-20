@@ -301,17 +301,6 @@ void Win_DoUnitTests()
 	// reset whole device
 	SIM_ClearOBK(0);
 }
-
-void Win_DoSingleTest()
-{
-	Test_Pins();
-	SIM_ClearOBK(0);
-
-}
-
-
-
-
 long g_delta;
 float SIM_GetDeltaTimeSeconds()
 {
@@ -630,11 +619,6 @@ int __cdecl main(int argc, char **argv)
 
 	if (g_selfTestsMode)
 	{
-		if (g_selfTestsMode  == 3)
-		{
-			Win_DoSingleTest();
-			return 0;
-		}
 		g_bDoingUnitTestsNow = 1;
 		SIM_ClearOBK(0);
 		// let things warm up a little

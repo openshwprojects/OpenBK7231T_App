@@ -7,7 +7,6 @@
 #include "../cJSON/cJSON.h"
 #include <ctype.h>
 #include "cmd_local.h"
-#include "../hal/hal_pins.h"
 #if ENABLE_LITTLEFS
 	#include "../littlefs/our_lfs.h"
 #endif

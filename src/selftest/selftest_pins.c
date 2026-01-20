@@ -33,28 +33,24 @@ const char *HAL_PIN_GetPinNameAlias(int index) {
 		return "RXD1";
 	if (index == 11)
 		return "TXD1";
-	if (index == 13)
-		return "IO13/Test13/RRX13 XX13";
-	if (index == 15)
-		return "X13(RX13)";
-	if (index == 14)
-		return "IO14 Test14 (X14/RX14/XX14)";
 	return "N/A";
 }
 
 */
-	printf("################################################################# Start Selftest PIN_FindIndexFromString() #################################################################\r\n");
+//	printf("################################################################# Start Selftest PIN_FindIndexFromString() #################################################################\r\n");
 	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("TXD1"), 11);
-	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("ADC3"),23);
-	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("Test13"),13);
-	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("X13"),15);
-	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("RX13"),15);
-	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("RRX13"),13);
-	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("XX13"),13);
-	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("IO14"),14);
-	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("RX14"),14);
+	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("ADC3"), 23);
+	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("TXD2"), 0);
+	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("PWM0"), 6);
+	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("PWM4"), 24);
+	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("1"), 1);
+	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("14"), 14);
+	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("12A"), -1);
+	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("A12"), -1);
+	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("RXD"), -1);
+	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("PWM"), -1);
 	SELFTEST_ASSERT_INTCOMPARE(PIN_FindIndexFromString("TDX2"),-1);
-	printf("################################################################## End Selftest PIN_FindIndexFromString() ##################################################################\r\n");
+//	printf("################################################################## End Selftest PIN_FindIndexFromString() ##################################################################\r\n");
 }
 
 #endif

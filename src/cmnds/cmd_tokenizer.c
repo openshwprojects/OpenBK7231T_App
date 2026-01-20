@@ -215,13 +215,12 @@ int Tokenizer_GetPin(int i, int def) {
 	int r;
 
 	if (g_numArgs <= i) {
-		ADDLOG_DEBUG(LOG_FEATURE_CMD, "Tokenizer_GetPin: Argument %i not present - Returning default index %i",i,def);
+//		ADDLOG_DEBUG(LOG_FEATURE_CMD, "Tokenizer_GetPin: Argument %i not present - Returning default index %i",i,def);
 		return def;
 	}
-//	return HAL_PIN_Find(g_args[i]);
-//	return Tokenizer_IsArgInteger(i) ? Tokenizer_GetArgInteger(i) : PIN_FindIndexFromString(g_args[i]);
-	r = Tokenizer_IsArgInteger(i) ? Tokenizer_GetArgInteger(i) : PIN_FindIndexFromString(g_args[i]);
-	ADDLOG_DEBUG(LOG_FEATURE_CMD, "Tokenizer_GetPin: Argument %i (%s) - Returning index %i",i,g_args[i],r);
+	return Tokenizer_IsArgInteger(i) ? Tokenizer_GetArgInteger(i) : PIN_FindIndexFromString(g_args[i]);
+//	r = Tokenizer_IsArgInteger(i) ? Tokenizer_GetArgInteger(i) : PIN_FindIndexFromString(g_args[i]);
+//	ADDLOG_DEBUG(LOG_FEATURE_CMD, "Tokenizer_GetPin: Argument %i (%s) - Returning index %i",i,g_args[i],r);
 	return r;
 }
 
