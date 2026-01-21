@@ -202,7 +202,7 @@ void Test_PartitionSearch()
 void Win_DoUnitTests()
 {
 	// SELFTEST_ASSERT_EXPRESSION("sqrt(4)", 2)
-
+	Test_TuyaMCU_Dimmer_Issue();
 	Test_Command_If();
 	Test_MQTT();
 	Test_HTTP_Client();

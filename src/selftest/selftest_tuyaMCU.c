@@ -226,6 +226,56 @@ void Test_TuyaMCU_DP22() {
 	SELFTEST_ASSERT_CHANNEL(11, 0);
 	SELFTEST_ASSERT_CHANNEL(12, 0);
 }
+
+
+void Test_TuyaMCU_Dimmer_Issue() {
+	// reset whole device
+	SIM_ClearOBK(0);
+	SIM_ClearAndPrepareForMQTTTesting("TuyaMCU", "bekens");
+
+	SIM_UART_InitReceiveRingBuffer(2048);
+
+	CMD_ExecuteCommand("startDriver TuyaMCU", 0);
+
+	// User configuration from the report
+	CMD_ExecuteCommand("tuyaMcu_defWiFiState 4", 0);
+	CMD_ExecuteCommand("setChannelType 1 toggle", 0);
+	CMD_ExecuteCommand("setChannelType 2 dimmer", 0);
+	CMD_ExecuteCommand("tuyaMcu_setDimmerRange 0 1000", 0);
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 1 bool 1", 0);
+	CMD_ExecuteCommand("linkTuyaMCUOutputToChannel 2 val 2", 0);
+
+	// Wait for startup/init
+	Sim_RunFrames(50, false);
+	SIM_ClearUART();
+
+	// Test case 1: "dimmer" command
+	// The user reported: > mosquitto_pub -h pi -t cmnd/tasmota/dimmer-11/dimmer
+	// -m 100 This maps to "dimmer 100" console command in OBK
+	CMD_ExecuteCommand("setChannel 2 100", 0);
+
+	// process frames
+	Sim_RunFrames(50, false);
+
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING(
+		"55 AA 00 06 00 08 02 02 00 04 00 00 03 E8 00");
+
+	SIM_ClearUART();
+	CMD_ExecuteCommand("setChannel 2 1", 0);
+	Sim_RunFrames(50, false);
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING(
+		"55 AA 00 06 00 08 02 02 00 04 00 00 00 0A 1F");
+
+	CMD_ExecuteCommand("dimmer 100", 0);
+	// process frames
+	Sim_RunFrames(50, false);
+	// Assert that we sent this packet
+	SELFTEST_ASSERT_HAS_SENT_UART_STRING(
+		"55 AA 00 06 00 08 02 02 00 04 00 00 03 E8 01");
+
+	// Assert UART is empty now
+	SELFTEST_ASSERT_HAS_UART_EMPTY();
+}
 void Test_TuyaMCU_Basic() {
 	// reset whole device
 	SIM_ClearOBK(0);

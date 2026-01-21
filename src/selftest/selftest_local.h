@@ -70,6 +70,7 @@ void SelfTest_Failed(const char *file, const char *function, int line, const cha
 #define SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_3KEY(topic, bPrefixMode, object1, object2, key, value, key2, value2, key3, value3) SELFTEST_ASSERT(SIM_HasMQTTHistoryStringWithJSONPayload(topic, bPrefixMode, object1, object2, key, value, key2, value2, key3, value3, 0, 0));
 #define SELFTEST_ASSERT_HAS_MQTT_JSON_SENT_ANY_4KEY(topic, bPrefixMode, object1, object2, key, value, key2, value2, key3, value3, key4, value4) SELFTEST_ASSERT(SIM_HasMQTTHistoryStringWithJSONPayload(topic, bPrefixMode, object1, object2, key, value, key2, value2, key3, value3, key4, value4));
 #define SELFTEST_ASSERT_HAS_SENT_UART_STRING(str) SELFTEST_ASSERT(SIM_UART_ExpectAndConsumeHexStr(str));
+#define SELFTEST_ASSERT_CONTAINS_UART_STRING(str) SELFTEST_ASSERT(SIM_UART_ContainsHexStr(str));
 #define SELFTEST_ASSERT_HAS_UART_EMPTY() SELFTEST_ASSERT(SIM_UART_GetDataSize()==0);
 #define SELFTEST_ASSERT_HAS_SOME_DATA_IN_UART() SELFTEST_ASSERT(SIM_UART_GetDataSize()!=0);
 
@@ -92,6 +93,7 @@ void Test_LEDDriver();
 void Test_TuyaMCU_Basic(); 
 void Test_TuyaMCU_Calib();
 void Test_TuyaMCU_Boolean();
+void Test_TuyaMCU_Dimmer_Issue();
 void Test_TuyaMCU_DP22();
 void Test_TuyaMCU_Mult();
 void Test_TuyaMCU_RawAccess();
@@ -212,6 +214,7 @@ void SIM_UART_ConsumeBytes(int idx);
 void SIM_AppendUARTByte(byte rc);
 bool SIM_UART_ExpectAndConsumeHByte(byte b);
 bool SIM_UART_ExpectAndConsumeHexStr(const char *hexString);
+bool SIM_UART_ContainsHexStr(const char *hexString);
 void SIM_ClearUART();
 
 

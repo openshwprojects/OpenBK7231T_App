@@ -57,6 +57,10 @@ bool SIM_UART_ExpectAndConsumeHByte(byte b) {
 	return false;
 }
 
+bool SIM_UART_ContainsHexStr(const char *hexString) {
+
+}
+
 bool SIM_UART_ExpectAndConsumeHexStr(const char *hexString) {
 	const char *p;
 	byte b;
