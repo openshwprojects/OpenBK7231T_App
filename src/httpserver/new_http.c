@@ -560,7 +560,7 @@ const char* htmlPinRoleNames[] = {
 	"HLW_8112_SCSN",
 	"RCRecv",
 	"RCRecv_nPup",
-	"error",
+	"DCF77",
 	"error",
 	"error",
 };
