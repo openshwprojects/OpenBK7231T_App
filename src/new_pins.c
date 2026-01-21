@@ -1051,7 +1051,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			setGPIActive(index, 1, falling);
 
 			// digital input
-			HAL_PIN_Setup_Input_Pullup(index);
+			HAL_PIN_Setup_Input_Pulldown(index);
 
 			// init button after initializing pin role
 			NEW_button_init(bt, button_generic_get_gpio_value, 0);
