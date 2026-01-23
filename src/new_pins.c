@@ -720,7 +720,7 @@ bool BTN_ShouldInvert(int index) {
 		role == IOR_DigitalInput_n || role == IOR_DigitalInput_NoPup_n
 		|| role == IOR_Button_NextColor_n || role == IOR_Button_NextDimmer_n
 		|| role == IOR_Button_NextTemperature_n || role == IOR_Button_ScriptOnly_n
-		|| role == IOR_SmartButtonForLEDs_n) {
+		|| role == IOR_SmartButtonForLEDs_n || role == IOR_Button_pd_n) {
 		return true;
 	}
 	if (CFG_HasFlag(OBK_FLAG_DOORSENSOR_INVERT_STATE)) {
@@ -1030,6 +1030,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		switch (role)
 		{
 		case IOR_Button:
+		case IOR_Button_pd: // TODO: is ok falling?
 		case IOR_Button_ToggleAll:
 		case IOR_Button_NextColor:
 		case IOR_Button_NextDimmer:
@@ -1038,6 +1039,7 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_SmartButtonForLEDs:
 			falling = 1;
 		case IOR_Button_n:
+		case IOR_Button_pd_n: // TODO: is ok falling?
 		case IOR_Button_ToggleAll_n:
 		case IOR_Button_NextColor_n:
 		case IOR_Button_NextDimmer_n:
@@ -1051,7 +1053,12 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			setGPIActive(index, 1, falling);
 
 			// digital input
-			HAL_PIN_Setup_Input_Pullup(index);
+			if (role == IOR_Button_pd_n || IOR_Button_pd) {
+				HAL_PIN_Setup_Input_Pulldown(index);
+			}
+			else {
+				HAL_PIN_Setup_Input_Pullup(index);
+			}
 
 			// init button after initializing pin role
 			NEW_button_init(bt, button_generic_get_gpio_value, 0);
@@ -1067,13 +1074,19 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			break;
 
 		case IOR_ToggleChannelOnToggle:
+		case IOR_ToggleChannelOnToggle_pd:
 		{
 			// add to active inputs
 			falling = 1;
 			setGPIActive(index, 1, falling);
 
 			// digital input
-			HAL_PIN_Setup_Input_Pullup(index);
+			if (role == IOR_ToggleChannelOnToggle_pd) {
+				HAL_PIN_Setup_Input_Pulldown(index);
+			}
+			else {
+				HAL_PIN_Setup_Input_Pullup(index);
+			}
 			// otherwise we get a toggle on start			
 #ifdef PLATFORM_BEKEN
 			//20231217 XJIKKA
@@ -2251,7 +2264,8 @@ void PIN_ticks(void* param)
 
 #endif
 			}
-			else if (g_cfg.pins.roles[i] == IOR_ToggleChannelOnToggle) {
+			else if (g_cfg.pins.roles[i] == IOR_ToggleChannelOnToggle
+				|| g_cfg.pins.roles[i] == IOR_ToggleChannelOnToggle_pd) {
 				value = PIN_ReadDigitalInputValue_WithInversionIncluded(i);
 			
 				if (value) {

@@ -630,6 +630,27 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":"RC"}
 	IOR_RCRecv_nPup,
+	//iodetail:{"name":"Button_pd",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"same as Button but with pulldown instead pullup",
+	//iodetail:"enum":"IOR_Button_pd",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_Button_pd,
+	//iodetail:{"name":"Button_pd_n",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"same as Button but with pulldown instead pullup",
+	//iodetail:"enum":"IOR_Button_pd_n",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_Button_pd_n,
+	//iodetail:{"name":"ToggleChannelOnToggle_pd",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"pulldown version of ToggleChannelOnToggle",
+	//iodetail:"enum":"IOR_ToggleChannelOnToggle_pd",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_ToggleChannelOnToggle_pd,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
