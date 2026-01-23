@@ -2264,7 +2264,8 @@ void PIN_ticks(void* param)
 
 #endif
 			}
-			else if (g_cfg.pins.roles[i] == IOR_ToggleChannelOnToggle) {
+			else if (g_cfg.pins.roles[i] == IOR_ToggleChannelOnToggle
+				|| g_cfg.pins.roles[i] == IOR_ToggleChannelOnToggle_pd) {
 				value = PIN_ReadDigitalInputValue_WithInversionIncluded(i);
 			
 				if (value) {
