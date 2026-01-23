@@ -566,7 +566,6 @@ const char* htmlPinRoleNames[] = {
 	"error",
 	"error",
 };
-
 const char* PIN_RoleToString(int role) {
 	return htmlPinRoleNames[role];
 }

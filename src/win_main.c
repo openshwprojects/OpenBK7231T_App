@@ -202,7 +202,10 @@ void Test_PartitionSearch()
 void Win_DoUnitTests()
 {
 	// SELFTEST_ASSERT_EXPRESSION("sqrt(4)", 2)
-
+	SELFTEST_ASSERT(PIN_ParsePinRoleName("Btn_pd") == IOR_Button_pd);
+	SELFTEST_ASSERT(PIN_ParsePinRoleName("Btn_pd_n") == IOR_Button_pd_n);
+	SELFTEST_ASSERT(PIN_ParsePinRoleName("TglChanOnTgl_pd") == IOR_ToggleChannelOnToggle_pd);
+		
 	Test_Command_If();
 	Test_MQTT();
 	Test_HTTP_Client();
