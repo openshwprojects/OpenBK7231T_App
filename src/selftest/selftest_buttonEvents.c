@@ -107,6 +107,9 @@ void Test_ButtonEvents() {
 	SIM_SetSimulatedPinValue(10, false);
 	Sim_RunFrames(100, false);
 	SELFTEST_ASSERT_CHANNEL(5, 0); // toggled
+	SIM_SetSimulatedPinValue(10, false);
+	Sim_RunFrames(100, false);
+	SELFTEST_ASSERT_CHANNEL(5, 1); // toggled
 
 }
 
