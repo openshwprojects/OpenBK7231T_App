@@ -28,7 +28,7 @@ int http_basic_auth_eval(http_request_t *request) {
 			tmp_auth[decoded_len] = 0;
 			if (!my_strnicmp(tmp_auth, "admin:", 6)) {
 				char *basic_auth_password = tmp_auth + 6;
-				if (strncmp(basic_auth_password, g_cfg.webPassword, 32) == 0) {
+				if (strncmp(basic_auth_password, g_cfg.webPassword, sizeof(g_cfg.webPassword)-1) == 0) {
 					return HTTP_BASIC_AUTH_OK;
 				}
 			}
