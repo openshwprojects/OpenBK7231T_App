@@ -36,10 +36,11 @@ static void SSD1306_WriteData(byte d) {
 
 void SSD1306_Clear(void) {
 	int i;
-	for (i = 0; i < 512; i++) SSD1306_WriteData(0x00);
+	for (i = 0; i < 512; i++) SSD1306_WriteData(0xFF);
 }
 
 // startDriver SSD1306 16 20 0x3C
+// backlog stopdriver SSD1306 ; startDriver SSD1306 16 20 0x3C
 void SSD1306_Init() {
 
 	g_softI2C.pin_clk = Tokenizer_GetPin(1, 16);
