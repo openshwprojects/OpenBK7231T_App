@@ -247,12 +247,12 @@ void extended_app_waiting_for_launch2(void) {
 #endif
 
 
-#if PLATFORM_LN882H || PLATFORM_ESPIDF || PLATFORM_ESP8266 || PLATFORM_REALTEK_NEW
+#if PLATFORM_LN882H || PLATFORM_ESPIDF || PLATFORM_REALTEK_NEW
 
-__attribute__((weak)) int LWIP_GetMaxSockets() {
+int LWIP_GetMaxSockets() {
 	return 0;
 }
-__attribute__((weak)) int LWIP_GetActiveSockets() {
+int LWIP_GetActiveSockets() {
 	return 0;
 }
 #endif
