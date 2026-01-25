@@ -13,21 +13,22 @@
 
 static softI2C_t g_softI2C;
 
-#define SSD1306_ADDR 0x3C
+int ssd1306_addr = 0x3C;
+
 #define SSD1306_CMD  0x00
 #define SSD1306_DATA 0x40
 
 static byte ssd1306_on = 1;
 
 static void SSD1306_WriteCmd(byte c) {
-	Soft_I2C_Start(&g_softI2C, SSD1306_ADDR);
+	Soft_I2C_Start(&g_softI2C, ssd1306_addr);
 	Soft_I2C_WriteByte(&g_softI2C, SSD1306_CMD);
 	Soft_I2C_WriteByte(&g_softI2C, c);
 	Soft_I2C_Stop(&g_softI2C);
 }
 
 static void SSD1306_WriteData(byte d) {
-	Soft_I2C_Start(&g_softI2C, SSD1306_ADDR);
+	Soft_I2C_Start(&g_softI2C, ssd1306_addr);
 	Soft_I2C_WriteByte(&g_softI2C, SSD1306_DATA);
 	Soft_I2C_WriteByte(&g_softI2C, d);
 	Soft_I2C_Stop(&g_softI2C);
@@ -38,10 +39,12 @@ void SSD1306_Clear(void) {
 	for (i = 0; i < 512; i++) SSD1306_WriteData(0x00);
 }
 
+// startDriver SSD1306 16 20 0x3C
 void SSD1306_Init() {
 
-	g_softI2C.pin_clk = 16;
-	g_softI2C.pin_data = 20;
+	g_softI2C.pin_clk = Tokenizer_GetPin(1, 16);
+	g_softI2C.pin_data = Tokenizer_GetPin(2, 20);
+	ssd1306_addr = Tokenizer_GetArgIntegerDefault(3, 0x3C);
 
 	Soft_I2C_PreInit(&g_softI2C);
 
