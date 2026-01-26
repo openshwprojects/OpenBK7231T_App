@@ -117,7 +117,7 @@ void SSD1306_DrawRect(byte x, byte y, byte w, byte h, byte fill) {
 		}
 	}
 }
-void ssd1306_testEverySecond() {
+void SSD1306_OnEverySecond() {
 	SSD1306_SetOn(true);
 	if (ssd1306_test) {
 		SSD1306_Fill(0x00);
