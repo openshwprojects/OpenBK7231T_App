@@ -36,6 +36,12 @@ static void SSD1306_WriteData(byte d) {
 
 void SSD1306_Fill(byte v) {
 	int i;
+	SSD1306_WriteCmd(0x21); // Set column range
+	SSD1306_WriteCmd(0x00);
+	SSD1306_WriteCmd(0x7F);
+	SSD1306_WriteCmd(0x22); // Set page range (for 128x32: 0-3)
+	SSD1306_WriteCmd(0x00);
+	SSD1306_WriteCmd(0x03);
 	for (i = 0; i < 512; i++)
 		SSD1306_WriteData(v);
 }
