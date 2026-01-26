@@ -209,18 +209,12 @@ void SSD1306_String(const char *str) {
 	}
 }
 
+int x = 1000;
 void SSD1306_OnEverySecond() {
 	SSD1306_SetOn(true);
-	if (ssd1306_test) {
-		SSD1306_Fill(0x00);
-		SSD1306_SetPos(0, 0);
-		SSD1306_String("OpenBeken");
-		SSD1306_SetPos(0, 1);
-		SSD1306_String("IoT Device");
-	}
-	else {
-		SSD1306_DrawRect(0, 0, 30, 15, 0);
-		SSD1306_DrawRect(40, 10, 50, 20, 1);
-	}
-	ssd1306_test = !ssd1306_test;
+	x++;
+	char tmp[8];
+	sprintf(tmp, "%i", x);
+	SSD1306_SetPos(0, 0);
+	SSD1306_String(tmp);
 }
