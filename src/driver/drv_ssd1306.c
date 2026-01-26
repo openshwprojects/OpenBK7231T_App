@@ -186,6 +186,10 @@ static const byte font5x7[][5] = {
 	{0x61, 0x51, 0x49, 0x45, 0x43}, // Z
 };
 void SSD1306_WriteChar(char c) {
+	// Convert lowercase to uppercase
+	if (c >= 'a' && c <= 'z') {
+		c = c - 'a' + 'A';
+	}
 	if (c < 32 || c > 90) c = 32; // Basic bounds check, map unknown to space
 	c -= 32; // Offset to match array index
 
