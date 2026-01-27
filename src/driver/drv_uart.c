@@ -205,7 +205,7 @@ commandResult_t CMD_UART_FakeHex(const void *context, const char *cmd, const cha
     }
     while (*args) {
         byte b;
-        if (*args == ' ') {
+        if (*args == ' ' || *args == '\t') {
             args++;
             continue;
         }
