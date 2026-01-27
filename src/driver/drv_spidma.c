@@ -614,7 +614,7 @@ static int current_pin = 6;
 
 void SPIDMA_Init(struct spi_message* msg)
 {
-	current_pin = spidma_led_pin > 0 ? spidma_led_pin : 6;
+	current_pin = spidma_led_pin >= 0 ? spidma_led_pin : 6;
 	lnPinMapping_t* pin = g_pins + current_pin;
 
 	hal_gpio_pin_afio_select(pin->base, pin->pin, SPI0_MOSI);
@@ -921,6 +921,64 @@ void SPIDMA_StopTX(void)
 void SPIDMA_Deinit(void)
 {
 	if(is_init) hosal_dma_chan_release(spidma_ch);
+}
+
+#elif PLATFORM_W800 || PLATFORM_W600
+
+#include "../new_cfg.h"
+#include "../new_common.h"
+#include "../new_pins.h"
+#include "../logging/logging.h"
+
+#include "drv_spidma.h"
+#include "wm_hostspi.h"
+#include "wm_gpio_afsel.h"
+
+extern int spidma_led_pin;
+static bool is_init = false;
+
+// max led count is 680 (SPI_DMA_BUF_MAX_SIZE/12). Try to remove limitation in sdk and test with more?
+// if led count is > 340, then spi transaction will be split into 2 blocks. Would it flicker?
+void SPIDMA_Init(struct spi_message* msg)
+{
+#if PLATFORM_W600
+	if(spidma_led_pin == 2) spidma_led_pin = 4;
+	else if(spidma_led_pin == 16) spidma_led_pin = 34;
+#endif
+	switch(spidma_led_pin)
+	{
+#if PLATFORM_W800
+		case 7:  // PA07
+		case 21: // PB05
+		case 32: // PB16
+		case 41: // PB25
+#else
+		case 4:  // PA04
+		case 34: // PB18
+#endif
+			tls_spi_init();
+			wm_spi_do_config(spidma_led_pin);
+			tls_spi_trans_type(2); // dma
+			tls_spi_setup(TLS_SPI_MODE_0, TLS_SPI_CS_LOW, 3000000);
+			is_init = true;
+			break;
+		default: return;
+	}
+}
+
+void SPIDMA_StartTX(struct spi_message* msg)
+{
+	if(is_init) tls_spi_write((uint8_t*)msg->send_buf, msg->send_len);
+}
+
+void SPIDMA_StopTX(void)
+{
+
+}
+
+void SPIDMA_Deinit(void)
+{
+	// can't be disabled, reboot only
 }
 
 #else

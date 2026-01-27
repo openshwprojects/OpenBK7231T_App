@@ -10,8 +10,8 @@
 | XR806                                                   | XRadio         | ✅   | ✅   | ✅     | ✅      | ✅   | ✅⁸ | ✅  | ✅         | ✅  | ❌     | ❌ |
 | XR872/XF16                                              | XRadio         | ✅   | ✅   | ✅²    | ✅      | ✅   | ✅⁸ | ✅  | ✅         | ✅  | ❌     | ❌ |
 | BL602/LF686                                             | Bouffalo Lab   | ✅   | ✅   | ✅⁴    | ✅      | ✅   | ✅  | ❌  | ✅         | ✅  | ✅     | ✅ |
-| W800/W801                                               | Winner Micro   | ✅   | ❌   | ✅     | ✅      | ✅   | ✅  | ✅  | ❌         | ✅  | ❌     | ❌ |
-| W600/W601                                               | Winner Micro   | ✅   | ❌   | ✅     | ✅      | ✅   | ✅  | ✅  | ❌         | ✅  | ❌     | ❌ |
+| W800/W801                                               | Winner Micro   | ✅   | ❌   | ✅     | ✅      | ✅   | ✅  | ✅  | ❌         | ✅  | ✅     | ❌ |
+| W600/W601                                               | Winner Micro   | ✅   | ❌   | ✅     | ✅      | ✅   | ✅  | ✅  | ❌         | ✅  | ✅⁶    | ❌ |
 | LN882H                                                  | Lightning Semi | ✅   | ✅   | ✅⁴    | ✅      | ❌   | ✅  | ❗️  | ❌         | ✅  | ✅     | ✅ |
 | ESP8266<br>ESP8285                                      | Espressif      | ✅   | ⚠️¹³ | ✅²'⁴  | ✅      | ✅   | ✅⁷ | ❌  | ❗️         | ❓⁹ | ❌     | ❌ |
 | ESP32<br>-C2<br>-C3<br>-C5<br>-C6<br>-C61<br>-S2<br>-S3 | Espressif      | ✅   | ⚠️¹³ | ✅⁴    | ✅      | ✅   | ✅  | ❓  | ✅¹⁰       | ✅  | ✅     | ❌ |
@@ -40,7 +40,7 @@
 ³ Implemented, but no tool to generate the file<br>
 ⁴ No HTTP OTA, only in Web App<br>
 ⁵ OTA attempt leads to device crash<br>
-⁶ Web App OTA is broken, use HTTP OTA<br>
+⁶ Disabled in obk_config <br>
 ⁷ Software PWM, expect flickering<br>
 ⁸ Be careful with pin assignments, some PWM channels overlap<br>
 ⁹ WDT is configured in SDK<br>
