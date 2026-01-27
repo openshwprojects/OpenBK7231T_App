@@ -25,7 +25,8 @@ extern mqtt_client_t* mqtt_client;
 
 void MQTT_init();
 int MQTT_RunQuickTick();
-int MQTT_RunEverySecondUpdate();
+void MQTT_FastConnect();
+bool MQTT_RunEverySecondUpdate();
 void MQTT_BroadcastTasmotaTeleSTATE();
 void MQTT_BroadcastTasmotaTeleSENSOR();
 

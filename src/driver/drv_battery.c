@@ -22,6 +22,7 @@ static void Batt_Measure() {
 	//this command has only been tested on CBU
 	float batt_ref, batt_res, vref;
 	int writeVal = 1;
+	ADDLOGF_TIMING("%i - %s", xTaskGetTickCount(), __func__);
 	ADDLOG_INFO(LOG_FEATURE_DRV, "DRV_BATTERY : Measure Battery volt en perc");
 	g_pin_adc = PIN_FindPinIndexForRole(IOR_BAT_ADC, g_pin_adc);
 	if (PIN_FindPinIndexForRole(IOR_BAT_Relay, -1) == -1 && PIN_FindPinIndexForRole(IOR_BAT_Relay_n, -1) == -1) {
@@ -147,6 +148,7 @@ commandResult_t Battery_cycle(const void* context, const char* cmd, const char* 
 
 // startDriver Battery
 void Batt_Init() {
+	ADDLOGF_TIMING("%i - %s", xTaskGetTickCount(), __func__);
 
 	//cmddetail:{"name":"Battery_Setup","args":"[minbatt][maxbatt][V_divider][Vref][AD Bits]",
 	//cmddetail:"descr":"measure battery based on ADC. <br />req. args: minbatt in mv, maxbatt in mv. <br />optional: V_divider(2), Vref(default 2400), ADC bits(4096)",
