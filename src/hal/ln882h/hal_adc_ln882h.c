@@ -1,19 +1,20 @@
 //#include "../hal_adc.h"
-#include "hal/hal_adc.h"
 #include "hal_pinmap_ln882h.h"
 
 #if PLATFORM_LN882H
 
+#include "hal/hal_adc.h"
+
 void HAL_ADC_Init(int pinNumber)
 {
-	adc_init_t_def adc_init = { 0 };
+	adc_init_t_def adc_init          = { 0 };
 
-	adc_init.adc_ch              = ADC_CH0;
-	adc_init.adc_conv_mode       = ADC_CONV_MODE_CONTINUE;
-	adc_init.adc_presc           = 0xFF;
+	adc_init.adc_ch                  = ADC_CH0;
+	adc_init.adc_conv_mode           = ADC_CONV_MODE_CONTINUE;
+	adc_init.adc_presc               = 0xFF;
 	if(pinNumber != 0xFF)
 	{
-		adc_init.adc_ov_smp_ratio = ADC_OVER_SAMPLING_RATIO_X8;
+		adc_init.adc_ov_smp_ratio    = ADC_OVER_SAMPLING_RATIO_X8;
 		adc_init.adc_ov_smp_ratio_en = ADC_OVER_SAMPLING_EN_STATUS_BIT0;
 	}
 	switch(pinNumber)
@@ -106,6 +107,8 @@ void HAL_ADC_Deinit(int pinNumber)
 #endif // PLATFORM_LN882H
 
 #if PLATFORM_LN8825
+
+#include "hal/hal_adc.h"
 
 void OBK_HAL_ADC_Init(int pinNumber)
 {
