@@ -21,14 +21,14 @@ int ssd1306_addr = 0x3C;
 static byte ssd1306_test = 1;
 
 static void SSD1306_WriteCmd(byte c) {
-	Soft_I2C_Start(&g_softI2C, ssd1306_addr);
+	Soft_I2C_Start(&g_softI2C, ssd1306_addr << 1);
 	Soft_I2C_WriteByte(&g_softI2C, SSD1306_CMD);
 	Soft_I2C_WriteByte(&g_softI2C, c);
 	Soft_I2C_Stop(&g_softI2C);
 }
 
 static void SSD1306_WriteData(byte d) {
-	Soft_I2C_Start(&g_softI2C, ssd1306_addr);
+	Soft_I2C_Start(&g_softI2C, ssd1306_addr << 1);
 	Soft_I2C_WriteByte(&g_softI2C, SSD1306_DATA);
 	Soft_I2C_WriteByte(&g_softI2C, d);
 	Soft_I2C_Stop(&g_softI2C);
@@ -193,7 +193,7 @@ void SSD1306_WriteChar(char c) {
 	if (c < 32 || c > 90) c = 32; // Basic bounds check, map unknown to space
 	c -= 32; // Offset to match array index
 
-	Soft_I2C_Start(&g_softI2C, ssd1306_addr);
+	Soft_I2C_Start(&g_softI2C, ssd1306_addr << 1);
 	Soft_I2C_WriteByte(&g_softI2C, SSD1306_DATA);
 
 	for (int i = 0; i < 5; i++) {
