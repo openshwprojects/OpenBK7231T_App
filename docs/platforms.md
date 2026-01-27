@@ -12,7 +12,7 @@
 | BL602/LF686                                             | Bouffalo Lab   | ✅   | ✅   | ✅⁴    | ✅      | ✅   | ✅  | ❌  | ✅         | ✅  | ✅     | ✅ |
 | W800/W801                                               | Winner Micro   | ✅   | ❌   | ✅     | ✅      | ✅   | ✅  | ✅  | ❌         | ✅  | ❌     | ❌ |
 | W600/W601                                               | Winner Micro   | ✅   | ❌   | ✅     | ✅      | ✅   | ✅  | ✅  | ❌         | ✅  | ❌     | ❌ |
-| LN882H                                                  | Lightning Semi | ✅   | ✅   | ✅⁴    | ✅      | ❌   | ✅  | ❗️  | ❌         | ✅  | ✅     | ✅ |
+| LN882H                                                  | Lightning Semi | ✅   | ✅   | ✅⁴    | ✅      | ❌   | ✅  | ✅  | ❌         | ✅  | ✅     | ✅ |
 | ESP8266<br>ESP8285                                      | Espressif      | ✅   | ⚠️¹³ | ✅²'⁴  | ✅      | ✅   | ✅⁷ | ❌  | ❗️         | ❓⁹ | ❌     | ❌ |
 | ESP32<br>-C2<br>-C3<br>-C5<br>-C6<br>-C61<br>-S2<br>-S3 | Espressif      | ✅   | ⚠️¹³ | ✅⁴    | ✅      | ✅   | ✅  | ❓  | ✅¹⁰       | ✅  | ✅     | ❌ |
 | TR6260                                                  | Transa Semi    | ✅   | ❌   | ❗️³'⁴  | ✅      | ❌   | ✅⁸ | ❌  | ❌         | ✅⁹ | ❌     | ❌ |
