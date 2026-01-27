@@ -1,8 +1,8 @@
-#if PLATFORM_LN882H
-
-#include "../hal_adc.h"
+//#include "../hal_adc.h"
 #include "hal/hal_adc.h"
 #include "hal_pinmap_ln882h.h"
+
+#if PLATFORM_LN882H
 
 void HAL_ADC_Init(int pinNumber)
 {
@@ -104,3 +104,55 @@ void HAL_ADC_Deinit(int pinNumber)
 }
 
 #endif // PLATFORM_LN882H
+
+#if PLATFORM_LN8825
+
+void OBK_HAL_ADC_Init(int pinNumber)
+{
+	ADC_InitTypeDef adc_init_struct;
+	adc_init_struct.ADC_Autoff = FENABLE;
+	adc_init_struct.ADC_ContinuousConvMode = FDISABLE;
+	adc_init_struct.ADC_DataAlign = ADC_DataAlign_Right;
+	adc_init_struct.ADC_WaitMode = FDISABLE;
+
+	HAL_ADC_Init(ADC, &adc_init_struct);
+	HAL_ADC_PrescCfg(ADC, 42);
+	HAL_SYSCON_GPIO_Digital_Analog_Select(pinNumber, GPIO_ANALOG_MOD);
+}
+
+int HAL_ADC_Read(int pinNumber)
+{
+	adc_chan_t ch;
+	switch(pinNumber)
+	{
+		case 0:  ch = EXTL_ADC_CHAN_0; break;
+		case 1:  ch = EXTL_ADC_CHAN_1; break;
+		case 4:  ch = EXTL_ADC_CHAN_2; break;
+		case 19: ch = EXTL_ADC_CHAN_3; break;
+		case 20: ch = EXTL_ADC_CHAN_4; break;
+		case 21: ch = EXTL_ADC_CHAN_5; break;
+		default: return 0;
+	}
+	uint16_t read_adc = 0;
+
+	HAL_ADC_SeqChanSelect_Cfg(ADC, ch);
+	HAL_ADC_Cmd(ADC, FENABLE);
+	HAL_ADC_SoftwareStartConvCmd(ADC);
+	for(volatile uint32_t t = 0; t < 40 * 3; t++)
+	{
+		__NOP();
+	}
+
+	read_adc = HAL_ADC_GetConversionValue(ADC, ch);
+	HAL_ADC_StopConvCmd(ADC);
+	HAL_ADC_Cmd(ADC, FDISABLE);
+
+	return read_adc;
+}
+
+void HAL_ADC_Deinit(int pinNumber)
+{
+	HAL_SYSCON_GPIO_Digital_Analog_Select(pinNumber, GPIO_DIGITAL_MOD);
+}
+
+#endif
