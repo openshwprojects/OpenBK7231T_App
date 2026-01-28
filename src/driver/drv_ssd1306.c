@@ -267,7 +267,7 @@ void SSD1306_Init() {
 	CMD_RegisterCommand("ssd1306_on", SSD1306_Cmd_On, NULL);
 	CMD_RegisterCommand("ssd1306_print", SSD1306_Cmd_Print, NULL);
 	CMD_RegisterCommand("ssd1306_rect", SSD1306_Cmd_Rect, NULL);
-	CMD_RegisterCommand("ssd1306_goto", SSD1306_Cmd_Goto, NULL);
+	CMD_RegisterCommand("ssd1306_goto", SSD1306_Cmd_GoTo, NULL);
 
 	Soft_I2C_PreInit(&g_softI2C);
 
