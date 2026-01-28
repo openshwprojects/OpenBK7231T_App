@@ -25,6 +25,7 @@ set(PROJ_ALL_SRC
 	${OBK_SRCS}hal/ln882h/hal_pins_ln882h.c
 	${OBK_SRCS}hal/ln882h/hal_wifi_ln882h.c
 	${OBK_SRCS}hal/ln882h/hal_ota_ln882h.c
+	${OBK_SRCS}hal/ln882h/hal_uart_ln882h.c
 	main.c
 	bsp/serial_hw.c
 	startup/startup_${CHIP_SERIAL}_gcc.c
