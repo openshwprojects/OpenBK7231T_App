@@ -13,12 +13,11 @@
 
 static softI2C_t g_softI2C;
 
-int ssd1306_addr = 0x3C;
+static int ssd1306_addr = 0x3C;
 
 #define SSD1306_CMD  0x00
 #define SSD1306_DATA 0x40
 
-static byte ssd1306_test = 1;
 
 static void SSD1306_WriteCmd(byte c) {
 	Soft_I2C_Start(&g_softI2C, ssd1306_addr << 1);
@@ -186,14 +185,24 @@ commandResult_t SSD1306_Cmd_Print(const void* context, const char* cmd, const ch
 	// following check must be done after 'Tokenizer_TokenizeString',
 	// so we know arguments count in Tokenizer. 'cmd' argument is
 	// only for warning display
-	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3)) {
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	const char *s = Tokenizer_GetArg(0);
+	SSD1306_String(s);
+	return CMD_RES_OK;
+}
+commandResult_t SSD1306_Cmd_GoTo(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	int x = Tokenizer_GetArgInteger(0);
 	int y = Tokenizer_GetArgInteger(1);
-	const char *s = Tokenizer_GetArg(2);
 	SSD1306_SetPos(x, y);
-	SSD1306_String(s);
 	return CMD_RES_OK;
 }
 commandResult_t SSD1306_Cmd_On(const void* context, const char* cmd, const char* args, int cmdFlags) {
@@ -245,7 +254,8 @@ void SSD1306_Cmd_Rect(const void* context, const char* cmd, const char* args, in
 backlog stopdriver SSD1306 ; startDriver SSD1306 16 20 0x3C
 ssd1306_clear 0
 ssd1306_on 1
-ssd1306_print 0 0 Hello
+ssd1306_goto 0 0
+ssd1306_print Hello
 */
 void SSD1306_Init() {
 
@@ -257,6 +267,7 @@ void SSD1306_Init() {
 	CMD_RegisterCommand("ssd1306_on", SSD1306_Cmd_On, NULL);
 	CMD_RegisterCommand("ssd1306_print", SSD1306_Cmd_Print, NULL);
 	CMD_RegisterCommand("ssd1306_rect", SSD1306_Cmd_Rect, NULL);
+	CMD_RegisterCommand("ssd1306_goto", SSD1306_Cmd_Goto, NULL);
 
 	Soft_I2C_PreInit(&g_softI2C);
 
