@@ -45,45 +45,6 @@ void SSD1306_Fill(byte v) {
 	for (i = 0; i < 512; i++)
 		SSD1306_WriteData(v);
 }
-
-// startDriver SSD1306 16 20 0x3C
-// backlog stopdriver SSD1306 ; startDriver SSD1306 16 20 0x3C
-void SSD1306_Init() {
-
-	g_softI2C.pin_clk = Tokenizer_GetPin(1, 16);
-	g_softI2C.pin_data = Tokenizer_GetPin(2, 20);
-	ssd1306_addr = Tokenizer_GetArgIntegerDefault(3, 0x3C);
-
-	Soft_I2C_PreInit(&g_softI2C);
-
-	SSD1306_WriteCmd(0xAE);
-	SSD1306_WriteCmd(0xD5);
-	SSD1306_WriteCmd(0x80);
-	SSD1306_WriteCmd(0xA8);
-	SSD1306_WriteCmd(0x1F);
-	SSD1306_WriteCmd(0xD3);
-	SSD1306_WriteCmd(0x00);
-	SSD1306_WriteCmd(0x40);
-	SSD1306_WriteCmd(0x8D);
-	SSD1306_WriteCmd(0x14);
-	SSD1306_WriteCmd(0x20);
-	SSD1306_WriteCmd(0x00);
-	SSD1306_WriteCmd(0xA1);
-	SSD1306_WriteCmd(0xC8);
-	SSD1306_WriteCmd(0xDA);
-	SSD1306_WriteCmd(0x02);
-	SSD1306_WriteCmd(0x81);
-	SSD1306_WriteCmd(0x8F);
-	SSD1306_WriteCmd(0xD9);
-	SSD1306_WriteCmd(0xF1);
-	SSD1306_WriteCmd(0xDB);
-	SSD1306_WriteCmd(0x40);
-	SSD1306_WriteCmd(0xA4);
-	SSD1306_WriteCmd(0xA6);
-	SSD1306_WriteCmd(0xAF);
-
-	SSD1306_Fill(0x00);
-}
 void SSD1306_SetOn(bool b) {
 	if (b) {
 		SSD1306_WriteCmd(0xAF);
@@ -209,12 +170,113 @@ void SSD1306_String(const char *str) {
 	}
 }
 
-int x = 1000;
+//int x = 1000;
 void SSD1306_OnEverySecond() {
-	SSD1306_SetOn(true);
-	x++;
-	char tmp[8];
-	sprintf(tmp, "%i", x);
-	SSD1306_SetPos(0, 0);
-	SSD1306_String(tmp);
+	//SSD1306_SetOn(true);
+	//x++;
+	//char tmp[8];
+	//sprintf(tmp, "%i", x);
+	//SSD1306_SetPos(0, 0);
+	//SSD1306_String(tmp);
+}
+
+
+commandResult_t SSD1306_Cmd_Print(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 3)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	int x = Tokenizer_GetArgInteger(0);
+	int y = Tokenizer_GetArgInteger(1);
+	const char *s = Tokenizer_GetArg(2);
+	SSD1306_SetPos(x, y);
+	SSD1306_String(s);
+	return CMD_RES_OK;
+}
+commandResult_t SSD1306_Cmd_On(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	int bOn = Tokenizer_GetArgInteger(0);
+	SSD1306_SetOn(bOn);
+	return CMD_RES_OK;
+}
+commandResult_t SSD1306_Cmd_Clear(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	int val = Tokenizer_GetArgInteger(0);
+	SSD1306_Fill(val);
+	return CMD_RES_OK;
+}
+
+void SSD1306_DrawRect(byte x, byte y, byte w, byte h, byte fill) {
+	Tokenizer_TokenizeString(args, 0);
+	// following check must be done after 'Tokenizer_TokenizeString',
+	// so we know arguments count in Tokenizer. 'cmd' argument is
+	// only for warning display
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 4)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
+	int x = Tokenizer_GetArgInteger(0);
+	int y = Tokenizer_GetArgInteger(1);
+	int w = Tokenizer_GetArgInteger(2);
+	int h = Tokenizer_GetArgInteger(3);
+	int fill = Tokenizer_GetArgIntegerDefault(4, 0xff);
+	SSD1306_DrawRect(x, y, w, h, fill);
+	return CMD_RES_OK;
+}
+// startDriver SSD1306 16 20 0x3C
+// backlog stopdriver SSD1306 ; startDriver SSD1306 16 20 0x3C
+void SSD1306_Init() {
+
+	g_softI2C.pin_clk = Tokenizer_GetPin(1, 16);
+	g_softI2C.pin_data = Tokenizer_GetPin(2, 20);
+	ssd1306_addr = Tokenizer_GetArgIntegerDefault(3, 0x3C);
+
+	CMD_RegisterCommand("ssd1306_clear", SSD1306_Cmd_Clear, NULL);
+	CMD_RegisterCommand("ssd1306_on", SSD1306_Cmd_On, NULL);
+	CMD_RegisterCommand("ssd1306_print", SSD1306_Cmd_Print, NULL);
+	CMD_RegisterCommand("ssd1306_rect", SSD1306_Cmd_Rect, NULL);
+
+	Soft_I2C_PreInit(&g_softI2C);
+
+	SSD1306_WriteCmd(0xAE);
+	SSD1306_WriteCmd(0xD5);
+	SSD1306_WriteCmd(0x80);
+	SSD1306_WriteCmd(0xA8);
+	SSD1306_WriteCmd(0x1F);
+	SSD1306_WriteCmd(0xD3);
+	SSD1306_WriteCmd(0x00);
+	SSD1306_WriteCmd(0x40);
+	SSD1306_WriteCmd(0x8D);
+	SSD1306_WriteCmd(0x14);
+	SSD1306_WriteCmd(0x20);
+	SSD1306_WriteCmd(0x00);
+	SSD1306_WriteCmd(0xA1);
+	SSD1306_WriteCmd(0xC8);
+	SSD1306_WriteCmd(0xDA);
+	SSD1306_WriteCmd(0x02);
+	SSD1306_WriteCmd(0x81);
+	SSD1306_WriteCmd(0x8F);
+	SSD1306_WriteCmd(0xD9);
+	SSD1306_WriteCmd(0xF1);
+	SSD1306_WriteCmd(0xDB);
+	SSD1306_WriteCmd(0x40);
+	SSD1306_WriteCmd(0xA4);
+	SSD1306_WriteCmd(0xA6);
+	SSD1306_WriteCmd(0xAF);
+
+	SSD1306_Fill(0x00);
 }
